@@ -5876,6 +5876,47 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
       });
     }
   }
+  // ── P3 §2-6: ドラフト総括(N-8 の作り直し) ──
+  // 団体ごとの記事とは別に、**指名全体を1本で振り返る**記事を出す。
+  // 並びは **能力値の降順にしない** — OVR順に並べると隠しステが読めて冷める(§2-6)。
+  // 見立てティア(assessedTier)は社長にも記者にも見えている評価なので、これで並べる。
+  // 同じティア内は id 昇順(乱数を使わないので、同じドラフトなら毎回同じ並びになる)
+  {
+    const TIER_ORDER = { superElite: 0, elite: 1, promising: 2, raw: 3, material: 4 };
+    const TIER_LABEL = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '素材', material: '素材' };
+    const picked = [];
+    const seenIds = new Set();
+    for (const st of draftNewsPage.stories) {
+      const ids = (st.portraits ? st.portraits.map(p => p.id) : (st.ids || []))
+        .filter(id => Number.isInteger(id) && id > 0);
+      ids.forEach(id => {
+        if (seenIds.has(id)) return;
+        seenIds.add(id);
+        const c = (typeof ALL_CHARS !== 'undefined') ? ALL_CHARS.find(x => x.id === id) : null;
+        const live = (state.roster || []).find(x => x.id === id)
+          || Object.values(state.aiOrgs || {}).flatMap(o => (o && o.roster) || []).find(x => x.id === id);
+        const tier = (live && live.assessedTier) || (c && c.assessedTier) || 'raw';
+        picked.push({ id, name: (live && live.name) || (c && c.name) || '', tier });
+      });
+    }
+    if (picked.length >= 2) {
+      picked.sort((a, b) => (TIER_ORDER[a.tier] ?? 9) - (TIER_ORDER[b.tier] ?? 9) || a.id - b.id);
+      const top = picked.slice(0, 5).filter(p => p.name);
+      if (top.length >= 2) {
+        s = Engine.industryNews.push(s, {
+          type: 'draftRoundup',
+          characterId: top[0].id,
+          characterIds: top.map(p => p.id),
+          data: {
+            total: picked.length,
+            names: top.map(p => `${p.name}（${TIER_LABEL[p.tier] || '素材'}）`).join('、'),
+            headName: top[0].name,
+          },
+        });
+      }
+    }
+  }
+
   // 指名漏れゼロは「何も起きなかった」ではなく、それ自体が一行の記事になる
   if (summary && Array.isArray(summary.flowThrough) && summary.flowThrough.length === 0) {
     s = Engine.industryNews.push(s, { type: 'draftEmpty', data: {} });

@@ -28307,6 +28307,7 @@ Engine.newspaper = {
     // ドラフト結果（2026-07-27）。オフに新聞が出ないので新年号にまとめて載る。
     // 自団体の獲得は引退記事(aiAceRetirement 160)と並んで一面を争える高さに置く
     // ——新年号が去年末の引退ばかりになるのを避けるため。
+    draftRoundup:        150,   // P3 §2-6: 指名全体の総括(N-8 の作り直し)
     draftPlayerResult:   165,
     draftAiResult:       100,
     draftFlowThrough:     70,

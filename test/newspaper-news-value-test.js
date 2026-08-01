@@ -178,6 +178,56 @@ section('事前記事のテンプレに差し込み口がある(死蔵にしな�
   });
 });
 
+// ── P3 §2-6: 週次ニュース源 / ドラフト総括 ──────────────────────────
+section('大怪我・連勝連敗はスキャンで拾う(発生地点を追いかけない)', () => {
+  const st = makeState({
+    roster: [f(101, '王者', 70, { injury: { type: '重傷', weeksLeft: 12 } }),
+      f(102, '連勝中', 65, { streak: 10 }), f(103, '連敗中', 60, { streak: -5 })],
+    streakRecord: { value: 9, holderId: 999 }, _industryNewsEvents: [],
+  });
+  const after = NP.scanRosterNews(st);
+  const types = (after._industryNewsEvents || []).map(e => e.type);
+  ['longInjury', 'winStreakMilestone', 'loseStreakMilestone'].forEach(t => {
+    assert.ok(types.includes(t), `${t} が拾われていない`);
+  });
+  // 同じネタを毎週出さない
+  const again = NP.scanRosterNews({ ...after, _industryNewsEvents: [] });
+  assert.strictEqual((again._industryNewsEvents || []).length, 0, '同じネタが翌週も出ている');
+});
+
+section('連勝は団体記録との距離で強度が変わる', () => {
+  const base = { type: 'winStreakMilestone', priority: NP.PRIORITY.winStreakMilestone, characterId: 107 };
+  const st = makeState();
+  const plain = valueOf(st, { ...base, newsData: {} });
+  const match = valueOf(st, { ...base, newsData: { recordState: 'match' } });
+  const broken = valueOf(st, { ...base, newsData: { recordState: 'broken' } });
+  assert.ok(plain < match && match < broken, `王手/更新で点が上がらない (${plain}/${match}/${broken})`);
+});
+
+section('移籍・引退の記事が生成できる(旧 transfer は死んだエントリだった)', () => {
+  assert.ok(NP.PRIORITY.transferDone > 0 && NP.PRIORITY.retirementDeclare > 0, '基礎点が無い');
+  const t = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') && NEWS_HEADLINE_TEMPLATES;
+  ['transferDone', 'retirementDeclare', 'longInjury', 'winStreakMilestone',
+    'loseStreakMilestone', 'draftRoundup'].forEach(k => {
+    assert.ok(t[k] && t[k].length, `${k} の記事テンプレが無い(点だけあって紙面に出ない)`);
+    t[k].forEach(x => {
+      assert.ok(x.headline && x.body, `${k} に見出しか本文が欠けている`);
+      assert.ok(!/MQ|condition|orgPop|OVR/.test(x.headline + x.body), `${k} に内部語が出ている`);
+    });
+  });
+});
+
+section('ドラフト総括は見立てティア順。能力値の降順にしない', () => {
+  const src = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'ui-common.js'), 'utf8');
+  // 同名のローカル変数 draftSummary が別の場所にあるので、**記事の push** を狙う
+  const at = src.indexOf("type: 'draftRoundup'");
+  assert.ok(at > 0, 'ドラフト総括の記事生成が ui-common.js に無い');
+  const block = src.slice(Math.max(0, at - 1800), at + 400);
+  assert.ok(/assessedTier/.test(block), '見立てティアで並べていない');
+  assert.ok(!/Engine\.util\.ov\(/.test(block), '能力値で並べている(隠しステが読める)');
+  assert.ok(/characterIds:/.test(block), '顔付きになっていない');
+});
+
 console.log('');
 if (failed > 0) { console.log(`newspaper-news-value-test: ${failed} FAILED`); process.exit(1); }
 console.log('newspaper-news-value-test: ok');
