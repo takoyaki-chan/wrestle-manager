@@ -800,6 +800,9 @@ const factionEventCensus = { byEvent: {}, byF07Incident: {} };
 // 殿堂入り計測 (WM_HOF_FIXTURE=1)。G はシミュレーションループのスコープ内にあるので、
 // ループ末でここへ引退者を移しておき、最後にトップレベルで集計する
 const hofCensus = [];
+const hofSeenIds = new Set();
+let lastAllHallOfFame = null;
+const hofPlayerRosterEver = new Set(); // 一度でも自団体に在籍した選手id（引退後は roster から消えるので毎週ためる）
 
 // Phase 3a: 派閥イベント自動処理（F01/F02/F03 をランダムに応答）
 function autoHandleFactionEvent(G, simRng) {
@@ -1135,6 +1138,22 @@ function runSimulation(seed, seasons) {
 
   while (completed < seasons && iter < MAX_ITER) {
     iter++;
+    // 殿堂入り計測 (WM_HOF_FIXTURE=1): state.retiredFighters は**年度末に空にされる
+    // 一時バッファ**なので、シーズンをまたぐ前に毎週さらっておく。
+    // 最後にまとめて読むと最終年の残りしか取れない(2026-08-01 にこれで測り違えた)
+    if (process.env.WM_HOF_FIXTURE === '1' && G) {
+      (G.roster || []).forEach(c => { if (c && c.id != null) hofPlayerRosterEver.add(c.id); });
+      (G.retiredFighters || []).forEach(f => {
+        if (f && f.id != null && f.careerRecord && !hofSeenIds.has(f.id)) {
+          hofSeenIds.add(f.id);
+          const inPlayer = hofPlayerRosterEver.has(f.id);
+          hofCensus.push(Object.assign({}, f.careerRecord, { _wasPlayerRoster: inPlayer, _orgHint: f._orgName || f.orgId || null }));
+        }
+      });
+      if (G.allHallOfFame) lastAllHallOfFame = G.allHallOfFame;
+      ([]).forEach(() => {
+      });
+    }
     try {
       injuryProbe.contextKey = String(currentSeed);
       observeFighterSeasons(G);
@@ -1557,13 +1576,6 @@ function runSimulation(seed, seasons) {
 
   if (iter >= MAX_ITER) {
     errors.push({ season: G.season, week: G.week, seed: currentSeed, error: `MAX_ITER (${MAX_ITER}) に到達。無限ループの可能性` });
-  }
-
-  // 殿堂入り計測 (WM_HOF_FIXTURE=1): 引退者のキャリア記録をトップレベルへ渡す
-  if (process.env.WM_HOF_FIXTURE === '1') {
-    ((G && G.retiredFighters) || []).forEach(f => {
-      if (f && f.careerRecord) hofCensus.push(f.careerRecord);
-    });
   }
 
   // relationship-flags-spec-v1.0 §7-4: フラグ発火頻度集計
@@ -2346,6 +2358,61 @@ if (process.env.WM_HOF_FIXTURE === '1') {
     const addBest = n(e => e.type === 'tenchosenBestBout' || e.type === 'juniorTournamentBestBout') * 2;
     rows.push({ cur, add: addB3 + addMq + addBest, addB3, addMq, addBest, peak: rec.peakOVR || 0 });
   }
+  // ── 残っている殿堂入り(恒久)の実人数 ──
+  {
+    const allHof = (typeof lastAllHallOfFame !== 'undefined' && lastAllHallOfFame) || null;
+    if (allHof) {
+      const parts = Object.entries(allHof).map(([k, v]) => `${k}=${(v || []).length}`);
+      console.log(`  [i] allHallOfFame(恒久保存) ${parts.join(' ')}`);
+    } else {
+      console.log('  [i] allHallOfFame 未取得');
+    }
+    const fromPlayer = hofCensus.filter(r => r._wasPlayerRoster).length;
+    console.log(`  [i] 一度でも自団体に在籍した人: ${fromPlayer} / ${hofCensus.length}`);
+  }
+  // ── 取りこぼし監査 ──────────────────────────────────────────
+  // 「今までのバランスで問題なく殿堂入りは出ていた」(Keisuke 2026-08-01)。
+  // 圏外が9割を超えるなら、集計側が**加点すべきものを読み落としている**疑いがある。
+  // 実際にキャリアへ積まれている type と、calcHofPoints が読む type を突き合わせる。
+  {
+    const typeCount = {};
+    hofCensus.forEach(rec => (rec.history || []).forEach(e => {
+      if (e && e.type) typeCount[e.type] = (typeCount[e.type] || 0) + 1;
+    }));
+    // calcHofPoints が実際に読んでいる type（ソースと対で保守すること）
+    const READ = {
+      titleWin: 'タイトル獲得(countTitleStats経由)',
+      titleDefense: 'タイトル防衛(countTitleStats経由)',
+      juniorTournament: 'ジュニア優勝 ×4',
+      springTagLeague: '春タッグ優勝 ×3',
+      autumnWar: '秋対抗戦 勝ち抜き/優勝',
+      ppvTournament: '天頂戦 優勝8/準優勝5/ベスト4=3',
+      ppvMainEvent: '頂上決戦 勝利 ×5',
+      war: '対抗戦 勝利 ×1.5',
+      awardMVP: 'MVP ×2',
+      awardRookie: '新人王 1.5',
+      awardBestMatch: 'ベストマッチ ×1',
+      awardMedia: 'メディア功労 ×1.5',
+      domeMain: 'ドームメイン 勝3/敗1',
+    };
+    console.log('  ── 取りこぼし監査 ──');
+    const readKeys = Object.keys(READ);
+    const missing = readKeys.filter(k => !typeCount[k]);
+    if (missing.length) {
+      console.log(`  [!] 集計対象なのにキャリアに1件も無い type (${missing.length}件):`);
+      missing.forEach(k => console.log(`      ${k.padEnd(20)} ${READ[k]}`));
+    } else {
+      console.log('  集計対象の type はすべてキャリアに存在する');
+    }
+    const unread = Object.keys(typeCount)
+      .filter(k => !readKeys.includes(k))
+      .sort((a, b) => typeCount[b] - typeCount[a]);
+    console.log(`  [i] キャリアにあるが集計していない type (上位15/全${unread.length}件):`);
+    unread.slice(0, 15).forEach(k => console.log(`      ${k.padEnd(24)} ${String(typeCount[k]).padStart(5)}件`));
+    console.log('  [i] 集計対象の出現件数:');
+    readKeys.forEach(k => console.log(`      ${k.padEnd(20)} ${String(typeCount[k] || 0).padStart(5)}件  ${READ[k]}`));
+  }
+
   if (rows.length === 0) {
     console.log('  引退者0人。シーズン数を増やして再実行してください');
   } else {

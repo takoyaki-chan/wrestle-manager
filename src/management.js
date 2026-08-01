@@ -2679,9 +2679,15 @@ const Engine = {
         };
         // 歴代最高評価は勝者ひとりの手柄ではない。相手がいて初めて成立した試合なので
         // 紙面も2人並びの写真にする（2026-08-01 Keisuke 裁定）
-        return Engine.industryNews.push(state, {
+        let next = Engine.industryNews.push(state, {
           type: 'mqAllTimeRecord', characterId: winnerId, characterIds: [winnerId, loserId], data,
         });
+        // 2026-08-01: 記録更新は記事にしかならず**キャリアに残っていなかった**。両者に刻む
+        next = Engine.career.addPairEvent(next,
+          { winnerId, loserId, winnerName: data.name, loserName: data.name2 },
+          { type: 'mqAllTimeRecord', season: state.season, week: state.week,
+            mq: record.value, prevRecord: prevRecordDisp, stage: stageLabel });
+        return next;
       }
       const winnerIds = Array.isArray(metadata.winnerIds) ? metadata.winnerIds.filter(id => id != null) : [];
       if (winnerIds.length < 2 || !Array.isArray(record.holderIds)) return state;
@@ -3058,6 +3064,42 @@ const Engine = {
     addEvent(fighter, event) {
       const f = Engine.career.ensure(fighter);
       return { ...f, careerRecord: { ...f.careerRecord, history: [...f.careerRecord.history, event] } };
+    },
+    /** id で選手を探して careerRecord.history へ1件積む（自団体・AI団体を横断）。
+     *  見つからなければ state をそのまま返す（誰のものでもない記録を作らない）。
+     *  2026-08-01: 歴代最高評価の試合・大会ベストバウトが**ニュース記事にしかならず
+     *  キャリアに残っていなかった**ので、両方をここから刻めるようにした。 */
+    addEventToId(state, id, event) {
+      if (!state || id == null || !event) return state;
+      if ((state.roster || []).some(f => f.id === id)) {
+        return { ...state, roster: state.roster.map(f => (f.id === id ? Engine.career.addEvent(f, event) : f)) };
+      }
+      const aiOrgs = state.aiOrgs || {};
+      for (const orgId of Object.keys(aiOrgs)) {
+        const od = aiOrgs[orgId];
+        if (od && (od.roster || []).some(f => f.id === id)) {
+          return { ...state, aiOrgs: { ...aiOrgs, [orgId]: {
+            ...od, roster: od.roster.map(f => (f.id === id ? Engine.career.addEvent(f, event) : f)),
+          } } };
+        }
+      }
+      return state;
+    },
+    /** 対になる2人（勝者・敗者）へ同じ出来事を刻む。
+     *  相手の名前は**各自から見た相手**が入る（両方に同じ名前を入れない）。
+     *  opts = { winnerId, loserId, winnerName, loserName } */
+    addPairEvent(state, opts, base) {
+      const { winnerId, loserId, winnerName, loserName } = opts || {};
+      let s = state;
+      if (winnerId != null) {
+        s = Engine.career.addEventToId(s, winnerId, {
+          ...base, won: true, opponentId: loserId ?? null, opponentName: loserName || undefined });
+      }
+      if (loserId != null) {
+        s = Engine.career.addEventToId(s, loserId, {
+          ...base, won: false, opponentId: winnerId ?? null, opponentName: winnerName || undefined });
+      }
+      return s;
     },
     /** Record title win: push event + update cache. opts={ orgName, defeatedName } */
     recordTitleWin(fighter, beltId, season, week, opts = {}) {
@@ -25599,6 +25641,27 @@ Engine.juniorTournament = {
       });
     });
 
+    // 大会ベストバウトをキャリアへ刻む（2026-08-01）。
+    // これまで紙面の記事にしかならず、選手のキャリアには何も残っていなかった。
+    // 決勝とは限らないので全ラウンドから最高MQの一戦を採る。
+    {
+      let bestMq = -1, bestPair = null;
+      rounds.forEach(round => (round.matches || []).forEach(m => {
+        if (m && typeof m.mq === 'number' && m.mq > bestMq) {
+          const w = m.winnerId === m.left.id ? m.left : m.right;
+          const l = m.winnerId === m.left.id ? m.right : m.left;
+          bestMq = m.mq;
+          bestPair = { winnerId: w.id, loserId: l.id, winnerName: w.name, loserName: l.name, round: round.name };
+        }
+      }));
+      if (bestPair) {
+        s = Engine.career.addPairEvent(s, bestPair, {
+          type: 'juniorTournamentBestBout', season: s.season, week: s.week,
+          mq: bestMq, round: bestPair.round,
+        });
+      }
+    }
+
     // トーナメント結果を保存すると同時に、大会phaseを完了させる。
     // UI演出はこの確定済み結果を読むだけなので、ここを原子的なコミット境界にする。
     s = {
@@ -26268,6 +26331,11 @@ Engine.ppvTournament = {
             loser: best.l.name, loserOrg: best.l._orgName,
           },
         });
+        // 2026-08-01: ベストバウトは記事にしかならず**キャリアに残っていなかった**。
+        // 両者に刻む（この試合は2人でひとつなので、敗者にも残す）
+        s = Engine.career.addPairEvent(s,
+          { winnerId: best.w.id, loserId: best.l.id, winnerName: best.w.name, loserName: best.l.name },
+          { type: 'tenchosenBestBout', season: s.season, week: s.week, mq: best.mq, round: best.round });
       }
     }
 
