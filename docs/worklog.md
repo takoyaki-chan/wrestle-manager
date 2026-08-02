@@ -1,5 +1,31 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 天頂戦 開催前ミニイベント(Week42)が大会後に出るバグ修正（2026-08-02・worktree）
+
+Keisuke実機報告（8年目・12年目の2回連続再現、天頂戦=4年に一度のPPVトーナメント）: 開催前ミニイベント（「4年に一度の大舞台まで、あと6週」モーダル）が本来のWeek42ではなく、天頂戦そのものが終わった直後に表示される。
+
+**根本原因**（ブラウザ実機トレースで実測・確定。仮説1「セット週のズレ」でも仮説3「他イベントとの競合」でもなく、仮説2の亜種）:
+
+`App.checkTenchosenPreEvent()`（app.js 14119、`advanceFromWeekSummary`/`advanceWeek` から2箇所で呼ばれる）は `_enqueuePopup()` を**同期的に**呼んでモーダルを即座に開いていた。ところが呼び出し元は、このチェックの直後に `showScreen('week')` を呼ぶ——**showScreenは内部で`dismissAllPopups()`を呼ぶ**（この関数は `_popupQueue` を空にし、`showResultOverlay` の `active` クラスも外す）。`checkTitleEstablishment` や `_notifyRosterCapUnlock` など他の週次チェックが軒並り `setTimeout(..., 220〜300ms)` でポップアップを開いているのは、まさにこの罠を避けるためだった。`checkTenchosenPreEvent` だけがこの配慮を欠いていたため、Week42に開いた直後に同じ関数呼び出しチェーン内で `showScreen` に畳まれ、プレイヤーが一度も目にしないまま消えていた。
+
+`seen` フラグが立たないため、Week43〜47の毎週の遷移でも同じ理由（`checkTenchosenPreEvent`→即消去）で再挑戦しては消え続ける。Week48で天頂戦本編に入ると `_shouldStartTenchosenReplay()` の早期returnが `checkTenchosenPreEvent` 呼び出しより先に来るため、このチェック自体が呼ばれなくなる。本編の演出チェーンが完走して通常フローに戻った瞬間、初めて `showScreen` による即時ワイプに巻き込まれない状況になり、そこで初めて表示される——これが「大会後に出る」ように見えていた正体。
+
+ブラウザ実機（`serve src` 相当、dev-tools.js の `WrestleManagerDev.fastForward(4,40)` でシーズン4週40まで早送りし、`App.checkTenchosenPreEvent`/`dismissAllPopups`/`renderTenchosenPreEvent` にログを仕込んで実測）:
+
+- 修正前: Week42遷移時、`checkTenchosenPreEvent`実行直後に`overlayActive:true`（開いた）→ その直後の`dismissAllPopups`（`showScreen`由来）で`overlayActiveBefore:true`→即オーバーレイ消去。`tenchosenPreEvent.seen`はfalseのまま。Week43でも同じ現象が再現し、Week48の天頂戦本編中は`checkTenchosenPreEvent`自体が呼ばれず、Week49（オフシーズン）まで`seen:false`が持ち越し
+- 修正後: Week42遷移時は`checkTenchosenPreEvent`実行直後は`overlayActive:false`（即開かない）→`showScreen`の`dismissAllPopups`が空振り（`overlayActiveBefore:false`）→300ms後に`renderTenchosenPreEvent`が実行され`overlayActive:true`。プレイヤーが閉じると`seen:true`。Week43〜48（天頂戦完走）まで再表示なし
+
+**修正**（app.js `App.checkTenchosenPreEvent()` のみ。呼び出し元2箇所には触れていない——関数内で遅延させれば両方の呼び出し元に効くため）:
+1. **根本修正**: `_enqueuePopup`呼び出しを`setTimeout(..., 300)`でラップし、`showScreen`のdismissAllPopupsより後に開くようにした（他のcheck*と同じ作法に揃えた）
+2. **陳腐化の保険**: `G.week >= Engine.ppvTournament.ENTRY_WEEK`（週43）に達してもまだ未読なら、本編に飲まれた演出とみなし静かに`markPreEventSeen`する。setTimeoutの遅延中に何らかの理由で不発でも、「大会後に出る」症状が再発しないための保険
+3. **多重enqueueガード**: `App._tenchosenPreEventPending`フラグで、同じ週に複数回チェックが走っても`setTimeout`予約を重ねて積まない（`checkTenchosenPreEvent`は`seen`になるまで毎週呼ばれる設計のため）
+
+**検証**:
+- ブラウザ実機トレース（上記）: 修正後はWeek42で正しく表示・Week43〜48は再表示なしを確認
+- 陳腐化保険・多重enqueueガードもブラウザ実機で個別に動作確認
+- `node test/auto-sim.js 20 42`: Total violations 0 / errors 0 / ALL CLEAR
+- `npm test`: 197/197 PASS
+
 ## AI怪我引退記事の戴冠数バグ修正（2026-08-02・worktree）
 
 task-77実装時にエージェントが発見しスコープ外とした残件の修正。`_newsInjuryRetirement` の生成側（`processAIWeek` 内、management.js 9720行付近）が `retiree.careerHistory` の `'titleWin'` を数えていたが、careerHistory に入るのは背景生成の `'title_win'` のみで、ゲーム内の戴冠は `careerRecord.totalTitleWins` に記録される。このため怪我引退記事の「通算N度の戴冠」がほぼ常に0か過少になり、task-77で追加した強度補正（`retirementGrade` への `newsData.reigns` 入力）も効いていなかった。

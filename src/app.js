@@ -14116,12 +14116,35 @@ const App = {
   },
 
   // C-6 天頂戦: Week42 開催前ミニイベント(数値効果なし・純演出)を1回だけ表示
+  //
+  // 2026-08-02 バグ修正: このチェックの直後に呼び出し元(advanceFromWeekSummary/advanceWeek)が
+  // showScreen('week') を呼ぶが、showScreen は内部で dismissAllPopups() を呼ぶ
+  // (checkTitleEstablishment 等、他の check* が軒並み setTimeout で popup を開いているのはこれが理由)。
+  // ここだけ _enqueuePopup を同期的に呼んでいたため、Week42 に開いたその場で
+  // showScreen の dismissAllPopups に畳まれ、プレイヤーが目にする前に消えていた。
+  // seen が立たないので毎週再挑戦しては同じ理由で消え続け、Week48で天頂戦本編に入ると
+  // このチェック自体が呼ばれなくなる(_shouldStartTenchosenReplay の早期returnが先に来る)ため、
+  // 本編が終わって通常フローに戻った瞬間に初めて生き残り、「大会後に出る」ように見えていた。
   checkTenchosenPreEvent() {
     const tp = G.tenchosenPreEvent;
     if (!tp || tp.seen || tp.season !== G.season) return;
-    _enqueuePopup(() => {
-      if (typeof renderTenchosenPreEvent === 'function') renderTenchosenPreEvent();
-    });
+    // 陳腐化の保険: エントリー週(週43)に入ってもまだ見せられていないなら、
+    // 本編に飲まれて出しそびれた演出とみなし、静かに既読化する(数値効果はないため無害)。
+    // これが無いと、上のsetTimeoutが何らかの理由で不発だった場合に「大会後に出る」症状が再発する。
+    if (G.week >= Engine.ppvTournament.ENTRY_WEEK) {
+      G = Engine.ppvTournament.markPreEventSeen(G);
+      return;
+    }
+    if (App._tenchosenPreEventPending) return; // 多重enqueueガード: 予約済みなら重ねて積まない
+    App._tenchosenPreEventPending = true;
+    setTimeout(() => {
+      App._tenchosenPreEventPending = false;
+      const cur = G.tenchosenPreEvent;
+      if (!cur || cur.seen || cur.season !== G.season) return;
+      _enqueuePopup(() => {
+        if (typeof renderTenchosenPreEvent === 'function') renderTenchosenPreEvent();
+      });
+    }, 300);
   },
 
   // 天頂戦 開催前ミニイベントを閉じる: 既読化してオーバーレイを畳む
