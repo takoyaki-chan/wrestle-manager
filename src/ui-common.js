@@ -1236,7 +1236,7 @@ function showBigNewsPopup(topStory, variant) {
     <div class="bignews-icon-dropin">📰</div>
     <div class="mdl-d-title" style="text-align:center">${_escapeHtml(lead)}</div>
     <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue();showScreen('newspaper')">紙面を読む</button>
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue();setNewspaperSubPage(1);showScreen('newspaper')">紙面を読む</button>
       <button class="mdl-d-btn secondary" onclick="_mdlDClose();_drainPopupQueue()">あとで</button>
     </div>
   `, 'cream bignews');

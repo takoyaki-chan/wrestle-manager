@@ -1488,7 +1488,8 @@ const FACTION_AUDIO = {
 // 各イベントの { src, volume, openStinger?, closeStinger? }
 // closeStinger は結果モーダルの「閉じる」クリック時に fadeOut 直前で再生
 const FACTION_AUDIO_MAP = {
-  F01:            { src: FACTION_AUDIO.SOFT,    volume: 0.14 },
+  // F01(派閥結成の報告)はBGMを切り替えない(2026-08-02 Keisuke)。中立の「気になる動きの報告」に
+  // 祝祭系c07の立ち上がりが「いいことが起きた音」として誤誘導していた。通常BGMのまま開く。
   F02:            { src: FACTION_AUDIO.TENSION, volume: 0.17 },
   F02_IGNITE:     { src: FACTION_AUDIO.TENSION, volume: 0.18, openStinger:  { src: FACTION_AUDIO.GONG,  volume: 0.15 } },
   F02_PEACE:      { src: FACTION_AUDIO.SOFT,    volume: 0.12,                                           closeStinger: { src: FACTION_AUDIO.CHIME, volume: 0.10 } },
@@ -1526,6 +1527,9 @@ function _factionAudioOpen(eventId) {
 // closeStinger → BGM fadeOut → playForState で通常 BGM を復帰
 function _factionAudioClose(eventId) {
   const cfg = FACTION_AUDIO_MAP[eventId];
+  // BGMを切り替えなかったイベント(F01等、MAP未登録)は復帰処理も不要。
+  // fadeOut+playForStateを走らせると流れ続けている通常BGMが無意味に再始動する
+  if (!cfg) return;
   if (cfg && cfg.closeStinger) {
     try { Audio.stinger(cfg.closeStinger.src, cfg.closeStinger.volume); } catch(e) {}
   }
