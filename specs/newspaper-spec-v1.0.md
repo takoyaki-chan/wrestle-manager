@@ -115,6 +115,28 @@ MVPレース順位は**トップ10しか無く、1週古い**（recalc は advan
 | `transferDone` | 150 | 所属が変わった週。**レンタルは数えない**。初回は基準づくりのみ |
 | `retirementDeclare` | 180 | `retiredFighters` の新規。オフに確定するので開幕号に載る |
 
+#### 3-1a. 引退記事の格付け（task-77・2026-08-02）
+
+引退は基礎点(retirementDeclare 180 / aiAceRetirement 160 / aiRetirement 100)を変えず、
+**強度補正に「引退の格」を積む**(`Engine.newspaper.retirementGrade`、上限+120)。
+
+```
+戴冠歴: reigns>=3 → +55 / 2 → +40 / 1 → +25 / 0 → 0
+ピーク: peakOVR>=90 → +50 / 80-89 → +30 / 70-79 → +5 / それ未満 → 0
+在籍:   seasons>=12 → +10
+現役王者のまま引退: +45
+```
+
+同じ情報で本文ティアも変える: **L**(reigns>=2 または peakOVR>=90) / **A**(reigns>=1 または peakOVR>=80) /
+**B**(peakOVR>=65) / **C**(それ以外)。各ティア3バリアント(`RETIREMENT_TEMPLATES`)を、
+同一号に同ティアが複数出る場合は `pickRetirementVariant` が順繰りに回して同文の並びを避ける。
+`{reigns}` を含むバリアントは reigns>=1 のときだけ選ぶ(無冠の看板/レジェンドには非使用バリアントを割り当てる)。
+
+入口は `_newsRetirements`(AIシーズン末キュー→aiAceRetirement/aiRetirement)と
+`retirementDeclare`(週次スキャン)の2系統。`aiInjuryRetirement`(怪我引退)は本文を独自の負傷フレーバーのまま
+維持し、強度補正のみ格スコアを効かせる。peakOVR は `careerRecord.peakOVR`(衰え前のピーク)を使い、
+現在OVR(衰え後)では代用しない。reigns は `careerRecord.totalTitleWins`。
+
 ### 3-2. 特別興行の事前記事
 
 **「事前の記事は、下手をすると結果の記事以上の注目度があるものです、新聞では」**（Keisuke）。
@@ -134,6 +156,14 @@ MVPレース順位は**トップ10しか無く、1週古い**（recalc は advan
 
 団体ごとの記事とは別に、指名全体を1本で振り返る。**並びは見立てティア**（`assessedTier`）で、
 能力値の降順にしない。同ティア内は id 昇順（乱数を使わないので同じドラフトなら毎回同じ並び）。
+
+#### 3-3a. 自団体ドラフト1面（`draftPlayerResult` 165、task-77・2026-08-02）
+
+本文は「リード文+注目選手文(1〜2名)+締め文」の組み立て式（`Engine.newspaper.composeDraftPlayerResult`）。
+注目選手は獲得選手を `assessedTier` 降順で見て、superElite/eliteがいれば2名目まで、
+promising以下しかいなければ1名だけ。raw/material しかいない年は注目選手文を出さない
+（リード+締めの2部構成に落ちる）。同一記事内で2名に言及する場合、同ティアでも必ず別バリアントを使う。
+内部数値(pot/trainCap/OVR)は一切使わない — 使うのは `assessedTier`/年齢/身長/スタイルだけ。
 
 ### 3-4. 静かな週の読み物（後追い記事）
 

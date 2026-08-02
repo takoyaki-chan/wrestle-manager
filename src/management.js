@@ -9718,11 +9718,16 @@ const Engine = {
             // 新聞フラグ蓄積
             if (!nextOrgData._newsInjuryRetirement) nextOrgData._newsInjuryRetirement = [];
             const titleReigns = (retiree.careerHistory || []).filter(e => e.type === 'titleWin').length;
+            // task-77 §A-3: 引退の格スコアに使う peakOVR/wasChampion を追加。
+            // reigns(titleReigns)は既存の取得元をそのまま使う(取得元を分けない)
+            const _injCr = retiree.careerRecord || {};
             nextOrgData._newsInjuryRetirement.push({
               orgName: org.name, fighterId: retiree.id, fighterName: retiree.name,
               age: retiree.age || 17, ovr: Engine.util.ov(retiree),
               injuryType: retireType,
               careerSeasons: retiree.careerSeasons || 1, titleReigns,
+              peakOVR: _injCr.peakOVR || Engine.util.ov(retiree) || 0,
+              wasChampion: Engine.newspaper._wasChampionAtRetirement(retiree),
             });
           }
           // 残りの選手から_pendingInjuryRetireフラグをクリア
@@ -10163,10 +10168,16 @@ const Engine = {
         }
 
         // 新聞v2: AI引退記録（次シーズン初週の新聞で表示）
-        const newsRetirements = aiRetirees.map(f => ({
-          orgName: org.name, id: f.id, name: f.name, age: f.age,
-          ovr: Engine.util.ov(f), seasons: f.careerSeasons || 1,
-        }));
+        // task-77 §A-3: peakOVR/reigns(生涯戴冠数)/wasChampion(引退時王座保持)を追加。
+        // 引退記事の格付け(Engine.newspaper.retirementGrade)がこれを読む
+        const newsRetirements = aiRetirees.map(f => {
+          const cs = Engine.newspaper._retirementCareerStats(f);
+          return {
+            orgName: org.name, id: f.id, name: f.name, age: f.age,
+            ovr: Engine.util.ov(f), seasons: f.careerSeasons || 1,
+            peakOVR: cs.peakOVR, reigns: cs.reigns, wasChampion: cs.wasChampion,
+          };
+        });
 
         // seasonBreakthroughsは参照後にリセット（新シーズン用）
         const seasonBT = aiData.seasonBreakthroughs || [];
@@ -28592,6 +28603,151 @@ Engine.newspaper = {
     return 'brief';
   },
 
+  // ══════════════════════════════════════════════════════════════════
+  //  task-77 §A: 引退記事の格付け(強度補正+本文ティア)。
+  //  基礎点(retirementDeclare 180 / aiAceRetirement系)はいじらない — §2 の
+  //  フレームどおり「格」は強度補正(intensityBonus)側に積む。主役補正には焼き込まない
+  //  (引退者は現役の注目属性をほぼ持たないため、キャリア実績は強度側が正しい置き場)。
+  //  入口は2系統(AIシーズン末キュー _newsRetirements / retiredFighters 週次スキャン) +
+  //  aiInjuryRetirement(強度のみ適用・本文は既存の負傷フレーバーを維持)。
+  //  格スコアの計算はここへ1本に寄せ、全経路から呼ぶ。
+  // ══════════════════════════════════════════════════════════════════
+
+  RETIREMENT_GRADE_CAP: 120,
+
+  /** 引退の格(強度補正) + 本文ティア。d = { reigns, peakOVR, seasons, wasChampion } */
+  retirementGrade(d) {
+    const reigns = Number(d && d.reigns) || 0;
+    const peakOVR = Number(d && d.peakOVR) || 0;
+    const seasons = Number(d && d.seasons) || 0;
+    const wasChampion = !!(d && d.wasChampion);
+    let bonus = 0;
+    if (reigns >= 3) bonus += 55;
+    else if (reigns >= 2) bonus += 40;
+    else if (reigns >= 1) bonus += 25;
+    if (peakOVR >= 90) bonus += 50;
+    else if (peakOVR >= 80) bonus += 30;
+    else if (peakOVR >= 70) bonus += 5;
+    if (seasons >= 12) bonus += 10;
+    if (wasChampion) bonus += 45;
+    bonus = Math.min(Engine.newspaper.RETIREMENT_GRADE_CAP, bonus);
+    let tier;
+    if (reigns >= 2 || peakOVR >= 90) tier = 'L';
+    else if (reigns >= 1 || peakOVR >= 80) tier = 'A';
+    else if (peakOVR >= 65) tier = 'B';
+    else tier = 'C';
+    return { bonus, tier };
+  },
+
+  /** careerRecord.history から「閉じていない戴冠(=現役王者のまま今に至る)」を検出する。
+   *  live の championId は退団直後に空位化されるため参照できない(§A-3)。
+   *  titleWin で開き、対になる titleLoss が来るまで開いたままの beltId が残っていれば true */
+  _wasChampionAtRetirement(f) {
+    const hist = (f && f.careerRecord && f.careerRecord.history) || [];
+    const sorted = hist.slice().sort((a, b) => (a.season || 0) - (b.season || 0) || (a.week || 0) - (b.week || 0));
+    const active = new Set();
+    sorted.forEach(ev => {
+      if (!ev) return;
+      const beltId = ev.beltId || 'world';
+      if (ev.type === 'titleWin') active.add(beltId);
+      else if (ev.type === 'titleLoss') active.delete(beltId);
+    });
+    return active.size > 0;
+  },
+
+  /** 引退の格スコアに必要な生涯実績を fighter から抽出する。
+   *  peakOVR は careerRecord.peakOVR(衰え前のピーク値)を使う — 現在OVR(衰え後)で代用しない(§A-3) */
+  _retirementCareerStats(f) {
+    const cr = (f && f.careerRecord) || {};
+    return {
+      reigns: cr.totalTitleWins || 0,
+      peakOVR: cr.peakOVR || Engine.util.ov(f) || 0,
+      wasChampion: Engine.newspaper._wasChampionAtRetirement(f),
+    };
+  },
+
+  /** ティア別テンプレから1本選ぶ。同一号に同ティア複数が出る場合は usedCounts で順繰りに回す。
+   *  {reigns} を含むバリアントは reigns>=1 のときだけ選ぶ(無冠者には非使用バリアントを割り当てる)。 */
+  pickRetirementVariant(tier, reigns, usedCounts) {
+    const table = (typeof RETIREMENT_TEMPLATES !== 'undefined') ? RETIREMENT_TEMPLATES[tier] : null;
+    if (!table || !table.length) return null;
+    const hasReigns = Number(reigns) > 0;
+    const pool = hasReigns ? table : table.filter(v => !/\{reigns\}/.test(v.body) && !/\{reigns\}/.test(v.headline));
+    const list = pool.length ? pool : table;
+    const uc = usedCounts || {};
+    const idx = (uc[tier] || 0) % list.length;
+    uc[tier] = (uc[tier] || 0) + 1;
+    return list[idx];
+  },
+
+  /** テンプレ文字列の {org}/{name}/{age}/{seasons}/{reigns} を埋める */
+  _fillRetirementTemplate(t, d) {
+    if (!t) return '';
+    const vars = {
+      org: (d && (d.org || d.orgName)) || '',
+      name: (d && d.name) || '',
+      age: (d && d.age != null) ? d.age : '',
+      seasons: (d && d.seasons != null) ? d.seasons : '',
+      reigns: (d && d.reigns != null) ? d.reigns : '',
+    };
+    return Object.keys(vars).reduce((acc, k) => acc.split('{' + k + '}').join(String(vars[k])), String(t));
+  },
+
+  // ══════════════════════════════════════════════════════════════════
+  //  task-77 §B: ドラフト自団体1面の拡充(リード+注目選手1〜2名+締め)
+  // ══════════════════════════════════════════════════════════════════
+
+  /** fighters = [{ name, tier(assessedTier), age, h, style }] を材料に本文を組み立てる。
+   *  注目選手は tier 降順(superElite/elite/promisingのみ)で上位1〜2名。
+   *  superElite/eliteがいれば2名目まで、promising以下しかいなければ1名だけ言及(§B-1)。
+   *  同一記事内で2名に言及する場合、同ティアでも必ず別バリアントを使う。
+   *  内部数値(pot/trainCap/OVR)は一切使わない(newspaper-spec §3-2)。
+   *  seed は年で変える(state.season 目安)。乱数(rng)は使わない — この呼び出し元(UI層)に
+   *  rng が渡っていないため、シード値による疑似ランダムで年ごとの組文を変える */
+  composeDraftPlayerResult(org, fighters, seed) {
+    const parts = (typeof DRAFT_PLAYER_RESULT_PARTS !== 'undefined') ? DRAFT_PLAYER_RESULT_PARTS : null;
+    if (!parts || !Array.isArray(fighters) || !fighters.length) return null;
+    const names = fighters.map(f => f && f.name).filter(Boolean);
+    if (!names.length) return null;
+    const sVal = Number(seed) || 0;
+    const pickAt = (arr, salt) => arr[Math.abs(sVal + salt) % arr.length];
+    const fillCommon = (t) => String(t || '')
+      .split('{org}').join(org || '')
+      .split('{count}').join(String(names.length))
+      .split('{names}').join(names.join('、'));
+
+    const lead = fillCommon(pickAt(parts.lead, 0));
+    const closing = fillCommon(pickAt(parts.closing, 11));
+
+    const STYLE_JA = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション',
+      Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+    const TIER_ORDER = { superElite: 0, elite: 1, promising: 2, raw: 3, material: 4 };
+    const FEATURED_TIERS = new Set(['superElite', 'elite', 'promising']);
+    const sorted = fighters.slice().sort((a, b) => (TIER_ORDER[a && a.tier] ?? 9) - (TIER_ORDER[b && b.tier] ?? 9));
+    const topTier = sorted[0] && sorted[0].tier;
+    let featured = [];
+    if (topTier && FEATURED_TIERS.has(topTier)) {
+      const eligible = sorted.filter(f => f && FEATURED_TIERS.has(f.tier));
+      // promising以下しかいなければ1名だけ、superElite/eliteがいれば2名目まで
+      featured = (topTier === 'promising') ? eligible.slice(0, 1) : eligible.slice(0, 2);
+    }
+    const usedIdx = {};
+    const featuredLines = featured.map(f => {
+      const pool = parts.featured[f.tier] || [];
+      if (!pool.length) return '';
+      const idx = (usedIdx[f.tier] || 0) % pool.length;
+      usedIdx[f.tier] = (usedIdx[f.tier] || 0) + 1;
+      return pool[idx]
+        .split('{age}').join(f.age != null ? String(f.age) : '')
+        .split('{h}').join(f.h != null ? String(f.h) : '')
+        .split('{rookieName}').join(f.name || '')
+        .split('{styleJa}').join(STYLE_JA[f.style] || f.style || '')
+        .split('{org}').join(org || '');
+    }).filter(Boolean);
+
+    return { body: [lead, ...featuredLines, closing].join('') };
+  },
+
   /** 1週ぶんの採点で使う参照を**1回だけ**作る。
    *  generate() は stories.push が約25箇所に散っているので、各所で引くと同じ集計を何度も回すことになる */
   buildValueContext(state) {
@@ -28690,6 +28846,12 @@ Engine.newspaper = {
       const def = Number(d.prevDefenses) || 0;
       if (def >= 3) n += 30;
       else if (d.firstReign) n += 30;
+    }
+    // task-77 §A-1: 引退の格(戴冠歴+ピーク到達+在籍+現役王者のまま引退)。
+    // 基礎点はいじらず、ここに上限+120で積む。引退以外の記事には触れない
+    if (story.type === 'retirementDeclare' || story.type === 'aiAceRetirement'
+      || story.type === 'aiRetirement' || story.type === 'aiInjuryRetirement') {
+      n += Engine.newspaper.retirementGrade(d).bonus;
     }
     return n;
   },
@@ -28894,17 +29056,20 @@ Engine.newspaper = {
     // ── 引退 ──
     // オフシーズンに確定するので、記事になるのは翌シーズン開幕号。
     // AI団体は既に aiRetirement 系を持っているが、**自団体の引退には記事が無かった**
+    // task-77 §A-3: 週次スキャン側にも同じ格スコアを効かせる。
+    // reigns は careerRecord.totalTitleWins から取る(旧 careerRecord.titleReigns は
+    // 実在しないフィールドで、常に0になっていた)。peakOVR/wasChampion は共通ヘルパーへ寄せる
     const seenRetired = { ...(seen.retired || {}) };
     (s.retiredFighters || []).forEach(r => {
       if (!r || r.id == null || seenRetired[String(r.id)]) return;
       seenRetired[String(r.id)] = 1;
-      const reigns = (r.careerRecord && r.careerRecord.titleReigns) || 0;
+      const cs = Engine.newspaper._retirementCareerStats(r);
       pushes.push({
         type: 'retirementDeclare', characterId: r.id,
         data: {
-          name: r.name, orgName: s.orgName || 'プレイヤー団体',
+          name: r.name, org: s.orgName || 'プレイヤー団体',
           age: r.age || '', seasons: (r.careerSeasons || 0) + 1,
-          careerLine: reigns > 0 ? `通算${reigns}度の戴冠を残した。` : '',
+          reigns: cs.reigns, peakOVR: cs.peakOVR, wasChampion: cs.wasChampion,
         },
       });
     });
@@ -28992,6 +29157,10 @@ Engine.newspaper = {
   generate(state, rng) {
     const P = Engine.newspaper.PRIORITY;
     const stories = [];
+    // task-77 §A-2: 同一号に同ティアの引退が複数出る場合、バリアントを順繰りに変える。
+    // AI団体ループ(aiAceRetirement/aiRetirement)と業界ニュースキュー(retirementDeclare)の
+    // 両方から書き込む共有カウンタ — この号の中で1本だけ持つ
+    const _retiredVariantCounts = {};
 
     // === 自団体の王座移動（2026-07-27） ===
     // 見出しは NEWS_HEADLINE_TEMPLATES.titleChange を使う(3本書かれていたが未使用だった)
@@ -29151,20 +29320,32 @@ Engine.newspaper = {
         }
 
         // AI引退（シーズン末にprocessSeasonEndで蓄積）
+        // task-77 §A-2: 現行の isAce=ovr>=70 二値と固定文を廃止。格スコア(retirementGrade)の
+        // ティア L/A → aiAceRetirement(160)、B/C → aiRetirement(100) に振り分け、
+        // 本文はティア別テンプレ(§5-L/A/B/C)から同一号内で順繰りに選ぶ
         if (aiData._newsRetirements) {
           aiData._newsRetirements.forEach(ev => {
-            const isAce = ev.ovr >= 70;
+            const grade = Engine.newspaper.retirementGrade(ev);
+            const isAce = grade.tier === 'L' || grade.tier === 'A';
+            const variant = Engine.newspaper.pickRetirementVariant(grade.tier, ev.reigns || 0, _retiredVariantCounts);
+            const headline = variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, ev)
+              : `${ev.orgName}の${ev.name}が現役引退を表明`;
+            const body = variant ? Engine.newspaper._fillRetirementTemplate(variant.body, ev)
+              : `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。`;
             stories.push({
               type: isAce ? 'aiAceRetirement' : 'aiRetirement',
               priority: isAce ? P.aiAceRetirement : P.aiRetirement,
-              headline: `${ev.orgName}の${ev.name}が現役引退を表明`,
-              body: `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。${isAce ? '看板選手の退団は団体にとって大きな痛手だ。' : '長い現役生活に幕を下ろした。'}`,
+              headline, body,
               characterId: ev.id,
+              newsData: { reigns: ev.reigns || 0, peakOVR: ev.peakOVR || 0, wasChampion: !!ev.wasChampion, seasons: ev.seasons || 0 },
             });
           });
         }
 
         // AI怪我引退（processAIWeek興行中に発生）
+        // task-77: 本文は既存の負傷フレーバー(緊急引退/度重なる怪我)のまま維持する
+        // (スコープ外・§D)。強度補正だけ引退の格を効かせる。reigns は既存の
+        // ev.titleReigns をそのまま使う(取得元を分けない・§A-3)
         if (aiData._newsInjuryRetirement) {
           aiData._newsInjuryRetirement.forEach(ev => {
             const isAce = ev.ovr >= 75;
@@ -29181,6 +29362,7 @@ Engine.newspaper = {
               priority: P.aiInjuryRetirement + (isAce ? 20 : 0),
               headline, body,
               characterId: ev.fighterId,
+              newsData: { reigns: ev.titleReigns || 0, peakOVR: ev.peakOVR || 0, wasChampion: !!ev.wasChampion, seasons: ev.careerSeasons || 0 },
             });
           });
         }
@@ -29409,6 +29591,30 @@ Engine.newspaper = {
     const industryEvents = state._industryNewsEvents || [];
     if (industryEvents.length > 0) {
       industryEvents.forEach((ev, _evIdx) => {
+        // task-77 §A: 自団体の引退(週次スキャン由来)はティア別テンプレ(§5-L/A/B/C)から
+        // 選ぶ。汎用の NEWS_HEADLINE_TEMPLATES 経由だと格に応じた本文選択ができないため、
+        // ここだけ個別に組み立てる(AI団体ループと同じ _retiredVariantCounts を共有し、
+        // 同一号での同ティア重複を避ける)
+        if (ev.type === 'retirementDeclare') {
+          const d = ev.data || {};
+          const grade = Engine.newspaper.retirementGrade(d);
+          const variant = Engine.newspaper.pickRetirementVariant(grade.tier, d.reigns || 0, _retiredVariantCounts);
+          const headline = variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, d)
+            : `${d.org || ''}の${d.name || ''}が現役引退`;
+          const body = variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d)
+            : `${d.name || ''}が引退した。`;
+          stories.push({
+            type: ev.type,
+            priority: P[ev.type] || P.general,
+            headline, body,
+            characterId: ev.characterId || null,
+            characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 3) : null,
+            characterCount: Array.isArray(ev.characterIds) ? ev.characterIds.length : 0,
+            newsData: d,
+            _industryIdx: _evIdx,
+          });
+          return;
+        }
         const templates = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES[ev.type] : null;
         if (!templates || templates.length === 0) return;
         const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];

@@ -72,7 +72,9 @@ const src = stripComments(ui);
 {
   const at = src.indexOf('function _queueDraftIndustryNews');
   assert.ok(at > 0, '_queueDraftIndustryNews が無い');
-  const body = src.slice(at, at + 2600);
+  // task-77 §B: draftPlayerResult の分岐が組み立て式(リード+注目選手+締め)になった分、
+  // 関数本体が伸びたので窓を広げる(2600 → 3600)
+  const body = src.slice(at, at + 3600);
 
   assert.ok(/characterIds: ports\.map\(p => p\.id\)\.filter\(/.test(body),
     '自団体の獲得で characterIds を2人に切り詰めたままになっている。'

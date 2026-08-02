@@ -217,6 +217,73 @@ section('移籍・引退の記事が生成できる(旧 transfer は死んだエ
   });
 });
 
+// ── task-77 §A-4: 引退記事の格付け ──────────────────────────────────
+section('task-77 不変条件1. 無冠・peakOVR70未満・11季以下の引退は一面トップに届かない', () => {
+  const st = makeState();
+  const s = story('retirementDeclare', NP.PRIORITY.retirementDeclare, 107,
+    { reigns: 0, peakOVR: 60, seasons: 8, wasChampion: false });
+  const v = valueOf(st, s);
+  assert.ok(v < LINE.top, `無冠・中堅の引退が ${v} 点で一面トップ(${LINE.top})に届いてしまう`);
+});
+
+section('task-77 不変条件2. reigns>=3 または peakOVR>=90 のレジェンド引退は肩・準特大資格以上に必ず届く', () => {
+  const st = makeState();
+  const byReigns = valueOf(st, story('retirementDeclare', NP.PRIORITY.retirementDeclare, 107,
+    { reigns: 3, peakOVR: 0, seasons: 5, wasChampion: false }));
+  assert.ok(byReigns >= LINE.kata, `3度戴冠の引退が ${byReigns} 点で肩資格(${LINE.kata})に届かない`);
+  const byPeak = valueOf(st, story('retirementDeclare', NP.PRIORITY.retirementDeclare, 107,
+    { reigns: 0, peakOVR: 90, seasons: 5, wasChampion: false }));
+  assert.ok(byPeak >= LINE.kata, `peakOVR90の引退が ${byPeak} 点で肩資格(${LINE.kata})に届かない`);
+  // AI側(aiAceRetirement)でも同じ格が同じ効果を持つ(基礎点は違っても、両方とも肩を超える)
+  const aiSide = valueOf(st, story('aiAceRetirement', NP.PRIORITY.aiAceRetirement, 107,
+    { reigns: 3, peakOVR: 0, seasons: 5, wasChampion: false }));
+  assert.ok(aiSide >= LINE.kata, `AI側のレジェンド引退が ${aiSide} 点で肩資格(${LINE.kata})に届かない`);
+});
+
+section('task-77 不変条件3. 無冠・peakOVR80未満・在籍12季未満の引退(ティアB量産帯)は肩資格に届かない', () => {
+  const st = makeState();
+  const v = valueOf(st, story('retirementDeclare', NP.PRIORITY.retirementDeclare, 107,
+    { reigns: 0, peakOVR: 75, seasons: 8, wasChampion: false }));
+  assert.ok(v < LINE.kata, `ティアB量産帯の引退が ${v} 点で肩資格(${LINE.kata})に届いてしまう(中記事帯に収まるべき)`);
+  // 在籍12季以上の長期功労者は+10で肩に届いてよい(仕様の想定どおり)
+  const veteran = valueOf(st, story('retirementDeclare', NP.PRIORITY.retirementDeclare, 107,
+    { reigns: 0, peakOVR: 75, seasons: 12, wasChampion: false }));
+  assert.ok(veteran >= LINE.kata, `12季以上の長期功労者(peakOVR75)が ${veteran} 点で肩資格に届かない`);
+});
+
+section('task-77 格スコアの追加で引退以外の記事の点は動かない', () => {
+  const st = makeState();
+  const d = { reigns: 5, peakOVR: 95, seasons: 20, wasChampion: true };
+  const withGrade = valueOf(st, story('general', NP.PRIORITY.general, 107, d));
+  const without = valueOf(st, story('general', NP.PRIORITY.general, 107, {}));
+  assert.strictEqual(withGrade, without, '引退以外の記事に引退の格スコアが乗ってしまっている');
+});
+
+section('task-77 引退テンプレのティア別バリアントが揃っている(reigns付きはreigns>=1専用)', () => {
+  const RT = (typeof RETIREMENT_TEMPLATES !== 'undefined') && RETIREMENT_TEMPLATES;
+  assert.ok(RT, 'RETIREMENT_TEMPLATES が読めない');
+  ['L', 'A', 'B', 'C'].forEach(tier => {
+    assert.ok(RT[tier] && RT[tier].length >= 2, `ティア${tier}のバリアントが2種未満`);
+    RT[tier].forEach(x => {
+      assert.ok(x.headline && x.body, `ティア${tier}に見出しか本文が欠けている`);
+      assert.ok(!/MQ|condition|orgPop|OVR/.test(x.headline + x.body), `ティア${tier}に内部語が出ている`);
+    });
+  });
+  // 無冠(reigns=0)では {reigns} を含むバリアントを選ばない
+  ['L', 'A'].forEach(tier => {
+    const v = NP.pickRetirementVariant(tier, 0, {});
+    assert.ok(v && !/\{reigns\}/.test(v.body) && !/\{reigns\}/.test(v.headline),
+      `ティア${tier}で無冠なのに{reigns}入りバリアントを選んでいる`);
+  });
+  // 同一号に同ティア複数が出る場合はバリアントを順繰りに変える(同文の反復禁止)
+  {
+    const used = {};
+    const first = NP.pickRetirementVariant('B', 0, used);
+    const second = NP.pickRetirementVariant('B', 0, used);
+    assert.notStrictEqual(first, second, 'ティアBの2件目が1件目と同じバリアントになっている');
+  }
+});
+
 section('ドラフト総括は見立てティア順。能力値の降順にしない', () => {
   const src = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'ui-common.js'), 'utf8');
   // 同名のローカル変数 draftSummary が別の場所にあるので、**記事の push** を狙う

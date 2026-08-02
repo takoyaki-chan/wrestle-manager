@@ -5844,18 +5844,38 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
         org: (extra && extra.org) || '',
         count: names.length,
         names: names.join('、'),
+        // task-77 §B: draftPlayerResult 等が本文を自前で組み立てた場合に渡す追加キー
+        ...((extra && extra.extraData) || {}),
       },
     });
   };
   for (const st of draftNewsPage.stories) {
     if (st.type === 'draftPlayerResult') {
       const ports = st.portraits || [];
+      const org = state.orgName || 'プレイヤー団体';
+      // task-77 §B: リード+注目選手(1〜2名)+締めの組み立て式。見立てティア(assessedTier)は
+      // 社長にも記者にも見えている評価なので使ってよい(draftRoundup と同じ流儀)。
+      // 内部数値(pot/trainCap/OVR)は使わない
+      const featuredSrc = ports.map(p => {
+        const live = (state.roster || []).find(x => x.id === p.id);
+        const c = (typeof ALL_CHARS !== 'undefined') ? ALL_CHARS.find(x => x.id === p.id) : null;
+        return {
+          name: p.name,
+          tier: (live && live.assessedTier) || (c && c.assessedTier) || 'material',
+          age: (live && live.age) != null ? live.age : (c && c.age),
+          h: (live && live.h) != null ? live.h : (c && c.h),
+          style: (live && live.style) || (c && c.style) || null,
+        };
+      });
+      const composed = Engine.newspaper.composeDraftPlayerResult(org, featuredSrc, state.season);
       push('draftPlayerResult', ports.map(p => p.name), {
-        org: state.orgName || 'プレイヤー団体',
+        org,
         characterId: ports[0] ? ports[0].id : null,
         // 切り詰めはここでしない。紙面に何人まで載せるかは Engine.newspaper.generate が
         // 決め、載り切らなかった人数は「+N」で示す(task-54)。
         characterIds: ports.map(p => p.id).filter(id => Number.isInteger(id) && id > 0),
+        extraData: composed ? { body: composed.body }
+          : { body: `${ports.map(p => p.name).join('、')}。新シーズンの陣容がひとつ厚くなった。` },
       });
     } else if (st.type === 'draftAiResult') {
       // 見出しから団体名を復元せず、本文(氏名の羅列)と見出しの団体名部分を分けて渡す
