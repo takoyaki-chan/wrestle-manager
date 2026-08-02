@@ -41,19 +41,19 @@
     .number-toggle{display:flex;align-items:center;gap:6px;margin-left:5px;color:var(--sub);font-size:9px;cursor:pointer}.number-toggle input{accent-color:var(--gold)}
     .speed-group,.camera-switch{display:flex;align-items:center;gap:3px}.camera-label{margin-right:3px;color:var(--dim);font-size:8px;font-weight:900}.camera-switch button{height:29px;padding:0 8px;border:1px solid #424957;border-radius:3px;color:#929aaa;background:#131722;cursor:pointer;font-size:9px}.camera-switch button.active{border-color:var(--gold);color:#ffe7a5;background:#433820}
 
-    .arena{position:relative;height:min(61vh,650px);min-height:520px;overflow:hidden;border:1px solid rgba(235,211,148,.38);border-radius:9px;background:#080b12;box-shadow:var(--shadow);isolation:isolate}
-    .ring-bg{position:absolute;z-index:-3;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
-    .ring-grade{position:absolute;z-index:-2;inset:0;background:radial-gradient(ellipse at 50% 42%,transparent 22%,rgba(3,5,9,.1) 58%,rgba(3,5,9,.42) 100%),linear-gradient(180deg,rgba(4,6,10,.02),transparent 50%,rgba(4,6,10,.18) 69%,rgba(4,6,10,.91) 100%)}
-    .ring-light{position:absolute;z-index:-1;top:-12%;width:46%;height:75%;border-radius:50%;opacity:.24;filter:blur(35px);transition:transform .35s ease,opacity .3s ease}.ring-light.left{left:4%;background:radial-gradient(ellipse,var(--blue),transparent 66%)}.ring-light.right{right:4%;background:radial-gradient(ellipse,var(--red),transparent 66%)}
+    .arena{position:relative;height:min(61vh,650px);min-height:520px;overflow:hidden;border:1px solid rgba(235,211,148,.38);border-radius:9px;background:#080b12;box-shadow:var(--shadow);isolation:isolate;container-type:inline-size}
+    .ring-bg{position:absolute;z-index:0;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;pointer-events:none}
+    .ring-grade{position:absolute;z-index:1;inset:0;background:radial-gradient(ellipse at 50% 42%,transparent 22%,rgba(3,5,9,.1) 58%,rgba(3,5,9,.42) 100%),linear-gradient(180deg,rgba(4,6,10,.02),transparent 50%,rgba(4,6,10,.18) 69%,rgba(4,6,10,.91) 100%);pointer-events:none}
+    .ring-light{position:absolute;z-index:2;top:-12%;width:46%;height:75%;border-radius:50%;opacity:.24;filter:blur(35px);transition:transform .35s ease,opacity .3s ease;pointer-events:none}.ring-light.left{left:4%;background:radial-gradient(ellipse,var(--blue),transparent 66%)}.ring-light.right{right:4%;background:radial-gradient(ellipse,var(--red),transparent 66%)}
     .live{position:absolute;z-index:8;top:12px;left:14px;display:flex;align-items:center;gap:6px;color:#e9ebf0;font-size:9px;font-weight:900;letter-spacing:.14em}.live i{width:7px;height:7px;border-radius:50%;background:#ed4960;box-shadow:0 0 9px rgba(237,73,96,.8)}
     .phase-chip{position:absolute;z-index:8;top:11px;right:14px;padding:4px 9px;border:1px solid rgba(223,189,100,.4);border-radius:99px;background:rgba(8,10,16,.67);color:var(--gold2);font-size:9px;font-weight:900;letter-spacing:.1em}
     .camera-chip{position:absolute;z-index:8;top:39px;right:14px;color:rgba(222,226,233,.58);font-size:8px;font-weight:900;letter-spacing:.08em}
     .move-cat{color:var(--gold);font-size:8px;font-weight:900;letter-spacing:.13em}.move-name{margin-top:4px;font-size:15px;font-weight:900}.move-guide{margin-top:7px;color:#e0e4eb;font-size:11px;font-weight:500;line-height:1.65}.result{display:inline-block;margin-top:8px;padding:3px 7px;border:1px solid rgba(255,255,255,.13);border-radius:3px;color:#dfe3e9;background:rgba(255,255,255,.04);font-size:8px;font-weight:900}.result.big{border-color:rgba(223,189,100,.55);color:#ffe39c;background:rgba(223,189,100,.11)}
 
-    .fighter-shell{position:absolute;z-index:2;bottom:0;width:48%;height:100%;pointer-events:none;transform-origin:center 74%;transition:transform .4s cubic-bezier(.2,.9,.2,1),filter .28s ease}
+    .fighter-shell{position:absolute;z-index:4;bottom:0;width:48%;height:100%;background:transparent!important;pointer-events:none;transform-origin:center 74%;transition:transform .4s cubic-bezier(.2,.9,.2,1),filter .28s ease}
     .fighter-shell.left{left:3%}.fighter-shell.right{right:3%}
-    .full-figure{position:absolute;bottom:-18%;height:118%;width:auto;max-width:none;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 18px 15px rgba(0,0,0,.74));transform-origin:center 12%;transition:height .48s cubic-bezier(.2,.8,.2,1),bottom .48s cubic-bezier(.2,.8,.2,1),right .48s ease,left .48s ease,transform .48s cubic-bezier(.2,.8,.2,1)}
-    .fighter-shell.left .full-figure{right:2%;transform:scaleX(-1)}.fighter-shell.right .full-figure{left:2%;transform:none}
+    .full-figure{position:absolute;bottom:-18%;left:50%;right:auto;height:118%;width:auto;max-width:none;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 10px 8px rgba(0,0,0,.46));translate:-50% 0;transform-origin:center 12%;transition:height .48s cubic-bezier(.2,.8,.2,1),bottom .48s cubic-bezier(.2,.8,.2,1),filter .28s ease}
+    .fighter-shell.left .full-figure{transform:scaleX(-1)}.fighter-shell.right .full-figure{transform:none}
     .fighter-nameplate{position:absolute;z-index:4;top:48%;padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:3px;color:#fff;background:rgba(8,10,15,.68);font-size:9px;font-weight:900;letter-spacing:.05em;opacity:1;backdrop-filter:blur(3px);transition:opacity .25s ease}
     .fighter-nameplate.left{left:8%;border-left-color:var(--blue)}.fighter-nameplate.right{right:8%;border-right-color:var(--red)}
     .attack-line{position:absolute;z-index:3;top:43%;left:27%;width:46%;height:4px;border-radius:9px;opacity:0;background:linear-gradient(90deg,transparent,var(--gold2),transparent);box-shadow:0 0 20px rgba(249,229,162,.9)}
@@ -63,7 +63,7 @@
     .arena.attack-left .ring-light.left,.arena.attack-right .ring-light.right{opacity:.48;transform:scale(1.08)}
     .arena.attack-left .attack-line{animation:sweepL .65s ease-out}.arena.attack-right .attack-line{animation:sweepR .65s ease-out}.arena.counter .attack-line{height:6px;background:linear-gradient(90deg,transparent,#ff8b62,#ffe39a,transparent)}
     .arena.miss .fighter-shell{filter:grayscale(.35) brightness(.82)}.impact.show{animation:impact .55s ease-out}
-    .arena.camera-close .full-figure{bottom:-105%;height:205%}.arena.camera-close .fighter-shell.left .full-figure{right:-3%;transform:scaleX(-1)}.arena.camera-close .fighter-shell.right .full-figure{left:-3%;transform:none}.arena.camera-close .fighter-nameplate{opacity:0}
+    .arena.camera-close .full-figure{bottom:-80%;height:180%;bottom:max(-80%,calc(100% - 105cqw));height:min(180%,105cqw)}.arena.camera-close .fighter-nameplate{opacity:0}
     @keyframes sweepL{0%{transform:translateX(-30%) scaleX(.2);opacity:0}25%{opacity:1}100%{transform:translateX(25%) scaleX(1);opacity:0}}
     @keyframes sweepR{0%{transform:translateX(30%) scaleX(.2);opacity:0}25%{opacity:1}100%{transform:translateX(-25%) scaleX(1);opacity:0}}
     @keyframes impact{0%{transform:translate(-50%,-50%) scale(.35);opacity:1}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}

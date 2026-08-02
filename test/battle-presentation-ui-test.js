@@ -45,7 +45,13 @@ assert.ok(main.includes('../image/battle-ring-bg-mockup-v2.png'), 'approved illu
 assert.ok(html.includes('.wm-stat-card.right .ab-fill{margin-left:auto}'), 'right stat bars must grow from the portrait side');
 assert.ok(html.includes("content:'実況'"), 'angular commentary panel must retain its broadcast label during effects');
 assert.ok(html.includes('grid-template-columns:1fr auto 1fr'), 'primary replay button must remain at the exact center');
-assert.ok(html.includes('.wm-live-ring.camera-close .wm-ring-fighter .wm-full-figure{bottom:-105%;height:205%}'), 'close-up must retain the full-image canvas top edge');
+assert.ok(html.includes('.wm-ring-bg{position:absolute;z-index:0;'), 'ring background must stay in a stable non-negative layer');
+assert.ok(!html.includes('.wm-ring-bg{position:absolute;z-index:-'), 'ring background must not use a negative compositing layer');
+assert.ok(html.includes('.wm-live-ring .wm-ring-fighter{position:absolute;z-index:4;'), 'moving fighters must stay above the fixed ring layers');
+assert.ok(html.includes('background:transparent!important'), 'moving fighter panels must not expose an opaque panel background');
+assert.ok(html.includes('bottom:max(-80%,calc(100% - 105cqw));height:min(180%,105cqw)'), 'close-up must respond to the ring aspect ratio and cap zoom at 180%');
+assert.ok(html.includes('bottom:-18%;left:50%;right:auto;height:118%'), 'both full-image canvases must share a centered anchor');
+assert.ok(html.includes('translate:-50% 0'), 'full-image canvas centering must be independent of each character silhouette');
 assert.ok(!html.includes('camera-close .wm-ring-fighter.left .wm-full-figure{right:-3%;transform:scaleX(-1) scale('), 'close-up must not apply a different secondary zoom to full-body assets');
 assert.ok(!html.includes('var(--blue-light)') && !html.includes('var(--red-light)'), 'undefined side-color tokens must not be used');
 
