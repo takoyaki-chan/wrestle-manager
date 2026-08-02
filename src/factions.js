@@ -2065,23 +2065,6 @@ Engine.factions = {
     };
   },
 
-  // ── auto-sim ランダム選択ヘルパー ──
-  pickRandomChoice(eventId, rng) {
-    if (eventId === 'F01') {
-      const choices = ['A', 'B', 'C'];
-      return choices[Math.floor(Engine.rng.float(rng) * choices.length)];
-    }
-    if (eventId === 'F02') {
-      const choices = ['A', 'B', 'C', 'D'];
-      return choices[Math.floor(Engine.rng.float(rng) * choices.length)];
-    }
-    if (eventId === 'F04' || eventId === 'F05' || eventId === 'F06' || eventId === 'F07' || eventId === 'F08') {
-      const choices = ['A', 'B', 'C'];
-      return choices[Math.floor(Engine.rng.float(rng) * choices.length)];
-    }
-    return 'OK'; // F03 は選択肢なし
-  },
-
   // ══════════════════════════════════════════════════════════
   //  Phase 3b: F04-F08 検出 + 適用
   // ══════════════════════════════════════════════════════════

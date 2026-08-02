@@ -4936,14 +4936,6 @@ const App = {
     App.showTitleScreen();
   },
 
-  // Focus/unfocus a draft candidate (expand detail panel)
-  focusDraftCandidate(charId) {
-    if (G.weekPhase !== 'draft') return;
-    Audio.play('hover');
-    G = { ...G, _draftFocus: G._draftFocus === charId ? null : charId };
-    renderWeekScreen();
-  },
-
   // Toggle a draft pick on/off
   toggleDraftPick(charId) {
     if (G.weekPhase !== 'draft') return;
@@ -6057,27 +6049,6 @@ const App = {
     refreshAll();
   },
 
-  // Set training schedule
-  setSchedule(charId, schedule) {
-    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, schedule } : c) };
-    refreshAll();
-  },
-
-  // Set intensive training
-  setIntensive(charId) {
-    const c = G.roster.find(c => c.id === charId);
-    if (!c || c.injury) return;
-    Audio.play('select');
-    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, intensive: true } : c) };
-    refreshAll();
-  },
-
-  cancelIntensive(charId) {
-    Audio.play('deselect');
-    G = { ...G, roster: G.roster.map(c => c.id === charId ? { ...c, intensive: false } : c) };
-    refreshAll();
-  },
-
   // Hire coach
   hireCoach(coachId) {
     const coach = ALL_COACHES.find(c => c.id === coachId);
@@ -6264,26 +6235,6 @@ const App = {
     for (let i = 0; i < maxMatches; i++) emptyCard.push({left: 0, right: 0, isTitle: false});
     G = { ...G, showCard: emptyCard };
     Audio.play('cardRemove');
-    renderShowPrep();
-  },
-
-  // ── Tag match slot management ──
-  addTagSlot() {
-    const card = [...G.showCard];
-    // 空シングル枠を末尾から2つ探す
-    let emptyCount = 0;
-    for (let i = card.length - 1; i >= 0; i--) {
-      if (!card[i].matchType && card[i].left === 0 && card[i].right === 0) emptyCount++;
-    }
-    if (emptyCount < 2) { Audio.play('error'); showToast('空き枠が足りません（タッグには2枠必要）'); return; }
-    // 末尾から空シングル2つを除去
-    let removed = 0;
-    for (let i = card.length - 1; i >= 0 && removed < 2; i--) {
-      if (!card[i].matchType && card[i].left === 0 && card[i].right === 0) { card.splice(i, 1); removed++; }
-    }
-    // タッグエントリーを末尾に挿入
-    card.push({ matchType: 'tag', teamA: { fighter1: 0, fighter2: 0 }, teamB: { fighter1: 0, fighter2: 0 } });
-    G = { ...G, showCard: card };
     renderShowPrep();
   },
 

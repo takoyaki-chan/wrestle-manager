@@ -627,7 +627,6 @@ function wrapMqPathOrigin(target, method, origin) {
 wrapBigMatchOrigin(Engine.juniorTournament, 'run', 'juniorTournament');
 wrapBigMatchOrigin(Engine.ppvTournament, 'run', 'tenchosen');
 wrapBigMatchOrigin(Engine.autumnWar, 'simulateNextBout', 'autumnWar');
-wrapBigMatchOrigin(Engine.autumnWar, 'runLegacy', 'autumnWar');
 wrapMqPathOrigin(Engine.rival, 'processAIWeek', 'aiShow');
 wrapMqPathOrigin(Engine.ppv, 'simulateTVResults', 'ppv');
 wrapMqPathOrigin(Engine.ppv, 'simulatePPVMatch', 'ppv');
@@ -636,7 +635,6 @@ wrapMqPathOrigin(Engine.juniorTournament, 'run', 'juniorTournament');
 wrapMqPathOrigin(Engine.ppvTournament, 'run', 'tenchosen');
 wrapMqPathOrigin(Engine.springTagLeague, 'run', 'springTagLeague');
 wrapMqPathOrigin(Engine.autumnWar, 'simulateNextBout', 'autumnWar');
-wrapMqPathOrigin(Engine.autumnWar, 'runLegacy', 'autumnWar');
 
 // グローバルに展開されたか確認
 if (typeof Engine === 'undefined') {
