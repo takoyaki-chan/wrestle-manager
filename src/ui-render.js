@@ -2039,7 +2039,8 @@ function _renderRosterDetailPanel(c, hired) {
     } else if (entry.type === 'rest') {
       eventText = entry.detail;
     } else if (entry.type === 'injury') {
-      eventText = `🏥 療養（${entry.detail}）`;
+      // detail は内部キー('中傷'等)のことがある。表示は必ず injuryLabel を通す
+      eventText = `🏥 療養（${injuryLabel(entry.detail) || entry.detail}）`;
     } else if (entry.type === 'milestone') {
       eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${entry.detail}</span>`;
     } else {

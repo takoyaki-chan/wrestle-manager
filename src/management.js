@@ -28832,7 +28832,8 @@ Engine.newspaper = {
             nextInjury[key] = weeks;
             pushes.push({
               type: 'longInjury', characterId: f.id,
-              data: { name: f.name, orgName, weeks, injuryType: (f.injury && f.injury.type) || '負傷', weeksOut: weeks },
+              // 表示は必ず injuryLabel を通す(内部キー「中傷」は誹謗中傷と読める — data.js INJURY_LABEL)
+              data: { name: f.name, orgName, weeks, injuryType: injuryLabel((f.injury && f.injury.type) || '') || '負傷', weeksOut: weeks },
             });
           }
         } else if (weeks === 0 && nextInjury[key]) {
