@@ -26,6 +26,18 @@ const removed = [
   'pickRandomChoice',
   'runLegacy',
   '_legacySelectMVP',
+  '_renderDbNewspaper',
+  '_renderNewspaperPlayerShow',
+  '_renderDbNewspaperLegacy',
+  '_renderNewspaperShowRating',
+  '_renderNewspaperDigest',
+  '_renderNewspaperPreview',
+  '_renderDbRivalry',
+  '_renderRivalryHeadline',
+  '_buildNarrativeData',
+  '_renderRivalryFeatured',
+  '_renderRivalryHistory',
+  '_renderRivalryRelations',
 ];
 
 removed.forEach(symbol => {
@@ -38,5 +50,9 @@ assert.ok(runtime.includes('function renderSpringTagLeagueBoard('), '春タッ�
 assert.ok(runtime.includes('bookedCommon1'), 'Common-1の現行興行予約を保持する');
 assert.ok(runtime.includes('Engine.ppv.getSummitPair('), 'PPV内頂上決戦を保持する');
 assert.ok(runtime.includes('mergeToTagSlot(idx)'), '現行のタッグ枠作成操作を保持する');
+assert.ok(runtime.includes('function renderNewspaper('), '現行の新聞タブを保持する');
+assert.ok(runtime.includes('function _npRenderPage1('), '現行の新聞1面を保持する');
+assert.ok(runtime.includes('function _npRenderPage3('), '現行の因縁列伝を保持する');
+assert.ok(runtime.includes('function _renderNewspaperExtraPage('), 'ドラフト結果でも使う新聞特集描画を保持する');
 
 console.log('dormant-code-cleanup-test: PASS');
