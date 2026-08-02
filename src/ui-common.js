@@ -3518,19 +3518,6 @@ function canOpenFighterPopup(fighterId) {
   return !!findFighter(Number(fighterId));
 }
 
-// 熱量(練習の乗り)を選手本人の口で伝えるセリフ。口調・性格で引き分ける。
-//
-// 2026-08-01: **選手詳細のヘッダーから外した**。あそこは選手の素性を見る場所で、
-// 「今日は体が軽い」のようなその週の状態を常設で置く場所ではない
-// (AI所属選手やスカウト候補にまで出ていた)。
-// 出すなら練習・特訓を実際にやった場面。移設先は未定のため、現在この関数は
-// どこからも呼ばれていない。捨てずに残してあるのは、道場シーンへ移す前提のため。
-function getHeatStateQuote(state, fighter) {
-  const pool = typeof HEAT_STATE_SELF_LINES !== 'undefined' && HEAT_STATE_SELF_LINES[state];
-  if (!pool || typeof pickDialogueLine !== 'function') return '…';
-  return pickDialogueLine(HEAT_STATE_SELF_LINES[state], fighter);
-}
-
 // 第3引数 _skipQueueCheck は歴史的な残り。**押したら必ず開く**ようになったので効果は無い。
 // 既存の呼び出しを壊さないために受け取るだけにしてある。
 function showFighterPopup(fighterId, source, _skipQueueCheck) {

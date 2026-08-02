@@ -54,8 +54,8 @@ assert.ok(allLines.every(line => !forbidden.test(line)), 'セリフ本文に数�
 
 const commonSource = read('src/ui-common.js');
 const renderSource = read('src/ui-render.js');
-assert.ok(commonSource.includes('pickDialogueLine(HEAT_STATE_SELF_LINES[state], fighter)'),
-  '選手詳細が personality×archetype セリフを引く');
+assert.ok(!commonSource.includes('pickDialogueLine(HEAT_STATE_SELF_LINES[state], fighter)'),
+  '未接続の選手本人向け熱量セリフを選手詳細へ戻さない');
 assert.ok(renderSource.includes('HEAT_STATE_COACH_LINES[heatState]'), '道場コーチ吹き出しが状態別プールを引く');
 assert.ok(renderSource.includes("heavyFighters[0] || reportFighter"), 'heavy の選手をコーチ観察の優先対象にする');
 assert.ok(renderSource.includes('speechText = heatPool'),
