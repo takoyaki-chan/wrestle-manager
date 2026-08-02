@@ -132,7 +132,8 @@ function crossOrgEmblemHtml(fighter, opponent, size = 16) {
 // 付ける(構造はここで共通化、配色はCSS変数経由でカテゴリごとに切り替える)。
 /**
  * @param {Object} o
- *   name, imgUrl, line, role(役割ラベル文字列 or null), isLoser(bool),
+ *   name, imgUrl, line, reserveBubble(false なら空の吹き出し予約枠も出さない),
+ *   role(役割ラベル文字列 or null), isLoser(bool),
  *   size('xl'|'l'|'m'|'s'|'chip'。既定'm'=132×194。U3グループA「1人が語る」画面用に
  *     xl=172×258/s=108×162/chip=40×40丸を追加。isBigは旧互換で size:'l' と同じ),
  *   isBig(旧互換。true で L サイズ 150×224。「1人ずつ見せる」勝者非対称画面のみ使う),
@@ -168,8 +169,11 @@ function _u3bSideHtml(o) {
     ? `<div class="u3b-stat"><small>${escHtml(o.statLabel || 'OVR')}</small>${escHtml(o.statValue)}</div>`
     : '';
   const sideCls = ['u3b-side', o.isLoser ? 'is-loser' : '', o.extraSideClass].filter(Boolean).join(' ');
+  const bubbleSlotHtml = (line || o.reserveBubble !== false)
+    ? `<div class="${slotCls}">${bubbleInner}</div>`
+    : '';
   return `<div class="${sideCls}">
-    <div class="${slotCls}">${bubbleInner}</div>
+    ${bubbleSlotHtml}
     <div class="${upperCls}"${clickAttr}>${imgHtml}</div>
     <div class="u3b-copy">
       <div class="u3b-name"${clickAttr}>${name}</div>
@@ -1676,7 +1680,7 @@ function confirmSigning(charId) {
   showEventPopup({
     type: 'fighter', id: fighterId, name,
     tone: 'positive',
-    message: `「${welcomeQuote}」`,
+    speech: welcomeQuote,
     detail: `${name}がロスターに加わりました！`
   });
 }
@@ -1900,7 +1904,7 @@ function _flagBuildPopupOpts(modal) {
     id: speakerId || (target?.id),
     name: (speaker && speaker.name) || (target && target.name) || '',
     tone: meta.tone || '',
-    message: message || '…',
+    speech: message || '…',
     detail: meta.title,
   };
 }
@@ -1930,7 +1934,7 @@ function _flagBuildM12(modal, meta) {
     id: p.returnerId,
     name: (returner && returner.name) || '',
     tone: '',
-    message: _flagFormatLine(rLine, returner) || '…',
+    speech: _flagFormatLine(rLine, returner) || '…',
     detail: `${meta.title}<br><div style="margin-top:8px;font-size:12px;text-align:left;line-height:1.6">${reactionLines.join('<br>')}</div>`,
   };
 }
@@ -1954,7 +1958,7 @@ function _flagBuildM13(modal, meta) {
     id: p.masterId,
     name: (master && master.name) || '',
     tone: meta.tone,
-    message: _flagFormatLine(mLine, master, disciple) || '…',
+    speech: _flagFormatLine(mLine, master, disciple) || '…',
     detail: `${meta.title}<br><div style="margin-top:6px;font-size:12px;font-style:italic">${(disciple && disciple.name) || '弟子'}: ${_flagFormatLine(dLine, disciple, master)}</div>`,
   };
 }
@@ -1979,7 +1983,9 @@ function _drainFlagModalQueue() {
 }
 
 function showEventPopup(opts) {
-  // opts: { type: 'fighter'|'coach', id, name, emoji?, message, detail?, tone: 'positive'|'negative'|'gold',
+  // opts: { type: 'fighter'|'coach', id, name, emoji?, speech?, message?, detail?, tone: 'positive'|'negative'|'gold',
+  // speech は「画像の人物が実際に発したセリフ」だけ。message は記事見出し・実況・ナレーション・通知本文。
+  // 人物 type でも message を吹き出しへ昇格させない。呼び出し側が意味を明示する。
   //         choices?: [{ label, hint?, tone?, onSelect }] — あれば A-5(mdl-a)で描画 }
   // A-5 分岐: choices を持つ場合は専用の A 型モーダルに流す
   if (opts && Array.isArray(opts.choices) && opts.choices.length > 0) {
@@ -2000,11 +2006,14 @@ function _showEventPopupAsChoice(opts) {
       : null;
 
     const detailHtml = opts.detail ? `<div class="mdl-a-observation centered" style="margin-top:10px;font-size:12px">${opts.detail}</div>` : '';
+    const messageHtml = opts.message
+      ? `<div class="mdl-a-observation centered event-popup-prose">${escHtml(opts.message).replace(/\n/g, '<br>')}</div>`
+      : '';
 
     const subjectHtml = fighter
-      ? _mdlASubjectStage(fighter, detailHtml, { small: true, speech: opts.message || '' })
+      ? _mdlASubjectStage(fighter, `${messageHtml}${detailHtml}`, { small: true, speech: opts.speech || '' })
       : `<div class="mdl-a-subject-stage">
-          ${opts.message ? `<div class="mdl-a-observation centered">${escHtml(opts.message)}</div>` : ''}
+          ${messageHtml}
           ${detailHtml}
         </div>`;
 
@@ -2055,7 +2064,7 @@ function _renderEventPopupAsC3() {
   let characterHtml = '';
   if (o.type === 'fighter' && o.id) {
     characterHtml = `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
-      name: o.name || '', line: o.message || '', size: 'm',
+      name: o.name || '', line: o.speech || '', reserveBubble: !!o.speech, size: 'm',
       imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(o.id) : '',
       onClick: `showFighterPopup(${Number(o.id)},'roster',true)`,
     })}</div>`;
@@ -2064,7 +2073,8 @@ function _renderEventPopupAsC3() {
       ? getCoachUpperUrl(o.id)
       : (typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(o.id) : '');
     characterHtml = `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
-      name: o.name || '', line: o.message || '', role: 'コーチ', size: 'm', imgUrl: coachUrl,
+      name: o.name || '', line: o.speech || '', reserveBubble: !!o.speech,
+      role: 'コーチ', size: 'm', imgUrl: coachUrl,
     })}</div>`;
   }
 
@@ -2078,7 +2088,8 @@ function _renderEventPopupAsC3() {
 
   const html = `
     <div class="mdl-c-body" style="padding-top:4px">
-      ${characterHtml || (o.message ? `<div class="mdl-c-comment-block">${o.message}</div>` : '')}
+      ${characterHtml}
+      ${o.message ? `<div class="event-popup-prose">${escHtml(o.message).replace(/\n/g, '<br>')}</div>` : ''}
       ${o.detail ? `<div style="font-size:12px;color:var(--info-text-dim);margin-top:8px;text-align:center">${o.detail}</div>` : ''}
       ${actionHtml}
     </div>
@@ -6216,7 +6227,9 @@ function draftNextCandidate() {
           : `${clean.name}との契約が成立した`;
         G._pendingDraftSigningPopup = {
           type: 'fighter', id: clean.id, name: clean.name,
-          tone: 'positive', message: signingLine,
+          tone: 'positive',
+          speech: typeof getSigningLine === 'function' ? signingLine : undefined,
+          message: typeof getSigningLine === 'function' ? undefined : signingLine,
           detail: `📝 契約金: ${ns.finalBid.toLocaleString()}万 [${tierLabel}]`
         };
       } catch (e) {
@@ -6368,7 +6381,7 @@ function resolvePoach(fighterId, accepted) {
         name: result.fighterSnapshot.name,
         emoji: titleByOutcome[result.outcome] ? '' : '💬',
         tone,
-        message,
+        speech: message,
         detail: titleByOutcome[result.outcome],
       });
     }
@@ -7244,7 +7257,7 @@ function _executeRental(fighterId, fromSource, fromOrgId, seasons) {
         ? (RIVAL_ORGS.find(o => o.id === fromOrgId)?.name || '') + 'から'
         : 'フリーエージェントとして';
       showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'positive',
-        message: quote, detail:`${srcLabel}レンタル加入！（${seasons}期 / ${seasons * 12}週）` });
+        speech: quote, detail:`${srcLabel}レンタル加入！（${seasons}期 / ${seasons * 12}週）` });
     }
   } else {
     if (fromSource === 'rival') {
@@ -7252,7 +7265,7 @@ function _executeRental(fighterId, fromSource, fromOrgId, seasons) {
       const fighter = orgData ? orgData.roster.find(f => f.id === fighterId) : null;
       if (fighter) {
         showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'negative',
-          message: '…今は移籍する気はないわ。', detail:'レンタル交渉は不成立でした' });
+          speech: '…今は移籍する気はないわ。', detail:'レンタル交渉は不成立でした' });
       }
     } else {
       showToast(result.events[0] || '交渉失敗', 'warning');
@@ -14296,7 +14309,9 @@ function _gcAvatarImgHtml(charId, name, badgeEmoji) {
 function _renderGlimpseCardHtml(g) {
   const toneCls = _glimpseToneClass(g);
   const emo = _glimpseEmoIcon(g);
-  const dialogue = g.dialogue ? `「${g.dialogue}」` : (g.label || '');
+  // label は関係変化の説明であり、人物の発話ではない。
+  // dialogue が無いときに label を吹き出しへ代入しない。
+  const dialogue = g.dialogue || '';
   const label = g.label || '';
   const tagHtml = label ? `<div class="gc-tag">${escHtml(label)}</div>` : '';
 
@@ -14305,11 +14320,13 @@ function _renderGlimpseCardHtml(g) {
       <div class="gc-duo">
         ${_u3bSideHtml({
           name: g.speakerName, line: dialogue, size: 's',
+          reserveBubble: !!dialogue,
           imgHtml: _gcAvatarImgHtml(g.speakerId, g.speakerName),
         })}
         <div class="gc-duo-arrow">➜</div>
         ${_u3bSideHtml({
           name: g.targetName, size: 's',
+          reserveBubble: !!dialogue,
           imgHtml: _gcAvatarImgHtml(g.targetId, g.targetName, emo),
         })}
       </div>
@@ -14320,6 +14337,7 @@ function _renderGlimpseCardHtml(g) {
   return `<div class="gc-card ${toneCls} u3b-theme-stage">
     ${_u3bSideHtml({
       name: g.speakerName, line: dialogue, size: 's',
+      reserveBubble: !!dialogue,
       imgHtml: _gcAvatarImgHtml(g.speakerId, g.speakerName),
     })}
     ${tagHtml}

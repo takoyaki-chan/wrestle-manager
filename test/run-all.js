@@ -68,6 +68,7 @@ const QUICK = new Set([
   'draft-offseason-flow-guard-test.js',
   'draft-week-render-refresh-test.js',
   'event-match-result-popup-test.js',
+  'event-popup-speech-semantics-test.js',
   'audio-mix-applied-test.js',
   'app-startup-scope-test.js',
   'faction-decree-and-common-cd-test.js',
