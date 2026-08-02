@@ -1,0 +1,1180 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>対抗戦(War)フロー 再設計モックアップ v0.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================================
+   対抗戦(S3 War)フロー 再設計モックアップ v0.1
+   準拠: docs/ui/01-foundations.md / 02-layouts.md / mockup-baseline-v0.1.md(v0.8)
+
+   ■ カテゴリ
+     対抗戦は S3 対抗戦シーケンス。試合に向かう一連の流れなので画面はすべて
+     Stage(純黒 --stage-bg)で通す。Office の Cream Panel は置かない。
+     唯一の例外は「セリフの吹き出し」で、baseline §3 が
+     「セリフの吹き出しは白(クリーム)に黒文字。例外なし。背景が暗い画面でも
+     暗い塗りの吹き出しにしない」と定めているため、Stage 上でもクリームを使う。
+     (既存の共通部品 .u3b-bubble も同じ扱い。カテゴリ違反ではない)
+
+   ■ 色
+     ハードコード16進は :root のトークン定義だけ。以降はすべて var(--*)。
+     値は src/index.html の :root からの転記(実装時に色がずれないようにするため)。
+     自陣 = --c-positive 系 / 敵陣 = --accent-hostility 系(baseline §7)。
+     RIVAL_ORGS[].color(#d63031 等)は敵陣アクセントとして使わない ——
+     団体ごとに違う色が入ると勝敗色・自他色と衝突するため、団体の識別は
+     エンブレム画像とバッジで行う(§5 団体バッジ)。
+   ========================================================================== */
+:root{
+  /* --- src/index.html :root からの転記(使用分のみ) --- */
+  --bg-dark:#24221e;
+  --panel-bg:#181614;
+  --card-bg:#12110e;
+  --border:rgba(200,190,170,0.08);
+  --text-main:#e8e6e0;
+  --text-sub:rgba(232,230,224,0.5);
+  --text-dim:rgba(232,230,224,0.25);
+  --gold:#d4a843;
+  --gold-light:#f0d078;
+  --gold-deep:#b8912e;
+  --gold-rgb:212,168,67;
+  --gold-light-rgb:240,208,120;
+  /* Stage */
+  --stage-bg:#060606;
+  --stage-bg-deep:#000000;
+  --stage-panel:rgba(20,18,15,0.62);
+  --stage-panel-deep:rgba(10,9,7,0.80);
+  --stage-card-top:#14171c;
+  --stage-card-bottom:#0d1014;
+  --stage-border:rgba(200,190,170,0.08);
+  --stage-border-lit:rgba(212,168,67,0.22);
+  --stage-border-main:rgba(212,168,67,0.42);
+  --stage-text-main:#e8e6e0;
+  --stage-text-sub:rgba(232,230,224,0.55);
+  --stage-text-dim:rgba(232,230,224,0.28);
+  --stage-text-quiet:rgba(232,230,224,0.16);
+  /* Cream(吹き出し専用) */
+  --office-panel-cream:#d4ccb8;
+  --office-panel-cream-card:#ede8dc;
+  --cream-text-main:#1e1c16;
+  --cream-text-sub:#4a4638;
+  --cream-text-dim:#7a7466;
+  --cream-gold-dark:#5c4a1e;
+  /* 意味色 */
+  --accent-faction-2:#6d94b8;
+  --accent-faction-4:#6fa28c;
+  --accent-hostility:#d07a3e;
+  --accent-hostility-rgb:208,122,62;
+  --c-positive:var(--accent-faction-4);
+  --c-positive-rgb:111,162,140;
+  --c-negative:#c0524a;
+  --c-negative-rgb:192,82,74;
+  --c-info:var(--accent-faction-2);
+  --c-warning:var(--accent-hostility);
+  --c-rivalry:#e17055;
+  /* 現行(比較用)にだけ出てくる紺パネル。新案では使わない */
+  --victory-panel-top:#1a1a2e;
+  --victory-panel-bottom:#16213e;
+  --victory-blue:#74b9ff;
+  --victory-blue-rgb:116,185,255;
+  /* Font */
+  --font-display:'Bebas Neue',sans-serif;
+  --font-label:'Oswald',sans-serif;
+  --font-body:'Noto Sans JP',sans-serif;
+  /* Space / Radius */
+  --space-xs:4px;
+  --space-sm:8px;
+  --space-md:12px;
+  --space-lg:16px;
+  --space-xl:24px;
+  --radius-sm:4px;
+  --radius-md:6px;
+  --radius-lg:10px;
+  --radius-xl:14px;
+}
+
+/* ══════════════ レビュー用の外枠(モックの器。ゲーム画面ではない) ══════════════ */
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg-dark);color:var(--text-main);font-family:var(--font-body);font-size:13px;line-height:1.7}
+button{font:inherit;color:inherit}
+button:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px}
+.doc-bar{position:sticky;top:0;z-index:40;display:flex;justify-content:space-between;align-items:center;gap:var(--space-lg);
+  padding:10px var(--space-lg);border-bottom:1px solid var(--stage-border-main);background:var(--panel-bg)}
+.doc-bar strong{font-size:15px;color:var(--gold-light)}
+.doc-bar small{display:block;font-size:10px;color:var(--text-sub)}
+.doc-toggle{display:flex;gap:var(--space-sm)}
+.doc-toggle button{min-height:32px;padding:4px var(--space-md);border:1px solid var(--stage-border-lit);border-radius:var(--radius-md);
+  background:var(--card-bg);color:var(--stage-text-sub);cursor:pointer;font-size:11px}
+.doc-toggle button.is-on{border-color:var(--gold);background:rgba(var(--gold-rgb),.12);color:var(--gold-light)}
+.doc{max-width:1180px;margin:0 auto;padding:var(--space-xl) var(--space-lg) 64px}
+.doc h2{font-size:18px;margin:40px 0 var(--space-sm);padding-bottom:var(--space-sm);border-bottom:1px solid var(--stage-border-lit);color:var(--gold-light)}
+.doc h3{font-size:15px;margin:var(--space-xl) 0 var(--space-sm);color:var(--text-main)}
+.doc p{margin:0 0 var(--space-md);color:var(--text-sub)}
+.doc ul{margin:0 0 var(--space-md);padding-left:1.3em;color:var(--text-sub)}
+.doc li{margin-bottom:var(--space-xs)}
+.doc code{font-size:11px;color:var(--gold-light);background:rgba(var(--gold-rgb),.08);padding:1px 5px;border-radius:var(--radius-sm)}
+.doc table{width:100%;border-collapse:collapse;margin:0 0 var(--space-lg);font-size:11px}
+.doc th,.doc td{border:1px solid var(--stage-border);padding:6px var(--space-sm);text-align:left;vertical-align:top}
+.doc th{background:rgba(var(--gold-rgb),.07);color:var(--gold-light);font-family:var(--font-label);letter-spacing:.06em;font-weight:600}
+.kicker{font-family:var(--font-label);font-size:10px;letter-spacing:.22em;color:var(--gold);text-transform:uppercase}
+.note{border-left:3px solid var(--gold);background:rgba(var(--gold-rgb),.05);padding:var(--space-md) var(--space-lg);margin:0 0 var(--space-lg);font-size:12px;color:var(--text-sub)}
+.note b{color:var(--gold-light)}
+.note.is-bad{border-left-color:var(--c-negative);background:rgba(var(--c-negative-rgb),.06)}
+.note.is-bad b{color:var(--c-negative)}
+/* Stage 画面のプレビュー枠 */
+.vp{width:min(980px,100%);margin:0 auto var(--space-lg);border:1px solid var(--stage-border-main);border-radius:var(--radius-lg);
+  overflow:hidden;background:var(--stage-bg);transition:width .2s ease}
+body.is-narrow .vp{width:375px}
+.vp-cap{font-family:var(--font-label);font-size:10px;letter-spacing:.16em;color:var(--stage-text-dim);text-transform:uppercase;
+  padding:6px var(--space-md);border-bottom:1px solid var(--stage-border);background:var(--stage-panel-deep)}
+.vp-pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:var(--space-lg);align-items:start}
+.vp-pair .vp{width:100%}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   共通部品(wf-*) — 実装時は既存の .u3b-* / .pb-* に対応づける。
+   対応表はページ末尾。
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* --- 顔出しブロック: 吹き出し(予約枠) → 画像 → 名前 → 役割 → 団体バッジ → 数値 --- */
+.wf-side{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}
+.wf-slot{height:52px;width:100%;display:flex;align-items:flex-end;justify-content:center;margin-bottom:var(--space-sm)}
+.wf-slot.is-s{height:46px}
+.wf-slot.is-chip{height:40px}
+.wf-bubble{position:relative;width:max-content;max-width:230px;background:var(--office-panel-cream-card);color:var(--cream-text-main);
+  border-radius:var(--radius-lg);padding:7px var(--space-md);font-size:13px;line-height:1.5;text-align:center;
+  box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.wf-slot.is-s .wf-bubble,.wf-slot.is-chip .wf-bubble{font-size:11px;padding:6px 10px}
+.wf-bubble-text{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wf-bubble::after{content:'';position:absolute;left:50%;transform:translateX(-50%);bottom:-7px;
+  border:7px solid transparent;border-top-color:var(--office-panel-cream-card);border-bottom:0}
+/* 2:3 梯子(XL 172×258 / L 150×224 / M 132×194 / S 108×162 / chip 46×66) */
+.wf-up{--wf-accent:var(--gold);--wf-accent-rgb:var(--gold-rgb);
+  overflow:hidden;flex:0 0 auto;border-radius:6px 6px 5px 5px;background:var(--stage-card-top);
+  border:1px solid rgba(var(--wf-accent-rgb),.28);border-bottom:3px solid var(--wf-accent)}
+.wf-up img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.wf-up.is-xl{width:172px;height:258px}
+.wf-up.is-l{width:150px;height:224px}
+.wf-up.is-m{width:132px;height:194px}
+.wf-up.is-s{width:108px;height:162px}
+.wf-up.is-chip{width:46px;height:66px;border-bottom-width:2px}
+.wf-side.is-away .wf-up,.wf-up.is-away{--wf-accent:var(--accent-hostility);--wf-accent-rgb:var(--accent-hostility-rgb)}
+/* 敗者(baseline §5-B): グレースケール + 下辺を無彩色に。"LOSE" の文字は出さない */
+.wf-side.is-loser .wf-up img,.wf-up.is-loser img{filter:grayscale(.9) brightness(.72)}
+.wf-side.is-loser .wf-up,.wf-up.is-loser{border-bottom-color:var(--stage-text-dim)}
+.wf-side.is-loser .wf-name,.wf-side.is-loser .wf-role,.wf-side.is-loser .wf-stat{opacity:.62}
+.wf-copy{text-align:center;margin-top:var(--space-sm);max-width:180px}
+.wf-name{font-size:15px;font-weight:900;line-height:1.3;color:var(--stage-text-main)}
+.wf-role{font-family:var(--font-label);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-top:2px}
+.wf-side.is-away .wf-role{color:var(--accent-hostility)}
+.wf-stat{font-family:var(--font-display);font-size:28px;line-height:1;margin-top:6px;color:var(--gold);font-variant-numeric:tabular-nums}
+.wf-side.is-away .wf-stat{color:var(--accent-hostility)}
+.wf-stat small{font-family:var(--font-label);font-size:8px;letter-spacing:.1em;margin-right:4px;opacity:.6;color:var(--stage-text-main)}
+/* 団体バッジ(baseline §5): エンブレムは実画像。他団体が絡むときのみ出す */
+.wf-org{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:3px 9px 3px 3px;border-radius:20px;
+  border:1px solid rgba(var(--wf-org-rgb),.5);background:rgba(var(--wf-org-rgb),.14)}
+.wf-org.is-home{--wf-org-rgb:var(--c-positive-rgb)}
+.wf-org.is-away{--wf-org-rgb:var(--accent-hostility-rgb)}
+.wf-org-emblem{width:18px;height:18px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgb(var(--wf-org-rgb));display:grid;place-items:center}
+.wf-org-emblem img{width:100%;height:100%;object-fit:cover;display:block}
+.wf-org-name{font-family:var(--font-label);font-size:11px;font-weight:700;color:rgb(var(--wf-org-rgb));white-space:nowrap}
+/* 勝敗記号(baseline §5-B): ○ 勝ち / × 負け / △ 分け のみ */
+.wf-mark{font-family:var(--font-body);font-size:18px;font-weight:900;line-height:1}
+.wf-mark.is-win{color:var(--c-positive)}
+.wf-mark.is-lose{color:var(--stage-text-dim)}
+.wf-mark.is-draw{color:var(--c-warning)}
+
+/* --- Stage 画面の枠組み(pb-* 流用相当) --- */
+.wf-screen{background:linear-gradient(180deg,var(--stage-panel),transparent 40%),var(--stage-bg);padding-bottom:var(--space-xl)}
+.wf-banner{position:relative;padding:var(--space-xl) var(--space-xl) 20px;text-align:center;
+  background:linear-gradient(180deg,rgba(var(--gold-rgb),.08) 0%,rgba(0,0,0,0) 100%);
+  border-bottom:1px solid rgba(var(--gold-rgb),.15)}
+.wf-banner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.wf-live{display:inline-block;padding:3px var(--space-md);margin-bottom:10px;border-radius:20px;
+  border:1px solid rgba(var(--accent-hostility-rgb),.45);background:rgba(var(--accent-hostility-rgb),.12);
+  color:var(--accent-hostility);font-family:var(--font-label);font-size:10px;font-weight:700;letter-spacing:.25em}
+.wf-banner-title{font-family:var(--font-display);font-size:28px;letter-spacing:.22em;color:var(--gold);
+  text-shadow:0 0 20px rgba(var(--gold-rgb),.3);margin-bottom:var(--space-xs)}
+.wf-banner-sub{font-family:var(--font-label);font-size:11px;letter-spacing:.18em;color:var(--stage-text-sub);text-transform:uppercase}
+.wf-banner-sub .dot{color:var(--stage-text-quiet);margin:0 var(--space-sm)}
+.wf-scorestrip{display:grid;border-bottom:1px solid var(--stage-border)}
+.wf-scorecell{text-align:center;padding:14px 10px;border-right:1px solid var(--stage-border);min-width:0}
+.wf-scorecell:last-child{border-right:none}
+.wf-scoreval{font-family:var(--font-display);font-size:28px;line-height:1.1;color:var(--stage-text-main);font-variant-numeric:tabular-nums}
+.wf-scoreval.is-text{font-family:var(--font-body);font-size:15px;font-weight:700;line-height:1.4;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wf-scorelbl{font-family:var(--font-label);font-size:8px;letter-spacing:.2em;color:var(--stage-text-dim);text-transform:uppercase;margin-top:var(--space-xs)}
+.wf-divider{text-align:center;font-family:var(--font-label);font-size:10px;font-weight:700;letter-spacing:.35em;
+  color:var(--stage-text-dim);text-transform:uppercase;padding:var(--space-sm) 0 6px;background:rgba(200,190,170,.02);
+  border-bottom:1px solid var(--stage-border)}
+.wf-btn{min-height:36px;padding:var(--space-sm) var(--space-lg);border:1px solid var(--stage-border-main);border-radius:var(--radius-md);
+  background:var(--stage-panel-deep);color:var(--stage-text-main);cursor:pointer;font-size:13px}
+.wf-btn:hover{border-color:var(--gold);background:rgba(var(--gold-rgb),.1)}
+.wf-btn.is-primary{border-color:var(--gold);background:rgba(var(--gold-rgb),.16);color:var(--gold-light);font-weight:700}
+.wf-btn.is-primary:disabled{opacity:.35;cursor:default}
+.wf-btn.is-quiet{border-color:var(--stage-border);color:var(--stage-text-sub)}
+
+/* ══════ 画面1: 申し込みモーダル ══════ */
+.wf-mdl{background:linear-gradient(180deg,var(--stage-card-top),var(--stage-card-bottom));padding-bottom:var(--space-xl)}
+.wf-mdl-head{padding:var(--space-lg) var(--space-xl) var(--space-md);text-align:center;
+  border-bottom:1px solid rgba(var(--accent-hostility-rgb),.32);
+  background:linear-gradient(180deg,rgba(var(--accent-hostility-rgb),.16),transparent)}
+.wf-mdl-title{font-size:18px;font-weight:900;letter-spacing:.3em;color:var(--stage-text-main)}
+.wf-mdl-meta{font-family:var(--font-label);font-size:10px;letter-spacing:.16em;color:var(--stage-text-dim);margin-top:var(--space-xs);text-transform:uppercase}
+.wf-mdl-strip{display:flex;align-items:center;gap:var(--space-md);padding:10px var(--space-xl);
+  border-bottom:1px solid var(--stage-border);background:var(--stage-panel-deep);font-size:11px;color:var(--stage-text-sub)}
+.wf-mdl-strip .tag{font-family:var(--font-label);font-size:8px;letter-spacing:.18em;color:var(--accent-hostility);
+  border:1px solid rgba(var(--accent-hostility-rgb),.4);border-radius:var(--radius-sm);padding:2px 6px;flex-shrink:0}
+.wf-mdl-stage{padding:var(--space-xl) var(--space-xl) var(--space-lg);display:flex;flex-direction:column;align-items:center}
+.wf-mdl-obs{max-width:520px;margin:var(--space-lg) auto 0;padding-top:var(--space-md);border-top:1px solid var(--stage-border);
+  text-align:center;font-size:13px;color:var(--stage-text-sub)}
+.wf-mdl-obs .marker{color:var(--accent-hostility);font-weight:700}
+/* 相手の3名を先に開示する(新設): chip 46×66 の小さな並び */
+.wf-lineup-peek{margin:var(--space-lg) auto 0;max-width:560px;padding:var(--space-md);border:1px solid var(--stage-border);
+  border-radius:var(--radius-md);background:var(--stage-panel-deep)}
+.wf-lineup-peek-head{font-family:var(--font-label);font-size:8px;letter-spacing:.2em;color:var(--stage-text-dim);
+  text-transform:uppercase;text-align:center;margin-bottom:var(--space-sm)}
+.wf-lineup-peek-row{display:flex;justify-content:center;gap:var(--space-lg)}
+.wf-peek{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);min-width:0}
+.wf-peek b{font-size:11px;font-weight:700;color:var(--stage-text-main);white-space:nowrap}
+.wf-peek span{font-family:var(--font-label);font-size:8px;letter-spacing:.14em;color:var(--stage-text-dim)}
+.wf-prompt{text-align:center;font-size:15px;font-weight:700;color:var(--stage-text-main);margin:var(--space-lg) 0 var(--space-md)}
+.wf-tray{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);max-width:620px;margin:0 auto;padding:0 var(--space-xl)}
+.wf-decision{padding:var(--space-md) var(--space-lg);border:1px solid var(--stage-border-lit);border-radius:var(--radius-md);
+  background:var(--stage-panel-deep);text-align:center;cursor:pointer}
+.wf-decision:hover{border-color:var(--gold)}
+.wf-decision.is-accept{border-color:rgba(var(--accent-hostility-rgb),.55);background:rgba(var(--accent-hostility-rgb),.1)}
+.wf-decision-letter{font-size:15px;font-weight:900;color:var(--stage-text-main)}
+.wf-decision.is-accept .wf-decision-letter{color:var(--accent-hostility)}
+.wf-decision-label{font-size:11px;color:var(--stage-text-sub);margin-top:2px}
+.wf-decision-hint{font-size:10px;color:var(--stage-text-dim);margin-top:var(--space-xs)}
+.wf-decision-hint.is-neg{color:var(--c-negative)}
+
+/* ══════ 画面2: 選手選択ステップ ══════ */
+.wf-pick-head{display:grid;grid-template-columns:1fr auto;gap:var(--space-md);align-items:end;
+  padding:var(--space-lg) var(--space-xl) var(--space-md);border-bottom:1px solid var(--stage-border-lit)}
+.wf-pick-head h3{margin:2px 0 0;font-size:18px;font-weight:900;color:var(--stage-text-main)}
+.wf-pick-head .hint{font-size:11px;color:var(--stage-text-sub);text-align:right;max-width:280px}
+.wf-steps{display:flex;gap:var(--space-sm);align-items:center;padding:var(--space-sm) var(--space-xl);
+  border-bottom:1px solid var(--stage-border);background:var(--stage-panel-deep);
+  font-family:var(--font-label);font-size:10px;letter-spacing:.14em;color:var(--stage-text-dim);text-transform:uppercase}
+.wf-steps b{color:var(--gold-light);font-weight:700}
+.wf-steps i{font-style:normal;color:var(--stage-text-quiet)}
+/* 対戦カード表: 1行 = 1試合。選出順がそのまま出場順であることを行番号で示す */
+.wf-board{padding:var(--space-lg) var(--space-lg) var(--space-sm)}
+/* 上端揃え(baseline §3「左右で画像の上端を揃える」)。自陣にだけ体調バーが付くので
+   下端で揃えると画像がずれる。相手の体調は社長には見えないので、非対称のまま上で揃える */
+.wf-brow{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);align-items:start;gap:var(--space-sm);
+  padding:var(--space-md) var(--space-md) var(--space-lg);border-bottom:1px solid var(--stage-border)}
+.wf-brow.is-main{border-left:2px solid var(--gold);background:linear-gradient(180deg,rgba(var(--gold-rgb),.07),transparent 60%)}
+.wf-brow-mid{text-align:center;padding-top:56px}
+.wf-brow-no{font-family:var(--font-label);font-size:10px;letter-spacing:.2em;color:var(--stage-text-dim);text-transform:uppercase}
+.wf-brow-vs{font-family:var(--font-display);font-size:28px;color:var(--accent-hostility);line-height:1.1}
+.wf-brow.is-main .wf-brow-no{color:var(--gold)}
+.wf-brow-tag{display:inline-block;margin-top:var(--space-xs);font-family:var(--font-label);font-size:8px;letter-spacing:.18em;
+  color:var(--gold);border:1px solid rgba(var(--gold-rgb),.4);border-radius:var(--radius-sm);padding:1px 6px}
+.wf-brow-note{font-size:10px;color:var(--stage-text-dim);margin-top:var(--space-xs)}
+/* 空きスロット。フォーカス中は金リング(遠征の同行者選択 .awpick-slot.focused から借用) */
+.wf-empty{width:108px;height:162px;border:1px dashed var(--stage-border-main);border-radius:var(--radius-md);
+  background:var(--stage-panel-deep);display:grid;place-items:center;color:var(--stage-text-dim);
+  font-family:var(--font-display);font-size:28px;cursor:pointer}
+.wf-side.is-focused .wf-empty,.wf-side.is-focused .wf-up{box-shadow:0 0 0 2px var(--gold),0 6px 14px rgba(var(--gold-rgb),.22);
+  border-color:var(--gold)}
+.wf-side.is-focused .wf-role{color:var(--gold-light)}
+/* コンディションバー(E-4 .agw-cond 相当) */
+.wf-cond{width:108px;margin-top:6px}
+.wf-cond-top{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:var(--stage-text-sub)}
+.wf-cond-top b{font-family:var(--font-display);font-size:15px;color:var(--stage-text-main);font-variant-numeric:tabular-nums}
+.wf-cond-track{height:4px;margin-top:3px;border-radius:2px;background:rgba(200,190,170,.1);overflow:hidden}
+.wf-cond-track span{display:block;height:100%;border-radius:2px}
+.wf-cond-track span.is-good{background:var(--c-positive)}
+.wf-cond-track span.is-warn{background:var(--c-warning)}
+.wf-cond-track span.is-danger{background:var(--c-negative)}
+/* 因縁バッジ */
+.wf-feud{display:inline-flex;align-items:center;gap:var(--space-xs);margin-top:5px;padding:2px 7px;border-radius:20px;
+  border:1px solid rgba(var(--accent-hostility-rgb),.5);background:rgba(var(--accent-hostility-rgb),.12);
+  font-family:var(--font-label);font-size:8px;letter-spacing:.12em;color:var(--c-rivalry)}
+/* 候補レール */
+.wf-rail-sec{margin:0 var(--space-lg);padding:var(--space-md);border:1px solid var(--stage-border);background:var(--stage-panel)}
+.wf-rail-head{display:flex;justify-content:space-between;align-items:end;gap:var(--space-md);margin-bottom:var(--space-sm)}
+.wf-rail-head strong{font-size:11px;color:var(--gold-light)}
+.wf-rail-head span{font-size:10px;color:var(--stage-text-dim)}
+.wf-rail{display:flex;gap:7px;overflow-x:auto;padding-bottom:var(--space-xs)}
+.wf-cand{flex:0 0 116px;padding:var(--space-sm) 6px;border:1px solid var(--stage-border);border-radius:var(--radius-md);
+  background:var(--stage-panel-deep);text-align:center;cursor:pointer}
+.wf-cand:hover{border-color:var(--stage-border-main)}
+.wf-cand.is-picked{border-color:var(--gold);background:rgba(var(--gold-rgb),.08)}
+.wf-cand.is-out{opacity:.4;cursor:default}
+.wf-cand-face{width:46px;height:66px;margin:0 auto 6px;border-radius:var(--radius-sm);overflow:hidden;background:var(--stage-card-top);
+  border-bottom:2px solid var(--gold)}
+.wf-cand.is-out .wf-cand-face{border-bottom-color:var(--stage-text-dim)}
+.wf-cand.is-out .wf-cand-face img{filter:grayscale(.9) brightness(.72)}
+.wf-cand-face img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.wf-cand-nm{font-size:11px;font-weight:700;color:var(--stage-text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wf-cand-ovr{font-family:var(--font-display);font-size:28px;line-height:1;color:var(--gold);font-variant-numeric:tabular-nums}
+.wf-cand-ovr small{font-family:var(--font-label);font-size:8px;letter-spacing:.1em;color:var(--stage-text-dim);margin-right:3px}
+.wf-cand-sub{font-size:10px;color:var(--stage-text-dim);margin-top:2px}
+.wf-cand-pick{display:block;width:100%;margin-top:6px;padding:3px 0;border-radius:var(--radius-sm);
+  border:1px solid var(--stage-border-lit);background:transparent;color:var(--stage-text-sub);font-size:10px;cursor:pointer}
+.wf-cand.is-picked .wf-cand-pick{border-color:var(--gold);background:rgba(var(--gold-rgb),.16);color:var(--gold-light)}
+.wf-pick-foot{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:var(--space-md);
+  margin:var(--space-md) var(--space-lg) 0;padding:10px var(--space-md);
+  border:1px solid var(--stage-border-lit);background:var(--stage-panel-deep)}
+.wf-pick-foot span{font-size:10px;color:var(--stage-text-dim)}
+.wf-pick-foot div{display:flex;gap:var(--space-sm)}
+
+/* ══════ 画面3: 進行画面 ══════ */
+.wf-list{padding:0}
+/* 済んだ試合 */
+.wf-done{display:grid;grid-template-columns:minmax(0,1fr) 190px minmax(0,1fr);align-items:center;gap:var(--space-sm);
+  padding:var(--space-md) var(--space-lg);border-bottom:1px solid var(--stage-border)}
+.wf-done-side{display:flex;align-items:center;gap:10px;min-width:0}
+.wf-done-side.is-right{flex-direction:row-reverse;text-align:right}
+.wf-done-face{width:46px;height:66px;border-radius:var(--radius-sm);overflow:hidden;flex-shrink:0;background:var(--stage-card-top);
+  border-bottom:2px solid var(--gold)}
+.wf-done-face.is-away{border-bottom-color:var(--accent-hostility)}
+.wf-done-face.is-loser{border-bottom-color:var(--stage-text-dim)}
+.wf-done-face.is-loser img{filter:grayscale(.9) brightness(.72)}
+.wf-done-face img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.wf-done-nm{font-size:13px;font-weight:700;color:var(--stage-text-main);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wf-done-sub{font-size:10px;color:var(--stage-text-dim)}
+.wf-done-mid{text-align:center}
+.wf-done-fin{font-size:11px;color:var(--stage-text-sub)}
+.wf-done-mq{font-family:var(--font-label);font-size:8px;letter-spacing:.14em;color:var(--stage-text-dim);margin-top:2px}
+.wf-done-mq b{font-family:var(--font-display);font-size:15px;color:var(--gold-light);margin-left:var(--space-xs)}
+/* 次の試合(NEXT) */
+.wf-next{position:relative;padding:var(--space-xl) var(--space-lg) var(--space-lg);border-bottom:1px solid var(--stage-border);
+  border-left:2px solid var(--gold);background:linear-gradient(180deg,rgba(var(--gold-rgb),.09),transparent 65%)}
+.wf-next::before{content:'NEXT';position:absolute;top:10px;left:var(--space-lg);font-family:var(--font-label);font-size:10px;
+  letter-spacing:.3em;font-weight:700;color:var(--gold)}
+.wf-next-grid{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);align-items:start;gap:var(--space-sm);margin-top:var(--space-sm)}
+.wf-next-mid{text-align:center;padding-top:60px}
+.wf-next-vs{font-family:var(--font-display);font-size:28px;color:var(--accent-hostility);line-height:1}
+.wf-next-no{font-family:var(--font-label);font-size:10px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase}
+.wf-next-actions{display:flex;justify-content:center;gap:var(--space-sm);margin-top:var(--space-lg)}
+/* 待機中の試合 */
+.wf-wait{display:flex;align-items:center;gap:var(--space-md);padding:10px var(--space-lg);
+  border-bottom:1px solid var(--stage-border);opacity:.55}
+.wf-wait-faces{display:flex;align-items:center;gap:var(--space-xs);flex-shrink:0}
+.wf-wait-faces .wf-done-face{width:46px;height:66px}
+.wf-wait-txt{font-size:11px;color:var(--stage-text-sub);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wf-wait-no{font-family:var(--font-label);font-size:8px;letter-spacing:.2em;color:var(--stage-text-dim);text-transform:uppercase;flex-shrink:0}
+.wf-skipall{text-align:center;padding:var(--space-lg) var(--space-lg) 0}
+
+/* ══════ 画面4: 試合後セリフポップ ══════ */
+.wf-pop{display:grid;place-items:center;padding:var(--space-xl) var(--space-lg);background:var(--stage-bg-deep);min-height:470px}
+.wf-pop-card{width:min(420px,100%);padding:var(--space-xl) var(--space-lg) var(--space-lg);border-radius:var(--radius-xl);
+  border:1px solid var(--stage-border-main);background:linear-gradient(180deg,var(--stage-card-top),var(--stage-card-bottom));
+  box-shadow:0 0 40px rgba(0,0,0,.7);text-align:center}
+.wf-pop-card.is-away{border-color:rgba(var(--accent-hostility-rgb),.42)}
+.wf-pop-verdict{display:inline-flex;align-items:center;gap:6px;margin-bottom:var(--space-md);padding:3px var(--space-md);
+  border-radius:20px;font-family:var(--font-label);font-size:10px;letter-spacing:.24em;font-weight:700}
+.wf-pop-verdict.is-win{color:var(--c-positive);border:1px solid rgba(var(--c-positive-rgb),.5);background:rgba(var(--c-positive-rgb),.12)}
+.wf-pop-verdict.is-lose{color:var(--stage-text-sub);border:1px solid var(--stage-border);background:rgba(200,190,170,.04)}
+.wf-pop-next{margin-top:var(--space-lg)}
+.wf-pop-next button{width:56px;height:32px;border-radius:var(--radius-md);border:1px solid rgba(var(--gold-rgb),.4);
+  background:rgba(var(--gold-rgb),.14);color:var(--gold-light);cursor:pointer}
+/* 現行(比較専用。新案では使わない) */
+.wf-old{display:grid;place-items:center;padding:var(--space-xl) var(--space-lg);background:rgba(0,0,0,.72);min-height:470px}
+.wf-old-card{width:min(420px,100%);padding:var(--space-xl);border-radius:12px;text-align:center;
+  background:linear-gradient(135deg,var(--victory-panel-top) 0%,var(--victory-panel-bottom) 100%);
+  border:1px solid rgba(var(--victory-blue-rgb),.35);box-shadow:0 0 40px rgba(0,0,0,.7)}
+.wf-old-face{width:132px;height:194px;margin:0 auto;border-radius:6px 6px 5px 5px;overflow:hidden;
+  border:1px solid rgba(var(--victory-blue-rgb),.28);border-bottom:3px solid var(--victory-blue);background:var(--stage-card-top)}
+.wf-old-face img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+.wf-old-nm{font-size:15px;font-weight:900;color:var(--victory-blue);margin-top:var(--space-sm)}
+.wf-old-flag{margin-top:var(--space-md);font-size:10px;color:var(--c-negative)}
+
+/* ══════ 画面5: 最終結果 ══════ */
+.wf-flavor{text-align:center;padding:var(--space-md) var(--space-xl);font-size:13px;color:var(--stage-text-sub);
+  border-bottom:1px solid var(--stage-border)}
+.wf-flavor em{color:var(--gold-light);font-style:normal;font-weight:700}
+/* 隊列(baseline §2-B): 群の外枠1つ・18px重ね・drop-shadow・個々に額縁を付けない */
+.wf-troop-wrap{margin:var(--space-xl) auto var(--space-lg);max-width:600px;padding:var(--space-lg) var(--space-lg) var(--space-md);
+  border:1px solid var(--stage-border-lit);border-radius:var(--radius-md);
+  background:linear-gradient(180deg,rgba(var(--gold-rgb),.05),transparent 70%),var(--stage-panel-deep)}
+.wf-troop-head{text-align:center;margin-bottom:var(--space-md)}
+.wf-troop-head .kicker{display:block}
+.wf-troop-head b{font-size:15px;color:var(--stage-text-main)}
+.wf-troop{display:flex;justify-content:center;align-items:flex-end}
+.wf-troop-fig{margin-right:-18px;filter:drop-shadow(0 10px 16px rgba(0,0,0,.85))}
+.wf-troop-fig:last-child{margin-right:0}
+.wf-troop-fig.is-center{z-index:3;position:relative}
+.wf-troop-fig img{display:block;height:194px;width:auto}
+.wf-troop-fig.is-center img{height:224px}
+.wf-troop-fig.is-loser img{filter:grayscale(.9) brightness(.72)}
+.wf-troop-names{display:flex;justify-content:center;margin-top:var(--space-sm)}
+.wf-troop-nm{margin-right:-18px;width:132px;text-align:center}
+.wf-troop-nm:last-child{margin-right:0}
+.wf-troop-nm.is-center{width:150px}
+.wf-troop-nm b{display:block;font-size:13px;font-weight:700;color:var(--stage-text-main)}
+.wf-troop-nm span{font-family:var(--font-label);font-size:8px;letter-spacing:.14em;color:var(--stage-text-dim)}
+.wf-summary{max-width:600px;margin:0 auto;padding:0 var(--space-lg)}
+.wf-sum-row{display:grid;grid-template-columns:auto minmax(0,1fr) auto minmax(0,1fr) auto;align-items:center;gap:var(--space-sm);
+  padding:var(--space-sm) 0;border-bottom:1px solid var(--stage-border);font-size:11px}
+.wf-sum-no{font-family:var(--font-label);font-size:8px;letter-spacing:.14em;color:var(--stage-text-dim);width:52px}
+.wf-sum-nm{color:var(--stage-text-main);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wf-sum-nm.is-right{text-align:right}
+.wf-sum-nm.is-dim{color:var(--stage-text-dim)}
+.wf-foot{display:flex;justify-content:space-between;align-items:center;gap:var(--space-md);
+  max-width:600px;margin:var(--space-lg) auto 0;padding:var(--space-md) var(--space-lg) 0;border-top:1px solid var(--stage-border)}
+.wf-foot-heat{font-family:var(--font-label);font-size:10px;letter-spacing:.16em;color:var(--stage-text-dim);text-transform:uppercase}
+.wf-foot-heat b{color:var(--c-rivalry);margin-left:var(--space-sm)}
+
+/* ══════ 狭幅(375px)確認 ══════ */
+@media(max-width:640px){
+  .wf-brow,.wf-next-grid{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+  .wf-done{grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr)}
+  .wf-tray{grid-template-columns:1fr}
+  .wf-banner,.wf-mdl-stage,.wf-pick-head{padding-left:var(--space-md);padding-right:var(--space-md)}
+  .wf-next-mid{padding-top:36px}
+  .wf-troop-fig img{height:150px}
+  .wf-troop-fig.is-center img{height:172px}
+  .wf-troop-nm{width:100px}.wf-troop-nm.is-center{width:114px}
+}
+body.is-narrow .wf-brow,body.is-narrow .wf-next-grid{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+body.is-narrow .wf-done{grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr)}
+body.is-narrow .wf-tray{grid-template-columns:1fr}
+body.is-narrow .wf-troop-fig img{height:150px}
+body.is-narrow .wf-troop-fig.is-center img{height:172px}
+body.is-narrow .wf-troop-nm{width:100px}
+body.is-narrow .wf-troop-nm.is-center{width:114px}
+</style>
+</head>
+<body>
+
+<div class="doc-bar">
+  <div>
+    <strong>対抗戦(War)フロー 再設計モックアップ v0.1</strong>
+    <small>S3 対抗戦シーケンス / Stage(純黒) / baseline v0.8 準拠 — 実装なし・意匠確認用</small>
+  </div>
+  <div class="doc-toggle">
+    <button type="button" id="btnWide" class="is-on">デスクトップ</button>
+    <button type="button" id="btnNarrow">375px</button>
+  </div>
+</div>
+
+<div class="doc">
+
+<p class="kicker">前提</p>
+<h2>このモックが直そうとしている3点</h2>
+<div class="note is-bad">
+  <b>① 受諾後に選手選択のターンが無い。</b>
+  <code>Engine.event.makeWarCard</code>(management.js 15800) が
+  <code>OVR降順で自陣と敵陣を機械的に1位vs1位・2位vs2位…と組む</code>だけで、社長は誰も選べない。
+  「社長は舞台を作る人」という三本柱に対して、対抗戦だけ舞台作りの手が入らない。<br>
+  <b>② 進行画面でカード全体が読み取れない。</b>
+  <code>renderWarMatchPreview</code>(ui-common.js 764) は済んだ試合と次の試合を大きく描き、
+  その先を <code>.pb-mrow.is-pending</code> の1行テキストへ潰す。しかも並びが
+  <b>メイン→前座の降順</b>なので、「次にどこへ進むのか」が上から下へ読めない。<br>
+  <b>③ 試合後セリフポップが規格違反。</b>
+  <code>_showWarVictoryChain</code>(ui-common.js 1076) は
+  <code>getPortraitUrl</code>(face・1:1・256×256)を <code>.u3b-upper</code>(132×194・2:3)へ
+  <code>object-fit:cover</code>で入れており、<b>顔の左右が確実に切れる</b>。
+  加えて OVR・所属バッジが無く、外枠が <code>--victory-panel-top/bottom</code> の
+  <b>紺のグラデーションパネル</b>で、Stage(純黒)から浮いている。
+</div>
+
+<div class="note">
+  <b>直し方の方針。</b> 3点とも「新しい様式を発明する」のではなく、
+  <b>ゲーム内に既にある正しい様式へ寄せる</b>ことで解く。
+  ①は E-4 4団体勝ち残り対抗戦の代表編成(<code>_awEntryScreenHtml</code> / <code>.agw-entry-*</code>)、
+  ②は E-4 のライブボードの「全員の状態が常に見えている」考え方、
+  ③は U3 で統一済みの顔出しブロック(<code>_u3bSideHtml</code> / <code>.u3b-*</code>)。
+  対応表はページ末尾。
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<h2>画面1 — 申し込みモーダル（現行を規格に寄せる）</h2>
+<p>
+  現行 <code>showWarChallenge</code>(ui-common.js 629)の骨格(A型モーダル・敵エースが挑戦状を持ってくる)は良いので残す。
+  <b>現→変</b>は3点だけ。
+</p>
+<ul>
+  <li><b>吹き出しの中の話者名を消す。</b> 現行は <code>.mdl-a-speech-speaker</code> に
+    <code>enemyAce.name.toUpperCase()</code> を入れている。baseline §3「中身はセリフ本文のみ・名前や所属を入れない」に反する。話者は画像の下で示す。</li>
+  <li><b>画像を梯子に載せる。</b> <code>.mdl-a-subject-portrait.big</code> は <code>background-image</code> 直指定。
+    2:3 の <code>XL 172×258</code>（単独の主役）に固定する。</li>
+  <li><b>相手の3名をここで開示する。</b> 受けるか辞退するかは「誰が来るか」で決まる判断なので、
+    エース1人だけでなく <code>chip 46×66</code> で3名を並べる。これが画面2の前提になる。</li>
+</ul>
+
+<div class="vp">
+  <div class="vp-cap">Screen 1 / 申し込みモーダル (Stage・選択を迫るモーダル = 専用ボタンのみで閉じる)</div>
+  <div class="wf-mdl">
+    <div class="wf-mdl-head">
+      <div class="wf-mdl-title">対 抗 戦 ・ 挑 戦 状</div>
+      <div class="wf-mdl-meta">FROM 帝都女子プロレス ・ 3試合</div>
+    </div>
+    <div class="wf-mdl-strip">
+      <span class="tag">記者</span>
+      <span>帝都女子プロレスから正式な対抗戦の申し入れが届きました。3試合の団体対決です。</span>
+    </div>
+
+    <div class="wf-mdl-stage">
+      <!-- 顔出しブロック: 吹き出し → 画像 → 名前 → 役割 → 団体バッジ → 数値 -->
+      <div class="wf-side is-away">
+        <div class="wf-slot">
+          <div class="wf-bubble"><div class="wf-bubble-text">三つでいい。それで、そちらの底が見える。</div></div>
+        </div>
+        <div class="wf-up is-xl"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
+        <div class="wf-copy">
+          <div class="wf-name">高階まさみ</div>
+          <div class="wf-role">Ace</div>
+          <div class="wf-org is-away">
+            <span class="wf-org-emblem"><img src="../../../image/org/org-s-0.png" alt=""></span>
+            <span class="wf-org-name">帝都女子プロレス</span>
+          </div>
+          <div class="wf-stat"><small>OVR</small>84</div>
+        </div>
+      </div>
+
+      <div class="wf-lineup-peek">
+        <div class="wf-lineup-peek-head">向こうが立てる三人</div>
+        <div class="wf-lineup-peek-row">
+          <div class="wf-peek">
+            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
+            <b>白銀麗子</b><span>OVR 77</span>
+          </div>
+          <div class="wf-peek">
+            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
+            <b>出羽鷹子</b><span>OVR 80</span>
+          </div>
+          <div class="wf-peek">
+            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
+            <b>高階まさみ</b><span>OVR 84</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="wf-mdl-obs">
+        <span class="marker">3試合の団体対決</span>。敗北はランクにも影響します。
+      </div>
+    </div>
+
+    <div class="wf-prompt">この挑戦、どう受けますか？</div>
+    <div class="wf-tray">
+      <div class="wf-decision is-accept">
+        <div class="wf-decision-letter">⚔ 受けて立つ</div>
+        <div class="wf-decision-label">対抗戦を受諾する</div>
+        <div class="wf-decision-hint">誰を出すか決める画面へ進む</div>
+      </div>
+      <div class="wf-decision">
+        <div class="wf-decision-letter">辞退</div>
+        <div class="wf-decision-label">今回は見送る</div>
+        <div class="wf-decision-hint is-neg">団体評価↓ ／ 関係悪化</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>受諾ボタンの文言も変える。</b> 現行は「試合カード編成へ進む」と書いてあるのに、押すと
+  <code>makeWarCard</code> が自動編成して進行画面が開く。<b>書いてあるのに存在しない工程</b>だったので、
+  文言を実態に合わせるのではなく、<b>書いてある工程の方を作る</b>（＝画面2）。
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<h2>画面2 — 選手選択ステップ（新設）</h2>
+<p>
+  <b>1行 = 1試合</b>の対戦カード表にする。上から第1試合・第2試合・第3試合（メイン）で、
+  <b>選出順がそのまま出場順</b>であることを行番号で示す。相手3名は既に開示されているので、
+  枠を埋めるたびに「誰と当たるか」が確定して見える。
+</p>
+<ul>
+  <li><b>枠を選ぶ → 候補を押す</b>の2手。フォーカス中の枠は金リング（遠征の同行者選択 <code>.awpick-slot.focused</code> の作法）。</li>
+  <li>候補レールには <b>体調・OVR・因縁の有無</b>を出す。出場停止/怪我は淡くして押せなくする。</li>
+  <li>「おまかせ」は現行 <code>makeWarCard</code> と同じ OVR 降順編成（<b>今の挙動が既定値として残る</b>）。</li>
+</ul>
+
+<div class="vp">
+  <div class="vp-cap">Screen 2 / 選手選択ステップ (Stage・P5 Workflow)</div>
+  <div class="wf-screen">
+    <div class="wf-pick-head">
+      <div>
+        <div class="kicker">Set Your Card</div>
+        <h3>誰を、何番手で出すか</h3>
+      </div>
+      <div class="hint">枠を選んでから候補を押す。<br>選んだ順がそのまま出場順になる。</div>
+    </div>
+    <div class="wf-steps"><b>1 受諾</b><i>›</i><b>2 出場選手を決める</b><i>›</i><span>3 試合進行</span><i>›</i><span>4 決着</span></div>
+
+    <div class="wf-board">
+      <!-- 第1試合 -->
+      <div class="wf-brow">
+        <div class="wf-side" style="align-items:flex-end">
+          <div class="wf-up is-s"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+          <div class="wf-cond">
+            <div class="wf-cond-top"><span>元気</span><b>78</b></div>
+            <div class="wf-cond-track"><span class="is-good" style="width:78%"></span></div>
+          </div>
+          <div class="wf-copy">
+            <div class="wf-name">生駒エリカ</div>
+            <div class="wf-role">先鋒 ・ OVR 71</div>
+            <div class="wf-feud">⚔ 因縁 出羽鷹子</div>
+          </div>
+        </div>
+        <div class="wf-brow-mid">
+          <div class="wf-brow-no">第 1 試合</div>
+          <div class="wf-brow-vs">VS</div>
+          <div class="wf-brow-note">OVR差 −9</div>
+        </div>
+        <div class="wf-side is-away" style="align-items:flex-start">
+          <div class="wf-up is-s"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
+          <div class="wf-copy">
+            <div class="wf-name">出羽鷹子</div>
+            <div class="wf-role">帝都 ・ OVR 80</div>
+            <div class="wf-feud">⚔ 因縁 生駒エリカ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第2試合(空き・フォーカス中) -->
+      <div class="wf-brow">
+        <div class="wf-side is-focused" style="align-items:flex-end">
+          <div class="wf-empty">＋</div>
+          <div class="wf-copy">
+            <div class="wf-name" style="color:var(--stage-text-dim)">未定</div>
+            <div class="wf-role">中堅 ・ 選択中</div>
+          </div>
+        </div>
+        <div class="wf-brow-mid">
+          <div class="wf-brow-no">第 2 試合</div>
+          <div class="wf-brow-vs">VS</div>
+          <div class="wf-brow-note">下の棚から選ぶ</div>
+        </div>
+        <div class="wf-side is-away" style="align-items:flex-start">
+          <div class="wf-up is-s"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
+          <div class="wf-copy">
+            <div class="wf-name">白銀麗子</div>
+            <div class="wf-role">帝都 ・ OVR 77</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 第3試合(メイン) -->
+      <div class="wf-brow is-main">
+        <div class="wf-side" style="align-items:flex-end">
+          <div class="wf-up is-s"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div>
+          <div class="wf-cond">
+            <div class="wf-cond-top"><span>疲れが見える</span><b>61</b></div>
+            <div class="wf-cond-track"><span class="is-warn" style="width:61%"></span></div>
+          </div>
+          <div class="wf-copy">
+            <div class="wf-name">深町真琴</div>
+            <div class="wf-role">大将 ・ OVR 78</div>
+          </div>
+        </div>
+        <div class="wf-brow-mid">
+          <div class="wf-brow-no">第 3 試合</div>
+          <div class="wf-brow-vs">VS</div>
+          <div class="wf-brow-tag">Main</div>
+          <div class="wf-brow-note">OVR差 −6</div>
+        </div>
+        <div class="wf-side is-away" style="align-items:flex-start">
+          <div class="wf-up is-s"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
+          <div class="wf-copy">
+            <div class="wf-name">高階まさみ</div>
+            <div class="wf-role">帝都 ・ ACE ・ OVR 84</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-rail-sec">
+      <div class="wf-rail-head">
+        <strong>出場可能選手</strong>
+        <span>顔画像を押すと選手詳細／「この枠へ」で第2試合に入る</span>
+      </div>
+      <div class="wf-rail">
+        <div class="wf-cand is-picked">
+          <div class="wf-cand-face"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div>
+          <div class="wf-cand-nm">深町真琴</div>
+          <div class="wf-cand-ovr"><small>OVR</small>78</div>
+          <div class="wf-cand-sub">体調 61 ・ Aerial</div>
+          <button type="button" class="wf-cand-pick">大将</button>
+        </div>
+        <div class="wf-cand">
+          <div class="wf-cand-face"><img src="../../../image/upper/upper_okubo_m.webp" alt=""></div>
+          <div class="wf-cand-nm">大久保桃子</div>
+          <div class="wf-cand-ovr"><small>OVR</small>74</div>
+          <div class="wf-cand-sub">体調 83 ・ Allround</div>
+          <button type="button" class="wf-cand-pick">この枠へ</button>
+        </div>
+        <div class="wf-cand is-picked">
+          <div class="wf-cand-face"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+          <div class="wf-cand-nm">生駒エリカ</div>
+          <div class="wf-cand-ovr"><small>OVR</small>71</div>
+          <div class="wf-cand-sub">体調 78 ・ ⚔因縁</div>
+          <button type="button" class="wf-cand-pick">先鋒</button>
+        </div>
+        <div class="wf-cand">
+          <div class="wf-cand-face"><img src="../../../image/upper/upper_matsukawa_a.webp" alt=""></div>
+          <div class="wf-cand-nm">松川杏樹</div>
+          <div class="wf-cand-ovr"><small>OVR</small>69</div>
+          <div class="wf-cand-sub">体調 90 ・ Grappler</div>
+          <button type="button" class="wf-cand-pick">この枠へ</button>
+        </div>
+        <div class="wf-cand">
+          <div class="wf-cand-face"><img src="../../../image/upper/upper_tachibana_r.webp" alt=""></div>
+          <div class="wf-cand-nm">橘玲美</div>
+          <div class="wf-cand-ovr"><small>OVR</small>66</div>
+          <div class="wf-cand-sub">体調 72 ・ Technician</div>
+          <button type="button" class="wf-cand-pick">この枠へ</button>
+        </div>
+        <div class="wf-cand">
+          <div class="wf-cand-face"><img src="../../../image/upper/upper_kuroe_m.webp" alt=""></div>
+          <div class="wf-cand-nm">黒江舞</div>
+          <div class="wf-cand-ovr"><small>OVR</small>63</div>
+          <div class="wf-cand-sub">体調 88 ・ Striker</div>
+          <button type="button" class="wf-cand-pick">この枠へ</button>
+        </div>
+        <div class="wf-cand is-out">
+          <div class="wf-cand-face"><img src="../../../image/upper/upper_takatsu_k.webp" alt=""></div>
+          <div class="wf-cand-nm">高津小春</div>
+          <div class="wf-cand-ovr"><small>OVR</small>70</div>
+          <div class="wf-cand-sub">怪我 ・ 出場不可</div>
+          <button type="button" class="wf-cand-pick" disabled>—</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="wf-pick-foot">
+      <span>おまかせは OVR の高い順に大将・中堅・先鋒を埋めます（＝今までの自動編成と同じ並び）。</span>
+      <div>
+        <button type="button" class="wf-btn is-quiet">おまかせ</button>
+        <button type="button" class="wf-btn is-primary" disabled>この布陣で開戦 ▶</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>枠が埋まるまで開戦できない。</b> 3枠すべて埋まるまで「この布陣で開戦」は無効（P5 の作法）。
+  ただし<b>中断は許さない</b> — 挑戦状を受けた後に編成から逃げられると、辞退のペナルティを回避できてしまう。
+  「おまかせ」を常に押せる状態にしておくことで、進めなくなる状況を作らない。
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<h2>画面3 — 進行画面（作り直し）</h2>
+<p>
+  スコアボード（<code>.pb-banner</code> / <code>.pb-score-strip</code>）はそのまま流用する。
+  作り直すのは<b>その下のカード一覧</b>。
+</p>
+<ul>
+  <li><b>並びを昇順（第1→第3）に変える。</b> 現行は <code>for (let di = total-1; di &gt;= 0; di--)</code> でメインが上。
+    済んだ試合が上・これからが下、という<b>時間の向きに合わせる</b>。メインは一番下＝トリになる。</li>
+  <li><b>3試合すべてを常に描く。</b> 未消化も <code>chip 46×66</code> の顔と名前で置く（現行は文字1行）。</li>
+  <li><b>次の試合だけ大きい。</b> <code>M 132×194</code> の対置＋煽りセリフ。ここだけ操作ボタンが付く。</li>
+</ul>
+
+<div class="vp">
+  <div class="vp-cap">Screen 3 / 進行画面 (Stage・P7 Theatrical / 1試合目を消化した時点)</div>
+  <div class="wf-screen">
+    <div class="wf-banner">
+      <div class="wf-live">⚔ WAR</div>
+      <div class="wf-banner-title">対 抗 戦</div>
+      <div class="wf-banner-sub">常磐女子プロレス<span class="dot">·</span>vs<span class="dot">·</span>帝都女子プロレス<span class="dot">·</span>Sランク王者</div>
+    </div>
+    <div class="wf-scorestrip" style="grid-template-columns:1.2fr 1fr 1fr 1.6fr">
+      <div class="wf-scorecell">
+        <div class="wf-scoreval"><span style="color:var(--c-positive)">1</span><span style="color:var(--stage-text-dim);margin:0 8px">—</span><span style="color:var(--accent-hostility)">0</span></div>
+        <div class="wf-scorelbl">Score</div>
+      </div>
+      <div class="wf-scorecell">
+        <div class="wf-scoreval is-text" style="color:var(--c-info)">勝ち越し中</div>
+        <div class="wf-scorelbl">Status</div>
+      </div>
+      <div class="wf-scorecell">
+        <div class="wf-scoreval">2<span style="font-size:15px;color:var(--stage-text-dim)"> / 3</span></div>
+        <div class="wf-scorelbl">Remaining</div>
+      </div>
+      <div class="wf-scorecell">
+        <div class="wf-scoreval is-text">大久保桃子 vs 白銀麗子</div>
+        <div class="wf-scorelbl">Next</div>
+      </div>
+    </div>
+
+    <div class="wf-list">
+      <div class="wf-divider">Card ・ 第1試合 → メイン</div>
+
+      <!-- 済 -->
+      <div class="wf-done">
+        <div class="wf-done-side">
+          <div class="wf-done-face"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+          <div style="min-width:0">
+            <div class="wf-done-nm"><span class="wf-mark is-win">○</span> 生駒エリカ</div>
+            <div class="wf-done-sub">先鋒 ・ OVR 71</div>
+          </div>
+        </div>
+        <div class="wf-done-mid">
+          <div class="wf-done-fin">片エビ固め ・ 11分</div>
+          <div class="wf-done-mq">MQ<b>68</b></div>
+        </div>
+        <div class="wf-done-side is-right">
+          <div class="wf-done-face is-away is-loser"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
+          <div style="min-width:0">
+            <div class="wf-done-nm"><span class="wf-mark is-lose">×</span> 出羽鷹子</div>
+            <div class="wf-done-sub">帝都 ・ OVR 80</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 次 -->
+      <div class="wf-next">
+        <div class="wf-next-grid">
+          <div class="wf-side">
+            <div class="wf-slot">
+              <div class="wf-bubble"><div class="wf-bubble-text">先輩が取ってくれた一勝、無駄にはしません。</div></div>
+            </div>
+            <div class="wf-up is-m"><img src="../../../image/upper/upper_okubo_m.webp" alt=""></div>
+            <div class="wf-copy">
+              <div class="wf-name">大久保桃子</div>
+              <div class="wf-role">中堅</div>
+              <div class="wf-org is-home">
+                <span class="wf-org-emblem"><img src="../../../image/org/org-player-0.png" alt=""></span>
+                <span class="wf-org-name">常磐女子プロレス</span>
+              </div>
+              <div class="wf-stat"><small>OVR</small>74</div>
+            </div>
+          </div>
+          <div class="wf-next-mid">
+            <div class="wf-next-no">第 2 試合</div>
+            <div class="wf-next-vs">VS</div>
+          </div>
+          <div class="wf-side is-away">
+            <div class="wf-slot">
+              <div class="wf-bubble"><div class="wf-bubble-text">一つ落とした。ここで戻す。それだけ。</div></div>
+            </div>
+            <div class="wf-up is-m"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
+            <div class="wf-copy">
+              <div class="wf-name">白銀麗子</div>
+              <div class="wf-role">中堅</div>
+              <div class="wf-org is-away">
+                <span class="wf-org-emblem"><img src="../../../image/org/org-s-0.png" alt=""></span>
+                <span class="wf-org-name">帝都女子プロレス</span>
+              </div>
+              <div class="wf-stat"><small>OVR</small>77</div>
+            </div>
+          </div>
+        </div>
+        <div class="wf-next-actions">
+          <button type="button" class="wf-btn is-primary">🎬 試合を観る</button>
+          <button type="button" class="wf-btn">≫ スキップ</button>
+        </div>
+      </div>
+
+      <!-- 未 -->
+      <div class="wf-wait">
+        <div class="wf-wait-no">第 3 試合 ・ Main</div>
+        <div class="wf-wait-faces">
+          <div class="wf-done-face"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div>
+          <div class="wf-done-face is-away"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
+        </div>
+        <div class="wf-wait-txt">深町真琴（OVR 78） vs 高階まさみ（OVR 84・ACE） — 待機</div>
+      </div>
+    </div>
+
+    <div class="wf-skipall">
+      <button type="button" class="wf-btn is-quiet">残り2試合をスキップ</button>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>実装時に必ず掛けること（baseline §5-D）。</b>
+  「観る」は観戦モード iframe（z-index 500）から戻ってくるコールバック待ちになる。
+  <b>タイムアウトと二重起動防止フラグをセットで</b>書く（鉄則1）。
+  「スキップ」「残り全スキップ」「観る」は<b>同じ1試合を二重に消化しうる</b>ので、
+  ハンドラ先頭で「自分が消化しようとしている index が本当に未消化か」を検証して、
+  違えば <code>console.warn</code> して return する（鉄則2）。
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<h2>画面4 — 試合後セリフポップ（現行 ↔ 新案）</h2>
+<p>左が現行、右が差し替え案。同じ選手・同じセリフで並べている。</p>
+
+<div class="vp-pair">
+  <div class="vp">
+    <div class="vp-cap">現行 — _showWarVictoryChain / .war-victory-modal</div>
+    <div class="wf-old">
+      <div class="wf-old-card">
+        <div class="wf-slot">
+          <div class="wf-bubble"><div class="wf-bubble-text">取りました。次、繋ぎます。</div></div>
+        </div>
+        <!-- face(1:1 256×256)を 132×194(2:3)へ cover。左右が切れる -->
+        <div class="wf-old-face"><img src="../../../image/face_ikoma_e.png" alt=""></div>
+        <div class="wf-old-nm">生駒エリカ</div>
+        <div class="wf-old-flag">
+          ✕ 顔素材が 1:1 なので左右が切れる<br>
+          ✕ OVR・所属バッジが無い<br>
+          ✕ 紺のパネルが Stage(純黒)から浮く<br>
+          ✕ 勝敗の記号が無い
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="vp">
+    <div class="vp-cap">新案 — upper(2:3) L 150×224 / Stage パネル / ○記号</div>
+    <div class="wf-pop">
+      <div class="wf-pop-card">
+        <div class="wf-pop-verdict is-win"><span class="wf-mark is-win">○</span> WIN</div>
+        <div class="wf-side">
+          <div class="wf-slot">
+            <div class="wf-bubble"><div class="wf-bubble-text">取りました。次、繋ぎます。</div></div>
+          </div>
+          <div class="wf-up is-l"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+          <div class="wf-copy">
+            <div class="wf-name">生駒エリカ</div>
+            <div class="wf-role">先鋒 ・ 第1試合</div>
+            <div class="wf-org is-home">
+              <span class="wf-org-emblem"><img src="../../../image/org/org-player-0.png" alt=""></span>
+              <span class="wf-org-name">常磐女子プロレス</span>
+            </div>
+            <div class="wf-stat"><small>OVR</small>71</div>
+          </div>
+        </div>
+        <div class="wf-pop-next"><button type="button">▶</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p>
+  同じ枠を敗者側（対抗戦終了後の敵エースの一言 <code>_showWarEnemyAceStatement</code>）にも使う。
+  <b>灰色化と下辺の無彩色化だけ</b>で負けを示し、<code>LOSE</code> の文字は出さない（baseline §5-B）。
+</p>
+
+<div class="vp" style="max-width:520px">
+  <div class="vp-cap">新案（敗者側）— 敵エースの総括</div>
+  <div class="wf-pop">
+    <div class="wf-pop-card is-away">
+      <div class="wf-pop-verdict is-lose"><span class="wf-mark is-lose">×</span> 帝都女子プロレス</div>
+      <div class="wf-side is-away is-loser">
+        <div class="wf-slot">
+          <div class="wf-bubble"><div class="wf-bubble-text">三つのうち一つ。それが今日の答えだ。次は違う。</div></div>
+        </div>
+        <div class="wf-up is-l"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
+        <div class="wf-copy">
+          <div class="wf-name">高階まさみ</div>
+          <div class="wf-role">Ace</div>
+          <div class="wf-org is-away">
+            <span class="wf-org-emblem"><img src="../../../image/org/org-s-0.png" alt=""></span>
+            <span class="wf-org-name">帝都女子プロレス</span>
+          </div>
+          <div class="wf-stat"><small>OVR</small>84</div>
+        </div>
+      </div>
+      <div class="wf-pop-next"><button type="button">▶</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>差し替えは1行では済まない。</b> <code>_showWarVictoryChain</code> は
+  <code>getPortraitUrl</code>（face）を渡している。<code>getUpperUrl</code> へ変えるだけでなく、
+  <code>size:'l'</code>・<code>role</code>・<code>orgBadge</code>・<code>statValue</code> を <code>_u3bSideHtml</code> に渡す必要がある。
+  <code>.war-victory-modal</code> の紺グラデーション（<code>--victory-panel-top/bottom</code>）は
+  <code>--stage-card-top/bottom</code> へ差し替える。<code>--victory-blue</code> は
+  <code>.u3b-theme-stage.is-victory</code> が名前色に使っているが、対抗戦は自陣＝<code>--c-positive</code> なので
+  <b>青は廃止して良いか要判断</b>（JT・天頂戦も同じテーマを共有しているため、影響範囲は対抗戦だけではない）。
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<h2>画面5 — 最終結果画面</h2>
+<p>
+  現行 <code>renderWarFinalResult</code> の情報（Score / Result / Avg MQ / Heat）はそのまま。
+  変えるのは<b>見せ方</b>で、勝敗を「3人が並んで立っている絵」で読ませる。
+</p>
+<ul>
+  <li><b>出場した3名を隊列にする（baseline §2-B）。</b> 個々に額縁を付けず、群の外枠を1つ・18px 重ね・<code>drop-shadow</code>。
+    大将を中心（<code>L 150×224</code>）、脇を <code>M 132×194</code>。負けた選手だけ灰色に落ちるので、
+    <b>2勝1敗が絵で分かる</b>。</li>
+  <li><b>1試合ごとの詳細は下の要約行に畳む。</b> 顔の大きい対置を3回繰り返すと、隊列の効果が消える。</li>
+  <li>スコア表記は em ダッシュ区切り <code>2 — 1</code>（baseline §5-B）。</li>
+</ul>
+
+<div class="vp">
+  <div class="vp-cap">Screen 5 / 最終結果 (Stage・P7 Theatrical)</div>
+  <div class="wf-screen">
+    <div class="wf-banner">
+      <div class="wf-live">⚔ WAR</div>
+      <div class="wf-banner-title">対 抗 戦 結 果</div>
+      <div class="wf-banner-sub">常磐女子プロレス<span class="dot">·</span>vs<span class="dot">·</span>帝都女子プロレス<span class="dot">·</span>Sランク王者</div>
+    </div>
+    <div class="wf-scorestrip" style="grid-template-columns:1.2fr 1fr 1fr 1fr">
+      <div class="wf-scorecell">
+        <div class="wf-scoreval"><span style="color:var(--c-positive)">2</span><span style="color:var(--stage-text-dim);margin:0 8px">—</span><span style="color:var(--accent-hostility)">1</span></div>
+        <div class="wf-scorelbl">Score</div>
+      </div>
+      <div class="wf-scorecell">
+        <div class="wf-scoreval is-text" style="color:var(--gold)">🏆 勝ち越し</div>
+        <div class="wf-scorelbl">Result</div>
+      </div>
+      <div class="wf-scorecell">
+        <div class="wf-scoreval">71</div>
+        <div class="wf-scorelbl">Avg MQ</div>
+      </div>
+      <div class="wf-scorecell">
+        <div class="wf-scoreval is-text" style="color:var(--c-rivalry)">HOT</div>
+        <div class="wf-scorelbl">Heat</div>
+      </div>
+    </div>
+
+    <div class="wf-flavor">Sランク王者・帝都女子プロレスに<em>勝ち越し</em>。団体の格が上がった。</div>
+
+    <!-- 隊列: 外枠1つ・18px重ね・個々に額縁なし -->
+    <div class="wf-troop-wrap">
+      <div class="wf-troop-head">
+        <span class="kicker">常磐女子プロレス</span>
+        <b>三人が持ち帰った 2勝1敗</b>
+      </div>
+      <div class="wf-troop">
+        <div class="wf-troop-fig"><img src="../../../image/stand/stand_ikoma_e.webp" alt=""></div>
+        <div class="wf-troop-fig is-center"><img src="../../../image/stand/stand_fukamachi_m.webp" alt=""></div>
+        <div class="wf-troop-fig is-loser"><img src="../../../image/stand/stand_okubo_m.webp" alt=""></div>
+      </div>
+      <div class="wf-troop-names">
+        <div class="wf-troop-nm"><b>生駒エリカ</b><span>先鋒 ○</span></div>
+        <div class="wf-troop-nm is-center"><b>深町真琴</b><span>大将 ○</span></div>
+        <div class="wf-troop-nm"><b>大久保桃子</b><span>中堅 ×</span></div>
+      </div>
+    </div>
+
+    <div class="wf-summary">
+      <div class="wf-sum-row">
+        <span class="wf-sum-no">第1試合</span>
+        <span class="wf-sum-nm"><span class="wf-mark is-win">○</span> 生駒エリカ</span>
+        <span style="color:var(--stage-text-dim)">—</span>
+        <span class="wf-sum-nm is-right is-dim">出羽鷹子 <span class="wf-mark is-lose">×</span></span>
+        <span class="wf-done-mq">MQ<b>68</b></span>
+      </div>
+      <div class="wf-sum-row">
+        <span class="wf-sum-no">第2試合</span>
+        <span class="wf-sum-nm is-dim"><span class="wf-mark is-lose">×</span> 大久保桃子</span>
+        <span style="color:var(--stage-text-dim)">—</span>
+        <span class="wf-sum-nm is-right">白銀麗子 <span class="wf-mark is-win">○</span></span>
+        <span class="wf-done-mq">MQ<b>70</b></span>
+      </div>
+      <div class="wf-sum-row">
+        <span class="wf-sum-no">メイン</span>
+        <span class="wf-sum-nm"><span class="wf-mark is-win">○</span> 深町真琴</span>
+        <span style="color:var(--stage-text-dim)">—</span>
+        <span class="wf-sum-nm is-right is-dim">高階まさみ <span class="wf-mark is-lose">×</span></span>
+        <span class="wf-done-mq">MQ<b>76</b></span>
+      </div>
+    </div>
+
+    <div class="wf-foot">
+      <div class="wf-foot-heat">Heat<b>🔥 HOT</b></div>
+      <button type="button" class="wf-btn is-primary">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <b>閉じた後の順序を固定する（§5-D 鉄則4）。</b> 現行 <code>closeWarFinalResult</code> は
+  「閉じる → 2秒 → 勝者セリフチェーン → 敵エース総括」。この順序は仕様として正しいので変えない。
+  ただし<b>勝者が0人でも敵エース総括は必ず出る</b>ことと、
+  途中で週送りが走らないこと（<code>_beginWarUiTransition</code> のトークン検証）を維持する。
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════════ -->
+<h2>参照した既存様式と流用部品</h2>
+<table>
+  <thead><tr><th>モックの部品</th><th>元にした実装</th><th>扱い</th></tr></thead>
+  <tbody>
+    <tr><td><code>.wf-side</code> / <code>.wf-slot</code> / <code>.wf-bubble</code> / <code>.wf-up</code> / <code>.wf-org</code> / <code>.wf-stat</code></td>
+      <td><code>_u3bSideHtml</code>(ui-common.js 148) と <code>.u3b-*</code>(index.html 2163〜2239)</td>
+      <td><b>そのまま流用</b>。モックはクラス名を変えただけで構造・寸法は同一。実装では <code>_u3bSideHtml</code> を呼ぶ</td></tr>
+    <tr><td>画面1 モーダル外枠・記者ストリップ・決裁トレイ</td>
+      <td><code>_mdlAOpen</code> / <code>_mdlAReporterStrip</code> / <code>.mdl-a-*</code>（A型モーダル）</td>
+      <td><b>流用</b>。主役ブロックだけ <code>.mdl-a-subject-portrait.big</code> → <code>_u3bSideHtml(size:'xl')</code> に差し替え</td></tr>
+    <tr><td>画面1 相手3名の開示（chip 並び）</td>
+      <td>新設。梯子は baseline §2 の <code>chip 46×66</code></td>
+      <td><b>新規</b></td></tr>
+    <tr><td>画面2 全体（対戦カード表＋候補レール＋フッター）</td>
+      <td>E-4 代表編成 <code>_awEntryScreenHtml</code>(ui-common.js 18403) / <code>.agw-entry-*</code>(index.html 3831〜3857)</td>
+      <td><b>骨格を流用</b>。候補レール・フッター・「おまかせ」ボタンは構造そのまま</td></tr>
+    <tr><td>画面2 コンディションバー</td>
+      <td><code>_agwConditionBar</code> / <code>.agw-cond</code></td>
+      <td><b>そのまま流用</b>（3段の閾値・ラベルも同じ）</td></tr>
+    <tr><td>画面2 枠フォーカス（金リング）</td>
+      <td>遠征の同行者選択 <code>.awpick-slot.focused</code>(index.html 5183)</td>
+      <td><b>操作モデルのみ流用</b>。配色は Office cream → Stage へ翻訳</td></tr>
+    <tr><td>画面3・5 バナー / スコアストリップ</td>
+      <td><code>.pb-banner</code> / <code>.pb-score-strip</code>(index.html 2951/2990)、<code>renderWarMatchPreview</code></td>
+      <td><b>そのまま流用</b>（対抗戦ヘッダー共通部品として既に成立している）</td></tr>
+    <tr><td>画面3 済／次／未 の3状態表示</td>
+      <td>E-4 ライブボード <code>_agwLiveTeamHtml</code> の <code>ring / wait / out</code> 3状態</td>
+      <td><b>考え方を流用</b>。「全員が常に見えていて、状態だけが変わる」</td></tr>
+    <tr><td>画面3 観る／スキップ／残り全スキップ</td>
+      <td><code>App.warWatchMatch</code> / <code>warSkipMatch</code> / <code>warSkipAll</code></td>
+      <td><b>導線は現状維持</b>。置き場所だけ変える</td></tr>
+    <tr><td>画面4 ポップの外枠</td>
+      <td><code>.war-victory-overlay</code>（枠だけ流用）／ <code>.war-victory-modal</code> の紺パネルは<b>廃止</b></td>
+      <td><b>差し替え</b>。面色を <code>--stage-card-top/bottom</code> に</td></tr>
+    <tr><td>画面5 隊列</td>
+      <td>baseline §2-B（秋4団体対抗戦の優勝3名・春タッグの優勝2名と同じ作法）</td>
+      <td><b>作法を適用</b>。対抗戦では初出</td></tr>
+    <tr><td>団体エンブレム</td>
+      <td><code>orgIconHtml()</code> / <code>Engine.util.getOrgIconPath</code>、<code>image/org/org-*.png</code></td>
+      <td><b>実画像</b>。頭文字の代用はしない（baseline §5）</td></tr>
+  </tbody>
+</table>
+
+<h2>チェックリスト自己確認（CLAUDE.md 頻出違反7項目）</h2>
+<table>
+  <thead><tr><th>#</th><th>項目</th><th>このモックでの扱い</th></tr></thead>
+  <tbody>
+    <tr><td>1</td><td>選手画像は 2:3 か</td><td>○ 使用したのは <code>XL 172×258 / L 150×224 / M 132×194 / S 108×162 / chip 46×66</code> の5段のみ。梯子外の寸法を作っていない</td></tr>
+    <tr><td>2</td><td>正方形の顔は 52px 以下か</td><td>○ 正方形の顔は<b>1つも使っていない</b>（現行との比較用に置いた左側の <code>face</code> だけが例外で、それが「切れる」という指摘そのもの）</td></tr>
+    <tr><td>3</td><td>吹き出しは画像の上か</td><td>○ 全て <code>.wf-slot</code>（予約枠・52px）で画像の上。尻尾は水平中心。クリーム＋黒文字。<b>名前・所属は吹き出しの外</b></td></tr>
+    <tr><td>4</td><td>複数人は隊列か</td><td>○ 画面5 は外枠1つ・18px 重ね・<code>drop-shadow</code>。名前の列にも同じ重なりを掛けている</td></tr>
+    <tr><td>5</td><td>勝敗が画像から読めるか</td><td>○ 敗者は <code>grayscale(.9) brightness(.72)</code>＋下辺無彩色。記号は ○×△ のみ。<code>LOSE</code> の文字なし</td></tr>
+    <tr><td>6</td><td>待ちに時限の保険</td><td>— モックには進行が無い。画面3の注記に実装要件として明記した</td></tr>
+    <tr><td>7</td><td>1操作＝1進行</td><td>— 同上。観る／スキップ／全スキップの再入検証を注記した</td></tr>
+  </tbody>
+</table>
+
+<h2>判断が要る点（実装前に決めること）</h2>
+<ol style="color:var(--text-sub);padding-left:1.4em">
+  <li><b>試合数は3固定か。</b> <code>ev.matchCount</code> は挑戦状側が決めており、
+    <code>makeWarCard</code> は既定5。今回の指示は3試合前提で作ったが、<b>5試合のとき画面2の行が5行になる</b>。
+    行の縦を <code>S 108×162</code> にしてあるので5行でも破綻はしないが、
+    「対抗戦は常に3試合」に寄せるなら仕様側の変更が要る。</li>
+  <li><b>相手の出場順を本当に先に開示するか。</b> 開示すると「相性の良い相手にぶつける」最適化ゲームになりうる
+    （数値哲学の「スプレッドシート化しない」に触れる）。
+    代案：<b>3名は開示するが並び順は伏せる</b>（E-4 と同じ「出場順は開戦時に公開」）。
+    その場合、画面2 の右列は <code>chip</code> の3名を横並びにして、行ごとの対戦相手は「?」にする。</li>
+  <li><b>選出の自由度に上限を設けるか。</b> 何も縛らないと「格下3人を出して負けを最小化」も
+    「エース3人を出して勝ちに行く」も自由になる。E-4 は <code>_eligible</code> で怪我人だけ弾いている。
+    対抗戦でも同じで良いか（例：直近の興行で出場した選手は体調ペナルティ、など）。</li>
+  <li><b><code>--victory-blue</code> を残すか。</b> 画面4 の名前色。対抗戦の自陣は <code>--c-positive</code> なので
+    青は文脈から外れているが、<code>.u3b-theme-stage.is-victory</code> は JT・天頂戦・特別興行の総括とも共有している。
+    対抗戦だけ外すか、全部まとめて見直すか。</li>
+  <li><b>因縁の見せ方。</b> 画面2 で「⚔ 因縁 出羽鷹子」と名指ししているが、
+    社長が rivalry の数値を知っている扱いで良いか。<b>数値は出さず「因縁あり」だけ</b>にしてある。</li>
+  <li><b>おまかせの既定値。</b> 現行の <code>makeWarCard</code>（OVR降順・メインが最強対決）をそのまま
+    既定にしてある。ここを変えると既存プレイヤーの体感が変わるので、変えないのが安全。</li>
+</ol>
+
+</div>
+
+<script>
+(function(){
+  var wide = document.getElementById('btnWide');
+  var narrow = document.getElementById('btnNarrow');
+  function set(isNarrow){
+    document.body.classList.toggle('is-narrow', isNarrow);
+    wide.classList.toggle('is-on', !isNarrow);
+    narrow.classList.toggle('is-on', isNarrow);
+  }
+  wide.addEventListener('click', function(){ set(false); });
+  narrow.addEventListener('click', function(){ set(true); });
+})();
+</script>
+</body>
+</html>
