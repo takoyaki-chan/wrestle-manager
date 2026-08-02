@@ -13999,9 +13999,61 @@ const App = {
   // ══════════════════════════════════════════════
   //  WAR MATCH PREVIEW SYSTEM (v0.99d)
   // ══════════════════════════════════════════════
+  _warEntrySelection: null,
   _warPreview: null,
   _warUiToken: 0,
   _warBgmTimer: null,
+
+  warToggleEntryFighter(id) {
+    const ev = G.pendingEvent;
+    if (!ev || ev.type !== 'war') return;
+    const required = Number(ev.matchCount) === 5 ? 5 : 3;
+    const candidates = Engine.event.getWarEntryCandidates(G);
+    if (!candidates.some(f => Number(f.id) === Number(id))) return;
+    const selected = Array.isArray(App._warEntrySelection) ? [...App._warEntrySelection] : [];
+    const index = selected.findIndex(pickedId => Number(pickedId) === Number(id));
+    if (index >= 0) selected.splice(index, 1);
+    else if (selected.length < required) selected.push(Number(id));
+    else { Audio.play('error'); return; }
+    App._warEntrySelection = selected;
+    Audio.play('click');
+    renderWarEntrySelection();
+  },
+
+  warAutoSelectEntry() {
+    const ev = G.pendingEvent;
+    if (!ev || ev.type !== 'war') return;
+    const required = Number(ev.matchCount) === 5 ? 5 : 3;
+    App._warEntrySelection = Engine.event.getWarEntryCandidates(G)
+      .slice(0, required).map(f => Number(f.id));
+    Audio.play('select');
+    renderWarEntrySelection();
+  },
+
+  warReturnToChallenge() {
+    App._warEntrySelection = null;
+    _mdlAClose();
+    showWarChallenge();
+  },
+
+  warConfirmEntry() {
+    const ev = G.pendingEvent;
+    if (!ev || ev.type !== 'war') return;
+    const required = Number(ev.matchCount) === 5 ? 5 : 3;
+    const selected = Array.isArray(App._warEntrySelection) ? [...App._warEntrySelection] : [];
+    if (selected.length !== required) { Audio.play('error'); return; }
+    const card = Engine.event.makeWarCard(G, ev.opponentOrgId, selected);
+    if (card.length !== required) {
+      Audio.play('error');
+      if (typeof showToast === 'function') showToast('代表選手の編成を確定できませんでした');
+      renderWarEntrySelection();
+      return;
+    }
+    App._warEntrySelection = null;
+    _mdlAClose();
+    Audio.play('select');
+    App.initWarPreview(ev, card);
+  },
 
   _beginWarUiTransition() {
     App._warUiToken += 1;

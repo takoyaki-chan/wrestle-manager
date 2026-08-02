@@ -678,19 +678,105 @@ function showWarChallenge() {
   _enqueuePopup(run);
 }
 
-// ── Accept War: open match preview (like show) ──
-function acceptWarChallenge() {
+// ── S3 War entry: B3の「受諾→代表選択」と大型大会の複数選出を同じA型モーダルで接続 ──
+function _warEntrySelectionHtml() {
   const ev = G.pendingEvent;
+  if (!ev || ev.type !== 'war') return '';
+  const required = Number(ev.matchCount) === 5 ? 5 : 3;
+  const selected = Array.isArray(App._warEntrySelection) ? App._warEntrySelection : [];
+  const candidates = Engine.event.getWarEntryCandidates(G);
+  const aiCandidates = Engine.event.getWarOpponentCandidates(G, ev.opponentOrgId);
+  const enemyAce = aiCandidates[0] || null;
+  const enemyUpper = enemyAce ? getUpperUrl(enemyAce.id) : '';
+  const enemyStyle = enemyUpper ? `background-image:url('${enemyUpper}')` : 'background:var(--stage-panel-deep)';
+
+  const candidateCards = candidates.map(f => {
+    const id = Number(f.id);
+    const selectedIndex = selected.findIndex(pickedId => Number(pickedId) === id);
+    const picked = selectedIndex >= 0;
+    const full = selected.length >= required && !picked;
+    const upperUrl = getUpperUrl(id);
+    const upperStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:var(--stage-panel-deep)';
+    return `<div class="mdl-a-candidate-card war-entry-candidate${picked ? ' is-selected' : ''}${full ? ' is-full' : ''}"
+        data-war-entry-id="${id}" role="button" aria-pressed="${picked ? 'true' : 'false'}"
+        onclick="App.warToggleEntryFighter(${id})">
+      ${picked ? `<div class="war-entry-pick-number">${selectedIndex + 1}</div>` : ''}
+      <div class="mdl-a-candidate-upper" style="${upperStyle}"></div>
+      <div class="mdl-a-candidate-name">${escHtml(f.name)}</div>
+      <div class="mdl-a-candidate-ovr-label">OVR</div>
+      <div class="mdl-a-candidate-ovr">${Engine.util.ov(f)}</div>
+    </div>`;
+  }).join('');
+
+  const selectedNames = selected.map(id => candidates.find(f => Number(f.id) === Number(id)))
+    .filter(Boolean).map(f => escHtml(f.name));
+  const canConfirm = selected.length === required;
+
+  return `
+    <div class="mdl-a-header danger">
+      <div class="mdl-a-header-title">⚔ 対 抗 戦 ・ 代 表 選 出</div>
+      <div class="mdl-a-header-meta">${required} VS ${required} ・ ${escHtml(_mdlASeasonLabel(G))}</div>
+    </div>
+    ${_mdlAReporterStrip(G, `${required}名の代表を選んでください。団体の威信を懸けた総力戦です`)}
+    <div class="mdl-a-candidate-stage war-entry-stage">
+      <div class="mdl-a-opponent-bar">
+        <div class="mdl-a-opponent-upper" style="${enemyStyle}"></div>
+        <div class="mdl-a-opponent-text">
+          <div class="mdl-a-opponent-label">OPPONENT ・ 対 戦 団 体</div>
+          <div class="mdl-a-opponent-name">${escHtml(ev.opponentName || '他団体')}</div>
+          <div class="mdl-a-opponent-meta">${required}試合の団体対決${enemyAce ? ` ・ ACE ${escHtml(enemyAce.name)}` : ''}</div>
+        </div>
+        <div class="war-entry-versus">${required}<span>対</span>${required}</div>
+      </div>
+      <div class="mdl-a-candidate-title">— CANDIDATES ・ 自団体の代表候補 —</div>
+      <div class="mdl-a-candidate-grid war-entry-candidate-grid">${candidateCards}</div>
+    </div>
+    <div class="war-entry-summary">
+      <span class="war-entry-summary-label">選択中 ${selected.length}/${required}</span>
+      <span class="war-entry-summary-names">${selectedNames.length ? selectedNames.join(' ／ ') : '代表選手を選んでください'}</span>
+    </div>
+    <div class="war-entry-footer">
+      <button type="button" class="mdl-a-continue-btn" onclick="App.warReturnToChallenge()">— 戻 る —</button>
+      <button type="button" class="mdl-a-continue-btn" onclick="App.warAutoSelectEntry()">おまかせ選出</button>
+      <button type="button" class="mdl-a-continue-btn is-primary" ${canConfirm ? '' : 'disabled'} onclick="App.warConfirmEntry()">この${required}名で開戦する</button>
+    </div>`;
+}
+
+function renderWarEntrySelection() {
+  const html = _warEntrySelectionHtml();
+  if (!html) return false;
+  const overlay = document.getElementById('mdlAOverlay');
+  const card = document.getElementById('mdlACard');
+  if (overlay && card && overlay.classList.contains('active')) {
+    card.className = 'mdl-a-card dark wide';
+    card.innerHTML = html;
+    return true;
+  }
+  return _mdlAOpen(html, { dark: true, wide: true });
+}
+
+// ── Accept War: representative selection must precede card creation ──
+function acceptWarChallenge() {
+  let ev = G.pendingEvent;
   if (!ev || ev.type !== 'war') return;
   Audio.play('war');
 
-  // Build card
-  const card = Engine.event.makeWarCard(G, ev.opponentOrgId);
-  if (card.length === 0) { skipEvent(); return; }
+  // 古いセーブで5試合イベントを保持したまま出場可能人数が減っていた場合だけ、
+  // 4試合などの半端なカードにせず、仕様内の3試合へ安全に縮小する。
+  const availableCount = Math.min(
+    Engine.event.getWarEntryCandidates(G).length,
+    Engine.event.getWarOpponentCandidates(G, ev.opponentOrgId).length
+  );
+  if (availableCount < 3) { skipEvent(); return; }
+  if (Number(ev.matchCount) === 5 && availableCount < 5) {
+    ev = { ...ev, matchCount: 3 };
+    G = { ...G, pendingEvent: ev };
+  }
 
-  // Close challenge popup, open match preview
-  document.getElementById('confirmOverlay').classList.remove('active');
-  App.initWarPreview(ev, card);
+  App._warEntrySelection = [];
+  const challengeOverlay = document.getElementById('confirmOverlay');
+  if (challengeOverlay) challengeOverlay.classList.remove('active');
+  renderWarEntrySelection();
 }
 
 // ── War Match Preview Renderer ──

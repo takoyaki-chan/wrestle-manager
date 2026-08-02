@@ -16222,6 +16222,23 @@ const Engine = {
 
   // ── Phase D: Inter-org Events (rival-spec §9) ─────────────
   event: {
+    /** S3対抗戦に出場できる自団体選手。通常興行の欠場条件と同じものを除外する。 */
+    getWarEntryCandidates(state) {
+      return [...(state.roster || [])]
+        .filter(f => f && !f.injury && !f.isRental && !f.forcedRest && !f.suspended && !f.onLeave
+          && !f.isIntrusion && !f.isAwayChallengeGuest && !f.isCRGuest && !f.isB3ChallengeGuest)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    },
+
+    /** S3対抗戦に出場できる相手団体選手。 */
+    getWarOpponentCandidates(state, opponentOrgId) {
+      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponentOrgId);
+      if (!aiOrg) return [];
+      return [...(aiOrg.roster || [])]
+        .filter(f => f && !f.injury && !f.suspended)
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+    },
+
     /** D-2: Check if rivalry war should trigger (Q1/Q2/Q3 end) */
     checkRivalryWar(rng, state) {
       if (state.warThisSeason) return null;
@@ -16249,21 +16266,32 @@ const Engine = {
       const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponent.orgId);
       if (!aiOrg) return null;
 
-      const opts = EVENT_CONFIG.warMatchCount.options;
+      // 対抗戦は3試合または5試合だけ。どちらの団体にも必要人数がいる形式から抽選する。
+      // これにより「5試合と告知したのに4試合しか組めない」中途半端なカードを作らない。
+      const availableCount = Math.min(
+        Engine.event.getWarEntryCandidates(state).length,
+        Engine.event.getWarOpponentCandidates(state, aiOrg.orgId).length
+      );
+      const opts = EVENT_CONFIG.warMatchCount.options.filter(count => count <= availableCount);
+      if (opts.length === 0) return null;
       const matchCount = opts[Engine.rng.int(rng, 0, opts.length - 1)];
       return { type: 'war', opponentOrgId: aiOrg.orgId, opponentName: aiOrg.name, matchCount };
     },
 
-    /** Make war card: auto-match by OVR rank, 弱い順→メインイベントが最後 */
-    makeWarCard(state, opponentOrgId) {
-      const aiOrg = Engine.rival.getOrgInfo(state.aiOrgs, opponentOrgId);
-      if (!aiOrg) return [];
-      const playerSorted = [...state.roster].filter(c => !c.injury && !c.isRental).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-      const aiSorted = [...aiOrg.roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
-      const requested = state.pendingEvent ? state.pendingEvent.matchCount : 5;
-      const count = Math.min(requested, playerSorted.length, aiSorted.length);
+    /** Make war card: 選出した代表だけをOVR帯で対応させ、弱い順→メインイベントが最後。 */
+    makeWarCard(state, opponentOrgId, selectedIds) {
+      const requested = state.pendingEvent && Number(state.pendingEvent.matchCount) === 3 ? 3 : 5;
+      const eligible = Engine.event.getWarEntryCandidates(state);
+      const eligibleById = new Map(eligible.map(f => [Number(f.id), f]));
+      const ids = Array.isArray(selectedIds) ? selectedIds.map(Number) : eligible.slice(0, requested).map(f => Number(f.id));
+      if (ids.length !== requested || new Set(ids).size !== requested) return [];
+      const playerSorted = ids.map(id => eligibleById.get(id));
+      if (playerSorted.some(f => !f)) return [];
+      playerSorted.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
+      const aiSorted = Engine.event.getWarOpponentCandidates(state, opponentOrgId).slice(0, requested);
+      if (aiSorted.length !== requested) return [];
       const card = [];
-      for (let i = 0; i < count; i++) {
+      for (let i = 0; i < requested; i++) {
         card.push({ playerFighter: playerSorted[i], aiFighter: aiSorted[i] });
       }
       // 弱い順に並べ替え（メインイベント＝最強対決が最後）
