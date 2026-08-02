@@ -31,7 +31,6 @@ const S = {
   bigmoveCount: 0,    // フレーム内ビッグムーブ演出済みカウント (auto-replay向け参考値)
   halfTrig: { l: false, r: false },
   qtrTrig:  { l: false, r: false },
-  dangerTrig: { l: false, r: false },
   _isBigMatch: false,
   cameraMode: 'auto',
   autoCameraPlan: [],
@@ -419,7 +418,6 @@ function startReplay(data){
   S.bigmoveCount = 0;
   S.halfTrig  = { l: false, r: false };
   S.qtrTrig   = { l: false, r: false };
-  S.dangerTrig = { l: false, r: false };
   S.cutinShown = { opening: false, mid: false, end: false, climax: false, finish: false };
   S._isBigMatch = !!(mi.matchTier && mi.matchTier >= 2);
   S.cameraMode = 'auto';
@@ -575,7 +573,6 @@ function _panelHtml(ch, side){
   if (!ch) return '';
   const isL = side === 'L';
   return `<div class="fighter-panel wm-ring-fighter ${isL?'left':'right'}" id="panel-${side}">
-    <div class="danger-overlay" id="danger-${side}">DANGER</div>
     <div class="battle-speech-slot"><div class="speech-bubble" id="sp-${side}"></div></div>
     <div class="portrait-area" id="port-${side}">
       <img class="wm-full-figure" src="${_getFullUrl(ch)}" alt="${escHtml(ch.name)}" id="img-${side}"

@@ -318,7 +318,6 @@ function _playerCardHtml(side, layer, posKey){
   if (ch.gritTurns > 0) cls.push('grit-active');
   if (ch.hotTagBuff > 0) cls.push('hot-tag-buff');
   return `<div class="${cls.join(' ')}" id="card-${side}-legal" data-fighter-key="${posKey}">
-    <div class="danger-overlay" id="danger-${side}">DANGER</div>
     <div class="portrait-area" id="portrait-${side}-legal">
       <img class="wm-tag-full-figure" src="${getFullUrl(ch)}" alt="${escHtml(ch.name)}" onerror="this.style.display='none'">
       <div class="monitor-frame"></div>

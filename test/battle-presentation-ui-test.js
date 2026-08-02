@@ -62,6 +62,7 @@ assert.ok(html.includes('bottom:-18%;left:50%;right:auto;height:118%'), 'both fu
 assert.ok(html.includes('translate:-50% 0'), 'full-image canvas centering must be independent of each character silhouette');
 assert.ok(!html.includes('camera-close .wm-ring-fighter.left .wm-full-figure{right:-3%;transform:scaleX(-1) scale('), 'close-up must not apply a different secondary zoom to full-body assets');
 assert.ok(main.includes("panel.classList.toggle('silhouette-danger'"), 'critical HP must drive the silhouette danger state');
+assert.ok(!main.includes('>DANGER</div>'), 'unexplained DANGER text must not appear in the live ring');
 assert.ok(html.includes('.wm-live-ring .danger-glow{display:none}'), 'legacy rectangular danger glow must be hidden in the live ring');
 assert.ok(html.includes('.wm-ring-fighter.charging .wm-full-figure{animation:wmFigureChargeAura'), 'big-move charge glow must follow the transparent fighter image');
 assert.ok(html.includes('box-shadow:none!important'), 'live-ring state effects must not restore rectangular panel shadows');

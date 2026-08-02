@@ -52,6 +52,7 @@ assert.ok(html.includes('@keyframes wmTagSlideIn{from{transform:translateX('), '
 assert.ok(html.includes('grid-template-columns:1fr auto 1fr'), 'primary tag replay button must remain at the exact center');
 assert.ok(html.includes('.wm-tag-move-detail .wm-move-guide') && html.includes('font-size:11px'), 'tag move descriptions must use the approved readable size');
 assert.ok(main.includes("cls.push('silhouette-danger')") && main.includes("current.classList.toggle('silhouette-danger'"), 'tag critical HP must keep the silhouette danger state in sync');
+assert.ok(!main.includes('>DANGER</div>'), 'tag live ring must not show the unexplained DANGER text');
 assert.ok(html.includes('.wm-tag-live-ring .danger-glow{display:none}'), 'legacy rectangular tag danger glow must be hidden');
 assert.ok(html.includes('.wm-tag-ring-fighter.charging .wm-tag-full-figure{animation:wmFigureChargeAura'), 'tag big-move charge glow must follow the transparent fighter image');
 assert.ok(html.includes('.wm-tag-ring-fighter.ff-flash .wm-tag-full-figure{animation:wmFigureFriendlyFlash'), 'tag event flashes must follow the transparent fighter image');

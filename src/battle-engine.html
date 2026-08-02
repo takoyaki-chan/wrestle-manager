@@ -99,13 +99,6 @@ body{
 @keyframes dangerPulseGlow{0%{opacity:0.5}50%{opacity:1}100%{opacity:0.5}}
 .danger-glow.show .danger-glow-inner{animation:dangerPulseGlow 1.8s ease-in-out infinite}
 
-/* Danger overlay text */
-.danger-overlay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(2);
-  font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:6px;color:rgba(196,30,58,0.9);
-  z-index:10;pointer-events:none;opacity:0}
-@keyframes dangerPop{0%{transform:translate(-50%,-50%) scale(2);opacity:0}20%{transform:translate(-50%,-50%) scale(1);opacity:1}80%{opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
-.danger-overlay.show{animation:dangerPop 1.2s ease-out forwards}
-
 /* Character dialogue: reserved slot -> bubble -> portrait. */
 .battle-speech-slot{height:52px;display:flex;align-items:flex-end;justify-content:center;padding:0 8px 7px;box-sizing:border-box;background:var(--card-bg)}
 .speech-bubble{position:relative;padding:7px 13px;border:1px solid rgba(122,101,48,0.48);border-radius:10px;font-size:12px;
@@ -454,7 +447,7 @@ body{
 .wm-ring-nameplate{position:absolute;z-index:8;top:50%;padding:5px 9px;border:1px solid var(--card-border);border-radius:3px;color:var(--text-main);background:rgba(0,0,0,.68);font:700 9px 'Noto Sans JP',sans-serif;letter-spacing:1px;pointer-events:auto;cursor:pointer}.wm-ring-fighter.left .wm-ring-nameplate{left:9%;border-left-color:var(--gold)}.wm-ring-fighter.right .wm-ring-nameplate{right:9%;border-right-color:var(--gold)}
 .wm-live-ring.attack-left .wm-ring-fighter.left{transform:translateX(7%) scale(1.04)}.wm-live-ring.attack-right .wm-ring-fighter.right{transform:translateX(-7%) scale(1.04)}.wm-live-ring.attack-left .wm-ring-light.left,.wm-live-ring.attack-right .wm-ring-light.right{opacity:.22;transform:none}.wm-live-ring.miss .wm-ring-fighter{filter:grayscale(.35) brightness(.82)}
 .wm-live-ring.camera-close .wm-ring-fighter .wm-full-figure{bottom:-80%;height:180%;bottom:max(-80%,calc(100% - 105cqw));height:min(180%,105cqw)}.wm-live-ring.camera-close .wm-ring-nameplate{opacity:0}
-.wm-live-ring .dmg-number{top:27%}.wm-live-ring .danger-overlay{top:44%}.wm-live-ring .danger-glow{bottom:12%;height:58%}.wm-live-ring .speech-bubble{top:18%;max-width:52%}
+.wm-live-ring .dmg-number{top:27%}.wm-live-ring .danger-glow{bottom:12%;height:58%}.wm-live-ring .speech-bubble{top:18%;max-width:52%}
 
 /* Direction arrow and impact */
 .wm-ring-arrow-layer{z-index:7}.wm-ring-arrow-layer .attack-arrow{top:43%;right:27%;left:27%;height:36px}.wm-ring-arrow-layer .attack-arrow .label{top:-38px}
