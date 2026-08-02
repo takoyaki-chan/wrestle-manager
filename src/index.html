@@ -5427,10 +5427,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   box-shadow: 0 6px 18px rgba(120,60,180,0.4);
 }
 
-/* U3統一(2026-07-25): F08前後・派閥内序列戦前後(4関数)の顔出しブロックは _u3bSideHtml(.u3b-*)へ
-   移行した。.fevt-arena-portrait/.fevt-arena-bubble は F09 派閥対抗戦(対象外)と共有のクラスなので
-   元のルールには手を入れず、.u3b-upper/.u3b-bubble と co-class されたときだけ複合セレクタで
-   上書きする(F09側の要素は u3b-*クラスを持たないため影響を受けない)。
+/* U3統一(2026-08-02): F08前後・派閥内序列戦前後・F09開幕/試合前後/結末の顔出しブロックは
+   _u3bSideHtml(.u3b-*)へ移行した。.fevt-arena-portrait/.fevt-arena-bubble の元ルールには手を入れず、
+   .u3b-upper/.u3b-bubble と co-class されたときだけ複合セレクタで上書きする。
    internal-challenge の紫テーマ上書き(.fevt-arena-card.internal-challenge-*)より詳細度を高くするため
    .fevt-arena-card を前置し、かつこのブロックより後ろに置いている。 */
 .fevt-arena-card .u3b-upper.fevt-arena-portrait {

@@ -123,7 +123,8 @@ function crossOrgEmblemHtml(fighter, opponent, size = 16) {
 // 仕様: docs/ui/mockup-baseline-v0.1.md §2〜§5。縦順は固定:
 //   吹き出し(予約枠) → 画像 → 名前 → 役割ラベル → 団体バッジ → 数値(OVR等)
 // 対象: _rivalryCol(.vd-*) / showFactionF08Modal(.fevt-bubble) /
-//       showFactionF08Pre/AftermathModal・showInternalChallengePre/PostModal(.fevt-arena-bubble) /
+//       showFactionF08Pre/AftermathModal・showInternalChallengePre/PostModal・
+//       showFactionF09Opening/MatchPre/MatchPost/EndingModal(.fevt-arena-bubble) /
 //       _factionF02RenderClash(.fevt-dialogue-bubble) /
 //       showFactionCommon3/Common1Modal・showChallengeRequestModal(.fc1m-bubble-wrap)
 // 色は呼び出し元が祖先要素に .u3b-theme-cream / .u3b-theme-dark / .u3b-theme-stage を
@@ -10645,10 +10646,10 @@ function showFactionF09OpeningModal(data, state, onContinue) {
 
   const aPp = _factionUpperUrl(data.factionA.leaderId);
   const bPp = _factionUpperUrl(data.factionB.leaderId);
-  const memberRow = (members) => (members || []).map(m => {
+  const memberRow = (members) => `<div style="display:flex;gap:4px;justify-content:center;margin:8px 0;flex-wrap:wrap">${(members || []).map(m => {
     const url = _factionUpperUrl(m.id);
-    return `<div style="width:42px;height:54px;background:#2a2520 url('${url}') center 20%/cover no-repeat;border:1px solid rgba(255,255,255,0.08)" title="${m.name}"></div>`;
-  }).join('');
+    return `<div style="width:42px;height:54px;background:#2a2520 url('${escHtml(url)}') center 20%/cover no-repeat;border:1px solid rgba(255,255,255,0.08)" title="${escHtml(m.name)}"></div>`;
+  }).join('')}</div>`;
 
   const html = `
     <div class="fevt-overlay-arena" id="fevtF09OpeningOverlay">
@@ -10658,30 +10659,24 @@ function showFactionF09OpeningModal(data, state, onContinue) {
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ FACTION WAR</div>
         </div>
         <div class="fevt-arena-narration">${String(data.narration || '')}</div>
-        <div class="fevt-arena-stage">
+        <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           <div class="fevt-arena-duel">
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${aPp}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.factionA.name)}</div>
-              <div class="fevt-arena-name">${String(data.factionA.leaderName)}</div>
-              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionA.leaderOvr}</div>
-              <div style="display:flex;gap:4px;justify-content:center;margin:8px 0;flex-wrap:wrap">${memberRow(data.factionA.members)}</div>
-              <div class="fevt-arena-bubble">
-                <span class="fevt-arena-bubble-name">${String(data.factionA.leaderName)}</span>
-                ${String(data.lineA || '')}
-              </div>
+              ${_u3bSideHtml({
+                name: data.factionA.leaderName, line: data.lineA, imgUrl: aPp,
+                role: `${data.factionA.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
+                extraHtml: memberRow(data.factionA.members),
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
             <div class="fevt-arena-vs">VS</div>
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${bPp}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.factionB.name)}</div>
-              <div class="fevt-arena-name">${String(data.factionB.leaderName)}</div>
-              <div class="fevt-arena-org">LEADER ・ OVR ${data.factionB.leaderOvr}</div>
-              <div style="display:flex;gap:4px;justify-content:center;margin:8px 0;flex-wrap:wrap">${memberRow(data.factionB.members)}</div>
-              <div class="fevt-arena-bubble">
-                <span class="fevt-arena-bubble-name">${String(data.factionB.leaderName)}</span>
-                ${String(data.lineB || '')}
-              </div>
+              ${_u3bSideHtml({
+                name: data.factionB.leaderName, line: data.lineB, imgUrl: bPp,
+                role: `${data.factionB.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
+                extraHtml: memberRow(data.factionB.members),
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
           </div>
         </div>
@@ -10720,20 +10715,22 @@ function showFactionF09MatchPreModal(data, state, onContinue) {
           <div class="fevt-arena-title">⚔ 第${idx}試合 / ${total}</div>
           <div class="fevt-arena-meta">FACTION WAR ・ MATCH ${idx}</div>
         </div>
-        <div class="fevt-arena-stage">
+        <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           <div class="fevt-arena-duel">
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${aPp}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.fighterA.factionName || '')}</div>
-              <div class="fevt-arena-name">${String(data.fighterA.name)}</div>
-              <div class="fevt-arena-bubble"><span class="fevt-arena-bubble-name">${String(data.fighterA.name)}</span>${String(data.lineA || '')}</div>
+              ${_u3bSideHtml({
+                name: data.fighterA.name, line: data.lineA, imgUrl: aPp,
+                role: data.fighterA.factionName || null,
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
             <div class="fevt-arena-vs">VS</div>
             <div class="fevt-arena-col">
-              <div class="fevt-arena-portrait" style="background-image:url('${bPp}');background-size:cover;background-position:center 20%"></div>
-              <div class="fevt-arena-faction">${String(data.fighterB.factionName || '')}</div>
-              <div class="fevt-arena-name">${String(data.fighterB.name)}</div>
-              <div class="fevt-arena-bubble"><span class="fevt-arena-bubble-name">${String(data.fighterB.name)}</span>${String(data.lineB || '')}</div>
+              ${_u3bSideHtml({
+                name: data.fighterB.name, line: data.lineB, imgUrl: bPp,
+                role: data.fighterB.factionName || null,
+                bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
+              })}
             </div>
           </div>
         </div>
@@ -10768,19 +10765,18 @@ function showFactionF09MatchPostModal(data, state, onContinue) {
           <div class="fevt-arena-title">⚔ 決着</div>
           <div class="fevt-arena-meta">${data.ptDelta ? `+${data.ptDelta}PT` : ''}</div>
         </div>
-        <div class="fevt-arena-stage">
-          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPp}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
-          <div class="fevt-arena-faction">${String(data.winner.factionName || '')}</div>
-          <div class="fevt-arena-name">${String(data.winner.name)}</div>
-          <div class="fevt-arena-org">WINNER</div>
-          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.winner.name)}</span>${String(data.winnerLine || '')}
-          </div>
+        <div class="fevt-arena-stage u3b-theme-stage is-hostility">
+          ${_u3bSideHtml({
+            name: data.winner.name, line: data.winnerLine, imgUrl: wPp, isBig: true,
+            role: `${data.winner.factionName || ''} ・ WINNER`,
+            bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
+          })}
           <div class="fevt-arena-divider"></div>
-          <div class="fevt-arena-name" style="opacity:0.75">${String(data.loser.factionName || '')} ・ ${String(data.loser.name)}</div>
-          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.loser.name)}</span>${String(data.loserLine || '')}
-          </div>
+          ${_u3bSideHtml({
+            name: data.loser.name, line: data.loserLine, imgUrl: lPp, isLoser: true,
+            role: `${data.loser.factionName || ''} ・ LOSER`,
+            bubbleClass: 'fevt-arena-bubble loser', portraitClass: 'fevt-arena-portrait loser',
+          })}
         </div>
         <div style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--gold-light, #f0d078);letter-spacing:2px;margin:12px 0">
           ${score.aName || ''} <span style="color:#fff">${score.a || 0}</span> — <span style="color:#fff">${score.b || 0}</span> ${score.bName || ''}
@@ -10819,21 +10815,18 @@ function showFactionF09EndingModal(data, state, onContinue) {
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ AFTERMATH</div>
         </div>
         <div class="fevt-arena-narration">${String(data.narration || '')}</div>
-        <div class="fevt-arena-stage">
-          <div class="fevt-arena-portrait winner-big" style="background-image:url('${wPp}');background-size:cover;background-position:center 20%;margin:0 auto 10px"></div>
-          <div class="fevt-arena-faction">${String(data.winnerFaction.name)}</div>
-          <div class="fevt-arena-name">${String(data.winnerFaction.leaderName)}</div>
-          <div class="fevt-arena-org">勝ち越し派閥</div>
-          <div class="fevt-arena-bubble winner-big" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.winnerFaction.leaderName)}</span>${String(data.winnerLine || '')}
-          </div>
+        <div class="fevt-arena-stage u3b-theme-stage is-hostility">
+          ${_u3bSideHtml({
+            name: data.winnerFaction.leaderName, line: data.winnerLine, imgUrl: wPp, isBig: true,
+            role: `${data.winnerFaction.name} ・ 勝ち越し派閥`,
+            bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
+          })}
           <div class="fevt-arena-divider"></div>
-          <div class="fevt-arena-portrait loser" style="background-image:url('${lPp}');background-size:cover;background-position:center 20%;margin:0 auto 8px"></div>
-          <div class="fevt-arena-faction" style="opacity:0.75">${String(data.loserFaction.name)}</div>
-          <div class="fevt-arena-name" style="font-size:15px;opacity:0.85">${String(data.loserFaction.leaderName)}</div>
-          <div class="fevt-arena-bubble loser" style="margin-left:auto;margin-right:auto">
-            <span class="fevt-arena-bubble-name">${String(data.loserFaction.leaderName)}</span>${String(data.loserLine || '')}
-          </div>
+          ${_u3bSideHtml({
+            name: data.loserFaction.leaderName, line: data.loserLine, imgUrl: lPp, isLoser: true,
+            role: `${data.loserFaction.name} ・ 敗退派閥`,
+            bubbleClass: 'fevt-arena-bubble loser', portraitClass: 'fevt-arena-portrait loser',
+          })}
         </div>
         <div style="text-align:center;font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold-light, #f0d078);letter-spacing:2px;margin:14px 0">
           ${String(data.winnerFaction.name)} <span style="color:#fff">${data.scoreA}</span> — <span style="color:#fff">${data.scoreB}</span> ${String(data.loserFaction.name)}

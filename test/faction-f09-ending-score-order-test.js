@@ -29,6 +29,7 @@ function buildEndingModal(mocks) {
     '_factionSeasonLabel',
     '_f09BgmStop',
     'Audio',
+    '_u3bSideHtml',
     `${functionSource('showFactionF09EndingModal')}; return showFactionF09EndingModal;`
   )(
     mocks._isPopupActive,
@@ -38,11 +39,13 @@ function buildEndingModal(mocks) {
     mocks._factionCloseCinematicOverlay,
     mocks._factionSeasonLabel,
     mocks._f09BgmStop,
-    mocks.Audio
+    mocks.Audio,
+    mocks._u3bSideHtml
   );
 }
 
 (function testEndingModalShowsWinnerAlignedScore() {
+  const sideCalls = [];
   const root = {
     innerHTML: '',
     querySelector(selector) {
@@ -61,6 +64,10 @@ function buildEndingModal(mocks) {
     _factionSeasonLabel: () => 'S3W48',
     _f09BgmStop: () => {},
     Audio: { play() {}, stinger() {} },
+    _u3bSideHtml: (side) => {
+      sideCalls.push(side);
+      return `<div class="u3b-side"><div class="u3b-bubble-slot"><div class="u3b-bubble">${side.line}</div></div><div class="u3b-upper fevt-arena-portrait"></div><div class="u3b-name">${side.name}</div></div>`;
+    },
   });
 
   showFactionF09EndingModal({
@@ -78,6 +85,23 @@ function buildEndingModal(mocks) {
 
   assert(root.innerHTML.includes('赤羽あんな派 <span style="color:#fff">4</span>'));
   assert(root.innerHTML.includes('<span style="color:#fff">1</span> 西川ちあき派'));
+  assert.strictEqual(sideCalls.length, 2, '勝者・敗者を共通の顔出しブロックで描画する');
+  assert.strictEqual(sideCalls[0].line, '見たか。');
+  assert.strictEqual(sideCalls[1].line, '次に返すから');
+  assert.ok(root.innerHTML.indexOf('u3b-bubble-slot') < root.innerHTML.indexOf('u3b-upper fevt-arena-portrait'),
+    'セリフ吹き出しをキャラクター画像より上に置く');
 })();
+
+[
+  'showFactionF09OpeningModal',
+  'showFactionF09MatchPreModal',
+  'showFactionF09MatchPostModal',
+  'showFactionF09EndingModal',
+].forEach(name => {
+  const source = functionSource(name);
+  assert.ok(source.includes('_u3bSideHtml({'), `${name}: 共通の吹き出し・画像配置を使う`);
+  assert.ok(source.includes('u3b-theme-stage is-hostility'), `${name}: 既存Stageテーマを使う`);
+  assert.ok(!source.includes('fevt-arena-bubble-name'), `${name}: 画像下の旧セリフ枠へ戻さない`);
+});
 
 console.log('faction-f09-ending-score-order-test: ok');
