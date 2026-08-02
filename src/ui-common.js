@@ -3432,16 +3432,6 @@ function getSigningQuote(char) {
   return pickDialogueLine(pool, char);
 }
 
-// v2.x: Get FA welcome quote after signing (personality×archetype)
-function getWelcomeQuote(char) {
-  const pool = EVENT_FA_WELCOME_LINES;
-  if (!pool) {
-    const generic = EVENT_FA_WELCOME_GENERIC_LINES || ['よろしくお願いします！頑張ります！'];
-    return generic[Math.floor(Math.random() * generic.length)];
-  }
-  return pickDialogueLine(pool, char);
-}
-
 function hasCareerHistory(char) {
   if (!char) return false;
   if ((char.wins || 0) + (char.losses || 0) + (char.draws || 0) > 0) return true;
