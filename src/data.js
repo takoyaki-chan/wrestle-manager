@@ -1461,7 +1461,9 @@ const FACTION_CONFIG = {
   factionCrossBondHostilityMidExtra: -0.05,
   factionCrossBondHostilityHighExtra: -0.10,
   // §5 勢い
-  momentumDecayPerWeek: -1.0,
+  // 週次で絶対値を0へ近づける減衰量。**正の値で書く**(2026-08-02修正: -1.0で符号反転し
+  // 勢いが毎週±1膨張していた。Codex調査で発見)
+  momentumDecayPerWeek: 1.0,
   momentumSeniorBonus: [8, 12],
   momentumLeaderBonus: [15, 20],
   // §6 派閥抗争appeal

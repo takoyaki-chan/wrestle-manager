@@ -657,7 +657,8 @@ Engine.factions = {
       if (!this._isHostile(f)) return { ...f, momentum: 0 };
       const m = f.momentum;
       if (m === 0) return f;
-      const step = cfg.momentumDecayPerWeek; // 1.0
+      // 設定が誤って負で書かれても減衰方向(絶対値→0)を保証する(2026-08-02 符号反転バグの再発防止)
+      const step = Math.abs(cfg.momentumDecayPerWeek); // 1.0
       let next;
       if (m > 0) next = Math.max(0, m - step);
       else next = Math.min(0, m + step);
