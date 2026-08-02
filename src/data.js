@@ -281,7 +281,7 @@ const TRAIT_DEFS = {
   '名勝負製造機': {cat:'match',  icon:'名', color:'#f1c40f', en:'Match Maker',      desc:'試合がたまに大化けする。キックアウトやカウンターが生まれやすい'},
   '引き出し上手': {cat:'match',  icon:'引', color:'#2ecc71', en:'Best Bringer',     desc:'格下との試合でも質が下がりにくい'},
   'ライバル体質': {cat:'match',  icon:'闘', color:'#e74c3c', en:'Rivalry Prone',    desc:'ライバル因縁が生まれやすい'},
-  '早熟':         {cat:'growth', icon:'早', color:'#27ae60', en:'Early Bloomer',    desc:'10代から即戦力。20歳で完成するが、伸びしろは少ない', excl:'A'},
+  '早熟':         {cat:'growth', icon:'早', color:'#27ae60', en:'Early Bloomer',    desc:'10代から即戦力。仕上がりが早いぶん、伸び盛りは短め', excl:'A'},
   '晩成':         {cat:'growth', icon:'晩', color:'#16a085', en:'Late Bloomer',     desc:'序盤は遅いが、21〜22歳でピークに成長する', excl:'A'},
   '遅咲き':       {cat:'growth', icon:'遅', color:'#1abc9c', en:'Late Starter',     desc:'序盤は全く伸びないが、23歳で突然覚醒する', excl:'A'},
   '努力家':       {cat:'growth', icon:'努', color:'#3498db', en:'Hard Worker',      desc:'成長が安定しやすく、練習で体を壊しにくい'},
