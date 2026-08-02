@@ -23,6 +23,11 @@ const S = {
   heldWinLogs: null,       // { turn, held: [lines] } — pin seq 完了まで保留する「★ 決着！」ログ
   pendingDamage: false,    // ダメージポップアップ表示中 (クリック待ち)
   finishCueSent: false,
+  cameraMode: 'auto',
+  showNumbers: true,
+  autoCameraPlan: [],
+  cameraLocked: false,
+  cameraLockTimer: null,
   matchInfo: null,
   chemA: 0,
   chemB: 0,
@@ -66,6 +71,11 @@ function startReplay(data){
   S.autoAdvance = false;
   clearTimeout(S.autoTimer);
   S.finishCueSent = false;
+  S.cameraMode = 'auto';
+  S.showNumbers = true;
+  S.autoCameraPlan = _buildAutoCameraPlan(S.frames);
+  S.cameraLocked = false;
+  clearTimeout(S.cameraLockTimer);
 
   const mk = (c) => {
     const st = Math.min(100, Math.max(0, c.st || 60));
@@ -94,6 +104,99 @@ function keyById(id){ return S.idToKey[id]; }
 // hpCls は battle-replay-core.js で定義
 function _getCurrentFrame(){ return S.frameIdx > 0 && S.frames[S.frameIdx - 1] ? S.frames[S.frameIdx - 1] : null; }
 
+// ── プレゼンテーション変換 ──
+// Replay の action / events を初心者向けの技説明とカメラ指示へ翻訳する。
+// 数値・フレーム・乱数には一切触れない。
+const TAG_MOVE_PRESENTATION = {
+  strike:     { label: '打撃技', guide: 'パンチやキックなどで相手の姿勢を崩し、次の攻めにつなげる。' },
+  throw:      { label: '投げ技', guide: '相手の重心を奪い、持ち上げるか回転させてマットへ叩きつける。' },
+  submission: { label: '関節・絞め技', guide: '関節や首を捕らえて動きを奪い、ギブアップや消耗を狙う。' },
+  aerial:     { label: '飛び技', guide: '跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。' },
+  ground:     { label: 'グラウンド攻撃', guide: '倒れた相手へ追撃し、起き上がる余裕と体力を奪う。' },
+  rollup:     { label: '丸め込み', guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
+  tag:        { label: '連携技', guide: 'パートナーと呼吸を合わせ、二人の動きを一つの攻撃へつなげる。' },
+};
+
+function _actionMoveName(action){
+  if (!action) return '---';
+  return action.kind === 'counter'
+    ? (action.counterMove || action.move || '---')
+    : (action.move || '---');
+}
+
+function _movePresentation(action, fr){
+  const doubleEv = fr && fr.events && fr.events.find(ev => ev.type === 'doubleTeam');
+  const cat = doubleEv ? 'tag' : (action && action.moveCat ? action.moveCat : 'strike');
+  const base = TAG_MOVE_PRESENTATION[cat] || TAG_MOVE_PRESENTATION.strike;
+  const name = doubleEv && doubleEv.move ? doubleEv.move : _actionMoveName(action);
+  let guide = base.guide;
+  if (/ドロップキック/.test(name)) guide = '両足を突き出して相手を蹴り、勢いと間合いで体勢を崩す打撃。';
+  else if (/キック|PK|延髄斬り|ニー/.test(name)) guide = '脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。';
+  else if (/エルボー|ラリアット|クローズライン|チョップ|パンチ|ブロー|頭突き|ヘッドバット/.test(name)) guide = '腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。';
+  else if (/スープレックス|バックドロップ/.test(name)) guide = '相手を抱えて反らすように投げ、背中からマットへ落とす投げ技。';
+  else if (/パワーボム|ドライバー|スラム|DDT|ブリーカー|ドロップ/.test(name) && cat === 'throw') guide = '相手を抱え上げるか頭部を制し、落差を使ってマットへ叩きつける投げ技。';
+  else if (/ロック|ホールド|クラッチ|固め|絞め|STF|卍|アームバー|ベアハッグ/.test(name) && cat === 'submission') guide = '身体の一部を固定して逃げ道を狭め、ギブアップを迫る技。';
+  else if (/ダイビング|プレス|スプラッシュ|ムーンサルト|セントーン|トペ|プランチャ/.test(name)) guide = '高い位置や助走から飛び込み、落下の勢いを全身でぶつける飛び技。';
+  return { label: base.label, guide, name };
+}
+
+function _moveResultText(action){
+  if (!action) return '試合開始';
+  const state = action.kind === 'miss' ? 'MISS'
+    : action.kind === 'counter' ? 'COUNTER'
+    : action.isCrit ? 'BIG HIT' : 'HIT';
+  if (!S.showNumbers) return state;
+  const dmg = action.kind === 'miss' ? 0 : (action.dmg || 0);
+  return `${state} · DMG ${dmg} / PWR ${action.moveD || 0}`;
+}
+
+function _buildAutoCameraPlan(frames){
+  let holdUntil = -1;
+  return (frames || []).map((frame, index) => {
+    const events = (frame && frame.events) || [];
+    const eventTypes = events.map(ev => ev.type);
+    const latePhase = frame && (frame.phase === 'End' || frame.phase === 'Climax');
+    const action = frame && frame.action;
+    const decisiveAction = !!(action && (action.isCrit || action.kind === 'counter' || (action.moveD|0) >= 14));
+    const eventMoment = !!(frame && (frame.winner || eventTypes.some(type =>
+      ['hotTag','doubleTeam','cutinSave','friendlyFire','betrayal','pinAttempt'].includes(type))));
+    if (eventMoment || (latePhase && decisiveAction)) holdUntil = Math.max(holdUntil, index + 1);
+    return index <= holdUntil;
+  });
+}
+
+function _applyCamera(force){
+  const ring = document.getElementById('liveRing');
+  if (!ring) return;
+  if (!force && S.cameraMode === 'auto' && S.cameraLocked) {
+    const chip = document.getElementById('cameraChip');
+    if (chip) chip.textContent = `カメラ · 自動・交代中固定`;
+    return;
+  }
+  const idx = Math.max(0, S.frameIdx - 1);
+  const close = S.cameraMode === 'close' || (S.cameraMode === 'auto' && !!S.autoCameraPlan[idx]);
+  ring.classList.toggle('camera-close', close);
+  const chip = document.getElementById('cameraChip');
+  if (chip) chip.textContent = S.cameraMode === 'auto'
+    ? `カメラ · 自動${close ? 'アップ' : '全景'}`
+    : `カメラ · ${close ? 'アップ' : '全景'}`;
+}
+
+function setCameraMode(mode){
+  if (!['auto','wide','close'].includes(mode)) return;
+  S.cameraMode = mode;
+  if (mode !== 'auto') S.cameraLocked = false;
+  document.querySelectorAll('[data-camera]').forEach(btn => btn.classList.toggle('active', btn.dataset.camera === mode));
+  _applyCamera(true);
+}
+
+function toggleBattleNumbers(){
+  const input = document.getElementById('numberToggle');
+  S.showNumbers = input ? !!input.checked : !S.showNumbers;
+  const disp = document.getElementById('moveDisplay');
+  if (disp) disp.outerHTML = _moveDisplayHtml(_getCurrentFrame());
+}
+
 // ── メイン画面(全体)描画 ──
 // 試合開始直後の初期描画と、大きな構造リセットが必要な時だけ呼ぶ。
 // applyFrame 内の差分更新 (_updateHud/_updateCard/_updateCenter/_appendLog) はピンポイント書換。
@@ -103,25 +206,25 @@ function renderMatchFrame(){
 
   container.innerHTML = `
     ${_hudHtml(curFrame)}
-    ${_chemBarHtml()}
-    <div class="main-row">
-      <div class="col-side left" id="col-a">
-        ${_playerCardHtml('a', 'legal', S.pos.legalA)}
-        ${_apronCardHtml('a', S.pos.apronA)}
-      </div>
-      <div class="col-center-top" id="col-center">
-        ${_moveDisplayHtml(curFrame)}
-        <div class="battle-log" id="battleLog"><div class="log-header-label">BATTLE LOG</div>${S.logHtml}</div>
-      </div>
-      <div class="col-side right" id="col-b">
-        ${_playerCardHtml('b', 'legal', S.pos.legalB)}
-        ${_apronCardHtml('b', S.pos.apronB)}
+    <div class="wm-tag-presentation" id="mainRow">
+      ${_liveRingHtml(curFrame)}
+      <div class="wm-tag-lower-dock">
+        ${_teamCardHtml('a')}
+        <section class="wm-tag-exchange-panel" id="col-center">
+          <div class="wm-tag-exchange-head"><span>直近の攻防</span><span>最新が上</span></div>
+          <div class="wm-tag-exchange-grid">
+            <div class="battle-log" id="battleLog">${S.logHtml || '<div class="log-empty">ゴングを待っています</div>'}</div>
+            ${_moveDisplayHtml(curFrame)}
+          </div>
+        </section>
+        ${_teamCardHtml('b')}
       </div>
     </div>
     ${_controlsHtml()}
   `;
   _bindNextButton();
   _scrollLogToTop();
+  _applyCamera(true);
 }
 
 function _fighterHpPct(ch){
@@ -135,15 +238,10 @@ function _hudHtml(fr){
   const turn = fr ? fr.turn : 0;
   const phase = fr ? fr.phase : 'Opening';
   const segIdx = fr ? fr.segmentIdx : 0;
-  const teamA = [f(S.pos.legalA), f(S.pos.apronA)];
-  const teamB = [f(S.pos.legalB), f(S.pos.apronB)];
-  // HUD HP: チーム合算ではなくレガル選手個人のHP
-  const hpA = _fighterHpPct(f(S.pos.legalA));
-  const hpB = _fighterHpPct(f(S.pos.legalB));
-  const legalAName = f(S.pos.legalA) ? f(S.pos.legalA).name : '';
-  const legalBName = f(S.pos.legalB) ? f(S.pos.legalB).name : '';
-  // mom は -50〜+50 → -1〜+1 に正規化。エンジン側規約: A(左)が攻撃ヒットで mom+方向。
-  // バーは攻撃を決めた側が伸びる見え方にする (シングル battle-engine.html と同規約)
+  const legalA = f(S.pos.legalA), apronA = f(S.pos.apronA);
+  const legalB = f(S.pos.legalB), apronB = f(S.pos.apronB);
+  const hpA = _fighterHpPct(legalA), hpApronA = _fighterHpPct(apronA);
+  const hpB = _fighterHpPct(legalB), hpApronB = _fighterHpPct(apronB);
   const momNorm = S.mom / 50;
   const momL = 50 + momNorm * 30;
   const momR = 50 - momNorm * 30;
@@ -152,22 +250,31 @@ function _hudHtml(fr){
   return `<div class="wm-hud">
     <div class="wm-hud-top">
       <div class="wm-hud-side">
-        <div class="wm-hud-faces">${teamA.map(x=>`<div class="wm-hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
+        <div class="wm-hud-faces">
+          <div class="wm-hud-face"><img id="hudFaceALegal" src="${getFaceUrl(legalA)}" onerror="this.style.display='none'"></div>
+          <div class="wm-hud-face apron"><img id="hudFaceAApron" src="${getFaceUrl(apronA)}" onerror="this.style.display='none'"></div>
+        </div>
         <div class="wm-hud-meta">
-          <div class="wm-hud-label">Aチーム</div>
-          <div class="wm-hud-name" title="${escHtml(teamA.map(x=>x.name).join(' & '))}">${escHtml(teamA.map(x=>x.name).join(' & '))}</div>
+          <div class="wm-hud-label">青コーナー</div>
+          <div class="wm-hud-name" id="hudTeamNameA">${escHtml(legalA.name)} ＆ ${escHtml(apronA.name)}</div>
+          <div class="wm-hud-active-label" id="hudActiveA">リング上 · ${escHtml(legalA.name)}</div>
         </div>
       </div>
       <div class="wm-hud-center">
         <div class="wm-hud-turn" id="hudTurn">TURN ${turn || 1}</div>
         <div class="wm-hud-phase" id="hudPhase">${escHtml(String(phase).toUpperCase())}</div>
         <div class="wm-hud-seg" id="hudSeg">SEG ${segIdx + 1}　${escHtml(header)}</div>
+        <div class="wm-tag-chem">連携 <strong>A ${Math.round(S.chemA)}</strong><span>／</span><strong>B ${Math.round(S.chemB)}</strong></div>
       </div>
       <div class="wm-hud-side" style="flex-direction:row-reverse">
-        <div class="wm-hud-faces">${teamB.map(x=>`<div class="wm-hud-face"><img src="${getFaceUrl(x)}" onerror="this.style.display='none'"></div>`).join('')}</div>
+        <div class="wm-hud-faces">
+          <div class="wm-hud-face"><img id="hudFaceBLegal" src="${getFaceUrl(legalB)}" onerror="this.style.display='none'"></div>
+          <div class="wm-hud-face apron"><img id="hudFaceBApron" src="${getFaceUrl(apronB)}" onerror="this.style.display='none'"></div>
+        </div>
         <div class="wm-hud-meta right">
-          <div class="wm-hud-label">Bチーム</div>
-          <div class="wm-hud-name" title="${escHtml(teamB.map(x=>x.name).join(' & '))}">${escHtml(teamB.map(x=>x.name).join(' & '))}</div>
+          <div class="wm-hud-label">赤コーナー</div>
+          <div class="wm-hud-name" id="hudTeamNameB">${escHtml(legalB.name)} ＆ ${escHtml(apronB.name)}</div>
+          <div class="wm-hud-active-label" id="hudActiveB">リング上 · ${escHtml(legalB.name)}</div>
         </div>
       </div>
     </div>
@@ -176,13 +283,18 @@ function _hudHtml(fr){
       <div class="wm-mom-r" id="momR" style="width:${clamp(momR,0,100)}%"></div>
     </div>
     <div class="wm-hp-row">
-      <span class="wm-hp-name" id="hudHpNameA">${escHtml(legalAName)}</span>
+      <span class="wm-hp-name" id="hudHpNameA">${escHtml(legalA.name)}</span>
       <span class="wm-hp-pct ${hpCls(hpA.ratio)}" id="hudHpPctA">${hpA.pct}%</span>
-      <div class="wm-hp-bar"><div class="wm-hp-fill ${hpCls(hpA.ratio)}" id="hudHpFillA" style="width:${hpA.pct}%"></div></div>
-      <span class="wm-hp-label">HP</span>
-      <div class="wm-hp-bar"><div class="wm-hp-fill rev ${hpCls(hpB.ratio)}" id="hudHpFillB" style="width:${hpB.pct}%"></div></div>
+      <div class="wm-hp-bar"><div class="wm-hp-fill left ${hpCls(hpA.ratio)}" id="hudHpFillA" style="width:${hpA.pct}%"></div></div>
+      <span class="wm-hp-label">リング上 HP</span>
+      <div class="wm-hp-bar"><div class="wm-hp-fill right ${hpCls(hpB.ratio)}" id="hudHpFillB" style="width:${hpB.pct}%"></div></div>
       <span class="wm-hp-pct ${hpCls(hpB.ratio)}" id="hudHpPctB">${hpB.pct}%</span>
-      <span class="wm-hp-name right" id="hudHpNameB">${escHtml(legalBName)}</span>
+      <span class="wm-hp-name right" id="hudHpNameB">${escHtml(legalB.name)}</span>
+    </div>
+    <div class="wm-apron-hp-row">
+      <div class="wm-apron-hp-side left"><span class="wm-apron-hp-name" id="hudApronNameA">${escHtml(apronA.name)}</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill left ${hpCls(hpApronA.ratio)}" id="hudApronFillA" style="width:${hpApronA.pct}%"></div></div><span class="wm-apron-hp-pct" id="hudApronPctA">${hpApronA.pct}%</span></div>
+      <span class="wm-apron-hp-label">控え HP</span>
+      <div class="wm-apron-hp-side right"><span class="wm-apron-hp-pct" id="hudApronPctB">${hpApronB.pct}%</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill right ${hpCls(hpApronB.ratio)}" id="hudApronFillB" style="width:${hpApronB.pct}%"></div></div><span class="wm-apron-hp-name" id="hudApronNameB">${escHtml(apronB.name)}</span></div>
     </div>
   </div>`;
 }
@@ -200,59 +312,27 @@ function _chemBarHtml(){
 function _playerCardHtml(side, layer, posKey){
   const ch = f(posKey);
   const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = ch.hp > 0 ? Math.max(1, Math.round(ratio*100)) : 0;
-  const cls = ['player-card'];
+  const cls = ['player-card', 'wm-tag-ring-fighter', side === 'a' ? 'left' : 'right'];
   if (ratio <= 0.33) cls.push('danger');
   if (ch.gritTurns > 0) cls.push('grit-active');
   if (ch.hotTagBuff > 0) cls.push('hot-tag-buff');
-  const ovr = _calcOvr(ch);
-  const isA = side === 'a';
-  const portraitUrl = getStandUrl(ch);
-  const nameRow = isA
-    ? `<span class="player-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span><span class="badge badge-inring">IN RING</span>`
-    : `<span class="badge badge-inring">IN RING</span><span class="player-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span>`;
-  const styleOvr = isA ? `${escHtml(ch.style||'')}   OVR ${ovr}` : `OVR ${ovr}   ${escHtml(ch.style||'')}`;
-  return `<div class="${cls.join(' ')}" id="card-${side}-legal">
-    <div class="portrait-area">
-      <div class="portrait-holder" id="portrait-${side}-legal"><img src="${portraitUrl}" alt="${escHtml(ch.name)}" onerror="this.style.display='none'"></div>
+  return `<div class="${cls.join(' ')}" id="card-${side}-legal" data-fighter-key="${posKey}">
+    <div class="danger-overlay" id="danger-${side}">DANGER</div>
+    <div class="portrait-area" id="portrait-${side}-legal">
+      <img class="wm-tag-full-figure" src="${getFullUrl(ch)}" alt="${escHtml(ch.name)}" onerror="this.style.display='none'">
       <div class="monitor-frame"></div>
-      <div class="danger-glow" id="danger-${side}"${ratio <= 0.25 && ratio > 0 ? ' style="opacity:1"' : ''}></div>
+      <div class="danger-glow" id="dangerGlow-${side}"${ratio <= 0.25 && ratio > 0 ? ' style="opacity:1"' : ''}></div>
+      <div class="speech-bubble" id="sp-${side}"></div>
     </div>
-    <div class="player-detail">
-      <div class="name-row${isA?'':' right'}" id="namerow-${side}-legal">${nameRow}</div>
-      <div class="style-ovr${isA?'':' right'}" id="styleovr-${side}-legal">${styleOvr}</div>
-      <div class="card-hp-wrap">
-        <div class="card-hp-track${isA?'':' rtl'}"><div class="card-hp-fill ${hpCls(ratio)}" id="cardhp-${side}-legal" style="width:${pct}%"></div></div>
-        <span class="card-hp-text ${hpCls(ratio)}${isA?'':' right'}" id="cardhptext-${side}-legal">${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${pct}%)</span>
-      </div>
-      <div class="stats-grid" id="stats-${side}-legal">${_statsHtml(ch, side)}</div>
-    </div>
+    <button class="wm-tag-ring-nameplate" onclick="openBp('${posKey}')"><span>リング上</span><b class="player-name">${escHtml(ch.name)}</b></button>
   </div>`;
 }
 
 function _apronCardHtml(side, posKey){
   const ch = f(posKey);
-  const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = ch.hp > 0 ? Math.max(1, Math.round(ratio*100)) : 0;
-  const isA = side === 'a';
-  const ovr = _calcOvr(ch);
-  const upperUrl = getUpperUrl(ch);
-  const nameRow = isA
-    ? `<span class="apron-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span><span class="apron-badge">APRON</span>`
-    : `<span class="apron-badge">APRON</span><span class="apron-name" onclick="openBp('${posKey}')">${escHtml(ch.name)}</span>`;
-  const styleOvr = isA ? `${escHtml(ch.style||'')}   OVR ${ovr}` : `OVR ${ovr}   ${escHtml(ch.style||'')}`;
-  return `<div class="apron-card${isA?'':' right'}" id="card-${side}-apron">
-    <div class="apron-avatar" onclick="openBp('${posKey}')"><img src="${upperUrl}" onerror="this.style.display='none'"></div>
-    <div class="apron-info${isA?'':' right'}">
-      <div class="apron-name-row${isA?'':' right'}" id="apronrow-${side}">${nameRow}</div>
-      <div class="apron-style" id="apronstyle-${side}">${styleOvr}</div>
-      <div class="apron-hp-row${isA?'':' right'}" id="apronhp-${side}">
-        <span class="apron-hp-val ${hpCls(ratio)}${isA?'':' right'}">${pct}%</span>
-        <div class="apron-hp-track${isA?'':' rtl'}"><div class="apron-hp-fill ${hpCls(ratio)}" style="width:${pct}%"></div></div>
-      </div>
-      <div class="apron-recovery${isA?'':' right'}">▲ 回復中</div>
-      <div class="stats-grid apron-stats" id="apron-stats-${side}">${_statsHtml(ch, side)}</div>
-    </div>
+  return `<div class="player-card wm-tag-ring-helper ${side === 'a' ? 'left' : 'right'}" id="card-${side}-apron" data-fighter-key="${posKey}" aria-hidden="true">
+    <div class="portrait-area"><img class="wm-tag-full-figure" src="${getFullUrl(ch)}" alt="" onerror="this.style.display='none'"></div>
+    <span class="apron-name">${escHtml(ch.name)}</span>
   </div>`;
 }
 
@@ -275,18 +355,62 @@ function _statsHtml(fighter, side){
   }).join('');
 }
 
-function _moveDisplayHtml(fr){
-  const move = fr && fr.action ? fr.action.move : '-';
-  const nar = fr ? _narrateFrame(fr) : { text:'試合開始 — NEXT TURNを押してください', dramatic:false };
-  const dmgText = fr && fr.action ? _dmgText(fr.action) : { text:'', cls:'' };
-  return `<div class="move-display" id="moveDisplay">
-    <div class="move-label">CURRENT MOVE</div>
+function _liveRingHtml(fr){
+  const phase = fr ? (fr.phase || 'Opening') : 'Opening';
+  const turn = fr ? fr.turn : 1;
+  const nar = fr ? _narrateFrame(fr) : { text:'ゴング！ 「次の攻防」で試合を進めてください', dramatic:false };
+  const header = (S.matchInfo && S.matchInfo.header) || 'TAG MATCH';
+  return `<section class="wm-tag-live-ring" id="liveRing">
+    <img class="wm-tag-ring-bg" src="../image/battle-ring-bg-mockup-v2.png" alt="プロレス会場のリング" onerror="this.src='../image/battle-bg_venue_4.webp'">
+    <div class="wm-tag-ring-grade"></div>
+    <div class="wm-tag-team-light left"></div><div class="wm-tag-team-light right"></div>
+    <div class="wm-tag-live-label"><i></i>LIVE RING</div>
+    <div class="wm-tag-match-chip">${escHtml(header)}</div>
+    <div class="wm-tag-phase-chip"><span id="pill">${escHtml(phase)}</span><span id="turnLbl">T${turn}</span></div>
+    <div class="wm-tag-camera-chip" id="cameraChip">カメラ · 自動全景</div>
+    ${_playerCardHtml('a', 'legal', S.pos.legalA)}${_playerCardHtml('b', 'legal', S.pos.legalB)}
+    ${_apronCardHtml('a', S.pos.apronA)}${_apronCardHtml('b', S.pos.apronB)}
+    <div class="attack-arrow-layer wm-tag-ring-arrow-layer" id="arrowLayer"></div>
     <div class="bigmove-splash" id="bigmoveSplash"></div>
-    <div class="attack-arrow-layer move-arrow-layer" id="arrowLayer"></div>
-    <div class="move-name" id="moveName">${escHtml(move)}</div>
-    <div class="move-damage ${dmgText.cls}" id="moveDmg">${dmgText.text}</div>
-    <div class="move-narration ${nar.dramatic?'dramatic':''}" id="moveNarration">${nar.text}</div>
     <div class="flash-overlay" id="flashOverlay"></div>
+    <div class="move-narration wm-tag-commentary${nar.dramatic?' dramatic':''}" id="moveNarration"><span>${nar.text}</span></div>
+  </section>`;
+}
+
+function _teamCardHtml(side){
+  const legalKey = side === 'a' ? S.pos.legalA : S.pos.legalB;
+  const apronKey = side === 'a' ? S.pos.apronA : S.pos.apronB;
+  return `<article class="wm-tag-team-card ${side === 'a' ? 'left' : 'right'}" id="teamCard-${side}">
+    ${_teamMemberHtml(side, 'legal', legalKey)}
+    ${_teamMemberHtml(side, 'apron', apronKey)}
+  </article>`;
+}
+
+function _teamMemberHtml(side, layer, posKey){
+  const ch = f(posKey);
+  const hp = _fighterHpPct(ch);
+  const active = layer === 'legal';
+  const role = active ? 'リング上' : '控え';
+  const recovery = active ? '' : ' · 回復中';
+  return `<div class="wm-tag-member${active?' active':''}" id="team-${side}-${layer}" data-fighter-key="${posKey}">
+    <img class="wm-tag-member-upper" src="${getUpperUrl(ch)}" alt="" onerror="this.style.display='none'">
+    <div class="wm-tag-member-profile">
+      <div class="wm-tag-member-head"><button onclick="openBp('${posKey}')">${escHtml(ch.name)}</button><strong>OVR ${_calcOvr(ch)}</strong></div>
+      <div class="wm-tag-member-meta"><span class="wm-tag-member-role">${role}</span><span>${escHtml(ch.style||'')}${recovery}</span></div>
+    </div>
+    <div class="wm-tag-micro-stats">${_statsHtml(ch, side)}</div>
+    <div class="wm-tag-member-hp"><span>HP ${hp.pct}%</span><div><i class="${hpCls(hp.ratio)}" style="width:${hp.pct}%"></i></div></div>
+  </div>`;
+}
+
+function _moveDisplayHtml(fr){
+  const action = fr && fr.action;
+  const meta = _movePresentation(action, fr);
+  return `<div class="move-display wm-tag-move-detail" id="moveDisplay">
+    <div class="move-label" id="moveCatLabel">${escHtml(meta.label)}</div>
+    <div class="move-name" id="moveName">${escHtml(meta.name)}</div>
+    <div class="wm-move-guide" id="moveGuide">${escHtml(meta.guide)}</div>
+    <div class="move-damage wm-move-result" id="moveDmg">${escHtml(_moveResultText(action))}</div>
   </div>`;
 }
 
@@ -332,14 +456,23 @@ function _controlsHtml(){
   const curFrame = _getCurrentFrame();
   const winnerFrame = curFrame && curFrame.winner;
   const endState = winnerFrame || S.frameIdx >= S.frames.length;
-  const btnLabel = winnerFrame ? '結果を見る' : (endState ? 'END' : '▶ NEXT TURN');
+  const btnLabel = winnerFrame ? '結果を見る' : (endState ? '試合終了' : '次の攻防 ▶');
   const btnDisabled = S.anim || S.pendingCutin;
-  const dots = [0,1,2].map(i => `<div class="speed-dot ${i <= S.speedIdx ? 'on' : 'off'}" onclick="setSpeed(${i})"></div>`).join('');
+  const dots = [0,1,2].map(i => `<button class="speed-dot wm-speed-btn ${i === S.speedIdx ? 'on' : 'off'}" onclick="setSpeed(${i})">${i+1}×</button>`).join('');
   return `<div class="controls-sub">
-    <button class="btn-main" id="nBtn"${btnDisabled ? ' disabled' : ''}>${btnLabel}</button>
-    <div class="control-sep"></div>
-    <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">AUTO<span>${S.autoAdvance?'ON':'OFF'}</span></button>
-    <div class="speed-dots">${dots}</div>
+    <div class="wm-control-left">
+      <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">自動再生<span>${S.autoAdvance?'再生中':'停止'}</span></button>
+      <div class="wm-control-set"><span>速度</span><div class="speed-dots">${dots}</div></div>
+    </div>
+    <div class="wm-control-center"><button class="btn-main" id="nBtn"${btnDisabled ? ' disabled' : ''}>${btnLabel}</button></div>
+    <div class="wm-control-right">
+      <div class="wm-control-set"><span>カメラ</span><div class="wm-camera-buttons">
+        <button data-camera="auto" class="${S.cameraMode==='auto'?'active':''}" onclick="setCameraMode('auto')">自動</button>
+        <button data-camera="wide" class="${S.cameraMode==='wide'?'active':''}" onclick="setCameraMode('wide')">全景</button>
+        <button data-camera="close" class="${S.cameraMode==='close'?'active':''}" onclick="setCameraMode('close')">アップ</button>
+      </div></div>
+      <label class="wm-number-toggle"><input id="numberToggle" type="checkbox" onchange="toggleBattleNumbers()"${S.showNumbers?' checked':''}> 正確な数値</label>
+    </div>
   </div>`;
 }
 
@@ -360,27 +493,44 @@ function _scrollLogToTop(){
 // ── 差分更新系 ──
 function _updateHud(){
   const fr = _getCurrentFrame();
-  // レガル選手個人HP
-  const hpA = _fighterHpPct(f(S.pos.legalA));
-  const hpB = _fighterHpPct(f(S.pos.legalB));
+  const legalA = f(S.pos.legalA), apronA = f(S.pos.apronA);
+  const legalB = f(S.pos.legalB), apronB = f(S.pos.apronB);
+  const hpA = _fighterHpPct(legalA), hpApronA = _fighterHpPct(apronA);
+  const hpB = _fighterHpPct(legalB), hpApronB = _fighterHpPct(apronB);
   const elTurn = document.getElementById('hudTurn');
   const elPhase = document.getElementById('hudPhase');
   const elSeg = document.getElementById('hudSeg');
   if (fr && elTurn) elTurn.textContent = `TURN ${fr.turn}`;
   if (fr && elPhase) elPhase.textContent = String(fr.phase||'').toUpperCase();
   if (fr && elSeg) elSeg.textContent = `SEG ${fr.segmentIdx + 1}　${(S.matchInfo && S.matchInfo.header) || 'TAG MATCH'}`;
-  const fillA = document.getElementById('hudHpFillA');
-  const pctA = document.getElementById('hudHpPctA');
-  const nameA = document.getElementById('hudHpNameA');
-  if (fillA) { fillA.style.width = hpA.pct + '%'; fillA.className = 'wm-hp-fill ' + hpCls(hpA.ratio); }
-  if (pctA) { pctA.textContent = hpA.pct + '%'; pctA.className = 'wm-hp-pct ' + hpCls(hpA.ratio); }
-  if (nameA && f(S.pos.legalA)) nameA.textContent = f(S.pos.legalA).name;
-  const fillB = document.getElementById('hudHpFillB');
-  const pctB = document.getElementById('hudHpPctB');
-  const nameB = document.getElementById('hudHpNameB');
-  if (fillB) { fillB.style.width = hpB.pct + '%'; fillB.className = 'wm-hp-fill rev ' + hpCls(hpB.ratio); }
-  if (pctB) { pctB.textContent = hpB.pct + '%'; pctB.className = 'wm-hp-pct ' + hpCls(hpB.ratio); }
-  if (nameB && f(S.pos.legalB)) nameB.textContent = f(S.pos.legalB).name;
+  const updateHp = (fillId, pctId, nameId, hp, name, fillClass) => {
+    const fill = document.getElementById(fillId);
+    const pct = document.getElementById(pctId);
+    const nameEl = document.getElementById(nameId);
+    if (fill) { fill.style.width = hp.pct + '%'; fill.className = `${fillClass} ${hpCls(hp.ratio)}`; }
+    if (pct) { pct.textContent = hp.pct + '%'; pct.className = pctId.includes('Apron') ? 'wm-apron-hp-pct' : `wm-hp-pct ${hpCls(hp.ratio)}`; }
+    if (nameEl) nameEl.textContent = name;
+  };
+  updateHp('hudHpFillA','hudHpPctA','hudHpNameA',hpA,legalA.name,'wm-hp-fill left');
+  updateHp('hudHpFillB','hudHpPctB','hudHpNameB',hpB,legalB.name,'wm-hp-fill right');
+  updateHp('hudApronFillA','hudApronPctA','hudApronNameA',hpApronA,apronA.name,'wm-apron-hp-fill left');
+  updateHp('hudApronFillB','hudApronPctB','hudApronNameB',hpApronB,apronB.name,'wm-apron-hp-fill right');
+  const teamNameA = document.getElementById('hudTeamNameA');
+  const teamNameB = document.getElementById('hudTeamNameB');
+  const activeA = document.getElementById('hudActiveA');
+  const activeB = document.getElementById('hudActiveB');
+  if (teamNameA) teamNameA.textContent = `${legalA.name} ＆ ${apronA.name}`;
+  if (teamNameB) teamNameB.textContent = `${legalB.name} ＆ ${apronB.name}`;
+  if (activeA) activeA.textContent = `リング上 · ${legalA.name}`;
+  if (activeB) activeB.textContent = `リング上 · ${legalB.name}`;
+  [['hudFaceALegal',legalA],['hudFaceAApron',apronA],['hudFaceBLegal',legalB],['hudFaceBApron',apronB]].forEach(([id,ch]) => {
+    const img = document.getElementById(id);
+    if (img) { img.src = getFaceUrl(ch); img.style.display = ''; }
+  });
+  const pill = document.getElementById('pill');
+  const turnLbl = document.getElementById('turnLbl');
+  if (fr && pill) pill.textContent = fr.phase || '';
+  if (fr && turnLbl) turnLbl.textContent = `T${fr.turn}`;
   // モメンタム: -50〜+50 を -1〜+1 に正規化して表示
   const momElL = document.getElementById('momL');
   const momElR = document.getElementById('momR');
@@ -403,54 +553,38 @@ function _updateCardsAfterFrame(skipLegalA, skipLegalB){
 function _refreshCard(side, layer, posKey){
   const id = `card-${side}-${layer}`;
   const el = document.getElementById(id);
-  if (!el) return;
-  // 選手カードは innerHTML の一部だけ更新(HP・数値)
   const ch = f(posKey);
+  if (!ch) return;
   const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
-  const pct = ch.hp > 0 ? Math.max(1, Math.round(ratio*100)) : 0;
+  if (el && el.dataset.fighterKey !== posKey) {
+    el.outerHTML = layer === 'legal' ? _playerCardHtml(side, layer, posKey) : _apronCardHtml(side, posKey);
+  }
   if (layer === 'legal') {
-    // カード内のキャラが変わっていないか確認 — 入れ替わった場合はDOM総入替
-    const existingName = el.querySelector('.player-name');
-    if (!existingName || existingName.textContent !== ch.name) {
-      el.outerHTML = _playerCardHtml(side, 'legal', posKey);
-      return;
-    }
-    // HP 更新
-    const fill = document.getElementById(`cardhp-${side}-legal`);
-    const text = document.getElementById(`cardhptext-${side}-legal`);
-    if (fill) { fill.style.width = pct + '%'; fill.className = 'card-hp-fill ' + hpCls(ratio); }
-    if (text) { text.textContent = `${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${pct}%)`; text.className = 'card-hp-text ' + hpCls(ratio) + (side==='a'?'':' right'); }
-    // danger class
-    el.classList.toggle('danger', ratio <= 0.33);
-    el.classList.toggle('grit-active', ch.gritTurns > 0);
-    el.classList.toggle('hot-tag-buff', ch.hotTagBuff > 0);
-    // danger glow
-    const glow = document.getElementById(`danger-${side}`);
-    if (glow) glow.classList.toggle('show', ratio <= 0.25 && ratio > 0);
-  } else {
-    // apron: キャラが入れ替わった場合もDOM総入替
-    const existingName = el.querySelector('.apron-name');
-    if (!existingName || existingName.textContent !== ch.name) {
-      el.outerHTML = _apronCardHtml(side, posKey);
-      return;
-    }
-    // HP bar 更新
-    const row = document.getElementById(`apronhp-${side}`);
-    if (row) {
-      const isA = side === 'a';
-      row.innerHTML = `<span class="apron-hp-val ${hpCls(ratio)}${isA?'':' right'}">${pct}%</span>` +
-        `<div class="apron-hp-track${isA?'':' rtl'}"><div class="apron-hp-fill ${hpCls(ratio)}" style="width:${pct}%"></div></div>`;
+    const current = document.getElementById(id);
+    if (current) {
+      current.classList.toggle('danger', ratio <= 0.33);
+      current.classList.toggle('grit-active', ch.gritTurns > 0);
+      current.classList.toggle('hot-tag-buff', ch.hotTagBuff > 0);
+      const glow = document.getElementById(`dangerGlow-${side}`);
+      if (glow) glow.classList.toggle('show', ratio <= 0.25 && ratio > 0);
     }
   }
+  const member = document.getElementById(`team-${side}-${layer}`);
+  if (member) member.outerHTML = _teamMemberHtml(side, layer, posKey);
 }
 
 function _updateCenter(fr){
-  const dispHtml = _moveDisplayHtml(fr);
   const disp = document.getElementById('moveDisplay');
-  if (disp) disp.outerHTML = dispHtml;
-  // pop animation
+  if (disp) disp.outerHTML = _moveDisplayHtml(fr);
+  const nar = _narrateFrame(fr);
+  const narEl = document.getElementById('moveNarration');
+  if (narEl) {
+    narEl.innerHTML = `<span>${nar.text}</span>`;
+    narEl.className = `move-narration wm-tag-commentary${nar.dramatic?' dramatic':''}`;
+  }
   const mn = document.getElementById('moveName');
   if (mn) { mn.classList.remove('pop'); void mn.offsetWidth; mn.classList.add('pop'); }
+  _applyCamera();
 }
 
 // 結末を示唆するログ行（pin/rollup/tkoStop シーケンス完了まで保留）
@@ -477,7 +611,7 @@ function _appendLogForFrame(fr){
   S.lastEventClass = evClass;
   const lb = document.getElementById('battleLog');
   if (lb) {
-    lb.innerHTML = `<div class="log-header-label">BATTLE LOG</div>${S.logHtml}`;
+    lb.innerHTML = S.logHtml;
     lb.className = 'battle-log' + (evClass ? ' ev-' + evClass : '');
     lb.scrollTop = 0;
   }
@@ -566,6 +700,10 @@ function applyFrame(fr){
   const newApronBKey = keyById(fr.apronB);
   const touchA = newLegalAKey !== prevLegalA;
   const touchB = newLegalBKey !== prevLegalB;
+  if ((touchA || touchB) && S.cameraMode === 'auto') {
+    S.cameraLocked = true;
+    clearTimeout(S.cameraLockTimer);
+  }
 
   // HP/バフ/position は即時更新（JS 状態、DOM には反映しない）
   ['a1','a2','b1','b2'].forEach(k => {
@@ -659,6 +797,17 @@ function _applyFrameVisuals(fr, touchA, touchB, isBigMove){
 function animateAction(action, fr, isBigMove){
   // 毎ターン頭の準備音
   try { sfx.ready(); } catch(e){}
+
+  const ring = document.getElementById('liveRing');
+  const atkKeyForStage = action && keyById(action.attackerId);
+  if (ring && atkKeyForStage) {
+    const attackClass = (atkKeyForStage === 'a1' || atkKeyForStage === 'a2') ? 'attack-left' : 'attack-right';
+    ring.classList.remove('attack-left', 'attack-right', 'miss');
+    void ring.offsetWidth;
+    ring.classList.add(attackClass);
+    if (action.kind === 'miss') ring.classList.add('miss');
+    setTimeout(() => ring.classList.remove(attackClass, 'miss'), 700);
+  }
 
   if (action.kind === 'miss') {
     try { sfx.missWhiff(); } catch(e){}
@@ -769,27 +918,39 @@ function _showBigMoveSplash(moveName){
   setTimeout(() => { el.className = 'bigmove-splash'; el.textContent = ''; }, 1600);
 }
 
+function _showRingHelperFor(side, duration){
+  const helper = document.getElementById(`card-${side}-apron`);
+  if (!helper) return;
+  helper.classList.remove('show');
+  void helper.offsetWidth;
+  helper.classList.add('show');
+  setTimeout(() => helper.classList.remove('show'), duration || 1350);
+}
+
 function animateEvent(ev, fr){
   if (ev.type === 'hotTag') {
-    showBanner('HOT TAG!', 'gold');
+    showBanner('反撃のタッチ！', 'gold');
     try { sfx.hotTagSE(); } catch(e){}
     flashGold();
     const teamKey = ev.team === 'A' ? S.pos.legalA : S.pos.legalB;
     const fighter = f(teamKey);
     if (fighter) showCutin(fighter, ev.team === 'A' ? 'left' : 'right', pickHotTagLine(fighter), 'tag-hot');
   } else if (ev.type === 'doubleTeam') {
-    showBanner('DOUBLE TEAM!', 'red');
+    showBanner('ダブルチーム！', 'red');
     try { sfx.doubleTeamSE(); } catch(e){}
+    const firstKey = keyById(Array.isArray(ev.by) ? ev.by[0] : ev.by);
+    if (firstKey) _showRingHelperFor(firstKey === 'a1' || firstKey === 'a2' ? 'a' : 'b', 1500);
   } else if (ev.type === 'cutinSave') {
     // pinAttempt(outcome=cutinSave) と同フレームなら pin シーケンス内で扱うためスキップ
     const hasPinCutin = fr && fr.events && fr.events.some(e => e.type === 'pinAttempt' && e.outcome === 'cutinSave');
     if (hasPinCutin) return;
     const saverKey = keyById(ev.by);
-    showBanner('CUT IN!', 'gold');
+    showBanner('カットイン！', 'gold');
     try { sfx.cutinSlide(); } catch(e){}
     const saver = f(saverKey);
     if (saver) {
       const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
+      _showRingHelperFor(side === 'left' ? 'a' : 'b', 1500);
       showCutin(saver, side, pickCutinSaveLine(saver), 'tag-save');
     }
   } else if (ev.type === 'friendlyFire') {
@@ -832,7 +993,7 @@ function animateTouchSwap(side, fr){
   const posKey = side === 'a' ? S.pos.legalA : S.pos.legalB;
   const newLegal = f(posKey);
 
-  // shrink完了後(~380ms)に内容差し替え → grow-in
+  // 交代中は画像倍率を変えず、同じ表示枠のまま水平方向だけで入れ替える。
   setTimeout(() => {
     _refreshCard(side, 'legal', posKey);
     const card = document.getElementById(`card-${side}-legal`);
@@ -840,10 +1001,16 @@ function animateTouchSwap(side, fr){
       card.classList.remove('tag-out-legal', 'tag-in-legal', hlCls);
       void card.offsetWidth;
       card.classList.add('tag-in-legal', hlCls);
-      setTimeout(() => card.classList.remove('tag-in-legal'), 500);
+      setTimeout(() => card.classList.remove('tag-in-legal'), 600);
       setTimeout(() => card.classList.remove(hlCls), 1600);
     }
-  }, 370);
+  }, 330);
+
+  clearTimeout(S.cameraLockTimer);
+  S.cameraLockTimer = setTimeout(() => {
+    S.cameraLocked = false;
+    _applyCamera(true);
+  }, 660);
 
   // タグバナー (少し遅らせてアニメと同期)
   setTimeout(() => {
@@ -1025,7 +1192,7 @@ function _executePinStep(idx){
       const narEl = document.getElementById('moveNarration');
       if (narEl) {
         narEl.textContent = step.rollupStatus;
-        narEl.className = 'move-narration dramatic rollup-status';
+        narEl.className = 'move-narration wm-tag-commentary dramatic rollup-status';
       }
     }
     _schedulePinAdvance(isLead, step.cls);
@@ -1033,7 +1200,7 @@ function _executePinStep(idx){
     const narEl = document.getElementById('moveNarration');
     if (narEl) {
       narEl.textContent = step.text;
-      narEl.className = 'move-narration' + (step.dramatic ? ' dramatic' : '');
+      narEl.className = 'move-narration wm-tag-commentary' + (step.dramatic ? ' dramatic' : '');
     }
     // 丸め込み intro narration: 主体/対象のパネルハイライトを付与 (T3)
     if (step.rollupHighlight) {
@@ -1049,7 +1216,7 @@ function _executePinStep(idx){
     const narEl = document.getElementById('moveNarration');
     if (narEl) {
       narEl.textContent = step.text;
-      narEl.className = 'move-narration' + (step.dramatic ? ' dramatic' : '');
+      narEl.className = 'move-narration wm-tag-commentary' + (step.dramatic ? ' dramatic' : '');
     }
     if (step.rollupHighlight) {
       _applyRollupHighlight(step.rollupHighlight.subjSide, step.rollupHighlight.objSide);
@@ -1069,8 +1236,9 @@ function _executePinStep(idx){
   } else if (step.kind === 'cutin') {
     // カットインは showCutin が pendingCutin=true を立てる。
     // クリックで dismissCutin → dismissCutin 側で pinCtrl 判定し _finishPinSeq を呼ぶ。
-    showBanner('CUT IN!', 'gold');
+    showBanner('カットイン！', 'gold');
     try { sfx.cutinSlide(); } catch(e){}
+    _showRingHelperFor(step.side === 'left' ? 'a' : 'b', 1500);
     showCutin(step.saver, step.side, step.line, 'tag-save');
     // nBtn は showCutin 内で disabled 化済み。dismissCutin からの遷移を待つ。
   }
@@ -1148,7 +1316,7 @@ function _finishPinSeq(){
     }
     const lb = document.getElementById('battleLog');
     if (lb) {
-      lb.innerHTML = `<div class="log-header-label">BATTLE LOG</div>${S.logHtml}`;
+      lb.innerHTML = S.logHtml;
       lb.scrollTop = 0;
     }
   }
@@ -1159,7 +1327,7 @@ function _finishPinSeq(){
     const narEl = document.getElementById('moveNarration');
     if (narEl) {
       narEl.textContent = '決着！';
-      narEl.className = 'move-narration dramatic';
+      narEl.className = 'move-narration wm-tag-commentary dramatic';
     }
   }
 
@@ -1329,7 +1497,7 @@ function toggleAuto(){
   const b = document.getElementById('autoBtn');
   if (b) {
     b.classList.toggle('active', S.autoAdvance);
-    b.innerHTML = 'AUTO<span>' + (S.autoAdvance ? 'ON' : 'OFF') + '</span>';
+    b.innerHTML = '自動再生<span>' + (S.autoAdvance ? '再生中' : '停止') + '</span>';
   }
   if (S.autoAdvance) {
     if (!S.anim && !S.pendingCutin && S.frameIdx < S.frames.length) {
@@ -1342,8 +1510,8 @@ function toggleAuto(){
 function setSpeed(idx){
   S.speedIdx = clamp(idx, 0, SPEED_DELAYS.length - 1);
   document.querySelectorAll('.speed-dot').forEach((d, i) => {
-    d.classList.toggle('on', i <= S.speedIdx);
-    d.classList.toggle('off', i > S.speedIdx);
+    d.classList.toggle('on', i === S.speedIdx);
+    d.classList.toggle('off', i !== S.speedIdx);
   });
 }
 

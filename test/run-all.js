@@ -48,6 +48,7 @@ const QUICK = new Set([
   'b3-challenge-audio-test.js',
   'b3-challenge-balance-test.js',
   'battle-presentation-ui-test.js',
+  'tag-battle-presentation-ui-test.js',
   'calendar-week-regression-test.js',
   'challenge-guest-save-sanitize-test.js',
   'challenge-request-away-launch-test.js',

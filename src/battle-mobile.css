@@ -305,4 +305,42 @@
   .controls-sub .btn-auto { width: 74px; min-width: 0; min-height: 30px; }
   .controls-sub .wm-speed-btn,
   .wm-camera-buttons button { min-width: 28px; height: 27px; padding: 0 5px; }
+
+  /* Tag battle presentation v2 */
+  .wm-hud-top { grid-template-columns: minmax(0, 1fr) 112px minmax(0, 1fr); }
+  .wm-hud-face.apron { width: 27px; height: 27px; }
+  .wm-hud-active-label,
+  .wm-tag-chem,
+  .wm-hud-seg { display: none; }
+  .wm-hp-row { grid-template-columns: 34px minmax(0, 1fr) 58px minmax(0, 1fr) 34px; }
+  .wm-hp-bar { height: 7px; }
+  .wm-hp-pct { font-size: 12px; }
+  .wm-apron-hp-row { grid-template-columns: minmax(0, 1fr) 48px minmax(0, 1fr); }
+  .wm-apron-hp-name { display: none; }
+  .wm-apron-hp-side.left,
+  .wm-apron-hp-side.right { grid-template-columns: minmax(40px, 1fr) 28px; }
+  .wm-apron-hp-side.right .wm-apron-hp-pct { grid-column: 1; grid-row: 1; }
+  .wm-apron-hp-side.right .wm-apron-hp-track { grid-column: 2; grid-row: 1; }
+  .wm-tag-presentation { flex: none; }
+  .wm-tag-live-ring { flex: none; min-height: 390px; }
+  .wm-tag-live-ring .wm-tag-ring-fighter,
+  .wm-tag-live-ring .wm-tag-ring-helper { width: 48%; }
+  .wm-tag-ring-fighter.left { left: 2%; }
+  .wm-tag-ring-fighter.right { right: 2%; }
+  .wm-tag-live-ring .portrait-area { padding: 0; }
+  .wm-tag-match-chip { max-width: 48%; padding-right: 12px; padding-left: 12px; font-size: 8px; }
+  .wm-tag-live-ring .wm-tag-commentary { width: calc(100% - 20px); padding: 10px 12px 15px; font-size: 14px; }
+  .wm-tag-lower-dock { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); flex: none; height: auto; }
+  .wm-tag-exchange-panel { grid-column: 1 / -1; grid-row: 1; height: 190px; }
+  .wm-tag-team-card { grid-row: 2; height: 214px; }
+  .wm-tag-member { grid-template-columns: 42px minmax(48px, .75fr) minmax(58px, 1.1fr); column-gap: 4px; padding: 5px 4px; }
+  .wm-tag-team-card.right .wm-tag-member { grid-template-columns: minmax(58px, 1.1fr) minmax(48px, .75fr) 42px; }
+  .wm-tag-member-upper { width: 40px; height: 72px; }
+  .wm-tag-member-head button { font-size: 9px; }
+  .wm-tag-member-head strong { font-size: 9px; }
+  .wm-tag-member-meta { font-size: 6px; }
+  .wm-tag-micro-stats .stat-row,
+  .wm-tag-team-card.right .stat-row { grid-template-columns: 15px minmax(24px, 1fr) 13px; gap: 2px; font-size: 6px; }
+  .wm-tag-member-hp { font-size: 7px; gap: 3px; }
+  .wm-tag-exchange-grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
 }
