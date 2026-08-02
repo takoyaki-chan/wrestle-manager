@@ -112,7 +112,7 @@ function buildTitleCeremony(ctxExtra) {
 }
 
 function extractSpeechBubble(html) {
-  const m = html.match(/<div class="mdl-a-speech"><div class="mdl-a-speech-text">([\s\S]*?)<\/div><\/div>/);
+  const m = html.match(/<div class="u3b-bubble mdl-a-subject-speech"><div class="u3b-bubble-text">([\s\S]*?)<\/div><\/div>/);
   return m ? m[1] : null;
 }
 
@@ -308,7 +308,7 @@ section('9. 通常防衛モーダルは王者の顔+頭上吹き出しを1つだ
   ctx.showTitleMatchCeremony({ outcome: 'defense', champId: 1, challengerId: 2 }, () => {});
   const html = document.getElementById('mdlACard').innerHTML;
 
-  const speechCount = (html.match(/class="mdl-a-speech"/g) || []).length;
+  const speechCount = (html.match(/class="u3b-bubble mdl-a-subject-speech"/g) || []).length;
   assert.strictEqual(speechCount, 1, '頭上吹き出しはちょうど1つ');
   const portraitCount = (html.match(/mdl-a-subject-portrait-wrap/g) || []).length;
   assert.strictEqual(portraitCount, 1, '選手の顔(ポートレート枠)は1つだけ(挑戦者の顔は出さない)');
@@ -322,10 +322,11 @@ section('10. 吹き出しは画像の上に予約され、margin-top で下に�
   });
   ctx.showTitleMatchCeremony({ outcome: 'defense', champId: 1, challengerId: 2 }, () => {});
   const html = document.getElementById('mdlACard').innerHTML;
-  // 吹き出しはHTML側にインラインstyleを一切持たない(位置決めは既存CSSクラス .mdl-a-speech に一任)。
+  // 吹き出しはHTML側にインラインstyleを一切持たない(共通の予約枠クラスに一任)。
   // margin-top を使って吹き出しを画像の下に押し出すような書き方をしていないことを確認する。
   assert.ok(!html.includes('margin-top'), '出力HTMLに margin-top を使ったインライン配置が無い');
-  assert.ok(html.includes('mdl-a-speech'), '吹き出し自体は出ている');
+  assert.ok(html.includes('mdl-a-subject-speech-slot'), '吹き出し予約枠が出ている');
+  assert.ok(html.indexOf('mdl-a-subject-speech-slot') < html.indexOf('mdl-a-subject-portrait-wrap'), '予約枠が画像より前にある');
 });
 
 section('11. 吹き出しの中身はセリフのみで、選手名・団体名を含まない', () => {

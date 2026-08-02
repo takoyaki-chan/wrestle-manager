@@ -576,13 +576,13 @@ function _panelHtml(ch, side){
   const isL = side === 'L';
   return `<div class="fighter-panel wm-ring-fighter ${isL?'left':'right'}" id="panel-${side}">
     <div class="danger-overlay" id="danger-${side}">DANGER</div>
+    <div class="battle-speech-slot"><div class="speech-bubble" id="sp-${side}"></div></div>
     <div class="portrait-area" id="port-${side}">
       <img class="wm-full-figure" src="${_getFullUrl(ch)}" alt="${escHtml(ch.name)}" id="img-${side}"
         onerror="this.style.display='none'">
       <div class="monitor-frame"></div>
       <div class="dmg-number" id="dmg-${side}"></div>
       <div class="danger-glow" id="dangerGlow-${side}"><div class="danger-glow-inner"></div></div>
-      <div class="speech-bubble" id="sp-${side}"></div>
     </div>
     <button class="wm-ring-nameplate" onclick="openBp('${side}')">${escHtml(ch.name)}</button>
   </div>`;
@@ -1530,11 +1530,11 @@ function showResult(fr){
     const vLine = winner && winner.vl && winner.vl.length ? pk(winner.vl) : '';
     // The victory quote is the winner speaking, so the identity card below must match that speaker.
     victoryOv.innerHTML = `<div class="victory-box" id="rBox">
+      <div class="vic-speech-slot"><div class="vic-speech" id="rQuote"><div class="vic-speech-text" id="rSpeech"></div></div></div>
       <img id="rImg" class="winner-portrait" src="${_getUpperUrl(winner)}" alt="${escHtml(winner.name)}" onerror="this.style.display='none'">
       <div class="winner-label">W I N N E R</div>
       <div class="winner-name" id="rWinner">${escHtml(winner.name)}</div>
       <div class="vic-finish" id="rType">${escHtml(finLabel)}</div>
-      <div class="vic-speech" id="rQuote"><div class="vic-speech-text" id="rSpeech"></div></div>
       <div class="vic-bottom" id="rBottom">
         <div class="vic-loser">
           <img class="vic-loser-face" src="${_getFaceUrl(winner)}" alt="${escHtml(winner.name)}" onerror="this.style.display='none'">

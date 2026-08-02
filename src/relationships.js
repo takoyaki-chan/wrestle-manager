@@ -3474,9 +3474,7 @@ Engine.challengeRequest = {
    *  and the PPV keep their own cards and never consume a challenge booking. */
   isEligibleHomeShow(state) {
     const week = state?.week || 0;
-    return !!(Engine.util?.isShowWeek?.(week))
-      && !Engine.util.isSpecialShow(week)
-      && !Engine.util.isPPV(week);
+    return !!(Engine.util?.isRegularShowWeek?.(week));
   },
 
   /** Remove booked travelers from an already-authored home card. */

@@ -1378,6 +1378,20 @@
   }
 
   .stl-pick-grid { grid-template-columns: repeat(2, 1fr); padding: 0 8px 14px; }
+  .mdl-a-card.wide { max-width: calc(100vw - 20px); }
+  .war-entry-stage { padding: 14px 8px 12px; }
+  .war-entry-stage .mdl-a-opponent-bar { gap: 9px; padding: 9px 10px; }
+  .war-entry-stage .mdl-a-opponent-upper { width: 54px; height: 72px; }
+  .war-entry-stage .mdl-a-opponent-name { font-size: 15px; }
+  .war-entry-stage .mdl-a-opponent-meta { font-size: 9px; }
+  .war-entry-versus { font-size: 26px; }
+  .war-entry-candidate-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; max-height: 45vh; }
+  .war-entry-candidate { padding: 8px 5px; }
+  .war-entry-candidate .mdl-a-candidate-upper { width: 90px; height: 120px; max-width: 100%; }
+  .war-entry-summary { align-items: flex-start; flex-direction: column; gap: 5px; padding: 10px 12px; }
+  .war-entry-footer { display: grid; grid-template-columns: 1fr 1fr; padding: 10px 8px calc(12px + env(safe-area-inset-bottom)); }
+  .war-entry-footer .mdl-a-continue-btn { width: 100%; padding: 10px 6px; letter-spacing: 1px; }
+  .war-entry-footer .is-primary { grid-column: 1 / -1; }
   .stl-match-preview { width: 100%; padding: 12px 6px 4px; box-sizing: border-box; }
   .stl-match-preview .stl-final-faceoff { gap: 8px; }
   .stl-match-preview .stl-final-side { flex: 1 1 0; width: auto; min-width: 0; }

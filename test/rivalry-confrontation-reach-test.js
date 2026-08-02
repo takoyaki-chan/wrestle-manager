@@ -165,12 +165,13 @@ section('11. 新しい吹き出しを作っていない', () => {
   assert.deepStrictEqual(missing, [], 'index.html に無いクラス: ' + missing.join(', '));
 });
 
-section('12. 吹き出しの中身は話者名とセリフだけ', () => {
-  // 既存の jt-bub と同じ形を崩さない。バッジや所属を足さない
+section('12. 吹き出しの中身はセリフだけ', () => {
   assert.ok(!/因 縁|宿 敵|⚡/.test(bubbleSrc),
     '吹き出しの中に飾りを足している。因縁であることはセリフ自体が言っている');
-  assert.ok(/class="sp bl"/.test(bubbleSrc) && /class="sp gd"/.test(bubbleSrc),
-    '既存の話者ラベル(sp bl / sp gd)を使っていない');
+  assert.ok(!/class="sp (?:bl|gd)"/.test(bubbleSrc),
+    '話者名を吹き出しの中へ戻している');
+  assert.ok((bubbleSrc.match(/jt-bub-slot/g) || []).length >= 2,
+    '左右両方に通常フローの予約枠が無い');
 });
 
 section('13. 同じ対戦なら描き直しても同じセリフ', () => {

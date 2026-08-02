@@ -67,7 +67,7 @@ section('4. renderShowPrep は非興行週・非該当フェーズを自分で�
   const at = uiRender.indexOf('function renderShowPrep()');
   assert.ok(at > 0, 'renderShowPrep が見つからない');
   const body = uiRender.slice(at, at + 900);
-  assert.ok(/isShowWeek\(G\.week\)/.test(body) && /'manage', 'showPrep'/.test(body),
+  assert.ok(/isRegularShowWeek\(G\.week\)/.test(body) && /'manage', 'showPrep'/.test(body),
     'renderShowPrep 側のガードが消えている。showScreen から無条件に呼べなくなる');
 });
 

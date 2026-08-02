@@ -65,6 +65,48 @@ function extractFunction(source, name) {
 }
 
 // ── (3) initPPVTV に保険の時限があること ──
+// Regression: an event can be enqueued during the 200ms empty-queue gap.
+// In that case the later modal must wait until the event popup is closed.
+{
+  const timers = [];
+  const ctx = {
+    _eventPopupQueue: [],
+    _onEventPopupQueueEmpty: null,
+    setTimeout: (fn) => { timers.push(fn); return timers.length; },
+    console,
+  };
+  const code = extractFunction(commonSource, '_consumeEventPopupQueueEmpty')
+    + '\n' + extractFunction(commonSource, '_chainEventPopupQueueEmpty')
+    + '\n;this.__chain = _chainEventPopupQueueEmpty;'
+    + 'this.__push = value => _eventPopupQueue.push(value);'
+    + 'this.__clear = () => { _eventPopupQueue.length = 0; };'
+    + 'this.__consume = _consumeEventPopupQueueEmpty;';
+  vm.runInNewContext(code, ctx);
+
+  let fired = false;
+  ctx.__chain(() => { fired = true; });
+  assert.strictEqual(timers.length, 1, 'empty queue should reserve one transition timer');
+
+  ctx.__push({ type: 'tvAppearance' });
+  timers.shift()();
+  assert.strictEqual(fired, false, 'a late event must keep the following modal waiting');
+
+  ctx.__clear();
+  const queuedCallback = ctx.__consume();
+  assert.strictEqual(typeof queuedCallback, 'function', 'callback must be chained behind the late event');
+  queuedCallback();
+  assert.strictEqual(fired, true, 'following modal should open after the event queue empties');
+}
+
+// Regression: the next C3 event must also honor the shared overlay queue.
+{
+  const closeEventPopup = extractFunction(commonSource, 'closeEventPopup');
+  assert.ok(
+    /setTimeout\(\(\)\s*=>\s*_enqueuePopup\(\(\)\s*=>\s*_renderEventPopupAsC3\(\)\),\s*200\)/.test(closeEventPopup),
+    'the next C3 event should re-enter the shared popup queue'
+  );
+}
+
 {
   const start = appSource.indexOf('App.initPPVTV = function()');
   assert.ok(start >= 0, 'App.initPPVTV must exist');

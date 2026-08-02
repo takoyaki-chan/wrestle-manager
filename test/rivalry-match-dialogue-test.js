@@ -1,6 +1,7 @@
 'use strict';
 
-// 因縁マッチの試合後コメントが「予約 → 消化」まで繋がっていることを固定する安全網。
+// 因縁マッチの試合後コメントが、通常興行では結果一覧内、PPVでは予約モーダルへ
+// 確実に届くことを固定する安全網。
 // 2026-07-21 の興行結果画面リデザイン(e03804b)でこの予約が丸ごと落ち、
 // UPSET_RIVALRY_LINES(71本)を含む因縁の勝敗セリフが一度も出ない状態が5日間続いた。
 // 「セリフのテーブルはあるのに誰も読まない」を機械的に落とすのがこのテストの役目。
@@ -31,10 +32,18 @@ function extractFunction(source, signature) {
 assert.ok(ui.includes('_pendingMatchDialogues.push('),
   '_pendingMatchDialogues に push する箇所が無い = 試合後コメントは永久に出ない');
 
-// ── 2) 通常興行・PPV の両方が予約すること ──
+// ── 2) 通常興行は結果一覧へ戻し、PPV は独立モーダルへ予約すること ──
 const showResult = extractFunction(ui, 'function renderShowResult(');
-assert.ok(showResult.includes('_queueRivalryMatchDialogue('),
-  '通常興行の結果画面が因縁コメントを予約していない');
+assert.ok(showResult.includes('_buildRivalryMatchDialogue('),
+  '通常興行の結果一覧が因縁コメントを組み立てていない');
+assert.ok(showResult.includes('SHOW_RESULT_DIALOGUE_MIN_RIVALRY'),
+  '通常興行の結果一覧が旧来の発現ラインを参照していない');
+assert.ok(showResult.includes("_pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine)"),
+  '通常興行の左選手画像上へセリフを渡していない');
+assert.ok(showResult.includes("_pbFighterBlock('right', r.right, rightCls, metaRight, rightLine)"),
+  '通常興行の右選手画像上へセリフを渡していない');
+assert.ok(!showResult.includes('_queueRivalryMatchDialogue('),
+  '通常興行は結果一覧と独立モーダルへ同じセリフを二重表示しない');
 const ppvResult = extractFunction(ui, 'function renderPPVResult(');
 assert.ok(ppvResult.includes('_queueRivalryMatchDialogue('),
   'PPV の結果画面が因縁コメントを予約していない');
@@ -55,16 +64,19 @@ for (const [label, source, signature] of [
 assert.strictEqual((app.match(/showPostMatchDialogues\(/g) || []).length, 2,
   '試合後コメントの消化は通常興行とPPVの2経路であるべき');
 
-// ── 4) 番狂わせ分岐が生きていること ──
-const queueFn = extractFunction(ui, 'function _queueRivalryMatchDialogue(');
-assert.ok(queueFn.includes('UPSET_RIVALRY_LINES'),
+// ── 4) 共通組み立て処理で番狂わせ分岐が生きていること ──
+const buildFn = extractFunction(ui, 'function _buildRivalryMatchDialogue(');
+assert.ok(buildFn.includes('UPSET_RIVALRY_LINES'),
   '番狂わせ専用セリフ(UPSET_RIVALRY_LINES)が参照されていない');
-assert.ok(/ovrW\s*<\s*ovrLose\s*-\s*8/.test(queueFn),
+assert.ok(/ovrW\s*<\s*ovrLose\s*-\s*8/.test(buildFn),
   '番狂わせ判定(OVR差9以上の格下勝ち)が削除前と同じ式で残っていること');
+const queueFn = extractFunction(ui, 'function _queueRivalryMatchDialogue(');
 assert.ok(queueFn.includes('RIVALRY_POPUP_CONFIG.normalMinRivalry'),
   '因縁コメントの発動ラインを data.js の設定から読んでいない');
 assert.ok(/normalMinRivalry:\s*60/.test(data),
   '通常の因縁コメントの発動ライン rivalry 60 が data.js に設定されていない');
+assert.ok(/SHOW_RESULT_DIALOGUE_MIN_RIVALRY\s*=\s*30/.test(ui),
+  '定期興行の結果一覧は旧来どおり rivalry 30 から吹き出しを出すこと');
 
 // ── 5) 描画は U3グループB の共通コンポーネントを使うこと ──
 const renderFn = extractFunction(ui, 'function _renderNextMatchDialogue(');

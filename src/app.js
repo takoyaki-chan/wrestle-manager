@@ -2870,6 +2870,11 @@ const Storage = {
         if (!G.factionEventCooldowns || typeof G.factionEventCooldowns !== 'object') G = { ...G, factionEventCooldowns: {} };
         G = { ...G, _migrated_factions_v1: true };
       }
+      // 旧セーブを含め、ロードのたびに敵対度の浮動小数誤差を除去する。
+      // clean state は同一参照のまま返るため、毎回通して将来の直書き経路にも備える。
+      if (Engine.factions && typeof Engine.factions.normalizeFactionHostility === 'function') {
+        G = Engine.factions.normalizeFactionHostility(G);
+      }
       // 派閥内ポイント制 v1 マイグレーション（spec: faction-internal-rank-spec-v0.2 §2.4）
       if (!G._migrated_factions_internal_points_v1) {
         if (!G.factionInternalPoints || typeof G.factionInternalPoints !== 'object') {
@@ -3741,6 +3746,7 @@ let sessionRng = Engine.rng.create(G.rngSeed);
 function ov(c) { return Engine.util.ov(c); }
 function getSalary(c) { return Engine.util.getSalary(c, G.titles); }
 function isShowWeek(w) { return Engine.util.isShowWeek(w); }
+function isRegularShowWeek(w) { return Engine.util.isRegularShowWeek(w); }
 function getQuarter(w) { return Engine.util.getQuarter(w); }
 function isSpecialShow(w) { return Engine.util.isSpecialShow(w); }
 function isPPV(w) { return Engine.util.isPPV(w); }
@@ -5131,7 +5137,7 @@ const App = {
     Audio.play('contract');
     const faSigningLine = getSigningLine(fighter, 'fa_signing');
     showEventPopup({ type:'fighter', id: fighter.id, name: fighter.name,
-      tone:'positive', message: faSigningLine,
+      tone:'positive', speech: faSigningLine,
       detail:`📝 契約金: ${finalCost}万 [${tierCfg.label}]` });
     refreshAll();
   },
@@ -5280,6 +5286,7 @@ const App = {
     if (!released) return;
     let signedFighter = pending.fighter;
     let detail = `解雇: ${released.name}`;
+    let speech = '';
     let message = '契約が成立しました';
     if (pending.source === 'fa') {
       const idx = G.freeAgents.findIndex(c => c.id === pending.fighterId);
@@ -5302,7 +5309,8 @@ const App = {
       G = { ...G, funds: G.funds - pending.cost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, eliteTicket: usedEliteTicket ? false : G.eliteTicket, eliteTicketUsed: usedEliteTicket ? true : G.eliteTicketUsed };
       signedFighter = normalized;
       detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
-      message = getSigningLine(fighter, 'fa_signing');
+      speech = getSigningLine(fighter, 'fa_signing');
+      message = '';
     } else if (pending.source === 'scout') {
       const cand = (G.scoutCandidates || []).find(c => c.id === pending.fighterId) || pending.fighter;
       const tierCfg = Engine.scout.getTierConfig(cand.assessedTier || 'material');
@@ -5326,7 +5334,8 @@ const App = {
       G = { ...G, roster: newRoster, scoutCandidates: candidates, scoutPicks: picks, funds: G.funds - pending.cost, titles, gameLog: log };
       signedFighter = normalizedSigned;
       detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
-      message = getSigningLine(cand, pending.meta?.choice === 'direct' ? 'direct' : 'competition_won');
+      speech = getSigningLine(cand, pending.meta?.choice === 'direct' ? 'direct' : 'competition_won');
+      message = '';
     } else if (pending.source === 'negotiation') {
       const fromOrgId = pending.meta?.fromOrgId;
       const fromOrgName = pending.meta?.fromOrgName || '他団体';
@@ -5348,7 +5357,10 @@ const App = {
     Storage.autoSave();
     refreshAll();
     Audio.play('contract');
-    showEventPopup({ type: 'fighter', id: signedFighter.id, name: signedFighter.name, tone: 'positive', message, detail });
+    showEventPopup({
+      type: 'fighter', id: signedFighter.id, name: signedFighter.name, tone: 'positive',
+      speech: speech || undefined, message: message || undefined, detail,
+    });
   },
 
   // ── Scout Event Methods (scout-spec §2-§5) ──────────────
@@ -5456,7 +5468,7 @@ const App = {
         : 'direct';
       // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
       var _scoutSigningPopup = { type:'fighter', id: cand.id, name: cand.name,
-        tone:'positive', message: `「${getJoinGreeting(normalizedSigned)}」`,
+        tone:'positive', speech: getJoinGreeting(normalizedSigned),
         detail:`${cand.name}が加入しました！(スカウト獲得)` };
       var _scoutSigningFanfare = (signingContext === 'competition_won');
     } else if (result.result === 'lost') {
@@ -5818,7 +5830,7 @@ const App = {
     // 引き留め成功セリフ表示
     showEventPopup({
       type: 'fighter', id: fighter.id, name: fighter.name, tone: 'positive',
-      message: retainLine, detail: `${fighter.name}の引き留めに成功しました（引き留め ${updatedFighter.retainCount}/2回目）`,
+      speech: retainLine, detail: `${fighter.name}の引き留めに成功しました（引き留め ${updatedFighter.retainCount}/2回目）`,
     });
   },
 
@@ -5932,7 +5944,7 @@ const App = {
     closeFighterPopup();
     refreshAll();
     showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',
-      message: getTraitQuote('release', c), detail:`${cName}が団体を去りました` });
+      speech: getTraitQuote('release', c), detail:`${cName}が団体を去りました` });
   },
 
   // ── タイトル奪還挑戦状（Phase 4） ─────────────────────────────────────
@@ -6083,7 +6095,7 @@ const App = {
     Audio.play('link');
     refreshAll();
     showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
-      message: pickCoachVoiceQuote('coachHire', coachId), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
+      speech: pickCoachVoiceQuote('coachHire', coachId), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
   },
 
   // Expand coach slot
@@ -6125,7 +6137,7 @@ const App = {
     Audio.play('unlink');
     refreshAll();
     if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
-      message: pickCoachVoiceQuote('coachFire', coachId), detail:`${coach.name}がチームを去りました` });
+      speech: pickCoachVoiceQuote('coachFire', coachId), detail:`${coach.name}がチームを去りました` });
   },
 
   // Assign character to coach
@@ -6151,11 +6163,11 @@ const App = {
       try { Storage.autoSave(); } catch (_e) {}
       refreshAll();
     }
-    if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
-    // PPV週は通常興行不可
-    if (G.ppvPhase === 'locked' || G.ppvPhase === 'show') {
+    if (G.offSeason || G.weekPhase !== 'manage' || !isRegularShowWeek(G.week)) {
       Audio.play('error');
-      showToast('今週はPPV GRAND FINALが開催されます。通常興行は行えません。');
+      if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
+        showToast('今週は季節の特別興行です。通常興行は行えません。');
+      }
       return;
     }
     Audio.play('crowd');
@@ -6351,6 +6363,15 @@ const App = {
     }
     // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
     if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
+    // Calendar invariant: weeks 12/24/36/48 belong exclusively to the
+    // seasonal special event, regardless of cancellation/completion state.
+    if (!isRegularShowWeek(G.week)) {
+      Audio.play('error');
+      showToast(Engine.util.isSeasonSpecialEventWeek(G.week)
+        ? '今週は季節の特別興行です。通常興行は行えません。'
+        : '今週は通常興行を開催できる週ではありません。');
+      return;
+    }
     // An accepted away challenge must be resolved before the local show.  The
     // old post-show branch temporarily mixed opponent guests into a completed
     // local-show state and could persist them if result processing failed.
@@ -7971,7 +7992,17 @@ const App = {
             _pendingCommon1Result: {
               payload: booking, matchResult: r,
               fighterAId: booking.fighterAId, fighterBId: booking.fighterBId,
-              applyResult: { resultText: c1Result.resultText, impactSummary: c1Result.impactSummary },
+              applyResult: {
+                resultText: c1Result.resultText,
+                impactSummary: c1Result.impactSummary,
+                winnerId: c1Result.winnerId,
+                loserId: c1Result.loserId,
+                winnerName: c1Result.winnerName,
+                loserName: c1Result.loserName,
+                factionName: c1Result.factionName,
+                isUpset: c1Result.isUpset,
+                upsetTag: c1Result.upsetTag,
+              },
             },
           };
           wmDiag(`[WM Faction] Common-1 booking resolved this show (slot ${c1Idx})`);
@@ -8925,11 +8956,11 @@ const App = {
       const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
       popups.push({
         type: 'fighter', id: leftId, name: leftFighter.name,
-        message: leftLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
+        speech: leftLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
       });
       popups.push({
         type: 'fighter', id: rightId, name: rightFighter.name,
-        message: rightLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
+        speech: rightLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
       });
     }
     // ── 段階拡張ポイント: 他のプラス効果はここに追加 ──
@@ -8954,7 +8985,7 @@ const App = {
     const loseLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.loser,  loserFighter);
     popups.push({
       type: 'fighter', id: loserId, name: loserFighter.name,
-      message: loseLine, detail: '— 敗者の心 —', autoCloseMs: 1800, sound: 'event',
+      speech: loseLine, detail: '— 敗者の心 —', autoCloseMs: 1800, sound: 'event',
     });
     return popups;
   },
@@ -10163,7 +10194,7 @@ const App = {
       setTimeout(() => showEventPopup({
         type: 'fighter', id: winnerId, name: winnerName,
         tone: isGood ? 'gold' : 'neutral',
-        message: winnerLine,
+        speech: winnerLine,
         detail: `📣 ${crowdText}`,
         autoCloseMs: 2500,
       }), i * 100);
@@ -10180,7 +10211,7 @@ const App = {
       setTimeout(() => {
         showEventPopup({
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
-          message: getTraitQuote('injury', ch),
+          speech: getTraitQuote('injury', ch),
           detail: `🏥 ${injuryLabel(ir.injury.type)} — 全治${ir.injury.weeksLeft}週間`,
         });
       }, i * 100);
@@ -10764,24 +10795,6 @@ const App = {
   // 週次精算を記録して、同じクリック内で次週へ遷移するための準備をする。
   // `weekSummary` は advanceFromWeekSummary の入力契約としてだけ使う。一度画面に
   // 描画してから次のクリックを要求すると、1週に2クリック必要になってしまう。
-  /** その週に専用大会（春タッグW12 / 夏JT W24 / 秋対抗戦W36 / 冬PPV・天頂戦W48）が走るか。
-   *  専用大会は会場入り演出と結果画面を自前で持っているので、「今週は〜です」という
-   *  予告トーストを出してはいけない。出すと**大会が全部終わったあとに予告が流れる**
-   *  （2026-07-30 Keisuke 報告。全大会で発生していた）。さらに週番号だけを見る
-   *  isPPV(48) は天頂戦の年も true になるため、天頂戦なのに「PPV GRAND FINAL」と
-   *  誤った大会名を出していた（同じ型の不具合は 2026-07-27 に興行見出しで一度直している）。
-   *  予告の役割は週ダッシュボードのバナーが担っているので、そちらに任せる。
-   *  大会が中止された年（U-20不足など）は通常興行にフォールバックするため、
-   *  各 *IsEventWeek() が false になり従来どおりトーストが出る。 */
-  _isDedicatedEventWeek() {
-    if (!G || G.offSeason) return false;
-    if (G.week === PPV_SHOW_WEEK) return true;
-    if (typeof _stlIsLeagueWeek === 'function' && _stlIsLeagueWeek()) return true;
-    if (typeof _jtIsEventWeek === 'function' && _jtIsEventWeek()) return true;
-    if (typeof _agwIsEventWeek === 'function' && _agwIsEventWeek()) return true;
-    return false;
-  },
-
   _tryAutoAdvance() {
     // 財務タブリデザイン: financeHistory に週次決算を永続蓄積
     const newHistory = [...(G.financeHistory || [])];
@@ -10884,10 +10897,6 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
-    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week)) && !App._isDedicatedEventWeek()) {
-      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
-      setTimeout(() => showToast(msg, 7000), 300);
-    }
     // orgPop リバランス v1.1 §7: シーズン開始時のorgPop変動通知
     if (G._pendingSeasonStartNotif) {
       const notif = G._pendingSeasonStartNotif;
@@ -10963,7 +10972,7 @@ const App = {
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
-        message: getTraitQuote('injury', c), detail:`🏥 ${injuryLabel(c.injury.type)} — 全治${c.injury.weeksLeft}週間` }), i * 100);
+        speech: getTraitQuote('injury', c), detail:`🏥 ${injuryLabel(c.injury.type)} — 全治${c.injury.weeksLeft}週間` }), i * 100);
     });
     // v1.2-9: Flavor event popups (雑誌取材・TV出演)
     const flavorEvents = G._flavorEvents || [];
@@ -11373,10 +11382,6 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
-    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week)) && !App._isDedicatedEventWeek()) {
-      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
-      setTimeout(() => showToast(msg, 7000), 300);
-    }
   },
 
   // Advance to next week via Engine
@@ -12187,7 +12192,7 @@ const App = {
           // closeAndChoice 直後の overlay クローズ完了を確実にしてから表示
           setTimeout(() => showEventPopup({
             type: 'fighter', id: selectedFighter.id, name: selectedFighter.name,
-            tone: 'gold', message: dialogue,
+            tone: 'gold', speech: dialogue,
             detail: `📺 ${event.outletName || 'メディア'}・${activityLabel}`,
           }), 250);
         }
@@ -13807,7 +13812,7 @@ const App = {
       name: speaker.name,
       tone: 'negative',
       title: '🚨 資金危機',
-      message: line,
+      speech: line,
       detail: `残り猶予${Math.max(0, G.crisisWeeksRemaining || 0)}週 — 立て直すか、解散か`,
     }), 250);
   },
@@ -13994,9 +13999,61 @@ const App = {
   // ══════════════════════════════════════════════
   //  WAR MATCH PREVIEW SYSTEM (v0.99d)
   // ══════════════════════════════════════════════
+  _warEntrySelection: null,
   _warPreview: null,
   _warUiToken: 0,
   _warBgmTimer: null,
+
+  warToggleEntryFighter(id) {
+    const ev = G.pendingEvent;
+    if (!ev || ev.type !== 'war') return;
+    const required = Number(ev.matchCount) === 5 ? 5 : 3;
+    const candidates = Engine.event.getWarEntryCandidates(G);
+    if (!candidates.some(f => Number(f.id) === Number(id))) return;
+    const selected = Array.isArray(App._warEntrySelection) ? [...App._warEntrySelection] : [];
+    const index = selected.findIndex(pickedId => Number(pickedId) === Number(id));
+    if (index >= 0) selected.splice(index, 1);
+    else if (selected.length < required) selected.push(Number(id));
+    else { Audio.play('error'); return; }
+    App._warEntrySelection = selected;
+    Audio.play('click');
+    renderWarEntrySelection();
+  },
+
+  warAutoSelectEntry() {
+    const ev = G.pendingEvent;
+    if (!ev || ev.type !== 'war') return;
+    const required = Number(ev.matchCount) === 5 ? 5 : 3;
+    App._warEntrySelection = Engine.event.getWarEntryCandidates(G)
+      .slice(0, required).map(f => Number(f.id));
+    Audio.play('select');
+    renderWarEntrySelection();
+  },
+
+  warReturnToChallenge() {
+    App._warEntrySelection = null;
+    _mdlAClose();
+    showWarChallenge();
+  },
+
+  warConfirmEntry() {
+    const ev = G.pendingEvent;
+    if (!ev || ev.type !== 'war') return;
+    const required = Number(ev.matchCount) === 5 ? 5 : 3;
+    const selected = Array.isArray(App._warEntrySelection) ? [...App._warEntrySelection] : [];
+    if (selected.length !== required) { Audio.play('error'); return; }
+    const card = Engine.event.makeWarCard(G, ev.opponentOrgId, selected);
+    if (card.length !== required) {
+      Audio.play('error');
+      if (typeof showToast === 'function') showToast('代表選手の編成を確定できませんでした');
+      renderWarEntrySelection();
+      return;
+    }
+    App._warEntrySelection = null;
+    _mdlAClose();
+    Audio.play('select');
+    App.initWarPreview(ev, card);
+  },
 
   _beginWarUiTransition() {
     App._warUiToken += 1;

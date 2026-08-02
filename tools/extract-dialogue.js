@@ -205,6 +205,9 @@ const TABLE_MANIFEST = [
   // 同じく c79a3ba で削除済み。現在の記事文は NEWS_HEADLINE_TEMPLATES 側にある。
   T('NEWS_TICKER_TEMPLATES', 'data.js', '10'),
   T('NEWS_HEADLINE_TEMPLATES', 'data.js', '10'),
+  T('RETIREMENT_TEMPLATES', 'data.js', '10'),
+  T('DRAFT_PLAYER_RESULT_PARTS', 'data.js', '10'),
+  T('CHAMPION_CHANGE_TEMPLATES', 'data.js', '10'),
   T('BIG_NEWS_LEAD_LINES', 'data.js', '10'),
   // 2026-07-31 追加。新年号(シーズン開幕号)のリード文
   T('SEASON_OPENING_NEWS_LEAD_LINES', 'data.js', '10'),

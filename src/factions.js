@@ -7,6 +7,27 @@ Engine.factions = {
   // ── ヘルパー ────────────────────────────────────────────────
   _hostKey(fromId, toId) { return `${fromId}>${toId}`; },
 
+  // 敵対度は週次で 0.3 ずつ動くため、二進浮動小数の誤差を state に蓄積させない。
+  // 保存精度を小数1桁に固定し、旧セーブや外部入力の非有限値もここで無害化する。
+  _normalizeHostility(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 0;
+    const clamped = Engine.util.clamp(numeric, 0, 100);
+    return Math.round((clamped + Number.EPSILON) * 10) / 10;
+  },
+
+  normalizeFactionHostility(state) {
+    if (!state || !state.factionHostility || typeof state.factionHostility !== 'object') return state;
+    const normalized = {};
+    let changed = false;
+    for (const [key, value] of Object.entries(state.factionHostility)) {
+      const next = this._normalizeHostility(value);
+      if (next > 0) normalized[key] = next;
+      if (!Object.is(value, next) || next === 0) changed = true;
+    }
+    return changed ? { ...state, factionHostility: normalized } : state;
+  },
+
   _getBond(state, fromId, toId) {
     if (!state.relationships) return 50;
     const rec = state.relationships[`${fromId}>${toId}`];
@@ -583,7 +604,10 @@ Engine.factions = {
     if (fromFactionId === toFactionId) return state;
     const key = this._hostKey(fromFactionId, toFactionId);
     const cur = (state.factionHostility || {})[key] || 0;
-    const next = Engine.util.clamp(cur + delta, 0, 100);
+    const numericDelta = Number(delta);
+    const next = this._normalizeHostility(
+      this._normalizeHostility(cur) + (Number.isFinite(numericDelta) ? numericDelta : 0)
+    );
     const newHost = { ...(state.factionHostility || {}) };
     if (next === 0) delete newHost[key];
     else newHost[key] = next;
@@ -626,7 +650,7 @@ Engine.factions = {
       const avgBond = bondCount ? bondSum / bondCount : 0;
       if (avgBond > cfg.hostilityHighBondThreshold) delta += cfg.hostilityHighBondExtraDecay;
 
-      const next = Engine.util.clamp(val + delta, 0, 100);
+      const next = this._normalizeHostility(Number(val) + delta);
       if (next > 0) newHost[key] = next;
     }
 
@@ -936,7 +960,10 @@ Engine.factions = {
     const newHost = {};
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
-      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) newHost[key] = val;
+      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) {
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
+      }
     }
 
     return { ...s, factions: newFactions, factionHostility: newHost };
@@ -1010,10 +1037,11 @@ Engine.factions = {
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
       if (Number(fromStr) === factionId || Number(toStr) === factionId) {
-        const next = Engine.util.clamp(val * cfg.hostilityLeaderChangeMultiplier, 0, 100);
+        const next = this._normalizeHostility(val * cfg.hostilityLeaderChangeMultiplier);
         if (next > 0) newHost[key] = next;
       } else {
-        newHost[key] = val;
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
       }
     }
     s = { ...s, factionHostility: newHost };
@@ -1071,7 +1099,10 @@ Engine.factions = {
     const newHost = {};
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
-      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) newHost[key] = val;
+      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) {
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
+      }
     }
     return { ...s, factions: newFactions, factionHostility: newHost };
   },
@@ -2010,10 +2041,11 @@ Engine.factions = {
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
       if (Number(fromStr) === factionId || Number(toStr) === factionId) {
-        const next = Engine.util.clamp(val * cfg.hostilityLeaderChangeMultiplier, 0, 100);
+        const next = this._normalizeHostility(val * cfg.hostilityLeaderChangeMultiplier);
         if (next > 0) newHost[key] = next;
       } else {
-        newHost[key] = val;
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
       }
     }
     s = { ...s, factionHostility: newHost };
@@ -2918,7 +2950,7 @@ Engine.factions = {
   },
 
   applyCommon1Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName, fighterAId, fighterBId, archetypeId, leaderId } = payload;
+    const { factionId, factionName, fighterAId, fighterBId, fighterAName, fighterBName, archetypeId, leaderId } = payload;
     let s = state;
     const impactSummary = [];
     let resultText = '';
@@ -2930,7 +2962,8 @@ Engine.factions = {
       s = {
         ...s,
         bookedCommon1: {
-          fighterAId, fighterBId, factionId, factionName, archetypeId, leaderId,
+          fighterAId, fighterBId, fighterAName, fighterBName,
+          factionId, factionName, archetypeId, leaderId,
           createdSeason: state.season, createdWeek: state.week,
           createdAbsWeek: this._absWeek(state),
         },
@@ -2952,14 +2985,30 @@ Engine.factions = {
 
   // Common-1 試合結果を state へ反映（trust / rivalry）
   applyCommon1MatchResult(state, payload, winnerId, loserId, rng) {
-    const { factionName, fighterAId, fighterBId, fighterAName, fighterBName, leaderId, factionId, archetypeId } = payload;
+    // task-79で予約をID主体へ移した後も、旧処理は予約時点のfighterAName/fighterBNameを
+    // 直接読んでいた。予約には名前が無い版が既にセーブへ存在し得るため、表示名は
+    // 現在のロスターと派閥をIDから引き直す。予約内の名前は後方互換用の予備に留める。
+    const {
+      fighterAId, fighterBId, leaderId, factionId, archetypeId,
+      fighterAName: bookedFighterAName, fighterBName: bookedFighterBName,
+      factionName: bookedFactionName,
+    } = payload || {};
+    const roster = Array.isArray(state.roster) ? state.roster : [];
+    const factions = Array.isArray(state.factions) ? state.factions : [];
+    const sameId = (left, right) => left != null && right != null && String(left) === String(right);
+    const fighterA = roster.find(c => c && sameId(c.id, fighterAId));
+    const fighterB = roster.find(c => c && sameId(c.id, fighterBId));
+    const currentFaction = factions.find(f => f && sameId(f.id, factionId));
+    const fighterAName = (fighterA && fighterA.name) || bookedFighterAName || '選手A';
+    const fighterBName = (fighterB && fighterB.name) || bookedFighterBName || '選手B';
+    const factionName = (currentFaction && currentFaction.name) || bookedFactionName || '派閥';
     let s = state;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
-    const winnerName = winnerId === fighterAId ? fighterAName : fighterBName;
-    const loserName  = loserId  === fighterAId ? fighterAName : fighterBName;
+    const winnerName = sameId(winnerId, fighterAId) ? fighterAName : fighterBName;
+    const loserName  = sameId(loserId, fighterAId) ? fighterAName : fighterBName;
 
-    const isUpset = !!leaderId && loserId === leaderId;     // 下克上
-    const isLeaderWin = !!leaderId && winnerId === leaderId; // 順当
+    const isUpset = leaderId != null && sameId(loserId, leaderId);     // 下克上
+    const isLeaderWin = leaderId != null && sameId(winnerId, leaderId); // 順当
 
     // アーキタイプ別倍率（下克上が「どれだけ刺さるか」）
     const upsetMult = ({
@@ -3010,7 +3059,7 @@ Engine.factions = {
       s = this._adjustFactionMomentum(s, facId, momentumHit);
 
       // 派閥メンバー全員 → リーダー rivalry 上昇（求心力低下の伝染）
-      const fac = (s.factions || []).find(f => f.id === facId);
+      const fac = (s.factions || []).find(f => f && sameId(f.id, facId));
       if (fac) {
         const others = (fac.memberIds || []).filter(id => id !== leaderId && id !== winnerId);
         for (const mid of others) {
@@ -3063,7 +3112,7 @@ Engine.factions = {
       });
     }
 
-    return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName, isUpset, upsetTag };
+    return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName, factionName, isUpset, upsetTag };
   },
 
   // ── task-79: Common-1 興行予約（bookedCommon1）ヘルパー群 ─────────────────

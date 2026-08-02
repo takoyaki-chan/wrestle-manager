@@ -80,7 +80,7 @@ function makeShowState(roster, titles, extra = {}) {
   return {
     rngSeed: 777,
     season: 5,
-    week: 20, // 偶数 = isShowWeek、かつ PPV_SHOW_WEEK(48)ではない
+    week: 20, // 通常興行週（各季節の第12週ではない）
     titles: { world: { championId: null, defenses: 0 } },
     aiOrgs: {
       org_s: {
@@ -171,10 +171,9 @@ function testVarietyAmongTopChallengers() {
   const roster = [champ, c1, c2, c3, filler];
 
   const picked = new Set();
-  // season/weekを振って抽選シードを変え、複数試行の分布を見る
-  for (let w = 2; w <= 120; w += 2) {
-    if (w === 48) continue; // PPV週は除外
-    const id = runOnceAndGetChallengerId(roster, titles, champ, filler, { week: w });
+  // seasonを振って抽選シードを変え、実在する通常興行週で複数試行の分布を見る
+  for (let season = 2; season <= 61; season++) {
+    const id = runOnceAndGetChallengerId(roster, titles, champ, filler, { season, week: 20 });
     picked.add(id);
   }
   assert.ok(picked.size > 1, `複数試行で最強(${c1.id})以外も選ばれること(実際に選ばれたID: ${[...picked].join(',')})`);
@@ -191,6 +190,7 @@ function testChampionNeverSelectsItself() {
   const roster = [champ, c1, c2, filler];
 
   for (let w = 2; w <= 40; w += 2) {
+    if (!Engine.util.isRegularShowWeek(w)) continue;
     const id = runOnceAndGetChallengerId(roster, titles, champ, filler, { week: w });
     assert.notStrictEqual(id, champ.id, '王者本人が自分自身の挑戦者に選ばれてはならない');
   }

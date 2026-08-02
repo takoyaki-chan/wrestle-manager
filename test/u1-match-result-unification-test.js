@@ -1,7 +1,7 @@
 'use strict';
 
-// U1 (残り分): .crrm-* (挑戦試合結果) / .c1r-*（派閥内対決結果） / .pb-mrow（8画面共有の試合行）を
-// .emr-*（1試合結果ポップアップ）の配置バランスに揃えた回。この回でしか保証されない不変条件を、
+// U1 (残り分): .crrm-* (挑戦試合結果) / Common-1（派閥内対決結果） / .pb-mrow（8画面共有の試合行）を
+// 既存の結果表示部品へ揃えた回。この回でしか保証されない不変条件を、
 // 可能な限り実関数を実行して検証する（test/README.md の方針: 文字列一致より実行結果を優先）。
 
 const assert = require('assert');
@@ -101,37 +101,25 @@ assert.ok(!ui.includes('crrm-reaction-speaker'), '吹き出し内の話者名(�
 assert.ok(!ui.includes('crrm-reaction-figure'), '旧ラッパー(crrm-reaction-figure)は撤去し画像を直接センタリングする');
 
 // ---------------------------------------------------------------------------
-// 4. .c1r-* (派閥内対決結果): 既存の_emrSingleSide/.emr-bout/.emr-hpヘルパーを流用し、
-//    常に自団体内の試合なのでcrossOrg=falseで団体バッジを出さない。
+// 4. Common-1 (派閥内対決結果): 重要な一戦として、戴冠・節目防衛と同じ既存A型イベントモーダルを使う。
+//    独自のc1rカードやshowResultOverlayへは戻さない。
 // ---------------------------------------------------------------------------
-assert.ok(
-  css.includes('.c1r-card{--emr-accent:var(--gold);--emr-accent-rgb:var(--gold-rgb);--emr-metal:var(--gold-light);'),
-  '派閥内対決カードは.emr-*ヘルパーが参照する--emr-accent系をローカル定義し、常に金テーマで描画する'
-);
-assert.ok(!css.includes('.c1r-stage{'), '旧.c1r-stage(独自2カラムレイアウト)は.emr-boutへ置換したため削除する');
-assert.ok(!css.includes('.c1r-verdict{'), '旧.c1r-verdict(勝敗タグ)はグレースケール+中央WIN表示と重複するため削除する');
-assert.ok(!css.includes('.c1r-bubble-wrap{'), '旧.c1r-bubble-wrap(絶対配置の吹き出し)は.emr-bubble-slotへ置換したため削除する');
-assert.ok(!css.includes('.c1r-portrait{'), '旧.c1r-portrait(勝敗で共通サイズだが独自実装)は.emr-upperへ統合したため削除する');
+assert.ok(!css.includes('.c1r-card{'), '旧Common-1専用結果カードCSSは廃止し、既存A型へ一本化する');
 
 const c1rSrc = functionSource('_renderCommon1MatchResult');
-const emrSideCalls = c1rSrc.match(/_emrSingleSide\(/g) || [];
-assert.strictEqual(emrSideCalls.length, 2, '_renderCommon1MatchResultは共通ヘルパー_emrSingleSideを両サイドで流用する');
-assert.ok(c1rSrc.includes("'OVR', ovrA, bubbleFor(fA), false"), '派閥内対決の左サイドはcrossOrg=falseで団体バッジを出さない');
-assert.ok(c1rSrc.includes("'OVR', ovrB, bubbleFor(fB), false"), '派閥内対決の右サイドはcrossOrg=falseで団体バッジを出さない');
-assert.ok(c1rSrc.includes('emr-hp'), '派閥内対決のHPバーも共通.emr-hpを流用する');
-// レイアウト統一で選手プロフィールへの導線を失わないこと(2026-07-25に一度消えた)
-assert.strictEqual(
-  (c1rSrc.match(/profileContext:\s*'roster'/g) || []).length, 2,
-  '派閥内対決の結果から選手プロフィールへ飛べる導線を両サイドに残す'
-);
-assert.ok(
-  ui.includes("onclick=\"showFighterPopup(${fid},'${ctx}')\""),
-  '_emrSingleSideはprofileContextを受けたとき画像と名前をプロフィールへの導線にする'
-);
+assert.ok(c1rSrc.includes("_mdlAHeader('⚔ 派閥内対決・決着'"), '既存A型ヘッダーを使う');
+assert.ok(c1rSrc.includes('mdl-a-title-result'), '戴冠・節目防衛と同じA型結果本体を使う');
+assert.ok(c1rSrc.includes('mdl-a-title-pair'), '既存A型の2名並置を使う');
+assert.ok(c1rSrc.includes('mdl-a-title-bubble'), 'セリフは既存A型の頭上吹き出しへ置く');
+assert.ok(c1rSrc.includes('mdl-a-result-summary'), '実況・ナレーションではない数値影響は既存結果欄へ分離する');
+assert.ok(c1rSrc.includes('_mdlAOpen(html, { wide: true, topAligned: true })'), 'A型共通オーバーレイを開く');
+assert.ok(!c1rSrc.includes('showResultOverlay'), 'Common-1専用のshowResultOverlay描画へ戻さない');
+assert.ok(!c1rSrc.includes('_emrSingleSide('), '単発試合カードではなく重要イベント用A型を使う');
 
 // ---------------------------------------------------------------------------
 // 5. ランタイム実測: _renderCommon1MatchResultを実際に実行し、
-//    (a) 吹き出し→画像→名前の順でDOMに現れる (b) 団体バッジが出ない (c) 勝者/敗者で画像サイズを分けていない
+//    (a) A型モーダルを開く (b) 吹き出し→画像→名前の順でDOMに現れる
+//    (c) 地の文と数値影響が吹き出しから分離される
 //    ことを生成HTMLで確認する。
 // ---------------------------------------------------------------------------
 (function runC1rRuntimeCheck() {
@@ -143,19 +131,21 @@ assert.ok(
     factions: { getCommon1Line: (kind) => (kind === 'resultLeader' ? '勝った。' : 'まだだ…') },
   };
   const Gstub = { season: 3, week: 12 };
-  const fakeBox = { innerHTML: '' };
-  const fakeOverlay = { classList: { add() {}, remove() {} } };
-  const documentStub = { getElementById: (id) => (id === 'showResultBox' ? fakeBox : id === 'showResultOverlay' ? fakeOverlay : null) };
+  let openHtml = '';
+  let openOpts = null;
+  const fakeButton = { addEventListener() {} };
+  const documentStub = { getElementById: (id) => (id === 'c1rCloseBtn' ? fakeButton : null) };
 
   const build = new Function(
     'Engine', 'G', 'document', 'escHtml', 'getUpperUrl', 'Math',
-    `${functionSource('_emrUpper')}
-     ${functionSource('_emrOvr')}
-     ${functionSource('_emrOrgBadgeHtml')}
-     ${functionSource('_emrOrgInitial')}
-     ${functionSource('_emrSingleSide')}
+    `let _capturedHtml = '', _capturedOpts = null;
+     function showFighterPopup() {}
+     function _mdlAOpen(html, opts) { _capturedHtml = html; _capturedOpts = opts; return true; }
+     function _mdlAClose() {}
+     function _mdlAHeader(title, meta) { return '<div class="mdl-a-header"><div class="mdl-a-header-title">' + title + '</div><div class="mdl-a-header-meta">' + meta + '</div></div>'; }
+     function _mdlASeasonLabel(state) { return 'WEEK ' + state.week + ' ・ ' + state.season + 'Y'; }
      ${functionSource('_renderCommon1MatchResult')}
-     return { _renderCommon1MatchResult };`
+     return { _renderCommon1MatchResult, getHtml: () => _capturedHtml, getOpts: () => _capturedOpts };`
   );
   const built = build(EngineStub, Gstub, documentStub, escHtml, getUpperUrl, Math);
 
@@ -163,27 +153,28 @@ assert.ok(
   const fB = { id: 22, name: 'B選手', pw: 70, sp: 68, te: 66, st: 72, mn: 64 };
   const payload = { factionName: 'テスト派閥', leaderId: 11, archetypeId: 'testarch' };
   const matchResult = { winner: 'left', mq: 62, turns: 9, finType: 'ピン', finMove: '必殺技', hpLeft: { final: 40, max: 100 }, hpRight: { final: 5, max: 100 } };
-  const applyResult = { resultText: 'AがBを下した。', impactSummary: [] };
+  const applyResult = {
+    resultText: 'AがBを下し、派閥の序列が動いた。', isUpset: true,
+    impactSummary: [{ label: 'A選手 人気', delta: '+2' }, { label: 'B選手 trust', delta: '-3' }],
+  };
 
   built._renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, () => {});
-  const html = fakeBox.innerHTML;
+  const html = built.getHtml();
 
-  assert.ok(html.includes('emr-bubble-slot') && html.includes('emr-upper') && html.includes('emr-name'),
-    '派閥内対決の1サイド分に吹き出し予約枠・画像・名前が揃っている');
-  const bubbleIdx = html.indexOf('emr-bubble-slot');
-  const upperIdx = html.indexOf('emr-upper');
-  const nameIdx = html.indexOf('emr-name');
+  assert.deepStrictEqual(built.getOpts(), { wide: true, topAligned: true }, '既存A型を重要イベント用の幅・上寄せで開く');
+  assert.ok(html.includes('mdl-a-header') && html.includes('mdl-a-title-result') && html.includes('mdl-a-title-pair'),
+    'A型イベントモーダルの既存骨格が生成されている');
+  const bubbleIdx = html.indexOf('mdl-a-title-bubble');
+  const upperIdx = html.indexOf('mdl-a-title-portrait');
+  const nameIdx = html.indexOf('mdl-a-title-name');
   assert.ok(bubbleIdx < upperIdx && upperIdx < nameIdx, '吹き出し→画像→名前の縦順序を守る(mockup-baseline §4)');
-  assert.ok(!html.includes('emr-org-badge'), '自団体内の試合(派閥内対決)では団体バッジを出さない');
-
-  const upperBlocks = html.match(/<div class="emr-upper"[^>]*>[\s\S]*?<\/div>/g) || [];
-  assert.strictEqual(upperBlocks.length, 2, '両サイド分の画像ブロックが生成されている');
-  // 選手IDと画像URLだけを伏せて比較する。両サイドの構造が同じであることを確かめるため
-  const normalize = (s) => s.replace(/src="[^"]*"/, 'src=""').replace(/showFighterPopup\(\d+,/, 'showFighterPopup(0,');
-  assert.strictEqual(normalize(upperBlocks[0]), normalize(upperBlocks[1]),
-    '勝者・敗者で画像の見た目(サイズ等)を分けない。差は.emr-side.is-loserのCSS(グレースケール等)だけで付ける');
+  assert.strictEqual((html.match(/mdl-a-title-person/g) || []).length, 2, '勝者と敗者をA型の同じ人物部品で2名並べる');
   assert.strictEqual((html.match(/showFighterPopup\(/g) || []).length, 4,
     '両サイドの画像と名前がプロフィールへの導線になっている(画像2+名前2)');
+  assert.ok(html.includes('AがBを下し、派閥の序列が動いた。'), 'ナレーションは地の文欄に残る');
+  assert.ok(html.includes('mdl-a-result-summary') && html.includes('A選手 人気') && html.includes('B選手 社長への反応'),
+    '数値影響は吹き出しではなくA型結果欄に残る');
+  assert.ok(!html.includes('showResultOverlay') && !html.includes('emr-bout'), '旧結果カードのDOMを生成しない');
 
   console.log('u1-match-result-unification-test: c1r runtime check ok');
 })();

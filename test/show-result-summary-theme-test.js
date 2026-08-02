@@ -31,9 +31,14 @@ assert(showSummary.indexOf('pb-attend-hero') < showSummary.indexOf('pb-score-str
 assert(css.includes('.pb-event-summary .pb-attend-hero-val{font-size:72px'), '客入り人数を最重要数値として強調する');
 assert(css.includes('.pb-event-summary .pb-attend-hero-bar{height:9px'), '客入りバーを見やすく強調する');
 
-[showSummary, ppvSummary, ppvTvSummary, warSummary].forEach((summary, index) => {
-  assert(!summary.includes('has-dialogue'), `全試合結果${index + 1}にセリフ用レイアウトを残さない`);
-  assert(!summary.includes('pb-dialogue'), `全試合結果${index + 1}にセリフ吹き出しを出さない`);
+assert(showSummary.includes('has-dialogue'), '定期興行の全試合結果はセリフがある行の高さを確保する');
+assert(showSummary.includes("_pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine)"),
+  '定期興行の左選手へ吹き出しセリフを渡す');
+assert(showSummary.includes("_pbFighterBlock('right', r.right, rightCls, metaRight, rightLine)"),
+  '定期興行の右選手へ吹き出しセリフを渡す');
+[ppvSummary, ppvTvSummary, warSummary].forEach((summary, index) => {
+  assert(!summary.includes('has-dialogue'), `定期興行以外の全試合結果${index + 1}に重複セリフ用レイアウトを残さない`);
+  assert(!summary.includes('pb-dialogue'), `定期興行以外の全試合結果${index + 1}に重複セリフ吹き出しを出さない`);
 });
 assert(!ppvSummary.includes('coachPraise'), 'PPV全試合結果にコーチのセリフを重複表示しない');
 assert(!ppvTvSummary.includes('emotionText'), 'PPV観戦の全試合結果に感情セリフを重複表示しない');
