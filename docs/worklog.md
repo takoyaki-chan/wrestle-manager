@@ -1,5 +1,54 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-80 実装完了: 王座交代記事の本文拡充 + 記事本文からの内部値(OVR/MQ)排除（2026-08-02・worktree）
+
+`docs/codex-tasks/task-80-champion-article-body.md` の実装。task-77 マージ後の main を fast-forward してから着手。
+
+**A. 王座交代記事の組み立て式本文**: `Engine.newspaper.composeChampionChangeBody(ev, seed)` を新設（`src/management.js`）。
+テンプレは `CHAMPION_CHANGE_TEMPLATES`（`src/data.js`、§4確定版26本・Keisukeレビュー通過、一字一句そのまま収録）。
+リード(3)+プロフィール(年齢帯4分割: 若手≤21=3/伸び盛り22-24=6/完成期25-29=3/ベテラン30+=3)+戴冠歴(初=3/複数回=2)+締め(3)。
+- プロフィールは `age` から年齢帯を判定して該当プールを1本選ぶ。22-24帯だけ6本(慎重系3+前向き系3)から選ぶ設計通り
+- 戴冠歴は `titleReigns>=2` なら複数回目文へ。複数回目テンプレは `[取り返した版, 汎用版]` の順で並ぶ前提で、
+  新設ヘルパー `Engine.newspaper._isRepeatSameTitleReign(fighter, titleOrgName)` が
+  `careerRecord.history` を `orgName`(例:「○○王座」文字列。`beltId` は常に `'world'` 固定で団体をまたいだ判別に
+  使えないため使わない)でスコープし、同じ王座の `titleWin` が2件以上あるときだけ「取り返した」版を選択肢に含める
+- ペイロード拡張(`age`/`styleJa`/`titleReigns`/`careerSeasons`)は2箇所: AI側は `nextOrgData._newsChampionChange`
+  組み立て時(`recordTitleWin` 適用後の roster から取得)、自団体側は `Engine.title.crownChampion` の
+  `newsEvent.data`(`recordTitleWin` 適用後の `newRoster` から取得)。どちらも「今回の戴冠を含んだ値」で揃えた
+- `styleJa` は `Engine.newspaper.STYLE_JA` を新設して `composeDraftPlayerResult`(task-77)のローカル重複定義も
+  ここへ差し替え(共用化)
+- `playerTitleChange`(自団体側、`titleChange` industry news event)の本文も同じ composer で拡充。
+  見出しは既存の `NEWS_HEADLINE_TEMPLATES.titleChange`(3種)のまま。`age` が取れない場合のみ旧・単文本文へフォールバック
+- パーツ選択の擬似乱数は `(season*131 + week*17 + fighterId)` を種にする(乱数不使用・仕様通り)
+
+**B. 記事本文からの内部値(OVR/MQ)排除**: `aiChampionChange` 本文の「（OVR {ovr}）」を削除。
+それ以外は grep で全列挙してから対応方針を決めた——**「新聞に載る記事の地の文」だけを対象**とし、
+表・数字欄のラベル(MVPレース欄・戦力レーダー・fact-item バッジ・UIカードの `AGE`/`OVR` メタ行等)は
+仕様の例外規定どおり現状維持。年代記(章システム)・殿堂/経歴サマリー・キャリア年表ハイライトは
+別スペック(chronicle-system-spec 等)の機能であり新聞ではないため対象外とした。
+実際に書き換えた箇所:
+- `src/management.js`: `_buildPpvSummitStory`(頂上決戦の質評価4分岐)/`crossWarResult`/`ppvUndercard`(見出し+本文)/
+  `aiShowHighlight`/`aiTeamConflict`(見出し)/`aiWarResult`(2)/`aiB3Result`(2)/`aiMediaSpotlight`/
+  `juniorTournamentBestBout`(見出し)/`juniorTournamentOutlook`(黒田記者の展望、OVR)/
+  `Engine.mvpRace` の直近名勝負叙述(2箇所・計11行) — 全て `MQ` → 「試合評価」、`OVR` → 「総合力」
+- `src/app.js`: `_NEWSPAPER_HEADLINES`(closeMQ/superMQ)/`_NEWSPAPER_ARTICLES`(9種のプール中8箇所、
+  upsetの「OVR格差」→「総合力差」含む)/メインイベント記事のサブヘッドライン3分岐 — 新聞1面メイン記事の生成元
+- `src/ui-render.js`: 格上げ記事(`promotedArticle`)フォールバック3種、2面 団体比較の黒田寸評フォールバック1箇所
+- `src/kuroda-text.js`: `KURODA_SPOTLIGHT`(2面 団体比較の選手寸評、growth/star/risingYoung/midCareer/veteranの
+  計19箇所)。文意・語尾は変えず `OVR` トークンだけ「総合力」に置換
+- スコープ外と判断した箇所(Chronicle章生成テンプレ・殿堂`_buildHighlights`・`buildCareerSummary`・
+  career-history highlights・DBカード/UIラベル類)は変更していない
+
+**C.** newsValue/PRIORITY の点数は一切変更していない(§4の組み立てはあくまで本文の厚みの改修)。
+
+**検証**: `node test/newspaper-news-value-test.js` 全25項目PASS(点数不変)。`node test/auto-sim.js 20 42` 違反0/エラー0/ALL CLEAR。
+`npm test` 196/196 PASS(既存本数のまま)。手動で `Engine.newspaper.composeChampionChangeBody` を直接呼び、
+若手初戴冠/22-24前向き系/ベテラン返り咲き(同王座取り返し)の組文が仕様通りに出ることと、
+`repeatSameTitle: false` のときに「取り返した」版が一切選ばれないことを確認。
+
+**specs更新**: `specs/newspaper-spec-v1.0.md` に「3-1b. 王座交代記事の組み立て式本文」を新設し、
+「7. 文章のルール」へ OVR/MQ 生表記禁止のルールと対象範囲(地の文 vs 表・数字欄の線引き)を追記。
+
 ## 天頂戦 開催前ミニイベント(Week42)が大会後に出るバグ修正（2026-08-02・worktree）
 
 Keisuke実機報告（8年目・12年目の2回連続再現、天頂戦=4年に一度のPPVトーナメント）: 開催前ミニイベント（「4年に一度の大舞台まで、あと6週」モーダル）が本来のWeek42ではなく、天頂戦そのものが終わった直後に表示される。

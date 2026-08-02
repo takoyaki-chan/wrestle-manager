@@ -137,6 +137,29 @@ MVPレース順位は**トップ10しか無く、1週古い**（recalc は advan
 維持し、強度補正のみ格スコアを効かせる。peakOVR は `careerRecord.peakOVR`(衰え前のピーク)を使い、
 現在OVR(衰え後)では代用しない。reigns は `careerRecord.totalTitleWins`。
 
+#### 3-1b. 王座交代記事の組み立て式本文（task-80・2026-08-02）
+
+対象は `aiChampionChange`(AI団体)と `playerTitleChange`(自団体、`titleChange` industry news event)。
+点数(`aiChampionChange` 130 / `playerTitleChange` 180)は変えず、**本文だけ**
+「リード+プロフィール+戴冠歴+締め」の組み立て式(`Engine.newspaper.composeChampionChangeBody`、
+テンプレは `CHAMPION_CHANGE_TEMPLATES` 全26本)に拡充する。
+
+- プロフィール文は**年齢帯4分割**で選ぶ: 若手(≤21)/伸び盛り(22〜24)/完成期(25〜29)/ベテラン(30+)。
+  22〜24帯だけ専用テンプレが6本あり、慎重系3本・前向き系3本が混在する
+- 戴冠歴文は初戴冠/複数回目で分岐。複数回目は `[取り返した版, 汎用版]` の順で並び、
+  **同じ王座を過去にも保持していた場合のみ**「取り返した」版を選択肢に含める
+  (`Engine.newspaper._isRepeatSameTitleReign`。`careerRecord.history` を `orgName`(例:「○○王座」)で
+  スコープし、同じ orgName の `titleWin` が2件以上あれば再戴冠と判定する。beltId は常に `'world'` 固定で
+  団体をまたいだ判別に使えないため使わない)
+- ペイロードは `age` / `styleJa`(`Engine.newspaper.STYLE_JA` で英字styleを和名変換) /
+  `titleReigns`(`careerRecord.totalTitleWins`、今回の戴冠を含む) /
+  `careerSeasons`(`(careerSeasons||0)+1`、今シーズンを含む在籍年数)を持つ。
+  AI側は `recordTitleWin` 適用後の roster から、自団体側(`Engine.title.crownChampion`)も
+  `recordTitleWin` 適用後の `newRoster` から引く(=どちらも今回の戴冠が反映された値)
+- パーツ選択は `(season*131 + week*17 + fighterId)` を種にした擬似ランダム(乱数は使わない)。
+  同じ組文が続かないようにキャラ・週で散らす
+- 組み立てに必要な情報が無い場合(自団体側で `age` が取れない等)は旧・単文テンプレへフォールバックする
+
 ### 3-2. 特別興行の事前記事
 
 **「事前の記事は、下手をすると結果の記事以上の注目度があるものです、新聞では」**（Keisuke）。
@@ -234,6 +257,13 @@ promising以下しかいなければ1名だけ。raw/material しかいない年
 - 大会名をセリフ内で連呼しない
 - 見出し・本文とも `NEWS_HEADLINE_TEMPLATES`（`src/data.js`）に置く。
   **点だけ足してテンプレを作らないと、紙面には一行も出ない**
+- **記事の地の文に `OVR` / `MQ` の英字トークンを出さない**（task-80・2026-08-02）。
+  「OVR78」「（MQ78）」のような生表記は「総合力78」「（試合評価78）」へ日本語化するか、削除する。
+  数値そのもの・点数・週数・回数はOK。**例外**は MVPレース欄・戦力レーダー・fact-item バッジのような
+  「表・数字欄」——ラベル付きの数値表示は現状維持でよい。対象はあくまで**文章として読ませる地の文**
+  （新聞1〜4面の story 本文、`_NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`（`src/app.js`）、
+  `KURODA_SPOTLIGHT`（`src/kuroda-text.js`、2面 団体比較の寸評）、MVPレースの叙述文
+  （`Engine.mvpRace.generateNarrative`/見出し生成）ほか）
 
 ---
 

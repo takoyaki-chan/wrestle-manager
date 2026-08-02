@@ -28,6 +28,7 @@
 - **記録タブ+ピークOVR+MVPレース拡張: ✅ 実装（2026-07-30）**。詳細は worklog。**残: 実機確認（📜記録タブ/ピーク表示/4面新文言）／specs+画面仕様書**
 - **新聞の全面再設計: ✅ P1〜P6 全工程完了（2026-08-02）**。確定仕様は `specs/newspaper-spec-v1.0.md` が正（旧 `newspaper-and-orgcompare-spec-v2.0.md` は置き換え）。採点を合成点化（基礎+主役+強度）し、ニュース源6種を追加、2面〜4面を固定面から特集へ降格、静かな週は後追い記事、写真は人物→汎用→なしの3段。一面トップの合成点は中央値 163→194、基礎点45の埋め草が一面を張る率は 27.8%→4.9%。**残は Keisuke 実機確認のみ**（「この記事が一面に来るのは納得できるか」は数値では測れない／2面以下の文字の読みやすさ／汎用画像の見え方）
   - **task-77（引退記事の格付け+ドラフト1面拡充）: ✅ 実装完了（2026-08-02・worktree）**。引退は戴冠歴/peakOVR/在籍/現役王者保持を強度補正化（上限+120）してティアL/A/B/C×各3文へ分岐、AI季末キュー・週次スキャン・怪我引退の3経路へ共通ヘルパーで配線。自団体ドラフト1面はリード+注目選手1〜2名+締めの組み立て式に拡充。`test/newspaper-news-value-test.js` にA-4不変条件5件追加・全PASS、`node test/auto-sim.js 20 42` 違反0、`npm test` 196/196 PASS。**Keisuke実機確認待ち**
+  - **task-80（王座交代記事の本文拡充+内部値トークン排除）: ✅ 実装完了（2026-08-02・worktree）**。王座交代記事(`aiChampionChange`/`playerTitleChange`)をリード+プロフィール(年齢帯4分割)+戴冠歴+締めの組み立て式(`Engine.newspaper.composeChampionChangeBody`、`CHAMPION_CHANGE_TEMPLATES`全26本、Keisukeレビュー通過版)に拡充。地の文のOVR/MQ生表記を新聞1〜4面全域(management.js/app.js主要記事プール/kuroda-text.js KURODA_SPOTLIGHT/mvpRace叙述)から排除し「総合力」「試合評価」へ日本語化。点数は無変更。`test/newspaper-news-value-test.js` 全PASS、`node test/auto-sim.js 20 42` 違反0、`npm test` 196/196 PASS。**Keisuke実機確認待ち**
 - **MQ再設計: ✅ 全工程完了・push済み（2026-07-24）**: P1〜P6完走・specs昇格。確定仕様は `specs/mq-system-spec-v1.0.md` が正。残は**Keisuke実機確認のみ**（週頭通知一式/一面レイアウト2種[ぶち抜きタッグ・2人並びfatedRivals]/王座戦MQ優位の体感）。詳細は下方の完了ブロックとworklog 2026-07-24参照。
 
 ### 小さな宿題（忘れない用）
