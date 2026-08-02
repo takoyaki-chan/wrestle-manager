@@ -2,7 +2,7 @@
 
 **ファイル**：`specs/faction-common-events-spec-v0.1.md`
 **最終更新**：2026-05-02
-**実装状況**：Phase A〜D 全実装完了（Common-1/3/4/5/7 すべて稼働）。Common-1 リデザイン v0.2（2026-05-02）：打診モーダルを比較レイアウト化（OVR 表示 / 名前リンク / 頭上吹き出し）+ A 選択時はビッグマッチ規格（matchTier=2）の実試合へ遷移。auto-sim 30×42 で違反 0 確認済み
+**実装状況**：Phase A〜D 全実装完了（Common-1/3/4/5/7 すべて稼働）。Common-1 リデザイン v0.2（2026-05-02）：打診モーダルを比較レイアウト化（OVR 表示 / 名前リンク / 頭上吹き出し）。**task-79（2026-08-02）：A 選択を即時試合から興行予約(`G.bookedCommon1`)へ変更**。枠(メイン/セミ/中盤)を強制せず、プレイヤーがカード編成のどこに置くかを決める。auto-sim 20×42 で違反 0 確認済み
 **親仕様**：
 - `specs/faction-system-spec-v0.1.md`（既存 F01〜F08）
 - `specs/faction-archetype-rework-spec-v0.1.md` v0.2
@@ -73,12 +73,13 @@ F05（派閥内亀裂）が「分裂への流れ」だとすれば、Common-1 �
 **打診モーダル（v0.2 リデザイン）**：
 - 2 名を左右に並べた比較レイアウト（ポートレート / OVR / PW・SP・TE・ST・MN ステータス・高い側ハイライト）
 - 名前・ポートレートをクリックで選手詳細ポップアップ（`showFighterPopup(id, 'roster')`）
-- リーダー側ポートレート頭上に **白吹き出し**（UI 共通ルール準拠：`#f0f0f0` 背景 + 黒文字 + 中央寄せ + 三角尻尾）でリーダーセリフ
+- リーダーが対戦者(A/B)本人のときは、その側のポートレート頭上に **白吹き出し**（UI 共通ルール準拠：クリーム背景 + 黒文字 + 中央寄せ + 三角尻尾）でリーダーセリフ
+- **リーダーが対戦者でないとき（task-79 A、2026-08-02 修正）**：対戦者の頭上に誤帰属させず、コーチ帯（reporter strip）の下に専用の**リーダー帯**（`.fc1-leader-strip`、chip サイズ 46×66・2:3 のミニ画像 + 頭上吹き出し）を出してそこにリーダーセリフを表示する。吹き出し内には名前・所属を書かない（`.fc1-leader-tag` に外出し）
 - リーダーセリフは **アーキタイプ × 性格** の 6×6 マトリクスから生成（personality: fiery/composed/grudging/airy/earnest/flippant）
 - 「2 名間の因縁 X / 100」表記（内部変数名 rivalry を出さない）
 
 3 択：
-- **A：派閥内対決を組む** — ビッグマッチ規格（matchTier=2）で実試合へ遷移
+- **A：派閥内対決を組む** — 次の興行への**予約**を作る（枠はカード編成でプレイヤーが決める）
 - **B：別カードに置換** — 別の対戦カードに振り替える
 - **C：静観** — 自然に任せる
 
@@ -86,17 +87,26 @@ F05（派閥内亀裂）が「分裂への流れ」だとすれば、Common-1 �
 
 | 選択 | 効果 |
 |---|---|
-| A | **試合プレビュー（観戦/スキップ）→ battle-engine.html でビッグマッチ実試合 → 結果反映**。下記 §3.4.3 の波及効果を適用。`Engine.relationships.applyMatchResult` も同団体ペアとして経由 |
+| A | **興行予約(`G.bookedCommon1`)を作る**。試合はその場では行われない。下記 §3.4.1 の予約制で消化された興行の結果処理で §3.4.3 の波及効果を適用。`Engine.relationships.applyMatchResult` も同団体ペアとして経由 |
 | B | 当該2名 trust ±0、rivalry が継続。F05 発火確率 +5% |
 | C | 自然展開。rivalry はそのまま、F05 発火確率 +10% |
 
-### 3.4.1 試合の規格（v0.2）
+### 3.4.1 興行予約制（v0.3 — task-79、2026-08-02）
 
-- `Engine.battle.simulateMatch(fA, fB, rng, 2, { recordFrames: true })` — matchTier=2（ビッグマッチ）
-- HP base 85（通常 50）、HP scale 1.10、Climax フェーズで BGM 切替、`BIG MATCH` バッジ表示
-- iframe header: `⚔ {factionName} 派閥内対決`、`isSpecialMatch: true, matchTier: 2`
-- seed: `Engine.rng.derive(rngSeed, season, week, 0xC0F1)`（観戦/スキップで結果一致）
-- 関係性反映 seed: `0xC0FE`、trust/rivalry 反映 seed: `0xC0FA`
+**設計原則**：「社長は舞台を作る人」— 対決の格（枠）を決めるのは社長。システムは強制しない。
+
+A を選ぶと即座に試合は行われず、`G.bookedCommon1 = { fighterAId, fighterBId, factionId, factionName, archetypeId, leaderId, createdSeason, createdWeek, createdAbsWeek }` という単一の予約が作られる。
+
+- **興行への組み込み**：次回**通常興行**の編成画面に「予約」バナーが出る（`renderShowPrep`）。プレイヤーが通常のカード編成でこの2名を同じ枠（メイン/セミ/中盤）に組めば、その枠がどこであっても興行結果処理で自動的に検出・清算される。枠は問わない（メインに置けば既存のビッグマッチ/因縁ブースト — `matchIdx===0` のタイトルマッチ相当の tier=2 判定 — が自然に乗るだけで、システム側から特定の枠を強制することはない）
+- **試合の規格**：通常興行の Pass-1 シミュレーションにそのまま乗る（`App._normalShowMatchTier` — メイン/タイトル/ドームメインのみ tier=2）。旧・即時試合フロー（`matchTier` 固定2 でのビッグマッチ扱い）は廃止
+- **清算処理**：`App._finalizeShowImpl` 内、F08 ディレクティブ処理の直前で `G.bookedCommon1` とカード上の一致ペアを検出し、`Engine.factions.applyCommon1MatchResult` を適用（§3.4.3 は不変）。結果表示は即時試合用モーダルの代わりに、興行結果表示の前段（F09/F08/CR と同じ drain チェーン）で `_renderCommon1MatchResult` を表示する
+- **衝突ルール**：
+  - 特別興行週（PPV/春タッグ/秋対抗戦/天頂戦/4団体戦 等）には組み込まない → `Engine.challengeRequest.isEligibleHomeShow` が false の週は自動的に見送り、次の通常興行へ繰り越す
+  - 挑戦状(CH系)/B3奪還挑戦/F09対抗戦/派閥内序列戦と**同一興行で重ねない**（`Engine.factions.hasCompetingBooking` が `_crMatchLocked`/`isCRMatch`/`_f09Locked`/`_internalChallengeLocked`/`isReclaim` のいずれかを検出したら、その週の Common-1 清算を見送る。1興行に予約消化は1件まで、先着優先）
+  - 当事者が負傷/レンタル/forcedRest/退団・引退（ロスターから消失）したら予約は**静かに破棄**（`Engine.factions.isBookedCommon1Valid` が false を返し、週次スイープ `sweepBookedCommon1` が黙って削除。エラー・説明文なし。因縁は残る）
+  - 期限：予約から**1シーズン(48週)** 消化できなければ自然消滅（`isBookedCommon1Expired`。因縁は残ったまま）
+  - 社長命令による派閥解散（`dissolveAllByDecree`）でも進行中の予約は畳まれる
+- **二重予約防止**：`G.bookedCommon1` が存在する間は `checkCommon1Conditions` が ineligible を返し、新しい Common-1 は選ばれない
 
 ### 3.4.3 試合結果の波及効果（v0.3 — リーダー敗北＝下克上を区別）
 
@@ -140,12 +150,15 @@ F05（派閥内亀裂）が「分裂への流れ」だとすれば、Common-1 �
 - 派閥レコードに `_lastUpset = { winnerId, leaderId, absWeek }` を記録
 - v0.4 以降のリーダー交代イベント等のフックに使用
 
-### 3.4.2 実装分割（v0.2）
+### 3.4.2 実装分割（v0.3 — task-79）
 
-- `Engine.factions.applyCommon1Choice` は choice='A' の場合 `pendingMatch: true` を返すのみ（trust/rivalry は反映しない）
-- `Engine.factions.applyCommon1MatchResult(state, payload, winnerId, loserId, rng)` — 試合結果から trust/rivalry を反映する独立関数
-- `App._common1Preview` / `App.common1WatchMatch` / `App.common1SkipMatch` / `App._receiveCommon1BattleResult` / `App._finalizeCommon1Match` — B3 挑戦状フローと同等の構造
-- iframe メッセージルーティングに Common-1 用分岐を追加
+- `Engine.factions.applyCommon1Choice` は choice='A' の場合 `G.bookedCommon1` を作り `booked: true` を返す（trust/rivalry はまだ反映しない）
+- `Engine.factions.applyCommon1MatchResult(state, payload, winnerId, loserId, rng)` — 試合結果から trust/rivalry を反映する独立関数（不変）
+- `Engine.factions.isBookedCommon1Valid` / `isBookedCommon1Expired` / `sweepBookedCommon1` / `findBookedCommon1CardIndex` / `hasCompetingBooking` — task-79 で追加した予約ヘルパー群
+- `App._finalizeShowImpl` 内（F08 ディレクティブ処理の直前）で予約ペアの一致検出・清算・`G._pendingCommon1Result` へのキューイングを行う
+- `management.js` の `tickWeek` 週次派閥処理ブロック末尾で `sweepBookedCommon1` を毎週実行（sealed/pending 週でも必ず走る）
+- `Engine.validateGameState` に `bookedCommon1` の整合チェック（オブジェクト型/存在しない選手ID参照/season・week 型）を追加
+- 旧・即時試合フロー（`App._common1Preview` / `App.common1WatchMatch` / `App.common1SkipMatch` / `App._receiveCommon1BattleResult` / `App._finalizeCommon1Match` / `_renderCommon1MatchPreview`）は呼び出し元を失い未使用（コードは残置、将来の削除候補）
 
 ### 3.5 アーキタイプ × 性格マトリクス（リーダーセリフ）
 

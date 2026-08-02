@@ -1121,6 +1121,7 @@ Engine.factions = {
       '_pendingFactionEvent', '_pendingF09', '_pendingInternalChallenge',
       '_pendingF08Directive', '_pendingF08Aftermath', '_pendingF07Directive',
       '_pendingForceCloseRivalry', '_pendingFactionJoinNotices',
+      'bookedCommon1', // task-79: 進行中の Common-1 興行予約も解散に連動して畳む
     ];
     const cleaned = { ...s };
     for (const k of drop) delete cleaned[k];
@@ -2857,6 +2858,8 @@ Engine.factions = {
   checkCommon1Conditions(state, rng) {
     const cfg = FACTION_CONFIG;
     if (state.offSeason) return { eligible: false };
+    // task-79: 既に興行予約が消化待ちのときは二重予約させない
+    if (state.bookedCommon1) return { eligible: false };
     if (this._isCommonTeamCooldownActive(state)) return { eligible: false };
 
     const factions = state.factions || [];
@@ -2931,15 +2934,26 @@ Engine.factions = {
   },
 
   applyCommon1Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName } = payload;
+    const { factionId, factionName, fighterAId, fighterBId, archetypeId, leaderId } = payload;
     let s = state;
     const impactSummary = [];
     let resultText = '';
 
     if (choiceId === 'A') {
-      // 試合は app.js 側でビッグマッチとして実行。ここではマーキングのみ
+      // task-79: 即時試合をやめ、次回通常興行への「予約」を作るだけにする。
+      // 枠(メイン/セミ/中盤)はカード編成でプレイヤーが自由に決める。
       s = this._markCommonEventTrigger(s, factionId, 'COMMON_1');
-      return { state: s, pendingMatch: true, resultText: '', impactSummary: [] };
+      s = {
+        ...s,
+        bookedCommon1: {
+          fighterAId, fighterBId, factionId, factionName, archetypeId, leaderId,
+          createdSeason: state.season, createdWeek: state.week,
+          createdAbsWeek: this._absWeek(state),
+        },
+      };
+      resultText = `${factionName}内の対決を組む方針を固めた。次の興行のカード編成で、どこに置くかは社長次第だ。`;
+      impactSummary.push({ label: `${factionName} 内部対立`, delta: '興行予約' });
+      return { state: s, booked: true, resultText, impactSummary, winnerId: null, loserId: null, winnerName: '', loserName: '' };
     } else if (choiceId === 'B') {
       resultText = `${factionName}内の対決は別カードに振り替えた。火種はそのまま残った。`;
       impactSummary.push({ label: `${factionName} 内部対立`, delta: '継続' });
@@ -3066,6 +3080,62 @@ Engine.factions = {
     }
 
     return { state: s, resultText, impactSummary, winnerId, loserId, winnerName, loserName, isUpset, upsetTag };
+  },
+
+  // ── task-79: Common-1 興行予約（bookedCommon1）ヘルパー群 ─────────────────
+  // 予約は「次の通常興行のカードのどこかに、この2名の一致するペアが組まれたら清算する」
+  // という受動的な仕組み。挑戦状(CH系)/B3のような枠の強制はしない。
+
+  /** 予約対象2名が現時点で有効か（在籍/健康/非レンタル）。無効なら静かに破棄すべき対象。 */
+  isBookedCommon1Valid(state) {
+    const b = state && state.bookedCommon1;
+    if (!b) return false;
+    const roster = state.roster || [];
+    const fA = roster.find(c => c.id === b.fighterAId);
+    const fB = roster.find(c => c.id === b.fighterBId);
+    if (!fA || !fB) return false; // 退団・引退・移籍等でロスターから消えた
+    if (fA.injury || fB.injury) return false;
+    if (fA.isRental || fB.isRental) return false;
+    if (fA.forcedRest || fB.forcedRest) return false;
+    return true;
+  },
+
+  /** 予約から1シーズン(48週)経過したか。経過していれば自然消滅の対象。 */
+  isBookedCommon1Expired(state) {
+    const b = state && state.bookedCommon1;
+    if (!b) return false;
+    const nowAbs = this._absWeek(state);
+    const createdAbs = typeof b.createdAbsWeek === 'number'
+      ? b.createdAbsWeek
+      : Engine.util.absWeek(b.createdSeason || state.season || 1, b.createdWeek || state.week || 1);
+    return (nowAbs - createdAbs) >= 48;
+  },
+
+  /** 週次スイープ: 無効化/期限切れの予約を静かに解除する（因縁自体は残す）。tickWeek から毎週呼ぶ。 */
+  sweepBookedCommon1(state) {
+    if (!state || !state.bookedCommon1) return state;
+    if (!this.isBookedCommon1Valid(state) || this.isBookedCommon1Expired(state)) {
+      const { bookedCommon1: _drop, ...rest } = state;
+      return rest;
+    }
+    return state;
+  },
+
+  /** 今週のカード(singlesのみ)から予約ペアと一致する試合の index を探す。枠(位置)は問わない。 */
+  findBookedCommon1CardIndex(state, validMatches) {
+    const b = state && state.bookedCommon1;
+    if (!b || !Array.isArray(validMatches)) return -1;
+    return validMatches.findIndex(m => m && m.matchType !== 'tag' &&
+      ((m.left === b.fighterAId && m.right === b.fighterBId) ||
+       (m.left === b.fighterBId && m.right === b.fighterAId)));
+  },
+
+  /** 同一興行内に他の予約試合(挑戦状CH/B3/F09/派閥内序列戦/奪還戦)が既に組まれているか。
+   *  spec: 「1興行に予約消化は1件まで、先着優先」— 該当すれば Common-1 はこの週を見送り、次の興行へ繰り越す。 */
+  hasCompetingBooking(validMatches) {
+    return (validMatches || []).some(m => m && (
+      m._crMatchLocked || m.isCRMatch || m._f09Locked || m._internalChallengeLocked || m.isReclaim
+    ));
   },
 
   // 派閥内ポイント加算: Common-1 結果（spec §3.1）

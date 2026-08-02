@@ -2897,6 +2897,35 @@ function renderShowPrep() {
     }
   }
 
+  // ── task-79: Common-1 派閥内対決 興行予約バナー ──
+  // A選択で作られる G.bookedCommon1 を、カード編成候補として案内する。
+  // 枠(メイン/セミ/中盤)は強制しない。プレイヤーが通常カード編成でこの2名を
+  // 同じ試合に組めば、興行結果処理で自動的に清算(因縁-30〜-50)される。
+  if (G.bookedCommon1) {
+    const bc1 = G.bookedCommon1;
+    const bc1A = (G.roster || []).find(c => c.id === bc1.fighterAId);
+    const bc1B = (G.roster || []).find(c => c.id === bc1.fighterBId);
+    if (bc1A && bc1B) {
+      const bc1Eligible = !!(Engine.challengeRequest && Engine.challengeRequest.isEligibleHomeShow
+        && Engine.challengeRequest.isEligibleHomeShow(G));
+      const bc1Placed = (G.showCard || []).some(m => m && m.matchType !== 'tag' &&
+        ((m.left === bc1.fighterAId && m.right === bc1.fighterBId) ||
+         (m.left === bc1.fighterBId && m.right === bc1.fighterAId)));
+      const bc1Status = !bc1Eligible
+        ? '⚠ 特別興行につき今回は組み込まれません（次の通常興行へ繰り越し）'
+        : bc1Placed
+          ? '✓ 今週のカードに組まれています'
+          : 'カードのどこか(メイン/セミ/中盤)に組んでください';
+      html += `<div class="panel" style="border:1px solid var(--gold);margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">⚔ ${escHtml(bc1.factionName || '派閥')}内対決の予約</div>
+        <div style="font-size:12px;color:var(--text-sub);line-height:1.6">
+          <strong>${escHtml(bc1A.name)}</strong> × <strong>${escHtml(bc1B.name)}</strong> — 枠は自由。カード編成のどこに置くかは社長次第<br>
+          <span style="color:${bc1Placed ? '#7bc46c' : 'var(--text-sub)'}">${escHtml(bc1Status)}</span>
+        </div>
+      </div>`;
+    }
+  }
+
   // L1: 会場選択（全会場選択可能・リスク指標付き）
   html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
   const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);

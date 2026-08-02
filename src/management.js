@@ -12701,6 +12701,11 @@ const Engine = {
         }
       }
     }
+    // task-79: Common-1 興行予約の週次スイープ（無効化/1シーズン経過を静かに解除）。
+    // 派閥パイプラインが sealed/pending でスキップされる週でも毎週必ず走らせる。
+    if (Engine.factions && typeof Engine.factions.sweepBookedCommon1 === 'function') {
+      s = Engine.factions.sweepBookedCommon1(s);
+    }
 
     // Phase 5: ライバル称号 週次判定（昇格/降格/片側因縁）
     if (s.rivalries && s.relationships) {
@@ -24824,6 +24829,27 @@ Engine.validateGameState = function(G) {
             warn(`factionHostility[${key}] が存在しない派閥を参照`);
           }
         });
+      }
+    }
+  }
+
+  // ── task-79: Common-1 興行予約(bookedCommon1)整合性チェック ──
+  if (G.bookedCommon1 !== undefined && G.bookedCommon1 !== null) {
+    const b = G.bookedCommon1;
+    if (typeof b !== 'object' || Array.isArray(b)) {
+      warn(`bookedCommon1がオブジェクトでない: ${typeof b}→自動削除`);
+      const { bookedCommon1: _bc1a, ...rest } = G;
+      G = rest;
+    } else {
+      const rosterHas = id => Array.isArray(G.roster) && G.roster.some(c => c.id === id);
+      if (b.fighterAId == null || b.fighterBId == null || !rosterHas(b.fighterAId) || !rosterHas(b.fighterBId)) {
+        warn(`bookedCommon1が存在しない選手ID(${b.fighterAId}, ${b.fighterBId})を参照→自動削除`);
+        const { bookedCommon1: _bc1b, ...rest } = G;
+        G = rest;
+      } else if (!isValidNum(b.createdSeason) || !isValidNum(b.createdWeek)) {
+        warn(`bookedCommon1のcreatedSeason/createdWeekが不正値→自動削除`);
+        const { bookedCommon1: _bc1c, ...rest } = G;
+        G = rest;
       }
     }
   }

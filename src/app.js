@@ -8000,6 +8000,43 @@ const App = {
       s = Engine.relationships.applyShowContextEffects(s, validMatches, results, preShowLosingStreaks, showCtxRng);
     }
 
+    // ── task-79: Common-1 興行予約(bookedCommon1)の清算 ──
+    // 枠(メイン/セミ/中盤)は問わない。今週のカードに予約ペアの一致する対戦が
+    // 実際に組まれていれば、既存の因縁清算(applyCommon1MatchResult)を適用する。
+    // 特別興行週/PPV週や、他の予約試合(CH/B3/F09/派閥内序列戦/奪還戦)と同一興行での
+    // 重複はここで弾き、繰り越す(§5-D鉄則: fail-openで例外は握りつぶし進行を止めない)。
+    if (s.bookedCommon1 && Engine.factions && typeof Engine.factions.findBookedCommon1CardIndex === 'function') {
+      try {
+        const eligibleShow = !!(Engine.challengeRequest && Engine.challengeRequest.isEligibleHomeShow
+          && Engine.challengeRequest.isEligibleHomeShow(s));
+        const noCompeting = eligibleShow && !Engine.factions.hasCompetingBooking(validMatches);
+        const c1Idx = noCompeting ? Engine.factions.findBookedCommon1CardIndex(s, validMatches) : -1;
+        if (c1Idx >= 0 && results[c1Idx] && Engine.factions.isBookedCommon1Valid(s)) {
+          const booking = s.bookedCommon1;
+          const m = validMatches[c1Idx];
+          const r = results[c1Idx];
+          // 引き分けの扱いは旧・即時試合フロー(_finalizeCommon1Match)と同じく非leftをBの勝ちとして解決する
+          const winnerId = r.winner === 'left' ? m.left : m.right;
+          const loserId  = r.winner === 'left' ? m.right : m.left;
+          const c1Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B1));
+          const c1Result = Engine.factions.applyCommon1MatchResult(s, booking, winnerId, loserId, c1Rng);
+          s = c1Result.state;
+          const { bookedCommon1: _doneC1, ...restC1 } = s;
+          s = {
+            ...restC1,
+            _pendingCommon1Result: {
+              payload: booking, matchResult: r,
+              fighterAId: booking.fighterAId, fighterBId: booking.fighterBId,
+              applyResult: { resultText: c1Result.resultText, impactSummary: c1Result.impactSummary },
+            },
+          };
+          wmDiag(`[WM Faction] Common-1 booking resolved this show (slot ${c1Idx})`);
+        }
+      } catch (e) {
+        console.error('[WM Faction] Common-1 booking resolution failed (fail-open, booking left pending):', e);
+      }
+    }
+
     // ── F08 ディレクティブ: 直接対決試合の結果を派閥勢い/対立度に 1.5× で反映
     //    + 両派閥リーダー間 rivalry に +30〜40 の大幅ブースト + ディレクティブクリア ──
     if (s._pendingF08Directive && Engine.factions && typeof Engine.factions.applyMatchResult === 'function') {
@@ -8886,7 +8923,21 @@ const App = {
         if (then) then();
       }
     };
-    drainF09Ending(() => drainF08Aftermath(() => drainCRResult(() => renderShowResult(results, injuryResults))));
+    // task-79: Common-1 予約清算の結果表示(即時試合用モーダルの代替。F08/CRと同じdrainパターン)
+    const drainCommon1Result = (then) => {
+      if (!G._pendingCommon1Result) { if (then) then(); return; }
+      const data = G._pendingCommon1Result;
+      const { _pendingCommon1Result: _, ...rest } = G;
+      G = rest;
+      const fA = (G.roster || []).find(c => c.id === data.fighterAId);
+      const fB = (G.roster || []).find(c => c.id === data.fighterBId);
+      if (fA && fB && typeof _renderCommon1MatchResult === 'function') {
+        _renderCommon1MatchResult(data.payload, data.matchResult, fA, fB, data.applyResult, () => { if (then) then(); });
+      } else {
+        if (then) then();
+      }
+    };
+    drainF09Ending(() => drainF08Aftermath(() => drainCRResult(() => drainCommon1Result(() => renderShowResult(results, injuryResults)))));
   },
 
   // 試合前フレーバーポップアップの収集（specs/match-flavor-popup-spec-v0.1.md §4.2）
@@ -12882,34 +12933,9 @@ const App = {
         Storage.autoSave();
         Audio.play('event');
         renderWeekScreen();
-        if (result.pendingMatch && choiceId === 'A') {
-          // ビッグマッチとして実試合へ遷移
-          const currentFighters = (Engine.factions && Engine.factions.resolveCommon1Fighters)
-            ? Engine.factions.resolveCommon1Fighters(G, payload)
-            : common1Fighters;
-          const fA = currentFighters.fighterA;
-          const fB = currentFighters.fighterB;
-          if (!fA || !fB) { finalizeAudio && finalizeAudio(); return; }
-          // 業界ニュース: 同門対決の実現
-          App._pushIndustryNews({
-            type: 'factionInternalBout',
-            characterId: fA.id,
-            data: {
-              org: G.orgName || 'プレイヤー団体',
-              factionName: payload.factionName || '?',
-              nameA: fA.name,
-              nameB: fB.name,
-            },
-          });
-          App._common1Preview = {
-            payload, fighterA: fA, fighterB: fB,
-            watching: false, matchResult: null, finalizeAudio
-          };
-          if (typeof _renderCommon1MatchPreview === 'function') {
-            _renderCommon1MatchPreview(payload, fA, fB);
-          }
-          return;
-        }
+        // task-79: A選択は即時試合ではなく興行予約(G.bookedCommon1)を作るだけ。
+        // 「試合を組んだ」ことの案内は通常の派閥イベント結果バナーで済ませ、
+        // 実際の試合とその清算(因縁-30〜-50)は予約消化された興行の結果表示側で行う。
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_1',
