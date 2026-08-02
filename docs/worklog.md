@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## AI怪我引退記事の戴冠数バグ修正（2026-08-02・worktree）
+
+task-77実装時にエージェントが発見しスコープ外とした残件の修正。`_newsInjuryRetirement` の生成側（`processAIWeek` 内、management.js 9720行付近）が `retiree.careerHistory` の `'titleWin'` を数えていたが、careerHistory に入るのは背景生成の `'title_win'` のみで、ゲーム内の戴冠は `careerRecord.totalTitleWins` に記録される。このため怪我引退記事の「通算N度の戴冠」がほぼ常に0か過少になり、task-77で追加した強度補正（`retirementGrade` への `newsData.reigns` 入力）も効いていなかった。
+
+- 取得元を task-77 の共通ヘルパー `Engine.newspaper._retirementCareerStats(retiree)` に統一（reigns=totalTitleWins / peakOVR / wasChampion の3値まとめて）。他の引退2経路（AIシーズン末・週次スキャン）と同じ取得元になった
+- 消費側（記事本文の戴冠言及 29366行・強度補正入力 29373行）は `ev.titleReigns` 参照のままで正しい値を受け取る。コード変更は生成側1箇所のみ
+- 消費側の「取得元を分けない」コメント（task-77 §A-3 の旧裁定）を実態に合わせて更新
+
+**検証**: `node test/newspaper-news-value-test.js` 全PASS。`node test/auto-sim.js 20 42` 違反0/エラー0 ALL CLEAR。
+
 ## task-79 実装完了: Common-1 興行予約化 + リーダー発言の帰属修正（2026-08-02・worktree）
 
 `docs/codex-tasks/task-79-common1-booking-and-attribution.md` の実装。
