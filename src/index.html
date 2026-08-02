@@ -3789,20 +3789,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .agw-live-complete{padding:28px 20px;border-top:1px solid var(--stage-border-lit);background:var(--stage-panel);text-align:center}
 .agw-status-rail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;max-width:1060px;margin:8px auto 0}.agw-status-team{min-width:0;padding:7px 9px;border:1px solid var(--stage-border);border-radius:var(--radius-md);background:var(--stage-panel)}.agw-status-team.is-active{border-color:var(--gold)}.agw-status-team.is-out{opacity:.4}.agw-status-team small{display:block;color:var(--stage-text-dim);font-size:7px}.agw-status-team b{display:block;overflow:hidden;font-size:9px;text-overflow:ellipsis;white-space:nowrap}
 
-.agw-intro-lead{text-align:center;margin:18px auto 12px;max-width:760px}
-.agw-intro-lead>span{display:block;font-family:var(--font-label);font-size:10px;letter-spacing:3px;color:var(--stage-text-dim)}
-.agw-intro-lead>strong{display:block;font-size:34px;letter-spacing:4px;color:var(--gold-light)}
-.agw-intro-lead p{font-size:12px;color:var(--stage-text-sub);margin:7px 0 0}
-.agw-intro-bracket{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;max-width:900px;margin:22px auto}
-.agw-intro-match{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;padding:14px;background:var(--stage-panel);border:1px solid var(--stage-border-lit);border-radius:var(--radius-md);text-align:center}
-.agw-intro-match>span{grid-column:1/-1;font-family:var(--font-label);font-size:9px;letter-spacing:3px;color:var(--ev-autumn)}
-.agw-intro-match b{font-size:13px}.agw-intro-match em{font-family:var(--font-display);font-size:22px;color:var(--stage-text-dim)}
-.agw-intro-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:900px;margin:0 auto}
-.agw-intro-steps>div{position:relative;padding:18px 14px 16px;background:var(--stage-panel-deep);border:1px solid var(--stage-border);border-top-color:var(--ev-autumn);text-align:center}
-.agw-intro-steps>div>b{display:grid;place-items:center;width:28px;height:28px;margin:-32px auto 10px;border:1px solid var(--ev-autumn);border-radius:50%;background:var(--stage-bg);color:var(--gold-light);font-family:var(--font-display);font-size:19px}
-.agw-intro-steps strong{display:block;font-size:13px}.agw-intro-steps span{display:block;margin-top:5px;font-size:10px;line-height:1.6;color:var(--stage-text-sub)}
-.agw-screen-actions{display:flex;justify-content:center;margin:24px auto 0}
-
 .agw-result{text-align:center}
 .agw-result-score{display:flex;align-items:center;justify-content:center;gap:18px;margin:12px 0 20px;font-family:var(--font-label);color:var(--stage-text-sub)}
 .agw-result-score b{font-family:var(--font-display);font-size:34px;color:var(--gold)}
@@ -6673,6 +6659,83 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 @keyframes mdlASpeechIn {
   from { opacity: 0; transform: translateX(-50%) translateY(6px); }
   to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+/* 戴冠・節目防衛の結果 — 承認済みの既存A型モーダル版。
+   本文は Noto Sans JP、英字ラベルだけ Oswald。大判式典用の明朝体は使わない。 */
+.mdl-a-title-result {
+  padding: 21px 28px 18px;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 38%, rgba(212,168,67,0.08), transparent 72%),
+    var(--office-panel-cream-card);
+  color: var(--cream-text-main);
+  font-family: var(--font-body);
+  animation: mdlAFadeIn 500ms ease 300ms both;
+}
+.mdl-a-title-narration {
+  max-width: 610px; margin: 0 auto 22px; padding: 0 12px 18px;
+  border-bottom: 1px solid rgba(122,101,48,0.24);
+  color: var(--cream-text-sub); font-size: 14px; line-height: 1.85; text-align: center;
+}
+.mdl-a-title-narration span { display: block; }
+.mdl-a-title-pair {
+  display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+  gap: 30px; align-items: end; max-width: 620px; margin: 0 auto;
+}
+.mdl-a-title-pair.single { grid-template-columns: minmax(0,310px); justify-content: center; }
+.mdl-a-title-person { min-width: 0; text-align: center; }
+.mdl-a-title-person.defeated { opacity: 0.82; }
+.mdl-a-title-bubble {
+  position: relative; min-height: 62px; margin: 0 auto 16px; padding: 10px 13px;
+  display: grid; place-items: center;
+  border: 1px solid rgba(122,101,48,0.32); border-radius: 9px;
+  background: rgba(252,249,240,0.98); box-shadow: 0 7px 18px rgba(70,56,28,0.12);
+  color: var(--cream-text-main); font-size: 13px; line-height: 1.6;
+}
+.mdl-a-title-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -9px; width: 16px; height: 16px;
+  border-right: 1px solid rgba(122,101,48,0.32);
+  border-bottom: 1px solid rgba(122,101,48,0.32);
+  background: rgba(252,249,240,0.98); transform: translateX(-50%) rotate(45deg);
+}
+.mdl-a-title-bubble span { position: relative; z-index: 1; }
+.mdl-a-title-bubble span::before { content: '「'; color: rgba(120,100,60,0.55); }
+.mdl-a-title-bubble span::after { content: '」'; color: rgba(120,100,60,0.55); }
+.mdl-a-title-portrait {
+  position: relative; display: block; width: 132px; height: 194px; margin: 0 auto 9px;
+  overflow: hidden; padding: 0; border: 2px solid var(--cream-gold-dark); border-radius: 4px;
+  background: #2a2520; cursor: pointer;
+}
+.mdl-a-title-person.defeated .mdl-a-title-portrait {
+  border-color: rgba(92,74,30,0.52); filter: saturate(0.78);
+}
+.mdl-a-title-portrait img {
+  position: absolute; inset: 0; display: block; width: 100%; height: 100%;
+  object-fit: cover; object-position: top center;
+}
+.mdl-a-title-portrait-fallback {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  color: rgba(237,232,220,0.6); font-family: var(--font-body); font-size: 42px;
+}
+.mdl-a-title-name {
+  color: var(--cream-text-main); font-size: 19px; font-weight: 700; letter-spacing: 1px;
+}
+.mdl-a-title-role {
+  margin-top: 4px; color: var(--cream-gold); font-family: var(--font-label);
+  font-size: 10px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase;
+}
+.mdl-a-title-actions { padding-bottom: 22px; border-top: 1px solid rgba(122,101,48,0.14); }
+@media (max-width: 620px) {
+  .mdl-a-overlay.top-aligned { align-items: flex-start; }
+  .mdl-a-overlay.top-aligned .mdl-a-header {
+    align-items: flex-start; flex-direction: column; gap: 5px;
+  }
+  .mdl-a-overlay.top-aligned .mdl-a-header-meta { text-align: left; }
+  .mdl-a-title-result { padding: 20px 18px 16px; }
+  .mdl-a-title-pair { grid-template-columns: 1fr; gap: 26px; max-width: 320px; }
+  .mdl-a-title-person.defeated {
+    padding-top: 24px; border-top: 1px solid rgba(122,101,48,0.24);
+  }
 }
 
 /* ============================================================

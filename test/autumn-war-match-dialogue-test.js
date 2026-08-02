@@ -68,6 +68,6 @@ assert.ok(!survivor.includes('getJuniorTournamentLine'), 'survivor dialogue must
 assert.ok(survivor.includes('AUTUMN_WAR_MVP_LINES[context]'), 'team victory dialogue must use the Autumn War archetype table');
 assert.ok(survivor.includes('getDialoguePool(lineSet, winner)'), 'team victory dialogue must resolve by the winner personality and archetype');
 
-assert.ok(ui.includes('preBout: 0.55, survivor: 0.60, champion: 0.75'), 'existing dialogue probabilities must remain unchanged');
+assert.ok(ui.includes('preBout: 0.55, survivor: 0.60, champion: 1.00'), '進行中の抽選率を維持し、最多勝選手の優勝台詞だけは無言にしない');
 
 console.log('autumn-war-match-dialogue-test: ok');

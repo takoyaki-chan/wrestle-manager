@@ -50,6 +50,16 @@ function snapshotMoveSelectionStats(stats) {
   };
 }
 
+// 時間切れでも勝敗は必ず決める。残りHPが同じ場合は試合中の優勢度、
+// それも同じなら試合用のseeded RNGで判定するため、通常の試合結果にdrawを作らない。
+function resolveTimeoutWinner(leftHp, rightHp, leftControl, rightControl, rng, leftWinner, rightWinner) {
+  if (leftHp > rightHp) return leftWinner;
+  if (rightHp > leftHp) return rightWinner;
+  if (leftControl > rightControl) return leftWinner;
+  if (rightControl > leftControl) return rightWinner;
+  return Engine.rng.float(rng) < 0.5 ? leftWinner : rightWinner;
+}
+
 // ── Battle Engine (DOM-free) ──────────────────────────
 Engine.battle = {
     // MQ再設計P3c(mq-redesign-proposal-v0.5 §3.7b): OV100超の減衰シーリング。
@@ -685,15 +695,10 @@ Engine.battle = {
       }
 
       if (!winner) {
-        if (L.hp === R.hp) {
-          winner = 'draw';
-          finType = '時間切れドロー';
-        } else {
-          winner = L.hp > R.hp ? 'left' : 'right';
-          finType = 'HP判定';
-        }
+        winner = resolveTimeoutWinner(L.hp, R.hp, mom, -mom, rng, 'left', 'right');
+        finType = 'HP判定';
         finishPhase = 'Timeout';
-        log.push(`⏰ 時間切れ！ ${winner === 'draw' ? '決着つかず' : (winner === 'left' ? L.name : R.name) + 'のHP判定勝ち'}`);
+        log.push(`⏰ 時間切れ判定により、${winner === 'left' ? L.name : R.name}の勝利！`);
         // 最終フレームに winner を刻む。最後に push された直前のフレームを上書きしても良いが、
         // 追加フレーム (turnSub 無し、turn は維持) で timeout 表示を分離した方が演出しやすい
         if (recordFrames && frames.length > 0) {
@@ -799,6 +804,7 @@ Engine.battle = {
 };
 
 Engine.formatFinish = function(finType, finMove, isFinisher) {
+  if (finType === 'HP判定') return '判定勝ち';
   if (!finMove) return finType || '激闘決着';
   const prefix = isFinisher ? '★ ' : '';
   switch (finType) {
@@ -1661,9 +1667,9 @@ Engine.tagMatch = (() => {
     if (!winner) {
       const totalHpA = legalA.hp + apronA.hp;
       const totalHpB = legalB.hp + apronB.hp;
-      if (totalHpA > totalHpB) winner = 'teamA';
-      else if (totalHpB > totalHpA) winner = 'teamB';
-      else winner = 'draw';
+      const controlA = fA1.damageDealt + fA2.damageDealt;
+      const controlB = fB1.damageDealt + fB2.damageDealt;
+      winner = resolveTimeoutWinner(totalHpA, totalHpB, controlA, controlB, rng, 'teamA', 'teamB');
       finType = 'HP判定';
       finMove = '';
       finishPhase = 'Timeout';

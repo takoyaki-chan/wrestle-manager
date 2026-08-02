@@ -118,8 +118,22 @@ function section(source, startMarker, endMarker) {
   assert.ok(render.includes('renderAutumnWarWeekBanner()'));
   assert.ok(render.includes('class="stl-week-banner agw-week-banner'));
   assert.ok(!render.includes('App.awOpenEntryModal()'));
-  ['renderAutumnWarIntro', 'renderAutumnWarEntry', 'renderAutumnWarBoard', 'renderAutumnWarReorder', 'renderAutumnWarResult', 'renderAutumnWarMvpScene']
+  ['renderAutumnWarEntry', 'renderAutumnWarBoard', 'renderAutumnWarReorder', 'renderAutumnWarResult', 'renderAutumnWarMvpScene']
     .forEach(name => assert.ok(ui.includes(`function ${name}`), `${name} missing`));
+})();
+
+(function testApprovedSpecialIntroGoesStraightToEntry() {
+  const replay = section(app, '  initAutumnWarReplay() {', '  awRevealBout() {');
+  assert.ok(replay.includes('const openEntry = () => App.awBeginEntry();'),
+    '秋大会の新導入後は代表編成へ進むこと');
+  assert.ok(replay.includes("showSpecialEventIntro('autumnWar', G, openEntry)"),
+    'コーチ→選手の既存導入から代表編成へ接続されていない');
+  assert.ok(!replay.includes('renderAutumnWarIntro'),
+    '廃止した旧ルール説明画面が秋大会の経路に残っている');
+  assert.ok(!ui.includes('function renderAutumnWarIntro'),
+    '廃止した旧ルール説明画面の休眠実装が残っている');
+  assert.ok(!html.includes('.agw-intro-') && !html.includes('.agw-screen-actions'),
+    '廃止した旧ルール説明画面の専用CSSが残っている');
 })();
 
 (function testApprovedResponsiveEntryAndDetails() {
@@ -191,7 +205,7 @@ function section(source, startMarker, endMarker) {
   const sectionText = section(ui, 'const _AGW_DIALOGUE_CHANCE', 'function renderAutumnWarBoard');
   assert.ok(sectionText.includes('preBout: 0.55'));
   assert.ok(sectionText.includes('survivor: 0.60'));
-  assert.ok(sectionText.includes('champion: 0.75'));
+  assert.ok(sectionText.includes('champion: 1.00'), '優勝発表の最多勝選手は抽選落ちで無言にしない');
   assert.ok(sectionText.includes('Engine.rng.create(seed | 0)'), 'dialogue inclusion must use a local seeded RNG');
   assert.ok(!sectionText.includes('Math.random'), 'autumn-war dialogue must stay stable across reloads');
   assert.ok(sectionText.includes('getAutumnWarMatchLine(timing'), 'pre-bout pair must use the Autumn War personality/archetype matrix');
@@ -203,6 +217,9 @@ function section(source, startMarker, endMarker) {
   const boutPopup = section(ui, 'function renderAutumnWarBoutResultPopup', 'function renderAutumnWarBoard');
   assert.ok(boutPopup.includes('showVictoryLine: !!victoryLine'), 'survivor line must be allowed to disappear');
   const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
+  const championSpeech = section(ui, 'function _agwChampionSpeech', 'function _agwMiniClimbHtml');
+  assert.ok(championSpeech.includes('result.fighterWins?.[b.id]'), '優勝台詞の話者を最多勝から選んでいない');
+  assert.ok(resultView.includes('speech?.fighter?.id === m.id'), '最多勝の1人だけへ優勝台詞を接続していない');
   assert.ok(resultView.includes("_chBubbleSlot(line, 'is-autumn-speech')"), 'championship speech must use the non-clipped autumn modifier');
   assert.ok(resultView.includes('class="ch-mem'), 'championship speech must be attached to its speaker card (U2 unified .ch-mem)');
   assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');

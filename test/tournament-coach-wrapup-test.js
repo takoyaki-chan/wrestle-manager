@@ -388,6 +388,27 @@ section('D9. 全 voice × 全成績段 が実際に文になる(組み立てで�
   assert.strictEqual(holes.length, 0, '文にならない組み合わせ: ' + holes.join(', '));
 });
 
+section('D10. 理論派の番狂わせ評は、矛盾する大会総評を後ろへ連結しない', () => {
+  const result = {
+    rounds: [{
+      name: 'firstRound',
+      matches: [{
+        left: { id: 101, name: '朝比奈 千夏', ovr: 60, _orgId: 'player' },
+        right: { id: 201, name: '外崎 レイ', ovr: 75, _orgId: 'org_a' },
+        winnerId: 101, loserId: 201, mq: 60,
+      }],
+    }],
+    champion: null, runnerUp: null, semiFinalists: [], bracketSize: 4,
+  };
+  const p = buildCoachTournamentWrapup('junior', baseState(), { result });
+  assert.ok(p, '番狂わせ評が組み立てられない');
+  assert.strictEqual(
+    p.line,
+    '朝比奈 千夏が格上を崩しました。あれは狙って作った勝ちです。ああいう書き方ができたことを褒めてあげたいですね。'
+  );
+  assert.ok(!p.line.includes('勝てる相手には勝てました'), '旧総評が後ろへ残っている');
+});
+
 console.log('');
 if (failed > 0) { console.log(`tournament-coach-wrapup-test: ${failed} FAILED`); process.exit(1); }
 console.log('tournament-coach-wrapup-test: ok');

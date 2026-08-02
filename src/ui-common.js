@@ -301,6 +301,8 @@ function _mdlAOpen(html, opts) {
     opts && opts.narrow ? 'narrow' : '',
     opts && opts.wide   ? 'wide'   : '',
   ].filter(Boolean).join(' ');
+  overlay.classList.remove('top-aligned');
+  if (opts && opts.topAligned) overlay.classList.add('top-aligned');
   card.innerHTML = html;
   overlay.classList.add('active');
   return true;
@@ -12163,12 +12165,80 @@ function _specialIntroPickSpeaker(state, cfg, pool) {
 }
 
 // ── Title match ceremony ─────────────────────────────────────────────────
-// 節目イベントと同じ showCeremonyEvent の2フェーズ式典へ、王座結果だけを
-// データとして渡す。画面構造・スキップ・音響の復帰を独自実装しない。
 // タスク51(2026-07-31): 防衛は年に何度も起きるため、通常の防衛(節目でない)は
 // showFactionEventResult と同じ密度のA型モーダル1枚に落とす。
-// 戴冠と、5/10/15度目の節目防衛だけ従来の大判式典(showCeremonyEvent)を使う。
+// 2026-08-02: 戴冠と5/10/15度目の節目防衛を既存A型モーダル枠へ移し、
+// 承認済みモックアップどおり勝者と敗者の既存セリフを並べる。
 // 判定は Engine.news.checkDefenseMilestone(management.js) をそのまま使う(新しい閾値を作らない)。
+function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLine, opts, done) {
+  if (typeof _mdlAOpen !== 'function') { done(); return; }
+
+  const isDefense = !!opts?.isDefense;
+  const defenses = Number(opts?.defenses) || 0;
+  const attendanceValue = Number(G?.lastShowAttendance);
+  const attendance = Number.isFinite(attendanceValue) && attendanceValue >= 0
+    ? Math.round(attendanceValue).toLocaleString()
+    : '0';
+  const metaHtml = `${isDefense ? `TITLE DEFENSE · ${defenses}` : 'NEW WORLD CHAMPION'} ・ ${attendance} ATTENDED`;
+  const championName = escHtml(champion?.name || '新王者');
+
+  const personHtml = (fighter, line, roleLabel, defeated) => {
+    if (!fighter) return '';
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+    const safeId = Number(fighter.id);
+    const openAttr = Number.isFinite(safeId) && typeof showFighterPopup === 'function'
+      ? ` onclick="event.stopPropagation();showFighterPopup(${safeId},'title',true)"`
+      : '';
+    const portrait = upperUrl
+      ? `<img src="${escHtml(upperUrl)}" alt="${escHtml(fighter.name || '')}" onerror="this.style.display='none'">`
+      : '';
+    return `<article class="mdl-a-title-person${defeated ? ' defeated' : ''}">
+      <div class="mdl-a-title-bubble"><span>${escHtml(line || '')}</span></div>
+      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${escHtml(fighter.name || '')}の詳細を開く">
+        <span class="mdl-a-title-portrait-fallback">${escHtml((fighter.name || '?').charAt(0))}</span>
+        ${portrait}
+      </button>
+      <div class="mdl-a-title-name">${escHtml(fighter.name || '')}</div>
+      <div class="mdl-a-title-role">${roleLabel}</div>
+    </article>`;
+  };
+
+  const narrationHtml = [
+    '世界王座戦の幕が下りた。',
+    isDefense
+      ? `${championName}は、王者としてベルトを守り抜いた。`
+      : `${championName}が、頂点のベルトを手にした。`,
+    isDefense
+      ? `${defenses}度目の防衛成功。王座は、なおその手にある。`
+      : '新たな王者の時代が、ここから始まる。',
+  ].map(line => `<span>${line}</span>`).join('');
+  const pairClass = opponent ? '' : ' single';
+  const html = `
+    ${_mdlAHeader(isDefense ? '防 衛' : '戴 冠', metaHtml)}
+    <div class="mdl-a-title-result">
+      <div class="mdl-a-title-narration">${narrationHtml}</div>
+      <div class="mdl-a-title-pair${pairClass}">
+        ${personHtml(champion, champLine, isDefense ? 'WORLD CHAMPION · DEFENSE SUCCESS' : 'NEW WORLD CHAMPION', false)}
+        ${personHtml(opponent, opponentLine || '次は、この景色を取り戻す。', isDefense ? 'CHALLENGER' : 'FORMER CHAMPION', true)}
+      </div>
+    </div>
+    <div class="mdl-a-prompt mdl-a-title-actions">
+      <button class="mdl-a-continue-btn" id="mdlATitleMilestoneClose">式典を終える</button>
+    </div>
+  `;
+  if (!_mdlAOpen(html, { topAligned: true })) { done(); return; }
+  const btn = document.getElementById('mdlATitleMilestoneClose');
+  if (!btn) { _mdlAClose(); done(); return; }
+  let closed = false;
+  btn.addEventListener('click', () => {
+    if (closed) return;
+    closed = true;
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _mdlAClose();
+    done();
+  });
+}
+
 function showTitleMatchCeremony(outcome, onDone) {
   const done = () => { if (typeof onDone === 'function') onDone(); };
   const isDefense = outcome?.outcome === 'defense';
@@ -12194,26 +12264,11 @@ function showTitleMatchCeremony(outcome, onDone) {
     showTitleDefenseResultModal(champion, champLine, defenses, done);
     return;
   }
-
-  if (typeof showCeremonyEvent !== 'function') { done(); return; }
-  const evt = {
-    titleMain: isDefense ? '防 衛' : '戴 冠',
-    titleSub: isDefense ? `TITLE DEFENSE · ${defenses}` : 'NEW WORLD CHAMPION',
-    narration: isDefense
-      ? ['世界王座戦の幕が下りた。', `${champion.name}は、王者としてベルトを守り抜いた。`, `${defenses}度目の防衛成功。王座は、なおその手にある。`]
-      : ['世界王座戦の幕が下りた。', `${champion.name}が、頂点のベルトを手にした。`, '新たな王者の時代が、ここから始まる。'],
-    narrationGaps: [1],
-    visualVariant: 'triumph',
-    continueLabel: '式典を終える',
-    lineForFighter: fighter => fighter.id === champion.id
-      ? champLine
-      : (opponentLine || '次は、この景色を取り戻す。'),
-  };
-  const speakers = [
-    { fighter: champion, roleLabel: isDefense ? 'WORLD CHAMPION · DEFENSE SUCCESS' : 'NEW WORLD CHAMPION' },
-    ...(opponent ? [{ fighter: opponent, roleLabel: isDefense ? 'CHALLENGER' : 'FORMER CHAMPION' }] : []),
-  ];
-  showCeremonyEvent(evt, speakers, done);
+  if (!isDefense) {
+    showTitleMilestoneResultModal(champion, opponent, champLine, opponentLine, { isDefense: false, defenses }, done);
+    return;
+  }
+  showTitleMilestoneResultModal(champion, opponent, champLine, opponentLine, { isDefense: true, defenses }, done);
 }
 
 // 通常防衛(節目でない防衛)専用: showFactionEventResult(ui-common.js内)と同じ部品
@@ -16090,6 +16145,7 @@ function buildCoachTournamentWrapup(kind, state, args) {
   const verdict = verdictTable ? _tcwPickLine(verdictTable[voice] || verdictTable.theorist) : '';
 
   let mention = '';
+  let mentionCompletesLine = false;
   let spoken = []; // 実際に名前を出した選手だけを覚える(触れていない選手を記録しない)
   if (reason && picks.length) {
     const table = (typeof COACH_WRAPUP_MENTION_LINES !== 'undefined' && COACH_WRAPUP_MENTION_LINES[reason]) || null;
@@ -16101,6 +16157,7 @@ function buildCoachTournamentWrapup(kind, state, args) {
         mention = ''; // 2人分の枠しか無い文で1人しか居ない場合は言及ごと落とす
       } else if (raw) {
         spoken = raw.indexOf('{n2}') >= 0 ? picks.slice(0, 2) : picks.slice(0, 1);
+        mentionCompletesLine = !wantsDuo && cell.soloComplete === true;
         mention = raw
           .replace('{n1}', (spoken[0] && spoken[0].name) || '')
           .replace('{n2}', (spoken[1] && spoken[1].name) || '');
@@ -16108,7 +16165,7 @@ function buildCoachTournamentWrapup(kind, state, args) {
     }
   }
   if (!mention) spoken = [];
-  const line = (_tcwSentence(mention) + _tcwSentence(verdict)).trim();
+  const line = (_tcwSentence(mention) + (mentionCompletesLine ? '' : _tcwSentence(verdict))).trim();
   if (!line) return null;
 
   const meta = TCW_EVENT_META[kind] || { kicker: 'COACH NOTE', theme: '' };
@@ -17781,28 +17838,6 @@ function _agwOpponentStrength(team) {
   };
 }
 
-function renderAutumnWarIntro() {
-  const aw = G.autumnWar;
-  if (!aw || aw.cancelled) return;
-  const bySeed = seed => (aw.teams || []).find(team => team.seed === seed);
-  const matchCard = (a, b, label) => `<div class="agw-intro-match"><span>${label}</span><b>${escHtml(a?.orgName || '未定')}</b><em>VS</em><b>${escHtml(b?.orgName || '未定')}</b></div>`;
-  const bracket = _agwBracket();
-  const semiFinals = bracket.length >= 2
-    ? bracket.slice(0, 2).map((pair, index) => matchCard(_agwTeam(pair.orgA), _agwTeam(pair.orgB), `SEMI FINAL ${index + 1}`)).join('')
-    : `${matchCard(bySeed(1), bySeed(4), 'SEMI FINAL 1')}${matchCard(bySeed(2), bySeed(3), 'SEMI FINAL 2')}`;
-  const html = `<div class="agw-wrap agw-intro">${_agwHeaderHtml('Autumn Survival War', 'WEEK 36・開幕')}
-    <div class="agw-intro-lead"><span>今週は</span><strong>4団体勝ち残り対抗戦</strong><p>各団体の3名が、最後の一人になるまでリングを譲らない。</p></div>
-    <div class="agw-intro-bracket">${semiFinals}</div>
-    <div class="agw-intro-steps" aria-label="勝ち残り戦の3ステップ">
-      <div><b>1</b><strong>3名を送り出す</strong><span>先鋒・中堅・大将の順を決める</span></div>
-      <div><b>2</b><strong>勝者はリングに残る</strong><span>消耗したまま次の相手と連戦する</span></div>
-      <div><b>3</b><strong>3名全員OUTで敗退</strong><span>最後まで選手が残った団体が勝ち上がる</span></div>
-    </div>
-    <div class="agw-screen-actions"><button type="button" class="btn btn-gold" onclick="App.awBeginEntry()">代表3名の布陣を組む ▶</button></div>
-  </div>`;
-  _agwRenderPhase('intro', html, '.agw-screen-actions .btn');
-}
-
 function _agwHeaderHtml(kicker, meta) {
   return `<div class="agw-header">
     <img class="agw-emblem" src="../image/emblem-autumn.png" alt="" onerror="this.style.display='none'">
@@ -17955,7 +17990,7 @@ function _agwStatusRailHtml(result, matchIndex, boutIndex) {
   }).join('')}</div>`;
 }
 
-const _AGW_DIALOGUE_CHANCE = Object.freeze({ preBout: 0.55, survivor: 0.60, champion: 0.75 });
+const _AGW_DIALOGUE_CHANCE = Object.freeze({ preBout: 0.55, survivor: 0.60, champion: 1.00 });
 
 function _agwDialogueRng(kind, parts, chance) {
   const signature = [kind, G.rngSeed || 42, G.season || 1, G.week || 36, ...(parts || [])].join('|');
@@ -18007,7 +18042,9 @@ function _agwSurvivorLine(match, bout, winner) {
 }
 
 function _agwChampionSpeech(result, championTeam) {
-  const candidates = (championTeam?.memberIds || []).map(id => _agwFighter(championTeam.orgId, id)).filter(Boolean)
+  const candidates = (championTeam?.memberIds || [])
+    .map(id => _agwFighter(championTeam.orgId, id))
+    .filter(Boolean)
     .sort((a, b) => (result.fighterWins?.[b.id] || 0) - (result.fighterWins?.[a.id] || 0) || a.id - b.id);
   const fighter = candidates[0];
   if (!fighter) return null;
@@ -18018,11 +18055,15 @@ function _agwChampionSpeech(result, championTeam) {
   let pool = [];
   if (lineSet && typeof getDialoguePool === 'function') pool = getDialoguePool(lineSet, fighter);
   let line = pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)] : '';
-  if (!line && typeof getJuniorTournamentLine === 'function') line = getJuniorTournamentLine('champion', fighter.personality || 'normal', fighter.archetype || 'standard', rng);
-  if (!line) return null;
+  if (!line && typeof getJuniorTournamentLine === 'function') {
+    line = getJuniorTournamentLine('champion', fighter.personality || 'normal', fighter.archetype || 'standard', rng);
+  }
+  if (!line) line = 'この三人で、最後まで立てた。それが全部です';
   return {
     fighter,
-    line: String(line).replaceAll('{wins}', String(wins)).replaceAll('{org}', championTeam.orgName || 'この団体'),
+    line: String(line)
+      .replaceAll('{wins}', String(wins))
+      .replaceAll('{org}', championTeam.orgName || 'この団体'),
   };
 }
 

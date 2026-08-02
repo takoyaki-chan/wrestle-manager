@@ -602,7 +602,7 @@ function logGap(msg) {
      ${uiFn('_agwHeaderHtml')}
      ${uiFn('_agwRoleLabel')}
      ${uiFn('_agwRenderPhase')}
-     const _AGW_DIALOGUE_CHANCE = { preBout: 0.55, survivor: 0.60, champion: 0.75 };
+     const _AGW_DIALOGUE_CHANCE = { preBout: 0.55, survivor: 0.60, champion: 1.00 };
      ${uiFn('_agwDialogueRng')}
      ${uiFn('_agwChampionSpeech')}
      ${uiFn('_emrOrgInitial')}

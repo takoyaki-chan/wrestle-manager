@@ -4096,13 +4096,14 @@ const App = {
       App._awPreview = { phase: 'intro', committed: false };
       try { Audio.bgm.playStage('autumnA'); } catch (_e) {}
       Audio.play('notify');
-      // 特別興行の導入シーン: いきなりルール説明へ飛ばさず、
-      // **コーチ1人 → 選手1人**を挟んでから本編へ入る(2026-07-26 Keisuke)。
-      // どちらもクリックで即スキップできる。導入が出せない場合はそのまま従来どおり。
+      // 秋大会も他の特別興行と同じく、既存モーダルの
+      // **コーチ1人 → 選手1人 → 代表編成**で始める。
+      // 旧「今週は4団体勝ち残り対抗戦」全画面は廃止済みなので挟まない。
+      const openEntry = () => App.awBeginEntry();
       if (typeof showSpecialEventIntro === 'function') {
-        showSpecialEventIntro('autumnWar', G, () => renderAutumnWarIntro());
+        showSpecialEventIntro('autumnWar', G, openEntry);
       } else {
-        renderAutumnWarIntro();
+        openEntry();
       }
       return;
     }

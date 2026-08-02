@@ -5,7 +5,7 @@
 // docs/codex-tasks/task-51-title-defense-scale-down.md の要求:
 //   - 通常の防衛(節目でない防衛) → showFactionEventResult と同じ密度の
 //     A型モーダル1枚(showCeremonyEvent は使わない)
-//   - 戴冠、および5/10/15度目の節目防衛 → 従来どおり showCeremonyEvent の大判式典
+//   - 戴冠、および5/10/15度目の節目防衛 → 承認済みのA型2選手モーダル
 //   - どの分岐でも onDone は必ず1回呼ばれる(王者が見つからない・DOM未整備などの
 //     早期returnパスも含めて)
 //
@@ -74,7 +74,7 @@ function makeDocument() {
   return { getElementById: (id) => (els[id] || (els[id] = makeEl())) };
 }
 
-// ── showTitleMatchCeremony + showTitleDefenseResultModal を、依存する
+// ── showTitleMatchCeremony + 王座結果モーダルを、依存する
 //    A型モーダル部品(実物)ごと vm コンテキストへ読み込む ──────────────
 function buildTitleCeremony(ctxExtra) {
   const document = (ctxExtra && ctxExtra.document) || makeDocument();
@@ -103,6 +103,7 @@ function buildTitleCeremony(ctxExtra) {
     ${uiFn('_mdlAOpen')}
     ${uiFn('_mdlAClose')}
     ${uiFn('showTitleDefenseResultModal')}
+    ${uiFn('showTitleMilestoneResultModal')}
     ${uiFn('showTitleMatchCeremony')}
     this.showTitleMatchCeremony = showTitleMatchCeremony;
   `;
@@ -146,40 +147,57 @@ section('1. 通常防衛(1〜4度目など)は showCeremonyEvent を呼ばない
   });
 });
 
-section('2. 節目の防衛(5/10/15)と戴冠は showCeremonyEvent を呼ぶ', () => {
+section('2. 節目の防衛(5/10/15)と戴冠は同じA型2選手モーダルを使う', () => {
   [5, 10, 15].forEach((defenses) => {
     let ceremonyCalls = 0;
-    let ceremonyVariant = null;
     const champion = { id: 1, name: '桜庭アカネ' };
     const opponent = { id: 2, name: '天音ルナ' };
     const { ctx, document } = buildTitleCeremony({
-      G: { roster: [champion, opponent], titles: { world: { defenses, championId: 1 } } },
+      G: { roster: [champion, opponent], titles: { world: { defenses, championId: 1 } }, lastShowAttendance: 800 },
       ALL_CHARS: [],
-      showCeremonyEvent: (evt, speakers, cb) => {
-        ceremonyCalls++; ceremonyVariant = evt.visualVariant; if (cb) cb();
-      },
+      showCeremonyEvent: () => { ceremonyCalls++; },
     });
     let doneCalls = 0;
     ctx.showTitleMatchCeremony({ outcome: 'defense', champId: 1, challengerId: 2 }, () => { doneCalls++; });
-    assert.strictEqual(ceremonyCalls, 1, `defenses=${defenses}(節目): showCeremonyEvent が呼ばれていない`);
-    assert.strictEqual(ceremonyVariant, 'triumph', '従来の式典演出(triumph)のまま');
-    assert.strictEqual(doneCalls, 1, `defenses=${defenses}: onDone が1回呼ばれていない`);
+    assert.strictEqual(ceremonyCalls, 0, `defenses=${defenses}(節目): 大判式典を呼んでしまっている`);
+    assert.strictEqual(doneCalls, 0, `defenses=${defenses}: ボタン前に onDone が呼ばれている`);
     const overlay = document.getElementById('mdlAOverlay');
-    assert.ok(!overlay.classList.contains('active'), '節目防衛では軽量モーダル側は開いていない');
+    assert.ok(overlay.classList.contains('active'), '節目防衛のA型モーダルが開いていない');
+    assert.ok(overlay.classList.contains('top-aligned'), 'スマホ縦積み時の上端スクロール保護がない');
+    const html = document.getElementById('mdlACard').innerHTML;
+    assert.ok(html.includes('mdl-a-title-result'), '承認済みの王座結果レイアウトを使っていない');
+    assert.ok(html.includes('防 衛'), '節目防衛の見出しがない');
+    assert.ok(html.includes(`TITLE DEFENSE · ${defenses} ・ 800 ATTENDED`), '防衛回数と観客数のメタ表示がない');
+    assert.ok(html.includes('WORLD CHAMPION · DEFENSE SUCCESS'), '王者側の役割表示がない');
+    assert.ok(html.includes('CHALLENGER'), '挑戦者側の役割表示がない');
+    assert.ok(html.includes('【titleDefenseのセリフ】'), '既存の王者防衛セリフを流用していない');
+    assert.ok(html.includes('【titleChallengeLossのセリフ】'), '既存の挑戦者敗戦セリフを流用していない');
+    document.getElementById('mdlATitleMilestoneClose').click();
+    assert.strictEqual(doneCalls, 1, `defenses=${defenses}: 閉じた後の onDone が1回でない`);
   });
 
-  // 戴冠(outcome !== 'defense')は防衛回数に関係なく常に式典
+  // 戴冠も同じモーダル。新王者と前王者の既存セリフをそのまま使う。
   let ceremonyCalls = 0;
   const champion = { id: 3, name: '新王者リコ' };
-  const { ctx } = buildTitleCeremony({
-    G: { roster: [champion], titles: { world: { defenses: 0, championId: 3 } } },
+  const former = { id: 4, name: '前王者ミオ' };
+  const { ctx, document } = buildTitleCeremony({
+    G: { roster: [champion, former], titles: { world: { defenses: 0, championId: 3 } }, lastShowAttendance: 1234 },
     ALL_CHARS: [],
-    showCeremonyEvent: (evt, speakers, cb) => { ceremonyCalls++; if (cb) cb(); },
+    showCeremonyEvent: () => { ceremonyCalls++; },
   });
   let doneCalls = 0;
-  ctx.showTitleMatchCeremony({ outcome: 'change', newChampId: 3, prevChampId: null }, () => { doneCalls++; });
-  assert.strictEqual(ceremonyCalls, 1, '戴冠は防衛回数に関係なく式典を使う');
-  assert.strictEqual(doneCalls, 1, '戴冠でも onDone は1回');
+  ctx.showTitleMatchCeremony({ outcome: 'change', newChampId: 3, prevChampId: 4 }, () => { doneCalls++; });
+  assert.strictEqual(ceremonyCalls, 0, '戴冠で大判式典を呼んでしまっている');
+  const html = document.getElementById('mdlACard').innerHTML;
+  assert.ok(document.getElementById('mdlAOverlay').classList.contains('top-aligned'), '戴冠もスマホ縦積みを上端から見せる');
+  assert.ok(html.includes('戴 冠'), '戴冠見出しがない');
+  assert.ok(html.includes('NEW WORLD CHAMPION ・ 1,234 ATTENDED'), '戴冠メタ表示がない');
+  assert.ok(html.includes('新王者リコが、頂点のベルトを手にした。'), '既存の戴冠地の文を流用していない');
+  assert.ok(html.includes('【titleWinのセリフ】'), '既存の titleWin セリフを流用していない');
+  assert.ok(html.includes('【titleLossのセリフ】'), '既存の titleLoss セリフを流用していない');
+  assert.strictEqual(doneCalls, 0, '戴冠モーダルを閉じる前に onDone が呼ばれている');
+  document.getElementById('mdlATitleMilestoneClose').click();
+  assert.strictEqual(doneCalls, 1, '戴冠モーダルを閉じた後の onDone は1回');
 });
 
 // ─────────────────────────────────────────────────────────────
@@ -227,18 +245,19 @@ section('5. 通常防衛でモーダルのDOMが未整備でも onDone が1回�
   assert.strictEqual(doneCalls, 1, 'DOM未整備でも onDone は1回だけ呼ばれる');
 });
 
-section('6. 節目防衛で showCeremonyEvent 自体が存在しなくても onDone が1回だけ呼ばれる', () => {
+section('6. 節目防衛モーダルのDOMが未整備でも onDone が1回だけ呼ばれる', () => {
   const champion = { id: 1, name: '桜庭アカネ' };
+  const missingDocument = { getElementById: () => null };
   const { ctx } = buildTitleCeremony({
     G: { roster: [champion], titles: { world: { defenses: 5, championId: 1 } } },
     ALL_CHARS: [],
-    // showCeremonyEvent を渡さない = typeof showCeremonyEvent !== 'function'
+    document: missingDocument,
   });
   let doneCalls = 0;
   assert.doesNotThrow(() => {
     ctx.showTitleMatchCeremony({ outcome: 'defense', champId: 1, challengerId: 2 }, () => { doneCalls++; });
   });
-  assert.strictEqual(doneCalls, 1, 'showCeremonyEvent が無くても onDone は1回だけ呼ばれる');
+  assert.strictEqual(doneCalls, 1, '節目防衛のDOM未整備でも onDone は1回だけ呼ばれる');
 });
 
 section('7. 通常防衛モーダルの「閉じる」ボタンで onDone が1回だけ呼ばれる', () => {
