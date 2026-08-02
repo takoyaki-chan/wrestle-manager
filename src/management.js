@@ -7400,6 +7400,259 @@ const Engine = {
     },
   },
 
+  // ── 開眼システム Phase 1 ──────────────────────────────────
+  // 表示用の状態は持たず、生成時の隠しシード・試合後発火・成長物理だけをここへ集約する。
+  // 既存RNGを進めないことが最重要不変条件なので、判定はすべて専用の派生RNGを使う。
+  kaigan: {
+    SEED_RATE: 0.029,
+    SEED_MAX_TRAIN_CAP_OVR: 100,
+    MIN_AGE: 19,
+    MAX_AGE: 24,
+    OPPONENT_OVR_GAP: 8,
+    MQ_GATE: 72,
+    TRIGGER_RATE: 0.50,
+    ACTIVE_SEASONS: 3,
+    MN_COMPENSATION: 4,
+    _STATS: ['pw', 'sp', 'te', 'st', 'mn'],
+
+    trainCapOVR(fighter) {
+      if (!fighter || !fighter.trainCap) return 0;
+      const sum = Engine.kaigan._STATS.reduce((total, stat) => total + (Number(fighter.trainCap[stat]) || 0), 0);
+      return Math.round(sum / Engine.kaigan._STATS.length);
+    },
+
+    _rngFromSnapshot(rng, fighter, salt) {
+      const s0 = rng && Number.isFinite(rng.s0) ? rng.s0 : 1;
+      const s1 = rng && Number.isFinite(rng.s1) ? rng.s1 : 1;
+      const id = fighter && Number.isFinite(Number(fighter.id)) ? Number(fighter.id) : 0;
+      const age = fighter && Number.isFinite(Number(fighter.age)) ? Number(fighter.age) : 0;
+      return Engine.rng.create(Engine.rng.derive(s0, s1, id, age, salt));
+    },
+
+    assignSeed(fighter, rng) {
+      if (!fighter || Engine.kaigan.trainCapOVR(fighter) > Engine.kaigan.SEED_MAX_TRAIN_CAP_OVR) return fighter;
+      const kaiganRng = Engine.kaigan._rngFromSnapshot(rng, fighter, 0x4B41);
+      if (Engine.rng.float(kaiganRng) >= Engine.kaigan.SEED_RATE) return fighter;
+      return { ...fighter, kaiganSeed: true };
+    },
+
+    ensureSeedEligibility(fighter) {
+      if (!fighter || fighter.kaiganSeed !== true
+          || Engine.kaigan.trainCapOVR(fighter) <= Engine.kaigan.SEED_MAX_TRAIN_CAP_OVR) return fighter;
+      const next = { ...fighter };
+      delete next.kaiganSeed;
+      return next;
+    },
+
+    isActive(fighter, season) {
+      const state = fighter && fighter.kaiganState;
+      if (!state || !Number.isFinite(state.triggeredSeason) || !Number.isFinite(season)) return false;
+      return season >= state.triggeredSeason
+        && season < state.triggeredSeason + Engine.kaigan.ACTIVE_SEASONS;
+    },
+
+    remainingSeasons(fighter, season) {
+      const state = fighter && fighter.kaiganState;
+      if (!state || !Number.isFinite(state.triggeredSeason)) return 0;
+      return Engine.util.clamp(
+        state.triggeredSeason + Engine.kaigan.ACTIVE_SEASONS - season,
+        0,
+        Engine.kaigan.ACTIVE_SEASONS
+      );
+    },
+
+    refreshState(state) {
+      if (!state) return state;
+      const refreshFighter = fighter => {
+        if (!fighter || !fighter.kaiganState) return fighter;
+        const remainingSeasons = Engine.kaigan.remainingSeasons(fighter, state.season || 1);
+        if (fighter.kaiganState.remainingSeasons === remainingSeasons) return fighter;
+        return { ...fighter, kaiganState: { ...fighter.kaiganState, remainingSeasons } };
+      };
+      const next = {
+        ...state,
+        roster: (state.roster || []).map(refreshFighter),
+        freeAgents: (state.freeAgents || []).map(refreshFighter),
+        scoutCandidates: (state.scoutCandidates || []).map(refreshFighter),
+      };
+      if (state.aiOrgs) {
+        next.aiOrgs = Object.fromEntries(Object.entries(state.aiOrgs).map(([orgId, org]) => [
+          orgId,
+          org ? { ...org, roster: (org.roster || []).map(refreshFighter) } : org,
+        ]));
+      }
+      return next;
+    },
+
+    _sTop4Median(state) {
+      const sOrg = (typeof RIVAL_ORGS !== 'undefined' ? RIVAL_ORGS : []).find(org => org.tier === 'S');
+      const roster = sOrg && state && state.aiOrgs && state.aiOrgs[sOrg.id]
+        ? (state.aiOrgs[sOrg.id].roster || [])
+        : [];
+      const values = roster
+        .map(Engine.kaigan.trainCapOVR)
+        .filter(Number.isFinite)
+        .sort((a, b) => b - a)
+        .slice(0, 4)
+        .sort((a, b) => a - b);
+      if (values.length === 0) return null;
+      const mid = Math.floor(values.length / 2);
+      return values.length % 2 === 1 ? values[mid] : (values[mid - 1] + values[mid]) / 2;
+    },
+
+    _allocateTargetCaps(fighter, targetTrainCapOVR) {
+      const stats = Engine.kaigan._STATS;
+      const pot = fighter.pot || {};
+      let weights = stats.map(stat => Math.max(0, Number(pot[stat]) || 0));
+      if (weights.reduce((sum, value) => sum + value, 0) <= 0) {
+        weights = stats.map(stat => Math.max(1, Number(fighter.trainCap && fighter.trainCap[stat]) || 1));
+      }
+      const weightTotal = weights.reduce((sum, value) => sum + value, 0);
+      const targetTotal = Math.max(0, Math.round(targetTrainCapOVR * stats.length));
+      const raw = weights.map(weight => targetTotal * weight / weightTotal);
+      const allocated = raw.map(Math.floor);
+      let remainder = targetTotal - allocated.reduce((sum, value) => sum + value, 0);
+      const order = raw.map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+        .sort((a, b) => b.fraction - a.fraction || a.index - b.index);
+      for (let i = 0; i < remainder; i++) allocated[order[i % order.length].index]++;
+      return Object.fromEntries(stats.map((stat, index) => [
+        stat,
+        Math.max(Number(fighter.trainCap && fighter.trainCap[stat]) || 0, allocated[index]),
+      ]));
+    },
+
+    applyAwakening(state, fighter, context = {}) {
+      const median = Engine.kaigan._sTop4Median(state);
+      if (!fighter || median == null) return fighter;
+      const opponentId = Number(context.opponentId) || 0;
+      const matchIndex = Number(context.matchIndex) || 0;
+      const targetRng = Engine.rng.create(Engine.rng.derive(
+        state.rngSeed || 1,
+        state.season || 1,
+        state.week || 1,
+        Number(fighter.id) || 0,
+        opponentId,
+        matchIndex,
+        0x4B42
+      ));
+      const relativeOffset = Engine.rng.int(targetRng, 0, 4);
+      const targetTrainCapOVR = Math.round(median) - relativeOffset + Engine.kaigan.MN_COMPENSATION;
+      const capFloor = { ...(fighter.trainCap || {}) };
+      const appliedTrainCap = Engine.kaigan._allocateTargetCaps(fighter, targetTrainCapOVR);
+      return {
+        ...fighter,
+        trainCap: appliedTrainCap,
+        kaiganState: {
+          triggeredSeason: state.season || 1,
+          triggeredWeek: state.week || 1,
+          triggerAge: fighter.age || 17,
+          remainingSeasons: Engine.kaigan.ACTIVE_SEASONS,
+          targetTrainCapOVR,
+          sTop4Median: median,
+          relativeOffset,
+          opponentId: opponentId || null,
+          capFloor,
+          appliedTrainCap: { ...appliedTrainCap },
+        },
+      };
+    },
+
+    tryTrigger(state, fighter, context = {}) {
+      if (!state || !fighter || fighter.kaiganSeed !== true || fighter.kaiganState) return null;
+      const age = Number(fighter.age) || 0;
+      if (age < Engine.kaigan.MIN_AGE || age > Engine.kaigan.MAX_AGE) return null;
+      if (context.isFreeAgent || context.wasInjured) return null;
+      if (!Number.isFinite(context.selfOvr) || !Number.isFinite(context.opponentOvr)
+          || context.opponentOvr - context.selfOvr < Engine.kaigan.OPPONENT_OVR_GAP) return null;
+      if (!(context.won || (Number(context.mq) || 0) >= Engine.kaigan.MQ_GATE)) return null;
+      const triggerRng = Engine.rng.create(Engine.rng.derive(
+        state.rngSeed || 1,
+        state.season || 1,
+        state.week || 1,
+        Number(fighter.id) || 0,
+        Number(context.opponentId) || 0,
+        Number(context.matchIndex) || 0,
+        0x4B43
+      ));
+      if (Engine.rng.float(triggerRng) >= Engine.kaigan.TRIGGER_RATE) return null;
+      const awakened = Engine.kaigan.applyAwakening(state, fighter, context);
+      return awakened === fighter ? null : awakened;
+    },
+
+    _orgName(state, fighter, fallbackOrgId, fallbackOrgName) {
+      const orgId = fighter && fighter.orgId != null ? fighter.orgId : fallbackOrgId;
+      if (orgId === 'player' || orgId == null) return (state && state.orgName) || fallbackOrgName || '所属団体';
+      const org = (typeof RIVAL_ORGS !== 'undefined' ? RIVAL_ORGS : []).find(item => item.id === orgId);
+      return (org && org.name) || fallbackOrgName || '所属団体';
+    },
+
+    processMatchResults(state, roster, results, options = {}) {
+      const byId = new Map((roster || []).map(fighter => [fighter.id, fighter]));
+      const occurrences = [];
+      (results || []).forEach((result, matchIndex) => {
+        if (!result || result.matchType === 'tag' || !result.left || !result.right) return;
+        [
+          { self: result.left, opponent: result.right, won: result.winner === 'left' },
+          { self: result.right, opponent: result.left, won: result.winner === 'right' },
+        ].forEach(entry => {
+          const fighter = byId.get(entry.self.id);
+          if (!fighter) return;
+          let stateAtTrigger = { ...state, roster: [...byId.values()] };
+          if (options.orgId && options.orgId !== 'player' && state.aiOrgs && state.aiOrgs[options.orgId]) {
+            stateAtTrigger = {
+              ...stateAtTrigger,
+              aiOrgs: {
+                ...state.aiOrgs,
+                [options.orgId]: { ...state.aiOrgs[options.orgId], roster: [...byId.values()] },
+              },
+            };
+          }
+          const awakened = Engine.kaigan.tryTrigger(stateAtTrigger, fighter, {
+            selfOvr: Engine.util.ov(entry.self),
+            opponentOvr: Engine.util.ov(entry.opponent),
+            opponentId: entry.opponent.id,
+            matchIndex,
+            mq: result.mq,
+            won: entry.won,
+            wasInjured: !!entry.self.injury,
+            isFreeAgent: options.orgId == null,
+          });
+          if (!awakened) return;
+          byId.set(awakened.id, awakened);
+          occurrences.push({
+            fighterId: awakened.id,
+            fighterName: awakened.name,
+            orgId: awakened.orgId != null ? awakened.orgId : options.orgId,
+            orgName: Engine.kaigan._orgName(state, awakened, options.orgId, options.orgName),
+            opponentId: entry.opponent.id,
+            opponentName: entry.opponent.name,
+            age: awakened.age,
+            mq: result.mq,
+            won: entry.won,
+          });
+        });
+      });
+      return { roster: [...byId.values()], occurrences };
+    },
+
+    weeklyLog(occurrence) {
+      return `👁️ ${occurrence.fighterName}が格上との一戦を境に開眼した。`;
+    },
+
+    industryEvent(occurrence) {
+      return {
+        type: 'kaiganAwakening',
+        characterId: occurrence.fighterId,
+        data: {
+          name: occurrence.fighterName,
+          orgName: occurrence.orgName,
+          opponentName: occurrence.opponentName,
+          result: occurrence.won ? '勝利' : '敗戦',
+        },
+      };
+    },
+  },
+
   // ── Growth System v1.0 (IMMUTABLE) ─────────────────────
   growth: {
     // DEPRECATED (growth-rebalance v1.0): calcGrowth/aiSeasonGrowthで不使用。参照用に残置。
@@ -7426,12 +7679,15 @@ const Engine = {
       if (current >= trainCap) return 0;
 
       const remaining = trainCap - current;
-      const ratio = GROWTH_CONFIG.brakeGamma !== 1.0
-        ? Math.pow(remaining / trainCap, GROWTH_CONFIG.brakeGamma)
+      const kaiganActive = Engine.kaigan.isActive(char, G.season || 1);
+      const brakeGamma = kaiganActive ? 1.0 : GROWTH_CONFIG.brakeGamma;
+      const ratio = brakeGamma !== 1.0
+        ? Math.pow(remaining / trainCap, brakeGamma)
         : remaining / trainCap; // 1.0時はpowを通さず現行の浮動小数演算を維持
 
       const age = char.age || (17 + (char.careerSeasons || 0));
       let ageMul = ageMultiplier(age, char.traits);
+      if (kaiganActive && ageMul < 1.0) ageMul = 1.0;
       if (ageMul <= 0) return 0;
       // v0.2: 才能開花 — ペナルティ期ageMul下限 0.90
       if (!overrideCoachMul) {
@@ -8071,7 +8327,7 @@ const Engine = {
       if (typeof template.affinityAxis === 'number') affinityAxis = template.affinityAxis;
       else if (typeof template.affinityAxis === 'object' && template.affinityAxis !== null && template.affinityAxis.pairedWith) affinityAxis = template.affinityAxis;
       else affinityAxis = Math.floor(Engine.rng.float(rng) * 360);
-      return {
+      const fighter = {
         id: template.id, name: template.name, h: template.h,
         pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn,
         style: template.style, role: template.role, pot: { ...template.pot },
@@ -8120,6 +8376,7 @@ const Engine = {
         promoCountSeason: 0,  // 年間プロモ実行週数
         _milestonesNotified: { ovr: [], pop: [], cap: [] },  // 成長マイルストーン通知済み閾値
       };
+      return Engine.kaigan.assignSeed(fighter, rng);
     },
     /** trainCap 5??????? */
     trainCapOVR(fighter) {
@@ -8348,10 +8605,10 @@ const Engine = {
             const template = ALL_CHARS.find(c => c.id === fighter.id);
             if (!template) continue;
             const prospectRng = Engine.rng.create(Engine.rng.derive(rng._state || 0, fighter.id, 0xE11E));
-            roster[i] = {
+            roster[i] = Engine.kaigan.ensureSeedEligibility({
               ...fighter,
               trainCap: Engine.rival.generateTrainCap(prospectRng, null, template.pot, [0.70, 0.80]),
-            };
+            });
           }
         }
         roster.sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a));
@@ -9681,6 +9938,19 @@ const Engine = {
 
             roster[fi] = nc;
           });
+        }
+
+        // 開眼 Phase 1: 試合成長などの通常処理を終えた後、シングル戦だけを共通判定へ渡す。
+        // result.left/right は試合前スナップショットなので、格上差は成長後の値に汚染されない。
+        const kaiganResult = Engine.kaigan.processMatchResults(
+          state,
+          roster,
+          matchResults,
+          { orgId: org.id, orgName: org.name }
+        );
+        roster = kaiganResult.roster;
+        if (kaiganResult.occurrences.length > 0) {
+          nextOrgData._kaiganOccurrences = kaiganResult.occurrences;
         }
 
         // AI怪我引退処理: _pendingInjuryRetireフラグのある選手を引退させる
@@ -12311,6 +12581,8 @@ const Engine = {
         s = { ...s, gameLog: [...(s.gameLog || []), ...rentalResult.events] };
       }
     }
+    // AI開眼は各団体の純処理から出来事だけを持ち出し、既存ログと新聞キューへ合流させる。
+    const kaiganWeekOccurrences = [];
     // AI統一成長 Phase3: AI団体の週次処理（練習+興行）
     if (s.aiOrgs && !s.offSeason) {
       const AI_WEEK_SEEDS = { org_s: 0xA101, org_a: 0xA102, org_b: 0xA103 };
@@ -12324,6 +12596,10 @@ const Engine = {
         const oldLogLen = (s.aiOrgs[orgId]?.matchupLog || []).length;
         const aiRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, AI_WEEK_SEEDS[orgId] || 0xA100));
         newAiOrgs[orgId] = Engine.rival.processAIWeek(aiRng, s, org);
+        if (newAiOrgs[orgId]._kaiganOccurrences) {
+          kaiganWeekOccurrences.push(...newAiOrgs[orgId]._kaiganOccurrences);
+          delete newAiOrgs[orgId]._kaiganOccurrences;
+        }
         const mqCandidate = newAiOrgs[orgId]._mqRecordCandidate;
         if (mqCandidate) {
           s = Engine.mq.updateRecord(s, { mq: mqCandidate.mq }, mqCandidate).state;
@@ -12346,6 +12622,9 @@ const Engine = {
         }
       });
       s = { ...s, aiOrgs: newAiOrgs };
+      kaiganWeekOccurrences.forEach(occurrence => {
+        s = Engine.industryNews.push(s, Engine.kaigan.industryEvent(occurrence));
+      });
       // AI怪我引退IDをretiredIds/retiredSeasonsに反映（5シーズンクールダウン用）
       {
         const _aiRetiredIds = [];
@@ -12447,7 +12726,11 @@ const Engine = {
       s = { ...s, ppvUnlocked: true };
       ppvUnlockEvent = '🏟️ PPV GRAND FINAL への出場資格を獲得！年末の大舞台に選手を送り出せます';
     }
-    const events = [...manage.events, settle.summary];
+    const events = [
+      ...manage.events,
+      ...kaiganWeekOccurrences.map(Engine.kaigan.weeklyLog),
+      settle.summary,
+    ];
     if (ppvUnlockEvent) events.push(ppvUnlockEvent);
     // bankruptcy-redesign v1.1: 資金危機フェーズ判定（オフシーズン中はスキップ）
     // 毎週 _crisisColumnTag / _crisisJustEntered をリセットしてから設定
@@ -12871,6 +13154,7 @@ const Engine = {
     // AI成長パリティ I5: 週内の移籍・イベントで持ち込まれた旧形式の負債をここで正規化する。
     // validateGameState の前に行うため、通常進行で不変条件違反ログを積み上げない。
     if (s.aiOrgs) s = { ...s, aiOrgs: Engine.rival.sanitizeAIOrgs(s.aiOrgs) };
+    s = Engine.kaigan.refreshState(s);
 
     // 自己最高値の更新（2026-07-27 Keisuke）。
     // 「今まで一番高くまで行った能力値」を**毎週**控える。衰えの表示はここを基準にする。
@@ -13771,6 +14055,18 @@ const Engine = {
       const m = validMatches[idx];
       tagExp = Engine.tagExp.increment(tagExp, m.teamA.fighter1, m.teamA.fighter2);
       tagExp = Engine.tagExp.increment(tagExp, m.teamB.fighter1, m.teamB.fighter2);
+    });
+
+    const kaiganResult = Engine.kaigan.processMatchResults(
+      { ...s, roster },
+      roster,
+      results,
+      { orgId: 'player', orgName: s.orgName }
+    );
+    roster = kaiganResult.roster;
+    kaiganResult.occurrences.forEach(occurrence => {
+      events.push(Engine.kaigan.weeklyLog(occurrence));
+      s = Engine.industryNews.push(s, Engine.kaigan.industryEvent(occurrence));
     });
 
     s = { ...s, roster, rivalries, titles, heatScore: newHeatScore, orgPop: popResult.orgPop, lastShowResults: results, lastTitleMatchWeek, matchupLog: updatedMatchupLog, tagExp };
@@ -17047,7 +17343,7 @@ const Engine = {
     if (typeof template.affinityAxis === 'number') affinityAxis = template.affinityAxis;
     else if (typeof template.affinityAxis === 'object' && template.affinityAxis !== null && template.affinityAxis.pairedWith) affinityAxis = template.affinityAxis;
     else affinityAxis = Math.floor(Engine.rng.float(rng) * 360);
-    return {
+    const fighter = {
       ...template,
       pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn,
       affinityAxis,
@@ -17089,6 +17385,7 @@ const Engine = {
       growthLog: [],  // 成長経過ログ（全週分、引退時削除）
       _milestonesNotified: { ovr: [], pop: [], cap: [] },  // 成長マイルストーン通知済み閾値
     };
+    return Engine.kaigan.assignSeed(fighter, rng);
   },
 
   // ── Draft System (v1.0) ─────────────────────────────────
@@ -17186,7 +17483,9 @@ const Engine = {
         const t = ALL_CHARS.find(c => c.id === id);
         const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
         let f = Engine.makeChar(t, rng, { age });
-        f = Engine.chronicle.applySpiritToFighter(f, state.chronicle); // Phase 4: 気風 trainCap 補正
+        f = Engine.kaigan.ensureSeedEligibility(
+          Engine.chronicle.applySpiritToFighter(f, state.chronicle)
+        ); // Phase 4: 気風 trainCap 補正後の最終資格線も確認
         f.contractOVR = Engine.util.ov(f);
         f.contractPop = f.popularity || 0;
         return f;
@@ -24575,6 +24874,40 @@ Engine.validateGameState = function(G) {
     });
   }
 
+  // ── 開眼 Phase 1 不変条件 ──
+  // 表示からは完全に隠すが、破損セーブや将来の経路追加で「シードなし発火」や
+  // cap低下が混入した場合は、通常の不変条件ログで必ず発見できるようにする。
+  const kaiganFighters = [
+    ...(G.roster || []),
+    ...(G.freeAgents || []),
+    ...(G.scoutCandidates || []),
+    ...Object.values(G.aiOrgs || {}).flatMap(org => (org && org.roster) || []),
+  ];
+  kaiganFighters.forEach(c => {
+    if (!c || !c.kaiganState) return;
+    const ks = c.kaiganState;
+    const label = `開眼状態 "${c.name}" (id:${c.id})`;
+    if (c.kaiganSeed !== true) warn(`${label} にkaiganSeedがない`);
+    if (!Number.isInteger(ks.remainingSeasons)
+        || ks.remainingSeasons < 0
+        || ks.remainingSeasons > Engine.kaigan.ACTIVE_SEASONS) {
+      warn(`${label} のremainingSeasonsが範囲外: ${ks.remainingSeasons}`);
+    }
+    if (!isValidNum(ks.triggeredSeason) || !isValidNum(ks.triggeredWeek)) {
+      warn(`${label} の発火時期が不正`);
+    }
+    if (!isValidNum(ks.targetTrainCapOVR)) warn(`${label} のtargetTrainCapOVRが不正`);
+    STATS.forEach(stat => {
+      const cap = ks.appliedTrainCap && ks.appliedTrainCap[stat];
+      const floor = ks.capFloor && ks.capFloor[stat];
+      if (!isValidNum(cap) || !isValidNum(floor)) {
+        warn(`${label} の${stat} cap整合データが不正`);
+      } else if (cap < floor) {
+        warn(`${label} の${stat} 開眼適用capが開眼前より低下: ${cap} < ${floor}`);
+      }
+    });
+  });
+
   // ── 社長室(決裁枠)関連 ──
   if (G.decisionPoints !== undefined) {
     if (!isValidNum(G.decisionPoints)) {
@@ -28581,6 +28914,7 @@ Engine.newspaper = {
     // MQ再設計P4/P5 §5.2: 大ニュース(BIG_NEWS_TYPES)。leagueElevation(300)より上で一面を保証
     mqAllTimeRecord:     320,
     hotProspectDebut:    315,
+    kaiganAwakening:     315,
     mqTagRecord:         310,
     fatedRivals:         308,
     // P2 §2-1: 主役を種別へ焼き込んだ特例を廃止し、**怪我(基礎)+王者(主役補正)**へ分解。

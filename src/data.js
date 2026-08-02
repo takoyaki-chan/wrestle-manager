@@ -17254,6 +17254,10 @@ const NEWS_HEADLINE_TEMPLATES = {
     { headline: '{name}デビュー。場内のざわめきが評判を裏づけた',
       body: '{orgName}の{name}が{age}歳でリングデビュー。デビュー戦そのものは{result}だったが、この日集まった関係者の関心は勝敗の先にあった。育成畑の人間が「化ける」と口を揃える新人は、そう頻繁には出てこない。誇張を嫌う本紙としても、この素材は本物の部類だと書いておく。' },
   ],
+  kaiganAwakening: [
+    { headline: '{name}、格上との一戦で動きに変化',
+      body: '{orgName}の{name}は{opponentName}との一戦で、それまでと異なる動きを見せた。試合は{result}に終わったが、攻防の組み立てと反応には明らかな変化があり、この試合が成長の転機として記録された。次戦以降も、その変化が続くか注目される。' },
+  ],
   fatedRivals: [
     { headline: '同年代の逸材が二人――{name}と{name2}、同じ時代に立つ',
       body: '{age}歳前後の有望株が、ほぼ同時期に頭角を現した。{orgName}の{name}と{orgName2}の{name2}。育成関係者の見立てでは、どちらも一団体の看板を背負える器だという。育成の現場では、同世代に競う相手がいる選手ほど伸びると言われる。この二人が並んだこと自体が、今後十年の業界地図に関わってくる。' },
@@ -17390,7 +17394,7 @@ const CHAMPION_CHANGE_TEMPLATES = {
 };
 
 // MQ再設計P4/P5 §5.2: 大ニュース(一面ジャック+週頭通知)判定集合。
-const BIG_NEWS_TYPES = new Set(['mqAllTimeRecord', 'mqTagRecord', 'hotProspectDebut', 'fatedRivals', 'topChampionInjury']);
+const BIG_NEWS_TYPES = new Set(['mqAllTimeRecord', 'mqTagRecord', 'hotProspectDebut', 'kaiganAwakening', 'fatedRivals', 'topChampionInjury']);
 
 // MQ再設計P4/P5 §5.3: 週頭ポップアップの号外リード文言（bignews-article-drafts-v1.0.md 正本）。
 // {mq}/{orgName}/{titleName} のみ変数展開（記事本文とは独立に、そのつどランダム1本を選ぶ）。
@@ -17406,6 +17410,9 @@ const BIG_NEWS_LEAD_LINES = {
   hotProspectDebut: [
     '号外――数年に一人の逸材がデビューした',
     '{orgName}に大型新人。場内がざわついた一夜',
+  ],
+  kaiganAwakening: [
+    '号外――格上との一戦を境に、若手選手の動きが変わった',
   ],
   fatedRivals: [
     '号外――同年代の逸材が二人、同じ時代に揃った',

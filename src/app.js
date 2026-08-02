@@ -8645,6 +8645,21 @@ const App = {
       // orgPop リバランス v1.1 §5: ドーム興行カウント更新
       s = { ...s, roster, domeShowsThisSeason: (s.domeShowsThisSeason || 0) + 1 };
     }
+    // 開眼 Phase 1: 既存の試合後処理を終えたシングル戦だけを純エンジンの共通判定へ渡す。
+    // 専用モーダルは作らず、既存の週次ログと新聞キューだけを使う。
+    const kaiganResult = Engine.kaigan.processMatchResults(
+      { ...s, roster },
+      roster,
+      results,
+      { orgId: 'player', orgName: s.orgName }
+    );
+    roster = kaiganResult.roster;
+    s = { ...s, roster };
+    kaiganResult.occurrences.forEach(occurrence => {
+      events.push(Engine.kaigan.weeklyLog(occurrence));
+      s = Engine.industryNews.push(s, Engine.kaigan.industryEvent(occurrence));
+    });
+
     if (pendingGrowthEvents.length > 0) {
       s = { ...s, _pendingGrowthEvents: pendingGrowthEvents };
     }

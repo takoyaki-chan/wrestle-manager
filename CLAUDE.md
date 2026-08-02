@@ -222,7 +222,7 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | tournament-coach-wrapup-spec-v1.0.md | 特別興行後のコーチ総括(5大会共通/言及は最大2名/voice 8系統×成績6段/_tcwGate の fail-open と onDone 1回保証。実装完了 2026-08-01) |
 | mq-system-spec-v1.0.md | MQシステム確定仕様(三層構造/finalize一本化+profile5種/OVシーリング4セグメント+超過レイヤー/固定加算全廃→リング内化/観客熱×注目度/歴代記録シングル90・タッグ94分離/大ニュース新聞5種+週頭通知。P1〜P5全実装完了 2026-07-24。設計経緯は docs/mq-redesign-proposal-v0.5.md) |
 | ai-growth-parity-spec-v0.1.md | AI成長パリティの設計経緯（興行週練習/体調安全弁/熱量/wear共通化/限定トレーナー/intensiveRate再較正）。**実装済み・較正完了 2026-08-02**（40年×10ラン+100年×1本 ALL CLEAR。残はKeisuke実機確認）。確定仕様は growth-system-spec-v2.2、指示書: docs/ai-growth-parity-claude-code-prompt.md |
-| kaigan-awakening-spec-v0.1.md | 開眼システム(中位以下の全選手に業界トップ到達の可能性を1〜2%残す。隠しシード1.5%/生成時capOVR≤100のみ/格上戦で発火/着地帯=S級top4のcapOVR中央値相対/開眼期間3季はγ1.0+ageMul下限1.0。**DRAFT・レビュー待ち 2026-08-02**) |
+| kaigan-awakening-spec-v0.1.md | 開眼システム(**第1フェーズ実装・較正済み 2026-08-02**。隠しシード2.9%/生成時capOVR≤100のみ/格上戦で50%発火/着地帯=S級top4のcapOVR中央値相対+mn補正4/開眼期間3季はγ1.0+ageMul下限1.0。専用演出は第2フェーズ) |
 
 ## UI実装ルール(必読)
 
