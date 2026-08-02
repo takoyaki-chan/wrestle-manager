@@ -3,12 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>対抗戦(War)フロー 再設計モックアップ v0.1</title>
+<title>対抗戦(War)フロー 再設計モックアップ v0.2</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================================
-   対抗戦(S3 War)フロー 再設計モックアップ v0.1
+   対抗戦(S3 War)フロー 再設計モックアップ v0.2
    準拠: docs/ui/01-foundations.md / 02-layouts.md / mockup-baseline-v0.1.md(v0.8)
+
+   ■ v0.2 の改訂(2026-08-02 Keisuke レビュー反映)
+     ① 画面2 を「対戦カード表」から「出場順序を決める」方式へ差し替え。
+        相手の顔ぶれは開示するが、行で相手とペアを組まない(相手の並びに依存しないUI)。
+     ② 画面5 の隊列画像を stand → **upper(image/upper/{id}.webp)** に統一。
+        **左右反転は禁止**(反転してよいのはスタンド画像の対面配置のみ。顔が崩れるため)。
+     ③ セリフのダミー表示に、実装時の要件(archetype × personality の既存プール)を注記。
 
    ■ カテゴリ
      対抗戦は S3 対抗戦シーケンス。試合に向かう一連の流れなので画面はすべて
@@ -122,6 +129,11 @@ button:focus-visible{outline:2px solid var(--gold-light);outline-offset:2px}
 .note b{color:var(--gold-light)}
 .note.is-bad{border-left-color:var(--c-negative);background:rgba(var(--c-negative-rgb),.06)}
 .note.is-bad b{color:var(--c-negative)}
+/* セリフ箇所に添える実装要件の注記(v0.2 で追加)。モックの吹き出しは全部ダミー */
+.lnote{display:block;margin:calc(var(--space-lg) * -1 + 4px) 0 var(--space-lg);padding:var(--space-sm) var(--space-md);
+  border:1px dashed rgba(var(--gold-rgb),.34);border-radius:var(--radius-sm);
+  background:rgba(var(--gold-rgb),.04);font-size:11px;line-height:1.6;color:var(--text-sub)}
+.lnote b{color:var(--gold-light)}
 /* Stage 画面のプレビュー枠 */
 .vp{width:min(980px,100%);margin:0 auto var(--space-lg);border:1px solid var(--stage-border-main);border-radius:var(--radius-lg);
   overflow:hidden;background:var(--stage-bg);transition:width .2s ease}
@@ -172,7 +184,7 @@ body.is-narrow .vp{width:375px}
 .wf-stat small{font-family:var(--font-label);font-size:8px;letter-spacing:.1em;margin-right:4px;opacity:.6;color:var(--stage-text-main)}
 /* 団体バッジ(baseline §5): エンブレムは実画像。他団体が絡むときのみ出す */
 .wf-org{display:inline-flex;align-items:center;gap:5px;margin-top:6px;padding:3px 9px 3px 3px;border-radius:20px;
-  border:1px solid rgba(var(--wf-org-rgb),.5);background:rgba(var(--wf-org-rgb),.14)}
+  max-width:100%;border:1px solid rgba(var(--wf-org-rgb),.5);background:rgba(var(--wf-org-rgb),.14)}
 .wf-org.is-home{--wf-org-rgb:var(--c-positive-rgb)}
 .wf-org.is-away{--wf-org-rgb:var(--accent-hostility-rgb)}
 .wf-org-emblem{width:18px;height:18px;border-radius:50%;overflow:hidden;flex-shrink:0;background:rgb(var(--wf-org-rgb));display:grid;place-items:center}
@@ -239,6 +251,7 @@ body.is-narrow .vp{width:375px}
 .wf-peek{display:flex;flex-direction:column;align-items:center;gap:var(--space-xs);min-width:0}
 .wf-peek b{font-size:11px;font-weight:700;color:var(--stage-text-main);white-space:nowrap}
 .wf-peek span{font-family:var(--font-label);font-size:8px;letter-spacing:.14em;color:var(--stage-text-dim)}
+.wf-peek em{font-family:var(--font-label);font-size:8px;letter-spacing:.16em;font-style:normal;color:var(--accent-hostility)}
 .wf-prompt{text-align:center;font-size:15px;font-weight:700;color:var(--stage-text-main);margin:var(--space-lg) 0 var(--space-md)}
 .wf-tray{display:grid;grid-template-columns:1fr 1fr;gap:var(--space-md);max-width:620px;margin:0 auto;padding:0 var(--space-xl)}
 .wf-decision{padding:var(--space-md) var(--space-lg);border:1px solid var(--stage-border-lit);border-radius:var(--radius-md);
@@ -251,30 +264,49 @@ body.is-narrow .vp{width:375px}
 .wf-decision-hint{font-size:10px;color:var(--stage-text-dim);margin-top:var(--space-xs)}
 .wf-decision-hint.is-neg{color:var(--c-negative)}
 
-/* ══════ 画面2: 選手選択ステップ ══════ */
+/* ══════ 画面2: 出場順を決めるステップ(v0.2 で対戦カード表から差し替え) ══════ */
 .wf-pick-head{display:grid;grid-template-columns:1fr auto;gap:var(--space-md);align-items:end;
   padding:var(--space-lg) var(--space-xl) var(--space-md);border-bottom:1px solid var(--stage-border-lit)}
 .wf-pick-head h3{margin:2px 0 0;font-size:18px;font-weight:900;color:var(--stage-text-main)}
 .wf-pick-head .hint{font-size:11px;color:var(--stage-text-sub);text-align:right;max-width:280px}
-.wf-steps{display:flex;gap:var(--space-sm);align-items:center;padding:var(--space-sm) var(--space-xl);
+.wf-steps{display:flex;flex-wrap:wrap;gap:var(--space-sm);align-items:center;padding:var(--space-sm) var(--space-xl);
   border-bottom:1px solid var(--stage-border);background:var(--stage-panel-deep);
   font-family:var(--font-label);font-size:10px;letter-spacing:.14em;color:var(--stage-text-dim);text-transform:uppercase}
 .wf-steps b{color:var(--gold-light);font-weight:700}
 .wf-steps i{font-style:normal;color:var(--stage-text-quiet)}
-/* 対戦カード表: 1行 = 1試合。選出順がそのまま出場順であることを行番号で示す */
-.wf-board{padding:var(--space-lg) var(--space-lg) var(--space-sm)}
-/* 上端揃え(baseline §3「左右で画像の上端を揃える」)。自陣にだけ体調バーが付くので
-   下端で揃えると画像がずれる。相手の体調は社長には見えないので、非対称のまま上で揃える */
-.wf-brow{display:grid;grid-template-columns:minmax(0,1fr) 150px minmax(0,1fr);align-items:start;gap:var(--space-sm);
-  padding:var(--space-md) var(--space-md) var(--space-lg);border-bottom:1px solid var(--stage-border)}
-.wf-brow.is-main{border-left:2px solid var(--gold);background:linear-gradient(180deg,rgba(var(--gold-rgb),.07),transparent 60%)}
-.wf-brow-mid{text-align:center;padding-top:56px}
-.wf-brow-no{font-family:var(--font-label);font-size:10px;letter-spacing:.2em;color:var(--stage-text-dim);text-transform:uppercase}
-.wf-brow-vs{font-family:var(--font-display);font-size:28px;color:var(--accent-hostility);line-height:1.1}
-.wf-brow.is-main .wf-brow-no{color:var(--gold)}
-.wf-brow-tag{display:inline-block;margin-top:var(--space-xs);font-family:var(--font-label);font-size:8px;letter-spacing:.18em;
-  color:var(--gold);border:1px solid rgba(var(--gold-rgb),.4);border-radius:var(--radius-sm);padding:1px 6px}
-.wf-brow-note{font-size:10px;color:var(--stage-text-dim);margin-top:var(--space-xs)}
+/* 出場順レーン: 左から順に出る。**操作するのは自軍の並びだけ**。
+   相手は既に順まで開示されているので、各枠の頭に「この枠の相手」として据え置く
+   (こちらの操作で動かない情報なので、掴めるようには見せない) */
+.wf-board{padding:var(--space-md) var(--space-lg) var(--space-sm)}
+.wf-board-note{text-align:center;margin:0 auto var(--space-md);max-width:460px;font-size:11px;color:var(--stage-text-sub)}
+.wf-oslot-foe{display:flex;flex-direction:column;align-items:center;gap:3px;width:100%;
+  padding:var(--space-sm) var(--space-xs);border-radius:var(--radius-sm);
+  border:1px solid rgba(var(--accent-hostility-rgb),.24);background:rgba(var(--accent-hostility-rgb),.07)}
+.wf-oslot-foe-lbl{font-family:var(--font-label);font-size:8px;letter-spacing:.18em;color:var(--accent-hostility);text-transform:uppercase}
+.wf-oslot-foe b{font-size:11px;font-weight:700;color:var(--stage-text-main);white-space:nowrap}
+.wf-oslot-foe span{font-family:var(--font-label);font-size:8px;letter-spacing:.12em;color:var(--stage-text-dim)}
+.wf-oslot-vs{font-family:var(--font-display);font-size:15px;line-height:1;color:var(--accent-hostility);margin:6px 0 var(--space-sm)}
+.wf-order-axis{display:flex;align-items:center;gap:var(--space-sm);max-width:420px;margin:0 auto var(--space-sm);
+  font-family:var(--font-label);font-size:8px;letter-spacing:.2em;color:var(--stage-text-dim);text-transform:uppercase}
+.wf-order-axis i{flex:1;height:1px;background:linear-gradient(90deg,var(--stage-border),rgba(var(--gold-rgb),.5))}
+.wf-order-axis b{color:var(--gold);font-weight:700}
+.wf-order{display:flex;justify-content:center;align-items:flex-start;gap:var(--space-sm)}
+.wf-oslot{flex:0 0 108px;display:flex;flex-direction:column;align-items:center;min-width:0;
+  padding:var(--space-sm) 0 var(--space-md);border-radius:var(--radius-md)}
+.wf-oslot.is-main{background:linear-gradient(180deg,rgba(var(--gold-rgb),.07),transparent 70%)}
+.wf-oslot .wf-copy{max-width:108px}
+.wf-oslot .wf-cond{margin-top:6px}
+.wf-oslot-no{font-family:var(--font-label);font-size:10px;letter-spacing:.16em;color:var(--stage-text-dim);
+  text-transform:uppercase;margin-bottom:6px;text-align:center}
+.wf-oslot.is-main .wf-oslot-no{color:var(--gold)}
+.wf-otag{display:inline-block;margin-left:var(--space-xs);font-family:var(--font-label);font-size:8px;letter-spacing:.18em;
+  color:var(--gold);border:1px solid rgba(var(--gold-rgb),.4);border-radius:var(--radius-sm);padding:0 5px}
+/* 順の入れ替え。枠を選び直さなくても、隣と交換できる */
+.wf-swap{display:flex;justify-content:center;gap:var(--space-xs);margin-top:var(--space-sm)}
+.wf-swap button{width:30px;height:24px;line-height:1;border:1px solid var(--stage-border-lit);border-radius:var(--radius-sm);
+  background:var(--stage-panel-deep);color:var(--stage-text-sub);cursor:pointer;font-size:11px}
+.wf-swap button:hover{border-color:var(--gold);color:var(--gold-light)}
+.wf-swap button:disabled{opacity:.28;cursor:default}
 /* 空きスロット。フォーカス中は金リング(遠征の同行者選択 .awpick-slot.focused から借用) */
 .wf-empty{width:108px;height:162px;border:1px dashed var(--stage-border-main);border-radius:var(--radius-md);
   background:var(--stage-panel-deep);display:grid;place-items:center;color:var(--stage-text-dim);
@@ -401,8 +433,12 @@ body.is-narrow .vp{width:375px}
 .wf-troop-fig{margin-right:-18px;filter:drop-shadow(0 10px 16px rgba(0,0,0,.85))}
 .wf-troop-fig:last-child{margin-right:0}
 .wf-troop-fig.is-center{z-index:3;position:relative}
-.wf-troop-fig img{display:block;height:194px;width:auto}
-.wf-troop-fig.is-center img{height:224px}
+/* v0.2: 素材を stand → **upper(image/upper/{id}.webp)** に統一。梯子は 脇 M 132×194 / 中心 L 150×224。
+   contain + object-position:bottom で 2:3 の切り抜きを一切トリミングせずに底で揃える。
+   **transform:scaleX(-1) は絶対に掛けない** — アッパー画像の左右反転は禁止(顔が崩れるため)。
+   反転してよいのはスタンド画像を対面に置くときだけ、というプロジェクト裁定。 */
+.wf-troop-fig img{display:block;width:132px;height:194px;object-fit:contain;object-position:bottom center}
+.wf-troop-fig.is-center img{width:150px;height:224px}
 .wf-troop-fig.is-loser img{filter:grayscale(.9) brightness(.72)}
 .wf-troop-names{display:flex;justify-content:center;margin-top:var(--space-sm)}
 .wf-troop-nm{margin-right:-18px;width:132px;text-align:center}
@@ -422,31 +458,53 @@ body.is-narrow .vp{width:375px}
 .wf-foot-heat{font-family:var(--font-label);font-size:10px;letter-spacing:.16em;color:var(--stage-text-dim);text-transform:uppercase}
 .wf-foot-heat b{color:var(--c-rivalry);margin-left:var(--space-sm)}
 
-/* ══════ 狭幅(375px)確認 ══════ */
+/* ══════ 狭幅(375px)確認 ══════
+   横溢れの検算(375px・vp の内寸 373px):
+   ・画面2 出場順レーン = 108×3 + gap 4×2 = 332 ≤ 373 − 左右 padding 16 = 357 ○
+   ・画面2 候補レール   = .wf-rail が overflow-x:auto なので横スクロールで吸収 ○
+   ・画面5 隊列         = 108 + 108 + 132 − 重なり 18×2 = 312 ≤ 373 − 枠 padding 32 = 341 ○
+   ・画面5 名前の列     = 108 + 108 + 132 − 18×2 = 312(画像と同じ重なりを掛けている) ○ */
 @media(max-width:640px){
-  .wf-brow,.wf-next-grid{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+  .wf-next-grid{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
   .wf-done{grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr)}
   .wf-tray{grid-template-columns:1fr}
-  .wf-banner,.wf-mdl-stage,.wf-pick-head{padding-left:var(--space-md);padding-right:var(--space-md)}
+  .wf-banner,.wf-mdl-stage,.wf-pick-head,.wf-steps{padding-left:var(--space-md);padding-right:var(--space-md)}
   .wf-next-mid{padding-top:36px}
-  .wf-troop-fig img{height:150px}
-  .wf-troop-fig.is-center img{height:172px}
-  .wf-troop-nm{width:100px}.wf-troop-nm.is-center{width:114px}
+  /* 団体名は 375px の列(約124px)より長い。切らずに2行へ折り返す(v0.2 で修正) */
+  .wf-org-name{white-space:normal;text-align:left;line-height:1.25}
+  /* 375px では左右の列が約124px しかなく M(132) が収まらない。
+     独自寸法を作らず、梯子を1段下げて S(108×162) を使う(v0.2 で修正) */
+  .wf-next-grid .wf-up.is-m{width:108px;height:162px}
+  .wf-rail-sec,.wf-pick-foot{margin-left:var(--space-sm);margin-right:var(--space-sm)}
+  .wf-board{padding-left:var(--space-sm);padding-right:var(--space-sm)}
+  .wf-order{gap:var(--space-xs)}
+  .wf-pick-foot{grid-template-columns:minmax(0,1fr)}
+  .wf-pick-foot div{justify-content:flex-end}
+  .wf-troop-fig img{width:108px;height:162px}
+  .wf-troop-fig.is-center img{width:132px;height:194px}
+  .wf-troop-nm{width:108px}.wf-troop-nm.is-center{width:132px}
 }
-body.is-narrow .wf-brow,body.is-narrow .wf-next-grid{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+body.is-narrow .wf-next-grid{grid-template-columns:minmax(0,1fr) 76px minmax(0,1fr)}
+body.is-narrow .wf-org-name{white-space:normal;text-align:left;line-height:1.25}
+body.is-narrow .wf-next-grid .wf-up.is-m{width:108px;height:162px}
 body.is-narrow .wf-done{grid-template-columns:minmax(0,1fr) 96px minmax(0,1fr)}
 body.is-narrow .wf-tray{grid-template-columns:1fr}
-body.is-narrow .wf-troop-fig img{height:150px}
-body.is-narrow .wf-troop-fig.is-center img{height:172px}
-body.is-narrow .wf-troop-nm{width:100px}
-body.is-narrow .wf-troop-nm.is-center{width:114px}
+body.is-narrow .wf-board{padding-left:var(--space-sm);padding-right:var(--space-sm)}
+body.is-narrow .wf-rail-sec,body.is-narrow .wf-pick-foot{margin-left:var(--space-sm);margin-right:var(--space-sm)}
+body.is-narrow .wf-order{gap:var(--space-xs)}
+body.is-narrow .wf-pick-foot{grid-template-columns:minmax(0,1fr)}
+body.is-narrow .wf-pick-foot div{justify-content:flex-end}
+body.is-narrow .wf-troop-fig img{width:108px;height:162px}
+body.is-narrow .wf-troop-fig.is-center img{width:132px;height:194px}
+body.is-narrow .wf-troop-nm{width:108px}
+body.is-narrow .wf-troop-nm.is-center{width:132px}
 </style>
 </head>
 <body>
 
 <div class="doc-bar">
   <div>
-    <strong>対抗戦(War)フロー 再設計モックアップ v0.1</strong>
+    <strong>対抗戦(War)フロー 再設計モックアップ v0.2</strong>
     <small>S3 対抗戦シーケンス / Stage(純黒) / baseline v0.8 準拠 — 実装なし・意匠確認用</small>
   </div>
   <div class="doc-toggle">
@@ -496,8 +554,9 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
     <code>enemyAce.name.toUpperCase()</code> を入れている。baseline §3「中身はセリフ本文のみ・名前や所属を入れない」に反する。話者は画像の下で示す。</li>
   <li><b>画像を梯子に載せる。</b> <code>.mdl-a-subject-portrait.big</code> は <code>background-image</code> 直指定。
     2:3 の <code>XL 172×258</code>（単独の主役）に固定する。</li>
-  <li><b>相手の3名をここで開示する。</b> 受けるか辞退するかは「誰が来るか」で決まる判断なので、
-    エース1人だけでなく <code>chip 46×66</code> で3名を並べる。これが画面2の前提になる。</li>
+  <li><b>相手の3名と、その出場順をここで開示する。</b> 受けるか辞退するかは「誰が、どの順で来るか」で決まる判断なので、
+    エース1人だけでなく <code>chip 46×66</code> で3名を第1試合から順に並べる。これが画面2の前提になる
+    （<b>相手の並びは伏せない</b> — 2026-08-02 Keisuke 裁定）。</li>
 </ul>
 
 <div class="vp">
@@ -531,17 +590,20 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
       </div>
 
       <div class="wf-lineup-peek">
-        <div class="wf-lineup-peek-head">向こうが立てる三人</div>
+        <div class="wf-lineup-peek-head">向こうが立てる三人 ・ 出場順</div>
         <div class="wf-lineup-peek-row">
           <div class="wf-peek">
-            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
-            <b>白銀麗子</b><span>OVR 77</span>
-          </div>
-          <div class="wf-peek">
+            <em>第1試合</em>
             <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
             <b>出羽鷹子</b><span>OVR 80</span>
           </div>
           <div class="wf-peek">
+            <em>第2試合</em>
+            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
+            <b>白銀麗子</b><span>OVR 77</span>
+          </div>
+          <div class="wf-peek">
+            <em>メイン</em>
             <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
             <b>高階まさみ</b><span>OVR 84</span>
           </div>
@@ -558,7 +620,7 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
       <div class="wf-decision is-accept">
         <div class="wf-decision-letter">⚔ 受けて立つ</div>
         <div class="wf-decision-label">対抗戦を受諾する</div>
-        <div class="wf-decision-hint">誰を出すか決める画面へ進む</div>
+        <div class="wf-decision-hint">誰を、どの順で出すか決める画面へ進む</div>
       </div>
       <div class="wf-decision">
         <div class="wf-decision-letter">辞退</div>
@@ -569,6 +631,11 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
   </div>
 </div>
 
+<div class="lnote">
+  <b>吹き出しのセリフはダミー。</b> 実装時は選手セリフを
+  <b>archetype（口調）× personality の既存プール方式</b>で用意する。汎用文の使い回しは禁止。
+</div>
+
 <div class="note">
   <b>受諾ボタンの文言も変える。</b> 現行は「試合カード編成へ進む」と書いてあるのに、押すと
   <code>makeWarCard</code> が自動編成して進行画面が開く。<b>書いてあるのに存在しない工程</b>だったので、
@@ -576,107 +643,118 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
 </div>
 
 <!-- ══════════════════════════════════════════════════════════════════ -->
-<h2>画面2 — 選手選択ステップ（新設）</h2>
+<h2>画面2 — 出場順を決めるステップ（新設）</h2>
+<div class="note">
+  <b>v0.1 → v0.2 で作り直した箇所（2026-08-02 Keisuke 裁定）。</b>
+  v0.1 は「1行 = 1試合」の<b>対戦カード表</b>で、左右の枠を両方組み立てていく形に見えていた。
+  これをやめ、<b>操作は「自軍3名を選んで出場順を決める」ことだけ</b>にする。
+  <b>相手は3名も出場順も開示されたまま</b>で、こちらが動かせない<b>据え置きの情報</b>として各枠の頭に出す。
+  結果として「第N試合にこの子を置けば、あの相手と当たる」ことは枠の上で読めるが、
+  <b>プレイヤーが組むのは自軍の並びだけ</b>——相手をドラッグして組み替えるような操作は作らない。
+</div>
 <p>
-  <b>1行 = 1試合</b>の対戦カード表にする。上から第1試合・第2試合・第3試合（メイン）で、
-  <b>選出順がそのまま出場順</b>であることを行番号で示す。相手3名は既に開示されているので、
-  枠を埋めるたびに「誰と当たるか」が確定して見える。
+  <b>自軍3名を選び、出場順（第1試合 → 第3試合＝メイン）を決める。</b>
+  レーンは左から右へ時間が進み、<b>一番右がトリ</b>。各枠の頭には、その枠で待っている相手を
+  <code>chip 46×66</code> で据える。
 </p>
 <ul>
-  <li><b>枠を選ぶ → 候補を押す</b>の2手。フォーカス中の枠は金リング（遠征の同行者選択 <code>.awpick-slot.focused</code> の作法）。</li>
-  <li>候補レールには <b>体調・OVR・因縁の有無</b>を出す。出場停止/怪我は淡くして押せなくする。</li>
-  <li>「おまかせ」は現行 <code>makeWarCard</code> と同じ OVR 降順編成（<b>今の挙動が既定値として残る</b>）。</li>
+  <li><b>枠を選ぶ → 候補を押す</b>の2手。フォーカス中の枠は金リング（遠征の同行者選択 <code>.awpick-slot.focused</code> の作法）。
+    埋めた後は各枠の <b>◀ ▶ で隣と交換</b>できる（順だけ直したいときに選び直させない）。</li>
+  <li>候補レールには <b>体調・OVR・因縁の有無</b>を出す（v0.1 から維持）。出場停止/怪我は淡くして押せなくする。</li>
+  <li>相手側には<b>体調バーを出さない</b>。社長が知りえない情報なので、開示するのは顔・名前・OVR・因縁まで。</li>
+  <li>「おまかせ」は現行 <code>makeWarCard</code> と同じ OVR 降順（<b>今の挙動が既定値として残る</b>）。
+    埋めるのは<b>自軍の3枠だけ</b>。</li>
 </ul>
 
 <div class="vp">
-  <div class="vp-cap">Screen 2 / 選手選択ステップ (Stage・P5 Workflow)</div>
+  <div class="vp-cap">Screen 2 / 出場順を決めるステップ (Stage・P5 Workflow)</div>
   <div class="wf-screen">
     <div class="wf-pick-head">
       <div>
-        <div class="kicker">Set Your Card</div>
-        <h3>誰を、何番手で出すか</h3>
+        <div class="kicker">Set Your Order</div>
+        <h3>誰を、どの順で出すか</h3>
       </div>
-      <div class="hint">枠を選んでから候補を押す。<br>選んだ順がそのまま出場順になる。</div>
+      <div class="hint">枠を選んでから候補を押す。<br>◀ ▶ で隣の枠と入れ替えられる。</div>
     </div>
-    <div class="wf-steps"><b>1 受諾</b><i>›</i><b>2 出場選手を決める</b><i>›</i><span>3 試合進行</span><i>›</i><span>4 決着</span></div>
+    <div class="wf-steps"><b>1 受諾</b><i>›</i><b>2 出場順を決める</b><i>›</i><span>3 試合進行</span><i>›</i><span>4 決着</span></div>
 
     <div class="wf-board">
-      <!-- 第1試合 -->
-      <div class="wf-brow">
-        <div class="wf-side" style="align-items:flex-end">
-          <div class="wf-up is-s"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
-          <div class="wf-cond">
-            <div class="wf-cond-top"><span>元気</span><b>78</b></div>
-            <div class="wf-cond-track"><span class="is-good" style="width:78%"></span></div>
-          </div>
-          <div class="wf-copy">
-            <div class="wf-name">生駒エリカ</div>
-            <div class="wf-role">先鋒 ・ OVR 71</div>
-            <div class="wf-feud">⚔ 因縁 出羽鷹子</div>
-          </div>
-        </div>
-        <div class="wf-brow-mid">
-          <div class="wf-brow-no">第 1 試合</div>
-          <div class="wf-brow-vs">VS</div>
-          <div class="wf-brow-note">OVR差 −9</div>
-        </div>
-        <div class="wf-side is-away" style="align-items:flex-start">
-          <div class="wf-up is-s"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
-          <div class="wf-copy">
-            <div class="wf-name">出羽鷹子</div>
-            <div class="wf-role">帝都 ・ OVR 80</div>
-            <div class="wf-feud">⚔ 因縁 生駒エリカ</div>
-          </div>
-        </div>
-      </div>
+      <div class="wf-board-note">相手の三人と、その出場順は既に分かっている。決めるのは<b>こちらの並び</b>。</div>
+      <div class="wf-order-axis"><span>先に出る</span><i></i><b>トリ</b></div>
 
-      <!-- 第2試合(空き・フォーカス中) -->
-      <div class="wf-brow">
-        <div class="wf-side is-focused" style="align-items:flex-end">
-          <div class="wf-empty">＋</div>
-          <div class="wf-copy">
-            <div class="wf-name" style="color:var(--stage-text-dim)">未定</div>
-            <div class="wf-role">中堅 ・ 選択中</div>
+      <div class="wf-order">
+        <!-- 第1試合(埋まっている) -->
+        <div class="wf-oslot">
+          <div class="wf-oslot-no">第 1 試合</div>
+          <div class="wf-oslot-foe">
+            <div class="wf-oslot-foe-lbl">相手</div>
+            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_dewa_t.webp" alt=""></div>
+            <b>出羽鷹子</b><span>帝都 ・ OVR 80</span>
+          </div>
+          <div class="wf-oslot-vs">VS</div>
+          <div class="wf-side">
+            <div class="wf-up is-s"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+            <div class="wf-cond">
+              <div class="wf-cond-top"><span>元気</span><b>78</b></div>
+              <div class="wf-cond-track"><span class="is-good" style="width:78%"></span></div>
+            </div>
+            <div class="wf-copy">
+              <div class="wf-name">生駒エリカ</div>
+              <div class="wf-role">先鋒 ・ OVR 71</div>
+              <div class="wf-feud">⚔ 因縁あり</div>
+            </div>
+          </div>
+          <div class="wf-swap">
+            <button type="button" disabled>◀</button>
+            <button type="button">▶</button>
           </div>
         </div>
-        <div class="wf-brow-mid">
-          <div class="wf-brow-no">第 2 試合</div>
-          <div class="wf-brow-vs">VS</div>
-          <div class="wf-brow-note">下の棚から選ぶ</div>
-        </div>
-        <div class="wf-side is-away" style="align-items:flex-start">
-          <div class="wf-up is-s"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
-          <div class="wf-copy">
-            <div class="wf-name">白銀麗子</div>
-            <div class="wf-role">帝都 ・ OVR 77</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- 第3試合(メイン) -->
-      <div class="wf-brow is-main">
-        <div class="wf-side" style="align-items:flex-end">
-          <div class="wf-up is-s"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div>
-          <div class="wf-cond">
-            <div class="wf-cond-top"><span>疲れが見える</span><b>61</b></div>
-            <div class="wf-cond-track"><span class="is-warn" style="width:61%"></span></div>
+        <!-- 第2試合(空き・フォーカス中) -->
+        <div class="wf-oslot">
+          <div class="wf-oslot-no">第 2 試合</div>
+          <div class="wf-oslot-foe">
+            <div class="wf-oslot-foe-lbl">相手</div>
+            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_shirogane_r.webp" alt=""></div>
+            <b>白銀麗子</b><span>帝都 ・ OVR 77</span>
           </div>
-          <div class="wf-copy">
-            <div class="wf-name">深町真琴</div>
-            <div class="wf-role">大将 ・ OVR 78</div>
+          <div class="wf-oslot-vs">VS</div>
+          <div class="wf-side is-focused">
+            <div class="wf-empty">＋</div>
+            <div class="wf-copy">
+              <div class="wf-name" style="color:var(--stage-text-dim)">未定</div>
+              <div class="wf-role">中堅 ・ 選択中</div>
+            </div>
+          </div>
+          <div class="wf-swap">
+            <button type="button" disabled>◀</button>
+            <button type="button" disabled>▶</button>
           </div>
         </div>
-        <div class="wf-brow-mid">
-          <div class="wf-brow-no">第 3 試合</div>
-          <div class="wf-brow-vs">VS</div>
-          <div class="wf-brow-tag">Main</div>
-          <div class="wf-brow-note">OVR差 −6</div>
-        </div>
-        <div class="wf-side is-away" style="align-items:flex-start">
-          <div class="wf-up is-s"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
-          <div class="wf-copy">
-            <div class="wf-name">高階まさみ</div>
-            <div class="wf-role">帝都 ・ ACE ・ OVR 84</div>
+
+        <!-- 第3試合(メイン) -->
+        <div class="wf-oslot is-main">
+          <div class="wf-oslot-no">第 3 試合<span class="wf-otag">Main</span></div>
+          <div class="wf-oslot-foe">
+            <div class="wf-oslot-foe-lbl">相手 ・ Ace</div>
+            <div class="wf-up is-chip is-away"><img src="../../../image/upper/upper_takashina_m.webp" alt=""></div>
+            <b>高階まさみ</b><span>帝都 ・ OVR 84</span>
+          </div>
+          <div class="wf-oslot-vs">VS</div>
+          <div class="wf-side">
+            <div class="wf-up is-s"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div>
+            <div class="wf-cond">
+              <div class="wf-cond-top"><span>疲れが見える</span><b>61</b></div>
+              <div class="wf-cond-track"><span class="is-warn" style="width:61%"></span></div>
+            </div>
+            <div class="wf-copy">
+              <div class="wf-name">深町真琴</div>
+              <div class="wf-role">大将 ・ OVR 78</div>
+            </div>
+          </div>
+          <div class="wf-swap">
+            <button type="button">◀</button>
+            <button type="button" disabled>▶</button>
           </div>
         </div>
       </div>
@@ -693,7 +771,7 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
           <div class="wf-cand-nm">深町真琴</div>
           <div class="wf-cand-ovr"><small>OVR</small>78</div>
           <div class="wf-cand-sub">体調 61 ・ Aerial</div>
-          <button type="button" class="wf-cand-pick">大将</button>
+          <button type="button" class="wf-cand-pick">第3試合</button>
         </div>
         <div class="wf-cand">
           <div class="wf-cand-face"><img src="../../../image/upper/upper_okubo_m.webp" alt=""></div>
@@ -707,7 +785,7 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
           <div class="wf-cand-nm">生駒エリカ</div>
           <div class="wf-cand-ovr"><small>OVR</small>71</div>
           <div class="wf-cand-sub">体調 78 ・ ⚔因縁</div>
-          <button type="button" class="wf-cand-pick">先鋒</button>
+          <button type="button" class="wf-cand-pick">第1試合</button>
         </div>
         <div class="wf-cand">
           <div class="wf-cand-face"><img src="../../../image/upper/upper_matsukawa_a.webp" alt=""></div>
@@ -741,17 +819,23 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
     </div>
 
     <div class="wf-pick-foot">
-      <span>おまかせは OVR の高い順に大将・中堅・先鋒を埋めます（＝今までの自動編成と同じ並び）。</span>
+      <span>おまかせは OVR の高い順に トリ → 中堅 → 先鋒 を埋めます（＝今までの自動編成と同じ並び）。</span>
       <div>
         <button type="button" class="wf-btn is-quiet">おまかせ</button>
-        <button type="button" class="wf-btn is-primary" disabled>この布陣で開戦 ▶</button>
+        <button type="button" class="wf-btn is-primary" disabled>この順で開戦 ▶</button>
       </div>
     </div>
   </div>
 </div>
 
+<div class="lnote">
+  <b>この画面のセリフについて。</b> v0.2 時点では吹き出しを置いていない。
+  もし選出時や開戦直前に一言を出すなら、<b>実装時は選手セリフを archetype（口調）× personality の
+  既存プール方式で用意する。汎用文の使い回しは禁止</b>（1本を複数キャラで共有しない）。
+</div>
+
 <div class="note">
-  <b>枠が埋まるまで開戦できない。</b> 3枠すべて埋まるまで「この布陣で開戦」は無効（P5 の作法）。
+  <b>枠が埋まるまで開戦できない。</b> 3枠すべて埋まるまで「この順で開戦」は無効（P5 の作法）。
   ただし<b>中断は許さない</b> — 挑戦状を受けた後に編成から逃げられると、辞退のペナルティを回避できてしまう。
   「おまかせ」を常に押せる状態にしておくことで、進めなくなる状況を作らない。
 </div>
@@ -882,6 +966,13 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
   </div>
 </div>
 
+<div class="lnote">
+  <b>NEXT の煽りセリフはダミー。</b> 実装時は
+  <b>archetype（口調）× personality の既存プール方式</b>で用意する。汎用文の使い回しは禁止。
+  ここは<b>相手・スコア状況で意味が変わる</b>場所なので（先に取られた／取り返した／トリで背負う）、
+  文脈の分岐もプール側に持たせる。
+</div>
+
 <div class="note">
   <b>実装時に必ず掛けること（baseline §5-D）。</b>
   「観る」は観戦モード iframe（z-index 500）から戻ってくるコールバック待ちになる。
@@ -942,6 +1033,12 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
   </div>
 </div>
 
+<div class="lnote">
+  <b>勝者の一言はダミー。</b> 実装時は
+  <b>archetype（口調）× personality の既存プール方式</b>で用意する（<code>VICTORY_LINES</code> と同じ持ち方）。
+  汎用文の使い回しは禁止 — 1本を複数キャラで共有しない。
+</div>
+
 <p>
   同じ枠を敗者側（対抗戦終了後の敵エースの一言 <code>_showWarEnemyAceStatement</code>）にも使う。
   <b>灰色化と下辺の無彩色化だけ</b>で負けを示し、<code>LOSE</code> の文字は出さない（baseline §5-B）。
@@ -972,6 +1069,12 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
   </div>
 </div>
 
+<div class="lnote">
+  <b>敵エースの総括もダミー。</b> 他団体の選手にも同じ規則が掛かる —
+  <b>archetype（口調）× personality の既存プール方式</b>で用意し、汎用文の使い回しは禁止。
+  勝ち越された側／負け越した側で意味が変わるので、結果の分岐もプール側に持たせる。
+</div>
+
 <div class="note">
   <b>差し替えは1行では済まない。</b> <code>_showWarVictoryChain</code> は
   <code>getPortraitUrl</code>（face）を渡している。<code>getUpperUrl</code> へ変えるだけでなく、
@@ -992,6 +1095,14 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
   <li><b>出場した3名を隊列にする（baseline §2-B）。</b> 個々に額縁を付けず、群の外枠を1つ・18px 重ね・<code>drop-shadow</code>。
     大将を中心（<code>L 150×224</code>）、脇を <code>M 132×194</code>。負けた選手だけ灰色に落ちるので、
     <b>2勝1敗が絵で分かる</b>。</li>
+  <li><b>素材は アッパー <code>image/upper/{id}.webp</code> に統一する（v0.2 で変更）。</b>
+    v0.1 は <code>stand</code>（全身立ち姿）を使っていたが、隊列は上半身が重なる見え方なので
+    全身と切り抜きが混在して中途半端になっていた。<b>顔の高さが3人で揃う</b>アッパーに寄せる。
+    <b>左右反転はしない</b> — アッパーを反転すると顔が崩れるため（反転してよいのは
+    スタンド画像を対面に置くときだけ、というプロジェクト裁定）。
+    引き換えに <code>stand</code> / <code>full</code> が持つ <b>OVR による絵の差し替え</b>は効かなくなるが、
+    ここは成長を見せる場ではなく<b>3人が並んで持ち帰った結果</b>を見せる場なので、顔が揃うことを取る
+    （2026-08-02 Keisuke 裁定）。</li>
   <li><b>1試合ごとの詳細は下の要約行に畳む。</b> 顔の大きい対置を3回繰り返すと、隊列の効果が消える。</li>
   <li>スコア表記は em ダッシュ区切り <code>2 — 1</code>（baseline §5-B）。</li>
 </ul>
@@ -1031,10 +1142,11 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
         <span class="kicker">常磐女子プロレス</span>
         <b>三人が持ち帰った 2勝1敗</b>
       </div>
+      <!-- v0.2: 素材を upper に統一。左右反転はしない(scaleX を掛けない) -->
       <div class="wf-troop">
-        <div class="wf-troop-fig"><img src="../../../image/stand/stand_ikoma_e.webp" alt=""></div>
-        <div class="wf-troop-fig is-center"><img src="../../../image/stand/stand_fukamachi_m.webp" alt=""></div>
-        <div class="wf-troop-fig is-loser"><img src="../../../image/stand/stand_okubo_m.webp" alt=""></div>
+        <div class="wf-troop-fig"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+        <div class="wf-troop-fig is-center"><img src="../../../image/upper/upper_fukamachi_m.webp" alt=""></div>
+        <div class="wf-troop-fig is-loser"><img src="../../../image/upper/upper_okubo_m.webp" alt=""></div>
       </div>
       <div class="wf-troop-names">
         <div class="wf-troop-nm"><b>生駒エリカ</b><span>先鋒 ○</span></div>
@@ -1074,6 +1186,13 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
   </div>
 </div>
 
+<div class="lnote">
+  <b>この画面自体はセリフを持たない。</b> 上の一文（「Sランク王者…勝ち越し」）は<b>地の文</b>なので、
+  鉤括弧も吹き出しも付けない。セリフが出るのは<b>閉じた後の勝者チェーン／敵エース総括</b>で、
+  そこには画面4と同じ規則が掛かる —
+  <b>archetype（口調）× personality の既存プール方式。汎用文の使い回しは禁止。</b>
+</div>
+
 <div class="note">
   <b>閉じた後の順序を固定する（§5-D 鉄則4）。</b> 現行 <code>closeWarFinalResult</code> は
   「閉じる → 2秒 → 勝者セリフチェーン → 敵エース総括」。この順序は仕様として正しいので変えない。
@@ -1092,12 +1211,13 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
     <tr><td>画面1 モーダル外枠・記者ストリップ・決裁トレイ</td>
       <td><code>_mdlAOpen</code> / <code>_mdlAReporterStrip</code> / <code>.mdl-a-*</code>（A型モーダル）</td>
       <td><b>流用</b>。主役ブロックだけ <code>.mdl-a-subject-portrait.big</code> → <code>_u3bSideHtml(size:'xl')</code> に差し替え</td></tr>
-    <tr><td>画面1 相手3名の開示（chip 並び）</td>
+    <tr><td>画面1 相手3名＋出場順の開示（chip 並び）</td>
       <td>新設。梯子は baseline §2 の <code>chip 46×66</code></td>
-      <td><b>新規</b></td></tr>
-    <tr><td>画面2 全体（対戦カード表＋候補レール＋フッター）</td>
+      <td><b>新規</b>。v0.2 で<b>出場順のラベル</b>を追加（相手の並びは伏せない）</td></tr>
+    <tr><td>画面2 全体（出場順レーン＋候補レール＋フッター）</td>
       <td>E-4 代表編成 <code>_awEntryScreenHtml</code>(ui-common.js 18403) / <code>.agw-entry-*</code>(index.html 3831〜3857)</td>
-      <td><b>骨格を流用</b>。候補レール・フッター・「おまかせ」ボタンは構造そのまま</td></tr>
+      <td><b>骨格を流用</b>。候補レール・フッター・「おまかせ」ボタンは構造そのまま。
+        v0.2 で盤面を<b>対戦カード表 → 自軍の出場順レーン</b>へ差し替え（相手は各枠の据え置き情報）</td></tr>
     <tr><td>画面2 コンディションバー</td>
       <td><code>_agwConditionBar</code> / <code>.agw-cond</code></td>
       <td><b>そのまま流用</b>（3段の閾値・ラベルも同じ）</td></tr>
@@ -1118,7 +1238,7 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
       <td><b>差し替え</b>。面色を <code>--stage-card-top/bottom</code> に</td></tr>
     <tr><td>画面5 隊列</td>
       <td>baseline §2-B（秋4団体対抗戦の優勝3名・春タッグの優勝2名と同じ作法）</td>
-      <td><b>作法を適用</b>。対抗戦では初出</td></tr>
+      <td><b>作法を適用</b>。対抗戦では初出。v0.2 で素材を <code>stand</code> → <code>upper</code> に統一（反転なし）</td></tr>
     <tr><td>団体エンブレム</td>
       <td><code>orgIconHtml()</code> / <code>Engine.util.getOrgIconPath</code>、<code>image/org/org-*.png</code></td>
       <td><b>実画像</b>。頭文字の代用はしない（baseline §5）</td></tr>
@@ -1129,7 +1249,8 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
 <table>
   <thead><tr><th>#</th><th>項目</th><th>このモックでの扱い</th></tr></thead>
   <tbody>
-    <tr><td>1</td><td>選手画像は 2:3 か</td><td>○ 使用したのは <code>XL 172×258 / L 150×224 / M 132×194 / S 108×162 / chip 46×66</code> の5段のみ。梯子外の寸法を作っていない</td></tr>
+    <tr><td>1</td><td>選手画像は 2:3 か</td><td>○ 使用したのは <code>XL 172×258 / L 150×224 / M 132×194 / S 108×162 / chip 46×66</code> の5段のみ。梯子外の寸法を作っていない。
+      画面5 の隊列は v0.2 で <code>upper</code> に統一し、<code>object-fit:contain</code> で<b>トリミングしない</b>。<b>左右反転もしない</b></td></tr>
     <tr><td>2</td><td>正方形の顔は 52px 以下か</td><td>○ 正方形の顔は<b>1つも使っていない</b>（現行との比較用に置いた左側の <code>face</code> だけが例外で、それが「切れる」という指摘そのもの）</td></tr>
     <tr><td>3</td><td>吹き出しは画像の上か</td><td>○ 全て <code>.wf-slot</code>（予約枠・52px）で画像の上。尻尾は水平中心。クリーム＋黒文字。<b>名前・所属は吹き出しの外</b></td></tr>
     <tr><td>4</td><td>複数人は隊列か</td><td>○ 画面5 は外枠1つ・18px 重ね・<code>drop-shadow</code>。名前の列にも同じ重なりを掛けている</td></tr>
@@ -1139,27 +1260,75 @@ body.is-narrow .wf-troop-nm.is-center{width:114px}
   </tbody>
 </table>
 
+<h2>決着済み（2026-08-02 Keisuke レビュー）</h2>
+<table>
+  <thead><tr><th>論点</th><th>裁定</th><th>このモックへの反映</th></tr></thead>
+  <tbody>
+    <tr><td><b>対戦表 vs 順序方式</b><br>（v0.1 の「判断が要る点」②）</td>
+      <td><b>順序方式を採る。</b> プレイヤーが決めるのは<b>自軍3名と、その出場順</b>だけ。
+        対戦カードを組み立てる操作は作らない。<br>
+        ただし<b>相手の3名と出場順は開示したまま</b>にする（伏せない）。
+        結果として「第N試合に置けば誰と当たるか」は枠上で読める。</td>
+      <td>画面2 を出場順レーンへ全面差し替え。各枠の頭に、その枠で待つ相手を
+        <code>chip 46×66</code> で据え置き（掴めるようには見せない）。
+        画面1 の相手3名にも出場順ラベルを追加</td></tr>
+    <tr><td><b>画像素材</b><br>（画面5 の隊列）</td>
+      <td><b>アッパー <code>image/upper/{id}.webp</code> に統一。</b>
+        <b>左右反転は禁止</b>（反転してよいのはスタンド画像の対面配置だけ。アッパーは顔が崩れる）</td>
+      <td><code>stand_*</code> → <code>upper_*</code>。梯子は 中心 <code>L 150×224</code> / 脇 <code>M 132×194</code> のまま、
+        隊列規格（外枠1つ・18px 重ね・<code>drop-shadow</code>・敗者グレースケール）も維持。
+        <code>object-fit:contain</code> でトリミングなし</td></tr>
+    <tr><td><b>セリフの扱い</b></td>
+      <td>モックのセリフは<b>すべてダミー</b>。実装時は
+        <b>archetype（口調）× personality の既存プール方式</b>で用意し、
+        <b>汎用文の使い回しは禁止</b></td>
+      <td>画面1〜5 のセリフ箇所の直下に注記を追加</td></tr>
+  </tbody>
+</table>
+
 <h2>判断が要る点（実装前に決めること）</h2>
 <ol style="color:var(--text-sub);padding-left:1.4em">
   <li><b>試合数は3固定か。</b> <code>ev.matchCount</code> は挑戦状側が決めており、
-    <code>makeWarCard</code> は既定5。今回の指示は3試合前提で作ったが、<b>5試合のとき画面2の行が5行になる</b>。
-    行の縦を <code>S 108×162</code> にしてあるので5行でも破綻はしないが、
+    <code>makeWarCard</code> は既定5。今回の指示は3試合前提で作ったが、<b>5試合のとき画面2の枠が5つになる</b>。
+    枠の幅は <code>S 108×162</code> なので、5枠だと 108×5＝540px となり
+    <b>375px では横に収まらない</b>（レーンを横スクロールにするか、2段に折るかを決める必要がある）。
     「対抗戦は常に3試合」に寄せるなら仕様側の変更が要る。</li>
-  <li><b>相手の出場順を本当に先に開示するか。</b> 開示すると「相性の良い相手にぶつける」最適化ゲームになりうる
-    （数値哲学の「スプレッドシート化しない」に触れる）。
-    代案：<b>3名は開示するが並び順は伏せる</b>（E-4 と同じ「出場順は開戦時に公開」）。
-    その場合、画面2 の右列は <code>chip</code> の3名を横並びにして、行ごとの対戦相手は「?」にする。</li>
   <li><b>選出の自由度に上限を設けるか。</b> 何も縛らないと「格下3人を出して負けを最小化」も
     「エース3人を出して勝ちに行く」も自由になる。E-4 は <code>_eligible</code> で怪我人だけ弾いている。
     対抗戦でも同じで良いか（例：直近の興行で出場した選手は体調ペナルティ、など）。</li>
   <li><b><code>--victory-blue</code> を残すか。</b> 画面4 の名前色。対抗戦の自陣は <code>--c-positive</code> なので
     青は文脈から外れているが、<code>.u3b-theme-stage.is-victory</code> は JT・天頂戦・特別興行の総括とも共有している。
     対抗戦だけ外すか、全部まとめて見直すか。</li>
-  <li><b>因縁の見せ方。</b> 画面2 で「⚔ 因縁 出羽鷹子」と名指ししているが、
-    社長が rivalry の数値を知っている扱いで良いか。<b>数値は出さず「因縁あり」だけ</b>にしてある。</li>
-  <li><b>おまかせの既定値。</b> 現行の <code>makeWarCard</code>（OVR降順・メインが最強対決）をそのまま
+  <li><b>因縁の見せ方。</b> 画面2 の枠には <code>⚔ 因縁あり</code> とだけ出し、
+    <b>rivalry の数値も相手の名指しも出していない</b>（枠の相手は上に据えてあるので、名前を重ねる必要がない）。
+    候補レールでは「その枠の相手と因縁があるか」までしか分からないが、
+    <b>誰との因縁かを候補側でも出すか</b>は要判断。</li>
+  <li><b>おまかせの既定値。</b> 現行の <code>makeWarCard</code>（OVR降順・トリが最強）をそのまま
     既定にしてある。ここを変えると既存プレイヤーの体感が変わるので、変えないのが安全。</li>
+  <li><b>相手の順が見えることで最適化が進みすぎないか（要観察）。</b>
+    開示は決着済み（上表）だが、<b>「格下にエースをぶつけて確実に1つ取る」</b>が最適解として固定化すると
+    スプレッドシート寄りになる。<b>おまかせの位置づけ</b>（推奨として見せるか、ただの初期値か）と、
+    上の「自由度に上限を設けるか」で調整する余地を残しておく。</li>
 </ol>
+
+<h2>改訂履歴</h2>
+<ul>
+  <li><b>v0.2 (2026-08-02 Keisuke レビュー反映: 選択＝出場順方式／画面5を upper へ／セリフ実装要件)</b>
+    <ul>
+      <li>画面2 を<b>対戦カード表 → 出場順を決める方式</b>へ差し替え。操作は「自軍3名を選び、出る順を決める」だけ。
+        相手の3名と出場順は<b>開示したまま</b>各枠に据え置き、こちらから組み替えられる要素にはしない。
+        <b>候補レールの体調バー・OVR・因縁バッジ・おまかせボタンは維持</b>。枠の <code>◀ ▶</code> 入れ替えを追加</li>
+      <li>画面1 の相手3名に<b>出場順ラベル</b>（第1試合／第2試合／メイン）を追加し、画面2 と並びを一致させた</li>
+      <li>画面5 の隊列を <code>stand_*</code> → <code>upper_*</code> に統一。梯子（中心 L／脇 M）と隊列規格
+        （外枠1つ・18px 重ね・<code>drop-shadow</code>・敗者グレースケール）は維持。<b>左右反転は掛けない</b></li>
+      <li>画面1〜5 のセリフ箇所に、<b>ダミーである旨＋実装は archetype × personality の既存プール方式・汎用文の使い回し禁止</b>を注記</li>
+      <li>「判断が要る点」から<b>対戦表 vs 順序方式</b>と<b>画像素材</b>を外し、<b>決着済み</b>の表へ移した</li>
+      <li>375px の横溢れを再確認（レーン 332px / 隊列 312px。検算は CSS 末尾のコメント）。
+        <code>.wf-steps</code> を折り返し可に、<code>.wf-pick-foot</code> を狭幅で縦積みに変更</li>
+    </ul></li>
+  <li><b>v0.1 (2026-08-02)</b> 起案。①受諾後の選手選択が無い ②進行画面でカード全体が読めない
+    ③試合後セリフポップが規格違反（face 1:1 を 2:3 枠へ）の3点を、既存の正しい様式へ寄せて解く案として作成</li>
+</ul>
 
 </div>
 
