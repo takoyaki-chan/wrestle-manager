@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-77 実装完了: 引退記事の格付け + ドラフト1面拡充（2026-08-02 続き2・worktree）
+
+`docs/codex-tasks/task-77-newspaper-retirement-rank-and-draft-feature.md` の実装。
+
+**A. 引退記事の格付け**: `Engine.newspaper.retirementGrade(d)` を新設（reigns/peakOVR/seasons/wasChampion → 強度補正+上限120・ティアL/A/B/C判定）。基礎点は一切変更していない。呼び出し元は3経路:
+- `_newsRetirements`（AIシーズン末キュー・processSeasonEnd）→ `aiAceRetirement`/`aiRetirement`。旧 `isAce = ovr>=70` 二値と固定文「看板選手の退団は団体にとって大きな痛手だ。」を廃止し、tier(L/A→ace, B/C→通常)+ティア別テンプレ(`RETIREMENT_TEMPLATES`、§5-L/A/B/C 確定版12文)へ置き換え
+- `retirementDeclare`（週次スキャン・`retiredFighters`新規）→ 同じ `retirementGrade`/`RETIREMENT_TEMPLATES` を使う共通経路。`generate()` の業界ニュースキュー処理内で type別に分岐（汎用 `NEWS_HEADLINE_TEMPLATES` 経由だとティア別本文を選べないため個別処理）。旧 `careerRecord.titleReigns`（実在しないフィールド、常に0だった）を `careerRecord.totalTitleWins` に修正
+- `aiInjuryRetirement`（怪我引退）は既存の負傷フレーバー本文をスコープ外として維持し、強度補正（newsData経由）だけ効かせた。reigns は既存の `ev.titleReigns` をそのまま使用（取得元を分けない）
+- 同一号内で同ティアの引退が複数出る場合、`pickRetirementVariant` が `_retiredVariantCounts`（AI団体ループと業界ニュースキューで共有）を使って順繰りにバリアントを回す。無冠(reigns=0)では `{reigns}` 入りバリアントを除外
+- `_newsContractDepartures`(destination='retire') は今回のスコープ外と判断（見出し/本文が既に isAce で分岐しており、背景で報告された「同一文4連発」バグの発生源ではない）
+
+**B. ドラフト自団体1面**: `data.js` の `draftPlayerResult` テンプレを見出し2種+本文パススルー(`{body}`)に変更し、`Engine.newspaper.composeDraftPlayerResult(org, fighters, seed)` がリード(3種)+注目選手(assessedTier降順・superElite/eliteがいれば2名まで、promising以下しかいなければ1名のみ・superElite3/elite3/promising2バリアント)+締め(3種)を組み立てる。内部数値(pot/trainCap/OVR)は一切使わず、`assessedTier`/`age`/`h`/`style`のみ使用。`ui-common.js` の `_queueDraftIndustryNews` から呼ぶ。
+
+**検証**: `node test/newspaper-news-value-test.js` にtask-77 §A-4不変条件5件を追加、全24項目PASS。`node test/auto-sim.js 20 42` 違反0/エラー0。`npm test` 196/196 PASS（既存 `draft-news-portrait-ids-test.js` は関数が伸びた分の走査ウィンドウを2600→3600へ拡張）。手動で4件混在の引退シナリオ(L×2/B×3/A×1)を再現し、全件が異なる本文・ティア相応のスコアになることを確認。
+
 ## task-77実装をエージェントへ・開眼spec v0.1起票（2026-08-02 続き2）
 
 Keisuke「どんどん流していってください」を受けて2本並行:
