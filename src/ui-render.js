@@ -7344,8 +7344,10 @@ function _npV3IndexBar(wp, isLatest) {
   if (wp.playerShowData) {
     items.push(`<span class="pg" onclick="npScrollToShowDetail()"><u>つづき</u> 自団体興行 詳報</span>`);
   }
-  items.push(`<span class="pg" onclick="setNewspaperSubPage(2)"><u>二面</u> 団体比較</span>`);
-  items.push(`<span class="pg" onclick="setNewspaperSubPage(3)"><u>三面</u> 因縁列伝</span>`);
+  // 外側タブと同じ _npFeatureOn で判定する。特集の無い週に目次だけ二面/三面を載せると、
+  // クリックしても renderNewspaper の空面ガードで1面へ弾かれ「書いてあるのに見れない」になる
+  if (_npFeatureOn(2)) items.push(`<span class="pg" onclick="setNewspaperSubPage(2)"><u>二面</u> 団体比較</span>`);
+  if (_npFeatureOn(3)) items.push(`<span class="pg" onclick="setNewspaperSubPage(3)"><u>三面</u> 因縁列伝</span>`);
   if (isLatest && G.mvpRace && (G.mvpRace.rankings || []).length > 0) {
     items.push(`<span class="pg np-v3-index-right" onclick="setNewspaperSubPage(4)"><u>MVPレース詳細 ▶</u></span>`);
   }
