@@ -459,7 +459,6 @@ function renderMatchFrame(){
 
   container.innerHTML = `
     ${_hudHtml(fr)}
-    ${_bigMatchStripHtml()}
     <div class="wm-presentation" id="mainRow">
       ${_liveRingHtml(fr)}
       <div class="wm-lower-dock">
@@ -533,7 +532,7 @@ function _hudHtml(fr){
   </div>`;
 }
 
-function _bigMatchStripHtml(){
+function _matchBadgeHtml(){
   const mi = S.matchInfo || {};
   const rec = mi.h2hRecord || null;
   if (!S._isBigMatch && !(rec && rec.matches > 0) && !(mi.rivalryTier > 0)) return '';
@@ -541,13 +540,9 @@ function _bigMatchStripHtml(){
     ? `${rec.matches} MATCHES  ${S.L ? escHtml(S.L.name) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(S.R.name) : 'RIGHT'}${rec.bestMQ ? `  BEST MQ ${rec.bestMQ}` : ''}`
     : 'FIRST MEETING';
   const title = S._isBigMatch ? 'BIG MATCH' : 'RIVALRY MATCH';
-  return `<div class="bigmatch-strip">
-    <div class="bigmatch-strip-bg">
-      <img src="${_getUpperUrl(S.L)}" alt="" onerror="this.style.display='none'">
-      <img src="${_getUpperUrl(S.R)}" alt="" onerror="this.style.display='none'">
-    </div>
-    <div class="bigmatch-strip-title">${title}</div>
-    <div class="bigmatch-strip-record">${recordText}</div>
+  return `<div class="wm-match-badge">
+    <span class="wm-match-badge-title">${title}</span>
+    <span class="wm-match-badge-record">${recordText}</span>
   </div>`;
 }
 
@@ -561,6 +556,7 @@ function _liveRingHtml(fr){
     <div class="wm-ring-grade"></div>
     <div class="wm-ring-light left"></div><div class="wm-ring-light right"></div>
     <div class="wm-live-label"><i></i>LIVE RING</div>
+    ${_matchBadgeHtml()}
     <div class="wm-phase-chip"><span id="pill" class="phase-pill${S._isBigMatch?' bigmatch':''}">${escHtml(phase)}</span><span id="turnLbl">T${turn}</span></div>
     <div class="wm-camera-chip" id="cameraChip">CAMERA · AUTO WIDE</div>
     ${_panelHtml(S.L, 'L')}${_panelHtml(S.R, 'R')}

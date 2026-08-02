@@ -54,11 +54,6 @@
   .wm-hp-label { min-width: 18px; font-size: 8px; }
   .wm-hp-bar { height: 20px; }
 
-  .bigmatch-strip { min-height: 44px; margin-bottom: 6px; }
-  .bigmatch-strip-bg img { height: 70px; }
-  .bigmatch-strip-title { font-size: 20px; }
-  .bigmatch-strip-record { max-width: 94%; font-size: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
   .chem-bar { padding: 5px 8px; margin-bottom: 6px; gap: 5px; font-size: 9px; }
 
   .main-row {
@@ -259,6 +254,9 @@
   .wm-live-ring .wm-commentary .nar-empty { font-size: 11px; }
   .wm-camera-chip,
   .wm-ring-nameplate { display: none; }
+  .wm-match-badge { top: 7px; max-width: 46%; padding: 4px 9px; }
+  .wm-match-badge-title { font-size: 9px; }
+  .wm-match-badge-record { display: none; }
   .wm-ring-arrow-layer .attack-arrow { right: 18%; left: 18%; }
 
   .wm-lower-dock {
