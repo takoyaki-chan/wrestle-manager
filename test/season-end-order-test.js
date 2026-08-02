@@ -123,11 +123,12 @@ section('7. 引退の確定は表彰式の前に済む', () => {
 });
 
 section('8. 表彰式のあとは総括へ繋がる', () => {
-  const cer = app.indexOf('showAwardsCeremony(pendingAwards, () => {');
-  assert.ok(cer > 0, 'showAwardsCeremony が見つからない');
-  const body = app.slice(cer, cer + 1200);
-  assert.ok(/_showFarewellsThenReport\(\)/.test(body),
-    '表彰式のあとに総括へ繋がっていない');
+  const finish = app.indexOf('const finishAwardsCeremony = () => {');
+  assert.ok(finish > 0, '表彰式の完了コールバックが見つからない');
+  const report = app.indexOf('_showFarewellsThenReport()', finish);
+  assert.ok(report > finish, '表彰式の完了後に総括へ繋がっていない');
+  const cer = app.indexOf('showAwardsCeremony(pendingAwards, finishAwardsCeremony', report);
+  assert.ok(cer > report, '完了コールバックを showAwardsCeremony へ渡していない');
 });
 
 section('9. 表彰式が無い年も同じ終わり方をする', () => {

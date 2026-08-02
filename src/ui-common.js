@@ -3197,6 +3197,67 @@ function _buildAwardsSummary(a) {
 
 // ── メインフロー (TASK-4) ────────────────────────────────────────
 
+/**
+ * 表彰式の「次へ」を1操作につき1枚だけ進める入力ゲート。
+ * Enter長押しのkey repeat、keyup後のsynthetic click、ダブルクリックをまとめて弾く。
+ */
+function _awCreateInputGate(advance, options = {}) {
+  const now = typeof options.now === 'function' ? options.now : () => Date.now();
+  const minInterval = Number(options.minInterval) > 0 ? Number(options.minInterval) : 320;
+  let lastAdvanceAt = -Infinity;
+  let keyHeld = false;
+  let suppressClickUntil = -Infinity;
+
+  const isAdvanceKey = e => e && (e.key === 'Enter' || e.key === ' ');
+  const requestAdvance = () => {
+    const time = now();
+    if (time - lastAdvanceAt < minInterval) return false;
+    lastAdvanceAt = time;
+    advance();
+    return true;
+  };
+
+  return {
+    onClick(e) {
+      if (now() < suppressClickUntil) {
+        if (e?.preventDefault) e.preventDefault();
+        return false;
+      }
+      return requestAdvance();
+    },
+    onKeyDown(e) {
+      if (!isAdvanceKey(e)) return;
+      e.preventDefault();
+      // キーを離すまで、ブラウザが生成するclickも含めて受け付けない。
+      suppressClickUntil = Infinity;
+      if (e.repeat || keyHeld) return;
+      keyHeld = true;
+    },
+    onKeyUp(e) {
+      if (!isAdvanceKey(e)) return;
+      e.preventDefault();
+      // 表彰式を開いた元ボタンで押されたキーのkeyupだけが飛んできた場合は無視する。
+      if (!keyHeld) return;
+      keyHeld = false;
+      suppressClickUntil = now() + 180;
+      requestAdvance();
+    },
+    onBlur() {
+      keyHeld = false;
+      suppressClickUntil = now() + 180;
+    },
+    dispose(button) {
+      keyHeld = false;
+      suppressClickUntil = Infinity;
+      if (!button) return;
+      button.onclick = null;
+      button.onkeydown = null;
+      button.onkeyup = null;
+      button.onblur = null;
+    },
+  };
+}
+
 function showAwardsCeremony(awards, onDone, onOpen) {
   if (!awards) { if (onDone) onDone(); return; }
   if (Engine.awards && !Engine.awards.hasDisplayableAwards(awards)) { if (onDone) onDone(); return; }
@@ -3283,6 +3344,7 @@ function showAwardsCeremony(awards, onDone, onOpen) {
 
   let current = 0;
   const TOTAL = slideInfo.length;
+  let finished = false;
 
   function goToSlide(idx) {
     const slides = slideWrap.querySelectorAll('.aw-slide');
@@ -3338,8 +3400,12 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   }
 
   function nextSlide() {
+    if (finished) return;
     if (current >= TOTAL - 1) {
       // 閉じる
+      finished = true;
+      btnNext.disabled = true;
+      inputGate.dispose(btnNext);
       overlay.classList.remove('active');
       _awClearParticles();
       coachFg.classList.remove('revealed');
@@ -3353,7 +3419,13 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   }
 
   window._awardsNext = nextSlide;
-  btnNext.onclick = function() { if (!btnNext.disabled) nextSlide(); };
+  const inputGate = _awCreateInputGate(() => {
+    if (!btnNext.disabled) nextSlide();
+  });
+  btnNext.onclick = e => inputGate.onClick(e);
+  btnNext.onkeydown = e => inputGate.onKeyDown(e);
+  btnNext.onkeyup = e => inputGate.onKeyUp(e);
+  btnNext.onblur = () => inputGate.onBlur();
 
   // 殿堂入りスライドのタップ→コーチセリフ切り替え
   slideWrap.addEventListener('click', function(e) {
@@ -3386,6 +3458,9 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   // 表示開始
   if (onOpen) onOpen();
   overlay.classList.add('active');
+  // 背面の「次の週へ」にフォーカスが残っていると、Enter/Spaceで式典を飛ばして
+  // オフシーズン第2週へ進めてしまう。表示した時点で操作焦点を式典へ移す。
+  try { btnNext.focus({ preventScroll: true }); } catch (_e) { try { btnNext.focus(); } catch (__e) {} }
   headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[0].label;
   if (headerSection) headerSection.textContent = slideInfo[0].section || '';
 
@@ -5714,10 +5789,10 @@ function startDraftNegotiation() {
 function _buildDraftGetPage(state, acquiredRecords) {
   const roster = state.roster || [];
   const acquired = acquiredRecords
-    .map(rec => {
+    .map((rec, visualIndex) => {
       const f = roster.find(r => r.id === (typeof rec === 'object' ? rec.id : rec));
       if (!f) return null;
-      return { ...f, _finalBid: rec.finalBid || 0, _tierId: rec.tier || 'material' };
+      return { ...f, _finalBid: rec.finalBid || 0, _tierId: rec.tier || 'material', _draftVisualIndex: visualIndex };
     })
     .filter(Boolean);
 
@@ -5735,16 +5810,36 @@ function _buildDraftGetPage(state, acquiredRecords) {
   const STYLE_JP_FULL = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
   const statRow = (k, v) => `<div class="b1-stat-row"><span class="k">${k}</span><div class="bar"><div class="fill" style="width:${Math.min(100, v)}%"></div></div><span class="v">${v}</span></div>`;
 
+  // 明るい色だけで構成した獲得カード用パレット。セッションごとに開始色をずらし、
+  // 同一画面内では8枚まで重複しない。再描画で色がちらつかないよう決定的に選ぶ。
+  const DRAFT_CARD_BACKGROUNDS = [
+    'linear-gradient(145deg,#b8e6fa 0%,#79badf 100%)',
+    'linear-gradient(145deg,#c4efd8 0%,#7dc9ab 100%)',
+    'linear-gradient(145deg,#ffd2bd 0%,#ef9f93 100%)',
+    'linear-gradient(145deg,#ddd1fa 0%,#aa93d7 100%)',
+    'linear-gradient(145deg,#f9ebad 0%,#dfc469 100%)',
+    'linear-gradient(145deg,#f7c9dd 0%,#e491b8 100%)',
+    'linear-gradient(145deg,#bcece7 0%,#70c6c8 100%)',
+    'linear-gradient(145deg,#ccdafa 0%,#91aee2 100%)'
+  ];
+  const draftColorKey = `${state.season || 1}:${state.rngSeed || 0}:${acquired.map(f => f.id).join(',')}`;
+  let draftColorHash = 0;
+  for (let i = 0; i < draftColorKey.length; i++) {
+    draftColorHash = ((draftColorHash * 31) + draftColorKey.charCodeAt(i)) >>> 0;
+  }
+  const draftColorStart = draftColorHash % DRAFT_CARD_BACKGROUNDS.length;
+  const draftCardBackground = f => DRAFT_CARD_BACKGROUNDS[
+    (draftColorStart + ((f._draftVisualIndex || 0) * 5)) % DRAFT_CARD_BACKGROUNDS.length
+  ];
+
   // 超逸材ヒーロー表示
   function _heroCard(f) {
     const ovr = Engine.util.ov(f);
     const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
-    const faceUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '';
-    const imgUrl = upperUrl || faceUrl;
-    const imgHtml = imgUrl
-      ? `<img src="${imgUrl}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+    const imgHtml = upperUrl
+      ? `<img class="b1-upper-img" src="${upperUrl}" alt="">`
       : `<div class="b1-placeholder" style="font-size:80px">${(f.name || '?').charAt(0)}</div>`;
-    return `<div class="b1-hero">
+    return `<div class="b1-hero" style="--b1-portrait-bg:${draftCardBackground(f)}">
       <div class="b1-hero-ribbon">GET!</div>
       <div class="b1-hero-img">${imgHtml}</div>
       <div class="b1-hero-body">
@@ -5772,12 +5867,12 @@ function _buildDraftGetPage(state, acquiredRecords) {
     const tierId = f._tierId || 'material';
     const tierLabel = TIER_LABELS[tierId] || tierId;
     const ovr = Engine.util.ov(f);
-    const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '';
-    const portrait = url
-      ? `<img src="${url}" alt="" style="width:100%;height:100%;object-fit:cover;">`
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
+    const portrait = upperUrl
+      ? `<img class="b1-upper-img" src="${upperUrl}" alt="">`
       : `<div class="b1-placeholder">${(f.name || '?').charAt(0)}</div>`;
     const lgClass = tierId === 'elite' ? ' b1-card-lg' : '';
-    return `<div class="b1-card tier-${tierId}${lgClass}">
+    return `<div class="b1-card tier-${tierId}${lgClass}" style="--b1-portrait-bg:${draftCardBackground(f)}">
       <div class="b1-card-top">
         <span class="b1-tier tier-${tierId}">${tierLabel}</span>
         <span class="b1-style">${STYLE_SHORT[f.style] || f.style} / ${ROLE_SHORT[f.role] || f.role}</span>
@@ -7355,6 +7450,14 @@ function calcAttendance(venueIdx, mainPop, hasTitleMatch, hasChampOnCard) { retu
 function calcShowRevenue(venueIdx, attendance) { return Engine.economy.calcShowRevenue(venueIdx, attendance); }
 // 全ポップアップ・トースト・キューを強制クリア（タブ切替・週送り時に使用）
 function dismissAllPopups() {
+  // 表彰式は複数枚で一つの進行単位。途中で共通クリーンアップを通すと、式典だけが
+  // 消え、呼び出し元によってはそのまま次週処理まで進む。終了ボタンで完走するまでは
+  // ポップアップ全消去そのものを無効化する。
+  if (typeof App !== 'undefined' && typeof App._isAwardsStageActive === 'function'
+      && App._isAwardsStageActive()) {
+    try { console.warn('[WM][awards] ignored dismissAllPopups during ceremony'); } catch (_e) {}
+    return false;
+  }
   _POPUP_OVERLAY_IDS.forEach(oid => {
     const el = document.getElementById(oid);
     if (el) { el.classList.remove('active'); el.classList.remove('show'); }
@@ -7399,6 +7502,7 @@ function dismissAllPopups() {
   clearTimeout(window._notifSafetyTimer);
   clearTimeout(window._notifModalTimer);
   clearTimeout(window._careModalTimer);
+  return true;
 }
 
 // BGMを変えずに画面だけ切り替える（ドラフト交渉中のUI更新用）
@@ -7410,6 +7514,10 @@ function _showScreenNoBgm(id) {
 }
 
 function showScreen(id, evt) {
+  // 年間表彰式など awardsOverlay の進行中に背面ナビへ移ると、showScreen 内の
+  // dismissAllPopups が式典を途中で消す。式典を閉じるまでは画面遷移を受け付けない。
+  if (typeof App !== 'undefined' && typeof App._guardAwardsStage === 'function'
+      && App._guardAwardsStage('showScreen:' + id)) return;
   if (id === 'training') id = 'roster'; // Legacy compat: training tab merged into roster
   // Legacy compat: scout tab merged into shachoshitsu (Phase C)
   if (id === 'scout') {
@@ -18260,39 +18368,38 @@ function renderAutumnWarResult() {
     <div class="is-player"><span>自団体の大会収入</span><strong>¥${playerShare.amount + playerPrize}万</strong><small>興行分配 ¥${playerShare.gateAmount}万（均等${playerShare.gateEqual}・延べ出場${playerShare.appearances}人 ${playerShare.gateAppearances}）<br>ブランド ¥${playerShare.brandAmount}万（通常興行基礎${playerShare.brandBase}・結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%／${playerShare.brandBonusAmount}）${playerPrize ? `<br>入賞賞金 ¥${playerPrize}万` : ''}</small></div>
   </div>` : '';
   const speech = _agwChampionSpeech(result, champ);
-  // U2統一デザイン: 団体優勝(秋4団体対抗戦)は3名を横一列、大将を中央に一回り大きく。全員に吹き出しの予約枠を置く
+  // 団体優勝(秋4団体対抗戦)は3名を同じ大きさで横一列にする。
+  // 優勝コメントは最多勝者の列だけに置かず、隊列全体の中央に独立した1枠として掲げる。
   const champOrder = (final && champ) ? (final.orgA === champ.orgId ? final.orderA : final.orderB) : null;
   const roleRank = { '先鋒': 0, '大将': 1, '中堅': 2 };
   const members = (champ?.memberIds || [])
     .map(id => ({ id, f: _agwFighter(champ.orgId, id), role: _agwRoleLabel(champOrder || champ?.order || champ?.memberIds, id) }))
     .filter(m => m.f)
     .sort((a, b) => (roleRank[a.role] ?? 9) - (roleRank[b.role] ?? 9));
-  // U3: 隊列は群の外側を1つの枠で囲む(案C)。吹き出し/画像/名前を3段の行に分け、
-  // 同じ列(先鋒・大将・中堅)が3段すべてで同じ幅を持つことで-18px重なりが揃う
   const memberRows = members.map(m => {
-    const isAce = m.role === '大将';
     const wins = result.fighterWins?.[m.id] || 0;
-    const line = speech?.fighter?.id === m.id ? speech.line : '';
-    return { m, isAce, wins, line };
+    return { m, wins, isMvp: m.id === result.mvpId };
   });
-  const bubsRow = memberRows.map(({ m, isAce, line }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
-      <div class="ch-order">${escHtml(m.role)}</div>
-      ${_chBubbleSlot(line, 'is-autumn-speech')}
-    </div>`).join('');
-  const imgsRow = memberRows.map(({ m, isAce }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
+  const speechMember = memberRows.find(({ m }) => m.id === speech?.fighter?.id);
+  const speechHtml = speech?.line ? `<div class="ch-trio-speech">
+      <div class="ch-trio-speaker">最多勝コメント${speechMember ? ` ・ ${escHtml(speechMember.m.role)} ${escHtml(speechMember.m.f.name)}` : ''}</div>
+      ${_chBubbleSlot(speech.line, 'is-autumn-speech')}
+    </div>` : '';
+  const imgsRow = memberRows.map(({ m, isMvp }) => `<div class="ch-mem${isMvp ? ' is-mvp' : ''}">
       <div class="ch-por-wrap">
         <div class="ch-por" style="cursor:pointer" onclick="showFighterPopup(${m.id},'autumnWar')">${_chPortraitImg(m.f)}</div></div>
     </div>`).join('');
-  const namesRow = memberRows.map(({ m, wins, isAce }) => `<div class="ch-mem${isAce ? ' is-ace' : ''}">
+  const namesRow = memberRows.map(({ m, wins, isMvp }) => `<div class="ch-mem${isMvp ? ' is-mvp' : ''}">
+      <div class="ch-order">${escHtml(m.role)}</div>
       <div class="ch-name">${escHtml(m.f.name)}</div>
-      <div class="ch-mem-rec">通算${wins}人抜き${m.id === result.mvpId ? ' ・ 大会MVP' : ''}</div>
+      <div class="ch-mem-rec">通算${wins}人抜き${isMvp ? ' ・ 大会MVP' : ''}</div>
     </div>`).join('');
   const html = `<div class="agw-wrap agw-result">${_agwHeaderHtml('Survival War Champion', '全団体戦終了')}
     <div class="champ th-autumn">
       ${_chTeamlineHtml(champ?.orgId, champ?.orgName)}
       <div class="ch-role-line"><span class="ch-role-crown">🏆</span><div class="ch-role">優 勝</div></div>
       <div class="ch-trio">
-        <div class="ch-lineup-bubs">${bubsRow}</div>
+        ${speechHtml}
         <div class="ch-lineup-imgs">${imgsRow}</div>
         <div class="ch-lineup-names">${namesRow}</div>
       </div>

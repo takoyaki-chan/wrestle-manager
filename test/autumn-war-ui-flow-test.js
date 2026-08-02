@@ -219,9 +219,10 @@ function section(source, startMarker, endMarker) {
   const resultView = section(ui, 'function renderAutumnWarResult', 'function _agwMvpLine');
   const championSpeech = section(ui, 'function _agwChampionSpeech', 'function _agwMiniClimbHtml');
   assert.ok(championSpeech.includes('result.fighterWins?.[b.id]'), '優勝台詞の話者を最多勝から選んでいない');
-  assert.ok(resultView.includes('speech?.fighter?.id === m.id'), '最多勝の1人だけへ優勝台詞を接続していない');
-  assert.ok(resultView.includes("_chBubbleSlot(line, 'is-autumn-speech')"), 'championship speech must use the non-clipped autumn modifier');
-  assert.ok(resultView.includes('class="ch-mem'), 'championship speech must be attached to its speaker card (U2 unified .ch-mem)');
+  assert.ok(resultView.includes('m.id === speech?.fighter?.id'), '最多勝コメントの話者情報を優勝隊列へ接続していない');
+  assert.ok(resultView.includes("_chBubbleSlot(speech.line, 'is-autumn-speech')"), 'championship speech must use the non-clipped autumn modifier');
+  assert.ok(resultView.includes('class="ch-trio-speech"'), 'championship speech must be a single centered block for the whole trio');
+  assert.ok(!resultView.includes('class="ch-lineup-bubs"'), 'single championship speech must not leave three phantom bubble columns');
   assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');
   assert.ok(resultView.includes('大会総収入'), 'result view must show the event revenue basis');
   assert.ok(resultView.includes('興行分配 ¥${playerShare.gateAmount}万'), 'player payout must separate gate revenue');
@@ -231,7 +232,7 @@ function section(source, startMarker, endMarker) {
   assert.ok(resultView.includes('結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%'), 'brand payout must expose the tournament-result percentage bonus');
   assert.ok(resultView.includes('${playerShare.brandBonusAmount}'), 'brand payout must expose the bonus amount');
   assert.ok(html.includes('.ch-bubble-slot'), 'U2 unified champion bubble slot CSS must exist');
-  assert.ok(html.includes('.ch-trio .ch-bubble.is-autumn-speech{display:block;-webkit-line-clamp:unset;overflow:visible}'), 'autumn champion speech must grow instead of being line-clamped');
+  assert.ok(html.includes('.ch-trio-speech .ch-bubble.is-autumn-speech{display:block;-webkit-line-clamp:unset;overflow:visible}'), 'autumn champion speech must grow instead of being line-clamped');
   assert.ok(html.includes('.agw-result-finance'));
 })();
 

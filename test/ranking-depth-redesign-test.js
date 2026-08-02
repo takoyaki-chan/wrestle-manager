@@ -54,11 +54,17 @@ function fighter(id, ovr, extra = {}) {
   [
     'font-size: 28px;', 'min-height: 400px;', 'min-height: 465px;',
     'height: 222px;', 'height: 252px;', 'width: 132px; height: 194px;',
-    'width: 150px; height: 224px;', 'width: 108px; height: 162px;',
-    'width: 108px;\n  height: 162px;', 'width: 40px;', 'height: 40px;',
+    'width: 150px; height: 224px;', 'width: 116px; height: 174px;',
+    'width: 92px; height: 138px;', 'width: 40px;', 'height: 40px;',
     'width: 62px; height: 62px;', 'grid-template-columns: 1fr 108px;',
     'font-size: 18px;', 'font-size: 15px;', 'font-size: 28px;', 'line-height: 1.7;',
   ].forEach(value => assert.ok(css.includes(value), `v1.3 CSSサイズ ${value} を適用する`));
+  assert.ok(/\.orgcell-fcell\.pos-2\s*\{\s*left:\s*0;\s*width:\s*92px;\s*height:\s*138px;/.test(css),
+    '2位以下の左後列がカード外側へ開かれていない');
+  assert.ok(/\.orgcell-fcell\.pos-3\s*\{\s*right:\s*0;\s*width:\s*92px;\s*height:\s*138px;/.test(css),
+    '2位以下の右後列がカード外側へ開かれていない');
+  assert.ok(/\.orgcell:not\(\.is-rank-1\) \.orgcell-fcell img\s*\{[^}]*object-fit:\s*contain;/.test(css),
+    '2位以下の人物画像が割当枠からはみ出す');
   assert.ok(!css.includes('.ovr-line'), '平均OVR専用のovr-line CSSを残さない');
 })();
 

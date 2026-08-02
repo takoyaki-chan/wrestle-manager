@@ -259,6 +259,64 @@ section('task-77 格スコアの追加で引退以外の記事の点は動かな
   assert.strictEqual(withGrade, without, '引退以外の記事に引退の格スコアが乗ってしまっている');
 });
 
+section('殿堂入り引退は通常引退と別格で採点され、永久保存版の記事を組める', () => {
+  const hof = {
+    id: 107, name: '殿堂選手', orgName: 'テスト団体', hofLevel: 3,
+    titleReigns: 3, totalDefenses: 8, activeSeasonsStart: 1, activeSeasonsEnd: 12,
+    activeYears: 'S1〜S12', epithet: '団体の象徴',
+  };
+  const st = makeState({ allHallOfFame: { player: [hof], org_s: [], org_a: [], org_b: [] } });
+  assert.strictEqual(NP._findHallOfFameEntry(st, 107), hof, 'allHallOfFameから対象選手を引けない');
+  const feature = NP.composeHallOfFameRetirement({
+    name: hof.name, org: hof.orgName, seasons: 12, reigns: 3,
+  }, hof);
+  assert.ok(feature && feature.newsData.hallOfFameRetirement, '殿堂入り引退の専用フラグが無い');
+  assert.ok(/殿堂入り/.test(feature.headline) && /永久保存版/.test(feature.situation),
+    `特別号の見出し・扱いになっていない: ${feature.headline} / ${feature.situation}`);
+  assert.ok(feature.body.includes('通算3度の戴冠') && feature.body.includes('通算8度の防衛'),
+    '殿堂入り選手の見える実績が本文に入っていない');
+
+  const normalData = { reigns: 3, peakOVR: 90, seasons: 12, wasChampion: false };
+  const normal = valueOf(st, story('retirementDeclare', NP.PRIORITY.retirementDeclare, 107, normalData));
+  const special = valueOf(st, story('retirementDeclare', NP.PRIORITY.retirementDeclare, 107,
+    { ...normalData, ...feature.newsData }));
+  assert.strictEqual(special - normal, NP.HOF_RETIREMENT_BONUS,
+    '殿堂入り特別号の加点が通常引退の格スコアと混ざっている');
+  assert.ok(special > NP.PRIORITY.tenchosenResult,
+    `殿堂入り引退が ${special} 点で、年間級の大ニュース帯に届いていない`);
+});
+
+section('殿堂入り引退の統合はAI引退と自団体引退の両経路に入り、二重記事を防ぐ', () => {
+  const src = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'management.js'), 'utf8');
+  assert.ok((src.match(/composeHallOfFameRetirement\(/g) || []).length >= 3,
+    '専用記事の定義だけあり、AI側か自団体側の生成経路へ接続されていない');
+  assert.ok(/ev\.type === 'hallOfFame' && retirementEventIds\.has/.test(src),
+    '引退記事と殿堂入り記事が同じ号に二重掲載される');
+});
+
+section('AI団体の殿堂入り引退が実際のgenerate()で特別号の一面になる', () => {
+  const base = Engine.createInitialState(77881, true);
+  const orgId = Object.keys(base.aiOrgs || {})[0];
+  const fighter = base.aiOrgs[orgId].roster[0];
+  const ev = {
+    orgName: '天頂プロレス', id: fighter.id, name: fighter.name, age: 29,
+    seasons: 12, peakOVR: 90, reigns: 2, wasChampion: false,
+  };
+  const hof = {
+    id: fighter.id, name: fighter.name, orgId, orgName: ev.orgName,
+    hofLevel: 2, titleReigns: 2, totalDefenses: 5,
+    activeSeasonsStart: 1, activeSeasonsEnd: 12,
+  };
+  const aiOrgs = { ...base.aiOrgs, [orgId]: { ...base.aiOrgs[orgId], _newsRetirements: [ev] } };
+  const allHallOfFame = { ...(base.allHallOfFame || {}), [orgId]: [hof] };
+  const wp = NP.generate({ ...base, season: 13, week: 1, aiOrgs, allHallOfFame }, Engine.rng.create(77881));
+  assert.ok(wp.topStory, '一面記事が生成されない');
+  assert.strictEqual(wp.topStory.characterId, fighter.id, '殿堂入り引退が一面を取れていない');
+  assert.ok(wp.topStory.newsData?.hallOfFameRetirement, '生成された記事に特別号フラグが残らない');
+  assert.ok(/殿堂入り/.test(wp.topStory.headline) && /永久保存版/.test(wp.topStory.situation),
+    '通常の引退見出しのまま生成されている');
+});
+
 section('task-77 引退テンプレのティア別バリアントが揃っている(reigns付きはreigns>=1専用)', () => {
   const RT = (typeof RETIREMENT_TEMPLATES !== 'undefined') && RETIREMENT_TEMPLATES;
   assert.ok(RT, 'RETIREMENT_TEMPLATES が読めない');

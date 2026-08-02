@@ -26,8 +26,10 @@ assert.ok(/let awardsChainStarted = false;[\s\S]*?if \(awardsChainStarted\) retu
 assert.ok(/setTimeout\(\(\) => \{[\s\S]*?awards chain safety net fired[\s\S]*?startAwardsChain\(\);[\s\S]*?\}, Math\.max\(8000, aiAlerts\.length \* 4000\)\);/.test(advance),
   'ポップアップ解消待ちのコールバックに時限保険がある');
 
-const ceremony = app.indexOf('showAwardsCeremony(pendingAwards, () => {');
-const report = app.indexOf('_showFarewellsThenReport()', ceremony);
-assert.ok(ceremony >= 0 && report > ceremony, '表彰式の完了後に総括表示へ進む');
+const finish = app.indexOf('const finishAwardsCeremony = () => {');
+const report = app.indexOf('_showFarewellsThenReport()', finish);
+const ceremony = app.indexOf('showAwardsCeremony(pendingAwards, finishAwardsCeremony', report);
+assert.ok(finish >= 0 && report > finish && ceremony > report,
+  '表彰式の完了コールバック内で総括表示へ進み、そのコールバックを式典へ渡す');
 
 console.log('awards-before-report-order-test: ok');

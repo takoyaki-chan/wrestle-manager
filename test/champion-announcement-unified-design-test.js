@@ -35,7 +35,7 @@ function functionSource(source, name) {
   '.ch-por-wrap{', '.ch-glow{', '.ch-por{', '.ch-crown{', '.ch-name{', '.ch-role{',
   '.ch-org{', '.ch-stat{', '.ch-sub{', '.ch-sub-card{', '.ch-foot{', '.ch-prize{', '.ch-next{',
   '.ch-teamline{', '.ch-teamname{', '.ch-role-line{', '.ch-duo,.ch-trio{', '.ch-order{', '.ch-mem{',
-  '.ch-lineup-bubs,.ch-lineup-imgs,.ch-lineup-names{', '.ch-lineup-imgs{',
+  '.ch-lineup-bubs,.ch-lineup-imgs,.ch-lineup-names{', '.ch-lineup-imgs{', '.ch-trio-speech{',
 ].forEach(sel => assert.ok(css.includes(sel), `統一デザインの共通CSSが必要: ${sel}`));
 
 assert.ok(css.includes('吹き出し'), 'CSSブロックに縦の並び順を説明する日本語コメントが必要');
@@ -62,10 +62,10 @@ assert.ok(css.includes('.ch-duo .ch-por,.ch-trio .ch-por{background:transparent;
 // ---- 重なり: 隣どうしを-18px重ねる。画像・吹き出し・名前の3列すべてに掛かる(1つの.ch-memクラスが3行で再利用されるため自動的に揃う) ----
 assert.ok(css.includes('.ch-mem+.ch-mem{margin-left:-18px}'), '隊列は隣どうしを18px重ねる');
 
-// ---- 秋トリオ: 大将(is-ace)だけ一回り大きい。中心はz-indexで手前に出す ----
-assert.ok(css.includes('.ch-mem.is-ace{width:150px;position:relative;z-index:2}'), '大将/主役はz-indexで手前に出す');
-assert.ok(css.includes('.ch-trio .ch-mem.is-ace .ch-por{width:150px;height:224px}'), '大将は他の2名より大きく表示する(L)');
-assert.ok(css.includes('.ch-trio .ch-por{width:132px;height:194px}'), '先鋒/中堅は共通サイズ(M)');
+// ---- 秋トリオ: 役割やMVPにかかわらず3名を同じ大きさに揃える ----
+assert.ok(css.includes('.ch-trio .ch-mem{width:150px}'), '秋の3名は同じ列幅を使う');
+assert.ok(css.includes('.ch-trio .ch-por{width:150px;height:224px}'), '秋の3名は同じL画像サイズを使う');
+assert.ok(!css.includes('.ch-trio .ch-mem.is-ace'), '大将だけを拡大してMVPを小さく見せてはいけない');
 
 // ---- タッグ2名は両方L(同格) ----
 assert.ok(css.includes('.ch-duo .ch-mem{width:150px}'), 'タッグの2人は両方Lサイズ(同格)');
@@ -119,15 +119,15 @@ assert.ok(stlFn.includes('_chTeamlineHtml(champTeam.orgId, champTeam.orgName)'),
 assert.ok(!stlFn.includes('stl-champ-') && !stlFn.includes('pb-champion-card') && !stlFn.includes('pb-champion-portrait'),
   '旧pb-champion/stl-champ系の優勝カード表示クラスを残していない(自団体賞金パネルのpb-champion-prizeboxは対象外)');
 
-// ---- 秋4団体対抗戦: 3名を横一列。全員に吹き出しの予約枠(1人しか出ない不具合の修正) ----
+// ---- 秋4団体対抗戦: 3名を横一列。最多勝コメントは隊列全体に対する独立した1枠 ----
 const agwFn = functionSource(ui, 'renderAutumnWarResult');
 assert.ok(agwFn.includes('class="champ th-autumn"'), '秋は朱のテーマ色を使う');
 assert.ok(agwFn.includes('class="ch-trio"'), '団体優勝は3名並びの.ch-trioを使う');
-// 呼び出しの字面ではなく「各メンバーの line を _chBubbleSlot に渡している」ことを見る。
-// 第2引数(修飾クラス)が増えても壊れないようにする — 2026-07-30 に秋専用の
-// is-autumn-speech 修飾が追加され、`_chBubbleSlot(line)` 決め打ちで落ちた。
-assert.ok(/_chBubbleSlot\(line\b/.test(agwFn), '3名それぞれに吹き出しの予約枠を置く');
-// 「発言が無くても空枠を出す」は _chBubbleSlot 自体の不変条件なので振る舞いで確認する。
+assert.strictEqual((agwFn.match(/_chBubbleSlot\(/g) || []).length, 1, '秋の優勝コメントは3列ではなく1枠だけ描画する');
+assert.ok(agwFn.includes('class="ch-trio-speech"'), '最多勝コメントを隊列中央の独立ブロックに置く');
+assert.ok(agwFn.includes('最多勝コメント'), '独立した吹き出しの話者理由を明示する');
+assert.ok(!agwFn.includes('class="ch-lineup-bubs"'), '見えない空欄を含む3人分の吹き出し行を残さない');
+// _chBubbleSlot は他の統一優勝画面でも使うため、空枠の基本動作は維持する。
 const bubbleSlot = new Function(
   'escHtml',
   `${functionSource(ui, '_chBubbleSlot')}; return _chBubbleSlot;`
@@ -138,8 +138,9 @@ assert.ok(!bubbleSlot('').includes('class="ch-bubble"'),
   '発言が無いときに空の吹き出し本体は描かない');
 assert.ok(bubbleSlot('やった', 'is-autumn-speech').includes('ch-bubble is-autumn-speech'),
   '修飾クラスを渡せば吹き出し本体に付く');
-assert.ok(agwFn.indexOf('_chBubbleSlot(line)') < agwFn.indexOf('class="ch-por"'), '秋トリオも吹き出しは画像より前');
-assert.ok(agwFn.includes("isAce ? ' is-ace' : ''"), '大将だけ一回り大きい表示(is-ace)にする');
+assert.ok(agwFn.indexOf('_chBubbleSlot(speech.line') < agwFn.indexOf('class="ch-por"'), '秋トリオも吹き出しは画像より前');
+assert.ok(!agwFn.includes('isAce'), '大将だけを拡大せず、MVPを含む3名を同寸にする');
+assert.ok(agwFn.includes("isMvp ? ' is-mvp' : ''"), 'MVPは大きさではなくラベル色で識別する');
 assert.ok(agwFn.includes('_chTeamlineHtml(champ?.orgId, champ?.orgName)'), '団体優勝は団体名を主役として掲げる');
 assert.ok(!agwFn.includes('agw-champion-speech') && !agwFn.includes('agw-champ-card') && !agwFn.includes('agw-champ-lineup'),
   '旧agw-champion系クラスを残していない');
@@ -190,17 +191,18 @@ assert.ok(css.includes('.ch-lineup-imgs{border:1px solid rgba(var(--gold-rgb),.5
 // .ch-por自体(ヒーロー用の基準ルール)は個別の額縁を持ったままでよい(単独主役.ch-heroでは温存)。
 // 隊列側は.ch-duo/.ch-trioの子孫セレクタで上書きしているので、上のassertで検証済み。
 
-// ---- 重なり(-18px)が画像・吹き出し・名前の3列すべてに掛かっていること ----
+// ---- 重なり(-18px)が画像・名前の列に掛かっていること ----
 // .ch-mem+.ch-mem{margin-left:-18px} は.ch-duo/.ch-trio共通の1ルールで、
-// レンダー関数側が.ch-lineup-bubs/.ch-lineup-imgs/.ch-lineup-namesの3行すべてで
-// 同じ.ch-memクラスを再利用しているため、CSS側は1箇所の定義で3列すべてに自動的に効く。
+// 春タッグは吹き出し/画像/名前の3行、秋は独立コメント+画像/名前の2行で、
+// 画像と名前には同じ.ch-memクラスを再利用する。
 assert.ok(css.includes('.ch-mem+.ch-mem{margin-left:-18px}'), '隣どうしの重なりは18pxで、値は1箇所に集約されている');
+assert.ok(stlFn.includes('class="ch-lineup-bubs"'), '春タッグ: 2人とも喋るため吹き出しの列を維持する');
 [stlFn, agwFn].forEach((fn, i) => {
   const label = i === 0 ? '春タッグ' : '秋4団体対抗戦';
-  assert.ok(fn.includes('class="ch-lineup-bubs"'), `${label}: 吹き出しの列(ch-lineup-bubs)が.ch-memを重ねる行として存在する`);
-  assert.ok(fn.includes('class="ch-lineup-imgs"'), `${label}: 画像の列(ch-lineup-imgs)が.ch-memを重ねる行として存在する`);
-  assert.ok(fn.includes('class="ch-lineup-names"'), `${label}: 名前の列(ch-lineup-names)が.ch-memを重ねる行として存在する`);
+  assert.ok(fn.includes('class="ch-lineup-imgs"'), `${label}: 画像の列が存在する`);
+  assert.ok(fn.includes('class="ch-lineup-names"'), `${label}: 名前の列が存在する`);
 });
+assert.ok(!agwFn.includes('class="ch-lineup-bubs"'), '秋4団体対抗戦: 1つだけのコメントに3列の空枠を使わない');
 
 // ---- 落ち影はfilter:drop-shadow()を使う。box-shadowは矩形に付くため誤り ----
 const chLineupPorRule = css.match(/\.ch-duo \.ch-por,\.ch-trio \.ch-por\{[^}]*\}/);
@@ -209,8 +211,8 @@ assert.ok(chLineupPorRule[0].includes('filter:drop-shadow('), '隊列の落ち�
 assert.ok(chLineupPorRule[0].includes('box-shadow:none'), '隊列の画像はbox-shadowを明示的に無効化する(矩形の影になるため誤り)');
 assert.ok(!/box-shadow:(?!none)/.test(chLineupPorRule[0]), '隊列の画像にnone以外のbox-shadow値を持たせない');
 
-// ---- サイズ梯子は5段(XL/L/M/S/chip)。隊列の脇はM(132×194)、MVPはS(108×162) ----
-assert.ok(css.includes('.ch-trio .ch-por{width:132px;height:194px}'), '隊列(秋)の脇はM(132×194)。旧S(126×188)は廃止');
+// ---- 秋の優勝隊列は3名とも同寸。専用MVP発表画面のサイズ規則は別に維持する ----
+assert.ok(css.includes('.ch-trio .ch-por{width:150px;height:224px}'), '隊列(秋)は3名ともL(150×224)で揃える');
 assert.ok(!css.includes('126px;height:188px'), '廃止した段(126×188)がCSSに残っていない');
 const mvpPortraitRule = css.match(/\.agw-mvp-portrait\{[^}]*\}/);
 assert.ok(mvpPortraitRule, '.agw-mvp-portraitのルールが見つかること');

@@ -10815,6 +10815,7 @@ const App = {
 
   // tickWeek 完了後の次週遷移。旧セーブの weekSummary ボタンからもここへ入る。
   advanceFromWeekSummary() {
+    if (App._guardAwardsStage?.('advanceFromWeekSummary')) return false;
     // この関数はサマリー完了状態だけを消費する。インライン onclick の重複発火や
     // 二重クリックで、第48週の PPV 専用 phase をもう一度 advanceWeek へ渡さない。
     if (G.weekPhase !== 'weekSummary') {
@@ -10930,6 +10931,7 @@ const App = {
   },
 
   processWeek() {
+    if (App._guardAwardsStage?.('processWeek')) return false;
     Audio.play('tick');
     dismissAllPopups(); // 前週の残存ポップアップを強制クリア
     // 今週のログフィードをリセット（前週分クリア）
@@ -11385,7 +11387,78 @@ const App = {
   },
 
   // Advance to next week via Engine
+  _isAwardsStageActive() {
+    // 年間表彰式は Engine.advanceWeek がオフシーズン第1週へ進めた「後」に開く。
+    // そのため背面の週送りが連打・Enterキー・古いonclickの再発火で通ると、式典を
+    // dismissAllPopups で消したうえで第2週へ進んでしまう。キュー待ち中はDOMがまだ
+    // activeにならないので、App側のtransientフラグと実DOMの両方を見る。
+    if (App._annualAwardsCeremonyActive || G?._annualAwardsCeremonyPending) return true;
+    try {
+      const overlay = document.getElementById('awardsOverlay');
+      return !!(overlay && overlay.classList.contains('active')
+        && typeof window !== 'undefined' && typeof window._awardsNext === 'function');
+    } catch (_e) {
+      return false;
+    }
+  },
+
+  /**
+   * 式典途中の再読込、または旧バグでoffWeek 2へ飛んだセーブから表彰式だけを復旧する。
+   * 年間処理や週そのものは巻き戻さないため、契約処理などが二重実行されることはない。
+   */
+  _resumeInterruptedAnnualAwards(source) {
+    if (App._annualAwardsCeremonyActive) return false;
+    try {
+      const overlay = document.getElementById('awardsOverlay');
+      if (overlay?.classList.contains('active') && typeof window._awardsNext === 'function') return false;
+    } catch (_e) {}
+
+    const hasPendingStage = !!(G?._annualAwardsCeremonyPending && G?.pendingAwards);
+    const completedThisSeason = Number(G?.lastAwards?.season) === Number(G?.season);
+    const skippedIntoWeek2 = !!(G?.offSeason && G?.offWeek === 2 && !completedThisSeason);
+    if (!hasPendingStage && !skippedIntoWeek2) return false;
+
+    if (!G.pendingAwards && !App._recoverPendingAwards()) return false;
+    G = {
+      ...G,
+      _annualAwardsCeremonyPending: {
+        season: G.pendingAwards?.season || G.season,
+        recoveredFrom: source || 'runtime',
+      },
+    };
+    try { Storage.autoSave(); } catch (_e) {}
+    App._safeAwardsChain();
+    return true;
+  },
+
+  _guardAwardsStage(source) {
+    if (App._resumeInterruptedAnnualAwards?.(source)) return true;
+    const stageActive = App._isAwardsStageActive();
+    const progressionSource = source === 'advanceCurrentFlow'
+      || source === 'advanceFromWeekSummary'
+      || source === 'advanceWeek'
+      || source === 'processWeek';
+    // 最終スライドを閉じた直後も、同じダブルクリックやEnter repeatが背面の
+    // 「次の週へ」に届く。式典終了後の短い間は週送りだけを遮断する。
+    const closeShieldActive = progressionSource
+      && Date.now() < (App._annualAwardsAdvanceBlockedUntil || 0);
+    if (!stageActive && !closeShieldActive) return false;
+    try {
+      console.warn('[WM][awards] ignored background navigation while ceremony is active', {
+        source, season: G && G.season, offWeek: G && G.offWeek,
+        stageActive, closeShieldActive,
+      });
+    } catch (_e) {}
+    // 表彰式開始前に押した背面ボタンへフォーカスが残ると、Enterで同じonclickが
+    // 再発火する。操作先を式典の「次へ」へ戻して、以後のキー入力も式典に届ける。
+    if (stageActive) {
+      try { document.getElementById('aw-btn-next')?.focus({ preventScroll: true }); } catch (_e) {}
+    }
+    return true;
+  },
+
   advanceCurrentFlow() {
+    if (App._guardAwardsStage?.('advanceCurrentFlow')) return;
     if (App.repairProgressionState('advanceCurrentFlow')) {
       try { Storage.autoSave(); } catch (_e) {}
     }
@@ -11449,6 +11522,7 @@ const App = {
   },
 
   advanceWeek() {
+    if (App._guardAwardsStage?.('advanceWeek')) return false;
     if (G.weekPhase === 'scoutEvent') {
       Audio.play('discover');
       showScreen('scoutEvent');
@@ -11669,7 +11743,9 @@ const App = {
   // 表彰式チェーン安全実行: 中間ステップのエラーで表彰式が消失しないよう防御
   _recoverPendingAwards() {
     if (G.pendingAwards) return true;
-    if (!G.offSeason || G.offWeek !== 1) return false;
+    // offWeek 2 は、旧バグで表彰式の途中から一週飛んだセーブだけを救う範囲。
+    // それより先の週から過去の式典を突然出すことはしない。
+    if (!G.offSeason || G.offWeek < 1 || G.offWeek > 2) return false;
     // 初年度のoffWeek 1ではseasonHistoryはまだ空。ここで復旧を拒むと、保存・演出
     // 切替などでpendingAwardsだけが失われた初年度に限って表彰式が恒久的に消える。
     // offSeason/offWeekという生成時点の条件で十分に絞れているため、履歴の有無は見ない。
@@ -11743,14 +11819,23 @@ const App = {
 
   // v1.4: 年末表彰式チェック＆表示
   _checkAndShowAwards() {
+    // AI成長通知の通常コールバックと時限保険などからチェーンが重なっても、開いている
+    // 表彰式をもう一度組み立てたり、背面だけ総括へ進めたりしない。
+    if (App._annualAwardsCeremonyActive) return;
     const pendingAwards = G.pendingAwards;
     if (!pendingAwards) {
       App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport()));
       return;
     }
-    // pendingAwards は transient field — 保存前にクリーン
-    const { pendingAwards: _, ...cleanG } = G;
-    G = cleanG;
+    // 式典完走前に再読込・例外・誤ナビゲーションが起きても再開できるよう、
+    // pendingAwards は終了ボタンまで保存に残す。
+    G = {
+      ...G,
+      _annualAwardsCeremonyPending: {
+        season: pendingAwards.season || G.season,
+        startedAtOffWeek: G.offWeek || 1,
+      },
+    };
 
     // 受賞歴をキャリア記録に追加（プレイヤー団体・NPC団体ともに）
     {
@@ -11876,7 +11961,16 @@ const App = {
     // 表彰式ポップアップ開始
     // WM-H05 表彰式（-17 LUFS 正規化済みのため vol は新音源基準へ）
     // WM-H05 表彰式。音量はミキサー実聴値（2026-07-27）
-    showAwardsCeremony(pendingAwards, () => {
+    let awardsCeremonyFinished = false;
+    const finishAwardsCeremony = () => {
+      // 最終ボタンのダブルクリックや非同期コールバックの競合でも、殿堂反映・新聞・
+      // 総括への遷移を一度しか行わない。
+      if (awardsCeremonyFinished) return;
+      awardsCeremonyFinished = true;
+      // 最終クリックの二発目／Enterのrepeatが、直下のオフシーズン週送りを
+      // 押さないようにする。画面をレポート週へ戻す内部showScreenは妨げない。
+      App._annualAwardsAdvanceBlockedUntil = Date.now() + 1000;
+      App._annualAwardsCeremonyActive = false;
       try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
       // 表彰式BGMフェードアウト後に通常BGMを再開
       App.restoreBgmForState(1600);
@@ -11886,14 +11980,29 @@ const App = {
       } else {
         G = { ...G, retiredFighters: [] };
       }
-      G = { ...G, lastAwards: pendingAwards };
+      const {
+        pendingAwards: _finishedAwards,
+        _annualAwardsCeremonyPending: _finishedStage,
+        ...afterAwards
+      } = G;
+      G = { ...afterAwards, lastAwards: pendingAwards };
       Storage.autoSave();
       App._showNewsPanelIfNeeded(() => App._checkAndShowMilestone(
         () => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport())));
-    }, () => {
-      // 別ポップアップ待機中には鳴らさず、表彰式が実際に開く瞬間から開始する。
-      try { Audio.fileBgm.play(YEAR_END_AWARDS_BGM, { loop: true, volume: 0.40 }); } catch(e) {}
-    });
+    };
+
+    // DOM表示前（別ポップアップ待ちのキューに入る場合も含む）から週送りをロックする。
+    App._annualAwardsCeremonyActive = true;
+    try {
+      showAwardsCeremony(pendingAwards, finishAwardsCeremony, () => {
+        // 別ポップアップ待機中には鳴らさず、表彰式が実際に開く瞬間から開始する。
+        try { Audio.fileBgm.play(YEAR_END_AWARDS_BGM, { loop: true, volume: 0.40 }); } catch(e) {}
+      });
+    } catch (e) {
+      // 描画そのものが失敗した場合に進行ロックだけが残ることは避ける。
+      App._annualAwardsCeremonyActive = false;
+      throw e;
+    }
   },
 
   // v1.5s25b: マイルストーン検出
@@ -13911,7 +14020,7 @@ const App = {
     if (champId) {
       const ch = G.roster.find(c => c.id === champId);
       const chName = ch?.name || '初代王者';
-      triggers.push({ id:'first_title_winner', tier:'red',
+      triggers.push({ id:'first_title_winner', tier:'red', characterId: champId,
         text:`${chName}が初代王者に。最初の頂が決まった。` });
     }
     if (peakMQ >= 50) triggers.push({ id:'first_mq50', tier:'silver', text:`MQ50到達。観客の目つきが変わり始めた。` });

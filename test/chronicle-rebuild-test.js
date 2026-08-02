@@ -214,4 +214,72 @@ function makeRetiredFighter(id = 101) {
   });
 })();
 
+(function prologueStoresAndResolvesOnlyTheActualFirstChampion() {
+  const base = {
+    season: 1,
+    week: 12,
+    orgName: '超日本女子プロレス',
+    roster: [
+      { id: 1, name: '米山杏里', careerRecord: { totalTitleWins: 1, history: [] } },
+      { id: 2, name: '浅見里緒菜', careerRecord: { totalTitleWins: 2, history: [] } },
+      { id: 3, name: 'クラッシャー毒島', careerRecord: { totalTitleWins: 1, history: [] } },
+    ],
+    prologue: {
+      founderIds: [1, 2, 3],
+      status: 'in_progress',
+      highlights: [],
+    },
+  };
+  const withId = Engine.prologue.addHighlight(base, {
+    id: 'first_title_winner',
+    tier: 'red',
+    characterId: 2,
+    text: '浅見里緒菜が初代王者に。最初の頂が決まった。',
+  });
+  assert.strictEqual(withId.prologue.highlights[0].characterId, 2,
+    'new saves should persist the first champion ID');
+  assert.strictEqual(Engine.prologue.firstChampionId(withId), 2,
+    'persisted ID should identify exactly one first champion');
+
+  const legacy = {
+    ...base,
+    prologue: {
+      ...base.prologue,
+      highlights: [{
+        id: 'first_title_winner', season: 1, week: 12, tier: 'red',
+        text: '浅見里緒菜が初代王者に。最初の頂が決まった。',
+      }],
+    },
+  };
+  assert.strictEqual(Engine.prologue.firstChampionId(legacy), 2,
+    'old saves should recover the first champion from the recorded chronicle text');
+})();
+
+(function prologueFirstChampionHistoryFallbackUsesOnlyThePlayerTitle() {
+  const state = {
+    orgName: 'テスト団体',
+    roster: [
+      { id: 10, name: '他団体王者', careerRecord: { history: [
+        { type: 'titleWin', beltId: 'world', orgName: '別団体王座', season: 1, week: 2 },
+      ] } },
+      { id: 11, name: '初代', careerRecord: { history: [
+        { type: 'titleWin', beltId: 'world', orgName: 'テスト団体王座', season: 1, week: 8 },
+      ] } },
+      { id: 12, name: '二代目', careerRecord: { history: [
+        { type: 'titleWin', beltId: 'world', orgName: 'テスト団体王座', season: 2, week: 1 },
+      ] } },
+    ],
+    prologue: { founderIds: [10, 11, 12], status: 'in_progress', highlights: [] },
+  };
+  assert.strictEqual(Engine.prologue.firstChampionId(state), 11,
+    'fallback should ignore other promotions and choose the oldest player-title win');
+})();
+
+(function prologueRendererDoesNotTreatEveryTitleWinnerAsTheFirstChampion() {
+  const uiSource = fs.readFileSync(path.join(srcDir, 'ui-render.js'), 'utf-8');
+  assert.ok(uiSource.includes('const firstChampionId = Engine.prologue.firstChampionId(G);'));
+  assert.ok(uiSource.includes('const isChamp = firstChampionId != null && f.id === firstChampionId;'));
+  assert.ok(!uiSource.includes('const isChamp = f.titleWins >= 1;'));
+})();
+
 console.log('chronicle-rebuild-test: ok');

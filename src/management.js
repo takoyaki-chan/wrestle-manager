@@ -1570,6 +1570,12 @@ const Engine = {
 
   // ── Injury System (IMMUTABLE — returns new objects, never mutates) ──
   injury: {
+    severityBand(roll) {
+      if (roll < 0.65) return INJURY_TABLE[0];       // 65%: 1〜2週
+      if (roll < 0.90) return INJURY_TABLE[1];       // 25%: 3〜4週
+      if (roll < 0.98) return INJURY_TABLE[2];       //  8%: 6〜8週
+      return LONG_TERM_INJURY;                       //  2%: 10〜16週
+    },
     check(rng, fighter, matchResult, coachInjuryMult = 1.0, week = 0, season = 0, coachSeverityDowngrade = 0, flavorOpts = {}) {
       if (!fighter) return null;
       const isLeft = matchResult.left.id === fighter.id;
@@ -1585,7 +1591,7 @@ const Engine = {
       if (Traits.has(fighter, 'ガラスの身体')) injuryChance *= 1.4;
       if (Engine.rng.float(rng) > injuryChance) return null;
       const roll = Engine.rng.float(rng);
-      let injury = roll < 0.65 ? INJURY_TABLE[0] : roll < 0.90 ? INJURY_TABLE[1] : INJURY_TABLE[2];
+      let injury = Engine.injury.severityBand(roll);
       // v0.2: 怪我耐性 — 重傷→中傷格下げ (能力40% + 頑健指導フレーバー15%)
       const totalDowngrade = coachSeverityDowngrade + (flavorOpts.severityDowngrade || 0);
       if (injury.type === '重傷' && totalDowngrade > 0 && Engine.rng.float(rng) < totalDowngrade) {
@@ -6117,6 +6123,7 @@ const Engine = {
         week: entry.week != null ? entry.week : (state.week || 0),
         tier: entry.tier || 'normal',
         text: entry.text || '',
+        ...(entry.characterId != null ? { characterId: entry.characterId } : {}),
       };
       return { ...state, prologue: { ...p, highlights: [...(p.highlights || []), hl] } };
     },
@@ -6129,6 +6136,39 @@ const Engine = {
         || (state.chronicle?.fighterArchive || []).some(a => a.id === fighterId);
       if (retired) return 'retired';
       return 'departed'; // 移籍/解雇/契約満了
+    },
+
+    /** 団体史上の初代王者ID。旧セーブは年代記本文と戴冠履歴から復元する。 */
+    firstChampionId(state) {
+      const firstTitle = (state?.prologue?.highlights || [])
+        .find(h => h?.id === 'first_title_winner');
+      if (firstTitle?.characterId != null) return firstTitle.characterId;
+
+      const fighters = [
+        ...(state?.roster || []),
+        ...(state?.retiredFighters || []),
+        ...(state?.freeAgents || []),
+        ...Object.values(state?.aiOrgs || {}).flatMap(org => org?.roster || []),
+        ...(state?.chronicle?.fighterArchive || []),
+      ].filter(Boolean);
+
+      // characterId を持たない旧セーブにも、確定時の名前は本文に保存されている。
+      if (firstTitle?.text) {
+        const nameMatch = fighters.find(f => f?.name && firstTitle.text.startsWith(`${f.name}が初代王者に`));
+        if (nameMatch) return nameMatch.id;
+      }
+
+      // 本文が欠けた旧データ用の最終手段。自団体王座の最古の戴冠履歴だけを採用する。
+      const playerTitleName = `${state?.orgName || '団体'}王座`;
+      const wins = [];
+      fighters.forEach(f => {
+        ((f?.careerRecord?.history) || []).forEach((event, index) => {
+          if (event?.type !== 'titleWin' || event?.beltId !== 'world' || event?.orgName !== playerTitleName) return;
+          wins.push({ id: f.id, season: Number(event.season) || 0, week: Number(event.week) || 0, index });
+        });
+      });
+      wins.sort((a, b) => (a.season - b.season) || (a.week - b.week) || (a.index - b.index));
+      return wins[0]?.id ?? null;
     },
 
     /** 全 founder が引退済みなら confirm を実行 */
@@ -9917,11 +9957,14 @@ const Engine = {
             nc.condition = Math.max(0, (nc.condition || 70) - (8 + Engine.rng.int(matchRng, 0, 7)));
             const injuryChance = (nc.condition < 30 ? 0.08 : 0.03) * Engine.coach.getInjuryMult(aiShowState, nc.id) * (nc._relationshipInjuryMult || 1.0);
             if (Engine.rng.float(matchRng) < injuryChance) {
-              // 怪我重傷度判定（プレイヤーと同等のINJURY_TABLE分布）
+              // 怪我重傷度判定: 65%軽傷 / 25%中程度 / 8%通常重傷 / 2%長期重傷
               const sevRoll = Engine.rng.float(matchRng);
-              const isSevere = sevRoll >= 0.90; // 10%重傷
+              const injuryBand = Engine.injury.severityBand(sevRoll);
+              const isSevere = injuryBand.type === '重傷'; // 合計10%（うち2%は10〜16週）
               const isModerate = !isSevere && sevRoll >= 0.65; // 25%中傷
-              const weeks = isSevere ? (4 + Engine.rng.int(matchRng, 0, 4)) : isModerate ? (3 + Engine.rng.int(matchRng, 0, 2)) : (2 + Engine.rng.int(matchRng, 0, 3));
+              const weeks = isSevere
+                ? injuryBand.minWeeks + Engine.rng.int(matchRng, 0, injuryBand.maxWeeks - injuryBand.minWeeks)
+                : isModerate ? (3 + Engine.rng.int(matchRng, 0, 2)) : (2 + Engine.rng.int(matchRng, 0, 3));
               const injType = isSevere ? '重傷' : isModerate ? '中傷' : '軽傷';
               const injColor = isSevere ? '#e74c3c' : isModerate ? '#e67e22' : '#f39c12';
               nc.injury = { type: injType, weeksLeft: weeks, severity: isSevere ? 'severe' : isModerate ? 'moderate' : 'minor', color: injColor };
@@ -10073,8 +10116,8 @@ const Engine = {
         // 素通りする(defenses・lastTitleMatchWeekは変化しない = 次週以降に持ち越されるだけ)。
         // 引退・移籍・解雇でロスターから消えた場合は従来どおりここで空位化する。
         // (a)期間によらず保持 を採用。理由はdocs/worklog.md参照(プレイヤー側も
-        // 負傷期間に関係なく同じ規則を使っており、既存の負傷テーブルの最大値は
-        // 有限(重傷でも最大8週程度)で、無期限に持ち越されるケースが元々存在しないため。
+        // 負傷期間に関係なく同じ規則を使う。長期重傷でも最大16週と有限であり、
+        // 無期限に持ち越されるケースは存在しない。
         const champAlive = champId && roster.find(f => f.id === champId);
         const beltId = `${org.id}_world`;
         if (!champAlive) {
@@ -28598,6 +28641,7 @@ Engine.newspaper = {
     ppvUndercard:        115,
     playerShowTitle:     120,
     npcHallOfFame:       170,
+    hallOfFame:          170,
     aiTeamConflict:      110,
     aiShowHighlight:      45,
     playerShowNormal:     50,
@@ -28719,6 +28763,59 @@ Engine.newspaper = {
   // ══════════════════════════════════════════════════════════════════
 
   RETIREMENT_GRADE_CAP: 120,
+
+  // 殿堂入りと同時の引退は、単なる「格の高い引退」ではなく団体史に残る出来事。
+  // 通常の引退格（最大+120）とは別枠で積み、天頂戦級の記事と競る特別号にする。
+  HOF_RETIREMENT_BONUS: 150,
+
+  /** allHallOfFame（旧セーブは hallOfFame）から選手の殿堂入り記録を引く。 */
+  _findHallOfFameEntry(state, fighterId) {
+    if (!state || fighterId == null) return null;
+    const sameId = h => h && String(h.id) === String(fighterId);
+    const all = state.allHallOfFame || {};
+    for (const entries of Object.values(all)) {
+      const hit = Array.isArray(entries) ? entries.find(sameId) : null;
+      if (hit) return hit;
+    }
+    const legacy = Array.isArray(state.hallOfFame) ? state.hallOfFame.find(sameId) : null;
+    if (legacy) return legacy;
+    const awarded = state.lastAwards && Array.isArray(state.lastAwards.hallOfFame)
+      ? state.lastAwards.hallOfFame.find(sameId) : null;
+    return awarded || null;
+  },
+
+  /** 殿堂入り引退だけに使う特別号の見出し・本文。通常引退テンプレは変更しない。 */
+  composeHallOfFameRetirement(d, hofEntry) {
+    if (!d || !hofEntry) return null;
+    const name = d.name || hofEntry.name || '';
+    const orgName = d.orgName || d.org || hofEntry.orgName || '所属団体';
+    const seasons = Number(d.seasons) || Math.max(1,
+      (Number(hofEntry.activeSeasonsEnd) || 1) - (Number(hofEntry.activeSeasonsStart) || 1) + 1);
+    const titleReigns = Math.max(Number(d.reigns) || 0, Number(hofEntry.titleReigns) || 0);
+    const totalDefenses = Number(hofEntry.totalDefenses) || 0;
+    const hofLevel = Math.max(1, Math.min(3, Number(hofEntry.hofLevel) || 1));
+    const levelLabel = hofLevel >= 3 ? '最高位・レジェンド殿堂' : hofLevel >= 2 ? 'ゴールド殿堂' : '殿堂';
+    const achievement = [];
+    if (titleReigns > 0) achievement.push(`通算${titleReigns}度の戴冠`);
+    if (totalDefenses > 0) achievement.push(`通算${totalDefenses}度の防衛`);
+    const recordLine = achievement.length
+      ? `${achievement.join('、')}。その数字は、${name}が団体の中心であり続けた時間の重さを物語る。`
+      : `記録の数字だけでは測れない存在感で、${name}は幾度も${orgName}のリングを支えた。`;
+    const epithet = hofEntry.epithet ? `「${hofEntry.epithet}」と呼ばれた` : '';
+    return {
+      headline: `${name}、殿堂入り——${orgName}の一時代に幕`,
+      subhead: `${seasons}シーズンの現役生活に区切り。引退と同時に${levelLabel}へ`,
+      situation: '永久保存版　殿堂入り・引退特別号',
+      captionExtra: `${levelLabel}・引退特別号`,
+      body: `${epithet}${name}が現役を退き、${orgName}の殿堂にその名を刻んだ。${seasons}シーズンにわたる歩みは、ひとりの選手の経歴にとどまらず、団体そのものの歴史の一部となった。｜${recordLine}｜リングを去っても、その試合、その言葉、その背中は記録と記憶の中に残る。${orgName}は功績をたたえ、${name}を${levelLabel}入りとして永く顕彰する。`,
+      newsData: {
+        hallOfFameRetirement: true,
+        hofLevel, titleReigns, totalDefenses,
+        activeYears: hofEntry.activeYears || '',
+        epithet: hofEntry.epithet || '',
+      },
+    };
+  },
 
   /** 引退の格(強度補正) + 本文ティア。d = { reigns, peakOVR, seasons, wasChampion } */
   retirementGrade(d) {
@@ -29014,6 +29111,7 @@ Engine.newspaper = {
     if (story.type === 'retirementDeclare' || story.type === 'aiAceRetirement'
       || story.type === 'aiRetirement' || story.type === 'aiInjuryRetirement') {
       n += Engine.newspaper.retirementGrade(d).bonus;
+      if (d.hallOfFameRetirement) n += Engine.newspaper.HOF_RETIREMENT_BONUS;
     }
     return n;
   },
@@ -29499,16 +29597,25 @@ Engine.newspaper = {
             const grade = Engine.newspaper.retirementGrade(ev);
             const isAce = grade.tier === 'L' || grade.tier === 'A';
             const variant = Engine.newspaper.pickRetirementVariant(grade.tier, ev.reigns || 0, _retiredVariantCounts);
-            const headline = variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, ev)
+            const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.id);
+            const hofFeature = Engine.newspaper.composeHallOfFameRetirement(ev, hofEntry);
+            const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, ev)
               : `${ev.orgName}の${ev.name}が現役引退を表明`;
-            const body = variant ? Engine.newspaper._fillRetirementTemplate(variant.body, ev)
+            const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, ev)
               : `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。`;
             stories.push({
               type: isAce ? 'aiAceRetirement' : 'aiRetirement',
               priority: isAce ? P.aiAceRetirement : P.aiRetirement,
               headline, body,
               characterId: ev.id,
-              newsData: { reigns: ev.reigns || 0, peakOVR: ev.peakOVR || 0, wasChampion: !!ev.wasChampion, seasons: ev.seasons || 0 },
+              subhead: hofFeature?.subhead,
+              situation: hofFeature?.situation,
+              captionExtra: hofFeature?.captionExtra,
+              newsData: {
+                reigns: ev.reigns || 0, peakOVR: ev.peakOVR || 0,
+                wasChampion: !!ev.wasChampion, seasons: ev.seasons || 0,
+                ...(hofFeature?.newsData || {}),
+              },
             });
           });
         }
@@ -29580,7 +29687,11 @@ Engine.newspaper = {
 
         // NPC殿堂入り（シーズン末にprocessSeasonEndで蓄積）
         if (aiData._npcInductees) {
+          const retirementIds = new Set((aiData._newsRetirements || []).map(ev => String(ev.id)));
           aiData._npcInductees.forEach(h => {
+            // 同じ号に引退記事がある選手は、そちらを「殿堂入り引退特別号」へ統合する。
+            // 独立した殿堂記事まで並べると、同一人物が一面とサブで二重掲載になる。
+            if (retirementIds.has(String(h.id))) return;
             const starText = h.hofLevel >= 3 ? '★★★レジェンド' : h.hofLevel >= 2 ? '★★ゴールド殿堂' : '殿堂入り';
             const statsText = [];
             if (h.titleReigns > 0) statsText.push(`通算${h.titleReigns}度戴冠`);
@@ -29761,6 +29872,9 @@ Engine.newspaper = {
     // bond/rivalry イベント、派閥動向、奪還挑戦、関係修復などをここで stories に変換
     const industryEvents = state._industryNewsEvents || [];
     if (industryEvents.length > 0) {
+      const retirementEventIds = new Set(industryEvents
+        .filter(ev => ev && ev.type === 'retirementDeclare' && ev.characterId != null)
+        .map(ev => String(ev.characterId)));
       industryEvents.forEach((ev, _evIdx) => {
         // task-77 §A: 自団体の引退(週次スキャン由来)はティア別テンプレ(§5-L/A/B/C)から
         // 選ぶ。汎用の NEWS_HEADLINE_TEMPLATES 経由だと格に応じた本文選択ができないため、
@@ -29770,22 +29884,38 @@ Engine.newspaper = {
           const d = ev.data || {};
           const grade = Engine.newspaper.retirementGrade(d);
           const variant = Engine.newspaper.pickRetirementVariant(grade.tier, d.reigns || 0, _retiredVariantCounts);
-          const headline = variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, d)
+          const queuedHof = industryEvents.find(x => x && x.type === 'hallOfFame'
+            && String(x.characterId) === String(ev.characterId));
+          const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.characterId)
+            || (queuedHof ? {
+              id: ev.characterId, name: d.name,
+              titleReigns: queuedHof.data?.titles || d.reigns || 0,
+              totalDefenses: queuedHof.data?.defenses || 0,
+              hofLevel: queuedHof.data?.hofLevel || 1,
+              orgName: d.org || state.orgName,
+            } : null);
+          const hofFeature = Engine.newspaper.composeHallOfFameRetirement(d, hofEntry);
+          const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, d)
             : `${d.org || ''}の${d.name || ''}が現役引退`;
-          const body = variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d)
+          const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d)
             : `${d.name || ''}が引退した。`;
           stories.push({
             type: ev.type,
             priority: P[ev.type] || P.general,
             headline, body,
+            subhead: hofFeature?.subhead,
+            situation: hofFeature?.situation,
+            captionExtra: hofFeature?.captionExtra,
             characterId: ev.characterId || null,
             characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 3) : null,
             characterCount: Array.isArray(ev.characterIds) ? ev.characterIds.length : 0,
-            newsData: d,
+            newsData: { ...d, ...(hofFeature?.newsData || {}) },
             _industryIdx: _evIdx,
           });
           return;
         }
+        // 引退と同じ号の殿堂入り通知は、上の特別号へ統合済み。
+        if (ev.type === 'hallOfFame' && retirementEventIds.has(String(ev.characterId))) return;
         const templates = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES[ev.type] : null;
         if (!templates || templates.length === 0) return;
         const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];

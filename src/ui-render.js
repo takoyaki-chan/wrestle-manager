@@ -5181,6 +5181,10 @@ function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
   const season = G.season || 1;
   const fundsStr = Math.round(G.funds).toLocaleString();
   const dateStr = Engine.util.formatDate(G.season, G.week);
+  // 通常の社長室壁は横長背景(1920:400)だが、契約交渉の話者ブロックは
+  // 吹き出し + 上半身194px + 名前/役割までで300px以上ある。話者がいる時だけ
+  // 長い台詞も省略せず収まる高さを確保し、上側をHUDの裏へはみ出させない。
+  const wallHasSpeaker = /class="negc-speaker\b/.test(wallInnerHtml || '');
 
   el.innerHTML = `
     <div class="shachoshitsu-hud">
@@ -5192,7 +5196,7 @@ function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
         <span class="neg-hud-label">📋 シーズン${season} 契約更新</span>
       </div>
     </div>
-    <div class="shachoshitsu-wall negotiation-wall" style="background-image:url('../image/shachoshitsu/wall-window-winter.webp')">
+    <div class="shachoshitsu-wall negotiation-wall${wallHasSpeaker ? ' negotiation-wall-dialogue' : ''}" style="background-image:url('../image/shachoshitsu/wall-window-winter.webp')">
       ${wallInnerHtml || ''}
     </div>
     <div class="shachoshitsu-desk">
@@ -7408,6 +7412,90 @@ function _npV3KurodaColumn(wp, seasonNum, weekNum) {
   return '';
 }
 
+// 殿堂入り記録は新聞記事とは別に恒久保存される。ここから照合することで、
+// 専用フラグ追加前に発行済みのバックナンバーも特別紙面へ描き替えられる。
+function _npV3HofEntry(fighterId) {
+  if (fighterId == null) return null;
+  const sameId = h => h && String(h.id) === String(fighterId);
+  const all = (typeof G !== 'undefined' && G.allHallOfFame) || {};
+  for (const entries of Object.values(all)) {
+    const hit = Array.isArray(entries) ? entries.find(sameId) : null;
+    if (hit) return hit;
+  }
+  const legacy = (typeof G !== 'undefined' && Array.isArray(G.hallOfFame)) ? G.hallOfFame : [];
+  return legacy.find(sameId) || null;
+}
+
+function _npV3IsHofRetirement(story) {
+  if (!story) return false;
+  const retirementTypes = ['retirementDeclare', 'aiAceRetirement', 'aiRetirement', 'aiInjuryRetirement'];
+  if (!retirementTypes.includes(story.type)) return false;
+  return !!(story.newsData?.hallOfFameRetirement || _npV3HofEntry(story.characterId));
+}
+
+// 殿堂入り引退の一面ジャック。新聞全体の赤・金・生成りの色規則は守りつつ、
+// 通常の一面トップとは写真量、見出し、功績帯、勲章で明確に格を分ける。
+function _npV3HallOfFameRetirement(ts, seasonNum, weekNum) {
+  const id = ts.characterId || null;
+  const entry = _npV3HofEntry(id) || {};
+  const data = ts.newsData || {};
+  const fighter = ALL_CHARS.find(c => c.id === id) || {};
+  const name = entry.name || fighter.name || '';
+  const orgId = entry.orgId || (id ? _npFindFighterOrgKey(G, id) : null);
+  const orgName = entry.orgName || (id ? _findFighterOrgName(G, id) : '');
+  const emblem = orgId ? _npOrgEmblem(G, orgId, 22) : '';
+  const upper = id && typeof getUpperUrl === 'function' ? getUpperUrl(id) : '';
+  const portrait = id && typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '';
+  const src = upper || portrait;
+  const hofLevel = Math.max(1, Math.min(3, Number(data.hofLevel || entry.hofLevel) || 1));
+  const levelLabel = hofLevel >= 3 ? '最高位・レジェンド殿堂' : hofLevel >= 2 ? 'ゴールド殿堂' : '殿堂';
+  const levelDisplay = `${levelLabel}入り`;
+  const stars = '★'.repeat(hofLevel);
+  const seasons = Number(data.seasons) || Math.max(0,
+    (Number(entry.activeSeasonsEnd) || 0) - (Number(entry.activeSeasonsStart) || 0) + 1);
+  const reigns = Math.max(Number(data.titleReigns) || 0, Number(data.reigns) || 0, Number(entry.titleReigns) || 0);
+  const defenses = Math.max(Number(data.totalDefenses) || 0, Number(entry.totalDefenses) || 0);
+  const facts = [
+    seasons > 0 ? `<span><b>${seasons}</b>シーズン</span>` : '',
+    reigns > 0 ? `<span><b>${reigns}</b>度戴冠</span>` : '',
+    defenses > 0 ? `<span><b>${defenses}</b>度防衛</span>` : '',
+  ].filter(Boolean).join('');
+  const headline = data.hallOfFameRetirement
+    ? (ts.headline || `${name}、殿堂入り`) : `${name}、殿堂入り——${orgName || '団体'}の一時代に幕`;
+  const paras = _npV3Paragraphs(ts.body);
+  const bodyHtml = (paras.length ? paras : ['']).map(p => `<p>${p}</p>`).join('');
+
+  return `<article class="np-v3-hof-retirement">
+    <div class="np-v3-hof-mast">
+      <div class="np-v3-hof-seal" aria-hidden="true">殿</div>
+      <div class="np-v3-hof-mast-copy">
+        <span>永久保存版</span>
+        <strong>HALL OF FAME</strong>
+        <small>殿堂入り・引退特別号</small>
+      </div>
+      <div class="np-v3-hof-stars">${stars}</div>
+    </div>
+    ${ts.situation ? `<div class="np-v3-hof-situation">${ts.situation}</div>` : ''}
+    <h2 class="np-v3-hof-headline">${headline}</h2>
+    <div class="np-v3-hof-deck">${ts.subhead || `${levelDisplay}。その功績を永久保存版で振り返る`}</div>
+    <div class="np-v3-hof-hero">
+      <figure class="np-v3-hof-figure">
+        <div class="np-v3-hof-photo"${id ? ` onclick="showFighterPopup(${id},null,true)"` : ''}>
+          ${src ? `<img src="${src}" alt="${escHtml(name)}">` : ''}
+          <div class="np-v3-hof-medallion">HALL<br>OF FAME</div>
+        </div>
+        <figcaption>${emblem}<strong>${name}</strong><span>${orgName || ts.captionExtra || `${seasonNum}-${weekNum}号`}</span></figcaption>
+      </figure>
+      <div class="np-v3-hof-copy">
+        <div class="np-v3-hof-rank"><span>${stars}</span>${levelDisplay}</div>
+        ${facts ? `<div class="np-v3-hof-facts">${facts}</div>` : ''}
+        <div class="np-v3-art np-v3-hof-body">${bodyHtml}</div>
+      </div>
+    </div>
+    <div class="np-v3-byline">${NP_KURODA_BYLINE.rating}</div>
+  </article>`;
+}
+
 // トップ記事(左カラム)。写真は本文に従属する脇役(190×228)
 function _npV3TopStory(wp, seasonNum, weekNum) {
   const ts = wp.topStory;
@@ -7415,6 +7503,9 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
   if (ts.type === 'mqTagRecord') {
     // MQ再設計P4 §5: タッグ歴代最高評価は専用の大記事レイアウトのまま一面を張る
     return _npRenderBignewsTag(G, ts, seasonNum, weekNum);
+  }
+  if (_npV3IsHofRetirement(ts)) {
+    return _npV3HallOfFameRetirement(ts, seasonNum, weekNum);
   }
   const tagPhotoIds = _npSpringTagStoryIds(G, ts, seasonNum);
   const isTagPhoto = tagPhotoIds.length >= 2;
@@ -7535,11 +7626,28 @@ function _npFrontV3(wp, seasonNum, weekNum, isLatest) {
   html += _npCrisisColumnHtml(seasonNum, weekNum, isLatest);
 
   // ── トップ + 肩(+MVP小窓) ──
-  const rightCol = _npV3Shoulder(shoulder) + _npV3MvpBox(isLatest);
-  html += `<div class="np-v3-lead-grid${rightCol ? '' : ' np-v3-lead-grid--single'}">
-    <div>${_npV3TopStory(wp, seasonNum, weekNum)}</div>
-    ${rightCol ? `<div class="np-v3-vr">${rightCol}</div>` : ''}
-  </div>`;
+  const shoulderHtml = _npV3Shoulder(shoulder);
+  const mvpHtml = _npV3MvpBox(isLatest);
+  const rightCol = shoulderHtml + mvpHtml;
+  if (_npV3IsHofRetirement(wp.topStory)) {
+    // 殿堂入り引退は左右分割せず紙面幅を全部使う。2番手記事とMVP欄は
+    // 消さずに直下へ送るので、派手さのために他ニュースを欠落させない。
+    html += `<div class="np-v3-lead-grid np-v3-lead-grid--single">
+      <div>${_npV3TopStory(wp, seasonNum, weekNum)}</div>
+    </div>`;
+    if (rightCol) {
+      html += `<hr class="np-v3-rule-thick">`;
+      html += `<div class="np-v3-hof-secondary${shoulderHtml && mvpHtml ? '' : ' np-v3-hof-secondary--single'}">
+        ${shoulderHtml ? `<div>${shoulderHtml}</div>` : ''}
+        ${mvpHtml ? `<div class="${shoulderHtml ? 'np-v3-vr' : ''}">${mvpHtml}</div>` : ''}
+      </div>`;
+    }
+  } else {
+    html += `<div class="np-v3-lead-grid${rightCol ? '' : ' np-v3-lead-grid--single'}">
+      <div>${_npV3TopStory(wp, seasonNum, weekNum)}</div>
+      ${rightCol ? `<div class="np-v3-vr">${rightCol}</div>` : ''}
+    </div>`;
+  }
 
   // ── 準トップ ──
   if (junTop) {
@@ -10586,6 +10694,7 @@ function _renderPrologueBlock(prologue, chapters) {
   const idolThreshold = 60;
   const idolCandidate = founders.filter(f => f.peakPopularity >= idolThreshold)
     .sort((a, b) => b.peakPopularity - a.peakPopularity)[0];
+  const firstChampionId = Engine.prologue.firstChampionId(G);
 
   const STYLE_JP = { Striker:'打撃', Grappler:'組技', Submission:'関節技', Brawler:'喧嘩', Aerial:'空中戦', Allround:'万能' };
   const ROLE_JP = { Babyface:'ベビー', Heel:'ヒール', Tweener:'ニュートラル' };
@@ -10632,7 +10741,7 @@ function _renderPrologueBlock(prologue, chapters) {
     <div class="chron-prologue-roster">`;
   founders.forEach(f => {
     const portraitUrl = (typeof getPortraitUrl === 'function') ? getPortraitUrl(f.id) : '';
-    const isChamp = f.titleWins >= 1;
+    const isChamp = firstChampionId != null && f.id === firstChampionId;
     const isIdol = idolCandidate && f.id === idolCandidate.id;
     const cardCls = `chron-prologue-card${isChamp ? ' champion' : ''}${isIdol ? ' idol' : ''}${f.state === 'retired' ? ' retired' : ''}${f.state === 'departed' ? ' departed' : ''}`;
     const styleLabel = STYLE_JP[f.style] || f.style;

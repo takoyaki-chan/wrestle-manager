@@ -360,7 +360,8 @@ function makeRenderCtx() {
     '_npPhotoBg', '_npSubPhotoHtml', '_npFindFighterOrgKey', '_npSpringTagStoryIds', '_npTopTagPhotoHtml',
     '_npCrisisColumnHtml', '_npKurodaCommentText',
     '_npV3PrimaryId', '_npV3OrgLine', '_npV3Paragraphs', '_npV3IndexBar', '_npV3MvpBox',
-    '_npV3KurodaColumn', '_npV3TopStory', '_npV3Shoulder', '_npV3JunTop', '_npV3Small',
+    '_npV3KurodaColumn', '_npV3HofEntry', '_npV3IsHofRetirement', '_npV3HallOfFameRetirement',
+    '_npV3TopStory', '_npV3Shoulder', '_npV3JunTop', '_npV3Small',
     '_npV3Briefs', '_npFrontV3',
   ].map(fnBody).join('\n'), ctx);
   return ctx;
@@ -485,6 +486,40 @@ section('H9. 人物が特定できない記事に空の額縁を置かない', (
   const small = html.slice(html.indexOf('np-v3-small'));
   assert.ok(!/np-sub-photo"[^>]*>/.test(small.slice(0, 400)) || !small.includes('np-v3-small-body'),
     '人物のいない小記事に空の写真枠を置いている');
+});
+
+section('H10. 殿堂入り引退は発行済みの号も一面ジャックへ昇格し、他の記事を消さない', () => {
+  const oldAllHof = rctx.G.allHallOfFame;
+  rctx.G.allHallOfFame = {
+    player: [{
+      id: 101, name: '阿武隈塔子', orgId: 'player', orgName: 'テスト団体',
+      hofLevel: 3, titleReigns: 2, totalDefenses: 6,
+      activeSeasonsStart: 1, activeSeasonsEnd: 12,
+    }],
+  };
+  try {
+    // 専用フラグ追加前のバックナンバーを模す。恒久保存の殿堂記録だけで昇格できること。
+    const issue = {
+      ...fullIssue,
+      topStory: {
+        type: 'aiAceRetirement', characterId: 101,
+        headline: '阿武隈塔子が引退、12シーズンの現役に区切り',
+        body: '長く団体を支えた阿武隈塔子が現役を退いた。二度の戴冠を含む歩みは団体史に残る。',
+        newsData: { reigns: 2, seasons: 12 },
+      },
+    };
+    const html = rctx._npFrontV3(issue, 6, 14, true);
+    assert.ok(html.includes('np-v3-hof-retirement'), '通常の一面トップのままで専用紙面にならない');
+    assert.ok(html.includes('np-v3-hof-mast') && html.includes('np-v3-hof-facts'),
+      '殿堂入りの題字または功績帯が無い');
+    assert.ok(html.includes('np-v3-lead-grid np-v3-lead-grid--single'),
+      '殿堂入り引退が左右分割の狭いトップ枠に閉じ込められている');
+    assert.ok(html.includes('np-v3-hof-secondary') && html.includes('np-v3-kata'),
+      '一面ジャックのために2番手記事を消している');
+    assert.ok(html.includes('np-v3-mvpbox'), '一面ジャックのためにMVP欄を消している');
+  } finally {
+    rctx.G.allHallOfFame = oldAllHof;
+  }
 });
 
 // ─────────────────────────────────────────────────────────────

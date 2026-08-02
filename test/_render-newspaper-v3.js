@@ -86,7 +86,8 @@ vm.runInContext([
   '_npPhotoBg', '_npSubPhotoHtml', '_npFindFighterOrgKey', '_npSpringTagStoryIds', '_npTopTagPhotoHtml',
   '_npCrisisColumnHtml', '_npKurodaCommentText',
   '_npV3PrimaryId', '_npV3OrgLine', '_npV3Paragraphs', '_npV3IndexBar', '_npV3MvpBox',
-  '_npV3KurodaColumn', '_npV3TopStory', '_npV3Shoulder', '_npV3JunTop', '_npV3Small',
+  '_npV3KurodaColumn', '_npV3HofEntry', '_npV3IsHofRetirement', '_npV3HallOfFameRetirement',
+  '_npV3TopStory', '_npV3Shoulder', '_npV3JunTop', '_npV3Small',
   '_npV3Briefs', '_npFrontV3',
 ].map(n => extractFunction(renderSrc, n)).join('\n'), ctx);
 
@@ -116,6 +117,25 @@ const issue = {
 };
 
 const front = ctx._npFrontV3(issue, 6, 14, true);
+ctx.G.allHallOfFame = {
+  player: [{
+    id: 1, name: '阿武隈塔子', orgId: 'player', orgName: '我が団体',
+    hofLevel: 3, titleReigns: 2, totalDefenses: 6,
+    activeSeasonsStart: 1, activeSeasonsEnd: 12, epithet: '漆黒の女帝',
+  }],
+};
+const hofIssue = {
+  ...issue,
+  topStory: {
+    type: 'aiAceRetirement', characterId: 1,
+    situation: '永久保存版　殿堂入り・引退特別号',
+    headline: '阿武隈塔子、殿堂入り——我が団体の一時代に幕',
+    subhead: '12シーズンの現役生活に区切り。引退と同時に最高位・レジェンド殿堂へ',
+    body: '「漆黒の女帝」と呼ばれた阿武隈塔子が現役を退き、我が団体の殿堂にその名を刻んだ。12シーズンにわたる歩みは、ひとりの選手の経歴にとどまらず、団体そのものの歴史の一部となった。｜通算2度の戴冠、通算6度の防衛。その数字は、阿武隈塔子が団体の中心であり続けた時間の重さを物語る。｜リングを去っても、その試合、その言葉、その背中は記録と記憶の中に残る。我が団体は功績をたたえ、阿武隈塔子を最高位・レジェンド殿堂入りとして永く顕彰する。',
+    newsData: { reigns: 2, seasons: 12, hallOfFameRetirement: true, hofLevel: 3, titleReigns: 2, totalDefenses: 6 },
+  },
+};
+const hofFront = ctx._npFrontV3(hofIssue, 6, 14, true);
 
 // index.html の <style> をまるごと持ってくる（実CSSで確認するため）
 const styles = [...htmlSrc.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m => m[1]).join('\n');
@@ -149,3 +169,11 @@ body { background:#241a12; margin:0; padding:24px 12px 80px; }
 const dest = path.join(root, 'docs', 'ui', 'mockups', 'newspaper-v3-render-check.html');
 fs.writeFileSync(dest, out, 'utf8');
 console.log('wrote', dest, out.length, 'bytes');
+
+const hofOut = out
+  .replace(/新聞 一面 v3 — 実装レンダリング確認/g, '殿堂入り引退特別号 — 実装レンダリング確認')
+  .replace('新聞 一面 v3 — <b>実装の出力</b>', '殿堂入り引退特別号 — <b>実装の出力</b>')
+  .replace(front, hofFront);
+const hofDest = path.join(root, 'docs', 'ui', 'mockups', 'newspaper-hof-retirement-render-check.html');
+fs.writeFileSync(hofDest, hofOut, 'utf8');
+console.log('wrote', hofDest, hofOut.length, 'bytes');

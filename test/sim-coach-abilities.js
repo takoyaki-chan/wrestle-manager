@@ -1039,13 +1039,21 @@ function runSim6() {
             severity = 'minor'; weeks = 1 + Engine.rng.int(rng, 0, 1); // 1-2
           } else if (roll < 0.90) {
             severity = 'moderate'; weeks = 3 + Engine.rng.int(rng, 0, 1); // 3-4
-          } else {
+          } else if (roll < 0.98) {
             severity = 'severe';
             // ★ 重傷→中傷格下げ
             if (Engine.rng.float(rng) < scenario.downgradeRate) {
               severity = 'moderate'; weeks = 3 + Engine.rng.int(rng, 0, 1); // 3-4
             } else {
               weeks = 6 + Engine.rng.int(rng, 0, 2); // 6-8
+            }
+          } else {
+            severity = 'severe';
+            // ごく稀な長期重傷も、怪我耐性による格下げ対象に含める
+            if (Engine.rng.float(rng) < scenario.downgradeRate) {
+              severity = 'moderate'; weeks = 3 + Engine.rng.int(rng, 0, 1); // 3-4
+            } else {
+              weeks = 10 + Engine.rng.int(rng, 0, 6); // 10-16
             }
           }
 

@@ -1,13 +1,8 @@
 <!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
+<html lang="ja"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>WRESTLE MANAGER — 女子プロレス団体経営シミュレーション</title>
-<!-- ファビコン素材は持たない。指定が無いとブラウザが /favicon.ico を自動要求して 404 になるため、
-     空の data URI で「アイコンは無い」と明示してリクエスト自体を止める。 -->
-<link rel="icon" href="data:,">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Noto+Sans+JP:wght@300;400;700;900&family=Noto+Serif+JP:wght@400;700;900&family=Oswald:wght@400;600;700&family=Shippori+Mincho:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<title>殿堂入り引退特別号 — 実装レンダリング確認</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@600;700;900&family=Noto+Sans+JP:wght@400;700;900&family=Bebas+Neue&display=swap" rel="stylesheet">
 <style>
 :root {
   --bg-dark: #24221e;
@@ -7779,7 +7774,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ranking-popup .orgcell-fcell { position: absolute; bottom: 12px; cursor: pointer; }
 .ranking-popup .orgcell-fcell.pos-1 {
   left: 50%; transform: translateX(-50%);
-  width: 116px; height: 174px;
+  width: 132px; height: 194px;
   z-index: 30;
 }
 .ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-1 { width: 150px; height: 224px; }
@@ -7793,24 +7788,18 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 
 .ranking-popup .orgcell-fcell.pos-2 {
-  left: 0; width: 92px; height: 138px; z-index: 20; bottom: 24px;
+  left: 6px; width: 108px; height: 162px; z-index: 20; bottom: 20px;
 }
 .ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-2 { width: 132px; height: 194px; }
 .ranking-popup .orgcell-fcell.pos-2 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
 .ranking-popup .orgcell-fcell.pos-2 img { height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity: 0.92; }
 
 .ranking-popup .orgcell-fcell.pos-3 {
-  right: 0; width: 92px; height: 138px; z-index: 20; bottom: 24px;
+  right: 6px; width: 108px; height: 162px; z-index: 20; bottom: 20px;
 }
 .ranking-popup .orgcell.is-rank-1 .orgcell-fcell.pos-3 { width: 132px; height: 194px; }
 .ranking-popup .orgcell-fcell.pos-3 .img-wrap { width: 100%; height: 100%; display: flex; align-items: end; justify-content: center; }
 .ranking-popup .orgcell-fcell.pos-3 img { height: 100%; filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)); opacity: 0.92; }
-
-/* 2〜4位はカード幅が狭い。3人とも一段縮め、左右を外へ開いて後列の顔と上半身を見せる。
-   画像自体も割当枠からはみ出させない。1位の大型フォーメーションは上の個別指定を維持する。 */
-.ranking-popup .orgcell:not(.is-rank-1) .orgcell-fcell img {
-  width: 100%; height: 100%; object-fit: contain; object-position: center bottom;
-}
 
 .ranking-popup .orgcell-fcell .crown-mini {
   position: absolute; top: -2px; left: 50%; transform: translateX(-50%);
@@ -9536,820 +9525,115 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .sr-rank-line .sr-num{font-size:60px}
 }
 
-</style>
-<link rel="stylesheet" href="mobile.css">
-<style id="ptv-style">
-/* ══ PPV GRAND FINAL テレビ中継 (ptv-*) — Stageカテゴリ ══
-   Stage専用トークン初導入(docs/ui/01-foundations.md 1-4。:root定義のみ16進可) */
-:root{
-  --stage-bg:#000;
-  --stage-panel:#101014;
-  --stage-panel-2:#16161c;
-  --stage-line:#2a2a33;
-  --stage-live:#e2493b;
-  --stage-text:#f0ede6;
-  --stage-text-sub:#a8a49a;
-}
-.ptv-tv{max-width:720px;margin:0 auto;background:var(--stage-bg);border-radius:14px;border:1px solid var(--stage-line);
-  box-shadow:0 0 0 6px #17171a,0 0 0 7px #3a3a41,0 18px 50px rgba(0,0,0,.8);overflow:hidden;position:relative;cursor:pointer}
-.ptv-tv::after{content:'';position:absolute;inset:0;pointer-events:none;
-  background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(255,255,255,.02) 2px 3px)}
-.ptv-screen{position:relative;min-height:430px;color:var(--stage-text);
-  background:radial-gradient(120% 90% at 50% 0%,#14141a 0%,var(--stage-bg) 55%)}
-.ptv-chrome{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;align-items:center;padding:10px 14px;z-index:5}
-.ptv-ch{font-size:11px;font-weight:900;letter-spacing:.14em;color:rgba(255,255,255,.87);background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.17);padding:3px 9px;border-radius:4px}
-.ptv-live{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:900;letter-spacing:.1em;color:#fff;background:var(--stage-live);padding:3px 10px;border-radius:4px}
-.ptv-live::before{content:'';width:7px;height:7px;border-radius:50%;background:#fff;animation:ptvbl 1.2s infinite}
-.ptv-live.is-off{background:#3a3a41}.ptv-live.is-off::before{animation:none;opacity:.4}
-@keyframes ptvbl{50%{opacity:.25}}
-.ptv-telop{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,rgba(0,0,0,.65),rgba(0,0,0,.9));border-top:2px solid var(--gold);padding:8px 14px 9px;z-index:5}
-.ptv-telop-cat{display:inline-block;font-size:10px;font-weight:900;color:#111;background:var(--gold);border-radius:3px;padding:1px 7px;margin-right:9px;vertical-align:1px}
-.ptv-telop-main{font-size:13.5px;font-weight:800}
-.ptv-telop-sub{font-size:11px;color:var(--stage-text-sub);margin-top:1px}
-.ptv-hint{position:absolute;right:14px;bottom:52px;font-size:10.5px;color:var(--stage-text-sub);z-index:5;animation:ptvbl 2.4s infinite}
-.ptv-upper{width:46px;height:66px;border-radius:var(--radius-md,8px);overflow:hidden;border:1px solid #44444e;flex:none;background:var(--stage-panel-2);position:relative}
-.ptv-upper img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
-.ptv-upper-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(135deg,#363642,#17171d);color:var(--gold);font-weight:900}
-.ptv-upper.is-big{width:92px;height:138px;border:2px solid var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
-.ptv-loading{cursor:default}.ptv-loading-label{min-height:430px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--gold);font-weight:900;letter-spacing:.14em}.ptv-loading-label small{color:var(--stage-text-sub);font-size:11px;letter-spacing:.08em;margin-top:8px}
-/* 場面1 OP */
-.ptv-op{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px;text-align:center;padding:40px 20px 70px}
-.ptv-op-emblem{font-size:52px;color:var(--gold);text-shadow:0 0 26px rgba(232,189,88,.4)}
-.ptv-op-kicker{font-size:12px;letter-spacing:.42em;color:var(--stage-text-sub);margin-top:14px}
-.ptv-op-title{font-size:34px;font-weight:900;letter-spacing:.06em;color:var(--gold-light,#f5d98d);margin-top:6px;text-shadow:0 2px 18px rgba(232,189,88,.2)}
-.ptv-op-sub{font-size:13px;color:var(--stage-text-sub);margin-top:10px}
-.ptv-op-badge{margin-top:18px;font-size:12px;color:#111;background:linear-gradient(180deg,var(--gold-light,#f5d98d),var(--gold));font-weight:900;padding:5px 18px;border-radius:999px}
-/* 場面2 カード */
-.ptv-cardlist{padding:52px 22px 78px}
-.ptv-h-row{font-size:12px;font-weight:900;letter-spacing:.3em;color:var(--gold);text-align:center;margin-bottom:14px}
-.ptv-mrow{display:grid;grid-template-columns:1fr 46px 1fr;align-items:center;gap:8px;background:var(--stage-panel);border:1px solid var(--stage-line);border-radius:9px;padding:9px 14px;margin-bottom:8px}
-.ptv-mrow.is-main{background:linear-gradient(180deg,#1d1708,#141005);border-color:#8a6d2b}
-.ptv-mtag{grid-column:1/-1;font-size:10px;color:var(--gold);letter-spacing:.2em;text-align:center;margin:-2px 0 2px}
-.ptv-wcell{display:flex;align-items:center;gap:9px;min-width:0}
-.ptv-wcell.is-right{flex-direction:row;justify-content:flex-end;text-align:right}
-.ptv-wname{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ptv-worg{font-size:10px;color:var(--stage-text-sub)}
-.ptv-vs{font-size:11px;font-weight:900;color:var(--stage-text-sub);text-align:center}
-.ptv-mrow.is-main .ptv-vs{color:var(--gold)}
-/* 場面3 速報 */
-.ptv-flash{padding:60px 22px 82px;display:flex;flex-direction:column;justify-content:center;min-height:430px}
-.ptv-flash-band{background:linear-gradient(90deg,rgba(0,0,0,0) 0%,#1a1408 18%,#1a1408 82%,rgba(0,0,0,0) 100%);border-top:1px solid var(--gold);border-bottom:1px solid var(--gold);padding:16px 18px;text-align:center}
-.ptv-flash-kicker{font-size:11px;font-weight:900;letter-spacing:.34em;color:var(--gold)}
-.ptv-result-fighters{display:flex;align-items:flex-end;justify-content:center;gap:16px;margin-top:12px}
-.ptv-result-fighter{position:relative;min-width:108px;text-align:center}
-.ptv-result-fighter .ptv-upper{margin:0 auto;border:2px solid var(--stage-line)}
-.ptv-result-fighter.is-winner .ptv-upper{border-color:var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
-.ptv-result-fighter.is-loser .ptv-upper{filter:grayscale(.9) brightness(.72)}
-.ptv-result-upper--s{width:108px;height:162px}.ptv-result-upper--m{width:132px;height:194px}.ptv-result-upper--xl{width:172px;height:258px}
-.ptv-result-mark{position:absolute;top:-8px;left:50%;transform:translateX(-50%);z-index:1;display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--stage-panel);border:1px solid var(--stage-line);font-size:18px;font-weight:900}
-.ptv-result-fighter.is-winner .ptv-result-mark{color:var(--gold);border-color:var(--gold)}
-.ptv-result-fighter.is-loser .ptv-result-mark{color:var(--stage-text-sub)}
-.ptv-result-name{font-size:18px;font-weight:900;margin-top:7px;white-space:nowrap}.ptv-result-fighter.is-winner .ptv-result-name{font-size:22px}
-.ptv-result-org{font-size:10px;color:var(--stage-text-sub);margin-top:2px}.ptv-result-win{display:block;font-size:10px;letter-spacing:.18em;color:var(--gold);margin-top:2px}
-.ptv-result-divider{align-self:center;font-size:10px;font-weight:900;letter-spacing:.12em;color:var(--stage-text-sub)}
-.ptv-flash-detail{font-size:12.5px;color:var(--stage-text-sub);margin-top:9px}
-.ptv-flash-detail b{color:var(--gold-light,#f5d98d)}
-.ptv-commentary{margin-top:22px;background:var(--stage-panel);border-left:3px solid var(--gold);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px}
-.ptv-who{font-size:10px;color:var(--stage-text-sub);letter-spacing:.15em;margin-bottom:2px}
-.ptv-dots{display:flex;gap:6px;justify-content:center;margin-top:24px}
-.ptv-dot{width:8px;height:8px;border-radius:50%;background:#33333c}
-.ptv-dot.done{background:var(--gold)}
-/* 場面4 頂上決戦 */
-.ptv-summit{padding:56px 22px 82px;text-align:center;min-height:430px;display:flex;flex-direction:column;justify-content:center}
-.ptv-summit-kicker{font-size:12px;font-weight:900;letter-spacing:.4em;color:var(--gold)}
-.ptv-summit-vs{display:flex;align-items:flex-start;justify-content:center;gap:26px;margin:22px 0 8px}
-.ptv-summit-vs .ptv-upper{margin:0 auto}
-.ptv-sname{font-size:15px;font-weight:900;margin-top:8px}
-.ptv-sorg{font-size:10.5px;color:var(--stage-text-sub)}
-.ptv-vs-big{font-size:22px;font-weight:900;color:var(--gold);align-self:center}
-.ptv-summit-result{margin-top:16px;font-size:13px;color:var(--stage-text-sub)}
-.ptv-win-line{font-size:19px;font-weight:900;color:var(--gold-light,#f5d98d);margin-top:4px}
-.ptv-summit-result-fighters{margin:18px 0 8px}.ptv-summit-result-fighters .ptv-result-name{font-size:20px}.ptv-summit-result-fighters .ptv-result-fighter.is-winner .ptv-result-name{font-size:25px}
-@media(max-width:600px){.ptv-result-fighters{gap:9px}.ptv-result-upper--xl{width:132px;height:194px}.ptv-result-upper--m{width:108px;height:162px}.ptv-result-upper--s{width:92px;height:138px}.ptv-result-name,.ptv-result-fighter.is-winner .ptv-result-name{font-size:15px}.ptv-summit-result-fighters .ptv-result-name,.ptv-summit-result-fighters .ptv-result-fighter.is-winner .ptv-result-name{font-size:17px}}
-/* 場面5 放送終了 */
-.ptv-ending{padding:70px 22px 86px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px}
-.ptv-end-msg{font-size:15px;max-width:430px;line-height:1.9}
-.ptv-end-msg b{color:var(--gold-light,#f5d98d)}
-.ptv-end-note{font-size:12px;color:var(--stage-text-sub);margin-top:14px}
-.ptv-btn{margin-top:26px;background:linear-gradient(180deg,var(--gold-light,#f5d98d),var(--gold));color:#151004;font-weight:900;font-size:14px;border:none;border-radius:8px;padding:12px 34px;cursor:pointer}
-.ptv-btn:hover{filter:brightness(1.08)}
-</style>
-</head>
-<body>
-<div class="app">
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="top-bar-clock">
-      <span id="dispOrgIcon"></span>
-      <div class="top-bar-date" id="dispDate">1年目 🌸春 第1週</div>
-    </div>
-    <div class="top-bar-info">
-      <div class="info-item"><span class="info-label">資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
-      <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span><span id="dispSubsidy" class="subsidy-badge"></span></div>
-      <div class="info-item"><span class="info-label">Heat</span><span class="info-val" id="dispHeat">➖ Neutral</span></div>
-      <div class="info-item"><span class="info-label">順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
-      <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
-    </div>
-    <div class="top-bar-audio">
-      <button id="muteBtn" onclick="Audio.toggleMute();document.getElementById('muteBtn').textContent=Audio.muted?'🔇':'🔊'" title="サウンド ON/OFF">🔊</button>
-      <button id="bgmMuteBtn" onclick="Audio.toggleBgmMute();document.getElementById('bgmMuteBtn').textContent=Audio.bgmMuted?'🎵❌':'🎵'" title="BGMのみ ON/OFF（効果音・ジングルは残る）">🎵</button>
-    </div>
-  </div>
-
-  <!-- Crisis Warning Bar (bankruptcy-redesign v1.1) -->
-  <div id="crisisBar" class="crisis-bar">
-    <span class="crisis-icon">⚠️</span>
-    <span class="crisis-title">資金危機</span>
-    <span class="crisis-weeks" id="crisisWeeksLabel">残り4週</span>
-    <span style="font-size:11px;opacity:0.85;letter-spacing:0.5px">立て直すか、解散か</span>
-  </div>
-
-  <!-- Navigation -->
-  <div class="nav-bar">
-    <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
-    <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
-    <button class="nav-btn" onclick="showScreen('roster',event)">👥 団体</button>
-    <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室</button>
-    <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
-    <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
-    <button class="nav-btn" onclick="showScreen('newspaper',event)">📰 新聞<span id="newspaperBadge" class="nav-badge-dot" style="display:none"></span></button>
-    <button class="nav-btn" onclick="showScreen('finance',event)">🏢 経営</button>
-    <button class="nav-btn" onclick="showScreen('log',event)">📋 ログ</button>
-    <button class="nav-btn" onclick="showScreen('save',event)">💾 セーブ</button>
-    <button class="nav-btn" onclick="showScreen('help',event)">❓ ヘルプ</button>
-  </div>
-
-  <!-- SCREEN: This Week -->
-  <div class="screen active" id="screen-week">
-    <div class="panel">
-      <div class="panel-title" id="weekTitle">Week 1 — 非興行週</div>
-      <div id="weekContent"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Ranking (v0.9) -->
-  <div class="screen" id="screen-ranking">
-    <div class="ranking-popup">
-      <div class="popup-header">
-        <h2><span class="dot"></span>団体ランキング</h2>
-      </div>
-      <div id="rankingMast"></div>
-      <div id="rankingVictoryBar"></div>
-      <div id="rankingContent"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Database (v1.0) -->
-  <div class="screen" id="screen-database">
-    <div class="panel" id="databasePanel">
-      <div id="databaseContent"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Newspaper (独立タブ v3.0) -->
-  <div class="screen" id="screen-newspaper">
-    <div id="newspaperContent"></div>
-  </div>
-
-  <!-- SCREEN: Roster -->
-  <div class="screen" id="screen-roster">
-    <div id="rosterDojoHeader"></div>
-    <div class="panel">
-      <div class="panel-title">🎓 所属スタッフ (<span id="staffCount">0</span>/<span id="staffMax">3</span>)
-        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('coach',event)">スタッフ募集 →</button>
-      </div>
-      <div id="rosterStaffSection"></div>
-    </div>
-    <div class="panel" style="margin-top:12px">
-      <div class="panel-title">👥 所属選手 (<span id="rosterCount">0</span>名)</div>
-      <div id="rosterTable"></div>
-    </div>
-    <div id="rosterGrowthLog"></div>
-  </div>
-
-  <!-- SCREEN: Scout -->
-  <div class="screen cream-screen" id="screen-scout">
-    <div class="panel">
-      <div class="panel-title">スカウト / フリーエージェント (<span id="faCount">0</span>名)</div>
-      <div id="scoutContent"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Scout Event -->
-  <div class="screen cream-screen" id="screen-scoutEvent">
-    <div class="panel">
-      <div class="panel-title" id="scoutEventTitle">🔍 スカウトイベント</div>
-      <div id="scoutEventContent"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Shachoshitsu (社長室 Phase 1) -->
-  <div class="screen" id="screen-shachoshitsu">
-    <div id="shachoshitsuContent"></div>
-  </div>
-
-  <!-- SCREEN: Show Prep -->
-  <div class="screen dark-black" id="screen-show">
-    <div class="panel">
-      <div class="panel-title">興行準備</div>
-      <div id="showPrepContent"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Finance / Management -->
-  <div class="screen" id="screen-finance">
-    <div class="panel">
-      <div class="panel-title">経営</div>
-      <div id="financeContent"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Log -->
-  <div class="screen" id="screen-log">
-    <div class="panel">
-      <div class="panel-title">ゲームログ</div>
-      <div id="logContent" style="max-height:600px;overflow-y:auto"></div>
-    </div>
-  </div>
-
-  <!-- SCREEN: Staff Room (Coach Management) -->
-  <div class="screen cream-screen" id="screen-coach">
-    <div class="panel">
-      <div class="panel-title">🎓 スタッフ募集
-        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('roster',event)">← 団体に戻る</button>
-      </div>
-      <div id="coachContent"></div>
-    </div>
-  </div>
 
 
-  <!-- SCREEN: Save/Load (v0.6) -->
-  <div class="screen" id="screen-save">
-    <div class="panel">
-      <div class="panel-title">💾 セーブ / ロード</div>
-      <div id="saveContent"></div>
-    </div>
-  </div>
-  <!-- SCREEN: Help / Tutorial (v2.0 C-4) -->
-  <div class="screen" id="screen-help">
-    <div class="panel">
-      <div class="panel-title">❓ 遊び方ガイド</div>
-      <div class="help-content">
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🎯</span> ゲームの目的 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>あなたは新興の女子プロレス団体のオーナーです。</p>
-            <p>選手をスカウト・育成し、興行を開催して資金と人気を集め、<strong style="color:var(--gold)">団体ランキング1位</strong>を目指しましょう。業界にはライバルの3団体（S級・A級・B級）がひしめいています。</p>
-            <p style="color:var(--text-sub);font-size:12px">⚠️ 資金がマイナスに落ちると<strong>資金危機</strong>に突入します。4週以内に黒字へ戻せなければ<strong style="color:var(--red)">倒産（ゲームオーバー）</strong>。赤字が深く沈みすぎれば、猶予を待たず経営は破綻します。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📅</span> シーズンと週の流れ <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは<strong>48週</strong>＋オフシーズンです。</p>
-            <p><strong style="color:var(--gold)">興行週と練習週：</strong></p>
-            <p>偶数週（第2, 4, 6…週）が<strong>興行週</strong>、奇数週が<strong>練習週</strong>。つまり2週に1回、興行を開催できます。</p>
-            <p><strong style="color:var(--gold)">毎週やること：</strong></p>
-            <p>① <strong>今週タブ</strong> — 選手ごとの育成方針と⚡追込を設定</p>
-            <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決めて開催</p>
-            <p>③ <strong>「▶ 次の週へ」</strong> — 結果処理</p>
-            <p><strong style="color:var(--gold)">シーズンの終わり：</strong></p>
-            <p>48週目の後はオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）と1年の総括に続き、<strong>契約更新 → ドラフト → 移籍ウィンドウ</strong>を経て新シーズンが始まります。</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 「おまかせ」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">👥</span> 選手の育成 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">今週タブの育成方針：</strong></p>
-            <p>・<strong>バランス</strong> — 興行週はプロモ、練習週は練習（デフォルト）</p>
-            <p>・<strong>練習優先</strong> — ステータス成長を重視</p>
-            <p>・<strong>プロモ優先</strong> — 人気上昇を重視（人気には上限あり）</p>
-            <p>・<strong>休養重視</strong> — 体調回復を優先</p>
-            <p>どの方針でも、<strong>体調が60を切った選手は自動で休養</strong>に切り替わります。</p>
-            <p><strong style="color:var(--gold)">⚡追込練習：</strong></p>
-            <p>⚡ボタンで設定。成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも背負います。<strong>最大2週連続、体調50以上</strong>が条件です。</p>
-            <p><strong style="color:var(--gold)">成長のかたち：</strong></p>
-            <p>選手は毎週の練習と試合経験で育ちます。伸び方は年齢・特性・コーチで大きく変わります。</p>
-            <p>・<strong>早熟</strong> — 若い時期に急成長、以降は鈍化</p>
-            <p>・<strong>晩成</strong> — スロースタート、20代後半で本領発揮</p>
-            <p>・<strong>努力家</strong> — 安定して伸びる</p>
-            <p>・<strong>破天荒</strong> — 振れ幅が極端</p>
-            <p><strong style="color:var(--gold)">コーチ：</strong></p>
-            <p>「スタッフ」からコーチを雇用できます。指導力の高いコーチは成長速度を引き上げ、選手と得意スタイルが合えばさらに伸びます。コーチ枠は最初1つ——<strong>資金を投資して最大4枠まで拡張</strong>できます。団体タブの選手カードからアサインを管理しましょう。</p>
-            <p><strong style="color:var(--gold)">外部コーチ招聘：</strong></p>
-            <p>社長室の「外部コーチ招聘状」で、団体の外から名伯楽を短期間だけ招けます。候補の顔ぶれは四半期ごとに入れ替わります。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🎤</span> 興行の組み方 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>偶数週に対戦カードと会場を決めて興行を開催します。</p>
-            <p><strong style="color:var(--gold)">MQ（Match Quality＝試合品質）：</strong></p>
-            <p>試合の面白さを表す指標で、団体の評判と収入に直結します。</p>
-            <p>・実力の近い者同士は良い試合になりやすい</p>
-            <p>・<strong>因縁の相手</strong>との一戦は大きく跳ねる</p>
-            <p>・タイトルマッチはそれ自体が興行の看板になる</p>
-            <p>・<strong>メインイベント</strong>の出来が、興行全体の印象を決めます</p>
-            <p><strong style="color:var(--gold)">おまかせ編成：</strong></p>
-            <p>🔥おすすめ（因縁・鮮度・話題性）／💪OVR順／🎤集客力順 の3ボタンで自動編成もできます。</p>
-            <p><strong style="color:var(--gold)">会場：</strong></p>
-            <p>公民館（150人）からドーム（22,500人）まで10段階。大きい会場ほどコストが上がり、試合枠が増えます。</p>
-            <p>集客力は<strong>団体人気</strong>で決まります。超満員（🔥）なら収入も会場の熱も跳ね上がり、ガラガラ（😰）だと収入が沈んで評判も落ちます。興行準備画面の<strong>リスク指標（🟢安全/🟡注意/🔴危険）</strong>を目安に選びましょう。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏆</span> 王座とビッグマッチ <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">団体王座：</strong></p>
-            <p>興行の実績・団体人気・所属人数が一定に達すると、王座を設立できます。まずは「初代王者決定戦」を組みましょう。</p>
-            <p>・挑戦資格を持つのは団体の<strong>実力上位陣</strong>だけ</p>
-            <p>・タイトルマッチを組めるのは<strong>12週に1回</strong></p>
-            <p>・レンタル選手は出場できません</p>
-            <p><strong style="color:var(--gold)">ジュニアトーナメント：</strong></p>
-            <p>毎年<strong>25週目</strong>、20歳以下の若手による業界横断の一日トーナメント。優勝は若手にとって最初の勲章です。</p>
-            <p><strong style="color:var(--gold)">PPV GRAND FINAL：</strong></p>
-            <p>団体人気が30に達すると出場資格を獲得。<strong>43週目にエントリー、48週目</strong>に業界全体の大興行が開かれます。ランキング上位ほど出場枠が多く、頂点で待つのは「頂上決戦」——業界の看板を懸けたメインイベントです。</p>
-            <p><strong style="color:var(--gold)">対抗戦：</strong></p>
-            <p>ライバル団体から挑戦状が届くことがあります。3本勝負または5本勝負の団体戦。勝てば人気と業界での立場が上がり、負ければ痛手を負います。選手が「あの団体とやらせてほしい」と直訴してくることもあります。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🤝</span> 選手の心 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">信頼：</strong></p>
-            <p>選手一人ひとりが、社長への信頼を胸の内に持っています。数値では見えません——表情や様子、コーチの報告から察してください。出場機会とケアで育ち、冷遇と放置で冷えます。冷え切った心は、不満・造反・移籍の火種になります。</p>
-            <p><strong style="color:var(--gold)">ロッカールームの空気：</strong></p>
-            <p>団体全体の空気は、成長やイベントの起きやすさに響きます。勝ちが続けば和み、連敗と空席が続けば荒みます。「人望」のある選手は、いるだけで空気を少し明るくします。</p>
-            <p><strong style="color:var(--gold)">スランプ・モチベ喪失：</strong></p>
-            <p>選手は時に沈みます。放置は禁物——休ませる、声をかける、環境を変える。手の打ち方は一つではありません。</p>
-            <p><strong style="color:var(--gold)">選択イベント：</strong></p>
-            <p>タイトル挑戦の直訴、休養申請、不満の爆発……社長の判断を求める出来事が起きます。選択肢に添えられた一言が、結果の手がかりです。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏛️</span> 社長室 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>社長室の机には決裁書類が並びます。印を押せば実行——ただし<strong>決裁枠⚡</strong>を消費します。決裁枠はシーズン中<strong>4週ごとに+2回復（上限6）</strong>。発動条件を満たさない書類は机に並びません。</p>
-            <p>・<strong>💰 ボーナス支給願</strong> — 起案された4案から支給額を選ぶ交渉型。額面が選手の格に見合ってこそ誠意は伝わります。<strong style="color:var(--red)">安すぎる額は逆効果</strong>になることも。再支給のたびに「相場」は吊り上がります</p>
-            <p>・<strong>🏖️ 休暇辞令</strong> — 1〜4週の休暇を与える。体調が戻り、蓄積した衰えも少しだけ癒えます。<strong>休暇中は興行に欠場</strong>します</p>
-            <p>・<strong>🍶 慰労会開催届</strong> — ロッカールームの空気が和らぐ</p>
-            <p>・<strong>📜 外部コーチ招聘状</strong> — 団体の外から指導者を短期招聘する</p>
-            <p>・<strong>⛺ 合宿実施手配書</strong> — 全員の練習効果を短期間ブースト</p>
-            <p>・<strong>📺 メディア露出手配書</strong> — 選手の人気と団体の知名度を上げる</p>
-            <p>・<strong>🏥 特別治療指示書</strong> — 離脱中の選手の復帰を早める</p>
-            <p>・<strong>📋 コーチ雇用決裁書</strong> — コーチ雇用時に消費される</p>
-            <p><strong style="color:var(--gold)">効き方は選手それぞれ：</strong></p>
-            <p>同じ書類でも、性格とタイプで響き方がまるで違います。深く刺されば「🌟」、空振りなら「💤」。<strong>刺してみないとわからない</strong>のが社長の仕事です。トレーナー系の書類は即効ではなく、<strong>期間中にじわじわ信頼が育つ</strong>タイプもあります。</p>
-            <p>・<strong>💬 声をかける</strong>（無料） — 選手ポップアップから実行。決裁枠も資金も使わない、社長自らの行動です。気持ちが揺らいだ選手にボタンが灯ります。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">💞</span> 絆と因縁 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>選手同士の関係は<strong>絆</strong>と<strong>因縁</strong>、2つの軸で動きます。想いは一方通行のこともあります——彼女は慕っていても、相手はそうでもない、ということも。</p>
-            <p><strong style="color:var(--gold)">絆：</strong></p>
-            <p>タッグや日々の交わりの中で育ちます。深い絆は成長を後押しし、土壇場の踏ん張りに効きます。</p>
-            <p><strong style="color:var(--gold)">因縁：</strong></p>
-            <p>何度も拳を交えた相手、遺恨を残した相手。<strong>因縁の一戦は観客を沸かせ、試合を大きく熱くします</strong>。育てた因縁は団体の財産です。</p>
-            <p><strong style="color:var(--gold)">こじれたとき：</strong></p>
-            <p>関係が険悪に沈むと、ロッカーが荒れ、タッグが壊れ、最悪の場合は造反や離脱に至ります。修復の道も残されています——社長室に修復の書類が並ぶことがあります。</p>
-            <p>データベースの<strong>相関図</strong>で、団体内の人間模様を一望できます。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏴</span> 派閥 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>団体が育ってくると、選手たちが旗を掲げ、<strong>派閥</strong>が生まれます。</p>
-            <p>派閥にはリーダーの気風が宿ります——権威で束ねる者、結束を誇る者、実力だけを信じる者……。気風によって、起きる事件も変わります。</p>
-            <p>派閥同士の火種は<strong>抗争ポイント</strong>として積み上がり、限界を超えると<strong>全面対抗戦</strong>に発展します。</p>
-            <p>合宿、取材、同門対決、下剋上——派閥がらみの報せには、社長の判断を求めるものもあります。静観するか、油を注ぐか、水を差すか。</p>
-            <p><strong>派閥タブ</strong>で、それぞれの勢力と火種を確認できます。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🔍</span> 補強 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">FA（フリーエージェント）：</strong></p>
-            <p>スカウトタブに、契約金を払えば即入団のFA選手が並びます。市場は<strong>4週ごとに入れ替わり</strong>（2名去り、2名参入）。ドラフトで指名が掛からなかった若い世代が中心です。</p>
-            <p><strong style="color:var(--gold)">レンタル移籍：</strong></p>
-            <p>FAやライバル団体の選手を<strong>1〜4シーズン</strong>の期間限定で借りられます。</p>
-            <p>・費用は前払い一括</p>
-            <p>・同時レンタルは2〜3枠（ロスター規模による）</p>
-            <p>・相手団体の看板上位3名は借りられません</p>
-            <p>・レンタル選手は<strong>タイトルマッチに出場不可</strong>。契約が切れれば帰っていきます</p>
-            <p><strong style="color:var(--gold)">引き抜き交渉：</strong></p>
-            <p>ライバル団体の選手詳細から<strong>「🤝 選手を引き抜く」</strong>。予算プラン3種から選んで<strong>4週間</strong>の交渉に入ります。同時に進められるのは1件、失敗すれば費用の半分は戻りません。格上の看板選手ほど、財布だけでは落ちません。</p>
-            <p>※逆もあります。上位団体があなたの選手に引き抜きオファーを出してくることも。日頃の信頼が防波堤になります。</p>
-            <p><strong style="color:var(--gold)">オフシーズンの補強：</strong></p>
-            <p>契約更新（去就に迷う選手との1対1交渉）→ <strong>ドラフト</strong>（新人候補を巡ってライバル団体とセリ合い。各団体の関心と交渉のヒートを読みながら入札します）→ 移籍ウィンドウ、の順で進みます。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📈</span> 峠と引退 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>選手の体には、リングで受けたダメージが静かに刻まれていきます。<strong>全盛期 → ⚠ 衰え → ⬇ 衰退期 → ⬇⬇ 限界</strong>——蓄積が峠を越えるとステータスは下り坂に入り、引退が視野に入ります。</p>
-            <p><strong style="color:var(--gold)">何が体を削るのか：</strong></p>
-            <p>20代半ばにさしかかる頃から、リングに上がり続けた分だけ毎年少しずつ蓄積します。そこに上乗せされるのが——</p>
-            <p>・<strong>試合の詰め込み</strong> — 年間の試合数が多い選手ほど体は削れます</p>
-            <p>・<strong>怪我</strong> — 一度の負傷は治っても、確実に体に残ります</p>
-            <p>・<strong>⚡追込の使いすぎ</strong> — 若いうちは何も起きません。重ねた無理は表に出ないまま溜まり、峠にさしかかった年に一度に返ってきます</p>
-            <p>一方で、<strong>練習やコーチの指導そのものは体を削りません</strong>。専属の指導で鍛え込むこと自体は安全です——削るのは、あくまでリングの上のダメージと無理な起用です。</p>
-            <p>蓄積の速さは体質でも変わります。「鉄人」や晩成型は長持ちし、早熟型は早く峠が来ます。減らす手段はただ一つ、<strong>休暇辞令</strong>——そして「延命術」を使うコーチは、蓄積そのものを緩やかにしてくれます。</p>
-            <p>30歳を過ぎると、選手は進退を考え始めます。引き際は選手それぞれ——引退した選手はロスターを去り、功績次第で<strong>殿堂</strong>に迎えられ、その名は年代記に残ります。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📊</span> 人気とお金 <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">選手人気：</strong></p>
-            <p>良い試合、戴冠、メディア露出で上がります。高くなるほど上がりにくく、逆に連敗・スキャンダル・怪我での長期欠場は人気を削ります。</p>
-            <p><strong style="color:var(--gold)">団体人気：</strong></p>
-            <p>集客もスポンサーも放映料も、すべての土台です。こちらも高いほど上がりにくく、シーズン末には順位に応じた自然減があります——頂の維持にも努力が要ります。</p>
-            <p><strong style="color:var(--gold)">収支：</strong></p>
-            <p>収入の柱はチケット・グッズ・スポンサー・放映料。支出の柱は給与です。選手が育って格が上がれば、給与も上がります。赤字が続けば資金危機に（→ ゲームの目的）。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📰</span> 読みもの <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p>この団体の歩みは、いくつもの紙面に記録されていきます。</p>
-            <p>・<strong>📰 新聞</strong> — 毎週発行。興行の結果、業界の動き、記者のコラム</p>
-            <p>・<strong>📜 団体年代記</strong> — 数シーズンごとに「章」が編まれ、時代の主役が刻まれます。旗揚げ世代の物語は「序章」として永久保存</p>
-            <p>・<strong>⚔ 因縁列伝</strong> — 宿命のライバル関係を特集する紙面</p>
-            <p>・<strong>👤 選手経歴</strong> — 選手詳細から見られる、一人ひとりの年表</p>
-            <p>・<strong>📜 記録</strong> — 殿堂入りした名選手たちの記憶と、歴代の栄冠</p>
-            <p>・<strong>📅 シーズン総括</strong> — 年度末の総決算（ANNUAL RECORD）</p>
-            <p>攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。</p>
-          </div>
-        </div>
-
-        <div class="help-section">
-          <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">💡</span> 序盤攻略のコツ <span class="help-arrow">▶</span>
-          </button>
-          <div class="help-body">
-            <p><strong style="color:var(--gold)">1. ドラフトで軸を作る</strong></p>
-            <p>バランスより、エース候補を1人。団体の顔が育てば興行が回り始めます。</p>
-            <p><strong style="color:var(--gold)">2. 公民館から</strong></p>
-            <p>満員を確実に取り、黒字を積む。背伸びは資金危機への近道です。</p>
-            <p><strong style="color:var(--gold)">3. メインを大切に</strong></p>
-            <p>エース候補をメインに据えて高MQを。同じ相手と当て続ければ、因縁も育ちます。</p>
-            <p><strong style="color:var(--gold)">4. 体調管理</strong></p>
-            <p>怪我は長期離脱＋人気低下のダブルパンチ。⚡追込は使いどころを選んで。</p>
-            <p><strong style="color:var(--gold)">5. コーチは早めに</strong></p>
-            <p>エース候補にアサインすれば、成長がまるで違います。</p>
-            <p><strong style="color:var(--gold)">6. 王座を建てる</strong></p>
-            <p>条件が揃ったら初代王者決定戦を。ベルトは団体の格を一段上げます。</p>
-            <p><strong style="color:var(--gold)">7. 会場は一段ずつ</strong></p>
-            <p>リスク指標🟢を目安に。焦って大箱に出ると空席が団体を蝕みます。</p>
-            <p><strong style="color:var(--gold)">8. 信頼は資産</strong></p>
-            <p>選手の気持ちの動きを見逃さないこと。冷えてからでは高くつきます。</p>
-          </div>
-        </div>
-
-      </div>
-      <div style="text-align:center;margin-top:18px">
-        <span class="title-credits-link" onclick="App.showCredits()" style="font-size:12px;color:var(--text-sub);cursor:pointer;letter-spacing:1px">Credits</span>
-      </div>
-    </div>
-  </div>
-
-</div>
-
-<!-- Title Screen Overlay (v1.0) -->
-<div class="title-screen" id="titleScreen" style="display:none">
-  <div class="title-bg">
-    <div class="title-portraits" id="titlePortraits"></div>
-  </div>
-  <div class="title-content">
-    <div class="title-logo">WRESTLE<br>MANAGER</div>
-    <div class="title-sub">女子プロレス団体経営シミュレーション</div>
-    <div class="title-buttons">
-      <button class="title-btn primary" onclick="App.titleNewGame()">NEW GAME</button>
-      <button class="title-btn" id="titleContinueBtn" onclick="App.titleContinue()" style="display:none">CONTINUE</button>
-      <button class="title-btn" id="titleLoadBtn" onclick="App.titleLoadGame()">LOAD GAME</button>
-    </div>
-    <div class="title-ver">VERSION 1.25</div>
-    <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
-    <div class="title-sns">
-      <a href="https://x.com/tkykchan" target="_blank" rel="noopener">𝕏</a>
-      <a href="https://www.patreon.com/takoyakichan" target="_blank" rel="noopener">Patreon</a>
-      <a href="https://takoyaki.fanbox.cc/" target="_blank" rel="noopener">FANBOX</a>
-    </div>
-    <div class="title-feedback" onclick="window.open(FEEDBACK_FORM_URL,'_blank')">📝 ご意見・バグ報告</div>
-  </div>
-</div>
-
-<!-- Org Setup Overlay (v1.0) -->
-<div class="org-setup" id="orgSetupScreen" style="display:none">
-  <div class="org-setup-bg"></div>
-  <div class="org-setup-content">
-    <div class="org-setup-icon">🏟️</div>
-    <div class="org-setup-title">ESTABLISH YOUR PROMOTION</div>
-    <div class="org-setup-desc">
-      あなたはこの世界で新たな女子プロレス団体を旗揚げする。<br>
-      小さな公民館から始まるその物語の、最初の一歩を踏み出そう。
-    </div>
-    <div class="org-setup-input-wrap">
-      <div class="org-setup-label">PROMOTION NAME</div>
-      <input class="org-setup-input" id="orgSetupNameInput" type="text" maxlength="20"
-        placeholder="団体名を入力" value="" onkeydown="if(event.key==='Enter')App.confirmOrgSetup()">
-      <div class="org-setup-hint">※ あとから変更できます</div>
-    </div>
-    <div class="org-setup-input-wrap" style="margin-top:16px">
-      <div class="org-setup-label">PROMOTION ICON</div>
-      <div id="orgIconGrid" style="display:grid;grid-template-columns:repeat(5,64px);gap:8px;justify-content:center;margin:12px 0"></div>
-    </div>
-    <button class="title-btn primary" onclick="App.confirmOrgSetup()" style="font-size:20px;padding:12px 48px">
-      旗揚げする
-    </button>
-    <div style="margin-top:16px">
-      <button class="title-btn" onclick="App.backToTitle()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(200,190,170,0.15);color:var(--text-sub)">
-        ← 戻る
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Difficulty Selection Screen (difficulty-mode v1.0) -->
-<div class="org-setup" id="difficultyScreen" style="display:none">
-  <div class="org-setup-bg"></div>
-  <div class="org-setup-content">
-    <div class="org-setup-icon">⚔️</div>
-    <div class="org-setup-title">難易度を選択</div>
-    <div class="org-setup-desc">
-      プレイスタイルを選んでください。<br>
-      <span style="color:var(--text-sub);font-size:13px">開始後は変更できません</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:12px;margin:24px 0;width:100%;max-width:380px">
-      <label class="difficulty-option" id="diffOptHard" onclick="App.selectDifficulty('hard')">
-        <div class="difficulty-option-radio" id="diffRadioHard">◉</div>
-        <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--text)">通常モード</div>
-          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">補助金なし — すべて自力で稼ぐ</div>
-        </div>
-      </label>
-      <label class="difficulty-option" id="diffOptNormal" onclick="App.selectDifficulty('normal')">
-        <div class="difficulty-option-radio" id="diffRadioNormal">○</div>
-        <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--text)">補助金モード</div>
-          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">団体人気40まで補助金支給</div>
-        </div>
-      </label>
-    </div>
-    <button class="title-btn primary" onclick="App.confirmDifficulty()" style="font-size:20px;padding:12px 48px">
-      ゲーム開始
-    </button>
-    <div style="margin-top:16px">
-      <button class="title-btn" onclick="App.backFromDifficulty()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(200,190,170,0.15);color:var(--text-sub)">
-        ← 戻る
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Custom Tooltip -->
-<div class="custom-tooltip" id="customTooltip"></div>
-
-<!-- Show Result Overlay -->
-<div class="show-result-overlay" id="showResultOverlay">
-  <div class="show-result-box" id="showResultBox"></div>
-</div>
-
-<!-- 4団体勝ち残り対抗戦 専用Stage -->
-<div class="agw-overlay" id="autumnWarOverlay" role="dialog" aria-modal="true" aria-label="4団体勝ち残り対抗戦">
-  <div class="agw-screen" id="autumnWarScreen" tabindex="-1"></div>
-</div>
-
-<!-- PPV マッチカード紹介画面 -->
-<div class="ppvmc-overlay" id="ppvMatchCardOverlay"></div>
-
-<!-- Battle Engine Overlay (v0.86)。U4: 観戦モードのiframeは最上位 → 500(旧9999から大幅ダウン)。
-     battleEscapeBtnはbattleOverlayのDOM子要素で、その内部スタッキングコンテキスト内だけで
-     iframeより手前に出ればよいため10000のまま(グローバルな5階層と競合しない、意図的に据え置き) -->
-<div id="battleOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:#000">
-  <iframe id="battleIframe" src="battle-engine.html" style="width:100%;height:100%;border:none"></iframe>
-  <button id="battleEscapeBtn" onclick="App.escapeBattle()" style="position:fixed;top:10px;right:10px;z-index:10000;background:rgba(200,190,170,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 0.3s">✕ 試合中断</button>
-</div>
-
-<!-- Confirm Dialog (v0.6) -->
-<div class="confirm-overlay" id="confirmOverlay">
-  <div class="confirm-box" id="confirmBox"></div>
-</div>
-
-<!-- Coach Tooltip Overlay -->
-<!-- U4: 情報を見るだけ(コーチ情報) → 背景クリックで閉じる -->
-<div class="coach-tooltip-overlay" id="coachTooltipOverlay" onclick="if(event.target===this)closeCoachTooltip()">
-  <div class="coach-tooltip-box" id="coachTooltipBox"></div>
-</div>
-
-<!-- Fighter Detail Popup -->
-<div class="fighter-popup-overlay" id="fighterPopupOverlay" onclick="if(event.target===this)closeFighterPopup()">
-  <div class="fighter-popup-box" id="fighterPopupBox" onclick="event.stopPropagation()"></div>
-</div>
-
-<!-- v1.4w: Newspaper panel (業界ニュース) -->
-<!-- U4: 情報を見るだけ(新聞を読むだけ) → 背景クリックで閉じる。子側のstopPropagationはあったが
-     親側のハンドラを書き忘れていたバグを修正(mockup-baseline-v0.1 §5-C) -->
-
-<!-- v2: Awards ceremony (mockup-final-v2 準拠) -->
-<div class="awards-overlay" id="awardsOverlay">
-  <div id="aw-fanfare-overlay"></div>
-  <div id="stage">
-    <div class="stage-curtain"></div>
-    <div class="spotlight spotlight-1"></div>
-    <div class="spotlight spotlight-2"></div>
-    <div class="spotlight spotlight-3"></div>
-  </div>
-  <div id="aw-particles"></div>
-  <div id="aw-ceremony">
-    <div id="aw-ceremony-header">
-      <div class="aw-header-season" id="aw-header-award-name"></div>
-      <div class="aw-header-title">年間表彰式</div>
-      <div class="aw-header-divider"></div>
-      <div class="aw-header-section" id="aw-header-section"></div>
-    </div>
-    <div id="aw-slide-wrap"></div>
-    <div id="aw-nav-area">
-      <div class="aw-slide-dots" id="aw-slide-dots"></div>
-      <button class="aw-btn-next" id="aw-btn-next">次へ　→</button>
-    </div>
-  </div>
-  <div id="hof-coach-fg"></div>
-</div>
-<!-- v1.5: Growth Event Popup -->
-<!-- U4: 情報を見るだけ(成長イベントの報告を読むだけ) → 背景クリックで閉じる。子側のstopPropagationは
-     あったが親側のハンドラを書き忘れていたバグを修正(mockup-baseline-v0.1 §5-C) -->
-<div class="growth-event-overlay" id="growthEventOverlay" onclick="if(event.target===this)closeGrowthEventPopup()">
-  <div class="growth-event-box" id="growthEventBox" onclick="event.stopPropagation()"></div>
-</div>
-
-<!-- v1.9: Toast notification -->
-<div class="toast" id="toastEl"></div>
-
-<!-- v2.0: 通知型イベント トースト -->
-<div class="notif-event-toast" id="notifEventToast"></div>
-
-<!-- P1: ケアリアクション モーダル -->
-<div class="care-modal-overlay" id="careModalOverlay">
-  <div class="care-modal-box" id="careModalBox"></div>
-</div>
-
-<!-- P1: 通知イベント モーダル -->
-<div class="notif-modal-overlay" id="notifModalOverlay">
-  <div class="notif-modal-box" id="notifModalBox"></div>
-</div>
-
-<!-- Glimpse Cascade: 興行後 Relationship Glimpse 集約オーバーレイ (2件以上のとき) -->
-<div class="glimpse-cascade-overlay" id="glimpseCascadeOverlay">
-  <div class="glimpse-cascade-box" id="glimpseCascadeBox"></div>
-</div>
-
-<!-- v2.0: ケアアクション モーダル -->
-<div class="care-overlay" id="careOverlay">
-  <div class="care-box" id="careBox"></div>
-</div>
-
-<!-- モーダル統一テンプレート用コンテナ（Phase 1以降で内容を注入） -->
-<div class="mdl-a-overlay" id="mdlAOverlay"><div class="mdl-a-card" id="mdlACard"></div></div>
-<div class="mdl-b-overlay" id="mdlBOverlay"></div>
-<div class="mdl-c-overlay" id="mdlCOverlay"><div class="mdl-c-card" id="mdlCCard"></div></div>
-<div class="mdl-d-overlay" id="mdlDOverlay"><div class="mdl-d-box" id="mdlDBox"></div></div>
-
-<!-- v1.9: Season Fanfare -->
-<div class="season-fanfare-overlay" id="seasonFanfareOverlay">
-  <div class="season-fanfare-box" id="seasonFanfareBox"></div>
-</div>
-
-<!-- v2.1: ゲームオーバー画面 -->
-<!-- U4: 進行を止めて見せる最上位画面(専用ボタンのみで進む)。親に閉じるハンドラは元々無いため、
-     効果の無かった子側のstopPropagationを外して「ボタンのみで閉じる」意図を明確にした -->
-<div class="gameover-overlay" id="gameoverOverlay">
-  <div class="gameover-box" id="gameoverBox"></div>
-</div>
-
-<!-- v2.1: クレジット画面 -->
-<div class="credits-overlay" id="creditsOverlay">
-  <div class="credits-box">
-    <div class="credits-title">CREDITS</div>
-    <div class="credits-section">
-      <div class="credits-heading">ゲームデザイン・開発</div>
-      <div style="font-size:13px;color:var(--text)">たこやき</div>
-    </div>
-    <div class="credits-section" id="creditsMusicSection">
-      <div class="credits-heading">使用楽曲</div>
-      <div id="creditsMusicList"></div>
-    </div>
-    <button class="credits-close" onclick="App.closeCredits()">閉じる</button>
-  </div>
-</div>
-
-<script>
-  // ===== 体験版フラグ =====
-  // 体験版ビルド: true  /  製品版ビルド: false
-  window.IS_TRIAL = false;
-  window.TRIAL_MAX_SEASON = 3;
-</script>
-<script src="victory-lines.js"></script>
-<!-- ⓪ ユーティリティ -->
-<script src="lz-string.min.js"></script>
-<!-- ① データ（依存なし） -->
-<script src="data.js"></script>
-<script src="coach-lines.js"></script>
-<script src="data-faction-dialogue.js"></script>
-<script src="tenchosen-final-lines.js"></script>
-<script src="ppv-lines.js"></script>
-<!-- ② エンジン（Dataに依存） -->
-<script src="management.js"></script>
-<script src="match-engine.js"></script>
-<script src="relationships.js"></script>
-<script src="flag-dialogue.js"></script>
-<script src="factions.js"></script>
-<script src="draft-negotiation.js"></script>
-<!-- ②b テキスト定数（Engine+Dataに依存） -->
-<script src="kuroda-text.js"></script>
-<!-- ③ アプリ（Engine+Dataに依存） -->
-<script src="app.js"></script>
-<!-- ④ UI（全部に依存） -->
-<script src="ui-common.js"></script>
-<script src="ui-render.js"></script>
-<script src="dev-event-catalog.js"></script>
-<script src="dev-tools.js"></script>
-
-<style>
 #wmDevPanel{position:fixed;inset:0;z-index:30000;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:#f4eee7}.wm-dev-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.72);backdrop-filter:blur(4px)}.wm-dev-card{position:relative;width:min(540px,calc(100vw - 28px));max-height:calc(100vh - 28px);overflow:auto;margin:14px auto;padding:20px;border:1px solid rgba(237,179,62,.7);border-radius:12px;background:linear-gradient(145deg,#1b1714,#0e0d0d);box-shadow:0 24px 70px rgba(0,0,0,.6)}.wm-dev-card header{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:1px solid rgba(237,179,62,.25);padding-bottom:12px}.wm-dev-card header b{display:block;color:#f2c24a;letter-spacing:2px;font-size:15px}.wm-dev-card header span{display:block;color:#b7aa9d;font-size:11px;margin-top:4px}.wm-dev-card header button{color:#f4eee7;background:none;border:0;font-size:26px;cursor:pointer}.wm-dev-status{font-size:13px;line-height:1.6;color:#e7ddd4}.wm-dev-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.wm-dev-grid label{font-size:11px;color:#b7aa9d}.wm-dev-grid input{box-sizing:border-box;width:100%;margin-top:4px;padding:9px;background:#080808;color:#fff;border:1px solid #4b4135;border-radius:5px}.wm-dev-primary,.wm-dev-buttons button{cursor:pointer;border:1px solid rgba(237,179,62,.45);border-radius:6px;background:rgba(237,179,62,.12);color:#f9db82;padding:9px 11px;font-weight:700}.wm-dev-primary{width:100%;margin:12px 0}.wm-dev-section{margin-top:14px;font-size:12px;color:#d2c8be}.wm-dev-buttons{display:flex;flex-wrap:wrap;gap:7px;margin-top:7px}.wm-dev-buttons button{font-size:11px;text-align:left}.wm-dev-buttons small{display:block;margin-top:2px;color:#a99f95;font-weight:400}.wm-dev-empty{font-size:11px;color:#978d84}.wm-dev-note{font-size:10px;line-height:1.65;color:#9a9087;margin:16px 0 0}
-</style>
 
-<style>
+
 .wm-dev-card{width:min(960px,calc(100vw - 28px)}
 .wm-dev-explorer{margin-top:18px;padding-top:14px;border-top:1px solid rgba(237,179,62,.25)}
 .wm-dev-explorer-head{display:flex;gap:12px;justify-content:space-between;align-items:end;flex-wrap:wrap}.wm-dev-explorer-head b{color:#f2c24a;letter-spacing:.8px}.wm-dev-explorer-head label{font-size:11px;color:#b7aa9d}.wm-dev-explorer-head select{display:block;margin-top:4px;padding:7px 8px;color:#f4eee7;background:#080808;border:1px solid #4b4135;border-radius:5px}
 .wm-dev-event-summary{margin:6px 0 0;color:#a99f95;font-size:11px;line-height:1.55}.wm-dev-event-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:8px;margin-top:10px}.wm-dev-event{padding:11px;border:1px solid rgba(237,179,62,.24);border-radius:7px;background:rgba(255,255,255,.025)}.wm-dev-event-title{display:flex;gap:7px;align-items:center;justify-content:space-between;font-size:12px;color:#f9db82}.wm-dev-event-title small{color:#a99f95;font-weight:400}.wm-dev-event-meta{margin-top:7px;font-size:10px;line-height:1.55;color:#b7aa9d}.wm-dev-event-meta strong{color:#ded3c8}.wm-dev-event-audio{margin-top:7px;font-size:10px;color:#d7c27c}.wm-dev-event-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}.wm-dev-event-actions button{font-size:10px;padding:6px 8px}.wm-dev-event-detail{grid-column:1/-1;padding:13px;border:1px solid rgba(104,176,229,.42);border-radius:7px;background:rgba(104,176,229,.06);font-size:11px;line-height:1.65}.wm-dev-event-detail h3{margin:0;color:#b9e2ff;font-size:14px}.wm-dev-event-detail p{margin:7px 0}.wm-dev-event-detail code{font-size:10px;color:#e2d5b3;word-break:break-all}.wm-dev-audio-status{margin:8px 0 0;font-size:11px;color:#9dd8a6}
 @media (max-width:600px){.wm-dev-card{padding:15px}.wm-dev-event-list{grid-template-columns:1fr}.wm-dev-explorer-head{align-items:stretch}.wm-dev-explorer-head label{width:100%}.wm-dev-explorer-head select{width:100%}}
 </style>
+<style>
+body { background:#241a12; margin:0; padding:24px 12px 80px; }
+.chk-note { max-width:800px; margin:0 auto 18px; color:#cbb98c; font-size:13px; line-height:1.8; font-family:'Noto Sans JP',sans-serif; }
+.chk-note h1 { font-size:18px; color:#f0d48b; margin:0 0 6px; }
+</style>
+</head><body>
+<div class="chk-note">
+  <h1>殿堂入り引退特別号 — <b>実装の出力</b>（モックではありません）</h1>
+  src/ui-render.js の <code>_npFrontV3()</code> が返した HTML に、src/index.html の実CSSを当てたもの。
+  記事の中身はダミー（実在キャラの画像を借りています）。
+</div>
+<div class="np-paper">
+  <div class="np-paper-header">
+    <div class="logo">週刊グラップル</div>
+    <div class="issue">シーズン6 第14週<small>Y6 W14</small></div>
+  </div>
+  <div class="np-v3-indexbar"><b>きょうの紙面</b><span class="pg" onclick="npScrollToShowDetail()"><u>つづき</u> 自団体興行 詳報</span><span class="pg" onclick="setNewspaperSubPage(2)"><u>二面</u> 団体比較</span><span class="pg" onclick="setNewspaperSubPage(3)"><u>三面</u> 因縁列伝</span><span class="pg np-v3-index-right" onclick="setNewspaperSubPage(4)"><u>MVPレース詳細 ▶</u></span></div><div class="np-content"><div class="np-v3-lead-grid np-v3-lead-grid--single">
+      <div><article class="np-v3-hof-retirement">
+    <div class="np-v3-hof-mast">
+      <div class="np-v3-hof-seal" aria-hidden="true">殿</div>
+      <div class="np-v3-hof-mast-copy">
+        <span>永久保存版</span>
+        <strong>HALL OF FAME</strong>
+        <small>殿堂入り・引退特別号</small>
+      </div>
+      <div class="np-v3-hof-stars">★★★</div>
+    </div>
+    <div class="np-v3-hof-situation">永久保存版　殿堂入り・引退特別号</div>
+    <h2 class="np-v3-hof-headline">阿武隈塔子、殿堂入り——我が団体の一時代に幕</h2>
+    <div class="np-v3-hof-deck">12シーズンの現役生活に区切り。引退と同時に最高位・レジェンド殿堂へ</div>
+    <div class="np-v3-hof-hero">
+      <figure class="np-v3-hof-figure">
+        <div class="np-v3-hof-photo" onclick="showFighterPopup(1,null,true)">
+          <img src="../../../image/upper/upper_abukuma_t.webp" alt="阿武隈塔子">
+          <div class="np-v3-hof-medallion">HALL<br>OF FAME</div>
+        </div>
+        <figcaption><strong>阿武隈塔子</strong><span>我が団体</span></figcaption>
+      </figure>
+      <div class="np-v3-hof-copy">
+        <div class="np-v3-hof-rank"><span>★★★</span>最高位・レジェンド殿堂入り</div>
+        <div class="np-v3-hof-facts"><span><b>12</b>シーズン</span><span><b>2</b>度戴冠</span><span><b>6</b>度防衛</span></div>
+        <div class="np-v3-art np-v3-hof-body"><p>「漆黒の女帝」と呼ばれた阿武隈塔子が現役を退き、我が団体の殿堂にその名を刻んだ。12シーズンにわたる歩みは、ひとりの選手の経歴にとどまらず、団体そのものの歴史の一部となった。</p><p>通算2度の戴冠、通算6度の防衛。その数字は、阿武隈塔子が団体の中心であり続けた時間の重さを物語る。</p><p>リングを去っても、その試合、その言葉、その背中は記録と記憶の中に残る。我が団体は功績をたたえ、阿武隈塔子を最高位・レジェンド殿堂入りとして永く顕彰する。</p></div>
+      </div>
+    </div>
+    <div class="np-v3-byline">——黒田幸子(本紙)</div>
+  </article></div>
+    </div><hr class="np-v3-rule-thick"><div class="np-v3-hof-secondary">
+        <div><article class="np-v3-kata">
+    <span class="np-v3-kicker">肩記事</span>
 
-<script>
-// ╔══════════════════════════════════════════════════════════╗
-// ║  SECTION 12: INIT (v1.0)                                   ║
-// ╚══════════════════════════════════════════════════════════╝
-(function() {
-  // Sync mute button with saved prefs (before AudioContext init)
-  try {
-    const prefs = JSON.parse(localStorage.getItem('wm_audio') || '{}');
-    if (prefs.muted) document.getElementById('muteBtn').textContent = '🔇';
-    if (prefs.bgmMuted) document.getElementById('bgmMuteBtn').textContent = '🎵❌';
-  } catch(e) {}
+    <div class="np-sub-org-line"><span>我が団体</span></div>
+    <h3 class="np-v3-hl-kata">相川あかね、右膝負傷で全治14週</h3>
+    <div class="np-v3-art np-v3-art-sub"><div class="np-v3-photo-kata" style="background-image: url('../../../image/upper/upper_aikawa_a.webp');" onclick="showFighterPopup(2,null,true)"></div><p class="np-v3-noindent">第13週興行で右膝を負傷、全治14週と診断された。今季9勝2敗、MVPレース4位につけていた絶好調の中での離脱となる。本人は「必ず戻る」と短くコメントした。復帰は最終盤の見込みで、レース戦線への影響は避けられない。</p><div class="np-v3-clear"></div></div>
+  </article></div>
+        <div class="np-v3-vr"><div class="np-v3-mvpbox">
+    <div class="ttl">MVPレース<span class="more" onclick="setNewspaperSubPage(4)">詳細 ▶</span></div>
+    <div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(6,null,true)">
+      <span class="rank">1</span><span class="who">相沢みなみ</span><span class="pt">148</span>
+    </div><div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(1,null,true)">
+      <span class="rank">2</span><span class="who">阿武隈塔子</span><span class="pt">141</span>
+    </div><div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(4,null,true)">
+      <span class="rank">3</span><span class="who">赤羽あすか</span><span class="pt">126</span>
+    </div><div class="np-v3-mvpchase">4位 相川あかね 118 / 5位 安沢ひかり 111</div>
+  </div></div>
+      </div><hr class="np-v3-rule-thick"><article class="np-v3-jun">
+    <span class="np-v3-kicker">準トップ</span>
 
-  // v1.0: Always start at title screen
-  App.showTitleScreen();
+    <div class="np-sub-org-line"><span>我が団体</span></div>
+    <h3 class="np-v3-hl-jun">ジュニアカップ来週開幕——本命不在、16名の混戦へ</h3>
+    <div class="np-v3-junbody">
+      <div class="np-sub-photo" style="background-image: url('../../../image/upper/upper_aida_m.webp');" onclick="showFighterPopup(3)"></div>
+      <div class="np-v3-art np-v3-art-sub"><p class="np-v3-noindent">若手16名が集う夏の祭典が来週開幕する。前年覇者が卒業した今年は本命不在の混戦模様。トーナメント表は今週末の公開抽選で決まる。注目は初出場の会田美緒。道場での動きには早くもスカウト陣の視線が集まっている。</p></div>
+    </div>
+  </article><hr class="np-v3-rule-thick"><div class="np-v3-bottom-grid cols-3"><div><article class="np-v3-small">
+    <div class="np-sub-photo" style="background-image: url('../../../image/upper/upper_akabane_a.webp');" onclick="showFighterPopup(4)"></div>
+    <div class="np-v3-small-body">
 
-  // BGM: Start on first user interaction (AudioContext needs user gesture)
-  document.addEventListener('click', function _bgmInit() {
-    if (!Audio.muted && !Audio.bgmMuted && !Audio.bgm._playing) Audio.bgm.playForState();
-    document.removeEventListener('click', _bgmInit);
-  }, { once: true });
-})();
-</script>
-</body>
-</html>
+      <div class="np-sub-org-line"><span>我が団体</span></div>
+      <div class="np-v3-hl-s">赤羽あすか、10連勝で記録に王手</div>
+      <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">団体記録まであと2。次週の相手は因縁の相沢みなみで、最も止められる可能性の高い一戦となった。</p></div>
+    </div>
+  </article></div><div class="np-v3-vr"><article class="np-v3-small">
+    <div class="np-sub-photo" style="background-image: url('../../../image/upper/upper_anazawa_h.webp');" onclick="showFighterPopup(5)"></div>
+    <div class="np-v3-small-body">
 
+      <div class="np-sub-org-line"><span>我が団体</span></div>
+      <div class="np-v3-hl-s">安沢ひかり、スランプ脱出を宣言</div>
+      <div class="np-v3-art np-v3-art-small"><p class="np-v3-noindent">6週ぶりの白星に控室では涙も見えた。次の一戦で真価が問われる。</p></div>
+    </div>
+  </article></div><div class="np-v3-vr"><div class="np-v3-beta"><b>短信</b>ノヴァインパクトが新体制を発表、来季は「原点回帰」<span class="np-v3-beta-sep">▼</span>大会場は第16週から座席を約1割増設<span class="np-v3-beta-sep">▼</span>週間観客動員は4団体合計18,240人（前週比+6%）</div></div></div><div class="np-v3-kuroda">
+        <div class="np-v3-kuroda-face" style="background-image:url('../../../image/npc/face_kuroda_s.png')"></div>
+        <div>
+          <div class="np-v3-kuroda-text">「7度目でようやく、である。だがこの7度がなければ今日の歓声もなかった。近道の無いことが、この商売の唯一の救いだ」</div>
+          <div class="np-v3-kuroda-byline">——黒田幸子(編集部)</div>
+        </div>
+      </div><div class="np-v3-fold" id="npShowDetail"><span>本紙つづき</span>自団体興行 詳報</div><section class="np-show-result">
+      <div class="np-sec">自団体 興行結果</div>
+      <h3 class="np-show-headline">（ここに既存の興行詳報がそのまま入る：VS 対面 / 星取 / 観客満足度 / ダイジェスト表）</h3>
+    </section></div>
+</div>
+</body></html>
