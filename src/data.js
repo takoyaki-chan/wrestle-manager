@@ -8770,9 +8770,6 @@ const EVENT_CONFIG = {
   warPopPenalty: -3,                    // 敗北時
   // D-3: 挑戦状
   challengeMQBonus: 5,                  // MQ+5（v1.0e: 10→5 に縮小）
-  // D-4: 頂上決戦
-  summitMinRank: 2,                     // ランキング2位以上で発生
-  summitPopReward: 10,
 };
 
 // ╔══════════════════════════════════════════════════════════╗

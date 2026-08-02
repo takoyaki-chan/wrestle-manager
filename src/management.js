@@ -16332,59 +16332,6 @@ const Engine = {
       return { state: warState, events };
     },
 
-    /** D-4: Check summit match conditions */
-    checkSummitMatch(state) {
-      const rankings = state.rankings || [];
-      const pRank = Engine.ranking.getPlayerRank(rankings);
-      if (pRank > EVENT_CONFIG.summitMinRank) return null;
-      if (!Engine.util.isPPV(state.week)) return null;
-
-      // Find #1 ranked AI org
-      const topRank = rankings.find(r => r.orgId !== 'player');
-      if (!topRank) return null;
-      const topOrg = Engine.rival.getOrgInfo(state.aiOrgs, topRank.orgId);
-      if (!topOrg) return null;
-
-      const playerAce = Engine.event.getAce(state.roster);
-      const aiAce = Engine.event.getAce(topOrg.roster);
-      if (!playerAce || !aiAce) return null;
-
-      return { type: 'summit', opponentOrgId: topOrg.orgId, orgName: topOrg.name,
-               playerFighter: playerAce, aiFighter: aiAce };
-    },
-
-    /** Apply summit outcome (v2: battlePoints 対戦ポイント移動) */
-    applySummitOutcome(state, won) {
-      const events = [];
-      if (won) {
-        const ptTransfer = BATTLE_POINT_CFG.summit;
-        const opponentOrgId = state.pendingEvent?.opponentOrgId;
-        const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
-        bp.player = (bp.player || 0) + ptTransfer;
-        if (opponentOrgId && bp[opponentOrgId] !== undefined) {
-          bp[opponentOrgId] = (bp[opponentOrgId] || 0) - ptTransfer;
-        }
-        events.push(`🏆 頂上決戦勝利！ 団体人気+${EVENT_CONFIG.summitPopReward}、対戦pt+${ptTransfer}`);
-        const summitOrgPop = Math.min(100, state.orgPop + EVENT_CONFIG.summitPopReward);
-        const summitState = { ...state, orgPop: summitOrgPop, battlePoints: bp, pendingEvent: null };
-        if (!summitState.ppvUnlocked && Engine.ppv.checkUnlock(summitOrgPop)) {
-          summitState.ppvUnlocked = true;
-          events.push('🏟️ PPV GRAND FINAL への出場資格を獲得！年末の大舞台に選手を送り出せます');
-        }
-        return { state: summitState, events };
-      }
-      // 敗北時: ポイントは相手に移動
-      const ptTransfer = BATTLE_POINT_CFG.summit;
-      const opponentOrgId = state.pendingEvent?.opponentOrgId;
-      const bp = { ...(state.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
-      bp.player = (bp.player || 0) - ptTransfer;
-      if (opponentOrgId && bp[opponentOrgId] !== undefined) {
-        bp[opponentOrgId] = (bp[opponentOrgId] || 0) + ptTransfer;
-      }
-      events.push(`🏆 頂上決戦敗北…対戦pt-${ptTransfer}。しかし挑戦したこと自体が名誉`);
-      return { state: { ...state, battlePoints: bp, pendingEvent: null }, events };
-    },
-
     /** Helper: get ace (highest OVR non-injured fighter) */
     getAce(roster) {
       return [...roster].filter(f => !f.injury).sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))[0] || null;
@@ -17309,16 +17256,6 @@ const Engine = {
       } else {
         // テレビ観戦モード予約
         s = { ...s, ppvPhase: 'tv', ppvName };
-      }
-    }
-
-    // D-4: Summit match check (PPV weeks, rank ≤ 2) — PPV統合時はスキップ
-    if (!s.ppvPhase || s.ppvPhase === null) {
-      const summitCheck = Engine.event.checkSummitMatch(s);
-      if (summitCheck) {
-        s = { ...s, pendingEvent: summitCheck };
-        events.push(`🏆 頂上決戦のチャンス！ ${summitCheck.orgName}のエース${summitCheck.aiFighter.name}に挑戦可能`);
-        return { state: { ...s, weekPhase: 'event' }, events };
       }
     }
 

@@ -6352,16 +6352,6 @@ function executeEvent() {
     G = { ...G, orgPop: Math.max(0, Math.min(100, G.orgPop + popDelta)), pendingEvent: null,
           gameLog: [...G.gameLog, ...events] };
 
-  } else if (ev.type === 'summit') {
-    const result = Engine.event.resolveEventMatch(rng, ev.playerFighter, ev.aiFighter, 0);
-    const won = result.winner === 'left'; // player is left
-    eventWon = won;
-    events.push(`🏆 頂上決戦: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！！' : '敗北…'} (MQ${result.mq})`);
-    const outcome = Engine.event.applySummitOutcome(G, won);
-    G = { ...outcome.state, gameLog: [...G.gameLog, ...events, ...outcome.events] };
-    // v1.3: Record summit appearance
-    G = { ...G, roster: G.roster.map(c => c.id !== ev.playerFighter.id ? c :
-      Engine.career.addEvent(c, { type: 'summit', season: G.season, week: G.week, opponentOrg: ev.orgName, won })) };
   }
 
   // v0.95: Track event stats
@@ -6381,7 +6371,6 @@ function skipEvent() {
   if (ev) {
     if (ev.type === 'war') events.push(`⚔ ${ev.opponentName}との対抗戦を辞退`);
     else if (ev.type === 'challenge') events.push(`🔥 ${ev.orgName}の挑戦状を無視`);
-    else if (ev.type === 'summit') events.push(`🏆 頂上決戦の挑戦を見送り`);
   }
   G = { ...G, pendingEvent: null, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] },
         gameLog: [...G.gameLog, ...events] };

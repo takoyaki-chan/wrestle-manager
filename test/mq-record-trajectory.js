@@ -15,9 +15,8 @@
 //      本スクリプトはこの2経路についてのみ、production の関数(Engine.event.*,
 //      Engine.ppv.preparePPVDay/applyPPVResults)をapp.jsの呼び出し順序に倣って
 //      自前で駆動し、実際に Engine.mq.updateRecord まで到達させる。
-//    - pendingEvent.type==='summit' (D-4 頂上決戦) は app.js のどこからも
-//      呼び出されておらず(grep確認済み・UI未実装のdead code)、実ゲームでは
-//      決して試合化しないため、本スクリプトでも自動解決の対象に含めない。
+//    - 旧 pendingEvent.type==='summit' (D-4 単独頂上決戦) はPPV内へ統合済み。
+//      現行ゲームでは生成せず、旧セーブに残る予約もロード時に解除する。
 //
 //  ■ 計測方法
 //    Engine.mq.updateRecord をフックし、production の判定(state.mqRecordの実際の
@@ -426,8 +425,7 @@ function autoHandlePPVTV(G) {
 // ── 対抗戦(pendingEvent.type==='war') 自動処理 ──
 // auto-sim.js には存在しない自動化(既存auto-simはpendingEventを無視して放置する)。
 // app.js App.warSkipAll → App.finalizeWar の呼び出し順序を再現する。
-// pendingEvent.type==='summit' (D-4) は app.js のどこからも呼ばれないdead codeの
-// ため、意図的に対象から除外する。
+// 旧 pendingEvent.type==='summit' (D-4) は現行ゲームで生成しないため対象外。
 function autoHandlePendingWarEvent(G) {
   const ev = G.pendingEvent;
   if (!ev || ev.type !== 'war') return G;
@@ -741,7 +739,7 @@ out += `- シード: ${SEEDS.join(', ')}\n`;
 out += `- シーズン数/シード: ${SEASONS}\n`;
 out += `- 候補値: ${CANDIDATES.join(', ')}\n`;
 out += `- 対象経路: プレイヤー通常興行(normal) / AI興行(ai) / PPV(ppv) / 天頂戦(tenchosen) / ジュニア(junior) / 春タッグ(springTag) / 秋勝ち残り(autumnWar) / イベント戦=対抗戦(event)\n`;
-out += `- 除外: pendingEvent.type==='summit'(D-4 頂上決戦)はapp.jsのどこからも呼び出されないdead codeのため対象外\n`;
+out += `- 除外: 旧 pendingEvent.type==='summit'(D-4 単独頂上決戦)はPPV内へ統合済みで、現行ゲームでは生成しない\n`;
 out += `- 総サンプル数(mq>=80): ${samples.length}\n\n`;
 
 out += `## stage別サンプル数(mq>=80)\n\n`;

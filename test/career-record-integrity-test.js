@@ -409,7 +409,6 @@ const APP_ONLY_WRITE_SITES = [
   { type: 'war(自団体)',           src: appSource,      re: /type: 'war', season: G\.season/ },
   { type: 'domeMain',              src: appSource,      re: /type: 'domeMain', season: s\.season/ },
   { type: 'bigMatch',              src: appSource,      re: /type: 'bigMatch', season: s\.season/ },
-  { type: 'summit(頂上決戦イベント)', src: uiCommonSource, re: /type: 'summit', season: G\.season/ },
 ];
 APP_ONLY_WRITE_SITES.forEach(({ type, src, re }) => {
   ok(re.test(src), `${type} の careerRecord 書き込みが消えている`);

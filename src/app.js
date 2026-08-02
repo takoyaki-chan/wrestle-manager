@@ -77,6 +77,17 @@ function resolveActiveStageBgm(app) {
   return null;
 }
 
+function migrateLegacySummitPendingEvent(state) {
+  if (!state || state.pendingEvent?.type !== 'summit') return state;
+  const note = '🏆 旧形式の単独頂上決戦はPPV GRAND FINALへ統合済みのため、予約を解除しました';
+  return {
+    ...state,
+    pendingEvent: null,
+    weekPhase: state.weekPhase === 'event' ? 'manage' : state.weekPhase,
+    gameLog: [...(state.gameLog || []), note],
+  };
+}
+
 // A result must only affect the two fighters who were actually booked together.
 // This also protects rivalry settlement when a stale result array is recovered.
 function _sameSinglesPair(match, result) {
@@ -2020,6 +2031,10 @@ const Storage = {
       // Replace G entirely with saved state, preserving any missing defaults
       const base = Engine.createInitialState(state.rngSeed || (Date.now() ^ 0xDEADBEEF));
       G = { ...base, ...state };
+
+      // 旧セーブに残った単独頂上決戦は、現行のPPV内頂上決戦へ統合済み。
+      // 旧イベント画面に閉じ込められないよう予約だけ安全に解除する。
+      G = migrateLegacySummitPendingEvent(G);
 
       // 挑戦試合旧予約を開催地別の新フィールドへ移行する。
       if (G._pendingChallengeMatch) {

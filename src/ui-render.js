@@ -1547,22 +1547,6 @@ function renderWeekScreen() {
       </div>`;
       // Auto-show the challenge popup on first render
       setTimeout(() => showWarChallenge(), 300);
-    } else if (ev.type === 'summit') {
-      document.getElementById('weekTitle').textContent = '🏆 頂上決戦';
-      html += `<div style="background:linear-gradient(135deg,rgba(241,196,15,0.2),rgba(255,215,0,0.1));border:1px solid rgba(241,196,15,0.4);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
-        <h3 style="color:var(--gold);margin-bottom:8px">🏆 頂上決戦</h3>
-        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.orgName}のエースに挑む！</p>
-        <p style="font-size:12px;color:var(--text-sub)">勝利で団体人気+${EVENT_CONFIG.summitPopReward}、対戦pt+${BATTLE_POINT_CFG.summit} / 敗北で対戦pt-${BATTLE_POINT_CFG.summit}</p>
-      </div>`;
-      html += `<div style="display:flex;justify-content:center;align-items:center;gap:24px;margin:16px 0;font-size:16px">
-        <span><strong style="color:var(--gold)">${ev.playerFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.playerFighter)}</span></span>
-        <span style="color:var(--text-dim)">VS</span>
-        <span><strong style="color:#e74c3c">${ev.aiFighter.name}</strong> <span style="font-size:11px;color:var(--text-dim)">OVR${Engine.util.ov(ev.aiFighter)}</span></span>
-      </div>`;
-      html += `<div class="btn-row" style="margin-top:16px">
-        <button class="btn btn-gold" onclick="executeEvent()">🏆 挑戦する！</button>
-        <button class="btn btn-blue" onclick="skipEvent()">見送る</button>
-      </div>`;
     }
   }
   // ── PPV ENTRY PHASE ──
