@@ -53,9 +53,9 @@ section('0. ベースラインに §2-C（一覧の顔）が書かれている',
 // 1. サイズの梯子
 // ─────────────────────────────────────────────────────────────
 
-// 1人だけを見せる場面。§2-C の管轄外なので梯子から除外する。
+// 1人だけを見せる場面、または興行カード固有の顔サイズ。§2-C の管轄外なので梯子から除外する。
 // **行番号ではなく呼び出しの字面**で持つ（行番号は編集のたびにずれて、除外が別の行に掛かる）
-const SOLO_CALLS = [
+const LADDER_EXEMPT_CALLS = [
   'portraitImg(f.id, 40)', // タッグ試合カードの顔（アッパーが無いときの代替）
   'portraitImg(charL.id, imgW)',        // 対置（U3-B が段を決める）
   'portraitImg(charR.id, imgW)',
@@ -64,6 +64,7 @@ const SOLO_CALLS = [
   'portraitImg(champ.id, 28)',          // ヘッダーの王者バッジ
   'portraitImg(g.speakerId, 34)',       // 道場バナー 休憩中（§2-B の例外）
   "portraitImg(f.id, size, '', 'roster')", // 興行準備の枠（呼び出し側で段を渡す）
+  "portraitImg(f.id, 72, '', 'roster')",   // 興行準備タッグ枠（通常カードと同じ72px）
 ];
 // card 52 / row 40 / row-sm 24 の3段（2026-07-26 実機で card を追加）
 const ALLOWED_SQUARE = new Set([24, 40, 52]);
@@ -86,11 +87,11 @@ function collectPortraitCalls() {
   return out;
 }
 
-const isSolo = c => SOLO_CALLS.some(s => c.line.includes(s));
+const isLadderExempt = c => LADDER_EXEMPT_CALLS.some(s => c.line.includes(s));
 
 section('1. 一覧の正方形の顔は 24 / 40 / 52 だけ', () => {
   const bad = collectPortraitCalls()
-    .filter(c => !isSolo(c))
+    .filter(c => !isLadderExempt(c))
     .filter(c => c.size !== null && !ALLOWED_SQUARE.has(c.size));
   assert.strictEqual(bad.length, 0,
     '梯子に無いサイズ:\n        ' + bad.map(b => `${b.where} → ${b.size}px  ${b.show}`).join('\n        '));
@@ -98,13 +99,13 @@ section('1. 一覧の正方形の顔は 24 / 40 / 52 だけ', () => {
 
 section('2. 除外リストが古びていない（単独表示が消えたり一覧に化けたりしていないか）', () => {
   const all = collectPortraitCalls();
-  const stale = SOLO_CALLS.filter(s => !all.some(c => c.line.includes(s)));
+  const stale = LADDER_EXEMPT_CALLS.filter(s => !all.some(c => c.line.includes(s)));
   assert.strictEqual(stale.length, 0,
     'この呼び出しがもう存在しない。除外リストを更新すること:\n        ' + stale.join('\n        '));
 });
 
 section('3. 梯子の3段が実際に全部使われている', () => {
-  const sizes = new Set(collectPortraitCalls().filter(c => !isSolo(c)).map(c => c.size));
+  const sizes = new Set(collectPortraitCalls().filter(c => !isLadderExempt(c)).map(c => c.size));
   assert.ok(sizes.has(52), 'card 52 がどこにも使われていない');
   assert.ok(sizes.has(40), 'row 40 がどこにも使われていない');
   assert.ok(sizes.has(24), 'row-sm 24 がどこにも使われていない');

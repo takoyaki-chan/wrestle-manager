@@ -117,6 +117,10 @@ assert.ok(
   uiRender.includes('class="sp-portrait-placeholder"'),
   'empty show-card portraits must have a stable responsive-layout hook'
 );
+assert.ok(
+  uiRender.includes("portraitImg(f.id, 72, '', 'roster')"),
+  'tag-match portraits must match the standard 72px show-card portrait size'
+);
 
 assert.ok(battleMobile.includes('@media (max-width: 700px)'), 'battle phone breakpoint is missing');
 assert.ok(battleMobile.includes('.main-row'), 'battle columns need a phone layout');

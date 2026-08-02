@@ -2791,7 +2791,7 @@ function renderShowPrep() {
     if (topTwo.length >= 2) {
       const [a, b] = topTwo;
       html += `<div style="background:linear-gradient(135deg,#0d2a3a,#1a3f5a);border:1px solid #6fa8c8;border-radius:8px;padding:12px 16px;margin-bottom:14px">
-        <div style="font-size:14px;font-weight:700;color:#bfe0ff;letter-spacing:1px;margin-bottom:6px">👑 世界王座 空位中</div>
+        <div style="font-size:14px;font-weight:700;color:#bfe0ff;letter-spacing:1px;margin-bottom:6px">👑 団体王座 空位中</div>
         <div style="font-size:12px;color:#dfeefc;line-height:1.6">
           王座決定戦の有力候補: <strong>${a.name}</strong>（OVR ${Engine.util.ov(a)}） × <strong>${b.name}</strong>（OVR ${Engine.util.ov(b)}）<br>
           メインイベントの 🏆 を有効化すると王座決定戦になります（勝者が新王者）。
@@ -2823,7 +2823,7 @@ function renderShowPrep() {
     html += `<div style="background:linear-gradient(135deg,#3a0d12,#5a1f28);border:1px solid #d4607a;border-radius:8px;padding:12px 16px;margin-bottom:14px">
       <div style="font-size:14px;font-weight:700;color:#ffb3c1;letter-spacing:1px;margin-bottom:6px">🏆 持ち出された王座</div>
       <div style="font-size:12px;color:#f5d4dc;line-height:1.6">
-        ${exChampName} が <strong>${heldByOrgName}</strong> へ世界王座を持ち去った。挑戦状を発行して取り戻せ。
+        ${exChampName} が <strong>${heldByOrgName}</strong> へ団体王座を持ち去った。挑戦状を発行して取り戻せ。
       </div>`;
     if (pending) {
       const ch = G.roster.find(c => c.id === G._pendingReclaim.challengerId);
@@ -3390,7 +3390,7 @@ function renderShowPrep() {
         const drawPow = Math.round(Engine.attendanceV2.calcDrawPower(f, G));
         const isChamp = G.titles?.world?.championId === f.id;
         return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">
-          ${portraitImg(f.id, 40, '', 'roster')}
+          ${portraitImg(f.id, 72, '', 'roster')}
           <div class="sp-tag-fighter-info">
             ${isChamp ? '<div style="font-size:9px;color:var(--gold)">👑 王者</div>' : ''}
             <div class="sp-tag-fighter-name">${f.name}</div>
@@ -4399,7 +4399,7 @@ function renderRanking() {
     let s2Pool = [];
     if (has('vacant')) {
       if (has('popHigh')) s2Pool = [`王座は空位のまま、${aceName}の看板で人気を保っている`, `頂点の椅子は空席。それでも${aceName}を中心に客足は途絶えない`];
-      else s2Pool = [`王座は不在で、${aceName}が看板を一人で背負う`, `タイトルを欠いたまま、${aceName}頼みで戦線をつなぐ`, `世界戦線から距離を置き、${aceName}を軸に再起を図る`];
+      else s2Pool = [`王座は不在で、${aceName}が看板を一人で背負う`, `タイトルを欠いたまま、${aceName}頼みで戦線をつなぐ`, `王座戦線から距離を置き、${aceName}を軸に再起を図る`];
     } else if (has('longReign')) {
       const cn = champion.name;
       if (has('popHigh')) s2Pool = [`${cn}の長期政権が団体を支え、客の目もそこに集まる`, `${cn}が幾度も防衛を重ね、団体の顔そのものになっている`];

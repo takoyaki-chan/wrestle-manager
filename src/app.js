@@ -6527,7 +6527,7 @@ const App = {
             type: 'fighter', id: pr.challengerId,
             name: challenger.name, tone: 'positive',
             message: `⚔ 王座奪還の決戦！ ${challenger.name} vs ${defender.name}`,
-            detail: `${aiOrg?.name || eh.orgId} に持ち去られた世界王座を取り戻せ！`,
+            detail: `${aiOrg?.name || eh.orgId} に持ち去られた団体王座を取り戻せ！`,
           });
         }
       }
@@ -7467,7 +7467,7 @@ const App = {
           roster = roster.map(c => c.id === rd.challengerId
             ? { ...c, popularity: Math.min(100, (c.popularity || 0) + Engine.popularity.applyDiminishing(5, c.popularity || 0)) }
             : c);
-          events.push(`🏆 王座奪還！ ${rd.challengerName} が ${rd.orgName} から世界王座を取り戻した！`);
+          events.push(`🏆 王座奪還！ ${rd.challengerName} が ${rd.orgName} から団体王座を取り戻した！`);
           titleMatchOutcomes.push({
             outcome: 'change', newChampId: rd.challengerId,
             prevChampId: rd.defenderId, challengerId: rd.challengerId,
@@ -7487,7 +7487,7 @@ const App = {
           // 挑戦失敗 → 12週CD
           const reclaimResult = Engine.title.resolveReclaimLoss(s, 'world');
           s = { ...s, reclaimChallenges: reclaimResult.reclaimChallenges };
-          events.push(`💔 ${rd.challengerName} の奪還挑戦は失敗。${rd.orgName} が世界王座を防衛した。`);
+          events.push(`💔 ${rd.challengerName} の奪還挑戦は失敗。${rd.orgName} が団体王座を防衛した。`);
           // 業界ニュース: 奪還失敗
           s = Engine.industryNews.push(s, {
             type: 'reclaimFailure',

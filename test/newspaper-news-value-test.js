@@ -76,7 +76,7 @@ section('不変条件2. 王者/MVP首位の長期離脱(全治10週+)は必ず�
 
 section('不変条件3. C帯の基礎点(70以下)は主役補正が上限でも一面トップに届かない', () => {
   const st = makeState({ mvpRace: { rankings: [{ fighterId: 101, rank: 1 }] } });
-  // 101 は 世界王者+MVP首位+団体エース+業界人気 — 主役補正が上限に張り付く条件
+  // 101 は 団体王者+MVP首位+団体エース+業界人気 — 主役補正が上限に張り付く条件
   const bonus = NP.protagonistBonus(st, 101, NP.buildValueContext(st));
   assert.strictEqual(bonus, NP.PROTAGONIST_CAP, `主役補正が上限(${NP.PROTAGONIST_CAP})に達していない: ${bonus}`);
   [70, 60, 45, 30].forEach(base => {

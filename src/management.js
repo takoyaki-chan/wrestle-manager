@@ -16917,7 +16917,7 @@ const Engine = {
         // Update rankings
         s.rankings = Engine.ranking.updateRankings(s);
         const pRank = Engine.ranking.getPlayerRank(s.rankings);
-        // v1.2: ランキング1位達成で世界王座解禁フラグを立てる（一方向フラグ）
+        // v1.2: ランキング1位達成で団体王座解禁フラグを立てる（一方向フラグ）
         if (pRank === 1 && !s.worldTitleUnlocked) {
           s.worldTitleUnlocked = true;
           events.push('🌟 業界1位達成！「団体王座」が世界に向けて開かれた。');
@@ -17668,7 +17668,7 @@ const Engine = {
       // v1.0: Rolling 4-week net (replaces profit streak for graduation)
       recentWeeklyNet: [0, 0, 0, 0],
       rollingNet4Count: 0,
-      // v1.2: タイトルマッチクールダウン & 世界王座解禁
+      // v1.2: タイトルマッチクールダウン & 団体王座解禁
       lastTitleMatchWeek: null, // 最後にタイトルマッチを実施した絶対週数（null=未実施）
       worldTitleUnlocked: false, // ランキング1位達成後に true
       beltDisplayName: null,    // 将来の改名イベント用（null=デフォルト名「団体王座」）
@@ -20424,7 +20424,7 @@ Engine.seasonReview = {
       if (cand) hero = { id: cand.id, name: cand.name, role: 'TOP RATED', ovr: ov(cand) };
     }
 
-    // ── 王座(自団体・現行の世界王者のみ。3階級構想のうち現データで実在するのは世界王座) ──
+    // ── 王座（自団体・現行の団体王者のみ。3階級構想のうち現データで実在するのは団体王座） ──
     let titleWonThisSeason = false;
     let champRecord = null;
     if (G.titles && G.titles.world && G.titles.world.championId) {
@@ -28914,7 +28914,7 @@ Engine.newspaper = {
    *  generate() は stories.push が約25箇所に散っているので、各所で引くと同じ集計を何度も回すことになる */
   buildValueContext(state) {
     const s = state || {};
-    // 世界王者(全団体)。state.aiOrgs[x].titles.world も見る
+    // 団体王者（全団体）。state.aiOrgs[x].titles.world も見る
     const champs = new Set();
     const pc = s.titles && s.titles.world && s.titles.world.championId;
     if (pc != null) champs.add(pc);

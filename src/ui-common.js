@@ -12229,7 +12229,7 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
   const attendance = Number.isFinite(attendanceValue) && attendanceValue >= 0
     ? Math.round(attendanceValue).toLocaleString()
     : '0';
-  const metaHtml = `${isDefense ? `TITLE DEFENSE · ${defenses}` : 'NEW WORLD CHAMPION'} ・ ${attendance} ATTENDED`;
+  const metaHtml = `${isDefense ? `TITLE DEFENSE · ${defenses}` : '新・団体王者'} ・ ${attendance} ATTENDED`;
   const championName = escHtml(champion?.name || '新王者');
 
   const personHtml = (fighter, line, roleLabel, defeated) => {
@@ -12254,7 +12254,7 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
   };
 
   const narrationHtml = [
-    '世界王座戦の幕が下りた。',
+    '団体王座戦の幕が下りた。',
     isDefense
       ? `${championName}は、王者としてベルトを守り抜いた。`
       : `${championName}が、頂点のベルトを手にした。`,
@@ -12268,8 +12268,8 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
     <div class="mdl-a-title-result">
       <div class="mdl-a-title-narration">${narrationHtml}</div>
       <div class="mdl-a-title-pair${pairClass}">
-        ${personHtml(champion, champLine, isDefense ? 'WORLD CHAMPION · DEFENSE SUCCESS' : 'NEW WORLD CHAMPION', false)}
-        ${personHtml(opponent, opponentLine || '次は、この景色を取り戻す。', isDefense ? 'CHALLENGER' : 'FORMER CHAMPION', true)}
+        ${personHtml(champion, champLine, isDefense ? '団体王者 · 防衛成功' : '新・団体王者', false)}
+        ${personHtml(opponent, opponentLine || '次は、この景色を取り戻す。', isDefense ? '挑戦者' : '前・団体王者', true)}
       </div>
     </div>
     <div class="mdl-a-prompt mdl-a-title-actions">

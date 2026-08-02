@@ -168,8 +168,8 @@ section('2. 節目の防衛(5/10/15)と戴冠は同じA型2選手モーダルを
     assert.ok(html.includes('mdl-a-title-result'), '承認済みの王座結果レイアウトを使っていない');
     assert.ok(html.includes('防 衛'), '節目防衛の見出しがない');
     assert.ok(html.includes(`TITLE DEFENSE · ${defenses} ・ 800 ATTENDED`), '防衛回数と観客数のメタ表示がない');
-    assert.ok(html.includes('WORLD CHAMPION · DEFENSE SUCCESS'), '王者側の役割表示がない');
-    assert.ok(html.includes('CHALLENGER'), '挑戦者側の役割表示がない');
+    assert.ok(html.includes('団体王者 · 防衛成功'), '団体王者側の役割表示がない');
+    assert.ok(html.includes('挑戦者'), '挑戦者側の役割表示がない');
     assert.ok(html.includes('【titleDefenseのセリフ】'), '既存の王者防衛セリフを流用していない');
     assert.ok(html.includes('【titleChallengeLossのセリフ】'), '既存の挑戦者敗戦セリフを流用していない');
     document.getElementById('mdlATitleMilestoneClose').click();
@@ -191,7 +191,8 @@ section('2. 節目の防衛(5/10/15)と戴冠は同じA型2選手モーダルを
   const html = document.getElementById('mdlACard').innerHTML;
   assert.ok(document.getElementById('mdlAOverlay').classList.contains('top-aligned'), '戴冠もスマホ縦積みを上端から見せる');
   assert.ok(html.includes('戴 冠'), '戴冠見出しがない');
-  assert.ok(html.includes('NEW WORLD CHAMPION ・ 1,234 ATTENDED'), '戴冠メタ表示がない');
+  assert.ok(html.includes('新・団体王者 ・ 1,234 ATTENDED'), '戴冠メタ表示がない');
+  assert.ok(html.includes('前・団体王者'), '前団体王者の役割表示がない');
   assert.ok(html.includes('新王者リコが、頂点のベルトを手にした。'), '既存の戴冠地の文を流用していない');
   assert.ok(html.includes('【titleWinのセリフ】'), '既存の titleWin セリフを流用していない');
   assert.ok(html.includes('【titleLossのセリフ】'), '既存の titleLoss セリフを流用していない');
