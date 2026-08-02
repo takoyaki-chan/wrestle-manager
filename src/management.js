@@ -501,6 +501,22 @@ const Engine = {
     clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); },
     ov(c) { return Math.round((c.pw + c.sp + c.te + c.st + c.mn) / 5); },
     isShowWeek(w) { return w % 2 === 0; },
+    /**
+     * Each season's 12th week is reserved for its dedicated special event.
+     * This is a calendar rule, so it remains true even when an event is
+     * cancelled or has already completed in the current save.
+     */
+    isSeasonSpecialEventWeek(w) {
+      const week = Number(w);
+      return Number.isInteger(week)
+        && week >= 1
+        && week <= this.WEEKS_PER_SEASON
+        && week % this.WEEKS_PER_QUARTER === 0;
+    },
+    /** A player/AI ordinary show may only use even weeks not owned by an event. */
+    isRegularShowWeek(w) {
+      return this.isShowWeek(w) && !this.isSeasonSpecialEventWeek(w);
+    },
     getSeasonInfo(w) {
       const week = this.clamp(Math.floor(Number(w) || 1), 1, this.WEEKS_PER_SEASON);
       const quarter = Math.ceil(week / this.WEEKS_PER_QUARTER);
@@ -637,13 +653,13 @@ const Engine = {
       pool.push({ id: fighter.id, age: fighter.age || 19 });
       return { ...state, dormantPool: pool };
     },
-    isSpecialShow(w) { return w % 12 === 0; },
+    // Backward-compatible name used by dedicated-event presentation code.
+    isSpecialShow(w) { return this.isSeasonSpecialEventWeek(w); },
     isPPV(w) { return w === 48; },
-    /** 会場規模連動の最大試合数。特別興行/PPVは+1（上限8） */
+    /** 通常興行の会場規模連動最大試合数。特別興行は専用カードを使う。 */
     getMaxMatches(week, venueIdx) {
       const base = (VENUES[venueIdx] && VENUES[venueIdx].maxMatches) || 4;
-      const bonus = (Engine.util.isSpecialShow(week) || Engine.util.isPPV(week)) ? 1 : 0;
-      return Math.min(base + bonus, 8);
+      return Math.min(base, 8);
     },
     getCardWeight(card) {
       return (Array.isArray(card) ? card : []).reduce((sum, m) => sum + (m && m.matchType === 'tag' ? 2 : 1), 0);
@@ -9573,6 +9589,7 @@ const Engine = {
       }));
 
       const isShow = Engine.util.isShowWeek(state.week);
+      const isRegularShow = Engine.util.isRegularShowWeek(state.week);
       const tierState = () => Engine.rival.buildAIState(state, nextOrgData, roster, org.tier);
 
       roster = roster.map(f => {
@@ -9682,7 +9699,7 @@ const Engine = {
       // AIの季節トレーナーはプレイヤーの招聘と同じ4週だけ効く。卒業/覚醒イベントは発生させない。
       roster = Engine.rival.tickAISeasonTrainerBuffs(roster);
 
-      if (isShow && state.week !== PPV_SHOW_WEEK) {
+      if (isRegularShow) {
         const aiShowState = tierState();
         let matchCard = Engine.rival.generateAIMatchCard(roster, nextOrgData.matchupLog, nextOrgData.showCount, state);
 
@@ -12981,7 +12998,7 @@ const Engine = {
           Engine.factions.checkRivalryResolution(s, resRng);
         }
         // Phase B: F09 派閥対抗戦 発火判定（spec §3） — 興行週のみ・pending F09 なし・pending イベントなし
-        if (Engine.factions && !s._pendingFactionEvent && !s._pendingF09 && Engine.util.isShowWeek(s.week)
+        if (Engine.factions && !s._pendingFactionEvent && !s._pendingF09 && Engine.util.isRegularShowWeek(s.week)
             && typeof Engine.factions.checkF09Conditions === 'function') {
           const f09Cand = Engine.factions.checkF09Conditions(s);
           if (f09Cand) {
@@ -12997,7 +13014,7 @@ const Engine = {
         }
         // 派閥内挑戦戦 発火判定（spec: faction-internal-rank-spec-v0.2 §4） — F09 後・興行週・pending なし
         if (Engine.factions && !s._pendingFactionEvent && !s._pendingF09 && !s._pendingInternalChallenge
-            && Engine.util.isShowWeek(s.week)
+            && Engine.util.isRegularShowWeek(s.week)
             && typeof Engine.factions.checkInternalChallengeConditions === 'function') {
           const icRng = Engine.rng.create(Engine.rng.derive(s.rngSeed || 1, s.season || 1, s.week || 1, 0xFA20));
           const cand = Engine.factions.checkInternalChallengeConditions(s, icRng);
@@ -13183,6 +13200,12 @@ const Engine = {
   //  Output: { state, results, injuryResults, events } or { error }
   // ══════════════════════════════════════════════════════════
   executeShow(state) {
+    if (Engine.util.isSeasonSpecialEventWeek(state?.week)) {
+      return { error: '季節の特別興行週には通常興行を開催できません' };
+    }
+    if (!Engine.util.isShowWeek(state?.week)) {
+      return { error: '通常興行を開催できる週ではありません' };
+    }
     const repaired = Engine.saveDoctor?.repairProgressionState
       ? Engine.saveDoctor.repairProgressionState(state).state
       : state;
@@ -20587,7 +20610,7 @@ Engine.news = {
     const orgName = id => Engine.awards ? Engine.awards._orgName(state, id) : id;
 
     // AI団体の興行結果（興行週なら）
-    if (Engine.util.isShowWeek(state.week)) {
+    if (Engine.util.isRegularShowWeek(state.week)) {
       if (state.aiOrgs) {
         Object.keys(state.aiOrgs).forEach(orgId => {
           const org = RIVAL_ORGS.find(o => o.id === orgId);

@@ -3746,6 +3746,7 @@ let sessionRng = Engine.rng.create(G.rngSeed);
 function ov(c) { return Engine.util.ov(c); }
 function getSalary(c) { return Engine.util.getSalary(c, G.titles); }
 function isShowWeek(w) { return Engine.util.isShowWeek(w); }
+function isRegularShowWeek(w) { return Engine.util.isRegularShowWeek(w); }
 function getQuarter(w) { return Engine.util.getQuarter(w); }
 function isSpecialShow(w) { return Engine.util.isSpecialShow(w); }
 function isPPV(w) { return Engine.util.isPPV(w); }
@@ -6162,11 +6163,11 @@ const App = {
       try { Storage.autoSave(); } catch (_e) {}
       refreshAll();
     }
-    if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
-    // PPV週は通常興行不可
-    if (G.ppvPhase === 'locked' || G.ppvPhase === 'show') {
+    if (G.offSeason || G.weekPhase !== 'manage' || !isRegularShowWeek(G.week)) {
       Audio.play('error');
-      showToast('今週はPPV GRAND FINALが開催されます。通常興行は行えません。');
+      if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
+        showToast('今週は季節の特別興行です。通常興行は行えません。');
+      }
       return;
     }
     Audio.play('crowd');
@@ -6362,6 +6363,15 @@ const App = {
     }
     // v2.0: weekPhase guard — settled/weekSummary等の非興行フェーズでは実行不可
     if (G.offSeason || !['manage', 'showPrep'].includes(G.weekPhase)) { Audio.play('error'); return; }
+    // Calendar invariant: weeks 12/24/36/48 belong exclusively to the
+    // seasonal special event, regardless of cancellation/completion state.
+    if (!isRegularShowWeek(G.week)) {
+      Audio.play('error');
+      showToast(Engine.util.isSeasonSpecialEventWeek(G.week)
+        ? '今週は季節の特別興行です。通常興行は行えません。'
+        : '今週は通常興行を開催できる週ではありません。');
+      return;
+    }
     // An accepted away challenge must be resolved before the local show.  The
     // old post-show branch temporarily mixed opponent guests into a completed
     // local-show state and could persist them if result processing failed.
@@ -7982,7 +7992,17 @@ const App = {
             _pendingCommon1Result: {
               payload: booking, matchResult: r,
               fighterAId: booking.fighterAId, fighterBId: booking.fighterBId,
-              applyResult: { resultText: c1Result.resultText, impactSummary: c1Result.impactSummary },
+              applyResult: {
+                resultText: c1Result.resultText,
+                impactSummary: c1Result.impactSummary,
+                winnerId: c1Result.winnerId,
+                loserId: c1Result.loserId,
+                winnerName: c1Result.winnerName,
+                loserName: c1Result.loserName,
+                factionName: c1Result.factionName,
+                isUpset: c1Result.isUpset,
+                upsetTag: c1Result.upsetTag,
+              },
             },
           };
           wmDiag(`[WM Faction] Common-1 booking resolved this show (slot ${c1Idx})`);
@@ -10775,24 +10795,6 @@ const App = {
   // 週次精算を記録して、同じクリック内で次週へ遷移するための準備をする。
   // `weekSummary` は advanceFromWeekSummary の入力契約としてだけ使う。一度画面に
   // 描画してから次のクリックを要求すると、1週に2クリック必要になってしまう。
-  /** その週に専用大会（春タッグW12 / 夏JT W24 / 秋対抗戦W36 / 冬PPV・天頂戦W48）が走るか。
-   *  専用大会は会場入り演出と結果画面を自前で持っているので、「今週は〜です」という
-   *  予告トーストを出してはいけない。出すと**大会が全部終わったあとに予告が流れる**
-   *  （2026-07-30 Keisuke 報告。全大会で発生していた）。さらに週番号だけを見る
-   *  isPPV(48) は天頂戦の年も true になるため、天頂戦なのに「PPV GRAND FINAL」と
-   *  誤った大会名を出していた（同じ型の不具合は 2026-07-27 に興行見出しで一度直している）。
-   *  予告の役割は週ダッシュボードのバナーが担っているので、そちらに任せる。
-   *  大会が中止された年（U-20不足など）は通常興行にフォールバックするため、
-   *  各 *IsEventWeek() が false になり従来どおりトーストが出る。 */
-  _isDedicatedEventWeek() {
-    if (!G || G.offSeason) return false;
-    if (G.week === PPV_SHOW_WEEK) return true;
-    if (typeof _stlIsLeagueWeek === 'function' && _stlIsLeagueWeek()) return true;
-    if (typeof _jtIsEventWeek === 'function' && _jtIsEventWeek()) return true;
-    if (typeof _agwIsEventWeek === 'function' && _agwIsEventWeek()) return true;
-    return false;
-  },
-
   _tryAutoAdvance() {
     // 財務タブリデザイン: financeHistory に週次決算を永続蓄積
     const newHistory = [...(G.financeHistory || [])];
@@ -10895,10 +10897,6 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
-    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week)) && !App._isDedicatedEventWeek()) {
-      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
-      setTimeout(() => showToast(msg, 7000), 300);
-    }
     // orgPop リバランス v1.1 §7: シーズン開始時のorgPop変動通知
     if (G._pendingSeasonStartNotif) {
       const notif = G._pendingSeasonStartNotif;
@@ -11384,10 +11382,6 @@ const App = {
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.nav-btn')[0].classList.add('active');
     refreshAll();
-    if (isShowWeek(G.week) && (isSpecialShow(G.week) || isPPV(G.week)) && !App._isDedicatedEventWeek()) {
-      const msg = isPPV(G.week) ? '🏆 今週はPPV GRAND FINAL！年間最大の舞台です！' : '⭐ 今週は月末特別興行！試合枠+1で組める！';
-      setTimeout(() => showToast(msg, 7000), 300);
-    }
   },
 
   // Advance to next week via Engine

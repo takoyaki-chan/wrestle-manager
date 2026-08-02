@@ -2114,7 +2114,10 @@ function closeEventPopup() {
   _mdlCClose();
   _eventPopupQueue.shift();
   if (_eventPopupQueue.length > 0) {
-    setTimeout(_renderEventPopupAsC3, 200);
+    // Between consecutive event popups another modal (for example a title
+    // ceremony) may have opened. Re-enter the shared popup queue instead of
+    // drawing the next C3 overlay directly on top of it.
+    setTimeout(() => _enqueuePopup(() => _renderEventPopupAsC3()), 200);
   } else if (_onEventPopupQueueEmpty) {
     const cb = _consumeEventPopupQueueEmpty();
     if (cb) setTimeout(cb, 200);
@@ -2136,7 +2139,16 @@ function _chainEventPopupQueueEmpty(cb) {
   // 1つも無い場合に closeEventPopup が呼ばれず、コールバックが永久に発火しない
   // (2026-07-31: PPVテレビ中継が「準備中…」で止まる不具合の原因)。
   if (_eventPopupQueue.length === 0 && !_onEventPopupQueueEmpty) {
-    setTimeout(cb, 200);
+    // Event producers in the weekly/show-result flow can enqueue on a short
+    // timer. Recheck after the transition gap so a late C3 event cannot race
+    // and appear over the modal started by this callback.
+    setTimeout(() => {
+      if (_eventPopupQueue.length === 0 && !_onEventPopupQueueEmpty) {
+        cb();
+      } else {
+        _chainEventPopupQueueEmpty(cb);
+      }
+    }, 200);
     return;
   }
   const prevCb = _consumeEventPopupQueueEmpty();
@@ -4583,7 +4595,13 @@ function toggleTitle(slotIndex) {
 
 // Show prep entry point (routes through App for state changes)
 function startShowPrep() {
-  if (G.offSeason || G.weekPhase !== 'manage' || !isShowWeek(G.week)) { Audio.play('error'); return; }
+  if (G.offSeason || G.weekPhase !== 'manage' || !Engine.util.isRegularShowWeek(G.week)) {
+    Audio.play('error');
+    if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
+      showToast('今週は季節の特別興行です。通常興行は行えません。', 4000);
+    }
+    return;
+  }
   // L1: 前回の会場を維持。初回のみbaseAttendanceベースでスマート選択
   let venueIdx = G.showVenue || 0;
   if (G.totalShows === 0 && G.showVenue === 0) {
@@ -4620,6 +4638,15 @@ function startShowPrep() {
 // 状態を作り直さず、準備画面を再表示するだけにする。
 function resumeShowPrep() {
   if (G.weekPhase !== 'showPrep') { startShowPrep(); return; }
+  if (G.offSeason || !Engine.util.isRegularShowWeek(G.week)) {
+    Audio.play('error');
+    if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
+      showToast('今週は季節の特別興行です。通常興行は行えません。', 4000);
+    }
+    showScreen('week');
+    refreshAll();
+    return;
+  }
   // 遠征が未消化ならそちらを先に消化する（startShowPrep と同じ優先順位）
   if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
       && typeof App !== 'undefined' && typeof App.beginAwayChallengeTravel === 'function') {
@@ -5001,6 +5028,7 @@ function renderMatchPreview() {
 }
 // ── Show Result Renderer ────────────────────────────────
 let _pendingMatchDialogues = [];
+const SHOW_RESULT_DIALOGUE_MIN_RIVALRY = 30;
 
 function _rivalryPopupPairKey(idA, idB) {
   return [String(idA), String(idB)].sort().join('-');
@@ -5033,22 +5061,20 @@ function _markRivalryMatchDialoguesSeen(dialogues) {
   });
 }
 
-/** 通常の因縁マッチの試合後コメントを、興行あたりの上限内で予約する。
- *  格下が OVR差9以上をひっくり返したときだけ UPSET_RIVALRY_LINES(番狂わせ専用)を引く。
- *  因縁決着は showRivalryPopups() の専用キューで必ず表示し、ここでは抑制しない。 */
-function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceMatch) {
+/** 因縁マッチの勝敗セリフを組み立てる。
+ *  通常興行の全試合結果では旧来どおり rivalry 30+ を選手画像上の吹き出しへ出し、
+ *  PPV の独立した試合後モーダルでは、より厳しい頻度制限を加えて使う。 */
+function _buildRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceMatch, minRivalry) {
   if (isDraw || !r || !r.rivalryBonus) return;
   if (typeof _sameSinglesPair === 'function' && !_sameSinglesPair(sourceMatch, r)) return;
   if (r.rivalryResolved) return; // 決着演出は専用キューに任せ、通常演出を重ねない。
   const rivalry = r.rivalryBonus.rivalry || 0;
   const hasRivalTitle = r.rivalryBonus.isGoodRival || r.rivalryBonus.isBitterRival;
-  if (!hasRivalTitle && rivalry < RIVALRY_POPUP_CONFIG.normalMinRivalry) return;
+  if (!hasRivalTitle && rivalry < minRivalry) return;
   const winF = leftIsWinner ? r.left : r.right;
   const loseF = leftIsWinner ? r.right : r.left;
   if (!winF || !loseF) return;
-  const { seen, currentWeek } = _getRivalryPopupSeen();
   const pairKey = _rivalryPopupPairKey(winF.id, loseF.id);
-  if (Number.isFinite(seen[pairKey]) && currentWeek - seen[pairKey] < RIVALRY_POPUP_CONFIG.normalPairCooldownWeeks) return;
   const winChar = ALL_CHARS.find(c => c.id === winF.id);
   const loseChar = ALL_CHARS.find(c => c.id === loseF.id);
   if (!winChar || !loseChar) return;
@@ -5061,14 +5087,27 @@ function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceM
   const winLine = pickDialogueLine(winPool, winChar);
   const loseLine = pickDialogueLine(losePool, loseChar);
   if (!winLine && !loseLine) return;
-  _pendingMatchDialogues.push({
+  return {
     matchLabel, rivalryBonus: r.rivalryBonus, isUpset,
     winnerId: winF.id, loserId: loseF.id,
     winnerName: winF.name, loserName: loseF.name,
     winLine, loseLine,
     _rivalryPopupPairKey: pairKey,
     _rivalryPopupRivalry: rivalry,
-  });
+  };
+}
+
+/** 独立した試合後モーダル用に、興行あたりの上限と同一カードのクールダウンを適用する。 */
+function _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceMatch) {
+  const dialogue = _buildRivalryMatchDialogue(
+    r, leftIsWinner, isDraw, matchLabel, sourceMatch,
+    RIVALRY_POPUP_CONFIG.normalMinRivalry,
+  );
+  if (!dialogue) return;
+  const { seen, currentWeek } = _getRivalryPopupSeen();
+  const pairKey = dialogue._rivalryPopupPairKey;
+  if (Number.isFinite(seen[pairKey]) && currentWeek - seen[pairKey] < RIVALRY_POPUP_CONFIG.normalPairCooldownWeeks) return;
+  _pendingMatchDialogues.push(dialogue);
   _pendingMatchDialogues.sort((a, b) => b._rivalryPopupRivalry - a._rivalryPopupRivalry);
   _pendingMatchDialogues.splice(RIVALRY_POPUP_CONFIG.maxNormalPerShow);
 }
@@ -5247,9 +5286,19 @@ function renderShowResult(results, injuryResults) {
     const metaLeft = isMain ? (leftIsWinner ? 'Winner' : isDraw ? 'No Contest' : 'Challenger') : `Match ${results.length - i}`;
     const metaRight = isMain ? (rightIsWinner ? 'Winner' : isDraw ? 'No Contest' : 'Challenger') : `Match ${results.length - i}`;
 
-    // 因縁マッチ(rivalry 30+)の試合後コメントを予約する。結果一覧を閉じた直後に
-    // showPostMatchDialogues() が順番に出す。
-    _queueRivalryMatchDialogue(r, leftIsWinner, isDraw, `Match ${results.length - i}`, sourceMatch);
+    // 旧来の定期興行ルールを復元: 因縁30以上の勝者・敗者セリフは、
+    // 全試合結果の選手画像上に吹き出しで表示する。独立モーダルへは重複予約しない。
+    const resultDialogue = _buildRivalryMatchDialogue(
+      r, leftIsWinner, isDraw, `Match ${results.length - i}`, sourceMatch,
+      SHOW_RESULT_DIALOGUE_MIN_RIVALRY,
+    );
+    const leftLine = resultDialogue
+      ? (leftIsWinner ? resultDialogue.winLine : resultDialogue.loseLine)
+      : '';
+    const rightLine = resultDialogue
+      ? (rightIsWinner ? resultDialogue.winLine : resultDialogue.loseLine)
+      : '';
+    const hasDialogue = !!(leftLine || rightLine);
 
     let winnerLabel;
     if (isDraw) winnerLabel = 'NO CONTEST';
@@ -5258,9 +5307,9 @@ function renderShowResult(results, injuryResults) {
       winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
     }
 
-    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}`;
+    const rowCls = `pb-mrow${isMain ? ' is-main' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
     html += `<div class="${rowCls}">`;
-    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, '');
+    html += _pbFighterBlock('left', r.left, leftCls, metaLeft, leftLine);
     html += _pbResultColumn({
       winnerLabel,
       winnerIsDraw: isDraw,
@@ -5268,7 +5317,7 @@ function renderShowResult(results, injuryResults) {
       turns: r.turns,
       mq: r.mq
     });
-    html += _pbFighterBlock('right', r.right, rightCls, metaRight, '');
+    html += _pbFighterBlock('right', r.right, rightCls, metaRight, rightLine);
     if (tags.length) html += `<div class="pb-mrow-tags">${tags.join('')}</div>`;
     if (r.hpLeft && r.hpRight) html += _pbHpMini(r.hpLeft, r.hpRight);
     if (sourceMatch?.isCRMatch && r._challengeRelationshipDelta) {
@@ -13485,29 +13534,29 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
 // fA, fB: 試合に出場した 2 選手 (左/右)
 // applyResult: Engine.factions.applyCommon1MatchResult の戻り値（resultText, impactSummary, winnerId, loserId, winnerName, loserName）
 function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, onClose) {
-  const overlay = document.getElementById('showResultOverlay');
-  const box = document.getElementById('showResultBox');
-  if (!overlay || !box) { if (onClose) onClose(); return; }
+  if (typeof _mdlAOpen !== 'function') { if (onClose) onClose(); return; }
 
-  const factionName = payload.factionName || '派閥';
+  payload = payload || {};
+  applyResult = applyResult || {};
+  const escHtmlSafe = (s) => (typeof escHtml === 'function') ? escHtml(s) : String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+  const stateFactions = typeof G !== 'undefined' && Array.isArray(G.factions) ? G.factions : [];
+  const currentFaction = stateFactions.find(f => f && payload.factionId != null && String(f.id) === String(payload.factionId));
+  const factionName = (currentFaction && currentFaction.name) || applyResult.factionName || payload.factionName || '派閥';
   const archetypeId = payload.archetypeId || null;
   const won = matchResult.winner === 'left';
   const isDraw = matchResult.winner === 'draw';
   const winChar = isDraw ? null : (won ? fA : fB);
   const loseChar = isDraw ? null : (won ? fB : fA);
-  const isLeaderA = payload.leaderId === fA.id;
-  const factionTagA = isLeaderA ? `${factionName} · リーダー` : factionName;
-  const factionTagB = !isLeaderA && payload.leaderId === fB.id ? `${factionName} · リーダー` : factionName;
+  const sameFighterId = (a, b) => a != null && b != null && String(a) === String(b);
+  const isLeader = (fighter) => !!fighter && sameFighterId(payload.leaderId, fighter.id);
 
-  // セリフ: 既存 COMMON1_LINES.resultLeader / resultLoser を引く
+  // セリフは既存 COMMON1_LINES.resultLeader / resultLoser をそのまま使う。
   const winnerVars = { factionName, aName: fA.name, bName: fB.name };
   let winnerLine = '';
   let loserLine = '';
-  if (!isDraw && winChar && loseChar) {
-    if (Engine.factions.getCommon1Line) {
-      winnerLine = Engine.factions.getCommon1Line('resultLeader', { archetypeId, choice: 'A', vars: winnerVars, fighter: winChar }) || '';
-      loserLine  = Engine.factions.getCommon1Line('resultLoser',  { archetypeId, choice: 'A', vars: winnerVars, fighter: loseChar }) || '';
-    }
+  if (!isDraw && winChar && loseChar && Engine.factions.getCommon1Line) {
+    winnerLine = Engine.factions.getCommon1Line('resultLeader', { archetypeId, choice: 'A', vars: winnerVars, fighter: winChar }) || '';
+    loserLine = Engine.factions.getCommon1Line('resultLoser', { archetypeId, choice: 'A', vars: winnerVars, fighter: loseChar }) || '';
   }
 
   const ovrA = Math.round(Engine.util.ov(fA)), ovrB = Math.round(Engine.util.ov(fB));
@@ -13515,7 +13564,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
     ? Engine.formatFinish(matchResult.finType, matchResult.finMove)
     : `${matchResult.finMove || ''} → ${matchResult.finType || ''}`;
 
-  // 影響行を方向で色分け
+  // 影響はキャラクターの台詞ではないため、吹き出しに入れずA型の結果欄へ置く。
   const impactRows = (applyResult.impactSummary || []).map(item => {
     const rawLabel = String(item.label || '');
     const isOrgTrust = /\btrust\b|信頼度/.test(rawLabel);
@@ -13527,64 +13576,68 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
     const display = isOrgTrust
       ? (deltaStr.startsWith('+') ? '納得した様子' : deltaStr.startsWith('-') || deltaStr.startsWith('−') ? '不満を残した様子' : '態度に変化')
       : (label.includes('因縁') && deltaStr.startsWith('-') ? `${deltaStr}(解消)` : deltaStr);
-    return `<div class="c1r-impact-row"><span>${escHtml(label)}</span><span class="${cls}">${escHtml(display)}</span></div>`;
+    return `<div class="mdl-a-result-row"><span>${escHtmlSafe(label)}</span><strong class="${cls}">${escHtmlSafe(display)}</strong></div>`;
   }).join('');
 
-  const escHtmlSafe = (s) => (typeof escHtml === 'function') ? escHtml(s) : String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
-
-  // バナー右側
-  const weekLabel = `S${G.season} · W${G.week}`;
-
-  // U1: 試合結果表示は.emr-*(1試合結果ポップアップ)と同じ配置バランスに揃える(共通ヘルパー流用)。
-  // 派閥内対決=自団体内の試合なのでcrossOrgは常にfalse(団体バッジは出さない)。
-  const winnerSideForEmr = isDraw ? 'draw' : (won ? 'left' : 'right');
-  const bubbleFor = (f) => {
-    const line = isDraw ? '' : (f === winChar ? winnerLine : (f === loseChar ? loserLine : ''));
-    return line ? `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtmlSafe(line)}」</span></div>` : '';
+  // 戴冠・節目防衛で承認済みのA型「吹き出し→画像→名前→役割」をそのまま使う。
+  const personHtml = (fighter, line, defeated) => {
+    if (!fighter) return '';
+    const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+    const safeId = Number(fighter.id);
+    const openAttr = Number.isFinite(safeId) && typeof showFighterPopup === 'function'
+      ? ` onclick="event.stopPropagation();showFighterPopup(${safeId},'roster')"`
+      : '';
+    const portrait = upperUrl
+      ? `<img src="${escHtmlSafe(upperUrl)}" alt="${escHtmlSafe(fighter.name || '')}" onerror="this.style.display='none'">`
+      : '';
+    const outcomeLabel = isDraw ? 'NO CONTEST' : (defeated ? 'DEFEATED' : 'WINNER');
+    const factionRole = isLeader(fighter) ? 'FACTION LEADER' : 'FACTION MEMBER';
+    const ovr = fighter === fA ? ovrA : ovrB;
+    return `<article class="mdl-a-title-person${defeated ? ' defeated' : ''}">
+      <div class="mdl-a-title-bubble"><span>${escHtmlSafe(line || '')}</span></div>
+      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${escHtmlSafe(fighter.name || '')}の詳細を開く">
+        <span class="mdl-a-title-portrait-fallback">${escHtmlSafe((fighter.name || '?').charAt(0))}</span>
+        ${portrait}
+      </button>
+      <div class="mdl-a-title-name"${openAttr}>${escHtmlSafe(fighter.name || '')}</div>
+      <div class="mdl-a-title-role">${outcomeLabel} · ${factionRole} · OVR ${ovr}</div>
+    </article>`;
   };
-  const bout = `<div class="emr-bout">
-      ${_emrSingleSide(fA, 'left', winnerSideForEmr, factionTagA, 'OVR', ovrA, bubbleFor(fA), false, { profileContext: 'roster' })}
-      <div class="emr-center">
-        <div class="emr-winner">${isDraw ? 'NO CONTEST' : 'WIN'}</div>
-        <div class="emr-finish">${escHtmlSafe(finText)}</div>
-        <div class="emr-turn">${matchResult.turns || 0} TURN</div>
-        <div class="emr-mq">MQ <b>${matchResult.mq || 0}</b></div>
-      </div>
-      ${_emrSingleSide(fB, 'right', winnerSideForEmr, factionTagB, 'OVR', ovrB, bubbleFor(fB), false, { profileContext: 'roster' })}
-    </div>`;
 
-  const hpA = matchResult.hpLeft  || { final: 0, max: 100 };
-  const hpB = matchResult.hpRight || { final: 0, max: 100 };
-  const pctA = Math.max(0, Math.min(100, Math.round((hpA.final / Math.max(1, hpA.max)) * 100)));
-  const pctB = Math.max(0, Math.min(100, Math.round((hpB.final / Math.max(1, hpB.max)) * 100)));
-  const hpBlock = `<div class="emr-hp">
-      <div class="emr-hp-half"><span class="emr-hp-val">${hpA.final} / ${hpA.max}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${pctA}%"></div></div></div>
-      <span class="emr-hp-label">HP REMAINING</span>
-      <div class="emr-hp-half is-right"><span class="emr-hp-val">${hpB.final} / ${hpB.max}</span><div class="emr-hp-track"><div class="emr-hp-fill" style="width:${pctB}%"></div></div></div>
-    </div>`;
+  const resultLine = isDraw
+    ? `${escHtmlSafe(fA.name)}と${escHtmlSafe(fB.name)}は決着つかず。`
+    : `${escHtmlSafe(winChar.name)}が${escHtmlSafe(finText)}で勝利。`;
+  const narrationHtml = [
+    resultLine,
+    escHtmlSafe(applyResult.resultText || `${factionName}内の序列を懸けた一戦に決着がついた。`),
+  ].map(line => `<span>${line}</span>`).join('');
+  const summaryRows = `<div class="mdl-a-result-row"><span>試合結果</span><strong>${escHtmlSafe(finText)} · ${Number(matchResult.turns) || 0} TURN · MQ ${Number(matchResult.mq) || 0}</strong></div>${impactRows}`;
+  const firstPerson = isDraw ? fA : winChar;
+  const secondPerson = isDraw ? fB : loseChar;
+  const firstLine = isDraw ? '' : winnerLine;
+  const secondLine = isDraw ? '' : loserLine;
+  const metaHtml = `COMMON-1 ・ ${_mdlASeasonLabel(typeof G !== 'undefined' ? G : {})} ・ ${escHtmlSafe(factionName)}`;
 
   const html = `
-    <div class="c1r-card">
-      <div class="c1r-banner">
-        <div class="c1r-title">⚔ 派閥内対決 — 結果</div>
-        <div class="c1r-meta">${escHtmlSafe(weekLabel)} · ${escHtmlSafe(factionName)}</div>
+    ${_mdlAHeader('⚔ 派閥内対決・決着', metaHtml, { urgent: !!applyResult.isUpset })}
+    <div class="mdl-a-title-result">
+      <div class="mdl-a-title-narration">${narrationHtml}</div>
+      <div class="mdl-a-title-pair">
+        ${personHtml(firstPerson, firstLine, false)}
+        ${personHtml(secondPerson, secondLine, !isDraw)}
       </div>
-      ${bout}
-      ${hpBlock}
-      <div class="c1r-narr">${escHtmlSafe(applyResult.resultText || '')}</div>
-      ${impactRows ? `<div class="c1r-impact"><div class="c1r-impact-h">影響</div>${impactRows}</div>` : ''}
-      <div class="c1r-actions">
-        <button class="c1r-btn" id="c1rCloseBtn">閉じる ✓</button>
-      </div>
+      <div class="mdl-a-result-summary">${summaryRows}</div>
+    </div>
+    <div class="mdl-a-prompt mdl-a-title-actions">
+      <button class="mdl-a-continue-btn" id="c1rCloseBtn">結果を確認する</button>
     </div>
   `;
-  box.innerHTML = html;
-  overlay.classList.add('active');
+  if (!_mdlAOpen(html, { wide: true, topAligned: true })) { if (onClose) onClose(); return; }
   const btn = document.getElementById('c1rCloseBtn');
   if (btn) {
     btn.addEventListener('click', () => {
       if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-      overlay.classList.remove('active');
+      _mdlAClose();
       if (onClose) onClose();
     });
   }

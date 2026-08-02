@@ -5490,31 +5490,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fc1m-rivalry strong{color:var(--cream-gold-dark);font-family:var(--font-label);font-size:14px}
 @media(max-width:520px){.crq-briefing{grid-template-columns:1fr;gap:5px;margin-top:10px}.crq-briefing-item{min-height:0}.crq-series-order{font-size:10px}.crq-series-order span{display:block;margin:2px 0 0}}
 
-/* Common-1 派閥内対決 試合後結果モーダル */
-/* U1: 派閥内対決結果は「試合結果表示」系統として.emr-*(1試合結果ポップアップ)の配置バランス・部品を流用する。
-   自団体内の試合なので常にis-normal相当の金テーマ。--emr-accent系だけこのカードにローカル定義して.emr-bout/.emr-hp等の
-   共有クラスをそのまま差し込める形にする(新しい同型CSSを増やさない)。 */
-.c1r-card{--emr-accent:var(--gold);--emr-accent-rgb:var(--gold-rgb);--emr-metal:var(--gold-light);
-  background:#0f0a06;border:1px solid #2a1f10;border-radius:6px;padding:0;width:100%;max-width:760px;margin:0 auto;color:#d8c89a;overflow:hidden}
-.c1r-banner{padding:12px 22px;border-bottom:1px solid #2a1f10;display:flex;justify-content:space-between;align-items:center}
-.c1r-title{font-size:15px;font-weight:700;color:#e8e0d0;letter-spacing:1px}
-.c1r-meta{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1.5px;color:#8a7549}
-.c1r-card .emr-bout{padding:20px 22px 12px;min-height:0}
-.c1r-card .emr-hp{margin:0 22px 12px;border-top-color:rgba(200,190,170,0.1)}
-.c1r-narr{margin:0 22px 14px;padding:12px 14px;background:rgba(212,168,67,0.06);border-left:3px solid var(--gold);font-size:13px;line-height:1.7;color:#d8c89a}
-.c1r-impact{margin:0 22px 14px;padding:12px 14px;background:rgba(0,0,0,0.25);border-radius:4px}
-.c1r-impact-h{color:#8a7549;font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;margin-bottom:6px}
-.c1r-impact-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px dotted rgba(255,255,255,0.08);font-size:12px}
-.c1r-impact-row span:first-child{color:#bfa97a}
-.c1r-impact-row span:last-child{font-family:'Oswald',sans-serif;font-weight:700}
-.c1r-impact-row span.pos{color:#7ac98a}
-.c1r-impact-row span.neg{color:#c98a7a}
-.c1r-impact-row span.resolved{color:var(--gold)}
-.c1r-actions{display:flex;justify-content:center;padding:0 22px 22px}
-.c1r-btn{padding:10px 28px;font-family:'Oswald',sans-serif;letter-spacing:2px;font-size:13px;border-radius:3px;cursor:pointer;border:1px solid var(--gold);background:rgba(212,168,67,0.15);color:var(--gold)}
-.c1r-btn:hover{background:rgba(212,168,67,0.25)}
-@media(max-width:700px){.c1r-card .emr-bout{grid-template-columns:1fr 82px 1fr;padding:10px 12px 8px}.c1r-card .emr-upper{width:72px;height:114px}.c1r-card .emr-bubble-slot{height:40px;margin-bottom:5px}.c1r-card .emr-name{font-size:11px}.c1r-card .emr-winner{font-size:21px}.c1r-card .emr-finish{font-size:8px}}
-
 /* F08 subject-duel（2リーダー並置＋VS＋吹き出し）
    U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。
    .col/.col.right は安全網テスト(class="col">の厳密一致)を保つため display:contents の
@@ -6822,6 +6797,20 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .mdl-a-result-row .pos   { color: #6fa28c; font-weight: 700; }
 .mdl-a-result-row .neg   { color: #c84a3a; font-weight: 700; }
 .mdl-a-result-row .gold  { color: #d4a843; font-weight: 700; }
+
+/* A型のクリーム結果（戴冠・節目防衛・派閥内重要戦）でも同じ結果行を使う。 */
+.mdl-a-title-result .mdl-a-result-summary {
+  max-width: 620px; margin-top: 20px; background: rgba(255,255,255,0.38);
+  border-color: rgba(122,101,48,0.22);
+}
+.mdl-a-title-result .mdl-a-result-row {
+  padding: 5px 0; color: var(--cream-text-sub); border-bottom: 1px dotted rgba(122,101,48,0.20);
+}
+.mdl-a-title-result .mdl-a-result-row:last-child { border-bottom: 0; }
+.mdl-a-title-result .mdl-a-result-row strong { color: var(--cream-text-main); }
+.mdl-a-title-result .mdl-a-result-row .pos { color: #2f7657; }
+.mdl-a-title-result .mdl-a-result-row .neg { color: #a33d30; }
+.mdl-a-title-result .mdl-a-result-row .resolved { color: var(--cream-gold-dark); }
 
 /* 敗者バッジ */
 .mdl-a-defeat-badge {

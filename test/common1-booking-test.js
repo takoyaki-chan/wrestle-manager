@@ -83,6 +83,8 @@ section('1-a. A選択は bookedCommon1 を作り、pendingMatchは返さない',
   assert.ok(r.state.bookedCommon1, 'bookedCommon1が作られていない');
   assert.strictEqual(r.state.bookedCommon1.fighterAId, 2);
   assert.strictEqual(r.state.bookedCommon1.fighterBId, 3);
+  assert.strictEqual(r.state.bookedCommon1.fighterAName, 'F2', '予約にA選手名も保持する');
+  assert.strictEqual(r.state.bookedCommon1.fighterBName, 'F3', '予約にB選手名も保持する');
   assert.strictEqual(r.state.bookedCommon1.factionId, 1);
   assert.strictEqual(r.state.bookedCommon1.createdSeason, 2);
   assert.strictEqual(r.state.bookedCommon1.createdWeek, 10);
@@ -95,6 +97,24 @@ section('1-b. B/C選択は従来通り即時に結果を返し、予約は作ら
   assert.ok(rB.resultText, 'B選択の結果文が空');
   const rC = Engine.factions.applyCommon1Choice(s, payload, 'C', rng());
   assert.ok(!rC.state.bookedCommon1, 'C選択なのに予約が作られた');
+});
+
+section('1-c. 旧予約に選手名が無くてもIDから現行名を引き直し、undefinedを出さない', () => {
+  const s = makeState();
+  const legacyBooking = {
+    fighterAId: 2, fighterBId: 1,
+    factionId: 1, factionName: '旧・テスト組',
+    archetypeId: 'BOND', leaderId: 1,
+  };
+  const r = Engine.factions.applyCommon1MatchResult(s, legacyBooking, 2, 1, rng());
+  assert.strictEqual(r.winnerName, 'F2', '勝者名は現行ロスターから解決する');
+  assert.strictEqual(r.loserName, 'F1', '敗者名は現行ロスターから解決する');
+  assert.strictEqual(r.factionName, 'テスト組', '派閥名は現行stateから解決して表示側へ返す');
+  assert.strictEqual(r.isUpset, true, 'リーダー敗北を下克上として判定する');
+  assert.ok(r.resultText.includes('F2') && r.resultText.includes('F1'), '結果文に両選手の現行名が入る');
+  assert.ok(r.resultText.includes('テスト組'), '派閥名もIDから現行名を引き直す');
+  assert.ok(!r.resultText.includes('undefined'), '結果文へundefinedを出さない');
+  assert.ok(r.impactSummary.every(row => !String(row.label).includes('undefined')), '影響欄へundefinedを出さない');
 });
 
 // ─────────────────────────────────────────────────────────────

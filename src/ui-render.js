@@ -937,13 +937,21 @@ function renderWeekScreen() {
   const agwBlocked = _agwIsEventWeek();
   const jtBlocked = _jtIsEventWeek();
   const tcBlocked = _tcIsEventWeek();
-  const specialEventBlocked = stlBlocked || agwBlocked || jtBlocked || tcBlocked;
-  const isShow = isShowWeek(G.week) && !specialEventBlocked;
-  const special = isSpecialShow(G.week) && !specialEventBlocked;
+  // The calendar itself owns weeks 12/24/36/48. Event-state guards are only
+  // for choosing a detailed label; a cancelled/completed event never reopens
+  // its week to an ordinary show.
+  const specialEventBlocked = Engine.util.isSeasonSpecialEventWeek(G.week);
+  const isShow = Engine.util.isRegularShowWeek(G.week);
   // isPPV は週番号だけを見るので、天頂戦の年でも Week48 で true になる。
   // その年の Week48 は PPV ではないため、表記から外す
-  const ppv = isPPV(G.week) && !tcBlocked;
-  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : jtBlocked ? '🏟️ ジュニアトーナメント' : tcBlocked ? '👑 天頂戦' : isShow ? (ppv ? '🏆 PPV' : special ? '⭐ 特別興行' : '🎤 興行週') : '📋 非興行週';
+  const ppv = isPPV(G.week) && !Engine.ppvTournament.isTournamentSeason(G.season);
+  const reservedEventLabel = G.week === Engine.springTagLeague.LEAGUE_WEEK ? '🌸 春のタッグリーグ'
+    : G.week === Engine.juniorTournament.WEEK ? '🏟️ ジュニアトーナメント'
+      : G.week === Engine.autumnWar.EVENT_WEEK ? '⚔️ 4団体勝ち残り対抗戦'
+        : G.week === Engine.ppvTournament.SHOW_WEEK
+          ? (Engine.ppvTournament.isTournamentSeason(G.season) ? '👑 天頂戦' : '🏆 PPV GRAND FINAL')
+          : '⭐ 季節の特別興行';
+  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : jtBlocked ? '🏟️ ジュニアトーナメント' : tcBlocked ? '👑 天頂戦' : specialEventBlocked ? reservedEventLabel : isShow ? (ppv ? '🏆 PPV' : '🎤 興行週') : '📋 非興行週';
   document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4` : typeLabel;
 
   html = '';
@@ -966,14 +974,13 @@ function renderWeekScreen() {
 
     // Upcoming events
     const upcomingItems = [];
-    const nextShow = (() => { for (let w = G.week; w <= 48; w++) if (isShowWeek(w)) return w; return null; })();
+    const nextShow = (() => { for (let w = G.week; w <= 48; w++) if (Engine.util.isRegularShowWeek(w)) return w; return null; })();
     if (nextShow && nextShow > G.week) upcomingItems.push(`🎤 次の興行: 第${nextShow}週`);
     else if (nextShow === G.week) upcomingItems.push('🎤 今週は興行週！');
-    if (isPPV(G.week)) upcomingItems.push('🏆 PPV週！');
-    else { const ppvW = (() => { for (let w = G.week+1; w <= 48; w++) if (isPPV(w)) return w; return null; })(); if (ppvW) upcomingItems.push(`🏆 PPV: 第${ppvW}週`); }
-    if (!isPPV(G.week)) {
-      if (isSpecialShow(G.week)) upcomingItems.push('⭐ 今週は特別興行！（試合枠+1）');
-      else { const spW = (() => { for (let w = G.week+1; w <= 48; w++) if (isSpecialShow(w) && !isPPV(w)) return w; return null; })(); if (spW) upcomingItems.push(`⭐ 特別興行: 第${spW}週`); }
+    if (specialEventBlocked) upcomingItems.push(`${reservedEventLabel} 開催週`);
+    else {
+      const spW = (() => { for (let w = G.week + 1; w <= 48; w++) if (Engine.util.isSeasonSpecialEventWeek(w)) return w; return null; })();
+      if (spW) upcomingItems.push(`⭐ 次の季節特別興行: 第${spW}週`);
     }
     if (G.pendingNegotiation) {
       const remainW = G.pendingNegotiation.resolveWeek - G.week;
@@ -1146,7 +1153,7 @@ function renderWeekScreen() {
       ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
       ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
     </div>`;
-    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : agwBlocked ? '週を進めてください（今週は4団体勝ち残り対抗戦）' : jtBlocked ? '週を進めてください（今週はジュニアトーナメント開催週）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
+    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : agwBlocked ? '週を進めてください（今週は4団体勝ち残り対抗戦）' : jtBlocked ? '週を進めてください（今週はジュニアトーナメント開催週）' : tcBlocked ? '週を進めてください（今週は天頂戦開催週）' : specialEventBlocked ? '週を進めてください（今週は季節の特別興行週）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
 
     // v1.0: Primary action buttons — top-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
@@ -2568,8 +2575,7 @@ function _tcIsEventWeek() {
     && G.ppvTournament && !G.ppvTournament.cancelled);
 }
 
-/** ジュニアトーナメント開催週(Week24=夏の最終興行週)。開催成立時は通常興行をブロックする。
- *  不開催年(選手不足キャンセル)は従来どおり通常の特別興行にフォールバック */
+/** ジュニアトーナメントの詳細表示用判定。通常興行の禁止はカレンダー側で独立して行う。 */
 function _jtIsEventWeek() {
   return !!(!G.offSeason && G.week === Engine.juniorTournament.WEEK
     && (G.weekPhase === 'juniorTournament'
@@ -2665,6 +2671,27 @@ function _agwBlockedShowPrepHtml() {
   </div>`;
 }
 
+function _ppvBlockedShowPrepHtml() {
+  return `<div class="stl-block-banner">
+    <div class="stl-block-banner-icon">🏆</div>
+    <div class="stl-block-banner-title">今週はPPV GRAND FINAL</div>
+    <div class="stl-block-banner-sub">第${PPV_SHOW_WEEK}週は通常興行の代わりに、冬の特別興行が開催されます。今週の通常カード編成はありません。</div>
+  </div>`;
+}
+
+/** Calendar-based dispatcher. Never consult cancellation/completion state. */
+function _seasonSpecialBlockedShowPrepHtml() {
+  if (G.week === Engine.springTagLeague.LEAGUE_WEEK) return _stlBlockedShowPrepHtml();
+  if (G.week === Engine.juniorTournament.WEEK) return _jtBlockedShowPrepHtml();
+  if (G.week === Engine.autumnWar.EVENT_WEEK) return _agwBlockedShowPrepHtml();
+  if (G.week === Engine.ppvTournament.SHOW_WEEK) {
+    return Engine.ppvTournament.isTournamentSeason(G.season)
+      ? _tcBlockedShowPrepHtml()
+      : _ppvBlockedShowPrepHtml();
+  }
+  return '<div class="stl-block-banner"><div class="stl-block-banner-title">今週は季節の特別興行週</div><div class="stl-block-banner-sub">通常興行のカード編成はありません。</div></div>';
+}
+
 /** カードの枠が埋まっているか。**confirmExecuteShow と renderShowPrep で共有する。**
     2026-07-26: renderShowPrep のローカル変数だったため、外から呼ぶ confirmExecuteShow が
     ReferenceError で落ち、**興行開催ボタンが無反応になっていた**（v1.22 のバグ報告）。 */
@@ -2722,30 +2749,16 @@ function renderShowPrep() {
     try { Storage.autoSave(); } catch (_e) {}
   }
   const el = document.getElementById('showPrepContent');
-  // v2.0: 興行準備は manage/showPrep フェーズのみ（settled等の非興行フェーズでは表示しない）
-  if (!isShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
+  // Weeks 12/24/36/48 are reserved even after a tournament is cancelled or
+  // completed. This check intentionally precedes all event-state predicates.
+  if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
+    el.innerHTML = _seasonSpecialBlockedShowPrepHtml();
+    return;
+  }
+
+  // v2.0: 興行準備は通常興行週の manage/showPrep フェーズのみ
+  if (!Engine.util.isRegularShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
     el.innerHTML = '<p style="color:var(--text-sub)">興行週ではありません。</p>';
-    return;
-  }
-
-  // 春のタッグリーグ Week12: 通常カード編成をブロック（PPV week48バイパスと同型）
-  if (_stlIsLeagueWeek()) {
-    el.innerHTML = _stlBlockedShowPrepHtml();
-    return;
-  }
-
-  if (_agwIsEventWeek()) {
-    el.innerHTML = _agwBlockedShowPrepHtml();
-    return;
-  }
-
-  if (_jtIsEventWeek()) {
-    el.innerHTML = _jtBlockedShowPrepHtml();
-    return;
-  }
-
-  if (_tcIsEventWeek()) {
-    el.innerHTML = _tcBlockedShowPrepHtml();
     return;
   }
 
@@ -2764,19 +2777,6 @@ function renderShowPrep() {
     html += `<div class="media-spotlight-banner">
       📺 <strong>${spName}</strong>の密着取材中（${sp.outletName}・残り${sp.remainingShows}興行）
       — この選手にいい試合を組んでください
-    </div>`;
-  }
-
-  // Special show / PPV banner
-  if (isPPV(G.week)) {
-    html += `<div style="background:linear-gradient(135deg,#2d1b00,#4a2c00);border:1px solid #f39c12;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
-      <div style="font-size:16px;font-weight:700;color:#f1c40f;letter-spacing:1px">🏆 PPV GRAND FINAL</div>
-      <div style="font-size:12px;color:#e67e22;margin-top:4px">年間最大の舞台！全会場で試合枠+1</div>
-    </div>`;
-  } else if (isSpecialShow(G.week)) {
-    html += `<div style="background:linear-gradient(135deg,#1a0033,#2e0055);border:1px solid #9b59b6;border-radius:8px;padding:12px 16px;margin-bottom:14px;text-align:center">
-      <div style="font-size:15px;font-weight:700;color:#d4a8ff;letter-spacing:1px">⭐ 月末特別興行</div>
-      <div style="font-size:12px;color:#a29bfe;margin-top:4px">特別な舞台！全会場で試合枠+1</div>
     </div>`;
   }
 
@@ -2932,7 +2932,7 @@ function renderShowPrep() {
       <div class="venue-name">${v.name}</div>
       <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
       <div class="venue-info">コスト: ${v.cost}万</div>
-      <div class="venue-info">試合枠: ${v.maxMatches}試合${(isSpecialShow(G.week) || isPPV(G.week)) ? ' <span style="color:var(--gold)">(+1)</span>' : ''}</div>
+      <div class="venue-info">試合枠: ${v.maxMatches}試合</div>
       <div class="venue-risk">${riskLabel}</div>
     </div>`;
   });

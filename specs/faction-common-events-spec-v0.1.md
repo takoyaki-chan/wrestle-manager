@@ -1,8 +1,8 @@
 # 派閥共通イベント仕様 v0.1
 
 **ファイル**：`specs/faction-common-events-spec-v0.1.md`
-**最終更新**：2026-05-02
-**実装状況**：Phase A〜D 全実装完了（Common-1/3/4/5/7 すべて稼働）。Common-1 リデザイン v0.2（2026-05-02）：打診モーダルを比較レイアウト化（OVR 表示 / 名前リンク / 頭上吹き出し）。**task-79（2026-08-02）：A 選択を即時試合から興行予約(`G.bookedCommon1`)へ変更**。枠(メイン/セミ/中盤)を強制せず、プレイヤーがカード編成のどこに置くかを決める。auto-sim 20×42 で違反 0 確認済み
+**最終更新**：2026-08-02
+**実装状況**：Phase A〜D 全実装完了（Common-1/3/4/5/7 すべて稼働）。Common-1 リデザイン v0.2（2026-05-02）：打診モーダルを比較レイアウト化（OVR 表示 / 名前リンク / 頭上吹き出し）。**task-79（2026-08-02）：A 選択を即時試合から興行予約(`G.bookedCommon1`)へ変更**。枠(メイン/セミ/中盤)を強制せず、プレイヤーがカード編成のどこに置くかを決める。決着時はIDから選手名・派閥名を再解決し、結果は戴冠・節目防衛と同じ既存A型イベントモーダルで表示する。auto-sim 20×42 で違反 0 確認済み
 **親仕様**：
 - `specs/faction-system-spec-v0.1.md`（既存 F01〜F08）
 - `specs/faction-archetype-rework-spec-v0.1.md` v0.2
@@ -99,7 +99,8 @@ A を選ぶと即座に試合は行われず、`G.bookedCommon1 = { fighterAId, 
 
 - **興行への組み込み**：次回**通常興行**の編成画面に「予約」バナーが出る（`renderShowPrep`）。プレイヤーが通常のカード編成でこの2名を同じ枠（メイン/セミ/中盤）に組めば、その枠がどこであっても興行結果処理で自動的に検出・清算される。枠は問わない（メインに置けば既存のビッグマッチ/因縁ブースト — `matchIdx===0` のタイトルマッチ相当の tier=2 判定 — が自然に乗るだけで、システム側から特定の枠を強制することはない）
 - **試合の規格**：通常興行の Pass-1 シミュレーションにそのまま乗る（`App._normalShowMatchTier` — メイン/タイトル/ドームメインのみ tier=2）。旧・即時試合フロー（`matchTier` 固定2 でのビッグマッチ扱い）は廃止
-- **清算処理**：`App._finalizeShowImpl` 内、F08 ディレクティブ処理の直前で `G.bookedCommon1` とカード上の一致ペアを検出し、`Engine.factions.applyCommon1MatchResult` を適用（§3.4.3 は不変）。結果表示は即時試合用モーダルの代わりに、興行結果表示の前段（F09/F08/CR と同じ drain チェーン）で `_renderCommon1MatchResult` を表示する
+- **清算処理**：`App._finalizeShowImpl` 内、F08 ディレクティブ処理の直前で `G.bookedCommon1` とカード上の一致ペアを検出し、`Engine.factions.applyCommon1MatchResult` を適用（§3.4.3 は不変）。選手名と派閥名は予約内の表示文字列を正とせず、`fighterAId` / `fighterBId` / `factionId` から決着時の現行stateを引き直す（名前を持たない旧予約でも`undefined`を出さない）。結果表示は興行結果表示の前段（F09/F08/CR と同じ drain チェーン）で `_renderCommon1MatchResult` を表示する
+- **結果UI**：派閥の序列を動かし得る重要戦として、戴冠・節目防衛と同じ既存A型イベントモーダル（`mdl-a-title-*`）を使う。地の文と決着情報・数値影響は本文／結果欄、`COMMON1_LINES.resultLeader/resultLoser`だけを各選手画像の頭上吹き出しへ置く。旧Common-1専用`.c1r-*`カードは使わない
 - **衝突ルール**：
   - 特別興行週（PPV/春タッグ/秋対抗戦/天頂戦/4団体戦 等）には組み込まない → `Engine.challengeRequest.isEligibleHomeShow` が false の週は自動的に見送り、次の通常興行へ繰り越す
   - 挑戦状(CH系)/B3奪還挑戦/F09対抗戦/派閥内序列戦と**同一興行で重ねない**（`Engine.factions.hasCompetingBooking` が `_crMatchLocked`/`isCRMatch`/`_f09Locked`/`_internalChallengeLocked`/`isReclaim` のいずれかを検出したら、その週の Common-1 清算を見送る。1興行に予約消化は1件まで、先着優先）

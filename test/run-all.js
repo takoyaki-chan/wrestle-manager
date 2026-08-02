@@ -118,6 +118,7 @@ const QUICK = new Set([
   'roster-cap-away-guest-guard-test.js',
   'save-doctor-load-test.js',
   'seasonal-tournament-bgm-continuity-test.js',
+  'special-event-week-block-test.js',
   'show-preview-stale-guard-test.js',
   'show-preview-tag-skip-test.js',
   'showcard-release-cleanup-test.js',
