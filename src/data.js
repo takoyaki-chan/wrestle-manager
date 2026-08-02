@@ -8048,7 +8048,6 @@ const GROWTH_CONFIG = {
   // 追い込みの熱量逓減: 連用するほど効きが落ち(1.8→1.6→…→1.0)、通常練習-1/休養-2で回復。
   // 「毎週押すのが正解」を壊し、ここぞの数週間に使う切り札へ。負傷・wearの代償は満額のまま
   intensiveHeatTable: [1.8, 1.6, 1.4, 1.2, 1.0],
-  aiMatchWearCoef: 0.05,  // AI活動wear(試合数×係数)。プレイヤーの活動由来wearの3〜6割相当
   intensiveCondDrain: 2.0, // condition drain multiplier (legacy, actual drain is hardcoded)
   intensiveInjuryChance: 0.03, // 3% chance of minor injury (v0.2b: 5%→3%)
   intensiveMaxConsec: 2,   // max consecutive intensive weeks
@@ -8529,12 +8528,11 @@ const AI_SCOUT_CFG = {
   B: { idealRoster:10 }
 };
 
-// F1: AI tier differentiation — roster quality caps & growth bonus
-// growth-rebalance v2: tierGrowth引き上げ（AI団体も興行で選手が育つ想定）
+// F1: AI tier differentiation — roster quality caps
 const AI_TIER_LIMITS = {
-  S: { maxProdigies: 99, maxPromising: 99, growthBonus: 1.12, faAggressiveness: 0.60 },
-  A: { maxProdigies: 3,  maxPromising: 99, growthBonus: 1.05, faAggressiveness: 0.40 },
-  B: { maxProdigies: 1,  maxPromising: 99, growthBonus: 1.00, faAggressiveness: 0.20 }
+  S: { maxProdigies: 99, maxPromising: 99, faAggressiveness: 0.60 },
+  A: { maxProdigies: 3,  maxPromising: 99, faAggressiveness: 0.40 },
+  B: { maxProdigies: 1,  maxPromising: 99, faAggressiveness: 0.20 }
 };
 
 // draft-value-rebalance: AI団体のシーズン中FA獲得設定
@@ -8553,33 +8551,30 @@ const DRAFT_SIGNING_BONUS = {
   rivalryRange: { min: 0, max: 0 },    // rivalry変動なし
 };
 
-// AI統一成長 Phase4: AI団体のコーチ環境設定（ティア別）
+// AI統一成長: AI団体の週次行動設定（ティア別）。
+// 実際の成長倍率は雇用コーチの gMult / 能力を Engine.coach 経路から得る。
 const AI_COACH_CONFIG = {
   S: {
     ace: {
       count: 4,
       top1: {
-        coachMul: 1.25,
-        intensiveRate: 0.30,
+        intensiveRate: 0.12,
         practiceRate: 0.85,
       },
       top2_4: {
-        coachMul: 1.20,
-        intensiveRate: 0.25,
+        intensiveRate: 0.10,
         practiceRate: 0.85,
       },
     },
     prospect: {
       count: 2,
       config: {
-        coachMul: 1.18,
-        intensiveRate: 0.20,
+        intensiveRate: 0.08,
         practiceRate: 0.85,
       },
     },
     general: {
-      coachMul: 1.15,
-      intensiveRate: 0.10,
+      intensiveRate: 0.04,
       practiceRate: 0.75,
     },
   },
@@ -8587,18 +8582,15 @@ const AI_COACH_CONFIG = {
     ace: {
       count: 2,
       top1: {
-        coachMul: 1.20,
-        intensiveRate: 0.20,
+        intensiveRate: 0.08,
         practiceRate: 0.80,
       },
       top2_3: {
-        coachMul: 1.15,
-        intensiveRate: 0.15,
+        intensiveRate: 0.06,
         practiceRate: 0.75,
       },
     },
     general: {
-      coachMul: 1.10,
       intensiveRate: 0.0,
       practiceRate: 0.55,
     },
@@ -8607,13 +8599,11 @@ const AI_COACH_CONFIG = {
     ace: {
       count: 1,                    // OVR上位1名がエース
       top1: {
-        coachMul: 1.12,            // 🔧 Cランク相当
         intensiveRate: 0.0,        // 強化練習なし
         practiceRate: 0.55,        // 🔧 55%
       },
     },
     general: {
-      coachMul: 1.08,              // 🔧 Dランク相当
       intensiveRate: 0.0,          // 強化練習なし
       practiceRate: 0.45,          // 🔧 45%
     },
@@ -8631,26 +8621,26 @@ const AI_COACH_STAFFING = {
 // ── 業界底上げ: プレイヤー1位達成後のA/B強化用定数 ────────────────
 // S級は変更なし。A/Bのみ「S級にやや劣る」水準に引き上げ
 const AI_TIER_LIMITS_ELEVATED = {
-  A: { maxProdigies: 8,  maxPromising: 99, growthBonus: 1.10, faAggressiveness: 0.55 },
-  B: { maxProdigies: 5,  maxPromising: 99, growthBonus: 1.08, faAggressiveness: 0.45 }
+  A: { maxProdigies: 8,  maxPromising: 99, faAggressiveness: 0.55 },
+  B: { maxProdigies: 5,  maxPromising: 99, faAggressiveness: 0.45 }
 };
 
 const AI_COACH_CONFIG_ELEVATED = {
   A: {
     ace: {
       count: 3,
-      top1: { coachMul: 1.22, intensiveRate: 0.25, practiceRate: 0.85 },
-      top2_3: { coachMul: 1.18, intensiveRate: 0.20, practiceRate: 0.80 },
+      top1: { intensiveRate: 0.10, practiceRate: 0.85 },
+      top2_3: { intensiveRate: 0.08, practiceRate: 0.80 },
     },
-    general: { coachMul: 1.12, intensiveRate: 0.05, practiceRate: 0.65 },
+    general: { intensiveRate: 0.02, practiceRate: 0.65 },
   },
   B: {
     ace: {
       count: 2,
-      top1: { coachMul: 1.18, intensiveRate: 0.15, practiceRate: 0.75 },
-      top2_3: { coachMul: 1.15, intensiveRate: 0.10, practiceRate: 0.70 },
+      top1: { intensiveRate: 0.06, practiceRate: 0.75 },
+      top2_3: { intensiveRate: 0.04, practiceRate: 0.70 },
     },
-    general: { coachMul: 1.10, intensiveRate: 0.0, practiceRate: 0.55 },
+    general: { intensiveRate: 0.0, practiceRate: 0.55 },
   },
 };
 

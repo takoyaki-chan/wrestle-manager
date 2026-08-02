@@ -1,11 +1,11 @@
 # ⚖️ AI成長パリティ設計書 v0.1
 
-> **ステータス**: 🟢 承認済み・実装待ち(2026-08-02 Keisukeレビュー通過。§9の決着を参照)
+> **ステータス**: 🟢 実装済み・40年較正完了(2026-08-02。実装内容は growth-system-spec-v2.2 に統合。100年最終確認は実行環境の時間上限により再実行待ち)
 > **実装指示書**: docs/ai-growth-parity-claude-code-prompt.md(実装はメインセッションで行う)
 > **作成日**: 2026-08-01
 > **裁定**: 2026-08-01 Keisuke「公平な対決」原則(全項目対称化 / AIは追い込みを控えめに / leagueElevated再較正を含める)
-> **依存**: growth-system-spec-v2.1 / rival-org-spec-v1.0 / shachoshitsu-care-rework-spec-v1.0
-> **実装箇所(予定)**: management.js(processAIWeek / AIシーズン末処理), data.js(AI_COACH_CONFIG系 / GROWTH_CONFIG)
+> **依存**: growth-system-spec-v2.2 / rival-org-spec-v1.0 / shachoshitsu-care-rework-spec-v1.0
+> **実装箇所**: management.js(processAIWeek / AIシーズン末処理 / validateGameState), data.js(AI_COACH_CONFIG系 / GROWTH_CONFIG), test/ai-growth-parity-test.js
 > **🔧 = 較正対象パラメータ**。§6の計測で確定するまで仮値
 
 ---
@@ -161,6 +161,16 @@ wear見積り(S top1): 0.12 × 実効練習約40週 ≒ 4.8追い込み週/シ�
 3. 比較指標: S/A/Bトップ層到達OVR分布 / カンスト率 / AI引退年齢 / AIロスター人数 / プレイヤー成長ログ一致(I4)
 4. §3のrate・P-5の確率は上記の結果で判断し、動かす場合のみ40年グリッド(候補値±50%の2点)
 5. 採用値の最終確認だけ100年×1本
+
+---
+
+## §6.1 実装後較正結果（2026-08-02）
+
+- 同一5シード（1001 / 2002 / 3003 / 4004 / 5005）を通常・開幕から`leagueElevated`強制の各40シーズンで完走。全10ランで **errors=0 / invariant violations=0**。
+- 通常AI S級のフルウィンドウ主集計は到達率 mean 80.9%、median 85.4%、p95 93.9%。上位寄りの到達帯はG1の下限に近く、初期採用値（S 50%、elevated A 30%）と`intensiveRate`は変更しない。
+- elevated後のAI A級は mean 84.8%、median 87.6%（通常A級 mean 83.3%、median 85.3%）。通常S級を超えず、底上げは限定的に留まる。
+- I5は季節境界を含めて検証済み。`advanceWeek`の全早期return後にAI状態を正規化し、decayStartAge到達後の`strainDebt`を保存しない。
+- 100シーズン最終確認は環境の10分上限で50/100シーズン到達時にタイムアウトした。クラッシュ・不変条件違反の出力はなかったが、完走結果ではないため、時間上限のない環境で1本だけ再実行する。
 
 ---
 

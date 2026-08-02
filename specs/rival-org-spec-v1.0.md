@@ -101,21 +101,23 @@
 
 ---
 
-## §4 AI処理パイプライン（v2.0: 週次化）
+## §4 AI処理パイプライン（v2.2: 成長入力パリティ）
 
 ### §4.0 週次処理: processAIWeek（毎週tickWeek内で実行）
 
-v2.0でシーズン末一括処理を廃止し、プレイヤーと同等の週次処理に移行。
+シーズン末一括成長を廃止し、AIを「毎週balanceを選ぶ社長」として週次処理する。成長式・熱量・追い込みの代償はプレイヤーと共通で、差は行動率とプレイヤーの能動判断だけに残す。
 
 ```
 processAIWeek 処理内容:
   1. 怪我回復・体調管理
-  2. 練習週: AI_COACH_CONFIG依存の成長計算（calcGrowthと同一式）
-  3. 興行週: AIプロモ→AI試合生成→タイトルマッチ管理
-  4. 試合後: applyMatchResult（Bond/Rivalry/ブレークスルー/スランプ等）
-  5. applyShowTrust（信頼度更新）
-  6. processAICare（trust<55の選手へのケア）
-  7. processAIWeeklyEvent（通知型/選択型イベント自動処理）
+  2. 体調60未満なら自動休養（heat -2）
+  3. 興行週もAIプロモ判定。実行者以外は練習判定へ進む
+  4. 練習: AI_COACH_CONFIGの行動率 + calcGrowth + 熱量テーブル
+  5. 興行: AI試合生成→タイトルマッチ管理
+  6. 試合後: applyMatchResult（Bond/Rivalry/ブレークスルー/スランプ等）
+  7. applyShowTrust（信頼度更新）
+  8. processAICare（trust<55の選手へのケア）
+  9. processAIWeeklyEvent（通知型/選択型イベント自動処理）
 ```
 
 ### §4.0a processAICare（v2.0新設）
@@ -135,7 +137,7 @@ processAIWeek 処理内容:
 ```
 offWeek 1: processSeasonEnd
   1. 加齢 — 全選手+1歳
-  2. 衰退判定（wear蓄積・decay）
+  2. 共通の季末wear/strainDebt式 → 衰退判定（wear蓄積・decay）
   3. 引退判定
   4. 契約退団判定（processAIContracts: trustベース）
 
@@ -143,24 +145,28 @@ offWeek 3: AIスカウト + AIロスター補強
 offWeek 4: AI間移籍 + FA獲得
 ```
 
-### §4.2 AI成長モデル（v2.0: 週次・プレイヤー同等）
+### §4.2 AI成長モデル（v2.2: balance入力と同等）
 
-**aiSeasonGrowth一括計算は廃止**。processAIWeek内で毎週calcGrowthと同一式で計算。
+**aiSeasonGrowth一括計算は廃止**。processAIWeek内で毎週 `calcGrowth` と同一式で計算する。追い込みは体調50以上・連続2週未満に限り、`_heat` を追い込み+1／通常練習-1／休養-2で更新する。AI追い込みの倍率も `intensiveHeatTable[_heat]` であり、固定×1.8ではない。
 
 ```javascript
-// AI_COACH_CONFIG（data.js）: ティア別コーチ環境
+// AI_COACH_CONFIG（data.js）: ティア別の行動率。成長倍率は実コーチから得る
 const AI_COACH_CONFIG = {
-  S: { ace: { coachMul: 1.25, intensiveRate: 0.30, practiceRate: 0.85 },
-       prospect: { coachMul: 1.18, intensiveRate: 0.20, practiceRate: 0.85 },
-       regular: { coachMul: 1.15, intensiveRate: 0.10, practiceRate: 0.75 } },
-  A: { ace: { coachMul: 1.20, intensiveRate: 0.20, practiceRate: 0.80 },
-       regular: { coachMul: 1.10, intensiveRate: 0.10, practiceRate: 0.55 } },
-  B: { ace: { coachMul: 1.12, intensiveRate: 0.10, practiceRate: 0.55 },
-       regular: { coachMul: 1.08, intensiveRate: 0, practiceRate: 0.45 } }
+  S: { top1: { intensiveRate: 0.12, practiceRate: 0.85 },
+       top2_4: { intensiveRate: 0.10, practiceRate: 0.85 },
+       prospect: { intensiveRate: 0.08, practiceRate: 0.85 },
+       general: { intensiveRate: 0.04, practiceRate: 0.75 } },
+  A: { top1: { intensiveRate: 0.08, practiceRate: 0.80 },
+       top2_3: { intensiveRate: 0.06, practiceRate: 0.75 },
+       general: { intensiveRate: 0.00, practiceRate: 0.55 } },
+  B: { top1: { intensiveRate: 0.00, practiceRate: 0.55 },
+       general: { intensiveRate: 0.00, practiceRate: 0.45 } }
 };
 ```
 
-成長式はプレイヤーと同じ: `baseLearning(2.0) × (remaining/trainCap) × ageMul × coachMul × variance`
+`leagueElevated`中はA top1/top2_3/generalが `.10/.08/.02`、B top1/top2_3/generalが `.06/.04/.00`。practiceRateは据え置く。
+
+成長式はプレイヤーと同じ: `baseLearning(3.0) × (remaining/trainCap)^1.3 × ageMul × 実コーチ倍率 × variance`。
 
 ### §4.2 人気変動（シーズン末一括）
 
@@ -181,23 +187,19 @@ function aiSeasonPopularity(fighter, orgTier) {
 }
 ```
 
-### §4.3 AI団体のコーチ・施設水準
+### §4.3 AI団体のコーチ・限定トレーナー
 
-AI団体はコーチ・施設を個別管理せず、ティアに応じた固定倍率で近似。
+AI団体は `ALL_COACHES` の実コーチを雇用・担当割り当てし、`gMult`、スタイル一致、能力をプレイヤーと同じ `Engine.coach` 経路で適用する。固定 `coachMul` は使わない。
 
-| AI団体ティア | coachMul 🔧 | facilityMul 🔧 | 想定 |
-|:----------:|:----------:|:-------------:|------|
-| S（EMPRESS） | 1.30 | 1.15 | S級コーチ＋Lv4施設相当 |
-| A（NOVA） | 1.15 | 1.10 | A級コーチ＋Lv3施設相当 |
-| B（CRESCENT） | 1.00 | 1.05 | B級コーチ＋Lv2施設相当 |
+シーズン開幕時、S級は50%、leagueElevated中のA級は30%で、`trainCapOVR`上位3名のうち `wear=0` かつ `statPeak`比の低下ゼロの選手へ1名だけ個別トレーナーを付与する。プレイヤー外部コーチ招聘と同じ4週・倍率・能力を使い、業界全体で最大2名。卒業イベント／延長／化けるには接続しない。
 
 ### §4.4 衰退処理
 
-training-system-spec §5.3〜5.4を**そのまま適用**。AI用に簡略化しない。
+`applySeasonTrainingWear` をプレイヤーと共用する。`baseWear(10±3) + 年間試合数補正 + seasonInjuries×2 + seasonIntensiveWeeks×0.15 − 実効耐久 + 初到達年のstrainDebt` に延命術×0.50を適用する。開始前は `strainDebt += intensiveWeeks×0.25`、開始後は負債を0にする。`aiMatchWearCoef` は廃止済み。
 
 ```javascript
-// training-spec §5.3 と完全に同じ処理
-applyAging(fighter)
+applySeasonTrainingWear(fighter)
+applyDecay(fighter)
 ```
 
 理由: AI選手もプレイヤー団体に移籍する可能性があるため、能力値の履歴がプレイヤー側と矛盾しないようにする。

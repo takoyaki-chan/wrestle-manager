@@ -7495,11 +7495,11 @@ const Engine = {
      *  それ以前の衰えは表示されない。**衰えの履歴を捏造しない**という従来の方針どおり。 */
     trackStatPeaks(state) {
       const roster = state && state.roster;
-      if (!Array.isArray(roster) || !roster.length) return state;
+      if (!state) return state;
       const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
       const capRatio = (typeof GROWTH_CONFIG !== 'undefined' && GROWTH_CONFIG.wearCapDecayRatio) || 0;
       let touched = false;
-      const next = roster.map(c => {
+      const trackRoster = entries => (entries || []).map(c => {
         if (!c || c.isRental) return c;   // レンタルは元所属先が管理する
 
         // 既存セーブの初回だけ、**記録済みの天井の落ち幅から**過去の最高値を復元する。
@@ -7529,7 +7529,20 @@ const Engine = {
         touched = true;
         return { ...c, statPeak: peak };
       });
-      return touched ? { ...state, roster: next } : state;
+      const next = Array.isArray(roster) ? trackRoster(roster) : roster;
+      let aiOrgs = state.aiOrgs;
+      if (aiOrgs && typeof aiOrgs === 'object') {
+        const nextAiOrgs = {};
+        Object.entries(aiOrgs).forEach(([orgId, org]) => {
+          if (!org || !Array.isArray(org.roster)) {
+            nextAiOrgs[orgId] = org;
+            return;
+          }
+          nextAiOrgs[orgId] = { ...org, roster: trackRoster(org.roster) };
+        });
+        aiOrgs = nextAiOrgs;
+      }
+      return touched ? { ...state, roster: next, aiOrgs } : state;
     },
 
     // Apply wear-based stat decay (v1.3-1 §3) + §1.5 ベテラン調整トレイト
@@ -7565,6 +7578,38 @@ const Engine = {
       return f;
     },
 
+    /**
+     * シーズン末の追い込み由来 wear / strainDebt を加算する共通ルーチン。
+     * プレイヤーとAIは同じ成長入力の代償を払い、違いは週次の采配だけにする。
+     * prevAge は加齢前の年齢で、decayStartAgeに初到達した年の負債清算に使う。
+     */
+    applySeasonTrainingWear(rng, G, fighter, prevAge) {
+      let nc = { ...fighter };
+      const effDura = Engine.growth.getEffectiveDurability(nc);
+      const decayStartAge = 23 + effDura;
+      const ageBeforeSeasonEnd = prevAge != null ? prevAge : (nc.age || 17);
+      const seasonIntWeeks = nc.seasonIntensiveWeeks || 0;
+
+      if (nc.age >= decayStartAge) {
+        const baseWear = 10 + Engine.rng.int(rng, -3, 3); // 7〜13
+        let wearBonus = 0;
+        const avgMatches = Math.round(((nc.wins || 0) + (nc.losses || 0) + (nc.draws || 0)) / nc.careerSeasons);
+        if (avgMatches >= 40) wearBonus += 3;
+        wearBonus += (nc.seasonInjuries || 0) * 2;
+        wearBonus += Math.round(seasonIntWeeks * GROWTH_CONFIG.intensiveWearPerWeek);
+        wearBonus -= effDura;
+        const debtPayoff = ageBeforeSeasonEnd < decayStartAge ? (nc.strainDebt || 0) : 0;
+        let finalWear = Math.max(1, baseWear + wearBonus + debtPayoff);
+        // 延命術は追い込み・怪我・試合・負債を含むシーズンwear全体に同じく効く。
+        finalWear = Math.max(1, Math.round(finalWear * Engine.coach.getWearMult(G, nc.id)));
+        nc = { ...nc, wear: (nc.wear || 0) + finalWear, strainDebt: 0 };
+      } else {
+        nc.strainDebt = (nc.strainDebt || 0) + seasonIntWeeks * GROWTH_CONFIG.strainDebtPerIntensiveWeek;
+      }
+      nc.seasonIntensiveWeeks = 0;
+      return nc;
+    },
+
     // Season end: aging + decay + growth reset for player roster
     applySeasonEnd(rng, G) {
       const report = [];
@@ -7578,42 +7623,7 @@ const Engine = {
         let nc = { ...c, age: (c.age || 17) + 1, careerSeasons: (c.careerSeasons || 0) + 1,
                    seasonGrowth: { ...(c.seasonGrowth || {pw:0,sp:0,te:0,st:0,mn:0}) },
                    promoStack: 0 }; // プロモ改修 v1.0: シーズン末リセット
-        // v1.3-1: wear蓄積 — decayより先に計算し、今シーズンのdecayに反映させる (§2.1)
-        // 早熟/晩成/鉄人 等の trait は durability に合算した実効値で扱う
-        const effDura = Engine.growth.getEffectiveDurability(nc);
-        const decayStartAge = 23 + effDura;
-        // growth-rebalance v1.0 (2026-07-26): 「追い込み」の代償を選手の消耗として払わせる。
-        // - decayStartAge到達後: シーズン内の追い込み週数(seasonIntensiveWeeks)に比例してwearが積む(累積式)。
-        //   旧実装は intensiveWeeks(連続カウンタ、UI上限2で頭打ち) >= 12 の閾値式で実質発火しない死んだ分岐だった。
-        // - decayStartAge到達前: wearは溜めず、代わりに strainDebt(隠れた負債)として溜める。
-        //   24歳前後で急に衰え始める不自然さを避けるため。到達した最初のシーズンにまとめてwearへ変換する
-        //   （＝追い込んでいる最中は快調のまま、衰えの入口に立った時点で既に消耗している）。
-        const prevAge = c.age || 17; // 今シーズン開始時点（加齢前）の年齢。decayStartAge初到達の判定に使う
-        const seasonIntWeeks = nc.seasonIntensiveWeeks || 0;
-        if (nc.age >= decayStartAge) {
-          const baseWear = 10 + Engine.rng.int(rng, -3, 3); // 7〜13
-          let wearBonus = 0;
-          // 年間試合数補正: キャリア平均で近似
-          const avgMatches = Math.round(((nc.wins || 0) + (nc.losses || 0) + (nc.draws || 0)) / nc.careerSeasons);
-          if (avgMatches >= 40) wearBonus += 3;
-          // v1.3-2: §5.3 シーズン中の怪我回数 × 2
-          wearBonus += (nc.seasonInjuries || 0) * 2;
-          // growth-rebalance v1.0: 追い込み週数に比例した消耗（閾値式→累積式）
-          wearBonus += Math.round(seasonIntWeeks * GROWTH_CONFIG.intensiveWearPerWeek);
-          // TODO: rest週 24週以上 → -3 (要: restWeeks フィールド追加)
-          // durability補正（耐久値が高いほどwear増加が遅い） — trait 合算済み
-          wearBonus -= effDura;
-          // growth-rebalance v1.0: decayStartAge初到達シーズンなら、若い頃に溜めたstrainDebtを一括清算
-          const debtPayoff = (prevAge < decayStartAge) ? (nc.strainDebt || 0) : 0;
-          let finalWear = Math.max(1, baseWear + wearBonus + debtPayoff);
-          // v0.2: 延命術 — wear蓄積 ×0.50（strainDebt清算分も含めて軽減される）
-          finalWear = Math.max(1, Math.round(finalWear * Engine.coach.getWearMult(G, nc.id)));
-          nc = { ...nc, wear: (nc.wear || 0) + finalWear, strainDebt: 0 };
-        } else {
-          // decayStartAge未到達: wearには触れず、strainDebtとして積み立てる
-          nc.strainDebt = (nc.strainDebt || 0) + seasonIntWeeks * GROWTH_CONFIG.strainDebtPerIntensiveWeek;
-        }
-        nc.seasonIntensiveWeeks = 0; // シーズンリセット（intensiveWeeksは連続カウンタなので既存のまま週次で管理）
+        nc = Engine.growth.applySeasonTrainingWear(rng, G, nc, c.age || 17);
         const beforeDecay = { pw:nc.pw, sp:nc.sp, te:nc.te, st:nc.st, mn:nc.mn };
         nc = Engine.growth.applyDecay(rng, nc, Engine.coach.getDecayReduction(G, nc.id));
         const changes = {};
@@ -8078,6 +8088,11 @@ const Engine = {
         careerRecord: Engine.career.createRecord(),
         durability,
         wear: initWear,
+        strainDebt: 0,
+        seasonIntensiveWeeks: 0,
+        intensiveWeeksTotal: 0,
+        _heat: 0,
+        statPeak: { pw: current.pw, sp: current.sp, te: current.te, st: current.st, mn: current.mn },
         seasonInjuries: 0,
         careerHistory: [],
         growthPenalty: null,
@@ -8371,7 +8386,6 @@ const Engine = {
         orgId: cfg.id,
         name: cfg.name,
         tier: cfg.tier,
-        coachMul: cfg.coachMul,
         roster: data.roster,
         orgPop: data.orgPop,
         coaches: data.coaches || [],
@@ -8408,7 +8422,18 @@ const Engine = {
         const org = aiOrgs[orgId];
         sanitized[orgId] = org ? {
           ...org,
-          roster: Engine.rival.dedupeRoster(org.roster || []),
+          roster: Engine.rival.dedupeRoster(org.roster || []).map(f => {
+            const decayStartAge = 23 + Engine.growth.getEffectiveDurability(f);
+            return {
+              ...f,
+              // 旧セーブや移籍で持ち込まれた負債も、衰退開始後には残さない。
+              strainDebt: (f.age || 0) >= decayStartAge ? 0 : (f.strainDebt ?? 0),
+              seasonIntensiveWeeks: f.seasonIntensiveWeeks ?? 0,
+              intensiveWeeksTotal: f.intensiveWeeksTotal ?? 0,
+              _heat: f._heat ?? 0,
+              statPeak: f.statPeak || { pw: f.pw, sp: f.sp, te: f.te, st: f.st, mn: f.mn },
+            };
+          }),
           coaches: Array.isArray(org.coaches) ? [...org.coaches] : [],
           coachAssign: { ...(org.coachAssign || {}) },
         } : org;
@@ -8664,6 +8689,82 @@ const Engine = {
         return config.ace.top1;
       }
       return config.general;
+    },
+
+    /** P-5: 今季の個別トレーナー候補。wear と記録済みの衰えが少しでもあれば除外する。 */
+    getAISeasonTrainerCandidates(roster) {
+      const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
+      return [...(roster || [])]
+        .sort((a, b) => Engine.rival.trainCapOVR(b) - Engine.rival.trainCapOVR(a))
+        .slice(0, 3)
+        .filter(f => {
+          if ((f.wear || 0) !== 0) return false;
+          const peak = f.statPeak || {};
+          return !STATS.some(stat => peak[stat] != null && (f[stat] || 0) < peak[stat]);
+        });
+    },
+
+    /**
+     * P-5: シーズン開幕時に最大2団体へ4週だけ個別トレーナーを付与する。
+     * バフの効果・期間はプレイヤーの外部コーチ招聘と同じ _inviteBuff / calcInviteMult を使う。
+     * AIは卒業イベントや覚醒を処理しないため、ここでは純粋に成長入力だけを対称化する。
+     */
+    assignAISeasonTrainers(state) {
+      if (!state || !state.aiOrgs) return state?.aiOrgs;
+      const nextAiOrgs = { ...state.aiOrgs };
+      let assignedCount = 0;
+
+      RIVAL_ORGS.forEach(org => {
+        if (assignedCount >= 2) return;
+        const orgData = nextAiOrgs[org.id];
+        if (!orgData || !Array.isArray(orgData.roster)) return;
+        const chance = org.tier === 'S' ? 0.50
+          : (org.tier === 'A' && state.leagueElevated ? 0.30 : 0);
+        if (chance <= 0) return;
+
+        const trainerRng = Engine.rng.create(Engine.rng.derive(
+          state.rngSeed, state.season, org.id.charCodeAt(4) || 0, 0xA171
+        ));
+        if (Engine.rng.float(trainerRng) >= chance) return;
+
+        const candidates = Engine.rival.getAISeasonTrainerCandidates(orgData.roster);
+        const coachIds = orgData.coaches || [];
+        const coaches = coachIds.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+        if (candidates.length === 0 || coaches.length === 0) return;
+
+        const fighter = candidates[Engine.rng.int(trainerRng, 0, candidates.length - 1)];
+        const coach = coaches[Engine.rng.int(trainerRng, 0, coaches.length - 1)];
+        const aiState = Engine.rival.buildAIState(state, orgData, orgData.roster, org.tier);
+        const invite = Engine.shachoshitsu.calcInviteMult(coach, fighter, aiState);
+        const roster = orgData.roster.map(f => f.id === fighter.id ? {
+          ...f,
+          _inviteBuff: {
+            coachId: coach.id,
+            mult: invite.mult,
+            compat: invite.compat,
+            weeksLeft: 4,
+            totalWeeks: 4,
+            source: 'aiSeasonTrainer',
+          },
+        } : f);
+        nextAiOrgs[org.id] = { ...orgData, roster };
+        assignedCount++;
+      });
+
+      return nextAiOrgs;
+    },
+
+    /** AI側の招聘は4週で静かに終了する。プレイヤー用の卒業・覚醒イベントには接続しない。 */
+    tickAISeasonTrainerBuffs(roster) {
+      return (roster || []).map(f => {
+        const buff = f._inviteBuff;
+        if (!buff || buff.source !== 'aiSeasonTrainer') return f;
+        if (buff.weeksLeft <= 1) {
+          const { _inviteBuff: _, ...rest } = f;
+          return rest;
+        }
+        return { ...f, _inviteBuff: { ...buff, weeksLeft: buff.weeksLeft - 1 } };
+      });
     },
 
     /** AI試合カード生成: OVR近接ペアリング + matchupLog鮮度考慮 + 因縁スコアリング(v2.1) */
@@ -9217,6 +9318,19 @@ const Engine = {
           return nc;
         }
 
+        const stateForCalc = tierState();
+        const condBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
+
+        // balance と同じ安全弁: 体調を崩した選手は興行週も含めて自動休養する。
+        if ((nc.condition || 70) < 60) {
+          const restIronBonus = (nc.traits || []).includes('鉄人') ? 3 : 0;
+          nc.condition = Math.min(100, (nc.condition || 70) + 8 + Engine.rng.int(rng, 0, 7) + condBonus + restIronBonus);
+          nc.intensiveWeeks = 0;
+          if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 2);
+          return nc;
+        }
+
+        let didPromo = false;
         if (isShow) {
           // AI プロモ: 興行週に非エース（general枠）の華/ファンサ持ちがプロモ
           const showConfig = Engine.rival.getEffectiveCoachConfig(org.tier, state.leagueElevated);
@@ -9234,15 +9348,15 @@ const Engine = {
             nc.promoStack = Math.min(3, (nc.promoStack || 0) + 1);
             nc.promoCountSeason = (nc.promoCountSeason || 0) + 1;
             nc.mediaRevSeason = (nc.mediaRevSeason || 0) + Math.round((nc.popularity || 1) * MEDIA_CONFIG.promoPerPop);
+            didPromo = true;
           }
-          return nc;
         }
+        // プロモ実行者だけは、おまかせと同様にこの週の練習を行わない。
+        if (didPromo) return nc;
 
         const aceConfig = Engine.rival.getAceConfig({ ...org, roster }, nc, state.leagueElevated);
         const roll = Engine.rng.float(rng);
-        const stateForCalc = tierState();
         const statusBlocked = nc.slump || nc.motivationLoss;
-        const condBonus = Engine.coach.getCondBonus(stateForCalc, nc.id);
 
         if (roll < aceConfig.practiceRate) {
           if (nc._boycottZeroGrowth) {
@@ -9251,15 +9365,18 @@ const Engine = {
             return nc;
           }
 
-          const isIntensive = Engine.rng.float(rng) < aceConfig.intensiveRate;
+          const canIntensive = (nc.condition || 70) >= GROWTH_CONFIG.intensiveMinCond
+            && (nc.intensiveWeeks || 0) < GROWTH_CONFIG.intensiveMaxConsec;
+          const isIntensive = canIntensive && Engine.rng.float(rng) < aceConfig.intensiveRate;
           const growStat = Engine.coach.pickGrowthStat(rng, stateForCalc, nc.id);
-          const growth = Engine.growth.calcGrowth(rng, stateForCalc, nc, growStat);
+          // calcGrowth に intensive を渡し、プレイヤーと同じ heat table を唯一の倍率源にする。
+          const growth = Engine.growth.calcGrowth(rng, stateForCalc, { ...nc, intensive: isIntensive }, growStat);
           const statusMult = statusBlocked ? 0 : (nc.hotStreak ? 1.15 : 1.0);
-          const intensiveMult = isIntensive ? GROWTH_CONFIG.intensiveMult : 1.0;
+          const trainerMult = Engine.shachoshitsu.getTrainerMult(nc);
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
-          const trainGrowth = Math.round(growth * statusMult * intensiveMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
+          const trainGrowth = Math.round(growth * statusMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
 
           if (trainGrowth > 0) {
             const _gain = Math.round(Math.min(trainGrowth, Math.max(0, (nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100) - nc[growStat])));
@@ -9275,19 +9392,28 @@ const Engine = {
               nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
             }
             nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
+            nc.seasonIntensiveWeeks = (nc.seasonIntensiveWeeks || 0) + 1;
+            if (GROWTH_CONFIG.intensiveHeatTable !== null) {
+              nc._heat = Math.min((nc._heat ?? 0) + 1, GROWTH_CONFIG.intensiveHeatTable.length - 1);
+            }
           } else {
             const ironBonus = (nc.traits || []).includes('\u9244\u4eba') ? 2 : 0;
             nc.condition = Math.max(0, (nc.condition || 70) - (3 + Engine.rng.int(rng, 0, 3)) + condBonus + ironBonus);
             nc.intensiveWeeks = 0;
+            if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 1);
           }
         } else {
           nc.condition = Math.min(100, (nc.condition || 70) + 8 + Engine.rng.int(rng, 0, 7) + condBonus);
           nc.intensiveWeeks = 0;
+          if (GROWTH_CONFIG.intensiveHeatTable !== null) nc._heat = Math.max(0, (nc._heat ?? 0) - 2);
         }
 
         nc.condition = Math.min(100, (nc.condition || 70) + 3 + condBonus);
         return nc;
       });
+
+      // AIの季節トレーナーはプレイヤーの招聘と同じ4週だけ効く。卒業/覚醒イベントは発生させない。
+      roster = Engine.rival.tickAISeasonTrainerBuffs(roster);
 
       if (isShow && state.week !== PPV_SHOW_WEEK) {
         const aiShowState = tierState();
@@ -9941,20 +10067,12 @@ const Engine = {
         let roster = aiData.roster.map(f => ({ ...f }));
         const retiredNames = [];
 
-        // Step 1: 加齢 + wear蓄積 (v1.3-1 §7 — AI team: baseWear + durability補正 only)
-        // trait 合算済み実効 durability を使用
-        roster.forEach(f => {
-          f.age = (f.age || 17) + 1;
-          f.careerSeasons = (f.careerSeasons || 0) + 1; // v1.4: 新人王判定用
-          const aiEffDura = Engine.growth.getEffectiveDurability(f);
-          const aiDecayStart = 23 + aiEffDura;
-          if (f.age >= aiDecayStart) {
-            const aiBaseWear = 10 + Engine.rng.int(rng, -3, 3);
-            const aiMatchWear = GROWTH_CONFIG.aiMatchWearCoef > 0
-              ? Math.round((f.wins + f.losses + f.draws) * GROWTH_CONFIG.aiMatchWearCoef)
-              : 0;
-            f.wear = (f.wear || 0) + Math.max(1, aiBaseWear - aiEffDura) + aiMatchWear;
-          }
+        // Step 1: 加齢 + 追い込みwear/strainDebt。プレイヤーと同じ共通式を使う。
+        const aiWearState = Engine.rival.buildAIState(state, aiData, roster, org.tier);
+        roster = roster.map(f => {
+          const prevAge = f.age || 17;
+          const aged = { ...f, age: prevAge + 1, careerSeasons: (f.careerSeasons || 0) + 1 };
+          return Engine.growth.applySeasonTrainingWear(rng, aiWearState, aged, prevAge);
         });
 
         // Step 2: 能力低下 (v1.3-1 §3 — wear-based)
@@ -10062,7 +10180,8 @@ const Engine = {
           seasonBestMQ: 0, seasonBestMQMatch: null };
       });
 
-      return { aiOrgs: newAiOrgs, events, retiredCharIds: allRetiredCharIds };
+      // I5: オフシーズン内の契約移動・世代交代後も、AI成長の保存値を即時に正規化する。
+      return { aiOrgs: Engine.rival.sanitizeAIOrgs(newAiOrgs), events, retiredCharIds: allRetiredCharIds };
     },
 
     /** AI契約退団: trust不満ベースの退団判定（processSeasonEnd内で呼び出し） */
@@ -12713,6 +12832,10 @@ const Engine = {
         };
       }
     }
+
+    // AI成長パリティ I5: 週内の移籍・イベントで持ち込まれた旧形式の負債をここで正規化する。
+    // validateGameState の前に行うため、通常進行で不変条件違反ログを積み上げない。
+    if (s.aiOrgs) s = { ...s, aiOrgs: Engine.rival.sanitizeAIOrgs(s.aiOrgs) };
 
     // 自己最高値の更新（2026-07-27 Keisuke）。
     // 「今まで一番高くまで行った能力値」を**毎週**控える。衰えの表示はここを基準にする。
@@ -16452,6 +16575,9 @@ const Engine = {
           });
           s = { ...s, aiOrgs: resetAiOrgs };
         }
+        // ai-growth-parity P-5: 新シーズンの個別トレーナー判定。
+        // 専用の派生RNGを使うため、プレイヤー側の乱数列と成長ログには影響しない。
+        s = { ...s, aiOrgs: Engine.rival.assignAISeasonTrainers(s) };
         // v3.0: コーチプールのシーズンローテーション
         const coachPoolRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, 0xC0AC));
         s = { ...s, availableCoaches: Engine.coach.generateSeasonalPool(coachPoolRng, s) };
@@ -24329,6 +24455,18 @@ Engine.sanitizeFloats = function(G) {
   return G;
 };
 
+// AI成長パリティ I5: advanceWeek はPPV・契約・オフシーズンなど複数の早期returnを持つ。
+// 全ての遷移結果をここで一度だけ正規化し、どの境界でもdecayStartAge後の負債を保存しない。
+const advanceWeekWithAIGrowthParity = Engine.advanceWeek;
+Engine.advanceWeek = function advanceWeekNormalized(state) {
+  const result = advanceWeekWithAIGrowthParity(state);
+  if (!result || !result.state || !result.state.aiOrgs) return result;
+  return {
+    ...result,
+    state: { ...result.state, aiOrgs: Engine.rival.sanitizeAIOrgs(result.state.aiOrgs) },
+  };
+};
+
 //  validateGameState: ランタイム不変条件チェック（常時オン）
 //  違反検出時はconsole.warnに出力し、G.debugLogに記録する。ゲーム進行は止めない。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -24602,6 +24740,23 @@ Engine.validateGameState = function(G) {
           // AI統一成長: condition/winsなどの数値検証
           if (c.condition !== undefined && !isValidNum(c.condition)) {
             warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) のconditionが不正値: ${c.condition}`);
+          }
+          const heat = c._heat ?? 0;
+          if (!isValidNum(heat) || heat < 0 || heat > 4) {
+            warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) の_heatが範囲外: ${c._heat}（範囲: 0-4）`);
+          }
+          const seasonIntensiveWeeks = c.seasonIntensiveWeeks ?? 0;
+          if (!isValidNum(seasonIntensiveWeeks) || seasonIntensiveWeeks < 0) {
+            warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) のseasonIntensiveWeeksが不正値: ${c.seasonIntensiveWeeks}`);
+          }
+          const strainDebt = c.strainDebt ?? 0;
+          if (!isValidNum(strainDebt) || strainDebt < 0) {
+            warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) のstrainDebtが不正値: ${c.strainDebt}`);
+          }
+          const decayStartAge = 23 + Engine.growth.getEffectiveDurability(c);
+          if ((c.age || 0) >= decayStartAge && strainDebt !== 0) {
+            warn(`AI団体 "${orgId}" のキャラ "${c.name}" (id:${c.id}) はdecayStartAge到達後にstrainDebtが残存: ${strainDebt}→0に修正`);
+            c.strainDebt = 0;
           }
         });
       }

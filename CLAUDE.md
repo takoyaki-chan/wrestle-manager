@@ -145,8 +145,9 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
 | contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |
 | economy-spec-v2.0.md | 収支バランス(グッズ/メディア/給与/精算) |
-| growth-system-spec-v2.0.md | trainCap距離ベース成長/年齢/追い込み → v2.1 |
-| growth-system-spec-v2.1.md | 成長リバランス v2.0反映（指数ブレーキ/追い込み熱量/AI活動wear） |
+| growth-system-spec-v2.0.md | trainCap距離ベース成長/年齢/追い込み → v2.2 |
+| growth-system-spec-v2.1.md | （旧）成長リバランスv2.0。AI活動wearの非対称は v2.2 で撤回 |
+| growth-system-spec-v2.2.md | **成長システム確定仕様**（指数ブレーキ/追い込み熱量/AI成長パリティ/共通wear/限定AIトレーナー） |
 | large-event-spec-v1.0.md | 大型イベントB1-B4(怪我/対立/挑戦状/メディア) |
 | personality-archetype-spec-v1.0.md | 性格6種×アーキタイプ6種の相性マトリクス |
 | ppv-grand-final-spec-v2.0.md | PPV GRAND FINAL(エントリー/頂上決戦/報酬) |
@@ -220,7 +221,7 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | prospect-assessment-spec-v1.0.md | 見立て評価(ドラフト級/スカウト/初期ドラフトのティア再設計。年齢ブレンド+ブレ、超逸材~2%、FA対象外。実装完了 2026-07-30) |
 | tournament-coach-wrapup-spec-v1.0.md | 特別興行後のコーチ総括(5大会共通/言及は最大2名/voice 8系統×成績6段/_tcwGate の fail-open と onDone 1回保証。実装完了 2026-08-01) |
 | mq-system-spec-v1.0.md | MQシステム確定仕様(三層構造/finalize一本化+profile5種/OVシーリング4セグメント+超過レイヤー/固定加算全廃→リング内化/観客熱×注目度/歴代記録シングル90・タッグ94分離/大ニュース新聞5種+週頭通知。P1〜P5全実装完了 2026-07-24。設計経緯は docs/mq-redesign-proposal-v0.5.md) |
-| ai-growth-parity-spec-v0.1.md | AI成長パリティ(成長入力のAI/プレイヤー対称化。興行週練習解禁/体調安全弁/熱量逓減/wear共通化/トレーナー限定付与/AI追い込み節度/leagueElevated再較正。**承認済み・実装待ち 2026-08-02**、指示書: docs/ai-growth-parity-claude-code-prompt.md。growth-spec v2.1 §6.2/§9の裁定を上書き) |
+| ai-growth-parity-spec-v0.1.md | AI成長パリティの設計経緯（興行週練習/体調安全弁/熱量/wear共通化/限定トレーナー/intensiveRate再較正）。**実装済み・40年較正完了 2026-08-02**（100年最終確認は環境時間上限のため再実行待ち）。確定仕様は growth-system-spec-v2.2、指示書: docs/ai-growth-parity-claude-code-prompt.md |
 
 ## UI実装ルール(必読)
 

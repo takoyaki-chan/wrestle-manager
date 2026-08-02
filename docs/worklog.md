@@ -1,5 +1,20 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## AI成長パリティ実装・40年較正完了（2026-08-02）
+
+AIを「毎週おまかせ(balance)を押す社長」として、成長式だけでなく**成長入力と代償**をプレイヤー側へ揃えた。確定仕様は `specs/growth-system-spec-v2.2.md`。設計経緯と較正結果は `specs/ai-growth-parity-spec-v0.1.md` に記録した。
+
+- `processAIWeek`: 興行週の早期returnを撤去。general枠のプロモ実行者だけは練習せず、その他は通常の練習判定へ進む
+- 体調60未満は自動休養、追い込みは体調50以上かつ連続2週未満。AIの `_heat` は追い込み+1／通常練習-1／休養-2で、成長倍率も `intensiveHeatTable` を唯一の入力にした
+- `applySeasonTrainingWear` を抽出し、プレイヤー／AIとも `baseWear + 試合数 + 怪我 + 追い込み + 負債 − 耐久` と延命術を同じ式で処理。`aiMatchWearCoef` を廃止
+- S級50%、leagueElevated中A級30%で、wearゼロかつstatPeak低下ゼロのtrainCap上位3名から1名へ、プレイヤー招聘と同じ4週バフを限定付与。AIの卒業・延長・化けるは**発火させない**
+- AI設定の未参照 `coachMul` / `growthBonus` を削除し、normal/elevatedのintensiveRateを仕様値へ再較正。practiceRateは据え置き
+- `test/ai-growth-parity-test.js` を追加。興行週練習、体調・連続ガード、熱量、共通wear、トレーナー候補／4週終了、プレイヤー状態の非変更、I5検証を実行テスト化。旧非対称を固定していた `growth-strain-presentation-test.js` は新裁定へ更新
+
+較正: 同一5シード（1001 / 2002 / 3003 / 4004 / 5005）×40シーズンを通常・開幕からelevated強制で実行。全10ランが errors=0 / invariant violations=0。通常S級の到達率はmean 80.9%、median 85.4%、p95 93.9%。elevated A級はmean 84.8%、median 87.6%で、初期のintensiveRateとトレーナー確率を維持した。
+
+季節境界で移籍済みAI選手の負債が一度だけ残るケースを計測で再現したため、`advanceWeek`の全早期returnを通過した後にAIロスターを正規化するラッパーを追加し、I5を閉じた。`node test/auto-sim.js 20 42` は違反0・エラー0、`npm.cmd test` は196/196 PASS。100シーズン最終確認は環境の10分上限で50/100シーズン到達時にタイムアウト（クラッシュ・違反出力なし）したため、時間上限のない環境で1本だけ再実行する。実機では興行週のプロモ選手以外が練習すること、体調不足時の休養、4週トレーナーの成長体感を確認する。
+
 ## 新聞の全面再設計 P1〜P6 完走（2026-08-02）
 
 Keisuke「新聞周りのデザインは終わっていないんじゃないんですか」。**その通りだった。**

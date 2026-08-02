@@ -69,15 +69,17 @@ section('2. AI団体の追い込み負傷も seasonInjuries を加算する（�
   assert.ok(/seasonInjuries/.test(window), 'AI団体側の seasonInjuries 加算が消えている');
 });
 
-section('2b. AI団体は追い込みの消耗を払わない（意図的・直さないこと）', () => {
-  // 2026-07-26 Keisuke 裁定: 対称にするとリーグ全体の年齢構成が変わるため、あえて非対称のまま。
-  // 「バグに見えるので直しました」で勝手に対称化されるのを防ぐための固定。
-  // 変えるならリーグ全体の再計測とセットで、この検査ごと更新すること。
+section('2b. AI団体も追い込みの消耗を払い、季末の共通式へ流す', () => {
+  // ai-growth-parity: AIを「毎週balanceを選ぶ社長」とみなし、追い込みの代償も
+  // プレイヤーと同じ共通ルーチンで処理する。再び片側だけを無料に戻さないための固定。
   const at = management.indexOf("type: 'training injury'");
   const window = management.slice(Math.max(0, at - 1200), at + 600);
-  assert.ok(!/seasonIntensiveWeeks/.test(window),
-    'AI団体の練習処理に seasonIntensiveWeeks が入った。' +
-    '意図的な非対称なので、変えるならリーグ全体の年齢構成を測り直すこと');
+  assert.ok(/seasonIntensiveWeeks/.test(window),
+    'AI団体の追い込み週数が seasonIntensiveWeeks へ積算されていない');
+  const seasonEndAt = management.indexOf('processSeasonEnd(rng, state)');
+  const seasonEnd = management.slice(seasonEndAt, seasonEndAt + 4000);
+  assert.ok(/applySeasonTrainingWear/.test(seasonEnd),
+    'AI団体の季末処理がプレイヤーと同じ wear/strainDebt 共通ルーチンを呼んでいない');
 });
 
 section('3. seasonInjuries が実際に wear へ流れている', () => {
@@ -314,7 +316,7 @@ section('21. 較正定数が2つとも存在し、正の値である', () => {
 
 section('22. strainDebt は decayStartAge 到達時に一括清算される', () => {
   assert.ok(/debtPayoff/.test(management), 'strainDebt の一括清算が消えている');
-  assert.ok(/prevAge < decayStartAge/.test(management),
+  assert.ok(/ageBeforeSeasonEnd < decayStartAge/.test(management),
     '「初到達シーズンのみ清算」の判定が消えている（毎年二重に払う恐れ）');
   assert.ok(/strainDebt:\s*0/.test(management), '清算後の strainDebt リセットが無い');
 });

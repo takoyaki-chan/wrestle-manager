@@ -124,6 +124,10 @@ loadAsGlobal('draft-negotiation.js');
 //  上書きするだけ。Codexが並行して作業ツリーを編集中のため、ファイルには触れない）。
 // ══════════════════════════════════════════════════════════════════════════
 const AGE_CURVE_MODE = process.env.WM_AGECURVE === 'spec' ? 'spec' : 'legacy';
+// AI growth parity calibration uses the identical simulation with only the public
+// league-elevated state flipped. This happens after initial-state construction, so
+// it consumes no additional gameplay RNG values.
+const LEAGUE_ELEVATED = process.env.WM_LEAGUE_ELEVATED === '1';
 if (AGE_CURVE_MODE === 'spec') {
   if (typeof ageMultiplier !== 'function') {
     throw new Error('ageMultiplier not found on global scope after loadAsGlobal — cannot patch for WM_AGECURVE=spec');
@@ -352,6 +356,7 @@ function snapshotGrowth(tracker, G) {
 
 function initGame(seed) {
   let G = Engine.createInitialState(seed, true);
+  if (LEAGUE_ELEVATED) G = { ...G, leagueElevated: true };
   G = { ...G, debugLog: G.debugLog || [] };
   return G;
 }
@@ -811,6 +816,7 @@ function main() {
   const output = {
     seed: userSeed,
     ageCurveMode: AGE_CURVE_MODE,
+    leagueElevated: LEAGUE_ELEVATED,
     seasonsRequested: targetSeasons,
     seasonsCompleted: result.completed,
     totalWeeks: result.totalWeeks,
