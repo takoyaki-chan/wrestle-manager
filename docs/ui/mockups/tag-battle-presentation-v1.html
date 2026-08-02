@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Wrestle Manager — Tag Battle Presentation v1</title>
+<style>
+  html,body{margin:0;background:#07090e}
+  #wm-tag-layout-v1{color:#f6f2e8;background:radial-gradient(circle at 50% -15%,rgba(78,61,111,.35),transparent 35%),linear-gradient(180deg,#0d1018,#07090e 82%);font-family:"Yu Gothic UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;min-width:320px;padding-bottom:18px;--gold:#dfbd64;--gold2:#fae6a3;--blue:#70bce8;--red:#ec7a8b;--green:#6dd5b2;--ink:#07090e;--panel:#111620;--line:rgba(235,211,148,.18)}
+  #wm-tag-layout-v1 *{box-sizing:border-box}
+  #wm-tag-layout-v1 button{font:inherit}
+  #wm-tag-layout-v1 button:focus-visible{outline:2px solid #dfbd64;outline-offset:2px}
+  #wm-tag-layout-v1 .study-bar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:8px 15px;border-bottom:1px solid rgba(223,189,100,.27);background:#181521;color:#b9aa7d;font-size:10px;letter-spacing:.08em}
+  #wm-tag-layout-v1 .study-bar b{color:#ffe7a4}
+  #wm-tag-layout-v1 .study-note{color:#77736b;letter-spacing:0}
+  #wm-tag-layout-v1 .app{max-width:1500px;margin:auto;padding:12px 15px 0}
+  #wm-tag-layout-v1 .hud{padding:9px 12px 10px;border:1px solid var(--line);border-radius:8px 8px 3px 3px;background:linear-gradient(100deg,rgba(24,51,70,.98),rgba(14,18,27,.99) 48%,rgba(73,28,40,.98));box-shadow:0 18px 44px rgba(0,0,0,.38)}
+  #wm-tag-layout-v1 .hud-top{display:grid;grid-template-columns:minmax(0,1fr) 210px minmax(0,1fr);align-items:center;gap:10px}
+  #wm-tag-layout-v1 .team-hud{display:flex;align-items:center;gap:9px;min-width:0}
+  #wm-tag-layout-v1 .team-hud.right{flex-direction:row-reverse;text-align:right}
+  #wm-tag-layout-v1 .hud-faces{display:flex;align-items:center;flex-shrink:0}
+  #wm-tag-layout-v1 .hud-face{position:relative;width:39px;height:39px;margin-right:-7px;overflow:hidden;border:1px solid #70bce8;border-radius:50%;background:#0a0e15;box-shadow:0 0 0 2px #111620}
+  #wm-tag-layout-v1 .team-hud.right .hud-face{margin-right:0;margin-left:-7px;border-color:#ec7a8b}
+  #wm-tag-layout-v1 .hud-face.apron{width:32px;height:32px;opacity:.72;filter:saturate(.68)}
+  #wm-tag-layout-v1 .hud-face img{width:100%;height:100%;object-fit:cover;object-position:top}
+  #wm-tag-layout-v1 .team-title{overflow:hidden;color:#fff;font-size:13px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+  #wm-tag-layout-v1 .team-sub{margin-top:2px;color:#b2bac8;font-size:8px;font-weight:800;letter-spacing:.06em}
+  #wm-tag-layout-v1 .hud-center{text-align:center}
+  #wm-tag-layout-v1 .hud-turn{color:#fae6a3;font-size:12px;font-weight:900;letter-spacing:.14em}
+  #wm-tag-layout-v1 .hud-phase{margin-top:2px;color:#d7dbe2;font-size:8px;font-weight:900;letter-spacing:.15em}
+  #wm-tag-layout-v1 .chem{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:5px;color:#8c95a5;font-size:8px;font-weight:900;letter-spacing:.08em}
+  #wm-tag-layout-v1 .chem strong{color:#ffe39b;font-size:11px}
+  #wm-tag-layout-v1 .hud-bars{display:grid;grid-template-columns:1fr 38px 56px 38px 1fr;align-items:center;gap:6px;margin-top:8px}
+  #wm-tag-layout-v1 .hp-track{height:7px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.11)}
+  #wm-tag-layout-v1 .hp-fill{height:100%;transition:width .35s ease}
+  #wm-tag-layout-v1 .hp-fill.left{float:right;background:#70bce8}
+  #wm-tag-layout-v1 .hp-fill.right{background:#ec7a8b}
+  #wm-tag-layout-v1 .hp-fill.danger{background:#f35f77}
+  #wm-tag-layout-v1 .hp-pct{font-size:9px;font-weight:900;text-align:center}
+  #wm-tag-layout-v1 .condition{color:#697386;font-size:7px;font-weight:900;text-align:center}
+  #wm-tag-layout-v1 .sub-hp{display:grid;grid-template-columns:minmax(0,1fr) 62px minmax(0,1fr);align-items:center;gap:6px;margin-top:6px;color:#8f98a8;font-size:8px;font-weight:800}
+  #wm-tag-layout-v1 .sub-hp-side{display:grid;align-items:center;gap:6px;min-width:0}
+  #wm-tag-layout-v1 .sub-hp-side.left{grid-template-columns:minmax(70px,1fr) minmax(90px,180px) 32px}
+  #wm-tag-layout-v1 .sub-hp-side.right{grid-template-columns:32px minmax(90px,180px) minmax(70px,1fr)}
+  #wm-tag-layout-v1 .sub-hp-name{overflow:hidden;color:#c9ced7;text-overflow:ellipsis;white-space:nowrap}
+  #wm-tag-layout-v1 .sub-hp-side.right .sub-hp-name{text-align:right}
+  #wm-tag-layout-v1 .sub-hp-pct{color:#d9dde5;font-size:8px;font-weight:900;text-align:center}
+  #wm-tag-layout-v1 .sub-hp-track{height:4px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.1)}
+  #wm-tag-layout-v1 .sub-hp-fill{display:block;height:100%;background:#6dd5b2;transition:width .35s ease}
+  #wm-tag-layout-v1 .sub-hp-fill.left{float:right}
+  #wm-tag-layout-v1 .sub-hp-fill.danger{background:#f35f77}
+  #wm-tag-layout-v1 .sub-hp-label{color:#697386;font-size:7px;font-weight:900;text-align:center;letter-spacing:.08em}
+  #wm-tag-layout-v1 .stage{position:relative;height:min(57vh,600px);min-height:500px;margin-top:8px;overflow:hidden;border:1px solid rgba(235,211,148,.4);border-radius:9px;background:#080b12;box-shadow:0 18px 44px rgba(0,0,0,.42);isolation:isolate}
+  #wm-tag-layout-v1 .ring-bg{position:absolute;z-index:-4;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+  #wm-tag-layout-v1 .ring-grade{position:absolute;z-index:-3;inset:0;background:radial-gradient(ellipse at 50% 40%,transparent 18%,rgba(3,5,9,.12) 58%,rgba(3,5,9,.5) 100%),linear-gradient(180deg,rgba(4,6,10,.02),transparent 44%,rgba(4,6,10,.2) 70%,rgba(4,6,10,.94) 100%)}
+  #wm-tag-layout-v1 .team-light{position:absolute;z-index:-2;top:-9%;width:45%;height:72%;border-radius:50%;opacity:.22;filter:blur(35px);transition:.35s ease}
+  #wm-tag-layout-v1 .team-light.left{left:3%;background:radial-gradient(ellipse,#70bce8,transparent 67%)}
+  #wm-tag-layout-v1 .team-light.right{right:3%;background:radial-gradient(ellipse,#ec7a8b,transparent 67%)}
+  #wm-tag-layout-v1 .stage.attack-left .team-light.left,#wm-tag-layout-v1 .stage.double-left .team-light.left,#wm-tag-layout-v1 .stage.cutin-right .team-light.right{opacity:.5;transform:scale(1.1)}
+  #wm-tag-layout-v1 .live{position:absolute;z-index:12;top:12px;left:14px;display:flex;align-items:center;gap:6px;color:#eef0f4;font-size:9px;font-weight:900;letter-spacing:.13em}
+  #wm-tag-layout-v1 .live i{width:7px;height:7px;border-radius:50%;background:#ed4960;box-shadow:0 0 9px rgba(237,73,96,.8)}
+  #wm-tag-layout-v1 .match-chip{position:absolute;z-index:12;top:0;left:50%;padding:6px 22px 7px;border:1px solid rgba(223,189,100,.58);border-top:0;border-radius:0 0 5px 5px;color:#ffe5a0;background:rgba(10,11,15,.9);font-size:10px;font-weight:900;letter-spacing:.15em;transform:translateX(-50%)}
+  #wm-tag-layout-v1 .phase-chip{position:absolute;z-index:12;top:11px;right:14px;padding:4px 9px;border:1px solid rgba(223,189,100,.38);border-radius:99px;color:#fae6a3;background:rgba(8,10,16,.69);font-size:8px;font-weight:900;letter-spacing:.1em}
+  #wm-tag-layout-v1 .camera-chip{position:absolute;z-index:12;top:39px;right:14px;color:rgba(222,226,233,.58);font-size:8px;font-weight:900;letter-spacing:.08em}
+  #wm-tag-layout-v1 .legal-shell{position:absolute;z-index:4;bottom:0;width:43%;height:100%;pointer-events:none;transform-origin:center 75%;transition:transform .42s cubic-bezier(.2,.9,.2,1),filter .28s ease}
+  #wm-tag-layout-v1 .legal-shell.left{left:7%}
+  #wm-tag-layout-v1 .legal-shell.right{right:7%}
+  #wm-tag-layout-v1 .legal-figure{position:absolute;bottom:-18%;height:118%;width:auto;max-width:none;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 18px 15px rgba(0,0,0,.75));transition:height .48s cubic-bezier(.2,.8,.2,1),bottom .48s cubic-bezier(.2,.8,.2,1),left .48s ease,right .48s ease}
+  #wm-tag-layout-v1 .legal-shell.left .legal-figure{right:2%;transform:scaleX(-1)}
+  #wm-tag-layout-v1 .legal-shell.right .legal-figure{left:2%}
+  #wm-tag-layout-v1 .corner-shell{position:absolute;z-index:3;bottom:0;width:43%;height:100%;opacity:0;filter:saturate(.74) brightness(.82);pointer-events:none;transition:left .5s cubic-bezier(.2,.85,.2,1),right .5s cubic-bezier(.2,.85,.2,1),opacity .25s ease}
+  #wm-tag-layout-v1 .corner-shell.left{left:-43%}
+  #wm-tag-layout-v1 .corner-shell.right{right:-43%}
+  #wm-tag-layout-v1 .corner-figure{position:absolute;bottom:-18%;height:118%;width:auto;max-width:none;object-fit:contain;filter:drop-shadow(0 18px 15px rgba(0,0,0,.75));transition:height .48s cubic-bezier(.2,.8,.2,1),bottom .48s cubic-bezier(.2,.8,.2,1)}
+  #wm-tag-layout-v1 .corner-shell.left .corner-figure{left:0;transform:scaleX(-1)}
+  #wm-tag-layout-v1 .corner-shell.right .corner-figure{right:0}
+  #wm-tag-layout-v1 .corner-label{display:none;position:absolute;z-index:7;top:23%;padding:5px 8px;border:1px solid rgba(255,255,255,.17);border-radius:3px;color:#d5dae3;background:rgba(8,10,15,.72);font-size:8px;font-weight:900;letter-spacing:.09em}
+  #wm-tag-layout-v1 .corner-label.left{left:2%;border-left-color:#70bce8}
+  #wm-tag-layout-v1 .corner-label.right{right:2%;border-right-color:#ec7a8b;text-align:right}
+  #wm-tag-layout-v1 .corner-label b{display:block;margin-top:2px;color:#fff;font-size:9px}
+  #wm-tag-layout-v1 .legal-label{position:absolute;z-index:7;top:47%;padding:5px 8px;border:1px solid rgba(255,255,255,.17);border-radius:3px;color:#fff;background:rgba(8,10,15,.69);font-size:9px;font-weight:900;letter-spacing:.05em;transition:opacity .25s ease}
+  #wm-tag-layout-v1 .legal-label.left{left:22%;border-left-color:#70bce8}
+  #wm-tag-layout-v1 .legal-label.right{right:22%;border-right-color:#ec7a8b}
+  #wm-tag-layout-v1 .legal-label small{display:block;margin-bottom:1px;color:#fae6a3;font-size:6px;letter-spacing:.14em}
+  #wm-tag-layout-v1 .event-banner{position:absolute;z-index:10;top:35%;left:50%;min-width:220px;padding:12px 22px;border:1px solid rgba(223,189,100,.7);clip-path:polygon(10px 0,calc(100% - 10px) 0,100% 10px,100% calc(100% - 10px),calc(100% - 10px) 100%,10px 100%,0 calc(100% - 10px),0 10px);color:#fff3bd;background:rgba(9,11,17,.9);box-shadow:0 0 30px rgba(223,189,100,.25);font-size:20px;font-weight:1000;letter-spacing:.15em;text-align:center;opacity:0;transform:translate(-50%,-50%) scale(.7);transition:.25s ease}
+  #wm-tag-layout-v1 .stage.event .event-banner{opacity:1;transform:translate(-50%,-50%) scale(1)}
+  #wm-tag-layout-v1 .event-banner small{display:block;margin-top:3px;color:#cfd4dd;font-size:7px;letter-spacing:.12em}
+  #wm-tag-layout-v1 .stage.double-left .corner-shell.left,#wm-tag-layout-v1 .stage.cutin-right .corner-shell.right{z-index:6;opacity:.93;filter:none}
+  #wm-tag-layout-v1 .stage.double-left .corner-shell.left{left:19%}
+  #wm-tag-layout-v1 .stage.cutin-right .corner-shell.right{right:19%}
+  #wm-tag-layout-v1 .stage.double-left .corner-label.left,#wm-tag-layout-v1 .stage.cutin-right .corner-label.right{opacity:0}
+  #wm-tag-layout-v1 .stage.attack-left .legal-shell.left{transform:translateX(7%) scale(1.04)}
+  #wm-tag-layout-v1 .stage.attack-left .legal-shell.right{animation:wm-tag-recoil .5s ease-out}
+  #wm-tag-layout-v1 .stage.tag-a .legal-shell.left{animation:wm-tag-enter-left .58s cubic-bezier(.18,.82,.2,1) both}
+  #wm-tag-layout-v1 .stage.tag-b .legal-shell.right{animation:wm-tag-enter-right .58s cubic-bezier(.18,.82,.2,1) both}
+  #wm-tag-layout-v1 .attack-line{position:absolute;z-index:7;top:44%;left:27%;width:46%;height:4px;border-radius:9px;opacity:0;background:linear-gradient(90deg,transparent,#fae6a3,transparent);box-shadow:0 0 20px rgba(249,229,162,.9)}
+  #wm-tag-layout-v1 .stage.attack-left .attack-line{animation:wm-tag-sweep .65s ease-out}
+  #wm-tag-layout-v1 .stage.camera-close .legal-figure{bottom:-105%;height:205%}
+  #wm-tag-layout-v1 .stage.camera-close .corner-figure{bottom:-105%;height:205%}
+  #wm-tag-layout-v1 .stage.camera-close .corner-shell{opacity:0}
+  #wm-tag-layout-v1 .stage.camera-close .legal-label{opacity:0}
+  #wm-tag-layout-v1 .commentary{position:absolute;z-index:11;bottom:13px;left:50%;width:min(calc(100% - 78px),1080px);padding:12px 24px 17px;overflow:hidden;border-top:1px solid rgba(249,229,162,.72);clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 9px),calc(50% + 15px) calc(100% - 9px),50% 100%,calc(50% - 15px) calc(100% - 9px),0 calc(100% - 9px),0 18px);background:linear-gradient(90deg,rgba(8,10,15,.9),rgba(12,15,22,.98) 50%,rgba(8,10,15,.9));box-shadow:0 12px 28px rgba(0,0,0,.55);text-align:center;transform:translateX(-50%)}
+  #wm-tag-layout-v1 .commentary:before{position:absolute;top:0;right:9%;left:9%;height:2px;background:linear-gradient(90deg,transparent,#dfbd64,#fae6a3,#dfbd64,transparent);content:""}
+  #wm-tag-layout-v1 .commentary-label{display:flex;align-items:center;justify-content:center;gap:8px;color:#dfbd64;font-size:7px;font-weight:900;letter-spacing:.18em}
+  #wm-tag-layout-v1 .commentary-label:before,#wm-tag-layout-v1 .commentary-label:after{width:34px;height:1px;background:rgba(223,189,100,.46);content:""}
+  #wm-tag-layout-v1 .headline{margin-top:4px;font-size:clamp(15px,1.45vw,21px);font-weight:900;line-height:1.4;text-shadow:0 2px 5px #000}
+  #wm-tag-layout-v1 .blue-name{color:#9ed8fb} #wm-tag-layout-v1 .red-name{color:#ff9ba8} #wm-tag-layout-v1 .move-key{color:#ffe5a0}
+  #wm-tag-layout-v1 .lower{display:grid;grid-template-columns:minmax(280px,.85fr) minmax(480px,1.45fr) minmax(280px,.85fr);gap:8px;margin-top:8px}
+  #wm-tag-layout-v1 .team-card,#wm-tag-layout-v1 .exchange{height:214px;border:1px solid var(--line);border-radius:7px;background:linear-gradient(135deg,#151b27,#0e121b);box-shadow:0 10px 24px rgba(0,0,0,.24)}
+  #wm-tag-layout-v1 .team-card{display:grid;grid-template-rows:1fr 1fr;overflow:hidden}
+  #wm-tag-layout-v1 .member{display:grid;grid-template-columns:58px minmax(76px,.75fr) minmax(105px,1.15fr);grid-template-rows:1fr auto;align-items:center;column-gap:9px;row-gap:4px;padding:6px 8px;opacity:.68;transition:.3s ease}
+  #wm-tag-layout-v1 .member+ .member{border-top:1px solid rgba(255,255,255,.07)}
+  #wm-tag-layout-v1 .team-card.right .member{grid-template-columns:minmax(105px,1.15fr) minmax(76px,.75fr) 58px;text-align:right}
+  #wm-tag-layout-v1 .member.active{opacity:1;background:linear-gradient(90deg,rgba(112,188,232,.08),transparent)}
+  #wm-tag-layout-v1 .team-card.right .member.active{background:linear-gradient(270deg,rgba(236,122,139,.08),transparent)}
+  #wm-tag-layout-v1 .member-upper{grid-row:1/3;width:56px;height:84px;object-fit:cover;object-position:top;border-radius:3px;border-bottom:3px solid #70bce8}
+  #wm-tag-layout-v1 .team-card.right .member-upper{grid-column:3;grid-row:1/3;border-color:#ec7a8b}
+  #wm-tag-layout-v1 .member-profile{grid-column:2;grid-row:1;min-width:0}
+  #wm-tag-layout-v1 .team-card.right .member-profile{grid-column:2;grid-row:1;text-align:right}
+  #wm-tag-layout-v1 .member-head{display:grid;gap:1px}
+  #wm-tag-layout-v1 .member-name{overflow:hidden;font-size:13px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+  #wm-tag-layout-v1 .member-ovr{color:#fae6a3;font-size:12px;font-weight:900;white-space:nowrap}
+  #wm-tag-layout-v1 .member-meta{display:grid;justify-items:start;gap:2px;margin:3px 0 6px;color:#aeb6c5;font-size:8px;font-weight:800}
+  #wm-tag-layout-v1 .team-card.right .member-meta{justify-items:end}
+  #wm-tag-layout-v1 .member-style{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #wm-tag-layout-v1 .role{padding:1px 5px;border:1px solid #3d4656;border-radius:2px;color:#c5cbd5;font-size:7px;letter-spacing:.06em}
+  #wm-tag-layout-v1 .member.active .role{border-color:#dfbd64;color:#ffe5a0}
+  #wm-tag-layout-v1 .mini-hp{grid-column:2/4;grid-row:2;display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:6px;width:100%}
+  #wm-tag-layout-v1 .team-card.right .mini-hp{grid-column:1/3;grid-template-columns:minmax(0,1fr) auto}
+  #wm-tag-layout-v1 .mini-hp-track{width:100%;height:5px;overflow:hidden;border-radius:8px;background:rgba(255,255,255,.1)}
+  #wm-tag-layout-v1 .team-card.right .mini-hp-track{grid-column:1;grid-row:1}
+  #wm-tag-layout-v1 .team-card.right .mini-hp-val{grid-column:2;grid-row:1}
+  #wm-tag-layout-v1 .mini-hp-fill{display:block;height:100%;background:#6dd5b2;transition:width .35s ease}
+  #wm-tag-layout-v1 .mini-hp-fill.danger{background:#f35f77}
+  #wm-tag-layout-v1 .mini-hp-val{font-size:8px;font-weight:900;white-space:nowrap}
+  #wm-tag-layout-v1 .team-card.right .mini-hp-fill{margin-left:auto}
+  #wm-tag-layout-v1 .micro-stats{grid-column:3;grid-row:1;display:grid;width:100%;max-width:181px;justify-self:end;gap:2px}
+  #wm-tag-layout-v1 .team-card.left .micro-stat{grid-template-columns:25px minmax(45px,1fr) 18px}
+  #wm-tag-layout-v1 .team-card.right .micro-stats{grid-column:1;grid-row:1;width:100%;margin:0;justify-self:start}
+  #wm-tag-layout-v1 .micro-stat{display:grid;grid-template-columns:25px minmax(0,1fr) 18px;align-items:center;gap:4px;color:#a2abba;font-size:7px;font-weight:900;text-align:left}
+  #wm-tag-layout-v1 .micro-track{height:3px;overflow:hidden;border-radius:4px;background:rgba(255,255,255,.1)}
+  #wm-tag-layout-v1 .micro-val{text-align:right}
+  #wm-tag-layout-v1 .team-card.right .micro-stat{grid-template-columns:18px minmax(45px,1fr) 25px}
+  #wm-tag-layout-v1 .team-card.right .micro-val{grid-column:1;grid-row:1;text-align:left}
+  #wm-tag-layout-v1 .team-card.right .micro-track{grid-column:2;grid-row:1}
+  #wm-tag-layout-v1 .team-card.right .micro-label{grid-column:3;grid-row:1;text-align:right}
+  #wm-tag-layout-v1 .team-card.right .micro-fill{margin-left:auto}
+  #wm-tag-layout-v1 .micro-fill{display:block;height:100%}
+  #wm-tag-layout-v1 .pwr{background:#e66f77}#wm-tag-layout-v1 .spd{background:#66b7e5}#wm-tag-layout-v1 .tec{background:#6cc7a7}#wm-tag-layout-v1 .sta{background:#dcb45f}#wm-tag-layout-v1 .mnt{background:#a483d2}
+  #wm-tag-layout-v1 .exchange{padding:9px 10px}
+  #wm-tag-layout-v1 .exchange-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  #wm-tag-layout-v1 .exchange-title{font-size:9px;font-weight:900;letter-spacing:.12em}
+  #wm-tag-layout-v1 .exchange-help{color:#697386;font-size:7px}
+  #wm-tag-layout-v1 .exchange-grid{display:grid;grid-template-columns:minmax(190px,.9fr) minmax(230px,1.1fr);gap:9px;margin-top:7px}
+  #wm-tag-layout-v1 .logs{display:grid;gap:4px}
+  #wm-tag-layout-v1 .log{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:6px;min-width:0;padding:5px 6px;border:1px solid rgba(255,255,255,.07);border-radius:4px;color:#f6f2e8;background:rgba(255,255,255,.025);cursor:pointer;text-align:left}
+  #wm-tag-layout-v1 .log.current{border-color:rgba(223,189,100,.68);background:rgba(223,189,100,.11)}
+  #wm-tag-layout-v1 .log-turn{color:#697386;font-size:7px;font-weight:900}
+  #wm-tag-layout-v1 .log-move{overflow:hidden;font-size:8px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+  #wm-tag-layout-v1 .log-result{margin-top:1px;color:#aeb6c5;font-size:7px}
+  #wm-tag-layout-v1 .log-tag{color:#fae6a3;font-size:6px;font-weight:900;letter-spacing:.06em}
+  #wm-tag-layout-v1 .move-detail{min-width:0;padding:7px 9px;border-left:1px solid rgba(223,189,100,.22);background:linear-gradient(90deg,rgba(223,189,100,.035),transparent)}
+  #wm-tag-layout-v1 .move-cat{color:#dfbd64;font-size:7px;font-weight:900;letter-spacing:.12em}
+  #wm-tag-layout-v1 .move-name{margin-top:4px;font-size:14px;font-weight:900}
+  #wm-tag-layout-v1 .move-guide{margin-top:7px;color:#e0e4eb;font-size:11px;font-weight:500;line-height:1.65}
+  #wm-tag-layout-v1 .move-result{display:inline-block;margin-top:7px;padding:3px 6px;border:1px solid rgba(223,189,100,.48);border-radius:3px;color:#ffe39c;background:rgba(223,189,100,.1);font-size:7px;font-weight:900}
+  #wm-tag-layout-v1 .controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-top:10px}
+  #wm-tag-layout-v1 .control-side{display:flex;align-items:center;gap:6px;min-width:0}
+  #wm-tag-layout-v1 .control-side.left{justify-content:flex-end}
+  #wm-tag-layout-v1 .control-side.right{justify-content:flex-start}
+  #wm-tag-layout-v1 .btn{min-height:33px;padding:0 11px;border:1px solid rgba(223,189,100,.3);border-radius:4px;color:#ead899;background:rgba(223,189,100,.06);cursor:pointer;font-size:9px;font-weight:900}
+  #wm-tag-layout-v1 .btn:hover{background:rgba(223,189,100,.15)}
+  #wm-tag-layout-v1 .btn.primary{min-width:250px;min-height:43px;border-color:rgba(223,189,100,.72);color:#fff;background:linear-gradient(135deg,#715624,#a77b2d);font-size:13px;letter-spacing:.08em;box-shadow:0 7px 18px rgba(112,79,26,.25)}
+  #wm-tag-layout-v1 .btn:disabled{opacity:.35;cursor:not-allowed}
+  #wm-tag-layout-v1 .toggle-group{display:flex;align-items:center;gap:3px}
+  #wm-tag-layout-v1 .toggle-label{margin-right:2px;color:#697386;font-size:7px;font-weight:900}
+  #wm-tag-layout-v1 .toggle-group button{height:28px;padding:0 7px;border:1px solid #424957;border-radius:3px;color:#929aaa;background:#131722;cursor:pointer;font-size:8px}
+  #wm-tag-layout-v1 .toggle-group button.active{border-color:#dfbd64;color:#ffe7a5;background:#433820}
+  #wm-tag-layout-v1 .damage-toggle{display:flex;align-items:center;gap:4px;color:#aeb6c5;font-size:7px;cursor:pointer;white-space:nowrap}
+  #wm-tag-layout-v1 .damage-toggle input{accent-color:#dfbd64}
+  #wm-tag-layout-v1 .scene-nav{display:flex;justify-content:center;gap:5px;margin:10px 0 0}
+  #wm-tag-layout-v1 .scene-nav button{padding:5px 9px;border:1px solid #363e4c;border-radius:99px;color:#8f98a8;background:#10141d;cursor:pointer;font-size:8px;font-weight:900}
+  #wm-tag-layout-v1 .scene-nav button.active{border-color:#dfbd64;color:#ffe5a0;background:#30291a}
+  #wm-tag-layout-v1 .footer{margin:8px 0 0;color:#697386;font-size:8px;line-height:1.5;text-align:center}
+  @keyframes wm-tag-sweep{0%{transform:translateX(-30%) scaleX(.2);opacity:0}25%{opacity:1}100%{transform:translateX(25%) scaleX(1);opacity:0}}
+  @keyframes wm-tag-recoil{25%{transform:translateX(4%) rotate(1deg)}100%{transform:none}}
+  @keyframes wm-tag-enter-left{from{transform:translateX(-36%);opacity:.2}to{transform:translateX(0);opacity:1}}
+  @keyframes wm-tag-enter-right{from{transform:translateX(36%);opacity:.2}to{transform:translateX(0);opacity:1}}
+  @media(max-width:1050px){#wm-tag-layout-v1 .viewport{overflow-x:auto}#wm-tag-layout-v1 .presentation{min-width:980px}#wm-tag-layout-v1 .study-note{display:none}#wm-tag-layout-v1 .stage{height:510px}#wm-tag-layout-v1 .lower{grid-template-columns:280px 430px 280px}#wm-tag-layout-v1 .controls{grid-template-columns:1fr}#wm-tag-layout-v1 .control-center{grid-row:1;display:flex;justify-content:center}#wm-tag-layout-v1 .control-side.left,#wm-tag-layout-v1 .control-side.right{justify-content:center;flex-wrap:wrap}}
+  @media(max-width:560px){#wm-tag-layout-v1 .study-bar{align-items:flex-start;flex-direction:column;gap:2px}#wm-tag-layout-v1 .app{padding:8px 8px 0}#wm-tag-layout-v1 .hud-top{grid-template-columns:1fr 90px 1fr}#wm-tag-layout-v1 .team-title{font-size:10px}#wm-tag-layout-v1 .team-sub,#wm-tag-layout-v1 .chem{display:none}#wm-tag-layout-v1 .hud-face{width:31px;height:31px}#wm-tag-layout-v1 .hud-face.apron{width:25px;height:25px}#wm-tag-layout-v1 .sub-hp{grid-template-columns:1fr 44px 1fr}#wm-tag-layout-v1 .sub-hp-name{display:none}#wm-tag-layout-v1 .sub-hp-side.left{grid-template-columns:minmax(40px,1fr) 28px}#wm-tag-layout-v1 .sub-hp-side.right{grid-template-columns:28px minmax(40px,1fr)}#wm-tag-layout-v1 .sub-hp-label{font-size:6px}#wm-tag-layout-v1 .scene-nav{overflow-x:auto;justify-content:flex-start}}
+</style>
+</head>
+<body>
+
+<div id="wm-tag-layout-v1">
+  <header class="study-bar"><span><b>TAG BATTLE PRESENTATION v1</b> · SINGLE DESIGN MERGE</span><span class="study-note">承認済みシングル画面 ＋ 現行タッグ戦の役割・演出</span></header>
+  <main class="app">
+    <section class="hud" aria-label="タッグ試合状況">
+      <div class="hud-top">
+        <div class="team-hud">
+          <div class="hud-faces"><span class="hud-face" data-hud-face="a-active"><img alt=""></span><span class="hud-face apron" data-hud-face="a-apron"><img alt=""></span></div>
+          <div><div class="team-title" data-team-title="a"></div><div class="team-sub">青コーナー · リング上＋控え</div></div>
+        </div>
+        <div class="hud-center"><div class="hud-turn" data-turn></div><div class="hud-phase" data-phase></div><div class="chem"><span>連携 A <strong>78</strong></span><span>／</span><span>連携 B <strong>72</strong></span></div></div>
+        <div class="team-hud right">
+          <div class="hud-faces"><span class="hud-face" data-hud-face="b-active"><img alt=""></span><span class="hud-face apron" data-hud-face="b-apron"><img alt=""></span></div>
+          <div><div class="team-title" data-team-title="b"></div><div class="team-sub">赤コーナー · リング上＋控え</div></div>
+        </div>
+      </div>
+      <div class="hud-bars"><div class="hp-track"><div class="hp-fill left" data-hp-fill="a"></div></div><span class="hp-pct" data-hp="a"></span><span class="condition">リング上 HP</span><span class="hp-pct" data-hp="b"></span><div class="hp-track"><div class="hp-fill right" data-hp-fill="b"></div></div></div>
+      <div class="sub-hp">
+        <div class="sub-hp-side left"><span class="sub-hp-name" data-apron-name="a"></span><span class="sub-hp-track"><span class="sub-hp-fill left" data-apron-fill="a"></span></span><span class="sub-hp-pct" data-apron-pct="a"></span></div>
+        <span class="sub-hp-label">控え HP</span>
+        <div class="sub-hp-side right"><span class="sub-hp-pct" data-apron-pct="b"></span><span class="sub-hp-track"><span class="sub-hp-fill" data-apron-fill="b"></span></span><span class="sub-hp-name" data-apron-name="b"></span></div>
+      </div>
+    </section>
+
+    <div class="viewport"><div class="presentation">
+      <section class="stage" data-stage aria-label="タッグ・ライブリング">
+        <img class="ring-bg" src="../../../image/battle-ring-bg-mockup-v2.png" alt="プロレス会場のリング">
+        <div class="ring-grade"></div><div class="team-light left"></div><div class="team-light right"></div>
+        <div class="live"><i></i>ライブ・リング</div><div class="match-chip">タッグマッチ</div><div class="phase-chip" data-stage-phase></div><div class="camera-chip" data-camera-chip></div>
+        <div class="corner-shell left" data-corner="a"><img class="corner-figure" alt=""></div>
+        <div class="corner-shell right" data-corner="b"><img class="corner-figure" alt=""></div>
+        <div class="legal-shell left" data-legal="a"><img class="legal-figure" alt=""></div>
+        <div class="legal-shell right" data-legal="b"><img class="legal-figure" alt=""></div>
+        <div class="corner-label left" data-corner-label="a">控え<b></b></div><div class="corner-label right" data-corner-label="b">控え<b></b></div>
+        <div class="legal-label left" data-legal-label="a"><small>リング上</small><b></b></div><div class="legal-label right" data-legal-label="b"><small>リング上</small><b></b></div>
+        <div class="attack-line"></div><div class="event-banner" data-event-banner></div>
+        <div class="commentary" aria-live="polite"><div class="commentary-label">実況</div><div class="headline" data-headline></div></div>
+      </section>
+
+      <section class="lower">
+        <article class="team-card left" data-team-card="a" aria-label="青コーナーの能力値"></article>
+        <section class="exchange" aria-label="直近の攻防と技説明">
+          <div class="exchange-head"><span class="exchange-title">直近の攻防</span><span class="exchange-help">最新が上 · クリックで確認</span></div>
+          <div class="exchange-grid"><div class="logs" data-logs></div><div class="move-detail"><div class="move-cat" data-move-cat></div><div class="move-name" data-move-name></div><div class="move-guide" data-move-guide></div><span class="move-result" data-move-result></span></div></div>
+        </section>
+        <article class="team-card right" data-team-card="b" aria-label="赤コーナーの能力値"></article>
+      </section>
+    </div></div>
+
+    <div class="controls" aria-label="リプレイ操作">
+      <div class="control-side left"><button class="btn" data-prev>◀ ひとつ戻る</button><button class="btn" data-auto>自動再生：停止</button><div class="toggle-group"><span class="toggle-label">速度</span><button data-speed="1700">1×</button><button class="active" data-speed="950">2×</button><button data-speed="520">3×</button></div></div>
+      <div class="control-center"><button class="btn primary" data-next>次の攻防 ▶</button></div>
+      <div class="control-side right"><div class="toggle-group"><span class="toggle-label">カメラ</span><button class="active" data-camera="auto">自動</button><button data-camera="wide">全景</button><button data-camera="close">アップ</button></div><label class="damage-toggle"><input data-damage type="checkbox" checked> 正確な数値</label></div>
+    </div>
+    <nav class="scene-nav" aria-label="タッグ固有シーン"><button data-scene="0">通常攻防</button><button data-scene="2">タッチ</button><button data-scene="4">ダブルチーム</button><button data-scene="5">カット救出</button></nav>
+    <p class="footer">リング上の2人を主役にし、控えはコーナーと下部チームカードで常時確認。交代時だけ主従を入れ替え、Replayの結果・数値・乱数・BGM/SFX系統には触れません。</p>
+  </main>
+</div>
+
+<script>
+(()=>{
+  const root=document.getElementById('wm-tag-layout-v1');
+  const asset='../../../image/';
+  const fighters={
+    takatsu:{name:'高津 小春',short:'高津',side:'a',style:'STRIKER',ovr:74,mhp:240,face:asset+'face_takatsu_k.png',upper:asset+'upper/upper_takatsu_k.webp',full:asset+'full/full_takatsu_k.webp',stats:{PWR:68,SPD:84,TEC:72,STA:70,MNT:78}},
+    fukamachi:{name:'深町 真琴',short:'深町',side:'a',style:'ALL-ROUNDER',ovr:71,mhp:236,face:asset+'face_fukamachi_m.png',upper:asset+'upper/upper_fukamachi_m.webp',full:asset+'full/full_fukamachi_m.webp',stats:{PWR:74,SPD:70,TEC:73,STA:72,MNT:67}},
+    tomioka:{name:'富岡 加奈子',short:'富岡',side:'b',style:'GRAPPLER',ovr:75,mhp:242,face:asset+'face_tomioka_k.png',upper:asset+'upper/upper_tomioka_k.webp',full:asset+'full/full_tomioka_k.webp',stats:{PWR:88,SPD:61,TEC:68,STA:83,MNT:76}},
+    abukuma:{name:'阿武隈 塔子',short:'阿武隈',side:'b',style:'POWERHOUSE',ovr:76,mhp:246,face:asset+'face_abukuma_t.png',upper:asset+'upper/upper_abukuma_t.webp',full:asset+'full/full_abukuma_t.webp',stats:{PWR:91,SPD:58,TEC:70,STA:84,MNT:77}}
+  };
+  const frames=[
+    {turn:1,phase:'OPENING',seg:1,activeA:'takatsu',apronA:'fukamachi',activeB:'tomioka',apronB:'abukuma',hp:{takatsu:232,fukamachi:236,tomioka:242,abukuma:246},kind:'hit',actor:'takatsu',target:'tomioka',move:'ローリングソバット',cat:'打撃 · 姿勢を崩す技',guide:'回転の勢いを乗せて蹴り込み、相手の上体を大きく揺らす。',dmg:10,result:'命中',scene:'normal'},
+    {turn:2,phase:'OPENING',seg:1,activeA:'takatsu',apronA:'fukamachi',activeB:'tomioka',apronB:'abukuma',hp:{takatsu:221,fukamachi:236,tomioka:242,abukuma:246},kind:'counter',actor:'tomioka',target:'takatsu',move:'スナップ・スープレックス',cat:'投げ · 切り返し',guide:'相手の勢いを利用して素早く投げ、攻守を一度に入れ替える。',dmg:11,result:'カウンター',scene:'normal'},
+    {turn:3,phase:'MID',seg:2,activeA:'fukamachi',apronA:'takatsu',activeB:'tomioka',apronB:'abukuma',hp:{takatsu:219,fukamachi:236,tomioka:242,abukuma:246},kind:'tag',actor:'takatsu',target:'fukamachi',move:'タッチ成功',cat:'交代 · 通常タッチ',guide:'傷んだ高津がコーナーへ戻り、回復済みの深町へ試合を託す。',dmg:0,result:'タッチ成立',scene:'tag',event:'タッチ！',eventSub:'リング上の選手が交代'},
+    {turn:4,phase:'MID',seg:3,activeA:'fukamachi',apronA:'takatsu',activeB:'abukuma',apronB:'tomioka',hp:{takatsu:222,fukamachi:226,tomioka:211,abukuma:246},kind:'hot',actor:'tomioka',target:'abukuma',move:'反撃のタッチ',cat:'交代 · 反撃開始',guide:'孤立していた富岡が間一髪で脱出。温存された阿武隈が一気にリングへ入る。',dmg:0,result:'反撃のタッチ',scene:'tag',event:'反撃のタッチ！',eventSub:'温存された選手が一気に反撃'},
+    {turn:5,phase:'END',seg:4,activeA:'fukamachi',apronA:'takatsu',activeB:'abukuma',apronB:'tomioka',hp:{takatsu:224,fukamachi:226,tomioka:214,abukuma:223},kind:'double',actor:'fukamachi',target:'abukuma',move:'ダブル・ニーアタック',cat:'連携 · ダブルチーム',guide:'深町が相手を固定し、高津がコーナーから飛び込んで同時に膝を叩き込む。',dmg:23,result:'ダブルチーム',scene:'double',event:'ダブルチーム！',eventSub:'2人の連携技が決まった'},
+    {turn:6,phase:'CLIMAX',seg:5,activeA:'fukamachi',apronA:'takatsu',activeB:'abukuma',apronB:'tomioka',hp:{takatsu:225,fukamachi:226,tomioka:216,abukuma:207},kind:'cutin',actor:'tomioka',target:'fukamachi',move:'フォール・カット',cat:'救出 · カットイン',guide:'フォール寸前、控えの富岡がリングへ飛び込み、パートナーを間一髪で救出する。',dmg:0,result:'カットイン救出',scene:'cutin',event:'カットイン！',eventSub:'パートナーが決着を阻止'}
+  ];
+  const statClass={PWR:'pwr',SPD:'spd',TEC:'tec',STA:'sta',MNT:'mnt'};
+  let current=0,auto=false,timer=null,framingTimer=null,speed=950,camera='auto';
+  const pct=(hp,f)=>Math.max(0,Math.round(hp/f.mhp*100));
+  const el=(sel)=>root.querySelector(sel);
+  const all=(sel)=>[...root.querySelectorAll(sel)];
+  const esc=(v)=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+  function teamCard(side,frame){
+    const keys=side==='a'?[frame.activeA,frame.apronA]:[frame.activeB,frame.apronB];
+    return keys.map((key,index)=>{const f=fighters[key],hpPct=pct(frame.hp[key],f);const stats=`<div class="micro-stats">${Object.entries(f.stats).map(([k,v])=>`<span class="micro-stat"><span class="micro-label">${k}</span><span class="micro-track"><span class="micro-fill ${statClass[k]}" style="width:${v}%"></span></span><span class="micro-val">${v}</span></span>`).join('')}</div>`;const hp=`<div class="mini-hp"><span class="mini-hp-val">HP ${hpPct}%</span><span class="mini-hp-track"><span class="mini-hp-fill${hpPct<=35?' danger':''}" style="width:${hpPct}%"></span></span></div>`;return `<div class="member${index===0?' active':''}"><img class="member-upper" src="${f.upper}" alt=""><div class="member-profile"><div class="member-head"><span class="member-name">${esc(f.name)}</span><span class="member-ovr">OVR ${f.ovr}</span></div><div class="member-meta"><span class="role">${index===0?'リング上':'控え'}</span><span class="member-style">${f.style}${index===1?' · 回復中':''}</span></div></div>${stats}${hp}</div>`}).join('');
+  }
+  function headline(frame){
+    const actor=fighters[frame.actor],target=fighters[frame.target],a=`<span class="${actor.side==='a'?'blue-name':'red-name'}">${actor.name}</span>`,t=`<span class="${target.side==='a'?'blue-name':'red-name'}">${target.name}</span>`,m=`<span class="move-key">${frame.move}</span>`;
+    if(frame.kind==='tag')return`${a}が手を伸ばす！ ${t}へ確実にタッチ、リング上の主役が入れ替わった。`;
+    if(frame.kind==='hot')return`${a}がつないだ！ ${t}が飛び込み、ここから一気に反撃へ！`;
+    if(frame.kind==='double')return`2人が呼吸を合わせた！ ${m}が${t}に炸裂する！`;
+    if(frame.kind==='cutin')return`${a}がエプロンから飛び込んだ！ フォールを寸前でカット、試合はまだ終わらない！`;
+    if(frame.kind==='counter')return`${a}が待っていた！ ${m}で切り返し、${t}をマットへ叩きつける。`;
+    return`${a}の${m}！ ${t}の体勢を大きく崩していく。`;
+  }
+  function logText(frame){if(frame.kind==='tag')return'通常タッチ成功';if(frame.kind==='hot')return'反撃のホットタグ';if(frame.kind==='double')return'連携技が炸裂';if(frame.kind==='cutin')return'パートナーが救出';if(frame.kind==='counter')return'切り返し成功';return'クリーンヒット'}
+  function logs(){return frames.slice(0,current+1).map((frame,index)=>({frame,index})).reverse().slice(0,4).map(({frame,index},pos)=>`<button class="log${index===current?' current':''}" data-log="${index}"><span class="log-turn">T${frame.turn}</span><span><div class="log-move">${esc(frame.move)}</div><div class="log-result">${logText(frame)}</div></span>${pos===0?'<span class="log-tag">LATEST</span>':''}</button>`).join('')}
+  function autoClose(frame){return frame.kind==='hot'||frame.kind==='double'||frame.kind==='cutin'||frame.kind==='counter'||frame.phase==='CLIMAX'}
+  function render(){
+    const frame=frames[current],a=fighters[frame.activeA],aa=fighters[frame.apronA],b=fighters[frame.activeB],ba=fighters[frame.apronB],aPct=pct(frame.hp[frame.activeA],a),bPct=pct(frame.hp[frame.activeB],b),aaPct=pct(frame.hp[frame.apronA],aa),baPct=pct(frame.hp[frame.apronB],ba);
+    el('[data-turn]').textContent=`TURN ${frame.turn}`;el('[data-phase]').textContent=`${frame.phase} · SEG ${frame.seg}`;el('[data-stage-phase]').textContent=`${frame.phase} · T${frame.turn}`;
+    el('[data-team-title="a"]').textContent=`${a.short} & ${aa.short}`;el('[data-team-title="b"]').textContent=`${b.short} & ${ba.short}`;
+    [['a-active',a],['a-apron',aa],['b-active',b],['b-apron',ba]].forEach(([slot,f])=>{const img=el(`[data-hud-face="${slot}"] img`);img.src=f.face;img.alt=f.name});
+    el('[data-hp="a"]').textContent=`${aPct}%`;el('[data-hp="b"]').textContent=`${bPct}%`;el('[data-hp-fill="a"]').style.width=`${aPct}%`;el('[data-hp-fill="b"]').style.width=`${bPct}%`;el('[data-hp-fill="a"]').classList.toggle('danger',aPct<=35);el('[data-hp-fill="b"]').classList.toggle('danger',bPct<=35);el('[data-apron-name="a"]').textContent=`控え · ${aa.name}`;el('[data-apron-name="b"]').textContent=`${ba.name} · 控え`;el('[data-apron-pct="a"]').textContent=`${aaPct}%`;el('[data-apron-pct="b"]').textContent=`${baPct}%`;el('[data-apron-fill="a"]').style.width=`${aaPct}%`;el('[data-apron-fill="b"]').style.width=`${baPct}%`;el('[data-apron-fill="a"]').classList.toggle('danger',aaPct<=35);el('[data-apron-fill="b"]').classList.toggle('danger',baPct<=35);
+    el('[data-legal="a"] img').src=a.full;el('[data-legal="a"] img').alt=a.name;el('[data-corner="a"] img').src=aa.full;el('[data-corner="a"] img').alt=aa.name;el('[data-legal="b"] img').src=b.full;el('[data-legal="b"] img').alt=b.name;el('[data-corner="b"] img').src=ba.full;el('[data-corner="b"] img').alt=ba.name;
+    el('[data-legal-label="a"] b').textContent=a.name;el('[data-corner-label="a"] b').textContent=aa.name;el('[data-legal-label="b"] b').textContent=b.name;el('[data-corner-label="b"] b').textContent=ba.name;
+    el('[data-team-card="a"]').innerHTML=teamCard('a',frame);el('[data-team-card="b"]').innerHTML=teamCard('b',frame);
+    el('[data-headline]').innerHTML=headline(frame);el('[data-move-cat]').textContent=frame.cat;el('[data-move-name]').textContent=frame.move;el('[data-move-guide]').textContent=frame.guide;el('[data-move-result]').textContent=frame.result+(el('[data-damage]').checked&&frame.dmg?` · DMG ${frame.dmg}`:'');el('[data-logs]').innerHTML=logs();all('[data-log]').forEach(btn=>btn.addEventListener('click',()=>{current=Number(btn.dataset.log);render()}));
+    const stage=el('[data-stage]'),previousClose=stage.classList.contains('camera-close'),isTagEntry=frame.kind==='tag'||frame.kind==='hot';clearTimeout(framingTimer);stage.className=`stage${previousClose?' camera-close':''}`;void stage.offsetWidth;if(frame.kind==='hit'||frame.kind==='counter')stage.classList.add('attack-left');if(isTagEntry)stage.classList.add(fighters[frame.target].side==='a'?'tag-a':'tag-b');if(frame.event)stage.classList.add('event');if(frame.scene==='double')stage.classList.add('double-left');if(frame.scene==='cutin')stage.classList.add('cutin-right');
+    const targetClose=camera==='close'||(camera==='auto'&&autoClose(frame)),close=camera==='auto'&&isTagEntry?previousClose:targetClose;stage.classList.toggle('camera-close',close);el('[data-camera-chip]').textContent=`カメラ · ${camera==='auto'?(isTagEntry&&close!==targetClose?'自動・交代中固定':close?'自動アップ':'自動全景'):(close?'アップ':'全景')}`;
+    if(camera==='auto'&&isTagEntry&&close!==targetClose){const lockedFrame=current;framingTimer=setTimeout(()=>{if(current!==lockedFrame||camera!=='auto')return;stage.classList.toggle('camera-close',targetClose);el('[data-camera-chip]').textContent=`カメラ · ${targetClose?'自動アップ':'自動全景'}`},660)}
+    el('[data-event-banner]').innerHTML=frame.event?`${frame.event}<small>${frame.eventSub}</small>`:'';
+    el('[data-prev]').disabled=current===0;el('[data-next]').textContent=current===frames.length-1?'↻ 最初から':'次の攻防 ▶';all('[data-scene]').forEach(btn=>btn.classList.toggle('active',Number(btn.dataset.scene)===current));
+  }
+  function next(){current=current===frames.length-1?0:current+1;render();if(auto&&current===frames.length-1)stopAuto()}
+  function stopAuto(){auto=false;clearTimeout(timer);el('[data-auto]').textContent='自動再生：停止'}
+  function autoLoop(){if(!auto)return;next();timer=setTimeout(autoLoop,speed)}
+  el('[data-next]').addEventListener('click',next);el('[data-prev]').addEventListener('click',()=>{current=Math.max(0,current-1);render()});el('[data-auto]').addEventListener('click',()=>{auto=!auto;el('[data-auto]').textContent=`自動再生：${auto?'再生中':'停止'}`;if(auto)autoLoop();else clearTimeout(timer)});el('[data-damage]').addEventListener('change',render);
+  all('[data-speed]').forEach(btn=>btn.addEventListener('click',()=>{speed=Number(btn.dataset.speed);all('[data-speed]').forEach(x=>x.classList.toggle('active',x===btn))}));all('[data-camera]').forEach(btn=>btn.addEventListener('click',()=>{camera=btn.dataset.camera;all('[data-camera]').forEach(x=>x.classList.toggle('active',x===btn));render()}));all('[data-scene]').forEach(btn=>btn.addEventListener('click',()=>{current=Number(btn.dataset.scene);render()}));
+  root.addEventListener('keydown',event=>{if(event.code==='Space'&&!['INPUT','BUTTON'].includes(event.target.tagName)){event.preventDefault();next()}});render();
+})();
+</script>
+</body>
+</html>
