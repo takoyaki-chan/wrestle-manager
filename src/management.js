@@ -2026,10 +2026,20 @@ const Engine = {
       // playerTitleChange は優先度180・大ニュース指定まであるのに、記事を作る場所が
       // どこにも無かった(Keisuke「タイトルマッチならまだしも」の指摘で発覚)。
       // 呼び出し元で積み忘れないよう、**記事そのものをここで組んで返す**。
+      // task-80: 組み立て式本文用のプロフィール情報を追加。newRoster(recordTitleWin適用後)から
+      // 参照するので titleReigns/repeatSameTitle は今回の戴冠を含んだ値になる(AI団体側と同じ扱い)
+      const updatedChamp = newRoster.find(r => r.id === fighterId);
       const newsEvent = prev ? {
         type: 'titleChange',
         characterId: fighterId,
-        data: { org: G.orgName || 'あなたの団体', name: c?.name || '新王者', prevChamp: prev.name },
+        data: {
+          org: G.orgName || 'あなたの団体', name: c?.name || '新王者', prevChamp: prev.name,
+          age: updatedChamp?.age != null ? updatedChamp.age : null,
+          styleJa: updatedChamp ? (Engine.newspaper.STYLE_JA[updatedChamp.style] || updatedChamp.style || '') : '',
+          titleReigns: (updatedChamp?.careerRecord?.totalTitleWins) || 0,
+          careerSeasons: (updatedChamp?.careerSeasons || 0) + 1,
+          repeatSameTitle: updatedChamp ? Engine.newspaper._isRepeatSameTitleReign(updatedChamp, titleOrgName) : false,
+        },
       } : null;
       return { titles: newTitles, roster: newRoster, msg, newsEvent };
     },
@@ -9864,11 +9874,20 @@ const Engine = {
         if (newChampId && newChampId !== oldChampId) {
           const newChamp = roster.find(f => f.id === newChampId);
           const prevChamp = oldChampId ? roster.find(f => f.id === oldChampId) : null;
+          // task-80: 組み立て式本文用にプロフィール情報を追加(age/styleJa/titleReigns/careerSeasons)。
+          // repeatSameTitle は careerRecord.history から「この団体の王座」を過去にも
+          // 保持していたか(=取り返した戴冠か)を判定する
+          const champTitleOrgName = `${org.name || '団体'}王座`;
           nextOrgData._newsChampionChange = {
             orgName: org.name,
             newChampId, newChampName: newChamp?.name || '?',
             prevChampName: prevChamp?.name || null,
             ovr: newChamp ? Engine.util.ov(newChamp) : 0,
+            age: newChamp?.age != null ? newChamp.age : null,
+            styleJa: newChamp ? (Engine.newspaper.STYLE_JA[newChamp.style] || newChamp.style || '') : '',
+            titleReigns: (newChamp?.careerRecord?.totalTitleWins) || 0,
+            careerSeasons: (newChamp?.careerSeasons || 0) + 1,
+            repeatSameTitle: newChamp ? Engine.newspaper._isRepeatSameTitleReign(newChamp, champTitleOrgName) : false,
           };
         }
 
@@ -18078,7 +18097,7 @@ Engine.mvpRace = {
           const opName = Engine.mvpRace._resolveName(state, sig.opponentId) || '相手';
           const tag = sig.isTitle ? 'タイトル戦' : (sig.isPPV ? 'PPV決勝' : (sig.stage === 'war' ? '対抗戦' : '通常興行'));
           const result = sig.won === 'win' ? '制した' : (sig.won === 'lose' ? '惜敗を喫した' : '譲り合った');
-          return `第${sig.week}週、${opName}との${tag}でMQ${sig.mq}を刻み、${result}記憶も新しい。`;
+          return `第${sig.week}週、${opName}との${tag}で試合評価${sig.mq}を刻み、${result}記憶も新しい。`;
         })()
       : '';
 
@@ -18678,18 +18697,18 @@ Engine.mvpRace = {
       const opName = Engine.mvpRace._resolveName(state, sig.opponentId) || '相手';
       const tag = sig.isTitle ? 'タイトル戦' : (sig.isPPV ? 'PPV' : (sig.stage === 'war' ? '対抗戦' : '一戦'));
       if (sig.won === 'win') return pick([
-        `${opName}との${tag}でMQ${sig.mq}を刻み、勝ち切った夜の余韻が点数に乗っている。`,
-        `${opName}を下した${tag}（MQ${sig.mq}）が、今期最高の手応えとして残っている。`,
-        `${opName}との${tag}で勝利、MQ${sig.mq}——あの夜の鼓動が今もシーズンを引っ張っている。`,
+        `${opName}との${tag}で試合評価${sig.mq}を刻み、勝ち切った夜の余韻が点数に乗っている。`,
+        `${opName}を下した${tag}（試合評価${sig.mq}）が、今期最高の手応えとして残っている。`,
+        `${opName}との${tag}で勝利、試合評価${sig.mq}——あの夜の鼓動が今もシーズンを引っ張っている。`,
       ]);
       if (sig.won === 'lose') return pick([
-        `${opName}との${tag}でMQ${sig.mq}を刻んだが、勝利には届かず——その悔しさが今も燃えている。`,
-        `${opName}に敗れた${tag}（MQ${sig.mq}）の記憶が、まだ拳の中にある。`,
-        `${opName}との${tag}は惜敗、それでもMQ${sig.mq}は今期屈指の試合の一つだった。`,
+        `${opName}との${tag}で試合評価${sig.mq}を刻んだが、勝利には届かず——その悔しさが今も燃えている。`,
+        `${opName}に敗れた${tag}（試合評価${sig.mq}）の記憶が、まだ拳の中にある。`,
+        `${opName}との${tag}は惜敗、それでも試合評価${sig.mq}は今期屈指の試合の一つだった。`,
       ]);
       return pick([
-        `${opName}との${tag}はMQ${sig.mq}で決着つかず。次戦へ持ち越された。`,
-        `${opName}との${tag}はMQ${sig.mq}を記録するも、決着は別の機会へ。`,
+        `${opName}との${tag}は試合評価${sig.mq}で決着つかず。次戦へ持ち越された。`,
+        `${opName}との${tag}は試合評価${sig.mq}を記録するも、決着は別の機会へ。`,
       ]);
     }
     // 2. 宿敵
@@ -18773,9 +18792,9 @@ Engine.mvpRace = {
       const pickH = arr => arr[Engine.rng.int(rngH, 0, arr.length - 1)];
       const resultPhrase = sig.won === 'win' ? '勝利' : (sig.won === 'lose' ? '惜敗' : '決着つかず');
       headlineLine = pickH([
-        `第${sig.week}週 ${opName} との${tag}でMQ${sig.mq}を記録（${resultPhrase}）。`,
-        `${sig.week}週、${opName}との${tag}——MQ${sig.mq}、結果は${resultPhrase}。`,
-        `${opName}との${tag}（第${sig.week}週、${resultPhrase}）でMQ${sig.mq}を刻んだ。`,
+        `第${sig.week}週 ${opName} との${tag}で試合評価${sig.mq}を記録（${resultPhrase}）。`,
+        `${sig.week}週、${opName}との${tag}——試合評価${sig.mq}、結果は${resultPhrase}。`,
+        `${opName}との${tag}（第${sig.week}週、${resultPhrase}）で試合評価${sig.mq}を刻んだ。`,
       ]);
     }
 
@@ -28437,10 +28456,10 @@ function _buildPpvSummitStory(sr, season, week, P) {
   bodyParts.push(matchPart);
 
   let qualityPart = '';
-  if (isMasterpiece) qualityPart = `MQ${sr.mq}——歴史に残る一戦として記録される。`;
-  else if (isGreat) qualityPart = `MQ${sr.mq}、見応えある決戦となった。`;
-  else if (sr.mq >= 50) qualityPart = `MQ${sr.mq}を記録。`;
-  else qualityPart = `MQ${sr.mq}。期待された熱戦には届かなかったが、頂点を懸けた一戦であることに変わりはない。`;
+  if (isMasterpiece) qualityPart = `試合評価${sr.mq}——歴史に残る一戦として記録される。`;
+  else if (isGreat) qualityPart = `試合評価${sr.mq}、見応えある決戦となった。`;
+  else if (sr.mq >= 50) qualityPart = `試合評価${sr.mq}を記録。`;
+  else qualityPart = `試合評価${sr.mq}。期待された熱戦には届かなかったが、頂点を懸けた一戦であることに変わりはない。`;
   bodyParts.push(qualityPart);
 
   if (isLongRivalry) {
@@ -28700,6 +28719,64 @@ Engine.newspaper = {
     return Object.keys(vars).reduce((acc, k) => acc.split('{' + k + '}').join(String(vars[k])), String(t));
   },
 
+  /** style 内部値(Grappler/Striker/...)の和名。記事の地の文に英字トークンを出さないための共通変換表
+   *  (task-77 composeDraftPlayerResult / task-80 composeChampionChangeBody で共用) */
+  STYLE_JA: { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション',
+    Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' },
+
+  // ══════════════════════════════════════════════════════════════════
+  //  task-80 §A: 王座交代記事の組み立て式本文(リード+プロフィール+戴冠歴+締め)
+  // ══════════════════════════════════════════════════════════════════
+
+  /** careerRecord.history から「同じ団体の王座を過去にも保持していた(=取り返した戴冠か)」を判定する。
+   *  beltId は AI/自団体とも常に 'world' 固定で団体をまたぐ判別に使えないため、
+   *  recordTitleWin に積んでいる orgName(例: "○○王座")でスコープする。
+   *  同じ orgName の titleWin が2件以上(今回分を含む)あれば、過去に一度手放して取り返した形とみなす */
+  _isRepeatSameTitleReign(fighter, titleOrgName) {
+    if (!titleOrgName) return false;
+    const hist = (fighter && fighter.careerRecord && fighter.careerRecord.history) || [];
+    return hist.filter(e => e && e.type === 'titleWin' && e.orgName === titleOrgName).length >= 2;
+  },
+
+  /** ev = { orgName, newChampName, prevChampName, age, styleJa, titleReigns, careerSeasons, repeatSameTitle }
+   *  を材料に「リード+プロフィール(年齢帯4分割)+戴冠歴(初/複数回)+締め」を組み立てる。
+   *  年齢帯: 若手(≤21)/伸び盛り(22〜24)/完成期(25〜29)/ベテラン(30+)。
+   *  複数回目の戴冠テンプレは [取り返した版, 汎用版] の順で並んでいる前提(§4)。
+   *  repeatSameTitle が true のときだけ取り返した版を選択肢に含める。判定できない/falseなら汎用版のみ。
+   *  内部数値(OVR/MQ)は一切使わない(task-80 §B)。seed は号数などの整数(乱数は使わない)。 */
+  composeChampionChangeBody(ev, seed) {
+    const parts = (typeof CHAMPION_CHANGE_TEMPLATES !== 'undefined') ? CHAMPION_CHANGE_TEMPLATES : null;
+    if (!parts || !ev) return null;
+    const sVal = Number(seed) || 0;
+    const pickAt = (arr, salt) => (arr && arr.length) ? arr[Math.abs(sVal + salt) % arr.length] : '';
+    const fill = (t) => String(t || '')
+      .split('{org}').join(ev.orgName || '')
+      .split('{name}').join(ev.newChampName || '')
+      .split('{prevChamp}').join(ev.prevChampName || '前王者')
+      .split('{age}').join(ev.age != null ? String(ev.age) : '')
+      .split('{seasons}').join(ev.careerSeasons != null ? String(ev.careerSeasons) : '')
+      .split('{styleJa}').join(ev.styleJa || '')
+      .split('{reigns}').join(ev.titleReigns != null ? String(ev.titleReigns) : '');
+
+    const age = Number(ev.age) || 0;
+    let profilePool;
+    if (age <= 21) profilePool = parts.profileYoung;
+    else if (age <= 24) profilePool = parts.profileRising;
+    else if (age <= 29) profilePool = parts.profileEstablished;
+    else profilePool = parts.profileVeteran;
+
+    const reigns = Number(ev.titleReigns) || 0;
+    const reignPool = (reigns >= 2)
+      ? (ev.repeatSameTitle ? parts.repeatReign : parts.repeatReign.slice(1))
+      : parts.firstReign;
+
+    const lead = fill(pickAt(parts.lead, 0));
+    const profile = fill(pickAt(profilePool, 7));
+    const reignText = fill(pickAt(reignPool, 13));
+    const closing = fill(pickAt(parts.closing, 19));
+    return [lead, profile, reignText, closing].join('');
+  },
+
   // ══════════════════════════════════════════════════════════════════
   //  task-77 §B: ドラフト自団体1面の拡充(リード+注目選手1〜2名+締め)
   // ══════════════════════════════════════════════════════════════════
@@ -28726,8 +28803,7 @@ Engine.newspaper = {
     const lead = fillCommon(pickAt(parts.lead, 0));
     const closing = fillCommon(pickAt(parts.closing, 11));
 
-    const STYLE_JA = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション',
-      Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
+    const STYLE_JA = Engine.newspaper.STYLE_JA;
     const TIER_ORDER = { superElite: 0, elite: 1, promising: 2, raw: 3, material: 4 };
     const FEATURED_TIERS = new Set(['superElite', 'elite', 'promising']);
     const sorted = fighters.slice().sort((a, b) => (TIER_ORDER[a && a.tier] ?? 9) - (TIER_ORDER[b && b.tier] ?? 9));
@@ -29172,16 +29248,21 @@ Engine.newspaper = {
 
     // === 自団体の王座移動（2026-07-27） ===
     // 見出しは NEWS_HEADLINE_TEMPLATES.titleChange を使う(3本書かれていたが未使用だった)
+    // task-80: 本文はリード+プロフィール+戴冠歴+締めの組み立て式(§4)に拡充。
+    // 組み立てに必要な情報(age/styleJa等)が無い場合のみ旧・単文テンプレへフォールバックする
     (state._industryNewsEvents || []).filter(ev => ev && ev.type === 'titleChange').forEach(ev => {
       const tmplList = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES.titleChange : null;
       if (!tmplList || !tmplList.length) return;
       const t = Engine.rng.pick(rng, tmplList);
       const fill = str => String(str).replace(/\{(\w+)\}/g, (m, k) => (ev.data && ev.data[k] != null) ? ev.data[k] : m);
+      const bodySeed = (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.characterId || 0);
+      const composedBody = ev.data && ev.data.age != null
+        ? Engine.newspaper.composeChampionChangeBody(ev.data, bodySeed) : null;
       stories.push({
         type: 'playerTitleChange',
         priority: P.playerTitleChange,
         headline: fill(t.headline),
-        body: fill(t.body),
+        body: composedBody || fill(t.body),
         characterId: ev.characterId || null,
       });
     });
@@ -29243,7 +29324,7 @@ Engine.newspaper = {
         type: 'crossWarResult',
         priority: P.crossWarResult,
         headline: `⚔ 対抗戦 vs ${wr.opponentName} — ${wr.playerWins}勝${wr.aiWins}敗で${resultLabel}`,
-        body: `${stamp}。${wr.opponentName}との対抗戦が行われ、${wr.playerWins}勝${wr.aiWins}敗で${resultLabel}。${bestMatch ? `ベストバウトは${bestMatch.playerName} vs ${bestMatch.aiName}（MQ${bestMatch.mq}）。` : ''}`,
+        body: `${stamp}。${wr.opponentName}との対抗戦が行われ、${wr.playerWins}勝${wr.aiWins}敗で${resultLabel}。${bestMatch ? `ベストバウトは${bestMatch.playerName} vs ${bestMatch.aiName}（試合評価${bestMatch.mq}）。` : ''}`,
         characterId: bestMatch ? (bestMatch.playerWon ? bestMatch.playerId : bestMatch.aiId) : null,
         warData: wr,
         situation: stamp,
@@ -29291,12 +29372,12 @@ Engine.newspaper = {
         if (uc.isTitleMatch) {
           headline = `🏆 PPV — ${uc.winnerOrgName}${uc.winnerName}、${uc.loserOrgName}${uc.loserName}を下しタイトル戦制す`;
         } else if (uc.mq >= 75) {
-          headline = `PPV ${tone} — ${uc.winnerOrgName}${uc.winnerName}が${uc.loserOrgName}${uc.loserName}を撃破（MQ ${uc.mq}）`;
+          headline = `PPV ${tone} — ${uc.winnerOrgName}${uc.winnerName}が${uc.loserOrgName}${uc.loserName}を撃破（試合評価${uc.mq}）`;
         } else {
           headline = `${winnerOrgOf}${uc.winnerName}、PPVで${uc.loserOrgName}${uc.loserName}を下す`;
         }
         const turnsPart = uc.turns ? `${uc.turns}ターンに及ぶ${tone}の末、` : `${tone}の末、`;
-        const body = `${stamp}。${turnsPart}${uc.winnerName}${winnerOrgParen}が${finishStr}で${uc.loserName}${loserOrgParen}から3カウントを奪取。MQ${uc.mq}の${tone}となった。`;
+        const body = `${stamp}。${turnsPart}${uc.winnerName}${winnerOrgParen}が${finishStr}で${uc.loserName}${loserOrgParen}から3カウントを奪取。試合評価${uc.mq}の${tone}となった。`;
         stories.push({
           type: uc.isTitleMatch ? 'ppvUndercardTitle' : 'ppvUndercard',
           priority: (uc.isTitleMatch ? P.ppvUndercardTitle : P.ppvUndercard) + Math.min(20, Math.floor(uc.mq / 5)),
@@ -29315,14 +29396,17 @@ Engine.newspaper = {
         if (!aiData) return;
 
         // AI王者交代
+        // task-80: 本文はリード+プロフィール+戴冠歴+締めの組み立て式(§4)。地の文からOVRを排除
         if (aiData._newsChampionChange) {
           const ev = aiData._newsChampionChange;
           const isAce = ev.ovr >= 75;
+          const bodySeed = (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.newChampId || 0);
+          const composedBody = Engine.newspaper.composeChampionChangeBody(ev, bodySeed);
           stories.push({
             type: 'aiChampionChange',
             priority: P.aiChampionChange + (isAce ? 20 : 0),
             headline: `${ev.orgName}——新王者${ev.newChampName}が誕生`,
-            body: `${ev.orgName}の王座が動いた。${ev.newChampName}（OVR ${ev.ovr}）が${ev.prevChampName || '前王者'}を下し、新たな頂点に立った。`,
+            body: composedBody || `${ev.orgName}の王座が動いた。${ev.newChampName}が${ev.prevChampName || '前王者'}を下し、新たな頂点に立った。`,
             characterId: ev.newChampId,
           });
         }
@@ -29441,7 +29525,7 @@ Engine.newspaper = {
             type: 'aiShowHighlight',
             priority: P.aiShowHighlight,
             headline: `${ev.orgName}定期興行——${ev.winnerName}が${ev.loserName}を下す`,
-            body: `${stamp}。${ev.orgName}の興行で${ev.winnerName}が${ev.loserName}に勝利。MQ ${ev.mq}を記録した。`,
+            body: `${stamp}。${ev.orgName}の興行で${ev.winnerName}が${ev.loserName}に勝利。試合評価${ev.mq}を記録した。`,
             characterId: ev.winnerId,
             situation: stamp,
           });
@@ -29469,7 +29553,7 @@ Engine.newspaper = {
               body = `${ev.orgName}内で${ev.fighter1Name}と${ev.fighter2Name}の間に緊張が走ったが、話し合いにより事態は収束した。`;
             } else if (ev.resolution === 'match') {
               const mqTone = ev.matchMQ >= 70 ? '名勝負となった一戦は' : '';
-              headline = `${ev.orgName}の${ev.fighter1Name}と${ev.fighter2Name}、リング上で決着！ ${ev.matchWinner || ''}が勝利（MQ${ev.matchMQ || 0}）`;
+              headline = `${ev.orgName}の${ev.fighter1Name}と${ev.fighter2Name}、リング上で決着！ ${ev.matchWinner || ''}が勝利（試合評価${ev.matchMQ || 0}）`;
               body = `${ev.orgName}で${ev.fighter1Name}と${ev.fighter2Name}の対立がリング上で決着。${mqTone}${ev.matchWinner || '勝者'}が勝利を収めた。`;
             } else {
               headline = `${ev.orgName}の${ev.fighter1Name}と${ev.fighter2Name}に亀裂——団体側は静観の構え`;
@@ -29523,7 +29607,7 @@ Engine.newspaper = {
                 type: 'aiWarResult',
                 priority: finalPriority,
                 headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦は決着つかず`,
-                body: `${stamp}。${ev.challengerName}と${ev.defenderName}の代表対決は決着つかずに終わった。MQ${ev.mq}。${mqTone}`,
+                body: `${stamp}。${ev.challengerName}と${ev.defenderName}の代表対決は決着つかずに終わった。試合評価${ev.mq}。${mqTone}`,
                 characterId: ev.challengerId || null,
                 situation: stamp,
               });
@@ -29532,7 +29616,7 @@ Engine.newspaper = {
                 type: 'aiWarResult',
                 priority: finalPriority,
                 headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦——${ev.winnerOrg}の${ev.winnerName}が勝利`,
-                body: `${stamp}。${ev.challengerOrg}と${ev.defenderOrg}の対抗戦で、${ev.winnerOrg}の${ev.winnerName}が勝利を収めた。MQ${ev.mq}。${mqTone}`,
+                body: `${stamp}。${ev.challengerOrg}と${ev.defenderOrg}の対抗戦で、${ev.winnerOrg}の${ev.winnerName}が勝利を収めた。試合評価${ev.mq}。${mqTone}`,
                 characterId: ev.winnerId || null,
                 situation: stamp,
               });
@@ -29559,7 +29643,7 @@ Engine.newspaper = {
                 type: 'aiB3Result',
                 priority: finalPriority,
                 headline: `📜 ${ev.challengerOrg} vs ${ev.defenderOrg} 挑戦状一騎討ちは決着つかず`,
-                body: `${stamp}。${ev.challengerName}と${ev.defenderName}による挑戦状の一騎討ちは決着つかず。MQ${ev.mq}。`,
+                body: `${stamp}。${ev.challengerName}と${ev.defenderName}による挑戦状の一騎討ちは決着つかず。試合評価${ev.mq}。`,
                 characterId: ev.challengerId || null,
                 situation: stamp,
               });
@@ -29570,7 +29654,7 @@ Engine.newspaper = {
                 type: 'aiB3Result',
                 priority: finalPriority,
                 headline: `📜 ${ev.challengerOrg}・${ev.challengerName}が${ev.defenderOrg}に挑戦状——${ev.winnerOrg}の${ev.winnerName}が制す`,
-                body: `${stamp}。${ev.challengerName}が${ev.defenderOrg}に叩きつけた挑戦状の一騎討ちは、${ev.winnerOrg}の${ev.winnerName}が勝利。MQ${ev.mq}。${mqTone}`,
+                body: `${stamp}。${ev.challengerName}が${ev.defenderOrg}に叩きつけた挑戦状の一騎討ちは、${ev.winnerOrg}の${ev.winnerName}が勝利。試合評価${ev.mq}。${mqTone}`,
                 characterId: ev.winnerId || null,
                 situation: stamp,
               });
@@ -29586,7 +29670,7 @@ Engine.newspaper = {
               type: 'aiMediaSpotlight',
               priority: P.aiMediaSpotlight,
               headline: `${ev.orgName}の${ev.fighterName}、密着取材で好評——人気急上昇`,
-              body: `${ev.outletName}の密着取材を受けた${ev.fighterName}が好成績を収め、人気が急上昇した。平均MQ${ev.avgMQ}。`,
+              body: `${ev.outletName}の密着取材を受けた${ev.fighterName}が好成績を収め、人気が急上昇した。平均試合評価${ev.avgMQ}。`,
               characterId: ev.fighterId,
             });
           }
@@ -29808,7 +29892,7 @@ Engine.newspaper = {
           const bmTone = bestMQ >= 80 ? 'これぞ若手の底力。' : bestMQ >= 60 ? '上々の内容と言えるだろう。' : '今後の成長に期待したい。';
           page2Stories.push({
             type: 'juniorTournamentBestBout',
-            headline: `大会ベストバウト: ${bestMatch.winner} vs ${bestMatch.loser}（MQ${bestMatch.mq}）`,
+            headline: `大会ベストバウト: ${bestMatch.winner} vs ${bestMatch.loser}（試合評価${bestMatch.mq}）`,
             body: `${bestMatch.round}で行われた${bestMatch.winner}と${bestMatch.loser}の一戦が、大会最高の試合内容を見せた。${bmTone}`,
           });
         }
@@ -29840,7 +29924,7 @@ Engine.newspaper = {
         });
         // 展望コメント
         const darkHorse = pList.length >= 4 ? pList[Math.min(2, pList.length - 1)] : null;
-        let outlook = `筆頭は${topP.name}（${topP._orgName}、OVR ${Engine.util.ov(topP)}）。`;
+        let outlook = `筆頭は${topP.name}（${topP._orgName}、総合力${Engine.util.ov(topP)}）。`;
         if (darkHorse && darkHorse.id !== topP.id) outlook += `しかし${darkHorse.name}（${darkHorse._orgName}）の勢いも侮れない。`;
         outlook += '波乱の予感がする大会になりそうだ。';
         page2Stories.push({

@@ -7650,11 +7650,11 @@ function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
   if (!promotedArticle) {
     // フォールバックも長めに
     if (m.isDraw) {
-      promotedArticle = `${m.left.name}と${m.right.name}、${m.turns || '?'}ターンの攻防は決着を見なかった。互いに譲らず${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。MQ${m.mq || '?'}——再戦を望む声は早くも上がっている。`;
+      promotedArticle = `${m.left.name}と${m.right.name}、${m.turns || '?'}ターンの攻防は決着を見なかった。互いに譲らず${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。試合評価${m.mq || '?'}——再戦を望む声は早くも上がっている。`;
     } else if (winnerName) {
-      promotedArticle = `${winnerName}が${loserName}を${m.finishLabel || '決着技'}で仕留めた${m.turns || '?'}ターンの一戦。${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を前にMQ${m.mq || '?'}を記録し、メインに次ぐ好カードとして紙面に残った。${m.isTitleMatch ? '王座戦としての重みも感じさせる勝利だった。' : `${loserName}も意地を見せたが、${winnerName}の地力が最後にものを言った形だ。`}`;
+      promotedArticle = `${winnerName}が${loserName}を${m.finishLabel || '決着技'}で仕留めた${m.turns || '?'}ターンの一戦。${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を前に試合評価${m.mq || '?'}を記録し、メインに次ぐ好カードとして紙面に残った。${m.isTitleMatch ? '王座戦としての重みも感じさせる勝利だった。' : `${loserName}も意地を見せたが、${winnerName}の地力が最後にものを言った形だ。`}`;
     } else {
-      promotedArticle = `${m.left.name}対${m.right.name}は${m.turns || '?'}ターンに及ぶ攻防となり、${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を魅了。MQ${m.mq || '?'}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。`;
+      promotedArticle = `${m.left.name}対${m.right.name}は${m.turns || '?'}ターンに及ぶ攻防となり、${promotedCtx.venue.name}の${(d.attendance || 0).toLocaleString()}人を魅了。試合評価${m.mq || '?'}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。`;
     }
   }
 
@@ -8253,7 +8253,7 @@ function _npRenderPage2() {
         }
       }
       if (!comment) {
-        comment = i === 0 ? `${d.rivalName}の看板。OVR${fOvr}は当面の脅威。`
+        comment = i === 0 ? `${d.rivalName}の看板。総合力${fOvr}は当面の脅威。`
           : i === 1 ? `主力として団体を支える。試合の質で平均値を引き上げる。`
           : `中堅として団体を支える一人。注視すべき存在だ。`;
       }
