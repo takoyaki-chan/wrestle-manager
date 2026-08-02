@@ -3105,15 +3105,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .pb-close-btn:hover{box-shadow:0 4px 20px rgba(212,168,67,0.4)}
 
 /* Tag match: 2人をチーム単位の1フレームに収める。 */
-.pb-mrow:has(.pb-fighter.is-tag){grid-template-columns:282px minmax(90px,1fr) 282px;column-gap:12px;align-items:center}
+.pb-mrow:has(.pb-fighter.is-tag){grid-template-columns:1fr 240px 1fr;column-gap:12px;align-items:center}
 .pb-fighter.is-tag,.pb-fighter.is-left.is-tag{flex-direction:column;align-items:center;gap:8px;min-width:0;text-align:center}
-.pb-tag-lineup{display:flex;width:282px;align-items:flex-start;border:2px solid var(--stage-border);border-radius:var(--radius-md);background:var(--stage-panel-deep)}
+.pb-tag-lineup{display:flex;width:198px;align-items:flex-start;border:2px solid var(--stage-border);border-radius:var(--radius-md);background:var(--stage-panel-deep)}
 /* Legacy selector retained for saved markup; current renderer uses .pb-tag-lineup above. */
 .pb-fighter.is-tag .pb-tag-members{display:flex;align-items:stretch;justify-content:center;width:min(178px,100%);overflow:hidden;border:2px solid var(--stage-border)}
-.pb-tag-member{display:flex;flex:0 0 150px;width:150px;min-width:150px;flex-direction:column;align-items:center;gap:4px}
+.pb-tag-member{display:flex;flex:0 0 108px;width:108px;min-width:108px;flex-direction:column;align-items:center;gap:4px}
 .pb-tag-member+.pb-tag-member{margin-left:-18px}
-.pb-tag-portrait{width:150px;height:224px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.38))}
-.pb-tag-portrait img{display:block;width:150px;height:224px;object-fit:contain;object-position:top center}
+.pb-tag-portrait{width:108px;height:162px;filter:drop-shadow(0 4px 6px rgba(0,0,0,.38))}
+.pb-tag-portrait img{display:block;width:108px;height:162px;object-fit:contain;object-position:top center}
 .pb-fighter.is-left.is-tag .pb-tag-lineup{flex-direction:row-reverse}
 .pb-fighter.is-tag.is-winner .pb-tag-lineup{border-color:var(--gold)}
 .pb-fighter.is-tag.is-loser .pb-tag-portrait img{filter:grayscale(.9) brightness(.72)}

@@ -34,12 +34,16 @@ assert.match(rule('.smc-tag-portrait'), /filter:drop-shadow\(/);
 assert.match(rule('.smc-tag-lineup'), /border:2px solid/);
 assert.doesNotMatch(rule('.smc-tag-fighter'), /border:/, 'tag members must not be individually framed');
 
-// #4: the common result tag renderer uses the same one-frame group treatment.
+// #4: normal-show tag results keep the one-frame group treatment while using
+// the same S-sized character images as single-match results.
 assert.match(ui, /<div class="pb-tag-lineup">\$\{mems\}<\/div>/);
-hasSize('.pb-tag-portrait', 150, 224);
+hasSize('.pb-tag-portrait', 108, 162);
+hasSize('.pb-portrait', 108, 162);
 assert.match(rule('.pb-tag-member+.pb-tag-member'), /margin-left:-18px/);
 assert.match(rule('.pb-tag-portrait'), /filter:drop-shadow\(/);
 assert.match(rule('.pb-tag-lineup'), /border:2px solid/);
+assert.match(rule('.pb-tag-lineup'), /width:198px/);
+assert.match(rule('.pb-mrow:has(.pb-fighter.is-tag)'), /grid-template-columns:1fr 240px 1fr/);
 assert.doesNotMatch(rule('.pb-tag-member'), /border:/, 'result tag members must not be individually framed');
 
 // #5 and #6: normal results use S; compact resolved rows use chip.
