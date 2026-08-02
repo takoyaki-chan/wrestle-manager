@@ -551,7 +551,7 @@ function _liveRingHtml(fr){
   const phase = fr ? (fr.phase || 'Opening') : 'Opening';
   const turn = fr ? fr.turn : 1;
   return `<section class="wm-live-ring" id="liveRing">
-    <img class="wm-ring-bg" src="../image/battle-ring-bg-mockup-v2.png" alt="プロレス会場のリング"
+    <img class="wm-ring-bg" src="../image/battle-ring-bg-mockup-v2.webp" alt="プロレス会場のリング"
       onerror="this.src='../image/battle-bg_venue_4.webp'">
     <div class="wm-ring-grade"></div>
     <div class="wm-ring-light left"></div><div class="wm-ring-light right"></div>

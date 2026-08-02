@@ -362,7 +362,7 @@ function _liveRingHtml(fr){
   const nar = fr ? _narrateFrame(fr) : { text:'ゴング！ 「次の攻防」で試合を進めてください', dramatic:false };
   const header = (S.matchInfo && S.matchInfo.header) || 'TAG MATCH';
   return `<section class="wm-tag-live-ring" id="liveRing">
-    <img class="wm-tag-ring-bg" src="../image/battle-ring-bg-mockup-v2.png" alt="プロレス会場のリング" onerror="this.src='../image/battle-bg_venue_4.webp'">
+    <img class="wm-tag-ring-bg" src="../image/battle-ring-bg-mockup-v2.webp" alt="プロレス会場のリング" onerror="this.src='../image/battle-bg_venue_4.webp'">
     <div class="wm-tag-ring-grade"></div>
     <div class="wm-tag-team-light left"></div><div class="wm-tag-team-light right"></div>
     <div class="wm-tag-live-label"><i></i>LIVE RING</div>

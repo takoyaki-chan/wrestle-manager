@@ -32,6 +32,8 @@ assert.ok(main.includes('class="wm-tag-live-ring"'), 'approved wide live-ring la
 assert.ok(main.includes('class="wm-tag-lower-dock"'), 'approved tag lower dock is missing');
 assert.ok(main.includes('getFullUrl(ch)'), 'ring wrestlers and temporary helpers must use full-body assets');
 assert.ok(main.includes('getUpperUrl(ch)'), 'lower team cards must use upper-body assets');
+assert.ok(main.includes('../image/battle-ring-bg-mockup-v2.webp'), 'tag viewer must use the optimized WebP ring background');
+assert.ok(!main.includes('battle-ring-bg-mockup-v2.png'), 'tag viewer must not retain the superseded PNG ring background');
 assert.ok(main.includes('hudApronFillA') && main.includes('hudApronFillB'), 'both apron HP meters must remain visible in the HUD');
 assert.ok(main.includes('S.logHtml = turnMarker + lines + S.logHtml'), 'new tag replay log entries must be prepended');
 
