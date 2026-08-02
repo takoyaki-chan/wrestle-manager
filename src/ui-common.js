@@ -11558,12 +11558,24 @@ function showFactionCommon1Modal(payload, state, onChoice) {
 
   const isLeaderA = leader && fA && leader.id === fA.id;
   const isLeaderB = leader && fB && leader.id === fB.id;
-  const leaderSide = isLeaderA ? 'a' : (isLeaderB ? 'b' : 'a');
+  // task-79 A: リーダーが対戦者でない場合、対戦者の頭上にセリフを誤帰属させない。
+  // その場合は null にして下の leaderStripHtml(コーチ帯の下・専用のリーダー帯)へ回す。
+  const leaderSide = isLeaderA ? 'a' : (isLeaderB ? 'b' : null);
   const aClick = fA ? `event.stopPropagation();showFighterPopup(${fA.id},'roster',true)` : '';
   const bClick = fB ? `event.stopPropagation();showFighterPopup(${fB.id},'roster',true)` : '';
   const factionTagA = isLeaderA ? `${factionName} ・ リーダー` : factionName;
   const factionTagB = isLeaderB ? `${factionName} ・ リーダー` : factionName;
   const rivalryNum = (payload.currentRivalry != null) ? payload.currentRivalry : 0;
+
+  // task-79 A: リーダーが非当事者のときだけ、コーチ帯の下に専用のリーダー帯を出す。
+  // chip 46×66(2:3)のミニ画像 + 頭上吹き出し。吹き出し内には名前・所属を書かない。
+  const leaderStripHtml = (leaderSide === null && leader && leaderLine)
+    ? `<div class="fc1-leader-strip">
+        <div class="fc1-leader-bubble-slot"><div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(leaderLine)}」</span></div></div>
+        <div class="fc1-leader-portrait" style="background-image:url('${_factionUpperUrl(leader.id)}')"></div>
+        <div class="fc1-leader-tag">${escHtml(factionName)} ・ リーダー</div>
+      </div>`
+    : '';
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。5項目比較(fc1m-stats)は
   // 数値行の後ろに追加する画面固有コンテンツとして温存する(構成順は変えず末尾に付く)。
@@ -11575,6 +11587,7 @@ function showFactionCommon1Modal(payload, state, onChoice) {
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, escHtml(coachLine))}
+        ${leaderStripHtml}
         <div class="fc1m-compare u3b-theme-cream">
           ${_u3bSideHtml({
             name: aName, line: leaderSide === 'a' ? leaderLine : '', imgUrl: fA ? _factionUpperUrl(fA.id) : '',
@@ -11596,7 +11609,7 @@ function showFactionCommon1Modal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">派閥内対決を組む</div>
-            <div class="fevt-decision-hint">ビッグマッチとして実際に試合。勝者は報われ、敗者はわだかまりを残す／因縁 <strong>-30〜-50</strong></div>
+            <div class="fevt-decision-hint">次の興行で組む。枠はカード編成で決める／勝者は報われ、敗者はわだかまりを残す／因縁 <strong>-30〜-50</strong></div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>

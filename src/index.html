@@ -5055,6 +5055,21 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fevt-reporter-line { font-size: 13px; color: #c8c0af; font-style: italic; line-height: 1.5; }
 .fevt-reporter-line::before { content: '「'; color: rgba(200,190,170,0.5); }
 .fevt-reporter-line::after { content: '」'; color: rgba(200,190,170,0.5); }
+/* task-79 A: Common-1 リーダー帯（対戦者でないリーダーのセリフの帰属先）。
+   chip 46×66(2:3) + 頭上吹き出し。名前・所属は吹き出しの外(fc1-leader-tag)に置く。 */
+.fc1-leader-strip {
+  background: var(--office-panel-dark, #221c14);
+  padding: 10px 20px 14px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border-bottom: 1px solid rgba(0,0,0,0.15);
+  animation: fevtFadeIn 500ms ease 500ms both;
+}
+.fc1-leader-bubble-slot { display: flex; justify-content: center; width: 100%; margin-bottom: 6px; }
+.fc1-leader-portrait {
+  width: 46px; height: 66px; border-radius: 4px;
+  border: 1px solid rgba(212,168,67,0.35);
+  background: #222 center/cover no-repeat; flex-shrink: 0;
+}
+.fc1-leader-tag { font-size: 10px; color: var(--gold); letter-spacing: 1px; font-family: 'Oswald',sans-serif; text-transform: uppercase; }
 .fevt-subject-stage {
   padding: 24px 24px 22px;
   background:

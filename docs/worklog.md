@@ -1,5 +1,36 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-79 実装完了: Common-1 興行予約化 + リーダー発言の帰属修正（2026-08-02・worktree）
+
+`docs/codex-tasks/task-79-common1-booking-and-attribution.md` の実装。
+
+**着手前の既存「予約→興行組み込み」機構の全列挙**（grep調査）:
+- 挑戦状(CH系) — `Engine.challengeRequest.reserveScheduledMatches`（`src/relationships.js`）。3枠(メイン/セミ/準セミ)を**強制ロック**して`showCard`に自動挿入(`_crMatchLocked`)。枠を選べない
+- B3奪還挑戦 — `Engine.challengeRequest.reserveScheduledSingleMatch`。メイン1枠を強制ロック(`isCRMatch`/`_b3ChallengeMatch`)
+- F09派閥対抗戦 — `_f09Locked`フラグでカード挿入(枠は自動選定)。試合連動ポイント制(先取100)で決着、これも「枠が固定」型
+- F08派閥直接対決 — `_pendingF08Directive`を立てておき、**カードのどこにリーダー同士の組み合わせが現れても**(`validMatches`を走査して検出)、その週の結果処理で追加効果を適用。枠を強制しない、唯一の「自由枠」既存パターン
+- F07 DEMAND_MAIN — メイン枠(`showCard[0]`)にメンバーが入っているかを**判定のみ**行い、含まれていれば加点/含まれなければ減点。カードへの挿入は一切しない
+- 頂上決戦(天頂戦) — 完全に独立した特別興行(`quadrennial-ppv-tournament`)。通常カードの予約とは無関係
+
+→ Common-1は「枠を強制しない」という要件がCH/B3/F09と根本的に異なり、**F08直接対決の「カード走査検出」パターンが最も近い**ため、これに乗せた。新しい並行機構は発明していない。
+
+**A. リーダー発言の帰属修正**: `showFactionCommon1Modal`（`src/ui-common.js`）の`leaderSide`フォールバックを`'a'`固定から`null`に変更。リーダー非当事者時は対戦者の吹き出しにセリフを出さず、コーチ帯(reporter strip)の下に新設した`.fc1-leader-strip`（chip 46×66・2:3のミニ画像+頭上吹き出し、名前/所属は吹き出し外）へ回す。`_renderCommon1MatchResult`のresultLeader/resultLoser帰属は元々`payload.leaderId === fA.id`の直接比較で正しく、修正不要と確認。
+
+**B. 興行予約化**: `Engine.factions.applyCommon1Choice`のA選択を`G.bookedCommon1 = {fighterAId, fighterBId, factionId, factionName, archetypeId, leaderId, createdSeason, createdWeek, createdAbsWeek}`という単一予約の作成に変更（即時試合を撤去）。新設ヘルパー5つ（`isBookedCommon1Valid`/`isBookedCommon1Expired`/`sweepBookedCommon1`/`findBookedCommon1CardIndex`/`hasCompetingBooking`）を`src/factions.js`に追加。`App._finalizeShowImpl`（F08ディレクティブ処理の直前）で予約ペアが今週のカードのどこにあるかを枠を問わず検出し、`Engine.challengeRequest.isEligibleHomeShow`で特別興行週を除外、`hasCompetingBooking`で他予約(CH/B3/F09/派閥内序列戦/奪還戦)との同一興行重複を回避してから`applyCommon1MatchResult`を適用。結果表示は即時試合用モーダルを廃し、F09/F08/CRと同じdrainチェーンで`_renderCommon1MatchResult`を表示。`renderShowPrep`に予約バナーを追加（配置済み/未配置/特別興行繰り越しを表示）。`tickWeek`の派閥週次処理末尾で`sweepBookedCommon1`を毎週実行し無効化/1シーズン(48週)経過を静かに解除。`dissolveAllByDecree`の畳む対象リストに`bookedCommon1`を追加。`Engine.validateGameState`に整合チェック(オブジェクト型/存在しない選手ID参照/season・week型)を追加。旧・即時試合フロー(`App._common1Preview`等5関数)は呼び出し元を失い未使用のまま残置(削除は別タスク候補)。
+
+**検証**: `node test/auto-sim.js 20 42` 違反0/エラー0/ALL CLEAR。`node test/common1-booking-test.js`（新規、12ケース）全PASS。`npm test` 197/197 PASS。
+
+**手動確認手順**（Keisuke実機確認用）:
+1. Common-1発火 → A選択 → 派閥イベント結果バナーに「次の興行のカード編成で、どこに置くかは社長次第だ」の文言が出ることを確認
+2. 興行準備画面に「⚔ ○○内対決の予約」バナーが出て、2名の名前と「カードのどこか(メイン/セミ/中盤)に組んでください」の案内が表示されることを確認
+3. カード編成で2名を中盤枠に配置 → バナーが「✓ 今週のカードに組まれています」に変わることを確認
+4. 興行実行 → 通常の試合結果に続き、派閥内対決の専用結果画面(因縁-30〜-50表記)が出ることを確認 → 興行準備画面から予約バナーが消えていることを確認
+5. 特別興行週(PPV/月末特別興行等)に2名を配置しても清算されず、次の通常興行まで予約が残ることを確認
+6. 予約中の当事者を負傷させる（または退団させる）→ 予約バナーが静かに消えることを確認（エラー表示なし）
+7. リーダーが対戦者でないCommon-1打診で、コーチ帯の下にリーダー専用の吹き出し(小さい2:3画像)が出て、対戦者側の吹き出しにリーダーのセリフが誤って出ないことを確認
+
+specs更新: `specs/faction-common-events-spec-v0.1.md` §3.3/§3.4/§3.4.1/§3.4.2 を予約制へ改訂。`specs/faction-rivalry-points-spec-v0.1.md`は調査の結果Common-1関連記述が存在せず、更新対象なし（`faction-internal-rank-spec-v0.2.md`にCommon-1の派閥内ポイント計算があるが、その計算ロジック自体は無変更のため未改訂）。
+
 ## task-77 実装完了: 引退記事の格付け + ドラフト1面拡充（2026-08-02 続き2・worktree）
 
 `docs/codex-tasks/task-77-newspaper-retirement-rank-and-draft-feature.md` の実装。
