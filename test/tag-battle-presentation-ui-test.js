@@ -47,6 +47,11 @@ assert.ok(html.includes('.tag-out-legal{animation:wmTagSlideOut'), 'fixed-scale 
 assert.ok(html.includes('@keyframes wmTagSlideIn{from{transform:translateX('), 'tag swaps must enter horizontally at a fixed scale');
 assert.ok(html.includes('grid-template-columns:1fr auto 1fr'), 'primary tag replay button must remain at the exact center');
 assert.ok(html.includes('.wm-tag-move-detail .wm-move-guide') && html.includes('font-size:11px'), 'tag move descriptions must use the approved readable size');
+assert.ok(main.includes("cls.push('silhouette-danger')") && main.includes("current.classList.toggle('silhouette-danger'"), 'tag critical HP must keep the silhouette danger state in sync');
+assert.ok(html.includes('.wm-tag-live-ring .danger-glow{display:none}'), 'legacy rectangular tag danger glow must be hidden');
+assert.ok(html.includes('.wm-tag-ring-fighter.charging .wm-tag-full-figure{animation:wmFigureChargeAura'), 'tag big-move charge glow must follow the transparent fighter image');
+assert.ok(html.includes('.wm-tag-ring-fighter.ff-flash .wm-tag-full-figure{animation:wmFigureFriendlyFlash'), 'tag event flashes must follow the transparent fighter image');
+assert.ok(html.includes('.vic-win-line{position:relative;margin-bottom:8px;padding:11px 16px;border:1px solid rgba(122,101,48,.52);border-radius:10px;color:#211d15;background:rgba(250,246,236,.98)'), 'tag victory dialogue must use the standard white speech bubble with dark text');
 assert.ok(mobile.includes('/* Tag battle presentation v2 */'), 'tag presentation must retain a phone layout');
 assert.ok(mobile.includes('.wm-tag-exchange-panel { grid-column: 1 / -1; grid-row: 1;'), 'phone tag layout must keep the exchange panel above both teams');
 

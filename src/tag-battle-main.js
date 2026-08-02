@@ -314,6 +314,7 @@ function _playerCardHtml(side, layer, posKey){
   const ratio = ch.mhp > 0 ? Math.max(0,ch.hp)/ch.mhp : 0;
   const cls = ['player-card', 'wm-tag-ring-fighter', side === 'a' ? 'left' : 'right'];
   if (ratio <= 0.33) cls.push('danger');
+  if (ratio <= 0.25 && ratio > 0) cls.push('silhouette-danger');
   if (ch.gritTurns > 0) cls.push('grit-active');
   if (ch.hotTagBuff > 0) cls.push('hot-tag-buff');
   return `<div class="${cls.join(' ')}" id="card-${side}-legal" data-fighter-key="${posKey}">
@@ -563,6 +564,7 @@ function _refreshCard(side, layer, posKey){
     const current = document.getElementById(id);
     if (current) {
       current.classList.toggle('danger', ratio <= 0.33);
+      current.classList.toggle('silhouette-danger', ratio <= 0.25 && ratio > 0);
       current.classList.toggle('grit-active', ch.gritTurns > 0);
       current.classList.toggle('hot-tag-buff', ch.hotTagBuff > 0);
       const glow = document.getElementById(`dangerGlow-${side}`);

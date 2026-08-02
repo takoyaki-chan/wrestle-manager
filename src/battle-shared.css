@@ -80,6 +80,24 @@
   100% { filter: brightness(1); transform: scale(1) }
 }
 
+/* Full-body PNG effects must follow the transparent silhouette, never its rectangular canvas. */
+@keyframes wmFigureChargeAura {
+  0%, 100% { filter: brightness(1) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 9px rgba(255,140,60,.5)) drop-shadow(0 0 18px rgba(255,215,107,.25)) }
+  50% { filter: brightness(1.14) contrast(1.05) var(--wm-figure-shadow) drop-shadow(0 0 18px rgba(255,140,60,.95)) drop-shadow(0 0 36px rgba(255,215,107,.58)) }
+}
+@keyframes wmFigureDangerAura {
+  0%, 100% { filter: brightness(.9) contrast(1.06) var(--wm-figure-shadow) drop-shadow(0 0 8px rgba(196,30,58,.42)) drop-shadow(0 0 16px rgba(196,30,58,.2)) }
+  50% { filter: brightness(.98) contrast(1.08) var(--wm-figure-shadow) drop-shadow(0 0 15px rgba(229,55,82,.82)) drop-shadow(0 0 28px rgba(196,30,58,.42)) }
+}
+@keyframes wmFigureGoldAura {
+  0%, 100% { filter: brightness(.98) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 8px rgba(212,168,67,.42)) }
+  50% { filter: brightness(1.1) contrast(1.05) var(--wm-figure-shadow) drop-shadow(0 0 17px rgba(240,208,120,.82)) drop-shadow(0 0 28px rgba(212,168,67,.38)) }
+}
+@keyframes wmFigureFriendlyFlash {
+  0% { filter: brightness(1.35) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 18px rgba(255,215,0,.8)) }
+  100% { filter: brightness(.96) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 0 transparent) }
+}
+
 /* カットインスライドイン (セリフ/ビッグムーブ/ダメージセリフ) */
 @keyframes cutinSlideIn {
   from { transform: translateX(-50px); opacity: 0 }

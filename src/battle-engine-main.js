@@ -712,6 +712,7 @@ function _updatePanel(side){
   // grit クラス
   panel.classList.toggle('grit-active', ch.gritTurns > 0);
   panel.classList.toggle('danger', hp.ratio <= 0.33);
+  panel.classList.toggle('silhouette-danger', hp.ratio <= 0.25 && hp.ratio > 0);
   // danger-glow
   const glow = document.getElementById(`dangerGlow-${side}`);
   if (glow) { if (hp.ratio <= 0.25 && hp.ratio > 0) glow.classList.add('show'); else glow.classList.remove('show'); }
