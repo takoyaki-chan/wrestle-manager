@@ -12,6 +12,14 @@ const manifest = JSON.parse(fs.readFileSync(path.join(root, 'release', 'manifest
 const packageScript = fs.readFileSync(path.join(root, 'release', 'package-release.ps1'), 'utf8');
 const verifyScript = fs.readFileSync(path.join(root, 'release', 'verify-package.ps1'), 'utf8');
 
+assert.ok(index.includes('<script src="dev-event-catalog.js"></script>'), 'event catalogue script must be loaded');
+assert.ok(index.indexOf('dev-event-catalog.js') < index.indexOf('dev-tools.js'), 'event catalogue must load before developer tools');
+assert.ok(!manifest.sourceFiles.includes('src/dev-event-catalog.js'), 'event catalogue must not ship in normal builds');
+assert.ok(manifest.devOnlyFiles.includes('src/dev-event-catalog.js'), 'event catalogue must be declared dev-only');
+assert.ok(source.includes('function playEventAudio(id)'), 'developer tools must expose audio preview');
+assert.ok(source.includes('function showEventFixture(id)'), 'developer tools must expose display fixtures');
+assert.ok(source.includes('function stopEventAudio(restore = true)'), 'developer tools must restore normal BGM after preview');
+
 assert.ok(index.includes('<script src="dev-tools.js"></script>'), '開発者モードのスクリプトを読み込む');
 
 // 配布物には含めない。src/index.html は参照を持ったままなので、梱包時に参照行を除去する必要がある

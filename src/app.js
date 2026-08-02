@@ -4066,16 +4066,9 @@ const App = {
     App._awEntryActiveRole = null;
     Audio.play('select');
     try { Storage.autoSave(); } catch (_e) {}
-    // 代表を決めたら、そのまま会場入りのカットを挟んで本編へ
-    // 会場入り → 開幕カード紹介(4団体の顔ぶれ) → 本編
-    const toBoard = () => {
-      const res = Engine.autumnWar.getProgress(G) || G.autumnWar;
-      if (typeof _showAutumnWarCardIntro === 'function' && res) {
-        _showAutumnWarCardIntro(res, () => App.initAutumnWarReplay());
-      } else {
-        App.initAutumnWarReplay();
-      }
-    };
+    // 代表を決めたら、会場入りのカットから専用の大会本編へ直接進む。
+    // 左右に全身画像を並べる全カード紹介は年度末PPVだけの演出。
+    const toBoard = () => App.initAutumnWarReplay();
     if (typeof showSpecialEventTravel === 'function') {
       showSpecialEventTravel('autumnWar', G, party, toBoard);
     } else {
@@ -15382,8 +15375,8 @@ App.initJuniorTournament = function() {
       Audio.play('notify');
       renderJuniorTournamentSummon();
     } else {
-      // 自団体の出場者ゼロでも、大会の全体像は見せる
-      App._jtOpenBracketWithCardIntro();
+      // 自団体の出場者ゼロでもトーナメント表は見せる
+      renderJuniorTournamentBracket();
     }
   };
   if (typeof showSpecialEventIntro === 'function') {
@@ -15395,24 +15388,6 @@ App.initJuniorTournament = function() {
   }
 };
 
-/** ジュニアの対戦表を開く共通入口。**開幕カード紹介を必ず1回挟む。**
- *  招集がある年と無い年で経路が分かれるので、ここに寄せないと片方だけ紹介が出なくなる。 */
-App._jtOpenBracketWithCardIntro = function() {
-  const jt = App._jtPreview;
-  if (!jt) return;
-  if (jt._cardIntroShown || typeof _showBracketCardIntro !== 'function') {
-    renderJuniorTournamentBracket();
-    return;
-  }
-  jt._cardIntroShown = true;
-  const bracketSize = jt.result?.bracketSize || jt.selection?.bracketSize || 8;
-  const firstRoundLabel = bracketSize >= 16 ? '1回戦' : bracketSize >= 8 ? '準々決勝' : '準決勝';
-  _showBracketCardIntro(jt.result.rounds, {
-    label: 'Special Event', bigName: 'U-20 JUNIOR TOURNAMENT',
-    sub: `Season ${G.season || 1} ─ ${bracketSize}名 単発トーナメント`, roundLabel: firstRoundLabel,
-  }, () => renderJuniorTournamentBracket());
-};
-
 App.jtNextSummon = function() {
   const jt = App._jtPreview;
   if (!jt) return;
@@ -15420,8 +15395,8 @@ App.jtNextSummon = function() {
   if (jt.summonIndex >= jt.myParticipants.length) {
     jt.phase = 'bracket';
     Audio.play('tick');
-    // 招集が済んだら会場入り → 開幕カード紹介 → 対戦表
-    const toBoard = () => App._jtOpenBracketWithCardIntro();
+    // 招集が済んだら会場入り → 対戦表。PPV型の全カード紹介は挟まない。
+    const toBoard = () => renderJuniorTournamentBracket();
     if (typeof showSpecialEventTravel === 'function') {
       showSpecialEventTravel('juniorTournament', G, jt.myParticipants, toBoard);
     } else {
@@ -15796,7 +15771,10 @@ App.finalizeJuniorTournament = function() {
     else if (runnerUp && runnerUp.id === p.id) timing = 'postWin';
     else if (semiFinalists && semiFinalists.some(sf => sf && sf.id === p.id)) timing = 'postWin';
     // 準々決勝敗退は postLose
-    return { ...p, _jtTiming: timing };
+    // 1回戦カード内の p は表示用の要約データなので、OVR計算に必要な能力値を持たない。
+    // apply 後の現行ロスターから完全な選手データを戻し、結果タイミングだけ付加する。
+    const liveFighter = (G.roster || []).find(f => f && f.id === p.id);
+    return { ...(liveFighter || p), _jtTiming: timing };
   });
 
   // task-73: コーチ総括は _jtPreview を捨てる前に材料だけ取っておく

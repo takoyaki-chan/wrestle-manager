@@ -16,6 +16,7 @@ const { readSource } = require('./helpers/source');
 
 const ui = readSource('src', 'ui-common.js');
 const appSrc = readSource('src', 'app.js');
+const htmlSrc = readSource('src', 'index.html');
 const coachLines = require('../src/coach-lines.js');
 
 const VOICES = ['sparta_roshi', 'sparta_tosho', 'theorist', 'artisan_bukotsu',
@@ -168,6 +169,19 @@ section('A4. 顔出しは共通部品 _u3bSideHtml を使う(新しい顔出し�
   assert.ok(/_u3bSideHtml\(\{[\s\S]{0,400}role: 'コーチ'/.test(blockSrc),
     'コーチの顔出しが _u3bSideHtml 経由でない、または役割ラベルが無い');
   assert.ok(!/<img[^>]*coach/i.test(blockSrc), '生の <img> で顔出しを自作している');
+});
+
+section('A5. コーチ総括の長文は2行で切らず、吹き出し枠ごと全文に合わせて伸びる', () => {
+  assert.ok(/bubbleClass: 'war-victory-line tcw-bubble'/.test(blockSrc),
+    'コーチ総括の吹き出しに専用スコープが付いていない');
+  assert.ok(/slotClass: 'tcw-bubble-slot'/.test(blockSrc),
+    '長文に合わせて伸ばす予約枠クラスが付いていない');
+  assert.ok(/\.war-victory-overlay\.is-tcw \.tcw-bubble-slot\{height:auto;min-height:52px\}/.test(htmlSrc),
+    'コーチ総括の予約枠が固定高のまま');
+  assert.ok(/\.war-victory-overlay\.is-tcw \.tcw-bubble \.u3b-bubble-text\{display:block;-webkit-line-clamp:unset;overflow:visible\}/.test(htmlSrc),
+    'コーチ総括の2行制限が解除されていない');
+  assert.ok(/\.u3b-bubble-text\{display:-webkit-box;-webkit-line-clamp:2/.test(htmlSrc),
+    '他の共通吹き出しまで2行制限を外している');
 });
 
 // B. 進行 — onDone がちょうど1回

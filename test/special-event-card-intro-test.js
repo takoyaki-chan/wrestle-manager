@@ -1,19 +1,8 @@
 // special-event-card-intro-test.js
 //
-// 大会が始まる前に「これから何が始まるのか」を一枚で見せる（2026-07-27 Keisuke 選択）。
-//
-// PPV には前から入っていた演出（ppvmc-*）。**新しく作らず、これを5大会の共通口にした。**
-// カードの枠は「左右が向かい合う」形で、5大会すべてこれに載る:
-//
-//   夏ジュニア・冬天頂戦   1回戦の全カード（＝出場者全員）
-//   冬PPV                  当日の全カード（従来どおり）
-//   秋4団体戦              準決勝2つ（団体 vs 団体・顔は大将・下段にメンバー3名）
-//   春タッグ               第1節（チーム vs チーム・顔は1人目・下段に所属）
-//
-// 守りたいのは3つ:
-//   1. 5大会すべてが**同じ部品**を通ること（別々に作ると必ず見た目がずれる）
-//   2. バスの後・本編の前という**位置**（順番が入れ替わると意味が消える）
-//   3. 経路が分かれる大会（ジュニア）で**片方だけ出ない**ことがないこと
+// 左右に全身画像を並べる ppvmc-* の全カード紹介は、4年に3回の年度末PPV専用。
+// 夏ジュニア・春タッグ・秋4団体戦・4年ごとの天頂戦は、それぞれの専用導入から
+// 本編へ直接進み、この画面を共有しない。
 
 'use strict';
 const assert = require('assert');
@@ -32,20 +21,18 @@ function section(name, fn) {
   catch (e) { failed++; console.log('  FAIL  ' + name + '\n        ' + e.message); }
 }
 
-console.log('=== 特別興行の開幕カード紹介 ===\n');
+console.log('=== 年度末PPV専用の全カード紹介 ===\n');
 
-const coreSrc = (ui.match(/function showSpecialEventCardIntro[\s\S]*?\n\}/) || [])[0];
+const coreSrc = (ui.match(/function _showPPVCardIntro[\s\S]*?\n\}/) || [])[0];
+const ppvSrc = (ui.match(/function showPPVMatchCardIntro[\s\S]*?\n\}/) || [])[0];
 
-// ─────────────────────────────────────────────────────────────
-// A. 部品がひとつか
-// ─────────────────────────────────────────────────────────────
-
-section('1. 共通の描画は1本', () => {
-  assert.ok(coreSrc, 'showSpecialEventCardIntro が無い');
+section('1. PPV専用の描画部品だけが残る', () => {
+  assert.ok(coreSrc, '_showPPVCardIntro が無い');
   assert.ok(/ppvmc-card/.test(coreSrc), 'PPV の既存カード枠を使っていない');
+  assert.ok(!/function showSpecialEventCardIntro/.test(ui), '汎用特別興行の入口が残っている');
 });
 
-section('2. 新しいCSSクラスを作っていない', () => {
+section('2. PPV用画面のCSSクラスは既存定義を使う', () => {
   const used = new Set();
   (coreSrc.match(/class="([^"$]+)"/g) || []).forEach(m => {
     m.slice(7, -1).replace(/\$\{[^}]*\}/g, '').trim().split(/\s+/).forEach(c => c && used.add(c));
@@ -54,119 +41,53 @@ section('2. 新しいCSSクラスを作っていない', () => {
   assert.deepStrictEqual(missing, [], 'index.html に無いクラス: ' + missing.join(', '));
 });
 
-section('3. どの大会もカードHTMLを自前で組んでいない', () => {
-  // 各大会がカードを手書きし始めると、PPV だけ直して他が古いままになる
-  const adapters = ['_showBracketCardIntro', '_showAutumnWarCardIntro', '_showSpringTagCardIntro',
-                    'showPPVMatchCardIntro'];
-  adapters.forEach(fn => {
-    const src = (ui.match(new RegExp(`function ${fn}[\\s\\S]*?\\n\\}`)) || [])[0];
-    assert.ok(src, `${fn} が無い`);
-    assert.ok(!/ppvmc-card/.test(src),
-      `${fn} がカードHTMLを自前で組んでいる。showSpecialEventCardIntro にデータだけ渡すこと`);
-    assert.ok(/showSpecialEventCardIntro\(/.test(src), `${fn} が共通描画を通っていない`);
-  });
-});
-
-section('4. カードが1枚も無ければ、黙って先へ進む', () => {
-  // 不開催や異常系で空の紹介画面を出さない
-  assert.ok(/if \(!el \|\| !cards\.length\) \{ onStart\(\); return; \}/.test(coreSrc),
-    'カードが空でも紹介画面を開いてしまう');
+section('3. PPV以外のカード紹介アダプターは削除済み', () => {
   ['_showBracketCardIntro', '_showAutumnWarCardIntro', '_showSpringTagCardIntro'].forEach(fn => {
-    const src = (ui.match(new RegExp(`function ${fn}[\\s\\S]*?\\n\\}`)) || [])[0];
-    assert.ok(/\{ onStart\(\); return; \}/.test(src), `${fn}: データが無いとき進めなくなる`);
+    assert.ok(!ui.includes(fn), `${fn} が ui-common.js に残っている`);
+    assert.ok(!app.includes(fn), `${fn} の呼び出しが app.js に残っている`);
   });
 });
 
-// ─────────────────────────────────────────────────────────────
-// B. 対象4大会に入っているか（天頂戦は専用導入から対戦表へ直行）
-// ─────────────────────────────────────────────────────────────
-
-section('5. 天頂戦を除く4大会で開幕カード紹介が出る', () => {
-  const wired = {
-    '夏ジュニア': /_showBracketCardIntro\(jt\.result\.rounds/,
-    '秋4団体戦':  /_showAutumnWarCardIntro\(res/,
-    '冬PPV':      /showPPVMatchCardIntro\(/,
-  };
-  Object.entries(wired).forEach(([name, re]) => {
-    assert.ok(re.test(app), `${name} に開幕カード紹介が入っていない`);
-  });
+section('4. ジュニアは専用導入から対戦表へ直接進む', () => {
+  assert.ok(!app.includes('_jtOpenBracketWithCardIntro'), '旧カード紹介入口が残っている');
+  assert.ok(/const toBoard = \(\) => renderJuniorTournamentBracket\(\);/.test(app),
+    '招集後にジュニア対戦表へ直接進んでいない');
+  assert.ok(/自団体の出場者ゼロでもトーナメント表は見せる\s*\n\s*renderJuniorTournamentBracket\(\);/.test(app),
+    '自団体出場者ゼロの経路が対戦表へ直接進んでいない');
 });
 
-section('6. ジュニアは経路が2つあっても必ず1回だけ出る', () => {
-  // 招集がある年と無い年で分岐する。片方だけ配線すると、ある年だけ紹介が出ない。
-  // 逆に両方から呼ぶと2回出るので、フラグで1回に抑える
-  assert.ok(/App\._jtOpenBracketWithCardIntro = function/.test(app),
-    'ジュニアの対戦表を開く共通入口が無い');
-  const calls = app.match(/App\._jtOpenBracketWithCardIntro\(\)/g) || [];
-  assert.ok(calls.length >= 2,
-    `共通入口の呼び出しが ${calls.length} 箇所。招集あり/なしの両経路から通すこと`);
-  const src = (app.match(/App\._jtOpenBracketWithCardIntro = function[\s\S]*?\n\};/) || [])[0];
-  assert.ok(/_cardIntroShown/.test(src), '2回目以降も紹介が出る');
+section('5. 秋4団体戦は会場入りから本編へ直接進む', () => {
+  assert.ok(/const toBoard = \(\) => App\.initAutumnWarReplay\(\);/.test(app),
+    '秋4団体戦が専用本編へ直接進んでいない');
+  assert.ok(/showSpecialEventTravel\('autumnWar', G, party, toBoard\)/.test(app),
+    '秋4団体戦の会場入り導線が消えている');
 });
 
-// ─────────────────────────────────────────────────────────────
-// C. 位置（バスの後・本編の前）
-// ─────────────────────────────────────────────────────────────
-
-section('7. 会場入り(バス)の後に出る', () => {
-  // 「導入 → 選定 → バス → 開幕紹介 → 本編」。バスより前だと会場に着く前に紹介が始まる
-  const blocks = {
-    '秋4団体戦': /showSpecialEventTravel\('autumnWar', G, party, toBoard\)/,
-    '春タッグ':   /showSpecialEventTravel\('springTagLeague', G, party, toBoard\)/,
-    '夏ジュニア': /showSpecialEventTravel\('juniorTournament', G, jt\.myParticipants, toBoard\)/,
-  };
-  Object.entries(blocks).forEach(([name, re]) => {
-    assert.ok(re.test(app), `${name}: バスの続きが開幕紹介になっていない`);
-  });
-  // 天頂戦はこの共通カード紹介を使わず、専用導入から対戦表へ直接進む。
+section('6. 春タッグと天頂戦にもPPV型紹介が無い', () => {
+  assert.ok(!/_showSpringTagCardIntro\(stl/.test(app), '春タッグにPPV型紹介が混入している');
   assert.ok(/const toBracket = \(\) => renderTenchosenBracket\(\)/.test(app),
-    '天頂戦: 専用導入の後に対戦表へ直接進んでいない');
+    '天頂戦が専用導入から対戦表へ直接進んでいない');
 });
 
-section('8. 本編は紹介を閉じた後に始まる', () => {
-  // onStart に本編を渡す。先に本編を描くと紹介の裏で試合が進む
-  assert.ok(/_showAutumnWarCardIntro\(res, \(\) => App\.initAutumnWarReplay\(\)\)/.test(app),
-    '秋: 本編が紹介の続きになっていない');
-  assert.ok(/const toBoard = \(\) => renderSpringTagLeagueBoard\(\)/.test(app),
-    '春: リーグ表への導線がない');
-  assert.ok(!/_showSpringTagCardIntro\(stl/.test(app),
-    '春タッグにPPV型の縦カード紹介が混入している');
+section('7. 年度末PPVだけがPPVカード描画を呼ぶ', () => {
+  assert.ok(ppvSrc, 'showPPVMatchCardIntro が無い');
+  assert.ok(/_showPPVCardIntro\(/.test(ppvSrc), 'PPVが専用カード描画を通っていない');
+  assert.strictEqual((ui.match(/_showPPVCardIntro\(/g) || []).length, 2,
+    'PPV専用描画の定義とPPV呼び出し以外に利用箇所がある');
+  assert.strictEqual((app.match(/showPPVMatchCardIntro\(/g) || []).length, 1,
+    '年度末PPV以外から showPPVMatchCardIntro が呼ばれている');
 });
 
-// ─────────────────────────────────────────────────────────────
-// D. 中身
-// ─────────────────────────────────────────────────────────────
-
-section('9. 単発トーナメントは1回戦の全カードを見せる', () => {
-  // 1回戦 = 出場者全員。ここを絞ると「全体像」でなくなる
-  const src = (ui.match(/function _showBracketCardIntro[\s\S]*?\n\}/) || [])[0];
-  assert.ok(/rounds\[0\]/.test(src), '1回戦を見ていない');
-  assert.ok(/first\.matches\.map\(/.test(src), '1回戦の一部しか出していない');
-});
-
-section('10. 団体戦は顔とメンバーの両方が分かる', () => {
-  const src = (ui.match(/function _showAutumnWarCardIntro[\s\S]*?\n\}/) || [])[0];
-  assert.ok(/大将/.test(src), '顔を誰が背負うか決めていない');
-  assert.ok(/names\.join\(/.test(src), 'メンバー名を出していない。団体名だけでは誰が出るか分からない');
-});
-
-section('11. PPV の見え方は変わっていない', () => {
-  // 既存演出の作り替えなので、メインが上・前座が下・MAIN EVENT 表記は維持する
-  const src = (ui.match(/function showPPVMatchCardIntro[\s\S]*?\n\}/) || [])[0];
-  assert.ok(/for \(let di = total - 1; di >= 0; di--\)/.test(src), 'メイン→前座の並び順が変わっている');
-  assert.ok(/MAIN EVENT/.test(src), 'MAIN EVENT 表記が消えている');
-  assert.ok(/isSummit/.test(src), 'サミット判定が落ちている');
-  assert.ok(/FIRST MEETING/.test(src), '初顔合わせ表記が消えている');
-});
-
-section('12. 下段カードほど手前に重なる', () => {
-  // 全身画像はカード枠より背が高い。下段の画像が上段カードの背景に隠れると頭が切れる。
-  assert.ok(/const zIdx = i \+ 1;/.test(coreSrc),
-    '下段ほど大きい z-index になっていない');
-  assert.ok(!/const zIdx = total - i;/.test(coreSrc),
-    '上段ほど手前になる逆順へ戻っている');
+section('8. PPVの見え方と異常時の継続を維持', () => {
+  assert.ok(/if \(!el \|\| !cards\.length\) \{ onStart\(\); return; \}/.test(coreSrc),
+    'カードが空のとき本編へ進めない');
+  assert.ok(/const zIdx = i \+ 1;/.test(coreSrc), '下段カードほど手前になる順序が崩れている');
+  assert.ok(/for \(let di = total - 1; di >= 0; di--\)/.test(ppvSrc), 'メイン→前座の並び順が変わっている');
+  assert.ok(/MAIN EVENT/.test(ppvSrc), 'MAIN EVENT 表記が消えている');
+  assert.ok(/isSummit/.test(ppvSrc), 'サミット判定が落ちている');
+  assert.ok(/FIRST MEETING/.test(ppvSrc), '初顔合わせ表記が消えている');
 });
 
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
-console.log('ALL PASS (12 sections)');
+console.log('ALL PASS (8 sections)');

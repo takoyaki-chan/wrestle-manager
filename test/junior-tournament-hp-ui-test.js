@@ -4,6 +4,7 @@ const path = require('path');
 
 const ui = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-common.js'), 'utf8').replace(/\r\n/g, '\n');
 const html = fs.readFileSync(path.join(__dirname, '..', 'src', 'index.html'), 'utf8').replace(/\r\n/g, '\n');
+const app = fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8').replace(/\r\n/g, '\n');
 
 function bodyOf(signature) {
   const start = ui.indexOf(signature);
@@ -85,6 +86,11 @@ assert.ok(impressionBody.includes("isLoser: timing === 'postLose'"),
   'JT defeat comment must visually mark the fighter as a loser');
 assert.ok(impressionBody.includes("statLabel: 'OVR'"),
   'JT post-tournament comment must retain the fighter OVR');
+assert.ok(impressionBody.includes('Number.isFinite(computedOvr)') && impressionBody.includes('Number(f.ovr)'),
+  'JT post-tournament comment must reject NaN and fall back to its stored tournament OVR');
+assert.ok(app.includes('const liveFighter = (G.roster || []).find(f => f && f.id === p.id)')
+  && app.includes('return { ...(liveFighter || p), _jtTiming: timing }'),
+  'JT impressions must restore the full live fighter before calculating OVR');
 
 assert.ok(html.includes('.jtc-fc-hp-row'), 'index CSS must style the shared tournament pre-match HP row');
 assert.ok(html.includes('.jtc-fc-hp-fill'), 'index CSS must style shared tournament HP fills');

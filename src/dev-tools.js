@@ -8,10 +8,124 @@
   let active = false;
   let panel = null;
   const originalAutoSave = Storage.autoSave.bind(Storage);
+  const EVENT_CATALOG = Array.isArray(globalThis.WrestleManagerDevEventCatalog)
+    ? globalThis.WrestleManagerDevEventCatalog : [];
+  let eventFilter = 'all';
+  let selectedEventId = null;
+  let audioPreview = { eventId: null, changedBgm: false };
+
+  const AUDIO_STATE_LABEL = {
+    current: '現行OGG',
+    'legacy-one-shot': '旧MP3効果音',
+    silent: '音なし',
+    inherits: '通常BGM継続',
+  };
 
   function esc(value) {
     return String(value == null ? '' : value)
       .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function findCatalogEvent(id) { return EVENT_CATALOG.find(event => event.id === id) || null; }
+  function eventAudioLabel(event) {
+    const audio = event.audio || {};
+    const parts = [];
+    if (audio.bgm) parts.push(`BGM: ${audio.bgm.label || audio.bgm.key || audio.bgm.src}`);
+    (audio.sfx || []).forEach(sfx => parts.push(`SE: ${sfx.label || sfx.key || sfx.src}`));
+    return parts.length ? parts.join(' / ') : '音声: なし';
+  }
+  function eventMatchesFilter(event) {
+    if (eventFilter === 'all') return true;
+    if (eventFilter === 'legacy') return event.audioState === 'legacy-one-shot';
+    if (eventFilter === 'silent') return event.audioState === 'silent';
+    return event.category === eventFilter;
+  }
+  function stopEventAudio(restore = true) {
+    const changedBgm = audioPreview.changedBgm;
+    audioPreview = { eventId: null, changedBgm: false };
+    if (!changedBgm) return;
+    try { Audio.bgm.stop(); } catch (_e) {}
+    try { Audio.fileBgm.stop(); } catch (_e) {}
+    if (restore) setTimeout(() => { try { Audio.bgm.playForState(); } catch (_e) {} }, 50);
+  }
+  function playEventAudio(id) {
+    const event = findCatalogEvent(id);
+    if (!event) return '対象イベントが見つかりません。';
+    const audio = event.audio || {};
+    if (!audio.bgm && (!audio.sfx || audio.sfx.length === 0)) return `${event.title} は音声を鳴らさないイベントです。`;
+    stopEventAudio(false);
+    let changedBgm = false;
+    try {
+      if (audio.bgm) {
+        changedBgm = true;
+        try { Audio.bgm.stop(); } catch (_e) {}
+        try { Audio.fileBgm.stop(); } catch (_e) {}
+        if (audio.bgm.type === 'bgm') Audio.bgm.play(audio.bgm.key);
+        else if (audio.bgm.type === 'stage') Audio.bgm.playStage(audio.bgm.key);
+        else if (audio.bgm.type === 'file') Audio.fileBgm.play(audio.bgm.src, { loop: audio.bgm.loop !== false, volume: audio.bgm.volume });
+      }
+      (audio.sfx || []).forEach(sfx => {
+        if (sfx.type === 'named') Audio.play(sfx.key);
+        else if (sfx.type === 'stinger') Audio.stinger(sfx.src, sfx.volume);
+      });
+    } catch (_e) {
+      if (changedBgm) stopEventAudio(true);
+      return `${event.title} の音声プレビューを開始できませんでした。`;
+    }
+    audioPreview = { eventId: event.id, changedBgm };
+    return `${event.title}: ${eventAudioLabel(event)} を試聴中です。`;
+  }
+  function showEventFixture(id) {
+    const event = findCatalogEvent(id);
+    if (!event) return '対象イベントが見つかりません。';
+    selectedEventId = event.id;
+    // showEventPopup is display-only here. "dev_silent" deliberately has no
+    // Audio mapping, so opening a fixture never plays an implicit sound.
+    if (typeof showEventPopup === 'function') {
+      showEventPopup({
+        type: 'system',
+        name: event.title,
+        emoji: '🧪',
+        tone: event.audioState === 'legacy-one-shot' ? 'negative' : event.audioState === 'silent' ? 'neutral' : 'positive',
+        message: event.summary,
+        detail: `開発者モードの表示専用fixtureです。\n発生: ${event.trigger}\n音声: ${eventAudioLabel(event)}`,
+        sound: 'dev_silent',
+      });
+    }
+    return `${event.title} の表示fixtureを開きました。`;
+  }
+  function explorerHtml() {
+    if (EVENT_CATALOG.length === 0) return '<div class="wm-dev-empty">イベントカタログを読み込めませんでした。</div>';
+    const categories = [...new Set(EVENT_CATALOG.map(event => event.category))];
+    const filterOptions = [
+      ['all', 'すべて'], ['legacy', '旧MP3効果音のみ'], ['silent', '音なしのみ'],
+      ...categories.map(category => [category, category]),
+    ].map(([value, label]) => `<option value="${esc(value)}"${eventFilter === value ? ' selected' : ''}>${esc(label)}</option>`).join('');
+    const filtered = EVENT_CATALOG.filter(eventMatchesFilter);
+    const selected = findCatalogEvent(selectedEventId);
+    const detail = selected ? `<section class="wm-dev-event-detail">
+      <h3>${esc(selected.title)} <small>(${esc(selected.id)})</small></h3>
+      <p><strong>一回限り／頻度:</strong> ${esc(selected.oneShot)}</p>
+      <p><strong>発生条件:</strong> ${esc(selected.trigger)}</p>
+      <p><strong>音声:</strong> ${esc(eventAudioLabel(selected))} — ${esc(AUDIO_STATE_LABEL[selected.audioState] || selected.audioState)}</p>
+      <p><strong>ソース:</strong><br>${selected.sources.map(source => `<code>${esc(source)}</code>`).join('<br>')}</p>
+    </section>` : '';
+    const rows = filtered.map(event => `<article class="wm-dev-event">
+      <div class="wm-dev-event-title"><b>${esc(event.title)}</b><small>${esc(event.category)}</small></div>
+      <div class="wm-dev-event-meta"><strong>${esc(AUDIO_STATE_LABEL[event.audioState] || event.audioState)}</strong><br>${esc(event.oneShot)}</div>
+      <div class="wm-dev-event-summary">${esc(event.summary)}</div>
+      <div class="wm-dev-event-audio">${esc(eventAudioLabel(event))}</div>
+      <div class="wm-dev-event-actions">
+        <button data-dev-event-detail="${esc(event.id)}">詳細</button>
+        <button data-dev-event-screen="${esc(event.id)}">表示fixture</button>
+        <button data-dev-event-audio="${esc(event.id)}"${(!event.audio.bgm && event.audio.sfx.length === 0) ? ' disabled' : ''}>音だけ試聴</button>
+      </div>
+    </article>`).join('') || '<div class="wm-dev-empty">このフィルターに該当するイベントはありません。</div>';
+    const audioStatus = audioPreview.eventId
+      ? `<p class="wm-dev-audio-status">${esc(findCatalogEvent(audioPreview.eventId)?.title || '')} を試聴中です。<button data-dev-event-stop>停止して通常BGMへ戻す</button></p>` : '';
+    return `<section class="wm-dev-explorer">
+      <div class="wm-dev-explorer-head"><div><b>イベント／BGMエクスプローラー</b><div class="wm-dev-event-summary">${EVENT_CATALOG.length}件。画面fixture・音声試聴ともゲーム状態を変更しません。</div></div><label>絞り込み<select id="wmDevEventFilter">${filterOptions}</select></label></div>
+      ${audioStatus}<div class="wm-dev-event-list">${detail}${rows}</div>
+    </section>`;
   }
   function phaseLabel(state) { return `S${state.season} / ${state.offSeason ? `OFF ${state.offWeek || 0}` : `W${state.week}`} / ${state.weekPhase || 'manage'}`; }
   function checkpointKeys() {
@@ -268,6 +382,8 @@
     const presets = presetRows().map(([name, season, week]) => `<button data-dev-preset="${season}:${week}:${esc(name)}">${esc(name)}<small>S${season} W${week}</small></button>`).join('');
     const restores = checkpoints.length ? checkpoints.map(c => `<button data-dev-restore="${esc(c.key)}">${esc(c.label)}<small>${esc(c.phase)}</small></button>`).join('') : '<div class="wm-dev-empty">まだ開発用チェックポイントはありません。</div>';
     panel.innerHTML = `<div class="wm-dev-backdrop" data-dev-close></div><section class="wm-dev-card" role="dialog" aria-modal="true" aria-label="開発者モード"><header><div><b>DEVELOPER MODE</b><span>通常オートセーブは保護されています</span></div><button data-dev-close aria-label="閉じる">×</button></header><p class="wm-dev-status">${esc(message || `${phaseLabel(G)} — すべての自動選択は既定値で処理します。`)}</p><div class="wm-dev-grid"><label>シーズン<input id="wmDevSeason" type="number" min="1" value="${G.season || 1}"></label><label>週<input id="wmDevWeek" type="number" min="1" max="48" value="${G.week || 1}"></label></div><button class="wm-dev-primary" data-dev-go>指定週まで高速進行して保存</button><div class="wm-dev-section"><b>大会プリセット</b><div class="wm-dev-buttons">${presets}</div></div><div class="wm-dev-section"><b>イベント即時発火</b><div class="wm-dev-buttons"><button data-dev-fire="forward">挑戦の直訴（自団体→他団体）<small>条件を無視して即表示</small></button><button data-dev-fire="inverse">挑戦の直訴（他団体→自団体）<small>条件を無視して即表示</small></button></div></div><div class="wm-dev-section"><b>検証用チェックポイント</b><div class="wm-dev-buttons"><button data-dev-base>開発開始地点へ戻す</button><button data-dev-save>現在地を保存</button><button data-dev-clear>保存を全部消す<small>保存領域が足りないとき</small></button>${restores}</div></div><p class="wm-dev-note">開く: Ctrl + Shift + D ／ 高速進行中は興行・選択イベントを既定値で自動処理します。通常のオートセーブと手動セーブには書き込みません。</p></section>`;
+    const card = panel.querySelector('.wm-dev-card');
+    if (card) card.insertAdjacentHTML('beforeend', explorerHtml());
     panel.querySelectorAll('[data-dev-close]').forEach(el => el.addEventListener('click', close));
     panel.querySelector('[data-dev-go]').addEventListener('click', () => { try { fastForward(panel.querySelector('#wmDevSeason').value, panel.querySelector('#wmDevWeek').value); } catch (e) { renderPanel(e.message); } });
     panel.querySelectorAll('[data-dev-preset]').forEach(el => el.addEventListener('click', () => { const [season, week, label] = el.dataset.devPreset.split(':'); try { fastForward(season, week, label); } catch (e) { renderPanel(e.message); } }));
@@ -276,6 +392,12 @@
     panel.querySelector('[data-dev-clear]').addEventListener('click', () => { const n = pruneCheckpoints(0); renderPanel(`チェックポイントを${n}件消しました。開発開始地点と開発用オートセーブは残しています。`); });
     panel.querySelector('[data-dev-base]').addEventListener('click', () => { try { restore(localStorage.getItem(DEV_SESSION_BASE_KEY)); renderPanel('開発開始地点へ戻しました。'); } catch (e) { renderPanel(e.message); } });
     panel.querySelectorAll('[data-dev-restore]').forEach(el => el.addEventListener('click', () => { try { restore(localStorage.getItem(el.dataset.devRestore)); renderPanel('チェックポイントを復元しました。'); } catch (e) { renderPanel(e.message); } }));
+    const eventFilterEl = panel.querySelector('#wmDevEventFilter');
+    if (eventFilterEl) eventFilterEl.addEventListener('change', () => { eventFilter = eventFilterEl.value; renderPanel(); });
+    panel.querySelectorAll('[data-dev-event-detail]').forEach(el => el.addEventListener('click', () => { selectedEventId = el.dataset.devEventDetail; renderPanel(); }));
+    panel.querySelectorAll('[data-dev-event-screen]').forEach(el => el.addEventListener('click', () => { const result = showEventFixture(el.dataset.devEventScreen); renderPanel(result); }));
+    panel.querySelectorAll('[data-dev-event-audio]').forEach(el => el.addEventListener('click', () => { const result = playEventAudio(el.dataset.devEventAudio); renderPanel(result); }));
+    panel.querySelectorAll('[data-dev-event-stop]').forEach(el => el.addEventListener('click', () => { stopEventAudio(true); renderPanel('音声プレビューを停止し、通常BGMへ戻しました。'); }));
   }
   function open() {
     if (!active) localStorage.setItem(DEV_SESSION_BASE_KEY, Storage.serialize(G, '開発開始地点'));
@@ -283,7 +405,7 @@
     if (!panel) { panel = document.createElement('div'); panel.id = 'wmDevPanel'; document.body.appendChild(panel); }
     renderPanel();
   }
-  function close() { if (panel) panel.remove(); panel = null; }
+  function close() { stopEventAudio(true); if (panel) panel.remove(); panel = null; }
   // Ctrl+Shift+D は Chrome が「全てのタブをブックマークに追加」へ割り当てており、ブラウザが先に
   // 処理してページへ届かないことがある。Alt+Shift+D を同義キーとして併設する（Chrome 未割り当て）。
   // 判定に event.code を優先するのは、Alt 併用時にレイアウト次第で event.key が変わりうるため。

@@ -6474,24 +6474,14 @@ function confirmPPVEntry() {
   refreshAll();
 }
 
-// ── PPV マッチカード紹介画面（興行開始前の全カード一覧）──
-// ─────────────────────────────────────────────────────────────────────────────
-// 特別興行の開幕カード紹介 (2026-07-27)
-//
-// 「これから何が始まるのか」を、始まる前に一枚で見せる(Keisuke 選択)。
-// PPV には前から入っていた演出。**新しく作らず、これを5大会の共通口にする。**
-//
-// カードの枠(ppvmc-card)は「左右が向かい合う」形。5大会すべてこれに載る:
-//   夏ジュニア・冬天頂戦   1回戦の全カード(選手 vs 選手)
-//   冬PPV                  当日の全カード(従来どおり)
-//   秋4団体戦              準決勝2つ(団体 vs 団体 / 顔は大将・下段にメンバー3名)
-//   春タッグ               第1節(チーム vs チーム / 顔は1人目・下段に組)
-// ─────────────────────────────────────────────────────────────────────────────
+// ── 年度末 PPV マッチカード紹介画面（興行開始前の全カード一覧）──
+// 左右に全身画像を並べるこの演出は、天頂戦に置き換わらない3年分の年度末PPVだけで使う。
+// ジュニア・春タッグ・秋対抗戦・天頂戦は、それぞれの専用導入から本編へ直接進む。
 
 /** 開幕カード紹介。cards は上から順に並ぶので、**メインを先頭**にして渡すこと。
  *  cards[i] = { typeLabel, leftName, rightName, leftId, leftOvr, rightId, rightOvr,
  *               badge?, note?, isMain? } */
-function showSpecialEventCardIntro(opts) {
+function _showPPVCardIntro(opts) {
   const onStart = (opts && opts.onStart) || (() => {});
   const cards = (opts && opts.cards) || [];
   const el = document.getElementById('ppvMatchCardOverlay');
@@ -6543,101 +6533,6 @@ function showSpecialEventCardIntro(opts) {
   });
 }
 
-/** 単発エリミネーション(夏ジュニア / 冬天頂戦)の開幕カード紹介。
- *  1回戦の全カード = その大会の出場者全員。並びは表と同じ「上が先の試合」。 */
-function _showBracketCardIntro(rounds, meta, onStart) {
-  const first = rounds && rounds[0];
-  if (!first || !Array.isArray(first.matches) || !first.matches.length) { onStart(); return; }
-  const cards = first.matches.map((m, mi) => {
-    const rec = Engine.h2h.getRecordFor(G, m.left.id, m.right.id);
-    const riv = (typeof _rivalryPreMatchLines === 'function') ? _rivalryPreMatchLines(m.left.id, m.right.id) : null;
-    return {
-      typeLabel: `${meta.roundLabel} 第${mi + 1}試合`,
-      leftName: m.left.name, rightName: m.right.name,
-      leftId: m.left.id, leftOvr: m.left.ovr,
-      rightId: m.right.id, rightOvr: m.right.ovr,
-      badge: riv ? '🔥 ライバル対決' : '',
-      note: (rec && rec.matches > 0)
-        ? `通算: ${m.left.name} ${rec.wins}勝 - ${rec.losses}勝 ${m.right.name}`
-        : 'FIRST MEETING',
-    };
-  });
-  showSpecialEventCardIntro({
-    label: meta.label, bigName: meta.bigName, sub: meta.sub, cards, onStart,
-  });
-}
-
-/** 秋4団体勝ち残り対抗戦の開幕カード紹介。
- *  「団体 vs 団体」を準決勝2つぶん。顔は大将、下段に3名の名前を並べる。 */
-function _showAutumnWarCardIntro(result, onStart) {
-  const semis = (result && result.results || []).filter(m => m.round === 'semiFinal');
-  if (!semis.length) { onStart(); return; }
-  const teamOf = orgId => (result.teams || []).find(t => t && t.orgId === orgId);
-  const side = (orgId, order) => {
-    const team = teamOf(orgId);
-    const ids = order || team?.order || team?.memberIds || [];
-    // 大将 = 最後に出てくる選手。顔はこの人が背負う
-    const aceId = ids[ids.length - 1];
-    const ace = (typeof _agwFighter === 'function') ? _agwFighter(orgId, aceId) : null;
-    const names = ids.map(id => {
-      const f = (typeof _agwFighter === 'function') ? _agwFighter(orgId, id) : null;
-      return f ? f.name : '';
-    }).filter(Boolean);
-    return { name: team?.orgName || '', id: aceId, ovr: ace ? Engine.util.ov(ace) : 0, names };
-  };
-  const cards = semis.map((m, mi) => {
-    const L = side(m.orgA, m.orderA), R = side(m.orgB, m.orderB);
-    return {
-      typeLabel: `準決勝 ${mi + 1}`,
-      leftName: L.name, rightName: R.name,
-      leftId: L.id, leftOvr: L.ovr, rightId: R.id, rightOvr: R.ovr,
-      note: `${L.names.join('・')}  /  ${R.names.join('・')}`,
-    };
-  });
-  showSpecialEventCardIntro({
-    label: 'Special Event',
-    bigName: 'AUTUMN SURVIVAL WAR',
-    sub: `Season ${G.season || 1} ─ 4団体 × 3名 勝ち残り`,
-    cards, onStart,
-  });
-}
-
-/** 春のタッグリーグの開幕カード紹介。総当たりなので「第1節」を見せる。
- *  顔は各チームの1人目、下段に組の2名と所属を並べる。 */
-function _showSpringTagCardIntro(stl, onStart) {
-  const matches = (stl && stl.matches) || [];
-  const teams = (stl && stl.teams) || [];
-  if (!matches.length) { onStart(); return; }
-  const orgNameOf = orgId => (teams.find(t => t && t.orgId === orgId) || {}).orgName || '';
-  const side = (orgId, team) => {
-    const f1 = _stlFighterOf(orgId, team && team.f1Id);
-    const f2 = _stlFighterOf(orgId, team && team.f2Id);
-    const n1 = f1 ? f1.name : '?', n2 = f2 ? f2.name : '?';
-    return {
-      name: `${n1} & ${n2}`,
-      id: team && team.f1Id,
-      ovr: f1 ? Engine.util.ov(f1) : 0,
-      org: orgNameOf(orgId),
-    };
-  };
-  // 第1節 = 最初の2試合(4チーム総当たりなので同じ日に2カード進む)
-  const cards = matches.slice(0, 2).map((m, mi) => {
-    const L = side(m.orgA, m.teamA), R = side(m.orgB, m.teamB);
-    return {
-      typeLabel: `第1節 第${mi + 1}試合`,
-      leftName: L.name, rightName: R.name,
-      leftId: L.id, leftOvr: L.ovr, rightId: R.id, rightOvr: R.ovr,
-      note: `${L.org}  /  ${R.org}`,
-    };
-  });
-  showSpecialEventCardIntro({
-    label: 'Special Event',
-    bigName: 'SPRING TAG LEAGUE',
-    sub: `Season ${G.season || 1} ─ ${teams.length}チーム 総当たり + 決勝`,
-    cards, onStart,
-  });
-}
-
 function showPPVMatchCardIntro(onStart) {
   const pp = App._ppvPreview;
   if (!pp || pp.card.length === 0) { onStart(); return; }
@@ -6660,7 +6555,7 @@ function showPPVMatchCardIntro(onStart) {
       isMain,
     });
   }
-  showSpecialEventCardIntro({
+  _showPPVCardIntro({
     label: 'Special Event',
     bigName: G.ppvName || 'GRAND FINAL',
     sub: `Season ${G.season || 1} ─ 全${total}試合`,
@@ -15845,8 +15740,12 @@ function _showJTImpressionChain(list, idx, onDone) {
   const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
   const resultLabel = timing === 'champion' ? '優勝' : timing === 'postWin' ? '入賞' : '敗退';
   const resultColor = timing === 'champion' ? 'var(--gold)' : timing === 'postWin' ? 'var(--c-positive)' : 'var(--text-sub)';
-  const ovr = (typeof Engine !== 'undefined' && Engine.util && typeof Engine.util.ov === 'function')
-    ? Engine.util.ov(f) : (f.ovr ?? '—');
+  const computedOvr = (typeof Engine !== 'undefined' && Engine.util && typeof Engine.util.ov === 'function')
+    ? Engine.util.ov(f) : NaN;
+  const storedOvr = Number(f.ovr);
+  const ovr = Number.isFinite(computedOvr)
+    ? Math.round(computedOvr)
+    : (Number.isFinite(storedOvr) ? Math.round(storedOvr) : '—');
 
   // U3グループA統一(2026-07-26): war-victory-line(_showWarVictoryChain)と同じ顔出しブロックへ移行
   // (mockup-baseline-v0.1)。旧#2ecc71(緑のハードコード)はvar(--c-positive)へトークン化。
@@ -16254,7 +16153,8 @@ function showCoachTournamentWrapup(payload, onDone) {
           name: payload.coachName, line: payload.line,
           imgUrl: payload.portraitUrl, fallback: payload.fallback,
           role: 'コーチ', size: 'm',
-          bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
+          bubbleClass: 'war-victory-line tcw-bubble', portraitClass: 'war-victory-img',
+          slotClass: 'tcw-bubble-slot',
         })}
         <button class="war-victory-close" type="button">▶</button>
       </div>
