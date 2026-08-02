@@ -23978,7 +23978,14 @@ Engine.fanExpect = {
         return;
       }
       if (pairState.resolvedType === 'bitter') {
-        addCandidate(f1, f2, `💀 ${f1.name} vs ${f2.name}の遺恨決着を望む声が高まっています！`, 3);
+        // 宿怨は決着済みの関係で、組んでも因縁が清算されるわけではない(checkResolutionは二度と発火しない)。
+        // 「決着を望む声」と毎週最優先で煽り続けるのは嘘になる(2026-08-02 Keisuke裁定: 両方対応)。
+        // ①文言は動員価値の提示へ ②頻度は6週に1回+組んだ直後8週は沈黙 ③優先度は最下段へ
+        const bitterAw = Engine.util.absWeek(state.season, state.week);
+        const bitterLastFight = rv.lastAbsWeek || 0;
+        if (bitterLastFight && (bitterAw - bitterLastFight) < 8) return;
+        if (((bitterAw + id1 * 7 + id2 * 13) % 6) !== 0) return;
+        addCandidate(f1, f2, `💀 ${f1.name} vs ${f2.name}——宿怨の一戦は、いまも客を呼べます`, 1);
         return;
       }
       if (pairState.minRivalry < 50 && !pairState.isOneSided) return;

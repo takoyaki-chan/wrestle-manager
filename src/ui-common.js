@@ -1085,10 +1085,12 @@ function _showWarVictoryChain(list, idx, onDone) {
   // U3グループA統一(2026-07-26): 1人ずつ全画面モーダルを▶で送る演出であり一覧ではないため、
   // 他のグループA画面と同じ規則で顔出しブロックを _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
   // 1人を主役として見せるモーダルなので size:'m'(132×194)以上を採用
+  // OVRはEngine非依存で算出(テストの関数単体抽出環境にEngineが無いため)
+  const wOvr = Math.round(((w.pw||0)+(w.sp||0)+(w.te||0)+(w.st||0)+(w.mn||0))/5);
   const sideHtml = _u3bSideHtml({
     name: w.name, line, imgUrl,
     fallback: (w.name || '?').charAt(0), size: 'm',
-    statLabel: 'OVR', statValue: Engine.util.ov(w),
+    statLabel: 'OVR', statValue: wOvr,
     bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
   });
   overlay.innerHTML = `
@@ -1127,7 +1129,7 @@ function _showWarEnemyAceStatement(onDone) {
     name: enemyAce.name, line: dialogue, imgUrl: upperUrl,
     fallback: (enemyAce.name || '?').charAt(0), size: 'l',
     isLoser: !!eventWon, role: 'ACE',
-    statLabel: 'OVR', statValue: Engine.util.ov(enemyAce),
+    statLabel: 'OVR', statValue: Math.round(((enemyAce.pw||0)+(enemyAce.sp||0)+(enemyAce.te||0)+(enemyAce.st||0)+(enemyAce.mn||0))/5),
     orgBadge: { orgId: ev.opponentOrgId, orgName: ev.opponentName, isHome: false },
     bubbleClass: 'pb-ace-bubble', portraitClass: 'pb-ace-portrait',
   });
