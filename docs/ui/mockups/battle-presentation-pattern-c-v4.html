@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wrestle Manager — Battle Presentation Pattern C v4</title>
+  <style>
+    :root{
+      --bg:#07090e;--panel:#111620;--panel2:#171d29;--line:rgba(235,211,148,.18);
+      --text:#f6f2e8;--sub:#aeb6c5;--dim:#697386;--gold:#dfbd64;--gold2:#fae6a3;
+      --blue:#70bce8;--red:#ec7a8b;--green:#71c99a;--shadow:0 20px 46px rgba(0,0,0,.42)
+    }
+    *{box-sizing:border-box}
+    html{background:var(--bg)}
+    body{margin:0;min-width:320px;color:var(--text);background:radial-gradient(circle at 50% -8%,rgba(80,68,116,.25),transparent 34%),linear-gradient(180deg,#0d1018,#07090e 76%);font-family:"Yu Gothic UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif}
+    button{font:inherit}
+    button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+    .study-head{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:9px 18px;border-bottom:1px solid rgba(223,189,100,.27);background:#181521;color:#bea96e;font-size:10px;letter-spacing:.09em}
+    .study-head b{color:#ffe7a4}
+    .study-note{color:#817b70;letter-spacing:.02em}
+    .app{max-width:1500px;margin:auto;padding:15px 18px 30px}
+
+    .hud{padding:10px 14px 12px;border:1px solid var(--line);border-radius:8px 8px 3px 3px;background:linear-gradient(100deg,rgba(24,51,70,.97),rgba(14,18,27,.98) 48%,rgba(73,28,40,.97));box-shadow:var(--shadow)}
+    .hud-top{display:grid;grid-template-columns:1fr 170px 1fr;align-items:center;gap:10px}
+    .hud-side{display:flex;align-items:center;gap:9px;min-width:0;color:var(--blue)}
+    .hud-side.right{flex-direction:row-reverse;color:var(--red);text-align:right}
+    .hud-face{width:38px;height:38px;object-fit:cover;object-position:top;border:1px solid currentColor;border-radius:50%}
+    .hud-name{overflow:hidden;color:#fff;font-size:15px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+    .hud-meta{color:var(--sub);font-size:9px}
+    .hud-center{text-align:center}.hud-turn{color:var(--gold2);font-size:12px;font-weight:900;letter-spacing:.12em}.hud-phase{margin-top:2px;color:#d7dbe2;font-size:9px;font-weight:900;letter-spacing:.16em}
+    .hud-bars{display:grid;grid-template-columns:1fr 46px 72px 46px 1fr;align-items:center;gap:6px;margin-top:8px}
+    .hp-track{height:7px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.12)}
+    .hp-fill{height:100%;transition:width .35s ease}.hp-fill.left{float:right;background:var(--blue)}.hp-fill.right{background:var(--red)}.hp-fill.danger{background:#f15d73}
+    .hp-pct{font-size:10px;font-weight:900;text-align:center}.mom-label{color:var(--dim);font-size:8px;font-weight:900;text-align:center}
+
+    .controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:14px;margin:11px 0 0}.control-left{display:flex;align-items:center;justify-content:flex-end;gap:7px;min-width:0}.control-center{display:flex;justify-content:center}.control-right{display:flex;align-items:center;justify-content:flex-start;gap:7px;min-width:0}
+    .btn{min-height:35px;padding:0 13px;border:1px solid rgba(223,189,100,.3);border-radius:4px;color:#ead899;background:rgba(223,189,100,.06);cursor:pointer;font-size:10px;font-weight:900;letter-spacing:.05em}
+    .btn:hover{background:rgba(223,189,100,.15)}.btn.primary{min-width:248px;min-height:44px;border-color:rgba(223,189,100,.72);color:#fff;background:linear-gradient(135deg,#715624,#a77b2d);font-size:14px;letter-spacing:.08em;box-shadow:0 7px 18px rgba(112,79,26,.25)}.btn:disabled{opacity:.35;cursor:not-allowed}
+    .speed{display:flex;gap:3px}.speed button{width:34px;height:29px;border:1px solid #424957;border-radius:3px;color:#929aaa;background:#131722;cursor:pointer;font-size:9px}.speed button.active{border-color:var(--gold);color:#ffe7a5;background:#433820}
+    .number-toggle{display:flex;align-items:center;gap:6px;margin-left:5px;color:var(--sub);font-size:9px;cursor:pointer}.number-toggle input{accent-color:var(--gold)}
+    .speed-group,.camera-switch{display:flex;align-items:center;gap:3px}.camera-label{margin-right:3px;color:var(--dim);font-size:8px;font-weight:900}.camera-switch button{height:29px;padding:0 8px;border:1px solid #424957;border-radius:3px;color:#929aaa;background:#131722;cursor:pointer;font-size:9px}.camera-switch button.active{border-color:var(--gold);color:#ffe7a5;background:#433820}
+
+    .arena{position:relative;height:min(61vh,650px);min-height:520px;overflow:hidden;border:1px solid rgba(235,211,148,.38);border-radius:9px;background:#080b12;box-shadow:var(--shadow);isolation:isolate}
+    .ring-bg{position:absolute;z-index:-3;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+    .ring-grade{position:absolute;z-index:-2;inset:0;background:radial-gradient(ellipse at 50% 42%,transparent 22%,rgba(3,5,9,.1) 58%,rgba(3,5,9,.42) 100%),linear-gradient(180deg,rgba(4,6,10,.02),transparent 50%,rgba(4,6,10,.18) 69%,rgba(4,6,10,.91) 100%)}
+    .ring-light{position:absolute;z-index:-1;top:-12%;width:46%;height:75%;border-radius:50%;opacity:.24;filter:blur(35px);transition:transform .35s ease,opacity .3s ease}.ring-light.left{left:4%;background:radial-gradient(ellipse,var(--blue),transparent 66%)}.ring-light.right{right:4%;background:radial-gradient(ellipse,var(--red),transparent 66%)}
+    .live{position:absolute;z-index:8;top:12px;left:14px;display:flex;align-items:center;gap:6px;color:#e9ebf0;font-size:9px;font-weight:900;letter-spacing:.14em}.live i{width:7px;height:7px;border-radius:50%;background:#ed4960;box-shadow:0 0 9px rgba(237,73,96,.8)}
+    .phase-chip{position:absolute;z-index:8;top:11px;right:14px;padding:4px 9px;border:1px solid rgba(223,189,100,.4);border-radius:99px;background:rgba(8,10,16,.67);color:var(--gold2);font-size:9px;font-weight:900;letter-spacing:.1em}
+    .camera-chip{position:absolute;z-index:8;top:39px;right:14px;color:rgba(222,226,233,.58);font-size:8px;font-weight:900;letter-spacing:.08em}
+    .move-cat{color:var(--gold);font-size:8px;font-weight:900;letter-spacing:.13em}.move-name{margin-top:4px;font-size:15px;font-weight:900}.move-guide{margin-top:6px;color:#d1d6df;font-size:9px;line-height:1.55}.result{display:inline-block;margin-top:8px;padding:3px 7px;border:1px solid rgba(255,255,255,.13);border-radius:3px;color:#dfe3e9;background:rgba(255,255,255,.04);font-size:8px;font-weight:900}.result.big{border-color:rgba(223,189,100,.55);color:#ffe39c;background:rgba(223,189,100,.11)}
+
+    .fighter-shell{position:absolute;z-index:2;bottom:0;width:48%;height:100%;pointer-events:none;transform-origin:center 74%;transition:transform .4s cubic-bezier(.2,.9,.2,1),filter .28s ease}
+    .fighter-shell.left{left:3%}.fighter-shell.right{right:3%}
+    .full-figure{position:absolute;bottom:-18%;height:118%;width:auto;max-width:none;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 18px 15px rgba(0,0,0,.74));transform-origin:center 12%;transition:height .48s cubic-bezier(.2,.8,.2,1),bottom .48s cubic-bezier(.2,.8,.2,1),right .48s ease,left .48s ease,transform .48s cubic-bezier(.2,.8,.2,1)}
+    .fighter-shell.left .full-figure{right:2%;transform:scaleX(-1)}.fighter-shell.right .full-figure{left:2%;transform:none}
+    .fighter-nameplate{position:absolute;z-index:4;top:48%;padding:5px 8px;border:1px solid rgba(255,255,255,.16);border-radius:3px;color:#fff;background:rgba(8,10,15,.68);font-size:9px;font-weight:900;letter-spacing:.05em;opacity:1;backdrop-filter:blur(3px);transition:opacity .25s ease}
+    .fighter-nameplate.left{left:8%;border-left-color:var(--blue)}.fighter-nameplate.right{right:8%;border-right-color:var(--red)}
+    .attack-line{position:absolute;z-index:3;top:43%;left:27%;width:46%;height:4px;border-radius:9px;opacity:0;background:linear-gradient(90deg,transparent,var(--gold2),transparent);box-shadow:0 0 20px rgba(249,229,162,.9)}
+    .impact{position:absolute;z-index:7;top:44%;left:50%;display:grid;width:74px;height:74px;place-items:center;border:2px solid #ffe39b;border-radius:50%;color:#fff1c1;font-size:10px;font-weight:900;opacity:0}
+    .arena.attack-left .fighter-shell.left{transform:translateX(7%) scale(1.04)}.arena.attack-right .fighter-shell.right{transform:translateX(-7%) scale(1.04)}
+    .arena.attack-left .fighter-shell.right{animation:recoilR .5s ease-out}.arena.attack-right .fighter-shell.left{animation:recoilL .5s ease-out}
+    .arena.attack-left .ring-light.left,.arena.attack-right .ring-light.right{opacity:.48;transform:scale(1.08)}
+    .arena.attack-left .attack-line{animation:sweepL .65s ease-out}.arena.attack-right .attack-line{animation:sweepR .65s ease-out}.arena.counter .attack-line{height:6px;background:linear-gradient(90deg,transparent,#ff8b62,#ffe39a,transparent)}
+    .arena.miss .fighter-shell{filter:grayscale(.35) brightness(.82)}.impact.show{animation:impact .55s ease-out}
+    .arena.camera-close .full-figure{bottom:-58%;height:170%}.arena.camera-close .fighter-shell.left .full-figure{right:-3%;transform:scaleX(-1) scale(1.28)}.arena.camera-close .fighter-shell.right .full-figure{left:-3%;transform:scale(1.28)}.arena.camera-close .fighter-nameplate{opacity:0}
+    @keyframes sweepL{0%{transform:translateX(-30%) scaleX(.2);opacity:0}25%{opacity:1}100%{transform:translateX(25%) scaleX(1);opacity:0}}
+    @keyframes sweepR{0%{transform:translateX(30%) scaleX(.2);opacity:0}25%{opacity:1}100%{transform:translateX(-25%) scaleX(1);opacity:0}}
+    @keyframes impact{0%{transform:translate(-50%,-50%) scale(.35);opacity:1}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+    @keyframes recoilR{25%{transform:translateX(4%) rotate(1deg)}100%{transform:none}}
+    @keyframes recoilL{25%{transform:translateX(-4%) rotate(-1deg)}100%{transform:none}}
+
+    .commentary{position:absolute;z-index:9;bottom:14px;left:50%;width:min(calc(100% - 82px),1080px);padding:13px 25px 18px;overflow:hidden;border-top:1px solid rgba(249,229,162,.72);background:linear-gradient(90deg,rgba(8,10,15,.88),rgba(12,15,22,.97) 50%,rgba(8,10,15,.88));box-shadow:0 12px 28px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.04);text-align:center;clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 9px),calc(50% + 15px) calc(100% - 9px),50% 100%,calc(50% - 15px) calc(100% - 9px),0 calc(100% - 9px),0 18px);transform:translateX(-50%)}
+    .commentary::before{position:absolute;top:0;right:9%;left:9%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold2),var(--gold),transparent);content:""}.commentary::after{position:absolute;right:16px;bottom:13px;left:16px;height:1px;background:linear-gradient(90deg,transparent,rgba(223,189,100,.22),transparent);content:""}.commentary-label{display:flex;align-items:center;justify-content:center;gap:9px;color:var(--gold);font-size:8px;font-weight:900;letter-spacing:.18em}.commentary-label::before,.commentary-label::after{width:34px;height:1px;background:rgba(223,189,100,.46);content:""}.headline{margin-top:4px;font-size:clamp(17px,1.55vw,23px);font-weight:900;line-height:1.38;text-align:center;text-shadow:0 2px 5px #000}.left-name{color:#9ed8fb}.right-name{color:#ff9ba8}.move-key{color:#ffe5a0}
+
+    .lower-dock{display:grid;grid-template-columns:minmax(250px,.72fr) minmax(480px,1.55fr) minmax(250px,.72fr);gap:9px;margin-top:9px}
+    .stat-card,.exchange-panel{height:190px;border:1px solid var(--line);border-radius:7px;background:linear-gradient(135deg,#151b27,#0e121b);box-shadow:0 10px 24px rgba(0,0,0,.23)}
+    .stat-card{display:grid;grid-template-columns:61px minmax(0,1fr);align-items:center;gap:9px;padding:9px 10px}.stat-card.right{grid-template-columns:minmax(0,1fr) 61px;text-align:right}
+    .stat-upper{width:58px;height:92px;object-fit:cover;object-position:top;border-radius:4px}.stat-card.left .stat-upper{border-bottom:3px solid var(--blue)}.stat-card.right .stat-upper{order:2;border-bottom:3px solid var(--red)}
+    .stat-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}.stat-card.right .stat-head{flex-direction:row-reverse}.stat-name{font-size:15px;font-weight:900}.stat-ovr{color:var(--gold2);font-size:13px;font-weight:900;white-space:nowrap}.stat-meta{margin:2px 0 8px;color:var(--sub);font-size:8px;letter-spacing:.06em}
+    .stat-grid{display:grid;gap:5px}.stat-line{display:grid;grid-template-columns:31px 1fr 23px;align-items:center;gap:6px;font-size:8px}.stat-card.right .stat-line{grid-template-columns:23px 1fr 31px}.stat-card.right .stat-value{grid-column:1;grid-row:1;text-align:left}.stat-card.right .stat-track{grid-column:2;grid-row:1}.stat-card.right .stat-label{grid-column:3;grid-row:1;text-align:right}.stat-card.right .stat-fill{margin-left:auto}.stat-label{color:var(--sub);font-weight:900}.stat-value{font-weight:900;text-align:right}.stat-track{height:5px;overflow:hidden;border-radius:5px;background:rgba(255,255,255,.1)}.stat-fill{display:block;height:100%;border-radius:5px}.pwr{background:#e66f77}.spd{background:#66b7e5}.tec{background:#6cc7a7}.sta{background:#dcb45f}.mnt{background:#a483d2}
+    .exchange-panel{padding:10px 11px}.exchange-head{display:flex;align-items:center;justify-content:space-between;gap:8px}.log-title{font-size:9px;font-weight:900;letter-spacing:.12em}.log-help{color:var(--dim);font-size:8px}.exchange-grid{display:grid;grid-template-columns:minmax(190px,.82fr) minmax(230px,1.18fr);gap:10px;margin-top:8px}.logs{display:grid;gap:5px}.log-event{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:7px;min-width:0;padding:6px 7px;border:1px solid rgba(255,255,255,.07);border-radius:4px;color:var(--text);background:rgba(255,255,255,.025);cursor:pointer;text-align:left}.log-event.current{border-color:rgba(223,189,100,.66);background:rgba(223,189,100,.11)}.log-turn{color:var(--dim);font-size:8px;font-weight:900}.log-event.current .log-turn{color:var(--gold2)}.log-copy{min-width:0}.log-move{overflow:hidden;font-size:9px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.log-result{margin-top:2px;color:var(--sub);font-size:8px}.log-tag{color:var(--gold2);font-size:7px;font-weight:900;letter-spacing:.06em}.move-detail{min-width:0;padding:7px 9px 8px;border-left:1px solid rgba(223,189,100,.22);background:linear-gradient(90deg,rgba(223,189,100,.035),transparent)}
+    .footer-note{margin:10px 0 0;color:var(--dim);font-size:9px;line-height:1.55;text-align:center}.footer-note b{color:#b8c0ce}
+
+    @media(max-width:980px){.app{padding:10px}.study-head{align-items:flex-start;flex-direction:column;gap:2px}.study-note{display:none}.hud-top{grid-template-columns:1fr 100px 1fr}.hud-face,.hud-meta{display:none}.controls{grid-template-columns:1fr}.control-center{grid-row:1}.control-left,.control-right{justify-content:center;flex-wrap:wrap}.btn.primary{width:min(100%,360px)}.presentation{min-width:940px}.viewport-scroll{overflow-x:auto}.arena{height:530px}.lower-dock{grid-template-columns:250px 440px 250px}.exchange-grid{grid-template-columns:180px 1fr}.camera-chip{display:none}}
+  </style>
+</head>
+<body>
+  <header class="study-head"><span><b>BATTLE PRESENTATION v4</b> · PATTERN C REFINED</span><span class="study-note">全身素材を上半身クロップで演出／能力値は下部ドックに常時表示</span></header>
+  <main class="app">
+    <section class="hud" aria-label="試合状況">
+      <div class="hud-top">
+        <div class="hud-side"><img class="hud-face" src="../../../image/face_takatsu_k.png" alt=""><div><div class="hud-name">高津 小春</div><div class="hud-meta">STRIKER · OVR 74</div></div></div>
+        <div class="hud-center"><div class="hud-turn" data-hud-turn>TURN 1</div><div class="hud-phase" data-hud-phase>OPENING</div></div>
+        <div class="hud-side right"><img class="hud-face" src="../../../image/face_tomioka_k.png" alt=""><div><div class="hud-name">富岡 加奈子</div><div class="hud-meta">GRAPPLER · OVR 75</div></div></div>
+      </div>
+      <div class="hud-bars"><div class="hp-track"><div class="hp-fill left" data-hp-l-fill></div></div><div class="hp-pct" data-hp-l>100%</div><div class="mom-label">CONDITION</div><div class="hp-pct" data-hp-r>100%</div><div class="hp-track"><div class="hp-fill right" data-hp-r-fill></div></div></div>
+    </section>
+
+    <div class="viewport-scroll">
+      <div class="presentation">
+        <section class="arena" data-arena aria-label="ライブリング">
+          <img class="ring-bg" src="../../../image/battle-ring-bg-mockup-v2.png" alt="プロレス会場のリング">
+          <div class="ring-grade"></div><div class="ring-light left"></div><div class="ring-light right"></div>
+          <div class="live"><i></i>LIVE RING</div><div class="phase-chip" data-phase-chip></div><div class="camera-chip" data-camera-chip>CAMERA · WIDE</div>
+          <div class="fighter-shell left"><img class="full-figure" src="../../../image/full/full_takatsu_k.webp" alt="高津小春"></div>
+          <div class="fighter-shell right"><img class="full-figure" src="../../../image/full/full_tomioka_k.webp" alt="富岡加奈子"></div>
+          <div class="fighter-nameplate left">高津 小春</div><div class="fighter-nameplate right">富岡 加奈子</div>
+          <div class="attack-line"></div><div class="impact" data-impact></div>
+          <div class="commentary" aria-live="polite"><div class="commentary-label">実況</div><div class="headline" data-headline></div></div>
+        </section>
+
+        <section class="lower-dock">
+          <article class="stat-card left">
+            <img class="stat-upper" src="../../../image/upper/upper_takatsu_k.webp" alt="">
+            <div><div class="stat-head"><span class="stat-name">高津 小春</span><span class="stat-ovr">OVR 74</span></div><div class="stat-meta">NEUTRAL · STRIKER</div><div class="stat-grid" data-stats="left"></div></div>
+          </article>
+          <section class="exchange-panel" aria-label="直近の攻防と技説明">
+            <div class="exchange-head"><span class="log-title">直近の攻防</span><span class="log-help">最新が上 · クリックで確認</span></div>
+            <div class="exchange-grid">
+              <div class="logs" data-logs></div>
+              <div class="move-detail"><div class="move-cat" data-move-cat></div><div class="move-name" data-move-name></div><div class="move-guide" data-move-guide></div><span class="result" data-result></span></div>
+            </div>
+          </section>
+          <article class="stat-card right">
+            <div><div class="stat-head"><span class="stat-name">富岡 加奈子</span><span class="stat-ovr">OVR 75</span></div><div class="stat-meta">NEUTRAL · GRAPPLER</div><div class="stat-grid" data-stats="right"></div></div>
+            <img class="stat-upper" src="../../../image/upper/upper_tomioka_k.webp" alt="">
+          </article>
+        </section>
+      </div>
+    </div>
+    <div class="controls" aria-label="リプレイ操作">
+      <div class="control-left">
+        <button class="btn" id="prevBtn">◀ ひとつ戻る</button>
+        <button class="btn" id="autoBtn">自動再生：停止</button>
+        <div class="speed-group"><span class="camera-label">速度</span><div class="speed" aria-label="再生速度"><button data-speed="1700">1×</button><button class="active" data-speed="950">2×</button><button data-speed="520">3×</button></div></div>
+      </div>
+      <div class="control-center"><button class="btn primary" id="nextBtn">次の攻防 ▶</button></div>
+      <div class="control-right">
+        <div class="camera-switch" aria-label="カメラ表示"><span class="camera-label">カメラ</span><button class="active" data-camera="auto">自動</button><button data-camera="wide">全景</button><button data-camera="close">アップ</button></div>
+        <label class="number-toggle"><input id="numberToggle" type="checkbox" checked> 正確なダメージを表示</label>
+      </div>
+    </div>
+    <p class="footer-note"><b>表示検討用モック</b> — 全身画像をリング内で拡大・上半身クロップし、移動・反動・照明演出の余地を確保。Replayの結果・数値・乱数には触れません。</p>
+  </main>
+
+  <script>
+    const fighters={
+      left:{name:'高津 小春',mhp:236,stats:{PWR:68,SPD:84,TEC:72,STA:70,MNT:78}},
+      right:{name:'富岡 加奈子',mhp:241,stats:{PWR:88,SPD:61,TEC:68,STA:83,MNT:76}}
+    };
+    const frames=[
+      {turn:1,phase:'Opening',hpL:236,hpR:235,action:{kind:'hit',atkSide:'left',move:'低空ドロップキック',moveD:7,moveCat:'strike',dmg:6}},
+      {turn:2,phase:'Opening',hpL:226,hpR:235,action:{kind:'hit',atkSide:'right',move:'スナップ・スープレックス',moveD:7,moveCat:'throw',dmg:10}},
+      {turn:3,phase:'Opening',hpL:226,hpR:235,action:{kind:'miss',atkSide:'left',move:'ジャンピング・エルボー',moveD:8,moveCat:'strike',dmg:0}},
+      {turn:4,phase:'Mid',hpL:226,hpR:224,action:{kind:'counter',atkSide:'left',move:'DDT',sourceMove:'ブレーンバスター',moveD:10,moveCat:'throw',dmg:11}},
+      {turn:5,phase:'Mid',hpL:219,hpR:224,action:{kind:'hit',atkSide:'right',move:'バックドロップ',moveD:13,moveCat:'throw',dmg:7}},
+      {turn:6,phase:'End',hpL:219,hpR:209,action:{kind:'hit',atkSide:'left',move:'バズソーキック',moveD:14,moveCat:'strike',dmg:15,isCrit:true}},
+      {turn:7,phase:'End',hpL:206,hpR:209,action:{kind:'hit',atkSide:'right',move:'パワーボム',moveD:14,moveCat:'throw',dmg:13}},
+      {turn:8,phase:'Climax',hpL:206,hpR:190,action:{kind:'hit',atkSide:'left',move:'トゥームストン・パイルドライバー',moveD:16,moveCat:'throw',dmg:19,isCrit:true},pinAttempt:'kickout2'}
+    ];
+    const categories={
+      strike:{label:'打撃の攻防',guide:'間合いと姿勢を崩す直接攻撃。ひるんだ瞬間を次の攻めへつなげる。'},
+      throw:{label:'投げの攻防',guide:'相手の重心を奪い、マットへ叩きつけて体力を削る。'},
+      submission:{label:'関節・絞めの攻防',guide:'関節や首を制して動きを奪い、逃げ道を狭める攻撃。'}
+    };
+    const moveGuides={
+      '低空ドロップキック':'低い姿勢から両足を突き出し、相手の土台を崩す一撃。',
+      'スナップ・スープレックス':'素早く抱え上げて後方へ投げ、組み合いから一気に主導権を取る。',
+      'ジャンピング・エルボー':'跳び上がって肘を振り下ろす。かわされると大きな隙ができる。',
+      'DDT':'相手の頭部を抱え、自分の落下でマットへ突き刺す切り返し技。',
+      'バックドロップ':'背後から抱え、後方へ大きく投げ落とす。高さと落差が見せ場。',
+      'バズソーキック':'旋回しながら放つ高い蹴り。上半身を狙う強烈な打撃。',
+      'パワーボム':'抱え上げた相手を強く叩きつける大型の投げ技。',
+      'トゥームストン・パイルドライバー':'相手を逆さに抱え込み、落下する決着級の大技。'
+    };
+    const statClass={PWR:'pwr',SPD:'spd',TEC:'tec',STA:'sta',MNT:'mnt'};
+    function buildAutoCameraPlan(){
+      let holdUntil=-1;
+      return frames.map((frame,index)=>{
+        const latePhase=frame.phase==='End'||frame.phase==='Climax';
+        const decisiveAction=frame.action.isCrit||frame.action.kind==='counter';
+        const resultMoment=Boolean(frame.pinAttempt||frame.finish||frame.kickout||frame.submissionAttempt);
+        if(resultMoment||(latePhase&&decisiveAction))holdUntil=Math.max(holdUntil,index+1);
+        return index<=holdUntil;
+      });
+    }
+    const autoCameraPlan=buildAutoCameraPlan();
+    const requestedCamera=new URLSearchParams(location.search).get('camera');
+    let current=0,auto=false,timer=null,speed=950,cameraMode=['wide','close'].includes(requestedCamera)?requestedCamera:'auto';
+    const pct=(value,max)=>Math.max(0,Math.round(value/max*100));
+    const esc=value=>String(value).replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
+    const coloredName=(name,side)=>`<span class="${side==='left'?'left-name':'right-name'}">${name}</span>`;
+
+    function headline(frame){
+      const a=frame.action,actor=fighters[a.atkSide].name,defSide=a.atkSide==='left'?'right':'left',defender=fighters[defSide].name;
+      if(a.kind==='miss')return`${coloredName(actor,a.atkSide)}の<span class="move-key">${a.move}</span>は空を切る！ ${coloredName(defender,defSide)}が間合いを外した。`;
+      if(a.kind==='counter')return`${coloredName(actor,a.atkSide)}が待っていた！ <span class="move-key">${a.sourceMove}</span>を受け流し、<span class="move-key">${a.move}</span>で切り返す。`;
+      if(a.isCrit)return`${coloredName(actor,a.atkSide)}の<span class="move-key">${a.move}</span>が深く入った！ ${coloredName(defender,defSide)}を大きく揺らす。`;
+      return`${coloredName(actor,a.atkSide)}が<span class="move-key">${a.move}</span>！ ${coloredName(defender,defSide)}の体勢を崩していく。`;
+    }
+    function resultText(action){if(action.kind==='miss')return'MISS';if(action.kind==='counter')return'COUNTER';if(action.isCrit)return'BIG HIT';return'HIT'}
+    function eventText(action){if(action.kind==='miss')return'かわされる';if(action.kind==='counter')return'切り返し成功';if(action.isCrit)return'強烈な一撃';return'クリーンヒット'}
+    function statsHtml(side){return Object.entries(fighters[side].stats).map(([key,value])=>`<div class="stat-line"><span class="stat-label">${key}</span><span class="stat-track"><span class="stat-fill ${statClass[key]}" style="width:${value}%"></span></span><span class="stat-value">${value}</span></div>`).join('')}
+    function logsHtml(){
+      return frames.slice(0,current+1).map((frame,index)=>({frame,index})).reverse().slice(0,3).map(({frame,index},position)=>`<button class="log-event${index===current?' current':''}" data-index="${index}"><span class="log-turn">T${frame.turn}</span><span class="log-copy"><div class="log-move">${esc(frame.action.move)}</div><div class="log-result">${eventText(frame.action)}</div></span>${position===0?'<span class="log-tag">LATEST</span>':''}</button>`).join('');
+    }
+    function animateArena(frame){
+      const arena=document.querySelector('[data-arena]'),action=frame.action;
+      arena.className=arena.className.replace(/ attack-(left|right)| miss| counter/g,'')+` attack-${action.atkSide}${action.kind==='miss'?' miss':''}${action.kind==='counter'?' counter':''}`;
+      const impact=arena.querySelector('[data-impact]');void arena.offsetWidth;
+      if(action.kind!=='miss'){impact.textContent=action.kind==='counter'?'COUNTER!':action.isCrit?'BIG HIT!':'HIT!';impact.classList.remove('show');void impact.offsetWidth;impact.classList.add('show')}
+    }
+    function applyCamera(frame){
+      const close=cameraMode==='close'||(cameraMode==='auto'&&autoCameraPlan[current]);
+      document.querySelector('[data-arena]').classList.toggle('camera-close',close);
+      const cameraLabel=cameraMode==='auto'?(close?'AUTO · HIGHLIGHT':'AUTO · WIDE'):(close?'CLOSE-UP':'WIDE');
+      document.querySelector('[data-camera-chip]').textContent=`CAMERA · ${cameraLabel}`;
+    }
+    function render(){
+      const frame=frames[current],action=frame.action,category=categories[action.moveCat]||categories.strike,leftPct=pct(frame.hpL,fighters.left.mhp),rightPct=pct(frame.hpR,fighters.right.mhp);
+      document.querySelector('[data-hud-turn]').textContent=`TURN ${frame.turn}`;document.querySelector('[data-hud-phase]').textContent=frame.phase.toUpperCase();document.querySelector('[data-phase-chip]').textContent=`${frame.phase.toUpperCase()} · T${frame.turn}`;
+      document.querySelector('[data-hp-l]').textContent=`${leftPct}%`;document.querySelector('[data-hp-r]').textContent=`${rightPct}%`;
+      const leftFill=document.querySelector('[data-hp-l-fill]'),rightFill=document.querySelector('[data-hp-r-fill]');leftFill.style.width=`${leftPct}%`;rightFill.style.width=`${rightPct}%`;leftFill.classList.toggle('danger',leftPct<=35);rightFill.classList.toggle('danger',rightPct<=35);
+      document.querySelector('[data-headline]').innerHTML=headline(frame);document.querySelector('[data-move-cat]').textContent=category.label;document.querySelector('[data-move-name]').textContent=action.move;document.querySelector('[data-move-guide]').textContent=moveGuides[action.move]||category.guide;
+      const detail=document.getElementById('numberToggle').checked?(action.kind==='miss'?' · DMG 0':` · DMG ${action.dmg} / PWR ${action.moveD}`):'';const result=document.querySelector('[data-result]');result.textContent=resultText(action)+detail;result.classList.toggle('big',!!action.isCrit||action.kind==='counter');
+      document.querySelector('[data-logs]').innerHTML=logsHtml();document.querySelectorAll('[data-index]').forEach(button=>button.addEventListener('click',()=>{current=Number(button.dataset.index);render()}));animateArena(frame);applyCamera(frame);
+      document.getElementById('prevBtn').disabled=current===0;document.getElementById('nextBtn').textContent=current===frames.length-1?'↻ 最初から':'次の攻防 ▶';
+    }
+    function next(){current=current===frames.length-1?0:current+1;render();if(auto&&current===frames.length-1)stopAuto()}
+    function stopAuto(){auto=false;clearTimeout(timer);document.getElementById('autoBtn').textContent='自動再生：停止'}
+    function autoLoop(){if(!auto)return;next();timer=setTimeout(autoLoop,speed)}
+
+    document.querySelector('[data-stats="left"]').innerHTML=statsHtml('left');document.querySelector('[data-stats="right"]').innerHTML=statsHtml('right');
+    document.getElementById('nextBtn').addEventListener('click',next);document.getElementById('prevBtn').addEventListener('click',()=>{current=Math.max(0,current-1);render()});
+    document.getElementById('autoBtn').addEventListener('click',()=>{auto=!auto;document.getElementById('autoBtn').textContent=`自動再生：${auto?'再生中':'停止'}`;if(auto)autoLoop();else clearTimeout(timer)});
+    document.getElementById('numberToggle').addEventListener('change',render);document.querySelectorAll('[data-speed]').forEach(button=>button.addEventListener('click',()=>{speed=Number(button.dataset.speed);document.querySelectorAll('[data-speed]').forEach(item=>item.classList.toggle('active',item===button))}));
+    document.querySelectorAll('[data-camera]').forEach(button=>{button.classList.toggle('active',button.dataset.camera===cameraMode);button.addEventListener('click',()=>{cameraMode=button.dataset.camera;document.querySelectorAll('[data-camera]').forEach(item=>item.classList.toggle('active',item===button));applyCamera(frames[current])})});
+    document.addEventListener('keydown',event=>{if(event.code==='Space'&&event.target===document.body){event.preventDefault();next()}});render();
+  </script>
+</body>
+</html>

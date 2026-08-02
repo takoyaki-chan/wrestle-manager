@@ -33,6 +33,11 @@ const S = {
   qtrTrig:  { l: false, r: false },
   dangerTrig: { l: false, r: false },
   _isBigMatch: false,
+  cameraMode: 'auto',
+  autoCameraPlan: [],
+  showNumbers: true,
+  startHpL: 0,
+  startHpR: 0,
 };
 
 // SPEED_DELAYS / BIGMOVE_CHARGE_MS / BIGMOVE_ANIM_RATE は battle-replay-core.js で定義
@@ -288,6 +293,87 @@ function _getUpperUrl(ch){ return typeof getUpperUrl === 'function' ? getUpperUr
 function _getFullUrl(ch) { return typeof getFullUrl  === 'function' ? getFullUrl(ch)  : ''; }
 function _getFaceUrl(ch) { return typeof getFaceUrl  === 'function' ? getFaceUrl(ch)  : ''; }
 
+// ─── Presentation helpers ─────────────────────────────────────────────────
+// 数値やフレーム内容を変えず、action を初心者向けの表示文へ翻訳する。
+const MOVE_PRESENTATION = {
+  strike:     { label: '打撃技', guide: 'パンチやキックなどで相手の姿勢を崩し、次の攻めにつなげる。' },
+  throw:      { label: '投げ技', guide: '相手の重心を奪い、持ち上げるか回転させてマットへ叩きつける。' },
+  submission: { label: '関節・絞め技', guide: '関節や首を捕らえて動きを奪い、ギブアップや消耗を狙う。' },
+  aerial:     { label: '飛び技', guide: '跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。' },
+  ground:     { label: 'グラウンド攻撃', guide: '倒れた相手へ追撃し、起き上がる余裕と体力を奪う。' },
+  rollup:     { label: '丸め込み', guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
+};
+
+function _actionMoveName(action){
+  if (!action) return '---';
+  return action.kind === 'counter'
+    ? (action.counterMove || action.move || '---')
+    : (action.move || '---');
+}
+
+function _movePresentation(action){
+  const cat = action && action.moveCat ? action.moveCat : 'strike';
+  const base = MOVE_PRESENTATION[cat] || MOVE_PRESENTATION.strike;
+  const name = _actionMoveName(action);
+  let guide = base.guide;
+  if (/ドロップキック/.test(name)) guide = '両足を突き出して相手を蹴り、勢いと間合いで体勢を崩す打撃。';
+  else if (/キック|PK|延髄斬り|ニー/.test(name)) guide = '脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。';
+  else if (/エルボー|ラリアット|クローズライン|チョップ|パンチ|ブロー|頭突き|ヘッドバット/.test(name)) guide = '腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。';
+  else if (/スープレックス|バックドロップ/.test(name)) guide = '相手を抱えて反らすように投げ、背中からマットへ落とす投げ技。';
+  else if (/パワーボム|ドライバー|スラム|DDT|ブリーカー|ドロップ/.test(name) && cat === 'throw') guide = '相手を抱え上げるか頭部を制し、落差を使ってマットへ叩きつける投げ技。';
+  else if (/ロック|ホールド|クラッチ|固め|絞め|STF|卍|アームバー|ベアハッグ/.test(name) && cat === 'submission') guide = '身体の一部を固定して逃げ道を狭め、ギブアップを迫る技。';
+  else if (/ダイビング|プレス|スプラッシュ|ムーンサルト|セントーン|トペ|プランチャ/.test(name)) guide = '高い位置や助走から飛び込み、落下の勢いを全身でぶつける飛び技。';
+  return { label: base.label, guide };
+}
+
+function _moveResultText(action){
+  if (!action) return '試合開始';
+  const state = action.kind === 'miss' ? 'MISS'
+    : action.kind === 'counter' ? 'COUNTER'
+    : action.isCrit ? 'BIG HIT' : 'HIT';
+  if (!S.showNumbers) return state;
+  const dmg = action.kind === 'miss' ? 0 : (action.dmg || 0);
+  return `${state} · DMG ${dmg} / PWR ${action.moveD || 0}`;
+}
+
+function _buildAutoCameraPlan(frames){
+  let holdUntil = -1;
+  return (frames || []).map((frame, index) => {
+    const latePhase = frame && (frame.phase === 'End' || frame.phase === 'Climax');
+    const action = frame && frame.action;
+    const decisiveAction = !!(action && (action.isCrit || action.kind === 'counter' || (action.moveD|0) >= 14));
+    const resultMoment = !!(frame && (frame.pinAttempt || frame.rollup || frame.tkoStop || frame.winner ||
+      (frame.kickout && (frame.kickout.escapeType || frame.kickout.count != null))));
+    if (resultMoment || (latePhase && decisiveAction)) holdUntil = Math.max(holdUntil, index + 1);
+    return index <= holdUntil;
+  });
+}
+
+function _applyCamera(){
+  const ring = document.getElementById('liveRing');
+  if (!ring) return;
+  const idx = Math.max(0, S.frameIdx - 1);
+  const close = S.cameraMode === 'close' || (S.cameraMode === 'auto' && !!S.autoCameraPlan[idx]);
+  ring.classList.toggle('camera-close', close);
+  const chip = document.getElementById('cameraChip');
+  if (chip) chip.textContent = S.cameraMode === 'auto'
+    ? `CAMERA · AUTO ${close ? 'HIGHLIGHT' : 'WIDE'}`
+    : `CAMERA · ${close ? 'CLOSE-UP' : 'WIDE'}`;
+}
+
+function setCameraMode(mode){
+  if (!['auto','wide','close'].includes(mode)) return;
+  S.cameraMode = mode;
+  document.querySelectorAll('[data-camera]').forEach(btn => btn.classList.toggle('active', btn.dataset.camera === mode));
+  _applyCamera();
+}
+
+function toggleBattleNumbers(){
+  const input = document.getElementById('numberToggle');
+  S.showNumbers = input ? !!input.checked : !S.showNumbers;
+  _updateMoveDetail(_getCurrentFrame());
+}
+
 // ─── 初期待受 ─────────────────────────────────────────────────────────────
 function renderWaiting(){
   const c = document.getElementById('mainContainer');
@@ -336,6 +422,9 @@ function startReplay(data){
   S.dangerTrig = { l: false, r: false };
   S.cutinShown = { opening: false, mid: false, end: false, climax: false, finish: false };
   S._isBigMatch = !!(mi.matchTier && mi.matchTier >= 2);
+  S.cameraMode = 'auto';
+  S.showNumbers = true;
+  S.autoCameraPlan = _buildAutoCameraPlan(S.frames);
   clearTimeout(S.autoTimer);
 
   // mhp は match-engine.js が計算した実値を result.hpLeft/hpRight.max から受け取る。
@@ -355,6 +444,8 @@ function startReplay(data){
   };
   S.L = mk(data.left,  resMhpL);
   S.R = mk(data.right, resMhpR);
+  S.startHpL = S.L.hp;
+  S.startHpR = S.R.hp;
 
   renderMatchFrame();
   try { sfx.gongStart(); } catch(e){}
@@ -369,13 +460,19 @@ function renderMatchFrame(){
   container.innerHTML = `
     ${_hudHtml(fr)}
     ${_bigMatchStripHtml()}
-    <div class="main-row" id="mainRow">
-      ${_panelHtml(S.L, 'L')}
-      <div class="col-center" id="colCenter">
-        ${_centerHtml(fr)}
-        <div class="battle-log" id="battleLog"><div class="log-header-label">BATTLE LOG</div>${S.logHtml}</div>
+    <div class="wm-presentation" id="mainRow">
+      ${_liveRingHtml(fr)}
+      <div class="wm-lower-dock">
+        ${_statCardHtml(S.L, 'L')}
+        <section class="wm-exchange-panel" id="colCenter">
+          <div class="wm-exchange-head"><span>直近の攻防</span><span>最新が上</span></div>
+          <div class="wm-exchange-grid">
+            <div class="battle-log" id="battleLog">${S.logHtml || '<div class="log-empty">ゴングを待っています</div>'}</div>
+            ${_centerHtml(fr)}
+          </div>
+        </section>
+        ${_statCardHtml(S.R, 'R')}
       </div>
-      ${_panelHtml(S.R, 'R')}
     </div>
     ${_controlsHtml()}
     <div class="finish-overlay" id="finishOverlay">
@@ -387,6 +484,8 @@ function renderMatchFrame(){
   `;
   _bindNextButton();
   _scrollLogToTop();
+  if (fr) _updateCenter(fr);
+  else _applyCamera();
 }
 
 // ─── HUD ──────────────────────────────────────────────────────────────────
@@ -452,70 +551,84 @@ function _bigMatchStripHtml(){
   </div>`;
 }
 
-// ─── 選手パネル ────────────────────────────────────────────────────────────
+// ─── ライブリング ──────────────────────────────────────────────────────────
+function _liveRingHtml(fr){
+  const phase = fr ? (fr.phase || 'Opening') : 'Opening';
+  const turn = fr ? fr.turn : 1;
+  return `<section class="wm-live-ring" id="liveRing">
+    <img class="wm-ring-bg" src="../image/battle-ring-bg-mockup-v2.png" alt="プロレス会場のリング"
+      onerror="this.src='../image/battle-bg_venue_4.webp'">
+    <div class="wm-ring-grade"></div>
+    <div class="wm-ring-light left"></div><div class="wm-ring-light right"></div>
+    <div class="wm-live-label"><i></i>LIVE RING</div>
+    <div class="wm-phase-chip"><span id="pill" class="phase-pill${S._isBigMatch?' bigmatch':''}">${escHtml(phase)}</span><span id="turnLbl">T${turn}</span></div>
+    <div class="wm-camera-chip" id="cameraChip">CAMERA · AUTO WIDE</div>
+    ${_panelHtml(S.L, 'L')}${_panelHtml(S.R, 'R')}
+    <div class="attack-arrow-layer wm-ring-arrow-layer" id="arrowLayer"></div>
+    <div class="wm-ring-impact" id="ringImpact"></div>
+    <div class="bigmove-name" id="bigmoveName"></div>
+    <div class="narration-box wm-commentary" id="narBox">
+      <div class="wm-commentary-label">実況</div>
+      <div class="nar-empty">ゴング！　「次の攻防」で試合を進めてください</div>
+    </div>
+  </section>`;
+}
+
+// ─── リング上の選手 ────────────────────────────────────────────────────────
 function _panelHtml(ch, side){
   if (!ch) return '';
-  const hp  = _hpPct(ch);
   const isL = side === 'L';
-  const ovr = _calcOvr(ch);
-  const mi  = S.matchInfo || {};
-  const hasRivalry = mi.rivalryTier > 0;
-  const rivalBadge = hasRivalry ? '<div class="f-rival-badge">🔥 RIVAL</div>' : '';
-  const rc  = (ch.role || 'Neutral').toLowerCase();
-  const stats = [
-    {k:'power',   l:'PWR', v: Math.round(ch.pw||0)},
-    {k:'speed',   l:'SPD', v: Math.round(ch.sp||0)},
-    {k:'technique',l:'TEC',v: Math.round(ch.te||0)},
-    {k:'stamina', l:'STA', v: Math.round(ch.st||0)},
-    {k:'mental',  l:'MNT', v: Math.round(ch.mn||0)},
-  ];
-  const statHtml = stats.map(s =>
-    `<div class="ab-row">
-      <span class="ab-name">${s.l}</span>
-      <div class="ab-track"><div class="ab-fill ${s.k}" style="width:${s.v}%"></div></div>
-      <span class="ab-val">${s.v}</span>
-    </div>`).join('');
-
-  return `<div class="fighter-panel ${isL?'left':'right'}" id="panel-${side}">
+  return `<div class="fighter-panel wm-ring-fighter ${isL?'left':'right'}" id="panel-${side}">
     <div class="danger-overlay" id="danger-${side}">DANGER</div>
     <div class="portrait-area" id="port-${side}">
-      <img src="${_getStandUrl(ch)}" alt="${escHtml(ch.name)}" id="img-${side}"
+      <img class="wm-full-figure" src="${_getFullUrl(ch)}" alt="${escHtml(ch.name)}" id="img-${side}"
         onerror="this.style.display='none'">
       <div class="monitor-frame"></div>
       <div class="dmg-number" id="dmg-${side}"></div>
       <div class="danger-glow" id="dangerGlow-${side}"><div class="danger-glow-inner"></div></div>
       <div class="speech-bubble" id="sp-${side}"></div>
     </div>
-    <div class="fighter-info">
-      <div class="f-name-row"><span class="f-name" onclick="openBp('${side}')">${escHtml(ch.name)}</span>
-        <span class="f-role-tag ${rc}">${ch.role || ''}</span></div>
-      <div class="f-style">${escHtml(ch.style || '')} OVR ${ovr}</div>
-      ${rivalBadge}
-      <div class="ability-bars">${statHtml}</div>
-      <div class="grit-indicator${ch.gritTurns>0?' active':''}" id="grit-${side}">⚡ 闘志 (${ch.gritTurns})</div>
-    </div>
+    <button class="wm-ring-nameplate" onclick="openBp('${side}')">${escHtml(ch.name)}</button>
   </div>`;
 }
 
-// ─── 中央パネル ────────────────────────────────────────────────────────────
+function _statCardHtml(ch, side){
+  if (!ch) return '';
+  const isL = side === 'L';
+  const rc = (ch.role || 'Neutral').toLowerCase();
+  const stats = [
+    {k:'power',l:'PWR',v:Math.round(ch.pw||0)},
+    {k:'speed',l:'SPD',v:Math.round(ch.sp||0)},
+    {k:'technique',l:'TEC',v:Math.round(ch.te||0)},
+    {k:'stamina',l:'STA',v:Math.round(ch.st||0)},
+    {k:'mental',l:'MNT',v:Math.round(ch.mn||0)},
+  ];
+  const rows = stats.map(stat => `<div class="ab-row">
+    <span class="ab-name">${stat.l}</span>
+    <div class="ab-track"><div class="ab-fill ${stat.k}" style="width:${stat.v}%"></div></div>
+    <span class="ab-val">${stat.v}</span>
+  </div>`).join('');
+  return `<article class="wm-stat-card ${isL?'left':'right'}">
+    ${isL ? `<img class="wm-stat-upper" src="${_getUpperUrl(ch)}" alt="" onerror="this.style.display='none'">` : ''}
+    <div class="wm-stat-core">
+      <div class="wm-stat-head"><button onclick="openBp('${side}')">${escHtml(ch.name)}</button><strong>OVR ${_calcOvr(ch)}</strong></div>
+      <div class="wm-stat-meta"><span class="f-role-tag ${rc}">${escHtml(ch.role || 'Neutral')}</span> · ${escHtml(ch.style || '')}</div>
+      <div class="ability-bars">${rows}</div>
+      <div class="grit-indicator${ch.gritTurns>0?' active':''}" id="grit-${side}">⚡ 闘志 (${ch.gritTurns})</div>
+    </div>
+    ${!isL ? `<img class="wm-stat-upper" src="${_getUpperUrl(ch)}" alt="" onerror="this.style.display='none'">` : ''}
+  </article>`;
+}
+
+// ─── 現在の技 ──────────────────────────────────────────────────────────────
 function _centerHtml(fr){
-  const move = fr && fr.action
-    ? (fr.action.kind === 'counter' ? (fr.action.counterMove || fr.action.move || '---') : (fr.action.move || '---'))
-    : '---';
-  return `<div class="center-panel" id="centerPanel">
-    <div class="top-line">
-      <span class="turn-label" id="turnLbl">ターン ${fr ? fr.turn : 1}</span>
-      <span class="phase-pill${S._isBigMatch?' bigmatch':''}" id="pill">${fr ? fr.phase : 'Opening'}</span>
-    </div>
-    <div class="narration-box" id="narBox">
-      <div class="nar-empty">試合開始 — NEXT TURNを押してください</div>
-    </div>
-    <div class="move-box">
-      <div class="move-label">Current Move</div>
-      <div class="move-value" id="moveV">${escHtml(move)}</div>
-      <div class="bigmove-name" id="bigmoveName"></div>
-      <div class="attack-arrow-layer move-arrow-layer" id="arrowLayer"></div>
-    </div>
+  const action = fr && fr.action;
+  const meta = _movePresentation(action);
+  return `<div class="center-panel wm-move-detail" id="centerPanel">
+    <div class="move-label" id="moveCatLabel">${escHtml(meta.label)}</div>
+    <div class="move-value" id="moveV">${escHtml(_actionMoveName(action))}</div>
+    <div class="wm-move-guide" id="moveGuide">${escHtml(meta.guide)}</div>
+    <div class="wm-move-result" id="moveResult">${escHtml(_moveResultText(action))}</div>
   </div>`;
 }
 
@@ -523,16 +636,26 @@ function _centerHtml(fr){
 function _controlsHtml(){
   const fr = _getCurrentFrame();
   const isEnd = (fr && fr.winner) || S.frameIdx >= S.frames.length;
-  const label = (fr && fr.winner) ? '結果を見る' : (isEnd ? 'END' : '▶ NEXT TURN');
+  const label = (fr && fr.winner) ? '結果を見る' : (isEnd ? '試合終了' : '次の攻防 ▶');
   const disabled = S.anim || S.pendingCutin;
   const dots = [0,1,2].map(i =>
-    `<div class="speed-dot ${i <= S.speedIdx?'on':'off'}" onclick="setSpeed(${i})"></div>`
+    `<button class="speed-dot wm-speed-btn ${i === S.speedIdx?'on':'off'}" onclick="setSpeed(${i})">${i+1}×</button>`
   ).join('');
   return `<div class="controls-sub">
-    <button class="btn-main" id="nBtn"${disabled?' disabled':''}>${label}</button>
-    <div class="control-sep"></div>
-    <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">AUTO<span>${S.autoAdvance?'ON':'OFF'}</span></button>
-    <div class="speed-dots">${dots}</div>
+    <div class="wm-control-left">
+      <button class="btn wm-prev-btn" id="prevBtn" onclick="previousFrame()"${disabled||S.frameIdx===0?' disabled':''}>◀ ひとつ戻る</button>
+      <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">自動再生<span>${S.autoAdvance?'再生中':'停止'}</span></button>
+      <div class="wm-control-set"><span>速度</span><div class="speed-dots">${dots}</div></div>
+    </div>
+    <div class="wm-control-center"><button class="btn-main" id="nBtn"${disabled?' disabled':''}>${label}</button></div>
+    <div class="wm-control-right">
+      <div class="wm-control-set"><span>カメラ</span><div class="wm-camera-buttons">
+        <button data-camera="auto" class="${S.cameraMode==='auto'?'active':''}" onclick="setCameraMode('auto')">自動</button>
+        <button data-camera="wide" class="${S.cameraMode==='wide'?'active':''}" onclick="setCameraMode('wide')">全景</button>
+        <button data-camera="close" class="${S.cameraMode==='close'?'active':''}" onclick="setCameraMode('close')">アップ</button>
+      </div></div>
+      <label class="wm-number-toggle"><input id="numberToggle" type="checkbox" onchange="toggleBattleNumbers()"${S.showNumbers?' checked':''}> 正確な数値</label>
+    </div>
   </div>`;
 }
 
@@ -621,7 +744,7 @@ function _appendLogForFrame(fr){
   const lines = rawLines.map(l => _logLineHtml(l, fr)).join('');
   S.logHtml = turnMarker + lines + S.logHtml;
   const lb = document.getElementById('battleLog');
-  if (lb){ lb.innerHTML = `<div class="log-header-label">BATTLE LOG</div>${S.logHtml}`; lb.scrollTop = 0; }
+  if (lb){ lb.innerHTML = S.logHtml; lb.scrollTop = 0; }
 }
 
 function _logLineHtml(line, fr){
@@ -682,6 +805,8 @@ function nextFrame(){
 
 function applyFrame(fr){
   S.anim = true;
+  const prevBtn = document.getElementById('prevBtn');
+  if (prevBtn) prevBtn.disabled = true;
   // _buildPinCtrl が扱う全ケースを拾う: pinAttempt / rollup / tkoStop / kickout(fall/gu/count 付)
   S.pinSeqPending = !!(fr && (fr.pinAttempt || fr.rollup || fr.tkoStop || (fr.kickout && (fr.kickout.escapeType || fr.kickout.count != null))));
 
@@ -714,6 +839,8 @@ function applyFrame(fr){
     S.anim = false;
     const btn = document.getElementById('nBtn');
     if (btn && !S.pendingCutin && !S.pinCtrl) btn.disabled = false;
+    const prev = document.getElementById('prevBtn');
+    if (prev && !S.pendingCutin && !S.pinCtrl) prev.disabled = S.frameIdx === 0;
     if (!S.pinCtrl) _bindNextButton();
   }, minDelay);
 }
@@ -746,10 +873,11 @@ function _applyFrameVisuals(fr, isBigMove){
 // ─── 演出 ─────────────────────────────────────────────────────────────────
 function animateAction(action, fr, isBigMove){
   try { sfx.ready(); } catch(e){}
+  _setRingActionState(action);
 
   if (action.kind === 'miss') {
     try { sfx.missWhiff(); } catch(e){}
-    _spawnMissEffect();
+    _spawnMissEffect(action);
     _spawnAttackArrow(action);
     return;
   }
@@ -763,7 +891,18 @@ function animateAction(action, fr, isBigMove){
   _renderActionImpact(action);
 }
 
-function _spawnMissEffect(){
+function _setRingActionState(action){
+  const ring = document.getElementById('liveRing');
+  if (!ring || !action) return;
+  ring.classList.remove('attack-left','attack-right','miss','counter');
+  ring.classList.add(action.atkSide === 'right' ? 'attack-right' : 'attack-left');
+  if (action.kind === 'miss') ring.classList.add('miss');
+  if (action.kind === 'counter') ring.classList.add('counter');
+  clearTimeout(ring._wmActionTimer);
+  ring._wmActionTimer = setTimeout(() => ring.classList.remove('attack-left','attack-right','miss','counter'), action.kind === 'counter' ? 1700 : 950);
+}
+
+function _spawnMissEffect(action){
   // MISS! テキスト 1.5秒 + フラッシュ
   const mt = document.createElement('div');
   mt.className = 'miss-text';
@@ -821,6 +960,7 @@ function _renderActionImpact(action){
   const atkSide = action.atkSide === 'left' ? 'L' : 'R';
   const isBig   = action.dmg >= 20;
 
+  _showRingImpact(action);
   _showDmgPop(defSide, action.dmg, action.isCrit, action.kind === 'counter');
   _applyShake(document.getElementById(`panel-${defSide}`), action.isCrit);
 
@@ -830,6 +970,16 @@ function _renderActionImpact(action){
 
   if (action.isCrit && isBig) _flashRedOverlay(document.getElementById('flashOv'));
   if (action.isCrit && action.dmg >= 15) _showBigMoveSplash(action.kind === 'counter' ? (action.counterMove || action.move) : action.move);
+}
+
+function _showRingImpact(action){
+  const impact = document.getElementById('ringImpact');
+  if (!impact || !action || action.kind === 'miss') return;
+  impact.textContent = action.kind === 'counter' ? 'COUNTER!' : action.isCrit ? 'BIG HIT!' : 'HIT!';
+  impact.classList.remove('show');
+  void impact.offsetWidth;
+  impact.classList.add('show');
+  setTimeout(() => impact.classList.remove('show'), 650);
 }
 
 function _showDmgPop(side, val, isCrit, isCounter){
@@ -899,6 +1049,8 @@ function showCutin(fighter, side, text, cssCls){
   S.pendingCutin = true;
   const btn = document.getElementById('nBtn');
   if (btn) btn.disabled = true;
+  const prev = document.getElementById('prevBtn');
+  if (prev) prev.disabled = true;
 }
 
 function dismissCutin(){
@@ -924,6 +1076,8 @@ function dismissCutin(){
   }
   const btn = document.getElementById('nBtn');
   if (btn && !S.anim) btn.disabled = false;
+  const prev = document.getElementById('prevBtn');
+  if (prev && !S.anim && !S.pinCtrl) prev.disabled = S.frameIdx === 0;
   if (S.autoAdvance && !S.anim && S.frameIdx < S.frames.length) {
     S.autoTimer = setTimeout(() => nextFrame(), 600);
   }
@@ -1230,7 +1384,7 @@ function _finishPinSeq(){
       S.logHtml = heldHtml + S.logHtml;
     }
     const lb = document.getElementById('battleLog');
-    if (lb){ lb.innerHTML = `<div class="log-header-label">BATTLE LOG</div>${S.logHtml}`; lb.scrollTop = 0; }
+    if (lb){ lb.innerHTML = S.logHtml; lb.scrollTop = 0; }
   }
   S.heldWinLogs = null;
 
@@ -1244,6 +1398,8 @@ function _finishPinSeq(){
   } else {
     _bindNextButton();
     if (btn) btn.disabled = false;
+    const prev = document.getElementById('prevBtn');
+    if (prev) prev.disabled = S.frameIdx === 0;
     if (S.autoAdvance && S.frameIdx < S.frames.length) {
       clearTimeout(S.autoTimer);
       S.autoTimer = setTimeout(() => nextFrame(), 600);
@@ -1289,11 +1445,40 @@ function _clearRollupHighlight(){
   });
 }
 
-// ─── AUTO / SPEED ─────────────────────────────────────────────────────────
+// ─── REPLAY CONTROLS ──────────────────────────────────────────────────────
+function _rebuildLogUntil(frameCount){
+  let html = '';
+  for (let i = 0; i < frameCount; i++) {
+    const frame = S.frames[i];
+    if (!frame) continue;
+    const marker = `<div class="log-new-marker">— Turn ${frame.turn} —</div>`;
+    const lines = (frame.logLines || []).map(line => _logLineHtml(line, frame)).join('');
+    html = marker + lines + html;
+  }
+  return html;
+}
+
+function previousFrame(){
+  if (S.anim || S.pendingCutin || S.pinCtrl || S.frameIdx <= 0) return;
+  clearTimeout(S.autoTimer);
+  S.autoAdvance = false;
+  S.frameIdx = Math.max(0, S.frameIdx - 1);
+  const frame = _getCurrentFrame();
+  S.L.hp = frame && frame.hpL != null ? frame.hpL : S.startHpL;
+  S.R.hp = frame && frame.hpR != null ? frame.hpR : S.startHpR;
+  S.L.gritTurns = frame && frame.gritL != null ? frame.gritL : 0;
+  S.R.gritTurns = frame && frame.gritR != null ? frame.gritR : 0;
+  S.mom = frame ? (frame.mom || 0) : 0;
+  S.logHtml = _rebuildLogUntil(S.frameIdx);
+  S.pinSeqPending = false;
+  S.heldWinLogs = null;
+  renderMatchFrame();
+}
+
 function toggleAuto(){
   S.autoAdvance = !S.autoAdvance;
   const b = document.getElementById('autoBtn');
-  if (b){ b.classList.toggle('active', S.autoAdvance); b.innerHTML = 'AUTO<span>' + (S.autoAdvance?'ON':'OFF') + '</span>'; }
+  if (b){ b.classList.toggle('active', S.autoAdvance); b.innerHTML = '自動再生<span>' + (S.autoAdvance?'再生中':'停止') + '</span>'; }
   if (S.autoAdvance) {
     if (!S.anim && !S.pendingCutin && S.frameIdx < S.frames.length)
       S.autoTimer = setTimeout(() => nextFrame(), 500);
@@ -1304,8 +1489,8 @@ function toggleAuto(){
 function setSpeed(idx){
   S.speedIdx = clamp(idx, 0, SPEED_DELAYS.length - 1);
   document.querySelectorAll('.speed-dot').forEach((d, i) => {
-    d.classList.toggle('on',  i <= S.speedIdx);
-    d.classList.toggle('off', i > S.speedIdx);
+    d.classList.toggle('on',  i === S.speedIdx);
+    d.classList.toggle('off', i !== S.speedIdx);
   });
 }
 
@@ -1497,9 +1682,9 @@ document.addEventListener('keydown', e => {
 const _spTimers = {};
 function _narrationHtml(nar){
   if (!nar || !nar.text) {
-    return '<div class="nar-empty">\u8a66\u5408\u958b\u59cb \u2014 NEXT TURN\u3092\u62bc\u3057\u3066\u304f\u3060\u3055\u3044</div>';
+    return '<div class="wm-commentary-label">実況</div><div class="nar-empty">ゴング！　「次の攻防」で試合を進めてください</div>';
   }
-  return `<div class="nar-line nar-main show${nar.dramatic ? ' dramatic' : ''}">${escHtml(nar.text)}</div>`;
+  return `<div class="wm-commentary-label">実況</div><div class="nar-line nar-main show${nar.dramatic ? ' dramatic' : ''}">${escHtml(nar.text)}</div>`;
 }
 
 function _narrateFrame(fr){
@@ -1518,35 +1703,47 @@ function _narrateFrame(fr){
 
   if (action.kind === 'miss') {
     return {
-      text: `${atk.name}\u306e${action.move || ''} \u2192 \u304b\u308f\u3055\u308c\u305f\uff01`,
+      text: `${atk.name}の${action.move || ''}は空を切る！ ${def.name}が間合いを外した。`,
       dramatic: false,
     };
   }
   if (action.kind === 'counter') {
     return {
-      text: `${atk.name}\u304c\u30ab\u30a6\u30f3\u30bf\u30fc\uff01 ${action.counterMove || action.move || ''} \u2192 ${def.name}\u306b${action.dmg}\u30c0\u30e1\u30fc\u30b8`,
+      text: `${atk.name}が待っていた！ ${def.name}の攻めを読み、${action.counterMove || action.move || ''}で切り返す！`,
       dramatic: true,
     };
   }
 
   return {
-    text: `${atk.name}\u306e${action.move || ''} \u2192 ${def.name}\u306b${action.dmg}\u30c0\u30e1\u30fc\u30b8`,
+    text: action.isCrit
+      ? `${atk.name}の${action.move || ''}が深く入った！ ${def.name}を大きく揺らす！`
+      : `${atk.name}が${action.move || ''}！ ${def.name}の体勢を崩していく。`,
     dramatic: !!action.isCrit,
   };
+}
+
+function _updateMoveDetail(fr){
+  const action = fr && fr.action;
+  const meta = _movePresentation(action);
+  const move = document.getElementById('moveV');
+  if (move){ move.textContent = _actionMoveName(action); move.classList.remove('move-pop'); void move.offsetWidth; move.classList.add('move-pop'); }
+  const category = document.getElementById('moveCatLabel');
+  if (category) category.textContent = meta.label;
+  const guide = document.getElementById('moveGuide');
+  if (guide) guide.textContent = meta.guide;
+  const result = document.getElementById('moveResult');
+  if (result){ result.textContent = _moveResultText(action); result.classList.toggle('big', !!(action && (action.isCrit || action.kind === 'counter'))); }
 }
 
 function _updateCenter(fr){
   const box = document.getElementById('centerPanel');
   if (!box) return;
-  const move = fr && fr.action
-    ? (fr.action.kind === 'counter' ? (fr.action.counterMove || fr.action.move || '---') : (fr.action.move || '---'))
-    : '---';
-  const mv2 = document.getElementById('moveV');
-  if (mv2){ mv2.textContent = move; mv2.classList.remove('move-pop'); void mv2.offsetWidth; mv2.classList.add('move-pop'); }
-  const tl = document.getElementById('turnLbl');
-  if (tl && fr) tl.textContent = `\u30bf\u30fc\u30f3 ${fr.turn}`;
+  _updateMoveDetail(fr);
+  const turn = document.getElementById('turnLbl');
+  if (turn && fr) turn.textContent = `T${fr.turn}`;
   const pill = document.getElementById('pill');
   if (pill && fr) pill.textContent = fr.phase || '';
-  const narBox = document.getElementById('narBox');
-  if (narBox) narBox.innerHTML = _narrationHtml(_narrateFrame(fr));
+  const narration = document.getElementById('narBox');
+  if (narration) narration.innerHTML = _narrationHtml(_narrateFrame(fr));
+  _applyCamera();
 }

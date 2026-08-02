@@ -141,6 +141,7 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 | ファイル | 内容 |
 |---------|------|
 | battle-engine-spec-v4.2.md | 試合シミュレーション(ターン制/MQ計算/ビッグマッチ) |
+| battle-presentation-spec-v1.0.md | シングル戦Replay観戦の確定表示仕様（Pattern C v4、実況・技説明・カメラ・既存演出維持） |
 | character-data-spec-v1.7.md | キャラクターデータ定義(ステータス/特性/性格) |
 | coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
 | contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |

@@ -1,0 +1,408 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wrestle Manager — Battle Presentation Mockup v2</title>
+  <style>
+    :root {
+      --bg:#080a10;
+      --panel:#111621;
+      --panel-2:#181e2b;
+      --line:rgba(224,204,151,.18);
+      --line-strong:rgba(224,204,151,.42);
+      --text:#f6f3eb;
+      --sub:#adb5c5;
+      --dim:#697285;
+      --gold:#e0c067;
+      --gold-light:#fae7a7;
+      --blue:#72bde8;
+      --red:#ec7c8c;
+      --danger:#f05770;
+      --green:#78d1a0;
+      --shadow:0 22px 55px rgba(0,0,0,.42);
+    }
+
+    *{box-sizing:border-box}
+    html{background:var(--bg)}
+    body{
+      margin:0;
+      min-width:320px;
+      color:var(--text);
+      background:
+        radial-gradient(circle at 50% -10%,rgba(84,76,126,.22),transparent 36%),
+        linear-gradient(180deg,#0c0f18,#07090e 70%);
+      font-family:"Yu Gothic UI","Hiragino Kaku Gothic ProN",Meiryo,sans-serif;
+    }
+    button{font:inherit}
+    button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+    .mock-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:18px;
+      padding:8px 18px;
+      border-bottom:1px solid rgba(224,192,103,.28);
+      background:#181522;
+      color:#ead28c;
+      font-size:11px;
+      letter-spacing:.1em;
+    }
+    .mock-head b{color:#fff0bc}
+    .app{max-width:1530px;margin:auto;padding:18px 18px 26px}
+
+    /* top broadcast HUD */
+    .hud{
+      position:relative;
+      z-index:5;
+      padding:12px 16px 14px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:10px 10px 4px 4px;
+      background:linear-gradient(100deg,rgba(23,48,68,.97),rgba(15,18,28,.98) 47%,rgba(73,28,40,.97));
+      box-shadow:var(--shadow);
+    }
+    .hud-main{display:grid;grid-template-columns:1fr 180px 1fr;align-items:center;gap:14px}
+    .hud-side{display:flex;align-items:center;gap:10px;min-width:0}
+    .hud-side.right{flex-direction:row-reverse;text-align:right}
+    .hud-face{width:42px;height:42px;flex:0 0 auto;object-fit:cover;object-position:top;border:1px solid currentColor;border-radius:50%;background:#101722}
+    .hud-side.left{color:var(--blue)}
+    .hud-side.right{color:var(--red)}
+    .hud-name{overflow:hidden;color:#fff;font-size:17px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}
+    .hud-meta{color:var(--sub);font-size:10px;letter-spacing:.08em}
+    .hud-center{text-align:center}
+    .hud-turn{color:var(--gold-light);font-size:13px;font-weight:900;letter-spacing:.14em}
+    .hud-phase{margin-top:2px;color:#d5d8e0;font-size:10px;font-weight:800;letter-spacing:.18em}
+    .hud-bars{display:grid;grid-template-columns:1fr 54px 76px 54px 1fr;align-items:center;gap:7px;margin-top:10px}
+    .hp-track{height:8px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.12)}
+    .hp-fill{height:100%;transition:width .35s ease,background .35s ease}
+    .hp-fill.left{float:right;background:linear-gradient(90deg,#4a88b4,var(--blue))}
+    .hp-fill.right{background:linear-gradient(90deg,var(--red),#a84254)}
+    .hp-fill.danger{background:var(--danger)}
+    .hp-pct{color:#eef1f6;font-size:11px;font-weight:900;text-align:center}
+    .momentum-label{color:var(--dim);font-size:9px;font-weight:900;letter-spacing:.08em;text-align:center}
+
+    .layout-scroll{margin-top:14px;overflow-x:auto;padding-bottom:5px}
+    .battle-layout{
+      display:grid;
+      grid-template-columns:250px minmax(560px,1fr) 250px;
+      grid-template-areas:"left center right";
+      gap:14px;
+      min-width:1090px;
+      align-items:stretch;
+    }
+
+    /* fixed side cards: always left and right, upper art only */
+    .fighter-card{
+      position:relative;
+      min-height:672px;
+      overflow:hidden;
+      border:1px solid var(--line);
+      border-radius:8px;
+      background:linear-gradient(180deg,#141a26,#0e121b);
+      box-shadow:var(--shadow);
+    }
+    .fighter-card.left{grid-area:left;border-top:3px solid var(--blue)}
+    .fighter-card.right{grid-area:right;border-top:3px solid var(--red)}
+    .fighter-card::before{position:absolute;inset:0;content:"";pointer-events:none;background:linear-gradient(180deg,transparent 22%,rgba(8,10,15,.16) 43%,rgba(8,10,15,.84) 63%)}
+    .fighter-card.damaged::after{position:absolute;z-index:8;inset:0;content:"";pointer-events:none;background:rgba(235,70,92,.22);animation:cardHit .5s ease-out}
+    @keyframes cardHit{from{opacity:1}to{opacity:0}}
+    .side-kicker{position:absolute;z-index:3;top:12px;left:14px;color:var(--dim);font-size:9px;font-weight:900;letter-spacing:.16em}
+    .fighter-card.right .side-kicker{right:14px;left:auto}
+    .upper-frame{
+      position:relative;
+      z-index:1;
+      width:184px;
+      aspect-ratio:2/3;
+      margin:28px auto 0;
+      overflow:hidden;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:5px 5px 0 0;
+      background:radial-gradient(circle at 50% 20%,rgba(255,255,255,.09),rgba(0,0,0,.15) 55%,rgba(0,0,0,.45));
+      box-shadow:0 12px 28px rgba(0,0,0,.38);
+    }
+    .fighter-card.left .upper-frame{border-bottom:3px solid var(--blue)}
+    .fighter-card.right .upper-frame{border-bottom:3px solid var(--red)}
+    .upper-frame img{width:100%;height:100%;object-fit:cover;object-position:center top}
+    .fighter-info{position:relative;z-index:3;margin-top:-16px;padding:0 15px 15px}
+    .fighter-card.right .fighter-info{text-align:right}
+    .name-plate{padding:10px 10px 9px;border:1px solid rgba(255,255,255,.08);border-radius:5px;background:rgba(8,11,17,.9);box-shadow:0 8px 20px rgba(0,0,0,.28)}
+    .side-name{font-size:22px;font-weight:900;line-height:1.1}
+    .side-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:5px;color:var(--sub);font-size:10px}
+    .fighter-card.right .side-meta{flex-direction:row-reverse}
+    .ovr{color:var(--gold-light);font-size:13px;font-weight:900;letter-spacing:.05em}
+    .stats{display:grid;gap:6px;margin-top:14px}
+    .stat{display:grid;grid-template-columns:31px 1fr 25px;align-items:center;gap:6px;font-size:9px}
+    .fighter-card.right .stat{grid-template-columns:25px 1fr 31px}
+    .fighter-card.right .stat-name{order:3}.fighter-card.right .stat-value{order:1;text-align:left}
+    .stat-name{color:#aeb5c3;font-weight:800;letter-spacing:.07em;text-align:left}
+    .fighter-card.right .stat-name{text-align:right}
+    .stat-value{color:#e9ecf2;font-weight:900;text-align:right}
+    .stat-track{height:5px;overflow:hidden;border-radius:4px;background:rgba(255,255,255,.11)}
+    .stat-fill{display:block;height:100%;border-radius:4px}
+    .pwr{background:#e66f77}.spd{background:#66b7e5}.tec{background:#6cc7a7}.sta{background:#dcb45f}.mnt{background:#a483d2}
+    .state-note{margin-top:13px;padding:8px 9px;border:1px solid rgba(224,192,103,.16);border-radius:4px;background:rgba(224,192,103,.05);color:var(--sub);font-size:10px;line-height:1.55;text-align:left}
+    .state-note b{color:#ecd88e}
+
+    /* center owns ring, explanation, track, controls */
+    .center-column{grid-area:center;display:flex;min-width:0;flex-direction:column;gap:10px}
+    .arena-shell{
+      position:relative;
+      min-height:414px;
+      overflow:hidden;
+      border:1px solid var(--line-strong);
+      border-radius:8px;
+      background:#090c13;
+      box-shadow:var(--shadow);
+      isolation:isolate;
+    }
+    .ring-bg{position:absolute;z-index:-2;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}
+    .arena-shade{position:absolute;z-index:-1;inset:0;background:linear-gradient(180deg,rgba(5,7,12,.08) 0%,rgba(5,7,12,.02) 44%,rgba(5,7,12,.22) 72%,rgba(5,7,12,.83) 100%)}
+    .broadcast-strip{position:absolute;z-index:7;top:10px;left:12px;display:flex;align-items:center;gap:7px}
+    .live-dot{width:7px;height:7px;border-radius:50%;background:#ed4860;box-shadow:0 0 10px rgba(237,72,96,.8)}
+    .broadcast-strip span{color:#e6e8ee;font-size:9px;font-weight:900;letter-spacing:.14em}
+    .phase-badge{position:absolute;z-index:7;top:9px;right:11px;padding:4px 9px;border:1px solid rgba(224,192,103,.38);border-radius:99px;background:rgba(8,10,16,.66);color:#f0d889;font-size:9px;font-weight:900;letter-spacing:.12em}
+    .ring-fighter{
+      position:absolute;
+      z-index:2;
+      bottom:9%;
+      width:31%;
+      max-height:76%;
+      object-fit:contain;
+      object-position:center bottom;
+      filter:drop-shadow(0 15px 13px rgba(0,0,0,.72));
+      transform-origin:center bottom;
+      transition:transform .36s cubic-bezier(.22,.9,.2,1),filter .25s ease;
+    }
+    /* source stand images both face left: mirror LEFT only so they face inward */
+    .ring-fighter.left{left:12%;transform:scaleX(-1)}
+    .ring-fighter.right{right:12%;transform:none}
+    .arena-shell.attack-left .ring-fighter.left{transform:translateX(42px) scaleX(-1) scale(1.045);filter:drop-shadow(0 0 19px rgba(114,189,232,.62)) drop-shadow(0 15px 13px rgba(0,0,0,.7))}
+    .arena-shell.attack-right .ring-fighter.right{transform:translateX(-42px) scale(1.045);filter:drop-shadow(0 0 19px rgba(236,124,140,.62)) drop-shadow(0 15px 13px rgba(0,0,0,.7))}
+    .arena-shell.miss .ring-fighter.left,.arena-shell.miss .ring-fighter.right{filter:grayscale(.32) brightness(.85) drop-shadow(0 15px 13px rgba(0,0,0,.7))}
+    .attack-line{position:absolute;z-index:3;top:47%;left:28%;width:44%;height:4px;border-radius:9px;opacity:0;background:linear-gradient(90deg,transparent,var(--gold-light),transparent);box-shadow:0 0 20px rgba(250,231,167,.9)}
+    .arena-shell.attack-left .attack-line{animation:sweepL .65s ease-out}.arena-shell.attack-right .attack-line{animation:sweepR .65s ease-out}
+    .arena-shell.counter .attack-line{height:6px;background:linear-gradient(90deg,transparent,#ff8b62,#ffe39a,transparent);box-shadow:0 0 25px rgba(255,123,83,.9)}
+    @keyframes sweepL{0%{transform:translateX(-32%) scaleX(.2);opacity:0}25%{opacity:1}100%{transform:translateX(26%) scaleX(1);opacity:0}}
+    @keyframes sweepR{0%{transform:translateX(32%) scaleX(.2);opacity:0}25%{opacity:1}100%{transform:translateX(-26%) scaleX(1);opacity:0}}
+    .impact{position:absolute;z-index:6;top:45%;left:50%;display:grid;width:70px;height:70px;place-items:center;border:2px solid #ffe39b;border-radius:50%;color:#fff1c1;font-size:10px;font-weight:900;letter-spacing:.08em;opacity:0;text-shadow:0 2px 4px #000}
+    .impact.show{animation:impact .55s ease-out}
+    @keyframes impact{0%{transform:translate(-50%,-50%) scale(.35);opacity:1}100%{transform:translate(-50%,-50%) scale(2.2);opacity:0}}
+    .commentary{
+      position:absolute;
+      z-index:8;
+      right:16px;
+      bottom:14px;
+      left:16px;
+      padding:12px 15px 13px;
+      border-left:3px solid var(--gold);
+      border-radius:3px 6px 6px 3px;
+      background:linear-gradient(90deg,rgba(7,9,14,.94),rgba(13,16,23,.82));
+      box-shadow:0 10px 28px rgba(0,0,0,.48);
+      backdrop-filter:blur(4px);
+    }
+    .commentary-label{color:var(--gold);font-size:9px;font-weight:900;letter-spacing:.15em}
+    .headline{margin-top:4px;font-size:clamp(18px,1.8vw,25px);font-weight:900;line-height:1.38;text-shadow:0 2px 5px rgba(0,0,0,.8)}
+    .left-name{color:#9ed8fb}.right-name{color:#ff9ba8}.move-key{color:#ffe5a0}
+
+    .move-panel{display:grid;grid-template-columns:160px 1fr auto;align-items:center;gap:13px;padding:11px 13px;border:1px solid var(--line);border-radius:7px;background:var(--panel);box-shadow:0 10px 25px rgba(0,0,0,.25)}
+    .move-ident{padding-right:12px;border-right:1px solid rgba(255,255,255,.08)}
+    .move-cat{color:var(--gold);font-size:9px;font-weight:900;letter-spacing:.13em}
+    .move-name{margin-top:3px;color:#fff;font-size:16px;font-weight:900}
+    .move-guide{color:#d5d9e1;font-size:11px;line-height:1.55}
+    .result-chip{min-width:82px;padding:7px 9px;border:1px solid rgba(255,255,255,.12);border-radius:4px;color:#dfe3e9;background:rgba(255,255,255,.035);font-size:10px;font-weight:800;text-align:center}
+    .result-chip.big{border-color:rgba(224,192,103,.42);color:#ffe39c;background:rgba(224,192,103,.09)}
+
+    .exchange-panel{padding:11px 12px 12px;border:1px solid var(--line);border-radius:7px;background:var(--panel);box-shadow:0 10px 25px rgba(0,0,0,.24)}
+    .exchange-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .exchange-title{color:#e7e3d7;font-size:10px;font-weight:900;letter-spacing:.14em}
+    .exchange-help{color:var(--dim);font-size:9px}
+    .exchange-track{display:flex;gap:6px;margin-top:9px;overflow-x:auto;padding:1px 1px 4px}
+    .exchange-event{display:grid;grid-template-columns:28px 1fr;gap:6px;min-width:126px;padding:7px 8px;border:1px solid rgba(255,255,255,.07);border-radius:5px;color:var(--text);background:rgba(255,255,255,.025);cursor:pointer;text-align:left}
+    .exchange-event:hover{background:rgba(255,255,255,.06)}
+    .exchange-event.current{border-color:rgba(224,192,103,.62);background:rgba(224,192,103,.1)}
+    .event-turn{color:var(--dim);font-size:9px;font-weight:900}.event-move{overflow:hidden;font-size:10px;font-weight:900;text-overflow:ellipsis;white-space:nowrap}.event-result{margin-top:2px;color:var(--sub);font-size:8px}
+    .exchange-empty{padding:9px;color:var(--dim);font-size:10px}
+
+    .controls{display:flex;align-items:center;justify-content:center;gap:7px;padding:3px 0 0}
+    .btn{min-height:37px;padding:0 13px;border:1px solid rgba(224,192,103,.28);border-radius:4px;color:#e9d999;background:rgba(224,192,103,.06);cursor:pointer;font-size:10px;font-weight:900;letter-spacing:.06em}
+    .btn:hover{background:rgba(224,192,103,.15)}
+    .btn.primary{min-width:176px;border-color:rgba(224,192,103,.72);color:#fff;background:linear-gradient(135deg,#725726,#a77c2e)}
+    .btn.primary:hover{filter:brightness(1.13)}
+    .btn:disabled{opacity:.35;cursor:not-allowed}
+    .data-toggle{display:flex;align-items:center;gap:6px;margin-left:6px;color:var(--sub);font-size:9px;cursor:pointer;user-select:none}
+    .data-toggle input{accent-color:var(--gold)}
+    .speed{display:flex;gap:3px}.speed button{min-width:33px;height:29px;border:1px solid #424957;border-radius:3px;color:#929aaa;background:#131722;cursor:pointer;font-size:9px}.speed button.active{border-color:var(--gold);color:#ffe8a8;background:#433820}
+    .footnote{margin:12px 0 0;color:var(--dim);font-size:9px;line-height:1.6;text-align:center}
+    .footnote b{color:#aeb5c3}
+
+    @media(max-width:780px){.app{padding:10px}.hud-main{grid-template-columns:1fr 95px 1fr}.hud-face{display:none}.hud-name{font-size:13px}.hud-meta{display:none}.mock-head{align-items:flex-start;flex-direction:column;gap:3px}.battle-layout{grid-template-columns:210px minmax(520px,1fr) 210px;min-width:980px}.fighter-card{min-height:640px}.upper-frame{width:164px}.move-panel{grid-template-columns:140px 1fr auto}}
+  </style>
+</head>
+<body>
+  <div class="mock-head"><span><b>BATTLE PRESENTATION v2</b> · COMPLETE REBUILD</span><span>左右カード固定／中央リング＋実況／中央下段に攻防履歴</span></div>
+  <main class="app">
+    <section class="hud" aria-label="試合状況">
+      <div class="hud-main">
+        <div class="hud-side left"><img class="hud-face" src="../../../image/face_takatsu_k.png" alt=""><div><div class="hud-name">高津 小春</div><div class="hud-meta">STRIKER · OVR 74</div></div></div>
+        <div class="hud-center"><div class="hud-turn" id="hudTurn">TURN 1</div><div class="hud-phase" id="hudPhase">OPENING</div></div>
+        <div class="hud-side right"><img class="hud-face" src="../../../image/face_tomioka_k.png" alt=""><div><div class="hud-name">富岡 加奈子</div><div class="hud-meta">GRAPPLER · OVR 75</div></div></div>
+      </div>
+      <div class="hud-bars"><div class="hp-track"><div class="hp-fill left" id="hpLFill"></div></div><div class="hp-pct" id="hpLPct">100%</div><div class="momentum-label">MOMENTUM</div><div class="hp-pct" id="hpRPct">100%</div><div class="hp-track"><div class="hp-fill right" id="hpRFill"></div></div></div>
+    </section>
+
+    <div class="layout-scroll">
+      <section class="battle-layout">
+        <aside class="fighter-card left" id="cardLeft">
+          <div class="side-kicker">LEFT CORNER</div>
+          <div class="upper-frame"><img src="../../../image/upper/upper_takatsu_k.webp" alt="高津小春"></div>
+          <div class="fighter-info">
+            <div class="name-plate"><div class="side-name">高津 小春</div><div class="side-meta"><span>NEUTRAL · STRIKER</span><span class="ovr">OVR 74</span></div></div>
+            <div class="stats">
+              <div class="stat"><span class="stat-name">PWR</span><span class="stat-track"><span class="stat-fill pwr" style="width:68%"></span></span><span class="stat-value">68</span></div>
+              <div class="stat"><span class="stat-name">SPD</span><span class="stat-track"><span class="stat-fill spd" style="width:84%"></span></span><span class="stat-value">84</span></div>
+              <div class="stat"><span class="stat-name">TEC</span><span class="stat-track"><span class="stat-fill tec" style="width:72%"></span></span><span class="stat-value">72</span></div>
+              <div class="stat"><span class="stat-name">STA</span><span class="stat-track"><span class="stat-fill sta" style="width:70%"></span></span><span class="stat-value">70</span></div>
+              <div class="stat"><span class="stat-name">MNT</span><span class="stat-track"><span class="stat-fill mnt" style="width:78%"></span></span><span class="stat-value">78</span></div>
+            </div>
+            <div class="state-note"><b>試合の見方</b><br>PWR＝威力、SPD＝機動力、TEC＝命中・切り返し、STA/MNT＝守りと粘り。</div>
+          </div>
+        </aside>
+
+        <section class="center-column">
+          <div class="arena-shell attack-left" id="arena">
+            <img class="ring-bg" src="../../../image/battle-ring-bg-mockup-v2.png" alt="プロレスリング">
+            <div class="arena-shade"></div>
+            <div class="broadcast-strip"><i class="live-dot"></i><span>LIVE RING</span></div><div class="phase-badge" id="phaseBadge">OPENING · T1</div>
+            <img class="ring-fighter left" src="../../../image/stand/stand_takatsu_k.webp" alt="高津小春">
+            <img class="ring-fighter right" src="../../../image/stand/stand_tomioka_k.webp" alt="富岡加奈子">
+            <div class="attack-line"></div><div class="impact" id="impact">HIT!</div>
+            <div class="commentary"><div class="commentary-label">実況</div><div class="headline" id="headline"></div></div>
+          </div>
+
+          <div class="move-panel">
+            <div class="move-ident"><div class="move-cat" id="moveCat">打撃の攻防</div><div class="move-name" id="moveName">低空ドロップキック</div></div>
+            <div class="move-guide" id="moveGuide"></div><div class="result-chip" id="resultChip">HIT</div>
+          </div>
+
+          <div class="exchange-panel">
+            <div class="exchange-head"><span class="exchange-title">EXCHANGE TRACK</span><span class="exchange-help">ここまでの攻防をクリックして見返す</span></div><div class="exchange-track" id="exchangeTrack"></div>
+          </div>
+
+          <div class="controls">
+            <button class="btn" id="prevBtn">← PREV</button><button class="btn primary" id="nextBtn">▶ NEXT EXCHANGE</button><button class="btn" id="autoBtn">AUTO: OFF</button>
+            <div class="speed"><button data-speed="1700">1×</button><button class="active" data-speed="950">2×</button><button data-speed="520">3×</button></div>
+            <label class="data-toggle"><input id="dataToggle" type="checkbox" checked> 正確な数値</label>
+          </div>
+        </section>
+
+        <aside class="fighter-card right" id="cardRight">
+          <div class="side-kicker">RIGHT CORNER</div>
+          <div class="upper-frame"><img src="../../../image/upper/upper_tomioka_k.webp" alt="富岡加奈子"></div>
+          <div class="fighter-info">
+            <div class="name-plate"><div class="side-name">富岡 加奈子</div><div class="side-meta"><span>NEUTRAL · GRAPPLER</span><span class="ovr">OVR 75</span></div></div>
+            <div class="stats">
+              <div class="stat"><span class="stat-name">PWR</span><span class="stat-track"><span class="stat-fill pwr" style="width:88%"></span></span><span class="stat-value">88</span></div>
+              <div class="stat"><span class="stat-name">SPD</span><span class="stat-track"><span class="stat-fill spd" style="width:61%"></span></span><span class="stat-value">61</span></div>
+              <div class="stat"><span class="stat-name">TEC</span><span class="stat-track"><span class="stat-fill tec" style="width:68%"></span></span><span class="stat-value">68</span></div>
+              <div class="stat"><span class="stat-name">STA</span><span class="stat-track"><span class="stat-fill sta" style="width:83%"></span></span><span class="stat-value">83</span></div>
+              <div class="stat"><span class="stat-name">MNT</span><span class="stat-track"><span class="stat-fill mnt" style="width:76%"></span></span><span class="stat-value">76</span></div>
+            </div>
+            <div class="state-note"><b>現在の状態</b><br><span id="rightState">まだ余裕あり。得意の投げで主導権を狙う。</span></div>
+          </div>
+        </aside>
+      </section>
+    </div>
+    <p class="footnote"><b>表示専用モック:</b> 既存 `result.frames` の `action / hp / phase / mom` を読むだけ。勝敗、技選択、ダメージ、乱数消費は再計算しません。</p>
+  </main>
+
+  <script>
+    const fighter={left:{name:'高津 小春',mhp:236},right:{name:'富岡 加奈子',mhp:241}};
+    const frames=[
+      {turn:1,phase:'Opening',hpL:236,hpR:235,mom:6,action:{kind:'hit',atkSide:'left',move:'低空ドロップキック',moveD:7,moveCat:'strike',dmg:6}},
+      {turn:2,phase:'Opening',hpL:226,hpR:235,mom:-5,action:{kind:'hit',atkSide:'right',move:'スナップ・スープレックス',moveD:7,moveCat:'throw',dmg:10}},
+      {turn:3,phase:'Opening',hpL:226,hpR:235,mom:-2,action:{kind:'miss',atkSide:'left',move:'ジャンピング・エルボー',moveD:8,moveCat:'strike',dmg:0}},
+      {turn:4,phase:'Mid',hpL:226,hpR:224,mom:7,action:{kind:'counter',atkSide:'left',move:'DDT',sourceMove:'ブレーンバスター',moveD:10,moveCat:'throw',dmg:11}},
+      {turn:5,phase:'Mid',hpL:219,hpR:224,mom:-4,action:{kind:'hit',atkSide:'right',move:'バックドロップ',moveD:13,moveCat:'throw',dmg:7}},
+      {turn:6,phase:'End',hpL:219,hpR:209,mom:16,action:{kind:'hit',atkSide:'left',move:'バズソーキック',moveD:14,moveCat:'strike',dmg:15,isCrit:true}},
+      {turn:7,phase:'End',hpL:206,hpR:209,mom:2,action:{kind:'hit',atkSide:'right',move:'パワーボム',moveD:14,moveCat:'throw',dmg:13}},
+      {turn:8,phase:'Climax',hpL:206,hpR:190,mom:23,action:{kind:'hit',atkSide:'left',move:'ツームストン・パイルドライバー',moveD:16,moveCat:'throw',dmg:19,isCrit:true},pinAttempt:'kickout2'}
+    ];
+    const cat={
+      strike:{label:'打撃の攻防',short:'打撃',guide:'間合いと姿勢を崩す打撃。相手がひるんだ瞬間に、次の大きな攻めへつなげる。'},
+      throw:{label:'投げの攻防',short:'投げ',guide:'相手の重心を奪ってマットへ叩きつける攻防。受け身を取らせても体力を削れる。'},
+      submission:{label:'関節・絞めの攻防',short:'関節',guide:'関節や首を制して動きを奪う。耐えるか、逃げ道を作るかが焦点になる。'},
+      aerial:{label:'飛び技の攻防',short:'飛び技',guide:'高い位置や走り込みから全体重を預ける。着地を取れば流れが大きく動く。'},
+      ground:{label:'グラウンドの追撃',short:'追撃',guide:'倒れた相手へ追撃し、起き上がる余裕を奪う攻め。'},
+      rollup:{label:'丸め込みの攻防',short:'丸め込み',guide:'一瞬の体勢変化を利用して押さえ込む。小さな隙がそのまま勝機になる。'}
+    };
+    const moveGuide={
+      '低空ドロップキック':'低い姿勢から両足を突き出し、足元や腹部を狙う。大柄な相手の土台を崩す一手。',
+      'スナップ・スープレックス':'素早く抱え上げて後方へ投げる。組み合いから一瞬で主導権を取る投げ技。',
+      'ジャンピング・エルボー':'跳び上がって肘を振り下ろす強打。距離を詰める勢いが必要なぶん、かわされると隙ができる。',
+      'DDT':'相手の頭部を抱え、自身の落下でマットへ突き刺す切り返し。持ち上げ技への対抗にもなる。',
+      'バックドロップ':'背後から抱え、後方へ大きく投げ落とす。高さと落差が見せ場になる。',
+      'バズソーキック':'旋回しながら放つ高い蹴り。上半身を狙い、流れを変える強烈な打撃。',
+      'パワーボム':'担ぎ上げた相手を強く叩きつける大型投げ。体格とパワーがそのまま迫力になる。',
+      'ツームストン・パイルドライバー':'相手を逆さに抱え込んで落とす大技。決着へ向けて一気に畳みかける場面で映える。'
+    };
+    let current=0,auto=false,timer=null,speed=950;
+    const $=id=>document.getElementById(id);
+    const pct=(v,m)=>Math.max(0,Math.round(v/m*100));
+    const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+    const nameHtml=(name,side)=>`<span class="${side==='left'?'left-name':'right-name'}">${name}</span>`;
+
+    function headline(fr){
+      const a=fr.action,actor=fighter[a.atkSide].name,defSide=a.atkSide==='left'?'right':'left',def=fighter[defSide].name;
+      if(a.kind==='miss')return `${nameHtml(actor,a.atkSide)}の<span class="move-key">${a.move}</span>は空を切る！　${nameHtml(def,defSide)}が間合いを外した。`;
+      if(a.kind==='counter')return `${nameHtml(actor,a.atkSide)}が待っていた！　<span class="move-key">${a.sourceMove}</span>を受け流し、<span class="move-key">${a.move}</span>で切り返す。`;
+      if(a.isCrit)return `${nameHtml(actor,a.atkSide)}の<span class="move-key">${a.move}</span>が深く入った！　${nameHtml(def,defSide)}を大きく揺らす。`;
+      return `${nameHtml(actor,a.atkSide)}が<span class="move-key">${a.move}</span>！　${nameHtml(def,defSide)}の体勢を崩していく。`;
+    }
+    function resultText(a){if(a.kind==='miss')return 'MISS';if(a.kind==='counter')return 'COUNTER';if(a.isCrit)return 'BIG HIT';return 'HIT'}
+    function eventResult(a){if(a.kind==='miss')return 'かわされた';if(a.kind==='counter')return '切り返し成功';if(a.isCrit)return '強烈な一撃';return 'クリーンヒット'}
+
+    function renderTrack(){
+      $('exchangeTrack').innerHTML=frames.slice(0,current+1).map((fr,i)=>`<button class="exchange-event${i===current?' current':''}" data-index="${i}"><span class="event-turn">T${fr.turn}</span><span><div class="event-move">${esc(fr.action.move)}</div><div class="event-result">${eventResult(fr.action)}</div></span></button>`).join('');
+      document.querySelectorAll('.exchange-event').forEach(btn=>btn.addEventListener('click',()=>setFrame(Number(btn.dataset.index),false)));
+    }
+    function animate(fr){
+      const a=fr.action,arena=$('arena');
+      arena.className=`arena-shell attack-${a.atkSide}${a.kind==='miss'?' miss':''}${a.kind==='counter'?' counter':''}`;
+      const target=a.atkSide==='left'?$('cardRight'):$('cardLeft');
+      $('cardLeft').classList.remove('damaged');$('cardRight').classList.remove('damaged');
+      void arena.offsetWidth;
+      if(a.kind!=='miss'){
+        target.classList.add('damaged');
+        $('impact').textContent=a.kind==='counter'?'COUNTER!':a.isCrit?'BIG HIT!':'HIT!';
+        $('impact').classList.remove('show');void $('impact').offsetWidth;$('impact').classList.add('show');
+      }
+    }
+    function setFrame(index,fromAuto){
+      current=Math.max(0,Math.min(index,frames.length-1));
+      const fr=frames[current],a=fr.action,g=cat[a.moveCat]||cat.strike;
+      const lp=pct(fr.hpL,fighter.left.mhp),rp=pct(fr.hpR,fighter.right.mhp);
+      $('hudTurn').textContent=`TURN ${fr.turn}`;$('hudPhase').textContent=fr.phase.toUpperCase();$('phaseBadge').textContent=`${fr.phase.toUpperCase()} · T${fr.turn}`;
+      $('hpLPct').textContent=`${lp}%`;$('hpRPct').textContent=`${rp}%`;$('hpLFill').style.width=`${lp}%`;$('hpRFill').style.width=`${rp}%`;
+      $('hpLFill').classList.toggle('danger',lp<=35);$('hpRFill').classList.toggle('danger',rp<=35);
+      $('headline').innerHTML=headline(fr);$('moveCat').textContent=g.label;$('moveName').textContent=a.move;$('moveGuide').textContent=moveGuide[a.move]||g.guide;
+      const data=$('dataToggle').checked?(a.kind==='miss'?' · DMG 0':` · DMG ${a.dmg} / POWER ${a.moveD}`):'';
+      $('resultChip').textContent=resultText(a)+data;$('resultChip').classList.toggle('big',!!a.isCrit||a.kind==='counter');
+      $('rightState').textContent=rp<=80?'ダメージが積み重なっている。次の攻防をしのげるか。':'まだ余裕あり。得意の投げで主導権を狙う。';
+      $('prevBtn').disabled=current===0;$('nextBtn').textContent=current===frames.length-1?'↻ REPLAY FROM START':'▶ NEXT EXCHANGE';
+      renderTrack();animate(fr);
+      if(fromAuto&&current===frames.length-1)stopAuto();
+    }
+    function next(){setFrame(current===frames.length-1?0:current+1,true)}
+    function stopAuto(){auto=false;clearTimeout(timer);$('autoBtn').textContent='AUTO: OFF'}
+    function autoLoop(){if(!auto)return;next();timer=setTimeout(autoLoop,speed)}
+    $('nextBtn').addEventListener('click',next);$('prevBtn').addEventListener('click',()=>setFrame(current-1,false));
+    $('autoBtn').addEventListener('click',()=>{auto=!auto;$('autoBtn').textContent=`AUTO: ${auto?'ON':'OFF'}`;if(auto)autoLoop();else clearTimeout(timer)});
+    $('dataToggle').addEventListener('change',()=>setFrame(current,false));
+    document.querySelectorAll('[data-speed]').forEach(btn=>btn.addEventListener('click',()=>{speed=Number(btn.dataset.speed);document.querySelectorAll('[data-speed]').forEach(b=>b.classList.toggle('active',b===btn))}));
+    document.addEventListener('keydown',e=>{if(e.code==='Space'&&e.target===document.body){e.preventDefault();next()}});
+    setFrame(0,false);
+  </script>
+</body>
+</html>

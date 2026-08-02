@@ -231,3 +231,80 @@
   .fighter-panel:hover,
   .player-card:hover { transform: none; }
 }
+
+/* Single battle presentation v4 */
+@media (max-width: 700px) {
+  .app {
+    padding-bottom: calc(108px + env(safe-area-inset-bottom));
+  }
+
+  .wm-presentation { display: block; }
+  .wm-live-ring {
+    width: 100%;
+    height: clamp(340px, 112vw, 460px);
+    min-height: 340px;
+    margin-bottom: 7px;
+  }
+  .wm-live-ring .wm-ring-fighter .portrait-area { height: 100%; }
+  .wm-live-ring .wm-ring-fighter { width: 52%; }
+  .wm-live-ring .wm-ring-fighter.left { left: -1%; }
+  .wm-live-ring .wm-ring-fighter.right { right: -1%; }
+  .wm-live-ring .wm-commentary {
+    bottom: 8px;
+    width: calc(100% - 14px);
+    padding: 9px 12px 14px;
+  }
+  .wm-live-ring .wm-commentary .nar-line,
+  .wm-live-ring .wm-commentary .nar-line.nar-main { font-size: 13px; }
+  .wm-live-ring .wm-commentary .nar-empty { font-size: 11px; }
+  .wm-camera-chip,
+  .wm-ring-nameplate { display: none; }
+  .wm-ring-arrow-layer .attack-arrow { right: 18%; left: 18%; }
+
+  .wm-lower-dock {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 7px;
+    min-height: 0;
+    height: auto;
+  }
+  .wm-exchange-panel {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    height: 174px;
+  }
+  .wm-stat-card {
+    grid-row: 2;
+    min-height: 154px;
+    padding: 7px;
+  }
+  .wm-stat-card,
+  .wm-stat-card.right { grid-template-columns: minmax(0, 1fr); }
+  .wm-stat-upper { display: none; }
+  .wm-stat-card .ability-bars { display: flex; }
+  .wm-stat-head button { font-size: 11px; }
+  .wm-stat-head strong { font-size: 10px; }
+  .wm-stat-card .ab-row { gap: 3px; }
+  .wm-stat-card .ab-name { font-size: 7px; }
+  .wm-stat-card .ab-val { font-size: 7px; }
+  .wm-exchange-grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); }
+
+  .controls-sub {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "main main" "left right";
+    min-height: 96px;
+    padding-top: 7px;
+    gap: 5px;
+  }
+  .wm-control-center { grid-area: main; }
+  .wm-control-left { grid-area: left; justify-content: flex-end; }
+  .wm-control-right { grid-area: right; justify-content: flex-start; }
+  .controls-sub .btn-main { width: min(100%, 360px); min-height: 40px; padding: 8px 12px; }
+  .wm-prev-btn,
+  .wm-number-toggle,
+  .wm-control-set > span { display: none; }
+  .controls-sub .btn-auto { width: 74px; min-width: 0; min-height: 30px; }
+  .controls-sub .wm-speed-btn,
+  .wm-camera-buttons button { min-width: 28px; height: 27px; padding: 0 5px; }
+}

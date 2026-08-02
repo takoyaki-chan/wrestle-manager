@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wrestle Manager — Battle Presentation Mockup v1</title>
+  <style>
+    :root {
+      --bg: #090b12;
+      --panel: rgba(20, 24, 36, .92);
+      --panel-strong: rgba(27, 32, 47, .96);
+      --line: rgba(232, 212, 156, .17);
+      --ink: #f5f2e9;
+      --sub: #aab1c0;
+      --muted: #646d80;
+      --gold: #e8ca78;
+      --left: #6db7e5;
+      --right: #ec7586;
+      --danger: #ef6075;
+      --ok: #77d2a0;
+      --shadow: 0 22px 55px rgba(0,0,0,.38);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 50% -15%, rgba(96, 92, 166, .25), transparent 42%),
+        radial-gradient(circle at 3% 74%, rgba(45, 130, 185, .12), transparent 36%),
+        var(--bg);
+      font-family: "Yu Gothic UI", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    }
+
+    button { font: inherit; }
+    button:focus-visible { outline: 2px solid var(--gold); outline-offset: 3px; }
+
+    .mock-banner {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 8px 20px;
+      border-bottom: 1px solid rgba(232, 202, 120, .28);
+      background: #191525;
+      color: #f5dd9a;
+      font-size: 12px;
+      letter-spacing: .08em;
+    }
+
+    .app { max-width: 1540px; margin: 0 auto; padding: 22px 22px 30px; }
+
+    .hud {
+      padding: 13px 18px 15px;
+      background: linear-gradient(105deg, rgba(24, 41, 59, .92), rgba(16, 19, 29, .94) 48%, rgba(68, 25, 38, .92));
+      border: 1px solid var(--line);
+      border-radius: 14px 14px 4px 4px;
+      box-shadow: var(--shadow);
+    }
+
+    .hud-main { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 18px; }
+    .hud-person { display: flex; align-items: center; gap: 10px; min-width: 0; }
+    .hud-person.right { flex-direction: row-reverse; text-align: right; }
+    .hud-face { width: 38px; height: 38px; object-fit: cover; object-position: top; border-radius: 50%; border: 1px solid currentColor; background: #17202a; }
+    .hud-person.left { color: var(--left); }
+    .hud-person.right { color: var(--right); }
+    .hud-name { overflow: hidden; color: var(--ink); font-weight: 800; font-size: 17px; text-overflow: ellipsis; white-space: nowrap; }
+    .hud-style { color: var(--sub); font-size: 11px; }
+    .hud-center { text-align: center; }
+    .turn { color: var(--gold); font-weight: 800; font-size: 13px; letter-spacing: .16em; }
+    .phase { display: inline-block; margin-top: 3px; padding: 2px 9px; border: 1px solid rgba(232, 202, 120, .3); border-radius: 999px; color: #e9dfbf; font-size: 11px; letter-spacing: .1em; }
+    .momentum { display: grid; grid-template-columns: 1fr 1fr; height: 7px; margin-top: 13px; overflow: hidden; border-radius: 99px; background: #332d38; }
+    .momentum > span { transition: width .45s ease; }
+    .mom-left { justify-self: end; width: 53%; background: linear-gradient(90deg, #478cc1, #8bcff7); }
+    .mom-right { width: 47%; background: linear-gradient(90deg, #fb8b98, #bc4357); }
+    .hp-row { display: grid; grid-template-columns: 116px 1fr 52px 52px 1fr 116px; align-items: center; gap: 8px; margin-top: 9px; font-size: 11px; }
+    .hp-name { color: var(--sub); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hp-name.right { text-align: right; }
+    .hp-number { color: #e9edf6; font-weight: 800; text-align: center; }
+    .hp-track { height: 6px; overflow: hidden; border-radius: 9px; background: rgba(255,255,255,.12); }
+    .hp-fill { height: 100%; transition: width .45s ease, background .45s ease; }
+    .hp-fill.left { float: right; background: var(--left); }
+    .hp-fill.right { background: var(--right); }
+    .hp-fill.danger { background: var(--danger); }
+
+    .view-switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 18px 2px 10px; }
+    .view-title { color: #d8dbe3; font-weight: 800; font-size: 15px; }
+    .view-note { color: var(--muted); font-size: 12px; }
+    .toggle { display: inline-flex; align-items: center; gap: 8px; color: var(--sub); font-size: 12px; cursor: pointer; user-select: none; }
+    .toggle input { accent-color: var(--gold); }
+
+    .battle-grid { display: grid; grid-template-columns: minmax(224px, 1fr) minmax(430px, 1.7fr) minmax(224px, 1fr); gap: 15px; align-items: stretch; }
+    .card, .scene, .history { border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow); }
+    .fighter-card { position: relative; min-height: 558px; overflow: hidden; border-radius: 9px; }
+    .fighter-card.left { border-top: 3px solid var(--left); }
+    .fighter-card.right { border-top: 3px solid var(--right); }
+    .fighter-card::after { position: absolute; z-index: 0; inset: 0; content: ""; background: linear-gradient(180deg, transparent 45%, rgba(10,12,19,.88) 75%); pointer-events: none; }
+    .fighter-card.hit::before { position: absolute; z-index: 5; inset: 0; content: ""; background: rgba(255, 83, 107, .26); animation: flash .45s ease-out; pointer-events: none; }
+    .fighter-card.countered::before { position: absolute; z-index: 5; inset: 0; content: "COUNTER"; display: grid; place-items: center; color: #ffe29a; background: rgba(106, 47, 23, .31); font-weight: 900; font-size: 29px; letter-spacing: .1em; animation: flash .7s ease-out; pointer-events: none; }
+    @keyframes flash { from { opacity: 1; } to { opacity: 0; } }
+    .portrait-wrap { position: absolute; z-index: 1; inset: 0; display: flex; justify-content: center; align-items: flex-start; padding-top: 16px; }
+    .portrait-wrap img { width: min(100%, 340px); height: 338px; object-fit: contain; object-position: top center; filter: drop-shadow(0 14px 17px rgba(0,0,0,.62)); }
+    .fighter-info { position: absolute; z-index: 2; right: 15px; bottom: 15px; left: 15px; }
+    .fighter-card.right .fighter-info { text-align: right; }
+    .fighter-role { color: var(--muted); font-size: 10px; letter-spacing: .13em; text-transform: uppercase; }
+    .fighter-name { margin: 2px 0 3px; color: #fff; font-size: 24px; font-weight: 900; }
+    .fighter-meta { color: var(--gold); font-size: 12px; font-weight: 700; }
+    .ovr { display: inline-block; margin-left: 5px; color: #fff4c7; font-size: 15px; letter-spacing: .04em; }
+    .stats { display: grid; gap: 6px; margin-top: 14px; }
+    .stat { display: grid; grid-template-columns: 31px 1fr 24px; align-items: center; gap: 6px; font-size: 10px; }
+    .fighter-card.right .stat { grid-template-columns: 24px 1fr 31px; }
+    .fighter-card.right .stat-label { order: 3; }
+    .fighter-card.right .stat-value { order: 1; }
+    .stat-label { color: #aeb5c5; font-weight: 700; letter-spacing: .08em; }
+    .stat-value { color: #e8ebf0; font-weight: 800; text-align: right; }
+    .fighter-card.right .stat-value { text-align: left; }
+    .stat-track { height: 5px; overflow: hidden; border-radius: 3px; background: rgba(255,255,255,.12); }
+    .stat-fill { height: 100%; border-radius: 3px; }
+    .pwr { background: #e96b72; }.spd { background: #6bb9e4; }.tec { background: #7ecfaf; }.sta { background: #e1b868; }.mnt { background: #aa8bdb; }
+    .always-on { margin-top: 12px; padding: 7px 9px; border: 1px solid rgba(232,202,120,.2); border-radius: 5px; background: rgba(0,0,0,.26); color: var(--sub); font-size: 11px; line-height: 1.55; }
+    .always-on strong { color: #f0d997; }
+
+    .scene { position: relative; min-height: 558px; overflow: hidden; border-radius: 9px; background:
+      linear-gradient(180deg, rgba(22,25,41,.97), rgba(13,16,27,.96)),
+      var(--panel-strong); }
+    .scene::before { position: absolute; inset: 0; content: ""; opacity: .33; background-image: linear-gradient(rgba(255,255,255,.028) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.028) 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; }
+    .scene-header { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 12px 15px; border-bottom: 1px solid var(--line); }
+    .eyebrow { color: var(--gold); font-size: 10px; font-weight: 800; letter-spacing: .15em; text-transform: uppercase; }
+    .event-type { padding: 4px 9px; border: 1px solid rgba(255,255,255,.14); border-radius: 99px; color: var(--sub); font-size: 11px; }
+    .stage { position: relative; z-index: 1; display: grid; min-height: 233px; place-items: center; overflow: hidden; border-bottom: 1px solid var(--line); }
+    .ring { position: absolute; right: 8%; bottom: 19px; left: 8%; height: 108px; transform: perspective(440px) rotateX(57deg); border: 5px solid #dfd6b6; background: repeating-linear-gradient(90deg, rgba(220,214,192,.88), rgba(220,214,192,.88) 18px, rgba(195,183,157,.9) 18px, rgba(195,183,157,.9) 36px); box-shadow: 0 8px 0 #9c1532, 0 0 0 8px #242739, 0 22px 28px rgba(0,0,0,.45); }
+    .ring::before, .ring::after { position: absolute; top: -35px; bottom: -35px; width: 5px; content: ""; background: #c4a65f; box-shadow: 0 0 13px rgba(232,202,120,.5); }
+    .ring::before { left: 11%; }.ring::after { right: 11%; }
+    .stage-fighter { position: absolute; bottom: 30px; width: 180px; height: 210px; object-fit: contain; object-position: bottom; filter: drop-shadow(0 12px 12px rgba(0,0,0,.7)); transition: transform .5s cubic-bezier(.2,.8,.2,1), filter .35s ease; }
+    .stage-fighter.left { left: 13%; }.stage-fighter.right { right: 13%; transform: scaleX(-1); }
+    .stage.attack-left .stage-fighter.left { transform: translateX(47px) scale(1.04); filter: drop-shadow(0 0 18px rgba(109,183,229,.55)); }
+    .stage.attack-right .stage-fighter.right { transform: translateX(-47px) scaleX(-1) scale(1.04); filter: drop-shadow(0 0 18px rgba(236,117,134,.55)); }
+    .stage.counter .stage-fighter.left, .stage.counter .stage-fighter.right { animation: recoil .48s ease-out; }
+    @keyframes recoil { 0% { filter: brightness(2.2) drop-shadow(0 0 22px #ffdc82); } 100% { filter: none; } }
+    .move-sweep { position: absolute; top: 44%; z-index: 3; width: 48%; height: 4px; border-radius: 5px; opacity: 0; background: linear-gradient(90deg, transparent, var(--gold), transparent); box-shadow: 0 0 16px var(--gold); }
+    .stage.attack-left .move-sweep { left: 21%; animation: sweep-l .7s ease-out; }.stage.attack-right .move-sweep { right: 21%; animation: sweep-r .7s ease-out; }.stage.counter .move-sweep { animation: sweep-l .7s ease-out; background: linear-gradient(90deg, transparent, #ff9668, transparent); }
+    @keyframes sweep-l { 0% { transform: scaleX(.1); transform-origin: left; opacity: 0; } 30% { opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+    @keyframes sweep-r { 0% { transform: scaleX(.1); transform-origin: right; opacity: 0; } 30% { opacity: 1; } 100% { transform: scaleX(1); opacity: 0; } }
+    .impact { position: absolute; z-index: 4; top: 43%; left: 50%; display: grid; width: 72px; height: 72px; transform: translate(-50%,-50%) scale(.4); place-items: center; border: 2px solid rgba(255,234,174,.9); border-radius: 50%; color: #fff0c4; font-size: 11px; font-weight: 900; letter-spacing: .08em; opacity: 0; }
+    .impact.show { animation: impact .58s ease-out; }
+    @keyframes impact { 0% { transform: translate(-50%,-50%) scale(.4); opacity: 1; } 100% { transform: translate(-50%,-50%) scale(2.1); opacity: 0; } }
+
+    .call { position: relative; z-index: 2; padding: 17px 19px 10px; }
+    .call .speaker { color: var(--muted); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+    .headline { min-height: 65px; margin: 7px 0 0; font-size: clamp(20px, 2.2vw, 28px); font-weight: 900; line-height: 1.42; letter-spacing: .01em; }
+    .headline .left-name { color: #9cd7fb; }.headline .right-name { color: #ff9ba7; }.headline .key { color: #ffe29a; }
+    .guide { position: relative; z-index: 2; display: grid; grid-template-columns: auto 1fr; gap: 12px; margin: 7px 15px; padding: 12px; border-left: 3px solid var(--gold); border-radius: 4px; background: rgba(232,202,120,.08); }
+    .guide-icon { display: grid; width: 36px; height: 36px; place-items: center; border-radius: 8px; background: rgba(232,202,120,.16); color: #ffdf86; font-size: 19px; }
+    .guide-kind { color: #f1d487; font-size: 11px; font-weight: 900; letter-spacing: .12em; }
+    .guide-text { margin-top: 3px; color: #e1e4eb; font-size: 12px; line-height: 1.55; }
+    .detail { position: relative; z-index: 2; margin: 7px 15px 14px; border: 1px solid rgba(255,255,255,.1); border-radius: 6px; background: rgba(4,6,11,.28); }
+    .detail summary { padding: 9px 11px; color: var(--sub); cursor: pointer; font-size: 11px; font-weight: 700; }
+    .detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; border-top: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.08); }
+    .detail-cell { padding: 8px 7px; background: rgba(8,10,16,.62); text-align: center; }
+    .detail-label { color: var(--muted); font-size: 9px; letter-spacing: .08em; }
+    .detail-value { margin-top: 2px; color: #f3f3ef; font-size: 13px; font-weight: 900; }
+    .detail-value.damage { color: #ff9aa7; }
+    .numbers-off { display: none; }
+
+    .history { padding: 13px; border-radius: 9px; }
+    .history-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+    .history-title { color: #e9e4d4; font-size: 12px; font-weight: 900; letter-spacing: .12em; }
+    .history-sub { color: var(--muted); font-size: 10px; }
+    .timeline { display: grid; gap: 6px; max-height: 465px; margin-top: 10px; overflow: auto; padding-right: 2px; }
+    .event { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 8px; width: 100%; padding: 8px; border: 1px solid transparent; border-radius: 6px; color: var(--ink); background: rgba(255,255,255,.025); cursor: pointer; text-align: left; }
+    .event:hover { background: rgba(255,255,255,.06); }.event.current { border-color: rgba(232,202,120,.6); background: rgba(232,202,120,.1); }
+    .event-turn { color: var(--muted); font-size: 10px; font-weight: 800; }
+    .event-name { overflow: hidden; font-size: 12px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+    .event-caption { margin-top: 2px; color: var(--sub); font-size: 10px; }
+    .event-type-mini { color: #edda9f; font-size: 10px; white-space: nowrap; }
+    .legend { margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,.08); color: var(--muted); font-size: 10px; line-height: 1.6; }
+
+    .controls { display: flex; align-items: center; justify-content: center; gap: 9px; margin-top: 16px; }
+    .button { min-height: 40px; padding: 0 15px; border: 1px solid rgba(232,202,120,.35); border-radius: 5px; color: #fff0c4; background: rgba(232,202,120,.08); cursor: pointer; font-size: 12px; font-weight: 800; letter-spacing: .06em; }
+    .button:hover { background: rgba(232,202,120,.19); }.button.primary { min-width: 168px; border-color: rgba(232,202,120,.82); background: linear-gradient(135deg, #715528, #b68a38); color: #fff; }.button.primary:hover { filter: brightness(1.12); }
+    .button:disabled { opacity: .38; cursor: not-allowed; }
+    .speed { display: flex; gap: 4px; margin-left: 4px; }.speed button { min-width: 37px; min-height: 32px; padding: 0 7px; border: 1px solid #4d5161; border-radius: 4px; color: var(--sub); background: #171b27; cursor: pointer; font-size: 11px; }.speed button.active { border-color: var(--gold); color: #ffe7a7; background: #473a25; }
+    .footnote { margin: 14px auto 0; color: var(--muted); font-size: 11px; line-height: 1.65; text-align: center; }
+    .footnote b { color: #abb5c5; }
+
+    @media (max-width: 960px) {
+      .battle-grid { grid-template-columns: 1fr 1fr; }.scene { grid-column: 1 / -1; grid-row: 1; }.fighter-card { min-height: 390px; }.portrait-wrap img { height: 230px; }.fighter-info { bottom: 11px; }.history { grid-column: 1 / -1; }.timeline { grid-template-columns: repeat(2, 1fr); max-height: none; }
+    }
+    @media (max-width: 600px) {
+      .mock-banner { align-items: flex-start; flex-direction: column; padding: 8px 12px; gap: 3px; }.app { padding: 12px; }.hud { padding: 12px; }.hud-main { gap: 6px; }.hud-face { display: none; }.hud-name { font-size: 13px; }.hud-style { display: none; }.hp-row { grid-template-columns: 1fr 38px 38px 1fr; }.hp-name { display: none; }.hp-track.left { grid-column: 1; }.hp-number.left { grid-column: 2; }.hp-number.right { grid-column: 3; }.hp-track.right { grid-column: 4; }.battle-grid { grid-template-columns: 1fr; }.scene { grid-column: auto; }.fighter-card { min-height: 372px; }.history { grid-column: auto; }.stage-fighter { width: 145px; }.stage-fighter.left { left: 5%; }.stage-fighter.right { right: 5%; }.timeline { grid-template-columns: 1fr; }.view-switch { align-items: flex-start; flex-direction: column; }.controls { flex-wrap: wrap; }.button.primary { order: -1; width: 100%; }.headline { min-height: 76px; }.guide { margin-right: 10px; margin-left: 10px; }.detail { margin-right: 10px; margin-left: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="mock-banner">
+    <span>INTERACTIVE MOCKUP · BATTLE PRESENTATION v1</span>
+    <span>本番のシミュレーション・乱数・`frames` は変更しない検証用画面</span>
+  </div>
+  <main class="app">
+    <section class="hud" aria-label="試合状況">
+      <div class="hud-main">
+        <div class="hud-person left"><img class="hud-face" src="../../../image/face_takatsu_k.png" alt=""><div><div class="hud-name">高津 小春</div><div class="hud-style">STRIKER · OVR 74</div></div></div>
+        <div class="hud-center"><div class="turn" id="turn">TURN 1</div><div class="phase" id="phase">OPENING</div></div>
+        <div class="hud-person right"><img class="hud-face" src="../../../image/face_tomioka_k.png" alt=""><div><div class="hud-name">富岡 加奈子</div><div class="hud-style">GRAPPLER · OVR 75</div></div></div>
+      </div>
+      <div class="momentum" aria-label="モメンタム"><span class="mom-left" id="momLeft"></span><span class="mom-right" id="momRight"></span></div>
+      <div class="hp-row">
+        <span class="hp-name">高津 小春</span><div class="hp-track left"><div class="hp-fill left" id="hpLeftFill"></div></div><span class="hp-number left" id="hpLeft">100%</span>
+        <span class="hp-number right" id="hpRight">100%</span><div class="hp-track right"><div class="hp-fill right" id="hpRightFill"></div></div><span class="hp-name right">富岡 加奈子</span>
+      </div>
+    </section>
+
+    <div class="view-switch">
+      <div><div class="view-title">いま何が起きているかを、技名だけに頼らず伝える</div><div class="view-note">画面中央は実況・技の狙い・結果の順。能力値とOVRは両選手カードに常時表示。</div></div>
+      <label class="toggle"><input id="numberToggle" type="checkbox" checked> 正確な数値を表示</label>
+    </div>
+
+    <section class="battle-grid" aria-label="観戦画面モック">
+      <article class="card fighter-card left" id="cardLeft">
+        <div class="portrait-wrap"><img src="../../../image/stand/stand_takatsu_k.webp" alt="高津小春"></div>
+        <div class="fighter-info">
+          <div class="fighter-role">NEUTRAL · STRIKER</div><div class="fighter-name">高津 小春</div><div class="fighter-meta">打撃で主導権を作る <span class="ovr">OVR 74</span></div>
+          <div class="stats" aria-label="高津小春の能力値">
+            <div class="stat"><span class="stat-label">PWR</span><span class="stat-track"><span class="stat-fill pwr" style="width:68%"></span></span><span class="stat-value">68</span></div>
+            <div class="stat"><span class="stat-label">SPD</span><span class="stat-track"><span class="stat-fill spd" style="width:84%"></span></span><span class="stat-value">84</span></div>
+            <div class="stat"><span class="stat-label">TEC</span><span class="stat-track"><span class="stat-fill tec" style="width:72%"></span></span><span class="stat-value">72</span></div>
+            <div class="stat"><span class="stat-label">STA</span><span class="stat-track"><span class="stat-fill sta" style="width:70%"></span></span><span class="stat-value">70</span></div>
+            <div class="stat"><span class="stat-label">MNT</span><span class="stat-track"><span class="stat-fill mnt" style="width:78%"></span></span><span class="stat-value">78</span></div>
+          </div>
+          <div class="always-on"><strong>能力の見方</strong><br>PWR: 威力 / SPD: 機動力 / TEC: 命中・切り返し / STA・MNT: 守りと粘り</div>
+        </div>
+      </article>
+
+      <article class="scene" aria-live="polite">
+        <header class="scene-header"><span class="eyebrow">LIVE RING · PLAY BY PLAY</span><span class="event-type" id="eventType">攻防</span></header>
+        <div class="stage attack-left" id="stage">
+          <div class="ring"></div><img class="stage-fighter left" src="../../../image/stand/stand_takatsu_k.webp" alt=""><img class="stage-fighter right" src="../../../image/stand/stand_tomioka_k.webp" alt="">
+          <div class="move-sweep" id="moveSweep"></div><div class="impact" id="impact">HIT!</div>
+        </div>
+        <div class="call"><div class="speaker">実況</div><div class="headline" id="headline">ゴング！　まずは互いの出方をうかがう。</div></div>
+        <div class="guide"><div class="guide-icon" id="guideIcon">◎</div><div><div class="guide-kind" id="guideKind">試合開始</div><div class="guide-text" id="guideText">「NEXT EXCHANGE」で、確定済みフレームを一つずつ再生します。</div></div></div>
+        <details class="detail" id="detail"><summary>この攻防の詳細データを確認</summary><div class="detail-grid"><div class="detail-cell"><div class="detail-label">技の威力</div><div class="detail-value" id="movePower">—</div></div><div class="detail-cell"><div class="detail-label">与ダメージ</div><div class="detail-value damage" id="damage">—</div></div><div class="detail-cell"><div class="detail-label">FRAME</div><div class="detail-value" id="frameNo">0 / 8</div></div></div></details>
+      </article>
+
+      <aside class="history" aria-label="攻防の記録">
+        <div class="history-head"><span class="history-title">EXCHANGE TRACK</span><span class="history-sub">クリックで見返す</span></div><div class="timeline" id="timeline"></div>
+        <div class="legend">ここは結果の時系列。中央の「実況」と「技の見どころ」は、選んだフレームを初心者向けに説明します。未来のフレームは表示しないため、結果の先読みはしません。</div>
+      </aside>
+
+      <article class="card fighter-card right" id="cardRight">
+        <div class="portrait-wrap"><img src="../../../image/stand/stand_tomioka_k.webp" alt="富岡加奈子"></div>
+        <div class="fighter-info">
+          <div class="fighter-role">NEUTRAL · GRAPPLER</div><div class="fighter-name">富岡 加奈子</div><div class="fighter-meta">投げで体勢を崩す <span class="ovr">OVR 75</span></div>
+          <div class="stats" aria-label="富岡加奈子の能力値">
+            <div class="stat"><span class="stat-label">PWR</span><span class="stat-track"><span class="stat-fill pwr" style="width:88%"></span></span><span class="stat-value">88</span></div>
+            <div class="stat"><span class="stat-label">SPD</span><span class="stat-track"><span class="stat-fill spd" style="width:61%"></span></span><span class="stat-value">61</span></div>
+            <div class="stat"><span class="stat-label">TEC</span><span class="stat-track"><span class="stat-fill tec" style="width:68%"></span></span><span class="stat-value">68</span></div>
+            <div class="stat"><span class="stat-label">STA</span><span class="stat-track"><span class="stat-fill sta" style="width:83%"></span></span><span class="stat-value">83</span></div>
+            <div class="stat"><span class="stat-label">MNT</span><span class="stat-track"><span class="stat-fill mnt" style="width:76%"></span></span><span class="stat-value">76</span></div>
+          </div>
+          <div class="always-on"><strong>現在の状態</strong><br><span id="rightStatus">まだ余裕あり。組み合いで力を見せたい。</span></div>
+        </div>
+      </article>
+    </section>
+
+    <nav class="controls" aria-label="再生操作">
+      <button class="button" id="prev">← 前の攻防</button><button class="button primary" id="next">▶ NEXT EXCHANGE</button><button class="button" id="auto">AUTO: OFF</button>
+      <div class="speed" aria-label="再生速度"><button data-speed="1800">1×</button><button class="active" data-speed="1000">2×</button><button data-speed="540">3×</button></div>
+    </nav>
+    <p class="footnote"><b>モックの範囲:</b> 画面側が既存の `frame.action`（技名・カテゴリ・ダメージ・命中結果）を説明文へ変換するのみです。技選択、ダメージ、HP、モメンタム、判定、乱数消費は一切計算しません。</p>
+  </main>
+
+  <script>
+    const players = {
+      left: { name: '高津 小春', short: '高津', mhp: 236 },
+      right: { name: '富岡 加奈子', short: '富岡', mhp: 241 }
+    };
+
+    // 本番で受け取る result.frames と同じく、表示側だけが読む値のサンプル。
+    const frames = [
+      { turn: 1, phase: 'Opening', hpL: 236, hpR: 235, mom: 6, action: { kind: 'hit', atkSide: 'left', move: '低空ドロップキック', moveD: 7, moveCat: 'strike', dmg: 6 } },
+      { turn: 2, phase: 'Opening', hpL: 226, hpR: 235, mom: -5, action: { kind: 'hit', atkSide: 'right', move: 'スナップ・スープレックス', moveD: 7, moveCat: 'throw', dmg: 10 } },
+      { turn: 3, phase: 'Opening', hpL: 226, hpR: 235, mom: -2, action: { kind: 'miss', atkSide: 'left', move: 'ジャンピング・エルボー', moveD: 8, moveCat: 'strike', dmg: 0 } },
+      { turn: 4, phase: 'Mid', hpL: 226, hpR: 224, mom: 7, action: { kind: 'counter', atkSide: 'left', move: 'DDT', sourceMove: 'ブレーンバスター', moveD: 10, moveCat: 'throw', dmg: 11 } },
+      { turn: 5, phase: 'Mid', hpL: 219, hpR: 224, mom: -4, action: { kind: 'hit', atkSide: 'right', move: 'バックドロップ', moveD: 13, moveCat: 'throw', dmg: 7 } },
+      { turn: 6, phase: 'End', hpL: 219, hpR: 209, mom: 16, action: { kind: 'hit', atkSide: 'left', move: 'バズソーキック', moveD: 14, moveCat: 'strike', dmg: 15, isCrit: true } },
+      { turn: 7, phase: 'End', hpL: 206, hpR: 209, mom: 2, action: { kind: 'hit', atkSide: 'right', move: 'パワーボム', moveD: 14, moveCat: 'throw', dmg: 13 } },
+      { turn: 8, phase: 'Climax', hpL: 206, hpR: 190, mom: 23, action: { kind: 'hit', atkSide: 'left', move: 'ツームストン・パイルドライバー', moveD: 16, moveCat: 'throw', dmg: 19, isCrit: true }, pinAttempt: 'kickout2' }
+    ];
+
+    const categoryGuide = {
+      strike: { icon: '✦', label: '打撃の攻防', text: '間合いと姿勢を崩す打撃。相手がひるんだ瞬間に、次の大きな攻めへつなげます。' },
+      throw: { icon: '↘', label: '投げの攻防', text: '相手の重心を持ち上げ、マットへ叩きつける攻防。体勢を取らせないことが狙いです。' },
+      submission: { icon: '⌁', label: '関節・絞めの攻防', text: '関節や首を制して、相手の動きを奪う攻め。耐えられるか、逃げ道を作れるかが焦点です。' },
+      aerial: { icon: '⤢', label: '飛び技の攻防', text: '走り込みや高い位置から全体重を預ける飛び技。着地を取れれば流れを一気に奪います。' },
+      ground: { icon: '↓', label: 'グラウンドの追撃', text: '倒れた相手に追撃して、起き上がる余裕を奪う攻めです。' },
+      rollup: { icon: '◎', label: '丸め込みの攻防', text: '一瞬の体勢変化を利用した押さえ込み。少ない隙を勝機へ変えます。' }
+    };
+    const moveNotes = {
+      '低空ドロップキック': '低い姿勢から両足を突き出し、相手の足元や腹部を狙う。大柄な相手の土台を崩す一手。',
+      'スナップ・スープレックス': '素早く抱え上げて後方へ投げる。組み合いから一瞬で主導権を取る投げ技。',
+      'ジャンピング・エルボー': '跳び上がって肘を振り下ろす強打。距離を詰める勢いが必要なぶん、かわされると隙ができる。',
+      'DDT': '相手の頭部を抱え、自身の落下でマットへ突き刺す切り返し技。持ち上げ技への対抗にもなる。',
+      'バックドロップ': '背後から抱え、後方へ大きく投げ落とす。投げの高さと落差でダメージを与える。',
+      'バズソーキック': '旋回しながら放つ高い蹴り。相手の上半身を狙い、流れを変える強烈な打撃。',
+      'パワーボム': '担ぎ上げた相手を強く叩きつける大型投げ。体格差とパワーが見せ場になる。',
+      'ツームストン・パイルドライバー': '相手を逆さに抱え込んで落とす大技。決着へ向けて一気に畳みかける場面で映える。'
+    };
+
+    let current = -1;
+    let auto = false;
+    let timer = null;
+    let speed = 1000;
+    const $ = (id) => document.getElementById(id);
+
+    function pct(value, max) { return Math.max(0, Math.round(value / max * 100)); }
+    function attackName(side) { return side === 'left' ? players.left.name : players.right.name; }
+    function defenseName(side) { return side === 'left' ? players.right.name : players.left.name; }
+    function escape(text) { return text.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#039;' })[c]); }
+    function colorName(name, side) { return `<span class="${side === 'left' ? 'left-name' : 'right-name'}">${name}</span>`; }
+
+    function buildHeadline(frame) {
+      const action = frame.action;
+      const actor = attackName(action.atkSide);
+      const defender = defenseName(action.atkSide);
+      if (action.kind === 'miss') return `${colorName(actor, action.atkSide)}の<span class="key">${action.move}</span>は空を切る！　${colorName(defender, action.atkSide === 'left' ? 'right' : 'left')}が間合いを外した。`;
+      if (action.kind === 'counter') return `${colorName(actor, action.atkSide)}が待っていた！　<span class="key">${action.sourceMove}</span>を受け流し、<span class="key">${action.move}</span>で切り返す。`;
+      if (action.isCrit) return `${colorName(actor, action.atkSide)}の<span class="key">${action.move}</span>が深く入った！　${colorName(defender, action.atkSide === 'left' ? 'right' : 'left')}を大きく揺らす。`;
+      return `${colorName(actor, action.atkSide)}が<span class="key">${action.move}</span>！　${colorName(defender, action.atkSide === 'left' ? 'right' : 'left')}の体勢を崩していく。`;
+    }
+
+    function eventCaption(action) {
+      if (action.kind === 'miss') return 'かわされた';
+      if (action.kind === 'counter') return '切り返し成功';
+      if (action.isCrit) return '強烈な一撃';
+      return 'クリーンヒット';
+    }
+
+    function renderTimeline() {
+      const known = frames.slice(0, Math.max(0, current + 1));
+      $('timeline').innerHTML = known.length ? known.map((frame, index) => {
+        const active = index === current ? ' current' : '';
+        const action = frame.action;
+        return `<button class="event${active}" data-index="${index}"><span class="event-turn">T${frame.turn}</span><span><span class="event-name">${escape(action.move)}</span><span class="event-caption">${eventCaption(action)}</span></span><span class="event-type-mini">${categoryGuide[action.moveCat].label.replace('の攻防','')}</span></button>`;
+      }).join('') : '<div class="legend">まだ攻防は記録されていません。</div>';
+      document.querySelectorAll('.event').forEach(button => button.addEventListener('click', () => setFrame(Number(button.dataset.index), false)));
+    }
+
+    function updateStatus(frame) {
+      const action = frame.action;
+      const guide = categoryGuide[action.moveCat] || categoryGuide.strike;
+      const leftPct = pct(frame.hpL, players.left.mhp);
+      const rightPct = pct(frame.hpR, players.right.mhp);
+      const momLeft = Math.max(20, Math.min(80, 50 + frame.mom));
+      $('turn').textContent = `TURN ${frame.turn}`;
+      $('phase').textContent = frame.phase.toUpperCase();
+      $('hpLeft').textContent = `${leftPct}%`;
+      $('hpRight').textContent = `${rightPct}%`;
+      $('hpLeftFill').style.width = `${leftPct}%`;
+      $('hpRightFill').style.width = `${rightPct}%`;
+      $('hpLeftFill').classList.toggle('danger', leftPct <= 35);
+      $('hpRightFill').classList.toggle('danger', rightPct <= 35);
+      $('momLeft').style.width = `${momLeft}%`;
+      $('momRight').style.width = `${100 - momLeft}%`;
+      $('eventType').textContent = action.kind === 'counter' ? 'カウンター' : action.kind === 'miss' ? '回避' : action.isCrit ? '大きな一撃' : '攻防';
+      $('headline').innerHTML = buildHeadline(frame);
+      $('guideIcon').textContent = guide.icon;
+      $('guideKind').textContent = guide.label;
+      $('guideText').textContent = moveNotes[action.move] || guide.text;
+      $('movePower').textContent = action.moveD;
+      $('damage').textContent = action.kind === 'miss' ? '0' : action.dmg;
+      $('frameNo').textContent = `${current + 1} / ${frames.length}`;
+      $('rightStatus').textContent = rightPct <= 80 ? 'ダメージが積み重なっている。次の攻防をしのげるか。' : 'まだ余裕あり。組み合いで力を見せたい。';
+      $('detail').classList.toggle('numbers-off', !$('numberToggle').checked);
+      animate(frame);
+    }
+
+    function animate(frame) {
+      const action = frame.action;
+      const stage = $('stage');
+      const targetCard = action.atkSide === 'left' ? $('cardRight') : $('cardLeft');
+      const sourceCard = action.atkSide === 'left' ? $('cardLeft') : $('cardRight');
+      stage.className = `stage ${action.atkSide === 'left' ? 'attack-left' : 'attack-right'}${action.kind === 'counter' ? ' counter' : ''}`;
+      targetCard.classList.remove('hit', 'countered'); sourceCard.classList.remove('hit', 'countered');
+      void stage.offsetWidth;
+      if (action.kind !== 'miss') {
+        targetCard.classList.add('hit');
+        if (action.kind === 'counter') sourceCard.classList.add('countered');
+        $('impact').textContent = action.kind === 'counter' ? 'COUNTER!' : action.isCrit ? 'BIG HIT!' : 'HIT!';
+        $('impact').classList.remove('show'); void $('impact').offsetWidth; $('impact').classList.add('show');
+      }
+    }
+
+    function setFrame(index, advance) {
+      if (index < 0) { current = -1; stopAuto(); renderTimeline(); return; }
+      current = Math.min(index, frames.length - 1);
+      updateStatus(frames[current]);
+      renderTimeline();
+      $('prev').disabled = current <= 0;
+      $('next').textContent = current >= frames.length - 1 ? '↻ 最初から見る' : '▶ NEXT EXCHANGE';
+      if (advance && current >= frames.length - 1) stopAuto();
+    }
+
+    function nextFrame() { if (current >= frames.length - 1) setFrame(0, false); else setFrame(current + 1, true); }
+    function stopAuto() { auto = false; clearTimeout(timer); $('auto').textContent = 'AUTO: OFF'; }
+    function loopAuto() { if (!auto) return; nextFrame(); timer = setTimeout(loopAuto, speed); }
+    $('next').addEventListener('click', nextFrame);
+    $('prev').addEventListener('click', () => setFrame(Math.max(0, current - 1), false));
+    $('auto').addEventListener('click', () => { auto = !auto; $('auto').textContent = `AUTO: ${auto ? 'ON' : 'OFF'}`; if (auto) loopAuto(); else clearTimeout(timer); });
+    $('numberToggle').addEventListener('change', () => { if (current >= 0) updateStatus(frames[current]); });
+    document.querySelectorAll('[data-speed]').forEach(button => button.addEventListener('click', () => { speed = Number(button.dataset.speed); document.querySelectorAll('[data-speed]').forEach(b => b.classList.toggle('active', b === button)); }));
+    document.addEventListener('keydown', (event) => { if (event.code === 'Space' && event.target === document.body) { event.preventDefault(); nextFrame(); } });
+    renderTimeline();
+  </script>
+</body>
+</html>
