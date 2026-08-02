@@ -766,10 +766,19 @@ function _tagLineArrFor(table, fighter) {
   const byStd = table.standard || {};
   return byA[p] || byA.normal || byStd[p] || byStd.normal;
 }
-function pickTagWinLine(fighter, partnerName) {
-  const arr = _tagLineArrFor(TAG_MATCH_WIN_LINES, fighter);
-  const line = arr[Math.floor(Math.random() * arr.length)];
-  return _tplTagLine(line, { partner: partnerName || 'パートナー' });
+const TAG_MATCH_WIN_NAMELESS_LINES = {
+  standard: ['お疲れさま！　二人でつかんだ勝利だよ！','私たち、息ぴったりだったね！','最後まで一緒に戦ってくれて、ありがとう！'],
+  polite: ['お疲れさまでした。二人でつかんだ勝利ですね。','力を合わせられたからこその勝利です。','最後まで一緒に戦ってくださって、ありがとうございました。'],
+  seductive: ['お疲れさま。二人で勝てて、うれしいわ。','息ぴったりだったでしょ？','一緒に戦うの、やっぱり楽しいわね。'],
+  delinquent: ['お疲れさん！　あたしらの勝ちだ！','二人でやり切ったな！','最後までついてきてくれて、ありがとな！'],
+  ojousama: ['お疲れさまですわ。二人でつかんだ勝利ですの。','息の合った見事な勝利でしたわね。','最後までご一緒くださって、感謝いたしますわ。'],
+  cool: ['…お疲れ。二人で、勝てた。','…息、ぴったりだったね。','…最後まで一緒にいてくれて、ありがとう。'],
+  composed: ['…お疲れさま。二人でつかんだ勝利だね。','…息、ぴったりだったよ。','…最後まで一緒に戦えて、よかった。'],
+};
+function pickTagWinLine(fighter) {
+  const archetype = (fighter && fighter.archetype) || 'standard';
+  const arr = TAG_MATCH_WIN_NAMELESS_LINES[archetype] || TAG_MATCH_WIN_NAMELESS_LINES.standard;
+  return arr[Math.floor(Math.random() * arr.length)];
 }
 function pickTagLossLine(fighter, partnerName) {
   const arr = _tagLineArrFor(TAG_MATCH_LOSS_LINES, fighter);

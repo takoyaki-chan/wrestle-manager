@@ -97,6 +97,16 @@
   0% { filter: brightness(1.35) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 18px rgba(255,215,0,.8)) }
   100% { filter: brightness(.96) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 0 transparent) }
 }
+@keyframes wmFigureTagTouchAura {
+  0% { filter: brightness(1.18) contrast(1.05) var(--wm-figure-shadow) drop-shadow(0 0 16px rgba(85,170,136,.9)) }
+  45% { filter: brightness(1.08) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 11px rgba(93,217,202,.62)) }
+  100% { filter: brightness(.96) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 0 transparent) }
+}
+@keyframes wmFigureHotTagTouchAura {
+  0% { filter: brightness(1.2) contrast(1.05) var(--wm-figure-shadow) drop-shadow(0 0 18px rgba(238,85,85,.92)) }
+  45% { filter: brightness(1.1) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 12px rgba(255,150,94,.66)) }
+  100% { filter: brightness(.96) contrast(1.04) var(--wm-figure-shadow) drop-shadow(0 0 0 transparent) }
+}
 
 /* カットインスライドイン (セリフ/ビッグムーブ/ダメージセリフ) */
 @keyframes cutinSlideIn {

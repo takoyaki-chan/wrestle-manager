@@ -1573,24 +1573,18 @@ function showResult(fr){
   const segments = (result.segments || []).length;
   vicType.textContent = `${finType}${finMove ? ' — ' + finMove : ''}${finishPhase ? ' / ' + finishPhase : ''} / ${result.turns} Turns`;
 
-  // T2: 締めセリフ — 勝者(決め技打った側)コメント + 敗者(pinされた側)コメント + 実況締め
-  // pinnedBy = 決め技を打った勝者、pinnedWho = pin/tap された敗者
+  // 決着画面は勝者中心。決め手となった選手のコメントと実況だけを表示する。
+  // pinnedBy = 決め技を打った勝者
   const winFinisher = (winners.length === 2 && result.pinnedBy)
     ? winners.find(w => w.id === result.pinnedBy) || winners[0]
     : (winners[0] || null);
   const winPartner = (winners.length === 2)
     ? (winFinisher === winners[0] ? winners[1] : winners[0])
     : null;
-  const lossPinned = (losers.length === 2 && result.pinnedWho)
-    ? losers.find(l => l.id === result.pinnedWho) || losers[0]
-    : (losers[0] || null);
-  const lossPartner = (losers.length === 2 && lossPinned)
-    ? (lossPinned === losers[0] ? losers[1] : losers[0])
-    : null;
   const vicLines = document.getElementById('vicLines');
   if (vicLines) {
     if (winFinisher && winPartner) {
-      const winLine = pickTagWinLine(winFinisher, winPartner.name);
+      const winLine = pickTagWinLine(winFinisher);
       const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, finMove);
       vicLines.innerHTML =
         `<div class="vic-win-line"><span class="vic-speaker">${escHtml(winFinisher.name)}</span>「${escHtml(winLine)}」</div>` +
@@ -1600,10 +1594,9 @@ function showResult(fr){
     }
   }
 
-  // Loser
+  // 敗者は小さな結果情報だけを残し、敗者セリフは表示しない。
   const loserEl = document.getElementById('vicLoser');
   if (losers.length === 2) {
-    const lossLine = (lossPinned && lossPartner) ? pickTagLossLine(lossPinned, lossPartner.name) : '';
     loserEl.innerHTML =
       `<div class="vic-loser-faces">` +
         `<img class="vic-loser-face" src="${getFaceUrl(losers[0])}" onerror="this.style.display='none'">` +
@@ -1612,7 +1605,6 @@ function showResult(fr){
       `<div>` +
         `<div class="vic-loser-names">${escHtml(losers[0].name)} & ${escHtml(losers[1].name)}</div>` +
         `<div class="vic-loser-tag">LOSER</div>` +
-        (lossLine ? `<div class="vic-loss-line"><span class="vic-speaker">${escHtml(lossPinned.name)}</span>「${escHtml(lossLine)}」</div>` : '') +
       `</div>`;
   } else {
     loserEl.innerHTML = '';

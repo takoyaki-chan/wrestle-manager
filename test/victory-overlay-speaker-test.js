@@ -26,6 +26,7 @@ assert.ok(!singleSpeakerCard.includes('escHtml(loser.name)'), 'single-match quot
 const tag = readSource('tag-battle-main.js');
 const tagQuoteIdx = tag.indexOf('const winLine = pickTagWinLine');
 assert.ok(tagQuoteIdx >= 0, 'tag-match victory quote must be selected from the winning finisher');
+assert.ok(tag.includes('const winLine = pickTagWinLine(winFinisher);'), 'tag-match victory quote must not inject a partner full name');
 
 const tagWinLineIdx = tag.indexOf('vic-win-line', tagQuoteIdx);
 assert.ok(tagWinLineIdx > tagQuoteIdx, 'tag-match victory overlay must render a winner line');
@@ -36,5 +37,6 @@ assert.ok(tagLoserIdx > tagWinLineIdx, 'tag-match loser block must be separate f
 const tagWinnerLine = tag.slice(tagWinLineIdx, tagLoserIdx);
 assert.ok(tagWinnerLine.includes('winFinisher.name'), 'tag-match winner quote must name the winning finisher as speaker');
 assert.ok(!tagWinnerLine.includes('lossPinned.name'), 'tag-match winner quote must not name the pinned loser as speaker');
+assert.ok(!tag.slice(tagLoserIdx).includes('vic-loss-line'), 'tag-match loser block must not include a forced loser quote');
 
 console.log('victory-overlay-speaker-test: ok');
