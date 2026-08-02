@@ -1078,14 +1078,17 @@ function _showWarVictoryChain(list, idx, onDone) {
   const w = list[idx];
   const overlay = document.createElement('div');
   overlay.className = 'war-victory-overlay u3b-theme-stage is-victory';
-  const portraitUrl = getPortraitUrl(w.id);
+  // 2026-08-02 Keisuke指摘: portrait(正方形の顔)を2:3のM枠に入れて拡大クロップになっていた。
+  // 素材規格どおり upper(256×384=2:3)を使い、表記セット(OVR)も標準に揃える
+  const imgUrl = (typeof getUpperUrl === 'function') ? getUpperUrl(w.id) : getPortraitUrl(w.id);
   const line = _getWarVictoryLine(w);
   // U3グループA統一(2026-07-26): 1人ずつ全画面モーダルを▶で送る演出であり一覧ではないため、
   // 他のグループA画面と同じ規則で顔出しブロックを _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
   // 1人を主役として見せるモーダルなので size:'m'(132×194)以上を採用
   const sideHtml = _u3bSideHtml({
-    name: w.name, line, imgUrl: portraitUrl,
+    name: w.name, line, imgUrl,
     fallback: (w.name || '?').charAt(0), size: 'm',
+    statLabel: 'OVR', statValue: Engine.util.ov(w),
     bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
   });
   overlay.innerHTML = `
@@ -1124,6 +1127,7 @@ function _showWarEnemyAceStatement(onDone) {
     name: enemyAce.name, line: dialogue, imgUrl: upperUrl,
     fallback: (enemyAce.name || '?').charAt(0), size: 'l',
     isLoser: !!eventWon, role: 'ACE',
+    statLabel: 'OVR', statValue: Engine.util.ov(enemyAce),
     orgBadge: { orgId: ev.opponentOrgId, orgName: ev.opponentName, isHome: false },
     bubbleClass: 'pb-ace-bubble', portraitClass: 'pb-ace-portrait',
   });
