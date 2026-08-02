@@ -9717,17 +9717,17 @@ const Engine = {
 
             // 新聞フラグ蓄積
             if (!nextOrgData._newsInjuryRetirement) nextOrgData._newsInjuryRetirement = [];
-            const titleReigns = (retiree.careerHistory || []).filter(e => e.type === 'titleWin').length;
-            // task-77 §A-3: 引退の格スコアに使う peakOVR/wasChampion を追加。
-            // reigns(titleReigns)は既存の取得元をそのまま使う(取得元を分けない)
-            const _injCr = retiree.careerRecord || {};
+            // 戴冠数(titleReigns)は careerRecord.totalTitleWins から取る。careerHistory の
+            // 'titleWin' はゲーム内戴冠が入らない(背景生成は 'title_win')ため常にほぼ0になる。
+            // peakOVR/wasChampion と合わせて共通ヘルパー(_retirementCareerStats)に寄せる
+            const _injCs = Engine.newspaper._retirementCareerStats(retiree);
             nextOrgData._newsInjuryRetirement.push({
               orgName: org.name, fighterId: retiree.id, fighterName: retiree.name,
               age: retiree.age || 17, ovr: Engine.util.ov(retiree),
               injuryType: retireType,
-              careerSeasons: retiree.careerSeasons || 1, titleReigns,
-              peakOVR: _injCr.peakOVR || Engine.util.ov(retiree) || 0,
-              wasChampion: Engine.newspaper._wasChampionAtRetirement(retiree),
+              careerSeasons: retiree.careerSeasons || 1, titleReigns: _injCs.reigns,
+              peakOVR: _injCs.peakOVR,
+              wasChampion: _injCs.wasChampion,
             });
           }
           // 残りの選手から_pendingInjuryRetireフラグをクリア
@@ -29352,8 +29352,8 @@ Engine.newspaper = {
 
         // AI怪我引退（processAIWeek興行中に発生）
         // task-77: 本文は既存の負傷フレーバー(緊急引退/度重なる怪我)のまま維持する
-        // (スコープ外・§D)。強度補正だけ引退の格を効かせる。reigns は既存の
-        // ev.titleReigns をそのまま使う(取得元を分けない・§A-3)
+        // (スコープ外・§D)。強度補正だけ引退の格を効かせる。ev.titleReigns は
+        // 生成側(processAIWeek)で careerRecord.totalTitleWins から積まれる
         if (aiData._newsInjuryRetirement) {
           aiData._newsInjuryRetirement.forEach(ev => {
             const isAce = ev.ovr >= 75;
