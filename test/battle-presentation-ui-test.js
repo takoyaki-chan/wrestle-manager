@@ -57,6 +57,7 @@ assert.ok(html.includes('.wm-ring-bg{display:none}'), 'the separately composited
 assert.ok(!html.includes('.wm-ring-bg{position:absolute;z-index:-'), 'ring background must not use a negative compositing layer');
 assert.ok(html.includes('.wm-live-ring .wm-ring-fighter{position:absolute;z-index:4;'), 'moving fighters must stay above the fixed ring layers');
 assert.ok(html.includes('background:transparent!important'), 'moving fighter panels must not expose an opaque panel background');
+assert.ok(html.includes('.wm-live-ring .battle-speech-slot{position:relative;z-index:8;background:transparent'), 'speech reservations must not cover the top of the full-frame ring background');
 assert.ok(html.includes('bottom:max(-80%,calc(100% - 105cqw));height:min(180%,105cqw)'), 'close-up must respond to the ring aspect ratio and cap zoom at 180%');
 assert.ok(html.includes('bottom:-18%;left:50%;right:auto;height:118%'), 'both full-image canvases must share a centered anchor');
 assert.ok(html.includes('translate:-50% 0'), 'full-image canvas centering must be independent of each character silhouette');
