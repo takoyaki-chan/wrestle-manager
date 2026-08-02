@@ -2870,6 +2870,11 @@ const Storage = {
         if (!G.factionEventCooldowns || typeof G.factionEventCooldowns !== 'object') G = { ...G, factionEventCooldowns: {} };
         G = { ...G, _migrated_factions_v1: true };
       }
+      // 旧セーブを含め、ロードのたびに敵対度の浮動小数誤差を除去する。
+      // clean state は同一参照のまま返るため、毎回通して将来の直書き経路にも備える。
+      if (Engine.factions && typeof Engine.factions.normalizeFactionHostility === 'function') {
+        G = Engine.factions.normalizeFactionHostility(G);
+      }
       // 派閥内ポイント制 v1 マイグレーション（spec: faction-internal-rank-spec-v0.2 §2.4）
       if (!G._migrated_factions_internal_points_v1) {
         if (!G.factionInternalPoints || typeof G.factionInternalPoints !== 'object') {

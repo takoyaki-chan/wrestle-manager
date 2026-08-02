@@ -18,7 +18,8 @@ function valueClassOvr(ovr) {
 }
 
 function _fmtStat(v) {
-  if (typeof v !== 'number' || isNaN(v)) return v;
+  if (typeof v !== 'number') return v;
+  if (!Number.isFinite(v)) return '—';
   return +v.toFixed(2);
 }
 
@@ -10840,8 +10841,8 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const bUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
-  const hostilityA = payload.hostilityA != null ? payload.hostilityA : '—';
-  const hostilityB = payload.hostilityB != null ? payload.hostilityB : '—';
+  const hostilityA = payload.hostilityA != null ? _fmtStat(payload.hostilityA) : '—';
+  const hostilityB = payload.hostilityB != null ? _fmtStat(payload.hostilityB) : '—';
   const membersA = payload.membersA != null ? payload.membersA : '—';
   const membersB = payload.membersB != null ? payload.membersB : '—';
 

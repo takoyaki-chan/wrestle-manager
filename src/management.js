@@ -12909,6 +12909,10 @@ const Engine = {
       if (!s.factionHostility || typeof s.factionHostility !== 'object') s = { ...s, factionHostility: {} };
       if (!s.factionEventCooldowns || typeof s.factionEventCooldowns !== 'object') s = { ...s, factionEventCooldowns: {} };
       if (!s.factionReconciliationStreak || typeof s.factionReconciliationStreak !== 'object') s = { ...s, factionReconciliationStreak: {} };
+      // 防波堤: 旧セーブ・将来追加される更新経路のどちらから来ても、週次判定前に精度を正規化する。
+      if (Engine.factions && typeof Engine.factions.normalizeFactionHostility === 'function') {
+        s = Engine.factions.normalizeFactionHostility(s);
+      }
       // v4 §2-1 F02 進展4種用のフィールド初期化
       if (!s.factionEndlessStreak || typeof s.factionEndlessStreak !== 'object') s = { ...s, factionEndlessStreak: {} };
       if (!Array.isArray(s.f02MediationWatches)) s = { ...s, f02MediationWatches: [] };

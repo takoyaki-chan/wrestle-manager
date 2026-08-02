@@ -7,6 +7,27 @@ Engine.factions = {
   // ── ヘルパー ────────────────────────────────────────────────
   _hostKey(fromId, toId) { return `${fromId}>${toId}`; },
 
+  // 敵対度は週次で 0.3 ずつ動くため、二進浮動小数の誤差を state に蓄積させない。
+  // 保存精度を小数1桁に固定し、旧セーブや外部入力の非有限値もここで無害化する。
+  _normalizeHostility(value) {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 0;
+    const clamped = Engine.util.clamp(numeric, 0, 100);
+    return Math.round((clamped + Number.EPSILON) * 10) / 10;
+  },
+
+  normalizeFactionHostility(state) {
+    if (!state || !state.factionHostility || typeof state.factionHostility !== 'object') return state;
+    const normalized = {};
+    let changed = false;
+    for (const [key, value] of Object.entries(state.factionHostility)) {
+      const next = this._normalizeHostility(value);
+      if (next > 0) normalized[key] = next;
+      if (!Object.is(value, next) || next === 0) changed = true;
+    }
+    return changed ? { ...state, factionHostility: normalized } : state;
+  },
+
   _getBond(state, fromId, toId) {
     if (!state.relationships) return 50;
     const rec = state.relationships[`${fromId}>${toId}`];
@@ -583,7 +604,10 @@ Engine.factions = {
     if (fromFactionId === toFactionId) return state;
     const key = this._hostKey(fromFactionId, toFactionId);
     const cur = (state.factionHostility || {})[key] || 0;
-    const next = Engine.util.clamp(cur + delta, 0, 100);
+    const numericDelta = Number(delta);
+    const next = this._normalizeHostility(
+      this._normalizeHostility(cur) + (Number.isFinite(numericDelta) ? numericDelta : 0)
+    );
     const newHost = { ...(state.factionHostility || {}) };
     if (next === 0) delete newHost[key];
     else newHost[key] = next;
@@ -626,7 +650,7 @@ Engine.factions = {
       const avgBond = bondCount ? bondSum / bondCount : 0;
       if (avgBond > cfg.hostilityHighBondThreshold) delta += cfg.hostilityHighBondExtraDecay;
 
-      const next = Engine.util.clamp(val + delta, 0, 100);
+      const next = this._normalizeHostility(Number(val) + delta);
       if (next > 0) newHost[key] = next;
     }
 
@@ -936,7 +960,10 @@ Engine.factions = {
     const newHost = {};
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
-      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) newHost[key] = val;
+      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) {
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
+      }
     }
 
     return { ...s, factions: newFactions, factionHostility: newHost };
@@ -1010,10 +1037,11 @@ Engine.factions = {
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
       if (Number(fromStr) === factionId || Number(toStr) === factionId) {
-        const next = Engine.util.clamp(val * cfg.hostilityLeaderChangeMultiplier, 0, 100);
+        const next = this._normalizeHostility(val * cfg.hostilityLeaderChangeMultiplier);
         if (next > 0) newHost[key] = next;
       } else {
-        newHost[key] = val;
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
       }
     }
     s = { ...s, factionHostility: newHost };
@@ -1071,7 +1099,10 @@ Engine.factions = {
     const newHost = {};
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
-      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) newHost[key] = val;
+      if (survivorIds.has(Number(fromStr)) && survivorIds.has(Number(toStr))) {
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
+      }
     }
     return { ...s, factions: newFactions, factionHostility: newHost };
   },
@@ -2010,10 +2041,11 @@ Engine.factions = {
     for (const [key, val] of Object.entries(s.factionHostility || {})) {
       const [fromStr, toStr] = key.split('>');
       if (Number(fromStr) === factionId || Number(toStr) === factionId) {
-        const next = Engine.util.clamp(val * cfg.hostilityLeaderChangeMultiplier, 0, 100);
+        const next = this._normalizeHostility(val * cfg.hostilityLeaderChangeMultiplier);
         if (next > 0) newHost[key] = next;
       } else {
-        newHost[key] = val;
+        const next = this._normalizeHostility(val);
+        if (next > 0) newHost[key] = next;
       }
     }
     s = { ...s, factionHostility: newHost };
