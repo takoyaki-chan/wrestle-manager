@@ -589,17 +589,18 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .dojo-header{margin-bottom:14px;position:relative;overflow:hidden;border-radius:8px}
 .dojo-header-img{width:100%;max-height:200px;object-fit:cover;display:block}
 .dojo-header-overlay{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(transparent 0%,rgba(0,0,0,0.7) 100%);pointer-events:none}
-.dojo-scene-coach{position:absolute;bottom:8px;left:10px;display:flex;align-items:flex-end;gap:8px;max-width:70%;z-index:2}
+.dojo-scene-coach{position:absolute;bottom:8px;left:10px;display:flex;flex-direction:column;align-items:center;max-width:70%;z-index:2}
 .dojo-scene-coach-avatar{width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.6);overflow:hidden;flex-shrink:0;background:rgba(0,0,0,0.3)}
 .dojo-scene-coach-avatar img{width:100%;height:100%;object-fit:cover}
 /* U3グループD統一(2026-07-26): mockup-baseline-v0.1 §3「セリフの吹き出しは白(クリーム)に黒文字。
    例外なし」。コーチ名は吹き出しの外(上)へ(旧 .dojo-scene-bubble .coach-name は削除)。
    コーチ不在時の雰囲気テキストは話者のいない地の文なので白塗り・鉤括弧にしない(.dojo-scene-atmosphere)。*/
-.dojo-scene-coach-text{display:flex;flex-direction:column;align-items:flex-start;gap:var(--space-xs);min-width:0}
-.dojo-scene-coach-name{font-size:10px;color:var(--gold);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,0.7)}
+.dojo-scene-coach-name{margin-top:3px;font-size:10px;color:var(--gold);font-weight:700;text-shadow:0 1px 2px rgba(0,0,0,0.7)}
+.dojo-scene-bubble-slot{height:40px;display:flex;align-items:flex-end;justify-content:center;margin-bottom:6px}
 .dojo-scene-bubble{position:relative;background:var(--office-panel-cream-card);color:var(--cream-text-main);
   border-radius:var(--radius-lg);padding:var(--space-xs) var(--space-sm);font-size:13px;line-height:1.4;
-  box-shadow:0 3px 10px rgba(0,0,0,0.35)}
+  box-shadow:0 3px 10px rgba(0,0,0,0.35);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.dojo-scene-bubble::after{content:'';position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);border:6px solid transparent;border-top-color:var(--office-panel-cream-card);border-bottom:0}
 .dojo-scene-atmosphere{color:rgba(255,255,255,0.82);font-size:13px;font-style:italic;
   text-shadow:0 1px 3px rgba(0,0,0,0.7);padding:var(--space-xs) 2px}
 .dojo-scene-fighters{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;z-index:2}
@@ -2074,9 +2075,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .notif-modal-face.dual{width:100px;height:100px}
 .notif-modal-text{font-size:14px;color:var(--text-main);line-height:1.5;margin-bottom:8px}
 .notif-modal-detail{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:6px}
-.notif-modal-dialogue{font-size:15px;line-height:1.7;font-style:italic;color:var(--text-main);
-  padding:12px 16px;background:rgba(0,0,0,0.25);border-radius:8px;
-  border-left:3px solid rgba(180,200,255,0.4);text-align:left;margin-bottom:14px}
 .notif-modal-btn{font-size:13px;padding:10px 32px;border-radius:7px;cursor:pointer;
   background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.12);
   color:var(--text-sub);transition:all .2s}
@@ -2681,14 +2679,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ppvprog-tdiv{width:36px;flex-shrink:0}
 .ppvprog-hype{text-align:center;padding:8px 36px 4px;font-size:13px;color:#e94560;font-weight:700;line-height:1.5}
 .ppvprog-mc.is-main .ppvprog-hype{color:#ffd700}
-.ppvprog-dl{display:flex;gap:14px;padding:4px 44px 12px;justify-content:center}
-.ppvprog-dlc{flex:0 1 auto;max-width:44%}
+.ppvprog-dl{display:grid;grid-template-columns:1fr 1fr;gap:80px;padding:4px 44px 12px}
+.ppvprog-dlc{height:52px;display:flex;align-items:flex-end;justify-content:center;min-width:0}
 .ppvprog-dlb{position:relative;background:#f0f0f0;color:#1a1a1a;border-radius:8px;padding:8px 12px;font-size:12px;line-height:1.5;text-align:center}
-.ppvprog-dlc.left .ppvprog-dlb::after{content:'';position:absolute;left:-8px;top:12px;border:5px solid transparent;border-right-color:#f0f0f0}
-.ppvprog-dlc.right .ppvprog-dlb::after{content:'';position:absolute;right:-8px;top:12px;border:5px solid transparent;border-left-color:#f0f0f0}
-.ppvprog-dlsp{font-size:9px;font-weight:700;margin-bottom:2px;letter-spacing:1px}
-.ppvprog-dlc.left .ppvprog-dlsp{color:#c23152}
-.ppvprog-dlc.right .ppvprog-dlsp{color:#3a7cbd}
+.ppvprog-dlb::after{content:'';position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);border:7px solid transparent;border-top-color:#f0f0f0;border-bottom:0}
 .ppvprog-act{display:flex;flex-direction:column;align-items:center;padding:8px 16px 18px;gap:6px}
 .ppvprog-bw{padding:12px 0;border:2px solid #e94560;background:linear-gradient(135deg,rgba(233,69,96,0.12),rgba(233,69,96,0.04));color:#fff;border-radius:8px;font-size:15px;font-weight:900;cursor:pointer;letter-spacing:2px;width:100%;max-width:300px}
 .ppvprog-bw:hover{background:linear-gradient(135deg,#e94560,#c23152)}
@@ -3028,7 +3022,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
 .pb-fighter{display:flex;align-items:center;gap:14px}
 .pb-fighter.is-left{flex-direction:row-reverse;text-align:right}
-.pb-portrait-wrap{position:relative;flex-shrink:0}
+.pb-portrait-wrap{position:relative;display:flex;flex-direction:column;align-items:center;flex-shrink:0}
 .pb-portrait{width:108px;height:162px;border-radius:6px;overflow:hidden;border:2px solid var(--stage-border);background:linear-gradient(180deg,#1a1816,#0a0907);flex-shrink:0;transition:box-shadow .2s}
 .pb-portrait img{width:100%;height:100%;object-fit:cover;object-position:center top}
 .pb-portrait-placeholder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:28px;color:var(--stage-text-dim);letter-spacing:2px}
@@ -3086,12 +3080,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .pb-hp-mini-half.is-right .pb-hp-mini-fill{background:linear-gradient(270deg,var(--hp-teal),var(--hp-teal-light))}
 /* HP残量による色替え(is-healthy/is-warning/is-danger)は廃止。左右常に同色統一(UI原則9)。危険域は数値表示のみで示す */
 
-.pb-dialogue{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:rgba(245,240,230,0.96);color:#1a1713;padding:8px 13px 10px;border-radius:8px;font-size:12px;line-height:1.55;box-shadow:0 3px 12px rgba(0,0,0,0.5);min-width:150px;max-width:220px;white-space:normal;text-align:center;z-index:3}
+.pb-dialogue-slot{height:52px;display:flex;align-items:flex-end;justify-content:center;width:100%;margin-bottom:8px}
+.pb-dialogue{position:relative;background:rgba(245,240,230,0.96);color:#1a1713;padding:8px 13px 10px;border-radius:8px;font-size:12px;line-height:1.55;box-shadow:0 3px 12px rgba(0,0,0,0.5);min-width:150px;max-width:220px;white-space:normal;text-align:center;z-index:3}
 .pb-dialogue::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);width:0;height:0;border:7px solid transparent;border-top-color:rgba(245,240,230,0.96);border-bottom:0}
 /* U1: 吹き出しの中身はセリフ本文のみ(話者名は画像下の.pb-fighter-nameが担う)。行数は2行で打ち切る */
 .pb-dialogue-line{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.pb-mrow.has-dialogue{padding-top:92px}
-.pb-mrow.has-dialogue.is-main{padding-top:104px}
 
 .pb-coach-praise{grid-column:1 / -1;margin-top:14px;padding:10px 14px;background:rgba(109,148,184,0.08);border:1px solid rgba(109,148,184,0.22);border-radius:4px;border-left:3px solid var(--c-info);display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--stage-text-sub);line-height:1.55}
 .pb-coach-praise-label{font-family:var(--font-label);font-size:9px;letter-spacing:2px;color:var(--c-info);text-transform:uppercase;font-weight:700;white-space:nowrap;margin-top:2px}
@@ -3705,11 +3698,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 /* Bubble */
 .jt-bub{background:#f0f0f0;color:#1a1a1a;border-radius:11px;padding:9px 14px;font-size:12px;line-height:1.5;
   text-align:center;box-shadow:0 4px 14px rgba(0,0,0,.2);margin:6px 0}
-.jt-bub .sp{font-size:9px;font-weight:700;margin-bottom:1px}
-.jt-bub .sp.bl{color:#4a90d9}
-.jt-bub .sp.gd{color:#b8860b}
-.jt-bub-pair{display:flex;gap:8px;margin:4px 14px 8px}
-.jt-bub-pair .jt-bub{flex:1;min-width:0}
+.jt-bub-pair{display:grid;grid-template-columns:1fr 1fr;gap:clamp(42px,10vw,80px);margin:4px 28px 8px}
+.jt-bub-slot{height:52px;display:flex;align-items:flex-end;justify-content:center;min-width:0}
+.jt-bub-pair .jt-bub{min-width:0;width:100%;box-sizing:border-box}
 
 /* Match Focus Card: 旧stand向かい合わせ(jt-mf/jt-mf-stands/jt-pre-hp/jt-bt)は
    mockup-jt-restyle-v0.1 tab2 でJT/天頂戦共通の jtc-fc*/jtc-fc-hp*(後述のC-6セクションで定義)へ統合済み。
@@ -3985,11 +3976,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   position:relative;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.4)}
 .tcdr-bub::after{content:'';position:absolute;bottom:-7px;left:50%;transform:translateX(-50%);
   border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
-.tcdr-bub .sp{font-size:9px;font-weight:700;color:#8a6d1f;margin-bottom:2px}
-.tcdr-bub.crimson .sp{color:#b03050}
 .tcdr-emo{display:inline-block;margin-bottom:12px;font-family:var(--font-label);font-size:10px;letter-spacing:2px;
   color:var(--stage-text-sub);border:1px solid rgba(232,230,224,0.2);border-radius:12px;padding:4px 12px}
-.tcdr-rc{width:96px;aspect-ratio:2/3;border-radius:4px;overflow:hidden;margin:0 auto;background:#121110;border-bottom:3px solid rgba(212,168,67,0.4)}
+.tcdr-rc{width:108px;height:162px;border-radius:4px;overflow:hidden;margin:0 auto;background:#121110;border-bottom:3px solid rgba(212,168,67,0.4)}
 .tcdr-rc img{width:100%;height:100%;object-fit:cover;object-position:top}
 .tcdr-name{font-size:12px;font-weight:700;margin-top:5px;color:var(--stage-text-main)}
 .tcdr-name .org{display:block;font-weight:400;font-size:9px;color:var(--stage-text-dim)}
@@ -4032,6 +4021,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .tc-tv-row{display:flex;align-items:center;justify-content:center;gap:10px;padding:6px 12px;font-size:12px;color:var(--stage-text-sub)}
 .tc-tv-row .w{color:var(--stage-text-main);font-weight:700}
 .tc-tv-row .mq{font-family:var(--font-label);font-size:10px;color:var(--gold);letter-spacing:1px}
+
+/* Character-dialogue utility wrappers used by legacy notification surfaces. */
+.event-popup-character,.notif-dialogue-speaker{display:flex;justify-content:center;margin:4px auto 12px}
+.notif-dialogue-duo{display:flex;align-items:flex-start;justify-content:center;gap:16px;margin:4px auto 12px}
+.glimpse-single-card{display:flex;justify-content:center;margin-bottom:12px}
+.legacy-character-stage,.r3-dialogue-speaker{display:flex;justify-content:center;margin:14px auto 16px}
 
 /* ---- エントリーモーダル(mdl-a-card.dark 土台) ---- */
 .tc-entry-lead{font-size:13px;color:var(--stage-text-sub);text-align:center;padding:14px 24px 4px;line-height:1.7}
@@ -4752,17 +4747,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
    co-classとして保持し、実際の意匠は .u3b-* が担う */
 .negotiation-wall{position:relative}
 .negc-speaker{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
-  display:flex;align-items:flex-end;gap:14px;animation:neg-speaker-in 0.45s cubic-bezier(0.22,1,0.36,1) both}
+  display:flex;justify-content:center;animation:neg-speaker-in 0.45s cubic-bezier(0.22,1,0.36,1) both}
 @keyframes neg-speaker-in{from{opacity:0;transform:translateX(-50%) translateY(18px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
-.negc-speaker-portrait{width:96px;height:96px;border-radius:8px;overflow:hidden;
-  flex-shrink:0;border:2px solid rgba(196,164,120,0.65);
-  box-shadow:0 6px 20px rgba(0,0,0,0.70),0 0 0 1px rgba(0,0,0,0.35)}
-.negc-bubble{max-width:400px;
-  background:rgba(16,12,8,0.92);backdrop-filter:blur(8px);
-  border:1px solid rgba(196,164,120,0.42);border-radius:10px 10px 10px 2px;
-  padding:14px 18px;font-size:13px;line-height:1.75;color:var(--text-main);
-  animation:neg-bubble-in 0.38s cubic-bezier(0.22,1,0.36,1) 0.18s both}
-@keyframes neg-bubble-in{from{opacity:0;transform:translateX(-12px)}to{opacity:1;transform:translateX(0)}}
+.negc-speaker-portrait{flex-shrink:0}
+.negc-bubble{max-width:340px}
 /* 解雇面談専用: 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。Office/Dark Panel(暗色の吹き出し)。
    .negotiation-speaker(壁上の配置)は絶対配置をやめ、通常フロー中央寄せに変更(mockup-baseline-v0.1
    §3「position:absoluteで浮かせない」)。.negotiation-bubble/.negotiation-speaker-portrait は
@@ -5030,20 +5018,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fevt-report-meta { font-family: 'Oswald',sans-serif; font-size: 11px; color: var(--cream-gold); letter-spacing: 2px; text-transform: uppercase; }
 .fevt-reporter-strip {
   background: var(--office-panel-dark);
-  padding: 14px 20px; display: flex; align-items: center; gap: 14px;
+  padding: 8px 20px 10px; display: flex; align-items: center; justify-content:center;
   border-bottom: 1px solid rgba(0,0,0,0.15);
   animation: fevtFadeIn 500ms ease 400ms both;
 }
-.fevt-reporter-portrait {
-  width: 48px; height: 48px; border-radius: 50%;
-  border: 1px solid rgba(212,168,67,0.3);
-  background: #222 center/cover no-repeat; flex-shrink: 0;
-}
-.fevt-reporter-text { flex: 1; color: #d8d2c4; }
-.fevt-reporter-name { font-size: 11px; color: var(--gold); letter-spacing: 1px; font-family: 'Oswald',sans-serif; text-transform: uppercase; margin-bottom: 3px; }
-.fevt-reporter-line { font-size: 13px; color: #c8c0af; font-style: italic; line-height: 1.5; }
-.fevt-reporter-line::before { content: '「'; color: rgba(200,190,170,0.5); }
-.fevt-reporter-line::after { content: '」'; color: rgba(200,190,170,0.5); }
+.fevt-reporter-person .u3b-copy,.mdl-a-reporter-person .u3b-copy{margin-top:4px}
+.fevt-reporter-person .u3b-name,.mdl-a-reporter-person .u3b-name{font-size:11px}
+.fevt-reporter-person .u3b-role,.mdl-a-reporter-person .u3b-role{font-size:8px;margin-top:1px}
 /* task-79 A: Common-1 リーダー帯（対戦者でないリーダーのセリフの帰属先）。
    chip 46×66(2:3) + 頭上吹き出し。名前・所属は吹き出しの外(fc1-leader-tag)に置く。 */
 .fc1-leader-strip {
@@ -5471,12 +5452,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   color: #5a8a6a; font-size: 22px;
 }
 
-/* F07 リーダー直訴: 肖像頭上の吹き出し */
-.fevt-subject-portrait-wrap{position:relative}
-.fevt-leader-bubble-wrap{position:absolute;bottom:calc(100% + 14px);left:50%;transform:translateX(-50%);width:280px;display:flex;flex-direction:column;align-items:center;pointer-events:none;z-index:2}
-.fevt-leader-bubble-speaker{font-size:10px;color:#9c6b1a;font-weight:700;letter-spacing:1px;margin-bottom:3px}
-.fevt-leader-bubble{position:relative;background:#f0f0f0;color:#1a1208;padding:10px 14px;border-radius:8px;font-size:13px;line-height:1.55;text-align:center;box-shadow:0 4px 12px rgba(0,0,0,0.18);max-width:280px}
-.fevt-leader-bubble::after{content:'';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:8px solid #f0f0f0}
+/* F07 リーダー直訴: 予約枠→吹き出し→肖像。名前は画像下表示だけに置く。 */
+.fevt-leader-column{display:flex;flex-direction:column;align-items:center}
+.fevt-leader-bubble-slot{width:280px}
+.fevt-leader-bubble{max-width:280px;pointer-events:none}
 
 /* Common-1 派閥内対決打診: 比較レイアウト + 頭上吹き出し */
 /* U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。旧 fc1m-side(position:absoluteの
@@ -6404,26 +6383,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
 .mdl-a-reporter-strip {
   background: var(--office-panel-dark);
-  padding: 14px 20px; display: flex; align-items: center; gap: 14px;
+  padding: 8px 20px 10px; display: flex; align-items: center; justify-content:center;
   border-bottom: 1px solid rgba(0,0,0,0.15);
   animation: mdlAFadeIn 500ms ease 300ms both;
 }
-.mdl-a-reporter-portrait {
-  width: 48px; height: 48px; border-radius: 50%;
-  border: 1px solid rgba(212,168,67,0.3);
-  background-size: cover; background-position: center; background-color: #222;
-  flex-shrink: 0;
-}
-.mdl-a-reporter-text { flex: 1; color: #d8d2c4; }
-.mdl-a-reporter-name {
-  font-size: 11px; color: var(--gold); letter-spacing: 1px;
-  font-family: var(--font-label); text-transform: uppercase; margin-bottom: 3px;
-}
-.mdl-a-reporter-line {
-  font-size: 13px; color: #c8c0af; font-style: italic; line-height: 1.5;
-}
-.mdl-a-reporter-line::before { content: '「'; color: rgba(200,190,170,0.5); }
-.mdl-a-reporter-line::after  { content: '」'; color: rgba(200,190,170,0.5); }
 
 .mdl-a-subject-stage {
   padding: 24px 24px 22px;
@@ -6569,34 +6532,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background: rgba(200,74,58,0.15); color: #8a3226; border: 1px solid rgba(200,74,58,0.4);
 }
 
-/* 派閥イベント結果モーダル — クリーム化キャラ吹き出しカード（v0.5 / 2026-05-03） */
-.fevt-result-charline {
-  display: flex; gap: 12px; align-items: flex-start;
-  background: #fffaee;
-  border: 1px solid rgba(122,101,48,0.25);
-  border-left: 3px solid var(--cream-gold);
-  border-radius: 6px;
-  padding: 12px 14px; margin: 14px auto 0; max-width: 460px; text-align: left;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
-  animation: mdlAFadeIn 500ms ease 800ms both;
-}
-.fevt-result-charline-portrait {
-  width: 44px; height: 56px; border-radius: 3px;
-  border: 1px solid rgba(122,101,48,0.4);
-  flex-shrink: 0;
-}
-.fevt-result-charline-text { flex: 1; }
-.fevt-result-charline-name {
-  font-size: 12px; font-weight: 700; color: var(--cream-gold-dark);
-  letter-spacing: 0.5px; margin-bottom: 4px;
-}
-.fevt-result-charline-line {
-  font-size: 14px; color: var(--cream-text-main);
-  font-style: italic; line-height: 1.6;
-}
-.fevt-result-charline-line::before { content: '「'; color: var(--cream-gold); }
-.fevt-result-charline-line::after  { content: '」'; color: var(--cream-gold); }
-
 @keyframes mdlAFadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -6618,47 +6553,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
-/* A型 頭上吹き出し(結果報告ヒーロー用、クリーム背景) */
-.mdl-a-speech {
-  position: absolute;
-  bottom: calc(100% + 16px); left: 50%;
-  transform: translateX(-50%);
-  background: rgba(250,246,236,0.97);
-  border: 1.5px solid rgba(122,101,48,0.5);
-  border-radius: 10px;
-  padding: 10px 16px;
-  min-width: 220px; max-width: 340px;
-  font-family: var(--font-body); font-size: 13px; font-weight: 500;
-  color: #2a2518; line-height: 1.6; letter-spacing: 0.3px;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-  text-align: center; z-index: 10;
-  animation: mdlASpeechIn 600ms cubic-bezier(0.22,1,0.36,1) 400ms both;
-}
-.mdl-a-speech::after {
-  content: ''; position: absolute;
-  top: 100%; left: 50%; transform: translateX(-50%);
-  border: 9px solid transparent; border-top-color: rgba(122,101,48,0.5);
-}
-.mdl-a-speech::before {
-  content: ''; position: absolute;
-  top: calc(100% - 2px); left: 50%; transform: translateX(-50%);
-  border: 8px solid transparent; border-top-color: rgba(250,246,236,0.97);
-  z-index: 1;
-}
-.mdl-a-speech-text { font-style: italic; }
-.mdl-a-speech-text::before { content: '「'; color: rgba(120,100,60,0.55); }
-.mdl-a-speech-text::after  { content: '」'; color: rgba(120,100,60,0.55); }
-
-/* 頭上吹き出しのための余白確保付き肖像ラッパ */
+/* A型 subject-stageも共通の予約枠を通常フローに置く。 */
 .mdl-a-subject-portrait-speechable {
-  position: relative; display: inline-block;
-  margin-top: 70px; /* 吹き出し分の上余白 */
+  display: inline-flex; flex-direction: column; align-items: center;
 }
-
-@keyframes mdlASpeechIn {
-  from { opacity: 0; transform: translateX(-50%) translateY(6px); }
-  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-}
+.mdl-a-subject-speech-slot { width: 340px; max-width: calc(100vw - 64px); }
+.mdl-a-subject-speech { max-width: 340px; }
+.mdl-a-flow-speaker{position:relative;display:inline-flex;flex-direction:column;align-items:center}
+.mdl-a-flow-speech-slot{width:340px;max-width:calc(100vw - 64px)}
+.mdl-a-flow-bubble{max-width:340px}
 
 /* 戴冠・節目防衛の結果 — 承認済みの既存A型モーダル版。
    本文は Noto Sans JP、英字ラベルだけ Oswald。大判式典用の明朝体は使わない。 */
@@ -6766,8 +6669,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background: #12110e;
   border-bottom: 1px solid rgba(0,0,0,0.25);
 }
-.mdl-a-card.dark .mdl-a-reporter-line::before,
-.mdl-a-card.dark .mdl-a-reporter-line::after { content: ''; }
 .mdl-a-card.dark .mdl-a-subject-stage {
   background:
     radial-gradient(ellipse 80% 60% at 50% 40%, rgba(212,168,67,0.08) 0%, transparent 70%),
@@ -6825,48 +6726,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background: #d4a843; color: #1a1611; border-color: #d4a843;
 }
 
-/* 頭上吹き出し — delay variants */
-.mdl-a-speech.delayed {
-  opacity: 0;
-  animation: mdlASpeechIn 700ms cubic-bezier(0.22,1,0.36,1) 5000ms both;
-}
-.mdl-a-speech.delayed.show-now {
-  animation: mdlASpeechIn 500ms cubic-bezier(0.22,1,0.36,1) both;
-}
-.mdl-a-speech-speaker {
-  font-family: var(--font-label); font-size: 10px; color: #5c4a1e;
-  letter-spacing: 2.5px; margin-bottom: 6px;
-  text-transform: uppercase; font-weight: 700;
-}
-.mdl-a-speech.danger { border-color: rgba(196,30,58,0.55); background: rgba(252,244,244,0.97); }
-.mdl-a-speech.danger::after  { border-top-color: rgba(196,30,58,0.55); }
-.mdl-a-speech.danger::before { border-top-color: rgba(252,244,244,0.97); }
-.mdl-a-speech.danger .mdl-a-speech-speaker { color: #9a2030; }
-.mdl-a-speech.gold { border-color: rgba(184,140,40,0.6); background: rgba(252,248,232,0.97); }
-.mdl-a-speech.gold::after  { border-top-color: rgba(184,140,40,0.6); }
-.mdl-a-speech.gold::before { border-top-color: rgba(252,248,232,0.97); }
-.mdl-a-speech.gold .mdl-a-speech-speaker { color: #8a6a1a; }
-.mdl-a-speech.resentment { border-color: rgba(100,85,70,0.55); background: rgba(240,232,220,0.94); }
-.mdl-a-speech.resentment::after  { border-top-color: rgba(100,85,70,0.55); }
-.mdl-a-speech.resentment::before { border-top-color: rgba(240,232,220,0.94); }
-.mdl-a-speech.resentment .mdl-a-speech-speaker { color: #5c4a3a; }
-.mdl-a-speech-text.large { font-size: 15px; font-weight: 600; }
-
-/* 待機インジケータ「…」 */
+/* TAPヒントの点滅 */
 @keyframes mdlAPendingDots {
   0%, 100% { opacity: 0.35; } 50% { opacity: 0.85; }
 }
-.mdl-a-speech-pending {
-  position: absolute;
-  bottom: calc(100% + 40px); left: 50%;
-  transform: translateX(-50%);
-  font-size: 26px; color: rgba(212,168,67,0.5);
-  letter-spacing: 4px; pointer-events: none; z-index: 5;
-  animation: mdlAPendingDots 1400ms ease-in-out infinite,
-             mdlAFadeIn 400ms ease 600ms both;
-}
-.mdl-a-speech-pending.hide { display: none; }
-
 /* TAP TO CONTINUE ヒント */
 .mdl-a-tap-hint {
   text-align: center;

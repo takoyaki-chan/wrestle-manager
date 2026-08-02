@@ -309,26 +309,6 @@ function _mdlAOpen(html, opts) {
   return true;
 }
 
-/** A型ダーク版: 吹き出し遅延表示 + クリックで即時表示 */
-function _mdlAAttachSpeechHandlers(overlay, card) {
-  const speeches = card.querySelectorAll('.mdl-a-speech.delayed');
-  const pendings  = card.querySelectorAll('.mdl-a-speech-pending');
-  const tapHint   = card.querySelector('.mdl-a-tap-hint');
-  if (!speeches.length) return;
-  const showNow = (e) => {
-    if (e && e.target === overlay) return;
-    speeches.forEach(s => s.classList.add('show-now'));
-    pendings.forEach(p => p.classList.add('hide'));
-    if (tapHint) tapHint.classList.add('hide');
-    card.removeEventListener('click', showNow);
-  };
-  card.addEventListener('click', showNow);
-  setTimeout(() => {
-    pendings.forEach(p => p.classList.add('hide'));
-    if (tapHint) tapHint.classList.add('hide');
-  }, 5000);
-}
-
 /** A型モーダルを閉じる */
 function _mdlAClose() {
   const overlay = document.getElementById('mdlAOverlay');
@@ -347,27 +327,24 @@ function _mdlAHeader(title, meta, opts) {
 
 /** A型 reporter-strip(コーチ or 古参選手の取次) */
 function _mdlAReporterStrip(state, line) {
-  let url = '', name = 'BLACKWELL COACH';
+  let url = '', name = 'BLACKWELL', role = 'COACH';
   if (typeof _factionPickReporter === 'function') {
     const pick = _factionPickReporter(state);
     if (pick && pick.kind === 'coach') {
-      url = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(pick.ref.id) : '';
-      name = `${String(pick.ref.name)} コーチ`;
+      url = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(pick.ref.id)
+        : ((typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(pick.ref.id) : '');
+      name = String(pick.ref.name);
+      role = 'コーチ';
     } else if (pick && pick.kind === 'veteran') {
       url = (typeof getUpperUrl === 'function') ? getUpperUrl(pick.ref.id) : '';
       name = String(pick.ref.name);
+      role = '古参選手';
     }
   }
-  const bg = url
-    ? `background-image:url('${url}'),linear-gradient(135deg,#5a4a3a,#3a2d22);background-size:cover;background-position:center`
-    : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
-  return `<div class="mdl-a-reporter-strip">
-    <div class="mdl-a-reporter-portrait" style="${bg}"></div>
-    <div class="mdl-a-reporter-text">
-      <div class="mdl-a-reporter-name">${name}</div>
-      <div class="mdl-a-reporter-line">${String(line || '')}</div>
-    </div>
-  </div>`;
+  return `<div class="mdl-a-reporter-strip u3b-theme-dark">${_u3bSideHtml({
+    name, role, line: String(line || ''), size: 'chip', imgUrl: url,
+    extraSideClass: 'mdl-a-reporter-person',
+  })}</div>`;
 }
 
 /** A型 季節ラベル */
@@ -506,12 +483,11 @@ function _mdlASubjectStage(fighter, bodyHtml, opts) {
     const bg = upperUrl
       ? `background-image:url('${upperUrl}')`
       : (faceUrl ? `background-image:url('${faceUrl}')` : '');
-    const speech = opts && opts.speech
-      ? `<div class="mdl-a-speech"><div class="mdl-a-speech-text">${opts.speech}</div></div>`
-      : '';
-    const wrapCls = speech ? 'mdl-a-subject-portrait-speechable' : '';
-    portraitHtml = `<div class="${wrapCls}">
-      ${speech}
+    const speech = opts && opts.speech ? String(opts.speech) : '';
+    portraitHtml = `<div class="mdl-a-subject-portrait-speechable u3b-theme-cream">
+      <div class="u3b-bubble-slot mdl-a-subject-speech-slot">${speech
+        ? `<div class="u3b-bubble mdl-a-subject-speech"><div class="u3b-bubble-text">${escHtml(speech)}</div></div>`
+        : ''}</div>
       <div class="mdl-a-subject-portrait-wrap" style="width:${size.w}px;height:${size.h}px;${bg}"></div>
     </div>`;
   }
@@ -645,7 +621,6 @@ function showWarChallenge() {
 
   const aceOvr = Engine.util.ov(enemyAce);
   const dialogue = getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
-  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
   const upperUrl = getUpperUrl(enemyAce.id);
   const portraitStyle = upperUrl
     ? `background-image:url('${upperUrl}')`
@@ -658,15 +633,13 @@ function showWarChallenge() {
       <div class="mdl-a-header-meta">${seasonMeta}</div>
     </div>
     ${_mdlAReporterStrip(G, `${ev.opponentName}から正式な対抗戦の申し入れが届きました`)}
-    <div class="mdl-a-subject-stage danger" style="padding-top:88px">
-      <div class="mdl-a-portrait-wrap">
-        <div class="mdl-a-speech-pending">…</div>
-        <div class="mdl-a-speech danger delayed">
-          <div class="mdl-a-speech-speaker">${enemyAce.name.toUpperCase()}</div>
-          <div class="mdl-a-speech-text large">${dialogueHtml}</div>
-        </div>
-        <div class="mdl-a-subject-portrait big danger" style="${portraitStyle}"></div>
-      </div>
+    <div class="mdl-a-subject-stage danger" style="padding-top:30px">
+      ${_mdlAFlowPortraitHtml({
+        line: dialogue,
+        toneClass: 'danger',
+        portraitClass: 'mdl-a-subject-portrait big danger',
+        portraitStyle,
+      })}
       <div class="mdl-a-subject-name danger">${enemyAce.name}</div>
       <div class="mdl-a-subject-org danger">${ev.opponentName} ・ ACE</div>
       <div class="mdl-a-subject-ovr danger"><span class="label">OVR</span>${aceOvr}</div>
@@ -692,7 +665,6 @@ function showWarChallenge() {
 
   const overlay = document.getElementById('mdlAOverlay');
   const card    = document.getElementById('mdlACard');
-  _mdlAAttachSpeechHandlers(overlay, card);
 
   card.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-war-choice]');
@@ -1211,15 +1183,14 @@ function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
     ? `${departedName} が引退した。`
     : `${departedName} が去った。`;
 
-  const faceHtml = fighterFace
-    ? `<div class="mdl-d-face" style="background-image:url('${fighterFace}')"></div>`
-    : '';
-
   _mdlDOpen(`
-    ${faceHtml}
-    <div class="mdl-d-speaker">${fighterName}</div>
+    <div class="r3-dialogue-speaker u3b-theme-dark">${_u3bSideHtml({
+      name: fighterName,
+      line,
+      size: 's',
+      imgUrl: fighterFace || '',
+    })}</div>
     <div class="mdl-d-body">${departureText}</div>
-    <div class="mdl-d-body italic">${line}</div>
     <div class="mdl-d-actions">
       <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue()">閉じる</button>
     </div>
@@ -1375,7 +1346,13 @@ function showNegotiatePopup(orgId, fighterId) {
   if (Engine.negotiate.isNegotiationBlocked(fighter)) {
     const dialogue = Engine.negotiate.getDialogue(fighter, 'blocked');
     showConfirm(
-      `${fighter.name}は今の団体に強い忠誠を抱いており、交渉に応じません。<br><br>「${dialogue.replace(/\n/g, '<br>')}」`,
+      `<div class="legacy-character-stage u3b-theme-dark">${_u3bSideHtml({
+        name: fighter.name,
+        line: dialogue,
+        size: 's',
+        imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '',
+      })}</div>
+      <div style="margin-top:12px">${fighter.name}は今の団体に強い忠誠を抱いており、交渉に応じません。</div>`,
       'OK', () => {}
     );
     return;
@@ -1398,7 +1375,6 @@ function showNegotiatePopup(orgId, fighterId) {
   const faDiscountBuff = (G.milestoneBuffs || []).find(b => b.type === 'fa_discount');
   if (faDiscountBuff) baseFee = Math.round(baseFee * (1 - faDiscountBuff.percent / 100));
   const dialogue = Engine.negotiate.getDialogue(fighter, 'start');
-  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
 
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
@@ -1410,23 +1386,19 @@ function showNegotiatePopup(orgId, fighterId) {
   html += `<div style="font-size:11px;color:var(--text-sub);margin-top:4px">${orgCfg.emoji} ${orgCfg.name}（${orgCfg.tier}級）</div>`;
   html += `</div>`;
 
-  // Fighter portrait + info
-  // U7: 1人の去就をここで決める場面なので、丸い小アイコンではなく 2:3 のアッパーを
-  // S(108×162) で見せる(§2 の梯子)。押せば選手詳細に戻れる
+  // Speaker: reserved bubble slot -> 2:3 upper -> name -> stats.
   const fUpper = (typeof getUpperUrl === 'function') ? getUpperUrl(fighter.id) : '';
   const fUrl = getPortraitUrl(fighter.id);
-  html += `<div style="display:flex;align-items:center;gap:12px;margin:16px 8px 12px;padding:12px;background:var(--bg-card);border:1px solid ${rc}33;border-radius:8px">`;
-  if (fUpper) html += `<img src="${fUpper}" class="u7-poach-upper" style="border-color:${rc}" onclick="event.stopPropagation();showFighterPopup(${Number(fighter.id)})" onerror="this.style.display='none'" alt="">`;
-  else if (fUrl) html += `<img src="${fUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${rc};object-fit:cover" alt="">`;
-  else html += `<div style="width:80px;height:80px;border-radius:50%;border:3px solid ${rc};display:flex;align-items:center;justify-content:center;background:${rc}11;font-size:30px;font-weight:900;color:${rc}">${fighter.name.charAt(0)}</div>`;
-  html += `<div style="flex:1"><div style="font-size:16px;font-weight:700;color:var(--text-main)">${fighter.name}</div>`;
-  html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px">OVR ${fOvr} ・ ${fighter.style || '?'}</div></div></div>`;
-
-  // Dialogue
-  html += `<div style="background:var(--panel-bg);border:1px solid ${rc}33;border-radius:10px;padding:14px 16px;margin:0 8px 16px;position:relative">`;
-  html += `<div style="position:absolute;top:-8px;left:40px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${rc}33"></div>`;
-  html += `<p style="font-size:13px;line-height:1.7;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
-  html += `</div>`;
+  html += `<div class="legacy-character-stage u3b-theme-dark">${_u3bSideHtml({
+    name: fighter.name,
+    line: dialogue,
+    size: 's',
+    imgUrl: fUpper || fUrl,
+    role: fighter.style || 'FIGHTER',
+    statLabel: 'OVR',
+    statValue: fOvr,
+    onClick: `event.stopPropagation();showFighterPopup(${Number(fighter.id)})`,
+  })}</div>`;
 
   // 3 Plans
   const planLabels = ['🅰 堅実', '🅱 勝負', '🅲 本気'];
@@ -1511,7 +1483,6 @@ function showNegotiationResult() {
 
   const phase = nr.success ? 'success' : 'fail';
   const dialogue = Engine.negotiate.getDialogue(fighter, phase);
-  const dialogueHtml = dialogue.replace(/\n/g, '<br>');
   const color = nr.success ? 'var(--gold)' : 'var(--red)';
   const title = nr.success ? '🎉 交渉成功！' : '😞 交渉失敗…';
 
@@ -1521,18 +1492,13 @@ function showNegotiationResult() {
   let html = '';
   html += `<div style="text-align:center;font-size:20px;font-weight:900;color:${color};margin-bottom:16px">${title}</div>`;
 
-  // Fighter portrait
-  const fUrl = getPortraitUrl(fighter.id);
-  html += `<div style="text-align:center;margin-bottom:12px">`;
-  if (fUrl) html += `<img src="${fUrl}" style="width:100px;height:100px;border-radius:50%;border:3px solid ${color};object-fit:cover" alt="">`;
-  html += `<div style="font-size:15px;font-weight:700;margin-top:8px">${fighter.name}</div>`;
-  html += `</div>`;
-
-  // Dialogue
-  html += `<div style="background:var(--panel-bg);border:1px solid ${color}44;border-radius:10px;padding:14px 16px;margin:0 8px 16px;position:relative">`;
-  html += `<div style="position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${color}44"></div>`;
-  html += `<p style="font-size:14px;line-height:1.7;text-align:center;color:var(--text-main);margin:0">「${dialogueHtml}」</p>`;
-  html += `</div>`;
+  html += `<div class="legacy-character-stage u3b-theme-dark">${_u3bSideHtml({
+    name: fighter.name,
+    line: dialogue,
+    size: 's',
+    imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : getPortraitUrl(fighter.id),
+    role: nr.success ? '交渉成立' : '交渉不成立',
+  })}</div>`;
 
   if (nr.success) {
     html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:12px">${fighter.name}がロスターに加わりました！</div>`;
@@ -1569,15 +1535,16 @@ function showSigningCeremony(charId) {
   html += `<div style="font-size:13px;letter-spacing:2px;color:${color};font-weight:700">✍ 契約セレモニー ${getJoinSourceBadge('fa')}</div>`;
   html += `</div>`;
 
-  // Fighter portrait + info
-  const fUrl = getPortraitUrl(fighter.id);
-  html += `<div style="display:flex;align-items:center;gap:12px;margin:16px 8px 12px;padding:12px;background:var(--bg-card);border:1px solid ${color}33;border-radius:8px">`;
-  if (fUrl) html += `<img src="${fUrl}" style="width:80px;height:80px;border-radius:50%;border:3px solid ${color};object-fit:cover" alt="">`;
-  else html += `<div style="width:80px;height:80px;border-radius:50%;border:3px solid ${color};display:flex;align-items:center;justify-content:center;background:${color}11;font-size:30px;font-weight:900;color:${color}">${fighter.name.charAt(0)}</div>`;
-  html += `<div style="flex:1">`;
-  html += `<div style="font-size:16px;font-weight:700;color:var(--text-main)">${fighter.name} <span style="font-size:24px;font-weight:900;color:var(--gold)">${fOvr}</span></div>`;
-  html += `<div style="font-size:12px;color:var(--text-sub);margin-top:4px"><span class="badge badge-${fighter.style}">${fighter.style}</span></div>`;
-  html += `</div></div>`;
+  const fUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : getPortraitUrl(fighter.id);
+  html += `<div class="legacy-character-stage u3b-theme-dark">${_u3bSideHtml({
+    name: fighter.name,
+    line: quote,
+    size: 's',
+    imgUrl: fUrl,
+    role: fighter.style || 'FIGHTER',
+    statLabel: 'OVR',
+    statValue: fOvr,
+  })}</div>`;
 
   // Contract details
   html += `<div style="margin:0 8px 12px;padding:12px;background:var(--bg-card);border:1px solid rgba(212,168,67,0.2);border-radius:8px">`;
@@ -1589,12 +1556,6 @@ function showSigningCeremony(charId) {
   html += `<span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>`;
   html += `<span>給与: ${salary}万/週</span>`;
   html += `</div></div>`;
-
-  // Signing speech bubble
-  html += `<div style="background:var(--panel-bg);border:1px solid ${color}33;border-radius:10px;padding:14px 16px;margin:0 8px 16px;position:relative">`;
-  html += `<div style="position:absolute;top:-8px;left:40px;width:0;height:0;border-left:8px solid transparent;border-right:8px solid transparent;border-bottom:8px solid ${color}33"></div>`;
-  html += `<p style="font-size:13px;line-height:1.7;color:var(--text-main);margin:0">「${quote}」</p>`;
-  html += `</div>`;
 
   // Buttons
   html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:8px">`;
@@ -1951,12 +1912,14 @@ function _showEventPopupAsChoice(opts) {
       ? (G.roster || []).find(f => f.id === opts.id) || { id: opts.id, name: opts.name }
       : null;
 
-    const bubbleHtml = `<div style="background:rgba(255,255,255,0.5);border-left:3px solid var(--cream-gold);border-radius:0 4px 4px 0;padding:12px 16px;margin-top:14px;max-width:440px;margin-left:auto;margin-right:auto;text-align:left;font-size:14px;color:var(--cream-text-main);line-height:1.7;font-style:italic">「${opts.message || ''}」</div>`;
     const detailHtml = opts.detail ? `<div class="mdl-a-observation centered" style="margin-top:10px;font-size:12px">${opts.detail}</div>` : '';
 
     const subjectHtml = fighter
-      ? _mdlASubjectStage(fighter, bubbleHtml + detailHtml, { small: true })
-      : `<div class="mdl-a-subject-stage">${bubbleHtml}${detailHtml}</div>`;
+      ? _mdlASubjectStage(fighter, detailHtml, { small: true, speech: opts.message || '' })
+      : `<div class="mdl-a-subject-stage">
+          ${opts.message ? `<div class="mdl-a-observation centered">${escHtml(opts.message)}</div>` : ''}
+          ${detailHtml}
+        </div>`;
 
     const choices = opts.choices;
     const trayCls = choices.length === 2 ? 'mdl-a-decision-tray two' : 'mdl-a-decision-tray';
@@ -2002,15 +1965,20 @@ function _renderEventPopupAsC3() {
   if (_eventPopupQueue.length === 0) return;
   const o = _eventPopupQueue[0];
 
-  let faceHtml = '';
+  let characterHtml = '';
   if (o.type === 'fighter' && o.id) {
-    const url = getPortraitUrl(o.id);
-    const faceStyle = `background-color:rgba(212,168,67,0.1)${url ? `;background-image:url('${url}')` : ''}`;
-    faceHtml = `<div style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;${faceStyle};background-size:cover;background-position:top center;border:3px solid rgba(212,168,67,0.5);box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>`;
+    characterHtml = `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
+      name: o.name || '', line: o.message || '', size: 'm',
+      imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(o.id) : '',
+      onClick: `showFighterPopup(${Number(o.id)},'roster',true)`,
+    })}</div>`;
   } else if (o.type === 'coach' && o.id) {
-    const url = getCoachPortraitUrl(o.id);
-    const faceStyle = `background-color:rgba(212,168,67,0.1)${url ? `;background-image:url('${url}')` : ''}`;
-    faceHtml = `<div style="width:120px;height:120px;margin:0 auto 12px;border-radius:50%;${faceStyle};background-size:cover;background-position:top center;border:3px solid rgba(212,168,67,0.5);box-shadow:0 4px 20px rgba(0,0,0,0.4)"></div>`;
+    const coachUrl = typeof getCoachUpperUrl === 'function'
+      ? getCoachUpperUrl(o.id)
+      : (typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(o.id) : '');
+    characterHtml = `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
+      name: o.name || '', line: o.message || '', role: 'コーチ', size: 'm', imgUrl: coachUrl,
+    })}</div>`;
   }
 
   let actionHtml = '';
@@ -2022,12 +1990,8 @@ function _renderEventPopupAsC3() {
   }
 
   const html = `
-    <div style="padding:24px 20px 12px;text-align:center">
-      ${faceHtml}
-      <div style="font-size:18px;font-weight:700;color:var(--info-text-main);margin-bottom:4px">${o.name || ''}</div>
-    </div>
     <div class="mdl-c-body" style="padding-top:4px">
-      <div class="mdl-c-comment-block">${o.message || ''}</div>
+      ${characterHtml || (o.message ? `<div class="mdl-c-comment-block">${o.message}</div>` : '')}
       ${o.detail ? `<div style="font-size:12px;color:var(--info-text-dim);margin-top:8px;text-align:center">${o.detail}</div>` : ''}
       ${actionHtml}
     </div>
@@ -5274,7 +5238,7 @@ function _pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine) {
     : `<span class="lbl">OVR</span><span class="val">${ovr}</span>`;
   return `<div class="pb-fighter is-${side} ${stateCls}">
     <div class="pb-portrait-wrap">
-      ${bubbleHtml}
+      <div class="pb-dialogue-slot">${bubbleHtml}</div>
       <div class="pb-portrait">${_pbPortraitImg(fighter)}</div>
     </div>
     <div class="pb-fighter-info">
@@ -6643,8 +6607,8 @@ function renderPPVMatchPreview() {
       <div class="ppvprog-mn">${typeLabel}</div>
       ${match.hype ? `<div class="ppvprog-hype">${match.hype}</div>` : ''}
       <div class="ppvprog-dl">
-        <div class="ppvprog-dlc left"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${L.name}</div>「${lineL}」</div></div>
-        <div class="ppvprog-dlc right"><div class="ppvprog-dlb"><div class="ppvprog-dlsp">${R.name}</div>「${lineR}」</div></div>
+        <div class="ppvprog-dlc left">${lineL ? `<div class="ppvprog-dlb">「${lineL}」</div>` : ''}</div>
+        <div class="ppvprog-dlc right">${lineR ? `<div class="ppvprog-dlb">「${lineR}」</div>` : ''}</div>
       </div>
       <div class="ppvprog-va">
         <div class="ppvprog-fc left">
@@ -8355,17 +8319,12 @@ function showInviteTargetModal(coachId, state) {
 
 // コーチ本人を話者にした reporter-strip(_mdlAReporterStrip はランダム取次者用のため専用版を用意)
 function _inviteCoachReporterStrip(coach, line) {
-  const url = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(coach.id) : '';
-  const bg = url
-    ? `background-image:url('${url}'),linear-gradient(135deg,#5a4a3a,#3a2d22);background-size:cover;background-position:center`
-    : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
-  return `<div class="mdl-a-reporter-strip">
-    <div class="mdl-a-reporter-portrait" style="${bg}"></div>
-    <div class="mdl-a-reporter-text">
-      <div class="mdl-a-reporter-name">${coach.name || ''} コーチ</div>
-      <div class="mdl-a-reporter-line">${String(line || '')}</div>
-    </div>
-  </div>`;
+  const url = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(coach.id)
+    : ((typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(coach.id) : '');
+  return `<div class="mdl-a-reporter-strip u3b-theme-dark">${_u3bSideHtml({
+    name: coach.name || '', role: 'コーチ', line: String(line || ''), size: 'chip', imgUrl: url,
+    extraSideClass: 'mdl-a-reporter-person',
+  })}</div>`;
 }
 
 // 中間報告: コーチ顔+一言の軽いポップアップ(1クリックで閉じる) — showNotifEventToast(mdl-d)を流用
@@ -8957,10 +8916,8 @@ function showChoiceEventModal(event, state, onChoice) {
   // subject-stage 内容: 選手がいればセリフ、なければ E5 の説明文
   let stageBody = '';
   if (fighter) {
-    const dialogue = event.dialogue || '';
     stageBody = `<div class="mdl-a-observation centered" style="padding-top:6px">
-      <span class="marker">${fighter.name || ''}</span><br>
-      <span style="font-style:italic;color:var(--cream-text-main);line-height:1.8;display:inline-block;margin-top:8px">「${dialogue}」</span>
+      <span class="marker">${fighter.name || ''}</span>からの申し入れです。
     </div>`;
   } else if (event.type === 'E5') {
     stageBody = `<div class="mdl-a-observation centered">
@@ -8969,7 +8926,7 @@ function showChoiceEventModal(event, state, onChoice) {
   }
 
   const subjectHtml = fighter
-    ? _mdlASubjectStage(fighter, stageBody, { small: true })
+    ? _mdlASubjectStage(fighter, stageBody, { small: true, speech: event.dialogue || '' })
     : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
 
   const choices = event.choices || [{ label: '了解', hint: '', idx: 0 }];
@@ -9109,25 +9066,21 @@ function _factionPickReporter(state) {
 }
 function _factionReporterStrip(state, line) {
   const pick = _factionPickReporter(state);
-  let url = '', name = '';
+  let url = '', name = '', role = '';
   if (pick && pick.kind === 'coach') {
-    url = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(pick.ref.id) : '';
-    name = `${String(pick.ref.name)} コーチ`;
+    url = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(pick.ref.id)
+      : ((typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(pick.ref.id) : '');
+    name = String(pick.ref.name);
+    role = 'コーチ';
   } else if (pick && pick.kind === 'veteran') {
     url = _factionUpperUrl(pick.ref.id);
     name = String(pick.ref.name);
+    role = '古参選手';
   }
-  const bg = url
-    ? `background-image:url('${url}'),linear-gradient(135deg,#5a4a3a,#3a2d22)`
-    : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
-  return `
-    <div class="fevt-reporter-strip">
-      <div class="fevt-reporter-portrait" style="${bg}"></div>
-      <div class="fevt-reporter-text">
-        <div class="fevt-reporter-name">${name}</div>
-        <div class="fevt-reporter-line">${String(line)}</div>
-      </div>
-    </div>`;
+  return `<div class="fevt-reporter-strip u3b-theme-dark">${_u3bSideHtml({
+    name, role, line: String(line || ''), size: 'chip', imgUrl: url,
+    extraSideClass: 'fevt-reporter-person',
+  })}</div>`;
 }
 // モック L1414「宇田川 里奈」→ L1419 marker「宇田川」: 姓のみ抽出（全角/半角スペース区切り）
 function _factionSurname(fighter) {
@@ -9651,30 +9604,18 @@ function showFactionEventResult(arg, onClose) {
     ? `<div class="mdl-a-observation centered" style="text-align:left;padding-top:6px">${String(opts.resultText).replace(/\n/g, '<br>')}</div>`
     : '';
 
-  // キャラ吹き出しカード（顔つき）
-  let charlineHtml = '';
-  if (opts.charLine) {
-    const portraitUrl = speakerFighter ? _factionUpperUrl(speakerFighter.id) : '';
-    const portraitBg = portraitUrl
-      ? `background-image:url('${portraitUrl}');background-size:cover;background-position:top center`
-      : 'background:linear-gradient(135deg,#c8a075,#7a5530)';
-    const speakerName = opts.charName || (speakerFighter ? speakerFighter.name : '');
-    charlineHtml = `
-      <div class="fevt-result-charline">
-        <div class="fevt-result-charline-portrait" style="${portraitBg}"></div>
-        <div class="fevt-result-charline-text">
-          ${speakerName ? `<div class="fevt-result-charline-name">${speakerName}</div>` : ''}
-          <div class="fevt-result-charline-line">${opts.charLine}</div>
-        </div>
-      </div>`;
-  }
+  // charId があるときは subject-stage 本人の頭上吹き出しへ一本化する。
+  // 画像の下に同じ人物の横長セリフカードを重ねて作らない。
+  const charlineHtml = opts.charLine && !speakerFighter
+    ? `<div class="mdl-a-observation centered">${escHtml(opts.charLine)}</div>`
+    : '';
 
   const stageBody = `${narrationHtml}${charlineHtml}`;
 
   // ヒーロー描画: charId があれば選手, なければ派閥章プレースホルダ
   let subjectHtml = '';
   if (heroFighter) {
-    subjectHtml = _mdlASubjectStage(heroFighter, stageBody, { small: true });
+    subjectHtml = _mdlASubjectStage(heroFighter, stageBody, { small: true, speech: opts.charLine || '' });
   } else if (factionPair.length === 2) {
     const factionSideHtml = (entry) => {
       const leader = entry.leaderId != null ? roster.find(c => c.id === entry.leaderId) : null;
@@ -10138,12 +10079,13 @@ function showFactionF07Modal(payload, state, onChoice) {
   const rightFol = fol2
     ? `<div class="fevt-follower-portrait right" style="background-image:url('${_factionUpperUrl(fol2.id)}');background-size:cover;background-position:center 20%"></div>`
     : `<div class="fevt-follower-portrait right"></div>`;
-  const leaderBubbleHtml = meta.source === 'leader'
-    ? `<div class="fevt-leader-bubble-wrap"><div class="fevt-leader-bubble-speaker">${String(leaderName)}</div><div class="fevt-leader-bubble">${String(leaderQuote)}</div></div>`
-    : '';
-  const centerLeader = leaderUrl
-    ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${leaderUrl}')">${leaderBubbleHtml}</div>`
-    : `<div class="fevt-subject-portrait-wrap">${leaderBubbleHtml}</div>`;
+  const leaderBubbleHtml = `<div class="u3b-bubble-slot fevt-leader-bubble-slot">${meta.source === 'leader'
+    ? `<div class="u3b-bubble fevt-leader-bubble"><div class="u3b-bubble-text">${escHtml(leaderQuote)}</div></div>`
+    : ''}</div>`;
+  const centerLeader = `<div class="fevt-leader-column u3b-theme-cream">
+    ${leaderBubbleHtml}
+    <div class="fevt-subject-portrait-wrap"${leaderUrl ? ` style="background-image:url('${leaderUrl}')"` : ''}></div>
+  </div>`;
 
   // observation-note(社長視点ナレーション。キャラのセリフは肖像頭上の吹き出しへ)
   const reporterText = meta.source === 'leader'
@@ -12198,6 +12140,23 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
   });
 }
 
+/** Legacy A型の人物段を、通常フローの予約枠→吹き出し→画像へ揃える。
+ *  名前・所属・数値は呼び出し側の既存表示をそのまま画像下に置く。 */
+function _mdlAFlowPortraitHtml(opts) {
+  const o = opts || {};
+  const line = o.line != null ? String(o.line) : '';
+  const bubble = line
+    ? `<div class="u3b-bubble mdl-a-flow-bubble ${o.toneClass || ''}"><div class="u3b-bubble-text">${escHtml(line).replace(/\n/g, '<br>')}</div></div>`
+    : '';
+  const portraitClass = o.portraitClass || 'mdl-a-subject-portrait';
+  const portraitStyle = o.portraitStyle ? ` style="${o.portraitStyle}"` : '';
+  return `<div class="mdl-a-flow-speaker ${o.themeClass || 'u3b-theme-dark'}">
+    <div class="u3b-bubble-slot mdl-a-flow-speech-slot">${bubble}</div>
+    <div class="${portraitClass}"${portraitStyle}></div>
+    ${o.extraHtml || ''}
+  </div>`;
+}
+
 function showTitleMatchCeremony(outcome, onDone) {
   const done = () => { if (typeof onDone === 'function') onDone(); };
   const isDefense = outcome?.outcome === 'defense';
@@ -12245,7 +12204,7 @@ function showTitleDefenseResultModal(champion, champLine, defenses, done) {
 
   const subjectHtml = _mdlASubjectStage(champion, narrationHtml, {
     small: true,
-    speech: champLine ? escHtml(champLine) : '',
+    speech: champLine || '',
   });
 
   const html = `
@@ -12308,7 +12267,7 @@ function showSpecialEventIntro(eventKey, state, onDone, opts) {
     if (!line) { done(); return; }
     const html = `
       ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
-      ${_mdlASubjectStage(speaker.fighter, '', { small: true, speech: escHtml(line) })}
+      ${_mdlASubjectStage(speaker.fighter, '', { small: true, speech: line })}
       <div class="mdl-a-prompt" style="padding-bottom:24px">
         <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">${escHtml(cfg.nextLabel || '— 続 け る —')}</button>
       </div>`;
@@ -12323,7 +12282,7 @@ function showSpecialEventIntro(eventKey, state, onDone, opts) {
   const coachUrl = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(coach.id) : '';
   const coachSubject = _mdlASubjectStage(null, '', {
     small: true,
-    speech: escHtml(pickLine(cfg.coach)),
+    speech: pickLine(cfg.coach),
     portraitUrl: coachUrl,
     name: escHtml(coach.name || ''),
     meta: 'COACH',
@@ -12735,7 +12694,6 @@ function showLargeEventModal(event, state, step, onChoice) {
     card.className = cardCls;
     card.innerHTML  = html;
     overlay.classList.add('active');
-    _mdlAAttachSpeechHandlers(overlay, card);
 
     const closeAndChoice = (idx) => {
       overlay.classList.remove('active');
@@ -12754,7 +12712,6 @@ function showLargeEventModal(event, state, step, onChoice) {
             : _buildB3Step3b(event, state, roster);
           card.className = 'mdl-a-card dark narrow';
           card.innerHTML  = html3b;
-          _mdlAAttachSpeechHandlers(overlay, card);
           card.querySelectorAll('[data-choice]').forEach(b =>
             b.addEventListener('click', () => closeAndChoice(0)));
         });
@@ -12878,28 +12835,24 @@ function _buildB2Step1(event, state, roster) {
       <div class="mdl-a-header-meta">INTERNAL CONFLICT ・ ${weekMeta}</div>
     </div>
     ${_mdlAReporterStrip(state, reporterLine)}
-    <div class="mdl-a-duo-stage" style="padding-top:108px">
+    <div class="mdl-a-duo-stage" style="padding-top:30px">
       <div class="mdl-a-duo-col">
-        <div class="mdl-a-portrait-wrap">
-          <div class="mdl-a-speech-pending">…</div>
-          <div class="mdl-a-speech danger delayed">
-            <div class="mdl-a-speech-speaker">${n1.toUpperCase()}</div>
-            <div class="mdl-a-speech-text">${event.dialogue || '…'}</div>
-          </div>
-          <div class="mdl-a-duo-portrait" style="${p1s}"></div>
-        </div>
+        ${_mdlAFlowPortraitHtml({
+          line: event.dialogue || '…',
+          toneClass: 'danger',
+          portraitClass: 'mdl-a-duo-portrait',
+          portraitStyle: p1s,
+        })}
         <div class="mdl-a-duo-name">${n1}</div>
         <div class="mdl-a-duo-org">OVR ${o1}</div>
       </div>
       <div class="mdl-a-duo-col">
-        <div class="mdl-a-portrait-wrap">
-          <div class="mdl-a-speech-pending">…</div>
-          <div class="mdl-a-speech danger delayed">
-            <div class="mdl-a-speech-speaker">${n2.toUpperCase()}</div>
-            <div class="mdl-a-speech-text">${event.dialogue2 || '…'}</div>
-          </div>
-          <div class="mdl-a-duo-portrait" style="${p2s}"></div>
-        </div>
+        ${_mdlAFlowPortraitHtml({
+          line: event.dialogue2 || '…',
+          toneClass: 'danger',
+          portraitClass: 'mdl-a-duo-portrait',
+          portraitStyle: p2s,
+        })}
         <div class="mdl-a-duo-name">${n2}</div>
         <div class="mdl-a-duo-org">OVR ${o2}</div>
       </div>
@@ -13029,14 +12982,12 @@ function _buildB2Step3(event, state, roster) {
         <div class="mdl-a-result-verdict-jp ${verdictCls}">${verdictJp}</div>
         <div class="mdl-a-result-verdict-en ${verdictCls}">${verdictEn}</div>
       </div>
-      <div class="mdl-a-portrait-wrap" style="margin-top:20px">
-        <div class="mdl-a-speech-pending">…</div>
-        <div class="mdl-a-speech ${speechCls} delayed">
-          <div class="mdl-a-speech-speaker">${escHtml(displayName.toUpperCase())}</div>
-          <div class="mdl-a-speech-text">${escHtml(winnerLine)}</div>
-        </div>
-        <div class="mdl-a-subject-portrait" style="${portraitStyle}"></div>
-      </div>
+      ${_mdlAFlowPortraitHtml({
+        line: winnerLine,
+        toneClass: speechCls,
+        portraitClass: 'mdl-a-subject-portrait',
+        portraitStyle,
+      })}
       <div class="mdl-a-subject-name">${escHtml(displayName)}</div>
       <div class="mdl-a-subject-org">${displayF ? `AGE ${displayF.age || '—'} ・ OVR ${Engine.util.ov(displayF)}` : ''}</div>
       <div class="mdl-a-result-summary">${resultRow}</div>
@@ -13065,15 +13016,13 @@ function _buildB2Step3b(event, state, roster) {
       <div class="mdl-a-header-meta">AFTERMATH ・ 2 / 2</div>
     </div>
     ${_mdlAReporterStrip(state, `${loserName}は納得していないようです…`)}
-    <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
-      <div class="mdl-a-portrait-wrap">
-        <div class="mdl-a-speech-pending">…</div>
-        <div class="mdl-a-speech resentment delayed">
-          <div class="mdl-a-speech-speaker">${loserName.toUpperCase()}</div>
-          <div class="mdl-a-speech-text">${loserLine}</div>
-        </div>
-        <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
-      </div>
+    <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
+      ${_mdlAFlowPortraitHtml({
+        line: loserLine,
+        toneClass: 'resentment',
+        portraitClass: 'mdl-a-subject-portrait defeat',
+        portraitStyle,
+      })}
       <div style="margin-top:12px"><div class="mdl-a-defeat-badge">DEFEATED ・ 敗 者</div></div>
       <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${loserName}</div>
       <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${loserF ? `AGE ${loserF.age || '—'} ・ OVR ${Engine.util.ov(loserF)}` : ''}</div>
@@ -13101,15 +13050,13 @@ function _buildB3Step1(event, state) {
       <div class="mdl-a-header-meta">CHALLENGE LETTER ・ ${_mdlASeasonLabel(state)}</div>
     </div>
     ${_mdlAReporterStrip(state, `興行会場に${orgName}の関係者が来ています`)}
-    <div class="mdl-a-subject-stage danger" style="padding-top:88px">
-      <div class="mdl-a-portrait-wrap">
-        <div class="mdl-a-speech-pending">…</div>
-        <div class="mdl-a-speech danger delayed">
-          <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
-          <div class="mdl-a-speech-text large">${event.challengerDialogue || '…'}</div>
-        </div>
-        <div class="mdl-a-subject-portrait big danger" style="${portraitStyle}"></div>
-      </div>
+    <div class="mdl-a-subject-stage danger" style="padding-top:30px">
+      ${_mdlAFlowPortraitHtml({
+        line: event.challengerDialogue || '…',
+        toneClass: 'danger',
+        portraitClass: 'mdl-a-subject-portrait big danger',
+        portraitStyle,
+      })}
       <div class="mdl-a-subject-name danger">${challenger.name || '???'}</div>
       <div class="mdl-a-subject-org danger">${orgName}</div>
       <div class="mdl-a-subject-ovr danger"><span class="label">OVR</span>${cOvr}</div>
@@ -13219,14 +13166,12 @@ function _buildB3Step3(event, state, roster) {
         <div class="mdl-a-result-verdict-jp ${verdictCls}">${verdictJp}</div>
         <div class="mdl-a-result-verdict-en ${verdictCls}">${verdictEn}</div>
       </div>
-      <div class="mdl-a-portrait-wrap" style="margin-top:20px">
-        <div class="mdl-a-speech-pending">…</div>
-        <div class="mdl-a-speech ${speechCls} delayed">
-          <div class="mdl-a-speech-speaker">${escHtml(pName.toUpperCase())}</div>
-          <div class="mdl-a-speech-text">${escHtml(pLine)}</div>
-        </div>
-        <div class="mdl-a-subject-portrait" style="${portraitStyle}${won ? ';box-shadow:0 0 32px rgba(240,208,120,0.3)' : ''}"></div>
-      </div>
+      ${_mdlAFlowPortraitHtml({
+        line: pLine,
+        toneClass: speechCls,
+        portraitClass: 'mdl-a-subject-portrait',
+        portraitStyle: `${portraitStyle}${won ? ';box-shadow:0 0 32px rgba(240,208,120,0.3)' : ''}`,
+      })}
       <div class="mdl-a-subject-name">${escHtml(pName)}</div>
       <div class="mdl-a-subject-org">${playerFighter ? `AGE ${playerFighter.age || '—'} ・ OVR ${Engine.util.ov(playerFighter)}` : ''}</div>
       <div class="mdl-a-result-summary">${resultRows}</div>
@@ -13273,15 +13218,13 @@ function _buildB3Step3b(event, state, roster) {
       <div class="mdl-a-header-meta">OPPONENT AFTERMATH ・ 2 / 2</div>
     </div>
     ${_mdlAReporterStrip(state, reporterLine)}
-    <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
-      <div class="mdl-a-portrait-wrap">
-        <div class="mdl-a-speech-pending">…</div>
-        <div class="mdl-a-speech ${speechVariant} delayed">
-          <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
-          <div class="mdl-a-speech-text">${challengerLine}</div>
-        </div>
-        <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
-      </div>
+    <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
+      ${_mdlAFlowPortraitHtml({
+        line: challengerLine,
+        toneClass: speechVariant,
+        portraitClass: 'mdl-a-subject-portrait defeat',
+        portraitStyle,
+      })}
       <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED ・ 敗 者' : 'VICTOR ・ 勝 者'}</div></div>
       <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
       <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
@@ -13336,16 +13279,14 @@ function _buildB3Step3b(event, state, roster) {
       <div class="mdl-a-header-meta">OPPONENT AFTERMATH ・ 2 / 2</div>
     </div>
     ${_mdlAReporterStrip(state, reporterLine)}
-    <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
-      <div class="mdl-a-portrait-wrap">
-        <div class="mdl-a-speech-pending">…</div>
-        <div class="mdl-a-speech ${speechVariant} delayed">
-          <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
-          <div class="mdl-a-speech-text">${challengerLine}</div>
-        </div>
-        <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
-        <div class="mdl-a-portrait-vignette"></div>
-      </div>
+    <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
+      ${_mdlAFlowPortraitHtml({
+        line: challengerLine,
+        toneClass: speechVariant,
+        portraitClass: 'mdl-a-subject-portrait defeat',
+        portraitStyle,
+        extraHtml: '<div class="mdl-a-portrait-vignette"></div>',
+      })}
       <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED ・ 敗北者' : 'VICTOR ・ 勝者'}</div></div>
       <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
       <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
@@ -13408,16 +13349,14 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
         <div class="mdl-a-header-meta">OPPONENT AFTERMATH</div>
       </div>
       ${_mdlAReporterStrip(G, reporterLine)}
-      <div class="mdl-a-subject-stage defeat" style="padding-top:96px">
-        <div class="mdl-a-portrait-wrap">
-          <div class="mdl-a-speech-pending">…</div>
-          <div class="mdl-a-speech ${speechVariant} delayed">
-            <div class="mdl-a-speech-speaker">${(challenger.name || '???').toUpperCase()}</div>
-            <div class="mdl-a-speech-text">${challengerLine}</div>
-          </div>
-          <div class="mdl-a-subject-portrait defeat" style="${portraitStyle}"></div>
-          <div class="mdl-a-portrait-vignette"></div>
-        </div>
+      <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
+        ${_mdlAFlowPortraitHtml({
+          line: challengerLine,
+          toneClass: speechVariant,
+          portraitClass: 'mdl-a-subject-portrait defeat',
+          portraitStyle,
+          extraHtml: '<div class="mdl-a-portrait-vignette"></div>',
+        })}
         <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED' : 'VICTOR'}</div></div>
         <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
         <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
@@ -13999,8 +13938,34 @@ function showNotifEventToast(event) {
   const f1Id = event.fighter;
   const f2Id = event.fighter2;
   const _fUrl = id => (typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '');
+  const _fighterById = id => (G.roster || []).find(f => String(f.id) === String(id));
+  const _fighterName = (id, fallback) => {
+    const fighter = _fighterById(id);
+    return fighter ? fighter.name : (fallback || '選手');
+  };
+  const _upperUrl = id => (typeof getUpperUrl === 'function' ? getUpperUrl(id) : _fUrl(id));
   let portraitsHtml = '';
-  if (f1Id != null && f2Id != null) {
+  if (event.dialogue && f1Id != null) {
+    const speakerHtml = _u3bSideHtml({
+      name: _fighterName(f1Id, event.name),
+      line: event.dialogue,
+      size: 's',
+      imgUrl: _upperUrl(f1Id),
+    });
+    if (f2Id != null) {
+      portraitsHtml = `<div class="notif-dialogue-duo u3b-theme-dark">
+        ${speakerHtml}
+        <div class="gc-duo-arrow">➜</div>
+        ${_u3bSideHtml({
+          name: _fighterName(f2Id, event.name2),
+          size: 's',
+          imgUrl: _upperUrl(f2Id),
+        })}
+      </div>`;
+    } else {
+      portraitsHtml = `<div class="notif-dialogue-speaker u3b-theme-dark">${speakerHtml}</div>`;
+    }
+  } else if (f1Id != null && f2Id != null) {
     portraitsHtml = `<div style="display:flex;gap:12px;justify-content:center;margin-bottom:10px">
       <div class="mdl-d-face" style="background-image:url('${_fUrl(f1Id)}');width:52px;height:52px;margin:0"></div>
       <div class="mdl-d-face" style="background-image:url('${_fUrl(f2Id)}');width:52px;height:52px;margin:0"></div>
@@ -14011,13 +13976,11 @@ function showNotifEventToast(event) {
 
   const textHtml    = event.text     ? `<div class="mdl-d-body">${event.text}</div>`         : '';
   const detailHtml  = event.detail   ? `<div class="mdl-d-detail">${event.detail}</div>`     : '';
-  const dialogueHtml = event.dialogue ? `<div class="mdl-d-body italic">${event.dialogue}</div>` : '';
 
   _mdlDOpen(`
     ${portraitsHtml}
     ${textHtml}
     ${detailHtml}
-    ${dialogueHtml}
     <div class="mdl-d-actions">
       <button class="mdl-d-btn primary" onclick="_mdlDClose();clearTimeout(window._notifModalTimer);_drainPopupQueue()">OK</button>
     </div>
@@ -14143,33 +14106,12 @@ function _renderGlimpseA(glimpse) {
     : glimpse.tone === 'warning' || glimpse.tone === 'danger' ? ' notif-warning' : '';
   box.className = `notif-modal-box${toneCls}`;
 
-  let portraitsHtml = '';
-  let labelHtml = '';
-  if (glimpse.targetId) {
-    const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
-    const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
-    portraitsHtml = `
-      <div class="notif-modal-portraits" style="align-items:flex-end">
-        <div class="notif-modal-face dual">${portraitImg(glimpse.speakerId, 100)}</div>
-        <span style="font-size:24px;padding-bottom:10px;filter:drop-shadow(0 0 5px ${axisColor})">${axisIcon}</span>
-        <div class="notif-modal-face dual">${portraitImg(glimpse.targetId, 100)}</div>
-      </div>`;
-    labelHtml = `<div class="notif-modal-text" style="color:${axisColor}">${glimpse.speakerName} → ${glimpse.targetName}</div>
-      <div class="notif-modal-detail">${glimpse.label}</div>`;
-  } else {
-    portraitsHtml = `
-      <div class="notif-modal-portraits">
-        <div class="notif-modal-face">${portraitImg(glimpse.speakerId, 120)}</div>
-      </div>`;
-    labelHtml = `<div class="notif-modal-text">${glimpse.speakerName} ・ ${glimpse.label}</div>`;
-  }
-
   box.innerHTML = `
-    ${portraitsHtml}
-    ${labelHtml}
-    <div class="notif-modal-dialogue">${glimpse.dialogue}</div>
+    <div class="glimpse-single-card">${_renderGlimpseCardHtml(glimpse)}</div>
     <button class="notif-modal-btn" onclick="closeNotifModal()">見届ける</button>
   `;
+  const card = box.querySelector('.gc-card');
+  if (card) card.classList.add('in');
   overlay.classList.add('active');
   Audio.play(glimpse.tone === 'gold' ? 'award' : 'event');
   clearTimeout(window._notifModalTimer);
@@ -14182,32 +14124,12 @@ function _renderGlimpseB(glimpse) {
   if (!overlay || !box) { _glimpseQueue.shift(); return; }
 
   box.className = 'notif-modal-box';
-  let portraitsHtml = '';
-  let labelHtml = '';
-  if (glimpse.targetId) {
-    const axisIcon = glimpse.axis === 'rivalry' ? '⚡' : glimpse.tone === 'negative' ? '💔' : '💙';
-    const axisColor = glimpse.axis === 'rivalry' ? '#e17055' : glimpse.tone === 'negative' ? '#e74c3c' : '#74b9ff';
-    portraitsHtml = `
-      <div class="notif-modal-portraits" style="align-items:flex-end">
-        <div class="notif-modal-face dual">${portraitImg(glimpse.speakerId, 100)}</div>
-        <span style="font-size:20px;padding-bottom:8px;filter:drop-shadow(0 0 4px ${axisColor})">${axisIcon}</span>
-        <div class="notif-modal-face dual">${portraitImg(glimpse.targetId, 100)}</div>
-      </div>`;
-    labelHtml = `<div class="notif-modal-detail" style="color:${axisColor}">${glimpse.speakerName} → ${glimpse.targetName} ・ ${glimpse.label}</div>`;
-  } else {
-    portraitsHtml = `
-      <div class="notif-modal-portraits">
-        <div class="notif-modal-face">${portraitImg(glimpse.speakerId, 120)}</div>
-      </div>`;
-    labelHtml = `<div class="notif-modal-detail">${glimpse.speakerName} ・ ${glimpse.label}</div>`;
-  }
-
   box.innerHTML = `
-    ${portraitsHtml}
-    ${labelHtml}
-    <div class="notif-modal-dialogue">${glimpse.dialogue}</div>
+    <div class="glimpse-single-card">${_renderGlimpseCardHtml(glimpse)}</div>
     <button class="notif-modal-btn" onclick="closeNotifModal()">見届ける</button>
   `;
+  const card = box.querySelector('.gc-card');
+  if (card) card.classList.add('in');
   overlay.classList.add('active');
   clearTimeout(window._notifModalTimer);
   window._notifModalTimer = setTimeout(closeNotifModal, 60000);
@@ -14691,12 +14613,10 @@ function showEndingCeremony(data, onDone) {
       const ovr = isNaN(ovrRaw) ? (f.ovr || '—') : ovrRaw;
       const line = fighterLineObj ? pickDialogueLine(fighterLineObj, f) : '最高だ！';
       return `<div style="flex:1;text-align:center;min-width:0;max-width:160px">
+        ${_awSpeechSlot(line)}
         <div style="display:flex;justify-content:center;margin-bottom:8px">${_endingPortrait(f.id, 100)}</div>
         <div style="font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:var(--text)">${f.name}</div>
         <div style="font-size:10px;color:var(--text-dim);margin-top:2px">OVR ${ovr}</div>
-        <div class="speech-bubble" style="margin-top:10px">
-          <div class="speech-text" style="font-size:11px">「${line}」</div>
-        </div>
       </div>`;
     }).join('');
     slideInfo.push({
@@ -14719,11 +14639,9 @@ function showEndingCeremony(data, onDone) {
     const cHtml = coaches.map((id, i) => {
       const master = ALL_C_ENDING.find(x => x.id === id);
       return `<div style="flex:1;text-align:center;min-width:0;max-width:180px">
+        ${_awSpeechSlot(cLines[i] || 'お疲れ様でした')}
         <div style="display:flex;justify-content:center;margin-bottom:8px">${_endingPortrait(id, 100, true)}</div>
         <div style="font-size:12px;font-weight:700;color:var(--text)">${master.name || '—'}</div>
-        <div class="speech-bubble" style="margin-top:10px">
-          <div class="speech-text" style="font-size:11px">「${cLines[i] || 'お疲れ様でした'}」</div>
-        </div>
       </div>`;
     }).join('');
     slideInfo.push({
@@ -14975,12 +14893,10 @@ function showGameOverCeremony(data, onDone) {
       const ovr = isNaN(ovrRaw) ? (f.ovr || '—') : ovrRaw;
       const line = fighterLines[i] || '……';
       return `<div style="flex:1;text-align:center;min-width:0;max-width:160px">
+        ${_awSpeechSlot(line)}
         <div style="display:flex;justify-content:center;margin-bottom:8px">${_gameoverPortrait(f.id, 100)}</div>
         <div style="font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:#d8c8c8">${f.name}</div>
         <div style="font-size:10px;color:#887878;margin-top:2px">OVR ${ovr}</div>
-        <div class="speech-bubble" style="margin-top:10px;background:rgba(40,16,16,0.6);border-color:#5a2020;color:#c8b8b8">
-          <div class="speech-text" style="font-size:11px;color:#c8b8b8">「${line}」</div>
-        </div>
       </div>`;
     }).join('');
     slideInfo.push({
@@ -15003,11 +14919,9 @@ function showGameOverCeremony(data, onDone) {
     const cHtml = coaches.map((id, i) => {
       const master = ALL_C_GO.find(x => x.id === id);
       return `<div style="flex:1;text-align:center;min-width:0;max-width:180px">
+        ${_awSpeechSlot(coachLines[i] || '……')}
         <div style="display:flex;justify-content:center;margin-bottom:8px">${_gameoverPortrait(id, 100, true)}</div>
         <div style="font-size:12px;font-weight:700;color:#d8c8c8">${master.name || '—'}</div>
-        <div class="speech-bubble" style="margin-top:10px;background:rgba(40,16,16,0.6);border-color:#5a2020;color:#c8b8b8">
-          <div class="speech-text" style="font-size:11px;color:#c8b8b8">「${coachLines[i] || '……'}」</div>
-        </div>
       </div>`;
     }).join('');
     slideInfo.push({
@@ -15330,17 +15244,16 @@ function showTrialEndMessage() {
 function _negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel) {
   // 顔と名前から選手詳細を開けるようにする(2026-07-27 Keisuke)。
   // 交渉相手の成績・能力を確かめないまま判断することになっていたため。
-  const face = portraitImg(neg.fighterId, 96, 'negc-speaker-portrait', 'roster');
-  return `
-    <div class="negc-speaker">
-      ${face}
-      <div class="negc-bubble">
-        <strong style="font-size:12px;color:rgba(255,255,255,0.55);cursor:pointer;text-decoration:underline dotted rgba(255,255,255,0.3);text-underline-offset:3px"
-          onclick="event.stopPropagation();showFighterPopup(${neg.fighterId},'roster',true)">${neg.fighterName}</strong>
-        <span class="neg-badge ${badgeCls}">${badgeLabel}</span><br>
-        「${dialogue}」
-      </div>
-    </div>`;
+  return `<div class="negc-speaker u3b-theme-dark">${_u3bSideHtml({
+    name: neg.fighterName,
+    line: dialogue,
+    size: 'm',
+    imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(neg.fighterId) : '',
+    portraitClass: 'negc-speaker-portrait',
+    bubbleClass: 'negc-bubble',
+    roleHtml: `<div class="u3b-role"><span class="neg-badge ${badgeCls}">${badgeLabel}</span></div>`,
+    onClick: `event.stopPropagation();showFighterPopup(${Number(neg.fighterId)},'roster',true)`,
+  })}</div>`;
 }
 
 // 画面1: サマリー — 「シーズンN 契約更新 ／ 意見あり：M名」
@@ -16421,12 +16334,11 @@ function _rivalryBubblePairHtml(leftId, rightId, leftName, rightName, extraCls) 
   let r = null;
   try { r = _rivalryPreMatchLines(leftId, rightId); } catch (_e) { return ''; }
   if (!r) return '';
-  // 吹き出しの中身は**話者名とセリフだけ**。既存の jt-bub と同じ形を崩さない。
-  // 因縁であることはセリフ自体が言っている(「今日こそ、決着をつける」)ので、
-  // バッジのような飾りは足さない
+  // 名前は各画像の下に既にある。吹き出しにはセリフ本文だけを入れ、
+  // 発言しない側にも同じ高さの予約枠を残す。
   return `<div class="jt-bub-pair${extraCls ? ' ' + extraCls : ''}" data-rivalry="${r.rivalry}">
-    ${r.leftLine ? `<div class="jt-bub"><div class="sp bl">${escHtml(leftName || '')}</div>「${escHtml(r.leftLine)}」</div>` : ''}
-    ${r.rightLine ? `<div class="jt-bub"><div class="sp gd">${escHtml(rightName || '')}</div>「${escHtml(r.rightLine)}」</div>` : ''}
+    <div class="jt-bub-slot">${r.leftLine ? `<div class="jt-bub">「${escHtml(r.leftLine)}」</div>` : ''}</div>
+    <div class="jt-bub-slot">${r.rightLine ? `<div class="jt-bub">「${escHtml(r.rightLine)}」</div>` : ''}</div>
   </div>`;
 }
 
@@ -16513,8 +16425,8 @@ function _jtFocusCard(match, roundName, ri, mi) {
   const lineR = getJuniorTournamentLine(timing, f2.personality || 'normal', f2.archetype || 'standard');
   if (!bubbleHtml && (lineL || lineR)) {
     bubbleHtml = `<div class="jt-bub-pair">`;
-    if (lineL) bubbleHtml += `<div class="jt-bub"><div class="sp bl">${escHtml(f1.name)}</div>「${escHtml(lineL)}」</div>`;
-    if (lineR) bubbleHtml += `<div class="jt-bub"><div class="sp bl">${escHtml(f2.name)}</div>「${escHtml(lineR)}」</div>`;
+    bubbleHtml += `<div class="jt-bub-slot">${lineL ? `<div class="jt-bub">「${escHtml(lineL)}」</div>` : ''}</div>`;
+    bubbleHtml += `<div class="jt-bub-slot">${lineR ? `<div class="jt-bub">「${escHtml(lineR)}」</div>` : ''}</div>`;
     bubbleHtml += `</div>`;
   }
 
@@ -17911,8 +17823,8 @@ function _agwPreBoutDialogueHtml(match, next, left, right, displayOrgIds) {
   const displayLeft = dialogueByOrg[displayOrgIds.left];
   const displayRight = dialogueByOrg[displayOrgIds.right];
   return `<div class="jt-bub-pair agw-bout-dialogue">
-    ${displayLeft?.line ? `<div class="jt-bub"><div class="sp bl">${escHtml(displayLeft.fighter.name)}</div>「${escHtml(displayLeft.line)}」</div>` : ''}
-    ${displayRight?.line ? `<div class="jt-bub"><div class="sp gd">${escHtml(displayRight.fighter.name)}</div>「${escHtml(displayRight.line)}」</div>` : ''}
+    <div class="jt-bub-slot">${displayLeft?.line ? `<div class="jt-bub">「${escHtml(displayLeft.line)}」</div>` : ''}</div>
+    <div class="jt-bub-slot">${displayRight?.line ? `<div class="jt-bub">「${escHtml(displayRight.line)}」</div>` : ''}</div>
   </div>`;
 }
 
@@ -19028,7 +18940,7 @@ function _tcDramaEmoBadge(evClass) {
 function _tcDramaActor(fighter, bubbleText, emoBadge, crimson) {
   const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
   const top = bubbleText
-    ? `<div class="tcdr-bub${crimson ? ' crimson' : ''}"><div class="sp">${escHtml(fighter.name)}</div>「${escHtml(bubbleText)}」</div>`
+    ? `<div class="tcdr-bub${crimson ? ' crimson' : ''}">「${escHtml(bubbleText)}」</div>`
     : (emoBadge ? `<div class="tcdr-emo">${emoBadge}</div>` : '');
   return `<div class="tcdr-actor">
     ${top}

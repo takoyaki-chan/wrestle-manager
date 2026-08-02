@@ -1771,9 +1771,6 @@ function _renderRosterDojoHeader() {
   if (coachForBubble || atmo) {
     html += '<div class="dojo-scene-coach">';
     if (coachForBubble) {
-      html += `<div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
-        ${coachPortraitImg(coachForBubble, 48)}
-      </div>`;
       const speakerName = (report && report.coachName) ? report.coachName : coachForBubble.name;
       let speechText = (report && report.reportText) ? report.reportText : atmo.text;
       // コーチ報告の表示枠では、対象選手の今週の熱量を優先して伝える。
@@ -1793,10 +1790,11 @@ function _renderRosterDojoHeader() {
         speechText = heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)]
           .replace('{name}', heatFighter.name || 'この子');
       }
-      html += `<div class="dojo-scene-coach-text">
-        <div class="dojo-scene-coach-name">${speakerName}</div>
-        <div class="dojo-scene-bubble">「${speechText}」</div>
-      </div>`;
+      html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">「${speechText}」</div></div>
+        <div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
+          ${coachPortraitImg(coachForBubble, 48)}
+        </div>
+        <div class="dojo-scene-coach-name">${speakerName}</div>`;
     } else {
       html += `<div class="dojo-scene-atmosphere">${atmo.emoji} ${atmo.text}</div>`;
     }

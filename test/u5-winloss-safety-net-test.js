@@ -141,6 +141,7 @@ function logGap(msg) {
     `let _popupQueue = [];
      const _POPUP_OVERLAY_IDS = [];
      ${uiFn('escHtml')}
+     ${uiFn('_u3bSideHtml')}
      ${uiFn('_isPopupActive')}
      ${uiFn('_factionUpperUrl')}
      ${uiFn('_factionEnsureOverlayRoot')}
@@ -915,6 +916,8 @@ function logGap(msg) {
   const build = new Function(
     'Engine', 'getUpperUrl',
     `${uiFn('escHtml')}
+     ${uiFn('_u3bSideHtml')}
+     ${uiFn('_mdlAFlowPortraitHtml')}
      ${uiFn('_factionPickReporter')}
      ${uiFn('_mdlAReporterStrip')}
      ${uiFn('_mdlASeasonLabel')}

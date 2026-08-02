@@ -259,8 +259,8 @@ function section(source, startMarker, endMarker) {
   const player = { id: 10, name: 'プレイヤー選手', personality: 'bold', archetype: 'cool' };
   const rival = { id: 20, name: '対戦相手', personality: 'quiet', archetype: 'normal' };
   const playerLeftOutput = sandbox.renderDialogue(playerLeftMatch, playerLeftNext, player, rival, { left: 'player', right: 'rival' });
-  assert.ok(playerLeftOutput.indexOf('プレイヤー選手') < playerLeftOutput.indexOf('対戦相手'), 'player dialogue must render left when the bracket puts the player on the left');
   assert.ok(playerLeftOutput.indexOf('boldのセリフ') < playerLeftOutput.indexOf('quietのセリフ'), 'left and right dialogue text must stay with their displayed speakers');
+  assert.ok(!playerLeftOutput.includes('プレイヤー選手') && !playerLeftOutput.includes('対戦相手'), 'speaker names must stay below the portraits, not inside bubbles');
 
   const playerRightMatch = { round: 'semiFinal', orgA: 'rival', orgB: 'player' };
   const playerRightNext = {
@@ -269,8 +269,8 @@ function section(source, startMarker, endMarker) {
     right: { id: 10, orgId: 'player' },
   };
   const playerRightOutput = sandbox.renderDialogue(playerRightMatch, playerRightNext, rival, player, { left: 'rival', right: 'player' });
-  assert.ok(playerRightOutput.indexOf('対戦相手') < playerRightOutput.indexOf('プレイヤー選手'), 'player dialogue must render right when the bracket puts the player on the right');
   assert.ok(playerRightOutput.indexOf('quietのセリフ') < playerRightOutput.indexOf('boldのセリフ'), 'right-side player dialogue must keep the player text');
+  assert.ok((playerRightOutput.match(/jt-bub-slot/g) || []).length === 2, 'both displayed sides must reserve the same bubble height');
 })();
 
 (function testAutumnCssUsesThemeTokens() {

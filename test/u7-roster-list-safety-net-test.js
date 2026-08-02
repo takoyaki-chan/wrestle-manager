@@ -60,12 +60,6 @@ const SOLO_CALLS = [
   'portraitImg(charL.id, imgW)',        // 対置（U3-B が段を決める）
   'portraitImg(charR.id, imgW)',
   'portraitImg(fighterId, 64)',         // 単独
-  'portraitImg(glimpse.speakerId, 100)', // Glimpse Cascade（U3-D 確定済み）
-  'portraitImg(glimpse.targetId, 100)',
-  'portraitImg(glimpse.speakerId, 120)',
-  // 2026-07-27: 顔から選手詳細を開けるようにした際に clickable 引数('roster')が付いた。
-  // どちらも「一覧」ではなく単独表示なので、除外である点は変わらない
-  "portraitImg(neg.fighterId, 96, 'negc-speaker-portrait', 'roster')", // 交渉の話し手
   "portraitImg(n.fighterId, 64, '', 'roster')",  // 交渉の相手（単独）
   'portraitImg(champ.id, 28)',          // ヘッダーの王者バッジ
   'portraitImg(g.speakerId, 34)',       // 道場バナー 休憩中（§2-B の例外）
