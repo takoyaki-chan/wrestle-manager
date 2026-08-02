@@ -9146,13 +9146,19 @@ const App = {
     if (!winnerF || !loserF) return null;
     const linesW = (typeof FACTION_F09_MATCH_POST_WIN_LINES !== 'undefined') ? FACTION_F09_MATCH_POST_WIN_LINES : null;
     const linesL = (typeof FACTION_F09_MATCH_POST_LOSE_LINES !== 'undefined') ? FACTION_F09_MATCH_POST_LOSE_LINES : null;
-    // 現在スコア（pendingF09 はクリアされている可能性があるので factionRivalryPoints から取得）
-    let scoreA = 0, scoreB = 0, aName = winnerF.name, bName = loserF.name;
+    // finalizeShow より前に出すモーダルなので、本体スコアはまだ今回の興行分を含まない。
+    // 本番加算と同じ純計算を使い、ここまで終わった F09 試合分を表示値へ積み上げる。
+    let scoreA = 0, scoreB = 0;
+    let aFid = Math.min(winnerF.id, loserF.id);
+    let bFid = Math.max(winnerF.id, loserF.id);
+    let aName = winnerF.id === aFid ? winnerF.name : loserF.name;
+    let bName = winnerF.id === bFid ? winnerF.name : loserF.name;
     if (G.factionRivalryPoints && Engine.factions._pairKey) {
       const key = Engine.factions._pairKey(winnerF.id, loserF.id);
       const e = G.factionRivalryPoints[key];
       if (e) {
-        const aFid = e.factionAId, bFid = e.factionBId;
+        aFid = e.factionAId;
+        bFid = e.factionBId;
         const aFac = (G.factions || []).find(f => f.id === aFid);
         const bFac = (G.factions || []).find(f => f.id === bFid);
         scoreA = e.pointsA; scoreB = e.pointsB;
@@ -9160,12 +9166,36 @@ const App = {
         bName = bFac ? bFac.name : '';
       }
     }
+    const calcPoints = (slot, matchResult) => {
+      if (!slot || !slot._f09Locked || !matchResult || matchResult.winner === 'draw') return null;
+      if (typeof Engine.factions.calculateRivalryPointsForMatch !== 'function') return null;
+      const winner = matchResult.winner === 'left' ? 'A' : (matchResult.winner === 'right' ? 'B' : 'draw');
+      return Engine.factions.calculateRivalryPointsForMatch(G, {
+        fighterIdA: slot.left,
+        fighterIdB: slot.right,
+        winner,
+        isMain: !!slot.isSummit,
+        isTitle: !!slot.isTitle,
+        isTag: false,
+        isF09: true,
+      });
+    };
+    const currentCalc = calcPoints(m, result);
+    const sp = App._showPreview;
+    if (sp && Array.isArray(sp.validMatches) && Array.isArray(sp.results)) {
+      sp.validMatches.slice(0, idx + 1).forEach((slot, resultIdx) => {
+        const calc = calcPoints(slot, sp.results[resultIdx]);
+        if (!calc) return;
+        if (calc.winnerFactionId === aFid) scoreA += calc.pt;
+        else if (calc.winnerFactionId === bFid) scoreB += calc.pt;
+      });
+    }
     return {
       winner: { id: winnerC.id, name: winnerC.name, factionName: winnerF.name },
       loser:  { id: loserC.id,  name: loserC.name,  factionName: loserF.name },
       winnerLine: App._f09PickLine(linesW, winnerC),
       loserLine:  App._f09PickLine(linesL, loserC),
-      ptDelta: 0,  // 現状の差分計算は未実装、後段で表示
+      ptDelta: currentCalc ? currentCalc.pt : 0,
       currentScore: { a: scoreA, b: scoreB, aName, bName },
     };
   },

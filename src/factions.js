@@ -5157,24 +5157,24 @@ Engine.factions = {
 
   // §2 試合ベース・ポイント加点
   // matchCtx: { fighterIdA, fighterIdB, winner: 'A'|'B'|'draw', isMain, isTitle, isTag, isF09 }
-  accrueRivalryPointsFromMatch(state, matchCtx) {
-    if (!state || !matchCtx) return state;
-    if (!state.factions || state.factions.length === 0) return state;
-    if (matchCtx.winner !== 'A' && matchCtx.winner !== 'B') return state;
+  calculateRivalryPointsForMatch(state, matchCtx) {
+    if (!state || !matchCtx) return null;
+    if (!state.factions || state.factions.length === 0) return null;
+    if (matchCtx.winner !== 'A' && matchCtx.winner !== 'B') return null;
     const fA = this.getFactionByFighterId(state, matchCtx.fighterIdA);
     const fB = this.getFactionByFighterId(state, matchCtx.fighterIdB);
-    if (!fA || !fB || fA.id === fB.id) return state;
+    if (!fA || !fB || fA.id === fB.id) return null;
     // リーダー幹部級でなければ加点しない（F09 中も同様、ただし F09 は OVR上位5名で組まれているため自然と該当する）
     const aRank = this._getFactionMatchRank(state, fA, matchCtx.fighterIdA);
     const bRank = this._getFactionMatchRank(state, fB, matchCtx.fighterIdB);
-    if (aRank == null || bRank == null) return state;
+    if (aRank == null || bRank == null) return null;
     // 「低い方を採用」: rank 値が大きい方（fillerが大）を採用してランク確定
     const rankIdx = Math.max(aRank.idx, bRank.idx);
     const cfg = FACTION_CONFIG;
     const RANK_KEYS = ['top', 'second', 'third', 'filler'];
     const rankKey = RANK_KEYS[Math.min(rankIdx, RANK_KEYS.length - 1)];
     const base = cfg.pointsByRank[rankKey] || 0;
-    if (base <= 0) return state;
+    if (base <= 0) return null;
 
     // 補正（加算式）
     let mult = 1.0;
@@ -5195,14 +5195,28 @@ Engine.factions = {
 
     let pt = Math.round(base * mult);
     if (matchCtx.isF09) pt = Math.round(pt * cfg.f09PointsMult);
-    if (pt <= 0) return state;
+    if (pt <= 0) return null;
 
-    const winnerFaction = matchCtx.winner === 'A' ? fA : fB;
-    const entry = this._ensureRivalryPointsEntry(state, fA.id, fB.id);
+    return {
+      pt,
+      factionAId: fA.id,
+      factionBId: fB.id,
+      winnerFactionId: matchCtx.winner === 'A' ? fA.id : fB.id,
+      rankKey,
+      multiplier: mult,
+    };
+  },
+
+  accrueRivalryPointsFromMatch(state, matchCtx) {
+    const calc = this.calculateRivalryPointsForMatch(state, matchCtx);
+    if (!calc) return state;
+    const cfg = FACTION_CONFIG;
+    let pt = calc.pt;
+    const entry = this._ensureRivalryPointsEntry(state, calc.factionAId, calc.factionBId);
 
     // 週次キャップ（F09 は無視）
     if (!matchCtx.isF09) {
-      const weeklyKey = `${state.season}-${state.week}-${this._pairKey(fA.id, fB.id)}`;
+      const weeklyKey = `${state.season}-${state.week}-${this._pairKey(calc.factionAId, calc.factionBId)}`;
       if (!state._rivalryPointsWeekly) state._rivalryPointsWeekly = {};
       const used = state._rivalryPointsWeekly[weeklyKey] || 0;
       const remain = Math.max(0, cfg.pointsWeeklyCapPerPair - used);
@@ -5211,7 +5225,7 @@ Engine.factions = {
       state._rivalryPointsWeekly[weeklyKey] = used + pt;
     }
 
-    if (winnerFaction.id === entry.factionAId) entry.pointsA += pt;
+    if (calc.winnerFactionId === entry.factionAId) entry.pointsA += pt;
     else entry.pointsB += pt;
     entry.lastUpdatedSeason = state.season;
     entry.lastUpdatedWeek = state.week;
