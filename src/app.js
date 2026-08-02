@@ -52,7 +52,7 @@ function resolveActiveStageBgm(app) {
     if (!isTagMatch && _isRivalryBgmMatch(match)) return 'rivalry';
     return 'battle';
   }
-  if (app._b3Preview?.watching || app._common1Preview?.watching || app._b2Preview?.watching) return 'bigMatch';
+  if (app._b3Preview?.watching || app._b2Preview?.watching) return 'bigMatch';
   if (app._warPreview) return app._warPreview.currentWatching >= 0 ? 'bigMatch' : 'war';
   if (app._ppvPreview) return app._ppvPreview.currentWatching >= 0 ? 'bigMatch' : _ppvStageTrack(app._ppvPreview);
 
@@ -7084,12 +7084,6 @@ const App = {
       App._receiveB3BattleResult(data);
       return;
     }
-    // Common-1 派閥内対決 context
-    const c1 = App._common1Preview;
-    if (c1 && c1.watching) {
-      App._receiveCommon1BattleResult(data);
-      return;
-    }
     // B2 context
     const b2 = App._b2Preview;
     if (b2 && b2.watching) {
@@ -7241,16 +7235,6 @@ const App = {
     if (b2 && b2.watching) {
       b2.watching = false;
       App.b2SkipMatch();
-      return;
-    }
-    // 派閥内対決(Common-1)。ここだけ復帰の枝が抜けていた(2026-07-31 監査で検出)。
-    // 抜けていると中断してもwatchingが立ったままで、後から遅れて届いた
-    // iframe の結果がもう一度 _finalizeCommon1Match を走らせ、MQ記録・絆・因縁・
-    // 派閥ポイントが**二重に入る**。数字が黙って狂うので見つけにくい。
-    const c1 = App._common1Preview;
-    if (c1 && c1.watching) {
-      c1.watching = false;
-      App.common1SkipMatch();
       return;
     }
   },
@@ -8009,7 +7993,7 @@ const App = {
           const booking = s.bookedCommon1;
           const m = validMatches[c1Idx];
           const r = results[c1Idx];
-          // 引き分けの扱いは旧・即時試合フロー(_finalizeCommon1Match)と同じく非leftをBの勝ちとして解決する
+          // 通常興行の試合エンジンは時間切れでも判定勝ちを返すため、ここには必ず左右どちらかの勝者が来る。
           const winnerId = r.winner === 'left' ? m.left : m.right;
           const loserId  = r.winner === 'left' ? m.right : m.left;
           const c1Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xC0B1));
@@ -13330,160 +13314,6 @@ const App = {
 
     // 結果画面表示
     setTimeout(() => _renderB3MatchResult(event, matchResult, playerFighter, challenger), 300);
-  },
-
-  // ── Common-1 派閥内対決: ビッグマッチ実試合フロー ──
-  common1WatchMatch() {
-    const c1 = App._common1Preview;
-    if (!c1) return;
-    c1.watching = true;
-    const overlay = document.getElementById('battleOverlay');
-    overlay.style.display = 'block';
-    const escBtn = document.getElementById('battleEscapeBtn');
-    if (escBtn) { escBtn.style.opacity = '0'; escBtn.style.pointerEvents = 'none'; }
-    clearTimeout(App._escBtnTimer);
-    App._escBtnTimer = setTimeout(() => { if (escBtn) { escBtn.style.opacity = '1'; escBtn.style.pointerEvents = 'auto'; } }, 8000);
-
-    const fA = c1.fighterA, fB = c1.fighterB;
-    const c1Rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0F1));
-    const c1RawResult = Engine.battle.simulateMatch(
-      { ...fA, condition: 80 }, { ...fB, condition: 80 },
-      c1Rng, 2, { recordFrames: true });
-    const c1Finalized = Engine.mq.finalize(G, c1RawResult, {
-      path: 'App.common1WatchMatch',
-      matchType: 'singles',
-      participantFighters: [fA, fB],
-    }, 'raw');
-    const c1Result = {
-      ...c1RawResult,
-      mq: c1Finalized.mq,
-      mqInventory: c1Finalized.mqInventory,
-    };
-    c1._preResult = c1Result;
-    const iframe = document.getElementById('battleIframe');
-    const factionName = c1.payload.factionName || '派閥';
-    const msg = {
-      type: 'START_MATCH',
-      left: {
-        ...fA, condition: 80,
-        portraitUrl: getPortraitUrl(fA.id), profile: CHAR_PROFILES[fA.id] || '',
-        vl: fA.voiceLines || fA.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fA.id]) || ['…！']
-      },
-      right: {
-        ...fB, condition: 80,
-        portraitUrl: getPortraitUrl(fB.id), profile: CHAR_PROFILES[fB.id] || '',
-        vl: fB.voiceLines || fB.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fB.id]) || ['…！']
-      },
-      matchInfo: {
-        header: `⚔ ${factionName} 派閥内対決`,
-        subHeader: `${fA.name} vs ${fB.name}`,
-        matchNum: 1, totalMatches: 1,
-        isTitle: false, isSpecialMatch: true, matchTier: 2,
-        rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, fA.id, fB.id); return rl ? rl.tier : 0; })(),
-        leftPersonality: fA.personality || 'normal', leftArchetype: fA.archetype || 'standard',
-        rightPersonality: fB.personality || 'normal', rightArchetype: fB.archetype || 'standard',
-        sfxMasterVol: Audio.sfxMasterVol, bgmMasterVol: Audio.bgmMasterVol,
-      },
-      result: c1Result,
-    };
-    try { Audio.bgm.playStage('bigMatch'); } catch(e) {}
-    let sent = false;
-    const sendOnce = () => { if (sent) return; sent = true; iframe.contentWindow.postMessage(msg, '*'); };
-    iframe.onload = () => setTimeout(sendOnce, 200);
-    iframe.src = 'battle-engine.html?t=' + Date.now();
-    setTimeout(sendOnce, 800);
-  },
-
-  common1SkipMatch() {
-    const c1 = App._common1Preview;
-    if (!c1) return;
-    // ここで観戦フラグを必ず降ろす。降ろさないと、放置された iframe から後で届く
-    // 結果を message ハンドラが拾い、同じ試合の精算が二度走る(B2/B3 と同じ作法)。
-    c1.watching = false;
-    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0F1));
-    const rawResult = Engine.battle.simulateMatch(c1.fighterA, c1.fighterB, rng, 2);
-    const finalized = Engine.mq.finalize(G, rawResult, {
-      path: 'App.common1SkipMatch',
-      matchType: 'singles',
-      participantFighters: [c1.fighterA, c1.fighterB],
-    }, 'raw');
-    const matchResult = {
-      ...rawResult,
-      mq: finalized.mq,
-      mqInventory: finalized.mqInventory,
-    };
-    c1.matchResult = matchResult;
-    App._finalizeCommon1Match(matchResult);
-  },
-
-  _receiveCommon1BattleResult(data) {
-    const c1 = App._common1Preview;
-    if (!c1) return;
-    c1.watching = false;
-    const matchResult = c1._preResult || {
-      winner: data.winner,
-      finType: data.finType || '', finMove: data.finMove || '',
-      turns: data.turns || 0, mq: data.mq || 50,
-      hpLeft: { final: data.hpLeft ? (data.hpLeft.current != null ? data.hpLeft.current : data.hpLeft.final) : 0, max: data.hpLeft ? data.hpLeft.max : 100 },
-      hpRight: { final: data.hpRight ? (data.hpRight.current != null ? data.hpRight.current : data.hpRight.final) : 0, max: data.hpRight ? data.hpRight.max : 100 },
-      log: data.log || []
-    };
-    c1.matchResult = matchResult;
-    // 2026-07-27 Keisuke 報告: イベント試合は決着音のかわりに coin(お金の音)が鳴り、
-    // BGM もフェードアウトするだけで**元に戻っていなかった**。
-    // 音の規則は playMatchResultSe(=共通ポップアップと同じ判定)に寄せる。
-    try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
-    document.getElementById('battleOverlay').style.display = 'none';
-    playMatchResultSe(c1.fighterA, c1.fighterB,
-      matchResult.winner === 'right' ? 'right' : matchResult.winner === 'draw' ? 'draw' : 'left');
-    App.restoreBgmForState(1600);
-    App._finalizeCommon1Match(matchResult);
-  },
-
-  _finalizeCommon1Match(matchResult) {
-    const c1 = App._common1Preview;
-    if (!c1) return;
-    const { payload, fighterA, fighterB, finalizeAudio } = c1;
-    const winnerId = matchResult.winner === 'left' ? fighterA.id : fighterB.id;
-    const loserId  = matchResult.winner === 'left' ? fighterB.id : fighterA.id;
-    G = Engine.mq.updateRecord(G, matchResult, {
-      holderIds: [fighterA.id, fighterB.id],
-      orgId: 'player',
-      stage: 'event',
-    }).state;
-
-    // 因縁・関係性の正規パイプライン（同団体ペア）
-    if (G.relationships) {
-      const c1RelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0FE));
-      const c1Context = {
-        mq: matchResult.mq,
-        winner: matchResult.winner === 'left' ? 'win' : (matchResult.winner === 'right' ? 'lose' : 'draw'),
-        hpA: matchResult.hpLeft, hpB: matchResult.hpRight,
-        turns: matchResult.turns,
-        stage: 'normal', isTitleMatch: false, rivalryResolved: false, injuredId: null,
-        isCareerBestA: matchResult.mq > (fighterA.careerBestMQ || 0),
-        isCareerBestB: matchResult.mq > (fighterB.careerBestMQ || 0),
-        losingStreakA: fighterA.losingStreak || 0, losingStreakB: fighterB.losingStreak || 0,
-        ovrA: Engine.util.ov(fighterA), ovrB: Engine.util.ov(fighterB),
-        isCrossOrg: false,
-      };
-      G = Engine.relationships.applyMatchResult(G, fighterA.id, fighterB.id, c1Context, c1RelRng);
-    }
-
-    // Common1 専用 trust/rivalry 反映
-    const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC0FA));
-    const result = Engine.factions.applyCommon1MatchResult(G, payload, winnerId, loserId, rng);
-    G = { ...result.state };
-    Storage.autoSave();
-    renderWeekScreen();
-
-    setTimeout(() => {
-      _renderCommon1MatchResult(payload, matchResult, fighterA, fighterB, result, () => {
-        App._common1Preview = null;
-        App.restoreBgmForState && App.restoreBgmForState();
-        if (finalizeAudio) finalizeAudio();
-      });
-    }, 300);
   },
 
   // B3: 結果画面を閉じる

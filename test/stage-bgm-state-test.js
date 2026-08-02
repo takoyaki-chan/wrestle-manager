@@ -59,7 +59,7 @@ assert.strictEqual(resolveActiveStageBgm({ _showPreview: { currentWatching: 0, v
 assert.strictEqual(resolveActiveStageBgm({ _showPreview: { currentWatching: 0, validMatches: [{ isTitle: true }] } }), 'bigMatch', 'watched title match must restore FB1');
 assert.strictEqual(resolveActiveStageBgm({ _showPreview: { currentWatching: 0, validMatches: [{ isTitle: true, teamA: {} }] } }), 'battle', 'watched title tag match must retain the tag-battle BGM choice');
 assert.strictEqual(resolveActiveStageBgm({ _b3Preview: { watching: true } }), 'bigMatch', 'B3 challenge match must restore FB1');
-assert.strictEqual(resolveActiveStageBgm({ _common1Preview: { watching: true } }), 'bigMatch', 'faction showdown must restore FB1');
+assert.ok(!appSource.includes('_common1Preview'), '予約化済みCommon-1の旧即時試合BGM状態を残さない');
 assert.strictEqual(resolveActiveStageBgm({ _b2Preview: { watching: true } }), 'bigMatch', 'B2 special match must restore FB1');
 
 // ── WM-M03 因縁戦（相互 rivalry が tier2「宿敵」以上でのみ差し替わる） ──
