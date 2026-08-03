@@ -11975,11 +11975,7 @@ const App = {
       // 表彰式BGMフェードアウト後に通常BGMを再開
       App.restoreBgmForState(1600);
       // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
-      if (pendingAwards.hallOfFame.length > 0) {
-        G = Engine.awards.applyHallOfFame(G, pendingAwards.hallOfFame);
-      } else {
-        G = { ...G, retiredFighters: [] };
-      }
+      G = Engine.awards.finalizeRetireeBuffer(G);
       const {
         pendingAwards: _finishedAwards,
         _annualAwardsCeremonyPending: _finishedStage,
@@ -14278,6 +14274,20 @@ const App = {
   },
 
   // Skip a war match (auto-resolve)
+  // 対抗戦の代表戦も、他のイベント結果と同じ勝敗SEの規則を通す。
+  // 対抗戦カードでは自団体側を常に左に置くため、所属を明示してから
+  // 共通判定へ渡す（古いセーブの選手データに orgId が無い場合の保険）。
+  _playWarMatchResultSe(matchResult) {
+    if (!matchResult || typeof playMatchResultSe !== 'function') return;
+    const opponentOrgId = App._warPreview?.ev?.opponentOrgId
+      || matchResult.aiFighter?.orgId || 'rival';
+    playMatchResultSe(
+      { ...matchResult.playerFighter, orgId: 'player' },
+      { ...matchResult.aiFighter, orgId: opponentOrgId },
+      matchResult.playerWon ? 'left' : 'right'
+    );
+  },
+
   warSkipMatch(idx) {
     const wp = App._warPreview;
     if (!wp || wp.results[idx]) return;
@@ -14295,7 +14305,7 @@ const App = {
       victoryLine: _getWarVictoryLine(winnerFighter, G),
       winnerName: winnerFighter.name, winnerId: winnerFighter.id
     };
-    Audio.play('tick');
+    App._playWarMatchResultSe(wp.results[idx]);
     renderWarMatchPreview();
     if (wp.results.every(r => r !== null)) App.finalizeWar();
   },
@@ -14336,7 +14346,7 @@ const App = {
     try { Audio.fileBgm.fadeOut(1500); } catch(e) {}
     document.getElementById('battleOverlay').style.display = 'none';
     wp.currentWatching = -1;
-    Audio.play('click');
+    App._playWarMatchResultSe(wp.results[idx]);
     renderWarMatchPreview();
     if (wp.results.every(r => r !== null)) {
       App.finalizeWar();

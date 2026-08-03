@@ -3152,7 +3152,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .pb-fighter.is-player-side .pb-fighter-meta{color:var(--c-info)}
 .pb-fighter.is-enemy-side .pb-fighter-meta{color:var(--pb-enemy-color,#e74c3c)}
 .pb-mrow.is-resolved{padding:12px 20px;border-bottom:1px solid rgba(200,190,170,0.05)}
-.pb-mrow.is-resolved .pb-portrait{width:46px;height:66px}
+/* 対抗戦も結果画面の選手写真は通常の対戦カードと同じ大きさにする。
+   小さなサムネイル化は勝敗やセリフの視認性を落とし、他イベントと不統一だった。 */
+.pb-mrow.is-resolved .pb-portrait{width:108px;height:162px}
 .pb-mrow.is-resolved .pb-fighter-ovr .val{font-size:24px}
 .pb-mrow.is-resolved .pb-fighter-name{font-size:14px}
 .pb-mrow.is-resolved.has-dialogue{padding-top:72px}

@@ -359,6 +359,24 @@ const Engine = {
       });
       if (before.missingRetiredSeasons.length > 0) changes.push(`retired_seasons_backfilled:${before.missingRetiredSeasons.length}`);
 
+      // A prior season's records can survive if year-end presentation was
+      // interrupted. Preserve the recycle clock while removing only stale
+      // presentation records.
+      const currentSeason = Number(state.season || 1);
+      const staleRetirees = (state.retiredFighters || []).filter(fighter => {
+        const retireEvent = [...(fighter?.careerRecord?.history || [])]
+          .reverse().find(event => event?.type === 'retire');
+        // Legacy snapshots without a retirement event are still used by old
+        // save migration and must remain available for that repair path.
+        if (!retireEvent) return false;
+        const retiredSeason = Number(retireEvent.season);
+        return Number.isFinite(retiredSeason) && retiredSeason < currentSeason;
+      });
+      if (staleRetirees.length > 0) {
+        state = Engine.awards.finalizeRetireeBuffer(state, staleRetirees);
+        changes.push(`stale_retirement_buffer_cleared:${staleRetirees.length}`);
+      }
+
       const severe = before.missing.length > 0
         || before.duplicates.length > 0
         || before.freeAgents === 0
@@ -16833,6 +16851,11 @@ const Engine = {
           return { state: s, events: ['🎬 体験版の最終シーズンが終了しました。'] };
         }
         // OffWeek 5: New season preparation — advance to next season
+        // Safety net for headless/fast-forward flows that do not finish the
+        // awards UI. The recycle cooldown data is kept separately.
+        if ((s.retiredFighters || []).length > 0) {
+          s = Engine.awards.finalizeRetireeBuffer(s);
+        }
         // v0.95: Archive season stats before transition
         const oldSeason = s.season;
         const oldStats = s.seasonStats || { wins:0, losses:0, draws:0, showCount:0, totalRevenue:0, totalExpense:0, bestMQ:0, bestMQMatch:'', peakFunds:s.funds, peakPop:0, eventsWon:0, eventsLost:0 };
@@ -20289,6 +20312,31 @@ Engine.awards = {
    * @param {Array} inductees - checkHallOfFame の結果
    * @returns {Object} 新しい state
    */
+  // `retiredFighters` is presentation-only. The reincarnation cooldown lives
+  // in retiredIds/retiredSeasons, so a stuck presentation buffer must never
+  // make a retired wrestler remain visible indefinitely.
+  finalizeRetireeBuffer(state, retirees = state.retiredFighters || []) {
+    const targetIds = new Set((retirees || []).map(f => f?.id).filter(id => id != null));
+    if (targetIds.size === 0) return state;
+    const targets = (state.retiredFighters || []).filter(f => targetIds.has(f?.id));
+    if (targets.length === 0) return state;
+
+    const bufferState = { ...state, retiredFighters: targets };
+    const inductees = Engine.awards.checkHallOfFame(bufferState);
+    const finalized = inductees.length > 0
+      ? Engine.awards.applyHallOfFame(bufferState, inductees)
+      : { ...bufferState, retiredFighters: [] };
+
+    return {
+      ...state,
+      hallOfFame: finalized.hallOfFame,
+      allHallOfFame: finalized.allHallOfFame,
+      retiredFighters: (state.retiredFighters || []).filter(f => !targetIds.has(f?.id)),
+      retiredIds: finalized.retiredIds,
+      retiredSeasons: finalized.retiredSeasons,
+    };
+  },
+
   applyHallOfFame(state, inductees) {
     // 修正A: hofPoints/hofLevel が欠落している場合は再計算して補完
     const safeInductees = inductees.map(h => {
