@@ -1,0 +1,32 @@
+{
+  "version": 2,
+  "status": "placeholder_only",
+  "description": "ゲーム配置確認用。全ファイルは最終絵ではなく、技名・優先度・担当レイヤーを明示した512px WebPプレースホルダー。",
+  "scope": {
+    "p0": "全スタイルの大技（styleMoves の d >= 11）",
+    "p1": "初期30技の基本セット",
+    "p2": "小技は未作成。必要になった時だけ追加する。"
+  },
+  "assetLayout": {
+    "filename": "NN_english_slug_component.webp",
+    "width": 512,
+    "height": 512,
+    "format": "webp",
+    "components": [
+      "attacker.webp",
+      "defender.webp",
+      "overlay.webp"
+    ],
+    "componentLabels": {
+      "attacker": { "en": "ATTACKER", "ja": "攻め側", "color": [221, 76, 91] },
+      "defender": { "en": "DEFENDER", "ja": "受け側", "color": [70, 142, 235] },
+      "overlay": { "en": "OVERLAY", "ja": "輪郭・影", "color": [159, 105, 226] }
+    },
+    "unassignedLabel": "未配置"
+  },
+  "assetCount": 87,
+  "componentCount": 261,
+  "catalog": "placeholder_assets.json",
+  "coveragePlan": "../../docs/move-illustration-coverage-plan-v0.1.md",
+  "replacementRule": "ポーズ参照から最終素材を作る時は、同じ技番号・slugを持つ3プレースホルダーを attacker / defender / overlay の最終WebPへ置き換える。"
+}
