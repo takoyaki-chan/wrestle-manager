@@ -264,6 +264,9 @@ function findExtractorHelpers(text) {
     const braceStart = m.index + m[0].length - 1;
     const body = extractBraceBody(text, braceStart);
     if (!body) continue;
+    // A plain occurrence counter also uses source.indexOf(marker), but its call sites
+    // assert counts such as zero and must not be treated as positive source markers.
+    if (!/\.(?:slice|substring|substr)\s*\(/.test(body)) continue;
 
     const idxCallRe = /(\w+)\.indexOf\(\s*(\w+)\s*[,)]/g;
     let im;

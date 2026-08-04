@@ -1,5 +1,9 @@
 {
   "scripts": {
+    "demo:dev": "node tools/serve-battle-demo.js",
+    "demo:build": "node tools/build-battle-demo.js",
+    "demo:preview": "node tools/serve-battle-demo.js --dist",
+    "test:demo": "node test/battle-demo-test.js",
     "test": "node test/run-all.js",
     "test:quick": "node test/run-all.js --quick",
     "test:stale": "node test/stale-lint.js",
