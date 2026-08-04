@@ -2237,7 +2237,7 @@ const Storage = {
           if (!isInflated) return c;
           // Recalculate with age-appropriate values
           const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 888));
-          const startVals = Engine.rival.generateStartValues(rng, nv, c.age);
+          const startVals = Engine.rival.generateStartValues(rng, nv, c.trainCap, c.age, c.traits || []);
           return { ...c, ...startVals };
         })};
         G = { ...G, _migrated_v1_0_fa_notion: true };
@@ -2251,10 +2251,67 @@ const Storage = {
           const ageRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, c.id, 1616));
           const newAge = 17 + Engine.rng.int(ageRng, 0, 6);
           const nv = c.notionValue || {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
-          const startVals = Engine.rival.generateStartValues(ageRng, nv, newAge);
+          const startVals = Engine.rival.generateStartValues(ageRng, nv, c.trainCap, newAge, c.traits || []);
           return { ...c, age: newAge, ...startVals };
         })};
         G = { ...G, _migrated_v1_2_fa_age: true };
+      }
+
+      // Growth lifecycle v1: 遅咲き is folded into 晩成, and every current
+      // fighter receives the fields used by the shared maturity/workload logic.
+      if (!G._migrated_growth_lifecycle_v1) {
+        const legacySeasonMatches = (G.week || 1) > 1 ? 11 : 0;
+        const migrateTraits = fighter => {
+          if (!fighter) return fighter;
+          const currentTraits = Array.isArray(fighter.traits) ? fighter.traits : [];
+          const hasLateStarter = currentTraits.includes('遅咲き');
+          const traits = hasLateStarter
+            ? [...new Set([...currentTraits.filter(t => t !== '早熟' && t !== '晩成' && t !== '遅咲き'), '晩成'])]
+            : currentTraits;
+          return {
+            ...fighter,
+            traits,
+            seasonMatchCount: Number.isFinite(fighter.seasonMatchCount) ? fighter.seasonMatchCount : legacySeasonMatches
+          };
+        };
+        const hasActiveCareer = fighter => {
+          const totalMatches = (fighter.wins || 0) + (fighter.losses || 0) + (fighter.draws || 0);
+          const timeline = fighter.orgTimeline || [];
+          const history = fighter.careerRecord?.history || [];
+          return totalMatches > 0
+            || (fighter.growthLog || []).length > 0
+            || timeline.some(e => e && e.orgId && e.orgId !== 'fa')
+            || history.some(e => e && (e.type === 'debut' || e.type === 'transfer'))
+            || (!!fighter.orgId && fighter.orgId !== 'fa');
+        };
+        const migrateActive = fighter => ({ ...migrateTraits(fighter), careerStage: 'active' });
+        const migrateProspect = fighter => {
+          let next = migrateTraits(fighter);
+          next.careerStage = next.careerStage || (hasActiveCareer(next) ? 'active' : 'prospect');
+          if (next.careerStage === 'prospect' && next.notionValue && next.trainCap) {
+            const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, next.id, next.age || 17, 0xFA04));
+            next = Engine.rival.syncProspectMaturity(rng, next);
+          }
+          return next;
+        };
+        const migrateArchive = fighter => migrateTraits(fighter);
+        const aiOrgs = Object.fromEntries(Object.entries(G.aiOrgs || {}).map(([orgId, org]) => [
+          orgId, { ...org, roster: (org.roster || []).map(migrateActive) }
+        ]));
+        G = {
+          ...G,
+          roster: (G.roster || []).map(migrateActive),
+          freeAgents: (G.freeAgents || []).map(migrateProspect),
+          scoutCandidates: (G.scoutCandidates || []).map(migrateProspect),
+          retiredFighters: (G.retiredFighters || []).map(migrateArchive),
+          hallOfFame: (G.hallOfFame || []).map(migrateArchive),
+          allHallOfFame: Object.fromEntries(Object.entries(G.allHallOfFame || {}).map(([key, entries]) => [key, (entries || []).map(migrateArchive)])),
+          aiOrgs,
+          _migrated_growth_lifecycle_v1: true
+        };
+        if (Array.isArray(G.pendingRetirements)) {
+          G = { ...G, pendingRetirements: G.pendingRetirements.map(entry => entry?.fighter ? { ...entry, fighter: migrateArchive(entry.fighter) } : entry) };
+        }
       }
 
       // v0.99 migration: assign assessedValue to all characters (pricing-balance-spec §1)
@@ -5109,6 +5166,8 @@ const App = {
       injury: fighter.injury || null,
       seasonGrowth: fighter.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
       careerSeasons: fighter.careerSeasons || 0,
+      careerStage: 'active',
+      seasonMatchCount: fighter.seasonMatchCount || 0,
       intensive: fighter.intensive ?? false,
       intensiveWeeks: fighter.intensiveWeeks || 0,
       lastMatchResult: fighter.lastMatchResult || null,
@@ -5158,6 +5217,8 @@ const App = {
       losingStreak: fighter?.losingStreak || 0,
       preInjuryPop: fighter?.preInjuryPop ?? null,
       careerSeasons: fighter?.careerSeasons || 0,
+      careerStage: 'active',
+      seasonMatchCount: fighter?.seasonMatchCount || 0,
       promoStack: fighter?.promoStack || 0,
     };
   },

@@ -59,7 +59,7 @@ const charPotData = ALL_CHARS.map(c => {
   const potSum = pot.pw + pot.sp + pot.te + pot.st + pot.mn;
   const capOVR = potSum / 5;
   const initOVR = (c.pw + c.sp + c.te + c.st + c.mn) / 5;
-  const hasAgeTrait = (c.traits || []).some(t => ['早熟', '晩成', '遅咲き'].includes(t));
+  const hasAgeTrait = (c.traits || []).some(t => ['早熟', '晩成'].includes(t));
   return { id: c.id, name: c.name, potSum, capOVR, initOVR, hasAgeTrait, traits: c.traits || [] };
 }).sort((a, b) => b.potSum - a.potSum);
 

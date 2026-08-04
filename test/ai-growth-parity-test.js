@@ -136,6 +136,24 @@ function testSharedSeasonWear() {
   });
 }
 
+function testAIInitialWearUsesSharedDecayStartAge() {
+  const originalDurability = Engine.career.generateDurability;
+  Engine.career.generateDurability = () => 0;
+  try {
+    const template = {
+      id: 1010, name: '初期wear検証', h: 165,
+      pw: 70, sp: 70, te: 70, st: 70, mn: 70,
+      pot: { pw: 100, sp: 100, te: 100, st: 100, mn: 100 },
+      traits: [], style: 'Grappler', role: 'standard', personality: 'normal',
+    };
+    const fighter = Engine.rival.makeAIFighter(template, Engine.rng.create(10), S_ORG.id, 24);
+    assert.ok(fighter.wear > 0,
+      '耐久0の24歳AIは共通のdecayStartAge=23に従い、初期wearを1年分持つ');
+  } finally {
+    Engine.career.generateDurability = originalDurability;
+  }
+}
+
 function testSeasonTrainerAndPlayerIsolation() {
   const eligible = makeFighter(1005);
   const worn = makeFighter(1006, { wear: 1 });
@@ -196,6 +214,7 @@ function testValidationAndDeadConfigRemoval() {
 testShowWeekAndHeatParity();
 testRestAndIntensiveGuards();
 testSharedSeasonWear();
+testAIInitialWearUsesSharedDecayStartAge();
 testSeasonTrainerAndPlayerIsolation();
 testValidationAndDeadConfigRemoval();
 

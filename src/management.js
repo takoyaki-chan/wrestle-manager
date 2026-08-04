@@ -7807,17 +7807,15 @@ const Engine = {
 
     // 実効 durability — durability 値に trait バイアスを合算したもの。
     // 衰退タイミング (decayStartAge) と wear 蓄積速度 (wearBonus) の両方に使う。
-    // 早熟は durability を相殺してでも早く散らせ、晩成/鉄人は逆に長持ちさせる。
-    // bias: 早熟 -1 / 晩成 +2 / 鉄人 +2 / 遅咲き +1 / 不屈 +1
+    // 成長タイプでは晩成だけを軽く延命し、早熟は素の耐久をそのまま使う。
+    // bias: 晩成 +1 / 鉄人 +2 / 不屈 +1
     // 仕様: durability ∈ [-3,+3] (N(0,2) クランプ) + trait bias、最終は [-3,+3] にクランプ
     getEffectiveDurability(fighter) {
       const base = fighter && fighter.durability != null ? fighter.durability : 0;
       const traits = (fighter && fighter.traits) || [];
       let bias = 0;
-      if (traits.indexOf('早熟') !== -1) bias -= 1;
-      if (traits.indexOf('晩成') !== -1) bias += 2;
+      if (traits.indexOf('晩成') !== -1) bias += 1;
       if (traits.indexOf('鉄人') !== -1) bias += 2;
-      if (traits.indexOf('遅咲き') !== -1) bias += 1;
       if (traits.indexOf('不屈') !== -1) bias += 1;
       return Math.max(-3, Math.min(3, base + bias));
     },
@@ -7933,8 +7931,13 @@ const Engine = {
       if (nc.age >= decayStartAge) {
         const baseWear = 10 + Engine.rng.int(rng, -3, 3); // 7〜13
         let wearBonus = 0;
-        const avgMatches = Math.round(((nc.wins || 0) + (nc.losses || 0) + (nc.draws || 0)) / nc.careerSeasons);
-        if (avgMatches >= 40) wearBonus += 3;
+        // The current season's actual appearances are the workload input.
+        // This applies identically to every growth type; low-volume use is a
+        // meaningful way to extend a career without a special early-bloomer rule.
+        const seasonMatches = Math.max(0, nc.seasonMatchCount || 0);
+        if (seasonMatches <= 10) wearBonus -= 1;
+        else if (seasonMatches >= 25) wearBonus += 4;
+        else if (seasonMatches >= 19) wearBonus += 2;
         wearBonus += (nc.seasonInjuries || 0) * 2;
         wearBonus += Math.round(seasonIntWeeks * GROWTH_CONFIG.intensiveWearPerWeek);
         wearBonus -= effDura;
@@ -7947,6 +7950,7 @@ const Engine = {
         nc.strainDebt = (nc.strainDebt || 0) + seasonIntWeeks * GROWTH_CONFIG.strainDebtPerIntensiveWeek;
       }
       nc.seasonIntensiveWeeks = 0;
+      nc.seasonMatchCount = 0;
       return nc;
     },
 
@@ -7984,6 +7988,7 @@ const Engine = {
         nc.seasonGrowth = { pw: 0, sp: 0, te: 0, st: 0, mn: 0 };
         nc.seasonPopGrowth = 0;
         nc.seasonInjuries = 0; // v1.3-2: §5.4 シーズンリセット
+        nc.seasonMatchCount = 0;
         nc.lowPerformanceSeasons = nc.lowPerformanceSeasons || 0;
         // v0.99: Age-based reassessment (pricing-balance-spec §4.2)
         if (nc.age === 25) {
@@ -8352,32 +8357,63 @@ const Engine = {
       });
       return caps;
     },
-    // Generate entry-level current values (training-spec §1.3)
-    generateStartValues(rng, notionValue, entryAge) {
-      let baseRatio, spread;
-      if (entryAge <= 18)      { baseRatio = 0.40; spread = 0.30; }
-      else if (entryAge <= 20) { baseRatio = 0.50; spread = 0.25; }
-      else if (entryAge <= 24) { baseRatio = 0.75; spread = 0.10; }
-      else if (entryAge <= 27) { baseRatio = 0.85; spread = 0.10; }
-      else                     { baseRatio = 0.90; spread = 0.10; }
+    // Entry maturity is shared by player, draft, scout and AI generation.
+    // The ratio expresses the current physical ability relative to the template
+    // ability, not potential/trainCap.  It keeps a late-discovered prospect
+    // useful without pretending that they already have years of match history.
+    getEntryMaturityRatio(entryAge, traits = []) {
+      const age = Number(entryAge) || 17;
+      let normal, early, late;
+      if (age <= 17)      { normal = 0.75; early = 0.75; late = 0.68; }
+      else if (age === 18){ normal = 0.79; early = 0.84; late = 0.74; }
+      else if (age === 19){ normal = 0.83; early = 0.91; late = 0.80; }
+      else if (age === 20){ normal = 0.87; early = 0.96; late = 0.85; }
+      else if (age === 21){ normal = 0.91; early = 1.00; late = 0.90; }
+      else if (age === 22){ normal = 0.95; early = 1.00; late = 0.95; }
+      else                { normal = 1.00; early = 1.00; late = 1.00; }
+      if (Array.isArray(traits) && traits.includes('早熟')) return early;
+      if (Array.isArray(traits) && traits.includes('晩成')) return late;
+      return normal;
+    },
+    // Generate entry-level current values.  Older saves and external callers
+    // using the former (rng, notionValue, entryAge) signature remain supported.
+    generateStartValues(rng, notionValue, trainCap, entryAge, traits = []) {
+      if (typeof trainCap === 'number') {
+        traits = entryAge || [];
+        entryAge = trainCap;
+        trainCap = null;
+      }
+      const cap = trainCap || {};
+      const baseRatio = Engine.rival.getEntryMaturityRatio(entryAge, traits);
       const vals = {};
       ['pw','sp','te','st'].forEach(s => {
-        const ratio = baseRatio + Engine.rng.float(rng) * spread;
-        vals[s] = Math.round(notionValue[s] * ratio);
+        const ratio = Engine.util.clamp(baseRatio - 0.04 + Engine.rng.float(rng) * 0.08, 0, 1);
+        const target = Math.round((notionValue[s] || 0) * ratio);
+        vals[s] = Math.min(cap[s] ?? target, target);
       });
-      vals.mn = notionValue.mn; // MNT is innate — no age reduction (training-spec §1.6)
+      // MNT remains innate, while respecting a deliberately lower trainCap.
+      vals.mn = Math.min(cap.mn ?? notionValue.mn, notionValue.mn);
       return vals;
     },
+    // Prospects who remain unsigned age through the same maturity curve.  This
+    // only ever raises their current values and never grants active veterans a
+    // free catch-up boost after they become free agents.
+    syncProspectMaturity(rng, fighter) {
+      if (!fighter || fighter.careerStage !== 'prospect' || !fighter.notionValue) return fighter;
+      const target = Engine.rival.generateStartValues(rng, fighter.notionValue, fighter.trainCap, fighter.age, fighter.traits || []);
+      const next = { ...fighter };
+      ['pw','sp','te','st','mn'].forEach(s => {
+        const cap = next.trainCap?.[s] ?? target[s];
+        next[s] = Math.min(cap, Math.max(next[s] || 0, target[s] || 0));
+      });
+      return next;
+    },
     // Make an AI fighter object from ALL_CHARS template
-    makeAIFighter(template, rng, orgId, age, factorOverride) {
+    makeAIFighter(template, rng, orgId, age, factorOverride, opts = {}) {
       const notion = {pw:template.pw,sp:template.sp,te:template.te,st:template.st,mn:template.mn};
       const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot, factorOverride);
-      // AI fighters start closer to their Notion values (established pros)
-      const maturity = Math.min(1.0, 0.70 + (age - 17) * 0.04 + Engine.rng.float(rng) * 0.10);
-      const current = {};
-      ['pw','sp','te','st','mn'].forEach(s => {
-        current[s] = Math.min(trainCap[s], Math.round(notion[s] * maturity));
-      });
+      const effectiveAge = age || (17 + Engine.rng.int(rng, 0, 11));
+      const current = Engine.rival.generateStartValues(rng, notion, trainCap, effectiveAge, template.traits || []);
       const ovr = Math.round((current.pw+current.sp+current.te+current.st+current.mn)/5);
       // Calculate assessed value (pricing-balance-spec §1)
       const charForAssess = { ...current, pot: template.pot, trainCap };
@@ -8385,9 +8421,11 @@ const Engine = {
       const durability = Engine.career.generateDurability(rng);
       // 初期Wear付与: decayStartAge超の選手にはwear蓄積済みとして生成
       // trait 合算済み実効 durability で開始年齢を判定
-      const effectiveAge = age || (17 + Engine.rng.int(rng, 0, 11));
+      const isProspect = opts.prospect ?? !orgId;
       const initEffDura = Engine.growth.getEffectiveDurability({ durability, traits: template.traits || [] });
-      const aiInitDecayStart = 24 + initEffDura;
+      // 季末の共通処理 (applySeasonTrainingWear) と同じ基準にする。
+      // ここだけ +24 にすると、途中参加するAI選手だけ初期wearが1年分少なくなる。
+      const aiInitDecayStart = 23 + initEffDura;
       let initWear = 0;
       if (effectiveAge >= aiInitDecayStart) {
         const yearsOfWear = effectiveAge - aiInitDecayStart;
@@ -8412,7 +8450,9 @@ const Engine = {
         notionValue: notion, trainCap,
         popularity: Math.max(5, Math.round(ovr * 0.6 + Engine.rng.int(rng, -5, 10))),
         orgId, age: effectiveAge,
-        careerSeasons: Math.max(0, (effectiveAge - 17)),
+        careerSeasons: isProspect ? 0 : Math.max(0, (effectiveAge - 17)),
+        careerStage: isProspect ? 'prospect' : 'active',
+        seasonMatchCount: 0,
         condition: 70 + Engine.rng.int(rng, 0, 19),
         losingStreak: 0, preInjuryPop: null,
         assessedValue: av.assessedValue, assessedTier: av.assessedTier,
@@ -10277,8 +10317,9 @@ const Engine = {
         roster = roster.map(f => {
           if (!participantIds.has(f.id)) return f;
           const rev = Math.round((f.popularity || 1) * MEDIA_CONFIG.showPerMQ * 0.15);
-          if (rev <= 0) return f;
-          return { ...f, mediaRevSeason: (f.mediaRevSeason || 0) + rev };
+          const appeared = { ...f, seasonMatchCount: (f.seasonMatchCount || 0) + 1 };
+          if (rev <= 0) return appeared;
+          return { ...appeared, mediaRevSeason: (f.mediaRevSeason || 0) + rev };
         });
 
         // recentMatches記録（AI団体）
@@ -10461,6 +10502,7 @@ const Engine = {
           f.wins = 0; f.losses = 0; f.draws = 0;
           f.lastMatchResult = null;
           f.seasonInjuries = 0;
+          f.seasonMatchCount = 0;
           // メディア功労賞: シーズン累計リセット
           f.mediaRevSeason = 0;
           f.talentRevSeason = 0;
@@ -11483,7 +11525,7 @@ const Engine = {
           if (rank === 'promising' && counts.promising >= tierLim.maxPromising) continue;
 
           // Acquire
-          const acquired = Engine.popularity.applyTransferReset({ ...fa, orgId: org.id });
+          const acquired = Engine.popularity.applyTransferReset({ ...fa, orgId: org.id, careerStage: 'active' });
           Engine.rival.pushUniqueFighter(roster, acquired);
           freeAgents = freeAgents.filter(f => f.id !== fa.id);
           events.push(`${org.emoji} ${org.name}がFA ${fa.name}を獲得`);
@@ -11567,7 +11609,7 @@ const Engine = {
         }
 
         // FA獲得
-        const acquired = Engine.popularity.applyTransferReset({ ...bestFA, orgId: org.id });
+        const acquired = Engine.popularity.applyTransferReset({ ...bestFA, orgId: org.id, careerStage: 'active' });
         Engine.rival.pushUniqueFighter(newAiOrgs[org.id].roster, acquired);
         freeAgents = freeAgents.filter(f => f.id !== bestFA.id);
         newAiOrgs[org.id]._midseasonFAGrabs = grabCount + 1;
@@ -12523,7 +12565,12 @@ const Engine = {
         roster = roster.map(c => {
           if (!usedIds.has(c.id)) return c;
           const condRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, c.id));
-          return { ...c, condition: Math.max(0, c.condition - (8 + Engine.rng.int(condRng, 0, 7))), _weekAction: 'show' };
+          return {
+            ...c,
+            condition: Math.max(0, c.condition - (8 + Engine.rng.int(condRng, 0, 7))),
+            seasonMatchCount: (c.seasonMatchCount || 0) + 1,
+            _weekAction: 'show'
+          };
         });
 
         // v2.1: trust 月次更新（出場+1.53/不出場-2.64、自然減衰、grievance、_trustBonus消費）
@@ -12897,16 +12944,6 @@ const Engine = {
         if (!template || !entry) continue;
         const age = entry.age || 19;
         const fighter = Engine.rival.makeAIFighter(template, faRng, null, age);
-        // draft-value-rebalance: 待機中の微成長（ドラフト漏れで1-2年待った選手）
-        if (age >= 19) {
-          const waitYears = age - 18;
-          const growthMul = 0.03 * waitYears; // 年3%の微成長（団体所属の約1/5）
-          for (const stat of ['pw', 'sp', 'te', 'st']) {
-            const cap = fighter.trainCap ? (fighter.trainCap[stat] || fighter[stat]) : fighter[stat];
-            const room = Math.max(0, cap - fighter[stat]);
-            fighter[stat] += Math.round(room * growthMul);
-          }
-        }
         fa.push(fighter);
         added.push(fighter);
         pool = pool.filter(e => e.id !== cid);
@@ -15858,12 +15895,14 @@ const Engine = {
         if (wId) {
           const lId = wId === match.left.id ? match.right.id : match.left.id;
           roster = roster.map(c => {
-            if (c.id === wId) return { ...c, wins: (c.wins || 0) + 1, streak: (c.streak > 0 ? c.streak : 0) + 1 };
-            if (c.id === lId) return { ...c, losses: (c.losses || 0) + 1, streak: (c.streak < 0 ? c.streak : 0) - 1 };
+            if (c.id === wId) return { ...c, wins: (c.wins || 0) + 1, streak: (c.streak > 0 ? c.streak : 0) + 1, seasonMatchCount: (c.seasonMatchCount || 0) + 1 };
+            if (c.id === lId) return { ...c, losses: (c.losses || 0) + 1, streak: (c.streak < 0 ? c.streak : 0) - 1, seasonMatchCount: (c.seasonMatchCount || 0) + 1 };
             return c;
           });
         } else if (r.winner === 'draw') {
-          roster = roster.map(c => (c.id === match.left.id || c.id === match.right.id) ? { ...c, draws: (c.draws || 0) + 1 } : c);
+          roster = roster.map(c => (c.id === match.left.id || c.id === match.right.id)
+            ? { ...c, draws: (c.draws || 0) + 1, seasonMatchCount: (c.seasonMatchCount || 0) + 1 }
+            : c);
         }
       });
 
@@ -16642,7 +16681,19 @@ const Engine = {
         }
 
         // FA: 加齢 + careerSeasons更新 + 22歳超えでdormantPoolにリサイクル（未デビュー→若返り再投入）
-        const agedFA = (s.freeAgents || []).map(f => ({ ...f, age: (f.age || 17) + 1, careerSeasons: (f.careerSeasons || 0) + 1 }));
+        const agedFA = (s.freeAgents || []).map(f => {
+          const nextAge = (f.age || 17) + 1;
+          let next = {
+            ...f,
+            age: nextAge,
+            careerSeasons: f.careerStage === 'prospect' ? (f.careerSeasons || 0) : (f.careerSeasons || 0) + 1
+          };
+          if (next.careerStage === 'prospect') {
+            const maturityRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, next.id, 0xFA03));
+            next = Engine.rival.syncProspectMaturity(maturityRng, next);
+          }
+          return next;
+        });
         const agedOutFA = agedFA.filter(f => f.age > 22);
         const youngFA   = agedFA.filter(f => f.age <= 22);
         if (agedOutFA.length > 0) {
@@ -17391,7 +17442,7 @@ const Engine = {
     const trainCap = Engine.rival.generateTrainCap(rng, notion, template.pot);
     // Player roster starts at entry-level values (training-spec §1.3)
     const entryAge = opts.age || 17;
-    const startVals = opts.useNotion ? notion : Engine.rival.generateStartValues(rng, notion, entryAge);
+    const startVals = opts.useNotion ? notion : Engine.rival.generateStartValues(rng, notion, trainCap, entryAge, template.traits || []);
     // Calculate assessed value (pricing-balance-spec §1)
     const charWithStats = { ...template, pw: startVals.pw, sp: startVals.sp, te: startVals.te, st: startVals.st, mn: startVals.mn };
     const av = Engine.scout.calcAssessedValue(charWithStats, rng, opts.season || 1);
@@ -17415,6 +17466,8 @@ const Engine = {
       injury: null,
       seasonGrowth: { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
       careerSeasons: 0,
+      careerStage: 'active',
+      seasonMatchCount: 0,
       intensive: false,
       intensiveWeeks: 0,
       lastMatchResult: null,
@@ -17469,10 +17522,9 @@ const Engine = {
       const tier = Engine.draft.EVAL_TIERS.find(t => perceived >= t.min) || Engine.draft.EVAL_TIERS[Engine.draft.EVAL_TIERS.length - 1];
       return { ...tier, variance: clampedVar };
     },
-    // v1.2: Age-based entry ratio (matches generateStartValues base + avg random)
-    _entryRatio(age) {
-      if (age <= 18) return 0.55;   // (0.40+0.70)/2 = 0.55
-      return 0.625;                 // (0.50+0.75)/2 = 0.625
+    // Display the center of the same maturity curve used by actual generation.
+    _entryRatio(age, traits = []) {
+      return Engine.rival.getEntryMaturityRatio(age, traits);
     },
     // Get candidate info with estimated entry-level OVR for display
     // coachMult: best hired coach's growthMult (0 at draft = max variance)
@@ -17480,7 +17532,7 @@ const Engine = {
       return DRAFT_CONFIG.candidates.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
         const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
-        const ratio = Engine.draft._entryRatio(age);
+        const ratio = Engine.draft._entryRatio(age, t.traits || []);
         const entryPw = Math.round(t.pw * ratio);
         const entrySp = Math.round(t.sp * ratio);
         const entryTe = Math.round(t.te * ratio);
@@ -17502,7 +17554,7 @@ const Engine = {
       return DRAFT_CONFIG.fixed.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
         const age = (DRAFT_CONFIG.draftAges && DRAFT_CONFIG.draftAges[id]) || 17;
-        const ratio = Engine.draft._entryRatio(age);
+        const ratio = Engine.draft._entryRatio(age, t.traits || []);
         const entryPw = Math.round(t.pw * ratio);
         const entrySp = Math.round(t.sp * ratio);
         const entryTe = Math.round(t.te * ratio);
@@ -17555,7 +17607,7 @@ const Engine = {
       const freeAgents = allFreeIds.map(id => {
         const t = ALL_CHARS.find(c => c.id === id);
         const age = 19 + Engine.rng.int(rng, 0, 1); // 19-20歳（ドラフト17-18との棲み分け）
-        return Engine.makeChar(t, rng, { age });
+        return { ...Engine.makeChar(t, rng, { age }), orgId: null, careerStage: 'prospect' };
       });
       // Update ORG_ASSIGN for ranking calculations
       ORG_ASSIGN.player = rosterIds;
@@ -17623,7 +17675,7 @@ const Engine = {
       const t = ALL_CHARS.find(c => c.id === id);
       if (!t) return null;
       const age = 19 + Engine.rng.int(rng, 0, 1); // 19-20歳（ドラフト17-18との棲み分け）
-      return Engine.makeChar(t, rng, { age });
+      return { ...Engine.makeChar(t, rng, { age }), orgId: null, careerStage: 'prospect' };
     }).filter(Boolean);
 
     // AI organizations (with randomized names)
@@ -18647,7 +18699,7 @@ Engine.mvpRace = {
   /** 特性 + 年齢 を自然な日本語句に整える（「○○を抱える○歳」/「○○の○歳」など） */
   _traitPhrase(traits, age) {
     if (!Array.isArray(traits) || traits.length === 0) return '';
-    const order = ['早熟', '晩成', '遅咲き', '反骨心', '不屈', '鉄人', '天才肌', '心技体', '影の支配者',
+    const order = ['早熟', '晩成', '反骨心', '不屈', '鉄人', '天才肌', '心技体', '影の支配者',
                    'リーダー気質', 'ムードメーカー', '忠誠心', '人望', '威圧感', '野心', '破天荒',
                    '努力家', '闘志', '負けず嫌い', '頑丈さ', '華', '番狂わせ体質', '適応力',
                    '引き出し上手', 'ヒール適性', 'ファンサービス', 'ガラスの心臓', 'ガラスの身体', '燃えやすい'];
@@ -18658,7 +18710,6 @@ Engine.mvpRace = {
     const M = {
       '早熟': `早熟の${a}`,
       '晩成': `晩成型の${a}`,
-      '遅咲き': `遅咲きの${a}`,
       '反骨心': `反骨心を燃やす${a}`,
       '不屈': `不屈の${a}`,
       '鉄人': `鉄人と称される${a}`,
@@ -18703,7 +18754,7 @@ Engine.mvpRace = {
     else if (state.aiOrgs && state.aiOrgs[orgId]) f = state.aiOrgs[orgId].roster.find(x => x.id === fid);
     if (!f) f = (state.retiredFighters || []).find(x => x.id === fid);
     traits = (f && f.traits) || [];
-    const isLate = traits.some(t => t === '晩成' || t === '遅咲き');
+    const isLate = traits.includes('晩成');
     const isEarly = traits.some(t => t === '早熟');
     if (isEarly) return age < 24;
     if (isLate) return age < 28;
@@ -25237,7 +25288,7 @@ Engine.contract = {
     if (traits.some(t => ['破天荒', 'ムードメーカー', '華'].includes(t))) return 'easygoing';
     if (traits.some(t => ['負けず嫌い', 'ライバル体質', 'ガラスの身体'].includes(t))) return 'emotional';
     if (traits.some(t => ['努力家', '忠誠心', 'リーダー気質', '人望', '適応力'].includes(t))) return 'earnest';
-    if (traits.some(t => ['晩成', '遅咲き', '不屈', '番狂わせ体質'].includes(t))) return 'quiet';
+    if (traits.some(t => ['晩成', '不屈', '番狂わせ体質'].includes(t))) return 'quiet';
     if (fighter.role === 'Heel') return 'bold';
     if (fighter.role === 'Babyface') return 'earnest';
     return 'quiet';

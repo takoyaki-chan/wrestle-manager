@@ -134,8 +134,7 @@ if (AGE_CURVE_MODE === 'spec') {
   }
   // eslint-disable-next-line no-global-assign
   ageMultiplier = function specAgeMultiplier(age, traits) {
-    // coordinator指定: spec §2 準拠のbaseカーブ（早熟/晩成/遅咲きの専用テーブルは温存し、
-    // ベース値だけを差し替える。トレイト別テーブルはgrowth-trait-rebalance v1.0の別仕様のため対象外）
+    // coordinator指定: spec §2 準拠のbaseカーブ。トレイト別テーブルは別仕様のため対象外。
     let mul;
     if (age <= 16) mul = 1.30;
     else if (age === 17) mul = 1.20;
@@ -167,17 +166,6 @@ if (AGE_CURVE_MODE === 'spec') {
       else if (age <= 22) mul = 1.15;
       else if (age <= 23) mul = 0.70;
       else if (age <= 24) mul = 0.30;
-      else                mul = 0;
-    } else if (traits.includes('遅咲き')) {
-      if      (age <= 17) mul = 0.40;
-      else if (age <= 18) mul = 0.50;
-      else if (age <= 19) mul = 0.60;
-      else if (age <= 20) mul = 0.70;
-      else if (age <= 21) mul = 0.80;
-      else if (age <= 22) mul = 1.00;
-      else if (age <= 23) mul = 1.15;
-      else if (age <= 24) mul = 0.80;
-      else if (age <= 25) mul = 0.30;
       else                mul = 0;
     }
     return mul;

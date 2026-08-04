@@ -4630,13 +4630,13 @@ Engine.orgTimeline = {
     const timeline = this.normalize(fighter.orgTimeline || []);
     const last = timeline[timeline.length - 1];
     if (last && last.orgId === newOrgId && !last.toSeason) {
-      return { ...fighter, orgTimeline: timeline };
+      return { ...fighter, careerStage: newOrgId === 'fa' ? fighter.careerStage : 'active', orgTimeline: timeline };
     }
     if (last && !last.toSeason) {
       timeline[timeline.length - 1] = { ...last, toSeason: season, toWeek: week };
     }
     timeline.push({ orgId: newOrgId, fromSeason: season, fromWeek: week });
-    return { ...fighter, orgTimeline: this.normalize(timeline) };
+    return { ...fighter, careerStage: newOrgId === 'fa' ? fighter.careerStage : 'active', orgTimeline: this.normalize(timeline) };
   },
   /** state からID指定で fighter オブジェクトを引く（roster/aiOrgs/freeAgents/retiredFighters 横断） */
   _findFighter(state, id) {

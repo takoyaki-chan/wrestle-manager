@@ -281,9 +281,8 @@ const TRAIT_DEFS = {
   '名勝負製造機': {cat:'match',  icon:'名', color:'#f1c40f', en:'Match Maker',      desc:'試合がたまに大化けする。キックアウトやカウンターが生まれやすい'},
   '引き出し上手': {cat:'match',  icon:'引', color:'#2ecc71', en:'Best Bringer',     desc:'格下との試合でも質が下がりにくい'},
   'ライバル体質': {cat:'match',  icon:'闘', color:'#e74c3c', en:'Rivalry Prone',    desc:'ライバル因縁が生まれやすい'},
-  '早熟':         {cat:'growth', icon:'早', color:'#27ae60', en:'Early Bloomer',    desc:'10代から即戦力。仕上がりが早いぶん、伸び盛りは短め', excl:'A'},
+  '早熟':         {cat:'growth', icon:'早', color:'#27ae60', en:'Early Bloomer',    desc:'10代から即戦力。若いうちに仕上がる成長タイプ', excl:'A'},
   '晩成':         {cat:'growth', icon:'晩', color:'#16a085', en:'Late Bloomer',     desc:'序盤は遅いが、21〜22歳でピークに成長する', excl:'A'},
-  '遅咲き':       {cat:'growth', icon:'遅', color:'#1abc9c', en:'Late Starter',     desc:'序盤は全く伸びないが、23歳で突然覚醒する', excl:'A'},
   '努力家':       {cat:'growth', icon:'努', color:'#3498db', en:'Hard Worker',      desc:'成長が安定しやすく、練習で体を壊しにくい'},
   '破天荒':       {cat:'growth', icon:'破', color:'#e67e22', en:'Maverick',         desc:'成長にムラあり。爆発的か停滞'},
   '適応力':       {cat:'growth', icon:'適', color:'#1abc9c', en:'Adaptability',     desc:'怪我中でも成長が落ちにくく、追い込み練習にも強い'},
@@ -8236,18 +8235,6 @@ function ageMultiplier(age, traits) {
     else if (age <= 22) mul = 1.15;
     else if (age <= 23) mul = 0.70;
     else if (age <= 24) mul = 0.30;
-    else                mul = 0;
-  } else if (traits.includes('遅咲き')) {
-    // ピーク22-23歳、序盤は非常に鈍い、23歳で突然覚醒。累計7.25（通常比+1%）
-    if      (age <= 17) mul = 0.40;
-    else if (age <= 18) mul = 0.50;
-    else if (age <= 19) mul = 0.60;
-    else if (age <= 20) mul = 0.70;
-    else if (age <= 21) mul = 0.80;
-    else if (age <= 22) mul = 1.00;
-    else if (age <= 23) mul = 1.15;
-    else if (age <= 24) mul = 0.80;
-    else if (age <= 25) mul = 0.30;
     else                mul = 0;
   }
   return mul;
