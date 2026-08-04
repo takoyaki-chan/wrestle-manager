@@ -1,0 +1,160 @@
+﻿target_pool_type,target_pool,move_name_ja,damage,tier_ja,category,category_ja,eligible_styles,affinity_styles,placement,origin_pool,personal_move_review
+common,共通,ストンピング,2,小技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ボディパンチ,3,小技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,バックエルボー,3,小技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ナックルパンチ,3,小技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,逆水平チョップ,4,小技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,エルボー・スタンプ,5,小技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,マシンガン・チョップ,5,小技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ニーキック,6,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ヘッドバット,6,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,低空ドロップキック,7,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,サッカーボールキック,7,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ドロップキック,8,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ジャンピング・エルボー,8,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ローリング・エルボー,9,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,延髄斬り,9,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ミサイルキック,9,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ラリアット,10,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,スーパーキック,10,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,クローズライン,10,中技,strike,打撃,全スタイル,,共有技,common,共有技として維持
+common,共通,ロックアップからの押し込み,2,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ショルダータックル,3,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ヒップトス,3,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,アームドラッグ,3,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ヘッドロック・テイクダウン,3,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ファイヤーマンズキャリー,4,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ボディスラム,6,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,スープレックス,7,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ブレーンバスター,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,サイド・スープレックス,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ネックブリーカー,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,スウィンギング・ネックブリーカー,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,バックブリーカー,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ベリー・トゥ・ベリー,9,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,スパインバスター,9,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,DDT,10,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,チンロック,2,小技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,ネックロック,2,小技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,ヘッドロック,4,小技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,リストロック,4,小技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,ハンマーロック,3,小技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,アームリンガー,4,小技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,スリーパー・ホールド,6,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,フルネルソン,6,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,コブラツイスト,7,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,ベアハッグ,7,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,キャメルクラッチ,7,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,インディアン・デスロック,7,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,ボストンクラブ,8,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,アキレス腱固め,9,中技,submission,関節・絞め,全スタイル,,共有技,common,共有技として維持
+common,共通,フライング・クロスボディ,7,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,ダイビング・ボディ・プレス,8,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,セントーン,7,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,トペ・スイシーダ,9,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,プランチャ・スイシーダ,8,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,ダイビング・エルボー,8,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,ダイビング・ヘッドバット,7,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,ミサイルキック（飛）,9,中技,aerial,空中,全スタイル,,共有技,common,共有技として維持
+common,共通,エルボードロップ,3,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,ニードロップ,4,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,レッグドロップ,4,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,スライディングキック,4,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,ストンピング連打,3,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,ヘアプル・スラム,3,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,フェイスウォッシュ,4,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,ダブルニードロップ,5,小技,ground,グラウンド,全スタイル,,共有技,common,共有技として維持
+common,共通,スクールボーイ,4,小技,rollup,丸め込み,全スタイル,,共有技,common,共有技として維持
+common,共通,首固め,4,小技,rollup,丸め込み,全スタイル,,共有技,common,共有技として維持
+common,共通,スモール・パッケージ,5,小技,rollup,丸め込み,全スタイル,,共有技,common,共有技として維持
+common,共通,ラ・マヒストラル,5,小技,rollup,丸め込み,Aerial,,共有技,common,共有技として維持
+common,共通,ウラカン・ラナ,5,小技,rollup,丸め込み,Aerial,,共有技,common,共有技として維持
+common,共通,回転エビ固め,5,小技,rollup,丸め込み,全スタイル,,共有技,common,共有技として維持
+common,共通,ヨーロピアン・クラッチ,5,小技,rollup,丸め込み,全スタイル,,共有技,common,共有技として維持
+style,Grappler,パワーボム,14,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
+style,Grappler,シットアウト・パワーボム,15,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
+style,Grappler,ジャーマン・スープレックス,13,大技,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
+style,Grappler,チョークスラム,13,大技,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
+style,Grappler,デスバレーボム,14,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
+style,Grappler,バックドロップ,13,大技,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
+style,Grappler,ラストライド,16,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
+style,Grappler,垂直落下式ブレーンバスター,14,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
+style,Grappler,力強いラリアット,12,大技,strike,打撃,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
+style,Grappler,頭突き,11,大技,strike,打撃,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
+style,Grappler,カナディアン・バックブリーカー,10,中技,submission,関節・絞め,Grappler,Grappler,スタイル技,Grappler,スタイル技として維持候補
+style,Grappler,アルゼンチン・バックブリーカー,11,大技,submission,関節・絞め,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
+style,Grappler,ビッグブーツ,7,中技,strike,打撃,Grappler,Grappler,スタイル技,common,スタイル技として維持候補
+style,Aerial,フランケンシュタイナー,12,大技,throw,投げ,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
+style,Aerial,トルネードDDT,13,大技,throw,投げ,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
+style,Aerial,シャイニング・ウィザード,12,大技,strike,打撃,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
+style,Aerial,ムーンサルト・プレス,15,大技（フィニッシャー候補）,aerial,空中,Aerial,Aerial,スタイル技,Aerial,個人技候補：優先検討
+style,Aerial,シューティング・スター・プレス,16,大技（フィニッシャー候補）,aerial,空中,Aerial,Aerial,スタイル技,Aerial,個人技候補：優先検討
+style,Aerial,450スプラッシュ,15,大技（フィニッシャー候補）,aerial,空中,Aerial,Aerial,スタイル技,Aerial,個人技候補：優先検討
+style,Aerial,フロッグ・スプラッシュ,13,大技,aerial,空中,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
+style,Aerial,スワントン・ボム,14,大技（フィニッシャー候補）,aerial,空中,Aerial,Aerial,スタイル技,Aerial,個人技候補：優先検討
+style,Aerial,トペ・コンヒーロ,11,大技,aerial,空中,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
+style,Aerial,ダイビング・セントーン,10,中技,aerial,空中,Aerial,Aerial,スタイル技,Aerial,スタイル技として維持候補
+style,Aerial,ドラゴン・スクリュー,10,中技,throw,投げ,Aerial,Aerial,スタイル技,Aerial,スタイル技として維持候補
+style,Aerial,ハリケーンラナ,12,大技,throw,投げ,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
+style,Allround,ノーザンライツ・スープレックス,12,大技,throw,投げ,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Allround,ダブルアーム・スープレックス,13,大技,throw,投げ,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Allround,リアネイキッドチョーク,11,大技,submission,関節・絞め,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Allround,テキサス・クローバーホールド,12,大技,submission,関節・絞め,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Allround,アンクル・ロック,11,大技,submission,関節・絞め,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Allround,ダイビング・ボディ・プレス（大）,11,大技,aerial,空中,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Allround,スピアー,12,大技,strike,打撃,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Allround,インプラントDDT,13,大技,throw,投げ,Allround,Allround,スタイル技,Allround,個人技候補：検討
+style,Striker,シャイニング・ウィザード（打）,13,大技,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：検討
+style,Striker,ジャンピングニー,12,大技,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：検討
+style,Striker,ハイキック,11,大技,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：検討
+style,Striker,バズソーキック,14,大技（フィニッシャー候補）,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：優先検討
+style,Striker,PK,11,大技,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：検討
+style,Striker,ランニングエルボー,13,大技,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：検討
+style,Striker,スピニングバックフィスト,12,大技,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：検討
+style,Striker,ケンカキック,15,大技（フィニッシャー候補）,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：優先検討
+style,Striker,エルボー連打,10,中技,strike,打撃,Striker,Striker,スタイル技,Striker,スタイル技として維持候補
+style,Striker,コーナーラッシュ,11,大技,strike,打撃,Striker,Striker,スタイル技,Striker,個人技候補：検討
+style,Striker,パイルドライバー,14,大技（フィニッシャー候補）,throw,投げ,Striker,Striker,スタイル技,Striker,個人技候補：優先検討
+style,Striker,ツームストン・パイルドライバー,16,大技（フィニッシャー候補）,throw,投げ,Striker,Striker,スタイル技,Striker,個人技候補：優先検討
+style,Submission,ギロチンチョーク,13,大技,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,肩固め,12,大技,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,ヒール・ホールド,13,大技,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,ロメロ・スペシャル,14,大技（フィニッシャー候補）,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：優先検討
+style,Submission,テキサス・クローバーホールド（専）,13,大技,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,リアネイキッドチョーク（専）,12,大技,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,アンクル・ロック（専）,12,大技,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,クロスフェイス（専）,14,大技（フィニッシャー候補）,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：優先検討
+style,Submission,卍固め（専）,15,大技（フィニッシャー候補）,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：優先検討
+style,Submission,フィギュア4レッグロック（専）,14,大技（フィニッシャー候補）,submission,関節・絞め,Submission,Submission,スタイル技,Submission,個人技候補：優先検討
+style,Submission,バックドロップ（専）,13,大技,throw,投げ,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,ドラゴン・スクリュー（専）,11,大技,throw,投げ,Submission,Submission,スタイル技,Submission,個人技候補：検討
+style,Submission,アームバー,11,大技,submission,関節・絞め,Submission,Submission,スタイル技,Technique,スタイル技
+style,Submission,フィギュア4レッグロック,12,大技,submission,関節・絞め,Submission,Submission,スタイル技,Technique,スタイル技
+style,Submission,STF,12,大技,submission,関節・絞め,Submission,Submission,スタイル技,Technique,スタイル技
+style,Brawler,エルボースマッシュ,12,大技,strike,打撃,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+style,Brawler,バックハンドブロー,11,大技,strike,打撃,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+style,Brawler,ヘッドバット連打,11,大技,strike,打撃,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+style,Brawler,コーナーラッシュ（喧）,12,大技,strike,打撃,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+style,Brawler,パイルドライバー（喧）,15,大技（フィニッシャー候補）,throw,投げ,Brawler,Brawler,スタイル技,Brawler,個人技候補：優先検討
+style,Brawler,ツームストン・パイルドライバー（喧）,16,大技（フィニッシャー候補）,throw,投げ,Brawler,Brawler,スタイル技,Brawler,個人技候補：優先検討
+style,Brawler,チョークスラム（喧）,14,大技（フィニッシャー候補）,throw,投げ,Brawler,Brawler,スタイル技,Brawler,個人技候補：優先検討
+style,Brawler,サイドウォークスラム,12,大技,throw,投げ,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+style,Brawler,ランニングパワースラム,13,大技,throw,投げ,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+style,Brawler,ネックハンギングツリー,12,大技,submission,関節・絞め,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+style,Brawler,フェイスウォッシュ連打,10,中技,ground,グラウンド,Brawler,Brawler,スタイル技,Brawler,スタイル技として維持候補
+style,Brawler,ストンピング乱打,11,大技,ground,グラウンド,Brawler,Brawler,スタイル技,Brawler,個人技候補：検討
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,ファルコンアロー,13,大技,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Allround,固有選定専用技,Allround,固有選定専用技
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,みちのくドライバーII,14,大技（フィニッシャー候補）,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Allround,固有選定専用技,Allround,固有選定専用技
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,エクスプローダー,12,大技,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Allround,固有選定専用技,Allround,固有選定専用技
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,フェニックス・スプラッシュ,15,大技（フィニッシャー候補）,aerial,空中,Grappler / Aerial / Allround / Striker / Submission / Brawler,Allround,固有選定専用技,Allround,固有選定専用技
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,サモアン・ドロップ,9,中技,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Grappler / Brawler,個人技候補,common,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,タイガー・ドライバー,9,中技,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Grappler / Allround,個人技候補,common,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,シャープシューター,13,大技,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Submission,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,三角絞め,12,大技,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Submission,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,クロスフェイス,13,大技,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Submission,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,卍固め,14,大技（フィニッシャー候補）,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Submission,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,ドラゴンスリーパー,13,大技,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Submission,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,キムラロック,11,大技,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Submission,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,タイガー・スープレックス,14,大技（フィニッシャー候補）,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Grappler,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,ドラゴン・スープレックス,15,大技（フィニッシャー候補）,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Grappler,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,フィッシャーマン・スープレックス,13,大技,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Allround,個人技候補,Technique,個人技候補
