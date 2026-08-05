@@ -633,7 +633,7 @@ const commonMoves=[
 {n:'スーパーキック',d:10,c:'strike'},{n:'クローズライン',d:10,c:'strike'},
 {n:'ロックアップからの押し込み',d:2,c:'throw'},{n:'ショルダータックル',d:3,c:'throw'},
 {n:'ヒップトス',d:3,c:'throw'},{n:'アームドラッグ',d:3,c:'throw'},{n:'ヘッドロック・テイクダウン',d:3,c:'throw'},
-{n:'ファイヤーマンズキャリー',d:4,c:'throw'},{n:'ボディスラム',d:6,c:'throw'},{n:'スープレックス',d:7,c:'throw'},
+{n:'ファイヤーマンズキャリー',d:4,c:'throw'},{n:'ボディスラム',d:6,c:'throw'},{n:'ジャーマン・スープレックス',d:7,c:'throw'},
 {n:'スナップ・スープレックス',d:7,c:'throw'},{n:'ブレーンバスター',d:8,c:'throw'},
 {n:'サイド・スープレックス',d:8,c:'throw'},{n:'ネックブリーカー',d:8,c:'throw'},
 {n:'スウィンギング・ネックブリーカー',d:8,c:'throw'},
@@ -660,7 +660,7 @@ const commonMoves=[
 ];
 const styleMoves={
 Grappler:[{n:'パワーボム',d:14,c:'throw'},{n:'シットアウト・パワーボム',d:15,c:'throw'},
-{n:'ジャーマン・スープレックス',d:13,c:'throw'},{n:'チョークスラム',d:13,c:'throw'},
+{n:'パワースラム',d:13,c:'throw'},{n:'チョークスラム',d:13,c:'throw'},
 {n:'デスバレーボム',d:14,c:'throw'},{n:'バックドロップ',d:13,c:'throw'},
 {n:'ラストライド',d:16,c:'throw'},{n:'垂直落下式ブレーンバスター',d:14,c:'throw'},
 {n:'力強いラリアット',d:12,c:'strike'},{n:'頭突き',d:11,c:'strike'},
@@ -671,7 +671,7 @@ Aerial:[{n:'フランケンシュタイナー',d:12,c:'throw'},{n:'トルネー�
 {n:'フロッグ・スプラッシュ',d:13,c:'aerial'},{n:'スワントン・ボム',d:14,c:'aerial'},
 {n:'トペ・コンヒーロ',d:11,c:'aerial'},
 {n:'ダイビング・セントーン',d:10,c:'aerial'},{n:'ドラゴン・スクリュー',d:10,c:'throw'},
-{n:'ハリケーンラナ',d:12,c:'throw'}],
+],
 Technique:[{n:'アームバー',d:11,c:'submission'},{n:'フィギュア4レッグロック',d:12,c:'submission'},
 {n:'シャープシューター',d:13,c:'submission'},{n:'STF',d:12,c:'submission'},
 {n:'三角絞め',d:12,c:'submission'},{n:'クロスフェイス',d:13,c:'submission'},

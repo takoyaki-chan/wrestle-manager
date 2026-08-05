@@ -61,6 +61,14 @@ const plannedStyleToSignatureOnly = {
   'フェニックス・スプラッシュ': { affinityStyles: ['Allround'] },
 };
 
+// These moves are added to the future signature-only catalog. They are not
+// placed in a baseline match pool until the personal-move slot is implemented.
+const plannedAdditionalSignatureCandidates = [
+  { name: 'ハリケーンラナ', damage: 12, category: 'throw', affinityStyles: ['Aerial'], originPool: 'legacy_style' },
+  { name: 'パラダイスロック', damage: 10, category: 'submission', affinityStyles: ['Allround'], originPool: 'new' },
+  { name: 'グラウンド卍固め', damage: 14, category: 'submission', affinityStyles: ['Submission'], originPool: 'new' },
+];
+
 function parseMoves(text) {
   return [...text.matchAll(/\{n:'([^']+)',d:(\d+),c:'([^']+)'\}/g)]
     .map(([, name, damage, category]) => ({ name, damage: Number(damage), category }));
@@ -277,6 +285,16 @@ for (const move of styleMoves.Technique || []) {
   else individualCandidates.push(targetMove);
 }
 
+for (const move of plannedAdditionalSignatureCandidates) {
+  individualCandidates.push({
+    ...move,
+    originPool: move.originPool || 'new',
+    eligibleStyles: reclassifiedStyleOrder,
+    targetScope: 'signature_only',
+    targetScopeLabel: '固有選定専用技',
+  });
+}
+
 const reclassifiedSummaryRows = reclassifiedStyleOrder.map(style => {
   const moves = reclassifiedStyleMoves[style];
   const counts = countBy(moves, 'category');
@@ -288,13 +306,16 @@ const reclassifiedSummaryRows = reclassifiedStyleOrder.map(style => {
     counts,
   };
 });
+const reclassifiedCatalogMoveCount = reclassifiedCommonMoves.length
+  + Object.values(reclassifiedStyleMoves).flat().length
+  + individualCandidates.length;
 
 const reclassifiedMd = [];
 reclassifiedMd.push('# 再配置後・全技カタログ v0.2', '');
-reclassifiedMd.push('`Technique` プールを廃止し、共有技・スタイル技・固有選定専用技を分け直した将来案。ゲームの `src/data.js` はまだ変更していない。', '');
+reclassifiedMd.push('`Technique` プールを廃止し、共有技・スタイル技・固有選定専用技を分け直した将来案。個人技スロット自体はまだ未実装で、固有選定専用技は基礎試合プールへ入らない。', '');
 reclassifiedMd.push('## 再配置後の抽選構造', '');
 reclassifiedMd.push('```text', `基礎使用技 = 共通技（${reclassifiedCommonMoves.length}）+ スタイル技`, '個人技スロット = 初期1 + 育成2、最大3。全技から選べる表示・演出用の個人化枠', '試合計算 = 個人技の表示名へ差し替える前に選ばれた基礎技の威力・命中・カテゴリを使用', '丸め込み = 共通技の rollup を独立抽選し、技ごとの利用スタイル条件で絞り込む', 'Technique = 廃止。単独のスタイル・抽選比率・選手枠を持たない。', '```', '');
-reclassifiedMd.push('- 個人技に選べる対象は、共有技・スタイル技・固有選定専用技を含む全159技。スタイル外の技も選べる。', '- ただし個人技は候補へ直接追加しない。基礎技と同じカテゴリ・技帯の時に表示名と絵を差し替えるため、選択技の威力13／16で有利不利が生まれない。', '- ビッグブーツはGrapplerのスタイル技へ移す。スナップ・スープレックスは削除する。サモアンドロップとタイガードライバーは共有技から外し、固有選定専用技へ移す。', '- ウラカン・ラナとラ・マヒストラルは共有の丸め込み定義のまま、Aerialだけが独立丸め込み抽選で使える。スタイル技には移さない。', '- ファルコンアロー、みちのくドライバーII、エクスプロイダー、フェニックス・スプラッシュはAllroundの基礎レパートリーから外し、固有選定専用技へ移す。', '');
+reclassifiedMd.push(`- 個人技に選べる対象は、共有技・スタイル技・固有選定専用技を含む全${reclassifiedCatalogMoveCount}技。スタイル外の技も選べる。`, '- ただし個人技は候補へ直接追加しない。基礎技と同じカテゴリ・技帯の時に表示名と絵を差し替えるため、選択技の威力13／16で有利不利が生まれない。', '- ビッグブーツはGrapplerのスタイル技へ移す。スナップ・スープレックスは削除する。サモアンドロップとタイガードライバーは共有技から外し、固有選定専用技へ移す。', '- ウラカン・ラナとラ・マヒストラルは共有の丸め込み定義のまま、Aerialだけが独立丸め込み抽選で使える。スタイル技には移さない。', '- ファルコンアロー、みちのくドライバーII、エクスプロイダー、フェニックス・スプラッシュはAllroundの基礎レパートリーから外し、固有選定専用技へ移す。', '- ハリケーンラナはAerialの基礎レパートリーから外し、固有選定専用技へ移す。', '');
 reclassifiedMd.push('## 再配置後のスタイル構成', '');
 reclassifiedMd.push('| スタイル | 選手数 | 技数 | 大技以上 | 打撃 | 投げ | 関節・絞め | 空中 | グラウンド |', '|---|---:|---:|---:|---:|---:|---:|---:|---:|');
 for (const row of reclassifiedSummaryRows) {
@@ -343,7 +364,7 @@ reclassifiedMd.push('', `## 固有選定専用技（${individualCandidates.lengt
 reclassifiedMd.push('基礎使用技には入らない。全スタイルの選手が個人技スロットで選択でき、推奨スタイルはUIの絞り込みやキャラクター性の目安として使う。', '');
 reclassifiedMd.push('| 技名 | 威力 | 技帯 | カテゴリ | 推奨スタイル | 選択可能スタイル | 出所 |', '|---|---:|---|---|---|---|---|');
 for (const move of individualCandidates) {
-  const origin = move.originPool === 'Technique' ? '旧Technique' : move.originPool === 'common' ? '旧共有技' : '旧スタイル技';
+  const origin = move.originPool === 'Technique' ? '旧Technique' : move.originPool === 'common' ? '旧共有技' : move.originPool === 'new' ? '新規追加' : '旧スタイル技';
   reclassifiedMd.push(`| ${move.name} | ${move.damage} | ${tier(move.damage)} | ${categoryJa[move.category]} | ${move.affinityStyles.join(' / ')} | 全スタイル | ${origin} |`);
 }
 reclassifiedMd.push('', '## 個人技スロットの前提', '');

@@ -25,7 +25,7 @@ common,共通,アームドラッグ,3,小技,throw,投げ,全スタイル,,共�
 common,共通,ヘッドロック・テイクダウン,3,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
 common,共通,ファイヤーマンズキャリー,4,小技,throw,投げ,全スタイル,,共有技,common,共有技として維持
 common,共通,ボディスラム,6,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
-common,共通,スープレックス,7,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
+common,共通,ジャーマン・スープレックス,7,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
 common,共通,ブレーンバスター,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
 common,共通,サイド・スープレックス,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
 common,共通,ネックブリーカー,8,中技,throw,投げ,全スタイル,,共有技,common,共有技として維持
@@ -73,7 +73,7 @@ common,共通,回転エビ固め,5,小技,rollup,丸め込み,全スタイル,,�
 common,共通,ヨーロピアン・クラッチ,5,小技,rollup,丸め込み,全スタイル,,共有技,common,共有技として維持
 style,Grappler,パワーボム,14,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
 style,Grappler,シットアウト・パワーボム,15,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
-style,Grappler,ジャーマン・スープレックス,13,大技,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
+style,Grappler,パワースラム,13,大技,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
 style,Grappler,チョークスラム,13,大技,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
 style,Grappler,デスバレーボム,14,大技（フィニッシャー候補）,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：優先検討
 style,Grappler,バックドロップ,13,大技,throw,投げ,Grappler,Grappler,スタイル技,Grappler,個人技候補：検討
@@ -95,7 +95,6 @@ style,Aerial,スワントン・ボム,14,大技（フィニッシャー候補）
 style,Aerial,トペ・コンヒーロ,11,大技,aerial,空中,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
 style,Aerial,ダイビング・セントーン,10,中技,aerial,空中,Aerial,Aerial,スタイル技,Aerial,スタイル技として維持候補
 style,Aerial,ドラゴン・スクリュー,10,中技,throw,投げ,Aerial,Aerial,スタイル技,Aerial,スタイル技として維持候補
-style,Aerial,ハリケーンラナ,12,大技,throw,投げ,Aerial,Aerial,スタイル技,Aerial,個人技候補：検討
 style,Allround,ノーザンライツ・スープレックス,12,大技,throw,投げ,Allround,Allround,スタイル技,Allround,個人技候補：検討
 style,Allround,ダブルアーム・スープレックス,13,大技,throw,投げ,Allround,Allround,スタイル技,Allround,個人技候補：検討
 style,Allround,リアネイキッドチョーク,11,大技,submission,関節・絞め,Allround,Allround,スタイル技,Allround,個人技候補：検討
@@ -158,3 +157,6 @@ personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler
 personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,タイガー・スープレックス,14,大技（フィニッシャー候補）,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Grappler,個人技候補,Technique,個人技候補
 personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,ドラゴン・スープレックス,15,大技（フィニッシャー候補）,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Grappler,個人技候補,Technique,個人技候補
 personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,フィッシャーマン・スープレックス,13,大技,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Allround,個人技候補,Technique,個人技候補
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,ハリケーンラナ,12,大技,throw,投げ,Grappler / Aerial / Allround / Striker / Submission / Brawler,Aerial,固有選定専用技,legacy_style,固有選定専用技
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,パラダイスロック,10,中技,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Allround,固有選定専用技,new,固有選定専用技
+personal_candidate,Grappler / Aerial / Allround / Striker / Submission / Brawler,グラウンド卍固め,14,大技（フィニッシャー候補）,submission,関節・絞め,Grappler / Aerial / Allround / Striker / Submission / Brawler,Submission,固有選定専用技,new,固有選定専用技
