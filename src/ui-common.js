@@ -2578,10 +2578,14 @@ function closeRivalryPopup() {
 
 // ── ヘルパー ──────────────────────────────────────────────────────
 
-function _awardLine(key, charId) {
+function _awardLine(key, fighterOrId) {
   const lineObj = (typeof AWARD_LINES !== 'undefined' && AWARD_LINES[key]);
   if (!lineObj) return '';
-  const ch = charId ? ALL_CHARS.find(c => c.id === charId) : null;
+  // 年末表彰式の受賞データには personality / archetype を保持する。既存セーブや
+  // 過去の受賞データで ID だけしかない場合も、従来どおりマスターデータから補う。
+  const ch = fighterOrId && typeof fighterOrId === 'object'
+    ? fighterOrId
+    : (fighterOrId ? ALL_CHARS.find(c => c.id === fighterOrId) : null);
   return pickDialogueLine(lineObj, ch);
 }
 
@@ -2914,7 +2918,7 @@ function _awSpawnConfetti() {
 // ── スライドビルダー (TASK-3) ────────────────────────────────────
 
 function _buildMediaAward(d) {
-  const line = _awardLine('mediaAward', d.id);
+  const line = _awardLine('mediaAward', d);
   const totalRevDisp = Math.round(d.totalRev).toLocaleString();
   const mediaRevDisp = Math.round(d.mediaRevSeason).toLocaleString();
   const talentRevDisp = Math.round(d.talentRevSeason).toLocaleString();
@@ -2936,7 +2940,7 @@ function _buildMediaAward(d) {
 
 function _buildJTChampionAward(d) {
   // 新人王はジュニアトーナメント優勝者に授与される。受賞セリフは rookie プールが正。
-  const line = _awardLine('rookie', d.id);
+  const line = _awardLine('rookie', d);
   const runnerUpText = d.runnerUp ? `決勝: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">ジュニアトーナメント 優勝</span></div>
   <div class="rookie-layout">
@@ -2967,7 +2971,7 @@ function _buildSeasonEventChampionAward(d, kind) {
   const many = fighters.length >= 3;
   const orgName = d.orgName || fighters[0]?.orgName || '';
   const isPlayerOrg = d.isPlayerOrg != null ? d.isPlayerOrg : fighters[0]?.isPlayerOrg;
-  const lineFor = f => _awardLine('champion', f.id);
+  const lineFor = f => _awardLine(kind === 'springTag' ? 'springTagChampion' : kind === 'autumnWar' ? 'autumnWarChampion' : 'champion', f);
   if (fighters.length === 1) {
     return `<div class="award-card"><div class="award-badge"><span class="badge-icon">${cfg.icon}</span><span class="badge-jp">${cfg.label}</span></div>
       <div class="aw-event-solo">
@@ -2993,8 +2997,8 @@ function _buildSeasonEventChampionAward(d, kind) {
 function _buildBestMatchAward(d) {
   const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
   const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
-  const line1 = _awardLine('bestMatch', f1.id);
-  const line2 = _awardLine('bestMatch', f2.id);
+  const line1 = _awardLine('bestMatch', f1);
+  const line2 = _awardLine('bestMatch', f2);
   const f1OrgName = d.fighter1OrgName || d.orgName || '';
   const f2OrgName = d.fighter2OrgName || d.orgName || '';
   const open1Attr = _awOpenAttr(f1.id);
@@ -3033,7 +3037,7 @@ function _buildChampionsAward(champions) {
 
   const buildCol = (c, rank) => {
     if (!c) return '';
-    const line = _awardLine('champion', c.id);
+    const line = _awardLine('champion', c);
     const defText = c.defenses != null ? `防衛 ${c.defenses}回` : '';
     const isPlayer = c.isPlayer;
     const openAttr = _awOpenAttr(c.id);
@@ -3057,7 +3061,7 @@ function _buildChampionsAward(champions) {
 }
 
 function _buildMVPAward(d) {
-  const line = _awardLine('mvp', d.id);
+  const line = _awardLine('mvp', d);
   const defenses = d.defenses || 0;
   const wins = d.wins || 0, losses = d.losses || 0;
 
@@ -3113,7 +3117,7 @@ function _buildMVPAward(d) {
 }
 
 function _buildHallOfFame(d) {
-  const line = _awardLine('hallOfFame', d.id);
+  const line = _awardLine('hallOfFame', d);
   const hofLevel = d.hofLevel || 1;
   const starCount = Math.min(hofLevel, 3);
   const stars = Array(starCount).fill('✦').join(' ');

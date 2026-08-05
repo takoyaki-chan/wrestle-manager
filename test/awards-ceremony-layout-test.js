@@ -36,9 +36,9 @@ assert.ok(/\$\{_awSpeechSlot\(line2\)\}<div class="portrait-sm"/.test(bestMatch)
 before(eventAward, '${_awSpeechSlot(lineFor(f))}', 'class="aw-team-portrait"', '大会優勝の隊列は吹き出し→画像の順');
 before(champions, '${_awSpeechSlot(line)}', 'class="champ-portrait"', 'タイトル王者は吹き出し→画像の順');
 before(hall, '${_awSpeechSlot(line)}', 'class="hof-portrait"', '殿堂入りは吹き出し→画像の順');
-assert.ok(/\.aw-speech-slot\{height:52px/.test(css), 'XL〜M の吹き出し予約枠は52px');
+assert.ok(/\.aw-speech-slot\{height:auto;min-height:52px/.test(css), '吹き出し予約枠は最低2行分を確保し、全文を表示する');
 assert.ok(/\.award-card \.speech-bubble::before\{[^}]*bottom:-8px[^}]*border-top-color/.test(css), '吹き出しの尻尾は画像へ向けて下向き');
-assert.ok(/-webkit-line-clamp:2/.test(css), '吹き出し本文を2行で制限する');
+assert.ok(/\.speech-text\{[^}]*display:block;overflow:visible/.test(css), '吹き出し本文は省略せずに全文を表示する');
 
 // §2: upper画像は2:3梯子の XL / L / M を使う。
 assert.ok(/\.portrait-main\{width:172px;height:258px/.test(css), '単独主役はXL 172×258');
@@ -55,8 +55,9 @@ assert.ok(/\.aw-team-member \+ \.aw-team-member\{margin-left:-18px/.test(css), '
 assert.ok(/\.aw-team-portrait img\{[^}]*filter:drop-shadow\(/.test(css), '隊列の影はシルエットに沿うdrop-shadow');
 assert.ok(/\.aw-team-portrait\{[^}]*border:/.test(css) === false, '個々の隊列画像に額縁を付けない');
 
-// 大会優勝は新規文言ではなく既存 AWARD_LINES の champion プールを参照する。
-assert.ok(eventAward.includes("const lineFor = f => _awardLine('champion', f.id);"), '大会優勝は既存のchampionセリフプールを使う');
+// 春タッグ / 秋対抗戦は、団体王座用 champion ではなく大会別のセリフを使用する。
+assert.ok(eventAward.includes("'springTagChampion'"), '春タッグ優勝は大会別セリフプールを使用する');
+assert.ok(eventAward.includes("'autumnWarChampion'"), '秋対抗戦優勝は大会別セリフプールを使用する');
 ['springTag', 'autumnWar', 'tenchosen', 'ppvFinal'].forEach(kind => {
   assert.ok(eventAward.includes(`${kind}:`), `${kind} の大会優勝スライドを維持する`);
 });

@@ -1669,12 +1669,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   animation:aw-glowPulse 2.5s ease-in-out infinite}
 @keyframes aw-glowPulse{0%,100%{opacity:.6}50%{opacity:1}}
 /* -- Speech bubble -- */
-.aw-speech-slot{height:52px;width:100%;display:flex;align-items:flex-end;justify-content:center;margin-bottom:8px}
+.aw-speech-slot{height:auto;min-height:52px;width:100%;display:flex;align-items:flex-end;justify-content:center;margin-bottom:8px}
 .award-card .speech-bubble{width:100%;min-height:52px;box-sizing:border-box;background:#f0f0f0;border-radius:var(--radius-lg);
   padding:7px 12px;position:relative;margin:0;display:flex;align-items:center;justify-content:center}
 .award-card .speech-bubble::before{content:'';position:absolute;bottom:-8px;left:calc(50% - 8px);border:8px solid transparent;border-top-color:#f0f0f0;border-bottom:0}
 .speech-text{font-family:'Noto Sans JP',sans-serif;font-size:13px;color:#222;text-align:center;line-height:1.45;
-  display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+  display:block;overflow:visible;overflow-wrap:anywhere}
 .aw-winner-block{display:flex;flex-direction:column;align-items:center;min-width:0;text-align:center}
 .aw-winner-name{font-family:'Noto Serif JP',serif;font-size:15px;font-weight:700;color:#f0ead8;letter-spacing:1px;margin-top:6px}
 .aw-winner-role{font-size:11px;color:#7a7060;letter-spacing:1px;margin-top:2px}

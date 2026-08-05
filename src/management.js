@@ -19278,7 +19278,7 @@ Engine.awards = {
       const f = row.fighter;
       return {
         id: f.id, name: f.name, portrait: f.portrait,
-        style: f.style || 'Allround', ovr: Engine.util.ov(f),
+        style: f.style || 'Allround', personality: f.personality || 'normal', archetype: f.archetype || 'standard', ovr: Engine.util.ov(f),
         age: f.age != null ? f.age : null,
         orgId: row.orgId, orgName: row.orgId ? Engine.awards._orgName(state, row.orgId) : '',
         isPlayerOrg: row.orgId === 'player',
