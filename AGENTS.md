@@ -1,5 +1,17 @@
 # Wrestle-Manager Codex Working Agreement
 
+## Workspace ownership
+
+- `C:\Users\nkmrk\Downloads\wrestle-manager` is Claude's shared integration
+  workspace. Codex treats it as read-only, except when the user explicitly
+  requests one-time workspace administration.
+- Codex file-changing tasks must run in
+  `C:\Users\nkmrk\Downloads\wrestle-manager-codex` on branch
+  `codex/agent-workspace`.
+- If the current directory is not the Codex workspace, stop before editing and
+  tell the user which workspace is required. Do not leave a Codex scratch diff
+  in Claude's workspace.
+
 ## Task closure and Git safety
 
 For every task that changes tracked or newly-created project files, choose one
