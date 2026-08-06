@@ -70,8 +70,46 @@ Write-Host "  Mode: $EditionName" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
+# ── 出荷元のGit状態 ───────────────────────────────────────────────────────────
+# 未コミットのまま梱包すると、出荷物と復元可能な履歴が一致しなくなる。
+# 完了済みコミットからだけ配布物を作る。
+Write-Host "[1/7] 出荷元のGit状態を確認中..." -ForegroundColor Yellow
+$GitCommand = Get-Command git -ErrorAction SilentlyContinue
+if (-not $GitCommand) {
+    Write-Host "ERROR: Git が見つかりません。出荷元がコミット済みか確認できないため梱包を中止します。" -ForegroundColor Red
+    exit 1
+}
+$WorkingTreeChanges = @(& $GitCommand.Source -C $ProjectDir status --short)
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Git状態を確認できません。梱包を中止します。" -ForegroundColor Red
+    exit 1
+}
+if ($WorkingTreeChanges.Count -gt 0) {
+    Write-Host "ERROR: 未コミット変更があります。出荷物とGit履歴を一致させるため、対象変更をコミットしてから梱包してください。" -ForegroundColor Red
+    $WorkingTreeChanges | ForEach-Object { Write-Host "  ! $_" -ForegroundColor Red }
+    exit 1
+}
+Write-Host "  ✓ 作業ツリーはクリーン" -ForegroundColor Green
+
 # ── ファイル存在検証 ──────────────────────────────────────────────────────────
-Write-Host "[1/5] ファイル存在検証中..." -ForegroundColor Yellow
+# ── 進行不能出荷ゲート ───────────────────────────────────────────────────────
+# ZIP を作る前に、通常週・季節イベント・年末処理・保存復帰の各進行経路を検証する。
+# この検証が失敗した配布物は回避不能な進行不能につながるため、梱包しない。
+Write-Host "[2/7] 進行不能出荷ゲートを実行中..." -ForegroundColor Yellow
+$NodeCommand = Get-Command node -ErrorAction SilentlyContinue
+if (-not $NodeCommand) {
+    Write-Host "ERROR: Node.js が見つかりません。進行不能出荷ゲートを実行できないため梱包を中止します。" -ForegroundColor Red
+    exit 1
+}
+& $NodeCommand.Source (Join-Path $ProjectDir "test\release-progression-gate.js")
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: 進行不能出荷ゲートが失敗しました。ZIPは作成していません。" -ForegroundColor Red
+    exit 1
+}
+Write-Host "  ✓ 進行不能出荷ゲートを通過" -ForegroundColor Green
+
+# ── ファイル存在検証 ─────────────────────────────────────────────────────────
+Write-Host "[3/7] ファイル存在検証中..." -ForegroundColor Yellow
 
 $MissingFiles = @()
 
@@ -165,7 +203,7 @@ $StagingRoot = Join-Path $ScriptDir "staging"
 $StagingDir  = Join-Path $StagingRoot $PackageName
 
 Write-Host ""
-Write-Host "[2/5] ステージングフォルダを準備中..." -ForegroundColor Yellow
+Write-Host "[4/7] ステージングフォルダを準備中..." -ForegroundColor Yellow
 
 if (Test-Path $StagingRoot) {
     Remove-Item -Recurse -Force $StagingRoot
@@ -280,7 +318,7 @@ if ($Trial) {
 
 # ── アセットディレクトリをコピー ──────────────────────────────────────────────
 Write-Host ""
-Write-Host "[3/5] アセットをコピー中（image/, bgm/ — 数分かかる場合があります）..." -ForegroundColor Yellow
+Write-Host "[5/7] アセットをコピー中（image/, bgm/ — 数分かかる場合があります）..." -ForegroundColor Yellow
 
 foreach ($d in $Manifest.assetDirectories) {
     $Src  = Join-Path $ProjectDir $d
@@ -340,7 +378,7 @@ Write-Host "  ✓ START.html / README.txt 生成" -ForegroundColor Green
 
 # ── ファイル数・サイズ集計 ────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "[4/5] ステージング集計..." -ForegroundColor Yellow
+Write-Host "[6/7] ステージング集計..." -ForegroundColor Yellow
 
 $AllFiles = Get-ChildItem -Recurse -File $StagingDir
 $TotalCount = $AllFiles.Count
@@ -352,7 +390,7 @@ Write-Host "  合計サイズ:   $TotalMB MB" -ForegroundColor Cyan
 
 # ── ZIP 作成 ──────────────────────────────────────────────────────────────────
 Write-Host ""
-Write-Host "[5/5] ZIP 作成中..." -ForegroundColor Yellow
+Write-Host "[7/7] ZIP 作成中..." -ForegroundColor Yellow
 
 if (Test-Path $ZipPath) {
     Remove-Item -Force $ZipPath

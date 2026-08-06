@@ -5,6 +5,8 @@
 ```bash
 npm test            # node test/run-all.js        — full suite (85 tests, ~85s)
 npm run test:quick   # node test/run-all.js --quick — fast subset (~80 tests, <15s)
+npm run test:release:progression # release blocker: all progression routes + 20-season simulation
+npm run task:closeout # confirms that a completed task left no uncommitted files
 npm run test:stale    # node test/stale-lint.js     — staleness report (never fails the build)
 npm run test:engine   # node test/auto-sim.js 20    — engine-integrity check, 20 seasons
 ```
@@ -14,6 +16,22 @@ npm run test:engine   # node test/auto-sim.js 20    — engine-integrity check, 
   violation count into the summary.
 - a bare filename substring, e.g. `node test/run-all.js spring-tag`, to run only matching
   tests. Combine with `--quick`.
+
+## Release progression gate
+
+`npm run test:release:progression` is the mandatory release blocker for progression bugs.
+It runs curated checks for normal weeks, save/load recovery, offseason, year-end awards,
+drafts, each seasonal event, and multi-path result screens, followed by a deterministic
+20-season headless simulation. Any failed or timed-out check exits non-zero.
+
+`release/package-release.ps1` runs this gate as its first step. It stops before staging or
+ZIP creation when the gate cannot run or fails; there is intentionally no skip switch. Run
+the same command manually while preparing a release so a failure is resolved before packaging.
+
+The package script also refuses to create a ZIP when `git status --short` is not empty.
+Commit the exact release changes first so the distributed ZIP and recoverable Git history
+always point to the same source state. After committing a file-changing task, run
+`npm run task:closeout`; it fails if any uncommitted file remains.
 
 ## What counts as a test
 

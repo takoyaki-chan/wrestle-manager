@@ -2,6 +2,8 @@
   "scripts": {
     "test": "node test/run-all.js",
     "test:quick": "node test/run-all.js --quick",
+    "test:release:progression": "node test/release-progression-gate.js",
+    "task:closeout": "powershell -ExecutionPolicy Bypass -File tools/task-closeout.ps1 -Status Complete",
     "test:stale": "node test/stale-lint.js",
     "test:engine": "node test/auto-sim.js 20",
     "bug:audit": "powershell -ExecutionPolicy Bypass -File tools/bug-audit.ps1",
