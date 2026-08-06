@@ -8,6 +8,7 @@ tools/tmp_xlsx/
 # 配布物には入らない（release/package-release.ps1 の $DevPatterns が除外する）。
 .claude/worktrees/
 .claude/scheduled_tasks.lock
+.claude/hooks/.autosim-dirty
 .codex-temp/
 test/_*.json
 release/dist/
