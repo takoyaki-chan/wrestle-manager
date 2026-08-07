@@ -25,6 +25,7 @@ const TESTS = [
   'season-end-order-test.js',
   'awards-before-report-order-test.js',
   'awards-ceremony-progression-lock-test.js',
+  'annual-contract-single-flight-test.js',
   'year-end-awards-generate-test.js',
 
   // Offseason choices and each dedicated event route.

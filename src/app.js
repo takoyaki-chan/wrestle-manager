@@ -5695,6 +5695,9 @@ const App = {
 
   // ── 契約更新交渉フロー ───────────────────────────────────────────────────
   handleContractNegotiations() {
+    // A contract queue must be single-flight: duplicate UI callbacks otherwise
+    // advance separate cursors and can skip negotiations.
+    if (App._contractNegotiationSession?.active) return;
     const negotiations = G.pendingContractNegotiations || [];
     const autoCount = G._contractAutoRenewed || 0;
     if (negotiations.length === 0) {
@@ -5708,6 +5711,16 @@ const App = {
     // 社長室に遷移（交渉モード）
     showScreen('shachoshitsu');
 
+    const session = { active: true };
+    App._contractNegotiationSession = session;
+    const isCurrentSession = () => App._contractNegotiationSession === session && session.active;
+    const finishSession = () => {
+      if (!isCurrentSession()) return false;
+      session.active = false;
+      App._contractNegotiationSession = null;
+      return true;
+    };
+
     const season = G.season || 1;
     const results = [];
     const preNegotiationRoster = (G.roster || []).map(f => ({ ...f }));
@@ -5715,6 +5728,7 @@ const App = {
     let idx = 0;
 
     function processNext() {
+      if (!isCurrentSession()) return;
       if (idx >= negotiations.length) {
         // 全交渉完了 → 結果サマリー
         const salaryChanges = App._buildContractRenewalSalaryChanges(
@@ -5724,6 +5738,7 @@ const App = {
           G
         );
         showContractResultModal(results, salaryChanges, () => {
+          if (!finishSession()) return;
           // weekPhase を offseason に戻す（ナビロック解除 + advanceWeek の再ループ防止）
           const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
           G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
@@ -5738,6 +5753,7 @@ const App = {
       // v2.0 §6.3: 突発退団 — 選択肢なし、即退団
       if (neg.attitude === 'sudden_departure') {
         showContractSuddenDepartureModal(neg, G, () => {
+          if (!isCurrentSession()) return;
           const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
           const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, 0);
           G = result.state;
@@ -5749,7 +5765,9 @@ const App = {
         return;
       }
       showContractNegotiationModal(neg, idx, negotiations.length, G, (choiceIdx) => {
+        if (!isCurrentSession()) return;
         App._resolveContractChoice(neg, choiceIdx, results, () => {
+          if (!isCurrentSession()) return;
           idx++;
           processNext();
         });
