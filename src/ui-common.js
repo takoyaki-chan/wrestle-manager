@@ -3265,7 +3265,21 @@ function _awCreateInputGate(advance, options = {}) {
 function showAwardsCeremony(awards, onDone, onOpen) {
   if (!awards) { if (onDone) onDone(); return; }
   if (Engine.awards && !Engine.awards.hasDisplayableAwards(awards)) { if (onDone) onDone(); return; }
-  if (_isPopupActive()) { _popupQueue.push(() => showAwardsCeremony(awards, onDone, onOpen)); return; }
+  // A ceremony can wait in the popup queue. Keep that pending entry single-flight
+  // so a stale callback cannot open the same year's ceremony a second time.
+  const awardSession = window._awardsCeremonySession || { active: false, queued: false };
+  if (awardSession.active || awardSession.queued) return;
+  if (_isPopupActive()) {
+    awardSession.queued = true;
+    window._awardsCeremonySession = awardSession;
+    _popupQueue.push(() => {
+      awardSession.queued = false;
+      showAwardsCeremony(awards, onDone, onOpen);
+    });
+    return;
+  }
+  awardSession.active = true;
+  window._awardsCeremonySession = awardSession;
 
   // スライド構築（動的: 該当なしスキップ）
   // 構成は2部。第1部は今年の大会を開催週の順に並べ、その優勝が兼ねる称号
@@ -3304,7 +3318,12 @@ function showAwardsCeremony(awards, onDone, onOpen) {
     });
   }
   // 受賞が一つもない年は、該当なしの説明を出さず式典自体を静かに省略する。
-  if (slideInfo.length === 0) { if (onDone) onDone(); return; }
+  if (slideInfo.length === 0) {
+    awardSession.active = false;
+    if (window._awardsCeremonySession === awardSession) window._awardsCeremonySession = null;
+    if (onDone) onDone();
+    return;
+  }
   // 全受賞者一覧は、成立した受賞がある年だけの締めの1枚。
   slideInfo.push({ html: _buildAwardsSummary(awards), label: '全受賞者一覧', se: 'normal' });
 
@@ -3415,6 +3434,8 @@ function showAwardsCeremony(awards, onDone, onOpen) {
       coachFg.classList.remove('revealed');
       coachFg.innerHTML = '';
       window._awardsNext = null;
+      awardSession.active = false;
+      if (window._awardsCeremonySession === awardSession) window._awardsCeremonySession = null;
       if (onDone) onDone();
       _drainPopupQueue();
       return;
@@ -15527,6 +15548,22 @@ function _negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel) {
 }
 
 // 画面1: サマリー — 「シーズンN 契約更新 ／ 意見あり：M名」
+// DOM の再描画までに click / Enter が重複して届いても、画面遷移は 1 回だけにする。
+function _bindContractOnce(element, onClick) {
+  if (!element) return;
+  let consumed = false;
+  element.addEventListener('click', event => {
+    if (consumed || element.disabled) {
+      event?.preventDefault?.();
+      return;
+    }
+    consumed = true;
+    element.disabled = true;
+    element.setAttribute?.('aria-disabled', 'true');
+    onClick.call(element, event);
+  });
+}
+
 function showContractSummaryModal(negotiations, autoCount, season, onStart) {
   const el = document.getElementById('shachoshitsuContent');
   if (!el) { if (onStart) onStart(); return; }
@@ -15559,7 +15596,7 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
   renderShachoshitsuNegotiation('', deskHtml);
   Audio.play('paper');
 
-  document.getElementById('contractStartBtn').addEventListener('click', () => {
+  _bindContractOnce(document.getElementById('contractStartBtn'), () => {
     Audio.play('tension_hit');
     if (onStart) onStart();
   });
@@ -15632,8 +15669,12 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   renderShachoshitsuNegotiation(_negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel), deskHtml);
   Audio.play('event');
 
+  let choiceConsumed = false;
   el.querySelectorAll('.neg-btn[data-choice]').forEach(btn => {
-    btn.addEventListener('click', function() {
+    _bindContractOnce(btn, function() {
+      if (choiceConsumed) return;
+      choiceConsumed = true;
+      el.querySelectorAll('.neg-btn[data-choice]').forEach(choice => { choice.disabled = true; });
       if (this.disabled) return;
       const ci = parseInt(this.dataset.choice);
       // 昇給: 受ける(0)=fanfare, 交渉(1)=select, 拒否(2)=defeat
@@ -15661,7 +15702,7 @@ function showContractReactionModal(neg, reactionText, onDone) {
   renderShachoshitsuNegotiation(wallHtml, deskHtml);
   Audio.play('notify');
 
-  document.getElementById('contractReactionOk').addEventListener('click', () => {
+  _bindContractOnce(document.getElementById('contractReactionOk'), () => {
     Audio.play('click');
     if (onDone) onDone();
   });
@@ -15693,8 +15734,12 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
   renderShachoshitsuNegotiation(wallHtml, deskHtml);
   Audio.play('event');
 
+  let subChoiceConsumed = false;
   el.querySelectorAll('.neg-btn[data-sub]').forEach(btn => {
-    btn.addEventListener('click', function() {
+    _bindContractOnce(btn, function() {
+      if (subChoiceConsumed) return;
+      subChoiceConsumed = true;
+      el.querySelectorAll('.neg-btn[data-sub]').forEach(choice => { choice.disabled = true; });
       if (this.disabled) return;
       const sub = this.dataset.sub;
       Audio.play(sub === 'retain' ? 'coin' : 'defeat');
@@ -15723,7 +15768,7 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
   renderShachoshitsuNegotiation(wallHtml, deskHtml);
   Audio.play('transfer');
 
-  document.getElementById('contractSuddenOk').addEventListener('click', () => {
+  _bindContractOnce(document.getElementById('contractSuddenOk'), () => {
     Audio.play('defeat');
     if (onDone) onDone();
   });
@@ -15795,7 +15840,7 @@ function showContractResultModal(results, salaryChanges, onDone) {
   renderShachoshitsuNegotiation('', deskHtml);
   Audio.play(departed.length > 0 ? 'transfer' : 'save');
 
-  document.getElementById('contractResultOk').addEventListener('click', () => {
+  _bindContractOnce(document.getElementById('contractResultOk'), () => {
     Audio.play('confirm');
     if (onDone) onDone();
   });
