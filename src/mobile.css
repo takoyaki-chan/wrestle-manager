@@ -1501,6 +1501,51 @@
   .rivalry-popup-upper { height: 150px; }
   .rivalry-popup-dialogue { grid-template-columns: 1fr; }
 
+  /* Awards are appended directly to body, while body scrolling is locked on
+     phones.  Give the ceremony its own touch viewport so taller award cards
+     can never strand the next button below the visible area. */
+  .awards-overlay {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    align-items: stretch;
+    justify-content: flex-start;
+  }
+
+  .awards-overlay.active { display: block; }
+
+  #aw-ceremony {
+    width: 100%;
+    height: auto;
+    min-height: 100%;
+    justify-content: flex-start;
+    padding: max(14px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) 0 max(10px, env(safe-area-inset-left));
+  }
+
+  #aw-ceremony-header { margin-bottom: 12px; }
+  #aw-slide-wrap { width: 100%; max-width: 100%; }
+
+  #aw-nav-area {
+    position: sticky;
+    bottom: 0;
+    z-index: 60;
+    width: 100%;
+    margin-top: 12px;
+    padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(8,6,16,0), rgba(8,6,16,.96) 24%);
+  }
+
+  .aw-btn-next {
+    min-width: 148px;
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
   /* Three speakers stack vertically here.  The ceremony is appended directly
      to body (outside .app), so it must provide its own touch scroll viewport. */
   .cerem-overlay {

@@ -166,6 +166,21 @@ assert.match(
   /\.cerem-phase\.active\s*\{[^}]*position:\s*relative;[^}]*min-height:\s*100%;[^}]*\}/s,
   'the visible phone ceremony phase must grow with its stacked speaker cards'
 );
+assert.match(
+  mobile,
+  /\.awards-overlay\s*\{[^}]*height:\s*100dvh;[^}]*overflow-y:\s*auto;[^}]*touch-action:\s*pan-y;[^}]*\}/s,
+  'the phone awards ceremony must own a vertical touch scroll viewport'
+);
+assert.match(
+  mobile,
+  /#aw-nav-area\s*\{[^}]*position:\s*sticky;[^}]*bottom:\s*0;[^}]*env\(safe-area-inset-bottom\)[^}]*\}/s,
+  'the phone awards next button must stay reachable above the safe area'
+);
+assert.ok(
+  uiCommon.includes("overlay.scrollTo({ top: 0, behavior: 'auto' })") &&
+    uiCommon.includes('overlay.scrollTop = 0;'),
+  'each awards slide must reset the ceremony scroll position'
+);
 assert.ok(
   mobile.includes('.db-subtab-bar {') &&
     mobile.includes('position: sticky;') &&
