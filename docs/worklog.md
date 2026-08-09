@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 3Dカスタム少女を使う技画像制作パイプラインを計画化（2026-08-09・Codex）
+
+技画像の実装・画像制作には着手せず、既存のP0カバレッジ計画とReplay統合仕様に接続する制作パイプラインを文書化した。人間は3Dカスタム少女で同一カメラ・同一解像度の2体完成構図と、完全分離に必要な攻め手／受け手の単体パスを撮影する。CodexはGPT Imageでポーズ・カメラ・接触位置を保つグレー人形へ一度だけ変換し、以後はローカルの決定的処理で分離・透過・master由来の輪郭抽出・命名・原本比較QAを行う。
+
+再処理用の`<pose>_source.png`／`<pose>_master.png`と、最終の`<pose>_attacker.png`／`<pose>_receiver.png`／`<pose>_outline.png`を明確に区別した。ゲーム配置時だけ`receiver`を`defender` WebPへ対応付ける。3Dカスタム少女のUI自動操作は、DirectX／独自UIでの安定性を別途確認するまで前提にしない。詳細は `docs/move-illustration-3d-capture-pipeline-v0.1.md`、ロードマップは「撮影準備・未着手」とした。
+
 ## 給与の下り坂設計 v0.1 起案（2026-08-08・Fable）
 
 「給料が上がりっぱなしで、ピークを過ぎても上がり続ける」というKeisukeの指摘を受け、実装を精査して設計提案 `docs/salary-decline-proposal-v0.1.md` を起案した（コードは未変更・レビュー待ち）。
