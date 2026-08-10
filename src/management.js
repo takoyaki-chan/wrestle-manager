@@ -16828,18 +16828,13 @@ const Engine = {
             (negResult.voluntaryStays.length > 0 ? `（自発残留 ${negResult.voluntaryStays.length}名）` : ''));
         }
         // 交渉不要 or 交渉解決済み → そのまま次のoffWeekへ
-        // 契約OVR制: 来シーズンの給与基準をロスター全員に設定
-        s = {
-          ...s,
-          roster: s.roster.map(f => f.isRental ? f : {
-            ...f,
-            contractOVR: Engine.util.ov(f),
-            contractPop: f.popularity || 0,
-          }),
-        };
         events.push('📅 オフシーズン第2週: 契約更新完了');
 
       } else if (offWeek === 3) {
+        // 契約OVR制: 交渉の有無に関係なく毎季1回、来季基準へ再固定する。
+        // 昇給で先払いされた適正給の上昇分は salaryBonus から吸収し、二重乗りを防ぐ。
+        s = { ...s, roster: Engine.contract.refixRoster(s.roster) };
+
         // OffWeek 3: Draft Negotiation (draft-negotiation-spec §3.1)
         // 新フロー: 全候補を共通プールから生成 → 関心マーク決定 → セリ交渉
 
@@ -25272,6 +25267,22 @@ Engine.validateGameState = function(G) {
 // シーズン開幕時、低trust選手との1対1交渉イベント
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.contract = {
+  // 契約OVR制: 現在の実力・人気へ再固定し、基本給へ織り込まれた昇給分を吸収する。
+  refixRoster(roster) {
+    return (roster || []).map(f => {
+      if (f.isRental) return f;
+      const oldBP = Engine.util.getSalary({ ...f, salaryBonus: 0 }, {});
+      const contractOVR = Engine.util.ov(f);
+      const contractPop = f.popularity || 0;
+      const newBP = Engine.util.getSalary(
+        { ...f, salaryBonus: 0, contractOVR, contractPop }, {}
+      );
+      const absorb = Math.max(0, newBP - oldBP);
+      const salaryBonus = Math.max(0, (f.salaryBonus || 0) - absorb);
+      return { ...f, contractOVR, contractPop, salaryBonus };
+    });
+  },
+
   // ── 性格タイプマッピング: 明示的personality優先 → 特性推論フォールバック ──
   // 戻り値は**現行の性格キー**(normal/bold/quiet/shy/easygoing/earnest/emotional)。
   // 2026-08-01 以前は introverted / carefree という独自語彙を返しており、
