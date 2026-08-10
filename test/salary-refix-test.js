@@ -105,6 +105,54 @@ function salary(f, titles = {}) {
   assert.strictEqual(rentalAfter, rental, 'レンタル選手は再固定対象外であること');
 }
 
+// I-4: FA・スカウト・移籍のplayer加入履歴を刻む時点で、現在値へ契約を固定する。
+{
+  const staleContract = fighter({
+    pw: 72, sp: 70, te: 68, st: 66, mn: 64,
+    popularity: 57,
+    contractOVR: 30,
+    contractPop: 5,
+  });
+  const joinEvents = [
+    { type: 'debut', orgId: 'player', via: 'freeagent' },
+    { type: 'debut', orgId: 'player', via: 'scout' },
+    { type: 'transfer', toOrg: 'player', via: 'negotiate' },
+  ];
+  joinEvents.forEach(event => {
+    const joined = Engine.career.addEvent(staleContract, event);
+    assert.strictEqual(joined.contractOVR, Engine.util.ov(staleContract),
+      `${event.via}加入時のcontractOVRが現在OVRであること`);
+    assert.strictEqual(joined.contractPop, staleContract.popularity,
+      `${event.via}加入時のcontractPopが現在人気であること`);
+  });
+
+  const aiTransfer = Engine.career.addEvent(staleContract, {
+    type: 'transfer', toOrg: 'org_s', via: 'negotiate',
+  });
+  assert.strictEqual(aiTransfer.contractOVR, staleContract.contractOVR,
+    'AI団体への移籍はプレイヤー契約値を再設定しないこと');
+  assert.strictEqual(aiTransfer.contractPop, staleContract.contractPop);
+}
+
+// I-4: UIを通らないスカウト確定経路も、候補生成時点の契約値を持ち越す。
+{
+  const template = ALL_CHARS[0];
+  const report = Engine.scout.generateScoutReport(Engine.rng.create(8304), {
+    rngSeed: 8304,
+    season: 2,
+    roster: [],
+    aiOrgs: {},
+    freeAgents: [],
+    scoutCandidates: [],
+    retiredIds: [],
+    dormantPool: [{ id: template.id, age: 17 }],
+  }, 'offseason');
+  assert.strictEqual(report.candidates.length, 1);
+  const candidate = report.candidates[0];
+  assert.strictEqual(candidate.contractOVR, Engine.util.ov(candidate));
+  assert.strictEqual(candidate.contractPop, candidate.popularity || 0);
+}
+
 function offseasonState(seed, f) {
   const base = Engine.createInitialState(seed, true);
   const rosterFighter = {

@@ -3209,7 +3209,14 @@ const Engine = {
     },
     /** Return new fighter with event appended to history */
     addEvent(fighter, event) {
-      const f = Engine.career.ensure(fighter);
+      const isPlayerJoin = event && (
+        (event.type === 'debut' && event.orgId === 'player')
+        || (event.type === 'transfer' && event.toOrg === 'player')
+      );
+      const entrant = isPlayerJoin && !fighter.isRental
+        ? Engine.contract.stampPlayerContract(fighter)
+        : fighter;
+      const f = Engine.career.ensure(entrant);
       return { ...f, careerRecord: { ...f.careerRecord, history: [...f.careerRecord.history, event] } };
     },
     /** id で選手を探して careerRecord.history へ1件積む（自団体・AI団体を横断）。
@@ -15331,7 +15338,9 @@ const Engine = {
         // Seed flag: mark top-tier as seed for UI highlight
         const avgNotion = Math.round((template.pw + template.sp + template.te + template.st + template.mn) / 5);
         if (avgNotion >= 75) fighter._isSeed = true;
-        candidates.push(fighter);
+        // 候補生成から加入確定までは同一オフ週内。UIを通らないheadless経路でも
+        // 加入時契約値を持ち越せるよう、この時点のOVR/人気を候補へ刻んでおく。
+        candidates.push(Engine.contract.stampPlayerContract(fighter));
         usedFromPool.push(cid);
         reservedDefIds.add(cid); // 同一バッチ内の仮予約
       }
@@ -25267,6 +25276,15 @@ Engine.validateGameState = function(G) {
 // シーズン開幕時、低trust選手との1対1交渉イベント
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.contract = {
+  // プレイヤー団体への加入時点を給与契約の基準として固定する。
+  stampPlayerContract(fighter) {
+    return {
+      ...fighter,
+      contractOVR: Engine.util.ov(fighter),
+      contractPop: fighter.popularity || 0,
+    };
+  },
+
   // 契約OVR制: 現在の実力・人気へ再固定し、基本給へ織り込まれた昇給分を吸収する。
   refixRoster(roster) {
     return (roster || []).map(f => {
