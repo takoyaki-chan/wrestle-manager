@@ -1,5 +1,12 @@
 # Wrestle-Manager Codex Working Agreement
 
+## Workspace ownership
+
+- `C:\Users\nkmrk\Downloads\wrestle-manager` is the shared active workspace
+  for this project. Codex may perform normal file-changing tasks here.
+- Treat any pre-existing or unrelated changes as user-owned. Keep task changes
+  scoped, inspect them before committing, and do not overwrite unrelated work.
+
 ## Task closure and Git safety
 
 For every task that changes tracked or newly-created project files, choose one

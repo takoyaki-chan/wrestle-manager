@@ -3376,6 +3376,11 @@ function showAwardsCeremony(awards, onDone, onOpen) {
     slides[current].classList.add('active');
     slides[current].style.animation = 'none';
     requestAnimationFrame(() => { slides[current].style.animation = ''; });
+    // Phone layout makes the fixed ceremony its own scroll viewport.  A user
+    // who reached the previous slide's bottom must start the new slide at its
+    // heading instead of inheriting that old scroll position.
+    try { overlay.scrollTo({ top: 0, behavior: 'auto' }); }
+    catch (_e) { overlay.scrollTop = 0; }
 
     headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[current].label;
     if (headerSection) headerSection.textContent = slideInfo[current].section || '';

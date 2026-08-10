@@ -18,7 +18,7 @@ description: Codexへの実装委譲用の指示書を docs/codex-tasks/ に作�
 
 ## 運用ルール
 
-- worktreeはCodexが自前で作る(mainの作業ツリーを直接編集させない。Keisukeが同じsrc/をブラウザで開いてプレイ中)
-- **Codexは不変条件を自分で検算しない**。数値が絡むタスクは、マージ前に不変条件を1つずつFable(自分)が検算する
-- 委譲結果は必ずdiffレビューしてからマージ
+- **ワークスペース分離(2026-08-06確立、規約はリポジトリ直下の AGENTS.md)**: mainフォルダ(`Downloads/wrestle-manager`)はClaude専用。Codexのファイル変更タスクは必ず `C:\Users\nkmrk\Downloads\wrestle-manager-codex`(ブランチ `codex/agent-workspace`)で行う。指示書の「作業場所」にこのパスを明記する
+- マージはFableが行う: diffレビュー → 数値が絡むタスクは**不変条件を1つずつ自分で検算**(Codexは検算しない) → 適切なタイミングでmainへマージ
+- Codexの未コミット成果があるツリーで `git checkout -- <file>` を使わない(巻き戻し事故の実害あり。切り分け実験は先にコミットさせてから)
 - 役割分担: 数値設計・レビュー=Fable / 実装=Codex / セリフ=Opus / 計測・調査・UI=Sonnet系

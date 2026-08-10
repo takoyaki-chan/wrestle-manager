@@ -2,7 +2,7 @@
 
 ## この文書の目的
 
-技イラストを、確定済みの試合結果を変えずにReplay観戦画面へ重ねるための再開用仕様である。素材制作の優先順位は [技イラスト・大技カバレッジ計画](move-illustration-coverage-plan-v0.1.md)、将来の技再配置は [再配置後・全技カタログ v0.2](move-catalog-reclassified-v0.2.md) を参照する。
+技イラストを、確定済みの試合結果を変えずにReplay観戦画面へ重ねるための再開用仕様である。素材制作の優先順位は [技イラスト・大技カバレッジ計画](move-illustration-coverage-plan-v0.1.md)、3Dカスタム少女から最終PNGを作る手順は [3Dカスタム少女を使う技画像撮影・分離パイプライン](move-illustration-3d-capture-pipeline-v0.1.md)、将来の技再配置は [再配置後・全技カタログ v0.2](move-catalog-reclassified-v0.2.md) を参照する。
 
 別の作業窓で再開する時は、本書の「着手条件」から読み、Phase 0から順に進める。ここに書かれていない表示・エンジン変更を同時に始めない。
 
@@ -38,12 +38,12 @@
 完成した1技は `image/moves` 直下に、同じ `assetId` を持つ3ファイルで置く。
 
 ```text
-NN_slug_attacker.webp
-NN_slug_defender.webp
-NN_slug_overlay.webp
+制作中PNG: <pose>_attacker.png / <pose>_receiver.png / <pose>_outline.png
+ゲーム配置: NN_slug_attacker.webp / NN_slug_defender.webp / NN_slug_overlay.webp
 ```
 
-- 制作元：1024px `raw.png` と透過 `master.png` を `assets/moves` に保管する。
+- 制作元：3Dカスタム少女の2体原本`<pose>_source.png`と、人形化後の`<pose>_master.png`を`assets/moves/<pose>/`に保管する。両者は再処理用中間物であり、最終3枚には数えない。
+- 最終PNGの`receiver`は、ゲーム配置時に`defender`としてWebPへ変換する。3D撮影・GPT Image・決定的分離の詳細は3Dカスタム少女パイプラインに従う。
 - ゲーム配置用：512×512 WebP。攻め手・受け手・輪郭／影を別レイヤーにする。
 - `status: "ready"` の3ファイルが揃った時だけゲームで表示する。
 - `placeholder`、`planned`、未知の技、読み込みエラーはすべて既存の立ち絵・矢印・技名表示へフォールバックし、プレースホルダーを画面に出さない。
