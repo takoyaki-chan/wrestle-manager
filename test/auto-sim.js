@@ -835,6 +835,49 @@ function censusTitleReigns(state) {
   }
 }
 
+// ── 給与カーブ計測 (WM_SALARY_FIXTURE=1) ────────────────────────────────
+// 給与の下り坂設計(docs/salary-decline-proposal-v0.1.md)の較正材料。
+// 契約更改の直前(generateNegotiations呼び出し時 = contractOVR/Pop再固定前)に
+// 自団体ロスターの給与・適正給・gapRatio を控える。フックは既存戻り値を
+// 横取りするだけで、シミュレーション状態にも乱数消費にも触れない。
+const salaryCensus = { renewals: [], raises: [] };
+if (process.env.WM_SALARY_FIXTURE === '1') {
+  const _generateNegotiationsForSalaryCensus = Engine.contract.generateNegotiations;
+  Engine.contract.generateNegotiations = function(rng, state) {
+    try {
+      for (const f of (state.roster || [])) {
+        if (f.isRental) continue;
+        const salary = Engine.util.getSalary(f, state.titles);
+        const fair = Engine.util.getSalary(
+          { ...f, contractOVR: Engine.util.ov(f), contractPop: f.popularity || 0 },
+          state.titles
+        );
+        salaryCensus.renewals.push({
+          season: state.season, id: f.id, name: f.name, age: f.age || 17,
+          ovr: Engine.util.ov(f), pop: Math.round(f.popularity || 0),
+          wear: f.wear || 0, trust: f.trust != null ? f.trust : 50,
+          bonus: f.salaryBonus || 0, salary, fair,
+          gapRatio: salary > 0 ? fair / salary : 1.0,
+        });
+      }
+    } catch (_e) { /* 計測エラーはゲームに影響させない */ }
+    return _generateNegotiationsForSalaryCensus.call(this, rng, state);
+  };
+  const _resolveNegotiationForSalaryCensus = Engine.contract.resolveNegotiation;
+  Engine.contract.resolveNegotiation = function(rng, state, neg, choiceIdx, subChoice) {
+    const result = _resolveNegotiationForSalaryCensus.call(this, rng, state, neg, choiceIdx, subChoice);
+    try {
+      if (result && result.result && result.result.salaryDelta > 0) {
+        salaryCensus.raises.push({
+          season: state.season, id: neg.fighterId,
+          delta: result.result.salaryDelta, attitude: neg.attitude,
+        });
+      }
+    } catch (_e) { /* 計測エラーはゲームに影響させない */ }
+    return result;
+  };
+}
+
 // Phase 3a: 派閥イベント自動処理（F01/F02/F03 をランダムに応答）
 function autoHandleFactionEvent(G, simRng) {
   if (!G._pendingFactionEvent) return G;
@@ -2542,6 +2585,38 @@ if (process.env.WM_FRONTPAGE_FIXTURE === '1') {
       console.log(`  合成点  平均${avg.toFixed(0)}  中央${v[Math.floor(v.length / 2)]}  最小${v[0]}  最大${v[v.length - 1]}`);
       console.log(`  資格線260以上の号: ${(v.filter(x => x >= 260).length / v.length * 100).toFixed(1)}%`);
     }
+  }
+}
+
+// ── 給与カーブ (WM_SALARY_FIXTURE=1) ──────────────────────────────────
+// gapRatio帯の分布を出す。詳細分析用に WM_SALARY_FIXTURE_OUT=<path> で生データをJSON保存。
+if (process.env.WM_SALARY_FIXTURE === '1') {
+  console.log('--------------------------------------');
+  console.log('[給与カーブ計測] (WM_SALARY_FIXTURE=1)  更改直前サンプル');
+  const rows = salaryCensus.renewals;
+  if (!rows.length) {
+    console.log('  観測なし');
+  } else {
+    const bands = [
+      ['gap>=1.3 (昇給large)', r => r.gapRatio >= 1.3],
+      ['1.1-1.3 (昇給mid)  ', r => r.gapRatio >= 1.1 && r.gapRatio < 1.3],
+      ['0.90-1.1 (none)    ', r => r.gapRatio > 0.90 && r.gapRatio < 1.1],
+      ['0.75-0.90 (下りmid)', r => r.gapRatio > 0.75 && r.gapRatio <= 0.90],
+      ['<=0.75 (下りlarge) ', r => r.gapRatio <= 0.75],
+    ];
+    console.log(`  選手シーズン数 n=${rows.length}  (${targetSeasons}季)`);
+    for (const [label, fn] of bands) {
+      const hit = rows.filter(fn);
+      const wearHit = hit.filter(r => r.wear > 0).length;
+      console.log(`  ${label} ${String(hit.length).padStart(5)}  ${(hit.length / rows.length * 100).toFixed(1)}%  (うちwear>0: ${wearHit})`);
+    }
+    const raiseTotal = salaryCensus.raises.reduce((s, r) => s + r.delta, 0);
+    console.log(`  昇給イベント: ${salaryCensus.raises.length}件  総額${raiseTotal}万/週分`);
+  }
+  if (process.env.WM_SALARY_FIXTURE_OUT) {
+    fs.writeFileSync(process.env.WM_SALARY_FIXTURE_OUT,
+      JSON.stringify({ seed: userSeed, seasons: targetSeasons, ...salaryCensus }));
+    console.log(`  生データ保存: ${process.env.WM_SALARY_FIXTURE_OUT}`);
   }
 }
 
