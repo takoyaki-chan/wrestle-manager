@@ -3209,7 +3209,14 @@ const Engine = {
     },
     /** Return new fighter with event appended to history */
     addEvent(fighter, event) {
-      const f = Engine.career.ensure(fighter);
+      const isPlayerJoin = event && (
+        (event.type === 'debut' && event.orgId === 'player')
+        || (event.type === 'transfer' && event.toOrg === 'player')
+      );
+      const entrant = isPlayerJoin && !fighter.isRental
+        ? Engine.contract.stampPlayerContract(fighter)
+        : fighter;
+      const f = Engine.career.ensure(entrant);
       return { ...f, careerRecord: { ...f.careerRecord, history: [...f.careerRecord.history, event] } };
     },
     /** id で選手を探して careerRecord.history へ1件積む（自団体・AI団体を横断）。
@@ -15331,7 +15338,9 @@ const Engine = {
         // Seed flag: mark top-tier as seed for UI highlight
         const avgNotion = Math.round((template.pw + template.sp + template.te + template.st + template.mn) / 5);
         if (avgNotion >= 75) fighter._isSeed = true;
-        candidates.push(fighter);
+        // 候補生成から加入確定までは同一オフ週内。UIを通らないheadless経路でも
+        // 加入時契約値を持ち越せるよう、この時点のOVR/人気を候補へ刻んでおく。
+        candidates.push(Engine.contract.stampPlayerContract(fighter));
         usedFromPool.push(cid);
         reservedDefIds.add(cid); // 同一バッチ内の仮予約
       }
@@ -16828,18 +16837,13 @@ const Engine = {
             (negResult.voluntaryStays.length > 0 ? `（自発残留 ${negResult.voluntaryStays.length}名）` : ''));
         }
         // 交渉不要 or 交渉解決済み → そのまま次のoffWeekへ
-        // 契約OVR制: 来シーズンの給与基準をロスター全員に設定
-        s = {
-          ...s,
-          roster: s.roster.map(f => f.isRental ? f : {
-            ...f,
-            contractOVR: Engine.util.ov(f),
-            contractPop: f.popularity || 0,
-          }),
-        };
         events.push('📅 オフシーズン第2週: 契約更新完了');
 
       } else if (offWeek === 3) {
+        // 契約OVR制: 交渉の有無に関係なく毎季1回、来季基準へ再固定する。
+        // 昇給で先払いされた適正給の上昇分は salaryBonus から吸収し、二重乗りを防ぐ。
+        s = { ...s, roster: Engine.contract.refixRoster(s.roster) };
+
         // OffWeek 3: Draft Negotiation (draft-negotiation-spec §3.1)
         // 新フロー: 全候補を共通プールから生成 → 関心マーク決定 → セリ交渉
 
@@ -25272,6 +25276,31 @@ Engine.validateGameState = function(G) {
 // シーズン開幕時、低trust選手との1対1交渉イベント
 // ─────────────────────────────────────────────────────────────────────────────
 Engine.contract = {
+  // プレイヤー団体への加入時点を給与契約の基準として固定する。
+  stampPlayerContract(fighter) {
+    return {
+      ...fighter,
+      contractOVR: Engine.util.ov(fighter),
+      contractPop: fighter.popularity || 0,
+    };
+  },
+
+  // 契約OVR制: 現在の実力・人気へ再固定し、基本給へ織り込まれた昇給分を吸収する。
+  refixRoster(roster) {
+    return (roster || []).map(f => {
+      if (f.isRental) return f;
+      const oldBP = Engine.util.getSalary({ ...f, salaryBonus: 0 }, {});
+      const contractOVR = Engine.util.ov(f);
+      const contractPop = f.popularity || 0;
+      const newBP = Engine.util.getSalary(
+        { ...f, salaryBonus: 0, contractOVR, contractPop }, {}
+      );
+      const absorb = Math.max(0, newBP - oldBP);
+      const salaryBonus = Math.max(0, (f.salaryBonus || 0) - absorb);
+      return { ...f, contractOVR, contractPop, salaryBonus };
+    });
+  },
+
   // ── 性格タイプマッピング: 明示的personality優先 → 特性推論フォールバック ──
   // 戻り値は**現行の性格キー**(normal/bold/quiet/shy/easygoing/earnest/emotional)。
   // 2026-08-01 以前は introverted / carefree という独自語彙を返しており、
