@@ -102,14 +102,13 @@ assert.ok(promP >= 45 && promP <= 65, `有望は従来の感触50-60%帯(実測$
 
 // 2: FAは現行式のまま(素材0%が旧式の指紋)
 assert.strictEqual(faDist.material, 0, 'FAに素材が出たら見立て式がFAへ漏れている');
-// FIXME(2026-08-11): 13aa69e(成長リバランス)以降、100シードでFA超逸材が~10件発生し
-// 本来の不変条件(===0、経済を動かさない)が破れている。仕様として認めるか、FA査定に
-// クランプを入れるかはKeisuke裁定待ち。裁定まで暫定で上限のみ監視する。
-assert.ok(faDist.superElite <= 12, `FA開始時の超逸材が異常増加していない(実測${faDist.superElite}、本来は0が不変条件)`);
+// 2026-08-11 Keisuke裁定: 13aa69e(成長リバランス)後のFA分布上振れを「リバランス後の仕様」
+// として承認。旧不変条件(超逸材===0・逸材~32%帯)を廃し、新分布(100シード実測:
+// 超逸材1.4% / 逸材44.7% / 有望39.1% / 原石14.7%)を正として較正する。
+const faSuper = pctOf(faDist, 'superElite', faN);
+assert.ok(faSuper <= 3, `FA超逸材は稀(~1.4%)に留まる(実測${faSuper.toFixed(1)}%)`);
 const faElite = pctOf(faDist, 'elite', faN);
-// FIXME(2026-08-11): 同上——13aa69e以降、FA逸材率も~45%へ上振れ(本来の帯は22〜42%)。
-// 成長リバランス後の世界の仕様とするか、FA査定をクランプするかはKeisuke裁定待ち。
-assert.ok(faElite >= 22 && faElite <= 50, `FAの逸材率が異常でない(実測${faElite.toFixed(1)}%、本来は~32%帯が不変条件)`);
+assert.ok(faElite >= 35 && faElite <= 55, `FAの逸材はリバランス後~45%帯(実測${faElite.toFixed(1)}%)`);
 
 // 6: 初期ドラフト
 assert.ok(lowOvrCandidateSeen >= 1, 'OVR40未満の原石が候補に並びうる(下限撤廃)');

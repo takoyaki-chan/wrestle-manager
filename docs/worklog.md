@@ -6,7 +6,9 @@ Keisukeのブック直接修正(数箇所)を取り込んだ上で `tools/dialog
 
 反映ゲート(test/run-all.js)で発覚した問題と対処: (1)**セリフ固定テスト4本**は参照元ドラフト文書(autumn-war/bitter-prematch/heat-visibility/signing-greeting)との同期が必要→改訂ペアで文書側を更新(Keisukeの直接修正2行も文書へ同期)。(2)**HEAT実体3行**はミラー行にのみ改訂を書いていたため実体へ手動反映+ブック修正。(3)**既存破損3本**: archetype人数テスト=セル移動8名を反映して更新 / showprep画像サイズ=bba6ba3の意図的変更(解決済み行46px→108×162)にテストを追随 / **prospect-assessment=13aa69e(成長リバランス)以降「FAは経済を動かさない」不変条件が破損**(FA超逸材0→10件・FA逸材32%帯→44.7%)——仕様とするかクランプするかはKeisuke裁定待ちとしてFIXME付きで暫定緩和(worktreeバイセクトで犯人特定済み)。
 
-検証: **test/run-all.js 222/222 PASS、auto-sim 20シーズン ALL CLEAR**。残: Keisuke実機確認 / prospect裁定 / 口調バイブルspecs化。
+検証: **test/run-all.js 222/222 PASS、auto-sim 20シーズン ALL CLEAR**。反映後に `export` も実行し、セリフ編集ブック全冊を正規状態(新・現在列/改訂列空欄/名簿最新)へ再生成。
+
+追記(同日): **prospect裁定確定——「リバランス後の仕様として認める」**。FIXMEを除去し、FA分布の新実測(100シード: 超逸材1.4%/逸材44.7%/有望39.1%/原石14.7%)を正式較正値としてテストに反映。Keisukeの指示によりmainをpush。残: Keisuke実機確認 / 口調バイブルspecs化。
 
 口調バイブルを正とした共通セリフ全直しを1日で完走。検品(セル別エージェント並列・口調シート照合)→機械修正即書き込み→声の書き直しはOpus起草→Fableレビュー→Keisuke承認→zip+XML直接方式でxlsx改訂列(G)へ書き込み、のループを7帯・34セルで回した。総合成績: **重160・軽855(違反率8.8%)、約910セル記入**。「現在」列は全冊無傷、バックアップはscratchpadに保存。
 
