@@ -10,13 +10,11 @@
       "Bash(git log:*)",
       "Bash(git diff:*)",
       "Bash(git worktree list:*)",
-
       "Bash(node --check:*)",
       "Bash(node -c:*)",
       "Bash(node -e:*)",
       "Bash(node test/:*)",
       "Bash(node tools/:*)",
-
       "Bash(grep:*)",
       "Bash(ls:*)",
       "Bash(wc:*)",
@@ -25,21 +23,25 @@
       "Bash(awk:*)",
       "Bash(where:*)",
       "Bash(identify:*)",
-
       "Bash(python:*)",
       "Bash(python3:*)",
       "Bash(py:*)",
       "Bash(PYTHONIOENCODING=utf-8 python:*)",
-
       "Read(//c/Users/nkmrk/**)",
       "Read(//tmp/**)",
       "Read(//usr/**)",
-
       "mcp__Claude_Browser__preview_start",
       "mcp__visualize__read_me",
       "mcp__visualize__show_widget",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "WebFetch(domain:www.youtube.com)"
+      "WebFetch(domain:www.youtube.com)",
+      "PowerShell(Get-ChildItem \"D:\\\\picture\\\\【完了】\\\\2026完了\\\\251025【先輩ミックスタッグ】\\\\完了\\\\商品版_日本語版\\\\Senpai_Mixed_Tag_JP_Single_Page_JPEG\" | Select-Object -First 12 Name, Length | Format-Table -AutoSize; \\(Get-ChildItem \"D:\\\\picture\\\\【完了】\\\\2026完了\\\\251025【先輩ミックスタッグ】\\\\完了\\\\商品版_日本語版\\\\Senpai_Mixed_Tag_JP_Single_Page_JPEG\"\\).Count)",
+      "PowerShell(python --version)",
+      "PowerShell(python -c \"import PIL; print\\('PIL', PIL.__version__\\)\")",
+      "PowerShell(Get-ChildItem C:\\\\Windows\\\\Fonts | Where-Object { $_.Name -match \"Yu|meiryo|BIZ|UDD|gothic\" } | Select-Object Name | Out-String)",
+      "PowerShell(python -m pip install pillow --quiet --disable-pip-version-check)",
+      "PowerShell(Get-ChildItem \"D:\\\\picture\\\\【完了】\\\\2026完了\\\\251025【先輩ミックスタッグ】\\\\カスコ\",\"D:\\\\picture\\\\【完了】\\\\2026完了\\\\251025【先輩ミックスタッグ】\\\\三浦チア\" -File -ErrorAction SilentlyContinue | Select-Object -First 40 @{n='Path';e={$_.Directory.Name + '\\\\' + $_.Name}}, Length | Format-Table -AutoSize | Out-String -Width 200)",
+      "PowerShell(python \"C:\\\\Users\\\\nkmrk\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-nkmrk-Downloads-wrestle-manager\\\\5df5f6fc-1d78-4d6f-8073-6079fb53b878\\\\scratchpad\\\\build_store_assets.py\")"
     ]
   }
 }
