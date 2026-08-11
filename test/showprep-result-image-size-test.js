@@ -46,9 +46,10 @@ assert.match(rule('.pb-tag-lineup'), /width:198px/);
 assert.match(rule('.pb-mrow:has(.pb-fighter.is-tag)'), /grid-template-columns:1fr 240px 1fr/);
 assert.doesNotMatch(rule('.pb-tag-member'), /border:/, 'result tag members must not be individually framed');
 
-// #5 and #6: normal results use S; compact resolved rows use chip.
+// #5 and #6: normal results use S; resolved rows were upgraded from chip to S
+// in bba6ba3 (war presentation fix) — test aligned 2026-08-11.
 hasSize('.pb-portrait', 108, 162);
-hasSize('.pb-mrow.is-resolved .pb-portrait', 46, 66);
+hasSize('.pb-mrow.is-resolved .pb-portrait', 108, 162);
 
 // Regression guard: the already-compliant main event remains S.
 hasSize('.pb-mrow.is-main .pb-portrait', 108, 162);

@@ -52,9 +52,10 @@ check(PERSONALITY_KEYS.has('normal'), '性格のキー集合には normal が残
 const badArchetype = ALL_CHARS.filter(c => !ARCHETYPE_KEYS.has(c.archetype));
 check(badArchetype.length === 0, `全キャラの archetype が既知の集合に収まる(逸脱: ${badArchetype.map(c => `${c.name}:${c.archetype}`).join(', ')})`);
 check(ALL_CHARS.filter(c => c.archetype === 'normal').length === 0, 'ALL_CHARS に archetype=normal のキャラが残っていない');
-check(ALL_CHARS.filter(c => c.archetype === 'standard').length === 33, 'ALL_CHARS の archetype=standard は33名(旧 normal 33名から1:1移行)');
-// personality の 'normal' は触っていないので現状維持のはず
-check(ALL_CHARS.filter(c => c.personality === 'normal').length === 37, 'ALL_CHARS の personality=normal は37名のまま(性格は不変)');
+// 2026-08-11 口調バイブルのセル移動裁定(計8名)で人数が変動: standard 33→32(海老名栞→seductive)、
+// normal 37→33(長谷川レオナ→earnest/山本理香→bold/松岡綾乃→shy/小森さなえ・穴澤ほのか→easygoing/南谷杏 bold→normal)
+check(ALL_CHARS.filter(c => c.archetype === 'standard').length === 32, 'ALL_CHARS の archetype=standard は32名(2026-08-11 セル移動反映)');
+check(ALL_CHARS.filter(c => c.personality === 'normal').length === 33, 'ALL_CHARS の personality=normal は33名(2026-08-11 セル移動反映)');
 
 // ─────────────────────────────────────────────────────────────────────────
 // 3. 旧セーブ移行(Engine.saveDoctor.repairOnLoad)
