@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-83 給与再固定P0: Codex実装をレビュー・検算してmainマージ（2026-08-12・Fable）
+
+Codexが `codex/agent-workspace` に実装した task-83(再固定のoffWeek3移設+昇給吸収+入団経路監査、d38a190/c84b143)をレビューし、不変条件を自分で検算してからmainへマージした(c5e1683)。diff は management.js +51/-11 と新規 `test/salary-refix-test.js` の2ファイルのみで、SALARY_PARAMS・UI・セーブ形式は無変更(指示書の変更可範囲どおり)。
+
+検算の要点: (**I-1**)offWeek2の交渉早期returnは`offWeek:2`保存→次tickで3に進むため、ブロック先頭の`Engine.contract.refixRoster`は交渉の有無に関わらず毎季ちょうど1回走る(単体テストが計数フックで両ケース検証、交渉判定が旧契約値のまま=§3.3も検証済み)。(**I-2/I-3**)吸収の数学(`absorb=max(0,newBP−oldBP)`、伸びた選手=max(前給,適正給)±1、衰えた選手=適正BP+bonus)は`getSalary(f,{})`がtitleBonus/bonusを含まないことを実装で確認、テストも直接検証。(**I-4**)加入経路を自分で全数列挙——app.js 5048(ドラフト)/5182・5359(FA)/5385・5519(スカウト)/5408(引き抜き)、ui-common.js 6372(スカウト)、management.js 14634(headless引き抜き・直接スタンプ併用)/14820(交渉移籍・14817直接スタンプ併用)は全て`Engine.career.addEvent`の加入イベントフック(debut orgId='player' / transfer toOrg='player')でスタンプされ、auto-simのheadlessドラフト経路は候補生成時スタンプ(15341)で担保。興行ゲスト(app.js 6480等)は一時所属で更改を跨がずスコープ外。(**I-5**)debut/transferイベントは全て加入瞬間にのみ積まれ、季中の再スタンプ経路なし。(**I-6**)validateGameState違反0。AI団体へ落札候補のスタンプが混入するが、`calcFee`は現在OVR/人気ベースでcontractOVRを参照せず無害(v0.2 §3.5の既知周辺課題のまま)。
+
+検証: `test/salary-refix-test.js` PASS / フィクスチャ再計測(40季×seed7919)でCodex報告と完全一致——**gap≥1.3が92.7%→36.4%**、下り帯が初出現(下りmid 9.2%+下りlarge 1.8%、下り帯31件中30件がwear>0)。残存gap≥1.3の103件中wear>0は15件のみで「残りは若手の成長由来」の説明も裏付けた。マージ後main: **npm test 223/223 PASS**(Codex環境の3失敗はmain側で解消済みと確認)、auto-sim 20季 ALL CLEAR。**Keisuke裁定(2026-08-12): 25%目標未達は問題なし——調整目標であり安全条件ではない。基準はP2経済較正へ移す**。
+
+残: **B=P2経済較正(Fable・次工程)** — fair支払い世界の総支出増を計測しSALARY_PARAMSスケール要否を判断 → C=下り交渉セリフのOpus起案 → D=P1下り交渉カード実装。specs昇格はP1/P2完了後にまとめて行う(task-83指示書もそれまでアーカイブしない)。
+
 ## セリフ全直しの本番反映完了: 866件をソース書き戻し・222/222テストPASS・auto-sim ALL CLEAR（2026-08-11・Fable）
 
 Keisukeのブック直接修正(数箇所)を取り込んだ上で `tools/dialogue-workbook.js apply` により**改訂863件+手動3件をsrcへ反映**(data.js/victory-lines.js/tag-battle-lines.js/battle-lines.js/data-faction-dialogue.js/battle-engine-main.js)。EVENT_LINES_BY_KEYミラー46件は参照構造のためスキップ(実体側で反映済み・取りこぼしゼロ)。名簿(在籍キャラシート)は移動8名分を手動同期済み。
