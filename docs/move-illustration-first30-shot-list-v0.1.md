@@ -111,7 +111,7 @@
 
 **第1波撮影完了サマリ**: 技24セット（第1波19のうち撮影18＋共用裁定2＋P1先行ボーナス4: 28_sleeper_hold/88_achilles_hold ほか）+ M0 3構図、全1680×1340・3パス完備。次工程はCodexの人形化・分離 — **16_powerbomb を試作先行**し、グレーRGB値・輪郭線幅をそこで固定してから残りを流す。
 
-**Phase A試作・初回は様式却下（2026-08-12）**: Codex(task-85)の16_powerbomb試作は機械QA全PASS・Fable独立検算PASS（再合成差0／IoU 0.9996／決定性ハッシュ不変。コミット: 素材9db7fd7＋試作693a4d1、Codex sandbox commit不可のためFable代行）だったが、**Keisukeの見た目レビューでベタ塗りグレー2トーン様式を却下**。正しい完成様式は `assets/moves/reference/mannequin_turnaround_master.png` の**基本3面図キャラ**（白ボディ+黒線画。旧30枚master同系）で、これは**事前決定済みだった** — Fableが参照フォルダ・旧世代成果物を試作前に照合しなかった検収漏れ。attacker/receiverはゲーム側で青/赤コーナー等のうっすらティントを乗せるフィルレイヤーのため、黒線はoutlineへ分離する（pipeline文書・task-85に是正済み、22d435f）。**様式修正版のPhase Aを再走中**。
+**Phase A試作・初回は様式却下（2026-08-12）**: Codex(task-85)の16_powerbomb試作は機械QA全PASS・Fable独立検算PASS（再合成差0／IoU 0.9996／決定性ハッシュ不変。コミット: 素材9db7fd7＋試作693a4d1、Codex sandbox commit不可のためFable代行）だったが、**Keisukeの見た目レビューでベタ塗りグレー2トーン様式を却下**。正しい完成様式は `assets/moves/reference/mannequin_turnaround_master.png` の**基本3面図キャラ**（白ボディ+黒線画。旧30枚master同系）で、これは**事前決定済みだった** — Fableが参照フォルダ・旧世代成果物を試作前に照合しなかった検収漏れ。attacker/receiverはゲーム側で青/赤コーナー等のうっすらティントを乗せるフィルレイヤーのため、黒線はoutlineへ分離する（pipeline文書・task-85に是正済み、22d435f）。**様式修正版のPhase A v2 完了・Fable検収PASS（2026-08-12）**: 白線画様式のmaster+白フィルattacker/receiver（黒線なし・二値アルファ・非白画素0）+黒線画outlineを生成。機械QA PASS（IoU 0.9002／単体照合 0.971/0.926／重なり0／再合成差0）+Fable独立検算で決定性ハッシュ不変。ティント合成デモ（攻め手=赤コーナー/受け手=青コーナー）で色付け前提のレイヤー動作を確認。コミット91f78e6（Fable代行）。**残: Keisukeの見た目確認 → Phase B（残り23技+M0）**。
 
 ## 7. 除外と後送（理由付き）
 
