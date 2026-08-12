@@ -581,8 +581,10 @@ function section(name, fn) {
 // 6. .negotiation-bubble — 社長室 解雇面談(renderShachoshitsuReleaseInterview, ui-render.js)
 // ===========================================================================
 (function releaseInterviewSuite() {
+  // faceout-audit v0.2: 解雇面談は素材系統違反(1:1 faceを2:3枠にcover)を解消し
+  // getUpperUrl(upper素材)へ移行したため、サンドボックスにもgetUpperUrlを注入する
   const build = new Function(
-    'document', 'G', 'Engine', 'getPortraitUrl', 'ALL_CHARS',
+    'document', 'G', 'Engine', 'getUpperUrl', 'ALL_CHARS',
     `${dataFn('portraitImg')}
      ${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
@@ -607,9 +609,9 @@ function section(name, fn) {
         formatDate: (s, w) => `S${s}-W${w}`,
       },
     };
-    const getPortraitUrlStub = opts.getPortraitUrl || ((id) => `image/face/${id}.png`);
+    const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/upper_${id}.webp`);
     const ALL_CHARS_STUB = opts.ALL_CHARS || [{ id: 3, name: '結城ミナ', style: 'Striker' }];
-    const built = build(documentStub, GStub, EngineStub, getPortraitUrlStub, ALL_CHARS_STUB);
+    const built = build(documentStub, GStub, EngineStub, getUpperUrlStub, ALL_CHARS_STUB);
     return { built, el };
   }
 
@@ -620,7 +622,7 @@ function section(name, fn) {
     assert.doesNotThrow(() => built.renderShachoshitsuReleaseInterview(fighter, 'お世話になりました。'), '例外を投げない(不変条件1)');
     const html = el.innerHTML;
     assert.ok(html.includes('negotiation-bubble'), 'negotiation-bubbleが出る');
-    assert.ok(html.includes('<img src="image/face/3.png"'), '選手の顔画像が出る(不変条件2)');
+    assert.ok(html.includes('<img src="image/upper/upper_3.webp"'), '選手のアッパー画像が出る(不変条件2。faceout-audit v0.2でupper素材へ)');
     assert.ok(html.includes('お世話になりました。'), 'セリフ本文が出る(不変条件3)');
     assert.ok(html.includes('結城ミナ'), '選手名が出る(不変条件4)');
     assert.ok(html.includes('解雇の確認') && html.includes('取り消せません'), '解雇の確定操作であることが明示される(不変条件5)');

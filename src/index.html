@@ -804,19 +804,19 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .emr-hp-half{display:flex;align-items:center;gap:7px}.emr-hp-half.is-right{flex-direction:row-reverse}.emr-hp-track{height:5px;background:#292d34;border-radius:4px;overflow:hidden;flex:1}.emr-hp-fill{height:100%;background:var(--emr-accent);border-radius:4px}.emr-hp-half.is-right .emr-hp-fill{margin-left:auto}.emr-hp-val{font-family:var(--font-display);font-size:13px;color:var(--stage-text-sub)}.emr-hp-label{font-family:var(--font-label);font-size:7px;letter-spacing:.12em;color:var(--stage-text-dim)}
 .emr-foot{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,300px) minmax(0,1fr);align-items:center;gap:12px;padding:13px 16px 15px;border-top:1px solid rgba(200,190,170,.1);background:rgba(0,0,0,.22)}.emr-foot-note{grid-column:1;grid-row:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px;color:var(--stage-text-sub)}
 .emr-next{grid-column:2;grid-row:1;width:100%;border:1px solid rgba(var(--emr-accent-rgb),.46);border-radius:8px;background:rgba(var(--emr-accent-rgb),.1);color:var(--emr-metal);padding:12px 18px;font-family:var(--font-label);font-size:13px;font-weight:900;letter-spacing:.12em;cursor:pointer}
-.emr-bout.is-tag{grid-template-columns:1fr 128px 1fr}.emr-team{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}.emr-team.is-loser{opacity:.62}.emr-pair{display:flex;align-items:flex-end;justify-content:center}.emr-pair .emr-upper{width:104px;height:152px}.emr-pair .emr-upper+.emr-upper{margin-left:-17px}.emr-team-name{font-size:13px;font-weight:900;line-height:1.4;text-align:center;margin-top:8px}
-/* 春タッグは選手ごとの額縁ではなく、チーム写真として1つのフレームに収める。 */
-.emr-layer.is-spring .emr-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;width:min(208px,100%);height:152px;overflow:hidden;border:1px solid rgba(var(--emr-accent-rgb),.3);border-bottom:3px solid var(--emr-accent);border-radius:10px 10px 5px 5px;background:#171a20}
-.emr-layer.is-spring .emr-pair .emr-upper{width:auto;height:auto;min-width:0;border:0;border-radius:0;background:transparent}
-.emr-layer.is-spring .emr-pair .emr-upper+.emr-upper{margin-left:0;border-left:1px solid rgba(var(--emr-accent-rgb),.2)}
-.emr-layer.is-spring .emr-team.is-loser .emr-pair{border-bottom-color:#40444c}
-/* 通常興行のタッグ結果も、春タッグと同じチーム単位の写真フレームにする。 */
-.emr-layer.is-normal .emr-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:stretch;width:min(208px,100%);height:152px;overflow:hidden;border:1px solid rgba(var(--emr-accent-rgb),.3);border-bottom:3px solid var(--emr-accent);border-radius:10px 10px 5px 5px;background:#171a20}
-.emr-layer.is-normal .emr-pair .emr-upper{width:auto;height:auto;min-width:0;border:0;border-radius:0;background:transparent}
-.emr-layer.is-normal .emr-pair .emr-upper+.emr-upper{margin-left:0;border-left:1px solid rgba(var(--emr-accent-rgb),.2)}
-.emr-layer.is-normal .emr-team.is-loser .emr-pair{border-bottom-color:#40444c}
+.emr-bout.is-tag{grid-template-columns:1fr 128px 1fr}.emr-team{position:relative;display:flex;flex-direction:column;align-items:center;min-width:0}.emr-team.is-loser{opacity:.62}
+/* faceout-audit v0.2: タッグ隊列は個々に額縁を付けず群の外枠1つ+18px重ね+drop-shadow
+   (mockup-baseline §2-B、優勝発表 .ch-duo と同型)。段はS 108×162。全プロファイル共通 */
+.emr-pair{display:flex;align-items:flex-end;justify-content:center;padding:10px 12px 0;overflow:hidden;
+  border:1px solid rgba(var(--emr-accent-rgb),.3);border-bottom:3px solid var(--emr-accent);border-radius:10px 10px 5px 5px;background:#171a20}
+.emr-pair .emr-upper{width:108px;height:162px;border:0;border-radius:0;background:transparent}
+.emr-pair .emr-upper img{filter:drop-shadow(0 6px 12px rgba(0,0,0,.5))}
+.emr-pair .emr-upper+.emr-upper{margin-left:-18px}
+.emr-team.is-loser .emr-pair{border-bottom-color:#40444c}
+.emr-team.is-loser .emr-pair .emr-upper img{filter:grayscale(.9) brightness(.72) drop-shadow(0 6px 12px rgba(0,0,0,.5))}
+.emr-team-name{font-size:13px;font-weight:900;line-height:1.4;text-align:center;margin-top:8px}
 @keyframes emrVeilIn{from{opacity:0}to{opacity:1}}@keyframes emrPopupIn{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
-@media(max-width:700px){.emr-layer{padding:9px}.emr-popup{max-height:calc(100vh - 18px)}.emr-head{grid-template-columns:52px 1fr auto;padding:10px}.emr-emblem{width:46px;height:46px}.emr-emblem img{width:39px;height:39px}.emr-title{font-size:14px}.emr-bout{grid-template-columns:1fr 82px 1fr;padding:10px 12px 8px;min-height:225px}.emr-bout.is-tag{grid-template-columns:1fr 72px 1fr}.emr-upper{width:72px;height:114px}.emr-bubble-slot{height:40px;margin-bottom:5px}.emr-side-copy{margin-top:5px}.emr-name{font-size:11px}.emr-org-badge{display:none}.emr-winner{font-size:21px}.emr-finish-actors{grid-template-columns:1fr;gap:0;font-size:8px}.emr-finish{font-size:8px}.emr-pair .emr-upper{width:54px;height:88px}.emr-layer.is-spring .emr-pair,.emr-layer.is-normal .emr-pair{width:min(108px,100%);height:88px}.emr-team-name{font-size:10px;margin-top:5px}.emr-foot-note{display:none}.emr-foot{display:flex;justify-content:center}.emr-next{width:min(300px,100%)}.emr-bubble{max-width:170px;font-size:9px}}
+@media(max-width:700px){.emr-layer{padding:9px}.emr-popup{max-height:calc(100vh - 18px)}.emr-head{grid-template-columns:52px 1fr auto;padding:10px}.emr-emblem{width:46px;height:46px}.emr-emblem img{width:39px;height:39px}.emr-title{font-size:14px}.emr-bout{grid-template-columns:1fr 82px 1fr;padding:10px 12px 8px;min-height:225px}.emr-bout.is-tag{grid-template-columns:1fr 72px 1fr}.emr-upper{width:72px;height:114px}.emr-bubble-slot{height:40px;margin-bottom:5px}.emr-side-copy{margin-top:5px}.emr-name{font-size:11px}.emr-org-badge{display:none}.emr-winner{font-size:21px}.emr-finish-actors{grid-template-columns:1fr;gap:0;font-size:8px}.emr-finish{font-size:8px}.emr-pair{padding:6px 8px 0}.emr-pair .emr-upper{width:46px;height:66px}.emr-team-name{font-size:10px;margin-top:5px}.emr-foot-note{display:none}.emr-foot{display:flex;justify-content:center}.emr-next{width:min(300px,100%)}.emr-bubble{max-width:170px;font-size:9px}}
 
 /* Scrollbar */
 ::-webkit-scrollbar{width:5px}
@@ -1444,75 +1444,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .db-cmp-vs-mark-circle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:64px;height:64px;border-radius:50%;background:radial-gradient(circle,#fff 0%,#f5ecd7 60%,#e8d9b7 100%);border:2px solid #8b1a1a;display:grid;place-items:center;font-family:'Oswald',sans-serif;font-size:26px;font-weight:900;color:#8b1a1a;letter-spacing:2px;box-shadow:0 4px 14px rgba(0,0,0,0.18);z-index:3;pointer-events:none}
 @media(max-width:900px){.db-cmp-vs-mark-circle{position:relative;left:auto;top:auto;transform:none;margin:6px auto;width:48px;height:48px;font-size:20px}}
 
-/* ════════════════════════════════════════════════════════
-   因縁列伝(3面) — KURODA_RELATION_NARRATIVE 駆動
-   ════════════════════════════════════════════════════════ */
-.rivalry-wrap{max-width:780px;margin:0 auto}
-.rivalry-headline{text-align:center;padding:8px 0 12px;border-bottom:3px double rgba(120,84,39,0.4);margin-bottom:14px}
-.rivalry-headline .pre{display:inline-block;font-size:10px;letter-spacing:4px;color:#8b1a1a;font-weight:800;border:1px solid #8b1a1a;padding:2px 10px;margin-bottom:8px}
-.rivalry-headline .title{font-size:24px;font-weight:900;font-family:'Noto Serif JP',serif;color:#1a0d04;line-height:1.25;letter-spacing:-0.01em;margin:0}
-.rivalry-headline .sub{font-size:12px;color:#5b4b34;margin-top:6px;font-family:'Noto Serif JP',serif}
-.rivalry-main{margin-bottom:16px;background:linear-gradient(180deg,#1a0d04 0%,#2a1a10 100%);border-radius:10px;overflow:hidden;border:1px solid rgba(154,112,32,0.4);box-shadow:inset 0 0 30px rgba(0,0,0,0.6)}
-.rivalry-featured-headline{text-align:center;padding:14px 16px 12px;background:radial-gradient(ellipse at 50% 100%,rgba(212,184,122,0.25),transparent 70%);border-bottom:2px solid rgba(212,184,122,0.4);margin-top:0}
-.rivalry-featured-headline .pre{font-size:9px;letter-spacing:4px;color:#d4a82a;font-weight:700;margin-bottom:6px}
-.rivalry-featured-headline .h{font-size:22px;font-weight:900;font-family:'Noto Serif JP',serif;color:#f0d48b;line-height:1.3;letter-spacing:-0.01em;text-shadow:0 1px 2px rgba(0,0,0,0.6)}
-.rivalry-main-photos{display:grid;grid-template-columns:1fr 100px 1fr;gap:8px;align-items:end;padding:14px 16px 0}
-.rivalry-main-stand{height:240px;border-radius:6px;overflow:hidden;background-color:#2a1a10;border:2px solid #d4b87a;box-shadow:0 4px 14px rgba(0,0,0,0.4)}
-.rivalry-main-stand .ace-stand-img.flip{transform:scaleX(-1)}
-.rivalry-main-vs{display:grid;align-content:center;justify-items:center;gap:4px}
-.rivalry-main-vs .vs{font-family:'Bebas Neue',sans-serif;font-size:42px;color:#f0d48b;line-height:1;text-shadow:0 0 12px rgba(212,184,122,0.6)}
-.rivalry-main-info{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;padding:10px 16px 0}
-.rivalry-main-side{background:rgba(0,0,0,0.5);padding:8px 12px;border-radius:4px;color:#fff}
-.rivalry-main-side.right{text-align:right}
-.rivalry-main-side .org{font-size:10px;color:#c8b878;letter-spacing:1px}
-.rivalry-main-side .name{font-size:17px;font-weight:900;font-family:'Noto Serif JP',serif}
-.rivalry-main-side .role{font-size:10px;color:#d4b87a;margin-top:2px}
-.rivalry-featured-body{padding:14px 18px 16px;font-size:13px;line-height:1.95;color:#f0d48b;font-family:'Noto Serif JP',serif;text-align:justify}
-.rivalry-featured-body p{text-indent:1em;margin:0 0 8px 0}
-.rivalry-featured-body strong{color:#d4a82a;font-weight:800}
-.rivalry-featured-facts{padding:8px 18px;background:rgba(0,0,0,0.4);border-top:1px dashed rgba(212,184,122,0.3);display:flex;flex-wrap:wrap;gap:8px 16px;font-size:10.5px;color:#c8b878;font-family:'Noto Serif JP',serif}
-.rivalry-featured-facts .fact-item::before{content:'◆';color:#d4a82a;margin-right:4px;font-size:9px}
-.rivalry-history{margin-bottom:14px;padding:12px 14px;background:rgba(120,84,39,0.05);border:1px solid rgba(120,84,39,0.2);border-radius:6px}
-.rivalry-history .history-list{display:grid;gap:8px}
-.rivalry-history .history-row{display:grid;grid-template-columns:80px 1fr auto;gap:10px;padding:8px 10px;border-left:3px solid rgba(120,84,39,0.4);align-items:start;background:rgba(248,238,210,0.5);border-radius:0 4px 4px 0}
-.rivalry-history .history-row.win-player{border-left-color:#6a4a10}
-.rivalry-history .history-row.win-rival{border-left-color:#8b1a1a}
-.rivalry-history .history-when{font-size:10px;font-weight:700;color:#5b4b34;letter-spacing:0.5px;line-height:1.4}
-.rivalry-history .history-when .week-num{display:block;font-family:'Bebas Neue',sans-serif;font-size:14px;color:#1a0d04;line-height:1}
-.rivalry-history .history-card{font-size:12px;font-weight:800;color:#1a0d04;font-family:'Noto Serif JP',serif;margin-bottom:2px;line-height:1.3}
-.rivalry-history .history-result{text-align:right;font-size:11px;font-weight:800;white-space:nowrap}
-.rivalry-history .history-result.win-player{color:#6a4a10}
-.rivalry-history .history-result.win-rival{color:#8b1a1a}
-.rivalry-history .history-result .mq{display:block;font-family:'Bebas Neue',sans-serif;font-size:14px;margin-top:2px}
-.rivalry-relations{margin-top:14px}
-.relation-card{position:relative;padding:11px 12px 10px;background:rgba(248,238,210,0.6);border:1px solid rgba(120,84,39,0.25);border-radius:5px;display:grid;gap:7px;border-left-width:4px}
-.relation-card[data-tag="fated_admiration"]{border-left-color:#d4a82a}
-.relation-card[data-tag="pure_hatred"]{border-left-color:#6a0a0a;background:rgba(139,26,26,0.06)}
-.relation-card[data-tag="destined_rival"]{border-left-color:#8b1a1a}
-.relation-card[data-tag="bitter_feud"]{border-left-color:#5a1010;background:rgba(120,30,30,0.05)}
-.relation-card[data-tag="allied_rivalry"]{border-left-color:#6a4a10}
-.relation-card[data-tag="standard_rivalry"]{border-left-color:#8b6a30}
-.relation-card[data-tag="mutual_respect"]{border-left-color:#9a7a40}
-.relation-card[data-tag="cold_rivalry"]{border-left-color:#5a5a5a}
-.relation-card[data-tag="casual_rivalry"]{border-left-color:#8a7a5a}
-.relation-card-photos{display:flex;align-items:center;gap:6px}
-.relation-card-photos .relation-photo{width:36px;height:36px;border-radius:4px;background-size:cover;background-position:center top;background-color:#2a1a10;border:1px solid rgba(120,84,39,0.4);flex-shrink:0}
-.relation-card-photos .relation-photo.left{border-color:rgba(80,140,255,0.5)}
-.relation-card-photos .relation-photo.right{border-color:rgba(255,80,120,0.5)}
-.relation-card-photos .relation-vs{font-family:'Bebas Neue',sans-serif;font-size:13px;color:#8b1a1a;padding:0 3px}
-.relation-card-photos .pair-meta{margin-left:auto;font-size:9px;color:#7a5b32;text-align:right;letter-spacing:0.5px}
-.relation-card-photos .pair-meta .scope{display:inline-block;padding:1px 6px;background:rgba(120,84,39,0.15);border-radius:8px;font-size:8px;font-weight:700}
-.relation-names{font-size:11px;font-weight:700;color:#1a0d04;line-height:1.3;margin-top:2px}
-.relation-headline{font-size:13px;font-weight:800;font-family:'Noto Serif JP',serif;color:#1a0d04;line-height:1.35}
-.relation-headline.heat{color:#6a0a0a}
-.relation-headline.bitter{color:#4a1010}
-.relation-headline.allied{color:#6a4a10}
-.relation-headline.fated{color:#8b5a10}
-.relation-body{font-size:11px;line-height:1.7;color:#3a2e1c;font-family:'Noto Serif JP',serif}
-.relation-facts{font-size:10px;color:#7a5b32;letter-spacing:0.3px;padding-top:5px;border-top:1px dashed rgba(120,84,39,0.2)}
-.relation-facts .sep{color:rgba(120,84,39,0.4);margin:0 5px}
-.db-cmp-rivalry-empty{padding:48px 24px;text-align:center;color:#5b4b34;font-family:'Noto Serif JP',serif;font-size:13px;line-height:1.8}
-@media(max-width:820px){.rivalry-relations .relations-grid{grid-template-columns:1fr !important}.rivalry-main-photos{grid-template-columns:1fr 60px 1fr}.rivalry-main-stand{height:180px}}
 /* v0.6: Growth indicators */
 .growth-up{color:#2ecc71;font-size:12px;font-weight:700}
 .growth-down{color:#e74c3c;font-size:12px;font-weight:700}
@@ -2065,14 +1996,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   box-shadow:0 0 24px rgba(155,89,182,0.12)}
 .notif-modal-box.notif-gold{border-color:rgba(241,196,15,0.4);
   box-shadow:0 0 24px rgba(241,196,15,0.15)}
-.notif-modal-portraits{display:flex;gap:12px;justify-content:center;margin-bottom:14px}
-.notif-modal-face{width:120px;height:120px;border-radius:50%;overflow:hidden;
-  border:3px solid rgba(200,190,170,0.15);background:var(--card-bg);
-  display:flex;align-items:center;justify-content:center}
-.notif-modal-face img,
-.notif-modal-face .portrait{width:100%;height:100%;object-fit:cover;
-  border-radius:0;border:none;display:block}
-.notif-modal-face.dual{width:100px;height:100px}
 .notif-modal-text{font-size:14px;color:var(--text-main);line-height:1.5;margin-bottom:8px}
 .notif-modal-detail{font-size:13px;color:rgba(255,255,255,0.55);line-height:1.6;margin-bottom:6px}
 .notif-modal-btn{font-size:13px;padding:10px 32px;border-radius:7px;cursor:pointer;
@@ -2641,7 +2564,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ppvprog-fc{display:flex;align-items:flex-end;flex:1}
 .ppvprog-fc.left{justify-content:flex-end}
 .ppvprog-fc.right{justify-content:flex-start}
-.ppvprog-fp{width:120px;height:190px;flex-shrink:0}
+.ppvprog-fp{width:132px;height:194px;flex-shrink:0}
 .ppvprog-fp img{width:100%;height:100%;object-fit:contain;object-position:bottom center}
 .ppvprog-fi{display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:14px;gap:1px;min-width:80px}
 .ppvprog-fc.left .ppvprog-fi{align-items:flex-start;padding-right:8px}
@@ -3405,7 +3328,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .rm-org-card-name{font-family:'Oswald',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;margin-bottom:2px}
 .rm-org-card-stats{font-size:9px;color:var(--text-dim);line-height:1.4}
 .rm-org-card-roster{display:flex;margin-top:3px}
-.rm-org-card-face{width:20px;height:20px;border-radius:50%;border:1.5px solid;overflow:hidden;margin-left:-3px;background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:9px}
+.rm-org-card-face{width:24px;height:24px;border-radius:50%;border:1.5px solid;overflow:hidden;margin-left:-3px;background:var(--card-bg);display:flex;align-items:center;justify-content:center;font-size:9px}
 .rm-org-card-face:first-child{margin-left:0}
 .rm-org-card-face img{width:100%;height:100%;object-fit:cover}
 
@@ -3466,7 +3389,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .rm-compare-header{display:flex;align-items:stretch;border-bottom:1px solid var(--border);position:relative}
 .rm-compare-side{flex:1;display:flex;flex-direction:column;align-items:center;padding:20px 14px 14px}
 .rm-compare-side:first-child{border-right:1px solid var(--border)}
-.rm-compare-upper-img{width:200px;height:260px;border-radius:8px;overflow:hidden;border:2px solid;margin-bottom:8px;background:var(--card-bg);position:relative}
+/* faceout-audit v0.2: 200×260(1:1.3)→対置2人の梯子M 132×194(mockup-baseline §2) */
+.rm-compare-upper-img{width:132px;height:194px;border-radius:8px;overflow:hidden;border:2px solid;margin-bottom:8px;background:var(--card-bg);position:relative}
 .rm-compare-upper-img img{width:100%;height:100%;object-fit:cover;object-position:top center}
 .rm-compare-upper-img .no-img{width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:60px;background:rgba(0,0,0,0.3)}
 .rm-compare-name{font-size:17px;font-weight:700;text-align:center}
@@ -4279,11 +4203,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   font-weight:400;letter-spacing:0.08em;display:inline-block;margin-top:18px}
 /* Act 3 portraits */
 .opening-portraits{display:flex;justify-content:center;align-items:flex-end;gap:60px;margin-bottom:32px;min-height:320px}
-.opening-portrait{width:180px;position:relative;opacity:0;transition:opacity 1.4s ease,transform 1.4s ease}
+/* faceout-audit v0.2: 梯子L 150×224 に固定(mockup-baseline §2。旧180px・高さ未固定) */
+.opening-portrait{width:150px;position:relative;opacity:0;transition:opacity 1.4s ease,transform 1.4s ease}
 .opening-portrait.left{transform:translateX(-30px)}
 .opening-portrait.right{transform:translateX(30px)}
 .opening-act.show .opening-portrait{opacity:1;transform:translateX(0)}
-.opening-portrait img{width:100%;display:block;filter:drop-shadow(0 6px 20px rgba(0,0,0,0.7)) brightness(0.92)}
+.opening-portrait img{width:100%;height:224px;object-fit:contain;object-position:bottom center;display:block;filter:drop-shadow(0 6px 20px rgba(0,0,0,0.7)) brightness(0.92)}
 .opening-portrait-name{text-align:center;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;
   letter-spacing:0.15em;color:var(--text-main);margin-top:14px;padding-top:8px;
   border-top:1px solid rgba(212,168,67,0.3)}
@@ -4374,7 +4299,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   padding:14px;display:flex;gap:14px;position:relative;transition:all 0.3s}
 .draft-fc.fixed::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;
   background:var(--cream-gold);border-radius:6px 0 0 6px}
-.draft-fc-portrait{width:100px;height:150px;background:var(--cream-portrait-bg);border-radius:4px;
+.draft-fc-portrait{width:108px;height:162px;background:var(--cream-portrait-bg);border-radius:4px;
   overflow:hidden;flex-shrink:0;border:2px solid rgba(100,85,50,0.18)}
 .draft-fc-portrait img{width:100%;height:100%;object-fit:cover;object-position:center 18%}
 .draft-fc-info{flex:1;min-width:0}
@@ -4424,7 +4349,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .draft-fc.cand.picked::after{content:'PICKED';position:absolute;top:8px;right:8px;
   font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:1.5px;color:#fff;
   background:var(--cream-gold);padding:2px 7px;border-radius:2px;font-weight:700}
-.draft-fc.cand .draft-fc-portrait{width:100%;height:auto;aspect-ratio:2/3;margin-bottom:12px}
+/* faceout-audit v0.2: 可変幅→梯子XL 172×258 固定(狭幅ではSへ) */
+.draft-fc.cand .draft-fc-portrait{width:172px;height:258px;margin:0 auto 12px}
+@media(max-width:600px){.draft-fc.cand .draft-fc-portrait{width:108px;height:162px}}
 .draft-fc.cand.disabled{opacity:0.4;cursor:not-allowed}
 .draft-fc.cand.disabled:hover{transform:none;box-shadow:none}
 /* Contract fee */
@@ -4473,7 +4400,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     .completion-overlay.show .team-bubble{animation:none;opacity:1;transform:none}
   }
   .opening-portraits{gap:30px}
-  .opening-portrait{width:130px}
+  .opening-portrait{width:108px}
+  .opening-portrait img{height:162px}
   .draft-paper{margin:20px 12px 40px}
   .draft-body{padding:20px 18px 28px}
 }
@@ -4623,9 +4551,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   letter-spacing:0.5px;border:1px solid rgba(80,60,40,0.25)}
 .shachoshitsu-resume-tag.source{background:rgba(80,130,180,0.2);color:#3a6a90;border-color:rgba(80,130,180,0.35)}
 .shachoshitsu-resume-tag.tier{background:rgba(212,168,67,0.2);border-color:rgba(212,168,67,0.4)}
-.shachoshitsu-resume-img{width:100%;aspect-ratio:4/3;object-fit:contain;
+/* faceout-audit v0.2: 4:3枠contain→梯子XL 172×258(upper素材は2:3。mockup-baseline §2) */
+.shachoshitsu-resume-img{display:block;width:172px;height:258px;object-fit:cover;
   object-position:center top;border-radius:3px;
-  border:1px solid rgba(80,60,40,0.15);background:rgba(0,0,0,0.03);margin-bottom:8px}
+  border:1px solid rgba(80,60,40,0.15);background:rgba(0,0,0,0.03);margin:0 auto 8px}
 .shachoshitsu-resume-name{font-size:14px;font-weight:700;text-align:center;line-height:1.3}
 .shachoshitsu-resume-age{font-size:12px;color:rgba(42,35,24,0.6);text-align:center;margin-bottom:4px}
 .shachoshitsu-resume-ovr{font-family:'Bebas Neue',sans-serif;font-size:36px;font-weight:700;
@@ -9432,7 +9361,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   max-width:440px}
 .sr-portrait{position:relative;border:1px solid var(--sr-hair);background:
     radial-gradient(80% 70% at 50% 30%,var(--sr-panel-2) 0%,var(--sr-void) 100%);overflow:hidden;
-  display:flex;align-items:flex-end;justify-content:center;min-height:220px}
+  display:flex;align-items:flex-end;justify-content:center;height:258px}
 .sr-portrait img{height:100%;width:auto;object-fit:contain;object-position:bottom center;
   filter:drop-shadow(0 6px 20px rgba(0,0,0,0.6))}
 .sr-portrait .sr-frame-tick{position:absolute;width:12px;height:12px;border-color:var(--gold)}
@@ -9452,11 +9381,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
 .sr-strip{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
 .sr-card{background:var(--sr-panel);border:1px solid var(--sr-hair-dim);position:relative;
-  display:flex;align-items:stretch}
+  display:flex;align-items:stretch;min-height:162px}
 .sr-card .sr-card-tag{position:absolute;top:0;left:0;z-index:3;font-family:'Oswald',sans-serif;font-size:9px;
   font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--sr-void);background:var(--gold);
   padding:3px 9px}
-.sr-card-img{width:92px;height:auto;flex-shrink:0;object-fit:cover;object-position:center 12%;display:block;
+.sr-card-img{width:108px;height:162px;flex-shrink:0;align-self:flex-start;object-fit:cover;object-position:center 12%;display:block;
   filter:grayscale(0.08) contrast(1.04);border-right:1px solid var(--sr-hair-dim)}
 .sr-card-body{padding:26px 14px 13px;flex:1;min-width:0}
 .sr-card-nm{font-family:'Noto Serif JP',serif;font-weight:700;font-size:14px;letter-spacing:1px;color:var(--sr-ink)}
@@ -9493,7 +9422,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   color:var(--gold);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--sr-hair-dim)}
 .sr-rc-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--sr-hair-neutral)}
 .sr-rc-item:last-child{border-bottom:none}
-.sr-rc-thumb{width:38px;height:50px;object-fit:cover;object-position:top center;flex-shrink:0;
+.sr-rc-thumb{width:46px;height:66px;object-fit:cover;object-position:top center;flex-shrink:0;
   border:1px solid var(--sr-hair-dim);filter:grayscale(0.2)}
 .sr-rc-nm{font-family:'Noto Serif JP',serif;font-weight:700;font-size:13px;letter-spacing:1px;color:var(--sr-ink)}
 .sr-rc-sub{font-family:'Oswald',sans-serif;font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--sr-ink-dim);margin-top:2px}
@@ -9572,7 +9501,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-upper{width:46px;height:66px;border-radius:var(--radius-md,8px);overflow:hidden;border:1px solid #44444e;flex:none;background:var(--stage-panel-2);position:relative}
 .ptv-upper img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
 .ptv-upper-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(135deg,#363642,#17171d);color:var(--gold);font-weight:900}
-.ptv-upper.is-big{width:92px;height:138px;border:2px solid var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
+/* faceout-audit v0.2: 92×138→対置2人の梯子M 132×194(mockup-baseline §2) */
+.ptv-upper.is-big{width:132px;height:194px;border:2px solid var(--gold);box-shadow:0 0 30px rgba(232,189,88,.13)}
 .ptv-loading{cursor:default}.ptv-loading-label{min-height:430px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:var(--gold);font-weight:900;letter-spacing:.14em}.ptv-loading-label small{color:var(--stage-text-sub);font-size:11px;letter-spacing:.08em;margin-top:8px}
 /* 場面1 OP */
 .ptv-op{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px;text-align:center;padding:40px 20px 70px}
@@ -9627,7 +9557,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-summit-result{margin-top:16px;font-size:13px;color:var(--stage-text-sub)}
 .ptv-win-line{font-size:19px;font-weight:900;color:var(--gold-light,#f5d98d);margin-top:4px}
 .ptv-summit-result-fighters{margin:18px 0 8px}.ptv-summit-result-fighters .ptv-result-name{font-size:20px}.ptv-summit-result-fighters .ptv-result-fighter.is-winner .ptv-result-name{font-size:25px}
-@media(max-width:600px){.ptv-result-fighters{gap:9px}.ptv-result-upper--xl{width:132px;height:194px}.ptv-result-upper--m{width:108px;height:162px}.ptv-result-upper--s{width:92px;height:138px}.ptv-result-name,.ptv-result-fighter.is-winner .ptv-result-name{font-size:15px}.ptv-summit-result-fighters .ptv-result-name,.ptv-summit-result-fighters .ptv-result-fighter.is-winner .ptv-result-name{font-size:17px}}
+@media(max-width:600px){.ptv-result-fighters{gap:9px}.ptv-result-upper--xl{width:132px;height:194px}.ptv-result-upper--m{width:108px;height:162px}.ptv-result-upper--s{width:108px;height:162px}.ptv-result-name,.ptv-result-fighter.is-winner .ptv-result-name{font-size:15px}.ptv-summit-result-fighters .ptv-result-name,.ptv-summit-result-fighters .ptv-result-fighter.is-winner .ptv-result-name{font-size:17px}}
 /* 場面5 放送終了 */
 .ptv-ending{padding:70px 22px 86px;text-align:center;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:430px}
 .ptv-end-msg{font-size:15px;max-width:430px;line-height:1.9}

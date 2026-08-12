@@ -28,14 +28,21 @@ const tagQuoteIdx = tag.indexOf('const winLine = pickTagWinLine');
 assert.ok(tagQuoteIdx >= 0, 'tag-match victory quote must be selected from the winning finisher');
 assert.ok(tag.includes('const winLine = pickTagWinLine(winFinisher);'), 'tag-match victory quote must not inject a partner full name');
 
+// faceout-audit v0.2 (2026-08-12): 話者名は吹き出しの中ではなく上のラベル(.vic-speaker-label)に出す
+// (mockup-baseline §3「名前を吹き出し内に書かない」)。話者の帰属自体は維持する。
+const tagSpeakerIdx = tag.indexOf('vic-speaker-label', tagQuoteIdx);
+assert.ok(tagSpeakerIdx > tagQuoteIdx, 'tag-match victory overlay must render a speaker label above the bubble');
+
 const tagWinLineIdx = tag.indexOf('vic-win-line', tagQuoteIdx);
-assert.ok(tagWinLineIdx > tagQuoteIdx, 'tag-match victory overlay must render a winner line');
+assert.ok(tagWinLineIdx > tagSpeakerIdx, 'tag-match winner bubble must come after the speaker label');
 
 const tagLoserIdx = tag.indexOf('const loserEl = document.getElementById(\'vicLoser\')', tagWinLineIdx);
 assert.ok(tagLoserIdx > tagWinLineIdx, 'tag-match loser block must be separate from the winner line');
 
+const tagSpeakerLabel = tag.slice(tagSpeakerIdx, tagWinLineIdx);
+assert.ok(tagSpeakerLabel.includes('winFinisher.name'), 'tag-match speaker label must name the winning finisher');
 const tagWinnerLine = tag.slice(tagWinLineIdx, tagLoserIdx);
-assert.ok(tagWinnerLine.includes('winFinisher.name'), 'tag-match winner quote must name the winning finisher as speaker');
+assert.ok(!tagWinnerLine.includes('winFinisher.name'), 'tag-match winner bubble must not contain the speaker name (mockup-baseline §3)');
 assert.ok(!tagWinnerLine.includes('lossPinned.name'), 'tag-match winner quote must not name the pinned loser as speaker');
 assert.ok(!tag.slice(tagLoserIdx).includes('vic-loss-line'), 'tag-match loser block must not include a forced loser quote');
 

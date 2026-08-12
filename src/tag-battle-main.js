@@ -1548,8 +1548,9 @@ function showResult(fr){
   // Portraits (upper images)
   const portraits = document.getElementById('vicPortraits');
   if (winners.length === 2) {
+    // faceout-audit v0.2: アッパー画像は左右反転しない(2026-07-18裁定。反転はスタンド対面のみ)
     portraits.innerHTML =
-      `<img class="vic-portrait left" src="${getUpperUrl(winners[0])}" onerror="this.style.display='none'">` +
+      `<img class="vic-portrait" src="${getUpperUrl(winners[0])}" onerror="this.style.display='none'">` +
       `<img class="vic-portrait" src="${getUpperUrl(winners[1])}" onerror="this.style.display='none'">`;
   } else {
     portraits.innerHTML = '';
@@ -1585,8 +1586,11 @@ function showResult(fr){
     if (winFinisher && winPartner) {
       const winLine = pickTagWinLine(winFinisher);
       const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, finMove);
+      // faceout-audit v0.2: 話者名は吹き出しの外(上のラベル)に出す(mockup-baseline §3。
+      // 名前を吹き出し内に書かない)。実況は地の文のまま
       vicLines.innerHTML =
-        `<div class="vic-win-line"><span class="vic-speaker">${escHtml(winFinisher.name)}</span>「${escHtml(winLine)}」</div>` +
+        `<div class="vic-speaker-label">${escHtml(winFinisher.name)}</div>` +
+        `<div class="vic-win-line">「${escHtml(winLine)}」</div>` +
         `<div class="vic-commentary">${escHtml(commentary)}</div>`;
     } else {
       vicLines.innerHTML = '';
@@ -1603,7 +1607,7 @@ function showResult(fr){
       `</div>` +
       `<div>` +
         `<div class="vic-loser-names">${escHtml(losers[0].name)} & ${escHtml(losers[1].name)}</div>` +
-        `<div class="vic-loser-tag">LOSER</div>` +
+        `<div class="vic-loser-tag">×</div>` +
       `</div>`;
   } else {
     loserEl.innerHTML = '';

@@ -5221,7 +5221,8 @@ function renderShachoshitsuReleaseInterview(fighter, dialogue) {
   // U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
   // Office/Dark Panel(社長室の壁前、暗色の吹き出し)のため theme=dark。解雇という重い一対一の
   // 局面なので size:'l'(150×224)。「'…'フォールバック」は_buildB1Modalの形に揃える(あわせて直すもの#1)
-  const upperUrl = typeof getPortraitUrl === 'function' ? getPortraitUrl(fighter.id) : '';
+  // faceout-audit v0.2: 2:3枠に1:1のfaceをcoverしていた素材系統違反を解消(upper素材へ)
+  const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
   const wallHtml = `
     <div class="negotiation-speaker u3b-theme-dark">
       ${_u3bSideHtml({
@@ -9673,8 +9674,8 @@ function _renderDbHallOfFame() {
     const starText = _getHofStarText(level);
     const legendClass = level >= 3 ? ' legend-glow' : '';
     const imgHtml = pUrl
-      ? `<img src="${pUrl}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid ${borderColor}" alt="">`
-      : `<div style="width:32px;height:32px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid ${borderColor};display:inline-flex;align-items:center;justify-content:center;font-size:14px">🏅</div>`;
+      ? `<img src="${pUrl}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid ${borderColor}" alt="">`
+      : `<div style="width:40px;height:40px;border-radius:50%;background:rgba(212,168,67,0.15);border:2px solid ${borderColor};display:inline-flex;align-items:center;justify-content:center;font-size:14px">🏅</div>`;
 
     html += `<div class="db-hof-card${legendClass}" style="border-color:${borderColor}" onclick="showHofDetail(${idx})" data-hof-idx="${idx}">
       ${_hofShieldImg(level, h.id, 50)}
@@ -9712,14 +9713,15 @@ function showHofDetail(idx) {
   const biography = h.biography || Engine.awards.generateBiography({ ...h, epithet, orgName });
 
   // 顔画像
+  // faceout-audit v0.2: 正方形faceの上限はcard 52(mockup-baseline §2-C)。主役は下の全身画像(XL)が担う
   const portraitHtml = pUrl
-    ? `<img src="${pUrl}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid ${borderColor}" alt="">`
-    : `<div style="width:80px;height:80px;border-radius:50%;background:rgba(212,168,67,0.15);border:3px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:32px">🏅</div>`;
+    ? `<img src="${pUrl}" style="width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid ${borderColor}" alt="">`
+    : `<div style="width:52px;height:52px;border-radius:50%;background:rgba(212,168,67,0.15);border:3px solid ${borderColor};display:flex;align-items:center;justify-content:center;font-size:22px">🏅</div>`;
 
   // §3 全身画像（グラデーション背景付き）
   const fullUrl = typeof getFullUrl === 'function' ? getFullUrl(h.id || 0, h.ovr || 0) : '';
   const fullHtml = fullUrl
-    ? `<div style="text-align:center;margin:8px 0;padding:12px 0;background:radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%);border-radius:8px"><img src="${fullUrl}" style="height:200px;object-fit:contain;border-radius:8px" alt="" onerror="this.parentElement.style.display='none'"></div>`
+    ? `<div style="text-align:center;margin:8px 0;padding:12px 0;background:radial-gradient(ellipse at center, rgba(255,255,255,0.05) 0%, transparent 70%);border-radius:8px"><img src="${fullUrl}" style="height:258px;object-fit:contain;border-radius:8px" alt="" onerror="this.parentElement.style.display='none'"></div>`
     : '';
 
   // §2 語り文（明るい白系）
@@ -10037,12 +10039,12 @@ function _chronicleStyleBlock() {
 }
 .chron-section:first-of-type { border-top: none; }
 .chron-ace-row {
-  display: grid; grid-template-columns: 160px 1fr; gap: 20px;
+  display: grid; grid-template-columns: 172px 1fr; gap: 20px;
   align-items: start;
 }
-.chron-ace-row.dual { grid-template-columns: 160px 160px 1fr; }
+/* faceout-audit v0.2: 単独エースは梯子XL 172×258(旧160×200は4:5で梯子外) */
 .chron-ace-portrait {
-  width: 160px; height: 200px;
+  width: 172px; height: 258px;
   background: linear-gradient(135deg, #d4c4a0 0%, #a8916a 100%);
   border: 3px solid var(--chr-gold);
   box-shadow: 0 0 12px rgba(154,112,32,0.25),
@@ -10217,8 +10219,9 @@ function _chronicleStyleBlock() {
   align-items: center;
 }
 .chron-gen-member:last-child { border-bottom: none; }
+/* faceout-audit v0.2: upper素材(2:3)の正方形切り抜きを解消 → 梯子chip 46×66 */
 .chron-gen-portrait {
-  width: 42px; height: 42px;
+  width: 46px; height: 66px;
   border-radius: 6px;
   background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
   border: 2px solid rgba(154,112,32,0.4);
@@ -10474,7 +10477,7 @@ function _chronicleStyleBlock() {
   margin-top: 6px;
 }
 .chron-dual-portrait {
-  width: 130px; height: 168px;
+  width: 132px; height: 194px;
   background: linear-gradient(135deg, #d4c4a0 0%, #a8916a 100%);
   border: 3px solid var(--chr-gold);
   box-shadow: 0 0 10px rgba(154,112,32,0.22),
@@ -10592,12 +10595,13 @@ function _chronicleStyleBlock() {
   filter: saturate(0.4);
   opacity: 0.7;
 }
+/* faceout-audit v0.2: face素材(1:1)は正方形card 52で使う(旧72×90は2:3外の切り抜き) */
 .chron-prologue-portrait {
-  width: 72px; height: 90px; margin: 0 auto 8px;
+  width: 52px; height: 52px; margin: 0 auto 8px;
   background: linear-gradient(135deg, #d4c4a0 0%, #b8a07a 100%);
   border: 2px solid var(--chr-gold-light);
   display: flex; align-items: center; justify-content: center;
-  font-size: 38px; font-weight: 900; color: var(--chr-ink);
+  font-size: 24px; font-weight: 900; color: var(--chr-ink);
   overflow: hidden;
 }
 .chron-prologue-card.idol .chron-prologue-portrait {
@@ -10655,8 +10659,8 @@ function _chronicleStyleBlock() {
   .chron-highlight { gap: 8px; align-items: flex-start; }
   .chron-highlight-season { width: 34px; font-size: 11px; }
   .chron-highlight-text { min-width: 0; font-size: 11px; line-height: 1.65; overflow-wrap: anywhere; }
-  .chron-ace-row { grid-template-columns: 104px minmax(0, 1fr); gap: 12px; }
-  .chron-ace-portrait { width: 104px; height: 140px; }
+  .chron-ace-row { grid-template-columns: 108px minmax(0, 1fr); gap: 12px; }
+  .chron-ace-portrait { width: 108px; height: 162px; }
   .chron-ace-name { font-size: 20px; }
   .chron-ace-meta-row { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .chron-dual-wrap { grid-template-columns: minmax(0, 1fr); gap: 14px; padding: 0; }

@@ -141,8 +141,6 @@ body{
 /* ===== APRON CARD ===== */
 .apron-card{border:1px solid rgba(212,168,67,0.04);border-radius:8px;overflow:hidden;background:linear-gradient(180deg,#12110e,#0a0a10);opacity:0.72;display:flex;align-items:center;gap:10px;padding:10px 12px;transition:all .3s;box-shadow:0 1px 6px rgba(0,0,0,0.2);position:relative}
 .apron-card.right{flex-direction:row-reverse}
-.apron-avatar{width:100px;height:140px;border-radius:6px;flex-shrink:0;background:#1c1a2e;border:1px solid #2a2838;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;color:#2a2838;overflow:hidden;position:relative;cursor:pointer}
-.apron-avatar img{position:absolute;top:-10%;left:-10%;width:125%;height:125%;object-fit:cover;object-position:center top;border-radius:6px}
 .apron-info{flex:1;min-width:0}
 .apron-info.right{text-align:right}
 .apron-name-row{display:flex;align-items:center;gap:5px;margin-bottom:2px;cursor:pointer}
@@ -320,7 +318,7 @@ body{
    (translateX を -40px→-50px で single に統一) */
 .cutin-box{animation:cutinSlideIn .35s cubic-bezier(0.22,1,0.36,1)}
 .cutin-box.right{animation:cutinSlideInR .35s cubic-bezier(0.22,1,0.36,1)}
-.cutin-portrait{width:90px;height:135px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0}
+.cutin-portrait{width:108px;height:162px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0}
 .cutin-info{flex:1;min-width:0}
 .cutin-name{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
 .cutin-text{font-size:18px;line-height:1.5;color:var(--text-main);font-weight:900}
@@ -341,10 +339,14 @@ body{
 .victory-overlay.visible{background-color:rgba(0,0,0,0.88);backdrop-filter:blur(6px)}
 .victory-box{width:min(560px,92vw);display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(0.9);transition:opacity .4s ease-out,transform .4s ease-out}
 .victory-box.visible{opacity:1;transform:scale(1)}
-.vic-portraits{display:flex;align-items:flex-end;justify-content:center;gap:0;margin-bottom:12px;height:220px;position:relative}
-.vic-portrait{width:140px;height:220px;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 0 20px rgba(212,168,67,0.3));opacity:0;transition:opacity .4s}
+/* faceout-audit v0.2: 勝者2人は隊列 — 群の外枠1つ+18px重ね+drop-shadow(mockup-baseline §2-B)。
+   段はL 150×224。アッパーの左右反転(.leftのscaleX(-1))は廃止(2026-07-18裁定) */
+.vic-portraits{display:flex;align-items:flex-end;justify-content:center;gap:0;margin-bottom:12px;position:relative;
+  padding:14px 16px 0;border:1px solid var(--gold-dim);border-bottom:3px solid var(--gold);border-radius:10px 10px 5px 5px;background:rgba(0,0,0,0.28);overflow:hidden}
+.vic-portraits:empty{display:none}
+.vic-portrait{width:150px;height:224px;object-fit:contain;object-position:bottom center;filter:drop-shadow(0 0 20px rgba(212,168,67,0.3));opacity:0;transition:opacity .4s}
+.vic-portrait+.vic-portrait{margin-left:-18px}
 .vic-portrait.visible{opacity:1}
-.vic-portrait.left{transform:scaleX(-1)}
 .vic-winner-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;color:#e94560;margin-bottom:2px;opacity:0;transition:opacity .4s}
 .vic-winner-label.visible{opacity:1}
 .vic-winner-names{font-family:'Noto Sans JP',sans-serif;font-size:26px;font-weight:900;letter-spacing:2px;background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;line-height:1.2;margin-bottom:6px;opacity:0;transition:opacity .4s}
@@ -352,17 +354,19 @@ body{
 .vic-finish-type{font-size:14px;color:#aaa;margin-bottom:12px;text-align:center;opacity:0;transition:opacity .4s}
 .vic-finish-type.visible{opacity:1}
 /* T2: 試合完了セリフ */
-.vic-lines{width:min(520px,88vw);margin:0 auto 18px;text-align:center;opacity:0;transition:opacity .5s ease-out;transform:translateY(6px)}
+/* faceout-audit v0.2: 吹き出しは画像の上へ移動(mockup-baseline §3)。尻尾は下向き */
+.vic-lines{width:min(520px,88vw);margin:0 auto 12px;text-align:center;opacity:0;transition:opacity .5s ease-out;transform:translateY(6px)}
 .vic-lines.visible{opacity:1;transform:translateY(0)}
 .vic-win-line{position:relative;margin-bottom:8px;padding:11px 16px;border:1px solid rgba(122,101,48,.52);border-radius:10px;color:#211d15;background:rgba(250,246,236,.98);box-shadow:0 7px 20px rgba(0,0,0,.32);font-size:14px;line-height:1.7;text-align:center}
-.vic-win-line::after{position:absolute;top:-8px;left:50%;width:14px;height:14px;border-top:1px solid rgba(122,101,48,.52);border-left:1px solid rgba(122,101,48,.52);background:rgba(250,246,236,.98);content:'';transform:translateX(-50%) rotate(45deg)}
-.vic-speaker{margin-right:6px;color:#211d15;font-family:'Noto Sans JP',sans-serif;font-weight:900}
+.vic-win-line::after{position:absolute;bottom:-8px;left:50%;width:14px;height:14px;border-bottom:1px solid rgba(122,101,48,.52);border-right:1px solid rgba(122,101,48,.52);background:rgba(250,246,236,.98);content:'';transform:translateX(-50%) rotate(45deg)}
+/* 話者名は吹き出しの外(上のラベル)。名前を吹き出し内に書かない(mockup-baseline §3) */
+.vic-speaker-label{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:2px;color:var(--gold);margin-bottom:5px}
 .vic-commentary{font-size:13px;line-height:1.6;color:rgba(212,168,67,0.9);font-style:italic;margin-top:4px;padding:6px 8px;text-align:center}
 .vic-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 8px;margin-bottom:18px;opacity:0;transition:opacity .4s}
 .vic-bottom.visible{opacity:1}
 .vic-loser{display:flex;align-items:center;gap:8px}
 .vic-loser-faces{display:flex}
-.vic-loser-face{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid #555}
+.vic-loser-face{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #555;filter:grayscale(.9) brightness(.72)}
 .vic-loser-face:nth-child(2){margin-left:-8px}
 .vic-loser-names{font-size:12px;color:#888}
 .vic-loser-tag{font-family:'Oswald',sans-serif;font-size:9px;color:#666;letter-spacing:1px}
@@ -467,11 +471,11 @@ body{padding:12px}
   <div class="finish-click-btn" id="finishBtn"></div>
   <div class="victory-overlay" id="victoryOv">
     <div class="victory-box" id="victoryBox">
+      <div class="vic-lines" id="vicLines"></div>
       <div class="vic-portraits" id="vicPortraits"></div>
       <div class="vic-winner-label" id="vicLabel">W I N N E R</div>
       <div class="vic-winner-names" id="vicNames"></div>
       <div class="vic-finish-type" id="vicType"></div>
-      <div class="vic-lines" id="vicLines"></div>
       <div class="vic-bottom" id="vicBottom">
         <div class="vic-loser" id="vicLoser"></div>
         <div class="vic-stats" id="vicStats"></div>

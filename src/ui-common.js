@@ -15533,7 +15533,7 @@ function showTrialEndMessage() {
 // careOverlay を使わず shachoshitsuContent に直接描画する
 // ─────────────────────────────────────────────────────────────────────────────
 
-// 壁前の発言者HTML (ポートレイト96px + 吹き出し)
+// 壁前の発言者HTML (梯子M 132×194 のアッパー + 吹き出し)
 // U3グループA統一(2026-07-26)注記: 解雇面談(renderShachoshitsuReleaseInterview)だけを
 // _u3bSideHtml(.u3b-*)へ移行したため、意匠の異なるこちら(契約更新交渉)は
 // .negotiation-* とのクラス名衝突を避けて .negc-* に改名した(見た目・挙動は変更なし)。

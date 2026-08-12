@@ -296,7 +296,7 @@ body{
 .cutin-box{display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,rgba(8,8,13,0.96),rgba(14,14,21,0.94));border:2px solid var(--gold-dim);border-radius:6px;padding:16px 28px;box-shadow:0 0 40px rgba(212,168,67,0.25),0 0 80px rgba(0,0,0,0.7);max-width:680px;transform:translateX(-50px);animation:cutinSlideIn .35s cubic-bezier(0.22,1,0.36,1) forwards}
 .cutin-box.right{flex-direction:row-reverse;transform:translateX(50px);animation:cutinSlideInR .35s cubic-bezier(0.22,1,0.36,1) forwards}
 /* cutinSlideIn / cutinSlideInR keyframes は battle-shared.css */
-.cutin-portrait{width:100px;height:150px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0;box-shadow:0 0 20px rgba(212,168,67,0.2)}
+.cutin-portrait{width:108px;height:162px;border-radius:4px;border:2px solid var(--gold);object-fit:cover;object-position:center top;flex-shrink:0;box-shadow:0 0 20px rgba(212,168,67,0.2)}
 .cutin-info{flex:1;min-width:0}
 .cutin-name{font-family:'Oswald',sans-serif;font-size:12px;color:var(--gold);letter-spacing:2px;margin-bottom:4px;text-transform:uppercase}
 .cutin-text{font-size:20px;line-height:1.5;color:var(--text-main);font-weight:900;text-shadow:0 0 12px rgba(212,168,67,0.2)}
@@ -332,7 +332,7 @@ body{
 /* Victory box (win result) */
 .victory-box{width:min(520px,90vw);display:flex;flex-direction:column;align-items:center;opacity:0;transform:scale(0.9);transition:opacity .4s ease-out,transform .4s ease-out}
 .victory-box.visible{opacity:1;transform:scale(1)}
-.winner-portrait{width:160px;height:240px;object-fit:contain;object-position:top center;filter:drop-shadow(0 0 24px rgba(233,69,96,0.35));margin-bottom:8px;opacity:0;transition:opacity .4s}
+.winner-portrait{width:172px;height:258px;object-fit:contain;object-position:top center;filter:drop-shadow(0 0 24px rgba(233,69,96,0.35));margin-bottom:8px;opacity:0;transition:opacity .4s}
 .winner-portrait.visible{opacity:1}
 .winner-label{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:6px;color:#e94560;margin-bottom:2px}
 .winner-name{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:2px;background:linear-gradient(180deg,#ffd700,#daa520);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;text-align:center;line-height:1.1;margin-bottom:6px;opacity:0;transition:opacity .4s}
@@ -349,7 +349,7 @@ body{
 .vic-bottom{width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 4px;margin-bottom:18px;opacity:0;transition:opacity .4s}
 .vic-bottom.visible{opacity:1}
 .vic-loser{display:flex;align-items:center;gap:8px}
-.vic-loser-face{width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid #555}
+.vic-loser-face{width:40px;height:40px;border-radius:50%;object-fit:cover;border:2px solid #555}
 .vic-loser-name{font-size:13px;color:#888}
 .vic-loser-tag{font-size:10px;color:#666}
 .vic-stats{display:flex;gap:16px}

@@ -173,7 +173,6 @@
     text-align: center;
   }
 
-  .apron-avatar { width: 54px; height: 68px; }
   .apron-info,
   .apron-info.right { width: 100%; text-align: center; }
   .apron-name-row,
@@ -193,7 +192,8 @@
   .bp-img { width: 100%; height: 190px; }
   .bp-info { padding: 14px; overflow: visible; }
   .victory-box { width: calc(100vw - 16px); max-height: calc(100dvh - 20px); overflow-y: auto; }
-  .vic-portraits img { max-height: 180px; }
+  /* faceout-audit v0.2: モバイルは1段下のS 108×162(旧max-height:180pxの比率崩れを解消) */
+  .vic-portrait { width: 108px; height: 162px; }
 
   .pin-count.three { font-size: 72px; }
   .bigmove-name { max-width: 92vw; font-size: 36px; text-align: center; overflow-wrap: anywhere; }
