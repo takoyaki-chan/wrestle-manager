@@ -26017,7 +26017,11 @@ const GLIMPSE_B_LINES = {
       },
       ojousama: {
         normal: [
-          '勝てたわ。……積み上げたものが、出ただけね'],
+          '勝てたわ。……積み上げたものが、出ただけね'
+        ],
+        earnest: [
+          'ありがとうございますわ……皆様の声援、確かに届きましたの'
+        ],
       },
       delinquent: {
         normal: [
@@ -26031,13 +26035,29 @@ const GLIMPSE_B_LINES = {
         normal: [
           'ふふ、今日も勝ち。気分がいいわ'
         ],
+        bold: [
+          'ふ……いい試合、だったわ'
+        ],
+        quiet: [
+          '……勝った'
+        ],
         emotional: [
           '勝ったわ……っ……ふふ、嬉しい……'
+        ],
+        earnest: [
+          'ふふ……ここまで、こられたのですね'
         ],
       },
       polite: {
         normal: [
-          '勝てました。応援のおかげです'
+          '勝てました。応援のおかげです',
+          '勝てました……応援、ありがとうございました'
+        ],
+        bold: [
+          'よっしゃ……!まだ終わらない!'
+        ],
+        quiet: [
+          '……勝利、いたしました'
         ],
         shy: [
           'か、勝てました…応援、ありがとうございます…',
@@ -26054,7 +26074,28 @@ const GLIMPSE_B_LINES = {
         bold: [
           '勝った。次も同じだ'
         ],
-      }},
+      },
+      composed: {
+        normal: [
+          '…勝ったね。…こんなもんかな'
+        ],
+        bold: [
+          '…当然。…まだまだだけどね'
+        ],
+        quiet: [
+          '……悪くない'
+        ],
+        easygoing: [
+          '…勝った〜。…いい感じだね'
+        ],
+        emotional: [
+          '…っ…勝てた。…よかった'
+        ],
+        earnest: [
+          '…勝てた。…次に繋げよう'
+        ],
+      },
+    },
     loss: {
       standard: {
         normal: [
@@ -26090,6 +26131,9 @@ const GLIMPSE_B_LINES = {
         normal: [
           'この敗北…受け入れがたいわね'
         ],
+        earnest: [
+          '……申し訳、ございませんわ……'
+        ],
       },
       delinquent: {
         normal: [
@@ -26103,13 +26147,29 @@ const GLIMPSE_B_LINES = {
         normal: [
           '負けたのね…屈辱だわ'
         ],
+        bold: [
+          'ふ……まだ、足りなかった、みたいね'
+        ],
+        quiet: [
+          '……負けた'
+        ],
         emotional: [
           '負けた……っ……悔しい……'
+        ],
+        earnest: [
+          '……まだ、わたし、足りませんわね……'
         ],
       },
       polite: {
         normal: [
-          '負けてしまいました…申し訳ないです'
+          '負けてしまいました…申し訳ないです',
+          '……すみません。次は、必ず'
+        ],
+        bold: [
+          'くそっ……!こんなはず、じゃなかったのに……っ'
+        ],
+        quiet: [
+          '……完敗、です'
         ],
         shy: [
           'ま、負けてしまいました…ご、ごめんなさい…',
@@ -26123,7 +26183,28 @@ const GLIMPSE_B_LINES = {
         normal: [
           '……足りないか'
         ],
-      }},
+      },
+      composed: {
+        normal: [
+          '…負けたか。…次だね'
+        ],
+        bold: [
+          '…こんなはずじゃない。…次は返す'
+        ],
+        quiet: [
+          '……足りなかった'
+        ],
+        easygoing: [
+          '…負けちゃったか。…まあ次があるよ'
+        ],
+        emotional: [
+          '…っ…悔しい'
+        ],
+        earnest: [
+          '…負けた原因は分かってる。…次に活かす'
+        ],
+      },
+    },
     goodLoss: {
       standard: {
         normal: [
@@ -26158,6 +26239,9 @@ const GLIMPSE_B_LINES = {
         normal: [
           '敗北は悔しいですけど…素晴らしい試合でした'
         ],
+        earnest: [
+          '……素晴らしい試合でしたわ、ありがとうございましたの'
+        ],
       },
       delinquent: {
         normal: [
@@ -26168,13 +26252,29 @@ const GLIMPSE_B_LINES = {
         normal: [
           '負けは負け。でも…悪くない戦いだったわ'
         ],
+        bold: [
+          'ふふ……これは、これで、悪くないわね'
+        ],
+        quiet: [
+          '……届かなかった。でも、見えた'
+        ],
         emotional: [
           '負けたけど……っ……ふふ、出し切れたの……'
+        ],
+        earnest: [
+          'ふ……貴女、強いのね……'
         ],
       },
       polite: {
         normal: [
-          '負けてしまいましたが…良い試合ができたと思います'
+          '負けてしまいましたが…良い試合ができたと思います',
+          '……負けましたが、後悔はないです'
+        ],
+        bold: [
+          '負けたけど……!わたし、全部出した!'
+        ],
+        quiet: [
+          '……よく、やれました'
         ],
         shy: [
           '負けてしまいましたが…悔いはありません…',
@@ -26185,7 +26285,28 @@ const GLIMPSE_B_LINES = {
         normal: [
           '……負けた。だが、後悔はない'
         ],
-      }},
+      },
+      composed: {
+        normal: [
+          '…負けたけど…悪くない試合だった'
+        ],
+        bold: [
+          '…負けは負け。…でもいい試合だった'
+        ],
+        quiet: [
+          '……負けた。…でも、悪くない'
+        ],
+        easygoing: [
+          '…いい試合だったなぁ。…負けたけどね'
+        ],
+        emotional: [
+          '…っ…認める。…いい試合だった'
+        ],
+        earnest: [
+          '…いい試合だった。…この経験を糧にする'
+        ],
+      },
+    },
     greatWin: {
       standard: {
         normal: [
@@ -26194,7 +26315,8 @@ const GLIMPSE_B_LINES = {
         ],
         bold: [
           'これが私の実力よ！ 最高の試合で最高の勝利！',
-          '見たでしょ！ これが私の全力よ！'],
+          '見たでしょ！ これが私の全力よ！'
+        ],
         quiet: [
           '……（小さくガッツポーズをしている）',
           '……いい試合だった。全てが噛み合った'
@@ -26220,6 +26342,9 @@ const GLIMPSE_B_LINES = {
         normal: [
           '素晴らしい勝利ですわ。この舞台に相応しい試合でした'
         ],
+        earnest: [
+          '……皆様のおかげですわ。本当に、本当に、ありがとうございますの'
+        ],
       },
       delinquent: {
         normal: [
@@ -26230,13 +26355,29 @@ const GLIMPSE_B_LINES = {
         normal: [
           '完璧な夜ね…最高の気分だわ'
         ],
+        bold: [
+          'ふふ……最高の、夜ね'
+        ],
+        quiet: [
+          '……獲った'
+        ],
         emotional: [
           '最高の勝利……っ……ふふ、震えてるの……'
+        ],
+        earnest: [
+          '……夢を、見ているみたい……ですわね'
         ],
       },
       polite: {
         normal: [
-          '最高の試合で勝利できました。感無量です'
+          '最高の試合で勝利できました。感無量です',
+          '……勝てた。信じられません'
+        ],
+        bold: [
+          '見ろよ!!これがわたしだ!!'
+        ],
+        quiet: [
+          '……勝ち、ました'
         ],
         shy: [
           'こ、こんな大きな勝利…信じられません…ありがとうございます…',
@@ -26247,7 +26388,28 @@ const GLIMPSE_B_LINES = {
         normal: [
           '……完璧だった'
         ],
-      }}
+      },
+      composed: {
+        normal: [
+          '…最高の試合で勝てた。…こういう日もあるね'
+        ],
+        bold: [
+          '…上等。…これが実力だ'
+        ],
+        quiet: [
+          '……完璧に近かった'
+        ],
+        easygoing: [
+          '…最高だね。…こういう試合のためにやってる'
+        ],
+        emotional: [
+          '…っ…最高だ。…泣きそう'
+        ],
+        earnest: [
+          '…全てを出し切って勝てた。…これ以上はない'
+        ],
+      },
+    },
   },
   'GL-02': {
     standard: {
@@ -26257,7 +26419,8 @@ const GLIMPSE_B_LINES = {
       ],
       bold: [
         'まだまだ！ もっと追い込むよ！',
-        'こんなもんで満足できない！ 次！'],
+        'こんなもんで満足できない！ 次！'
+      ],
       quiet: [
         '……（黙々とスクワットを続けている）',
         '………（汗が床に落ちる音だけが響く）'
@@ -26296,17 +26459,10 @@ const GLIMPSE_B_LINES = {
       normal: [
         '汗を流すのも悪くないわね'
       ],
-      emotional: [
-        '今日は……っ……ふふ、よろしくね……'
-      ],
     },
     polite: {
       normal: [
         '今日も精一杯練習させていただきます'
-      ],
-      shy: [
-        'あ、あの…今日は、よろしくお願いいたします…',
-        '頑張ります…'
       ],
       earnest: [
         '基本を怠らず、しっかり取り組みます'
@@ -26316,7 +26472,95 @@ const GLIMPSE_B_LINES = {
       normal: [
         '……集中。あと一セット'
       ],
-    }},
+    },
+    composed: {
+      normal: [
+        '…まあ、いい感じだ'
+      ],
+      bold: [
+        '…まだまだ。もう一本'
+      ],
+      quiet: [
+        '……（黙々と続けている）'
+      ],
+      easygoing: [
+        '…いい汗だね'
+      ],
+      emotional: [
+        '…っ…まだやれる'
+      ],
+      earnest: [
+        '…一つずつ、着実に'
+      ],
+    },
+  },
+  'GL-02-hostile': {
+    standard: {
+      normal: [
+        'あいつのことを考えると、練習に身が入らない…',
+        '次に当たったとき…絶対に見てろよ',
+        'なんであいつが同じ場所にいるんだ。意味わからん',
+        '…練習中に思い出すな。腹が立って仕方ない',
+        'こっちがどれだけ頑張っても、あいつのことが頭から離れない'
+      ],
+      bold: [
+        '次は絶対やってやる。燃えてきた！',
+        'あいつがいる限り、手を抜けるわけがない'
+      ],
+      quiet: [
+        '……（道具に八つ当たりしている）',
+        '……（黙々とやっているが、目が怖い）'
+      ],
+      shy: [
+        '怖い…でも…負けたくない…',
+        'あの子がいると思うと、うまく練習できなくて…'
+      ],
+      easygoing: [
+        'うーん…なんか気になっちゃうなあ、あの子のこと',
+        'あいつのこと考えると力入っちゃうわ。まあいっか'
+      ],
+      emotional: [
+        '悔しい…！あいつの顔を見たくない…！',
+        'なんで…なんであいつのことが頭から消えないの…！'
+      ],
+      earnest: [
+        '私情を持ち込むな、と自分に言い聞かせているが…難しい',
+        '集中できていない自分が、情けない…'
+      ],
+    },
+    ojousama: {
+      normal: [
+        'あの方と同じ空間にいるだけで、集中が乱れますわ…',
+        '…今日もあの顔が頭をよぎった。本当に、困ります'
+      ],
+    },
+    delinquent: {
+      normal: [
+        '次は絶対やってやる。絶対に…！',
+        'あいつのことばっか考えてたら、バーベル落としそうになった'
+      ],
+    },
+    seductive: {
+      normal: [
+        '…あら、また考えてしまった。ま、それが原動力になるなら悪くないけど'
+      ],
+    },
+    polite: {
+      normal: [
+        '私情を持ち込むな、と自分に言い聞かせているが…難しい'
+      ],
+    },
+    cool: {
+      normal: [
+        '……集中を乱す存在がいる。気に入らない'
+      ],
+    },
+    composed: {
+      normal: [
+        '…あの子のせいで、今日の調子は最悪だった'
+      ],
+    },
+  },
   'GL-03': {
     up: {
       standard: {
@@ -26357,23 +26601,38 @@ const GLIMPSE_B_LINES = {
         normal: [
           '最近いい扱い受けてる気がするわ。嬉しいわね'
         ],
-        emotional: [
-          'なんだか調子いいの……っ……ふふ……'
-        ],
       },
       polite: {
         normal: [
           '最近、居心地がとても良くなりました'
-        ],
-        shy: [
-          '調子が…良い気がします…'
         ],
       },
       cool: {
         normal: [
           '……この環境は、悪くない'
         ],
-      }},
+      },
+      composed: {
+        normal: [
+          '…悪くない環境だね'
+        ],
+        bold: [
+          '…ここ、いいね。…もっと盛り上げてやるよ'
+        ],
+        quiet: [
+          '……居心地がいい'
+        ],
+        easygoing: [
+          '…いい感じだね。居心地いいや'
+        ],
+        emotional: [
+          '…っ…嬉しいな'
+        ],
+        earnest: [
+          '…いい環境だ。…応えないとね'
+        ],
+      },
+    },
     down: {
       standard: {
         normal: [
@@ -26381,7 +26640,8 @@ const GLIMPSE_B_LINES = {
           'ちょっと不安になってきた…大丈夫かな'
         ],
         bold: [
-          '何だよ最近の扱いは。私を軽く見てるの？'],
+          '何だよ最近の扱いは。私を軽く見てるの？'
+        ],
         quiet: [
           '……（不安そうに窓の外を見ている）'
         ],
@@ -26412,23 +26672,38 @@ const GLIMPSE_B_LINES = {
         normal: [
           'ねぇ…最近私のこと放置してない？'
         ],
-        emotional: [
-          'うまくいかない……っ……どうしてかしら……'
-        ],
       },
       polite: {
         normal: [
           '少し寂しいというか…不安が…'
-        ],
-        shy: [
-          'う、うまくいきません…どうしたら…'
         ],
       },
       cool: {
         normal: [
           '……この状況は、よくない'
         ],
-      }}
+      },
+      composed: {
+        normal: [
+          '…最近、ちょっと引っかかることがあるかな'
+        ],
+        bold: [
+          '…この扱いは、どうなの'
+        ],
+        quiet: [
+          '………'
+        ],
+        easygoing: [
+          '…う〜ん、ちょっと気になるなぁ'
+        ],
+        emotional: [
+          '…っ…何か変だ'
+        ],
+        earnest: [
+          '…少し思うところがある'
+        ],
+      },
+    },
   },
   'GL-04': {
     standard: {
@@ -26472,17 +26747,10 @@ const GLIMPSE_B_LINES = {
       normal: [
         'ちょっと気になってるの。いい距離感よね'
       ],
-      emotional: [
-        '練習するわ……っ……ふふ……'
-      ],
     },
     polite: {
       normal: [
         '一緒にいると安心します'
-      ],
-      shy: [
-        '練習…させていただきます…',
-        'もう少し…頑張ります…'
       ],
       earnest: [
         'ともに成長できることが嬉しいです'
@@ -26492,7 +26760,8 @@ const GLIMPSE_B_LINES = {
       normal: [
         '…おかげで、ここにいる意味がある'
       ],
-    }},
+    },
+  },
   'GL-05': {
     standard: {
       normal: [
@@ -26535,17 +26804,10 @@ const GLIMPSE_B_LINES = {
       normal: [
         '…考えちゃうのよね'
       ],
-      emotional: [
-        '大丈夫よ……っ……ふふ、心配しないで……'
-      ],
     },
     polite: {
       normal: [
         '活躍が気になってしまいます'
-      ],
-      shy: [
-        'あ、あの…大丈夫です、心配しないでください…',
-        'ご心配を、おかけして…'
       ],
       earnest: [
         '追いつくため、日々研鑽します'
@@ -26555,7 +26817,8 @@ const GLIMPSE_B_LINES = {
       normal: [
         '……情報は、自然と入ってくる'
       ],
-    }},
+    },
+  },
   'GL-06': {
     standard: {
       normal: [
@@ -26600,23 +26863,17 @@ const GLIMPSE_B_LINES = {
         'なんで出してくれねぇんだよ…腕が鳴ってんのに'
       ],
       bold: [
-        'おいこら！ 私を出せよ！ 暴れたいんだよ！'],
+        'おいこら！ 私を出せよ！ 暴れたいんだよ！'
+      ],
     },
     seductive: {
       normal: [
         '私を干すつもり？ もったいないと思うけど'
       ],
-      emotional: [
-        'みんなと一緒だと……っ……ふふ、安心するの……'
-      ],
     },
     polite: {
       normal: [
         '出場できなかったのは残念ですが…次の機会を待ちます'
-      ],
-      shy: [
-        'みんなと…一緒だと、心強いです…',
-        '仲間って、いいですね…'
       ],
       earnest: [
         '出場機会をいただけるよう、より一層努力いたします'
@@ -26626,7 +26883,8 @@ const GLIMPSE_B_LINES = {
       normal: [
         '……出番がないのは、つらい'
       ],
-    }},
+    },
+  },
   'GL-07': {
     standard: {
       normal: [
@@ -26669,17 +26927,10 @@ const GLIMPSE_B_LINES = {
       normal: [
         '体が言うこと聞かないわ…もどかしい'
       ],
-      emotional: [
-        'お客さんがいっぱい……っ……ふふ、燃えるわね……'
-      ],
     },
     polite: {
       normal: [
         '申し訳ありません…少し体調が…'
-      ],
-      shy: [
-        'お、お客さんがいっぱいで…き、緊張します…',
-        'がんばります…'
       ],
       earnest: [
         '体調管理を怠りました。しっかり立て直します'
@@ -26689,7 +26940,8 @@ const GLIMPSE_B_LINES = {
       normal: [
         '……体が鈍い。これは…まずいな'
       ],
-    }},
+    },
+  },
   'GL-08': {
     standard: {
       normal: [
@@ -26698,7 +26950,8 @@ const GLIMPSE_B_LINES = {
       ],
       bold: [
         '…このまま終わるつもりはないから！',
-        'いつまで負け続ける気だ…！ 目を覚ませ、私！'],
+        'いつまで負け続ける気だ…！ 目を覚ませ、私！'
+      ],
       quiet: [
         '……（無言で練習を続けている）',
         '……（壁に拳を押し当てている）'
@@ -26727,7 +26980,8 @@ const GLIMPSE_B_LINES = {
     },
     delinquent: {
       normal: [
-        'くそが…何連敗してんだよ私は…'],
+        'くそが…何連敗してんだよ私は…'
+      ],
       bold: [
         'ふざけんな…いつまで負けてんだよ…！'
       ],
@@ -26736,17 +26990,10 @@ const GLIMPSE_B_LINES = {
       normal: [
         '負け続き…こんなの私じゃないわ'
       ],
-      emotional: [
-        '体調は大丈夫よ……っ……ふふ、心配いらない……'
-      ],
     },
     polite: {
       normal: [
         '連敗してしまって…皆さんに申し訳なくて…'
-      ],
-      shy: [
-        'あ、あの…体調は、大丈夫です…',
-        '無理はしません…'
       ],
       earnest: [
         '不甲斐ない結果が続いています…何とか打開しなければ'
@@ -26756,7 +27003,8 @@ const GLIMPSE_B_LINES = {
       normal: [
         '……勝てない。何が足りない'
       ],
-    }},
+    },
+  },
   'GL-09': {
     standard: {
       normal: [
@@ -26765,7 +27013,8 @@ const GLIMPSE_B_LINES = {
       ],
       bold: [
         '絶好調！ この波に乗って一気に行くぞ！',
-        '今の私を止められるやつはいない！'],
+        '今の私を止められるやつはいない！'
+      ],
       quiet: [
         '……いい流れだ。このまま'
       ],
@@ -26799,17 +27048,10 @@ const GLIMPSE_B_LINES = {
       normal: [
         '最近負けなしよ。ふふ、誰が相手でも返り討ちだわ'
       ],
-      emotional: [
-        '次の試合……っ……ふふ、楽しみだわ……'
-      ],
     },
     polite: {
       normal: [
         '連勝させていただいています。ありがたいことです'
-      ],
-      shy: [
-        '次の試合…が、頑張ります…',
-        'しっかり、準備します…'
       ],
       earnest: [
         '結果がついてきていますが、慢心せず精進します'
@@ -26819,15 +27061,18 @@ const GLIMPSE_B_LINES = {
       normal: [
         '……負ける気がしない'
       ],
-    }},
+    },
+  },
   'GL-10': {
     standard: {
       normal: [
         '早くリングに戻りたい…体が疼く',
-        '怪我…早く治さないと…'],
+        '怪我…早く治さないと…'
+      ],
       bold: [
         'こんなとこで寝てる場合じゃない…！',
-        '私がいない間に追い抜かれるのは耐えられない！'],
+        '私がいない間に追い抜かれるのは耐えられない！'
+      ],
       quiet: [
         '……（天井を見つめている）',
         '……リングが、遠い'
@@ -26866,17 +27111,10 @@ const GLIMPSE_B_LINES = {
       normal: [
         '退屈…早くリングに立ちたいわ'
       ],
-      emotional: [
-        'ありがとう……っ……ふふ、嬉しい……'
-      ],
     },
     polite: {
       normal: [
         '早く復帰して、皆さんのお役に立ちたいです'
-      ],
-      shy: [
-        'あ、あの…ありがとうございます…',
-        '感謝、しています…'
       ],
       earnest: [
         '復帰に向けて、今できることを精一杯やります'
@@ -26886,7 +27124,8 @@ const GLIMPSE_B_LINES = {
       normal: [
         '……じっとしているのが、一番つらい'
       ],
-    }},
+    },
+  },
   // bond-rivalry plan 2026-04-29: P-2 中間嫌悪帯（coldness）
   // 発火: bond ≤ 25 ∧ rivalry < 30（無関心寄りの冷たさ、敵意ではない）
   'GL-11': {
@@ -26941,484 +27180,6 @@ const GLIMPSE_B_LINES = {
       '{nameB}の話題が出ても、{nameA}は表情ひとつ変えなかった'
     ]
   }
-};
-
-GLIMPSE_B_LINES['GL-01'] = {
-  win: {
-    normal: {
-      _default: ['よし、勝てた。この調子で頑張ろう', '今日はいい試合ができた'],
-      ojousama: ['勝利ですわ。当然の結果ですけどね'],
-      delinquent: ['勝ったぜ。当然だろ'],
-      seductive: ['ふふ、今日も勝ち。気分がいいわ'],
-      polite: ['勝てました。応援のおかげです'],
-      cool: ['……勝った。それでいい'],
-      composed: ['…勝ったね。…こんなもんかな'],
-    },
-    bold: {
-      _default: ['楽勝！ 私に勝てるわけないでしょ', '当たり前よ。この程度で負けるわけないじゃない'],
-      delinquent: ['へっ、雑魚が。話にならねぇ'],
-      cool: ['勝った。次も同じだ'],
-      composed: ['…当然。…まだまだだけどね'],
-    },
-    quiet: {
-      _default: ['……勝った', '……悪くない'],
-      composed: ['……悪くない'],
-    },
-    shy: {
-      _default: ['か、勝てた…！ よかった…', '嬉しい…勝てて本当に嬉しいです…'],
-    },
-    easygoing: {
-      _default: ['やった〜勝った〜！ 今日のご褒美何にしよう', '勝利！ いい一日だね〜'],
-      composed: ['…勝った〜。…いい感じだね'],
-    },
-    emotional: {
-      _default: ['やった…！ 勝てた…！ 嬉しい…！', '勝った…！ この気持ち、最高…！'],
-      composed: ['…っ…勝てた。…よかった'],
-    },
-    earnest: {
-      _default: ['勝てた。でもまだ課題はある。次に繋げよう', '勝利を掴めたのは練習の成果。もっと上を目指す'],
-      polite: ['勝利できました。引き続き精進します'],
-      composed: ['…勝てた。…次に繋げよう'],
-    },
-  },
-  loss: {
-    normal: {
-      _default: ['負けた…。悔しい', '今日は相手が上だった。次は負けない'],
-      ojousama: ['この敗北…受け入れがたいですわ'],
-      delinquent: ['ちっ…次は絶対ぶっ倒す'],
-      seductive: ['負けたのね…屈辱だわ'],
-      polite: ['負けてしまいました…申し訳ないです'],
-      cool: ['……足りないか'],
-      composed: ['…負けたか。…次だね'],
-    },
-    bold: {
-      _default: ['くそっ…こんなはずじゃない', 'この借りは必ず返す'],
-      delinquent: ['次会ったらぶっ飛ばしてやる…覚えてろ'],
-      composed: ['…こんなはずじゃない。…次は返す'],
-    },
-    quiet: {
-      _default: ['………………', '……（無言で拳を握りしめている）'],
-      composed: ['……足りなかった'],
-    },
-    shy: {
-      _default: ['う…また負けちゃった…ごめんなさい…', '私…ダメですよね…ごめんなさい…'],
-    },
-    easygoing: {
-      _default: ['あちゃ〜、負けちゃった。次頑張ろ', '残念〜。でもいい勉強になったかな'],
-      composed: ['…負けちゃったか。…まあ次があるよ'],
-    },
-    emotional: {
-      _default: ['くっ…悔しい…！ 涙が止まらない…', '負けた…負けた…もう嫌だ…！'],
-      composed: ['…っ…悔しい'],
-    },
-    earnest: {
-      _default: ['悔しい…もっと練習しないと…', '負けた原因を分析して、必ず次に活かす'],
-      polite: ['不甲斐ない試合をしてしまいました。申し訳ございません'],
-      composed: ['…負けた原因は分かってる。…次に活かす'],
-    },
-  },
-  goodLoss: {
-    normal: {
-      _default: ['負けたけど…いい試合だった。得るものはあった', '悔しいけど、あの人は強かった。認めるしかない'],
-      ojousama: ['敗北は悔しいですけど…素晴らしい試合でしたわ'],
-      delinquent: ['負けたけど…あいつ、やるじゃねぇか'],
-      seductive: ['負けは負け。でも…悪くない戦いだったわ'],
-      polite: ['負けてしまいましたが…良い試合ができたと思います'],
-      cool: ['……負けた。だが、後悔はない'],
-      composed: ['…負けたけど…悪くない試合だった'],
-    },
-    bold: {
-      _default: ['負けたけど…悔しいけど…いい試合だった', 'ちっ…認めてあげる。今日は向こうが上だった'],
-      composed: ['…負けは負け。…でもいい試合だった'],
-    },
-    quiet: {
-      _default: ['……負けた。でも…悪くなかった'],
-      composed: ['……負けた。…でも、悪くない'],
-    },
-    shy: {
-      _default: ['負けちゃったけど…精一杯やれました…', '悔しいけど…いい試合だったって…思いたいです'],
-    },
-    easygoing: {
-      _default: ['いい試合だったなぁ〜。負けたけど満足かも', '相手が強かった！ でも楽しかった〜'],
-      composed: ['…いい試合だったなぁ。…負けたけどね'],
-    },
-    emotional: {
-      _default: ['くっ…認めたくないけど、あの人は強かった…！', '負けた…でも…この試合は…忘れない…！'],
-      composed: ['…っ…認める。…いい試合だった'],
-    },
-    earnest: {
-      _default: ['負けたが良い試合だった。この経験を糧にする', 'あの人の強さを体感できた。次は必ず超える'],
-      composed: ['…いい試合だった。…この経験を糧にする'],
-    },
-  },
-  greatWin: {
-    normal: {
-      _default: ['最高の試合で勝てた…！ この感覚を忘れない', '今日は自分でも驚くくらいいい試合ができた'],
-      ojousama: ['素晴らしい勝利ですわ。この舞台に相応しい試合でしたの'],
-      delinquent: ['最高の試合で最高の結果だ。文句ねぇだろ'],
-      seductive: ['完璧な夜ね…最高の気分だわ'],
-      polite: ['最高の試合で勝利できました。感無量です'],
-      cool: ['……完璧だった'],
-      composed: ['…最高の試合で勝てた。…こういう日もあるね'],
-    },
-    bold: {
-      _default: ['これが私の実力だ！ 最高の試合で最高の勝利！', 'へへっ、見たか！ これが私の全力だ！'],
-      composed: ['…上等。…これが実力だ'],
-    },
-    quiet: {
-      _default: ['……（小さくガッツポーズをしている）', '……いい試合だった。全てが噛み合った'],
-      composed: ['……完璧に近かった'],
-    },
-    shy: {
-      _default: ['す、すごい試合ができました…！ 信じられない…！', '勝てた…しかもいい試合で…夢みたい…'],
-    },
-    easygoing: {
-      _default: ['最高〜〜〜！ こういう試合のためにプロレスやってんだよ！', 'いい試合で勝てるって最高だね〜！'],
-      composed: ['…最高だね。…こういう試合のためにやってる'],
-    },
-    emotional: {
-      _default: ['最高…！ 最高の試合だった…！ 泣いちゃう…！', 'この瞬間のために生きてるんだ…！！'],
-      composed: ['…っ…最高だ。…泣きそう'],
-    },
-    earnest: {
-      _default: ['最高の試合で勝利。努力は裏切らないと証明できた', '自分の全てを出し切って勝てた。これ以上の幸せはない'],
-      composed: ['…全てを出し切って勝てた。…これ以上はない'],
-    },
-  },
-};
-
-GLIMPSE_B_LINES['GL-02'] = {
-  normal: {
-    _default: ['今日の練習はいい感じだ', 'もう少しスタミナつけないとな…'],
-    ojousama: ['今日のトレーニングも充実しておりますわ'],
-    delinquent: ['もう一本いくぞ、おら！'],
-    seductive: ['汗を流すのも悪くないわね'],
-    polite: ['今日も精一杯練習させていただきます'],
-    cool: ['……集中。あと一セット'],
-    composed: ['…まあ、いい感じだ'],
-  },
-  bold: {
-    _default: ['まだまだ！ もっと追い込むぞ！', 'こんなもんで満足できるか！ 次！'],
-    delinquent: ['おらおら、休んでる暇ねぇぞ！'],
-    composed: ['…まだまだ。もう一本'],
-  },
-  quiet: {
-    _default: ['……（黙々とスクワットを続けている）', '………（汗が床に落ちる音だけが響く）'],
-    composed: ['……（黙々と続けている）'],
-  },
-  shy: {
-    _default: ['あ、えっと…もう少し頑張ります…', '今日の練習…うまくできてるかな…'],
-  },
-  easygoing: {
-    _default: ['練習たのし〜。いい汗かいてるわ', 'よーし、今日もがんばるぞ〜っと'],
-    composed: ['…いい汗だね'],
-  },
-  emotional: {
-    _default: ['絶対強くなる…！ もっともっと…！', '練習は裏切らない…頑張るぞ…！'],
-    composed: ['…っ…まだやれる'],
-  },
-  earnest: {
-    _default: ['一つ一つの練習を大切に。基礎が全ての土台だ', '今日のメニューも全力でこなす。手は抜かない'],
-    polite: ['基本を怠らず、しっかり取り組みます'],
-    composed: ['…一つずつ、着実に'],
-  },
-};
-
-// bond-rivalry plan P-7: 険悪ペア持ちの選手が練習中に出す敵意フレーズ（rivalry≥50 ∧ bond≤30）
-GLIMPSE_B_LINES['GL-02-hostile'] = {
-  normal: {
-    _default: [
-      'あいつのことを考えると、練習に身が入らない…',
-      '次に当たったとき…絶対に見てろよ',
-      'なんであいつが同じ場所にいるんだ。意味わからん',
-      '…練習中に思い出すな。腹が立って仕方ない',
-      'こっちがどれだけ頑張っても、あいつのことが頭から離れない',
-    ],
-    ojousama: [
-      'あの方と同じ空間にいるだけで、集中が乱れますわ…',
-      '…今日もあの顔が頭をよぎった。本当に、困ります',
-    ],
-    delinquent: [
-      '次は絶対やってやる。絶対に…！',
-      'あいつのことばっか考えてたら、バーベル落としそうになった',
-    ],
-    seductive: [
-      '…あら、また考えてしまった。ま、それが原動力になるなら悪くないけど'],
-    polite: ['私情を持ち込むな、と自分に言い聞かせているが…難しい'],
-    cool: ['……集中を乱す存在がいる。気に入らない'],
-    composed: ['…あの子のせいで、今日の調子は最悪だった'],
-  },
-  bold: {
-    _default: ['次は絶対やってやる。燃えてきた！', 'あいつがいる限り、手を抜けるわけがない'],
-  },
-  quiet: {
-    _default: ['……（道具に八つ当たりしている）', '……（黙々とやっているが、目が怖い）'],
-  },
-  emotional: {
-    _default: ['悔しい…！あいつの顔を見たくない…！', 'なんで…なんであいつのことが頭から消えないの…！'],
-  },
-  earnest: {
-    _default: ['私情を持ち込むな、と自分に言い聞かせているが…難しい', '集中できていない自分が、情けない…'],
-  },
-  easygoing: {
-    _default: ['うーん…なんか気になっちゃうなあ、あの子のこと', 'あいつのこと考えると力入っちゃうわ。まあいっか'],
-  },
-  shy: {
-    _default: ['怖い…でも…負けたくない…', 'あの子がいると思うと、うまく練習できなくて…'],
-  },
-};
-
-GLIMPSE_B_LINES['GL-03'] = {
-  up: {
-    normal: {
-      _default: ['最近いい感じだ。この団体で頑張ろうって思える', 'ちゃんと見てくれてるんだな。嬉しいよ'],
-      ojousama: ['最近の待遇には満足しておりますわ'],
-      delinquent: ['ここも悪くねぇな。やる気出てきたぜ'],
-      seductive: ['最近いい扱い受けてる気がするわ。嬉しいわね'],
-      polite: ['最近、居心地がとても良くなりました'],
-      cool: ['……この環境は、悪くない'],
-      composed: ['…悪くない環境だね'],
-    },
-    bold: {
-      _default: ['この団体、やっぱり最高！ もっと盛り上げてみせる！'],
-      composed: ['…ここ、いいね。…もっと盛り上げてやるよ'],
-    },
-    quiet: {
-      _default: ['……ここにいてもいいんだな'],
-      composed: ['……居心地がいい'],
-    },
-    shy: { _default: ['あ、あの…ここにいていいんですね…嬉しいです…'] },
-    easygoing: {
-      _default: ['最近めっちゃ楽しい〜。ここ大好き！'],
-      composed: ['…いい感じだね。居心地いいや'],
-    },
-    emotional: {
-      _default: ['嬉しい…！ ここで頑張れるって幸せ…！'],
-      composed: ['…っ…嬉しいな'],
-    },
-    earnest: {
-      _default: ['信頼に応えるよう、より一層精進します'],
-      composed: ['…いい環境だ。…応えないとね'],
-    },
-  },
-  down: {
-    normal: {
-      _default: ['最近…なんだか扱いが雑じゃないか…？', 'ちょっと不安になってきた…大丈夫かな'],
-      ojousama: ['最近のお扱い…少々不満がございますわ'],
-      delinquent: ['おい、最近の扱い何だよ…舐めてんのか'],
-      seductive: ['ねぇ…最近私のこと放置してない？'],
-      polite: ['少し寂しいというか…不安が…'],
-      cool: ['……この状況は、よくない'],
-      composed: ['…最近、ちょっと引っかかることがあるかな'],
-    },
-    bold: {
-      _default: ['何だよ最近の扱いは。私を軽く見てんのか'],
-      composed: ['…この扱いは、どうなの'],
-    },
-    quiet: {
-      _default: ['……（不安そうに窓の外を見ている）'],
-      composed: ['………'],
-    },
-    shy: { _default: ['私…ちゃんとやれてますか…？ 不安です…'] },
-    easygoing: {
-      _default: ['あれ〜？ なんかちょっと居心地悪くなった？'],
-      composed: ['…う〜ん、ちょっと気になるなぁ'],
-    },
-    emotional: {
-      _default: ['どうして…私のこと忘れてるの…？ 悲しい…'],
-      composed: ['…っ…何か変だ'],
-    },
-    earnest: {
-      _default: ['何か改善すべき点があるなら教えてほしい…'],
-      composed: ['…少し思うところがある'],
-    },
-  },
-};
-
-GLIMPSE_B_LINES['GL-04'] = {
-  normal: {
-    _default: ['一緒にいると練習も楽しいんだよな', '最近調子良さそうだな。嬉しいな'],
-    ojousama: ['一緒の時間、わたくしにとって大切ですわ'],
-    delinquent: ['つるむの、結構楽しいんだよな'],
-    seductive: ['ちょっと気になってるの。いい距離感よね'],
-    polite: ['一緒にいると安心します'],
-    cool: ['…おかげで、ここにいる意味がある'],
-  },
-  bold: {
-    _default: ['いい仲間だよ。一緒に強くなろう'],
-    delinquent: ['ダチだ。大事にしてやるよ'],
-  },
-  quiet: { _default: ['……（そっと隣を見て、少し微笑んでいる）'] },
-  shy: { _default: ['近くにいてくれると…安心する…'] },
-  easygoing: { _default: ['一緒だとテンション上がるわ〜'] },
-  emotional: { _default: ['大切にしたい…この関係を…！'] },
-  earnest: {
-    _default: ['切磋琢磨できる環境に感謝してる'],
-    polite: ['ともに成長できることが嬉しいです'],
-  },
-};
-
-GLIMPSE_B_LINES['GL-05'] = {
-  normal: {
-    _default: ['今何してるかな…気になる', '勝ったって聞くと…悔しいな'],
-    ojousama: ['動向が…気になりますわ'],
-    delinquent: ['顔が頭から離れねぇんだよ'],
-    seductive: ['…考えちゃうのよね'],
-    polite: ['活躍が気になってしまいます'],
-    cool: ['……情報は、自然と入ってくる'],
-  },
-  bold: {
-    _default: ['負けてたまるか。見てろよ'],
-    delinquent: ['超えるまで止まらねぇ'],
-  },
-  quiet: { _default: ['……（試合映像を食い入るように見ている）'] },
-  shy: { _default: ['…すごいな…私も頑張らなきゃ…'] },
-  easygoing: { _default: ['気になって仕方ないんだよね〜'] },
-  emotional: { _default: ['絶対…！ 絶対に…！！'] },
-  earnest: {
-    _default: ['意識するからこそ成長できる'],
-    polite: ['追いつくため、日々研鑽します'],
-  },
-};
-
-GLIMPSE_B_LINES['GL-06'] = {
-  normal: {
-    _default: ['今週は出番なしか…リングが恋しい', '試合に出たい。見てるだけはつらい'],
-    ojousama: ['わたくしを出場させない理由がございまして？'],
-    delinquent: ['なんで出してくれねぇんだよ…腕が鳴ってんのに'],
-    seductive: ['私を干すつもり？ もったいないと思うけど'],
-    polite: ['出場できなかったのは残念ですが…次の機会を待ちます'],
-    cool: ['……出番がないのは、つらい'],
-  },
-  bold: {
-    _default: ['なんで私を使わないの！ 実力は見せてるでしょ！', 'リングに上がらせて！ くすぶってる場合じゃないのよ！'],
-    delinquent: ['おいこら！ 私を出せよ！ 暴れたいんだよ！'],
-    ojousama: ['わたくしの出番がないとは…運営の怠慢ですわ'],
-  },
-  quiet: {
-    _default: ['……（リングを見つめている）', '……出番がない。ただそれだけが、重い'],
-  },
-  shy: {
-    _default: ['出られなかった…私じゃダメなんですか…', 'あの…次は…出してもらえますか…？'],
-  },
-  easygoing: {
-    _default: ['まあ今週は仕方ないか〜。でもちょっと寂しいな', 'お休みかぁ。まぁたまにはね。…うん、寂しいけど'],
-  },
-  emotional: {
-    _default: ['出たかった…リングに立ちたかった…！', '試合したい…みんなと一緒に戦いたい…！'],
-  },
-  earnest: {
-    _default: ['出場できなかった…次こそは選んでもらえるように頑張らないと', '実力不足なら練習で補う。必ず次は出場する'],
-    polite: ['出場機会をいただけるよう、より一層努力いたします'],
-  },
-};
-
-GLIMPSE_B_LINES['GL-07'] = {
-  normal: {
-    _default: ['体が重い…コンディションが上がらない', '調子悪いな…少し休んだ方がいいかも'],
-    ojousama: ['お体の調子が…あまり芳しくありませんわ'],
-    delinquent: ['くそ…体がついてこねぇ'],
-    seductive: ['体が言うこと聞かないわ…もどかしい'],
-    polite: ['申し訳ありません…少し体調が…'],
-    cool: ['……体が鈍い。これは…まずいな'],
-  },
-  bold: {
-    _default: ['ちっ、体がなまってる…休んでる場合じゃないのに'],
-    delinquent: ['くそっ、こんな体じゃ戦えねぇだろ…！'],
-  },
-  quiet: { _default: ['……体が、動かない'] },
-  shy: { _default: ['体が…重くて…すみません…迷惑かけて…'] },
-  easygoing: { _default: ['う〜ん、体がだるいなぁ。ちょっと休もっかな'] },
-  emotional: { _default: ['体が動かない…悔しい…早く元気になりたい…'] },
-  earnest: {
-    _default: ['コンディションが良くない。焦らず回復に努めよう'],
-    polite: ['体調管理を怠りました。しっかり立て直します'],
-  },
-};
-
-GLIMPSE_B_LINES['GL-08'] = {
-  normal: {
-    _default: ['また負けた…どうすればいいんだ', '連敗が止まらない…自信がなくなってきた'],
-    ojousama: ['連敗…こんなはずでは…ありませんわ'],
-    delinquent: ['くそが…何連敗してんだよ私は…'],
-    seductive: ['負け続き…こんなの私じゃないわ'],
-    polite: ['連敗してしまって…皆さんに申し訳なくて…'],
-    cool: ['……勝てない。何が足りない'],
-  },
-  bold: {
-    _default: ['…このまま終わるつもりはない', 'いつまで負け続ける気だ…！ 目を覚ませ、私！'],
-    delinquent: ['ふざけんな…いつまで負けてんだよ…！'],
-  },
-  quiet: {
-    _default: ['……（無言で練習を続けている）', '……（壁に拳を押し当てている）'],
-  },
-  shy: {
-    _default: ['わ、私…足引っ張ってますよね…ごめんなさい…', '勝てない…勝てない…どうしたらいいの…'],
-  },
-  easygoing: {
-    _default: ['あはは…笑えない状況だね…さすがに凹むわ', 'う〜ん、負けが込んでるなぁ…どうしたもんか'],
-  },
-  emotional: {
-    _default: ['もう…どうしたらいいの…', '勝てない…私なんかもう…うっ…'],
-  },
-  earnest: {
-    _default: ['連敗の原因を見つけなければ。何かが間違っているはずだ', '負けが続いている。でも腐らない。必ず糸口はある'],
-    polite: ['不甲斐ない結果が続いています…何とか打開しなければ'],
-  },
-};
-
-GLIMPSE_B_LINES['GL-09'] = {
-  normal: {
-    _default: ['いい流れが来てる。この調子を維持したい', '連勝中…自信がついてきた'],
-    ojousama: ['連勝ですわ。わたくしの実力が証明されましたわね'],
-    delinquent: ['勝ちまくってるぜ。誰か止めてみろよ'],
-    seductive: ['最近負けなしよ。ふふ、誰が相手でも返り討ちだわ'],
-    polite: ['連勝させていただいています。ありがたいことです'],
-    cool: ['……負ける気がしない'],
-  },
-  bold: {
-    _default: ['絶好調！ この波に乗って一気に行くぞ！', '今の私を止められるやつはいない！'],
-    delinquent: ['止まらねぇぜ！ 全員ぶっ倒す！'],
-  },
-  quiet: { _default: ['……いい流れだ。このまま'] },
-  shy: { _default: ['連勝…嘘みたい…でも自信になってます…！'] },
-  easygoing: { _default: ['連勝〜！ ノッてるね〜。この波乗りこなすぞ〜'] },
-  emotional: { _default: ['勝ち続けてる…！ この調子で…もっと…！！'] },
-  earnest: {
-    _default: ['連勝は努力の証。でも油断はしない。謙虚にいこう'],
-    polite: ['結果がついてきていますが、慢心せず精進します'],
-  },
-};
-
-GLIMPSE_B_LINES['GL-10'] = {
-  normal: {
-    _default: ['早くリングに戻りたい…体が疼く', '怪我…早く治してくれ…'],
-    ojousama: ['このお体が恨めしいですわ…早くリングに'],
-    delinquent: ['くそ、いつまで寝てりゃいいんだよ…'],
-    seductive: ['退屈…早くリングに立ちたいわ'],
-    polite: ['早く復帰して、皆さんのお役に立ちたいです'],
-    cool: ['……じっとしているのが、一番つらい'],
-  },
-  bold: {
-    _default: ['こんなとこで寝てる場合じゃねぇんだよ…！', '私がいない間に追い抜かれてたまるか'],
-    delinquent: ['チッ…じっとしてらんねぇ。もう走れるだろ…！'],
-  },
-  quiet: {
-    _default: ['……（天井を見つめている）', '……リングが、遠い'],
-  },
-  shy: {
-    _default: ['みんなに置いてかれちゃう…怖い…', '怪我…早く治って…お願い…'],
-  },
-  easygoing: {
-    _default: ['怪我かぁ…暇だなぁ。早く治らないかな〜', 'じっとしてるの苦手なんだよね〜。あーリング恋しい'],
-  },
-  emotional: {
-    _default: ['みんなが戦ってるのに…私だけ…悔しい…！', 'リングに…早く…戻りたい…！！'],
-  },
-  earnest: {
-    _default: ['リハビリに全力で取り組む。一日でも早く復帰する', '怪我の間もできることはある。頭を鍛える時間にする'],
-    polite: ['復帰に向けて、今できることを精一杯やります'],
-  },
 };
 
 // ─── Session F nested: ワークシート反映パッチ（394行） ───
@@ -28318,652 +28079,6 @@ if (!LARGE_EVENT_DIALOGUES['B4_fan']) LARGE_EVENT_DIALOGUES['B4_fan'] = {};
 if (!LARGE_EVENT_DIALOGUES['B4_fan'].easygoing) LARGE_EVENT_DIALOGUES['B4_fan'].easygoing = {};
 if (!LARGE_EVENT_DIALOGUES['B4_fan'].easygoing.ojousama) LARGE_EVENT_DIALOGUES['B4_fan'].easygoing.ojousama = [];
 LARGE_EVENT_DIALOGUES['B4_fan'].easygoing.ojousama.push('ファンの皆様と直接お話できますの!?まあ、楽しみですわ、はりきりますの!');
-
-// ── GLIMPSE_B_LINES 拡張 (dialogue + scene) ──
-if (!GLIMPSE_B_LINES['GL-01']['win']) GLIMPSE_B_LINES['GL-01']['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].normal) GLIMPSE_B_LINES['GL-01']['win'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].normal.polite) GLIMPSE_B_LINES['GL-01']['win'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']['win'].normal.polite.push('勝てました……応援、ありがとうございました');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win']) GLIMPSE_B_LINES['GL-01']._scene['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].normal) GLIMPSE_B_LINES['GL-01']._scene['win'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].normal.polite) GLIMPSE_B_LINES['GL-01']._scene['win'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['win'].normal.polite.push('息を整える。勝てた。ようやく、勝てた');
-if (!GLIMPSE_B_LINES['GL-01']['win']) GLIMPSE_B_LINES['GL-01']['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].bold) GLIMPSE_B_LINES['GL-01']['win'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].bold.polite) GLIMPSE_B_LINES['GL-01']['win'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']['win'].bold.polite.push('よっしゃ……!まだ終わらない!');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win']) GLIMPSE_B_LINES['GL-01']._scene['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].bold) GLIMPSE_B_LINES['GL-01']._scene['win'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].bold.polite) GLIMPSE_B_LINES['GL-01']._scene['win'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['win'].bold.polite.push('拳を握りしめる。ここまで来た。まだ、もっと行ける');
-if (!GLIMPSE_B_LINES['GL-01']['win']) GLIMPSE_B_LINES['GL-01']['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].bold) GLIMPSE_B_LINES['GL-01']['win'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].bold.seductive) GLIMPSE_B_LINES['GL-01']['win'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']['win'].bold.seductive.push('ふ……いい試合、だったわ');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win']) GLIMPSE_B_LINES['GL-01']._scene['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].bold) GLIMPSE_B_LINES['GL-01']._scene['win'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].bold.seductive) GLIMPSE_B_LINES['GL-01']._scene['win'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['win'].bold.seductive.push('汗の滴る肌。唇の端がわずかに上がる');
-if (!GLIMPSE_B_LINES['GL-01']['win']) GLIMPSE_B_LINES['GL-01']['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].quiet) GLIMPSE_B_LINES['GL-01']['win'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].quiet.seductive) GLIMPSE_B_LINES['GL-01']['win'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']['win'].quiet.seductive.push('……勝った');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win']) GLIMPSE_B_LINES['GL-01']._scene['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].quiet) GLIMPSE_B_LINES['GL-01']._scene['win'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].quiet.seductive) GLIMPSE_B_LINES['GL-01']._scene['win'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['win'].quiet.seductive.push('リングに膝をつく。息を吐く。沈黙');
-if (!GLIMPSE_B_LINES['GL-01']['win']) GLIMPSE_B_LINES['GL-01']['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].quiet) GLIMPSE_B_LINES['GL-01']['win'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].quiet.polite) GLIMPSE_B_LINES['GL-01']['win'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']['win'].quiet.polite.push('……勝利、いたしました');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win']) GLIMPSE_B_LINES['GL-01']._scene['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].quiet) GLIMPSE_B_LINES['GL-01']._scene['win'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].quiet.polite) GLIMPSE_B_LINES['GL-01']._scene['win'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['win'].quiet.polite.push('静かにマイクを受け取る。声は低く、しかし確か');
-if (!GLIMPSE_B_LINES['GL-01']['win']) GLIMPSE_B_LINES['GL-01']['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].earnest) GLIMPSE_B_LINES['GL-01']['win'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].earnest.seductive) GLIMPSE_B_LINES['GL-01']['win'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']['win'].earnest.seductive.push('ふふ……ここまで、こられたのですね');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win']) GLIMPSE_B_LINES['GL-01']._scene['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].earnest) GLIMPSE_B_LINES['GL-01']._scene['win'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].earnest.seductive) GLIMPSE_B_LINES['GL-01']._scene['win'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['win'].earnest.seductive.push('胸に手を当てる。確かに、鼓動は高鳴っている');
-if (!GLIMPSE_B_LINES['GL-01']['win']) GLIMPSE_B_LINES['GL-01']['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].earnest) GLIMPSE_B_LINES['GL-01']['win'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['win'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']['win'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']['win'].earnest.ojousama.push('ありがとうございますわ……皆様の声援、確かに届きましたの');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win']) GLIMPSE_B_LINES['GL-01']._scene['win'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].earnest) GLIMPSE_B_LINES['GL-01']._scene['win'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['win'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']._scene['win'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']._scene['win'].earnest.ojousama.push('背筋を伸ばす。勝利の重みを、噛みしめる');
-if (!GLIMPSE_B_LINES['GL-01']['loss']) GLIMPSE_B_LINES['GL-01']['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].normal) GLIMPSE_B_LINES['GL-01']['loss'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].normal.polite) GLIMPSE_B_LINES['GL-01']['loss'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']['loss'].normal.polite.push('……すみません。次は、必ず');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss']) GLIMPSE_B_LINES['GL-01']._scene['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].normal) GLIMPSE_B_LINES['GL-01']._scene['loss'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].normal.polite) GLIMPSE_B_LINES['GL-01']._scene['loss'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['loss'].normal.polite.push('天井を見上げる。悔しい。悔しすぎて、言葉にならない');
-if (!GLIMPSE_B_LINES['GL-01']['loss']) GLIMPSE_B_LINES['GL-01']['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].bold) GLIMPSE_B_LINES['GL-01']['loss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].bold.polite) GLIMPSE_B_LINES['GL-01']['loss'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']['loss'].bold.polite.push('くそっ……!こんなはず、じゃなかったのに……っ');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss']) GLIMPSE_B_LINES['GL-01']._scene['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].bold) GLIMPSE_B_LINES['GL-01']._scene['loss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].bold.polite) GLIMPSE_B_LINES['GL-01']._scene['loss'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['loss'].bold.polite.push('拳で床を叩く。負けた。負けてしまった');
-if (!GLIMPSE_B_LINES['GL-01']['loss']) GLIMPSE_B_LINES['GL-01']['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].bold) GLIMPSE_B_LINES['GL-01']['loss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].bold.seductive) GLIMPSE_B_LINES['GL-01']['loss'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']['loss'].bold.seductive.push('ふ……まだ、足りなかった、みたいね');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss']) GLIMPSE_B_LINES['GL-01']._scene['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].bold) GLIMPSE_B_LINES['GL-01']._scene['loss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].bold.seductive) GLIMPSE_B_LINES['GL-01']._scene['loss'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['loss'].bold.seductive.push('血の味を舌で確かめる。敗北の味は、よく知っている');
-if (!GLIMPSE_B_LINES['GL-01']['loss']) GLIMPSE_B_LINES['GL-01']['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].quiet) GLIMPSE_B_LINES['GL-01']['loss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].quiet.seductive) GLIMPSE_B_LINES['GL-01']['loss'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']['loss'].quiet.seductive.push('……負けた');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss']) GLIMPSE_B_LINES['GL-01']._scene['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet) GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet.seductive) GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet.seductive.push('動けない。動きたくない。ただ、天井だけを見ていた');
-if (!GLIMPSE_B_LINES['GL-01']['loss']) GLIMPSE_B_LINES['GL-01']['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].quiet) GLIMPSE_B_LINES['GL-01']['loss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].quiet.polite) GLIMPSE_B_LINES['GL-01']['loss'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']['loss'].quiet.polite.push('……完敗、です');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss']) GLIMPSE_B_LINES['GL-01']._scene['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet) GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet.polite) GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['loss'].quiet.polite.push('ゆっくりと立ち上がる。負けは負け、受け入れるしかない');
-if (!GLIMPSE_B_LINES['GL-01']['loss']) GLIMPSE_B_LINES['GL-01']['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].earnest) GLIMPSE_B_LINES['GL-01']['loss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].earnest.seductive) GLIMPSE_B_LINES['GL-01']['loss'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']['loss'].earnest.seductive.push('……まだ、わたし、足りませんわね……');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss']) GLIMPSE_B_LINES['GL-01']._scene['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest) GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest.seductive) GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest.seductive.push('目を閉じる。悔しさを、胸の奥に沈めていく');
-if (!GLIMPSE_B_LINES['GL-01']['loss']) GLIMPSE_B_LINES['GL-01']['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].earnest) GLIMPSE_B_LINES['GL-01']['loss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['loss'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']['loss'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']['loss'].earnest.ojousama.push('……申し訳、ございませんわ……');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss']) GLIMPSE_B_LINES['GL-01']._scene['loss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest) GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']._scene['loss'].earnest.ojousama.push('涙をこらえる。唇を噛む。言葉にしたら、崩れてしまいそうで');
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss']) GLIMPSE_B_LINES['GL-01']['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].normal) GLIMPSE_B_LINES['GL-01']['goodLoss'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].normal.polite) GLIMPSE_B_LINES['GL-01']['goodLoss'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']['goodLoss'].normal.polite.push('……負けましたが、後悔はないです');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss']) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].normal) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].normal.polite) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].normal.polite.push('敗れた。けれど、出し切った感覚はあった');
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss']) GLIMPSE_B_LINES['GL-01']['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].bold) GLIMPSE_B_LINES['GL-01']['goodLoss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].bold.polite) GLIMPSE_B_LINES['GL-01']['goodLoss'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']['goodLoss'].bold.polite.push('負けたけど……!わたし、全部出した!');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss']) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold.polite) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold.polite.push('息が上がる。勝てなかった、でも怖じ気づきはしなかった');
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss']) GLIMPSE_B_LINES['GL-01']['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].bold) GLIMPSE_B_LINES['GL-01']['goodLoss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].bold.seductive) GLIMPSE_B_LINES['GL-01']['goodLoss'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']['goodLoss'].bold.seductive.push('ふふ……これは、これで、悪くないわね');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss']) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold.seductive) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].bold.seductive.push('リングに手をつく。負けてなお、身体は熱い');
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss']) GLIMPSE_B_LINES['GL-01']['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet) GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet.seductive) GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet.seductive.push('……届かなかった。でも、見えた');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss']) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet.seductive) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet.seductive.push('ゆっくりと息を吐く。身体の芯に、残るものがある');
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss']) GLIMPSE_B_LINES['GL-01']['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet) GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet.polite) GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']['goodLoss'].quiet.polite.push('……よく、やれました');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss']) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet.polite) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].quiet.polite.push('拳を見つめる。ここまで動けた自分を、少しだけ認める');
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss']) GLIMPSE_B_LINES['GL-01']['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest) GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest.seductive) GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest.seductive.push('ふ……貴女、強いのね……');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss']) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest.seductive) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest.seductive.push('血が滲む唇を拭う。この敗北に、意味はあった');
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss']) GLIMPSE_B_LINES['GL-01']['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest) GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']['goodLoss'].earnest.ojousama.push('……素晴らしい試合でしたわ、ありがとうございましたの');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss']) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']._scene['goodLoss'].earnest.ojousama.push('深く頭を下げる。負けはしたが、誇りは失わない');
-if (!GLIMPSE_B_LINES['GL-01']['greatWin']) GLIMPSE_B_LINES['GL-01']['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].normal) GLIMPSE_B_LINES['GL-01']['greatWin'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].normal.polite) GLIMPSE_B_LINES['GL-01']['greatWin'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']['greatWin'].normal.polite.push('……勝てた。信じられません');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin']) GLIMPSE_B_LINES['GL-01']._scene['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].normal) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].normal = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].normal.polite) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].normal.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['greatWin'].normal.polite.push('信じられない。震える手を、必死に抑える');
-if (!GLIMPSE_B_LINES['GL-01']['greatWin']) GLIMPSE_B_LINES['GL-01']['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].bold) GLIMPSE_B_LINES['GL-01']['greatWin'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].bold.polite) GLIMPSE_B_LINES['GL-01']['greatWin'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']['greatWin'].bold.polite.push('見ろよ!!これがわたしだ!!');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin']) GLIMPSE_B_LINES['GL-01']._scene['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold.polite) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold.polite.push('両手を突き上げる。やってやった、やってやったんだ');
-if (!GLIMPSE_B_LINES['GL-01']['greatWin']) GLIMPSE_B_LINES['GL-01']['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].bold) GLIMPSE_B_LINES['GL-01']['greatWin'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].bold.seductive) GLIMPSE_B_LINES['GL-01']['greatWin'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']['greatWin'].bold.seductive.push('ふふ……最高の、夜ね');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin']) GLIMPSE_B_LINES['GL-01']._scene['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold.seductive) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['greatWin'].bold.seductive.push('観客の歓声が遠く聞こえる。全身が、熱い');
-if (!GLIMPSE_B_LINES['GL-01']['greatWin']) GLIMPSE_B_LINES['GL-01']['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].quiet) GLIMPSE_B_LINES['GL-01']['greatWin'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].quiet.seductive) GLIMPSE_B_LINES['GL-01']['greatWin'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']['greatWin'].quiet.seductive.push('……獲った');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin']) GLIMPSE_B_LINES['GL-01']._scene['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet.seductive) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet.seductive.push('空を見上げる。涙が、勝手に流れてくる');
-if (!GLIMPSE_B_LINES['GL-01']['greatWin']) GLIMPSE_B_LINES['GL-01']['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].quiet) GLIMPSE_B_LINES['GL-01']['greatWin'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].quiet.polite) GLIMPSE_B_LINES['GL-01']['greatWin'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']['greatWin'].quiet.polite.push('……勝ち、ました');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin']) GLIMPSE_B_LINES['GL-01']._scene['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet.polite) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-01']._scene['greatWin'].quiet.polite.push('静かに、確かに、膝を折る。勝利を、噛みしめる');
-if (!GLIMPSE_B_LINES['GL-01']['greatWin']) GLIMPSE_B_LINES['GL-01']['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].earnest) GLIMPSE_B_LINES['GL-01']['greatWin'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].earnest.seductive) GLIMPSE_B_LINES['GL-01']['greatWin'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']['greatWin'].earnest.seductive.push('……夢を、見ているみたい……ですわね');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin']) GLIMPSE_B_LINES['GL-01']._scene['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest.seductive) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest.seductive.push('胸の前で手を合わせる。感謝の祈りのように');
-if (!GLIMPSE_B_LINES['GL-01']['greatWin']) GLIMPSE_B_LINES['GL-01']['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].earnest) GLIMPSE_B_LINES['GL-01']['greatWin'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']['greatWin'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']['greatWin'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']['greatWin'].earnest.ojousama.push('……皆様のおかげですわ。本当に、本当に、ありがとうございますの');
-if (!GLIMPSE_B_LINES['GL-01']._scene) GLIMPSE_B_LINES['GL-01']._scene = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin']) GLIMPSE_B_LINES['GL-01']._scene['greatWin'] = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest.ojousama) GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-01']._scene['greatWin'].earnest.ojousama.push('深々と頭を下げる。誇りと感謝で、胸がいっぱいだった');
-if (!GLIMPSE_B_LINES['GL-02'].normal) GLIMPSE_B_LINES['GL-02'].normal = {};
-if (!GLIMPSE_B_LINES['GL-02'].normal.polite) GLIMPSE_B_LINES['GL-02'].normal.polite = [];
-GLIMPSE_B_LINES['GL-02'].normal.polite.push('……行けます。大丈夫');
-if (!GLIMPSE_B_LINES['GL-02']._scene) GLIMPSE_B_LINES['GL-02']._scene = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.normal) GLIMPSE_B_LINES['GL-02']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.normal.polite) GLIMPSE_B_LINES['GL-02']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-02']._scene.normal.polite.push('静かな控室。自分の呼吸音だけが響く');
-if (!GLIMPSE_B_LINES['GL-02'].bold) GLIMPSE_B_LINES['GL-02'].bold = {};
-if (!GLIMPSE_B_LINES['GL-02'].bold.polite) GLIMPSE_B_LINES['GL-02'].bold.polite = [];
-GLIMPSE_B_LINES['GL-02'].bold.polite.push('……さあ、行ってきます!');
-if (!GLIMPSE_B_LINES['GL-02']._scene) GLIMPSE_B_LINES['GL-02']._scene = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.bold) GLIMPSE_B_LINES['GL-02']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.bold.polite) GLIMPSE_B_LINES['GL-02']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-02']._scene.bold.polite.push('鏡の前で、自分の目を見る。逃げない目だ');
-if (!GLIMPSE_B_LINES['GL-02'].bold) GLIMPSE_B_LINES['GL-02'].bold = {};
-if (!GLIMPSE_B_LINES['GL-02'].bold.seductive) GLIMPSE_B_LINES['GL-02'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-02'].bold.seductive.push('ふふ……今夜も、魅せてあげる');
-if (!GLIMPSE_B_LINES['GL-02']._scene) GLIMPSE_B_LINES['GL-02']._scene = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.bold) GLIMPSE_B_LINES['GL-02']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.bold.seductive) GLIMPSE_B_LINES['GL-02']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-02']._scene.bold.seductive.push('唇に色を差す。戦うための、戦化粧');
-if (!GLIMPSE_B_LINES['GL-02'].quiet) GLIMPSE_B_LINES['GL-02'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-02'].quiet.seductive) GLIMPSE_B_LINES['GL-02'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-02'].quiet.seductive.push('……行く');
-if (!GLIMPSE_B_LINES['GL-02']._scene) GLIMPSE_B_LINES['GL-02']._scene = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.quiet) GLIMPSE_B_LINES['GL-02']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-02']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-02']._scene.quiet.seductive.push('目を閉じて、息を整える。静かに、深く');
-if (!GLIMPSE_B_LINES['GL-02'].quiet) GLIMPSE_B_LINES['GL-02'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-02'].quiet.polite) GLIMPSE_B_LINES['GL-02'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-02'].quiet.polite.push('……参ります');
-if (!GLIMPSE_B_LINES['GL-02']._scene) GLIMPSE_B_LINES['GL-02']._scene = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.quiet) GLIMPSE_B_LINES['GL-02']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.quiet.polite) GLIMPSE_B_LINES['GL-02']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-02']._scene.quiet.polite.push('手袋を締め直す。準備は、整った');
-if (!GLIMPSE_B_LINES['GL-02'].earnest) GLIMPSE_B_LINES['GL-02'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-02'].earnest.seductive) GLIMPSE_B_LINES['GL-02'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-02'].earnest.seductive.push('……必ず、勝ちますわ');
-if (!GLIMPSE_B_LINES['GL-02']._scene) GLIMPSE_B_LINES['GL-02']._scene = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.earnest) GLIMPSE_B_LINES['GL-02']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-02']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-02']._scene.earnest.seductive.push('胸元の十字を、そっと握る');
-if (!GLIMPSE_B_LINES['GL-02'].earnest) GLIMPSE_B_LINES['GL-02'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-02'].earnest.ojousama) GLIMPSE_B_LINES['GL-02'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-02'].earnest.ojousama.push('……行ってまいりますの');
-if (!GLIMPSE_B_LINES['GL-02']._scene) GLIMPSE_B_LINES['GL-02']._scene = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.earnest) GLIMPSE_B_LINES['GL-02']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-02']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-02']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-02']._scene.earnest.ojousama.push('凛と背筋を伸ばす。戦場へ向かう覚悟を決める');
-if (!GLIMPSE_B_LINES['GL-04'].normal) GLIMPSE_B_LINES['GL-04'].normal = {};
-if (!GLIMPSE_B_LINES['GL-04'].normal.polite) GLIMPSE_B_LINES['GL-04'].normal.polite = [];
-GLIMPSE_B_LINES['GL-04'].normal.polite.push('……まだ、です……!');
-if (!GLIMPSE_B_LINES['GL-04']._scene) GLIMPSE_B_LINES['GL-04']._scene = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.normal) GLIMPSE_B_LINES['GL-04']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.normal.polite) GLIMPSE_B_LINES['GL-04']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-04']._scene.normal.polite.push('息が上がる。けれど、ここで倒れるわけには');
-if (!GLIMPSE_B_LINES['GL-04'].bold) GLIMPSE_B_LINES['GL-04'].bold = {};
-if (!GLIMPSE_B_LINES['GL-04'].bold.polite) GLIMPSE_B_LINES['GL-04'].bold.polite = [];
-GLIMPSE_B_LINES['GL-04'].bold.polite.push('こん、な……とこ、ろで……!');
-if (!GLIMPSE_B_LINES['GL-04']._scene) GLIMPSE_B_LINES['GL-04']._scene = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.bold) GLIMPSE_B_LINES['GL-04']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.bold.polite) GLIMPSE_B_LINES['GL-04']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-04']._scene.bold.polite.push('歯を食いしばる。痛みは、まだ耐えられる');
-if (!GLIMPSE_B_LINES['GL-04'].bold) GLIMPSE_B_LINES['GL-04'].bold = {};
-if (!GLIMPSE_B_LINES['GL-04'].bold.seductive) GLIMPSE_B_LINES['GL-04'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-04'].bold.seductive.push('ふ……そう簡単には、落ちない、わ……');
-if (!GLIMPSE_B_LINES['GL-04']._scene) GLIMPSE_B_LINES['GL-04']._scene = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.bold) GLIMPSE_B_LINES['GL-04']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.bold.seductive) GLIMPSE_B_LINES['GL-04']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-04']._scene.bold.seductive.push('汗が滴る。血の味がする。でも、まだ立てる');
-if (!GLIMPSE_B_LINES['GL-04'].quiet) GLIMPSE_B_LINES['GL-04'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-04'].quiet.seductive) GLIMPSE_B_LINES['GL-04'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-04'].quiet.seductive.push('……立つ');
-if (!GLIMPSE_B_LINES['GL-04']._scene) GLIMPSE_B_LINES['GL-04']._scene = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.quiet) GLIMPSE_B_LINES['GL-04']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-04']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-04']._scene.quiet.seductive.push('膝が震える。それでも、倒れない');
-if (!GLIMPSE_B_LINES['GL-04'].quiet) GLIMPSE_B_LINES['GL-04'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-04'].quiet.polite) GLIMPSE_B_LINES['GL-04'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-04'].quiet.polite.push('……まだ、動け、ます……');
-if (!GLIMPSE_B_LINES['GL-04']._scene) GLIMPSE_B_LINES['GL-04']._scene = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.quiet) GLIMPSE_B_LINES['GL-04']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.quiet.polite) GLIMPSE_B_LINES['GL-04']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-04']._scene.quiet.polite.push('視界が揺れる。歯を食いしばる');
-if (!GLIMPSE_B_LINES['GL-04'].earnest) GLIMPSE_B_LINES['GL-04'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-04'].earnest.seductive) GLIMPSE_B_LINES['GL-04'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-04'].earnest.seductive.push('……まだ、終わっては、いませんの……');
-if (!GLIMPSE_B_LINES['GL-04']._scene) GLIMPSE_B_LINES['GL-04']._scene = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.earnest) GLIMPSE_B_LINES['GL-04']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-04']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-04']._scene.earnest.seductive.push('痛みの向こうに、意地を見る。ここで折れるわけにはいかない');
-if (!GLIMPSE_B_LINES['GL-04'].earnest) GLIMPSE_B_LINES['GL-04'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-04'].earnest.ojousama) GLIMPSE_B_LINES['GL-04'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-04'].earnest.ojousama.push('……わたくし、まだ……立てますわ……');
-if (!GLIMPSE_B_LINES['GL-04']._scene) GLIMPSE_B_LINES['GL-04']._scene = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.earnest) GLIMPSE_B_LINES['GL-04']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-04']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-04']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-04']._scene.earnest.ojousama.push('息を吐く。崩れそうな体を、誇りだけが支えている');
-if (!GLIMPSE_B_LINES['GL-05'].normal) GLIMPSE_B_LINES['GL-05'].normal = {};
-if (!GLIMPSE_B_LINES['GL-05'].normal.polite) GLIMPSE_B_LINES['GL-05'].normal.polite = [];
-GLIMPSE_B_LINES['GL-05'].normal.polite.push('……いけます、行きますよ');
-if (!GLIMPSE_B_LINES['GL-05']._scene) GLIMPSE_B_LINES['GL-05']._scene = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.normal) GLIMPSE_B_LINES['GL-05']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.normal.polite) GLIMPSE_B_LINES['GL-05']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-05']._scene.normal.polite.push('身体が軽い。流れが、こちらに来た');
-if (!GLIMPSE_B_LINES['GL-05'].bold) GLIMPSE_B_LINES['GL-05'].bold = {};
-if (!GLIMPSE_B_LINES['GL-05'].bold.polite) GLIMPSE_B_LINES['GL-05'].bold.polite = [];
-GLIMPSE_B_LINES['GL-05'].bold.polite.push('はは……!きた、きたきた!');
-if (!GLIMPSE_B_LINES['GL-05']._scene) GLIMPSE_B_LINES['GL-05']._scene = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.bold) GLIMPSE_B_LINES['GL-05']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.bold.polite) GLIMPSE_B_LINES['GL-05']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-05']._scene.bold.polite.push('口元に笑みが浮かぶ。流れを掴んだ、確信がある');
-if (!GLIMPSE_B_LINES['GL-05'].bold) GLIMPSE_B_LINES['GL-05'].bold = {};
-if (!GLIMPSE_B_LINES['GL-05'].bold.seductive) GLIMPSE_B_LINES['GL-05'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-05'].bold.seductive.push('ふふ……堕ちなさい');
-if (!GLIMPSE_B_LINES['GL-05']._scene) GLIMPSE_B_LINES['GL-05']._scene = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.bold) GLIMPSE_B_LINES['GL-05']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.bold.seductive) GLIMPSE_B_LINES['GL-05']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-05']._scene.bold.seductive.push('流れが変わる瞬間の、甘美な感覚');
-if (!GLIMPSE_B_LINES['GL-05'].quiet) GLIMPSE_B_LINES['GL-05'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-05'].quiet.seductive) GLIMPSE_B_LINES['GL-05'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-05'].quiet.seductive.push('……もらった');
-if (!GLIMPSE_B_LINES['GL-05']._scene) GLIMPSE_B_LINES['GL-05']._scene = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.quiet) GLIMPSE_B_LINES['GL-05']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-05']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-05']._scene.quiet.seductive.push('静かに、しかし確実に、主導権を握る');
-if (!GLIMPSE_B_LINES['GL-05'].quiet) GLIMPSE_B_LINES['GL-05'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-05'].quiet.polite) GLIMPSE_B_LINES['GL-05'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-05'].quiet.polite.push('……ここから、です');
-if (!GLIMPSE_B_LINES['GL-05']._scene) GLIMPSE_B_LINES['GL-05']._scene = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.quiet) GLIMPSE_B_LINES['GL-05']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.quiet.polite) GLIMPSE_B_LINES['GL-05']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-05']._scene.quiet.polite.push('呼吸が合ってきた。ここから、詰めに入る');
-if (!GLIMPSE_B_LINES['GL-05'].earnest) GLIMPSE_B_LINES['GL-05'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-05'].earnest.seductive) GLIMPSE_B_LINES['GL-05'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-05'].earnest.seductive.push('ふ……ここから、行きますわよ');
-if (!GLIMPSE_B_LINES['GL-05']._scene) GLIMPSE_B_LINES['GL-05']._scene = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.earnest) GLIMPSE_B_LINES['GL-05']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-05']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-05']._scene.earnest.seductive.push('流れを読み切った。ここが、勝負所だ');
-if (!GLIMPSE_B_LINES['GL-05'].earnest) GLIMPSE_B_LINES['GL-05'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-05'].earnest.ojousama) GLIMPSE_B_LINES['GL-05'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-05'].earnest.ojousama.push('……参りますわ!');
-if (!GLIMPSE_B_LINES['GL-05']._scene) GLIMPSE_B_LINES['GL-05']._scene = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.earnest) GLIMPSE_B_LINES['GL-05']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-05']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-05']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-05']._scene.earnest.ojousama.push('好機。躊躇わず、踏み込む');
-if (!GLIMPSE_B_LINES['GL-06'].normal) GLIMPSE_B_LINES['GL-06'].normal = {};
-if (!GLIMPSE_B_LINES['GL-06'].normal.polite) GLIMPSE_B_LINES['GL-06'].normal.polite = [];
-GLIMPSE_B_LINES['GL-06'].normal.polite.push('……決まった');
-if (!GLIMPSE_B_LINES['GL-06']._scene) GLIMPSE_B_LINES['GL-06']._scene = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.normal) GLIMPSE_B_LINES['GL-06']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.normal.polite) GLIMPSE_B_LINES['GL-06']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-06']._scene.normal.polite.push('完璧に入った。手応えが、腕に残る');
-if (!GLIMPSE_B_LINES['GL-06'].bold) GLIMPSE_B_LINES['GL-06'].bold = {};
-if (!GLIMPSE_B_LINES['GL-06'].bold.polite) GLIMPSE_B_LINES['GL-06'].bold.polite = [];
-GLIMPSE_B_LINES['GL-06'].bold.polite.push('よっしゃ!入った、入った!');
-if (!GLIMPSE_B_LINES['GL-06']._scene) GLIMPSE_B_LINES['GL-06']._scene = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.bold) GLIMPSE_B_LINES['GL-06']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.bold.polite) GLIMPSE_B_LINES['GL-06']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-06']._scene.bold.polite.push('会心の一撃。拳を握る');
-if (!GLIMPSE_B_LINES['GL-06'].bold) GLIMPSE_B_LINES['GL-06'].bold = {};
-if (!GLIMPSE_B_LINES['GL-06'].bold.seductive) GLIMPSE_B_LINES['GL-06'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-06'].bold.seductive.push('ふ……きれいに、決まったわ');
-if (!GLIMPSE_B_LINES['GL-06']._scene) GLIMPSE_B_LINES['GL-06']._scene = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.bold) GLIMPSE_B_LINES['GL-06']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.bold.seductive) GLIMPSE_B_LINES['GL-06']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-06']._scene.bold.seductive.push('相手が崩れ落ちる。美しい、と思った');
-if (!GLIMPSE_B_LINES['GL-06'].quiet) GLIMPSE_B_LINES['GL-06'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-06'].quiet.seductive) GLIMPSE_B_LINES['GL-06'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-06'].quiet.seductive.push('……');
-if (!GLIMPSE_B_LINES['GL-06']._scene) GLIMPSE_B_LINES['GL-06']._scene = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.quiet) GLIMPSE_B_LINES['GL-06']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-06']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-06']._scene.quiet.seductive.push('沈黙。技の余韻だけが、リングに残る');
-if (!GLIMPSE_B_LINES['GL-06'].quiet) GLIMPSE_B_LINES['GL-06'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-06'].quiet.polite) GLIMPSE_B_LINES['GL-06'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-06'].quiet.polite.push('……捉えました');
-if (!GLIMPSE_B_LINES['GL-06']._scene) GLIMPSE_B_LINES['GL-06']._scene = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.quiet) GLIMPSE_B_LINES['GL-06']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.quiet.polite) GLIMPSE_B_LINES['GL-06']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-06']._scene.quiet.polite.push('技は決まった。残るは、詰めの一手');
-if (!GLIMPSE_B_LINES['GL-06'].earnest) GLIMPSE_B_LINES['GL-06'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-06'].earnest.seductive) GLIMPSE_B_LINES['GL-06'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-06'].earnest.seductive.push('……入り、ましたわ');
-if (!GLIMPSE_B_LINES['GL-06']._scene) GLIMPSE_B_LINES['GL-06']._scene = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.earnest) GLIMPSE_B_LINES['GL-06']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-06']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-06']._scene.earnest.seductive.push('祈るように、技を放った。報われた');
-if (!GLIMPSE_B_LINES['GL-06'].earnest) GLIMPSE_B_LINES['GL-06'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-06'].earnest.ojousama) GLIMPSE_B_LINES['GL-06'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-06'].earnest.ojousama.push('……お見事な、受け身ですわね');
-if (!GLIMPSE_B_LINES['GL-06']._scene) GLIMPSE_B_LINES['GL-06']._scene = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.earnest) GLIMPSE_B_LINES['GL-06']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-06']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-06']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-06']._scene.earnest.ojousama.push('一心に放った一撃。相手への敬意を込めて');
-if (!GLIMPSE_B_LINES['GL-07'].normal) GLIMPSE_B_LINES['GL-07'].normal = {};
-if (!GLIMPSE_B_LINES['GL-07'].normal.polite) GLIMPSE_B_LINES['GL-07'].normal.polite = [];
-GLIMPSE_B_LINES['GL-07'].normal.polite.push('……っ、まだ、です……');
-if (!GLIMPSE_B_LINES['GL-07']._scene) GLIMPSE_B_LINES['GL-07']._scene = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.normal) GLIMPSE_B_LINES['GL-07']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.normal.polite) GLIMPSE_B_LINES['GL-07']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-07']._scene.normal.polite.push('視界が真っ白になる。痛みが、遅れてやって来る');
-if (!GLIMPSE_B_LINES['GL-07'].bold) GLIMPSE_B_LINES['GL-07'].bold = {};
-if (!GLIMPSE_B_LINES['GL-07'].bold.polite) GLIMPSE_B_LINES['GL-07'].bold.polite = [];
-GLIMPSE_B_LINES['GL-07'].bold.polite.push('こんの……っ、まだやれる!');
-if (!GLIMPSE_B_LINES['GL-07']._scene) GLIMPSE_B_LINES['GL-07']._scene = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.bold) GLIMPSE_B_LINES['GL-07']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.bold.polite) GLIMPSE_B_LINES['GL-07']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-07']._scene.bold.polite.push('衝撃。膝が崩れる。くそ、立て、立て');
-if (!GLIMPSE_B_LINES['GL-07'].bold) GLIMPSE_B_LINES['GL-07'].bold = {};
-if (!GLIMPSE_B_LINES['GL-07'].bold.seductive) GLIMPSE_B_LINES['GL-07'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-07'].bold.seductive.push('ふふ……効いた、じゃない……');
-if (!GLIMPSE_B_LINES['GL-07']._scene) GLIMPSE_B_LINES['GL-07']._scene = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.bold) GLIMPSE_B_LINES['GL-07']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.bold.seductive) GLIMPSE_B_LINES['GL-07']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-07']._scene.bold.seductive.push('身体が跳ね飛ばされる。痛みすら、どこか遠い');
-if (!GLIMPSE_B_LINES['GL-07'].quiet) GLIMPSE_B_LINES['GL-07'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-07'].quiet.seductive) GLIMPSE_B_LINES['GL-07'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-07'].quiet.seductive.push('……まだ');
-if (!GLIMPSE_B_LINES['GL-07']._scene) GLIMPSE_B_LINES['GL-07']._scene = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.quiet) GLIMPSE_B_LINES['GL-07']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-07']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-07']._scene.quiet.seductive.push('天井。白い。動けない');
-if (!GLIMPSE_B_LINES['GL-07'].quiet) GLIMPSE_B_LINES['GL-07'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-07'].quiet.polite) GLIMPSE_B_LINES['GL-07'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-07'].quiet.polite.push('……まだ、倒れません');
-if (!GLIMPSE_B_LINES['GL-07']._scene) GLIMPSE_B_LINES['GL-07']._scene = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.quiet) GLIMPSE_B_LINES['GL-07']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.quiet.polite) GLIMPSE_B_LINES['GL-07']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-07']._scene.quiet.polite.push('痛みが全身を貫く。それでも、意識は手放さない');
-if (!GLIMPSE_B_LINES['GL-07'].earnest) GLIMPSE_B_LINES['GL-07'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-07'].earnest.seductive) GLIMPSE_B_LINES['GL-07'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-07'].earnest.seductive.push('……まだ、わたくし、立ちますわ……っ');
-if (!GLIMPSE_B_LINES['GL-07']._scene) GLIMPSE_B_LINES['GL-07']._scene = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.earnest) GLIMPSE_B_LINES['GL-07']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-07']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-07']._scene.earnest.seductive.push('強烈な一撃。けれど、これで終わる訳にはいかない');
-if (!GLIMPSE_B_LINES['GL-07'].earnest) GLIMPSE_B_LINES['GL-07'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-07'].earnest.ojousama) GLIMPSE_B_LINES['GL-07'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-07'].earnest.ojousama.push('……この程度で、終わりませんわ……っ');
-if (!GLIMPSE_B_LINES['GL-07']._scene) GLIMPSE_B_LINES['GL-07']._scene = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.earnest) GLIMPSE_B_LINES['GL-07']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-07']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-07']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-07']._scene.earnest.ojousama.push('視界が霞む。誇りだけを頼りに、立ち上がろうとする');
-if (!GLIMPSE_B_LINES['GL-08'].normal) GLIMPSE_B_LINES['GL-08'].normal = {};
-if (!GLIMPSE_B_LINES['GL-08'].normal.polite) GLIMPSE_B_LINES['GL-08'].normal.polite = [];
-GLIMPSE_B_LINES['GL-08'].normal.polite.push('……聞こえます、皆さんの声');
-if (!GLIMPSE_B_LINES['GL-08']._scene) GLIMPSE_B_LINES['GL-08']._scene = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.normal) GLIMPSE_B_LINES['GL-08']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.normal.polite) GLIMPSE_B_LINES['GL-08']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-08']._scene.normal.polite.push('観客の声が、耳の奥に届く。ああ、見てくれている');
-if (!GLIMPSE_B_LINES['GL-08'].bold) GLIMPSE_B_LINES['GL-08'].bold = {};
-if (!GLIMPSE_B_LINES['GL-08'].bold.polite) GLIMPSE_B_LINES['GL-08'].bold.polite = [];
-GLIMPSE_B_LINES['GL-08'].bold.polite.push('聞こえてるよ!ありがとう!!');
-if (!GLIMPSE_B_LINES['GL-08']._scene) GLIMPSE_B_LINES['GL-08']._scene = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.bold) GLIMPSE_B_LINES['GL-08']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.bold.polite) GLIMPSE_B_LINES['GL-08']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-08']._scene.bold.polite.push('歓声が全身を震わせる。これが、わたしを動かす');
-if (!GLIMPSE_B_LINES['GL-08'].bold) GLIMPSE_B_LINES['GL-08'].bold = {};
-if (!GLIMPSE_B_LINES['GL-08'].bold.seductive) GLIMPSE_B_LINES['GL-08'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-08'].bold.seductive.push('ふふ……もっと、声を聞かせて');
-if (!GLIMPSE_B_LINES['GL-08']._scene) GLIMPSE_B_LINES['GL-08']._scene = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.bold) GLIMPSE_B_LINES['GL-08']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.bold.seductive) GLIMPSE_B_LINES['GL-08']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-08']._scene.bold.seductive.push('歓声の波に、身を委ねる。最高の瞬間');
-if (!GLIMPSE_B_LINES['GL-08'].quiet) GLIMPSE_B_LINES['GL-08'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-08'].quiet.seductive) GLIMPSE_B_LINES['GL-08'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-08'].quiet.seductive.push('……聞こえてる');
-if (!GLIMPSE_B_LINES['GL-08']._scene) GLIMPSE_B_LINES['GL-08']._scene = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.quiet) GLIMPSE_B_LINES['GL-08']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-08']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-08']._scene.quiet.seductive.push('歓声。遠くで、確かに、届いている');
-if (!GLIMPSE_B_LINES['GL-08'].quiet) GLIMPSE_B_LINES['GL-08'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-08'].quiet.polite) GLIMPSE_B_LINES['GL-08'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-08'].quiet.polite.push('……ありがとうございます');
-if (!GLIMPSE_B_LINES['GL-08']._scene) GLIMPSE_B_LINES['GL-08']._scene = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.quiet) GLIMPSE_B_LINES['GL-08']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.quiet.polite) GLIMPSE_B_LINES['GL-08']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-08']._scene.quiet.polite.push('観客の声が、力に変わる。深く、頭を下げたくなる');
-if (!GLIMPSE_B_LINES['GL-08'].earnest) GLIMPSE_B_LINES['GL-08'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-08'].earnest.seductive) GLIMPSE_B_LINES['GL-08'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-08'].earnest.seductive.push('……届きましたわ、皆様の声');
-if (!GLIMPSE_B_LINES['GL-08']._scene) GLIMPSE_B_LINES['GL-08']._scene = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.earnest) GLIMPSE_B_LINES['GL-08']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-08']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-08']._scene.earnest.seductive.push('声援が胸に染みる。応えなければ、と心から思う');
-if (!GLIMPSE_B_LINES['GL-08'].earnest) GLIMPSE_B_LINES['GL-08'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-08'].earnest.ojousama) GLIMPSE_B_LINES['GL-08'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-08'].earnest.ojousama.push('……感謝いたしますわ、皆様');
-if (!GLIMPSE_B_LINES['GL-08']._scene) GLIMPSE_B_LINES['GL-08']._scene = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.earnest) GLIMPSE_B_LINES['GL-08']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-08']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-08']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-08']._scene.earnest.ojousama.push('観客への感謝を、背筋で表す');
-if (!GLIMPSE_B_LINES['GL-09'].normal) GLIMPSE_B_LINES['GL-09'].normal = {};
-if (!GLIMPSE_B_LINES['GL-09'].normal.polite) GLIMPSE_B_LINES['GL-09'].normal.polite = [];
-GLIMPSE_B_LINES['GL-09'].normal.polite.push('……あなた、本当に強いです');
-if (!GLIMPSE_B_LINES['GL-09']._scene) GLIMPSE_B_LINES['GL-09']._scene = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.normal) GLIMPSE_B_LINES['GL-09']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.normal.polite) GLIMPSE_B_LINES['GL-09']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-09']._scene.normal.polite.push('相手の目を見る。強い、この人は強い');
-if (!GLIMPSE_B_LINES['GL-09'].bold) GLIMPSE_B_LINES['GL-09'].bold = {};
-if (!GLIMPSE_B_LINES['GL-09'].bold.polite) GLIMPSE_B_LINES['GL-09'].bold.polite = [];
-GLIMPSE_B_LINES['GL-09'].bold.polite.push('ふ……いい相手だ、燃えるぜ!');
-if (!GLIMPSE_B_LINES['GL-09']._scene) GLIMPSE_B_LINES['GL-09']._scene = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.bold) GLIMPSE_B_LINES['GL-09']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.bold.polite) GLIMPSE_B_LINES['GL-09']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-09']._scene.bold.polite.push('睨み合う。闘志が、火花のように散る');
-if (!GLIMPSE_B_LINES['GL-09'].bold) GLIMPSE_B_LINES['GL-09'].bold = {};
-if (!GLIMPSE_B_LINES['GL-09'].bold.seductive) GLIMPSE_B_LINES['GL-09'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-09'].bold.seductive.push('ふふ……いい目、してるじゃない');
-if (!GLIMPSE_B_LINES['GL-09']._scene) GLIMPSE_B_LINES['GL-09']._scene = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.bold) GLIMPSE_B_LINES['GL-09']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.bold.seductive) GLIMPSE_B_LINES['GL-09']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-09']._scene.bold.seductive.push('相手の瞳を覗き込む。そこに、炎を見る');
-if (!GLIMPSE_B_LINES['GL-09'].quiet) GLIMPSE_B_LINES['GL-09'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-09'].quiet.seductive) GLIMPSE_B_LINES['GL-09'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-09'].quiet.seductive.push('……やろう');
-if (!GLIMPSE_B_LINES['GL-09']._scene) GLIMPSE_B_LINES['GL-09']._scene = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.quiet) GLIMPSE_B_LINES['GL-09']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-09']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-09']._scene.quiet.seductive.push('見つめ合う。言葉はいらない');
-if (!GLIMPSE_B_LINES['GL-09'].quiet) GLIMPSE_B_LINES['GL-09'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-09'].quiet.polite) GLIMPSE_B_LINES['GL-09'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-09'].quiet.polite.push('……全力で、お相手します');
-if (!GLIMPSE_B_LINES['GL-09']._scene) GLIMPSE_B_LINES['GL-09']._scene = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.quiet) GLIMPSE_B_LINES['GL-09']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.quiet.polite) GLIMPSE_B_LINES['GL-09']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-09']._scene.quiet.polite.push('相手を、正面から見据える');
-if (!GLIMPSE_B_LINES['GL-09'].earnest) GLIMPSE_B_LINES['GL-09'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-09'].earnest.seductive) GLIMPSE_B_LINES['GL-09'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-09'].earnest.seductive.push('ふ……貴女となら、良い試合になりそうね');
-if (!GLIMPSE_B_LINES['GL-09']._scene) GLIMPSE_B_LINES['GL-09']._scene = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.earnest) GLIMPSE_B_LINES['GL-09']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-09']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-09']._scene.earnest.seductive.push('相手の実力に、敬意を抱く。だからこそ、全力で');
-if (!GLIMPSE_B_LINES['GL-09'].earnest) GLIMPSE_B_LINES['GL-09'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-09'].earnest.ojousama) GLIMPSE_B_LINES['GL-09'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-09'].earnest.ojousama.push('……よろしくお願いいたしますわ');
-if (!GLIMPSE_B_LINES['GL-09']._scene) GLIMPSE_B_LINES['GL-09']._scene = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.earnest) GLIMPSE_B_LINES['GL-09']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-09']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-09']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-09']._scene.earnest.ojousama.push('深く、会釈を返す。戦士としての礼儀を尽くして');
-if (!GLIMPSE_B_LINES['GL-10'].normal) GLIMPSE_B_LINES['GL-10'].normal = {};
-if (!GLIMPSE_B_LINES['GL-10'].normal.polite) GLIMPSE_B_LINES['GL-10'].normal.polite = [];
-GLIMPSE_B_LINES['GL-10'].normal.polite.push('……これで、終わりにします');
-if (!GLIMPSE_B_LINES['GL-10']._scene) GLIMPSE_B_LINES['GL-10']._scene = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.normal) GLIMPSE_B_LINES['GL-10']._scene.normal = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.normal.polite) GLIMPSE_B_LINES['GL-10']._scene.normal.polite = [];
-GLIMPSE_B_LINES['GL-10']._scene.normal.polite.push('すべてを、この一撃に');
-if (!GLIMPSE_B_LINES['GL-10'].bold) GLIMPSE_B_LINES['GL-10'].bold = {};
-if (!GLIMPSE_B_LINES['GL-10'].bold.polite) GLIMPSE_B_LINES['GL-10'].bold.polite = [];
-GLIMPSE_B_LINES['GL-10'].bold.polite.push('ここで決める!!');
-if (!GLIMPSE_B_LINES['GL-10']._scene) GLIMPSE_B_LINES['GL-10']._scene = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.bold) GLIMPSE_B_LINES['GL-10']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.bold.polite) GLIMPSE_B_LINES['GL-10']._scene.bold.polite = [];
-GLIMPSE_B_LINES['GL-10']._scene.bold.polite.push('最後の瞬間。迷いは、ない');
-if (!GLIMPSE_B_LINES['GL-10'].bold) GLIMPSE_B_LINES['GL-10'].bold = {};
-if (!GLIMPSE_B_LINES['GL-10'].bold.seductive) GLIMPSE_B_LINES['GL-10'].bold.seductive = [];
-GLIMPSE_B_LINES['GL-10'].bold.seductive.push('ふふ……さよなら、ね');
-if (!GLIMPSE_B_LINES['GL-10']._scene) GLIMPSE_B_LINES['GL-10']._scene = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.bold) GLIMPSE_B_LINES['GL-10']._scene.bold = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.bold.seductive) GLIMPSE_B_LINES['GL-10']._scene.bold.seductive = [];
-GLIMPSE_B_LINES['GL-10']._scene.bold.seductive.push('終わりの気配。美しく、締めくくる');
-if (!GLIMPSE_B_LINES['GL-10'].quiet) GLIMPSE_B_LINES['GL-10'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-10'].quiet.seductive) GLIMPSE_B_LINES['GL-10'].quiet.seductive = [];
-GLIMPSE_B_LINES['GL-10'].quiet.seductive.push('……終わり');
-if (!GLIMPSE_B_LINES['GL-10']._scene) GLIMPSE_B_LINES['GL-10']._scene = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.quiet) GLIMPSE_B_LINES['GL-10']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.quiet.seductive) GLIMPSE_B_LINES['GL-10']._scene.quiet.seductive = [];
-GLIMPSE_B_LINES['GL-10']._scene.quiet.seductive.push('終わり。静かに、終わる');
-if (!GLIMPSE_B_LINES['GL-10'].quiet) GLIMPSE_B_LINES['GL-10'].quiet = {};
-if (!GLIMPSE_B_LINES['GL-10'].quiet.polite) GLIMPSE_B_LINES['GL-10'].quiet.polite = [];
-GLIMPSE_B_LINES['GL-10'].quiet.polite.push('……これで、決まります');
-if (!GLIMPSE_B_LINES['GL-10']._scene) GLIMPSE_B_LINES['GL-10']._scene = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.quiet) GLIMPSE_B_LINES['GL-10']._scene.quiet = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.quiet.polite) GLIMPSE_B_LINES['GL-10']._scene.quiet.polite = [];
-GLIMPSE_B_LINES['GL-10']._scene.quiet.polite.push('最後の一撃を放つ。すべてを込めて');
-if (!GLIMPSE_B_LINES['GL-10'].earnest) GLIMPSE_B_LINES['GL-10'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-10'].earnest.seductive) GLIMPSE_B_LINES['GL-10'].earnest.seductive = [];
-GLIMPSE_B_LINES['GL-10'].earnest.seductive.push('……これで、終わりにいたしますわ');
-if (!GLIMPSE_B_LINES['GL-10']._scene) GLIMPSE_B_LINES['GL-10']._scene = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.earnest) GLIMPSE_B_LINES['GL-10']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.earnest.seductive) GLIMPSE_B_LINES['GL-10']._scene.earnest.seductive = [];
-GLIMPSE_B_LINES['GL-10']._scene.earnest.seductive.push('この一撃に、魂を込める');
-if (!GLIMPSE_B_LINES['GL-10'].earnest) GLIMPSE_B_LINES['GL-10'].earnest = {};
-if (!GLIMPSE_B_LINES['GL-10'].earnest.ojousama) GLIMPSE_B_LINES['GL-10'].earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-10'].earnest.ojousama.push('……ごきげんよう、ですわ');
-if (!GLIMPSE_B_LINES['GL-10']._scene) GLIMPSE_B_LINES['GL-10']._scene = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.earnest) GLIMPSE_B_LINES['GL-10']._scene.earnest = {};
-if (!GLIMPSE_B_LINES['GL-10']._scene.earnest.ojousama) GLIMPSE_B_LINES['GL-10']._scene.earnest.ojousama = [];
-GLIMPSE_B_LINES['GL-10']._scene.earnest.ojousama.push('すべての想いを乗せて、最後の技を放つ');
 
 // ── SNAPSHOT_TEXTS 拡張 (voice + scene deduped) ──
 if (!SNAPSHOT_TEXTS.G1.scene) SNAPSHOT_TEXTS.G1.scene = [];
