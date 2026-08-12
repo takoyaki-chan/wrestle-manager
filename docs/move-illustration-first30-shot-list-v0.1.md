@@ -99,7 +99,11 @@
 | 検収待ち | Codex納品済み・司令官のdiff検収前 |
 | ready | QA通過・WebP変換済み（マニフェスト `status: "ready"`） |
 
-全30+4は現時点ですべて「未撮影」。撮影が済んだものから本台帳の行に状態を追記する。
+### 受領記録
+
+**第1便（2026-08-12・14技×3パス=42枚・撮影済）**: 16_powerbomb / 31_sitout_powerbomb / 33_death_valley_bomb / 32_chokeslam / 12_backdrop / 13_german_suplex / 17_piledriver / 65_kenka_kick / 73_octopus_hold / 71_romero_special / 26_figure_four（**要反転**） / 09_ddt（**要反転**） / 53_rear_naked_choke（胴締めスリーパー） / 28_sleeper_hold（P1先行ボーナス）。全1680×1340・3パス完備・単一カメラ。この便は肌色分け前のモデル（両者色白）— 人形化で消えるため撮り直し不要、絡み技の人形化テストで攻守が混ざる場合のみ該当技を再撮。受領詳細は codex側 `assets/moves/INTAKE.md`。
+
+**第1波の残り（撮影中）**: 27_ankle_hold / 35_vertical_brainbuster / 57_spear / 56_diving_body_press / 41_moonsault_press / 01_lariat ＋ M0の4点。**第2便から肌の褐色/色白分けを適用**。
 
 ## 7. 除外と後送（理由付き）
 
