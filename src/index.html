@@ -65,6 +65,9 @@
   --accent-faction-4: #6fa28c;   /* 鶯緑 */
   --accent-hostility: #d07a3e;   /* 対立度の橙 */
   --accent-hostility-rgb: 208,122,62; /* 上記のrgba()用トリプレット（遠征フロー「敵地」配色で使用） */
+  --accent-war: #e04343;          /* 開戦・宣戦級の稀少演出専用の火の赤 */
+  --accent-war-rgb: 224,67,67;
+  --accent-war-hi: #ffb3a3;       /* 赤のハイライト（見出しグラデ上端・強調文字） */
   --accent-faction-feud: #c38c54; /* 派閥抗争バッジ（accent-faction-1 と同系統）*/
   --pop-pink: #d4538a;            /* 人気値（POP）数値色（Faction Tab v0.9 で導入）*/
   --pop-pink-light: #f0a0bf;      /* 人気★アイコンの薄色版 */
@@ -6084,14 +6087,21 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fevt-peace-ledger-line .delta-flat { color: #a8a8a0; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
 
 /* ============================================================
-   F02 進展①: 発火（Stage / 橙・公式戦化）
+   F02 進展①: 発火（Stage / 火の赤・公式戦化）
    ============================================================ */
+.fevt-overlay-stage.ignite {
+  overflow-y: auto; justify-content: flex-start; box-sizing: border-box;
+  padding: 28px 24px 36px;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(var(--accent-war-rgb),.18), transparent 65%),
+    linear-gradient(180deg, #0e0606 0%, var(--stage-bg) 55%);
+}
 .fevt-overlay-stage.ignite::before {
   content: ''; position: absolute; inset: 0;
   background:
-    radial-gradient(ellipse at 18% 45%, rgba(138,122,168,0.18) 0%, rgba(0,0,0,0) 45%),
-    radial-gradient(ellipse at 82% 45%, rgba(195,140,84,0.18) 0%, rgba(0,0,0,0) 45%),
-    radial-gradient(ellipse at 50% 50%, rgba(208,122,62,0.10) 0%, rgba(0,0,0,0) 55%);
+    radial-gradient(ellipse at 18% 45%, rgba(var(--accent-war-rgb),.12) 0%, rgba(0,0,0,0) 45%),
+    radial-gradient(ellipse at 82% 45%, rgba(var(--accent-war-rgb),.12) 0%, rgba(0,0,0,0) 45%),
+    radial-gradient(ellipse at 50% 50%, rgba(var(--accent-war-rgb),.10) 0%, rgba(0,0,0,0) 55%);
   pointer-events: none;
   animation: fevtIgniteFlare 3800ms ease-out forwards;
 }
@@ -6101,89 +6111,105 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   100% { opacity: 0.65; }
 }
 .fevt-title-main.ignite {
-  color: #e8d8c8;
-  text-shadow: 0 0 26px rgba(208,122,62,0.45), 0 2px 6px rgba(0,0,0,0.9);
+  font-family: 'Noto Serif JP',serif; font-weight: 900; font-size: 44px;
+  background: linear-gradient(180deg,var(--accent-war-hi),var(--accent-war));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  filter: drop-shadow(0 0 22px rgba(var(--accent-war-rgb),.35));
 }
+.ignite .fevt-title-band { margin: 0 0 4px; flex-shrink: 0; }
+.ignite .fevt-title-divider { background: linear-gradient(90deg,transparent,rgba(var(--accent-war-rgb),.8),transparent); }
 .fevt-ign-stage {
   position: relative;
-  display: grid; grid-template-columns: 1fr 160px 1fr;
-  align-items: center; justify-items: center;
-  gap: 24px; margin: 22px 48px 0; min-height: 360px;
+  display: grid; grid-template-columns: minmax(0,1fr) 130px minmax(0,1fr);
+  align-items: start; justify-items: center;
+  gap: 14px; width: 100%; max-width: 860px; margin: 18px auto 0;
 }
-.fevt-ign-col { position: relative; text-align: center; opacity: 0; }
+.fevt-ign-col { position: relative; display: flex; flex-direction: column; align-items: center; min-width: 0; text-align: center; opacity: 0; }
 .fevt-ign-col.left, .fevt-ign-col.right { animation: fevtIgniteFade 900ms ease-out both; }
 .fevt-ign-col.left  { animation-delay: 400ms; }
 .fevt-ign-col.right { animation-delay: 400ms; }
 @keyframes fevtIgniteFade { 0% { opacity: 0; } 100% { opacity: 1; } }
 .fevt-ign-col .fevt-role-label {
-  font-family: 'Bebas Neue', sans-serif; font-size: 11px; letter-spacing: 5px;
-  color: rgba(232,216,200,0.6); margin-bottom: 4px;
+  font-family: 'Oswald',sans-serif; font-size: 10px; letter-spacing: .3em;
+  color: var(--stage-text-sub);
 }
-.fevt-ign-col.left .fevt-role-kanji {
-  font-family: 'Noto Sans JP', serif; font-size: 16px; font-weight: 700; letter-spacing: 8px;
-  color: #b09ad0; margin-bottom: 8px;
+.fevt-ign-col .fevt-role-kanji {
+  font-family: 'Noto Serif JP',serif; font-size: 21px; font-weight: 900; letter-spacing: .5em;
+  text-indent: .5em; color: var(--stage-text-main); margin: 2px 0 10px;
 }
-.fevt-ign-col.right .fevt-role-kanji {
-  font-family: 'Noto Sans JP', serif; font-size: 16px; font-weight: 700; letter-spacing: 8px;
-  color: #d4a070; margin-bottom: 8px;
+.fevt-ign-col.left .fevt-role-kanji { color: var(--accent-war-hi); }
+.fevt-ign-bubble-slot { height: 64px; width: 100%; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 8px; }
+.fevt-ign-bubble {
+  position: relative; width: max-content; max-width: 250px; padding: 8px 13px;
+  background: var(--office-panel-cream-card); color: var(--cream-text-main);
+  border-radius: var(--radius-lg); font-size: 13px; line-height: 1.55; text-align: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,.4);
+}
+.fevt-ign-bubble-line { overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.fevt-ign-bubble::after {
+  content: ''; position: absolute; left: 50%; bottom: -7px; transform: translateX(-50%);
+  border: 7px solid transparent; border-top-color: var(--office-panel-cream-card); border-bottom: 0;
 }
 .fevt-ign-col .fevt-portrait-wrap {
-  position: relative; display: inline-block;
-  width: 220px; height: 260px; margin-bottom: 10px;
+  position: relative; display: inline-block; overflow: hidden;
+  width: 150px; height: 224px; margin-bottom: 0;
+  border: 1px solid rgba(var(--accent-war-rgb),.3); border-bottom: 3px solid var(--accent-war);
+  border-radius: 6px 6px 5px 5px; background: #14100c;
 }
 .fevt-ign-col .fevt-portrait-wrap .fevt-leader-upper { display: block; }
 .fevt-ign-col .fevt-faction-flag {
-  position: absolute; left: 50%; bottom: 10px; transform: translateX(-50%);
-  box-sizing: border-box; width: calc(100% - 16px); padding: 5px 10px;
-  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px;
-  line-height: 1.3; text-align: center; backdrop-filter: blur(2px); z-index: 2;
+  position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; box-sizing: border-box;
+  width: 100%; padding: 4px 6px; font-family: 'Oswald',sans-serif; font-size: 9px;
+  letter-spacing: .18em; line-height: 1.3; text-align: center; color: var(--stage-text-main);
+  background: linear-gradient(0deg,rgba(0,0,0,.82),rgba(0,0,0,0));
 }
-.fevt-ign-col.left .fevt-faction-flag {
-  background: linear-gradient(180deg, rgba(20,16,30,0.72), rgba(60,42,90,0.78));
-  border: 1px solid rgba(180,160,210,0.65);
-  color: #d8c6ee;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
+.fevt-ign-col .fevt-leader-upper {
+  width: 150px; height: 224px; object-fit: cover; object-position: center top;
+  background: #14100c; filter: none;
 }
-.fevt-ign-col.right .fevt-faction-flag {
-  background: linear-gradient(180deg, rgba(30,18,10,0.72), rgba(90,56,24,0.78));
-  border: 1px solid rgba(225,180,125,0.65);
-  color: #f0d6ad;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.9);
-}
-.fevt-ign-col.left .fevt-leader-upper {
-  width: 220px; height: 260px; object-fit: cover; object-position: center top;
-  filter: drop-shadow(0 0 20px rgba(138,122,168,0.45)) contrast(1.05) saturate(1.03);
-}
-.fevt-ign-col.right .fevt-leader-upper {
-  width: 220px; height: 260px; object-fit: cover; object-position: center top;
-  filter: drop-shadow(0 0 20px rgba(195,140,84,0.45)) contrast(1.05) saturate(1.03);
-}
-.fevt-ign-stats {
-  display: inline-flex; gap: 14px; margin-top: 8px;
-  font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1.5px;
-  color: rgba(232,216,200,0.75);
-}
-.fevt-ign-stats .stat-num { color: #ffd4a8; font-weight: 700; font-size: 13px; margin-left: 4px; }
-.fevt-ign-col.left .fevt-ign-stats .stat-num { color: #c8b4e0; }
-.fevt-ign-col.right .fevt-ign-stats .stat-num { color: #e6b880; }
+.fevt-ign-initial { display: flex!important; align-items: center; justify-content: center; color: var(--accent-war-hi); font-weight: 900; }
 .fevt-ign-col .fevt-leader-name {
-  margin-top: 8px;
+  margin-top: 9px;
   font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 18px;
-  color: #fff2e2; letter-spacing: 2px;
+  color: var(--stage-text-main); letter-spacing: 2px;
 }
 .fevt-ign-col .fevt-leader-org {
   font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 2px;
-  color: rgba(255,200,160,0.75); margin-top: 2px;
+  color: var(--accent-war); margin-top: 2px;
 }
+.fevt-ign-fbadge {
+  display: inline-flex; align-items: center; gap: 6px; margin-top: 7px; padding: 3px 11px;
+  border: 1px solid; border-radius: 20px; background: rgba(255,255,255,.04);
+  font-family: 'Oswald',sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .06em;
+}
+.fevt-ign-fbadge .dot { width: 9px; height: 9px; border-radius: 50%; }
+.fevt-ign-fbadge.fac-a { color: var(--accent-faction-1); border-color: color-mix(in srgb,var(--accent-faction-1) 50%,transparent); }
+.fevt-ign-fbadge.fac-a .dot { background: var(--accent-faction-1); }
+.fevt-ign-fbadge.fac-b { color: var(--accent-faction-3); border-color: color-mix(in srgb,var(--accent-faction-3) 50%,transparent); }
+.fevt-ign-fbadge.fac-b .dot { background: var(--accent-faction-3); }
+.fevt-ign-members { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 9px; }
+.fevt-ign-members .cnt { font-family: 'Oswald',sans-serif; font-size: 11px; color: var(--stage-text-sub); letter-spacing: .1em; }
+.fevt-ign-member-chips { display: flex; justify-content: center; }
+.fevt-ign-member-chip {
+  width: 46px; height: 66px; box-sizing: border-box; margin-left: -6px; object-fit: cover; object-position: center top;
+  border: 1px solid rgba(200,190,170,.3); border-radius: 4px; background: #14100c;
+}
+.fevt-ign-member-chip:first-child { margin-left: 0; }
+.fevt-ign-center { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 120px; padding-top: 96px; }
+.fevt-ign-hostility { margin-top: 14px; text-align: center; }
+.fevt-ign-hostility .lbl { font-family: 'Oswald',sans-serif; font-size: 9px; letter-spacing: .3em; color: var(--stage-text-dim); }
+.fevt-ign-hostility .band {
+  margin-top: 3px; font-family: 'Noto Serif JP',serif; font-weight: 900; font-size: 22px;
+  letter-spacing: .34em; text-indent: .34em; color: var(--accent-war-hi);
+  text-shadow: 0 0 14px rgba(var(--accent-war-rgb),.5);
+}
+.fevt-ign-flames { display: flex; justify-content: center; gap: 5px; margin-top: 8px; font-size: 14px; }
+.fevt-ign-flames span { filter: grayscale(1) brightness(.45); }
+.fevt-ign-flames span.on { filter: none; text-shadow: 0 0 8px rgba(var(--accent-war-rgb),.8); }
 .fevt-ign-vs {
-  position: relative;
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 96px; line-height: 1;
-  background: linear-gradient(90deg, #b09ad0 0%, #e8d8c8 50%, #d4a070 100%);
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  text-shadow: 0 0 30px rgba(208,122,62,0.55), 0 4px 12px rgba(0,0,0,0.95);
-  letter-spacing: 4px; opacity: 0;
-  animation: fevtIgniteVs 800ms ease-out 1200ms both;
+  position: relative; font-family: 'Bebas Neue',sans-serif; font-size: 74px; line-height: 1;
+  color: var(--stage-text-main); text-shadow: 0 0 26px rgba(var(--accent-war-rgb),.45);
+  letter-spacing: 4px; opacity: 0; animation: fevtIgniteVs 800ms ease-out 1200ms both;
 }
 @keyframes fevtFadeUp {
   0%   { transform: translateY(12px); opacity: 0; }
@@ -6195,24 +6221,19 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   100% { transform: scale(1);    opacity: 1; }
 }
 .fevt-ign-card-band {
-  margin: 28px 56px 0;
-  padding: 14px 24px;
-  border-top: 1px solid rgba(255,170,110,0.45);
-  border-bottom: 1px solid rgba(255,170,110,0.45);
-  background: linear-gradient(90deg,
-    rgba(255,120,60,0) 0%,
-    rgba(255,120,60,0.12) 50%,
-    rgba(255,120,60,0) 100%);
+  width: min(460px,calc(100% - 32px)); box-sizing: border-box; margin: 24px auto 0; padding: 10px 14px;
+  border: 1px solid rgba(var(--accent-war-rgb),.4); border-radius: 8px;
+  background: rgba(var(--accent-war-rgb),.07);
   text-align: center; opacity: 0;
   animation: fevtFadeUp 900ms ease 1600ms both;
 }
 .fevt-ign-card-label {
   font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 5px;
-  color: rgba(255,200,160,0.7); margin-bottom: 4px;
+  color: var(--accent-war); margin-bottom: 4px;
 }
 .fevt-ign-card-name {
-  font-family: 'Noto Sans JP', sans-serif; font-weight: 700; font-size: 20px;
-  color: #fff2e2; letter-spacing: 3px;
+  font-family: 'Noto Serif JP',serif; font-weight: 900; font-size: 20px;
+  color: var(--stage-text-main); letter-spacing: 3px;
 }
 .fevt-ign-verdict {
   margin: 22px 72px 0;
@@ -6220,26 +6241,25 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   color: #e8d8c8; text-align: center; opacity: 0;
   animation: fevtFadeUp 900ms ease 2100ms both;
 }
-.fevt-ign-verdict em { font-style: normal; color: #ffd4a8; font-weight: 700; }
-.fevt-ign-ledger {
-  margin: 20px 72px 0;
-  display: grid; grid-template-columns: 1fr 1fr; gap: 20px;
-  opacity: 0; animation: fevtFadeUp 900ms ease 2500ms both;
+.fevt-ign-verdict em { font-style: normal; color: var(--gold-light); font-weight: 700; }
+.fevt-ign-facts { display: flex; justify-content: center; gap: 26px; margin-top: 18px; flex-wrap: wrap; opacity: 0; animation: fevtFadeUp 900ms ease 2500ms both; }
+.fevt-ign-fact { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--stage-text-sub); }
+.fevt-ign-fact::before { content: '◆'; font-size: 9px; color: var(--accent-war); }
+.ignite .fevt-continue-btn {
+  margin-top: 26px; padding: 13px 60px; border: 0; border-radius: 8px;
+  color: #1a120a; background: linear-gradient(180deg,var(--accent-war-hi),var(--accent-war));
+  font-family: inherit; font-weight: 900; letter-spacing: .3em; text-indent: .3em;
 }
-.fevt-ign-ledger-col {
-  padding: 10px 14px;
-  border: 1px solid rgba(255,170,110,0.28);
-  background: rgba(255,120,60,0.05);
+@media (max-width: 720px) {
+  .fevt-overlay-stage.ignite { padding-inline: 10px; }
+  .fevt-ign-stage { grid-template-columns: minmax(0,1fr) 82px minmax(0,1fr); gap: 5px; }
+  .fevt-ign-col .fevt-portrait-wrap,.fevt-ign-col .fevt-leader-upper { width: 120px; height: 180px; }
+  .fevt-ign-bubble { max-width: 155px; font-size: 11px; }
+  .fevt-ign-member-chip { width: 36px; height: 52px; }
+  .fevt-ign-center { min-width: 76px; }
+  .fevt-ign-vs { font-size: 54px; }
+  .fevt-ign-hostility .band { font-size: 17px; }
 }
-.fevt-ign-ledger-head {
-  font-family: 'Bebas Neue', sans-serif; font-size: 12px; letter-spacing: 3px;
-  color: #ffd4a8; margin-bottom: 6px;
-}
-.fevt-ign-ledger-line {
-  font-family: 'Noto Sans JP', sans-serif; font-size: 12px; line-height: 1.7;
-  color: #e8d8c8;
-}
-.fevt-ign-ledger-line .delta-up { color: #ffb080; font-family: 'Oswald', sans-serif; font-size: 11px; letter-spacing: 1px; }
 
 /* ============================================================
    MODAL UNIFIED TEMPLATES — Phase 0 基盤CSS (mdl-*)

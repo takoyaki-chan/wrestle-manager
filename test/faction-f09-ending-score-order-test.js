@@ -30,6 +30,7 @@ function buildEndingModal(mocks) {
     '_f09BgmStop',
     'Audio',
     '_u3bSideHtml',
+    'escHtml',
     `${functionSource('showFactionF09EndingModal')}; return showFactionF09EndingModal;`
   )(
     mocks._isPopupActive,
@@ -40,7 +41,8 @@ function buildEndingModal(mocks) {
     mocks._factionSeasonLabel,
     mocks._f09BgmStop,
     mocks.Audio,
-    mocks._u3bSideHtml
+    mocks._u3bSideHtml,
+    mocks.escHtml
   );
 }
 
@@ -68,6 +70,7 @@ function buildEndingModal(mocks) {
       sideCalls.push(side);
       return `<div class="u3b-side"><div class="u3b-bubble-slot"><div class="u3b-bubble">${side.line}</div></div><div class="u3b-upper fevt-arena-portrait"></div><div class="u3b-name">${side.name}</div></div>`;
     },
+    escHtml: (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),
   });
 
   showFactionF09EndingModal({
@@ -90,6 +93,7 @@ function buildEndingModal(mocks) {
   assert.strictEqual(sideCalls[1].line, '次に返すから');
   assert.ok(root.innerHTML.indexOf('u3b-bubble-slot') < root.innerHTML.indexOf('u3b-upper fevt-arena-portrait'),
     'セリフ吹き出しをキャラクター画像より上に置く');
+  assert.ok(!root.innerHTML.includes('<script>'), 'F09結末ナレーションをHTMLとして解釈しない');
 })();
 
 [
