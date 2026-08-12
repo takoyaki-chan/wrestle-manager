@@ -65,10 +65,17 @@ body {
   border-radius: 12px;
   overflow: hidden;
 }
+/* 赤メイン(2026-08-12 Keisuke指示「肌色っぽい中途半端な色より赤で燃え上がる感じ」)。
+   PPV/天頂戦の深紅(ピンク寄り #e94560系)とは色相を分け、火の赤(#e04343)にする。
+   実装時は --ev-war 系トークンとして正式に切る */
+.ignite-screen.red { --accent-hostility: #e04343; --accent-hostility-rgb: 224,67,67; --war-hi: #ffb3a3;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(224,67,67,.18), transparent 65%),
+    linear-gradient(180deg, #0e0606 0%, var(--stage-bg) 55%); }
 .fevt-title-main {
   text-align: center; font-family: 'Noto Serif JP', serif; font-weight: 900;
   font-size: 44px; letter-spacing: .3em; text-indent: .3em;
-  background: linear-gradient(180deg, #ffd4a8, var(--accent-hostility));
+  background: linear-gradient(180deg, var(--war-hi, #ffd4a8), var(--accent-hostility));
   -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 0 22px rgba(var(--accent-hostility-rgb), .35));
 }
@@ -85,7 +92,7 @@ body {
   color: var(--stage-text-sub); }
 .ign-role-kanji { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 21px;
   letter-spacing: .5em; text-indent: .5em; margin: 2px 0 10px; color: var(--stage-text-main); }
-.ign-col.left .ign-role-kanji { color: #ffd4a8; }
+.ign-col.left .ign-role-kanji { color: var(--war-hi, #ffd4a8); }
 
 /* 吹き出し（§3: 画像の上・クリーム地黒文字・名前は入れない・尻尾は画像の水平中心） */
 .ign-bubble-slot { height: 64px; display: flex; align-items: flex-end; justify-content: center;
@@ -139,7 +146,7 @@ body {
 .ign-hostility .lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: .3em;
   color: var(--stage-text-dim); }
 .ign-hostility .band { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 22px;
-  letter-spacing: .34em; text-indent: .34em; color: #ffb37a; margin-top: 3px;
+  letter-spacing: .34em; text-indent: .34em; color: var(--war-hi, #ffb37a); margin-top: 3px;
   text-shadow: 0 0 14px rgba(var(--accent-hostility-rgb), .5); }
 .ign-flames { display: flex; gap: 5px; justify-content: center; margin-top: 8px; font-size: 14px; }
 .ign-flames span { filter: grayscale(1) brightness(.45); }
@@ -162,7 +169,7 @@ body {
 .ign-fact::before { content: '◆'; font-size: 9px; color: var(--accent-hostility); }
 .ign-continue { display: block; margin: 26px auto 0; padding: 13px 60px;
   font-family: inherit; font-size: 14px; font-weight: 900; letter-spacing: .3em; text-indent: .3em;
-  color: #1a120a; background: linear-gradient(180deg, #ffd4a8, var(--accent-hostility));
+  color: #1a120a; background: linear-gradient(180deg, var(--war-hi, #ffd4a8), var(--accent-hostility));
   border: 0; border-radius: 8px; cursor: pointer; }
 
 /* ============================================================
@@ -238,13 +245,14 @@ body {
   <button class="dev-btn active" data-v="vA">案A（推奨）</button>
   <button class="dev-btn" data-v="vCur">現行（参考）</button>
   <button class="dev-btn" data-v="vCmp">🔍 横並び比較</button>
+  <button class="dev-btn" data-v="vOrg">団体戦へ同フォーマット適用（案）</button>
   <button class="dev-btn" data-v="vPolicy">敵対度の見せ方 統一案</button>
   <button class="dev-btn" data-v="vMemo">判断メモ（要裁定）</button>
 </div>
 
 <!-- ================= 案A: リデザイン ================= -->
 <section class="view active" id="vA">
-<div class="ignite-screen">
+<div class="ignite-screen red">
   <div class="fevt-title-main">開 　 戦</div>
   <div class="fevt-title-divider"></div>
   <div class="fevt-title-sub">OFFICIAL MATCH SIGNED ・ WEEK 9</div>
@@ -413,6 +421,84 @@ body {
 </div>
 </section>
 
+<!-- ================= 団体戦へ同フォーマット適用（案） ================= -->
+<section class="view" id="vOrg">
+<div class="cmp-note" style="max-width:860px">
+  <b>Keisuke指摘(08-12)への応答案</b>: 団体間の挑戦試合(3人制シングル3連戦の団体戦)は重みが開戦と同格なのに、
+  宣戦の瞬間の演出がない(Officeの決裁と送り出しのみ)。そこで<b>「宣戦フォーマット」を共通化</b>し、
+  挑戦YES後の送り出しをこのStage画面に置き換える案(CH-1判断メモ④の発展形。採用ならsendoffのOffice化案は不要)。
+  違いは旗が<b>派閥フラグ→団体バッジ</b>になり、中央が敵対度ゲージ→<b>シリーズ情報</b>になるだけ。骨格・赤・吹き出し規則は同一。
+</div>
+<div class="ignite-screen red">
+  <div class="fevt-title-main">宣 　 戦</div>
+  <div class="fevt-title-divider"></div>
+  <div class="fevt-title-sub">CHALLENGE ACCEPTED ・ AWAY SERIES ・ WEEK 12</div>
+
+  <div class="ign-stage">
+    <div class="ign-col left">
+      <div class="ign-role-label">CHALLENGING SIDE</div>
+      <div class="ign-role-kanji">挑 む</div>
+      <div class="ign-bubble-slot"><div class="ign-bubble">行ってきます、社長。三つ勝って戻ります。</div></div>
+      <div class="ign-upper">
+        <img src="../../../image/upper/upper_abukuma_t.webp" alt="">
+        <div class="ign-flag">あ な た の 団 体</div>
+      </div>
+      <div class="ign-name">阿武隈 塔子</div>
+      <div class="ign-role">団体戦の発起人</div>
+      <div class="ign-members">
+        <span class="cnt">3名で挑む</span>
+        <span class="faces">
+          <img src="../../../image/face_abukuma_t.png" alt="">
+          <img src="../../../image/face_tomioka_k.png" alt="">
+          <img src="../../../image/face_takatsu_k.png" alt="">
+        </span>
+      </div>
+    </div>
+
+    <div class="ign-center">
+      <div class="ign-vs">VS</div>
+      <div class="ign-hostility">
+        <div class="lbl">試合形式</div>
+        <div class="band" style="font-size:15px; letter-spacing:.18em">3 連 戦</div>
+        <div class="ign-flames"><span class="on">⚔</span><span class="on">⚔</span><span class="on">⚔</span></div>
+      </div>
+    </div>
+
+    <div class="ign-col right">
+      <div class="ign-role-label">DEFENDING SIDE</div>
+      <div class="ign-role-kanji">迎 撃</div>
+      <div class="ign-bubble-slot"></div>
+      <div class="ign-upper">
+        <img src="../../../image/upper/upper_ikoma_e.webp" alt="">
+        <div class="ign-flag">凰 翔 プ ロ レ ス</div>
+      </div>
+      <div class="ign-name">生駒 エリカ</div>
+      <div class="ign-role">第1試合の対戦相手</div>
+      <div class="ign-members">
+        <span class="cnt">敵地 ・ 凰翔の会場</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ign-card-band">
+    <div class="ign-card-label">AWAY SERIES ・ 公式団体戦</div>
+    <div class="ign-card-name">凰翔プロレス ・ 敵地3連戦</div>
+  </div>
+
+  <div class="ign-verdict">
+    果たし状は、受理された。<br>
+    次の通常興行週——三人は<em>凰翔のリング</em>に立つ。
+  </div>
+
+  <div class="ign-facts">
+    <div class="ign-fact">この遠征は公式戦として記録される</div>
+    <div class="ign-fact">自団体の興行は通常どおり開催できる（遠征3名はカードから外れる）</div>
+  </div>
+
+  <button class="ign-continue">送 り 出 す</button>
+</div>
+</section>
+
 <!-- ================= 敵対度の見せ方 統一案 ================= -->
 <section class="view" id="vPolicy">
 <div class="doc">
@@ -482,7 +568,16 @@ body {
       <span class="rec">推奨</span>「4名」+顔チップ列（24px丸・一覧用途）。
       ※現行は実装バグで<b>メンバー氏名がカンマ連結表示</b>されており、どの案でも修正は必須
     </li>
+    <li style="margin-bottom:12px">
+      <b>宣戦フォーマットの共通化（08-12 Keisuke指摘を受けた追加論点）</b><br>
+      団体間挑戦（3人制団体戦）も重みは開戦と同格 — <span class="rec">案</span>同じStage宣戦フォーマットを
+      挑戦YES後の送り出しに適用（「団体戦へ同フォーマット適用」ビュー参照）。
+      採用なら CH-1 判断メモ④（sendoffのOffice化）はこちらに置き換わる
+    </li>
   </ol>
+  <p style="margin-top:6px"><b>確定済み（裁定不要）</b>: メインカラーは<b>赤</b>（08-12 Keisuke指示。
+  肌色寄りの橙 #d07a3e → 火の赤 #e04343。PPV/天頂戦の深紅とは色相を分けた）。案A・団体戦ビューに適用済み、
+  横並び比較で現行の橙と見比べ可能。</p>
 
   <h3>実装時の注意（承認後のタスクに含める・裁定不要）</h3>
   <ul>
