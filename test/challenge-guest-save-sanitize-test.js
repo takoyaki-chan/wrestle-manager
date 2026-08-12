@@ -41,6 +41,7 @@ serialize({
     { id: 101, name: 'Away guest', isAwayChallengeGuest: true },
     { id: 102, name: 'Incoming guest', isCRGuest: true },
     { id: 103, name: 'B3 guest', isB3ChallengeGuest: true },
+    { id: 105, name: 'Unified-title guest', isUnifiedTitleGuest: true },
     // レンタル元の一時フラグが紛れ込んでいても、契約済み選手は保存対象。
     { id: 104, name: 'Rental', isRental: true, isAwayChallengeGuest: true },
   ],
