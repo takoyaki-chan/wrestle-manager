@@ -142,7 +142,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: 契約更新交渉セリフ (contract-negotiation-event-spec v1.0) / 5性格(bold/introverted/carefree/earnest/emotional) × 態度 × 分岐 / テンプレ変数: {tenure} {record} {rivalry} {tenure_farewell} {wins} {losses} {n} {rivalName}
-- 本数: 719
+- 本数: 1062
 
 ### raise_open.standard.normal[]
 
@@ -2151,6 +2151,1378 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### transfer_listen.seductive.emotional[]
 
 - `CONTRACT_NEGOTIATION_LINES.transfer_listen.seductive.emotional[1]`: 話だけは聞くわ……っ……それで決めるから……
+
+### decline_open.standard.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.standard.normal[1]`: ……はい。今年は思うように動けてなかったので、なんとなく覚悟はしてました。
+
+### decline_open.standard.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.standard.bold[1]`: ……ふーん、下がるんだ。まあ、聞くだけ聞くわよ。…で、いくら削るつもり？
+
+### decline_open.standard.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.standard.quiet[1]`: …そう。文句はないわ。自分がいちばん分かってたから。
+
+### decline_open.standard.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.standard.shy[1]`: あ……あの、はい……。わ、わたし、最近ついていけてないなって、思ってたので……。
+
+### decline_open.standard.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.standard.easygoing[1]`: えー、下がっちゃうんだ？ まあ、そういう年もあるよね♪ で、どんくらい？
+
+### decline_open.standard.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.standard.earnest[1]`: ……驚きはしません。若い子の背中が遠くなっていくのは、私が一番よく分かっていますから。
+
+### decline_open.standard.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.standard.emotional[1]`: え……下がる、下がるんですか……。あ、いえ、分かってます。分かってるんですけど……っ。
+
+### decline_open.ojousama.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.ojousama.normal[1]`: ……ええ。自分の調子は、自分がいちばん分かっていますもの。……驚きません
+
+### decline_open.ojousama.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.ojousama.bold[1]`: ……値札のお話ね。ふふ、下げるのはご自由に。……私の格まで下がるわけじゃないもの
+
+### decline_open.ojousama.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.ojousama.quiet[1]`: ……そう、ですか。……数字がそう言うのなら、そうなのでしょう
+
+### decline_open.ojousama.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.ojousama.shy[1]`: あ……はい……。あの、落ちているのは、その……わかって、おりましたから……
+
+### decline_open.ojousama.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.ojousama.easygoing[1]`: あらあら、そういうお話。……ええ、ちゃんと伺いますから、どうぞ
+
+### decline_open.ojousama.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.ojousama.earnest[1]`: ……はい。数字は数字ですもの。言い訳を並べるのは、かえって失礼でしょう
+
+### decline_open.ojousama.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.ojousama.emotional[1]`: ……下がる……。ま、待ってくださいまし。……まだ、終わっておりません……！
+
+### decline_open.cool.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.cool.normal[1]`: {tenure}……落ちてるのは自覚してる。……で、どれだけ下がる
+
+### decline_open.cool.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.cool.bold[1]`: 下がる理由は聞いた。納得したとは言ってない
+
+### decline_open.cool.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.cool.quiet[1]`: ……そう。……数字どおり、か
+
+### decline_open.cool.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.cool.shy[1]`: ……はい。……驚いては、いない。……少し、思ってたから
+
+### decline_open.cool.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.cool.easygoing[1]`: ……ま、そういう年もある。で、どのくらい
+
+### decline_open.cool.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.cool.earnest[1]`: 査定は査定だ。落ちた分は受け止める。……理由だけ、聞かせてほしい
+
+### decline_open.cool.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.cool.emotional[1]`: ……分かってる。分かってるけど。……口に出されると、少しこたえる
+
+### decline_open.delinquent.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.delinquent.normal[1]`: {tenure}下がるのか。……ま、去年の私を見てりゃ、そういう話にもなるよな。
+
+### decline_open.delinquent.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.delinquent.bold[1]`: 下げる、ね。……止めやしないよ。ただ、この数字が私の底だと思ってんなら、その目は節穴。
+
+### decline_open.delinquent.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.delinquent.quiet[1]`: ……そっすか。……体は正直っすもんね。
+
+### decline_open.delinquent.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.delinquent.shy[1]`: あ……えっと、はい……。……その、うすうす、分かってたっす……。
+
+### decline_open.delinquent.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.delinquent.easygoing[1]`: あー、やっぱそういう話か。いいっていいって、言いにくそうな顔しなくても。で、いくら下がんの？
+
+### decline_open.delinquent.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.delinquent.earnest[1]`: はっきり言ってくれてありがとうっす。……去年の私に、あの額の値打ちはなかったんで。
+
+### decline_open.delinquent.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.delinquent.emotional[1]`: ……っ、待ってください。分かってるんすよ、自分でも。……ただ、言葉にされると効くっすね。
+
+### decline_open.polite.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.polite.normal[1]`: ……そうですか。去年より動けていないのは、自分がいちばん分かっていますから。
+
+### decline_open.polite.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.polite.bold[1]`: はっきり言ってください。数字が下がる理由も、上げ直す道も、全部。
+
+### decline_open.polite.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.polite.quiet[1]`: ……そう。理由は聞かなくてもいいのよ。自分がいちばん知っていることだから。
+
+### decline_open.polite.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.polite.shy[1]`: あ……はい……。わたし、ちゃんと分かってます……去年みたいには、動けてないって……。
+
+### decline_open.polite.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.polite.easygoing[1]`: えっ、下がっちゃうんですか！？ わっ、びっくりした……。うーん、まあ、そういう年もありますよね！
+
+### decline_open.polite.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.polite.earnest[1]`: はい、伺います。……練習の量は落としていないつもりでした。足りないのは、そこじゃなかったんですね。
+
+### decline_open.polite.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.polite.emotional[1]`: ……はい……分かっています……！ 分かって、いるんですけど……。少しだけ、待ってください……。
+
+### decline_open.composed.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.composed.normal[1]`: …ああ、その話か。{tenure}まあ、薄々そんな気はしてたんだ。…続けて、社長。
+
+### decline_open.composed.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.composed.bold[1]`: 下げる、か。構わないよ。ただ、どこを見てそう決めたのかは聞かせてもらうよ。
+
+### decline_open.composed.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.composed.quiet[1]`: ……そう。……数字、見せてもらえる？ ……口で言われるより、早いから。
+
+### decline_open.composed.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.composed.shy[1]`: ……あの…わかってた、から。……大丈夫、最後まで言って。
+
+### decline_open.composed.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.composed.easygoing[1]`: あー、来たね、その話。まあ、上がる年があれば下がる年もあるよねー。
+
+### decline_open.composed.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.composed.earnest[1]`: はい。…薄々、自分でも感じていました。数字にも出ましたか。…最後まで聞かせてください。
+
+### decline_open.composed.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.composed.emotional[1]`: うわ、下がるんだ！ …いや、うん、そりゃそうだよね。分かってる、分かってるって！
+
+### decline_open.seductive.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.seductive.normal[1]`: あら、そんな顔をしないで。{tenure}数字が正直なだけでしょう？　……嫌いじゃないわ、その正直さ。
+
+### decline_open.seductive.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.seductive.bold[1]`: 下がるのね。……その分は預けておくわ。取り返しに来るから、そのつもりで。
+
+### decline_open.seductive.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.seductive.quiet[1]`: ……ふふ。落ちるものは、落ちる。……それだけのこと。
+
+### decline_open.seductive.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.seductive.shy[1]`: ……あの。……分かってた、つもりなの。……鏡は、嘘つかないから……。
+
+### decline_open.seductive.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.seductive.easygoing[1]`: あー、来ると思ってた♪　……で、どのくらい下がるの？　先に言っちゃって。
+
+### decline_open.seductive.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.seductive.earnest[1]`: ……分かるわ。自分の身体のことだもの。数字より先に、こちらが気づいてる。
+
+### decline_open.seductive.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_open.seductive.emotional[1]`: ……そう、もう若い子に回すのね。……その子たちの前で証明してあげる。見ていて。
+
+### decline_voluntary_open.standard.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.standard.normal[1]`: 社長、先に言わせてください。今の私、もらってるぶんは動けてないです。下げてください。
+
+### decline_voluntary_open.standard.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.standard.bold[1]`: 社長、先に言っておくわよ。今の私に、去年の額は釣り合わない。下げなさい。惨めなのは嫌なの。
+
+### decline_voluntary_open.standard.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.standard.quiet[1]`: …社長。{tenure}私の値段、下げていいわ。…見合わないものを貰うのは、落ち着かないから。
+
+### decline_voluntary_open.standard.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.standard.shy[1]`: あの……わ、わたしから、お願いが……。お給料、下げてください。見合って、ない気がするので……。
+
+### decline_voluntary_open.standard.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.standard.easygoing[1]`: 社長、聞いて聞いて。私さー、そろそろ盛りすぎな気がするんだよね♪ 下げていいよ、遠慮なく。
+
+### decline_voluntary_open.standard.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.standard.earnest[1]`: 社長。{tenure}全盛期は過ぎました。額は、今の私に合わせてください。そのほうが、筋が通ります。
+
+### decline_voluntary_open.standard.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.standard.emotional[1]`: 社長……！ 私から言わせてください……！ 下げて、いいです。今の自分に、嘘はつきたくないから……！
+
+### decline_voluntary_open.ojousama.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.ojousama.normal[1]`: 社長。……全盛は過ぎました。相応の額に、書き直してくださいませ
+
+### decline_voluntary_open.ojousama.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.ojousama.bold[1]`: 社長。年俸は下げてくださって結構よ。……以前と同額を受け取るわけにもいかないわ
+
+### decline_voluntary_open.ojousama.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.ojousama.quiet[1]`: ……社長。……下げてくださって、構いません。……見合う分で、十分
+
+### decline_voluntary_open.ojousama.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.ojousama.shy[1]`: あ、あの、社長……。その……減らしてくださって、大丈夫ですから……。本当に
+
+### decline_voluntary_open.ojousama.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.ojousama.easygoing[1]`: 社長、そろそろお値下げの頃合いではなくて？ ……お互い、目は確かでしょう
+
+### decline_voluntary_open.ojousama.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.ojousama.earnest[1]`: 社長。今の私に、以前と同じ額は不相応ですわ。どうか、正しく直してくださいまし
+
+### decline_voluntary_open.ojousama.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.ojousama.emotional[1]`: 社長……。……下げてくださいまし。……もらいすぎるのは、つらいのです
+
+### decline_voluntary_open.cool.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.cool.normal[1]`: 社長。……全盛期は過ぎた。査定、下げていい。……その分、若いのに回して
+
+### decline_voluntary_open.cool.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.cool.bold[1]`: ……先に言う。今の額に見合ってない。下げていい。哀れみで置かれる方が、よほど嫌だ
+
+### decline_voluntary_open.cool.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.cool.quiet[1]`: ……下げていい。……もう、そういう歳だ
+
+### decline_voluntary_open.cool.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.cool.shy[1]`: ……あの。……下げて、いいから。……見合ってないのは、わたしが分かってる
+
+### decline_voluntary_open.cool.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.cool.easygoing[1]`: 社長、先に言っとく。……もう全盛期じゃない。下げていいよ、そこは正直に
+
+### decline_voluntary_open.cool.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.cool.earnest[1]`: {tenure}数字は落ちた。自分から言わせてほしい。……下げるのが筋だ
+
+### decline_voluntary_open.cool.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.cool.emotional[1]`: ……下げていい。……自分で言うと、思ったよりくるな
+
+### decline_voluntary_open.delinquent.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.delinquent.normal[1]`: 社長、先に言っとく。{tenure}私の全盛期はもう過ぎた。下げていいよ。数字は嘘つかねえもんな。
+
+### decline_voluntary_open.delinquent.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.delinquent.bold[1]`: 先に言うよ。今の私に、前と同じ額は釣り合わない。……下げな。もらいすぎってのは、性に合わない。
+
+### decline_voluntary_open.delinquent.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.delinquent.quiet[1]`: ……社長。……給料、下げていいっす。……もう、昔の私じゃないんで。
+
+### decline_voluntary_open.delinquent.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.delinquent.shy[1]`: あ、あの……先に言わせてください……。その……下げて、いいっす。自分が一番、分かってるんで……。
+
+### decline_voluntary_open.delinquent.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.delinquent.easygoing[1]`: 言いにくそうな顔してるから、こっちから言うわ。下げていいよ。こういうのは、言った者勝ちだからね。
+
+### decline_voluntary_open.delinquent.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.delinquent.earnest[1]`: 今年は私から言うっす。{tenure}動きが落ちてるのは自分が一番分かってる。……見合った額に直してください。
+
+### decline_voluntary_open.delinquent.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.delinquent.emotional[1]`: ……先に言わせてください。全盛期はもう過ぎたっす。それでもリングに立たせてくれるなら、十分っす。
+
+### decline_voluntary_open.polite.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.polite.normal[1]`: 社長、先に言わせてください。もう全盛期じゃありません。査定は、そのぶん下げてもらって結構です。
+
+### decline_voluntary_open.polite.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.polite.bold[1]`: 今年は下げてください。動ける量が落ちたのは事実です。事実に値段をつけるのが査定でしょう。
+
+### decline_voluntary_open.polite.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.polite.quiet[1]`: ……下げていいのよ。もらいすぎた自覚があるうちに、言っておきたかったの。
+
+### decline_voluntary_open.polite.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.polite.shy[1]`: あ、あの……わたしから、お願いがあって……。お給料、下げてもらって、いいんです……。
+
+### decline_voluntary_open.polite.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.polite.easygoing[1]`: 社長、正直に言いますね！ 私、もうピークは過ぎました！ なので下げちゃってください、遠慮なく！
+
+### decline_voluntary_open.polite.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.polite.earnest[1]`: 先に申し上げます。全盛期の数字を、いまの身体でもらい続けるのは筋が通りません。下げてください。
+
+### decline_voluntary_open.polite.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.polite.emotional[1]`: ……自分から言わせてください……！ もう、あの頃の私じゃありませんから……！
+
+### decline_voluntary_open.composed.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.composed.normal[1]`: 社長、先に言わせて。……もう全盛期じゃないんだ。下げていい。若い子に回して。
+
+### decline_voluntary_open.composed.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.composed.bold[1]`: 先に言っておくんだ。今の私に、去年の額は重いよ。…削っていい。実力で取り返すから。
+
+### decline_voluntary_open.composed.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.composed.quiet[1]`: ……社長。……査定、下げていいよ。……自分の体だから。……一番、分かってる。
+
+### decline_voluntary_open.composed.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.composed.shy[1]`: ……あの。…先に、わたしから。……もう去年と同じ体じゃないの。……下げて、いい。
+
+### decline_voluntary_open.composed.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.composed.easygoing[1]`: はい社長、先に言っちゃうね。ピークはとっくに置いてきたし、正直に下げていいよ〜。
+
+### decline_voluntary_open.composed.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.composed.earnest[1]`: 社長、査定の前に。{tenure}……今の力に見合う額にしてください。それが筋だと思っています。
+
+### decline_voluntary_open.composed.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.composed.emotional[1]`: 社長！ 先に言う！ もう全盛期じゃない！ …だから下げて。ちゃんと、自分で言いたかったんだ。
+
+### decline_voluntary_open.seductive.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.seductive.normal[1]`: 社長、先に言わせて。{tenure}……全盛期は過ぎたわ。下げていいの。まだ、ここにいたいから。
+
+### decline_voluntary_open.seductive.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.seductive.bold[1]`: 言っておくわ。今の私に、去年の値はつかない。……下げなさい。恥はかきたくないの。
+
+### decline_voluntary_open.seductive.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.seductive.quiet[1]`: ……下げていいわ。……盛りは過ぎた。……見えているもの、自分でも。
+
+### decline_voluntary_open.seductive.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.seductive.shy[1]`: ……あの、社長……。……わたしのお給料……下げて、いいの……。……もう、昔とは違うから……。
+
+### decline_voluntary_open.seductive.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.seductive.easygoing[1]`: はい、正直に言うね。……もう昔の値段の女じゃないの。下げていいわよ、そのぶん長く置いて？
+
+### decline_voluntary_open.seductive.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.seductive.earnest[1]`: {tenure}自分の身体は自分が一番よく観ているの。……今年は下げて。それが筋だと思うわ。
+
+### decline_voluntary_open.seductive.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_open.seductive.emotional[1]`: 先に言わせてもらうわ。……盛りは過ぎた。下げていい。……惨めに値切られるのは、ごめんだから。
+
+### decline_hold.standard.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.standard.normal[1]`: え、下げないんですか……？ …っ、ずるいです、そういうの。この一年で、絶対に返しますから。
+
+### decline_hold.standard.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.standard.bold[1]`: ……据え置き？ 情けかけたつもり？ ……っ、…ありがと。そのぶんは、リングで返すわよ。
+
+### decline_hold.standard.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.standard.quiet[1]`: …下げない、の。…変わってるわね、社長は。…なら、その額のぶんは働くわ。
+
+### decline_hold.standard.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.standard.shy[1]`: え……そ、そのままで、いいんですか……？ わ、わたし……っ、ごめんなさい、涙が……。ありがとうございます……！
+
+### decline_hold.standard.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.standard.easygoing[1]`: えっ、据え置き！？ 社長、太っ腹じゃん♪ ……ちょっと、泣きそうなんだけど。
+
+### decline_hold.standard.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.standard.earnest[1]`: ……理由を伺うのは、やめておきます。頂く以上は、額に見合う一年にします。それだけです。
+
+### decline_hold.standard.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.standard.emotional[1]`: ……え。え、下げない……？ 下げないって、今……。うそ、うそでしょ……っ。私、まだやれます……！
+
+### decline_hold.ojousama.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.ojousama.normal[1]`: ……据え置き……？ ……その分は、来季の数字で返します。必ず
+
+### decline_hold.ojousama.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.ojousama.bold[1]`: ……下げない、と？ ……見る目だけはおありのようね。恥はかかせませんわ
+
+### decline_hold.ojousama.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.ojousama.quiet[1]`: ……なぜ。……いえ。……その分、動きます
+
+### decline_hold.ojousama.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.ojousama.shy[1]`: え……あ、あの、そんな……。……い、いただいた分は、ちゃんと……返します……
+
+### decline_hold.ojousama.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.ojousama.easygoing[1]`: あらあら、そんなことをなさって。……ふふ、責任は取ってさしあげますわね
+
+### decline_hold.ojousama.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.ojousama.earnest[1]`: ……それはいけませんわ。……いいえ、頂戴します。頂いた以上、もう逃げられません
+
+### decline_hold.ojousama.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.ojousama.emotional[1]`: そんな……っ。……ずるいですわ、そういうお優しさは。……泣いてしまうでしょう
+
+### decline_hold.cool.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.cool.normal[1]`: ……下げないのか。……普通は下げる場面だ。その普通じゃない分、返す
+
+### decline_hold.cool.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.cool.bold[1]`: ……甘い判断だ。……でも、受け取る。次の査定で、正しかったことにする
+
+### decline_hold.cool.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.cool.quiet[1]`: ……なんで。……いや。……ありがとう
+
+### decline_hold.cool.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.cool.shy[1]`: ……え。……いいの。……ごめん、うまく言えない。……ありがとう
+
+### decline_hold.cool.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.cool.easygoing[1]`: ……据え置き？ 社長、けっこう変わってる。……嬉しいけど
+
+### decline_hold.cool.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.cool.earnest[1]`: ……それは、筋が通らない。通らないものを通されたなら、結果で辻褄を合わせる
+
+### decline_hold.cool.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.cool.emotional[1]`: ……やめて。……そういうことされると、……崩れる
+
+### decline_hold.delinquent.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.delinquent.normal[1]`: は……据え置き？ ……なんでだよ。……いや、いい。働いて返す。それでチャラにさせて。
+
+### decline_hold.delinquent.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.delinquent.bold[1]`: 据え置き？ ……施しは受けない主義なんだけどね。……ま、借りにしとくよ。倍にして返す。
+
+### decline_hold.delinquent.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.delinquent.quiet[1]`: ……え。……いいんすか。……そういうの、断れなくなるっす……。
+
+### decline_hold.delinquent.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.delinquent.shy[1]`: え、あ、待ってください……そんな、困るっす……。嬉しいけど、めちゃくちゃ困るっす……。
+
+### decline_hold.delinquent.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.delinquent.easygoing[1]`: えっ、据え置き？ ……うわ、参ったな。こういうの、笑って受け取れないタイプなんだよね私。
+
+### decline_hold.delinquent.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.delinquent.earnest[1]`: ……それは受け取れないっす。……いや、受けます。額に見合う私に戻すのが筋なんで。
+
+### decline_hold.delinquent.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.delinquent.emotional[1]`: なんでそんなことするんすか……！ ……反則っすよ、それ。……働くっす。何倍にもして返すんで。
+
+### decline_hold.polite.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.polite.normal[1]`: えっ……いいんですか、それ。……ずるいですよ、そんなふうにされたら、休めなくなるじゃないですか。
+
+### decline_hold.polite.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.polite.bold[1]`: 据え置き……ですか。ではその差額ぶん、来年こちらから利子をつけてお返しします。
+
+### decline_hold.polite.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.polite.quiet[1]`: ……据え置き。理由は聞かないでおくわ。聞いたら、たぶん泣いてしまうもの。
+
+### decline_hold.polite.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.polite.shy[1]`: な、なんで……ですか……。わたし、下がって当然なのに……。……絶対、無駄にしません……！
+
+### decline_hold.polite.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.polite.easygoing[1]`: 据え置き！？ やった、ありがとうございます！ ……あっ、これ、お礼に何かしないとまずいやつですね！？
+
+### decline_hold.polite.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.polite.earnest[1]`: ……それは、私の数字ではありません。お借りしたぶんとして、来年の身体で返させてください。
+
+### decline_hold.polite.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.polite.emotional[1]`: そんな……っ……なんで、そこまで……。……すみません、少しだけ、顔を上げられません……。
+
+### decline_hold.composed.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.composed.normal[1]`: ……社長、それは商売として下手だよ。…でも、ありがとう。無駄にはしないんだ。
+
+### decline_hold.composed.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.composed.bold[1]`: 情けは要らない、って言うつもりだったんだ。……言えなかったよ。…借りにしておく。
+
+### decline_hold.composed.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.composed.quiet[1]`: ……据え置き……？ ……社長、損するよ？ ……ううん。……ありがとう。
+
+### decline_hold.composed.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.composed.shy[1]`: ……え。……いい、の…？ ……わたしのために、社長が損をするのは……。……でも、嬉しい。
+
+### decline_hold.composed.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.composed.easygoing[1]`: えっ、据え置き？ …社長、あんまり優しくすると、こっちが本気出しちゃうよ？
+
+### decline_hold.composed.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.composed.earnest[1]`: ……その判断は、数字としては間違っています。……だから、間違いじゃなかったと言わせてください。
+
+### decline_hold.composed.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.composed.emotional[1]`: ……ずるいよ、社長！ そんなことされたら、下がるどころじゃ済まないじゃん！ …やってやる！
+
+### decline_hold.seductive.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.seductive.normal[1]`: あら……身銭を切ったのね。……ふふ、その甘さ、高くつくわよ？　ちゃんと返すもの。
+
+### decline_hold.seductive.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.seductive.bold[1]`: ……下げないですって？　……ずるいわね、そのやり方。借りたままじゃ、いられなくなる。
+
+### decline_hold.seductive.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.seductive.quiet[1]`: ……据え置き。……ふふ。……借りは、リングで返すわ。
+
+### decline_hold.seductive.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.seductive.shy[1]`: え……いいの……？　……そんなふうにされたら……もう、逃げられない……。
+
+### decline_hold.seductive.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.seductive.easygoing[1]`: えっ、据え置き？　……やだ、ちょっと嬉しい♪　……損な人ね、あなた。
+
+### decline_hold.seductive.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.seductive.earnest[1]`: ……そこまでしてくれるの。……なら、値段の話は今年で終わりにするわ。上げさせてみせる。
+
+### decline_hold.seductive.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_hold.seductive.emotional[1]`: ……っ……据え置きですって……？　……泣かせないでよ。牙が疼くじゃない。
+
+### decline_accept.standard.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.standard.normal[1]`: はい、それで大丈夫です。来年もう一度上げてもらえるように、練習しますね。
+
+### decline_accept.standard.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.standard.bold[1]`: いいわよ、その額で。…言っておくけど、来年も同じ数字だと思わないことね。
+
+### decline_accept.standard.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.standard.quiet[1]`: …いいわ、それで。…下がったぶん、身軽になったと思っておく。
+
+### decline_accept.standard.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.standard.shy[1]`: は、はい……それで、大丈夫です。あの、リングに上がれるなら、わたしはそれで……。
+
+### decline_accept.standard.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.standard.easygoing[1]`: オッケー、それでいいよ♪ 落ちたぶん、来年また取り返せばいいっしょ。
+
+### decline_accept.standard.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.standard.earnest[1]`: はい、その額で結構です。頂くぶんの仕事は、きちんとしますね。
+
+### decline_accept.standard.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.standard.emotional[1]`: ……分かりました。分かって、ます……。これ、ちゃんと自分の数字ですから……っ。
+
+### decline_accept.ojousama.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.ojousama.normal[1]`: ……それで結構です。足りないところは、練習で埋めます。……それだけのこと
+
+### decline_accept.ojousama.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.ojousama.bold[1]`: よろしくてよ。……その額でどれほどのものが手に入るか、ご覧になって
+
+### decline_accept.ojousama.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.ojousama.quiet[1]`: ……異存は、ありません。……次の査定で、書き直していただきます
+
+### decline_accept.ojousama.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.ojousama.shy[1]`: は、はい……。あの……ちゃんと、受け止めますから……。だ、大丈夫です……
+
+### decline_accept.ojousama.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.ojousama.easygoing[1]`: ええ、それでよろしいのよ。……お気になさらないで。お茶でも、いかが？
+
+### decline_accept.ojousama.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.ojousama.earnest[1]`: 承知いたしましたわ。見合う額をいただく——それが筋というものですから
+
+### decline_accept.ojousama.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.ojousama.emotional[1]`: ……わかりました。……悔しくないと言えば、嘘になりますけれど
+
+### decline_accept.cool.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.cool.normal[1]`: ……妥当だ。数字で下がったなら、数字で戻す。それだけ
+
+### decline_accept.cool.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.cool.bold[1]`: いいよ、その額で。……来年、書き直させる
+
+### decline_accept.cool.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.cool.quiet[1]`: ……分かった。……戻すだけ
+
+### decline_accept.cool.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.cool.shy[1]`: ……はい。文句は、ない。……そのぶん、練習する
+
+### decline_accept.cool.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.cool.easygoing[1]`: ……了解。下がったぶんは、そのうち取り返すから
+
+### decline_accept.cool.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.cool.earnest[1]`: 妥当な判断だ。落ちた事実は変わらない。……来季、査定を上げにいく
+
+### decline_accept.cool.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.cool.emotional[1]`: ……うん。……少しだけ、こっち見ないで
+
+### decline_accept.delinquent.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.delinquent.normal[1]`: うん、それでいい。……変に情をかけられるほうが、よっぽど堪えるからさ。
+
+### decline_accept.delinquent.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.delinquent.bold[1]`: 上等。それが今の私の値段ってことね。……安く買ったって、後悔させてやる。
+
+### decline_accept.delinquent.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.delinquent.quiet[1]`: ……了解っす。……次は、上げさせるっす。
+
+### decline_accept.delinquent.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.delinquent.shy[1]`: は、はい……。あの、恨んでるとか、ないっすから……。ほんとに……。
+
+### decline_accept.delinquent.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.delinquent.easygoing[1]`: はいはい了解〜。落ちたもんはしゃーないっしょ。飯代くらいは残ってるし、まあ生きてけるって。
+
+### decline_accept.delinquent.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.delinquent.earnest[1]`: 妥当っす。ここで甘い顔されたら、こっちが腐るんで。……ちゃんと下げてくれてどうも。
+
+### decline_accept.delinquent.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.delinquent.emotional[1]`: ……分かったっす。だから、そんな顔しないでください。私が下手打っただけの話なんで。
+
+### decline_accept.polite.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.polite.normal[1]`: はい、その額で。落ちたぶんは、来年の宿題ということにしておきますね。
+
+### decline_accept.polite.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.polite.bold[1]`: その額で構いません。悔しさに値段がついたと思えば、来年の張り合いになります。
+
+### decline_accept.polite.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.polite.quiet[1]`: わかりました。……納得のいく数字よ。無理に言い繕われるほうが、よほど困るの。
+
+### decline_accept.polite.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.polite.shy[1]`: は、はい……。ちゃんと数字にしてもらえたほうが……わたし、かえって落ち着きます……。
+
+### decline_accept.polite.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.polite.easygoing[1]`: オッケーです！ いやー、来年は上げてもらえるように頑張りますね！ お昼のおかず、一品減らします！
+
+### decline_accept.polite.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.polite.earnest[1]`: 承知しました。数字が下がった年をどう過ごすかで、次が決まるんだと思います。
+
+### decline_accept.polite.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.polite.emotional[1]`: ……悔しいです。でもこの悔しさは、持っていていいものですよね……？
+
+### decline_accept.composed.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.composed.normal[1]`: うん、妥当だ。…変に庇われるほうが、よっぽど居心地が悪いからね。
+
+### decline_accept.composed.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.composed.bold[1]`: …それでいい。下がった分は、リングで取り返すよ。それだけなんだ。
+
+### decline_accept.composed.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.composed.quiet[1]`: ……うん。……はんこ、押すね。……それだけのことだから。
+
+### decline_accept.composed.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.composed.shy[1]`: ……はい。……あの、気を遣わせなくて、よかった。……わたしは、平気だから。
+
+### decline_accept.composed.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.composed.easygoing[1]`: はいはい、了解でーす。まあ、生活が壊れるわけじゃないしね。
+
+### decline_accept.composed.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.composed.earnest[1]`: 承知しました。評価は評価です。…下がった数字は、下がった理由ごと預かります。
+
+### decline_accept.composed.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.composed.emotional[1]`: よし、分かった！ …うん、悔しいけどね。悔しいのは、まだやれる証拠だし！
+
+### decline_accept.seductive.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.seductive.normal[1]`: ええ、それでいいの。……安く抱えられるうちに、せいぜい使ってちょうだい。
+
+### decline_accept.seductive.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.seductive.bold[1]`: 決まりね。……この額で残る意味、あなたにも分からせてあげる。
+
+### decline_accept.seductive.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.seductive.quiet[1]`: ……ええ。……値札が変わるだけ。……中身は、そのまま。
+
+### decline_accept.seductive.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.seductive.shy[1]`: ……ええ。……わたしも、そう思ってたの……。……大丈夫、これで……。
+
+### decline_accept.seductive.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.seductive.easygoing[1]`: はいはい、了解。……お店のランクを一つ落とすだけの話でしょ？
+
+### decline_accept.seductive.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.seductive.earnest[1]`: 妥当な線ね。……下がったぶんは、技のほうで埋めるわ。見ていて。
+
+### decline_accept.seductive.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_accept.seductive.emotional[1]`: 受けて立つわ。……その数字、来年こちらから塗り替えてあげる。
+
+### decline_strict.standard.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.standard.normal[1]`: ……そこまで、ですか。……はい、分かりました。少しだけ、頭を冷やさせてください。
+
+### decline_strict.standard.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.standard.bold[1]`: ……そこまで削るんだ。ふーん。……いいわ、覚えておく。この目で、ちゃんと覚えておくわよ。
+
+### decline_strict.standard.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.standard.quiet[1]`: …全部持っていくのね。…わかった。…もう、話すことはないわ。
+
+### decline_strict.standard.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.standard.shy[1]`: ……っ、は、はい……。あの、分かり、ました……。すみません、今日は、これで……。
+
+### decline_strict.standard.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.standard.easygoing[1]`: ……えー、そこまでやる？ ……はいはい、分かった分かった。それでいいよ、もう♪
+
+### decline_strict.standard.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.standard.earnest[1]`: ……筋は通っています。数字なんですから。……ただ、今日のことは覚えておきますね。
+
+### decline_strict.standard.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.standard.emotional[1]`: ……そこまでしますか……っ。いい、いいです、もう。……何も言いません、何も……！
+
+### decline_strict.ojousama.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.ojousama.normal[1]`: ……そうですか。……よくわかりました。ここは、そういう場所なのですね
+
+### decline_strict.ojousama.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.ojousama.bold[1]`: ……そこまでなさるの。ふふ、覚えておきますわ。……勘定は、いずれ
+
+### decline_strict.ojousama.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.ojousama.quiet[1]`: ……わかりました。……これ以上は、お互い言葉が要りませんね
+
+### decline_strict.ojousama.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.ojousama.shy[1]`: そ、そこまで……。……いえ、あの……なんでも、ありません……。失礼、いたします……
+
+### decline_strict.ojousama.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.ojousama.easygoing[1]`: まあ。……そこまできっちり数えられると、笑うしかありませんわね
+
+### decline_strict.ojousama.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.ojousama.earnest[1]`: ……承知しました。……ですが、礼を欠いたのはどちらか、考えてくださいまし
+
+### decline_strict.ojousama.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.ojousama.emotional[1]`: ……そこまでなさるのですか……。……ひどい。……もう、何も申しません
+
+### decline_strict.cool.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.cool.normal[1]`: ……そこまでやるんだ。……分かった。もう何も言わない
+
+### decline_strict.cool.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.cool.bold[1]`: ……全部持っていくんだ。……いいよ。次の交渉は、こっちの番だから
+
+### decline_strict.cool.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.cool.quiet[1]`: ……そう。……もういい
+
+### decline_strict.cool.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.cool.shy[1]`: ……はい。……いえ。……何も、言えない
+
+### decline_strict.cool.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.cool.easygoing[1]`: ……へえ、そこまで。……笑うところ、なくなったね
+
+### decline_strict.cool.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.cool.earnest[1]`: 契約は契約だ。……ただ、今日のやり方は覚えておく
+
+### decline_strict.cool.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.cool.emotional[1]`: ……そこまで、しなくても。……いい。……もう、いい
+
+### decline_strict.delinquent.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.delinquent.normal[1]`: ……そこまでやるんだ。……いいよ、覚えとく。数字で見られてんなら、数字で返すだけ。
+
+### decline_strict.delinquent.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.delinquent.bold[1]`: ……へえ。ボーナスまで。……分かった。それがあんたのやり方なら、私は私のやり方でいく。
+
+### decline_strict.delinquent.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.delinquent.quiet[1]`: ……全部、っすか。……分かりました。……もう、いいっす。
+
+### decline_strict.delinquent.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.delinquent.shy[1]`: ……はい……。あ、あの、平気っす……。平気じゃないけど、平気っす……。
+
+### decline_strict.delinquent.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.delinquent.easygoing[1]`: うわ、きっちり取るなあ。……あはは。……いや、笑えないやつだ、これ。
+
+### decline_strict.delinquent.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.delinquent.earnest[1]`: ……筋は通ってるっす。通ってるけど、納得はしてないっす。それだけ言わせてください。
+
+### decline_strict.delinquent.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.delinquent.emotional[1]`: ……そういうやり方するんすね。……今日は帰らせてください。今は、まともに話せないんで。
+
+### decline_strict.polite.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.polite.normal[1]`: ……そこまでやりますか。ええ、分かりました。恨みませんけど、覚えてはおきますね。
+
+### decline_strict.polite.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.polite.bold[1]`: 結構です。ここまで削ったのなら、こちらも遠慮はしません。取り返しにいきます。
+
+### decline_strict.polite.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.polite.quiet[1]`: ……わかりました。数字は数字よ。……ただ、今日のことは忘れないでいるわ。
+
+### decline_strict.polite.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.polite.shy[1]`: ……はい……。あの……わたし、そんなに、いらない人になっちゃいましたか……？
+
+### decline_strict.polite.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.polite.easygoing[1]`: うーん、さすがにちょっと堪えますね。……大丈夫です、明日には忘れてますから！
+
+### decline_strict.polite.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.polite.earnest[1]`: ……承知しました。査定は仕事ですから。ただ、あの上乗せまで戻されるとは思いませんでした。
+
+### decline_strict.polite.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.polite.emotional[1]`: ……そこまで、しますか……っ。……いえ、失礼しました。何も申しません……。
+
+### decline_strict.composed.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.composed.normal[1]`: ……そこまでやるんだ。……分かった。うん、社長は社長の仕事をしただけだ。
+
+### decline_strict.composed.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.composed.bold[1]`: ……そこまで削るんだ。いいよ、受け取る。……今の判断、こっちも覚えておくよ。
+
+### decline_strict.composed.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.composed.quiet[1]`: …………そう。……分かった。……話は、それだけ？
+
+### decline_strict.composed.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.composed.shy[1]`: ……あ……はい。…………ごめんなさい、少しだけ……頭が、追いつかなくて。
+
+### decline_strict.composed.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.composed.easygoing[1]`: うわ、そこまで持っていくんだ。……あはは。…笑うしかないねー、これ。
+
+### decline_strict.composed.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.composed.earnest[1]`: ……承知しました。筋は通っています。……ええ、通りすぎているくらいに。
+
+### decline_strict.composed.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.composed.emotional[1]`: ……えっ、そこまで！？ ……いや、いい。言わない。今言ったら、絶対いいこと言えないから！
+
+### decline_strict.seductive.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.seductive.normal[1]`: ……あら。そこまで削るのね。……ええ、覚えておくわ。数字は、忘れてくれないもの。
+
+### decline_strict.seductive.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.seductive.bold[1]`: ……全部きっちり、ね。……いいわ。この冷たさ、そっくり返すから。
+
+### decline_strict.seductive.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.seductive.quiet[1]`: ……そう。……そこまで。……ふふ。……もう、笑えないわね。
+
+### decline_strict.seductive.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.seductive.shy[1]`: ……そこまで……なの……。……分かったわ……もう、何も言わない……。
+
+### decline_strict.seductive.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.seductive.easygoing[1]`: うわ、きっちり回収するのね♪　……あなたのそういうとこ、嫌いじゃなかったのに。
+
+### decline_strict.seductive.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.seductive.earnest[1]`: ……理屈は通ってるわ。通りすぎているくらい。……ええ、覚えておく。
+
+### decline_strict.seductive.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_strict.seductive.emotional[1]`: ……ふうん。そこまでやるの。……こっちも遠慮はしないから。覚悟してね。
+
+### decline_voluntary_hold.standard.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.standard.normal[1]`: え、据え置き……？ …私、下げてって言ったんですけど。…ふふ。じゃあ、そのぶん働きますね。
+
+### decline_voluntary_hold.standard.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.standard.bold[1]`: ……本気で言ってる？ こっちが下げろって言ったのよ。……はぁ。…分かった、受け取る。必ず釣り合わせるから。
+
+### decline_voluntary_hold.standard.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.standard.quiet[1]`: …下げないの。……こっちが折れた形ね。…わかった。その額に、体のほうを合わせるわ。
+
+### decline_voluntary_hold.standard.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.standard.shy[1]`: そ、そんな……わたしが、お願いした、のに……。…はい、…はい。ありがとう、ございます……！
+
+### decline_voluntary_hold.standard.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.standard.easygoing[1]`: えっ、聞いてなかった！？ …もー、社長ってそういうとこだよね♪ ……うん、めっちゃ嬉しい。
+
+### decline_voluntary_hold.standard.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.standard.earnest[1]`: ……こちらが下げてくれと申し上げたのに、上を通すんですね。……分かりました。その重さ、背負います。
+
+### decline_voluntary_hold.standard.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.standard.emotional[1]`: ……なんで。なんで下げてくれないんですか……っ。うれしい、うれしいですけど……ずるいですよ、社長……！
+
+### decline_voluntary_hold.ojousama.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.ojousama.normal[1]`: ……変えない、と。……では、その額に見合うところまで戻すだけですね
+
+### decline_voluntary_hold.ojousama.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.ojousama.bold[1]`: ……わたくしの申し出を退けるなんて、いいご身分になったのね。ふふ……頼りにされているなら、それに応えようかしら？
+
+### decline_voluntary_hold.ojousama.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.ojousama.quiet[1]`: ……そう。……なら、下げさせないだけの仕事をします
+
+### decline_voluntary_hold.ojousama.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.ojousama.shy[1]`: え……で、でも……。……ありがとうございます……。……必ず、応えますから
+
+### decline_voluntary_hold.ojousama.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.ojousama.easygoing[1]`: あらあら、聞いてくださらないのね。……ふふ、では甘えてしまいましょうか
+
+### decline_voluntary_hold.ojousama.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.ojousama.earnest[1]`: ……それでは道理が通りませんわ。……いいえ、頂きます。この借りは、リングで！
+
+### decline_voluntary_hold.ojousama.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.ojousama.emotional[1]`: ……どうして……。こちらから下げると申しましたのに……。……ありがとう、ございます
+
+### decline_voluntary_hold.cool.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.cool.normal[1]`: ……下げないのか。……変な人だ。なら、下げさせない働きをする
+
+### decline_voluntary_hold.cool.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.cool.bold[1]`: ……こっちが下げろと言ったのに。……いいよ、じゃあ働く。文句のない額まで
+
+### decline_voluntary_hold.cool.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.cool.quiet[1]`: ……聞いてた？ ……下げてって言った。……いや。……ありがとう
+
+### decline_voluntary_hold.cool.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.cool.shy[1]`: ……そんな。……下げてって、言ったのに。……ずるい、そういうの
+
+### decline_voluntary_hold.cool.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.cool.easygoing[1]`: ……据え置き？ こっちが折れた形になるじゃない。……まあ、もらっとく
+
+### decline_voluntary_hold.cool.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.cool.earnest[1]`: ……申し出を退けられたのは初めてだ。なら、その判断が正しかったと証明する
+
+### decline_voluntary_hold.cool.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.cool.emotional[1]`: ……ずるい。……こっちが、きれいに終わらせようとしたのに
+
+### decline_voluntary_hold.delinquent.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.delinquent.normal[1]`: ……いや、下げろって言ったんだけど。……ったく。……そういうとこ、嫌いじゃないよ。
+
+### decline_voluntary_hold.delinquent.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.delinquent.bold[1]`: ……人の話、聞いてた？ ……ふん。……その額に私が追いつくまで、辞められなくなったじゃん。
+
+### decline_voluntary_hold.delinquent.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.delinquent.quiet[1]`: ……据え置き……？ ……逃げ場、なくなるじゃないっすか。
+
+### decline_voluntary_hold.delinquent.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.delinquent.shy[1]`: え……だ、だめっすよ、それは……。……あの、じゃあ……頑張るしか、ないっすね……。
+
+### decline_voluntary_hold.delinquent.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.delinquent.easygoing[1]`: えー、聞いてた？ 下げていいって言ったじゃん。……もー、断りにくいことすんなよなあ。
+
+### decline_voluntary_hold.delinquent.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.delinquent.earnest[1]`: ……こっちが引いた分を、そっちが被るのは違うっす。……分かりました。その分はリングで返します。
+
+### decline_voluntary_hold.delinquent.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.delinquent.emotional[1]`: ……こっちが格好つけたのに、台無しじゃないっすか。……ありがとうございます。ほんとに。
+
+### decline_voluntary_hold.polite.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.polite.normal[1]`: ……据え置き、ですか。こっちが言い出したのに、話がまとまりませんね。……ありがとうございます。
+
+### decline_voluntary_hold.polite.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.polite.bold[1]`: 下げろと言ったのはこちらですよ。……いいでしょう。その値段に見合う一年にします。
+
+### decline_voluntary_hold.polite.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.polite.quiet[1]`: ……頑固な人ね。……わかったわ。もらった以上は、もらったぶんの仕事をするだけよ。
+
+### decline_voluntary_hold.polite.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.polite.shy[1]`: そ、そんな……わたしが言い出したのに……。……はい……。もう一年、やってみます……！
+
+### decline_voluntary_hold.polite.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.polite.easygoing[1]`: えー！ 下げてって言ったのに！ ……もう、そういうの弱いんですから。ちゃんと働きます！
+
+### decline_voluntary_hold.polite.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.polite.earnest[1]`: ……お言葉に甘えます。据え置いてよかったと、来年の暮れに思っていただきます。
+
+### decline_voluntary_hold.polite.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.polite.emotional[1]`: どうして……こっちが下げてくださいって、言ったのに……っ。……ずるいですよ、社長……。
+
+### decline_voluntary_hold.composed.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.composed.normal[1]`: ……せっかく格好つけたのに。……まったく、社長は人が悪いね。……ありがたく、受け取るよ。
+
+### decline_voluntary_hold.composed.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.composed.bold[1]`: ……下げろって言ったんだ。……ふぅん。……なら、額に見合う体に戻すまでだよ。
+
+### decline_voluntary_hold.composed.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.composed.quiet[1]`: ……下げて、って言ったのに。……ずるいよ？ ……うん。……返す。ちゃんと、返す。
+
+### decline_voluntary_hold.composed.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.composed.shy[1]`: ……そんな。……せっかく、勇気を出したのに……。……嬉しい。……ずるい、です。
+
+### decline_voluntary_hold.composed.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.composed.easygoing[1]`: あー、そう来るかー。……こっちが格好つけた分、逃げ場がなくなったんだけど？
+
+### decline_voluntary_hold.composed.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.composed.earnest[1]`: ……申し出を、断られるとは思いませんでした。……この額に、体のほうを追いつかせます。
+
+### decline_voluntary_hold.composed.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.composed.emotional[1]`: ……なんで下げてくれないの！ せっかく決心したのに！ ……うう、もう、頑張るしかないじゃん！
+
+### decline_voluntary_hold.seductive.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.seductive.normal[1]`: ……下げないの？　……ずるいことをするのね。……これじゃ、辞めるに辞められないじゃない。
+
+### decline_voluntary_hold.seductive.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.seductive.bold[1]`: ……聞いてなかったの？　下げていいと言ったのに。……なら、見合う女に戻るだけ。
+
+### decline_voluntary_hold.seductive.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.seductive.quiet[1]`: ……据え置き。……理由が要るわね。……作るわ、こちらで。
+
+### decline_voluntary_hold.seductive.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.seductive.shy[1]`: え……下げなくて、いいの……？　……ずるい……。……そんなこと言われたら、もう抜けられない……。
+
+### decline_voluntary_hold.seductive.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.seductive.easygoing[1]`: え、そのまま？　……ちょっと、それ反則よ♪　……せっかく格好つけたのに。
+
+### decline_voluntary_hold.seductive.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.seductive.earnest[1]`: ……据え置く理由が見当たらないわ。……なら、その理由をこちらで作るまでね。
+
+### decline_voluntary_hold.seductive.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_hold.seductive.emotional[1]`: ……っ……そこまで買いかぶるの。……後悔はさせない。覚えておいて。
+
+### decline_voluntary_accept.standard.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.standard.normal[1]`: はい、それでいいんです。…なんだか、すっきりしました。ここからまた積み直しますね。
+
+### decline_voluntary_accept.standard.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.standard.bold[1]`: そう、それでいい。…変に庇われるより、よっぽど気分がいいわ。次は自分で上げ直す。
+
+### decline_voluntary_accept.standard.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.standard.quiet[1]`: …素直に下げたわね。…嫌いじゃないわ、そういうの。…また、上げさせるから。
+
+### decline_voluntary_accept.standard.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.standard.shy[1]`: はい……。あの、ちゃんと聞いてくれて、うれしかったです。…わたし、まだ辞めませんから。
+
+### decline_voluntary_accept.standard.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.standard.easygoing[1]`: うん、それでオッケー♪ 変に気を遣われるより、こっちのほうが全然気楽だし。
+
+### decline_voluntary_accept.standard.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.standard.earnest[1]`: ありがとうございます。……こういう時に情を挟まない人だから、私はここまでやってこられたんです。
+
+### decline_voluntary_accept.standard.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.standard.emotional[1]`: ……はい。……ちゃんと、聞いてくれたんですね。…うれしい。選手として、見てもらえた……！
+
+### decline_voluntary_accept.ojousama.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.ojousama.normal[1]`: ……ええ、それでいい。……見合う額のほうが、迷わずに済みます
+
+### decline_voluntary_accept.ojousama.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.ojousama.bold[1]`: 潔くて結構。……次に値をつけ直すとき、そちらが慌てることになるわね
+
+### decline_voluntary_accept.ojousama.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.ojousama.quiet[1]`: ……ええ。……ちょうどいい。……身軽になりました
+
+### decline_voluntary_accept.ojousama.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.ojousama.shy[1]`: ……はい。……あの、聞いていただけて……その、うれしいです……
+
+### decline_voluntary_accept.ojousama.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.ojousama.easygoing[1]`: 素直に下げてくださるのね。……そういう方、嫌いではなくてよ
+
+### decline_voluntary_accept.ojousama.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.ojousama.earnest[1]`: ありがとうございます。……身の丈の額で戦えるのは、幸せなことですもの
+
+### decline_voluntary_accept.ojousama.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.ojousama.emotional[1]`: ……ええ。……不思議ですわね。下がったのに、胸が軽い……
+
+### decline_voluntary_accept.cool.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.cool.normal[1]`: ……うん、それでいい。……変に庇われるより、ずっと楽だ
+
+### decline_voluntary_accept.cool.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.cool.bold[1]`: ……話が早い。……安く使える分、しっかり使って
+
+### decline_voluntary_accept.cool.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.cool.quiet[1]`: ……それでいい。……身軽になった
+
+### decline_voluntary_accept.cool.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.cool.shy[1]`: ……はい。……よかった。……気を遣われる方が、こわかったから
+
+### decline_voluntary_accept.cool.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.cool.easygoing[1]`: ……あっさりしてる。いいね、そういうの。……じゃ、来年もよろしく
+
+### decline_voluntary_accept.cool.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.cool.earnest[1]`: ……ありがとう。言った通りにしてくれる相手は、信用できる
+
+### decline_voluntary_accept.cool.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.cool.emotional[1]`: ……ちゃんと下げてくれた。……嬉しいのが、自分でも意外だ
+
+### decline_voluntary_accept.delinquent.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.delinquent.normal[1]`: そう、それでいい。……自分で言った額で立つほうが、背筋が伸びるからさ。
+
+### decline_voluntary_accept.delinquent.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.delinquent.bold[1]`: 話が早くて助かる。言っとくけど、下がったのは値段だけだから。中身は勝手に上げていく。
+
+### decline_voluntary_accept.delinquent.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.delinquent.quiet[1]`: ……ありがとうございます。……身の丈で、やるっす。
+
+### decline_voluntary_accept.delinquent.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.delinquent.shy[1]`: は、はい……。……なんか、ちょっとだけ肩が軽いっす……。ほんとっすよ？
+
+### decline_voluntary_accept.delinquent.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.delinquent.easygoing[1]`: おっけー、話が早い！ よし、これで気兼ねなく飯が食える。……いや食えるのか？ 食えるな。
+
+### decline_voluntary_accept.delinquent.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.delinquent.earnest[1]`: ありがとうございます。額に嘘がないほうが、私も嘘つかずに済むんで。
+
+### decline_voluntary_accept.delinquent.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.delinquent.emotional[1]`: ……ちゃんと下げてくれたっすね。そういう正直なとこ、私は好きっす。だから、まだやれる。
+
+### decline_voluntary_accept.polite.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.polite.normal[1]`: ええ、それでいいんです。変に気を遣われるより、こう扱ってもらえるほうが助かります。
+
+### decline_voluntary_accept.polite.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.polite.bold[1]`: 話が早くて助かります。次に上げてもらうときは、こちらから胸を張って言いにきますから。
+
+### decline_voluntary_accept.polite.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.polite.quiet[1]`: ……ええ、それでいいの。値段どおりの働きをする。それだけのことよ。
+
+### decline_voluntary_accept.polite.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.polite.shy[1]`: ……ありがとうございます。ちゃんと聞いてもらえて……わたし、少し、背筋が伸びました……。
+
+### decline_voluntary_accept.polite.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.polite.easygoing[1]`: はーい、決まりですね！ うん、なんかスッキリしました！ 身軽なほうが動けますし！
+
+### decline_voluntary_accept.polite.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.polite.earnest[1]`: そうしていただけて安心しました。身の丈の数字から、もう一度積み直します。
+
+### decline_voluntary_accept.polite.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.polite.emotional[1]`: ……ちゃんと、聞き入れてくださったんですね……。なんだか、胸のつかえが取れました……。
+
+### decline_voluntary_accept.composed.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.composed.normal[1]`: うん、それでいい。……変に庇われないのが、一番の敬意だからね。……さ、来季の話をしよう。
+
+### decline_voluntary_accept.composed.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.composed.bold[1]`: 潔いね、社長も。……いいよ、その額で。……安く使えると思ったら、痛い目見るんだ。
+
+### decline_voluntary_accept.composed.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.composed.quiet[1]`: ……ん。……気を遣われなくて、よかった。……そのほうが、背筋が伸びる。
+
+### decline_voluntary_accept.composed.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.composed.shy[1]`: ……はい。……ちゃんと、話を聞いてくれて……嬉しかった。……その分、返します。
+
+### decline_voluntary_accept.composed.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.composed.easygoing[1]`: はい、契約成立ー。……自分で言った額だし、文句のつけようがないねー。
+
+### decline_voluntary_accept.composed.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.composed.earnest[1]`: ありがとうございます。……自分の言葉どおりに扱ってもらえるのが、一番の信頼です。
+
+### decline_voluntary_accept.composed.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.composed.emotional[1]`: よし、これでいい！ ……自分で言って、自分で納得した。……なんか、すっきりしたかも！
+
+### decline_voluntary_accept.seductive.normal[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.seductive.normal[1]`: それで手を打ちましょう。……値札が軽くなったぶん、身のこなしも軽くなりそうだわ。
+
+### decline_voluntary_accept.seductive.bold[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.seductive.bold[1]`: 潔くていいわね、あなたも。……安く見られたままでいる気はないけれど、今年はね。
+
+### decline_voluntary_accept.seductive.quiet[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.seductive.quiet[1]`: ……ええ。……納得ずく。……これで、清々したわ。
+
+### decline_voluntary_accept.seductive.shy[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.seductive.shy[1]`: ……ええ。……受け入れてくれて、ありがとう……。……なんだか、少し軽いの……。
+
+### decline_voluntary_accept.seductive.easygoing[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.seductive.easygoing[1]`: はい、契約成立。……自分で言った値段だもの、文句なんて出るわけないでしょ？
+
+### decline_voluntary_accept.seductive.earnest[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.seductive.earnest[1]`: これでいいわ。……身の丈を知ってる女のほうが、長く使えるでしょう？
+
+### decline_voluntary_accept.seductive.emotional[]
+
+- `CONTRACT_NEGOTIATION_LINES.decline_voluntary_accept.seductive.emotional[1]`: ええ、そうこなくちゃ。……哀れまれるより、よっぽど気持ちいいわ。
 
 ### tenure.1.standard
 

@@ -23,6 +23,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | relationship-system-spec-v2.2.md | 離脱・裏切りイベント(A-1〜A-4 サーチャージ/B-3 元同僚初対戦/奪還挑戦) |
 | relationship-system-spec-v2.3.md | bond/rivalry ネガティブ拡張全項目(先行5項目 + P-1 タッグペナルティ/P-3 興行波及/P-4 ロッカー荒廃+嫌悪伝染/P-6 修復チャネル決裁/P-7 険悪可視化) |
 | rental-system-spec-v2.0.md | レンタル移籍(費用/制約/帰団処理) |
+| salary-decline-spec-v1.0.md | **給与の下り坂(契約査定)確定仕様**(offWeek3再固定/昇給吸収/下り交渉カード/セリフ7フェーズ/P2較正値) |
 | rival-org-spec-v1.0.md | AI団体の行動ロジック |
 | scout-system-spec-v1.0.md | スカウト/新人獲得 |
 | snapshot-notification-spec-v1.0.md | スナップショット通知(G/R系列/テキスト生成) |

@@ -4,7 +4,7 @@
 セリフを書き直したら、このツールを再実行すれば内容が更新される(下記「再実行方法」参照)。
 
 - 対象テーブル数: 194
-- 抽出できたセリフ総本数: **20119**
+- 抽出できたセリフ総本数: **20462**
 
 ## ID の読み方
 
@@ -20,7 +20,7 @@
 | 03 | 因縁・絆(Bond/Rivalry)イベント | [03-rivalry-and-relationship.md](./03-rivalry-and-relationship.md) | 10 | 825 |
 | 04 | 挑戦試合(直訴・遠征) | [04-challenge-request.md](./04-challenge-request.md) | 3 | 830 |
 | 05 | 引退・引き抜き・引き留め | [05-retirement-and-poach.md](./05-retirement-and-poach.md) | 7 | 1131 |
-| 06 | 契約交渉 | [06-negotiation-and-contract.md](./06-negotiation-and-contract.md) | 3 | 870 |
+| 06 | 契約交渉 | [06-negotiation-and-contract.md](./06-negotiation-and-contract.md) | 3 | 1213 |
 | 07 | 派閥イベント | [07-faction.md](./07-faction.md) | 28 | 2626 |
 | 08 | 成長・スランプ・モチベーション | [08-growth-and-emotion.md](./08-growth-and-emotion.md) | 8 | 576 |
 | 09 | 表彰式・記録・ドーム到達 | [09-award-and-milestone.md](./09-award-and-milestone.md) | 6 | 760 |
@@ -83,7 +83,7 @@
 | `RETAIN_LINES` | `src/data.js` | 05-retirement-and-poach.md | 123 |
 | `VOLUNTARY_STAY_LINES` | `src/data.js` | 05-retirement-and-poach.md | 34 |
 | `NEGOTIATE_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 130 |
-| `CONTRACT_NEGOTIATION_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 719 |
+| `CONTRACT_NEGOTIATION_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 1062 |
 | `RELEASE_INTERVIEW_LINES` | `src/data.js` | 06-negotiation-and-contract.md | 21 |
 | `FACTION_TRANSITION_LINES` | `src/data.js` | 07-faction.md | 84 |
 | `FACTION_F02_LINES` | `src/data.js` | 07-faction.md | 84 |

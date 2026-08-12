@@ -203,4 +203,4 @@ showContractNegotiationModal の attitude 分岐に追加(新画面なし):
 | A | Codex | P0実装(docs/codex-tasks/task-83-salary-refix-and-absorption.md) | ✅ 完了・mainマージ済み(2026-08-12, c5e1683)。gap≥1.3 92.7%→36.4%、下り帯11%出現。25%目標未達はKeisuke裁定で容認(P2へ移管) |
 | B | Fable | P2較正 + 不変条件の検算 + マージ | ✅ 完了(2026-08-12)。**結論: SALARY_PARAMS再スケール不要**(pre/post統制比較40季×2シード: 総支出x1.0-1.2・資金増加基調・破産0・退団引退同一。100季seed1001 ALL CLEAR)。詳細はworklog 2026-08-12 |
 | C | Opus | §4.3セリフ起案 → Keisukeレビュー | ✅ **Keisuke承認済み(2026-08-12)**。`docs/salary-decline-dialogue-draft-v0.1.md` 343本(差し戻し11本反映済み)が実装の正 |
-| D | Codex | P1実装(エンジン+UI+auto-sim対応) | 📋 指示書済み(2026-08-12): `docs/codex-tasks/task-84-salary-decline-cards.md` |
+| D | Codex | P1実装(エンジン+UI+auto-sim対応) | ✅ 完了・mainマージ済み(2026-08-12, b86080a)。**確定仕様は `specs/salary-decline-spec-v1.0.md` へ昇格** — 本文書は以後、設計経緯の記録 |
