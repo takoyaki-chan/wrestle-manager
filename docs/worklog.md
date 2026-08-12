@@ -1,5 +1,9 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 統一王座: 新聞記事を一面級の組み立て式へ格上げ、草案65本をFable執筆（2026-08-12〜13・レビュー待ち）
+
+Keisuke指示「一面記事が埋まるようにリッチな内容で」を受け、task-88 §H を改訂——一行記事を廃し、task-80王座交代記事と同じ組み立て式(リード→経緯→人物→来歴→締め)へ。文面の正は `docs/unified-title-article-drafts-v0.1.md`(見出し16本+本文テンプレ65本+合成例8本)。**執筆はOpus委譲が529過負荷で2連続死したためKeisuke裁定でFableが代行**。人物プロフィールは承認済み`CHAMPION_CHANGE_TEMPLATES`の年齢帯4帯を参照共用(複製しない)、来歴スロットは`unifiedTitle.history`の実データ(防衛数/保持年数/渡った団体数/歴代保持者数)から条件付きで叙述——リッチさをテンプレの水増しではなくデータ由来にした。規約(事実記述/格言禁止/「世界」禁止/変数名禁止/連呼禁止/セリフなし)は自己検査済み。残: **Keisuke全文レビュー**→修正反映→task-88のCodex投入(task-87の決着後)。
+
 ## task-86マージ: 開戦画面リデザイン+敵対度表記の全画面統一（2026-08-12・Fable+Codex）
 
 Codexを専用worktree(wm-codex-task86、mainのlinked worktree)で`codex exec --full-auto`実行→Fableがdiff全文レビュー・検算・コミット代行(sandboxがworktreeのindex.lock作成を拒むため。task-84と同型)→mainへマージ(749b93e)。
