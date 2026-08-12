@@ -84,18 +84,15 @@
   .corC-name{font-size:20px;font-weight:800;color:#fff;margin-top:10px}
   .corC-org{font-size:11px;color:#d8c08a;margin-top:2px}
 
-  /* ── 挑戦者到着(派手化版) ── */
+  /* ── 挑戦者到着(静か版・派手化なしの裁定) ── */
   .stageWrap{background:#000;border-radius:10px;padding:36px 16px;display:flex;justify-content:center}
-  .arr-frame{width:520px;background:linear-gradient(180deg,#0d0f13,#060708);border:1px solid var(--idc-deep);
-    border-radius:9px;padding:26px 20px 22px;text-align:center;position:relative;overflow:hidden;
-    box-shadow:0 0 40px var(--idc-glow) inset,0 0 26px rgba(0,0,0,.8)}
-  .arr-frame .wm{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:340px;opacity:.06;pointer-events:none;filter:grayscale(1) brightness(2)}
+  .arr-frame{width:460px;background:linear-gradient(180deg,#101216,#08090c);border:1px solid #3a4048;
+    border-radius:9px;padding:24px 20px 20px;text-align:center;position:relative}
   .arr-label{font-size:10px;letter-spacing:.36em;color:var(--idc-deep);position:relative}
-  .arr-title{font-size:30px;font-weight:900;letter-spacing:.5em;color:var(--idc-hi);margin:6px 0 4px;position:relative;
-    text-shadow:0 0 22px var(--idc-glow),0 0 46px var(--idc-glow)}
-  .arr-belt{height:5px;width:230px;margin:8px auto 16px;background:var(--idc-grad);border-radius:3px;box-shadow:0 0 16px var(--idc-glow)}
+  .arr-title{font-size:21px;font-weight:800;letter-spacing:.4em;color:var(--idc-hi);margin:4px 0 16px;position:relative;
+    text-shadow:0 0 16px var(--idc-glow)}
   .fL{width:150px;height:224px;object-fit:contain;display:block;margin:0 auto;position:relative;
-    filter:drop-shadow(0 0 18px var(--idc-glow)) drop-shadow(0 10px 18px rgba(0,0,0,.75))}
+    filter:drop-shadow(0 10px 18px rgba(0,0,0,.75))}
   .arr-id{margin-top:8px;font-size:15px;font-weight:800;color:#fff;position:relative}
   .arr-org{display:inline-block;margin-top:5px;font-size:10.5px;color:var(--idc-hi);border:1px solid var(--idc-deep);
     border-radius:3px;padding:2px 10px;letter-spacing:.14em;position:relative}
@@ -135,28 +132,28 @@
   .memo .done{color:#8fb7d0}
 </style>
 </head>
-<body class="c-plat">
-<h1>全国統一王座 P3 演出モックアップ v0.2</h1>
-<div class="sub">2026-08-13改訂: 戴冠3案+色3候補の見た目比較(裁定④Office/⑤仮運用は確定済み) ・ セリフは草案(レビュー中)から仮置き</div>
+<body class="c-aurora">
+<h1>全国統一王座 P3 演出モックアップ v0.2a(裁定刻印版)</h1>
+<div class="sub">✅ 確定(2026-08-13): 戴冠=案B ・ 色=オーロラ ・ 到着画面=派手化なし(静か版) ・ こちらの番=Office ・ ベルト画像=仮運用先行</div>
 
 <div class="bar colors">
-  <span style="font-size:11px;color:var(--dim);align-self:center">色候補:</span>
-  <button class="on" data-c="c-plat"><span class="sw" style="background:linear-gradient(115deg,#f8fbff,#9fb2c4)"></span>1. 白金(プラチナ)</button>
-  <button data-c="c-royal"><span class="sw" style="background:linear-gradient(115deg,#b79aff,#553d9e)"></span>2. 紫紺(ロイヤル)</button>
-  <button data-c="c-aurora"><span class="sw" style="background:linear-gradient(115deg,#7ee8d0,#6aa8ff,#b58cff,#ff9ac8)"></span>3. オーロラ(虹彩)</button>
+  <span style="font-size:11px;color:var(--dim);align-self:center">色(✅オーロラ確定・他は記録):</span>
+  <button data-c="c-plat"><span class="sw" style="background:linear-gradient(115deg,#f8fbff,#9fb2c4)"></span>1. 白金</button>
+  <button data-c="c-royal"><span class="sw" style="background:linear-gradient(115deg,#b79aff,#553d9e)"></span>2. 紫紺</button>
+  <button class="on" data-c="c-aurora"><span class="sw" style="background:linear-gradient(115deg,#7ee8d0,#6aa8ff,#b58cff,#ff9ac8)"></span>3. オーロラ ✅</button>
 </div>
 <div class="bar">
-  <button class="on" data-v="v1">戴冠 案A: 深紅の授与式</button>
-  <button data-v="v2">戴冠 案B: 暗転スポットライト</button>
-  <button data-v="v3">戴冠 案C: 黄金セレモニー</button>
-  <button data-v="v4">挑戦者の到着(派手化)</button>
+  <button data-v="v1">戴冠 案A(不採用・記録)</button>
+  <button class="on" data-v="v2">戴冠 案B ✅確定</button>
+  <button data-v="v3">戴冠 案C(不採用・記録)</button>
+  <button data-v="v4">挑戦者の到着 ✅静か版</button>
   <button data-v="v5">バッジ・帯の見た目</button>
   <button data-v="v6">返還式</button>
   <button data-v="v7">判断メモ</button>
 </div>
 
 <!-- 案A -->
-<section class="view on" id="v1">
+<section class="view" id="v1">
   <div class="corA">
     <div class="rays"></div>
     <div class="cor-event">DAY OF THE SUMMIT ・ 第3回 天頂戦</div>
@@ -173,7 +170,7 @@
 </section>
 
 <!-- 案B -->
-<section class="view" id="v2">
+<section class="view on" id="v2">
   <div class="corB">
     <div class="spot"></div>
     <div class="dust">
@@ -218,10 +215,8 @@
 <section class="view" id="v4">
   <div class="stageWrap">
     <div class="arr-frame">
-      <img class="wm" src="../../../image/emblem-tenchosen.png" alt="">
       <div class="arr-label">UNIFIED TITLE ・ QUARTERLY CHALLENGE</div>
       <div class="arr-title">挑 戦 表 明</div>
-      <div class="arr-belt"></div>
       <div class="bub" style="max-width:320px;font-size:13px;position:relative">申し込みに参りました。お受けいただけますね。<span style="font-size:10px;color:#8a8172">(草案UT-ARR-ojo-1)</span></div>
       <img class="fL" src="../../../image/upper/upper_kusunoki_n.webp" alt="">
       <div class="arr-id">楠 乃亜</div>
@@ -230,7 +225,7 @@
       <button class="arr-btn">受けて立つ</button>
     </div>
   </div>
-  <div class="note"><b>v0.1からの派手化</b>: タイトルを30px+二重グロー化、ベルト色の帯線、挑戦者にリムライト(色付き発光)、背景に大会エンブレムの透かし、枠自体も色付き内側グロー。色候補を切り替えると光の色が変わります。</div>
+  <div class="note"><b>✅ 裁定(08-13)</b>: 派手化はしない。静かな黒Stage+オーロラの見出し・バッジのみ(果たし状の赤とは色で区別)。showHostileArrivalStage の共通仕様(人数1)で実装。</div>
 </section>
 
 <!-- バッジ・帯 -->
@@ -267,14 +262,10 @@
 <!-- 判断メモ -->
 <section class="view" id="v7">
   <div class="memo">
-    <h2>✅ 確定済み(2026-08-13 Keisuke裁定)</h2>
-    ①戴冠はセレモニー級全画面にする(デザインはA/B/Cから選ぶ) ／ ④こちらの番=Office書式 ／ ⑤ベルト画像は仮運用で実装先行(Keisuke制作後に同名上書き)
-    <h2>裁定待ち1: 戴冠セレモニーのデザイン</h2>
-    案A=深紅の授与式(大会の続き・色言語に忠実) ／ 案B=暗転スポットライト(孤高・「頂点はただ一人」) ／ 案C=黄金セレモニー(祝祭・表彰式の様式)。<span class="rec">私の推奨: 案B(4年に一度だけ許される「静寂の全画面」は他のどの演出とも被らず、稀少性が最も立つ)</span>
-    <h2>裁定待ち2: アイデンティティカラー(3候補・上のボタンで切替)</h2>
-    1=白金(頂点の別格感・金の一段上) ／ 2=紫紺(ロイヤル・王権の色) ／ 3=オーロラ(虹彩・「世界に一本」の唯一物感)。<span class="rec">私の推奨: 3のオーロラ(既存の金/深紅/赤/橙のどれとも被らず、ベルトの唯一性が色だけで伝わる)</span>
-    <h2>裁定待ち3: 到着画面の派手さ</h2>
-    v0.1(単色白金・地味)→v0.2(二重グロー+帯線+リムライト+透かし)。<span class="rec">これで足りるか、まだ地味かをご判断ください</span>
+    <h2>✅ 全点確定(2026-08-13 Keisuke裁定・2ラウンド)</h2>
+    ①戴冠=セレモニー級全画面・<b>案B(暗転スポットライト)</b> ／ ②到着画面=<b>派手化なし(静か版)</b>・色はオーロラ ／ ③アイデンティティカラー=<b>オーロラ(虹彩)</b>(--unified系トークン新設・仮ティール全置換) ／ ④こちらの番=Office書式 ／ ⑤ベルト画像=仮運用で実装先行(Keisuke制作後に同名上書き)
+    <h2>実装へ</h2>
+    実装指示書 task-89(P3)へ確定内容を反映。案A/案Cと白金/紫紺は不採用の記録として本モックに残す。<span class="rec">セリフ147本の全文レビュー(要判断5点)のみ継続中 — 承認後にCodex投入</span>
   </div>
 </section>
 
