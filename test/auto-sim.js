@@ -709,7 +709,8 @@ Engine.attendanceV2.calcMatchAppeal = function(fighterA, fighterB, context, G) {
 //   因縁カード・タイトル戦の意図的配置、人気選手の起用頻度管理などは再現されない。
 function autoSetupShowCard(G, simRng) {
   const roster = G.roster.filter(c => !c.injury && c.condition >= 40);
-  if (roster.length < 2) return G;
+  const unifiedIncoming = Engine.unifiedTitle?.getIncomingMatch(G) || null;
+  if (roster.length < 2 && !unifiedIncoming) return G;
 
   const venueIdx = Math.min(9, Math.max(0, Math.floor(G.orgPop / 12)));
   const maxMatches = typeof VENUES !== 'undefined'
@@ -758,6 +759,33 @@ function autoSetupShowCard(G, simRng) {
           if (!hasRental) mainMatch.isTitle = true;
         }
       }
+    }
+  }
+
+  if (unifiedIncoming) {
+    const reserved = Engine.unifiedTitle.reserveIncomingMatch(G);
+    if (reserved.match) {
+      const blockedIds = new Set([reserved.match.championId, reserved.match.challengerId]);
+      const remaining = card.filter(match => {
+        if (match.matchType === 'tag') {
+          return ![
+            match.teamA?.fighter1, match.teamA?.fighter2,
+            match.teamB?.fighter1, match.teamB?.fighter2,
+          ].some(id => blockedIds.has(id));
+        }
+        return !blockedIds.has(match.left) && !blockedIds.has(match.right);
+      });
+      const guest = {
+        ...reserved.match.challenger,
+        isUnifiedTitleGuest: true,
+        _unifiedGuestOrgId: reserved.match.challengerOrgId,
+      };
+      return {
+        ...reserved.state,
+        roster: [...(G.roster || []).filter(f => !f.isUnifiedTitleGuest), guest],
+        showCard: [reserved.match.slot, ...remaining].slice(0, effectiveMax),
+        showVenue: venueIdx,
+      };
     }
   }
 
@@ -1505,6 +1533,8 @@ function runSimulation(seed, seasons) {
       // ── tickWeek（週次パイプライン） ── validateGameStateはtickWeek内で実行される
       const tickResult = Engine.tickWeek(G);
       G = { ...tickResult.state, gameLog: [] };
+      // UIなしでもプレイヤー側へ回った全国統一王座の挑戦権を自動選択・消化する。
+      G = Engine.unifiedTitle.autoConsumePlayerTurn(G);
       if (process.env.WM_TITLE_FIXTURE === '1') censusTitleReigns(G);
       // 新聞P2: 一面トップに来た記事の種別を数える。G を覗くだけの読み取り専用。
       // WM_SOURCE_REF と併用して P2 前後を比べるためのもの
@@ -1703,6 +1733,8 @@ function runSimulation(seed, seasons) {
 
   const semanticJson = JSON.stringify({ G, stats, flagStats, totalWeeks, gameOverCount }, (key, value) => {
     if (key === 'mqInventory' || key === 'debugLog' || key === 'gameLog') return undefined;
+    // task-88 I-1: 王座創設前の null は旧HEAD(undefined)と同じ意味として指紋から除外。
+    if (key === 'unifiedTitle' && value == null) return undefined;
     return value;
   });
   let semanticFingerprint = 2166136261;
@@ -1710,10 +1742,25 @@ function runSimulation(seed, seasons) {
     semanticFingerprint ^= semanticJson.charCodeAt(i);
     semanticFingerprint = Math.imul(semanticFingerprint, 16777619) >>> 0;
   }
+  const unifiedHistory = (G?.unifiedTitle?.history || []);
+  const unifiedDefenses = unifiedHistory.filter(ev => ev.type === 'defense').length;
+  const unifiedMoves = unifiedHistory.filter(ev => ev.type === 'move').length;
+  const unifiedDefenseMatches = unifiedDefenses + unifiedMoves;
+  const unifiedDistribution = unifiedHistory.some(ev => ev.type === 'creation') ? {
+    creations: unifiedHistory.filter(ev => ev.type === 'creation').length,
+    moves: unifiedMoves,
+    defenses: unifiedDefenses,
+    defenseMatches: unifiedDefenseMatches,
+    defenseSuccessRate: unifiedDefenseMatches > 0 ? unifiedDefenses / unifiedDefenseMatches : 0,
+    playerTurns: unifiedHistory.filter(ev => ev.type === 'playerTurnOffered').length,
+    playerTurnsConsumed: unifiedHistory.filter(ev => ev.type === 'playerTurnConsumed').length,
+    vacates: unifiedHistory.filter(ev => ev.type === 'vacate').length,
+  } : null;
   return {
     violations, errors, totalWeeks, gameOverCount, stats, flagStats,
     finalSeasons: G ? G.season : 0,
     semanticFingerprint: semanticFingerprint.toString(16).padStart(8, '0'),
+    unifiedDistribution,
   };
 }
 
@@ -1758,6 +1805,16 @@ if (result.errors.length > 0) {
 // 頻度レポート
 const freqWarnings = [];
 const s = result.stats;
+if (result.unifiedDistribution) {
+  const u = result.unifiedDistribution;
+  console.log('');
+  console.log('全国統一王座 分布:');
+  console.log(`  創設回数: ${u.creations}`);
+  console.log(`  移動回数: ${u.moves}`);
+  console.log(`  防衛成功率: ${u.defenses}/${u.defenseMatches} (${(u.defenseSuccessRate * 100).toFixed(1)}%)`);
+  console.log(`  こちらの番: 発生${u.playerTurns} / 消化${u.playerTurnsConsumed}`);
+  console.log(`  返上回数: ${u.vacates}`);
+}
 if (s.seasons >= 10) {
   const rates = {
     warRate:   s.warEvents        / s.seasons,

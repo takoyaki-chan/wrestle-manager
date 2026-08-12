@@ -3829,7 +3829,8 @@ const INJURY_DEBUFF_TABLE = {
 
 // Title System
 const TITLES = [
-  {id:'world', name:'団体王座', mqBonus:5, popBonus:3, attendBonus:1.15, emoji:'🏆'}
+  {id:'world', name:'団体王座', mqBonus:5, popBonus:3, attendBonus:1.15, emoji:'🏆'},
+  {id:'unified', name:'全国統一王座', mqBonus:5, popBonus:8, attendBonus:1.25, emoji:'🌐'}
 ];
 
 // Rivalry System
@@ -17813,6 +17814,182 @@ const CHAMPION_CHANGE_TEMPLATES = {
   ],
 };
 
+// task-88 §H: 全国統一王座の記事本文（承認済み正本。文面変更禁止）。
+// 人物プロフィールだけは task-80 の承認済みプールを参照で共用する。
+const UNIFIED_TITLE_TEMPLATES = {
+  creation: {
+    headline: [
+      '全国統一王座、誕生 初代王者は{name}',
+      '頂点はただ一人 {name}が業界初の統一王者に',
+    ],
+    lead: [
+      '業界の歴史が変わった夜である。第{edition}回天頂戦を制した{name}（{org}）に、全団体の頂点を示す新設ベルト——全国統一王座が授与された。',
+      '頂点はただ一人。その一人を決めるベルトが、ついに生まれた。初代・全国統一王者は{name}。第{edition}回天頂戦の優勝者だ。',
+      '4団体がしのぎを削ってきたこの業界に、初めて「統一」の二文字が刻まれた。真新しいベルトを掲げたのは{name}（{org}）。天頂戦の頂点が、そのまま業界の頂点になった。',
+    ],
+    circumstance: [
+      '16名の精鋭を4連勝でなぎ倒しての栄冠である。決勝のゴングから間を置かず、リング上でベルトの授与が発表され、場内の熱は最高潮に達した。',
+      'エントリー16名、負ければ終わりの一発勝負を4つ。その全部を制した者だけが届く高さに、このベルトは置かれた。',
+    ],
+    institution: [
+      'この王座は団体王座の上に立つ。防衛戦はおよそ3か月に一度、団体の垣根を越えて業界の看板級が挑んでくる。ベルトは奪った者のもの。そして4年後、次の天頂戦が来れば王者はベルトを大会に返し、また16名の争奪戦が始まる。',
+      '規定は苛烈だ。王者はおよそ3か月ごとに他団体の刺客を迎え撃つ。負ければベルトは団体ごと持っていかれる。引退すれば返上、次の天頂戦まで誰の腰にも巻かれない。',
+    ],
+    profileYoung: CHAMPION_CHANGE_TEMPLATES.profileYoung,
+    profileRising: CHAMPION_CHANGE_TEMPLATES.profileRising,
+    profileEstablished: CHAMPION_CHANGE_TEMPLATES.profileEstablished,
+    profileVeteran: CHAMPION_CHANGE_TEMPLATES.profileVeteran,
+    closing: [
+      '最初の挑戦はおよそ3か月後。業界中の上位陣が、もうこのベルトに照準を合わせている。',
+      '業界の頂点は誰か——長年の問いに、初めてベルトという形の答えが出た。',
+      '4年間の防衛ロードが始まる。この夜の栄光が本物かどうかは、これからの挑戦者たちが確かめに来る。',
+    ],
+  },
+  crown: {
+    headline: [
+      '{name}、全国の頂点へ 天頂戦制覇で統一王座戴冠',
+      '空位のベルトに新たな主 {name}が16名の頂上決戦を制す',
+    ],
+    lead: [
+      '新しい頂点が決まった。第{edition}回天頂戦を制した{name}（{org}）が、全国統一王座を戴冠した。',
+      '空位のベルトが、ついに主を得た。16名の頂上決戦を勝ち抜いた{name}（{org}）である。',
+      '4年に一度の争奪戦を制したのは{org}の{name}。業界のすべての選手の上に、この夜から一人が立つ。',
+    ],
+    circumstance: [
+      '4連勝。それ以外に頂点への道はない。前王者が返したベルトは空位のまま決勝を待ち、勝者の腰にだけ巻かれた。',
+      '優勝即戴冠——この王座の規定が、天頂戦を業界最大の舞台へ押し上げている。挑む側だった選手が、今夜から迎え撃つ側になる。',
+    ],
+    historyMoved: ['前の4年間、ベルトは{holderCount}人の腰と{orgCount}団体を渡り歩いた。その流転の歴史に、新しい章が加わる。'],
+    historyStayed: ['前の4年間、ベルトはただの一度も動かなかった。その鉄壁の記録を超えられるか、新王者の4年間が始まる。'],
+    profileYoung: CHAMPION_CHANGE_TEMPLATES.profileYoung,
+    profileRising: CHAMPION_CHANGE_TEMPLATES.profileRising,
+    profileEstablished: CHAMPION_CHANGE_TEMPLATES.profileEstablished,
+    profileVeteran: CHAMPION_CHANGE_TEMPLATES.profileVeteran,
+    closing: [
+      '最初の刺客はおよそ3か月後に来る。玉座に座った瞬間から、狙われる4年間が始まっている。',
+      'ここから4年、この名前が業界の中心にいる。まず最初の防衛戦で、王者の器が試される。',
+    ],
+  },
+  repeat: {
+    headline: [
+      '{name}、圧巻の連覇 統一王座は渡さない',
+      '王者が王者のまま {name}、天頂戦を連覇',
+    ],
+    lead: [
+      '王者が、王者のまま帰ってきた。前週にベルトを返還した{name}（{org}）が第{edition}回天頂戦を制し、全国統一王座を自らの手で取り戻した。',
+      '圧巻の連覇である。返還と再戴冠のあいだにあったのは、16名トーナメントの4試合だけ。{name}（{org}）は、その全部に勝った。',
+    ],
+    circumstance: [
+      '規定に情けはない。王者もベルトを手放し、他の15名と同じスタートラインに並ぶ。そこから4連勝——文句のつけようがない連覇だった。',
+      '4年間守り、規定どおり返し、また勝って取り戻す。空位はわずか1週間。ベルトが他人の腰を知らないまま、2期目が始まる。',
+    ],
+    historyDefended: ['前の4年間の防衛は{n}度。挑戦者を退け続け、トーナメントでも頂点に立った。今この選手を止められる者が業界にいるのか——次の4年間が、その答え合わせになる。'],
+    closing: [
+      '8年間、頂点はただ一人。この記録の前に、業界中の挑戦者が並び直すことになる。',
+      '連覇王者への挑戦権を、どの団体が最初にもぎ取るか。次の3か月は、その争いから始まる。',
+    ],
+  },
+  defense: {
+    headline: [
+      '{name}、統一王座を死守 {n}度目の防衛',
+      '王者健在 {name}が{challenger}を返り討ち',
+    ],
+    leadFirst: ['全国統一王座、最初の防衛戦を制したのは王者だった。{name}（{org}）が{challengerOrg}の{challenger}を退け、ベルトの重みを見せつけた。'],
+    lead: [
+      '業界の頂点は揺るがなかった。{name}（{org}）が挑戦者{challenger}（{challengerOrg}）を下し、{n}度目の防衛に成功した。',
+      '団体の垣根を越えた頂上決戦は、王者の勝利で終わった。{name}（{org}）、{n}度目の防衛である。',
+      '{challengerOrg}の{challenger}、届かず。全国統一王座は{name}の腰で輝き続け、防衛の数字は{n}に伸びた。',
+    ],
+    circumstance: [
+      'この王座の防衛戦はおよそ3か月に一度、業界の看板級だけが挑める頂上決戦だ。今回は{challengerOrg}が挑戦権をもぎ取り、団体最上位級の{challenger}を送り込んだ。',
+      '挑戦者は{challengerOrg}の精鋭。所属のリングでは追われる側の選手が、この日は業界の頂点に牙を剥いた。',
+    ],
+    historyConsecutive: ['防衛は連続{n}度。授与から{heldYears}年、ベルトはただの一度も持ち主を変えていない。'],
+    historyCaptured: ['奪取からの防衛は{n}度目。ベルトを奪った者が、守る者としても本物であることを証明し始めた。'],
+    closing: [
+      '次の刺客はおよそ3か月後に来る。どの団体が挑戦権を取るか、業界の上位陣から目が離せない。',
+      '防衛が積み上がるほど、王者の名は重くなる。次の天頂戦での返還まで、この牙城に挑む機会は限られている。',
+      '敗れた{challengerOrg}に次の挑戦権が回る保証はない。頂点への列は、3か月ごとに引き直される。',
+    ],
+  },
+  move: {
+    headline: [
+      '統一王座、陥落 新王者は{winner}',
+      '{winner}が業界の頂点を奪取 {loser}の牙城崩れる',
+    ],
+    lead: [
+      '業界の頂点が、ひっくり返った。{winnerOrg}の{winner}が王者{loser}（{loserOrg}）を撃破し、全国統一王座は団体ごと持ち主を変えた。',
+      '{loser}の時代が、ここで終わった。挑戦者{winner}（{winnerOrg}）が業界の頂点のベルトを奪い取り、勢力図を塗り替えた。',
+      '3か月に一度の頂上決戦が、ついにベルトを動かした。新しい全国統一王者は{winner}（{winnerOrg}）である。',
+    ],
+    circumstance: [
+      '挑戦権をもぎ取ったのは{winnerOrg}。団体の看板を背負って送り込まれた選手が、その期待に最高の結果で応えた。',
+      'この王座に情状はない。勝った者がすべてを持っていく。{loserOrg}の手を離れたベルトは、この夜から{winnerOrg}の至宝になった。',
+    ],
+    historyDefended: ['敗れた前王者の在位は{heldYears}年、防衛{n}度。積み上げた数字は、この一敗ですべて過去のものになった。'],
+    historyNoDefense: ['前王者は最初の防衛を守り切れないまま、玉座を追われた。'],
+    profileYoung: CHAMPION_CHANGE_TEMPLATES.profileYoung,
+    profileRising: CHAMPION_CHANGE_TEMPLATES.profileRising,
+    profileEstablished: CHAMPION_CHANGE_TEMPLATES.profileEstablished,
+    profileVeteran: CHAMPION_CHANGE_TEMPLATES.profileVeteran,
+    closing: [
+      '奪ったベルトを守れるのか。およそ3か月後の最初の防衛戦で、今度はこの選手が試される番だ。',
+      'ベルトを失った団体に、雪辱の機会はいずれ巡ってくる。ただしそれが3か月後とは限らない。',
+      'これでベルトは{orgCount}団体目。業界の頂点は、まだ一つの団体に留まろうとしない。',
+    ],
+  },
+  retirement: {
+    headline: [
+      '{name}、統一王座を返上 頂点のまま去る',
+      '統一王座、空位に 王者{name}が引退',
+    ],
+    lead: [
+      '業界の頂点が、空になった。王者{name}（{org}）が現役生活に幕を下ろし、全国統一王座は規定により返上された。',
+      'ベルトを巻いたまま、王者はリングを去る。{name}（{org}）の引退にともない、全国統一王座は空位となった。',
+    ],
+    historyDefended: ['在位{heldYears}年、防衛{n}度。最後まで誰にも奪わせなかったベルトを、自らの手で置いていく。'],
+    historyNoDefense: ['戴冠から日は浅かった。それでも返上の規定に例外はない。'],
+    vacancy: [
+      '王座は次の天頂戦まで空位となる。繰り上げも代替戦もない。頂点の椅子は、簡単には埋まらない。',
+      '新しい王者を名乗れるのは、次の天頂戦の優勝者ただ一人である。',
+    ],
+    closing: [
+      '王者不在の業界で、各団体の勢力争いは続く。空いた頂点を誰が獲るか——次の天頂戦への号砲は、もう鳴っている。',
+      '空位のまま迎える次の天頂戦は、そのまま新王者決定戦になる。大きな大会になることだけは、いまから決まっている。',
+    ],
+  },
+  affiliationLoss: {
+    headline: [
+      '{name}、統一王座を返上 所属喪失で無念の手放し',
+      '統一王座、空位に 王者{name}が無所属へ',
+    ],
+    lead: [
+      '業界の頂点のベルトが、行き場を失った。王者{name}が所属を失い、全国統一王座は規定により返上された。',
+      '王座の規定は保持者に所属団体を求める。無所属となった{name}は、実力とは関係のないところでベルトを手放すことになった。',
+    ],
+    vacancy: null,
+    closing: [
+      '返上した本人が次の天頂戦のリングに立てるかどうかは、新しい所属次第。実力者の去就に、業界中の視線が集まる。',
+      '空位は次の天頂戦まで続く。それまで、この頂点に挑む道はない。',
+    ],
+  },
+  return: {
+    headline: [
+      '{name}、統一王座を返還 4年間の王座に幕',
+      'ベルトが大会に帰る夜 天頂戦前夜の返還式',
+    ],
+    lead: [
+      '4年に一度の儀式である。開幕を1週間後に控えた天頂戦へ、王者{name}（{org}）が全国統一王座を返還した。',
+      '王者の腰からベルトが外れた。奪われたのではない——規定に従い、次の優勝者を決める大会へ自ら返したのだ。',
+    ],
+    historyStayed: ['この4年間、ベルトはただの一度も持ち主を変えなかった。防衛{n}度、そのすべてを守り切っての返還である。胸を張ってベルトを置ける王者が、どれだけいるだろうか。'],
+    historyMoved: ['この4年間でベルトは{holderCount}人の保持者と{orgCount}団体を渡った。激動の4年の最後にベルトを巻いていたのが、この選手だった。'],
+    closingEntered: ['翌週、16名のトーナメントが新しい持ち主を決める。返還した王者自身も、その16名に名を連ねる——奪い返す資格は、誰よりも持っている。'],
+    closing: ['ベルトのない1週間が、4年ぶりに始まる。次にこれを巻くのは、4連勝を成し遂げたただ一人だ。'],
+  },
+};
+UNIFIED_TITLE_TEMPLATES.affiliationLoss.vacancy = UNIFIED_TITLE_TEMPLATES.retirement.vacancy;
+
 // MQ再設計P4/P5 §5.2: 大ニュース(一面ジャック+週頭通知)判定集合。
 const BIG_NEWS_TYPES = new Set(['mqAllTimeRecord', 'mqTagRecord', 'hotProspectDebut', 'kaiganAwakening', 'fatedRivals', 'topChampionInjury']);
 
@@ -30734,7 +30911,7 @@ if (typeof module !== 'undefined' && module.exports) {
     MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, LONG_TERM_INJURY, INJURY_DEBUFF_TABLE,
-    TITLES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
+    TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
     GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
     GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES, BITTER_PREMATCH_LINES,
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,

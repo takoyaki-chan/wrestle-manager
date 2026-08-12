@@ -3754,6 +3754,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   const _npcChampOrgData = negotiateOrgId ? G.aiOrgs[negotiateOrgId] : null;
   const _npcChamp = _npcChampOrgData?.titles?.world?.championId === c.id;
   const isChamp = _playerChamp || _npcChamp;
+  const isUnifiedChamp = G.unifiedTitle?.championId === c.id;
   const _champDefenses = _playerChamp ? G.titles.world.defenses : (_npcChamp ? (_npcChampOrgData.titles.world.defenses || 0) : 0);
   // 春のタッグリーグ「総合ベストタッグ」称号（遅延失効判定 — 片方が退団/引退していれば自動非表示）
   const _activeBestTag = (typeof Engine !== 'undefined' && Engine.springTagLeague) ? Engine.springTagLeague.getActiveBestTagTeam(G) : null;
@@ -3807,6 +3808,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
+            ${isUnifiedChamp ? '<span style="font-size:14px;color:#4fb7c5;font-weight:700">🌐 全国統一王者</span>' : ''}
             ${_isBestTagTeam ? `<span style="font-size:13px;color:#ff6f9c;font-weight:700">🌸 総合ベストタッグ（第${_bestTagSeason}回${_bestTagPartnerName ? '・' + _bestTagPartnerName + 'と' : ''}）</span>` : ''}
             ${c.lastRun ? '<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">🌅 ラストラン</span>' : ''}
             ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル（残${ct ? ct.weeksLeft : '?'}週）</span>`; })() : ''}
@@ -4149,6 +4151,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
             ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
             ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${_champDefenses}防衛）</span>` : ''}
+            ${isUnifiedChamp ? `<span style="color:#4fb7c5;font-size:12px;font-weight:700">｜ 🌐 全国統一王者（${G.unifiedTitle.defenses || 0}防衛）</span>` : ''}
             ${summary.peakOVR > 0 && Engine.util.ov(c) < summary.peakOVR ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
           </div>
           ${(() => {
@@ -4450,6 +4453,9 @@ function getChallengeUnavailableIds() {
   const ids = new Set(getScheduledChallengeCard()?.reservedIds || []);
   const single = Engine.challengeRequest?.getScheduledSingleChallenge?.(G);
   (single?.reservedIds || []).forEach(id => ids.add(id));
+  const unifiedIncoming = Engine.unifiedTitle?.getIncomingMatch?.(G);
+  if (unifiedIncoming) ids.add(unifiedIncoming.championId);
+  if (G?._pendingUnifiedAwayMatch?.challengerId) ids.add(G._pendingUnifiedAwayMatch.challengerId);
   // これから遠征に出る(週の種類を問わない)
   const away = G && G._pendingAwayChallengeMatch;
   if (away) {
@@ -4471,7 +4477,11 @@ function getShowCardFighter(id) {
   const scheduled = getScheduledChallengeCard();
   if (scheduled) return [...scheduled.teamA, ...scheduled.teamB].find(c => c.id === id) || null;
   const single = Engine.challengeRequest?.getScheduledSingleChallenge?.(G);
-  return single && (single.playerFighter.id === id ? single.playerFighter : single.challenger.id === id ? single.challenger : null);
+  if (single) {
+    const fighter = single.playerFighter.id === id ? single.playerFighter : single.challenger.id === id ? single.challenger : null;
+    if (fighter) return fighter;
+  }
+  return Engine.unifiedTitle?._findActive?.(G, id)?.fighter || null;
 }
 
 function moveShowCard(idx, dir) {
@@ -4479,7 +4489,7 @@ function moveShowCard(idx, dir) {
   if (target < 0 || target >= G.showCard.length) return;
   // メインイベント(位置0)にタッグ枠を移動させない
   const card = [...G.showCard];
-  if (card[idx]?._crMatchLocked || card[target]?._crMatchLocked) {
+  if (card[idx]?._crMatchLocked || card[target]?._crMatchLocked || card[idx]?._unifiedTitleLocked || card[target]?._unifiedTitleLocked) {
     Audio.play('error');
     showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
     return;
@@ -4728,6 +4738,11 @@ function startShowPrep() {
   // away-flow-redesign CH-2: 遠征(敵地遠征)が未消化なら、興行準備(会場選択・カード編集)
   // という寄り道を見せる前に「敵地へ向かう」演出→遠征試合を挟む。
   // 遠征が解決すると App.beginAwayChallengeTravel() 経由で通常の興行準備へ戻ってくる。
+  if (G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
+      && typeof App !== 'undefined' && typeof App.beginUnifiedTitleAwayTravel === 'function') {
+    App.beginUnifiedTitleAwayTravel();
+    return;
+  }
   if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G) && typeof App !== 'undefined' && typeof App.beginAwayChallengeTravel === 'function') {
     App.beginAwayChallengeTravel();
     return;
@@ -4753,6 +4768,11 @@ function resumeShowPrep() {
     return;
   }
   // 遠征が未消化ならそちらを先に消化する（startShowPrep と同じ優先順位）
+  if (G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
+      && typeof App !== 'undefined' && typeof App.beginUnifiedTitleAwayTravel === 'function') {
+    App.beginUnifiedTitleAwayTravel();
+    return;
+  }
   if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
       && typeof App !== 'undefined' && typeof App.beginAwayChallengeTravel === 'function') {
     App.beginAwayChallengeTravel();
@@ -12022,6 +12042,34 @@ function showHostileArrivalStage(opts) {
 
 if (typeof window !== 'undefined') {
   window.showHostileArrivalStage = showHostileArrivalStage;
+}
+
+function showUnifiedTitleChallengeModal(payload, state, onChoice) {
+  if (_isPopupActive()) { _popupQueue.push(() => showUnifiedTitleChallengeModal(payload, state, onChoice)); return; }
+  const champion = Engine.unifiedTitle?._findActive?.(state, payload?.championId);
+  const eligible = (payload?.eligibleIds || [])
+    .map(id => (state.roster || []).find(f => f.id === id)).filter(Boolean);
+  if (!champion || eligible.length === 0) { if (onChoice) onChoice(null); return; }
+  const choices = eligible.map(f => `<button class="mdl-a-continue-btn" type="button" data-unified-fighter="${f.id}" style="margin-top:7px;width:100%">
+    🌐 ${escHtml(f.name)}で挑戦する <small style="margin-left:8px;opacity:.7">OVR ${Engine.util.ov(f)}</small>
+  </button>`).join('');
+  const html = `
+    ${_mdlAHeader('全国統一王座 挑戦権', `${_mdlASeasonLabel(state)} ・ PLAYER TURN`, { urgent: true })}
+    ${_mdlAReporterStrip(state, `${Engine.unifiedTitle._orgName(state, champion.orgId)}の王者${champion.fighter.name}へ挑む番が来ました`)}
+    <div class="mdl-a-subject-stage">
+      <div class="mdl-a-observation centered" style="font-size:14px;line-height:1.9">
+        業界の挑戦順が自団体へ回ってきました。遠征させる選手を一人選んでください。
+      </div>
+      <div style="padding:10px 18px">${choices}</div>
+    </div>
+    <div class="mdl-a-prompt"><button class="mdl-a-continue-btn" id="unifiedTitleSkipBtn" type="button">今回は見送る</button></div>`;
+  if (!_mdlAOpen(html, { dark: true, narrow: true })) { if (onChoice) onChoice(null); return; }
+  const finish = fighterId => { _mdlAClose(); if (onChoice) onChoice(fighterId); };
+  document.querySelectorAll('[data-unified-fighter]').forEach(button => {
+    button.addEventListener('click', () => finish(Number(button.dataset.unifiedFighter)), { once: true });
+  });
+  document.getElementById('unifiedTitleSkipBtn')?.addEventListener('click', () => finish(null), { once: true });
+  Audio.play('notify');
 }
 
 function showChallengeRequestModal(payload, state, onChoice) {

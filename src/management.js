@@ -479,6 +479,10 @@ const Engine = {
         changes.push(...progressionRepair.changes);
       }
 
+      const beforeUnified = state.unifiedTitle;
+      state = Engine.unifiedTitle.repairOnLoad(state);
+      if (beforeUnified === undefined) changes.push('unified_title_initialized');
+
       return {
         state,
         changed: changes.length > 0,
@@ -2298,10 +2302,21 @@ const Engine = {
       const titleEstablished = !!state?.titleEstablished;
       const cd = Engine.title.canTitleMatch(state || {});
       const champId = state?.titles?.world?.championId || null;
+      const hasUnified = showCard.some(slot => slot && slot._unifiedTitleMatch);
       let titleAssigned = false;
 
       return showCard.map(slot => {
         if (!slot) return slot;
+        if (slot._unifiedTitleMatch) {
+          const unifiedChampId = state?.unifiedTitle?.championId || null;
+          const left = slot.left || 0;
+          const right = slot.right || 0;
+          const allowed = !titleAssigned && left > 0 && right > 0 && left !== right
+            && unifiedChampId != null && (left === unifiedChampId || right === unifiedChampId);
+          if (!allowed) return { ...slot, isTitle: false, _unifiedTitleMatch: false };
+          titleAssigned = true;
+          return { ...slot, isTitle: true, _unifiedTitleLocked: true };
+        }
         if (slot.matchType === 'tag') return slot.isTitle ? { ...slot, isTitle: false } : slot;
         if (!slot.isTitle) return slot;
 
@@ -2329,7 +2344,7 @@ const Engine = {
           }
         }
 
-        if (allowed && titleAssigned) allowed = false;
+        if (allowed && (titleAssigned || hasUnified)) allowed = false;
         if (!allowed) return { ...slot, isTitle: false };
         titleAssigned = true;
         return slot;
@@ -2342,6 +2357,619 @@ const Engine = {
       }
       return '団体王座';
     }
+  },
+
+  // ── 全国統一王座（task-88）──────────────────────────────
+  // 団体王座とは別の、業界全体でただ一本だけ存在する王座。
+  unifiedTitle: {
+    ORG_RANK_DECAY: 0.65,
+    FIGHTER_RANK_DECAY: 0.8,
+    BOOKING_EXPIRY_WEEKS: 8,
+
+    _orgName(state, orgId) {
+      return orgId === 'player'
+        ? (state.orgName || 'あなたの団体')
+        : Engine.contract._getOrgName(orgId, state);
+    },
+
+    _findActive(state, fighterId) {
+      if (fighterId == null) return null;
+      const player = (state.roster || []).find(c => c.id === fighterId);
+      if (player) return {
+        fighter: player,
+        orgId: player.isUnifiedTitleGuest && player._unifiedGuestOrgId
+          ? player._unifiedGuestOrgId
+          : 'player',
+      };
+      for (const [orgId, org] of Object.entries(state.aiOrgs || {})) {
+        const fighter = (org.roster || []).find(c => c.id === fighterId);
+        if (fighter) return { fighter, orgId };
+      }
+      return null;
+    },
+
+    _updateFighter(state, fighterId, updater) {
+      const found = this._findActive(state, fighterId);
+      if (!found) return state;
+      if (found.orgId === 'player') {
+        return { ...state, roster: (state.roster || []).map(c => c.id === fighterId ? updater(c) : c) };
+      }
+      const org = state.aiOrgs[found.orgId];
+      return {
+        ...state,
+        aiOrgs: {
+          ...state.aiOrgs,
+          [found.orgId]: { ...org, roster: (org.roster || []).map(c => c.id === fighterId ? updater(c) : c) },
+        },
+      };
+    },
+
+    _recordUnifiedWin(state, fighterId) {
+      return this._updateFighter(state, fighterId, fighter => {
+        const gain = Engine.popularity.applyDiminishing(8, fighter.popularity || 0);
+        const event = { type: 'unifiedTitle', result: 'won', season: state.season, week: state.week };
+        const careerRecord = fighter.careerRecord || {};
+        const updated = {
+          ...fighter,
+          popularity: Math.min(100, (fighter.popularity || 0) + gain),
+          careerRecord: { ...careerRecord, history: [...(careerRecord.history || []), event] },
+        };
+        return Engine.career.updatePeakPopularity(updated, state.season);
+      });
+    },
+
+    _pushNews(state, type, data, characterIds = []) {
+      return Engine.industryNews.push(state, {
+        type,
+        characterId: characterIds[0] || null,
+        characterIds: characterIds.filter(Boolean),
+        data,
+      });
+    },
+
+    _abs(state, season = state.season, week = state.week) {
+      return Engine.util.absWeek(season || 1, week || 1);
+    },
+
+    _heldYears(state, title = state.unifiedTitle) {
+      if (!title) return 0;
+      const weeks = Math.max(0, this._abs(state) - this._abs(state, title.wonSeason, title.wonWeek));
+      const years = Math.round((weeks / 48) * 10) / 10;
+      return Number.isInteger(years) ? years : years.toFixed(1);
+    },
+
+    _cycleStats(title) {
+      const history = title?.history || [];
+      const lastAwardIndex = history.reduce((idx, ev, i) => ['creation', 'crown', 'repeat'].includes(ev.type) ? i : idx, -1);
+      const cycle = history.slice(Math.max(0, lastAwardIndex));
+      const holderIds = new Set();
+      const orgIds = new Set();
+      cycle.forEach(ev => {
+        if (ev.championId != null) holderIds.add(ev.championId);
+        if (ev.winnerId != null) holderIds.add(ev.winnerId);
+        if (ev.orgId) orgIds.add(ev.orgId);
+        if (ev.winnerOrgId) orgIds.add(ev.winnerOrgId);
+      });
+      if (title?.championId != null) holderIds.add(title.championId);
+      if (title?.orgId) orgIds.add(title.orgId);
+      return { holderCount: holderIds.size, orgCount: orgIds.size };
+    },
+
+    awardTournamentWinner(state, fighterId) {
+      const found = this._findActive(state, fighterId);
+      if (!found) return { state, event: null };
+      const previous = state.unifiedTitle || null;
+      const isCreation = previous == null;
+      const isRepeat = !isCreation
+        && previous.championId === fighterId
+        && previous.returnedSeason === state.season;
+      const priorStats = this._cycleStats(previous);
+      const priorDefenses = previous?.defenses || 0;
+      const eventType = isCreation ? 'creation' : (isRepeat ? 'repeat' : 'crown');
+      const historyEvent = {
+        type: eventType,
+        season: state.season,
+        week: state.week,
+        championId: fighterId,
+        orgId: found.orgId,
+        edition: state.ppvTournament?.edition || Math.max(1, Math.floor((state.season + 3) / 4)),
+      };
+      const unifiedTitle = {
+        championId: fighterId,
+        orgId: found.orgId,
+        defenses: 0,
+        wonSeason: state.season,
+        wonWeek: state.week,
+        edition: historyEvent.edition,
+        challengePeriodKey: null,
+        aiHolderCycles: found.orgId === 'player' ? 0 : (previous?.aiHolderCycles || 0),
+        returnedSeason: null,
+        history: [...(previous?.history || []), historyEvent],
+      };
+      let next = { ...state, unifiedTitle };
+      next = this._recordUnifiedWin(next, fighterId);
+      const fighter = this._findActive(next, fighterId)?.fighter || found.fighter;
+      const newsType = isCreation ? 'unifiedTitleCreation' : (isRepeat ? 'unifiedTitleRepeat' : 'unifiedTitleCrown');
+      next = this._pushNews(next, newsType, {
+        name: fighter.name,
+        org: this._orgName(next, found.orgId),
+        edition: unifiedTitle.edition,
+        n: priorDefenses,
+        holderCount: priorStats.holderCount,
+        orgCount: priorStats.orgCount,
+        age: fighter.age,
+        styleJa: Engine.newspaper.STYLE_JA[fighter.style] || fighter.style || '',
+        careerSeasons: (fighter.careerSeasons || 0) + 1,
+      }, [fighterId]);
+      return {
+        state: next,
+        event: { type: newsType, message: `🌐 ${fighter.name}が全国統一王座を戴冠！` },
+      };
+    },
+
+    markTournamentReturn(state) {
+      const title = state.unifiedTitle;
+      if (!title?.championId || title.returnedSeason === state.season) return { state, event: null };
+      const found = this._findActive(state, title.championId);
+      if (!found) return { state: this.reconcile(state, { silent: true }), event: null };
+      const stats = this._cycleStats(title);
+      const historyEvent = {
+        type: 'return', season: state.season, week: state.week,
+        championId: title.championId, orgId: found.orgId, defenses: title.defenses || 0,
+      };
+      let next = {
+        ...state,
+        unifiedTitle: {
+          ...title,
+          returnedSeason: state.season,
+          history: [...(title.history || []), historyEvent],
+        },
+      };
+      next = this._pushNews(next, 'unifiedTitleReturn', {
+        name: found.fighter.name,
+        org: this._orgName(next, found.orgId),
+        n: title.defenses || 0,
+        holderCount: stats.holderCount,
+        orgCount: stats.orgCount,
+        entered: true,
+      }, [title.championId]);
+      return { state: next, event: { type: 'unifiedTitleReturn', message: `🌐 ${found.fighter.name}が全国統一王座を天頂戦へ返還` } };
+    },
+
+    vacate(state, reason = 'affiliation', snapshot = null) {
+      const title = state.unifiedTitle;
+      if (!title?.championId) return state;
+      const found = this._findActive(state, title.championId);
+      const fighter = snapshot || found?.fighter;
+      const orgId = found?.orgId || title.orgId;
+      const data = {
+        name: fighter?.name || '王者',
+        org: this._orgName(state, orgId),
+        n: title.defenses || 0,
+        heldYears: this._heldYears(state, title),
+      };
+      const historyEvent = {
+        type: 'vacate', reason, season: state.season, week: state.week,
+        championId: title.championId, orgId, defenses: title.defenses || 0,
+      };
+      let next = {
+        ...state,
+        unifiedTitle: {
+          ...title,
+          championId: null,
+          orgId: null,
+          defenses: 0,
+          aiHolderCycles: 0,
+          challengePeriodKey: null,
+          history: [...(title.history || []), historyEvent],
+        },
+        _pendingUnifiedIncomingMatch: null,
+        _pendingUnifiedAIMatch: null,
+        _pendingUnifiedPlayerTurn: null,
+        _pendingUnifiedAwayMatch: null,
+      };
+      const newsType = reason === 'retirement' ? 'unifiedTitleVacateRetirement' : 'unifiedTitleVacateAffiliation';
+      next = this._pushNews(next, newsType, data, fighter?.id ? [fighter.id] : []);
+      return next;
+    },
+
+    reconcile(state, opts = {}) {
+      if (state.unifiedTitle === undefined) return { ...state, unifiedTitle: null };
+      const title = state.unifiedTitle;
+      if (!title?.championId) return state;
+      const found = this._findActive(state, title.championId);
+      if (!found) {
+        if (opts.silent) {
+          return {
+            ...state,
+            unifiedTitle: { ...title, championId: null, orgId: null, defenses: 0, aiHolderCycles: 0, challengePeriodKey: null },
+            _pendingUnifiedIncomingMatch: null,
+            _pendingUnifiedAIMatch: null,
+            _pendingUnifiedPlayerTurn: null,
+            _pendingUnifiedAwayMatch: null,
+          };
+        }
+        return this.vacate(state, opts.reason || 'affiliation', opts.snapshot || null);
+      }
+      if (found.orgId === title.orgId) return state;
+      return { ...state, unifiedTitle: { ...title, orgId: found.orgId } };
+    },
+
+    repairOnLoad(state) {
+      let next = state.unifiedTitle === undefined ? { ...state, unifiedTitle: null } : state;
+      if (next.unifiedTitle) {
+        const title = next.unifiedTitle;
+        next = {
+          ...next,
+          unifiedTitle: {
+            championId: title.championId ?? null,
+            orgId: title.orgId ?? null,
+            defenses: Math.max(0, Number(title.defenses) || 0),
+            wonSeason: title.wonSeason || next.season,
+            wonWeek: title.wonWeek || next.week,
+            edition: title.edition || Math.max(1, Math.floor(((next.season || 1) + 3) / 4)),
+            challengePeriodKey: title.challengePeriodKey || null,
+            aiHolderCycles: Math.max(0, Number(title.aiHolderCycles) || 0),
+            returnedSeason: title.returnedSeason || null,
+            history: Array.isArray(title.history) ? title.history : [],
+          },
+        };
+      }
+      return this.reconcile(next, { silent: true });
+    },
+
+    _available(fighter) {
+      return !!fighter && !fighter.injury && !fighter.isRental && !fighter.isIntrusion;
+    },
+
+    getEligibleChallengers(state, orgId, championId = null) {
+      const roster = orgId === 'player' ? (state.roster || []) : (state.aiOrgs?.[orgId]?.roster || []);
+      const ranked = roster.filter(f => f.id !== championId && this._available(f))
+        .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || a.id - b.id);
+      if (!ranked.length) return [];
+      const floor = Engine.util.ov(ranked[0]) - 4;
+      return ranked.filter(f => Engine.util.ov(f) >= floor);
+    },
+
+    assertEligibleChallenger(state, orgId, fighterId, championId = null) {
+      const eligible = this.getEligibleChallengers(state, orgId, championId);
+      const ok = eligible.some(f => f.id === fighterId);
+      if (!ok) throw new Error(`Unified title challenger ${fighterId} is outside ${orgId}'s top OVR-4 pool`);
+      return true;
+    },
+
+    _weightedPick(rng, rows, decay) {
+      if (!rows.length) return null;
+      const weights = {};
+      rows.forEach((row, index) => { weights[String(index)] = Math.pow(decay, index); });
+      const pickedIndex = Number(Engine.rng.weighted(rng, weights));
+      return rows[pickedIndex] || rows[0];
+    },
+
+    _rankedOrgIds(state, predicate) {
+      const known = ['player', ...Object.keys(state.aiOrgs || {})];
+      const rank = new Map((state.rankings || []).map((row, index) => [row.orgId, Number(row.rank) || index + 1]));
+      return known.filter(id => !predicate || predicate(id))
+        .sort((a, b) => (rank.get(a) || 99) - (rank.get(b) || 99) || String(a).localeCompare(String(b)));
+    },
+
+    _quarterKey(state) {
+      return `${state.season}-Q${Math.ceil((state.week || 1) / 12)}`;
+    },
+
+    processQuarter(state, suppliedRng = null) {
+      // I-1: 王座創設前はstateもRNGも一切触らない。
+      if (!state.unifiedTitle || !state.unifiedTitle.championId) return state;
+      // 前四半期末で失効した「こちらの番」を先に回収し、新四半期を空振りさせない。
+      state = this.releaseExpiredBookings(state);
+      const quarter = Math.ceil((state.week || 1) / 12);
+      if (quarter < 1 || quarter > 4) return state;
+      // 天頂戦年Q4は大会専用。periodKeyも消費しない。
+      if (quarter === 4 && Engine.ppvTournament.isTournamentSeason(state.season)) return state;
+      const periodKey = this._quarterKey(state);
+      if (state.unifiedTitle.challengePeriodKey === periodKey) return state;
+
+      let next = {
+        ...state,
+        unifiedTitle: { ...state.unifiedTitle, challengePeriodKey: periodKey },
+      };
+      const holder = this._findActive(next, next.unifiedTitle.championId);
+      if (!holder || !this._available(holder.fighter)) return next;
+      if (next.unifiedTitle.returnedSeason === next.season) return next;
+      if (next._pendingUnifiedIncomingMatch || next._pendingUnifiedAIMatch
+          || next._pendingUnifiedPlayerTurn || next._pendingUnifiedAwayMatch) return next;
+
+      const rng = suppliedRng || Engine.rng.create(Engine.rng.derive(
+        next.rngSeed, next.season, quarter, 0x8811));
+      const issuedAbsWeek = this._abs(next);
+
+      if (holder.orgId === 'player') {
+        const orgIds = this._rankedOrgIds(next, id => id !== 'player' && id !== holder.orgId
+          && this.getEligibleChallengers(next, id, holder.fighter.id).length > 0);
+        const challengerOrgId = this._weightedPick(rng, orgIds, this.ORG_RANK_DECAY);
+        if (!challengerOrgId) return next;
+        const fighters = this.getEligibleChallengers(next, challengerOrgId, holder.fighter.id);
+        const challenger = this._weightedPick(rng, fighters, this.FIGHTER_RANK_DECAY);
+        if (!challenger) return next;
+        this.assertEligibleChallenger(next, challengerOrgId, challenger.id, holder.fighter.id);
+        return {
+          ...next,
+          _pendingUnifiedIncomingMatch: {
+            championId: holder.fighter.id,
+            challengerId: challenger.id,
+            challengerOrgId,
+            periodKey,
+            issuedAbsWeek,
+            expiresAbsWeek: issuedAbsWeek + this.BOOKING_EXPIRY_WEEKS,
+          },
+        };
+      }
+
+      const cycles = Math.max(0, Number(next.unifiedTitle.aiHolderCycles) || 0);
+      if (cycles >= 3) {
+        const eligible = this.getEligibleChallengers(next, 'player', holder.fighter.id);
+        if (!eligible.length) {
+          return { ...next, unifiedTitle: { ...next.unifiedTitle, aiHolderCycles: 0 } };
+        }
+        const historyEvent = { type: 'playerTurnOffered', season: next.season, week: next.week, championId: holder.fighter.id };
+        return {
+          ...next,
+          unifiedTitle: { ...next.unifiedTitle, history: [...(next.unifiedTitle.history || []), historyEvent] },
+          _pendingUnifiedPlayerTurn: {
+            championId: holder.fighter.id,
+            championOrgId: holder.orgId,
+            eligibleIds: eligible.map(f => f.id),
+            periodKey,
+            issuedAbsWeek,
+            expiresAbsWeek: Engine.util.absWeek(next.season, quarter * 12),
+          },
+          _pendingUnifiedNotification: { type: 'playerTurn', championId: holder.fighter.id },
+        };
+      }
+
+      const orgIds = this._rankedOrgIds(next, id => id !== 'player' && id !== holder.orgId
+        && this.getEligibleChallengers(next, id, holder.fighter.id).length > 0);
+      const challengerOrgId = this._weightedPick(rng, orgIds, this.ORG_RANK_DECAY);
+      if (!challengerOrgId) return next;
+      const fighters = this.getEligibleChallengers(next, challengerOrgId, holder.fighter.id);
+      const challenger = this._weightedPick(rng, fighters, this.FIGHTER_RANK_DECAY);
+      if (!challenger) return next;
+      this.assertEligibleChallenger(next, challengerOrgId, challenger.id, holder.fighter.id);
+      return {
+        ...next,
+        unifiedTitle: { ...next.unifiedTitle, aiHolderCycles: cycles + 1 },
+        _pendingUnifiedAIMatch: {
+          championId: holder.fighter.id,
+          championOrgId: holder.orgId,
+          challengerId: challenger.id,
+          challengerOrgId,
+          periodKey,
+          issuedAbsWeek,
+        },
+      };
+    },
+
+    getIncomingMatch(state) {
+      const pending = state._pendingUnifiedIncomingMatch;
+      if (!pending || state.unifiedTitle?.championId !== pending.championId
+          || state.unifiedTitle?.orgId !== 'player') return null;
+      const champion = this._findActive(state, pending.championId);
+      const challenger = this._findActive(state, pending.challengerId);
+      if (!champion || champion.orgId !== 'player' || !this._available(champion.fighter)
+          || !challenger || challenger.orgId !== pending.challengerOrgId || !this._available(challenger.fighter)) return null;
+      try { this.assertEligibleChallenger(state, challenger.orgId, challenger.fighter.id, champion.fighter.id); }
+      catch (_err) { return null; }
+      return { ...pending, champion: champion.fighter, challenger: challenger.fighter };
+    },
+
+    reserveIncomingMatch(state) {
+      const match = this.getIncomingMatch(state);
+      if (!match) return { state: { ...state, _pendingUnifiedIncomingMatch: null }, match: null };
+      const slot = {
+        left: match.champion.id,
+        right: match.challenger.id,
+        isTitle: true,
+        _unifiedTitleMatch: true,
+        _unifiedTitleLocked: true,
+      };
+      return { state: { ...state, _pendingUnifiedIncomingMatch: null }, match: { ...match, slot } };
+    },
+
+    acceptPlayerTurn(state, fighterId) {
+      const turn = state._pendingUnifiedPlayerTurn;
+      if (!turn || !turn.eligibleIds.includes(fighterId)) return state;
+      this.assertEligibleChallenger(state, 'player', fighterId, turn.championId);
+      const now = this._abs(state);
+      return {
+        ...state,
+        _pendingUnifiedPlayerTurn: null,
+        _pendingUnifiedNotification: null,
+        _pendingUnifiedAwayMatch: {
+          championId: turn.championId,
+          championOrgId: turn.championOrgId,
+          challengerId: fighterId,
+          periodKey: turn.periodKey,
+          issuedAbsWeek: now,
+          expiresAbsWeek: turn.expiresAbsWeek,
+        },
+      };
+    },
+
+    declinePlayerTurn(state, outcome = 'skipped') {
+      if (!state._pendingUnifiedPlayerTurn) return state;
+      const event = { type: 'playerTurnConsumed', outcome, season: state.season, week: state.week };
+      return {
+        ...state,
+        unifiedTitle: state.unifiedTitle ? {
+          ...state.unifiedTitle,
+          aiHolderCycles: 0,
+          history: [...(state.unifiedTitle.history || []), event],
+        } : state.unifiedTitle,
+        _pendingUnifiedPlayerTurn: null,
+        _pendingUnifiedNotification: null,
+      };
+    },
+
+    releaseExpiredBookings(state) {
+      if (!state.unifiedTitle) return state;
+      const now = this._abs(state);
+      let next = state;
+      if (next._pendingUnifiedIncomingMatch && now > next._pendingUnifiedIncomingMatch.expiresAbsWeek) {
+        next = { ...next, _pendingUnifiedIncomingMatch: null };
+      }
+      if (next._pendingUnifiedAwayMatch && now > next._pendingUnifiedAwayMatch.expiresAbsWeek) {
+        const event = { type: 'playerTurnConsumed', outcome: 'expired', season: next.season, week: next.week };
+        next = {
+          ...next,
+          unifiedTitle: { ...next.unifiedTitle, aiHolderCycles: 0, history: [...(next.unifiedTitle.history || []), event] },
+          _pendingUnifiedAwayMatch: null,
+        };
+      }
+      if (next._pendingUnifiedPlayerTurn && now > next._pendingUnifiedPlayerTurn.expiresAbsWeek) {
+        next = this.declinePlayerTurn(next, 'expired');
+      }
+      return next;
+    },
+
+    _simulateBookedMatch(state, booking, path) {
+      const champion = this._findActive(state, booking.championId);
+      const challenger = this._findActive(state, booking.challengerId);
+      if (!champion || !challenger || !this._available(champion.fighter) || !this._available(challenger.fighter)) return null;
+      try { this.assertEligibleChallenger(state, challenger.orgId, challenger.fighter.id, champion.fighter.id); }
+      catch (_err) { return null; }
+      const roster = [challenger.fighter, champion.fighter];
+      const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, booking.challengerId, 0x88A1));
+      const ringIn = Engine.mq.buildRingInOpts(state, challenger.fighter.id, champion.fighter.id, {
+        roster, isTitle: true, championId: champion.fighter.id,
+      });
+      let result = Engine.battle.simulateMatch(challenger.fighter, champion.fighter, rng, 2, ringIn.simOpts);
+      const finalized = Engine.mq.finalize(state, result, {
+        path, matchType: 'singles', participantFighters: roster, isTitle: true,
+      }, 'ai-show');
+      result = { ...result, mq: finalized.mq, mqInventory: finalized.mqInventory };
+      const winnerId = result.winner === 'left' ? challenger.fighter.id
+        : result.winner === 'right' ? champion.fighter.id : null;
+      return { champion, challenger, result, winnerId };
+    },
+
+    resolvePendingAIMatch(state) {
+      const booking = state._pendingUnifiedAIMatch;
+      if (!booking || !Engine.util.isRegularShowWeek(state.week) || state.offSeason) return state;
+      const simulated = this._simulateBookedMatch(state, booking, 'Engine.unifiedTitle.aiDefense');
+      if (!simulated) return { ...state, _pendingUnifiedAIMatch: null };
+      let next = Engine.mq.updateRecord(state, simulated.result, {
+        holderIds: [booking.challengerId, booking.championId], orgId: null,
+        stage: 'ai', matchType: 'singles', winnerId: simulated.winnerId,
+      }).state;
+      next = this.resolveMatch(next, { ...booking, winnerId: simulated.winnerId });
+      return { ...next, _pendingUnifiedAIMatch: null };
+    },
+
+    autoConsumePlayerTurn(state) {
+      let next = state;
+      if (next._pendingUnifiedPlayerTurn) {
+        const fighterId = next._pendingUnifiedPlayerTurn.eligibleIds[0];
+        next = fighterId ? this.acceptPlayerTurn(next, fighterId) : this.declinePlayerTurn(next, 'noEligible');
+      }
+      const booking = next._pendingUnifiedAwayMatch;
+      if (!booking || this._abs(next) <= booking.issuedAbsWeek
+          || !Engine.util.isRegularShowWeek(next.week) || next.offSeason) return next;
+      const simulated = this._simulateBookedMatch(next, booking, 'Engine.unifiedTitle.playerAway');
+      if (!simulated) {
+        const failed = { ...next, _pendingUnifiedAwayMatch: null };
+        return this.declinePlayerTurn({ ...failed, _pendingUnifiedPlayerTurn: { eligibleIds: [] } }, 'invalid');
+      }
+      next = Engine.mq.updateRecord(next, simulated.result, {
+        holderIds: [booking.challengerId, booking.championId], orgId: null,
+        stage: 'normal', matchType: 'singles', winnerId: simulated.winnerId,
+      }).state;
+      next = this.resolveMatch(next, { ...booking, winnerId: simulated.winnerId });
+      const won = simulated.winnerId === booking.challengerId;
+      const event = { type: 'playerTurnConsumed', outcome: won ? 'won' : 'lost', season: next.season, week: next.week };
+      return {
+        ...next,
+        unifiedTitle: next.unifiedTitle ? {
+          ...next.unifiedTitle,
+          aiHolderCycles: won ? next.unifiedTitle.aiHolderCycles : 0,
+          history: [...(next.unifiedTitle.history || []), event],
+        } : next.unifiedTitle,
+        _pendingUnifiedAwayMatch: null,
+        _awayChallengeUsedIds: { season: next.season, week: next.week, ids: [booking.challengerId] },
+      };
+    },
+
+    resolveMatch(state, details) {
+      const title = state.unifiedTitle;
+      if (!title?.championId || title.championId !== details.championId) return state;
+      const champion = this._findActive(state, details.championId);
+      const challenger = this._findActive(state, details.challengerId);
+      if (!champion || !challenger) return state;
+      const championWon = details.winnerId == null || details.winnerId === details.championId;
+      if (championWon) {
+        const defenses = (title.defenses || 0) + 1;
+        const event = {
+          type: 'defense', season: state.season, week: state.week,
+          championId: champion.fighter.id, orgId: champion.orgId,
+          challengerId: challenger.fighter.id, challengerOrgId: challenger.orgId,
+          defenses,
+        };
+        let next = {
+          ...state,
+          unifiedTitle: { ...title, defenses, history: [...(title.history || []), event] },
+        };
+        next = this._updateFighter(next, champion.fighter.id, fighter => {
+          const gain = Engine.popularity.applyDiminishing(3, fighter.popularity || 0);
+          return Engine.career.updatePeakPopularity({ ...fighter, popularity: Math.min(100, (fighter.popularity || 0) + gain) }, state.season);
+        });
+        next = this._pushNews(next, 'unifiedTitleDefense', {
+          name: champion.fighter.name,
+          org: this._orgName(next, champion.orgId),
+          challenger: challenger.fighter.name,
+          challengerOrg: this._orgName(next, challenger.orgId),
+          n: defenses,
+          heldYears: this._heldYears(next, title),
+          captured: (title.history || []).some(ev => ev.type === 'move' && ev.winnerId === champion.fighter.id),
+        }, [champion.fighter.id, challenger.fighter.id]);
+        return next;
+      }
+
+      if (details.winnerId !== details.challengerId) return state;
+      const statsBefore = this._cycleStats(title);
+      const event = {
+        type: 'move', season: state.season, week: state.week,
+        winnerId: challenger.fighter.id, winnerOrgId: challenger.orgId,
+        loserId: champion.fighter.id, loserOrgId: champion.orgId,
+        defenses: title.defenses || 0,
+      };
+      let next = {
+        ...state,
+        unifiedTitle: {
+          ...title,
+          championId: challenger.fighter.id,
+          orgId: challenger.orgId,
+          defenses: 0,
+          wonSeason: state.season,
+          wonWeek: state.week,
+          aiHolderCycles: challenger.orgId === 'player' ? 0 : (title.aiHolderCycles || 0),
+          history: [...(title.history || []), event],
+        },
+      };
+      next = this._recordUnifiedWin(next, challenger.fighter.id);
+      const movedStats = this._cycleStats(next.unifiedTitle);
+      next = this._pushNews(next, 'unifiedTitleMove', {
+        winner: challenger.fighter.name,
+        winnerOrg: this._orgName(next, challenger.orgId),
+        loser: champion.fighter.name,
+        loserOrg: this._orgName(next, champion.orgId),
+        n: title.defenses || 0,
+        heldYears: this._heldYears(state, title),
+        orgCount: Math.max(statsBefore.orgCount, movedStats.orgCount),
+        age: challenger.fighter.age,
+        styleJa: Engine.newspaper.STYLE_JA[challenger.fighter.style] || challenger.fighter.style || '',
+        careerSeasons: (challenger.fighter.careerSeasons || 0) + 1,
+      }, [challenger.fighter.id, champion.fighter.id]);
+      return next;
+    },
   },
 
   // ── MQ finalization (all match paths share this pure function) ───────────
@@ -2411,7 +3039,9 @@ const Engine = {
       const titleMatch = !!options.isTitle;
       // task-61: 呼び出し元が王者IDを明示できるようにする(AI団体の内部王座は
       // state.titles.world とは別の場所にあるため)。未指定時は従来どおりstateから引く。
-      const championId = options.championId !== undefined ? options.championId : state?.titles?.world?.championId;
+      const championId = options.championId !== undefined ? options.championId
+        : options.unifiedTitleMatch ? state?.unifiedTitle?.championId
+        : state?.titles?.world?.championId;
       const championDefenseEscape = (options.normalShowRingExtras && titleMatch && championId != null)
         ? [
             leftId === championId ? Engine.mq.CHAMPION_DEFENSE_ESCAPE_BONUS : 0,
@@ -6855,6 +7485,8 @@ const Engine = {
       const _newRetiredSeasons = { ...(s.retiredSeasons || {}) };
       retiredWithRecords.forEach(f => { _newRetiredSeasons[f.id] = s.season; });
       s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons };
+      const unifiedRetiree = retiredWithRecords.find(f => f.id === state.unifiedTitle?.championId);
+      if (unifiedRetiree) s = Engine.unifiedTitle.vacate(s, 'retirement', unifiedRetiree);
 
       // Keep faction membership consistent immediately; waiting for the next weekly
       // reconciliation lets retired members survive in a saved faction state.
@@ -12632,6 +13264,8 @@ const Engine = {
     }));
     // MQ再設計P5 §5.4: topChampionInjury — 週内処理前の各団体王者の怪我状態スナップショット
     const _championInjurySnapshot = Engine.mq.snapshotChampionInjuries(state);
+    const _unifiedChampionSnapshot = state.unifiedTitle?.championId
+      ? Engine.unifiedTitle._findActive(state, state.unifiedTitle.championId) : null;
 
     // 安全弁: 王者がロスターに存在しない場合は即座に空位にする
     if (state.titles?.world?.championId && !state.roster.find(c => c.id === state.titles.world.championId)) {
@@ -12659,6 +13293,8 @@ const Engine = {
     if (manage.coachAssign) s = { ...s, coachAssign: manage.coachAssign };
     // care-rework v0.1 §3.1: 四半期(12週)ごとに招聘候補市場を再抽選(periodKey変化時のみ)
     s = { ...s, inviteMarket: Engine.shachoshitsu.ensureInviteMarket(s) };
+    // task-88 §D: 王座未創設時は同一stateを返しRNGも消費しない四半期フック。
+    s = Engine.unifiedTitle.processQuarter(s);
     // v1.8: transient 成長イベントを state に乗せる
     if (manage._pendingGrowthEvents) s = { ...s, _pendingGrowthEvents: manage._pendingGrowthEvents };
     if (manage._pendingMotivationRetirements) s = { ...s, _pendingMotivationRetirements: manage._pendingMotivationRetirements };
@@ -12771,6 +13407,9 @@ const Engine = {
           const updSeasons = { ...(s.retiredSeasons || {}) };
           _aiRetiredIds.forEach(id => { updSeasons[id] = s.season; });
           s = { ...s, retiredIds: updIds, retiredSeasons: updSeasons };
+          if (_unifiedChampionSnapshot && _aiRetiredIds.includes(_unifiedChampionSnapshot.fighter.id)) {
+            s = Engine.unifiedTitle.vacate(s, 'retirement', _unifiedChampionSnapshot.fighter);
+          }
         }
       }
       // Phase 5: AI試合の関係値更新（applyMatchResult フル適用）
@@ -12851,6 +13490,7 @@ const Engine = {
       const b3Rng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xAA04));
       s = Engine.rival.processAIB3Challenge(b3Rng, s);
     }
+    s = Engine.unifiedTitle.resolvePendingAIMatch(s);
 
     // PPV解禁チェック（orgPop変動後）
     let ppvUnlockEvent = null;
@@ -13134,6 +13774,9 @@ const Engine = {
     if (Engine.factions && typeof Engine.factions.sweepBookedCommon1 === 'function') {
       s = Engine.factions.sweepBookedCommon1(s);
     }
+    // task-88: 破損・旧セーブ由来の保持者不在を毎週静かに修復する。
+    s = Engine.unifiedTitle.reconcile(s, { silent: true });
+    s = Engine.unifiedTitle.releaseExpiredBookings(s);
 
     // Phase 5: ライバル称号 週次判定（昇格/降格/片側因縁）
     if (s.rivalries && s.relationships) {
@@ -13322,7 +13965,7 @@ const Engine = {
     if (validMatches.length === 0) return { error: '少なくとも1試合を組んでください' };
 
     // v1.2: タイトルマッチクールダウンガード（UIバイパス防止）
-    const hasTitleSlot = validMatches.some(m => m.isTitle);
+    const hasTitleSlot = validMatches.some(m => m.isTitle && !m._unifiedTitleMatch);
     if (hasTitleSlot) {
       const cd = Engine.title.canTitleMatch(repaired);
       if (!cd.allowed) {
@@ -13386,6 +14029,7 @@ const Engine = {
       const isMainEvent = matchIdx === 0;
       const ringIn = Engine.mq.buildRingInOpts({ ...s, roster }, m.left, m.right, {
         roster, rivalries, isTitle: !!m.isTitle,
+        unifiedTitleMatch: !!m._unifiedTitleMatch,
         applyNextMatchMq: matchIdx === nextMatchMqTargetIdx,
         normalShowRingExtras: true, isMainEvent,
       });
@@ -13406,7 +14050,7 @@ const Engine = {
 
     // Title outcomes
     validMatches.forEach((m, i) => {
-      if (!m.isTitle || !rawResults[i]) return;
+      if (!m.isTitle || m._unifiedTitleMatch || !rawResults[i]) return;
       const r = rawResults[i];
       const champId = titles.world.championId;
       const tempState = { ...s, titles, roster };
@@ -13478,6 +14122,10 @@ const Engine = {
     // MQ再設計P3c(§3.2): fp(fill pressure)算出用の「キャパでクランプする前の需要」。
     // 動員系バフはこちらにもクランプなしで反映し、fpが実際の需要超過を反映するようにする。
     let rawDemand = v2Result.rawDemand;
+    if (validMatches.some(m => m && m._unifiedTitleMatch)) {
+      preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * 1.25));
+      rawDemand = Math.round(rawDemand * 1.25);
+    }
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuff = (state.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuff) {
@@ -14133,7 +14781,7 @@ const Engine = {
     // §2.4 TODO: 調子連動（試合後の調子変動）— 調子システム実装時に有効化
 
     // v1.2: タイトルマッチ実施時に絶対週数を記録
-    const executedTitleMatch = validMatches.some(m => m.isTitle);
+    const executedTitleMatch = validMatches.some(m => m.isTitle && !m._unifiedTitleMatch);
     const lastTitleMatchWeek = executedTitleMatch
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
@@ -14270,6 +14918,43 @@ const Engine = {
         }
       });
       s = { ...s, _pendingSuddenDepartures: departureResult.departed };
+    }
+
+    // 全国統一王座の一時ゲストを相手団体へ戻し、共有の王座解決器へ渡す。
+    // 通常興行の副作用をすべて反映した選手データを戻すが、一時印は保存しない。
+    const unifiedMatchIdx = validMatches.findIndex(m => m._unifiedTitleMatch);
+    if (unifiedMatchIdx >= 0 && results[unifiedMatchIdx]) {
+      const match = validMatches[unifiedMatchIdx];
+      const matchResult = results[unifiedMatchIdx];
+      let aiOrgs = { ...(s.aiOrgs || {}) };
+      for (const fighter of s.roster || []) {
+        if (!fighter.isUnifiedTitleGuest || !fighter._unifiedGuestOrgId) continue;
+        const org = aiOrgs[fighter._unifiedGuestOrgId];
+        if (!org) continue;
+        const { isUnifiedTitleGuest, _unifiedGuestOrgId, ...clean } = fighter;
+        aiOrgs[fighter._unifiedGuestOrgId] = {
+          ...org,
+          roster: (org.roster || []).map(c => c.id === clean.id ? clean : c),
+        };
+      }
+      s = {
+        ...s,
+        aiOrgs,
+        roster: (s.roster || []).filter(f => !f.isUnifiedTitleGuest),
+        _pendingUnifiedIncomingMatch: null,
+      };
+      s = Engine.unifiedTitle.resolveMatch(s, {
+        championId: s.unifiedTitle?.championId,
+        challengerId: match.left === s.unifiedTitle?.championId ? match.right : match.left,
+        leftId: match.left,
+        rightId: match.right,
+        winnerId: matchResult.winner === 'left' ? match.left
+          : matchResult.winner === 'right' ? match.right : null,
+        source: 'playerIncoming',
+      });
+      events.push(s.unifiedTitle?.championId === (match.left === state.unifiedTitle?.championId ? match.right : match.left)
+        ? '🌐 全国統一王座が移動した'
+        : '🌐 全国統一王座の防衛戦が行われた');
     }
 
     // v2.0: trust 月次更新（興行参加/不参加・勝敗・MQ・連敗・自然変動）
@@ -16654,6 +17339,8 @@ const Engine = {
         }
 
         // AI season end processing (steps 1-5)
+        const unifiedBeforeAISeasonEnd = s.unifiedTitle?.championId
+          ? Engine.unifiedTitle._findActive(s, s.unifiedTitle.championId) : null;
         const aiResult = Engine.rival.processSeasonEnd(rng, s);
         // v2.0 HOF拡張: NPC殿堂入り回収
         const allHof = { ...(s.allHallOfFame || { player: [], org_s: [], org_a: [], org_b: [] }) };
@@ -16665,6 +17352,12 @@ const Engine = {
           if (aiResult.aiOrgs[org.id]) delete aiResult.aiOrgs[org.id]._npcInductees;
         });
         s = { ...s, allHallOfFame: allHof, aiOrgs: aiResult.aiOrgs };
+        if (unifiedBeforeAISeasonEnd && !Engine.unifiedTitle._findActive(s, unifiedBeforeAISeasonEnd.fighter.id)) {
+          const retired = (aiResult.retiredCharIds || []).includes(unifiedBeforeAISeasonEnd.fighter.id);
+          s = Engine.unifiedTitle.vacate(s, retired ? 'retirement' : 'affiliation', unifiedBeforeAISeasonEnd.fighter);
+        } else {
+          s = Engine.unifiedTitle.reconcile(s, { silent: true });
+        }
         // AIシーズン末引退者のIDをretiredIds/retiredSeasonsに反映（5シーズンクールダウン用）
         if (aiResult.retiredCharIds && aiResult.retiredCharIds.length > 0) {
           const _seIds = [...(s.retiredIds || []), ...aiResult.retiredCharIds.filter(id => !(s.retiredIds || []).includes(id))];
@@ -17403,6 +18096,9 @@ const Engine = {
 
     // 天頂戦: Week43 エントリー受付。通常PPVと異なり weekPhase は奪わない。
     if (s.week === Engine.ppvTournament.ENTRY_WEEK && Engine.ppvTournament.isTournamentSeason(s.season)) {
+      const returned = Engine.unifiedTitle.markTournamentReturn(s);
+      s = returned.state;
+      if (returned.event) events.push(returned.event.message);
       s = Engine.ppvTournament.startEntry(s, { tvMode: !s.ppvUnlocked });
       if (s.ppvUnlocked && s.ppvTournament.phase === 'entry') {
         events.push('🏛️ 全国女子プロレス最強王者決定戦「天頂戦」エントリー受付開始');
@@ -17717,6 +18413,8 @@ const Engine = {
       heatScore: 0,
       matchHistory: [],
       titles: { world: { championId: null, defenses: 0, wonWeek: 0 } },
+      // task-88: 旧セーブでは undefined。repairOnLoad で null に正規化する。
+      unifiedTitle: null,
       titleEstablished: false, // v1.0: 団体王座は条件達成後に解禁
       rosterCap: 8,   // roster cap progression: 8 -> 10 -> 12 -> 16
       warWon: false,  // backward compatibility only
@@ -21639,7 +22337,7 @@ Engine.trust = {
     const departed = [];
     let newMorale = morale;
     const newRoster = roster.filter(f => {
-      if (f.isRental) return true;
+      if (f.isRental || f.isUnifiedTitleGuest) return true;
       const trust = f.trust != null ? f.trust : 50;
       if (trust >= 15) return true;
       if (Engine.rng.float(rng) >= 0.025) return true;
@@ -25107,6 +25805,20 @@ Engine.validateGameState = function(G) {
       warn(`タイトル防衛数が不正値: ${G.titles.world.defenses}`);
     }
   }
+  if (G.unifiedTitle) {
+    const title = G.unifiedTitle;
+    if (!Array.isArray(title.history)) warn('全国統一王座のhistoryが配列でない');
+    if (!isValidNum(title.defenses) || title.defenses < 0) warn(`全国統一王座の防衛数が不正: ${title.defenses}`);
+    if (!isValidNum(title.aiHolderCycles) || title.aiHolderCycles < 0) warn(`全国統一王座のAI保持サイクルが不正: ${title.aiHolderCycles}`);
+    if (title.championId != null) {
+      const found = Engine.unifiedTitle._findActive(G, title.championId);
+      if (!found) warn(`全国統一王者ID ${title.championId} が現役ロスターに存在しない`);
+      else if (found.orgId !== title.orgId) warn(`全国統一王者の所属不一致: ${title.orgId} != ${found.orgId}`);
+      if ((G.retiredFighters || []).some(f => f.id === title.championId)) {
+        warn(`全国統一王者ID ${title.championId} が引退済み選手にも存在する`);
+      }
+    }
+  }
 
   // ── Rivalry関連 ──
   if (G.rivalries && typeof G.rivalries === 'object') {
@@ -25972,6 +26684,9 @@ Engine.contract = {
       s = Engine.chronicle.archiveFighter(s, _claimedSnap);
       s = Engine.chronicle.applySpiritContribution(s, _claimedSnap);
       s = Engine.chronicle.refreshChapters(s);
+      if (state.unifiedTitle?.championId === fighter.id) {
+        s = Engine.unifiedTitle.reconcile(s, { silent: true });
+      }
       return { state: s, info };
     }
 
@@ -26016,6 +26731,11 @@ Engine.contract = {
       s = Engine.chronicle.archiveFighter(s, _depSnap);
       s = Engine.chronicle.applySpiritContribution(s, _depSnap);
       s = Engine.chronicle.refreshChapters(s);
+    }
+
+    if (state.unifiedTitle?.championId === fighter.id) {
+      if (info.type === 'rival') s = Engine.unifiedTitle.reconcile(s, { silent: true });
+      else s = Engine.unifiedTitle.vacate(s, info.type === 'retire' ? 'retirement' : 'affiliation', fighterWithHist);
     }
 
     return { state: s, info };
@@ -26782,8 +27502,11 @@ Engine.ppvTournament = {
       .filter(f => !excluded.has(f.id))
       .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a) || String(a.id).localeCompare(String(b.id)));
     const champId = this._championId(state, orgId);
-    const champion = eligible.find(f => f.id === champId);
-    const ordered = champion ? [champion, ...eligible.filter(f => f.id !== champId)] : eligible;
+    const unifiedId = state.unifiedTitle?.orgId === orgId ? state.unifiedTitle.championId : null;
+    const requiredIds = [unifiedId, champId].filter((id, index, ids) => id != null && ids.indexOf(id) === index);
+    const required = requiredIds.map(id => eligible.find(f => f.id === id)).filter(Boolean);
+    const requiredSet = new Set(required.map(f => f.id));
+    const ordered = [...required, ...eligible.filter(f => !requiredSet.has(f.id))];
     return ordered.slice(0, count);
   },
 
@@ -26854,6 +27577,9 @@ Engine.ppvTournament = {
     if (fighterIds.some(id => !eligibleIds.has(id))) return state;
     const champId = this._championId(state, 'player');
     if (champId && eligibleIds.has(champId) && expected > 0 && !fighterIds.includes(champId)) return state;
+    const unifiedId = state.unifiedTitle?.orgId === 'player' ? state.unifiedTitle.championId : null;
+    const unifiedAlreadySpecial = (tournament.specialInvites || []).some(e => e.id === unifiedId);
+    if (unifiedId && eligibleIds.has(unifiedId) && expected > 0 && !unifiedAlreadySpecial && !fighterIds.includes(unifiedId)) return state;
     const baseEntries = (tournament.entries || []).filter(e => e.orgId !== 'player' || e.special);
     const entries = this._finalizeEntries(state, [
       ...baseEntries,
@@ -27334,6 +28060,9 @@ Engine.ppvTournament = {
     }
 
     events.push(`🏆 ${champion?.name || '優勝者'}が全国女子プロレス最強王者決定戦「天頂戦」優勝！`);
+    const unifiedAward = Engine.unifiedTitle.awardTournamentWinner(s, tournamentResult.championId);
+    s = unifiedAward.state;
+    if (unifiedAward.event) events.push(unifiedAward.event.message);
     s = {
       ...s,
       ppvTournament: {
@@ -28849,6 +29578,14 @@ Engine.newspaper = {
     springTagAnnounce:    220,
     ppvSummitResult:     200,
     playerTitleChange:   180,
+    unifiedTitleCreation: 180,
+    unifiedTitleCrown:    180,
+    unifiedTitleRepeat:   180,
+    unifiedTitleMove:     180,
+    unifiedTitleDefense:  140,
+    unifiedTitleReturn:   140,
+    unifiedTitleVacateRetirement: 140,
+    unifiedTitleVacateAffiliation: 140,
     aiAceRetirement:     160,
     aiInjuryRetirement:  150,
     warMilestone:         145,
@@ -29171,6 +29908,55 @@ Engine.newspaper = {
     const reignText = fill(pickAt(reignPool, 13));
     const closing = fill(pickAt(parts.closing, 19));
     return [lead, profile, reignText, closing].join('');
+  },
+
+  /** task-88 §H: 承認済み全国統一王座テンプレートを種別ごとに合成する。 */
+  composeUnifiedTitleArticle(type, data, seed) {
+    const all = (typeof UNIFIED_TITLE_TEMPLATES !== 'undefined') ? UNIFIED_TITLE_TEMPLATES : null;
+    if (!all || !data) return null;
+    const key = {
+      unifiedTitleCreation: 'creation', unifiedTitleCrown: 'crown', unifiedTitleRepeat: 'repeat',
+      unifiedTitleDefense: 'defense', unifiedTitleMove: 'move',
+      unifiedTitleVacateRetirement: 'retirement', unifiedTitleVacateAffiliation: 'affiliationLoss',
+      unifiedTitleReturn: 'return',
+    }[type];
+    const parts = all[key];
+    if (!parts) return null;
+    const sVal = Number(seed) || 0;
+    const pickAt = (arr, salt) => (arr && arr.length) ? arr[Math.abs(sVal + salt) % arr.length] : '';
+    const fill = text => String(text || '').replace(/\{(\w+)\}/g, (m, name) => data[name] != null ? String(data[name]) : m);
+    const profile = () => {
+      const age = Number(data.age) || 0;
+      const pool = age <= 21 ? parts.profileYoung : age <= 24 ? parts.profileRising
+        : age <= 29 ? parts.profileEstablished : parts.profileVeteran;
+      return fill(pickAt(pool, 31));
+    };
+    const body = [];
+    body.push(fill(pickAt(parts.leadFirst && Number(data.n) === 1 ? parts.leadFirst : parts.lead, 3)));
+    if (parts.circumstance) body.push(fill(pickAt(parts.circumstance, 7)));
+    if (parts.institution) body.push(fill(pickAt(parts.institution, 11)));
+    if (key === 'crown') {
+      const moved = Number(data.holderCount) > 1 || Number(data.orgCount) > 1;
+      body.push(fill(pickAt(moved ? parts.historyMoved : parts.historyStayed, 13)));
+    } else if (key === 'repeat' && Number(data.n) >= 1) {
+      body.push(fill(pickAt(parts.historyDefended, 13)));
+    } else if (key === 'defense') {
+      if (data.captured) body.push(fill(pickAt(parts.historyCaptured, 13)));
+      else if (Number(data.n) >= 2) body.push(fill(pickAt(parts.historyConsecutive, 13)));
+    } else if (key === 'move') {
+      body.push(fill(pickAt(Number(data.n) >= 1 ? parts.historyDefended : parts.historyNoDefense, 13)));
+    } else if (key === 'retirement') {
+      body.push(fill(pickAt(Number(data.n) >= 1 ? parts.historyDefended : parts.historyNoDefense, 13)));
+    } else if (key === 'return') {
+      const moved = Number(data.holderCount) > 1 || Number(data.orgCount) > 1;
+      body.push(fill(pickAt(moved ? parts.historyMoved : parts.historyStayed, 13)));
+    }
+    if (parts.vacancy) body.push(fill(pickAt(parts.vacancy, 17)));
+    if (['creation', 'crown', 'move'].includes(key)) body.push(profile());
+    if (key === 'return' && data.entered) body.push(fill(pickAt(parts.closingEntered, 19)));
+    else if (key === 'move' && Number(data.orgCount) >= 3 && Math.abs(sVal + 23) % 3 === 0) body.push(fill(parts.closing[2]));
+    else body.push(fill(pickAt(parts.closing, 19)));
+    return { headline: fill(pickAt(parts.headline, 0)), body: body.filter(Boolean).join('') };
   },
 
   // ══════════════════════════════════════════════════════════════════
@@ -30096,6 +30882,25 @@ Engine.newspaper = {
         .filter(ev => ev && ev.type === 'retirementDeclare' && ev.characterId != null)
         .map(ev => String(ev.characterId)));
       industryEvents.forEach((ev, _evIdx) => {
+        if (ev && /^unifiedTitle/.test(ev.type)) {
+          const article = Engine.newspaper.composeUnifiedTitleArticle(
+            ev.type, ev.data || {},
+            (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.characterId || 0) + _evIdx,
+          );
+          if (!article) return;
+          stories.push({
+            type: ev.type,
+            priority: P[ev.type] || P.general,
+            headline: article.headline,
+            body: article.body,
+            characterId: ev.characterId || null,
+            characterIds: Array.isArray(ev.characterIds) ? ev.characterIds.slice(0, 3) : null,
+            characterCount: Array.isArray(ev.characterIds) ? ev.characterIds.length : 0,
+            newsData: ev.data || {},
+            _industryIdx: _evIdx,
+          });
+          return;
+        }
         // task-77 §A: 自団体の引退(週次スキャン由来)はティア別テンプレ(§5-L/A/B/C)から
         // 選ぶ。汎用の NEWS_HEADLINE_TEMPLATES 経由だと格に応じた本文選択ができないため、
         // ここだけ個別に組み立てる(AI団体ループと同じ _retiredVariantCounts を共有し、
@@ -30261,6 +31066,7 @@ Engine.newspaper = {
     const unpublishedIndustryEvents = industryEvents.filter((_ev, i) => {
       if (_publishedIdx.has(i)) return false;
       // そもそもテンプレートが無い type は紙面にできないので持ち越さない（永久に居座る）
+      if (_ev && /^unifiedTitle/.test(_ev.type)) return true;
       const t = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') ? NEWS_HEADLINE_TEMPLATES[_ev && _ev.type] : null;
       return !!(t && t.length);
     });

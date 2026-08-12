@@ -3171,7 +3171,7 @@ Engine.factions = {
    *  spec: 「1興行に予約消化は1件まで、先着優先」— 該当すれば Common-1 はこの週を見送り、次の興行へ繰り越す。 */
   hasCompetingBooking(validMatches) {
     return (validMatches || []).some(m => m && (
-      m._crMatchLocked || m.isCRMatch || m._f09Locked || m._internalChallengeLocked || m.isReclaim
+      m._crMatchLocked || m.isCRMatch || m._f09Locked || m._internalChallengeLocked || m.isReclaim || m._unifiedTitleMatch
     ));
   },
 
