@@ -2,230 +2,296 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<title>全国統一王座 演出モックアップ v0.1</title>
+<title>全国統一王座 演出モックアップ v0.2</title>
 <style>
   :root{
-    --plat:#dfe3e8; --plat-deep:#aebac4; --plat-hi:#f4f7fa;
     --crimson:#8f1d2c; --crimson-deep:#5c1019;
     --cream:#f2ead8; --cream-panel:#f7f1e3; --ink:#1c1a17;
-    --gold:#d4a843; --dim:#9a938a;
+    --gold:#d4a843; --gold-hi:#f4d98c; --dim:#9a938a;
   }
+  /* ── アイデンティティカラー3候補(bodyクラスで切替・全ビュー連動) ── */
+  body.c-plat{ --idc:#dfe6ee; --idc-deep:#93a6b8; --idc-hi:#ffffff;
+    --idc-grad:linear-gradient(115deg,#f8fbff 0%,#c9d6e2 30%,#ffffff 48%,#9fb2c4 70%,#e8eff6 100%);
+    --idc-glow:rgba(210,230,255,.55); --idc-text:#233240; }
+  body.c-royal{ --idc:#8d6ae0; --idc-deep:#4a3585; --idc-hi:#d9c9ff;
+    --idc-grad:linear-gradient(115deg,#b79aff 0%,#6c4fc0 35%,#e2d4ff 50%,#553d9e 72%,#a98ef2 100%);
+    --idc-glow:rgba(150,110,255,.55); --idc-text:#f3edff; }
+  body.c-aurora{ --idc:#7de0c8; --idc-deep:#3f7dbb; --idc-hi:#eafff6;
+    --idc-grad:linear-gradient(115deg,#7ee8d0 0%,#6aa8ff 30%,#b58cff 55%,#ff9ac8 78%,#7ee8d0 100%);
+    --idc-glow:rgba(120,220,220,.5); --idc-text:#123028; }
   *{box-sizing:border-box;margin:0;padding:0}
   body{background:#242220;color:#e8e2d8;font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;padding:24px 12px 80px}
   h1{font-size:16px;text-align:center;margin-bottom:4px}
-  .sub{font-size:11px;color:var(--dim);text-align:center;margin-bottom:16px}
-  .switch{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:22px}
-  .switch button{background:#3a362f;color:#d8d2c6;border:1px solid #57503f;border-radius:5px;padding:7px 13px;font-size:12px;cursor:pointer}
-  .switch button.on{background:var(--plat);color:#1c1a17;font-weight:700;border-color:var(--plat-hi)}
-  .view{display:none;max-width:860px;margin:0 auto}
+  .sub{font-size:11px;color:var(--dim);text-align:center;margin-bottom:12px}
+  .bar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+  .bar button{background:#3a362f;color:#d8d2c6;border:1px solid #57503f;border-radius:5px;padding:7px 13px;font-size:12px;cursor:pointer}
+  .bar button.on{background:#d8d2c6;color:#1c1a17;font-weight:700}
+  .bar.colors button.on{outline:2px solid var(--gold)}
+  .bar .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+  .view{display:none;max-width:880px;margin:16px auto 0}
   .view.on{display:block}
-  .note{max-width:760px;margin:14px auto 0;font-size:11px;line-height:1.8;color:var(--dim);border-top:1px dashed #4a443a;padding-top:10px}
+  .note{max-width:780px;margin:14px auto 0;font-size:11px;line-height:1.8;color:var(--dim);border-top:1px dashed #4a443a;padding-top:10px}
   .note b{color:#cfc7b8}
 
-  /* ── 吹き出し(共通: クリーム地・黒文字・画像の上・尻尾は水平中心) ── */
   .bub{position:relative;background:var(--cream);color:var(--ink);border-radius:10px;
     padding:11px 16px;font-size:14px;line-height:1.7;max-width:340px;margin:0 auto 16px;text-align:center;
     box-shadow:0 3px 14px rgba(0,0,0,.45)}
   .bub:after{content:"";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);
     border:10px solid transparent;border-top-color:var(--cream);border-bottom:none}
+  .beltband{display:inline-block;padding:9px 28px;font-size:14px;font-weight:800;letter-spacing:.2em;
+    color:var(--idc-text);background:var(--idc-grad);border-radius:4px;box-shadow:0 0 28px var(--idc-glow)}
 
-  /* ── ① 戴冠・授与式(セレモニー級・全画面) ── */
-  .coronation{background:radial-gradient(ellipse at 50% 18%,#6d1522 0%,#3a0b12 52%,#17060a 100%);
-    border-radius:10px;padding:34px 20px 30px;text-align:center;min-height:640px;position:relative;overflow:hidden}
-  .coronation .rays{position:absolute;inset:0;background:
-    repeating-conic-gradient(from -8deg at 50% 30%,rgba(244,247,250,.05) 0 5deg,transparent 5deg 14deg);pointer-events:none}
+  /* ── 戴冠 案A: 深紅の授与式(天頂戦の色を継承) ── */
+  .corA{background:radial-gradient(ellipse at 50% 16%,#6d1522 0%,#3a0b12 52%,#150509 100%);
+    border-radius:10px;padding:32px 20px 30px;text-align:center;min-height:620px;position:relative;overflow:hidden}
+  .corA .rays{position:absolute;inset:0;background:
+    repeating-conic-gradient(from -8deg at 50% 28%,rgba(255,255,255,.055) 0 5deg,transparent 5deg 14deg);pointer-events:none}
   .cor-event{font-size:11px;letter-spacing:.42em;color:#d8a0a8;margin-bottom:6px}
-  .cor-title{font-size:26px;font-weight:800;letter-spacing:.3em;color:var(--plat-hi);
-    text-shadow:0 0 22px rgba(244,247,250,.35);margin-bottom:2px}
-  .cor-title small{display:block;font-size:11px;letter-spacing:.5em;color:var(--plat-deep);margin-top:5px}
-  .cor-emblem{width:52px;opacity:.9;margin:12px auto 18px;display:block;filter:drop-shadow(0 0 10px rgba(255,255,255,.25))}
-  .cor-fighter{width:172px;height:258px;object-fit:contain;display:block;margin:0 auto;
-    filter:drop-shadow(0 14px 22px rgba(0,0,0,.6))}
-  .cor-plate{margin-top:14px}
-  .cor-name{font-size:20px;font-weight:800;color:#fff}
+  .cor-title{font-size:26px;font-weight:800;letter-spacing:.3em;color:var(--idc-hi);
+    text-shadow:0 0 24px var(--idc-glow);margin-bottom:2px}
+  .cor-title small{display:block;font-size:11px;letter-spacing:.5em;color:var(--idc-deep);margin-top:5px}
+  .cor-emblem{width:52px;opacity:.92;margin:10px auto 16px;display:block;filter:drop-shadow(0 0 10px rgba(255,255,255,.25))}
+  .fXL{width:172px;height:258px;object-fit:contain;display:block;margin:0 auto;filter:drop-shadow(0 14px 22px rgba(0,0,0,.6))}
+  .cor-name{font-size:20px;font-weight:800;color:#fff;margin-top:12px}
   .cor-org{font-size:11px;color:#cfa9ad;margin-top:2px}
-  .cor-belt{display:inline-block;margin-top:14px;padding:9px 26px;font-size:14px;font-weight:800;letter-spacing:.2em;
-    color:#20242a;background:linear-gradient(180deg,var(--plat-hi),var(--plat) 45%,var(--plat-deep));
-    border-radius:4px;box-shadow:0 0 26px rgba(223,227,232,.35)}
   .cor-road{font-size:11px;color:#c4b7ba;margin-top:12px;letter-spacing:.08em}
 
-  /* ── ② 返還式(中規模Stageモーダル) ── */
-  .stageWrap{background:#000;border-radius:10px;padding:40px 16px;display:flex;justify-content:center}
-  .ret-frame{width:420px;background:linear-gradient(180deg,#15161a,#0a0b0e);border:1px solid #3c414b;
+  /* ── 戴冠 案B: 暗転スポットライト(頂点はただ一人) ── */
+  .corB{background:#020203;border-radius:10px;padding:30px 20px 30px;text-align:center;min-height:620px;position:relative;overflow:hidden}
+  .corB .spot{position:absolute;left:50%;top:-8%;transform:translateX(-50%);width:460px;height:120%;
+    background:linear-gradient(180deg,var(--idc-glow) 0%,rgba(255,255,255,.06) 45%,transparent 78%);
+    clip-path:polygon(38% 0,62% 0,96% 100%,4% 100%);pointer-events:none}
+  .corB .dust i{position:absolute;width:4px;height:4px;border-radius:50%;background:var(--idc-hi);opacity:.7;
+    animation:float 5s linear infinite}
+  @keyframes float{0%{transform:translateY(30px);opacity:0}30%{opacity:.8}100%{transform:translateY(-340px);opacity:0}}
+  .corB-tag{font-size:11px;letter-spacing:.5em;color:var(--idc-deep)}
+  .corB-title{font-size:32px;font-weight:900;letter-spacing:.38em;color:var(--idc-hi);
+    text-shadow:0 0 30px var(--idc-glow),0 0 60px var(--idc-glow);margin:6px 0 20px}
+  .corB-one{font-size:11.5px;color:#8f96a2;letter-spacing:.34em;margin-bottom:16px}
+  .corB-name{font-size:22px;font-weight:800;color:#fff;margin-top:14px;letter-spacing:.1em}
+  .corB-org{font-size:11px;color:#8f96a2;margin-top:3px}
+
+  /* ── 戴冠 案C: 黄金セレモニー(年末表彰式の様式を継承) ── */
+  .corC{background:linear-gradient(180deg,#3d2f10 0%,#5c4718 34%,#2c2109 100%);
+    border-radius:10px;padding:30px 20px 30px;text-align:center;min-height:620px;position:relative;overflow:hidden}
+  .corC .confetti i{position:absolute;width:7px;height:11px;opacity:.85;animation:fall 6s linear infinite}
+  @keyframes fall{0%{transform:translateY(-40px) rotate(0deg)}100%{transform:translateY(660px) rotate(540deg)}}
+  .corC-title{font-size:27px;font-weight:900;letter-spacing:.26em;color:var(--gold-hi);
+    text-shadow:0 0 22px rgba(244,217,140,.5);margin-bottom:3px}
+  .corC-title small{display:block;font-size:11px;letter-spacing:.46em;color:#caa64f;margin-top:5px}
+  .corC-frame{width:290px;margin:14px auto 0;padding:20px 12px 16px;border:2px solid rgba(244,217,140,.55);
+    border-radius:8px;background:rgba(0,0,0,.28)}
+  .corC-name{font-size:20px;font-weight:800;color:#fff;margin-top:10px}
+  .corC-org{font-size:11px;color:#d8c08a;margin-top:2px}
+
+  /* ── 挑戦者到着(派手化版) ── */
+  .stageWrap{background:#000;border-radius:10px;padding:36px 16px;display:flex;justify-content:center}
+  .arr-frame{width:520px;background:linear-gradient(180deg,#0d0f13,#060708);border:1px solid var(--idc-deep);
+    border-radius:9px;padding:26px 20px 22px;text-align:center;position:relative;overflow:hidden;
+    box-shadow:0 0 40px var(--idc-glow) inset,0 0 26px rgba(0,0,0,.8)}
+  .arr-frame .wm{position:absolute;left:50%;top:44%;transform:translate(-50%,-50%);width:340px;opacity:.06;pointer-events:none;filter:grayscale(1) brightness(2)}
+  .arr-label{font-size:10px;letter-spacing:.36em;color:var(--idc-deep);position:relative}
+  .arr-title{font-size:30px;font-weight:900;letter-spacing:.5em;color:var(--idc-hi);margin:6px 0 4px;position:relative;
+    text-shadow:0 0 22px var(--idc-glow),0 0 46px var(--idc-glow)}
+  .arr-belt{height:5px;width:230px;margin:8px auto 16px;background:var(--idc-grad);border-radius:3px;box-shadow:0 0 16px var(--idc-glow)}
+  .fL{width:150px;height:224px;object-fit:contain;display:block;margin:0 auto;position:relative;
+    filter:drop-shadow(0 0 18px var(--idc-glow)) drop-shadow(0 10px 18px rgba(0,0,0,.75))}
+  .arr-id{margin-top:8px;font-size:15px;font-weight:800;color:#fff;position:relative}
+  .arr-org{display:inline-block;margin-top:5px;font-size:10.5px;color:var(--idc-hi);border:1px solid var(--idc-deep);
+    border-radius:3px;padding:2px 10px;letter-spacing:.14em;position:relative}
+  .arr-vs{margin:15px auto 0;max-width:360px;font-size:12px;color:#c9ccd2;border-top:1px solid #2f333a;padding-top:11px;position:relative}
+  .arr-vs b{color:var(--idc-hi)}
+  .arr-btn{display:inline-block;margin-top:13px;background:var(--idc-grad);color:var(--idc-text);
+    font-size:13px;font-weight:800;letter-spacing:.2em;border:none;border-radius:5px;padding:11px 36px;cursor:pointer;
+    box-shadow:0 0 18px var(--idc-glow);position:relative}
+
+  /* ── バッジ・帯の見た目 ── */
+  .badgeWrap{background:#2c2925;border:1px solid #4a443a;border-radius:8px;padding:18px 20px}
+  .badgeWrap h3{font-size:12px;color:#cfc7b8;margin:14px 0 8px}
+  .badgeWrap h3:first-child{margin-top:0}
+  .rowSim{background:#f4eddb;color:#2b2620;border-radius:6px;padding:9px 14px;display:flex;align-items:center;gap:8px;font-size:13px;max-width:520px}
+  .rowSim img{width:40px;height:40px;border-radius:8px;object-fit:cover}
+  .ubadge{display:inline-block;font-size:10px;font-weight:800;color:var(--idc-text);background:var(--idc-grad);
+    border-radius:3px;padding:2px 8px;letter-spacing:.1em;box-shadow:0 0 8px var(--idc-glow)}
+  .gbadge{color:#7a6530;font-size:13px}
+  .darkSim{background:#101216;border:1px solid #33363d;border-radius:6px;padding:12px 16px;font-size:13px;color:#dfe3e8;max-width:520px;display:flex;align-items:center;gap:10px}
+  .prepTag{display:inline-block;font-size:11px;border:1px solid var(--idc-deep);color:var(--idc-hi);background:rgba(0,0,0,.35);border-radius:4px;padding:3px 10px;box-shadow:0 0 10px var(--idc-glow)}
+
+  /* ── 返還式 ── */
+  .ret-frame{width:420px;background:linear-gradient(180deg,#15161a,#0a0b0e);border:1px solid var(--idc-deep);
     border-radius:9px;padding:26px 22px 22px;text-align:center}
-  .ret-label{font-size:10px;letter-spacing:.4em;color:var(--plat-deep);margin-bottom:4px}
-  .ret-title{font-size:19px;font-weight:800;letter-spacing:.34em;color:var(--plat-hi);margin-bottom:18px}
-  .ret-fighter{width:150px;height:224px;object-fit:contain;display:block;margin:0 auto;
-    filter:drop-shadow(0 10px 16px rgba(0,0,0,.7))}
+  .ret-label{font-size:10px;letter-spacing:.4em;color:var(--idc-deep);margin-bottom:4px}
+  .ret-title{font-size:19px;font-weight:800;letter-spacing:.34em;color:var(--idc-hi);margin-bottom:18px;text-shadow:0 0 16px var(--idc-glow)}
   .ret-name{font-size:15px;font-weight:700;color:#eee;margin-top:10px}
   .ret-record{margin:14px auto 0;max-width:300px;font-size:12px;line-height:2;color:#c9ccd2;
     border-top:1px solid #33363d;border-bottom:1px solid #33363d;padding:9px 0}
-  .ret-record b{color:var(--plat-hi)}
+  .ret-record b{color:var(--idc-hi)}
   .ret-next{font-size:10.5px;color:#7d838d;margin-top:12px;letter-spacing:.1em}
 
-  /* ── ③ 挑戦者の到着(常設・黒Stage+白金) ── */
-  .arr-frame{width:460px;background:linear-gradient(180deg,#101216,#08090c);border:1px solid #3a4048;
-    border-radius:9px;padding:24px 20px 20px;text-align:center}
-  .arr-label{font-size:10px;letter-spacing:.36em;color:var(--plat-deep)}
-  .arr-title{font-size:21px;font-weight:800;letter-spacing:.4em;color:var(--plat-hi);margin:4px 0 16px;
-    text-shadow:0 0 16px rgba(223,227,232,.3)}
-  .arr-fighter{width:150px;height:224px;object-fit:contain;display:block;margin:0 auto;
-    filter:drop-shadow(0 10px 18px rgba(0,0,0,.75))}
-  .arr-id{margin-top:8px;font-size:14px;font-weight:700;color:#eee}
-  .arr-org{display:inline-block;margin-top:4px;font-size:10.5px;color:#aeb6c0;border:1px solid #3d434c;
-    border-radius:3px;padding:2px 9px;letter-spacing:.14em}
-  .arr-vs{margin:16px auto 0;max-width:330px;font-size:12px;color:#c9ccd2;border-top:1px solid #2f333a;padding-top:11px}
-  .arr-vs b{color:var(--plat-hi)}
-  .arr-btn{display:inline-block;margin-top:14px;background:linear-gradient(180deg,var(--plat-hi),var(--plat-deep));
-    color:#20242a;font-size:13px;font-weight:800;letter-spacing:.2em;border:none;border-radius:5px;padding:11px 34px;cursor:pointer}
-
-  /* ── ④ こちらの番(Office) ── */
-  .officeWrap{background:#4a443c;border-radius:10px;padding:34px 14px;display:flex;justify-content:center}
-  .turn-frame{width:560px;background:var(--cream-panel);color:var(--ink);border-radius:8px;padding:0 0 18px;overflow:hidden}
-  .turn-head{background:#2e2a24;color:#f0e8d8;padding:12px 18px;font-size:13px;font-weight:800;letter-spacing:.12em}
-  .turn-head small{display:block;font-weight:400;font-size:10px;color:#b3a88f;margin-top:3px;letter-spacing:.2em}
-  .turn-body{display:flex;gap:16px;padding:16px 18px 6px}
-  .turn-target{flex:0 0 150px;text-align:center}
-  .turn-target img{width:132px;height:194px;object-fit:contain;filter:drop-shadow(0 6px 10px rgba(0,0,0,.35))}
-  .turn-target .tt-name{font-size:12.5px;font-weight:700;margin-top:6px}
-  .turn-target .tt-org{font-size:10px;color:#7d7466;margin-top:2px}
-  .turn-target .tt-belt{display:inline-block;font-size:9.5px;font-weight:800;color:#3c4650;background:linear-gradient(180deg,var(--plat-hi),var(--plat-deep));border-radius:3px;padding:2px 8px;margin-top:5px;letter-spacing:.14em}
-  .turn-pick{flex:1}
-  .turn-pick .tp-cap{font-size:11.5px;line-height:1.7;color:#4d463c;margin-bottom:10px}
-  .cands{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .cand{border:1.5px solid #d8cdb4;border-radius:6px;background:#fffdf7;padding:7px 4px;text-align:center;cursor:pointer}
-  .cand img{width:52px;height:52px;object-fit:cover;border-radius:6px}
-  .cand .nm{font-size:10.5px;font-weight:700;margin-top:4px}
-  .cand .ov{font-size:9.5px;color:#8a8172}
-  .cand.sel{border-color:#3f7d8c;background:#eef7f8;box-shadow:0 0 0 1px #3f7d8c inset}
-  .turn-foot{display:flex;gap:10px;justify-content:center;margin-top:14px}
-  .turn-foot .go{background:#2e2a24;color:#f5edd9;border:none;border-radius:5px;padding:10px 26px;font-size:12.5px;font-weight:700;cursor:pointer}
-  .turn-foot .skip{background:none;border:1px solid #b7ab90;color:#6d6455;border-radius:5px;padding:10px 18px;font-size:11.5px;cursor:pointer}
-
-  /* ── 判断メモ ── */
   .memo{background:#2c2925;border:1px solid #4a443a;border-radius:8px;padding:20px 22px;font-size:12.5px;line-height:1.95}
-  .memo h2{font-size:13px;color:var(--plat);margin:14px 0 4px}
+  .memo h2{font-size:13px;color:#dfe3e8;margin:14px 0 4px}
   .memo h2:first-child{margin-top:0}
   .memo .rec{color:#9fd0a8}
+  .memo .done{color:#8fb7d0}
 </style>
 </head>
-<body>
-<h1>全国統一王座 P3 演出モックアップ v0.1</h1>
-<div class="sub">2026-08-13 Fable作成 ・ 設計の正: docs/unified-title-p3-presentation-plan-v0.1.md ・ セリフは全て仮(Opus起案中)</div>
-<div class="switch">
-  <button class="on" data-v="v1">① 戴冠・授与式(4年に1回)</button>
-  <button data-v="v2">② 返還式(W47)</button>
-  <button data-v="v3">③ 挑戦者の到着(年3回)</button>
-  <button data-v="v4">④ こちらの番</button>
-  <button data-v="v5">判断メモ(裁定5点)</button>
+<body class="c-plat">
+<h1>全国統一王座 P3 演出モックアップ v0.2</h1>
+<div class="sub">2026-08-13改訂: 戴冠3案+色3候補の見た目比較(裁定④Office/⑤仮運用は確定済み) ・ セリフは草案(レビュー中)から仮置き</div>
+
+<div class="bar colors">
+  <span style="font-size:11px;color:var(--dim);align-self:center">色候補:</span>
+  <button class="on" data-c="c-plat"><span class="sw" style="background:linear-gradient(115deg,#f8fbff,#9fb2c4)"></span>1. 白金(プラチナ)</button>
+  <button data-c="c-royal"><span class="sw" style="background:linear-gradient(115deg,#b79aff,#553d9e)"></span>2. 紫紺(ロイヤル)</button>
+  <button data-c="c-aurora"><span class="sw" style="background:linear-gradient(115deg,#7ee8d0,#6aa8ff,#b58cff,#ff9ac8)"></span>3. オーロラ(虹彩)</button>
+</div>
+<div class="bar">
+  <button class="on" data-v="v1">戴冠 案A: 深紅の授与式</button>
+  <button data-v="v2">戴冠 案B: 暗転スポットライト</button>
+  <button data-v="v3">戴冠 案C: 黄金セレモニー</button>
+  <button data-v="v4">挑戦者の到着(派手化)</button>
+  <button data-v="v5">バッジ・帯の見た目</button>
+  <button data-v="v6">返還式</button>
+  <button data-v="v7">判断メモ</button>
 </div>
 
-<!-- ① 戴冠・授与式 -->
+<!-- 案A -->
 <section class="view on" id="v1">
-  <div class="coronation">
+  <div class="corA">
     <div class="rays"></div>
     <div class="cor-event">DAY OF THE SUMMIT ・ 第3回 天頂戦</div>
     <div class="cor-title">全国統一王座 授与式<small>UNIFIED CHAMPIONSHIP CORONATION</small></div>
     <img class="cor-emblem" src="../../../image/emblem-tenchosen.png" alt="">
-    <div class="bub">これが頂点の重さ……受け取ったからには、もう誰にも渡さない。<span style="font-size:10px;color:#8a8172">(仮)</span></div>
-    <img class="cor-fighter" src="../../../image/upper/upper_abukuma_t.webp" alt="">
-    <div class="cor-plate">
-      <div class="cor-name">阿武隈 鉄子</div>
-      <div class="cor-org">グランエール</div>
-      <div class="cor-belt">初代 全国統一王者</div>
-      <div class="cor-road">防衛戦はおよそ3か月ごと ・ 次の天頂戦まで4年間</div>
-    </div>
+    <div class="bub">ここまで来ました。この重さ、受け取ります。<span style="font-size:10px;color:#8a8172">(草案UT-COR-std-1)</span></div>
+    <img class="fXL" src="../../../image/upper/upper_abukuma_t.webp" alt="">
+    <div class="cor-name">阿武隈 鉄子</div>
+    <div class="cor-org">グランエール</div>
+    <div style="margin-top:14px"><span class="beltband">初代 全国統一王者</span></div>
+    <div class="cor-road">防衛戦はおよそ3か月ごと ・ 次の天頂戦まで4年間</div>
   </div>
-  <div class="note"><b>実装ノート</b>: App.finalizeTenchosen の直後に1枚挿入(セレモニー級・原則11の「節目」適用)。色は天頂戦の深紅にベルトの白金を重ねる。2代目以降は「第N代」表記、連覇時は「連覇」帯を追加。閉じるはクリック/タイムアウト保険つき(§5-D鉄則1)。</div>
+  <div class="note"><b>案Aの考え方</b>: 天頂戦の深紅をそのまま引き継ぎ、「大会の続きの儀式」として見せる。ベルト帯と見出しだけがアイデンティティカラーで光る。3案のうち最も既存の色言語に忠実。</div>
 </section>
 
-<!-- ② 返還式 -->
+<!-- 案B -->
 <section class="view" id="v2">
-  <div class="stageWrap">
-    <div class="ret-frame">
-      <div class="ret-label">WEEK 47 ・ 天頂戦前夜</div>
-      <div class="ret-title">返 還 式</div>
-      <div class="bub" style="max-width:290px;font-size:13px">4年間、いい旅だったな。……次に巻くやつ、覚悟して来い。<span style="font-size:10px;color:#8a8172">(仮)</span></div>
-      <img class="ret-fighter" src="../../../image/upper/upper_ikoma_e.webp" alt="">
-      <div class="ret-name">生駒 えれな <span style="font-size:10px;color:#8d939c">グランエール</span></div>
-      <div class="ret-record">在位 <b>4年</b> ・ 防衛 <b>11度</b><br>この4年間、ベルトは一度も持ち主を変えなかった</div>
-      <div class="ret-next">ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる</div>
+  <div class="corB">
+    <div class="spot"></div>
+    <div class="dust">
+      <i style="left:38%;bottom:8%;animation-delay:0s"></i><i style="left:52%;bottom:4%;animation-delay:1.2s"></i>
+      <i style="left:61%;bottom:10%;animation-delay:2.4s"></i><i style="left:45%;bottom:2%;animation-delay:3.1s"></i>
+      <i style="left:56%;bottom:12%;animation-delay:4.2s"></i>
     </div>
+    <div class="corB-tag">UNIFIED CHAMPION</div>
+    <div class="corB-title">頂 点</div>
+    <div class="corB-one">業界の頂点は、ただ一人</div>
+    <div class="bub" style="max-width:300px">一番上は、ここ。それだけ。<span style="font-size:10px;color:#8a8172">(草案UT-COR-cool-1)</span></div>
+    <img class="fXL" src="../../../image/upper/upper_abukuma_t.webp" alt="">
+    <div class="corB-name">阿武隈 鉄子</div>
+    <div class="corB-org">グランエール ・ 第3回 天頂戦覇者</div>
+    <div style="margin-top:14px"><span class="beltband">初代 全国統一王者</span></div>
   </div>
-  <div class="note"><b>実装ノート</b>: W47のイベントキューに1枚(checkTenchosenPreEventと同じ _enqueuePopup 作法・同期呼び禁止)。自団体王者のときだけ表示、AI王者の返還は新聞のみ。在位記録は unifiedTitle.history から事実を出す(数字OK・格言なし)。</div>
+  <div class="note"><b>案Bの考え方</b>: 会場が暗転し、頂点の一人だけにスポットライトが落ちる。「頂点はただ一人」を画にした案。光の柱と粒子はアイデンティティカラー。3案で最も静かで、最も孤高。</div>
 </section>
 
-<!-- ③ 挑戦者の到着 -->
+<!-- 案C -->
 <section class="view" id="v3">
+  <div class="corC">
+    <div class="confetti">
+      <i style="left:8%;background:#f4d98c;animation-delay:0s"></i><i style="left:22%;background:#fff;animation-delay:1.4s"></i>
+      <i style="left:37%;background:#e8b34c;animation-delay:2.8s"></i><i style="left:55%;background:#f4d98c;animation-delay:.7s"></i>
+      <i style="left:68%;background:#fff;animation-delay:2.1s"></i><i style="left:83%;background:#e8b34c;animation-delay:3.5s"></i>
+      <i style="left:93%;background:#f4d98c;animation-delay:1s"></i>
+    </div>
+    <div class="corC-title">戴 冠<small>UNIFIED CHAMPIONSHIP CEREMONY</small></div>
+    <div class="bub" style="max-width:310px">日々の積み上げが、こうして形になったのね。<span style="font-size:10px;color:#8a8172">(草案UT-COR-ojo-1)</span></div>
+    <div class="corC-frame">
+      <img class="fXL" style="width:150px;height:224px" src="../../../image/upper/upper_abukuma_t.webp" alt="">
+      <div class="corC-name">阿武隈 鉄子</div>
+      <div class="corC-org">グランエール ・ 第3回 天頂戦覇者</div>
+      <div style="margin-top:12px"><span class="beltband">初代 全国統一王者</span></div>
+    </div>
+  </div>
+  <div class="note"><b>案Cの考え方</b>: 年末表彰式の黄金の様式を継承した「祭りの豪華さ」。紙吹雪+金枠フレーム。ベルト帯だけアイデンティティカラー。3案で最も賑やかで祝祭感が強い。</div>
+</section>
+
+<!-- 挑戦者の到着(派手化) -->
+<section class="view" id="v4">
   <div class="stageWrap">
     <div class="arr-frame">
+      <img class="wm" src="../../../image/emblem-tenchosen.png" alt="">
       <div class="arr-label">UNIFIED TITLE ・ QUARTERLY CHALLENGE</div>
       <div class="arr-title">挑 戦 表 明</div>
-      <div class="bub" style="max-width:300px;font-size:13px">その腰のもの、頂きに参りましたわ。逃げないでくださいまし。<span style="font-size:10px;color:#8a8172">(仮)</span></div>
-      <img class="arr-fighter" src="../../../image/upper/upper_kusunoki_n.webp" alt="">
+      <div class="arr-belt"></div>
+      <div class="bub" style="max-width:320px;font-size:13px;position:relative">申し込みに参りました。お受けいただけますね。<span style="font-size:10px;color:#8a8172">(草案UT-ARR-ojo-1)</span></div>
+      <img class="fL" src="../../../image/upper/upper_kusunoki_n.webp" alt="">
       <div class="arr-id">楠 乃亜</div>
       <div class="arr-org">北斗女子プロレス</div>
       <div class="arr-vs">迎え撃つのは王者 <b>阿武隈鉄子</b>。次の興行のメインイベントに固定されます。<br>統一王座の挑戦は断れません(規定)。</div>
       <button class="arr-btn">受けて立つ</button>
     </div>
   </div>
-  <div class="note"><b>実装ノート</b>: CH-1で新設した showHostileArrivalStage(黒Stage・人数可変)の<b>共通仕様の初展開</b>(人数1)。ただし色は果たし状の赤ではなく<b>白金</b>(赤=開戦級専用の裁定を守る)。口上はOpus起案21本(challengerArrival)から。ボタンは1つ=受諾のみ(裁定②: 断れない)。</div>
+  <div class="note"><b>v0.1からの派手化</b>: タイトルを30px+二重グロー化、ベルト色の帯線、挑戦者にリムライト(色付き発光)、背景に大会エンブレムの透かし、枠自体も色付き内側グロー。色候補を切り替えると光の色が変わります。</div>
 </section>
 
-<!-- ④ こちらの番 -->
-<section class="view" id="v4">
-  <div class="officeWrap">
-    <div class="turn-frame">
-      <div class="turn-head">🌐 全国統一王座 挑戦権 — こちらの番<small>PLAYER TURN ・ この四半期のうちに選ぶ</small></div>
-      <div class="turn-body">
-        <div class="turn-target">
-          <img src="../../../image/upper/upper_kuroe_m.webp" alt="">
-          <div class="tt-name">黒江 マキ</div>
-          <div class="tt-org">スターダスト興行</div>
-          <div class="tt-belt">全国統一王者 ・ 防衛4</div>
-        </div>
-        <div class="turn-pick">
-          <div class="tp-cap">業界の挑戦順が自団体へ回ってきました。<b>敵地へ遠征して王者に挑む選手</b>を一人選んでください(資格: 団体最上位級)。</div>
-          <div class="cands">
-            <div class="cand sel"><img src="../../../image/face_tomioka_k.png" alt=""><div class="nm">富岡加奈子</div><div class="ov">OVR 84</div></div>
-            <div class="cand"><img src="../../../image/face_takatsu_k.png" alt=""><div class="nm">高津小春</div><div class="ov">OVR 81</div></div>
-            <div class="cand"><img src="../../../image/face_sawade_m.png" alt=""><div class="nm">澤出みずき</div><div class="ov">OVR 80</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="turn-foot">
-        <button class="go">富岡加奈子を遠征に送る</button>
-        <button class="skip">今回は見送る(次は約9か月後)</button>
-      </div>
+<!-- バッジ・帯 -->
+<section class="view" id="v5">
+  <div class="badgeWrap">
+    <h3>ロースター行(クリーム地・Office)での識別</h3>
+    <div class="rowSim"><img src="../../../image/face_tomioka_k.png" alt=""><b>富岡加奈子</b><span class="gbadge">👑</span><span class="ubadge">🌐 統一王者</span><span style="font-size:11px;color:#8a8172">28歳 ・ Grappler</span></div>
+    <h3>選手詳細・黒地(Stage)での識別</h3>
+    <div class="darkSim"><img src="../../../image/face_tomioka_k.png" style="width:52px;height:52px;border-radius:8px" alt=""><div><b>富岡加奈子</b> <span style="color:var(--gold)">👑 王者(3防衛)</span><br><span class="ubadge" style="font-size:11px">🌐 全国統一王者 ・ 防衛4</span></div></div>
+    <h3>興行準備のカード枠タグ</h3>
+    <div class="darkSim"><span class="prepTag">🌐 全国統一王座戦(固定)</span><span style="font-size:11px;color:#8f96a2">メインイベント ・ 集客+25%</span></div>
+    <h3>ベルト帯(セレモニー共通部品)</h3>
+    <div style="padding:14px 0"><span class="beltband">第2代 全国統一王者</span></div>
+  </div>
+  <div class="note"><b>見るポイント</b>: 上の3色ボタンで切り替えて、👑(金)との并置で潰れないか・クリーム地/黒地の両方で読めるかを確認してください。実装時は選んだ色を --unified 系トークンとして新設し、現在の仮ティールを全置換します。</div>
+</section>
+
+<!-- 返還式 -->
+<section class="view" id="v6">
+  <div class="stageWrap">
+    <div class="ret-frame">
+      <div class="ret-label">WEEK 47 ・ 天頂戦前夜</div>
+      <div class="ret-title">返 還 式</div>
+      <div class="bub" style="max-width:290px;font-size:13px">持てるところまで持ちました。ここで返します。<span style="font-size:10px;color:#8a8172">(草案UT-RET-std-1)</span></div>
+      <img class="fL" src="../../../image/upper/upper_ikoma_e.webp" alt="">
+      <div class="ret-name">生駒 えれな <span style="font-size:10px;color:#8d939c">グランエール</span></div>
+      <div class="ret-record">在位 <b>4年</b> ・ 防衛 <b>11度</b><br>この4年間、ベルトは一度も持ち主を変えなかった</div>
+      <div class="ret-next">ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる</div>
     </div>
   </div>
-  <div class="note"><b>実装ノート</b>: 現行の仮モーダル(showUnifiedTitleChallengeModal)の改善。相手王者の姿(upper M 132×194)を見せ、候補はface 52px正方の選択チップに(U7の3段規約)。書式はOffice=クリーム(事務所で決める場面)。見送り時は輪番リセットの注記を出す。</div>
+  <div class="note"><b>実装ノート</b>: W47のイベントキューに1枚(_enqueuePopup作法)。自団体王者のときだけ表示、AI王者の返還は新聞のみ。枠線・見出しがアイデンティティカラーに追従。</div>
 </section>
 
 <!-- 判断メモ -->
-<section class="view" id="v5">
+<section class="view" id="v7">
   <div class="memo">
-    <h2>① 戴冠をセレモニー級全画面にするか</h2>
-    4年に一度・ゲーム内最大イベントの帰結。原則11「節目専用」の代表例として全画面を使う。<span class="rec">推奨: する(①ビューの形)</span>
-    <h2>② 挑戦者到着画面の色</h2>
-    果たし状(黒+赤)と同じ共通コンポーネントを使うが、赤は「開戦級の稀少演出専用」(08-12裁定)。統一王座の挑戦は年3回来る常設イベントであり、敵意ではなく「格式ある挑戦」。<span class="rec">推奨: 黒Stage+白金(③ビューの形)</span>
-    <h2>③ 統一王座のアイデンティティカラー</h2>
-    現実装は仮のティール(#4fb7c5)。団体王座の金の一段上として<b>白金(プラチナ)</b>をトークン新設(--unified系)し、バッジ・帯・画面をこの色に統一する。<span class="rec">推奨: 白金へ置換(モックアップ全ビューが白金)</span>
-    <h2>④ こちらの番の書式</h2>
-    事務所で挑戦者を決める場面のためOffice(クリーム)。遠征そのものは既存のバス演出(実装済み)。<span class="rec">推奨: Office(④ビューの形)</span>
-    <h2>⑤ ベルト記章・エンブレム画像</h2>
-    当面は白金の帯+🌐で仮運用し、ベルト/エンブレム画像はKeisuke制作後に同名上書き(天頂戦エンブレムと同じ流れ)。<span class="rec">推奨: 仮運用で実装を先行</span>
+    <h2>✅ 確定済み(2026-08-13 Keisuke裁定)</h2>
+    ①戴冠はセレモニー級全画面にする(デザインはA/B/Cから選ぶ) ／ ④こちらの番=Office書式 ／ ⑤ベルト画像は仮運用で実装先行(Keisuke制作後に同名上書き)
+    <h2>裁定待ち1: 戴冠セレモニーのデザイン</h2>
+    案A=深紅の授与式(大会の続き・色言語に忠実) ／ 案B=暗転スポットライト(孤高・「頂点はただ一人」) ／ 案C=黄金セレモニー(祝祭・表彰式の様式)。<span class="rec">私の推奨: 案B(4年に一度だけ許される「静寂の全画面」は他のどの演出とも被らず、稀少性が最も立つ)</span>
+    <h2>裁定待ち2: アイデンティティカラー(3候補・上のボタンで切替)</h2>
+    1=白金(頂点の別格感・金の一段上) ／ 2=紫紺(ロイヤル・王権の色) ／ 3=オーロラ(虹彩・「世界に一本」の唯一物感)。<span class="rec">私の推奨: 3のオーロラ(既存の金/深紅/赤/橙のどれとも被らず、ベルトの唯一性が色だけで伝わる)</span>
+    <h2>裁定待ち3: 到着画面の派手さ</h2>
+    v0.1(単色白金・地味)→v0.2(二重グロー+帯線+リムライト+透かし)。<span class="rec">これで足りるか、まだ地味かをご判断ください</span>
   </div>
-  <div class="note"><b>セリフ</b>: 7場面×口調7種×3本=147本をOpus起案中(docs/dialogue/unified-title-lines-draft-v0.1.md 予定)。モックアップ内のセリフは全て仮。</div>
 </section>
 
 <script>
-document.querySelectorAll('.switch button').forEach(b=>{
+document.querySelectorAll('.bar button[data-v]').forEach(b=>{
   b.addEventListener('click',()=>{
-    document.querySelectorAll('.switch button').forEach(x=>x.classList.remove('on'));
+    document.querySelectorAll('.bar button[data-v]').forEach(x=>x.classList.remove('on'));
     document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));
     b.classList.add('on');
     document.getElementById(b.dataset.v).classList.add('on');
+  });
+});
+document.querySelectorAll('.bar.colors button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.bar.colors button').forEach(x=>x.classList.remove('on'));
+    b.classList.add('on');
+    document.body.className = b.dataset.c;
   });
 });
 </script>
