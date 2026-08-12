@@ -8,6 +8,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | battle-presentation-spec-v1.0.md | シングル戦Replay観戦の確定表示仕様（Pattern C v4、実況・技説明・カメラ・既存演出維持） |
 | character-data-spec-v1.7.md | キャラクターデータ定義(ステータス/特性/性格) |
 | coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
+| dialogue-tone-spec-v1.0.md | **セリフ口調の確定仕様**(archetype×personality二軸/アンカー制/全セル共通の鉄則10項/口調シート34枚を規範文書化) |
 | contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |
 | economy-spec-v2.0.md | 収支バランス(グッズ/メディア/給与/精算) |
 | growth-system-spec-v2.0.md | trainCap距離ベース成長/年齢/追い込み → v2.2 |
