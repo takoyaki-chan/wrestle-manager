@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## roadmap要判断7(COMMON1/COMMON5に口調軸が無い・72行)をクローズ — 08-01解消済みを実測確認（2026-08-12・Fable）
+
+棚卸し09(08-12)で「roadmapの記述とコードが食い違う」と起票された課題チップの消化。**結論: コードもExcelも解消済みで、roadmapの記録だけが更新漏れだった。**
+
+**経緯の特定(git履歴)**: 2026-08-01 の c44309c(08:55)が worklog/roadmap に「残る72行=COMMON1/COMMON5のleaderDemand・leaderQuoteA」を記録し、その33分後の 5dde838(09:28「選手が喋るのに口調軸が無かった129箇所を解消」)が当の2テーブルの第二階層を性格6種→**話者の口調7種**へ入れ替えていた。記録→解消が同日同朝に連続したため、roadmap側の項目だけ据え置きになった。
+
+**Excel実測(読み取りのみ・exportは破壊的なので不実行)**: `tools/dialogue-workbook.js` の `readWorkbookSheets` でセリフ編集/配下の全48ブック20,180行を走査。「archetype列が空で性格列のみ埋まっている行」は**0行**(08-01時点の72行→0)。派閥.xlsx の当該行は leaderDemand 49行(派閥6+`_any`×口調7)+leaderQuoteA 42行(派閥6×口調7)=**91行すべて archetype列に口調が入っている**。personality列が空なのは第二軸が性格→口調に置き換わった新構造の仕様どおり。
+
+触ったファイル: `docs/game-system-roadmap.md`(要判断7を解消済み表記へ1行更新)、`docs/worklog.md`(本エントリ)。計数スクリプトはscratchpad(セッション限り)。specs更新なし(仕様変更なし・記録の訂正のみ)、manifest変更なし、コード変更なしのため能動auto-simなし。残課題なし。
+
 ## 「あたし」棚卸しの承認反映: 19出現を修正・xlsx書き出し・GLIMPSE_B二重定義を発見（2026-08-12・Fable）
 
 Keisuke承認(①直し漏れ11=オールOK・②_default 8=今回一緒に直す)を受け、**data.jsの19出現を修正**(あたし→私/私ら、10422のみ一人称を落とす改稿)し、`tools/dialogue-workbook.js export` で**原本xlsxへ書き出した**(ブックはクリーン状態を確認してから実行——破壊的書き出しルール順守。変更ブック: その他.xlsx / ヤンキー×強気.xlsx)。検証: 残存 `grep "あたし"` は103行→**86行**(全て該当者なしセル=想定どおり)、`node --check` OK、全ブック走査で旧文言残存0・新文言の所在確認(ヤンキー×強気/ノーマル・その他・標準×強気)。
