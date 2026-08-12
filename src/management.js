@@ -25296,8 +25296,15 @@ Engine.contract = {
         { ...f, salaryBonus: 0, contractOVR, contractPop }, {}
       );
       const absorb = Math.max(0, newBP - oldBP);
-      const salaryBonus = Math.max(0, (f.salaryBonus || 0) - absorb);
-      return { ...f, contractOVR, contractPop, salaryBonus };
+      const holdAmount = Math.max(0, Number(f.salaryDeclineHold) || 0);
+      const salaryBonus = Engine.util.clamp(
+        Math.max(0, (f.salaryBonus || 0) - absorb) + holdAmount,
+        0,
+        100
+      );
+      // 据え置き予約はこの再固定だけに使う。旧セーブでは未定義のままで問題ない。
+      const { salaryDeclineHold: _consumedHold, ...cleanFighter } = f;
+      return { ...cleanFighter, contractOVR, contractPop, salaryBonus };
     });
   },
 
@@ -25445,6 +25452,37 @@ Engine.contract = {
       // §3.2: ギャップ3段階
       const gapLevel = gapRatio >= 1.3 ? 'large' : (gapRatio >= 1.1 ? 'mid' : 'none');
 
+      // 給与の下り坂P1: bonusを除いた旧契約基本給と現在査定基本給を比較する。
+      // trust 40未満は従来の昇給要求・移籍志願を優先し、下りカードを出さない。
+      const oldBP = Engine.util.getSalary({ ...f, salaryBonus: 0 }, {});
+      const newBP = Engine.util.getSalary({
+        ...f,
+        salaryBonus: 0,
+        contractOVR: Engine.util.ov(f),
+        contractPop: f.popularity || 0,
+      }, {});
+      const bpRatio = oldBP > 0 ? newBP / oldBP : 1.0;
+      const declineAmount = Math.max(0, oldBP - newBP);
+      const declineLevel = declineAmount >= 10
+        ? (bpRatio <= 0.75 ? 'large' : (bpRatio <= 0.90 ? 'mid' : 'none'))
+        : 'none';
+
+      if (declineLevel !== 'none' && trust >= 40) {
+        const context = Engine.contract.extractContext(f, state);
+        const currentSalary = Engine.util.getSalary(f, state.titles);
+        negotiations.push({
+          fighterId: f.id, fighterName: f.name,
+          attitude: trust >= 75 ? 'decline_voluntary' : 'decline',
+          tone: declineLevel,
+          personality: f.personality || 'normal', archetype: f.archetype || 'standard',
+          raiseAmount: 0, counterOffer: 0,
+          retentionBonus: Engine.contract.calcRetentionBonus(f, state),
+          context, trust, gapRatio, bpRatio, declineLevel, declineAmount,
+          currentSalary, assessedSalary: currentSalary - declineAmount,
+        });
+        continue;
+      }
+
       // §4.1: 自発的残留 — trust 75+ かつギャップなし
       if (trust >= 75 && gapLevel === 'none') {
         const line = Engine.contract.getVoluntaryStayLine(rng, f);
@@ -25527,13 +25565,29 @@ Engine.contract = {
       });
     }
 
-    // §4.6: 深刻度スコア順にソートし上位4名を選出
-    negotiations.sort((a, b) => {
-      const scoreA = (100 - a.trust) + ((a.gapRatio || 1) - 1.0) * 100;
-      const scoreB = (100 - b.trust) + ((b.gapRatio || 1) - 1.0) * 100;
+    // 下りカードは減額幅の大きい順で季2枚まで。既存の上位4名枠に同居させる。
+    const declineAttitudes = new Set(['decline', 'decline_voluntary']);
+    const declineFighterIds = new Set(
+      negotiations
+        .filter(n => declineAttitudes.has(n.attitude))
+        .sort((a, b) => (b.declineAmount || 0) - (a.declineAmount || 0))
+        .slice(0, 2)
+        .map(n => n.fighterId)
+    );
+    const eligibleNegotiations = negotiations.filter(n =>
+      !declineAttitudes.has(n.attitude) || declineFighterIds.has(n.fighterId)
+    );
+
+    // §4.6: 深刻度スコア順にソートし上位4名を選出。
+    // 下りのgapは負方向なので絶対値で同じ土俵に載せる。
+    eligibleNegotiations.sort((a, b) => {
+      const gapA = Number.isFinite(a.gapRatio) ? a.gapRatio : 1.0;
+      const gapB = Number.isFinite(b.gapRatio) ? b.gapRatio : 1.0;
+      const scoreA = (100 - a.trust) + Math.abs(gapA - 1.0) * 100;
+      const scoreB = (100 - b.trust) + Math.abs(gapB - 1.0) * 100;
       return scoreB - scoreA;
     });
-    const capped = negotiations.slice(0, 4);
+    const capped = eligibleNegotiations.slice(0, 4);
     return {
       negotiations: capped,
       voluntaryStays,
@@ -25664,8 +25718,41 @@ Engine.contract = {
     let fundsCost = 0;
     let moraleDelta = 0;
     let escalated = false;
+    let strictEscalationCheck = false;
 
-    if (neg.attitude === 'raise') {
+    if (neg.attitude === 'decline_voluntary') {
+      if (choiceIdx === 0) {
+        // A: 選手の申し出を退け、査定減をsalaryBonusで据え置く予約をする。
+        trustDelta = 10;
+        moraleDelta = 3;
+        reactionPhase = 'decline_voluntary_hold';
+        f.salaryDeclineHold = Math.max(0, Number(neg.declineAmount) || 0);
+      } else {
+        // B: 自発的な減俸申し出を受け入れる。
+        trustDelta = 2;
+        reactionPhase = 'decline_voluntary_accept';
+      }
+    } else if (neg.attitude === 'decline') {
+      if (choiceIdx === 0) {
+        // A: 査定減をsalaryBonusで据え置く予約をする。
+        trustDelta = 6;
+        moraleDelta = 2;
+        reactionPhase = 'decline_hold';
+        f.salaryDeclineHold = Math.max(0, Number(neg.declineAmount) || 0);
+      } else if (choiceIdx === 1) {
+        // B: 査定どおり改定。trust 60未満だけ不満が残る。
+        trustDelta = (f.trust ?? 50) >= 60 ? 0 : -4;
+        reactionPhase = 'decline_accept';
+      } else {
+        // C: bonusも清算し、offWeek3の再固定後に適正給ちょうどへ合わせる。
+        trustDelta = -10;
+        salaryDelta = -Math.max(0, f.salaryBonus || 0);
+        f.salaryBonus = 0;
+        delete f.salaryDeclineHold;
+        reactionPhase = 'decline_strict';
+        strictEscalationCheck = true;
+      }
+    } else if (neg.attitude === 'raise') {
       if (choiceIdx === 0) {
         // A: 昇給を受ける
         salaryDelta = neg.raiseAmount;
@@ -25743,6 +25830,11 @@ Engine.contract = {
     if (trustDelta !== 0) {
       const adjusted = Engine.trust.applyCoeff(trustDelta, f.mn);
       f.trust = Engine.util.clamp((f.trust || 50) + adjusted, 0, 100);
+    }
+
+    // 厳格改定でtrustが40未満まで落ちた場合だけ、40%で移籍志願へ発展する。
+    if (strictEscalationCheck && f.trust < 40 && Engine.rng.float(rng) < 0.40) {
+      escalated = true;
     }
 
     // 昇給適用（上限100万/週まで）
