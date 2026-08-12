@@ -189,6 +189,24 @@ body {
 .cur-ledger-line .up { color: #7ec98f; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
 
 /* ============================================================
+   横並び比較 ビュー
+   ============================================================ */
+.cmp-wrap { max-width: 1560px; margin: 0 auto; padding: 0 16px; }
+.cmp-note { max-width: 1400px; margin: 18px auto 0; padding: 10px 16px; font-size: 12px;
+  color: var(--stage-text-sub); background: rgba(200,190,170,.05);
+  border: 1px solid rgba(200,190,170,.16); border-radius: 8px; line-height: 1.9; }
+.cmp-note b { color: var(--gold-light); }
+.cmp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
+.cmp-label { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: .2em;
+  color: var(--gold); margin: 16px 0 0 4px; }
+.cmp-col .ignite-screen { zoom: .74; margin: 8px auto 20px; }
+.cmp-ref-head { font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: .2em;
+  color: var(--gold); margin: 8px 0 8px 4px; }
+.cmp-ref iframe { width: 100%; height: 660px; border: 1px solid rgba(200,190,170,.2);
+  border-radius: 10px; background: #000; margin-bottom: 16px; }
+.cmp-ref a { color: var(--gold-light); }
+
+/* ============================================================
    ポリシー/判断メモ ビュー
    ============================================================ */
 .doc { max-width: 860px; margin: 26px auto 60px; padding: 28px 30px;
@@ -219,6 +237,7 @@ body {
   <span class="dev-switcher-label">開戦画面リデザイン v0.1</span>
   <button class="dev-btn active" data-v="vA">案A（推奨）</button>
   <button class="dev-btn" data-v="vCur">現行（参考）</button>
+  <button class="dev-btn" data-v="vCmp">🔍 横並び比較</button>
   <button class="dev-btn" data-v="vPolicy">敵対度の見せ方 統一案</button>
   <button class="dev-btn" data-v="vMemo">判断メモ（要裁定）</button>
 </div>
@@ -368,6 +387,32 @@ body {
 </div>
 </section>
 
+<!-- ================= 横並び比較 ================= -->
+<section class="view" id="vCmp">
+<div class="cmp-wrap">
+  <div class="cmp-note">
+    上段: <b>案A(左)と現行(右)を同倍率で並置</b>。デザイン言語は既存の派閥系から継承しています —
+    タイトル帯(明朝+字間)/煽りの橙(--accent-hostility)/宣戦・応戦の役割ラベル/派閥フラグ/VS。
+    <b>新規に足したのは3つだけ</b>: ①リーダーの吹き出し(全派閥イベント共通のクリーム地黒文字規則に準拠)
+    ②中央の敵対度ラベル+火ゲージ(左右の生数値の置き換え) ③頭数の顔チップ列(氏名カンマ連結バグの置き換え)。<br>
+    下段: <b>既存の派閥系モック(正)をそのまま埋め込み</b>。中の切替ボタンも動くので、
+    F01〜F08の各画面と見比べて違和感の有無を確認できます。
+  </div>
+  <div class="cmp-grid">
+    <div><div class="cmp-label">案 A（新）</div><div id="cmpA"></div></div>
+    <div><div class="cmp-label">現 行</div><div id="cmpCur"></div></div>
+  </div>
+  <div class="cmp-ref">
+    <div class="cmp-ref-head">参考 ①: 派閥イベント F01-F04 モック（承認済みの正。開戦の元デザインはこの中の「F02① IGNITE」）
+      — <a href="faction-events.html" target="_blank">別タブで開く</a></div>
+    <iframe src="faction-events.html" loading="lazy"></iframe>
+    <div class="cmp-ref-head">参考 ②: F05-F08 リワークモック（対立ヒートアップ等のOffice系）
+      — <a href="faction-events-f05-f08-rework.html" target="_blank">別タブで開く</a></div>
+    <iframe src="faction-events-f05-f08-rework.html" loading="lazy"></iframe>
+  </div>
+</div>
+</section>
+
 <!-- ================= 敵対度の見せ方 統一案 ================= -->
 <section class="view" id="vPolicy">
 <div class="doc">
@@ -458,12 +503,19 @@ body {
 </section>
 
 <script>
+function populateCmp() {
+  const a = document.querySelector('#vA .ignite-screen');
+  const c = document.querySelector('#vCur .ignite-screen');
+  if (a && !document.querySelector('#cmpA .ignite-screen')) document.getElementById('cmpA').appendChild(a.cloneNode(true));
+  if (c && !document.querySelector('#cmpCur .ignite-screen')) document.getElementById('cmpCur').appendChild(c.cloneNode(true));
+}
 document.querySelectorAll('.dev-btn').forEach(b => {
   b.addEventListener('click', () => {
     document.querySelectorAll('.dev-btn').forEach(x => x.classList.remove('active'));
     document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
     b.classList.add('active');
     document.getElementById(b.dataset.v).classList.add('active');
+    if (b.dataset.v === 'vCmp') populateCmp();
   });
 });
 </script>
