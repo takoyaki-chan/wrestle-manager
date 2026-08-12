@@ -59,10 +59,10 @@
 
 | assetId | 技名 | スタイル・威力 | 改変元 |
 |---|---|---|---|
-| 34_last_ride | ラストライド | Grappler 16 | パワーボム系の高抱えから |
+| 34_last_ride | ラストライド | Grappler 16 | **共用裁定(2026-08-12 Keisuke)**: 16_powerbomb の絵を別名利用。専用撮影しない |
 | 67_tombstone_piledriver | ツームストン・パイルドライバー | Striker 16＋Brawler喧 16 | パイルドライバー束から逆さ抱えへ（ハイジャックパイルドライバーBも参考） |
 | 61_buzzsaw_kick | バズソーキック | Striker 14 | キック系から。受け手は座り姿勢（ダウンすわり系流用） |
-| 58_implant_ddt | インプラントDDT | Allround 13 | DDTから |
+| 58_implant_ddt | インプラントDDT | Allround 13 | **共用裁定(2026-08-12 Keisuke)**: 09_ddt の絵を別名利用。専用撮影しない |
 | 52_double_arm_suplex | ダブルアーム・スープレックス | Allround 13 | フロントスープレックス系から両腕差しへ |
 | 51_northern_lights_suplex | ノーザンライツ・スープレックス | Allround 12 | フロントスープレックス／フィッシャーマン系からブリッジへ |
 | 54_texas_cloverleaf | テキサス・クローバーホールド | Allround 12＋Submission専 13 | 逆エビ束／サソリ固めから脚組みへ |
@@ -103,7 +103,11 @@
 
 **第1便（2026-08-12・14技×3パス=42枚・撮影済）**: 16_powerbomb / 31_sitout_powerbomb / 33_death_valley_bomb / 32_chokeslam / 12_backdrop / 13_german_suplex / 17_piledriver / 65_kenka_kick / 73_octopus_hold / 71_romero_special / 26_figure_four（**要反転**） / 09_ddt（**要反転**） / 53_rear_naked_choke（胴締めスリーパー） / 28_sleeper_hold（P1先行ボーナス）。全1680×1340・3パス完備・単一カメラ。この便は肌色分け前のモデル（両者色白）— 人形化で消えるため撮り直し不要、絡み技の人形化テストで攻守が混ざる場合のみ該当技を再撮。受領詳細は codex側 `assets/moves/INTAKE.md`。
 
-**第1波の残り（撮影中）**: 27_ankle_hold / 35_vertical_brainbuster / 57_spear / 56_diving_body_press / 41_moonsault_press / 01_lariat ＋ M0の4点。**第2便から肌の褐色/色白分けを適用**。
+**第2便（2026-08-12・8セット×3=24枚・撮影済）**: 27_ankle_hold（アンクルロック1採用・2は`alt/`保管） / 88_achilles_hold（**新規ID採番**・共通技アキレス腱固めのP1先行ボーナス） / 57_spear / 56_diving_body_press / 41_moonsault_press（空中の「前」採用・着地の「後」は`alt/`保管） / 01_lariat。全1680×1340・3パス完備・反転指定なし。
+
+**共用裁定（2026-08-12 Keisuke）**: ラストライド(34)=16_powerbomb別名 / インプラントDDT(58)=09_ddt別名。第2波の専用撮影から外し、マニフェスト実装時にaliasesへ記録する。
+
+**第1波の未受領**: 35_vertical_brainbuster（垂直落下式ブレーンバスター・ポーズ庫に束あり）＋ M0の3構図（フォール押さえ込み／フォール返し／ぐったりダウン）。
 
 ## 7. 除外と後送（理由付き）
 
