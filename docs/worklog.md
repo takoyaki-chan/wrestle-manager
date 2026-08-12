@@ -1,5 +1,9 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 統一王座記事65本 Keisuke全文承認 → task-88 Codex投入（2026-08-13・Fable）
+
+記事草案v0.1改(大仰トーン)が**全文承認**。草案ファイルに承認マーク、task-88 §Hを「一字一句変更禁止・草案MD突き合わせテスト必須」(task-86セリフと同じ扱い)へ更新。task-87マージでゲートが開いたため、**task-88(統一王座P1+P2)を専用worktree `wm-codex-task88`(ブランチ codex/task-88-unified-title)でCodexへ投入**。完了後はFableがdiff全文レビュー+不変条件I-1〜I-8の独立検算(核: 創設前の乱数消費ゼロ=auto-sim 3季指紋一致/hasCompetingBooking排他)→コミット代行→mainマージの手順(task-86/87と同型)。
+
 ## task-87マージ+petition102本焼き込み: CH-1完遂・spec v0.2昇格（2026-08-13・Fable+Codex）
 
 **task-87(CH-1挑戦フロー改修)をマージ**(7199354)。Codex実装→Fableのdiff全文レビュー・独立検算(npm test 227/227/auto-sim指紋 前後とも fae2a4d1=I-1成立/口上21本を自前照合で全文一致/I-2〜I-6はdiff+テストで確認)→3粒度コミット代行。実装: ①直訴+同行2名ピッカー統合(3枚→2枚。資格判定は旧showAwayTeamPickModalと同一集合、2名未満はYES無効、旧モーダル撤去) ②**果たし状画面を共通コンポーネント`showHostileArrivalStage`として新設**(黒Stage+--accent-war・敵隊列L寸-18px群外枠・人数可変1〜5・onChoice単発ガード+900msタイムアウト)しinverse挑戦を差し替え、重複受理ポップ廃止 ③inverse発火時に相手3名をエンジンで確定(OVR上位2名・負傷/引退除外・同値はderiveローカル・**旧セーブはfail-openで従来自動選抜**) ④sendoffのOffice化(行き先実エンブレム+遠征3人チップ)。

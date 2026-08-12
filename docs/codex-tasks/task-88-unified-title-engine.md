@@ -1,7 +1,7 @@
 # task-88: 全国統一王座 P1+P2（エンジン基盤+挑戦サイクル）
 
 - 起票: 2026-08-12(Fable) / 設計裁定: 同日Keisuke(全8件確定・提案書に刻印済み)
-- 作業場所: `C:\Users\nkmrk\Downloads\wrestle-manager-codex`(ブランチ `codex/agent-workspace`)。mainフォルダは触らない
+- 作業場所: 専用worktree `C:\Users\nkmrk\Downloads\wm-codex-task88`(mainのlinked worktree・ブランチ `codex/task-88-unified-title`。task-86/87と同方式)。mainフォルダと `wrestle-manager-codex`(技画像作業で使用中)は触らない
 - 前提: **同ツリーに他タスクのWIPが残っている場合は先にコミットしてから着手**する(未コミット成果の巻き戻し事故防止)
 - スコープ外(このタスクでやらない): 返還式・戴冠のセレモニー演出 / 王者バッジの本デザイン / 選手セリフ(Opus起案後の別タスク) / 殿堂pt・年間表彰への組み込み(P4)。**演出は最小限、エンジンと配線を正しく作るのが本タスク**
 
@@ -70,7 +70,7 @@
 
 ### H. 新聞記事(一面が埋まる組み立て式。2026-08-12 Keisuke指示「一面記事が埋まるようにリッチな内容で」)
 
-- **文面の正: `docs/unified-title-article-drafts-v0.1.md`(Keisuke承認版)**。承認前に実装へ着手する場合は構造だけ先に作り、文面差し替えを最後に行う
+- **文面の正: `docs/unified-title-article-drafts-v0.1.md`(v0.1改・2026-08-13 Keisuke全文承認済み)**。**一字一句変更禁止**(task-86セリフ焼き込みと同じ扱い。テストで草案MDと突き合わせる)
 - **本文は task-80 の王座交代記事と同じ組み立て式**(`Engine.newspaper.composeChampionChangeBody` / `CHAMPION_CHANGE_TEMPLATES` が実装の見本): リード → 経緯 → 人物プロフィール(年齢帯分岐) → ベルトの来歴(`unifiedTitle.history` から防衛数・保持期間・渡った団体を叙述) → 締め、の各スロットをテンプレートプールから合成する。一行記事を作らない
 - 記事種別は8種(創設/戴冠/連覇/防衛/移動/返上・引退/返上・所属喪失/返還)。ナレーション規約: 事実記述・格言禁止・ベルトに「世界」を冠しない・内部変数名(OVR/MQ等)を出さない
 - priority は 移動/戴冠/創設/連覇=180、防衛/返還/返上=140(aiChampionChange 130 より上、天頂戦結果 330 より下)。写真は人物写真(既存の characterIds 経路)
