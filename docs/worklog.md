@@ -1,5 +1,14 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-84 P1下り交渉カード: Codex実装を検算・マージ、給与の下り坂 全工程完了（2026-08-12・Fable+Codex）
+
+Codex CLIへ直接投入(`codex exec --full-auto`)して実装させ、diffレビューと検算の上mainへマージ(b86080a)。CodexはsandboxがworktreeのGitメタデータ書き込みを塞ぎ**コミットのみBLOCKED**だったため、レビュー後にFableが3粒度(エンジン/セリフ343本/UI+auto-sim+テスト)でコミット代行した。
+
+検算の要点: (I-2)据え置き予約`salaryDeclineHold`はrefixRosterが吸収後に加算し clamp[0,100]、消費後フィールド除去(旧セーブ互換)。据え置き選手の給与総額=前給維持を数式で確認。(I-1)昇給側の発生は127→122件(−3.9%)/132→119件(−9.8%)で±10%以内 — declineカードが4名枠に同居する設計どおりの減少。(I-4)厳格清算はbonus=0+trust−10、調整後trust<40のみ40%エスカレート(コード確認)。セリフ343本は原稿(承認済み草案)と突き合わせ — 本数一致・マーカー混入なし・Keisuke改3件を原文確認。SALARY_PARAMS無変更をdiffで確認。検証: 単体テスト2本PASS/npm test 224/224/fixture再計測40季(昇給122件=Codex報告一致、gap分布はP0帯を維持、ALL CLEAR)。
+
+締め: **`specs/salary-decline-spec-v1.0.md` へ昇格**(P0サイクル/P1カード/P2較正値/不変条件7項を成文化、INDEX追記)。セリフ編集ブックを再export(20,396行、新343本込み。「あたし」修正セッションのexport直後だったため差分は新フェーズのみ)。実機確認5点は `docs/実機確認バックログ.md` へ集約。proposal v0.2は設計経緯の記録に降格。**給与の下り坂はこれで全工程完了** — 残はKeisukeのspecs diff確認と実機確認のみ。
+
+
 ## roadmap要判断7(COMMON1/COMMON5に口調軸が無い・72行)をクローズ — 08-01解消済みを実測確認（2026-08-12・Fable）
 
 棚卸し09(08-12)で「roadmapの記述とコードが食い違う」と起票された課題チップの消化。**結論: コードもExcelも解消済みで、roadmapの記録だけが更新漏れだった。**
