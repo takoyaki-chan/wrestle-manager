@@ -10,7 +10,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `BT_HINT_LINES.standard.normal[1]`: （…体が軽い。いつもと、何かが違う——）
 - `BT_HINT_LINES.standard.normal[2]`: （…動ける。まだ、動ける——）
-- `BT_HINT_LINES.standard.bold[1]`: （…体が勝手に動く。これが、あたしの限界の先——）
+- `BT_HINT_LINES.standard.bold[1]`: （…体が勝手に動く。これが、私の限界の先——）
 - `BT_HINT_LINES.standard.bold[2]`: （…見えた。次やるべきことが、はっきりと——）
 - `BT_HINT_LINES.standard.quiet[1]`: （…見える。次の一手が、はっきりと）
 - `BT_HINT_LINES.standard.quiet[2]`: （…体が、勝手に動いている——）
@@ -18,7 +18,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BT_HINT_LINES.standard.easygoing[2]`: （…体が軽い。いつもと全然違う——）
 - `BT_HINT_LINES.standard.earnest[1]`: （…あの練習が、今、実を結ぼうとしている——）
 - `BT_HINT_LINES.standard.earnest[2]`: （…わかる。体が覚えている。次の一手——）
-- `BT_HINT_LINES.standard.emotional[1]`: （…わたしの体、こんなに動けたんだ——！）
+- `BT_HINT_LINES.standard.emotional[1]`: （…私の体、こんなに動けたんだ——！）
 - `BT_HINT_LINES.standard.emotional[2]`: （…すごい。体が勝手に。止まらない——）
 - `BT_HINT_LINES.ojousama.normal[1]`: （…体が軽いわ。何かが変わったかしら——）
 - `BT_HINT_LINES.ojousama.bold[1]`: もう少しでなにかが掴めそうな。……あと一歩ね。
@@ -31,7 +31,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BT_HINT_LINES.polite.normal[1]`: 何かが掴めそうな気がします。もう少しで…
 - `BT_HINT_LINES.polite.bold[1]`: もう少しで掴めそうです。あと一歩です
 - `BT_HINT_LINES.polite.quiet[1]`: ………もう少しで…掴めそう…です
-- `BT_HINT_LINES.polite.earnest[1]`: （…あのお稽古が、今、実を結ぼうとしている——）
+- `BT_HINT_LINES.polite.earnest[1]`: （…あの練習が、今、実を結ぼうとしている——）
 - `BT_HINT_LINES.polite.shy[1]`: 最近…なにかが、掴めそうな…そんな気がするんです…
 - `BT_HINT_LINES.seductive.normal[1]`: 何かが変わり始めてる…自分でもわかるわ
 - `BT_HINT_LINES.seductive.bold[1]`: もう少し…あと少しで何かが掴めそうなの
@@ -65,7 +65,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BREAKTHROUGH_LINES.ojousama.normal[1]`: 何かが変わった気がいたします…壁を越えたのね
 - `BREAKTHROUGH_LINES.ojousama.bold[1]`: 当然ね。まだまだこんなものでは無くてよ
 - `BREAKTHROUGH_LINES.ojousama.easygoing[1]`: 最近絶好調ですわ！ もっと上に行けそうですの
-- `BREAKTHROUGH_LINES.ojousama.earnest[1]`: お稽古の成果ですわ…！ まだまだ上を目指しますわ
+- `BREAKTHROUGH_LINES.ojousama.earnest[1]`: お稽古の成果です…！ まだまだ上を目指しますわ
 - `BREAKTHROUGH_LINES.delinquent.normal[1]`: おっしゃ！ なんか壁越えた気がするぜ！
 - `BREAKTHROUGH_LINES.delinquent.bold[1]`: 当然だろ！ まだまだこんなもんじゃねーぜ！
 - `BREAKTHROUGH_LINES.delinquent.easygoing[1]`: おお！ なんかいつもと違うぜ！ いい感じ！
@@ -74,7 +74,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BREAKTHROUGH_LINES.seductive.quiet[1]`: ………（静かに拳を見つめ）…変わってきたわ
 - `BREAKTHROUGH_LINES.seductive.easygoing[1]`: あら、いつもと違う感じ。いいわね
 - `BREAKTHROUGH_LINES.seductive.earnest[1]`: 練習が実を結んだわ…まだ上を目指すわよ
-- `BREAKTHROUGH_LINES.seductive.emotional[1]`: ……っ……変わったの、わたし……ふふ、自分でも信じられないくらい……
+- `BREAKTHROUGH_LINES.seductive.emotional[1]`: ……っ……変わったの、私……ふふ、自分でも信じられないくらい……
 - `BREAKTHROUGH_LINES.cool.normal[1]`: ……成長を、実感している
 - `BREAKTHROUGH_LINES.cool.bold[1]`: …まだ上がある
 - `BREAKTHROUGH_LINES.cool.quiet[1]`: …変わった
@@ -89,7 +89,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BREAKTHROUGH_LINES.composed.quiet[1]`: ……変わった、かな
 - `BREAKTHROUGH_LINES.composed.easygoing[1]`: あれ、なんかいい感じ。…悪くないね
 - `BREAKTHROUGH_LINES.composed.earnest[1]`: …積み重ねてきたものが、ようやく。…まだ上がある
-- `BREAKTHROUGH_LINES.composed.emotional[1]`: なんだか壁を超えてみたいな。…へぇ、イイ感じじゃん♪
+- `BREAKTHROUGH_LINES.composed.emotional[1]`: なんか、壁を超えられそうな気がする！ うん、これいい感じ！
 
 ## `MILESTONE_LINES`
 
@@ -140,7 +140,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `MILESTONE_LINES.ovr_elite.standard.earnest[2]`: 全ての敗北が、ここに繋がっていた
 - `MILESTONE_LINES.ovr_elite.standard.emotional[1]`: ここまで来れた…！ 泣きそう…いや、泣かない…！
 - `MILESTONE_LINES.ovr_elite.standard.emotional[2]`: みんなが支えてくれたから…ここに立ってる…！
-- `MILESTONE_LINES.ovr_elite.ojousama.normal[1]`: ここまで来れたのですね…感慨深いですわ
+- `MILESTONE_LINES.ovr_elite.ojousama.normal[1]`: ここまで来られたのですね…感慨深いですわ
 - `MILESTONE_LINES.ovr_elite.ojousama.bold[1]`: 頂が見えてきましたわ。手を伸ばせば届く距離に
 - `MILESTONE_LINES.ovr_elite.ojousama.easygoing[1]`: ここまで来れるとは思いませんでしたわ！
 - `MILESTONE_LINES.ovr_elite.delinquent.normal[1]`: ここまで来たら、もう誰にも止められねえ
@@ -224,7 +224,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `MILESTONE_LINES.pop_star.standard.normal[1]`: こんなにたくさんの人が応援してくれてる…
 - `MILESTONE_LINES.pop_star.standard.normal[2]`: 期待に応えなきゃ
 - `MILESTONE_LINES.pop_star.standard.bold[1]`: この声援に恥じない試合を見せてやる
-- `MILESTONE_LINES.pop_star.standard.bold[2]`: 期待してろ。最高の舞台を見せてやるから
+- `MILESTONE_LINES.pop_star.standard.bold[2]`: 期待してていいわよ。最高の舞台を見せてあげる
 - `MILESTONE_LINES.pop_star.standard.quiet[1]`: ……こんなに……ありがとう
 - `MILESTONE_LINES.pop_star.standard.easygoing[1]`: うわー、すごい人気！ もっと盛り上げていくよ！
 - `MILESTONE_LINES.pop_star.standard.earnest[1]`: この声援が、私の全て。…絶対に裏切らない
@@ -292,8 +292,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `SLUMP_START_LINES.defeat.standard.normal[1]`: あの負けから…何かがおかしい
 - `SLUMP_START_LINES.defeat.standard.normal[2]`: 自分の何が悪かったのか、わからない
-- `SLUMP_START_LINES.defeat.standard.bold[1]`: …何やってんだわたし
-- `SLUMP_START_LINES.defeat.standard.bold[2]`: 負けた？ わたしが？ …嘘でしょ
+- `SLUMP_START_LINES.defeat.standard.bold[1]`: …何やってんだ私
+- `SLUMP_START_LINES.defeat.standard.bold[2]`: 負けた？ 私が？ …嘘でしょ
 - `SLUMP_START_LINES.defeat.standard.quiet[1]`: ……あの負けから、動けない
 - `SLUMP_START_LINES.defeat.standard.shy[1]`: やっぱり…私なんかじゃ、ダメなんでしょうか…
 - `SLUMP_START_LINES.defeat.standard.easygoing[1]`: あはは…なんだろうね、体が動かないや
@@ -306,7 +306,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SLUMP_START_LINES.defeat.ojousama.easygoing[1]`: 最近少し不調ですの…でもすぐ立て直しますわ
 - `SLUMP_START_LINES.defeat.ojousama.earnest[1]`: あの敗北…わたくしの何がいけませんでしたの
 - `SLUMP_START_LINES.defeat.delinquent.normal[1]`: あの負けから…何かおかしいんだよ
-- `SLUMP_START_LINES.defeat.delinquent.bold[1]`: …チッ、何やってんだよあたし
+- `SLUMP_START_LINES.defeat.delinquent.bold[1]`: …チッ、何やってんだよ私
 - `SLUMP_START_LINES.defeat.delinquent.easygoing[1]`: なんだろうな…いつもみたいに動かねーよ
 - `SLUMP_START_LINES.defeat.seductive.normal[1]`: あの負けから…何かがおかしいの
 - `SLUMP_START_LINES.defeat.seductive.bold[1]`: あら…おかしいわね、こんなはずじゃ
@@ -337,7 +337,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SLUMP_START_LINES.injury_moderate_recovery.standard.easygoing[1]`: あれー、治ったはずなのに調子出ないなぁ
 - `SLUMP_START_LINES.injury_moderate_recovery.standard.earnest[1]`: 復帰できたのに…まだ全然足りない
 - `SLUMP_START_LINES.injury_moderate_recovery.standard.emotional[1]`: せっかく治ったのに…なんで、なんで動けないの…！
-- `SLUMP_START_LINES.injury_moderate_recovery.ojousama.normal[1]`: 体は治りったのに…動けない……なぜ？
+- `SLUMP_START_LINES.injury_moderate_recovery.ojousama.normal[1]`: 体は治ったのに…動けない……なぜ？
 - `SLUMP_START_LINES.injury_moderate_recovery.ojousama.bold[1]`: もう治ったのに…なぜこんなにもたつくの？
 - `SLUMP_START_LINES.injury_moderate_recovery.ojousama.earnest[1]`: 復帰できましたのに…まだまだ足りませんわ
 - `SLUMP_START_LINES.injury_moderate_recovery.delinquent.normal[1]`: 体は治ったはずだろ…なんで動けねーんだ
@@ -361,7 +361,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SLUMP_START_LINES.injury_moderate_recovery.polite.earnest[1]`: 復帰できたのですが…まだ全然、足りていません
 - `SLUMP_START_LINES.injury_severe_recovery.standard.normal[1]`: またリングに立てた…のに、怖い
 - `SLUMP_START_LINES.injury_severe_recovery.standard.normal[2]`: 重傷から帰ってきたけど…自信がない
-- `SLUMP_START_LINES.injury_severe_recovery.standard.bold[1]`: あたしが…怯えてる？ そんなはずない！
+- `SLUMP_START_LINES.injury_severe_recovery.standard.bold[1]`: 私が…怯えてる？ そんなはずない！
 - `SLUMP_START_LINES.injury_severe_recovery.standard.quiet[1]`: ……リングが、遠い
 - `SLUMP_START_LINES.injury_severe_recovery.standard.shy[1]`: 戻ってこれたけど…また壊れたらって思うと…怖いです
 - `SLUMP_START_LINES.injury_severe_recovery.standard.easygoing[1]`: あはは…参ったな、リングがちょっと怖いや
@@ -370,8 +370,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SLUMP_START_LINES.injury_severe_recovery.ojousama.normal[1]`: リングに戻れたというのに…怖いわ
 - `SLUMP_START_LINES.injury_severe_recovery.ojousama.bold[1]`: わたくしが…怯える？ そんなはずは
 - `SLUMP_START_LINES.injury_severe_recovery.ojousama.earnest[1]`: 復帰できましたわ…でもお体が覚えていますの、あの痛みを
-- `SLUMP_START_LINES.injury_severe_recovery.delinquent.normal[1]`: 戻ってきたのに…ビビってんのかよ、あたし
-- `SLUMP_START_LINES.injury_severe_recovery.delinquent.bold[1]`: あたしがビビってる？ ふざけんな
+- `SLUMP_START_LINES.injury_severe_recovery.delinquent.normal[1]`: 戻ってきたのに…ビビってんのかよ、私
+- `SLUMP_START_LINES.injury_severe_recovery.delinquent.bold[1]`: 私がビビってる？ ふざけんな
 - `SLUMP_START_LINES.injury_severe_recovery.delinquent.easygoing[1]`: まいったな…リングがちょっと怖ぇーよ
 - `SLUMP_START_LINES.injury_severe_recovery.seductive.normal[1]`: 戻ってこれたのに…怖いの
 - `SLUMP_START_LINES.injury_severe_recovery.seductive.bold[1]`: 私が…怯えてる？ 嘘でしょう
@@ -397,7 +397,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SLUMP_START_LINES.penalty_end.standard.easygoing[1]`: 怪我は治ったんだけどなぁ…なんか気分が乗らない
 - `SLUMP_START_LINES.penalty_end.standard.earnest[1]`: 怪我は治った。でも離れていた時間が…重い
 - `SLUMP_START_LINES.penalty_end.standard.emotional[1]`: 治ったはずなのに…なんでこんなに不安なの…！
-- `SLUMP_START_LINES.penalty_end.ojousama.normal[1]`: 怪我は癒えましたのに…気力が戻ないわね
+- `SLUMP_START_LINES.penalty_end.ojousama.normal[1]`: 怪我は癒えましたのに…気力が戻らないわね
 - `SLUMP_START_LINES.penalty_end.ojousama.bold[1]`: 体は万全ですのに…気持ちがついてきませんわね
 - `SLUMP_START_LINES.penalty_end.ojousama.earnest[1]`: お怪我は癒えましたわ。でも離れていた時間が…重いですの
 - `SLUMP_START_LINES.penalty_end.delinquent.normal[1]`: 怪我は治ったっつーのに…気力が戻んねー
@@ -435,7 +435,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SLUMP_END_LINES.standard.earnest[1]`: 迷惑かけた分…倍にして返す
 - `SLUMP_END_LINES.standard.earnest[2]`: 待ってくれていたリングに、恩返しする
 - `SLUMP_END_LINES.standard.emotional[1]`: うっ…やっと、やっと抜け出せた…！ もう負けない…！
-- `SLUMP_END_LINES.ojousama.normal[1]`: ようやく…戻ってこれましたわ
+- `SLUMP_END_LINES.ojousama.normal[1]`: ようやく…戻ってこられましたわ
 - `SLUMP_END_LINES.ojousama.bold[1]`: 少し待たせたかしら？ここからよ
 - `SLUMP_END_LINES.ojousama.easygoing[1]`: 調子が戻ってまいりましたわ！ もう大丈夫ですの
 - `SLUMP_END_LINES.ojousama.earnest[1]`: ご迷惑をおかけしましたわ…必ずお返しいたします
@@ -453,7 +453,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `SLUMP_END_LINES.cool.quiet[1]`: ……戻った
 - `SLUMP_END_LINES.polite.normal[1]`: ようやく…調子が戻ってきた気がします
 - `SLUMP_END_LINES.polite.bold[1]`: 復調しました。もう大丈夫です
-- `SLUMP_END_LINES.polite.quiet[1]`: …戻ってこれました
+- `SLUMP_END_LINES.polite.quiet[1]`: …戻ってこられました
 - `SLUMP_END_LINES.polite.shy[1]`: やっと…調子が、戻ってきました…
 - `SLUMP_END_LINES.polite.easygoing[1]`: 調子戻ってきました！ もう大丈夫です！
 - `SLUMP_END_LINES.polite.earnest[1]`: ご迷惑をおかけしました…必ず、倍にしてお返しします
@@ -479,8 +479,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `MOTIVATION_LOSS_LINES.standard.earnest[1]`: 毎日道場に来るのが…こんなに辛いなんて
 - `MOTIVATION_LOSS_LINES.standard.earnest[2]`: 自分を追い込んでも…何も返ってこない
 - `MOTIVATION_LOSS_LINES.standard.emotional[1]`: やだ…もう嫌…何もしたくない…！
-- `MOTIVATION_LOSS_LINES.standard.emotional[2]`: …なんで泣いてるんだろ、あたし…
-- `MOTIVATION_LOSS_LINES.ojousama.normal[1]`: 何のために…闘っているのかしら、わたし
+- `MOTIVATION_LOSS_LINES.standard.emotional[2]`: …なんで泣いてるんだろ、私…
+- `MOTIVATION_LOSS_LINES.ojousama.normal[1]`: 何のために…闘っているのかしら、私
 - `MOTIVATION_LOSS_LINES.ojousama.bold[1]`: …燃えないわね。…何をしても、火がつかないのよ
 - `MOTIVATION_LOSS_LINES.ojousama.easygoing[1]`: 少しやる気が出ませんの…でも頑張りますわ
 - `MOTIVATION_LOSS_LINES.ojousama.earnest[1]`: 毎日お稽古に通うのが…こんなに辛いとは
@@ -519,16 +519,16 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `HEAT_STATE_SELF_LINES.fresh.standard.bold[1]`: 体が動きたがってる。もっとやらせてくれない?
 - `HEAT_STATE_SELF_LINES.fresh.standard.easygoing[1]`: なんか今日、体が軽いんだよねー。いけるいける
 - `HEAT_STATE_SELF_LINES.fresh.standard.earnest[1]`: 体が素直に動きます。やった分だけ返ってきます
-- `HEAT_STATE_SELF_LINES.fresh.standard.emotional[1]`: 体が軽い…!今ならなんでもできる気がする…!
+- `HEAT_STATE_SELF_LINES.fresh.standard.emotional[1]`: 体が軽い…！今ならなんでもできる気がする…！
 - `HEAT_STATE_SELF_LINES.fresh.standard.quiet[1]`: …体が、軽いです。…今日は、いけます
-- `HEAT_STATE_SELF_LINES.fresh.standard.shy[1]`: な、なんだか今日、体が軽くて…!やれそうです…!
+- `HEAT_STATE_SELF_LINES.fresh.standard.shy[1]`: な、なんだか今日、体が軽くて…！やれそうです…！
 - `HEAT_STATE_SELF_LINES.fresh.cool.normal[1]`: …調子はいい。今なら、何をやっても身につく
 - `HEAT_STATE_SELF_LINES.fresh.cool.bold[1]`: …万全だ。遠慮はいらない。もっと来て
 - `HEAT_STATE_SELF_LINES.fresh.cool.earnest[1]`: …体が応えてくれる。…今のうちに色々試したい
 - `HEAT_STATE_SELF_LINES.fresh.cool.quiet[1]`: …体は軽い。…今日は、かなり…やれる
 - `HEAT_STATE_SELF_LINES.fresh.polite.normal[1]`: 体が軽いんです。今なら、いくらでもやれます
 - `HEAT_STATE_SELF_LINES.fresh.polite.earnest[1]`: 今日は身体が素直に動きます。学んだ分だけ、身につきます
-- `HEAT_STATE_SELF_LINES.fresh.polite.shy[1]`: あ、あの…今日は体が軽くて…もっと、やれます…!
+- `HEAT_STATE_SELF_LINES.fresh.polite.shy[1]`: あ、あの…今日は体が軽くて…もっと、やれます…！
 - `HEAT_STATE_SELF_LINES.fresh.composed.normal[1]`: …体は軽いね。こういう日は、伸びるんだよ
 - `HEAT_STATE_SELF_LINES.fresh.composed.earnest[1]`: …今日はなんだか感覚が良い。こういう日を、無駄にしたくない
 - `HEAT_STATE_SELF_LINES.fresh.composed.emotional[1]`: …体は軽い。…こういう日は、黙って積むよ
@@ -544,7 +544,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `HEAT_STATE_SELF_LINES.warm.standard.bold[1]`: まだやれる。…切れが鈍った? 気のせいだって
 - `HEAT_STATE_SELF_LINES.warm.standard.easygoing[1]`: んー、なんか乗り切らないなー。動けてはいるけど
 - `HEAT_STATE_SELF_LINES.warm.standard.earnest[1]`: 同じだけやってるのに、身についてる感じがしません
-- `HEAT_STATE_SELF_LINES.warm.standard.emotional[1]`: あれ…なんか入ってこない…!?もっとやれるはずなのに
+- `HEAT_STATE_SELF_LINES.warm.standard.emotional[1]`: あれ…なんか入ってこない…！？もっとやれるはずなのに
 - `HEAT_STATE_SELF_LINES.warm.standard.quiet[1]`: …同じことを、しているのに。…返るものが、少ない
 - `HEAT_STATE_SELF_LINES.warm.standard.shy[1]`: あの…同じようにやってるはずなんですけど…なんだか…
 - `HEAT_STATE_SELF_LINES.warm.cool.normal[1]`: …昨日と同じ動きだ。…なのに、入りが浅い
@@ -569,7 +569,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `HEAT_STATE_SELF_LINES.heavy.standard.bold[1]`: 重い。…でも止まらない。止まったら負けた気がする
 - `HEAT_STATE_SELF_LINES.heavy.standard.easygoing[1]`: あー、体が重い。今日は何やっても身にならないねー
 - `HEAT_STATE_SELF_LINES.heavy.standard.earnest[1]`: 動きが同じところで止まる。私の集中が足りないのかな
-- `HEAT_STATE_SELF_LINES.heavy.standard.emotional[1]`: 体が重い…!やる気はあるのに、体がついてこない…!
+- `HEAT_STATE_SELF_LINES.heavy.standard.emotional[1]`: 体が重い…！やる気はあるのに、体がついてこない…！
 - `HEAT_STATE_SELF_LINES.heavy.standard.quiet[1]`: …体が、重いです。…今日は、たぶん、残りません
 - `HEAT_STATE_SELF_LINES.heavy.standard.shy[1]`: あ、あの…体が重いです…今日は、身になってない気がして…
 - `HEAT_STATE_SELF_LINES.heavy.cool.normal[1]`: …体が重い。今日は、何をやっても素通りだ
@@ -605,8 +605,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `MOTIVATION_RECOVERY_LINES.standard.easygoing[1]`: よーし、またやる気出てきたぞ！ 楽しまなきゃね
 - `MOTIVATION_RECOVERY_LINES.standard.earnest[1]`: 闘うことを忘れていた…でも、もう迷わない
 - `MOTIVATION_RECOVERY_LINES.standard.emotional[1]`: うっ…また闘いたいって…思えたよ…！ 大丈夫、もう大丈夫…！
-- `MOTIVATION_RECOVERY_LINES.ojousama.normal[1]`: まだ…やれるわ。やって見せる
-- `MOTIVATION_RECOVERY_LINES.ojousama.bold[1]`: 目が覚めたわ。ここで終わるわけにはかないもの
+- `MOTIVATION_RECOVERY_LINES.ojousama.normal[1]`: まだ…やれるわ。やってみせる
+- `MOTIVATION_RECOVERY_LINES.ojousama.bold[1]`: 目が覚めたわ。ここで終わるわけにはいかないもの
 - `MOTIVATION_RECOVERY_LINES.ojousama.easygoing[1]`: やる気が戻ってまいりましたわ！ もう大丈夫ですの
 - `MOTIVATION_RECOVERY_LINES.ojousama.earnest[1]`: 闘う心を忘れていましたわ…でも、もう迷いませんの
 - `MOTIVATION_RECOVERY_LINES.delinquent.normal[1]`: まだやれる…やってやるよ

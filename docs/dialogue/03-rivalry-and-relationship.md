@@ -16,7 +16,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### attacker.standard.bold[]
 
-- `RIVALRY_CONFRONTATION_LINES.attacker.standard.bold[1]`: 逃がさないよ。今日ここで決着をつけから
+- `RIVALRY_CONFRONTATION_LINES.attacker.standard.bold[1]`: 逃がさないよ。今日ここで決着をつけるから
 - `RIVALRY_CONFRONTATION_LINES.attacker.standard.bold[2]`: 何度やっても結果は同じだと思うけど。まぁ、かかってきなさい
 
 ### attacker.standard.quiet[]
@@ -425,7 +425,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fateDefender.standard.easygoing[]
 
-- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.easygoing[1]`: おう！ 最高の締めにしようぜ！
+- `RIVALRY_CONFRONTATION_LINES.fateDefender.standard.easygoing[1]`: 最高の締めにしよう！ さあ、行くよ！
 
 ### fateDefender.standard.earnest[]
 
@@ -668,7 +668,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### defender.standard.normal[]
 
-- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.normal[1]`: ……来なよ。相手してあげる
+- `RIVALRY_CONFRONTATION_LINES_70.defender.standard.normal[1]`: ……来て。ちゃんと相手するよ
 - `RIVALRY_CONFRONTATION_LINES_70.defender.standard.normal[2]`: 出来るものならやってみなよ！
 - `RIVALRY_CONFRONTATION_LINES_70.defender.standard.normal[3]`: 終わりにできるか、やってみなよ！
 
@@ -838,7 +838,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.quiet[1]`: ………（言葉はなく、ただ見つめている）
 - `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.easygoing[1]`: ……ようやく、この日ね。全部、出し切るわ
 - `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.earnest[1]`: ……この日をずっと待っていたの。全てを賭けるわ
-- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.emotional[1]`: ……この日を…ずっと待ってた……っ……行くわよ……!
+- `RIVALRY_CONFRONTATION_LINES_90.attacker.seductive.emotional[1]`: ……この日を…ずっと待ってた……っ……行くわよ……！
 - `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.normal[1]`: ……この日を、ずっと待っておりました
 - `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.bold[1]`: 全てを賭けます。行かせていただきます
 - `RIVALRY_CONFRONTATION_LINES_90.attacker.polite.quiet[1]`: ………行き…ます
@@ -875,7 +875,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.quiet[1]`: ………（静かに目を閉じ、開く）
 - `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.easygoing[1]`: ……ええ。言葉は、いらないわね
 - `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.earnest[1]`: ……ええ。全力で受けるわ
-- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.emotional[1]`: ……ええ……!来なさい、全部受け止めるわ……!
+- `RIVALRY_CONFRONTATION_LINES_90.defender.seductive.emotional[1]`: ……ええ……！来なさい、全部受け止めるわ……！
 - `RIVALRY_CONFRONTATION_LINES_90.defender.polite.normal[1]`: ……はい。もう言葉は…いりません
 - `RIVALRY_CONFRONTATION_LINES_90.defender.polite.bold[1]`: ……はい。受けて立ちます
 - `RIVALRY_CONFRONTATION_LINES_90.defender.polite.quiet[1]`: ………（静かに頷く）…はい
@@ -908,7 +908,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RIVALRY_RESOLUTION_LINES.winner.ojousama.normal[1]`: 一つ決着がついたわね…でも、まだ終わった気がしない
 - `RIVALRY_RESOLUTION_LINES.winner.ojousama.bold[1]`: 当然の勝利。…でも、これで折れては居ないのでしょうね
 - `RIVALRY_RESOLUTION_LINES.winner.ojousama.easygoing[1]`: 一つ勝ちましたわ！ …でもまだ終わった気がしませんの
-- `RIVALRY_RESOLUTION_LINES.winner.ojousama.earnest[1]`: ひとつ結果を出しましたわ…でも、まだ終わりではありませんわね
+- `RIVALRY_RESOLUTION_LINES.winner.ojousama.earnest[1]`: ひとつ結果を出しました…でも、まだ終わりではありませんわね
 - `RIVALRY_RESOLUTION_LINES.winner.delinquent.normal[1]`: ひとまず決着だ…でも、なんだろ。まだモヤモヤすんな
 - `RIVALRY_RESOLUTION_LINES.winner.delinquent.bold[1]`: 一個返したぞ。…でもまだ足りねえ気がすんだよ
 - `RIVALRY_RESOLUTION_LINES.winner.delinquent.easygoing[1]`: いよっしゃ！ …でもよ、なんかまだスッキリしねえんだよな
@@ -946,7 +946,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RIVALRY_RESOLUTION_LINES.loser.ojousama.normal[1]`: 負けたわね…でも、これで終わりとは思っていないの
 - `RIVALRY_RESOLUTION_LINES.loser.ojousama.bold[1]`: 負けた？…ですが、次がありましてよ！
 - `RIVALRY_RESOLUTION_LINES.loser.ojousama.easygoing[1]`: 負けてしまいましたわ…でも次はお返ししますの
-- `RIVALRY_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 負けましたわ…ですが、この借りは必ずお返ししますわ
+- `RIVALRY_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 負けました…ですが、この借りは必ずお返ししますわ
 - `RIVALRY_RESOLUTION_LINES.loser.delinquent.normal[1]`: くそっ…負けた。…でもこれで終わりだと思うなよ
 - `RIVALRY_RESOLUTION_LINES.loser.delinquent.bold[1]`: くっそ…完敗だ。…だがこの借りは絶対返すからな
 - `RIVALRY_RESOLUTION_LINES.loser.delinquent.easygoing[1]`: ちくしょ〜…負けた！ でもよ、次は絶対やり返すからな！
@@ -979,7 +979,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RIVALRY_RESOLUTION_LINES.fateWinner.standard.easygoing[1]`: やっと一つ勝てた…！ でもさ、まだ終わってないよね…？
 - `RIVALRY_RESOLUTION_LINES.fateWinner.standard.earnest[1]`: 長い戦いでした…一つ答えは出た。でも、ここからだと思います
 - `RIVALRY_RESOLUTION_LINES.fateWinner.standard.emotional[1]`: 勝った…！やっと…！ でも…まだ泣きたくない…まだ続くから…！（涙）
-- `RIVALRY_RESOLUTION_LINES.fateWinner.ojousama.normal[1]`: ようやく…一つ答えがたわね。…でも、終わりではないわよ
+- `RIVALRY_RESOLUTION_LINES.fateWinner.ojousama.normal[1]`: ようやく…一つ答えが出たわね。…でも、終わりではないわよ
 - `RIVALRY_RESOLUTION_LINES.fateWinner.ojousama.easygoing[1]`: やっと一つ勝ちましたわ…！ でもまだ終わっておりませんわね
 - `RIVALRY_RESOLUTION_LINES.fateWinner.delinquent.normal[1]`: やっと…一つ決着がついた…でもよ、なんかまだ胸がざわつくんだ
 - `RIVALRY_RESOLUTION_LINES.fateWinner.seductive.normal[1]`: ようやく一つ答えが出たわ…でも、まだ終わりじゃないの
@@ -1043,9 +1043,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.normal[1]`: あなたがいてくださったから、ここまで来られましたわ。……感謝いたします
 - `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.bold[1]`: 貴方は悪くない相手ですわね。また挑戦して来なさいな
 - `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.easygoing[1]`: 最高のお相手でしたわ！ これからもよろしくですの
-- `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.earnest[1]`: あなたのおかげで成長できましたわ。これからもよろしくお願いいたしますわ
+- `GOODRIVAL_RESOLUTION_LINES.winner.ojousama.earnest[1]`: あなたのおかげで成長できました。これからもよろしくお願いいたしますわ
 - `GOODRIVAL_RESOLUTION_LINES.winner.delinquent.normal[1]`: お前がいたから強くなれた。……サンキュな
-- `GOODRIVAL_RESOLUTION_LINES.winner.delinquent.bold[1]`: お前は俺の誇りだ。これからも来いよ
+- `GOODRIVAL_RESOLUTION_LINES.winner.delinquent.bold[1]`: お前は私の誇りだ。これからも来いよ
 - `GOODRIVAL_RESOLUTION_LINES.winner.delinquent.easygoing[1]`: 最高だったぜ！ まだまだ一緒にやろうな！
 - `GOODRIVAL_RESOLUTION_LINES.winner.cool.normal[1]`: ……認めている。これからも、共に
 - `GOODRIVAL_RESOLUTION_LINES.winner.cool.bold[1]`: ……好敵手だ。それ以上の言葉はいらない
@@ -1080,7 +1080,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GOODRIVAL_RESOLUTION_LINES.loser.standard.emotional[1]`: 負けた……！ でも嬉しい……！ 最高だった……！（号泣）
 - `GOODRIVAL_RESOLUTION_LINES.loser.ojousama.normal[1]`: 負けましたわ。でも……あなたが好敵手で良かった
 - `GOODRIVAL_RESOLUTION_LINES.loser.ojousama.easygoing[1]`: 負けてしまいましたわ。でも笑みが零れますの。最高のお相手でしたわ
-- `GOODRIVAL_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 負けましたわ。でもこの試合は一生の宝ですわ
+- `GOODRIVAL_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 負けました。でもこの試合は一生の宝ですわ
 - `GOODRIVAL_RESOLUTION_LINES.loser.delinquent.normal[1]`: 負けたけどよ……清々しいぜ。お前が相手で良かった
 - `GOODRIVAL_RESOLUTION_LINES.loser.delinquent.easygoing[1]`: 負けたけど……へへ、最高だったぜ
 - `GOODRIVAL_RESOLUTION_LINES.loser.polite.normal[1]`: 負けました。でも…あなたが好敵手で良かったです
@@ -1157,7 +1157,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BITTER_RESOLUTION_LINES.loser.standard.earnest[2]`: 負けた……でもこれで終わりなんかじゃない……！
 - `BITTER_RESOLUTION_LINES.loser.standard.emotional[1]`: 嫌だ……！ こんなの嫌だ……！ 認めない……！（叫ぶ）
 - `BITTER_RESOLUTION_LINES.loser.ojousama.normal[1]`: 認めない……こんな結末、認められない……！
-- `BITTER_RESOLUTION_LINES.loser.ojousama.bold[1]`: 認めない……！ この借りは……必ず返す……！
+- `BITTER_RESOLUTION_LINES.loser.ojousama.bold[1]`: ……今日のところは、預けておくわ。次は同じ景色ではないでしょうね
 - `BITTER_RESOLUTION_LINES.loser.ojousama.easygoing[1]`: ……参りましたわ。でも…忘れませんことよ
 - `BITTER_RESOLUTION_LINES.loser.ojousama.earnest[1]`: 認めませんわ。こんな結末は…認められませんの
 - `BITTER_RESOLUTION_LINES.loser.delinquent.normal[1]`: ちくしょう……覚えてろ……！
@@ -1176,7 +1176,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BITTER_RESOLUTION_LINES.loser.polite.shy[1]`: ま、負けました…悔しいです…でも、これ以上恨んだりはしません…
 - `BITTER_RESOLUTION_LINES.loser.polite.easygoing[1]`: ……参りました。でも…忘れませんから
 - `BITTER_RESOLUTION_LINES.loser.polite.earnest[1]`: ……認めません。こんな結末は……認められません
-- `BITTER_RESOLUTION_LINES.loser.composed.normal[1]`: …認めない。…これで終わりだと思うなよ
+- `BITTER_RESOLUTION_LINES.loser.composed.normal[1]`: …認めない。…これで終わりのつもりなら、間違いだ
 - `BITTER_RESOLUTION_LINES.loser.composed.bold[1]`: …認めない。…必ず返す
 - `BITTER_RESOLUTION_LINES.loser.composed.quiet[1]`: ………（静かに拳を握る）
 - `BITTER_RESOLUTION_LINES.loser.composed.easygoing[1]`: …参ったね。…でも忘れないよ
@@ -1199,7 +1199,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BITTER_PREMATCH_LINES.ahead.standard.easygoing[2]`: 勝っても軽くならないもんだね。……不思議
 - `BITTER_PREMATCH_LINES.ahead.standard.earnest[1]`: 決着はつきました。……私の中だけ、まだです
 - `BITTER_PREMATCH_LINES.ahead.standard.earnest[2]`: 勝った人間が引きずるのは、変な話ですね
-- `BITTER_PREMATCH_LINES.ahead.standard.emotional[1]`: 終わったって言っただろ……！ なんでまだ、いるんだ
+- `BITTER_PREMATCH_LINES.ahead.standard.emotional[1]`: 終わったって言ったのに……！ なんで、まだいるの
 - `BITTER_PREMATCH_LINES.ahead.cool.normal[1]`: ……済んだ話だ。まだ気にする方がどうかしてる
 - `BITTER_PREMATCH_LINES.ahead.cool.quiet[1]`: ……終わった。それだけだ。……それだけのはずだ
 - `BITTER_PREMATCH_LINES.ahead.delinquent.normal[1]`: 片付いた話を蒸し返すな。……いい加減、疲れるんだよ
@@ -1223,11 +1223,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BITTER_PREMATCH_LINES.behind.standard.bold[2]`: もう格付けは済んでいるのかも。それでも・・・
 - `BITTER_PREMATCH_LINES.behind.standard.quiet[1]`: ………（あの日の敗北の瞬間が、まだ耳から抜けない）
 - `BITTER_PREMATCH_LINES.behind.standard.shy[1]`: …あの日敗北した屈辱を…まだ、毎晩思い出すんです…
-- `BITTER_PREMATCH_LINES.behind.standard.easygoing[1]`: みんな綺麗に忘れてるね。……あたしは忘れないけど
+- `BITTER_PREMATCH_LINES.behind.standard.easygoing[1]`: みんな綺麗に忘れてるね。……私は忘れないけど
 - `BITTER_PREMATCH_LINES.behind.standard.easygoing[2]`: いつまでやるんだろうね、これ。……やめられないけど
 - `BITTER_PREMATCH_LINES.behind.standard.earnest[1]`: あの負けを、まだ一度も納得できていません
 - `BITTER_PREMATCH_LINES.behind.standard.earnest[2]`: 終わったと言われるたび、足元が抜けるんです
-- `BITTER_PREMATCH_LINES.behind.standard.emotional[1]`: 終わってない……！ 勝手に終わらせるな……！
+- `BITTER_PREMATCH_LINES.behind.standard.emotional[1]`: 終わってない……！ 勝手に終わらせないで……！
 - `BITTER_PREMATCH_LINES.behind.cool.normal[1]`: ……決着はついた。納得したとは、言ってない
 - `BITTER_PREMATCH_LINES.behind.cool.quiet[1]`: ……終わっていない。……私の中では
 - `BITTER_PREMATCH_LINES.behind.delinquent.normal[1]`: 終わった扱いされんのが、一番腹立つんだよ
@@ -1237,7 +1237,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `BITTER_PREMATCH_LINES.behind.composed.quiet[1]`: ……もう昔の話だ。…そう言えたら、楽だったな
 - `BITTER_PREMATCH_LINES.behind.composed.easygoing[1]`: …忘れたふりが下手でさ。…まだ引きずってるよ
 - `BITTER_PREMATCH_LINES.behind.composed.earnest[1]`: …終わったって言われてる。…受け取れてないだけだよ
-- `BITTER_PREMATCH_LINES.behind.composed.emotional[1]`: …勝手に幕を下ろすな。…まだ、こっちに残ってる
+- `BITTER_PREMATCH_LINES.behind.composed.emotional[1]`: …勝手に幕を下ろさないで。…まだ、こっちに残ってる
 - `BITTER_PREMATCH_LINES.behind.ojousama.bold[1]`: 幕を引かれた側の気持ちは、誰も聞きませんのね
 - `BITTER_PREMATCH_LINES.behind.ojousama.earnest[1]`: 終わったことにされた分は、まだお返ししていませんの
 - `BITTER_PREMATCH_LINES.behind.polite.quiet[1]`: …終わったと、皆さんは仰います。…私は違います
@@ -1260,7 +1260,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RIVALRY_MATCH_REACTION.winnerLines.standard.easygoing[1]`: 一個勝ち！ でもまだまだこれからだよ！
 - `RIVALRY_MATCH_REACTION.winnerLines.standard.earnest[1]`: 無事勝ちました。でもこの因縁は、まだ続きそうね
 - `RIVALRY_MATCH_REACTION.winnerLines.standard.emotional[1]`: 勝った……！ でもまだ……まだ終わらない……！
-- `RIVALRY_MATCH_REACTION.winnerLines.ojousama.normal[1]`: まだ終わって無いのでしょうね。あちらの目はまだ死んでいないようですし。
+- `RIVALRY_MATCH_REACTION.winnerLines.ojousama.normal[1]`: まだ終わっていないのでしょうね。あちらの目はまだ死んでいないようですし。
 - `RIVALRY_MATCH_REACTION.winnerLines.ojousama.bold[1]`: 当然の勝利ね。まだ諦めないのかしら？
 - `RIVALRY_MATCH_REACTION.winnerLines.ojousama.easygoing[1]`: 一つ勝ちですわ！ でもまだまだこれからですの
 - `RIVALRY_MATCH_REACTION.winnerLines.ojousama.earnest[1]`: 勝たせていただきましたわ。でもこの因縁はまだ続くのでしょうね
@@ -1326,17 +1326,17 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 番狂わせ × 高rivalry 専用テキスト
 - 本数: 71
 
-- `UPSET_RIVALRY_LINES.winnerLines.standard.normal[1]`: 見たか！ 私が格下だなんて、もう言わせない……！
+- `UPSET_RIVALRY_LINES.winnerLines.standard.normal[1]`: 見て！ 私が格下だなんて、もう言わせない……！
 - `UPSET_RIVALRY_LINES.winnerLines.standard.bold[1]`: ついに……勝った……！ ずっと待ってた……！
 - `UPSET_RIVALRY_LINES.winnerLines.standard.quiet[1]`: ………（膝をつき、震えている）……勝った…？
 - `UPSET_RIVALRY_LINES.winnerLines.standard.shy[1]`: え…うそ…私が…？ ほんとに…？（膝から崩れる）
 - `UPSET_RIVALRY_LINES.winnerLines.standard.easygoing[1]`: うっそ……勝っちゃった……！ やばい、信じられない……！
 - `UPSET_RIVALRY_LINES.winnerLines.standard.earnest[1]`: やりました……！ ずっとこの人を目標にしてきて……ついに……！
 - `UPSET_RIVALRY_LINES.winnerLines.standard.emotional[1]`: 勝った……！ 勝ったよ……！ ずっと……ずっと追いかけてきたんだ……！（号泣）
-- `UPSET_RIVALRY_LINES.winnerLines.ojousama.normal[1]`: ご覧になって？ 格上ですって……もう言えないわね
+- `UPSET_RIVALRY_LINES.winnerLines.ojousama.normal[1]`: 格上……その言葉に、もう意味はないわね。積み上げてきたものが上回った、それだけですもの
 - `UPSET_RIVALRY_LINES.winnerLines.ojousama.easygoing[1]`: まあ…勝ちましたわ…！ 信じられませんこと…！
 - `UPSET_RIVALRY_LINES.winnerLines.ojousama.earnest[1]`: やりましたわ…！ ずっと追いかけてまいりまして…ついに…
-- `UPSET_RIVALRY_LINES.winnerLines.delinquent.normal[1]`: どうだ……！ これが俺の答えだ！
+- `UPSET_RIVALRY_LINES.winnerLines.delinquent.normal[1]`: どうだ……！ これが私の答えだ！
 - `UPSET_RIVALRY_LINES.winnerLines.delinquent.easygoing[1]`: マジか……やったぞ……！
 - `UPSET_RIVALRY_LINES.winnerLines.cool.normal[1]`: ……証明した
 - `UPSET_RIVALRY_LINES.winnerLines.cool.bold[1]`: ……やった。……ようやく
@@ -1359,7 +1359,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `UPSET_RIVALRY_LINES.winnerLines.composed.easygoing[1]`: …勝っちゃった。…ふぅん
 - `UPSET_RIVALRY_LINES.winnerLines.composed.earnest[1]`: …ずっと追いかけてきた。…ようやく、届いた
 - `UPSET_RIVALRY_LINES.winnerLines.composed.emotional[1]`: …っ…勝った。…ようやく
-- `UPSET_RIVALRY_LINES.loserLines.standard.normal[1]`: 噓でしょ？……こんなはずじゃ……
+- `UPSET_RIVALRY_LINES.loserLines.standard.normal[1]`: 嘘でしょ？……こんなはずじゃ……
 - `UPSET_RIVALRY_LINES.loserLines.standard.normal[2]`: なんで……なんで負けたの……？
 - `UPSET_RIVALRY_LINES.loserLines.standard.bold[1]`: 認めない……！ こんな結果……認めない……！
 - `UPSET_RIVALRY_LINES.loserLines.standard.bold[2]`: ありえない……嘘でしょ……！
@@ -1551,7 +1551,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### awakening.composed.bold[]
 
-- `WEEKLY_STORY_TICKER.awakening.composed.bold[1]`: {nameB}が静かに{nameA}の前に立った。「…もういいだろう。受けて立つよ」
+- `WEEKLY_STORY_TICKER.awakening.composed.bold[1]`: {nameB}が静かに{nameA}の前に立った。「…もう十分だ。受けて立つよ」
 
 ### awakening.composed.quiet[]
 
@@ -1567,7 +1567,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### awakening.composed.emotional[]
 
-- `WEEKLY_STORY_TICKER.awakening.composed.emotional[1]`: {nameB}が押し殺した声で{nameA}に告げた。「…もういい。…覚えてろ」
+- `WEEKLY_STORY_TICKER.awakening.composed.emotional[1]`: {nameB}が押し殺した声で{nameA}に告げた。「…もういい。…覚えておいて」
 
 ### awakening.polite.quiet[]
 

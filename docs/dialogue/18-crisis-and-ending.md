@@ -202,11 +202,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fighter.ojousama.normal[]
 
-- `ENDING_LINES.fighter.ojousama.normal[1]`: ここまで来れたのね…感無量だわ
+- `ENDING_LINES.fighter.ojousama.normal[1]`: ここまで来られたのね…感無量だわ
 
 ### fighter.ojousama.bold[]
 
-- `ENDING_LINES.fighter.ojousama.bold[1]`: これが頂点の景色？…馬鹿ね。まだまだ先はあってよ
+- `ENDING_LINES.fighter.ojousama.bold[1]`: これが頂点の景色……？ ……ふふ、まだ先があるでしょうね
 
 ### fighter.ojousama.easygoing[]
 
@@ -274,7 +274,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fighter.polite.quiet[]
 
-- `ENDING_LINES.fighter.polite.quiet[1]`: …ここまで来れるなんて…社長…ありがとうございます
+- `ENDING_LINES.fighter.polite.quiet[1]`: …ここまで来られるなんて…社長…ありがとうございます
 
 ### fighter.polite.shy[]
 

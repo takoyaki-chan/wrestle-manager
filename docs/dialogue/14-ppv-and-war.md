@@ -54,7 +54,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.easygoing[]
 
-- `PPV_SUMMIT_VICTORY_LINES.ojousama.easygoing[1]`: まあ、勝っちゃいましたわ!最高の舞台で、最高の気分ですの!
+- `PPV_SUMMIT_VICTORY_LINES.ojousama.easygoing[1]`: まあ、勝っちゃいましたわ！最高の舞台で、最高の気分ですの！
 
 ### ojousama.earnest[]
 
@@ -93,7 +93,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.bold[]
 
-- `PPV_SUMMIT_VICTORY_LINES.seductive.bold[1]`: ずっと待ってたのよ、この瞬間を……!ふふ、最高の気分ね
+- `PPV_SUMMIT_VICTORY_LINES.seductive.bold[1]`: ずっと待ってたのよ、この瞬間を……！ふふ、最高の気分ね
 
 ### seductive.quiet[]
 
@@ -101,7 +101,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.easygoing[]
 
-- `PPV_SUMMIT_VICTORY_LINES.seductive.easygoing[1]`: 勝っちゃった!ふふ、最高の舞台で、最高の結末ね♪
+- `PPV_SUMMIT_VICTORY_LINES.seductive.easygoing[1]`: 勝っちゃった！ふふ、最高の舞台で、最高の結末ね♪
 
 ### seductive.earnest[]
 
@@ -109,7 +109,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.emotional[]
 
-- `PPV_SUMMIT_VICTORY_LINES.seductive.emotional[1]`: 嬉しい……っ……!最高の舞台で勝てた……この瞬間を、ずっと忘れないわ……!
+- `PPV_SUMMIT_VICTORY_LINES.seductive.emotional[1]`: 嬉しい……っ……！最高の舞台で勝てた……この瞬間を、ずっと忘れないわ……！
 
 ### polite.normal[]
 
@@ -117,7 +117,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.bold[]
 
-- `PPV_SUMMIT_VICTORY_LINES.polite.bold[1]`: ずっと待っていました、この瞬間を……!わたしの力、証明できました!
+- `PPV_SUMMIT_VICTORY_LINES.polite.bold[1]`: ずっと待っていました、この瞬間を……！私の力、証明できました！
 
 ### polite.quiet[]
 
@@ -129,7 +129,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.easygoing[]
 
-- `PPV_SUMMIT_VICTORY_LINES.polite.easygoing[1]`: やった、勝ちました!最高の舞台で最高の結果、夢みたいです!
+- `PPV_SUMMIT_VICTORY_LINES.polite.easygoing[1]`: やった、勝ちました！最高の舞台で最高の結果、夢みたいです！
 
 ### polite.earnest[]
 
@@ -175,7 +175,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### gauntlet.standard.bold[]
 
 - `AUTUMN_WAR_MVP_LINES.gauntlet.standard.bold[1]`: 三人だろうが四人だろうが、立って来るなら倒す。今日はそれを証明しただけ
-- `AUTUMN_WAR_MVP_LINES.gauntlet.standard.bold[2]`: 次が来るなら、何人でもいい。あたしの拳はまだ握れてる
+- `AUTUMN_WAR_MVP_LINES.gauntlet.standard.bold[2]`: 次が来るなら、何人でもいい。この拳はまだ握れてる
 - `AUTUMN_WAR_MVP_LINES.gauntlet.standard.bold[3]`: 全員まとめて相手にしてやった。文句あるなら、もう一回並べ
 
 ### gauntlet.standard.quiet[]
@@ -216,7 +216,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### gauntlet.composed.bold[]
 
 - `AUTUMN_WAR_MVP_LINES.gauntlet.composed.bold[1]`: 何人来ようと……立っている者が、最後に語る権利を得る。今日はそれだけのこと
-- `AUTUMN_WAR_MVP_LINES.gauntlet.composed.bold[2]`: 身体は重い。だが、拳を下ろす理由がどこにもなかった
+- `AUTUMN_WAR_MVP_LINES.gauntlet.composed.bold[2]`: 身体は重い。でも、拳を下ろす理由がどこにもなかった
 
 ### gauntlet.composed.quiet[]
 
@@ -240,12 +240,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### gauntlet.composed.emotional[]
 
-- `AUTUMN_WAR_MVP_LINES.gauntlet.composed.emotional[1]`: 限界は何度も訪れた。それでも……足が前に出た。理屈ではなく、意地だった
-- `AUTUMN_WAR_MVP_LINES.gauntlet.composed.emotional[2]`: 身体は壊れかけている。だが……最後に立っていた。それだけで、十分だ
+- `AUTUMN_WAR_MVP_LINES.gauntlet.composed.emotional[1]`: もう無理って何回も思った！ でも足が勝手に前に出た！ 理屈じゃない、意地！
+- `AUTUMN_WAR_MVP_LINES.gauntlet.composed.emotional[2]`: 体はもうボロボロ！ でも最後に立ってたのはこっち！ それだけで満足！
 
 ### gauntlet.ojousama.normal[]
 
-- `AUTUMN_WAR_MVP_LINES.gauntlet.ojousama.normal[1]`: お身体はもう悲鳴を上げていますわ。ですが……このリングを明け渡す理由にはなりませんの
+- `AUTUMN_WAR_MVP_LINES.gauntlet.ojousama.normal[1]`: 身体はもう悲鳴を上げています。ですが……このリングを明け渡す理由にはなりませんの
 - `AUTUMN_WAR_MVP_LINES.gauntlet.ojousama.normal[2]`: 何人お相手したか、数えるのも野暮ですわね。わたくしは最後まで立っていた、それだけのこと
 
 ### gauntlet.ojousama.bold[]
@@ -350,13 +350,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### gauntlet.delinquent.normal[]
 
-- `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.normal[1]`: 何人来ようが関係ねえ。全員倒して、最後に立ってんのがあたしだ
+- `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.normal[1]`: 何人来ようが関係ねえ。全員倒して、最後に立ってんのが私だ
 - `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.normal[2]`: 足ガクガクだけどよ、膝はつかなかった。それが全部だろ
 
 ### gauntlet.delinquent.bold[]
 
 - `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.bold[1]`: 来るだけ来いっつったろ？ 全員ぶっ倒して、まだ余裕あんぞ
-- `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.bold[2]`: 何人並ぼうが一緒だ。あたしの前に立つなら覚悟しろ
+- `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.bold[2]`: 何人並ぼうが一緒だ。私の前に立つなら覚悟しろ
 
 ### gauntlet.delinquent.quiet[]
 
@@ -371,7 +371,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### gauntlet.delinquent.easygoing[]
 
 - `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.easygoing[1]`: いやー次から次に来んのな。途中から面白くなっちゃったよ
-- `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.easygoing[2]`: 何人だっけ？ まあいいや、全員倒したし。あたしの勝ちってことで
+- `AUTUMN_WAR_MVP_LINES.gauntlet.delinquent.easygoing[2]`: 何人だっけ？ まあいいや、全員倒したし。私の勝ちってことで
 
 ### gauntlet.delinquent.earnest[]
 
@@ -492,12 +492,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### champion.composed.emotional[]
 
-- `AUTUMN_WAR_MVP_LINES.champion.composed.emotional[1]`: 三人の勝利だ。一人では……ここには、到底たどり着けなかった
-- `AUTUMN_WAR_MVP_LINES.champion.composed.emotional[2]`: 仲間が繋いでくれた道を……最後まで歩けた。それが、何より……
+- `AUTUMN_WAR_MVP_LINES.champion.composed.emotional[1]`: これ、三人で獲った勝利だから！ ひとりだったら絶対ここまで来れてない！
+- `AUTUMN_WAR_MVP_LINES.champion.composed.emotional[2]`: みんなが繋いでくれたから、最後まで走りきれた！ それが一番嬉しい！
 
 ### champion.ojousama.normal[]
 
-- `AUTUMN_WAR_MVP_LINES.champion.ojousama.normal[1]`: 三人で掴んだ勝利ですわ。わたくし一人では、こうはなりませんの
+- `AUTUMN_WAR_MVP_LINES.champion.ojousama.normal[1]`: 三人で掴んだ勝利ですわ。わたくし一人では、こうはまいりません
 - `AUTUMN_WAR_MVP_LINES.champion.ojousama.normal[2]`: お二人が繋いでくださったから、わたくしがここに立てていますの
 
 ### champion.ojousama.bold[]
@@ -547,8 +547,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### champion.polite.shy[]
 
-- `AUTUMN_WAR_MVP_LINES.champion.polite.shy[1]`: わ、私がMVPなんて……二人がいてくれたから、ここまで来られたんです
-- `AUTUMN_WAR_MVP_LINES.champion.polite.shy[2]`: 三人で勝てて、本当によかったです。私は……二人に助けられてばかりで
+- `AUTUMN_WAR_MVP_LINES.champion.polite.shy[1]`: わ、わたしがMVPなんて……二人がいてくれたから、ここまで来られたんです
+- `AUTUMN_WAR_MVP_LINES.champion.polite.shy[2]`: 三人で勝てて、本当によかったです。わたしは……二人に助けられてばかりで
 
 ### champion.polite.easygoing[]
 
@@ -602,12 +602,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### champion.delinquent.normal[]
 
-- `AUTUMN_WAR_MVP_LINES.champion.delinquent.normal[1]`: 三人でもぎ取った勝ちだ。あたし一人の手柄じゃねえよ
-- `AUTUMN_WAR_MVP_LINES.champion.delinquent.normal[2]`: 仲間が繋いでくれたから、あたしはここにいる。それだけだろ
+- `AUTUMN_WAR_MVP_LINES.champion.delinquent.normal[1]`: 三人でもぎ取った勝ちだ。私一人の手柄じゃねえよ
+- `AUTUMN_WAR_MVP_LINES.champion.delinquent.normal[2]`: 仲間が繋いでくれたから、私はここにいる。それだけだろ
 
 ### champion.delinquent.bold[]
 
-- `AUTUMN_WAR_MVP_LINES.champion.delinquent.bold[1]`: あたしらが最強だ。文句あんなら、かかってこいよ
+- `AUTUMN_WAR_MVP_LINES.champion.delinquent.bold[1]`: 私らが最強だ。文句あんなら、かかってこいよ
 - `AUTUMN_WAR_MVP_LINES.champion.delinquent.bold[2]`: 三人揃って無敵だったな。最高のチームだぜ
 
 ### champion.delinquent.quiet[]
@@ -679,7 +679,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### defiant.standard.bold[]
 
 - `AUTUMN_WAR_MVP_LINES.defiant.standard.bold[1]`: 賞はもらう。でも優勝旗は向こうだ。次は、あれごと奪う
-- `AUTUMN_WAR_MVP_LINES.defiant.standard.bold[2]`: MVP？ そんなもんで満足できるかよ。次は団体ごと叩き潰す
+- `AUTUMN_WAR_MVP_LINES.defiant.standard.bold[2]`: MVP？ そんなもんで満足できるわけないでしょ。次は団体ごと叩き潰す
 - `AUTUMN_WAR_MVP_LINES.defiant.standard.bold[3]`: 個人で勝っても、チームが負けたら意味がない。次は絶対に獲る
 
 ### defiant.standard.quiet[]
@@ -719,8 +719,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### defiant.composed.bold[]
 
-- `AUTUMN_WAR_MVP_LINES.defiant.composed.bold[1]`: 賞は受け取ろう。だが……次は旗ごともらいに行く。覚えておけ
-- `AUTUMN_WAR_MVP_LINES.defiant.composed.bold[2]`: この程度で満足する性分ではない。次は、全てを攫う
+- `AUTUMN_WAR_MVP_LINES.defiant.composed.bold[1]`: 賞はもらっておくよ。でも……次は旗ごといただきに行くから。忘れないでよね
+- `AUTUMN_WAR_MVP_LINES.defiant.composed.bold[2]`: この程度で満足できる性分じゃないんだ。次は、全部いただくよ。
 
 ### defiant.composed.quiet[]
 
@@ -744,17 +744,17 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### defiant.composed.emotional[]
 
-- `AUTUMN_WAR_MVP_LINES.defiant.composed.emotional[1]`: 賞は受け取ろう……だが、この胸の内は……次に晴らす他ない
-- `AUTUMN_WAR_MVP_LINES.defiant.composed.emotional[2]`: 足りなかった……それだけが、今は重い。次こそ……全てを
+- `AUTUMN_WAR_MVP_LINES.defiant.composed.emotional[1]`: 賞はもらう！ でも正直、めちゃくちゃ悔しい！ これは次にぶつける！
+- `AUTUMN_WAR_MVP_LINES.defiant.composed.emotional[2]`: 足りなかった！ それがもう、悔しくて仕方ない！ 次こそ全部獲る！
 
 ### defiant.ojousama.normal[]
 
-- `AUTUMN_WAR_MVP_LINES.defiant.ojousama.normal[1]`: お褒めいただけるのは光栄ですわ。ですが……団体が負けたという事実は、変わりませんの
-- `AUTUMN_WAR_MVP_LINES.defiant.ojousama.normal[2]`: この賞だけでは、わたくし、満足できませんわ。次は三人で勝ちますの
+- `AUTUMN_WAR_MVP_LINES.defiant.ojousama.normal[1]`: お褒めいただけるのは光栄ですわ。ですが……団体が負けたという事実は、変わりません
+- `AUTUMN_WAR_MVP_LINES.defiant.ojousama.normal[2]`: この賞だけでは、わたくし、満足できません。次は三人で勝ちますわ
 
 ### defiant.ojousama.bold[]
 
-- `AUTUMN_WAR_MVP_LINES.defiant.ojousama.bold[1]`: お賞はいただきますわ。ですが……次は優勝旗もわたくしの手元に参りますのよ
+- `AUTUMN_WAR_MVP_LINES.defiant.ojousama.bold[1]`: 賞はいただきますわ。ですが……次は優勝旗もわたくしの手元に参りますのよ
 - `AUTUMN_WAR_MVP_LINES.defiant.ojousama.bold[2]`: わたくしを甘く見ないでくださいまし。次は、全てを奪い返しますわ
 
 ### defiant.ojousama.quiet[]
@@ -937,7 +937,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `AUTUMN_WAR_MATCH_LINES.preMatch.standard.bold[1]`: 何人並んでようが関係ない。真っ向から薙ぎ倒して、次に繋ぐ
 - `AUTUMN_WAR_MATCH_LINES.preMatch.standard.bold[2]`: 来るなら来い。このリングを抜けさせると思ってんのか
-- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.bold[3]`: 相手が誰だろうと、結果は変わらない。最後に立ってるのはあたしだ
+- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.bold[3]`: 相手が誰だろうと、結果は変わらない。最後に立ってるのは私よ
 
 ### preMatch.standard.quiet[]
 
@@ -946,13 +946,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### preMatch.standard.shy[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.shy[1]`: つ、相手が来る…。怖い、けど…ここで逃げたら、繋げないから
+- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.shy[1]`: あ、相手が来る…。怖い、けど…ここで逃げたら、繋げないから
 - `AUTUMN_WAR_MATCH_LINES.preMatch.standard.shy[2]`: 足が震えてる…でも、私の番だから。行かなきゃ
 
 ### preMatch.standard.easygoing[]
 
 - `AUTUMN_WAR_MATCH_LINES.preMatch.standard.easygoing[1]`: 相手は誰かなー。まあ、来た子と真っ向勝負するっきゃないよね
-- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.easygoing[2]`: よーし、あたしの番だ。止まってらんないし、いっちょやりますか
+- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.easygoing[2]`: よーし、私の番だ。止まってらんないし、いっちょやりますか
 
 ### preMatch.standard.earnest[]
 
@@ -962,10 +962,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### preMatch.standard.emotional[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[1]`: 来い…! この一戦、絶対に退かねえ…!
-- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[2]`: 心臓がうるさい…! でも、ここで引いたら仲間に顔向けできねえ…!
-- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[3]`: 来い…! 目の前の一人から、全部倒して繋いでやる…!
-- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[4]`: 止まりたくない…! この一戦から、全力でいく…!
+- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[1]`: 来い…！ この一戦、絶対に退かない…！
+- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[2]`: 心臓がうるさい…！ でも、ここで引いたら仲間に顔向けできない…！
+- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[3]`: 来い…！ 目の前の一人から、全部倒して繋いでやる…！
+- `AUTUMN_WAR_MATCH_LINES.preMatch.standard.emotional[4]`: 止まりたくない…！ この一戦から、全力でいく…！
 
 ### preMatch.composed.normal[]
 
@@ -1010,7 +1010,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### preMatch.ojousama.easygoing[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.ojousama.easygoing[1]`: あら、お相手はどなた? 次から次へと、賑やかですこと
+- `AUTUMN_WAR_MATCH_LINES.preMatch.ojousama.easygoing[1]`: あら、お相手はどなた？ 次から次へと、賑やかですこと
 - `AUTUMN_WAR_MATCH_LINES.preMatch.ojousama.easygoing[2]`: 賑やかな一日になりそうですわね。…面白いですわ
 
 ### preMatch.ojousama.earnest[]
@@ -1036,7 +1036,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### preMatch.polite.shy[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.polite.shy[1]`: つ、相手の方…がんばります。仲間が待ってるので、退けません…
+- `AUTUMN_WAR_MATCH_LINES.preMatch.polite.shy[1]`: あ、相手の方…がんばります。仲間が待ってるので、退けません…
 - `AUTUMN_WAR_MATCH_LINES.preMatch.polite.shy[2]`: こ、怖いです…でも、ここで止まったら、みんなに申し訳なくて…
 
 ### preMatch.polite.easygoing[]
@@ -1057,18 +1057,18 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### preMatch.seductive.bold[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.bold[1]`: 相手は誰? 何人来ても…最後まで残るのは、こっちよ
+- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.bold[1]`: 相手は誰？ 何人来ても…最後まで残るのは、こっちよ
 - `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.bold[2]`: もっと骨のあるのを出してきて。全部相手にしてあげる
 
 ### preMatch.seductive.quiet[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.quiet[1]`: ……相手は誰。…来なよ
+- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.quiet[1]`: ……相手は誰。…来なさい
 - `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.quiet[2]`: ……まだ、これから。楽しませてよ
 
 ### preMatch.seductive.easygoing[]
 
 - `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.easygoing[1]`: 相手は誰が来るのかしら。何人でも、退屈しなさそうね
-- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.easygoing[2]`: まだまだお楽しみは続くの? いいわね、乗ってあげる
+- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.easygoing[2]`: まだまだお楽しみは続くの？ いいわね、乗ってあげる
 
 ### preMatch.seductive.earnest[]
 
@@ -1078,22 +1078,22 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### preMatch.seductive.emotional[]
 
 - `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.emotional[1]`: お相手は誰かしら…っ…ふふ、もう身体が疼いてるの
-- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.emotional[2]`: 早く来てよ…! この昂り、ぶつける相手が欲しいの…!
+- `AUTUMN_WAR_MATCH_LINES.preMatch.seductive.emotional[2]`: 早く来てよ…！ この昂り、ぶつける相手が欲しいの…！
 
 ### preMatch.delinquent.normal[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.normal[1]`: 相手は誰だ? 何人来ようが、あたしがここで止めてやる
+- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.normal[1]`: 相手は誰だ？ 何人来ようが、私がここで止めてやる
 - `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.normal[2]`: このリング、通れると思ってんのか。かかってこいよ
 
 ### preMatch.delinquent.bold[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.bold[1]`: 相手は誰だ! 何人来ようがまとめてかかってこいや
-- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.bold[2]`: 一人ずつしか来れねえのか? じれってえな。全員まとめて潰してやる
+- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.bold[1]`: 相手は誰だ！ 何人来ようがまとめてかかってこいや
+- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.bold[2]`: 一人ずつしか来れねえのか？ じれってえな。全員まとめて潰してやる
 - `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.bold[3]`: このリング、渡すわけねえだろ。出てこいよ、順番に沈めてやる
 
 ### preMatch.delinquent.easygoing[]
 
-- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.easygoing[1]`: 相手は誰だ? ま、来た奴から順にぶっ倒すだけだ
+- `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.easygoing[1]`: 相手は誰だ？ ま、来た奴から順にぶっ倒すだけだ
 - `AUTUMN_WAR_MATCH_LINES.preMatch.delinquent.easygoing[2]`: いいぜいいぜ、次々来いよ。まとめて相手してやるって
 
 ### preMatch.cool.normal[]
@@ -1115,7 +1115,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `AUTUMN_WAR_MATCH_LINES.preFinal.standard.bold[1]`: 傷だらけで結構。最後まで残ったのはこっちだ。全部持っていく
 - `AUTUMN_WAR_MATCH_LINES.preFinal.standard.bold[2]`: ここまで抜いてきて、最後で退くわけないでしょ。獲りにいく
-- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.bold[3]`: 身体は重いけど、心は決まってる。この一戦、全部あたしがもらう
+- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.bold[3]`: 身体は重いけど、心は決まってる。この一戦、全部私がもらう
 
 ### preFinal.standard.quiet[]
 
@@ -1140,10 +1140,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### preFinal.standard.emotional[]
 
-- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[1]`: 身体中が痛い…! でも、ここで泣くのは終わってからだ…!
-- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[2]`: ここまで来たんだ…! 最後の一戦、絶対に退かねえ…!
-- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[3]`: ここまで来た…! 身体は痛いけど、最後まで絶対立ってやる…!
-- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[4]`: あと一つ…! 繋いでくれた分、私が締める…! 泣くのは後だ…!
+- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[1]`: 身体中が痛い…！ でも、ここで泣くのは終わってからだ…！
+- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[2]`: ここまで来たんだ…！ 最後の一戦、絶対に退かない…！
+- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[3]`: ここまで来た…！ 身体は痛いけど、最後まで絶対立ってやる…！
+- `AUTUMN_WAR_MATCH_LINES.preFinal.standard.emotional[4]`: あと一つ…！ 繋いでくれた分、私が締める…！ 泣くのは後だ…！
 
 ### preFinal.composed.normal[]
 
@@ -1235,7 +1235,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### preFinal.seductive.bold[]
 
-- `AUTUMN_WAR_MATCH_LINES.preFinal.seductive.bold[1]`: 満身創痍の私、悪くないでしょ? この傷ごと、最後を飾るわ
+- `AUTUMN_WAR_MATCH_LINES.preFinal.seductive.bold[1]`: 満身創痍の私、悪くないでしょ？ この傷ごと、最後を飾るわ
 - `AUTUMN_WAR_MATCH_LINES.preFinal.seductive.bold[2]`: ここまで残ったんだもの。一番いいところ、見せてあげる
 
 ### preFinal.seductive.quiet[]
@@ -1246,7 +1246,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### preFinal.seductive.easygoing[]
 
 - `AUTUMN_WAR_MATCH_LINES.preFinal.seductive.easygoing[1]`: 満身創痍だけど…最後の舞台、楽しんじゃおうかな
-- `AUTUMN_WAR_MATCH_LINES.preFinal.seductive.easygoing[2]`: ぼろぼろの私、でも一番いいところで残ったの。悪くないでしょ?
+- `AUTUMN_WAR_MATCH_LINES.preFinal.seductive.easygoing[2]`: ぼろぼろの私、でも一番いいところで残ったの。悪くないでしょ？
 
 ### preFinal.seductive.earnest[]
 
@@ -1261,13 +1261,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### preFinal.delinquent.normal[]
 
 - `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.normal[1]`: 身体ガタガタだけどよ。最後だ、引けるわけねえだろ
-- `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.normal[2]`: 傷だらけ上等。この一戦、あたしが全部背負ってやる
+- `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.normal[2]`: 傷だらけ上等。この一戦、私が全部背負ってやる
 
 ### preFinal.delinquent.bold[]
 
-- `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.bold[1]`: 身体? 知るかよ。最後まで残ったんだ、テッペン獲るに決まってんだろ
+- `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.bold[1]`: 身体？ 知るかよ。最後まで残ったんだ、テッペン獲るに決まってんだろ
 - `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.bold[2]`: ボロボロだろうが関係ねえ。この一戦、ぶっ潰して終わらせる
-- `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.bold[3]`: 痛え? あたりめえだろ。でもここで倒れたら、今までが無駄になる。行くぞ
+- `AUTUMN_WAR_MATCH_LINES.preFinal.delinquent.bold[3]`: 痛え？ あたりめえだろ。でもここで倒れたら、今までが無駄になる。行くぞ
 
 ### preFinal.delinquent.easygoing[]
 
@@ -1292,7 +1292,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### survivor.standard.bold[]
 
 - `AUTUMN_WAR_MATCH_LINES.survivor.standard.bold[1]`: 一人落とした。…息は上がってる。だから何だ? 次、まとめて来い
-- `AUTUMN_WAR_MATCH_LINES.survivor.standard.bold[2]`: まだ立ってる。このリングを抜けたきゃ、あたしを倒してからにしな。次だ
+- `AUTUMN_WAR_MATCH_LINES.survivor.standard.bold[2]`: まだ立ってる。このリングを抜けたいなら、私を倒してからにしなさい。次
 - `AUTUMN_WAR_MATCH_LINES.survivor.standard.bold[3]`: 一丁上がり。…息は切れてるけど、拳はまだ握れる。次、出てきな
 
 ### survivor.standard.quiet[]
@@ -1302,7 +1302,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### survivor.standard.shy[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.standard.shy[1]`: 一人…倒せた…! はぁ、はぁ…怖いけど、まだ退かない…! 次の人、来て…!
+- `AUTUMN_WAR_MATCH_LINES.survivor.standard.shy[1]`: 一人…倒せた…！ はぁ、はぁ…怖いけど、まだ退かない…！ 次の人、来て…！
 - `AUTUMN_WAR_MATCH_LINES.survivor.standard.shy[2]`: 足が震えてる…でも、まだ立ってる。ここは、渡せないから…次、来て
 
 ### survivor.standard.easygoing[]
@@ -1318,10 +1318,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### survivor.standard.emotional[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[1]`: 一人ぶっ倒した…! はぁ、はぁ…! まだ立ってんだよ…! 次、出てこい…!
-- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[2]`: まだ終わってねえ…! 息が上がろうが関係あるか…! 次、早く来い…!
-- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[3]`: 一人倒した…! はぁ…まだ立ってる…! 次、来い…! ここは渡さねえ…!
-- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[4]`: まだ終わらない…! この勢いのまま、次も倒す…! 出てこい…!
+- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[1]`: 一人ぶっ倒した…！ はぁ、はぁ…！ まだ、まだ立ってる…！ 次、出てこい…！
+- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[2]`: まだ終わってない…！ 息が上がっても関係ない…！ 次、早く来い…！
+- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[3]`: 一人倒した…！ はぁ…まだ立ってる…！ 次、来い…！ ここは渡さない…！
+- `AUTUMN_WAR_MATCH_LINES.survivor.standard.emotional[4]`: まだ終わらない…！ この勢いのまま、次も倒す…！ 出てこい…！
 
 ### survivor.composed.normal[]
 
@@ -1356,23 +1356,23 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### survivor.ojousama.normal[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.normal[1]`: 一人、お見送りしましたわ。…息は乱れていますけれど、退きませんの。次はどなた?
-- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.normal[2]`: まだこのリングに立っていますのよ。次の方、早くいらして
+- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.normal[1]`: 一人、倒したわ。…少し息は乱れているけれど。次はどなた？
+- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.normal[2]`: 待ちきれませんわね。次の方、早くいらして
 
 ### survivor.ojousama.bold[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.bold[1]`: 一人、片づけましたわ。…息は乱れていますけれど、まだまだですのよ。次はどなた?
+- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.bold[1]`: 一人、片づけましたわ。…息は乱れていますけれど、まだまだですのよ。次はどなた？
 - `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.bold[2]`: このリングの主は、まだわたくしですわ。次の方、覚悟していらして
 
 ### survivor.ojousama.easygoing[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.easygoing[1]`: 一人、お見送りしましたわ。…ふぅ、まだ立っていますのよ。次はどなた?
-- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.easygoing[2]`: あら、まだ終わりませんの? いいですわ、次の方、いらして
+- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.easygoing[1]`: 一人、お見送りしましたわ。…ふぅ、まだ立っていますのよ。次はどなた？
+- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.easygoing[2]`: あら、まだ終わりませんの？ いいですわ、次の方、いらして
 
 ### survivor.ojousama.earnest[]
 
 - `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.earnest[1]`: 一人、お相手しましたわ。…息は乱れていますけれど、まだ役目の途中。次の方、いらして
-- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.earnest[2]`: まだ立っていますのよ。繋ぐまで、退くわけには参りませんの。次はどなた?
+- `AUTUMN_WAR_MATCH_LINES.survivor.ojousama.earnest[2]`: まだ立っていますのよ。繋ぐまで、退くわけには参りませんの。次はどなた？
 
 ### survivor.polite.normal[]
 
@@ -1392,7 +1392,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### survivor.polite.shy[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.polite.shy[1]`: い、一人、倒せました…! はぁ…まだ、退けません…次の方、来てください…!
+- `AUTUMN_WAR_MATCH_LINES.survivor.polite.shy[1]`: い、一人、倒せました…！ はぁ…まだ、退けません…次の方、来てください…！
 - `AUTUMN_WAR_MATCH_LINES.survivor.polite.shy[2]`: 怖いです…でも、まだ立ってます。仲間に繋ぐまで、ここは…次、どうぞ…
 
 ### survivor.polite.easygoing[]
@@ -1408,17 +1408,17 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### survivor.seductive.normal[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.normal[1]`: 一人、落としたわ。…息、荒いでしょ? でも、まだ物足りないの。次、出してよ
+- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.normal[1]`: 一人、落としたわ。…息、荒いでしょ？ でも、まだ物足りないの。次、出してよ
 - `AUTUMN_WAR_MATCH_LINES.survivor.seductive.normal[2]`: まだ立ってるの。次の子、早くいらっしゃい。ここは、渡さないから
 
 ### survivor.seductive.bold[]
 
 - `AUTUMN_WAR_MATCH_LINES.survivor.seductive.bold[1]`: 一人、落としたわ。…でも、まだ足りないの。次、早く出してよ
-- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.bold[2]`: まだ立ってるの、見える? 次の子、こっちにいらっしゃい。全部相手にしてあげる
+- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.bold[2]`: まだ立ってるの、見える？ 次の子、こっちにいらっしゃい。全部相手にしてあげる
 
 ### survivor.seductive.quiet[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.quiet[1]`: ……一人、落としたわ。まだ立ってる。……次、来なよ
+- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.quiet[1]`: ……一人、落としたわ。まだ立ってる。……次、来なさい
 - `AUTUMN_WAR_MATCH_LINES.survivor.seductive.quiet[2]`: ……息、荒いけど。まだ、終わらない
 
 ### survivor.seductive.easygoing[]
@@ -1434,7 +1434,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### survivor.seductive.emotional[]
 
 - `AUTUMN_WAR_MATCH_LINES.survivor.seductive.emotional[1]`: 一人、落としたわ…っ…はぁ…まだ疼いてるの。次、早く出してよ
-- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.emotional[2]`: まだ立ってる…! この身体、まだ終わってないの…! 次、来なさい…!
+- `AUTUMN_WAR_MATCH_LINES.survivor.seductive.emotional[2]`: まだ立ってる…！ この身体、まだ終わってないの…！ 次、来なさい…！
 
 ### survivor.delinquent.normal[]
 
@@ -1443,13 +1443,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### survivor.delinquent.bold[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.bold[1]`: 一人ぶっ倒した! …はぁ、まだいけるぞ。次、どいつだ、出てこい!
-- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.bold[2]`: まだ終わってねえ! このリング、渡すかよ。次、さっさとかかってこい!
-- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.bold[3]`: 一人沈めたぞ! …はぁ、はぁ…まだ足りねえ。次、誰でもいい、来い!
+- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.bold[1]`: 一人ぶっ倒した！ …はぁ、まだいけるぞ。次、どいつだ、出てこい！
+- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.bold[2]`: まだ終わってねえ！ このリング、渡すかよ。次、さっさとかかってこい！
+- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.bold[3]`: 一人沈めたぞ！ …はぁ、はぁ…まだ足りねえ。次、誰でもいい、来い！
 
 ### survivor.delinquent.easygoing[]
 
-- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.easygoing[1]`: 一人ぶっ倒したー! …はぁ、まだいけるっしょ。次、出てこいよー
+- `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.easygoing[1]`: 一人ぶっ倒したー！ …はぁ、まだいけるっしょ。次、出てこいよー
 - `AUTUMN_WAR_MATCH_LINES.survivor.delinquent.easygoing[2]`: ふう、一丁上がり。でもまだ終わってねえぞ。次、さっさと来い
 
 ### survivor.cool.normal[]
@@ -1518,19 +1518,19 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.bold[]
 
-- `WAR_VICTORY_LINES.ojousama.bold[1]`: 当然の結果ね。……私を甘く見るべきじゃなかったわね
+- `WAR_VICTORY_LINES.ojousama.bold[1]`: 当然の結果ね。……私を甘く見るべきではなかったわね
 - `WAR_VICTORY_LINES.ojousama.bold[2]`: この程度で終わりではなくてよ
 - `WAR_VICTORY_LINES.ojousama.bold[3]`: 私の団体に挑むなど……百年早いですわね
 
 ### ojousama.earnest[]
 
-- `WAR_VICTORY_LINES.ojousama.earnest[1]`: 勝てましたわ…！ みなさまのおかげですわ…！
-- `WAR_VICTORY_LINES.ojousama.earnest[2]`: 団体のために全力を尽くせましたわ…嬉しいですわ
+- `WAR_VICTORY_LINES.ojousama.earnest[1]`: 勝てました…！ みなさまのおかげですわ…！
+- `WAR_VICTORY_LINES.ojousama.earnest[2]`: 団体のために全力を尽くせました…嬉しいですわ
 - `WAR_VICTORY_LINES.ojousama.earnest[3]`: みなさまのおかげで勝てましたわ…感謝いたします
 
 ### ojousama.easygoing[]
 
-- `WAR_VICTORY_LINES.ojousama.easygoing[1]`: あら、勝ってしまいましたわ～。うちの団体、なかなかやりますでしょ？
+- `WAR_VICTORY_LINES.ojousama.easygoing[1]`: あら、勝ってしまいましたわ〜。うちの団体、なかなかやりますでしょ？
 - `WAR_VICTORY_LINES.ojousama.easygoing[2]`: あらあら、勝っちゃいましたわね〜
 - `WAR_VICTORY_LINES.ojousama.easygoing[3]`: 楽しかったですわ〜。またやりましょうね
 
@@ -1708,7 +1708,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - 本数: 61
 
 - `WAR_CHALLENGER_DIALOGUE.standard.normal[1]`: あんたたちの実力、確かめさせてもらうよ
-- `WAR_CHALLENGER_DIALOGUE.standard.normal[2]`: こっちは本気だよ。受けて立つ気はあるの？
+- `WAR_CHALLENGER_DIALOGUE.standard.normal[2]`: こっちは本気だよ。受けて立つ気はある？
 - `WAR_CHALLENGER_DIALOGUE.standard.bold[1]`: 聞いてあきれる。そんな団体に負けるわけないでしょ
 - `WAR_CHALLENGER_DIALOGUE.standard.bold[2]`: あんたたちの看板選手？ 笑わせないで
 - `WAR_CHALLENGER_DIALOGUE.standard.earnest[1]`: そちらの団体の実力、確かめさせてもらいます
@@ -1721,7 +1721,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `WAR_CHALLENGER_DIALOGUE.standard.shy[2]`: で、でも…負けるつもりはないです…
 - `WAR_CHALLENGER_DIALOGUE.standard.emotional[1]`: ずっと…あなたたちの団体が気になってたの…！ 勝負して…！
 - `WAR_CHALLENGER_DIALOGUE.standard.emotional[2]`: この熱い気持ち…ぶつけさせてもらう…！
-- `WAR_CHALLENGER_DIALOGUE.ojousama.normal[1]`: あら、こちらの団体さん？ 随分とかわいらしい興行をなさっていますわね
+- `WAR_CHALLENGER_DIALOGUE.ojousama.normal[1]`: そちらの興行、拝見したわ。……少し、もの足りないわね。私が出れば、変わるはずですもの
 - `WAR_CHALLENGER_DIALOGUE.ojousama.normal[2]`: わたくしたちの実力をお見せする良い機会ですわ
 - `WAR_CHALLENGER_DIALOGUE.ojousama.bold[1]`: そちらの団体のレベル、存じておりますわよ？
 - `WAR_CHALLENGER_DIALOGUE.ojousama.bold[2]`: 格の違いをお教えして差し上げますわ
@@ -1775,8 +1775,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 対抗戦・辞退セリフ（personality×archetype）
 - 本数: 60
 
-- `WAR_DECLINE_DIALOGUE.standard.normal[1]`: やっぱりな。逃げると思ってたよ
-- `WAR_DECLINE_DIALOGUE.standard.normal[2]`: …逃げ足だけは一流だね
+- `WAR_DECLINE_DIALOGUE.standard.normal[1]`: やっぱりね。逃げるだろうなって思ってた
+- `WAR_DECLINE_DIALOGUE.standard.normal[2]`: …逃げ足だけは速いんだね
 - `WAR_DECLINE_DIALOGUE.standard.bold[1]`: はっ、やっぱりね。戦う前から結果は見えてたわ
 - `WAR_DECLINE_DIALOGUE.standard.bold[2]`: 逃げるの？ まあ、賢い判断よね
 - `WAR_DECLINE_DIALOGUE.standard.earnest[1]`: 残念です。正々堂々の勝負がしたかった
@@ -1792,7 +1792,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `WAR_DECLINE_DIALOGUE.ojousama.normal[1]`: あら、お逃げになるの？ 残念ですわ
 - `WAR_DECLINE_DIALOGUE.ojousama.normal[2]`: …お覚悟が足りないようですわね
 - `WAR_DECLINE_DIALOGUE.ojousama.bold[1]`: あらまあ。逃げ足が速い…格の違いは理解出来たみたいね
-- `WAR_DECLINE_DIALOGUE.ojousama.bold[2]`: うふふ……みっともないだこと。
+- `WAR_DECLINE_DIALOGUE.ojousama.bold[2]`: うふふ……みっともないこと。
 - `WAR_DECLINE_DIALOGUE.ojousama.easygoing[1]`: あら〜、お断りですの？ もったいないですわ
 - `WAR_DECLINE_DIALOGUE.ojousama.easygoing[2]`: ま、いいですわ。またの機会にいたしましょう
 - `WAR_DECLINE_DIALOGUE.ojousama.emotional[1]`: 逃げるなんて…許しませんわ…！
@@ -1824,7 +1824,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `WAR_DECLINE_DIALOGUE.cool.shy[2]`: ……わかった
 - `WAR_DECLINE_DIALOGUE.cool.emotional[1]`: ……逃げるか。……覚えた
 - `WAR_DECLINE_DIALOGUE.cool.emotional[2]`: ……次はない。……逃がさない
-- `WAR_DECLINE_DIALOGUE.composed.normal[1]`: …ふぅん。逃げるんだ
+- `WAR_DECLINE_DIALOGUE.composed.normal[1]`: …そうか。そんな時もあるね
 - `WAR_DECLINE_DIALOGUE.composed.normal[2]`: …まあ、そういうこともあるか
 - `WAR_DECLINE_DIALOGUE.composed.bold[1]`: …逃げるか。…まあ、賢い判断かもね
 - `WAR_DECLINE_DIALOGUE.composed.earnest[1]`: …残念です。…次は受けてほしいね
@@ -1918,7 +1918,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `WAR_POST_DIALOGUE.result_win.ojousama.normal[2]`: いい対抗戦でしたわ。またの機会を楽しみにしておりますわ
 - `WAR_POST_DIALOGUE.result_win.ojousama.bold[1]`: 当然の結果ですわ。格の違い、おわかりになりまして？
 - `WAR_POST_DIALOGUE.result_win.ojousama.bold[2]`: 圧勝ですわね。ふふっ
-- `WAR_POST_DIALOGUE.result_win.ojousama.easygoing[1]`: やりましたわ〜！ 勝利ですわ！
+- `WAR_POST_DIALOGUE.result_win.ojousama.easygoing[1]`: あらあら、勝ってしまいましたわね
 - `WAR_POST_DIALOGUE.result_win.ojousama.easygoing[2]`: 楽しい対抗戦でしたわ。またぜひ
 - `WAR_POST_DIALOGUE.result_win.ojousama.emotional[1]`: 勝ちましたわ…！ 感動で涙が…！
 - `WAR_POST_DIALOGUE.result_win.ojousama.emotional[2]`: 最高ですわ…！ この喜び、忘れませんわ…！
@@ -2262,7 +2262,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.easygoing[]
 
-- `PPV_OPPONENT_LINES.standard.easygoing[1]`: この大舞台、最高の気分！楽しもうぜ！
+- `PPV_OPPONENT_LINES.standard.easygoing[1]`: この大舞台、最高の気分！ 楽しもう！
 - `PPV_OPPONENT_LINES.standard.easygoing[2]`: あんたと戦えるの楽しみにしてた！
 - `PPV_OPPONENT_LINES.standard.easygoing[3]`: すごい大舞台！これは楽しみだねっ！
 
@@ -2444,7 +2444,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.summon.ojousama.bold[1]`: 私の選出は、当然ね
 - `JUNIOR_TOURNAMENT_LINES.summon.ojousama.bold[2]`: 選ばれた以上、出場いたしますわ
 - `JUNIOR_TOURNAMENT_LINES.summon.ojousama.easygoing[1]`: あら、わたくしも呼ばれましたの？ 面白そうですわね
-- `JUNIOR_TOURNAMENT_LINES.summon.ojousama.easygoing[2]`: わたくしが選ばれないわけがありませんわよね
+- `JUNIOR_TOURNAMENT_LINES.summon.ojousama.easygoing[2]`: あらあら、お声がかかってしまって。断る理由もありませんわね
 - `JUNIOR_TOURNAMENT_LINES.summon.ojousama.emotional[1]`: まあ…！ わたくし、選ばれましたの…？ 嬉しいですわ…！
 - `JUNIOR_TOURNAMENT_LINES.summon.ojousama.emotional[2]`: この胸の高鳴り…全てリングにぶつけますわ…！
 - `JUNIOR_TOURNAMENT_LINES.summon.delinquent.normal[1]`: おう、出てやるよ。覚悟しとけ
@@ -2458,10 +2458,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.summon.seductive.normal[1]`: 出場が決まったわ。見ていてね
 - `JUNIOR_TOURNAMENT_LINES.summon.seductive.normal[2]`: 素敵な舞台ね。魅せてあげるわ
 - `JUNIOR_TOURNAMENT_LINES.summon.seductive.bold[1]`: あら、指名してくれたの？ 嬉しいわ
-- `JUNIOR_TOURNAMENT_LINES.summon.seductive.bold[2]`: わたしの舞台が増えるのね。楽しみ
+- `JUNIOR_TOURNAMENT_LINES.summon.seductive.bold[2]`: 私の舞台が増えるのね。楽しみ
 - `JUNIOR_TOURNAMENT_LINES.summon.seductive.easygoing[1]`: あら〜、ラッキー。いい舞台じゃない
 - `JUNIOR_TOURNAMENT_LINES.summon.seductive.easygoing[2]`: 注目を集められるなら、いいわね
-- `JUNIOR_TOURNAMENT_LINES.summon.seductive.emotional[1]`: ジュニア大会に……っ……ふふ、わたしを選んでくれたのね、嬉しい……
+- `JUNIOR_TOURNAMENT_LINES.summon.seductive.emotional[1]`: ジュニア大会に……っ……ふふ、私を選んでくれたのね、嬉しい……
 - `JUNIOR_TOURNAMENT_LINES.summon.seductive.emotional[2]`: 楽しみだわ……っ……ふふ、燃えてきたの……
 - `JUNIOR_TOURNAMENT_LINES.summon.cool.normal[1]`: ……出る。それだけだ
 - `JUNIOR_TOURNAMENT_LINES.summon.cool.normal[2]`: ……勝つだけだ
@@ -2483,7 +2483,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.summon.composed.emotional[1]`: …選ばれたか。…やるよ
 - `JUNIOR_TOURNAMENT_LINES.summon.polite.earnest[1]`: 身に余る光栄です。一生懸命頑張ります
 - `JUNIOR_TOURNAMENT_LINES.summon.polite.earnest[2]`: お声がけいただき感謝いたします。精一杯務めます
-- `JUNIOR_TOURNAMENT_LINES.summon.polite.shy[1]`: え、わたしが…ジュニアトーナメントに…？ あ、あの、頑張ります…!
+- `JUNIOR_TOURNAMENT_LINES.summon.polite.shy[1]`: え、わたしが…ジュニアトーナメントに…？ あ、あの、頑張ります…！
 - `JUNIOR_TOURNAMENT_LINES.summon.polite.shy[2]`: 選んでいただいて…あ、ありがとうございます…
 - `JUNIOR_TOURNAMENT_LINES.preMatch.standard.normal[1]`: 相手がどうとかじゃない。自分の試合をする
 - `JUNIOR_TOURNAMENT_LINES.preMatch.standard.normal[2]`: 集中。一つずつ勝っていく
@@ -2500,7 +2500,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.preMatch.standard.emotional[2]`: この熱い気持ちのまま…ぶつかる…！
 - `JUNIOR_TOURNAMENT_LINES.preMatch.ojousama.normal[1]`: お相手がどなたであれ、全力を尽くします
 - `JUNIOR_TOURNAMENT_LINES.preMatch.ojousama.normal[2]`: わたくしの試合を、ご覧に入れます
-- `JUNIOR_TOURNAMENT_LINES.preMatch.ojousama.bold[1]`: 勝つのは私。それ以外のありえないでしょう？
+- `JUNIOR_TOURNAMENT_LINES.preMatch.ojousama.bold[1]`: 勝つのは私。それ以外ありえないでしょう？
 - `JUNIOR_TOURNAMENT_LINES.preMatch.ojousama.bold[2]`: 格の違いを教えてあげる
 - `JUNIOR_TOURNAMENT_LINES.preMatch.ojousama.easygoing[1]`: さあ、楽しい時間の始まりですわ
 - `JUNIOR_TOURNAMENT_LINES.preMatch.ojousama.easygoing[2]`: 気楽に参りましょう。でも負けませんわよ
@@ -2515,9 +2515,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.preMatch.delinquent.emotional[1]`: っしゃあ…！ 燃えてきたぜ…！
 - `JUNIOR_TOURNAMENT_LINES.preMatch.delinquent.emotional[2]`: ぶっ飛ばす…絶対ぶっ飛ばしてやる…！
 - `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.normal[1]`: 次の相手…楽しみね
-- `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.normal[2]`: わたしの魅力、見せつけてあげる
+- `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.normal[2]`: 私の魅力、見せつけてあげる
 - `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.bold[1]`: あら、可愛い相手ね。すぐ終わらせてあげるわ
-- `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.bold[2]`: わたしに勝てるつもり？ 甘いわね
+- `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.bold[2]`: 私に勝てるつもり？ 甘いわね
 - `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.easygoing[1]`: さてと、楽しませてもらうわね
 - `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.easygoing[2]`: リラックス、リラックス。……でも本気よ
 - `JUNIOR_TOURNAMENT_LINES.preMatch.seductive.emotional[1]`: 試合前……っ……ふふ、心臓がドキドキしてるの……
@@ -2561,7 +2561,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.normal[1]`: ひとつ勝ちました。でも油断は禁物ね
 - `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.normal[2]`: 次もこの調子で参ります
 - `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.bold[1]`: 当然の結果ね
-- `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.bold[2]`: この程度のことで驚いていては、私については来れなくてよ？
+- `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.bold[2]`: この程度のことで驚いていては、私についてはこられなくてよ？
 - `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.easygoing[1]`: やりましたわ。この調子で行きますわよ
 - `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.easygoing[2]`: まだまだ楽しめそうですわね
 - `JUNIOR_TOURNAMENT_LINES.postMatchWin.ojousama.emotional[1]`: 勝ちましたわ…！ この感動…次もきっと…！
@@ -2621,7 +2621,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.normal[1]`: 決勝。全てを出し切ります
 - `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.normal[2]`: ここまで来ましたのだから。最後まで、私らしく
 - `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.bold[1]`: 決勝は当然の舞台。このまま優勝もいただきましょう
-- `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.bold[2]`: こいつが最後の獲物ね。覚悟は出来てるかしら
+- `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.bold[2]`: あなたで最後ね。……覚悟はできているのかしら
 - `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.easygoing[1]`: あら、決勝まで来ちゃいましたわ。楽しみですわね
 - `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.easygoing[2]`: 最後の一戦！ 思いっきりやりますわよ
 - `JUNIOR_TOURNAMENT_LINES.preFinal.ojousama.emotional[1]`: 決勝ですわ…！ この胸の高鳴り…最高ですわ…！
@@ -2637,7 +2637,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.normal[1]`: 決勝…。最後の舞台、最高に魅せてあげるわ
 - `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.normal[2]`: あと一つ。全てを懸けるわ
 - `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.bold[1]`: あら、最後のお相手ね。たっぷり楽しませてあげるわ
-- `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.bold[2]`: 優勝はわたしのもの。決まっていることよ
+- `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.bold[2]`: 優勝は私のもの。決まっていることよ
 - `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.easygoing[1]`: 決勝かあ。最高の舞台じゃない
 - `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.easygoing[2]`: あと一つ。楽しんでいきましょう
 - `JUNIOR_TOURNAMENT_LINES.preFinal.seductive.emotional[1]`: 決勝戦……っ……ふふ、ここまで来たのね……
@@ -2682,13 +2682,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.champion.ojousama.normal[2]`: この優勝を糧に、さらに上を目指します
 - `JUNIOR_TOURNAMENT_LINES.champion.ojousama.bold[1]`: 優勝はわたくしのもの。当然の結果ですわね
 - `JUNIOR_TOURNAMENT_LINES.champion.ojousama.bold[2]`: これがわたくしの実力。誰もかれもわかったかしら？
-- `JUNIOR_TOURNAMENT_LINES.champion.ojousama.easygoing[1]`: まあ、優勝ですの！ 最高ですわ〜！
+- `JUNIOR_TOURNAMENT_LINES.champion.ojousama.easygoing[1]`: あらあら、優勝ですって。うまくいくものですわね
 - `JUNIOR_TOURNAMENT_LINES.champion.ojousama.easygoing[2]`: やりましたわ〜！ ご褒美が楽しみですわね
 - `JUNIOR_TOURNAMENT_LINES.champion.ojousama.emotional[1]`: 優勝ですわ…！ ああ…涙が…止まりませんわ…！
 - `JUNIOR_TOURNAMENT_LINES.champion.ojousama.emotional[2]`: わたくし…やりましたわ…！ 最高に幸せですわ…！
 - `JUNIOR_TOURNAMENT_LINES.champion.delinquent.normal[1]`: テッペン獲ったぜ！ でもまだ上がある
 - `JUNIOR_TOURNAMENT_LINES.champion.delinquent.normal[2]`: 優勝…悪くねえな。もっと強くなってやる
-- `JUNIOR_TOURNAMENT_LINES.champion.delinquent.bold[1]`: 言ったろ？ テッペンは俺のもんだってな
+- `JUNIOR_TOURNAMENT_LINES.champion.delinquent.bold[1]`: 言ったろ？ テッペンは私のもんだってな
 - `JUNIOR_TOURNAMENT_LINES.champion.delinquent.bold[2]`: はっ、当然の結果だぜ。誰にも負けねえ
 - `JUNIOR_TOURNAMENT_LINES.champion.delinquent.easygoing[1]`: いえ〜い！ 優勝〜！ 最高じゃん！
 - `JUNIOR_TOURNAMENT_LINES.champion.delinquent.easygoing[2]`: ひゃっほ〜！ やったぜ〜！
@@ -2697,10 +2697,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.champion.seductive.normal[1]`: 優勝。…最高の気分ね
 - `JUNIOR_TOURNAMENT_LINES.champion.seductive.normal[2]`: ふふ、これで終わりじゃないわよ
 - `JUNIOR_TOURNAMENT_LINES.champion.seductive.bold[1]`: あら、優勝しちゃったわ。当然だけどね
-- `JUNIOR_TOURNAMENT_LINES.champion.seductive.bold[2]`: わたしが一番。それが証明されたわね
+- `JUNIOR_TOURNAMENT_LINES.champion.seductive.bold[2]`: 私が一番。それが証明されたわね
 - `JUNIOR_TOURNAMENT_LINES.champion.seductive.easygoing[1]`: あらあら、優勝しちゃったわ。素敵
 - `JUNIOR_TOURNAMENT_LINES.champion.seductive.easygoing[2]`: ふふ、最高の気分。ご褒美ちょうだいね
-- `JUNIOR_TOURNAMENT_LINES.champion.seductive.emotional[1]`: 優勝……っ……ふふ、わたし、頂点に立ったのね……!
+- `JUNIOR_TOURNAMENT_LINES.champion.seductive.emotional[1]`: 優勝……っ……ふふ、私、頂点に立ったのね……！
 - `JUNIOR_TOURNAMENT_LINES.champion.seductive.emotional[2]`: この景色……っ……ふふ、忘れないわ……
 - `JUNIOR_TOURNAMENT_LINES.champion.cool.normal[1]`: ……優勝。……次のステージへ
 - `JUNIOR_TOURNAMENT_LINES.champion.cool.normal[2]`: ……ありがとう
@@ -2722,7 +2722,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.champion.composed.emotional[1]`: …っ…優勝か。…ありがとう
 - `JUNIOR_TOURNAMENT_LINES.champion.polite.earnest[1]`: 優勝…させていただきました。皆様のおかげです…！
 - `JUNIOR_TOURNAMENT_LINES.champion.polite.earnest[2]`: この経験を糧に、さらに精進して参ります
-- `JUNIOR_TOURNAMENT_LINES.champion.polite.shy[1]`: ゆ、優勝…ですか…？ ほ、本当に…？ あ、ありがとうございます…!
+- `JUNIOR_TOURNAMENT_LINES.champion.polite.shy[1]`: ゆ、優勝…ですか…？ ほ、本当に…？ あ、ありがとうございます…！
 - `JUNIOR_TOURNAMENT_LINES.champion.polite.shy[2]`: 夢みたいで…まだ、信じられません…
 - `JUNIOR_TOURNAMENT_LINES.postWin.standard.normal[1]`: いい経験になった。もっと強くなりたい
 - `JUNIOR_TOURNAMENT_LINES.postWin.standard.normal[2]`: 大会を通して、自分の成長を感じられた
@@ -2753,7 +2753,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.postWin.seductive.normal[1]`: いい経験だったわ。もっと魅せられるようになりたいわね
 - `JUNIOR_TOURNAMENT_LINES.postWin.seductive.normal[2]`: まだまだこんなものじゃないわよ
 - `JUNIOR_TOURNAMENT_LINES.postWin.seductive.bold[1]`: まだ足りないわね。もっと上に行くわ
-- `JUNIOR_TOURNAMENT_LINES.postWin.seductive.bold[2]`: いい舞台だったわ。でも、わたしはもっと上を目指す
+- `JUNIOR_TOURNAMENT_LINES.postWin.seductive.bold[2]`: いい舞台だったわ。でも、私はもっと上を目指す
 - `JUNIOR_TOURNAMENT_LINES.postWin.seductive.easygoing[1]`: 楽しい大会だったわ〜
 - `JUNIOR_TOURNAMENT_LINES.postWin.seductive.easygoing[2]`: いい経験になったわね
 - `JUNIOR_TOURNAMENT_LINES.postWin.seductive.emotional[1]`: 勝ち上がったわ……っ……ふふ、ここまで来られたの……
@@ -2795,7 +2795,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.postLose.standard.emotional[2]`: 負けた…。でも…この悔しさが…力になる…！
 - `JUNIOR_TOURNAMENT_LINES.postLose.ojousama.normal[1]`: 不甲斐ない結果でした。もっと精進いたします
 - `JUNIOR_TOURNAMENT_LINES.postLose.ojousama.normal[2]`: 悔しい…。もっと練習しなくては…
-- `JUNIOR_TOURNAMENT_LINES.postLose.ojousama.bold[1]`: こ、こんな結果…ありえないっ…！
+- `JUNIOR_TOURNAMENT_LINES.postLose.ojousama.bold[1]`: ……これが結果？ ……信じられないわね
 - `JUNIOR_TOURNAMENT_LINES.postLose.ojousama.bold[2]`: わたくしともあろうものが…屈辱ですわ
 - `JUNIOR_TOURNAMENT_LINES.postLose.delinquent.normal[1]`: くそっ…次は絶対負けねえ
 - `JUNIOR_TOURNAMENT_LINES.postLose.delinquent.normal[2]`: こんなとこで終わってたまるか…
@@ -2807,7 +2807,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `JUNIOR_TOURNAMENT_LINES.postLose.delinquent.emotional[2]`: ちくしょう…！ こんなんで終わるかよ…！
 - `JUNIOR_TOURNAMENT_LINES.postLose.seductive.normal[1]`: あら、残念ね。でも次があるわ
 - `JUNIOR_TOURNAMENT_LINES.postLose.seductive.normal[2]`: 悔しいけど…いい経験だったわ
-- `JUNIOR_TOURNAMENT_LINES.postLose.seductive.bold[1]`: …悔しいわ。でも、わたしはここで終わらない
+- `JUNIOR_TOURNAMENT_LINES.postLose.seductive.bold[1]`: …悔しいわ。でも、私はここで終わらない
 - `JUNIOR_TOURNAMENT_LINES.postLose.seductive.bold[2]`: 次は必ず勝つわ
 - `JUNIOR_TOURNAMENT_LINES.postLose.seductive.easygoing[1]`: あらら、残念。でもまた来年があるわ
 - `JUNIOR_TOURNAMENT_LINES.postLose.seductive.easygoing[2]`: ま、こういう日もあるわよね

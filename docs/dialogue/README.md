@@ -3,8 +3,8 @@
 `node tools/extract-dialogue.js` により `src/*.js` から自動生成。
 セリフを書き直したら、このツールを再実行すれば内容が更新される(下記「再実行方法」参照)。
 
-- 対象テーブル数: 191
-- 抽出できたセリフ総本数: **19864**
+- 対象テーブル数: 194
+- 抽出できたセリフ総本数: **20119**
 
 ## ID の読み方
 
@@ -23,14 +23,14 @@
 | 06 | 契約交渉 | [06-negotiation-and-contract.md](./06-negotiation-and-contract.md) | 3 | 870 |
 | 07 | 派閥イベント | [07-faction.md](./07-faction.md) | 28 | 2626 |
 | 08 | 成長・スランプ・モチベーション | [08-growth-and-emotion.md](./08-growth-and-emotion.md) | 8 | 576 |
-| 09 | 表彰式・記録・ドーム到達 | [09-award-and-milestone.md](./09-award-and-milestone.md) | 6 | 686 |
-| 10 | ニュース・新聞・黒田記者コラム | [10-news-and-newspaper.md](./10-news-and-newspaper.md) | 23 | 1843 |
+| 09 | 表彰式・記録・ドーム到達 | [09-award-and-milestone.md](./09-award-and-milestone.md) | 6 | 760 |
+| 10 | ニュース・新聞・黒田記者コラム | [10-news-and-newspaper.md](./10-news-and-newspaper.md) | 26 | 1960 |
 | 11 | 選択イベント・大型イベント・社長室 | [11-choice-and-large-event.md](./11-choice-and-large-event.md) | 8 | 1630 |
 | 12 | 選手経歴イベント | [12-career-event.md](./12-career-event.md) | 15 | 1731 |
-| 13 | Glimpse Cascade(興行後の一言) | [13-glimpse-cascade.md](./13-glimpse-cascade.md) | 3 | 1194 |
+| 13 | Glimpse Cascade(興行後の一言) | [13-glimpse-cascade.md](./13-glimpse-cascade.md) | 3 | 1260 |
 | 14 | PPV・対抗戦・天頂戦・トーナメント | [14-ppv-and-war.md](./14-ppv-and-war.md) | 12 | 1520 |
 | 15 | コーチ | [15-coach.md](./15-coach.md) | 13 | 631 |
-| 16 | キャラクター人物設定・年代記 | [16-character-and-chronicle.md](./16-character-and-chronicle.md) | 8 | 302 |
+| 16 | キャラクター人物設定・年代記 | [16-character-and-chronicle.md](./16-character-and-chronicle.md) | 8 | 300 |
 | 17 | 関係性フラグ | [17-relationship-flags.md](./17-relationship-flags.md) | 2 | 473 |
 | 18 | 経営危機・エンディング | [18-crisis-and-ending.md](./18-crisis-and-ending.md) | 6 | 258 |
 | 19 | ドラフト・スカウト | [19-draft-and-scout.md](./19-draft-and-scout.md) | 7 | 172 |
@@ -121,15 +121,18 @@
 | `MOTIVATION_LOSS_LINES` | `src/data.js` | 08-growth-and-emotion.md | 38 |
 | `HEAT_STATE_SELF_LINES` | `src/data.js` | 08-growth-and-emotion.md | 75 |
 | `MOTIVATION_RECOVERY_LINES` | `src/data.js` | 08-growth-and-emotion.md | 36 |
-| `AWARD_LINES` | `src/data.js` | 09-award-and-milestone.md | 232 |
+| `AWARD_LINES` | `src/data.js` | 09-award-and-milestone.md | 306 |
 | `MILESTONE_EVENTS` | `src/data.js` | 09-award-and-milestone.md | 51 |
 | `DOME_FIRSTSHOW_LINES` | `src/data.js` | 09-award-and-milestone.md | 146 |
 | `DOME_SELLOUT_LINES` | `src/data.js` | 09-award-and-milestone.md | 146 |
 | `Engine.awards._EPITHET_TEMPLATES` | `src/management.js` | 09-award-and-milestone.md | 111 |
 | `CREDITS` | `src/data.js` | 09-award-and-milestone.md | 0 |
 | `NEWS_TICKER_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 75 |
-| `NEWS_HEADLINE_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 284 |
-| `BIG_NEWS_LEAD_LINES` | `src/data.js` | 10-news-and-newspaper.md | 10 |
+| `NEWS_HEADLINE_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 336 |
+| `RETIREMENT_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 24 |
+| `DRAFT_PLAYER_RESULT_PARTS` | `src/data.js` | 10-news-and-newspaper.md | 14 |
+| `CHAMPION_CHANGE_TEMPLATES` | `src/data.js` | 10-news-and-newspaper.md | 26 |
+| `BIG_NEWS_LEAD_LINES` | `src/data.js` | 10-news-and-newspaper.md | 11 |
 | `SEASON_OPENING_NEWS_LEAD_LINES` | `src/data.js` | 10-news-and-newspaper.md | 3 |
 | `SEASON_REVIEW_LINES` | `src/data.js` | 10-news-and-newspaper.md | 61 |
 | `NOTIF_EVENT_TEXTS` | `src/data.js` | 10-news-and-newspaper.md | 102 |
@@ -175,7 +178,7 @@
 | `EVENT_LINES_BY_KEY` | `src/data.js` | 12-career-event.md | 1002 |
 | `GLIMPSE_A_LINES` | `src/data.js` | 13-glimpse-cascade.md | 848 |
 | `GLIMPSE_HOTSTREAK_END_LINES` | `src/data.js` | 13-glimpse-cascade.md | 41 |
-| `GLIMPSE_B_LINES` | `src/data.js` | 13-glimpse-cascade.md | 305 |
+| `GLIMPSE_B_LINES` | `src/data.js` | 13-glimpse-cascade.md | 371 |
 | `PPV_SUMMIT_VICTORY_LINES` | `src/data.js` | 14-ppv-and-war.md | 47 |
 | `AUTUMN_WAR_MVP_LINES` | `src/data.js` | 14-ppv-and-war.md | 315 |
 | `AUTUMN_WAR_MATCH_LINES` | `src/data.js` | 14-ppv-and-war.md | 228 |
@@ -202,7 +205,7 @@
 | `COACH_FLAVOR_DEFS` | `src/data.js` | 15-coach.md | 12 |
 | `ALL_COACHES` | `src/data.js` | 15-coach.md | 238 |
 | `CHAR_PROFILES` | `src/data.js` | 16-character-and-chronicle.md | 127 |
-| `TRAIT_DEFS` | `src/data.js` | 16-character-and-chronicle.md | 40 |
+| `TRAIT_DEFS` | `src/data.js` | 16-character-and-chronicle.md | 38 |
 | `Engine.chronicle.AXIS_LABELS` | `src/management.js` | 16-character-and-chronicle.md | 5 |
 | `Engine.chronicle.SUBTITLE_TEMPLATES` | `src/management.js` | 16-character-and-chronicle.md | 29 |
 | `Engine.chronicle.CLOSING_TEMPLATES` | `src/management.js` | 16-character-and-chronicle.md | 12 |

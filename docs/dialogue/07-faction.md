@@ -106,10 +106,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FACTION_F02_LINES.bold.attack.cool`: ……もう、並べない
 - `FACTION_F02_LINES.bold.attack.delinquent`: もう、一緒にゃいられねえ
 - `FACTION_F02_LINES.bold.attack.seductive`: もう、隣には立てないわ
-- `FACTION_F02_LINES.bold.defend.standard`: 上等だ。受けて立つ
-- `FACTION_F02_LINES.bold.defend.ojousama`: 上等ですわ。お受けいたしましょう
-- `FACTION_F02_LINES.bold.defend.polite`: 上等です。お受けいたします
-- `FACTION_F02_LINES.bold.defend.composed`: 上等。受けて立とう
+- `FACTION_F02_LINES.bold.defend.standard`: 上等よ。受けて立つわ
+- `FACTION_F02_LINES.bold.defend.ojousama`: よろしくてよ。お受けいたしましょう
+- `FACTION_F02_LINES.bold.defend.polite`: 望むところです。お受けいたします
+- `FACTION_F02_LINES.bold.defend.composed`: いいね、受けて立つ
 - `FACTION_F02_LINES.bold.defend.cool`: ……上等
 - `FACTION_F02_LINES.bold.defend.delinquent`: 上等だ、かかってこい
 - `FACTION_F02_LINES.bold.defend.seductive`: 上等よ。受けて立つわ
@@ -129,8 +129,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FACTION_F02_LINES.quiet.defend.seductive`: あなたが望むなら
 - `FACTION_F02_LINES.easygoing.attack.standard`: 仲良しごっこは終わり、かな
 - `FACTION_F02_LINES.easygoing.attack.ojousama`: 仲良しごっこは、もう終わりですわね
-- `FACTION_F02_LINES.easygoing.attack.polite`: 仲良しごっこは、もう終わりですね
-- `FACTION_F02_LINES.easygoing.attack.composed`: 仲良しごっこは、もう終わりだ
+- `FACTION_F02_LINES.easygoing.attack.polite`: 仲良しはここまでですね！　さあ、本気でいきましょう！
+- `FACTION_F02_LINES.easygoing.attack.composed`: 仲良しごっこは、そろそろお開きかな〜♪
 - `FACTION_F02_LINES.easygoing.attack.cool`: ……仲良しごっこは終わり
 - `FACTION_F02_LINES.easygoing.attack.delinquent`: 仲良しごっこは終わりだな
 - `FACTION_F02_LINES.easygoing.attack.seductive`: 仲良しごっこは終わり、でしょ？
@@ -240,7 +240,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MAIN.ojousama.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.ojousama.bold[1]`: ねぇ社長、次のメイン、わたくしたちにお任せいただけませんこと?
+- `F07_LINES.leaderDemand.DEMAND_MAIN.ojousama.bold[1]`: ねぇ社長、次のメイン、わたくしたちにお任せいただけませんこと？
 
 ### leaderDemand.DEMAND_MAIN.ojousama.quiet[]
 
@@ -248,7 +248,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MAIN.ojousama.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.ojousama.easygoing[1]`: 社長〜、次のメインカード、わたくしたちでいかがかしら?
+- `F07_LINES.leaderDemand.DEMAND_MAIN.ojousama.easygoing[1]`: 社長〜、次のメインカード、わたくしたちでいかがかしら？
 
 ### leaderDemand.DEMAND_MAIN.ojousama.earnest[]
 
@@ -284,19 +284,19 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MAIN.polite.shy[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.polite.shy[1]`: …社長、あの…次のメイン、私たちに…お任せいただけたら、嬉しいです。
+- `F07_LINES.leaderDemand.DEMAND_MAIN.polite.shy[1]`: …社長、あの…次のメイン、わたしたちに…お任せいただけたら、嬉しいです。
 
 ### leaderDemand.DEMAND_MAIN.seductive.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.seductive.bold[1]`: 社長、次のメイン、私に任せてくれない? 必ず客を沸かすから。
+- `F07_LINES.leaderDemand.DEMAND_MAIN.seductive.bold[1]`: 社長、次のメイン、私に任せてくれない？ 必ず客を沸かすから。
 
 ### leaderDemand.DEMAND_MAIN.seductive.quiet[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.seductive.quiet[1]`: …社長、次のメイン、私で行ってもいい?
+- `F07_LINES.leaderDemand.DEMAND_MAIN.seductive.quiet[1]`: …社長、次のメイン、私で行ってもいい？
 
 ### leaderDemand.DEMAND_MAIN.seductive.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.seductive.easygoing[1]`: 社長〜、次のメイン、私たちでいかが? 楽しい絵を描けるわよ。
+- `F07_LINES.leaderDemand.DEMAND_MAIN.seductive.easygoing[1]`: 社長〜、次のメイン、私たちでいかが？ 楽しい絵を描けるわよ。
 
 ### leaderDemand.DEMAND_MAIN.seductive.earnest[]
 
@@ -312,7 +312,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MAIN.delinquent.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.delinquent.bold[1]`: 社長、次のメイン、あたしらでいきますよ。話、通してください。
+- `F07_LINES.leaderDemand.DEMAND_MAIN.delinquent.bold[1]`: 社長、次のメイン、私らでいきますよ。話、通してください。
 
 ### leaderDemand.DEMAND_MAIN.delinquent.quiet[]
 
@@ -320,7 +320,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MAIN.delinquent.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MAIN.delinquent.easygoing[1]`: 社長〜、次のメイン、あたしらで暴れさせてくれません?
+- `F07_LINES.leaderDemand.DEMAND_MAIN.delinquent.easygoing[1]`: 社長〜、次のメイン、私らで暴れさせてくれません？
 
 ### leaderDemand.DEMAND_MAIN.delinquent.earnest[]
 
@@ -368,7 +368,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MONEY.standard.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.standard.easygoing[1]`: 社長〜、お給料の話なんですけど、ちょっとだけ上げてもらえませんか?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.standard.easygoing[1]`: 社長〜、お給料の話なんですけど、ちょっとだけ上げてもらえませんか？
 
 ### leaderDemand.DEMAND_MONEY.standard.earnest[]
 
@@ -392,7 +392,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MONEY.composed.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.composed.easygoing[1]`: 社長、給与の話、頃合いだと思うんですけど、いかがですか?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.composed.easygoing[1]`: 社長、給与の話、頃合いだと思うんですけど、いかがですか？
 
 ### leaderDemand.DEMAND_MONEY.composed.earnest[]
 
@@ -408,7 +408,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MONEY.ojousama.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.ojousama.bold[1]`: ねぇ社長、わたくしどもの給与、改めてお考えいただけませんこと?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.ojousama.bold[1]`: ねぇ社長、わたくしどもの給与、改めてお考えいただけませんこと？
 
 ### leaderDemand.DEMAND_MONEY.ojousama.quiet[]
 
@@ -416,7 +416,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MONEY.ojousama.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.ojousama.easygoing[1]`: 社長〜、お給金の件、少々考えてくださってもよろしくてよ?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.ojousama.easygoing[1]`: 社長〜、お給金の件、少々考えてくださってもよろしくてよ？
 
 ### leaderDemand.DEMAND_MONEY.ojousama.earnest[]
 
@@ -456,15 +456,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MONEY.seductive.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.seductive.bold[1]`: 社長、私たちの給料の話、ちょっと聞いてくれない?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.seductive.bold[1]`: 社長、私たちの給料の話、ちょっと聞いてくれない？
 
 ### leaderDemand.DEMAND_MONEY.seductive.quiet[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.seductive.quiet[1]`: …社長、待遇の話…してもいい?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.seductive.quiet[1]`: …社長、待遇の話…してもいい？
 
 ### leaderDemand.DEMAND_MONEY.seductive.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.seductive.easygoing[1]`: 社長〜、お給料の話、たまには上向きにしてくれないと困りますよ?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.seductive.easygoing[1]`: 社長〜、お給料の話、たまには上向きにしてくれないと困りますよ？
 
 ### leaderDemand.DEMAND_MONEY.seductive.earnest[]
 
@@ -480,7 +480,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MONEY.delinquent.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.delinquent.bold[1]`: 社長、あたしらの給料、見直してくれません? はっきり言って足りないっす。
+- `F07_LINES.leaderDemand.DEMAND_MONEY.delinquent.bold[1]`: 社長、私らの給料、見直してくれません？ はっきり言って足りないっす。
 
 ### leaderDemand.DEMAND_MONEY.delinquent.quiet[]
 
@@ -488,7 +488,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_MONEY.delinquent.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_MONEY.delinquent.easygoing[1]`: 社長〜、お給料の件、ちょっと色つけてくんないっすかね〜?
+- `F07_LINES.leaderDemand.DEMAND_MONEY.delinquent.easygoing[1]`: 社長〜、お給料の件、ちょっと色つけてくんないっすかね〜？
 
 ### leaderDemand.DEMAND_MONEY.delinquent.earnest[]
 
@@ -528,7 +528,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_ABSTRACT.standard.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.standard.bold[1]`: 社長、私たちのメンバーのこと、もう少しだけ大事にしてもらえませんか。
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.standard.bold[1]`: 社長、うちのメンバーのこと、もう少し大事にしてくれない？
 
 ### leaderDemand.DEMAND_ABSTRACT.standard.quiet[]
 
@@ -552,7 +552,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_ABSTRACT.composed.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.composed.bold[1]`: 社長、私たちのメンバーに、もう少し目を配っていただけませんか。
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.composed.bold[1]`: 社長。うちの子たちにも、もう少し目を向けてほしいんだ。
 
 ### leaderDemand.DEMAND_ABSTRACT.composed.quiet[]
 
@@ -584,7 +584,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_ABSTRACT.ojousama.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.ojousama.easygoing[1]`: 社長〜、わたくしたちのこと、たまには思い出してくださってもよろしくてよ?
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.ojousama.easygoing[1]`: 社長〜、わたくしたちのこと、たまには思い出してくださってもよろしくてよ？
 
 ### leaderDemand.DEMAND_ABSTRACT.ojousama.earnest[]
 
@@ -620,7 +620,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_ABSTRACT.polite.shy[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.polite.shy[1]`: …社長、あの…私たちのメンバーのこと、気にかけていただけると…嬉しいです。
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.polite.shy[1]`: …社長、あの…わたしたちのメンバーのこと、気にかけていただけると…嬉しいです。
 
 ### leaderDemand.DEMAND_ABSTRACT.seductive.bold[]
 
@@ -628,11 +628,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_ABSTRACT.seductive.quiet[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.seductive.quiet[1]`: …社長、私たちのこと…たまには思い出してくれる?
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.seductive.quiet[1]`: …社長、私たちのこと…たまには思い出してくれる？
 
 ### leaderDemand.DEMAND_ABSTRACT.seductive.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.seductive.easygoing[1]`: 社長〜、私たちの子のこと、ちゃんと可愛がってあげないとダメですよ?
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.seductive.easygoing[1]`: 社長〜、私たちの子のこと、ちゃんと可愛がってあげないとダメですよ？
 
 ### leaderDemand.DEMAND_ABSTRACT.seductive.earnest[]
 
@@ -648,7 +648,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_ABSTRACT.delinquent.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.delinquent.bold[1]`: 社長、あたしらのこと、もうちょい大事にしてくんないっすか。
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.delinquent.bold[1]`: 社長、私らのこと、もうちょい大事にしてくんないっすか。
 
 ### leaderDemand.DEMAND_ABSTRACT.delinquent.quiet[]
 
@@ -656,7 +656,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_ABSTRACT.delinquent.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.delinquent.easygoing[1]`: 社長〜、あたしらの子のこと、たまには可愛がってやってくれません?
+- `F07_LINES.leaderDemand.DEMAND_ABSTRACT.delinquent.easygoing[1]`: 社長〜、私らの子のこと、たまには可愛がってやってくれません？
 
 ### leaderDemand.DEMAND_ABSTRACT.delinquent.earnest[]
 
@@ -704,7 +704,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_RECOGNITION.standard.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.standard.easygoing[1]`: 社長〜、私たちの頑張り、たまには褒めてくれてもいいんですよ?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.standard.easygoing[1]`: 社長〜、私たちの頑張り、たまには褒めてくれてもいいんですよ？
 
 ### leaderDemand.DEMAND_RECOGNITION.standard.earnest[]
 
@@ -716,7 +716,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_RECOGNITION.standard.shy[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.standard.shy[1]`: …社長、その、私たちのこと、見てくれてますか…?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.standard.shy[1]`: …社長、その、私たちのこと、見てくれてますか…？
 
 ### leaderDemand.DEMAND_RECOGNITION.composed.bold[]
 
@@ -744,7 +744,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_RECOGNITION.ojousama.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.ojousama.bold[1]`: ねぇ社長、わたくしどもの貢献、きちんと評価していただいておりますの?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.ojousama.bold[1]`: ねぇ社長、わたくしどもの貢献、きちんと評価していただいておりますの？
 
 ### leaderDemand.DEMAND_RECOGNITION.ojousama.quiet[]
 
@@ -752,7 +752,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_RECOGNITION.ojousama.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.ojousama.easygoing[1]`: 社長〜、わたくしたちの働き、たまには褒めてくださってもよろしくてよ?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.ojousama.easygoing[1]`: 社長〜、わたくしたちの働き、たまには褒めてくださってもよろしくてよ？
 
 ### leaderDemand.DEMAND_RECOGNITION.ojousama.earnest[]
 
@@ -788,19 +788,19 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_RECOGNITION.polite.shy[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.polite.shy[1]`: …社長、あの…私たちのこと、見ていてくださると…うれしいです。
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.polite.shy[1]`: …社長、あの…わたしたちのこと、見ていてくださると…うれしいです。
 
 ### leaderDemand.DEMAND_RECOGNITION.seductive.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.seductive.bold[1]`: 社長、私の貢献、ちゃんと見てくれてる? 確かめさせて。
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.seductive.bold[1]`: 社長、私の貢献、ちゃんと見てくれてる？ 確かめさせて。
 
 ### leaderDemand.DEMAND_RECOGNITION.seductive.quiet[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.seductive.quiet[1]`: …社長、私のこと、見ていてくれてる?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.seductive.quiet[1]`: …社長、私のこと、見ていてくれてる？
 
 ### leaderDemand.DEMAND_RECOGNITION.seductive.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.seductive.easygoing[1]`: 社長〜、私のこと、たまには褒めてくれないと拗ねちゃいますよ?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.seductive.easygoing[1]`: 社長〜、私のこと、たまには褒めてくれないと拗ねちゃいますよ？
 
 ### leaderDemand.DEMAND_RECOGNITION.seductive.earnest[]
 
@@ -816,7 +816,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_RECOGNITION.delinquent.bold[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.delinquent.bold[1]`: 社長、あたしらの働き、ちゃんと数えてんですか。はっきり言ってもらえます?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.delinquent.bold[1]`: 社長、私らの働き、ちゃんと数えてんですか。はっきり言ってもらえます？
 
 ### leaderDemand.DEMAND_RECOGNITION.delinquent.quiet[]
 
@@ -824,7 +824,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### leaderDemand.DEMAND_RECOGNITION.delinquent.easygoing[]
 
-- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.delinquent.easygoing[1]`: 社長〜、あたしらの頑張り、たまには口に出してくれませんかね〜?
+- `F07_LINES.leaderDemand.DEMAND_RECOGNITION.delinquent.easygoing[1]`: 社長〜、私らの頑張り、たまには口に出してくれませんかね〜？
 
 ### leaderDemand.DEMAND_RECOGNITION.delinquent.earnest[]
 
@@ -920,7 +920,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.A.standard.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.A.standard.easygoing[1]`: やった、社長ありがとう! メイン張りますね!
+- `F07_LINES.resultLeader.DEMAND_MAIN.A.standard.easygoing[1]`: やった、社長ありがとう！ メイン張りますね！
 
 ### resultLeader.DEMAND_MAIN.A.standard.earnest[]
 
@@ -936,7 +936,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.A.composed.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.A.composed.bold[1]`: ありがたく頂戴します。期待は超えてみせます。
+- `F07_LINES.resultLeader.DEMAND_MAIN.A.composed.bold[1]`: ありがたく頂いておくよ。期待はきっちり超えてみせるから、見てて。
 
 ### resultLeader.DEMAND_MAIN.A.composed.quiet[]
 
@@ -968,7 +968,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.A.ojousama.easygoing[1]`: まあ嬉しい、社長ありがとう! 華やかなメインにいたしますわ。
+- `F07_LINES.resultLeader.DEMAND_MAIN.A.ojousama.easygoing[1]`: まあ嬉しい、社長ありがとう！ 華やかなメインにいたしますわ。
 
 ### resultLeader.DEMAND_MAIN.A.ojousama.earnest[]
 
@@ -992,7 +992,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.A.polite.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.A.polite.easygoing[1]`: わ、社長ありがとうございます〜。期待に応えますね!
+- `F07_LINES.resultLeader.DEMAND_MAIN.A.polite.easygoing[1]`: わ、社長ありがとうございます〜。期待に応えますね！
 
 ### resultLeader.DEMAND_MAIN.A.polite.earnest[]
 
@@ -1016,7 +1016,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.A.seductive.easygoing[1]`: やった〜、社長ありがとう! 楽しいメインにしますね。
+- `F07_LINES.resultLeader.DEMAND_MAIN.A.seductive.easygoing[1]`: やった〜、社長ありがとう！ 楽しいメインにしますね。
 
 ### resultLeader.DEMAND_MAIN.A.seductive.earnest[]
 
@@ -1040,7 +1040,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.A.delinquent.easygoing[1]`: マジですか? 社長ありがとう! 暴れさせてもらいますね〜!
+- `F07_LINES.resultLeader.DEMAND_MAIN.A.delinquent.easygoing[1]`: マジですか？ 社長ありがとう！ 暴れさせてもらいますね〜！
 
 ### resultLeader.DEMAND_MAIN.A.delinquent.earnest[]
 
@@ -1080,7 +1080,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.B.standard.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.B.standard.bold[1]`: …そうですか。わかりました。
+- `F07_LINES.resultLeader.DEMAND_MAIN.B.standard.bold[1]`: …そう。わかった、今は引くわよ。
 
 ### resultLeader.DEMAND_MAIN.B.standard.quiet[]
 
@@ -1176,7 +1176,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.B.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.B.seductive.bold[1]`: …そう。じゃあ、覚えておくね。
+- `F07_LINES.resultLeader.DEMAND_MAIN.B.seductive.bold[1]`: ……そう。その言葉、覚えておくわ。
 
 ### resultLeader.DEMAND_MAIN.B.seductive.quiet[]
 
@@ -1304,7 +1304,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.C.ojousama.easygoing[1]`: あら、そういう形ですの? まあ、ありがとうございますわ〜。
+- `F07_LINES.resultLeader.DEMAND_MAIN.C.ojousama.easygoing[1]`: あら、そういう形ですの？ まあ、ありがとうございますわ〜。
 
 ### resultLeader.DEMAND_MAIN.C.ojousama.earnest[]
 
@@ -1324,7 +1324,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.C.polite.quiet[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.C.polite.quiet[1]`: …ありがとうございます。…そっちで考えてくださったんですね。
+- `F07_LINES.resultLeader.DEMAND_MAIN.C.polite.quiet[1]`: …ありがとうございます。…そちらで考えてくださったんですね。
 
 ### resultLeader.DEMAND_MAIN.C.polite.easygoing[]
 
@@ -1344,7 +1344,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.C.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.C.seductive.bold[1]`: …そう。それも悪くないかもね。ありがとう。
+- `F07_LINES.resultLeader.DEMAND_MAIN.C.seductive.bold[1]`: ……なるほど。そういう手もあるのね。悪くないじゃない。
 
 ### resultLeader.DEMAND_MAIN.C.seductive.quiet[]
 
@@ -1352,7 +1352,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.C.seductive.easygoing[1]`: あら、そっちの形? まあ、ありがとうございます〜。
+- `F07_LINES.resultLeader.DEMAND_MAIN.C.seductive.easygoing[1]`: あら、そっちの形？ まあ、ありがとうございます〜。
 
 ### resultLeader.DEMAND_MAIN.C.seductive.earnest[]
 
@@ -1376,7 +1376,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MAIN.C.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MAIN.C.delinquent.easygoing[1]`: へぇ、そっちっすか? まあ、ありがたいっすけど〜。
+- `F07_LINES.resultLeader.DEMAND_MAIN.C.delinquent.easygoing[1]`: へぇ、そっちっすか？ まあ、ありがたいっすけど〜。
 
 ### resultLeader.DEMAND_MAIN.C.delinquent.earnest[]
 
@@ -1424,7 +1424,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.A.standard.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.standard.easygoing[1]`: えっ、ホントに上げてくれるんですか? やった〜! みんなに自慢しちゃう。
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.standard.easygoing[1]`: えっ、ホントに上げてくれるんですか？ やった〜！ みんなに自慢しちゃう。
 
 ### resultLeader.DEMAND_MONEY.A.standard.earnest[]
 
@@ -1472,11 +1472,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.ojousama.easygoing[1]`: まあ嬉しい! 社長ありがとうございますわ〜。
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.ojousama.easygoing[1]`: まあ嬉しい！ 社長ありがとうございますわ〜。
 
 ### resultLeader.DEMAND_MONEY.A.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.ojousama.earnest[1]`: 社長、誠にありがとうございますわ。皆を代表してお礼申し上げますわ。
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.ojousama.earnest[1]`: 社長、誠にありがとうございます。皆を代表してお礼申し上げますわ。
 
 ### resultLeader.DEMAND_MONEY.A.ojousama.emotional[]
 
@@ -1496,7 +1496,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.A.polite.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.polite.easygoing[1]`: わ、社長ありがとうございます〜! みんな喜びます!
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.polite.easygoing[1]`: わ、社長ありがとうございます〜！ みんな喜びます！
 
 ### resultLeader.DEMAND_MONEY.A.polite.earnest[]
 
@@ -1512,7 +1512,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.seductive.bold[1]`: ありがとう社長、嬉しい。みんなにも伝えるね。
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.seductive.bold[1]`: 感謝するわ、社長。この話、皆にも下ろしておく。
 
 ### resultLeader.DEMAND_MONEY.A.seductive.quiet[]
 
@@ -1520,7 +1520,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.seductive.easygoing[1]`: えっホントに〜? 社長ありがとう! みんなに自慢しちゃう。
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.seductive.easygoing[1]`: えっホントに〜？ 社長ありがとう！ みんなに自慢しちゃう。
 
 ### resultLeader.DEMAND_MONEY.A.seductive.earnest[]
 
@@ -1536,7 +1536,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.A.delinquent.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.delinquent.bold[1]`: マジっすか、社長ありがとうございます! みんな喜びますよ。
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.delinquent.bold[1]`: マジっすか、社長ありがとうございます！ みんな喜びますよ。
 
 ### resultLeader.DEMAND_MONEY.A.delinquent.quiet[]
 
@@ -1544,7 +1544,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.A.delinquent.easygoing[1]`: マジで上げてくれんすか?! 社長太っ腹〜! みんなにも言っときます!
+- `F07_LINES.resultLeader.DEMAND_MONEY.A.delinquent.easygoing[1]`: マジで上げてくれんすか？！ 社長太っ腹〜！ みんなにも言っときます！
 
 ### resultLeader.DEMAND_MONEY.A.delinquent.earnest[]
 
@@ -1680,7 +1680,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.B.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.B.seductive.bold[1]`: …そう。わかった、また話そうね。
+- `F07_LINES.resultLeader.DEMAND_MONEY.B.seductive.bold[1]`: ……そう。続きはまた、いずれ。
 
 ### resultLeader.DEMAND_MONEY.B.seductive.quiet[]
 
@@ -1752,7 +1752,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.C.standard.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.C.standard.bold[1]`: …ご配慮、ありがとうございます。お金の話、しちゃってすみません。
+- `F07_LINES.resultLeader.DEMAND_MONEY.C.standard.bold[1]`: …ありがと、社長。お金の話は、言うべきだと思ったから
 
 ### resultLeader.DEMAND_MONEY.C.standard.quiet[]
 
@@ -1760,7 +1760,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.C.standard.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.C.standard.easygoing[1]`: あれ、お金の話そらされた? でもまあ、ありがとうございます〜。
+- `F07_LINES.resultLeader.DEMAND_MONEY.C.standard.easygoing[1]`: あれ、お金の話そらされた？ でもまあ、ありがとうございます〜。
 
 ### resultLeader.DEMAND_MONEY.C.standard.earnest[]
 
@@ -1768,7 +1768,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.C.standard.emotional[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.C.standard.emotional[1]`: …社長…そういう形ですか。…わかりました、ありがたいです。
+- `F07_LINES.resultLeader.DEMAND_MONEY.C.standard.emotional[1]`: …社長…そういう、形ですか。…わかりました、わかりましたから。
 
 ### resultLeader.DEMAND_MONEY.C.standard.shy[]
 
@@ -1776,7 +1776,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.C.composed.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.C.composed.bold[1]`: …なるほど、そういうご配慮ですか。ありがたく頂戴します。
+- `F07_LINES.resultLeader.DEMAND_MONEY.C.composed.bold[1]`: …なるほど、そこまで気を回してくれたんだ。素直に甘えておこうかな。
 
 ### resultLeader.DEMAND_MONEY.C.composed.quiet[]
 
@@ -1808,7 +1808,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.C.ojousama.easygoing[1]`: あら、お金じゃない形ですの? まあ、それも素敵ですわね。
+- `F07_LINES.resultLeader.DEMAND_MONEY.C.ojousama.easygoing[1]`: あら、お金じゃない形ですの？ まあ、それも素敵ですわね。
 
 ### resultLeader.DEMAND_MONEY.C.ojousama.earnest[]
 
@@ -1848,7 +1848,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_MONEY.C.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_MONEY.C.seductive.bold[1]`: …ふぅん、お金じゃないんだ。まあ、それも嬉しいよ。
+- `F07_LINES.resultLeader.DEMAND_MONEY.C.seductive.bold[1]`: ……ふぅん、金銭じゃないのね。まあ、そういうのも嫌いじゃないわ。
 
 ### resultLeader.DEMAND_MONEY.C.seductive.quiet[]
 
@@ -1928,7 +1928,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.A.standard.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.standard.easygoing[1]`: わ、ちゃんと聞いてくれてた! 嬉しいです、ありがとうございます〜。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.standard.easygoing[1]`: わ、ちゃんと聞いてくれてた！ 嬉しいです、ありがとうございます〜。
 
 ### resultLeader.DEMAND_ABSTRACT.A.standard.earnest[]
 
@@ -2000,7 +2000,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.A.polite.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.polite.easygoing[1]`: わ、ありがとうございます〜! 社長にそう言ってもらえると本当に嬉しいです。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.polite.easygoing[1]`: わ、ありがとうございます〜！ 社長にそう言ってもらえると本当に嬉しいです。
 
 ### resultLeader.DEMAND_ABSTRACT.A.polite.earnest[]
 
@@ -2016,7 +2016,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.seductive.bold[1]`: ありがとう社長、嬉しい。ちゃんと届いてたんだね。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.seductive.bold[1]`: 届いていたのね、その気持ち。……ありがとう、社長。
 
 ### resultLeader.DEMAND_ABSTRACT.A.seductive.quiet[]
 
@@ -2024,7 +2024,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.seductive.easygoing[1]`: わ、社長ちゃんと聞いてくれてた! ありがとうございます〜。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.seductive.easygoing[1]`: わ、社長ちゃんと聞いてくれてた！ ありがとうございます〜。
 
 ### resultLeader.DEMAND_ABSTRACT.A.seductive.earnest[]
 
@@ -2048,7 +2048,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.delinquent.easygoing[1]`: マジっすか、社長ありがとう〜! 嬉しいっすね。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.A.delinquent.easygoing[1]`: マジっすか、社長ありがとう〜！ 嬉しいっすね。
 
 ### resultLeader.DEMAND_ABSTRACT.A.delinquent.earnest[]
 
@@ -2088,7 +2088,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.B.standard.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.B.standard.bold[1]`: …そうですか。失礼しました。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.B.standard.bold[1]`: …そう。出すぎたこと言ったわね。
 
 ### resultLeader.DEMAND_ABSTRACT.B.standard.quiet[]
 
@@ -2112,7 +2112,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.B.composed.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.B.composed.bold[1]`: …承知しました。出過ぎたことを申しました。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.B.composed.bold[1]`: …わかった。言うだけは言ったんだ、それでいいよ。
 
 ### resultLeader.DEMAND_ABSTRACT.B.composed.quiet[]
 
@@ -2272,7 +2272,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.C.standard.emotional[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.standard.emotional[1]`: …ああ、社長…そういう答え方、ですか。…ありがとうございます。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.standard.emotional[1]`: …ああ、社長…そういう、答え方…ですか。…ありがとう、ございます。
 
 ### resultLeader.DEMAND_ABSTRACT.C.standard.shy[]
 
@@ -2280,7 +2280,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.C.composed.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.composed.bold[1]`: …なるほど、そういう形ですか。ありがたく受け取ります。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.composed.bold[1]`: …なるほど、そういう形なんだ。ありがたく受け取っておくよ。
 
 ### resultLeader.DEMAND_ABSTRACT.C.composed.quiet[]
 
@@ -2312,7 +2312,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.ojousama.easygoing[1]`: あら、別の形ですの? まあ、ありがたいですわ〜。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.ojousama.easygoing[1]`: あら、別の形ですの？ まあ、ありがたいですわ〜。
 
 ### resultLeader.DEMAND_ABSTRACT.C.ojousama.earnest[]
 
@@ -2332,7 +2332,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.C.polite.quiet[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.polite.quiet[1]`: …ありがとうございます。…そっちで気にかけてくださったんですね。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.polite.quiet[1]`: …ありがとうございます。…そちらで気にかけてくださったんですね。
 
 ### resultLeader.DEMAND_ABSTRACT.C.polite.easygoing[]
 
@@ -2352,7 +2352,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.C.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.seductive.bold[1]`: …そう、別ルートね。それも嬉しい、ありがとう。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.seductive.bold[1]`: ……ふふ、そちらの筋から来たの。悪くないわ、感謝しておく。
 
 ### resultLeader.DEMAND_ABSTRACT.C.seductive.quiet[]
 
@@ -2360,7 +2360,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_ABSTRACT.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.seductive.easygoing[1]`: あら、別の形? まあ、ありがとうございます〜。
+- `F07_LINES.resultLeader.DEMAND_ABSTRACT.C.seductive.easygoing[1]`: あら、別の形？ まあ、ありがとうございます〜。
 
 ### resultLeader.DEMAND_ABSTRACT.C.seductive.earnest[]
 
@@ -2432,7 +2432,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.A.standard.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.standard.easygoing[1]`: ホント!? やった、社長に褒められちゃった〜!
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.standard.easygoing[1]`: ホント！？ やった、社長に褒められちゃった〜！
 
 ### resultLeader.DEMAND_RECOGNITION.A.standard.earnest[]
 
@@ -2480,7 +2480,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.ojousama.easygoing[1]`: まあ嬉しい、社長に褒められちゃいましたわ〜!
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.ojousama.easygoing[1]`: まあ嬉しい、社長に褒められちゃいましたわ〜！
 
 ### resultLeader.DEMAND_RECOGNITION.A.ojousama.earnest[]
 
@@ -2504,7 +2504,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.A.polite.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.polite.easygoing[1]`: わ、ありがとうございます〜! 社長に褒めてもらえるなんて!
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.polite.easygoing[1]`: わ、ありがとうございます〜！ 社長に褒めてもらえるなんて！
 
 ### resultLeader.DEMAND_RECOGNITION.A.polite.earnest[]
 
@@ -2520,7 +2520,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.seductive.bold[1]`: ありがとう社長、嬉しい。ちゃんと見ててくれたんだね。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.seductive.bold[1]`: 見ていてくれたのね。……こういうの、効くじゃない。
 
 ### resultLeader.DEMAND_RECOGNITION.A.seductive.quiet[]
 
@@ -2528,7 +2528,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.seductive.easygoing[1]`: わ、社長に褒められちゃった〜! 嬉しいです。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.seductive.easygoing[1]`: わ、社長に褒められちゃった〜！ 嬉しいです。
 
 ### resultLeader.DEMAND_RECOGNITION.A.seductive.earnest[]
 
@@ -2544,7 +2544,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.A.delinquent.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.delinquent.bold[1]`: 社長、ありがとうございます。励みになりますよ。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.delinquent.bold[1]`: 社長、あんがとっす。そう言われちゃ、気合い入るっすよ。
 
 ### resultLeader.DEMAND_RECOGNITION.A.delinquent.quiet[]
 
@@ -2552,7 +2552,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.delinquent.easygoing[1]`: マジっすか〜、社長に褒められちゃった〜! ありがとうございます。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.A.delinquent.easygoing[1]`: マジっすか〜、社長に褒められちゃった〜！ ありがとうございます。
 
 ### resultLeader.DEMAND_RECOGNITION.A.delinquent.earnest[]
 
@@ -2592,7 +2592,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.B.standard.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.B.standard.bold[1]`: …そうですか。失礼しました。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.B.standard.bold[1]`: …そっか。悪かったわね、無理言って。
 
 ### resultLeader.DEMAND_RECOGNITION.B.standard.quiet[]
 
@@ -2616,7 +2616,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.B.composed.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.B.composed.bold[1]`: …承知しました。出過ぎたことを申しました。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.B.composed.bold[1]`: …そう。なら引くよ。言いたいことは伝わったはずだ。
 
 ### resultLeader.DEMAND_RECOGNITION.B.composed.quiet[]
 
@@ -2760,7 +2760,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.C.standard.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.standard.bold[1]`: …ご配慮ありがとうございます。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.standard.bold[1]`: …その心配りは、ありがたく受け取るわ。
 
 ### resultLeader.DEMAND_RECOGNITION.C.standard.quiet[]
 
@@ -2776,7 +2776,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.C.standard.emotional[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.standard.emotional[1]`: …社長…そういう答え方、好きです。ありがとうございます。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.standard.emotional[1]`: …社長…そういう答え方、うれしい…！ …ありがとう、ございます！
 
 ### resultLeader.DEMAND_RECOGNITION.C.standard.shy[]
 
@@ -2784,7 +2784,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.C.composed.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.composed.bold[1]`: …なるほど、そういう形ですか。ありがたく受け取ります。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.composed.bold[1]`: …ふぅん、そう来たんだ。せっかくだし、遠慮なくもらっておこうかな。
 
 ### resultLeader.DEMAND_RECOGNITION.C.composed.quiet[]
 
@@ -2816,7 +2816,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.ojousama.easygoing[1]`: あら、別の形ですの? まあ、ありがたいですわ〜。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.ojousama.easygoing[1]`: あら、別の形ですの？ まあ、ありがたいですわ〜。
 
 ### resultLeader.DEMAND_RECOGNITION.C.ojousama.earnest[]
 
@@ -2836,7 +2836,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.C.polite.quiet[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.polite.quiet[1]`: …ありがとうございます。…そっちで気にかけてくださったんですね。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.polite.quiet[1]`: …ありがとうございます。…そちらで気にかけてくださったんですね。
 
 ### resultLeader.DEMAND_RECOGNITION.C.polite.easygoing[]
 
@@ -2856,7 +2856,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.C.seductive.bold[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.seductive.bold[1]`: …そう、別の形ね。それも嬉しい、ありがとう。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.seductive.bold[1]`: ……別の形、ね。それはそれで悪くないわ。感謝する。
 
 ### resultLeader.DEMAND_RECOGNITION.C.seductive.quiet[]
 
@@ -2864,7 +2864,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.DEMAND_RECOGNITION.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.seductive.easygoing[1]`: あら、別ルート? まあ、ありがとうございます〜。
+- `F07_LINES.resultLeader.DEMAND_RECOGNITION.C.seductive.easygoing[1]`: あら、別ルート？ まあ、ありがとうございます〜。
 
 ### resultLeader.DEMAND_RECOGNITION.C.seductive.earnest[]
 
@@ -2928,7 +2928,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.standard.bold[1]`: …わかりました。気をつけます。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.standard.bold[1]`: …わかった。やりすぎないようにする。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.standard.quiet[]
 
@@ -2984,7 +2984,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.ojousama.easygoing[1]`: あら、見られてましたの? 失礼いたしましたわ〜。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.ojousama.easygoing[1]`: あら、見られてましたの？ 失礼いたしましたわ〜。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.ojousama.earnest[]
 
@@ -3024,7 +3024,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.bold[1]`: …そう。気をつけるね。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.bold[1]`: ……了解。次から気を配るわ。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.quiet[]
 
@@ -3032,7 +3032,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.easygoing[1]`: あら、バレてた? 気をつけますね〜。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.easygoing[1]`: あら、バレてた？ 気をつけますね〜。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.A.seductive.earnest[]
 
@@ -3264,7 +3264,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.standard.bold[1]`: …ご配慮、ありがとうございます。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.standard.bold[1]`: …気遣いは、ちゃんと届いてるわよ。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.standard.quiet[]
 
@@ -3288,7 +3288,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.composed.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.composed.bold[1]`: …ご配慮、ありがたく頂戴します。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.composed.bold[1]`: …その心遣い、素直に嬉しいよ。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.composed.quiet[]
 
@@ -3320,7 +3320,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.ojousama.easygoing[1]`: あら、別の手立てですの? ありがたいですわ〜。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.ojousama.easygoing[1]`: あら、別の手立てですの？ ありがたいですわ〜。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.ojousama.earnest[]
 
@@ -3368,7 +3368,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.seductive.easygoing[1]`: あら、別の形? まあ、ありがとうございます〜。
+- `F07_LINES.resultLeader.OBSERVE_RIVAL_HEAT.C.seductive.easygoing[1]`: あら、別の形？ まあ、ありがとうございます〜。
 
 ### resultLeader.OBSERVE_RIVAL_HEAT.C.seductive.earnest[]
 
@@ -3432,7 +3432,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.standard.bold[1]`: …ご迷惑おかけしました。明日から、ちゃんと出ます。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.standard.bold[1]`: …迷惑かけたわね。明日から、ちゃんと出るわよ。
 
 ### resultLeader.OBSERVE_ABSENCE.A.standard.quiet[]
 
@@ -3440,7 +3440,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.standard.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.standard.easygoing[1]`: あ、ばれてました? すみませ〜ん、明日から出ますって。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.standard.easygoing[1]`: あ、ばれてました？ すみませ〜ん、明日から出ますって。
 
 ### resultLeader.OBSERVE_ABSENCE.A.standard.earnest[]
 
@@ -3468,7 +3468,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.composed.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.composed.earnest[1]`: …申し訳ありません。立場をわきまえず、恥ずかしい限りです。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.composed.earnest[1]`: …申し訳ありません。少し先走りました。次は落ち着いて言葉を選びます。
 
 ### resultLeader.OBSERVE_ABSENCE.A.composed.emotional[]
 
@@ -3488,7 +3488,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.ojousama.easygoing[1]`: あら、ばれてましたの? 明日から出ますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.ojousama.easygoing[1]`: あら、ばれてましたの？ 明日から出ますわ〜。
 
 ### resultLeader.OBSERVE_ABSENCE.A.ojousama.earnest[]
 
@@ -3512,7 +3512,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.polite.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.polite.easygoing[1]`: あ、ばれてました〜? すみません、明日から出ます〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.polite.easygoing[1]`: あ、ばれてました〜？ すみません、明日から出ます〜。
 
 ### resultLeader.OBSERVE_ABSENCE.A.polite.earnest[]
 
@@ -3528,7 +3528,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.seductive.bold[1]`: …ごめん、社長。明日から、ちゃんと出るね。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.seductive.bold[1]`: ……悪かったわ、社長。明日からはきちんと顔を出す。
 
 ### resultLeader.OBSERVE_ABSENCE.A.seductive.quiet[]
 
@@ -3536,7 +3536,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.seductive.easygoing[1]`: あら、ばれちゃった? 明日から出るね〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.seductive.easygoing[1]`: あら、ばれちゃった？ 明日から出るね〜。
 
 ### resultLeader.OBSERVE_ABSENCE.A.seductive.earnest[]
 
@@ -3560,7 +3560,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.delinquent.easygoing[1]`: あ〜ばれてました? すんませ〜ん、明日から出まっす。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.A.delinquent.easygoing[1]`: あ〜、バレてました？ すんませ〜ん、明日から出まっす。
 
 ### resultLeader.OBSERVE_ABSENCE.A.delinquent.earnest[]
 
@@ -3600,7 +3600,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.B.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.standard.bold[1]`: …ありがとうございます。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.standard.bold[1]`: …礼を言うわ、素直に。
 
 ### resultLeader.OBSERVE_ABSENCE.B.standard.quiet[]
 
@@ -3608,7 +3608,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.B.standard.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.standard.easygoing[1]`: お、見逃してくれるんですか〜? 助かります〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.standard.easygoing[1]`: お、見逃してくれるんですか〜？ 助かります〜。
 
 ### resultLeader.OBSERVE_ABSENCE.B.standard.earnest[]
 
@@ -3656,11 +3656,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.B.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.ojousama.easygoing[1]`: まあ、見逃してくださるの? 助かりますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.ojousama.easygoing[1]`: まあ、見逃してくださるの？ 助かりますわ〜。
 
 ### resultLeader.OBSERVE_ABSENCE.B.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.ojousama.earnest[1]`: …ありがとうございますわ。お見逃しのぶん、お返しいたしますわ。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.ojousama.earnest[1]`: …ありがとうございます。お見逃しのぶん、お返しいたしますわ。
 
 ### resultLeader.OBSERVE_ABSENCE.B.ojousama.emotional[]
 
@@ -3704,7 +3704,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.B.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.seductive.easygoing[1]`: お〜、見逃してくれるの? 社長優しい〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.seductive.easygoing[1]`: お〜、見逃してくれるの？ 社長優しい〜。
 
 ### resultLeader.OBSERVE_ABSENCE.B.seductive.earnest[]
 
@@ -3728,7 +3728,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.B.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.delinquent.easygoing[1]`: マジっすか〜、社長太っ腹! 助かります〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.B.delinquent.easygoing[1]`: マジっすか〜、社長太っ腹！ 助かります〜。
 
 ### resultLeader.OBSERVE_ABSENCE.B.delinquent.earnest[]
 
@@ -3768,7 +3768,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.C.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.standard.bold[1]`: …そっちですか。…私たちのメンバーをちゃんと見てくれて、感謝します。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.standard.bold[1]`: …そっちなんだ。…うちの子たちをちゃんと見ててくれて、感謝するわよ。
 
 ### resultLeader.OBSERVE_ABSENCE.C.standard.quiet[]
 
@@ -3792,7 +3792,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.C.composed.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.composed.bold[1]`: …なるほど、そういう形ですか。ありがたく頂戴します。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.composed.bold[1]`: …へえ、そういうことか。その気遣い、ありがたく乗らせてもらうよ。
 
 ### resultLeader.OBSERVE_ABSENCE.C.composed.quiet[]
 
@@ -3824,7 +3824,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.ojousama.easygoing[1]`: あら、メンバー優先ですの? まあ、ありがたいですわ〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.ojousama.easygoing[1]`: あら、メンバー優先ですの？ まあ、ありがたいですわ〜。
 
 ### resultLeader.OBSERVE_ABSENCE.C.ojousama.earnest[]
 
@@ -3872,7 +3872,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_ABSENCE.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.seductive.easygoing[1]`: あら、私じゃなくて子たち優先? まあ、ありがたいです〜。
+- `F07_LINES.resultLeader.OBSERVE_ABSENCE.C.seductive.easygoing[1]`: あら、私じゃなくて子たち優先？ まあ、ありがたいです〜。
 
 ### resultLeader.OBSERVE_ABSENCE.C.seductive.earnest[]
 
@@ -3992,11 +3992,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.ojousama.easygoing[1]`: あら、そんな話してましたの? 注意しておきますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.ojousama.easygoing[1]`: あら、そんな話してましたの？ 注意しておきますわ〜。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.ojousama.earnest[1]`: …申し訳ありませんわ。わたくしの目が届きませんでしたわ。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.ojousama.earnest[1]`: …申し訳ありません。わたくしの目が届きませんでしたわ。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.ojousama.emotional[]
 
@@ -4032,7 +4032,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.bold[1]`: …そう。私から皆に話すね。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.bold[1]`: ……そう。皆へは私の口から通しておくわ。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.quiet[]
 
@@ -4040,7 +4040,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.easygoing[1]`: えー、そんな話してた? まあ、注意しとくね〜。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.easygoing[1]`: えー、そんな話してた？ まあ、注意しとくね〜。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.seductive.earnest[]
 
@@ -4056,7 +4056,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.bold[1]`: …っす、わかりました。あたしから言っときます。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.bold[1]`: …っす、わかりました。私から言っときます。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.quiet[]
 
@@ -4064,7 +4064,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.easygoing[1]`: えー、そんな話してました? まあ注意しときますんで〜。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.easygoing[1]`: えー、そんな話してました？ まあ注意しときますんで〜。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.delinquent.earnest[]
 
@@ -4104,7 +4104,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.B.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.B.standard.bold[1]`: …ありがとうございます。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.B.standard.bold[1]`: …ありがたいわね、それは。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.B.standard.quiet[]
 
@@ -4164,7 +4164,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.B.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.B.ojousama.earnest[1]`: …ありがとうございますわ。穏便に収まるよう努めますわ。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.B.ojousama.earnest[1]`: …ありがとうございます。穏便に収まるよう努めますわ。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.B.ojousama.emotional[]
 
@@ -4216,7 +4216,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.B.seductive.emotional[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.B.seductive.emotional[1]`: …社長、ありがとうございます。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.B.seductive.emotional[1]`: …社長。ありがとうございます……ふふ。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.B.seductive.shy[]
 
@@ -4272,7 +4272,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.standard.bold[1]`: …ご配慮、ありがとうございます。下の子にも声をかけてくださって。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.standard.bold[1]`: …下の子にも声かけてくれたのね。…そういうの、嬉しいわ。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.standard.quiet[]
 
@@ -4328,7 +4328,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.ojousama.easygoing[1]`: あら、別ルートですの? 下の子のフォロー、お願いいたしますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.ojousama.easygoing[1]`: あら、別ルートですの？ 下の子のフォロー、お願いいたしますわ〜。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.ojousama.earnest[]
 
@@ -4376,7 +4376,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.seductive.easygoing[1]`: あら、別ルートで動いてくれるの? ありがとうございます〜。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.seductive.easygoing[1]`: あら、別ルートで動いてくれるの？ ありがとうございます〜。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.seductive.earnest[]
 
@@ -4440,7 +4440,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.standard.bold[1]`: …大丈夫だと思ってましたが、…少しだけ、休ませてもらいます。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.standard.bold[1]`: …平気なつもりだったけど、…少しだけ、休ませてもらうわ。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.standard.quiet[]
 
@@ -4448,7 +4448,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.standard.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.standard.easygoing[1]`: えへへ、バレてた? じゃ、お言葉に甘えて休みまーす。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.standard.easygoing[1]`: えへへ、バレてた？ じゃ、お言葉に甘えて休みまーす。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.standard.earnest[]
 
@@ -4496,11 +4496,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.ojousama.easygoing[1]`: まあ、見ていてくださったの? ではお言葉に甘えますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.ojousama.easygoing[1]`: まあ、見ていてくださったの？ ではお言葉に甘えますわ〜。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.ojousama.earnest[1]`: …ありがとうございますわ。ご厚意に甘えさせていただきますわ。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.ojousama.earnest[1]`: …ありがとうございます。ご厚意に甘えさせていただきますわ。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.ojousama.emotional[]
 
@@ -4536,7 +4536,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.bold[1]`: …ありがとう、社長。ちょっと休むね。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.bold[1]`: ……ありがとう。少しだけ、身体を休めておくわ。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.quiet[]
 
@@ -4544,7 +4544,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.easygoing[1]`: あら、バレちゃった? じゃ、お言葉に甘えて〜。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.easygoing[1]`: あら、バレちゃった？ じゃ、お言葉に甘えて〜。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.seductive.earnest[]
 
@@ -4568,7 +4568,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.delinquent.easygoing[1]`: えへ、バレてました〜? じゃお言葉に甘えて休みまっす。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.A.delinquent.easygoing[1]`: えへ、バレてました〜？ じゃお言葉に甘えて休みまっす。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.A.delinquent.earnest[]
 
@@ -4668,7 +4668,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.B.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.B.ojousama.earnest[1]`: …ご心配ありがとうございますわ。まだ立てますわ。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.B.ojousama.earnest[1]`: …ご心配ありがとうございます。まだ立てますわ。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.B.ojousama.emotional[]
 
@@ -4704,7 +4704,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.B.seductive.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.B.seductive.bold[1]`: …大丈夫、まだ平気だよ。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.B.seductive.bold[1]`: ……平気よ。まだ倒れる気はないの。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.B.seductive.quiet[]
 
@@ -4776,7 +4776,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.standard.bold[1]`: …そっちですか。…メンバーにフォローを入れてくださると、私も楽になります。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.standard.bold[1]`: …あぁ、そっち。…メンバーにフォロー入れてくれるなら、私も楽になる。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.standard.quiet[]
 
@@ -4784,7 +4784,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.standard.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.standard.easygoing[1]`: お、メンバーケアですか? 助かりますね〜。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.standard.easygoing[1]`: お、メンバーケアですか？ 助かりますね〜。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.standard.earnest[]
 
@@ -4832,11 +4832,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.ojousama.easygoing[1]`: あら、皆のケアですの? 助かりますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.ojousama.easygoing[1]`: あら、皆のケアですの？ 助かりますわ〜。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.ojousama.earnest[1]`: …ありがとうございますわ。皆で支えていただけると、立ち直れますわ。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.ojousama.earnest[1]`: …ありがとうございます。皆で支えていただけると、立ち直れますわ。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.ojousama.emotional[]
 
@@ -4880,7 +4880,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.seductive.easygoing[1]`: あら、メンバー優先? まあ、助かります〜。
+- `F07_LINES.resultLeader.OBSERVE_FAN_PRESSURE.C.seductive.easygoing[1]`: あら、メンバー優先？ まあ、助かります〜。
 
 ### resultLeader.OBSERVE_FAN_PRESSURE.C.seductive.earnest[]
 
@@ -4944,7 +4944,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.standard.bold[1]`: …わかりました。怪我させちゃ意味がないですもんね。少し、緩めます。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.standard.bold[1]`: …わかった。怪我させたら意味ないもんね。少し、緩めるわ。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.standard.quiet[]
 
@@ -4976,7 +4976,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.composed.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.composed.easygoing[1]`: あらら、見られてました? じゃ、緩めますね〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.composed.easygoing[1]`: あらら、見られてました？ じゃ、緩めますね〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.composed.earnest[]
 
@@ -5000,11 +5000,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.ojousama.easygoing[1]`: あら、見ていらしたの? では緩めますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.ojousama.easygoing[1]`: あら、見ていらしたの？ では緩めますわ〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.ojousama.earnest[1]`: …申し訳ありませんわ。わたくしの判断が行きすぎましたわ。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.ojousama.earnest[1]`: …申し訳ありません。わたくしの判断が行きすぎましたわ。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.ojousama.emotional[]
 
@@ -5040,7 +5040,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.seductive.bold[1]`: …そうね、緩めるね。怪我させたくないし。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.A.seductive.bold[1]`: ……そうね、加減はするわ。壊してしまっては意味がないもの。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.A.seductive.quiet[]
 
@@ -5112,7 +5112,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.standard.bold[1]`: …ありがとうございます。このままで大丈夫です。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.standard.bold[1]`: …心配いらないわよ、社長。このままで行く
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.standard.quiet[]
 
@@ -5120,7 +5120,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.standard.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.standard.easygoing[1]`: お、続けていいんですね〜! やった〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.standard.easygoing[1]`: お、続けていいんですね〜！ やった〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.standard.earnest[]
 
@@ -5168,11 +5168,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.ojousama.easygoing[1]`: まあ、続けていいんですの? ありがとうございますわ〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.ojousama.easygoing[1]`: まあ、続けていいんですの？ ありがとうございますわ〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.ojousama.earnest[1]`: …ありがとうございますわ。責任はわたくしが持ちますわ。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.ojousama.earnest[1]`: …ありがとうございます。責任はわたくしが持ちますわ。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.ojousama.emotional[]
 
@@ -5192,7 +5192,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.polite.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.polite.easygoing[1]`: わ、続けていいんですか〜! ありがとうございます〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.polite.easygoing[1]`: わ、続けていいんですか〜！ ありがとうございます〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.polite.earnest[]
 
@@ -5208,7 +5208,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.seductive.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.seductive.bold[1]`: …ありがとう、社長。このまま続けるね。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.seductive.bold[1]`: ……感謝するわ、社長。このまま突き進ませてもらう。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.seductive.quiet[]
 
@@ -5216,7 +5216,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.seductive.easygoing[1]`: お〜、続けていいの? やった〜!
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.seductive.easygoing[1]`: お〜、続けていいの？ やった〜！
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.seductive.earnest[]
 
@@ -5240,7 +5240,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.delinquent.easygoing[1]`: お〜、続けていいんすか〜! やった〜!
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.B.delinquent.easygoing[1]`: お〜、続けていいんすか〜！ やった〜！
 
 ### resultLeader.OBSERVE_TRAINING_HARD.B.delinquent.earnest[]
 
@@ -5280,7 +5280,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.standard.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.standard.bold[1]`: …そっちですか。下の子の負担を見てくださって、ありがとうございます。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.standard.bold[1]`: …そこ見てたんだ。下の子の負担まで気にしてくれるなんて。…悪くないわね、社長。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.standard.quiet[]
 
@@ -5288,7 +5288,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.standard.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.standard.easygoing[1]`: あれ、私じゃなくて子たち優先? まあ、ありがたいですけど〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.standard.easygoing[1]`: あれ、私じゃなくて子たち優先？ まあ、ありがたいですけど〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.standard.earnest[]
 
@@ -5304,7 +5304,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.composed.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.composed.bold[1]`: …なるほど、下の子のケアですか。ありがたく頂戴します。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.composed.bold[1]`: …なるほど、下の子たちのケアってわけだ。その心遣いには感謝するよ。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.composed.quiet[]
 
@@ -5336,7 +5336,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.ojousama.easygoing[1]`: あら、わたくしより皆優先ですの? ありがたいですわ〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.ojousama.easygoing[1]`: あら、わたくしより皆優先ですの？ ありがたいですわ〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.ojousama.earnest[]
 
@@ -5360,7 +5360,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.polite.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.polite.easygoing[1]`: あれ、私じゃなくて子たち優先ですか〜? ありがたいです〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.polite.easygoing[1]`: あれ、私じゃなくて子たち優先ですか〜？ ありがたいです〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.polite.earnest[]
 
@@ -5384,7 +5384,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.seductive.easygoing[1]`: あら、私じゃなくて子たち? まあ、ありがたいですけどね〜。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.seductive.easygoing[1]`: あら、私じゃなくて子たち？ まあ、ありがたいですけどね〜。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.seductive.earnest[]
 
@@ -5408,7 +5408,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.delinquent.easygoing[1]`: あれ、あたしじゃなくて子たち優先っすか〜? まあありがたいっす。
+- `F07_LINES.resultLeader.OBSERVE_TRAINING_HARD.C.delinquent.easygoing[1]`: あれ、私じゃなくて子たち優先っすか〜？ まあありがたいっす。
 
 ### resultLeader.OBSERVE_TRAINING_HARD.C.delinquent.earnest[]
 
@@ -5448,7 +5448,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BOUNDARY.A.standard.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.standard.bold[1]`: …そうですね、注意します。
+- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.standard.bold[1]`: …そうね、そこは改めるわ。
 
 ### resultLeader.INCIDENT_BOUNDARY.A.standard.quiet[]
 
@@ -5508,7 +5508,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BOUNDARY.A.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.ojousama.earnest[1]`: …申し訳ありませんわ、心がけを改めますわ。
+- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.ojousama.earnest[1]`: …申し訳ありません、心がけを改めますわ。
 
 ### resultLeader.INCIDENT_BOUNDARY.A.ojousama.emotional[]
 
@@ -5544,7 +5544,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BOUNDARY.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.seductive.bold[1]`: …そう、気をつけるね。
+- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.seductive.bold[1]`: ……そう。心に留めておくわ。
 
 ### resultLeader.INCIDENT_BOUNDARY.A.seductive.quiet[]
 
@@ -5552,7 +5552,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BOUNDARY.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.seductive.easygoing[1]`: あら、配慮足りなかった? 気をつけるね〜。
+- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.A.seductive.easygoing[1]`: あら、配慮足りなかった？ 気をつけるね〜。
 
 ### resultLeader.INCIDENT_BOUNDARY.A.seductive.earnest[]
 
@@ -5616,7 +5616,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BOUNDARY.B.standard.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.B.standard.bold[1]`: …ありがとうございます。
+- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.B.standard.bold[1]`: …恩に着るわよ。
 
 ### resultLeader.INCIDENT_BOUNDARY.B.standard.quiet[]
 
@@ -5728,7 +5728,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BOUNDARY.B.seductive.emotional[]
 
-- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.B.seductive.emotional[1]`: …ありがとうございます。
+- `F07_LINES.resultLeader.INCIDENT_BOUNDARY.B.seductive.emotional[1]`: …嬉しい。ありがとうございます。
 
 ### resultLeader.INCIDENT_BOUNDARY.B.seductive.shy[]
 
@@ -5784,7 +5784,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.A.standard.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.standard.bold[1]`: …そうですね、配慮が足りませんでした。次は声をかけます。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.standard.bold[1]`: …そうね、気が回ってなかった。次は声かけるわよ。
 
 ### resultLeader.INCIDENT_BONDING.A.standard.quiet[]
 
@@ -5792,7 +5792,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.A.standard.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.standard.easygoing[1]`: え、そんなに気にしてました? ごめんなさ〜い、次は誘いますって。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.standard.easygoing[1]`: え、そんなに気にしてました？ ごめんなさ〜い、次は誘いますって。
 
 ### resultLeader.INCIDENT_BONDING.A.standard.earnest[]
 
@@ -5840,11 +5840,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.ojousama.easygoing[1]`: あら、気にしてらしたの? 次はお誘いしますわ〜。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.ojousama.easygoing[1]`: あら、気にしてらしたの？ 次はお誘いしますわ〜。
 
 ### resultLeader.INCIDENT_BONDING.A.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.ojousama.earnest[1]`: …申し訳ありませんわ。輪の外の子のお気持ち、見えてませんでしたわ。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.ojousama.earnest[1]`: …申し訳ありません。輪の外の子のお気持ち、見えてませんでしたわ。
 
 ### resultLeader.INCIDENT_BONDING.A.ojousama.emotional[]
 
@@ -5864,7 +5864,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.A.polite.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.polite.easygoing[1]`: え、気にされてました〜? ごめんなさい、次は誘いますね〜。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.polite.easygoing[1]`: え、気にされてました〜？ ごめんなさい、次は誘いますね〜。
 
 ### resultLeader.INCIDENT_BONDING.A.polite.earnest[]
 
@@ -5880,7 +5880,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.seductive.bold[1]`: …そう、次は声かけるね。ごめんなさい。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.seductive.bold[1]`: ……そう。次は先に一声かけるわ。悪かったわね。
 
 ### resultLeader.INCIDENT_BONDING.A.seductive.quiet[]
 
@@ -5888,7 +5888,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.A.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.seductive.easygoing[1]`: あら、気にしてた? ごめん、次は誘うね〜。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.seductive.easygoing[1]`: あら、気にしてた？ ごめん、次は誘うね〜。
 
 ### resultLeader.INCIDENT_BONDING.A.seductive.earnest[]
 
@@ -5912,7 +5912,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.A.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.A.delinquent.easygoing[1]`: え、気にしてました? ごめんなさ〜い、次は誘いますんで〜。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.A.delinquent.easygoing[1]`: え、気にしてました？ ごめんなさ〜い、次は誘いますんで〜。
 
 ### resultLeader.INCIDENT_BONDING.A.delinquent.earnest[]
 
@@ -5952,7 +5952,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.B.standard.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.B.standard.bold[1]`: …ありがとうございます。仲間内の付き合いも大事ですから。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.B.standard.bold[1]`: …そう言ってくれると助かる。仲間の付き合いも大事だからね。
 
 ### resultLeader.INCIDENT_BONDING.B.standard.quiet[]
 
@@ -6012,7 +6012,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.B.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.B.ojousama.earnest[1]`: …ありがとうございますわ。寛容に甘え過ぎぬよう気をつけますわ。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.B.ojousama.earnest[1]`: …ありがとうございます。寛容に甘え過ぎぬよう気をつけますわ。
 
 ### resultLeader.INCIDENT_BONDING.B.ojousama.emotional[]
 
@@ -6032,7 +6032,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_BONDING.B.polite.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_BONDING.B.polite.easygoing[1]`: ありがとうございます〜! 楽しんできます〜。
+- `F07_LINES.resultLeader.INCIDENT_BONDING.B.polite.easygoing[1]`: ありがとうございます〜！ 楽しんできます〜。
 
 ### resultLeader.INCIDENT_BONDING.B.polite.earnest[]
 
@@ -6152,7 +6152,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.A.composed.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.composed.easygoing[1]`: あらら、見られてました〜? じゃ、控えますね。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.composed.easygoing[1]`: あらら、見られてました〜？ じゃ、控えますね。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.A.composed.earnest[]
 
@@ -6176,11 +6176,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.A.ojousama.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.ojousama.easygoing[1]`: あら、見られてましたの? では控えますわ〜。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.ojousama.easygoing[1]`: あら、見られてましたの？ では控えますわ〜。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.A.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.ojousama.earnest[1]`: …申し訳ありませんわ。リングの外にまで持ち込むのは、行きすぎでしたわ。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.ojousama.earnest[1]`: …申し訳ありません。リングの外にまで持ち込むのは、行きすぎでしたわ。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.A.ojousama.emotional[]
 
@@ -6216,7 +6216,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.A.seductive.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.seductive.bold[1]`: …そう、線を引くね。客はノッてたんだけど。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.A.seductive.bold[1]`: ……線ね。引くわ。客は乗っていたのだけれど。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.A.seductive.quiet[]
 
@@ -6288,7 +6288,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.bold[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.bold[1]`: …ありがとうございます。これも仕事のうちです。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.bold[1]`: …どうも。これも仕事のうちよ。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.quiet[]
 
@@ -6296,7 +6296,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.easygoing[1]`: やった〜、社長わかってる〜! 引き続き暴れまーす。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.easygoing[1]`: やった〜、社長わかってる〜！ 引き続き暴れまーす。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.standard.earnest[]
 
@@ -6348,7 +6348,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.ojousama.earnest[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.ojousama.earnest[1]`: …ありがとうございますわ。役柄の責任、まっとういたしますわ。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.ojousama.earnest[1]`: …ありがとうございます。役柄の責任、まっとういたしますわ。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.ojousama.emotional[]
 
@@ -6368,7 +6368,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.polite.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.polite.easygoing[1]`: わ、社長わかってる〜! 引き続きやらせていただきます〜。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.polite.easygoing[1]`: わ、社長わかってる〜！ 引き続きやらせていただきます〜。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.polite.earnest[]
 
@@ -6392,7 +6392,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.seductive.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.seductive.easygoing[1]`: やった〜、社長わかってる〜! 引き続き暴れちゃう〜。
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.seductive.easygoing[1]`: やった〜、社長わかってる〜！ 引き続き暴れちゃう〜。
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.seductive.earnest[]
 
@@ -6416,7 +6416,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.delinquent.easygoing[]
 
-- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.delinquent.easygoing[1]`: やった〜、社長わかってる〜! 引き続き暴れまっす!
+- `F07_LINES.resultLeader.INCIDENT_HEEL_PROVOKE.B.delinquent.easygoing[1]`: やった〜、社長わかってる〜！ 引き続き暴れまっす！
 
 ### resultLeader.INCIDENT_HEEL_PROVOKE.B.delinquent.earnest[]
 
@@ -6992,14 +6992,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 形式: { [personality]: { [archetype]: [ lines... ] } } / 欠けたアーキタイプは normal にフォールバック（Engine.factions.getFactionLine） / 性格 6種: normal / bold / quiet / easygoing / earnest / emotional / アーキタイプ: normal / ojousama / delinquent / cool / seductive / polite / Phase 3a 叩き台: 核4アーキタイプ（normal / ojousama / delinquent / cool）+ normalフォールバック / F05: 派閥内不満分子（ringleader）のセリフ（陰口・リーダーへの不満）
 - 本数: 20
 
-- `FACTION_F05_DISSIDENT_LINES.standard.bold[1]`: あの人のやり方、もう付き合いきれねえわ。
-- `FACTION_F05_DISSIDENT_LINES.standard.bold[2]`: あたしらの声なんて、届いてないんだよ。上は。
+- `FACTION_F05_DISSIDENT_LINES.standard.bold[1]`: あの人のやり方、もう付き合いきれないわ。
+- `FACTION_F05_DISSIDENT_LINES.standard.bold[2]`: こっちの声なんて、届いてないんだよ。上は。
 - `FACTION_F05_DISSIDENT_LINES.standard.earnest[1]`: みんなで一つのはずだったのに……こんなの、違う。
 - `FACTION_F05_DISSIDENT_LINES.standard.earnest[2]`: 本当に変わってほしい。だから、声を上げなきゃ。
 - `FACTION_F05_DISSIDENT_LINES.standard.quiet[1]`: ……もう、ついていけない。
 - `FACTION_F05_DISSIDENT_LINES.standard.quiet[2]`: ……息が、できない。
 - `FACTION_F05_DISSIDENT_LINES.standard.easygoing[1]`: まー、なんていうか、ちょっと合わないんだよね、もう。
-- `FACTION_F05_DISSIDENT_LINES.standard.emotional[1]`: あたし、あの人のこと信じてたのに……ひどい！
+- `FACTION_F05_DISSIDENT_LINES.standard.emotional[1]`: 私、あの人のこと信じてたのに……ひどい！
 - `FACTION_F05_DISSIDENT_LINES.standard.emotional[2]`: もう、無理だよ……泣きたい……！
 - `FACTION_F05_DISSIDENT_LINES.standard.normal[1]`: 今のままじゃ、立ち行かない。誰かが、声を上げないと。
 - `FACTION_F05_DISSIDENT_LINES.standard.normal[2]`: 上の人には、もう期待できない。
@@ -7007,7 +7007,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FACTION_F05_DISSIDENT_LINES.delinquent.normal[1]`: 黙ってたけど、もう限界だっつーの。
 - `FACTION_F05_DISSIDENT_LINES.cool.bold[1]`: 別に文句はない。ただ、道が違うだけ。
 - `FACTION_F05_DISSIDENT_LINES.cool.quiet[1]`: ……静かに、離れたい。
-- `FACTION_F05_DISSIDENT_LINES.polite.earnest[1]`: 申し上げにくいのですが……今のままでは、わたくしたち、息が詰まります。
+- `FACTION_F05_DISSIDENT_LINES.polite.earnest[1]`: 申し上げにくいのですが……今のままでは、私たち、息が詰まります。
 - `FACTION_F05_DISSIDENT_LINES.polite.normal[1]`: 失礼ながら、意見を申し上げさせてください。
 - `FACTION_F05_DISSIDENT_LINES.ojousama.emotional[1]`: わたくし、もう耐えかねますの。このままでは、心が削れてしまいますわ。
 - `FACTION_F05_DISSIDENT_LINES.ojousama.normal[1]`: 率直に申し上げます。このままでは、わたくしたちは朽ちますわ。
@@ -7024,7 +7024,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `FACTION_F06_AMBIENT_LINES.standard.earnest[1]`: ずっと、こうして話せたらって思ってたんです。
 - `FACTION_F06_AMBIENT_LINES.standard.earnest[2]`: あの頃のこと、お互いに少しずつ……手放せたらいいですね。
 - `FACTION_F06_AMBIENT_LINES.standard.quiet[1]`: ……意外と、普通に、話せるね。
-- `FACTION_F06_AMBIENT_LINES.standard.easygoing[1]`: あはは、もう何で揉めてたんだっけ、あたしたち。
+- `FACTION_F06_AMBIENT_LINES.standard.easygoing[1]`: あはは、もう何で揉めてたんだっけ、私たち。
 - `FACTION_F06_AMBIENT_LINES.standard.emotional[1]`: ずっと、気まずかったの……嬉しい……！
 - `FACTION_F06_AMBIENT_LINES.standard.normal[1]`: ……気づけば、睨み合う理由がどこかに消えてたね。
 - `FACTION_F06_AMBIENT_LINES.standard.normal[2]`: まあ、お互い、大人になったってことかな。
@@ -7042,7 +7042,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - 本数: 15
 
 - `FACTION_F08_LEADER_LINES.standard.bold[1]`: もう言葉はいらない。リングで片をつけるだけだ。
-- `FACTION_F08_LEADER_LINES.standard.bold[2]`: あたしが勝つ。それだけの話。
+- `FACTION_F08_LEADER_LINES.standard.bold[2]`: 私が勝つ。それだけの話。
 - `FACTION_F08_LEADER_LINES.standard.earnest[1]`: これ以上は、話し合いでは済まない。わかってるはず。
 - `FACTION_F08_LEADER_LINES.standard.quiet[1]`: ……もう、逃げない。
 - `FACTION_F08_LEADER_LINES.standard.easygoing[1]`: はぁ〜あ、こうなると、もうやるしかないよね。
@@ -7065,9 +7065,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold.high[]
 
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.bold.high[1]`: あんたんとこの組、今夜で終わりだ。覚悟しときな
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.bold.high[2]`: あたしの背中にいる連中のためにも、今日は退かない
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.bold.high[3]`: あんた一人潰せば、組ごと崩れる――遠慮しねえぞ
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.bold.high[1]`: アンタんとこの組、今夜で終わりよ。覚悟しなさい
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.bold.high[2]`: 背中にいる子たちのためにも、今日は退かない
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.bold.high[3]`: アンタ一人潰せば、組ごと崩れる――遠慮はしないわよ
 
 ### standard.bold.mid[]
 
@@ -7097,7 +7097,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `FACTION_F08_PRE_MATCH_LINES_A.standard.quiet.high[1]`: ……話すことは、もうない
 - `FACTION_F08_PRE_MATCH_LINES_A.standard.quiet.high[2]`: ……行こう。リングが、待ってる
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.quiet.high[3]`: ……うちらの組のこと、悪く言う声は、ぜんぶ今日で消す
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.quiet.high[3]`: ……うちの組のこと、悪く言う声は、ぜんぶ今日で消す
 
 ### standard.quiet.mid[]
 
@@ -7110,7 +7110,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.easygoing.high[]
 
 - `FACTION_F08_PRE_MATCH_LINES_A.standard.easygoing.high[1]`: んー、こうなっちゃったら、もう仕方ないよね。やろっか
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.easygoing.high[2]`: あたしも嫌なんだけど、組のみんなが黙ってないから
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.easygoing.high[2]`: 私も嫌なんだけど、組のみんなが黙ってないから
 
 ### standard.easygoing.mid[]
 
@@ -7122,12 +7122,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.emotional.high[]
 
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.emotional.high[1]`: もう、我慢できない！　あんたんとこの組、今夜で終わりにする！
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.emotional.high[1]`: もう、我慢できない！　あなたの組、今夜で終わりにする！
 - `FACTION_F08_PRE_MATCH_LINES_A.standard.emotional.high[2]`: うちのみんなが泣いた分、ぜんぶ返してもらうから
 
 ### standard.emotional.mid[]
 
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.emotional.mid[1]`: 今日のあたし、止めても無駄だよ
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.emotional.mid[1]`: 今日の私、止めても無駄だよ
 
 ### standard.emotional.low[]
 
@@ -7135,7 +7135,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.normal.high[]
 
-- `FACTION_F08_PRE_MATCH_LINES_A.standard.normal.high[1]`: 今日のリングは、あんたとあたしのためにある
+- `FACTION_F08_PRE_MATCH_LINES_A.standard.normal.high[1]`: 今日のリングは、あなたと私のためにある
 - `FACTION_F08_PRE_MATCH_LINES_A.standard.normal.high[2]`: 言葉ではもう、何も伝わらない。だからリングで
 
 ### standard.normal.mid[]
@@ -7150,7 +7150,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `FACTION_F08_PRE_MATCH_LINES_A.delinquent.bold.high[1]`: 今夜、あんたの組は終わる。しっかり見とけよ
 - `FACTION_F08_PRE_MATCH_LINES_A.delinquent.bold.high[2]`: ヘラヘラしてられんのも今のうちだぜ
-- `FACTION_F08_PRE_MATCH_LINES_A.delinquent.bold.high[3]`: 舐めた口きいてた連中、ぜんぶ纏めてあたしが叩く
+- `FACTION_F08_PRE_MATCH_LINES_A.delinquent.bold.high[3]`: 舐めた口きいてた連中、ぜんぶ纏めて私が叩く
 
 ### delinquent.bold.mid[]
 
@@ -7188,14 +7188,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold.high[]
 
-- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.high[1]`: 上等だ。やってもらおうじゃねえか
-- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.high[2]`: 受けて立つ。あたしんとこの組も、舐められっぱなしじゃ終われねえ
+- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.high[1]`: 面白いじゃない。やってもらおうじゃないの
+- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.high[2]`: 受けて立つわ。こっちの組も、舐められっぱなしじゃ終われない
 - `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.high[3]`: そっちが来るなら、こっちも全力で潰しにいく
 
 ### standard.bold.mid[]
 
-- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.mid[1]`: いいだろう。来な
-- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.mid[2]`: あんたの覚悟、リングで見せてみろよ
+- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.mid[1]`: いいわよ。かかってきなさい
+- `FACTION_F08_PRE_MATCH_LINES_B.standard.bold.mid[2]`: アンタの覚悟、リングで見せてもらうわよ
 
 ### standard.bold.low[]
 
@@ -7242,12 +7242,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.emotional.high[]
 
-- `FACTION_F08_PRE_MATCH_LINES_B.standard.emotional.high[1]`: あんたが本気なら、あたしも本気で受ける！
+- `FACTION_F08_PRE_MATCH_LINES_B.standard.emotional.high[1]`: あなたが本気なら、私も本気で受ける！
 - `FACTION_F08_PRE_MATCH_LINES_B.standard.emotional.high[2]`: うちの子たちのこと、もう傷つけさせない！
 
 ### standard.emotional.mid[]
 
-- `FACTION_F08_PRE_MATCH_LINES_B.standard.emotional.mid[1]`: 受ける。今日は引かない
+- `FACTION_F08_PRE_MATCH_LINES_B.standard.emotional.mid[1]`: 受ける…。今日は、今日は引かない…！
 
 ### standard.emotional.low[]
 
@@ -7269,7 +7269,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### delinquent.bold.high[]
 
 - `FACTION_F08_PRE_MATCH_LINES_B.delinquent.bold.high[1]`: おう、待ってたぞ。逃がさねえからな
-- `FACTION_F08_PRE_MATCH_LINES_B.delinquent.bold.high[2]`: あたしんとこも、舐められたまま終わる気はねえ
+- `FACTION_F08_PRE_MATCH_LINES_B.delinquent.bold.high[2]`: わたしんとこも、舐められたまま終わる気はねえ
 
 ### delinquent.bold.mid[]
 
@@ -7297,13 +7297,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.bold.high[]
 
 - `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.high[1]`: これがあんたの組の限界か？　次は誰だ
-- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.high[2]`: 見たかよ。これが格の違いってやつだ
-- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.high[3]`: もう二度と、あたしらに楯突くんじゃねえぞ
+- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.high[2]`: 見た？ これが格の違いってやつよ
+- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.high[3]`: もう二度と、こっちに楯突かないことね
 
 ### standard.bold.mid[]
 
-- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.mid[1]`: ……今日は、あたしの勝ちだ
-- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.mid[2]`: 次の番、誰でも構わねえ。来な
+- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.mid[1]`: ……今日は、私の勝ち
+- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.bold.mid[2]`: 次の番、誰でも構わないわ。来なさいよ
 
 ### standard.bold.low[]
 
@@ -7352,7 +7352,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.emotional.high[]
 
 - `FACTION_F08_POST_MATCH_WINNER_LINES.standard.emotional.high[1]`: 勝った！　うちのみんなのために、勝った！
-- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.emotional.high[2]`: あんたら、もう泣かせないからね、絶対！
+- `FACTION_F08_POST_MATCH_WINNER_LINES.standard.emotional.high[2]`: あなたたち、もう泣かせないからね、絶対！
 
 ### standard.emotional.mid[]
 
@@ -7382,7 +7382,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent.bold.mid[]
 
-- `FACTION_F08_POST_MATCH_WINNER_LINES.delinquent.bold.mid[1]`: ふん。あたしの勝ちだ
+- `FACTION_F08_POST_MATCH_WINNER_LINES.delinquent.bold.mid[1]`: ふん。私の勝ちだ
 
 ### polite.earnest.high[]
 
@@ -7390,7 +7390,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### cool.quiet.high[]
 
-- `FACTION_F08_POST_MATCH_WINNER_LINES.cool.quiet.high[1]`: ……結果がすべて、だろ
+- `FACTION_F08_POST_MATCH_WINNER_LINES.cool.quiet.high[1]`: ……結果がすべて、だ
 
 ### ojousama.emotional.high[]
 
@@ -7402,8 +7402,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: 試合後 敗者セリフ（HP帯分岐）
 - 本数: 34
 
-- `FACTION_F08_POST_MATCH_LOSER_LINES.standard.bold.hp_high[1]`: ……次は、こうはいかねえ。覚えとけよ
-- `FACTION_F08_POST_MATCH_LOSER_LINES.standard.bold.hp_high[2]`: 今日のとこは、あたしの負けだ。だが、組は潰れねえ
+- `FACTION_F08_POST_MATCH_LOSER_LINES.standard.bold.hp_high[1]`: ……次は、こうはいかないわよ。覚えておきなさい
+- `FACTION_F08_POST_MATCH_LOSER_LINES.standard.bold.hp_high[2]`: 今日のところは、私の負け。でも、この組は潰れないわ
 - `FACTION_F08_POST_MATCH_LOSER_LINES.standard.bold.hp_mid[1]`: ……くそっ……まだ、終わりじゃ……
 - `FACTION_F08_POST_MATCH_LOSER_LINES.standard.bold.hp_mid[2]`: ……次、絶対に……
 - `FACTION_F08_POST_MATCH_LOSER_LINES.standard.bold.hp_low[1]`: ……っ……
@@ -7443,15 +7443,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - コード内コメント: F09 派閥対抗戦 セリフテーブル群（spec: faction-rivalry-points-spec-v0.1 §3.5） / hostility帯 (high/mid/low) で分岐する F08 と同じ形式。引きは Engine.factions._getF08LineByBand を流用。 / オープニング宣戦：A 派閥リーダーの宣言
 - 本数: 15
 
-- `FACTION_F09_OPENING_LINES_A.standard.bold.high[1]`: 今夜、あんたの組ごと踏み潰す。覚悟しときな
-- `FACTION_F09_OPENING_LINES_A.standard.bold.high[2]`: 選手全員、リングに上げな。一人残らず叩く
+- `FACTION_F09_OPENING_LINES_A.standard.bold.high[1]`: 今夜、アンタの組ごと踏み潰す。覚悟はできてるわね
+- `FACTION_F09_OPENING_LINES_A.standard.bold.high[2]`: 選手全員、リングに上げなさい。一人残らず叩く
 - `FACTION_F09_OPENING_LINES_A.standard.bold.mid[1]`: 今日が、あんたんとこの分水嶺だ
 - `FACTION_F09_OPENING_LINES_A.standard.earnest.high[1]`: 派閥同士の決着、今夜つけさせていただきます
 - `FACTION_F09_OPENING_LINES_A.standard.earnest.high[2]`: うちの組のみんなのためにも、今日は引きません
-- `FACTION_F09_OPENING_LINES_A.standard.earnest.mid[1]`: この夜が、わたしたちの答えになります
+- `FACTION_F09_OPENING_LINES_A.standard.earnest.mid[1]`: この夜が、私たちの答えになります
 - `FACTION_F09_OPENING_LINES_A.standard.quiet.high[1]`: ……今夜で、終わらせる
 - `FACTION_F09_OPENING_LINES_A.standard.easygoing.high[1]`: まあ、ここまで来ちゃったしね。今夜決めようよ
-- `FACTION_F09_OPENING_LINES_A.standard.emotional.high[1]`: わたしたち、今日で全部背負って戦います
+- `FACTION_F09_OPENING_LINES_A.standard.emotional.high[1]`: 私たち、今日で全部背負って戦います
 - `FACTION_F09_OPENING_LINES_A.standard.emotional.high[2]`: うちの組の名前、今夜傷つけさせない
 - `FACTION_F09_OPENING_LINES_A.standard.shy.high[1]`: ……今夜、組の全員で受けて立ちます
 - `FACTION_F09_OPENING_LINES_A.delinquent.bold.high[1]`: 全員揃ってるな？ じゃあ、今夜が最後だ
@@ -7467,7 +7467,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold.high[]
 
-- `FACTION_F09_OPENING_LINES_B.standard.bold.high[1]`: 上等だ。組ごと潰し合おうじゃねえか
+- `FACTION_F09_OPENING_LINES_B.standard.bold.high[1]`: 上等よ。組ごと潰し合おうじゃない
 
 ### standard.earnest.high[]
 
@@ -7484,7 +7484,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.emotional.high[]
 
-- `FACTION_F09_OPENING_LINES_B.standard.emotional.high[1]`: わたしたちも、今夜は退きません
+- `FACTION_F09_OPENING_LINES_B.standard.emotional.high[1]`: 私たちも、今夜は退きません
 
 ### standard.shy.high[]
 
@@ -7556,7 +7556,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold.mid[]
 
-- `FACTION_F09_MATCH_POST_WIN_LINES.standard.bold.mid[1]`: まだ序章だぜ
+- `FACTION_F09_MATCH_POST_WIN_LINES.standard.bold.mid[1]`: まだ序章よ
 
 ### standard.earnest.high[]
 
@@ -7568,7 +7568,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.easygoing.high[]
 
-- `FACTION_F09_MATCH_POST_WIN_LINES.standard.easygoing.high[1]`: とりあえず1つ、もらった
+- `FACTION_F09_MATCH_POST_WIN_LINES.standard.easygoing.high[1]`: とりあえず一つ、もらった
 
 ### standard.emotional.high[]
 
@@ -7590,7 +7590,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold.high[]
 
-- `FACTION_F09_MATCH_POST_LOSE_LINES.standard.bold.high[1]`: ……ちっ。次の奴で取り返してくれ
+- `FACTION_F09_MATCH_POST_LOSE_LINES.standard.bold.high[1]`: ……ちっ。次の子、取り返してちょうだい
 
 ### standard.earnest.high[]
 
@@ -7598,7 +7598,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.quiet.high[]
 
-- `FACTION_F09_MATCH_POST_LOSE_LINES.standard.quiet.high[1]`: ……すまない
+- `FACTION_F09_MATCH_POST_LOSE_LINES.standard.quiet.high[1]`: ……ごめん
 
 ### standard.easygoing.high[]
 
@@ -7621,7 +7621,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.bold.high[]
 
 - `FACTION_F09_ENDING_WIN_LINES.standard.bold.high[1]`: 勝ち越した。今夜は、うちの組の夜だ
-- `FACTION_F09_ENDING_WIN_LINES.standard.bold.high[2]`: 見たか。これがうちの組の力だ
+- `FACTION_F09_ENDING_WIN_LINES.standard.bold.high[2]`: 今の、見えた？ これがうちの組の力よ
 
 ### standard.earnest.high[]
 
@@ -7665,8 +7665,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.earnest.high[]
 
-- `FACTION_F09_ENDING_LOSE_LINES.standard.earnest.high[1]`: ……ごめんなさい、みんな。わたしの責任です
-- `FACTION_F09_ENDING_LOSE_LINES.standard.earnest.high[2]`: 今夜は、わたしたちが弱かった。立て直します
+- `FACTION_F09_ENDING_LOSE_LINES.standard.earnest.high[1]`: ……ごめんなさい、みんな。私の責任です
+- `FACTION_F09_ENDING_LOSE_LINES.standard.earnest.high[2]`: 今夜は、私たちが弱かった。立て直します
 
 ### standard.quiet.high[]
 
@@ -7694,7 +7694,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES.standard.bold.high[1]`: 今夜、あんたの座は降ろさせてもらう
 - `INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES.standard.bold.high[2]`: ずっと、あんたの背中ばっか見てきた。今日で終わりにする
-- `INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES.standard.bold.high[3]`: リーダー――その肩書、重そうだな。譲ってもらうぜ
+- `INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES.standard.bold.high[3]`: リーダー――その肩書、重そうね。譲ってもらうわよ
 
 ### standard.earnest.high[]
 
@@ -7728,7 +7728,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### delinquent.bold.high[]
 
 - `INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES.delinquent.bold.high[1]`: 黙って退け、なんて言わねえ。リングで証明してやる
-- `INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES.delinquent.bold.high[2]`: あたしが上に立つ。それだけだ
+- `INTERNAL_CHALLENGE_PRE_CHALLENGER_LINES.delinquent.bold.high[2]`: 私が上に立つ。それだけだ
 
 ### cool.bold.high[]
 
@@ -7746,7 +7746,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.bold.high[]
 
 - `INTERNAL_CHALLENGE_PRE_LEADER_LINES.standard.bold.high[1]`: 上等。叩き潰してやる
-- `INTERNAL_CHALLENGE_PRE_LEADER_LINES.standard.bold.high[2]`: 若いの、その意気だけは買ってやる。リングは別だがな
+- `INTERNAL_CHALLENGE_PRE_LEADER_LINES.standard.bold.high[2]`: 新人さん、その意気だけは買ってあげる。リングは別だけどね
 
 ### standard.earnest.high[]
 
@@ -7763,7 +7763,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.easygoing.high[]
 
-- `INTERNAL_CHALLENGE_PRE_LEADER_LINES.standard.easygoing.high[1]`: おう、来るかい。じゃあ行こう
+- `INTERNAL_CHALLENGE_PRE_LEADER_LINES.standard.easygoing.high[1]`: お、来るんだ。じゃあ行こっか
 
 ### standard.shy.high[]
 
@@ -7788,7 +7788,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold.high[]
 
-- `INTERNAL_CHALLENGE_POST_WINNER_LINES.standard.bold.high[1]`: これで、あたしが先頭に立つ。文句あるか
+- `INTERNAL_CHALLENGE_POST_WINNER_LINES.standard.bold.high[1]`: これで、私が先頭に立つ。文句ある？
 - `INTERNAL_CHALLENGE_POST_WINNER_LINES.standard.bold.high[2]`: 後ろのみんな、ついて来な。ここからだ
 
 ### standard.earnest.high[]
@@ -7806,7 +7806,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.easygoing.high[]
 
-- `INTERNAL_CHALLENGE_POST_WINNER_LINES.standard.easygoing.high[1]`: あー、勝っちゃったか。じゃ、頑張りますわ
+- `INTERNAL_CHALLENGE_POST_WINNER_LINES.standard.easygoing.high[1]`: あー、勝っちゃったか。じゃ、やってみるね
 
 ### standard.shy.high[]
 
@@ -7814,23 +7814,23 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.normal.high[]
 
-- `INTERNAL_CHALLENGE_POST_WINNER_LINES.standard.normal.high[1]`: 勝った。これからはわたしが先頭に立つ
+- `INTERNAL_CHALLENGE_POST_WINNER_LINES.standard.normal.high[1]`: 勝った。これからは私が先頭に立つ
 
 ## `INTERNAL_CHALLENGE_POST_LOSER_LINES`
 
 - 出典: `src/data-faction-dialogue.js`
 - 本数: 21
 
-- `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.bold.hp_high[1]`: ……次はねえぞ。覚えとけ
+- `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.bold.hp_high[1]`: ……次はないわ。忘れないことね
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.bold.hp_high[2]`: ふん、今日は譲ってやる。それだけだ
-- `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.bold.hp_mid[1]`: ……認めるしかねえな、今日は
+- `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.bold.hp_mid[1]`: ……認めるしかないわね、今日は
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.bold.hp_low[1]`: ……強かった
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.earnest.hp_high[1]`: ……あなたの方が、上でした。素直に認めます
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.earnest.hp_high[2]`: あとは、お任せします。立派に、組を率いてください
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.earnest.hp_mid[1]`: ……負けました。次は、支える側に回ります
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.earnest.hp_low[1]`: ……託します
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.quiet.hp_high[1]`: ……負けた
-- `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.quiet.hp_mid[1]`: ……うむ
+- `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.quiet.hp_mid[1]`: ……ええ
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.emotional.hp_high[1]`: ……ごめんね、みんな。守れなかった
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.emotional.hp_mid[1]`: ……うちの背中、もう、頼りにならないかな
 - `INTERNAL_CHALLENGE_POST_LOSER_LINES.standard.emotional.hp_low[1]`: ……ごめん

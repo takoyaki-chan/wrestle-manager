@@ -102,7 +102,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.bond_80_up.shy.cool[2]`: …隣にいるだけで…違うんです…
 - `GLIMPSE_A_LINES.bond_80_up.shy.seductive[1]`: あの人がいなかったら…私、とっくに壊れてたの…
 - `GLIMPSE_A_LINES.bond_80_up.shy.seductive[2]`: 隣にいてくれるだけで…なんだって頑張れちゃう…
-- `GLIMPSE_A_LINES.bond_80_up.shy.polite[1]`: あの方がいなければ…私、とっくに駄目になっていたと思います…
+- `GLIMPSE_A_LINES.bond_80_up.shy.polite[1]`: あの方がいなければ…わたし、とっくに駄目になっていたと思います…
 - `GLIMPSE_A_LINES.bond_80_up.shy.polite[2]`: 隣にいてくださるだけで…なんでも頑張れる気がするんです…
 - `GLIMPSE_A_LINES.bond_80_up.shy.composed[1]`: …あの人がいなかったら、私はとうに折れてた。…そう思う
 - `GLIMPSE_A_LINES.bond_80_up.shy.composed[2]`: …隣にいてくれるだけでいい。…それで、なんとかなる
@@ -186,8 +186,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.bond_59_down.shy.cool[2]`: …前と違う…私のせい…かな…
 - `GLIMPSE_A_LINES.bond_59_down.shy.seductive[1]`: 最近…目を合わせるのが怖いの…私、何かしちゃったのかな…
 - `GLIMPSE_A_LINES.bond_59_down.shy.seductive[2]`: あの人の態度が…前と違う…私のせい…よね…
-- `GLIMPSE_A_LINES.bond_59_down.shy.polite[1]`: 最近…目を合わせるのが怖くて…私、何かしてしまったんでしょうか…
-- `GLIMPSE_A_LINES.bond_59_down.shy.polite[2]`: あの方の態度が…前と違うんです…私のせい…ですよね…
+- `GLIMPSE_A_LINES.bond_59_down.shy.polite[1]`: 最近…目を合わせるのが怖くて…わたし、何かしてしまったんでしょうか…
+- `GLIMPSE_A_LINES.bond_59_down.shy.polite[2]`: あの方の態度が…前と違うんです…わたしのせい…ですよね…
 - `GLIMPSE_A_LINES.bond_59_down.shy.composed[1]`: …目を合わせるのが怖い。…何かしたかな、私
 - `GLIMPSE_A_LINES.bond_59_down.shy.composed[2]`: …前と態度が違う。…私のせいだろうね
 - `GLIMPSE_A_LINES.bond_59_down.shy.standard[1]`: 最近…目を合わせるのが怖い…私、何かしちゃったのかな…
@@ -330,7 +330,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.rivalry_30_up.shy.seductive[1]`: あの人のこと考えると…胸がきゅってなるの…負けたくない…
 - `GLIMPSE_A_LINES.rivalry_30_up.shy.seductive[2]`: 練習してるのを見かけると…私も走り出したくなっちゃう…
 - `GLIMPSE_A_LINES.rivalry_30_up.shy.polite[1]`: あの方のことを考えると…胸が締めつけられて…負けたくないんです…
-- `GLIMPSE_A_LINES.rivalry_30_up.shy.polite[2]`: 練習しているのを見かけると…私も走り出したくなります…
+- `GLIMPSE_A_LINES.rivalry_30_up.shy.polite[2]`: 練習しているのを見かけると…わたしも走り出したくなります…
 - `GLIMPSE_A_LINES.rivalry_30_up.shy.composed[1]`: …考えると胸が締めつけられる。…負けたくないな
 - `GLIMPSE_A_LINES.rivalry_30_up.shy.composed[2]`: …あの人が走ってるのを見ると、私も動きたくなる
 - `GLIMPSE_A_LINES.rivalry_30_up.shy.standard[1]`: あの人のこと…考えると胸がきゅってなる…負けたくない…
@@ -373,7 +373,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.rivalry_30_up.earnest.polite[1]`: 勝つために、もっと努力しなければなりません
 - `GLIMPSE_A_LINES.rivalry_30_up.earnest.composed[1]`: …超えるべき相手が見えた。…やるしかない
 - `GLIMPSE_A_LINES.rivalry_50_up.normal.standard[1]`: 絶対に負けられない。絶対に
-- `GLIMPSE_A_LINES.rivalry_50_up.normal.standard[2]`: 名前を聞くだけで拳が握りしまる
+- `GLIMPSE_A_LINES.rivalry_50_up.normal.standard[2]`: 名前を聞くだけで、拳に力がこもる
 - `GLIMPSE_A_LINES.rivalry_50_up.normal.ojousama[1]`: 何としてでも超えてみせますわ
 - `GLIMPSE_A_LINES.rivalry_50_up.normal.delinquent[1]`: 絶対ぶっ倒す。覚悟しろ
 - `GLIMPSE_A_LINES.rivalry_50_up.normal.seductive[1]`: どうしても許せない。必ず私が勝つわ
@@ -496,7 +496,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.rivalry_70_up.shy.cool[2]`: …逃げたい。…でも、逃げない…
 - `GLIMPSE_A_LINES.rivalry_70_up.shy.seductive[1]`: あの人がいなかったら…今の私はいないの。それだけは…わかる…
 - `GLIMPSE_A_LINES.rivalry_70_up.shy.seductive[2]`: 逃げたい…でも…あの人からだけは逃げちゃダメ…
-- `GLIMPSE_A_LINES.rivalry_70_up.shy.polite[1]`: あの方がいなければ…今の私はいません。それだけは…わかるんです…
+- `GLIMPSE_A_LINES.rivalry_70_up.shy.polite[1]`: あの方がいなければ…今のわたしはいません。それだけは…わかるんです…
 - `GLIMPSE_A_LINES.rivalry_70_up.shy.polite[2]`: 逃げたい…でも…あの方からだけは逃げてはいけない…
 - `GLIMPSE_A_LINES.rivalry_70_up.shy.composed[1]`: …あの人がいなかったら、今の私はいない。…それだけは分かる
 - `GLIMPSE_A_LINES.rivalry_70_up.shy.composed[2]`: …逃げたい。でも、あの人からだけは逃げられないな
@@ -643,7 +643,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.trust_below_35.bold.polite[2]`: ここにいていいのか…考え直す時期かもしれません
 - `GLIMPSE_A_LINES.trust_below_35.bold.standard[1]`: この扱いは何？ 私の実力、わかってるの
 - `GLIMPSE_A_LINES.trust_below_35.bold.standard[2]`: ここにいていいのか…考え直す時期かもしれない
-- `GLIMPSE_A_LINES.trust_below_35.bold.delinquent[1]`: なめんじゃねぇぞ。あたしをもっと使え
+- `GLIMPSE_A_LINES.trust_below_35.bold.delinquent[1]`: なめんじゃねぇぞ。私をもっと使え
 - `GLIMPSE_A_LINES.trust_below_35.bold.ojousama[1]`: わたくしの価値をご理解いただけていませんわね
 - `GLIMPSE_A_LINES.trust_below_35.bold.composed[1]`: …この扱いは、ちょっとどうかと思うけど
 - `GLIMPSE_A_LINES.trust_below_35.quiet.ojousama[1]`: ……ここに身を置いてよいのか、分からなくなりました
@@ -657,7 +657,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.trust_below_35.shy.delinquent[1]`: …ここにあたしの居場所なんて…あんのかな……
 - `GLIMPSE_A_LINES.trust_below_35.shy.cool[1]`: …私の居場所は…ここに…あるのか……
 - `GLIMPSE_A_LINES.trust_below_35.shy.seductive[1]`: …ここに私の居場所なんて…あるのかしら……
-- `GLIMPSE_A_LINES.trust_below_35.shy.polite[1]`: …ここに私の居場所なんて…あるんでしょうか……
+- `GLIMPSE_A_LINES.trust_below_35.shy.polite[1]`: …ここにわたしの居場所なんて…あるんでしょうか……
 - `GLIMPSE_A_LINES.trust_below_35.shy.composed[1]`: …私の居場所、ここにあるのかな。…分からないね
 - `GLIMPSE_A_LINES.trust_below_35.shy.standard[1]`: …ここに私の居場所なんて…あるのかな……
 - `GLIMPSE_A_LINES.trust_below_35.easygoing.ojousama[1]`: う〜ん…近ごろ少し胸がすっきりしません…
@@ -710,7 +710,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.trust_below_20.bold.polite[2]`: この扱いは許せません。覚えておいてください
 - `GLIMPSE_A_LINES.trust_below_20.bold.standard[1]`: ふざけないで。私の価値がわからないなら、もう付き合いきれない
 - `GLIMPSE_A_LINES.trust_below_20.bold.standard[2]`: この扱いは許せない。覚えておいて
-- `GLIMPSE_A_LINES.trust_below_20.bold.delinquent[1]`: あたしを舐めてんなら出てってやるよ。後悔するなよ
+- `GLIMPSE_A_LINES.trust_below_20.bold.delinquent[1]`: 私を舐めてんなら出てってやるよ。後悔するなよ
 - `GLIMPSE_A_LINES.trust_below_20.bold.composed[1]`: …もう付き合いきれないかな。…覚えておいて
 - `GLIMPSE_A_LINES.trust_below_20.quiet.ojousama[1]`: ……（静かに荷を纏めはじめている）
 - `GLIMPSE_A_LINES.trust_below_20.quiet.ojousama[2]`: ……もう、心が動きません
@@ -774,7 +774,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.trust_above_75.normal.standard[1]`: この団体に来てよかった。ここが自分の居場所だ
 - `GLIMPSE_A_LINES.trust_above_75.normal.standard[2]`: みんなと一緒にもっと上を目指したい
 - `GLIMPSE_A_LINES.trust_above_75.normal.ojousama[1]`: ここがわたくしの居場所ですわ。誇りに思います
-- `GLIMPSE_A_LINES.trust_above_75.normal.delinquent[1]`: ここはあたしの場所だ。誰にも渡さねぇ
+- `GLIMPSE_A_LINES.trust_above_75.normal.delinquent[1]`: ここは私の場所だ。誰にも渡さねぇ
 - `GLIMPSE_A_LINES.trust_above_75.normal.seductive[1]`: ここでなら…私らしくいられるわ
 - `GLIMPSE_A_LINES.trust_above_75.normal.polite[1]`: この団体の一員でいられて…本当に幸せです
 - `GLIMPSE_A_LINES.trust_above_75.normal.cool[1]`: ここが…自分の場所だ
@@ -787,7 +787,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_A_LINES.trust_above_75.bold.polite[2]`: この団体を背負っていく覚悟はできています
 - `GLIMPSE_A_LINES.trust_above_75.bold.standard[1]`: ここが最高の場所。私がもっと強くしてみせる
 - `GLIMPSE_A_LINES.trust_above_75.bold.standard[2]`: この団体を背負っていく覚悟はできてるよ
-- `GLIMPSE_A_LINES.trust_above_75.bold.delinquent[1]`: ここは最高だ。あたしがてっぺんまで連れてってやるよ
+- `GLIMPSE_A_LINES.trust_above_75.bold.delinquent[1]`: ここは最高だ。私がてっぺんまで連れてってやるよ
 - `GLIMPSE_A_LINES.trust_above_75.bold.ojousama[1]`: この団体の看板、わたくしが背負って差し上げますわ
 - `GLIMPSE_A_LINES.trust_above_75.bold.composed[1]`: …ここが最高の場所だ。…もっと強くしてみせる
 - `GLIMPSE_A_LINES.trust_above_75.quiet.ojousama[1]`: ……ここにいたい。いつまでも
@@ -885,7 +885,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `GLIMPSE_HOTSTREAK_END_LINES.delinquent.bold[1]`: 調子戻っちまったけど、あの感覚は覚えたぜ
 - `GLIMPSE_HOTSTREAK_END_LINES.delinquent.easygoing[1]`: 終わっちまったかー。まぁ次また来るっしょ
 - `GLIMPSE_HOTSTREAK_END_LINES.seductive.normal[1]`: あら、いつもの私に戻ったみたい。でも悪くない気分よ
-- `GLIMPSE_HOTSTREAK_END_LINES.seductive.bold[1]`: ふふ、あの輝きは一時的だったみたいね。でもいい夢だったわ
+- `GLIMPSE_HOTSTREAK_END_LINES.seductive.bold[1]`: ふふ、あの輝きも一度きり……なんて言うと思った？すぐに取り戻してみせるわ。
 - `GLIMPSE_HOTSTREAK_END_LINES.seductive.quiet[1]`: ………終わったわね。…でもまだよ
 - `GLIMPSE_HOTSTREAK_END_LINES.seductive.easygoing[1]`: あらら、魔法が解けちゃったわ〜。でも楽しかった
 - `GLIMPSE_HOTSTREAK_END_LINES.seductive.emotional[1]`: 勢いが止まったわ……っ……ふふ、また始めればいいのよ……
@@ -909,7 +909,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: P6: Glimpse B層 セリフデータ
-- 本数: 305
+- 本数: 371
 
 ### GL-01.win.standard.normal[]
 
@@ -918,7 +918,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.win.standard.bold[]
 
-- `GLIMPSE_B_LINES.GL-01.win.standard.bold[1]`: 楽勝！ わたしに勝てるわけないでしょ
+- `GLIMPSE_B_LINES.GL-01.win.standard.bold[1]`: 楽勝！ 私に勝てるわけないでしょ
 - `GLIMPSE_B_LINES.GL-01.win.standard.bold[2]`: 当たり前よ。この程度で負けるわけないじゃない
 
 ### GL-01.win.standard.quiet[]
@@ -948,7 +948,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.win.ojousama.normal[]
 
-- `GLIMPSE_B_LINES.GL-01.win.ojousama.normal[1]`: 勝利。当然の結果ですけどね
+- `GLIMPSE_B_LINES.GL-01.win.ojousama.normal[1]`: 勝てたわ。……積み上げたものが、出ただけね
+
+### GL-01.win.ojousama.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.win.ojousama.earnest[1]`: ありがとうございますわ……皆様の声援、確かに届きましたの
 
 ### GL-01.win.delinquent.normal[]
 
@@ -962,13 +966,34 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.win.seductive.normal[1]`: ふふ、今日も勝ち。気分がいいわ
 
+### GL-01.win.seductive.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.win.seductive.bold[1]`: ふ……いい試合、だったわ
+
+### GL-01.win.seductive.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.win.seductive.quiet[1]`: ……勝った
+
 ### GL-01.win.seductive.emotional[]
 
 - `GLIMPSE_B_LINES.GL-01.win.seductive.emotional[1]`: 勝ったわ……っ……ふふ、嬉しい……
 
+### GL-01.win.seductive.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.win.seductive.earnest[1]`: ふふ……ここまで、こられたのですね
+
 ### GL-01.win.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.win.polite.normal[1]`: 勝てました。応援のおかげです
+- `GLIMPSE_B_LINES.GL-01.win.polite.normal[2]`: 勝てました……応援、ありがとうございました
+
+### GL-01.win.polite.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.win.polite.bold[1]`: よっしゃ……!まだ終わらない!
+
+### GL-01.win.polite.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.win.polite.quiet[1]`: ……勝利、いたしました
 
 ### GL-01.win.polite.shy[]
 
@@ -986,6 +1011,30 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-01.win.cool.bold[]
 
 - `GLIMPSE_B_LINES.GL-01.win.cool.bold[1]`: 勝った。次も同じだ
+
+### GL-01.win.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-01.win.composed.normal[1]`: …勝ったね。…こんなもんかな
+
+### GL-01.win.composed.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.win.composed.bold[1]`: …当然。…まだまだだけどね
+
+### GL-01.win.composed.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.win.composed.quiet[1]`: ……悪くない
+
+### GL-01.win.composed.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-01.win.composed.easygoing[1]`: …勝った〜。…いい感じだね
+
+### GL-01.win.composed.emotional[]
+
+- `GLIMPSE_B_LINES.GL-01.win.composed.emotional[1]`: …っ…勝てた。…よかった
+
+### GL-01.win.composed.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.win.composed.earnest[1]`: …勝てた。…次に繋げよう
 
 ### GL-01.loss.standard.normal[]
 
@@ -1025,6 +1074,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.loss.ojousama.normal[1]`: この敗北…受け入れがたいわね
 
+### GL-01.loss.ojousama.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.ojousama.earnest[1]`: ……申し訳、ございませんわ……
+
 ### GL-01.loss.delinquent.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.loss.delinquent.normal[1]`: ちっ…次は絶対ぶっ倒す
@@ -1037,13 +1090,34 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.loss.seductive.normal[1]`: 負けたのね…屈辱だわ
 
+### GL-01.loss.seductive.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.seductive.bold[1]`: ふ……まだ、足りなかった、みたいね
+
+### GL-01.loss.seductive.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.seductive.quiet[1]`: ……負けた
+
 ### GL-01.loss.seductive.emotional[]
 
 - `GLIMPSE_B_LINES.GL-01.loss.seductive.emotional[1]`: 負けた……っ……悔しい……
 
+### GL-01.loss.seductive.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.seductive.earnest[1]`: ……まだ、わたし、足りませんわね……
+
 ### GL-01.loss.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.loss.polite.normal[1]`: 負けてしまいました…申し訳ないです
+- `GLIMPSE_B_LINES.GL-01.loss.polite.normal[2]`: ……すみません。次は、必ず
+
+### GL-01.loss.polite.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.polite.bold[1]`: くそっ……!こんなはず、じゃなかったのに……っ
+
+### GL-01.loss.polite.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.polite.quiet[1]`: ……完敗、です
 
 ### GL-01.loss.polite.shy[]
 
@@ -1057,6 +1131,30 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-01.loss.cool.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.loss.cool.normal[1]`: ……足りないか
+
+### GL-01.loss.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.composed.normal[1]`: …負けたか。…次だね
+
+### GL-01.loss.composed.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.composed.bold[1]`: …こんなはずじゃない。…次は返す
+
+### GL-01.loss.composed.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.composed.quiet[1]`: ……足りなかった
+
+### GL-01.loss.composed.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.composed.easygoing[1]`: …負けちゃったか。…まあ次があるよ
+
+### GL-01.loss.composed.emotional[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.composed.emotional[1]`: …っ…悔しい
+
+### GL-01.loss.composed.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.loss.composed.earnest[1]`: …負けた原因は分かってる。…次に活かす
 
 ### GL-01.goodLoss.standard.normal[]
 
@@ -1096,6 +1194,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.goodLoss.ojousama.normal[1]`: 敗北は悔しいですけど…素晴らしい試合でした
 
+### GL-01.goodLoss.ojousama.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.ojousama.earnest[1]`: ……素晴らしい試合でしたわ、ありがとうございましたの
+
 ### GL-01.goodLoss.delinquent.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.goodLoss.delinquent.normal[1]`: 負けたけど…あいつ、やるじゃねぇか
@@ -1104,13 +1206,34 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.goodLoss.seductive.normal[1]`: 負けは負け。でも…悪くない戦いだったわ
 
+### GL-01.goodLoss.seductive.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.seductive.bold[1]`: ふふ……これは、これで、悪くないわね
+
+### GL-01.goodLoss.seductive.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.seductive.quiet[1]`: ……届かなかった。でも、見えた
+
 ### GL-01.goodLoss.seductive.emotional[]
 
 - `GLIMPSE_B_LINES.GL-01.goodLoss.seductive.emotional[1]`: 負けたけど……っ……ふふ、出し切れたの……
 
+### GL-01.goodLoss.seductive.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.seductive.earnest[1]`: ふ……貴女、強いのね……
+
 ### GL-01.goodLoss.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.goodLoss.polite.normal[1]`: 負けてしまいましたが…良い試合ができたと思います
+- `GLIMPSE_B_LINES.GL-01.goodLoss.polite.normal[2]`: ……負けましたが、後悔はないです
+
+### GL-01.goodLoss.polite.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.polite.bold[1]`: 負けたけど……!わたし、全部出した!
+
+### GL-01.goodLoss.polite.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.polite.quiet[1]`: ……よく、やれました
 
 ### GL-01.goodLoss.polite.shy[]
 
@@ -1121,6 +1244,30 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.goodLoss.cool.normal[1]`: ……負けた。だが、後悔はない
 
+### GL-01.goodLoss.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.composed.normal[1]`: …負けたけど…悪くない試合だった
+
+### GL-01.goodLoss.composed.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.composed.bold[1]`: …負けは負け。…でもいい試合だった
+
+### GL-01.goodLoss.composed.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.composed.quiet[1]`: ……負けた。…でも、悪くない
+
+### GL-01.goodLoss.composed.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.composed.easygoing[1]`: …いい試合だったなぁ。…負けたけどね
+
+### GL-01.goodLoss.composed.emotional[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.composed.emotional[1]`: …っ…認める。…いい試合だった
+
+### GL-01.goodLoss.composed.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.goodLoss.composed.earnest[1]`: …いい試合だった。…この経験を糧にする
+
 ### GL-01.greatWin.standard.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.greatWin.standard.normal[1]`: 最高の試合で勝てた…！ この感覚を忘れない
@@ -1128,8 +1275,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.greatWin.standard.bold[]
 
-- `GLIMPSE_B_LINES.GL-01.greatWin.standard.bold[1]`: これがあたしの実力よ！ 最高の試合で最高の勝利！
-- `GLIMPSE_B_LINES.GL-01.greatWin.standard.bold[2]`: 見たか！ これがあたしの全力だ！
+- `GLIMPSE_B_LINES.GL-01.greatWin.standard.bold[1]`: これが私の実力よ！ 最高の試合で最高の勝利！
+- `GLIMPSE_B_LINES.GL-01.greatWin.standard.bold[2]`: 見たでしょ！ これが私の全力よ！
 
 ### GL-01.greatWin.standard.quiet[]
 
@@ -1160,6 +1307,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.greatWin.ojousama.normal[1]`: 素晴らしい勝利ですわ。この舞台に相応しい試合でした
 
+### GL-01.greatWin.ojousama.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.ojousama.earnest[1]`: ……皆様のおかげですわ。本当に、本当に、ありがとうございますの
+
 ### GL-01.greatWin.delinquent.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.greatWin.delinquent.normal[1]`: 最高の試合で最高の結果だ。文句ねぇだろ
@@ -1168,13 +1319,34 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.greatWin.seductive.normal[1]`: 完璧な夜ね…最高の気分だわ
 
+### GL-01.greatWin.seductive.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.seductive.bold[1]`: ふふ……最高の、夜ね
+
+### GL-01.greatWin.seductive.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.seductive.quiet[1]`: ……獲った
+
 ### GL-01.greatWin.seductive.emotional[]
 
 - `GLIMPSE_B_LINES.GL-01.greatWin.seductive.emotional[1]`: 最高の勝利……っ……ふふ、震えてるの……
 
+### GL-01.greatWin.seductive.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.seductive.earnest[1]`: ……夢を、見ているみたい……ですわね
+
 ### GL-01.greatWin.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-01.greatWin.polite.normal[1]`: 最高の試合で勝利できました。感無量です
+- `GLIMPSE_B_LINES.GL-01.greatWin.polite.normal[2]`: ……勝てた。信じられません
+
+### GL-01.greatWin.polite.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.polite.bold[1]`: 見ろよ!!これがわたしだ!!
+
+### GL-01.greatWin.polite.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.polite.quiet[1]`: ……勝ち、ました
 
 ### GL-01.greatWin.polite.shy[]
 
@@ -1185,6 +1357,30 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-01.greatWin.cool.normal[1]`: ……完璧だった
 
+### GL-01.greatWin.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.composed.normal[1]`: …最高の試合で勝てた。…こういう日もあるね
+
+### GL-01.greatWin.composed.bold[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.composed.bold[1]`: …上等。…これが実力だ
+
+### GL-01.greatWin.composed.quiet[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.composed.quiet[1]`: ……完璧に近かった
+
+### GL-01.greatWin.composed.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.composed.easygoing[1]`: …最高だね。…こういう試合のためにやってる
+
+### GL-01.greatWin.composed.emotional[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.composed.emotional[1]`: …っ…最高だ。…泣きそう
+
+### GL-01.greatWin.composed.earnest[]
+
+- `GLIMPSE_B_LINES.GL-01.greatWin.composed.earnest[1]`: …全てを出し切って勝てた。…これ以上はない
+
 ### GL-02.standard.normal[]
 
 - `GLIMPSE_B_LINES.GL-02.standard.normal[1]`: 今日の練習はいい感じだ
@@ -1193,7 +1389,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-02.standard.bold[]
 
 - `GLIMPSE_B_LINES.GL-02.standard.bold[1]`: まだまだ！ もっと追い込むよ！
-- `GLIMPSE_B_LINES.GL-02.standard.bold[2]`: こんなもんで満足できるない！ 次！
+- `GLIMPSE_B_LINES.GL-02.standard.bold[2]`: こんなもんで満足できない！ 次！
 
 ### GL-02.standard.quiet[]
 
@@ -1236,18 +1432,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-02.seductive.normal[1]`: 汗を流すのも悪くないわね
 
-### GL-02.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-02.seductive.emotional[1]`: 今日は……っ……ふふ、よろしくね……
-
 ### GL-02.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-02.polite.normal[1]`: 今日も精一杯練習させていただきます
-
-### GL-02.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-02.polite.shy[1]`: あ、あの…今日は、よろしくお願いいたします…
-- `GLIMPSE_B_LINES.GL-02.polite.shy[2]`: 頑張ります…
 
 ### GL-02.polite.earnest[]
 
@@ -1256,6 +1443,94 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-02.cool.normal[]
 
 - `GLIMPSE_B_LINES.GL-02.cool.normal[1]`: ……集中。あと一セット
+
+### GL-02.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-02.composed.normal[1]`: …まあ、いい感じだ
+
+### GL-02.composed.bold[]
+
+- `GLIMPSE_B_LINES.GL-02.composed.bold[1]`: …まだまだ。もう一本
+
+### GL-02.composed.quiet[]
+
+- `GLIMPSE_B_LINES.GL-02.composed.quiet[1]`: ……（黙々と続けている）
+
+### GL-02.composed.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-02.composed.easygoing[1]`: …いい汗だね
+
+### GL-02.composed.emotional[]
+
+- `GLIMPSE_B_LINES.GL-02.composed.emotional[1]`: …っ…まだやれる
+
+### GL-02.composed.earnest[]
+
+- `GLIMPSE_B_LINES.GL-02.composed.earnest[1]`: …一つずつ、着実に
+
+### GL-02-hostile.standard.normal[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[1]`: あいつのことを考えると、練習に身が入らない…
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[2]`: 次に当たったとき…絶対に見てろよ
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[3]`: なんであいつが同じ場所にいるんだ。意味わからん
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[4]`: …練習中に思い出すな。腹が立って仕方ない
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[5]`: こっちがどれだけ頑張っても、あいつのことが頭から離れない
+
+### GL-02-hostile.standard.bold[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.bold[1]`: 次は絶対やってやる。燃えてきた！
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.bold[2]`: あいつがいる限り、手を抜けるわけがない
+
+### GL-02-hostile.standard.quiet[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.quiet[1]`: ……（道具に八つ当たりしている）
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.quiet[2]`: ……（黙々とやっているが、目が怖い）
+
+### GL-02-hostile.standard.shy[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.shy[1]`: 怖い…でも…負けたくない…
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.shy[2]`: あの子がいると思うと、うまく練習できなくて…
+
+### GL-02-hostile.standard.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.easygoing[1]`: うーん…なんか気になっちゃうなあ、あの子のこと
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.easygoing[2]`: あいつのこと考えると力入っちゃうわ。まあいっか
+
+### GL-02-hostile.standard.emotional[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.emotional[1]`: 悔しい…！あいつの顔を見たくない…！
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.emotional[2]`: なんで…なんであいつのことが頭から消えないの…！
+
+### GL-02-hostile.standard.earnest[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.earnest[1]`: 私情を持ち込むな、と自分に言い聞かせているが…難しい
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.earnest[2]`: 集中できていない自分が、情けない…
+
+### GL-02-hostile.ojousama.normal[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.ojousama.normal[1]`: あの方と同じ空間にいるだけで、集中が乱れますわ…
+- `GLIMPSE_B_LINES.GL-02-hostile.ojousama.normal[2]`: …今日もあの顔が頭をよぎった。本当に、困ります
+
+### GL-02-hostile.delinquent.normal[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.delinquent.normal[1]`: 次は絶対やってやる。絶対に…！
+- `GLIMPSE_B_LINES.GL-02-hostile.delinquent.normal[2]`: あいつのことばっか考えてたら、バーベル落としそうになった
+
+### GL-02-hostile.seductive.normal[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.seductive.normal[1]`: …あら、また考えてしまった。ま、それが原動力になるなら悪くないけど
+
+### GL-02-hostile.polite.normal[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.polite.normal[1]`: 私情を持ち込むな、と自分に言い聞かせているが…難しい
+
+### GL-02-hostile.cool.normal[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.cool.normal[1]`: ……集中を乱す存在がいる。気に入らない
+
+### GL-02-hostile.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-02-hostile.composed.normal[1]`: …あの子のせいで、今日の調子は最悪だった
 
 ### GL-03.up.standard.normal[]
 
@@ -1298,21 +1573,37 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-03.up.seductive.normal[1]`: 最近いい扱い受けてる気がするわ。嬉しいわね
 
-### GL-03.up.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-03.up.seductive.emotional[1]`: なんだか調子いいの……っ……ふふ……
-
 ### GL-03.up.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-03.up.polite.normal[1]`: 最近、居心地がとても良くなりました
 
-### GL-03.up.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-03.up.polite.shy[1]`: 調子が…良い気がします…
-
 ### GL-03.up.cool.normal[]
 
 - `GLIMPSE_B_LINES.GL-03.up.cool.normal[1]`: ……この環境は、悪くない
+
+### GL-03.up.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-03.up.composed.normal[1]`: …悪くない環境だね
+
+### GL-03.up.composed.bold[]
+
+- `GLIMPSE_B_LINES.GL-03.up.composed.bold[1]`: …ここ、いいね。…もっと盛り上げてやるよ
+
+### GL-03.up.composed.quiet[]
+
+- `GLIMPSE_B_LINES.GL-03.up.composed.quiet[1]`: ……居心地がいい
+
+### GL-03.up.composed.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-03.up.composed.easygoing[1]`: …いい感じだね。居心地いいや
+
+### GL-03.up.composed.emotional[]
+
+- `GLIMPSE_B_LINES.GL-03.up.composed.emotional[1]`: …っ…嬉しいな
+
+### GL-03.up.composed.earnest[]
+
+- `GLIMPSE_B_LINES.GL-03.up.composed.earnest[1]`: …いい環境だ。…応えないとね
 
 ### GL-03.down.standard.normal[]
 
@@ -1321,7 +1612,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-03.down.standard.bold[]
 
-- `GLIMPSE_B_LINES.GL-03.down.standard.bold[1]`: 何だよ最近の扱いは。わたしを軽く見てるの？
+- `GLIMPSE_B_LINES.GL-03.down.standard.bold[1]`: 何だよ最近の扱いは。私を軽く見てるの？
 
 ### GL-03.down.standard.quiet[]
 
@@ -1355,21 +1646,33 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-03.down.seductive.normal[1]`: ねぇ…最近私のこと放置してない？
 
-### GL-03.down.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-03.down.seductive.emotional[1]`: うまくいかない……っ……どうしてかしら……
-
 ### GL-03.down.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-03.down.polite.normal[1]`: 少し寂しいというか…不安が…
 
-### GL-03.down.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-03.down.polite.shy[1]`: う、うまくいきません…どうしたら…
-
 ### GL-03.down.cool.normal[]
 
 - `GLIMPSE_B_LINES.GL-03.down.cool.normal[1]`: ……この状況は、よくない
+
+### GL-03.down.composed.normal[]
+
+- `GLIMPSE_B_LINES.GL-03.down.composed.normal[1]`: …最近、ちょっと引っかかることがあるかな
+
+### GL-03.down.composed.bold[]
+
+- `GLIMPSE_B_LINES.GL-03.down.composed.bold[1]`: …この扱いは、どうなの
+
+### GL-03.down.composed.easygoing[]
+
+- `GLIMPSE_B_LINES.GL-03.down.composed.easygoing[1]`: …う〜ん、ちょっと気になるなぁ
+
+### GL-03.down.composed.emotional[]
+
+- `GLIMPSE_B_LINES.GL-03.down.composed.emotional[1]`: …っ…何か変だ
+
+### GL-03.down.composed.earnest[]
+
+- `GLIMPSE_B_LINES.GL-03.down.composed.earnest[1]`: …少し思うところがある
 
 ### GL-04.standard.normal[]
 
@@ -1416,18 +1719,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-04.seductive.normal[1]`: ちょっと気になってるの。いい距離感よね
 
-### GL-04.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-04.seductive.emotional[1]`: 練習するわ……っ……ふふ……
-
 ### GL-04.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-04.polite.normal[1]`: 一緒にいると安心します
-
-### GL-04.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-04.polite.shy[1]`: 練習…させていただきます…
-- `GLIMPSE_B_LINES.GL-04.polite.shy[2]`: もう少し…頑張ります…
 
 ### GL-04.polite.earnest[]
 
@@ -1482,18 +1776,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-05.seductive.normal[1]`: …考えちゃうのよね
 
-### GL-05.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-05.seductive.emotional[1]`: 大丈夫よ……っ……ふふ、心配しないで……
-
 ### GL-05.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-05.polite.normal[1]`: 活躍が気になってしまいます
-
-### GL-05.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-05.polite.shy[1]`: あ、あの…大丈夫です、心配しないでください…
-- `GLIMPSE_B_LINES.GL-05.polite.shy[2]`: ご心配を、おかけして…
 
 ### GL-05.polite.earnest[]
 
@@ -1510,7 +1795,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-06.standard.bold[]
 
-- `GLIMPSE_B_LINES.GL-06.standard.bold[1]`: なんでわたしを使わないの！ 実力は見せてるでしょ！
+- `GLIMPSE_B_LINES.GL-06.standard.bold[1]`: なんで私を使わないの！ 実力は見せてるでしょ！
 - `GLIMPSE_B_LINES.GL-06.standard.bold[2]`: リングに上がらせて！ くすぶってる場合じゃないのよ！
 
 ### GL-06.standard.quiet[]
@@ -1552,24 +1837,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-06.delinquent.bold[]
 
-- `GLIMPSE_B_LINES.GL-06.delinquent.bold[1]`: おいこら！ あたしを出せよ！ 暴れたいんだよ！
+- `GLIMPSE_B_LINES.GL-06.delinquent.bold[1]`: おいこら！ 私を出せよ！ 暴れたいんだよ！
 
 ### GL-06.seductive.normal[]
 
 - `GLIMPSE_B_LINES.GL-06.seductive.normal[1]`: 私を干すつもり？ もったいないと思うけど
 
-### GL-06.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-06.seductive.emotional[1]`: みんなと一緒だと……っ……ふふ、安心するの……
-
 ### GL-06.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-06.polite.normal[1]`: 出場できなかったのは残念ですが…次の機会を待ちます
-
-### GL-06.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-06.polite.shy[1]`: みんなと…一緒だと、心強いです…
-- `GLIMPSE_B_LINES.GL-06.polite.shy[2]`: 仲間って、いいですね…
 
 ### GL-06.polite.earnest[]
 
@@ -1624,18 +1900,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-07.seductive.normal[1]`: 体が言うこと聞かないわ…もどかしい
 
-### GL-07.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-07.seductive.emotional[1]`: お客さんがいっぱい……っ……ふふ、燃えるわね……
-
 ### GL-07.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-07.polite.normal[1]`: 申し訳ありません…少し体調が…
-
-### GL-07.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-07.polite.shy[1]`: お、お客さんがいっぱいで…き、緊張します…
-- `GLIMPSE_B_LINES.GL-07.polite.shy[2]`: がんばります…
 
 ### GL-07.polite.earnest[]
 
@@ -1653,7 +1920,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-08.standard.bold[]
 
 - `GLIMPSE_B_LINES.GL-08.standard.bold[1]`: …このまま終わるつもりはないから！
-- `GLIMPSE_B_LINES.GL-08.standard.bold[2]`: いつまで負け続ける気だ…！ 目を覚ませ、わたし！
+- `GLIMPSE_B_LINES.GL-08.standard.bold[2]`: いつまで負け続ける気だ…！ 目を覚ませ、私！
 
 ### GL-08.standard.quiet[]
 
@@ -1686,7 +1953,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-08.delinquent.normal[]
 
-- `GLIMPSE_B_LINES.GL-08.delinquent.normal[1]`: くそが…何連敗してんだよあたしは…
+- `GLIMPSE_B_LINES.GL-08.delinquent.normal[1]`: くそが…何連敗してんだよ私は…
 
 ### GL-08.delinquent.bold[]
 
@@ -1696,18 +1963,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-08.seductive.normal[1]`: 負け続き…こんなの私じゃないわ
 
-### GL-08.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-08.seductive.emotional[1]`: 体調は大丈夫よ……っ……ふふ、心配いらない……
-
 ### GL-08.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-08.polite.normal[1]`: 連敗してしまって…皆さんに申し訳なくて…
-
-### GL-08.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-08.polite.shy[1]`: あ、あの…体調は、大丈夫です…
-- `GLIMPSE_B_LINES.GL-08.polite.shy[2]`: 無理はしません…
 
 ### GL-08.polite.earnest[]
 
@@ -1725,7 +1983,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-09.standard.bold[]
 
 - `GLIMPSE_B_LINES.GL-09.standard.bold[1]`: 絶好調！ この波に乗って一気に行くぞ！
-- `GLIMPSE_B_LINES.GL-09.standard.bold[2]`: 今のわたしを止められるやつはいない！
+- `GLIMPSE_B_LINES.GL-09.standard.bold[2]`: 今の私を止められるやつはいない！
 
 ### GL-09.standard.quiet[]
 
@@ -1763,18 +2021,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-09.seductive.normal[1]`: 最近負けなしよ。ふふ、誰が相手でも返り討ちだわ
 
-### GL-09.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-09.seductive.emotional[1]`: 次の試合……っ……ふふ、楽しみだわ……
-
 ### GL-09.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-09.polite.normal[1]`: 連勝させていただいています。ありがたいことです
-
-### GL-09.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-09.polite.shy[1]`: 次の試合…が、頑張ります…
-- `GLIMPSE_B_LINES.GL-09.polite.shy[2]`: しっかり、準備します…
 
 ### GL-09.polite.earnest[]
 
@@ -1787,12 +2036,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-10.standard.normal[]
 
 - `GLIMPSE_B_LINES.GL-10.standard.normal[1]`: 早くリングに戻りたい…体が疼く
-- `GLIMPSE_B_LINES.GL-10.standard.normal[2]`: 怪我…早く治してくれ…
+- `GLIMPSE_B_LINES.GL-10.standard.normal[2]`: 怪我…早く治さないと…
 
 ### GL-10.standard.bold[]
 
 - `GLIMPSE_B_LINES.GL-10.standard.bold[1]`: こんなとこで寝てる場合じゃない…！
-- `GLIMPSE_B_LINES.GL-10.standard.bold[2]`: わたしがいない間に追い抜かれるのは耐えられない！
+- `GLIMPSE_B_LINES.GL-10.standard.bold[2]`: 私がいない間に追い抜かれるのは耐えられない！
 
 ### GL-10.standard.quiet[]
 
@@ -1835,18 +2084,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `GLIMPSE_B_LINES.GL-10.seductive.normal[1]`: 退屈…早くリングに立ちたいわ
 
-### GL-10.seductive.emotional[]
-
-- `GLIMPSE_B_LINES.GL-10.seductive.emotional[1]`: ありがとう……っ……ふふ、嬉しい……
-
 ### GL-10.polite.normal[]
 
 - `GLIMPSE_B_LINES.GL-10.polite.normal[1]`: 早く復帰して、皆さんのお役に立ちたいです
-
-### GL-10.polite.shy[]
-
-- `GLIMPSE_B_LINES.GL-10.polite.shy[1]`: あ、あの…ありがとうございます…
-- `GLIMPSE_B_LINES.GL-10.polite.shy[2]`: 感謝、しています…
 
 ### GL-10.polite.earnest[]
 
@@ -1871,7 +2111,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-11.delinquent.normal[]
 
-- `GLIMPSE_B_LINES.GL-11.delinquent.normal[1]`: あー、いるな。それで?……別に
+- `GLIMPSE_B_LINES.GL-11.delinquent.normal[1]`: あー、いるな。それで？……別に
 
 ### GL-11.seductive.normal[]
 
@@ -1887,7 +2127,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-11.composed.normal[]
 
-- `GLIMPSE_B_LINES.GL-11.composed.normal[1]`: あの子は、わたくしの中にはいないの。それだけのことよ
+- `GLIMPSE_B_LINES.GL-11.composed.normal[1]`: あの子は、もう心の中にはいない。ただ、それだけのことだ
 
 ### GL-12._narration[]
 

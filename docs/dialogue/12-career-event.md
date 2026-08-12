@@ -23,7 +23,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.quiet[]
 
 - `EVENT_DRAFT_JOIN_LINES.standard.quiet[1]`: …よろしくお願いします
-- `EVENT_DRAFT_JOIN_LINES.standard.quiet[2]`: ………(深々と一礼)
+- `EVENT_DRAFT_JOIN_LINES.standard.quiet[2]`: ………（深々と一礼）
 - `EVENT_DRAFT_JOIN_LINES.standard.quiet[3]`: ……全力でやります
 
 ### standard.earnest[]
@@ -58,7 +58,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### ojousama.bold[]
 
 - `EVENT_DRAFT_JOIN_LINES.ojousama.bold[1]`: チャンピオンになるために参りましたわ。ご期待くださいませ
-- `EVENT_DRAFT_JOIN_LINES.ojousama.bold[2]`: てっぺんに立ちますわよ。当然ですの
+- `EVENT_DRAFT_JOIN_LINES.ojousama.bold[2]`: 頂点に立ちますわよ。当然ですの
 
 ### ojousama.quiet[]
 
@@ -94,7 +94,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.quiet[]
 
-- `EVENT_DRAFT_JOIN_LINES.polite.quiet[1]`: …よ、よろしくお願いいたします
+- `EVENT_DRAFT_JOIN_LINES.polite.quiet[1]`: …よろしくお願いいたします
 
 ### polite.earnest[]
 
@@ -137,7 +137,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent.easygoing[]
 
-- `EVENT_DRAFT_JOIN_LINES.delinquent.easygoing[1]`: よっ、よろしくな! 楽しくやろうぜ
+- `EVENT_DRAFT_JOIN_LINES.delinquent.easygoing[1]`: よっ、よろしくな！ 楽しくやろうぜ
 
 ### delinquent.shy[]
 
@@ -186,7 +186,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.quiet[]
 
-- `EVENT_DRAFT_JOIN_LINES.seductive.quiet[1]`: ……よ、よろしく
+- `EVENT_DRAFT_JOIN_LINES.seductive.quiet[1]`: ……よろしく
 
 ### seductive.earnest[]
 
@@ -212,7 +212,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### composed.bold[]
 
 - `EVENT_DRAFT_JOIN_LINES.composed.bold[1]`: …てっぺんを獲りに来た。よろしく
-- `EVENT_DRAFT_JOIN_LINES.composed.bold[2]`: …期待には応える。見ててくれ
+- `EVENT_DRAFT_JOIN_LINES.composed.bold[2]`: …期待には応える。見ていて
 
 ### composed.quiet[]
 
@@ -254,7 +254,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `EVENT_DRAFT_INTEREST_LINES.polite.bold[1]`: 頂点を獲ります。それ以外に興味はありません
 - `EVENT_DRAFT_INTEREST_LINES.polite.bold[2]`: 選んでいただけたら、決して後悔はさせません
 - `EVENT_DRAFT_INTEREST_LINES.polite.quiet[1]`: …選んでいただけたら、精一杯やらせていただきます
-- `EVENT_DRAFT_INTEREST_LINES.polite.shy[1]`: あ、あの…私などでよろしければ…せ、精一杯務めます…
+- `EVENT_DRAFT_INTEREST_LINES.polite.shy[1]`: あ、あの…わたしなどでよろしければ…せ、精一杯務めます…
 - `EVENT_DRAFT_INTEREST_LINES.polite.easygoing[1]`: えへへ、一緒に楽しくやりましょう
 - `EVENT_DRAFT_INTEREST_LINES.polite.easygoing[2]`: 退屈なプロレスはしないって約束します
 - `EVENT_DRAFT_INTEREST_LINES.polite.earnest[1]`: 地道に努力するのが取り柄です。信じていただけますか
@@ -320,7 +320,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.quiet[]
 
-- `EVENT_INJURY_LINES.standard.quiet[2]`: …(静かに頭を下げる)
+- `EVENT_INJURY_LINES.standard.quiet[2]`: …（静かに頭を下げる）
 - `EVENT_INJURY_LINES.standard.quiet[3]`: …ごめん
 
 ### standard.earnest[]
@@ -333,7 +333,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `EVENT_INJURY_LINES.standard.emotional[1]`: くぅっ…痛い…！ でも、絶対戻ります…！
 - `EVENT_INJURY_LINES.standard.emotional[2]`: うぅ…こんなの悔しい…！
-- `EVENT_INJURY_LINES.standard.emotional[3]`: ちくしょう…！ 絶対に、絶対に戻る…！
+- `EVENT_INJURY_LINES.standard.emotional[3]`: 悔しい…！ 絶対に、絶対に戻る…！
 
 ### standard.easygoing[]
 
@@ -511,7 +511,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed.quiet[]
 
-- `EVENT_INJURY_LINES.composed.quiet[1]`: …戻る。待っててくれ
+- `EVENT_INJURY_LINES.composed.quiet[1]`: …戻る。待ってて
 
 ### composed.earnest[]
 
@@ -581,7 +581,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.shy[]
 
-- `EVENT_TITLE_WIN_LINES.polite.shy[1]`: え…わ、私が…チャンピオン、ですか…？ 夢のようです…
+- `EVENT_TITLE_WIN_LINES.polite.shy[1]`: え…わ、わたしが…チャンピオン、ですか…？ 夢のようです…
 
 ### polite.easygoing[]
 
@@ -631,7 +631,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.normal[]
 
-- `EVENT_TITLE_WIN_LINES.ojousama.normal[1]`: チャンピオンですわ…！夢のようですわね…！
+- `EVENT_TITLE_WIN_LINES.ojousama.normal[1]`: ……ベルトが、こんなに重いなんて。……確かに、この手で掴んだのね
 
 ### ojousama.bold[]
 
@@ -764,7 +764,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `EVENT_TITLE_DEFENSE_LINES.polite.bold[2]`: 防衛は通過点です。私が目指すのは、もっと先
 - `EVENT_TITLE_DEFENSE_LINES.polite.quiet[1]`: …守れました。次も、頑張ります
 - `EVENT_TITLE_DEFENSE_LINES.polite.shy[1]`: よ、よかった…守れました…（ほっとしている）
-- `EVENT_TITLE_DEFENSE_LINES.polite.easygoing[1]`: チャンピオンはわたしです。また守り切りました
+- `EVENT_TITLE_DEFENSE_LINES.polite.easygoing[1]`: チャンピオンは私です。また守り切りました
 - `EVENT_TITLE_DEFENSE_LINES.polite.easygoing[2]`: いい試合でした。また挑戦してきてくださいね
 - `EVENT_TITLE_DEFENSE_LINES.polite.earnest[1]`: 防衛できました。でも、まだまだ精進いたします
 - `EVENT_TITLE_DEFENSE_LINES.polite.emotional[1]`: 守れました…！嬉しい…！次も絶対に守ります…！
@@ -847,7 +847,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `EVENT_TITLE_CHALLENGE_LOSS_LINES.standard.earnest[2]`: 悔しい…でもここで腐っちゃだめだ
 - `EVENT_TITLE_CHALLENGE_LOSS_LINES.standard.emotional[1]`: 悔しい…！悔しい…！でも…絶対諦めない…！
 - `EVENT_TITLE_CHALLENGE_LOSS_LINES.ojousama.normal[1]`: 悔しゅうございますわ…でも、次こそは…
-- `EVENT_TITLE_CHALLENGE_LOSS_LINES.ojousama.bold[1]`: 認めませんわ…！もう一度お願いいたします！
+- `EVENT_TITLE_CHALLENGE_LOSS_LINES.ojousama.bold[1]`: ……これで終わりかしら。もう一度、場を用意していただける？
 - `EVENT_TITLE_CHALLENGE_LOSS_LINES.ojousama.quiet[1]`: ………（拳を握ったまま、顔を上げない）
 - `EVENT_TITLE_CHALLENGE_LOSS_LINES.ojousama.shy[1]`: …ごめんなさい…でも…諦めたくありませんの…
 - `EVENT_TITLE_CHALLENGE_LOSS_LINES.ojousama.easygoing[1]`: 今日は負けてしまいましたけれど…次はもっとよい試合をしますわ
@@ -899,7 +899,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `EVENT_TITLE_LOSS_LINES.polite.quiet[1]`: …申し訳ございません。でも…もう一度…
 - `EVENT_TITLE_LOSS_LINES.polite.shy[1]`: …申し訳ありません…ベルト…守れませんでした…
 - `EVENT_TITLE_LOSS_LINES.polite.easygoing[1]`: 負けちゃいました…でもファンが応援してくれる限り、立ち上がります
-- `EVENT_TITLE_LOSS_LINES.polite.easygoing[2]`: …ベルトのない自分なんて想像できませんでした。でも、わたしはわたしですから
+- `EVENT_TITLE_LOSS_LINES.polite.easygoing[2]`: …ベルトのない自分なんて想像できませんでした。でも、私は私ですから
 - `EVENT_TITLE_LOSS_LINES.polite.earnest[1]`: 努力が足りませんでした。一から出直します
 - `EVENT_TITLE_LOSS_LINES.polite.emotional[1]`: 嘘…嘘です…ベルトが…！でも…でも諦めません…！
 - `EVENT_TITLE_LOSS_LINES.standard.normal[1]`: ベルトを失ってしまった…。でも、この団体で戦い続けます。
@@ -963,7 +963,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.quiet[]
 
-- `EVENT_RELEASE_LINES.standard.quiet[1]`: ……(深く一礼)
+- `EVENT_RELEASE_LINES.standard.quiet[1]`: ……（深く一礼）
 - `EVENT_RELEASE_LINES.standard.quiet[3]`: …お世話になりました
 
 ### standard.earnest[]
@@ -1032,7 +1032,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.quiet[]
 
-- `EVENT_RELEASE_LINES.polite.quiet[1]`: …お、お世話になりました
+- `EVENT_RELEASE_LINES.polite.quiet[1]`: …お世話になりました
 
 ### polite.earnest[]
 
@@ -1093,7 +1093,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### cool.quiet[]
 
-- `EVENT_RELEASE_LINES.cool.quiet[1]`: ……(静かに立ち去る)
+- `EVENT_RELEASE_LINES.cool.quiet[1]`: ……（静かに立ち去る）
 - `EVENT_RELEASE_LINES.cool.quiet[2]`: ……ありがとう
 
 ### cool.earnest[]
@@ -1124,7 +1124,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.quiet[]
 
-- `EVENT_RELEASE_LINES.seductive.quiet[1]`: …お世話になりました(ふっと目を伏せて)
+- `EVENT_RELEASE_LINES.seductive.quiet[1]`: …お世話になりました（ふっと目を伏せて）
 
 ### seductive.earnest[]
 
@@ -1421,7 +1421,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### draftJoin.standard.quiet[]
 
 - `EVENT_LINES_BY_KEY.draftJoin.standard.quiet[1]`: …よろしくお願いします
-- `EVENT_LINES_BY_KEY.draftJoin.standard.quiet[2]`: ………(深々と一礼)
+- `EVENT_LINES_BY_KEY.draftJoin.standard.quiet[2]`: ………（深々と一礼）
 - `EVENT_LINES_BY_KEY.draftJoin.standard.quiet[3]`: ……全力でやります
 
 ### draftJoin.standard.earnest[]
@@ -1456,7 +1456,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### draftJoin.ojousama.bold[]
 
 - `EVENT_LINES_BY_KEY.draftJoin.ojousama.bold[1]`: チャンピオンになるために参りましたわ。ご期待くださいませ
-- `EVENT_LINES_BY_KEY.draftJoin.ojousama.bold[2]`: てっぺんに立ちますわよ。当然ですの
+- `EVENT_LINES_BY_KEY.draftJoin.ojousama.bold[2]`: 頂点に立ちますわよ。当然ですの
 
 ### draftJoin.ojousama.quiet[]
 
@@ -1492,7 +1492,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### draftJoin.polite.quiet[]
 
-- `EVENT_LINES_BY_KEY.draftJoin.polite.quiet[1]`: …よ、よろしくお願いいたします
+- `EVENT_LINES_BY_KEY.draftJoin.polite.quiet[1]`: …よろしくお願いいたします
 
 ### draftJoin.polite.earnest[]
 
@@ -1535,7 +1535,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### draftJoin.delinquent.easygoing[]
 
-- `EVENT_LINES_BY_KEY.draftJoin.delinquent.easygoing[1]`: よっ、よろしくな! 楽しくやろうぜ
+- `EVENT_LINES_BY_KEY.draftJoin.delinquent.easygoing[1]`: よっ、よろしくな！ 楽しくやろうぜ
 
 ### draftJoin.delinquent.shy[]
 
@@ -1584,7 +1584,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### draftJoin.seductive.quiet[]
 
-- `EVENT_LINES_BY_KEY.draftJoin.seductive.quiet[1]`: ……よ、よろしく
+- `EVENT_LINES_BY_KEY.draftJoin.seductive.quiet[1]`: ……よろしく
 
 ### draftJoin.seductive.earnest[]
 
@@ -1610,7 +1610,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### draftJoin.composed.bold[]
 
 - `EVENT_LINES_BY_KEY.draftJoin.composed.bold[1]`: …てっぺんを獲りに来た。よろしく
-- `EVENT_LINES_BY_KEY.draftJoin.composed.bold[2]`: …期待には応える。見ててくれ
+- `EVENT_LINES_BY_KEY.draftJoin.composed.bold[2]`: …期待には応える。見ていて
 
 ### draftJoin.composed.quiet[]
 
@@ -1679,7 +1679,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### draftInterest.polite.shy[]
 
-- `EVENT_LINES_BY_KEY.draftInterest.polite.shy[1]`: あ、あの…私などでよろしければ…せ、精一杯務めます…
+- `EVENT_LINES_BY_KEY.draftInterest.polite.shy[1]`: あ、あの…わたしなどでよろしければ…せ、精一杯務めます…
 
 ### draftInterest.polite.easygoing[]
 
@@ -1854,7 +1854,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### injury.standard.quiet[]
 
-- `EVENT_LINES_BY_KEY.injury.standard.quiet[2]`: …(静かに頭を下げる)
+- `EVENT_LINES_BY_KEY.injury.standard.quiet[2]`: …（静かに頭を下げる）
 - `EVENT_LINES_BY_KEY.injury.standard.quiet[3]`: …ごめん
 
 ### injury.standard.earnest[]
@@ -1867,7 +1867,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `EVENT_LINES_BY_KEY.injury.standard.emotional[1]`: くぅっ…痛い…！ でも、絶対戻ります…！
 - `EVENT_LINES_BY_KEY.injury.standard.emotional[2]`: うぅ…こんなの悔しい…！
-- `EVENT_LINES_BY_KEY.injury.standard.emotional[3]`: ちくしょう…！ 絶対に、絶対に戻る…！
+- `EVENT_LINES_BY_KEY.injury.standard.emotional[3]`: 悔しい…！ 絶対に、絶対に戻る…！
 
 ### injury.standard.easygoing[]
 
@@ -2045,7 +2045,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### injury.composed.quiet[]
 
-- `EVENT_LINES_BY_KEY.injury.composed.quiet[1]`: …戻る。待っててくれ
+- `EVENT_LINES_BY_KEY.injury.composed.quiet[1]`: …戻る。待ってて
 
 ### injury.composed.earnest[]
 
@@ -2110,7 +2110,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### titleWin.polite.shy[]
 
-- `EVENT_LINES_BY_KEY.titleWin.polite.shy[1]`: え…わ、私が…チャンピオン、ですか…？ 夢のようです…
+- `EVENT_LINES_BY_KEY.titleWin.polite.shy[1]`: え…わ、わたしが…チャンピオン、ですか…？ 夢のようです…
 
 ### titleWin.polite.easygoing[]
 
@@ -2160,7 +2160,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### titleWin.ojousama.normal[]
 
-- `EVENT_LINES_BY_KEY.titleWin.ojousama.normal[1]`: チャンピオンですわ…！夢のようですわね…！
+- `EVENT_LINES_BY_KEY.titleWin.ojousama.normal[1]`: ……ベルトが、こんなに重いなんて。……確かに、この手で掴んだのね
 
 ### titleWin.ojousama.bold[]
 
@@ -2323,7 +2323,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### titleDefense.polite.easygoing[]
 
-- `EVENT_LINES_BY_KEY.titleDefense.polite.easygoing[1]`: チャンピオンはわたしです。また守り切りました
+- `EVENT_LINES_BY_KEY.titleDefense.polite.easygoing[1]`: チャンピオンは私です。また守り切りました
 - `EVENT_LINES_BY_KEY.titleDefense.polite.easygoing[2]`: いい試合でした。また挑戦してきてくださいね
 
 ### titleDefense.polite.earnest[]
@@ -2580,7 +2580,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### titleChallengeLoss.ojousama.bold[]
 
-- `EVENT_LINES_BY_KEY.titleChallengeLoss.ojousama.bold[1]`: 認めませんわ…！もう一度お願いいたします！
+- `EVENT_LINES_BY_KEY.titleChallengeLoss.ojousama.bold[1]`: ……これで終わりかしら。もう一度、場を用意していただける？
 
 ### titleChallengeLoss.ojousama.quiet[]
 
@@ -2740,7 +2740,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### titleLoss.polite.easygoing[]
 
 - `EVENT_LINES_BY_KEY.titleLoss.polite.easygoing[1]`: 負けちゃいました…でもファンが応援してくれる限り、立ち上がります
-- `EVENT_LINES_BY_KEY.titleLoss.polite.easygoing[2]`: …ベルトのない自分なんて想像できませんでした。でも、わたしはわたしですから
+- `EVENT_LINES_BY_KEY.titleLoss.polite.easygoing[2]`: …ベルトのない自分なんて想像できませんでした。でも、私は私ですから
 
 ### titleLoss.polite.earnest[]
 
@@ -2910,7 +2910,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### release.standard.quiet[]
 
-- `EVENT_LINES_BY_KEY.release.standard.quiet[1]`: ……(深く一礼)
+- `EVENT_LINES_BY_KEY.release.standard.quiet[1]`: ……（深く一礼）
 - `EVENT_LINES_BY_KEY.release.standard.quiet[3]`: …お世話になりました
 
 ### release.standard.earnest[]
@@ -2979,7 +2979,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### release.polite.quiet[]
 
-- `EVENT_LINES_BY_KEY.release.polite.quiet[1]`: …お、お世話になりました
+- `EVENT_LINES_BY_KEY.release.polite.quiet[1]`: …お世話になりました
 
 ### release.polite.earnest[]
 
@@ -3040,7 +3040,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### release.cool.quiet[]
 
-- `EVENT_LINES_BY_KEY.release.cool.quiet[1]`: ……(静かに立ち去る)
+- `EVENT_LINES_BY_KEY.release.cool.quiet[1]`: ……（静かに立ち去る）
 - `EVENT_LINES_BY_KEY.release.cool.quiet[2]`: ……ありがとう
 
 ### release.cool.earnest[]
@@ -3071,7 +3071,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### release.seductive.quiet[]
 
-- `EVENT_LINES_BY_KEY.release.seductive.quiet[1]`: …お世話になりました(ふっと目を伏せて)
+- `EVENT_LINES_BY_KEY.release.seductive.quiet[1]`: …お世話になりました（ふっと目を伏せて）
 
 ### release.seductive.earnest[]
 
@@ -3779,7 +3779,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### heatSelf.fresh.standard.emotional[]
 
-- `EVENT_LINES_BY_KEY.heatSelf.fresh.standard.emotional[1]`: 体が軽い…!今ならなんでもできる気がする…!
+- `EVENT_LINES_BY_KEY.heatSelf.fresh.standard.emotional[1]`: 体が軽い…！今ならなんでもできる気がする…！
 
 ### heatSelf.fresh.standard.quiet[]
 
@@ -3787,7 +3787,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### heatSelf.fresh.standard.shy[]
 
-- `EVENT_LINES_BY_KEY.heatSelf.fresh.standard.shy[1]`: な、なんだか今日、体が軽くて…!やれそうです…!
+- `EVENT_LINES_BY_KEY.heatSelf.fresh.standard.shy[1]`: な、なんだか今日、体が軽くて…！やれそうです…！
 
 ### heatSelf.fresh.cool.normal[]
 
@@ -3815,7 +3815,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### heatSelf.fresh.polite.shy[]
 
-- `EVENT_LINES_BY_KEY.heatSelf.fresh.polite.shy[1]`: あ、あの…今日は体が軽くて…もっと、やれます…!
+- `EVENT_LINES_BY_KEY.heatSelf.fresh.polite.shy[1]`: あ、あの…今日は体が軽くて…もっと、やれます…！
 
 ### heatSelf.fresh.composed.normal[]
 
@@ -3879,7 +3879,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### heatSelf.warm.standard.emotional[]
 
-- `EVENT_LINES_BY_KEY.heatSelf.warm.standard.emotional[1]`: あれ…なんか入ってこない…!?もっとやれるはずなのに
+- `EVENT_LINES_BY_KEY.heatSelf.warm.standard.emotional[1]`: あれ…なんか入ってこない…！？もっとやれるはずなのに
 
 ### heatSelf.warm.standard.quiet[]
 
@@ -3979,7 +3979,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### heatSelf.heavy.standard.emotional[]
 
-- `EVENT_LINES_BY_KEY.heatSelf.heavy.standard.emotional[1]`: 体が重い…!やる気はあるのに、体がついてこない…!
+- `EVENT_LINES_BY_KEY.heatSelf.heavy.standard.emotional[1]`: 体が重い…！やる気はあるのに、体がついてこない…！
 
 ### heatSelf.heavy.standard.quiet[]
 
@@ -4114,7 +4114,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### scoutGreeting.standard.easygoing[]
 
-- `EVENT_LINES_BY_KEY.scoutGreeting.standard.easygoing[1]`: よく見つけたねー。掘り出し物だよ、あたし
+- `EVENT_LINES_BY_KEY.scoutGreeting.standard.easygoing[1]`: よく見つけたねー。掘り出し物だよ、私
 - `EVENT_LINES_BY_KEY.scoutGreeting.standard.easygoing[2]`: ちょうど暴れる場所探してたんだ。よろしくね
 
 ### scoutGreeting.standard.earnest[]
@@ -4174,7 +4174,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### scoutGreeting.polite.easygoing[]
 
-- `EVENT_LINES_BY_KEY.scoutGreeting.polite.easygoing[1]`: 見つけてくださって助かりました！暴れますね
+- `EVENT_LINES_BY_KEY.scoutGreeting.polite.easygoing[1]`: 声をかけてくださって嬉しいです！　思いきり暴れますね！
 
 ### scoutGreeting.polite.earnest[]
 
@@ -4186,7 +4186,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### scoutGreeting.ojousama.normal[]
 
-- `EVENT_LINES_BY_KEY.scoutGreeting.ojousama.normal[1]`: わたくしを見つけたご慧眼、称えて差し上げます
+- `EVENT_LINES_BY_KEY.scoutGreeting.ojousama.normal[1]`: 見つけていただいたからには、お応えするわ。……期待を裏切るつもりはないもの
 
 ### scoutGreeting.ojousama.bold[]
 
@@ -4246,7 +4246,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### scoutGreeting.seductive.bold[]
 
-- `EVENT_LINES_BY_KEY.scoutGreeting.seductive.bold[1]`: わたしに声をかけた責任は、取ってちょうだいね
+- `EVENT_LINES_BY_KEY.scoutGreeting.seductive.bold[1]`: 私に声をかけた責任は、取ってちょうだいね
 
 ### scoutGreeting.seductive.quiet[]
 
@@ -4258,7 +4258,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### scoutGreeting.seductive.easygoing[]
 
-- `EVENT_LINES_BY_KEY.scoutGreeting.seductive.easygoing[1]`: ふうん、あたしに目をつけたんだ。…お目が高いね
+- `EVENT_LINES_BY_KEY.scoutGreeting.seductive.easygoing[1]`: ふうん、私に目をつけたんだ。…お目が高いね
 
 ### scoutGreeting.seductive.earnest[]
 
@@ -4326,17 +4326,17 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### faGreeting.standard.easygoing[]
 
 - `EVENT_LINES_BY_KEY.faGreeting.standard.easygoing[1]`: フリーも気楽だったけどねー。ここらで腰を据えるか
-- `EVENT_LINES_BY_KEY.faGreeting.standard.easygoing[2]`: 声かかんなくてさー。拾ってくれて助かったよ
+- `EVENT_LINES_BY_KEY.faGreeting.standard.easygoing[2]`: しばらく声かかんなくてさー。呼んでくれて嬉しいよ
 
 ### faGreeting.standard.earnest[]
 
 - `EVENT_LINES_BY_KEY.faGreeting.standard.earnest[1]`: もう一度チャンスをもらえた。無駄にしません
-- `EVENT_LINES_BY_KEY.faGreeting.standard.earnest[2]`: 拾ってくれた恩は、練習の量でお返しします
+- `EVENT_LINES_BY_KEY.faGreeting.standard.earnest[2]`: 声をかけてくれた恩には、積み上げた練習で応えます
 
 ### faGreeting.standard.emotional[]
 
 - `EVENT_LINES_BY_KEY.faGreeting.standard.emotional[1]`: また契約できた…！この嬉しさ、試合で爆発させる…！
-- `EVENT_LINES_BY_KEY.faGreeting.standard.emotional[2]`: 拾ってくれた…！この恩、絶対に返す…！
+- `EVENT_LINES_BY_KEY.faGreeting.standard.emotional[2]`: 呼んでくれた…！ この恩、絶対に返す…！
 
 ### faGreeting.cool.normal[]
 
@@ -4348,7 +4348,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.cool.quiet[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.cool.quiet[1]`: …拾われた。…なら、恩を返す
+- `EVENT_LINES_BY_KEY.faGreeting.cool.quiet[1]`: ……ここでやる。……結果で返す
 
 ### faGreeting.cool.shy[]
 
@@ -4368,7 +4368,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.polite.normal[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.polite.normal[1]`: 拾っていただいた御恩は、試合でお返しします
+- `EVENT_LINES_BY_KEY.faGreeting.polite.normal[1]`: 声をかけてもらえて嬉しいな。…そのぶんは試合で返すね
 
 ### faGreeting.polite.bold[]
 
@@ -4384,7 +4384,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.polite.easygoing[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.polite.easygoing[1]`: フリー生活、今日で終わりです！助かりました
+- `EVENT_LINES_BY_KEY.faGreeting.polite.easygoing[1]`: フリー生活は今日で卒業です！　ここから楽しくなりそう！
 
 ### faGreeting.polite.earnest[]
 
@@ -4396,11 +4396,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.ojousama.normal[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.ojousama.normal[1]`: 行くあての無いわたくしを招いてくださって。恩は必ずお返しします
+- `EVENT_LINES_BY_KEY.faGreeting.ojousama.normal[1]`: 声をかけていただいたこと、感謝しています。……ここで、また一から積み上げていくわね
 
 ### faGreeting.ojousama.bold[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.ojousama.bold[1]`: チャンスをありがとう。私を侮ったあいつらに、ほえ面かかせてやりますわ
+- `EVENT_LINES_BY_KEY.faGreeting.ojousama.bold[1]`: 良い機会をいただいたわ。私を見誤った方々に、答えを見せるとしましょう
 
 ### faGreeting.ojousama.quiet[]
 
@@ -4452,7 +4452,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.seductive.normal[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.seductive.normal[1]`: 落ちこぼれを拾うなんて。…物好きね。
+- `EVENT_LINES_BY_KEY.faGreeting.seductive.normal[1]`: わざわざ口説きに来るなんて。…物好きね、あなた。
 
 ### faGreeting.seductive.bold[]
 
@@ -4460,7 +4460,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.seductive.quiet[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.seductive.quiet[1]`: ……居場所ができたのね。…助かるわ
+- `EVENT_LINES_BY_KEY.faGreeting.seductive.quiet[1]`: ……ここが新しい場所ね。……ええ、悪くない……。
 
 ### faGreeting.seductive.shy[]
 
@@ -4468,7 +4468,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.seductive.easygoing[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.seductive.easygoing[1]`: 拾ってくれるなんて。…優しいのね、ここ
+- `EVENT_LINES_BY_KEY.faGreeting.seductive.easygoing[1]`: あら、悪くない話じゃない♪　…ええ、お世話になるわね
 
 ### faGreeting.seductive.earnest[]
 
@@ -4476,7 +4476,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faGreeting.seductive.emotional[]
 
-- `EVENT_LINES_BY_KEY.faGreeting.seductive.emotional[1]`: 拾われる側になるなんて…っ…参ったわ
+- `EVENT_LINES_BY_KEY.faGreeting.seductive.emotional[1]`: 口説かれる側になるなんて…っ…ふふ、いい度胸ね
 
 ### faGreeting.composed.normal[]
 
@@ -4542,7 +4542,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### bitterPrematch.ahead.standard.emotional[]
 
-- `EVENT_LINES_BY_KEY.bitterPrematch.ahead.standard.emotional[1]`: 終わったって言っただろ……！ なんでまだ、いるんだ
+- `EVENT_LINES_BY_KEY.bitterPrematch.ahead.standard.emotional[1]`: 終わったって言ったのに……！ なんで、まだいるの
 
 ### bitterPrematch.ahead.cool.normal[]
 
@@ -4632,7 +4632,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### bitterPrematch.behind.standard.easygoing[]
 
-- `EVENT_LINES_BY_KEY.bitterPrematch.behind.standard.easygoing[1]`: みんな綺麗に忘れてるね。……あたしは忘れないけど
+- `EVENT_LINES_BY_KEY.bitterPrematch.behind.standard.easygoing[1]`: みんな綺麗に忘れてるね。……私は忘れないけど
 - `EVENT_LINES_BY_KEY.bitterPrematch.behind.standard.easygoing[2]`: いつまでやるんだろうね、これ。……やめられないけど
 
 ### bitterPrematch.behind.standard.earnest[]
@@ -4642,7 +4642,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### bitterPrematch.behind.standard.emotional[]
 
-- `EVENT_LINES_BY_KEY.bitterPrematch.behind.standard.emotional[1]`: 終わってない……！ 勝手に終わらせるな……！
+- `EVENT_LINES_BY_KEY.bitterPrematch.behind.standard.emotional[1]`: 終わってない……！ 勝手に終わらせないで……！
 
 ### bitterPrematch.behind.cool.normal[]
 
@@ -4682,7 +4682,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### bitterPrematch.behind.composed.emotional[]
 
-- `EVENT_LINES_BY_KEY.bitterPrematch.behind.composed.emotional[1]`: …勝手に幕を下ろすな。…まだ、こっちに残ってる
+- `EVENT_LINES_BY_KEY.bitterPrematch.behind.composed.emotional[1]`: …勝手に幕を下ろさないで。…まだ、こっちに残ってる
 
 ### bitterPrematch.behind.ojousama.bold[]
 

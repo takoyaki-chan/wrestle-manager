@@ -490,7 +490,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### media.seductive.emotional[]
 
-- `CARE_REACTION_DIALOGUES.media.seductive.emotional[1]`: メディアに……っ……ふふ、わたしを世間に見せたいのね、いいわ……
+- `CARE_REACTION_DIALOGUES.media.seductive.emotional[1]`: メディアに……っ……ふふ、私を世間に見せたいのね、いいわ……
 
 ### media.composed.normal[]
 
@@ -670,7 +670,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### encourage_high_trust.ojousama.bold[]
 
-- `CARE_REACTION_DIALOGUES.encourage_high_trust.ojousama.bold[1]`: あなたが信じているなら、応えてあげないとかしらね？
+- `CARE_REACTION_DIALOGUES.encourage_high_trust.ojousama.bold[1]`: あなたが信じているなら、応えてあげませんとね？
 
 ### encourage_high_trust.ojousama.earnest[]
 
@@ -706,7 +706,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### encourage_high_trust.seductive.emotional[]
 
-- `CARE_REACTION_DIALOGUES.encourage_high_trust.seductive.emotional[1]`: あなたの言葉だけで……っ……わたし、何でもできちゃいそうなの……ふふ……
+- `CARE_REACTION_DIALOGUES.encourage_high_trust.seductive.emotional[1]`: あなたの言葉だけで……っ……私、何でもできちゃいそうなの……ふふ……
 
 ### encourage_high_trust.composed.normal[]
 
@@ -1175,7 +1175,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### camp.polite.shy[]
 
-- `CARE_REACTION_DIALOGUES.camp.polite.shy[1]`: が、合宿…ですか…緊張しますけど…頑張ります…!
+- `CARE_REACTION_DIALOGUES.camp.polite.shy[1]`: が、合宿…ですか…緊張しますけど…頑張ります…！
 
 ### camp.polite.earnest[]
 
@@ -1194,8 +1194,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faction_decree.standard.emotional[]
 
-- `CARE_REACTION_DIALOGUES.faction_decree.standard.emotional[1]`: どうして…！ わたし、何か間違えましたか…！
-- `CARE_REACTION_DIALOGUES.faction_decree.standard.emotional[2]`: みんな、わたしを信じてついてきてくれたのに…
+- `CARE_REACTION_DIALOGUES.faction_decree.standard.emotional[1]`: どうして…！ 私、何か間違えましたか…！
+- `CARE_REACTION_DIALOGUES.faction_decree.standard.emotional[2]`: みんな、私を信じてついてきてくれたのに…
 
 ### faction_decree.standard.quiet[]
 
@@ -1204,7 +1204,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faction_decree.standard.earnest[]
 
-- `CARE_REACTION_DIALOGUES.faction_decree.standard.earnest[1]`: わたしのやり方が、間違っていたということでしょうか
+- `CARE_REACTION_DIALOGUES.faction_decree.standard.earnest[1]`: 私のやり方が、間違っていたということでしょうか
 - `CARE_REACTION_DIALOGUES.faction_decree.standard.earnest[2]`: ……もっと、うまくやれたはずでした
 
 ### faction_decree.standard.easygoing[]
@@ -1277,7 +1277,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faction_decree.polite.earnest[]
 
-- `CARE_REACTION_DIALOGUES.faction_decree.polite.earnest[1]`: わたしの至らなさです。申し訳ありませんでした
+- `CARE_REACTION_DIALOGUES.faction_decree.polite.earnest[1]`: 私の至らなさです。申し訳ありませんでした
 
 ### faction_decree.polite.shy[]
 
@@ -1303,7 +1303,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faction_decree.delinquent.bold[]
 
-- `CARE_REACTION_DIALOGUES.faction_decree.delinquent.bold[1]`: ふざけんな。あそこは、あたしらの場所だっただろ
+- `CARE_REACTION_DIALOGUES.faction_decree.delinquent.bold[1]`: ふざけんな。あそこは、私らの場所だっただろ
 
 ### faction_decree.delinquent.emotional[]
 
@@ -1574,7 +1574,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S4_direct.seductive.shy[1]`: あの…ごめんなさい…でも、このままじゃ…わたし…
 - `CHOICE_EVENT_DIALOGUES.S4_direct.seductive.easygoing[1]`: ぶっちゃけ、不満があるの。ちゃんと話しましょう？
 - `CHOICE_EVENT_DIALOGUES.S4_direct.seductive.earnest[1]`: ずっと我慢してきたの。でも、もう限界よ
-- `CHOICE_EVENT_DIALOGUES.S4_direct.seductive.emotional[1]`: はっきり言うわ……っ……わたしの気持ちは……
+- `CHOICE_EVENT_DIALOGUES.S4_direct.seductive.emotional[1]`: はっきり言うわ……っ……私の気持ちは……
 - `CHOICE_EVENT_DIALOGUES.S4_direct.composed.normal[1]`: …このままだと困るんだよね。少し考えてもらえるかな
 - `CHOICE_EVENT_DIALOGUES.S4_direct.composed.bold[1]`: …このままだと先がないよ。考え直してくれないかな
 - `CHOICE_EVENT_DIALOGUES.S4_direct.composed.quiet[1]`: ……黙ってたけどね。…このままは、無理だよ
@@ -1710,7 +1710,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S6.seductive.shy[1]`: あの…わたしでよければ…後輩の子たちに、何か残せたら…って…
 - `CHOICE_EVENT_DIALOGUES.S6.seductive.easygoing[1]`: 後輩の子たち、かわいいわよね。面倒見させてもらえない？
 - `CHOICE_EVENT_DIALOGUES.S6.seductive.earnest[1]`: 培ってきたものを、次の子たちに伝えたいの
-- `CHOICE_EVENT_DIALOGUES.S6.seductive.emotional[1]`: 決めたわ……っ……ふふ、これがわたしの答えよ……
+- `CHOICE_EVENT_DIALOGUES.S6.seductive.emotional[1]`: 決めたわ……っ……ふふ、これが私の答えよ……
 - `CHOICE_EVENT_DIALOGUES.S6.composed.normal[1]`: …後輩の面倒、見させてもらえないかな
 - `CHOICE_EVENT_DIALOGUES.S6.composed.bold[1]`: …後輩に伝えておきたいことがあるんだ。任せてくれないかな
 - `CHOICE_EVENT_DIALOGUES.S6.composed.quiet[1]`: ……後輩に、渡したいものがあるんだ
@@ -1734,7 +1734,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.E1.polite.normal[1]`: メディア出演のお話をいただきまして…ご検討いただけますでしょうか
 - `CHOICE_EVENT_DIALOGUES.E1.polite.normal[2]`: 出演のお話をいただきました。ぜひ、やらせていただきたいです
 - `CHOICE_EVENT_DIALOGUES.E1.polite.bold[1]`: この露出を足がかりに、もっと大きな舞台へ行きたいんです
-- `CHOICE_EVENT_DIALOGUES.E1.polite.bold[2]`: わたしが出れば注目は集まります。任せてください
+- `CHOICE_EVENT_DIALOGUES.E1.polite.bold[2]`: 私が出れば注目は集まります。任せてください
 - `CHOICE_EVENT_DIALOGUES.E1.polite.quiet[1]`: …出演のお話でしょうか。精一杯努めます
 - `CHOICE_EVENT_DIALOGUES.E1.polite.shy[1]`: あ、あの…どうしたら、いいんでしょうか…
 - `CHOICE_EVENT_DIALOGUES.E1.polite.easygoing[1]`: もっと多くの方に見ていただきたくて…出させていただけませんか
@@ -1919,13 +1919,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S_grumble.standard.earnest[1]`: （「自分、このままでいいんですかね…」と後輩に弱音を吐いている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.standard.emotional[1]`: （涙ぐみながら「もう限界かも…」とチームメイトに打ち明けている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.ojousama.normal[1]`: （控室で「あの方の采配、少しおかしくなくて？」と囁いている）
-- `CHOICE_EVENT_DIALOGUES.S_grumble.ojousama.bold[1]`: （「なぜわたくしたちがこんな扱いを受けねばならないの」と控室で声を張っている）
+- `CHOICE_EVENT_DIALOGUES.S_grumble.ojousama.bold[1]`: （「この扱いの意味、伺いたいものね」と控室で静かに笑ってみせる）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.ojousama.quiet[1]`: （一言も発しないまま、その静けさが控室を重くしている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.ojousama.earnest[1]`: （「わたくし、このままでよろしいのでしょうか」と後輩に弱音を漏らしている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.ojousama.emotional[1]`: （目を潤ませて「もう限界かもしれません」と仲間に打ち明けている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.ojousama.shy[1]`: あの…わたくし…少しだけ、不満がございます…
 - `CHOICE_EVENT_DIALOGUES.S_grumble.delinquent.normal[1]`: （「マジふざけんな」とロッカーを蹴る音が聞こえてきた）
-- `CHOICE_EVENT_DIALOGUES.S_grumble.delinquent.bold[1]`: （「なんであたしらがこんな扱い受けなきゃなんねぇんだよ」とロッカーで吠えている）
+- `CHOICE_EVENT_DIALOGUES.S_grumble.delinquent.bold[1]`: （「なんで私らがこんな扱い受けなきゃなんねぇんだよ」とロッカーで吠えている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.delinquent.quiet[1]`: （何も言わず壁にもたれているが、その空気に誰も近づけない）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.delinquent.easygoing[1]`: （いつもの軽口が消え、「なぁ、ちょっとさぁ…」と珍しく愚痴をこぼしている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.delinquent.earnest[1]`: （「あたし、このままでいいのかな…」と後輩に珍しく弱音を吐いている）
@@ -1939,9 +1939,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S_grumble.cool.emotional[1]`: （「…もう限界かもしれない」と、声を殺して仲間に漏らしている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.cool.shy[1]`: …あの。…少し、不満がある
 - `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.normal[1]`: （「最近、ここにいる意味あるのかしら」と同僚に漏らしている）
-- `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.bold[1]`: （「わたしたち、ずいぶん軽く見られてるのね」と笑みを崩さずに言い放っている）
+- `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.bold[1]`: （「私たち、ずいぶん軽く見られてるのね」と笑みを崩さずに言い放っている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.easygoing[1]`: （笑顔が消え、「ねえ…ちょっと聞いてよ」と同僚に愚痴をこぼしている）
-- `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.earnest[1]`: （「わたし、このままでいいのかしら」と後輩に弱音を漏らしている）
+- `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.earnest[1]`: （「私、このままでいいのかしら」と後輩に弱音を漏らしている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.emotional[1]`: 正直に言うわね……っ……ちょっと不満なの……
 - `CHOICE_EVENT_DIALOGUES.S_grumble.seductive.shy[1]`: あの…ごめんなさい…少し、不満があるの…
 - `CHOICE_EVENT_DIALOGUES.S_grumble.composed.normal[1]`: （いつもの穏やかさが消え、「…ま、そういうことだよね」と静かに呟いている）
@@ -1952,7 +1952,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S_grumble.composed.emotional[1]`: （感情を押し殺した声で「…もう限界かもね」と仲間にだけ漏らしている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.composed.shy[1]`: …言いにくいんだけど。…少し、不満があってさ
 - `CHOICE_EVENT_DIALOGUES.S_grumble.polite.quiet[1]`: （黙って頭を下げるだけで、その沈黙が周囲を不安にさせている）
-- `CHOICE_EVENT_DIALOGUES.S_grumble.polite.earnest[1]`: （「わたし、このままでいいんでしょうか…」と後輩に弱音をこぼしている）
+- `CHOICE_EVENT_DIALOGUES.S_grumble.polite.earnest[1]`: （「私、このままでいいんでしょうか…」と後輩に弱音をこぼしている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.polite.emotional[1]`: （涙をこらえながら「もう限界かもしれません」と仲間に打ち明けている）
 - `CHOICE_EVENT_DIALOGUES.S_grumble.polite.shy[1]`: すみません…少し、不満があります…
 - `CHOICE_EVENT_DIALOGUES.S_sns.standard.normal[1]`: （SNSに「自分の居場所はどこなんだろう」と意味深な投稿）
@@ -1984,7 +1984,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S_sns.seductive.normal[1]`: （SNSに「次のステージが待っているかも」と匂わせ投稿）
 - `CHOICE_EVENT_DIALOGUES.S_sns.seductive.bold[1]`: （SNSに「このまま終わるつもりはないの。楽しみにしてて」と投稿）
 - `CHOICE_EVENT_DIALOGUES.S_sns.seductive.easygoing[1]`: （SNSに「最近ね、ちょっと考えることがあるの」と珍しく素の投稿）
-- `CHOICE_EVENT_DIALOGUES.S_sns.seductive.earnest[1]`: （SNSに「わたし、ここで必要とされているのかしら」と率直な投稿）
+- `CHOICE_EVENT_DIALOGUES.S_sns.seductive.earnest[1]`: （SNSに「私、ここで必要とされているのかしら」と率直な投稿）
 - `CHOICE_EVENT_DIALOGUES.S_sns.seductive.emotional[1]`: SNS見たわ……っ……ふふ、勝手な人たちね……
 - `CHOICE_EVENT_DIALOGUES.S_sns.seductive.shy[1]`: え、SNSで…あんなふうに書かれてしまって…
 - `CHOICE_EVENT_DIALOGUES.S_sns.composed.normal[1]`: （SNSに夕焼けの写真と「…少し考える時間が欲しいかな」と投稿。ファンがざわついている）
@@ -1995,7 +1995,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S_sns.composed.emotional[1]`: （SNSに涙の絵文字と「…もう駄目かもしれないね」と投稿。静かな文面だけに騒ぎが大きくなっている）
 - `CHOICE_EVENT_DIALOGUES.S_sns.composed.shy[1]`: …SNSでね。…あんなふうに書かれてしまって
 - `CHOICE_EVENT_DIALOGUES.S_sns.polite.quiet[1]`: （SNSに「…すみません」とだけ投稿。ファンの間で憶測が広がっている）
-- `CHOICE_EVENT_DIALOGUES.S_sns.polite.earnest[1]`: （SNSに「わたしは本当にここで必要とされているんでしょうか」と率直な投稿）
+- `CHOICE_EVENT_DIALOGUES.S_sns.polite.earnest[1]`: （SNSに「私は本当にここで必要とされているんでしょうか」と率直な投稿）
 - `CHOICE_EVENT_DIALOGUES.S_sns.polite.emotional[1]`: （SNSに涙の絵文字と「もう駄目かもしれません」と投稿。炎上し始めている）
 - `CHOICE_EVENT_DIALOGUES.S_sns.polite.shy[1]`: え、SNSで…そんな風に書かれてしまって…
 
@@ -2008,22 +2008,22 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.normal[1]`: 出演のお話、ありがたくお受けします
 - `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.bold[1]`: 任せてよ、ばっちり爪痕残してくる!
 - `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.quiet[1]`: ……出る。頑張る
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.shy[1]`: は、はい…!せ、精一杯やります…!
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.easygoing[1]`: やったー!カメラの前で何しよっかな!
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.shy[1]`: は、はい…！せ、精一杯やります…！
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.easygoing[1]`: やったー！カメラの前で何しよっかな！
 - `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.earnest[1]`: お任せください…精一杯務めます
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.emotional[1]`: ほんとに……!? 嬉しい……っ……頑張ります……!
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.polite.normal[1]`: やりました……!夢みたいです、本当にありがとうございます
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.polite.bold[1]`: やった、やりましたよ!わたしにできないことなんてない!
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.polite.easygoing[1]`: やったー!信じられない、夢みたい……!
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.standard.emotional[1]`: ほんとに……！？ 嬉しい……っ……頑張ります……！
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.polite.normal[1]`: やりました……！夢みたいです、本当にありがとうございます
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.polite.bold[1]`: やりました！　全力でぶつかれば、届くんですね！
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.polite.easygoing[1]`: やったー！信じられない、夢みたい……！
 - `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.seductive.quiet[1]`: ……やれた。……嬉しい
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.ojousama.easygoing[1]`: まあ、成功いたしましたの!わたくし、嬉しくて仕方ありませんわ!
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.normal[1]`: えっ、わたしですか？ ……はい、頑張ります!
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.bold[1]`: お、わたしに来た!? いいよ、任せて!
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.quiet[1]`: ……わたしで、いいんですか。……やります
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.shy[1]`: えっ、わ、わたしが…!? が、頑張ります……!
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.easygoing[1]`: えー!? わたしでいいの? やったー!
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.accept.ojousama.easygoing[1]`: まあ、成功いたしましたの！わたくし、嬉しくて仕方ありませんわ！
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.normal[1]`: えっ、私ですか？ ……はい、頑張ります！
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.bold[1]`: お、私に来た!? いいよ、任せて!
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.quiet[1]`: ……私で、いいんですか。……やります
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.shy[1]`: えっ、わ、わたしが…！？ が、頑張ります……！
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.easygoing[1]`: えー！？ 私でいいの？ やったー！
 - `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.earnest[1]`: ご指名、ありがとうございます。精一杯やります
-- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.emotional[1]`: えっ、わたしに……!? う、嬉しい……!
+- `CHOICE_EVENT_RESULT_DIALOGUES.E1.recommend.standard.emotional[1]`: えっ、私に……！？ う、嬉しい……！
 
 ## `LARGE_EVENT_TEXTS`
 
@@ -2244,7 +2244,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B2_fighter1.standard.quiet[1]`: ………あの人とは、もう…
 - `LARGE_EVENT_DIALOGUES.B2_fighter1.standard.shy[1]`: あの…あの人のこと…もう…どうしたらいいか…
 - `LARGE_EVENT_DIALOGUES.B2_fighter1.standard.easygoing[1]`: あいつとはもう無理！顔も見たくない！
-- `LARGE_EVENT_DIALOGUES.B2_fighter1.standard.earnest[1]`: 足を引っ張る人間とは一緒にやれない
+- `LARGE_EVENT_DIALOGUES.B2_fighter1.standard.earnest[1]`: 手を抜く人と同じリングには立てない
 - `LARGE_EVENT_DIALOGUES.B2_fighter1.standard.earnest[2]`: このままでは団体のためにならない。何とかしてほしい
 - `LARGE_EVENT_DIALOGUES.B2_fighter1.standard.emotional[1]`: もう無理…！あの人と一緒にいると…辛い…！
 - `LARGE_EVENT_DIALOGUES.B2_fighter1.ojousama.normal[1]`: あの方とは…もう限界ですわ
@@ -2339,7 +2339,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4.standard.shy[1]`: え…わ、私なんかでいいんですか…？ が、頑張ります…！
 - `LARGE_EVENT_DIALOGUES.B4.standard.easygoing[1]`: マジで！？ テレビに出れるの！？ やったー！
 - `LARGE_EVENT_DIALOGUES.B4.standard.easygoing[2]`: ファンの皆さんにもっと近い姿を見せられるね！
-- `LARGE_EVENT_DIALOGUES.B4.standard.earnest[1]`: 私なんかでいいんですか？ …精一杯頑張ります！
+- `LARGE_EVENT_DIALOGUES.B4.standard.earnest[1]`: 私でいいんですか？ …精一杯やらせていただきます！
 - `LARGE_EVENT_DIALOGUES.B4.standard.emotional[1]`: えっ…テレビ…！？ 私が…！？ 頑張ります…！頑張ります…！
 - `LARGE_EVENT_DIALOGUES.B4.ojousama.normal[1]`: 取材ですか？ 精一杯務めさせていただきます
 - `LARGE_EVENT_DIALOGUES.B4.ojousama.bold[1]`: あらあら、全国の皆様も私の事が気にかかるのかしら？
@@ -2402,7 +2402,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4_cm.delinquent.earnest[1]`: CMか。しっかり準備するっす。恥ずかしいもんは映せねえ
 - `LARGE_EVENT_DIALOGUES.B4_cm.delinquent.emotional[1]`: CM出るのかよ…！？ うわ、緊張する…！でもやる…！
 - `LARGE_EVENT_DIALOGUES.B4_cm.seductive.normal[1]`: カメラの前ね…いい絵、撮らせてあげる♡
-- `LARGE_EVENT_DIALOGUES.B4_cm.seductive.bold[1]`: 全国に私を見てもらえるのね。楽しみだわ♡
+- `LARGE_EVENT_DIALOGUES.B4_cm.seductive.bold[1]`: 全国に私を見てもらえるのね。楽しみだわ
 - `LARGE_EVENT_DIALOGUES.B4_cm.seductive.shy[1]`: わ、私がCMに…？ 本当に、大丈夫なの…？
 - `LARGE_EVENT_DIALOGUES.B4_cm.seductive.easygoing[1]`: CM出演か…どんな自分が映るか楽しみ♡
 - `LARGE_EVENT_DIALOGUES.B4_cm.seductive.earnest[1]`: ちゃんと準備して、いい姿を見せるわ
@@ -2449,7 +2449,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4_gravure.delinquent.earnest[1]`: しっかり準備して臨むっす。でも…ちょっと恥ずいな
 - `LARGE_EVENT_DIALOGUES.B4_gravure.delinquent.emotional[1]`: グラビア…！？ えっ、あたしが…！？ うわ、マジか…！
 - `LARGE_EVENT_DIALOGUES.B4_gravure.seductive.normal[1]`: グラビアね…全部見せてあげるわ♡
-- `LARGE_EVENT_DIALOGUES.B4_gravure.seductive.bold[1]`: 私の本気の魅力、たっぷり撮ってもらうわ♡
+- `LARGE_EVENT_DIALOGUES.B4_gravure.seductive.bold[1]`: 私の本気の魅力、たっぷり撮ってもらうわ
 - `LARGE_EVENT_DIALOGUES.B4_gravure.seductive.shy[1]`: え…グラビア…？ は、恥ずかしい…でも、やる…
 - `LARGE_EVENT_DIALOGUES.B4_gravure.seductive.easygoing[1]`: グラビア？ 任せておいてよ♡
 - `LARGE_EVENT_DIALOGUES.B4_gravure.seductive.earnest[1]`: きちんと準備して、いい仕上がりにするわ
@@ -2495,8 +2495,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4_variety.delinquent.easygoing[1]`: テレビで暴れてやる！ 楽しみ！
 - `LARGE_EVENT_DIALOGUES.B4_variety.delinquent.earnest[1]`: うまく喋れるか不安っすけど…精一杯やるんで
 - `LARGE_EVENT_DIALOGUES.B4_variety.delinquent.emotional[1]`: バラエティ出るのか…！？ うおー、テンション上がってきた…！
-- `LARGE_EVENT_DIALOGUES.B4_variety.seductive.normal[1]`: バラエティか。じゃあ、素の私を少し見せてあげようかな
-- `LARGE_EVENT_DIALOGUES.B4_variety.seductive.bold[1]`: バラエティでも私のペースで話すわ♡
+- `LARGE_EVENT_DIALOGUES.B4_variety.seductive.normal[1]`: バラエティねぇ。じゃあ、素の私を少し見せてあげようかしら
+- `LARGE_EVENT_DIALOGUES.B4_variety.seductive.bold[1]`: バラエティでも私のペースで話すわ
 - `LARGE_EVENT_DIALOGUES.B4_variety.seductive.shy[1]`: バ、バラエティ…喋るの…？ が、頑張る…
 - `LARGE_EVENT_DIALOGUES.B4_variety.seductive.easygoing[1]`: バラエティか〜。楽しそう！ 見ててよ♡
 - `LARGE_EVENT_DIALOGUES.B4_variety.seductive.earnest[1]`: ちゃんと準備して、面白い話ができるよう頑張るわ
@@ -2543,7 +2543,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4_brand.delinquent.earnest[1]`: ブランドのイメージは大事だろ。しっかり務めるっす
 - `LARGE_EVENT_DIALOGUES.B4_brand.delinquent.emotional[1]`: えっ、ブランドとコラボ…！？ すげえ…！どんな商品になるんだよ…！？
 - `LARGE_EVENT_DIALOGUES.B4_brand.seductive.normal[1]`: 私のイメージに合うブランドね。いい選択だわ♡
-- `LARGE_EVENT_DIALOGUES.B4_brand.seductive.bold[1]`: 私とブランドの組み合わせ…最高じゃない♡
+- `LARGE_EVENT_DIALOGUES.B4_brand.seductive.bold[1]`: 私とブランドの組み合わせ…最高じゃない
 - `LARGE_EVENT_DIALOGUES.B4_brand.seductive.shy[1]`: わ、私がコラボ…？ 本当に、私でいいの…
 - `LARGE_EVENT_DIALOGUES.B4_brand.seductive.easygoing[1]`: コラボ商品か…どんなのになるかな♡
 - `LARGE_EVENT_DIALOGUES.B4_brand.seductive.earnest[1]`: ちゃんとブランドのイメージに合わせて取り組むわ
@@ -2557,7 +2557,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4_brand.composed.earnest[1]`: …先方のイメージを大事にね。…しっかり務めるよ
 - `LARGE_EVENT_DIALOGUES.B4_brand.composed.emotional[1]`: …っ…コラボか。…どんな形になるんだろうね
 - `LARGE_EVENT_DIALOGUES.B4_brand.cool.bold[1]`: …ブランドには口数の少なさが向いている。悪くない
-- `LARGE_EVENT_DIALOGUES.B4_brand.cool.quiet[1]`: …無駄口は叩かない。それがブランドには向いているかもな
+- `LARGE_EVENT_DIALOGUES.B4_brand.cool.quiet[1]`: …無駄口は叩かない。それがブランドには向いているかも
 - `LARGE_EVENT_DIALOGUES.B4_brand.cool.shy[1]`: …私がコラボ。…本当に私でいいのか
 - `LARGE_EVENT_DIALOGUES.B4_brand.cool.easygoing[1]`: …コラボか。…商品はもらえるのか
 - `LARGE_EVENT_DIALOGUES.B4_brand.cool.easygoing[2]`: …どんなものになるのか。少し気になる
@@ -2599,7 +2599,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4_fashion.delinquent.earnest[1]`: 練習して、ちゃんと歩けるようにしとくっす
 - `LARGE_EVENT_DIALOGUES.B4_fashion.delinquent.emotional[1]`: ランウェイ歩くのかよ…！？ うわ、どうしよ、緊張するやつだろこれ…！
 - `LARGE_EVENT_DIALOGUES.B4_fashion.seductive.normal[1]`: ランウェイか…私の本領発揮ね♡
-- `LARGE_EVENT_DIALOGUES.B4_fashion.seductive.bold[1]`: ランウェイ、私のためにあるようなものよ♡
+- `LARGE_EVENT_DIALOGUES.B4_fashion.seductive.bold[1]`: ランウェイ、私のためにあるようなものよ
 - `LARGE_EVENT_DIALOGUES.B4_fashion.seductive.shy[1]`: フ、ファッションショー…みんなに、見られるのよね…！
 - `LARGE_EVENT_DIALOGUES.B4_fashion.seductive.easygoing[1]`: ランウェイ！ 絶対楽しい！ 見ててよ♡
 - `LARGE_EVENT_DIALOGUES.B4_fashion.seductive.earnest[1]`: きちんと練習して、完璧に歩いてみせるわ
@@ -2647,7 +2647,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `LARGE_EVENT_DIALOGUES.B4_fan.delinquent.earnest[1]`: 来てくれた一人ひとりと、ちゃんと向き合うっす
 - `LARGE_EVENT_DIALOGUES.B4_fan.delinquent.emotional[1]`: ファンに会えるのか…！ 絶対みんな笑顔にしてやる…！
 - `LARGE_EVENT_DIALOGUES.B4_fan.seductive.normal[1]`: ファンと直接会える機会ね…喜ばせてあげるわ♡
-- `LARGE_EVENT_DIALOGUES.B4_fan.seductive.bold[1]`: ファンを喜ばせるのは得意よ。任せて♡
+- `LARGE_EVENT_DIALOGUES.B4_fan.seductive.bold[1]`: ファンを喜ばせるのは得意よ。任せて
 - `LARGE_EVENT_DIALOGUES.B4_fan.seductive.shy[1]`: フ、ファンの人に直接会うの…！ 緊張するけど、頑張る
 - `LARGE_EVENT_DIALOGUES.B4_fan.seductive.easygoing[1]`: ファンに会いに行くの？ 嬉しいな♡
 - `LARGE_EVENT_DIALOGUES.B4_fan.seductive.earnest[1]`: 一人ひとりにちゃんと向き合う。それが大事だと思うわ

@@ -65,14 +65,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### polite.bold[]
 
 - `HOT_TAG_LINES.polite.bold[1]`: 待っていましたっ！
-- `HOT_TAG_LINES.polite.bold[2]`: わたしの番ですっ！
+- `HOT_TAG_LINES.polite.bold[2]`: 私の番ですっ！
 - `HOT_TAG_LINES.polite.bold[3]`: ようやく回ってきましたね！
 
 ### polite.easygoing[]
 
 - `HOT_TAG_LINES.polite.easygoing[1]`: はーい、交代しますね〜！
 - `HOT_TAG_LINES.polite.easygoing[2]`: お疲れさまです♪ いきますね
-- `HOT_TAG_LINES.polite.easygoing[3]`: ここからはわたしの出番です♪
+- `HOT_TAG_LINES.polite.easygoing[3]`: ここからは私の出番です♪
 
 ### polite.quiet[]
 
@@ -96,25 +96,25 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `HOT_TAG_LINES.seductive.normal[1]`: 任せて…いいわよ
 - `HOT_TAG_LINES.seductive.normal[2]`: 交代よ
-- `HOT_TAG_LINES.seductive.normal[3]`: ここからはわたしの番ね
+- `HOT_TAG_LINES.seductive.normal[3]`: ここからは私の番ね
 
 ### seductive.earnest[]
 
 - `HOT_TAG_LINES.seductive.earnest[1]`: お疲れさま…あとは任せて
 - `HOT_TAG_LINES.seductive.earnest[2]`: よく耐えたわね…交代よ
-- `HOT_TAG_LINES.seductive.earnest[3]`: ここからはわたしが背負うわ
+- `HOT_TAG_LINES.seductive.earnest[3]`: ここからは私が背負うわ
 
 ### seductive.bold[]
 
 - `HOT_TAG_LINES.seductive.bold[1]`: 待ちくたびれたわ
-- `HOT_TAG_LINES.seductive.bold[2]`: わたしの番よ
+- `HOT_TAG_LINES.seductive.bold[2]`: 私の番よ
 - `HOT_TAG_LINES.seductive.bold[3]`: ようやく回ってきたわね
 
 ### seductive.easygoing[]
 
 - `HOT_TAG_LINES.seductive.easygoing[1]`: はぁい、交代ね♪
 - `HOT_TAG_LINES.seductive.easygoing[2]`: お疲れさま…あとは任せて♪
-- `HOT_TAG_LINES.seductive.easygoing[3]`: ここからはわたしの時間よ♪
+- `HOT_TAG_LINES.seductive.easygoing[3]`: ここからは私の時間よ♪
 
 ### seductive.quiet[]
 
@@ -131,14 +131,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### seductive.emotional[]
 
 - `HOT_TAG_LINES.seductive.emotional[1]`: 絶対…勝つわ…！
-- `HOT_TAG_LINES.seductive.emotional[2]`: お疲れさま…あとはわたしが…！
+- `HOT_TAG_LINES.seductive.emotional[2]`: お疲れさま…あとは私が…！
 - `HOT_TAG_LINES.seductive.emotional[3]`: 任せて…絶対に、よ…！
 
 ### delinquent.normal[]
 
 - `HOT_TAG_LINES.delinquent.normal[1]`: 任せときな！
 - `HOT_TAG_LINES.delinquent.normal[2]`: 交代だ！
-- `HOT_TAG_LINES.delinquent.normal[3]`: ここからはあたしが行く！
+- `HOT_TAG_LINES.delinquent.normal[3]`: ここからは私が行く！
 
 ### delinquent.earnest[]
 
@@ -149,14 +149,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### delinquent.bold[]
 
 - `HOT_TAG_LINES.delinquent.bold[1]`: 待ってたぜ！
-- `HOT_TAG_LINES.delinquent.bold[2]`: あたしの番だ！
+- `HOT_TAG_LINES.delinquent.bold[2]`: 私の番だ！
 - `HOT_TAG_LINES.delinquent.bold[3]`: ようやく回ってきやがった！
 
 ### delinquent.easygoing[]
 
 - `HOT_TAG_LINES.delinquent.easygoing[1]`: はいはい、交代な〜！
-- `HOT_TAG_LINES.delinquent.easygoing[2]`: お疲れさん♪ あたしいくぜ
-- `HOT_TAG_LINES.delinquent.easygoing[3]`: ここからはあたしの出番だ♪
+- `HOT_TAG_LINES.delinquent.easygoing[2]`: お疲れさん♪ 私いくぜ
+- `HOT_TAG_LINES.delinquent.easygoing[3]`: ここからは私の出番だ♪
 
 ### delinquent.quiet[]
 
@@ -185,7 +185,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### ojousama.earnest[]
 
 - `HOT_TAG_LINES.ojousama.earnest[1]`: お疲れさまですわ、お任せを！
-- `HOT_TAG_LINES.ojousama.earnest[2]`: よく耐えましたわ、交代ですわ！
+- `HOT_TAG_LINES.ojousama.earnest[2]`: よく耐えました、交代ですわ！
 - `HOT_TAG_LINES.ojousama.earnest[3]`: ここからはわたくしが引き継ぎますわ！
 
 ### ojousama.bold[]
@@ -323,7 +323,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.bold[]
 
 - `DOUBLE_TEAM_LINES.standard.bold[1]`: 二人で決める！
-- `DOUBLE_TEAM_LINES.standard.bold[2]`: 合わせろ、いくぞ！
+- `DOUBLE_TEAM_LINES.standard.bold[2]`: 合わせて、行くぞ！
 - `DOUBLE_TEAM_LINES.standard.bold[3]`: 逃がさない、そっち頼む！
 
 ### standard.easygoing[]
@@ -408,7 +408,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DOUBLE_TEAM_LINES.seductive.bold[1]`: 二人で決めるわよ
 - `DOUBLE_TEAM_LINES.seductive.bold[2]`: 合わせなさい
-- `DOUBLE_TEAM_LINES.seductive.bold[3]`: 逃がさないわ、そっち任せた
+- `DOUBLE_TEAM_LINES.seductive.bold[3]`: 逃がさないわ、そっちは任せたわ
 
 ### seductive.easygoing[]
 
@@ -485,7 +485,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### ojousama.earnest[]
 
 - `DOUBLE_TEAM_LINES.ojousama.earnest[1]`: ご一緒に参りますわ！
-- `DOUBLE_TEAM_LINES.ojousama.earnest[2]`: タイミングを合わせて！
+- `DOUBLE_TEAM_LINES.ojousama.earnest[2]`: タイミングを合わせますわ！
 - `DOUBLE_TEAM_LINES.ojousama.earnest[3]`: 二人で決めますわ！
 
 ### ojousama.bold[]
@@ -1004,7 +1004,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### seductive.bold[]
 
 - `BETRAYAL_LINES.seductive.bold[1]`: くっ…！
-- `BETRAYAL_LINES.seductive.bold[2]`: ちっ…間に合わないわ
+- `BETRAYAL_LINES.seductive.bold[2]`: くっ…間に合わないわ
 - `BETRAYAL_LINES.seductive.bold[3]`: 届かなかった…わね
 
 ### seductive.easygoing[]
@@ -1287,7 +1287,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TAG_MATCH_WIN_LINES.polite.quiet[1]`: …{partner}さん、ありがとうございました。
 - `TAG_MATCH_WIN_LINES.polite.quiet[2]`: …{partner}さんと、だから勝てました。
 - `TAG_MATCH_WIN_LINES.polite.shy[1]`: {partner}さん…ほ、本当に…ありがとうございました…！
-- `TAG_MATCH_WIN_LINES.polite.shy[2]`: わ、私…頑張れました…{partner}さんのおかげです…！
+- `TAG_MATCH_WIN_LINES.polite.shy[2]`: わ、わたし…頑張れました…{partner}さんのおかげです…！
 - `TAG_MATCH_WIN_LINES.polite.emotional[1]`: {partner}さんっ…！ ありがとうございます…二人で、勝てました…！
 - `TAG_MATCH_WIN_LINES.polite.emotional[2]`: 絶対勝つって約束…守れましたね、{partner}さん…っ！
 - `TAG_MATCH_WIN_LINES.seductive.normal[1]`: {partner}…ありがとう。二人でつかんだ勝ち、悪くないでしょ？
@@ -1295,7 +1295,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TAG_MATCH_WIN_LINES.seductive.earnest[1]`: {partner}…あなたを信じてよかった。この勝ちは二人のものよ。
 - `TAG_MATCH_WIN_LINES.seductive.earnest[2]`: {partner}、あなたが繋いでくれたから…最後まで折れずにいられたの。
 - `TAG_MATCH_WIN_LINES.seductive.bold[1]`: やったわね{partner}。二人揃えば、負ける気なんてしないわ。
-- `TAG_MATCH_WIN_LINES.seductive.bold[2]`: 見た？ これが{partner}とわたしのタッグよ。
+- `TAG_MATCH_WIN_LINES.seductive.bold[2]`: 見た？ これが{partner}と私のタッグよ。
 - `TAG_MATCH_WIN_LINES.seductive.easygoing[1]`: {partner}〜お疲れさま♪ 息ぴったりだったでしょ？
 - `TAG_MATCH_WIN_LINES.seductive.easygoing[2]`: 勝っちゃった♪ やっぱり{partner}と組むと、楽しいわ〜
 - `TAG_MATCH_WIN_LINES.seductive.quiet[1]`: …{partner}、ありがとう。
@@ -1305,12 +1305,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TAG_MATCH_WIN_LINES.seductive.emotional[1]`: {partner}っ…！ やったわ…二人で、勝ったのよ…！
 - `TAG_MATCH_WIN_LINES.seductive.emotional[2]`: 約束…守れたわね、{partner}…っ！
 - `TAG_MATCH_WIN_LINES.delinquent.normal[1]`: {partner}、ありがとな！ 二人だから勝てたんだ！
-- `TAG_MATCH_WIN_LINES.delinquent.normal[2]`: やったぜ{partner}！ あたしら、いいコンビだろ？
+- `TAG_MATCH_WIN_LINES.delinquent.normal[2]`: やったぜ{partner}！ 私ら、いいコンビだろ？
 - `TAG_MATCH_WIN_LINES.delinquent.earnest[1]`: {partner}、お前を信じてよかった。この勝ちは二人のもんだ。
 - `TAG_MATCH_WIN_LINES.delinquent.earnest[2]`: {partner}が繋いでくれたから…あたし、最後まで踏ん張れた。
-- `TAG_MATCH_WIN_LINES.delinquent.bold[1]`: やったな{partner}！ あたしらが組みゃ、負ける気がしねえ！
-- `TAG_MATCH_WIN_LINES.delinquent.bold[2]`: 見たかよ！ {partner}とあたしのタッグ、最強だぜ！
-- `TAG_MATCH_WIN_LINES.delinquent.easygoing[1]`: {partner}〜お疲れさん！ あたしら息ぴったりだったろ？
+- `TAG_MATCH_WIN_LINES.delinquent.bold[1]`: やったな{partner}！ 私らが組みゃ、負ける気がしねえ！
+- `TAG_MATCH_WIN_LINES.delinquent.bold[2]`: 見たかよ！ {partner}と私のタッグ、最強だぜ！
+- `TAG_MATCH_WIN_LINES.delinquent.easygoing[1]`: {partner}〜お疲れさん！ 私ら息ぴったりだったろ？
 - `TAG_MATCH_WIN_LINES.delinquent.easygoing[2]`: 勝っちゃったぜ♪ {partner}と組むの、やっぱ楽しいわ〜
 - `TAG_MATCH_WIN_LINES.delinquent.quiet[1]`: …{partner}、恩に着る。
 - `TAG_MATCH_WIN_LINES.delinquent.quiet[2]`: …{partner}と、だから勝てた。
@@ -1371,7 +1371,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TAG_MATCH_LOSS_LINES.standard.normal[2]`: {partner}、悔しいね。次は絶対、勝とう。
 - `TAG_MATCH_LOSS_LINES.standard.earnest[1]`: {partner}…私の力不足だ。あなたを勝たせてあげられなかった…
 - `TAG_MATCH_LOSS_LINES.standard.earnest[2]`: ここまで繋いでくれたのに…{partner}、ごめん。
-- `TAG_MATCH_LOSS_LINES.standard.bold[1]`: くそっ…{partner}、悪い。私のミスだ。次は絶対だ。
+- `TAG_MATCH_LOSS_LINES.standard.bold[1]`: くそっ…{partner}、ごめん。私のミスよ。次は絶対に取る。
 - `TAG_MATCH_LOSS_LINES.standard.bold[2]`: 負けたままでいられるか…{partner}、次は倍返しだ！
 - `TAG_MATCH_LOSS_LINES.standard.easygoing[1]`: {partner}〜ごめんね…私、決められちゃった…
 - `TAG_MATCH_LOSS_LINES.standard.easygoing[2]`: あちゃ〜負けちゃった…でも{partner}、次は頑張るね。
@@ -1391,31 +1391,31 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TAG_MATCH_LOSS_LINES.polite.easygoing[2]`: あちゃ〜負けちゃいましたね…次は頑張ります、{partner}さん。
 - `TAG_MATCH_LOSS_LINES.polite.quiet[1]`: …{partner}さん、ごめんなさい。
 - `TAG_MATCH_LOSS_LINES.polite.quiet[2]`: …申し訳、ありませんでした。{partner}さん。
-- `TAG_MATCH_LOSS_LINES.polite.shy[1]`: {partner}さん…ご、ごめんなさい…私のせいで…
+- `TAG_MATCH_LOSS_LINES.polite.shy[1]`: {partner}さん…ご、ごめんなさい…わたしのせいで…
 - `TAG_MATCH_LOSS_LINES.polite.shy[2]`: つ、次は…絶対…{partner}さんを勝たせます…！
 - `TAG_MATCH_LOSS_LINES.polite.emotional[1]`: {partner}さんっ…ごめんなさいっ…私のせいでっ…！
 - `TAG_MATCH_LOSS_LINES.polite.emotional[2]`: 次は絶対…勝ちますからっ…！ {partner}さん…！
-- `TAG_MATCH_LOSS_LINES.seductive.normal[1]`: {partner}…ごめんなさい。わたしが決めきれてたら…
+- `TAG_MATCH_LOSS_LINES.seductive.normal[1]`: {partner}…ごめんなさい。私が決めきれてたら…
 - `TAG_MATCH_LOSS_LINES.seductive.normal[2]`: 悔しいわね、{partner}。次は絶対、勝つわよ。
-- `TAG_MATCH_LOSS_LINES.seductive.earnest[1]`: {partner}…わたしの力不足よ。あなたを勝たせられなかった…
+- `TAG_MATCH_LOSS_LINES.seductive.earnest[1]`: {partner}…私の力不足よ。あなたを勝たせられなかった…
 - `TAG_MATCH_LOSS_LINES.seductive.earnest[2]`: ここまで繋いでくれたのに…ごめんなさい、{partner}。
-- `TAG_MATCH_LOSS_LINES.seductive.bold[1]`: わたしのミスよ、{partner}…悪いわね。でも次は絶対、返すわ。
+- `TAG_MATCH_LOSS_LINES.seductive.bold[1]`: 私のミスよ、{partner}…悪いわね。でも次は絶対、返すわ。
 - `TAG_MATCH_LOSS_LINES.seductive.bold[2]`: このままじゃ終わらせない。{partner}、次は倍返しよ。
-- `TAG_MATCH_LOSS_LINES.seductive.easygoing[1]`: {partner}〜ごめんね…わたし、決められちゃった…
+- `TAG_MATCH_LOSS_LINES.seductive.easygoing[1]`: {partner}〜ごめんね…私、決められちゃった…
 - `TAG_MATCH_LOSS_LINES.seductive.easygoing[2]`: あーあ、負けちゃった…でも{partner}、次はやるわよ。
 - `TAG_MATCH_LOSS_LINES.seductive.quiet[1]`: …{partner}、ごめんなさい。
 - `TAG_MATCH_LOSS_LINES.seductive.quiet[2]`: …悔しい。{partner}にも…ね。
 - `TAG_MATCH_LOSS_LINES.seductive.shy[1]`: {partner}…ご、ごめんね…わたしのせいで…
 - `TAG_MATCH_LOSS_LINES.seductive.shy[2]`: つ、次は…絶対…{partner}を、勝たせるわ…！
-- `TAG_MATCH_LOSS_LINES.seductive.emotional[1]`: {partner}っ…ごめんっ…わたしのせいでっ…！
+- `TAG_MATCH_LOSS_LINES.seductive.emotional[1]`: {partner}っ…ごめんっ…私のせいでっ…！
 - `TAG_MATCH_LOSS_LINES.seductive.emotional[2]`: 次は絶対、勝つわっ…！ {partner}…！
-- `TAG_MATCH_LOSS_LINES.delinquent.normal[1]`: {partner}…悪い。あたしが決めてりゃな…
+- `TAG_MATCH_LOSS_LINES.delinquent.normal[1]`: {partner}…悪い。私が決めてりゃな…
 - `TAG_MATCH_LOSS_LINES.delinquent.normal[2]`: {partner}、悔しいな。次は絶対、勝とうぜ。
 - `TAG_MATCH_LOSS_LINES.delinquent.earnest[1]`: {partner}…あたしの力不足だ。お前を勝たせてやれなかった…
 - `TAG_MATCH_LOSS_LINES.delinquent.earnest[2]`: ここまで繋いでくれたのに…悪い、{partner}。
-- `TAG_MATCH_LOSS_LINES.delinquent.bold[1]`: くそっ…あたしのミスだ、{partner}。次は絶対、返してやる。
+- `TAG_MATCH_LOSS_LINES.delinquent.bold[1]`: くそっ…私のミスだ、{partner}。次は絶対、返してやる。
 - `TAG_MATCH_LOSS_LINES.delinquent.bold[2]`: このまま終われるかよ…{partner}、次は倍返しだ！
-- `TAG_MATCH_LOSS_LINES.delinquent.easygoing[1]`: {partner}〜わりぃ…あたし、決められちった…
+- `TAG_MATCH_LOSS_LINES.delinquent.easygoing[1]`: {partner}〜わりぃ…私、決められちった…
 - `TAG_MATCH_LOSS_LINES.delinquent.easygoing[2]`: あちゃ〜負けたか…でも{partner}、次は頑張るぜ。
 - `TAG_MATCH_LOSS_LINES.delinquent.quiet[1]`: …{partner}、悪い。
 - `TAG_MATCH_LOSS_LINES.delinquent.quiet[2]`: …悔しい。{partner}にも、詫びる。
@@ -1446,16 +1446,16 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TAG_MATCH_LOSS_LINES.cool.easygoing[1]`: …{partner}、ごめん。決められ、ちゃった。
 - `TAG_MATCH_LOSS_LINES.cool.easygoing[2]`: …負けちゃった。{partner}、次は。
 - `TAG_MATCH_LOSS_LINES.cool.quiet[1]`: ……{partner}、ごめん。
-- `TAG_MATCH_LOSS_LINES.cool.quiet[2]`: ……悔しい。{partner}にも。
+- `TAG_MATCH_LOSS_LINES.cool.quiet[2]`: ……{partner}に、勝ち星を渡せなかった。……次
 - `TAG_MATCH_LOSS_LINES.cool.shy[1]`: …っ、{partner}…ごめん…私の、せいで…
 - `TAG_MATCH_LOSS_LINES.cool.shy[2]`: …つ、次は…{partner}を、勝たせる…
 - `TAG_MATCH_LOSS_LINES.cool.emotional[1]`: …っ、{partner}…ごめん。
 - `TAG_MATCH_LOSS_LINES.cool.emotional[2]`: …次は、勝つ。絶対。{partner}…っ。
 - `TAG_MATCH_LOSS_LINES.composed.normal[1]`: …{partner}、ごめん。決めきれなかったね。
 - `TAG_MATCH_LOSS_LINES.composed.normal[2]`: …悔しいけど、{partner}。次までに、詰めようか。
-- `TAG_MATCH_LOSS_LINES.composed.earnest[1]`: …{partner}、ごめん。あたしの力不足だ。
+- `TAG_MATCH_LOSS_LINES.composed.earnest[1]`: …{partner}、ごめん。私の力不足だ。
 - `TAG_MATCH_LOSS_LINES.composed.earnest[2]`: …ここまで繋いでくれたのにな。{partner}、すまない。
-- `TAG_MATCH_LOSS_LINES.composed.bold[1]`: …あたしのミスだ、{partner}。でも、次はこうはいかないよ。
+- `TAG_MATCH_LOSS_LINES.composed.bold[1]`: …私のミスだ、{partner}。でも、次はこうはいかないよ。
 - `TAG_MATCH_LOSS_LINES.composed.bold[2]`: …このまま終わる気はない。{partner}、次は返すから。
 - `TAG_MATCH_LOSS_LINES.composed.easygoing[1]`: …{partner}、ごめんね。決められちゃった…
 - `TAG_MATCH_LOSS_LINES.composed.easygoing[2]`: …あ〜あ、負けちゃった。まあ、次があるよ、{partner}。
@@ -1463,8 +1463,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TAG_MATCH_LOSS_LINES.composed.quiet[2]`: …悔しいな。{partner}にも、悪い。
 - `TAG_MATCH_LOSS_LINES.composed.shy[1]`: …{partner}、ご、ごめん…私のせいで…
 - `TAG_MATCH_LOSS_LINES.composed.shy[2]`: …つ、次は、ちゃんと…{partner}を勝たせるよ…
-- `TAG_MATCH_LOSS_LINES.composed.emotional[1]`: …{partner}、悪い。あたしが弱かった。…それだけだ。
-- `TAG_MATCH_LOSS_LINES.composed.emotional[2]`: …次は、こうはいかない。{partner}、もう一回だけ付き合ってくれ。
+- `TAG_MATCH_LOSS_LINES.composed.emotional[1]`: …{partner}、悪い。私が弱かった。…それだけだ。
+- `TAG_MATCH_LOSS_LINES.composed.emotional[2]`: …次は、こうはいかない。{partner}、もう一回だけ付き合って。
 
 ## `TAG_MATCH_COMMENTARY_WIN_LINES`
 

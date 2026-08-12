@@ -9,7 +9,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `RETIREMENT_LINES.A1_champion.standard.normal[1]`: 頂点からの景色は、忘れないよ
 - `RETIREMENT_LINES.A1_champion.standard.normal[2]`: 最高の舞台で闘えた。それだけで十分だよ
-- `RETIREMENT_LINES.A1_champion.standard.bold[1]`: あたしの時代だったよね？誰も文句言えないでしょ？
+- `RETIREMENT_LINES.A1_champion.standard.bold[1]`: 私の時代だったよね？誰も文句言えないでしょ？
 - `RETIREMENT_LINES.A1_champion.standard.quiet[1]`: ……あのベルトの重さ、一生の宝物
 - `RETIREMENT_LINES.A1_champion.standard.shy[1]`: こんな私がチャンピオンになれたなんて…夢みたいです
 - `RETIREMENT_LINES.A1_champion.standard.easygoing[1]`: いやー最高だったね！ ベルト持てて幸せだったよ
@@ -23,7 +23,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.A1_champion.ojousama.earnest[1]`: このベルトに恥じない闘いを…最後まで全うできましたわ
 - `RETIREMENT_LINES.A1_champion.ojousama.emotional[1]`: あのベルト…お返ししたくない…でも…ありがとう…っ
 - `RETIREMENT_LINES.A1_champion.delinquent.normal[1]`: 頂点からの景色、忘れねーよ
-- `RETIREMENT_LINES.A1_champion.delinquent.bold[1]`: あたしの時代だった。文句あるやつはかかってこい
+- `RETIREMENT_LINES.A1_champion.delinquent.bold[1]`: 私の時代だった。文句あるやつはかかってこい
 - `RETIREMENT_LINES.A1_champion.delinquent.quiet[1]`: ……あの重さ。…一生モンだ
 - `RETIREMENT_LINES.A1_champion.delinquent.shy[1]`: あたしが、チャンピオン…なんか、夢みたいっす…
 - `RETIREMENT_LINES.A1_champion.delinquent.easygoing[1]`: 最高だったよ！ ベルト持てて幸せだったよ
@@ -112,13 +112,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.A3_heel.cool.normal[1]`: …泣くな。みっともない
 - `RETIREMENT_LINES.A3_heel.cool.normal[2]`: …いなくなれば、寂しくなる。それだけだ
 - `RETIREMENT_LINES.A3_heel.cool.bold[1]`: …嫌われ者で終わる。悪くない
-- `RETIREMENT_LINES.A3_heel.cool.quiet[1]`: …じゃあな
+- `RETIREMENT_LINES.A3_heel.cool.quiet[1]`: …じゃあ
 - `RETIREMENT_LINES.A3_heel.cool.shy[1]`: …本当は、一緒にいたかった。…ごめん
 - `RETIREMENT_LINES.A3_heel.cool.easygoing[1]`: …最後くらいは素直に。…楽しかった
 - `RETIREMENT_LINES.A3_heel.cool.earnest[1]`: …誰かがやる必要があった。それだけだ
 - `RETIREMENT_LINES.A3_heel.cool.emotional[1]`: …っ、泣くな。…こっちまで、困る
 - `RETIREMENT_LINES.A3_heel.polite.normal[1]`: …お泣きにならないでください。みっともないですよ
-- `RETIREMENT_LINES.A3_heel.polite.normal[2]`: わたしがいなくなれば、寂しくなりますよ
+- `RETIREMENT_LINES.A3_heel.polite.normal[2]`: 私がいなくなれば、寂しくなりますよ
 - `RETIREMENT_LINES.A3_heel.polite.bold[1]`: 最後まで嫌われ者でいさせていただきます。…最高でした
 - `RETIREMENT_LINES.A3_heel.polite.quiet[1]`: …お世話になりました
 - `RETIREMENT_LINES.A3_heel.polite.shy[1]`: こ、こんなわたしでしたが…リングを、去ります…
@@ -126,13 +126,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.A3_heel.polite.earnest[1]`: 嫌われ役は…誰かがやらなければいけませんでしたから
 - `RETIREMENT_LINES.A3_heel.polite.emotional[1]`: …っ、やめてください…泣かないで…わたしまで…っ
 - `RETIREMENT_LINES.A3_heel.standard.normal[1]`: フン…勝手に泣いてんじゃないわよ
-- `RETIREMENT_LINES.A3_heel.standard.normal[2]`: わたしがいなくなって寂しくなるね
+- `RETIREMENT_LINES.A3_heel.standard.normal[2]`: 私がいなくなって寂しくなるね
 - `RETIREMENT_LINES.A3_heel.standard.bold[1]`: 最後まで嫌われ者でいさせてもらうわ。最高だった
 - `RETIREMENT_LINES.A3_heel.standard.quiet[1]`: ……さよなら
 - `RETIREMENT_LINES.A3_heel.standard.shy[1]`: 本当は…みんなと一緒にいたかったです…ごめんなさい
 - `RETIREMENT_LINES.A3_heel.standard.easygoing[1]`: あはは、最後くらい素直になってもいいかな。楽しかったよ
 - `RETIREMENT_LINES.A3_heel.standard.earnest[1]`: 嫌われ役は…誰かがやらなきゃいけなかったから
-- `RETIREMENT_LINES.A3_heel.standard.emotional[1]`: …っ、バカ…泣くんじゃないわよ…あたしまで…っ！
+- `RETIREMENT_LINES.A3_heel.standard.emotional[1]`: …っ、バカ…泣くんじゃないわよ…私まで…っ！
 - `RETIREMENT_LINES.A3_heel.ojousama.normal[1]`: お泣きにならないで。みっともなくてよ
 - `RETIREMENT_LINES.A3_heel.ojousama.bold[1]`: お泣きにならないで。みっともなくてよ
 - `RETIREMENT_LINES.A3_heel.ojousama.quiet[1]`: ……ごきげんよう
@@ -153,14 +153,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.A3_heel.seductive.shy[1]`: 本当はね…みんなと一緒に、いたかったの…ごめんなさい
 - `RETIREMENT_LINES.A3_heel.seductive.easygoing[1]`: 最後くらい素直になろうかしら。楽しかったわ
 - `RETIREMENT_LINES.A3_heel.seductive.earnest[1]`: 嫌われ役はね…誰かがやらなきゃいけなかったの
-- `RETIREMENT_LINES.A3_heel.seductive.emotional[1]`: 悪役のまま消えるわ……っ……ふふ、それがわたしらしいの……
+- `RETIREMENT_LINES.A3_heel.seductive.emotional[1]`: 悪役のまま消えるわ……っ……ふふ、それが私らしいの……
 - `RETIREMENT_LINES.A3_heel.composed.normal[1]`: …ま、こんなもんだろう。…泣くなよ
 - `RETIREMENT_LINES.A3_heel.composed.bold[1]`: …嫌われ者か。…悪くない肩書だったよ
 - `RETIREMENT_LINES.A3_heel.composed.quiet[1]`: …じゃあね
 - `RETIREMENT_LINES.A3_heel.composed.shy[1]`: …本当は、一緒にいたかったんだけどね。…ごめん
 - `RETIREMENT_LINES.A3_heel.composed.easygoing[1]`: …ま、最後くらいは正直にね。…楽しかったよ
 - `RETIREMENT_LINES.A3_heel.composed.earnest[1]`: …誰かがやらなきゃいけなかった。…それだけだよ
-- `RETIREMENT_LINES.A3_heel.composed.emotional[1]`: …っ…泣くなって。…こっちまで、困るだろ
+- `RETIREMENT_LINES.A3_heel.composed.emotional[1]`: …っ…泣くなって。…こっちまで、困るでしょ
 - `RETIREMENT_LINES.A4_veteran.cool.normal[1]`: …ここが、全部だった
 - `RETIREMENT_LINES.A4_veteran.cool.normal[2]`: …無駄な時間は、ひとつもない
 - `RETIREMENT_LINES.A4_veteran.cool.bold[1]`: …あっという間だった
@@ -169,7 +169,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.A4_veteran.cool.easygoing[1]`: …長かった。…でも、あっという間だ
 - `RETIREMENT_LINES.A4_veteran.cool.earnest[1]`: …走り抜けた。嘘はない
 - `RETIREMENT_LINES.A4_veteran.cool.emotional[1]`: …ここが、全部だった。…ありがとう
-- `RETIREMENT_LINES.A4_veteran.polite.normal[1]`: ここが、わたしの全部でした
+- `RETIREMENT_LINES.A4_veteran.polite.normal[1]`: ここが、私の全部でした
 - `RETIREMENT_LINES.A4_veteran.polite.normal[2]`: この団体で過ごした時間は、無駄ではありませんでした
 - `RETIREMENT_LINES.A4_veteran.polite.bold[1]`: 長かったようで…あっという間でした。悔いはありません
 - `RETIREMENT_LINES.A4_veteran.polite.quiet[1]`: …ありがとうございました
@@ -177,7 +177,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.A4_veteran.polite.easygoing[1]`: いやあ、長かったです。でも、あっという間でしたね
 - `RETIREMENT_LINES.A4_veteran.polite.earnest[1]`: 全力で走り抜けました。この時間に嘘はありません
 - `RETIREMENT_LINES.A4_veteran.polite.emotional[1]`: ここが…全部でした…ありがとうございます…ありがとうございます…っ
-- `RETIREMENT_LINES.A4_veteran.standard.normal[1]`: ここが、あたしの全部だった
+- `RETIREMENT_LINES.A4_veteran.standard.normal[1]`: ここが、私の全部だった
 - `RETIREMENT_LINES.A4_veteran.standard.normal[2]`: この団体で過ごした時間は、無駄じゃない
 - `RETIREMENT_LINES.A4_veteran.standard.bold[1]`: 長かったようで…あっという間だったなぁ。悔いはないよ
 - `RETIREMENT_LINES.A4_veteran.standard.quiet[1]`: ……ありがとう
@@ -222,7 +222,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.B1_young.cool.earnest[1]`: …まだ何も返せてない。…受け入れられない
 - `RETIREMENT_LINES.B1_young.cool.emotional[1]`: …いやだ。…まだ、始まったばかりなのに
 - `RETIREMENT_LINES.B1_young.polite.normal[1]`: まだ何ひとつ、成し遂げられていないのに…
-- `RETIREMENT_LINES.B1_young.polite.normal[2]`: わたしの物語は…こんなところで終わりなのでしょうか…
+- `RETIREMENT_LINES.B1_young.polite.normal[2]`: 私の物語は…こんなところで終わりなのでしょうか…
 - `RETIREMENT_LINES.B1_young.polite.bold[1]`: 嘘です…まだ始まったばかりじゃありませんか…！
 - `RETIREMENT_LINES.B1_young.polite.quiet[1]`: …まだ、何も…
 - `RETIREMENT_LINES.B1_young.polite.shy[1]`: ま、まだ若いのに…ご、ごめんなさい…続けられないんです…
@@ -230,7 +230,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.B1_young.polite.earnest[1]`: まだ何もお返しできていないのに…受け入れられません
 - `RETIREMENT_LINES.B1_young.polite.emotional[1]`: いやです…いやです…まだ始まったばかりなのに…っ
 - `RETIREMENT_LINES.B1_young.standard.normal[1]`: まだ何も成し遂げてないのに…
-- `RETIREMENT_LINES.B1_young.standard.normal[2]`: あたしの物語、こんなところで終わりなの…？
+- `RETIREMENT_LINES.B1_young.standard.normal[2]`: 私の物語、こんなところで終わりなの…？
 - `RETIREMENT_LINES.B1_young.standard.bold[1]`: 嘘でしょ…まだ始まったばかりじゃない…！
 - `RETIREMENT_LINES.B1_young.standard.quiet[1]`: ………まだ、なのに
 - `RETIREMENT_LINES.B1_young.standard.shy[1]`: やっぱり…私には無理だったんでしょうか…
@@ -257,9 +257,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.B1_young.seductive.shy[1]`: やっぱり…わたしには、無理だったのかしら…
 - `RETIREMENT_LINES.B1_young.seductive.easygoing[1]`: うそ…まだこれからだったのに…
 - `RETIREMENT_LINES.B1_young.seductive.earnest[1]`: まだ何も返せてないのに…受け入れられないわ
-- `RETIREMENT_LINES.B1_young.seductive.emotional[1]`: まだ若いけど……っ……ふふ、わたしには無理だったの……
+- `RETIREMENT_LINES.B1_young.seductive.emotional[1]`: まだ若いけど……っ……ふふ、私には無理だったの……
 - `RETIREMENT_LINES.B1_young.composed.normal[1]`: …こんなところで、か。…まだ何も…
-- `RETIREMENT_LINES.B1_young.composed.bold[1]`: …嘘だろ。…まだ、始まったばかりなのに
+- `RETIREMENT_LINES.B1_young.composed.bold[1]`: …嘘だ。…まだ、始まったばかりなのに
 - `RETIREMENT_LINES.B1_young.composed.quiet[1]`: …まだ、なのにな
 - `RETIREMENT_LINES.B1_young.composed.shy[1]`: …やっぱり無理だったのかな。…そういうことか
 - `RETIREMENT_LINES.B1_young.composed.easygoing[1]`: …これからだったんだけどな。…参ったね
@@ -595,7 +595,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `POACH_REACTION_DIALOGUES.defended.seductive.easygoing[2]`: 残るわ〜。これからもよろしくね
 - `POACH_REACTION_DIALOGUES.defended.seductive.earnest[1]`: …社長の気持ち、伝わったわ。ここで闘い続ける
 - `POACH_REACTION_DIALOGUES.defended.seductive.earnest[2]`: 残らせてもらうわ。必ず恩返しをするから
-- `POACH_REACTION_DIALOGUES.defended.seductive.emotional[1]`: ……必要としてくれるんだ。…うん、残る
+- `POACH_REACTION_DIALOGUES.defended.seductive.emotional[1]`: ……必要だって言うのね。…いいわ、残ってあげる♪
 - `POACH_REACTION_DIALOGUES.defended.standard.normal[1]`: …ここに残れて、ほっとしました
 - `POACH_REACTION_DIALOGUES.defended.standard.normal[2]`: 社長…ありがとうございます。期待には応えます
 - `POACH_REACTION_DIALOGUES.defended.standard.bold[1]`: そこまで言うなら、残ってあげる
@@ -614,7 +614,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `POACH_REACTION_DIALOGUES.defended.polite.bold[1]`: そこまで仰るなら、残らせていただきます
 - `POACH_REACTION_DIALOGUES.defended.polite.bold[2]`: 簡単には手放さない、ということですか。…悪い気はしません
 - `POACH_REACTION_DIALOGUES.defended.polite.quiet[1]`: …残らせて、いただきます
-- `POACH_REACTION_DIALOGUES.defended.polite.shy[1]`: ほ、本当に…いいんですか…？ ありがとうございます…!
+- `POACH_REACTION_DIALOGUES.defended.polite.shy[1]`: ほ、本当に…いいんですか…？ ありがとうございます…！
 - `POACH_REACTION_DIALOGUES.defended.polite.easygoing[1]`: えへへ、引き留めてくださって嬉しいです！
 - `POACH_REACTION_DIALOGUES.defended.polite.easygoing[2]`: 残ります〜！ これからもよろしくお願いします〜
 - `POACH_REACTION_DIALOGUES.defended.polite.earnest[1]`: 身に余るお言葉です。…ここで結果を出します
@@ -672,7 +672,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `POACH_REACTION_DIALOGUES.defense_failed.delinquent.emotional[2]`: う…っ…許してくれ…
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.normal[1]`: …ごめんなさい。新しい場所で、答えを出すわ
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.normal[2]`: お世話になりました。…また、どこかで
-- `POACH_REACTION_DIALOGUES.defense_failed.seductive.bold[1]`: …ごめんなさいね。でも、わたしの決意は固いの
+- `POACH_REACTION_DIALOGUES.defense_failed.seductive.bold[1]`: …ごめんなさいね。でも、私の決意は固いの
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.bold[2]`: 止められても止まらないわ。じゃあね
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.quiet[1]`: …ごめんなさい…ね
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.quiet[2]`: …さよなら
@@ -682,7 +682,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.easygoing[2]`: …元気でね〜
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.earnest[1]`: ご恩を返せなくて、ごめんなさい…新天地で必ず結果を出すわ
 - `POACH_REACTION_DIALOGUES.defense_failed.seductive.earnest[2]`: …ごめんなさい。でも、行かなきゃいけないの
-- `POACH_REACTION_DIALOGUES.defense_failed.seductive.emotional[1]`: ……ごめん。……でも、決めたから
+- `POACH_REACTION_DIALOGUES.defense_failed.seductive.emotional[1]`: ……悪く思わないで。……もう、決めたことなの。
 - `POACH_REACTION_DIALOGUES.defense_failed.standard.normal[1]`: …申し訳ありません。新しい場所で、答えを出します
 - `POACH_REACTION_DIALOGUES.defense_failed.standard.normal[2]`: お世話になりました。…またどこかで
 - `POACH_REACTION_DIALOGUES.defense_failed.standard.bold[1]`: …ごめんなさいね。でも、私の決意は固いから
@@ -698,7 +698,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `POACH_REACTION_DIALOGUES.defense_failed.standard.emotional[1]`: ごめんなさい…っ…ごめんなさい…！
 - `POACH_REACTION_DIALOGUES.defense_failed.standard.emotional[2]`: うう…っ…許してください…
 - `POACH_REACTION_DIALOGUES.defense_failed.polite.normal[1]`: …ご恩を返せず、申し訳ありません
-- `POACH_REACTION_DIALOGUES.defense_failed.polite.bold[1]`: …申し訳ありません。ですが、わたしの決意は固いんです
+- `POACH_REACTION_DIALOGUES.defense_failed.polite.bold[1]`: …申し訳ありません。ですが、私の決意は固いんです
 - `POACH_REACTION_DIALOGUES.defense_failed.polite.bold[2]`: 止められても止まりません。…失礼します
 - `POACH_REACTION_DIALOGUES.defense_failed.polite.quiet[1]`: …ごめんなさい…
 - `POACH_REACTION_DIALOGUES.defense_failed.polite.shy[1]`: …ごめんなさい…どうしても、行かなきゃいけないんです…
@@ -903,7 +903,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - 本数: 126
 
 - `RETIRE_REFUSE_LINES.refuse_champ.standard.normal[1]`: チャンピオンに引退しろって？ 冗談はやめて
-- `RETIRE_REFUSE_LINES.refuse_champ.standard.normal[2]`: このベルトがある限り、わたしは終わらない
+- `RETIRE_REFUSE_LINES.refuse_champ.standard.normal[2]`: このベルトがある限り、私は終わらない
 - `RETIRE_REFUSE_LINES.refuse_champ.standard.bold[1]`: 王者を引退させようなんて、100年早いよ
 - `RETIRE_REFUSE_LINES.refuse_champ.standard.quiet[1]`: ……このベルトがある限り
 - `RETIRE_REFUSE_LINES.refuse_champ.standard.shy[1]`: あの…まだ、このベルトを守りたいんです…
@@ -911,7 +911,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIRE_REFUSE_LINES.refuse_champ.standard.earnest[1]`: このベルトの重みをまだ背負える。引退はしない
 - `RETIRE_REFUSE_LINES.refuse_champ.standard.emotional[1]`: やだ…このベルト離さない…まだ闘える…！
 - `RETIRE_REFUSE_LINES.refuse_champ.ojousama.normal[1]`: チャンピオンに引退ですって？ ご冗談を
-- `RETIRE_REFUSE_LINES.refuse_champ.ojousama.bold[1]`: 女王である私を引退させようなんて、100年早くてよ
+- `RETIRE_REFUSE_LINES.refuse_champ.ojousama.bold[1]`: 女王である私を引退させようなんて、百年早くてよ
 - `RETIRE_REFUSE_LINES.refuse_champ.ojousama.easygoing[1]`: まだですわ！ まだやれますの！ お願いいたします！
 - `RETIRE_REFUSE_LINES.refuse_champ.ojousama.earnest[1]`: このベルトの重みをまだ背負えますわ
 - `RETIRE_REFUSE_LINES.refuse_champ.delinquent.normal[1]`: チャンピオンに引退しろだと？ ふざけんな
@@ -938,25 +938,25 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIRE_REFUSE_LINES.refuse_champ.composed.easygoing[1]`: …まだチャンピオンだよ。…もう少し待って
 - `RETIRE_REFUSE_LINES.refuse_champ.composed.earnest[1]`: …このベルトの重み、まだ背負える。…引退はしないよ
 - `RETIRE_REFUSE_LINES.refuse_champ.composed.emotional[1]`: …っ、…このベルトは渡さない。…まだ闘える
-- `RETIRE_REFUSE_LINES.refuse_distrust.standard.normal[1]`: わたしを追い出す気？ そう簡単にはいかないわよ
+- `RETIRE_REFUSE_LINES.refuse_distrust.standard.normal[1]`: 私を追い出す気？ そう簡単にはいかないわよ
 - `RETIRE_REFUSE_LINES.refuse_distrust.standard.normal[2]`: この団体に何年貢献してきたと思ってるの
-- `RETIRE_REFUSE_LINES.refuse_distrust.standard.bold[1]`: …あたしのことが邪魔なの？ はっきり言いなさいよ
+- `RETIRE_REFUSE_LINES.refuse_distrust.standard.bold[1]`: …邪魔になったってこと？ はっきり言いなさいよ
 - `RETIRE_REFUSE_LINES.refuse_distrust.standard.quiet[1]`: ……そういうこと、か
 - `RETIRE_REFUSE_LINES.refuse_distrust.standard.shy[1]`: …私、必要ないってことですか…？
-- `RETIRE_REFUSE_LINES.refuse_distrust.standard.easygoing[1]`: えぇ…あたし邪魔なの？ ちょっとひどくない？
+- `RETIRE_REFUSE_LINES.refuse_distrust.standard.easygoing[1]`: えぇ…私邪魔なの？ ちょっとひどくない？
 - `RETIRE_REFUSE_LINES.refuse_distrust.standard.earnest[1]`: この団体のために尽くしてきた。その気持ちは嘘じゃない
 - `RETIRE_REFUSE_LINES.refuse_distrust.standard.emotional[1]`: 何年…何年ここにいたと思ってるの…っ！
 - `RETIRE_REFUSE_LINES.refuse_distrust.ojousama.normal[1]`: わたくしを追い出すおつもり？ そうはいきませんわ
 - `RETIRE_REFUSE_LINES.refuse_distrust.ojousama.bold[1]`: わたくしが邪魔ですの？ はっきりおっしゃいなさい
 - `RETIRE_REFUSE_LINES.refuse_distrust.ojousama.earnest[1]`: この団体のために尽くしてまいりましたわ
 - `RETIRE_REFUSE_LINES.refuse_distrust.delinquent.normal[1]`: 追い出す気かよ。そう簡単にいくと思うなよ
-- `RETIRE_REFUSE_LINES.refuse_distrust.delinquent.bold[1]`: あたしが邪魔だってのか？ はっきり言えよ
-- `RETIRE_REFUSE_LINES.refuse_distrust.delinquent.easygoing[1]`: おいおい…邪魔だっての？さすがに ひどくない？
+- `RETIRE_REFUSE_LINES.refuse_distrust.delinquent.bold[1]`: 私が邪魔だってのか？ はっきり言えよ
+- `RETIRE_REFUSE_LINES.refuse_distrust.delinquent.easygoing[1]`: おいおい…邪魔だっての？さすがにひどくない？
 - `RETIRE_REFUSE_LINES.refuse_distrust.seductive.normal[1]`: 私を追い出すつもり？ そうはいかないわよ
 - `RETIRE_REFUSE_LINES.refuse_distrust.seductive.bold[1]`: 私が邪魔なの？ はっきり言ってくれる？
 - `RETIRE_REFUSE_LINES.refuse_distrust.seductive.easygoing[1]`: あら…私が邪魔なの？ ひどいわね
 - `RETIRE_REFUSE_LINES.refuse_distrust.seductive.earnest[1]`: この団体のために尽くしてきたの。嘘じゃないわ
-- `RETIRE_REFUSE_LINES.refuse_distrust.seductive.emotional[1]`: どうして……っ……ふふ、わたしを切り捨てるつもり？……
+- `RETIRE_REFUSE_LINES.refuse_distrust.seductive.emotional[1]`: どうして……っ……ふふ、私を切り捨てるつもり？……
 - `RETIRE_REFUSE_LINES.refuse_distrust.composed.normal[1]`: …追い出す、か。…何年ここにいたと思ってるの
 - `RETIRE_REFUSE_LINES.refuse_distrust.composed.bold[1]`: …ふぅん、邪魔か。…はっきり言ってくれるね
 - `RETIRE_REFUSE_LINES.refuse_distrust.composed.quiet[1]`: ……そう、か
@@ -970,7 +970,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIRE_REFUSE_LINES.refuse_distrust.polite.earnest[1]`: この団体のために尽くしてきました。嘘ではありません
 - `RETIRE_REFUSE_LINES.refuse_heel.standard.normal[1]`: 引退？ 次の興行を見てなさい。後悔させてあげる
 - `RETIRE_REFUSE_LINES.refuse_heel.standard.normal[2]`: まだまだ引退なんてしてやらないよ
-- `RETIRE_REFUSE_LINES.refuse_heel.standard.bold[1]`: あたしがいなくなったら、この団体は終わりよ
+- `RETIRE_REFUSE_LINES.refuse_heel.standard.bold[1]`: 私がいなくなったら、この団体は終わりよ
 - `RETIRE_REFUSE_LINES.refuse_heel.standard.quiet[1]`: ……まだ辞めない
 - `RETIRE_REFUSE_LINES.refuse_heel.standard.shy[1]`: …もう少しだけ…ここにいさせてください
 - `RETIRE_REFUSE_LINES.refuse_heel.standard.easygoing[1]`: まだまだ暴れ足りないよ～
@@ -980,7 +980,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIRE_REFUSE_LINES.refuse_heel.ojousama.bold[1]`: わたくしがいなくなったら、この団体は終わりですわよ？
 - `RETIRE_REFUSE_LINES.refuse_heel.ojousama.earnest[1]`: 次の興行で証明いたしますわ
 - `RETIRE_REFUSE_LINES.refuse_heel.delinquent.normal[1]`: 引退だと？ 次の興行見てろ。後悔させてやる
-- `RETIRE_REFUSE_LINES.refuse_heel.delinquent.bold[1]`: あたしがいなくなったらこの団体終わりだぜ
+- `RETIRE_REFUSE_LINES.refuse_heel.delinquent.bold[1]`: 私がいなくなったらこの団体終わりだぜ
 - `RETIRE_REFUSE_LINES.refuse_heel.delinquent.easygoing[1]`: まだまだ暴れ足りねーっ！
 - `RETIRE_REFUSE_LINES.refuse_heel.seductive.normal[1]`: 引退ですって？ 次の興行を見てちょうだい
 - `RETIRE_REFUSE_LINES.refuse_heel.seductive.bold[1]`: 私がいなくなったら…この団体、終わるわよ？
@@ -998,8 +998,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIRE_REFUSE_LINES.refuse_heel.polite.quiet[1]`: …まだ辞めません
 - `RETIRE_REFUSE_LINES.refuse_heel.polite.shy[1]`: こ、こんなわたしですけど…まだ、リングにいたいんです…
 - `RETIRE_REFUSE_LINES.refuse_heel.polite.earnest[1]`: 次の興行で証明します。後悔させてみせます
-- `RETIRE_REFUSE_LINES.refuse_fighting.standard.normal[1]`: まだ終わらない。わたしはまだ闘える
-- `RETIRE_REFUSE_LINES.refuse_fighting.standard.normal[2]`: 体がある限り、わたしはリングに立つ
+- `RETIRE_REFUSE_LINES.refuse_fighting.standard.normal[1]`: まだ終わらない。私はまだ闘える
+- `RETIRE_REFUSE_LINES.refuse_fighting.standard.normal[2]`: 体がある限り、私はリングに立つ
 - `RETIRE_REFUSE_LINES.refuse_fighting.standard.bold[1]`: …諦めるのは、まだ早い。見てなさい
 - `RETIRE_REFUSE_LINES.refuse_fighting.standard.quiet[1]`: ……まだ、闘える
 - `RETIRE_REFUSE_LINES.refuse_fighting.standard.shy[1]`: あの…もう少しだけ、チャンスをください…
@@ -1009,14 +1009,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIRE_REFUSE_LINES.refuse_fighting.ojousama.normal[1]`: まだ終わりませんわ。わたくしはまだ闘えます
 - `RETIRE_REFUSE_LINES.refuse_fighting.ojousama.bold[1]`: 私を見限るには早すぎるという事……。良く見ていなさいね
 - `RETIRE_REFUSE_LINES.refuse_fighting.ojousama.earnest[1]`: まだやれることがございます。止まりませんわ
-- `RETIRE_REFUSE_LINES.refuse_fighting.delinquent.normal[1]`: まだ終わんねーよ。あたしはまだ闘える
+- `RETIRE_REFUSE_LINES.refuse_fighting.delinquent.normal[1]`: まだ終わんねーよ。私はまだ闘える
 - `RETIRE_REFUSE_LINES.refuse_fighting.delinquent.bold[1]`: 諦めるのはまだ早ぇんだよ。見てろ
 - `RETIRE_REFUSE_LINES.refuse_fighting.delinquent.easygoing[1]`: まだまだ元気だぜ！ もうちょっとやらせろよ
 - `RETIRE_REFUSE_LINES.refuse_fighting.seductive.normal[1]`: まだ終わらないわ。私はまだ闘えるの
 - `RETIRE_REFUSE_LINES.refuse_fighting.seductive.bold[1]`: 諦めるのはまだ早いわ。見ていて
 - `RETIRE_REFUSE_LINES.refuse_fighting.seductive.easygoing[1]`: まだまだ元気よ。もう少しやらせて
 - `RETIRE_REFUSE_LINES.refuse_fighting.seductive.earnest[1]`: まだやれることがあるの。止まるわけにはいかないわ
-- `RETIRE_REFUSE_LINES.refuse_fighting.seductive.emotional[1]`: まだ戦えるの……っ……ふふ、わたしを止めないで……
+- `RETIRE_REFUSE_LINES.refuse_fighting.seductive.emotional[1]`: まだ戦えるの……っ……ふふ、私を止めないで……
 - `RETIRE_REFUSE_LINES.refuse_fighting.composed.normal[1]`: …まだ終わらないよ。…体がある限り、リングに立つ
 - `RETIRE_REFUSE_LINES.refuse_fighting.composed.bold[1]`: …諦めるのはまだ早いよ。…見ていて
 - `RETIRE_REFUSE_LINES.refuse_fighting.composed.quiet[1]`: …まだ、闘える
@@ -1100,7 +1100,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETAIN_LINES.high_trust.polite.earnest[1]`: 信じてくださってありがとうございます。期待に応えます
 - `RETAIN_LINES.heel.standard.normal[1]`: フン…まだ使い道があるってことね。いいわ、付き合ってあげる
 - `RETAIN_LINES.heel.standard.bold[1]`: …引き留めるんだぁ。まぁ、悪くない判断かな
-- `RETAIN_LINES.heel.standard.quiet[1]`: ……いいだろう
+- `RETAIN_LINES.heel.standard.quiet[1]`: ……いいわ
 - `RETAIN_LINES.heel.standard.shy[1]`: …まだ、ここにいてもいいんですか…？
 - `RETAIN_LINES.heel.standard.easygoing[1]`: へぇ、まだ使ってくれるんだ。ま、いいけどね
 - `RETAIN_LINES.heel.standard.earnest[1]`: …わかった。まだ役に立てるなら、全力でやる
@@ -1173,24 +1173,24 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VOLUNTARY_STAY_LINES.standard.emotional[1]`: ここで戦えることが幸せなんです…（涙）
 - `VOLUNTARY_STAY_LINES.ojousama.normal[1]`: わたくし、こちらに残らせていただきますわ。ここが一番輝ける場所ですもの
 - `VOLUNTARY_STAY_LINES.ojousama.bold[1]`: こちらに残りますわ。頂点は、わたくしのものなのだから。
-- `VOLUNTARY_STAY_LINES.ojousama.easygoing[1]`: わたくし、こちらに残りますわ!ここ、とっても楽しいんですもの!
+- `VOLUNTARY_STAY_LINES.ojousama.easygoing[1]`: わたくし、こちらに残りますわ！ここ、とっても楽しいんですもの！
 - `VOLUNTARY_STAY_LINES.ojousama.earnest[1]`: こちらに残らせていただきますわ。精進を続けさせてくださいませ
 - `VOLUNTARY_STAY_LINES.delinquent.normal[1]`: どこにも行かねーよ。ここが一番おもしれーからな
 - `VOLUNTARY_STAY_LINES.delinquent.bold[1]`: 行くわけねーだろ。ここで一番になるまで帰らねぇよ
-- `VOLUNTARY_STAY_LINES.delinquent.easygoing[1]`: 残るぜ!ここの雰囲気、気に入ってるからな!
+- `VOLUNTARY_STAY_LINES.delinquent.easygoing[1]`: 残るぜ！ここの雰囲気、気に入ってるからな！
 - `VOLUNTARY_STAY_LINES.cool.normal[1]`: （静かにうなずいている）……ここにいる
 - `VOLUNTARY_STAY_LINES.cool.quiet[1]`: …………（契約書にペンを走らせた）
 - `VOLUNTARY_STAY_LINES.seductive.normal[1]`: あら、他に行く場所なんてないわ。ここが好きなの
 - `VOLUNTARY_STAY_LINES.seductive.bold[1]`: 残るわ。ここで一番になるって決めたの
 - `VOLUNTARY_STAY_LINES.seductive.quiet[1]`: ……残るわ。ここが、いい
-- `VOLUNTARY_STAY_LINES.seductive.easygoing[1]`: 残るわよ~。ここ、結構気に入ってるの♪
+- `VOLUNTARY_STAY_LINES.seductive.easygoing[1]`: 残るわよ〜。ここ、結構気に入ってるの♪
 - `VOLUNTARY_STAY_LINES.seductive.earnest[1]`: 残るわ。ここで、もっと強くなりたいの
-- `VOLUNTARY_STAY_LINES.seductive.emotional[1]`: 残るわ…っ…ここが、わたしの…大切な場所だから…
-- `VOLUNTARY_STAY_LINES.polite.normal[1]`: 残らせていただきます。ここが、わたくしの居場所ですから
+- `VOLUNTARY_STAY_LINES.seductive.emotional[1]`: 残るわ…っ…ここが、私の…大切な場所だから…
+- `VOLUNTARY_STAY_LINES.polite.normal[1]`: 残らせていただきます。ここが、私の居場所ですから
 - `VOLUNTARY_STAY_LINES.polite.bold[1]`: 残ります。ここで頂点を目指させていただきますから
 - `VOLUNTARY_STAY_LINES.polite.quiet[1]`: ……残ります。ここで、続けさせてください
 - `VOLUNTARY_STAY_LINES.polite.shy[1]`: あ、あの…残らせていただけますか…ここが、好きで…
-- `VOLUNTARY_STAY_LINES.polite.easygoing[1]`: 残らせていただきますね!ここ、すごく楽しいんです!
+- `VOLUNTARY_STAY_LINES.polite.easygoing[1]`: 残らせていただきますね！ここ、すごく楽しいんです！
 - `VOLUNTARY_STAY_LINES.polite.earnest[1]`: 来年もどうぞよろしくお願いいたします。精進してまいります
 - `VOLUNTARY_STAY_LINES.composed.normal[1]`: …ま、居心地いいからね。ここにいるよ
 - `VOLUNTARY_STAY_LINES.composed.bold[1]`: …行く理由がないね。ここで続けるよ

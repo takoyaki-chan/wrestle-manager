@@ -40,14 +40,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_normal.sendoff[]
 
-- `CHALLENGE_LINES.polite_normal.sendoff[1]`: ありがとうございます! ……行ってまいります。
+- `CHALLENGE_LINES.polite_normal.sendoff[1]`: ありがとうございます！ ……行ってまいります。
 - `CHALLENGE_LINES.polite_normal.sendoff[2]`: ありがとうございます。必ず、勝ってきます。
 - `CHALLENGE_LINES.polite_normal.sendoff[3]`: 嬉しいです。……精一杯やってきますね。
 
 ### polite_normal.win[]
 
 - `CHALLENGE_LINES.polite_normal.win[1]`: 勝ちました。ありがとうございました。
-- `CHALLENGE_LINES.polite_normal.win[2]`: やりました! ……見ていてくださいましたか。
+- `CHALLENGE_LINES.polite_normal.win[2]`: やりました！ ……見ていてくださいましたか。
 - `CHALLENGE_LINES.polite_normal.win[3]`: 勝てました。……言い出して、よかったです。
 
 ### polite_normal.lose[]
@@ -160,14 +160,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_normal.sendoff[]
 
-- `CHALLENGE_LINES.standard_normal.sendoff[1]`: ありがとうございます! ……行ってきます。
+- `CHALLENGE_LINES.standard_normal.sendoff[1]`: ありがとうございます！ ……行ってきます。
 - `CHALLENGE_LINES.standard_normal.sendoff[2]`: ありがとうございます。必ず、勝ってきます。
 - `CHALLENGE_LINES.standard_normal.sendoff[3]`: ……ありがとうございます。やってきます。
 
 ### standard_normal.win[]
 
 - `CHALLENGE_LINES.standard_normal.win[1]`: 勝ちました。……ありがとうございました。
-- `CHALLENGE_LINES.standard_normal.win[2]`: やりました! ……見ててくれましたか。
+- `CHALLENGE_LINES.standard_normal.win[2]`: やりました！ ……見ててくれましたか。
 - `CHALLENGE_LINES.standard_normal.win[3]`: 勝てました。……無駄にしなくて、よかった。
 
 ### standard_normal.lose[]
@@ -222,7 +222,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_LINES.standard_bold.lose[1]`: 負けました。……悔しいです。
 - `CHALLENGE_LINES.standard_bold.lose[2]`: 今日は届きませんでした。……次は勝ちます。
-- `CHALLENGE_LINES.standard_bold.lose[3]`: すみません、負けました。でも、やってよかったです。
+- `CHALLENGE_LINES.standard_bold.lose[3]`: 悪いわね、負けた。でも、やってよかったよ。
 
 ### standard_easygoing.petition[]
 
@@ -388,9 +388,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_earnest.lose[]
 
-- `CHALLENGE_LINES.composed_earnest.lose[1]`: 負けました。…わがままを通した挙句、この結果です。申し訳ありません。
-- `CHALLENGE_LINES.composed_earnest.lose[2]`: 完敗です。…社長の判断を、無駄にしました。
-- `CHALLENGE_LINES.composed_earnest.lose[3]`: …すみません。頼み込んだのは自分なのに、勝てませんでした。
+- `CHALLENGE_LINES.composed_earnest.lose[1]`: 負けました。…無理を通させてもらったのに、この結果です。次は必ず持ち帰ります。
+- `CHALLENGE_LINES.composed_earnest.lose[2]`: 完敗です。…この経験は、必ず勝ちで返してみせます。
+- `CHALLENGE_LINES.composed_earnest.lose[3]`: …頼み込んだ以上は勝つつもりでした。この悔しさ、糧にしてみせます。
 
 ### composed_bold.petition[]
 
@@ -418,9 +418,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_easygoing.petition[]
 
-- `CHALLENGE_LINES.composed_easygoing.petition[1]`: 社長、ちょっといい? ……やってみたい相手がいるの。
+- `CHALLENGE_LINES.composed_easygoing.petition[1]`: 社長、ちょっといい？ ……やってみたい相手がいるの。
 - `CHALLENGE_LINES.composed_easygoing.petition[2]`: ……あのね。あの人と、やらせてもらえないかな。
-- `CHALLENGE_LINES.composed_easygoing.petition[3]`: お願いがあるんだけど。……あの相手、私に回してくれない?
+- `CHALLENGE_LINES.composed_easygoing.petition[3]`: お願いがあるんだけど。……あの相手、私に回してくれない？
 
 ### composed_easygoing.sendoff[]
 
@@ -467,7 +467,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### seductive_normal.petition[]
 
 - `CHALLENGE_LINES.seductive_normal.petition[1]`: 社長、正直に言うわ。対戦したい相手が居るのよね。
-- `CHALLENGE_LINES.seductive_normal.petition[2]`: {org}のあいつが気に障るのよね・・・対戦、セッティングしてくれる?
+- `CHALLENGE_LINES.seductive_normal.petition[2]`: {org}のあの子が気に障るのよね……対戦、セッティングしてくれる？
 - `CHALLENGE_LINES.seductive_normal.petition[3]`: 理由は言いたくないのだけれど。試合を組んで欲しいの。
 
 ### seductive_normal.sendoff[]
@@ -480,7 +480,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_LINES.seductive_normal.win[1]`: 勝ったわ。……当然よね。
 - `CHALLENGE_LINES.seductive_normal.win[2]`: 勝ってきたわよ。わがまま言った分は返さないとね。
-- `CHALLENGE_LINES.seductive_normal.win[3]`: いい顔してる? やっぱり勝った後だからかしらね。ふふ♪
+- `CHALLENGE_LINES.seductive_normal.win[3]`: いい顔してる？ やっぱり勝った後だからかしらね。ふふ♪
 
 ### seductive_normal.lose[]
 
@@ -490,9 +490,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_easygoing.petition[]
 
-- `CHALLENGE_LINES.seductive_easygoing.petition[1]`: 社長〜、あの人とやりたいの。だめ?
+- `CHALLENGE_LINES.seductive_easygoing.petition[1]`: 社長〜、あの人とやりたいの。だめ？
 - `CHALLENGE_LINES.seductive_easygoing.petition[2]`: ねえ社長、あの人と当てて。お願い。
-- `CHALLENGE_LINES.seductive_easygoing.petition[3]`: あの人とやらせて? わがままよね、私。
+- `CHALLENGE_LINES.seductive_easygoing.petition[3]`: あの人とやらせて？ わがままよね、私。
 
 ### seductive_easygoing.sendoff[]
 
@@ -515,7 +515,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### seductive_earnest.petition[]
 
 - `CHALLENGE_LINES.seductive_earnest.petition[1]`: 社長、あの人とやらせてほしいの。お願いします。
-- `CHALLENGE_LINES.seductive_earnest.petition[2]`: どうしてもあの人とやりたくて。……聞いてくれる?
+- `CHALLENGE_LINES.seductive_earnest.petition[2]`: どうしてもあの人とやりたくて。……聞いてくれる？
 - `CHALLENGE_LINES.seductive_earnest.petition[3]`: 身勝手なお願いなの。あの人と、やらせて。
 
 ### seductive_earnest.sendoff[]
@@ -540,7 +540,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_LINES.seductive_bold.petition[1]`: 社長、{org}のあの女、私にやらせて。
 - `CHALLENGE_LINES.seductive_bold.petition[2]`: 気に入らない女がいるの。……そいつと、やらせてほしいのよ。
-- `CHALLENGE_LINES.seductive_bold.petition[3]`: 身の程を教えてあげたい相手がいるの。組んでくれる?
+- `CHALLENGE_LINES.seductive_bold.petition[3]`: 身の程を教えてあげたい相手がいるの。組んでくれる？
 
 ### seductive_bold.sendoff[]
 
@@ -550,7 +550,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_bold.win[]
 
-- `CHALLENGE_LINES.seductive_bold.win[1]`: 勝ったわ。当然でしょ? ……ありがと、社長。
+- `CHALLENGE_LINES.seductive_bold.win[1]`: 勝ったわ。当然でしょ？ ……ありがと、社長。
 - `CHALLENGE_LINES.seductive_bold.win[2]`: 大したことなかったわ。いい報告でしょ、社長。
 - `CHALLENGE_LINES.seductive_bold.win[3]`: ほら、言った通り。通してくれて助かったわ。
 
@@ -586,7 +586,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_emotional.petition[]
 
-- `CHALLENGE_LINES.seductive_emotional.petition[1]`: 社長。あの人とやりたいの。……いいでしょ?
+- `CHALLENGE_LINES.seductive_emotional.petition[1]`: 社長。あの人とやりたいの。……いいでしょ？
 - `CHALLENGE_LINES.seductive_emotional.petition[2]`: 我慢が切れたの。あの人と、やらせて。
 - `CHALLENGE_LINES.seductive_emotional.petition[3]`: 言うだけ言うわ。あの人と当てて。
 
@@ -599,7 +599,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### seductive_emotional.win[]
 
 - `CHALLENGE_LINES.seductive_emotional.win[1]`: 勝ったわ。当たり前でしょ。……ありがと。
-- `CHALLENGE_LINES.seductive_emotional.win[2]`: ほら、私の言う通り。いい報告でしょう?
+- `CHALLENGE_LINES.seductive_emotional.win[2]`: ほら、私の言う通り。いい報告でしょう？
 - `CHALLENGE_LINES.seductive_emotional.win[3]`: 勝ったわよ。頷いた甲斐、あったでしょ。
 
 ### seductive_emotional.lose[]
@@ -622,8 +622,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama_normal.win[]
 
-- `CHALLENGE_LINES.ojousama_normal.win[1]`: 勝ちましたわ! ……お骨折り、ありがとうございました。
-- `CHALLENGE_LINES.ojousama_normal.win[2]`: ご報告です。勝ってまいりました!
+- `CHALLENGE_LINES.ojousama_normal.win[1]`: 勝ちましたわ！ ……お骨折り、ありがとうございました。
+- `CHALLENGE_LINES.ojousama_normal.win[2]`: ご報告です。勝ってまいりました！
 - `CHALLENGE_LINES.ojousama_normal.win[3]`: 勝てました。お許しをいただけたからです。
 
 ### ojousama_normal.lose[]
@@ -635,7 +635,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### ojousama_easygoing.petition[]
 
 - `CHALLENGE_LINES.ojousama_easygoing.petition[1]`: 社長、わたくし、あの方とやってみたいのです。
-- `CHALLENGE_LINES.ojousama_easygoing.petition[2]`: ねえ社長、あの方と当ててくださいません?
+- `CHALLENGE_LINES.ojousama_easygoing.petition[2]`: ねえ社長、あの方と当ててくださいません？
 - `CHALLENGE_LINES.ojousama_easygoing.petition[3]`: 思いつきではないのです。あの方と、試合を。
 
 ### ojousama_easygoing.sendoff[]
@@ -684,7 +684,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_LINES.ojousama_bold.petition[1]`: 社長、あの方はわたくしが引き受けますわね。
 - `CHALLENGE_LINES.ojousama_bold.petition[2]`: あの方と対戦したいのです。適任はわたくしでしょう。
-- `CHALLENGE_LINES.ojousama_bold.petition[3]`: 名指しさせていただくわ。あの相手との舞台、整えられる?
+- `CHALLENGE_LINES.ojousama_bold.petition[3]`: 名指しさせていただくわ。あの相手との舞台、整えられる？
 
 ### ojousama_bold.sendoff[]
 
@@ -712,15 +712,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_bold.sendoff[]
 
-- `CHALLENGE_LINES.delinquent_bold.sendoff[1]`: あざっす! ……行ってきます。
+- `CHALLENGE_LINES.delinquent_bold.sendoff[1]`: あざっす！ ……行ってきます。
 - `CHALLENGE_LINES.delinquent_bold.sendoff[2]`: ありがとうございます。……勝ってくるんで、心配いらないっす。
 - `CHALLENGE_LINES.delinquent_bold.sendoff[3]`: 話通してくれて、あざっした。ちゃんとやってきます。
 
 ### delinquent_bold.win[]
 
-- `CHALLENGE_LINES.delinquent_bold.win[1]`: 勝ったっす! ……ほら、言った通りでしょ。
-- `CHALLENGE_LINES.delinquent_bold.win[2]`: 勝ちました。社長、ありがとうございました。
-- `CHALLENGE_LINES.delinquent_bold.win[3]`: やってきました。……頼んだ甲斐、あったでしょ?
+- `CHALLENGE_LINES.delinquent_bold.win[1]`: 勝ったっす！ ……ほら、言った通りでしょ。
+- `CHALLENGE_LINES.delinquent_bold.win[2]`: きっちり勝ってきたっすよ。社長、ありがとうっす。
+- `CHALLENGE_LINES.delinquent_bold.win[3]`: やってきました。……頼んだ甲斐、あったでしょ？
 
 ### delinquent_bold.lose[]
 
@@ -756,7 +756,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_LINES.delinquent_easygoing.petition[1]`: 社長、あの人とやらせてよ。頼む。
 - `CHALLENGE_LINES.delinquent_easygoing.petition[2]`: やりたい相手がいるんだ。組んでくれ。
-- `CHALLENGE_LINES.delinquent_easygoing.petition[3]`: なあ社長、あの人と当ててくれない?
+- `CHALLENGE_LINES.delinquent_easygoing.petition[3]`: なあ社長、あの人と当ててくれない？
 
 ### delinquent_easygoing.sendoff[]
 
@@ -827,13 +827,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ## `CHALLENGE_REQUEST_OPPONENT_REACTIONS`
 
 - 出典: `src/data.js`
-- コード内コメント: challenge-request-spec-v0.1 Phase 5: 相手選手リアクションセリフ（試合前/結果モーダル） / キー: `${archetype}_${personality}` の34セル × 4場面(_accept/win/lose/draw) × 3本(Keisuke 承認済み最終版 2026-07-25)。 / 話す相手は「自分を名指しした挑戦者」。社長への報告ではない。 / 未定義セルは参照側で `${archetype}_normal` → `normal_normal` の順にフォールバックする(relationships.js pickLine と同じ規約)。
 - 本数: 408
 
 ### polite_earnest._accept[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest._accept[1]`: ご指名、確かに受け取りました。全力でお相手します。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest._accept[2]`: わたしを選んだのなら、その責任は果たします。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest._accept[2]`: 私を選んだのなら、その責任は果たします。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest._accept[3]`: お受けします。半端な気持ちでは、向き合いません。
 
 ### polite_earnest.win[]
@@ -846,7 +845,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest.lose[1]`: ……受けておいて、この結果です。悔やみます。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest.lose[2]`: あなたが上でした。言い訳はいたしません。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest.lose[3]`: わたしの力不足です。……この負けは、忘れません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_earnest.lose[3]`: 私の力不足です。……この負けは、忘れません。
 
 ### polite_earnest.draw[]
 
@@ -863,12 +862,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### polite_normal.win[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.win[1]`: お受けして良かったです。いい試合でした。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.win[2]`: 今日はわたしが上でしたね。お強かったですよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.win[2]`: 今日は私が上でしたね。お強かったですよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.win[3]`: 勝たせていただきました。またいつでも、どうぞ。
 
 ### polite_normal.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.lose[1]`: わたしの力が及びませんでした。お見事です。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.lose[1]`: 私の力が及びませんでした。お見事です。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.lose[2]`: 悔しいです。……ですが、受けたことに悔いはありません。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_normal.lose[3]`: 完敗です。次は、違う結果をお見せします。
 
@@ -904,7 +903,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_easygoing._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing._accept[1]`: あら、わたしですか。いいですよ、やりましょう。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing._accept[1]`: あら、私ですか。いいですよ、やりましょう。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing._accept[2]`: お受けします。せっかく呼ばれましたし。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_easygoing._accept[3]`: そんなに構えなくていいですよ。ちゃんとお相手します。
 
@@ -953,13 +952,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### polite_bold._accept[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold._accept[1]`: 望むところです。逃げも隠れもいたしません。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold._accept[2]`: わたしを選んだこと、後悔することになりますよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold._accept[2]`: 選ばれたからには、出し惜しみなしで！　全力で応えますよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold._accept[3]`: 結構です。そのお気持ち、全部受け止めます。
 
 ### polite_bold.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.win[1]`: 申し上げた通りです。お相手が悪かったですね。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.win[2]`: わたしを選んだのが、間違いでしたね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.win[1]`: 申し上げた通りです。最初から最後まで、全力で押し切りました。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.win[2]`: ふぅ……出し切りました。これが今の実力です。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.polite_bold.win[3]`: 受け止めました。……もう一度、いかがですか。
 
 ### polite_bold.lose[]
@@ -983,7 +982,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard_normal.win[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.win[1]`: 受けて正解でした。いい試合だった。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.win[2]`: 今日はわたしが上でしたね。強かったですよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.win[2]`: 今日は私が上でしたね。強かったですよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_normal.win[3]`: 勝ちました。いい相手でしたよ、あなた。
 
 ### standard_normal.lose[]
@@ -1000,7 +999,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_earnest._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest._accept[1]`: わたしを選んだ以上、真正面から受けます。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest._accept[1]`: 私を選んだ以上、真正面から受けます。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest._accept[2]`: その覚悟、無駄にはしません。必ず応えます。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest._accept[3]`: 逃げません。全部、受け止めます。
 
@@ -1013,7 +1012,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard_earnest.lose[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.lose[1]`: 受けておいて、この結果です。……情けない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.lose[2]`: あなたが上でした。全部、わたしの責任です。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.lose[2]`: あなたが上でした。全部、私の責任です。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_earnest.lose[3]`: 負けました。……この悔しさは、抱えていきます。
 
 ### standard_earnest.draw[]
@@ -1037,7 +1036,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard_bold.lose[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.lose[1]`: 持っていかれました。……大口叩いた分、痛い。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.lose[2]`: あなたが上でした。認めます、今日は。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.lose[2]`: アンタが上だった。認めるわよ、今日は。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_bold.lose[3]`: 負けました。次はこうはいきませんから。
 
 ### standard_bold.draw[]
@@ -1048,7 +1047,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_easygoing._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing._accept[1]`: わたしでいいの? いいよ、やろっか。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing._accept[1]`: 私でいいの？ いいよ、やろっか。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing._accept[2]`: ずいぶん熱心だね。まあ、受けるよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing._accept[3]`: そんなに力まなくても、ちゃんと相手するって。
 
@@ -1066,7 +1065,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.draw[1]`: 決着つかずだって。ちょうどいいんじゃない?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.draw[1]`: 決着つかずだって。ちょうどいいんじゃない？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.draw[2]`: 決まらなかったね。まあ、またそのうち。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_easygoing.draw[3]`: お互い元気だねえ。ちょっと疲れた。
 
@@ -1096,7 +1095,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_shy._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy._accept[1]`: え、わたし……? ……うん、逃げないよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy._accept[1]`: え、わたし……？ ……うん、逃げないよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy._accept[2]`: 名指しされるなんて、思ってなかった。……でも、受ける。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy._accept[3]`: 自信、ないんだけど……。それでも、いいなら。
 
@@ -1116,23 +1115,23 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.draw[1]`: 決着つかず……。よかったのか、どうなのか。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.draw[2]`: 決着、つかなかったね……。ちょっと、ほっとしてる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.draw[3]`: あの……もう一度、やる? 今度は、ちゃんと。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_shy.draw[3]`: あの……もう一度、やる？ 今度は、ちゃんと。
 
 ### standard_emotional._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[1]`: 上等! そっちが名前を出したんだからね!
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[2]`: わたしを選んだんだ。……絶対、後悔させてやる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[3]`: 言ったな? もう引っ込みつかないよ、お互い!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[1]`: いいよ、受ける！ そっちが名前を出したんだからね！
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[2]`: 私を選んだんだ。……絶対、後悔させてやる。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional._accept[3]`: 言ったよね？ もう引っ込みつかないよ、お互い！
 
 ### standard_emotional.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.win[1]`: ほら見なさい! わたしを選んだのが間違い!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.win[1]`: ほら見なさい！ 私を選んだのが間違い！
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.win[2]`: 勝った……! ざまあみろって、言っていい?
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.win[3]`: これで分かったでしょ! 二度と名前呼ばないで!
 
 ### standard_emotional.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.lose[1]`: くっそ……! 認めない、絶対に認めないから!
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.lose[1]`: 悔しい……！ 認めない、絶対に認めないから！
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.lose[2]`: 負けた……。悔しい、悔しいよ……!
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.standard_emotional.lose[3]`: なんで……! こんなの、納得できるわけない!
 
@@ -1168,20 +1167,20 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_emotional._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional._accept[1]`: ……ふぅん。よく、わたしの名前を出せたね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional._accept[1]`: ……ふぅん。よく、私の名前を出せたね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional._accept[2]`: ……いいよ。言葉はいらない。来なよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional._accept[3]`: ……そう。じゃあ、覚悟はできてるんだ。
 
 ### composed_emotional.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.win[1]`: ……これで分かった? 次はないよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.win[1]`: ……これで分かった？ 次はないよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.win[2]`: ……言いたいことは、全部言えたよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.win[3]`: ……もう、名前は呼ばないほうがいい。
 
 ### composed_emotional.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.lose[1]`: ……ちっ。次は、こうはいかない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.lose[2]`: ……っ……そうかよ。覚えておく。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.lose[1]`: ……くっ。次は、こうはいかない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.lose[2]`: ……っ……そう。覚えておく。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_emotional.lose[3]`: ……何も言わない。今は、何も。
 
 ### composed_emotional.draw[]
@@ -1204,9 +1203,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_earnest.lose[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.lose[1]`: ……受けておいて、この結果か。情けない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.lose[1]`: ……受けたからには勝ちたかった。この悔しさ、忘れない。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.lose[2]`: あんたが上だった。……言い訳はしない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.lose[3]`: ……負けは、わたしのものだ。持って帰るよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_earnest.lose[3]`: ……負けは、私のものだ。持って帰るよ。
 
 ### composed_earnest.draw[]
 
@@ -1218,12 +1217,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold._accept[1]`: 来なよ。……受けて立つから。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold._accept[2]`: ……いい度胸してるね。乗ってあげる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold._accept[3]`: わたしを選んだんだ。……せいぜい、悔やまないように。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold._accept[3]`: 私を選んだんだ。……せいぜい、悔やまないように。
 
 ### composed_bold.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.win[1]`: ……ほら、言った通りだろ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.win[2]`: わたしを選んだのが、間違いだったね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.win[1]`: ……ほら、言った通りだよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.win[2]`: 私を選んだのが、間違いだったね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.win[3]`: ……悪くなかったよ。もう一度来るなら、受ける。
 
 ### composed_bold.lose[]
@@ -1235,12 +1234,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### composed_bold.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[1]`: ……決めきれなかったか。つまらないね。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[2]`: こういう終わり方は、わたしの趣味じゃない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[2]`: こういう終わり方は、私の趣味じゃない。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_bold.draw[3]`: ……まだ足りない。また名前を呼びなよ。
 
 ### composed_easygoing._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing._accept[1]`: …あたし? ま、いいよ。付き合う。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing._accept[1]`: …私？ ま、いいよ。付き合う。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing._accept[2]`: へえ、名指しか。…断る理由もないかな。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.composed_easygoing._accept[3]`: そんなに気合い入れなくていいよ。…受けるから。
 
@@ -1288,14 +1287,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_normal._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal._accept[1]`: あら、私を選んだの? 光栄だわ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal._accept[1]`: あら、私を選んだの？ 光栄だわ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal._accept[2]`: ふふ、いいわよ。受けて立つ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal._accept[3]`: そんなに私が欲しいの? …来なさい。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal._accept[3]`: そんなに私が欲しいの？ …来なさい。
 
 ### seductive_normal.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.win[1]`: ね、届かなかったでしょう?
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.win[2]`: ふふ、いい夢は見られた?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.win[1]`: ね、届かなかったでしょう？
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.win[2]`: ふふ、いい夢は見られた？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.win[3]`: 悪くなかったわよ。…でも、まだ早い。
 
 ### seductive_normal.lose[]
@@ -1307,18 +1306,18 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### seductive_normal.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.draw[1]`: 決まらないなんて、じれったいわね。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.draw[2]`: 続きは、また今度。ね?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.draw[2]`: 続きは、また今度。ね？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_normal.draw[3]`: あら、まだ足りない顔してるわよ。
 
 ### seductive_easygoing._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing._accept[1]`: え、私? ふふ、いいわよー、遊びましょ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing._accept[2]`: ま、呼ばれたら行くわよ。そういうものでしょ?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing._accept[1]`: え、私？ ふふ、いいわよー、遊びましょ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing._accept[2]`: ま、呼ばれたら行くわよ。そういうものでしょ？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing._accept[3]`: あら、断るの面倒だし。…受けるわ。
 
 ### seductive_easygoing.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.win[1]`: ふふ、勝っちゃった。ごめんね?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.win[1]`: ふふ、勝っちゃった。ごめんね？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.win[2]`: あんまり気張らないの。…疲れるわよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.win[3]`: ね、思ったより楽しかったわ。
 
@@ -1330,8 +1329,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[1]`: 決着つかずかぁ。…ま、いいんじゃない?
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[2]`: 決まらなかったわね。お茶でも飲む?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[1]`: 決着つかずかぁ。…ま、いいんじゃない？
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[2]`: 決まらなかったわね。お茶でも飲む？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_easygoing.draw[3]`: もう、しつこいんだから。ふふ。
 
 ### seductive_earnest._accept[]
@@ -1360,15 +1359,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_bold._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold._accept[1]`: へえ、私に噛みつくの? …いい度胸ね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold._accept[1]`: へえ、私に噛みつくの？ …いい度胸ね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold._accept[2]`: いいわ、来なさい。喰ってあげる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold._accept[3]`: 後悔しても知らないわよ? ふふ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold._accept[3]`: 後悔しても知らないわよ？ ふふ。
 
 ### seductive_bold.win[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.win[1]`: ほら、言った通り。届かなかったでしょ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.win[2]`: ふふ、可愛かったわよ。その必死な顔。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.win[3]`: もう一度来る? …今度は容赦しない。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.win[3]`: もう一度来る？ …今度は容赦しない。
 
 ### seductive_bold.lose[]
 
@@ -1378,9 +1377,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_bold.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[1]`: 決めさせてくれないの? 生意気ね。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[1]`: 決めさせてくれないの？ 生意気ね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[2]`: まだ足りないわ。…ぜんぜん、足りない。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[3]`: 決着つかず? 私は納得してないわよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_bold.draw[3]`: 決着つかず？ 私は納得してないわよ。
 
 ### seductive_quiet._accept[]
 
@@ -1390,7 +1389,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_quiet.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_quiet.win[1]`: ……ね?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_quiet.win[1]`: ……ね？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_quiet.win[2]`: ふふ。……おやすみ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_quiet.win[3]`: ……まだ、早かったわね。
 
@@ -1408,27 +1407,27 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_emotional._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional._accept[1]`: 私を呼んだわね? …後悔させてあげる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional._accept[2]`: ふざけてるの? …いいわ、受けるわよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional._accept[1]`: 私を呼んだわね？ …後悔させてあげる。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional._accept[2]`: ふざけてるの？ …いいわ、受けるわよ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional._accept[3]`: その目、気に入らないわ。…来なさい。
 
 ### seductive_emotional.win[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.win[1]`: 分かった? 二度と私を選ばないで。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.win[1]`: 分かった？ 二度と私を選ばないで。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.win[2]`: ふふ……ざまあないわね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.win[3]`: もっと吠えてみせなさいよ。ほら。
 
 ### seductive_emotional.lose[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.lose[1]`: ……っ、なんで。認めたくないわ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.lose[2]`: 悔しい……! 悔しいのよ、私は。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.lose[2]`: 悔しい……！ 悔しいのよ、私は。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.lose[3]`: 笑いなさいよ。……今だけは、許すわ。
 
 ### seductive_emotional.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.draw[1]`: なによこれ。…全然すっきりしないわ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.draw[2]`: 決めさせなさいよ! …ああ、もう。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.draw[3]`: 中途半端は嫌いなの。…わかるでしょ?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.draw[2]`: 決めさせなさいよ！ …ああ、もう。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.seductive_emotional.draw[3]`: 中途半端は嫌いなの。…わかるでしょ？
 
 ### ojousama_normal._accept[]
 
@@ -1464,7 +1463,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.win[1]`: 勝ってしまいました。ごめんなさいね。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.win[2]`: 楽しい試合でした。ありがとう。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.win[3]`: あら、もう終わり? 少し物足りません。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_easygoing.win[3]`: あら、もう終わり？ 少し物足りません。
 
 ### ojousama_easygoing.lose[]
 
@@ -1488,7 +1487,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_earnest.win[1]`: 勝ちました。手は一切抜いていません。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_earnest.win[2]`: あなたは強かった。それは伝えておきます。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_earnest.win[3]`: 勝ちよりも、良い試合だったことが嬉しい。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_earnest.win[3]`: 勝ちよりも、良い試合だったことが嬉しいですの。
 
 ### ojousama_earnest.lose[]
 
@@ -1505,13 +1504,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### ojousama_bold._accept[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold._accept[1]`: わたくしを選ぶとは、見る目はあるようです。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold._accept[2]`: よろしい。お受けします。覚悟はおありで?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold._accept[2]`: よろしい。お受けします。覚悟はおありで？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold._accept[3]`: 無謀ですけれど……嫌いではありません。
 
 ### ojousama_bold.win[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.win[1]`: 勝ちました。この結果に驚きはありません。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.win[2]`: 身の程は分かりました? …ふふ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.win[2]`: 身の程は分かりました？ …ふふ。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.ojousama_bold.win[3]`: 危なげなく、勝たせていただきました。
 
 ### ojousama_bold.lose[]
@@ -1530,7 +1529,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold._accept[1]`: 上等じゃん。名指しとかいい度胸してんな。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold._accept[2]`: 来いよ。全部まとめて叩き返してやる。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold._accept[3]`: あたしを選んだ時点で、勝負ありだろ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold._accept[3]`: 私を選んだ時点で、勝負ありだろ。
 
 ### delinquent_bold.win[]
 
@@ -1547,8 +1546,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### delinquent_bold.draw[]
 
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[1]`: 決まらねぇとか、一番むかつくんだよ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[2]`: はぁ? まだ全然終わってねぇだろ。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[3]`: 決着つかず? 冗談。続きやるぞ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[2]`: はぁ？ まだ全然終わってねぇだろ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_bold.draw[3]`: 決着つかず？ 冗談。続きやるぞ。
 
 ### delinquent_normal._accept[]
 
@@ -1576,7 +1575,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_easygoing._accept[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing._accept[1]`: お、あたし? いいよ、やろうやろう。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing._accept[1]`: お、私？ いいよ、やろうやろう。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing._accept[2]`: めんどくせ……ま、断る理由もねぇか。
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing._accept[3]`: そんな睨むなって。受けるっての。
 
@@ -1594,9 +1593,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_easygoing.draw[]
 
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[1]`: 決着つかずか。ちょうどいいんじゃね?
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[1]`: 決着つかずか。ちょうどいいんじゃね？
 - `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[2]`: 決まんなかったな。腹減った。
-- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[3]`: まだやんの? あたしはもういいよ。
+- `CHALLENGE_REQUEST_OPPONENT_REACTIONS.delinquent_easygoing.draw[3]`: まだやんの？ 私はもういいよ。
 
 ### cool_normal._accept[]
 

@@ -132,7 +132,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: §6.2 新聞パネル用テンプレート（イベント種別ごとに headline + body ペア、各3+パターン）
-- 本数: 284
+- 本数: 336
 
 ### tenchosenAnnounce[].headline
 
@@ -174,6 +174,66 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NEWS_HEADLINE_TEMPLATES.tenchosenBestBout[1].body`: {round}で組まれた{winner}（{winnerOrg}）と{loser}（{loserOrg}）の一戦が、大会最高の{mq}点を記録した。{closing}
 - `NEWS_HEADLINE_TEMPLATES.tenchosenBestBout[2].body`: {round}の{winner}（{winnerOrg}）対{loser}（{loserOrg}）が、全15試合を通して最も高い評価を集めた。{closing}
 
+### longInjury[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.longInjury[1].headline`: {orgName}の{name}、{injuryType}で全治{weeks}週
+- `NEWS_HEADLINE_TEMPLATES.longInjury[2].headline`: {name}が長期離脱へ——全治{weeks}週
+- `NEWS_HEADLINE_TEMPLATES.longInjury[3].headline`: {orgName}に痛手、{name}が{weeks}週の離脱
+
+### longInjury[].body
+
+- `NEWS_HEADLINE_TEMPLATES.longInjury[1].body`: {orgName}の{name}が{injuryType}と診断された。全治{weeks}週の見込みで、この間はカードから外れる。復帰後にどこまで戻せるかが次の焦点になる。
+- `NEWS_HEADLINE_TEMPLATES.longInjury[2].body`: {orgName}の{name}が{injuryType}を負い、全治{weeks}週と発表された。離脱期間は団体の編成に直接響く。穴をどう埋めるかは、そのまま今季の残りを左右する。
+- `NEWS_HEADLINE_TEMPLATES.longInjury[3].body`: {name}（{orgName}）の{injuryType}は全治{weeks}週。復帰の目処が立つまで、上位カードの組み替えは避けられない。
+
+### winStreakMilestone[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.winStreakMilestone[1].headline`: {orgName}の{name}、{count}連勝
+- `NEWS_HEADLINE_TEMPLATES.winStreakMilestone[2].headline`: 止まらない{name}——{count}連勝
+- `NEWS_HEADLINE_TEMPLATES.winStreakMilestone[3].headline`: {name}が{count}連勝、視線を集める
+
+### winStreakMilestone[].body
+
+- `NEWS_HEADLINE_TEMPLATES.winStreakMilestone[1].body`: {orgName}の{name}が{count}連勝に到達した。{recordLine}この勢いがどこまで続くかに注目が集まる。
+- `NEWS_HEADLINE_TEMPLATES.winStreakMilestone[2].body`: {name}（{orgName}）が白星を{count}に伸ばした。{recordLine}この期間に当たった相手の顔ぶれが、連勝の重さをそのまま示している。
+- `NEWS_HEADLINE_TEMPLATES.winStreakMilestone[3].body`: {orgName}の{name}が{count}連勝。{recordLine}カードを組む側からすれば、次に誰を当てるかが難しくなってきた。
+
+### loseStreakMilestone[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.loseStreakMilestone[1].headline`: {orgName}の{name}、{count}連敗
+- `NEWS_HEADLINE_TEMPLATES.loseStreakMilestone[2].headline`: {name}、{count}連敗。浮上の糸口を探る
+- `NEWS_HEADLINE_TEMPLATES.loseStreakMilestone[3].headline`: {name}の連敗が{count}に
+
+### loseStreakMilestone[].body
+
+- `NEWS_HEADLINE_TEMPLATES.loseStreakMilestone[1].body`: {orgName}の{name}が{count}連敗を喫した。苦しい試合が続くなか、戦い方をどう立て直すか。流れを変える一勝が待たれる。
+- `NEWS_HEADLINE_TEMPLATES.loseStreakMilestone[2].body`: {name}（{orgName}）が{count}連敗を喫した。対戦相手との力関係だけで片づけられる状況ではない。戦い方を立て直し、流れを変える一勝をつかめるか。
+- `NEWS_HEADLINE_TEMPLATES.loseStreakMilestone[3].body`: {orgName}の{name}は、これで{count}試合連続の黒星となった。内容を見直しながら、まずは長いトンネルを抜ける一勝を目指したい。
+
+### transferDone[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.transferDone[1].headline`: {name}、{fromOrg}から{toOrg}へ
+- `NEWS_HEADLINE_TEMPLATES.transferDone[2].headline`: {toOrg}が{name}を獲得
+- `NEWS_HEADLINE_TEMPLATES.transferDone[3].headline`: {name}の移籍が決まる——{fromOrg}を離れ{toOrg}へ
+
+### transferDone[].body
+
+- `NEWS_HEADLINE_TEMPLATES.transferDone[1].body`: {name}の{toOrg}移籍が決まった。{fromOrg}で培った経験を新天地でどう生かすか。新しい顔ぶれの中で担う役割に注目が集まる。
+- `NEWS_HEADLINE_TEMPLATES.transferDone[2].body`: {toOrg}が{fromOrg}の{name}を迎え入れた。加入によって対戦カードの幅は広がりそうだ。一方の{fromOrg}には、抜けた戦力をどう補うかという課題が残る。
+- `NEWS_HEADLINE_TEMPLATES.transferDone[3].body`: {name}が{fromOrg}を離れ、{toOrg}に加わることが決まった。対戦相手の顔ぶれが変わる以上、これまでの戦い方がそのまま通じるとは限らない。
+
+### retirementDeclare[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.retirementDeclare[1].headline`: {orgName}の{name}が現役引退
+- `NEWS_HEADLINE_TEMPLATES.retirementDeclare[2].headline`: {name}、{seasons}シーズンで現役に区切り
+- `NEWS_HEADLINE_TEMPLATES.retirementDeclare[3].headline`: {orgName}、{name}が退く
+
+### retirementDeclare[].body
+
+- `NEWS_HEADLINE_TEMPLATES.retirementDeclare[1].body`: {orgName}の{name}（{age}歳）が現役を退く。{seasons}シーズンにわたってリングに立ち続けた。{careerLine}空いた場所を誰が埋めるかは、これからの話になる。
+- `NEWS_HEADLINE_TEMPLATES.retirementDeclare[2].body`: {name}（{orgName}・{age}歳）が引退を表明した。{careerLine}デビューから{seasons}シーズン。積み重ねた試合と記録を残し、現役生活に区切りをつける。
+- `NEWS_HEADLINE_TEMPLATES.retirementDeclare[3].body`: {orgName}の{name}が現役生活に幕を下ろす。{age}歳、通算{seasons}シーズン。{careerLine}団体にとっては、戦力の話であると同時に、並びの意味が変わる出来事でもある。
+
 ### autumnWarAnnounce[].headline
 
 - `NEWS_HEADLINE_TEMPLATES.autumnWarAnnounce[1].headline`: 4団体勝ち残り対抗戦、組み合わせ決定
@@ -181,8 +241,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### autumnWarAnnounce[].body
 
-- `NEWS_HEADLINE_TEMPLATES.autumnWarAnnounce[1].body`: 第{season}回4団体勝ち残り対抗戦は第36週に開催される。準決勝は第1シード{seed1}対第4シード{seed4}、第2シード{seed2}対第3シード{seed3}。各団体3名が先鋒・中堅・大将の順に立ち、最後の一人になるまでリングを譲らない。
-- `NEWS_HEADLINE_TEMPLATES.autumnWarAnnounce[2].body`: 第{season}回4団体勝ち残り対抗戦の出場団体は{seed1}・{seed2}・{seed3}・{seed4}。第36週、団体ランキング1位対4位、2位対3位の準決勝から、勝者同士の決勝までを一日で戦い抜く。
+- `NEWS_HEADLINE_TEMPLATES.autumnWarAnnounce[1].body`: 第{season}回4団体勝ち残り対抗戦は第36週に開催される。準決勝は第1シード{seed1}対第4シード{seed4}、第2シード{seed2}対第3シード{seed3}。各団体3名が先鋒・中堅・大将の順に立ち、最後の一人になるまでリングを譲らない。{preview}
+- `NEWS_HEADLINE_TEMPLATES.autumnWarAnnounce[2].body`: 第{season}回4団体勝ち残り対抗戦の出場団体は{seed1}・{seed2}・{seed3}・{seed4}。第36週、団体ランキング1位対4位、2位対3位の準決勝から、勝者同士の決勝までを一日で戦い抜く。{preview}
 
 ### autumnWarResult[].headline
 
@@ -201,18 +261,65 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### springTagAnnounce[].body
 
-- `NEWS_HEADLINE_TEMPLATES.springTagAnnounce[1].body`: 第{season}回春のタッグリーグの出場4団体が出揃った。{org1}・{org2}・{org3}・{org4}。各団体代表タッグは編成期間を経て、第12週に激突する。
-- `NEWS_HEADLINE_TEMPLATES.springTagAnnounce[2].body`: 第{season}回春のタッグリーグに{org1}・{org2}・{org3}・{org4}の4団体が名乗りを上げた。第12週、4団体総当たりのリーグ戦と優勝決定戦が1日で行われる。
+- `NEWS_HEADLINE_TEMPLATES.springTagAnnounce[1].body`: 第{season}回春のタッグリーグの出場4団体が出揃った。{org1}・{org2}・{org3}・{org4}。各団体代表タッグは編成期間を経て、第12週に激突する。{preview}
+- `NEWS_HEADLINE_TEMPLATES.springTagAnnounce[2].body`: 第{season}回春のタッグリーグに{org1}・{org2}・{org3}・{org4}の4団体が名乗りを上げた。第12週、4団体総当たりのリーグ戦と優勝決定戦が1日で行われる。{preview}
+
+### followUpBreakthrough[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.followUpBreakthrough[1].headline`: {name}の{stat}、何が変わったのか
+- `NEWS_HEADLINE_TEMPLATES.followUpBreakthrough[2].headline`: 一段上がった{name}——{stat}の伸び
+
+### followUpBreakthrough[].body
+
+- `NEWS_HEADLINE_TEMPLATES.followUpBreakthrough[1].body`: 先の興行で{name}は{stat}の成長を示した。一度の変化で評価が決まるわけではないが、試合の組み立てに新しい選択肢が増えたのは確かだ。次戦でその成長をどう生かすかが見どころになる。
+- `NEWS_HEADLINE_TEMPLATES.followUpBreakthrough[2].body`: {name}の{stat}が伸びた。この手の変化は、伸びた直後よりも、次に格上と当たったときにはっきり出る。伸びをそのまま勝ち星に変えられるかどうかは、これからのカード次第だ。
+
+### followUpRecord[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.followUpRecord[1].headline`: {name}の{what}、その後
+- `NEWS_HEADLINE_TEMPLATES.followUpRecord[2].headline`: {what}から数週——{name}の現在地
+
+### followUpRecord[].body
+
+- `NEWS_HEADLINE_TEMPLATES.followUpRecord[1].body`: {name}が{what}を果たしてから数週が過ぎた。大きな実績を一度きりで終わらせず、次の勝利へつなげられるか。今後の対戦カードと試合内容に注目したい。
+- `NEWS_HEADLINE_TEMPLATES.followUpRecord[2].body`: {what}を果たした{name}は、その後もリングの中心で戦い続けている。実績にふさわしい内容を積み重ねられるか。ここ数戦の結果が、今後の立ち位置を左右しそうだ。
+
+### followUpNewcomer[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.followUpNewcomer[1].headline`: {name}の{how}から数週——新天地での歩み
+- `NEWS_HEADLINE_TEMPLATES.followUpNewcomer[2].headline`: {how}した{name}、その後の日々
+
+### followUpNewcomer[].body
+
+- `NEWS_HEADLINE_TEMPLATES.followUpNewcomer[1].body`: {name}が{how}して数週が過ぎた。環境が変われば、練習相手も控室の並びも変わる。数字に出るまでには時間がかかるが、変化はまず立ち居振る舞いに出るものだ。
+- `NEWS_HEADLINE_TEMPLATES.followUpNewcomer[2].body`: {how}から間もない{name}。新しい環境で迎える最初の数戦は、連携や試合運びを確かめる時間でもある。今の段階で評価を決めるのはまだ早い。
+
+### followUpStreak[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.followUpStreak[1].headline`: {name}の{count}連勝は、まだ続いている
+- `NEWS_HEADLINE_TEMPLATES.followUpStreak[2].headline`: 止まらない{name}——{count}連勝の中身
+
+### followUpStreak[].body
+
+- `NEWS_HEADLINE_TEMPLATES.followUpStreak[1].body`: {name}の連勝が{count}まで伸びた。勝ち星を重ねるほど、対戦相手の警戒も強くなる。そのなかで自分の形を貫けるかが、次の焦点だ。
+- `NEWS_HEADLINE_TEMPLATES.followUpStreak[2].body`: {count}連勝。数字だけを見れば順調だが、当たった相手の顔ぶれを並べれば内容は違って見える。連勝が続くほど、次に組まれる相手の格は上がっていく。
+
+### draftRoundup[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.draftRoundup[1].headline`: 今年のドラフト、{total}名が新たにリングへ
+- `NEWS_HEADLINE_TEMPLATES.draftRoundup[2].headline`: ドラフト総括——注目は{headName}
+- `NEWS_HEADLINE_TEMPLATES.draftRoundup[3].headline`: 新人{total}名が出そろう
+
+### draftRoundup[].body
+
+- `NEWS_HEADLINE_TEMPLATES.draftRoundup[1].body`: 今季のドラフトで{total}名の新人が各団体に加わった。記者の目を引いたのは{names}。見立てはあくまで入り口の評価であり、ここから伸びるかどうかは一年の使われ方で決まる。
+- `NEWS_HEADLINE_TEMPLATES.draftRoundup[2].body`: {total}名が指名を受けた今年のドラフト。名前が挙がったのは{names}。同じ評価で入っても、リングに上がる回数が違えば一年後の姿は変わる。
+- `NEWS_HEADLINE_TEMPLATES.draftRoundup[3].body`: 今年のドラフトは{total}名。{names}が注目を集めた。どの団体がどう育てるかは、来季の勢力図にそのまま出る。
 
 ### draftPlayerResult[].headline
 
 - `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[1].headline`: {org}、新人{count}名を獲得
 - `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[2].headline`: {org}が{count}名を指名、新体制へ
-
-### draftPlayerResult[].body
-
-- `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[1].body`: {names}。新シーズンの陣容がひとつ厚くなった。
-- `NEWS_HEADLINE_TEMPLATES.draftPlayerResult[2].body`: {names}が加入。どこまで伸びるかは、これからの一年が決める。
 
 ### draftAiResult[].headline
 
@@ -342,107 +449,107 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### titleChange[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.titleChange[1].headline`: 激震！{org}の王座が動いた！{name}が新王者に
-- `NEWS_HEADLINE_TEMPLATES.titleChange[2].headline`: 王座交代！{name}が{org}の頂点を奪取
-- `NEWS_HEADLINE_TEMPLATES.titleChange[3].headline`: {org}に新女王誕生。{name}が王座を戴冠
+- `NEWS_HEADLINE_TEMPLATES.titleChange[1].headline`: {org}の王座が動く——{name}が新王者に
+- `NEWS_HEADLINE_TEMPLATES.titleChange[2].headline`: 王座交代——{name}が{org}の頂点へ
+- `NEWS_HEADLINE_TEMPLATES.titleChange[3].headline`: {org}に新王者——{name}がベルトを獲得
 
 ### titleChange[].body
 
-- `NEWS_HEADLINE_TEMPLATES.titleChange[1].body`: {org}のタイトルマッチで大波乱。{prevChamp}を破った{name}が新チャンピオンの座に就いた。新王者の時代は長く続くのか、それとも――
-- `NEWS_HEADLINE_TEMPLATES.titleChange[2].body`: 壮絶な一戦の末、{name}が新チャンピオンに。敗れた{prevChamp}は雪辱を期すことになる。{org}の新時代が始まる。
-- `NEWS_HEADLINE_TEMPLATES.titleChange[3].body`: {prevChamp}の牙城を崩した{name}。ファンの歓声が会場を包む中、新王者の時代が幕を開けた。
+- `NEWS_HEADLINE_TEMPLATES.titleChange[1].body`: {org}のタイトルマッチで{name}が{prevChamp}を破り、新王者となった。王座を手にした{name}が、ここからどんな防衛戦を築くかに注目が集まる。
+- `NEWS_HEADLINE_TEMPLATES.titleChange[2].body`: {name}が{prevChamp}を下し、新チャンピオンの座に就いた。前王者の雪辱戦も含め、{org}の王座戦線は新たな局面を迎える。
+- `NEWS_HEADLINE_TEMPLATES.titleChange[3].body`: {prevChamp}の防衛を止めた{name}が、{org}の新王者となった。新たな王者を軸に、次の挑戦者争いも動き出す。
 
 ### defenseRecord[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.defenseRecord[1].headline`: 盤石！{name}、{count}度目の防衛に成功。王座を脅かす者はいるのか
-- `NEWS_HEADLINE_TEMPLATES.defenseRecord[2].headline`: 伝説へ――{name}、前人未到の{count}回防衛
-- `NEWS_HEADLINE_TEMPLATES.defenseRecord[3].headline`: もはや神話。{name}の王座は誰にも止められない
+- `NEWS_HEADLINE_TEMPLATES.defenseRecord[1].headline`: {name}、{count}度目の防衛に成功
+- `NEWS_HEADLINE_TEMPLATES.defenseRecord[2].headline`: {name}が{count}回防衛——王座戦線の中心に
+- `NEWS_HEADLINE_TEMPLATES.defenseRecord[3].headline`: {count}回防衛の{name}、長期政権へ
 
 ### defenseRecord[].body
 
-- `NEWS_HEADLINE_TEMPLATES.defenseRecord[1].body`: {org}の{name}が{count}回目のタイトル防衛を達成。この安定感は驚異的だ。次の挑戦者にとって、越えるべき壁はさらに高くなった。
-- `NEWS_HEADLINE_TEMPLATES.defenseRecord[2].body`: {org}の{name}が{count}回防衛という金字塔を打ち立てた。その強さに対戦者も脱帽。「もはや別格」と業界関係者も舌を巻く。
-- `NEWS_HEADLINE_TEMPLATES.defenseRecord[3].body`: {count}回防衛――この数字が全てを物語る。{org}の{name}は最早歴史の一部。挑む者全てを退ける絶対王者は、孤高の頂に立ち続ける。
+- `NEWS_HEADLINE_TEMPLATES.defenseRecord[1].body`: {org}の{name}が{count}回目のタイトル防衛を果たした。王者として結果を積み重ね、次の挑戦者を待つ。
+- `NEWS_HEADLINE_TEMPLATES.defenseRecord[2].body`: {org}の{name}が防衛回数を{count}に伸ばした。挑戦者が変わってもベルトを守り続ける王者を、次に誰が止めるのか。
+- `NEWS_HEADLINE_TEMPLATES.defenseRecord[3].body`: {org}の{name}がまた一つ防衛を重ねた。王者としての実績は確かなものになりつつあり、次戦でもその安定した戦いが問われる。
 
 ### breakthrough[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[1].headline`: 新星爆誕！{name}が覚醒、瞬く間に別人に
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[2].headline`: {name}にブレークスルー。{org}の新たな武器に
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[3].headline`: 覚醒の{name}！ {org}に嬉しい誤算
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[1].headline`: {name}が成長の跡——試合内容に変化
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[2].headline`: {name}に転機——{org}の新たな戦力へ
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[3].headline`: 伸びを見せる{name}、次戦にも注目
 
 ### breakthrough[].body
 
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[1].body`: {org}の{name}が驚くべき成長を見せた。{detail}。業界関係者も「この選手は化ける」と太鼓判。今後の活躍から目が離せない。
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[2].body`: 地道な努力がついに実を結んだ。{org}の{name}が{detail}。本人も驚くほどの変化だという。団体の戦力が一段上がった。
-- `NEWS_HEADLINE_TEMPLATES.breakthrough[3].body`: 期待以上の急成長を遂げた{name}。{detail}。{org}のファンからは「ウチのエースはこの子だ」と歓喜の声が上がっている。
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[1].body`: {org}の{name}が確かな成長を見せた。{detail}。一度の好内容で終わらせず、次戦でも同じ強みを発揮できるか。
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[2].body`: {org}の{name}が{detail}。これまでの積み重ねが試合内容に表れ、戦い方の幅を広げている。
+- `NEWS_HEADLINE_TEMPLATES.breakthrough[3].body`: {name}が{detail}。成長を結果へつなげられるか、今後のカードが試金石になる。
 
 ### slump[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.slump[1].headline`: 心配される{name}の不調…いつになったら復活？
-- `NEWS_HEADLINE_TEMPLATES.slump[2].headline`: {name}に暗雲。{org}の戦力に影響か
-- `NEWS_HEADLINE_TEMPLATES.slump[3].headline`: {org}の{name}、苦悩の日々。スランプはいつ明けるのか
+- `NEWS_HEADLINE_TEMPLATES.slump[1].headline`: {name}、不調から抜け出せず
+- `NEWS_HEADLINE_TEMPLATES.slump[2].headline`: {name}の不調、{org}の戦いにも影響
+- `NEWS_HEADLINE_TEMPLATES.slump[3].headline`: {org}の{name}、復調への道を探る
 
 ### slump[].body
 
-- `NEWS_HEADLINE_TEMPLATES.slump[1].body`: {org}の{name}がスランプに陥っている。練習でも精彩を欠き、周囲も心配顔。「本人が一番苦しんでいる」とチームメイトは語る。
-- `NEWS_HEADLINE_TEMPLATES.slump[2].body`: {org}の主力{name}の調子が上がらない。ファンからは激励の声が寄せられるが、復活の兆しはまだ見えない。
-- `NEWS_HEADLINE_TEMPLATES.slump[3].body`: かつての輝きを失った{name}。しかし周囲は信じている。「あの子は必ず戻ってくる」と{org}の仲間たちは口を揃える。
+- `NEWS_HEADLINE_TEMPLATES.slump[1].body`: {org}の{name}は本来の力を発揮できない試合が続いている。内容を立て直し、浮上のきっかけをつかめるか。
+- `NEWS_HEADLINE_TEMPLATES.slump[2].body`: {org}の{name}の調子が上がらない。今は結果を急ぐより、自分の戦いを取り戻すことが先決になりそうだ。
+- `NEWS_HEADLINE_TEMPLATES.slump[3].body`: {name}は苦しい時期を迎えている。次の一戦で内容を変えられるかが、復調への重要な一歩になる。
 
 ### motivationLoss[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.motivationLoss[1].headline`: 引退か――{name}から闘志が消えた？
-- `NEWS_HEADLINE_TEMPLATES.motivationLoss[2].headline`: {name}の去就に暗雲。{org}は引き留められるか
-- `NEWS_HEADLINE_TEMPLATES.motivationLoss[3].headline`: {org}の{name}、心ここにあらず。業界に衝撃
+- `NEWS_HEADLINE_TEMPLATES.motivationLoss[1].headline`: {name}に気力の低下——立て直しが急務
+- `NEWS_HEADLINE_TEMPLATES.motivationLoss[2].headline`: {name}の状態を懸念、{org}は支えられるか
+- `NEWS_HEADLINE_TEMPLATES.motivationLoss[3].headline`: {org}の{name}、再起のきっかけを求めて
 
 ### motivationLoss[].body
 
-- `NEWS_HEADLINE_TEMPLATES.motivationLoss[1].body`: {org}の{name}にモチベーション喪失の噂。練習を欠席する日も増えたという。「あのギラギラしていた目が…」とファンも心配を隠せない。
-- `NEWS_HEADLINE_TEMPLATES.motivationLoss[2].body`: {org}の{name}が闘志を失いつつあるという。関係者によると、プロレスを楽しめなくなっていると漏らしているとか。復活を願う声が業界に広がる。
-- `NEWS_HEADLINE_TEMPLATES.motivationLoss[3].body`: かつてリングを沸かせた{name}の目から光が消えた。何のために戦うのか——それを見失った姿に、ファンは言葉を失った。
+- `NEWS_HEADLINE_TEMPLATES.motivationLoss[1].body`: {org}の{name}は、試合への意欲を保てない状態が続いている。心身を整え、もう一度リングに向き合える環境を作れるか。
+- `NEWS_HEADLINE_TEMPLATES.motivationLoss[2].body`: {org}の{name}に気力の低下が見られる。結果だけを求めず、本人が戦う目的を取り戻せるよう支える必要がある。
+- `NEWS_HEADLINE_TEMPLATES.motivationLoss[3].body`: {name}は思うように気持ちを高められずにいる。次の一戦が、前を向くきっかけになるかもしれない。
 
 ### hallOfFame[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.hallOfFame[1].headline`: 栄光の殿堂入り！{name}の輝かしいキャリアを振り返る
-- `NEWS_HEADLINE_TEMPLATES.hallOfFame[2].headline`: {name}、殿堂入り。伝説は永遠に刻まれた
-- `NEWS_HEADLINE_TEMPLATES.hallOfFame[3].headline`: 感動の殿堂入りセレモニー。{name}に万雷の拍手
+- `NEWS_HEADLINE_TEMPLATES.hallOfFame[1].headline`: {name}が殿堂入り——実績を振り返る
+- `NEWS_HEADLINE_TEMPLATES.hallOfFame[2].headline`: {name}、殿堂入り。記録に残るキャリア
+- `NEWS_HEADLINE_TEMPLATES.hallOfFame[3].headline`: {name}の功績を称え、殿堂入り
 
 ### hallOfFame[].body
 
-- `NEWS_HEADLINE_TEMPLATES.hallOfFame[1].body`: タイトル{titles}回獲得、防衛{defenses}回。{name}の偉大なキャリアに、業界全体が敬意を表した。プロレスに全てを捧げた半生が、この日たしかに報われた。
-- `NEWS_HEADLINE_TEMPLATES.hallOfFame[2].body`: 数々の名勝負を生んだ{name}が殿堂入り。受賞の挨拶が終わると、会場はスタンディングオベーションに包まれた。
-- `NEWS_HEADLINE_TEMPLATES.hallOfFame[3].body`: 引退後もなおファンに愛される{name}。タイトル{titles}回、防衛{defenses}回の偉業。後輩たちに繋いだ道は、これからも色褪せない。
+- `NEWS_HEADLINE_TEMPLATES.hallOfFame[1].body`: タイトル獲得{titles}回、防衛{defenses}回。{name}が積み重ねた実績が評価され、殿堂入りを果たした。
+- `NEWS_HEADLINE_TEMPLATES.hallOfFame[2].body`: 数々の試合で存在感を示した{name}が殿堂入りを果たした。その歩みは、団体の歴史にも確かな足跡を残している。
+- `NEWS_HEADLINE_TEMPLATES.hallOfFame[3].body`: タイトル獲得{titles}回、防衛{defenses}回を記録した{name}が殿堂入りした。長年の実績が、あらためて評価された形だ。
 
 ### retirement[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.retirement[1].headline`: ありがとう{name}――リングに別れを告げた戦士
+- `NEWS_HEADLINE_TEMPLATES.retirement[1].headline`: {name}が引退——現役生活に区切り
 - `NEWS_HEADLINE_TEMPLATES.retirement[2].headline`: {name}、引退。{org}の一時代が終わる
-- `NEWS_HEADLINE_TEMPLATES.retirement[3].headline`: さようなら{name}。最後のゴングが鳴った
+- `NEWS_HEADLINE_TEMPLATES.retirement[3].headline`: {name}、リングを去る
 
 ### retirement[].body
 
-- `NEWS_HEADLINE_TEMPLATES.retirement[1].body`: {org}の{name}が現役を退いた。{detail}。最後まで全力で闘い抜いてリングを降りる姿に、ファンから惜別の涙が溢れた。
-- `NEWS_HEADLINE_TEMPLATES.retirement[2].body`: {org}を支えた{name}がリングを去った。{detail}。最後に深々と下げられた頭が、全てを物語っていた。
-- `NEWS_HEADLINE_TEMPLATES.retirement[3].body`: 長きにわたり{org}を背負った{name}が引退を決断。{detail}。悔いはないと言い切る、その穏やかな表情が印象的だった。
+- `NEWS_HEADLINE_TEMPLATES.retirement[1].body`: {org}の{name}が現役を退いた。{detail}。これまでの実績と、団体に残したものを振り返りたい。
+- `NEWS_HEADLINE_TEMPLATES.retirement[2].body`: {org}を支えた{name}がリングを去った。{detail}。その不在を、団体がどう埋めていくかが次の課題となる。
+- `NEWS_HEADLINE_TEMPLATES.retirement[3].body`: {org}の{name}が引退を決断した。{detail}。現役生活で積み重ねた試合と記録は、これからも団体史に残る。
 
 ### contractBetrayalChampCarry[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[1].headline`: 衝撃の裏切り――{name}がベルトを抱えて{toOrg}へ
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[2].headline`: 王座を抱えての離脱――{name}、{toOrg}入り
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[1].headline`: 王者{name}が{toOrg}へ移籍——ベルトの扱いに注目
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[2].headline`: 王座保持者{name}、{toOrg}入り
 
 ### contractBetrayalChampCarry[].body
 
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[1].body`: {fromOrg}の{name}が契約を蹴って{toOrg}へ電撃移籍。団体王座まで持ち去られる前代未聞の事態に、ロッカールームには重い沈黙が流れた。ベルトの行方を巡る騒動は、業界全体を巻き込みつつある。
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[2].body`: {fromOrg}が抱える看板タイトルを保持したまま、{name}が{toOrg}への移籍を決断。残された選手たちは「あれが仲間だったとは思いたくない」と肩を落とす。奪還の挑戦状なくして決着はつかない。
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[1].body`: {fromOrg}の王座を保持する{name}が、{toOrg}への移籍を決めた。王者の所属変更を受け、ベルトを今後どう扱うかが焦点となる。
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampCarry[2].body`: {fromOrg}のタイトルを保持したまま、{name}が{toOrg}へ移籍した。王座戦線への影響は大きく、両団体の対応が待たれる。
 
 ### contractBetrayalChampLeave[].headline
 
 - `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampLeave[1].headline`: {name}が{toOrg}へ――ベルトは置いて去った
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampLeave[2].headline`: 王座返上――{name}、{toOrg}へ移籍
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampLeave[2].headline`: 王座返上——{name}、{toOrg}へ移籍
 
 ### contractBetrayalChampLeave[].body
 
 - `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampLeave[1].body`: {fromOrg}との契約交渉が決裂し、{name}が{toOrg}へ去った。王座は返上、空位に。ベルトを置いて去るというその幕引きに、複雑な思いを抱くファンも少なくない。
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampLeave[2].body`: 団体王座を保持していた{name}が{toOrg}への移籍を表明。ベルトはリング中央に置かれたまま空位となった。{fromOrg}は早急に王座決定戦の準備に入る。
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalChampLeave[2].body`: 団体王座を保持していた{name}が{toOrg}へ移籍し、ベルトは空位となった。{fromOrg}は新王者決定に向けて動くことになる。
 
 ### contractBetrayalRivalOrg[].headline
 
@@ -451,8 +558,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### contractBetrayalRivalOrg[].body
 
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalRivalOrg[1].body`: {fromOrg}を離れた{name}が、よりによって因縁の{toOrg}へ。「これは裏切りだ」とロッカールームから怒号が漏れた。次にリングで顔を合わせる時、その視線がどう変わっているのか――。
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalRivalOrg[2].body`: 幾度も激戦を繰り広げてきた{toOrg}に、{fromOrg}の{name}が加入。残された仲間の表情には怒りと困惑が混じる。次の対抗戦は感情の渦になることが避けられない。
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalRivalOrg[1].body`: {fromOrg}を離れた{name}が、因縁のある{toOrg}へ移籍した。今後の対抗戦で古巣と顔を合わせれば、大きな注目を集めることになりそうだ。
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalRivalOrg[2].body`: 幾度も激戦を繰り広げてきた{toOrg}に、{fromOrg}の{name}が加入した。両団体の関係を含め、次の対抗戦へ新たな因縁を持ち込む移籍となる。
 
 ### contractBetrayalAce[].headline
 
@@ -462,7 +569,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### contractBetrayalAce[].body
 
 - `NEWS_HEADLINE_TEMPLATES.contractBetrayalAce[1].body`: {fromOrg}の屋台骨を支えた{name}が{toOrg}への移籍を決断。看板選手の喪失に、団体の前途には暗雲が垂れ込める。残された選手たちは奮起できるか。
-- `NEWS_HEADLINE_TEMPLATES.contractBetrayalAce[2].body`: OVR上位常連の{name}が{fromOrg}を離れて{toOrg}へ。チームの戦力構成は大きく変わる。ファンからは「次のエースは誰になる」と早くも期待と不安の声が混ざる。
+- `NEWS_HEADLINE_TEMPLATES.contractBetrayalAce[2].body`: 団体を代表する実力者{name}が{fromOrg}を離れ、{toOrg}へ移籍した。両団体の戦力構成は大きく変わり、{fromOrg}では次の中心選手が問われる。
 
 ### contractBetrayalGeneric[].headline
 
@@ -476,13 +583,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### poachSuccess[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.poachSuccess[1].headline`: 電撃移籍！{name}が{toOrg}に加入。{fromOrg}は大打撃か
+- `NEWS_HEADLINE_TEMPLATES.poachSuccess[1].headline`: {name}が{toOrg}に加入——{fromOrg}から移籍
 - `NEWS_HEADLINE_TEMPLATES.poachSuccess[2].headline`: {name}が移籍。{toOrg}の戦力強化なるか
 - `NEWS_HEADLINE_TEMPLATES.poachSuccess[3].headline`: {toOrg}が{name}を獲得！ 補強の目玉に
 
 ### poachSuccess[].body
 
-- `NEWS_HEADLINE_TEMPLATES.poachSuccess[1].body`: {fromOrg}の{name}が{toOrg}への移籍を決断。OVR{ovr}の実力者の流出に{fromOrg}関係者は衝撃を隠せない。新天地で自分を試す道を選んだ形だ。
+- `NEWS_HEADLINE_TEMPLATES.poachSuccess[1].body`: {fromOrg}の{name}が{toOrg}への移籍を決断した。実力者の加入で{toOrg}の選手層は厚くなる一方、{fromOrg}は戦力の再編を迫られる。
 - `NEWS_HEADLINE_TEMPLATES.poachSuccess[2].body`: {fromOrg}から{toOrg}へ――{name}の電撃移籍が決まった。チャンスを掴みに行く決断に、新たなファンの期待が集まる。
 - `NEWS_HEADLINE_TEMPLATES.poachSuccess[3].body`: {toOrg}が{fromOrg}の{name}を引き抜きに成功。即戦力としてチームを底上げする見込み。「この移籍は大きい」と業界紙が一様に報じた。
 
@@ -518,19 +625,19 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### lockerRoomCrisis[].body
 
-- `NEWS_HEADLINE_TEMPLATES.lockerRoomCrisis[1].body`: {org}の控室に重い空気が立ち込めている。絆の崩れた{count}組が同じ空間で身を支度する日々——挨拶もなく、目線も合わない。「あの空気の中で試合に出ろと言われても」と若手が漏らす。社長が動かなければ、これは長引く。
-- `NEWS_HEADLINE_TEMPLATES.lockerRoomCrisis[2].body`: {org}のロッカールームで{count}組の険悪ペアが同居している。リング外での衝突こそ表沙汰になっていないが、関係者は「いつ火を噴いてもおかしくない」と口を揃える。団体としての一枚岩が試されている。
-- `NEWS_HEADLINE_TEMPLATES.lockerRoomCrisis[3].body`: 同じ団体の選手同士が、視線も交わさず通り過ぎる——{org}の控室で起きているのはそういう光景だ。bond ≤30 の組み合わせが{count}組も同居しているとなれば、興行のテンションにも影響が出かねない。
+- `NEWS_HEADLINE_TEMPLATES.lockerRoomCrisis[1].body`: {org}の控室で、関係が悪化した選手同士が増えている。険悪な組み合わせは{count}組。団体は試合への影響が広がる前に、関係の修復へ動けるか。
+- `NEWS_HEADLINE_TEMPLATES.lockerRoomCrisis[2].body`: {org}のロッカールームで、{count}組の選手同士が険悪な関係にある。リング外の対立が試合へ持ち込まれれば、団体全体の編成にも影響が及びかねない。
+- `NEWS_HEADLINE_TEMPLATES.lockerRoomCrisis[3].body`: {org}では、関係が冷え込んだ選手同士が{count}組に増えている。対立を放置すれば、試合の連携や興行全体の雰囲気にも影響が出かねない。
 
 ### hatredContagion[].headline
 
-- `NEWS_HEADLINE_TEMPLATES.hatredContagion[1].headline`: {org}に広がる嫌悪の連鎖——{carrier}が{enemy}を距離を取り始めた
-- `NEWS_HEADLINE_TEMPLATES.hatredContagion[2].headline`: 心の伝染——{carrier}の中で{enemy}への感情が変わった
+- `NEWS_HEADLINE_TEMPLATES.hatredContagion[1].headline`: {org}に広がる不和——{carrier}が{enemy}と距離
+- `NEWS_HEADLINE_TEMPLATES.hatredContagion[2].headline`: {carrier}と{enemy}の関係に変化
 
 ### hatredContagion[].body
 
-- `NEWS_HEADLINE_TEMPLATES.hatredContagion[1].body`: 親しい{friend}が{enemy}を疎んじているのを目の当たりにした{carrier}が、自分の中の感情を整理しきれずに距離を取り始めている。心の冷えは、確実に伝染する。
-- `NEWS_HEADLINE_TEMPLATES.hatredContagion[2].body`: {org}の{carrier}は、{friend}が{enemy}を見る目を覚えてしまった。それは知らず知らずに自分の判断にも染み込んでいく。気づけば、あの人と前のように話すことはなくなっていた。
+- `NEWS_HEADLINE_TEMPLATES.hatredContagion[1].body`: 親しい{friend}と{enemy}の対立をきっかけに、{carrier}も{enemy}と距離を置き始めた。個人間の不和が周囲へ広がり、控室の関係を複雑にしている。
+- `NEWS_HEADLINE_TEMPLATES.hatredContagion[2].body`: {org}の{carrier}は、親しい{friend}と対立する{enemy}への態度を変えつつある。二人の問題だったはずの対立が、周囲にも影響を及ぼし始めた。
 
 ### relationshipRepair[].headline
 
@@ -577,7 +684,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### factionResolution[].body
 
-- `NEWS_HEADLINE_TEMPLATES.factionResolution[1].body`: {org}内で続いていた派閥抗争に、リング上で一つの答えが出た。{winFaction}が{loseFaction}を下し、控室の力学はしばらくこの形で固まる見込みだ。敗れた側の {loseLeader} がこのあとどう動くかが次の焦点になる。
+- `NEWS_HEADLINE_TEMPLATES.factionResolution[1].body`: {org}内で続いていた派閥抗争に、リング上で一つの答えが出た。{winFaction}が{loseFaction}を下し、控室の力学はしばらくこの形で固まる見込みだ。敗れた側の{loseLeader}がこのあとどう動くかが次の焦点になる。
 - `NEWS_HEADLINE_TEMPLATES.factionResolution[2].body`: 長く続いた{org}内の対立は、{winFaction}と{loseFaction}の決着戦で一旦の幕引きとなった。完全な和解ではないが、これ以上の消耗を避けるという意味では、双方にとっての落とし所だったのかもしれない。
 
 ### factionDissolution[].headline
@@ -784,6 +891,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NEWS_HEADLINE_TEMPLATES.hotProspectDebut[2].body`: {orgName}の新人{name}がデビューした。結果は{result}。荒削りな部分は目についたが、体の使い方に{age}歳とは思えない下地がある。複数のスカウトが入団前から動いていたという情報もあり、獲得競争の裏側込みで注目されていた一人だ。今後の伸び方を、業界が黙って見ている段階に入った。
 - `NEWS_HEADLINE_TEMPLATES.hotProspectDebut[3].body`: {orgName}の{name}が{age}歳でリングデビュー。デビュー戦そのものは{result}だったが、この日集まった関係者の関心は勝敗の先にあった。育成畑の人間が「化ける」と口を揃える新人は、そう頻繁には出てこない。誇張を嫌う本紙としても、この素材は本物の部類だと書いておく。
 
+### kaiganAwakening[].headline
+
+- `NEWS_HEADLINE_TEMPLATES.kaiganAwakening[1].headline`: {name}、格上との一戦で動きに変化
+
+### kaiganAwakening[].body
+
+- `NEWS_HEADLINE_TEMPLATES.kaiganAwakening[1].body`: {orgName}の{name}は{opponentName}との一戦で、それまでと異なる動きを見せた。試合は{result}に終わったが、攻防の組み立てと反応には明らかな変化があり、この試合が成長の転機として記録された。次戦以降も、その変化が続くか注目される。
+
 ### fatedRivals[].headline
 
 - `NEWS_HEADLINE_TEMPLATES.fatedRivals[1].headline`: 同年代の逸材が二人――{name}と{name2}、同じ時代に立つ
@@ -808,11 +923,156 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NEWS_HEADLINE_TEMPLATES.topChampionInjury[2].body`: {orgName}の{titleName}王者{name}が重傷を負った。欠場は{weeks}週規模とみられ、防衛ロードは白紙に戻る。ランキング上位団体のトップが長期で不在になるのは、ここ数シーズンでも例がない。空いた頂点を誰が埋めるのか、それとも帰りを待つのか。団体は難しい判断を抱えることになった。
 - `NEWS_HEADLINE_TEMPLATES.topChampionInjury[3].body`: {orgName}の看板を背負う{name}が試合で重傷を負い、{weeks}週の欠場が避けられない情勢となった。{titleName}をどう扱うかは団体の判断待ちだが、いずれにせよ王座は当面動かせない。強い王者がいる前提で組まれていた対戦の流れが、根元から止まった。影響の広さは、これから表に出てくる。
 
+## `RETIREMENT_TEMPLATES`
+
+- 出典: `src/data.js`
+- コード内コメント: task-77 §5: 引退記事のティア別テンプレ(確定版・一字一句変更不可)。 / A-2: L(reigns>=2 または peakOVR>=90) / A(reigns>=1 または peakOVR>=80) / B(peakOVR>=65) / C(それ以外) / {reigns} を含むバリアント(L-1/L-2/A-1/A-3)は reigns>=1 のときだけ選ぶ(Engine.newspaper.pickRetirementVariant)。
+- 本数: 24
+
+### L[].headline
+
+- `RETIREMENT_TEMPLATES.L[1].headline`: {org}・{name}が引退 {seasons}シーズンの現役に区切り
+- `RETIREMENT_TEMPLATES.L[2].headline`: {name}、現役を退く 一つの区切りが{org}に
+- `RETIREMENT_TEMPLATES.L[3].headline`: {age}歳の{name}が引退 {org}の中心が空く
+
+### L[].body
+
+- `RETIREMENT_TEMPLATES.L[1].body`: {age}歳。{reigns}度の戴冠を含め、この選手の名前が載った日の興行はカードの重さが変わった。理由をどう語ろうと、抜けたあとの{org}が同じ客席の温度を作れるかは別の問題として残る。引き継ぐ選手の名前は、今のところ本紙にも見えていない。
+- `RETIREMENT_TEMPLATES.L[2].body`: {org}で{seasons}シーズンを過ごし、{age}歳での決断となった。{reigns}度ベルトを巻いた選手だが、記者が覚えているのはむしろ落とした試合の翌週の上がり方のほうだ。この先しばらく、この団体の試合を見る人は、無意識に比べる相手を持つことになる。
+- `RETIREMENT_TEMPLATES.L[3].body`: {org}に{seasons}シーズン。ベルトの数で語られる選手ではなかったが、対戦相手の格を引き上げる役を長く担い続けてきた。同じ場所に誰を置いても、しばらくは前任者の輪郭が透けて見えるだろう。空いた分の大きさが正確に測れるのは、来季の興行を何本か見てからになる。
+
+### A[].headline
+
+- `RETIREMENT_TEMPLATES.A[1].headline`: {org}・{name}が現役引退 {seasons}シーズンに幕
+- `RETIREMENT_TEMPLATES.A[2].headline`: {name}が引退表明 {org}の上位カードに空席
+- `RETIREMENT_TEMPLATES.A[3].headline`: {org}の顔、{name}が現役を終える
+
+### A[].body
+
+- `RETIREMENT_TEMPLATES.A[1].body`: {age}歳での引退。{reigns}度の戴冠と、上位カードに置かれ続けた年数がそのまま{org}の看板の一部だった。来季の主要興行のメインを誰が務めるのか、編成の見直しはここから始まる。
+- `RETIREMENT_TEMPLATES.A[2].body`: 在籍{seasons}シーズン、{age}歳。大会のメイン級に置かれ続けた選手が抜けた分は、下から一人繰り上げれば埋まるという性質のものではない。{org}が次に誰を同じ位置で使うかは、来季最初の数興行で見えてくる。
+- `RETIREMENT_TEMPLATES.A[3].body`: {age}歳。{reigns}度の戴冠を経て、この{seasons}シーズンは団体のポスターに最も長く名前が載り続けた選手だった。その位置を空けたまま来季を始めるのか、誰かを繰り上げるのか、答えはまだ出ていない。
+
+### B[].headline
+
+- `RETIREMENT_TEMPLATES.B[1].headline`: {name}が現役引退 {org}で{seasons}シーズン
+- `RETIREMENT_TEMPLATES.B[2].headline`: {seasons}シーズンの現役に区切り {name}が引退
+- `RETIREMENT_TEMPLATES.B[3].headline`: {org}・{name}、{age}歳で引退
+
+### B[].body
+
+- `RETIREMENT_TEMPLATES.B[1].body`: {age}歳。派手なカードに置かれることは多くなかったが、興行の中盤を任せられる選手が一人いるかいないかで、その日の流れは変わる。
+- `RETIREMENT_TEMPLATES.B[2].body`: {org}で{age}歳まで上がり続けた。長く同じ位置で試合を組まれた選手ほど、いなくなってから欠けたものに名前が付きにくい。
+- `RETIREMENT_TEMPLATES.B[3].body`: {seasons}シーズン、故障の期間を挟みながらもリングに戻ってきた選手だ。記録に残る数字は多くない。ただ、同じ日に組まれた若手の顔ぶれを並べると、今の中堅の何人かがそこにいる。
+
+### C[].headline
+
+- `RETIREMENT_TEMPLATES.C[1].headline`: {name}が現役引退 {org}
+- `RETIREMENT_TEMPLATES.C[2].headline`: {org}の{name}、引退
+- `RETIREMENT_TEMPLATES.C[3].headline`: 引退 {name}({age}歳)
+
+### C[].body
+
+- `RETIREMENT_TEMPLATES.C[1].body`: {age}歳、在籍{seasons}シーズン。大きな発表の並ぶ週に、短い一報として届いた。
+- `RETIREMENT_TEMPLATES.C[2].body`: {seasons}シーズンで現役を終える。{age}歳での判断について、詳しい説明は出ていない。
+- `RETIREMENT_TEMPLATES.C[3].body`: {org}での{seasons}シーズンをもって現役を退く。今後の予定については本人からの発表を待つことになる。
+
+## `DRAFT_PLAYER_RESULT_PARTS`
+
+- 出典: `src/data.js`
+- コード内コメント: task-77 §5-D: ドラフト自団体1面(リード+注目選手1〜2名+締め)。確定版・一字一句変更不可。 / featured は assessedTier(superElite/elite/promising)ごとのバリアント。raw/material は言及しない
+- 本数: 14
+
+### lead[]
+
+- `DRAFT_PLAYER_RESULT_PARTS.lead[1]`: 今季のドラフトで{org}は{count}名を指名した。{names}の顔ぶれが、そのまま来季の若手層になる。
+- `DRAFT_PLAYER_RESULT_PARTS.lead[2]`: {org}の指名は{count}名。{names}が新たに名簿に加わった。
+- `DRAFT_PLAYER_RESULT_PARTS.lead[3]`: {count}名。今季{org}が迎え入れたのは{names}の面々だ。指名順を見るかぎり、狙いを絞った指名だった。
+
+### featured.superElite[]
+
+- `DRAFT_PLAYER_RESULT_PARTS.featured.superElite[1]`: {age}歳・{h}cmの{rookieName}には、{org}のスカウト陣が近年例を見ない評価を付けた。{styleJa}としての完成度ではなく、伸びしろの底が見えないという言い方だった。
+- `DRAFT_PLAYER_RESULT_PARTS.featured.superElite[2]`: 注目は{age}歳の{rookieName}。{h}cmの体格と{styleJa}としての組み立ては、担当したスカウト陣が最上位の見立てを最後まで崩さなかった理由でもある。
+- `DRAFT_PLAYER_RESULT_PARTS.featured.superElite[3]`: {styleJa}の{rookieName}は、複数のスカウトが揃って最上位の評価を付けた一人だ。{age}歳、{h}cm。入り口の段階でここまで評価が割れなかった新人は珍しい。
+
+### featured.elite[]
+
+- `DRAFT_PLAYER_RESULT_PARTS.featured.elite[1]`: {age}歳の{rookieName}は、{styleJa}として上の年代と噛み合う下地があるとの見立てだ。{h}cmという体格をどう使うかで、伸び方の幅は変わってくる。
+- `DRAFT_PLAYER_RESULT_PARTS.featured.elite[2]`: {h}cm・{age}歳の{rookieName}にも高い評価が付いた。{styleJa}の型がすでに一本通っており、あとは実戦で削られたときに何が残るか。
+- `DRAFT_PLAYER_RESULT_PARTS.featured.elite[3]`: スカウト陣が推したのは{styleJa}の{rookieName}。{h}cm、{age}歳。すぐ上位に食い込む種類ではないが、二、三年で計算が立つという読みだった。
+
+### featured.promising[]
+
+- `DRAFT_PLAYER_RESULT_PARTS.featured.promising[1]`: {age}歳の{rookieName}は、{styleJa}としての基礎を評価されての指名。{h}cmの体をどこまで作れるかが最初の課題になる。
+- `DRAFT_PLAYER_RESULT_PARTS.featured.promising[2]`: {rookieName}は{h}cm・{age}歳。{styleJa}の適性は認められたが、見立ては分かれた。使われ方次第という但し書きが付く。
+
+### closing[]
+
+- `DRAFT_PLAYER_RESULT_PARTS.closing[1]`: 新体制での練習は来週から始まる。{org}がこの{count}名をどの順で人前に出すかで、来季の興行の形も変わってくる。
+- `DRAFT_PLAYER_RESULT_PARTS.closing[2]`: 顔ぶれは揃った。{org}にとって次に問われるのは、誰を早く実戦に置くかの判断のほうだ。
+- `DRAFT_PLAYER_RESULT_PARTS.closing[3]`: 指名の当たり外れが数字になるのは何年も先の話だ。{org}の来季は、この新しい名前をどこに置くかから始まる。
+
+## `CHAMPION_CHANGE_TEMPLATES`
+
+- 出典: `src/data.js`
+- コード内コメント: task-80 §4: 王座交代記事の組み立て式本文(確定版・Keisukeレビュー通過済み・一字一句変更不可)。 / リード+プロフィール(年齢帯4分割: 若手≤21/伸び盛り22-24/完成期25-29/ベテラン30+)+戴冠歴(初/複数回)+締め。 / repeatReign は [取り返した版(同王座の再戴冠時のみ), 汎用版] の順で並ぶ前提(Engine.newspaper.composeChampionChangeBody)。
+- 本数: 26
+
+### lead[]
+
+- `CHAMPION_CHANGE_TEMPLATES.lead[1]`: {org}の王座が動いた。{name}が{prevChamp}を下し、ベルトはこの日を境に持ち主を変えた。
+- `CHAMPION_CHANGE_TEMPLATES.lead[2]`: {prevChamp}の防衛は、ここで途切れた。{org}のベルトは挑戦者だった{name}の腰に渡っている。
+- `CHAMPION_CHANGE_TEMPLATES.lead[3]`: {org}のタイトルマッチは挑戦者の側に落ちた。{name}が{prevChamp}を退け、新しい王者になっている。
+
+### profileYoung[]
+
+- `CHAMPION_CHANGE_TEMPLATES.profileYoung[1]`: {age}歳での戴冠になる。若さはそのまま伸びしろでもあるが、次からはベルトを持った側として見られる。
+- `CHAMPION_CHANGE_TEMPLATES.profileYoung[2]`: まだ{age}歳。{styleJa}としての形は途中で、その途中のまま頂点に届いたことになる。
+- `CHAMPION_CHANGE_TEMPLATES.profileYoung[3]`: {age}歳。同世代の多くがまだ前座で試合数を重ねている時期に、この選手はベルトを持って上がることになった。
+
+### profileRising[]
+
+- `CHAMPION_CHANGE_TEMPLATES.profileRising[1]`: {age}歳。仕上がる前に届いた戴冠で、{styleJa}の型もまだ手を入れている途中に見える。
+- `CHAMPION_CHANGE_TEMPLATES.profileRising[2]`: {seasons}シーズン目での戴冠になる。これから伸びる時期を王者として過ごすことが、その伸び方をどう変えるかはまだ分からない。
+- `CHAMPION_CHANGE_TEMPLATES.profileRising[3]`: {age}歳での戴冠は、早すぎるわけではないが完成を待った結果でもない。挑戦者として蓄えるはずだった時間を、これからは防衛に使うことになる。
+- `CHAMPION_CHANGE_TEMPLATES.profileRising[4]`: {age}歳での戴冠は到達点というより通過点に見える。これから伸ばす分は、まだ一つも王座に反映されていない。
+- `CHAMPION_CHANGE_TEMPLATES.profileRising[5]`: {seasons}シーズン目での戴冠で、団体内の視線はもうこの選手に向いている。若い王者を追う側に回った挑戦者たちが次に何を仕掛けてくるかも含めて、動きの多い一年になる。
+- `CHAMPION_CHANGE_TEMPLATES.profileRising[6]`: {age}歳。{styleJa}が最も噛み合うのはもう少し先で、全盛の時期をベルトとともに迎えることになる。
+
+### profileEstablished[]
+
+- `CHAMPION_CHANGE_TEMPLATES.profileEstablished[1]`: {age}歳、{styleJa}としての組み立てが安定してきた時期の戴冠だ。取りこぼしが減ったことが、そのまま結果に出ている。
+- `CHAMPION_CHANGE_TEMPLATES.profileEstablished[2]`: {age}歳。体も試合勘も揃う頃合いで、{styleJa}の型は相手に読まれても通る段階に入っている。
+- `CHAMPION_CHANGE_TEMPLATES.profileEstablished[3]`: {styleJa}としての完成度は、{age}歳という年齢に見合うところまで来ている。あとはその型が、防衛戦の連続に耐えるかどうかだ。
+
+### profileVeteran[]
+
+- `CHAMPION_CHANGE_TEMPLATES.profileVeteran[1]`: {seasons}シーズンを費やしての戴冠になる。長いとみるか間に合ったとみるかは、この先の防衛が決める。
+- `CHAMPION_CHANGE_TEMPLATES.profileVeteran[2]`: {age}歳。{seasons}シーズンをリングで過ごしてきた選手が、ここで頂点に立った。{styleJa}の細部は、そのまま年数の記録でもある。
+- `CHAMPION_CHANGE_TEMPLATES.profileVeteran[3]`: {seasons}シーズン、{age}歳。上がってくる若手より一回りも二回りも多く試合を持っている側が、この日は勝った。
+
+### firstReign[]
+
+- `CHAMPION_CHANGE_TEMPLATES.firstReign[1]`: 初戴冠である。ベルトを持たない側で組んできた一年が、ここで区切りを迎えた。
+- `CHAMPION_CHANGE_TEMPLATES.firstReign[2]`: これが最初のベルトになる。追う立場から追われる立場へ、位置が入れ替わった。
+- `CHAMPION_CHANGE_TEMPLATES.firstReign[3]`: 初めての戴冠だ。挑戦者としての試合しか知らない選手が、次からは防衛戦の日程を背負う。
+
+### repeatReign[]
+
+- `CHAMPION_CHANGE_TEMPLATES.repeatReign[1]`: これで通算{reigns}回目の戴冠になる。一度手放したベルトを、取り返した形だ。
+- `CHAMPION_CHANGE_TEMPLATES.repeatReign[2]`: {reigns}度目のベルトだ。この団体の王座の歴史に、同じ名前がまた並ぶ。
+
+### closing[]
+
+- `CHAMPION_CHANGE_TEMPLATES.closing[1]`: 防衛戦の相手はまだ決まっていない。ただ、この結果を見て名乗りを上げる選手は少なくないはずだ。
+- `CHAMPION_CHANGE_TEMPLATES.closing[2]`: 次は追われる側として組まれる。挑戦者の列がどう並ぶかは、ここからの数週で見えてくる。
+- `CHAMPION_CHANGE_TEMPLATES.closing[3]`: 王者が代われば、狙う顔ぶれも代わる。防衛が積み上がるかどうかは、まだ何とも言えない。
+
 ## `BIG_NEWS_LEAD_LINES`
 
 - 出典: `src/data.js`
 - コード内コメント: MQ再設計P4/P5 §5.3: 週頭ポップアップの号外リード文言（bignews-article-drafts-v1.0.md 正本）。 / {mq}/{orgName}/{titleName} のみ変数展開（記事本文とは独立に、そのつどランダム1本を選ぶ）。
-- 本数: 10
+- 本数: 11
 
 ### mqAllTimeRecord[]
 
@@ -828,6 +1088,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `BIG_NEWS_LEAD_LINES.hotProspectDebut[1]`: 号外――数年に一人の逸材がデビューした
 - `BIG_NEWS_LEAD_LINES.hotProspectDebut[2]`: {orgName}に大型新人。場内がざわついた一夜
+
+### kaiganAwakening[]
+
+- `BIG_NEWS_LEAD_LINES.kaiganAwakening[1]`: 号外――格上との一戦を境に、若手選手の動きが変わった
 
 ### fatedRivals[]
 
@@ -1167,7 +1431,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NOTIF_DIALOGUES.N1.ojousama.bold[1]`: まだまだですわ。もっと上を目指しませんと…
 - `NOTIF_DIALOGUES.N1.ojousama.quiet[1]`: ……少し、手応えがありますわ
 - `NOTIF_DIALOGUES.N1.ojousama.shy[1]`: あの…ほんの少しだけ、お稽古が楽しくなってきましたの…
-- `NOTIF_DIALOGUES.N1.ojousama.earnest[1]`: 積み重ねが大切ですわ。一歩一歩、参りますわね
+- `NOTIF_DIALOGUES.N1.ojousama.earnest[1]`: 積み重ねが大切です。一歩一歩、参りますわね
 - `NOTIF_DIALOGUES.N1.ojousama.emotional[1]`: ああ…っ、お稽古が楽しい…もっとやりたい…っ
 - `NOTIF_DIALOGUES.N1.ojousama.emotional[2]`: 体が動くようになってきて…嬉しい…っ
 - `NOTIF_DIALOGUES.N1.delinquent.normal[1]`: なんか最近、体の動きキレてね？
@@ -1185,7 +1449,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NOTIF_DIALOGUES.N1.seductive.bold[1]`: まだ足りないわ。もっと強くなれる気がするの
 - `NOTIF_DIALOGUES.N1.seductive.shy[1]`: あの…ちょっとだけ、練習が楽しくなってきたの…
 - `NOTIF_DIALOGUES.N1.seductive.easygoing[1]`: あら、急にいろいろ掴めちゃったかも
-- `NOTIF_DIALOGUES.N1.seductive.earnest[1]`: 積み重ねって大事よね。もっとやりたくなっちゃう
+- `NOTIF_DIALOGUES.N1.seductive.earnest[1]`: 積み重ねって大事よね。もっとやりたくなるわ
 - `NOTIF_DIALOGUES.N1.seductive.emotional[1]`: お知らせよ……っ……ふふ、聞いて……
 - `NOTIF_DIALOGUES.N1.seductive.emotional[2]`: ねえ、聞いて……っ……ふふ……
 - `NOTIF_DIALOGUES.N1.composed.normal[1]`: …ま、少しずつ馴染んできたかな
@@ -1258,7 +1522,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NOTIF_DIALOGUES.N2.cool.emotional[1]`: …みんなが好きだ。…一緒にいられて、幸せ
 - `NOTIF_DIALOGUES.N2.polite.quiet[1]`: …良い方々だと思います
 - `NOTIF_DIALOGUES.N2.polite.shy[1]`: ちょ、ちょっとお伝えしたいことが…
-- `NOTIF_DIALOGUES.N2.polite.earnest[1]`: 一緒にお稽古していると、自分も頑張ろうと思えます
+- `NOTIF_DIALOGUES.N2.polite.earnest[1]`: 一緒に練習していると、自分も頑張ろうと思えます
 - `NOTIF_DIALOGUES.N2.polite.emotional[1]`: みんなのことが大好きです…っ、一緒にいられて幸せです…っ
 - `NOTIF_DIALOGUES.N3.standard.normal[1]`: ちょっと疲れてるだけです。次の試合までには戻ります
 - `NOTIF_DIALOGUES.N3.standard.normal[2]`: 少し休めば大丈夫です
@@ -1384,7 +1648,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NOTIF_DIALOGUES.N5_warning.delinquent.earnest[2]`: …ここにいてえ気持ちは変わらねえんだけどさ……
 - `NOTIF_DIALOGUES.N5_warning.delinquent.emotional[1]`: …なんか、最近ずっとモヤモヤしててよ…うまく言えねえけど…
 - `NOTIF_DIALOGUES.N5_warning.seductive.normal[1]`: …ごめんなさい、ちょっと考え事してて
-- `NOTIF_DIALOGUES.N5_warning.seductive.bold[1]`: …このままでいいのかなって、ふと思うの
+- `NOTIF_DIALOGUES.N5_warning.seductive.bold[1]`: …このままでいいのかしらって、ふと思うの
 - `NOTIF_DIALOGUES.N5_warning.seductive.shy[1]`: …あ、あの……なんでも、ないの…
 - `NOTIF_DIALOGUES.N5_warning.seductive.easygoing[1]`: ふふ…なんでもないわ。気にしないで
 - `NOTIF_DIALOGUES.N5_warning.seductive.earnest[1]`: いくら練習しても、何か足りない気がして…
@@ -1403,7 +1667,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NOTIF_DIALOGUES.N5_warning.cool.earnest[2]`: …ここにいたい気持ちは、変わらない。…ただ
 - `NOTIF_DIALOGUES.N5_warning.cool.emotional[1]`: …最近、ずっとモヤモヤする。…うまく言えない
 - `NOTIF_DIALOGUES.N5_warning.polite.quiet[1]`: …あの…何でもありません…
-- `NOTIF_DIALOGUES.N5_warning.polite.shy[1]`: き、緊急のお知らせです…!
+- `NOTIF_DIALOGUES.N5_warning.polite.shy[1]`: き、緊急のお知らせです…！
 - `NOTIF_DIALOGUES.N5_warning.polite.earnest[1]`: 練習を重ねても、何か足りない気がいたしまして…
 - `NOTIF_DIALOGUES.N5_warning.polite.emotional[1]`: …なんだか、最近ずっとモヤモヤして…うまく言えないんですけど…
 - `NOTIF_DIALOGUES.N5_low.standard.normal[1]`: …別に、何でもないです
@@ -1417,7 +1681,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NOTIF_DIALOGUES.N5_low.standard.earnest[2]`: ここが好きだから、だから辛いんです
 - `NOTIF_DIALOGUES.N5_low.standard.emotional[1]`: もう…もう分かんない…！どうすればいいの…！
 - `NOTIF_DIALOGUES.N5_low.ojousama.normal[1]`: …もう結構ですわ
-- `NOTIF_DIALOGUES.N5_low.ojousama.bold[1]`: …この団体で、わたしの夢は叶えられますの…？
+- `NOTIF_DIALOGUES.N5_low.ojousama.bold[1]`: …この団体で、私の夢は叶えられますの…？
 - `NOTIF_DIALOGUES.N5_low.ojousama.quiet[1]`: ………（静かに目を伏せ、何も言わない）
 - `NOTIF_DIALOGUES.N5_low.ojousama.shy[1]`: …ごめんなさい…もう…わかりませんの…
 - `NOTIF_DIALOGUES.N5_low.ojousama.earnest[1]`: 裏切りたいわけではありませんの。ただ……
@@ -1548,7 +1812,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### G2.voice.standard.bold[]
 
 - `SNAPSHOT_TEXTS.G2.voice.standard.bold[1]`: …年功序列なんて古い。分かってる。分かってるけど
-- `SNAPSHOT_TEXTS.G2.voice.standard.bold[2]`: …あたしだって負けてない
+- `SNAPSHOT_TEXTS.G2.voice.standard.bold[2]`: …私だって負けてない
 
 ### G2.voice.standard.earnest[]
 
@@ -1556,7 +1820,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### G2.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.G2.voice.standard.emotional[1]`: …先に始めたのはあたしなのに
+- `SNAPSHOT_TEXTS.G2.voice.standard.emotional[1]`: …先に始めたのは私なのに
 - `SNAPSHOT_TEXTS.G2.voice.standard.emotional[2]`: …置いていかれてる気がする
 
 ### G2.voice.composed.normal[]
@@ -1603,7 +1867,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### G3.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.G3.voice.standard.bold[1]`: …いつになったらあたしの番が来るの？
+- `SNAPSHOT_TEXTS.G3.voice.standard.bold[1]`: …いつになったら私の番が来るの？
 - `SNAPSHOT_TEXTS.G3.voice.standard.bold[2]`: …待つのは好きじゃないな
 
 ### G3.voice.standard.earnest[]
@@ -1614,7 +1878,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### G3.voice.standard.emotional[]
 
 - `SNAPSHOT_TEXTS.G3.voice.standard.emotional[1]`: …悔しくないって言ったら嘘になる
-- `SNAPSHOT_TEXTS.G3.voice.standard.emotional[2]`: …あたしも、あそこに立ちたい
+- `SNAPSHOT_TEXTS.G3.voice.standard.emotional[2]`: …私も、あそこに立ちたい
 
 ### G3.voice.composed.normal[]
 
@@ -1665,7 +1929,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### G4.voice.standard.bold[]
 
 - `SNAPSHOT_TEXTS.G4.voice.standard.bold[1]`: …使ってくれなきゃ意味ないじゃん
-- `SNAPSHOT_TEXTS.G4.voice.standard.bold[2]`: …あたしの居場所、あるのかな
+- `SNAPSHOT_TEXTS.G4.voice.standard.bold[2]`: …私の居場所、あるのかな
 
 ### G4.voice.standard.earnest[]
 
@@ -1673,7 +1937,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### G4.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.G4.voice.standard.emotional[1]`: …見てくれてるのかな、あたしのこと
+- `SNAPSHOT_TEXTS.G4.voice.standard.emotional[1]`: …見てくれてるのかな、私のこと
 
 ### G4.voice.composed.normal[]
 
@@ -1721,7 +1985,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### R2.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.R2.voice.standard.bold[1]`: …別にいいけど。わたしは一人でやれるし
+- `SNAPSHOT_TEXTS.R2.voice.standard.bold[1]`: …別にいいけど。私は一人でやれるし
 
 ### R2.voice.standard.earnest[]
 
@@ -1729,7 +1993,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### R2.voice.standard.emotional[]
 
-- `SNAPSHOT_TEXTS.R2.voice.standard.emotional[1]`: …みんな、あたしのこと嫌いなのかな
+- `SNAPSHOT_TEXTS.R2.voice.standard.emotional[1]`: …みんな、私のこと嫌いなのかな
 - `SNAPSHOT_TEXTS.R2.voice.standard.emotional[2]`: …ここにいていいのかな
 
 ### R2.voice.composed.normal[]
@@ -1789,13 +2053,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### R3.modal.standard.earnest[]
 
-- `SNAPSHOT_TEXTS.R3.modal.standard.earnest[1]`: {name2}のために、あたしはここで頑張るから
+- `SNAPSHOT_TEXTS.R3.modal.standard.earnest[1]`: {name2}のために、私はここで頑張るから
 - `SNAPSHOT_TEXTS.R3.modal.standard.earnest[2]`: …ありがとう。ずっと支えてくれて
 
 ### R3.modal.standard.emotional[]
 
 - `SNAPSHOT_TEXTS.R3.modal.standard.emotional[1]`: …やだ。嫌だよ。なんで…
-- `SNAPSHOT_TEXTS.R3.modal.standard.emotional[2]`: …{name2}がいないなんて、あたし…
+- `SNAPSHOT_TEXTS.R3.modal.standard.emotional[2]`: …{name2}がいないなんて、私…
 
 ### R3.modal.composed.normal[]
 
@@ -1854,7 +2118,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### R4.voice.standard.emotional[]
 
 - `SNAPSHOT_TEXTS.R4.voice.standard.emotional[1]`: …勝った…勝ったよ…！
-- `SNAPSHOT_TEXTS.R4.voice.standard.emotional[2]`: …泣くな、あたし。まだ先がある
+- `SNAPSHOT_TEXTS.R4.voice.standard.emotional[2]`: …泣くな、私。まだ先がある
 
 ### R4.voice.composed.normal[]
 
@@ -1912,7 +2176,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### R5.voice.standard.emotional[]
 
 - `SNAPSHOT_TEXTS.R5.voice.standard.emotional[1]`: …悔しい…悔しい…！
-- `SNAPSHOT_TEXTS.R5.voice.standard.emotional[2]`: …なんであたしは勝てないの
+- `SNAPSHOT_TEXTS.R5.voice.standard.emotional[2]`: …なんで私は勝てないの
 
 ### R5.voice.composed.normal[]
 
@@ -2031,7 +2295,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### warVictory.voice.standard.bold[]
 
-- `SNAPSHOT_TEXTS.warVictory.voice.standard.bold[1]`: …わたしが勝つに決まってるでしょ。この団体を背負ってるんだから！
+- `SNAPSHOT_TEXTS.warVictory.voice.standard.bold[1]`: …私が勝つに決まってるでしょ。この団体を背負ってるんだから！
 
 ### warVictory.voice.standard.earnest[]
 
@@ -2122,7 +2386,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `App._NEWSPAPER_HEADLINES.closeMQ[1]`: 死闘${d.turns}ターン——${d.winner.name}が辛くも勝利
 - `App._NEWSPAPER_HEADLINES.closeMQ[2]`: ${d.winner.name}と${d.loser.name}、名勝負の果てに
-- `App._NEWSPAPER_HEADLINES.closeMQ[3]`: 激闘の末に${d.winner.name}！ MQ ${d.mq}の熱戦
+- `App._NEWSPAPER_HEADLINES.closeMQ[3]`: 激闘の末に${d.winner.name}！ 試合評価${d.mq}の熱戦
 
 ### upset[]
 
@@ -2132,7 +2396,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### superMQ[]
 
-- `App._NEWSPAPER_HEADLINES.superMQ[1]`: 歴史的名勝負！ MQ ${d.mq}を記録
+- `App._NEWSPAPER_HEADLINES.superMQ[1]`: 歴史的名勝負！ 試合評価${d.mq}を記録
 - `App._NEWSPAPER_HEADLINES.superMQ[2]`: 語り継がれる一戦——${d.winner.name}vs${d.loser.name}
 
 ### draw[]
@@ -2155,20 +2419,20 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `App._NEWSPAPER_ARTICLES.titleWin[1]`: ${d.venue.name}に詰めかけた${d.attendance.toLocaleString()}人の観衆が見届けたのは、新たな王者の誕生だった。${d.winner.name}は序盤から積極的に攻め込み、${d.finishLabel}で${d.loser.name}から3カウントを奪取。試合後、ベルトを手にした${d.winner.name}の表情には、長い道のりを歩んできた者だけが見せる充足感が浮かんでいた。
 - `App._NEWSPAPER_ARTICLES.titleWin[2]`: ${d.loser.name}の牙城がついに崩れた。${d.turns}ターンに及ぶ攻防の末、${d.winner.name}が${d.finishLabel}で王座を奪取。${d.venue.name}のリングに立つ新王者に、${d.attendance.toLocaleString()}人のファンが惜しみない拍手を送った。
 - `App._NEWSPAPER_ARTICLES.titleDefend[1]`: ${d.loser.name}の挑戦を受けた王者${d.winner.name}は、${d.turns}ターンの攻防を経て${d.finishLabel}で防衛に成功。${d.attendance.toLocaleString()}人の前で王座の重みを証明した。敗れた${d.loser.name}もリング上で健闘を称えられ、次なる挑戦への期待が膨らむ。
-- `App._NEWSPAPER_ARTICLES.rivalry[1]`: もはや説明不要のカード。${d.left.name}と${d.right.name}による${d.rivalLabel}は今回も期待を裏切らなかった。${d.turns}ターン、互いの手の内を知り尽くした二人の攻防はMQ ${d.mq}を記録。最後は${d.winner.name}の${d.finishLabel}が決着を呼んだ。この因縁に終わりはあるのか——その答えは、まだ誰にも分からない。
+- `App._NEWSPAPER_ARTICLES.rivalry[1]`: もはや説明不要のカード。${d.left.name}と${d.right.name}による${d.rivalLabel}は今回も期待を裏切らなかった。${d.turns}ターン、互いの手の内を知り尽くした二人の攻防は試合評価${d.mq}を記録。最後は${d.winner.name}の${d.finishLabel}が決着を呼んだ。この因縁に終わりはあるのか——その答えは、まだ誰にも分からない。
 - `App._NEWSPAPER_ARTICLES.rivalry[2]`: ${d.rivalLabel}として知られる二人が再びリングで激突。${d.venue.name}の空気は試合前から張り詰めていた。${d.winner.name}が${d.finishLabel}で勝利を収めたが、敗れた${d.loser.name}の闘志は折れていない。次の対戦が、すでに待ち遠しい。
-- `App._NEWSPAPER_ARTICLES.goodRival[1]`: 互いを高め合う二人の戦いは、今回もファンの心を掴んだ。${d.left.name}と${d.right.name}は${d.turns}ターンにわたり好勝負を展開。${d.winner.name}が${d.finishLabel}で勝利を手にしたが、試合後に交わした視線には敵意ではなく敬意が宿っていた。MQ ${d.mq}。
+- `App._NEWSPAPER_ARTICLES.goodRival[1]`: 互いを高め合う二人の戦いは、今回もファンの心を掴んだ。${d.left.name}と${d.right.name}は${d.turns}ターンにわたり好勝負を展開。${d.winner.name}が${d.finishLabel}で勝利を手にしたが、試合後に交わした視線には敵意ではなく敬意が宿っていた。試合評価${d.mq}。
 - `App._NEWSPAPER_ARTICLES.dominant[1]`: わずか${d.turns}ターン。${d.winner.name}は${d.loser.name}に反撃の余地すら与えなかった。${d.finishLabel}が決まった瞬間、${d.venue.name}は静まり返った。実力差を見せつけた${d.winner.name}の強さは本物だ。
 - `App._NEWSPAPER_ARTICLES.dominant[2]`: ${d.loser.name}にとっては厳しい夜となった。${d.winner.name}の猛攻に防戦一方、${d.turns}ターンでの決着に${d.attendance.toLocaleString()}人の観客も言葉を失った。
-- `App._NEWSPAPER_ARTICLES.closeMQ[1]`: ${d.turns}ターンの死闘——勝敗を分けたのは、ほんのわずかな差だった。${d.winner.name}と${d.loser.name}はMQ ${d.mq}の名勝負を演じ、${d.venue.name}の${d.attendance.toLocaleString()}人を総立ちにさせた。${d.finishLabel}で辛くも勝利した${d.winner.name}だが、敗れた${d.loser.name}の評価もまた上がったはずだ。
-- `App._NEWSPAPER_ARTICLES.closeMQ[2]`: 最後の最後まで勝負の行方は分からなかった。${d.loser.name}も見せ場を作り続けたが、${d.winner.name}の${d.finishLabel}が決着を告げた。消耗戦を制した${d.winner.name}のタフネスが光った${d.turns}ターン。MQ ${d.mq}は今シーズン屈指の数字だ。
-- `App._NEWSPAPER_ARTICLES.upset[1]`: 戦前の予想を覆す結果となった。OVR格差${d.ovrGap}ポイントの壁を、${d.winner.name}は気迫で打ち破った。${d.finishLabel}が決まった瞬間、${d.venue.name}は驚きと興奮に包まれた。格上${d.loser.name}からの金星は、${d.winner.name}にとって大きな自信になるだろう。
-- `App._NEWSPAPER_ARTICLES.superMQ[1]`: MQ ${d.mq}——今シーズンのベストバウト候補が生まれた。${d.left.name}と${d.right.name}は${d.turns}ターンにわたって技術と闘志をぶつけ合い、${d.venue.name}の${d.attendance.toLocaleString()}人を熱狂の渦に巻き込んだ。${d.winner.name}が${d.finishLabel}で勝利を収めたが、勝敗を超えた価値がこの試合にはあった。
+- `App._NEWSPAPER_ARTICLES.closeMQ[1]`: ${d.turns}ターンの死闘——勝敗を分けたのは、ほんのわずかな差だった。${d.winner.name}と${d.loser.name}は試合評価${d.mq}の名勝負を演じ、${d.venue.name}の${d.attendance.toLocaleString()}人を総立ちにさせた。${d.finishLabel}で辛くも勝利した${d.winner.name}だが、敗れた${d.loser.name}の評価もまた上がったはずだ。
+- `App._NEWSPAPER_ARTICLES.closeMQ[2]`: 最後の最後まで勝負の行方は分からなかった。${d.loser.name}も見せ場を作り続けたが、${d.winner.name}の${d.finishLabel}が決着を告げた。消耗戦を制した${d.winner.name}のタフネスが光った${d.turns}ターン。試合評価${d.mq}は今シーズン屈指の数字だ。
+- `App._NEWSPAPER_ARTICLES.upset[1]`: 戦前の予想を覆す結果となった。総合力差${d.ovrGap}ポイントの壁を、${d.winner.name}は気迫で打ち破った。${d.finishLabel}が決まった瞬間、${d.venue.name}は驚きと興奮に包まれた。格上${d.loser.name}からの金星は、${d.winner.name}にとって大きな自信になるだろう。
+- `App._NEWSPAPER_ARTICLES.superMQ[1]`: 試合評価${d.mq}——今シーズンのベストバウト候補が生まれた。${d.left.name}と${d.right.name}は${d.turns}ターンにわたって技術と闘志をぶつけ合い、${d.venue.name}の${d.attendance.toLocaleString()}人を熱狂の渦に巻き込んだ。${d.winner.name}が${d.finishLabel}で勝利を収めたが、勝敗を超えた価値がこの試合にはあった。
 - `App._NEWSPAPER_ARTICLES.draw[1]`: ${d.left.name}と${d.right.name}、${d.turns}ターンの攻防は決着を見なかった。互いにフォールを返し合い、極めを切り合い、最後まで膝を折らなかった二人。${d.venue.name}の${d.attendance.toLocaleString()}人は、決着つかずの結果にもかかわらず惜しみない拍手を送った。再戦を望む声が、すでにあちこちから聞こえている。
-- `App._NEWSPAPER_ARTICLES.draw[2]`: 決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこれだ。MQ ${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。
-- `App._NEWSPAPER_ARTICLES.normal[1]`: ${d.venue.name}で行われた${d.showName}のメインイベントは、${d.winner.name}が${d.finishLabel}で${d.loser.name}を下して幕を閉じた。${d.turns}ターンの試合は${d.attendance.toLocaleString()}人の観客を沸かせ、MQ ${d.mq}を記録した。
+- `App._NEWSPAPER_ARTICLES.draw[2]`: 決着つかず。${d.left.name}も${d.right.name}も己の全てを出し尽くした結果がこれだ。試合評価${d.mq}が示す通り、試合内容に不満を持つ者はいないだろう。次はどちらが先に決着をつけるのか——${d.attendance.toLocaleString()}人のファンが次の邂逅を待っている。
+- `App._NEWSPAPER_ARTICLES.normal[1]`: ${d.venue.name}で行われた${d.showName}のメインイベントは、${d.winner.name}が${d.finishLabel}で${d.loser.name}を下して幕を閉じた。${d.turns}ターンの試合は${d.attendance.toLocaleString()}人の観客を沸かせ、試合評価${d.mq}を記録した。
 - `App._NEWSPAPER_ARTICLES.normal[2]`: ${d.winner.name}がメインの大舞台で堂々たる勝利を飾った。${d.loser.name}も要所で見せ場を作ったが、最終的には${d.winner.name}の${d.finishLabel}に沈んだ。${d.attendance.toLocaleString()}人の観客が見守った${d.turns}ターンの一戦。
-- `App._NEWSPAPER_ARTICLES.lowMQ[1]`: 正直に言えば、メインイベントは物足りなさが残った。${d.winner.name}が${d.finishLabel}で${d.loser.name}を下したものの、MQ ${d.mq}という数字が試合内容を物語っている。${d.attendance.toLocaleString()}人のファンは、次回の興行にこそ期待を寄せるだろう。
+- `App._NEWSPAPER_ARTICLES.lowMQ[1]`: 正直に言えば、メインイベントは物足りなさが残った。${d.winner.name}が${d.finishLabel}で${d.loser.name}を下したものの、試合評価${d.mq}という数字が試合内容を物語っている。${d.attendance.toLocaleString()}人のファンは、次回の興行にこそ期待を寄せるだろう。
 
 ## `KURODA_HEADLINES`
 
@@ -2565,36 +2829,36 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### growth[]
 
-- `KURODA_SPOTLIGHT.growth[1]`: ${d.name}。今季OVR +${d.ovrGain}の急成長だ。半年前まで脅威でもなんでもなかったのに、見違えた
+- `KURODA_SPOTLIGHT.growth[1]`: ${d.name}。今季総合力+${d.ovrGain}の急成長だ。半年前まで脅威でもなんでもなかったのに、見違えた
 - `KURODA_SPOTLIGHT.growth[2]`: 要注意——${d.name}の成長速度は異常だ。次の対抗戦で当たるなら覚悟すべきだろう
-- `KURODA_SPOTLIGHT.growth[3]`: ${d.name}が化けている。OVR +${d.ovrGain}。放っておくと手がつけられなくなる
+- `KURODA_SPOTLIGHT.growth[3]`: ${d.name}が化けている。総合力+${d.ovrGain}。放っておくと手がつけられなくなる
 - `KURODA_SPOTLIGHT.growth[4]`: ${d.orgName}で一番伸びているのは${d.name}だ。気づいていないなら、今知っておいたほうがいい
-- `KURODA_SPOTLIGHT.growth[5]`: ${d.name}、OVR +${d.ovrGain}。成長曲線が急すぎて、来季にはエース級になっていてもおかしくない
-- `KURODA_SPOTLIGHT.growth[6]`: 本紙としては、${d.name}の成長は今季最大の発見の一つだと書いておく。OVR +${d.ovrGain}は偶然では出せない数字だ
+- `KURODA_SPOTLIGHT.growth[5]`: ${d.name}、総合力+${d.ovrGain}。成長曲線が急すぎて、来季にはエース級になっていてもおかしくない
+- `KURODA_SPOTLIGHT.growth[6]`: 本紙としては、${d.name}の成長は今季最大の発見の一つだと書いておく。総合力+${d.ovrGain}は偶然では出せない数字だ
 - `KURODA_SPOTLIGHT.growth[7]`: 40年見てきた中で、こういう急成長を遂げた選手の半数はそのまま伸び切る。${d.name}も期待していい
-- `KURODA_SPOTLIGHT.growth[8]`: 数字は嘘をつかない。${d.name}のOVR +${d.ovrGain}という伸びは、この団体の育成方針が機能している証拠でもある
+- `KURODA_SPOTLIGHT.growth[8]`: 数字は嘘をつかない。${d.name}の総合力+${d.ovrGain}という伸びは、この団体の育成方針が機能している証拠でもある
 
 ### star[]
 
-- `KURODA_SPOTLIGHT.star[1]`: ${d.orgName}の看板、${d.name}。OVR ${d.ovr}に人気${d.pop}——実力と集客力を兼ね備えた正真正銘のエースだ
+- `KURODA_SPOTLIGHT.star[1]`: ${d.orgName}の看板、${d.name}。総合力${d.ovr}に人気${d.pop}——実力と集客力を兼ね備えた正真正銘のエースだ
 - `KURODA_SPOTLIGHT.star[1]`: ${d.name}、人気${d.pop}。中堅以上の実力に加えてこの集客力。厄介な存在だ
-- `KURODA_SPOTLIGHT.star[1]`: ${d.name}は人気${d.pop}。OVRはまだ発展途上だが、ファンを呼べるのは才能の証だ
-- `KURODA_SPOTLIGHT.star[2]`: ${d.name}——OVR ${d.ovr}、人気${d.pop}。こちらのエースと真正面からぶつかれる数少ない相手だ
-- `KURODA_SPOTLIGHT.star[2]`: ${d.name}、OVR ${d.ovr}で人気${d.pop}。実力と人気のバランスが良く、どのカードにも組み込める
+- `KURODA_SPOTLIGHT.star[1]`: ${d.name}は人気${d.pop}。総合力はまだ発展途上だが、ファンを呼べるのは才能の証だ
+- `KURODA_SPOTLIGHT.star[2]`: ${d.name}——総合力${d.ovr}、人気${d.pop}。こちらのエースと真正面からぶつかれる数少ない相手だ
+- `KURODA_SPOTLIGHT.star[2]`: ${d.name}、総合力${d.ovr}で人気${d.pop}。実力と人気のバランスが良く、どのカードにも組み込める
 - `KURODA_SPOTLIGHT.star[2]`: ${d.name}は人気${d.pop}。まだ実力は追いついていないが、集客面では無視できない
-- `KURODA_SPOTLIGHT.star[3]`: 対策なしで${d.name}に当たれば、興行ごと持っていかれる。OVR ${d.ovr}に人気${d.pop}は反則だ
+- `KURODA_SPOTLIGHT.star[3]`: 対策なしで${d.name}に当たれば、興行ごと持っていかれる。総合力${d.ovr}に人気${d.pop}は反則だ
 - `KURODA_SPOTLIGHT.star[3]`: ${d.name}の人気${d.pop}は脅威だ。実力もそれなりにある。舐めてかかると痛い目を見る
 - `KURODA_SPOTLIGHT.star[3]`: ${d.name}の人気${d.pop}は侮れない。今のうちに成長を止めたいところだが
 - `KURODA_SPOTLIGHT.star[4]`: ${d.orgName}の人気看板であり実力のエース。${d.name}はどちらの意味でも団体の顔だ
-- `KURODA_SPOTLIGHT.star[4]`: ${d.orgName}の集客の要は${d.name}。OVR ${d.ovr}と伸びしろもある。要注意だ
-- `KURODA_SPOTLIGHT.star[4]`: ${d.orgName}の人気看板は${d.name}。OVRは発展途上だが、カリスマ性は数字に出ている
-- `KURODA_SPOTLIGHT.star[5]`: 本紙としては、${d.name}は${d.orgName}そのものを背負う存在だと書いておく。OVR ${d.ovr}、人気${d.pop}——この組み合わせは反則だ
-- `KURODA_SPOTLIGHT.star[5]`: 本紙は${d.name}を要警戒人物リストに入れておく。OVR ${d.ovr}に人気${d.pop}は十分に脅威だ
+- `KURODA_SPOTLIGHT.star[4]`: ${d.orgName}の集客の要は${d.name}。総合力${d.ovr}と伸びしろもある。要注意だ
+- `KURODA_SPOTLIGHT.star[4]`: ${d.orgName}の人気看板は${d.name}。総合力は発展途上だが、カリスマ性は数字に出ている
+- `KURODA_SPOTLIGHT.star[5]`: 本紙としては、${d.name}は${d.orgName}そのものを背負う存在だと書いておく。総合力${d.ovr}、人気${d.pop}——この組み合わせは反則だ
+- `KURODA_SPOTLIGHT.star[5]`: 本紙は${d.name}を要警戒人物リストに入れておく。総合力${d.ovr}に人気${d.pop}は十分に脅威だ
 - `KURODA_SPOTLIGHT.star[5]`: ${d.name}は人気${d.pop}が先行している。実力が追いついた時が本当の脅威になる
-- `KURODA_SPOTLIGHT.star[6]`: 40年見てきた中で、OVR ${d.ovr}と人気${d.pop}を両立する選手は一握りだ。${d.name}はその一握りに入っている
+- `KURODA_SPOTLIGHT.star[6]`: 40年見てきた中で、総合力${d.ovr}と人気${d.pop}を両立する選手は一握りだ。${d.name}はその一握りに入っている
 - `KURODA_SPOTLIGHT.star[6]`: 40年見てきた中で、${d.name}クラスの選手にどう対処するかで団体の格が問われる
 - `KURODA_SPOTLIGHT.star[6]`: 40年見てきた中で、人気${d.pop}は実力に先行することがある。${d.name}が伸びれば手がつけられなくなる
-- `KURODA_SPOTLIGHT.star[7]`: 数字は嘘をつかない。${d.name}のOVR ${d.ovr}・人気${d.pop}はトップクラスの証だ
+- `KURODA_SPOTLIGHT.star[7]`: 数字は嘘をつかない。${d.name}の総合力${d.ovr}・人気${d.pop}はトップクラスの証だ
 - `KURODA_SPOTLIGHT.star[7]`: ${d.name}の数字は中堅以上を保証している。${d.orgName}の柱として機能しているのは間違いない
 - `KURODA_SPOTLIGHT.star[7]`: ${d.name}の人気${d.pop}は数字以上の意味を持つ。集客力こそが団体を支える
 
@@ -2611,8 +2875,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### risingYoung[]
 
 - `KURODA_SPOTLIGHT.risingYoung[1]`: ${d.age}歳の${d.name}——ブレイクスルー前夜の気配を漂わせている。次の一年が分水嶺になる
-- `KURODA_SPOTLIGHT.risingYoung[2]`: ${d.name}（${d.age}歳）。OVR ${d.ovr} は通過点でしかない、というのが本紙の見立てだ
-- `KURODA_SPOTLIGHT.risingYoung[3]`: ${d.age}歳という年齢、OVR ${d.ovr} という数字。この組み合わせが意味するのは「これからが本番」ということだ
+- `KURODA_SPOTLIGHT.risingYoung[2]`: ${d.name}（${d.age}歳）。総合力${d.ovr} は通過点でしかない、というのが本紙の見立てだ
+- `KURODA_SPOTLIGHT.risingYoung[3]`: ${d.age}歳という年齢、総合力${d.ovr} という数字。この組み合わせが意味するのは「これからが本番」ということだ
 - `KURODA_SPOTLIGHT.risingYoung[4]`: ${d.name}は${d.age}歳。試合経験を重ねるごとに化けていくタイプで、今期の伸び方は警戒に値する
 - `KURODA_SPOTLIGHT.risingYoung[5]`: ${d.orgName}の中で、${d.name}（${d.age}歳）は最も目を離せない一人だ。一年後には別人になっている可能性がある
 - `KURODA_SPOTLIGHT.risingYoung[6]`: ${d.age}歳——勝ち方を覚え始めた頃合いだ。${d.name}の試合は、見るたびに上達が分かる
@@ -2621,16 +2885,16 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### midCareer[]
 
 - `KURODA_SPOTLIGHT.midCareer[1]`: ${d.age}歳の${d.name}。経験と実力のバランスが今もっとも整っている時期で、戦績の安定感は本物だ
-- `KURODA_SPOTLIGHT.midCareer[2]`: ${d.name}（${d.age}歳）はキャリアの中核に差し掛かっている。OVR ${d.ovr} で${d.orgName}の屋台骨を支える存在
+- `KURODA_SPOTLIGHT.midCareer[2]`: ${d.name}（${d.age}歳）はキャリアの中核に差し掛かっている。総合力${d.ovr} で${d.orgName}の屋台骨を支える存在
 - `KURODA_SPOTLIGHT.midCareer[3]`: ${d.age}歳という年齢は、リング上の判断が最も冴える時期だ。${d.name}の試合運びを見れば一目で分かる
 - `KURODA_SPOTLIGHT.midCareer[4]`: ${d.name}は${d.age}歳、人気${d.pop}。実績と知名度の両方で、団体の主軸として機能している
 - `KURODA_SPOTLIGHT.midCareer[5]`: ${d.age}歳。${d.name}が今期見せている戦いぶりは、円熟という言葉が最もしっくりくる
 - `KURODA_SPOTLIGHT.midCareer[6]`: ${d.orgName}を語るうえで${d.name}（${d.age}歳）の名前は外せない。中堅以上の働きを毎週見せ続けている
-- `KURODA_SPOTLIGHT.midCareer[7]`: ${d.age}歳の${d.name}は、もはや団体の信用そのものだ。OVR ${d.ovr} に裏付けされた安定感がある
+- `KURODA_SPOTLIGHT.midCareer[7]`: ${d.age}歳の${d.name}は、もはや団体の信用そのものだ。総合力${d.ovr} に裏付けされた安定感がある
 
 ### veteran[]
 
-- `KURODA_SPOTLIGHT.veteran[1]`: ${d.age}歳の${d.name}。OVR ${d.ovr} を維持し続けるベテランの存在は、若手の壁として機能している
+- `KURODA_SPOTLIGHT.veteran[1]`: ${d.age}歳の${d.name}。総合力${d.ovr} を維持し続けるベテランの存在は、若手の壁として機能している
 - `KURODA_SPOTLIGHT.veteran[2]`: ${d.name}（${d.age}歳）。人気${d.pop}は長年の積み上げによるもので、一朝一夕では作れない数字だ
 - `KURODA_SPOTLIGHT.veteran[3]`: ${d.age}歳になっても${d.name}が${d.orgName}の中核に居続けるのは、それだけの実力と説得力がある証拠だ
 - `KURODA_SPOTLIGHT.veteran[4]`: ${d.name}は${d.age}歳。引き出しの数で勝負するタイプで、対戦相手にとっては最も読みづらい一人

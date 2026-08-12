@@ -806,7 +806,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### direct.standard.earnest[]
 
 - `SCOUT_SIGNING_LINES.direct.standard.earnest[1]`: よろしくお願いします！ この団体で強くなりたいです！
-- `SCOUT_SIGNING_LINES.direct.standard.earnest[2]`: 期待に応えて見せます。よろしくお願いしますね！
+- `SCOUT_SIGNING_LINES.direct.standard.earnest[2]`: 期待に応えてみせます。よろしくお願いしますね！
 - `SCOUT_SIGNING_LINES.direct.standard.earnest[3]`: 嬉しいです…！ 練習、いつから始められますか？
 
 ### direct.standard.emotional[]
@@ -827,7 +827,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### direct.ojousama.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.ojousama.easygoing[1]`: よろしくお願いしますわ!楽しくやりましょうの!
+- `SCOUT_SIGNING_LINES.direct.ojousama.easygoing[1]`: よろしくお願いしますわ！楽しくやりましょう！
 
 ### direct.ojousama.earnest[]
 
@@ -870,7 +870,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### direct.seductive.bold[]
 
-- `SCOUT_SIGNING_LINES.direct.seductive.bold[1]`: 契約してあげてもいいわよ？ …ふふ、冗談♡
+- `SCOUT_SIGNING_LINES.direct.seductive.bold[1]`: 契約してあげてもいいわよ？ …ふふ、冗談
 - `SCOUT_SIGNING_LINES.direct.seductive.bold[2]`: ここの子たち、私についてこれるかしら？
 
 ### direct.seductive.quiet[]
@@ -889,7 +889,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### direct.seductive.emotional[]
 
-- `SCOUT_SIGNING_LINES.direct.seductive.emotional[1]`: 入団できて嬉しい……っ……絶対強くなってみせるわ……!
+- `SCOUT_SIGNING_LINES.direct.seductive.emotional[1]`: 入団できて嬉しい……っ……絶対強くなってみせるわ……！
 
 ### direct.polite.normal[]
 
@@ -906,11 +906,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### direct.polite.shy[]
 
-- `SCOUT_SIGNING_LINES.direct.polite.shy[1]`: あ、あの…よろしくお願いいたします…頑張ります…!
+- `SCOUT_SIGNING_LINES.direct.polite.shy[1]`: あ、あの…よろしくお願いいたします…頑張ります…！
 
 ### direct.polite.easygoing[]
 
-- `SCOUT_SIGNING_LINES.direct.polite.easygoing[1]`: よろしくお願いします!楽しくやっていきましょう!
+- `SCOUT_SIGNING_LINES.direct.polite.easygoing[1]`: よろしくお願いします！楽しくやっていきましょう！
 
 ### direct.polite.earnest[]
 
@@ -919,7 +919,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### direct.composed.normal[]
 
-- `SCOUT_SIGNING_LINES.direct.composed.normal[1]`: …よろしくね。のんびりだけど、頑張るよ
+- `SCOUT_SIGNING_LINES.direct.composed.normal[1]`: …よろしくね。それなりには、頑張るよ
 
 ### direct.composed.bold[]
 
@@ -993,7 +993,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### competition_won.ojousama.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.ojousama.easygoing[1]`: まあ、争奪戦ですの!?嬉しいですわ、頑張りますの!
+- `SCOUT_SIGNING_LINES.competition_won.ojousama.easygoing[1]`: まあ、争奪戦ですの！？嬉しいですわ、頑張りますの！
 
 ### competition_won.ojousama.earnest[]
 
@@ -1007,13 +1007,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### competition_won.delinquent.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.delinquent.bold[1]`: 取り合いになんのは当然だろ？ アタシなんだから
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.bold[1]`: 取り合いになんのは当然だろ？ 私なんだから
 - `SCOUT_SIGNING_LINES.competition_won.delinquent.bold[2]`: 他の団体に行かなくてよかったな。…感謝しろよ？
 
 ### competition_won.delinquent.easygoing[]
 
 - `SCOUT_SIGNING_LINES.competition_won.delinquent.easygoing[1]`: おー取り合いになってたのかよ。ラッキー！
-- `SCOUT_SIGNING_LINES.competition_won.delinquent.easygoing[2]`: モテモテじゃん、アタシ。まー当然だけど
+- `SCOUT_SIGNING_LINES.competition_won.delinquent.easygoing[2]`: モテモテじゃん、私。まー当然だけど
 - `SCOUT_SIGNING_LINES.competition_won.delinquent.easygoing[3]`: 取り合い勝ち取ってくれたのかよ。…サンキューな、暴れさせてもらうぜ
 
 ### competition_won.cool.normal[]
@@ -1033,13 +1033,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### competition_won.seductive.normal[]
 
-- `SCOUT_SIGNING_LINES.competition_won.seductive.normal[1]`: 私のために争ってくれたの？ …ちょっと嬉しいかも♡
+- `SCOUT_SIGNING_LINES.competition_won.seductive.normal[1]`: 私のために争ってくれたの？ …ふふ、悪くない気分よ♡
 - `SCOUT_SIGNING_LINES.competition_won.seductive.normal[2]`: 取り合いなんて…罪な女ね、私♪
 
 ### competition_won.seductive.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.seductive.bold[1]`: 高い買い物だったでしょ？ …元は取らせてあげる♡
-- `SCOUT_SIGNING_LINES.competition_won.seductive.bold[2]`: 私をめぐって争奪戦…ふふ、気分いいわ♡
+- `SCOUT_SIGNING_LINES.competition_won.seductive.bold[1]`: 高い買い物だったでしょ？ …元は取らせてあげる
+- `SCOUT_SIGNING_LINES.competition_won.seductive.bold[2]`: 私をめぐって争奪戦…ふふ、気分いいわ
 
 ### competition_won.seductive.quiet[]
 
@@ -1057,7 +1057,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### competition_won.seductive.emotional[]
 
-- `SCOUT_SIGNING_LINES.competition_won.seductive.emotional[1]`: わたしのために争ってくれたの……っ……嬉しい、絶対期待に応えるわ……!
+- `SCOUT_SIGNING_LINES.competition_won.seductive.emotional[1]`: 私のために争ってくれたの……っ……嬉しい、絶対期待に応えるわ……！
 
 ### competition_won.polite.normal[]
 
@@ -1065,7 +1065,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### competition_won.polite.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.polite.bold[1]`: わたしを巡って争奪戦ですか。期待に応えさせていただきます
+- `SCOUT_SIGNING_LINES.competition_won.polite.bold[1]`: 私を巡って争奪戦ですか。期待に応えさせていただきます
 
 ### competition_won.polite.quiet[]
 
@@ -1074,11 +1074,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### competition_won.polite.shy[]
 
-- `SCOUT_SIGNING_LINES.competition_won.polite.shy[1]`: あ、あの…わたしのために争ってくださったんですか…?絶対に恩返しします…!
+- `SCOUT_SIGNING_LINES.competition_won.polite.shy[1]`: あ、あの…わたしのために争ってくださったんですか…？絶対に恩返しします…！
 
 ### competition_won.polite.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.polite.easygoing[1]`: え、争奪戦ですか!?嬉しいです、頑張ります!
+- `SCOUT_SIGNING_LINES.competition_won.polite.easygoing[1]`: え、争奪戦ですか！？嬉しいです、頑張ります！
 
 ### competition_won.polite.earnest[]
 
@@ -1091,11 +1091,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### competition_won.composed.bold[]
 
-- `SCOUT_SIGNING_LINES.competition_won.composed.bold[1]`: …わたしを巡って争奪戦か。…期待に応えるよ
+- `SCOUT_SIGNING_LINES.competition_won.composed.bold[1]`: …私を巡って争奪戦か。…期待に応えるよ
 
 ### competition_won.composed.easygoing[]
 
-- `SCOUT_SIGNING_LINES.competition_won.composed.easygoing[1]`: …争奪戦だったの?…ふぅん、ありがとね
+- `SCOUT_SIGNING_LINES.competition_won.composed.easygoing[1]`: …争奪戦だったの？…ふぅん、ありがとね
 
 ### competition_won.composed.earnest[]
 
@@ -1136,11 +1136,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `SCOUT_SIGNING_LINES.fa_signing.standard.earnest[1]`: フリーの身でしたけど…やっと落ち着ける場所が見つかりました
 - `SCOUT_SIGNING_LINES.fa_signing.standard.earnest[2]`: 声をかけてくれてありがとうございます。精一杯やりますね！
-- `SCOUT_SIGNING_LINES.fa_signing.standard.earnest[3]`: 待ってた甲斐がありました。この団体で輝いて見せますね！
+- `SCOUT_SIGNING_LINES.fa_signing.standard.earnest[3]`: 待ってた甲斐がありました。この団体で輝いてみせますね！
 
 ### fa_signing.standard.emotional[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.standard.emotional[1]`: 一人で戦い続けるのは寂しかったから…仲��ができるのが嬉しいです…！
+- `SCOUT_SIGNING_LINES.fa_signing.standard.emotional[1]`: 一人で戦い続けるのは寂しかったから…仲間ができるのが嬉しいです…！
 - `SCOUT_SIGNING_LINES.fa_signing.standard.emotional[2]`: やっと居場所が…！ ここで頑張ります…！
 
 ### fa_signing.ojousama.normal[]
@@ -1155,7 +1155,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fa_signing.ojousama.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.ojousama.easygoing[1]`: フリーも自由でよろしかったですけれど、こちらも楽しそうですわね!
+- `SCOUT_SIGNING_LINES.fa_signing.ojousama.easygoing[1]`: フリーも自由でよろしかったですけれど、こちらも楽しそうですわね！
 
 ### fa_signing.ojousama.earnest[]
 
@@ -1198,8 +1198,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fa_signing.seductive.bold[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.seductive.bold[1]`: フリーで磨いた牙…ここで見せてあげる♡
-- `SCOUT_SIGNING_LINES.fa_signing.seductive.bold[2]`: ようやくいい団体が見つかったわ。楽しませてね♡
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.bold[1]`: フリーで磨いた牙…ここで見せてあげる
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.bold[2]`: ようやくいい団体が見つかったわ。楽しませてね
 
 ### fa_signing.seductive.quiet[]
 
@@ -1217,7 +1217,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fa_signing.seductive.emotional[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.seductive.emotional[1]`: ひとりで戦ってきたの……っ……仲間ができて、嬉しい……!
+- `SCOUT_SIGNING_LINES.fa_signing.seductive.emotional[1]`: ひとりで戦ってきたの……っ……仲間ができて、嬉しい……！
 
 ### fa_signing.polite.normal[]
 
@@ -1229,8 +1229,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fa_signing.polite.quiet[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.polite.quiet[1]`: フリーで不安でしたけど…声をかけていただけて嬉しいです
-- `SCOUT_SIGNING_LINES.fa_signing.polite.quiet[2]`: ようやく落ち着ける場所が…。お世話になります
+- `SCOUT_SIGNING_LINES.fa_signing.polite.quiet[1]`: フリーはフリーで悪くなかったけれど、ここのほうが強くなれそうね。…嬉しいわ
+- `SCOUT_SIGNING_LINES.fa_signing.polite.quiet[2]`: 腰を据える場所が決まったわ。…お世話になります
 
 ### fa_signing.polite.shy[]
 
@@ -1238,12 +1238,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fa_signing.polite.easygoing[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.polite.easygoing[1]`: フリーも気楽でしたけど、団体に入るのも楽しそうです!よろしくお願いします!
+- `SCOUT_SIGNING_LINES.fa_signing.polite.easygoing[1]`: フリーも気楽でしたけど、団体に入るのも楽しそうです！よろしくお願いします！
 
 ### fa_signing.polite.earnest[]
 
 - `SCOUT_SIGNING_LINES.fa_signing.polite.earnest[1]`: フリーで色々経験してきました。…ここで花を咲かせます
-- `SCOUT_SIGNING_LINES.fa_signing.polite.earnest[2]`: ようやくお世話になれる場所が。全力で恩返しいたします
+- `SCOUT_SIGNING_LINES.fa_signing.polite.earnest[2]`: お声がけ、ありがとうございます。積んできたもの、全力でお見せします。
 
 ### fa_signing.composed.normal[]
 
@@ -1263,7 +1263,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### fa_signing.composed.emotional[]
 
-- `SCOUT_SIGNING_LINES.fa_signing.composed.emotional[1]`: …ひとりは、寂しかった。…仲間ができて、嬉しい
+- `SCOUT_SIGNING_LINES.fa_signing.composed.emotional[1]`: ひとりも気楽だったけどね！ やっぱり仲間がいるのが嬉しい！
 
 ## `VS_EX_EMPLOYER_LINES`
 
@@ -1283,8 +1283,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.standard.bold.win[2]`: あの団体で消えるはずだった女が、ここに立ってる。見たでしょ。
 - `VS_EX_EMPLOYER_LINES.standard.bold.hit[1]`: あんたたち相手に、ここで膝はつかない。
 - `VS_EX_EMPLOYER_LINES.standard.bold.hit[2]`: ここで倒れたら、切った判断が正しかったことになる。冗談じゃない。
-- `VS_EX_EMPLOYER_LINES.standard.easygoing.win[1]`: 要らないって言われた側なんだけどさ、勝っちゃった。いいの?
-- `VS_EX_EMPLOYER_LINES.standard.easygoing.win[2]`: あそこ、私を切ったの…ちょっと早まったんじゃない?
+- `VS_EX_EMPLOYER_LINES.standard.easygoing.win[1]`: 要らないって言われた側なんだけどさ、勝っちゃった。いいの？
+- `VS_EX_EMPLOYER_LINES.standard.easygoing.win[2]`: あそこ、私を切ったの…ちょっと早まったんじゃない？
 - `VS_EX_EMPLOYER_LINES.standard.easygoing.hit[1]`: うわ、効く…でも、ここで沈むのは違うんだよね。
 - `VS_EX_EMPLOYER_LINES.standard.easygoing.hit[2]`: もうちょい踏ん張らせて。あそこに見せたい景色があるの。
 - `VS_EX_EMPLOYER_LINES.standard.quiet.win[1]`: ……これが、答え。切られて、終わりじゃなかった。
@@ -1292,7 +1292,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.standard.quiet.hit[1]`: ……あなたたち相手に、ここでは終われない。
 - `VS_EX_EMPLOYER_LINES.standard.quiet.hit[2]`: ……まだ、立てる。
 - `VS_EX_EMPLOYER_LINES.standard.shy.win[1]`: ……勝っちゃった……。あの、私を切ったところに……信じられない……。
-- `VS_EX_EMPLOYER_LINES.standard.shy.win[2]`: ……ちゃんと、戦えてましたか……? あそこの人に……。
+- `VS_EX_EMPLOYER_LINES.standard.shy.win[2]`: ……ちゃんと、戦えてましたか……？ あそこの人に……。
 - `VS_EX_EMPLOYER_LINES.standard.shy.hit[1]`: ……まだ、立てます……あなたたちには、倒れたくなくて……。
 - `VS_EX_EMPLOYER_LINES.standard.shy.hit[2]`: ……お願い、もう一回だけ……あそこには、負けたくないの……。
 - `VS_EX_EMPLOYER_LINES.standard.emotional.win[1]`: あの日、リングを降ろされた私が……今、あそこの選手に勝った……っ!
@@ -1311,16 +1311,16 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.polite.bold.win[2]`: あそこで要らないと言われた身で、ちゃんと立っています。ご覧の通り。
 - `VS_EX_EMPLOYER_LINES.polite.bold.hit[1]`: あなた方の前で倒れるわけには、いきませんっ。
 - `VS_EX_EMPLOYER_LINES.polite.bold.hit[2]`: ここで沈んだら、あの判断を認めることになります。お断りします。
-- `VS_EX_EMPLOYER_LINES.polite.easygoing.win[1]`: 要らないって言われた身なんですけど、勝っちゃいました。いいんですか?
-- `VS_EX_EMPLOYER_LINES.polite.easygoing.win[2]`: あそこ、私を切ったの…ちょっと早まりましたね?
+- `VS_EX_EMPLOYER_LINES.polite.easygoing.win[1]`: 要らないって言われた身なんですけど、勝っちゃいました。いいんですか？
+- `VS_EX_EMPLOYER_LINES.polite.easygoing.win[2]`: あそこ、私を切ったの…ちょっと早まりましたね？
 - `VS_EX_EMPLOYER_LINES.polite.easygoing.hit[1]`: うわ、効きます…でも、ここで沈むのは違うんですよね。
 - `VS_EX_EMPLOYER_LINES.polite.easygoing.hit[2]`: もう少し踏ん張らせてください。あそこに見せたい景色があるんです。
 - `VS_EX_EMPLOYER_LINES.polite.quiet.win[1]`: ……これが、答えです。終わりでは、なかった。
 - `VS_EX_EMPLOYER_LINES.polite.quiet.win[2]`: ……あそこを離れても、まだ戦えています。それだけです。
 - `VS_EX_EMPLOYER_LINES.polite.quiet.hit[1]`: ……あなた方の前では、終われません。
 - `VS_EX_EMPLOYER_LINES.polite.quiet.hit[2]`: ……まだ、立てます。
-- `VS_EX_EMPLOYER_LINES.polite.shy.win[1]`: ……勝てちゃいました……。私を切ったところに……信じられません……。
-- `VS_EX_EMPLOYER_LINES.polite.shy.win[2]`: ……ちゃんと、戦えていましたか……? あそこの方に……。
+- `VS_EX_EMPLOYER_LINES.polite.shy.win[1]`: ……勝てちゃいました……。わたしを切ったところに……信じられません……。
+- `VS_EX_EMPLOYER_LINES.polite.shy.win[2]`: ……ちゃんと、戦えていましたか……？ あそこの方に……。
 - `VS_EX_EMPLOYER_LINES.polite.shy.hit[1]`: ……まだ、立てます……あなた方には、倒れたくなくて……。
 - `VS_EX_EMPLOYER_LINES.polite.shy.hit[2]`: ……お願いします、もう一度だけ……あそこには、負けたくないんです……。
 - `VS_EX_EMPLOYER_LINES.polite.emotional.win[1]`: あの日、降ろされた私が……今、あそこの選手に勝ちましたっ……!
@@ -1340,7 +1340,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.seductive.bold.hit[1]`: あなたたちの前でだけは、崩れて見せないわ。
 - `VS_EX_EMPLOYER_LINES.seductive.bold.hit[2]`: ここで倒れる姿…あそこには、絶対見せない。
 - `VS_EX_EMPLOYER_LINES.seductive.easygoing.win[1]`: 要らないって言われた女に負けちゃうなんて…あそこ、可愛いところあるわね。
-- `VS_EX_EMPLOYER_LINES.seductive.easygoing.win[2]`: 切ったこと、ちょっとは後悔してくれてるかしら?
+- `VS_EX_EMPLOYER_LINES.seductive.easygoing.win[2]`: 切ったこと、ちょっとは後悔してくれてるかしら？
 - `VS_EX_EMPLOYER_LINES.seductive.easygoing.hit[1]`: あら、効いちゃう…でも、ここで沈むのは違うのよ。
 - `VS_EX_EMPLOYER_LINES.seductive.easygoing.hit[2]`: もう少しだけ。あそこに見せたい顔があるの。
 - `VS_EX_EMPLOYER_LINES.seductive.quiet.win[1]`: ……終わりじゃなかったの。切った側に、見せられたわ。
@@ -1351,10 +1351,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.seductive.shy.win[2]`: ……見て、くれてました……? あそこの人に、ちゃんと……。
 - `VS_EX_EMPLOYER_LINES.seductive.shy.hit[1]`: ……まだ、立てるの……あなたたちには、倒れたくない……。
 - `VS_EX_EMPLOYER_LINES.seductive.shy.hit[2]`: ……お願い、もう一回だけ……あそこには、見せたくないの……。
-- `VS_EX_EMPLOYER_LINES.seductive.emotional.win[1]`: あの日、降ろされた私が……あそこの選手を沈めたの……っ!
-- `VS_EX_EMPLOYER_LINES.seductive.emotional.win[2]`: 見てた……? 切った女、こんなに戦えるのよ……!
-- `VS_EX_EMPLOYER_LINES.seductive.emotional.hit[1]`: ここで終わったら……あの日の景色に、戻っちゃう……っ!
-- `VS_EX_EMPLOYER_LINES.seductive.emotional.hit[2]`: 立つの……あそこに切られた、あの日の私のために……!
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.win[1]`: あの日、降ろされた私が……あそこの選手を沈めたの……っ！
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.win[2]`: 見てた……？ 切った女、こんなに戦えるのよ……！
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.hit[1]`: ここで終わったら……あの日の景色に、戻っちゃう……っ！
+- `VS_EX_EMPLOYER_LINES.seductive.emotional.hit[2]`: 立つの……あそこに切られた、あの日の私のために……！
 - `VS_EX_EMPLOYER_LINES.delinquent.normal.win[1]`: 解雇されてから、ここまで来た。あそこに証明してやったぜ。
 - `VS_EX_EMPLOYER_LINES.delinquent.normal.win[2]`: あそこで出来なかったこと、ここで完成させる。だから負けらんねえ。
 - `VS_EX_EMPLOYER_LINES.delinquent.normal.hit[1]`: まだ立てる。あんたら相手に、ここで終われるかよ。
@@ -1363,12 +1363,12 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.delinquent.earnest.win[2]`: 今の団体に恥かかせられねえ。だからあそこには負けらんねえんだよ。
 - `VS_EX_EMPLOYER_LINES.delinquent.earnest.hit[1]`: ここで倒れたら、拾ってくれた連中に顔向けできねえ。
 - `VS_EX_EMPLOYER_LINES.delinquent.earnest.hit[2]`: まだだ。証明の途中で沈むわけにいかねえ。
-- `VS_EX_EMPLOYER_LINES.delinquent.bold.win[1]`: 切られたあたしが、あそこの選手を叩き潰した。文句あるか。
+- `VS_EX_EMPLOYER_LINES.delinquent.bold.win[1]`: 切られた私が、あそこの選手を叩き潰した。文句あるか。
 - `VS_EX_EMPLOYER_LINES.delinquent.bold.win[2]`: 要らねえって言った側の面、リングで拝ませてもらったぜ。
 - `VS_EX_EMPLOYER_LINES.delinquent.bold.hit[1]`: あんたら相手に、ここで沈むかよ。
 - `VS_EX_EMPLOYER_LINES.delinquent.bold.hit[2]`: 切った判断が正しかった…なんて、絶対言わせねえ。
 - `VS_EX_EMPLOYER_LINES.delinquent.easygoing.win[1]`: 要らねえって言われた側が勝っちまった。いいのかよ、あそこ。
-- `VS_EX_EMPLOYER_LINES.delinquent.easygoing.win[2]`: あたしを切ったの、ちょっと早まったんじゃねえの?
+- `VS_EX_EMPLOYER_LINES.delinquent.easygoing.win[2]`: 私を切ったの、ちょっと早まったんじゃねえの？
 - `VS_EX_EMPLOYER_LINES.delinquent.easygoing.hit[1]`: うわ、効くわ…でも、ここで沈むのは違うんだよなあ。
 - `VS_EX_EMPLOYER_LINES.delinquent.easygoing.hit[2]`: もうちょい踏ん張らせろ。あそこに見せてえ景色があんだ。
 - `VS_EX_EMPLOYER_LINES.delinquent.quiet.win[1]`: ……これが答えだ。切られて、終わりじゃなかった。
@@ -1392,11 +1392,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.ojousama.earnest.hit[1]`: 迎えてくださった団体に、申し訳が立ちませんわ…倒れませんの。
 - `VS_EX_EMPLOYER_LINES.ojousama.earnest.hit[2]`: 立ちますわ。証明の途中で退くなど、ありえませんもの。
 - `VS_EX_EMPLOYER_LINES.ojousama.bold.win[1]`: 解雇なさった側が、負けましたのよ。…とんだ見立て違いですわね。
-- `VS_EX_EMPLOYER_LINES.ojousama.bold.win[2]`: 捨てられた者の方が上でしたわ。ご覧いただけまして?
+- `VS_EX_EMPLOYER_LINES.ojousama.bold.win[2]`: 捨てられた者の方が上でしたわ。ご覧いただけまして？
 - `VS_EX_EMPLOYER_LINES.ojousama.bold.hit[1]`: あなた方の前で崩れるなど、ありえませんわ。
 - `VS_EX_EMPLOYER_LINES.ojousama.bold.hit[2]`: ここで倒れては、あの決定が正しかったことになりますの。お断りですわ。
-- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.win[1]`: 要らないと言われた者が勝ってしまいましたわ。よろしくて?
-- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.win[2]`: わたくしを切ったこと…少々、早まりましたわね?
+- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.win[1]`: 要らないと言われた者が勝ってしまいましたわ。よろしくて？
+- `VS_EX_EMPLOYER_LINES.ojousama.easygoing.win[2]`: わたくしを切ったこと…少々、早まりましたわね？
 - `VS_EX_EMPLOYER_LINES.ojousama.easygoing.hit[1]`: あら、効きますわね…でも、ここで沈むのは違いますのよ。
 - `VS_EX_EMPLOYER_LINES.ojousama.easygoing.hit[2]`: もう少し、粘らせてくださいまし。あそこに見せたい景色がありますの。
 - `VS_EX_EMPLOYER_LINES.ojousama.quiet.win[1]`: ……これが答えですわ。終わりでは、ありませんでしたの。
@@ -1448,7 +1448,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.composed.earnest.hit[1]`: …効くね。でも、迎えてくれた側に顔向けできなくなる。まだ立つよ。
 - `VS_EX_EMPLOYER_LINES.composed.earnest.hit[2]`: …証明の途中だから。ここでは終われないんだ。
 - `VS_EX_EMPLOYER_LINES.composed.bold.win[1]`: …切った側が、こうなる。悪くない眺めだね。
-- `VS_EX_EMPLOYER_LINES.composed.bold.win[2]`: 要らないって言われた側だけど…ま、こんなもんかな。見えてた?
+- `VS_EX_EMPLOYER_LINES.composed.bold.win[2]`: 要らないって言われた側だけど…ま、こんなもんかな。見えてた？
 - `VS_EX_EMPLOYER_LINES.composed.bold.hit[1]`: …効くね。でも、あんたたちの前じゃ倒れないよ。
 - `VS_EX_EMPLOYER_LINES.composed.bold.hit[2]`: …ここで沈んだら、あの判断が正解になる。それは困るんだ。
 - `VS_EX_EMPLOYER_LINES.composed.easygoing.win[1]`: …要らないって言われた側だけど、勝っちゃった。ま、そういうこともあるよね。
@@ -1464,7 +1464,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `VS_EX_EMPLOYER_LINES.composed.shy.hit[1]`: ……まだ、立てるよ……あなたたちには、倒れたくなくて……。
 - `VS_EX_EMPLOYER_LINES.composed.shy.hit[2]`: ……もう少しだけ……あそこには、負けたくないんだ……。
 - `VS_EX_EMPLOYER_LINES.composed.emotional.win[1]`: ……あの日、降ろされた私が、ね。今あそこに勝った。それだけ言っておく。
-- `VS_EX_EMPLOYER_LINES.composed.emotional.win[2]`: ……切られても、こうして戦ってる。見えてたろ?
+- `VS_EX_EMPLOYER_LINES.composed.emotional.win[2]`: ……切られても、こうして戦ってる。見えてたでしょ？
 - `VS_EX_EMPLOYER_LINES.composed.emotional.hit[1]`: ……ここで終われば、また、あの日に戻る。…それは、ごめんだ。
 - `VS_EX_EMPLOYER_LINES.composed.emotional.hit[2]`: ……立つよ。あの日の私に、悪いからね。
 
@@ -1562,7 +1562,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DAMAGE_SERIF_LINES.seductive.normal[1]`: っ…やるじゃない…
 - `DAMAGE_SERIF_LINES.seductive.normal[2]`: くっ…いい攻撃ね…でもまだよ
-- `DAMAGE_SERIF_LINES.seductive.normal[3]`: はぁ…少し本気になったわ…
+- `DAMAGE_SERIF_LINES.seductive.normal[3]`: はぁ…少し本気を見せてあげる…
 
 ### seductive.earnest[]
 
@@ -1830,15 +1830,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### atk.standard.shy[]
 
-- `CUTIN_LINES.atk.standard.shy[1]`: あ、あの…いきますっ…!
-- `CUTIN_LINES.atk.standard.shy[2]`: わ、わたし…まだまだ…!
-- `CUTIN_LINES.atk.standard.shy[3]`: ま、負けたくないから…!
-- `CUTIN_LINES.atk.standard.shy[4]`: こ、ここから…ですっ…!
+- `CUTIN_LINES.atk.standard.shy[1]`: あ、あの…いきますっ…！
+- `CUTIN_LINES.atk.standard.shy[2]`: わ、わたし…まだまだ…！
+- `CUTIN_LINES.atk.standard.shy[3]`: ま、負けたくないから…！
+- `CUTIN_LINES.atk.standard.shy[4]`: こ、ここから…ですっ…！
 
 ### atk.polite.normal[]
 
 - `CUTIN_LINES.atk.polite.normal[1]`: いきますっ！
-- `CUTIN_LINES.atk.polite.normal[2]`: まだまだです!
+- `CUTIN_LINES.atk.polite.normal[2]`: まだまだです！
 - `CUTIN_LINES.atk.polite.normal[3]`: 負けません！
 - `CUTIN_LINES.atk.polite.normal[4]`: ここからですっ！
 
@@ -1847,7 +1847,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CUTIN_LINES.atk.polite.bold[1]`: こんなものじゃありませんよ！
 - `CUTIN_LINES.atk.polite.bold[2]`: ここからが本番です！
 - `CUTIN_LINES.atk.polite.bold[3]`: 逃がしませんよ！
-- `CUTIN_LINES.atk.polite.bold[4]`: わたしの全力、受けてくださいっ！
+- `CUTIN_LINES.atk.polite.bold[4]`: 私の全力、受けてくださいっ！
 
 ### atk.polite.quiet[]
 
@@ -1879,10 +1879,10 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### atk.polite.shy[]
 
-- `CUTIN_LINES.atk.polite.shy[1]`: す、すみません…いきますっ…!
-- `CUTIN_LINES.atk.polite.shy[2]`: あ、あの…まだまだです…!
-- `CUTIN_LINES.atk.polite.shy[3]`: ま、負けたくないんです…!
-- `CUTIN_LINES.atk.polite.shy[4]`: こ、ここから…ですっ…!
+- `CUTIN_LINES.atk.polite.shy[1]`: す、すみません…いきますっ…！
+- `CUTIN_LINES.atk.polite.shy[2]`: あ、あの…まだまだです…！
+- `CUTIN_LINES.atk.polite.shy[3]`: ま、負けたくないんです…！
+- `CUTIN_LINES.atk.polite.shy[4]`: こ、ここから…ですっ…！
 
 ### atk.seductive.normal[]
 
@@ -1896,7 +1896,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CUTIN_LINES.atk.seductive.bold[1]`: ふふ…こんなものじゃないわよ？
 - `CUTIN_LINES.atk.seductive.bold[2]`: ここからが本番…逃がさないわ
 - `CUTIN_LINES.atk.seductive.bold[3]`: たっぷり味わわせてあげる
-- `CUTIN_LINES.atk.seductive.bold[4]`: わたしの全部、受け止めなさい
+- `CUTIN_LINES.atk.seductive.bold[4]`: 私の全部、受け止めなさい
 
 ### atk.seductive.quiet[]
 
@@ -1922,7 +1922,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### atk.seductive.easygoing[]
 
 - `CUTIN_LINES.atk.seductive.easygoing[1]`: ふふ、楽しくなってきちゃった♪
-- `CUTIN_LINES.atk.seductive.easygoing[2]`: いい試合にしましょ?
+- `CUTIN_LINES.atk.seductive.easygoing[2]`: いい試合にしましょ？
 - `CUTIN_LINES.atk.seductive.easygoing[3]`: まだまだいけるわよ〜♪
 - `CUTIN_LINES.atk.seductive.easygoing[4]`: 本気、出しちゃおうかしら？
 
@@ -1945,7 +1945,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CUTIN_LINES.atk.delinquent.bold[1]`: こんなもんじゃねえぞ！
 - `CUTIN_LINES.atk.delinquent.bold[2]`: ここからが本番だぜ！
 - `CUTIN_LINES.atk.delinquent.bold[3]`: 逃がさねえからな！
-- `CUTIN_LINES.atk.delinquent.bold[4]`: あたしの全部、くらいやがれ！
+- `CUTIN_LINES.atk.delinquent.bold[4]`: 私の全部、くらいやがれ！
 
 ### atk.delinquent.quiet[]
 
@@ -2050,7 +2050,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CUTIN_LINES.atk.cool.quiet[1]`: ……まだ
 - `CUTIN_LINES.atk.cool.quiet[2]`: ……ここから
 - `CUTIN_LINES.atk.cool.quiet[3]`: ……負けない
-- `CUTIN_LINES.atk.cool.quiet[4]`: ……見ててて
+- `CUTIN_LINES.atk.cool.quiet[4]`: ……見てて
 
 ### atk.cool.earnest[]
 
@@ -2092,7 +2092,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CUTIN_LINES.atk.composed.bold[1]`: …まだまだ、こんなもんじゃないよ
 - `CUTIN_LINES.atk.composed.bold[2]`: …ここからが本番、かな
 - `CUTIN_LINES.atk.composed.bold[3]`: …逃がさないよ、ゆっくりね
-- `CUTIN_LINES.atk.composed.bold[4]`: …わたしの全部、受け止めて
+- `CUTIN_LINES.atk.composed.bold[4]`: …私の全部、受け止めて
 
 ### atk.composed.quiet[]
 
@@ -2136,7 +2136,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.standard.bold[]
 
-- `CUTIN_LINES.climax.standard.bold[1]`: （ここからが、あたしの時間！）
+- `CUTIN_LINES.climax.standard.bold[1]`: （ここからが、私の時間！）
 - `CUTIN_LINES.climax.standard.bold[2]`: （さあ…決めにいく）
 
 ### climax.standard.quiet[]
@@ -2161,8 +2161,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.standard.shy[]
 
-- `CUTIN_LINES.climax.standard.shy[1]`: （…ま、まだ…いけるはず…!）
-- `CUTIN_LINES.climax.standard.shy[2]`: （こ、ここで…決めなきゃ…!）
+- `CUTIN_LINES.climax.standard.shy[1]`: （…ま、まだ…いけるはず…！）
+- `CUTIN_LINES.climax.standard.shy[2]`: （こ、ここで…決めなきゃ…！）
 
 ### climax.polite.normal[]
 
@@ -2171,7 +2171,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.polite.bold[]
 
-- `CUTIN_LINES.climax.polite.bold[1]`: （ここからです…ここからが、わたしの時間）
+- `CUTIN_LINES.climax.polite.bold[1]`: （ここからです…ここからが、私の時間）
 - `CUTIN_LINES.climax.polite.bold[2]`: （さあ…決めさせていただきます）
 
 ### climax.polite.quiet[]
@@ -2196,8 +2196,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.polite.shy[]
 
-- `CUTIN_LINES.climax.polite.shy[1]`: （…ま、まだ…いけます…!）
-- `CUTIN_LINES.climax.polite.shy[2]`: （こ、ここで…決めないと…!）
+- `CUTIN_LINES.climax.polite.shy[1]`: （…ま、まだ…いけます…！）
+- `CUTIN_LINES.climax.polite.shy[2]`: （こ、ここで…決めないと…！）
 
 ### climax.seductive.normal[]
 
@@ -2206,7 +2206,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.seductive.bold[]
 
-- `CUTIN_LINES.climax.seductive.bold[1]`: （ここからよ…わたしの時間が、始まるの）
+- `CUTIN_LINES.climax.seductive.bold[1]`: （ここからよ…私の時間が、始まるの）
 - `CUTIN_LINES.climax.seductive.bold[2]`: （さあ…決めてあげる）
 
 ### climax.seductive.quiet[]
@@ -2241,7 +2241,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.delinquent.bold[]
 
-- `CUTIN_LINES.climax.delinquent.bold[1]`: （ここからだ…あたしの時間だぜ）
+- `CUTIN_LINES.climax.delinquent.bold[1]`: （ここからだ…私の時間だぜ）
 - `CUTIN_LINES.climax.delinquent.bold[2]`: （さあ…決めてやる）
 
 ### climax.delinquent.quiet[]
@@ -2346,7 +2346,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.composed.bold[]
 
-- `CUTIN_LINES.climax.composed.bold[1]`: （…ここから、あたしの時間だね）
+- `CUTIN_LINES.climax.composed.bold[1]`: （…ここから、私の時間だね）
 - `CUTIN_LINES.climax.composed.bold[2]`: （…さあ、決めにいこうか）
 
 ### climax.composed.quiet[]
@@ -2361,7 +2361,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### climax.composed.emotional[]
 
-- `CUTIN_LINES.climax.composed.emotional[1]`: （…胸が苦しいな…でも、この痛みが生きてる証だから）
+- `CUTIN_LINES.climax.composed.emotional[1]`: （うわ、胸が苦しい！ でも、これが生きてるってことだよね！）
 - `CUTIN_LINES.climax.composed.emotional[2]`: （…お願い、身体…もう少しだけ、動いてね）
 
 ### climax.composed.easygoing[]
@@ -2389,7 +2389,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### bigmove.standard.bold[]
 
 - `CUTIN_LINES.bigmove.standard.bold[1]`: さあ…終わらせるわよっ！
-- `CUTIN_LINES.bigmove.standard.bold[2]`: 見せてあげる…わたしの全力！
+- `CUTIN_LINES.bigmove.standard.bold[2]`: 見せてあげる…私の全力！
 - `CUTIN_LINES.bigmove.standard.bold[3]`: 思いっきりいくわよっ！！
 
 ### bigmove.standard.easygoing[]
@@ -2551,7 +2551,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### bigmove.ojousama.earnest[]
 
 - `CUTIN_LINES.bigmove.ojousama.earnest[1]`: この一撃に…全てを懸けますわ！
-- `CUTIN_LINES.bigmove.ojousama.earnest[2]`: 真剣勝負ですわ…参りますわよ！
+- `CUTIN_LINES.bigmove.ojousama.earnest[2]`: 真剣勝負です…参りますわよ！
 - `CUTIN_LINES.bigmove.ojousama.earnest[3]`: 覚悟はよろしくて？ いきますわ！
 
 ### bigmove.ojousama.bold[]
@@ -2564,7 +2564,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `CUTIN_LINES.bigmove.ojousama.easygoing[1]`: さーて！ 仕上げですわ〜！
 - `CUTIN_LINES.bigmove.ojousama.easygoing[2]`: うふふ、締めにいきますわよ！
-- `CUTIN_LINES.bigmove.ojousama.easygoing[3]`: 楽しかったですわ…でもここまでですわ！
+- `CUTIN_LINES.bigmove.ojousama.easygoing[3]`: 楽しかったですわ…でもここまでですの！
 
 ### bigmove.ojousama.quiet[]
 
@@ -2640,7 +2640,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### bigmove.composed.bold[]
 
 - `CUTIN_LINES.bigmove.composed.bold[1]`: …終わらせるよ、ゆっくりね
-- `CUTIN_LINES.bigmove.composed.bold[2]`: …見ていて…わたしの全力
+- `CUTIN_LINES.bigmove.composed.bold[2]`: …見ていて…私の全力
 - `CUTIN_LINES.bigmove.composed.bold[3]`: …覚悟してね…最高の一発
 
 ### bigmove.composed.easygoing[]
@@ -2768,7 +2768,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### goodWinner.ojousama.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.ojousama.easygoing[1]`: 皆様の声援、しかと届きましたわ!最高の試合でしたの!
+- `FAN_EXPECT_REACTIONS.goodWinner.ojousama.easygoing[1]`: 皆様の声援、しかと届きましたわ！最高の試合でしたの！
 
 ### goodWinner.ojousama.earnest[]
 
@@ -2807,7 +2807,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### goodWinner.seductive.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.seductive.bold[1]`: 負けられない試合だったわ。…ふふ、応えられて満足
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.bold[1]`: 負けられない試合だったわ。…ふふ、応えたまでよ
 
 ### goodWinner.seductive.quiet[]
 
@@ -2815,7 +2815,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### goodWinner.seductive.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.seductive.easygoing[1]`: みんなの声援が聞こえてたわ~♪ 最高の試合だったわね
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.easygoing[1]`: みんなの声援が聞こえてたわ〜♪ 最高の試合だったわね
 
 ### goodWinner.seductive.earnest[]
 
@@ -2823,7 +2823,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### goodWinner.seductive.emotional[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.seductive.emotional[1]`: みんなの声が聞こえてた……っ……ありがとう……!
+- `FAN_EXPECT_REACTIONS.goodWinner.seductive.emotional[1]`: みんなの声が聞こえてた……っ……ありがとう……！
 
 ### goodWinner.polite.normal[]
 
@@ -2831,7 +2831,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### goodWinner.polite.bold[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.polite.bold[1]`: 絶対に負けられない試合でした。応えられて良かったです!
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.bold[1]`: 絶対に負けられない試合でした。応えられて良かったです！
 
 ### goodWinner.polite.quiet[]
 
@@ -2843,7 +2843,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### goodWinner.polite.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.goodWinner.polite.easygoing[1]`: みんなの声、届いてました!最高の試合でした、ありがとうございます!
+- `FAN_EXPECT_REACTIONS.goodWinner.polite.easygoing[1]`: みんなの声、届いてました！最高の試合でした、ありがとうございます！
 
 ### goodWinner.polite.earnest[]
 
@@ -2963,7 +2963,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### badWinner.seductive.emotional[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.seductive.emotional[1]`: ごめんなさい……っ…もっとやれたはずなのに…悔しい……!
+- `FAN_EXPECT_REACTIONS.badWinner.seductive.emotional[1]`: ごめんなさい……っ…もっとやれたはずなのに…悔しい……！
 
 ### badWinner.polite.normal[]
 
@@ -2983,7 +2983,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### badWinner.polite.easygoing[]
 
-- `FAN_EXPECT_REACTIONS.badWinner.polite.easygoing[1]`: ごめんなさい、もっとやれたはずなのに…次こそ、絶対頑張ります!
+- `FAN_EXPECT_REACTIONS.badWinner.polite.easygoing[1]`: ごめんなさい、もっとやれたはずなのに…次こそ、絶対頑張ります！
 
 ### badWinner.polite.earnest[]
 
@@ -3026,7 +3026,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `POST_MATCH_FLAVOR_LINES.winner.standard.bold[1]`: 当然よ！
 - `POST_MATCH_FLAVOR_LINES.winner.standard.bold[2]`: こんなもんよ！
-- `POST_MATCH_FLAVOR_LINES.winner.standard.bold[3]`: わたしの勝ち！
+- `POST_MATCH_FLAVOR_LINES.winner.standard.bold[3]`: 私の勝ち！
 
 ### winner.standard.quiet[]
 
@@ -3057,7 +3057,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### winner.ojousama.normal[]
 
 - `POST_MATCH_FLAVOR_LINES.winner.ojousama.normal[1]`: 勝たせていただきましたわ
-- `POST_MATCH_FLAVOR_LINES.winner.ojousama.normal[2]`: ふぅ…お見事でしたでしょう？
+- `POST_MATCH_FLAVOR_LINES.winner.ojousama.normal[2]`: ふぅ……今日は、思い描いた通りに動けたわね
 
 ### winner.ojousama.bold[]
 
@@ -3186,7 +3186,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### loser.ojousama.easygoing[]
 
-- `POST_MATCH_FLAVOR_LINES.loser.ojousama.easygoing[1]`: …負けてしまいましたわ、てへ
+- `POST_MATCH_FLAVOR_LINES.loser.ojousama.easygoing[1]`: …負けてしまいましたわ…あらあら
 
 ### loser.polite.normal[]
 
@@ -3258,7 +3258,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.bold[]
 
 - `FIRST_MEET_LINES.standard.bold[1]`: やっと当たれるな！
-- `FIRST_MEET_LINES.standard.bold[2]`: 待ってたぞ、この日を
+- `FIRST_MEET_LINES.standard.bold[2]`: 待ってたよ、この日を
 - `FIRST_MEET_LINES.standard.bold[3]`: 本気で来いよ
 
 ### standard.quiet[]
@@ -3316,7 +3316,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.quiet[]
 
-- `FIRST_MEET_LINES.polite.quiet[1]`: …よ、よろしくお願いします
+- `FIRST_MEET_LINES.polite.quiet[1]`: …よろしくお願いします
 
 ### polite.earnest[]
 

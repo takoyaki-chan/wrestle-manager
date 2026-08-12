@@ -141,7 +141,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.easygoing[]
 
-- `SCOUT_GREETING_LINES.standard.easygoing[1]`: よく見つけたねー。掘り出し物だよ、あたし
+- `SCOUT_GREETING_LINES.standard.easygoing[1]`: よく見つけたねー。掘り出し物だよ、私
 - `SCOUT_GREETING_LINES.standard.easygoing[2]`: ちょうど暴れる場所探してたんだ。よろしくね
 
 ### standard.earnest[]
@@ -201,7 +201,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.easygoing[]
 
-- `SCOUT_GREETING_LINES.polite.easygoing[1]`: 見つけてくださって助かりました！暴れますね
+- `SCOUT_GREETING_LINES.polite.easygoing[1]`: 声をかけてくださって嬉しいです！　思いきり暴れますね！
 
 ### polite.earnest[]
 
@@ -213,7 +213,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.normal[]
 
-- `SCOUT_GREETING_LINES.ojousama.normal[1]`: わたくしを見つけたご慧眼、称えて差し上げます
+- `SCOUT_GREETING_LINES.ojousama.normal[1]`: 見つけていただいたからには、お応えするわ。……期待を裏切るつもりはないもの
 
 ### ojousama.bold[]
 
@@ -273,7 +273,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.bold[]
 
-- `SCOUT_GREETING_LINES.seductive.bold[1]`: わたしに声をかけた責任は、取ってちょうだいね
+- `SCOUT_GREETING_LINES.seductive.bold[1]`: 私に声をかけた責任は、取ってちょうだいね
 
 ### seductive.quiet[]
 
@@ -285,7 +285,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.easygoing[]
 
-- `SCOUT_GREETING_LINES.seductive.easygoing[1]`: ふうん、あたしに目をつけたんだ。…お目が高いね
+- `SCOUT_GREETING_LINES.seductive.easygoing[1]`: ふうん、私に目をつけたんだ。…お目が高いね
 
 ### seductive.earnest[]
 
@@ -361,17 +361,17 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard.easygoing[]
 
 - `FA_GREETING_LINES.standard.easygoing[1]`: フリーも気楽だったけどねー。ここらで腰を据えるか
-- `FA_GREETING_LINES.standard.easygoing[2]`: 声かかんなくてさー。拾ってくれて助かったよ
+- `FA_GREETING_LINES.standard.easygoing[2]`: しばらく声かかんなくてさー。呼んでくれて嬉しいよ
 
 ### standard.earnest[]
 
 - `FA_GREETING_LINES.standard.earnest[1]`: もう一度チャンスをもらえた。無駄にしません
-- `FA_GREETING_LINES.standard.earnest[2]`: 拾ってくれた恩は、練習の量でお返しします
+- `FA_GREETING_LINES.standard.earnest[2]`: 声をかけてくれた恩には、積み上げた練習で応えます
 
 ### standard.emotional[]
 
 - `FA_GREETING_LINES.standard.emotional[1]`: また契約できた…！この嬉しさ、試合で爆発させる…！
-- `FA_GREETING_LINES.standard.emotional[2]`: 拾ってくれた…！この恩、絶対に返す…！
+- `FA_GREETING_LINES.standard.emotional[2]`: 呼んでくれた…！ この恩、絶対に返す…！
 
 ### cool.normal[]
 
@@ -383,7 +383,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### cool.quiet[]
 
-- `FA_GREETING_LINES.cool.quiet[1]`: …拾われた。…なら、恩を返す
+- `FA_GREETING_LINES.cool.quiet[1]`: ……ここでやる。……結果で返す
 
 ### cool.shy[]
 
@@ -403,7 +403,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.normal[]
 
-- `FA_GREETING_LINES.polite.normal[1]`: 拾っていただいた御恩は、試合でお返しします
+- `FA_GREETING_LINES.polite.normal[1]`: 声をかけてもらえて嬉しいな。…そのぶんは試合で返すね
 
 ### polite.bold[]
 
@@ -419,7 +419,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.easygoing[]
 
-- `FA_GREETING_LINES.polite.easygoing[1]`: フリー生活、今日で終わりです！助かりました
+- `FA_GREETING_LINES.polite.easygoing[1]`: フリー生活は今日で卒業です！　ここから楽しくなりそう！
 
 ### polite.earnest[]
 
@@ -431,11 +431,11 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.normal[]
 
-- `FA_GREETING_LINES.ojousama.normal[1]`: 行くあての無いわたくしを招いてくださって。恩は必ずお返しします
+- `FA_GREETING_LINES.ojousama.normal[1]`: 声をかけていただいたこと、感謝しています。……ここで、また一から積み上げていくわね
 
 ### ojousama.bold[]
 
-- `FA_GREETING_LINES.ojousama.bold[1]`: チャンスをありがとう。私を侮ったあいつらに、ほえ面かかせてやりますわ
+- `FA_GREETING_LINES.ojousama.bold[1]`: 良い機会をいただいたわ。私を見誤った方々に、答えを見せるとしましょう
 
 ### ojousama.quiet[]
 
@@ -487,7 +487,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.normal[]
 
-- `FA_GREETING_LINES.seductive.normal[1]`: 落ちこぼれを拾うなんて。…物好きね。
+- `FA_GREETING_LINES.seductive.normal[1]`: わざわざ口説きに来るなんて。…物好きね、あなた。
 
 ### seductive.bold[]
 
@@ -495,7 +495,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.quiet[]
 
-- `FA_GREETING_LINES.seductive.quiet[1]`: ……居場所ができたのね。…助かるわ
+- `FA_GREETING_LINES.seductive.quiet[1]`: ……ここが新しい場所ね。……ええ、悪くない……。
 
 ### seductive.shy[]
 
@@ -503,7 +503,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.easygoing[]
 
-- `FA_GREETING_LINES.seductive.easygoing[1]`: 拾ってくれるなんて。…優しいのね、ここ
+- `FA_GREETING_LINES.seductive.easygoing[1]`: あら、悪くない話じゃない♪　…ええ、お世話になるわね
 
 ### seductive.earnest[]
 
@@ -511,7 +511,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive.emotional[]
 
-- `FA_GREETING_LINES.seductive.emotional[1]`: 拾われる側になるなんて…っ…参ったわ
+- `FA_GREETING_LINES.seductive.emotional[1]`: 口説かれる側になるなんて…っ…ふふ、いい度胸ね
 
 ### composed.normal[]
 

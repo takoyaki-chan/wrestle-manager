@@ -140,7 +140,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: Trait Definitions (traits-v2.1)
-- 本数: 40
+- 本数: 38
 
 - `TRAIT_DEFS.華.desc`: 集客力にボーナス。グッズ売上の重みも増加
 - `TRAIT_DEFS.ファンサービス.en`: Fan Service
@@ -154,11 +154,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `TRAIT_DEFS.ライバル体質.en`: Rivalry Prone
 - `TRAIT_DEFS.ライバル体質.desc`: ライバル因縁が生まれやすい
 - `TRAIT_DEFS.早熟.en`: Early Bloomer
-- `TRAIT_DEFS.早熟.desc`: 10代から即戦力。20歳で完成するが、伸びしろは少ない
+- `TRAIT_DEFS.早熟.desc`: 10代から即戦力。若いうちに仕上がる成長タイプ
 - `TRAIT_DEFS.晩成.en`: Late Bloomer
 - `TRAIT_DEFS.晩成.desc`: 序盤は遅いが、21〜22歳でピークに成長する
-- `TRAIT_DEFS.遅咲き.en`: Late Starter
-- `TRAIT_DEFS.遅咲き.desc`: 序盤は全く伸びないが、23歳で突然覚醒する
 - `TRAIT_DEFS.努力家.en`: Hard Worker
 - `TRAIT_DEFS.努力家.desc`: 成長が安定しやすく、練習で体を壊しにくい
 - `TRAIT_DEFS.破天荒.desc`: 成長にムラあり。爆発的か停滞

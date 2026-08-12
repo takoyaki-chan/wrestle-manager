@@ -19,8 +19,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NEGOTIATE_LINES.start.ojousama.bold[1]`: わたくしを引き抜こうと？⏎たいした度胸ですわね
 - `NEGOTIATE_LINES.start.ojousama.easygoing[1]`: 条件をお聞かせくださいまし。それ次第ですわ
 - `NEGOTIATE_LINES.start.ojousama.earnest[1]`: この団体を離れるのは容易ではありませんわ。⏎…でも、お聞きするだけなら
-- `NEGOTIATE_LINES.start.delinquent.normal[1]`: あたしを引き抜くってか？⏎…条件次第だな
-- `NEGOTIATE_LINES.start.delinquent.bold[1]`: あたしを引き抜く？⏎面白ぇ度胸してんじゃねーか
+- `NEGOTIATE_LINES.start.delinquent.normal[1]`: 私を引き抜くってか？⏎…条件次第だな
+- `NEGOTIATE_LINES.start.delinquent.bold[1]`: 私を引き抜く？⏎面白ぇ度胸してんじゃねーか
 - `NEGOTIATE_LINES.start.delinquent.easygoing[1]`: マジで！？ スカウト！？⏎話聞かせてくれよ！
 - `NEGOTIATE_LINES.start.seductive.normal[1]`: 私を誘うの？⏎ふふ…条件次第ね
 - `NEGOTIATE_LINES.start.seductive.bold[1]`: 私を引き抜こうだなんて…⏎ふふ、面白い度胸してるわね
@@ -89,7 +89,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NEGOTIATE_LINES.blocked.ojousama.bold[1]`: わたくしへの評価は光栄だけれど、⏎今の団体を裏切るなどあり得ませんわ
 - `NEGOTIATE_LINES.blocked.ojousama.earnest[1]`: 今の仲間への責任がありますわ。⏎それを果たすまで、他のお話は聞けませんの
 - `NEGOTIATE_LINES.blocked.delinquent.normal[1]`: 悪いな、話を聞く気にならねぇ。⏎今の仲間を裏切るわけにはいかねぇから
-- `NEGOTIATE_LINES.blocked.delinquent.bold[1]`: あたしが今の仲間に背くと思ったか？⏎甘ぇよ、帰れ
+- `NEGOTIATE_LINES.blocked.delinquent.bold[1]`: 私が今の仲間に背くと思ったか？⏎甘ぇよ、帰れ
 - `NEGOTIATE_LINES.blocked.delinquent.easygoing[1]`: おっ、引き抜きか！気持ちは嬉しいけどな、⏎今の仲間が好きすぎて動けないわ！
 - `NEGOTIATE_LINES.blocked.seductive.normal[1]`: うれしいお誘いだけど…今の仲間を置いていく気にはなれないわ。⏎ごめんなさい
 - `NEGOTIATE_LINES.blocked.seductive.bold[1]`: ふふ…買いかぶってくれてありがとう。⏎でも今の仲間を裏切るつもりは毛頭ないわ
@@ -119,7 +119,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `NEGOTIATE_LINES.fail.ojousama.bold[1]`: ここがわたくしの居場所なの。⏎出直していらして
 - `NEGOTIATE_LINES.fail.ojousama.earnest[1]`: 皆さまを置いて行くわけにはまいりませんわ
 - `NEGOTIATE_LINES.fail.delinquent.normal[1]`: 悪ぃけど、今回はパスだ。⏎縁があればまたな
-- `NEGOTIATE_LINES.fail.delinquent.bold[1]`: ここがあたしの居場所だ。⏎出直してきな
+- `NEGOTIATE_LINES.fail.delinquent.bold[1]`: ここが私の居場所だ。⏎出直してきな
 - `NEGOTIATE_LINES.fail.delinquent.easygoing[1]`: ごめんな〜、今のとこが好きなんだよ！⏎またな！
 - `NEGOTIATE_LINES.fail.seductive.normal[1]`: ごめんなさい、今回はパス。⏎縁があればまたね
 - `NEGOTIATE_LINES.fail.seductive.bold[1]`: ここが私の居場所なの。⏎出直してきて
@@ -265,7 +265,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_open.seductive.earnest[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_open.seductive.earnest[1]`: 社長、大事な話があるの。{tenure}{record}ちゃんと評価してほしいな
+- `CONTRACT_NEGOTIATION_LINES.raise_open.seductive.earnest[1]`: 社長、大事な話があるの。{tenure}{record}ちゃんと評価してほしいの
 
 ### raise_open.seductive.emotional[]
 
@@ -439,7 +439,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### transfer_open.standard.quiet[]
 
 - `CONTRACT_NEGOTIATION_LINES.transfer_open.standard.quiet[1]`: あの……社長……。{tenure}言いにくいんですけど……もう、ここを離れたいです……。
-- `CONTRACT_NEGOTIATION_LINES.transfer_open.standard.quiet[2]`: ……ごめんなさい……。{tenure}私なんかいなくても……変わらないと思うんです……。
+- `CONTRACT_NEGOTIATION_LINES.transfer_open.standard.quiet[2]`: ……ごめんなさい……。{tenure}私がいなくても……変わらないと思うんです……。
 
 ### transfer_open.standard.shy[]
 
@@ -482,7 +482,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### transfer_open.ojousama.easygoing[]
 
 - `CONTRACT_NEGOTIATION_LINES.transfer_open.ojousama.easygoing[1]`: 社長、あのね。{tenure}いろいろ考えたのだけれど……環境を変えてみようかしら、と。
-- `CONTRACT_NEGOTIATION_LINES.transfer_open.ojousama.easygoing[2]`: いやはや社長。言いにくいのだけれど。{tenure}少し外の風に当たってみたくなって。
+- `CONTRACT_NEGOTIATION_LINES.transfer_open.ojousama.easygoing[2]`: ごめんなさいね、社長。言いにくいのだけれど。{tenure}少し外の風に当たってみたくなって。
 
 ### transfer_open.ojousama.earnest[]
 
@@ -536,7 +536,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### transfer_open.seductive.quiet[]
 
 - `CONTRACT_NEGOTIATION_LINES.transfer_open.seductive.quiet[1]`: ……社長。{tenure}言いにくいんだけど……もう、ここを出たいの……。
-- `CONTRACT_NEGOTIATION_LINES.transfer_open.seductive.quiet[2]`: ……ごめんなさい……。{tenure}わたしがいなくても……何も変わらないでしょう……。
+- `CONTRACT_NEGOTIATION_LINES.transfer_open.seductive.quiet[2]`: ……聞いてほしいの……。{tenure}ここを出ることに決めたわ……。もう、覆らない……。
 
 ### transfer_open.seductive.shy[]
 
@@ -622,7 +622,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_accept.polite.quiet[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_accept.polite.quiet[1]`: え…本当ですか…？ ありがとうございます…！ 精一杯頑張ります…！
+- `CONTRACT_NEGOTIATION_LINES.raise_accept.polite.quiet[1]`: え…本当ですか…？ ありがとうございます…。精一杯頑張ります…。
 
 ### raise_accept.polite.shy[]
 
@@ -690,7 +690,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_accept.ojousama.earnest[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_accept.ojousama.earnest[1]`: 感謝いたしますわ。期待に応えてみせますわね。
+- `CONTRACT_NEGOTIATION_LINES.raise_accept.ojousama.earnest[1]`: 感謝いたします。期待に応えてみせますわね。
 
 ### raise_accept.ojousama.emotional[]
 
@@ -726,15 +726,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_accept.seductive.normal[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_accept.seductive.normal[1]`: ありがと、社長♡ もっと頑張っちゃうからね。
+- `CONTRACT_NEGOTIATION_LINES.raise_accept.seductive.normal[1]`: ありがと、社長♡ もっと魅せてあげるわね。
 
 ### raise_accept.seductive.bold[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_accept.seductive.bold[1]`: ふふ、分かってくれるじゃない♡ 期待しててね。
+- `CONTRACT_NEGOTIATION_LINES.raise_accept.seductive.bold[1]`: ふふ、分かってくれるじゃない 期待しててね。
 
 ### raise_accept.seductive.quiet[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_accept.seductive.quiet[1]`: え……本当……？ ……ありがとう、社長。ちゃんと応えるから……。
+- `CONTRACT_NEGOTIATION_LINES.raise_accept.seductive.quiet[1]`: ふふ……そう。……ありがとう、社長。ちゃんと応えてあげる……。
 
 ### raise_accept.seductive.shy[]
 
@@ -886,7 +886,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_negotiate_accept.ojousama.earnest[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_negotiate_accept.ojousama.earnest[1]`: ……社長のご判断を尊重いたしますわ。精一杯やりますわね。
+- `CONTRACT_NEGOTIATION_LINES.raise_negotiate_accept.ojousama.earnest[1]`: ……社長のご判断を尊重いたします。精一杯やりますわね。
 
 ### raise_negotiate_accept.ojousama.emotional[]
 
@@ -926,7 +926,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_negotiate_accept.seductive.bold[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_negotiate_accept.seductive.bold[1]`: ……まあ、少しは考えてくれたのね。次はもっと期待してるわよ♡
+- `CONTRACT_NEGOTIATION_LINES.raise_negotiate_accept.seductive.bold[1]`: ……まあ、少しは考えてくれたのね。次はもっと期待してるわよ
 
 ### raise_negotiate_accept.seductive.quiet[]
 
@@ -1322,7 +1322,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_refuse.seductive.quiet[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_refuse.seductive.quiet[1]`: ……ええ……分かったわ……。……ごめんなさい、困らせて……。
+- `CONTRACT_NEGOTIATION_LINES.raise_refuse.seductive.quiet[1]`: ……ええ……分かったわ……。……今の話は、忘れてちょうだい……。
 
 ### raise_refuse.seductive.shy[]
 
@@ -1474,7 +1474,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### transfer_retain_success.ojousama.earnest[]
 
-- `CONTRACT_NEGOTIATION_LINES.transfer_retain_success.ojousama.earnest[1]`: ……その誠意、しかと受け止めましたわ。もう一度、全力で臨みますわ。
+- `CONTRACT_NEGOTIATION_LINES.transfer_retain_success.ojousama.earnest[1]`: ……その誠意、しかと受け止めました。もう一度、全力で臨みますわ。
 
 ### transfer_retain_success.ojousama.emotional[]
 
@@ -1518,7 +1518,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### transfer_retain_success.seductive.quiet[]
 
-- `CONTRACT_NEGOTIATION_LINES.transfer_retain_success.seductive.quiet[1]`: えっ……そこまでしてくれるの……？ ……もう少しだけ、いてみようかしら……。
+- `CONTRACT_NEGOTIATION_LINES.transfer_retain_success.seductive.quiet[1]`: ……ふふ、そこまでするのね……。……いいわ。もう少しだけ、いてあげる……。
 
 ### transfer_retain_success.seductive.shy[]
 
@@ -1894,7 +1894,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### transfer_release.ojousama.earnest[]
 
-- `CONTRACT_NEGOTIATION_LINES.transfer_release.ojousama.earnest[1]`: ……承知いたしましたわ。{tenure_farewell}こちらでの日々、忘れませんわ。{rivalry}
+- `CONTRACT_NEGOTIATION_LINES.transfer_release.ojousama.earnest[1]`: ……承知いたしました。{tenure_farewell}こちらでの日々、忘れませんわ。{rivalry}
 
 ### transfer_release.ojousama.emotional[]
 
@@ -2090,7 +2090,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### transfer_listen.ojousama.earnest[]
 
-- `CONTRACT_NEGOTIATION_LINES.transfer_listen.ojousama.earnest[1]`: ありがとうございますわ。{record}こちらでの経験は一生の宝ですわ。ですが…新天地で挑戦したいのです。
+- `CONTRACT_NEGOTIATION_LINES.transfer_listen.ojousama.earnest[1]`: ありがとうございます。{record}こちらでの経験は一生の宝ですわ。ですが…新天地で挑戦したいのです。
 
 ### transfer_listen.ojousama.emotional[]
 
@@ -2134,7 +2134,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### transfer_listen.seductive.quiet[]
 
-- `CONTRACT_NEGOTIATION_LINES.transfer_listen.seductive.quiet[1]`: ……聞いてくれるの……。{record}わたし……ここにいる意味が、分からなくなって……。
+- `CONTRACT_NEGOTIATION_LINES.transfer_listen.seductive.quiet[1]`: ……聞いてくれるの……。{record}私……ここにいる意味が、分からなくなって……。
 
 ### transfer_listen.seductive.shy[]
 
@@ -2250,7 +2250,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### tenure.founder.delinquent
 
-- `CONTRACT_NEGOTIATION_LINES.tenure.founder.delinquent`: 旗揚げからここにいるんだぜ、あたし。
+- `CONTRACT_NEGOTIATION_LINES.tenure.founder.delinquent`: 旗揚げからずっと、ここにいるんだぜ。
 
 ### tenure.founder.cool
 
@@ -2306,7 +2306,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### record.good.delinquent
 
-- `CONTRACT_NEGOTIATION_LINES.record.good.delinquent`: あたしなりに結果は出してきたつもりだ。
+- `CONTRACT_NEGOTIATION_LINES.record.good.delinquent`: 私なりに結果は出してきたつもりだ。
 
 ### record.good.cool
 

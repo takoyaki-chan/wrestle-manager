@@ -6,7 +6,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: v1.4: 年末表彰式 セリフデータ（personality×archetype）
-- 本数: 232
+- 本数: 306
 
 ### rookie.standard.normal[]
 
@@ -310,7 +310,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### mvp.standard.normal[]
 
 - `AWARD_LINES.mvp.standard.normal[1]`: 一年間、逃げなかった。それだけは胸を張れます
-- `AWARD_LINES.mvp.standard.normal[2]`: 苦しい試合もあった。でも全部、今のわたしを作ってくれた
+- `AWARD_LINES.mvp.standard.normal[2]`: 苦しい試合もあった。でも全部、今の私を作ってくれた
 
 ### mvp.standard.bold[]
 
@@ -369,7 +369,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### mvp.delinquent.bold[]
 
-- `AWARD_LINES.mvp.delinquent.bold[1]`: 一番強かったのはあたしだ。文句あるなら来いよ
+- `AWARD_LINES.mvp.delinquent.bold[1]`: 一番強かったのは私だ。文句あるなら来いよ
 
 ### mvp.delinquent.shy[]
 
@@ -405,7 +405,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### mvp.seductive.emotional[]
 
-- `AWARD_LINES.mvp.seductive.emotional[1]`: MVP……っ……ふふ、わたしが一番輝いてたって、そう言ってもらえるのね……
+- `AWARD_LINES.mvp.seductive.emotional[1]`: MVP……っ……ふふ、私が一番輝いてたって、そう言ってもらえるのね……
 
 ### mvp.polite.normal[]
 
@@ -600,7 +600,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### champion.delinquent.bold[]
 
-- `AWARD_LINES.champion.delinquent.bold[1]`: 最強はあたしだ。証拠がここにある。文句は拳で言いに来い
+- `AWARD_LINES.champion.delinquent.bold[1]`: 最強は私だ。証拠がここにある。文句は拳で言いに来い
 
 ### champion.delinquent.shy[]
 
@@ -697,7 +697,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### hallOfFame.standard.normal[]
 
 - `AWARD_LINES.hallOfFame.standard.normal[1]`: 後悔はない。一試合も。…本当に良い現役生活でした
-- `AWARD_LINES.hallOfFame.standard.normal[2]`: このリングで過ごした時間が、わたしの全て
+- `AWARD_LINES.hallOfFame.standard.normal[2]`: このリングで過ごした時間が、私の全て
 
 ### hallOfFame.standard.bold[]
 
@@ -706,7 +706,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### hallOfFame.standard.quiet[]
 
-- `AWARD_LINES.hallOfFame.standard.quiet[1]`: ……ありがとう。この場所が、わたしの全部だった
+- `AWARD_LINES.hallOfFame.standard.quiet[1]`: ……ありがとう。この場所が、私の全部だった
 
 ### hallOfFame.standard.shy[]
 
@@ -724,7 +724,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### hallOfFame.standard.emotional[]
 
-- `AWARD_LINES.hallOfFame.standard.emotional[1]`: プロレスが…わたしの居場所だった…。ここで出会えた人たちが…全部…宝物で…っ！
+- `AWARD_LINES.hallOfFame.standard.emotional[1]`: プロレスが…私の居場所だった…。ここで出会えた人たちが…全部…宝物で…っ！
 
 ### hallOfFame.ojousama.normal[]
 
@@ -850,6 +850,302 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `AWARD_LINES.hallOfFame.cool.quiet[1]`: …悔いはない。…ありがとう
 
+### springTagChampion.standard.normal[]
+
+- `AWARD_LINES.springTagChampion.standard.normal[1]`: この春を一緒に走り抜いた相棒に、まずはありがとうと言いたいです。
+
+### springTagChampion.standard.bold[]
+
+- `AWARD_LINES.springTagChampion.standard.bold[1]`: 最高の相棒と獲った優勝だ。次は誰が来ても返り討ちにする。
+
+### springTagChampion.standard.quiet[]
+
+- `AWARD_LINES.springTagChampion.standard.quiet[1]`: ふたりで積み上げた結果です。うれしいです。
+
+### springTagChampion.standard.shy[]
+
+- `AWARD_LINES.springTagChampion.standard.shy[1]`: 相棒がいてくれたから、最後まで前を向けました。
+
+### springTagChampion.standard.easygoing[]
+
+- `AWARD_LINES.springTagChampion.standard.easygoing[1]`: いやあ、相棒と組むと楽しいことばっかりですね！
+
+### springTagChampion.standard.earnest[]
+
+- `AWARD_LINES.springTagChampion.standard.earnest[1]`: 支えてくれた相棒と応援してくださった皆さんに、心から感謝します。
+
+### springTagChampion.standard.emotional[]
+
+- `AWARD_LINES.springTagChampion.standard.emotional[1]`: 相棒と抱き合った瞬間、ここまでの全部が報われた気がしました。
+
+### springTagChampion.ojousama.normal[]
+
+- `AWARD_LINES.springTagChampion.ojousama.normal[1]`: この栄冠は、わたくしたち二人の信頼が結んだものですわ。
+
+### springTagChampion.ojousama.bold[]
+
+- `AWARD_LINES.springTagChampion.ojousama.bold[1]`: わたくしたちの連係に、並のタッグが届くはずもありませんわ。
+
+### springTagChampion.ojousama.shy[]
+
+- `AWARD_LINES.springTagChampion.ojousama.shy[1]`: 相棒となら、わたくしも胸を張ってここに立てますわ。
+
+### springTagChampion.ojousama.easygoing[]
+
+- `AWARD_LINES.springTagChampion.ojousama.easygoing[1]`: まあ、相棒と優勝なんて素敵な春になりましたわね。
+
+### springTagChampion.ojousama.earnest[]
+
+- `AWARD_LINES.springTagChampion.ojousama.earnest[1]`: 相棒の献身に報いるためにも、この優勝を誇り高く受け取りますわ。
+
+### springTagChampion.delinquent.normal[]
+
+- `AWARD_LINES.springTagChampion.delinquent.normal[1]`: 相棒と決めたことをやっただけだ。文句あるやつはかかってきな。
+
+### springTagChampion.delinquent.bold[]
+
+- `AWARD_LINES.springTagChampion.delinquent.bold[1]`: 見ただろ。私らのタッグが一番強いんだよ。
+
+### springTagChampion.delinquent.shy[]
+
+- `AWARD_LINES.springTagChampion.delinquent.shy[1]`: べ、別に泣いてねえし。相棒が頑張ったからだ。
+
+### springTagChampion.delinquent.easygoing[]
+
+- `AWARD_LINES.springTagChampion.delinquent.easygoing[1]`: 相棒となら、面倒な相手でもなんとかなるもんだな。
+
+### springTagChampion.cool.normal[]
+
+- `AWARD_LINES.springTagChampion.cool.normal[1]`: 役割を果たした結果だ。相棒にも敬意を表する。
+
+### springTagChampion.cool.bold[]
+
+- `AWARD_LINES.springTagChampion.cool.bold[1]`: 連係の精度で上回った。それだけのことだ。
+
+### springTagChampion.cool.quiet[]
+
+- `AWARD_LINES.springTagChampion.cool.quiet[1]`: 相棒のおかげだ。
+
+### springTagChampion.seductive.normal[]
+
+- `AWARD_LINES.springTagChampion.seductive.normal[1]`: ふたりで掴んだ春の主役の座、悪くない気分でしょう？
+
+### springTagChampion.seductive.bold[]
+
+- `AWARD_LINES.springTagChampion.seductive.bold[1]`: 相棒との舞台は最上級よ。次も目を離さないで。
+
+### springTagChampion.seductive.quiet[]
+
+- `AWARD_LINES.springTagChampion.seductive.quiet[1]`: 相棒となら、もっと高く行けるわ。
+
+### springTagChampion.seductive.easygoing[]
+
+- `AWARD_LINES.springTagChampion.seductive.easygoing[1]`: 相棒と一緒だと、勝つまでの時間まで楽しめちゃうの。
+
+### springTagChampion.seductive.earnest[]
+
+- `AWARD_LINES.springTagChampion.seductive.earnest[1]`: 相棒が背中を預けてくれたから、最後まで美しく戦えました。
+
+### springTagChampion.seductive.emotional[]
+
+- `AWARD_LINES.springTagChampion.seductive.emotional[1]`: 相棒と笑えるこの瞬間が、何よりうれしいの。
+
+### springTagChampion.polite.normal[]
+
+- `AWARD_LINES.springTagChampion.polite.normal[1]`: 相棒と力を合わせた成果です。皆さま、ありがとうございます。
+
+### springTagChampion.polite.bold[]
+
+- `AWARD_LINES.springTagChampion.polite.bold[1]`: この優勝は、二人で準備してきた必然です。
+
+### springTagChampion.polite.quiet[]
+
+- `AWARD_LINES.springTagChampion.polite.quiet[1]`: 相棒に感謝しています。
+
+### springTagChampion.polite.shy[]
+
+- `AWARD_LINES.springTagChampion.polite.shy[1]`: 相棒が隣にいてくれたので、落ち着いて戦えました。
+
+### springTagChampion.polite.easygoing[]
+
+- `AWARD_LINES.springTagChampion.polite.easygoing[1]`: 相棒と優勝できて、本当にうれしいです。
+
+### springTagChampion.polite.earnest[]
+
+- `AWARD_LINES.springTagChampion.polite.earnest[1]`: 互いを信じ続けたことが、この結果につながりました。
+
+### springTagChampion.composed.normal[]
+
+- `AWARD_LINES.springTagChampion.composed.normal[1]`: 相棒との信頼を、結果として示せてよかった。
+
+### springTagChampion.composed.bold[]
+
+- `AWARD_LINES.springTagChampion.composed.bold[1]`: 春の頂点は私たちのもの。次も譲る気はない。
+
+### springTagChampion.composed.quiet[]
+
+- `AWARD_LINES.springTagChampion.composed.quiet[1]`: 相棒がいたからだ。
+
+### springTagChampion.composed.easygoing[]
+
+- `AWARD_LINES.springTagChampion.composed.easygoing[1]`: いい相棒に恵まれたね。だから最高の結果になった。
+
+### springTagChampion.composed.earnest[]
+
+- `AWARD_LINES.springTagChampion.composed.earnest[1]`: 二人で交わした約束を守れたことが、一番うれしい。
+
+### springTagChampion.composed.emotional[]
+
+- `AWARD_LINES.springTagChampion.composed.emotional[1]`: 相棒と勝ててよかった。本当に、それだけで十分だ。
+
+### autumnWarChampion.standard.normal[]
+
+- `AWARD_LINES.autumnWarChampion.standard.normal[1]`: 団体の代表として戦い抜けたことを、誇りに思います。
+
+### autumnWarChampion.standard.bold[]
+
+- `AWARD_LINES.autumnWarChampion.standard.bold[1]`: 対抗戦を制したのはうちだ。覚えておけ。
+
+### autumnWarChampion.standard.quiet[]
+
+- `AWARD_LINES.autumnWarChampion.standard.quiet[1]`: みんなで勝ち取った勝利です。
+
+### autumnWarChampion.standard.shy[]
+
+- `AWARD_LINES.autumnWarChampion.standard.shy[1]`: 仲間がつないでくれたから、最後まで戦えました。
+
+### autumnWarChampion.standard.easygoing[]
+
+- `AWARD_LINES.autumnWarChampion.standard.easygoing[1]`: 団体のみんなが強すぎて、頼もしかったですね！
+
+### autumnWarChampion.standard.earnest[]
+
+- `AWARD_LINES.autumnWarChampion.standard.earnest[1]`: 仲間の思いを背負って戦い、優勝で応えられて光栄です。
+
+### autumnWarChampion.standard.emotional[]
+
+- `AWARD_LINES.autumnWarChampion.standard.emotional[1]`: みんなの声が背中を押してくれました。絶対に忘れません。
+
+### autumnWarChampion.ojousama.normal[]
+
+- `AWARD_LINES.autumnWarChampion.ojousama.normal[1]`: 我が団体の誇りを、この対抗戦で示せましたわ。
+
+### autumnWarChampion.ojousama.bold[]
+
+- `AWARD_LINES.autumnWarChampion.ojousama.bold[1]`: わたくしたちの団体が最強だと、証明できましたわね。
+
+### autumnWarChampion.ojousama.shy[]
+
+- `AWARD_LINES.autumnWarChampion.ojousama.shy[1]`: 皆さまがつないでくださった勝利ですわ。感謝いたします。
+
+### autumnWarChampion.ojousama.easygoing[]
+
+- `AWARD_LINES.autumnWarChampion.ojousama.easygoing[1]`: まあ、頼もしい仲間ばかりで心強かったですわ。
+
+### autumnWarChampion.ojousama.earnest[]
+
+- `AWARD_LINES.autumnWarChampion.ojousama.earnest[1]`: 団体を代表する責任を果たせたことを、誇りに思いますわ。
+
+### autumnWarChampion.delinquent.normal[]
+
+- `AWARD_LINES.autumnWarChampion.delinquent.normal[1]`: うちの団体をなめるなって、ちゃんと教えてやったよ。
+
+### autumnWarChampion.delinquent.bold[]
+
+- `AWARD_LINES.autumnWarChampion.delinquent.bold[1]`: 対抗戦の頂点は私らだ。異論あるならまた来な。
+
+### autumnWarChampion.delinquent.shy[]
+
+- `AWARD_LINES.autumnWarChampion.delinquent.shy[1]`: みんなが頑張ったんだ。あたしだけの勝ちじゃない。
+
+### autumnWarChampion.delinquent.easygoing[]
+
+- `AWARD_LINES.autumnWarChampion.delinquent.easygoing[1]`: 団体戦って悪くないな。みんなで勝つと気分がいい。
+
+### autumnWarChampion.cool.normal[]
+
+- `AWARD_LINES.autumnWarChampion.cool.normal[1]`: 団体の総合力が上だった。その結果だ。
+
+### autumnWarChampion.cool.bold[]
+
+- `AWARD_LINES.autumnWarChampion.cool.bold[1]`: 代表の看板に見合う仕事はした。
+
+### autumnWarChampion.cool.quiet[]
+
+- `AWARD_LINES.autumnWarChampion.cool.quiet[1]`: 全員の勝利だ。
+
+### autumnWarChampion.seductive.normal[]
+
+- `AWARD_LINES.autumnWarChampion.seductive.normal[1]`: 団体の名を背負うなら、このくらい華やかに勝たなきゃ。
+
+### autumnWarChampion.seductive.bold[]
+
+- `AWARD_LINES.autumnWarChampion.seductive.bold[1]`: 対抗戦の主役は私たちよ。忘れないでね。
+
+### autumnWarChampion.seductive.quiet[]
+
+- `AWARD_LINES.autumnWarChampion.seductive.quiet[1]`: 仲間のために勝てて、うれしいわ。
+
+### autumnWarChampion.seductive.easygoing[]
+
+- `AWARD_LINES.autumnWarChampion.seductive.easygoing[1]`: みんなで勝つと、祝福も何倍も楽しいのね。
+
+### autumnWarChampion.seductive.earnest[]
+
+- `AWARD_LINES.autumnWarChampion.seductive.earnest[1]`: 仲間の奮闘を無駄にしないために、最後まで戦い抜きました。
+
+### autumnWarChampion.seductive.emotional[]
+
+- `AWARD_LINES.autumnWarChampion.seductive.emotional[1]`: みんなと分かち合える優勝だから、こんなに胸がいっぱいなの。
+
+### autumnWarChampion.polite.normal[]
+
+- `AWARD_LINES.autumnWarChampion.polite.normal[1]`: 団体を代表して戦えたこと、そして勝てたことを誇りに思います。
+
+### autumnWarChampion.polite.bold[]
+
+- `AWARD_LINES.autumnWarChampion.polite.bold[1]`: この優勝は、団体全員で積み上げた力の証明です。
+
+### autumnWarChampion.polite.quiet[]
+
+- `AWARD_LINES.autumnWarChampion.polite.quiet[1]`: 皆さんのおかげです。
+
+### autumnWarChampion.polite.shy[]
+
+- `AWARD_LINES.autumnWarChampion.polite.shy[1]`: 仲間の声があったから、最後まで頑張れました。
+
+### autumnWarChampion.polite.easygoing[]
+
+- `AWARD_LINES.autumnWarChampion.polite.easygoing[1]`: みんなと一緒に喜べる優勝って、最高ですね。
+
+### autumnWarChampion.polite.earnest[]
+
+- `AWARD_LINES.autumnWarChampion.polite.earnest[1]`: 仲間を信じ、仲間に応える。その思いで戦い抜きました。
+
+### autumnWarChampion.composed.normal[]
+
+- `AWARD_LINES.autumnWarChampion.composed.normal[1]`: 団体の看板を守れた。それが何よりだ。
+
+### autumnWarChampion.composed.bold[]
+
+- `AWARD_LINES.autumnWarChampion.composed.bold[1]`: この対抗戦は私たちが制した。次も同じだ。
+
+### autumnWarChampion.composed.quiet[]
+
+- `AWARD_LINES.autumnWarChampion.composed.quiet[1]`: みんながいたから勝てた。
+
+### autumnWarChampion.composed.easygoing[]
+
+- `AWARD_LINES.autumnWarChampion.composed.easygoing[1]`: 仲間と勝つのは気持ちいいね。最高の一日だ。
+
+### autumnWarChampion.composed.earnest[]
+
+- `AWARD_LINES.autumnWarChampion.composed.earnest[1]`: 一人ひとりの力が重なって、この優勝になった。
+
+### autumnWarChampion.composed.emotional[]
+
+- `AWARD_LINES.autumnWarChampion.composed.emotional[1]`: みんなでつかんだ勝利だ。誇らしいよ。
+
 ### hofCoach._default[]
 
 - `AWARD_LINES.hofCoach._default[1]`: あの子が本当にすごい選手になりました。指導者冥利に尽きます…。
@@ -956,15 +1252,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold[]
 
-- `DOME_FIRSTSHOW_LINES.standard.bold[1]`: 燃えてきたぜ、ドーム!! 全員ぶっ倒す!
-- `DOME_FIRSTSHOW_LINES.standard.bold[2]`: ここが一番いいとこだろ!? やってやんよ!
-- `DOME_FIRSTSHOW_LINES.standard.bold[3]`: 観客全員、俺の試合に釘付けにしてやる!
+- `DOME_FIRSTSHOW_LINES.standard.bold[1]`: 燃えてきたよ、ドーム!! 全員ぶっ倒す!
+- `DOME_FIRSTSHOW_LINES.standard.bold[2]`: ここが一番いいとこでしょ!? やってやるわよ!
+- `DOME_FIRSTSHOW_LINES.standard.bold[3]`: 観客全員、この試合に釘付けにしてみせる!
 
 ### standard.quiet[]
 
 - `DOME_FIRSTSHOW_LINES.standard.quiet[1]`: …ドーム、ですか
 - `DOME_FIRSTSHOW_LINES.standard.quiet[2]`: …やります
-- `DOME_FIRSTSHOW_LINES.standard.quiet[3]`: ……(無言で頷く)
+- `DOME_FIRSTSHOW_LINES.standard.quiet[3]`: ……（無言で頷く）
 
 ### standard.easygoing[]
 
@@ -982,7 +1278,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DOME_FIRSTSHOW_LINES.standard.emotional[1]`: …ドームまで来たんですね、私たち
 - `DOME_FIRSTSHOW_LINES.standard.emotional[2]`: 胸がいっぱいで…うまく言葉が出ません
-- `DOME_FIRSTSHOW_LINES.standard.emotional[3]`: 絶対に、絶対に良い試合にします!
+- `DOME_FIRSTSHOW_LINES.standard.emotional[3]`: 絶対に、絶対に良い試合にします！
 
 ### standard.shy[]
 
@@ -998,9 +1294,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.bold[]
 
-- `DOME_FIRSTSHOW_LINES.ojousama.bold[1]`: ドームですわよ!! 思い切り暴れますわ!
-- `DOME_FIRSTSHOW_LINES.ojousama.bold[2]`: ほほほ、わたくしの本気、ご覧に入れましょう!
-- `DOME_FIRSTSHOW_LINES.ojousama.bold[3]`: このリング、わたくしの独壇場にしてみせますわ!
+- `DOME_FIRSTSHOW_LINES.ojousama.bold[1]`: ドーム。……ようやく、相応しい場所ね
+- `DOME_FIRSTSHOW_LINES.ojousama.bold[2]`: ほほほ、わたくしの本気、ご覧に入れましょう！
+- `DOME_FIRSTSHOW_LINES.ojousama.bold[3]`: このリング、わたくしの独壇場にしてみせますわ！
 
 ### ojousama.quiet[]
 
@@ -1089,7 +1385,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DOME_FIRSTSHOW_LINES.cool.quiet[1]`: …行きます
 - `DOME_FIRSTSHOW_LINES.cool.quiet[2]`: …ドームか。悪くない
-- `DOME_FIRSTSHOW_LINES.cool.quiet[3]`: ……(視線だけで応える)
+- `DOME_FIRSTSHOW_LINES.cool.quiet[3]`: ……（視線だけで応える）
 
 ### cool.easygoing[]
 
@@ -1131,7 +1427,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DOME_FIRSTSHOW_LINES.seductive.quiet[1]`: …いよいよね
 - `DOME_FIRSTSHOW_LINES.seductive.quiet[2]`: …見ていて
-- `DOME_FIRSTSHOW_LINES.seductive.quiet[3]`: ……(静かに微笑む)
+- `DOME_FIRSTSHOW_LINES.seductive.quiet[3]`: ……（静かに微笑む）
 
 ### seductive.easygoing[]
 
@@ -1165,9 +1461,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.bold[]
 
-- `DOME_FIRSTSHOW_LINES.polite.bold[1]`: ドームで戦えること、心から感謝しております!
-- `DOME_FIRSTSHOW_LINES.polite.bold[2]`: 全力で、この舞台に恥じない試合をします!
-- `DOME_FIRSTSHOW_LINES.polite.bold[3]`: お客様の期待に、必ず応えてみせます!
+- `DOME_FIRSTSHOW_LINES.polite.bold[1]`: ドームで戦えること、心から感謝しております！
+- `DOME_FIRSTSHOW_LINES.polite.bold[2]`: 全力で、この舞台に恥じない試合をします！
+- `DOME_FIRSTSHOW_LINES.polite.bold[3]`: お客様の期待に、必ず応えてみせます！
 
 ### polite.quiet[]
 
@@ -1207,15 +1503,15 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed.bold[]
 
-- `DOME_FIRSTSHOW_LINES.composed.bold[1]`: ドーム。燃える。それだけだ
+- `DOME_FIRSTSHOW_LINES.composed.bold[1]`: ドーム、か。…燃えてきたな
 - `DOME_FIRSTSHOW_LINES.composed.bold[2]`: …やるべきことは分かってる。全力でぶつかる
-- `DOME_FIRSTSHOW_LINES.composed.bold[3]`: この闘志、ドームで解き放つ
+- `DOME_FIRSTSHOW_LINES.composed.bold[3]`: この闘志、ドームで全部見せてあげるよ
 
 ### composed.quiet[]
 
 - `DOME_FIRSTSHOW_LINES.composed.quiet[1]`: …ドーム
 - `DOME_FIRSTSHOW_LINES.composed.quiet[2]`: …準備は、できています
-- `DOME_FIRSTSHOW_LINES.composed.quiet[3]`: ……(静かに立っている)
+- `DOME_FIRSTSHOW_LINES.composed.quiet[3]`: ……（静かに立っている）
 
 ### composed.easygoing[]
 
@@ -1254,19 +1550,19 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.bold[]
 
-- `DOME_SELLOUT_LINES.standard.bold[1]`: やったぜ!! ドーム満員だ!! うおおおお!
-- `DOME_SELLOUT_LINES.standard.bold[2]`: 全員立ち上がってくれてたぜ!! 最高だ!!
-- `DOME_SELLOUT_LINES.standard.bold[3]`: 次はもっと大きい舞台、作ろうぜ!!
+- `DOME_SELLOUT_LINES.standard.bold[1]`: やった!! ドーム満員だ!! うおおおお!
+- `DOME_SELLOUT_LINES.standard.bold[2]`: 全員立ち上がってくれてた!! 最高だ!!
+- `DOME_SELLOUT_LINES.standard.bold[3]`: 次はもっと大きい舞台、作ろう!!
 
 ### standard.quiet[]
 
 - `DOME_SELLOUT_LINES.standard.quiet[1]`: …満員でした
 - `DOME_SELLOUT_LINES.standard.quiet[2]`: …ありがとう、ございます
-- `DOME_SELLOUT_LINES.standard.quiet[3]`: ……(深く頭を下げる)
+- `DOME_SELLOUT_LINES.standard.quiet[3]`: ……（深く頭を下げる）
 
 ### standard.easygoing[]
 
-- `DOME_SELLOUT_LINES.standard.easygoing[1]`: うわー、満員だって! びっくりしちゃった
+- `DOME_SELLOUT_LINES.standard.easygoing[1]`: うわー、満員だって！ びっくりしちゃった
 - `DOME_SELLOUT_LINES.standard.easygoing[2]`: やりましたねー、本当に嬉しいです
 - `DOME_SELLOUT_LINES.standard.easygoing[3]`: なんか、胸がじーんとしてます
 
@@ -1278,13 +1574,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard.emotional[]
 
-- `DOME_SELLOUT_LINES.standard.emotional[1]`: 満員って…満員って言いました? …涙が止まりません…!
-- `DOME_SELLOUT_LINES.standard.emotional[2]`: 社長…本当に…本当にありがとうございます…!
-- `DOME_SELLOUT_LINES.standard.emotional[3]`: この日のこと、絶対に、絶対に忘れません!
+- `DOME_SELLOUT_LINES.standard.emotional[1]`: 満員って…満員って言いました？ …涙が止まりません…！
+- `DOME_SELLOUT_LINES.standard.emotional[2]`: 社長…本当に…本当にありがとうございます…！
+- `DOME_SELLOUT_LINES.standard.emotional[3]`: この日のこと、絶対に、絶対に忘れません！
 
 ### standard.shy[]
 
-- `DOME_SELLOUT_LINES.standard.shy[1]`: …ま、満員…ですか? …嘘みたい…
+- `DOME_SELLOUT_LINES.standard.shy[1]`: …ま、満員…ですか？ …嘘みたい…
 - `DOME_SELLOUT_LINES.standard.shy[2]`: …皆さん、来てくださって、本当に嬉しいです…
 - `DOME_SELLOUT_LINES.standard.shy[3]`: …ありがとう、ございました…
 
@@ -1296,9 +1592,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.bold[]
 
-- `DOME_SELLOUT_LINES.ojousama.bold[1]`: 満員ですって!? 胸が熱くなりますわ!!
-- `DOME_SELLOUT_LINES.ojousama.bold[2]`: お客様方の歓声、まだ耳に焼き付いておりますの!
-- `DOME_SELLOUT_LINES.ojousama.bold[3]`: この勢い、止めてはなりませんわよ!!
+- `DOME_SELLOUT_LINES.ojousama.bold[1]`: 満員……ふふ、当然でしょうね。この顔ぶれですもの
+- `DOME_SELLOUT_LINES.ojousama.bold[2]`: お客様方の歓声、まだ耳に焼き付いておりますの！
+- `DOME_SELLOUT_LINES.ojousama.bold[3]`: この勢い、止めてはなりませんわよ！！
 
 ### ojousama.quiet[]
 
@@ -1307,7 +1603,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama.easygoing[]
 
-- `DOME_SELLOUT_LINES.ojousama.easygoing[1]`: まぁ、満員ですのね! 嬉しゅうございますわ
+- `DOME_SELLOUT_LINES.ojousama.easygoing[1]`: まぁ、満員ですのね！ 嬉しゅうございますわ
 - `DOME_SELLOUT_LINES.ojousama.easygoing[2]`: こんなに楽しい日は、なかなかありませんの
 - `DOME_SELLOUT_LINES.ojousama.easygoing[3]`: ほほほ、またやりたくなりますわ
 
@@ -1331,14 +1627,14 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent.normal[]
 
-- `DOME_SELLOUT_LINES.delinquent.normal[1]`: …マジかよ、満員だって?
+- `DOME_SELLOUT_LINES.delinquent.normal[1]`: …マジかよ、満員だって？
 - `DOME_SELLOUT_LINES.delinquent.normal[2]`: くっそ、これがドーム満員ってやつか…
 - `DOME_SELLOUT_LINES.delinquent.normal[3]`: …悪くねえな。…全然悪くねえ
 
 ### delinquent.bold[]
 
 - `DOME_SELLOUT_LINES.delinquent.bold[1]`: …全員、ひっくり返せた気がすんな。満員にしやがって
-- `DOME_SELLOUT_LINES.delinquent.bold[2]`: くっそおおお、やってやったぜドーム満員!!
+- `DOME_SELLOUT_LINES.delinquent.bold[2]`: くっそおおお、やってやったぜドーム満員！！
 - `DOME_SELLOUT_LINES.delinquent.bold[3]`: …覚えとけよ、観客全員。またぶっ壊しに来るからな
 
 ### delinquent.quiet[]
@@ -1349,8 +1645,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent.easygoing[]
 
-- `DOME_SELLOUT_LINES.delinquent.easygoing[1]`: マジで満員かよ! やっべ、嬉しくて笑えてきたわ
-- `DOME_SELLOUT_LINES.delinquent.easygoing[2]`: 観客全員ぶち上がってたな! 気持ち良かったぜ
+- `DOME_SELLOUT_LINES.delinquent.easygoing[1]`: マジで満員かよ！ やっべ、嬉しくて笑えてきたわ
+- `DOME_SELLOUT_LINES.delinquent.easygoing[2]`: 観客全員ぶち上がってたな！ 気持ち良かったぜ
 - `DOME_SELLOUT_LINES.delinquent.easygoing[3]`: こういう日もあんだな、人生ってよ
 
 ### delinquent.earnest[]
@@ -1387,7 +1683,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DOME_SELLOUT_LINES.cool.quiet[1]`: …満員
 - `DOME_SELLOUT_LINES.cool.quiet[2]`: …忘れない
-- `DOME_SELLOUT_LINES.cool.quiet[3]`: ……(遠くを見ている)
+- `DOME_SELLOUT_LINES.cool.quiet[3]`: ……（遠くを見ている）
 
 ### cool.easygoing[]
 
@@ -1423,13 +1719,13 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DOME_SELLOUT_LINES.seductive.bold[1]`: 満員…最高の演出になったわね
 - `DOME_SELLOUT_LINES.seductive.bold[2]`: この熱量、また必ず味わいたい
-- `DOME_SELLOUT_LINES.seductive.bold[3]`: うふふ、皆様を虜にしてやったわ
+- `DOME_SELLOUT_LINES.seductive.bold[3]`: うふふ、皆様を虜にしてあげたわ
 
 ### seductive.quiet[]
 
 - `DOME_SELLOUT_LINES.seductive.quiet[1]`: …満員ね
 - `DOME_SELLOUT_LINES.seductive.quiet[2]`: …この景色、胸に
-- `DOME_SELLOUT_LINES.seductive.quiet[3]`: ……(静かに微笑む)
+- `DOME_SELLOUT_LINES.seductive.quiet[3]`: ……（静かに微笑む）
 
 ### seductive.easygoing[]
 
@@ -1463,9 +1759,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite.bold[]
 
-- `DOME_SELLOUT_LINES.polite.bold[1]`: 満員のお客様に、心から感謝します!!
-- `DOME_SELLOUT_LINES.polite.bold[2]`: 全力で戦った甲斐がありました!!
-- `DOME_SELLOUT_LINES.polite.bold[3]`: この興奮、必ず次につなげます!!
+- `DOME_SELLOUT_LINES.polite.bold[1]`: 満員のお客様に、心から感謝します！！
+- `DOME_SELLOUT_LINES.polite.bold[2]`: 全力で戦った甲斐がありました！！
+- `DOME_SELLOUT_LINES.polite.bold[3]`: この興奮、必ず次につなげます！！
 
 ### polite.quiet[]
 
@@ -1494,7 +1790,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### polite.shy[]
 
 - `DOME_SELLOUT_LINES.polite.shy[1]`: …満員、ありがとうございます…ありがとうございます…
-- `DOME_SELLOUT_LINES.polite.shy[2]`: …こんな私を、応援してくださって…
+- `DOME_SELLOUT_LINES.polite.shy[2]`: …こんなわたしを、応援してくださって…
 - `DOME_SELLOUT_LINES.polite.shy[3]`: …この恩、一生忘れません…
 
 ### composed.normal[]
@@ -1513,7 +1809,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `DOME_SELLOUT_LINES.composed.quiet[1]`: …満員
 - `DOME_SELLOUT_LINES.composed.quiet[2]`: …よかった。本当によかった
-- `DOME_SELLOUT_LINES.composed.quiet[3]`: ……(しばし言葉を失う)
+- `DOME_SELLOUT_LINES.composed.quiet[3]`: ……（しばし言葉を失う）
 
 ### composed.easygoing[]
 
