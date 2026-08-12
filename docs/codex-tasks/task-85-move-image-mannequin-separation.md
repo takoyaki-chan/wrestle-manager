@@ -80,6 +80,8 @@ G-1〜G-4全PASS、かつL群・S群・F群のFAILが各群1件以下。ルー�
 
 **Phase B前の必須ゲート（Sol指示+Keisuke体型指示）**: ①**production-v3を作る** — 線幅約1.5倍=相対1.0%狙い／ブーツ紐は3〜4段の簡略記号／2体重なり+接触影の見本カット追加／**体型は「むっちりした女性らしい肉付き」**（2026-08-12 Keisuke明言。太もも・腰回り・二の腕に丸みと量感。ガリガリ・過度な筋肉質の両方を避ける）／無駄な内部線を最小限に（「内部線過多で貧相に見える」対策） → ②パイロット3技（撮影済みから: 立ち=13_german_suplex／寝技=73_octopus_hold／跳び=41_moonsault_press）をSol判定 → ③通過後に残り量産。G-3狙いを中央値3.5〜4.0へ引き上げ（下限3.0は不合格ライン）。機械QAに「陰影の深色が陰影画素の10%以上」を追加。
 
+**リファレンスv4裁定（2026-08-12 Keisuke・v3-finalを見て）**: ①**体型はproduction-v2に戻す**（v3の「むっちり」は行き過ぎ。痩せ見えはポーズ入力浄化で解決済みなので体型はv2で足りる。P-5ルーラーはv2実測値のまま） ②**ブーツの紐要素は一切なくす**（×印も無し。外形+履き口ライン+ソールのみのプレーンブーツ。L-9は「512ブーツ胴内の暗画素連結成分0個」に改訂）。v3の成果で維持するもの: 線幅1.5倍、内部線経済（衣装境界+陰影1本のみ）、2体重なり+接触影見本。成果物名: `mannequin_turnaround_production-v4.png`。
+
 **Sol追加分析（2026-08-12・Keisuke指摘2点の検証）**: ①紐=標準器が自プロンプト(3〜4段)に反し約11段でFAIL確定。②**ガリガリの真因はリファレンスではなくポーズ入力(Image 1)** — v5はv3 masterをポーズ入力に使い、その二重線・皺線が継承されて「四肢の長軸に平行な内部線が筒を縦割り」していた（内部線密度: リファレンス4.25% vs v5出力10.41%）。対策は**Image 1の浄化**（ポーズ入力は関節位置・四肢角度・遮蔽順序だけを伝える最小情報=シルエット化or内部線除去版）+プロンプト明記: "Image 1 controls joint positions, limb angles, contact points, and occlusion order ONLY. Do NOT reproduce Image 1's interior lines, wrinkles, or surface detail." / "no interior lines running lengthwise along a limb; each limb reads as one solid rounded form" / "limb thickness must match Image 2's proportions"。ルーブリックはv0.3へ改訂（L-8内部線・L-9紐・P-5量感=頭部直径比ルーラー）。
 
 **匿名化パスの扱い（Sol見解を採用）**: 「安全判定の回避」ではなく**「様式入力の正規化」**として恒常化（顔・髪・肌色・元衣装を消した無彩色マネキン入力にすることで、v2/v3で不合格だったL-6毛先残骸・P-3衣装皺線がv5で両方PASSに転じた品質上の正当工程）。**正規化済み入力でもなお拒否される技が出たら、さらに加工して再試行せずKeisukeに上げて判断を仰ぐ**。
