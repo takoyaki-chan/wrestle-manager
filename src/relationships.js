@@ -3616,7 +3616,8 @@ Engine.challengeRequest = {
   processWeekly(state, rng) {
     let s = this.releaseExpiredAwayBooking(this.ensureInit(state));
     if (s.challengeRequest.pendingThisWeek) return s;
-    if (s._pendingIncomingChallengeMatch || s._pendingAwayChallengeMatch || s._pendingIncomingB3Match || s._pendingChallengeMatch) return s;
+    if (s._pendingIncomingChallengeMatch || s._pendingAwayChallengeMatch || s._pendingIncomingB3Match || s._pendingChallengeMatch
+        || s._pendingUnifiedIncomingMatch || s._pendingUnifiedAwayMatch || s._pendingUnifiedPlayerTurn) return s;
     if (!this._isSamplingWeek(s)) return s;
     if ((s.orgPop || 0) < 15) return s;
     if (!s.relationships) return s;
