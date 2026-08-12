@@ -50,12 +50,58 @@ body { font-family: 'Noto Sans JP', sans-serif; background: #0a0a0a; color: #e8e
   background: var(--office-panel-dark-deep); color: var(--gold-light); padding: 13px 20px; }
 .rep-title { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 17px; letter-spacing: .12em; }
 .rep-week { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .3em; color: var(--stage-text-sub); }
-/* 迎撃は攻撃的=赤系(08-12 Keisuke裁定。挑む側=事務所の平和的クリームのまま)。開戦と同じ火の赤 #e04343 */
-.rep-header.hostile { background: linear-gradient(90deg, #1c0808, var(--office-panel-dark-deep));
-  border-bottom: 2px solid #e04343; }
-.rep-header.hostile .rep-title { color: #ffb3a3; }
-.view#vInv .brief-card.is-home { border-left-color: #e04343; }
-.view#vInv .dcard:hover { border-color: #b53333; }
+/* ============================================================
+   迎撃(相手発): 黒系Stage+火の赤+敵3人の隊列が主役
+   (08-12 Keisuke裁定: 「背景ベージュじゃなく黒系」「向こうの選手が
+    仕掛けてきた絵を見たい→相手方の3人を並べる」)
+   ============================================================ */
+.inv-screen { max-width: 720px; margin: 26px auto 60px; padding: 30px 26px 26px; border-radius: 12px;
+  overflow: hidden; color: #e8e6e0; border: 1px solid rgba(224,67,67,.4);
+  background: radial-gradient(ellipse 90% 55% at 50% 0%, rgba(224,67,67,.16), transparent 65%),
+    linear-gradient(180deg, #0e0606 0%, #060606 55%); }
+.inv-title { text-align: center; font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 36px;
+  letter-spacing: .3em; text-indent: .3em;
+  background: linear-gradient(180deg, #ffb3a3, #e04343);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 18px rgba(224,67,67,.4)); }
+.inv-divider { width: 200px; height: 1px; margin: 10px auto;
+  background: linear-gradient(90deg, transparent, rgba(224,67,67,.8), transparent); }
+.inv-sub { text-align: center; font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .34em;
+  color: #a89e8a; }
+.inv-speaker { text-align: center; font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .2em;
+  color: #ff9d8a; margin: 18px 0 6px; }
+.inv-bubble-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
+.inv-bubble { position: relative; max-width: 440px; background: var(--office-panel-cream-card);
+  color: var(--cream-text-main); border-radius: 10px; padding: 8px 14px; font-size: 13px; line-height: 1.6;
+  text-align: center; box-shadow: 0 6px 16px rgba(0,0,0,.45); }
+.inv-bubble::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%); bottom: -7px;
+  border: 7px solid transparent; border-top-color: var(--office-panel-cream-card); border-bottom: 0; }
+/* 敵3人の隊列: 群外枠1つ+18px重ね+drop-shadow(mockup-baseline §2-B、秋対抗戦トリオと同型・同寸L) */
+.inv-lineup { display: flex; align-items: flex-end; justify-content: center; margin: 0 auto;
+  width: max-content; max-width: 100%; padding: 16px 18px 0;
+  border: 1px solid rgba(224,67,67,.45); border-bottom: 3px solid #e04343; border-radius: 10px 10px 5px 5px;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(224,67,67,.14), transparent 70%), #0c0a0a; }
+.inv-mem { flex: 0 0 auto; }
+.inv-mem + .inv-mem { margin-left: -18px; }
+.inv-mem img { width: 150px; height: 224px; object-fit: cover; object-position: center top; display: block;
+  filter: drop-shadow(0 8px 16px rgba(0,0,0,.55)); }
+.inv-names { display: flex; justify-content: center; gap: 30px; margin-top: 10px; }
+.inv-name { text-align: center; }
+.inv-name b { font-size: 14px; font-weight: 900; display: block; }
+.inv-name span { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: .14em; color: #ff9d8a; }
+.inv-orgline { display: flex; justify-content: center; margin-top: 10px; }
+.inv-facts { display: flex; justify-content: center; gap: 22px; margin-top: 16px; flex-wrap: wrap;
+  font-size: 12px; color: #a89e8a; }
+.inv-fact::before { content: '◆'; font-size: 9px; color: #e04343; margin-right: 6px; }
+/* 決裁トレイの黒地版(Stage画面にクリームパネルは置かない。クリームは吹き出しのみ=セリフの普遍規則) */
+.inv-tray { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 18px; }
+.inv-dcard { border: 1px solid rgba(224,67,67,.4); border-radius: 10px; padding: 12px 14px;
+  background: rgba(224,67,67,.06); cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
+.inv-dcard:hover { border-color: #e04343; background: rgba(224,67,67,.12); }
+.inv-dcard .letter { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: #ffb3a3; line-height: 1; }
+.inv-dcard .label { font-weight: 900; font-size: 13.5px; }
+.inv-dcard .hint { font-size: 10.5px; color: #a89e8a; margin-top: 3px; line-height: 1.6; }
 
 /* コーチ取次帯（_factionReporterStrip と同型: 40px丸 + 一言） */
 .coach-strip { display: flex; align-items: center; gap: 10px; background: rgba(18,17,14,.92);
@@ -254,57 +300,47 @@ body { font-family: 'Noto Sans JP', sans-serif; background: #0a0a0a; color: #e8e
 </div>
 </section>
 
-<!-- ================= 迎撃（inverse） ================= -->
+<!-- ================= 迎撃（inverse・黒Stage+赤） ================= -->
 <section class="view" id="vInv">
 <div class="note">
-  現行の相手発は<b>タイトルもラベルも「挑む」側と同一</b>で、さらにセリフは自団体用の
-  「社長、…」がそのまま出る（敵団体の選手がこちらの社長に頼む形になる矛盾）。
-  差別化はヘッダの<b>専用タイトル+敵対色</b>と、<b>敵意がこちらへ向いた専用セリフ</b>(仮文言・採用ならOpus起案)の2点。
-  骨格・部品は「挑む」側と共通のまま。
+  <b>08-12 Keisuke裁定を反映</b>: 背景は<b>黒系Stage(ブラックメインで赤が入る)</b>——「危険な挑戦が来た」感。
+  主役は<b>仕掛けてきた側の3人の隊列</b>(こちらの選手は出さない。迎え撃つ3名は受諾後の興行準備で決める)。
+  隊列は群外枠1つ+18px重ね+drop-shadowの共通規則(秋対抗戦トリオと同型)。
+  <b>デザインは人数可変が前提</b>(1人でも3人でも5人でも同じ基本形。B3挑戦状など他の「挑戦が届く」場面への
+  適用は別判断だが、同型を使えるように作る)。セリフは承認済み草案・場面3から。
 </div>
-<div class="report-card">
-  <div class="rep-header hostile">
-    <div class="rep-title">⚔ 挑戦状、届く</div>
-    <div class="rep-week">WEEK 20 ・ 3年目</div>
+<div class="inv-screen">
+  <div class="inv-title">果 た し 状</div>
+  <div class="inv-divider"></div>
+  <div class="inv-sub">CHALLENGE ARRIVED ・ 3人制シングル3連戦 ・ WEEK 20</div>
+
+  <div class="inv-speaker">挑戦状の主 ・ 楠木 なぎさ</div>
+  <div class="inv-bubble-wrap"><div class="inv-bubble">私を切った判断が正しかったか、確かめに来ました。</div></div>
+
+  <div class="inv-lineup">
+    <div class="inv-mem"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+    <div class="inv-mem"><img src="../../../image/upper/upper_kusunoki_n.webp" alt=""></div>
+    <div class="inv-mem"><img src="../../../image/upper/upper_kuroe_m.webp" alt=""></div>
   </div>
-  <div class="coach-strip">
-    <img src="../../../image/coach/face_coach_akagi.png" alt="">
-    <div><span class="who">HEAD COACH</span>
-    社長、凰翔プロレスから団体戦の挑戦状です。受けるかどうかは——うちの看板の問題です。</div>
+  <div class="inv-names">
+    <div class="inv-name"><b>生駒 エリカ</b><span>中堅</span></div>
+    <div class="inv-name"><b>楠木 なぎさ</b><span>発起人 ・ 大将</span></div>
+    <div class="inv-name"><b>黒江 舞</b><span>先鋒</span></div>
   </div>
-  <div class="briefing">
-    <div class="brief-card is-home"><div class="brief-t">🏠 自団体で迎撃</div>
-      <div class="brief-d">次の自団体興行で、相手団体を迎え撃ちます</div></div>
-    <div class="brief-card"><div class="brief-t">⚔ 3人制・シングル3連戦</div>
-      <div class="brief-d">興行の上位3試合で、相手団体の3名と対戦します</div></div>
+  <div class="inv-orgline">
+    <div class="org-badge away"><span class="emb">凰</span>凰翔プロレス</div>
   </div>
-  <div class="compare">
-    <div class="side">
-      <div class="bubble-slot"><div class="bubble">お宅の三枚看板、うちの三人で全部倒す。逃げないでよね。</div></div>
-      <div class="upper"><img src="../../../image/upper/upper_kusunoki_n.webp" alt=""></div>
-      <div class="p-name">楠木 なぎさ</div>
-      <div class="p-role">挑戦状の主</div>
-      <div class="org-badge away"><span class="emb">凰</span>凰翔プロレス</div>
-      <div class="p-ovr"><small>OVR</small>87</div>
-    </div>
-    <div class="vs">VS</div>
-    <div class="side">
-      <div class="bubble-slot"></div>
-      <div class="upper"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
-      <div class="p-name">阿武隈 塔子</div>
-      <div class="p-role">第1試合で迎え撃つ</div>
-      <div class="org-badge home"><span class="emb">自</span>あなたの団体</div>
-      <div class="p-ovr"><small>OVR</small>88</div>
-    </div>
+
+  <div class="inv-facts">
+    <div class="inv-fact">次の自団体興行の上位3試合が、この団体戦になる</div>
+    <div class="inv-fact">迎え撃つ3名は、興行準備のカードで決める</div>
   </div>
-  <div class="series-line">第1試合・先鋒対決 ／ 全3試合のシリーズ戦です</div>
-  <div class="rivalry-line">直近対戦 <b>初対戦</b> — <em>この名前を、控室で口にする者は多い。</em></div>
-  <div class="prompt">この挑戦状、どうしますか？</div>
-  <div class="tray">
-    <div class="dcard"><div class="letter">A</div>
+
+  <div class="inv-tray">
+    <div class="inv-dcard"><div class="letter">A</div>
       <div><div class="label">受けて立つ</div>
-      <div class="hint">次の自団体興行の上位3試合が、この団体戦になる</div></div></div>
-    <div class="dcard"><div class="letter">B</div>
+      <div class="hint">逃げも隠れもしない。次の興行で迎え撃つ</div></div></div>
+    <div class="inv-dcard"><div class="letter">B</div>
       <div><div class="label">お引き取り願う</div>
       <div class="hint">断れば、あちらの因縁は消えずに残る</div></div></div>
   </div>
@@ -324,10 +360,15 @@ body { font-family: 'Noto Sans JP', sans-serif; background: #0a0a0a; color: #e8e
       案Aの「🚌 同行する2名を選ぶ」ブロックの形。「誰と行かせるか」まで見てから受けるか決められる
     </li>
     <li style="margin-bottom:12px">
-      <b>迎撃（相手発）の差別化</b> → <span class="rec">✅ 裁定: 差別化する</span>
-      方向づけ: <b>挑む側=事務所での相談なので平和的（クリームのまま）／相手から来た側=攻撃的なので赤系</b>。
-      専用タイトル「⚔ 挑戦状、届く」+赤アクセント（迎撃ビューに反映済み）+敵意がこちらへ向いた専用セリフ
-      （現状の「社長、…」向き矛盾を解消。Opus起案→全文レビュー）
+      <b>迎撃（相手発）の差別化</b> → <span class="rec">✅ 裁定: 差別化する（08-12・3段階で確定）</span><br>
+      ①挑む側=事務所の相談なので平和的クリーム／来た側=攻撃的な赤系
+      ②<b>背景はベージュでなく黒系Stage（ブラックメインに赤）</b>——「危険な挑戦が来た」感
+      ③<b>主役は仕掛けてきた側の隊列</b>（3人を並べる。こちらの選手は出さない）。
+      タイトルは「果 た し 状」（結果画面の「果たし状、成就。」と語を揃えた）。
+      専用セリフは<b>承認済み</b>（草案・場面3の21本）。<br>
+      <span class="tag">共通仕様候補</span><b>「相手から仕掛けられた突発バトルイベント」の到着画面全般の共通形として有力</b>
+      （Keisuke 08-12「共通の仕様としてありかな」）。デザインは人数可変（1〜5人の隊列で同じ基本形）で実装し、
+      B3挑戦状など他の相手発イベントへの展開は各実装時に判断
     </li>
     <li style="margin-bottom:12px">
       <b>直訴セリフの供給</b> → <span class="rec">✅ 裁定: 復活させる</span>
