@@ -10143,6 +10143,7 @@ function showFactionF06Modal(payload, state, onChoice) {
     const hBA = state.factionHostility[Engine.factions._hostKey(payload.factionBId, payload.factionAId)] || 0;
     hostAvg = Math.round((hAB + hBA) / 2);
   }
+  const hostLabel = Engine.factions.getHostilityLabel(hostAvg === '—' ? 0 : hostAvg);
 
   // 代表セリフ（leaderB の諦観風）。seed 決定性
   const seedPick = (state && state.season || 0) + (state && state.week || 0);
@@ -10180,7 +10181,7 @@ function showFactionF06Modal(payload, state, onChoice) {
               })}
             </div>
           </div>
-          <div class="fevt-subject-org" style="margin-top:6px">FORMER RIVALS ・ HOSTILITY ${hostAvg} / 100</div>
+          <div class="fevt-subject-org" style="margin-top:6px">かつての因縁 ・ ${hostLabel}</div>
           <div class="fevt-subject-divider" style="margin-top:12px"></div>
           <div class="fevt-observation-note">
             対立が始まって以来、両派閥のリーダー<span class="marker">${String(leaderASurname)}</span>と<span class="marker">${String(leaderBSurname)}</span>の間にあった棘は、
@@ -10457,6 +10458,7 @@ function showFactionF08Modal(payload, state, onChoice) {
   const factionAName = payload.factionAName || '派閥A';
   const factionBName = payload.factionBName || '派閥B';
   const hostilityPeak = payload.hostilityPeak != null ? payload.hostilityPeak : '—';
+  const hostilityLabel = Engine.factions.getHostilityLabel(hostilityPeak === '—' ? 0 : Number(hostilityPeak));
 
   const lineA = _factionLine(FACTION_F08_LEADER_LINES, leaderA,
     Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA81));
@@ -10472,7 +10474,7 @@ function showFactionF08Modal(payload, state, onChoice) {
       <div class="fevt-report-card f08">
         <div class="fevt-report-header">
           <div class="fevt-report-title">🔥 対立ヒートアップ</div>
-          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ HOSTILITY ${hostilityPeak} / 100</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ ${hostilityLabel}の対立</div>
         </div>
         ${_factionReporterStrip(state, '……もう、止めても無駄だと思います。両方とも、リングで決着つける覚悟です')}
         <div class="fevt-subject-stage u3b-theme-cream">
@@ -10495,7 +10497,7 @@ function showFactionF08Modal(payload, state, onChoice) {
           </div>
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-observation-note">
-            両派閥の敵対度は <span class="marker hostile">${hostilityPeak}/100</span>。
+            二人の対立は、<span class="marker hostile">${hostilityLabel}の段階</span>まで来ている。
             ロッカールームの緊張は限界に近く、メンバー全員が次の興行のカード編成を待っている。<br>
             この熱を、どこに着火させるかは社長の手の中にある。
           </div>
@@ -10510,7 +10512,7 @@ function showFactionF08Modal(payload, state, onChoice) {
           <div class="fevt-decision-card label-disabled" data-choice="B">
             <div class="fevt-decision-letter">B</div>
             <div class="fevt-decision-label">仲裁する（条件未達）</div>
-            <div class="fevt-decision-hint">敵対度80超では仲裁不能。敵対度70未満で再判定</div>
+            <div class="fevt-decision-hint">ここまで燃え広がった対立は、もう言葉では止まらない。火が弱まれば、仲裁の余地も生まれる</div>
           </div>
           <div class="fevt-decision-card" data-choice="C">
             <div class="fevt-decision-letter">C</div>
@@ -10887,7 +10889,7 @@ function showFactionF09OpeningModal(data, state, onContinue) {
           <div class="fevt-arena-title">⚔ 派閥対抗戦 ・ 開幕</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ FACTION WAR</div>
         </div>
-        <div class="fevt-arena-narration">${String(data.narration || '')}</div>
+        <div class="fevt-arena-narration">${escHtml(String(data.narration || ''))}</div>
         <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           <div class="fevt-arena-duel">
             <div class="fevt-arena-col">
@@ -11043,7 +11045,7 @@ function showFactionF09EndingModal(data, state, onContinue) {
           <div class="fevt-arena-title">⚔ 派閥対抗戦 ・ 結末</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ AFTERMATH</div>
         </div>
-        <div class="fevt-arena-narration">${String(data.narration || '')}</div>
+        <div class="fevt-arena-narration">${escHtml(String(data.narration || ''))}</div>
         <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           ${_u3bSideHtml({
             name: data.winnerFaction.leaderName, line: data.winnerLine, imgUrl: wPp, isBig: true,
@@ -11115,6 +11117,20 @@ function _factionF02StageMount(html) {
   return root;
 }
 
+function _factionIgniteLine(table, fighter, state, salt) {
+  const archetype = fighter && fighter.archetype ? fighter.archetype : 'standard';
+  const pool = (table && table[archetype]) || (table && table.standard) || [];
+  if (!pool.length) return '';
+  const seed = Engine.rng.derive(
+    (state && state.rngSeed) || 1,
+    (state && state.season) || 0,
+    (state && state.week) || 0,
+    salt
+  );
+  const rng = Engine.rng.create(seed);
+  return pool[Math.floor(Engine.rng.float(rng) * pool.length)] || pool[0];
+}
+
 // F02① 発火 — 社長が A 煽る を選んだ後、次週メインカード公式戦化の通知
 function showFactionF02IgniteModal(payload, state, onContinue) {
   if (_isPopupActive()) { _popupQueue.push(() => showFactionF02IgniteModal(payload, state, onContinue)); return; }
@@ -11127,10 +11143,30 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const bUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
-  const hostilityA = payload.hostilityA != null ? _fmtStat(payload.hostilityA) : '—';
-  const hostilityB = payload.hostilityB != null ? _fmtStat(payload.hostilityB) : '—';
-  const membersA = payload.membersA != null ? payload.membersA : '—';
-  const membersB = payload.membersB != null ? payload.membersB : '—';
+  const memberIdsA = Array.isArray(payload.memberIdsA) ? payload.memberIdsA : [];
+  const memberIdsB = Array.isArray(payload.memberIdsB) ? payload.memberIdsB : [];
+  const memberCountA = payload.memberCountA != null ? payload.memberCountA : memberIdsA.length;
+  const memberCountB = payload.memberCountB != null ? payload.memberCountB : memberIdsB.length;
+  const hostilityPeak = Math.max(Number(payload.hostilityA) || 0, Number(payload.hostilityB) || 0);
+  const hostilityLabel = Engine.factions.getHostilityLabel(hostilityPeak);
+  const hostilityBands = ['冷え込み', '小競り合い', '抗争', '泥沼', '血みどろ'];
+  const flameCount = Math.max(1, hostilityBands.indexOf(hostilityLabel) + 1);
+  const flamesHtml = hostilityBands.map((_, index) => `<span class="${index < flameCount ? 'on' : ''}">🔥</span>`).join('');
+  const provokeLine = _factionIgniteLine(FACTION_IGNITE_LINES.provoke, leaderA, state, 0xFA21);
+  const respondLine = _factionIgniteLine(FACTION_IGNITE_LINES.respond, leaderB, state, 0xFA22);
+
+  const initial = (fighter, fallbackName) => escHtml(String((fighter && fighter.name) || fallbackName || '？').trim().charAt(0) || '？');
+  const leaderUpper = (fighter, url, fallbackName) => url
+    ? `<img class="fevt-leader-upper" src="${escHtml(url)}" alt="">`
+    : `<div class="fevt-leader-upper fevt-ign-initial">${initial(fighter, fallbackName)}</div>`;
+  const memberChips = (ids) => `<div class="fevt-ign-member-chips">${ids.map(id => {
+    const fighter = roster.find(c => c.id === id);
+    const url = fighter ? _factionUpperUrl(fighter.id) : '';
+    const title = escHtml(fighter ? fighter.name : '所属選手');
+    return url
+      ? `<img class="fevt-ign-member-chip" src="${escHtml(url)}" alt="" title="${title}">`
+      : `<div class="fevt-ign-member-chip fevt-ign-initial" title="${title}">${initial(fighter, '？')}</div>`;
+  }).join('')}</div>`;
 
   const html = `
     <div class="fevt-overlay-stage ignite" id="fevtF02IOverlay">
@@ -11143,52 +11179,55 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
         <div class="fevt-ign-col left">
           <div class="fevt-role-label">PROVOKING SIDE</div>
           <div class="fevt-role-kanji">宣 　 戦</div>
+          <div class="fevt-ign-bubble-slot"><div class="fevt-ign-bubble"><span class="fevt-ign-bubble-line">${escHtml(provokeLine)}</span></div></div>
           <div class="fevt-portrait-wrap">
-            ${aUrl ? `<img class="fevt-leader-upper" src="${aUrl}" alt="">` : `<div class="fevt-leader-upper"></div>`}
-            <div class="fevt-faction-flag">${String(factionAName)}</div>
+            ${leaderUpper(leaderA, aUrl, aName)}
+            <div class="fevt-faction-flag">${escHtml(factionAName)}</div>
           </div>
-          <div class="fevt-leader-name">${String(aName)}</div>
+          <div class="fevt-leader-name">${escHtml(aName)}</div>
           <div class="fevt-leader-org">LEADER</div>
-          <div class="fevt-ign-stats">
-            <span>敵対度<span class="stat-num">${hostilityA}</span></span>
-            <span>派閥人数<span class="stat-num">${membersA}</span></span>
+          <div class="fevt-ign-fbadge fac-a"><span class="dot"></span>${escHtml(factionAName)}</div>
+          <div class="fevt-ign-members">
+            <span class="cnt">${memberCountA}名</span>
+            ${memberChips(memberIdsA)}
           </div>
         </div>
-        <div class="fevt-ign-vs">VS</div>
+        <div class="fevt-ign-center">
+          <div class="fevt-ign-vs">VS</div>
+          <div class="fevt-ign-hostility">
+            <div class="lbl">両派の対立</div>
+            <div class="band">${hostilityLabel}</div>
+            <div class="fevt-ign-flames">${flamesHtml}</div>
+          </div>
+        </div>
         <div class="fevt-ign-col right">
           <div class="fevt-role-label">RESPONDING SIDE</div>
           <div class="fevt-role-kanji">応 　 戦</div>
+          <div class="fevt-ign-bubble-slot"><div class="fevt-ign-bubble"><span class="fevt-ign-bubble-line">${escHtml(respondLine)}</span></div></div>
           <div class="fevt-portrait-wrap">
-            ${bUrl ? `<img class="fevt-leader-upper" src="${bUrl}" alt="">` : `<div class="fevt-leader-upper"></div>`}
-            <div class="fevt-faction-flag">${String(factionBName)}</div>
+            ${leaderUpper(leaderB, bUrl, bName)}
+            <div class="fevt-faction-flag">${escHtml(factionBName)}</div>
           </div>
-          <div class="fevt-leader-name">${String(bName)}</div>
+          <div class="fevt-leader-name">${escHtml(bName)}</div>
           <div class="fevt-leader-org">LEADER</div>
-          <div class="fevt-ign-stats">
-            <span>敵対度<span class="stat-num">${hostilityB}</span></span>
-            <span>派閥人数<span class="stat-num">${membersB}</span></span>
+          <div class="fevt-ign-fbadge fac-b"><span class="dot"></span>${escHtml(factionBName)}</div>
+          <div class="fevt-ign-members">
+            <span class="cnt">${memberCountB}名</span>
+            ${memberChips(memberIdsB)}
           </div>
         </div>
       </div>
       <div class="fevt-ign-card-band">
         <div class="fevt-ign-card-label">MAIN EVENT ・ 公式戦化</div>
-        <div class="fevt-ign-card-name">派閥抗争 ・ 直接決戦</div>
+        <div class="fevt-ign-card-name">両派リーダー ・ 一騎打ち</div>
       </div>
       <div class="fevt-ign-verdict">
         水面下でくすぶっていた火種は、<em>リング上での戦い</em>にまで燃え広がった。<br>
         来週の興行、メインは——この一戦。観客も、この対決に期待を膨らませている。
       </div>
-      <div class="fevt-ign-ledger">
-        <div class="fevt-ign-ledger-col">
-          <div class="fevt-ign-ledger-head">両 派 閥</div>
-          <div class="fevt-ign-ledger-line">相互 敵対度　<span class="delta-up">+12</span></div>
-          <div class="fevt-ign-ledger-line">対戦マッチ数　<span class="delta-up">1 → 2</span></div>
-        </div>
-        <div class="fevt-ign-ledger-col">
-          <div class="fevt-ign-ledger-head">興 行</div>
-          <div class="fevt-ign-ledger-line">メイン MQ 期待値　<span class="delta-up">+8</span></div>
-          <div class="fevt-ign-ledger-line">集客見込み　<span class="delta-up">+6%</span></div>
-        </div>
+      <div class="fevt-ign-facts">
+        <div class="fevt-ign-fact">両派の対立は、後戻りできない段階に入った</div>
+        <div class="fevt-ign-fact">この一戦は公式戦として記録される</div>
       </div>
       <button class="fevt-continue-btn">続 け る</button>
     </div>

@@ -50,7 +50,6 @@ const srcDir = path.join(__dirname, '..', 'src');
 const factionSource = fs.readFileSync(path.join(srcDir, 'factions.js'), 'utf8');
 const appSource = fs.readFileSync(path.join(srcDir, 'app.js'), 'utf8');
 const managementSource = fs.readFileSync(path.join(srcDir, 'management.js'), 'utf8');
-const uiSource = fs.readFileSync(path.join(srcDir, 'ui-common.js'), 'utf8');
 
 assert.strictEqual(
   (factionSource.match(/this\._normalizeHostility\(val \* cfg\.hostilityLeaderChangeMultiplier\)/g) || []).length,
@@ -59,7 +58,7 @@ assert.strictEqual(
 );
 assert.ok(appSource.includes('G = Engine.factions.normalizeFactionHostility(G);'), 'ロード時の旧セーブ補正を外さない');
 assert.ok(managementSource.includes('s = Engine.factions.normalizeFactionHostility(s);'), '週次判定前の防波堤を外さない');
-assert.ok(uiSource.includes('const hostilityA = payload.hostilityA != null ? _fmtStat(payload.hostilityA)'), '開戦画面の表示整形を外さない');
-assert.ok(uiSource.includes('const hostilityB = payload.hostilityB != null ? _fmtStat(payload.hostilityB)'), '開戦画面の反対側も表示整形する');
+assert.strictEqual(Engine.factions.getHostilityLabel(98.5), '血みどろ', '高い敵対度は既存の最上位ラベルへ変換する');
+assert.strictEqual(Engine.factions.getHostilityLabel(63.7), '泥沼', '小数の敵対度も既存の段位ラベルへ変換する');
 
 console.log('faction hostility precision tests passed');

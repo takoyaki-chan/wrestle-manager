@@ -30170,6 +30170,85 @@ const EVENT_FA_WELCOME_GENERIC_LINES = [
   '新しい仲間として、全力で頑張ります！',
 ];
 
+// F02①「開戦」で向かい合う両派閥リーダーの宣戦・応戦。
+// 第一分岐は archetype 単軸。選択側で欠落キーを standard へフォールバックする。
+const FACTION_IGNITE_LINES = {
+  provoke: {
+    standard: [
+      'ずっと言えなかったことを、リングで言う。逃げないで。',
+      '文句があるなら、リングで聞く。それでいい？',
+      '先に手を挙げたのは私。ここから最後まで付き合って。',
+    ],
+    ojousama: [
+      '言葉を尽くしても届かないなら、あとはリングね。',
+      'この一戦は、わたくしから申し込んだもの。お受けになって。',
+      '一度では終わらないの。長くお付き合いいただくわ。',
+    ],
+    cool: [
+      '話は終わり。あとは、リングで。',
+      '先に仕掛けたのは私。異論は、要らない。',
+      '……一度で終わるとは思っていない。始めるだけ。',
+    ],
+    delinquent: [
+      '言い訳はいい。あんたとは、リングで話をつける。',
+      '売った喧嘩だ。引っ込めるつもりはねえよ。',
+      '一発で終わると思うなよ。ここからだ。',
+    ],
+    polite: [
+      'これ以上は、言葉では足りません。お相手願います。',
+      '申し込んだのは私です。どうか、逃げないでください。',
+      'これは始まりです。最後まで、お付き合いいただきます。',
+    ],
+    composed: [
+      '穏やかに済ませたかった。でも、もう無理みたいだね。',
+      '先に名前を出したのは私だ。責任は取るよ。',
+      '一回で終わらせる気はないんだ。長くなるよ。',
+    ],
+    seductive: [
+      '我慢はもうやめたの。あなたと、正面からやるわ。',
+      'ふふ、もう断れないでしょう？　私が申し込んだのよ。',
+      'この一戦じゃ終わらないわ。……ゆっくり付き合って。',
+    ],
+  },
+  respond: {
+    standard: [
+      'わかった。売られたなら、買うだけ。',
+      'そっちが決めたことでしょ。後悔しても遅いよ。',
+      '言いたいことは全部、リングで受け取る。',
+    ],
+    ojousama: [
+      'お受けしますわ。……そちらから来たのですもの。',
+      '呼ばれて断るような育ち方は、していないの。',
+      '受けて立ちます。品位まで落とすつもりはないの。',
+    ],
+    cool: [
+      '受ける。それだけ。',
+      '先に動いたのはそっち。……付き合う。',
+      '後戻りできないのは、そっちも同じ。',
+    ],
+    delinquent: [
+      '上等だ。その喧嘩、買うよ。',
+      '先に手を出したのはそっちだ。もう遅えよ。',
+      'あんたが始めたことだ。落とし前はつける。',
+    ],
+    polite: [
+      '謹んでお受けします。逃げるつもりはありません。',
+      'そちらから来られたのなら、遠慮はいたしません。',
+      '言葉は要りません。リングでお答えします。',
+    ],
+    composed: [
+      'そう来るなら、受けるよ。避けはしない。',
+      'よく決めたね。……その分、こっちも遠慮しないよ。',
+      '怒ってはいないんだ。ただ、負けるつもりもない。',
+    ],
+    seductive: [
+      'うれしい。……そんなに私と、やりたかったのね。',
+      'いいわ、受けてあげる。後で泣かないでね♪',
+      '仕掛けたのはあなたよ。……その顔、忘れないわ。',
+    ],
+  },
+};
+
 // 追い込みの熱量(_heat)を選手の様子として見せる一言。
 // 数値・倍率・内部語は一切出さない。fresh=軽い / warm=薄い / heavy=重い で3段を作る。
 // 参照: LINES[state][personality][archetype]
@@ -30610,6 +30689,8 @@ const EVENT_LINES_BY_KEY = {
   faSigningGeneric: EVENT_FA_SIGNING_GENERIC_LINES,
   faWelcome: EVENT_FA_WELCOME_LINES,
   faWelcomeGeneric: EVENT_FA_WELCOME_GENERIC_LINES,
+  factionIgniteProvoke: FACTION_IGNITE_LINES.provoke,
+  factionIgniteRespond: FACTION_IGNITE_LINES.respond,
   rentalGreeting: EVENT_RENTAL_GREETING_LINES,
   rentalGreetingGeneric: EVENT_RENTAL_GREETING_GENERIC_LINES,
   heatSelf: HEAT_STATE_SELF_LINES,
@@ -30688,7 +30769,7 @@ if (typeof module !== 'undefined' && module.exports) {
     EVENT_FA_SIGNING_LINES, EVENT_FA_SIGNING_GENERIC_LINES,
     EVENT_FA_WELCOME_LINES, EVENT_FA_WELCOME_GENERIC_LINES,
     EVENT_RENTAL_GREETING_LINES, EVENT_RENTAL_GREETING_GENERIC_LINES,
-    HEAT_STATE_SELF_LINES, HEAT_STATE_COACH_LINES,
+    FACTION_IGNITE_LINES, HEAT_STATE_SELF_LINES, HEAT_STATE_COACH_LINES,
     SCOUT_GREETING_LINES, SCOUT_GREETING_GENERIC_LINES,
     FA_GREETING_LINES, FA_GREETING_GENERIC_LINES,
     EVENT_LINES_BY_KEY,

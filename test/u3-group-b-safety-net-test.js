@@ -268,6 +268,7 @@ function defaultEngineStub() {
       int: (rng, lo) => lo,
     },
     factions: {
+      getHostilityLabel: (hostility) => hostility >= 80 ? '血みどろ' : hostility >= 60 ? '泥沼' : hostility >= 40 ? '抗争' : hostility >= 20 ? '小競り合い' : '冷え込み',
       getF02ClashLine: (fighter, mode) => (fighter ? `F02_${mode}_${fighter.id}` : ''),
       getCommon1Line: (kind) => (kind === 'coachReport' ? 'COACH_LINE_MARKER' : 'LEADER_LINE_MARKER'),
       getCommon3Line: (kind) => (kind === 'newcomer' ? 'NEWCOMER_LINE_MARKER' : 'REACTION_LINE_MARKER'),

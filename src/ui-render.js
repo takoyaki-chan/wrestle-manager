@@ -12289,9 +12289,13 @@ function _dfcRenderFeudTimeline(state, factionAId, factionBId, feudEntry) {
     // 未定義の種別は内部定数名(ev.type)をそのまま出さず、汎用の日本語ラベルへフォールバックする
     // (2026-07-26: INTERNAL_CHALLENGE_* 系がここに来ると素通りしていたバグの修正)
     let cls = 'match', label = '抗争イベント';
-    if (/F02/.test(ev.type)) { cls = 'f02'; label = ev.type.replace('F02_', 'F02 ・ '); }
-    else if (/F08/.test(ev.type)) { cls = 'f08'; label = 'F08'; }
-    else if (/F09/.test(ev.type)) { cls = 'f09'; label = 'F09'; }
+    if (ev.type === 'F02_IGNITE') { cls = 'f02'; label = '開戦'; }
+    else if (ev.type === 'F02_PEACE') { cls = 'f02'; label = '和解'; }
+    else if (ev.type === 'F02_RESOLVED') { cls = 'f02'; label = '決着'; }
+    else if (ev.type === 'F02_ENDLESS') { cls = 'f02'; label = '長期化'; }
+    else if (/F02/.test(ev.type)) { cls = 'f02'; label = '抗争イベント'; }
+    else if (/F08/.test(ev.type)) { cls = 'f08'; label = '直接対決'; }
+    else if (/F09/.test(ev.type)) { cls = 'f09'; label = '対抗戦'; }
     else if (ev.type === 'RIVALRY_CLOSED') { cls = 'f09'; label = `決着 ・ ${ev.reason || ''}`; }
     else if (ev.type === 'INTERNAL_CHALLENGE_REGISTERED') { cls = 'match'; label = '序列戦 ・ 受理'; }
     else if (ev.type === 'INTERNAL_CHALLENGE_RESOLVED') { cls = 'match'; label = ev.challengerWon ? '序列戦 ・ 下克上' : '序列戦 ・ 防衛'; }
@@ -12319,8 +12323,8 @@ function _dfcRenderFeudAxis(state, factionAId, factionBId, feudEntry, opts = {})
   const f09Ready = hAB >= f09H && hBA >= f09H;
   const f09Near = !f09Ready && hAB >= f09NearH && hBA >= f09NearH;
   const badge = f09Ready
-    ? `<div class="near-badge fire">F09 発火圏</div>`
-    : (f09Near ? `<div class="near-badge">F09 接近中</div>` : '');
+    ? `<div class="near-badge fire">対抗戦の機運</div>`
+    : (f09Near ? `<div class="near-badge">接近中</div>` : '');
   const histId = `feud-history-${factionAId}-${factionBId}`;
   return `
     <div class="feud-axis">
