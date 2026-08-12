@@ -985,7 +985,13 @@ function autoHandleContractNegotiation(G, simRng) {
     }
     const roll = Engine.rng.float(simRng);
     let choiceIdx, subChoice;
-    if (neg.attitude === 'raise') {
+    if (neg.attitude === 'decline') {
+      // 据え置き30% / 査定どおり50% / 厳しく20%
+      choiceIdx = roll < 0.3 ? 0 : (roll < 0.8 ? 1 : 2);
+    } else if (neg.attitude === 'decline_voluntary') {
+      // 据え置き30% / 申し出を受け入れる70%
+      choiceIdx = roll < 0.3 ? 0 : 1;
+    } else if (neg.attitude === 'raise') {
       // 70% 受ける, 20% 交渉, 10% 拒否
       choiceIdx = roll < 0.7 ? 0 : (roll < 0.9 ? 1 : 2);
     } else {
@@ -993,6 +999,16 @@ function autoHandleContractNegotiation(G, simRng) {
       if (roll < 0.6) { choiceIdx = 0; }
       else if (roll < 0.8) { choiceIdx = 1; subChoice = 'retain'; }
       else { choiceIdx = 2; }
+    }
+    if (process.env.WM_SALARY_FIXTURE === '1'
+        && (neg.attitude === 'decline' || neg.attitude === 'decline_voluntary')) {
+      salaryCensus.declines ||= [];
+      salaryCensus.declines.push({
+        season: state.season,
+        id: neg.fighterId,
+        attitude: neg.attitude,
+        choice: ['A', 'B', 'C'][choiceIdx],
+      });
     }
     const result = Engine.contract.resolveNegotiation(resolveRng, state, neg, choiceIdx, subChoice);
     state = result.state;

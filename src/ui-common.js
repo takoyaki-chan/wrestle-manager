@@ -15614,13 +15614,22 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
 
   const fighter = (state.roster || []).find(f => f.id === neg.fighterId);
   const isTransfer = neg.attitude === 'transfer';
+  const isDecline = neg.attitude === 'decline' || neg.attitude === 'decline_voluntary';
+  const isVoluntaryDecline = neg.attitude === 'decline_voluntary';
   const [badgeCls, badgeLabel] = isTransfer
     ? ['neg-badge-transfer', '🚪 移籍志願']
-    : ['neg-badge-raise', '💰 昇給要求'];
+    : isDecline
+      ? [isVoluntaryDecline ? 'neg-badge-raise' : 'neg-badge-transfer',
+        isVoluntaryDecline ? '🤝 減俸申し出' : '📉 契約査定']
+      : ['neg-badge-raise', '💰 昇給要求'];
 
   // セリフ生成
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
-  const openPhase = isTransfer ? 'transfer_open' : 'raise_open';
+  const openPhase = isTransfer
+    ? 'transfer_open'
+    : isDecline
+      ? (isVoluntaryDecline ? 'decline_voluntary_open' : 'decline_open')
+      : 'raise_open';
   const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, neg.context);
   const retentionRaise = isTransfer && fighter
     ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state)
@@ -15634,6 +15643,17 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
       { label: '昇給を受ける', hint: `本人は強く報われたと感じる　給与+${neg.raiseAmount}万/週`, idx: 0 },
       { label: '交渉する',     hint: `成功時　給与+${neg.counterOffer}万/週`, idx: 1 },
       { label: '拒否する',     hint: '本人に強い不満が残るおそれ', idx: 2 },
+    ];
+  } else if (isVoluntaryDecline) {
+    choices = [
+      { label: '据え置く',   hint: '温情を示し、本人とロッカーの空気が明るくなる', idx: 0 },
+      { label: '受け入れる', hint: '申し出を尊重し、対等な関係を示す', idx: 1 },
+    ];
+  } else if (isDecline) {
+    choices = [
+      { label: '据え置く',       hint: '温情を示し、本人とロッカーの空気が明るくなる', idx: 0 },
+      { label: '査定どおり改定', hint: '関係が良ければ納得するが、そうでなければ不満が残る', idx: 1 },
+      { label: '厳しく改定',     hint: 'ボーナスも清算し、関係が大きく軋む ／ 移籍志願のおそれ', idx: 2 },
     ];
   } else {
     choices = [
@@ -15650,6 +15670,17 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
     const currentSalary = fighter ? Engine.util.getSalary(fighter, state.titles) : 0;
     infoHtml = `<div class="neg-card-info neg-card-info-raise" style="font-size:12px">
       現在の週給: ${currentSalary}万 → 要求: ${currentSalary + neg.raiseAmount}万（+${neg.raiseAmount}万/週）
+    </div>`;
+  } else if (isDecline) {
+    const currentSalary = Number.isFinite(neg.currentSalary)
+      ? neg.currentSalary
+      : (fighter ? Engine.util.getSalary(fighter, state.titles) : 0);
+    const declineAmount = Math.max(0, Number(neg.declineAmount) || 0);
+    const assessedSalary = Number.isFinite(neg.assessedSalary)
+      ? neg.assessedSalary
+      : currentSalary - declineAmount;
+    infoHtml = `<div class="neg-card-info ${isVoluntaryDecline ? 'neg-card-info-raise' : 'neg-card-info-transfer'}" style="font-size:12px">
+      現在の週給: ${currentSalary}万 → 査定: ${assessedSalary}万（−${declineAmount}万/週）
     </div>`;
   } else {
     infoHtml = `<div class="neg-card-info neg-card-info-transfer" style="font-size:12px">
