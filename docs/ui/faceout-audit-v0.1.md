@@ -35,6 +35,8 @@
 
 **テスト追随**: `spring-tag-team-frame-test.js`(分割枠→群外枠の新契約へ) / `victory-overlay-speaker-test.js`(話者名はラベル外出し、吹き出し内に名前が無いことを負検査) / `u3-group-a-safety-net-test.js`(解雇面談のgetUpperUrl注入)。npm test 225/225 PASS。全変更CSSはブラウザ実測(computed style)で数値一致を確認済み。
 
+**回帰ガード新設(2026-08-12)**: `test/ui-baseline-guard-test.js`(CLAUDE.md頻出違反チェックリストが参照していた欠落ファイルを実装)。共有部品の梯子値の改変検知+人物系セレクタの width/height 固定値を全走査し、梯子外の**新規流入**を落とす。本監査後も残る既知の梯子外(保留5件・監査対象外レガシー・モバイル縮小など100件)はテスト内 ALLOW に理由グループ付きで凍結した — ALLOWは「準拠」ではなく「既知」であり、減らす方向が正。
+
 **保留5件(理由付き)**:
 1. 新聞・注目対決/関係カード(np-*) — `newspaper-spec-v1.0`(08-02)の管轄。紙面写真の寸法は新聞の実機確認と合わせてKeisuke判断
 2. 単発観戦・選手パネルの吹き出し被り — Pattern C v4の全画面リング演出に内在。v4実機確認待ちのため据え置き
