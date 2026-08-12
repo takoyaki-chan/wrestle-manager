@@ -1190,6 +1190,7 @@ function renderWeekScreen() {
           ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 休養中</span>'
           : '<span style="font-size:12px;color:#2ecc71">健康</span>';
       const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
+      const wkUnifiedBadge = G.unifiedTitle?.championId === c.id ? ' <span style="color:#4fb7c5;font-size:11px;font-weight:700">🌐 統一王者</span>' : '';
 
       // レンタル選手は操作不可（自律行動）
       if (c.isRental) {
@@ -1206,7 +1207,7 @@ function renderWeekScreen() {
             <div class="wr-name-cell">
               ${_imgOrInitial(faceUrl, c.id, 40, 'border-radius:8px;')}
               <span>
-                <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}
+                <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${wkUnifiedBadge}
                 <span style="font-size:10px;color:#f39c12;margin-left:4px">🤝残${rentalWL}週</span>
               </span>
             </div>
@@ -1277,7 +1278,7 @@ function renderWeekScreen() {
           <div class="wr-name-cell">
             ${_imgOrInitial(faceUrl, c.id, 40, 'border-radius:8px;')}
             <span>
-              <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${trainerBadge}${inviteBadge}${leaveBadge}
+              <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${wkUnifiedBadge}${trainerBadge}${inviteBadge}${leaveBadge}
             </span>
           </div>
         </td>
@@ -1919,6 +1920,7 @@ function _renderRosterDetailPanel(c, hired) {
   // === Left Column: Portrait ===
   const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
   const isChamp = G.titles?.world?.championId === c.id;
+  const isUnifiedChamp = G.unifiedTitle?.championId === c.id;
   const statusBadges = [];
   if (c.hotStreak) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(200,120,0,0.12);color:#a06000;border:1px solid rgba(200,120,0,0.3)">🔥 絶好調</span>');
   if (c.slump) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(52,73,94,0.15);color:#5a6670;border:1px solid rgba(127,140,141,0.3)">📉 スランプ</span>');
@@ -1954,6 +1956,7 @@ function _renderRosterDetailPanel(c, hired) {
       <div class="rd-portrait-record">
         <span style="color:#1a7a3a">${c.wins||0}○</span> <span style="color:#b03030">${c.losses||0}×</span>
         ${isChamp ? '<span style="margin-left:8px;color:#7a6530">👑王者</span>' : ''}
+        ${isUnifiedChamp ? '<span style="margin-left:8px;color:#257886">🌐全国統一王者</span>' : ''}
       </div>
       ${statusBadges.length > 0 ? `<div class="rd-portrait-status">${statusBadges.join('')}</div>` : ''}
     </div>
@@ -2255,6 +2258,7 @@ function renderRoster() {
     const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
     const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
     const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> 👑</span>' : '';
+    const unifiedBadge = G.unifiedTitle?.championId === c.id ? '<span style="color:#4fb7c5;font-size:11px;font-weight:700"> 🌐統一王者</span>' : '';
     const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> 🤝</span>' : '';
     // v1.3-1: wear状態ラベル (§3)
     const wearBadge = (() => {
@@ -2317,7 +2321,7 @@ function renderRoster() {
         </div>
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
-            <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${c.name}</span>${champBadge ? '<span style="color:#7a6530;font-size:12px">👑⭐</span>' : ''}
+            <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${c.name}</span>${champBadge ? '<span style="color:#7a6530;font-size:12px">👑⭐</span>' : ''}${unifiedBadge}
             <span style="font-size:11px;color:#7a6530;font-weight:600">${c.age}歳</span>
             <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
@@ -2420,6 +2424,10 @@ function getUsedFighterIds(excludeSlot) {
 function _spOpenPicker(slotIdx, side) {
   // F08 ロック: 直接対決固定枠は選手差替え不可
   const slot = G.showCard && G.showCard[slotIdx];
+  if (slot && slot._unifiedTitleLocked) {
+    if (typeof showToast === 'function') showToast('🌐 全国統一王座戦の対戦者は固定です', 3000);
+    return;
+  }
   if (slot && slot._crMatchLocked) {
     if (typeof showToast === 'function') showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
     return;
@@ -3184,12 +3192,32 @@ function renderShowPrep() {
     }
   }
 
+  let scheduledUnifiedNotice = null;
+  if (eligibleChallengeShow && !getScheduledChallengeCard() && G._pendingUnifiedIncomingMatch) {
+    const scheduled = Engine.unifiedTitle.getIncomingMatch(G);
+    if (scheduled) {
+      scheduledUnifiedNotice = scheduled;
+      if (!(G.showCard || []).some(m => m && m._unifiedTitleMatch)) {
+        const cleared = Engine.challengeRequest?.removeFightersFromCard
+          ? Engine.challengeRequest.removeFightersFromCard(G.showCard, [scheduled.championId, scheduled.challengerId])
+          : G.showCard;
+        const slot = { left: scheduled.championId, right: scheduled.challengerId, isTitle: true,
+          _unifiedTitleMatch: true, _unifiedTitleLocked: true };
+        G = { ...G, showCard: Engine.util.normalizeShowCardForVenue([slot, ...cleared], G.week, G.showVenue) };
+      }
+    } else {
+      G = { ...G, _pendingUnifiedIncomingMatch: null,
+        showCard: (G.showCard || []).filter(m => !m?._unifiedTitleMatch) };
+      if (typeof showToast === 'function') showToast('⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました', 5000);
+    }
+  }
+
   let scheduledSingleNotice = null;
   const b3AwayConflict = G._pendingIncomingB3Match && Engine.challengeRequest?.hasAwayParticipantConflict?.(G, [
     G._pendingIncomingB3Match.fighterId,
     G._pendingIncomingB3Match.challenger?.id,
   ]);
-  if (eligibleChallengeShow && !getScheduledChallengeCard() && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
+  if (eligibleChallengeShow && !getScheduledChallengeCard() && !scheduledUnifiedNotice && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
     const reservedSingle = Engine.challengeRequest.reserveScheduledSingleMatch(G, G.showCard);
     if (reservedSingle) {
       scheduledSingleNotice = reservedSingle.scheduled;
@@ -3210,6 +3238,12 @@ function renderShowPrep() {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid rgba(235,105,90,.55);background:rgba(145,45,40,.18);border-radius:6px;color:#ffd9d2;font-size:12px;line-height:1.65">
       <strong style="color:#ff9e8f">⚔ 他団体挑戦シリーズ</strong>　${requesterName} vs ${opponentName}<br>
       メインイベントから上位3試合を固定しています。会場の全${maxMatches}枠のうち、通常カードは残り${regularSlots}枠です。各挑戦試合には集客評価+${MATCH_APPEAL_CONFIG.challengeRequestAppeal}が入ります。
+    </div>`;
+  }
+  if (scheduledUnifiedNotice) {
+    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid rgba(79,183,197,.6);background:rgba(25,95,110,.2);border-radius:6px;color:#d9fbff;font-size:12px;line-height:1.65">
+      <strong style="color:#75d6e2">🌐 全国統一王座戦</strong>　${scheduledUnifiedNotice.champion.name} vs ${scheduledUnifiedNotice.challenger.name}<br>
+      全国統一王座戦をメインイベントに固定しています。残りの枠に通常カードを編成してください。
     </div>`;
   }
   if (scheduledSingleNotice) {
@@ -3279,7 +3313,7 @@ function renderShowPrep() {
   // MQ再設計P3c(§3.2/§3.2b): 予想MQタイルは会場の熱(venueHeat)ベースに変更。
   // fp(fill pressure)はrawDemand/capacityで、実際のfinalize計算と同じ経路(calcAttendanceV2)を使う。
   const previewV2Result = Engine.attendanceV2.calcAttendanceV2(G, G.showVenue, previewShowDraw, validMatches, null);
-  const previewFp = previewV2Result.rawDemand / VENUES[G.showVenue].cap;
+  const previewFp = (previewV2Result.rawDemand * (validMatches.some(m => m?._unifiedTitleMatch) ? 1.25 : 1)) / VENUES[G.showVenue].cap;
   const estCrowdMQ = Engine.economy.calcVenueHeat(G.showVenue, previewFp);
   const v = VENUES[G.showVenue];
   const heat = getHeatLevel();
@@ -3309,7 +3343,7 @@ function renderShowPrep() {
       <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
       ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('会場の熱気予測。ここに各試合の注目度(人気・因縁・タイトル・メイン枠など)を掛けた分だけ試合品質(MQ)に効きます。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${Math.round(estCrowdMQ.total * 10) / 10}</div><div class="sp-metric-label">会場の熱</div></div>` : ''}
       ${hasTitlePreview
-        ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">タイトル戦</div></div>`
+        ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${validMatches.some(m => m?._unifiedTitleMatch) ? '#4fb7c5' : 'var(--gold)'}">${validMatches.some(m => m?._unifiedTitleMatch) ? '🌐' : '🏆'}</div><div class="sp-metric-label">${validMatches.some(m => m?._unifiedTitleMatch) ? '全国統一王座戦' : 'タイトル戦'}</div></div>`
         : (titleCd.allowed
           ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">王座戦 解禁中</div></div>`
           : `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-dim);font-size:18px">⏳${titleCd.weeksLeft}週</div><div class="sp-metric-label">王座戦 解禁まで</div></div>`)}
@@ -3348,6 +3382,7 @@ function renderShowPrep() {
       return `<div class="sp-fighter-info ${side}"><div class="sp-fighter-name empty" onclick="_spOpenPicker(${slotIdx},'${side}')">— 選手選択 —</div></div>`;
     }
     const isChamp = G.titles?.world?.championId === f.id;
+    const isUnifiedChamp = G.unifiedTitle?.championId === f.id;
     const condOk = (f.condition || 100) >= 60;
     let drawHtml = '';
     if (drawData) {
@@ -3357,6 +3392,7 @@ function renderShowPrep() {
     }
     return `<div class="sp-fighter-info ${side}">
       ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
+      ${isUnifiedChamp ? '<div class="sp-champ" style="color:#4fb7c5">🌐 統一王者</div>' : ''}
       <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${f.name}</div>
       <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
       ${drawHtml}
@@ -3513,7 +3549,7 @@ function renderShowPrep() {
     const cdCheck = Engine.title.canTitleMatch(G);
     const titleEligible = G.titleEstablished && (hasChamp || (isVacant && curL > 0 && curR > 0));
     const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
-    const canTitle = !slot._crMatchLocked && titleEligible && cdCheck.allowed && !slotHasRental;
+    const canTitle = !slot._crMatchLocked && !slot._unifiedTitleLocked && titleEligible && cdCheck.allowed && !slotHasRental;
     const isTitle = G.showCard[i].isTitle || false;
     const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
@@ -3549,6 +3585,9 @@ function renderShowPrep() {
     }
     if (slot._crMatchLocked) {
       tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('他団体との3試合挑戦シリーズ：会場枠内の上位3試合として固定され、カード魅力に専用ボーナスが入ります')} style="background:rgba(170,55,55,0.28);border-color:rgba(235,105,90,0.6);color:#ffd0c8;cursor:help">⚔ 他団体挑戦（固定）</span>`);
+    }
+    if (slot._unifiedTitleMatch) {
+      tagParts.push(`<span class="sp-match-tag sp-tag-title" style="background:rgba(25,95,110,.28);border-color:rgba(79,183,197,.6);color:#9eeaf2">🌐 全国統一王座戦（固定）</span>`);
     }
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
@@ -3611,11 +3650,13 @@ function renderShowPrep() {
       if (slotBD.heelFaceBonus > 0) appealParts.push(`😈善悪+${slotBD.heelFaceBonus}`);
     }
 
-    const cardBorder = slot._crMatchLocked
+    const cardBorder = slot._unifiedTitleMatch
+      ? ' style="border-color:rgba(79,183,197,0.6)"'
+      : slot._crMatchLocked
       ? ' style="border-color:rgba(235,105,90,0.5)"'
       : isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
-    const moveUpBtn = !slot._crMatchLocked && i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
-    const moveDnBtn = !slot._crMatchLocked && i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const moveUpBtn = !slot._crMatchLocked && !slot._unifiedTitleLocked && i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const moveDnBtn = !slot._crMatchLocked && !slot._unifiedTitleLocked && i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}>
       <div class="sp-match-card-inner">
         <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>

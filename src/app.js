@@ -1933,7 +1933,7 @@ const Storage = {
     // battle UI is open.  Never persist them, even if an autosave is triggered
     // by an unrelated recovery path before the normal result cleanup runs.
     state.roster = (state.roster || []).filter(c =>
-      c?.isRental || (!c?.isAwayChallengeGuest && !c?.isCRGuest && !c?.isB3ChallengeGuest)
+      c?.isRental || (!c?.isAwayChallengeGuest && !c?.isCRGuest && !c?.isB3ChallengeGuest && !c?.isUnifiedTitleGuest)
     );
     state.roster.forEach(c => {
       delete c._weekAction; c.intensive = false;
@@ -2723,7 +2723,7 @@ const Storage = {
       // only records the roster-cap recalculation; it must not disable future
       // cleanup if an interrupted battle polluted a newer save.
       const cleanedRoster = (G.roster || []).filter(f =>
-        f?.isRental || (!f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest)
+        f?.isRental || (!f?.isAwayChallengeGuest && !f?.isCRGuest && !f?.isB3ChallengeGuest && !f?.isUnifiedTitleGuest)
       );
       const removedChallengeGuests = cleanedRoster.length !== (G.roster || []).length;
       if (removedChallengeGuests) {
@@ -6270,7 +6270,7 @@ const App = {
 
   // Set show card slot
   setShowCardSlot(slotIndex, side, newId) {
-    if (G.showCard?.[slotIndex]?._crMatchLocked) {
+    if (G.showCard?.[slotIndex]?._crMatchLocked || G.showCard?.[slotIndex]?._unifiedTitleLocked) {
       Audio.play('error'); showToast('⚔ 挑戦試合の上位3枠は固定です', 3000); return;
     }
     newId = +newId;
@@ -6333,7 +6333,7 @@ const App = {
   mergeToTagSlot(idx) {
     const card = [...G.showCard];
     if (idx < 0 || idx + 1 >= card.length) return;
-    if (card[idx]?._crMatchLocked || card[idx + 1]?._crMatchLocked) {
+    if (card[idx]?._crMatchLocked || card[idx + 1]?._crMatchLocked || card[idx]?._unifiedTitleLocked || card[idx + 1]?._unifiedTitleLocked) {
       Audio.play('error'); showToast('⚔ 挑戦試合の固定枠はタッグに変更できません', 3000); return;
     }
     if (idx === 0) { Audio.play('error'); showToast('メインイベントはシングルマッチのみです'); return; }
@@ -6418,7 +6418,7 @@ const App = {
       if (typeof renderShowPrep === 'function') renderShowPrep();
       return;
     }
-    if (G.showCard?.[slotIndex]?._crMatchLocked) {
+    if (G.showCard?.[slotIndex]?._crMatchLocked || G.showCard?.[slotIndex]?._unifiedTitleLocked) {
       Audio.play('error'); showToast('⚔ 挑戦試合の固定枠はタイトル戦に変更できません', 3000); return;
     }
     const newVal = !G.showCard[slotIndex].isTitle;
@@ -6455,6 +6455,10 @@ const App = {
     // old post-show branch temporarily mixed opponent guests into a completed
     // local-show state and could persist them if result processing failed.
     // Route both buttons through the same transactional away-show flow.
+    if (G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+      App.beginUnifiedTitleAwayTravel();
+      return;
+    }
     if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
       if (App.startAwayChallengeFromPrep()) return;
       // Invalid bookings are cancelled by _startAwayChallengeShow(). Continue
@@ -6485,12 +6489,38 @@ const App = {
         showToast('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました', 5000);
       }
     }
+    // task-88: 挑戦シリーズの次、B3より前に統一王座戦をメインへ予約する。
+    // 既存予約が同週なら先着の挑戦シリーズを優先し、統一王座戦は次の通常興行へ繰り越す。
+    App._unifiedTitleShowData = null;
+    if (eligibleChallengeShow && !Engine.challengeRequest?.getScheduledCard?.(G) && G._pendingUnifiedIncomingMatch) {
+      const reservedUnified = Engine.unifiedTitle.reserveIncomingMatch(G);
+      if (reservedUnified.match) {
+        const scheduled = reservedUnified.match;
+        const participantIds = [scheduled.champion.id, scheduled.challenger.id];
+        const cleared = Engine.challengeRequest?.removeFightersFromCard
+          ? Engine.challengeRequest.removeFightersFromCard(G.showCard, participantIds)
+          : G.showCard;
+        const card = Engine.util.normalizeShowCardForVenue(
+          [scheduled.slot, ...cleared], G.week, G.showVenue);
+        const existingIds = new Set((G.roster || []).map(f => f.id));
+        const guests = existingIds.has(scheduled.challenger.id) ? [] : [{
+          ...scheduled.challenger,
+          isUnifiedTitleGuest: true,
+          _unifiedGuestOrgId: scheduled.challengerOrgId,
+        }];
+        G = { ...reservedUnified.state, showCard: card, roster: [...reservedUnified.state.roster, ...guests] };
+        App._unifiedTitleShowData = { ...scheduled, guestIds: guests.map(f => f.id) };
+      } else {
+        G = reservedUnified.state;
+        showToast('⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました', 5000);
+      }
+    }
     App._b3ShowData = null;
     const b3AwayConflict = G._pendingIncomingB3Match && Engine.challengeRequest?.hasAwayParticipantConflict?.(G, [
       G._pendingIncomingB3Match.fighterId,
       G._pendingIncomingB3Match.challenger?.id,
     ]);
-    if (eligibleChallengeShow && !Engine.challengeRequest?.getScheduledCard?.(G) && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
+    if (eligibleChallengeShow && !Engine.challengeRequest?.getScheduledCard?.(G) && !App._unifiedTitleShowData && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
       const reservedB3 = Engine.challengeRequest.reserveScheduledSingleMatch(G, G.showCard);
       if (reservedB3) {
         const scheduled = reservedB3.scheduled;
@@ -6550,7 +6580,7 @@ const App = {
     }
 
     // v1.2: タイトルマッチクールダウンガード（UIバイパス防止）
-    const hasTitleSlot = validMatches.some(m => m.isTitle);
+    const hasTitleSlot = validMatches.some(m => m.isTitle && !m._unifiedTitleMatch);
     if (hasTitleSlot) {
       const cd = Engine.title.canTitleMatch(G);
       if (!cd.allowed) {
@@ -6661,7 +6691,7 @@ const App = {
     const intrusion = Engine.intrusion.check(G, intrusionRng);
     if (intrusion) {
       // タイトルマッチの挑戦者を差し替え
-      const titleIdx = G.showCard.findIndex(m => m.isTitle && m.left > 0 && m.right > 0);
+      const titleIdx = G.showCard.findIndex(m => m.isTitle && !m._unifiedTitleMatch && m.left > 0 && m.right > 0);
       if (titleIdx >= 0) {
         const tm = G.showCard[titleIdx];
         const challengerSide = tm.left === intrusion.champId ? 'right' : 'left';
@@ -6857,6 +6887,7 @@ const App = {
     const ringIn = Engine.mq.buildRingInOpts(G, m.left, m.right, {
       roster: G.roster, isTitle: !!m.isTitle, applyNextMatchMq: idx === targetIdx,
       normalShowRingExtras: true, isMainEvent: idx === 0,
+      unifiedTitleMatch: !!m._unifiedTitleMatch,
     });
     return ringIn.simOpts;
   },
@@ -6978,7 +7009,7 @@ const App = {
       right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: App._buildVlVsPlayerForExEmployee(charR, G.season, G.week, charL.orgId), vsExHit: App._buildVsExHitLines(charR, G.season, G.week, charL.orgId) },
       result,
       matchInfo: {
-        header: m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
+        header: m._unifiedTitleMatch ? '🌐 全国統一王座戦' : m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
         subHeader: `${charL.name} vs ${charR.name}`,
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
@@ -7356,6 +7387,10 @@ const App = {
 
   // Post-processing: apply titles, popularity, injuries (mirrors Engine.executeShow logic)
   finalizeShow() {
+    if (App._showPreview?.isUnifiedAwayTitle) {
+      App._finalizeUnifiedTitleAwayShow();
+      return;
+    }
     if (App._showPreview?.isAwayChallenge) {
       try {
         App._finalizeAwayChallengeShow();
@@ -7459,7 +7494,7 @@ const App = {
     // Title outcomes
     const titleMatchOutcomes = [];
     validMatches.forEach((m, i) => {
-      if (!m.isTitle || !results[i]) return;
+      if (!m.isTitle || m._unifiedTitleMatch || !results[i]) return;
       if (m.isReclaim) return; // Phase 4: 奪還挑戦試合は専用ハンドラで処理
       const r = results[i];
       const champId = titles.world.championId;
@@ -7684,6 +7719,10 @@ const App = {
     let preAttendance = appV2Result.attendance;
     // MQ再設計P3c(§3.2): fp(fill pressure)算出用の「キャパでクランプする前の需要」。
     let rawDemand = appV2Result.rawDemand;
+    if (validMatches.some(m => m && m._unifiedTitleMatch)) {
+      preAttendance = Math.min(VENUES[s.showVenue].cap, Math.round(preAttendance * 1.25));
+      rawDemand = Math.round(rawDemand * 1.25);
+    }
     // v1.5s25b: attendance_boost バフ（マイルストーン）
     const attendBoostBuffPre = (s.milestoneBuffs || []).find(b => b.type === 'attendance_boost');
     if (attendBoostBuffPre) {
@@ -7990,7 +8029,7 @@ const App = {
         let stage = 'normal';
         if (r.isTitleMatch) stage = 'title';
 
-        const champId = s.titles?.world?.championId;
+        const champId = m._unifiedTitleMatch ? s.unifiedTitle?.championId : s.titles?.world?.championId;
         const isTitleM = !!r.isTitleMatch;
 
         const context = {
@@ -8015,7 +8054,7 @@ const App = {
           ovrA: fA ? Engine.util.ov(fA) : 0,
           ovrB: fB ? Engine.util.ov(fB) : 0,
           // 奪還戦と挑戦試合は cross-org。挑戦試合は決着ではなく因縁を増幅する。
-          isCrossOrg: !!(m.isReclaim || m.isCRMatch || m._crMatchLocked || m._awayChallengeMatch),
+          isCrossOrg: !!(m.isReclaim || m.isCRMatch || m._crMatchLocked || m._awayChallengeMatch || m._unifiedTitleMatch),
           isChallengeShowMatch: !!(m.isCRMatch || m._crMatchLocked || m._awayChallengeMatch),
         };
         relState = Engine.relationships.applyMatchResult(relState, charIdA, charIdB, context, relRng);
@@ -8723,6 +8762,43 @@ const App = {
 
     if (pendingGrowthEvents.length > 0) {
       s = { ...s, _pendingGrowthEvents: pendingGrowthEvents };
+    }
+
+    // 全国統一王座戦: 通常興行の共通処理後、ゲストを本来のAI団体へ戻して王座を清算する。
+    if (App._unifiedTitleShowData) {
+      const unified = App._unifiedTitleShowData;
+      const matchIdx = validMatches.findIndex(m => m && m._unifiedTitleMatch);
+      const matchResult = matchIdx >= 0 ? results[matchIdx] : null;
+      const guestIds = new Set(unified.guestIds || []);
+      const updatedGuest = roster.find(f => guestIds.has(f.id));
+      const aiOrgs = { ...(s.aiOrgs || {}) };
+      const guestOrg = aiOrgs[unified.challengerOrgId];
+      if (updatedGuest && guestOrg?.roster) {
+        const cleanGuest = { ...updatedGuest };
+        delete cleanGuest.isUnifiedTitleGuest;
+        delete cleanGuest._unifiedGuestOrgId;
+        aiOrgs[unified.challengerOrgId] = {
+          ...guestOrg,
+          roster: guestOrg.roster.map(f => f.id === cleanGuest.id ? cleanGuest : f),
+        };
+      }
+      roster = roster.filter(f => !guestIds.has(f.id));
+      s = { ...s, aiOrgs, roster, titles };
+      if (matchResult) {
+        const slot = validMatches[matchIdx];
+        const winnerId = matchResult.winner === 'left' ? slot.left
+          : matchResult.winner === 'right' ? slot.right : null;
+        s = Engine.unifiedTitle.resolveMatch(s, {
+          championId: unified.championId,
+          challengerId: unified.challengerId,
+          winnerId,
+        });
+        roster = s.roster;
+        events.push(winnerId === unified.challengerId
+          ? `🌐 ${unified.challenger.name}が全国統一王座を奪取！`
+          : `🌐 ${unified.champion.name}が全国統一王座を防衛！`);
+      }
+      App._unifiedTitleShowData = null;
     }
 
     // 単発の挑戦状(B3)は通常興行のメインとして解決する。
@@ -9848,6 +9924,115 @@ const App = {
     try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch (_e) {}
     renderMatchPreview();
     return true;
+  },
+
+  _startUnifiedTitleAwayShow() {
+    const booking = G._pendingUnifiedAwayMatch;
+    if (!booking) return false;
+    const champion = Engine.unifiedTitle._findActive(G, booking.championId);
+    const challenger = Engine.unifiedTitle._findActive(G, booking.challengerId);
+    if (!champion || !challenger || challenger.orgId !== 'player'
+        || !Engine.unifiedTitle._available(champion.fighter) || !Engine.unifiedTitle._available(challenger.fighter)) {
+      G = { ...G, _pendingUnifiedAwayMatch: null };
+      showToast('⚠ 全国統一王座への遠征条件が整わないため、予約を解除しました', 5000);
+      return false;
+    }
+    try { Engine.unifiedTitle.assertEligibleChallenger(G, 'player', challenger.fighter.id, champion.fighter.id); }
+    catch (_err) {
+      G = { ...G, _pendingUnifiedAwayMatch: null };
+      showToast('⚠ 挑戦資格が失われたため、全国統一王座戦を解除しました', 5000);
+      return false;
+    }
+    const guest = { ...champion.fighter, isUnifiedTitleGuest: true, _unifiedGuestOrgId: champion.orgId };
+    const slot = { left: challenger.fighter.id, right: champion.fighter.id, isTitle: true,
+      _unifiedTitleMatch: true, _unifiedAwayMatch: true, _unifiedTitleLocked: true };
+    const ownIds = new Set((G.roster || []).map(f => f.id));
+    G = {
+      ...G,
+      roster: [...G.roster, guest],
+      _awayChallengeUsedIds: { season: G.season, week: G.week, ids: [challenger.fighter.id] },
+    };
+    App._showPreview = {
+      validMatches: [slot], results: [null], currentWatching: -1,
+      stateSnapshot: JSON.parse(JSON.stringify(G)), confrontationPairs: [], confrontationMap: {},
+      _shownConfrontations: new Set(), isUnifiedAwayTitle: true,
+      unifiedAwayBooking: booking, unifiedAwayGuestIds: [guest.id], unifiedAwayPlayerRosterIds: [...ownIds],
+    };
+    try { Audio.bgm.stop(); Audio.bgm.play('battle'); } catch (_e) {}
+    renderMatchPreview();
+    return true;
+  },
+
+  beginUnifiedTitleAwayTravel() {
+    const booking = G._pendingUnifiedAwayMatch;
+    if (!booking) return;
+    const champion = Engine.unifiedTitle._findActive(G, booking.championId);
+    const challenger = Engine.unifiedTitle._findActive(G, booking.challengerId);
+    if (!champion || !challenger) { App._startUnifiedTitleAwayShow(); return; }
+    const start = () => App._startUnifiedTitleAwayShow();
+    if (typeof showTravelScene !== 'function') { start(); return; }
+    showTravelScene({
+      heading: '— 全国統一王座へ —',
+      from: { label: G.orgName || 'プレイヤー団体', emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
+      to: { label: Engine.unifiedTitle._orgName(G, champion.orgId), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(champion.orgId, 22) : ''), accent: '#4fb7c5' },
+      party: [{ id: challenger.fighter.id, name: challenger.fighter.name }],
+      lines: [`${challenger.fighter.name}が、全国統一王者の待つ敵地へ向かっています。`, '業界の頂点を懸けた一戦です。'],
+      vehicleIcon: '🚌', durationMs: 5800,
+    }, start);
+  },
+
+  _finalizeUnifiedTitleAwayShow() {
+    const sp = App._showPreview;
+    if (!sp?.isUnifiedAwayTitle || !sp.results?.[0]) return;
+    const booking = sp.unifiedAwayBooking;
+    const result = sp.results[0];
+    const slot = sp.validMatches[0];
+    const winnerId = result.winner === 'left' ? slot.left : result.winner === 'right' ? slot.right : null;
+    const updatedChampion = (G.roster || []).find(f => f.isUnifiedTitleGuest && f.id === booking.championId);
+    const aiOrgs = { ...(G.aiOrgs || {}) };
+    const championOrg = aiOrgs[booking.championOrgId];
+    if (updatedChampion && championOrg?.roster) {
+      const { isUnifiedTitleGuest, _unifiedGuestOrgId, ...cleanChampion } = updatedChampion;
+      aiOrgs[booking.championOrgId] = {
+        ...championOrg,
+        roster: championOrg.roster.map(f => f.id === cleanChampion.id ? cleanChampion : f),
+      };
+    }
+    let s = { ...G, aiOrgs, roster: (G.roster || []).filter(f => !f.isUnifiedTitleGuest) };
+    s = Engine.mq.updateRecord(s, result, {
+      holderIds: [slot.left, slot.right], orgId: null, stage: 'normal', matchType: 'singles', winnerId,
+    }).state;
+    s = Engine.unifiedTitle.resolveMatch(s, { ...booking, winnerId });
+    const won = winnerId === booking.challengerId;
+    const consumed = { type: 'playerTurnConsumed', outcome: won ? 'won' : 'lost', season: s.season, week: s.week };
+    s = {
+      ...s,
+      unifiedTitle: s.unifiedTitle ? {
+        ...s.unifiedTitle,
+        aiHolderCycles: won ? s.unifiedTitle.aiHolderCycles : 0,
+        history: [...(s.unifiedTitle.history || []), consumed],
+      } : s.unifiedTitle,
+      _pendingUnifiedAwayMatch: null,
+      weekPhase: 'showPrep',
+    };
+    G = s;
+    App._showPreview = null;
+    try { Storage.autoSave(); } catch (_e) {}
+    showToast(won ? '🌐 全国統一王座を奪取しました！' : '全国統一王座への挑戦は届きませんでした', 5000);
+    showScreen('show');
+    refreshAll();
+    if (typeof renderShowPrep === 'function') renderShowPrep();
+  },
+
+  handleUnifiedTitlePlayerTurn() {
+    const turn = G._pendingUnifiedPlayerTurn;
+    if (!turn || typeof showUnifiedTitleChallengeModal !== 'function') return;
+    showUnifiedTitleChallengeModal(turn, G, fighterId => {
+      if (fighterId == null) G = Engine.unifiedTitle.declinePlayerTurn(G, 'skipped');
+      else G = Engine.unifiedTitle.acceptPlayerTurn(G, fighterId);
+      try { Storage.autoSave(); } catch (_e) {}
+      refreshAll();
+    });
   },
 
   // Run an accepted away challenge directly from show preparation so its result
@@ -11377,6 +11562,14 @@ const App = {
     if (crPending && !pendingLargeEvent && !pendingFactionEvent) {
       const crDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 700;
       setTimeout(() => App.handleChallengeRequest(crPending), crDelay);
+    }
+
+    const unifiedPlayerTurn = G._pendingUnifiedNotification?.type === 'playerTurn'
+      ? G._pendingUnifiedPlayerTurn : null;
+    if (unifiedPlayerTurn && !pendingLargeEvent && !pendingFactionEvent && !crPending) {
+      G = { ...G, _pendingUnifiedNotification: null };
+      const unifiedDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 750;
+      setTimeout(() => App.handleUnifiedTitlePlayerTurn(), unifiedDelay);
     }
 
     // スナップショット R3モーダル表示
