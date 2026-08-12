@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>CH-1 団体戦挑戦の直訴 統合モック v0.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Tokens（階層1からの抜粋。Office / Cream Panel 系）
+   ============================================================ */
+:root {
+  --office-bg: #24221e;
+  --office-panel-cream: #d4ccb8;
+  --office-panel-cream-card: #ede8dc;
+  --office-panel-dark-deep: #12110e;
+  --cream-text-main: #1e1c16;
+  --cream-text-sub: #5c5242;
+  --cream-text-dim: #7a6f5a;
+  --cream-gold: #7a6530;
+  --cream-gold-dark: #5c4a1e;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --stage-text-sub: #a89e8a;
+  --c-positive: #4a8a5c;
+  --accent-hostility: #d07a3e;
+  --accent-hostility-rgb: 208,122,62;
+  --radius-lg: 10px;
+  --space-sm: 8px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans JP', sans-serif; background: #0a0a0a; color: #e8e6e0; min-height: 100vh; }
+
+/* Switcher（開発用） */
+.dev-switcher { position: sticky; top: 0; z-index: 9999; background: rgba(10,8,6,0.94);
+  border-bottom: 1px solid rgba(212,168,67,0.25); padding: 10px 16px; display: flex; gap: 10px;
+  align-items: center; flex-wrap: wrap; font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1.5px; }
+.dev-switcher-label { color: var(--gold); font-weight: 700; margin-right: 8px; }
+.dev-btn { background: rgba(200,190,170,0.08); border: 1px solid rgba(200,190,170,0.2); color: #e8e6e0;
+  padding: 6px 14px; border-radius: 3px; cursor: pointer; font-family: inherit; font-size: 11px; letter-spacing: 1px; }
+.dev-btn:hover { border-color: var(--gold); color: var(--gold); }
+.dev-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1a1a; font-weight: 700; }
+.view { display: none; } .view.active { display: block; }
+
+/* ============================================================
+   Office / Cream レポートカード（現行 .fevt-report-card と同系）
+   ============================================================ */
+.report-card { max-width: 720px; margin: 26px auto 60px; background: var(--office-panel-cream);
+  border-radius: 12px; overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.6); color: var(--cream-text-main); }
+.rep-header { display: flex; justify-content: space-between; align-items: center;
+  background: var(--office-panel-dark-deep); color: var(--gold-light); padding: 13px 20px; }
+.rep-title { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 17px; letter-spacing: .12em; }
+.rep-week { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .3em; color: var(--stage-text-sub); }
+.rep-header.hostile { background: linear-gradient(90deg, #1a0e06, var(--office-panel-dark-deep));
+  border-bottom: 2px solid var(--accent-hostility); }
+.rep-header.hostile .rep-title { color: #ffc9a0; }
+
+/* コーチ取次帯（_factionReporterStrip と同型: 40px丸 + 一言） */
+.coach-strip { display: flex; align-items: center; gap: 10px; background: rgba(18,17,14,.92);
+  color: #e8e6e0; padding: 9px 18px; font-size: 12.5px; line-height: 1.6; }
+.coach-strip img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover;
+  border: 2px solid rgba(212,168,67,.5); flex: 0 0 auto; }
+.coach-strip .who { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: .18em;
+  color: var(--gold); display: block; }
+
+/* ブリーフィングカード2枚（現行 .crq-briefing と同型） */
+.briefing { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 18px 0; }
+.brief-card { border: 1px solid rgba(100,85,50,.25); border-radius: 8px; padding: 9px 12px;
+  background: var(--office-panel-cream-card); }
+.brief-card.is-away { border-left: 3px solid var(--accent-hostility); }
+.brief-card.is-home { border-left: 3px solid var(--c-positive); }
+.brief-t { font-weight: 900; font-size: 12.5px; }
+.brief-d { font-size: 11px; color: var(--cream-text-sub); margin-top: 2px; line-height: 1.6; }
+
+/* 対面比較（.fc1m-compare + _u3bSideHtml(u3b-theme-cream) と同型） */
+.compare { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: start;
+  padding: 16px 18px 0; }
+.side { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.bubble-slot { height: 52px; display: flex; align-items: flex-end; justify-content: center;
+  width: 100%; margin-bottom: var(--space-sm); }
+.bubble { position: relative; width: max-content; max-width: 230px; background: var(--office-panel-cream-card);
+  color: var(--cream-text-main); border: 1px solid rgba(100,85,50,.25); border-radius: var(--radius-lg);
+  padding: 7px 12px; font-size: 12.5px; line-height: 1.5; text-align: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,.18); }
+.bubble::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%); bottom: -7px;
+  border: 7px solid transparent; border-top-color: var(--office-panel-cream-card); border-bottom: 0; }
+.upper { width: 132px; height: 194px; overflow: hidden; border-radius: 6px 6px 5px 5px;
+  border: 1px solid rgba(100,85,50,.3); border-bottom: 3px solid var(--cream-gold); background: #efe9da; }
+.upper img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.p-name { font-size: 15px; font-weight: 900; margin-top: 8px; }
+.p-role { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .14em;
+  color: var(--cream-gold); margin-top: 2px; }
+.org-badge { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 3px 9px 3px 3px;
+  border-radius: 20px; border: 1px solid; font-family: 'Oswald', sans-serif; font-size: 10.5px; font-weight: 700; }
+.org-badge .emb { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center;
+  font-size: 10px; color: #fff; }
+.org-badge.home { color: var(--c-positive); border-color: rgba(74,138,92,.5); }
+.org-badge.home .emb { background: var(--c-positive); }
+.org-badge.away { color: var(--accent-hostility); border-color: rgba(var(--accent-hostility-rgb),.5); }
+.org-badge.away .emb { background: var(--accent-hostility); }
+.p-ovr { font-family: 'Bebas Neue', sans-serif; font-size: 22px; margin-top: 4px; color: var(--cream-gold-dark); }
+.p-ovr small { font-family: 'Oswald', sans-serif; font-size: 8px; letter-spacing: .1em; margin-right: 3px; color: var(--cream-text-dim); }
+.stats { width: 100%; max-width: 150px; margin-top: 6px; font-size: 10px; }
+.stats .row { display: flex; justify-content: space-between; border-bottom: 1px dotted rgba(100,85,50,.2); padding: 2px 2px; }
+.stats .row b.hi { color: var(--c-positive); }
+.vs { align-self: center; font-family: 'Bebas Neue', sans-serif; font-size: 34px; color: var(--cream-gold);
+  padding-top: 96px; }
+
+/* シリーズ・因縁の行（.crq-series-order / .fc1m-rivalry と同型） */
+.series-line { text-align: center; font-size: 11.5px; color: var(--cream-text-sub); padding: 10px 18px 0; }
+.rivalry-line { text-align: center; font-size: 12px; color: var(--cream-text-main); padding: 6px 18px 0; }
+.rivalry-line b { color: var(--cream-gold-dark); }
+.rivalry-line em { font-style: normal; color: var(--cream-text-sub); }
+
+/* ★新設: 同行2名ピッカー（現行は別モーダル showAwayTeamPickModal） */
+.party { margin: 14px 18px 0; padding: 12px 14px; background: var(--office-panel-cream-card);
+  border: 1px solid rgba(100,85,50,.25); border-radius: 10px; }
+.party-head { display: flex; justify-content: space-between; align-items: baseline; }
+.party-title { font-weight: 900; font-size: 12.5px; }
+.party-count { font-family: 'Oswald', sans-serif; font-size: 11px; color: var(--cream-gold-dark); letter-spacing: .1em; }
+.party-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.cand { width: 74px; text-align: center; cursor: pointer; border: 1px solid rgba(100,85,50,.22);
+  border-radius: 8px; padding: 6px 4px 5px; background: rgba(255,255,255,.35); position: relative; }
+.cand img { width: 46px; height: 66px; object-fit: cover; object-position: center top;
+  border-radius: 4px; display: block; margin: 0 auto; }
+.cand .nm { font-size: 9.5px; font-weight: 700; margin-top: 4px; line-height: 1.25; }
+.cand .ov { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--cream-text-sub); }
+.cand.sel { border-color: var(--cream-gold-dark); box-shadow: 0 0 0 2px rgba(122,101,48,.35);
+  background: #f4eed8; }
+.cand.sel::after { content: '✓'; position: absolute; top: -7px; right: -7px; width: 18px; height: 18px;
+  border-radius: 50%; background: var(--cream-gold-dark); color: #fff; font-size: 11px; font-weight: 900;
+  display: grid; place-items: center; }
+.party-note { font-size: 10px; color: var(--cream-text-dim); margin-top: 8px; line-height: 1.6; }
+
+/* 決裁トレイ（.fevt-decision-tray と同型） */
+.prompt { text-align: center; font-size: 12.5px; color: var(--cream-text-sub); padding: 16px 18px 0; }
+.tray { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 12px 18px 20px; }
+.dcard { border: 1px solid rgba(100,85,50,.3); border-radius: 10px; padding: 12px 14px;
+  background: var(--office-panel-cream-card); cursor: pointer; display: flex; gap: 12px; align-items: flex-start; }
+.dcard:hover { border-color: var(--cream-gold-dark); box-shadow: 0 4px 14px rgba(95,69,35,.25); }
+.dcard .letter { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--cream-gold-dark); line-height: 1; }
+.dcard .label { font-weight: 900; font-size: 13.5px; }
+.dcard .hint { font-size: 10.5px; color: var(--cream-text-sub); margin-top: 3px; line-height: 1.6; }
+
+/* 注記・ドキュメント */
+.note { max-width: 720px; margin: 18px auto 0; padding: 10px 16px; font-size: 12px; color: var(--stage-text-sub);
+  background: rgba(200,190,170,.05); border: 1px solid rgba(200,190,170,.16); border-radius: 8px; line-height: 1.9; }
+.note b { color: var(--gold-light); }
+.doc { max-width: 860px; margin: 26px auto 60px; padding: 28px 30px; background: #12100d;
+  border: 1px solid rgba(200,190,170,.14); border-radius: 12px; }
+.doc h2 { font-family: 'Noto Serif JP', serif; font-size: 20px; color: var(--gold-light); letter-spacing: .1em; margin-bottom: 14px; }
+.doc h3 { font-size: 14px; color: var(--gold); margin: 22px 0 8px; }
+.doc p, .doc li { font-size: 13px; line-height: 1.9; color: #e8e6e0; }
+.doc ul, .doc ol { padding-left: 22px; }
+.doc code { font-family: Consolas, monospace; font-size: 11px; color: #c9b98a;
+  background: rgba(200,190,170,.08); padding: 1px 5px; border-radius: 3px; }
+.doc .rec { display: inline-block; font-size: 10px; font-weight: 900; letter-spacing: .1em; color: #1a1a1a;
+  background: var(--gold); border-radius: 3px; padding: 1px 7px; margin-right: 6px; }
+.doc .tag { display: inline-block; font-size: 10px; letter-spacing: .08em; color: var(--stage-text-sub);
+  border: 1px solid rgba(200,190,170,.3); border-radius: 3px; padding: 1px 7px; margin-right: 6px; }
+</style>
+</head>
+<body>
+
+<div class="dev-switcher">
+  <span class="dev-switcher-label">CH-1 直訴フォーマット統合 v0.1</span>
+  <button class="dev-btn active" data-v="vFwd">案A: 挑む（選手発）</button>
+  <button class="dev-btn" data-v="vInv">迎撃（相手発）の差別化</button>
+  <button class="dev-btn" data-v="vMemo">判断メモ（要裁定）</button>
+</div>
+
+<!-- ================= 案A: 挑む（forward） ================= -->
+<section class="view active" id="vFwd">
+<div class="note">
+  骨格は<b>現行の直訴モーダルそのまま</b>（派閥イベントと同じOfficeクリーム書式。U3統一済み）。
+  変更点は2つだけ — ①<b>同行2名の選択を直訴と同じ紙面に統合</b>（現行はYES後に別モーダル。3枚→2枚に短縮）
+  ②発起人のセリフは現行どおり吹き出し(仮文言)。承認時はセリフ増補をOpus起案（判断メモ③）。
+</div>
+<div class="report-card">
+  <div class="rep-header">
+    <div class="rep-title">👥 団体戦挑戦の直訴</div>
+    <div class="rep-week">WEEK 12 ・ 3年目</div>
+  </div>
+  <div class="coach-strip">
+    <img src="../../../image/coach/face_coach_akagi.png" alt="">
+    <div><span class="who">HEAD COACH</span>
+    社長、阿武隈選手から団体戦挑戦の直訴です。凰翔プロレスへ、私たち三人で挑みたい、と。</div>
+  </div>
+  <div class="briefing">
+    <div class="brief-card is-away"><div class="brief-t">✈ 遠征興行</div>
+      <div class="brief-d">凰翔プロレスの会場へ乗り込みます</div></div>
+    <div class="brief-card"><div class="brief-t">⚔ 3人制・シングル3連戦</div>
+      <div class="brief-d">あなたの団体から3名が出場します</div></div>
+  </div>
+  <div class="compare">
+    <div class="side">
+      <div class="bubble-slot"><div class="bubble">社長、凰翔に三対三で挑ませてください。負けるつもりはありません。</div></div>
+      <div class="upper"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
+      <div class="p-name">阿武隈 塔子</div>
+      <div class="p-role">団体戦の発起人</div>
+      <div class="org-badge home"><span class="emb">自</span>あなたの団体</div>
+      <div class="p-ovr"><small>OVR</small>88</div>
+      <div class="stats">
+        <div class="row"><span>PW</span><b class="hi">95</b></div>
+        <div class="row"><span>SP</span><b>73</b></div>
+        <div class="row"><span>TE</span><b>71</b></div>
+      </div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="side">
+      <div class="bubble-slot"></div>
+      <div class="upper"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+      <div class="p-name">生駒 エリカ</div>
+      <div class="p-role">第1試合の対戦相手</div>
+      <div class="org-badge away"><span class="emb">凰</span>凰翔プロレス</div>
+      <div class="p-ovr"><small>OVR</small>86</div>
+      <div class="stats">
+        <div class="row"><span>PW</span><b>78</b></div>
+        <div class="row"><span>SP</span><b class="hi">92</b></div>
+        <div class="row"><span>TE</span><b class="hi">84</b></div>
+      </div>
+    </div>
+  </div>
+  <div class="series-line">第1試合・先鋒対決 ／ 全3試合のシリーズ戦です</div>
+  <div class="rivalry-line">直近対戦 <b>1勝1敗</b> — <em>この二人の間には、まだ終わっていない宿題がある。</em></div>
+
+  <div class="party">
+    <div class="party-head">
+      <div class="party-title">🚌 同行する2名を選ぶ</div>
+      <div class="party-count">2 / 2 選択中</div>
+    </div>
+    <div class="party-row">
+      <div class="cand sel"><img src="../../../image/face_tomioka_k.png" alt=""><div class="nm">富岡加奈子</div><div class="ov">84</div></div>
+      <div class="cand sel"><img src="../../../image/face_takatsu_k.png" alt=""><div class="nm">高津小春</div><div class="ov">81</div></div>
+      <div class="cand"><img src="../../../image/face_sawade_m.png" alt=""><div class="nm">澤出みずき</div><div class="ov">79</div></div>
+      <div class="cand"><img src="../../../image/face_fukamachi_m.png" alt=""><div class="nm">深町真琴</div><div class="ov">77</div></div>
+      <div class="cand"><img src="../../../image/face_hayashi_m.png" alt=""><div class="nm">林真尋</div><div class="ov">75</div></div>
+      <div class="cand"><img src="../../../image/face_domae_y.png" alt=""><div class="nm">堂前ユキ</div><div class="ov">72</div></div>
+    </div>
+    <div class="party-note">中堅・大将はここで決める(現行はYES後の別画面)。負傷・休養中の選手は候補に出ません。</div>
+  </div>
+
+  <div class="prompt">この直訴、受けますか？</div>
+  <div class="tray">
+    <div class="dcard"><div class="letter">A</div>
+      <div><div class="label">この舞台、組もう</div>
+      <div class="hint">選んだ3名で、次の通常興行週に凰翔プロレスの会場へ遠征する</div></div></div>
+    <div class="dcard"><div class="letter">B</div>
+      <div><div class="label">今は時期じゃない</div>
+      <div class="hint">この組み合わせでの再打診は、当分の間ない</div></div></div>
+  </div>
+</div>
+</section>
+
+<!-- ================= 迎撃（inverse） ================= -->
+<section class="view" id="vInv">
+<div class="note">
+  現行の相手発は<b>タイトルもラベルも「挑む」側と同一</b>で、さらにセリフは自団体用の
+  「社長、…」がそのまま出る（敵団体の選手がこちらの社長に頼む形になる矛盾）。
+  差別化はヘッダの<b>専用タイトル+敵対色</b>と、<b>敵意がこちらへ向いた専用セリフ</b>(仮文言・採用ならOpus起案)の2点。
+  骨格・部品は「挑む」側と共通のまま。
+</div>
+<div class="report-card">
+  <div class="rep-header hostile">
+    <div class="rep-title">⚔ 挑戦状、届く</div>
+    <div class="rep-week">WEEK 20 ・ 3年目</div>
+  </div>
+  <div class="coach-strip">
+    <img src="../../../image/coach/face_coach_akagi.png" alt="">
+    <div><span class="who">HEAD COACH</span>
+    社長、凰翔プロレスから団体戦の挑戦状です。受けるかどうかは——うちの看板の問題です。</div>
+  </div>
+  <div class="briefing">
+    <div class="brief-card is-home"><div class="brief-t">🏠 自団体で迎撃</div>
+      <div class="brief-d">次の自団体興行で、相手団体を迎え撃ちます</div></div>
+    <div class="brief-card"><div class="brief-t">⚔ 3人制・シングル3連戦</div>
+      <div class="brief-d">興行の上位3試合で、相手団体の3名と対戦します</div></div>
+  </div>
+  <div class="compare">
+    <div class="side">
+      <div class="bubble-slot"><div class="bubble">お宅の三枚看板、うちの三人で全部倒す。逃げないでよね。</div></div>
+      <div class="upper"><img src="../../../image/upper/upper_kusunoki_n.webp" alt=""></div>
+      <div class="p-name">楠木 なぎさ</div>
+      <div class="p-role">挑戦状の主</div>
+      <div class="org-badge away"><span class="emb">凰</span>凰翔プロレス</div>
+      <div class="p-ovr"><small>OVR</small>87</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="side">
+      <div class="bubble-slot"></div>
+      <div class="upper"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
+      <div class="p-name">阿武隈 塔子</div>
+      <div class="p-role">第1試合で迎え撃つ</div>
+      <div class="org-badge home"><span class="emb">自</span>あなたの団体</div>
+      <div class="p-ovr"><small>OVR</small>88</div>
+    </div>
+  </div>
+  <div class="series-line">第1試合・先鋒対決 ／ 全3試合のシリーズ戦です</div>
+  <div class="rivalry-line">直近対戦 <b>初対戦</b> — <em>この名前を、控室で口にする者は多い。</em></div>
+  <div class="prompt">この挑戦状、どうしますか？</div>
+  <div class="tray">
+    <div class="dcard"><div class="letter">A</div>
+      <div><div class="label">受けて立つ</div>
+      <div class="hint">次の自団体興行の上位3試合が、この団体戦になる</div></div></div>
+    <div class="dcard"><div class="letter">B</div>
+      <div><div class="label">お引き取り願う</div>
+      <div class="hint">断れば、あちらの因縁は消えずに残る</div></div></div>
+  </div>
+</div>
+</section>
+
+<!-- ================= 判断メモ ================= -->
+<section class="view" id="vMemo">
+<div class="doc">
+  <h2>判断メモ — CH-1 実装前に決めたいこと</h2>
+  <p>前提の共有: 07-25時点のCH-1は「直訴を派閥と同じOffice書式へ統合する」でしたが、
+  <b>その統合はU3(07-26)と団体戦化で既に完了しています</b>(同じ枠・同じ部品・同じ縦順)。
+  残っている固有の設計判断は以下です。</p>
+  <ol>
+    <li style="margin-bottom:12px">
+      <b>同行2名の選択を直訴画面へ統合するか</b>（案Aの「🚌 同行する2名を選ぶ」ブロック）<br>
+      <span class="rec">推奨A</span>統合する — 現行は 直訴YES → 別画面で2名選択 → 送り出し の3枚。
+      「誰と行かせるか」まで見てから受けるか決められる方が社長の判断として自然<br>
+      <span class="tag">B</span>現行維持（YES後に別画面）
+    </li>
+    <li style="margin-bottom:12px">
+      <b>迎撃（相手発）の差別化</b><br>
+      <span class="rec">推奨</span>専用タイトル「⚔ 挑戦状、届く」+ヘッダ敵対色+<b>敵意がこちらへ向いた専用セリフ</b>を新設。<br>
+      現状の問題: タイトル・役割ラベルが「挑む」側と完全に同一な上、セリフは自団体用
+      （「社長、…と挑みたい」）が敵選手からも出る<b>向きの矛盾</b>がある。セリフはOpus起案→全文レビュー
+    </li>
+    <li style="margin-bottom:12px">
+      <b>直訴セリフの供給をどうするか</b><br>
+      現状: 団体戦化の際に <code>CHALLENGE_GROUP_PETITION_LINES</code>（アーキタイプ7種×2本=14本のみ・性格軸なし）に切り替わり、
+      07-25に書いた34セル×3本=102本の petition は<b>参照されない死蔵</b>になっている。<br>
+      <span class="rec">推奨A</span>34セル102本を団体戦の文脈（「三人で」「団体戦」）へ改修して復活させる（Opus・全文レビュー）<br>
+      <span class="tag">B</span>14本のまま増補だけ（アーキタイプ×性格の34セルへ拡張）　<span class="tag">C</span>現状維持
+    </li>
+    <li style="margin-bottom:12px">
+      <b>送り出し(sendoff)画面の枠</b> — 直訴・遠征選択はOffice書式なのに、送り出しだけ別系統の枠(mdl-a)で
+      相手・遠征先の情報が一切出ない。<br>
+      <span class="rec">推奨</span>Office書式へ寄せ、行き先(相手団体バッジ)と3人の顔を添える。「送り出す」の瞬間自体は残す
+    </li>
+  </ol>
+
+  <h3>実装時の注意（承認後のタスクに含める・裁定不要）</h3>
+  <ul>
+    <li>結果画面の <code>.crrm-*</code> が関数内インラインCSSの第3系統として残存 — <code>u3b-*</code>へ寄せる</li>
+    <li><code>specs/challenge-request-spec-v0.1.md</code> が旧前提（1対1・mdl-a枠）のまま — 実装後にv0.2へ改訂</li>
+    <li>受ける側のB3挑戦状（大型イベント）は別システムとして現状維持（2026-07-25裁定どおり・触らない）</li>
+    <li>セリフの仮文言は全てダミー。採用時はOpus起案→口調バイブル準拠→Keisuke全文レビュー</li>
+  </ul>
+</div>
+</section>
+
+<script>
+document.querySelectorAll('.dev-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.dev-btn').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.v).classList.add('active');
+  });
+});
+document.querySelectorAll('.cand').forEach(c => c.addEventListener('click', () => {
+  const sel = document.querySelectorAll('.cand.sel').length;
+  if (c.classList.contains('sel')) c.classList.remove('sel');
+  else if (sel < 2) c.classList.add('sel');
+  const n = document.querySelectorAll('.cand.sel').length;
+  document.querySelector('.party-count').textContent = n + ' / 2 選択中';
+}));
+</script>
+</body>
+</html>
