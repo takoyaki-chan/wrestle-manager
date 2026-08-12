@@ -12113,8 +12113,10 @@ function showChallengeRequestModal(payload, state, onChoice) {
 
   // セリフ抽選（決定論的 rng）
   const lineRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xC4A1, payload.selfId, payload.otherId));
-  const requesterLine = Engine.challengeRequest.pickGroupRequesterLine(requester, lineRng, opponentOrgName)
-    || `${opponentOrgName}へ、私たち三人で挑戦させてください。`;
+  // task-87追補(2026-08-13): 直訴セリフを二軸34セル(CHALLENGE_LINES.petition・団体戦文脈へ改修済み102本)へ切替。
+  // 旧アーキタイプ単軸14本(CHALLENGE_GROUP_PETITION_LINES)は置き換えで撤去(2026-08-12 Keisuke裁定)
+  const requesterLine = Engine.challengeRequest.pickRequesterLine(requester, lineRng, opponentOrgName)
+    || `私たち三人で、挑ませてください。`;
   const flavorLine = Engine.challengeRequest.pickFlavorLine(rivalry, bond, requester.name, opponent.name);
 
   // 取次コーチセリフ

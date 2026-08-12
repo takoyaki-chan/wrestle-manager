@@ -155,7 +155,7 @@ function makeUiBundle() {
   const EngineStub = {
     util: { ov: f => f.pw },
     rng: { derive: (...args) => args.reduce((sum, value) => sum + (Number(value) || 0), 0), create: seed => ({ seed }), int: (_rng, lo) => lo },
-    challengeRequest: { pickGroupRequesterLine: () => '直訴セリフ', pickFlavorLine: () => '因縁フレーバー' },
+    challengeRequest: { pickRequesterLine: () => '直訴セリフ', pickFlavorLine: () => '因縁フレーバー' },
     h2h: { getRecordFor: () => null },
   };
   const ui = buildUi(

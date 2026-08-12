@@ -3797,17 +3797,6 @@ Engine.challengeRequest = {
     return this.pickLine(requester, 'petition', rng, orgName);
   },
 
-  /** 団体戦の直訴は、個人対決用 petition ではなく集団挑戦用の言葉を使う。 */
-  pickGroupRequesterLine(requester, rng, orgName) {
-    if (!requester || typeof CHALLENGE_GROUP_PETITION_LINES === 'undefined') return null;
-    const archetype = requester.archetype || 'standard';
-    const pool = CHALLENGE_GROUP_PETITION_LINES[archetype]
-      || CHALLENGE_GROUP_PETITION_LINES.standard;
-    if (!Array.isArray(pool) || pool.length === 0) return null;
-    const index = rng ? Engine.rng.int(rng, 0, pool.length - 1) : 0;
-    return String(pool[index]).replace(/\{org\}/g, orgName || '相手団体');
-  },
-
   /** 社長視点の関係性フレーバー1行（数値を出さない） */
   pickFlavorLine(rivalry, bond, requesterName, otherName) {
     const pure = bond < 50 && rivalry >= 60;       // 純粋憎悪
