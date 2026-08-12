@@ -1,6 +1,9 @@
 # 挑戦試合 直訴セリフ(petition)102本 — 団体戦文脈への改修草案 v0.1
 
-- 起案: 2026-08-12(Opus起草 / Fableレビュー前)
+- 起案: 2026-08-12(Opus起草 / Fable機械検算済み)
+- 状態: **✅ Keisuke承認済み(2026-08-12)** — 102本全文OK(「これでいい」)。末尾の確認3点もすべて推奨どおり確定:
+  ①`{org}`全廃=可(団体名は画面バッジ/コーチ取次が背負う) ②鷹揚×感情的「腹の底に残ってます」=旧文由来のため残置 ③「変更なし」2本=そのまま。
+  **実装焼き込みは task-87(CH-1)のデータ差し替えに同梱**(`CHALLENGE_GROUP_PETITION_LINES` 14本を本案34セル102本で置き換え)
 - 対象: `CHALLENGE_LINES.<archetype>_<personality>.petition[1..3]` の **34セル×3本=102本**
 - 参照: `specs/dialogue-tone-spec-v1.0.md`(鉄則10項) / `docs/tone-bible/<属性>×<性格>.md` / `docs/ui/mockups/ch1-petition-unified-v0.1.html`
 - レビュー方法: 下の「旧 / 新」の対をそのまま上から読んでください。旧=`src/data.js` 現行値(一字一句)、新=改修案
