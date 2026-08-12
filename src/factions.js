@@ -2457,6 +2457,8 @@ Engine.factions = {
     const hBA = (state.factionHostility || {})[this._hostKey(facB.id, facA.id)] || 0;
     const membersA = facA.memberIds.map(id => (roster.find(c => c.id === id) || {}).name).filter(Boolean);
     const membersB = facB.memberIds.map(id => (roster.find(c => c.id === id) || {}).name).filter(Boolean);
+    const memberIdsA = facA.memberIds.slice();
+    const memberIdsB = facB.memberIds.slice();
     return {
       eligible: true,
       payload: {
@@ -2467,6 +2469,8 @@ Engine.factions = {
         factionAName: facA.name, factionBName: facB.name,
         hostilityA: hAB, hostilityB: hBA,
         membersA, membersB,
+        memberIdsA, memberIdsB,
+        memberCountA: memberIdsA.length, memberCountB: memberIdsB.length,
       },
     };
   },
