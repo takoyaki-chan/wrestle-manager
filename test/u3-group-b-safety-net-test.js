@@ -234,6 +234,7 @@ const buildFaction = new Function(
   'Engine', 'document', 'getUpperUrl', '_factionLine', '_factionReporterStrip', '_awOrgEmblem',
   `let _popupQueue = [];
    let FACTION_F08_LEADER_LINES = {};
+   let EVENT_LINES_BY_KEY = { challengeArrival: { standard: ['ARRIVAL_LINE_MARKER'] } };
    function _isPopupActive() { return false; }
    ${functionSource('escHtml')}
    ${functionSource('_u3bSideHtml')}
@@ -249,6 +250,7 @@ const buildFaction = new Function(
    ${functionSource('_factionF02RenderClash')}
    ${functionSource('showFactionCommon3Modal')}
    ${functionSource('showFactionCommon1Modal')}
+   ${functionSource('showHostileArrivalStage')}
    ${functionSource('showChallengeRequestModal')}
    return {
      showFactionF08Modal, showFactionF08PreMatchModal, showFactionF08AftermathModal,
@@ -614,7 +616,7 @@ function fighter(id, name, extra) {
   });
 
   // --- 5d. showChallengeRequestModal(inverse: 他団体からの逆打診) ---
-  section('fc1m-bubble-wrap: challenge request (inverse) resolves requester from the AI org roster', () => {
+  section('hostile arrival: inverse challenge renders the enemy lineup and approved arrival line', () => {
     const { built, getRoot } = makeFactionBundle({});
     const requester = fighter(201, 'C選手'); // 相手団体側の打診者
     const opponent = fighter(5, 'D選手'); // 自団体側
@@ -629,8 +631,9 @@ function fighter(id, name, extra) {
     assert.doesNotThrow(() => built.showChallengeRequestModal(payload, state, () => {}),
       'inverseケースでも例外を投げない(不変条件1)');
     const html = getRoot().innerHTML;
-    assert.ok(html.includes('C選手') && html.includes('D選手'), 'inverseケースでも両者の名前が出る(不変条件4)');
-    assert.ok(html.includes('REQUESTER_LINE_201'), 'inverseケースでも打診者のセリフが出る(不変条件3)');
+    assert.ok(html.includes('C選手'), 'inverseケースで敵側の発起人名が出る(不変条件4)');
+    assert.ok(!html.includes('D選手'), 'inverse果たし状には自団体側の大型画像・名前を出さない');
+    assert.ok(html.includes('ARRIVAL_LINE_MARKER'), 'inverseケースでは承認済み挑戦状セリフを使う(不変条件3)');
   });
 
   // --- 5e. payload/dataが欠けている・セリフが空でも落ちない ---
