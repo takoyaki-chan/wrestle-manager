@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-86マージ: 開戦画面リデザイン+敵対度表記の全画面統一（2026-08-12・Fable+Codex）
+
+Codexを専用worktree(wm-codex-task86、mainのlinked worktree)で`codex exec --full-auto`実行→Fableがdiff全文レビュー・検算・コミット代行(sandboxがworktreeのindex.lock作成を拒むため。task-84と同型)→mainへマージ(749b93e)。
+
+実装: 赤トークン`--accent-war`系新設(橙--accent-hostilityは不変)/開戦モーダルをモック案Aへ(L 150×224+吹き出し+中央の段位ラベル+火ゲージ🔥×5+upperチップ46×66隊列+「両派リーダー・一騎打ち」+飾り数字ledger廃止→定性2行)/`FACTION_IGNITE_LINES`42本+ブック往復登録/`checkF02IgniteTrigger`にmemberIds/Count追加(氏名カンマ連結バグの土台修正)/敵対度露出6箇所をラベル統一(F08ヘッダ・本文・ヒント、F06、DBタイムライン・バッジ)/F09ナレーションescHtml 2箇所/テスト追随3本+新規`test/faction-ignite-rework-test.js`(草案42/42突き合わせ・生数値非露出・チップN個・escHtml振る舞い検査)。
+
+**レビューでの修正1件(Fable)**: タイムラインのF02系ラベルがCodex実装では一律「開戦」になっており、**F02_PEACE(和解)まで「開戦」と表示される取り違え**だったため、種別ごとに 開戦/和解/決着/長期化 へ振り分け直した。
+
+検算(Fable独立実行): npm test **226/226 PASS**/auto-sim 20季 seed42の指紋がmain(変更なし)とworktree(変更後)で**完全一致 fae2a4d1**=I-1成立(エンジン乱数消費ゼロ増)/セリフ42本は自前スクリプトで草案と全文一致(data→草案の不一致0)/I-2〜I-5はdiff読みで確認(getHostilityLabel・F08実挙動・発火判定に差分なし)。ブック再export済み(その他.xlsxに42本初収録、apply --dry-runで全冊クリーン確認後)。実機確認はバックログへ追記。**task-87(CH-1)を続けてCodexへ投入済み**(専用worktree wm-codex-task87)。
+
 ## 統一王座: 全8件裁定完了+コーチ引退基準確定、実装指示書 task-88 起票（2026-08-12・Fable+Keisuke）
 
 設計提案v0.1の裁定8件が**全件推奨どおり確定**(①AI間でもベルトが動く ②自団体王者への挑戦は断れない・負傷四半期は自動スキップ ③王者常設バフなし・王座戦は団体王座より一段大きい扱い ④こちらの挑戦は相手団体へ遠征 ⑤W47返還式・不成立年は前王者保持継続 ⑥統一王者は天頂戦自動エントリー・優勝で連覇 ⑦移籍はベルトごと移動/FA・解雇は返上 ⑧名称「全国統一王座」)。あわせて**コーチ引退の基準=在籍年数**も裁定(年齢基準ではない。年数の具体値は設計時)。提案書・ロードマップに刻印済み。
