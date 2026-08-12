@@ -10419,7 +10419,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       standard: '旗揚げからここにいるんですよ、私。',
       composed: '…旗揚げからずっとここにいるんだよ、私。',
       ojousama: '旗揚げの時からここにおりますのよ、わたくし。',
-      delinquent: '旗揚げからここにいるんだぜ、あたし。',
+      delinquent: '旗揚げからずっと、ここにいるんだぜ。',
       cool: '……旗揚げから、ここにいる。',
       seductive: '旗揚げからここにいるのよ、わたし。',
       polite: '旗揚げの時からここにおります、私。',
@@ -10439,7 +10439,7 @@ const CONTRACT_NEGOTIATION_LINES = {
       standard: '自分なりに結果は出してきたつもりです。',
       composed: '…自分なりに、結果は出してきたつもりだよ。',
       ojousama: 'わたくしなりに、結果は出してまいりました。',
-      delinquent: 'あたしなりに結果は出してきたつもりだ。',
+      delinquent: '私なりに結果は出してきたつもりだ。',
       cool: '……自分なりに、結果は出した。',
       seductive: 'わたしなりに、結果は出してきたつもりよ。',
       polite: '自分なりに結果は出してきたつもりです。',
@@ -14523,7 +14523,7 @@ const AWARD_LINES = {
       normal:['この栄冠は、わたくしたち二人の信頼が結んだものですわ。'], bold:['わたくしたちの連係に、並のタッグが届くはずもありませんわ。'], shy:['相棒となら、わたくしも胸を張ってここに立てますわ。'], easygoing:['まあ、相棒と優勝なんて素敵な春になりましたわね。'], earnest:['相棒の献身に報いるためにも、この優勝を誇り高く受け取りますわ。']
     },
     delinquent: {
-      normal:['相棒と決めたことをやっただけだ。文句あるやつはかかってきな。'], bold:['見ただろ。あたしたちのタッグが一番強いんだよ。'], shy:['べ、別に泣いてねえし。相棒が頑張ったからだ。'], easygoing:['相棒となら、面倒な相手でもなんとかなるもんだな。']
+      normal:['相棒と決めたことをやっただけだ。文句あるやつはかかってきな。'], bold:['見ただろ。私らのタッグが一番強いんだよ。'], shy:['べ、別に泣いてねえし。相棒が頑張ったからだ。'], easygoing:['相棒となら、面倒な相手でもなんとかなるもんだな。']
     },
     cool: {
       normal:['役割を果たした結果だ。相棒にも敬意を表する。'], bold:['連係の精度で上回った。それだけのことだ。'], quiet:['相棒のおかげだ。']
@@ -14546,7 +14546,7 @@ const AWARD_LINES = {
       normal:['我が団体の誇りを、この対抗戦で示せましたわ。'], bold:['わたくしたちの団体が最強だと、証明できましたわね。'], shy:['皆さまがつないでくださった勝利ですわ。感謝いたします。'], easygoing:['まあ、頼もしい仲間ばかりで心強かったですわ。'], earnest:['団体を代表する責任を果たせたことを、誇りに思いますわ。']
     },
     delinquent: {
-      normal:['うちの団体をなめるなって、ちゃんと教えてやったよ。'], bold:['対抗戦の頂点はあたしたちだ。異論あるならまた来な。'], shy:['みんなが頑張ったんだ。あたしだけの勝ちじゃない。'], easygoing:['団体戦って悪くないな。みんなで勝つと気分がいい。']
+      normal:['うちの団体をなめるなって、ちゃんと教えてやったよ。'], bold:['対抗戦の頂点は私らだ。異論あるならまた来な。'], shy:['みんなが頑張ったんだ。あたしだけの勝ちじゃない。'], easygoing:['団体戦って悪くないな。みんなで勝つと気分がいい。']
     },
     cool: {
       normal:['団体の総合力が上だった。その結果だ。'], bold:['代表の看板に見合う仕事はした。'], quiet:['全員の勝利だ。']
@@ -24968,7 +24968,7 @@ const GLIMPSE_A_LINES = {
         'ここ、ちゃんとしてんのかよ…不安になるぜ'
       ],
       bold: [
-        'なめんじゃねぇぞ。あたしをもっと使え'
+        'なめんじゃねぇぞ。私をもっと使え'
       ],
     },
     seductive: {
@@ -25038,7 +25038,7 @@ const GLIMPSE_A_LINES = {
         'こんなとこ、もういられるか。出て行ってやる'
       ],
       bold: [
-        'あたしを舐めてんなら出てってやるよ。後悔するなよ'
+        '私を舐めてんなら出てってやるよ。後悔するなよ'
       ],
     },
     seductive: {
@@ -25106,10 +25106,10 @@ const GLIMPSE_A_LINES = {
     },
     delinquent: {
       normal: [
-        'ここはあたしの場所だ。誰にも渡さねぇ'
+        'ここは私の場所だ。誰にも渡さねぇ'
       ],
       bold: [
-        'ここは最高だ。あたしがてっぺんまで連れてってやるよ'
+        'ここは最高だ。私がてっぺんまで連れてってやるよ'
       ],
     },
     seductive: {
@@ -26955,7 +26955,7 @@ GLIMPSE_B_LINES['GL-01'] = {
       composed: ['…勝ったね。…こんなもんかな'],
     },
     bold: {
-      _default: ['楽勝！ あたしに勝てるわけないでしょ', '当たり前よ。この程度で負けるわけないじゃない'],
+      _default: ['楽勝！ 私に勝てるわけないでしょ', '当たり前よ。この程度で負けるわけないじゃない'],
       delinquent: ['へっ、雑魚が。話にならねぇ'],
       cool: ['勝った。次も同じだ'],
       composed: ['…当然。…まだまだだけどね'],
@@ -27062,7 +27062,7 @@ GLIMPSE_B_LINES['GL-01'] = {
       composed: ['…最高の試合で勝てた。…こういう日もあるね'],
     },
     bold: {
-      _default: ['これがあたしの実力だ！ 最高の試合で最高の勝利！', 'へへっ、見たか！ これがあたしの全力だ！'],
+      _default: ['これが私の実力だ！ 最高の試合で最高の勝利！', 'へへっ、見たか！ これが私の全力だ！'],
       composed: ['…上等。…これが実力だ'],
     },
     quiet: {
@@ -27212,7 +27212,7 @@ GLIMPSE_B_LINES['GL-03'] = {
       composed: ['…最近、ちょっと引っかかることがあるかな'],
     },
     bold: {
-      _default: ['何だよ最近の扱いは。あたしを軽く見てんのか'],
+      _default: ['何だよ最近の扱いは。私を軽く見てんのか'],
       composed: ['…この扱いは、どうなの'],
     },
     quiet: {
@@ -27291,8 +27291,8 @@ GLIMPSE_B_LINES['GL-06'] = {
     cool: ['……出番がないのは、つらい'],
   },
   bold: {
-    _default: ['なんであたしを使わないの！ 実力は見せてるでしょ！', 'リングに上がらせて！ くすぶってる場合じゃないのよ！'],
-    delinquent: ['おいこら！ あたしを出せよ！ 暴れたいんだよ！'],
+    _default: ['なんで私を使わないの！ 実力は見せてるでしょ！', 'リングに上がらせて！ くすぶってる場合じゃないのよ！'],
+    delinquent: ['おいこら！ 私を出せよ！ 暴れたいんだよ！'],
     ojousama: ['わたくしの出番がないとは…運営の怠慢ですわ'],
   },
   quiet: {
@@ -27340,13 +27340,13 @@ GLIMPSE_B_LINES['GL-08'] = {
   normal: {
     _default: ['また負けた…どうすればいいんだ', '連敗が止まらない…自信がなくなってきた'],
     ojousama: ['連敗…こんなはずでは…ありませんわ'],
-    delinquent: ['くそが…何連敗してんだよあたしは…'],
+    delinquent: ['くそが…何連敗してんだよ私は…'],
     seductive: ['負け続き…こんなの私じゃないわ'],
     polite: ['連敗してしまって…皆さんに申し訳なくて…'],
     cool: ['……勝てない。何が足りない'],
   },
   bold: {
-    _default: ['…このまま終わるつもりはない', 'いつまで負け続ける気だ…！ 目を覚ませ、あたし！'],
+    _default: ['…このまま終わるつもりはない', 'いつまで負け続ける気だ…！ 目を覚ませ、私！'],
     delinquent: ['ふざけんな…いつまで負けてんだよ…！'],
   },
   quiet: {
@@ -27377,7 +27377,7 @@ GLIMPSE_B_LINES['GL-09'] = {
     cool: ['……負ける気がしない'],
   },
   bold: {
-    _default: ['絶好調！ この波に乗って一気に行くぞ！', '今のあたしを止められるやつはいない！'],
+    _default: ['絶好調！ この波に乗って一気に行くぞ！', '今の私を止められるやつはいない！'],
     delinquent: ['止まらねぇぜ！ 全員ぶっ倒す！'],
   },
   quiet: { _default: ['……いい流れだ。このまま'] },
@@ -27400,7 +27400,7 @@ GLIMPSE_B_LINES['GL-10'] = {
     cool: ['……じっとしているのが、一番つらい'],
   },
   bold: {
-    _default: ['こんなとこで寝てる場合じゃねぇんだよ…！', 'あたしがいない間に追い抜かれてたまるか'],
+    _default: ['こんなとこで寝てる場合じゃねぇんだよ…！', '私がいない間に追い抜かれてたまるか'],
     delinquent: ['チッ…じっとしてらんねぇ。もう走れるだろ…！'],
   },
   quiet: {
@@ -29381,7 +29381,7 @@ if (!RIVALRY_MATCH_REACTION.winnerLines.seductive.bold) RIVALRY_MATCH_REACTION.w
 RIVALRY_MATCH_REACTION.winnerLines.seductive.bold.push('今のあなたじゃ、わたしに届かないわ。…鍛え直してらっしゃい');
 if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent) RIVALRY_MATCH_REACTION.winnerLines.delinquent = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold) RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold = [];
-RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold.push('今のテメェじゃ、あたしには勝てねえ。出直してこい');
+RIVALRY_MATCH_REACTION.winnerLines.delinquent.bold.push('今のテメェじゃ、私には勝てねえ。出直してこい');
 if (!RIVALRY_MATCH_REACTION.winnerLines.composed) RIVALRY_MATCH_REACTION.winnerLines.composed = {};
 if (!RIVALRY_MATCH_REACTION.winnerLines.composed.bold) RIVALRY_MATCH_REACTION.winnerLines.composed.bold = [];
 RIVALRY_MATCH_REACTION.winnerLines.composed.bold.push('…今のあなたじゃ、わたしには届かない。また来なよ');
