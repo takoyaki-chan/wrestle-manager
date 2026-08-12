@@ -12432,10 +12432,13 @@ const App = {
     };
     _factionAudioOpen('CHALLENGE_REQUEST');
     const finalizeCRAudio = () => _factionAudioClose('CHALLENGE_REQUEST');
-    showChallengeRequestModal(payload, G, (choice) => {
+    showChallengeRequestModal(payload, G, (choice, pickedIds) => {
       if (choice === 'YES') {
         const requesterFighter = _findRequester();
         const reqName = requesterFighter.name || '';
+        if (!isInverse && Array.isArray(pickedIds) && pickedIds.length === 2) {
+          G = { ...G, _awayTeamPick: pickedIds };
+        }
 
         const proceedWithCard = () => {
           // 試合カード生成（味方/相手陣が足りなければ却下扱い）
@@ -12472,27 +12475,29 @@ const App = {
           Storage.autoSave();
 
           const finishAccept = () => {
+            // task-87: inverse は果たし状そのものが受理演出を兼ねる。重ねて受理通知を出さない。
+            if (isInverse) {
+              renderWeekScreen && renderWeekScreen();
+              finalizeCRAudio();
+              return;
+            }
             Audio.play('event');
             showEventPopup({
               type: 'fighter', id: payload.selfId,
               name: reqName, tone: 'positive',
-              message: isInverse
-                ? `⚔ 挑戦状を受理。次の自団体興行で迎え撃つ`
-                : `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
-              detail: isInverse
-                ? `${reqName} らの挑戦試合は、自団体興行の上位3試合に固定される。`
-                : `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
+              message: `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
+              detail: `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
             });
             renderWeekScreen && renderWeekScreen();
             finalizeCRAudio();
           };
 
           // challenge-request-spec-v0.1 追加: YES 直後、直訴した本人の返事を頭上吹き出しで見せる
-          if (typeof showChallengeSendoffModal === 'function' && Engine.challengeRequest.pickLine) {
+          if (!isInverse && typeof showChallengeSendoffModal === 'function' && Engine.challengeRequest.pickLine) {
             const sendoffRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xC4A4, payload.selfId, payload.otherId));
             const sendoffLine = Engine.challengeRequest.pickLine(requesterFighter, 'sendoff', sendoffRng, card.opponentOrgName);
             if (sendoffLine) {
-              showChallengeSendoffModal(requesterFighter, sendoffLine, G, finishAccept);
+              showChallengeSendoffModal(requesterFighter, sendoffLine, G, card, finishAccept);
             } else {
               finishAccept();
             }
@@ -12501,22 +12506,7 @@ const App = {
           }
         };
 
-        // away-flow-redesign CH-1b: forward（自団体→他団体）のときだけ、
-        // buildMatchCardの自動選抜(bond→OVR順)の前にプレイヤーへ同行2名を選ばせる。
-        // inverse（迎撃）は対象外＝現状維持。
-        if (!isInverse && typeof showAwayTeamPickModal === 'function') {
-          const otherOrg = G.aiOrgs && G.aiOrgs[payload.otherOrgId];
-          const opponentOrgName = (G.rivalOrgNames && G.rivalOrgNames[payload.otherOrgId])
-            || (otherOrg && otherOrg.name) || payload.otherOrgId || '他団体';
-          showAwayTeamPickModal(G, requesterFighter, opponentOrgName, (pickedIds) => {
-            if (Array.isArray(pickedIds) && pickedIds.length === 2) {
-              G = { ...G, _awayTeamPick: pickedIds };
-            }
-            proceedWithCard();
-          });
-        } else {
-          proceedWithCard();
-        }
+        proceedWithCard();
       } else if (choice === 'NO') {
         G = Engine.challengeRequest.rejectPending(G);
         // 打診者の condition 一時悪化（次戦のパフォーマンスとセリフに反映）

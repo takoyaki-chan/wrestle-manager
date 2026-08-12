@@ -11368,6 +11368,46 @@ const CHALLENGE_GROUP_PETITION_LINES = {
   ],
 };
 
+// task-87: 他団体から届く3人制団体戦の挑戦状。承認済み草案「場面3」を原文どおり収録する。
+// 話者の archetype 単軸で選び、未定義時は standard へフォールバックする。
+const CHALLENGE_ARRIVAL_LINES = {
+  standard: [
+    '三人で行きます。お宅の三人、隠さず出してください。',
+    '私を切った判断が正しかったか、確かめに来ました。',
+    '三つとも取ります。それで話は終わりです。',
+  ],
+  ojousama: [
+    '三人で参りますわ。お宅の精鋭を、お出しになって。',
+    'わたくしを要らないと決めた方に、お会いしたいの。',
+    '三つの勝負で、格の違いをお見せいたします。',
+  ],
+  cool: [
+    '三人で行く。そちらも三人、出して。',
+    '切られた理由を、まだ聞いていない。……三つで返す。',
+    '断ってもいい。逃げたと書かれるだけ。',
+  ],
+  delinquent: [
+    '三人で乗り込む。お宅も三人、出しなよ。',
+    '私を追い出したこと、忘れちゃいねえよ。三人で行く。',
+    'あんたたちの一番強いのを出せばいい。潰すから。',
+  ],
+  polite: [
+    '三人で伺います。断られては、困りますので。',
+    '私を手放した判断、間違いだったと申し上げます。',
+    'お宅の三人を、正面から倒させていただきます。',
+  ],
+  composed: [
+    '三人で行かせてもらうよ。そちらも三人、頼むね。',
+    '恨んではいないんだ。ただ、確かめたいことがある。',
+    '断る自由はあるよ。それも、答えのうちだ。',
+  ],
+  seductive: [
+    '三人で伺うわ。お宅の自慢の三人、見せて。',
+    '私を手放したこと、後悔させてあげる。……ふふ。',
+    '三つとも、いただくわ。断る理由、あるかしら？',
+  ],
+};
+
 const CHALLENGE_REQUEST_OPPONENT_REACTIONS = {
 
   // ═══ polite 系 ═══
@@ -30691,6 +30731,7 @@ const EVENT_LINES_BY_KEY = {
   faWelcomeGeneric: EVENT_FA_WELCOME_GENERIC_LINES,
   factionIgniteProvoke: FACTION_IGNITE_LINES.provoke,
   factionIgniteRespond: FACTION_IGNITE_LINES.respond,
+  challengeArrival: CHALLENGE_ARRIVAL_LINES,
   rentalGreeting: EVENT_RENTAL_GREETING_LINES,
   rentalGreetingGeneric: EVENT_RENTAL_GREETING_GENERIC_LINES,
   heatSelf: HEAT_STATE_SELF_LINES,
@@ -30740,7 +30781,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED, AI_TITLE_CHALLENGER_CFG,
     AI_TITLE_ELIGIBILITY_CFG,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
-    CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES,
+    CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES, CHALLENGE_ARRIVAL_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, FAREWELL_KIND_TEXT, FAREWELL_CLOSING, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES,
     AWARD_LINES, AUTUMN_WAR_MATCH_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,

@@ -3708,6 +3708,27 @@ Engine.challengeRequest = {
     if (picked._inverse) {
       pending._inverse = true;
       pending.requesterOrgId = picked.requesterOrgId;
+      // task-87: 挑戦状が届いた瞬間の敵隊列を固定する。発起人以外を OVR 降順で選び、
+      // 同値だけ derive ローカル rng で決めるため、本流 rng の乱数列は不変。
+      const requesterOrg = (s.aiOrgs || {})[picked.requesterOrgId];
+      const requesterRoster = requesterOrg && Array.isArray(requesterOrg.roster)
+        ? requesterOrg.roster
+        : [];
+      const ovr = f => Engine.util && Engine.util.ov
+        ? Engine.util.ov(f)
+        : Math.round(((f.pw || 0) + (f.sp || 0) + (f.te || 0) + (f.st || 0) + (f.mn || 0)) / 5);
+      const selectionRng = Engine.rng.create(Engine.rng.derive(
+        s.rngSeed || 0, s.season || 0, s.week || 0, 0xC4A6, picked.selfId
+      ));
+      const mateIds = requesterRoster
+        .filter(f => f && f.id !== picked.selfId && !f.injury && f.status !== 'retired')
+        .map(f => ({ fighter: f, tieBreak: Engine.rng.int(selectionRng, 0, 0x7fffffff) }))
+        .sort((a, b) => (ovr(b.fighter) - ovr(a.fighter))
+          || (a.tieBreak - b.tieBreak)
+          || (Number(a.fighter.id) - Number(b.fighter.id)))
+        .slice(0, 2)
+        .map(entry => entry.fighter.id);
+      pending.memberIds = [picked.selfId, ...mateIds];
     }
     return {
       ...s,
@@ -3891,7 +3912,13 @@ Engine.challengeRequest = {
     // state._awayTeamPick = [id1, id2] が両方とも reqMates 内に見つかった場合だけ採用し、
     // 見つからない/未指定/inverse の場合は従来どおり bond→OVR 順の自動選抜にフォールバックする。
     let mateA = reqMates[0], mateB = reqMates[1];
-    if (!isInverse && Array.isArray(state._awayTeamPick) && state._awayTeamPick.length === 2) {
+    if (isInverse && Array.isArray(p.memberIds) && p.memberIds.length >= 3) {
+      const picked = p.memberIds
+        .filter(id => id !== requester.id)
+        .map(id => reqMates.find(f => f.id === id))
+        .filter(Boolean);
+      if (picked.length >= 2) { mateA = picked[0]; mateB = picked[1]; }
+    } else if (!isInverse && Array.isArray(state._awayTeamPick) && state._awayTeamPick.length === 2) {
       const picked = state._awayTeamPick
         .map(id => reqMates.find(f => f.id === id))
         .filter(Boolean);

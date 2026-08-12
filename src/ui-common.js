@@ -11951,6 +11951,79 @@ if (typeof window !== 'undefined') {
 // 自団体選手 → 他団体選手 への直訴。YES / NO の2択。
 // 派閥 Common-1 の比較レイアウト(fc1m-*)を流用しつつ、cross-org 用に再設計。
 // ─────────────────────────────────────────────────────────────────────────────
+function showHostileArrivalStage(opts) {
+  if (_isPopupActive()) { _popupQueue.push(() => showHostileArrivalStage(opts)); return; }
+  const cfg = opts || {};
+  const members = Array.isArray(cfg.members) ? cfg.members.filter(Boolean).slice(0, 5) : [];
+  const choices = Array.isArray(cfg.choices) ? cfg.choices.filter(Boolean) : [];
+  const root = _factionEnsureOverlayRoot();
+  const memberHtml = members.map(member => {
+    const imgUrl = member.id != null ? _factionUpperUrl(member.id) : '';
+    const portrait = imgUrl
+      ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(member.name || '')}">`
+      : `<div class="inv-mem-fallback">${escHtml((member.name || '?').charAt(0))}</div>`;
+    return `<div class="inv-mem" data-member-id="${escHtml(String(member.id != null ? member.id : ''))}">${portrait}</div>`;
+  }).join('');
+  const namesHtml = members.map(member => `<div class="inv-name">
+    <b>${escHtml(member.name || '???')}</b><span>${escHtml(member.roleLabel || '挑戦者')}</span>
+  </div>`).join('');
+  const orgBadgeHtml = cfg.orgBadge && typeof _u3bOrgBadgeHtml === 'function'
+    ? _u3bOrgBadgeHtml({ ...cfg.orgBadge, isHome: false })
+    : '';
+  const factsHtml = (Array.isArray(cfg.facts) ? cfg.facts : [])
+    .map(fact => `<div class="inv-fact">${escHtml(fact)}</div>`).join('');
+  const choicesHtml = choices.map((choice, idx) => `<button class="inv-dcard" type="button" data-choice-index="${idx}">
+    <span class="letter">${escHtml(choice.letter || '')}</span>
+    <span><span class="label">${escHtml(choice.label || '')}</span><span class="hint">${escHtml(choice.hint || '')}</span></span>
+  </button>`).join('');
+
+  root.innerHTML = `
+    <div class="fevt-overlay-office hostile-arrival-overlay">
+      <div class="inv-screen" role="dialog" aria-modal="true" aria-labelledby="hostileArrivalTitle">
+        <div class="inv-title" id="hostileArrivalTitle">${escHtml(cfg.title || '果 た し 状')}</div>
+        <div class="inv-divider"></div>
+        <div class="inv-sub">${escHtml(cfg.subLabel || '')}</div>
+        <div class="inv-speaker">${escHtml(cfg.speakerLabel || '')}</div>
+        <div class="inv-bubble-wrap"><div class="inv-bubble">${escHtml(cfg.line || '……')}</div></div>
+        <div class="inv-lineup" data-member-count="${members.length}">${memberHtml}</div>
+        <div class="inv-names">${namesHtml}</div>
+        ${orgBadgeHtml ? `<div class="inv-orgline u3b-theme-stage">${orgBadgeHtml}</div>` : ''}
+        ${factsHtml ? `<div class="inv-facts">${factsHtml}</div>` : ''}
+        <div class="inv-tray">${choicesHtml}</div>
+      </div>
+    </div>`;
+
+  const overlay = root.querySelector('.hostile-arrival-overlay');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  let resolved = false;
+  const finish = (choice) => {
+    if (resolved) return;
+    resolved = true;
+    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+    _factionCloseCinematicOverlay();
+    // CSS transition/MutationObserver が動かない環境でも、古いオーバーレイを残して進行を塞がない。
+    setTimeout(() => {
+      if (overlay && root.contains(overlay)) {
+        console.warn('[WM] hostile arrival close safety net fired');
+        root.innerHTML = '';
+        _drainPopupQueue();
+      }
+    }, 900);
+    if (typeof cfg.onChoice === 'function') cfg.onChoice(choice);
+  };
+  root.querySelectorAll('.inv-dcard').forEach(button => {
+    button.addEventListener('click', () => {
+      const idx = Number(button.dataset.choiceIndex);
+      if (!Number.isInteger(idx) || !choices[idx]) return;
+      finish(choices[idx]);
+    }, { once: true });
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.showHostileArrivalStage = showHostileArrivalStage;
+}
+
 function showChallengeRequestModal(payload, state, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showChallengeRequestModal(payload, state, onChoice)); return; }
   if (!payload) { if (onChoice) onChoice(null); return; }
@@ -11958,6 +12031,59 @@ function showChallengeRequestModal(payload, state, onChoice) {
   const roster = state ? (state.roster || []) : [];
   const aiOrgs = state ? (state.aiOrgs || {}) : {};
   const isInverse = !!payload._inverse;
+
+  if (isInverse) {
+    const requesterOrg = aiOrgs[payload.requesterOrgId];
+    const requesterRoster = requesterOrg && Array.isArray(requesterOrg.roster) ? requesterOrg.roster : [];
+    const requester = requesterRoster.find(c => c.id === payload.selfId);
+    if (!requester) { if (onChoice) onChoice(null); return; }
+    const listedIds = Array.isArray(payload.memberIds) && payload.memberIds.length > 0
+      ? payload.memberIds
+      : [payload.selfId];
+    const listedMembers = [...new Set([payload.selfId, ...listedIds])]
+      .map(id => requesterRoster.find(f => f.id === id))
+      .filter(Boolean);
+    const requesterMates = listedMembers.filter(f => f.id !== requester.id);
+    const displayMembers = listedMembers.length === 3
+      ? [requesterMates[0], requester, requesterMates[1]].filter(Boolean)
+      : listedMembers;
+    const roleById = new Map([[requester.id, '発起人 ・ 大将']]);
+    requesterMates.forEach((fighter, idx) => roleById.set(fighter.id, idx === 0 ? '中堅' : idx === 1 ? '先鋒' : '挑戦者'));
+    const arrivalPools = typeof EVENT_LINES_BY_KEY !== 'undefined'
+      ? EVENT_LINES_BY_KEY.challengeArrival
+      : (typeof CHALLENGE_ARRIVAL_LINES !== 'undefined' ? CHALLENGE_ARRIVAL_LINES : null);
+    const arrivalPool = arrivalPools
+      ? (arrivalPools[requester.archetype || 'standard'] || arrivalPools.standard || [])
+      : [];
+    const arrivalRng = Engine.rng.create(Engine.rng.derive(
+      state.rngSeed || 0, state.season || 0, state.week || 0, 0xC4A5, payload.selfId, payload.otherId
+    ));
+    const arrivalLine = arrivalPool.length > 0
+      ? arrivalPool[Engine.rng.int(arrivalRng, 0, arrivalPool.length - 1)]
+      : '三人で行きます。お宅の三人、隠さず出してください。';
+    const requesterOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.requesterOrgId])
+      || requesterOrg.name || payload.requesterOrgId || '他団体';
+    showHostileArrivalStage({
+      title: '果 た し 状',
+      subLabel: `CHALLENGE ARRIVED ・ 3人制シングル3連戦 ・ WEEK ${state.week || '—'}`,
+      speakerLabel: `挑戦状の主 ・ ${requester.name}`,
+      line: arrivalLine,
+      members: displayMembers.map(fighter => ({
+        id: fighter.id, name: fighter.name, roleLabel: roleById.get(fighter.id) || '挑戦者',
+      })),
+      orgBadge: { orgId: payload.requesterOrgId, orgName: requesterOrgName },
+      facts: [
+        '次の自団体興行の上位3試合が、この団体戦になる',
+        '迎え撃つ3名は、興行準備のカードで決める',
+      ],
+      choices: [
+        { letter: 'A', label: '受けて立つ', hint: '逃げも隠れもしない。次の興行で迎え撃つ', result: 'YES' },
+        { letter: 'B', label: 'お引き取り願う', hint: '断れば、あちらの因縁は消えずに残る', result: 'NO' },
+      ],
+      onChoice: choice => { if (onChoice) onChoice(choice && choice.result); },
+    });
+    return;
+  }
 
   // 打診者・相手の lookup（forward / inverse で参照先を切替）
   let requester, opponent, requesterOrgName, opponentOrgName;
@@ -12019,6 +12145,23 @@ function showChallengeRequestModal(payload, state, onChoice) {
     }
   }
 
+  // task-87: 旧・別画面ピッカーと同じ資格集合を、直訴の紙面内へ統合する。
+  const awayCandidates = roster
+    .filter(f => f && f.id !== requester.id && !f.isRental
+      && !f.injury && !f.forcedRest && !f.suspended)
+    .map(f => ({ fighter: f, ovr: Engine.util && Engine.util.ov ? Engine.util.ov(f) : ovr(f) }))
+    .sort((a, b) => b.ovr - a.ovr);
+  let selectedAwayIds = awayCandidates.slice(0, 2).map(c => c.fighter.id);
+  const awayPartyHtml = awayCandidates.map(candidate => {
+    const fighter = candidate.fighter;
+    const selected = selectedAwayIds.includes(fighter.id);
+    return `<button class="crq-party-cand${selected ? ' sel' : ''}" type="button" data-away-candidate-id="${fighter.id}" aria-pressed="${selected ? 'true' : 'false'}">
+      <img src="${escHtml(_factionUpperUrl(fighter.id))}" alt="">
+      <span class="crq-party-name">${escHtml(fighter.name)}</span>
+      <span class="crq-party-ovr">OVR ${candidate.ovr}</span>
+    </button>`;
+  }).join('');
+
   // クリック対象: forward は requester(自陣)、inverse は opponent(自陣) のみ
   const aClick = isInverse ? '' : `event.stopPropagation();showFighterPopup(${requester.id},'roster',true)`;
   const bClick = isInverse ? `event.stopPropagation();showFighterPopup(${opponent.id},'roster',true)` : '';
@@ -12078,9 +12221,17 @@ function showChallengeRequestModal(payload, state, onChoice) {
         </div>
         <div class="crq-series-order">第1試合・先鋒対決 <span>全3試合のシリーズ戦です</span></div>
         <div class="fc1m-rivalry">直近対戦 <strong>${h2hLabel}</strong> — ${escHtml(flavorLine)}</div>
+        <div class="crq-party" data-away-party-picker>
+          <div class="crq-party-head">
+            <div class="crq-party-title">🚌 同行する2名を選ぶ</div>
+            <div class="crq-party-count"><strong>${selectedAwayIds.length}</strong> / 2 選択中</div>
+          </div>
+          <div class="crq-party-row">${awayPartyHtml || '<div class="crq-party-empty">同行できる選手がいません</div>'}</div>
+          <div class="crq-party-note">発起人と選んだ2名が遠征します。負傷・休養・謹慎・レンタル中の選手は候補外です。</div>
+        </div>
         <div class="fevt-decision-prompt">この団体戦挑戦、社長としてどう答えますか？</div>
         <div class="fevt-decision-tray two">
-          <div class="fevt-decision-card" data-choice="YES">
+          <div class="fevt-decision-card${selectedAwayIds.length === 2 ? '' : ' label-disabled'}" data-choice="YES" aria-disabled="${selectedAwayIds.length === 2 ? 'false' : 'true'}">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">${isInverse ? '受けて立つ' : 'この舞台、組もう'}</div>
             <div class="fevt-decision-hint">${isInverse ? `${escHtml(requesterOrgName)}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ` : `次の通常興行週、自団体興行より先に${escHtml(opponentOrgName)}へ3人で遠征する`}</div>
@@ -12099,247 +12250,53 @@ function showChallengeRequestModal(payload, state, onChoice) {
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  const paintAwayParty = () => {
+    root.querySelectorAll('[data-away-candidate-id]').forEach(chip => {
+      const selected = selectedAwayIds.includes(Number(chip.dataset.awayCandidateId));
+      chip.classList.toggle('sel', selected);
+      chip.setAttribute('aria-pressed', selected ? 'true' : 'false');
+    });
+    const count = root.querySelector('.crq-party-count strong');
+    if (count) count.textContent = String(selectedAwayIds.length);
+    const yesCard = root.querySelector('.fevt-decision-card[data-choice="YES"]');
+    if (yesCard) {
+      const disabled = selectedAwayIds.length !== 2;
+      yesCard.classList.toggle('label-disabled', disabled);
+      yesCard.setAttribute('aria-disabled', disabled ? 'true' : 'false');
+    }
+  };
+  root.querySelectorAll('[data-away-candidate-id]').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const id = Number(chip.dataset.awayCandidateId);
+      const selectedIndex = selectedAwayIds.indexOf(id);
+      if (selectedIndex >= 0) {
+        selectedAwayIds.splice(selectedIndex, 1);
+      } else if (selectedAwayIds.length < 2) {
+        selectedAwayIds.push(id);
+      } else {
+        selectedAwayIds = [selectedAwayIds[1], id];
+      }
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      paintAwayParty();
+    });
+  });
+  let resolved = false;
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
     card.addEventListener('click', function() {
       const choice = this.dataset.choice;
       if (!choice) return;
+      if (choice === 'YES' && selectedAwayIds.length !== 2) return;
+      if (resolved) return;
+      resolved = true;
       if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
       _factionCloseCinematicOverlay();
-      if (onChoice) onChoice(choice);
+      if (onChoice) onChoice(choice, choice === 'YES' ? [...selectedAwayIds] : []);
     });
   });
 }
 
 if (typeof window !== 'undefined') {
   window.showChallengeRequestModal = showChallengeRequestModal;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// away-flow-redesign 実装A: 同行2名を選ぶ（CH-1b）
-// 直訴YESの直後、forward（自団体→他団体）のときだけプレイヤーに選ばせる。
-// 言い出し手はロック、残り2枠を自団体ロスターから選ぶ。負傷・休養中・謹慎中の選手は
-// 理由付きでグレーアウト表示する（buildMatchCard の _healthy 判定と同じ基準）。
-// 健康な候補が2名に満たない場合はモーダルを開かず null で即コールバックし、
-// 呼び出し側の既存フォールバック（buildMatchCard 失敗時の却下トースト）に委ねる。
-// ─────────────────────────────────────────────────────────────────────────────
-function showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm) {
-  if (_isPopupActive()) { _popupQueue.push(() => showAwayTeamPickModal(state, requester, opponentOrgName, onConfirm)); return; }
-  if (!state || !requester) { if (onConfirm) onConfirm(null); return; }
-
-  const ov = f => (typeof Engine !== 'undefined' && Engine.util && Engine.util.ov) ? Engine.util.ov(f) : 0;
-  const roster = state.roster || [];
-  const candidates = roster
-    .filter(f => f && f.id !== requester.id && !f.isRental)
-    .map(f => ({
-      fighter: f,
-      ovr: ov(f),
-      healthy: !f.injury && !f.forcedRest && !f.suspended,
-      reason: f.injury ? `${injuryLabelShort(f.injury.type)} ${f.injury.weeksLeft}週`
-        : f.forcedRest ? '休養中'
-        : f.suspended ? '謹慎中'
-        : '',
-    }))
-    .sort((a, b) => b.ovr - a.ovr);
-
-  const healthyOnly = candidates.filter(c => c.healthy);
-  if (healthyOnly.length < 2) { if (onConfirm) onConfirm(null); return; }
-
-  let selected = [healthyOnly[0].fighter.id, healthyOnly[1].fighter.id];
-  // 枠フォーカス方式(2026-07-25): 初期状態は両枠とも埋まっているが、
-  // 「1枠目」にフォーカスを当てておき、候補をいきなりクリックしても
-  // そこへ上書きされるようにする(ユーザー指摘: 解除→選択の2手を要求しない)。
-  let focusedSlot = 0;
-
-  const root = _factionEnsureOverlayRoot();
-
-  const _awpickFaceHtml = (fighter, cls) => {
-    const url = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
-    const bg = _genericFaceBg(fighter.id);
-    if (url) return `<div class="${cls}" style="background:${bg}"><img src="${url}" alt="" onerror="this.style.display='none'"></div>`;
-    return `<div class="${cls}" style="background:${bg}"><span class="awpick-ini">${escHtml((fighter.name || '?').charAt(0))}</span></div>`;
-  };
-
-  const slotHtml = (idx) => {
-    const id = selected[idx];
-    const c = id ? candidates.find(x => x.fighter.id === id) : null;
-    const isFocused = focusedSlot === idx;
-    const cls = ['awpick-slot', !c ? 'empty' : '', isFocused ? 'focused' : ''].filter(Boolean).join(' ');
-    const commonAttrs = `data-idx="${idx}" role="button" tabindex="0" aria-pressed="${isFocused ? 'true' : 'false'}"`;
-    if (!c) {
-      const ariaLabel = `同行者${idx + 1}、未選択。タップして候補を選ぶ`;
-      return `<div class="${cls}" ${commonAttrs} aria-label="${escHtml(ariaLabel)}">
-        <span class="awpick-tag">同行者 ${idx + 1}</span>
-        <div class="awpick-face blank">＋</div>
-        <div class="awpick-nm awpick-empty">未選択</div>
-        <div class="awpick-sub">${isFocused ? '候補を選んでください' : 'タップして選ぶ'}</div>
-      </div>`;
-    }
-    const ariaLabel = `同行者${idx + 1}、${c.fighter.name}。タップで入れ替え`;
-    return `<div class="${cls}" ${commonAttrs} aria-label="${escHtml(ariaLabel)}">
-      <span class="awpick-tag">同行者 ${idx + 1}</span>
-      ${_awpickFaceHtml(c.fighter, 'awpick-face')}
-      <div class="awpick-nm">${escHtml(c.fighter.name)}</div>
-      <div class="awpick-sub">${isFocused ? '候補を選ぶと入れ替わります' : 'タップで入れ替え'}</div>
-      <div class="awpick-ov">OVR ${c.ovr}</div>
-    </div>`;
-  };
-
-  const candHtml = (c) => {
-    const isSel = selected.includes(c.fighter.id);
-    const cls = ['awpick-cand', isSel ? 'sel' : '', !c.healthy ? 'dis' : ''].filter(Boolean).join(' ');
-    const condLabel = c.healthy && c.fighter.condition != null ? ` ／ 体調 ${Math.round(c.fighter.condition)}` : '';
-    return `<div class="${cls}" data-id="${c.fighter.id}" data-healthy="${c.healthy ? '1' : '0'}">
-      ${isSel ? '<span class="awpick-chk">✓</span>' : ''}
-      ${_awpickFaceHtml(c.fighter, 'awpick-cf')}
-      <div class="awpick-cnm">${escHtml(c.fighter.name)}</div>
-      <div class="awpick-cst">OVR ${c.ovr}${condLabel}</div>
-      ${!c.healthy ? `<div class="awpick-warn">${escHtml(c.reason)}</div>` : ''}
-    </div>`;
-  };
-
-  function confirmAndClose() {
-    const overlay = root.querySelector('.fevt-overlay-office');
-    if (overlay) overlay.classList.remove('active');
-    setTimeout(() => { if (overlay && root.contains(overlay)) root.innerHTML = ''; _drainPopupQueue(); }, 500);
-    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-    root.removeEventListener('click', handleClick);
-    root.removeEventListener('keydown', handleKeydown);
-    if (onConfirm) onConfirm(selected.filter(Boolean));
-  }
-
-  function paint() {
-    const selCount = selected.filter(Boolean).length;
-    const candHeadText = focusedSlot != null
-      ? `出せる選手 — 「同行者${focusedSlot + 1}」に入れる候補を選んでください`
-      : '出せる選手（体調・負傷を考慮）';
-    const html = `
-      <div class="fevt-overlay-office" id="awayTeamPickOverlay">
-        <div class="fevt-report-card">
-          <div class="fevt-report-header">
-            <div class="fevt-report-title">🚌 遠征メンバーを決める</div>
-            <div class="fevt-report-meta">${_mdlASeasonLabel(state)}</div>
-          </div>
-          <div class="awpick-body">
-            <p class="awpick-note">${escHtml(requester.name)}が名指しした一戦です。<strong>あと2名</strong>を連れて${escHtml(opponentOrgName)}へ乗り込みます。<br>遠征に出た選手は、同じ週の自団体興行には出られません。</p>
-            <div class="awpick-slots">
-              <div class="awpick-slot fixed">
-                <span class="awpick-tag">言い出し手・確定</span>
-                ${_awpickFaceHtml(requester, 'awpick-face')}
-                <div class="awpick-nm">${escHtml(requester.name)}</div>
-                <div class="awpick-sub">この一戦の当事者</div>
-                <div class="awpick-ov">OVR ${ov(requester)}</div>
-              </div>
-              ${slotHtml(0)}
-              ${slotHtml(1)}
-            </div>
-            <div class="awpick-cand-head">${escHtml(candHeadText)}</div>
-            <div class="awpick-cands">${candidates.map(candHtml).join('')}</div>
-            <div class="awpick-foot">
-              <div class="awpick-sum">選択 <strong>${selCount}</strong> / 2 名${selCount < 2 ? `　—　残り${2 - selCount}名を選んでください` : ''}</div>
-              <div class="awpick-actions">
-                <button class="awpick-btn-auto" id="awpickAuto" type="button">おまかせ（OVR順）</button>
-                <button class="awpick-btn-go" id="awpickGo" type="button"${selCount === 2 ? '' : ' disabled'}>この3人で行く →</button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>`;
-    root.innerHTML = html;
-    const overlay = root.querySelector('.fevt-overlay-office');
-    if (overlay) { void overlay.offsetWidth; overlay.classList.add('active'); }
-  }
-
-  // 枠フォーカス方式(2026-07-25、Keisuke指摘対応):
-  // 同行者スロットをクリックすると「フォーカス」される。フォーカス中の枠がある状態で
-  // 候補をクリックすると、既に誰か入っていてもその枠へ即座に上書きされる
-  // (旧: 満枠時は候補クリックを拒否し、先に解除させる2手UIだった)。
-  function slotClicked(idx) {
-    if (idx === focusedSlot) {
-      if (selected[idx] != null) {
-        // フォーカス中の枠をもう一度押す = その枠から選手を外す(枠側の解除手段)。
-        // フォーカスはそのまま保持し、続けて候補を選べば即座に埋まる。
-        selected[idx] = null;
-      } else {
-        // 既に空＆フォーカス中の枠をもう一度押す = フォーカス解除。
-        focusedSlot = null;
-      }
-    } else {
-      focusedSlot = idx;
-    }
-    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-    paint();
-  }
-
-  function candClicked(cand) {
-    if (cand.dataset.healthy !== '1') return;
-    const id = Number(cand.dataset.id);
-    const pos = selected.indexOf(id);
-    if (pos >= 0) {
-      // 既に選ばれている選手をもう一度押す=解除(既存の逃げ道、維持)。
-      // 空いた枠にそのままフォーカスを移し、続けて別候補を選べば埋められるようにする。
-      selected[pos] = null;
-      focusedSlot = pos;
-    } else {
-      let target = focusedSlot;
-      if (target == null) {
-        const emptyIdx = selected.indexOf(null);
-        if (emptyIdx >= 0) {
-          target = emptyIdx;
-        } else {
-          // フォーカス無し＋2枠とも埋まっている: 誤操作で意図しない枠を
-          // 書き換えないよう、ここでは何もせず「枠を選んでください」と促す。
-          if (typeof showToast === 'function') showToast('入れ替えたい同行者の枠を選んでください', 2200);
-          return;
-        }
-      }
-      selected[target] = id;
-      // 埋めたら次の空き枠へフォーカスを移す。両方埋まったらフォーカス解除
-      // (次の変更は必ず枠を明示的に選び直させ、連続クリックでの誤上書きを防ぐ)。
-      const nextEmpty = selected.indexOf(null);
-      focusedSlot = nextEmpty >= 0 ? nextEmpty : null;
-    }
-    if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
-    paint();
-  }
-
-  function handleClick(e) {
-    const slotEl = e.target.closest('.awpick-slot');
-    if (slotEl && !slotEl.classList.contains('fixed')) {
-      slotClicked(Number(slotEl.dataset.idx));
-      return;
-    }
-    const cand = e.target.closest('.awpick-cand');
-    if (cand) {
-      candClicked(cand);
-      return;
-    }
-    if (e.target.closest('#awpickAuto')) {
-      selected = [healthyOnly[0].fighter.id, healthyOnly[1].fighter.id];
-      focusedSlot = null;
-      confirmAndClose();
-      return;
-    }
-    if (e.target.closest('#awpickGo')) {
-      if (selected.filter(Boolean).length !== 2) return;
-      confirmAndClose();
-    }
-  }
-
-  function handleKeydown(e) {
-    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
-    const slotEl = e.target.closest && e.target.closest('.awpick-slot');
-    if (slotEl && !slotEl.classList.contains('fixed')) {
-      e.preventDefault();
-      slotClicked(Number(slotEl.dataset.idx));
-    }
-  }
-
-  root.addEventListener('click', handleClick);
-  root.addEventListener('keydown', handleKeydown);
-  paint();
-}
-if (typeof window !== 'undefined') {
-  window.showAwayTeamPickModal = showAwayTeamPickModal;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -12658,25 +12615,64 @@ if (typeof window !== 'undefined') {
   window.showSpecialEventTravel = showSpecialEventTravel;
 }
 
-function showChallengeSendoffModal(fighter, line, state, onDone) {
+function showChallengeSendoffModal(fighter, line, state, card, onDone) {
   const run = () => {
     if (!fighter || !line) { if (onDone) onDone(); return; }
-    const subjectHtml = _mdlASubjectStage(fighter, '', { small: true, speech: line });
-    const html = `
-      ${_mdlAHeader('📜 直訴への返事', _mdlASeasonLabel(state))}
-      ${subjectHtml}
-      <div class="mdl-a-prompt" style="padding-bottom:24px">
-        <button class="mdl-a-continue-btn" id="mdlAChallengeSendoffClose">— 送 り 出 す —</button>
+    const team = card && Array.isArray(card.teamA) ? card.teamA.slice(0, 3) : [fighter];
+    const opponentOrgId = card && (card.opponentOrgId || card.otherOrgId);
+    const opponentOrgName = card && (card.opponentOrgName || card.otherOrgName) || '相手団体';
+    const orgBadgeHtml = typeof _u3bOrgBadgeHtml === 'function'
+      ? _u3bOrgBadgeHtml({ orgId: opponentOrgId, orgName: opponentOrgName, isHome: false })
+      : `<strong>${escHtml(opponentOrgName)}</strong>`;
+    const teamHtml = team.map((member, idx) => `<div class="crq-sendoff-member${member.id === fighter.id ? ' initiator' : ''}">
+      <img src="${escHtml(_factionUpperUrl(member.id))}" alt="">
+      <span>${escHtml(member.name || '')}</span>
+      <small>${idx === 0 ? '発起人' : `同行者 ${idx}`}</small>
+    </div>`).join('');
+    const root = _factionEnsureOverlayRoot();
+    root.innerHTML = `
+      <div class="fevt-overlay-office" id="challengeSendoffOverlay">
+        <div class="fevt-report-card crq-sendoff-card" role="dialog" aria-modal="true" aria-labelledby="challengeSendoffTitle">
+          <div class="fevt-report-header">
+            <div class="fevt-report-title" id="challengeSendoffTitle">📜 直訴への返事</div>
+            <div class="fevt-report-meta">${_mdlASeasonLabel(state)}</div>
+          </div>
+          <div class="crq-sendoff-body">
+            <div class="crq-sendoff-destination"><span>行き先</span>${orgBadgeHtml}</div>
+            <div class="crq-sendoff-speaker">
+              <div class="inv-bubble">${escHtml(line)}</div>
+              <img src="${escHtml(_factionUpperUrl(fighter.id))}" alt="">
+              <strong>${escHtml(fighter.name || '')}</strong>
+            </div>
+            <div class="crq-sendoff-team" aria-label="遠征する3名">${teamHtml}</div>
+            <button class="mdl-a-continue-btn crq-sendoff-close" type="button">— 送 り 出 す —</button>
+          </div>
+        </div>
       </div>
     `;
-    if (!_mdlAOpen(html)) { if (onDone) onDone(); return; }
-    const btn = document.getElementById('mdlAChallengeSendoffClose');
+    const overlay = root.querySelector('#challengeSendoffOverlay');
+    if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+    let resolved = false;
+    const finish = () => {
+      if (resolved) return;
+      resolved = true;
+      if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
+      _factionCloseCinematicOverlay();
+      setTimeout(() => {
+        if (overlay && root.contains(overlay)) {
+          console.warn('[WM] challenge sendoff close safety net fired');
+          root.innerHTML = '';
+          _drainPopupQueue();
+        }
+      }, 900);
+      if (onDone) onDone();
+    };
+    const btn = root.querySelector('.crq-sendoff-close');
     if (btn) {
-      btn.addEventListener('click', () => {
-        Audio.play('click');
-        _mdlAClose();
-        if (onDone) onDone();
-      });
+      btn.addEventListener('click', finish, { once: true });
+    } else {
+      console.warn('[WM] challenge sendoff continue button missing');
+      finish();
     }
   };
   _enqueuePopup(run);
