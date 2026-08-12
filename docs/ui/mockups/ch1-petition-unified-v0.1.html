@@ -50,9 +50,12 @@ body { font-family: 'Noto Sans JP', sans-serif; background: #0a0a0a; color: #e8e
   background: var(--office-panel-dark-deep); color: var(--gold-light); padding: 13px 20px; }
 .rep-title { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 17px; letter-spacing: .12em; }
 .rep-week { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .3em; color: var(--stage-text-sub); }
-.rep-header.hostile { background: linear-gradient(90deg, #1a0e06, var(--office-panel-dark-deep));
-  border-bottom: 2px solid var(--accent-hostility); }
-.rep-header.hostile .rep-title { color: #ffc9a0; }
+/* 迎撃は攻撃的=赤系(08-12 Keisuke裁定。挑む側=事務所の平和的クリームのまま)。開戦と同じ火の赤 #e04343 */
+.rep-header.hostile { background: linear-gradient(90deg, #1c0808, var(--office-panel-dark-deep));
+  border-bottom: 2px solid #e04343; }
+.rep-header.hostile .rep-title { color: #ffb3a3; }
+.view#vInv .brief-card.is-home { border-left-color: #e04343; }
+.view#vInv .dcard:hover { border-color: #b53333; }
 
 /* コーチ取次帯（_factionReporterStrip と同型: 40px丸 + 一言） */
 .coach-strip { display: flex; align-items: center; gap: 10px; background: rgba(18,17,14,.92);
@@ -311,34 +314,29 @@ body { font-family: 'Noto Sans JP', sans-serif; background: #0a0a0a; color: #e8e
 <!-- ================= 判断メモ ================= -->
 <section class="view" id="vMemo">
 <div class="doc">
-  <h2>判断メモ — CH-1 実装前に決めたいこと</h2>
+  <h2>判断メモ — ✅ 全点裁定済み（2026-08-12 Keisuke）</h2>
   <p>前提の共有: 07-25時点のCH-1は「直訴を派閥と同じOffice書式へ統合する」でしたが、
   <b>その統合はU3(07-26)と団体戦化で既に完了しています</b>(同じ枠・同じ部品・同じ縦順)。
-  残っている固有の設計判断は以下です。</p>
+  残っていた固有の設計判断と裁定は以下です。</p>
   <ol>
     <li style="margin-bottom:12px">
-      <b>同行2名の選択を直訴画面へ統合するか</b>（案Aの「🚌 同行する2名を選ぶ」ブロック）<br>
-      <span class="rec">推奨A</span>統合する — 現行は 直訴YES → 別画面で2名選択 → 送り出し の3枚。
-      「誰と行かせるか」まで見てから受けるか決められる方が社長の判断として自然<br>
-      <span class="tag">B</span>現行維持（YES後に別画面）
+      <b>同行2名の選択を直訴画面へ統合するか</b> → <span class="rec">✅ 裁定: 統合（3枚→2枚）</span>
+      案Aの「🚌 同行する2名を選ぶ」ブロックの形。「誰と行かせるか」まで見てから受けるか決められる
     </li>
     <li style="margin-bottom:12px">
-      <b>迎撃（相手発）の差別化</b><br>
-      <span class="rec">推奨</span>専用タイトル「⚔ 挑戦状、届く」+ヘッダ敵対色+<b>敵意がこちらへ向いた専用セリフ</b>を新設。<br>
-      現状の問題: タイトル・役割ラベルが「挑む」側と完全に同一な上、セリフは自団体用
-      （「社長、…と挑みたい」）が敵選手からも出る<b>向きの矛盾</b>がある。セリフはOpus起案→全文レビュー
+      <b>迎撃（相手発）の差別化</b> → <span class="rec">✅ 裁定: 差別化する</span>
+      方向づけ: <b>挑む側=事務所での相談なので平和的（クリームのまま）／相手から来た側=攻撃的なので赤系</b>。
+      専用タイトル「⚔ 挑戦状、届く」+赤アクセント（迎撃ビューに反映済み）+敵意がこちらへ向いた専用セリフ
+      （現状の「社長、…」向き矛盾を解消。Opus起案→全文レビュー）
     </li>
     <li style="margin-bottom:12px">
-      <b>直訴セリフの供給をどうするか</b><br>
-      現状: 団体戦化の際に <code>CHALLENGE_GROUP_PETITION_LINES</code>（アーキタイプ7種×2本=14本のみ・性格軸なし）に切り替わり、
-      07-25に書いた34セル×3本=102本の petition は<b>参照されない死蔵</b>になっている。<br>
-      <span class="rec">推奨A</span>34セル102本を団体戦の文脈（「三人で」「団体戦」）へ改修して復活させる（Opus・全文レビュー）<br>
-      <span class="tag">B</span>14本のまま増補だけ（アーキタイプ×性格の34セルへ拡張）　<span class="tag">C</span>現状維持
+      <b>直訴セリフの供給</b> → <span class="rec">✅ 裁定: 復活させる</span>
+      死蔵中の34セル×3本=102本（<code>CHALLENGE_LINES.petition</code>）を団体戦の文脈へ改修して復活
+      （Opus起案→全文レビュー→焼き込み）。現行の14本（アーキタイプのみ）は置き換え
     </li>
     <li style="margin-bottom:12px">
-      <b>送り出し(sendoff)画面の枠</b> — 直訴・遠征選択はOffice書式なのに、送り出しだけ別系統の枠(mdl-a)で
-      相手・遠征先の情報が一切出ない。<br>
-      <span class="rec">推奨</span>Office書式へ寄せ、行き先(相手団体バッジ)と3人の顔を添える。「送り出す」の瞬間自体は残す
+      <b>送り出し(sendoff)画面の枠</b> → <span class="rec">✅ 裁定: 提案どおり</span>
+      Office書式へ寄せ、行き先（相手団体バッジ）と3人の顔を添える。「送り出す」の瞬間自体は残す
     </li>
   </ol>
 

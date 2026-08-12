@@ -128,13 +128,14 @@ body {
 .ign-fbadge.fac-b { color: var(--accent-faction-3); border-color: rgba(138,122,168,.5); }
 .ign-fbadge.fac-b .dot { background: var(--accent-faction-3); }
 
-/* 派閥の頭数: 数値+顔チップ列（row-sm 24px丸・一覧用途）。現行の氏名カンマ連結バグを置き換える */
-.ign-members { display: flex; align-items: center; gap: 7px; margin-top: 9px; }
+/* 派閥の頭数: 数値+顔チップ列。現行の氏名カンマ連結バグを置き換える。
+   08-12 Keisuke裁定: 「もう少し大きく・丸じゃない方が」→ 梯子chip 46×66(2:3矩形)へ */
+.ign-members { display: flex; flex-direction: column; align-items: center; gap: 5px; margin-top: 9px; }
 .ign-members .cnt { font-family: 'Oswald', sans-serif; font-size: 11px; color: var(--stage-text-sub);
   letter-spacing: .1em; }
 .ign-members .faces { display: flex; }
-.ign-members .faces img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
-  border: 1.5px solid rgba(200,190,170,.35); background: #14100c; margin-left: -5px; }
+.ign-members .faces img { width: 46px; height: 66px; border-radius: 4px; object-fit: cover;
+  object-position: center top; border: 1px solid rgba(200,190,170,.3); background: #14100c; margin-left: -6px; }
 .ign-members .faces img:first-child { margin-left: 0; }
 
 /* ── 中央: VS + 敵対度（数値は出さない。段位ラベル+火のゲージ） ── */
@@ -315,7 +316,7 @@ body {
 
   <div class="ign-card-band">
     <div class="ign-card-label">MAIN EVENT ・ 公式戦化</div>
-    <div class="ign-card-name">派閥抗争 ・ 直接決戦</div>
+    <div class="ign-card-name">両派リーダー ・ 一騎打ち</div>
   </div>
 
   <div class="ign-verdict">
@@ -542,32 +543,28 @@ body {
 <!-- ================= 判断メモ ================= -->
 <section class="view" id="vMemo">
 <div class="doc">
-  <h2>判断メモ — 実装前に決めたいこと</h2>
+  <h2>判断メモ — ✅ 全点裁定済み（2026-08-12 Keisuke）</h2>
   <ol>
     <li style="margin-bottom:12px">
-      <b>敵対度の見せ方</b><br>
-      <span class="rec">推奨A</span>中央に1つ、段位ラベル+火ゲージ（数値なし。案Aモックの形）<br>
-      <span class="tag">B</span>ラベルのみ（ゲージなし）　<span class="tag">C</span>現状維持（生数値）
+      <b>敵対度の見せ方</b> → <span class="rec">✅ 裁定: A</span>
+      中央に1つ、5段階ラベル（冷え込み〜血みどろ）+火ゲージ。数値は出さない
     </li>
     <li style="margin-bottom:12px">
-      <b>リーダーの宣戦・応戦セリフ（新設）</b><br>
-      <span class="rec">推奨</span>入れる。派閥イベント群でこの画面だけ無言。開戦こそキャラドラマの見せ場。
-      文面は仮置き——採用なら<b>Opus起案 → 全文レビュー</b>で、話者の口調(アーキタイプ)別に用意。<br>
-      <span class="tag">分岐案</span>リーダーのアーキタイプ×口調7種（他の派閥セリフと同じ軸）
+      <b>リーダーの宣戦・応戦セリフ（新設）</b> → <span class="rec">✅ 裁定: 入れる</span>
+      文面はOpus起案（話者の口調7種×宣戦/応戦）→ Keisuke全文レビューで確定。モックの文言は仮
     </li>
     <li style="margin-bottom:12px">
-      <b>下段の元帳(ledger)の扱い</b> — 現状は「対戦マッチ数 1→2」「MQ期待値 +8」「集客 +6%」が<b>未実装の飾り数字</b>（実効は敵対度+12のみ）<br>
-      <span class="rec">推奨A</span>数値カードを廃止し、実際に起きることだけを定性2行で（案Aモックの形）<br>
-      <span class="tag">B</span>飾り数字に合わせてエンジン側の効果を実装する（集客/MQボーナス設計が別途必要・重い）
+      <b>下段の元帳(ledger)の扱い</b> → <span class="rec">✅ 裁定: A</span>
+      未実装の飾り数字（対戦マッチ数/MQ期待値/集客）は廃止し、実際に起きることだけを定性2行で
     </li>
     <li style="margin-bottom:12px">
-      <b>カード帯の文言「派閥抗争 ・ 直接決戦」</b> — 07-27レビューの未回答項目。この強度のままでよいか。<br>
-      ※調査で判明: 「直接決戦」という語はこの帯にしか存在せず、単独の画面はない（実体はF08決裁→試合前後、F09対抗戦×4に分散）
+      <b>カード帯の文言</b> → <span class="rec">✅ 裁定: 実態に合う言葉へ変更</span>
+      「派閥抗争 ・ 直接決戦」→ 案「<b>両派リーダー ・ 一騎打ち</b>」（案Aビューに反映済み。文言自体は実装レビューで最終確認）
     </li>
     <li style="margin-bottom:12px">
-      <b>派閥の頭数の見せ方</b><br>
-      <span class="rec">推奨</span>「4名」+顔チップ列（24px丸・一覧用途）。
-      ※現行は実装バグで<b>メンバー氏名がカンマ連結表示</b>されており、どの案でも修正は必須
+      <b>派閥の頭数の見せ方</b> → <span class="rec">✅ 裁定: 数字+顔チップ列</span>
+      サイズは「もう少し大きく・丸じゃない形」の指示により<b>梯子chip 46×66（2:3矩形）</b>へ（案Aビューに反映済み）。
+      氏名カンマ連結バグの修正は前提
     </li>
     <li style="margin-bottom:12px">
       <b>~~宣戦フォーマットの共通化~~ → ❌ 見送りで確定（08-12 Keisuke裁定）</b><br>
