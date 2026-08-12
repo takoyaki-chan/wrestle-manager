@@ -245,7 +245,7 @@ body {
   <button class="dev-btn active" data-v="vA">案A（推奨）</button>
   <button class="dev-btn" data-v="vCur">現行（参考）</button>
   <button class="dev-btn" data-v="vCmp">🔍 横並び比較</button>
-  <button class="dev-btn" data-v="vOrg">団体戦へ同フォーマット適用（案）</button>
+  <button class="dev-btn" data-v="vOrg">団体戦へ適用（❌見送り・記録）</button>
   <button class="dev-btn" data-v="vPolicy">敵対度の見せ方 統一案</button>
   <button class="dev-btn" data-v="vMemo">判断メモ（要裁定）</button>
 </div>
@@ -423,11 +423,12 @@ body {
 
 <!-- ================= 団体戦へ同フォーマット適用（案） ================= -->
 <section class="view" id="vOrg">
-<div class="cmp-note" style="max-width:860px">
-  <b>Keisuke指摘(08-12)への応答案</b>: 団体間の挑戦試合(3人制シングル3連戦の団体戦)は重みが開戦と同格なのに、
-  宣戦の瞬間の演出がない(Officeの決裁と送り出しのみ)。そこで<b>「宣戦フォーマット」を共通化</b>し、
-  挑戦YES後の送り出しをこのStage画面に置き換える案(CH-1判断メモ④の発展形。採用ならsendoffのOffice化案は不要)。
-  違いは旗が<b>派閥フラグ→団体バッジ</b>になり、中央が敵対度ゲージ→<b>シリーズ情報</b>になるだけ。骨格・赤・吹き出し規則は同一。
+<div class="cmp-note" style="max-width:860px; border-color:rgba(200,80,80,.5)">
+  <b>❌ 見送り（2026-08-12 Keisuke裁定）</b> — 記録として残置。理由:
+  団体戦のドラマは<b>遠征→敵地3連戦→「果たし状、成就。」に既に存在</b>し、YES直後の宣戦画面は
+  自分の決断の復唱になる(開戦画面が効くのは「采配に世界が反応した」驚きがあるから)。
+  CH-1の画面削減方針(3枚→2枚)にも逆行する。団体戦の戦争感は既存の敵地試合前画面(Stage)の色言語で表現する。
+  → CH-1側は判断メモ④(送り出しのOffice化+行き先情報)が正式案に戻る。
 </div>
 <div class="ignite-screen red">
   <div class="fevt-title-main">宣 　 戦</div>
@@ -569,15 +570,15 @@ body {
       ※現行は実装バグで<b>メンバー氏名がカンマ連結表示</b>されており、どの案でも修正は必須
     </li>
     <li style="margin-bottom:12px">
-      <b>宣戦フォーマットの共通化（08-12 Keisuke指摘を受けた追加論点）</b><br>
-      団体間挑戦（3人制団体戦）も重みは開戦と同格 — <span class="rec">案</span>同じStage宣戦フォーマットを
-      挑戦YES後の送り出しに適用（「団体戦へ同フォーマット適用」ビュー参照）。
-      採用なら CH-1 判断メモ④（sendoffのOffice化）はこちらに置き換わる
+      <b>~~宣戦フォーマットの共通化~~ → ❌ 見送りで確定（08-12 Keisuke裁定）</b><br>
+      団体戦のドラマは遠征〜敵地3連戦〜結果に既にあるため、宣戦画面は開戦専用とする。
+      「団体戦へ適用」ビューは記録として残置
     </li>
   </ol>
-  <p style="margin-top:6px"><b>確定済み（裁定不要）</b>: メインカラーは<b>赤</b>（08-12 Keisuke指示。
-  肌色寄りの橙 #d07a3e → 火の赤 #e04343。PPV/天頂戦の深紅とは色相を分けた）。案A・団体戦ビューに適用済み、
-  横並び比較で現行の橙と見比べ可能。</p>
+  <p style="margin-top:6px"><b>確定済み（裁定不要）</b>: ①メインカラーは<b>赤</b>（08-12 Keisuke指示。
+  肌色寄りの橙 #d07a3e → 火の赤 #e04343。PPV/天頂戦の深紅とは色相を分けた。横並び比較で現行の橙と見比べ可能）。
+  ②<b>開戦は稀少イベントである前提を確認</b>（08-12）— 発火には「煽る」選択+リーダー戦の手動編成という
+  プレイヤーの二段の意思が要り、連発しない。全画面の格はこの稀少性に見合わせたもの。</p>
 
   <h3>実装時の注意（承認後のタスクに含める・裁定不要）</h3>
   <ul>
