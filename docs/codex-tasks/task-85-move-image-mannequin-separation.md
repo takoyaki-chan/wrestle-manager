@@ -1,5 +1,7 @@
 # task-85: 技画像第1波の人形化・分離処理（16_powerbomb試作先行）
 
+**依頼先の分担（2026-08-12 Keisuke指示: 見た目が重要な仕事はSolに高思考で）**: 決定的処理・スクリプト実装=Codex ／ **見た目の品質基準策定と毎回の目視判定=Sol（デザイン枠・高思考）** ／ 機械検算・工程管理=Fable ／ 最終OK=Keisuke。見た目品質ルーブリックは `docs/move-illustration-visual-quality-rubric-v0.1.md`（Sol策定）を正とする。
+
 ## ⚠️ 様式修正（2026-08-12 Keisuke指摘・初回Phase A成果は不採用）
 
 初回Phase A（コミット693a4d1）の**ベタ塗りグレー2トーン様式は不採用**。正しい完成様式は `assets/moves/reference/mannequin_turnaround_master.png` の**基本3面図キャラ**（白ボディ+黒線画・簡略レオタード/ニーパッド/編み上げブーツ・卵型頭・淡い陰影。旧世代30枚のmasterと同系統）。**GPT Imageの各呼び出しに、この3面図PNGをスタイル参照として必ず入力へ添付する。**
