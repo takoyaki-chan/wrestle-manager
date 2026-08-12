@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>派閥「開戦」画面リデザイン v0.1</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@400;700;900&family=Noto+Serif+JP:wght@700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   Tokens（階層1からの抜粋。faction-events.html と同系）
+   ============================================================ */
+:root {
+  --office-panel-cream-card: #ede8dc;
+  --cream-text-main: #1e1c16;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --stage-bg: #060606;
+  --stage-text-main: #e8e6e0;
+  --stage-text-sub: #a89e8a;
+  --stage-text-dim: #6e6656;
+  --accent-faction-1: #c38c54;
+  --accent-faction-3: #8a7aa8;
+  --accent-hostility: #d07a3e;
+  --accent-hostility-rgb: 208,122,62;
+  --space-sm: 8px;
+  --space-md: 12px;
+  --space-lg: 16px;
+  --radius-lg: 10px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Noto Sans JP', 'Hiragino Kaku Gothic ProN', sans-serif;
+  background: #0a0a0a; color: var(--stage-text-main);
+  min-height: 100vh;
+}
+
+/* ============================================================
+   Switcher（開発用、本番では存在しない）
+   ============================================================ */
+.dev-switcher {
+  position: sticky; top: 0; z-index: 9999;
+  background: rgba(10,8,6,0.94); border-bottom: 1px solid rgba(212,168,67,0.25);
+  padding: 10px 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+  font-family: 'Oswald', sans-serif; font-size: 12px; letter-spacing: 1.5px;
+}
+.dev-switcher-label { color: var(--gold); font-weight: 700; margin-right: 8px; }
+.dev-btn {
+  background: rgba(200,190,170,0.08); border: 1px solid rgba(200,190,170,0.2);
+  color: #e8e6e0; padding: 6px 14px; border-radius: 3px; cursor: pointer;
+  font-family: inherit; font-size: 11px; letter-spacing: 1px;
+}
+.dev-btn:hover { border-color: var(--gold); color: var(--gold); }
+.dev-btn.active { background: var(--gold); border-color: var(--gold); color: #1a1a1a; font-weight: 700; }
+.view { display: none; }
+.view.active { display: block; }
+
+/* ============================================================
+   Stage 全画面（開戦）共通
+   ============================================================ */
+.ignite-screen {
+  position: relative; max-width: 860px; margin: 26px auto 60px; padding: 34px 30px 30px;
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 0%, rgba(var(--accent-hostility-rgb), .16), transparent 65%),
+    linear-gradient(180deg, #0c0906 0%, var(--stage-bg) 55%);
+  border: 1px solid rgba(var(--accent-hostility-rgb), .35);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.fevt-title-main {
+  text-align: center; font-family: 'Noto Serif JP', serif; font-weight: 900;
+  font-size: 44px; letter-spacing: .3em; text-indent: .3em;
+  background: linear-gradient(180deg, #ffd4a8, var(--accent-hostility));
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 22px rgba(var(--accent-hostility-rgb), .35));
+}
+.fevt-title-divider { width: 220px; height: 1px; margin: 10px auto;
+  background: linear-gradient(90deg, transparent, rgba(var(--accent-hostility-rgb), .8), transparent); }
+.fevt-title-sub { text-align: center; font-family: 'Oswald', sans-serif; font-size: 11px;
+  letter-spacing: .4em; color: var(--stage-text-sub); }
+
+/* ── 対峙ステージ（左右対称・対等表示。勝敗未定なので敗者演出はしない） ── */
+.ign-stage { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px;
+  align-items: start; margin-top: 26px; }
+.ign-col { display: flex; flex-direction: column; align-items: center; min-width: 0; }
+.ign-role-label { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .3em;
+  color: var(--stage-text-sub); }
+.ign-role-kanji { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 21px;
+  letter-spacing: .5em; text-indent: .5em; margin: 2px 0 10px; color: var(--stage-text-main); }
+.ign-col.left .ign-role-kanji { color: #ffd4a8; }
+
+/* 吹き出し（§3: 画像の上・クリーム地黒文字・名前は入れない・尻尾は画像の水平中心） */
+.ign-bubble-slot { height: 64px; display: flex; align-items: flex-end; justify-content: center;
+  width: 100%; margin-bottom: var(--space-sm); }
+.ign-bubble { position: relative; width: max-content; max-width: 250px;
+  background: var(--office-panel-cream-card); color: var(--cream-text-main);
+  border-radius: var(--radius-lg); padding: 8px 13px; font-size: 13px; line-height: 1.55;
+  text-align: center; box-shadow: 0 6px 16px rgba(0,0,0,.4); }
+.ign-bubble::after { content: ''; position: absolute; left: 50%; transform: translateX(-50%);
+  bottom: -7px; border: 7px solid transparent; border-top-color: var(--office-panel-cream-card);
+  border-bottom: 0; }
+
+/* 選手画像: 梯子 L 150×224（2:3。現行の 220×260 cover は §2-0 違反のため廃止） */
+.ign-upper { position: relative; width: 150px; height: 224px; overflow: hidden;
+  border-radius: 6px 6px 5px 5px; background: #14100c;
+  border: 1px solid rgba(var(--accent-hostility-rgb), .3);
+  border-bottom: 3px solid var(--accent-hostility); }
+.ign-upper img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.ign-flag { position: absolute; left: 0; right: 0; bottom: 0; padding: 4px 6px;
+  font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: .18em; text-align: center;
+  color: #f5e9d8; background: linear-gradient(0deg, rgba(0,0,0,.82), rgba(0,0,0,0)); }
+.ign-name { font-size: 16px; font-weight: 900; margin-top: 9px; }
+.ign-role { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .18em;
+  color: var(--accent-hostility); margin-top: 2px; }
+
+/* 派閥バッジ（識別色。u3b-org-badge と同型） */
+.ign-fbadge { display: inline-flex; align-items: center; gap: 6px; margin-top: 7px;
+  padding: 3px 11px; border-radius: 20px; border: 1px solid; background: rgba(255,255,255,.04);
+  font-family: 'Oswald', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.ign-fbadge .dot { width: 9px; height: 9px; border-radius: 50%; }
+.ign-fbadge.fac-a { color: var(--accent-faction-1); border-color: rgba(195,140,84,.5); }
+.ign-fbadge.fac-a .dot { background: var(--accent-faction-1); }
+.ign-fbadge.fac-b { color: var(--accent-faction-3); border-color: rgba(138,122,168,.5); }
+.ign-fbadge.fac-b .dot { background: var(--accent-faction-3); }
+
+/* 派閥の頭数: 数値+顔チップ列（row-sm 24px丸・一覧用途）。現行の氏名カンマ連結バグを置き換える */
+.ign-members { display: flex; align-items: center; gap: 7px; margin-top: 9px; }
+.ign-members .cnt { font-family: 'Oswald', sans-serif; font-size: 11px; color: var(--stage-text-sub);
+  letter-spacing: .1em; }
+.ign-members .faces { display: flex; }
+.ign-members .faces img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
+  border: 1.5px solid rgba(200,190,170,.35); background: #14100c; margin-left: -5px; }
+.ign-members .faces img:first-child { margin-left: 0; }
+
+/* ── 中央: VS + 敵対度（数値は出さない。段位ラベル+火のゲージ） ── */
+.ign-center { display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding-top: 96px; min-width: 120px; }
+.ign-vs { font-family: 'Bebas Neue', sans-serif; font-size: 74px; line-height: 1;
+  color: var(--stage-text-main); text-shadow: 0 0 26px rgba(var(--accent-hostility-rgb), .45); }
+.ign-hostility { margin-top: 14px; text-align: center; }
+.ign-hostility .lbl { font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: .3em;
+  color: var(--stage-text-dim); }
+.ign-hostility .band { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 22px;
+  letter-spacing: .34em; text-indent: .34em; color: #ffb37a; margin-top: 3px;
+  text-shadow: 0 0 14px rgba(var(--accent-hostility-rgb), .5); }
+.ign-flames { display: flex; gap: 5px; justify-content: center; margin-top: 8px; font-size: 14px; }
+.ign-flames span { filter: grayscale(1) brightness(.45); }
+.ign-flames span.on { filter: none; text-shadow: 0 0 8px rgba(var(--accent-hostility-rgb), .8); }
+
+/* ── カード帯・地の文・確定事項 ── */
+.ign-card-band { margin: 24px auto 0; max-width: 460px; text-align: center;
+  border: 1px solid rgba(var(--accent-hostility-rgb), .4); border-radius: 8px;
+  padding: 10px 14px; background: rgba(var(--accent-hostility-rgb), .07); }
+.ign-card-label { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .3em;
+  color: var(--accent-hostility); }
+.ign-card-name { font-family: 'Noto Serif JP', serif; font-weight: 900; font-size: 19px;
+  letter-spacing: .2em; margin-top: 4px; }
+.ign-verdict { max-width: 560px; margin: 18px auto 0; text-align: center; font-size: 13px;
+  line-height: 2; color: var(--stage-text-sub); }
+.ign-verdict em { font-style: normal; color: var(--gold-light); }
+/* ledger は廃止 → 実際に起きることだけを定性で（判断メモ③参照） */
+.ign-facts { display: flex; justify-content: center; gap: 26px; margin-top: 18px; flex-wrap: wrap; }
+.ign-fact { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--stage-text-sub); }
+.ign-fact::before { content: '◆'; font-size: 9px; color: var(--accent-hostility); }
+.ign-continue { display: block; margin: 26px auto 0; padding: 13px 60px;
+  font-family: inherit; font-size: 14px; font-weight: 900; letter-spacing: .3em; text-indent: .3em;
+  color: #1a120a; background: linear-gradient(180deg, #ffd4a8, var(--accent-hostility));
+  border: 0; border-radius: 8px; cursor: pointer; }
+
+/* ============================================================
+   現行（参考）ビュー — faction-events.html:1921 の写し(簡略)
+   ============================================================ */
+.cur-note { max-width: 860px; margin: 20px auto 0; padding: 10px 16px; font-size: 12px;
+  color: #e0b9a0; background: rgba(208,122,62,.08); border: 1px dashed rgba(208,122,62,.4);
+  border-radius: 8px; line-height: 1.8; }
+.cur-stage { display: grid; grid-template-columns: 1fr auto 1fr; gap: 14px; margin-top: 26px; align-items: start; }
+.cur-col { display: flex; flex-direction: column; align-items: center; }
+.cur-upper { width: 220px; height: 260px; overflow: hidden; border-radius: 8px;
+  border: 1px solid rgba(var(--accent-hostility-rgb), .35); position: relative; }
+.cur-upper img { width: 100%; height: 100%; object-fit: cover; object-position: center top; display: block; }
+.cur-flag { position: absolute; left: 0; right: 0; bottom: 0; padding: 4px 6px;
+  font-family: 'Oswald', sans-serif; font-size: 9px; letter-spacing: .18em; text-align: center;
+  color: #f5e9d8; background: linear-gradient(0deg, rgba(0,0,0,.82), rgba(0,0,0,0)); }
+.cur-stats { display: flex; gap: 16px; margin-top: 8px; font-size: 11px; color: var(--stage-text-sub); }
+.cur-stats b { font-family: 'Bebas Neue', sans-serif; font-size: 16px; color: #ffb37a; margin-left: 5px; }
+.cur-ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 560px; margin: 18px auto 0; }
+.cur-ledger-col { border: 1px solid rgba(200,190,170,.15); border-radius: 8px; padding: 10px 14px; }
+.cur-ledger-head { font-family: 'Oswald', sans-serif; font-size: 10px; letter-spacing: .3em;
+  color: var(--stage-text-dim); margin-bottom: 6px; }
+.cur-ledger-line { font-size: 12px; color: var(--stage-text-sub); line-height: 1.9; }
+.cur-ledger-line .up { color: #7ec98f; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+
+/* ============================================================
+   ポリシー/判断メモ ビュー
+   ============================================================ */
+.doc { max-width: 860px; margin: 26px auto 60px; padding: 28px 30px;
+  background: #12100d; border: 1px solid rgba(200,190,170,.14); border-radius: 12px; }
+.doc h2 { font-family: 'Noto Serif JP', serif; font-size: 20px; color: var(--gold-light);
+  letter-spacing: .1em; margin-bottom: 14px; }
+.doc h3 { font-size: 14px; color: var(--gold); margin: 22px 0 8px; }
+.doc p, .doc li { font-size: 13px; line-height: 1.9; color: var(--stage-text-main); }
+.doc ul, .doc ol { padding-left: 22px; }
+.doc table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 12px; }
+.doc th, .doc td { border: 1px solid rgba(200,190,170,.16); padding: 7px 10px; text-align: left;
+  vertical-align: top; line-height: 1.7; }
+.doc th { background: rgba(212,168,67,.08); color: var(--gold-light); font-weight: 700; }
+.doc td.bad { color: #e59a9a; }
+.doc td.good { color: #9fd8a8; }
+.doc .rec { display: inline-block; font-size: 10px; font-weight: 900; letter-spacing: .1em;
+  color: #1a1a1a; background: var(--gold); border-radius: 3px; padding: 1px 7px; margin-right: 6px; }
+.doc .tag { display: inline-block; font-size: 10px; letter-spacing: .08em;
+  color: var(--stage-text-sub); border: 1px solid rgba(200,190,170,.3); border-radius: 3px;
+  padding: 1px 7px; margin-right: 6px; }
+.doc code { font-family: Consolas, monospace; font-size: 11px; color: #c9b98a;
+  background: rgba(200,190,170,.08); padding: 1px 5px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="dev-switcher">
+  <span class="dev-switcher-label">開戦画面リデザイン v0.1</span>
+  <button class="dev-btn active" data-v="vA">案A（推奨）</button>
+  <button class="dev-btn" data-v="vCur">現行（参考）</button>
+  <button class="dev-btn" data-v="vPolicy">敵対度の見せ方 統一案</button>
+  <button class="dev-btn" data-v="vMemo">判断メモ（要裁定）</button>
+</div>
+
+<!-- ================= 案A: リデザイン ================= -->
+<section class="view active" id="vA">
+<div class="ignite-screen">
+  <div class="fevt-title-main">開 　 戦</div>
+  <div class="fevt-title-divider"></div>
+  <div class="fevt-title-sub">OFFICIAL MATCH SIGNED ・ WEEK 9</div>
+
+  <div class="ign-stage">
+    <div class="ign-col left">
+      <div class="ign-role-label">PROVOKING SIDE</div>
+      <div class="ign-role-kanji">宣 戦</div>
+      <div class="ign-bubble-slot"><div class="ign-bubble">もう口喧嘩じゃ終わらせない。リングで決めるよ。</div></div>
+      <div class="ign-upper">
+        <img src="../../../image/upper/upper_udagawa_r.webp" alt="">
+        <div class="ign-flag">宇 田 川 派 ・ UDAGAWA</div>
+      </div>
+      <div class="ign-name">宇田川 里奈</div>
+      <div class="ign-role">LEADER</div>
+      <div class="ign-fbadge fac-a"><span class="dot"></span>宇田川派</div>
+      <div class="ign-members">
+        <span class="cnt">4名</span>
+        <span class="faces">
+          <img src="../../../image/face_udagawa_r.png" alt="">
+          <img src="../../../image/face_abe_m.png" alt="">
+          <img src="../../../image/face_aida_m.png" alt="">
+          <img src="../../../image/face_aizawa_m.png" alt="">
+        </span>
+      </div>
+    </div>
+
+    <div class="ign-center">
+      <div class="ign-vs">VS</div>
+      <div class="ign-hostility">
+        <div class="lbl">両派の対立</div>
+        <div class="band">泥 沼</div>
+        <div class="ign-flames">
+          <span class="on">🔥</span><span class="on">🔥</span><span class="on">🔥</span><span class="on">🔥</span><span>🔥</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ign-col right">
+      <div class="ign-role-label">RESPONDING SIDE</div>
+      <div class="ign-role-kanji">応 戦</div>
+      <div class="ign-bubble-slot"><div class="ign-bubble">面白い。売られた喧嘩は、全部買う主義よ。</div></div>
+      <div class="ign-upper">
+        <img src="../../../image/upper/upper_miura_s.webp" alt="">
+        <div class="ign-flag">三 浦 派 ・ MIURA</div>
+      </div>
+      <div class="ign-name">三浦 早紀</div>
+      <div class="ign-role">LEADER</div>
+      <div class="ign-fbadge fac-b"><span class="dot"></span>三浦派</div>
+      <div class="ign-members">
+        <span class="cnt">3名</span>
+        <span class="faces">
+          <img src="../../../image/face_miura_s.png" alt="">
+          <img src="../../../image/face_akabane_a.png" alt="">
+          <img src="../../../image/face_akanuma_s.png" alt="">
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <div class="ign-card-band">
+    <div class="ign-card-label">MAIN EVENT ・ 公式戦化</div>
+    <div class="ign-card-name">派閥抗争 ・ 直接決戦</div>
+  </div>
+
+  <div class="ign-verdict">
+    水面下でくすぶっていた火種は、<em>リング上での戦い</em>にまで燃え広がった。<br>
+    来週の興行、メインは——この一戦。観客も、この対決に期待を膨らませている。
+  </div>
+
+  <div class="ign-facts">
+    <div class="ign-fact">両派の対立は、後戻りできない段階に入った</div>
+    <div class="ign-fact">この一戦は公式戦として記録される</div>
+  </div>
+
+  <button class="ign-continue">続 け る</button>
+</div>
+</section>
+
+<!-- ================= 現行（参考） ================= -->
+<section class="view" id="vCur">
+<div class="cur-note">
+  現行実装の再現（比較用）。既知の問題:
+  ①画像 220×260 の cover で 2:3 素材の脚側が切れる（梯子外）
+  ②「派閥人数」は実装バグで<b>メンバー氏名がカンマ連結で出る</b>（モック段階の「4」は本番では「東條,西島,…」になる）
+  ③敵対度が生数値・小数2桁で露出（例: 76.30）
+  ④下段の元帳(ledger)のうち「対戦マッチ数 1→2」「メイン MQ 期待値 +8」「集客見込み +6%」は<b>エンジン未実装の飾り数字</b>（実効は敵対度+12のみ）
+  ⑤セリフ・吹き出しが無い（派閥イベント群でこの画面だけ）
+</div>
+<div class="ignite-screen">
+  <div class="fevt-title-main">開 　 戦</div>
+  <div class="fevt-title-divider"></div>
+  <div class="fevt-title-sub">OFFICIAL MATCH SIGNED ・ WEEK 9</div>
+  <div class="cur-stage">
+    <div class="cur-col">
+      <div class="ign-role-label">PROVOKING SIDE</div>
+      <div class="ign-role-kanji">宣 戦</div>
+      <div class="cur-upper" style="margin-top:10px">
+        <img src="../../../image/upper/upper_udagawa_r.webp" alt="">
+        <div class="cur-flag">宇 田 川 派 ・ UDAGAWA</div>
+      </div>
+      <div class="ign-name">宇田川 里奈</div>
+      <div class="ign-role">LEADER</div>
+      <div class="cur-stats"><span>敵対度<b>76.30</b></span><span>派閥人数<b>東條,西島,南雲,葛西</b></span></div>
+    </div>
+    <div class="ign-center"><div class="ign-vs">VS</div></div>
+    <div class="cur-col">
+      <div class="ign-role-label">RESPONDING SIDE</div>
+      <div class="ign-role-kanji">応 戦</div>
+      <div class="cur-upper" style="margin-top:10px">
+        <img src="../../../image/upper/upper_miura_s.webp" alt="">
+        <div class="cur-flag">三 浦 派 ・ MIURA</div>
+      </div>
+      <div class="ign-name">三浦 早紀</div>
+      <div class="ign-role">LEADER</div>
+      <div class="cur-stats"><span>敵対度<b>68.00</b></span><span>派閥人数<b>赤羽,赤沼,穴沢</b></span></div>
+    </div>
+  </div>
+  <div class="ign-card-band">
+    <div class="ign-card-label">MAIN EVENT ・ 公式戦化</div>
+    <div class="ign-card-name">派閥抗争 ・ 直接決戦</div>
+  </div>
+  <div class="ign-verdict">
+    水面下でくすぶっていた火種は、<em>リング上での戦い</em>にまで燃え広がった。<br>
+    来週の興行、メインは——この一戦。観客も、この対決に期待を膨らませている。
+  </div>
+  <div class="cur-ledger">
+    <div class="cur-ledger-col">
+      <div class="cur-ledger-head">両 派 閥</div>
+      <div class="cur-ledger-line">相互 敵対度　<span class="up">+12</span></div>
+      <div class="cur-ledger-line">対戦マッチ数　<span class="up">1 → 2</span></div>
+    </div>
+    <div class="cur-ledger-col">
+      <div class="cur-ledger-head">興 行</div>
+      <div class="cur-ledger-line">メイン MQ 期待値　<span class="up">+8</span></div>
+      <div class="cur-ledger-line">集客見込み　<span class="up">+6%</span></div>
+    </div>
+  </div>
+  <button class="ign-continue">続 け る</button>
+</div>
+</section>
+
+<!-- ================= 敵対度の見せ方 統一案 ================= -->
+<section class="view" id="vPolicy">
+<div class="doc">
+  <h2>敵対度の見せ方 — 全画面統一案</h2>
+  <p>内部変数 <code>factionHostility</code>（0〜100・小数1桁）が、画面ごとにバラバラの形で露出している。
+  既にDB派閥タブで使っている5段ラベル関数 <code>getHostilityLabel</code> を<b>唯一の語彙</b>にし、
+  生数値・英語内部名・内部閾値の露出を全廃する。</p>
+
+  <h3>語彙（既存実装のまま採用）</h3>
+  <table>
+    <tr><th>内部値</th><th>ラベル</th><th>火ゲージ</th></tr>
+    <tr><td>0〜19</td><td>冷え込み</td><td>🔥×0〜1</td></tr>
+    <tr><td>20〜39</td><td>小競り合い</td><td>🔥×2</td></tr>
+    <tr><td>40〜59</td><td>抗争</td><td>🔥×3</td></tr>
+    <tr><td>60〜79</td><td>泥沼</td><td>🔥×4</td></tr>
+    <tr><td>80〜100</td><td>血みどろ</td><td>🔥×5</td></tr>
+  </table>
+
+  <h3>露出箇所と置き換え（6箇所）</h3>
+  <table>
+    <tr><th>画面</th><th>現状</th><th>置き換え</th></tr>
+    <tr><td>開戦（本モック）</td><td class="bad">敵対度 76.30（左右別々・小数2桁）</td>
+        <td class="good">中央に1つ「泥沼」+火ゲージ（数値なし）</td></tr>
+    <tr><td>F08 決裁ヘッダ</td><td class="bad">HOSTILITY 84 / 100（英語内部名）</td>
+        <td class="good">「血みどろの対立」</td></tr>
+    <tr><td>F08 本文</td><td class="bad">敵対度 84/100</td>
+        <td class="good">「二人の対立は、血みどろの段階まで来ている」</td></tr>
+    <tr><td>F08 選択肢B ヒント</td><td class="bad">「敵対度80超では仲裁不能。敵対度70未満で再判定」（内部閾値の直書き）</td>
+        <td class="good">「ここまで燃え広がった対立は、もう言葉では止まらない。火が弱まれば、仲裁の余地も生まれる」</td></tr>
+    <tr><td>F06 ヘッダ</td><td class="bad">FORMER RIVALS ・ HOSTILITY 62 / 100</td>
+        <td class="good">「かつての因縁 ・ 泥沼」</td></tr>
+    <tr><td>DB派閥タブのバッジ/タイムライン</td><td class="bad">「F09 発火圏」「F02 ・ IGNITE」等の内部イベントID</td>
+        <td class="good">「対抗戦の機運」「開戦」「直接対決」「対抗戦」へ日本語化</td></tr>
+  </table>
+  <p style="margin-top:10px">※ F08試合前画面はエンジンが敵対度の帯(<code>hostilityBand</code>)を計算済みなのに未表示——
+  同じラベルをナレーション横に1語添えるだけで統一できる。</p>
+</div>
+</section>
+
+<!-- ================= 判断メモ ================= -->
+<section class="view" id="vMemo">
+<div class="doc">
+  <h2>判断メモ — 実装前に決めたいこと</h2>
+  <ol>
+    <li style="margin-bottom:12px">
+      <b>敵対度の見せ方</b><br>
+      <span class="rec">推奨A</span>中央に1つ、段位ラベル+火ゲージ（数値なし。案Aモックの形）<br>
+      <span class="tag">B</span>ラベルのみ（ゲージなし）　<span class="tag">C</span>現状維持（生数値）
+    </li>
+    <li style="margin-bottom:12px">
+      <b>リーダーの宣戦・応戦セリフ（新設）</b><br>
+      <span class="rec">推奨</span>入れる。派閥イベント群でこの画面だけ無言。開戦こそキャラドラマの見せ場。
+      文面は仮置き——採用なら<b>Opus起案 → 全文レビュー</b>で、話者の口調(アーキタイプ)別に用意。<br>
+      <span class="tag">分岐案</span>リーダーのアーキタイプ×口調7種（他の派閥セリフと同じ軸）
+    </li>
+    <li style="margin-bottom:12px">
+      <b>下段の元帳(ledger)の扱い</b> — 現状は「対戦マッチ数 1→2」「MQ期待値 +8」「集客 +6%」が<b>未実装の飾り数字</b>（実効は敵対度+12のみ）<br>
+      <span class="rec">推奨A</span>数値カードを廃止し、実際に起きることだけを定性2行で（案Aモックの形）<br>
+      <span class="tag">B</span>飾り数字に合わせてエンジン側の効果を実装する（集客/MQボーナス設計が別途必要・重い）
+    </li>
+    <li style="margin-bottom:12px">
+      <b>カード帯の文言「派閥抗争 ・ 直接決戦」</b> — 07-27レビューの未回答項目。この強度のままでよいか。<br>
+      ※調査で判明: 「直接決戦」という語はこの帯にしか存在せず、単独の画面はない（実体はF08決裁→試合前後、F09対抗戦×4に分散）
+    </li>
+    <li style="margin-bottom:12px">
+      <b>派閥の頭数の見せ方</b><br>
+      <span class="rec">推奨</span>「4名」+顔チップ列（24px丸・一覧用途）。
+      ※現行は実装バグで<b>メンバー氏名がカンマ連結表示</b>されており、どの案でも修正は必須
+    </li>
+  </ol>
+
+  <h3>実装時の注意（承認後のタスクに含める・裁定不要）</h3>
+  <ul>
+    <li>画像を 220×260 cover → 梯子L 150×224 へ（顔出し監査v0.2と同じ物差し）</li>
+    <li>開戦画面を <code>_u3bSideHtml</code>(u3b-theme-stage is-hostility)へ移行——派閥画面群で唯一の共通部品外</li>
+    <li>ハードコード色（#b09ad0 / #d4a070 / #ffd4a8 等）をトークンへ</li>
+    <li>F09のナレーションだけ <code>escHtml</code> 未通し（2箇所）——ついでに直す</li>
+    <li>触ると壊れるテスト: u3-group-b-safety-net / u4-modal-frame-safety-net / faction-f09系4本</li>
+  </ul>
+
+  <h3>今回のスコープ外として記録（別起票候補）</h3>
+  <ul>
+    <li>F09対抗戦の情報量: 100pt先取の進捗が全く見えない／試合後スコアは累積PT・最終結果は勝敗数と単位が不一致／メンバー列は最大5人で総数なし</li>
+    <li>F09のカード生成(<code>buildF09MatchPairs</code>)が怪我・出場可否を検証しない（task-70の残根本原因・未回答の問いあり）</li>
+    <li>F02系ledgerの飾り数字はpeace(②)/resolution(③)画面にも同様に存在</li>
+  </ul>
+</div>
+</section>
+
+<script>
+document.querySelectorAll('.dev-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.dev-btn').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    document.getElementById(b.dataset.v).classList.add('active');
+  });
+});
+</script>
+</body>
+</html>
