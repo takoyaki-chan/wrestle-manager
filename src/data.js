@@ -8331,7 +8331,7 @@ const SPECIAL_EVENT_INTRO = {
     title: '🌸 春のタッグリーグ',
     historyType: 'springTagLeague',
     venueIndex: 8,   // 特別興行の会場は Engine.specialEventFinance.VENUE_INDEX と同じ「大会場」
-    travelLine: '4チームの総当たり。勝ち上がれば、その日のうちに決勝です。',
+    travelLine: 'A・Bブロックの総当たりを勝ち抜いた1位同士が、その日の決勝でぶつかります。',
     nextLabel: '— チ ー ム を 組 む —',   // 2枚目のボタン。**次に実際に起きること**を書く
     coach: [
       '社長、春のタッグリーグです。二人一組、相性の良い組を選びましょう。',
@@ -17235,7 +17235,7 @@ const SEASON_REVIEW_LINES = {
     ],
     springTag: [
       '相棒と息を合わせ、春のタッグリーグの頂点に立った。',
-      '総当たりを勝ち抜き、決勝でも組んだ相手と守り切った。',
+      'ブロック総当たりを勝ち抜き、決勝でも相棒と頂点をつかんだ。',
     ],
   },
   closing: {
@@ -17346,10 +17346,10 @@ const NEWS_HEADLINE_TEMPLATES = {
       body: '第{season}回4団体勝ち残り対抗戦は{championOrg}が優勝。{runnerUpOrg}との決勝を制した。準決勝結果は{semi1}、{semi2}、決勝は{finalResult}。最多{mvpWins}勝を挙げた{mvpName}（{mvpOrg}）が大会MVPに選ばれた。{gauntletNote}{tieBreakNote}' },
   ],
   springTagAnnounce: [
-    { headline: '春のタッグリーグ 出場4団体が決定',
-      body: '第{season}回春のタッグリーグの出場4団体が出揃った。{org1}・{org2}・{org3}・{org4}。各団体代表タッグは編成期間を経て、第12週に激突する。{preview}' },
-    { headline: '春のタッグリーグ開幕迫る、参加団体出揃う',
-      body: '第{season}回春のタッグリーグに{org1}・{org2}・{org3}・{org4}の4団体が名乗りを上げた。第12週、4団体総当たりのリーグ戦と優勝決定戦が1日で行われる。{preview}' },
+    { headline: '春のタッグリーグ 出場{teamCount}チームが決定',
+      body: '第{season}回春のタッグリーグの出場枠が決まった。団体ランキング順の配分は{entrySummary}。各代表タッグは編成期間を経て、第12週にA・Bブロックの総当たりへ挑む。{preview}' },
+    { headline: '春のタッグリーグ開幕迫る、2ブロックの陣容決まる',
+      body: '第{season}回春のタッグリーグは{entrySummary}から計{teamCount}チームが出場する。第12週、A・B各ブロックの総当たりと、ブロック1位同士の優勝決定戦を一日で行う。{preview}' },
   ],
   // ドラフト結果（2026-07-27）。オフシーズン中は新聞が発行されないため、
   // ドラフトの顛末は翌シーズン第1週の号（新年号）に載る。
@@ -17417,9 +17417,9 @@ const NEWS_HEADLINE_TEMPLATES = {
   ],
   springTagResult: [
     { headline: '{championOrg}『{champ1}&{champ2}』組、春のタッグリーグ制覇',
-      body: '第{season}回春のタッグリーグは{championOrg}の{champ1}・{champ2}組が優勝。決勝で{runnerUpOrg}の{runner1}・{runner2}組を下した。' },
+      body: '第{season}回春のタッグリーグはA・B両ブロックの総当たりを経て決勝へ進み、{championOrg}の{champ1}・{champ2}組が優勝。{runnerUpOrg}の{runner1}・{runner2}組を下した。' },
     { headline: '春のタッグリーグ、{championOrg}が頂点に',
-      body: '4団体総当たりを経て行われた決勝で、{championOrg}の{champ1}・{champ2}組が{runnerUpOrg}の{runner1}・{runner2}組を破り、第{season}回春のタッグリーグの優勝チームとなった。' },
+      body: 'A・B各ブロック1位がぶつかった決勝で、{championOrg}の{champ1}・{champ2}組が{runnerUpOrg}の{runner1}・{runner2}組を破り、第{season}回春のタッグリーグの優勝チームとなった。' },
   ],
   challengeRequestWin: [
     { headline: '{requesterName}の直訴が実った！{ourOrg}が{opponentOrg}を {score} で下す',
