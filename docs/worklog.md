@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-90マージ: タイトル画面「選手ファイル」+配色案2+共通数値表記ヘルパー（2026-08-13・Fable+Codex）
+
+**task-90をマージ**(cd746da)。Codexが専用worktree wm-codex-task90で実装(+663/-5、4ファイル)→Fableがdiff全文レビュー・不変条件I-1〜I-6の独立検算→3粒度コミット代行(ヘルパー/配色+DOM/本体+テスト)→mainへ。
+
+実装: ①`statTierStyle`/`barDispOver`/`statOverBarHtml`をui-commonへ新設(stat-notation v1.0。7帯・glow=数値の100超のみ・枠越え圧縮バー・バー非発光・▼n/+n対応) ②タイトル配色を案2「会場の夜」へ(`.title-screen`ローカルトークン`--title-bg:#161b21`/`--title-glow`で上書き。**全画面共通の`--bg-dark`は不変**。マーキー彩度0.4→0.55)+Credits横に「Fighter File」リンク ③選手ファイル本体(z200オーバーレイ・確定文言の機密注記・スタイル絞り込み+名前検索+thクリックソート・詳細モーダル=upper172×258+色軸レーダー+枠越えバー+特性+紹介文)。静的カタログはホワイトリスト14キーのみで構築、`G`・乱数に非接触。
+
+検算(Fable独立実施): barDispOver 4点一致(110→103.6/130→110.8/150→118/200→118頭打ち)/機密注記3行の一字一句/`--bg-dark`定義不変/新設トークン`--stat-*`・`--border-strong`の:root追加確認/**SVGプレゼンテーション属性のvar()が実環境で解決されることをブラウザ実測で確認**(fill/stroke/font-family——修正不要と判定)。ガードテストは番兵方式でpot/trainCap漏れを全127名×一覧+詳細の生成HTMLに対して検査する本物(Codexテストとしては上出来)。auto-sim不要(エンジン非接触)。実機確認はバックログへ: タイトル配色の見え方/Fighter Fileリンク→一覧→詳細の通し/検索・ソート/ESC・背景クリック閉じ。
+
+**続けてtask-91(DB逆輸入)をCodexへ投入済み**(worktree wm-codex-task91。task-90ヘルパー依存が解けたため)。
+
 ## 選手ファイル+DB逆輸入: デザイン全面確定→仕様書2本+Codex指示書2本（2026-08-13・Fable）
 
 Keisukeの**「完璧」裁定でデザイン全面確定**(選手ファイルv0.7+逆輸入v0.1+バーglow廃止まで)。確定内容を仕様化し実装工程を準備した。

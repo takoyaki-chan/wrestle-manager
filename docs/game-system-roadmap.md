@@ -187,7 +187,7 @@ Phase 2 の配線と WM-D03「引退」までは入った（2026-07-26: WM-C01 �
 
 ## 次の実装予定
 
-### 🆕 タイトル画面「選手ファイル」+ 本編DB逆輸入（2026-08-13 Keisuke起票） — ✅ **デザイン全面確定(「完璧」裁定)**・実装準備完了。仕様: `docs/ui/stat-notation-v1.0.md`+`docs/ui/03-screens/fighter-file.md`、指示書: task-90(選手ファイル+配色+共通ヘルパー)→task-91(DB逆輸入・90に依存)。残: 仕様書diff確認→Codex投入→実機確認
+### 🆕 タイトル画面「選手ファイル」+ 本編DB逆輸入（2026-08-13 Keisuke起票） — 🔄 **task-90マージ済み(cd746da: 選手ファイル+配色案2+共通ヘルパー、検算合格)**。task-91(DB逆輸入)はCodex実行中(worktree wm-codex-task91)。仕様の正: `docs/ui/stat-notation-v1.0.md`+`docs/ui/03-screens/fighter-file.md`。残: task-91マージ→実機確認(バックログ)
 
 ### 🆕 全国統一王座 + コーチ世代交代サイクル（2026-08-12 Keisuke起票。この順で着手）
 
