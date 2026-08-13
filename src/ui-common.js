@@ -32,6 +32,91 @@ function escHtml(s) {
     .replace(/'/g, '&#39;');
 }
 
+// ── task-90: 共通数値表記(stat-notation-v1.0) ──────────────────────────
+// 選手ファイル・DB一覧・選手詳細で共用する。既存の _scale6 系は対象外画面の
+// 表現を維持するため変更せず、新しい適用画面だけがこの3ヘルパーを呼ぶ。
+const _STAT_TIER_PURE = Object.freeze({
+  pw: '#e74c3c', sp: '#2ecc71', te: '#3498db', st: '#f39c12', mn: '#9b59b6',
+  ovr: '#d4a843',
+});
+const _STAT_TIER_GRAY_LO = '#63615b';
+const _STAT_TIER_GRAY_HI = '#a8a59d';
+const _STAT_TIER_WHITE = '#f2f0e8';
+
+function _statTierHexLerp(from, to, amount) {
+  const a = [1, 3, 5].map(i => parseInt(from.slice(i, i + 2), 16));
+  const b = [1, 3, 5].map(i => parseInt(to.slice(i, i + 2), 16));
+  return '#' + a.map((part, i) => Math.round(part + (b[i] - part) * amount)
+    .toString(16).padStart(2, '0')).join('');
+}
+
+/** 能力値/OVRの7帯スタイル。glowは100超の数値だけに付ける。 */
+function statTierStyle(kind, v) {
+  const key = String(kind || '').toLowerCase();
+  const pure = _STAT_TIER_PURE[key] || _STAT_TIER_PURE.ovr;
+  const value = Number.isFinite(Number(v)) ? Number(v) : 0;
+  if (value > 100) {
+    const lit = _statTierHexLerp(pure, '#ffffff', 0.22);
+    return `color:${lit};text-shadow:0 0 6px ${pure}cc,0 0 14px ${pure}55;font-weight:700`;
+  }
+  let color = _STAT_TIER_GRAY_LO;
+  if (value >= 90) color = pure;
+  else if (value >= 80) color = _statTierHexLerp(_STAT_TIER_WHITE, pure, 0.80);
+  else if (value >= 70) color = _statTierHexLerp(_STAT_TIER_WHITE, pure, 0.50);
+  else if (value >= 60) color = _STAT_TIER_WHITE;
+  else if (value >= 45) color = _STAT_TIER_GRAY_HI;
+  return `color:${color}${value >= 90 ? ';font-weight:700' : ''}`;
+}
+
+/** 0〜100の枠と、100超〜150を18表示単位へ圧縮した表示値。 */
+function barDispOver(v) {
+  const value = Number.isFinite(Number(v)) ? Number(v) : 0;
+  if (value <= 100) return value;
+  return 100 + (Math.min(value, 150) - 100) * 18 / 50;
+}
+
+function _statOverBarEsc(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * 枠越えバー1行分のHTML。options: label / labelTitle / lost / gain。
+ * lostは現在値の直後へ同色28%ゴースト、gainは数値横へ+nで表示する。
+ */
+function statOverBarHtml(kind, v, options) {
+  const opts = options || {};
+  const key = Object.prototype.hasOwnProperty.call(_STAT_TIER_PURE, String(kind).toLowerCase())
+    && String(kind).toLowerCase() !== 'ovr' ? String(kind).toLowerCase() : 'pw';
+  const value = Math.max(0, Number.isFinite(Number(v)) ? Number(v) : 0);
+  const lost = Math.max(0, Number.isFinite(Number(opts.lost)) ? Number(opts.lost) : 0);
+  const gain = Math.max(0, Number.isFinite(Number(opts.gain)) ? Number(opts.gain) : 0);
+  const label = opts.label == null ? key.toUpperCase() : opts.label;
+  const labelTitle = opts.labelTitle == null ? '' : ` title="${_statOverBarEsc(opts.labelTitle)}"`;
+  const color = `var(--stat-${key})`;
+  const width = (Math.max(0, barDispOver(value)) / 118 * 100).toFixed(1);
+  const ghostEnd = Math.max(0, barDispOver(value + lost));
+  const ghostWidth = ((ghostEnd - Math.max(0, barDispOver(value))) / 118 * 100).toFixed(1);
+  const ghost = lost > 0
+    ? `<div class="stat-over-ghost" style="left:${width}%;width:${ghostWidth}%;background:${color}"></div>`
+    : '';
+  const marks = [
+    lost > 0 ? `<span class="stat-over-mark is-lost">▼${_statOverBarEsc(lost)}</span>` : '',
+    gain > 0 ? `<span class="stat-over-mark is-gain">+${_statOverBarEsc(gain)}</span>` : '',
+  ].filter(Boolean).join('');
+  const marksHtml = marks ? `<span class="stat-over-marks">${marks}</span>` : '';
+  return `<div class="stat-over-row">
+    <span class="stat-over-label" style="color:${color}"${labelTitle}>${_statOverBarEsc(label)}</span>
+    <div class="stat-over-zone"><div class="stat-over-frame"></div><div class="stat-over-fill" style="width:${width}%;background:${color}"></div>${ghost}</div>
+    <span class="stat-over-value" style="${statTierStyle(key, value)}">${_statOverBarEsc(value)}</span>${marksHtml}
+  </div>`;
+}
+// ── /task-90: 共通数値表記 ─────────────────────────────────────────────
+
 /** 画像+イニシャルフォールバック付きimgタグ生成。onerror時にイニシャル円を表示 */
 /** 「自己最高値からどれだけ落ちたか」を見せるための計算。
  *
