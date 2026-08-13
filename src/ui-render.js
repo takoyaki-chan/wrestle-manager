@@ -9151,11 +9151,9 @@ function _renderNewspaperExtraPage(wp, pageData) {
   return html;
 }
 
-const _STAT_COLORS = { pw: '#e74c3c', sp: '#2ecc71', te: '#3498db', st: '#f39c12', mn: '#9b59b6' };
-function _statCell(val, color) {
+function _statCell(kind, val) {
   const v = Math.round(val || 0);
-  const c = v >= 75 ? (color || '#e74c3c') : v >= 60 ? 'var(--text-main)' : 'var(--text-dim)';
-  return `<td class="num" style="font-size:12px;color:${c}">${v}</td>`;
+  return `<td class="num" style="font-size:12px;${statTierStyle(kind, v)}">${v}</td>`;
 }
 
 // DB全選手一覧用: 各大会の「直近の優勝者」だけを履歴から集計する。
@@ -9325,7 +9323,6 @@ function _renderDbFighters() {
 
   filtered.forEach(f => {
     const ovr = Engine.util.ov(f);
-    const _ovrSc = _ovrColor(ovr);
     const rc = RANK_COLORS[f._orgTier] || '#888';
     const tierBadge = f._orgTier !== 'player' && f._orgTier !== 'fa' && f._orgTier !== 'retired'
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:${rc}22;color:${rc};border:1px solid ${rc}44;margin-left:4px">${f._orgTier}</span>`
@@ -9345,8 +9342,8 @@ function _renderDbFighters() {
       <td style="font-weight:600">${f.name}<span class="db-title-badges">${titleBadges}</span></td>
       <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
-      <td class="num" style="${_scale6Style(_ovrSc)};font-weight:700;font-size:15px">${ovr}</td>
-      ${_statCell(f.pw, '#e74c3c')}${_statCell(f.sp, '#3498db')}${_statCell(f.te, '#2ecc71')}${_statCell(f.st, '#f39c12')}${_statCell(f.mn, '#9b59b6')}
+      <td class="num" style="${statTierStyle('ovr', ovr)};font-size:15px">${ovr}</td>
+      ${_statCell('pw', f.pw)}${_statCell('sp', f.sp)}${_statCell('te', f.te)}${_statCell('st', f.st)}${_statCell('mn', f.mn)}
       <td class="num" style="color:var(--text-sub)">${f.age || '—'}</td>
       <td class="num" style="color:${_popColor(Engine.util.dispPop(f.popularity || 0)).color}">${Engine.util.dispPop(f.popularity || 0)}</td>
     </tr>`;
