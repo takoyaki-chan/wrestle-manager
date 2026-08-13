@@ -16608,6 +16608,247 @@ App.tcConfirmEntries = function() {
   if (typeof refreshAll === 'function') refreshAll();
 };
 
+// ── task-90: タイトル画面 選手ファイル ────────────────────────────────
+// ランタイム状態へ触れず、静的マスタから表示許可字段だけをコピーしたカタログで描画する。
+const _FIGHTER_FILE_STATS = Object.freeze([
+  Object.freeze({ key: 'pw', label: 'PW' }),
+  Object.freeze({ key: 'sp', label: 'SP' }),
+  Object.freeze({ key: 'te', label: 'TE' }),
+  Object.freeze({ key: 'st', label: 'ST' }),
+  Object.freeze({ key: 'mn', label: 'MN' }),
+]);
+const _FIGHTER_FILE_COLUMNS = Object.freeze([
+  Object.freeze({ key: '', label: '', sortable: false }),
+  Object.freeze({ key: 'name', label: '名前', sortable: true }),
+  Object.freeze({ key: 'style', label: 'スタイル', sortable: true }),
+  Object.freeze({ key: 'ovr', label: 'OVR', sortable: true }),
+  ..._FIGHTER_FILE_STATS.map(stat => Object.freeze({ ...stat, sortable: true })),
+  Object.freeze({ key: 'h', label: '身長', sortable: true }),
+]);
+const _FIGHTER_FILE_STYLES = Object.freeze([
+  'Grappler', 'Striker', 'Submission', 'Aerial', 'Allround', 'Brawler',
+]);
+const _fighterFileState = { key: 'ovr', asc: false, style: '', query: '' };
+let _fighterFileCatalogCache = null;
+
+function _fighterFileBuildCatalog(chars, profiles, portraits) {
+  return (Array.isArray(chars) ? chars : []).map(char => {
+    const pw = Number(char.pw) || 0;
+    const sp = Number(char.sp) || 0;
+    const te = Number(char.te) || 0;
+    const st = Number(char.st) || 0;
+    const mn = Number(char.mn) || 0;
+    return {
+      id: Number(char.id),
+      name: String(char.name || ''),
+      h: Number(char.h) || 0,
+      style: String(char.style || ''),
+      role: String(char.role || ''),
+      pw, sp, te, st, mn,
+      ovr: Math.round((pw + sp + te + st + mn) / 5),
+      traits: Array.isArray(char.traits) ? char.traits.map(String) : [],
+      profile: String((profiles && profiles[char.id]) || ''),
+      portraitKey: String((portraits && portraits[char.id]) || ''),
+    };
+  });
+}
+
+function _fighterFileCatalog() {
+  if (!_fighterFileCatalogCache) {
+    _fighterFileCatalogCache = _fighterFileBuildCatalog(ALL_CHARS, CHAR_PROFILES, PORTRAIT);
+  }
+  return _fighterFileCatalogCache;
+}
+
+function _fighterFileNextSort(state, key) {
+  const sortable = _FIGHTER_FILE_COLUMNS.some(column => column.sortable && column.key === key);
+  if (!sortable) return { key: state.key, asc: state.asc };
+  return state.key === key ? { key, asc: !state.asc } : { key, asc: false };
+}
+
+function _fighterFileCompare(a, b, key, asc) {
+  const av = a[key];
+  const bv = b[key];
+  const compared = typeof av === 'string'
+    ? av.localeCompare(String(bv), 'ja')
+    : (Number(av) || 0) - (Number(bv) || 0);
+  return asc ? compared : -compared;
+}
+
+function _fighterFileStyleBadge(style) {
+  const safeStyle = _FIGHTER_FILE_STYLES.includes(style) ? style : '';
+  const badgeClass = safeStyle ? ` badge-${safeStyle}` : '';
+  return `<span class="fighter-file-style-badge${badgeClass}">${escHtml(style || '—')}</span>`;
+}
+
+function _fighterFileFaceHtml(fighter) {
+  const initial = escHtml((fighter.name || '?').charAt(0));
+  const fallback = `<span class="fighter-file-face-fallback">${initial}</span>`;
+  if (!fighter.portraitKey) return `<div class="fighter-file-face-wrap">${fallback}</div>`;
+  const url = `../image/face_${fighter.portraitKey}.png`;
+  return `<div class="fighter-file-face-wrap"><img class="fighter-file-face" src="${escHtml(url)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="fighter-file-face-fallback" hidden>${initial}</span></div>`;
+}
+
+function _fighterFileUpperHtml(fighter) {
+  const initial = escHtml((fighter.name || '?').charAt(0));
+  if (!fighter.portraitKey) return `<div class="fighter-file-upper-fallback">${initial}</div>`;
+  const url = `../image/upper/upper_${fighter.portraitKey}.webp`;
+  return `<img src="${escHtml(url)}" alt="${escHtml(fighter.name)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="fighter-file-upper-fallback" hidden>${initial}</div>`;
+}
+
+function _fighterFileRadarHtml(fighter) {
+  const cx = 100, cy = 104, radius = 72;
+  const point = (index, length) => {
+    const angle = (-90 + index * 72) * Math.PI / 180;
+    return [cx + length * Math.cos(angle), cy + length * Math.sin(angle)];
+  };
+  const polygon = length => _FIGHTER_FILE_STATS.map((_, index) =>
+    point(index, length).map(value => value.toFixed(1)).join(',')).join(' ');
+  const grid = [20, 40, 60, 80, 100].map(level =>
+    `<polygon points="${polygon(radius * level / 100)}" fill="none" stroke="var(--border-strong)" stroke-width="${level === 100 ? 1 : 0.5}"/>`).join('');
+  const axes = _FIGHTER_FILE_STATS.map((_, index) => {
+    const [x, y] = point(index, radius);
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.5"/>`;
+  }).join('');
+  const values = _FIGHTER_FILE_STATS.map(stat => Math.max(0, Math.min(100, Number(fighter[stat.key]) || 0)));
+  const dataPoints = values.map((value, index) =>
+    point(index, radius * value / 100).map(coord => coord.toFixed(1)).join(',')).join(' ');
+  const labels = _FIGHTER_FILE_STATS.map((stat, index) => {
+    const [x, y] = point(index, radius + 15);
+    return `<text x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="middle" font-family="var(--font-label)" font-size="8" letter-spacing="1" fill="var(--stat-${stat.key})">${stat.label}</text>`;
+  }).join('');
+  return `<svg width="200" height="208" viewBox="0 0 200 208" role="img" aria-label="能力レーダーチャート">${grid}${axes}<polygon points="${dataPoints}" fill="var(--gold)" fill-opacity="0.25" stroke="var(--gold)" stroke-width="1.5"/>${labels}</svg>`;
+}
+
+function _fighterFileListHtml(catalog, state) {
+  let visible = catalog.slice();
+  if (state.style) visible = visible.filter(fighter => fighter.style === state.style);
+  if (state.query) visible = visible.filter(fighter => fighter.name.includes(state.query));
+  visible.sort((a, b) => _fighterFileCompare(a, b, state.key, state.asc));
+  const head = `<tr>${_FIGHTER_FILE_COLUMNS.map(column => {
+    if (!column.sortable) return '<th scope="col" style="width:48px"></th>';
+    const active = state.key === column.key;
+    const arrow = active ? (state.asc ? ' ▲' : ' ▼') : '';
+    return `<th scope="col" class="${active ? 'sorted' : ''}" onclick="App.sortFighterFile('${column.key}')">${column.label}${arrow}</th>`;
+  }).join('')}</tr>`;
+  const body = visible.map(fighter => {
+    const stats = _FIGHTER_FILE_STATS.map(stat =>
+      `<td class="is-number" style="${statTierStyle(stat.key, fighter[stat.key])}">${fighter[stat.key]}</td>`).join('');
+    return `<tr onclick="App.openFighterFileDetail(${fighter.id})">
+      <td>${_fighterFileFaceHtml(fighter)}</td>
+      <td class="fighter-file-name">${escHtml(fighter.name)}</td>
+      <td>${_fighterFileStyleBadge(fighter.style)}</td>
+      <td class="fighter-file-ovr" style="${statTierStyle('ovr', fighter.ovr)}">${fighter.ovr}</td>
+      ${stats}
+      <td class="is-number">${fighter.h}<span class="fighter-file-unit">cm</span></td>
+    </tr>`;
+  }).join('');
+  return { head, body, visibleCount: visible.length };
+}
+
+function _fighterFileDetailHtml(fighter, traitDefs) {
+  const bars = _FIGHTER_FILE_STATS.map(stat =>
+    statOverBarHtml(stat.key, fighter[stat.key], { label: stat.label })).join('');
+  const traits = fighter.traits.length ? fighter.traits.map(trait => {
+    const def = traitDefs && traitDefs[trait];
+    if (!def) return '';
+    return `<div class="fighter-file-trait"><span class="fighter-file-trait-icon" style="--fighter-trait-color:${escHtml(def.color || 'var(--gold)')}">${escHtml(def.icon || trait.charAt(0))}</span><span class="fighter-file-trait-name">${escHtml(trait)}</span><span class="fighter-file-trait-desc">${escHtml(def.desc || '')}</span></div>`;
+  }).join('') : '<div class="fighter-file-trait-desc">固有特性なし</div>';
+  return `<div class="fighter-file-detail-head">
+      <span class="fighter-file-kicker">Personnel File</span>
+      <button type="button" class="fighter-file-close" onclick="App.closeFighterFileDetail()" title="閉じる（ESC可）" aria-label="選手詳細を閉じる">✕</button>
+    </div>
+    <div class="fighter-file-detail-main">
+      <div class="fighter-file-upper">${_fighterFileUpperHtml(fighter)}</div>
+      <div class="fighter-file-detail-info">
+        <h3 class="fighter-file-detail-name">${escHtml(fighter.name)}</h3>
+        <div class="fighter-file-detail-badges">${_fighterFileStyleBadge(fighter.style)}<span class="fighter-file-role-badge">${escHtml(fighter.role)}</span></div>
+        <div class="fighter-file-detail-meta">身長 ${fighter.h}cm</div>
+        <div class="fighter-file-detail-ovr"><strong style="${statTierStyle('ovr', fighter.ovr)}">${fighter.ovr}</strong><span>OVR — 基準値</span></div>
+        <div class="fighter-file-charts"><div class="fighter-file-radar">${_fighterFileRadarHtml(fighter)}</div><div class="fighter-file-bars">${bars}<div class="fighter-file-bar-note">枠の右端=100。枠を飛び越えた選手は規格外（はみ出しは圧縮表示）</div></div></div>
+      </div>
+    </div>
+    <div class="fighter-file-section"><div class="fighter-file-section-label">Traits — 特性</div>${traits}</div>
+    <div class="fighter-file-section"><div class="fighter-file-section-label">Profile — 紹介</div><div class="fighter-file-profile">${escHtml(fighter.profile)}</div></div>
+    <div class="fighter-file-footnote">※ 記載の能力値は各選手の能力基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。</div>`;
+}
+
+App.renderFighterFile = function() {
+  const head = document.getElementById('fighterFileHead');
+  const body = document.getElementById('fighterFileBody');
+  const count = document.getElementById('fighterFileCount');
+  if (!head || !body || !count) return false;
+  const view = _fighterFileListHtml(_fighterFileCatalog(), _fighterFileState);
+  head.innerHTML = view.head;
+  body.innerHTML = view.body;
+  count.textContent = `全${_fighterFileCatalog().length}名 / 表示中: ${view.visibleCount}名`;
+  return true;
+};
+
+App.showFighterFile = function() {
+  const overlay = document.getElementById('fighterFileOverlay');
+  if (!overlay) return false;
+  _fighterFileCatalogCache = _fighterFileBuildCatalog(ALL_CHARS, CHAR_PROFILES, PORTRAIT);
+  Object.assign(_fighterFileState, { key: 'ovr', asc: false, style: '', query: '' });
+  const style = document.getElementById('fighterFileStyle');
+  const search = document.getElementById('fighterFileSearch');
+  if (style) style.value = '';
+  if (search) search.value = '';
+  App.closeFighterFileDetail();
+  overlay.classList.add('active');
+  return App.renderFighterFile();
+};
+
+App.closeFighterFile = function() {
+  App.closeFighterFileDetail();
+  const overlay = document.getElementById('fighterFileOverlay');
+  if (overlay) overlay.classList.remove('active');
+};
+
+App.sortFighterFile = function(key) {
+  const next = _fighterFileNextSort(_fighterFileState, key);
+  _fighterFileState.key = next.key;
+  _fighterFileState.asc = next.asc;
+  return App.renderFighterFile();
+};
+
+App.filterFighterFileStyle = function(style) {
+  _fighterFileState.style = _FIGHTER_FILE_STYLES.includes(style) ? style : '';
+  return App.renderFighterFile();
+};
+
+App.filterFighterFileName = function(query) {
+  _fighterFileState.query = String(query || '').trim();
+  return App.renderFighterFile();
+};
+
+App.openFighterFileDetail = function(id) {
+  const fighter = _fighterFileCatalog().find(item => item.id === Number(id));
+  const overlay = document.getElementById('fighterFileDetailOverlay');
+  const detail = document.getElementById('fighterFileDetail');
+  if (!fighter || !overlay || !detail) return false;
+  detail.innerHTML = _fighterFileDetailHtml(fighter, TRAIT_DEFS);
+  overlay.classList.add('active');
+  return true;
+};
+
+App.closeFighterFileDetail = function() {
+  const overlay = document.getElementById('fighterFileDetailOverlay');
+  const detail = document.getElementById('fighterFileDetail');
+  if (overlay) overlay.classList.remove('active');
+  if (detail) detail.innerHTML = '';
+};
+
+function _handleFighterFileEscape(e) {
+  if (e.key !== 'Escape') return;
+  const detail = document.getElementById('fighterFileDetailOverlay');
+  if (detail && detail.classList.contains('active')) { App.closeFighterFileDetail(); return; }
+  const overlay = document.getElementById('fighterFileOverlay');
+  if (overlay && overlay.classList.contains('active')) App.closeFighterFile();
+}
+document.addEventListener('keydown', _handleFighterFileEscape);
+// ── /task-90: タイトル画面 選手ファイル ───────────────────────────────
+
 // v2.1: クレジット画面
 App.showCredits = function() {
   // 楽曲クレジットを動的にレンダリング
