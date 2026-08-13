@@ -6,6 +6,13 @@ const { loadGame } = require('./helpers/load-game');
 loadGame();
 
 let state = Engine.createInitialState(42, true);
+state = {
+  ...state,
+  rankings: ['org_s', 'org_a', 'org_b', 'player'].map((orgId, index) => ({
+    orgId, rank: index + 1, rating: 100 - index,
+    name: Engine.springTagLeague._orgName(state, orgId),
+  })),
+};
 const announced = Engine.springTagLeague.announce(state);
 assert.strictEqual(announced.cancelled, false);
 state = { ...state, springTagLeague: announced };
@@ -15,29 +22,38 @@ state = Engine.springTagLeague.confirmPlayerTeam(state, playerPair.f1Id, playerP
 const simulated = Engine.springTagLeague.run(state, Engine.rng.create(42));
 assert.strictEqual(simulated.cancelled, false);
 
-// バグ条件を固定して再現: プレイヤーはリーグ2位だが、決勝でリーグ1位に勝つ。
-const aiFinalist = simulated.teams.find(team => team.orgId !== 'player');
-const remaining = simulated.teams.filter(team => team.orgId !== 'player' && team.orgId !== aiFinalist.orgId);
-const standings = simulated.standings.map(standing => {
-  if (standing.orgId === aiFinalist.orgId) return { ...standing, rank: 1 };
-  if (standing.orgId === 'player') return { ...standing, rank: 2 };
-  return { ...standing, rank: standing.orgId === remaining[0].orgId ? 3 : 4 };
-});
+// バグ条件を固定して再現: ブロック順位とは別に、決勝勝者を優勝として配布する。
 const playerTeam = simulated.teams.find(team => team.orgId === 'player');
+const aiFinalist = simulated.teams.find(team => team.orgId !== 'player');
+const fallbackPlacement = team => {
+  const standing = simulated.standings[team.block].find(row => row.teamId === team.teamId);
+  return {
+    teamId: team.teamId, orgId: team.orgId, block: team.block, blockRank: standing.rank,
+    result: standing.rank === 2 ? 'third' : 'fourth',
+    prizeKey: standing.rank === 2 ? 'blockSecond' : standing.rank === 3 ? 'blockThird' : 'blockFourth',
+  };
+};
+const placements = simulated.teams.map(team => {
+  if (team.teamId === playerTeam.teamId) return { ...fallbackPlacement(team), result: 'champion', prizeKey: 'champion' };
+  if (team.teamId === aiFinalist.teamId) return { ...fallbackPlacement(team), result: 'runnerUp', prizeKey: 'runnerUp' };
+  return fallbackPlacement(team);
+});
 const finalResult = {
   ...simulated,
-  standings,
+  placements,
+  championTeamId: playerTeam.teamId,
+  runnerUpTeamId: aiFinalist.teamId,
   champion: 'player',
   runnerUp: aiFinalist.orgId,
-  third: remaining[0].orgId,
-  fourth: remaining[1].orgId,
   finalMatch: {
     ...simulated.finalMatch,
-    orgA: aiFinalist.orgId,
-    orgB: 'player',
-    teamA: aiFinalist,
-    teamB: playerTeam,
-    winner: 'teamB',
+    teamAId: playerTeam.teamId,
+    teamBId: aiFinalist.teamId,
+    orgA: 'player',
+    orgB: aiFinalist.orgId,
+    teamA: playerTeam,
+    teamB: aiFinalist,
+    winner: 'teamA',
   },
 };
 
@@ -47,7 +63,7 @@ const springFinance = applied.springTagLeague.revenueDistribution;
 const playerFinance = springFinance.orgShares.find(share => share.orgId === 'player');
 assert.strictEqual(springFinance.fixedRevenue, 7000, 'spring special-event revenue must be fixed at 7000');
 assert.strictEqual(applied.funds - fundsBefore, Engine.springTagLeague.PRIZE.champion + playerFinance.amount,
-  'league-second final winner must receive both the champion prize and special-event income');
+  'final winner must receive both the champion prize and special-event income');
 assert.strictEqual(playerFinance.placementBonusRate, 1, 'final winner must receive the 100% champion brand bonus');
 
 const resultNewsEvent = applied._industryNewsEvents.find(event => event.type === 'springTagResult');

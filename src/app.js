@@ -4559,11 +4559,16 @@ const App = {
 
   stlOpenEntryModal() {
     if (!G.springTagLeague || G.springTagLeague.cancelled) return;
-    const myTeam = (G.springTagLeague.teams || []).find(t => t.orgId === 'player');
+    const myTeams = (G.springTagLeague.teams || []).filter(t => t.orgId === 'player')
+      .sort((a, b) => (a.slot || 1) - (b.slot || 1));
     App._stlEntrySelection = {
-      f1Id: myTeam && myTeam.confirmed ? myTeam.f1Id : null,
-      f2Id: myTeam && myTeam.confirmed ? myTeam.f2Id : null,
+      activeSlot: Math.max(0, myTeams.findIndex(team => !team.confirmed)),
+      pairs: myTeams.map(team => ({
+        f1Id: team && team.confirmed ? team.f1Id : null,
+        f2Id: team && team.confirmed ? team.f2Id : null,
+      })),
     };
+    if (App._stlEntrySelection.activeSlot < 0) App._stlEntrySelection.activeSlot = 0;
     Audio.play('select');
     // 編成に入る前に導入シーン(コーチ→選手)。出せないときはそのまま編成へ
     const openEntry = () => _mdlAOpen(_stlEntryModalHtml());
@@ -4578,10 +4583,14 @@ const App = {
   stlPickFighter(id) {
     const sel = App._stlEntrySelection;
     if (!sel) return;
-    if (sel.f1Id === id) { sel.f1Id = null; }
-    else if (sel.f2Id === id) { sel.f2Id = null; }
-    else if (sel.f1Id == null) { sel.f1Id = id; }
-    else if (sel.f2Id == null) { sel.f2Id = id; }
+    const pair = sel.pairs[sel.activeSlot] || (sel.pairs[sel.activeSlot] = { f1Id: null, f2Id: null });
+    const usedElsewhere = sel.pairs.some((row, index) => index !== sel.activeSlot
+      && row && (row.f1Id === id || row.f2Id === id));
+    if (usedElsewhere) { Audio.play('error'); return; }
+    if (pair.f1Id === id) { pair.f1Id = null; }
+    else if (pair.f2Id === id) { pair.f2Id = null; }
+    else if (pair.f1Id == null) { pair.f1Id = id; }
+    else if (pair.f2Id == null) { pair.f2Id = id; }
     else { return; } // 既に2名選択済み — 先に外してから選び直す
     Audio.play('click');
     const card = document.getElementById('mdlACard');
@@ -4589,21 +4598,41 @@ const App = {
   },
 
   stlPickSuggestion(f1Id, f2Id) {
-    App._stlEntrySelection = { f1Id, f2Id };
+    const sel = App._stlEntrySelection;
+    if (!sel) return;
+    sel.pairs[sel.activeSlot] = { f1Id, f2Id };
     Audio.play('select');
+    const card = document.getElementById('mdlACard');
+    if (card) card.innerHTML = _stlEntryModalHtml();
+  },
+
+  stlSelectEntrySlot(slotIndex) {
+    const sel = App._stlEntrySelection;
+    if (!sel || !Array.isArray(sel.pairs) || !sel.pairs[slotIndex]) return;
+    sel.activeSlot = slotIndex;
+    Audio.play('click');
     const card = document.getElementById('mdlACard');
     if (card) card.innerHTML = _stlEntryModalHtml();
   },
 
   stlConfirmTeam() {
     const sel = App._stlEntrySelection;
-    if (!sel || sel.f1Id == null || sel.f2Id == null) return;
-    G = Engine.springTagLeague.confirmPlayerTeam(G, sel.f1Id, sel.f2Id);
+    if (!sel || !Array.isArray(sel.pairs)) return;
+    const hasHalfPair = sel.pairs.some(pair => !!pair && ((pair.f1Id == null) !== (pair.f2Id == null)));
+    if (hasHalfPair || !sel.pairs.some(pair => pair && pair.f1Id != null && pair.f2Id != null)) return;
+    const confirmPlayerTeams = Engine.springTagLeague.confirmPlayerTeams || ((current, pairs) => pairs.reduce(
+      (next, pair, index) => pair && pair.f1Id != null && pair.f2Id != null
+        ? Engine.springTagLeague.confirmPlayerTeam(next, pair.f1Id, pair.f2Id, index) : next,
+      current
+    ));
+    G = confirmPlayerTeams(G, sel.pairs);
+    const playerTeams = (G.springTagLeague.teams || []).filter(team => team.orgId === 'player');
+    const confirmedCount = playerTeams.filter(team => team.confirmed).length;
     App._stlEntrySelection = null;
     _mdlAClose();
     Audio.play('select');
     try { Storage.autoSave(); } catch (_e) {}
-    if (typeof showToast === 'function') showToast('🌸 春のタッグリーグ 出場チームを編成しました');
+    if (typeof showToast === 'function') showToast(`🌸 春のタッグリーグ ${confirmedCount}/${playerTeams.length}チームを編成しました`);
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
     if (typeof refreshAll === 'function') refreshAll();
   },
@@ -4640,13 +4669,15 @@ const App = {
       if (typeof refreshAll === 'function') refreshAll();
       return;
     }
-    App._stlPreview = { idx: 0, phase: 'table' };
+    App._stlAdvanceBusy = false;
+    clearTimeout(App._stlAdvanceTimer);
+    clearTimeout(App._stlChampionTimer);
+    App._stlPreview = { idx: 0, phase: 'table', championQueued: false };
     try { Audio.bgm.playStage('springA'); } catch (e) {}
     // 編成は週11、本編は週12。週をまたぐので会場入りはここで挟む
-    const myTeam = (stl.teams || []).find(t => t && t.orgId === 'player');
-    const party = myTeam
-      ? [myTeam.f1Id, myTeam.f2Id].map(id => (G.roster || []).find(f => f && f.id === id)).filter(Boolean)
-      : [];
+    const partyIds = (stl.teams || []).filter(team => team && team.orgId === 'player')
+      .flatMap(team => [team.f1Id, team.f2Id]);
+    const party = partyIds.map(id => (G.roster || []).find(f => f && f.id === id)).filter(Boolean);
     // 春タッグはリーグ表から開始する。PPV型の縦カード紹介は使わない。
     const toBoard = () => renderSpringTagLeagueBoard();
     if (typeof showSpecialEventTravel === 'function' && party.length) {
@@ -4658,7 +4689,14 @@ const App = {
 
   stlAdvance() {
     const p = App._stlPreview;
-    if (!p) return;
+    if (!p || App._stlAdvanceBusy) return;
+    App._stlAdvanceBusy = true;
+    clearTimeout(App._stlAdvanceTimer);
+    // 連打は1操作に畳み、UI側の待ちが壊れてもタイムアウトで必ず再操作可能にする。
+    App._stlAdvanceTimer = setTimeout(() => {
+      App._stlAdvanceBusy = false;
+      App._stlAdvanceTimer = null;
+    }, 900);
     const stl = G.springTagLeague;
     const matches = (stl && stl.matches) || [];
     if (p.phase === 'table') {
@@ -4679,13 +4717,17 @@ const App = {
       Audio.play('click');
       renderSpringTagLeagueMatchResultPopup(stl.finalMatch, true, () => App.stlAdvance());
     } else if (p.phase === 'finalResult') {
+      if (p.championQueued) return;
+      p.championQueued = true;
       p.phase = 'champion';
       try { Audio.fileBgm.fadeOut(800); } catch (e) {}
-      setTimeout(() => {
+      clearTimeout(App._stlChampionTimer);
+      App._stlChampionTimer = setTimeout(() => {
         try { Audio.fileBgm.stop(); } catch (e) {}
         try { Audio.bgm.playJingle('championship'); } catch (e) {}
+        if (App._stlPreview === p && p.phase === 'champion') renderSpringTagLeagueChampion();
+        App._stlChampionTimer = null;
       }, 900);
-      renderSpringTagLeagueChampion();
     } else {
       // 想定外のphase(2026-07-31監査で検出。到達経路は見つかっていないが、
       // 見つからない=絶対に来ない、の証明にはならないための保険)。
@@ -4748,7 +4790,9 @@ const App = {
       profile: CHAR_PROFILES[fighter.id] || '',
     });
     const { fA1, fA2, fB1, fB2 } = replay.fighters;
-    const roundLabel = isFinal ? '優勝決定戦' : `リーグ 第${matchIndex + 1}試合`;
+    const roundLabel = isFinal ? '優勝決定戦' : `${match.block || ''}ブロック 第${match.blockRound || matchIndex + 1}試合`;
+    // 総試合数は実データから数える(8チーム=13、7チーム=10、6チーム=7、旧4チーム形式=7)
+    const totalStlMatches = ((G.springTagLeague && G.springTagLeague.matches) || []).length + 1;
     const msg = {
       type: 'START_TAG_MATCH',
       teamA: { fighter1: profile(fA1), fighter2: profile(fA2) },
@@ -4756,8 +4800,8 @@ const App = {
       result: replay.result,
       matchInfo: {
         header: `🌸 春のタッグリーグ ${roundLabel}`,
-        matchNum: isFinal ? 7 : matchIndex + 1,
-        totalMatches: 7,
+        matchNum: isFinal ? totalStlMatches : matchIndex + 1,
+        totalMatches: totalStlMatches,
         preserveParentFileBgm: true,
         sfxMasterVol: Audio.sfxMasterVol,
         bgmMasterVol: Audio.bgmMasterVol,
@@ -4801,6 +4845,11 @@ const App = {
       const { _pendingSpringTagLeagueReplay: _, ...cleanG } = G;
       G = cleanG;
     }
+    clearTimeout(App._stlAdvanceTimer);
+    clearTimeout(App._stlChampionTimer);
+    App._stlAdvanceTimer = null;
+    App._stlChampionTimer = null;
+    App._stlAdvanceBusy = false;
     App._stlPreview = null;
     const overlay = document.getElementById('showResultOverlay');
     if (overlay) overlay.classList.remove('active');
