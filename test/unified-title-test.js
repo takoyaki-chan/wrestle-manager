@@ -145,6 +145,8 @@ section('初回授与・連覇・tvMode経路で統一王座だけを記録す�
   state = { ...state, season: 8, week: 47 };
   state = Engine.unifiedTitle.markTournamentReturn(state).state;
   assert.strictEqual(state.unifiedTitle.championId, championId, '返還時点ではchampionIdを保持する');
+  assert.deepStrictEqual(state._pendingUnifiedReturnCeremony, { championId, season: 8 },
+    '自団体王者のW47返還だけ表示用フラグを立てる');
   state = { ...state, week: 48 };
   state = awardTo(state, championId);
   assert.strictEqual(state.unifiedTitle.history.at(-1).type, 'repeat');
@@ -204,6 +206,12 @@ section('四半期は最大1回、天頂戦年Q4は0回', () => {
   state = Engine.unifiedTitle.processQuarter(state, Engine.rng.create(1));
   assert.strictEqual(state.unifiedTitle.challengePeriodKey, '5-Q1');
   assert.ok(state._pendingUnifiedIncomingMatch);
+  assert.deepStrictEqual(state._pendingUnifiedNotification, {
+    type: 'challengerArrival',
+    championId: state._pendingUnifiedIncomingMatch.championId,
+    challengerId: state._pendingUnifiedIncomingMatch.challengerId,
+    challengerOrgId: state._pendingUnifiedIncomingMatch.challengerOrgId,
+  }, '自団体王者への挑戦発火時だけ到着演出フラグを立てる');
   const first = state._pendingUnifiedIncomingMatch;
   state = { ...state, week: 11, _pendingUnifiedIncomingMatch: null };
   state = Engine.unifiedTitle.processQuarter(state, Engine.rng.create(2));

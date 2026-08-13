@@ -1190,7 +1190,7 @@ function renderWeekScreen() {
           ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 休養中</span>'
           : '<span style="font-size:12px;color:#2ecc71">健康</span>';
       const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
-      const wkUnifiedBadge = G.unifiedTitle?.championId === c.id ? ' <span style="color:#4fb7c5;font-size:11px;font-weight:700">🌐 統一王者</span>' : '';
+      const wkUnifiedBadge = G.unifiedTitle?.championId === c.id ? ' <span style="color:var(--unified);font-size:11px;font-weight:700">🌐 統一王者</span>' : '';
 
       // レンタル選手は操作不可（自律行動）
       if (c.isRental) {
@@ -1960,7 +1960,7 @@ function _renderRosterDetailPanel(c, hired) {
       <div class="rd-portrait-record">
         <span style="color:#1a7a3a">${c.wins||0}○</span> <span style="color:#b03030">${c.losses||0}×</span>
         ${isChamp ? '<span style="margin-left:8px;color:#7a6530">👑王者</span>' : ''}
-        ${isUnifiedChamp ? '<span style="margin-left:8px;color:#257886">🌐全国統一王者</span>' : ''}
+        ${isUnifiedChamp ? '<span style="margin-left:8px;color:var(--unified-deep)">🌐全国統一王者</span>' : ''}
       </div>
       ${statusBadges.length > 0 ? `<div class="rd-portrait-status">${statusBadges.join('')}</div>` : ''}
     </div>
@@ -2262,7 +2262,7 @@ function renderRoster() {
     const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
     const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
     const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> 👑</span>' : '';
-    const unifiedBadge = G.unifiedTitle?.championId === c.id ? '<span style="color:#4fb7c5;font-size:11px;font-weight:700"> 🌐統一王者</span>' : '';
+    const unifiedBadge = G.unifiedTitle?.championId === c.id ? '<span style="color:var(--unified);font-size:11px;font-weight:700"> 🌐統一王者</span>' : '';
     const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> 🤝</span>' : '';
     // v1.3-1: wear状態ラベル (§3)
     const wearBadge = (() => {
@@ -3245,8 +3245,8 @@ function renderShowPrep() {
     </div>`;
   }
   if (scheduledUnifiedNotice) {
-    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid rgba(79,183,197,.6);background:rgba(25,95,110,.2);border-radius:6px;color:#d9fbff;font-size:12px;line-height:1.65">
-      <strong style="color:#75d6e2">🌐 全国統一王座戦</strong>　${scheduledUnifiedNotice.champion.name} vs ${scheduledUnifiedNotice.challenger.name}<br>
+    html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid color-mix(in srgb,var(--unified) 60%,transparent);background:color-mix(in srgb,var(--unified-deep) 20%,transparent);border-radius:6px;color:var(--unified-hi);font-size:12px;line-height:1.65">
+      <strong style="color:var(--unified)">🌐 全国統一王座戦</strong>　${scheduledUnifiedNotice.champion.name} vs ${scheduledUnifiedNotice.challenger.name}<br>
       全国統一王座戦をメインイベントに固定しています。残りの枠に通常カードを編成してください。
     </div>`;
   }
@@ -3347,7 +3347,7 @@ function renderShowPrep() {
       <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
       ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('会場の熱気予測。ここに各試合の注目度(人気・因縁・タイトル・メイン枠など)を掛けた分だけ試合品質(MQ)に効きます。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${Math.round(estCrowdMQ.total * 10) / 10}</div><div class="sp-metric-label">会場の熱</div></div>` : ''}
       ${hasTitlePreview
-        ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${validMatches.some(m => m?._unifiedTitleMatch) ? '#4fb7c5' : 'var(--gold)'}">${validMatches.some(m => m?._unifiedTitleMatch) ? '🌐' : '🏆'}</div><div class="sp-metric-label">${validMatches.some(m => m?._unifiedTitleMatch) ? '全国統一王座戦' : 'タイトル戦'}</div></div>`
+        ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${validMatches.some(m => m?._unifiedTitleMatch) ? 'var(--unified)' : 'var(--gold)'}">${validMatches.some(m => m?._unifiedTitleMatch) ? '🌐' : '🏆'}</div><div class="sp-metric-label">${validMatches.some(m => m?._unifiedTitleMatch) ? '全国統一王座戦' : 'タイトル戦'}</div></div>`
         : (titleCd.allowed
           ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">王座戦 解禁中</div></div>`
           : `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-dim);font-size:18px">⏳${titleCd.weeksLeft}週</div><div class="sp-metric-label">王座戦 解禁まで</div></div>`)}
@@ -3396,7 +3396,7 @@ function renderShowPrep() {
     }
     return `<div class="sp-fighter-info ${side}">
       ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
-      ${isUnifiedChamp ? '<div class="sp-champ" style="color:#4fb7c5">🌐 統一王者</div>' : ''}
+      ${isUnifiedChamp ? '<div class="sp-champ" style="color:var(--unified)">🌐 統一王者</div>' : ''}
       <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${f.name}</div>
       <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
       ${drawHtml}
@@ -3591,7 +3591,7 @@ function renderShowPrep() {
       tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('他団体との3試合挑戦シリーズ：会場枠内の上位3試合として固定され、カード魅力に専用ボーナスが入ります')} style="background:rgba(170,55,55,0.28);border-color:rgba(235,105,90,0.6);color:#ffd0c8;cursor:help">⚔ 他団体挑戦（固定）</span>`);
     }
     if (slot._unifiedTitleMatch) {
-      tagParts.push(`<span class="sp-match-tag sp-tag-title" style="background:rgba(25,95,110,.28);border-color:rgba(79,183,197,.6);color:#9eeaf2">🌐 全国統一王座戦（固定）</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-title" style="background:color-mix(in srgb,var(--unified-deep) 28%,transparent);border-color:color-mix(in srgb,var(--unified) 60%,transparent);color:var(--unified-hi)">🌐 全国統一王座戦（固定）</span>`);
     }
     if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
@@ -3655,7 +3655,7 @@ function renderShowPrep() {
     }
 
     const cardBorder = slot._unifiedTitleMatch
-      ? ' style="border-color:rgba(79,183,197,0.6)"'
+      ? ' style="border-color:color-mix(in srgb,var(--unified) 60%,transparent)"'
       : slot._crMatchLocked
       ? ' style="border-color:rgba(235,105,90,0.5)"'
       : isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';

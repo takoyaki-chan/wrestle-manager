@@ -2524,6 +2524,9 @@ const Engine = {
           returnedSeason: state.season,
           history: [...(title.history || []), historyEvent],
         },
+        ...(found.orgId === 'player' ? {
+          _pendingUnifiedReturnCeremony: { championId: title.championId, season: state.season },
+        } : {}),
       };
       next = this._pushNews(next, 'unifiedTitleReturn', {
         name: found.fighter.name,
@@ -2702,6 +2705,12 @@ const Engine = {
             issuedAbsWeek,
             expiresAbsWeek: issuedAbsWeek + this.BOOKING_EXPIRY_WEEKS,
           },
+          _pendingUnifiedNotification: {
+            type: 'challengerArrival',
+            championId: holder.fighter.id,
+            challengerId: challenger.id,
+            challengerOrgId,
+          },
         };
       }
 
@@ -2762,9 +2771,16 @@ const Engine = {
       return { ...pending, champion: champion.fighter, challenger: challenger.fighter };
     },
 
+    // 到着通知(表示用)は予約の消費・失効と運命を共にさせる。UIが表示済みなら
+    // App側で先に消えているので無害。UIの無いauto-simで残留させない(I-1保全)。
+    _clearArrivalNotification(state) {
+      if (state._pendingUnifiedNotification?.type !== 'challengerArrival') return state;
+      return { ...state, _pendingUnifiedNotification: null };
+    },
+
     reserveIncomingMatch(state) {
       const match = this.getIncomingMatch(state);
-      if (!match) return { state: { ...state, _pendingUnifiedIncomingMatch: null }, match: null };
+      if (!match) return { state: this._clearArrivalNotification({ ...state, _pendingUnifiedIncomingMatch: null }), match: null };
       const slot = {
         left: match.champion.id,
         right: match.challenger.id,
@@ -2772,7 +2788,7 @@ const Engine = {
         _unifiedTitleMatch: true,
         _unifiedTitleLocked: true,
       };
-      return { state: { ...state, _pendingUnifiedIncomingMatch: null }, match: { ...match, slot } };
+      return { state: this._clearArrivalNotification({ ...state, _pendingUnifiedIncomingMatch: null }), match: { ...match, slot } };
     },
 
     acceptPlayerTurn(state, fighterId) {
@@ -2815,7 +2831,7 @@ const Engine = {
       const now = this._abs(state);
       let next = state;
       if (next._pendingUnifiedIncomingMatch && now > next._pendingUnifiedIncomingMatch.expiresAbsWeek) {
-        next = { ...next, _pendingUnifiedIncomingMatch: null };
+        next = this._clearArrivalNotification({ ...next, _pendingUnifiedIncomingMatch: null });
       }
       if (next._pendingUnifiedAwayMatch && now > next._pendingUnifiedAwayMatch.expiresAbsWeek) {
         const event = { type: 'playerTurnConsumed', outcome: 'expired', season: next.season, week: next.week };

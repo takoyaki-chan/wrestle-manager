@@ -76,6 +76,7 @@ function runSummaryHandler(state, calls, uiLog) {
       checkSurvivalUpdate: () => {}, checkCrisisEnteredPopup: () => {},
       checkTitleEstablishment: () => {}, checkRosterCapMilestones: () => {},
       checkPrologueHighlights: () => {}, checkTenchosenPreEvent: () => {},
+      checkUnifiedTitlePresentation: () => {},
       _refreshTicker: () => {},
     };
     const invoke = new Function(
