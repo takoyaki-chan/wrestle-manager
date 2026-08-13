@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-92マージ+specs昇格: 全国統一王座シリーズ全完了（2026-08-13・Fable+Codex）
+
+**task-92(P4記録・表彰・殿堂・MVP)をマージ**(5aba026)し、**`specs/unified-title-spec-v1.0.md` へ昇格**(INDEX追記済み)。統一王座はP1〜P4完結。
+
+P4実装: ①careerRecordに奪取(captured)/防衛(defense)イベント(天頂戦戴冠はwonのまま分離) ②殿堂pt=1勝2pt対称・won+0(calcHofPointsとbuildCareerHighlightsを共通ヘルパーで対に) ③MVPレース=UNIFIED_DEFENSE 20/CAPTURE 20/HOLD_AT_END 12(既存キー無変更・breakdownは条件付き展開で旧shape維持) ④年間表彰「全国統一王者」スライド(非天頂戦年のみ・空位年なし・オーロラ帯)+表彰式全体にfinishCeremony一回化+10分時限保険 ⑤📜記録タブ「全国統一王座」セクション(政権復元は不成立年の返還仮置きまで処理・最多防衛/最長在位・未創設は非表示) ⑥シーズンチップ🌐3種。
+
+検算(Fable): worktreeでnpm test 231/231・I-3=3季auto-simが現mainと完全一致・diff全文レビュー。**I-6較正判定: 両条項とも未発動**(殿堂★分布 23/32/45→16/36/50=★★★+11%で2倍条項外/年間MVP中の統一王者比率38%→56%で9割条項外。導入前値はWM_SOURCE_REF=HEADの外付け計測器・baseline指紋一致確認済み)。**レビューで発見したP3の代数バグをmainで修正**(3e0c539): 戴冠式の「第N代」がcreation/crown/repeatしか数えず奪取(move)の政権交代を落としていた→記録タブ・実績リストと同じ定義(move含む)へ統一。
+
+併せて同日の実機フィードバック3点は cff0929 で対応済み(戴冠ファンファーレRS04/決勝の決着後カードを敗者のみへ/優勝画面→戴冠式→コーチ総括の順へ)。実機確認はバックログ§全国統一王座にP4項目5点を追記。**残: Keisuke実機確認とベルト画像のみ。次工程=コーチ世代交代サイクルの設計**(既存35名の分布実測から)。※main側でnpm test 4本(feedback-fixes/wear-ceiling-decay/regular-show-pregame-design ほか)が並行セッションのマージ由来で失敗中 — 統一王座系とは無関係(stash切り分け済み・当該セッションの管轄)。
+
 ## R3リアクションの顔画像修正+ポップアップ重なりの監査タスク起票（2026-08-13・Fable）
 
 実機報告2件の続き。①**R3モーダル(仲間の引退/退団リアクション)の縦枠に顔アイコンが引き伸ばされて入っていた** — 呼び出し元(app.js 2箇所)が getPortraitUrl を渡していたため。showR3Modal に fighterId を追加し getUpperUrl のアッパー画像優先へ(取れないときのみ旧fighterFace)。②**種類の違うポップアップが同時に重なる件**(怪我+試合下振れ+王座防衛) — 主要経路(_eventPopupQueue/_enqueuePopup/_chainEventPopupQueueEmpty/popupActionsチェーン)は調査の結果ゲート済みで、残る容疑は (a)_enqueuePopup の check-then-show レース (b)週頭経路のキュー非連動 setTimeout遅延 (c)チェーン外ドレイン3種のゲート未確認 に絞り込んだ。**盲目パッチは78f1445型のフリーズ事故を生むため、調査結果一式を持たせた監査タスクをチップ起票**(全発火経路の数え上げ→既存ゲートへの寄せ、タイムアウト保険必須)。

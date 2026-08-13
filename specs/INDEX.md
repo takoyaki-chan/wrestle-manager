@@ -10,7 +10,9 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
 | dialogue-tone-spec-v1.0.md | **セリフ口調の確定仕様**(archetype×personality二軸/アンカー制/全セル共通の鉄則10項/口調シート34枚を規範文書化) |
 | contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |
+| unified-title-spec-v1.0.md | **全国統一王座の確定仕様**(天頂戦優勝ベルト/四半期挑戦サイクル/殿堂・MVP・表彰・記録タブ/戴冠式ほか演出/オーロラトークン) |
 | economy-spec-v2.0.md | 収支バランス(グッズ/メディア/給与/精算) |
+| flight-recorder-spec-v1.0.md | **フライトレコーダー確定仕様**(常駐エラー捕捉/操作トレース永続化/⚠バッジ+報告バンドルv1/配布物同梱) |
 | growth-system-spec-v2.0.md | trainCap距離ベース成長/年齢/追い込み → v2.2 |
 | growth-system-spec-v2.1.md | （旧）成長リバランスv2.0。AI活動wearの非対称は v2.2 で撤回 |
 | growth-system-spec-v2.2.md | **成長システム確定仕様**（指数ブレーキ/追い込み熱量/AI成長パリティ/共通wear/限定AIトレーナー） |
