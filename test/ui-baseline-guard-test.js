@@ -84,8 +84,6 @@ const ALLOW = new Set([
 
   // --- 派閥イベント旧画面(F02系はU3移行対象外。移行済み画面は .u3b-* co-classで上書きし
   //     元ルールは共有のため残置 — index.html内コメント参照) ---
-  '.fevt-subject-portrait-wrap | 120x140',
-  '.fevt-follower-portrait | 64x76',
   '.fevt-arena-portrait | 160x190',
   '.fevt-arena-portrait.loser | 110x130',
   '.fevt-arena-portrait.winner-big | 200x230',
@@ -96,9 +94,9 @@ const ALLOW = new Set([
   '.fevt-res-loser .fevt-leader-upper | 220x270',
   '.fevt-endless-col .fevt-leader-upper | 200x250',
   '.fevt-peace-col .fevt-leader-upper | 230x280',
-  '.fevt-ign-col .fevt-portrait-wrap | 220x260',
-  '.fevt-ign-col.left .fevt-leader-upper | 220x260',
-  '.fevt-ign-col.right .fevt-leader-upper | 220x260',
+  // task-86 開戦画面リデザイン(2026-08-12承認)の設計値: リーダー120x180は真2:3、頭数チップ36x52
+  '.fevt-ign-col .fevt-portrait-wrap,.fevt-ign-col .fevt-leader-upper | 120x180',
+  '.fevt-ign-member-chip | 36x52',
   '.decision-result-hero-portrait | 120x120',
   '.dfc-hero .leader-pp | 128x160',
   '.dfx-grid-neutral .dfc-hero .leader-pp | 112x140',
@@ -154,6 +152,8 @@ const ALLOW = new Set([
   '.wm-tag-member-upper | 56x84',
 
   // --- モバイル/狭幅の比例縮小(メディアクエリ内。梯子の段に乗せ直すのは今後の課題) ---
+  // 果たし状/統一王座の到着隊列(基準はL 150x224)の620px以下縮小(task-87系)
+  '.inv-mem img,.inv-mem-fallback | 105x157',
   '.emr-upper | 72x114',
   '.show-pregame-a .card-main .smc-char .upper-wrap | 88x112',
   '.show-pregame-a .card-sub .smc-char .upper-wrap | 76x96',

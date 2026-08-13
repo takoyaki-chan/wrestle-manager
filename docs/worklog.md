@@ -1,5 +1,13 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## v1.30リリース: 取り残し2ブランチ回収+バージョン更新+push（2026-08-13・Fable）
+
+Keisuke指示「取り残しがないか確認してからv1.30でpush」。push前監査で**マージ漏れ2ブランチ**を発見し回収:
+①**ポップアップ直列化**(claude/serene-shamir-97d4d7、同日の監査チップ完了分)→マージ(f28fcdf)。`_isPopupActive`のオプション対応が現mainに存在することを確認済み ②**ui-baseline-guard-test新設**(claude/serene-pascal-03f89e、08-12完了分)→マージ(b002643)。08-12以降に入った画面で検出3件(task-86開戦の120×180/36×52・果たし状隊列のモバイル縮小105×157)は**承認済み設計値のためALLOWへ理由付き凍結**+陳腐化ALLOW5行掃除(F07肖像修正・task-86で消えた旧サイズ)。これでCLAUDE.md/ui-checkスキルが参照する機械検査が実在するようになった。
+残置ブランチ4本(inspiring-ritchie/autumn-war-winner-comments/battle-demo系2本、7/30〜8/5)は旧実験・別リリース系のため意図的に除外。
+
+バージョン: release/manifest.json + タイトル画面 `title-ver` を **1.26→1.30**。検証: ui-baseline-guard-test ok(allowed=98/98)・npm test **243/243全緑**(直列化+ガードテスト込み)。この状態で origin/main へ push(Cloudflare Pages自動デプロイ)。
+
 ## task-96マージ: 春のタッグリーグv0.2(2ブロック制)（2026-08-13・Fable+Codex）
 
 **task-96をマージ**(bb9c0ed)。Codexがworktree wm-codex-task96で実装(+1,167行、src6+テスト6)→sandboxコミット不可(BLOCKED)→Fableがdiff全文レビュー・検算・**2件の設計修正**・3粒度コミット代行(①エンジンd352fb4/②UI 9180697/③文言38d6a0e)→mainへ。ui-common.jsは並行チップ(798861b 試合前OVR7帯統一)と自動マージ。
