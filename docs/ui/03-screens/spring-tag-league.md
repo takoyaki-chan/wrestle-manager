@@ -2,7 +2,7 @@
 
 **ファイル**：`docs/ui/03-screens/spring-tag-league.md`
 **最終更新**：2026-07-19
-**実装状況**：P2a UI実装完了。2026-07-19にリーグ戦6試合・決勝のタッグ観戦を追加。エンジンP1実装済み（`Engine.springTagLeague` / `Engine.wear`）。残: P2b=ジュニアUIのクライムライン改修（`docs/jt-climbline-rework-inventory-v0.1.md` 承認済み）
+**実装状況**：P2a UI実装完了。2026-07-19にリーグ戦6試合・決勝のタッグ観戦を追加。エンジンP1実装済み（`Engine.springTagLeague` / `Engine.wear`）。残: P2b=ジュニアUIのクライムライン改修（`docs/jt-climbline-rework-inventory-v0.1.md` 承認済み）。**2026-08-13 v0.2(2ブロック制・task-96)実装済み**: 本書のリーグ興行画面は「A/Bブロック順位表の縦積み+決勝カードにA1位/B1位チップ」、編成モーダルは「出場枠ごとのスロットタブ(1〜3枠)」に拡張された(構造の正は `specs/spring-tag-league-spec-v0.2.md`。本文の4チーム総当たり記述は旧形式=formatなしセーブの表示にのみ残る)
 
 > 本ファイルは faction-events.md と同様、単一画面でなく**シーケンス一式**（編成モーダル + リーグ興行画面 + 週12ブロック導線）を1枚で定義する。
 
