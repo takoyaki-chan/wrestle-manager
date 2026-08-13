@@ -113,6 +113,14 @@ assert.ok(!generatedHtml.includes('HIDDEN_RATE_'), '派生ラベルが生成HTML
 assert.ok(!generatedHtml.includes('trainCap'), '非表示フィールド名が生成HTMLへ出ない');
 assert.ok(!generatedHtml.includes('pot:'), '非表示フィールド名が生成HTMLへ出ない');
 
+// 実機バグ2件の再発防止(2026-08-13 Keisuke報告)
+assert.ok(
+  indexSource.includes('.fighter-file-overlay [hidden],.fighter-file-detail-overlay [hidden]{display:none!important}'),
+  'hidden属性がフォールバックのdisplay:flexに勝つ(画像とイニシャルの二重表示防止)'
+);
+assert.ok(listView.head.includes('style="width:40px"'), '数値列は固定幅(ソート矢印で列がずれない)');
+assert.ok(listView.head.includes('style="width:50px"'), 'OVR列は固定幅');
+
 const maxOvr = Math.max(...catalog.map(fighter => fighter.ovr));
 const firstId = Number((listView.body.match(/App\.openFighterFileDetail\((\d+)\)/) || [])[1]);
 assert.ok(catalog.some(fighter => fighter.id === firstId && fighter.ovr === maxOvr), 'デフォルトはOVR降順');

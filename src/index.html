@@ -923,6 +923,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .stat-over-mark.is-gain{color:var(--stat-sp)}
 
 /* ═══ task-90: タイトル画面 選手ファイル ═══ */
+/* hidden属性を画像フォールバックのdisplay:flexより優先させる(これが無いと
+   フォールバックが常時表示され、写真列が縦に溢れて下のセクションへ被さる) */
+.fighter-file-overlay [hidden],.fighter-file-detail-overlay [hidden]{display:none!important}
 .fighter-file-overlay{--fighter-file-row-hover:rgba(200,190,170,0.03);display:none;position:fixed;inset:0;z-index:200;align-items:stretch;justify-content:center;overflow:hidden;background:var(--bg-dark);color:var(--text-main)}
 .fighter-file-overlay.active{display:flex}
 .fighter-file-screen{display:flex;width:min(1200px,100%);min-width:0;flex-direction:column;background:var(--bg-dark)}

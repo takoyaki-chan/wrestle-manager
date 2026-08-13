@@ -16618,12 +16618,13 @@ const _FIGHTER_FILE_STATS = Object.freeze([
   Object.freeze({ key: 'mn', label: 'MN' }),
 ]);
 const _FIGHTER_FILE_COLUMNS = Object.freeze([
+  // width: ソート矢印(" ▲/▼")の付け外しで列幅が動かないよう、数値系は固定幅(ゲーム内DBと同じ作法)
   Object.freeze({ key: '', label: '', sortable: false }),
   Object.freeze({ key: 'name', label: '名前', sortable: true }),
-  Object.freeze({ key: 'style', label: 'スタイル', sortable: true }),
-  Object.freeze({ key: 'ovr', label: 'OVR', sortable: true }),
-  ..._FIGHTER_FILE_STATS.map(stat => Object.freeze({ ...stat, sortable: true })),
-  Object.freeze({ key: 'h', label: '身長', sortable: true }),
+  Object.freeze({ key: 'style', label: 'スタイル', sortable: true, width: 90 }),
+  Object.freeze({ key: 'ovr', label: 'OVR', sortable: true, width: 50 }),
+  ..._FIGHTER_FILE_STATS.map(stat => Object.freeze({ ...stat, sortable: true, width: 40 })),
+  Object.freeze({ key: 'h', label: '身長', sortable: true, width: 56 }),
 ]);
 const _FIGHTER_FILE_STYLES = Object.freeze([
   'Grappler', 'Striker', 'Submission', 'Aerial', 'Allround', 'Brawler',
@@ -16729,7 +16730,8 @@ function _fighterFileListHtml(catalog, state) {
     if (!column.sortable) return '<th scope="col" style="width:48px"></th>';
     const active = state.key === column.key;
     const arrow = active ? (state.asc ? ' ▲' : ' ▼') : '';
-    return `<th scope="col" class="${active ? 'sorted' : ''}" onclick="App.sortFighterFile('${column.key}')">${column.label}${arrow}</th>`;
+    const width = column.width ? ` style="width:${column.width}px"` : '';
+    return `<th scope="col" class="${active ? 'sorted' : ''}"${width} onclick="App.sortFighterFile('${column.key}')">${column.label}${arrow}</th>`;
   }).join('')}</tr>`;
   const body = visible.map(fighter => {
     const stats = _FIGHTER_FILE_STATS.map(stat =>
