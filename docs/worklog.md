@@ -1,5 +1,19 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## セリフ検品: 文言化けの全数照合+GLIMPSE_B移植59セル検品（2026-08-13・Fable・修正はレビュー待ち）
+
+「拳が握りしまる」(1f4222f修正済み)と同型の文言化けを機械検品した。**コードは一切変更していない**(指摘の修正はKeisukeレビュー後)。
+
+**手法**: ①`tools/extract-dialogue.js` をworktreeで再実行→committed版カタログとgit diff→docs復元(同一生成ロジックなので \uXXXX デコード・キー順正規化は自動吸収、全20,540本照合) ②口調バイブル反映(6295662)のdiffから旧文言849本を抽出し、現行srcへの残存を全数走査(拳ケースの検出器として設計) ③GLIMPSE_B移植59セル(composed42+GL-02-hostile13+GL-01push分)へ口調spec鉄則の機械検査+目視 ④petition102本を承認草案と全数突き合わせ。
+
+**結果**:
+1. **doc↔src不一致ゼロ**。差分は4ファイルすべて意図的改稿と一致(petition100本置換=task-87 / 負傷セリフ1本+雰囲気テキスト15本=実機FB 7件バッチ / 新セリフ63本=task-86/87のEVENT_LINES_BY_KEY登録)
+2. **化け残り(拳同型)は実質なし**。残存候補8件を精査→全て別人格セルの正当な文言か部分一致。ただし改訂漏れ疑い2件+迷い1件を列挙(flag-dialogue seductiveの「わたし」/F07 composed.boldの敬語/coolの「すまない」)
+3. **GLIMPSE_B移植分に明確な違反5件**: GL-01の polite.bold 4行(data.js:26706/26818/26923/27026、「よっしゃ……!」「見ろよ!!これがわたしだ!!」等=旧セッションF push由来。半角!+ひらがな一人称+丁寧の口調完全不一致)+loss.seductive.earnest(26809「わたし、足りませんわね」)。**移植の軸変換自体は正しい**(旧`['win'].bold.polite`→新`polite.bold`)=4月の元執筆がpoliteスロットに非丁寧文言を書いていた。ほかGL-02-hostile.polite.normal(27199)がstandard.earnest(27176)と完全重複+常体、composed.earnest 7セルが常体(specは「earnestのみです・ます」)=裁定待ちとして列挙
+4. **petition102本は草案と102/102一致**(「変更なし」2本含む)
+
+**残**: 指摘セルの直しはKeisuke裁定後(違反5件は直し推奨、迷い項目は裁定のみ)。roadmap該当項目なし・specs変更なし(検品のみ)・manifest変更なし。
+
 ## 実機フィードバック7件バッチ: 契約交渉フリーズ(進行停止)ほか（2026-08-13・Fable）
 
 Keisukeのプレイ中報告7件を一括対応。
