@@ -8,7 +8,7 @@
 
 検算(Fable独立実行): **決定論成立**=同一シード2走で319操作・digest 09f442518091ed7a・操作ログ完全一致(227s/183s)/1季完走・検出0件/サンドボックス4検出器PASS(main上でも再確認)/src/変更ゼロ/`page.evaluate`はG読み取りのみ/サーバはポート0+パストラバーサル防御/一時コンテキストでKeisukeの実ブラウザ非干渉/run-all.jsは`test/*-test.js`直下のみ収集=npm test非干渉。開発中D2_FREEZEアーティファクト群は全て「driverが押し方を知らなかった画面」(大型イベント選手カード/PPVエントリー/年間表彰式→特別対応済み)でゲーム本体のバグ検出はゼロ。
 
-**週次オートメーション刷新**: Codexの `weekly-bug-audit`(月曜10時・ACTIVE)のプロンプトを新フルスイートへ書き換え——main取り込み→依存確認→npm test→auto-sim 40季(日付シード)→**UI走破1季**→bug:audit:full、修正禁止(検出と報告のみ)。effort low→medium。重複していた旧 `weekly-bug-check`(4月作成heartbeat)は**PAUSED**へ。※automation.toml直接編集のため、Codexアプリ側で表示が反映されているか要一見。CLAUDE.mdの自動検証システム節に「UI層の検証」小節を追記(フライトレコーダー/走破ハーネス/週次スイートの入口)。
+**週次オートメーション刷新**: Codexの `weekly-bug-audit`(月曜10時・ACTIVE)のプロンプトを新フルスイートへ書き換え——main取り込み→依存確認→npm test→auto-sim 40季(日付シード)→**UI走破1季**→bug:audit:full、修正禁止(検出と報告のみ)。effort low→medium。重複していた旧 `weekly-bug-check`(4月作成heartbeat)はPAUSED化を試行→**Keisuke実機確認で「停止になっていない」**。追調査(TOML再読+内部sqlite読み取り)で確定: **オートメーションの実体はローカル `~/.codex/automations/*.toml` ではなくアプリ/クラウド側**(少なくともheartbeat型はローカル編集が無効)。weekly-bug-checkの停止と、weekly-bug-auditの新プロンプト反映確認は**Codexアプリ画面での操作をKeisukeに依頼**(新プロンプト全文はworklogではなくチャットで手渡し済み+`scratchpad`不要のためこの節の手順(0)〜(5)が正)。CLAUDE.mdの自動検証システム節に「UI層の検証」小節を追記(フライトレコーダー/走破ハーネス/週次スイートの入口)。
 
 残: ③レア画面強制点火カタログ(②のdriver/detectors流用・別タスク)/Mモード・D4不可視検出(後続)/specs化は設計書v0.1+READMEが正のため不要と判断(dev基盤のため)。manifest変更なし(配布物に含まれない)。npm testの既存3失敗(task-91陳腐化疑い)は未解消のまま=別対応。
 
