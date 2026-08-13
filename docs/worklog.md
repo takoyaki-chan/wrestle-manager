@@ -1,5 +1,19 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## セリフ検品の指摘を修正: 違反6本差し替え+「わたし」→「私」13箇所+取り残し3箇所（2026-08-13・Fable・文言レビュー待ち）
+
+検品報告へのKeisuke裁定「①②③全部直せ。不揃いも含めて」を受けて実施。全24箇所、宣言テーブル内のみ(push実行文は対象外・後述)。
+
+1. **①違反セルの差し替え6本**(新規執筆・口調シートのアンカー準拠): GL-01のpolite.bold 4行(win「ふぅ……勝ちました！ 実力、見せられたかな？」/loss「……悔しいです。この負けは、次で必ず取り返します！」/goodLoss「負けました……でも、全力は出し切れたかな。次は勝ちます！」/greatWin「見ていただけましたか？ これが私の、全力です！」=大久保アンカーの全力・誇り・見下しなし)+loss.seductive.earnest「……敗因は、分かっているの。次は、同じようにはいかないわ」(新見アンカーの観察と分析)+GL-02-hostile.polite.normalの重複コピー解消「私情は持ち込まないと、決めているんです。……難しいですね」
+2. **②ひらがな一人称13箇所を漢字「私」へ**(裁定53: ひらがなはshy帯のみ): CONTRACT_NEGOTIATION(polite.emotional×2/seductive×2)、RETIREMENT・POACH・CHOICE_EVENTのpolite.emotional×4、CARE_REACTION polite._default、GLIMPSE_A trust_below_20.seductive.emotional、FLAG_DIALOGUE seductive×2、F08_PRE_MATCH_LINES_B(delinquent)「私んとこ」。**shyセルの「わたし」116行は仕様通りなので不変**
+3. **③取り残し3箇所**: F07 composed.bold 2セルをタメ口化(「…わかった。私からメンバーに話しておくよ。」「…そこまで見てくれてるんだ。下の子のこと、助かるよ。」=6295662の同型改訂と同じ骨格)+GL-02-hostile.standard.normal「見てろよ」→「見返してやる」+FLAG_DIALOGUE cool「……すまない。」→「……ごめん。」
+4. **③のGlimpse常体7セルは直していない(重要)**: 規範の口調シート「鷹揚×真面目」のアンカー(馬入橋)が常体(「まだまだ成長途中。もっと強くなってみせる！」)であり、GLIMPSE_A/Bとも既にシート通り=**両者は揃っていた**。不揃いの実体はspec§4の要約1行だったため、specの鷹揚行を「対社長の改まった場面のみearnestがです・ます」へ明確化(specs/dialogue-tone-spec-v1.0.md、diff要Keisuke確認)
+5. **新発見(未対応・要判断)**: `NOTIF_DIALOGUES['N2'].easygoing.polite.push(...)` 型の**push実行文セリフ群**(NOTIF/CARE_REACTION/CHOICE_EVENT/LARGE_EVENT/SNAPSHOT_TEXTS等)に「わたし」61行+半角!?が大量残存。GLIMPSE_B§5と同じ「ブラケット/push=ワークブック不可視」の第2の盲点で、口調全直しを一度も通っていない。規模が大きいため今回は触らず別タスク起票(チップ)
+
+検証: node --check 3ファイル / glimpse-b-axis-guard PASS / **test 228/228 PASS** / 残存「わたし」の分布再計測(宣言テーブル=shyのみ116行・push実行文61行)。data-faction-dialogue.jsは混在改行のためEditツールが562行を巻き込む事故→復元しバイト精密置換で1行差分に修正済み。auto-simはターン末フック任せ。manifest変更なし。ブック再export+抽出MD再生成は**未実施**(文言レビュー後にまとめて実施)。
+
+残: Keisukeの文言レビュー(差し替え6本+③3本は全文提示済み)/specs diff確認/push実行文クラスの検品タスク。
+
 ## セリフ検品: 文言化けの全数照合+GLIMPSE_B移植59セル検品（2026-08-13・Fable・修正はレビュー待ち）
 
 「拳が握りしまる」(1f4222f修正済み)と同型の文言化けを機械検品した。**コードは一切変更していない**(指摘の修正はKeisukeレビュー後)。
