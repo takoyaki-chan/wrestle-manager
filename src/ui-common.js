@@ -10511,11 +10511,13 @@ function showFactionF07Modal(payload, state, onChoice) {
     ? `AGE ${leader.age || '—'} ・ OVR ${Engine.util.ov(leader)} ・ FACTION LEADER ・ ${factionName}（${memberCount}名）`
     : `FACTION LEADER ・ ${factionName}`;
 
+  // 枠は梯子chip(46×66=2:3)。素材も2:3なので center top で頭から欠けなく収まる
+  // (旧: 64×76枠+center 20%クロップ。2026-08-13 顔出し監査の取りこぼし修正)
   const leftFol = fol1
-    ? `<div class="fevt-follower-portrait" style="background-image:url('${_factionUpperUrl(fol1.id)}');background-size:cover;background-position:center 20%"></div>`
+    ? `<div class="fevt-follower-portrait" style="background-image:url('${_factionUpperUrl(fol1.id)}');background-size:cover;background-position:center top"></div>`
     : `<div class="fevt-follower-portrait"></div>`;
   const rightFol = fol2
-    ? `<div class="fevt-follower-portrait right" style="background-image:url('${_factionUpperUrl(fol2.id)}');background-size:cover;background-position:center 20%"></div>`
+    ? `<div class="fevt-follower-portrait right" style="background-image:url('${_factionUpperUrl(fol2.id)}');background-size:cover;background-position:center top"></div>`
     : `<div class="fevt-follower-portrait right"></div>`;
   const leaderBubbleHtml = `<div class="u3b-bubble-slot fevt-leader-bubble-slot">${meta.source === 'leader'
     ? `<div class="u3b-bubble fevt-leader-bubble"><div class="u3b-bubble-text">${escHtml(leaderQuote)}</div></div>`

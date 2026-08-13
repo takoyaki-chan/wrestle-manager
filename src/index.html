@@ -5104,10 +5104,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   animation: fevtFadeIn 500ms ease 900ms both;
 }
 .fevt-subject-trio { display: flex; align-items: flex-end; justify-content: center; gap: 18px; margin-bottom: 6px; }
+/* 2026-08-13 Keisuke指摘「縦長で統一したのでは」: 120×140(1:1.17)は顔出し監査(08-12)の
+   取りこぼし。梯子のM(132×194, 2:3)へ。素材が256×384(2:3)なのでcoverで欠けなく収まる */
 .fevt-subject-portrait-wrap {
-  width: 120px; height: 140px;
+  width: 132px; height: 194px;
   border: 2px solid rgba(122,101,48,0.3); border-radius: 4px;
-  background: #222 center/cover no-repeat;
+  background: #222 center top/cover no-repeat;
   box-shadow: 0 8px 24px rgba(0,0,0,0.2);
   position: relative; flex-shrink: 0;
 }
@@ -5116,10 +5118,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   color: var(--cream-gold); font-size: 14px; line-height: 1;
   text-shadow: 0 0 8px rgba(122,101,48,0.5);
 }
+/* 同上: 64×76(ほぼ正方形)→梯子のchip(46×66, 2:3)。一段引いた脇役として置く */
 .fevt-follower-portrait {
-  width: 64px; height: 76px;
+  width: 46px; height: 66px;
   border: 1px solid rgba(100,85,50,0.3); border-radius: 3px;
-  background: #888 center/cover no-repeat;
+  background: #888 center top/cover no-repeat;
   opacity: 0.85; filter: brightness(0.9);
   flex-shrink: 0; margin-bottom: 18px;
   animation: fevtFollowerEnter 700ms ease 1500ms both;

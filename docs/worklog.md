@@ -1,5 +1,9 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## F07派閥相談モーダルの肖像を梯子サイズへ(顔出し監査の取りこぼし)（2026-08-13・Fable）
+
+実機報告: 内部格付け争い(F07)モーダルの画像サイズが「縦長統一」から外れている。調査の結果、08-12の顔出し監査20件に漏れていた直書きサイズが残っていた: 中央リーダー `.fevt-subject-portrait-wrap` 120×140(1:1.17)→**梯子M 132×194**、脇メンバー `.fevt-follower-portrait` 64×76(ほぼ正方形)→**梯子chip 46×66**(index.html)。JS側インラインの `center 20%` クロップも `center top` へ(2:3枠×2:3素材で欠けゼロ、ui-common.js)。F07全種(相談/観察/インシデント)の共通モーダルに効く。ブラウザ実測: computed 132×194 / 46×66 / pos 50% 0% を確認。
+
 ## task-93マージ: フライトレコーダー(バグ捜索①)（2026-08-13・Fable+Codex）
 
 **task-93をマージ**(c532b95)。Codexがworktree wm-codex-task93で実装(+1174行、4ファイル)→サンドボックスが `.git/worktrees/` に書けずコミット不能(BLOCKED報告)→Fableがdiff全文レビュー・検算・ブラウザ実測(Codex環境で不可だった§5-3)・2粒度コミット代行→mainへ。worktree/ブランチは削除済み。
