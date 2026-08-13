@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>本編DB逆輸入 — 階調・枠越えバー・レーダー v0.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   本編DB逆輸入モック v0.1 — 2026-08-13 Fable
+   選手ファイル(fighter-file-title-v0.7)で確定した表記法則を、
+   ゲーム本編のデータベースへ逆輸入する(Keisuke指示・同日)。
+   ◆ 逆輸入する3点:
+     ① 一覧の数値カラー: 案X「段で塗る」7帯
+        (0-44暗灰/45-59明灰/60-69白/70-79系統色50%/80-89同80%/
+         90-99純色+太字/100+純色+輝き)。OVRは金の段
+     ② 詳細のステータスバー: 枠越え・圧縮はみ出し方式
+        (枠=100終端。100超は右18%区画へ圧縮+輝き。0-150目盛廃止)
+     ③ レーダーチャート: 軸ラベルを系統色に
+   ◆ 本編固有の要素(選手ファイルには無い)の扱い:
+     - 100超の実数値が本当に出る(trainCap=pot×0.55〜0.80で150台まで)
+       → 輝きが実戦で生きる。現行の「OVR85+で常時glow」は廃止し、
+         輝き=100超だけに限定(稀少性が格を作る)
+     - 消耗で失われた天井(statDecayView ▼n) → 新バーでは現在値の先に
+       同色ゴースト(半透明)で「失った幅」を描く。▼n表記は維持
+     - 季節成長 +n(緑) → 数値の隣に維持
+     - 団体/年齢/人気列 → 変更なし(人気の塗りは現行 _popColor のまま。
+       揃えるかは判断点)
+   ◆ 対象外: ソート・フィルタ等の機能 / 開発率・体調・コーチ・因縁の
+     各行 / ヘッダのサイズ類(色とバーの差し替えのみ)
+   データ注記: 一覧の団体名・年齢・人気・成長後の数値はすべて
+   「色見本用のダミー」(シーズン進行後の想定値)。tier色(S=#d63031/
+   A=#6c5ce7/B=#00b894)は RIVAL_ORGS の実値。
+   ============================================================ */
+:root {
+  --bg-dark:#24221e; --panel-bg:#181614; --card-bg:#12110e;
+  --gold:#d4a843; --gold-light:#f0d078;
+  --text-main:#e8e6e0; --text-sub:rgba(232,230,224,0.5); --text-dim:rgba(232,230,224,0.25);
+  --border:rgba(200,190,170,0.08); --border-strong:rgba(200,190,170,0.16);
+  /* ステ系統色(ui-render.js _STAT_COLORS 実値) */
+  --stat-pw:#e74c3c; --stat-sp:#2ecc71; --stat-te:#3498db; --stat-st:#f39c12; --stat-mn:#9b59b6;
+  /* スタイルバッジ(index.html .badge-* 実値) */
+  --style-grappler:#8e44ad; --style-striker:#c0392b; --style-submission:#b9570d;
+  --style-aerial:#1e8449; --style-allround:#9a7d0a; --style-brawler:#a93226;
+  /* tier色(data.js RIVAL_ORGS 実値) */
+  --tier-s:#d63031; --tier-a:#6c5ce7; --tier-b:#00b894; --fa-blue:#8bc4f0;
+  --font-body:"Noto Sans JP",sans-serif;
+  --font-num:"Bebas Neue","Noto Sans JP",sans-serif;
+  --font-label:"Oswald","Noto Sans JP",sans-serif;
+  --radius-sm:4px; --radius-md:6px; --radius-lg:10px;
+  --space-xs:4px; --space-sm:8px; --space-md:12px; --space-lg:16px; --space-xl:24px;
+  --ff-bg:var(--bg-dark); --ff-panel:var(--panel-bg);
+  --ff-text:var(--text-main); --ff-sub:var(--text-sub); --ff-dim:var(--text-dim);
+  --ff-border:var(--border); --ff-border-strong:var(--border-strong);
+  --ff-accent:var(--gold); --ff-accent-light:var(--gold-light);
+  --ff-row-hover:rgba(200,190,170,0.03);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; padding:0; background:var(--bg-dark); color:var(--text-main); font-family:var(--font-body); line-height:1.5; }
+body { padding:var(--space-xl) 0 80px; }
+.shell { width:min(1200px, calc(100vw - 24px)); margin:0 auto; }
+.intro { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-lg) 20px; margin-bottom:var(--space-xl); }
+.intro .eyebrow { font-family:var(--font-label); color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; }
+.intro h1 { font-size:18px; margin:0 0 6px; font-weight:700; }
+.intro p { margin:0 0 4px; color:var(--text-sub); font-size:13px; }
+.sec { margin-bottom:56px; }
+.sec-title { font-family:var(--font-label); font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); border-bottom:1px solid var(--border); padding-bottom:var(--space-sm); margin-bottom:var(--space-lg); }
+.note { background:var(--panel-bg); border-left:3px solid var(--gold); border-radius:var(--radius-sm); padding:var(--space-md) var(--space-lg); margin-top:var(--space-lg); font-size:13px; color:var(--text-sub); }
+.note b { color:var(--text-main); }
+.note ul { margin:6px 0 0; padding-left:18px; }
+.note li { margin-bottom:4px; }
+.judge { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-lg) 20px; }
+.judge ol { margin:0; padding-left:20px; font-size:13px; }
+.judge li { margin-bottom:10px; }
+.judge li b { color:var(--gold-light); }
+.judge .rec { color:var(--text-main); }
+.frame-label { font-family:var(--font-label); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-sub); margin:0 0 6px; }
+.screen-frame { background:var(--ff-bg); color:var(--ff-text); border:1px solid var(--ff-border-strong); border-radius:var(--radius-md); overflow:hidden; margin-bottom:var(--space-lg); }
+.ff-body { padding:var(--space-lg) 20px; }
+
+/* 一覧テーブル(ゲーム内 .db-table 準拠) */
+.ff-table { width:100%; border-collapse:collapse; font-size:13px; }
+.ff-table th { font-size:11px; color:var(--ff-dim); text-transform:uppercase; letter-spacing:1px; padding:6px 8px; border-bottom:1px solid var(--ff-border); text-align:left; white-space:nowrap; font-weight:400; }
+.ff-table td { padding:7px 8px; border-bottom:1px solid var(--ff-border); vertical-align:middle; }
+.ff-table tr:hover td { background:var(--ff-row-hover); }
+.ff-table td.num { font-variant-numeric:tabular-nums; }
+.ff-face { width:40px; height:40px; object-fit:cover; object-position:top; border-radius:var(--radius-sm); display:block; }
+.ff-face-fb { width:40px; height:40px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--ff-sub); background:var(--ff-panel); border:1px solid var(--ff-border-strong); }
+.ff-name { font-weight:700; white-space:nowrap; }
+.ff-ovr { font-family:var(--font-num); font-size:15px; letter-spacing:1px; }
+.style-badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:2px; letter-spacing:.5px; white-space:nowrap;
+  color:var(--sb); background:color-mix(in srgb, var(--sb) 15%, transparent); border:1px solid color-mix(in srgb, var(--sb) 40%, transparent);
+  filter:brightness(1.35); }
+.tier-badge { display:inline-block; font-size:10px; padding:1px 5px; border-radius:2px; margin-left:4px; white-space:nowrap;
+  color:var(--tb); background:color-mix(in srgb, var(--tb) 13%, transparent); border:1px solid color-mix(in srgb, var(--tb) 27%, transparent); }
+.org-cell { font-size:12px; color:var(--ff-sub); white-space:nowrap; }
+
+/* 詳細・能力タブ比較 */
+.detail-pair { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-lg); }
+@media(max-width:900px){ .detail-pair{grid-template-columns:1fr} }
+.detail-panel { background:var(--ff-bg); border:1px solid var(--ff-border-strong); border-radius:var(--radius-md); padding:var(--space-lg) 20px; }
+.detail-panel h3 { margin:0 0 var(--space-md); font-size:15px; font-weight:700; }
+.dp-charts { display:flex; gap:var(--space-lg); align-items:flex-start; flex-wrap:wrap; }
+.dp-bars { flex:1; min-width:220px; display:flex; flex-direction:column; gap:6px; padding-top:var(--space-xs); }
+.dp-extra { font-size:11px; color:var(--ff-dim); margin-top:var(--space-md); border-top:1px dashed var(--ff-border); padding-top:var(--space-sm); }
+
+/* 新バー(枠越え・圧縮はみ出し) — fighter-file v0.7 と同一 */
+.sb-row { display:flex; align-items:center; gap:var(--space-sm); }
+.sb-label { font-family:var(--font-label); font-size:10px; letter-spacing:1px; width:24px; flex:0 0 auto; }
+.sb-zone { flex:1; position:relative; height:8px; }
+.sb-frame { position:absolute; left:0; top:0; bottom:0; width:84.746%; background:var(--ff-panel); border:1px solid var(--ff-border); border-radius:2px; }
+.sb-fill { position:absolute; left:0; top:0; bottom:0; border-radius:2px; }
+.sb-ghost { position:absolute; top:0; bottom:0; opacity:.28; border-radius:0 2px 2px 0; }
+.sb-val { font-family:var(--font-num); font-size:13px; width:30px; text-align:right; flex:0 0 auto; font-variant-numeric:tabular-nums; }
+.sb-mark { font-size:10px; width:26px; flex:0 0 auto; }
+.sb-scale { font-size:10px; color:var(--ff-dim); text-align:right; margin-top:2px; }
+
+/* 現行バー(0-150目盛の再現) */
+.old-track { flex:1; position:relative; height:8px; background:var(--ff-panel); border:1px solid var(--ff-border); border-radius:2px; overflow:hidden; }
+.old-tick { position:absolute; left:66.67%; top:0; bottom:0; width:1px; background:var(--ff-border-strong); }
+.old-fill { position:absolute; left:0; top:0; bottom:0; }
+.old-ghost { position:absolute; top:0; bottom:0; opacity:.28; }
+
+/* 凡例 */
+.tier-legend { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:var(--space-md) var(--space-lg); margin-top:var(--space-sm); }
+.tier-legend .tl-head { font-size:11px; color:var(--text-sub); margin-bottom:6px; }
+.tl-row { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; margin-bottom:4px; }
+.tl-row .tl-name { font-family:var(--font-label); font-size:10px; letter-spacing:1px; width:34px; color:var(--text-sub); }
+.tl-row .sw { font-family:var(--font-num); font-size:15px; font-variant-numeric:tabular-nums; width:34px; text-align:right; }
+.tl-row .tl-plus { font-size:10px; color:var(--text-dim); margin-left:4px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="intro">
+    <div class="eyebrow">Mockup — In-Game Database Backport / v0.1 / 2026-08-13</div>
+    <h1>本編データベースへの逆輸入 — 階調カラー・枠越えバー・レーダー軸色</h1>
+    <p>選手ファイル(v0.7)で確定した表記法則を、ゲーム本編のデータベース(全選手一覧+選手詳細ポップアップの能力タブ)へ逆輸入する。<b style="color:var(--gold-light)">本編では100超の実数値が本当に出る</b>(天井=pot×0.55〜0.80で150台まで)ので、「100超だけが輝く」「枠を飛び越える」が実戦で生きる。</p>
+    <p style="color:var(--text-dim)">一覧の団体名・年齢・人気・成長後の数値は色見本用のダミー(進行後の想定値)。tier色はRIVAL_ORGSの実値。ソート・フィルタ・開発率・体調などの機能と行構成は変更しない(色とバーの差し替えのみ)。</p>
+  </div>
+
+  <!-- ═══════════ §1 一覧: 現行 vs 逆輸入 ═══════════ -->
+  <div class="sec" id="secList">
+    <div class="sec-title">§1 — DB全選手一覧: 現行の塗り vs 逆輸入(案X段)</div>
+    <div class="frame-label">現行 — ステは「75以上=系統色/60以上=白/未満=減光」の3段、OVRは_scale6の6段(85+は常時輝き)</div>
+    <div class="screen-frame"><div class="ff-body">
+      <table class="ff-table"><thead id="headCur"></thead><tbody id="bodyCur"></tbody></table>
+    </div></div>
+    <div class="frame-label">逆輸入 — 全数値列を案Xの7帯へ。輝きは「100超」だけに限定(85+の常時glowは廃止)</div>
+    <div class="screen-frame"><div class="ff-body">
+      <table class="ff-table"><thead id="headNew"></thead><tbody id="bodyNew"></tbody></table>
+    </div></div>
+    <div class="tier-legend" id="tierLegend"></div>
+    <div class="note">
+      <b>現→変:</b>
+      <ul>
+        <li><b>ステ列</b>: 3段(75+系統色/60+白/未満減光) → <b>案Xの7帯</b>。深町のSP107・橘のTE104のような100超が「輝く」形で自然に主役になる</li>
+        <li><b>OVR列</b>: _scale6の6段 → 金の7帯(選手ファイルと同法則)。<b>85+の常時glowは廃止し、輝き=100超のみ</b>。輝きの稀少性が「規格外」の格を作る(01-foundations 原則11と同じ思想)</li>
+        <li><b>人気列</b>: 現行 _popColor のまま変更なし(揃えるかは§4判断点)</li>
+        <li>団体バッジ・称号バッジ・年齢・ソート・フィルタ・行クリック: 変更なし</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════ §2 選手詳細・能力タブ: 現行 vs 逆輸入 ═══════════ -->
+  <div class="sec" id="secDetail">
+    <div class="sec-title">§2 — 選手詳細ポップアップ(能力タブ): 現行 vs 逆輸入</div>
+    <p style="font-size:13px;color:var(--text-sub);margin:0 0 12px">見本は成長後の想定値(ダミー): PW112(100超・枠越え) / SP84 / TE80(今季+2) / ST92(消耗で天井▼6) / MN90。レーダーは両案とも0-100クランプ(ゲーム内と同じ)。</p>
+    <div class="detail-pair">
+      <div class="detail-panel">
+        <h3>現行 — 0-150目盛+縦線(100)、数値は3段塗り、レーダー軸は無彩</h3>
+        <div class="dp-charts">
+          <div id="radarCur"></div>
+          <div class="dp-bars" id="barsCur"></div>
+        </div>
+        <div class="dp-extra">課題: 空きトラックが150まで続き「150まで育つ」と錯覚させる。消耗▼の薄バーも150基準で小さく見える</div>
+      </div>
+      <div class="detail-panel">
+        <h3>逆輸入 — 枠=100終端+圧縮はみ出し、数値は案X階調、レーダー軸は系統色</h3>
+        <div class="dp-charts">
+          <div id="radarNew"></div>
+          <div class="dp-bars" id="barsNew"></div>
+        </div>
+        <div class="dp-extra">開発率・体調・コーチ・因縁・怪我の各行、ヘッダ(名前24px/OVR36px)は変更なし。変わるのは数値の塗り・バー・レーダー軸色だけ</div>
+      </div>
+    </div>
+    <div class="note">
+      <b>本編固有要素の織り込み:</b>
+      <ul>
+        <li><b>100超(PW112)</b>: バーが枠を飛び越えて圧縮はみ出し+輝き。数値も輝く。選手ファイルでは見本でしかなかったものが、本編では実際に出る</li>
+        <li><b>消耗で失われた天井(ST▼6)</b>: 現在値の先に同色の半透明ゴーストで「失った幅」を描く+▼6表記(現行の薄バー表現を新ジオメトリへ移植)</li>
+        <li><b>季節成長(TE+2)</b>: 数値の隣の緑 +2 を維持</li>
+        <li><b>レーダー軸ラベル</b>: PW/SP/TE/ST/MN を系統色に(どの軸がどの能力か一目で分かる。選手ファイルからの逆輸入)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════ §3 実装方針 ═══════════ -->
+  <div class="sec" id="secImpl">
+    <div class="sec-title">§3 — 実装方針(指示書に書く内容の骨子)</div>
+    <div class="note" style="margin-top:0">
+      <ul style="margin-top:0">
+        <li><b>共通ヘルパー化</b>: 階調(`statTierStyle(kind, v)`)と枠越えバー(`barDisp(v)`+部品CSS)を ui-common に1箇所で新設し、<b>DB一覧・選手詳細・選手ファイル(新設)の3画面で共用</b>する。画面ごとに再実装しない(ドリフト防止)</li>
+        <li><b>置き換え対象</b>: `_statCell`(ui-render.js:9155)の3段塗り / `_ovrColor`+`_scale6Style`のOVR適用箇所のうちDB一覧・選手詳細 / 選手詳細のステバー(0-150)とレーダー軸</li>
+        <li><b>触らないもの</b>: `_scale6`本体と他の用途(_mqColor/_condColor/_popColor/_bondColor等)・ランキング画面のOVR階調(v0.9)・開発率バー。これらへの波及は§4で判断してから</li>
+        <li>選手ファイル本体の実装と同一タスクに載せるか、逆輸入を別タスクに切るかは指示書作成時に分割(逆輸入は既存画面の差し替えなので回帰確認が要る)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════ §4 判断が要る点 ═══════════ -->
+  <div class="sec" id="secJudge">
+    <div class="sec-title">§4 — 判断が要る点(v0.1)</div>
+    <div class="judge">
+      <ol>
+        <li><b>OVR 85+の常時glow廃止</b> — 現行DBは85以上が常に輝く。逆輸入後は<b>輝き=100超だけ</b>に限定する提案(稀少性が格を作る)。85-99の強豪は「純色+太字」で十分立つ。この整理で良いか</li>
+        <li><b>人気列・ほかのスケール</b> — 人気(_popColor)・体調(_condColor)・MQ(_mqColor)・絆(_bondColor)は今回触らない提案。数値言語を全部揃えるなら別途一括で(段の閾値がスケールごとに違うため設計が要る)</li>
+        <li><b>ランキング画面との整合</b> — ランキングv0.9のOVR階調(白→金の独自トークン)はそのまま残すか、案Xの金帯へ寄せるか。ランキングは「戦力ヒエラルキーの演出」として独自設計した経緯があるため、<span class="rec">当面は残す提案</span>(乖離が気になったら後で寄せる)</li>
+        <li><b>消耗ゴーストの濃さ</b> — 半透明28%。もっと薄く/ハッチング(斜線)にも振れる</li>
+        <li><b>適用画面の範囲</b> — 今回はDB一覧+選手詳細のみ。ロスター表・興行準備ピッカー・ランキング行など「数値が並ぶ他画面」への展開は、この2画面の実機確認後に判断</li>
+      </ol>
+    </div>
+  </div>
+
+  <div style="font-size:10px;color:var(--text-dim);text-align:center">db-gradient-backport-v0.1.html — 法則はfighter-file-title-v0.7と同一(案X段/枠越え圧縮/glow=100超) / ダミー値は色見本用</div>
+</div>
+
+<script>
+/* ── 階調(案X段・fighter-file v0.7と同一) ── */
+const STAT_HEX = { pw:'#e74c3c', sp:'#2ecc71', te:'#3498db', st:'#f39c12', mn:'#9b59b6' };
+const STAT_KEYS = [['pw','PW','--stat-pw'],['sp','SP','--stat-sp'],['te','TE','--stat-te'],['st','ST','--stat-st'],['mn','MN','--stat-mn']];
+const STYLE_VAR = {Grappler:'--style-grappler',Striker:'--style-striker',Submission:'--style-submission',Aerial:'--style-aerial',Allround:'--style-allround',Brawler:'--style-brawler'};
+const GRAY_LO = '#63615b', GRAY_HI = '#a8a59d', WHITE_MID = '#f2f0e8';
+function hexLerp(a, b, t){
+  const pa = [1,3,5].map(i=>parseInt(a.slice(i,i+2),16));
+  const pb = [1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+  return '#' + pa.map((x,i)=>Math.round(x+(pb[i]-x)*t).toString(16).padStart(2,'0')).join('');
+}
+function pureOf(kind){ return kind==='ovr' ? '#d4a843' : STAT_HEX[kind]; }
+function colorFor(kind, v){
+  const pure = pureOf(kind);
+  if(v >= 90) return pure;
+  if(v >= 80) return hexLerp(WHITE_MID, pure, 0.80);
+  if(v >= 70) return hexLerp(WHITE_MID, pure, 0.50);
+  if(v >= 60) return WHITE_MID;
+  if(v >= 45) return GRAY_HI;
+  return GRAY_LO;
+}
+function glowStyle(color){
+  const lit = hexLerp(color, '#ffffff', 0.22);
+  return `color:${lit};text-shadow:0 0 6px ${color}cc,0 0 14px ${color}55;font-weight:700`;
+}
+function styleFor(kind, v){
+  if(v > 100) return glowStyle(pureOf(kind));
+  return `color:${colorFor(kind, v)}${v>=90?';font-weight:700':''}`;
+}
+
+/* ── 現行の塗り(再現) ── */
+const SCALE6 = ['#f0d078','#d4a843','#c4853a','#b89870','#8090a8','#607080']; /* ui-common.js:799 実値 */
+function curOvrStyle(v){
+  const th = [85,75,65,55,45];
+  for(let i=0;i<th.length;i++){ if(v>=th[i]) return `color:${SCALE6[i]}${i===0?';text-shadow:0 0 6px #f0d07880':''}`; }
+  return `color:${SCALE6[5]}`;
+}
+function curStatStyle(k, v){
+  /* _statCell(ui-render.js:9155): 75+=系統色 / 60+=通常 / 未満=減光 */
+  if(v >= 75) return `color:${STAT_HEX[k]}`;
+  if(v >= 60) return 'color:var(--text-main)';
+  return 'color:var(--text-dim)';
+}
+function popStyle(v){
+  /* _popColor: _scale6(v,[70,55,40,28,15]) の再現(現行のまま・両表共通) */
+  const th = [70,55,40,28,15];
+  for(let i=0;i<th.length;i++){ if(v>=th[i]) return `color:${SCALE6[i]}${i===0?';text-shadow:0 0 6px #f0d07880':''}`; }
+  return `color:${SCALE6[5]}`;
+}
+
+/* ── 枠越えバー(v0.7と同一) ── */
+const OVER_MAX = 150, OVER_STRIP = 18, BAR_ZONE = 118;
+function barDisp(v){
+  if(v <= 100) return v;
+  return 100 + (Math.min(v, OVER_MAX) - 100) * OVER_STRIP / (OVER_MAX - 100);
+}
+
+/* ── 一覧ダミーデータ(成長後の想定値。団体名・年齢・人気は色見本用) ── */
+const ROWS = [
+{name:'阿武隈塔子',img:'abukuma_t',style:'Grappler',org:'player',age:26,pop:88,champ:true, pw:112,sp:84,te:80,st:92,mn:90},
+{name:'白銀麗子',img:'shirogane_r',style:'Allround',org:'S',orgName:'白鳳プロレス',age:24,pop:82, pw:88,sp:95,te:93,st:90,mn:86},
+{name:'橘玲美',img:'tachibana_r',style:'Submission',org:'A',orgName:'新星プロモーション',age:23,pop:74, pw:82,sp:85,te:104,st:88,mn:85},
+{name:'深町真琴',img:'fukamachi_m',style:'Aerial',org:'player',age:22,pop:70, pw:66,sp:107,te:70,st:98,mn:72},
+{name:'大河内紗代子',img:'okochi_s',style:'Grappler',org:'S',orgName:'白鳳プロレス',age:25,pop:85, pw:108,sp:86,te:75,st:80,mn:89},
+{name:'生駒エリカ',img:'ikoma_e',style:'Brawler',org:'B',orgName:'哲玖プロレス',age:24,pop:66, pw:90,sp:81,te:63,st:95,mn:94},
+{name:'井沢遥',img:'izawa_h',style:'Submission',org:'fa',age:27,pop:58, pw:75,sp:80,te:93,st:70,mn:86},
+{name:'堂前ユキ',img:'domae_y',style:'Striker',org:'B',orgName:'哲玖プロレス',age:21,pop:52, pw:92,sp:96,te:50,st:72,mn:80},
+{name:'柳島みずほ',img:'yanagishima_m',style:'Grappler',org:'A',orgName:'新星プロモーション',age:25,pop:77, pw:97,sp:70,te:76,st:82,mn:96},
+{name:'高島さや',img:'takashima_s',style:'Allround',org:'player',age:19,pop:64, pw:34,sp:45,te:31,st:30,mn:33},
+];
+const ovr = f => Math.round((f.pw+f.sp+f.te+f.st+f.mn)/5);
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+function orgCell(f){
+  if(f.org==='player') return `<span class="org-cell">マイプロ</span><span class="tier-badge" style="--tb:var(--gold)">自</span>`;
+  if(f.org==='fa') return `<span class="tier-badge" style="--tb:var(--fa-blue)">FA</span>`;
+  const tb = f.org==='S' ? '--tier-s' : f.org==='A' ? '--tier-a' : '--tier-b';
+  return `<span class="org-cell">${f.orgName}</span><span class="tier-badge" style="--tb:var(${tb})">${f.org}</span>`;
+}
+function renderTable(headId, bodyId, mode){
+  const ovrFn = mode==='cur' ? curOvrStyle : (v)=>styleFor('ovr',v);
+  const statFn = mode==='cur' ? curStatStyle : (k,v)=>styleFor(k,v);
+  document.getElementById(headId).innerHTML =
+    `<tr><th style="width:48px"></th><th>名前</th><th>団体</th><th>スタイル</th><th>OVR</th><th>PW</th><th>SP</th><th>TE</th><th>ST</th><th>MN</th><th>年齢</th><th>人気</th></tr>`;
+  document.getElementById(bodyId).innerHTML = ROWS.map(f=>{
+    const o = ovr(f);
+    const stats = STAT_KEYS.map(([k])=>`<td class="num" style="${statFn(k, f[k])}">${f[k]}</td>`).join('');
+    return `<tr>
+      <td><img class="ff-face" src="../../../image/face_${f.img}.png" alt="" loading="lazy" onerror="this.outerHTML='<div class=&quot;ff-face-fb&quot;>${esc(f.name[0])}</div>'"></td>
+      <td class="ff-name">${esc(f.name)}${f.champ?' <span title="王者">👑</span>':''}</td>
+      <td>${orgCell(f)}</td>
+      <td><span class="style-badge" style="--sb:var(${STYLE_VAR[f.style]})">${f.style}</span></td>
+      <td class="ff-ovr" style="${ovrFn(o)}">${o}</td>
+      ${stats}
+      <td class="num" style="color:var(--ff-sub)">${f.age}</td>
+      <td class="num" style="${popStyle(f.pop)}">${f.pop}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── 凡例 ── */
+function legendRow(name, kind, overVal){
+  const marks = [0,20,40,60,70,80,90,100];
+  return `<div class="tl-row"><span class="tl-name">${name}</span>` +
+    marks.map(v=>`<span class="sw" style="${styleFor(kind, v)}">${v}</span>`).join('') +
+    `<span class="sw" style="${styleFor(kind, overVal)}">${overVal}</span><span class="tl-plus">← 100オーバー(本編では実際に出る)</span></div>`;
+}
+function renderLegend(){
+  document.getElementById('tierLegend').innerHTML =
+    `<div class="tl-head">逆輸入後の階調(選手ファイルと同一法則) — 0=グレー、60=白、上ほど濃く、90で純色、100超だけが輝く:</div>` +
+    legendRow('OVR','ovr',105) +
+    STAT_KEYS.map(([k,label])=>legendRow(label,k,112)).join('');
+}
+
+/* ── 詳細・能力タブ見本 ──
+   PW112(枠越え) / SP84 / TE80(+2) / ST92(▼6) / MN90 */
+const DETAIL = [
+  {k:'pw', v:112, lost:0, gain:0},
+  {k:'sp', v:84,  lost:0, gain:0},
+  {k:'te', v:80,  lost:0, gain:2},
+  {k:'st', v:92,  lost:6, gain:0},
+  {k:'mn', v:90,  lost:0, gain:0},
+];
+function markHtml(d){
+  if(d.lost) return `<span class="sb-mark" style="color:var(--stat-pw)">▼${d.lost}</span>`;
+  if(d.gain) return `<span class="sb-mark" style="color:var(--stat-sp)">+${d.gain}</span>`;
+  return `<span class="sb-mark"></span>`;
+}
+function renderBarsCur(){
+  document.getElementById('barsCur').innerHTML = DETAIL.map(d=>{
+    const [,label,cssVar] = STAT_KEYS.find(([k])=>k===d.k);
+    const w = (d.v/150*100).toFixed(1);
+    const ghost = d.lost ? `<div class="old-ghost" style="left:${w}%;width:${(d.lost/150*100).toFixed(1)}%;background:var(${cssVar})"></div>` : '';
+    return `<div class="sb-row">
+      <span class="sb-label" style="color:var(${cssVar})">${label}</span>
+      <div class="old-track"><div class="old-tick"></div><div class="old-fill" style="width:${w}%;background:var(${cssVar})"></div>${ghost}</div>
+      <span class="sb-val" style="${curStatStyle(d.k, d.v)}">${d.v}</span>${markHtml(d)}
+    </div>`;
+  }).join('') + `<div class="sb-scale">目盛 0–150(縦線=100)</div>`;
+}
+function renderBarsNew(){
+  document.getElementById('barsNew').innerHTML = DETAIL.map(d=>{
+    const [,label,cssVar] = STAT_KEYS.find(([k])=>k===d.k);
+    const w = (barDisp(d.v)/BAR_ZONE*100).toFixed(1);
+    const over = d.v > 100 ? `;box-shadow:0 0 6px var(${cssVar}),0 0 12px var(${cssVar})` : '';
+    const gEnd = barDisp(d.v + d.lost);
+    const ghost = d.lost ? `<div class="sb-ghost" style="left:${w}%;width:${((gEnd-barDisp(d.v))/BAR_ZONE*100).toFixed(1)}%;background:var(${cssVar})"></div>` : '';
+    return `<div class="sb-row">
+      <span class="sb-label" style="color:var(${cssVar})">${label}</span>
+      <div class="sb-zone"><div class="sb-frame"></div><div class="sb-fill" style="width:${w}%;background:var(${cssVar})${over}"></div>${ghost}</div>
+      <span class="sb-val" style="${styleFor(d.k, d.v)}">${d.v}</span>${markHtml(d)}
+    </div>`;
+  }).join('') + `<div class="sb-scale">枠の右端=100。枠を飛び越えた選手は規格外(はみ出しは圧縮表示)</div>`;
+}
+
+/* ── レーダー(軸色: mono=現行 / colored=逆輸入) ── */
+function radarSVG(vals, colored){
+  const cx=100, cy=104, r=72;
+  const pt = (i, rad) => {
+    const a = (-90 + i*72) * Math.PI/180;
+    return [cx + rad*Math.cos(a), cy + rad*Math.sin(a)];
+  };
+  const poly = rad => Array.from({length:5},(_,i)=>pt(i,rad).map(n=>n.toFixed(1)).join(',')).join(' ');
+  const grid = [20,40,60,80,100].map(lv=>
+    `<polygon points="${poly(r*lv/100)}" fill="none" stroke="var(--ff-border-strong)" stroke-width="${lv===100?1:0.5}"/>`).join('');
+  const axes = Array.from({length:5},(_,i)=>{
+    const [x,y]=pt(i,r);
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--ff-border)" stroke-width="0.5"/>`;
+  }).join('');
+  const clamped = vals.map(x=>Math.max(0,Math.min(100,x)));
+  const dataPts = clamped.map((val,i)=>pt(i,r*val/100).map(n=>n.toFixed(1)).join(',')).join(' ');
+  const labels = STAT_KEYS.map(([,label,cssVar],i)=>{
+    const [x,y]=pt(i,r+15);
+    const fill = colored ? `var(${cssVar})` : 'var(--ff-sub)';
+    return `<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="8" letter-spacing="1" fill="${fill}">${label}</text>`;
+  }).join('');
+  return `<svg width="200" height="208" viewBox="0 0 200 208" role="img" aria-label="能力レーダーチャート">
+    ${grid}${axes}
+    <polygon points="${dataPts}" fill="var(--ff-accent)" fill-opacity="0.25" stroke="var(--ff-accent)" stroke-width="1.5"/>
+    ${labels}
+  </svg>`;
+}
+
+renderTable('headCur','bodyCur','cur');
+renderTable('headNew','bodyNew','new');
+renderLegend();
+const vals = DETAIL.map(d=>d.v);
+document.getElementById('radarCur').innerHTML = radarSVG(vals, false);
+document.getElementById('radarNew').innerHTML = radarSVG(vals, true);
+renderBarsCur();
+renderBarsNew();
+</script>
+</body>
+</html>
