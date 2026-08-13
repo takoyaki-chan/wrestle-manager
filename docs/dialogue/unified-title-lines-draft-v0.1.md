@@ -1,6 +1,6 @@
 ﻿# セリフ草案: 全国統一王座 7場面 v0.1
 
-- ステータス: **v0.1a — Keisuke一次レビュー反映(2026-08-13)**。直し5本(場面3)+要判断①差し替え/②④温存を反映済み。**残: 要判断③⑤の裁定のみ**(説明し直して確認中)
+- ステータス: ✅ **全文承認済み(2026-08-13 Keisuke)**。v0.1a(直し5本+裁定①②④反映)を採用、要判断③(話し方の混在=このまま)・⑤(素の歓喜なし=このまま)も確定。**この稿が実装の正 — task-89で一字一句焼き込み・変更禁止**。(なおFable書き直し稿v0.2はA/B比較の結果不採用、git 97bac89 に記録)
 - 準拠: `specs/dialogue-tone-spec-v1.0.md`(鉄則10項)/ `docs/tone-bible/` 各セル口調シート / `docs/tone-bible-anchors.md`
 - 場面定義: `docs/unified-title-p3-presentation-plan-v0.1.md` §3
 - 分岐軸: **archetype 単軸7種**(`standard` / `ojousama` / `cool` / `delinquent` / `polite` / `composed` / `seductive`)。
