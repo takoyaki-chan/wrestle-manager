@@ -136,10 +136,11 @@ assert.strictEqual(statApi.barDispOver(110), 103.6);
 assert.strictEqual(statApi.barDispOver(130), 110.8);
 assert.strictEqual(statApi.barDispOver(150), 118);
 
-// 5. 対象外・非置換の旧カラーヘルパー呼び出し件数をtask-91着手時の値へ固定する。
+// 5. 対象外・非置換の旧カラーヘルパー呼び出し件数を固定する。
+// task-91着手時は_ovrColor6件/_scale6Style19件。試合前画面OVR統一(シングル左右+タッグの3件)で各-3。
 const colorSources = uiCommon + '\n' + uiRender;
-assert.strictEqual(countCalls(colorSources, '_ovrColor'), 6, '対象外_ovrColorは着手前6件のまま');
-assert.strictEqual(countCalls(colorSources, '_scale6Style'), 19, '対象外_scale6Styleは着手前19件のまま');
+assert.strictEqual(countCalls(colorSources, '_ovrColor'), 3, '対象外_ovrColorは試合前画面統一後3件のまま');
+assert.strictEqual(countCalls(colorSources, '_scale6Style'), 16, '対象外_scale6Styleは試合前画面統一後16件のまま');
 assert.strictEqual(countCalls(colorSources, '_popColor'), 9, '非置換_popColorは着手前9件のまま');
 assert.strictEqual(countCalls(dbBlock, '_ovrColor'), 0, 'DB対象OVRから旧色を除去');
 assert.strictEqual(countCalls(dbBlock, '_scale6Style'), 0, 'DB対象OVRから旧glowを除去');

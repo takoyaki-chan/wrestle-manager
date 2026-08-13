@@ -20,11 +20,12 @@ assert(!preview.includes('const cardBg ='), '旧インライン背景色を残�
 assert(!preview.includes('const borderColor ='), '旧インライン枠色を残さない');
 assert(!preview.includes('border-color:rgba(52,152,219,0.4)') && !preview.includes('border-color:rgba(231,76,60,0.4)'), '左右キャラ枠へ旧青赤色をインライン指定しない');
 
-const ovrStyleCalls = preview.match(/_scale6Style\(_ovrColor\(/g) || [];
-assert(ovrStyleCalls.length >= 3, 'シングル左右とタッグのOVRへ6段階調を使う');
-// DB全選手一覧はtask-91系(faf4e8c)で共通7帯(statTierStyle)へ移行済み。試合前画面の7帯統一は未着手のため、
-// ここではDB側の階調基準が存在することだけ照合する
-assert(render.includes("statTierStyle('ovr'"), 'データベースのOVR階調基準を確認できること');
+// DB全選手一覧(task-91系 faf4e8c)に続き、試合前画面のOVRも共通7帯階調(stat-notation-v1.0)へ統一済み。
+// シングル左右+タッグ+遠征変種(task-95)の4箇所すべてが statTierStyle('ovr') を使う
+const ovrStyleCalls = preview.match(/statTierStyle\('ovr'/g) || [];
+assert(ovrStyleCalls.length >= 4, 'シングル左右・タッグ・遠征のOVRへ共通7帯階調を使う');
+assert(!preview.includes('_scale6Style(_ovrColor('), '試合前画面のOVRに旧6段階調を残さない');
+assert(render.includes("statTierStyle('ovr'"), 'データベース側も同じ7帯階調基準を使うこと');
 
 assert(css.includes('Regular show pre-match — Pattern A / dark platinum cards'), 'A案のスタイル定義が必要');
 assert(css.includes('.show-pregame-a .match-card{background:linear-gradient(145deg,#101318,#0b0e12)'), 'カード背景を暗色にする');

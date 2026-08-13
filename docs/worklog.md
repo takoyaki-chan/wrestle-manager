@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 試合前画面OVRを共通7帯階調へ統一（2026-08-13・Fable）
+
+前セッション(2bbfc99)でチップ起票した統一タスク。通常興行の試合前画面(`renderMatchPreview`)のOVRだけがDB(7帯 `statTierStyle`、stat-notation-v1.0が正)と違う旧6段(`_scale6Style(_ovrColor())`)のままだった件。task-95マージ済み(e104b7d)を確認してから着手。
+
+変更: ui-common.js の3箇所(シングル左右+タッグの`_tagFighter`)を `statTierStyle('ovr', …)` へ置換。遠征変種はtask-95で適用済みのため、これで試合前画面のOVR4箇所すべてが7帯に揃った。見た目の差: 85+常時glow廃止(輝きは100超のみ)/90+純色太字/60台は白。DOM構造・クラスは不変(style文字列の中身だけ)。
+
+テスト: `regular-show-pregame-design-test.js` を7帯前提へ更新(preview内 `statTierStyle('ovr'` 4箇所以上+旧6段の残存禁止)。`stat-notation-backport-test.js` §5の件数ピンを新しい真実へ再較正(`_ovrColor` 6→3 / `_scale6Style` 19→16。ピンは意図しないドリフト検出用で、今回は意図的移行)。**npm test 239/239全緑**。
+
+OVR系の残置3件(勝手に変えない裁定・spec §4へ残置理由を明記): ①選手詳細・戦績タブのピークOVR(ui-common.js:4279。task-91が「変更しない」とピンした箇所+同行のベストMQが6段のままで単独変更は行内混在になる) ②社長室・履歴書カードのOVR(ui-render.js:5097) ③同レンタルミニカード(ui-render.js:5192)。②③はクリーム背景のOffice画面で7帯の白帯#f2f0e8が背景に溶けるため、適用するならOffice向け明度設計が先。統一するかはKeisuke裁定待ち。
+
+specs: `docs/ui/stat-notation-v1.0.md` §4へ試合前画面の行+残置理由を追記。manifest変更なし(新規ファイルなし)。残: Keisuke実機確認(バックログ§選手ファイル+数値表記へ1項目追記)+spec diff確認。
+
 ## task-95マージ: 遠征試合リスタイル+結果2拍シーケンス（2026-08-13・Fable+Codex）
 
 **task-95をマージ**(e104b7d)。Codexがworktree wm-codex-task95で実装(+850行、src4+新テスト3)→sandboxのindex.lock拒否でBLOCKED→Fableがdiff全文レビュー・検算・2粒度コミット代行(A=進行画面8b027d2 / B=2拍+セリフ+テスト7e5d7e5、ui-common.jsはパッチ分割でA/Bへ振り分け)→mainへ。

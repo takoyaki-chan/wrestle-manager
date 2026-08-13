@@ -5103,7 +5103,7 @@ function renderMatchPreview() {
             <div class="fname">${f.name}</div>
             <div class="smc-tag-ovr-row">
               <span class="smc-tag-style-label">${f.style || '—'}</span>
-              <span class="ovr-line">OVR&thinsp;<span class="ovr-num" style="${_scale6Style(_ovrColor(ovr))}">${ovr}</span></span>
+              <span class="ovr-line">OVR&thinsp;<span class="ovr-num" style="${statTierStyle('ovr', ovr)}">${ovr}</span></span>
             </div>
             <div class="smc-tag-statbars">
               <div class="smc-tag-srow"><span class="smc-tag-sl">PW</span><div class="smc-tag-strk"><div class="smc-tag-sfill pw" style="width:${pw}%"></div></div></div>
@@ -5243,7 +5243,7 @@ function renderMatchPreview() {
           </div>
         </button>
         <div class="fname">${charL.name}</div>
-        <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrL))}">${ovrL}</span></div>
+        <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${statTierStyle('ovr', ovrL)}">${ovrL}</span></div>
         ${_matchOrgLabel(charL, charR)}
       </div>`;
 
@@ -5256,7 +5256,7 @@ function renderMatchPreview() {
           </div>
         </button>
         <div class="fname">${charR.name}</div>
-        <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrR))}">${ovrR}</span></div>
+        <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${statTierStyle('ovr', ovrR)}">${ovrR}</span></div>
         ${_matchOrgLabel(charR, charL)}
       </div>`;
 
