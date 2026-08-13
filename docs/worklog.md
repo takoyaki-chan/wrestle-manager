@@ -114,7 +114,6 @@ Keisuke実機報告「興行後、王座防衛モーダル(mdl-a)の前に怪我
 検証: node --check 2本/u4-modal-frame-safety-net-test 43 ok/title-defense-scale-test 12 PASS/faction-f03・ch1 ok/npm test=既存破損3本(feedback-fixes・regular-show-pregame-design・wear-ceiling-decay。stashで変更前から失敗と切り分け済み・task-91系の並行セッション管轄)以外全通過。auto-simはUI層のみの変更につき対象外。specs更新なし(バグ修正・既存仕様の回復)・manifest変更なし(新規ファイルなし)。実機確認はバックログ「ポップアップ直列化」へ追記。
 
 残課題: フラグモーダル・因縁コメントが**興行後に出るようになる**(これまで沈黙破棄)ため、頻度・くどさはKeisukeの実機裁定待ち。08-13の「関係性通知全廃」裁定はGlimpse系が対象で、relationship-flags-spec §4のフラグモーダルは確定仕様として復活が正——ただし観て不要と判断されたらチャンネル再設計で応える。
->>>>>>> claude/serene-shamir-97d4d7
 
 ## task-93マージ: フライトレコーダー(バグ捜索①)（2026-08-13・Fable+Codex）
 
