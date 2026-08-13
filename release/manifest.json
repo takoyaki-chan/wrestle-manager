@@ -4,6 +4,7 @@
   "sourceFiles": [
     "src/index.html",
     "src/mobile.css",
+    "src/flight-recorder.js",
     "src/victory-lines.js",
     "src/lz-string.min.js",
     "src/data.js",
