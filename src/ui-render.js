@@ -3181,6 +3181,9 @@ function renderShowPrep() {
   // Reserve the three highest card positions for an accepted inter-org
   // challenge before the player fills the remaining venue slots.
   const eligibleChallengeShow = !!Engine.challengeRequest?.isEligibleHomeShow?.(G);
+  // 同一週の挑戦系コンテナは1つまで(2026-08-13)。'away'の週(遠征予約が先着 or 消化済み)は
+  // 受け挑戦(果たし状/挑戦状/統一王座迎撃)をカードへ予約せず、次の通常興行週へ持ち越す。
+  const weeklyChallengeSide = Engine.challengeRequest?.resolveWeeklyChallengeContainer?.(G) || null;
   if (eligibleChallengeShow && G._pendingAwayChallengeMatch && Engine.challengeRequest?.removeFightersFromCard) {
     const awayOwnIds = G._pendingAwayChallengeMatch.requesterOrgId === 'player'
       ? G._pendingAwayChallengeMatch.teamAIds
@@ -3188,7 +3191,7 @@ function renderShowPrep() {
     const clearedAwayCard = Engine.challengeRequest.removeFightersFromCard(G.showCard, awayOwnIds);
     if (JSON.stringify(clearedAwayCard) !== JSON.stringify(G.showCard)) G = { ...G, showCard: clearedAwayCard };
   }
-  if (eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse) && Engine.challengeRequest?.reserveScheduledMatches) {
+  if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse) && Engine.challengeRequest?.reserveScheduledMatches) {
     const reservedCR = Engine.challengeRequest.reserveScheduledMatches(G, G.showCard);
     if (reservedCR) {
       if (JSON.stringify(reservedCR.card) !== JSON.stringify(G.showCard)) {
@@ -3203,7 +3206,7 @@ function renderShowPrep() {
   }
 
   let scheduledUnifiedNotice = null;
-  if (eligibleChallengeShow && !getScheduledChallengeCard() && G._pendingUnifiedIncomingMatch) {
+  if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && !getScheduledChallengeCard() && G._pendingUnifiedIncomingMatch) {
     const scheduled = Engine.unifiedTitle.getIncomingMatch(G);
     if (scheduled) {
       scheduledUnifiedNotice = scheduled;
@@ -3223,11 +3226,8 @@ function renderShowPrep() {
   }
 
   let scheduledSingleNotice = null;
-  const b3AwayConflict = G._pendingIncomingB3Match && Engine.challengeRequest?.hasAwayParticipantConflict?.(G, [
-    G._pendingIncomingB3Match.fighterId,
-    G._pendingIncomingB3Match.challenger?.id,
-  ]);
-  if (eligibleChallengeShow && !getScheduledChallengeCard() && !scheduledUnifiedNotice && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
+  // 挑戦状(B3)も同週コンテナ排他に従う(旧・参加者重複チェックは週単位の排他へ置換)
+  if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && !getScheduledChallengeCard() && !scheduledUnifiedNotice && G._pendingIncomingB3Match && Engine.challengeRequest?.reserveScheduledSingleMatch) {
     const reservedSingle = Engine.challengeRequest.reserveScheduledSingleMatch(G, G.showCard);
     if (reservedSingle) {
       scheduledSingleNotice = reservedSingle.scheduled;
@@ -3262,10 +3262,13 @@ function renderShowPrep() {
       挑戦試合をメインイベントに固定しています。残りの枠に通常カードを編成してください。
     </div>`;
   }
-  if (eligibleChallengeShow && b3AwayConflict) {
+  const incomingDeferredByAway = eligibleChallengeShow && weeklyChallengeSide === 'away'
+    && !!(G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse
+      || G._pendingUnifiedIncomingMatch || G._pendingIncomingB3Match);
+  if (incomingDeferredByAway) {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
-      <strong style="color:var(--c-info)">📨 挑戦状は次の通常興行へ</strong><br>
-      対戦予定者が敵地遠征にも出場するため、この挑戦試合は破棄せず次の通常興行まで持ち越します。
+      <strong style="color:var(--c-info)">📨 挑戦試合は次の通常興行へ</strong><br>
+      同じ週に敵地遠征があるため、受けた挑戦試合は破棄せず次の通常興行まで持ち越します。
     </div>`;
   }
   if (!eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingIncomingB3Match)) {

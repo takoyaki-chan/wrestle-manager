@@ -4862,12 +4862,17 @@ function startShowPrep() {
   // away-flow-redesign CH-2: 遠征(敵地遠征)が未消化なら、興行準備(会場選択・カード編集)
   // という寄り道を見せる前に「敵地へ向かう」演出→遠征試合を挟む。
   // 遠征が解決すると App.beginAwayChallengeTravel() 経由で通常の興行準備へ戻ってくる。
-  if (G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
+  // 同一週の挑戦系コンテナは1つまで(2026-08-13): 受け挑戦(果たし状/挑戦状/統一王座迎撃)が
+  // 先着の週は遠征を見送り、予約は消さず次の通常興行週へ持ち越す。
+  // 今週すでに遠征を1本消化済みなら2本目の遠征も見送る。
+  const prepChallengeSide = Engine.challengeRequest?.resolveWeeklyChallengeContainer?.(G) || null;
+  const prepAwayRan = Engine.challengeRequest?.hasAwayRunThisWeek?.(G) || false;
+  if (!prepAwayRan && prepChallengeSide !== 'incoming' && G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
       && typeof App !== 'undefined' && typeof App.beginUnifiedTitleAwayTravel === 'function') {
     App.beginUnifiedTitleAwayTravel();
     return;
   }
-  if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G) && typeof App !== 'undefined' && typeof App.beginAwayChallengeTravel === 'function') {
+  if (!prepAwayRan && prepChallengeSide !== 'incoming' && G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G) && typeof App !== 'undefined' && typeof App.beginAwayChallengeTravel === 'function') {
     App.beginAwayChallengeTravel();
     return;
   }
@@ -4891,13 +4896,16 @@ function resumeShowPrep() {
     refreshAll();
     return;
   }
-  // 遠征が未消化ならそちらを先に消化する（startShowPrep と同じ優先順位）
-  if (G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
+  // 遠征が未消化ならそちらを先に消化する（startShowPrep と同じ優先順位。
+  // 同週コンテナ排他も同じ: 受け挑戦が先着の週・遠征消化済みの週は遠征を見送る）
+  const resumeChallengeSide = Engine.challengeRequest?.resolveWeeklyChallengeContainer?.(G) || null;
+  const resumeAwayRan = Engine.challengeRequest?.hasAwayRunThisWeek?.(G) || false;
+  if (!resumeAwayRan && resumeChallengeSide !== 'incoming' && G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
       && typeof App !== 'undefined' && typeof App.beginUnifiedTitleAwayTravel === 'function') {
     App.beginUnifiedTitleAwayTravel();
     return;
   }
-  if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
+  if (!resumeAwayRan && resumeChallengeSide !== 'incoming' && G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)
       && typeof App !== 'undefined' && typeof App.beginAwayChallengeTravel === 'function') {
     App.beginAwayChallengeTravel();
     return;

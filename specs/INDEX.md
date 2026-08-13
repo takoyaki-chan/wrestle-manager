@@ -64,7 +64,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | org-ranking-spec-v2.1.md | 団体ランキング評価/基礎力 算出仕様 v2.1（Depthの業界水準連動・4〜8番手/9〜12番手到達度評価・怪我人の非対称扱い、実装済み） |
 | faction-rivalry-points-spec-v0.1.md | 派閥抗争ポイント制 + F09 派閥対抗戦(v0.3 確定 / Phase B 全実装完了 / 試合連動ポイント+先取100決着+F09 ×1.8倍率+勝ち越し+15pt+v0.9 UI+モーダル4種) |
 | glimpse-cascade-spec-v1.0.md | Glimpse Cascade(2件以上の興行後 Tier1 Glimpse を1枚集約・Variant A 縦リスト・白吹き出し+from矢印+to感情バッジ+ベル系SE順次再生・1件は単発フォールバック / 実装済 2026-05-02) |
-| challenge-request-spec-v0.2.md | 選手発信 挑戦試合(3人制団体戦)。直訴+同行選択の統合2枚/果たし状画面(黒Stage+赤・人数可変)/セリフ102+21本焼き込み。**v0.1は旧設計案(置き換え済み)** |
+| challenge-request-spec-v0.2.md | 選手発信 挑戦試合(3人制団体戦)。直訴+同行選択の統合2枚/果たし状画面(黒Stage+赤・人数可変)/セリフ102+21本焼き込み/§7 同一週の挑戦系コンテナ排他(先着優先・持ち越し)。**v0.1は旧設計案(置き換え済み)** |
 | firing-grudge-spec-v0.1.md | 解雇キャラの遺恨システム(grudge.intensity・解雇者→残留組の片方向更新・challenge-request連動・DRAFT) |
 | faction-bond-rivalry-spec-v1.0.md | 派閥イベント bond/rivalry 連動(F03/F04/F05/F07 の選択結果で当事者間の 絆/因縁 を動かす、_applyAxisBetweenGroups ヘルパー追加、実装完了 2026-05-04) |
 | shachoshitsu-care-rework-spec-v1.0.md | 社長室・選手ケア再設計(ボーナス交渉4案/休暇辞令v2/外部コーチ招聘制・指導タイプ5種・voice8系統、全実装済み 2026-07-06〜07、実機確認済 07-17) |
