@@ -17,7 +17,8 @@ assert.ok(ui.includes('winAttribution: result.winAttribution'),
   'regular tag results must pass finish attribution to the shared popup');
 assert.ok(ui.includes('winAttribution: match.winAttribution'),
   'spring tag results must pass finish attribution to the shared popup');
-assert.ok(management.includes('finType: result.finType, finMove: result.finMove, winAttribution: result.winAttribution'),
+assert.ok(management.includes('finType: result.finType, finMove: result.finMove, winAttribution: result.winAttribution')
+  || management.includes('finType: sim.result.finType, finMove: sim.result.finMove, winAttribution: sim.result.winAttribution'),
   'spring tag league matches must preserve finish details');
 assert.ok(management.includes('finType: finalResult.finType, finMove: finalResult.finMove, winAttribution: finalResult.winAttribution'),
   'spring tag league final must preserve finish details');
