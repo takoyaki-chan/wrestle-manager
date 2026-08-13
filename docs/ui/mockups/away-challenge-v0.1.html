@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>遠征試合(挑戦試合) 画面リデザイン モックアップ v0.1</title>
+<style>
+  :root{
+    --stage-bg:#0b0d10; --stage-panel:#14171c; --stage-panel-deep:#0f1216;
+    --stage-border:#262b33; --stage-border-lit:#3a4150;
+    --gold:#d4a843; --gold-hi:#f4d98c;
+    --txt:#e8e2d8; --sub:#9aa3ad; --dim:#5d6570;
+    --cream:#f2ead8; --cream-panel:#f7f1e3; --ink:#1c1a17; --ink-sub:#6b6154;
+    --home:#4da06a; /* 自団体ドット(既存 .dot.home 相当) */
+    --win:#2e8b57; --loss:#b03030;
+    /* OVR階調(ランキング/選手ファイルの物差しの近似。実装時は本番トークンを使う) */
+    --v100:#ffe9a8; --v95:#ffd166; --v90:#f0a35e; --v85:#e8927c; --v80:#d8d2c6; --v70:#b9b2a4; --v60:#8f8b81;
+  }
+  /* 相手団体カラー(切替デモ。実装では RIVAL_ORGS[].color を差し込む) */
+  body.foe-red{ --foe:#e0592a; --foe-deep:#7a2c12; --foe-rgb:224,89,42 }
+  body.foe-blue{ --foe:#4f7fd9; --foe-deep:#263f75; --foe-rgb:79,127,217 }
+  body.foe-purple{ --foe:#8d6ae0; --foe-deep:#46357d; --foe-rgb:141,106,224 }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:#242220;color:var(--txt);font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;padding:24px 12px 80px}
+  h1{font-size:16px;text-align:center;margin-bottom:4px}
+  .sub{font-size:11px;color:var(--dim);text-align:center;margin-bottom:12px}
+  .bar{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:8px}
+  .bar button{background:#3a362f;color:#d8d2c6;border:1px solid #57503f;border-radius:5px;padding:7px 13px;font-size:12px;cursor:pointer}
+  .bar button.on{background:#d8d2c6;color:#1c1a17;font-weight:700}
+  .bar .sw{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-1px;margin-right:5px}
+  .view{display:none;max-width:880px;margin:16px auto 0}
+  .view.on{display:block}
+  .note{max-width:780px;margin:14px auto 0;font-size:11px;line-height:1.8;color:var(--dim);border-top:1px dashed #4a443a;padding-top:10px}
+  .note b{color:#cfc7b8}
+
+  /* ════ View A: 進行画面(敵地の盤面) ════ */
+  .awx{background:
+    radial-gradient(ellipse 90% 34% at 50% 0%, rgba(var(--foe-rgb), .16), transparent 60%),
+    linear-gradient(180deg,#101318 0%, var(--stage-bg) 30%);
+    border:1px solid var(--stage-border); border-radius:12px; padding:26px 22px 30px}
+  .awx-head{text-align:center;margin-bottom:14px}
+  .awx-emblem{width:52px;height:52px;border-radius:50%;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 40% 35%, var(--foe), var(--foe-deep));font-size:24px;box-shadow:0 0 26px rgba(var(--foe-rgb),.4)}
+  .awx-kicker{font-size:10px;letter-spacing:.42em;color:var(--foe);margin-bottom:5px}
+  .awx-title{font-size:22px;font-weight:800;letter-spacing:.18em;color:#fff}
+  .awx-prog{font-size:11px;color:var(--sub);margin-top:5px;letter-spacing:.12em}
+  .awx-bar{display:flex;align-items:center;justify-content:center;gap:8px;margin:12px auto 20px;padding:7px 18px;width:max-content;
+    font-size:11.5px;color:var(--sub);background:rgba(var(--foe-rgb),.08);border:1px solid rgba(var(--foe-rgb),.25);border-radius:999px}
+  .awx-bar b{color:#e8e2d8;font-weight:700}
+  .awx-bar .d-home{width:8px;height:8px;border-radius:50%;background:var(--home)}
+  .awx-bar .d-foe{width:8px;height:8px;border-radius:50%;background:var(--foe)}
+
+  .awx-card{background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,.008));
+    border:1px solid var(--stage-border);border-radius:10px;padding:16px 18px 12px;margin-bottom:14px;position:relative}
+  .awx-card.is-next{border-color:rgba(var(--foe-rgb),.55);box-shadow:0 0 0 1px rgba(var(--foe-rgb),.2), 0 6px 26px rgba(0,0,0,.35)}
+  .awx-card.is-main{border-color:rgba(212,168,67,.4)}
+  .awx-mlabel{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;
+    font-size:12px;letter-spacing:.22em;color:var(--sub);font-weight:700}
+  .awx-card.is-main .awx-mlabel{color:var(--gold)}
+  .awx-badge{font-size:9px;letter-spacing:.14em;padding:3px 9px;border-radius:3px;border:1px solid var(--stage-border-lit);color:var(--dim)}
+  .awx-badge.next{border-color:var(--foe);color:var(--foe)}
+  .awx-badge.done{border-color:var(--dim);color:var(--dim)}
+  .awx-bout{display:flex;align-items:flex-start;justify-content:center;gap:20px}
+  .awx-side{width:150px;text-align:center;flex-shrink:0}
+  .awx-upper{width:108px;height:162px;margin:0 auto;border-radius:5px;overflow:hidden;background:#171a1f;
+    border:1px solid var(--stage-border-lit);border-bottom:3px solid var(--dim)}
+  .awx-side.home .awx-upper{border-bottom-color:var(--home)}
+  .awx-side.foe .awx-upper{border-bottom-color:var(--foe)}
+  .awx-upper img{width:100%;height:100%;object-fit:cover;object-position:center top;display:block}
+  .awx-name{font-size:14px;font-weight:800;margin-top:8px}
+  .awx-org{font-size:10px;margin-top:3px;display:flex;align-items:center;justify-content:center;gap:5px;color:var(--sub)}
+  .awx-org .d{width:6px;height:6px;border-radius:50%}
+  .awx-side.home .awx-org .d{background:var(--home)}
+  .awx-side.foe .awx-org .d{background:var(--foe)}
+  .awx-ovr{margin-top:5px;font-size:11px;color:var(--dim);letter-spacing:.14em}
+  .awx-ovr b{font-size:22px;letter-spacing:0;margin-left:5px;font-weight:800}
+  /* 中央: VS + 5ステ対比行(バー全廃) */
+  .awx-center{flex:0 0 190px;padding-top:6px}
+  .awx-vs{text-align:center;font-size:15px;font-weight:800;letter-spacing:.3em;color:var(--foe);margin-bottom:10px}
+  .awx-stat{display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;padding:4px 0;border-bottom:1px dashed rgba(255,255,255,.06)}
+  .awx-stat:last-child{border-bottom:none}
+  .awx-stat .lbl{text-align:center;font-size:9.5px;letter-spacing:.18em;color:var(--dim)}
+  .awx-stat .v{font-size:14px;font-weight:700;color:var(--dim);text-align:center}
+  .awx-stat .v.hi{font-size:16px;font-weight:800}
+  .awx-stat .v.hi.home-hi{color:var(--gold-hi)}
+  .awx-stat .v.hi.foe-hi{color:var(--foe)}
+  .awx-chips{display:flex;justify-content:center;gap:8px;margin-top:12px}
+  .awx-chip{font-size:10px;padding:3px 10px;border-radius:999px;border:1px solid var(--stage-border-lit);color:var(--sub)}
+  .awx-chip.fate{border-color:rgba(224,120,80,.5);color:#e8977a}
+
+  /* ════ View B: 結果画面(整合性の再設計) ════ */
+  .crx{background:var(--cream-panel);color:var(--ink);border-radius:12px;max-width:640px;margin:0 auto;
+    padding:0 0 22px;overflow:hidden;box-shadow:0 18px 48px rgba(0,0,0,.5)}
+  .crx-head{display:flex;justify-content:space-between;align-items:center;background:#efe6d0;
+    padding:13px 18px;border-bottom:1px solid #d8cbae}
+  .crx-title{font-size:15px;font-weight:800;color:#8f3020}
+  .crx-meta{font-size:10px;letter-spacing:.14em;color:var(--ink-sub)}
+  .crx-coach{background:#17150f;color:#e8e2d8;padding:14px 16px;text-align:center}
+  .crx-coach .cbub{position:relative;display:inline-block;background:var(--cream);color:var(--ink);
+    border-radius:8px;padding:8px 14px;font-size:12px;max-width:420px}
+  .crx-coach .cbub:after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
+    border:8px solid transparent;border-top-color:var(--cream);border-bottom:none}
+  .crx-coach .cface{width:40px;height:40px;border-radius:50%;overflow:hidden;margin:10px auto 3px;border:2px solid rgba(255,255,255,.4)}
+  .crx-coach .cface img{width:100%;height:100%;object-fit:cover;object-position:center top}
+  .crx-coach .cname{font-size:11px;font-weight:700}
+  .crx-coach .crole{font-size:9px;color:#b8b0a2;letter-spacing:.2em}
+  /* シリーズ結果帯: 団体の勝敗はここが一手に背負う */
+  .crx-band{display:flex;align-items:center;justify-content:center;gap:16px;padding:12px 16px;background:#f3ecdb;border-bottom:1px solid #e2d6b8}
+  .crx-band .org{font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:6px}
+  .crx-band .org .d{width:8px;height:8px;border-radius:50%}
+  .crx-band .org.us .d{background:var(--home)} .crx-band .org.them .d{background:#c0562e}
+  .crx-band .score{font-size:26px;font-weight:800;letter-spacing:.1em;color:#8f3020}
+  .crx-band .verdict{font-size:10px;letter-spacing:.24em;color:#8f3020;border:1px solid rgba(143,48,32,.4);
+    border-radius:3px;padding:3px 9px;font-weight:700}
+  /* 代表ペア: ○× とグレースケールは「本人の試合」基準 */
+  .crx-pair{display:flex;justify-content:center;align-items:flex-start;gap:34px;padding:22px 16px 6px}
+  .crx-rep{width:220px;text-align:center}
+  .crx-bub{position:relative;background:#fff;border:1px solid #e0d5ba;border-radius:9px;padding:9px 12px;
+    font-size:12px;line-height:1.65;min-height:56px;display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+  .crx-bub:after{content:"";position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);
+    border:8px solid transparent;border-top-color:#fff;border-bottom:none}
+  .crx-photo{width:132px;height:194px;margin:0 auto;border-radius:5px;overflow:hidden;border:1px solid #cbbd9d;position:relative}
+  .crx-photo img{width:100%;height:100%;object-fit:cover;object-position:center top}
+  .crx-rep.lost-self .crx-photo img{filter:grayscale(.9) brightness(.72)}
+  .crx-mark{position:absolute;top:6px;left:6px;width:24px;height:24px;border-radius:50%;background:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;box-shadow:0 2px 6px rgba(0,0,0,.25)}
+  .crx-mark.w{color:var(--win)} .crx-mark.l{color:var(--loss)}
+  .crx-rname{font-size:14px;font-weight:800;margin-top:9px}
+  .crx-rrole{font-size:10px;color:var(--ink-sub);margin-top:3px;line-height:1.5}
+  .crx-note{font-size:9.5px;color:#a08c62;margin-top:2px}
+  /* 明細 */
+  .crx-rows{margin:16px 18px 0;border-top:1px solid #e2d6b8}
+  .crx-row{display:grid;grid-template-columns:58px 1fr 30px 1fr 64px;align-items:center;gap:6px;
+    padding:9px 6px;border-bottom:1px solid #ece1c6;font-size:11.5px}
+  .crx-row .n{color:var(--ink-sub);font-size:10px}
+  .crx-row .w{color:var(--win);font-weight:800} .crx-row .l{color:var(--loss)}
+  .crx-row .vs{text-align:center;color:#b3a684;font-size:10px}
+  .crx-row .mq{text-align:right;color:#8f3020;font-size:10.5px}
+  .crx-close{display:block;margin:18px auto 0;background:#7a4a19;color:#f7f1e3;border:none;border-radius:6px;
+    padding:10px 34px;font-size:13px;font-weight:700;letter-spacing:.2em;cursor:pointer}
+
+  /* ════ View C: 判断メモ ════ */
+  .memo{background:#1d1b17;border:1px solid #3c372d;border-radius:10px;padding:20px 22px;font-size:12.5px;line-height:2.0}
+  .memo h2{font-size:13px;color:var(--gold);margin:14px 0 4px}
+  .memo h2:first-child{margin-top:0}
+  .memo table{border-collapse:collapse;width:100%;margin:6px 0 10px;font-size:11.5px}
+  .memo th,.memo td{border:1px solid #3c372d;padding:6px 9px;text-align:left;line-height:1.7}
+  .memo th{background:#26231c;color:#cfc7b8;font-weight:700}
+  .memo .q{color:#e8977a}
+</style>
+</head>
+<body class="foe-red">
+<h1>遠征試合(挑戦試合) 画面リデザイン モックアップ v0.1</h1>
+<div class="sub">2026-08-13 ・ Keisuke指摘「進行画面がダサい/能力値の配置を整理」「結果画面の勝敗の整合性」への設計案 ・ セリフはすべて仮(Opus起案工程で差し替え)</div>
+<div class="bar">
+  <button class="on" data-v="a">A 進行画面(敵地の盤面)</button>
+  <button data-v="b">B 結果画面(整合性の再設計)</button>
+  <button data-v="c">C 判断メモ</button>
+</div>
+<div class="bar colors">
+  <button class="on" data-c="foe-red"><span class="sw" style="background:#e0592a"></span>相手=炎系(凰翔)</button>
+  <button data-c="foe-blue"><span class="sw" style="background:#4f7fd9"></span>相手=青系</button>
+  <button data-c="foe-purple"><span class="sw" style="background:#8d6ae0"></span>相手=紫系(ブレイクスルー)</button>
+</div>
+
+<!-- ═══ View A ═══ -->
+<div class="view on" id="v-a">
+  <div class="awx">
+    <div class="awx-head">
+      <div class="awx-emblem">🔥</div>
+      <div class="awx-kicker">AWAY CHALLENGE</div>
+      <div class="awx-title">凰翔プロレス 興行・遠征試合</div>
+      <div class="awx-prog">全3試合 ─ 0/3 完了</div>
+    </div>
+    <div class="awx-bar"><span class="d-home"></span><b>たこやき軍</b><span>が</span><span class="d-foe"></span><b>凰翔プロレス</b><span>のリングへ乗り込む</span></div>
+
+    <div class="awx-card is-main">
+      <div class="awx-mlabel">★ メインイベント <span class="awx-badge">待機</span></div>
+      <div class="awx-bout">
+        <div class="awx-side home">
+          <div class="awx-upper"><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
+          <div class="awx-name">深町真琴</div>
+          <div class="awx-org"><span class="d"></span>たこやき軍</div>
+          <div class="awx-ovr">OVR<b style="color:var(--v95)">97</b></div>
+        </div>
+        <div class="awx-center">
+          <div class="awx-vs">V S</div>
+          <div class="awx-stat"><span class="v">82</span><span class="lbl">PW</span><span class="v hi foe-hi">114</span></div>
+          <div class="awx-stat"><span class="v hi home-hi">109</span><span class="lbl">SP</span><span class="v">110</span></div>
+          <div class="awx-stat"><span class="v">107</span><span class="lbl">TE</span><span class="v hi foe-hi">115</span></div>
+          <div class="awx-stat"><span class="v hi home-hi">114</span><span class="lbl">ST</span><span class="v">109</span></div>
+          <div class="awx-stat"><span class="v hi home-hi">73</span><span class="lbl">MN</span><span class="v">61</span></div>
+        </div>
+        <div class="awx-side foe">
+          <div class="awx-upper"><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+          <div class="awx-name">等々力あかね</div>
+          <div class="awx-org"><span class="d"></span>凰翔プロレス</div>
+          <div class="awx-ovr">OVR<b style="color:var(--v100)">102</b></div>
+        </div>
+      </div>
+      <div class="awx-chips"><span class="awx-chip fate">🔥 宿命 (MQ+5)</span><span class="awx-chip">🤝 友好 55</span></div>
+    </div>
+
+    <div class="awx-card is-next">
+      <div class="awx-mlabel">第2試合 <span class="awx-badge next">次戦</span></div>
+      <div class="awx-bout">
+        <div class="awx-side home">
+          <div class="awx-upper"><img src="../../../image/upper/upper_aida_m.webp" alt=""></div>
+          <div class="awx-name">大久保桃子</div>
+          <div class="awx-org"><span class="d"></span>たこやき軍</div>
+          <div class="awx-ovr">OVR<b style="color:var(--v100)">107</b></div>
+        </div>
+        <div class="awx-center">
+          <div class="awx-vs">V S</div>
+          <div class="awx-stat"><span class="v">116</span><span class="lbl">PW</span><span class="v hi foe-hi">121</span></div>
+          <div class="awx-stat"><span class="v hi home-hi">121</span><span class="lbl">SP</span><span class="v">117</span></div>
+          <div class="awx-stat"><span class="v hi home-hi">118</span><span class="lbl">TE</span><span class="v">115</span></div>
+          <div class="awx-stat"><span class="v">109</span><span class="lbl">ST</span><span class="v hi foe-hi">118</span></div>
+          <div class="awx-stat"><span class="v hi home-hi">71</span><span class="lbl">MN</span><span class="v">69</span></div>
+        </div>
+        <div class="awx-side foe">
+          <div class="awx-upper"><img src="../../../image/upper/upper_aikawa_a.webp" alt=""></div>
+          <div class="awx-name">生駒エリカ</div>
+          <div class="awx-org"><span class="d"></span>凰翔プロレス</div>
+          <div class="awx-ovr">OVR<b style="color:var(--v100)">108</b></div>
+        </div>
+      </div>
+      <div class="awx-chips"><span class="awx-chip fate">🔥 宿命 (MQ+4)</span><span class="awx-chip">🤝 友好 48</span></div>
+    </div>
+  </div>
+  <div class="note">
+    <b>設計:</b> 敵地=Stage純黒に<b>相手団体カラーの照明</b>(上部radial+乗り込みバー+次戦枠+敵側の下線)。現行の茶オレンジグラデは廃止。<br>
+    <b>能力値:</b> 左右5本バー(計10本)を全廃し、中央の<b>対比行</b>に集約。勝っている側だけ点灯(自=金/敵=団体色)、劣る側はdim。
+    「どこで勝てるか」が1目で読める。OVRは階調カラー(ランキングの物差し)で名前下に。<br>
+    <b>据え置き:</b> 画像は梯子S(108×162)、宿命/友好チップ、カード縦積み構成。
+  </div>
+</div>
+
+<!-- ═══ View B ═══ -->
+<div class="view" id="v-b">
+  <div class="crx">
+    <div class="crx-head"><div class="crx-title">📜 果たし状、敗れる。</div><div class="crx-meta">WEEK 08 ・ 13Y ・ 挑戦試合</div></div>
+    <div class="crx-coach">
+      <div class="cbub">社長、挑戦試合 1 — 2。深町真琴選手は自分の星を取りましたが、団体としては届きませんでした。</div>
+      <div class="cface"><img src="../../../image/upper/upper_abe_m.webp" alt=""></div>
+      <div class="cname">中村 紗弓</div><div class="crole">コーチ</div>
+    </div>
+    <div class="crx-band">
+      <div class="org us"><span class="d"></span>たこやき軍</div>
+      <div class="score">1 — 2</div>
+      <div class="verdict">団体として敗北</div>
+      <div class="org them"><span class="d"></span>凰翔プロレス</div>
+    </div>
+    <div class="crx-pair">
+      <div class="crx-rep">
+        <div class="crx-bub">「私は、勝ちました。でも団体としては負けです。……この借りは、必ず返しに来ます」</div>
+        <div class="crx-photo"><span class="crx-mark w">○</span><img src="../../../image/upper/upper_abukuma_t.webp" alt=""></div>
+        <div class="crx-rname">深町真琴</div>
+        <div class="crx-rrole">挑んだ代表 ・ 一矢報いる<br><b>本人の試合: ○勝利</b> / 団体: 敗北</div>
+        <div class="crx-note">※セリフは仮。win×teamLose 象限(新規)</div>
+      </div>
+      <div class="crx-rep lost-self">
+        <div class="crx-bub">「あなたには、負けた。……でも今日は、うちが勝った。次は自分の星も守る」</div>
+        <div class="crx-photo"><span class="crx-mark l">×</span><img src="../../../image/upper/upper_ikoma_e.webp" alt=""></div>
+        <div class="crx-rname">等々力あかね</div>
+        <div class="crx-rrole">受けた代表 ・ 代表戦は落とす<br><b>本人の試合: ×敗北</b> / 団体: 勝利</div>
+        <div class="crx-note">※セリフは仮。lose×teamWin 象限(新規)</div>
+      </div>
+    </div>
+    <div class="crx-rows">
+      <div class="crx-row"><span class="n">第1試合</span><span><b class="w">○</b> 深町真琴</span><span class="vs">vs</span><span><b class="l">×</b> 等々力あかね</span><span class="mq">MQ 77</span></div>
+      <div class="crx-row"><span class="n">第2試合</span><span><b class="l">×</b> 大久保桃子</span><span class="vs">vs</span><span><b class="w">○</b> 生駒エリカ</span><span class="mq">MQ 76</span></div>
+      <div class="crx-row"><span class="n">第3試合</span><span><b class="l">×</b> 高槻千歳</span><span class="vs">vs</span><span><b class="w">○</b> 倉見菜々</span><span class="mq">MQ 83</span></div>
+    </div>
+    <button class="crx-close">閉 じ る</button>
+  </div>
+  <div class="note">
+    <b>整合性の原則:</b> <b>団体の勝敗</b>はヘッダー+スコア帯(「団体として敗北」の明記)が背負い、
+    <b>本人の勝敗</b>は代表の○×バッジ+グレースケール+ラベル2行目が背負う。セリフは両軸を踏まえた象限別(View C)。<br>
+    現行の欠陥: セリフ・ラベル・グレースケールがすべて団体勝敗だけで決まり、
+    「自分の試合に勝った代表が敗者の言葉を言う」「代表戦で負けた相手が勝ち名乗りを上げる」が起きる。
+  </div>
+</div>
+
+<!-- ═══ View C ═══ -->
+<div class="view" id="v-c">
+  <div class="memo">
+    <h2>■ 結果画面: セリフ・表示の2軸マトリクス(本人の試合 × 団体の勝敗)</h2>
+    <table>
+      <tr><th>象限</th><th>ラベル例</th><th>セリフのトーン</th><th>画像</th></tr>
+      <tr><td>○本人勝ち × 団体勝ち</td><td>挑戦を実らせた代表</td><td>勝ち名乗り(現行の win プール流用可)</td><td>カラー+○</td></tr>
+      <tr><td class="q">○本人勝ち × 団体負け</td><td>一矢報いた代表</td><td class="q">新規: 自分は勝ったが団体は負け。悔しさ+借り</td><td>カラー+○ (グレー化しない)</td></tr>
+      <tr><td class="q">×本人負け × 団体勝ち</td><td>代表戦は落とすも、団体は勝利</td><td class="q">新規: 仲間に救われた/相手への敬意</td><td>グレー+×</td></tr>
+      <tr><td>×本人負け × 団体負け</td><td>挑んで、敗れた代表</td><td>敗北(現行の lose プール流用可)</td><td>グレー+×</td></tr>
+    </table>
+    相手側代表も同じマトリクスの鏡像。<b>新規セリフは2象限 × 口調7種 × 自他2視点</b>(Opus起案→Keisukeレビュー→焼き込み)。
+
+    <h2>■ 実装の要点(結果画面)</h2>
+    ・現行 `_challengeRequestResultReaction` / `_challengeRequestOpponentReaction`(ui-common.js)は scene を
+    <b>団体勝敗だけ</b>で選んでいる(playerWon ? 'win' : 'lose')。代表本人の第1試合結果(result.matches[0].winner)を第2軸に追加<br>
+    ・グレースケール(defeated)とラベルも本人基準へ差し替え。ヘッダー/コーチ行/スコア帯は現行どおり団体基準(変更なし)<br>
+    ・スコア帯に「団体として敗北/勝利」の明記を追加(誤読の余地を消す)
+
+    <h2>■ 進行画面の判断点</h2>
+    ① 配色 = 敵地黒+相手団体カラー照明(candidate切替は上のボタンで確認)<br>
+    ② 能力値 = バー10本廃止→中央対比行(勝っている側だけ点灯)。<b>生値を出し続けるか、階調色だけにするかは要判断</b>(現行も生値表示のため踏襲した)<br>
+    ③ OVR = ランキングと同じ階調カラー<br>
+    ④ 画像・チップ・縦積み構成は現行踏襲(変えるのは「色」と「数値の整理」だけ)
+
+    <h2>■ この設計で変えないもの</h2>
+    ・画面遷移/操作(試合を観る・スキップ)・カード数・宿命/友好の表示意味・明細3行の構成
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('on', x === b));
+    document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'v-' + b.dataset.v));
+  }));
+  document.querySelectorAll('[data-c]').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('[data-c]').forEach(x => x.classList.toggle('on', x === b));
+    document.body.className = b.dataset.c;
+  }));
+</script>
+</body>
+</html>
