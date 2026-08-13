@@ -140,6 +140,7 @@ const buildUi = new Function(
    ${functionSource('escHtml')}
    ${functionSource('_factionUpperUrl')}
    ${functionSource('_factionEnsureOverlayRoot')}
+   ${functionSource('_activatePopupOverlaySync')}
    ${functionSource('showHostileArrivalStage')}
    ${functionSource('showChallengeRequestModal')}
    ${functionSource('showChallengeSendoffModal')}
