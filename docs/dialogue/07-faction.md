@@ -3960,7 +3960,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.composed.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.composed.bold[1]`: …承知しました。私からメンバーに話します。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.A.composed.bold[1]`: …わかった。私からメンバーに話しておくよ。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.A.composed.quiet[]
 
@@ -4296,7 +4296,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.composed.bold[]
 
-- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.composed.bold[1]`: …ご配慮ありがとうございます。下の子のフォロー、助かります。
+- `F07_LINES.resultLeader.OBSERVE_INTERNAL_RANK.C.composed.bold[1]`: …そこまで見てくれてるんだ。下の子のこと、助かるよ。
 
 ### resultLeader.OBSERVE_INTERNAL_RANK.C.composed.quiet[]
 
@@ -7269,7 +7269,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### delinquent.bold.high[]
 
 - `FACTION_F08_PRE_MATCH_LINES_B.delinquent.bold.high[1]`: おう、待ってたぞ。逃がさねえからな
-- `FACTION_F08_PRE_MATCH_LINES_B.delinquent.bold.high[2]`: わたしんとこも、舐められたまま終わる気はねえ
+- `FACTION_F08_PRE_MATCH_LINES_B.delinquent.bold.high[2]`: 私んとこも、舐められたまま終わる気はねえ
 
 ### delinquent.bold.mid[]
 

@@ -1265,7 +1265,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### faction_decree.polite._default[]
 
-- `CARE_REACTION_DIALOGUES.faction_decree.polite._default[1]`: ……はい。皆には、わたしから伝えます
+- `CARE_REACTION_DIALOGUES.faction_decree.polite._default[1]`: ……はい。皆には、私から伝えます
 
 ### faction_decree.polite.bold[]
 
@@ -1585,7 +1585,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S4_direct.polite.quiet[1]`: …申し訳ありません。ただ…このままでは…
 - `CHOICE_EVENT_DIALOGUES.S4_direct.polite.shy[1]`: は、はっきり言わせていただきます…わたしは…
 - `CHOICE_EVENT_DIALOGUES.S4_direct.polite.earnest[1]`: ずっと我慢して参りましたが…このままでは限界です
-- `CHOICE_EVENT_DIALOGUES.S4_direct.polite.emotional[1]`: …申し訳ありません…！でも、もう…このままでは、わたし…！
+- `CHOICE_EVENT_DIALOGUES.S4_direct.polite.emotional[1]`: …申し訳ありません…！でも、もう…このままでは、私…！
 - `CHOICE_EVENT_DIALOGUES.S4_silent.ojousama.normal[1]`: （…申し上げたいことは、ございます。けれど、口にはできません）
 - `CHOICE_EVENT_DIALOGUES.S4_silent.ojousama.bold[1]`: …………（膝の上で、手を固く握りしめている）
 - `CHOICE_EVENT_DIALOGUES.S4_silent.ojousama.quiet[1]`: …………（小さく息をつき、そっと目を伏せる）
@@ -1721,7 +1721,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `CHOICE_EVENT_DIALOGUES.S6.polite.quiet[1]`: …後輩のご指導を、担当させていただけますか
 - `CHOICE_EVENT_DIALOGUES.S6.polite.shy[1]`: 決めました…これで、いいんですよね…？
 - `CHOICE_EVENT_DIALOGUES.S6.polite.earnest[1]`: 培ってきたものを後輩にお伝えしたいのです
-- `CHOICE_EVENT_DIALOGUES.S6.polite.emotional[1]`: 後輩の子たちに…わたしにできることがあるのでしたら…やらせてください…！
+- `CHOICE_EVENT_DIALOGUES.S6.polite.emotional[1]`: 後輩の子たちに…私にできることがあるのでしたら…やらせてください…！
 - `CHOICE_EVENT_DIALOGUES.E1.cool.normal[1]`: …メディアの話が来ている。出たい
 - `CHOICE_EVENT_DIALOGUES.E1.cool.normal[2]`: …出演の話。やらせてくれ
 - `CHOICE_EVENT_DIALOGUES.E1.cool.bold[1]`: …いい機会だ。出る

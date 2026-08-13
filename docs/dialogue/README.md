@@ -4,7 +4,7 @@
 セリフを書き直したら、このツールを再実行すれば内容が更新される(下記「再実行方法」参照)。
 
 - 対象テーブル数: 194
-- 抽出できたセリフ総本数: **20462**
+- 抽出できたセリフ総本数: **20540**
 
 ## ID の読み方
 
@@ -26,7 +26,7 @@
 | 09 | 表彰式・記録・ドーム到達 | [09-award-and-milestone.md](./09-award-and-milestone.md) | 6 | 760 |
 | 10 | ニュース・新聞・黒田記者コラム | [10-news-and-newspaper.md](./10-news-and-newspaper.md) | 26 | 1960 |
 | 11 | 選択イベント・大型イベント・社長室 | [11-choice-and-large-event.md](./11-choice-and-large-event.md) | 8 | 1630 |
-| 12 | 選手経歴イベント | [12-career-event.md](./12-career-event.md) | 15 | 1731 |
+| 12 | 選手経歴イベント | [12-career-event.md](./12-career-event.md) | 15 | 1794 |
 | 13 | Glimpse Cascade(興行後の一言) | [13-glimpse-cascade.md](./13-glimpse-cascade.md) | 3 | 1260 |
 | 14 | PPV・対抗戦・天頂戦・トーナメント | [14-ppv-and-war.md](./14-ppv-and-war.md) | 12 | 1520 |
 | 15 | コーチ | [15-coach.md](./15-coach.md) | 13 | 631 |
@@ -34,7 +34,7 @@
 | 17 | 関係性フラグ | [17-relationship-flags.md](./17-relationship-flags.md) | 2 | 473 |
 | 18 | 経営危機・エンディング | [18-crisis-and-ending.md](./18-crisis-and-ending.md) | 6 | 258 |
 | 19 | ドラフト・スカウト | [19-draft-and-scout.md](./19-draft-and-scout.md) | 7 | 172 |
-| 20 | その他雰囲気テキスト | [20-misc-atmosphere.md](./20-misc-atmosphere.md) | 7 | 165 |
+| 20 | その他雰囲気テキスト | [20-misc-atmosphere.md](./20-misc-atmosphere.md) | 7 | 180 |
 
 ## テーブル別内訳
 
@@ -175,7 +175,7 @@
 | `EVENT_FA_WELCOME_GENERIC_LINES` | `src/data.js` | 12-career-event.md | 3 |
 | `EVENT_RENTAL_GREETING_LINES` | `src/data.js` | 12-career-event.md | 61 |
 | `EVENT_RENTAL_GREETING_GENERIC_LINES` | `src/data.js` | 12-career-event.md | 3 |
-| `EVENT_LINES_BY_KEY` | `src/data.js` | 12-career-event.md | 1002 |
+| `EVENT_LINES_BY_KEY` | `src/data.js` | 12-career-event.md | 1065 |
 | `GLIMPSE_A_LINES` | `src/data.js` | 13-glimpse-cascade.md | 848 |
 | `GLIMPSE_HOTSTREAK_END_LINES` | `src/data.js` | 13-glimpse-cascade.md | 41 |
 | `GLIMPSE_B_LINES` | `src/data.js` | 13-glimpse-cascade.md | 371 |
@@ -231,7 +231,7 @@
 | `FAREWELL_KIND_TEXT` | `src/data.js` | 20-misc-atmosphere.md | 15 |
 | `PRE_WINDOW_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 9 |
 | `LOCKER_AIR_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 14 |
-| `ATMOSPHERE_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 18 |
+| `ATMOSPHERE_TEXTS` | `src/data.js` | 20-misc-atmosphere.md | 33 |
 | `EMOTION_TEXTS` | `src/ui-render.js` | 20-misc-atmosphere.md | 91 |
 | `SURVIVAL_MILESTONES` | `src/app.js` | 20-misc-atmosphere.md | 10 |
 

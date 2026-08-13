@@ -502,7 +502,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - `FLAG_DIALOGUE.M-12.returner.cool[1]`: ……ただいま。
 - `FLAG_DIALOGUE.M-12.returner.cool[2]`: 戻った。
-- `FLAG_DIALOGUE.M-12.returner.cool[3]`: ……すまない。
+- `FLAG_DIALOGUE.M-12.returner.cool[3]`: ……ごめん。
 
 ### M-12.returner.standard[]
 
@@ -738,8 +738,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### M-15.seductive[]
 
-- `FLAG_DIALOGUE.M-15.seductive[1]`: {name2}、いい気にならないでね。次はわたしの番よ。
-- `FLAG_DIALOGUE.M-15.seductive[2]`: 一度や二度の番狂わせで、わたしを計らないで。
+- `FLAG_DIALOGUE.M-15.seductive[1]`: {name2}、いい気にならないでね。次は私の番よ。
+- `FLAG_DIALOGUE.M-15.seductive[2]`: 一度や二度の番狂わせで、私を計らないで。
 - `FLAG_DIALOGUE.M-15.seductive[3]`: 借り、利子つきで返すから。覚えておきなさい。
 
 ### M-15.delinquent[]

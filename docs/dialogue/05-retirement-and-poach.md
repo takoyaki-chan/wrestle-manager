@@ -124,7 +124,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `RETIREMENT_LINES.A3_heel.polite.shy[1]`: こ、こんなわたしでしたが…リングを、去ります…
 - `RETIREMENT_LINES.A3_heel.polite.easygoing[1]`: 最後くらい、素直になってもいいですか。楽しかったです
 - `RETIREMENT_LINES.A3_heel.polite.earnest[1]`: 嫌われ役は…誰かがやらなければいけませんでしたから
-- `RETIREMENT_LINES.A3_heel.polite.emotional[1]`: …っ、やめてください…泣かないで…わたしまで…っ
+- `RETIREMENT_LINES.A3_heel.polite.emotional[1]`: …っ、やめてください…泣かないで…私まで…っ
 - `RETIREMENT_LINES.A3_heel.standard.normal[1]`: フン…勝手に泣いてんじゃないわよ
 - `RETIREMENT_LINES.A3_heel.standard.normal[2]`: 私がいなくなって寂しくなるね
 - `RETIREMENT_LINES.A3_heel.standard.bold[1]`: 最後まで嫌われ者でいさせてもらうわ。最高だった
@@ -532,7 +532,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `POACH_REACTION_DIALOGUES.accepted.polite.easygoing[2]`: 行ってきます〜！
 - `POACH_REACTION_DIALOGUES.accepted.polite.earnest[1]`: いただいたご恩、新天地で結果として返させていただきます
 - `POACH_REACTION_DIALOGUES.accepted.polite.emotional[1]`: うう…っ…行かせて…ください…っ
-- `POACH_REACTION_DIALOGUES.accepted.polite.emotional[2]`: …っ、ごめんなさい…でも、わたし……行かなければ…
+- `POACH_REACTION_DIALOGUES.accepted.polite.emotional[2]`: …っ、ごめんなさい…でも、私……行かなければ…
 - `POACH_REACTION_DIALOGUES.accepted.cool.normal[1]`: …世話になった。…さよならだ
 - `POACH_REACTION_DIALOGUES.accepted.cool.bold[1]`: …もっと大きい舞台で証明する。見ていろ
 - `POACH_REACTION_DIALOGUES.accepted.cool.bold[2]`: …行く。世話になった

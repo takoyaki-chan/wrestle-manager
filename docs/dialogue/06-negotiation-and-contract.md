@@ -329,7 +329,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### raise_open.polite.emotional[]
 
-- `CONTRACT_NEGOTIATION_LINES.raise_open.polite.emotional[1]`: 社長……！ どうか聞いてください……！ {tenure}{record}わたし、もっとやれるはずなんです……！ このままでは、悔しくて……！
+- `CONTRACT_NEGOTIATION_LINES.raise_open.polite.emotional[1]`: 社長……！ どうか聞いてください……！ {tenure}{record}私、もっとやれるはずなんです……！ このままでは、悔しくて……！
 - `CONTRACT_NEGOTIATION_LINES.raise_open.polite.emotional[2]`: ……どうして、評価していただけないのでしょうか……！ {record}こんなに頑張っておりますのに……！
 
 ### raise_open.composed.normal[]
@@ -1422,7 +1422,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### transfer_retain_success.polite.emotional[]
 
-- `CONTRACT_NEGOTIATION_LINES.transfer_retain_success.polite.emotional[1]`: 社長……！ ……申し訳ありません、こんなわたしのために……。……この御恩、必ずお返しいたします……！
+- `CONTRACT_NEGOTIATION_LINES.transfer_retain_success.polite.emotional[1]`: 社長……！ ……申し訳ありません、こんな私のために……。……この御恩、必ずお返しいたします……！
 
 ### transfer_retain_success.standard.normal[]
 
@@ -3630,7 +3630,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### tenure.founder.seductive
 
-- `CONTRACT_NEGOTIATION_LINES.tenure.founder.seductive`: 旗揚げからここにいるのよ、わたし。
+- `CONTRACT_NEGOTIATION_LINES.tenure.founder.seductive`: 旗揚げからここにいるのよ、私。
 
 ### tenure.founder.polite
 
@@ -3686,7 +3686,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### record.good.seductive
 
-- `CONTRACT_NEGOTIATION_LINES.record.good.seductive`: わたしなりに、結果は出してきたつもりよ。
+- `CONTRACT_NEGOTIATION_LINES.record.good.seductive`: 私なりに、結果は出してきたつもりよ。
 
 ### record.good.polite
 

@@ -100,29 +100,44 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ## `ATMOSPHERE_TEXTS`
 
 - 出典: `src/data.js`
-- コード内コメント: §3 ロッカールーム可視化: 雰囲気テキスト（5段階×3-4パターン）
-- 本数: 18
+- コード内コメント: §3 ロッカールーム可視化: 雰囲気テキスト（5段階×3-4パターン） / 2026-08-13 Keisuke指摘「バラエティが少ない」を受け各レベル+3本(音・道具・時間などの観測事実系)
+- 本数: 33
 
 ### [][].text
 
 - `ATMOSPHERE_TEXTS[1][1].text`: 練習場が静まり返っている
 - `ATMOSPHERE_TEXTS[1][2].text`: 誰も目を合わせようとしない
 - `ATMOSPHERE_TEXTS[1][3].text`: 重い空気が漂っている
+- `ATMOSPHERE_TEXTS[1][4].text`: リングに上がる者がいない
+- `ATMOSPHERE_TEXTS[1][5].text`: 掛け声ひとつ上がらない
+- `ATMOSPHERE_TEXTS[1][6].text`: マットに汗の跡がない
 - `ATMOSPHERE_TEXTS[2][1].text`: どこかよそよそしい空気がある
 - `ATMOSPHERE_TEXTS[2][2].text`: 最低限のメニューだけこなしている
 - `ATMOSPHERE_TEXTS[2][3].text`: 会話が少ない
+- `ATMOSPHERE_TEXTS[2][4].text`: 時計を気にする選手が目につく
+- `ATMOSPHERE_TEXTS[2][5].text`: 休憩が長引きがちだ
+- `ATMOSPHERE_TEXTS[2][6].text`: 組む相手を決めるのに手間取っている
 - `ATMOSPHERE_TEXTS[3][1].text`: 淡々とメニューをこなしている
 - `ATMOSPHERE_TEXTS[3][2].text`: いつも通りの練習風景
 - `ATMOSPHERE_TEXTS[3][3].text`: 特に変わった様子はない
 - `ATMOSPHERE_TEXTS[3][4].text`: 黙々と汗を流している
+- `ATMOSPHERE_TEXTS[3][5].text`: 受け身の音が規則正しく響いている
+- `ATMOSPHERE_TEXTS[3][6].text`: 定刻通りに始まり、定刻通りに終わる
+- `ATMOSPHERE_TEXTS[3][7].text`: 汗を拭いては、また組み直している
 - `ATMOSPHERE_TEXTS[4][1].text`: 声が飛び交っている
 - `ATMOSPHERE_TEXTS[4][2].text`: 練習に熱が入っている
 - `ATMOSPHERE_TEXTS[4][3].text`: 選手同士でアドバイスし合っている
 - `ATMOSPHERE_TEXTS[4][4].text`: 活気のある練習場
+- `ATMOSPHERE_TEXTS[4][5].text`: 順番待ちの列ができている
+- `ATMOSPHERE_TEXTS[4][6].text`: ロープの鳴る音が途切れない
+- `ATMOSPHERE_TEXTS[4][7].text`: 息が上がっても手を止めない
 - `ATMOSPHERE_TEXTS[5][1].text`: 自主練する選手が増えている
 - `ATMOSPHERE_TEXTS[5][2].text`: 練習場に笑い声が響いている
 - `ATMOSPHERE_TEXTS[5][3].text`: 全員の目つきが違う
 - `ATMOSPHERE_TEXTS[5][4].text`: チーム全体に勢いがある
+- `ATMOSPHERE_TEXTS[5][5].text`: 消灯の時間を過ぎても人が残っている
+- `ATMOSPHERE_TEXTS[5][6].text`: 終わりの合図を誰も聞いていない
+- `ATMOSPHERE_TEXTS[5][7].text`: マットが汗で滑るほど濡れている
 
 ## `EMOTION_TEXTS`
 

@@ -10,9 +10,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_earnest.petition[]
 
-- `CHALLENGE_LINES.polite_earnest.petition[1]`: 社長、ご迷惑は承知しています。それでも、あの方とやらせていただけませんか。
-- `CHALLENGE_LINES.polite_earnest.petition[2]`: 不躾なお願いだと分かっています。……あの方と、闘わせてください。
-- `CHALLENGE_LINES.polite_earnest.petition[3]`: 社長。どうかお願いします。あの方とだけは、やらせていただきたくて。
+- `CHALLENGE_LINES.polite_earnest.petition[1]`: 社長、ご迷惑は承知しております。それでも三人で挑ませてください。
+- `CHALLENGE_LINES.polite_earnest.petition[2]`: 不躾なお願いだと分かっています。……三人で、乗り込ませてください。
+- `CHALLENGE_LINES.polite_earnest.petition[3]`: 社長。どうかお願いします。この挑戦だけは、三人で行かせてください。
 
 ### polite_earnest.sendoff[]
 
@@ -34,9 +34,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_normal.petition[]
 
-- `CHALLENGE_LINES.polite_normal.petition[1]`: 社長、お願いがあります。あの方と、やらせていただけませんか。
-- `CHALLENGE_LINES.polite_normal.petition[2]`: どうしても、あの方とやってみたいんです。……お願いします。
-- `CHALLENGE_LINES.polite_normal.petition[3]`: 叶うなら、あの方と。……我慢できなくて、言いに来ました。
+- `CHALLENGE_LINES.polite_normal.petition[1]`: 社長、お願いがあります。三人で、挑ませていただけませんか。
+- `CHALLENGE_LINES.polite_normal.petition[2]`: どうしても、向こうへ三人で行きたいんです。……お願いします。
+- `CHALLENGE_LINES.polite_normal.petition[3]`: 叶うなら、三人であちらへ。……我慢できなくて、言いに来ました。
 
 ### polite_normal.sendoff[]
 
@@ -58,8 +58,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_shy.petition[]
 
-- `CHALLENGE_LINES.polite_shy.petition[1]`: あの……社長。あの方と、やらせていただけませんか。
-- `CHALLENGE_LINES.polite_shy.petition[2]`: 言いにくいのですが……どうしても、あの方と。
+- `CHALLENGE_LINES.polite_shy.petition[1]`: あの……社長。三人で、挑ませていただけませんか。
+- `CHALLENGE_LINES.polite_shy.petition[2]`: 言いにくいのですが……どうしても、三人であちらへ。
 - `CHALLENGE_LINES.polite_shy.petition[3]`: すみません、わがままです。それでも、お願いしたくて。
 
 ### polite_shy.sendoff[]
@@ -82,9 +82,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_easygoing.petition[]
 
-- `CHALLENGE_LINES.polite_easygoing.petition[1]`: 社長、あの方とやってみたいのですけれど、だめでしょうか。
-- `CHALLENGE_LINES.polite_easygoing.petition[2]`: あの方と一度、やってみたいんです。だめならいいので。
-- `CHALLENGE_LINES.polite_easygoing.petition[3]`: ふと思ったんです。あの方とやってみたいなって。
+- `CHALLENGE_LINES.polite_easygoing.petition[1]`: 社長、三人で挑んでみたいのですけれど、だめでしょうか。
+- `CHALLENGE_LINES.polite_easygoing.petition[2]`: 一度、三人で乗り込んでみたいんです。だめならいいので。
+- `CHALLENGE_LINES.polite_easygoing.petition[3]`: ふと思ったんです。三人であちらへ行ってみたいなって。
 
 ### polite_easygoing.sendoff[]
 
@@ -106,9 +106,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_quiet.petition[]
 
-- `CHALLENGE_LINES.polite_quiet.petition[1]`: 社長。……あの方と、お願いします。
-- `CHALLENGE_LINES.polite_quiet.petition[2]`: 一つだけ。あの方と、やらせてください。
-- `CHALLENGE_LINES.polite_quiet.petition[3]`: ……お願いがあります。あの方と。
+- `CHALLENGE_LINES.polite_quiet.petition[1]`: 社長。……三人で、あちらへ。お願いします。
+- `CHALLENGE_LINES.polite_quiet.petition[2]`: 一つだけ。三人で、挑ませてください。
+- `CHALLENGE_LINES.polite_quiet.petition[3]`: ……お願いがあります。三人で、あちらへ。
 
 ### polite_quiet.sendoff[]
 
@@ -130,9 +130,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### polite_bold.petition[]
 
-- `CHALLENGE_LINES.polite_bold.petition[1]`: 社長、あの方とやります。許可をください。
-- `CHALLENGE_LINES.polite_bold.petition[2]`: 決めてきました。あの方と、やらせてください。
-- `CHALLENGE_LINES.polite_bold.petition[3]`: 必ず勝ちます。あの方との試合、通してください。
+- `CHALLENGE_LINES.polite_bold.petition[1]`: 社長、三人であちらへ行きます。許可をください。
+- `CHALLENGE_LINES.polite_bold.petition[2]`: 決めてきました。三人で、乗り込ませてください。
+- `CHALLENGE_LINES.polite_bold.petition[3]`: 必ず勝ちます。三人での遠征、通してください。
 
 ### polite_bold.sendoff[]
 
@@ -154,9 +154,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_normal.petition[]
 
-- `CHALLENGE_LINES.standard_normal.petition[1]`: 社長、お願いがあります。あの人とやらせてください。
-- `CHALLENGE_LINES.standard_normal.petition[2]`: どうしても、あの人とやりたいんです。……お願いします。
-- `CHALLENGE_LINES.standard_normal.petition[3]`: わがままだとは分かってます。それでも、組んでほしいんです。
+- `CHALLENGE_LINES.standard_normal.petition[1]`: 社長、お願いがあります。三人であちらへ行かせてください。
+- `CHALLENGE_LINES.standard_normal.petition[2]`: どうしても、三人で挑みたいんです。……お願いします。
+- `CHALLENGE_LINES.standard_normal.petition[3]`: わがままだとは分かってます。それでも、三人で組んでほしいんです。
 
 ### standard_normal.sendoff[]
 
@@ -178,9 +178,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_earnest.petition[]
 
-- `CHALLENGE_LINES.standard_earnest.petition[1]`: 社長、迷惑をかけるのは分かってます。それでも、あの人とやらせてください。
-- `CHALLENGE_LINES.standard_earnest.petition[2]`: 半端な気持ちじゃありません。……あの人と、闘わせてください。
-- `CHALLENGE_LINES.standard_earnest.petition[3]`: お願いします。この一戦だけは、逃げたくないんです。
+- `CHALLENGE_LINES.standard_earnest.petition[1]`: 社長、迷惑は分かってます。それでも三人で行かせてください。
+- `CHALLENGE_LINES.standard_earnest.petition[2]`: 半端な気持ちじゃありません。……三人で、乗り込ませてください。
+- `CHALLENGE_LINES.standard_earnest.petition[3]`: お願いします。この三連戦だけは、逃げたくないんです。
 
 ### standard_earnest.sendoff[]
 
@@ -202,9 +202,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_bold.petition[]
 
-- `CHALLENGE_LINES.standard_bold.petition[1]`: 社長、あの人とやらせてください。勝てます。
-- `CHALLENGE_LINES.standard_bold.petition[2]`: あの人とやりたいんです。……今なら、いけると思ってます。
-- `CHALLENGE_LINES.standard_bold.petition[3]`: 待ってても回ってこないので、言いに来ました。組んでください。
+- `CHALLENGE_LINES.standard_bold.petition[1]`: 社長、三人であちらへ行かせてください。勝てます。
+- `CHALLENGE_LINES.standard_bold.petition[2]`: 三人で乗り込みたいんです。……今なら、いけると思ってます。
+- `CHALLENGE_LINES.standard_bold.petition[3]`: 待ってても回ってこないので、言いに来ました。三人で組ませてください。
 
 ### standard_bold.sendoff[]
 
@@ -226,9 +226,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_easygoing.petition[]
 
-- `CHALLENGE_LINES.standard_easygoing.petition[1]`: 社長、あの人とやってみたいんですけど、どうですか。
-- `CHALLENGE_LINES.standard_easygoing.petition[2]`: だめならいいんです。でも、あの人とやりたくて。
-- `CHALLENGE_LINES.standard_easygoing.petition[3]`: なんとなく、あの人とやりたくなっちゃって。
+- `CHALLENGE_LINES.standard_easygoing.petition[1]`: 社長、三人であちらへ行ってみたいんですけど、どうですか。
+- `CHALLENGE_LINES.standard_easygoing.petition[2]`: だめならいいんです。でも、三人で挑んでみたくて。
+- `CHALLENGE_LINES.standard_easygoing.petition[3]`: なんとなく、三人で乗り込みたくなっちゃって。
 
 ### standard_easygoing.sendoff[]
 
@@ -250,9 +250,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_quiet.petition[]
 
-- `CHALLENGE_LINES.standard_quiet.petition[1]`: 社長。あの人と、やらせてください。
-- `CHALLENGE_LINES.standard_quiet.petition[2]`: ……お願いがあります。あの人です。
-- `CHALLENGE_LINES.standard_quiet.petition[3]`: 一つだけ。あの人と、組んでください。
+- `CHALLENGE_LINES.standard_quiet.petition[1]`: 社長。三人で、行かせてください。
+- `CHALLENGE_LINES.standard_quiet.petition[2]`: ……お願いがあります。三人での、遠征です。
+- `CHALLENGE_LINES.standard_quiet.petition[3]`: 一つだけ。あちらへ三人で、組んでください。
 
 ### standard_quiet.sendoff[]
 
@@ -275,8 +275,8 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### standard_shy.petition[]
 
 - `CHALLENGE_LINES.standard_shy.petition[1]`: あの……社長。ひとつ、お願いが……。
-- `CHALLENGE_LINES.standard_shy.petition[2]`: 言うか迷ったんですけど……あの人と、やりたいです。
-- `CHALLENGE_LINES.standard_shy.petition[3]`: わがままですよね。……でも、どうしても。
+- `CHALLENGE_LINES.standard_shy.petition[2]`: 言うか迷ったんですけど……三人で、あちらへ行きたいです。
+- `CHALLENGE_LINES.standard_shy.petition[3]`: 三人で行きたいんです。わがままですよね。……でも、どうしても。
 
 ### standard_shy.sendoff[]
 
@@ -298,9 +298,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### standard_emotional.petition[]
 
-- `CHALLENGE_LINES.standard_emotional.petition[1]`: 社長! あの人とやりたいんです、お願いします!
-- `CHALLENGE_LINES.standard_emotional.petition[2]`: もう我慢できないんです。あの人と、やらせてください。
-- `CHALLENGE_LINES.standard_emotional.petition[3]`: ずっと考えてました。……お願いします、どうしても!
+- `CHALLENGE_LINES.standard_emotional.petition[1]`: 社長！ 三人であちらへ行きたいんです、お願いします！
+- `CHALLENGE_LINES.standard_emotional.petition[2]`: もう我慢できないんです。三人で、乗り込ませてください。
+- `CHALLENGE_LINES.standard_emotional.petition[3]`: ずっと考えてました。……三人で行かせてください、どうしても！
 
 ### standard_emotional.sendoff[]
 
@@ -322,9 +322,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_normal.petition[]
 
-- `CHALLENGE_LINES.composed_normal.petition[1]`: 社長。……頼みがあります。あの人と、やらせてください。
-- `CHALLENGE_LINES.composed_normal.petition[2]`: あの人と、一度やってみたい。……それだけなんです。
-- `CHALLENGE_LINES.composed_normal.petition[3]`: 無茶を言ってる自覚はあります。……それでも、お願いします。
+- `CHALLENGE_LINES.composed_normal.petition[1]`: 社長。……頼みがあります。三人で、あちらへ行かせてください。
+- `CHALLENGE_LINES.composed_normal.petition[2]`: 三人で、一度あちらへ乗り込みたい。……それだけなんです。
+- `CHALLENGE_LINES.composed_normal.petition[3]`: 無茶を言ってる自覚はあります。……それでも、三人で行かせてください。
 
 ### composed_normal.sendoff[]
 
@@ -346,9 +346,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_emotional.petition[]
 
-- `CHALLENGE_LINES.composed_emotional.petition[1]`: 社長。…あの人のことが、まだ腹の底に残ってます。やらせてください。
-- `CHALLENGE_LINES.composed_emotional.petition[2]`: …ずっと呑み込んできました。もう限界です。あいつと、やらせてください。
-- `CHALLENGE_LINES.composed_emotional.petition[3]`: 社長。…静かに言いますけど、本気です。あの人と、やらせてください。
+- `CHALLENGE_LINES.composed_emotional.petition[1]`: 社長。…あの団体が、まだ腹の底に残ってます。三人で行かせてください。
+- `CHALLENGE_LINES.composed_emotional.petition[2]`: …ずっと呑み込んできました。もう限界です。三人で行かせてください。
+- `CHALLENGE_LINES.composed_emotional.petition[3]`: 社長。…静かに言いますけど、本気です。三人で、行かせてください。
 
 ### composed_emotional.sendoff[]
 
@@ -370,9 +370,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_earnest.petition[]
 
-- `CHALLENGE_LINES.composed_earnest.petition[1]`: 社長。…あの人と、やらせてください。覚悟はできています。
-- `CHALLENGE_LINES.composed_earnest.petition[2]`: …わがままを言います。あの人と、やらせてください。責任は取ります。
-- `CHALLENGE_LINES.composed_earnest.petition[3]`: 社長。…自分に必要な相手です。あの人と、お願いします。
+- `CHALLENGE_LINES.composed_earnest.petition[1]`: 社長。…三人で行かせてください。覚悟はできています。
+- `CHALLENGE_LINES.composed_earnest.petition[2]`: …わがままを言います。三人で挑ませてください。責任は取ります。
+- `CHALLENGE_LINES.composed_earnest.petition[3]`: 社長。…今の自分に必要な相手です。三人で、お願いします。
 
 ### composed_earnest.sendoff[]
 
@@ -394,9 +394,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_bold.petition[]
 
-- `CHALLENGE_LINES.composed_bold.petition[1]`: 社長。……あの人は、私が引き受けるよ。
-- `CHALLENGE_LINES.composed_bold.petition[2]`: 頼みがあるの。あの相手と、やらせてほしい。
-- `CHALLENGE_LINES.composed_bold.petition[3]`: ……名前を挙げさせてもらうね。あの人と、やりたい。
+- `CHALLENGE_LINES.composed_bold.petition[1]`: 社長。……あの団体は、私たち三人で引き受けるよ。
+- `CHALLENGE_LINES.composed_bold.petition[2]`: 頼みがあるの。あの団体へ、三人で行かせてほしい。
+- `CHALLENGE_LINES.composed_bold.petition[3]`: ……行き先を挙げさせてもらうね。三人で、あそこへ。
 
 ### composed_bold.sendoff[]
 
@@ -418,9 +418,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_easygoing.petition[]
 
-- `CHALLENGE_LINES.composed_easygoing.petition[1]`: 社長、ちょっといい？ ……やってみたい相手がいるの。
-- `CHALLENGE_LINES.composed_easygoing.petition[2]`: ……あのね。あの人と、やらせてもらえないかな。
-- `CHALLENGE_LINES.composed_easygoing.petition[3]`: お願いがあるんだけど。……あの相手、私に回してくれない？
+- `CHALLENGE_LINES.composed_easygoing.petition[1]`: 社長、ちょっといい？ ……三人で行ってみたい所があるの。
+- `CHALLENGE_LINES.composed_easygoing.petition[2]`: ……あのね。三人であちらへ、行かせてもらえないかな。
+- `CHALLENGE_LINES.composed_easygoing.petition[3]`: お願いがあるんだけど。……あの団体、私たち三人に回してくれない？
 
 ### composed_easygoing.sendoff[]
 
@@ -442,9 +442,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed_quiet.petition[]
 
-- `CHALLENGE_LINES.composed_quiet.petition[1]`: 社長。…あの人と、やりたいです。
-- `CHALLENGE_LINES.composed_quiet.petition[2]`: …お願いが、ひとつだけ。あの人と、やらせてください。
-- `CHALLENGE_LINES.composed_quiet.petition[3]`: 社長。…あの人です。お願いします。
+- `CHALLENGE_LINES.composed_quiet.petition[1]`: 社長。…三人で、あちらへ行きたいです。
+- `CHALLENGE_LINES.composed_quiet.petition[2]`: …お願いが、ひとつだけ。三人で、行かせてください。
+- `CHALLENGE_LINES.composed_quiet.petition[3]`: 社長。…あの団体です。三人で、お願いします。
 
 ### composed_quiet.sendoff[]
 
@@ -466,9 +466,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_normal.petition[]
 
-- `CHALLENGE_LINES.seductive_normal.petition[1]`: 社長、正直に言うわ。対戦したい相手が居るのよね。
-- `CHALLENGE_LINES.seductive_normal.petition[2]`: {org}のあの子が気に障るのよね……対戦、セッティングしてくれる？
-- `CHALLENGE_LINES.seductive_normal.petition[3]`: 理由は言いたくないのだけれど。試合を組んで欲しいの。
+- `CHALLENGE_LINES.seductive_normal.petition[1]`: 社長、正直に言うわ。三人で乗り込みたい所があるのよね。
+- `CHALLENGE_LINES.seductive_normal.petition[2]`: あの団体の子が気に障るのよね……三人で乗り込ませてくれる？
+- `CHALLENGE_LINES.seductive_normal.petition[3]`: 理由は言いたくないのだけれど。三人での遠征、組んで欲しいの。
 
 ### seductive_normal.sendoff[]
 
@@ -490,9 +490,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_easygoing.petition[]
 
-- `CHALLENGE_LINES.seductive_easygoing.petition[1]`: 社長〜、あの人とやりたいの。だめ？
-- `CHALLENGE_LINES.seductive_easygoing.petition[2]`: ねえ社長、あの人と当てて。お願い。
-- `CHALLENGE_LINES.seductive_easygoing.petition[3]`: あの人とやらせて？ わがままよね、私。
+- `CHALLENGE_LINES.seductive_easygoing.petition[1]`: 社長〜、三人であちらへ行きたいの。だめ？
+- `CHALLENGE_LINES.seductive_easygoing.petition[2]`: ねえ社長、三人であの団体に当てて。お願い。
+- `CHALLENGE_LINES.seductive_easygoing.petition[3]`: 三人であちらへ行かせて？ わがままよね、私。
 
 ### seductive_easygoing.sendoff[]
 
@@ -514,9 +514,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_earnest.petition[]
 
-- `CHALLENGE_LINES.seductive_earnest.petition[1]`: 社長、あの人とやらせてほしいの。お願いします。
-- `CHALLENGE_LINES.seductive_earnest.petition[2]`: どうしてもあの人とやりたくて。……聞いてくれる？
-- `CHALLENGE_LINES.seductive_earnest.petition[3]`: 身勝手なお願いなの。あの人と、やらせて。
+- `CHALLENGE_LINES.seductive_earnest.petition[1]`: 社長、三人であちらへ行かせてほしいの。お願いします。
+- `CHALLENGE_LINES.seductive_earnest.petition[2]`: どうしても三人で乗り込みたくて。……聞いてくれる？
+- `CHALLENGE_LINES.seductive_earnest.petition[3]`: 身勝手なお願いなの。三人で、あちらへ行かせて。
 
 ### seductive_earnest.sendoff[]
 
@@ -538,9 +538,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_bold.petition[]
 
-- `CHALLENGE_LINES.seductive_bold.petition[1]`: 社長、{org}のあの女、私にやらせて。
-- `CHALLENGE_LINES.seductive_bold.petition[2]`: 気に入らない女がいるの。……そいつと、やらせてほしいのよ。
-- `CHALLENGE_LINES.seductive_bold.petition[3]`: 身の程を教えてあげたい相手がいるの。組んでくれる？
+- `CHALLENGE_LINES.seductive_bold.petition[1]`: 社長、あの団体、私たち三人にやらせて。
+- `CHALLENGE_LINES.seductive_bold.petition[2]`: 気に入らない連中がいるの。……三人で、やらせてほしいのよ。
+- `CHALLENGE_LINES.seductive_bold.petition[3]`: 身の程を教えてあげたい団体があるの。三人で組んでくれる？
 
 ### seductive_bold.sendoff[]
 
@@ -562,9 +562,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_quiet.petition[]
 
-- `CHALLENGE_LINES.seductive_quiet.petition[1]`: 社長。あの人と、やらせてほしいの。
-- `CHALLENGE_LINES.seductive_quiet.petition[2]`: お願いがあるの。……あの人と、やりたい。
-- `CHALLENGE_LINES.seductive_quiet.petition[3]`: 一度、あの人と。……いいかしら。
+- `CHALLENGE_LINES.seductive_quiet.petition[1]`: 社長。三人で、あちらへ行かせてほしいの。
+- `CHALLENGE_LINES.seductive_quiet.petition[2]`: お願いがあるの。……三人で、あの団体へ。
+- `CHALLENGE_LINES.seductive_quiet.petition[3]`: 一度、三人であちらへ。……いいかしら。
 
 ### seductive_quiet.sendoff[]
 
@@ -586,9 +586,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### seductive_emotional.petition[]
 
-- `CHALLENGE_LINES.seductive_emotional.petition[1]`: 社長。あの人とやりたいの。……いいでしょ？
-- `CHALLENGE_LINES.seductive_emotional.petition[2]`: 我慢が切れたの。あの人と、やらせて。
-- `CHALLENGE_LINES.seductive_emotional.petition[3]`: 言うだけ言うわ。あの人と当てて。
+- `CHALLENGE_LINES.seductive_emotional.petition[1]`: 社長。三人であちらへ行きたいの。……いいでしょ？
+- `CHALLENGE_LINES.seductive_emotional.petition[2]`: 我慢が切れたの。三人で、乗り込ませて。
+- `CHALLENGE_LINES.seductive_emotional.petition[3]`: 言うだけ言うわ。三人であの団体に当てて。
 
 ### seductive_emotional.sendoff[]
 
@@ -610,9 +610,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama_normal.petition[]
 
-- `CHALLENGE_LINES.ojousama_normal.petition[1]`: 社長、わたくし、あの方と対戦したいのです。
-- `CHALLENGE_LINES.ojousama_normal.petition[2]`: お願いがあります。あの方と試合をさせてくださいませ
-- `CHALLENGE_LINES.ojousama_normal.petition[3]`: 不躾を承知で申します。あの方と当たりたいのです。
+- `CHALLENGE_LINES.ojousama_normal.petition[1]`: 社長、わたくしたち三人で、あちらへ挑みたいのです。
+- `CHALLENGE_LINES.ojousama_normal.petition[2]`: お願いがあります。三人であちらへ挑ませてくださいませ。
+- `CHALLENGE_LINES.ojousama_normal.petition[3]`: 不躾を承知で申します。三人であちらへ参りたいのです。
 
 ### ojousama_normal.sendoff[]
 
@@ -634,9 +634,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama_easygoing.petition[]
 
-- `CHALLENGE_LINES.ojousama_easygoing.petition[1]`: 社長、わたくし、あの方とやってみたいのです。
-- `CHALLENGE_LINES.ojousama_easygoing.petition[2]`: ねえ社長、あの方と当ててくださいません？
-- `CHALLENGE_LINES.ojousama_easygoing.petition[3]`: 思いつきではないのです。あの方と、試合を。
+- `CHALLENGE_LINES.ojousama_easygoing.petition[1]`: 社長、わたくしたち三人で、あちらへ行ってみたいのです。
+- `CHALLENGE_LINES.ojousama_easygoing.petition[2]`: ねえ社長、三人であの団体に当ててくださいません？
+- `CHALLENGE_LINES.ojousama_easygoing.petition[3]`: 思いつきではないのです。三人で、あちらへ挑戦を。
 
 ### ojousama_easygoing.sendoff[]
 
@@ -658,9 +658,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama_earnest.petition[]
 
-- `CHALLENGE_LINES.ojousama_earnest.petition[1]`: 社長、お願いがあります。あの方と戦わせてください。
-- `CHALLENGE_LINES.ojousama_earnest.petition[2]`: わたくし、あの方と対戦したいのです。どうか。
-- `CHALLENGE_LINES.ojousama_earnest.petition[3]`: 願いはひとつです。あの方と、当たらせてください。
+- `CHALLENGE_LINES.ojousama_earnest.petition[1]`: 社長、お願いがあります。三人であちらへ挑ませてください。
+- `CHALLENGE_LINES.ojousama_earnest.petition[2]`: わたくしたち三人で、あちらへ挑みたいのです。どうか。
+- `CHALLENGE_LINES.ojousama_earnest.petition[3]`: 願いはひとつです。三人で、あちらへ向かわせてください。
 
 ### ojousama_earnest.sendoff[]
 
@@ -682,9 +682,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### ojousama_bold.petition[]
 
-- `CHALLENGE_LINES.ojousama_bold.petition[1]`: 社長、あの方はわたくしが引き受けますわね。
-- `CHALLENGE_LINES.ojousama_bold.petition[2]`: あの方と対戦したいのです。適任はわたくしでしょう。
-- `CHALLENGE_LINES.ojousama_bold.petition[3]`: 名指しさせていただくわ。あの相手との舞台、整えられる？
+- `CHALLENGE_LINES.ojousama_bold.petition[1]`: 社長、あの団体はわたくしたち三人で引き受けますわ。
+- `CHALLENGE_LINES.ojousama_bold.petition[2]`: あの団体へ三人で挑みたいのです。適任はわたくしでしょう。
+- `CHALLENGE_LINES.ojousama_bold.petition[3]`: 名指しさせていただくわ。あの団体との三連戦、整えられる？
 
 ### ojousama_bold.sendoff[]
 
@@ -706,9 +706,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_bold.petition[]
 
-- `CHALLENGE_LINES.delinquent_bold.petition[1]`: 社長、あいつとやらせてくださいよ。勝てるんで。
-- `CHALLENGE_LINES.delinquent_bold.petition[2]`: あいつとやりたいんす。……頼みます、組んでください。
-- `CHALLENGE_LINES.delinquent_bold.petition[3]`: 言わなきゃ回ってこねぇんで、直接来ました。お願いします。
+- `CHALLENGE_LINES.delinquent_bold.petition[1]`: 社長、三人で乗り込ませてくださいよ。勝てるんで。
+- `CHALLENGE_LINES.delinquent_bold.petition[2]`: あの団体とやりたいんす。……頼みます、三人で組んでください。
+- `CHALLENGE_LINES.delinquent_bold.petition[3]`: 言わなきゃ回ってこねぇんで、直接来ました。三人で行かせてください。
 
 ### delinquent_bold.sendoff[]
 
@@ -730,9 +730,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_normal.petition[]
 
-- `CHALLENGE_LINES.delinquent_normal.petition[1]`: 社長、あの人とやらせてください。
-- `CHALLENGE_LINES.delinquent_normal.petition[2]`: お願いがあるんすよ。あの人と当ててほしい。
-- `CHALLENGE_LINES.delinquent_normal.petition[3]`: ずっと引っかかってる相手がいる。組ませてください。
+- `CHALLENGE_LINES.delinquent_normal.petition[1]`: 社長、三人であっちへ行かせてください。
+- `CHALLENGE_LINES.delinquent_normal.petition[2]`: お願いがあるんすよ。三人であの団体に当ててほしい。
+- `CHALLENGE_LINES.delinquent_normal.petition[3]`: ずっと引っかかってる団体がある。三人で組ませてください。
 
 ### delinquent_normal.sendoff[]
 
@@ -754,9 +754,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### delinquent_easygoing.petition[]
 
-- `CHALLENGE_LINES.delinquent_easygoing.petition[1]`: 社長、あの人とやらせてよ。頼む。
-- `CHALLENGE_LINES.delinquent_easygoing.petition[2]`: やりたい相手がいるんだ。組んでくれ。
-- `CHALLENGE_LINES.delinquent_easygoing.petition[3]`: なあ社長、あの人と当ててくれない？
+- `CHALLENGE_LINES.delinquent_easygoing.petition[1]`: 社長、三人であっちへ行かせてよ。頼む。
+- `CHALLENGE_LINES.delinquent_easygoing.petition[2]`: やりたい団体があるんだ。三人で組んでくれ。
+- `CHALLENGE_LINES.delinquent_easygoing.petition[3]`: なあ社長、三人であの団体に当ててくれない？
 
 ### delinquent_easygoing.sendoff[]
 
@@ -778,9 +778,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### cool_normal.petition[]
 
-- `CHALLENGE_LINES.cool_normal.petition[1]`: ……社長。あの人と、やらせてください。
-- `CHALLENGE_LINES.cool_normal.petition[2]`: ……頼みがあります。あの人と、やりたい。
-- `CHALLENGE_LINES.cool_normal.petition[3]`: ……あの人だ。あの人と、やらせてほしい。
+- `CHALLENGE_LINES.cool_normal.petition[1]`: ……社長。三人で、あちらへ行かせてください。
+- `CHALLENGE_LINES.cool_normal.petition[2]`: ……頼みがあります。三人で、あの団体へ行きたい。
+- `CHALLENGE_LINES.cool_normal.petition[3]`: ……あの団体だ。三人で乗り込ませてほしい。
 
 ### cool_normal.sendoff[]
 
@@ -802,9 +802,9 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### cool_quiet.petition[]
 
-- `CHALLENGE_LINES.cool_quiet.petition[1]`: ……社長。あの人と。
-- `CHALLENGE_LINES.cool_quiet.petition[2]`: ……願いが、ひとつ。あの人と。
-- `CHALLENGE_LINES.cool_quiet.petition[3]`: ……やりたい相手が、います。
+- `CHALLENGE_LINES.cool_quiet.petition[1]`: ……社長。三人で、あちらへ。
+- `CHALLENGE_LINES.cool_quiet.petition[2]`: ……願いが、ひとつ。三人で、あの団体へ。
+- `CHALLENGE_LINES.cool_quiet.petition[3]`: ……行きたい団体が、あります。三人で。
 
 ### cool_quiet.sendoff[]
 

@@ -989,7 +989,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.win.polite.bold[]
 
-- `GLIMPSE_B_LINES.GL-01.win.polite.bold[1]`: よっしゃ……!まだ終わらない!
+- `GLIMPSE_B_LINES.GL-01.win.polite.bold[1]`: ふぅ……勝ちました！ 実力、見せられたかな？
 
 ### GL-01.win.polite.quiet[]
 
@@ -1104,7 +1104,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.loss.seductive.earnest[]
 
-- `GLIMPSE_B_LINES.GL-01.loss.seductive.earnest[1]`: ……まだ、わたし、足りませんわね……
+- `GLIMPSE_B_LINES.GL-01.loss.seductive.earnest[1]`: ……敗因は、分かっているの。次は、同じようにはいかないわ
 
 ### GL-01.loss.polite.normal[]
 
@@ -1113,7 +1113,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.loss.polite.bold[]
 
-- `GLIMPSE_B_LINES.GL-01.loss.polite.bold[1]`: くそっ……!こんなはず、じゃなかったのに……っ
+- `GLIMPSE_B_LINES.GL-01.loss.polite.bold[1]`: ……悔しいです。この負けは、次で必ず取り返します！
 
 ### GL-01.loss.polite.quiet[]
 
@@ -1229,7 +1229,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.goodLoss.polite.bold[]
 
-- `GLIMPSE_B_LINES.GL-01.goodLoss.polite.bold[1]`: 負けたけど……!わたし、全部出した!
+- `GLIMPSE_B_LINES.GL-01.goodLoss.polite.bold[1]`: 負けました……でも、全力は出し切れたかな。次は勝ちます！
 
 ### GL-01.goodLoss.polite.quiet[]
 
@@ -1342,7 +1342,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-01.greatWin.polite.bold[]
 
-- `GLIMPSE_B_LINES.GL-01.greatWin.polite.bold[1]`: 見ろよ!!これがわたしだ!!
+- `GLIMPSE_B_LINES.GL-01.greatWin.polite.bold[1]`: 見ていただけましたか？ これが私の、全力です！
 
 ### GL-01.greatWin.polite.quiet[]
 
@@ -1471,7 +1471,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 ### GL-02-hostile.standard.normal[]
 
 - `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[1]`: あいつのことを考えると、練習に身が入らない…
-- `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[2]`: 次に当たったとき…絶対に見てろよ
+- `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[2]`: 次に当たったとき…絶対に見返してやる
 - `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[3]`: なんであいつが同じ場所にいるんだ。意味わからん
 - `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[4]`: …練習中に思い出すな。腹が立って仕方ない
 - `GLIMPSE_B_LINES.GL-02-hostile.standard.normal[5]`: こっちがどれだけ頑張っても、あいつのことが頭から離れない
@@ -1522,7 +1522,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### GL-02-hostile.polite.normal[]
 
-- `GLIMPSE_B_LINES.GL-02-hostile.polite.normal[1]`: 私情を持ち込むな、と自分に言い聞かせているが…難しい
+- `GLIMPSE_B_LINES.GL-02-hostile.polite.normal[1]`: 私情は持ち込まないと、決めているんです。……難しいですね
 
 ### GL-02-hostile.cool.normal[]
 

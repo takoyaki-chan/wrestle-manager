@@ -506,7 +506,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### composed.bold[]
 
-- `EVENT_INJURY_LINES.composed.bold[1]`: …止まるわけにはいかない。すぐ戻る
+- `EVENT_INJURY_LINES.composed.bold[1]`: …私の代わりは、そう簡単には見つからないよ
 - `EVENT_INJURY_LINES.composed.bold[2]`: …問題ない。少し休めば治る
 
 ### composed.quiet[]
@@ -1404,7 +1404,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 - 出典: `src/data.js`
 - コード内コメント: 動的アクセス用ルックアップ（pickQuote/getTraitQuote の引数 category→定数） / コーチ雇用/解雇/PPV称賛は E-8 Phase A/B で pickCoachVoiceQuote() 経由(voiceKey別)に移行済み。 / このマップには含まれない（coach-lines.js の COACH_VOICE_HIRE/FIRE/PRAISE_LINES を参照）。
-- 本数: 1002
+- 本数: 1065
 
 ### draftJoin.standard.normal[]
 
@@ -2040,7 +2040,7 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 
 ### injury.composed.bold[]
 
-- `EVENT_LINES_BY_KEY.injury.composed.bold[1]`: …止まるわけにはいかない。すぐ戻る
+- `EVENT_LINES_BY_KEY.injury.composed.bold[1]`: …私の代わりは、そう簡単には見つからないよ
 - `EVENT_LINES_BY_KEY.injury.composed.bold[2]`: …問題ない。少し休めば治る
 
 ### injury.composed.quiet[]
@@ -3546,6 +3546,132 @@ docs/dialogue/README.md から自動生成(`node tools/extract-dialogue.js`)。�
 - `EVENT_LINES_BY_KEY.faWelcomeGeneric[1]`: よろしくお願いします！頑張ります！
 - `EVENT_LINES_BY_KEY.faWelcomeGeneric[2]`: 精一杯やります！応援してください！
 - `EVENT_LINES_BY_KEY.faWelcomeGeneric[3]`: 新しい仲間として、全力で頑張ります！
+
+### factionIgniteProvoke.standard[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.standard[1]`: ずっと言えなかったことを、リングで言う。逃げないで。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.standard[2]`: 文句があるなら、リングで聞く。それでいい？
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.standard[3]`: 先に手を挙げたのは私。ここから最後まで付き合って。
+
+### factionIgniteProvoke.ojousama[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.ojousama[1]`: 言葉を尽くしても届かないなら、あとはリングね。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.ojousama[2]`: この一戦は、わたくしから申し込んだもの。お受けになって。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.ojousama[3]`: 一度では終わらないの。長くお付き合いいただくわ。
+
+### factionIgniteProvoke.cool[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.cool[1]`: 話は終わり。あとは、リングで。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.cool[2]`: 先に仕掛けたのは私。異論は、要らない。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.cool[3]`: ……一度で終わるとは思っていない。始めるだけ。
+
+### factionIgniteProvoke.delinquent[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.delinquent[1]`: 言い訳はいい。あんたとは、リングで話をつける。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.delinquent[2]`: 売った喧嘩だ。引っ込めるつもりはねえよ。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.delinquent[3]`: 一発で終わると思うなよ。ここからだ。
+
+### factionIgniteProvoke.polite[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.polite[1]`: これ以上は、言葉では足りません。お相手願います。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.polite[2]`: 申し込んだのは私です。どうか、逃げないでください。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.polite[3]`: これは始まりです。最後まで、お付き合いいただきます。
+
+### factionIgniteProvoke.composed[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.composed[1]`: 穏やかに済ませたかった。でも、もう無理みたいだね。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.composed[2]`: 先に名前を出したのは私だ。責任は取るよ。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.composed[3]`: 一回で終わらせる気はないんだ。長くなるよ。
+
+### factionIgniteProvoke.seductive[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.seductive[1]`: 我慢はもうやめたの。あなたと、正面からやるわ。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.seductive[2]`: ふふ、もう断れないでしょう？　私が申し込んだのよ。
+- `EVENT_LINES_BY_KEY.factionIgniteProvoke.seductive[3]`: この一戦じゃ終わらないわ。……ゆっくり付き合って。
+
+### factionIgniteRespond.standard[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.standard[1]`: わかった。売られたなら、買うだけ。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.standard[2]`: そっちが決めたことでしょ。後悔しても遅いよ。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.standard[3]`: 言いたいことは全部、リングで受け取る。
+
+### factionIgniteRespond.ojousama[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.ojousama[1]`: お受けしますわ。……そちらから来たのですもの。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.ojousama[2]`: 呼ばれて断るような育ち方は、していないの。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.ojousama[3]`: 受けて立ちます。品位まで落とすつもりはないの。
+
+### factionIgniteRespond.cool[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.cool[1]`: 受ける。それだけ。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.cool[2]`: 先に動いたのはそっち。……付き合う。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.cool[3]`: 後戻りできないのは、そっちも同じ。
+
+### factionIgniteRespond.delinquent[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.delinquent[1]`: 上等だ。その喧嘩、買うよ。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.delinquent[2]`: 先に手を出したのはそっちだ。もう遅えよ。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.delinquent[3]`: あんたが始めたことだ。落とし前はつける。
+
+### factionIgniteRespond.polite[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.polite[1]`: 謹んでお受けします。逃げるつもりはありません。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.polite[2]`: そちらから来られたのなら、遠慮はいたしません。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.polite[3]`: 言葉は要りません。リングでお答えします。
+
+### factionIgniteRespond.composed[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.composed[1]`: そう来るなら、受けるよ。避けはしない。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.composed[2]`: よく決めたね。……その分、こっちも遠慮しないよ。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.composed[3]`: 怒ってはいないんだ。ただ、負けるつもりもない。
+
+### factionIgniteRespond.seductive[]
+
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.seductive[1]`: うれしい。……そんなに私と、やりたかったのね。
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.seductive[2]`: いいわ、受けてあげる。後で泣かないでね♪
+- `EVENT_LINES_BY_KEY.factionIgniteRespond.seductive[3]`: 仕掛けたのはあなたよ。……その顔、忘れないわ。
+
+### challengeArrival.standard[]
+
+- `EVENT_LINES_BY_KEY.challengeArrival.standard[1]`: 三人で行きます。お宅の三人、隠さず出してください。
+- `EVENT_LINES_BY_KEY.challengeArrival.standard[2]`: 私を切った判断が正しかったか、確かめに来ました。
+- `EVENT_LINES_BY_KEY.challengeArrival.standard[3]`: 三つとも取ります。それで話は終わりです。
+
+### challengeArrival.ojousama[]
+
+- `EVENT_LINES_BY_KEY.challengeArrival.ojousama[1]`: 三人で参りますわ。お宅の精鋭を、お出しになって。
+- `EVENT_LINES_BY_KEY.challengeArrival.ojousama[2]`: わたくしを要らないと決めた方に、お会いしたいの。
+- `EVENT_LINES_BY_KEY.challengeArrival.ojousama[3]`: 三つの勝負で、格の違いをお見せいたします。
+
+### challengeArrival.cool[]
+
+- `EVENT_LINES_BY_KEY.challengeArrival.cool[1]`: 三人で行く。そちらも三人、出して。
+- `EVENT_LINES_BY_KEY.challengeArrival.cool[2]`: 切られた理由を、まだ聞いていない。……三つで返す。
+- `EVENT_LINES_BY_KEY.challengeArrival.cool[3]`: 断ってもいい。逃げたと書かれるだけ。
+
+### challengeArrival.delinquent[]
+
+- `EVENT_LINES_BY_KEY.challengeArrival.delinquent[1]`: 三人で乗り込む。お宅も三人、出しなよ。
+- `EVENT_LINES_BY_KEY.challengeArrival.delinquent[2]`: 私を追い出したこと、忘れちゃいねえよ。三人で行く。
+- `EVENT_LINES_BY_KEY.challengeArrival.delinquent[3]`: あんたたちの一番強いのを出せばいい。潰すから。
+
+### challengeArrival.polite[]
+
+- `EVENT_LINES_BY_KEY.challengeArrival.polite[1]`: 三人で伺います。断られては、困りますので。
+- `EVENT_LINES_BY_KEY.challengeArrival.polite[2]`: 私を手放した判断、間違いだったと申し上げます。
+- `EVENT_LINES_BY_KEY.challengeArrival.polite[3]`: お宅の三人を、正面から倒させていただきます。
+
+### challengeArrival.composed[]
+
+- `EVENT_LINES_BY_KEY.challengeArrival.composed[1]`: 三人で行かせてもらうよ。そちらも三人、頼むね。
+- `EVENT_LINES_BY_KEY.challengeArrival.composed[2]`: 恨んではいないんだ。ただ、確かめたいことがある。
+- `EVENT_LINES_BY_KEY.challengeArrival.composed[3]`: 断る自由はあるよ。それも、答えのうちだ。
+
+### challengeArrival.seductive[]
+
+- `EVENT_LINES_BY_KEY.challengeArrival.seductive[1]`: 三人で伺うわ。お宅の自慢の三人、見せて。
+- `EVENT_LINES_BY_KEY.challengeArrival.seductive[2]`: 私を手放したこと、後悔させてあげる。……ふふ。
+- `EVENT_LINES_BY_KEY.challengeArrival.seductive[3]`: 三つとも、いただくわ。断る理由、あるかしら？
 
 ### rentalGreeting.cool.normal[]
 
