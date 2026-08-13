@@ -11,6 +11,7 @@ tools/tmp_xlsx/
 .claude/hooks/.autosim-dirty
 .codex-temp/
 test/_*.json
+test/ui-walkthrough/artifacts/
 release/dist/
 release/staging/
 release/verify-tmp/
