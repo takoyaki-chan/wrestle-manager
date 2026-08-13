@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-93マージ: フライトレコーダー(バグ捜索①)（2026-08-13・Fable+Codex）
+
+**task-93をマージ**(c532b95)。Codexがworktree wm-codex-task93で実装(+1174行、4ファイル)→サンドボックスが `.git/worktrees/` に書けずコミット不能(BLOCKED報告)→Fableがdiff全文レビュー・検算・ブラウザ実測(Codex環境で不可だった§5-3)・2粒度コミット代行→mainへ。worktree/ブランチは削除済み。
+
+実装: `src/flight-recorder.js` 新設(index.html先頭スクリプト・manifest sourceFiles追加)。onerror/unhandledrejection/console.error/`[WM Debug]`warn捕捉30件リング+クリックトレース100件リング+境界マーカー(`wm_flight`≤150KB・リロード跨ぎ永続化)+エラー時のみ⚠バッジ遅延生成+報告バンドルv1(openLayers/autosave同梱/context復元)。ガードテストはstub環境の振る舞い検査で上出来(Math.random禁止トラップ・capture-phase検証・確定文言固定まで)。
+
+検算(Fable独立実施): guard test単独実行OK/`WM_LZ|`マーカーとslice(6)・旧`WM_LZ\x00`両対応が実コード(app.js:1891,2018)と一致/serialize形状=Gクローン直列化でseason/weekトップレベル一致。**ブラウザ実測**: クリーンロードでDOM無追加(I-3)/エラー注入→バッジ(左下8px・24px・z99999・**トークン実値解決を確認**=--bg-dark #24221e)→パネル文言一字一句/バンドル(クリック相対t・muteBtn記録・openLayers=div.app+titleScreen)/リロード跨ぎ(session1→2・クリックとエラー残存・起動時バッジ再表示)/**data.js先頭throw→`data.js:1`で捕捉**(読み込み順I-6の実証・連鎖5件収集)。
+
+**npm test 230/233 — 失敗3本(feedback-fixes/regular-show-pregame-design/wear-ceiling-decay)はmainでも同一失敗の既存破損でtask-93非起因**(能力バー150目盛り期待など=task-91枠越えバー改修後の陳腐化の疑い。並行セッションの領分のため触らず報告のみ)。specs昇格済み: `specs/flight-recorder-spec-v1.0.md`+INDEX追記。実機確認はバックログへ追記。
+
 ## task-92マージ+specs昇格: 全国統一王座シリーズ全完了（2026-08-13・Fable+Codex）
 
 **task-92(P4記録・表彰・殿堂・MVP)をマージ**(5aba026)し、**`specs/unified-title-spec-v1.0.md` へ昇格**(INDEX追記済み)。統一王座はP1〜P4完結。
