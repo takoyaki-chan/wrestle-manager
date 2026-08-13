@@ -4,9 +4,9 @@
 
 ## 0. 作業場所
 
-- **必ず** `C:\Users\nkmrk\Downloads\wrestle-manager-codex`(ブランチ `codex/agent-workspace`)で作業する(AGENTS.md 規約)。mainフォルダはClaude専用
-- 開始前に main の最新を取り込むこと
-- **並行作業の注意**: 同日、別セッションが「挑戦試合フローの週内排他/観戦中断挙動」を修正中(app.js の遠征・対抗戦まわり)。コンフリクトしやすいので、着手時に main の当該領域の最新コミットを確認し、マージはFableが順序を判断する
+- **必ず** 専用worktree `C:\Users\nkmrk\Downloads\wm-codex-task95`(ブランチ `codex/task-95`、mainのlinked worktree)で作業する。mainフォルダはClaude専用
+  - (2026-08-13 変更: 従来の wrestle-manager-codex は task-85 のWIPで占有中のため、task-86/93/94 と同じ worktree 方式に切り替え。worktree は Fable が作成済みの状態で投入する)
+- **並行作業の注意**: 同日の「挑戦試合フローの週内排他/観戦中断挙動」修正(app.js/ui-common.js/ui-render.js の遠征・対抗戦まわり)は **mainへマージ済み(4b315a7)**。worktree はこれを含む main から切ってあるので、この上に実装すればよい
 
 ## 1. 目的
 
