@@ -1742,8 +1742,8 @@ const DOJO_REST_PROB = 0.18; // 控えめ: 対象1件につき18%抽選。該当
 const DOJO_REST_MAX = 1;
 /** 休憩中の選手候補として使える Glimpse か判定する。
  *  心の状態・人間関係を映すものだけに絞り、成績・数値・試合結果の報告は除外する:
- *  - layer A: axis が bond/rivalry/trust の閾値通過(tier2側。tone=gold/dangerの濃いものは
- *    Glimpse Cascadeで既出のためここには来ない)。いずれも関係性・信頼度そのもの
+ *  - layer A: axis が bond/rivalry/trust の閾値通過。2026-08-13のモーダル全廃により
+ *    tone=gold/danger の節目級もここに流れてくる(節目級は抽選ではなく確定枠 — 下の picker 参照)
  *  - layer B: GL-02(練習中のひとこと)/GL-03(信頼度の揺れ)/GL-04(仲間への想い)/
  *    GL-05(ライバルへの意識)/GL-06(不出場の鬱憤)/GL-07(コンディション不良)/
  *    GL-10(怪我中の焦り)/GL-11(冷たい距離)/GL-12(第三者の証言)のみ許可
@@ -1852,8 +1852,14 @@ function _renderRosterDojoHeader() {
     const availableIds = new Set(G.roster.filter(c => !c.injury && !c.onLeave).map(c => c.id));
     const restCandidates = eligibleRest.filter(g => availableIds.has(g.speakerId) && !practicingIds.has(g.speakerId));
     const restPicked = [];
+    // 2026-08-13裁定(関係性モーダル全廃の受け皿): gold(宿命のライバル/深い絆)・danger(退団の噂)級の
+    // 節目は抽選にかけず、その週は確定で1枠見せる。道場を覗きに来なければそのまま流れる——
+    // 「さりげなく垣間見える」の距離感は変えない
+    const milestone = restCandidates.find(g => g.layer === 'A' && (g.tone === 'gold' || g.tone === 'danger'));
+    if (milestone) restPicked.push(milestone);
     restCandidates.forEach(g => {
       if (restPicked.length >= DOJO_REST_MAX) return;
+      if (g === milestone) return;
       if (Engine.rng.float(restRng) < DOJO_REST_PROB) restPicked.push(g);
     });
 

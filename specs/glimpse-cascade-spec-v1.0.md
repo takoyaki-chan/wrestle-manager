@@ -1,19 +1,46 @@
-# 👁️ Glimpse Cascade 仕様 v1.1
+# 👁️ Glimpse Cascade 仕様 v2.0 — **廃止**
 
-> **ステータス**: 🟢 実装済 (2026-05-02 / v1.1: 2026-08-13)
+> **ステータス**: 🔴 廃止 (2026-08-13 Keisuke裁定)。v1.x は 2026-05-02〜2026-08-13 の記録
 > **作成日**: 2026-05-02
 > **依存**: snapshot-notification-spec-v1.0.md / relationship-system-spec-v2.0.md
-> **実装箇所**: ui-common.js (showGlimpseCascade / _renderGlimpseCascade / _isGlimpseTier1), index.html (.glimpse-cascade-* / .gc-* CSS, #glimpseCascadeOverlay), app.js (5箇所の置換)
+> **実装箇所**: ui-common.js (`_isGlimpseTier1` が常に false を返し、表示経路は発火しない)
 
 ---
 
-## 1. 目的
+## 0. 廃止 (v2.0: 2026-08-13)
+
+**興行後の関係性通知(カスケード・単発モーダルとも)は全廃。**
+
+理由(Keisuke裁定): 関係性の変化は「さりげなく人のふとしたセリフから垣間見える」のが
+当初設計。試合後に羅列・通知すること自体が設計思想からのずれであり、
+カードの縮小(v1.1)では応えたことにならない。
+
+### 置き換え先(すべて既存の「世界の側」チャンネル)
+
+| 出来事 | 受け皿 |
+|---|---|
+| 関係の節目全般 | 道場バナー「休憩中の選手」のつぶやき。**gold(宿命のライバル/深い絆)・danger(退団の噂)級はその週の確定枠**(通常は18%抽選)。見に来なければ流れる |
+| 宿命のライバル級ペア | 新聞3面・因縁列伝(既存の featured 選定が rivalry×0.4 + ドラマタグで高rivalryペアを自然に上位へ。追加ボーナス不要と判断) |
+| 関係の小さな揺れ | 週次ティッカー(trustWarning 等・既存のまま) |
+| 退団を考えているという噂(danger) | **週次レポートに1行**「💬 {name}が退団を考えているという噂がある」(tickWeek、社長の実務情報として) |
+| いつでも確認 | データベースの相関図(既存のまま) |
+
+実装: `_isGlimpseTier1` が常に false → 全 Glimpse が Tier2 として weekLogFeed へ。
+確定枠は `_renderRosterDojoHeader` の rest picker。レポート行は tickWeek の A層生成直後。
+旧表示経路(showGlimpseCascade / showGlimpseAModal / .gc-* CSS / #glimpseCascadeOverlay)は
+呼ばれないまま残置 — 撤去は別途クリーンアップタスクで行う(安全網テストの追随が要るため)。
+
+---
+
+以下は廃止までの記録(v1.x)。
+
+## 1. 目的 (廃止済み)
 
 興行後に複数の Tier1 Relationship Glimpse が連発するとき、ポップアップを1件ずつ
 「見届ける」連打させるのは煩わしい。1枚のオーバーレイに集約し、上から順に
 **「ポンポンポン」と気持ちよく降ってくる演出**にまとめる。
 
-## 2. 発動条件
+## 2. 発動条件 (廃止済み)
 
 - 1興行で発火した Tier1 Glimpse の件数 N について:
   - **N == 1** → 既存の単発 `showGlimpseAModal` にフォールバック(連打感がないと演出オーバーヘッドが大袈裟)
@@ -21,13 +48,9 @@
 
 定数: `GLIMPSE_CASCADE_MIN = 2` (ui-common.js)
 
-### 2.1 Tier1 の範囲 (v1.1: 2026-08-13 Keisuke裁定)
+### 2.1 Tier1 の範囲 (v1.1: 2026-08-13 → 同日 v2.0 で全廃)
 
-モーダル(Tier1)に上げるのは **tone === 'gold'(宿命のライバル/深い絆) と 'danger'(退団の噂)級の節目だけ**。
-かつて `rivalry_50_up`(宿敵として意識)を特例でTier1に含めていたが、ほぼ毎興行鳴って
-「関係性はさりげないセリフから垣間見せる」という当初設計とずれるため廃止。
-Tier2 は weekLogFeed へ流れ、道場バナー「休憩中の選手」などのさりげない経路で顔を出す。
-判定は `_isGlimpseTier1` (ui-common.js) に一元化。
+v1.1 では gold/danger 級のみTier1としたが、同日の裁定で全廃(§0)。
 
 ## 3. レイアウト (Variant A: 縦リスト・順次降臨)
 

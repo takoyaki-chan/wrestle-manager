@@ -14713,14 +14713,16 @@ function closeMatchDialogue() {
 // ─────────────────────────────────────────────────────────────────────────────
 const _glimpseQueue = [];
 
-// Tier 1（リッチモーダル）か判定: gold/danger tone A層 + rivalry_50_up dramatic → Tier 1
+// Tier 1（リッチモーダル）か判定 — 2026-08-13 全廃につき常に Tier 2
 function _isGlimpseTier1(glimpse) {
+  // 2026-08-13 Keisuke裁定: 興行後の関係性通知(モーダル/カスケード)は**全廃**。
+  // gold(宿命のライバル/深い絆)・danger(退団の噂)級も含めて通知せず、すべてTier2として
+  // weekLogFeedへ流し「世界の側」から垣間見せる(当初設計への回帰):
+  //   - 道場バナー「休憩中の選手」— 節目級(gold/danger)はその週の確定枠(_renderRosterDojoHeader)
+  //   - 週次ティッカー / 新聞3面・因縁列伝 / 相関図 — 既存のまま
+  //   - 退団の噂(danger)だけは社長の実務情報として週次レポートに1行(tickWeek側)
+  // 表示経路(showGlimpseCascade / showGlimpseAModal)は呼ばれなくなる。コード撤去は別途クリーンアップ。
   if (glimpse.layer === 'A') {
-    // gold(宿命のライバル/深い絆)・danger(退団の噂)級の節目だけをモーダルで見せる。
-    // rivalry_50_up(宿敵として意識)の特例Tier1入りは2026-08-13 Keisuke裁定で廃止:
-    // 毎興行のように鳴り「関係性はさりげなく垣間見せる」当初設計とずれるため、
-    // Tier2(weekLogFeed→道場バナーの休憩中の選手など)へ降格。
-    if (glimpse.tone === 'gold' || glimpse.tone === 'danger') return true;
     return false;
   }
   // B層: すべて Tier 2

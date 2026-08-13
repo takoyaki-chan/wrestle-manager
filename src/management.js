@@ -13806,6 +13806,12 @@ const Engine = {
     s = glimpseAResult.state;
     if (glimpseAResult.glimpses.length > 0) {
       s = { ...s, _pendingGlimpseA: glimpseAResult.glimpses };
+      // 2026-08-13裁定: 関係性のモーダル通知は全廃(世界の側から垣間見せる)。
+      // ただし「退団を考えているという噂」(trust danger級)だけは社長の実務に直結するため、
+      // 週次レポートに1行だけ静かに残す
+      glimpseAResult.glimpses
+        .filter(g => g.tone === 'danger')
+        .forEach(g => events.push(`💬 ${g.speakerName}が退団を考えているという噂がある`));
     }
     // ── スナップショット生成 ──
     const snapshotRng = Engine.rng.create(
