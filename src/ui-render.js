@@ -9602,6 +9602,131 @@ function _recordBookDefenseLeader(sources) {
   return candidates[0] || null;
 }
 
+function _recordBookUnifiedReigns(sources) {
+  if (!G.unifiedTitle) return [];
+  const history = G.unifiedTitle.history || [];
+  const byId = new Map(sources.map(source => [String(source.fighter.id), source]));
+  const absWeek = (season, week) => Engine.util.absWeek(Number(season) || 1, Number(week) || 1);
+  const reigns = [];
+  let current = null;
+  let pendingReturn = null;
+  let derivedGeneration = 0;
+
+  const startReign = event => {
+    derivedGeneration++;
+    const isMove = event.type === 'move';
+    const championId = isMove ? event.winnerId : event.championId;
+    const orgId = isMove ? event.winnerOrgId : event.orgId;
+    current = {
+      generation: Number(event.generation) || derivedGeneration,
+      championId,
+      orgId,
+      source: byId.get(String(championId)) || null,
+      startSeason: Number(event.season) || 1,
+      startWeek: Number(event.week) || 1,
+      defenses: 0,
+    };
+    pendingReturn = null;
+  };
+  const finishReign = (event, endReason) => {
+    if (!current) return;
+    const endSeason = Number(event.season) || current.startSeason;
+    const endWeek = Number(event.week) || current.startWeek;
+    reigns.push({
+      ...current,
+      endSeason,
+      endWeek,
+      endReason,
+      active: false,
+      durationWeeks: Math.max(0, absWeek(endSeason, endWeek) - absWeek(current.startSeason, current.startWeek)),
+    });
+    current = null;
+    pendingReturn = null;
+  };
+
+  history.forEach(event => {
+    if (!event) return;
+    if (['creation', 'crown', 'repeat'].includes(event.type)) {
+      if (current) finishReign(pendingReturn || event, '返還');
+      startReign(event);
+      return;
+    }
+    if (event.type === 'move') {
+      if (current) finishReign(event, '陥落');
+      startReign(event);
+      return;
+    }
+    if (event.type === 'defense' && current) {
+      current.defenses = Math.max(current.defenses + 1, Number(event.defenses) || 0);
+      return;
+    }
+    if (event.type === 'return' && current) {
+      // 大会不成立なら前王者が保持を続けるため、次の戴冠が確定するまで仮置きする。
+      pendingReturn = event;
+      return;
+    }
+    if (event.type === 'vacate' && current) finishReign(event, '返上');
+  });
+
+  if (current && G.unifiedTitle.championId === current.championId) {
+    const endSeason = Number(G.season) || current.startSeason;
+    const endWeek = Number(G.week) || current.startWeek;
+    reigns.push({
+      ...current,
+      defenses: Math.max(current.defenses, Number(G.unifiedTitle.defenses) || 0),
+      endSeason,
+      endWeek,
+      endReason: '在位中',
+      active: true,
+      durationWeeks: Math.max(0, absWeek(endSeason, endWeek) - absWeek(current.startSeason, current.startWeek)),
+    });
+  }
+  return reigns;
+}
+
+function _recordBookUnifiedDuration(weeks) {
+  const total = Math.max(0, Number(weeks) || 0);
+  const years = Math.floor(total / 48);
+  const rest = total % 48;
+  if (years > 0) return `${years}年${rest > 0 ? `${rest}週` : ''}`;
+  return `${total}週`;
+}
+
+function _renderDbUnifiedTitleRecords(sources) {
+  // 未創設セーブでは見出しも空データ説明も出さない。
+  if (!G.unifiedTitle) return '';
+  const reigns = _recordBookUnifiedReigns(sources);
+  const defenseLeader = reigns.slice().sort((a, b) => b.defenses - a.defenses || a.generation - b.generation)[0] || null;
+  const longest = reigns.slice().sort((a, b) => b.durationWeeks - a.durationWeeks || a.generation - b.generation)[0] || null;
+  const holderName = reign => reign?.source ? _recordBookName(reign.source)
+    : Engine.mq._fighterName(G, reign?.championId);
+  const recordCard = (label, reign, value) => reign ? `<div class="db-record-strip"${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
+    <span class="db-record-strip-label">${label}</span>
+    <span class="db-record-strip-value">${value}</span>
+    <div class="db-record-strip-detail"><strong>${escHtml(holderName(reign))}</strong><br><span>第${reign.generation}代 / ${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</span></div>
+  </div>` : '';
+  const rows = reigns.map(reign => {
+    const period = `S${reign.startSeason} 第${reign.startWeek}週〜${reign.active ? '現在' : `S${reign.endSeason} 第${reign.endWeek}週`}`;
+    return `<tr${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
+      <td class="num">第${reign.generation}代</td>
+      <td>${escHtml(holderName(reign))}</td>
+      <td>${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</td>
+      <td>${period}</td>
+      <td class="num">${reign.defenses}度</td>
+      <td>${reign.endReason}</td>
+    </tr>`;
+  }).join('');
+
+  return `<section class="db-record-hall db-record-unified-hall">
+    <div class="db-record-cere-head"><span>━━</span><h3>🌐 全国統一王座</h3><span>━━</span></div>
+    ${reigns.length > 0 ? `<div class="db-record-strips">
+      ${recordCard('最多防衛', defenseLeader, `${defenseLeader.defenses}度`)}
+      ${recordCard('最長在位', longest, _recordBookUnifiedDuration(longest.durationWeeks))}
+    </div>
+    <div class="db-table-scroll"><table class="db-table"><thead><tr><th>世代</th><th>王者</th><th>団体</th><th>在位期間</th><th>防衛</th><th>終わり方</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+  </section>`;
+}
+
 function _renderDbRecordBook() {
   const sources = _recordBookSources();
   const tenchosen = _recordBookWinnerCards(sources, event => event.type === 'ppvTournament' && event.result === 'champion')
@@ -9613,6 +9738,7 @@ function _renderDbRecordBook() {
 
   let html = `<div class="db-record-book">
     <div class="db-record-strips">${_renderDbRecordStrip(G.mqRecord, 'シングル', false)}${_renderDbRecordStrip(G.mqRecordTag, 'タッグ', true)}</div>
+    ${_renderDbUnifiedTitleRecords(sources)}
     <section class="db-record-hall db-record-tenchosen-hall">
       <div class="db-record-cere-head"><span>━━</span><h3>天頂戦 歴代優勝</h3><span>━━</span></div>
       <p class="db-record-cere-lead">4年に一度、業界の頂を決める舞台</p>
@@ -9645,7 +9771,7 @@ function _hofShieldImg(level, id, size) {
   return `<img src="${url}" style="width:${size}px;height:auto;display:block;margin:0 auto" alt="${_getHofStarText(level)}" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:${Math.round(size*0.6)}px;text-align:center">${_getHofShieldEmoji(level)}</span>`;
 }
 function _getHighlightIcon(type) {
-  return { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆', springTagLeague: '🌸' }[type] || '📌';
+  return { titleWin: '👑', titleDefense: '🛡️', titleLoss: '💔', juniorTournament: '🏟️', ppvMainEvent: '🏆', springTagLeague: '🌸', unifiedTitle: '🌐' }[type] || '📌';
 }
 
 function _getAllHofEntries() {
