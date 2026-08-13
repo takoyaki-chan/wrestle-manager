@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-94マージ+週次オートメーション刷新: UI自動走破ハーネス(バグ捜索②)（2026-08-13・Fable+Codex）
+
+**task-94をマージ**(0dd77fb)。Codexがworktree wm-codex-task94で実装(+7,801行、11ファイル)→git管理領域書き込み不可でBLOCKED(task-93と同根)→Fableがdiff全文レビュー・不変条件の独立検算→4粒度コミット代行→mainへ。worktree/ブランチ削除済み。mainで `npm install`+self-test動作確認済み。
+
+実装: `test/ui-walkthrough/` 新設(run/server/driver/detectors/fixtures/README)+Playwright devDependency+`npm run test:ui:walkthrough`。Wモード=fixtureセーブ(headless Engine生成・seed42・14名体制)から**実UIクリックのみで1季走破**。主ボタン方針のスコア表+最前面オーバーレイ優先+破壊操作遮断リスト+CSSアニメ待ちのclock制御。検出器: D1例外(pageerror/console/[WM Debug])/D2スタック(クリック後5秒無変化→他ボタン一巡→FREEZE)/D3可視テキスト(undefined/NaN/[object/null/内部トークン)/D5大域90秒+step上限。失敗時artifacts(スクショ/操作列/状態/console/再現コマンド1行)。
+
+検算(Fable独立実行): **決定論成立**=同一シード2走で319操作・digest 09f442518091ed7a・操作ログ完全一致(227s/183s)/1季完走・検出0件/サンドボックス4検出器PASS(main上でも再確認)/src/変更ゼロ/`page.evaluate`はG読み取りのみ/サーバはポート0+パストラバーサル防御/一時コンテキストでKeisukeの実ブラウザ非干渉/run-all.jsは`test/*-test.js`直下のみ収集=npm test非干渉。開発中D2_FREEZEアーティファクト群は全て「driverが押し方を知らなかった画面」(大型イベント選手カード/PPVエントリー/年間表彰式→特別対応済み)でゲーム本体のバグ検出はゼロ。
+
+**週次オートメーション刷新**: Codexの `weekly-bug-audit`(月曜10時・ACTIVE)のプロンプトを新フルスイートへ書き換え——main取り込み→依存確認→npm test→auto-sim 40季(日付シード)→**UI走破1季**→bug:audit:full、修正禁止(検出と報告のみ)。effort low→medium。重複していた旧 `weekly-bug-check`(4月作成heartbeat)は**PAUSED**へ。※automation.toml直接編集のため、Codexアプリ側で表示が反映されているか要一見。CLAUDE.mdの自動検証システム節に「UI層の検証」小節を追記(フライトレコーダー/走破ハーネス/週次スイートの入口)。
+
+残: ③レア画面強制点火カタログ(②のdriver/detectors流用・別タスク)/Mモード・D4不可視検出(後続)/specs化は設計書v0.1+READMEが正のため不要と判断(dev基盤のため)。manifest変更なし(配布物に含まれない)。npm testの既存3失敗(task-91陳腐化疑い)は未解消のまま=別対応。
+
 ## 遠征試合モックv0.2: 一次レビュー3点反映（2026-08-13・Fable・二次レビュー待ち）
 
 Keisuke一次レビュー(①オレンジは中途半端で赤系がいい ②パラメータの並びがかっこよくない・既存の何かを参考に ③結果は相手の勝者が大きく映って挑発するのをメインに→その後単独の悔しさ)を反映し `docs/ui/mockups/away-challenge-v0.2.html` を作成。

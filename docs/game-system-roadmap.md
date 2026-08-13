@@ -3,7 +3,7 @@
 ## 開発・検証基盤
 
 - [x] 隠し開発者モード（`Ctrl + Shift + D`）: 指定週・季節大会への既定選択高速進行、開発用チェックポイントの保存／復元、通常セーブ保護。運用・改修手順は [developer-mode.md](developer-mode.md) を参照
-- [ ] **バグ徹底捜索体制 ①→②→③（2026-08-13 Keisuke承認・推奨案全承認）**: ①フライトレコーダー=**✅ task-93マージ済み(c532b95・specs昇格済み)**。以後のバグ報告は⚠バッジ「記録をコピー」が基本形 / ②Playwright自動走破ハーネス=設計書v0.1確定([ui-walkthrough-harness-design-v0.1.md](ui-walkthrough-harness-design-v0.1.md))・骨格=**task-94**(Wモード1季+D1/D2/D3/D5)・Codex実装中 / ③レア画面強制点火カタログ=②の基盤流用で後行 / 完成後にCodex週次オートメーション(weekly-bug-audit)を新スイートへ書き換え予定。背景: UI層約26,000行に自動検証ゼロ、交渉フリーズ級の無例外バグはauto-simでは捕まらない
+- [ ] **バグ徹底捜索体制 ①→②→③（2026-08-13 Keisuke承認・推奨案全承認）**: ①フライトレコーダー=**✅ task-93マージ済み(c532b95・specs昇格済み)**。以後のバグ報告は⚠バッジ「記録をコピー」が基本形 / ②走破ハーネス=**✅ task-94マージ済み(0dd77fb)**。`npm run test:ui:walkthrough` で実UI1季走破(約3分・決定論)。UI大改修後は1本回す(CLAUDE.md「UI層の検証」) / **週次オートメーション=✅ 刷新済み**(weekly-bug-audit月曜10時=npm test+auto-sim40季+UI走破+静的スキャン。旧weekly-bug-checkはPAUSED) / ③レア画面強制点火カタログ=②のdriver/detectors流用・未着手(次) / 後続候補: Mモード(モンキー)・D4不可視検出。背景: UI層約26,000行に自動検証ゼロだった、交渉フリーズ級の無例外バグはauto-simでは捕まらない
 
 > 最終更新: 2026-08-03（v1.25配布版を生成）
 

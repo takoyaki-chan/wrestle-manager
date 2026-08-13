@@ -105,6 +105,11 @@ v0.85bで確立。すべての実装はこの原則に従う。
 - **`Engine.validateGameState(G)`**: tickWeek末尾で毎週実行される不変条件チェッカー。キャラステータス範囲・NaN検出・参照整合性など約20種を検証。違反は `[WM Debug]` でコンソール出力 + `G.debugLog` に記録。ゲーム進行は止めない
 - **`test/auto-sim.js`**: UIなし高速シミュレーション。プレイヤー判断をランダム自動化して数千シーズンを数十秒で回し、validateGameStateの違反を収集・報告する
 
+### UI層の検証(2026-08-13新設・バグ徹底捜索体制)
+- **フライトレコーダー** `src/flight-recorder.js`: ゲーム常駐のエラー捕捉+操作トレース(リロード跨ぎ)。実プレイのバグ報告は⚠バッジ「記録をコピー」のJSONが基本形。仕様は `specs/flight-recorder-spec-v1.0.md`
+- **UI自動走破ハーネス** `npm run test:ui:walkthrough`: Playwrightで実UIをクリックして1季走破(約3〜4分)。無例外フリーズ(D2)/例外(D1)/undefined露出(D3)/大域停止(D5)を検出。**app.js/ui-*.jsの大きめ変更後はこれを1本回す**。設計は `docs/ui-walkthrough-harness-design-v0.1.md`、使い方は `test/ui-walkthrough/README.md`
+- 週次フルスイート(npm test+auto-sim 40季+走破+bug:audit)はCodexオートメーション weekly-bug-audit が毎週月曜に自動実行
+
 ### 自動実行(Claude Codeフック)
 - **management.js / match-engine.js / relationships.js / data.js / victory-lines.js を編集すると、編集直後に構文チェック(node --check)、ターン終了時に100シーズン(5シード×20シーズン)のチェックが自動で1回走る**(2026-08-06に編集毎の都度実行からターン末バッチへ変更 — 「一区切りで1回」方針との整合)
 - 違反検出時はフィードバックが返り、その場で修正に入る
