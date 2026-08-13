@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-91マージ: 数値表記の本編DB逆輸入完了——選手ファイル案件は実装全完了（2026-08-13・Fable+Codex）
+
+**task-91をマージ**(abd5cbf)。Codexが専用worktree wm-codex-task91で実装(+177/-28、3ファイル)→Fableがdiff全文レビュー・不変条件I-1〜I-6の独立検算→3粒度コミット代行→mainへ。worktreeは撤去(ブランチ保持)。
+
+実装: ①**DB全選手一覧**のOVR+ステ5列を共通7帯階調へ(`_statCell`をkindシグネチャに変更=呼び出しはDB一覧の1箇所のみ確認済み。OVRの`_scale6Style`常時glow(85+)を廃止し輝き=100超のみ) ②**選手詳細・能力タブ**の0-150バーを枠越え圧縮バーへ(`_fighterPopupStatBarsHtml`が共通部品`statOverBarHtml`をラップ。消耗▼=`statDecayView`のlostPtsをゴースト+▼n表記に移植、季節成長+nも維持——旧実装は+nか▼nの片方しか出なかったが新実装は両方出る) ③レーダー軸ラベルを`_STAT_TIER_PURE`の系統色へ(値・0-100クランプ・塗り(styleカラー)・グリッドは不変)。
+
+**発見**: 旧DB一覧の`_statCell`呼び出しはSP=青/TE=緑を渡しており`_STAT_COLORS`定義(SP緑/TE青)と逆——**ゲーム内に二重定義が潜んでいた**。今回stat-notation正(SP=#2ecc71緑/TE=#3498db青)へ全画面統一。
+
+検算(Fable独立実施): `_statCell`呼び出し全数=1(シグネチャ変更の波及なし)/対象外画面の`_ovrColor`/`_scale6Style`/`_popColor`件数が前後一致(減少は置換対象のDB一覧OVRセル1件ずつのみ)/テストは境界値キャラでDB一覧をVM実描画して帯・glow・列数12を検査、対象外呼び出し件数を6/19/9件に固定、レーダー不変・バー非発光も固定。auto-sim 20季 ALL CLEAR(fingerprint d057b96f、Codex実行・出力全文確認)。
+
+**これで選手ファイル案件(起票〜デザイン7ラウンド〜実装2タスク)は同日完了**。残: Keisuke実機確認——①ゲーム内DB一覧の階調(SP/TE色が入れ替わって見える点は正への統一)②選手詳細の枠越えバー(100超選手・消耗▼持ち・+n持ち)③レーダー軸色。実機確認バックログへ。
+
 ## task-90マージ: タイトル画面「選手ファイル」+配色案2+共通数値表記ヘルパー（2026-08-13・Fable+Codex）
 
 **task-90をマージ**(cd746da)。Codexが専用worktree wm-codex-task90で実装(+663/-5、4ファイル)→Fableがdiff全文レビュー・不変条件I-1〜I-6の独立検算→3粒度コミット代行(ヘルパー/配色+DOM/本体+テスト)→mainへ。
