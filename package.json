@@ -21,6 +21,7 @@
     "test:ui:spring-tag-watch": "node test/spring-tag-league-watch-test.js",
     "test:engine:spring-tag-result": "node test/spring-tag-league-result-placement-test.js",
     "test:ui:autumn-war": "node test/autumn-war-ui-flow-test.js",
+    "test:ui:walkthrough": "node test/ui-walkthrough/run.js",
     "test:data:autumn-war-mvp": "node test/autumn-war-mvp-lines-test.js",
     "test:engine:autumn-war-live": "node test/autumn-war-live-engine-test.js",
     "test:balance:match": "node test/_match-system-v5-validation.js",
@@ -34,5 +35,8 @@
   "dependencies": {
     "lz-string": "^1.5.0",
     "notion-client": "^7.8.3"
+  },
+  "devDependencies": {
+    "playwright": "^1.62.1"
   }
 }
