@@ -248,7 +248,7 @@ function mkMatch(o) {
   assert.notStrictEqual(r.leftLine, r.rightLine, '二人が同じセリフを繰り返さない');
 })();
 
-// ═══ 6. 決着後: 勝者 → 敗者 の順に 1 枚ずつ / 連打で飛ばさない ═════════════
+// ═══ 6. 決着後: 敗者のみ 1 枚(勝者は戴冠式で喋る・2026-08-13 Keisuke実機裁定) ═══
 (function testAftermathChain() {
   const ctx = makeCtx();
   let done = 0;
@@ -257,19 +257,14 @@ function mkMatch(o) {
   assert.strictEqual(ctx._domNodes.length, 1, '1 枚ずつ出す');
   const first = ctx._domNodes[0];
   assert.ok(/is-tenchosen/.test(first.className), '天頂戦テーマで出す');
-  assert.ok(first.innerHTML.includes('戴冠'), '1 枚目は勝者');
-  assert.ok(!first.innerHTML.includes('u3b-bubble-text"></div>'), '勝者のセリフが空でない');
+  assert.ok(first.innerHTML.includes('準優勝'), '出るのは敗者のみ(勝者カードは戴冠式に統合)');
+  assert.ok(!first.innerHTML.includes('戴冠'), '勝者カードは出さない');
+  assert.ok(!first.innerHTML.includes('u3b-bubble-text"></div>'), '敗者のセリフが空でない');
 
   first.click();
-  first.click(); // 連打しても 2 枚飛ばさない
-  assert.strictEqual(ctx._domNodes.length, 1, '連打しても 1 枚だけ進む');
-  const second = ctx._domNodes[0];
-  assert.ok(second.innerHTML.includes('準優勝'), '2 枚目は敗者');
-  assert.strictEqual(done, 0, '2 枚目が残っている間は次へ進まない');
-
-  second.click();
+  first.click(); // 連打しても二重に進まない
   assert.strictEqual(ctx._domNodes.length, 0, '送り終えたら残骸を残さない');
-  assert.strictEqual(done, 1, '送り終えて初めて次へ進む');
+  assert.strictEqual(done, 1, '送り終えてちょうど 1 回だけ次へ進む');
 })();
 
 // ═══ 7. 待ちの保険: 二重起動防止 + オーバーレイ消失で救う ═══════════════════
@@ -280,9 +275,9 @@ const safetyNetDone = (function testSafetyNet() {
     let proceeded = 0;
     const tc = {};
     ctx.App._tcRunFinalAftermath(tc, mkMatch(), 'final', () => { proceeded++; });
-    assert.strictEqual(ctx._domNodes.length, 1);
+    assert.strictEqual(ctx._domNodes.length, 1, '敗者カードが 1 枚だけ出る(勝者は戴冠式へ統合)');
     ctx._domNodes[0].click();
-    ctx._domNodes[0].click();
+    if (ctx._domNodes[0]) ctx._domNodes[0].click(); // 残骸があっても二重に進まない
     assert.strictEqual(proceeded, 1, 'proceed はちょうど 1 回');
     assert.strictEqual(ctx.App._tcFinalTalkWatch, null, '見張りを畳む');
     assert.strictEqual(ctx.App._tcFinalTalkCap, null, '絶対上限タイマーを畳む');

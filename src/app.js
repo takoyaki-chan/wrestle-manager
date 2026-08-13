@@ -16498,9 +16498,9 @@ App.tcNextDrama = function(idx) {
 };
 
 App.finalizeTenchosen = function() {
-  // task-73: 経営画面へ戻る直前にコーチが1枚だけ締める。
-  // TV観戦モード(自団体不出場)でもここを通るので、その回も無言にはならない
-  if (App._tcwGate('tenchosen', { tournament: G.ppvTournament }, () => App.finalizeTenchosen())) return;
+  // 2026-08-13 Keisuke実機裁定: 演出の順は 優勝画面 → 戴冠式 → コーチ総括。
+  // 祝いの熱が続いているうちにベルトを渡し、コーチは仕様どおり
+  // 「経営画面へ戻る直前」の最後尾で締める(task-73)。
   const title = G.unifiedTitle;
   const tournament = G.ppvTournament;
   const awardEvents = (title?.history || []).filter(event =>
@@ -16530,6 +16530,9 @@ App.finalizeTenchosen = function() {
     }, () => App.finalizeTenchosen());
     return;
   }
+  // task-73: 経営画面へ戻る直前にコーチが1枚だけ締める。
+  // TV観戦モード(自団体不出場)でもここを通るので、その回も無言にはならない
+  if (App._tcwGate('tenchosen', { tournament: G.ppvTournament }, () => App.finalizeTenchosen())) return;
   // 状態は advanceWeek 内で適用済み。ここでは演出を畳むだけ
   clearTimeout(App._tcPeakTimer);
   // 決勝の決着後コメント(task-72)の見張り・保険・残骸を必ず片付ける

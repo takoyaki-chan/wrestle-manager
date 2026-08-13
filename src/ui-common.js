@@ -12120,7 +12120,9 @@ function showUnifiedTitleCoronation(payload, onDone) {
     finish();
   }, Number(cfg.safetyTimeoutMs) || 30000);
   requestAnimationFrame(() => layer.querySelector('.unified-coronation-next')?.focus());
-  try { Audio.play('notify'); } catch (_e) {}
+  // 2026-08-13 Keisuke実機裁定: 戴冠式にはファンファーレ。表彰式の最高栄誉と同じ
+  // 本番ジングル(WM-SE-RS04)=「最高の栄誉の音」で言語を揃える。聴感はバックログで確認。
+  try { Audio.bgm.playJingle('championship'); } catch (_e) { try { Audio.play('notify'); } catch (__e) {} }
 }
 
 function showUnifiedTitleReturnCeremony(payload, state, onDone) {
@@ -19348,12 +19350,15 @@ function _showTcFinalAftermath(match, roundName, onDone) {
   const winSide = leftWins ? 'left' : 'right';
   const loseSide = leftWins ? 'right' : 'left';
   const rng = _tcFinalRng(match, 0x7C72);
-  const wLine = _tcFinalPick(
+  // 2026-08-13 Keisuke実機裁定: 勝者の決着後カードは出さない(このあと戴冠式で勝者が喋るため
+  // 同じ人が二連続で喋る=演出過多)。敗者の言葉はここにしか出ないので残す。
+  // 乱数は従来と同じ順で消費し(勝者分も引く)、既存シードの敗者セリフを変えない。
+  const _wLineUnused = _tcFinalPick(
     (TENCHOSEN_FINAL_LINES.postWin || {})[_tcFinalPostMotif(match, winSide, true)], winner, rng);
+  void _wLineUnused; void winner;
   const lLine = _tcFinalPick(
     (TENCHOSEN_FINAL_LINES.postLose || {})[_tcFinalPostMotif(match, loseSide, false)], loser, rng);
   const steps = [];
-  if (wLine) steps.push({ f: winner, line: wLine, isWin: true });
   if (lLine) steps.push({ f: loser, line: lLine, isWin: false });
   if (!steps.length) return false;
   _tcFinalAftermathStep(steps, 0, onDone);
