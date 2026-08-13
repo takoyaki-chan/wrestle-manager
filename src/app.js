@@ -16518,7 +16518,9 @@ App.finalizeTenchosen = function() {
   if (ceremonyKey && App._unifiedCoronationKey !== ceremonyKey
       && typeof showUnifiedTitleCoronation === 'function') {
     App._unifiedCoronationKey = ceremonyKey;
-    const generation = awardEvents.length;
+    // 「第N代」は政権の数。防衛戦での奪取(move)も1代と数える(記録タブ・実績リストと同じ定義)。
+    const generation = (title?.history || []).filter(event =>
+      ['creation', 'crown', 'repeat', 'move'].includes(event?.type)).length;
     const repeatLabel = latestAward.type === 'repeat' ? ' ・ 連覇' : '';
     showUnifiedTitleCoronation({
       fighter: champion.fighter,
