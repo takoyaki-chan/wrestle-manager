@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## リポジトリ大掃除: 恒常dirtの根絶+陳腐化ブランチ26本の処理（2026-08-13・Fable・Keisuke指示）
+
+「未コミット・未マージが残って毎回考える羽目になるものは処理してしまえ」の指示。
+
+**①恒常的な未コミットdirtの根絶**: `docs/stat-contribution-report.md` がnpm testのたびに汚れる原因は、stat-contribution-test.jsが**実行時間の行をレポートファイルに書き込む**こと(本文はシード済みで決定論)。実行時間をコンソール表示のみに変更し、レポートを再生成してコミット。以後npm testを何度回してもツリーは汚れない。
+
+**②陳腐化ブランチの処理**(全て中身の突き合わせ検証つき): 未マージ4本は**全て内容がmainへ別経路で反映済み or 別製品ライン**と確認 — inspiring-ritchie(Math.randomシード化→checkRecontact/applyChoiceEffectのrng引数として反映済み)/autumn-war-winner-comments(→is-autumn-speechとして反映済み)/browser-battle-demo(→_playWarMatchResultSe/finalizeRetireeBufferとして反映済み)/battle-demo-move-assets(公開デモ1.25B資材393ファイル=本編と別ライン)。**`archive/*` の注釈タグ4本で保全してからブランチ削除**(タグはoriginにもpush)。加えて**マージ済みで削除し忘れていた17本**(codex/task-86〜92の7本・サブエージェント残骸worktree-agent-*8本・セッション残骸2本)を`git branch -d`(マージ検証つき)で一括削除。
+
+**③完了セッションの後始末**: 今日マージした3セッション(sweet-galileo/ポップアップ監査/ガードテスト)のworktree撤去+ブランチ削除+セッションアーカイブ。残るブランチ・worktreeは**稼働中のもののみ**(eager-bell検品/goofy-sammet/keen-taussig=OVRチップ/task-85系のcodexワークスペース+技画像2本)。
+
+検証: node test/stat-contribution-test.js 再実行→git diffゼロ(実行時間行の削除のみ)。specs/manifest該当なし(テスト基盤+git整理)。
+
 ## v1.30リリース: 取り残し2ブランチ回収+バージョン更新+push（2026-08-13・Fable）
 
 Keisuke指示「取り残しがないか確認してからv1.30でpush」。push前監査で**マージ漏れ2ブランチ**を発見し回収:

@@ -392,8 +392,10 @@ function main() {
   log('');
   log('╚══════════════════════════════════════════════════════════════╝');
 
+  // 実行時間はレポートファイルに書かない: 毎回値が変わり、生成物 docs/stat-contribution-report.md の
+  // git diff が恒常的に汚れるため(2026-08-13)。コンソール表示のみに留める。
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-  log(`\n実行時間: ${elapsed}秒`);
+  console.log(`\n実行時間: ${elapsed}秒`);
 
   // --- ファイル出力 ---
   const docsDir = path.join(__dirname, '..', 'docs');
