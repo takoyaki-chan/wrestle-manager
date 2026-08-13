@@ -6750,6 +6750,12 @@ function _showPPVCardIntro(opts) {
   </div>`;
 
   el.classList.add('active');
+  // 2026-08-13 Keisuke報告「この画面に入っても音楽が変わらなくなった」への保険。
+  // initPPVShow が playStage('ppvA') を呼んでいるが、導入(コーチ→選手→会場入り)を
+  // 挟む経路や復帰経路で上書き/取り逃しがあっても、この画面では必ず状態から
+  // BGMを選び直す(resolveActiveStageBgm が _ppvPreview からPPV進行曲を返す。
+  // 既に同曲なら playStage 側が素通しするので鳴り直しはしない)
+  try { Audio.bgm.playForState(); } catch (e) {}
   const btn = document.getElementById('ppvmcStartBtn');
   if (btn) btn.addEventListener('click', () => {
     Audio.play('click');
@@ -14451,8 +14457,11 @@ const _glimpseQueue = [];
 // Tier 1（リッチモーダル）か判定: gold/danger tone A層 + rivalry_50_up dramatic → Tier 1
 function _isGlimpseTier1(glimpse) {
   if (glimpse.layer === 'A') {
+    // gold(宿命のライバル/深い絆)・danger(退団の噂)級の節目だけをモーダルで見せる。
+    // rivalry_50_up(宿敵として意識)の特例Tier1入りは2026-08-13 Keisuke裁定で廃止:
+    // 毎興行のように鳴り「関係性はさりげなく垣間見せる」当初設計とずれるため、
+    // Tier2(weekLogFeed→道場バナーの休憩中の選手など)へ降格。
     if (glimpse.tone === 'gold' || glimpse.tone === 'danger') return true;
-    if (glimpse.type === 'rivalry_50_up') return true;
     return false;
   }
   // B層: すべて Tier 2
@@ -14579,8 +14588,10 @@ function _gcAvatarImgHtml(charId, name, badgeEmoji) {
   return `<span class="gc-upper-inner">${inner}${badge}</span>`;
 }
 
-/** U3グループD統一(2026-07-26): 丸96pxアバターは梯子のS(108×162)アッパー画像へ移行
- *  (mockup-baseline-v0.1 §2案2)。顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。
+/** U3グループD統一(2026-07-26): 丸96pxアバターは梯子のアッパー画像へ移行。
+ *  2026-08-13 Keisuke裁定: S(108×162)は「大げさすぎる」ため梯子のchip(46×66)へ縮小し、
+ *  カード全体を簡略表示にする(.gc-card 配下のCSSで chip を 2:3 の 46×66 に上書き)。
+ *  顔出しブロックは _u3bSideHtml(.u3b-*)。
  *  構造は「発言者→対象の2人1組(対象の右下に感情アイコン)」。単独版(targetなし)も対応。 */
 function _renderGlimpseCardHtml(g) {
   const toneCls = _glimpseToneClass(g);
@@ -14595,13 +14606,13 @@ function _renderGlimpseCardHtml(g) {
     return `<div class="gc-card ${toneCls} u3b-theme-stage">
       <div class="gc-duo">
         ${_u3bSideHtml({
-          name: g.speakerName, line: dialogue, size: 's',
+          name: g.speakerName, line: dialogue, size: 'chip',
           reserveBubble: !!dialogue,
           imgHtml: _gcAvatarImgHtml(g.speakerId, g.speakerName),
         })}
         <div class="gc-duo-arrow">➜</div>
         ${_u3bSideHtml({
-          name: g.targetName, size: 's',
+          name: g.targetName, size: 'chip',
           reserveBubble: !!dialogue,
           imgHtml: _gcAvatarImgHtml(g.targetId, g.targetName, emo),
         })}
@@ -14612,7 +14623,7 @@ function _renderGlimpseCardHtml(g) {
   // 単独 Glimpse(target なし): 1人が語る
   return `<div class="gc-card ${toneCls} u3b-theme-stage">
     ${_u3bSideHtml({
-      name: g.speakerName, line: dialogue, size: 's',
+      name: g.speakerName, line: dialogue, size: 'chip',
       reserveBubble: !!dialogue,
       imgHtml: _gcAvatarImgHtml(g.speakerId, g.speakerName),
     })}
@@ -15796,7 +15807,10 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
       if (choiceConsumed) return;
       choiceConsumed = true;
       el.querySelectorAll('.neg-btn[data-choice]').forEach(choice => { choice.disabled = true; });
-      if (this.disabled) return;
+      // 注意: ここで this.disabled を見てはいけない。_bindContractOnce が onClick 呼び出し前に
+      // 自ボタンを disabled にする(上の全disable化でも同様)ため、常に true になり
+      // onChoice が永久に呼ばれず進行が止まる(2026-08-13 実機で発生、78f1445の回帰)。
+      // 押下時点で disabled だったボタンは _bindContractOnce 側が弾いている。
       const ci = parseInt(this.dataset.choice);
       // 昇給: 受ける(0)=fanfare, 交渉(1)=select, 拒否(2)=defeat
       // 移籍: 引き留め(0)=coin, 理由を聞く(1)=select, 送り出す(2)=defeat
@@ -15861,7 +15875,7 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
       if (subChoiceConsumed) return;
       subChoiceConsumed = true;
       el.querySelectorAll('.neg-btn[data-sub]').forEach(choice => { choice.disabled = true; });
-      if (this.disabled) return;
+      // this.disabled ガード禁止(上と同じ理由。_bindContractOnce が先に disabled を立てる)
       const sub = this.dataset.sub;
       Audio.play(sub === 'retain' ? 'coin' : 'defeat');
       if (onSubChoice) onSubChoice(sub);

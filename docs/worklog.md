@@ -1,6 +1,21 @@
 # Wrestle Manager 作業ログ（worklog）
 
-## 統一王座P3: 演出裁定が全点確定(案B×オーロラ)、task-89起票（2026-08-13・Fable+Keisuke）
+## 実機フィードバック7件バッチ: 契約交渉フリーズ(進行停止)ほか（2026-08-13・Fable）
+
+Keisukeのプレイ中報告7件を一括対応。
+
+1. **【最重要】契約更新交渉のフリーズ修正** — 交渉画面でどの選択肢を押しても進まない進行停止バグ。原因は78f1445(08-07)の多重クリックガード: `_bindContractOnce` が onClick 呼び出し**前に**自ボタンを disabled にするため、ハンドラ内に残っていた旧ガード `if (this.disabled) return;` が常に成立し onChoice/onSubChoice が永久に呼ばれなかった。`showContractNegotiationModal` / `showContractListenModal` の死んだガードを除去(ui-common.js)。08-07以降の契約更改・昇給・移籍志願・査定はすべて詰む状態だった(今季の契約更新が初遭遇)。`annual-contract-single-flight-test` 通過。**フリーズ中のセーブはリロードで交渉が再開する**
+2. **関係性カスケード(SHOW AFTERMATH)の設計回帰を是正** — 「毎試合通知は当初設計(さりげなく垣間見せる)とずれ・キャラが大きく大げさ」の裁定。(a) `rivalry_50_up`(宿敵として意識)の特例Tier1入りを廃止し、モーダルは gold(宿命のライバル/深い絆)・danger(退団の噂)級のみに(ui-common.js `_isGlimpseTier1`)。降格分は weekLogFeed→道場バナー「休憩中の選手」経路へ。(b) カードを簡略化: 画像S(108×162)→梯子chip(46×66・2:3)、モーダル幅680→480、矢印/名前/バッジ縮小(ui-common.js size:'chip' + index.html .gc-*)。単発版(showGlimpseAModal)も同カードを共用するため同時に縮む。specs/glimpse-cascade-spec を v1.1 に更新
+3. **団体タブ道場バナーのコーチ吹き出しを縮小** — 13px→11px(右下の休憩選手と同格)+max-width 190px(index.html .dojo-scene-bubble)
+4. **バナーのセリフ量を拡充** — 雰囲気テキスト各レベル3〜4本→6〜7本(+15本、音・道具・時間の観測事実系)、練習掛け声15→27本(data.js ATMOSPHERE_TEXTS / ui-render.js DOJO_SHOUTS)。草案Opus・Fable検収。ランタイムでプール件数6/6/7/7/7を実測確認
+5. **因縁セリフ「拳が握りしまる」修正** — 正本(docs/dialogue/13-glimpse-cascade.md「拳に力がこもる」)から反映時に文言が化けていた(日本語として不成立)。docの文言へ復元(data.js GLIMPSE_A_LINES.rivalry_50_up)。**同型の化けが他セルにもある疑い**→検品タスクを別途起票
+6. **菊池璃子の負傷セリフ差し替え** — EVENT_INJURY_LINES.composed.bold「…止まるわけにはいかない。すぐ戻る」は負傷で止まる本人の台詞として矛盾(Keisuke「なんか変」)→「…私の代わりは、そう簡単には見つからないよ」(Opus起案5本からFable選定。欠場を受け入れつつ静かな強気)
+7. **新聞一面「ただの5連勝」の格下げ** — winStreakMilestone 基礎120→100+強度補正に節目スケール(+4/連勝・上限+40)を追加(management.js)。不変条件: 5連勝は王手+主役補正上限でも240<top(260)で一面不可/記録更新絡み(例:10連勝更新280)は従来どおり一面可/連敗(95)<連勝(100)。`newspaper-news-value-test` 全通過。specs/newspaper-spec-v1.0 の表を更新
+8. **PPVカード紹介でBGMが変わらない報告への保険** — 全経路で `initPPVShow`→`playStage('ppvA')` は呼ばれており静的には原因を特定できず。カード紹介画面(`_showPPVCardIntro`)表示時に `Audio.bgm.playForState()` で状態BGMを張り直す保険を追加(既に同曲なら素通しで鳴り直しなし)。**根本原因は次のPPVで要観察**(それでも変わらなければF12コンソールの [Audio] エラーを見る)
+
+検証: node --check 全編集ファイル / newspaper-news-value / annual-contract-single-flight / stage-bgm-state / seasonal-tournament-bgm-continuity 全通過 / ブラウザ実測(ロード・プール件数・Tier1判定・差し替えセリフ到達・streak基礎点)。ui-check目視7項目○(機械検査 `test/ui-baseline-guard-test.js` は**スキル記載のパスに存在せず**=要スキル修正、2度目の検出)。auto-simはターン末フックに委任。manifest変更なし(新規配布ファイルなし)。roadmap該当項目なしのため更新なし。
+
+残: 実機確認(バックログ「2026-08-13 実機フィードバック対応」に集約)/セリフ移植の文言化け検品(別タスク起票)。
 
 第2ラウンド裁定: **戴冠=案B(暗転スポットライト)・色=オーロラ・到着画面=派手化なし(静か版)**(発話「アンビートオーロラ」=案B+オーロラと解釈、①〜⑤全点確定)。モックをv0.2aへ: 既定色をオーロラに・既定ビューを案Bに・到着ビューを静か版へ戻し(透かし/帯線/リムライト/内側グロー撤去、21px単グロー)・判断メモに全裁定刻印。案A/C・白金/紫紺は不採用の記録として残置。ブラウザ実測(画像8/8・既定 c-aurora/v2・到着21px・撤去確認)。**task-89(P3実装)起票**: A オーロラトークン新設+仮ティール全置換 / B セリフ147本焼き込み(承認稿一字一句+ブック往復) / C 戴冠セレモニー案B(AI優勝年も表示・タイムアウト保険) / D 返還式(自団体王者のみ) / E 到着=showHostileArrivalStageバリアント(静か版・受けて立つ1択) / F こちらの番Office化 / G 結果画面セリフ差し込み。不変条件I-1〜I-6(核: 表示層のみ=auto-sim 20季指紋完全一致/承認稿突き合わせ/果たし状への無影響)。**Codex投入はセリフ承認後**(要判断5点のレビュー継続中)。
 

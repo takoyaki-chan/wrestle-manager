@@ -1,9 +1,9 @@
-# 👁️ Glimpse Cascade 仕様 v1.0
+# 👁️ Glimpse Cascade 仕様 v1.1
 
-> **ステータス**: 🟢 実装済 (2026-05-02)
+> **ステータス**: 🟢 実装済 (2026-05-02 / v1.1: 2026-08-13)
 > **作成日**: 2026-05-02
 > **依存**: snapshot-notification-spec-v1.0.md / relationship-system-spec-v2.0.md
-> **実装箇所**: ui-common.js (showGlimpseCascade / _renderGlimpseCascade), index.html (.glimpse-cascade-* CSS, #glimpseCascadeOverlay), app.js (5箇所の置換)
+> **実装箇所**: ui-common.js (showGlimpseCascade / _renderGlimpseCascade / _isGlimpseTier1), index.html (.glimpse-cascade-* / .gc-* CSS, #glimpseCascadeOverlay), app.js (5箇所の置換)
 
 ---
 
@@ -21,15 +21,26 @@
 
 定数: `GLIMPSE_CASCADE_MIN = 2` (ui-common.js)
 
+### 2.1 Tier1 の範囲 (v1.1: 2026-08-13 Keisuke裁定)
+
+モーダル(Tier1)に上げるのは **tone === 'gold'(宿命のライバル/深い絆) と 'danger'(退団の噂)級の節目だけ**。
+かつて `rivalry_50_up`(宿敵として意識)を特例でTier1に含めていたが、ほぼ毎興行鳴って
+「関係性はさりげないセリフから垣間見せる」という当初設計とずれるため廃止。
+Tier2 は weekLogFeed へ流れ、道場バナー「休憩中の選手」などのさりげない経路で顔を出す。
+判定は `_isGlimpseTier1` (ui-common.js) に一元化。
+
 ## 3. レイアウト (Variant A: 縦リスト・順次降臨)
 
+v1.1 (2026-08-13 Keisuke裁定「キャラが大きすぎて大げさ。簡略に小さく」):
+アバターは梯子の chip(46×66, 2:3) を使う簡略カードにする(旧: S 108×162 / 初版: 丸96px)。
+モーダル幅も 680px → 480px へ縮小。
+
 各カードの構造(上→下):
-1. **吹き出し** (白背景 #f0f0f0 / 黒文字 #222 / 左下が尖った角)
-   - 既存 `.speech-bubble` (src/index.html:1537) のスタイルに準拠
-   - tail は左下から下方向、from-avatar の真上を指す
-2. **アバター対** (横並び, 96px)
-   - 左: from(発言者) — 右側に光る矢印 ➜ を貼り付け、発信を明示
-   - 右: to(対象) — 右下に感情アイコンバッジ(⚡♥★💔)
+1. **吹き出し** (クリーム背景 / 黒文字。`.u3b-bubble`、chipスロット 11px文字)
+   - tail は発言者画像の水平中心の真上
+2. **アバター対** (横並び, chip 46×66。`.gc-card .u3b-upper.is-chip` で 2:3 に上書き)
+   - 左: from(発言者) — 中央に矢印 ➜ (画像行の縦中央)
+   - 右: to(対象) — 右下に感情アイコンバッジ(⚡♥★💔、16px)
 3. **関係ラベル** (中央)
    - `from → to | label`
 
