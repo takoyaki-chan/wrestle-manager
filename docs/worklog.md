@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## task-95マージ: 遠征試合リスタイル+結果2拍シーケンス（2026-08-13・Fable+Codex）
+
+**task-95をマージ**(e104b7d)。Codexがworktree wm-codex-task95で実装(+850行、src4+新テスト3)→sandboxのindex.lock拒否でBLOCKED→Fableがdiff全文レビュー・検算・2粒度コミット代行(A=進行画面8b027d2 / B=2拍+セリフ+テスト7e5d7e5、ui-common.jsはパッチ分割でA/Bへ振り分け)→mainへ。
+
+実装: **A)** away進行画面を黒×火の赤(`--awx-*`=--accent-warエイリアス・新規16進ゼロ)+fc1m式5項目帯(生値・優位のみ点灯: 自=金/敵=赤)+OVR7帯statTierStyle+梯子S。**通常興行の5カラムDOMはelse分岐に完全隔離**。**B)** 決着時のみ2拍シーケンス(B1=勝者側代表XL172×258の勝ち名乗り+スコア帯「団体として勝利/敗北」+明細crrm-row/B2=「— そ の 夜 —」敗者側代表M132×194単独、グレースケールは本人勝敗基準)。引き分けは従来並置。主役選定(代表戦勝者→同陣営最高MQ勝者)と場面選定(本人○×団体●=regretOwnWin/本人●=既存lose)は純関数。▶待ち12秒タイムアウト+二重起動防止+onClose単発。コーチ要約はモーダル撤去→gameLog1行(文面は旧モーダルの流用)。42本は`AWAY_CHALLENGE_RESULT_LINES`宣言追加(ブラケット代入なし)。
+
+検算(Fable独立実施): **I-1**=auto-sim 20季seed42の指紋 worktree`c4ae4364`=main`c4ae4364`完全一致(表示層のみ) / **I-2**=突き合わせテストが承認稿mdを直接パースしdeepStrictEqual(21+21本・archetype7×3) / **I-3/I-4**=純関数をテスト固定 / **I-5**=梯子XL/M・吹き出しは画像の上でセリフのみ・○×のみでLOSE文字なし / **I-6**=非away DOM不変+既存安全網テスト通過 / **I-7**=シーケンステストがクリック二重・タイムアウト経路まで検査 / `sp.awayPlayerRosterIds`等の参照は全て既存(app.js:9970)。**マージ後main: npm test 239/239全緑**(新3本込み)。ui-check 7項目全○(機械検査のui-baseline-guard-test.jsはリポジトリに存在せず=CLAUDE.md記載が古い、npm test内guard群で代替)。specs: challenge-request-spec-v0.2 の結果演出行を2拍へ更新。バックログに実機確認6項目追記。manifest変更なし(新規配布ファイルなし)。
+
+新規マイクロコピー(Keisuke要レビュー): B1タイトル「果たし状、成就。/果たし状、敗れる。」(inverse:「挑戦、退ける。/挑戦、許す。」)/帯「団体として勝利/敗北」/役割ラベル「挑んで、団体を勝たせた代表」「受けて立ち、団体を勝たせた代表」「挑んだ代表/受けて立った代表 ・ 本人の試合: ○ 勝利/× 敗北 / 団体: 敗北」/キッカー「AWAY CHALLENGE ・ RESULT」「— そ の 夜 —」/ボタン「▶」「— 閉 じ る —」。
+
+残: Keisuke実機確認(バックログ§遠征試合)/worktree・ブランチ削除済み/次工程=task-96(春タッグv0.2)のCodex投入。
+
 ## 春タッグv0.2をtask-96起票+task-95をCodex投入+既存テスト3本を再較正（2026-08-13・Fable）
 
 Keisukeが実機で「決勝は同率1位のときだけにすべきでは。8チーム2リーグの1位同士ならわかる」と再提起 — これは**2026-08-01の本人裁定と同内容で、spec v0.2(2ブロック制)として起票済み・未実装**だった。同率時のみ決勝案は「決勝の有無が年により不定/3チーム同率で結局詰む」ため不採用とし、v0.2実装で進める。**task-96(docs/codex-tasks/task-96-spring-tag-league-v02.md)を起票**: spec §10未決2点へのFable裁定(AIの2・3チーム目=未選出OVR上位ペア/蛇行固定/プレイヤー未編成枠はAI規則で自動編成のfail-open)+不変条件I-1〜I-10(核: 3/2/2/1計8・別ブロック1位同士・掛け持ち禁止・seedTag=A0〜5/B6〜11/決勝12・旧セーブ互換・報酬据え置き)。roadmap実装順表とspecs/INDEXに1行反映。**投入はtask-95マージ後**(app.js/index.html/data.jsが交差)。
