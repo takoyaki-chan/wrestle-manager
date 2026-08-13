@@ -1,5 +1,25 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## ポップアップ直列化監査+修正 — 素通り経路4種を既存ゲートへ寄せる（2026-08-13・Fable）
+
+Keisuke実機報告「興行後、王座防衛モーダル(mdl-a)の前に怪我ポップと『試合がうまくいかなかった』系が**同時に重なって**出た」の監査タスク(同日チップ起票分)。興行後(closeShowResult)・週頭(processWeek)・PPV後(closePPVResult)の**ポップアップ開き手を全数調査**し、ゲートを素通りする経路4種を特定、新しい仕組みは発明せず既存ゲート(`_enqueuePopup`/`_isPopupActive`/`_chainEventPopupQueueEmpty`)へ寄せた。
+
+**数え上げの結論**(開き手→ゲートの対応表):
+- **ゲート済みで健全(変更なし)**: showEventPopup系C3(mdlC・_eventPopupQueueで相互直列+_enqueuePopup)/showPostMatchDialogues・Glimpse(notifModal・_enqueuePopup)/showNotifEventToast・showR3Modal・showBigNewsPopup(mdlD・自前_isPopupActive)/showChoiceEventModal・showLargeEventModal・showChallengeRequestModal・派閥F01〜F03/F08/F09/Common3/遷移・統一王座4種・showHostileArrivalStage(自前_isPopupActive)/showRetirementPopups・showGrowthEventPopups・showRivalryPopups・renderTenchosenPreEvent・checkUnifiedTitlePresentation(_enqueuePopup)/CR結果モーダル(自前+ignoreShowResultOverlay)。週頭の「件数×100+700」型タイマー群は遅延こそキュー非連動だが、開き手側が全員ゲート持ちで実害なし
+- **素通り4種(修正)**:
+  1. **fevt系30箇所の'active'付与が20ms遅延** — `setTimeout(→classList.add('active'), 20)`のため、ゲート通過〜付与の20ms間 _isPopupActive がそのモーダルを「不在」と誤答し、同時期の別開き手が素通り→重なる(check-then-showレースの実体・容疑1)。→ `_activatePopupOverlaySync()`(offsetWidth強制リフロー+同期付与。_mdlB/COpenと同じイディオムでトランジション維持)へ30箇所一括置換
+  2. **popupActionsチェーン(王座式典→引退→成長→因縁決着)** — (a)hasEventPopupsなし時の盲目`setTimeout(200)`開始 (b)`_chainEventPopupQueueEmpty`のcb発火(閉じ待ち200ms)がキュー積み直しを再検証しない (c)showTitleMatchCeremonyが無ゲートでmdl-aを開く(容疑3)。→ (a)常時`_chainEventPopupQueueEmpty`経由(空でも200ms再検証後に発火=旧実効タイミングと同じ) (b)cb発火を`_chainEventPopupQueueEmpty(cb)`再入で再検証 (c)入口に共有ゲート追加(F09と同型・ignoreShowResultOverlay・typeof検査でテストサンドボックス互換)
+  3. **キュー非連動の再入** — closeMatchDialogue/closeNotifModalの次件描画が200ms後に直接発火し、隙間に開いた他モーダルの上へ重なる。→ closeEventPopupと同型の`_enqueuePopup`経由へ
+  4. **同期ドレインが同tickのdismissAllPopupsに破棄される(監査の副産物・「書いてあるのに出ていない」型)** — closeShowResult/processWeekは同期のまま`advanceFromWeekSummary`→`dismissAllPopups`(closePPVResultは`advanceWeek`→同)まで進むため、同期で開いた**因縁マッチコメント・関係性フラグモーダル(C3キュー)は表示前に消えていた**(コード読解で確定。fevt系の派閥通知はfactionEventRootが全消去対象外のため生存していたが、別モーダル表示中に退避された分は同様に消失)。→ 4箇所(closeShowResultの因縁コメント+ドレイン3種/processWeekのドレイン4種/closePPVResultの因縁コメント)を`setTimeout(0)`遅延にし、全消去の後に開かせて共有ゲートで直列化。Engine.advanceWeekは`{...state}`スプレッドで`_pending*`を保持するため遅延後の消費でも取りこぼさない(検算済み)
+
+**デッドロック対策(§5-D)**: ユーザー操作を堰き止めるガードは一切追加していない(78f1445型の回避)。新しい待ちはすべて「閉じ手が_drainPopupQueue/再検証ループを回す」既存機構上で、`_chainEventPopupQueueEmpty`は空なら200ms後に必ず発火・dismissAllPopupsの待機cb即時発火保険も従来どおり。
+
+触ったファイル: src/ui-common.js(ヘルパー新設+30箇所置換+ゲート3件)/src/app.js(チェーン開始+遅延化4箇所)/test/title-defense-scale-test.js(新セクション12: 表示中は退避→ドレイン後に開く)/test/faction-f03-modal-flow-test.js・test/ch1-challenge-flow-test.js(サンドボックスへ実物ヘルパー注入)。
+
+検証: node --check 2本/u4-modal-frame-safety-net-test 43 ok/title-defense-scale-test 12 PASS/faction-f03・ch1 ok/npm test=既存破損3本(feedback-fixes・regular-show-pregame-design・wear-ceiling-decay。stashで変更前から失敗と切り分け済み・task-91系の並行セッション管轄)以外全通過。auto-simはUI層のみの変更につき対象外。specs更新なし(バグ修正・既存仕様の回復)・manifest変更なし(新規ファイルなし)。実機確認はバックログ「ポップアップ直列化」へ追記。
+
+残課題: フラグモーダル・因縁コメントが**興行後に出るようになる**(これまで沈黙破棄)ため、頻度・くどさはKeisukeの実機裁定待ち。08-13の「関係性通知全廃」裁定はGlimpse系が対象で、relationship-flags-spec §4のフラグモーダルは確定仕様として復活が正——ただし観て不要と判断されたらチャンネル再設計で応える。
+
 ## task-93マージ: フライトレコーダー(バグ捜索①)（2026-08-13・Fable+Codex）
 
 **task-93をマージ**(c532b95)。Codexがworktree wm-codex-task93で実装(+1174行、4ファイル)→サンドボックスが `.git/worktrees/` に書けずコミット不能(BLOCKED報告)→Fableがdiff全文レビュー・検算・ブラウザ実測(Codex環境で不可だった§5-3)・2粒度コミット代行→mainへ。worktree/ブランチは削除済み。

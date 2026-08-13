@@ -346,6 +346,37 @@ section('11. 吹き出しの中身はセリフのみで、選手名・団体名�
   assert.ok(!bubble.includes('団体') && !bubble.includes('ORG'), '吹き出しの中に所属団体らしき文字列が入っていない');
 });
 
+section('12. 別ポップアップ表示中は開かず共有キューへ退避し、ドレイン後に開く(2026-08-13 直列化)', () => {
+  const champion = { id: 1, name: '桜庭アカネ' };
+  const parked = [];
+  let popupActive = true;
+  const { ctx, document } = buildTitleCeremony({
+    G: { roster: [champion], titles: { world: { defenses: 2, championId: 1 } } },
+    ALL_CHARS: [],
+    _isPopupActive: (opts) => {
+      // showResultOverlay 越しの待ちはデッドロックになるため無視指定が必須
+      assert.ok(opts && opts.ignoreShowResultOverlay === true,
+        'ゲートは ignoreShowResultOverlay: true で照会する');
+      return popupActive;
+    },
+    _popupQueue: parked,
+  });
+  let doneCalls = 0;
+  ctx.showTitleMatchCeremony({ outcome: 'defense', champId: 1, challengerId: 2 }, () => { doneCalls++; });
+  assert.strictEqual(parked.length, 1, '表示中は開かずに共有キューへ1件退避する');
+  assert.ok(!document.getElementById('mdlAOverlay').classList.contains('active'),
+    '別ポップアップ表示中に mdl-a を重ねて開かない');
+  assert.strictEqual(doneCalls, 0, '退避しただけでは onDone を呼ばない(チェーンを先に進めない)');
+  // ドレイン(前のポップアップが閉じた後)を模す: 退避分を実行すると通常どおり開く
+  popupActive = false;
+  parked.shift()();
+  assert.ok(document.getElementById('mdlAOverlay').classList.contains('active'),
+    'ドレイン後は通常どおり軽量モーダルが開く');
+  assert.strictEqual(doneCalls, 0, '閉じる前に onDone を呼ばない');
+  document.getElementById('mdlATitleDefenseClose').click();
+  assert.strictEqual(doneCalls, 1, '閉じた後の onDone は1回');
+});
+
 console.log('');
 if (failed > 0) { console.log(`FAILED: ${failed} 件`); process.exit(1); }
 console.log('title-defense-scale-test: ALL PASS');

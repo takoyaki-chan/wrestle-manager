@@ -10368,10 +10368,14 @@ const App = {
       resultOverlay.classList.remove('active');
 
     // 試合後コメントポップアップ（因縁マッチ）
+    // **同期で開かない(2026-08-13)。** closeShowResult は同じ tick 内で
+    // advanceFromWeekSummary → dismissAllPopups まで進むため、ここで同期表示すると
+    // ユーザーが目にする前にオーバーレイもキューも消される(=因縁コメントが出ない)。
+    // タイマーに載せて同期本体(週送り+全消去)の後に開く。以降は _enqueuePopup ゲートが直列化する。
     const matchDialogues = [..._pendingMatchDialogues];
     _pendingMatchDialogues = [];
     if (matchDialogues.length > 0) {
-      showPostMatchDialogues(matchDialogues);
+      setTimeout(() => showPostMatchDialogues(matchDialogues), 0);
     }
 
     // v1.3-3: Extract pending injury retirements before state changes
@@ -10714,21 +10718,25 @@ const App = {
         };
         runNext();
       };
-      if (hasEventPopups) {
-        _chainEventPopupQueueEmpty(runPopupActions);
-      } else {
-        setTimeout(runPopupActions, 200);
-      }
+      // 直列化(2026-08-13): hasEventPopups に関わらず常にキュー連動で開始する。
+      // 旧実装の setTimeout(runPopupActions, 200) は、フラグモーダル等が同じ週に
+      // イベントキューへ積まれていても 200ms 後に盲目的に発火し、モーダルが重なっていた。
+      // _chainEventPopupQueueEmpty はキューが空でも 200ms 後の再検証を挟むので、
+      // 空のときの実効タイミングは旧実装と同じ(進行は止まらない)。
+      _chainEventPopupQueueEmpty(runPopupActions);
     }
 
     // relationship-flags-spec-v1.0 §4: 試合発火系の関係性フラグモーダル
-    if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
-
     // Common-3 派閥加入通知（興行後に発生したものも消化）
-    App._drainFactionJoinNotices();
-
     // §6 アーキタイプ遷移ナレーション（F02 完全敗北など興行後に発生する）
-    App._drainArchetypeTransitions();
+    // **3系統とも同期で開かない(2026-08-13)。** この後の advanceFromWeekSummary →
+    // dismissAllPopups が同 tick で走り、同期表示した分(特にフラグモーダルの C3 キュー)は
+    // 表示前に消えていた。タイマーに載せて全消去の後で開き、共有ゲートで直列化させる。
+    setTimeout(() => {
+      if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
+      App._drainFactionJoinNotices();
+      App._drainArchetypeTransitions();
+    }, 0);
 
     // スナップショット R3モーダルは popupActions チェーン内（本人引退ポップアップの後）に
     // 組み込み済みのため、ここでは別経路の setTimeout 発火はしない。
@@ -11308,13 +11316,17 @@ const App = {
     // v1.4w: ティッカー更新
     App._refreshTicker();
     // relationship-flags-spec-v1.0 §4: 関係性フラグモーダルを順次 popup に流す
-    if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
-    // Common-3 派閥加入通知を順次表示
-    App._drainFactionJoinNotices();
-    // §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など週次処理で発生する）
-    App._drainArchetypeTransitions();
+    // Common-3 派閥加入通知 / §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など）
     // care-rework v0.1 §3.4 P4: 招聘の過程イベント（中間報告/衝突/延長打診/卒業レポート）
-    App._drainInviteEvents();
+    // **4系統とも同期で開かない(2026-08-13)。** processWeek も末尾で
+    // advanceFromWeekSummary → dismissAllPopups が同 tick で走るため、同期表示分
+    // (特にフラグモーダルの C3 キュー)は表示前に消えていた。closeShowResult と同じ扱い。
+    setTimeout(() => {
+      if (typeof _drainFlagModalQueue === 'function') _drainFlagModalQueue();
+      App._drainFactionJoinNotices();
+      App._drainArchetypeTransitions();
+      App._drainInviteEvents();
+    }, 0);
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
@@ -15426,9 +15438,11 @@ App.closePPVResult = function() {
   Audio.bgm.play('management');
 
   // 試合後コメントポップアップ（因縁マッチ）— 通常興行の閉じ方と揃える
+  // 同期で開かない(2026-08-13): この後の App.advanceWeek → dismissAllPopups が同 tick で
+  // 走り、表示前に消される(closeShowResult と同じ理由)。タイマー遅延で全消去の後に開く。
   const ppvMatchDialogues = [..._pendingMatchDialogues];
   _pendingMatchDialogues = [];
-  if (ppvMatchDialogues.length > 0) showPostMatchDialogues(ppvMatchDialogues);
+  if (ppvMatchDialogues.length > 0) setTimeout(() => showPostMatchDialogues(ppvMatchDialogues), 0);
 
   // Step 5-6: ポップアップ用データ取得 + Gからクリア
   const pendingGrowthEventsShow = G._pendingGrowthEvents || [];

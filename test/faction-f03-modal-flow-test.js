@@ -111,6 +111,7 @@ const build = new Function(
     functionSource('_factionUpperUrl'),
     functionSource('_factionEnsureOverlayRoot'),
     functionSource('_factionCloseCinematicOverlay'),
+    functionSource('_activatePopupOverlaySync'),
     functionSource('showFactionF03Modal'),
     'return { showFactionF03Modal };',
   ].join('\n')

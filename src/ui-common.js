@@ -355,6 +355,19 @@ function _drainPopupQueue() {
   }, 200);
 }
 
+// ポップアップ直列化(2026-08-13): オーバーレイの 'active' 付与は**同期**で行う。
+// 旧実装(20ms の setTimeout 越しに active を付与)では、_isPopupActive() の
+// ゲート検査を通過した直後〜active付与までの 20ms 間、このオーバーレイが「不在」に見える。
+// その窓に別の開き手がゲートを素通りし、種類の違うポップアップが同時に重なって表示される
+// (2026-08-13 Keisuke実機報告: 興行後に怪我ポップと試合リアクションが重なった)。
+// offsetWidth の強制リフローで innerHTML 直後のスタイルを確定させてから付与するので、
+// CSSトランジションは従来どおり走る(_mdlBOpen/_mdlCOpen と同じイディオム)。
+function _activatePopupOverlaySync(overlay) {
+  if (!overlay) return;
+  void overlay.offsetWidth;
+  overlay.classList.add('active');
+}
+
 // U4(2026-07-26): 「情報を見るだけ」系オーバーレイの共通ESCハンドラ
 // (docs/ui/mockup-baseline-v0.1.md v0.6 §5-C: 情報を見るだけ=背景クリックとESCの両方で閉じられる)。
 // 対象は選手ポップアップ・コーチ情報・殿堂入り詳細・新聞・成長イベント報告。
@@ -2208,7 +2221,11 @@ function closeEventPopup() {
     setTimeout(() => _enqueuePopup(() => _renderEventPopupAsC3()), 200);
   } else if (_onEventPopupQueueEmpty) {
     const cb = _consumeEventPopupQueueEmpty();
-    if (cb) setTimeout(cb, 200);
+    // 発火時再検証(2026-08-13): 200ms の遷移待ちの間に週次タイマー等から新しい C3 が
+    // 積まれることがある。cb を直接呼ぶとその C3 の上にモーダルが重なるため、
+    // _chainEventPopupQueueEmpty を通してキューが本当に空かをもう一度確かめてから発火する
+    // (空なら 200ms 後に発火、積み直されていれば再登録して待つ。捨てないので進行は止まらない)。
+    if (cb) setTimeout(() => _chainEventPopupQueueEmpty(cb), 200);
   } else {
     _drainPopupQueue();
   }
@@ -9660,7 +9677,7 @@ function showFactionF01Modal(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
@@ -9746,7 +9763,7 @@ function _factionF02RenderClash(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-overlay-stage');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   root.querySelectorAll('.fevt-stage-btn').forEach(btn => {
@@ -9799,7 +9816,7 @@ function showFactionF02Modal(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-narration-act');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   // 1文ずつ .shown 付与（置き換え式: 前文を .shown 外して次文を .shown）
@@ -9928,7 +9945,7 @@ function showFactionF03Modal(payload, state, onContinue) {
   // 強制リフロー後に .active を付与してトランジション発火
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   const finish = () => {
@@ -9994,7 +10011,7 @@ function showFactionHiatusModal(payload, state, onContinue) {
   const overlay = root.querySelector('.fevt-overlay-stage');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   const finish = () => {
@@ -10183,7 +10200,7 @@ function showFactionF04Modal(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   const btn = root.querySelector('#fevtF04Continue');
@@ -10253,7 +10270,7 @@ function showFactionF05Modal(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   const btn = root.querySelector('#fevtF05Continue');
@@ -10361,7 +10378,7 @@ function showFactionF06Modal(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
@@ -10574,7 +10591,7 @@ function showFactionF07Modal(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
@@ -10679,7 +10696,7 @@ function showFactionF08Modal(payload, state, onChoice) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
@@ -10749,7 +10766,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
   const overlay = root.querySelector('.fevt-overlay-arena');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   // BGM/SFX: tension ループ + 150ms 遅延の gong 1打
@@ -10821,7 +10838,7 @@ function showFactionF08AftermathModal(data, state, onContinue) {
   const overlay = root.querySelector('.fevt-overlay-arena');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   const btn = root.querySelector('#fevtF08PostBtn');
@@ -10892,7 +10909,7 @@ function showInternalChallengePreModal(data, state, onContinue) {
   const overlay = root.querySelector('.fevt-overlay-arena');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   try {
@@ -10975,7 +10992,7 @@ function showInternalChallengePostModal(data, state, onContinue) {
   const overlay = root.querySelector('.fevt-overlay-arena');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
 
   const btn = root.querySelector('#fevtICPostBtn');
@@ -11070,7 +11087,7 @@ function showFactionF09OpeningModal(data, state, onContinue) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-arena');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   _f09BgmStart(0.22);
   try { if (typeof Audio !== 'undefined' && Audio.stinger) setTimeout(() => Audio.stinger('../bgm/f07_gong_v1.mp3', 0.20), 150); } catch (e) {}
 
@@ -11123,7 +11140,7 @@ function showFactionF09MatchPreModal(data, state, onContinue) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-arena');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   const btn = root.querySelector('#fevtF09PreBtn');
   if (btn) btn.addEventListener('click', () => {
     if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
@@ -11170,7 +11187,7 @@ function showFactionF09MatchPostModal(data, state, onContinue) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-arena');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   const btn = root.querySelector('#fevtF09PostBtn');
   if (btn) btn.addEventListener('click', () => {
     if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
@@ -11221,7 +11238,7 @@ function showFactionF09EndingModal(data, state, onContinue) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-arena');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   const btn = root.querySelector('#fevtF09EndingBtn');
   if (btn) btn.addEventListener('click', () => {
     if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
@@ -11262,7 +11279,7 @@ function _factionF02StageMount(html) {
   const overlay = root.querySelector('.fevt-overlay-stage');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
   return root;
 }
@@ -11647,7 +11664,7 @@ function showFactionCommon3Modal(payload, state, onClose) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
     card.addEventListener('click', function() {
@@ -11715,7 +11732,7 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
     card.addEventListener('click', function() {
@@ -11776,7 +11793,7 @@ function showFactionCommon4Modal(payload, state, onClose) {
   const overlay = root.querySelector('.fevt-overlay-office');
   if (overlay) {
     void overlay.offsetWidth;
-    setTimeout(() => overlay.classList.add('active'), 20);
+    _activatePopupOverlaySync(overlay);
   }
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
     card.addEventListener('click', function() {
@@ -11902,7 +11919,7 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-office');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
     card.addEventListener('click', function() {
       const choice = this.dataset.choice;
@@ -11970,7 +11987,7 @@ function showFactionCommon5Modal(payload, state, onChoice) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-office');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
     card.addEventListener('click', function() {
       const choice = this.dataset.choice;
@@ -12060,7 +12077,7 @@ function showFactionCommon7Modal(payload, state, onChoice) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-office');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   root.querySelectorAll('.fevt-decision-card').forEach(card => {
     card.addEventListener('click', function() {
       const choice = this.dataset.choice;
@@ -12192,7 +12209,7 @@ function showUnifiedTitleReturnCeremony(payload, state, onDone) {
     </div>
   </div>`;
   const overlay = root.querySelector('.unified-return-overlay');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   let resolved = false;
   let safetyTimer = null;
   const finish = () => {
@@ -12261,7 +12278,7 @@ function showHostileArrivalStage(opts) {
     </div>`;
 
   const overlay = root.querySelector('.hostile-arrival-overlay');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   let resolved = false;
   const finish = (choice) => {
     if (resolved) return;
@@ -12607,7 +12624,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-office');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   const paintAwayParty = () => {
     root.querySelectorAll('[data-away-candidate-id]').forEach(chip => {
       const selected = selectedAwayIds.includes(Number(chip.dataset.awayCandidateId));
@@ -12799,6 +12816,17 @@ function _mdlAFlowPortraitHtml(opts) {
 }
 
 function showTitleMatchCeremony(outcome, onDone) {
+  // 直列化ゲート(2026-08-13): 王座結果モーダル(mdl-a)は popupActions チェーンから呼ばれるが、
+  // チェーン開始の待ち(_chainEventPopupQueueEmpty)はイベントキューしか見ておらず、
+  // 因縁コメント(notifModal)や派閥通知(fevt)が開いている瞬間に上へ重なることがあった。
+  // 他の単発モーダル(showFactionF09EndingModal 等)と同じ形で共有ゲートを通す。
+  // showResultOverlay は無視する: 興行結果画面の裏で待つと閉じ手が _drainPopupQueue を
+  // 呼ばずデッドロックしうるため(F09 と同じ理由)。typeof 検査はゲート未読込の
+  // 単体テストサンドボックス(title-defense-scale-test)でも実関数を動かせるようにするため。
+  if (typeof _isPopupActive === 'function' && _isPopupActive({ ignoreShowResultOverlay: true })) {
+    _popupQueue.push(() => showTitleMatchCeremony(outcome, onDone));
+    return;
+  }
   const done = () => { if (typeof onDone === 'function') onDone(); };
   const isDefense = outcome?.outcome === 'defense';
   const championId = isDefense ? outcome?.champId : outcome?.newChampId;
@@ -13009,7 +13037,7 @@ function showChallengeSendoffModal(fighter, line, state, card, onDone) {
       </div>
     `;
     const overlay = root.querySelector('#challengeSendoffOverlay');
-    if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+    if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
     let resolved = false;
     const finish = () => {
       if (resolved) return;
@@ -13330,7 +13358,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
   const root = _factionEnsureOverlayRoot();
   root.innerHTML = html;
   const overlay = root.querySelector('.fevt-overlay-office');
-  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  if (overlay) { void overlay.offsetWidth; _activatePopupOverlaySync(overlay); }
   const closeBtn = root.querySelector('#crrmCloseBtn');
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
@@ -14680,9 +14708,10 @@ function closeNotifModal() {
   clearTimeout(window._notifModalTimer);
   _glimpseQueue.shift();
   if (_glimpseQueue.length > 0) {
-    setTimeout(_renderNextGlimpse, 200);
+    // 直列化(2026-08-13): closeMatchDialogue と同じく、再入は共有ゲート経由にする
+    setTimeout(() => _enqueuePopup(() => _renderNextGlimpse()), 200);
   } else if (_matchDialogueQueue.length > 0) {
-    setTimeout(_renderNextMatchDialogue, 200);
+    setTimeout(() => _enqueuePopup(() => _renderNextMatchDialogue()), 200);
   } else {
     _drainPopupQueue();
   }
@@ -14745,7 +14774,9 @@ function closeMatchDialogue() {
   clearTimeout(window._notifModalTimer);
   _matchDialogueQueue.shift();
   if (_matchDialogueQueue.length > 0) {
-    setTimeout(_renderNextMatchDialogue, 200);
+    // 直列化(2026-08-13): 200ms の隙間に別のポップアップが開くことがあるため、
+    // 直接描画せず共有ゲート(_enqueuePopup)を通す(closeEventPopup の再入と同じ形)。
+    setTimeout(() => _enqueuePopup(() => _renderNextMatchDialogue()), 200);
   } else {
     _drainPopupQueue();
   }
