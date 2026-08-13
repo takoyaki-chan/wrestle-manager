@@ -4137,6 +4137,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
 /* ---- 編成モーダル（Office/Cream、mdl-a-card を土台に使用） ---- */
 .stl-modal-lead{font-size:13px;color:var(--cream-text-sub);text-align:center;padding:14px 24px 4px;line-height:1.7}
+.stl-slot-tabs{display:flex;gap:8px;padding:12px 24px 4px;justify-content:center;flex-wrap:wrap}
+.stl-slot-tab{min-width:112px;padding:8px 12px;border:1px solid var(--office-border-cream);border-radius:7px;background:var(--office-panel-cream-card);color:var(--cream-text-sub);cursor:pointer;font-family:var(--font-label);letter-spacing:1px}
+.stl-slot-tab span,.stl-slot-tab small{display:block}
+.stl-slot-tab small{margin-top:3px;font-size:9px;color:var(--cream-text-sub)}
+.stl-slot-tab.is-active{border-color:var(--cream-gold);color:var(--cream-gold-dark);background:var(--cream-bg-card)}
+.stl-slot-tab.is-complete small{color:var(--cream-gold-dark)}
 .stl-modal-section{padding:14px 24px}
 .stl-modal-section-label{font-family:var(--font-label);font-size:10px;letter-spacing:2.5px;color:var(--cream-gold);text-transform:uppercase;margin-bottom:10px}
 .stl-suggest-row{display:flex;gap:10px;flex-wrap:wrap;padding:0 24px 14px}
@@ -4147,6 +4153,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .stl-suggest-chip .faces img+img{margin-left:-10px}
 .stl-suggest-chip .chem{font-weight:700;color:var(--cream-gold-dark)}
 .stl-pick-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 24px 14px;max-height:340px;overflow-y:auto}
+.stl-pick-grid .stl-is-locked{opacity:.48;cursor:not-allowed}
+.stl-used-label{display:block;margin-top:4px;font-size:9px;color:var(--cream-text-sub)}
 .stl-summary-bar{display:flex;align-items:center;gap:14px;padding:12px 24px;background:var(--office-panel-cream-card);border-top:1px solid var(--office-border-cream)}
 .stl-summary-label{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--cream-gold);text-transform:uppercase}
 .stl-summary-names{flex:1;font-size:14px;font-weight:700;color:var(--cream-text-main)}
@@ -4163,7 +4171,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .stl-double-rule{width:320px;margin:12px auto 20px;border-top:1px solid var(--gold);position:relative;opacity:0.75}
 .stl-double-rule::after{content:'';position:absolute;left:22px;right:22px;top:3px;border-top:1px solid rgba(212,168,67,0.4)}
 
+.stl-block{margin-bottom:18px;border:1px solid var(--stage-border);border-radius:8px;overflow:hidden;background:var(--stage-panel)}
+.stl-block-title{padding:8px 12px;text-align:left;font-family:var(--font-label);font-size:11px;letter-spacing:2px;color:var(--stage-text-sub);border-bottom:1px solid var(--stage-border)}
+.stl-block-title span{display:inline-block;margin-right:7px;font-family:var(--font-display);font-size:19px;color:var(--ev-spring)}
 .stl-league-table{width:100%;border-collapse:collapse;text-align:left;margin-bottom:18px}
+.stl-block .stl-league-table{margin-bottom:0}
 .stl-league-table th{font-family:var(--font-label);font-size:10px;letter-spacing:2px;color:var(--stage-text-dim);text-transform:uppercase;font-weight:400;padding:6px 12px;border-bottom:1px solid var(--stage-border)}
 .stl-league-table td{padding:10px 12px;border-bottom:1px solid var(--stage-border);font-size:13px;vertical-align:middle;transition:background-color 300ms ease}
 .stl-league-row{position:relative}
@@ -4229,6 +4241,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .stl-final-side.is-loser .faces img{filter:grayscale(0.85) brightness(0.6)}
 .stl-final-side .nm{font-size:14px;font-weight:700;color:var(--stage-text-main)}
 .stl-final-side .org{font-family:var(--font-label);font-size:10px;letter-spacing:1.5px;color:var(--stage-text-dim);text-transform:uppercase}
+.stl-block-origin{display:inline-block;padding:3px 9px;border:1px solid var(--ev-spring);border-radius:12px;font-family:var(--font-label);font-size:9px;letter-spacing:1.5px;color:var(--ev-spring)}
 .stl-final-vs{font-family:var(--font-display);font-size:24px;color:var(--stage-text-dim)}
 .stl-final-result{margin-top:6px;font-family:var(--font-label);font-size:11px;letter-spacing:1.5px;color:var(--gold)}
 

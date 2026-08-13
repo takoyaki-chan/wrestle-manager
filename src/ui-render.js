@@ -2535,31 +2535,42 @@ function _stlFindFighterAnywhere(id) {
     || null;
 }
 
-/** 週10(出場4団体決定)/週11(編成期間・編成済み) の今週バナー。存在しないセーブでは何も出さない */
+/** 週10(出場チーム決定)/週11(編成期間・編成済み) の今週バナー。存在しないセーブでは何も出さない */
 function renderSpringTagLeagueWeekBanner() {
   const stl = G.springTagLeague;
   if (!stl || stl.cancelled || stl.announcedSeason !== G.season
       || (Engine.springTagLeague && Engine.springTagLeague.isCompletedThisSeason && Engine.springTagLeague.isCompletedThisSeason(G))) return '';
   if (G.week === Engine.springTagLeague.ANNOUNCE_WEEK) {
-    const names = (stl.teams || []).map(t => t.orgName).filter(Boolean).join(' / ');
+    const allocation = stl.format === 2
+      ? Object.entries(stl.slotAllocation || {}).map(([orgId, count]) => {
+        const team = (stl.teams || []).find(row => row.orgId === orgId);
+        return `${team?.orgName || orgId} ${count}枠`;
+      }).join(' / ')
+      : (stl.teams || []).map(t => t.orgName).filter(Boolean).join(' / ');
+    const teamCount = (stl.teams || []).length;
     return `<div class="stl-week-banner">
       <div class="stl-week-banner-icon">🌸</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">春のタッグリーグ 出場4団体決定</div>
-        <div class="stl-week-banner-sub">${escHtml(names)}。編成期間は来週(第${Engine.springTagLeague.ENTRY_WEEK}週)です。</div>
+        <div class="stl-week-banner-title">春のタッグリーグ 出場${teamCount}チーム決定</div>
+        <div class="stl-week-banner-sub">${escHtml(allocation)}。編成期間は来週(第${Engine.springTagLeague.ENTRY_WEEK}週)です。</div>
       </div>
     </div>`;
   }
   if (G.week === Engine.springTagLeague.ENTRY_WEEK) {
-    const myTeam = (stl.teams || []).find(t => t.orgId === 'player');
-    const confirmed = !!(myTeam && myTeam.confirmed);
-    if (confirmed) {
-      const f1 = _stlFindFighterAnywhere(myTeam.f1Id);
-      const f2 = _stlFindFighterAnywhere(myTeam.f2Id);
+    const myTeams = (stl.teams || []).filter(t => t.orgId === 'player')
+      .sort((a, b) => (a.slot || 1) - (b.slot || 1));
+    const confirmedTeams = myTeams.filter(team => team.confirmed);
+    if (confirmedTeams.length === myTeams.length && myTeams.length > 0) {
+      const pairs = confirmedTeams.map(team => {
+        const f1 = _stlFindFighterAnywhere(team.f1Id);
+        const f2 = _stlFindFighterAnywhere(team.f2Id);
+        return `第${team.slot || 1}代表 ${f1 ? f1.name : '?'} & ${f2 ? f2.name : '?'}`;
+      }).join(' / ');
       return `<div class="stl-week-banner is-done">
         <div class="stl-week-banner-icon">🌸</div>
         <div class="stl-week-banner-body">
-          <div class="stl-week-banner-title">春のタッグリーグ 編成済み: ${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</div>
+          <div class="stl-week-banner-title">春のタッグリーグ 全${myTeams.length}チーム編成済み</div>
+          <div class="stl-week-banner-sub">${escHtml(pairs)}</div>
           <div class="stl-week-banner-sub">タップすると組み直せます。</div>
         </div>
         <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">組み直す</button>
@@ -2569,7 +2580,7 @@ function renderSpringTagLeagueWeekBanner() {
       <div class="stl-week-banner-icon">🌸</div>
       <div class="stl-week-banner-body">
         <div class="stl-week-banner-title">春のタッグリーグ 出場チーム編成期間</div>
-        <div class="stl-week-banner-sub">代表タッグ1組を選出してください。編成しない場合はおまかせ編成(サジェスト1位)で開催されます。</div>
+        <div class="stl-week-banner-sub">${confirmedTeams.length}/${myTeams.length}チーム編成済み。未編成枠は締切時に、未選出選手のOVR上位からおまかせ編成されます。</div>
       </div>
       <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">編成する</button>
     </div>`;
@@ -2661,7 +2672,7 @@ function _stlBlockedShowPrepHtml() {
   return `<div class="stl-block-banner">
     <div class="stl-block-banner-icon">🌸</div>
     <div class="stl-block-banner-title">今週は春のタッグリーグ開催週</div>
-    <div class="stl-block-banner-sub">第${Engine.springTagLeague.LEAGUE_WEEK}週は通常興行の代わりに春のタッグリーグ(4団体総当たり戦+優勝決定戦)が開催されます。今週のカード編成はありません。</div>
+    <div class="stl-block-banner-sub">第${Engine.springTagLeague.LEAGUE_WEEK}週は通常興行の代わりに春のタッグリーグ(A/Bブロック各6試合+ブロック1位同士の優勝決定戦)が開催されます。今週のカード編成はありません。</div>
   </div>`;
 }
 
@@ -6798,7 +6809,9 @@ function _npSpringTagStoryIds(state, story, seasonNum) {
   // 同じシーズンの大会結果またはベストタッグ記録から補完する(springTagResult専用の救済)。
   const league = state.springTagLeague;
   if (league && !league.cancelled && league.announcedSeason === seasonNum) {
-    const team = (league.teams || []).find(t => t.orgId === league.champion);
+    const team = (league.teams || []).find(row => league.championTeamId
+      ? row.teamId === league.championTeamId
+      : row.orgId === league.champion);
     if (team?.f1Id && team?.f2Id) return [team.f1Id, team.f2Id];
   }
   const best = state.bestTagTeam;

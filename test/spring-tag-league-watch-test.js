@@ -22,7 +22,10 @@ for (const seed of [42, 12345, 98765]) {
 
   const leagueResult = Engine.springTagLeague.run(state, Engine.rng.create(seed));
   assert.strictEqual(leagueResult.cancelled, false);
-  assert.strictEqual(leagueResult.matches.length, 6);
+  assert.strictEqual(leagueResult.matches.length, 12);
+  assert.strictEqual(leagueResult.format, 2);
+  assert.deepStrictEqual(leagueResult.matches.map(match => match.seedTag), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]);
+  assert.strictEqual(leagueResult.finalMatch.seedTag, 12);
   assert.ok(leagueResult.replayContext, 'league must preserve its compact replay context');
   assert.ok(!leagueResult.matches.some(match => Object.prototype.hasOwnProperty.call(match, 'frames')),
     'canonical league results should not bloat saves with replay frames');
@@ -71,7 +74,7 @@ for (const seed of [42, 12345, 98765]) {
   const finalReplay = Engine.springTagLeague.simulateReplay(
     applied,
     applied.springTagLeague.finalMatch,
-    { isFinal: true, matchIndex: 6 }
+    { isFinal: true, matchIndex: 12 }
   );
   assert.ok(finalReplay && finalReplay.result.frames.length > 0, 'final must have watch frames');
   assert.deepStrictEqual(

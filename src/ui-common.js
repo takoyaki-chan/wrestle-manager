@@ -16808,18 +16808,28 @@ function _tcwCollectTenchosen(state, args) {
   return { grade, entrants: [...stats.values()] };
 }
 
-/** 春のタッグリーグ (4団体総当たり+決勝。自団体の出場者は常にタッグの2名) */
+/** 春のタッグリーグ。複数出場時は自団体で最も上位の1組を締めコメントの主役にする。 */
 function _tcwCollectSpringTag(state) {
   const stl = state.springTagLeague;
   if (!stl || stl.cancelled) return { grade: 'absent', entrants: [] };
-  const team = (stl.teams || []).find(t => t && t.orgId === 'player');
+  const playerTeams = (stl.teams || []).filter(team => team && team.orgId === 'player');
+  const championTeam = (stl.teams || []).find(team => stl.championTeamId
+    ? team.teamId === stl.championTeamId : team.orgId === stl.champion);
+  const runnerTeam = (stl.teams || []).find(team => stl.runnerUpTeamId
+    ? team.teamId === stl.runnerUpTeamId : team.orgId === stl.runnerUp);
+  const placementOf = team => (stl.placements || []).find(row => row.teamId === team.teamId);
+  const team = championTeam?.orgId === 'player' ? championTeam
+    : runnerTeam?.orgId === 'player' ? runnerTeam
+      : playerTeams.slice().sort((a, b) => (placementOf(a)?.blockRank || 99) - (placementOf(b)?.blockRank || 99))[0];
   if (!team || team.f1Id == null || team.f2Id == null) return { grade: 'absent', entrants: [] };
 
   const leagueWins = (stl.matches || []).filter(m => m
-    && ((m.orgA === 'player' && m.winner === 'teamA') || (m.orgB === 'player' && m.winner === 'teamB'))).length;
-  const grade = stl.champion === 'player' ? 'champion'
-    : stl.runnerUp === 'player' ? 'finalist'
-    : stl.third === 'player' ? 'semifinal'
+    && ((m.teamAId === team.teamId && m.winner === 'teamA') || (m.teamBId === team.teamId && m.winner === 'teamB')
+      || (stl.format !== 2 && ((m.orgA === 'player' && m.winner === 'teamA') || (m.orgB === 'player' && m.winner === 'teamB'))))).length;
+  const placement = placementOf(team);
+  const grade = (stl.format === 2 ? championTeam?.teamId === team.teamId : stl.champion === 'player') ? 'champion'
+    : (stl.format === 2 ? runnerTeam?.teamId === team.teamId : stl.runnerUp === 'player') ? 'finalist'
+    : placement?.blockRank === 2 || (stl.format !== 2 && stl.third === 'player') ? 'semifinal'
     : leagueWins > 0 ? 'advanced' : 'firstRound';
 
   // タッグは2人で1つの結果を分け合う。片方だけを主役にしないので reason は together 固定
@@ -18246,9 +18256,11 @@ const _STL_STYLE_CREAM = {
   Aerial: 'tag-cream-aerial', Allround: 'tag-cream-allround', Brawler: 'tag-cream-brawler',
 };
 
-function _stlOrgTeam(orgId) {
+function _stlOrgTeam(teamOrOrgId) {
   const stl = G.springTagLeague;
-  return (stl && Array.isArray(stl.teams) ? stl.teams : []).find(t => t.orgId === orgId) || null;
+  const teams = stl && Array.isArray(stl.teams) ? stl.teams : [];
+  return teams.find(team => team.teamId === teamOrOrgId)
+    || teams.find(team => team.orgId === teamOrOrgId) || null;
 }
 
 function _stlFighterOf(orgId, fighterId) {
@@ -18281,9 +18293,10 @@ function _stlWearBarHtml(cond) {
 }
 
 /** matches[0..count) から現在の condition を逆引きする（無ければ初期値） */
-function _stlCurrentCondition(matches, count, orgId) {
+function _stlCurrentCondition(matches, count, teamId, orgId) {
   for (let i = count - 1; i >= 0; i--) {
     const m = matches[i];
+    if (m && m.conditionAfter && m.conditionAfter[teamId] != null) return m.conditionAfter[teamId];
     if (m && m.conditionAfter && m.conditionAfter[orgId] != null) return m.conditionAfter[orgId];
   }
   return Engine.springTagLeague.INITIAL_CONDITION;
@@ -18291,30 +18304,39 @@ function _stlCurrentCondition(matches, count, orgId) {
 
 /** matches[0..count) を集計した中間スタンディング（UI専用の簡易順位。h2h厳密tie-breakは行わない —
  * 全試合終了後の最終順位は常に G.springTagLeague.standings を正とする） */
-function _stlComputeStandingsThrough(matches, count) {
+function _stlComputeStandingsThrough(matches, count, block) {
   const P = Engine.springTagLeague.POINTS;
   const MQT = Engine.springTagLeague.MQ_BONUS_THRESHOLD;
   const MQB = Engine.springTagLeague.MQ_BONUS;
-  const orgOrder = Engine.springTagLeague.ORG_ORDER;
+  const stl = G.springTagLeague || {};
+  const isV2 = stl.format === 2 && stl.blocks && block;
+  const teamOrder = isV2 ? (stl.blocks[block] || []) : Engine.springTagLeague.ORG_ORDER;
   const acc = {};
-  orgOrder.forEach(o => { acc[o] = { orgId: o, points: 0, wins: 0, losses: 0, draws: 0, mqTotal: 0, closeBonusCount: 0 }; });
+  teamOrder.forEach(teamId => {
+    const team = _stlOrgTeam(teamId);
+    acc[teamId] = { teamId, orgId: team ? team.orgId : teamId, block: block || null, points: 0, wins: 0, losses: 0, draws: 0, mqTotal: 0, closeBonusCount: 0 };
+  });
   matches.slice(0, count).forEach(m => {
+    if (isV2 && m.block !== block) return;
+    const teamAId = isV2 ? (m.teamAId || m.teamA?.teamId) : m.orgA;
+    const teamBId = isV2 ? (m.teamBId || m.teamB?.teamId) : m.orgB;
+    if (!acc[teamAId] || !acc[teamBId]) return;
     if (m.isDraw) {
-      acc[m.orgA].points += P.draw; acc[m.orgB].points += P.draw;
-      acc[m.orgA].draws++; acc[m.orgB].draws++;
+      acc[teamAId].points += P.draw; acc[teamBId].points += P.draw;
+      acc[teamAId].draws++; acc[teamBId].draws++;
     } else {
-      const winnerOrg = m.winner === 'teamA' ? m.orgA : m.orgB;
-      const loserOrg = winnerOrg === m.orgA ? m.orgB : m.orgA;
-      acc[winnerOrg].points += P.win; acc[winnerOrg].wins++;
-      acc[loserOrg].points += P.loss; acc[loserOrg].losses++;
+      const winnerTeamId = m.winner === 'teamA' ? teamAId : teamBId;
+      const loserTeamId = winnerTeamId === teamAId ? teamBId : teamAId;
+      acc[winnerTeamId].points += P.win; acc[winnerTeamId].wins++;
+      acc[loserTeamId].points += P.loss; acc[loserTeamId].losses++;
     }
     if (m.mq >= MQT) {
-      acc[m.orgA].points += MQB; acc[m.orgB].points += MQB;
-      acc[m.orgA].closeBonusCount++; acc[m.orgB].closeBonusCount++;
+      acc[teamAId].points += MQB; acc[teamBId].points += MQB;
+      acc[teamAId].closeBonusCount++; acc[teamBId].closeBonusCount++;
     }
-    acc[m.orgA].mqTotal += m.mq; acc[m.orgB].mqTotal += m.mq;
+    acc[teamAId].mqTotal += m.mq; acc[teamBId].mqTotal += m.mq;
   });
-  const arr = orgOrder.map(o => acc[o]);
+  const arr = teamOrder.map(teamId => acc[teamId]);
   arr.sort((a, b) => (b.points - a.points) || (b.mqTotal - a.mqTotal));
   arr.forEach((row, i) => { row.rank = i + 1; });
   return arr;
@@ -18325,7 +18347,7 @@ function _stlHeaderHtml(subLabel) {
   return `<div class="stl-header">
     <img class="stl-header-emblem" src="../image/emblem-spring.png" alt="" onerror="this.style.display='none'">
     <div class="stl-header-title">SPRING TAG LEAGUE</div>
-    <div class="stl-header-sub">春のタッグリーグ — 総当たり戦</div>
+    <div class="stl-header-sub">春のタッグリーグ — A/Bブロック総当たり戦</div>
     <div class="stl-header-ed">第${season}回大会${subLabel ? ` / ${escHtml(subLabel)}` : ''}</div>
   </div><div class="stl-double-rule"></div>`;
 }
@@ -18341,7 +18363,7 @@ function _stlLastMatchStripHtml(m) {
   // U5: 引き分け時は「両陣営ともWINタグが無い」という消去法でしか判別できなかったため、
   // △DRAWタグを明示する(is-draw)。勝敗色は既存の verdict 表現(--c-warning=引分)に合わせる。
   return `<div class="stl-lastmatch">
-    <span class="stl-lastmatch-label">第${m.round}試合 結果</span>
+    <span class="stl-lastmatch-label">${m.block && m.block !== 'FINAL' ? `${m.block}ブロック ` : ''}第${m.blockRound || m.round}試合 結果</span>
     <span class="stl-lastmatch-duo ${aWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}<span class="n">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}${aWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
     <span class="stl-lastmatch-vs">VS</span>
     <span class="stl-lastmatch-duo ${bWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}<span class="n">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}${bWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
@@ -18350,28 +18372,28 @@ function _stlLastMatchStripHtml(m) {
 }
 
 function _stlFinalPreviewHtml(finalM) {
-  const teamA = _stlOrgTeam(finalM.orgA), teamB = _stlOrgTeam(finalM.orgB);
+  const teamA = _stlOrgTeam(finalM.teamAId || finalM.orgA), teamB = _stlOrgTeam(finalM.teamBId || finalM.orgB);
   const fA1 = _stlFighterOf(finalM.orgA, finalM.teamA.f1Id), fA2 = _stlFighterOf(finalM.orgA, finalM.teamA.f2Id);
   const fB1 = _stlFighterOf(finalM.orgB, finalM.teamB.f1Id), fB2 = _stlFighterOf(finalM.orgB, finalM.teamB.f2Id);
   return `<div class="stl-final-banner">
     <div class="stl-final-label">FINAL</div>
     <div class="stl-final-sub">優勝決定戦</div>
     <div class="stl-final-faceoff">
-      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="stl-block-origin">A1位</span><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
       <div class="stl-final-vs">VS</div>
-      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="stl-block-origin">B1位</span><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
     </div>
   </div>`;
 }
 
 function _stlUpcomingMatchHtml(m, matchNumber) {
   if (!m) return '';
-  const teamA = _stlOrgTeam(m.orgA), teamB = _stlOrgTeam(m.orgB);
+  const teamA = _stlOrgTeam(m.teamAId || m.orgA), teamB = _stlOrgTeam(m.teamBId || m.orgB);
   const fA1 = _stlFighterOf(m.orgA, m.teamA.f1Id), fA2 = _stlFighterOf(m.orgA, m.teamA.f2Id);
   const fB1 = _stlFighterOf(m.orgB, m.teamB.f1Id), fB2 = _stlFighterOf(m.orgB, m.teamB.f2Id);
   return `<div class="stl-match-preview">
     <div class="stl-match-preview-label">NEXT MATCH</div>
-    <div class="stl-match-preview-round">リーグ 第${matchNumber}試合</div>
+    <div class="stl-match-preview-round">${m.block ? `${m.block}ブロック 第${m.blockRound}試合` : `リーグ 第${matchNumber}試合`} / 全体${matchNumber}試合目</div>
     <div class="stl-final-faceoff">
       <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
       <div class="stl-final-vs">VS</div>
@@ -18382,21 +18404,24 @@ function _stlUpcomingMatchHtml(m, matchNumber) {
 
 function renderSpringTagLeagueMatchResultPopup(match, isFinal, onContinue) {
   if (!match) { if (onContinue) onContinue(); return; }
-  const teamA = _stlOrgTeam(match.orgA), teamB = _stlOrgTeam(match.orgB);
+  const teamA = _stlOrgTeam(match.teamAId || match.orgA), teamB = _stlOrgTeam(match.teamBId || match.orgB);
   const membersA = [_stlFighterOf(match.orgA, match.teamA.f1Id), _stlFighterOf(match.orgA, match.teamA.f2Id)].filter(Boolean);
   const membersB = [_stlFighterOf(match.orgB, match.teamB.f1Id), _stlFighterOf(match.orgB, match.teamB.f2Id)].filter(Boolean);
-  const winnerSide = match.isDraw ? 'draw' : match.winner === 'teamB' ? 'right' : 'left';
+  const decidedFinalDraw = isFinal && match.isDraw && (match.winner === 'teamA' || match.winner === 'teamB');
+  const winnerSide = match.isDraw && !decidedFinalDraw ? 'draw' : match.winner === 'teamB' ? 'right' : 'left';
   const winnerFighter = (winnerSide === 'right' ? membersB : membersA)[0];
   const closeBonus = match.mq >= Engine.springTagLeague.MQ_BONUS_THRESHOLD;
   const winnerOrg = winnerSide === 'right' ? match.orgB : match.orgA;
   showEventMatchResultPopup({
-    theme: 'spring', title: `${isFinal ? '優勝決定戦' : `リーグ 第${match.round}試合`}　結果`, meta: `第${G.season}回大会 ・ 春のタッグリーグ`,
+    theme: 'spring', title: `${isFinal ? '優勝決定戦' : `${match.block || ''}ブロック 第${match.blockRound || match.round}試合`}　結果`, meta: `第${G.season}回大会 ・ 春のタッグリーグ`,
     progress: isFinal ? 'FINAL' : `${match.round} / ${(G.springTagLeague?.matches || []).length}`, progressLabel: isFinal ? 'CHAMPIONSHIP' : 'LEAGUE',
     context: [['勝者勝点', match.isDraw ? '+1' : '+3'], ['接戦ボーナス', closeBonus ? '+1' : '—'], ['勝利団体', _stlOrgTeam(winnerOrg)?.orgName || '決着つかず']],
     isTag: true, teamLeft: { members: membersA, org: teamA?.orgName || '', orgId: match.orgA }, teamRight: { members: membersB, org: teamB?.orgName || '', orgId: match.orgB }, winnerSide, winnerFighter,
-    resultLabel: match.isDraw ? 'NO CONTEST' : isFinal ? 'CHAMPION' : 'TEAM WIN', winAttribution: match.winAttribution, finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
-    chips: [match.isDraw ? '勝点 +1' : 'リーグ勝点 +3', closeBonus ? '接戦ボーナス +1' : '', isFinal ? '春の王者' : 'リーグ戦'],
-    hpLeft: match.conditionAfter?.[match.orgA], hpRight: match.conditionAfter?.[match.orgB], hpLabel: 'TEAM WEAR', footNote: `春タッグ ・ ${_stlOrgTeam(winnerOrg)?.orgName || '決着つかず'}`,
+    resultLabel: decidedFinalDraw ? 'TIEBREAK CHAMPION' : match.isDraw ? 'NO CONTEST' : isFinal ? 'CHAMPION' : 'TEAM WIN', winAttribution: match.winAttribution, finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
+    chips: [decidedFinalDraw ? `引分裁定: ${match.tieBreakDecision || '大会規定'}` : match.isDraw ? '勝点 +1' : 'リーグ勝点 +3', closeBonus ? '接戦ボーナス +1' : '', isFinal ? '春の王者' : `${match.block || ''}ブロック`],
+    hpLeft: match.conditionAfter?.[match.teamAId || match.orgA] ?? match.conditionAfter?.[match.orgA],
+    hpRight: match.conditionAfter?.[match.teamBId || match.orgB] ?? match.conditionAfter?.[match.orgB],
+    hpLabel: 'TEAM WEAR', footNote: `春タッグ ・ ${_stlOrgTeam(winnerOrg)?.orgName || '決着つかず'}`,
     nextLabel: _matchNextLabel(isFinal), onContinue,
   });
 }
@@ -18425,43 +18450,55 @@ function renderSpringTagLeagueBoard() {
   // FLIP用: 再描画前の行位置を記録
   const oldRects = {};
   document.querySelectorAll('.stl-league-row').forEach(tr => {
-    const org = tr.getAttribute('data-org');
-    if (org) oldRects[org] = tr.getBoundingClientRect();
+    const teamId = tr.getAttribute('data-team');
+    if (teamId) oldRects[teamId] = tr.getBoundingClientRect();
   });
-
-  const standings = _stlComputeStandingsThrough(matches, idx);
 
   let html = `<div class="stl-wrap">`;
   html += _stlHeaderHtml(progLabel);
-
-  html += `<table class="stl-league-table"><tr><th></th><th>チーム</th><th>戦績</th><th style="text-align:right">勝ち点</th></tr>`;
-  standings.forEach(row => {
-    const team = _stlOrgTeam(row.orgId);
-    if (!team) return;
-    const f1 = _stlFighterOf(row.orgId, team.f1Id);
-    const f2 = _stlFighterOf(row.orgId, team.f2Id);
-    const cond = _stlCurrentCondition(matches, idx, row.orgId);
-    const recParts = [];
-    if (row.wins) recParts.push(`${row.wins}勝`);
-    if (row.losses) recParts.push(`${row.losses}敗`);
-    const recText = recParts.length ? recParts.join('') : '——';
-    const isMine = row.orgId === 'player';
-    const rowCls = `stl-league-row${isMine ? ' is-mine' : ''}${row.rank === 1 ? ' is-rank1' : ''}`;
-    html += `<tr class="${rowCls}" data-org="${row.orgId}">
-      <td class="stl-league-rank">${row.rank}</td>
-      <td><div class="stl-league-pair">
-        <span class="stl-league-faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
-        <span>
-          <span class="stl-league-org">${isMine ? '★ 自団体' : escHtml(team.orgName)}</span>
-          <span class="stl-league-team-name">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</span>
-          ${idx > 0 ? `<span class="stl-league-condition">${_stlWearBarHtml(cond)}</span>` : ''}
-        </span>
-      </div></td>
-      <td class="stl-league-rec">${recText}${row.closeBonusCount ? `<span class="stl-league-bonus"> / 接戦+${row.closeBonusCount}</span>` : ''}</td>
-      <td class="stl-league-pts">${row.points}<small>pt</small></td>
-    </tr>`;
-  });
-  html += `</table>`;
+  const renderTable = block => {
+    const canonical = stl.format === 2 && idx >= matches.length && stl.standings && stl.standings[block];
+    const rows = canonical
+      ? canonical.map(row => ({ ...row, closeBonusCount: row.mqBonusCount }))
+      : _stlComputeStandingsThrough(matches, idx, block);
+    let table = stl.format === 2 ? `<section class="stl-block"><div class="stl-block-title"><span>${block}</span>ブロック</div>` : '';
+    table += `<table class="stl-league-table"><tr><th></th><th>チーム</th><th>戦績</th><th style="text-align:right">勝ち点</th></tr>`;
+    rows.forEach(row => {
+      const team = _stlOrgTeam(row.teamId || row.orgId);
+      if (!team) return;
+      const teamId = team.teamId || team.orgId;
+      const f1 = _stlFighterOf(team.orgId, team.f1Id);
+      const f2 = _stlFighterOf(team.orgId, team.f2Id);
+      const cond = _stlCurrentCondition(matches, idx, teamId, team.orgId);
+      const recParts = [];
+      if (row.wins) recParts.push(`${row.wins}勝`);
+      if (row.losses) recParts.push(`${row.losses}敗`);
+      const recText = recParts.length ? recParts.join('') : '——';
+      const isMine = team.orgId === 'player';
+      const rowCls = `stl-league-row${isMine ? ' is-mine' : ''}${row.rank === 1 ? ' is-rank1' : ''}`;
+      table += `<tr class="${rowCls}" data-team="${escHtml(String(teamId))}">
+        <td class="stl-league-rank">${row.rank}</td>
+        <td><div class="stl-league-pair">
+          <span class="stl-league-faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
+          <span>
+            <span class="stl-league-org">${isMine ? `★ 自団体 第${team.slot || 1}代表` : `${escHtml(team.orgName)} 第${team.slot || 1}代表`}</span>
+            <span class="stl-league-team-name">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</span>
+            ${idx > 0 ? `<span class="stl-league-condition">${_stlWearBarHtml(cond)}</span>` : ''}
+          </span>
+        </div></td>
+        <td class="stl-league-rec">${recText}${row.closeBonusCount ? `<span class="stl-league-bonus"> / 接戦+${row.closeBonusCount}</span>` : ''}</td>
+        <td class="stl-league-pts">${row.points}<small>pt</small></td>
+      </tr>`;
+    });
+    table += `</table>${stl.format === 2 ? '</section>' : ''}`;
+    return table;
+  };
+  if (stl.format === 2 && stl.blocks) {
+    html += renderTable('A');
+    html += renderTable('B');
+  } else {
+    html += renderTable(null);
+  }
 
   if (idx > 0 && !isFinalReady) {
     html += _stlLastMatchStripHtml(matches[idx - 1]);
@@ -18488,8 +18525,8 @@ function renderSpringTagLeagueBoard() {
   const lastMatch = idx > 0 ? matches[idx - 1] : null;
   requestAnimationFrame(() => {
     document.querySelectorAll('.stl-league-row').forEach(tr => {
-      const org = tr.getAttribute('data-org');
-      const old = org ? oldRects[org] : null;
+      const teamId = tr.getAttribute('data-team');
+      const old = teamId ? oldRects[teamId] : null;
       if (old) {
         const newRect = tr.getBoundingClientRect();
         const dy = old.top - newRect.top;
@@ -18502,7 +18539,8 @@ function renderSpringTagLeagueBoard() {
           });
         }
       }
-      if (lastMatch && (org === lastMatch.orgA || org === lastMatch.orgB)) {
+      if (lastMatch && (teamId === (lastMatch.teamAId || lastMatch.orgA)
+          || teamId === (lastMatch.teamBId || lastMatch.orgB))) {
         tr.classList.add('is-flash');
         setTimeout(() => tr.classList.remove('is-flash'), 700);
       }
@@ -18521,11 +18559,11 @@ function renderSpringTagLeagueChampion() {
   box.style.background = '';
   box.style.border = '';
 
-  const champTeam = _stlOrgTeam(stl.champion);
-  const runnerTeam = _stlOrgTeam(stl.runnerUp);
+  const champTeam = _stlOrgTeam(stl.championTeamId || stl.champion);
+  const runnerTeam = _stlOrgTeam(stl.runnerUpTeamId || stl.runnerUp);
   if (!champTeam) { App.finalizeSpringTagLeagueReplay(); return; }
-  const f1 = _stlFighterOf(stl.champion, champTeam.f1Id);
-  const f2 = _stlFighterOf(stl.champion, champTeam.f2Id);
+  const f1 = _stlFighterOf(champTeam.orgId, champTeam.f1Id);
+  const f2 = _stlFighterOf(champTeam.orgId, champTeam.f2Id);
   const season = G.season;
   const PRIZE = Engine.springTagLeague.PRIZE;
   // タッグ優勝は2名とも主役 → 2名とも吹き出しを持つ(既存の勝利セリフ機構=JT champion timingを流用)
@@ -18558,8 +18596,8 @@ function renderSpringTagLeagueChampion() {
     </div>`;
 
   if (runnerTeam) {
-    const r1 = _stlFighterOf(stl.runnerUp, runnerTeam.f1Id);
-    const r2 = _stlFighterOf(stl.runnerUp, runnerTeam.f2Id);
+    const r1 = _stlFighterOf(runnerTeam.orgId, runnerTeam.f1Id);
+    const r2 = _stlFighterOf(runnerTeam.orgId, runnerTeam.f2Id);
     html += `<div class="ch-sub">${_chSubCardHtml('2', r1, runnerTeam.orgId, runnerTeam.orgName, PRIZE.runnerUp)}${_chSubCardHtml('2', r2, runnerTeam.orgId, runnerTeam.orgName, PRIZE.runnerUp)}</div>`;
   }
 
@@ -18569,18 +18607,30 @@ function renderSpringTagLeagueChampion() {
   </div>`;
   html += `</div>`; // .champ
 
-  const standing = (stl.standings || []).find(s => s.orgId === 'player');
-  if (standing) {
-    const prizeByRank = { 1: PRIZE.champion, 2: PRIZE.runnerUp, 3: PRIZE.third, 4: PRIZE.fourth };
-    const rankLabel = { 1: '優勝', 2: '準優勝', 3: '3位', 4: '4位' }[standing.rank] || `${standing.rank}位`;
-    const amt = prizeByRank[standing.rank] || 0;
-    if (amt > 0) {
+  if (stl.format === 2) {
+    const playerPlacements = (stl.placements || []).filter(row => row.orgId === 'player');
+    const prizeRows = playerPlacements.map(row => ({
+      label: row.result === 'champion' ? '優勝' : row.result === 'runnerUp' ? '準優勝' : `${row.block}ブロック${row.blockRank}位`,
+      amount: PRIZE[row.prizeKey] || 0,
+    }));
+    const total = prizeRows.reduce((sum, row) => sum + row.amount, 0);
+    if (total > 0) {
       html += `<div class="pb-champion-prizebox">
         <div class="pb-champion-prizebox-label">💰 自団体の獲得賞金</div>
-        <div class="pb-champion-prizebox-total">${rankLabel} <span>¥${amt}万</span></div>
+        <div class="pb-champion-prizebox-total">${prizeRows.filter(row => row.amount > 0).map(row => `${row.label} ¥${row.amount}万`).join(' / ')} <span>計¥${total}万</span></div>
       </div>`;
     } else {
-      html += `<div class="pb-champion-prizebox is-empty">自団体は入賞圏外でした（${rankLabel}）</div>`;
+      html += `<div class="pb-champion-prizebox is-empty">自団体は賞金圏外でした</div>`;
+    }
+  } else {
+    const standing = (stl.standings || []).find(s => s.orgId === 'player');
+    if (standing) {
+      const prizeByRank = { 1: PRIZE.champion, 2: PRIZE.runnerUp, 3: PRIZE.third, 4: PRIZE.fourth };
+      const rankLabel = { 1: '優勝', 2: '準優勝', 3: '3位', 4: '4位' }[standing.rank] || `${standing.rank}位`;
+      const amount = prizeByRank[standing.rank] || 0;
+      html += amount > 0
+        ? `<div class="pb-champion-prizebox"><div class="pb-champion-prizebox-label">💰 自団体の獲得賞金</div><div class="pb-champion-prizebox-total">${rankLabel} <span>¥${amount}万</span></div></div>`
+        : `<div class="pb-champion-prizebox is-empty">自団体は入賞圏外でした（${rankLabel}）</div>`;
     }
   }
 
@@ -18592,14 +18642,34 @@ function renderSpringTagLeagueChampion() {
 
 // ── 週11 編成モーダル（Office/Cream、mdl-a-card を土台に使用） ──
 function _stlEntryModalHtml() {
-  const sel = App._stlEntrySelection || { f1Id: null, f2Id: null };
-  const data = Engine.springTagLeague.getEntryCandidates(G);
-  const eligible = data.eligible || [];
-  const suggestions = data.suggestions || [];
+  const playerTeams = (G.springTagLeague?.teams || []).filter(team => team.orgId === 'player')
+    .sort((a, b) => (a.slot || 1) - (b.slot || 1));
+  const sel = App._stlEntrySelection || {
+    activeSlot: 0,
+    pairs: playerTeams.map(team => ({ f1Id: team.f1Id, f2Id: team.f2Id })),
+  };
+  const activeSlot = Math.max(0, Math.min(sel.pairs.length - 1, sel.activeSlot || 0));
+  const pair = sel.pairs[activeSlot] || { f1Id: null, f2Id: null };
+  const usedElsewhere = sel.pairs.flatMap((row, index) => index === activeSlot || !row ? [] : [row.f1Id, row.f2Id])
+    .filter(id => id != null);
+  const allData = Engine.springTagLeague.getEntryCandidates(G);
+  const suggestions = Engine.springTagLeague.getEntryCandidates(G, usedElsewhere).suggestions || [];
+  const eligible = allData.eligible || [];
   const season = G.season;
 
-  let html = _mdlAHeader('🌸 春のタッグリーグ 出場チーム編成', `第${season}回大会 ・ 代表タッグ1組`);
-  html += `<div class="stl-modal-lead">代表タッグ1組を選出してください。編成しない場合はおまかせ編成（サジェスト1位）で開催されます。</div>`;
+  let html = _mdlAHeader('🌸 春のタッグリーグ 出場チーム編成', `第${season}回大会 ・ 代表タッグ${playerTeams.length}組`);
+  html += `<div class="stl-modal-lead">出場枠ごとに2名を選出してください。同じ選手は複数チームに登録できません。未編成枠は締切時におまかせ編成されます。</div>`;
+  if (playerTeams.length > 1) {
+    html += `<div class="stl-slot-tabs">`;
+    playerTeams.forEach((team, index) => {
+      const selected = sel.pairs[index] || {};
+      const complete = selected.f1Id != null && selected.f2Id != null;
+      html += `<button type="button" class="stl-slot-tab${index === activeSlot ? ' is-active' : ''}${complete ? ' is-complete' : ''}" onclick="App.stlSelectEntrySlot(${index})">
+        <span>第${team.slot || index + 1}代表</span><small>${complete ? '編成済み' : '未編成'}</small>
+      </button>`;
+    });
+    html += `</div>`;
+  }
 
   if (suggestions.length > 0) {
     html += `<div class="stl-modal-section-label" style="padding:10px 24px 0">おすすめペア</div>`;
@@ -18621,38 +18691,41 @@ function _stlEntryModalHtml() {
   html += `<div class="stl-modal-section-label" style="padding:0 24px">出場資格のある選手</div>`;
   html += `<div class="stl-pick-grid">`;
   eligible.forEach(f => {
-    const picked = sel.f1Id === f.id || sel.f2Id === f.id;
+    const picked = pair.f1Id === f.id || pair.f2Id === f.id;
+    const locked = usedElsewhere.some(id => String(id) === String(f.id));
     const upperUrl = getUpperUrl(f.id);
     const tagCls = _STL_STYLE_CREAM[f.style] || 'tag-cream-neutral';
-    html += `<div class="draft-fc cand${picked ? ' picked' : ''}" onclick="App.stlPickFighter(${f.id})">
+    html += `<div class="draft-fc cand${picked ? ' picked' : ''}${locked ? ' stl-is-locked' : ''}"${locked ? '' : ` onclick="App.stlPickFighter(${f.id})"`}>
       <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(f.name)}">` : ''}</div>
       <div class="draft-fc-info">
         <div class="draft-fc-name-row"><span class="draft-fc-name">${escHtml(f.name)}</span></div>
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
           <span class="draft-fc-ovr-label">OVR</span><span class="draft-fc-ovr">${f.ovr}</span>
         </div>
-        <div class="draft-fc-meta"><span class="draft-fc-tag ${tagCls}">${escHtml(f.style || '')}</span></div>
+        <div class="draft-fc-meta"><span class="draft-fc-tag ${tagCls}">${escHtml(f.style || '')}</span>${locked ? '<span class="stl-used-label">他枠で選出済み</span>' : ''}</div>
       </div>
     </div>`;
   });
   html += `</div>`;
 
-  const f1 = sel.f1Id != null ? eligible.find(f => f.id === sel.f1Id) : null;
-  const f2 = sel.f2Id != null ? eligible.find(f => f.id === sel.f2Id) : null;
+  const f1 = pair.f1Id != null ? eligible.find(f => f.id === pair.f1Id) : null;
+  const f2 = pair.f2Id != null ? eligible.find(f => f.id === pair.f2Id) : null;
   let chemLabel = '';
   if (f1 && f2) {
     const pairData = suggestions.find(s => (s.f1Id === f1.id && s.f2Id === f2.id) || (s.f1Id === f2.id && s.f2Id === f1.id));
     if (pairData) chemLabel = pairData.chemistry >= 70 ? '◎' : pairData.chemistry >= 45 ? '◯' : '△';
   }
   html += `<div class="stl-summary-bar">
-    <span class="stl-summary-label">選択中</span>
+    <span class="stl-summary-label">第${activeSlot + 1}代表</span>
     <span class="stl-summary-names">${f1 ? escHtml(f1.name) : '未選択'} &amp; ${f2 ? escHtml(f2.name) : '未選択'}</span>
     ${chemLabel ? `<span class="stl-summary-chem">相性 ${chemLabel}</span>` : ''}
   </div>`;
 
-  const canConfirm = !!(f1 && f2);
+  const hasComplete = sel.pairs.some(row => row && row.f1Id != null && row.f2Id != null);
+  const hasHalfPair = sel.pairs.some(row => row && ((row.f1Id == null) !== (row.f2Id == null)));
+  const canConfirm = hasComplete && !hasHalfPair;
   html += `<div class="stl-modal-footer">
-    <button class="btn btn-gold" ${canConfirm ? '' : 'disabled'} onclick="App.stlConfirmTeam()">この2人で確定する</button>
+    <button class="btn btn-gold" ${canConfirm ? '' : 'disabled'} onclick="App.stlConfirmTeam()">編成内容を保存する</button>
   </div>`;
 
   return html;
