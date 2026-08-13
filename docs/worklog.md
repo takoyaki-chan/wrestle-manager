@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 春タッグv0.2をtask-96起票+task-95をCodex投入+既存テスト3本を再較正（2026-08-13・Fable）
+
+Keisukeが実機で「決勝は同率1位のときだけにすべきでは。8チーム2リーグの1位同士ならわかる」と再提起 — これは**2026-08-01の本人裁定と同内容で、spec v0.2(2ブロック制)として起票済み・未実装**だった。同率時のみ決勝案は「決勝の有無が年により不定/3チーム同率で結局詰む」ため不採用とし、v0.2実装で進める。**task-96(docs/codex-tasks/task-96-spring-tag-league-v02.md)を起票**: spec §10未決2点へのFable裁定(AIの2・3チーム目=未選出OVR上位ペア/蛇行固定/プレイヤー未編成枠はAI規則で自動編成のfail-open)+不変条件I-1〜I-10(核: 3/2/2/1計8・別ブロック1位同士・掛け持ち禁止・seedTag=A0〜5/B6〜11/決勝12・旧セーブ互換・報酬据え置き)。roadmap実装順表とspecs/INDEXに1行反映。**投入はtask-95マージ後**(app.js/index.html/data.jsが交差)。
+
+**task-95(遠征試合リスタイル+結果2拍)をCodexへ投入**: 従来のwrestle-manager-codexはtask-85のWIPで占有中+mainの未push149コミットをGitHub経由で取り込めないため、§0をtask-86/93/94と同じ**worktree方式(wm-codex-task95、ブランチcodex/task-95)へ変更**(0b28342)して`codex exec --full-auto`をバックグラウンド起動。マージレビュー(不変条件I-1〜I-7の検算)はFableが行う。なお開始時、sweet-galileoセッションのマージがworklogコンフリクトで停止していたが、当該セッションが自力で完了(4b315a7)。マージ後mainのsrc4ファイルはnode --check通過。
+
+**npm test既存3失敗の再較正(2bbfc99)**: worklog記載の「task-91陳腐化疑い」を確定させた。①feedback-fixes §5=選手詳細バーの150目盛り直計算(`val/150`)を見ていたが、task-91で共通枠越えバー`statOverBarHtml`へ移行済み→共通表記経由の検査へ ②wear-ceiling-decay §11/12=▼N・+Nの旧排他表示を見ていたが、新表記は`is-lost`/`is-gain`別チップ併記が確定デザイン→独立マークの検査へ ③regular-show-pregame-design=DB照合先`_scale6Style(_ovrSc)`がfaf4e8cで`statTierStyle('ovr')`(共通7帯)へ移行済み→照合先を差し替え。**検査は削らず新しい真実の固定に置き換え。npm test 236/236全緑へ復帰**。副産物: 試合前画面のOVRだけ旧6段階調のまま(DBは7帯)と判明→統一タスクをチップ起票。
+
+残: task-95のCodex完走→Fableマージレビュー / task-96はその後に投入 / specs更新なし(実装なしのためN/A、v0.2実装完了時にspec INDEXのステータス更新)。manifest変更なし。
+
 ## 挑戦フロー2バグ修正: 同一週の挑戦系コンテナ排他+対抗戦中断で結果が出る（2026-08-13・Fable・mainへマージ済み）
 
 チップ起票済みの2件を修正(worktree sweet-galileo→main)。
