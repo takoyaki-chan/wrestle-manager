@@ -3505,6 +3505,42 @@ Engine.challengeRequest = {
     return (fighterIds || []).some(id => id != null && awayIds.has(id));
   },
 
+  /** 同一週の挑戦系コンテナ排他(2026-08-13 Keisuke報告)。
+   *  遠征(敵地遠征・統一王座遠征)と受け挑戦(果たし状シリーズ・挑戦状・統一王座迎撃)は
+   *  別々のコンテナで進むため、同じ週に両方を消化すると同じ選手が週内に複数回試合できた。
+   *  受理が早い側(先着)だけを今週消化し、後発は消滅させず次の通常興行週へ持ち越す。
+   *  今週すでに遠征を消化済み(_awayChallengeUsedIds)なら受け側は無条件で持ち越し。
+   *  returns: 'away' | 'incoming' | null(どちらの予約も無い)
+   */
+  /** 今週すでに遠征コンテナ(敵地遠征/統一王座遠征)を消化済みか。
+   *  予約(_pending系)は消化と同時に消えるため、「出た事実」はこちらで判定する。 */
+  hasAwayRunThisWeek(state) {
+    const used = state?._awayChallengeUsedIds;
+    return !!(used && used.season === state?.season && used.week === state?.week);
+  },
+
+  resolveWeeklyChallengeContainer(state) {
+    if (!state) return null;
+    if (this.hasAwayRunThisWeek(state)) return 'away';
+    const away = state._pendingAwayChallengeMatch || state._pendingUnifiedAwayMatch || null;
+    const legacy = state._pendingChallengeMatch;
+    const incoming = state._pendingIncomingChallengeMatch
+      || (legacy && legacy.isInverse ? legacy : null)
+      || state._pendingUnifiedIncomingMatch
+      || state._pendingIncomingB3Match
+      || null;
+    if (!away || !incoming) return away ? 'away' : incoming ? 'incoming' : null;
+    // 受理週の無い旧データは最古(先着)扱い。同着は従来の消化順どおり遠征を先に。
+    const acceptedAbs = booking => {
+      const s = Number(booking.acceptedSeason);
+      const w = Number(booking.acceptedWeek);
+      if (Number.isInteger(s) && Number.isInteger(w)) return Engine.util.absWeek(s, w);
+      const issued = Number(booking.issuedAbsWeek);
+      return Number.isFinite(issued) ? issued : -Infinity;
+    };
+    return acceptedAbs(away) <= acceptedAbs(incoming) ? 'away' : 'incoming';
+  },
+
   /**
    * An away booking is only a reservation; its wrestlers remain in the roster.
    * Older builds could leave that reservation behind indefinitely, which made

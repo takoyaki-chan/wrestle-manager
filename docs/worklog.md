@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 挑戦フロー2バグ修正: 同一週の挑戦系コンテナ排他+対抗戦中断で結果が出る（2026-08-13・Fable）
+
+チップ起票済みの2件を修正(worktree sweet-galileo)。
+
+**バグ1(優先): 同一週に受け挑戦と遠征が同時発生し同一選手が複数回試合** — 呼び出し元の数え上げの結果、予約は5コンテナ(敵地遠征/統一王座遠征/果たし状シリーズ/B3挑戦状/統一王座迎撃)あり、既存排他は ①`hasCompetingBooking`=1興行のカード内のみ ②B3の`hasAwayParticipantConflict`=**遠征の消化後は予約が消えて素通り**(9910行コメントの既知の罠と同型) ③task-88の統一王座繰り越し=受け側同士のみ、で**週内の遠征↔受け側の排他が無かった**。修正: `Engine.challengeRequest.resolveWeeklyChallengeContainer(state)`(純関数・'away'/'incoming'/null)を新設し、**同一週の挑戦系コンテナは1つまで・受理週の先着優先・後発は予約を消さず次の通常興行週へ持ち越し**(=既存の8週失効sweepと整合、消すのは従来どおりsweepだけ)。「今週遠征消化済み」は`_awayChallengeUsedIds`で判定する`hasAwayRunThisWeek`を対にし、同週2本目の遠征も見送り。配線は全地点: executeShow(遠征起動2+受け予約3+果たし状消化1+**I-1保険=今週遠征済み選手をカードから除去**)/renderShowPrep(受け予約3+持ち越しバナー)/startShowPrep・resumeShowPrep(移動演出ごと見送り)/_startAwayChallengeShow(直接呼び出しの保険)。B3の旧参加者重複ゲートは本排他に置換(旧ゲートを残すと相互デッドロックでB3が失効まで走らない)。
+
+**バグ2: 対抗戦観戦の「✕試合中断」で試合が未消化に見える** — 原因は表示: warWatchMatchが結果を観戦開始時に確定済みなのに、escapeBattleの対抗戦分岐だけ**盤面を再描画せず**古いスコア(0-0)のまま戻していた。さらに最終試合を中断すると finalizeWar が呼ばれず**ボタンも死ぬソフトロック**が潜在。修正: 中断でも観戦完了(`_receiveWarBattleResult`)と同じ着地=勝敗SE→`renderWarMatchPreview()`→全消化なら`finalizeWar()`。BGM復帰はトークンガード付き`_scheduleWarBgmResume`へ。**対抗戦分岐のみの変更**で、通常興行/PPV/大会観戦の中断挙動は不変。
+
+触ったファイル: relationships.js(裁定関数2つ)/app.js(executeShowゲート+I-1保険+遠征起動保険+escapeBattle)/ui-common.js(startShowPrep/resumeShowPrep)/ui-render.js(renderShowPrep+バナー)。テスト新設: `test/challenge-week-exclusivity-test.js`(先着裁定・消化済みロック・純関数性=I-2・8週失効不変=I-3・全配線の静的検査)/`test/war-escape-result-test.js`(escapeBattle実抽出の挙動検査3ケース)。検証: 新規2本+関連13本(challenge系5・away系2・unified2・autumn-war2・b3・f09)全緑、auto-sim 40季(seed 7919)ALL CLEAR 違反0。specs: challenge-request-spec-v0.2 に§7(週次排他)追記+INDEX更新。残: Keisuke実機確認(バックログ追記済み)・specs diff確認。
+
 ## 遠征試合2画面のリデザイン設計+モックv0.1 / 紫線修正 / 挑戦フロー2バグをチップ起票（2026-08-13・Fable・レビュー待ち）
 
 実機フィードバック続き4件。①**相手エース一言カードの「変な紫線」**= `.pb-ace-area` の左端団体色帯(border-left: --pb-enemy-color)。紫系団体で不評のため削除(団体色はバッジが担う)→コミット13189d1 ②**同一週に受け挑戦と遠征が同時発生し同一選手が複数試合**+③**対抗戦観戦の「中断」後に試合が未消化に見える**の2件は、既存排他(hasCompetingBookingは1興行内のみ=週内の別コンテナ間に穴)と escapeBattle の対抗戦分岐(warSkipMatchで結果は埋めるはず)まで調査した結果を添えて**修正タスクをチップ起票**(不変条件I-1〜I-3対) ④**遠征試合の進行/結果画面リデザイン** — 設計+`docs/ui/mockups/away-challenge-v0.1.html`(3ビュー・相手団体カラー3種切替)。

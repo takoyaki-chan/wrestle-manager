@@ -6455,11 +6455,16 @@ const App = {
     // old post-show branch temporarily mixed opponent guests into a completed
     // local-show state and could persist them if result processing failed.
     // Route both buttons through the same transactional away-show flow.
-    if (G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+    // 同一週の挑戦系コンテナは1つまで(2026-08-13): 受け挑戦(果たし状/挑戦状/統一王座迎撃)が
+    // 先着の週は遠征を見送る(予約は消さず次の通常興行週へ)。逆に遠征側が先着・消化済みの
+    // 週は、下の受け側予約ブロックが持ち越しになる。遠征を1本消化済みの週は2本目の遠征も見送る。
+    const weeklyChallengeSide = Engine.challengeRequest?.resolveWeeklyChallengeContainer?.(G) || null;
+    const awayRanThisWeek = Engine.challengeRequest?.hasAwayRunThisWeek?.(G) || false;
+    if (!awayRanThisWeek && weeklyChallengeSide !== 'incoming' && G._pendingUnifiedAwayMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
       App.beginUnifiedTitleAwayTravel();
       return;
     }
-    if (G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
+    if (!awayRanThisWeek && weeklyChallengeSide !== 'incoming' && G._pendingAwayChallengeMatch && Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
       if (App.startAwayChallengeFromPrep()) return;
       // Invalid bookings are cancelled by _startAwayChallengeShow(). Continue
       // the local show only after that reservation has actually been cleared.
@@ -6474,7 +6479,7 @@ const App = {
         : G._pendingAwayChallengeMatch.teamBIds;
       G = { ...G, showCard: Engine.challengeRequest.removeFightersFromCard(G.showCard, awayOwnIds) };
     }
-    if (eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse) && Engine.challengeRequest?.reserveScheduledMatches) {
+    if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse) && Engine.challengeRequest?.reserveScheduledMatches) {
       const reservedCR = Engine.challengeRequest.reserveScheduledMatches(G, G.showCard);
       if (reservedCR) {
         const existingIds = new Set((G.roster || []).map(f => f.id));
@@ -6492,7 +6497,7 @@ const App = {
     // task-88: 挑戦シリーズの次、B3より前に統一王座戦をメインへ予約する。
     // 既存予約が同週なら先着の挑戦シリーズを優先し、統一王座戦は次の通常興行へ繰り越す。
     App._unifiedTitleShowData = null;
-    if (eligibleChallengeShow && !Engine.challengeRequest?.getScheduledCard?.(G) && G._pendingUnifiedIncomingMatch) {
+    if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && !Engine.challengeRequest?.getScheduledCard?.(G) && G._pendingUnifiedIncomingMatch) {
       const reservedUnified = Engine.unifiedTitle.reserveIncomingMatch(G);
       if (reservedUnified.match) {
         const scheduled = reservedUnified.match;
@@ -6516,11 +6521,9 @@ const App = {
       }
     }
     App._b3ShowData = null;
-    const b3AwayConflict = G._pendingIncomingB3Match && Engine.challengeRequest?.hasAwayParticipantConflict?.(G, [
-      G._pendingIncomingB3Match.fighterId,
-      G._pendingIncomingB3Match.challenger?.id,
-    ]);
-    if (eligibleChallengeShow && !Engine.challengeRequest?.getScheduledCard?.(G) && !App._unifiedTitleShowData && G._pendingIncomingB3Match && !b3AwayConflict && Engine.challengeRequest?.reserveScheduledSingleMatch) {
+    // 挑戦状(B3)も同週コンテナ排他に従う。旧・参加者重複チェック(hasAwayParticipantConflict)は
+    // 遠征の消化後(予約が消えた後)を見抜けず同週の二重出場を許していたため、週単位の排他へ置換。
+    if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && !Engine.challengeRequest?.getScheduledCard?.(G) && !App._unifiedTitleShowData && G._pendingIncomingB3Match && Engine.challengeRequest?.reserveScheduledSingleMatch) {
       const reservedB3 = Engine.challengeRequest.reserveScheduledSingleMatch(G, G.showCard);
       if (reservedB3) {
         const scheduled = reservedB3.scheduled;
@@ -6536,6 +6539,14 @@ const App = {
         G = { ...rest, showCard: Engine.challengeRequest.clearReservedMatches(G, G.showCard) };
         showToast('⚠ 挑戦試合の出場条件が整わないため、予約を解除しました', 5000);
       }
+    }
+    // I-1保険: 今週すでに遠征で試合した選手が(手動編集や旧セーブ経由で)カードに
+    // 残っていても自団体興行には出さない。該当枠は空欄化され、下のsanitizeで除外される。
+    const awayUsedThisWeek = G._awayChallengeUsedIds;
+    if (awayUsedThisWeek && awayUsedThisWeek.season === G.season && awayUsedThisWeek.week === G.week
+        && (awayUsedThisWeek.ids || []).length > 0 && Engine.challengeRequest?.removeFightersFromCard) {
+      const strippedCard = Engine.challengeRequest.removeFightersFromCard(G.showCard, awayUsedThisWeek.ids);
+      if (JSON.stringify(strippedCard) !== JSON.stringify(G.showCard)) G = { ...G, showCard: strippedCard };
     }
     // Guard: sanitize stale card refs (released/retired/transferred wrestlers)
     const rosterIdSet = new Set(G.roster.map(c => c.id));
@@ -6645,7 +6656,7 @@ const App = {
     // ── challenge-request-spec-v0.1 Phase 3: 予約済み挑戦シリーズを実行 ──
     // 上位3枠は会場上限の内数として興行準備時点で確保済み。
     App._crMatchData = null;
-    if (eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse)) {
+    if (eligibleChallengeShow && weeklyChallengeSide !== 'away' && (G._pendingIncomingChallengeMatch || G._pendingChallengeMatch?.isInverse)) {
       const pcm = G._pendingIncomingChallengeMatch || G._pendingChallengeMatch;
       const isInverseCR = !!pcm.isInverse;
       const _crHealthy = f => f && !f.injury && !f.forcedRest && !f.suspended;
@@ -7287,14 +7298,22 @@ const App = {
     } else if (wp && wp.currentWatching >= 0) {
       const idx = wp.currentWatching;
       wp.currentWatching = -1;
-      // App._skipWarMatch は**存在しない**(改名の取り残し)。正しくは warSkipMatch。
-      // いまは warWatchMatch が結果を先に埋めるのでこの枝に入らないが、
-      // 結果を後回しにする変更を入れた瞬間に TypeError で escapeBattle ごと落ちる
-      // (2026-07-31 監査で検出)。
-      if (!wp.results[idx]) App.warSkipMatch(idx);
-      // 対抗戦BGM復帰
+      if (!wp.results[idx]) {
+        // warWatchMatch が結果を先に埋めるので通常ここには来ない(保険)。
+        // warSkipMatch 側が勝敗SE・盤面再描画・全消化時の finalizeWar まで行う。
+        App.warSkipMatch(idx);
+      } else {
+        // 中断でも観戦完了(_receiveWarBattleResult)と同じ着地にする:
+        // 結果は事前計算済みなので勝敗SE→盤面反映→全消化なら決着処理。
+        // 以前は結果を埋めるだけで盤面を再描画しておらず、スコアが古いまま
+        // 「試合が未消化」に見えていた(2026-08-13 Keisuke報告)。
+        App._playWarMatchResultSe(wp.results[idx]);
+        renderWarMatchPreview();
+        if (wp.results.every(r => r !== null)) App.finalizeWar();
+      }
+      // 対抗戦BGM復帰(全消化で決着処理へ進んだ場合はトークンガードで再開しない)
       if (!wp.results.every(r => r !== null)) {
-        setTimeout(() => { if (App._warPreview) { try { Audio.bgm.playStage('war'); } catch(e) {} } }, 300);
+        App._scheduleWarBgmResume(300);
       }
     }
     if (aw && aw.phase === 'watching') {
@@ -9884,6 +9903,11 @@ const App = {
   _startAwayChallengeShow() {
     const booking = G._pendingAwayChallengeMatch;
     if (!booking || App._awayChallengeInProgress) return false;
+    // 同週コンテナ排他: 受け挑戦が先着の週、および今週すでに別の遠征を消化済みの週は
+    // 遠征を起動しない(予約は持ち越し)。通常導線(startShowPrep/resumeShowPrep/executeShow)は
+    // 手前で見送るため、これは直接呼び出しの保険。
+    if (Engine.challengeRequest?.hasAwayRunThisWeek?.(G)) return false;
+    if (Engine.challengeRequest?.resolveWeeklyChallengeContainer?.(G) === 'incoming') return false;
     const requesterRoster = booking.requesterOrgId === 'player' ? (G.roster || []) : (G.aiOrgs?.[booking.requesterOrgId]?.roster || []);
     const opponentRoster = booking.opponentOrgId === 'player' ? (G.roster || []) : (G.aiOrgs?.[booking.opponentOrgId]?.roster || []);
     const findAll = (ids, roster) => (ids || []).map(id => roster.find(f => f.id === id)).filter(Boolean);
