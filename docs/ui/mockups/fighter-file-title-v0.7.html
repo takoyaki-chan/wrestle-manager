@@ -245,7 +245,7 @@ body { padding:var(--space-xl) 0 80px; }
           <span class="stamp">機密指定</span>
           <div>
             <div class="nx-main">潜在能力値は、本ファイルには記載されない。</div>
-            <div class="nx-sub">各選手の潜在能力の基準値は機密事項。さらに同じ選手であっても、その基準値はプレイごとに変化する。<br>※ 記載の能力値は各選手の基準値。</div>
+            <div class="nx-sub">各選手の潜在能力は機密事項。さらに同じ選手であっても、その数値はプレイごとに変化する。<br>※ 記載の能力値は各選手の能力基準値。</div>
           </div>
         </div>
         <div class="ff-filterbar">
@@ -571,7 +571,7 @@ function openDetail(id){
       <div class="ffm-sec-label">Profile — 紹介</div>
       <div class="ffm-profile">${esc(f.profile)}</div>
     </div>
-    <div class="ffm-foot">※ 記載の能力値は基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。</div>`;
+    <div class="ffm-foot">※ 記載の能力値は各選手の能力基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。</div>`;
   document.getElementById('ffmBackdrop').classList.add('open');
 }
 function closeDetail(){ document.getElementById('ffmBackdrop').classList.remove('open'); }
