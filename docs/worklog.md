@@ -1,5 +1,32 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## セリフ検品の指摘を修正: 違反6本差し替え+「わたし」→「私」13箇所+取り残し3箇所（2026-08-13・Fable・文言レビュー待ち）
+
+検品報告へのKeisuke裁定「①②③全部直せ。不揃いも含めて」を受けて実施。全24箇所、宣言テーブル内のみ(push実行文は対象外・後述)。
+
+1. **①違反セルの差し替え6本**(新規執筆・口調シートのアンカー準拠): GL-01のpolite.bold 4行(win「ふぅ……勝ちました！ 実力、見せられたかな？」/loss「……悔しいです。この負けは、次で必ず取り返します！」/goodLoss「負けました……でも、全力は出し切れたかな。次は勝ちます！」/greatWin「見ていただけましたか？ これが私の、全力です！」=大久保アンカーの全力・誇り・見下しなし)+loss.seductive.earnest「……敗因は、分かっているの。次は、同じようにはいかないわ」(新見アンカーの観察と分析)+GL-02-hostile.polite.normalの重複コピー解消「私情は持ち込まないと、決めているんです。……難しいですね」
+2. **②ひらがな一人称13箇所を漢字「私」へ**(裁定53: ひらがなはshy帯のみ): CONTRACT_NEGOTIATION(polite.emotional×2/seductive×2)、RETIREMENT・POACH・CHOICE_EVENTのpolite.emotional×4、CARE_REACTION polite._default、GLIMPSE_A trust_below_20.seductive.emotional、FLAG_DIALOGUE seductive×2、F08_PRE_MATCH_LINES_B(delinquent)「私んとこ」。**shyセルの「わたし」116行は仕様通りなので不変**
+3. **③取り残し3箇所**: F07 composed.bold 2セルをタメ口化(「…わかった。私からメンバーに話しておくよ。」「…そこまで見てくれてるんだ。下の子のこと、助かるよ。」=6295662の同型改訂と同じ骨格)+GL-02-hostile.standard.normal「見てろよ」→「見返してやる」+FLAG_DIALOGUE cool「……すまない。」→「……ごめん。」
+4. **③のGlimpse常体7セルは直していない(重要)**: 規範の口調シート「鷹揚×真面目」のアンカー(馬入橋)が常体(「まだまだ成長途中。もっと強くなってみせる！」)であり、GLIMPSE_A/Bとも既にシート通り=**両者は揃っていた**。不揃いの実体はspec§4の要約1行だったため、specの鷹揚行を「対社長の改まった場面のみearnestがです・ます」へ明確化(specs/dialogue-tone-spec-v1.0.md、diff要Keisuke確認)
+5. **新発見(未対応・要判断)**: `NOTIF_DIALOGUES['N2'].easygoing.polite.push(...)` 型の**push実行文セリフ群**(NOTIF/CARE_REACTION/CHOICE_EVENT/LARGE_EVENT/SNAPSHOT_TEXTS等)に「わたし」61行+半角!?が大量残存。GLIMPSE_B§5と同じ「ブラケット/push=ワークブック不可視」の第2の盲点で、口調全直しを一度も通っていない。規模が大きいため今回は触らず別タスク起票(チップ)
+
+検証: node --check 3ファイル / glimpse-b-axis-guard PASS / **test 228/228 PASS** / 残存「わたし」の分布再計測(宣言テーブル=shyのみ116行・push実行文61行)。data-faction-dialogue.jsは混在改行のためEditツールが562行を巻き込む事故→復元しバイト精密置換で1行差分に修正済み。auto-simはターン末フック任せ。manifest変更なし。ブック再export+抽出MD再生成は**未実施**(文言レビュー後にまとめて実施)。
+
+残: Keisukeの文言レビュー(差し替え6本+③3本は全文提示済み)/specs diff確認/push実行文クラスの検品タスク。
+
+## セリフ検品: 文言化けの全数照合+GLIMPSE_B移植59セル検品（2026-08-13・Fable・修正はレビュー待ち）
+
+「拳が握りしまる」(1f4222f修正済み)と同型の文言化けを機械検品した。**コードは一切変更していない**(指摘の修正はKeisukeレビュー後)。
+
+**手法**: ①`tools/extract-dialogue.js` をworktreeで再実行→committed版カタログとgit diff→docs復元(同一生成ロジックなので \uXXXX デコード・キー順正規化は自動吸収、全20,540本照合) ②口調バイブル反映(6295662)のdiffから旧文言849本を抽出し、現行srcへの残存を全数走査(拳ケースの検出器として設計) ③GLIMPSE_B移植59セル(composed42+GL-02-hostile13+GL-01push分)へ口調spec鉄則の機械検査+目視 ④petition102本を承認草案と全数突き合わせ。
+
+**結果**:
+1. **doc↔src不一致ゼロ**。差分は4ファイルすべて意図的改稿と一致(petition100本置換=task-87 / 負傷セリフ1本+雰囲気テキスト15本=実機FB 7件バッチ / 新セリフ63本=task-86/87のEVENT_LINES_BY_KEY登録)
+2. **化け残り(拳同型)は実質なし**。残存候補8件を精査→全て別人格セルの正当な文言か部分一致。ただし改訂漏れ疑い2件+迷い1件を列挙(flag-dialogue seductiveの「わたし」/F07 composed.boldの敬語/coolの「すまない」)
+3. **GLIMPSE_B移植分に明確な違反5件**: GL-01の polite.bold 4行(data.js:26706/26818/26923/27026、「よっしゃ……!」「見ろよ!!これがわたしだ!!」等=旧セッションF push由来。半角!+ひらがな一人称+丁寧の口調完全不一致)+loss.seductive.earnest(26809「わたし、足りませんわね」)。**移植の軸変換自体は正しい**(旧`['win'].bold.polite`→新`polite.bold`)=4月の元執筆がpoliteスロットに非丁寧文言を書いていた。ほかGL-02-hostile.polite.normal(27199)がstandard.earnest(27176)と完全重複+常体、composed.earnest 7セルが常体(specは「earnestのみです・ます」)=裁定待ちとして列挙
+4. **petition102本は草案と102/102一致**(「変更なし」2本含む)
+
+**残**: 指摘セルの直しはKeisuke裁定後(違反5件は直し推奨、迷い項目は裁定のみ)。roadmap該当項目なし・specs変更なし(検品のみ)・manifest変更なし。
 ## 本編DB逆輸入モック v0.1: 階調・枠越えバー・レーダー軸色（2026-08-13・Fable・レビュー待ち）
 
 選手ファイルv0.7の**Keisuke全項目承認**を受け、「詳細画面の五角形・能力値表記・一覧のグラデーションを本編データベースへ逆輸入したい」の指示で `docs/ui/mockups/db-gradient-backport-v0.1.html` を作成。**§1 DB全選手一覧**: 現行の塗り(ステ3段・OVR=_scale6 6段で85+常時glow)と逆輸入(案X7帯)を同一ダミーデータ10行で上下比較。**輝きは100超だけに限定する提案**(現行の85+常時glowは廃止——本編は100超が実在するので、輝きの稀少性が規格外の格を作る。01-foundations原則11と同思想)。**§2 選手詳細・能力タブ**: 0-150バー→枠越え圧縮バーへ。本編固有要素を織り込み——PW112=枠越え+輝き/消耗天井▼6=現在値の先に同色半透明ゴースト(現行の薄バー表現を新ジオメトリへ移植)/季節成長+2=緑マーカー維持/レーダー軸ラベルを系統色に。**§3 実装方針**: 階調`statTierStyle`と`barDisp`をui-commonへ共通ヘルパー化し**DB一覧・選手詳細・選手ファイルの3画面で共用**(画面ごとの再実装=ドリフトを禁止)。置換対象=_statCell/DB・詳細のOVR塗り/詳細ステバー・レーダー軸。**触らない**=_scale6本体と他用途(_mqColor/_condColor/_popColor/_bondColor)・ランキングv0.9階調・開発率バー。**§4 判断点5件**: 85+glow廃止の是非/人気ほか他スケールへの展開/ランキング階調との整合(当面残す提案)/ゴースト濃度/他画面への展開範囲。
