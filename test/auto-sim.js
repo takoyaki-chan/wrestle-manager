@@ -96,6 +96,19 @@ loadAsGlobal('flag-dialogue.js');
 loadAsGlobal('factions.js');
 loadAsGlobal('draft-negotiation.js');
 
+// task-92 I-6: 年末表彰データが作られる瞬間のMVPと統一王者を横計測する。
+// sourceRefで旧HEADを読む場合も同じ物差しを使えるよう、ゲーム実装の外側で包む。
+const unifiedRecordsI6Probe = { annualMvps: 0, unifiedChampionMvps: 0 };
+const generateAwardsForUnifiedRecordsI6 = Engine.awards.generate;
+Engine.awards.generate = function generateAwardsWithUnifiedRecordsI6(rng, state) {
+  const awards = generateAwardsForUnifiedRecordsI6.call(this, rng, state);
+  if (awards?.mvp) {
+    unifiedRecordsI6Probe.annualMvps++;
+    if (state.unifiedTitle?.championId === awards.mvp.id) unifiedRecordsI6Probe.unifiedChampionMvps++;
+  }
+  return awards;
+};
+
 function createPhaseTimingStats(maxTurn, climaxStart) {
   return {
     matches: 0,
@@ -1196,6 +1209,8 @@ const FREQ_THRESHOLDS = [
 ];
 
 function runSimulation(seed, seasons) {
+  unifiedRecordsI6Probe.annualMvps = 0;
+  unifiedRecordsI6Probe.unifiedChampionMvps = 0;
   const violations = [];
   const errors = [];
   let totalWeeks = 0;
@@ -1756,11 +1771,27 @@ function runSimulation(seed, seasons) {
     playerTurnsConsumed: unifiedHistory.filter(ev => ev.type === 'playerTurnConsumed').length,
     vacates: unifiedHistory.filter(ev => ev.type === 'vacate').length,
   } : null;
+  const hofLevels = { star1: 0, star2: 0, star3: 0 };
+  Object.values(G?.allHallOfFame || {}).flat().forEach(entry => {
+    const level = Number(entry?.hofLevel)
+      || Engine.awards.getHofLevel(Number(entry?.hofPoints) || 0);
+    if (level === 1) hofLevels.star1++;
+    else if (level === 2) hofLevels.star2++;
+    else if (level >= 3) hofLevels.star3++;
+  });
+  const unifiedRecordsI6 = {
+    hofLevels,
+    annualMvps: unifiedRecordsI6Probe.annualMvps,
+    unifiedChampionMvps: unifiedRecordsI6Probe.unifiedChampionMvps,
+    unifiedChampionMvpRate: unifiedRecordsI6Probe.annualMvps > 0
+      ? unifiedRecordsI6Probe.unifiedChampionMvps / unifiedRecordsI6Probe.annualMvps : 0,
+  };
   return {
     violations, errors, totalWeeks, gameOverCount, stats, flagStats,
     finalSeasons: G ? G.season : 0,
     semanticFingerprint: semanticFingerprint.toString(16).padStart(8, '0'),
     unifiedDistribution,
+    unifiedRecordsI6,
   };
 }
 
@@ -1814,6 +1845,13 @@ if (result.unifiedDistribution) {
   console.log(`  防衛成功率: ${u.defenses}/${u.defenseMatches} (${(u.defenseSuccessRate * 100).toFixed(1)}%)`);
   console.log(`  こちらの番: 発生${u.playerTurns} / 消化${u.playerTurnsConsumed}`);
   console.log(`  返上回数: ${u.vacates}`);
+}
+if (targetSeasons >= 100) {
+  const i6 = result.unifiedRecordsI6;
+  console.log('');
+  console.log('全国統一王座 P4 記録較正 (I-6):');
+  console.log(`  殿堂★分布: ★=${i6.hofLevels.star1} ★★=${i6.hofLevels.star2} ★★★=${i6.hofLevels.star3}`);
+  console.log(`  年間MVPの統一王者比率: ${i6.unifiedChampionMvps}/${i6.annualMvps} (${(i6.unifiedChampionMvpRate * 100).toFixed(1)}%)`);
 }
 if (s.seasons >= 10) {
   const rates = {

@@ -2404,10 +2404,10 @@ const Engine = {
       };
     },
 
-    _recordUnifiedWin(state, fighterId) {
+    _recordUnifiedWin(state, fighterId, result = 'won') {
       return this._updateFighter(state, fighterId, fighter => {
         const gain = Engine.popularity.applyDiminishing(8, fighter.popularity || 0);
-        const event = { type: 'unifiedTitle', result: 'won', season: state.season, week: state.week };
+        const event = { type: 'unifiedTitle', result, season: state.season, week: state.week };
         const careerRecord = fighter.careerRecord || {};
         const updated = {
           ...fighter,
@@ -2487,7 +2487,7 @@ const Engine = {
         history: [...(previous?.history || []), historyEvent],
       };
       let next = { ...state, unifiedTitle };
-      next = this._recordUnifiedWin(next, fighterId);
+      next = this._recordUnifiedWin(next, fighterId, 'won');
       const fighter = this._findActive(next, fighterId)?.fighter || found.fighter;
       const newsType = isCreation ? 'unifiedTitleCreation' : (isRepeat ? 'unifiedTitleRepeat' : 'unifiedTitleCrown');
       next = this._pushNews(next, newsType, {
@@ -2935,7 +2935,13 @@ const Engine = {
         };
         next = this._updateFighter(next, champion.fighter.id, fighter => {
           const gain = Engine.popularity.applyDiminishing(3, fighter.popularity || 0);
-          return Engine.career.updatePeakPopularity({ ...fighter, popularity: Math.min(100, (fighter.popularity || 0) + gain) }, state.season);
+          const careerRecord = fighter.careerRecord || {};
+          const careerEvent = { type: 'unifiedTitle', result: 'defense', season: state.season, week: state.week };
+          return Engine.career.updatePeakPopularity({
+            ...fighter,
+            popularity: Math.min(100, (fighter.popularity || 0) + gain),
+            careerRecord: { ...careerRecord, history: [...(careerRecord.history || []), careerEvent] },
+          }, state.season);
         });
         next = this._pushNews(next, 'unifiedTitleDefense', {
           name: champion.fighter.name,
@@ -2970,7 +2976,7 @@ const Engine = {
           history: [...(title.history || []), event],
         },
       };
-      next = this._recordUnifiedWin(next, challenger.fighter.id);
+      next = this._recordUnifiedWin(next, challenger.fighter.id, 'captured');
       const movedStats = this._cycleStats(next.unifiedTitle);
       next = this._pushNews(next, 'unifiedTitleMove', {
         winner: challenger.fighter.name,
@@ -18922,6 +18928,9 @@ Engine.mvpRace = {
     TITLE_WIN: 11,
     TITLE_DEFENSE_PER: 13,
     TITLE_HOLD_AT_END: 8,
+    UNIFIED_DEFENSE: 20,
+    UNIFIED_CAPTURE: 20,
+    UNIFIED_HOLD_AT_END: 12,
     DOME_MAIN_APPEARANCE: 4,
     BIG_MATCH_MQ85: 3,
     BIG_MATCH_MQ90: 4,
@@ -18977,6 +18986,7 @@ Engine.mvpRace = {
 
     let ppvChampion = 0, ppvRunnerUp = 0, ppvOtherWin = 0, ppvOtherLoss = 0;
     let titleWins = 0, titleDefenses = 0;
+    let unifiedCaptures = 0, unifiedDefenses = 0;
     let domeAppearances = 0;
     let bigMatchPoints = 0;
     let bigMatch85 = 0, bigMatch90 = 0, bigMatch95 = 0;
@@ -18998,6 +19008,8 @@ Engine.mvpRace = {
         }
       } else if (ev.type === 'titleWin') titleWins++;
       else if (ev.type === 'titleDefense') titleDefenses++;
+      else if (ev.type === 'unifiedTitle' && ev.result === 'captured') unifiedCaptures++;
+      else if (ev.type === 'unifiedTitle' && ev.result === 'defense') unifiedDefenses++;
       else if (ev.type === 'domeMain') domeAppearances++;
       else if (ev.type === 'bigMatch') {
         const mq = typeof ev.mq === 'number' ? ev.mq : 0;
@@ -19061,6 +19073,10 @@ Engine.mvpRace = {
     const ppv = ppvChampion * P.PPV_CHAMPION + ppvRunnerUp * P.PPV_RUNNER_UP
               + ppvOtherWin * P.PPV_OTHER_WIN + ppvOtherLoss * P.PPV_OTHER_LOSS;
     const title = titleWins * P.TITLE_WIN + titleDefenses * P.TITLE_DEFENSE_PER + (isCurrentChamp ? P.TITLE_HOLD_AT_END : 0);
+    const isUnifiedChamp = state.unifiedTitle?.championId === fighter.id;
+    const unified = unifiedCaptures * P.UNIFIED_CAPTURE + unifiedDefenses * P.UNIFIED_DEFENSE
+      + (isUnifiedChamp ? P.UNIFIED_HOLD_AT_END : 0);
+    const hasUnifiedContext = !!state.unifiedTitle || unifiedCaptures > 0 || unifiedDefenses > 0;
     const dome = domeAppearances * P.DOME_MAIN_APPEARANCE;
     const mq = bigMatchPoints + seasonBestMQBonus + mqRecordBroken * P.MQ_RECORD_BREAK;
     const war = warWins * P.WAR_WIN + warLosses * P.WAR_LOSS;
@@ -19068,14 +19084,15 @@ Engine.mvpRace = {
     const orgRank = Engine.mvpRace._orgRankPoints(state, orgId);
     const draw = popBonus + drawBonus;
 
-    const points = ovr + ppv + title + dome + mq + war + b3 + orgRank + draw + tenchosen + autumnWar + springTag;
+    const points = ovr + ppv + title + unified + dome + mq + war + b3 + orgRank + draw + tenchosen + autumnWar + springTag;
 
     return {
       points,
       breakdown: {
-        ovr, ppv, title, dome, mq, war, b3, orgRank, draw, tenchosen, autumnWar, springTag,
+        ovr, ppv, title, ...(hasUnifiedContext ? { unified } : {}), dome, mq, war, b3, orgRank, draw, tenchosen, autumnWar, springTag,
         meta: {
           titleWins, titleDefenses, isCurrentChamp,
+          ...(hasUnifiedContext ? { unifiedCaptures, unifiedDefenses, isUnifiedChamp } : {}),
           ppvChampion, ppvRunnerUp, ppvOtherWin, ppvOtherLoss,
           bigMatch85, bigMatch90, bigMatch95,
           bigMatches: bigMatch85 + bigMatch90 + bigMatch95,
@@ -19699,6 +19716,9 @@ Engine.mvpRace = {
   /** 当シーズンに発生した特筆事績をチップ向けに収集（最大3件） */
   _collectFactChips(fighter, season, m) {
     const chips = [];
+    if (m.unifiedDefenses > 0) chips.push({ icon: '🌐', text: `統一王座防衛${m.unifiedDefenses}回` });
+    if (m.unifiedCaptures > 0) chips.push({ icon: '🌐', text: '統一王座奪取' });
+    if (m.isUnifiedChamp) chips.push({ icon: '🌐', text: '現統一王者' });
     if (m.titleDefenses > 0) chips.push({ icon: '👑', text: `王座防衛${m.titleDefenses}回` });
     if (m.titleWins > 0) chips.push({ icon: '👑', text: `王座奪取${m.titleWins}回` });
     if (m.isCurrentChamp && m.titleDefenses === 0 && m.titleWins === 0) chips.push({ icon: '👑', text: '現王者' });
@@ -19943,7 +19963,7 @@ Engine.awards = {
     if (!awards) return false;
     return !!(
       awards.springTagChampion || awards.jtChampion || awards.autumnWarChampion ||
-      awards.tenchosenChampion || awards.ppvFinalWinner || awards.mediaAward ||
+      awards.tenchosenChampion || awards.ppvFinalWinner || awards.unifiedChampion || awards.mediaAward ||
       awards.bestMatch || awards.mvp ||
       (awards.champions && Object.values(awards.champions).some(Boolean)) ||
       (awards.hallOfFame && awards.hallOfFame.length > 0)
@@ -20054,6 +20074,22 @@ Engine.awards = {
     };
     const springTagChampion = teamAward(springTagMembers);
     const autumnWarChampion = teamAward(autumnWarMembers);
+    // 天頂戦年は大会優勝スライドが戴冠を兼ねる。通常年だけ、年末時点の
+    // 現統一王者を「今年の大会」に1枚追加する（空位ならデータ自体を作らない）。
+    let unifiedChampion = null;
+    if (!Engine.ppvTournament.isTournamentSeason(state.season) && state.unifiedTitle?.championId) {
+      const holder = awardFighter(state.unifiedTitle.championId);
+      if (holder) {
+        const holderRow = resultScanPool.find(row => row.fighter?.id === holder.id);
+        const history = holderRow?.fighter?.careerRecord?.history || [];
+        unifiedChampion = {
+          ...holder,
+          heldYears: Engine.unifiedTitle._heldYears(state, state.unifiedTitle),
+          defensesThisSeason: history.filter(ev => ev.type === 'unifiedTitle'
+            && ev.result === 'defense' && ev.season === state.season).length,
+        };
+      }
+    }
 
     // NPC団体ごとの内部表彰（プレイヤー視点では暗黙の事実として履歴にだけ残る）
     const npcAwards = {};
@@ -20080,6 +20116,7 @@ Engine.awards = {
       autumnWarChampion,
       tenchosenChampion,
       ppvFinalWinner,
+      ...(unifiedChampion ? { unifiedChampion } : {}),
       bestMatch:    Engine.awards.selectBestMatch(rng, state),
       mvp:          Engine.awards.selectMVP(rng, state),
       mediaAward:   Engine.awards.selectMediaAward(state),
@@ -20380,6 +20417,15 @@ Engine.awards = {
   /** ⑤ 殿堂入り判定: retiredFighters から条件合致者（ポイント制）
    * 転生前（NPC事前史）は別人扱いで除外する。joinSeason 以降のイベントのみ集計。
    */
+  _unifiedCareerStats(history) {
+    const events = (history || []).filter(ev => ev?.type === 'unifiedTitle');
+    return {
+      won: events.filter(ev => ev.result === 'won'),
+      captured: events.filter(ev => ev.result === 'captured'),
+      defenses: events.filter(ev => ev.result === 'defense'),
+    };
+  },
+
   calcHofPoints(rec) {
     const histAll = (rec && rec.history) || [];
     // joinSeason の判定は Engine.career.joinSeason に一本化する。
@@ -20414,7 +20460,11 @@ Engine.awards = {
     // orgPop リバランス v1.1: ドームメイン加点（勝利+3、敗北+1）
     const domeMainPt = hist.filter(e => e.type === 'domeMain' && e.result === 'win').length * 3
                      + hist.filter(e => e.type === 'domeMain' && e.result === 'lose').length * 1;
-    return titlePt + juniorPt + springTagPt + autumnWarPt + ppvTournamentPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt + domeMainPt;
+    // 全国統一王座は1勝2ptで奪取・防衛を対称にする。天頂戦戴冠(won)は
+    // ppvTournamentPtに含まれるため追加加点しない。実績リストも同じ集計経路を使う。
+    const unifiedStats = Engine.awards._unifiedCareerStats(hist);
+    const unifiedPt = (unifiedStats.captured.length + unifiedStats.defenses.length) * 2;
+    return titlePt + juniorPt + springTagPt + autumnWarPt + ppvTournamentPt + ppvPt + warPt + mvpPt + rookiePt + bestMatchPt + mediaPt + domeMainPt + unifiedPt;
   },
   getHofLevel(points) {
     if (points >= 35) return 3; // ★★★ レジェンド
@@ -20509,6 +20559,35 @@ Engine.awards = {
       highlights.push({
         type: 'war', season: lastWarWin.season,
         text: `対抗戦通算${warWinsAll.length}勝`
+      });
+    }
+    // calcHofPoints と同じ post-join history / 共通ヘルパーから生成する。
+    const unifiedStats = Engine.awards._unifiedCareerStats(history);
+    const generationByWhen = new Map();
+    let derivedGeneration = 0;
+    (state?.unifiedTitle?.history || []).forEach(ev => {
+      if (!['creation', 'crown', 'repeat', 'move'].includes(ev?.type)) return;
+      derivedGeneration++;
+      const generation = Number(ev.generation) || derivedGeneration;
+      generationByWhen.set(`${ev.season}:${ev.week}`, generation);
+    });
+    const generationOf = ev => Number(ev.generation)
+      || generationByWhen.get(`${ev.season}:${ev.week}`) || null;
+    unifiedStats.won.forEach(ev => {
+      const generation = generationOf(ev);
+      highlights.push({
+        type: 'unifiedTitle', season: ev.season,
+        text: `全国統一王座 戴冠${generation ? `(第${generation}代)` : ''}`,
+      });
+    });
+    unifiedStats.captured.forEach(ev => {
+      highlights.push({ type: 'unifiedTitle', season: ev.season, text: '全国統一王座 奪取' });
+    });
+    if (unifiedStats.defenses.length > 0) {
+      const lastDefense = unifiedStats.defenses[unifiedStats.defenses.length - 1];
+      highlights.push({
+        type: 'unifiedTitle', season: lastDefense.season,
+        text: `全国統一王座 防衛${unifiedStats.defenses.length}度`,
       });
     }
     highlights.sort((a, b) => a.season - b.season);
