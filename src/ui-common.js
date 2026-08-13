@@ -13167,6 +13167,258 @@ function _challengeRequestReactionOrder(reaction, foeReaction, playerLost) {
   return playerLost ? [foeReaction, reaction] : [reaction, foeReaction];
 }
 
+function _challengeRequestMatchWinnerSide(match) {
+  if (!match) return 'draw';
+  if (match.winner === 'left' || match.winner === 'A') return 'A';
+  if (match.winner === 'right' || match.winner === 'B') return 'B';
+  return 'draw';
+}
+
+/** 1拍目の主役: 代表戦勝者を優先し、不在なら勝利陣営の最高MQ勝者を選ぶ純関数。 */
+function _challengeRequestWinnerRepresentative(card, result) {
+  const side = result && result.teamWin;
+  if (!card || !result || (side !== 'A' && side !== 'B')) return null;
+  const team = side === 'A' ? (card.teamA || []) : (card.teamB || []);
+  const candidates = (result.matches || []).map((match, index) => ({
+    fighter: (side === 'A' ? match.fighterA : match.fighterB) || team[index],
+    match,
+    matchIndex: index,
+    side,
+  })).filter(entry => entry.fighter && _challengeRequestMatchWinnerSide(entry.match) === side);
+  const representativeWinner = candidates.find(entry => entry.matchIndex === 0);
+  if (representativeWinner) return representativeWinner;
+  return candidates.sort((a, b) => (Number(b.match.mq) || 0) - (Number(a.match.mq) || 0)
+    || a.matchIndex - b.matchIndex)[0] || null;
+}
+
+/** 2拍目の主役はシリーズ敗者側の第1試合代表。本人の勝敗も同時に返す純関数。 */
+function _challengeRequestLoserRepresentative(card, result) {
+  if (!card || !result || (result.teamWin !== 'A' && result.teamWin !== 'B')) return null;
+  const side = result.teamWin === 'A' ? 'B' : 'A';
+  const firstMatch = (result.matches || [])[0] || null;
+  const team = side === 'A' ? (card.teamA || []) : (card.teamB || []);
+  const fighter = (firstMatch && (side === 'A' ? firstMatch.fighterA : firstMatch.fighterB)) || team[0];
+  if (!fighter) return null;
+  return {
+    fighter,
+    match: firstMatch,
+    matchIndex: 0,
+    side,
+    ownWon: _challengeRequestMatchWinnerSide(firstMatch) === side,
+  };
+}
+
+/** 本人○×団体●だけ新規場面2、本人●×団体●は既存loseへ送る。 */
+function _challengeRequestLoserScene(ownWon) {
+  return ownWon ? 'regretOwnWin' : 'lose';
+}
+
+function _challengeRequestResultPool(scene, fighter, linesTable) {
+  const table = linesTable || (typeof AWAY_CHALLENGE_RESULT_LINES !== 'undefined' ? AWAY_CHALLENGE_RESULT_LINES : null);
+  const byScene = table && table[scene];
+  if (!byScene) return [];
+  const archetype = (fighter && fighter.archetype) || 'standard';
+  return byScene[archetype] || byScene.standard || [];
+}
+
+function _challengeRequestSideOrgName(card, state, side) {
+  const ourOrg = (state && state.orgName) || 'プレイヤー団体';
+  if (side === (card && card.isInverse ? 'B' : 'A')) return ourOrg;
+  if (card && card.isInverse) return card.requesterOrgName || card.otherOrgName || card.opponentOrgName || '相手団体';
+  return (card && (card.otherOrgName || card.opponentOrgName)) || '相手団体';
+}
+
+/** 決着シリーズの2拍分を決定する。ローカル派生RNGだけを使い、state/card/resultを変更しない。 */
+function _challengeRequestBuildResultSequence(card, result, state) {
+  const winner = _challengeRequestWinnerRepresentative(card, result);
+  const loser = _challengeRequestLoserRepresentative(card, result);
+  if (!winner || !loser || !winner.fighter || !loser.fighter) return null;
+  const seedState = state || {};
+  const pickFrom = (lines, fighter, salt) => {
+    if (!Array.isArray(lines) || lines.length === 0) return '';
+    const rng = Engine.rng.create(Engine.rng.derive(
+      seedState.rngSeed || 0, seedState.season || 0, seedState.week || 0,
+      0xC4A3, Number(fighter.id) || 0, salt
+    ));
+    return lines[Engine.rng.int(rng, 0, lines.length - 1)];
+  };
+  const winnerLine = pickFrom(_challengeRequestResultPool('seriesWin', winner.fighter), winner.fighter, 11);
+  const loserScene = _challengeRequestLoserScene(loser.ownWon);
+  let loserLine = '';
+  if (loserScene === 'regretOwnWin') {
+    loserLine = pickFrom(_challengeRequestResultPool('regretOwnWin', loser.fighter), loser.fighter, 12);
+  } else if (Engine.challengeRequest && Engine.challengeRequest.pickLine) {
+    const rng = Engine.rng.create(Engine.rng.derive(
+      seedState.rngSeed || 0, seedState.season || 0, seedState.week || 0,
+      0xC4A3, Number(loser.fighter.id) || 0, 13
+    ));
+    loserLine = Engine.challengeRequest.pickLine(
+      loser.fighter, 'lose', rng, _challengeRequestSideOrgName(card, state, winner.side)
+    );
+  }
+  const winnerRole = winner.side === 'A'
+    ? '挑んで、団体を勝たせた代表'
+    : '受けて立ち、団体を勝たせた代表';
+  const loserRole = `${loser.side === 'A' ? '挑んだ代表' : '受けて立った代表'} ・ 本人の試合: ${loser.ownWon ? '○ 勝利' : '× 敗北'} / 団体: 敗北`;
+  return {
+    winner: { ...winner, line: winnerLine, role: winnerRole, orgName: _challengeRequestSideOrgName(card, state, winner.side) },
+    loser: { ...loser, line: loserLine, role: loserRole, scene: loserScene, orgName: _challengeRequestSideOrgName(card, state, loser.side) },
+  };
+}
+
+let _challengeRequestResultSequenceActive = false;
+
+/** 決着時の2拍シーケンス。各▶待ちにタイムアウトと遷移ロックを持たせる。 */
+function _showChallengeRequestResultSequence(card, result, state, onClose) {
+  if (_challengeRequestResultSequenceActive) return false;
+  const sequence = _challengeRequestBuildResultSequence(card, result, state);
+  if (!sequence) { if (onClose) onClose(); return false; }
+  _challengeRequestResultSequenceActive = true;
+
+  const isInverse = !!card.isInverse;
+  const playerWon = isInverse ? result.teamWin === 'B' : result.teamWin === 'A';
+  const titleText = playerWon ? (isInverse ? '挑戦、退ける。' : '果たし状、成就。')
+    : (isInverse ? '挑戦、許す。' : '果たし状、敗れる。');
+  const playerScore = isInverse ? result.winsB : result.winsA;
+  const aiScore = isInverse ? result.winsA : result.winsB;
+  const ourOrg = state.orgName || 'プレイヤー団体';
+  const otherOrgName = isInverse
+    ? (card.requesterOrgName || card.otherOrgName || '相手団体')
+    : (card.otherOrgName || card.opponentOrgName || '相手団体');
+  const root = _factionEnsureOverlayRoot();
+  const WAIT_TIMEOUT_MS = 12000;
+  let waitTimer = null;
+  let advancing = false;
+  let closed = false;
+
+  const clearWait = () => {
+    if (waitTimer !== null) clearTimeout(waitTimer);
+    waitTimer = null;
+  };
+  const finish = () => {
+    if (closed) return;
+    closed = true;
+    advancing = true;
+    clearWait();
+    _challengeRequestResultSequenceActive = false;
+    try { if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click'); } catch (_error) {}
+    try {
+      _factionCloseCinematicOverlay();
+    } finally {
+      if (onClose) onClose();
+    }
+  };
+  const advance = action => {
+    if (closed || advancing) return;
+    advancing = true;
+    clearWait();
+    action();
+  };
+  const armWait = action => {
+    advancing = false;
+    clearWait();
+    waitTimer = setTimeout(() => advance(action), WAIT_TIMEOUT_MS);
+  };
+  const activate = (buttonSelector, action) => {
+    const overlay = root.querySelector('#challengeRequestResultOverlay');
+    if (overlay) overlay.classList.add('active');
+    const button = root.querySelector(buttonSelector);
+    if (button) button.addEventListener('click', () => advance(action), { once: true });
+    armWait(action);
+  };
+  const upperScene = (entry, sizeClass, resultClass) => {
+    const url = _factionUpperUrl(entry.fighter.id);
+    return `<div class="crrm-sequence-person ${sizeClass} ${resultClass}">
+      <div class="crrm-sequence-bubble-slot"><div class="crrm-sequence-bubble">「${escHtml(entry.line)}」</div></div>
+      <div class="crrm-sequence-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((entry.fighter.name || '?').slice(0, 1))}</div>
+      <div class="crrm-sequence-name">${escHtml(entry.fighter.name || '')}</div>
+      <div class="crrm-sequence-role">${escHtml(entry.role)}</div>
+      ${entry.orgName ? `<div class="crrm-sequence-org">${escHtml(entry.orgName)}</div>` : ''}
+    </div>`;
+  };
+  const matchRows = (result.matches || []).map((match, index) => {
+    const winSide = _challengeRequestMatchWinnerSide(match);
+    const leftFighter = isInverse ? match.fighterB : match.fighterA;
+    const rightFighter = isInverse ? match.fighterA : match.fighterB;
+    const leftSide = isInverse ? 'B' : 'A';
+    const rightSide = isInverse ? 'A' : 'B';
+    const mark = side => winSide === side ? '<b class="crrm-win">○</b>' : (winSide === 'draw' ? '' : '<b class="crrm-loss">×</b>');
+    const relText = fighter => {
+      const delta = match.relationshipDelta && fighter && match.relationshipDelta[fighter.id];
+      if (!delta) return '';
+      const signed = value => `${value >= 0 ? '+' : ''}${Math.round(value * 10) / 10}`;
+      return `<small class="crrm-rel">因縁 ${signed(delta.rivalry)} / 相手との関係 ${signed(delta.bond)}</small>`;
+    };
+    return `<div class="crrm-row">
+      <div class="crrm-row-num">第${index + 1}試合</div>
+      <div class="crrm-row-side crrm-row-a">${mark(leftSide)} <span class="crrm-name">${escHtml(leftFighter.name)}${relText(leftFighter)}</span></div>
+      <div class="crrm-row-vs">vs</div>
+      <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(rightFighter.name)}${relText(rightFighter)}</span> ${mark(rightSide)}</div>
+      <div class="crrm-row-mq">MQ ${Math.round(match.mq || 0)}</div>
+      <div class="crrm-row-fin">${match.finMove ? escHtml(match.finMove) : ''}</div>
+    </div>`;
+  }).join('');
+
+  const sharedStyle = `<style>
+    .crrm-stage-overlay{padding:18px;overflow-y:auto;align-items:flex-start;background:var(--stage-bg-deep)}
+    .crrm-stage-card{width:min(640px,calc(100vw - 36px));box-sizing:border-box;margin:auto;padding:26px 22px 28px;text-align:center;color:var(--stage-text-main);border:1px solid rgba(var(--accent-war-rgb),.35);border-radius:12px;background:radial-gradient(ellipse 80% 40% at 50% 8%,rgba(var(--accent-war-rgb),.22),transparent 60%),linear-gradient(180deg,var(--stage-card-top),var(--stage-bg));box-shadow:0 18px 48px rgba(0,0,0,.72)}
+    .crrm-sequence-kicker{font-family:var(--font-label);font-size:10px;letter-spacing:.42em;color:var(--accent-war-hi)}
+    .crrm-sequence-title{margin-top:6px;font-size:24px;font-weight:800;letter-spacing:.24em;color:var(--stage-text-main);text-shadow:0 0 22px rgba(var(--accent-war-rgb),.45)}
+    .crrm-sequence-score{display:flex;align-items:center;justify-content:center;gap:14px;margin:12px 0 4px;font-size:12px;color:var(--stage-text-sub)}
+    .crrm-sequence-score b{font-size:30px;font-weight:800;letter-spacing:.08em;color:var(--accent-war-hi)}
+    .crrm-sequence-verdict{display:inline-block;margin-bottom:16px;padding:3px 12px;border:1px solid rgba(var(--accent-war-rgb),.5);border-radius:3px;color:var(--accent-war-hi);font-size:10px;letter-spacing:.26em}
+    .crrm-sequence-person{display:flex;flex-direction:column;align-items:center;text-align:center}
+    .crrm-sequence-bubble-slot{height:52px;display:flex;align-items:flex-end;justify-content:center;width:100%;margin-bottom:14px}
+    .crrm-sequence-bubble{position:relative;width:max-content;max-width:360px;padding:9px 15px;border:1px solid var(--cream-border);border-radius:var(--radius-lg);background:var(--cream-bg-card);color:var(--cream-text-main);font-size:13px;line-height:1.6}
+    .crrm-sequence-bubble::after{content:'';position:absolute;left:50%;bottom:-9px;transform:translateX(-50%);border:9px solid transparent;border-top-color:var(--cream-bg-card);border-bottom:0}
+    .crrm-sequence-portrait{display:grid;place-items:center;overflow:hidden;background:var(--stage-card-top) center top/cover no-repeat;color:var(--stage-text-dim);font-size:36px;font-weight:800}
+    .crrm-sequence-person.is-xl .crrm-sequence-portrait{width:172px;height:258px;border:1px solid rgba(var(--accent-war-rgb),.5);border-bottom:4px solid var(--accent-war);border-radius:6px;box-shadow:0 18px 42px rgba(0,0,0,.6),0 0 34px rgba(var(--accent-war-rgb),.25)}
+    .crrm-sequence-person.is-m .crrm-sequence-portrait{width:132px;height:194px;border:1px solid var(--stage-border-lit);border-bottom:3px solid var(--stage-text-dim);border-radius:5px}
+    .crrm-sequence-person.is-own-win .crrm-sequence-portrait{filter:grayscale(.35) brightness(.9);border-bottom-color:var(--gold)}
+    .crrm-sequence-person.is-own-loss .crrm-sequence-portrait{filter:grayscale(.9) brightness(.72)}
+    .crrm-sequence-name{margin-top:10px;font-size:15px;font-weight:800}.crrm-sequence-person.is-xl .crrm-sequence-name{font-size:18px}
+    .crrm-sequence-role{margin-top:4px;color:var(--stage-text-sub);font-size:10px;line-height:1.6}.crrm-sequence-person.is-xl .crrm-sequence-role{color:var(--accent-war-hi);letter-spacing:.14em}
+    .crrm-sequence-org{margin-top:3px;color:var(--stage-text-sub);font-size:10.5px}
+    .crrm-rows{max-width:560px;margin:18px auto 0;border-top:1px solid var(--stage-border)}
+    .crrm-row{display:grid;grid-template-columns:58px minmax(0,1fr) 22px minmax(0,1fr) 52px 70px;align-items:center;gap:6px;padding:7px 4px;border-bottom:1px solid var(--stage-border);font-size:11px;color:var(--stage-text-sub)}
+    .crrm-row-num{color:var(--stage-text-dim);font-size:9.5px}.crrm-row-side{display:flex;align-items:center;gap:4px}.crrm-row-a{justify-content:flex-start}.crrm-row-b{justify-content:flex-end}.crrm-row-vs{color:var(--stage-text-dim);font-size:9px}.crrm-row-mq{color:var(--accent-war-hi);font-size:10px;text-align:right}.crrm-row-fin{color:var(--stage-text-sub);font-size:9px;text-align:left}.crrm-name{font-weight:700}.crrm-win{color:var(--c-positive)}.crrm-loss{color:var(--c-negative)}.crrm-rel{display:block;margin-top:2px;color:var(--accent-war-hi);font-size:8px;white-space:nowrap}
+    .crrm-sequence-next{display:inline-block;margin-top:16px;padding:9px 34px;border:1px solid var(--stage-border-main);border-radius:999px;background:transparent;color:var(--stage-text-main);font-family:inherit;font-size:12px;letter-spacing:.22em;cursor:pointer}
+    .crrm-stage-card.is-beat-two{width:min(560px,calc(100vw - 36px));padding-top:34px;background:linear-gradient(180deg,var(--stage-card-top),var(--stage-bg))}.crrm-stage-card.is-beat-two .crrm-sequence-kicker{margin-bottom:18px;color:var(--stage-text-dim)}
+    @media(max-width:600px){.crrm-stage-overlay{padding:8px}.crrm-stage-card{width:calc(100vw - 16px);padding:18px 10px 20px}.crrm-sequence-title{font-size:20px;letter-spacing:.14em}.crrm-sequence-score{gap:7px}.crrm-sequence-score b{font-size:25px}.crrm-row{grid-template-columns:50px minmax(0,1fr) 16px minmax(0,1fr) 44px}.crrm-row-fin{display:none}.crrm-rel{white-space:normal}.crrm-sequence-bubble{max-width:calc(100vw - 42px);font-size:12px}}
+  </style>`;
+
+  const renderBeatTwo = () => {
+    try {
+      root.innerHTML = `${sharedStyle}<div class="fevt-overlay-office crrm-stage-overlay" id="challengeRequestResultOverlay"><div class="crrm-stage-card is-beat-two">
+        <div class="crrm-sequence-kicker">— そ の 夜 —</div>
+        ${upperScene(sequence.loser, 'is-m', sequence.loser.ownWon ? 'is-own-win' : 'is-own-loss')}
+        <button class="crrm-sequence-next crrm-sequence-close" type="button">— 閉 じ る —</button>
+      </div></div>`;
+      activate('.crrm-sequence-close', finish);
+    } catch (error) {
+      console.error('[WM] challenge result second beat render failed:', error);
+      finish();
+    }
+  };
+
+  try {
+    root.innerHTML = `${sharedStyle}<div class="fevt-overlay-office crrm-stage-overlay" id="challengeRequestResultOverlay"><div class="crrm-stage-card is-beat-one">
+      <div class="crrm-sequence-kicker">AWAY CHALLENGE ・ RESULT</div>
+      <div class="crrm-sequence-title">${titleText}</div>
+      <div class="crrm-sequence-score"><span>${escHtml(ourOrg)}</span><b>${playerScore} — ${aiScore}</b><span>${escHtml(otherOrgName)}</span></div>
+      <div><span class="crrm-sequence-verdict">団体として${playerWon ? '勝利' : '敗北'}</span></div>
+      ${upperScene(sequence.winner, 'is-xl', result.teamWin === (isInverse ? 'B' : 'A') ? 'is-player-winner' : 'is-foe-winner')}
+      <div class="crrm-rows">${matchRows}</div>
+      <button class="crrm-sequence-next crrm-sequence-forward" type="button" aria-label="次の場面へ">▶</button>
+    </div></div>`;
+    activate('.crrm-sequence-forward', renderBeatTwo);
+  } catch (error) {
+    console.error('[WM] challenge result sequence render failed:', error);
+    finish();
+  }
+  return true;
+}
+
 function showChallengeRequestResultModal(card, result, state, onClose) {
   // The match-preview/result shell stays active while the post-show modal chain runs.
   // Waiting on that shell would deadlock: renderShowResult is only called by onClose.
@@ -13180,6 +13432,13 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
   if (!card.__deferredRender) {
     card.__deferredRender = true;
     setTimeout(() => showChallengeRequestResultModal(card, result, state, onClose), 650);
+    return;
+  }
+
+  // 決着シリーズだけ新2拍へ。引き分けは以下の既存並置表示をそのまま使う。
+  // typeofガードは単体テストが旧関数だけを抽出する場合の互換フォールバックでもある。
+  if (result.teamWin !== 'draw' && typeof _showChallengeRequestResultSequence === 'function') {
+    _showChallengeRequestResultSequence(card, result, state, onClose);
     return;
   }
 
@@ -13206,18 +13465,6 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
   // プレイヤー陣スコア表示順を player-vs-AI で揃える
   const playerScore = isInverse ? result.winsB : result.winsA;
   const aiScore = isInverse ? result.winsA : result.winsB;
-
-  const coachLine = isInverse
-    ? (playerWon
-        ? `社長、挑戦試合 ${playerScore} — ${aiScore}。${otherOrgNameSafe}の${reqNameSafe}選手の越境挑戦、退けました。`
-        : playerLost
-        ? `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqNameSafe}選手陣に古巣として星を取られる結果になりました。`
-        : `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqNameSafe}選手と${oppNameSafe}選手の決着は持ち越しです。`)
-    : (playerWon
-        ? `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqNameSafe}選手が呼んだ舞台、しっかり制しました。`
-        : playerLost
-        ? `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqNameSafe}選手の直訴…結果が伴いませんでした。`
-        : `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqNameSafe}選手と${oppNameSafe}選手の決着は持ち越しです。`);
 
   // U1: 顔出し+セリフの縦順序(吹き出し→画像→名前→役割ラベル)をmockup-baseline v0.2に揃える。
   // 吹き出しの中身はセリフ本文のみ(話者名・所属は入れない。話者は画像下の名前表示で示す)。
@@ -13356,7 +13603,6 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
           <div class="fevt-report-title crrm-tone-${tone === 'positive' ? 'pos' : tone === 'negative' ? 'neg' : 'neu'}">📜 ${titleText}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)} · 挑戦試合（${ourOrgSafe} vs ${otherOrgNameSafe}）</div>
         </div>
-        ${_factionReporterStrip(state, coachLine)}
         ${reactionHtml}
         <div class="crrm-score-banner">
           <div class="crrm-score-org"><div class="crrm-score-org-name">${_awOrgEmblem(ourOrg, true, 20)}<span>${ourOrgSafe}</span></div><small>${isInverse ? `迎撃: ${oppNameSafe}陣` : `${reqNameSafe}陣`}</small></div>
