@@ -83,12 +83,15 @@ section('4. 画像がある記録アッパーはイニシャルを出さず、�
     '画像失敗時だけイニシャルを描くCSSが無い');
 });
 
-section('5. 選手詳細の能力バーは150目盛りで120を80%に描く', () => {
-  assert.match(uiCommon, /const w = Math\.min\(100, \(val \/ 150\) \* 100\);/,
-    '能力バーが150目盛りで計算されていない');
+section('5. 選手詳細の能力バーは共通数値表記(枠越えバー)を通す', () => {
+  // task-91で選手詳細のバーは statOverBarHtml(共通数値表記 stat-notation-v1.0)へ移行した。
+  // 独自の目盛り計算(旧: val/150 の150目盛り)へ戻らないことを守る。消耗帯の基準150は据え置き。
+  assert.match(uiCommon, /function _fighterPopupStatBarsHtml/,
+    '選手詳細のバー生成が共通ヘルパーに集約されていない');
+  assert.match(uiCommon, /return statOverBarHtml\(s\.key, value, \{/,
+    '能力バーが共通表記 statOverBarHtml を通っていない');
   assert.match(uiCommon, /statDecayView\(c, s\.key, 150, isAiFighter\)/,
     '消耗帯が150目盛りに揃っていない');
-  assert.strictEqual(Math.min(100, (120 / 150) * 100), 80, '120のバー幅が80%にならない');
 });
 
 section('6. AIの実天井差を表示専用に復元し、通常選手の履歴は捏造しない', () => {

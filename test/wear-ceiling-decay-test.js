@@ -160,15 +160,20 @@ section('10. 団体画面と選手詳細の両方に出す', () => {
 section('11. 数字でも下がり幅を出す', () => {
   // バーだけだと何ポイント落ちたか分からない
   assert.ok(/▼\$\{dv\.lostPts\}/.test(uiRender), '団体画面に下がり幅の数字が無い');
-  assert.ok(/▼\$\{dv\.lostPts\}/.test(ui), '選手詳細に下がり幅の数字が無い');
+  // 選手詳細はtask-91で共通数値表記(statOverBarHtml)へ移行。▼は is-lost マークが背負う
+  assert.ok(/▼\$\{_statOverBarEsc\(lost\)\}/.test(ui), '選手詳細(共通表記)に下がり幅の数字が無い');
+  assert.ok(/lost: decay\.lostPts/.test(ui), '選手詳細が消耗量(lostPts)をバーへ渡していない');
 });
 
 section('12. 成長中の表示を潰さない', () => {
-  // 今季伸びた選手は「+3」が優先。伸びていないときだけ「▼8」を出す
+  // 団体画面: 今季伸びた選手は「+3」が優先。伸びていないときだけ「▼8」を出す
   assert.ok(/sg > 0 \? '\+' \+ sg : lostTag \|\| '—'/.test(uiRender),
     '団体画面で成長表示と衰え表示がぶつかっている');
-  assert.ok(/\+\$\{sg\}<\/span>` : lostTag\}/.test(ui),
-    '選手詳細で成長表示と衰え表示がぶつかっている');
+  // 選手詳細(共通表記): +Nと▼Nは別チップで併記し、互いに潰し合わない(task-90/91確定デザイン)
+  assert.ok(/lost > 0 \? `<span class="stat-over-mark is-lost">▼/.test(ui),
+    '選手詳細で衰えマークが独立に出ない');
+  assert.ok(/gain > 0 \? `<span class="stat-over-mark is-gain">\+/.test(ui),
+    '選手詳細で成長マークが独立に出ない');
 });
 
 console.log('');
