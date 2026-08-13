@@ -1,9 +1,9 @@
-# task-92: フライトレコーダー(ゲーム内バグ捕捉・報告システム)
+# task-93: フライトレコーダー(ゲーム内バグ捕捉・報告システム)
 
 **依頼先**: Codex
-**作業場所**: 専用worktree `wm-codex-task92`(ブランチ `codex/task-92-flight-recorder`。task-86〜91と同型。mainフォルダ `Downloads/wrestle-manager` はKeisukeがブラウザで直接開いてプレイ中のため絶対に触らない)
+**作業場所**: 専用worktree `wm-codex-task93`(ブランチ `codex/task-93-flight-recorder`。task-86〜92と同型。mainフォルダ `Downloads/wrestle-manager` はKeisukeがブラウザで直接開いてプレイ中のため絶対に触らない)
 **マージ**: Fableがdiff全文レビュー+不変条件を1つずつ独立検算→コミット代行→mainへ
-**依存**: なし(task-91と並行可。触るファイルが交差しない)
+**依存**: なし(task-92統一王座P4・task-94ハーネスと並行可。触るファイルが交差しない)
 
 ---
 

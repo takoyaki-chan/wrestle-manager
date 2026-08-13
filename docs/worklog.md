@@ -1,5 +1,26 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## バグ捜索①②: Keisuke全承認→task-93/94へ改番・指示書完成・Codex並行投入（2026-08-13・Fable）
+
+「全部推奨通りで進めてくれ」の裁定。①配布物に含める(sourceFiles)・可視文言確定 ②Playwright導入OK・初期スコープ=Wモード1季・分担=骨格Codex/検出器調整Fable、すべて確定。
+
+**改番**: フライトレコーダーはtask-92→**task-93**へ(並行セッションの統一王座P4がtask-92と専用worktree `wm-codex-task92` を先に取得していたため。git mvで改名し依存欄を92/94並行可に更新)。**task-94(ハーネス骨格)指示書を新規作成**: スコープ=静的サーバ+Wモードdriver+検出器D1/D2/D3/D5+アーティファクト+fixture(Mモード・D4は後続)。不変条件I-1〜I-6の核: **src/変更ゼロ**(git diffで検証)/進行は実UIクリックのみ(evaluateでのG書き換え・App直接呼び出しによる進行禁止)/検出器はサンドボックスページ(既知バグ3種入り)でテスト固定/同一シード2回実行で操作列diff空/15分タイムアウト+プロセス残留禁止/`*-test.js`命名回避でnpm test非干渉。ゲーム側の真バグを検出した場合は修正せず報告(検出が成果物)。
+
+投入: worktree `wm-codex-task93` / `wm-codex-task94` を作成しCodexを並行起動(触るファイル交差なし)。マージ時にFableがdiff全文レビュー+不変条件検算。
+
+備考: mainの作業ツリーに並行セッションの未コミットsrc変更(management/ui-common/ui-render)が存在するため、本コミットはdocsのみを明示addで封じ込め。
+
+## 興行後の関係性通知を全廃 — 「世界の側」チャンネルへ置き換え（2026-08-13・Fable+Keisuke裁定）
+
+同日先行分(実機フィードバック7件バッチの2項)の「Tier1縮小+カード小型化」はKeisukeに差し戻し——「小さくすればいいってもんじゃない。試合後に羅列するのをやめて、設計思想(さりげなく垣間見える)から考え直す」。再設計して以下を実装:
+
+- **モーダル全廃**: `_isGlimpseTier1` を常に false 化(ui-common.js)。gold(宿命のライバル/深い絆)・danger(退団の噂)級も含め、興行後のカスケード/単発モーダルは一切出ない。全Glimpseが weekLogFeed(Tier2)へ
+- **受け皿(新UIなし・全部既存チャンネル)**: ①道場バナー「休憩中の選手」— gold/danger級はその週の**確定枠**(通常18%抽選のまま。見に来なければ流れる=覗き見の距離感を維持。ui-render.js rest picker) ②週次ティッカー/新聞3面・因縁列伝/相関図 — 既存のまま(因縁列伝は featured 選定が rivalry×0.4+ドラマタグで高rivalryペアを自然に上位に置くため追加ボーナス不要と判断) ③**退団の噂(danger)のみ週次レポートに1行**「💬 {name}が退団を考えているという噂がある」(management.js tickWeek・Keisuke選択「週次レポートに1行」)
+- 旧表示経路(showGlimpseCascade/.gc-* CSS/#glimpseCascadeOverlay)は不達のまま残置。撤去は安全網テスト追随が要るため別途クリーンアップ
+- specs/glimpse-cascade-spec を **v2.0(廃止)** に改訂(置き換え先の表を§0に記録)。実機確認バックログの該当項目を書き換え
+
+検証: node --check(3ファイル)/ブラウザ実測(_isGlimpseTier1 が gold でも false)/auto-simはターン末フック。
+
 ## バグ捜索②: UI自動走破ハーネス設計v0.1（2026-08-13・Fable・判断点3件レビュー待ち）
 
 ②の設計書 `docs/ui-walkthrough-harness-design-v0.1.md` を作成。**核心の発見: 「`G`はapp.jsクロージャ内でアクセス不可」は誤認だった**。実体は `let G` がapp.js:3797の**トップレベル宣言**(グローバル・レキシカル)で、アクセスできなかったのはプレビューツールのevalが拡張の隔離ワールドで走るため。Playwrightの `page.evaluate` はメインワールド実行なので G/App/Engine/Storage を直接読める→**製品コードを1文字も変えずにハーネスを作れる**(テスト用フック新設は不要と判明)。メモリの誤情報も訂正済み。

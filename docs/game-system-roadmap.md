@@ -3,7 +3,7 @@
 ## 開発・検証基盤
 
 - [x] 隠し開発者モード（`Ctrl + Shift + D`）: 指定週・季節大会への既定選択高速進行、開発用チェックポイントの保存／復元、通常セーブ保護。運用・改修手順は [developer-mode.md](developer-mode.md) を参照
-- [ ] **バグ徹底捜索体制 ①→②→③（2026-08-13 Keisuke承認）**: ①フライトレコーダー=task-92指示書完成・Codex投入待ち / ②Playwright自動走破ハーネス=設計書v0.1完成([ui-walkthrough-harness-design-v0.1.md](ui-walkthrough-harness-design-v0.1.md))・判断点3件のKeisuke裁定待ち(Playwright導入可否ほか) / ③レア画面強制点火カタログ=②の基盤流用で後行。背景: UI層約26,000行に自動検証ゼロ、交渉フリーズ級の無例外バグはauto-simでは捕まらない
+- [ ] **バグ徹底捜索体制 ①→②→③（2026-08-13 Keisuke承認・推奨案全承認）**: ①フライトレコーダー=**task-93**(92は統一王座P4と衝突のため改番)・Codex実装中 / ②Playwright自動走破ハーネス=設計書v0.1確定([ui-walkthrough-harness-design-v0.1.md](ui-walkthrough-harness-design-v0.1.md))・骨格=**task-94**(Wモード1季+D1/D2/D3/D5)・Codex実装中 / ③レア画面強制点火カタログ=②の基盤流用で後行。背景: UI層約26,000行に自動検証ゼロ、交渉フリーズ級の無例外バグはauto-simでは捕まらない
 
 > 最終更新: 2026-08-03（v1.25配布版を生成）
 
