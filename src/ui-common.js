@@ -4967,6 +4967,15 @@ function _showStatItem(label, lv, rv, cls, side) {
     <div class="smc-stat-bar"><div class="smc-stat-fill ${cls}" style="width:${Math.max(4, val)}%"></div></div>`;
 }
 
+/** 敵地遠征専用のfc1m式5項目帯。生値を保ち、優位値だけを陣営色で点灯する。 */
+function _awayChallengeStatsHtml(fighter, opponent) {
+  return ['pw', 'sp', 'te', 'st', 'mn'].map(key => {
+    const value = Math.round(Number(fighter && fighter[key]) || 0);
+    const other = Math.round(Number(opponent && opponent[key]) || 0);
+    return `<div class="fc1m-stat"><div class="fc1m-stat-label">${key.toUpperCase()}</div><div class="fc1m-stat-val${value > other ? ' fc1m-higher' : ''}">${value}</div></div>`;
+  }).join('');
+}
+
 function renderMatchPreview() {
   const sp = App._showPreview;
   if (!sp) return;
@@ -5186,56 +5195,81 @@ function renderMatchPreview() {
       ${statusBadge}${titleTag}
     </div>`;
 
-    // 5カラムアリーナ
-    html += `<div class="smc-arena">`;
-    // 左ステータス
-    html += `<div class="smc-stat-col left${leftDimmed}">`;
-    html += _showStatItem('PW', charL.pw||0, charR.pw||0, 'pw', 'left');
-    html += _showStatItem('SP', charL.sp||0, charR.sp||0, 'sp', 'left');
-    html += _showStatItem('TE', charL.te||0, charR.te||0, 'te', 'left');
-    html += _showStatItem('ST', charL.st||0, charR.st||0, 'st', 'left');
-    html += _showStatItem('MN', charL.mn||0, charR.mn||0, 'mn', 'left');
-    html += `</div>`;
+    if (isAway) {
+      // 敵地はfc1mの「人物の下に5項目帯」を流用。通常興行の5カラムDOMは下のelseに隔離する。
+      const playerIds = sp.awayPlayerRosterIds || [];
+      const awaySideHtml = (fighter, opponent, upper, ovr, charClass) => {
+        const isPlayerSide = playerIds.includes(fighter.id);
+        const orgId = isPlayerSide ? 'player' : awayOpponentOrgId;
+        const orgName = isPlayerSide ? awaySelfOrgName : awayOpponentOrgName;
+        const emblem = typeof orgIconHtml === 'function' ? orgIconHtml(orgId, 14) : '';
+        const orgLabel = `<div class="forg">${emblem}<span class="dot ${isPlayerSide ? 'home' : 'away'}"></span>${escHtml(orgName)}</div>`;
+        return `<div class="smc-away-side ${isPlayerSide ? 'is-player-side' : 'is-foe-side'} ${charClass}">
+          <button type="button" onclick="showFighterPopup(${Number(fighter.id)}, 'roster')" class="smc-away-portrait-btn">
+            <div class="upper-wrap">
+              ${upper ? `<img src="${upper}" alt="${escHtml(fighter.name)}" onerror="this.style.display='none'">` : portraitImg(fighter.id, imgW)}
+            </div>
+          </button>
+          <div class="fname">${escHtml(fighter.name)}</div>
+          ${orgLabel}
+          <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${statTierStyle('ovr', ovr)}">${ovr}</span></div>
+          <div class="fc1m-stats smc-away-stats">${_awayChallengeStatsHtml(fighter, opponent)}</div>
+        </div>`;
+      };
+      const awayRelParts = [];
+      if (rivalLvl) awayRelParts.push(`<span class="smc-away-chip is-fate">${rivalLvl.emoji}${escHtml(rivalLvl.label)} MQ+${rivalLvl.mqBonus}</span>`);
+      else if (rivMax > 10) awayRelParts.push(`<span class="smc-away-chip is-fate">⚡ 因縁 ${Math.round(rivMax)}</span>`);
+      awayRelParts.push(`<span class="smc-away-chip">🤝 友好 ${bondAvg}</span>`);
+      html += `<div class="smc-away-arena">
+        ${awaySideHtml(charL, charR, upperL, ovrL, leftCharClass)}
+        <div class="smc-away-mid"><div class="smc-vs-text">VS</div>${awayRelParts.join('')}</div>
+        ${awaySideHtml(charR, charL, upperR, ovrR, rightCharClass)}
+      </div>`;
+    } else {
+      // 通常興行は既存の5カラムDOMを一字も変えず維持する。
+      html += `<div class="smc-arena">`;
+      html += `<div class="smc-stat-col left${leftDimmed}">`;
+      html += _showStatItem('PW', charL.pw||0, charR.pw||0, 'pw', 'left');
+      html += _showStatItem('SP', charL.sp||0, charR.sp||0, 'sp', 'left');
+      html += _showStatItem('TE', charL.te||0, charR.te||0, 'te', 'left');
+      html += _showStatItem('ST', charL.st||0, charR.st||0, 'st', 'left');
+      html += _showStatItem('MN', charL.mn||0, charR.mn||0, 'mn', 'left');
+      html += `</div>`;
 
-    // 左キャラ
-    html += `<div class="smc-char ${leftCharClass}">
-      <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
-        <div class="upper-wrap">
-          ${upperL ? `<img src="${upperL}" alt="${charL.name}" onerror="this.style.display='none'">` : portraitImg(charL.id, imgW)}
-        </div>
-      </button>
-      <div class="fname">${charL.name}</div>
-      <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrL))}">${ovrL}</span></div>
-      ${_matchOrgLabel(charL, charR)}
-    </div>`;
+      html += `<div class="smc-char ${leftCharClass}">
+        <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
+          <div class="upper-wrap">
+            ${upperL ? `<img src="${upperL}" alt="${charL.name}" onerror="this.style.display='none'">` : portraitImg(charL.id, imgW)}
+          </div>
+        </button>
+        <div class="fname">${charL.name}</div>
+        <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrL))}">${ovrL}</span></div>
+        ${_matchOrgLabel(charL, charR)}
+      </div>`;
 
-    // VS
-    html += `<div class="smc-vs"><div class="smc-vs-text">VS</div></div>`;
+      html += `<div class="smc-vs"><div class="smc-vs-text">VS</div></div>`;
 
-    // 右キャラ
-    html += `<div class="smc-char ${rightCharClass}">
-      <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
-        <div class="upper-wrap">
-          ${upperR ? `<img src="${upperR}" alt="${charR.name}" onerror="this.style.display='none'">` : portraitImg(charR.id, imgW)}
-        </div>
-      </button>
-      <div class="fname">${charR.name}</div>
-      <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrR))}">${ovrR}</span></div>
-      ${_matchOrgLabel(charR, charL)}
-    </div>`;
+      html += `<div class="smc-char ${rightCharClass}">
+        <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
+          <div class="upper-wrap">
+            ${upperR ? `<img src="${upperR}" alt="${charR.name}" onerror="this.style.display='none'">` : portraitImg(charR.id, imgW)}
+          </div>
+        </button>
+        <div class="fname">${charR.name}</div>
+        <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${_scale6Style(_ovrColor(ovrR))}">${ovrR}</span></div>
+        ${_matchOrgLabel(charR, charL)}
+      </div>`;
 
-    // 右ステータス
-    html += `<div class="smc-stat-col right${rightDimmed}">`;
-    html += _showStatItem('PW', charL.pw||0, charR.pw||0, 'pw', 'right');
-    html += _showStatItem('SP', charL.sp||0, charR.sp||0, 'sp', 'right');
-    html += _showStatItem('TE', charL.te||0, charR.te||0, 'te', 'right');
-    html += _showStatItem('ST', charL.st||0, charR.st||0, 'st', 'right');
-    html += _showStatItem('MN', charL.mn||0, charR.mn||0, 'mn', 'right');
-    html += `</div>`;
-    html += `</div>`; // smc-arena
-
-    // 関係性ストリップ
-    html += `<div class="smc-rel">${relParts.join('<span class="sep">|</span>')}</div>`;
+      html += `<div class="smc-stat-col right${rightDimmed}">`;
+      html += _showStatItem('PW', charL.pw||0, charR.pw||0, 'pw', 'right');
+      html += _showStatItem('SP', charL.sp||0, charR.sp||0, 'sp', 'right');
+      html += _showStatItem('TE', charL.te||0, charR.te||0, 'te', 'right');
+      html += _showStatItem('ST', charL.st||0, charR.st||0, 'st', 'right');
+      html += _showStatItem('MN', charL.mn||0, charR.mn||0, 'mn', 'right');
+      html += `</div>`;
+      html += `</div>`; // smc-arena
+      html += `<div class="smc-rel">${relParts.join('<span class="sep">|</span>')}</div>`;
+    }
 
     // ステータス別ボトム
     if (isResolved) {
