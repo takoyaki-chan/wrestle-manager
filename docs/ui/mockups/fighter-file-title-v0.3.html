@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>選手ファイル(タイトル画面) v0.3</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+JP:wght@300;400;500;700;900&family=Oswald:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   選手ファイル(タイトル画面) v0.3 — 2026-08-13 Fable
+   v0.2 レビュー(Keisuke)の反映:
+   ① OVRの階調: ランキングv0.9の白っぽい階調をやめ、
+      「元のルール」= DB実装 _SCALE6(ui-common.js:799)のアンカー
+      [45:#8090a8 / 55:#b89870 / 65:#c4853a / 75:#d4a843 / 85:#f0d078]
+      を値で補間する連続グラデーションへ(45未満=#607080)
+   ② PW/SP/TE/ST/MNは各系統色が「100で一番濃く」なるよう、
+      低域スレート→純色の連続グラデーションを新設
+   ③ 100オーバーは「輝き」(text-shadow glow)。元実装の85+glow
+      (_scale6Style)と同型のまま発動点を100超へ移設
+   ④ タイトル配色=案2「会場の夜」確定 / 入口=Credits横リンク確定
+   ⑤ 修正: SP/TEの系統色がv0.2まで逆だった。実装 _STAT_COLORS
+      (ui-render.js:9154)の実値 SP=#2ecc71(緑)/TE=#3498db(青) へ訂正
+   mockup-baseline v0.8 準拠(タイプスケール7段/顔row40/2:3梯子XL/
+   余白・角丸トークン/数値Bebas+tabular-nums)。
+   色について: 本文中のCSSは var(--*) のみ。JSが算出する階調色は
+   _SCALE6/_STAT_COLORS(実装の実値)を転記した定数からの補間で、
+   色の新規発明は「低域スレートからの混色」と100+の微増光のみ。
+   ============================================================ */
+:root {
+  /* 実装 index.html の実値 */
+  --bg-dark:#24221e; --panel-bg:#181614; --card-bg:#12110e;
+  --gold:#d4a843; --gold-light:#f0d078;
+  --text-main:#e8e6e0; --text-sub:rgba(232,230,224,0.5); --text-dim:rgba(232,230,224,0.25);
+  --border:rgba(200,190,170,0.08); --border-strong:rgba(200,190,170,0.16);
+  /* ステ系統色(ui-render.js _STAT_COLORS の実値。SP=緑/TE=青が正) */
+  --stat-pw:#e74c3c; --stat-sp:#2ecc71; --stat-te:#3498db; --stat-st:#f39c12; --stat-mn:#9b59b6;
+  /* スタイルバッジ色(index.html .badge-* の実値) */
+  --style-grappler:#8e44ad; --style-striker:#c0392b; --style-submission:#b9570d;
+  --style-aerial:#1e8449; --style-allround:#9a7d0a; --style-brawler:#a93226;
+  /* ★ 確定: タイトル画面リフレッシュ 案2「会場の夜」(採用時に実装へ) */
+  --title-bg-cool:#161b21;
+  --title-glow-cool:rgba(110,150,190,0.09);
+  --font-body:"Noto Sans JP",sans-serif;
+  --font-num:"Bebas Neue","Noto Sans JP",sans-serif;
+  --font-label:"Oswald","Noto Sans JP",sans-serif;
+  --radius-sm:4px; --radius-md:6px; --radius-lg:10px;
+  --space-xs:4px; --space-sm:8px; --space-md:12px; --space-lg:16px; --space-xl:24px;
+  /* 選手ファイル画面(案A確定)のコンポーネントトークン */
+  --ff-bg:var(--bg-dark); --ff-panel:var(--panel-bg);
+  --ff-text:var(--text-main); --ff-sub:var(--text-sub); --ff-dim:var(--text-dim);
+  --ff-border:var(--border); --ff-border-strong:var(--border-strong);
+  --ff-accent:var(--gold); --ff-accent-light:var(--gold-light);
+  --ff-row-hover:rgba(200,190,170,0.03); --ff-input-bg:var(--panel-bg);
+}
+* { box-sizing:border-box; }
+html,body { margin:0; padding:0; background:var(--bg-dark); color:var(--text-main); font-family:var(--font-body); line-height:1.5; }
+body { padding:var(--space-xl) 0 80px; }
+.shell { width:min(1200px, calc(100vw - 24px)); margin:0 auto; }
+
+/* ── モック用の枠・注釈 ── */
+.intro { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-lg) 20px; margin-bottom:var(--space-xl); }
+.intro .eyebrow { font-family:var(--font-label); color:var(--gold); font-size:11px; letter-spacing:3px; text-transform:uppercase; margin-bottom:6px; }
+.intro h1 { font-size:18px; margin:0 0 6px; font-weight:700; }
+.intro p { margin:0 0 4px; color:var(--text-sub); font-size:13px; }
+.sec { margin-bottom:56px; }
+.sec-title { font-family:var(--font-label); font-size:13px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); border-bottom:1px solid var(--border); padding-bottom:var(--space-sm); margin-bottom:var(--space-lg); }
+.note { background:var(--panel-bg); border-left:3px solid var(--gold); border-radius:var(--radius-sm); padding:var(--space-md) var(--space-lg); margin-top:var(--space-lg); font-size:13px; color:var(--text-sub); }
+.note b { color:var(--text-main); }
+.note ul { margin:6px 0 0; padding-left:18px; }
+.note li { margin-bottom:4px; }
+.judge { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius-md); padding:var(--space-lg) 20px; }
+.judge ol { margin:0; padding-left:20px; font-size:13px; }
+.judge li { margin-bottom:10px; }
+.judge li b { color:var(--gold-light); }
+.judge .rec { color:var(--text-main); }
+
+/* ══ §0 タイトル画面(案2確定形・縮小再現) ══ */
+.title-solo { max-width:560px; margin:0 auto; }
+.tp-label { font-family:var(--font-label); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text-sub); margin-bottom:6px; }
+.title-mini { position:relative; height:460px; background:var(--title-bg-cool); border:1px solid var(--border-strong); border-radius:var(--radius-md); overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.title-mini::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 85%, var(--title-glow-cool) 0%, transparent 60%); }
+.tm-faces { position:absolute; left:0; right:0; bottom:0; display:flex; justify-content:center; opacity:0.3; filter:saturate(0.55); pointer-events:none;
+  mask-image:linear-gradient(to top, transparent 0%, black 30%, black 70%, transparent 100%);
+  -webkit-mask-image:linear-gradient(to top, transparent 0%, black 30%, black 70%, transparent 100%); }
+.tm-faces img { width:110px; height:110px; object-fit:cover; object-position:top; flex:0 0 auto; }
+.tm-content { position:relative; z-index:1; text-align:center; }
+.tm-logo { font-family:var(--font-num); font-size:42px; letter-spacing:7px; line-height:1;
+  background:linear-gradient(180deg, var(--text-main) 0%, var(--gold-light) 50%, var(--gold) 100%);
+  -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; margin-bottom:4px; }
+.tm-sub { font-size:10px; letter-spacing:4px; color:var(--text-sub); margin-bottom:26px; }
+.tm-buttons { display:flex; flex-direction:column; gap:8px; align-items:center; }
+.tm-btn { font-family:var(--font-num); font-size:14px; letter-spacing:4px; padding:9px 34px;
+  border:1px solid rgba(212,168,67,0.4); background:rgba(212,168,67,0.08); color:var(--gold-light);
+  border-radius:var(--radius-sm); min-width:180px; cursor:default; }
+.tm-btn.primary { background:linear-gradient(135deg, var(--gold), #b8912e); color:var(--title-bg-cool); border:none; font-size:15px; }
+.tm-ver { font-family:var(--font-label); font-size:8px; letter-spacing:2px; color:var(--text-dim); margin-top:18px; }
+.tm-links { display:flex; gap:14px; justify-content:center; margin-top:6px; font-size:10px; color:var(--text-dim); }
+.tm-links span { text-decoration:underline; text-underline-offset:2px; cursor:default; }
+.tm-links .newlink { color:var(--gold-light); cursor:pointer; }
+.tm-links .newlink:hover { color:var(--gold); }
+.tm-flag { position:absolute; top:8px; right:10px; font-family:var(--font-label); font-size:8px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; }
+
+/* ══ §1 選手ファイル(案A確定形) ══ */
+.screen-frame { background:var(--ff-bg); color:var(--ff-text); border:1px solid var(--ff-border-strong); border-radius:var(--radius-md); overflow:hidden; }
+.ff-topbar { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) 20px; background:var(--ff-panel); border-bottom:1px solid var(--ff-border); }
+.ff-titlebox .kicker { font-family:var(--font-label); font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--ff-accent); }
+.ff-titlebox h2 { margin:0; font-size:18px; font-weight:700; letter-spacing:1px; }
+.ff-close { font-size:15px; line-height:1; color:var(--ff-sub); border:1px solid var(--ff-border-strong); background:none; border-radius:var(--radius-sm); width:32px; height:32px; cursor:pointer; }
+.ff-close:hover { color:var(--ff-text); border-color:var(--ff-accent); }
+.ff-body { padding:var(--space-lg) 20px var(--space-xl); }
+.ff-notice { display:flex; gap:var(--space-md); align-items:flex-start; border:1px dashed var(--ff-border-strong); border-radius:var(--radius-sm); background:var(--ff-panel); padding:var(--space-md) var(--space-lg); margin-bottom:var(--space-lg); }
+.ff-notice .stamp { flex:0 0 auto; font-family:var(--font-label); font-size:10px; letter-spacing:2px; color:var(--ff-accent); border:1px solid var(--ff-accent); border-radius:var(--radius-sm); padding:3px 8px; transform:rotate(-4deg); text-transform:uppercase; margin-top:2px; }
+.ff-notice .nx-main { font-size:13px; font-weight:700; margin-bottom:2px; }
+.ff-notice .nx-sub { font-size:11px; color:var(--ff-sub); line-height:1.7; }
+.ff-filterbar { display:flex; gap:var(--space-sm); flex-wrap:wrap; align-items:center; margin-bottom:var(--space-md); }
+.ff-filterbar select, .ff-filterbar input { font-size:13px; padding:5px 8px; background:var(--ff-input-bg); border:1px solid var(--ff-border-strong); border-radius:var(--radius-sm); color:var(--ff-text); min-width:0; font-family:var(--font-body); }
+.ff-filterbar input { flex:1; min-width:120px; }
+.ff-count { font-size:11px; color:var(--ff-dim); white-space:nowrap; }
+.ff-table { width:100%; border-collapse:collapse; font-size:13px; }
+.ff-table th { font-family:var(--font-body); font-size:11px; color:var(--ff-dim); text-transform:uppercase; letter-spacing:1px; padding:6px 8px; border-bottom:1px solid var(--ff-border); text-align:left; cursor:pointer; user-select:none; white-space:nowrap; font-weight:400; }
+.ff-table th:hover { color:var(--ff-sub); }
+.ff-table th.sorted { color:var(--ff-accent); }
+.ff-table td { padding:7px 8px; border-bottom:1px solid var(--ff-border); vertical-align:middle; }
+.ff-table tr.clickable:hover td { background:var(--ff-row-hover); cursor:pointer; }
+.ff-table td.num { font-variant-numeric:tabular-nums; }
+.ff-face { width:40px; height:40px; object-fit:cover; object-position:top; border-radius:var(--radius-sm); display:block; }
+.ff-face-fb { width:40px; height:40px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:15px; font-weight:700; color:var(--ff-sub); background:var(--ff-panel); border:1px solid var(--ff-border-strong); }
+.ff-name { font-weight:700; }
+.ff-ovr { font-family:var(--font-num); font-size:15px; letter-spacing:1px; }
+.style-badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:2px; letter-spacing:.5px; white-space:nowrap;
+  color:var(--sb); background:color-mix(in srgb, var(--sb) 15%, transparent); border:1px solid color-mix(in srgb, var(--sb) 40%, transparent);
+  filter:brightness(1.35); }
+
+/* ══ §2 詳細モーダル ══ */
+.ffm-backdrop { position:fixed; inset:0; z-index:200; background:rgba(0,0,0,0.6); display:none; align-items:center; justify-content:center; padding:var(--space-lg); }
+.ffm-backdrop.open { display:flex; }
+.ffm-box { width:min(720px, 100%); max-height:88vh; overflow-y:auto; background:var(--ff-bg); color:var(--ff-text); border:1px solid var(--ff-border-strong); border-radius:var(--radius-lg); }
+.ffm-head { display:flex; align-items:center; justify-content:space-between; padding:var(--space-md) 20px; background:var(--ff-panel); border-bottom:1px solid var(--ff-border); position:sticky; top:0; }
+.ffm-head .kicker { font-family:var(--font-label); font-size:8px; letter-spacing:3px; text-transform:uppercase; color:var(--ff-accent); }
+.ffm-main { display:flex; gap:var(--space-lg); padding:var(--space-lg) 20px; flex-wrap:wrap; }
+.ffm-photo { flex:0 0 auto; }
+.ffm-photo img { width:172px; height:258px; object-fit:cover; object-position:top; border-radius:var(--radius-md); border-bottom:3px solid var(--ff-accent); display:block; background:var(--ff-panel); }
+.ffm-photo .ph-fb { width:172px; height:258px; border-radius:var(--radius-md); display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:700; color:var(--ff-sub); background:var(--ff-panel); border-bottom:3px solid var(--ff-accent); }
+.ffm-info { flex:1; min-width:260px; }
+.ffm-name { font-size:18px; font-weight:700; margin:0 0 var(--space-sm); }
+.ffm-badges { display:flex; gap:var(--space-xs); flex-wrap:wrap; margin-bottom:var(--space-sm); }
+.role-badge { display:inline-block; font-size:10px; padding:1px 6px; border-radius:2px; letter-spacing:.5px; color:var(--ff-sub); border:1px solid var(--ff-border-strong); }
+.ffm-meta { font-size:11px; color:var(--ff-sub); margin-bottom:var(--space-md); }
+.ffm-ovr { display:flex; align-items:baseline; gap:var(--space-sm); margin-bottom:var(--space-md); }
+.ffm-ovr .v { font-family:var(--font-num); font-size:28px; line-height:1; letter-spacing:1px; }
+.ffm-ovr .u { font-family:var(--font-label); font-size:8px; letter-spacing:2px; text-transform:uppercase; color:var(--ff-sub); }
+.ffm-charts { display:flex; gap:var(--space-lg); align-items:flex-start; flex-wrap:wrap; }
+.ffm-radar { flex:0 0 auto; }
+.ffm-bars { flex:1; min-width:200px; display:flex; flex-direction:column; gap:6px; padding-top:var(--space-xs); }
+.sb-row { display:flex; align-items:center; gap:var(--space-sm); }
+.sb-label { font-family:var(--font-label); font-size:10px; letter-spacing:1px; width:24px; flex:0 0 auto; }
+.sb-track { flex:1; height:8px; background:var(--ff-panel); border:1px solid var(--ff-border); border-radius:2px; position:relative; overflow:hidden; }
+.sb-tick { position:absolute; left:66.67%; top:0; bottom:0; width:1px; background:var(--ff-border-strong); }
+.sb-fill { height:100%; border-radius:2px 0 0 2px; }
+.sb-val { font-family:var(--font-num); font-size:13px; width:28px; text-align:right; flex:0 0 auto; font-variant-numeric:tabular-nums; }
+.sb-scale { font-size:10px; color:var(--ff-dim); text-align:right; margin-top:2px; }
+.ffm-sec { padding:0 20px var(--space-lg); }
+.ffm-sec-label { font-family:var(--font-label); font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--ff-accent); border-bottom:1px solid var(--ff-border); padding-bottom:var(--space-xs); margin-bottom:var(--space-sm); }
+.tr-row { display:flex; align-items:baseline; gap:var(--space-sm); margin-bottom:6px; }
+.tr-chip { flex:0 0 auto; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; border-radius:var(--radius-sm); color:var(--tc); background:color-mix(in srgb, var(--tc) 16%, transparent); border:1px solid color-mix(in srgb, var(--tc) 45%, transparent); align-self:center; filter:brightness(1.2); }
+.tr-name { font-size:13px; font-weight:700; flex:0 0 auto; }
+.tr-desc { font-size:11px; color:var(--ff-sub); }
+.ffm-profile { font-size:13px; line-height:1.9; color:var(--ff-text); }
+.ffm-foot { padding:var(--space-md) 20px; border-top:1px solid var(--ff-border); font-size:10px; color:var(--ff-dim); }
+
+.demo-btns { display:flex; gap:var(--space-sm); flex-wrap:wrap; margin-top:var(--space-md); }
+.demo-btn { font-size:13px; padding:8px 16px; border:1px solid var(--border-strong); background:var(--panel-bg); color:var(--text-main); border-radius:var(--radius-sm); cursor:pointer; }
+.demo-btn:hover { border-color:var(--gold); color:var(--gold-light); }
+
+/* 階調の凡例 */
+.tier-legend { background:var(--panel-bg); border:1px solid var(--border); border-radius:var(--radius-sm); padding:var(--space-md) var(--space-lg); margin-top:var(--space-sm); }
+.tier-legend .tl-head { font-size:11px; color:var(--text-sub); margin-bottom:6px; }
+.tl-row { display:flex; align-items:center; gap:var(--space-md); flex-wrap:wrap; margin-bottom:4px; }
+.tl-row .tl-name { font-family:var(--font-label); font-size:10px; letter-spacing:1px; width:34px; color:var(--text-sub); }
+.tl-row .sw { font-family:var(--font-num); font-size:15px; font-variant-numeric:tabular-nums; width:34px; text-align:right; }
+.tl-row .tl-plus { font-size:10px; color:var(--text-dim); margin-left:4px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="intro">
+    <div class="eyebrow">Mockup — Title Screen Feature / v0.3 / 2026-08-13</div>
+    <h1>選手ファイル v0.3 — 階調カラー作り直し版</h1>
+    <p><b style="color:var(--gold-light)">v0.2からの変更:</b> ①OVRの階調を「元のルール」= ゲーム内DB実装の6段カラー(`_SCALE6`)を値で補間する連続グラデーションへ作り直し ②PW〜MNは各系統色が<b>100で一番濃くなる</b>専用グラデーションを新設 ③<b>100オーバーは輝く</b>(元実装のglow表現を100超へ移設) ④タイトル配色=案2「会場の夜」確定・入口=Credits横リンク確定 ⑤SP/TEの系統色がv0.2まで逆だったのを実装値(SP=緑/TE=青)へ訂正。</p>
+    <p style="color:var(--text-dim)">確定済み: 器=案A / 列構成 / ソート・検索 / 入口 / タイトル配色。機密注記(①記載しない ②基準値は機密 ③プレイごとに変化)は不変。</p>
+  </div>
+
+  <!-- ═══════════ §0 タイトル画面(確定形) ═══════════ -->
+  <div class="sec" id="sec0">
+    <div class="sec-title">§0 — タイトル画面 確定形: 案2「会場の夜」+ Credits横リンク</div>
+    <div class="title-solo">
+      <div class="tp-label">確定 — 地色 #161b21 + 下からの涼しい光 / 入口は Credits 横の小リンク</div>
+      <div class="title-mini">
+        <div class="tm-flag">Confirmed</div>
+        <div class="tm-faces">
+          <img src="../../../image/face_abukuma_t.png" alt="" loading="lazy"><img src="../../../image/face_shirogane_r.png" alt="" loading="lazy"><img src="../../../image/face_tachibana_r.png" alt="" loading="lazy"><img src="../../../image/face_okochi_s.png" alt="" loading="lazy"><img src="../../../image/face_fukamachi_m.png" alt="" loading="lazy"><img src="../../../image/face_ikoma_e.png" alt="" loading="lazy">
+        </div>
+        <div class="tm-content">
+          <div class="tm-logo">WRESTLE<br>MANAGER</div>
+          <div class="tm-sub">女子プロレス団体経営シミュレーション</div>
+          <div class="tm-buttons">
+            <button class="tm-btn primary">NEW GAME</button>
+            <button class="tm-btn">CONTINUE</button>
+            <button class="tm-btn">LOAD GAME</button>
+          </div>
+          <div class="tm-ver">VERSION 1.26</div>
+          <div class="tm-links"><span>Credits</span><span class="newlink" onclick="document.getElementById('secList').scrollIntoView({behavior:'smooth'})">Fighter File</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="note">
+      <b>確定事項(2026-08-13 Keisuke):</b> 配色は案2「会場の夜」/ 入口はCredits横の小リンク。
+      <ul>
+        <li>実装対象: `.title-screen` の背景と `.title-bg::before` のグロー、リンク1個の追加。ロゴ・ボタンの金は不変、ゲーム内Officeの暖茶も不変</li>
+        <li>顔マーキーの彩度 0.4→0.55 も案2に含めて適用(過剰なら実装時に戻せる)</li>
+        <li>残る小判断: 団体設立・難易度画面(同じ地色)も揃えるか(§3)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════ §1 一覧(階調カラー作り直し) ═══════════ -->
+  <div class="sec" id="secList">
+    <div class="sec-title">§1 — 一覧: OVR=元ルールの連続階調 / PW〜MN=系統色が100で頂点</div>
+    <div class="screen-frame" id="frameA">
+      <div class="ff-topbar">
+        <div class="ff-titlebox">
+          <div class="kicker">Personnel Files — All Wrestlers</div>
+          <h2>選手ファイル</h2>
+        </div>
+        <button class="ff-close" title="タイトルへ戻る(ESC可)">✕</button>
+      </div>
+      <div class="ff-body">
+        <div class="ff-notice">
+          <span class="stamp">機密指定</span>
+          <div>
+            <div class="nx-main">潜在能力値は、本ファイルには記載されない。</div>
+            <div class="nx-sub">各選手の潜在能力の基準値は機密事項。さらに同じ選手であっても、その基準値はプレイごとに変化する。<br>※ 記載の能力値は入団前査定の初期値。入団後の育成と経験で変わっていく。</div>
+          </div>
+        </div>
+        <div class="ff-filterbar">
+          <select onchange="setStyleFilter(this.value)">
+            <option value="">全スタイル</option>
+          </select>
+          <input type="text" placeholder="名前で検索" oninput="setNameFilter(this.value)">
+          <span class="ff-count" id="countA"></span>
+        </div>
+        <table class="ff-table"><thead id="headA"></thead><tbody id="bodyA"></tbody></table>
+      </div>
+    </div>
+    <div class="tier-legend" id="tierLegend"></div>
+    <div class="note">
+      <b>現→変(v0.2→v0.3):</b>
+      <ul>
+        <li><b>OVR</b>: DB実装 `_ovrColor`(_SCALE6)のアンカー <span style="color:#8090a8">45</span>→<span style="color:#b89870">55</span>→<span style="color:#c4853a">65</span>→<span style="color:#d4a843">75</span>→<span style="color:#f0d078">85</span> を値で補間する連続グラデーション(45未満はスレート)。85以上は太字</li>
+        <li><b>PW〜MN</b>: 低域スレートから始まり、<b>100でその系統の純色(一番濃い色)</b>に到達するグラデーション。系統色は実装 `_STAT_COLORS` の実値(PW赤/SP緑/TE青/ST橙/MN紫)</li>
+        <li><b>100オーバー</b>: 少し明るく+その色のglow(text-shadow)で「輝く」。元実装が85+に使っていた表現と同型で、発動点を100超へ移設。初期値では出ない(最高95)ため、凡例に成長域の見本を置いた</li>
+        <li>ソート・検索・行クリック→詳細・身長列(階調対象外)は不変</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ═══════════ §2 詳細モーダル ═══════════ -->
+  <div class="sec" id="secDetail">
+    <div class="sec-title">§2 — 詳細モーダル: 数値が同じ階調に追随</div>
+    <p style="font-size:13px;color:var(--text-sub);margin:0">OVR大数字=OVR階調、バー右の数値=各系統の階調。レーダー軸ラベルとバーの塗りは系統色のまま(軸識別)。SP/TE訂正はここにも効いている(レーダーのSPが緑・TEが青に)。</p>
+    <div class="demo-btns">
+      <button class="demo-btn" onclick="openDetail(1)">阿武隈塔子(PW95=赤の頂点近く)</button>
+      <button class="demo-btn" onclick="openDetail(11)">橘玲美(TE91=青の頂点近く)</button>
+      <button class="demo-btn" onclick="openDetail(80)">高島さや(低ステの見え方)</button>
+    </div>
+  </div>
+
+  <!-- ═══════════ §3 判断が要る点 ═══════════ -->
+  <div class="sec" id="secJudge">
+    <div class="sec-title">§3 — 判断が要る点(v0.3)</div>
+    <div class="judge">
+      <ol>
+        <li><b>階調カーブ</b> — 低域は30以下=スレート固定、30→100で純色へ(緩い加速カーブ)。中域(50〜70)の色の乗り方が薄い/濃いの感触を見てほしい</li>
+        <li><b>輝きの強さ</b> — 100超のglowは元実装と同じ 6px・半透明。もっと派手(2重shadow等)にも振れる</li>
+        <li><b>太字の閾値</b> — OVR・ステとも85以上を太字にした(元ルールのglow帯に合わせた)。不要なら外す</li>
+        <li><b>配色の適用範囲</b> — タイトルに続く団体設立・難易度画面も案2の地色に揃えるか</li>
+        <li><b>選手ファイル画面の地色</b> — モックはゲーム内DB準拠の暖ダークのまま。タイトル(案2)の上に開く画面として微青地に追従させる選択もある</li>
+        <li><b>SP/TE色の訂正の波及</b> — 本モックは実装値(SP緑/TE青)に合わせた。実装時もこの正を使う(v0.2の逆転はモックだけの誤りで、ゲーム側は元から正しい)</li>
+      </ol>
+    </div>
+  </div>
+
+  <div style="font-size:10px;color:var(--text-dim);text-align:center">fighter-file-title-v0.3.html — mockup-baseline v0.8 準拠 / 階調=_SCALE6・_STAT_COLORS(実装実値)からの補間 / 見本データは src/data.js の実値(pot除く)</div>
+</div>
+
+<!-- 詳細モーダル -->
+<div class="ffm-backdrop" id="ffmBackdrop" onclick="if(event.target===this)closeDetail()">
+  <div class="ffm-box" id="ffmBox"></div>
+</div>
+
+<script>
+/* ── 見本データ: src/data.js の実値を転記。pot(潜在能力値)はソースにも一切含めていない。 ── */
+const TRAITS = {
+  '華':{icon:'華',color:'#e91e9c',desc:'集客力にボーナス。グッズ売上の重みも増加'},
+  'ファンサービス':{icon:'奉',color:'#f39c12',desc:'グッズ売上にボーナス。興行出場で人気が上がりやすい'},
+  'ヒール適性':{icon:'悪',color:'#9b59b6',desc:'悪役ムーブで人気を稼ぎ、因縁も生みやすい'},
+  '名勝負製造機':{icon:'名',color:'#f1c40f',desc:'試合がたまに大化けする。キックアウトやカウンターが生まれやすい'},
+  '引き出し上手':{icon:'引',color:'#2ecc71',desc:'格下との試合でも質が下がりにくい'},
+  'ライバル体質':{icon:'闘',color:'#e74c3c',desc:'ライバル因縁が生まれやすい'},
+  '早熟':{icon:'早',color:'#27ae60',desc:'10代から即戦力。若いうちに仕上がる成長タイプ'},
+  '晩成':{icon:'晩',color:'#16a085',desc:'序盤は遅いが、21〜22歳でピークに成長する'},
+  '努力家':{icon:'努',color:'#3498db',desc:'成長が安定しやすく、練習で体を壊しにくい'},
+  '破天荒':{icon:'破',color:'#e67e22',desc:'成長にムラあり。爆発的か停滞'},
+  '適応力':{icon:'適',color:'#1abc9c',desc:'怪我中でも成長が落ちにくく、追い込み練習にも強い'},
+  '頑丈さ':{icon:'頑',color:'#2980b9',desc:'怪我しにくい'},
+  'ガラスの身体':{icon:'脆',color:'#c0392b',desc:'怪我しやすいが、復帰のたびにファンの声援を集める'},
+  '鉄人':{icon:'鉄',color:'#7f8c8d',desc:'コンディション全般に強い'},
+  '不屈':{icon:'屈',color:'#d35400',desc:'怪我からの復帰が速い'},
+  'ムードメーカー':{icon:'和',color:'#f39c12',desc:'明るさでロッカールームの空気を持ち上げる'},
+  '人望':{icon:'望',color:'#3498db',desc:'不安定な選手たちの心を支える'},
+  '負けず嫌い':{icon:'負',color:'#e74c3c',desc:'負けた翌週の練習成長にボーナス'},
+  'リーダー気質':{icon:'将',color:'#f1c40f',desc:'チームの不満を抑え、チャンピオン時は団体の顔として人気UP'},
+  '忠誠心':{icon:'忠',color:'#2ecc71',desc:'引き抜きオファーが来る確率が大幅に低下'},
+  '野心':{icon:'野',color:'#9b59b6',desc:'タイトル挑戦時に試合が盛り上がり、覚醒しやすい'},
+  '番狂わせ体質':{icon:'番',color:'#e74c3c',desc:'格上相手に丸め込み率UP'},
+  '闘志':{icon:'志',color:'#c0392b',desc:'瀕死から粘る力が強く、負けても人気が落ちにくい'},
+  '威圧感':{icon:'威',color:'#8e44ad',desc:'対戦相手の序盤モメンタムが不利'},
+  '反骨心':{icon:'反',color:'#c0392b',desc:'移籍願望が出やすいが、信頼が低いと成長する'}
+};
+const STYLE_VAR = {Grappler:'--style-grappler',Striker:'--style-striker',Submission:'--style-submission',Aerial:'--style-aerial',Allround:'--style-allround',Brawler:'--style-brawler'};
+const STYLES = ['Grappler','Striker','Submission','Aerial','Allround','Brawler'];
+/* 系統色: ui-render.js _STAT_COLORS の実値(SP=緑/TE=青が正) */
+const STAT_KEYS = [['pw','PW','--stat-pw'],['sp','SP','--stat-sp'],['te','TE','--stat-te'],['st','ST','--stat-st'],['mn','MN','--stat-mn']];
+const STAT_HEX = { pw:'#e74c3c', sp:'#2ecc71', te:'#3498db', st:'#f39c12', mn:'#9b59b6' };
+
+const F = [
+{id:1,name:'阿武隈塔子',h:173,pw:95,sp:73,te:71,st:81,mn:80,style:'Grappler',role:'Babyface',traits:['リーダー気質','人望','威圧感','引き出し上手','ガラスの身体'],img:'abukuma_t',profile:'抜きん出た体格とパワーで粕田市内最強と謳われた伝説のレスラー。面倒見が良く人望も厚い。パワーボムと強烈なラリアットを武器に圧倒的な存在感で対戦相手を飲み込む。'},
+{id:5,name:'深町真琴',h:160,pw:58,sp:91,te:62,st:85,mn:63,style:'Aerial',role:'Babyface',traits:['努力家','華','鉄人'],img:'fukamachi_m',profile:'陸上部の快足女子。ストイックに鍛え上げた脚力から繰り出すスピードと蹴り技で相手を翻弄する実力者。短距離走で鍛えた爆発的な加速力はリングでも遺憾なく発揮される。飛び技・蹴り技の切れ味は一級品。'},
+{id:11,name:'橘玲美',h:171,pw:71,sp:73,te:91,st:75,mn:74,style:'Submission',role:'Heel',traits:['ヒール適性','威圧感','早熟','華'],img:'tachibana_r',profile:'高校生としては大人びた印象の女子高生。嗜虐的な一面を持ち、関節技と絞め技で相手を追い詰めるスタイルを好む危険な実力者。看護科で学んだ知識をプロレスに持ち込んだ独自のサブミッション技術は市内トップクラスで、一度捕まれば脱出は至難の業。'},
+{id:12,name:'生駒エリカ',h:153,pw:78,sp:71,te:55,st:82,mn:82,style:'Brawler',role:'Heel',traits:['負けず嫌い','闘志','鉄人','人望','反骨心'],img:'ikoma_e',profile:'小柄ながら体格に似合わぬパワーと不屈の闘志で相手をねじ伏せる。153cmの小さな体に宿る闘志は誰よりも激しく、タフネスと根性で大型選手にも真っ向から立ち向かう。チームメイトからの信頼も厚く、頼もしいリーダー格。'},
+{id:13,name:'堂前ユキ',h:163,pw:81,sp:84,te:43,st:64,mn:73,style:'Striker',role:'Neutral',traits:['破天荒'],img:'domae_y',profile:'口数は極めて少ない打撃戦の申し子。一撃必殺を理想とする戦闘狂。鍛え抜かれた拳足から繰り出される打撃はスピードとパワーを兼ね備え、試合が始まれば相手を容赦なく打ち抜く。寡黙ゆえに何を考えているか掴みにくく、対戦相手に不気味な圧を与える。'},
+{id:15,name:'楠木なぎさ',h:178,pw:79,sp:65,te:21,st:66,mn:62,style:'Brawler',role:'Babyface',traits:['威圧感'],img:'kusunoki_n',profile:'哲玖高校一のパワーを誇る重戦車。生駒と橘を慕う忠義者だが、身内以外には非常に冷淡で攻撃的。178cmの長身と圧倒的なパワーで相手を力任せにねじ伏せる。'},
+{id:16,name:'大河内紗代子',h:164,pw:93,sp:76,te:66,st:69,mn:77,style:'Grappler',role:'Heel',traits:['リーダー気質','威圧感','華','野心'],img:'okochi_s',profile:'名家・大河内家の令嬢にして摺出川女学院を支配する女帝。高いカリスマ性と冷酷さで学園に君臨する。全国から実力者を編入させる権力と資金力を持ち、自らも卓越した身体能力で頂点に立つ。その支配欲と野心は留まるところを知らず、粕田市全体の覇権をも狙う。'},
+{id:18,name:'出羽鷹子',h:184,pw:82,sp:71,te:68,st:78,mn:80,style:'Grappler',role:'Heel',traits:['威圧感','適応力'],img:'dewa_t',profile:'大河内が全国から呼び寄せた編入組の一角。市内屈指の体格とパワーは阿武隈にも引けを取らない。184cmの長身から繰り出す豪快なパワー殺法が武器。試合中に相手のスタイルに合わせた戦術変更もこなせる器用さを併せ持つ。'},
+{id:33,name:'梅ヶ丘みのり',h:163,pw:70,sp:68,te:72,st:75,mn:80,style:'Allround',role:'Babyface',traits:['リーダー気質','負けず嫌い'],img:'umegaoka_m',profile:'名門・岬浜女子の主将。おしとやかな容貌ながら努力で掴んだ実力で全国制覇を目指す。抜きん出た才能はないが、あらゆる面でハイレベルにまとまった総合力の高さが武器。チームを率いるリーダーシップにも優れ、部員たちから深い敬意を集めている。'},
+{id:37,name:'白銀麗子',h:165,pw:74,sp:81,te:79,st:79,mn:74,style:'Allround',role:'Babyface',traits:['不屈','華','頑丈さ'],img:'shirogane_r',profile:'名門・姫宮女子の主将。「柔の白銀」「姫宮の白雪姫」と呼ばれる容姿端麗な人気レスラー。バランスの取れた高い総合力と、どんな窮地でも折れない不屈の精神力が最大の武器。優雅で華麗な試合スタイルは多くのファンを魅了し、全国的にも知名度の高いトップレスラー。'},
+{id:46,name:'井沢遥',h:165,pw:68,sp:73,te:82,st:64,mn:77,style:'Submission',role:'Babyface',traits:['不屈','名勝負製造機','引き出し上手','負けず嫌い'],img:'izawa_h',profile:'かつて団地の実力者として尊敬を集めたが、高槻の策略で地位と友人を失い孤立。それでも折れずに５年の雌伏の後に高槻を破り地位を回復した。相手の良さを引き出しながら戦う誠実なスタイルは多くの支持を集めている。'},
+{id:48,name:'菊池璃子',h:162,pw:74,sp:76,te:69,st:71,mn:78,style:'Striker',role:'Neutral',traits:['負けず嫌い','適応力','闘志'],img:'kikuchi_r',profile:'粕田台団地に入居してきたちょっときつめの奥さん。前の住まいでは町内会プロレスの実力者。外には厳しく家では陽気。負けず嫌いの性格と適応力の高さで新しい環境にもすぐに溶け込んだ。打撃を軸にした攻撃的なスタイルで、闘志を前面に押し出す熱い試合を見せる。'},
+{id:55,name:'大久保桃子',h:163,pw:72,sp:73,te:74,st:71,mn:80,style:'Allround',role:'Babyface',traits:['不屈','鉄人','頑丈さ'],img:'okubo_m',profile:'社長秘書としてスカウトされた才媛。美貌と実力で瞬く間に社内マドンナの座を獲得した。不屈の精神と鉄人のスタミナを兼ね備え、どんな劣勢からも逆転を狙える粘り強さが最大の武器。正統派のオールラウンドスタイルで正面から堂々と戦う姿勢が支持を集めている。'},
+{id:67,name:'柳島みずほ',h:165,pw:83,sp:61,te:68,st:73,mn:83,style:'Grappler',role:'Babyface',traits:['ファンサービス','華','野心'],img:'yanagishima_m',profile:'かつては天才美少女ピアニストとして名を馳せた。夢破れた後も秘めた思いは消えず、望みをかなえるために地下プロレスに身を投じる。繊細な指先から繰り出すのは今やピアノではなく、容赦ないパワーグラップリング。華やかな容姿の瞳の奥には、挫折を乗り越えた者だけが持つ覚悟が宿っている。'},
+{id:80,name:'高島さや',h:145,pw:21,sp:32,te:19,st:18,mn:19,style:'Allround',role:'Babyface',traits:['ファンサービス','ムードメーカー'],img:'takashima_s',profile:'プロレスをするには不似合いな華奢でひ弱な少女。明日をも知れぬ日々に怯えながらも懸命に生きている。全ステータスが最低クラスだが、ムードメーカーとして場を明るくするファンサービス精神は誰にも負けない。彼女がリングに立つ姿は、強さとは何かを問いかける。'},
+{id:87,name:'レオナ・O・シュタインフェルト',h:152,pw:72,sp:77,te:43,st:65,mn:68,style:'Aerial',role:'Babyface',traits:['華'],img:'steinfeld_l',profile:'オーストリアからの留学生。体操競技の強化選手で、金髪碧眼の美少女が地下リングに舞い降りた。体操仕込みの華麗な空中殺法とスピードは観客を魅了し、その華やかな存在感で一躍人気者に。グラウンド技術には課題を残すが、身体能力の高さで十分カバーしている。'},
+{id:117,name:'クラッシャー毒島',h:184,pw:88,sp:67,te:58,st:66,mn:55,style:'Brawler',role:'Heel',traits:['ヒール適性','威圧感'],img:'crusher_b',profile:'地下リングで挑戦者をことごとく地獄に沈めてきた処刑人。184cmの巨体から繰り出す破壊的なブロウラーファイトと威圧感で相手を震え上がらせる。'},
+{id:128,name:'巳沼紗霧',h:166,pw:68,sp:63,te:88,st:73,mn:67,style:'Submission',role:'Heel',traits:['ヒール適性','リーダー気質'],img:'minuma_s',profile:'元哲玖四天王の一人。悪辣な外道ファイトとまとわりつくサブミッションで恐れられる哲玖の毒蛇。リーダーシップも兼ね備えた危険な実力者。'}
+];
+
+const ovr = f => Math.round((f.pw+f.sp+f.te+f.st+f.mn)/5);
+const face = f => `../../../image/face_${f.img}.png`;
+const upper = f => `../../../image/upper/upper_${f.img}.webp`;
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+
+/* ══ 階調カラー(v0.3 作り直し) ══
+   OVR: ui-common.js _SCALE6 のアンカーを値で線形補間(元のルールの並び)。
+   ステ: 低域スレート #607080 → 100 で系統色の純色(一番濃い色)。
+   100オーバー: 元実装 _scale6Style の glow(text-shadow 6px)を100超へ移設。 */
+function hexLerp(a, b, t){
+  const pa = [1,3,5].map(i=>parseInt(a.slice(i,i+2),16));
+  const pb = [1,3,5].map(i=>parseInt(b.slice(i,i+2),16));
+  return '#' + pa.map((x,i)=>Math.round(x+(pb[i]-x)*t).toString(16).padStart(2,'0')).join('');
+}
+/* _SCALE6 の実値(転記): ['#f0d078','#d4a843','#c4853a','#b89870','#8090a8','#607080'] */
+const OVR_ANCHORS = [
+  [40,'#607080'],[45,'#8090a8'],[55,'#b89870'],[65,'#c4853a'],[75,'#d4a843'],[85,'#f0d078'],[100,'#f7e19a']
+];
+function rampColor(anchors, v){
+  if(v <= anchors[0][0]) return anchors[0][1];
+  for(let i=1;i<anchors.length;i++){
+    if(v <= anchors[i][0]){
+      const [v0,c0] = anchors[i-1], [v1,c1] = anchors[i];
+      return hexLerp(c0, c1, (v-v0)/(v1-v0));
+    }
+  }
+  return anchors[anchors.length-1][1];
+}
+function ovrColorFor(v){ return rampColor(OVR_ANCHORS, Math.min(v,100)); }
+function statColorFor(k, v){
+  const c = STAT_HEX[k];
+  if(v > 100) return c;
+  const t = Math.pow(Math.max(0, Math.min(v,100)-30)/70, 1.15);
+  return hexLerp('#607080', c, t);
+}
+function glowStyle(color){
+  /* 100オーバーの輝き: 少し明るく + その色のglow(元実装の 0 0 6px 半透明 と同型) */
+  const lit = hexLerp(color, '#ffffff', 0.22);
+  return `color:${lit};text-shadow:0 0 6px ${color}cc,0 0 14px ${color}55;font-weight:700`;
+}
+function ovrStyle(v){
+  if(v > 100) return glowStyle(ovrColorFor(100));
+  return `color:${ovrColorFor(v)}${v>=85?';font-weight:700':''}`;
+}
+function statStyle(k, v){
+  if(v > 100) return glowStyle(STAT_HEX[k]);
+  return `color:${statColorFor(k,v)}${v>=85?';font-weight:700':''}`;
+}
+
+/* ── 一覧 ── */
+const COLS = [
+  {k:'',    label:'',      sortable:false},
+  {k:'name',label:'名前',  sortable:true},
+  {k:'style',label:'スタイル',sortable:true},
+  {k:'ovr', label:'OVR',   sortable:true},
+  {k:'pw',  label:'PW',    sortable:true},
+  {k:'sp',  label:'SP',    sortable:true},
+  {k:'te',  label:'TE',    sortable:true},
+  {k:'st',  label:'ST',    sortable:true},
+  {k:'mn',  label:'MN',    sortable:true},
+  {k:'h',   label:'身長',  sortable:true}
+];
+const state = {key:'ovr',asc:false,style:'',q:''};
+function sortVal(f,key){
+  if(key==='ovr') return ovr(f);
+  return f[key];
+}
+function sortBy(key){
+  if(state.key===key){ state.asc = !state.asc; } else { state.key = key; state.asc = false; }
+  renderList();
+}
+function setStyleFilter(val){ state.style = val; renderList(); }
+function setNameFilter(val){ state.q = val.trim(); renderList(); }
+function renderList(){
+  let rows = F.slice();
+  if(state.style) rows = rows.filter(f=>f.style===state.style);
+  if(state.q) rows = rows.filter(f=>f.name.includes(state.q));
+  rows.sort((a,b)=>{
+    const va=sortVal(a,state.key), vb=sortVal(b,state.key);
+    const c = (typeof va==='string') ? va.localeCompare(vb,'ja') : va-vb;
+    return state.asc ? c : -c;
+  });
+  document.getElementById('headA').innerHTML = '<tr>' + COLS.map(c=>{
+    if(!c.sortable) return `<th style="width:48px"></th>`;
+    const active = state.key===c.k;
+    const arrow = active ? (state.asc?' ▲':' ▼') : '';
+    return `<th class="${active?'sorted':''}" onclick="sortBy('${c.k}')">${c.label}${arrow}</th>`;
+  }).join('') + '</tr>';
+  document.getElementById('bodyA').innerHTML = rows.map(f=>{
+    const o = ovr(f);
+    const statTds = STAT_KEYS.map(([k])=>
+      `<td class="num" style="${statStyle(k, f[k])}">${f[k]}</td>`).join('');
+    return `<tr class="clickable" onclick="openDetail(${f.id})">
+      <td><img class="ff-face" src="${face(f)}" alt="" loading="lazy" onerror="this.outerHTML='<div class=&quot;ff-face-fb&quot;>${esc(f.name[0])}</div>'"></td>
+      <td class="ff-name">${esc(f.name)}</td>
+      <td><span class="style-badge" style="--sb:var(${STYLE_VAR[f.style]})">${f.style}</span></td>
+      <td class="ff-ovr" style="${ovrStyle(o)}">${o}</td>
+      ${statTds}
+      <td class="num">${f.h}<span style="font-size:10px;color:var(--ff-dim)">cm</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('countA').textContent = `全${F.length}名 / 表示中: ${rows.length}名(モック収録。実装時は全127名)`;
+}
+function initFilters(){
+  document.querySelectorAll('.ff-filterbar select').forEach(sel=>{
+    STYLES.forEach(st=>{ const o=document.createElement('option'); o.value=st; o.textContent=st; sel.appendChild(o); });
+  });
+  /* 階調の凡例: OVR + 各系統のランプ、右端に100オーバーの輝き見本 */
+  const marks = [40,55,65,75,85,95,100];
+  const row = (name, styleFn, overVal) =>
+    `<div class="tl-row"><span class="tl-name">${name}</span>` +
+    marks.map(v=>`<span class="sw" style="${styleFn(v)}">${v}</span>`).join('') +
+    `<span class="sw" style="${styleFn(overVal)}">${overVal}</span><span class="tl-plus">← 100オーバー(成長域の参考。初期値では出ない)</span></div>`;
+  document.getElementById('tierLegend').innerHTML =
+    `<div class="tl-head">階調の凡例 — OVRは元ルール(_SCALE6)の並びを補間、各ステは100で系統の純色が頂点。100超は輝く:</div>` +
+    row('OVR', ovrStyle, 105) +
+    STAT_KEYS.map(([k,label])=>row(label, v=>statStyle(k,v), 112)).join('');
+}
+
+/* ── 詳細モーダル ── */
+function radarSVG(f){
+  const cx=100, cy=104, r=72;
+  const pt = (i, rad) => {
+    const a = (-90 + i*72) * Math.PI/180;
+    return [cx + rad*Math.cos(a), cy + rad*Math.sin(a)];
+  };
+  const poly = rad => Array.from({length:5},(_,i)=>pt(i,rad).map(n=>n.toFixed(1)).join(',')).join(' ');
+  const grid = [20,40,60,80,100].map(lv=>
+    `<polygon points="${poly(r*lv/100)}" fill="none" stroke="var(--ff-border-strong)" stroke-width="${lv===100?1:0.5}"/>`).join('');
+  const axes = Array.from({length:5},(_,i)=>{
+    const [x,y]=pt(i,r);
+    return `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}" stroke="var(--ff-border)" stroke-width="0.5"/>`;
+  }).join('');
+  const vals = [f.pw,f.sp,f.te,f.st,f.mn].map(x=>Math.max(0,Math.min(100,x)));
+  const dataPts = vals.map((val,i)=>pt(i,r*val/100).map(n=>n.toFixed(1)).join(',')).join(' ');
+  const labels = STAT_KEYS.map(([,label,cssVar],i)=>{
+    const [x,y]=pt(i,r+15);
+    return `<text x="${x.toFixed(1)}" y="${(y+3).toFixed(1)}" text-anchor="middle" font-family="Oswald,sans-serif" font-size="8" letter-spacing="1" fill="var(${cssVar})">${label}</text>`;
+  }).join('');
+  return `<svg width="200" height="208" viewBox="0 0 200 208" role="img" aria-label="能力レーダーチャート">
+    ${grid}${axes}
+    <polygon points="${dataPts}" fill="var(--ff-accent)" fill-opacity="0.25" stroke="var(--ff-accent)" stroke-width="1.5"/>
+    ${labels}
+  </svg>`;
+}
+function openDetail(id){
+  const f = F.find(x=>x.id===id);
+  if(!f) return;
+  const bars = STAT_KEYS.map(([k,label,cssVar])=>{
+    const val = f[k];
+    return `<div class="sb-row">
+      <span class="sb-label" style="color:var(${cssVar})">${label}</span>
+      <div class="sb-track"><i class="sb-tick"></i><div class="sb-fill" style="width:${(val/150*100).toFixed(1)}%;background:var(${cssVar})"></div></div>
+      <span class="sb-val" style="${statStyle(k, val)}">${val}</span>
+    </div>`;
+  }).join('');
+  const traits = f.traits.length ? f.traits.map(t=>{
+    const d = TRAITS[t];
+    if(!d) return '';
+    return `<div class="tr-row"><span class="tr-chip" style="--tc:${d.color}">${d.icon}</span><span class="tr-name">${t}</span><span class="tr-desc">${d.desc}</span></div>`;
+  }).join('') : '<div class="tr-desc">固有特性なし</div>';
+  const o = ovr(f);
+  document.getElementById('ffmBox').innerHTML = `
+    <div class="ffm-head">
+      <span class="kicker">Personnel File No.${String(f.id).padStart(3,'0')}</span>
+      <button class="ff-close" onclick="closeDetail()" title="閉じる(ESC可)">✕</button>
+    </div>
+    <div class="ffm-main">
+      <div class="ffm-photo">
+        <img src="${upper(f)}" alt="${esc(f.name)}" onerror="this.outerHTML='<div class=&quot;ph-fb&quot;>${esc(f.name[0])}</div>'">
+      </div>
+      <div class="ffm-info">
+        <h3 class="ffm-name">${esc(f.name)}</h3>
+        <div class="ffm-badges">
+          <span class="style-badge" style="--sb:var(${STYLE_VAR[f.style]})">${f.style}</span>
+          <span class="role-badge">${f.role}</span>
+        </div>
+        <div class="ffm-meta">📏 身長 ${f.h}cm</div>
+        <div class="ffm-ovr"><span class="v" style="${ovrStyle(o)}">${o}</span><span class="u">OVR — 入団前査定</span></div>
+        <div class="ffm-charts">
+          <div class="ffm-radar">${radarSVG(f)}</div>
+          <div class="ffm-bars">${bars}<div class="sb-scale">目盛 0–150(縦線=100)・ゲーム内と同じ</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="ffm-sec">
+      <div class="ffm-sec-label">Traits — 特性</div>
+      ${traits}
+    </div>
+    <div class="ffm-sec">
+      <div class="ffm-sec-label">Profile — 紹介</div>
+      <div class="ffm-profile">${esc(f.profile)}</div>
+    </div>
+    <div class="ffm-foot">※ 潜在能力・成長タイプ・体調・戦績などの査定外情報は、本ファイルには記載されない。</div>`;
+  document.getElementById('ffmBackdrop').classList.add('open');
+}
+function closeDetail(){ document.getElementById('ffmBackdrop').classList.remove('open'); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeDetail(); });
+
+initFilters();
+renderList();
+</script>
+</body>
+</html>
