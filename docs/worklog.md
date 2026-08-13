@@ -1,5 +1,13 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## バグ捜索②: UI自動走破ハーネス設計v0.1（2026-08-13・Fable・判断点3件レビュー待ち）
+
+②の設計書 `docs/ui-walkthrough-harness-design-v0.1.md` を作成。**核心の発見: 「`G`はapp.jsクロージャ内でアクセス不可」は誤認だった**。実体は `let G` がapp.js:3797の**トップレベル宣言**(グローバル・レキシカル)で、アクセスできなかったのはプレビューツールのevalが拡張の隔離ワールドで走るため。Playwrightの `page.evaluate` はメインワールド実行なので G/App/Engine/Storage を直接読める→**製品コードを1文字も変えずにハーネスを作れる**(テスト用フック新設は不要と判明)。メモリの誤情報も訂正済み。
+
+設計骨子: Playwright(devDependency)+使い捨てローカルhttpサーバ(file://はbattle-engine.html iframeの同一オリジン制約で不安定)。Wモード(fixture セーブから実UIで1〜2季走破・主ボタン方針)/Mモード(シード付きモンキー・破壊操作遮断リスト)。検出器5種: D1例外(pageerror+console)/D2スタック(クリック後5秒でDOM変異・G変化・オーバーレイ変化のいずれも無し→全ボタン一巡再試行→FREEZE判定。閉じる手段のないオーバーレイも同判定)/D3可視テキスト(undefined・NaN・内部変数名)/D4不可視(遷移差分要素の実効面積0・親overflowクリップ=「書いてあるのに出ていない」検出器)/D5進行ウォッチドッグ。page.clockで演出待ち圧縮。npm test・編集毎フックには入れない(実行時間が桁違い)。③レア画面カタログはこの driver/detectors を流用する共通基盤設計。
+
+残: **Keisuke判断点3件**(①Playwright導入可否=Chromiumダウンロード数百MB ②初期スコープ=Wモード1季推奨 ③実装分担=骨格Codex task-93+検出器調整Fable推奨)→裁定後にtask-93指示書。specs更新なし(設計段階)・manifest変更なし。
+
 ## バグ徹底捜索体制の設計+task-92フライトレコーダー指示書（2026-08-13・Fable）
 
 Keisukeの問題提起「少し触るだけで深刻なバグが出る。徹底的に探す仕組みが要る」を受けた体制設計。**診断**: エンジン層(auto-sim+validateGameState+132本テスト)は厚いが、**UI・進行層 約26,000行(app.js/ui-common/ui-render/index.html=コードの過半)は自動検証ゼロ**(フックの構文チェック対象ですらない)。実プレイで踏むバグ——交渉フリーズ・「書いてあるのに出ていない」・想定外ボタン経路——は全部この層。さらに `window.onerror`/`unhandledrejection` の捕捉が皆無で、プレイ中の例外はF12を開かない限り消える。
