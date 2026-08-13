@@ -1351,20 +1351,23 @@ function closeWarFinalResult(eventWon) {
 }
 
 // ── R3 モーダル: 仲良し退団/引退演出 ──
-function showR3Modal({ fighterName, fighterFace, departedName, reason, line }) {
-  if (_isPopupActive()) { _popupQueue.push(() => showR3Modal({ fighterName, fighterFace, departedName, reason, line })); return; }
+function showR3Modal({ fighterId, fighterName, fighterFace, departedName, reason, line }) {
+  if (_isPopupActive()) { _popupQueue.push(() => showR3Modal({ fighterId, fighterName, fighterFace, departedName, reason, line })); return; }
 
   const isRetired = reason && (reason.includes('引退') || reason === 'retired');
   const departureText = isRetired
     ? `${departedName} が引退した。`
     : `${departedName} が去った。`;
 
+  // 2:3の縦枠に正方形の顔アイコンを引き伸ばして入れない(2026-08-13 Keisuke指摘)。
+  // 他の画面と同じくアッパー画像(256×384)を使い、取れないときだけ旧fighterFaceへ落とす
+  const upperUrl = (fighterId != null && typeof getUpperUrl === 'function') ? getUpperUrl(fighterId) : '';
   _mdlDOpen(`
     <div class="r3-dialogue-speaker u3b-theme-dark">${_u3bSideHtml({
       name: fighterName,
       line,
       size: 's',
-      imgUrl: fighterFace || '',
+      imgUrl: upperUrl || fighterFace || '',
     })}</div>
     <div class="mdl-d-body">${departureText}</div>
     <div class="mdl-d-actions">

@@ -1,5 +1,9 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## R3リアクションの顔画像修正+ポップアップ重なりの監査タスク起票（2026-08-13・Fable）
+
+実機報告2件の続き。①**R3モーダル(仲間の引退/退団リアクション)の縦枠に顔アイコンが引き伸ばされて入っていた** — 呼び出し元(app.js 2箇所)が getPortraitUrl を渡していたため。showR3Modal に fighterId を追加し getUpperUrl のアッパー画像優先へ(取れないときのみ旧fighterFace)。②**種類の違うポップアップが同時に重なる件**(怪我+試合下振れ+王座防衛) — 主要経路(_eventPopupQueue/_enqueuePopup/_chainEventPopupQueueEmpty/popupActionsチェーン)は調査の結果ゲート済みで、残る容疑は (a)_enqueuePopup の check-then-show レース (b)週頭経路のキュー非連動 setTimeout遅延 (c)チェーン外ドレイン3種のゲート未確認 に絞り込んだ。**盲目パッチは78f1445型のフリーズ事故を生むため、調査結果一式を持たせた監査タスクをチップ起票**(全発火経路の数え上げ→既存ゲートへの寄せ、タイムアウト保険必須)。
+
 ## バグ捜索①②: Keisuke全承認→task-93/94へ改番・指示書完成・Codex並行投入（2026-08-13・Fable）
 
 「全部推奨通りで進めてくれ」の裁定。①配布物に含める(sourceFiles)・可視文言確定 ②Playwright導入OK・初期スコープ=Wモード1季・分担=骨格Codex/検出器調整Fable、すべて確定。

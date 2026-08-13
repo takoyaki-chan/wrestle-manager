@@ -10682,6 +10682,7 @@ const App = {
       G = cleanR3Show;
       const r3Fighter = G.roster.find(f => f.id === pendingR3Spec.fighterId);
       const r3Args = {
+        fighterId: pendingR3Spec.fighterId,
         fighterName: r3Fighter ? r3Fighter.name : '???',
         fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
         departedName: pendingR3Spec.departedName || '???',
@@ -11663,6 +11664,7 @@ const App = {
       const r3Delay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 700;
       setTimeout(() => {
         showR3Modal({
+          fighterId: pendingR3Modal.fighterId,
           fighterName: r3Fighter ? r3Fighter.name : '???',
           fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
           departedName: pendingR3Modal.departedName || '???',
