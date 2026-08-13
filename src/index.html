@@ -3214,10 +3214,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
    旧 .pb-ace-label(団体名見出し)・.pb-ace-speaker(団体名+エース名の重複表記)・.pb-ace-name・
    .pb-ace-portrait-wrap・.pb-ace-speech は role="ACE" + 団体バッジ(.u3b-org-badge) +
    .u3b-upper/.u3b-name/.u3b-bubble に置き換えたため削除(情報は団体バッジに集約、表記の重複を解消)。
-   --pb-enemy-color(団体固有色)はカード左端のアクセント帯にのみ残す。
+   カード左端の --pb-enemy-color アクセント帯は 2026-08-13 Keisuke指摘(「変な紫線」=紫系の
+   団体色で気持ち悪い)により削除。団体色の情報は団体バッジ(.u3b-org-badge)が既に背負っている。
    .pb-ace-portrait/.pb-ace-bubble は安全網テスト互換のco-classとして残す */
 .pb-ace-area{margin-top:20px;padding:20px 24px;background:var(--stage-panel-deep);border:1px solid var(--stage-border-lit);
-  border-left:3px solid var(--pb-enemy-color,#e74c3c);display:flex;justify-content:center}
+  display:flex;justify-content:center}
 .pb-ace-portrait{flex-shrink:0}
 .pb-ace-bubble{max-width:100%}
 .pb-war-flavor{text-align:center;font-size:13px;font-style:italic;line-height:1.8;color:var(--stage-text-sub);padding:10px 16px;margin:0 0 4px}
