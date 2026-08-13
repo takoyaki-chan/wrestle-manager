@@ -3783,6 +3783,20 @@ function canOpenFighterPopup(fighterId) {
   return !!findFighter(Number(fighterId));
 }
 
+function _fighterPopupStatBarsHtml(c, stats, isAiFighter) {
+  return stats.map(s => {
+    const value = Math.round(c[s.key] || 0);
+    const seasonGain = Math.round(c.seasonGrowth?.[s.key] || 0);
+    const decay = statDecayView(c, s.key, 150, isAiFighter);
+    return statOverBarHtml(s.key, value, {
+      label: s.label,
+      labelTitle: STAT_TIPS[s.key],
+      lost: decay.lostPts,
+      gain: seasonGain,
+    });
+  }).join('');
+}
+
 // 第3引数 _skipQueueCheck は歴史的な残り。**押したら必ず開く**ようになったので効果は無い。
 // 既存の呼び出しを壊さないために受け取るだけにしてある。
 function showFighterPopup(fighterId, source, _skipQueueCheck) {
@@ -4025,26 +4039,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       // Left: Radar Chart canvas
       html += `<div style="flex-shrink:0"><canvas id="fpRadarChart" width="200" height="200"></canvas></div>`;
       // Right: Stat bars
-      html += `<div style="flex:1;min-width:0">`;
-      STATS.forEach(s => {
-        const val = Math.round(c[s.key] || 0);
-        const sg = Math.round(c.seasonGrowth?.[s.key] || 0);
-        const w = Math.min(100, (val / 150) * 100);
-        const valColor = val >= 75 ? s.color : val >= 50 ? 'var(--text)' : 'var(--text-sub)';
-        // 消耗で失われた天井。団体タブと同じ 0〜150 目盛りに揃える。
-        // AI選手は、保存済みの実天井差からのみ最高値を復元する。
-        const dv = statDecayView(c, s.key, 150, isAiFighter);
-        const lostBar = dv.lostPts > 0
-          ? `<div class="fighter-popup-stat-lost" title="消耗で失われた伸びしろ ${dv.lostPts}" style="width:${dv.lostPct}%;right:${dv.lostFromRightPct}%"></div>`
-          : '';
-        const lostTag = dv.lostPts > 0
-          ? `<span style="color:var(--stat-decayed);font-size:11px">▼${dv.lostPts}</span>` : '';
-        html += `<div class="fighter-popup-stat-row">
-          <span class="fighter-popup-stat-label" style="cursor:help" ${_tipAttr(STAT_TIPS[s.key])}>${s.label}</span>
-          <div class="fighter-popup-stat-bar">${lostBar}<div class="fighter-popup-stat-fill" style="width:${w}%;background:${s.color};position:relative;z-index:1"></div></div>
-          <span class="fighter-popup-stat-val" style="color:${valColor};font-weight:${val>=75?700:400}">${val}${sg > 0 ? `<span style="color:#2ecc71;font-size:11px">+${sg}</span>` : lostTag}</span>
-        </div>`;
-      });
+      html += `<div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">`;
+      html += _fighterPopupStatBarsHtml(c, STATS, isAiFighter);
       html += `</div></div>`; // end flex row
 
       // Potential & Condition
@@ -4468,7 +4464,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
   if ((window._fpTab || 0) === 0) {
     const cvs = document.getElementById('fpRadarChart');
     if (cvs) {
-      const radarData = STATS.map(s => ({ label: s.label, value: c[s.key] || 0, color: s.color }));
+      const radarData = STATS.map(s => ({ label: s.label, value: c[s.key] || 0, color: _STAT_TIER_PURE[s.key] }));
       drawRadarChart(cvs, radarData, { fillColor: sm.color, fillAlpha: 0.25 });
     }
   }
