@@ -100,6 +100,30 @@ function _sameSinglesPair(match, result) {
     && booked.every((id, index) => Number.isFinite(id) && id === fought[index]);
 }
 
+/** 挑戦試合のコーチ要約。モーダルには出さず、同じ文面を週次gameLogへ残す。 */
+function _challengeRequestCoachLogLine(state, card, result) {
+  if (!state || !card || !result || !Array.isArray(card.teamA) || !Array.isArray(card.teamB)
+      || !card.teamA[0] || !card.teamB[0]) return '';
+  const isInverse = !!card.isInverse;
+  const playerWon = isInverse ? result.teamWin === 'B' : result.teamWin === 'A';
+  const playerLost = isInverse ? result.teamWin === 'A' : result.teamWin === 'B';
+  const playerScore = isInverse ? result.winsB : result.winsA;
+  const aiScore = isInverse ? result.winsA : result.winsB;
+  const reqName = card.teamA[0].name;
+  const oppName = card.teamB[0].name;
+  const otherOrgName = isInverse
+    ? (card.requesterOrgName || card.otherOrgName || '相手団体')
+    : (card.otherOrgName || card.opponentOrgName || '相手団体');
+  if (isInverse) {
+    if (playerWon) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${otherOrgName}の${reqName}選手の越境挑戦、退けました。`;
+    if (playerLost) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手陣に古巣として星を取られる結果になりました。`;
+    return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手と${oppName}選手の決着は持ち越しです。`;
+  }
+  if (playerWon) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手が呼んだ舞台、しっかり制しました。`;
+  if (playerLost) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`;
+  return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手と${oppName}選手の決着は持ち越しです。`;
+}
+
 /** 宿怨の試合前セリフ用。決着戦の勝者を優先し、旧セーブだけH2Hで補う。 */
 function _bitterPrematchSide(state, selfId, opponentId) {
   const key = Engine.title.getRivalryKey(selfId, opponentId);
@@ -11115,6 +11139,9 @@ const App = {
     };
     _emitFiredReturnForLineup(card.teamA, requesterOrgId, opponentOrgId);
     _emitFiredReturnForLineup(card.teamB, opponentOrgId, requesterOrgId);
+
+    const coachLine = _challengeRequestCoachLogLine(s, card, result);
+    if (coachLine) s = { ...s, gameLog: [...(s.gameLog || []), coachLine] };
 
     return s;
   },

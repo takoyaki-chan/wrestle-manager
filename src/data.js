@@ -11332,6 +11332,85 @@ const CHALLENGE_LINES = {
   },
 };
 
+// task-95: 遠征試合の結果2拍シーケンス用。承認稿をarchetype単軸で収録する。
+// seriesWin=1拍目のシリーズ勝者、regretOwnWin=2拍目の「本人○×団体●」。
+const AWAY_CHALLENGE_RESULT_LINES = {
+  seriesWin: {
+    standard: [
+      '三つやって、勝ち越したのは私たちだ。持って帰るものはないよ',
+      '結果が全部です。次に来るなら、もっと仕上げてきてください',
+      '今日は私たちが上。悔しかったら、また名前を出してこい',
+    ],
+    ojousama: [
+      '勝ち星を数え直す必要はございませんわね。お引き取りを',
+      '胸を張ってお帰りなさい。負けを認められるのも品のうちです',
+      '次にお会いするときは、もう少し歯応えのある方を連れて',
+    ],
+    delinquent: [
+      '勝ち越しは私たちだ。文句あるなら、いつでも私の前に立てよ',
+      'これで分かっただろ。次は一つも渡さねえぜ',
+      '帰り道、よく話し合っとけ。何が足りねえのかをな',
+    ],
+    seductive: [
+      'もう終わり? もう少し楽しませてほしかったわ',
+      '勝ち越しは私たちのものよ。物足りないくらいだったわね',
+      'また誘ってくれるかしら。今度はもっと粘ってね',
+    ],
+    composed: [
+      '…数えるまでもなかったね。勝ち越したのは私たちだよ',
+      '…強くなって戻るなら、また受けるよ。いつでもいい',
+      '…帰り支度はゆっくりでいいよ。逃げたりしないから',
+    ],
+    cool: [
+      '……勝ち越した。それで充分',
+      '……この結果が答え。次も同じ',
+      '……また来ればいい。何度でも同じ結果',
+    ],
+    polite: [
+      '本日は私どもの勝ちです。またの挑戦をお待ちしております',
+      'お疲れさまでした。次はもう少し長く戦えるといいですね',
+      '勝ち越しました。今日の差、忘れずに持ち帰ってください',
+    ],
+  },
+  regretOwnWin: {
+    standard: [
+      '私は勝った。それなのに終わってみれば負け。全然嬉しくない',
+      '一つじゃ足りなかった。次は二つ分の働きをする',
+      '勝ったのに悔しいなんて、初めて知った。この借りは返す',
+    ],
+    ojousama: [
+      'わたくしの星は取りました。それでも足りなかったのですわ',
+      '勝って帰るのが、こんなに味気ないなんて。必ず取り返します',
+      '一つでは届かないのだと学びました。次は二つ、いえ三つ',
+    ],
+    delinquent: [
+      '私は勝った。なのに結果はこれだ。悔しくて眠れねえ',
+      '一つ取っただけじゃ意味がねえ。次は全部持って帰る',
+      'この借りは覚えとく。返すのは私の仕事だろ',
+    ],
+    seductive: [
+      '私は落としてないのよ。それでも負けは負け……つまらないわ',
+      '勝った夜にこんな顔をするなんてね。次は三つとも頂くわ',
+      '星は取ったのに、手元に何も残らない。続きはまた今度',
+    ],
+    composed: [
+      '…私の分は取ったよ。それでも足りなかった、それだけだね',
+      '…悔しいな。勝った側でこんな気持ちになるとは思わなかった',
+      '…一つじゃ足りない。そう分かっただけでも収穫だよ',
+    ],
+    cool: [
+      '……私は勝った。それでも負け。意味がない',
+      '……一つでは足りない。覚えた',
+      '……この夜は忘れない。必ず返す',
+    ],
+    polite: [
+      '私は勝ちました。それでも結果は負けです。素直に悔しいです',
+      '一つでは届きませんでした。次は必ず二つ以上を',
+      '今夜のことは忘れません。この借りは必ずお返しします',
+    ],
+  },
+};
+
 // challenge-request-spec-v0.1 Phase 5: 相手選手リアクションセリフ（試合前/結果モーダル）
 // キー: `${archetype}_${personality}` の34セル × 4場面(_accept/win/lose/draw) × 3本(Keisuke 承認済み最終版 2026-07-25)。
 // 話す相手は「自分を名指しした挑戦者」。社長への報告ではない。
@@ -31207,7 +31286,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AI_TIER_LIMITS_ELEVATED, AI_COACH_CONFIG_ELEVATED, AI_COACH_STAFFING_ELEVATED, AI_TITLE_CHALLENGER_CFG,
     AI_TITLE_ELIGIBILITY_CFG,
     TRANSFER_CONFIG, RENTAL_CONFIG, EVENT_CONFIG, NEGOTIATION_CONFIG,
-    CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES, CHALLENGE_ARRIVAL_LINES,
+    CONTRACT_NEGOTIATION_LINES, RELEASE_INTERVIEW_LINES, CHALLENGE_LINES, AWAY_CHALLENGE_RESULT_LINES, CHALLENGE_ARRIVAL_LINES,
     NEGOTIATE_LINES, RETIREMENT_LINES, FAREWELL_KIND_TEXT, FAREWELL_CLOSING, RETIRE_ACCEPT_LINES, RETIRE_REFUSE_LINES,
     RETAIN_LINES,
     AWARD_LINES, AUTUMN_WAR_MATCH_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,

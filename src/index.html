@@ -2928,22 +2928,56 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 }
 
 /* ============================================================
-   away-flow-redesign 実装C: 試合前画面「敵地仕様」
-   .show-pregame-a はレギュラー興行(regular-show-pregame-design-test.js)と共有するため
-   ベース定義は一切変更せず、.away 修飾クラスで上乗せする（色と補助情報の追加のみ）。
+   task-95: 遠征試合進行画面「黒×火の赤」+ fc1m式5項目帯。
+   通常興行のDOM/CSSは変更せず、.away配下だけで上書きする。
    ============================================================ */
-.show-pregame-a.away{background:linear-gradient(180deg,rgba(46,22,14,.96),rgba(16,10,7,.98))}
-.show-result-overlay:has(.show-pregame-a.away) .show-header{background:linear-gradient(180deg,rgba(var(--accent-hostility-rgb),.16),transparent);border-bottom-color:rgba(var(--accent-hostility-rgb),.34)}
-.show-result-overlay:has(.show-pregame-a.away) .show-header::after{background:linear-gradient(90deg,transparent,var(--accent-hostility),transparent)}
-.show-result-overlay:has(.show-pregame-a.away) .show-label{color:var(--accent-hostility)}
-.show-pregame-a.away .hdr-emblem{width:62px;height:62px;margin:0 auto 10px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:2px solid rgba(232,230,224,.55);box-shadow:0 6px 20px rgba(0,0,0,.55),0 0 22px rgba(var(--accent-hostility-rgb),.34)}
+.show-result-overlay.active:has(.show-pregame-a.away){background:radial-gradient(ellipse 85% 30% at 50% 0%,rgba(var(--accent-war-rgb),.2),transparent 62%),var(--stage-bg)}
+.show-pregame-a.away{--awx-fire:var(--accent-war);--awx-fire-rgb:var(--accent-war-rgb);--awx-fire-hi:var(--accent-war-hi);background:radial-gradient(ellipse 85% 30% at 50% 0%,rgba(var(--awx-fire-rgb),.2),transparent 62%),linear-gradient(180deg,var(--stage-bg-deep),var(--stage-bg) 34%)}
+.show-result-overlay:has(.show-pregame-a.away) .show-header{background:linear-gradient(180deg,rgba(var(--awx-fire-rgb),.16),transparent);border-bottom-color:rgba(var(--awx-fire-rgb),.34)}
+.show-result-overlay:has(.show-pregame-a.away) .show-header::after{background:linear-gradient(90deg,transparent,var(--awx-fire),transparent)}
+.show-result-overlay:has(.show-pregame-a.away) .show-label{color:var(--awx-fire-hi)}
+.show-result-overlay:has(.show-pregame-a.away) .show-title{color:var(--stage-text-main);text-shadow:0 0 22px rgba(var(--awx-fire-rgb),.22)}
+.show-pregame-a.away .hdr-emblem{width:52px;height:52px;margin:0 auto 8px;border-radius:50%;overflow:hidden;display:flex;align-items:center;justify-content:center;border:1px solid rgba(var(--awx-fire-rgb),.55);box-shadow:0 0 26px rgba(var(--awx-fire-rgb),.45)}
 .show-pregame-a.away .hdr-emblem img{width:100%!important;height:100%!important;object-fit:cover;border-radius:50%!important;margin:0!important}
-.show-pregame-a.away .awaybar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:7px;padding:8px 14px;background:linear-gradient(90deg,rgba(var(--accent-hostility-rgb),.2),rgba(var(--accent-hostility-rgb),.05));border-bottom:1px solid rgba(var(--accent-hostility-rgb),.3);font-family:var(--font-label);font-size:11.5px;letter-spacing:1.5px;color:var(--stage-text-main);font-weight:700}
+.show-pregame-a.away .awaybar{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;width:max-content;max-width:calc(100% - 24px);margin:12px auto 20px;padding:7px 18px;background:rgba(var(--awx-fire-rgb),.09);border:1px solid rgba(var(--awx-fire-rgb),.3);border-radius:999px;font-family:var(--font-label);font-size:11.5px;letter-spacing:1.5px;color:var(--stage-text-main);font-weight:700}
 .show-pregame-a.away .awaybar-sep{color:var(--stage-text-dim);font-weight:400;letter-spacing:normal}
+.show-pregame-a.away .match-card{background:linear-gradient(180deg,var(--stage-panel),var(--stage-panel-deep));border-color:var(--stage-border)}
+.show-pregame-a.away .match-card.card-main{border-color:var(--stage-border-main);box-shadow:inset 0 1px 0 var(--stage-border-lit)}
+.show-pregame-a.away .match-card.is-next{border-color:rgba(var(--awx-fire-rgb),.6);box-shadow:0 0 0 1px rgba(var(--awx-fire-rgb),.22),0 6px 26px rgba(0,0,0,.35)}
+.show-pregame-a.away .smc-head{border-bottom-color:var(--stage-border)}
+.show-pregame-a.away .smc-badge.next{border-color:var(--awx-fire);color:var(--awx-fire-hi)}
 .show-pregame-a.away .forg{display:flex;align-items:center;justify-content:center;gap:4px;margin-top:3px;font-size:9.5px;color:var(--stage-text-dim);letter-spacing:.5px}
 .show-pregame-a.away .forg .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.show-pregame-a.away .forg .dot.home{background:var(--c-positive)}
-.show-pregame-a.away .forg .dot.away{background:var(--accent-hostility)}
+.show-pregame-a.away .forg .dot.home{background:var(--gold)}
+.show-pregame-a.away .forg .dot.away{background:var(--awx-fire)}
+.show-pregame-a.away .smc-away-arena{display:grid;grid-template-columns:minmax(0,230px) 96px minmax(0,230px);justify-content:center;align-items:start;padding:10px 16px 4px}
+.show-pregame-a.away .smc-away-side{text-align:center;min-width:0}
+.show-pregame-a.away .smc-away-portrait-btn{padding:0;border:0;background:none;cursor:pointer}
+.show-pregame-a.away .smc-away-side .upper-wrap,.show-pregame-a.away .card-main .smc-away-side .upper-wrap,.show-pregame-a.away .card-sub .smc-away-side .upper-wrap{width:108px;height:162px;margin:0 auto;border:1px solid var(--stage-border-lit);border-bottom:3px solid var(--stage-text-dim);border-radius:6px 6px 5px 5px;background:var(--stage-card-top);overflow:hidden;box-shadow:none}
+.show-pregame-a.away .smc-away-side.is-player-side .upper-wrap{border-bottom-color:var(--gold)}
+.show-pregame-a.away .smc-away-side.is-foe-side .upper-wrap{border-bottom-color:var(--awx-fire)}
+.show-pregame-a.away .smc-away-side .upper-wrap img{width:100%;height:100%;display:block;object-fit:cover;object-position:center top}
+.show-pregame-a.away .smc-away-side .fname{margin-top:8px;color:var(--stage-text-main);font-size:14px;font-weight:800}
+.show-pregame-a.away .smc-away-side .ovr-line{margin-top:4px;color:var(--stage-text-dim);font-size:10px;letter-spacing:.16em}
+.show-pregame-a.away .smc-away-side .ovr-num{margin-left:5px;font-family:var(--font-display);font-size:21px;font-weight:800;letter-spacing:0}
+.show-pregame-a.away .smc-away-stats{max-width:210px;margin:8px auto 0}
+.show-pregame-a.away .smc-away-stats .fc1m-stat-label{color:var(--stage-text-dim);font-size:8.5px;letter-spacing:.12em}
+.show-pregame-a.away .smc-away-stats .fc1m-stat-val{margin-top:1px;color:var(--stage-text-sub);font-size:13px;font-weight:700}
+.show-pregame-a.away .smc-away-side.is-player-side .fc1m-higher{color:var(--gold-light);font-weight:800}
+.show-pregame-a.away .smc-away-side.is-foe-side .fc1m-higher{color:var(--awx-fire-hi);font-weight:800}
+.show-pregame-a.away .smc-away-side.loser .upper-wrap img{filter:grayscale(.9) brightness(.72)}
+.show-pregame-a.away .smc-away-mid{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:12px;padding-top:56px}
+.show-pregame-a.away .smc-away-mid .smc-vs-text{color:var(--awx-fire);font-size:17px;letter-spacing:.28em;text-shadow:none}
+.show-pregame-a.away .smc-away-chip{max-width:94px;padding:3px 9px;border:1px solid var(--stage-border-lit);border-radius:999px;color:var(--stage-text-sub);font-size:10px;line-height:1.35;white-space:nowrap}
+.show-pregame-a.away .smc-away-chip.is-fate{border-color:rgba(var(--awx-fire-rgb),.5);color:var(--awx-fire-hi)}
+.show-pregame-a.away .smc-btn-watch{color:var(--stage-bg-deep);background:linear-gradient(135deg,var(--awx-fire),var(--awx-fire-hi));border-color:var(--awx-fire-hi);box-shadow:0 5px 18px rgba(var(--awx-fire-rgb),.22)}
+.show-pregame-a.away .smc-tag-sfill,.show-pregame-a.away .smc-stat-fill{background:linear-gradient(90deg,var(--awx-fire),var(--awx-fire-hi))!important;box-shadow:0 0 7px rgba(var(--awx-fire-rgb),.28)}
+@media(max-width:700px){
+  .show-pregame-a.away .smc-away-arena{grid-template-columns:minmax(0,1fr) 72px minmax(0,1fr);padding-left:2px;padding-right:2px}
+  .show-pregame-a.away .smc-away-mid{padding-top:52px;gap:9px}
+  .show-pregame-a.away .smc-away-chip{max-width:70px;padding-left:5px;padding-right:5px;font-size:9px;white-space:normal}
+  .show-pregame-a.away .smc-away-stats{gap:2px}
+}
 
 /* ============================================================
    Show Result — Pattern B "Broadcast Scoreboard" (Stage カテゴリ)
