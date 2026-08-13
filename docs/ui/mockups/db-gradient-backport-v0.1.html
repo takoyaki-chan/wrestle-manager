@@ -16,7 +16,8 @@
         (0-44暗灰/45-59明灰/60-69白/70-79系統色50%/80-89同80%/
          90-99純色+太字/100+純色+輝き)。OVRは金の段
      ② 詳細のステータスバー: 枠越え・圧縮はみ出し方式
-        (枠=100終端。100超は右18%区画へ圧縮+輝き。0-150目盛廃止)
+        (枠=100終端。100超は右18%区画へ圧縮してはみ出す。
+         バー自体は光らせない=輝きは数値のみ。0-150目盛廃止)
      ③ レーダーチャート: 軸ラベルを系統色に
    ◆ 本編固有の要素(選手ファイルには無い)の扱い:
      - 100超の実数値が本当に出る(trainCap=pot×0.55〜0.80で150台まで)
@@ -189,7 +190,7 @@ body { padding:var(--space-xl) 0 80px; }
     <div class="note">
       <b>本編固有要素の織り込み:</b>
       <ul>
-        <li><b>100超(PW112)</b>: バーが枠を飛び越えて圧縮はみ出し+輝き。数値も輝く。選手ファイルでは見本でしかなかったものが、本編では実際に出る</li>
+        <li><b>100超(PW112)</b>: バーが枠を飛び越えて圧縮はみ出し(バー自体は光らせない)。<b>輝きは数値側だけ</b>が担う。選手ファイルでは見本でしかなかったものが、本編では実際に出る</li>
         <li><b>消耗で失われた天井(ST▼6)</b>: 現在値の先に同色の半透明ゴーストで「失った幅」を描く+▼6表記(現行の薄バー表現を新ジオメトリへ移植)</li>
         <li><b>季節成長(TE+2)</b>: 数値の隣の緑 +2 を維持</li>
         <li><b>レーダー軸ラベル</b>: PW/SP/TE/ST/MN を系統色に(どの軸がどの能力か一目で分かる。選手ファイルからの逆輸入)</li>
@@ -368,17 +369,17 @@ function renderBarsCur(){
 }
 function renderBarsNew(){
   document.getElementById('barsNew').innerHTML = DETAIL.map(d=>{
+    /* バー自体は100超でも光らせない(2026-08-13 Keisuke)。輝きは数値側のみ */
     const [,label,cssVar] = STAT_KEYS.find(([k])=>k===d.k);
     const w = (barDisp(d.v)/BAR_ZONE*100).toFixed(1);
-    const over = d.v > 100 ? `;box-shadow:0 0 6px var(${cssVar}),0 0 12px var(${cssVar})` : '';
     const gEnd = barDisp(d.v + d.lost);
     const ghost = d.lost ? `<div class="sb-ghost" style="left:${w}%;width:${((gEnd-barDisp(d.v))/BAR_ZONE*100).toFixed(1)}%;background:var(${cssVar})"></div>` : '';
     return `<div class="sb-row">
       <span class="sb-label" style="color:var(${cssVar})">${label}</span>
-      <div class="sb-zone"><div class="sb-frame"></div><div class="sb-fill" style="width:${w}%;background:var(${cssVar})${over}"></div>${ghost}</div>
+      <div class="sb-zone"><div class="sb-frame"></div><div class="sb-fill" style="width:${w}%;background:var(${cssVar})"></div>${ghost}</div>
       <span class="sb-val" style="${styleFor(d.k, d.v)}">${d.v}</span>${markHtml(d)}
     </div>`;
-  }).join('') + `<div class="sb-scale">枠の右端=100。枠を飛び越えた選手は規格外(はみ出しは圧縮表示)</div>`;
+  }).join('') + `<div class="sb-scale">枠の右端=100。枠を飛び越えた選手は規格外(はみ出しは圧縮表示・バーは光らせない)</div>`;
 }
 
 /* ── レーダー(軸色: mono=現行 / colored=逆輸入) ── */

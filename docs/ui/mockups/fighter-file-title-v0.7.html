@@ -20,7 +20,8 @@
    ◆ バーの方針(枠越え・圧縮表示):
      - 枠(トラック)は 0-100 で終わる。100超の黒い空きトラックは無い
      - 100超(〜150)は実寸に比例させず、枠の右へ「圧縮して」はみ出す
-       +輝く。枠を越えたこと自体が記号で、量は数字が語る。
+       (バーは光らせない・輝きは数値側のみ — 2026-08-13 Keisuke)。
+       枠を越えたこと自体が記号で、量は数字が語る。
        これで「150まで育つ」錯覚を戻さずに、110でも150でも破綻しない
      - 表示式: disp = 100 + (v-100) × 18/50(ゾーン=118表示単位)
    確定済み: 器=案A / 入口=Credits横リンク / タイトル配色=案2会場の夜
@@ -273,7 +274,7 @@ body { padding:var(--space-xl) 0 80px; }
   <!-- ═══════════ §2 詳細モーダル ═══════════ -->
   <div class="sec" id="secDetail">
     <div class="sec-title">§2 — 詳細モーダル: バーは「枠越え・圧縮はみ出し」方式</div>
-    <p style="font-size:13px;color:var(--text-sub);margin:0 0 4px"><b style="color:var(--gold-light)">バーの枠は100で終わる。</b>旧0-150目盛は「150まで育つ」と錯覚させるため廃止(100超の黒い空きトラックは存在しない)。天井はプレイごとに変わり120〜150台も実在するため、100超は<b>実寸に比例させず圧縮してはみ出し、輝く</b>。枠を越えた=規格外が一目で伝わり、正確な量は数字が語る。</p>
+    <p style="font-size:13px;color:var(--text-sub);margin:0 0 4px"><b style="color:var(--gold-light)">バーの枠は100で終わる。</b>旧0-150目盛は「150まで育つ」と錯覚させるため廃止(100超の黒い空きトラックは存在しない)。天井はプレイごとに変わり120〜150台も実在するため、100超は<b>実寸に比例させず圧縮してはみ出す</b>(バー自体は光らせない——規格外の輝きは数値側が担う)。枠を越えた=規格外が一目で伝わり、正確な量は数字が語る。</p>
     <p style="font-size:13px;color:var(--text-sub);margin:0">数値はOVR=金階調・各ステ=系統の段階調(案X)。レーダー軸ラベルとバーの塗りは系統色のまま(軸識別)。選手ファイル本体は基準値のみ(最高95)なので、枠越えが実際に出るのはこの方式をゲーム内選手詳細へ展開したとき。</p>
     <div class="tier-legend" id="barDemo"></div>
     <div class="demo-btns">
@@ -288,7 +289,7 @@ body { padding:var(--space-xl) 0 80px; }
     <div class="sec-title">§3 — 判断が要る点(v0.7)</div>
     <div class="judge">
       <ol>
-        <li><b>はみ出しの圧縮率</b> — 100超(〜150)を枠の右18%区画に圧縮(110で枠+3%、150で枠+18%)。110がもっと目立ってほしければ区画を広げる/平方根カーブにする等の調整可。輝き(box-shadow二重)の強さも同様</li>
+        <li><b>はみ出しの圧縮率</b> — 100超(〜150)を枠の右18%区画に圧縮(110で枠+3%、150で枠+18%)。110がもっと目立ってほしければ区画を広げる/平方根カーブにする等の調整可。バー自体の発光は廃止済み(輝き=数値のみ)</li>
         <li><b>枠越え方式の適用範囲</b> — この方式は<b>ゲーム内の選手詳細ポップアップ(現在0-150目盛+縦線)にも展開すべき</b>と考える(150錯覚は本編でも同じ問題で、実測120〜150台の選手が本編には実在する)。展開するなら別タスクとして起票</li>
         <li><b>案Xの帯割り微調整</b> — 70台の淡い系統色(50%混色)が薄すぎるなら60%へ上げられる</li>
         <li><b>低域グレー2色の色味</b> — 暗灰#63615b/明灰#a8a59d。暗すぎないか</li>
@@ -412,11 +413,11 @@ function barDisp(v){
   return 100 + (Math.min(v, OVER_MAX) - 100) * OVER_STRIP / (OVER_MAX - 100);
 }
 function barRow(k, label, cssVar, val){
+  /* バー自体は100超でも光らせない(2026-08-13 Keisuke)。輝きは数値側のみ */
   const w = (barDisp(val)/BAR_ZONE*100).toFixed(1);
-  const over = val > 100 ? `;box-shadow:0 0 6px var(${cssVar}),0 0 12px var(${cssVar})` : '';
   return `<div class="sb-row">
     <span class="sb-label" style="color:var(${cssVar})">${label}</span>
-    <div class="sb-zone"><div class="sb-frame"></div><div class="sb-fill" style="width:${w}%;background:var(${cssVar})${over}"></div></div>
+    <div class="sb-zone"><div class="sb-frame"></div><div class="sb-fill" style="width:${w}%;background:var(${cssVar})"></div></div>
     <span class="sb-val" style="${statStyle(k, val)}">${val}</span>
   </div>`;
 }
@@ -497,7 +498,7 @@ function renderLegend(){
 /* 枠越えバーの見本(成長域を含む。選手ファイル本体では100超は出ない) */
 function renderBarDemo(){
   document.getElementById('barDemo').innerHTML =
-    `<div class="tl-head">バーの見本 — 枠の右端=100。100超は圧縮してはみ出し+輝き(実寸比例ではない。量は数字が語る):</div>` +
+    `<div class="tl-head">バーの見本 — 枠の右端=100。100超は圧縮してはみ出す(バーは光らせない・実寸比例ではない。量は数字が語る):</div>` +
     `<div style="max-width:420px;display:flex;flex-direction:column;gap:6px">` +
     [85,100,110,130,150].map(v=>barRow('pw','PW','--stat-pw',v)).join('') +
     `</div>` +
