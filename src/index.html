@@ -30,6 +30,12 @@
   --blue: #4a8fd4;
   --red: #c41e3a;
   --green: #2ecc71;
+  /* stat-notation-v1.0: 能力軸の識別色（SP=緑 / TE=青） */
+  --stat-pw: #e74c3c;
+  --stat-sp: #2ecc71;
+  --stat-te: #3498db;
+  --stat-st: #f39c12;
+  --stat-mn: #9b59b6;
   --text-main: #e8e6e0;
   --text-sub: rgba(232,230,224,0.5);
   --text-dim: rgba(232,230,224,0.25);
@@ -37,6 +43,7 @@
   --bg-card: #12110e;
   --bg-main: #181614;
   --border: rgba(200,190,170,0.08);
+  --border-strong: rgba(200,190,170,0.16);
   /* 儀式ナレーション専用フォント */
   --font-ceremony: 'Shippori Mincho', serif;
   /* クリームテーマ(初期ドラフト画面) */
@@ -868,11 +875,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 /* ═══ Title Screen ═══ */
 /* U4(2026-07-26): 画面を覆う枠の重なり順を5階層(100画面/200モーダル/300演出/400式典/500最上位)に統一
    (docs/ui/mockup-baseline-v0.1.md v0.6 §5-C)。タイトル画面はそれ自体が1つの画面 → 100 */
-.title-screen{position:fixed;inset:0;z-index:100;background:var(--bg-dark);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+.title-screen{--title-bg:#161b21;--title-glow:rgba(110,150,190,0.09);position:fixed;inset:0;z-index:100;background:var(--title-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
 .title-bg{position:absolute;inset:0;overflow:hidden}
-.title-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 80%,rgba(212,168,67,0.08) 0%,transparent 60%)}
-.title-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--bg-dark) 0%,transparent 30%,transparent 70%,var(--bg-dark) 100%)}
-.title-portraits{position:absolute;right:0;bottom:0;left:0;overflow:hidden;opacity:0.3;filter:saturate(0.4);pointer-events:none}
+.title-bg::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 85%,var(--title-glow) 0%,transparent 60%)}
+.title-bg::after{content:'';position:absolute;inset:0;background:linear-gradient(0deg,var(--title-bg) 0%,transparent 30%,transparent 70%,var(--title-bg) 100%)}
+.title-portraits{position:absolute;right:0;bottom:0;left:0;overflow:hidden;opacity:0.3;filter:saturate(0.55);pointer-events:none}
 .title-portraits-track{display:flex;width:max-content;min-width:max-content;align-items:flex-end;will-change:transform;transform:translate3d(0,0,0)}
 .title-portraits-track.is-running{animation:title-portraits-scroll 110s linear infinite;animation-play-state:running}
 .title-portraits-group{display:flex;flex:0 0 auto;align-items:flex-end}
@@ -900,6 +907,96 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   border:none;font-size:24px}
 .title-btn.primary:hover{filter:brightness(1.15);box-shadow:0 4px 24px rgba(212,168,67,0.4)}
 .title-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;box-shadow:none}
+.title-links{display:flex;justify-content:center;gap:14px;margin-top:6px}
+.title-links .title-credits-link{margin-top:0}
+
+/* ═══ stat-notation-v1.0: 共通の枠越えバー ═══ */
+.stat-over-row{display:flex;align-items:center;gap:var(--space-sm)}
+.stat-over-label{width:24px;flex:0 0 auto;font-family:var(--font-label);font-size:10px;letter-spacing:1px}
+.stat-over-zone{position:relative;flex:1;height:8px;min-width:0}
+.stat-over-frame{position:absolute;top:0;bottom:0;left:0;width:84.746%;border:1px solid var(--border);border-radius:2px;background:var(--panel-bg)}
+.stat-over-fill{position:absolute;top:0;bottom:0;left:0;border-radius:2px}
+.stat-over-ghost{position:absolute;top:0;bottom:0;border-radius:0 2px 2px 0;opacity:.28}
+.stat-over-value{width:30px;flex:0 0 auto;text-align:right;font-family:var(--font-display);font-size:13px;font-variant-numeric:tabular-nums}
+.stat-over-marks{display:flex;width:30px;flex:0 0 auto;gap:2px;font-size:10px}
+.stat-over-mark.is-lost{color:var(--stat-pw)}
+.stat-over-mark.is-gain{color:var(--stat-sp)}
+
+/* ═══ task-90: タイトル画面 選手ファイル ═══ */
+.fighter-file-overlay{--fighter-file-row-hover:rgba(200,190,170,0.03);display:none;position:fixed;inset:0;z-index:200;align-items:stretch;justify-content:center;overflow:hidden;background:var(--bg-dark);color:var(--text-main)}
+.fighter-file-overlay.active{display:flex}
+.fighter-file-screen{display:flex;width:min(1200px,100%);min-width:0;flex-direction:column;background:var(--bg-dark)}
+.fighter-file-topbar{display:flex;align-items:center;justify-content:space-between;flex:0 0 auto;padding:var(--space-md) 20px;border-bottom:1px solid var(--border);background:var(--panel-bg)}
+.fighter-file-kicker{font-family:var(--font-label);font-size:8px;letter-spacing:3px;text-transform:uppercase;color:var(--gold)}
+.fighter-file-title{margin:0;font-size:18px;font-weight:700;letter-spacing:1px}
+.fighter-file-close{display:grid;width:32px;height:32px;padding:0;place-items:center;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:transparent;color:var(--text-sub);font-size:15px;line-height:1;cursor:pointer}
+.fighter-file-close:hover{border-color:var(--gold);color:var(--text-main)}
+.fighter-file-body{min-height:0;overflow:auto;padding:var(--space-lg) 20px var(--space-xl)}
+.fighter-file-notice{display:flex;align-items:flex-start;gap:var(--space-md);margin-bottom:var(--space-lg);padding:var(--space-md) var(--space-lg);border:1px dashed var(--border-strong);border-radius:var(--radius-sm);background:var(--panel-bg)}
+.fighter-file-stamp{flex:0 0 auto;margin-top:2px;padding:3px 8px;transform:rotate(-4deg);border:1px solid var(--gold);border-radius:var(--radius-sm);color:var(--gold);font-family:var(--font-label);font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.fighter-file-notice-main{margin-bottom:2px;font-size:13px;font-weight:700}
+.fighter-file-notice-sub{color:var(--text-sub);font-size:11px;line-height:1.7}
+.fighter-file-filters{display:flex;align-items:center;gap:var(--space-sm);flex-wrap:wrap;margin-bottom:var(--space-md)}
+.fighter-file-filters select,.fighter-file-filters input{min-width:0;padding:5px 8px;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--panel-bg);color:var(--text-main);font-family:var(--font-body);font-size:13px}
+.fighter-file-filters input{flex:1;min-width:160px}
+.fighter-file-count{color:var(--text-dim);font-size:11px;white-space:nowrap}
+.fighter-file-table-wrap{overflow-x:auto}
+.fighter-file-table{width:100%;min-width:780px;border-collapse:collapse;font-size:13px}
+.fighter-file-table th{padding:6px 8px;border-bottom:1px solid var(--border);color:var(--text-dim);font-size:11px;font-weight:400;letter-spacing:1px;text-align:left;text-transform:uppercase;white-space:nowrap;cursor:pointer;user-select:none}
+.fighter-file-table th:hover{color:var(--text-sub)}
+.fighter-file-table th.sorted{color:var(--gold)}
+.fighter-file-table td{padding:7px 8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.fighter-file-table tbody tr{cursor:pointer}
+.fighter-file-table tbody tr:hover td{background:var(--fighter-file-row-hover)}
+.fighter-file-table .is-number{font-variant-numeric:tabular-nums}
+.fighter-file-face-wrap{position:relative;width:40px;height:40px}
+.fighter-file-face{display:block;width:40px;height:40px;border-radius:var(--radius-sm);object-fit:cover;object-position:top}
+.fighter-file-face-fallback{display:flex;width:40px;height:40px;align-items:center;justify-content:center;border:1px solid var(--border-strong);border-radius:var(--radius-sm);background:var(--panel-bg);color:var(--text-sub);font-size:15px;font-weight:700}
+.fighter-file-name{font-weight:700}
+.fighter-file-ovr{font-family:var(--font-display);font-size:15px;letter-spacing:1px}
+.fighter-file-style-badge,.fighter-file-role-badge{display:inline-block;padding:1px 6px;border-radius:2px;font-size:10px;letter-spacing:.5px;white-space:nowrap}
+.fighter-file-role-badge{border:1px solid var(--border-strong);color:var(--text-sub)}
+.fighter-file-unit{margin-left:2px;color:var(--text-dim);font-size:10px}
+
+.fighter-file-detail-overlay{--fighter-file-backdrop:rgba(0,0,0,0.72);display:none;position:fixed;inset:0;z-index:200;align-items:center;justify-content:center;padding:var(--space-lg);background:var(--fighter-file-backdrop)}
+.fighter-file-detail-overlay.active{display:flex}
+.fighter-file-detail{width:min(720px,100%);max-height:88vh;overflow-y:auto;border:1px solid var(--border-strong);border-radius:var(--radius-lg);background:var(--bg-dark);color:var(--text-main)}
+.fighter-file-detail-head{position:sticky;z-index:1;top:0;display:flex;align-items:center;justify-content:space-between;padding:var(--space-md) 20px;border-bottom:1px solid var(--border);background:var(--panel-bg)}
+.fighter-file-detail-main{display:flex;align-items:flex-start;gap:var(--space-lg);flex-wrap:wrap;padding:var(--space-lg) 20px}
+.fighter-file-upper{position:relative;width:172px;height:258px;flex:0 0 auto}
+.fighter-file-upper img,.fighter-file-upper-fallback{display:flex;width:172px;height:258px;align-items:center;justify-content:center;border-bottom:3px solid var(--gold);border-radius:var(--radius-md);background:var(--panel-bg);object-fit:cover;object-position:top}
+.fighter-file-upper-fallback{color:var(--text-sub);font-family:var(--font-display);font-size:28px;font-weight:700}
+.fighter-file-detail-info{min-width:260px;flex:1}
+.fighter-file-detail-name{margin:0 0 var(--space-sm);font-size:18px;font-weight:700}
+.fighter-file-detail-badges{display:flex;gap:var(--space-xs);flex-wrap:wrap;margin-bottom:var(--space-sm)}
+.fighter-file-detail-meta{margin-bottom:var(--space-md);color:var(--text-sub);font-size:11px}
+.fighter-file-detail-ovr{display:flex;align-items:baseline;gap:var(--space-sm);margin-bottom:var(--space-md)}
+.fighter-file-detail-ovr strong{font-family:var(--font-display);font-size:28px;line-height:1;letter-spacing:1px}
+.fighter-file-detail-ovr span{color:var(--text-sub);font-family:var(--font-label);font-size:8px;letter-spacing:2px;text-transform:uppercase}
+.fighter-file-charts{display:flex;align-items:flex-start;gap:var(--space-lg);flex-wrap:wrap}
+.fighter-file-radar{flex:0 0 auto}
+.fighter-file-bars{display:flex;min-width:200px;flex:1;flex-direction:column;gap:6px;padding-top:var(--space-xs)}
+.fighter-file-bar-note{margin-top:2px;color:var(--text-dim);font-size:10px;text-align:right}
+.fighter-file-section{padding:0 20px var(--space-lg)}
+.fighter-file-section-label{margin-bottom:var(--space-sm);padding-bottom:var(--space-xs);border-bottom:1px solid var(--border);color:var(--gold);font-family:var(--font-label);font-size:10px;letter-spacing:2px;text-transform:uppercase}
+.fighter-file-trait{display:flex;align-items:baseline;gap:var(--space-sm);margin-bottom:6px}
+.fighter-file-trait-icon{display:flex;width:20px;height:20px;align-self:center;align-items:center;justify-content:center;flex:0 0 auto;border:1px solid color-mix(in srgb,var(--fighter-trait-color) 45%,transparent);border-radius:var(--radius-sm);background:color-mix(in srgb,var(--fighter-trait-color) 16%,transparent);color:var(--fighter-trait-color);font-size:11px;font-weight:700}
+.fighter-file-trait-name{flex:0 0 auto;font-size:13px;font-weight:700}
+.fighter-file-trait-desc{color:var(--text-sub);font-size:11px}
+.fighter-file-profile{font-size:13px;line-height:1.9}
+.fighter-file-footnote{padding:var(--space-md) 20px;border-top:1px solid var(--border);color:var(--text-dim);font-size:10px}
+@media(max-width:600px){
+  .fighter-file-body{padding:var(--space-md)}
+  .fighter-file-topbar{padding:var(--space-md)}
+  .fighter-file-notice{flex-direction:column}
+  .fighter-file-detail-overlay{align-items:flex-start;padding:var(--space-sm)}
+  .fighter-file-detail-main{padding:var(--space-md)}
+  .fighter-file-upper{margin:0 auto}
+  .fighter-file-detail-info{min-width:0;flex-basis:100%}
+  .fighter-file-charts{justify-content:center}
+  .fighter-file-bars{flex-basis:100%}
+  .fighter-file-section{padding-right:var(--space-md);padding-left:var(--space-md)}
+}
 
 /* ═══ Org Setup Screen ═══ */
 /* U4: 団体設立/難易度選択もそれ自体が1つの画面 → 100 */
@@ -10119,7 +10216,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <button class="title-btn" id="titleLoadBtn" onclick="App.titleLoadGame()">LOAD GAME</button>
     </div>
     <div class="title-ver">VERSION 1.26</div>
-    <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
+    <div class="title-links">
+      <div class="title-credits-link" onclick="App.showCredits()">Credits</div>
+      <div class="title-credits-link" onclick="App.showFighterFile()">Fighter File</div>
+    </div>
     <div class="title-sns">
       <a href="https://x.com/tkykchan" target="_blank" rel="noopener">𝕏</a>
       <a href="https://www.patreon.com/takoyakichan" target="_blank" rel="noopener">Patreon</a>
@@ -10127,6 +10227,51 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     </div>
     <div class="title-feedback" onclick="window.open(FEEDBACK_FORM_URL,'_blank')">📝 ご意見・バグ報告</div>
   </div>
+</div>
+
+<!-- task-90: タイトル画面 選手ファイル -->
+<div class="fighter-file-overlay" id="fighterFileOverlay" role="dialog" aria-modal="true" aria-labelledby="fighterFileTitle">
+  <div class="fighter-file-screen">
+    <div class="fighter-file-topbar">
+      <div>
+        <div class="fighter-file-kicker">Personnel Files — All Wrestlers</div>
+        <h2 class="fighter-file-title" id="fighterFileTitle">選手ファイル</h2>
+      </div>
+      <button type="button" class="fighter-file-close" onclick="App.closeFighterFile()" title="タイトルへ戻る（ESC可）" aria-label="選手ファイルを閉じる">✕</button>
+    </div>
+    <div class="fighter-file-body">
+      <div class="fighter-file-notice">
+        <span class="fighter-file-stamp">機密指定</span>
+        <div>
+          <div class="fighter-file-notice-main">潜在能力値は、本ファイルには記載されない。</div>
+          <div class="fighter-file-notice-sub">各選手の潜在能力は機密事項。さらに同じ選手であっても、その数値はプレイごとに変化する。<br>※ 記載の能力値は各選手の能力基準値。</div>
+        </div>
+      </div>
+      <div class="fighter-file-filters">
+        <select id="fighterFileStyle" onchange="App.filterFighterFileStyle(this.value)" aria-label="スタイルで絞り込む">
+          <option value="">全スタイル</option>
+          <option value="Grappler">Grappler</option>
+          <option value="Striker">Striker</option>
+          <option value="Submission">Submission</option>
+          <option value="Aerial">Aerial</option>
+          <option value="Allround">Allround</option>
+          <option value="Brawler">Brawler</option>
+        </select>
+        <input id="fighterFileSearch" type="search" placeholder="名前で検索" oninput="App.filterFighterFileName(this.value)" aria-label="名前で検索">
+        <span class="fighter-file-count" id="fighterFileCount"></span>
+      </div>
+      <div class="fighter-file-table-wrap">
+        <table class="fighter-file-table">
+          <thead id="fighterFileHead"></thead>
+          <tbody id="fighterFileBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fighter-file-detail-overlay" id="fighterFileDetailOverlay" role="dialog" aria-modal="true" aria-label="選手詳細" onclick="if(event.target===this)App.closeFighterFileDetail()">
+  <div class="fighter-file-detail" id="fighterFileDetail"></div>
 </div>
 
 <!-- Org Setup Overlay (v1.0) -->
