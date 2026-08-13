@@ -72,10 +72,12 @@ assert.ok(/catch \(e\) \{[\s\S]*?App\._annualAwardsCeremonyActive = false;[\s\S]
 const ceremony = uiFunction('showAwardsCeremony');
 assert.ok(/let finished = false;[\s\S]*?function nextSlide\(\) \{\s*if \(finished\) return;/.test(ceremony),
   '最終ボタン連打で onDone が二重発火する');
-assert.ok(/finished = true;\s*btnNext\.disabled = true;\s*inputGate\.dispose\(btnNext\);[\s\S]*?if \(onDone\) onDone\(\);/.test(ceremony),
+assert.ok(/function finishCeremony\([^)]*\) \{\s*if \(finished\) return;\s*finished = true;[\s\S]*?btnNext\.disabled = true;[\s\S]*?if \(inputGate\) inputGate\.dispose\(btnNext\);[\s\S]*?if \(onDone\) onDone\(\);/.test(ceremony),
   '終了コールバックより前にボタンを無効化していない');
-assert.ok(ceremony.includes('const inputGate = _awCreateInputGate'),
+assert.ok(ceremony.includes('inputGate = _awCreateInputGate'),
   '表彰式の次へボタンに連打・キーrepeat防止ゲートが接続されていない');
+assert.ok(ceremony.includes("completionTimer = setTimeout(() => finishCeremony('timeout')"),
+  '入力経路喪失時に年末進行を再開する時限保険がない');
 const activeAt = ceremony.indexOf("overlay.classList.add('active');");
 const focusAt = ceremony.indexOf('btnNext.focus({ preventScroll: true })');
 assert.ok(activeAt >= 0 && focusAt > activeAt,

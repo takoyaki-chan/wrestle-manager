@@ -2994,6 +2994,24 @@ function _buildSeasonEventChampionAward(d, kind) {
     </div></div>`;
 }
 
+function _buildUnifiedChampionAward(d) {
+  if (!d) return null;
+  const line = _awardLine('champion', d);
+  const heldYears = d.heldYears ?? 0;
+  const defenses = Math.max(0, Number(d.defensesThisSeason) || 0);
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🌐</span><span class="badge-jp">全国統一王者</span></div>
+    <div class="aw-event-solo">
+      ${_awWinnerBlock(d, { line, glow: true, role: d.orgName || '' })}
+      <div style="text-align:center">
+        <div class="unified-beltband">全国統一王者</div>
+        <div class="winner-tags" style="justify-content:center;margin-top:16px">
+          <span class="aw-tag neutral">在位 ${heldYears}年</span>
+          <span class="aw-tag neutral">今季防衛 ${defenses}回</span>
+        </div>
+      </div>
+    </div></div>`;
+}
+
 function _buildBestMatchAward(d) {
   const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
   const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
@@ -3166,6 +3184,8 @@ function _buildAwardsSummary(a) {
     html += item('👑', '天頂戦 覇者', a.tenchosenChampion.name, a.tenchosenChampion.orgName);
   if (a.ppvFinalWinner)
     html += item('🏆', 'PPV最終戦勝者', a.ppvFinalWinner.name, a.ppvFinalWinner.orgName);
+  if (a.unifiedChampion)
+    html += item('🌐', '全国統一王者', a.unifiedChampion.name, `${a.unifiedChampion.orgName} / 今季防衛 ${a.unifiedChampion.defensesThisSeason || 0}回`);
   // 個人表彰
   if (a.mediaAward)
     html += item('📺', 'メディア功労賞', a.mediaAward.name, `貢献 ${Math.round(a.mediaAward.totalRev).toLocaleString()}万円`);
@@ -3301,6 +3321,8 @@ function showAwardsCeremony(awards, onDone, onOpen) {
     slideInfo.push({ html: _buildSeasonEventChampionAward(awards.tenchosenChampion, 'tenchosen'), label: '天頂戦 覇者', section: SEC_EVENT, se: 'normal' });
   if (awards.ppvFinalWinner)
     slideInfo.push({ html: _buildSeasonEventChampionAward(awards.ppvFinalWinner, 'ppvFinal'), label: 'PPV最終戦勝者', section: SEC_EVENT, se: 'normal' });
+  if (awards.unifiedChampion)
+    slideInfo.push({ html: _buildUnifiedChampionAward(awards.unifiedChampion), label: '全国統一王者', section: SEC_EVENT, se: 'normal' });
 
   // ── 第2部: 個人表彰 ──
   if (awards.mediaAward)
@@ -3335,6 +3357,12 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   const btnNext = document.getElementById('aw-btn-next');
   const fanfareEl = document.getElementById('aw-fanfare-overlay');
   const coachFg = document.getElementById('hof-coach-fg');
+  if (!overlay || !slideWrap || !headerLabel || !dotsEl || !btnNext || !fanfareEl || !coachFg) {
+    awardSession.active = false;
+    if (window._awardsCeremonySession === awardSession) window._awardsCeremonySession = null;
+    if (onDone) onDone();
+    return;
+  }
 
   // スライドDOM生成
   slideWrap.innerHTML = '';
@@ -3368,6 +3396,8 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   let current = 0;
   const TOTAL = slideInfo.length;
   let finished = false;
+  let completionTimer = null;
+  let inputGate = null;
 
   function goToSlide(idx) {
     const slides = slideWrap.querySelectorAll('.aw-slide');
@@ -3427,35 +3457,45 @@ function showAwardsCeremony(awards, onDone, onOpen) {
     }
   }
 
+  function finishCeremony(reason = 'complete') {
+    if (finished) return;
+    finished = true;
+    if (completionTimer != null) clearTimeout(completionTimer);
+    btnNext.disabled = true;
+    if (inputGate) inputGate.dispose(btnNext);
+    overlay.classList.remove('active');
+    _awClearParticles();
+    coachFg.classList.remove('revealed');
+    coachFg.innerHTML = '';
+    window._awardsNext = null;
+    awardSession.active = false;
+    if (window._awardsCeremonySession === awardSession) window._awardsCeremonySession = null;
+    if (reason === 'timeout') console.warn('[WM] awards ceremony safety net fired');
+    if (onDone) onDone();
+    _drainPopupQueue();
+  }
+
   function nextSlide() {
     if (finished) return;
     if (current >= TOTAL - 1) {
-      // 閉じる
-      finished = true;
-      btnNext.disabled = true;
-      inputGate.dispose(btnNext);
-      overlay.classList.remove('active');
-      _awClearParticles();
-      coachFg.classList.remove('revealed');
-      coachFg.innerHTML = '';
-      window._awardsNext = null;
-      awardSession.active = false;
-      if (window._awardsCeremonySession === awardSession) window._awardsCeremonySession = null;
-      if (onDone) onDone();
-      _drainPopupQueue();
+      finishCeremony();
       return;
     }
     goToSlide(current + 1);
   }
 
   window._awardsNext = nextSlide;
-  const inputGate = _awCreateInputGate(() => {
+  inputGate = _awCreateInputGate(() => {
     if (!btnNext.disabled) nextSlide();
   });
   btnNext.onclick = e => inputGate.onClick(e);
   btnNext.onkeydown = e => inputGate.onKeyDown(e);
   btnNext.onkeyup = e => inputGate.onKeyUp(e);
   btnNext.onblur = () => inputGate.onBlur();
+  // 式典は操作待ちだが、DOM差し替えなどで入力経路が失われた場合に年末進行を
+  // 永久停止させない。通常の閲覧を妨げない長い猶予を取り、クリック完了と競合しても
+  // finishCeremony の一回化ガードで onDone はちょうど1回だけ呼ぶ。
+  completionTimer = setTimeout(() => finishCeremony('timeout'), Math.max(600000, TOTAL * 90000));
 
   // 殿堂入りスライドのタップ→コーチセリフ切り替え
   slideWrap.addEventListener('click', function(e) {
