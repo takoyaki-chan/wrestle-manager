@@ -3808,7 +3808,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
-            ${isUnifiedChamp ? '<span style="font-size:14px;color:#4fb7c5;font-weight:700">🌐 全国統一王者</span>' : ''}
+            ${isUnifiedChamp ? '<span style="font-size:14px;color:var(--unified);font-weight:700">🌐 全国統一王者</span>' : ''}
             ${_isBestTagTeam ? `<span style="font-size:13px;color:#ff6f9c;font-weight:700">🌸 総合ベストタッグ（第${_bestTagSeason}回${_bestTagPartnerName ? '・' + _bestTagPartnerName + 'と' : ''}）</span>` : ''}
             ${c.lastRun ? '<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">🌅 ラストラン</span>' : ''}
             ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル（残${ct ? ct.weeksLeft : '?'}週）</span>`; })() : ''}
@@ -4151,7 +4151,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
             ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
             ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${_champDefenses}防衛）</span>` : ''}
-            ${isUnifiedChamp ? `<span style="color:#4fb7c5;font-size:12px;font-weight:700">｜ 🌐 全国統一王者（${G.unifiedTitle.defenses || 0}防衛）</span>` : ''}
+            ${isUnifiedChamp ? `<span style="color:var(--unified);font-size:12px;font-weight:700">｜ 🌐 全国統一王者（${G.unifiedTitle.defenses || 0}防衛）</span>` : ''}
             ${summary.peakOVR > 0 && Engine.util.ov(c) < summary.peakOVR ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
           </div>
           ${(() => {
@@ -11977,6 +11977,120 @@ if (typeof window !== 'undefined') {
 // 自団体選手 → 他団体選手 への直訴。YES / NO の2択。
 // 派閥 Common-1 の比較レイアウト(fc1m-*)を流用しつつ、cross-org 用に再設計。
 // ─────────────────────────────────────────────────────────────────────────────
+function _pickUnifiedTitleLine(sceneKey, fighter, state, extraSalt) {
+  const table = typeof EVENT_LINES_BY_KEY !== 'undefined' ? EVENT_LINES_BY_KEY[sceneKey] : null;
+  if (!table || typeof table !== 'object') return '';
+  const archetype = fighter?.archetype || 'standard';
+  const pool = Array.isArray(table[archetype]) && table[archetype].length
+    ? table[archetype]
+    : (Array.isArray(table.standard) ? table.standard : []);
+  if (!pool.length) return '';
+  const sceneSalts = {
+    coronation: 0x89C1, return: 0x89C2, challengerArrival: 0x89C3,
+    defenseWin: 0x89C4, beltLost: 0x89C5, captureWin: 0x89C6, challengeFailed: 0x89C7,
+  };
+  const s = state || (typeof G !== 'undefined' ? G : {});
+  const rng = Engine.rng.create(Engine.rng.derive(
+    s.rngSeed || 0, s.season || 0, s.week || 0,
+    sceneSalts[sceneKey] || 0x89CF, fighter?.id || 0, Number(extraSalt) || 0
+  ));
+  return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+}
+
+function showUnifiedTitleCoronation(payload, onDone) {
+  const cfg = payload || {};
+  const fighter = cfg.fighter;
+  if (!fighter || !document?.body) { if (onDone) onDone(); return; }
+  document.querySelector('.unified-coronation-overlay')?.remove();
+  const imgUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const line = cfg.line || _pickUnifiedTitleLine('coronation', fighter, cfg.state, cfg.edition);
+  const layer = document.createElement('div');
+  layer.className = 'cerem-overlay unified-coronation-overlay';
+  layer.setAttribute('role', 'dialog');
+  layer.setAttribute('aria-modal', 'true');
+  layer.setAttribute('aria-labelledby', 'unifiedCoronationTitle');
+  layer.innerHTML = `<div class="unified-coronation-spot"></div>
+    <div class="unified-coronation-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    <div class="unified-coronation-content">
+      <div class="unified-coronation-kicker">UNIFIED CHAMPION</div>
+      <div class="unified-coronation-title" id="unifiedCoronationTitle">頂 点</div>
+      <div class="unified-coronation-one">業界の頂点は、ただ一人</div>
+      <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
+      ${imgUrl ? `<img class="unified-coronation-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(fighter.name || '')}">` : `<div class="unified-coronation-fallback">${escHtml((fighter.name || '?').charAt(0))}</div>`}
+      <div class="unified-coronation-name">${escHtml(fighter.name || '???')}</div>
+      <div class="unified-coronation-org">${escHtml(cfg.orgName || '')} ・ 第${escHtml(cfg.edition || 1)}回 天頂戦覇者</div>
+      <div class="unified-beltband">${escHtml(cfg.beltLabel || '全国統一王者')}</div>
+      <button class="unified-coronation-next" type="button">次へ</button>
+    </div>`;
+  document.body.appendChild(layer);
+  let resolved = false;
+  let safetyTimer = null;
+  const finish = () => {
+    if (resolved) return;
+    resolved = true;
+    clearTimeout(safetyTimer);
+    layer.remove();
+    if (typeof onDone === 'function') onDone();
+  };
+  layer.querySelector('.unified-coronation-next')?.addEventListener('click', finish, { once: true });
+  safetyTimer = setTimeout(() => {
+    if (resolved) return;
+    console.warn('[WM] unified title coronation safety net fired');
+    finish();
+  }, Number(cfg.safetyTimeoutMs) || 30000);
+  requestAnimationFrame(() => layer.querySelector('.unified-coronation-next')?.focus());
+  try { Audio.play('notify'); } catch (_e) {}
+}
+
+function showUnifiedTitleReturnCeremony(payload, state, onDone) {
+  if (_isPopupActive()) { _popupQueue.push(() => showUnifiedTitleReturnCeremony(payload, state, onDone)); return; }
+  const cfg = payload || {};
+  const fighter = cfg.fighter;
+  if (!fighter) { if (onDone) onDone(); return; }
+  const root = _factionEnsureOverlayRoot();
+  const imgUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  const line = cfg.line || _pickUnifiedTitleLine('return', fighter, state, cfg.heldYears);
+  const holderText = Number(cfg.holderCount) <= 1
+    ? `この${Number(cfg.cycleYears) || 4}年間、ベルトは一度も持ち主を変えなかった`
+    : `この${Number(cfg.cycleYears) || 4}年間、ベルトは${Number(cfg.holderCount)}人を渡った`;
+  root.innerHTML = `<div class="fevt-overlay-office unified-return-overlay">
+    <div class="unified-return-card" role="dialog" aria-modal="true" aria-labelledby="unifiedReturnTitle">
+      <div class="unified-return-label">WEEK ${escHtml(state?.week || '47')} ・ 天頂戦前夜</div>
+      <div class="unified-return-title" id="unifiedReturnTitle">返 還 式</div>
+      <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
+      ${imgUrl ? `<img class="unified-return-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(fighter.name || '')}">` : `<div class="unified-return-fallback">${escHtml((fighter.name || '?').charAt(0))}</div>`}
+      <div class="unified-return-name">${escHtml(fighter.name || '???')} <span>${escHtml(cfg.orgName || '')}</span></div>
+      <div class="unified-return-record">在位 <b>${escHtml(cfg.heldYears || 1)}年</b> ・ 防衛 <b>${escHtml(cfg.defenses || 0)}度</b><br>${escHtml(holderText)}</div>
+      <div class="unified-return-next">ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる</div>
+      <button class="unified-return-close" type="button">返還式を終える</button>
+    </div>
+  </div>`;
+  const overlay = root.querySelector('.unified-return-overlay');
+  if (overlay) { void overlay.offsetWidth; setTimeout(() => overlay.classList.add('active'), 20); }
+  let resolved = false;
+  let safetyTimer = null;
+  const finish = () => {
+    if (resolved) return;
+    resolved = true;
+    clearTimeout(safetyTimer);
+    _factionCloseCinematicOverlay();
+    setTimeout(() => {
+      if (overlay && root.contains(overlay)) {
+        console.warn('[WM] unified title return close safety net fired');
+        root.innerHTML = '';
+        _drainPopupQueue();
+      }
+    }, 900);
+    if (typeof onDone === 'function') onDone();
+  };
+  root.querySelector('.unified-return-close')?.addEventListener('click', finish, { once: true });
+  safetyTimer = setTimeout(() => {
+    if (resolved) return;
+    console.warn('[WM] unified title return ceremony safety net fired');
+    finish();
+  }, Number(cfg.safetyTimeoutMs) || 30000);
+}
+
 function showHostileArrivalStage(opts) {
   if (_isPopupActive()) { _popupQueue.push(() => showHostileArrivalStage(opts)); return; }
   const cfg = opts || {};
@@ -12003,8 +12117,9 @@ function showHostileArrivalStage(opts) {
     <span><span class="label">${escHtml(choice.label || '')}</span><span class="hint">${escHtml(choice.hint || '')}</span></span>
   </button>`).join('');
 
+  const variantClass = cfg.variant === 'unifiedTitle' ? ' unified-title-arrival' : '';
   root.innerHTML = `
-    <div class="fevt-overlay-office hostile-arrival-overlay">
+    <div class="fevt-overlay-office hostile-arrival-overlay${variantClass}">
       <div class="inv-screen" role="dialog" aria-modal="true" aria-labelledby="hostileArrivalTitle">
         <div class="inv-title" id="hostileArrivalTitle">${escHtml(cfg.title || '果 た し 状')}</div>
         <div class="inv-divider"></div>
@@ -12025,6 +12140,7 @@ function showHostileArrivalStage(opts) {
   const finish = (choice) => {
     if (resolved) return;
     resolved = true;
+    clearTimeout(safetyTimer);
     if (typeof Audio !== 'undefined' && Audio.play) Audio.play('click');
     _factionCloseCinematicOverlay();
     // CSS transition/MutationObserver が動かない環境でも、古いオーバーレイを残して進行を塞がない。
@@ -12037,6 +12153,7 @@ function showHostileArrivalStage(opts) {
     }, 900);
     if (typeof cfg.onChoice === 'function') cfg.onChoice(choice);
   };
+  let safetyTimer = null;
   root.querySelectorAll('.inv-dcard').forEach(button => {
     button.addEventListener('click', () => {
       const idx = Number(button.dataset.choiceIndex);
@@ -12044,10 +12161,46 @@ function showHostileArrivalStage(opts) {
       finish(choices[idx]);
     }, { once: true });
   });
+  if (Number(cfg.safetyTimeoutMs) > 0 && choices[0]) {
+    safetyTimer = setTimeout(() => {
+      if (resolved) return;
+      console.warn('[WM] hostile arrival choice safety net fired');
+      finish(choices[0]);
+    }, Number(cfg.safetyTimeoutMs));
+  }
 }
 
 if (typeof window !== 'undefined') {
   window.showHostileArrivalStage = showHostileArrivalStage;
+  window.showUnifiedTitleCoronation = showUnifiedTitleCoronation;
+  window.showUnifiedTitleReturnCeremony = showUnifiedTitleReturnCeremony;
+}
+
+function showUnifiedTitleChallengerArrival(payload, state, onDone) {
+  const champion = Engine.unifiedTitle?._findActive?.(state, payload?.championId);
+  const challenger = Engine.unifiedTitle?._findActive?.(state, payload?.challengerId);
+  if (!champion || !challenger) { if (onDone) onDone(); return; }
+  const orgName = Engine.unifiedTitle._orgName(state, challenger.orgId);
+  showHostileArrivalStage({
+    variant: 'unifiedTitle',
+    title: '挑 戦 表 明',
+    subLabel: `UNIFIED TITLE ・ QUARTERLY CHALLENGE ・ WEEK ${state.week || '—'}`,
+    speakerLabel: '',
+    line: _pickUnifiedTitleLine('challengerArrival', challenger.fighter, state, champion.fighter.id),
+    members: [{ id: challenger.fighter.id, name: challenger.fighter.name, roleLabel: '挑戦者' }],
+    orgBadge: { orgId: challenger.orgId, orgName },
+    facts: [
+      `迎え撃つのは王者 ${champion.fighter.name}。次の興行のメインイベントに固定されます。`,
+      '統一王座の挑戦は断れません（規定）。',
+    ],
+    choices: [{ letter: '🌐', label: '受けて立つ', hint: '次の興行で全国統一王座を防衛する', result: 'ACCEPT' }],
+    safetyTimeoutMs: 30000,
+    onChoice: () => { if (typeof onDone === 'function') onDone(); },
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.showUnifiedTitleChallengerArrival = showUnifiedTitleChallengerArrival;
 }
 
 function showUnifiedTitleChallengeModal(payload, state, onChoice) {
@@ -12056,25 +12209,48 @@ function showUnifiedTitleChallengeModal(payload, state, onChoice) {
   const eligible = (payload?.eligibleIds || [])
     .map(id => (state.roster || []).find(f => f.id === id)).filter(Boolean);
   if (!champion || eligible.length === 0) { if (onChoice) onChoice(null); return; }
-  const choices = eligible.map(f => `<button class="mdl-a-continue-btn" type="button" data-unified-fighter="${f.id}" style="margin-top:7px;width:100%">
-    🌐 ${escHtml(f.name)}で挑戦する <small style="margin-left:8px;opacity:.7">OVR ${Engine.util.ov(f)}</small>
-  </button>`).join('');
+  const orgName = Engine.unifiedTitle._orgName(state, champion.orgId);
+  const championImg = typeof getUpperUrl === 'function' ? getUpperUrl(champion.fighter.id) : '';
+  const orgBadge = typeof _u3bOrgBadgeHtml === 'function'
+    ? _u3bOrgBadgeHtml({ orgId: champion.orgId, orgName, isHome: false }) : '';
+  const choices = eligible.map(f => `<div class="unified-challenge-candidate">
+    <div class="unified-challenge-face">${portraitImg(f.id, 52, '', 'roster')}</div>
+    <div class="unified-challenge-candidate-info"><strong>${escHtml(f.name)}</strong><span>OVR <b>${Engine.util.ov(f)}</b></span></div>
+    <button class="unified-challenge-send" type="button" data-unified-fighter="${f.id}">遠征に送る</button>
+  </div>`).join('');
   const html = `
-    ${_mdlAHeader('全国統一王座 挑戦権', `${_mdlASeasonLabel(state)} ・ PLAYER TURN`, { urgent: true })}
+    ${_mdlAHeader('全国統一王座 挑戦権', `${_mdlASeasonLabel(state)} ・ PLAYER TURN`)}
     ${_mdlAReporterStrip(state, `${Engine.unifiedTitle._orgName(state, champion.orgId)}の王者${champion.fighter.name}へ挑む番が来ました`)}
-    <div class="mdl-a-subject-stage">
-      <div class="mdl-a-observation centered" style="font-size:14px;line-height:1.9">
-        業界の挑戦順が自団体へ回ってきました。遠征させる選手を一人選んでください。
+    <div class="mdl-a-subject-stage unified-challenge-office">
+      <div class="unified-challenge-champion">
+        ${championImg ? `<img src="${escHtml(championImg)}" alt="${escHtml(champion.fighter.name)}">` : `<div class="unified-challenge-champion-fallback">${escHtml((champion.fighter.name || '?').charAt(0))}</div>`}
+        <strong>${escHtml(champion.fighter.name)}</strong>
+        ${orgBadge}
       </div>
-      <div style="padding:10px 18px">${choices}</div>
+      <div class="unified-challenge-choice"><p>業界の挑戦順が自団体へ回ってきました。遠征させる選手を一人選んでください。</p>${choices}</div>
     </div>
-    <div class="mdl-a-prompt"><button class="mdl-a-continue-btn" id="unifiedTitleSkipBtn" type="button">今回は見送る</button></div>`;
-  if (!_mdlAOpen(html, { dark: true, narrow: true })) { if (onChoice) onChoice(null); return; }
-  const finish = fighterId => { _mdlAClose(); if (onChoice) onChoice(fighterId); };
+    <div class="mdl-a-prompt"><button class="mdl-a-continue-btn" id="unifiedTitleSkipBtn" type="button">今回は見送る(次は約9か月後)</button></div>`;
+  let resolved = false;
+  let safetyTimer = null;
+  const finish = fighterId => {
+    if (resolved) return;
+    resolved = true;
+    clearTimeout(safetyTimer);
+    _mdlAClose();
+    if (onChoice) onChoice(fighterId);
+  };
+  if (!_mdlAOpen(html, { narrow: true })) { finish(null); return; }
   document.querySelectorAll('[data-unified-fighter]').forEach(button => {
     button.addEventListener('click', () => finish(Number(button.dataset.unifiedFighter)), { once: true });
   });
   document.getElementById('unifiedTitleSkipBtn')?.addEventListener('click', () => finish(null), { once: true });
+  // 保険は「進行を塞がない」ためのもの。9か月に一度の挑戦権を勝手に消費しない —
+  // タイムアウト時は 'defer' で閉じ、App側が通知を復元して翌週もう一度差し出す。
+  safetyTimer = setTimeout(() => {
+    if (resolved) return;
+    console.warn('[WM] unified title challenge modal safety net fired (defer)');
+    finish('defer');
+  }, 60000);
   Audio.play('notify');
 }
 
@@ -17191,15 +17367,30 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   const total = sp.validMatches.length;
   const venue = typeof VENUES !== 'undefined' ? VENUES[G.showVenue || 0] : null;
   const challenge = sp.awayBooking || sp.incomingChallenge;
+  const unifiedBooking = sp.isUnifiedAwayTitle
+    ? sp.unifiedAwayBooking : App._unifiedTitleShowData;
+  const isUnified = !!(match._unifiedTitleMatch && unifiedBooking);
   const isChallenge = !!(challenge && (match.isCRMatch || match._crMatchLocked || match._awayChallengeMatch));
-  const resultTitle = sp.isAwayChallenge
+  const resultTitle = isUnified
+    ? '全国統一王座戦　試合結果'
+    : sp.isAwayChallenge
     ? `${challenge?.opponentOrgName || '相手団体'}興行　遠征試合結果`
     : `第${G.totalShows + 1}回 定期興行　試合結果`;
-  const venueLabel = sp.isAwayChallenge ? `${challenge?.opponentOrgName || '相手団体'} 興行` : (venue?.name || '通常興行');
-  const leftOrg = isChallenge ? (challenge.requesterOrgName || challenge.requesterOrgId) : 'プレイヤー団体';
-  const rightOrg = isChallenge ? (challenge.opponentOrgName || challenge.opponentOrgId) : 'プレイヤー団体';
-  const leftOrgId = isChallenge ? (challenge.requesterOrgId || 'player') : 'player';
-  const rightOrgId = isChallenge ? (challenge.opponentOrgId || 'away') : 'player';
+  const unifiedOpponentOrgId = sp.isUnifiedAwayTitle
+    ? unifiedBooking?.championOrgId : unifiedBooking?.challengerOrgId;
+  const unifiedOpponentOrgName = isUnified
+    ? Engine.unifiedTitle._orgName(G, unifiedOpponentOrgId) : '';
+  const venueLabel = sp.isUnifiedAwayTitle
+    ? `${unifiedOpponentOrgName || '相手団体'} 興行`
+    : sp.isAwayChallenge ? `${challenge?.opponentOrgName || '相手団体'} 興行` : (venue?.name || '通常興行');
+  const leftOrg = isUnified ? (G.orgName || 'プレイヤー団体')
+    : isChallenge ? (challenge.requesterOrgName || challenge.requesterOrgId) : 'プレイヤー団体';
+  const rightOrg = isUnified ? unifiedOpponentOrgName
+    : isChallenge ? (challenge.opponentOrgName || challenge.opponentOrgId) : 'プレイヤー団体';
+  const leftOrgId = isUnified ? 'player'
+    : isChallenge ? (challenge.requesterOrgId || 'player') : 'player';
+  const rightOrgId = isUnified ? unifiedOpponentOrgId
+    : isChallenge ? (challenge.opponentOrgId || 'away') : 'player';
   if (match.matchType === 'tag') {
     const idsA = [match.teamA.fighter1, match.teamA.fighter2];
     const idsB = [match.teamB.fighter1, match.teamB.fighter2];
@@ -17226,13 +17417,32 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   if (winnerSide !== 'draw' && winner && typeof POST_MATCH_FLAVOR_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
     try { victoryLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.winner, winner); } catch (_e) {}
   }
+  let loserLine = '';
+  let showVictoryLine = true;
+  if (isUnified && winnerSide !== 'draw') {
+    const playerFighterId = sp.isUnifiedAwayTitle
+      ? unifiedBooking?.challengerId : unifiedBooking?.championId;
+    const playerFighter = [left, right].find(fighter => fighter?.id === playerFighterId);
+    const playerSide = left?.id === playerFighterId ? 'left' : right?.id === playerFighterId ? 'right' : null;
+    const playerWon = playerSide === winnerSide;
+    const sceneKey = sp.isUnifiedAwayTitle
+      ? (playerWon ? 'captureWin' : 'challengeFailed')
+      : (playerWon ? 'defenseWin' : 'beltLost');
+    const unifiedLine = playerFighter
+      ? _pickUnifiedTitleLine(sceneKey, playerFighter, G, unifiedBooking?.championId) : '';
+    victoryLine = playerWon ? unifiedLine : '';
+    loserLine = playerWon ? '' : unifiedLine;
+    showVictoryLine = playerWon;
+  }
   showEventMatchResultPopup({
     theme: 'normal', title: resultTitle, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${boutNumber}試合 / 全${total}試合`,
-    progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', isChallenge ? 'CHALLENGE MATCH' : match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], ['MQ', String(result.mq ?? '—')]],
+    progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', isUnified ? 'UNIFIED TITLE' : isChallenge ? 'CHALLENGE MATCH' : match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], ['MQ', String(result.mq ?? '—')]],
     left: { ...left, org: leftOrg, orgId: leftOrgId }, right: { ...right, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'NO CONTEST' : match.isTitle ? 'TITLE WIN' : 'WIN',
-    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine, chips: [isChallenge ? '挑戦試合' : match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
-    footNote: isChallenge ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
+    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq,
+    victoryLine, loserLine, showVictoryLine,
+    chips: [isUnified ? '全国統一王座' : isChallenge ? '挑戦試合' : match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
+    footNote: (isUnified || isChallenge) ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
   });
 }
 

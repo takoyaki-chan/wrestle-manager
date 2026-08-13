@@ -9974,7 +9974,7 @@ const App = {
     showTravelScene({
       heading: '— 全国統一王座へ —',
       from: { label: G.orgName || 'プレイヤー団体', emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
-      to: { label: Engine.unifiedTitle._orgName(G, champion.orgId), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(champion.orgId, 22) : ''), accent: '#4fb7c5' },
+      to: { label: Engine.unifiedTitle._orgName(G, champion.orgId), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(champion.orgId, 22) : ''), accent: 'var(--unified)' },
       party: [{ id: challenger.fighter.id, name: challenger.fighter.name }],
       lines: [`${challenger.fighter.name}が、全国統一王者の待つ敵地へ向かっています。`, '業界の頂点を懸けた一戦です。'],
       vehicleIcon: '🚌', durationMs: 5800,
@@ -10028,11 +10028,90 @@ const App = {
     const turn = G._pendingUnifiedPlayerTurn;
     if (!turn || typeof showUnifiedTitleChallengeModal !== 'function') return;
     showUnifiedTitleChallengeModal(turn, G, fighterId => {
-      if (fighterId == null) G = Engine.unifiedTitle.declinePlayerTurn(G, 'skipped');
-      else G = Engine.unifiedTitle.acceptPlayerTurn(G, fighterId);
+      if (fighterId === 'defer') {
+        // タイムアウト保険で閉じただけ。挑戦権は消費せず、翌週の週次通知でもう一度差し出す。
+        G = { ...G, _pendingUnifiedNotification: { type: 'playerTurn', championId: turn.championId } };
+      } else if (fighterId == null) {
+        G = Engine.unifiedTitle.declinePlayerTurn(G, 'skipped');
+      } else {
+        G = Engine.unifiedTitle.acceptPlayerTurn(G, fighterId);
+      }
       try { Storage.autoSave(); } catch (_e) {}
       refreshAll();
     });
+  },
+
+  _unifiedTitleReturnFacts(state) {
+    const title = state?.unifiedTitle;
+    if (!title) return { heldYears: 0, defenses: 0, holderCount: 0, cycleYears: 4 };
+    const history = Array.isArray(title.history) ? title.history : [];
+    const lastAwardIndex = history.reduce((idx, event, index) =>
+      ['creation', 'crown', 'repeat'].includes(event?.type) ? index : idx, -1);
+    const holderIds = new Set();
+    history.slice(Math.max(0, lastAwardIndex)).forEach(event => {
+      if (event?.championId != null) holderIds.add(event.championId);
+      if (event?.winnerId != null) holderIds.add(event.winnerId);
+    });
+    if (title.championId != null) holderIds.add(title.championId);
+    const heldWeeks = Math.max(0,
+      Engine.util.absWeek(state.season || 1, state.week || 1)
+      - Engine.util.absWeek(title.wonSeason || state.season || 1, title.wonWeek || 1));
+    const heldYearsValue = Math.round((heldWeeks / 48) * 10) / 10;
+    return {
+      heldYears: Number.isInteger(heldYearsValue) ? heldYearsValue : heldYearsValue.toFixed(1),
+      defenses: Number(title.defenses) || 0,
+      holderCount: holderIds.size,
+      cycleYears: 4,
+    };
+  },
+
+  checkUnifiedTitlePresentation() {
+    const returnPending = G._pendingUnifiedReturnCeremony || null;
+    const arrivalPending = G._pendingUnifiedNotification?.type === 'challengerArrival'
+      ? G._pendingUnifiedNotification : null;
+    if ((!returnPending && !arrivalPending) || App._unifiedPresentationPending) return;
+    App._unifiedPresentationPending = true;
+    setTimeout(() => {
+      App._unifiedPresentationPending = false;
+      const jobs = [];
+      let next = G;
+
+      const currentReturn = next._pendingUnifiedReturnCeremony;
+      if (currentReturn) {
+        if (currentReturn.season === next.season) {
+          const found = Engine.unifiedTitle._findActive(next, currentReturn.championId);
+          if (found && found.orgId === 'player' && typeof showUnifiedTitleReturnCeremony === 'function') {
+            const facts = App._unifiedTitleReturnFacts(next);
+            const snapshot = next;
+            jobs.push(() => showUnifiedTitleReturnCeremony({
+              fighter: found.fighter,
+              orgName: Engine.unifiedTitle._orgName(snapshot, found.orgId),
+              ...facts,
+              safetyTimeoutMs: 30000,
+            }, snapshot, () => { try { Storage.autoSave(); } catch (_e) {} }));
+          }
+        }
+        const { _pendingUnifiedReturnCeremony: _shownReturn, ...withoutReturn } = next;
+        next = withoutReturn;
+      }
+
+      const currentArrival = next._pendingUnifiedNotification?.type === 'challengerArrival'
+        ? next._pendingUnifiedNotification : null;
+      if (currentArrival && typeof showUnifiedTitleChallengerArrival === 'function') {
+        const snapshot = next;
+        jobs.push(() => showUnifiedTitleChallengerArrival(currentArrival, snapshot,
+          () => { try { Storage.autoSave(); } catch (_e) {} }));
+        const { _pendingUnifiedNotification: _shownArrival, ...withoutArrival } = next;
+        next = withoutArrival;
+      }
+
+      G = next;
+      if (jobs.length) {
+        try { Storage.autoSave(); } catch (_e) {}
+        _enqueuePopup(jobs.shift());
+        jobs.forEach(job => _popupQueue.push(job));
+      }
+    }, 300);
   },
 
   // Run an accepted away challenge directly from show preparation so its result
@@ -11155,6 +11234,7 @@ const App = {
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     App.checkPrologueHighlights();
     App.checkTenchosenPreEvent();
+    App.checkUnifiedTitlePresentation();
     sessionRng = Engine.rng.create(G.rngSeed);
     App._refreshTicker();
     Storage.autoSave();
@@ -11871,6 +11951,7 @@ const App = {
     App.checkTitleEstablishment(); App.checkRosterCapMilestones();
     App.checkPrologueHighlights();
     App.checkTenchosenPreEvent();
+    App.checkUnifiedTitlePresentation();
     sessionRng = Engine.rng.create(G.rngSeed);
 
     // v1.4w: 交渉成功時の新聞イベント
@@ -16420,6 +16501,35 @@ App.finalizeTenchosen = function() {
   // task-73: 経営画面へ戻る直前にコーチが1枚だけ締める。
   // TV観戦モード(自団体不出場)でもここを通るので、その回も無言にはならない
   if (App._tcwGate('tenchosen', { tournament: G.ppvTournament }, () => App.finalizeTenchosen())) return;
+  const title = G.unifiedTitle;
+  const tournament = G.ppvTournament;
+  const awardEvents = (title?.history || []).filter(event =>
+    ['creation', 'crown', 'repeat'].includes(event?.type));
+  const latestAward = awardEvents[awardEvents.length - 1] || null;
+  const champion = tournament?.championId != null
+    ? Engine.unifiedTitle._findActive(G, tournament.championId) : null;
+  const isCurrentAward = latestAward
+    && latestAward.season === G.season
+    && latestAward.championId === tournament?.championId;
+  const ceremonyKey = isCurrentAward && champion
+    ? `${latestAward.season}:${latestAward.edition}:${latestAward.championId}:${latestAward.type}` : '';
+  if (ceremonyKey && App._unifiedCoronationKey !== ceremonyKey
+      && typeof showUnifiedTitleCoronation === 'function') {
+    App._unifiedCoronationKey = ceremonyKey;
+    const generation = awardEvents.length;
+    const repeatLabel = latestAward.type === 'repeat' ? ' ・ 連覇' : '';
+    showUnifiedTitleCoronation({
+      fighter: champion.fighter,
+      orgName: Engine.unifiedTitle._orgName(G, champion.orgId),
+      edition: latestAward.edition || tournament.edition || 1,
+      beltLabel: generation === 1
+        ? '初代 全国統一王者'
+        : `第${generation}代 全国統一王者${repeatLabel}`,
+      state: G,
+      safetyTimeoutMs: 30000,
+    }, () => App.finalizeTenchosen());
+    return;
+  }
   // 状態は advanceWeek 内で適用済み。ここでは演出を畳むだけ
   clearTimeout(App._tcPeakTimer);
   // 決勝の決着後コメント(task-72)の見張り・保険・残骸を必ず片付ける
