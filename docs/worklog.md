@@ -451,6 +451,16 @@ roadmap起票(08-02)の「派閥『開戦/直接決戦』画面の再設計」�
 
 (2)**宿怨(BITTER)試合前セリフの記録訂正**。roadmapで「⏸未着手」のままだったが、実際は07-31のtask-45で実装済み(`BITTER_PREMATCH_LINES` ahead/behind各28本+宿怨専用分岐16週CD+「遺 恨 再 燃」モーダル)。roadmap訂正+実機確認バックログへ追加。コード変更なし・specs/manifest該当なし。
 
+## ui-baseline-guard-test 新設: チェックリスト参照の欠落ファイルを実装で解消（2026-08-12・Fable）
+
+CLAUDE.md「頻出違反チェックリスト」と `.claude/skills/ui-check/SKILL.md` が機械検査として案内する `node test/ui-baseline-guard-test.js` が実在しない問題(53952a7 でスキルが参照だけ書き、テスト本体が作られていなかった)。対応2択(参照書き換え or ガード新設)のうち、**ガード新設(b)を採用**——顔出し監査(12a76c3)直後で現状スナップショットの取り時であり、`/ui-check` が毎回叩くコマンドが回帰ガードとして実際に機能する価値が参照修正のコストを上回ると判断。
+
+実装(`test/ui-baseline-guard-test.js`、run-all自動発見で npm test に編入): **Part A=共有部品の梯子値の改変検知**(.u3b-upper 4段+chip / .ch-por系 / .emr-upper系 / .pb-portrait / 表彰式 portrait-main・aw-team / 両観戦の cutin・winner・vic、計17本を実寸一致で検査)。**Part B=梯子外の新規流入検出**——CSS(index/battle-engine/tag-battle の style ブロック+battle-shared/battle-mobile/mobile.css)の width+height 固定ルールを全走査し、人物系セレクタ(port/upper/face/photo等のキーワード、emblem等は除外)で「2:3梯子5段」「52px以下の正方形(§2-C)」「ALLOW」のいずれでもなければ FAIL。失敗時はそのまま貼れる ALLOW 行を出力する。分類ロジック自体の自己検査付き。
+
+**ALLOW=既知の梯子外100件を理由グループ付きで凍結**(準拠ではなく既知、減らす方向が正): faceout-audit保留分(新聞np-*・wm-stat-upper) / 旧A〜D型モーダル(_mdlASubjectStage 3:4はモックアップ先行の残タスク) / 派閥イベント旧画面(F02系=U3対象外、co-class上書きの元ルール) / DB・相関図タブ独自レイアウト / CSS内コメントに根拠のある設計値(JT 150×225等) / コーチ・NPC / モバイル比例縮小。走査で人物画像なのにキーワードから漏れた2クラス(.jtc-up/.awpick-cf)も検出対象へ追加した。陳腐化した ALLOW 行は note 表示で掃除を促す(失敗にはしない)。
+
+検証: 単体OK(ladder=65, face≤52=56, allowed=100/100) / **npm test 226/226 PASS**(既存225+本テスト)。監査書 `docs/ui/faceout-audit-v0.1.md` v0.2追記へガード新設の段落を追加。specs該当なし(テスト基盤でありゲーム仕様は不変)、manifest該当なし(test/は配布対象外)。auto-simはsrc未変更のため対象外。残: 新規に梯子外が必要になったら ALLOW へ理由付き1行追記という運用の周知は本テストのヘッダコメントと失敗メッセージが担う。
+
 ## 顔出し違反の一括解消: faceout-audit再検証→20件修正+死にCSS掃除（2026-08-12・Fable）
 
 UI統一の残タスク「顔出し違反32件」(docs/ui/faceout-audit-v0.1.md、07-31監査)を消化した。監査後にPPV修正(task-46)・バトル観戦Pattern C v4刷新・新聞全面再設計が入っていたため、まず32件全数を現行コードで再検証(Explore並列2本)——自然解消7件(U3共通部品化とtask-46/50の効果)・残25件を確定し、**20件を承認済み梯子(XL/L/M/S/chip)へ一括修正、5件を理由付き保留**とした。件別の対応表は監査書の**v0.2追記**が正。
