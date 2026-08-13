@@ -2,7 +2,7 @@
 
 **ファイル**：`docs/ui/03-screens/fighter-file.md`
 **最終更新**：2026-08-13
-**実装状況**：未着手(モック確定済み・Codex実装待ち)
+**実装状況**：完了(task-90マージ cd746da・2026-08-13。実機確認はバックログ)
 
 > デザインの正: `docs/ui/mockups/fighter-file-title-v0.7.html`(Keisuke全項目承認・2026-08-13)。
 > 数値の塗り・バー・レーダーは `docs/ui/stat-notation-v1.0.md` に従う。
