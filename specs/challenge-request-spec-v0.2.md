@@ -16,7 +16,7 @@
 1. **inverse発火時に相手3名を確定**: 発起人+同団体からOVR上位2名(負傷・引退除外、同値はderiveローカルRNG)を `pending.memberIds` に固定。旧セーブ(memberIds無し)は従来の自動選抜へfail-open
 2. forward受諾時の同行2名は直訴画面内ピッカーの選択を `_awayTeamPick` 経由で使用(旧: 別モーダル)
 
-**2026-08-14 追加(孤児化した打診の自浄)**: 未解決の `pendingThisWeek` は翌週持ち越しだが、持ち越し中に発起人/相手が移籍・引退・団体解散で不在になると表示不能のまま週次モーダル枠(新規直訴の抽選と統一王座「こちらの番」の表示)を恒久占有していた(点火カタログR4で検出)。`Engine.challengeRequest.dropStalePending` が実効性を検査し、不成立の打診は**静かに取り下げる**(CD/クォータ不記録・取り下げ通知なし)。processWeekly冒頭+tickWeek末尾の2箇所で自浄し、validateGameStateの参照整合性不変条件が外部経路の孤児を検出する。詳細は v0.1 の同日追加改修+`test/challenge-request-stale-pending-test.js`。
+**2026-08-14 追加(孤児化した打診の自浄)**: 未解決の `pendingThisWeek` は翌週持ち越しだが、持ち越し中に発起人/相手が移籍・引退・団体解散で不在になると表示不能のまま週次モーダル枠(新規直訴の抽選と統一王座「こちらの番」の表示)を恒久占有していた(点火カタログR4で検出)。`Engine.challengeRequest.dropStalePending` が実効性を検査し、不成立の打診は**静かに取り下げる**(CD/クォータ不記録・取り下げ通知なし)。選手が退場しうる全遷移API(processWeekly冒頭/tickWeek末尾/commitRetirements/advanceWeekラッパー)で自浄し、validateGameStateの参照整合性不変条件が外部経路の孤児を検出する。詳細は v0.1 の同日追加改修+`test/challenge-request-stale-pending-test.js`。
 
 ## 3. UIフロー
 

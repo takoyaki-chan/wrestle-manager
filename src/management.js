@@ -7576,6 +7576,10 @@ const Engine = {
         events.push(vc.msg);
       }
 
+      // 8b. 直訴の孤児化自浄(2026-08-14 R4): 引退者が発起人/相手の pendingThisWeek を
+      // 取り下げる。王座空位化・派閥整合と同列の「退場者が残す参照の後始末」
+      s = Engine.challengeRequest.dropStalePending(s);
+
       // 9. pendingAwards.hallOfFame 再計算 (引退者を含めて)
       if (s.pendingAwards) {
         s = { ...s, pendingAwards: { ...s.pendingAwards, hallOfFame: Engine.awards.checkHallOfFame(s) } };
@@ -25645,14 +25649,16 @@ Engine.sanitizeFloats = function(G) {
 
 // AI成長パリティ I5: advanceWeek はPPV・契約・オフシーズンなど複数の早期returnを持つ。
 // 全ての遷移結果をここで一度だけ正規化し、どの境界でもdecayStartAge後の負債を保存しない。
+// 2026-08-14 R4追記: 季末の契約満了・移籍等でロスターを離れた選手を参照する直訴pendingも
+// ここで取り下げる(tickWeek末尾と同じ自浄)。auto-simはadvanceWeek直後にもvalidateGameStateを
+// 通すため、遷移APIが不整合な参照を返すと不変条件に捕まる(実測: Week49の引退・満了で発生)
 const advanceWeekWithAIGrowthParity = Engine.advanceWeek;
 Engine.advanceWeek = function advanceWeekNormalized(state) {
   const result = advanceWeekWithAIGrowthParity(state);
-  if (!result || !result.state || !result.state.aiOrgs) return result;
-  return {
-    ...result,
-    state: { ...result.state, aiOrgs: Engine.rival.sanitizeAIOrgs(result.state.aiOrgs) },
-  };
+  if (!result || !result.state) return result;
+  let s = Engine.challengeRequest.dropStalePending(result.state);
+  if (s.aiOrgs) s = { ...s, aiOrgs: Engine.rival.sanitizeAIOrgs(s.aiOrgs) };
+  return { ...result, state: s };
 };
 
 //  validateGameState: ランタイム不変条件チェック（常時オン）

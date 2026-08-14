@@ -130,9 +130,12 @@ const uiRenderJs = fs.readFileSync(path.join(root, 'src', 'ui-render.js'), 'utf8
 // null choice(表示不能)を無条件残置に戻さない
 assert(appJs.includes('Engine.challengeRequest.dropStalePending(G)'),
   'handleChallengeRequest の null 分岐は dropStalePending で孤児を取り下げること(無条件残置へ戻さない)');
-// tickWeek 末尾の自浄(validateGameState の直前)
-assert(managementJs.includes('Engine.challengeRequest.dropStalePending(s)'),
-  'tickWeek 末尾で dropStalePending による自浄を行うこと');
+// 遷移APIの自浄配線3箇所: tickWeek末尾(validateGameState直前)/commitRetirements/
+// advanceWeekラッパー(季末の契約満了・移籍。auto-simはadvanceWeek直後にもvalidateを通す)
+assert((managementJs.match(/Engine\.challengeRequest\.dropStalePending\(s\)/g) || []).length >= 2,
+  'tickWeek 末尾と commitRetirements の両方で dropStalePending による自浄を行うこと');
+assert(managementJs.includes('Engine.challengeRequest.dropStalePending(result.state)'),
+  'advanceWeek ラッパー(advanceWeekNormalized)でも dropStalePending による自浄を行うこと');
 
 // 無ドレイン閉じ経路の再発防止: 動的オーバーレイ(MutationObserver対象外)は閉じ時に明示ドレイン必須
 const travelFn = uiCommonJs.slice(
