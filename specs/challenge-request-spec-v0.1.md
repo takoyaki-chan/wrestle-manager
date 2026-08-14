@@ -1,12 +1,14 @@
 # 選手発信 挑戦試合打診イベント 仕様 v0.1
 
 **ファイル**：`specs/challenge-request-spec-v0.1.md`
-**最終更新**：2026-07-25
+**最終更新**：2026-08-14
 **実装状況**：全Phase完了。試合は受諾時に即時解決せず、必ず興行に所属する。相手発信は次の通常自団体興行の上位枠、自団体発信は次の通常興行週に相手団体興行へ先に遠征して解決する。固定季節興行・PPVには割り込まない。NOは condition -8 + CD52週。逆方向（AI解雇キャラ→player直訴）も firing-grudge-spec Phase 3b で接続済み。
 **2026-07-17 追加改修**：①Phase 3 を即時解決から「次回自団体興行への挿入解決」に変更 — YES 時は `_pendingReclaim`（タイトル奪還挑戦）と同じ予約パターンで `App.executeShow()` 直前に3シングル分のshowCardスロットへ注入し、通常興行と同じ解決パイプライン（injury/growth/economy含む）を通してから結果を反映。相手陣は一時ゲスト注入で処理し試合後に除去。バッジDOM表示は「打診自体がサプライズイベントで興行準備画面には現れない」ため見送り、事前ポップアップ+事後結果モーダルを「最低限の演出」として採用。②Phase 5 の相手リアクションセリフを archetype(6種)×結果(win/lose/draw)の36本に細分化（`CHALLENGE_REQUEST_OPPONENT_REACTIONS`、旧・受諾スタンス18本は`_accept`として保持）。詳細は `docs/worklog.md` 2026-07-17 該当項参照
 **2026-07-19 追加改修**：Phase 3 の興行組み込み方式を再設計。受諾した3試合は次回興行のメインイベント・セミ・第3試合として、会場の最大試合数の**内数**で先に固定する（7試合会場なら挑戦3+通常4）。出場6名は通常カード候補から除外して二重出場を禁止。各挑戦試合には、団体対抗という話題性を表す集客評価（match appeal）+12を付与する。興行準備画面には固定枠・通常残り枠数・ボーナスを明示する。
 **2026-07-22 追加改修**：開催地を発信方向で分離。AI側から届いた挑戦状（B3を含む）は次の通常自団体興行へ固定し、自団体選手からの直訴は次の通常興行週に、相手団体興行の遠征3試合として専用試合画面で先に行う。遠征を未実行のまま通常興行を実行した場合も、通常興行へ入る前に同じ遠征画面へ自動誘導する。遠征側の出場者は同日の自団体カードから除外し、遠征試合に自団体の会場収入・入場料収入は発生しない。試合結果・消耗・成長・負傷・キャリア・H2H・選手間関係は通常どおり反映する。挑戦試合の方向別関係変化と、団体信頼の非数値表示も確定。一時ゲストは保存対象外とし、例外復旧・ロード時にも自団体ロスターから除去する。
 **2026-07-25 追加改修（打診者セリフ全面刷新）**：§4.1 の性格×heatタイプ設計は不採用となり、Keisuke承認済みの `archetype × personality` 34セル×4場面（petition/直訴・sendoff/YES直後の返事・win/勝利報告・lose/敗戦報告）＝408本（`src/data.js` `CHALLENGE_LINES`）に置き換え。bond閾値によるhostile/respectful分岐と、style軸のフレーバー分岐（`CHALLENGE_REQUEST_LINES_STYLE`、旧・§4.1派生）は両方廃止し、両テーブルとも削除済み。抽選は `Engine.challengeRequest.pickLine(fighter, scene, rng, orgName)` に統一（フォールバック: `${archetype}_${personality}` → `${archetype}_normal` → `normal_normal`、本文中 `{org}` は相手団体名へ実行時置換）。新規で **sendoff場面**（YES直後、直訴した本人の返事を頭上吹き出しで表示。`src/ui-common.js` `showChallengeSendoffModal`、mdl-a型subject-stage+speechを流用）を追加。結果モーダルの自団体勝利セリフも汎用 `VICTORY_LINES` から `CHALLENGE_LINES.win` へ切替（`_challengeRequestResultReaction`）。AI代表のリアクション（§4.2 `CHALLENGE_REQUEST_OPPONENT_REACTIONS`）とNO時のティッカー（§4.3 `CHALLENGE_REQUEST_NO_LINES`）は対象外・変更なし。詳細は `docs/worklog.md` 2026-07-25 該当項参照
+**2026-08-14 追加改修（孤児化した打診の自浄）**：未解決の `pendingThisWeek` は翌週持ち越しだが、持ち越し中に発起人/相手が移籍・引退・団体解散で不在になると、モーダルは表示不能のまま毎週持ち越され、週次モーダル枠（新規直訴の抽選と統一王座「こちらの番」の表示）を恒久占有していた（点火カタログR4で検出。実例: S2W4発行の直訴が発起人の移籍後3季残留）。対策: ①`Engine.challengeRequest.dropStalePending` が発起人/相手の実在（inverse は発起人のAI団体在籍+標的の自団体在籍、団体の非解散を含む）を検査し、不成立なら**静かに取り下げる**（不在データの説明文は出さない。CD/クォータは記録しない）。自浄は選手が退場しうる全遷移APIの4箇所 — `processWeekly` 冒頭（持ち越し早期returnより前）・`tickWeek` 末尾（validateGameState 直前）・`retirement.commitRetirements`（王座空位化と同列の退場者後始末）・`advanceWeek` ラッパー（季末の契約満了・移籍。auto-sim が advanceWeek 直後にも validateGameState を通すため）。②UI側 `handleChallengeRequest` の null choice（表示不能）も同関数で取り下げ（fail-open: actor実在時は従来どおり持ち越し）。③`validateGameState` に参照整合性不変条件を追加（パイプライン外からの孤児持ち込み検出）。ガード: `test/challenge-request-stale-pending-test.js`
+
 **親仕様**：
 - `specs/relationship-system-spec-v2.0.md`（Bond / Rivalry 非対称2軸）
 - `specs/relationship-system-spec-v2.2.md`（A-1〜A-4 / B-3 / C 奪還挑戦）

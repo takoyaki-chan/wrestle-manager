@@ -3583,6 +3583,35 @@ Engine.challengeRequest = {
     return state;
   },
 
+  /** 実効性を失った pendingThisWeek を静かに取り下げる。
+   *  直訴は解決されるまで週次モーダル枠を占有し、新規直訴(processWeekly:3654)も
+   *  統一王座「こちらの番」のUI表示(app.js processWeek の !crPending ガード)も堰き止める。
+   *  発起人・相手が移籍/引退/団体解散で不在になると、モーダルは表示不能(onChoice(null)=残置)の
+   *  まま毎週持ち越され、この堰が恒久化する(2026-08-14 点火カタログR4で検出:
+   *  S2W4発行の直訴が発起人の移籍後3季にわたり残留し、playerTurnを四半期失効まで飲んでいた)。
+   *  誰もいなくなった打診に取り下げの通知は出さない(不在データの説明文を出さない方針)。 */
+  dropStalePending(state) {
+    const s = this.ensureInit(state);
+    const p = s.challengeRequest.pendingThisWeek;
+    if (!p) return s;
+    const playerRoster = s.roster || [];
+    const aiOrgs = s.aiOrgs || {};
+    let valid;
+    if (p._inverse) {
+      const reqOrg = aiOrgs[p.requesterOrgId];
+      valid = !!(reqOrg && !reqOrg.disbanded && Array.isArray(reqOrg.roster)
+        && reqOrg.roster.some(f => f && f.id === p.selfId)
+        && playerRoster.some(f => f && f.id === p.otherId));
+    } else {
+      const otherOrg = aiOrgs[p.otherOrgId];
+      valid = !!(playerRoster.some(f => f && f.id === p.selfId)
+        && otherOrg && !otherOrg.disbanded && Array.isArray(otherOrg.roster)
+        && otherOrg.roster.some(f => f && f.id === p.otherId));
+    }
+    if (valid) return s;
+    return { ...s, challengeRequest: { ...s.challengeRequest, pendingThisWeek: null } };
+  },
+
   /** heat = rivalry + max(0, 50-bond)*0.8 + max(0, bond-75)*0.6 + (rivalry≥70 ? +10 : 0) */
   computeHeat(rivalry, bond) {
     const r = rivalry || 0;
@@ -3651,6 +3680,9 @@ Engine.challengeRequest = {
    */
   processWeekly(state, rng) {
     let s = this.releaseExpiredAwayBooking(this.ensureInit(state));
+    // 孤児化した打診の週次自浄。持ち越し判定(次行)より先に行うこと —
+    // 後に置くと不在ペアの pending が新規抽選を永久に塞ぎ続ける
+    s = this.dropStalePending(s);
     if (s.challengeRequest.pendingThisWeek) return s;
     if (s._pendingIncomingChallengeMatch || s._pendingAwayChallengeMatch || s._pendingIncomingB3Match || s._pendingChallengeMatch
         || s._pendingUnifiedIncomingMatch || s._pendingUnifiedAwayMatch || s._pendingUnifiedPlayerTurn) return s;
