@@ -21,3 +21,4 @@ src/*.bak
 
 # 新聞 一面 v3 の目視確認用レンダリング (test/_render-newspaper-v3.js の生成物)
 docs/ui/mockups/newspaper-v3-render-check.html
+test/ui-walkthrough/fixtures/generated/

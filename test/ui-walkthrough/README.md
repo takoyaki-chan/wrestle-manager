@@ -10,6 +10,20 @@ npm run test:ui:walkthrough -- --mode walk --seasons 1 --seed 42
 
 既定の全体タイムアウトは15分です。再現範囲を絞る場合は、失敗アーティファクトの `README.txt` に記録された `--max-steps` 付きコマンドを使います。
 
+## ignite モード（レア画面強制点火カタログ・バグ捜索体制③）
+
+自然走破では踏めないレア画面(天頂戦・ゲームオーバー等)を、合成 fixture から実UIクリックで強制到達して検査します。設計は `docs/rare-screen-ignition-catalog-design-v0.1.md`。
+
+```powershell
+npm run test:ui:ignite -- --scenario tenchosen
+npm run test:ui:ignite -- --scenario gameover
+npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直す
+```
+
+- シナリオ定義は `scenarios.js`。fixture は初回実行時に `fixtures/generated/`(Git管理外)へ自動生成されます(headless進行+`Engine.validateGameState` ゲート)
+- 各シナリオは**点火マーカー**(対象オーバーレイ/画面の観測)を必須宣言し、未観測なら検出0件でも `IGNITION_MISFIRE` で失敗します(不発検出)
+- 実行後に観測した全オーバーレイ・画面IDを表示します。新シナリオのマーカー選定はこの一覧から行ってください
+
 検出器だけを既知バグ入りサンドボックスで確認するには次を実行します。
 
 ```powershell

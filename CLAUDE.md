@@ -108,6 +108,7 @@ v0.85bで確立。すべての実装はこの原則に従う。
 ### UI層の検証(2026-08-13新設・バグ徹底捜索体制)
 - **フライトレコーダー** `src/flight-recorder.js`: ゲーム常駐のエラー捕捉+操作トレース(リロード跨ぎ)。実プレイのバグ報告は⚠バッジ「記録をコピー」のJSONが基本形。仕様は `specs/flight-recorder-spec-v1.0.md`
 - **UI自動走破ハーネス** `npm run test:ui:walkthrough`: Playwrightで実UIをクリックして1季走破(約3〜4分)。無例外フリーズ(D2)/例外(D1)/undefined露出(D3)/大域停止(D5)を検出。**app.js/ui-*.jsの大きめ変更後はこれを1本回す**。設計は `docs/ui-walkthrough-harness-design-v0.1.md`、使い方は `test/ui-walkthrough/README.md`
+- **レア画面強制点火カタログ** `npm run test:ui:ignite -- --scenario <tenchosen|gameover>`: 自然走破では踏めないレア画面(天頂戦・ゲームオーバー等)を合成fixtureから実UIで強制到達して検査(点火マーカー+不発検出)。**該当レア画面のコードを触ったら当該シナリオを1本回す**。設計は `docs/rare-screen-ignition-catalog-design-v0.1.md`
 - 週次フルスイート(npm test+auto-sim 40季+走破+bug:audit)はCodexオートメーション weekly-bug-audit が毎週月曜に自動実行
 
 ### 自動実行(Claude Codeフック)

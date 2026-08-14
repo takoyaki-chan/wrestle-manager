@@ -37,7 +37,12 @@ async function readPageSnapshot(page) {
       .map(element => element.id || element.className)
       .map(value => String(value).replace(/\s+/g, '.'))
       .sort();
-    const activeScreen = Array.from(document.querySelectorAll('.screen')).find(visible);
+    // #titleScreen は .screen ではなく .title-screen で、表示中は下の .screen に全面で
+    // 重なる(下は非表示にならない)。可視ならタイトルを最優先で採る
+    const titleScreen = document.getElementById('titleScreen');
+    const activeScreen = (titleScreen && visible(titleScreen))
+      ? titleScreen
+      : Array.from(document.querySelectorAll('.screen')).find(visible);
     let state = null;
     try {
       if (typeof G !== 'undefined' && G) {

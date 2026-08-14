@@ -27,6 +27,8 @@ function actionScore(candidate, state) {
 
   if (/CONTINUE/i.test(text)) return 10000;
   if (candidate.id === 'travelSceneOverlay') return 9975;
+  // 全画面タップ面(天頂戦優勝発表 .tcwn-wrap 等)。文章量が多くても「タップして進む」導線
+  if (candidate.fullSurface && candidate.inOverlay) return 9960;
   if (/(?:confirmPPVEntry|tcConfirmEntries)/.test(candidate.onclick)) return 9500;
   if (/(?:togglePPVPick|tcTogglePick)/.test(candidate.onclick)) return 9450;
   if (candidate.inOverlay && (/閉じる/.test(candidate.ariaLabel) || /^✕$/.test(candidate.text))) return 9950;
@@ -89,6 +91,8 @@ async function listCandidates(page) {
         dataChoice: element.getAttribute('data-choice') || element.getAttribute('data-mdl-choice')
           || element.getAttribute('data-war-choice') || '',
         dataFighterId: element.getAttribute('data-fighter-id') || '',
+        fullSurface: !!element.getAttribute('onclick')
+          && rect.width * rect.height >= innerWidth * innerHeight * 0.7,
         id: element.id || '',
         index,
         inOverlay: overlayVisible && (overlay !== element || element.id === 'travelSceneOverlay'),
@@ -103,7 +107,7 @@ async function listCandidates(page) {
   const candidates = [];
   for (const metadata of entries) {
     const text = normalizeText(metadata.text || metadata.ariaLabel);
-    if (metadata.id !== 'travelSceneOverlay' && metadata.tagName !== 'BUTTON'
+    if (metadata.id !== 'travelSceneOverlay' && metadata.tagName !== 'BUTTON' && !metadata.fullSurface
       && (text.length > 100 || /Overlay$/i.test(metadata.id))) continue;
     candidates.push({
       ...metadata,
@@ -172,8 +176,16 @@ async function waitForTimedUi(page, milliseconds) {
   // reveal their real controls, then freeze the clock again for repeatability.
   await page.clock.resume();
   await new Promise(resolve => setTimeout(resolve, milliseconds));
+  // resume中は内部時計が実時間で進み続けるため、時刻の読み取りとpauseAtの間に
+  // 内部時計が読んだ値を追い越すと "Cannot fast-forward to the past" になる。
+  // 少し先の時刻で止めて競合を吸収する(失敗したら読み直してさらに先で止める)
   const currentTime = await page.evaluate(() => Date.now());
-  await page.clock.pauseAt(currentTime);
+  try {
+    await page.clock.pauseAt(currentTime + 1500);
+  } catch (_error) {
+    const retryTime = await page.evaluate(() => Date.now());
+    await page.clock.pauseAt(retryTime + 5000);
+  }
 }
 
 async function clickCandidate(candidate, page) {
@@ -202,10 +214,12 @@ async function runWalk(options) {
     detectors,
     fixtureName,
     maxSteps = 1200,
+    observe = null,
     page,
     reproductionCommand,
     seasons = 1,
     seed = 42,
+    until = null,
   } = options;
   const random = createSeededPrng(seed);
   const actionLog = [];
@@ -219,14 +233,18 @@ async function runWalk(options) {
     if (before.activeScreen && before.activeScreen !== 'screen-week' && before.activeScreen !== 'titleScreen') {
       specialScreens.add(before.activeScreen);
     }
+    if (observe) observe(before);
     if (before.state && !initialState) {
       initialState = before.state;
       previousProgressKey = progressKey(before);
       detectors.noteProgress(before);
     }
-    if (initialState && before.state
-      && before.state.season >= initialState.season + seasons
-      && before.state.week === 1 && !before.state.offSeason) {
+    const goalReached = until
+      ? until(before)
+      : (initialState && before.state
+        && before.state.season >= initialState.season + seasons
+        && before.state.week === 1 && !before.state.offSeason);
+    if (goalReached) {
       return {
         actionDigest: stableHash(JSON.stringify(actionLog)),
         actionLog,
@@ -264,6 +282,17 @@ async function runWalk(options) {
       candidates = await listCandidates(page);
       selected = chooseCandidate(candidates, await detectors.snapshot(page), random);
     }
+    if (!selected && before.activeScreen && before.activeScreen !== 'screen-week') {
+      // 週次新聞ジャック等で側画面へ遷移した直後は前進コントロールが無い。
+      // ナビタブ禁止の原則は保ちつつ「今週」への帰還だけを脱出口として許す
+      const homeClicked = await page.locator('.nav-btn', { hasText: '今週' }).first()
+        .click({ timeout: 1500 }).then(() => true).catch(() => false);
+      if (homeClicked) {
+        await settleClock(page);
+        actionLog.push({ action: 'nav:今週(escape)', after: (await detectors.snapshot(page)).state, before: before.state, seed, step });
+        continue;
+      }
+    }
     if (!selected) {
       const issue = detectors.record('D2_FREEZE', 'no safe progress control is visible', {
         candidates: candidates.map(candidate => candidate.text),
@@ -285,7 +314,29 @@ async function runWalk(options) {
     let label = actionLabel(selected);
     process.stdout.write(`  action ${step}: ${label}\n`);
     const mutationWatch = await detectors.beginMutationWatch(page);
-    const clickResult = await clickWithOverlayRecovery(page, selected, before, random);
+    let clickResult;
+    try {
+      clickResult = await clickWithOverlayRecovery(page, selected, before, random);
+    } catch (error) {
+      // クリックが恒久的に遮られる(全面オーバーレイ越しの陳腐化ボタン等)。
+      // クラッシュではなくFREEZEとしてアーティファクトを残して着地する
+      await mutationWatch.dispose().catch(() => {});
+      const issue = detectors.record('D2_FREEZE', `click permanently blocked on ${label}: ${String(error.message || error).split('\n')[0]}`, {
+        action: label,
+        snapshot: before,
+      });
+      const directory = await writeFailureArtifacts({
+        actionLog,
+        artifactRoot,
+        consoleEntries: detectors.consoleEntries,
+        issue,
+        page,
+        reproductionCommand: `${reproductionCommand} --max-steps ${step}`,
+        state: before,
+        step,
+      });
+      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, specialScreens: [...specialScreens].sort() };
+    }
     const clicked = clickResult.candidate;
     if (clickResult.recovered) {
       label = actionLabel(clicked);
@@ -298,6 +349,7 @@ async function runWalk(options) {
       await retryCandidate(page, candidate).catch(() => {});
     }), mutationWatch);
     const after = progress.after;
+    if (observe && after) observe(after);
     const nextProgressKey = progressKey(after);
     actionLog.push({
       action: label,

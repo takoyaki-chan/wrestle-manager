@@ -1,5 +1,21 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## バグ捜索体制③「レア画面強制点火カタログ」初回実装+発見バグ修正+小掃除（2026-08-14・Fable）
+
+ロードマップ計画立案からの実行指示(0番小掃除/1番③実装/3番バグD)。
+
+**0番 小掃除**: ①前セッションのコミット漏れ1件回収(246789b・枠越えバーのマーク列常設化=▼/+の有無でバー長がズレる問題。関連テスト4本PASS確認済み) ②マージ済み3worktree/ブランチ撤去(eager-bell検品/goofy-sammet/keen-taussig — 全てmain反映済みを突き合わせ確認。空ディレクトリ3個は別プロセスのロックで残置・無害)。
+
+**3番 バグD**: 着手前の実装grepで**既にクローズ済みと判明**。2026-07-30のKeisuke裁定(28d1a4a「drop bug D」)で天頂戦エントリーは「当日再選定+プレイヤー選択維持」を正としてspec §2改訂済み、実装(`ensureReady`のpreviousPlayerIds維持)も裁定準拠を実コード確認。**7/25監査のバグA〜Kは全クローズ**。roadmap「UI統一の後にやること」5行目とメモリを訂正(陳腐化した「未修正D」が次の計画を狂わせた実例)。
+
+**1番 ③レア画面強制点火カタログ**(設計: `docs/rare-screen-ignition-catalog-design-v0.1.md` / 実装: `test/ui-walkthrough/` に scenarios.js+fixtures/headless-sim.js+generate-scenario-fixture.js、run.jsに`--mode ignite`): 合成fixture(headless進行+validateGameStateゲート、`fixtures/generated/`=gitignore)→実UIクリック強制到達→**点火マーカー未観測=不発FAIL**。棚卸しR1〜R11起票。**R1天頂戦=PASS**(77操作85秒: S4W41→W42ミニイベント→W43エントリー→W48開催→優勝発表→初代統一王座戴冠→表彰式→ドラフト→S5W1・検出0・王者ID29) / **R2ゲームオーバー=PASS**(22操作20秒: 危機突入→猶予→タイムアウト→解散セレモニー5スライド→タイトル帰着・再実行ダイジェスト完全一致)。`npm run test:ui:ignite -- --scenario <name>`。CLAUDE.md「UI層の検証」+ハーネスREADMEに追記。
+
+**初回実走の戦果(製品バグ2件発見・修正)**: ①**選択サーフェス内の顔がstopPropagationで選択を飲み込む**(portraitImg第4引数の型) — 大型イベント選手ピック2箇所は顔=カード主面のため実質選択不能だった。天頂戦エントリー行・通常PPV行と合わせ4箇所修正+`test/selection-surface-portrait-guard-test.js`新設。**なお前例は両方向あり**(task-87同行者選択=顔も選択 / U7対抗戦3名選択=顔は詳細をテストでピン)。カード編成ピッカー行2箇所(ui-render.js 3488/3660)は毎週の操作感が変わるため裁定チップ起票(Keisuke起動済み) ②**v1.30リリースの取りこぼし**: app.jsの`_saveVersion`が1.26のまま(0ee9431はmanifest+タイトルのみ更新)→1.30へ。version-consistency-testが検出した実例。
+
+**②ハーネス自体の修正4件+1**(③が最初の重負荷利用者として炙り出し): waitForTimedUiのclock.pauseAt競合クラッシュ→少し先で止めて吸収 / titleScreenがactiveScreenに出ない(.screenでない+下画面が残る)→タイトル優先判定 / 全画面タップ面(.tcwn-wrap優勝発表等)が「長文div」として候補除外→fullSurface候補化(9960) / クリック恒久失敗が未捕捉クラッシュ→D2+アーティファクトで着地 / 新聞等の側画面で前進手段が無い→「今週」タブ帰還の脱出口(ナビ禁止原則は維持)。**fixture生成の教訓**: make-save.jsはauto-simの古いコピーでJT/秋対抗戦/派閥イベント未消化・pendingAwards残骸が実UIをソフトロックさせる — headless-sim.jsは現行auto-simループを正として移植し、UI消化フラグを実プレイ相当へ戻してから書き出す。
+
+検証: R1/R2両PASS(上記)+walkモード回帰1季PASS(325操作199秒・検出0)+npm test 244/244(新ガード込み)。specs変更なし(設計はdocs/、テスト基盤のため)。manifest変更なし(配布ファイル増減なし)。残: ピッカー行の裁定(チップ)/R3果たし状・R4統一王座防衛・R5派閥開戦の次バッチ/週次オートメーションへの組み込みはR1/R2安定後。
+
 ## リポジトリ大掃除: 恒常dirtの根絶+陳腐化ブランチ26本の処理（2026-08-13・Fable・Keisuke指示）
 
 「未コミット・未マージが残って毎回考える羽目になるものは処理してしまえ」の指示。
