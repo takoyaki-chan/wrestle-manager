@@ -103,6 +103,7 @@ const QUICK = new Set([
   'org-trust-visibility-guard-test.js',
   'ppv-lines-test.js',
   'ppv-org-name-resolution-test.js',
+  'progression-labels-test.js',
   'progression-repair-test.js',
   'regular-show-pregame-design-test.js',
   'relationship-balance-test.js',

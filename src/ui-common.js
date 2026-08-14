@@ -1262,7 +1262,7 @@ function _showWarVictoryChain(list, idx, onDone) {
   overlay.innerHTML = `
     <div class="war-victory-modal">
       ${sideHtml}
-      <button class="war-victory-close">▶</button>
+      <button class="war-victory-close">次へ</button>
     </div>
   `;
   overlay.querySelector('.war-victory-close').addEventListener('click', () => {
@@ -1309,7 +1309,7 @@ function _showWarEnemyAceStatement(onDone) {
         ${sideHtml}
       </div>
       <div style="text-align:center;margin-top:16px">
-        <button class="war-victory-close war-ace-close" type="button">▶</button>
+        <button class="war-victory-close war-ace-close" type="button">次へ</button>
       </div>
     </div>
   `;
@@ -13439,7 +13439,7 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
       <div><span class="crrm-sequence-verdict">団体として${playerWon ? '勝利' : '敗北'}</span></div>
       ${upperScene(sequence.winner, 'is-xl', result.teamWin === (isInverse ? 'B' : 'A') ? 'is-player-winner' : 'is-foe-winner')}
       <div class="crrm-rows">${matchRows}</div>
-      <button class="crrm-sequence-next crrm-sequence-forward" type="button" aria-label="次の場面へ">▶</button>
+      <button class="crrm-sequence-next crrm-sequence-forward" type="button">次へ</button>
     </div></div>`;
     activate('.crrm-sequence-forward', renderBeatTwo);
   } catch (error) {
@@ -16699,7 +16699,7 @@ function _showJTImpressionChain(list, idx, onDone) {
         statLabel: 'OVR', statValue: ovr,
         bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
       })}
-      <button class="war-victory-close">▶</button>
+      <button class="war-victory-close">次へ</button>
     </div>
   `;
   overlay.querySelector('.war-victory-close').addEventListener('click', () => {
@@ -17105,7 +17105,7 @@ function showCoachTournamentWrapup(payload, onDone) {
           bubbleClass: 'war-victory-line tcw-bubble', portraitClass: 'war-victory-img',
           slotClass: 'tcw-bubble-slot',
         })}
-        <button class="war-victory-close" type="button">▶</button>
+        <button class="war-victory-close" type="button">次へ</button>
       </div>
     `;
     const btn = overlay.querySelector('.war-victory-close');
@@ -19764,7 +19764,7 @@ function _tcFinalAftermathStep(steps, idx, onDone) {
         statLabel: 'OVR', statValue: ovr,
         bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
       })}
-      <button class="war-victory-close">▶</button>
+      <button class="war-victory-close">次へ</button>
     </div>`;
   // 1操作=1進行(docs/ui §5-D 鉄則2)。連打で2枚飛ばさない
   let advanced = false;
