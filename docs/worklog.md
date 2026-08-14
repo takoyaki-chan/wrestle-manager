@@ -1,5 +1,19 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 点火カタログ第2バッチ: R3果たし状×2/R5派閥開戦PASS+製品バグ2件修正+R4で新バグ検出（2026-08-14午後・Fable）
+
+Keisuke「進めてください」を受け③の次バッチを続行。**シナリオ計5本PASS**(初回2+新規3)、うち走破ドライバに「シナリオ固有の誘導(boost/makeBoost)」を新設してカード編成まで実クリックで行えるようにした。
+
+**新シナリオ**: **R3a away-challenge=PASS**(CH-1直訴[同行2名をboostが選択]→sendoff→バス→敵地興行→task-95の2拍リザルト。実在最熱ペアからpendingThisWeek(forward)を合成) / **R3b incoming-challenge=PASS**(果たし状黒Stage到着→受けて立つ→自団体興行3試合シリーズ→2拍inverse変種。到着画面はid無し`.hostile-arrival-overlay`) / **R5 faction-ignite=PASS**(発火予約+hostility55を合成し、**リーダー対決はmakeBoostが実際にピッカーでカード編成**して組む——カード自動組込みは存在せず社長が組む設計、予約カードのfixture保存はロードのshowPrep→manage正規化+startShowPrepのカードリセットで不可と実証)。
+
+**製品バグ2件修正(第2バッチの戦果)**: ①**fevt-overlay-office(クリーム系モーダル枠)が縦長カードでスクロール不能** — 枠にoverflowが無くカードにmax-heightも無いため、1000px高で直訴モーダルのYES/NOに到達不能(実プレイでもノートPC等で詰む)。task-87/88/95が`hostile-arrival`/`unified-return`/`crrm`で同じ欠陥を個別に3回直していた型を基底へ一般化(overflow-y:auto+align-items:flex-start+カードmargin:auto。短いカードの中央寄せは不変) ②**factionTimeline未初期化** — 全writer(factions.js×8+app.js×1)がArray.isArrayガード付きのため、初期化ゼロ=**全セーブで派閥史(開戦・決着・派閥内序列戦)が一度も記録されない**。createInitialState初期化+saveDoctor.repairOnLoad救済+`test/faction-timeline-init-test.js`(初期化/救済/開戦記録の3点)。
+
+**R4 unified-player-turn(統一王座「こちらの番」)=製品バグの再現ハーネスとして残置**: エンジン発火(aiHolderCycles=3+periodKeyクリア→playerTurnOffered)までは成功するが、**モーダルが8週間一度も表示されずpendingが残留**。過程で①通知ワンショット問題(モーダルがキュー破棄に飲まれると挑戦権が四半期末失効まで黙って放置)を**ドレイン条件の実体判定化(fail-open)で修正済み**(app.js。直訴のpendingThisWeekと同型) ②残る飢餓の実測: blockers probe で「未応答の直訴pendingが統一王座の枠を塞ぎ、その直訴モーダル自体も出ない」連鎖を確認。processWeek冒頭のdismissAllPopupsが_popupQueueを全破棄する構造と、_drainPopupQueueを呼ばない閉じ経路の疑い——**調査チップ起票済み**(ポップアップ直列化・素通り経路4種の続き)。
+
+**②ハーネス改善**: chooseCandidateに`boost(candidate, all)`注入口(+シナリオの`makeBoost(fixture)`でfixture実データ依存の誘導) / 相槌型確認ボタン(「……わかった」=契約更改の突発退団)を語彙追加(fixture再生成でRNGが変わり初出現、D5で95秒スタックしていた) / fixtureに現行版移行フラグ(`_migrated_calendarWeek52_v1`等)を焼き込み(無いと旧セーブ扱いでカレンダー換算・キャップ再計算がfixture値を作り直す) / fixtureロスター上限を12へ(orgPop床80はロード後に自然減し、キャップ再計算12超のロスターが毎週D1違反を吐く)。
+
+検証: **5シナリオ一括PASS**(gameover 25s/away 18s/incoming 16s/faction-ignite 26s/tenchosen 79s・全てIssues 0)+**walk回帰PASS(ダイジェスト2bc92a=改修前と完全一致・②挙動不変)**+npm test 245/245(faction-timeline-init込み)。specs変更なし(製品修正はUI/初期化のみ、挙動specは調査チップ側でまとめて)。manifest変更なし。残: 実機確認3項目(バックログ追記済み)/R4=チップ/R6以降の次バッチ。
+
 ## バグ捜索体制③「レア画面強制点火カタログ」初回実装+発見バグ修正+小掃除（2026-08-14・Fable）
 
 ロードマップ計画立案からの実行指示(0番小掃除/1番③実装/3番バグD)。

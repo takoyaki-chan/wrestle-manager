@@ -207,6 +207,10 @@ async function main() {
     const result = await Promise.race([
       runWalk({
         artifactRoot: path.join(HARNESS_ROOT, 'artifacts'),
+        // makeBoost はfixtureの実データ(リーダーID等)に依存する誘導を作るための口
+        boost: scenario && scenario.makeBoost
+          ? scenario.makeBoost(JSON.parse(fixtureText))
+          : (scenario && scenario.boost ? scenario.boost : null),
         detectors,
         fixtureName: scenario ? path.basename(fixturePath) : options.fixture,
         maxSteps: effectiveMaxSteps,

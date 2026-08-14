@@ -34,6 +34,13 @@ if (assertFails.length > 0) {
   process.exit(1);
 }
 
+// 実UIロード後のキャップ下限(orgPop 50帯=12)を超えるfixtureは毎週D1違反を吐く
+const ownCount = (G.roster || []).filter(c => !c.isRental).length;
+if (ownCount > 12) {
+  console.error(`fixture roster ${ownCount}名 > 12。実UIのキャップ再計算で違反になる。headless-simのTARGET/capを確認`);
+  process.exit(1);
+}
+
 const warnings = collectValidationWarnings(G);
 if (warnings.length > 0) {
   console.error(`validateGameState violations in fixture ${scenarioName} (seed=${seed}):`);

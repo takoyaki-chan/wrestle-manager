@@ -43,6 +43,8 @@ function actionScore(candidate, state) {
   if (/週を処理|次の週へ|シーズンレポートへ|ドラフト会議へ|移籍ウィンドウへ|新シーズン開幕/.test(text)) return 9100;
   if (/オフシーズンへ|結果へ|結果を確認|決着へ|表彰式へ|大会へ進む|JTへ進む|ドラフトへ/.test(text)) return 9000;
   if (/^(?:次へ|続ける|進む|閉じる|完了|終了|確定|OK)(?:\s*[→▶›])?$/.test(text)) return 8900;
+  // 相槌型の確認ボタン(契約更改の突発退団「……わかった」等)
+  if (/わかった|承知した|了解した/.test(text)) return 8850;
   if (/次へ|続ける|閉じる|完了|終了|結果を見る|結果発表|進行/.test(text)) return 8800;
   if (/承認|受けて立つ|参加する|開始|開催|決定/.test(text)) return 8600;
   if (/スキップ/.test(text)) return 8500;
@@ -119,9 +121,13 @@ async function listCandidates(page) {
   return candidates;
 }
 
-function chooseCandidate(candidates, snapshot, random) {
+function chooseCandidate(candidates, snapshot, random, boost) {
   const scored = candidates
-    .map(candidate => ({ candidate, score: actionScore(candidate, snapshot.state) }))
+    .map(candidate => {
+      // シナリオ固有の優先度注入(igniteモード)。null/undefined なら通常スコア
+      const boosted = boost ? boost(candidate, candidates) : null;
+      return { candidate, score: boosted != null ? boosted : actionScore(candidate, snapshot.state) };
+    })
     .filter(entry => Number.isFinite(entry.score));
   if (scored.length === 0) return null;
   const overlayCandidates = scored.filter(entry => entry.candidate.inOverlay);
@@ -194,14 +200,14 @@ async function clickCandidate(candidate, page) {
   await settleClock(page);
 }
 
-async function clickWithOverlayRecovery(page, selected, snapshot, random) {
+async function clickWithOverlayRecovery(page, selected, snapshot, random, boost) {
   try {
     await clickCandidate(selected, page);
     return { candidate: selected, recovered: false };
   } catch (error) {
     await settleClock(page, 3000);
     const current = await listCandidates(page);
-    const replacement = chooseCandidate(current, snapshot, random);
+    const replacement = chooseCandidate(current, snapshot, random, boost);
     if (!replacement) throw error;
     await clickCandidate(replacement, page);
     return { candidate: replacement, recovered: true };
@@ -213,6 +219,7 @@ async function runWalk(options) {
     artifactRoot,
     detectors,
     fixtureName,
+    boost = null,
     maxSteps = 1200,
     observe = null,
     page,
@@ -273,14 +280,14 @@ async function runWalk(options) {
     }
 
     let candidates = await listCandidates(page);
-    let selected = chooseCandidate(candidates, before, random);
+    let selected = chooseCandidate(candidates, before, random, boost);
     if (!selected) {
       // Some full-screen ceremonies intentionally cover their first real
       // control with a timed intro. Give that UI its normal five-second grace
       // period before classifying the screen as a dead end.
       await waitForTimedUi(page, 5000);
       candidates = await listCandidates(page);
-      selected = chooseCandidate(candidates, await detectors.snapshot(page), random);
+      selected = chooseCandidate(candidates, await detectors.snapshot(page), random, boost);
     }
     if (!selected && before.activeScreen && before.activeScreen !== 'screen-week') {
       // 週次新聞ジャック等で側画面へ遷移した直後は前進コントロールが無い。
@@ -316,13 +323,16 @@ async function runWalk(options) {
     const mutationWatch = await detectors.beginMutationWatch(page);
     let clickResult;
     try {
-      clickResult = await clickWithOverlayRecovery(page, selected, before, random);
+      clickResult = await clickWithOverlayRecovery(page, selected, before, random, boost);
     } catch (error) {
       // クリックが恒久的に遮られる(全面オーバーレイ越しの陳腐化ボタン等)。
       // クラッシュではなくFREEZEとしてアーティファクトを残して着地する
       await mutationWatch.dispose().catch(() => {});
-      const issue = detectors.record('D2_FREEZE', `click permanently blocked on ${label}: ${String(error.message || error).split('\n')[0]}`, {
+      const fullError = String(error.message || error);
+      process.stdout.write(`  click-block detail:\n${fullError.split('\n').slice(0, 14).join('\n')}\n`);
+      const issue = detectors.record('D2_FREEZE', `click permanently blocked on ${label}: ${fullError.split('\n')[0]}`, {
         action: label,
+        fullError,
         snapshot: before,
       });
       const directory = await writeFailureArtifacts({

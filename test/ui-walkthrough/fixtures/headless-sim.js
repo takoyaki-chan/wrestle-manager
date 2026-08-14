@@ -36,8 +36,12 @@ function loadEngines() {
 }
 
 function expandRosterForTest(G) {
-  const TARGET = 14;
-  let s = { ...G, rosterCap: 18, funds: Math.max(G.funds, 8000) };
+  // auto-sim版はTARGET14/cap18だが、UI用fixtureは12で止める。
+  // 実UIのロード後はcheckRosterCapMilestonesがorgPop連動でキャップを再計算し、
+  // headlessの人工orgPop床(80)が外れて自然値へ落ちるとキャップは12まで縮む。
+  // 13名以上のfixtureは毎週validateGameState違反(D1)を吐く(2026-08-14実証)
+  const TARGET = 12;
+  let s = { ...G, rosterCap: 12, funds: Math.max(G.funds, 8000) };
   const fa = s.freeAgents || [];
   const ownCount = s.roster.filter(c => !c.isRental).length;
   if (ownCount < TARGET && fa.length > 0) {
@@ -367,6 +371,11 @@ function toSaveState(G, note) {
   delete saveState._juniorTournamentSelection;
   delete saveState._pendingAutumnWarReplay;
   saveState.pendingAwards = false;
+  // 現行版で生成したセーブであることを明示する(無いとロード時に旧版セーブ扱いされ、
+  // 53週カレンダー換算やキャップ再計算がfixtureの値を作り直してしまう)
+  saveState._migrated_calendarWeek52_v1 = true;
+  saveState._migrated_roster_cap_pop_v2 = true;
+  saveState._migrated_roster_cap_away_guest_repair_v1 = true;
   saveState.debugLog = [];
   saveState.gameLog = [];
   saveState._saveVersion = '1.30';
