@@ -14874,10 +14874,12 @@ function _buildB4Modal(event, state, roster) {
     available.forEach(f => {
       const ovr = Engine.util.ov(f);
       const pop = Math.round(f.popularity || 0);
-      const face = portraitImg(f.id, 40, '', 'roster');
+      const face = portraitImg(f.id, 40);
       const mult = Engine.eventSystem.calcTalentMultiplier(f, activityType);
       const compatTag = mult >= 1.4 ? '<span style="color:#f1c40f;font-size:9px"> ★適性◎</span>'
         : mult <= 0.6 ? '<span style="color:#e74c3c;font-size:9px"> △苦手</span>' : '';
+      // 選択カード内の顔はクリック=選択。portraitImgに第4引数(clickable)を渡すと
+      // stopPropagation+選手詳細が選択リスナーを飲み込み、顔を押しても選べなくなる
       html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
         ${face}
         <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}${compatTag}</div>
@@ -14906,7 +14908,7 @@ function _buildB4Modal(event, state, roster) {
   available.forEach(f => {
     const ovr = Engine.util.ov(f);
     const pop = Math.round(f.popularity || 0);
-    const face = portraitImg(f.id, 40, '', 'roster');
+    const face = portraitImg(f.id, 40);
     html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
       ${face}
       <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
@@ -20341,7 +20343,7 @@ function _tcEntryModalHtml() {
     const click = isChamp ? '' : ` onclick="App.tcTogglePick(${f.id})"`;
     html += `<div class="${cls}" style="border:1px solid var(--stage-border-lit);border-radius:6px;cursor:${isChamp ? 'default' : 'pointer'}"${click}>
       <span style="font-size:18px;width:24px;text-align:center">${picked ? (isChamp ? '👑' : '✅') : '⬜'}</span>
-      ${portraitImg(f.id, 40, '', 'roster')}
+      ${portraitImg(f.id, 40)}
       <span style="flex:1;font-size:13px;color:var(--stage-text-main)">${escHtml(f.name)}${isChamp ? ' <span style="font-size:10px;color:var(--gold)">王者・出場必須</span>' : ''}</span>
       <span style="font-size:11px;color:var(--stage-text-sub)">OVR ${ovr}</span>
       <span style="font-size:11px;color:var(--stage-text-dim)">人気 ${Math.round(f.popularity || 0)}</span>

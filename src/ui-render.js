@@ -1603,7 +1603,7 @@ function renderWeekScreen() {
       const bg = picked ? 'background:rgba(241,196,15,0.12);border-color:rgba(241,196,15,0.4);' : '';
       html += `<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;margin-bottom:4px;border:1px solid var(--border);border-radius:6px;cursor:pointer;${bg}${disabled}" onclick="togglePPVPick(${c.id})">
         <span style="font-size:18px;width:24px;text-align:center">${picked ? '✅' : '⬜'}</span>
-        ${portraitImg(c.id, 40, '', 'roster')}
+        ${portraitImg(c.id, 40)}
         <span style="flex:1;font-size:13px;color:var(--text-main)">${c.name}</span>
         <span style="font-size:11px;color:var(--text-sub)">OVR ${ovr}</span>
         <span style="font-size:11px;color:var(--text-dim)">人気 ${Math.round(c.popularity || 0)}</span>
