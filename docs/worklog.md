@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## キュー飢餓セッションのマージ+Fable検算+規約化(§5-D鉄則6)（2026-08-14夜・Fable）
+
+調査セッション(vigilant-greider)の成果2コミットをdiff全文レビューしてmainへマージ(1e5f2fd、worklog/roadmapの衝突は両追記を統合)。**A+B+C総合対応のKeisuke方針に対する充足を判定**: A=無ドレイン閉じ経路2件(travelScene/relmap)修正済み / B=閉じの一元化は**既存の自動ドレインMutationObserver(静的オーバーレイ全対象・ui-common 636)+動的2件のパッチで構造的に充足**と裁定(全面リファクタは冗長と判断) / C=規約明文化が不足していたため**§5-D鉄則6「週次モーダルはpending実体+毎週再提示の型で作る」をmockup-baseline-v0.1へ新設**(権威=pending実体・表示=使い捨て/週送りのキュー全破棄は正当/pendingは自浄とセット/動的オーバーレイの閉じは必ず_drainPopupQueue)。
+
+Fable独立検算: 受け入れ基準の**R4シナリオPASS**(こちらの番モーダル→挑戦者選出→統一遠征→王座戦→履歴playerTurnOffered/defense/playerTurnConsumed・59.6s・検出0) / dropStalePendingの実在判定がモーダル側の要求(forward=roster+AI org在籍/inverse=発起人在籍+標的在籍)と一致することをコード照合 / advanceWeekラッパー変更(早期return緩和)の影響=challengeRequest構造の早期実体化のみで無害 / **auto-sim 20季ALL CLEAR** / 全6シナリオ+walk回帰+npm testは本項末尾の一括検証で確認。
+
 ## R4飢餓バグ解明: 孤児化した直訴pendingが週次モーダル枠を恒久占有（2026-08-14夕・Fable・調査チップ）
 
 R4 unified-player-turnの「モーダルが8週間一度も出ない」を根治し、**点火カタログ全6本PASS**。
