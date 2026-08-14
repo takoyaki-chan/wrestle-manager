@@ -483,6 +483,13 @@ const Engine = {
       state = Engine.unifiedTitle.repairOnLoad(state);
       if (beforeUnified === undefined) changes.push('unified_title_initialized');
 
+      // 派閥史の初期化(2026-08-14): 全writerがArray.isArrayガード付きのため、
+      // 未初期化の既存セーブでは開戦・決着等が一度も記録されない
+      if (!Array.isArray(state.factionTimeline)) {
+        state = { ...state, factionTimeline: [] };
+        changes.push('faction_timeline_initialized');
+      }
+
       return {
         state,
         changed: changes.length > 0,
@@ -18448,6 +18455,9 @@ const Engine = {
       rosterCapRank1Notified: false,
       rivalries: {},
       matchupLog: [],  // カード鮮度: 全対戦履歴
+      // 派閥史。全writer(factions.js×8+app.js×1)が Array.isArray ガード付きのため、
+      // ここで初期化しないと一度も記録されない(2026-08-14 点火カタログで検出)
+      factionTimeline: [],
       coaches: [],
       coachSlots: 1,
       availableCoaches: Engine.coach.generateSeasonalPool(Engine.rng.create(Engine.rng.derive(seed, 1, 0xC0AC)), { orgPop: 10, coaches: [], coachSlots: 1 }),

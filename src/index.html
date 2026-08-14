@@ -5097,9 +5097,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.75) 100%);
   display: none; align-items: center; justify-content: center;
   opacity: 0; transition: opacity 500ms ease;
+  /* カードがビューポートより縦長のときのスクロール確保。align-items:centerのままだと
+     はみ出したカードの上端が切れて届かなくなるため、縦寄せはカード側のmargin:autoが担う
+     (短いカードは従来どおり中央、長いカードは上端から読める)。2026-08-14 点火カタログで
+     「1000px高でCH-1直訴のYES/NOに到達不能」を検出した修正 */
+  overflow-y: auto; align-items: flex-start;
 }
 .fevt-overlay-office.active { display: flex; opacity: 1; }
 .fevt-report-card {
+  margin: auto;
   width: 760px; max-width: calc(100vw - 48px);
   background: var(--office-panel-cream);
   border: 1px solid var(--office-border-cream);

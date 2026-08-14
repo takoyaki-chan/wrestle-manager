@@ -11757,8 +11757,11 @@ const App = {
       setTimeout(() => App.handleChallengeRequest(crPending), crDelay);
     }
 
-    const unifiedPlayerTurn = G._pendingUnifiedNotification?.type === 'playerTurn'
-      ? G._pendingUnifiedPlayerTurn : null;
+    // 「こちらの番」は通知フラグではなく挑戦権の実体(_pendingUnifiedPlayerTurn)で判定する。
+    // 通知は最初のドレインで消える一発物のため、モーダルがキュー破棄(dismissAllPopups)や
+    // 他モーダルとの衝突に飲まれると、挑戦権が再提示されないまま四半期末失効まで放置されていた
+    // (2026-08-14 点火カタログR4で検出)。失効・消費はエンジン側が管理するので毎週再提示してよい
+    const unifiedPlayerTurn = G._pendingUnifiedPlayerTurn || null;
     if (unifiedPlayerTurn && !pendingLargeEvent && !pendingFactionEvent && !crPending) {
       G = { ...G, _pendingUnifiedNotification: null };
       const unifiedDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 750;
