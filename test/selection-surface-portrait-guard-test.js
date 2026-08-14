@@ -12,9 +12,9 @@
 // 慣例の正: task-87 同行者選択(.crq-party-cand)=選択チップ内の顔は素の<img>で
 // チップ全面がクリック=選択。
 //
-// 対象外(意図的に検査しない): カード編成ピッカー行(setTagSlotFighter /
-// _spSelectFighter、24px顔)。同型だが毎週使う画面の操作感が変わるため
-// Keisuke 裁定待ち(2026-08-14 報告済み)。
+// カード編成ピッカー行(§4)も 2026-08-14 Keisuke 裁定で選択に統一:
+// 「行と同じ=選択に揃える。ただし選手詳細は名前クリックで見られるように」。
+// 顔は素通し+名前 span に stopPropagation+showFighterPopup の対で凍結。
 
 const assert = require('assert');
 const { readSource } = require('./helpers/source');
@@ -65,4 +65,27 @@ function linesAround(source, anchorRegex, before, after, label) {
   }
 }
 
-console.log('selection-surface-portrait-guard-test: ok (大型イベントピック2/天頂戦エントリー行/通常PPV行 — 選択面の顔は素通し)');
+// §4 カード編成ピッカー行(タッグ: App.setTagSlotFighter / シングル: _spSelectFighter)
+// 2026-08-14 Keisuke裁定: 行クリック=選択(顔も素通し)。選手詳細は名前クリックだけが開く。
+// 「顔に第4引数なし」と「名前クリックの showFighterPopup がある」を対で検査する。
+{
+  const anchors = [
+    [/onclick="App\.setTagSlotFighter\(/, 'タッグスロットピッカー行'],
+    [/onclick="_spSelectFighter\(/, 'シングル戦ピッカー行'],
+  ];
+  for (const [anchor, label] of anchors) {
+    const blocks = linesAround(uiRender, anchor, 0, 0, label);
+    // 「✕ この選手を外す」行も同じ onclick を持つので、選手行(${c.name} を含む行)だけ見る
+    const fighterRows = blocks.filter(b => b.includes('${c.name}'));
+    assert.ok(fighterRows.length > 0,
+      `${label}: 選手行(\${c.name} を含む行)が見つからない(検査が空振り=stale)。テンプレートが変わったなら本テストを新しい真実に合わせること`);
+    for (const row of fighterRows) {
+      assert.ok(!CLICKABLE_PORTRAIT.test(row),
+        `${label}内で portraitImg に第4引数(clickable)が渡されている。顔クリックが選択を飲み込む:\n${row}`);
+      assert.ok(row.includes('showFighterPopup'),
+        `${label}から名前クリックの選手詳細(showFighterPopup)が消えた。裁定(2026-08-14)は「行=選択・詳細は名前クリック」の対。詳細導線を別の形にしたなら本テストを更新すること:\n${row}`);
+    }
+  }
+}
+
+console.log('selection-surface-portrait-guard-test: ok (大型イベントピック2/天頂戦エントリー行/通常PPV行/カード編成ピッカー行2 — 選択面の顔は素通し・ピッカー詳細は名前クリック)');

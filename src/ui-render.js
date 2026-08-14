@@ -3485,7 +3485,8 @@ function renderShowPrep() {
         const rows = pickerFighters.map(c => {
           const isAssigned = usedInOther.has(c.id);
           const cls = isAssigned ? 'sp-picker-row assigned' : 'sp-picker-row';
-          return `<div class="${cls}" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',${c.id});_spActivePicker=null">${portraitImg(c.id, 24, '', 'roster')}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
+          // ピッカー行は行クリック=選択(顔も素通し)。選手詳細は名前クリックだけが開く(2026-08-14裁定)
+          return `<div class="${cls}" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',${c.id});_spActivePicker=null">${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${c.name}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
         }).join('');
         const removeRow = curInPos > 0 ? `<div class="sp-picker-row" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',0);_spActivePicker=null" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
         const teamLabel = tagTeam === 'teamA' ? 'チームA' : 'チームB';
@@ -3657,7 +3658,8 @@ function renderShowPrep() {
         const champBadge = G.titles?.world?.championId === c.id ? ' <span style="color:var(--gold);font-size:9px">👑</span>' : '';
         const hoverEvts = isAssigned
           ? ` onmouseenter="_spHighlightSwap(${c.id})" onmouseleave="_spClearHighlight()"` : '';
-        return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24, '', 'roster')}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
+        // ピッカー行は行クリック=選択(顔も素通し)。選手詳細は名前クリックだけが開く(2026-08-14裁定)
+        return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}>${portraitImg(c.id, 24)}<span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
       }).join('');
       const removeRow = curInSide > 0 ? `<div class="sp-picker-row" onclick="_spSelectFighter(${i},'${pickerSide}',0)" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
       pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
