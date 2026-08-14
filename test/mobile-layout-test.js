@@ -176,6 +176,16 @@ assert.match(
   /#aw-nav-area\s*\{[^}]*position:\s*sticky;[^}]*bottom:\s*0;[^}]*env\(safe-area-inset-bottom\)[^}]*\}/s,
   'the phone awards next button must stay reachable above the safe area'
 );
+assert.match(
+  mobile,
+  /\.mdl-b-overlay\s*\{[^}]*height:\s*100dvh;[^}]*overflow-y:\s*auto;[^}]*-webkit-overflow-scrolling:\s*touch;[^}]*touch-action:\s*pan-y;[^}]*\}/s,
+  'phone stage modals must own a momentum-enabled vertical scroll viewport'
+);
+assert.match(
+  mobile,
+  /\.mdl-b-decision\s*\{[^}]*position:\s*sticky;[^}]*bottom:\s*0;[^}]*env\(safe-area-inset-bottom\)[^}]*\}/s,
+  'the retirement acknowledgement must remain reachable above the phone safe area'
+);
 assert.ok(
   uiCommon.includes("overlay.scrollTo({ top: 0, behavior: 'auto' })") &&
     uiCommon.includes('overlay.scrollTop = 0;'),

@@ -1546,6 +1546,43 @@
     touch-action: manipulation;
   }
 
+  /* The retirement stage can be taller than a phone viewport.  The page body
+     is locked while a modal is open, so the stage itself must own scrolling
+     and keep its acknowledgement button within reach. */
+  .mdl-b-overlay {
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    align-items: stretch;
+    justify-content: flex-start;
+    padding: max(20px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  }
+
+  .mdl-b-overlay.active { display: block; }
+
+  .mdl-b-title-band { margin-bottom: 20px; }
+  .mdl-b-solo-stage { margin-bottom: 24px; }
+  .mdl-b-stats-row { gap: 6px; margin-bottom: 16px; }
+
+  .mdl-b-decision {
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    margin: 12px -12px 0;
+    padding: 12px max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+    background: linear-gradient(180deg, rgba(11,8,5,0), rgba(11,8,5,.96) 30%);
+  }
+
+  .mdl-b-btn {
+    min-height: 44px;
+    touch-action: manipulation;
+  }
+
   /* Three speakers stack vertically here.  The ceremony is appended directly
      to body (outside .app), so it must provide its own touch scroll viewport. */
   .cerem-overlay {
