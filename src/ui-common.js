@@ -108,7 +108,9 @@ function statOverBarHtml(kind, v, options) {
     lost > 0 ? `<span class="stat-over-mark is-lost">▼${_statOverBarEsc(lost)}</span>` : '',
     gain > 0 ? `<span class="stat-over-mark is-gain">+${_statOverBarEsc(gain)}</span>` : '',
   ].filter(Boolean).join('');
-  const marksHtml = marks ? `<span class="stat-over-marks">${marks}</span>` : '';
+  // マーク列は空でも常に確保する。行ごとに列が消えるとゾーンが flex:1 で伸び、
+  // バーの長さと数値の位置がマークの有無でズレる(同じ値でもバー長が変わって見える)
+  const marksHtml = `<span class="stat-over-marks">${marks}</span>`;
   return `<div class="stat-over-row">
     <span class="stat-over-label" style="color:${color}"${labelTitle}>${_statOverBarEsc(label)}</span>
     <div class="stat-over-zone"><div class="stat-over-frame"></div><div class="stat-over-fill" style="width:${width}%;background:${color}"></div>${ghost}</div>
