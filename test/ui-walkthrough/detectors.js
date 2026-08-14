@@ -138,10 +138,15 @@ class WalkthroughDetectors {
       this.record('D1_EXCEPTION', error.message, { stack: error.stack || String(error) });
     });
     page.on('console', message => {
-      const entry = { type: message.type(), text: message.text() };
+      // リソース系エラーはtextにURLが入らない(「Failed to load resource: 404」だけ)ため、
+      // location からURLを補う。無いと何が404したのか特定できない(2026-08-14実例)
+      const location = typeof message.location === 'function' ? message.location() : null;
+      const entry = { type: message.type(), text: message.text(), url: (location && location.url) || '' };
       this.consoleEntries.push(entry);
+      // favicon.ico はブラウザの自動リクエストで、配信サーバに実体が無いだけのノイズ
+      if (/Failed to load resource/.test(entry.text) && /favicon\.ico/.test(entry.url)) return;
       if (entry.type === 'error' || (entry.type === 'warning' && entry.text.includes('[WM Debug]'))) {
-        this.record('D1_CONSOLE', entry.text, entry);
+        this.record('D1_CONSOLE', entry.url ? `${entry.text} (${entry.url})` : entry.text, entry);
       }
     });
   }
