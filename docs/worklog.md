@@ -1,5 +1,19 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## R4飢餓バグ解明: 孤児化した直訴pendingが週次モーダル枠を恒久占有（2026-08-14夕・Fable・調査チップ）
+
+R4 unified-player-turnの「モーダルが8週間一度も出ない」を根治し、**点火カタログ全6本PASS**。
+
+**真因は起票時の仮説(閉じ経路のドレイン漏れによるキュー飢餓)ではなかった**。detectors.readPageSnapshotに`_popupQueue`残量プローブを足して実測すると、キューは毎週0まで掃けており、残留破棄は起きていない。実際の連鎖は: ①fixture生成のheadless進行中に発行された直訴pendingThisWeek(S2W4)の発起人(id17 川野辺菜穂子)が**挑戦先org_aへ移籍**して孤児化 ②毎週processWeekが直訴を最優先ディスパッチ→showChallengeRequestModalが発起人lookup失敗→`onChoice(null)`=「何もしない・残置」→**表示ゼロのまま毎週持ち越し** ③crPendingが真の間は統一王座「こちらの番」がディスパッチされず(app.js processWeekの!crPendingガード)、processWeeklyも新規直訴を抽選しない→**両方が恒久飢餓**。実プレイでも「衝突持ち越し中に発起人がシーズン末に移籍/引退」で同型が成立する。
+
+**修正(3層)**: ①`Engine.challengeRequest.dropStalePending`新設 — 発起人/相手の実在(+団体非解散)を検査し、不成立なら静かに取り下げ(不在データの説明は出さない。CD/クォータ不記録)。processWeekly冒頭(持ち越し早期returnより前)と**tickWeek末尾(validateGameState直前の正規化帯)**の2箇所で自浄 ②app.js handleChallengeRequestのnull分岐を無条件残置→dropStalePending経由のfail-openへ(actor実在時は従来どおり持ち越し)+`[WM][challenge-request]`警告 ③validateGameStateに直訴の参照整合性不変条件を追加(パイプライン外からの孤児持ち込みをauto-simで検出)。
+
+**閉じ経路の全数調査(起票仮説の検分)**: _isPopupActiveが堰き止める全ポップアップの閉じ経路を数え上げ。静的15枠はMutationObserver自動ドレインで被覆、fevt系/war-victory/cerem/db-hofは明示ドレイン済みを確認。**無ドレイン2件を発見・修正**: `showTravelScene`のfinish()と`_relmapClosePopup`(いずれもDOMContentLoaded後生成の動的オーバーレイ=Observer監視外で、表示中に積まれたキューが凍る)。
+
+**ハーネス恒久改善2件**: ①readPageSnapshotに`popup`プローブ(`_popupQueue`残量+`_isPopupActive`)+driverが残量変化を`popup-queue: 0 -> 1`で出力(didProgress比較には不参加=walkダイジェスト不変) ②汎用モーダル枠(mdlA〜D/notifModal)のoverlaysラベルにカード直下2階層のクラス列を連結(`mdlAOverlay:…unified-challenge-office`)。R4の点火マーカーが枠idしか見えず**製品は正常動作なのにマーカー構造的未観測**だった問題の根治で、以後mdl系レア画面のマーカーが書けるようになった。
+
+検証: **unified-player-turn=PASS**(56操作40秒・Issues 0・両マーカーHIT・playerTurnConsumed+遠征消化+新規直訴の受諾フローまで完走)+**残り5本回帰PASS**+`test/challenge-request-stale-pending-test.js`新設(dropStalePendingの6分岐/processWeekly自浄/不変条件/無ドレイン2経路のソース固定)+npm run test:quick 108/108。specs: `challenge-request-spec-v0.1.md`に2026-08-14追加改修を記載。manifest変更なし(配布ファイル増減なし)。残: 実機確認(バックログ追記)。
+
 ## 点火カタログ第2バッチ: R3果たし状×2/R5派閥開戦PASS+製品バグ2件修正+R4で新バグ検出（2026-08-14午後・Fable）
 
 Keisuke「進めてください」を受け③の次バッチを続行。**シナリオ計5本PASS**(初回2+新規3)、うち走破ドライバに「シナリオ固有の誘導(boost/makeBoost)」を新設してカード編成まで実クリックで行えるようにした。

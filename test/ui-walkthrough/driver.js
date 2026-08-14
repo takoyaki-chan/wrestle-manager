@@ -373,6 +373,12 @@ async function runWalk(options) {
       previousProgressKey = nextProgressKey;
       process.stdout.write(`  progress: season=${after.state.season} week=${after.state.week} off=${after.state.offSeason ? after.state.offWeek : 0} step=${step}\n`);
     }
+    // ポップアップ直列化キューの観測(2026-08-14 キュー飢餓調査)。残量が変わった手だけ出す
+    const beforeQueue = before.popup ? before.popup.queueLength : null;
+    const afterQueue = after.popup ? after.popup.queueLength : null;
+    if (afterQueue !== null && afterQueue !== beforeQueue) {
+      process.stdout.write(`  popup-queue: ${beforeQueue} -> ${afterQueue} (active=${after.popup.active}) after ${label}\n`);
+    }
 
     await detectors.scanText(page);
     const issue = detectors.issues[0];

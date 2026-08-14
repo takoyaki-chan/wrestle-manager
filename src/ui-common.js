@@ -2875,6 +2875,10 @@ function showTravelScene(opts, onDone) {
     overlay.removeEventListener('click', onOverlayClick);
     overlay.classList.remove('active');
     setTimeout(() => { if (root.contains(overlay)) root.innerHTML = ''; }, 400);
+    // travelSceneOverlay は _isPopupActive() の判定対象だがDOMContentLoaded後に生成される
+    // 動的オーバーレイのため、MutationObserverの自動ドレイン監視が効かない(閉じ経路全数調査
+    // 2026-08-14)。表示中に _enqueuePopup された分をここで流す(_factionCloseCinematicOverlayと同型)
+    _drainPopupQueue();
     if (typeof onDone === 'function') onDone();
   };
   const onOverlayClick = () => finish();

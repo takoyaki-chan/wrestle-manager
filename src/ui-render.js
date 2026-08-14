@@ -15090,6 +15090,10 @@ function _relmapClosePopup() {
   _relmapCompareA = null; _relmapCompareB = null;
   _relmapUpdateCompareHint();
   _relmapReheat();
+  // relmapPopupOverlay は _isPopupActive() の判定対象だが相関図タブ表示中のみDOMに存在する
+  // 動的オーバーレイのため、MutationObserverの自動ドレイン監視が効かない(閉じ経路全数調査
+  // 2026-08-14)。表示中に _enqueuePopup された分をここで流す
+  _drainPopupQueue();
 }
 
 function _relmapZoomIn() {

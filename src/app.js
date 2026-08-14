@@ -12943,7 +12943,20 @@ const App = {
         showToast(noLine);
         finalizeCRAudio();
       } else {
-        // null / unknown → 何もしない（pendingThisWeek 残置で次週に持ち越し）
+        // null = モーダルが表示不能(発起人/相手の不在)。以前は無条件で残置していたが、
+        // 孤児化した打診は毎週「表示不能→残置」を繰り返して週次モーダル枠を恒久占有し、
+        // 新規直訴と統一王座「こちらの番」を永久に堰き止める(2026-08-14 点火カタログR4で検出)。
+        // エンジン側の実効性検査で取り下げる。actor が実在するのに null が来た場合(想定外)は
+        // dropStalePending が pending を残すので、従来どおり翌週持ち越しになる(fail-open)
+        const hadPending = !!(G.challengeRequest && G.challengeRequest.pendingThisWeek);
+        G = Engine.challengeRequest.dropStalePending(G);
+        if (hadPending && !(G.challengeRequest && G.challengeRequest.pendingThisWeek)) {
+          console.warn('[WM][challenge-request] 表示不能の直訴を取り下げ(発起人/相手が不在)', {
+            selfId: payload.selfId, otherId: payload.otherId,
+            inverse: isInverse, issuedSeason: payload.issuedSeason, issuedWeek: payload.issuedWeek,
+          });
+          Storage.autoSave();
+        }
         finalizeCRAudio();
       }
     });

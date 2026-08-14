@@ -13959,6 +13959,10 @@ const Engine = {
     // validateGameState の前に行うため、通常進行で不変条件違反ログを積み上げない。
     if (s.aiOrgs) s = { ...s, aiOrgs: Engine.rival.sanitizeAIOrgs(s.aiOrgs) };
     s = Engine.kaigan.refreshState(s);
+    // 直訴の孤児化自浄(2026-08-14 点火カタログR4): processWeekly後の週内処理(移籍・退団等)で
+    // 発起人/相手が不在になった pendingThisWeek をここでも取り下げる。残すと表示不能の打診が
+    // 週次モーダル枠を恒久占有し、新規直訴と統一王座「こちらの番」を永久に堰き止める
+    s = Engine.challengeRequest.dropStalePending(s);
 
     // 自己最高値の更新（2026-07-27 Keisuke）。
     // 「今まで一番高くまで行った能力値」を**毎週**控える。衰えの表示はここを基準にする。
@@ -25750,6 +25754,26 @@ Engine.validateGameState = function(G) {
       }
     });
   });
+
+  // ── 直訴(challengeRequest)の参照整合性 ──
+  // pendingThisWeek は解決されるまで週次モーダル枠を占有するため、発起人/相手が不在の
+  // 打診が残ると新規直訴と統一王座「こちらの番」が恒久飢餓する(2026-08-14 点火カタログR4)。
+  // tickWeek は processWeekly と末尾の dropStalePending で自浄するので、ここで鳴るのは
+  // パイプライン外の変更(開発ツール・fixture・将来の経路追加)が孤児を持ち込んだときだけ。
+  const crPending = G.challengeRequest && G.challengeRequest.pendingThisWeek;
+  if (crPending) {
+    const aiOrgsRef = G.aiOrgs || {};
+    const inAiOrg = (orgId, fid) => {
+      const org = aiOrgsRef[orgId];
+      return !!(org && !org.disbanded && Array.isArray(org.roster) && org.roster.some(f => f && f.id === fid));
+    };
+    const crOk = crPending._inverse
+      ? (inAiOrg(crPending.requesterOrgId, crPending.selfId) && rosterIds.has(crPending.otherId))
+      : (rosterIds.has(crPending.selfId) && inAiOrg(crPending.otherOrgId, crPending.otherId));
+    if (!crOk) {
+      warn(`直訴pendingThisWeekが不在の選手/団体を参照(selfId:${crPending.selfId}, otherId:${crPending.otherId}, inverse:${!!crPending._inverse})`);
+    }
+  }
 
   // ── 社長室(決裁枠)関連 ──
   if (G.decisionPoints !== undefined) {

@@ -34,7 +34,21 @@ async function readPageSnapshot(page) {
       .join('\n');
     const overlays = Array.from(document.querySelectorAll('[id*="Overlay"], .overlay, [class*="overlay"], .emr-layer'))
       .filter(visible)
-      .map(element => element.id || element.className)
+      .map(element => {
+        let label = element.id || element.className;
+        // 汎用モーダル枠は枠idだけでは中身を識別できない(例: 統一王座「こちらの番」は
+        // mdlAOverlayに載るため、点火マーカーが枠の中身を観測できなかった — 2026-08-14 R4)。
+        // カード直下2階層のクラス列を連結し、中身をマーカーから識別可能にする
+        if (/^(mdlAOverlay|mdlBOverlay|mdlCOverlay|mdlDOverlay|notifModalOverlay)$/.test(element.id || '')) {
+          const inner = Array.from(element.querySelectorAll(':scope > *, :scope > * > *'))
+            .slice(0, 12)
+            .map(node => (typeof node.className === 'string' ? node.className : ''))
+            .filter(Boolean)
+            .join(' ');
+          if (inner) label = `${label}:${inner}`;
+        }
+        return label;
+      })
       .map(value => String(value).replace(/\s+/g, '.'))
       .sort();
     // #titleScreen は .screen ではなく .title-screen で、表示中は下の .screen に全面で
@@ -43,6 +57,16 @@ async function readPageSnapshot(page) {
     const activeScreen = (titleScreen && visible(titleScreen))
       ? titleScreen
       : Array.from(document.querySelectorAll('.screen')).find(visible);
+    // ポップアップ直列化キューの観測プローブ(2026-08-14 キュー飢餓調査で追加)。
+    // _popupQueue/_isPopupActive はメインワールドのグローバルレキシカルなので直接読める。
+    // didProgress の比較対象には含めない(キュー残量の変化を「前進」と誤認させない)
+    let popup = null;
+    try {
+      popup = {
+        queueLength: (typeof _popupQueue !== 'undefined' && Array.isArray(_popupQueue)) ? _popupQueue.length : null,
+        active: (typeof _isPopupActive === 'function') ? !!_isPopupActive() : null,
+      };
+    } catch (_error) {}
     let state = null;
     try {
       if (typeof G !== 'undefined' && G) {
@@ -66,6 +90,7 @@ async function readPageSnapshot(page) {
       activeScreen: activeScreen?.id || null,
       domShape,
       overlays,
+      popup,
       state,
       text,
       title: document.title,
@@ -79,6 +104,7 @@ function summarizeSnapshot(snapshot) {
     activeScreen: snapshot.activeScreen,
     domHash: stableHash(snapshot.domShape),
     overlays: snapshot.overlays,
+    popup: snapshot.popup,
     state: snapshot.state,
     textHash: stableHash(snapshot.text),
     title: snapshot.title,
