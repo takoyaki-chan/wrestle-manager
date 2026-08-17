@@ -378,7 +378,7 @@ function toSaveState(G, note) {
   saveState._migrated_roster_cap_away_guest_repair_v1 = true;
   saveState.debugLog = [];
   saveState.gameLog = [];
-  saveState._saveVersion = '1.30';
+  saveState._saveVersion = '1.31';
   saveState._saveDate = '2026-01-01T00:00:00.000Z';
   saveState._saveNote = note;
   return saveState;
