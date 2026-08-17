@@ -4631,6 +4631,31 @@ function getShowCardFighter(id) {
   return Engine.unifiedTitle?._findActive?.(G, id)?.fighter || null;
 }
 
+/** 来訪する全国統一王座戦を、開催ボタン押下後ではなくカード編成前に1枠確保する。
+ * pending自体は開催確定まで消費しないため、準備画面の再読込でも安全に組み直せる。 */
+function stageIncomingUnifiedTitleCard() {
+  if (getScheduledChallengeCard()) return false;
+  const incoming = Engine.unifiedTitle?.getIncomingMatch?.(G);
+  if (!incoming) return false;
+  const slot = {
+    left: incoming.champion.id,
+    right: incoming.challenger.id,
+    isTitle: true,
+    _unifiedTitleMatch: true,
+    _unifiedTitleLocked: true,
+  };
+  const participantIds = [incoming.champion.id, incoming.challenger.id];
+  const withoutOldReservation = (G.showCard || []).filter(m => !m?._unifiedTitleMatch);
+  const cleared = Engine.unifiedTitle.removeParticipantsFromCard(withoutOldReservation, participantIds);
+  G = {
+    ...G,
+    showCard: Engine.util.normalizeShowCardForVenue(
+      [slot, ...cleared], G.week, G.showVenue
+    ),
+  };
+  return true;
+}
+
 function moveShowCard(idx, dir) {
   const target = idx + dir;
   if (target < 0 || target >= G.showCard.length) return;
@@ -4651,13 +4676,24 @@ function moveShowCard(idx, dir) {
 // タッグ枠保持ヘルパー: 既存タッグ枠を保持し、タッグ選手IDを除外セットに追加
 function _preserveTagSlots(maxMatches) {
   const scheduled = getScheduledChallengeCard();
+  const unifiedIncoming = !scheduled ? Engine.unifiedTitle?.getIncomingMatch?.(G) : null;
   const reservedIds = getChallengeUnavailableIds();
-  const prefix = scheduled ? [0, 1, 2].map(i => ({
-    left: scheduled.teamA[i].id, right: scheduled.teamB[i].id,
-    isTitle: false, isCRMatch: true, _crMatchLocked: true,
-    _crGroupId: `cr_${scheduled.requesterId}_${scheduled.opponentId}_${G.season}_${G.week}`,
-    _crSlot: i,
-  })) : [];
+  const prefix = scheduled
+    ? [0, 1, 2].map(i => ({
+        left: scheduled.teamA[i].id, right: scheduled.teamB[i].id,
+        isTitle: false, isCRMatch: true, _crMatchLocked: true,
+        _crGroupId: `cr_${scheduled.requesterId}_${scheduled.opponentId}_${G.season}_${G.week}`,
+        _crSlot: i,
+      }))
+    : unifiedIncoming
+      ? [{
+          left: unifiedIncoming.champion.id,
+          right: unifiedIncoming.challenger.id,
+          isTitle: true,
+          _unifiedTitleMatch: true,
+          _unifiedTitleLocked: true,
+        }]
+      : [];
   const maxTags = Math.max(0, Math.floor((maxMatches - prefix.length) / 2));
   const tags = G.showCard.filter(m => m.matchType === 'tag' &&
     ![m.teamA?.fighter1, m.teamA?.fighter2, m.teamB?.fighter1, m.teamB?.fighter2].some(id => reservedIds.has(id)))
@@ -4787,14 +4823,16 @@ function _applyAutoTitleMatch(card) {
   if (!card.length || !G.titleEstablished) return;
   const cdOk = Engine.title.canTitleMatch(G).allowed;
   if (!cdOk) return;
-  const topRegularIdx = card.findIndex(m => m && !m._crMatchLocked && !m.isCRMatch && m.matchType !== 'tag');
+  const topRegularIdx = card.findIndex(m => m && !m._crMatchLocked && !m.isCRMatch
+    && !m._unifiedTitleLocked && !m._unifiedTitleMatch && m.matchType !== 'tag');
   if (topRegularIdx < 0) return;
   const champId = G.titles.world.championId;
   if (champId) {
     // 王者在位: 王者が含まれるスロットをメインに移動してタイトル戦に
     const champIdx = card.findIndex(m => m.left === champId || m.right === champId);
     if (champIdx < 0) return;
-    if (card[champIdx]?._crMatchLocked || card[champIdx]?.isCRMatch) return;
+    if (card[champIdx]?._crMatchLocked || card[champIdx]?.isCRMatch
+        || card[champIdx]?._unifiedTitleLocked || card[champIdx]?._unifiedTitleMatch) return;
     if (champIdx !== topRegularIdx) { [card[topRegularIdx], card[champIdx]] = [card[champIdx], card[topRegularIdx]]; }
     card[topRegularIdx].isTitle = true;
   } else {
@@ -4881,6 +4919,7 @@ function startShowPrep() {
       ? [] : [...G.showCard]
   };
   if (G.showCard.length === 0) autoFillCardByAppeal();
+  else stageIncomingUnifiedTitleCard();
   Audio.bgm.play('management');
   // away-flow-redesign CH-2: 遠征(敵地遠征)が未消化なら、興行準備(会場選択・カード編集)
   // という寄り道を見せる前に「敵地へ向かう」演出→遠征試合を挟む。
@@ -4919,6 +4958,7 @@ function resumeShowPrep() {
     refreshAll();
     return;
   }
+  stageIncomingUnifiedTitleCard();
   // 遠征が未消化ならそちらを先に消化する（startShowPrep と同じ優先順位。
   // 同週コンテナ排他も同じ: 受け挑戦が先着の週・遠征消化済みの週は遠征を見送る）
   const resumeChallengeSide = Engine.challengeRequest?.resolveWeeklyChallengeContainer?.(G) || null;

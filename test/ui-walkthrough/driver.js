@@ -196,13 +196,8 @@ async function waitForTimedUi(page, milliseconds) {
 
 async function clickCandidate(candidate, page) {
   await candidate.locator.scrollIntoViewIfNeeded().catch(() => {});
-  // カード編成ピッカー行は中央に名前span(クリック=選手詳細を開く・2026-08-14裁定)が
-  // 座っているため、既定の中央クリックだと選択でなく詳細ポップアップが開いてループする。
-  // 行として選択するには左端の顔領域(素通し=行へバブル)を押す
-  const isPickerRow = /_spSelectFighter\(|setTagSlotFighter\(/.test(candidate.onclick || '');
-  await candidate.locator.click(isPickerRow
-    ? { timeout: 1500, position: { x: 12, y: 12 } }
-    : { timeout: 1500 });
+  // カード編成ピッカーは名前/行が選択、顔だけが詳細。中央クリックは名前側へ入る。
+  await candidate.locator.click({ timeout: 1500 });
   await settleClock(page);
 }
 

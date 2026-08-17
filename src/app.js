@@ -5775,14 +5775,17 @@ const App = {
     const autoCount = G._contractAutoRenewed || 0;
     if (negotiations.length === 0) {
       // 交渉不要 — transientクリアして次へ
-      const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
+      const {
+        pendingContractNegotiations: _,
+        _contractAutoRenewed: __,
+        _contractNegotiationProgress: ___,
+        ...clean
+      } = G;
       G = clean;
+      try { Storage.autoSave(); } catch (_e) {}
       App.advanceWeek();
       return;
     }
-
-    // 社長室に遷移（交渉モード）
-    showScreen('shachoshitsu');
 
     const session = { active: true };
     App._contractNegotiationSession = session;
@@ -5795,10 +5798,56 @@ const App = {
     };
 
     const season = G.season || 1;
-    const results = [];
+    // 交渉結果とカーソルは画面内のクロージャだけに置かない。途中で再読込・例外終了しても
+    // 同じ選手へ同じ昇給/退団処理をもう一度適用せず、次の未処理選手から再開する。
+    const savedProgress = G._contractNegotiationProgress;
+    const negotiationIds = negotiations.map(neg => neg.fighterId);
+    const savedNegotiationIds = Array.isArray(savedProgress?.negotiationIds)
+      ? savedProgress.negotiationIds
+      : [];
+    const sameQueue = savedNegotiationIds.length === negotiationIds.length
+      && negotiationIds.every((id, index) => Number(savedNegotiationIds[index]) === Number(id));
+    const canResume = savedProgress && Number(savedProgress.season) === Number(season)
+      && Number(savedProgress.total) === negotiations.length
+      && sameQueue
+      && Array.isArray(savedProgress.results)
+      && savedProgress.results.length >= (Number(savedProgress.cursor) || 0);
+    const salaryBefore = canResume && savedProgress.salaryBefore
+      ? { ...savedProgress.salaryBefore }
+      : Object.fromEntries(negotiations.map(neg => {
+          const fighter = (G.roster || []).find(f => f.id === neg.fighterId);
+          return [neg.fighterId, fighter ? Engine.util.getSalary(fighter, G.titles || {}) : null];
+        }));
+    const results = canResume && Array.isArray(savedProgress.results)
+      ? [...savedProgress.results]
+      : [];
     const preNegotiationRoster = (G.roster || []).map(f => ({ ...f }));
     const preNegotiationTitles = G.titles || {};
-    let idx = 0;
+    let idx = canResume
+      ? Math.max(0, Math.min(negotiations.length, Number(savedProgress.cursor) || 0))
+      : 0;
+
+    const persistProgress = () => {
+      if (!isCurrentSession()) return false;
+      G = {
+        ...G,
+        _contractNegotiationProgress: {
+          season,
+          total: negotiations.length,
+          negotiationIds: [...negotiationIds],
+          cursor: idx,
+          results: [...results],
+          salaryBefore,
+        },
+      };
+      try { Storage.autoSave(); } catch (_e) {}
+      return true;
+    };
+    if (!canResume) persistProgress();
+
+    // セッションロックと再開点を確定してから社長室へ移る。画面遷移中の再描画や古い
+    // onclick が同じ交渉チェーンをもう一本作る余地を残さない。
+    showScreen('shachoshitsu');
 
     function processNext() {
       if (!isCurrentSession()) return;
@@ -5808,13 +5857,20 @@ const App = {
           results,
           preNegotiationRoster,
           preNegotiationTitles,
-          G
+          G,
+          salaryBefore
         );
         showContractResultModal(results, salaryChanges, () => {
           if (!finishSession()) return;
           // weekPhase を offseason に戻す（ナビロック解除 + advanceWeek の再ループ防止）
-          const { pendingContractNegotiations: _, _contractAutoRenewed: __, ...clean } = G;
+          const {
+            pendingContractNegotiations: _,
+            _contractAutoRenewed: __,
+            _contractNegotiationProgress: ___,
+            ...clean
+          } = G;
           G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
+          try { Storage.autoSave(); } catch (_e) {}
           // 今週画面に戻ってから次週へ進める（社長室の交渉カードに留まらないように）
           showScreen('week');
           App.advanceWeek();
@@ -5833,6 +5889,7 @@ const App = {
           App._consumeBetrayalNews(neg);
           results.push(result.result);
           idx++;
+          persistProgress();
           processNext();
         });
         return;
@@ -5841,17 +5898,20 @@ const App = {
         if (!isCurrentSession()) return;
         App._resolveContractChoice(neg, choiceIdx, results, () => {
           if (!isCurrentSession()) return;
-          idx++;
           processNext();
+        }, () => {
+          if (!isCurrentSession()) return;
+          idx++;
+          persistProgress();
         });
       });
     }
 
     // サマリー画面 → 交渉開始
-    showContractSummaryModal(negotiations, autoCount, season, () => processNext());
+    showContractSummaryModal(negotiations.slice(idx), autoCount, season, () => processNext());
   },
 
-  _buildContractRenewalSalaryChanges(results, preRoster, preTitles, stateAfterNegotiation) {
+  _buildContractRenewalSalaryChanges(results, preRoster, preTitles, stateAfterNegotiation, salaryBefore) {
     const changes = [];
     const seen = new Set();
     const afterRoster = stateAfterNegotiation?.roster || [];
@@ -5870,7 +5930,10 @@ const App = {
       const after = afterRoster.find(f => f.id === result.fighterId);
       if (!before || !after) continue;
 
-      const oldSalary = Engine.util.getSalary(before, preTitles);
+      const persistedOldSalary = salaryBefore && Number(salaryBefore[result.fighterId]);
+      const oldSalary = Number.isFinite(persistedOldSalary)
+        ? persistedOldSalary
+        : Engine.util.getSalary(before, preTitles);
       const newSalary = Engine.util.getSalary(after, afterTitles);
       const actualDelta = newSalary - oldSalary;
       const negotiatedDelta = resultByFighterId.get(result.fighterId)?.salaryDelta || 0;
@@ -5891,7 +5954,7 @@ const App = {
     return changes;
   },
 
-  _resolveContractChoice(neg, choiceIdx, results, onDone) {
+  _resolveContractChoice(neg, choiceIdx, results, onDone, onResolved) {
     const resolveRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xC0E7, neg.fighterId, 2));
     const result = Engine.contract.resolveNegotiation(resolveRng, G, neg, choiceIdx);
     G = result.state;
@@ -5905,14 +5968,13 @@ const App = {
         G = subResult.state;
         App._consumeBetrayalNews(neg);
         results.push(subResult.result);
+        if (onResolved) onResolved(subResult.result);
         if (subResult.result.type === 'stay') Audio.play('notify');
         else if (subResult.result.type === 'depart') Audio.play('defeat');
         showContractReactionModal(neg, subResult.reactionDialogue, onDone);
       });
       return;
     }
-
-    results.push(result.result);
 
     // 結果に応じたSE
     if (result.result.type === 'stay') Audio.play('notify');
@@ -5923,13 +5985,15 @@ const App = {
       Audio.play('tension_hit');
       const escNeg = { ...neg, attitude: 'transfer' };
       showContractReactionModal(neg, result.reactionDialogue, () => {
-        showContractNegotiationModal(escNeg, results.length - 1, results.length, G, (escChoice) => {
-          App._resolveContractChoice(escNeg, escChoice, results, onDone);
+        showContractNegotiationModal(escNeg, results.length, results.length + 1, G, (escChoice) => {
+          App._resolveContractChoice(escNeg, escChoice, results, onDone, onResolved);
         });
       });
       return;
     }
 
+    results.push(result.result);
+    if (onResolved) onResolved(result.result);
     showContractReactionModal(neg, result.reactionDialogue, onDone);
   },
 
@@ -6398,6 +6462,9 @@ const App = {
     const emptyCard = [];
     for (let i = 0; i < maxMatches; i++) emptyCard.push({left: 0, right: 0, isTitle: false});
     G = { ...G, showCard: emptyCard };
+    // 「全クリア」は自由枠だけを空にする。来訪済みの全国統一王座戦まで消すと、
+    // 編成画面では枠が空いたように見えて開催時に再び割り込み、別試合を落としてしまう。
+    if (typeof stageIncomingUnifiedTitleCard === 'function') stageIncomingUnifiedTitleCard();
     Audio.play('cardRemove');
     renderShowPrep();
   },
@@ -6575,9 +6642,10 @@ const App = {
       if (reservedUnified.match) {
         const scheduled = reservedUnified.match;
         const participantIds = [scheduled.champion.id, scheduled.challenger.id];
-        const cleared = Engine.challengeRequest?.removeFightersFromCard
-          ? Engine.challengeRequest.removeFightersFromCard(G.showCard, participantIds)
-          : G.showCard;
+        // 編成画面ですでに見せている予約枠は一度外してから確定枠へ置換する。
+        // そのまま先頭追加すると同じ王座戦が2枠になり、会場上限で通常試合が落ちる。
+        const withoutStagedUnified = (G.showCard || []).filter(m => !m?._unifiedTitleMatch);
+        const cleared = Engine.unifiedTitle.removeParticipantsFromCard(withoutStagedUnified, participantIds);
         const card = Engine.util.normalizeShowCardForVenue(
           [scheduled.slot, ...cleared], G.week, G.showVenue);
         const existingIds = new Set((G.roster || []).map(f => f.id));
@@ -11856,12 +11924,42 @@ const App = {
   },
 
   // Advance to next week via Engine
+  _annualAwardsCompletedThrough(state = G) {
+    return Math.max(
+      Number(state?._annualAwardsCompletedSeason) || 0,
+      Number(state?.lastAwards?.season) || 0
+    );
+  },
+
+  _repairCompletedAnnualAwards(source) {
+    const completedThrough = App._annualAwardsCompletedThrough(G);
+    const pendingSeason = Number(G?.pendingAwards?.season) || 0;
+    const stageSeason = Number(G?._annualAwardsCeremonyPending?.season) || 0;
+    const stalePending = pendingSeason > 0 && pendingSeason <= completedThrough;
+    const staleStage = stageSeason > 0 && stageSeason <= completedThrough;
+    if (!stalePending && !staleStage) return false;
+    const clean = { ...G };
+    if (stalePending) delete clean.pendingAwards;
+    if (staleStage) delete clean._annualAwardsCeremonyPending;
+    G = clean;
+    App._annualAwardsCeremonyActive = false;
+    try {
+      console.warn('[WM][awards] cleared an already-completed ceremony state', {
+        source, completedThrough, pendingSeason, stageSeason,
+      });
+      Storage.autoSave();
+    } catch (_e) {}
+    return true;
+  },
+
   _isAwardsStageActive() {
     // 年間表彰式は Engine.advanceWeek がオフシーズン第1週へ進めた「後」に開く。
     // そのため背面の週送りが連打・Enterキー・古いonclickの再発火で通ると、式典を
     // dismissAllPopups で消したうえで第2週へ進んでしまう。キュー待ち中はDOMがまだ
     // activeにならないので、App側のtransientフラグと実DOMの両方を見る。
-    if (App._annualAwardsCeremonyActive || G?._annualAwardsCeremonyPending) return true;
+    const completedThrough = App._annualAwardsCompletedThrough(G);
+    const stageSeason = Number(G?._annualAwardsCeremonyPending?.season) || 0;
+    if (App._annualAwardsCeremonyActive || stageSeason > completedThrough) return true;
     try {
       const overlay = document.getElementById('awardsOverlay');
       return !!(overlay && overlay.classList.contains('active')
@@ -11877,13 +11975,17 @@ const App = {
    */
   _resumeInterruptedAnnualAwards(source) {
     if (App._annualAwardsCeremonyActive) return false;
+    App._repairCompletedAnnualAwards(source);
     try {
       const overlay = document.getElementById('awardsOverlay');
       if (overlay?.classList.contains('active') && typeof window._awardsNext === 'function') return false;
     } catch (_e) {}
 
-    const hasPendingStage = !!(G?._annualAwardsCeremonyPending && G?.pendingAwards);
-    const completedThisSeason = Number(G?.lastAwards?.season) === Number(G?.season);
+    const pendingSeason = Number(G?.pendingAwards?.season) || Number(G?.season) || 0;
+    const stageSeason = Number(G?._annualAwardsCeremonyPending?.season) || 0;
+    const hasPendingStage = !!(G?.pendingAwards && stageSeason === pendingSeason
+      && pendingSeason > App._annualAwardsCompletedThrough(G));
+    const completedThisSeason = App._annualAwardsCompletedThrough(G) >= Number(G?.season);
     const skippedIntoWeek2 = !!(G?.offSeason && G?.offWeek === 2 && !completedThisSeason);
     if (!hasPendingStage && !skippedIntoWeek2) return false;
 
@@ -11901,6 +12003,7 @@ const App = {
   },
 
   _guardAwardsStage(source) {
+    App._repairCompletedAnnualAwards?.(source);
     if (App._resumeInterruptedAnnualAwards?.(source)) return true;
     const stageActive = App._isAwardsStageActive();
     const progressionSource = source === 'advanceCurrentFlow'
@@ -12212,10 +12315,17 @@ const App = {
 
   // 表彰式チェーン安全実行: 中間ステップのエラーで表彰式が消失しないよう防御
   _recoverPendingAwards() {
-    if (G.pendingAwards) return true;
+    const completedThrough = App._annualAwardsCompletedThrough(G);
+    const pendingSeason = Number(G?.pendingAwards?.season) || 0;
+    if (G.pendingAwards && pendingSeason > completedThrough) return true;
+    if (G.pendingAwards && pendingSeason > 0 && pendingSeason <= completedThrough) {
+      App._repairCompletedAnnualAwards('_recoverPendingAwards');
+      return false;
+    }
     // offWeek 2 は、旧バグで表彰式の途中から一週飛んだセーブだけを救う範囲。
     // それより先の週から過去の式典を突然出すことはしない。
     if (!G.offSeason || G.offWeek < 1 || G.offWeek > 2) return false;
+    if (completedThrough >= Number(G.season)) return false;
     // 初年度のoffWeek 1ではseasonHistoryはまだ空。ここで復旧を拒むと、保存・演出
     // 切替などでpendingAwardsだけが失われた初年度に限って表彰式が恒久的に消える。
     // offSeason/offWeekという生成時点の条件で十分に絞れているため、履歴の有無は見ない。
@@ -12297,19 +12407,29 @@ const App = {
       App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport()));
       return;
     }
+    const awardSeason = Number(pendingAwards.season) || Number(G.season) || 1;
+    // 異常終了や旧セーブに完了済みデータが残っても、同じ年の式典を再上映しない。
+    if (awardSeason <= App._annualAwardsCompletedThrough(G)) {
+      App._repairCompletedAnnualAwards('_checkAndShowAwards');
+      App._checkAndShowMilestone(() => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport()));
+      return;
+    }
     // 式典完走前に再読込・例外・誤ナビゲーションが起きても再開できるよう、
     // pendingAwards は終了ボタンまで保存に残す。
     G = {
       ...G,
       _annualAwardsCeremonyPending: {
-        season: pendingAwards.season || G.season,
+        season: awardSeason,
         startedAtOffWeek: G.offWeek || 1,
       },
     };
 
-    // 受賞歴をキャリア記録に追加（プレイヤー団体・NPC団体ともに）
-    {
-      const aSeason = pendingAwards.season || G.season;
+    // 式典は中断地点から再表示してよいが、受賞歴・関係値・殿堂ニュースの前処理は
+    // 年1回だけ。ここを画面の一時フラグだけで守ると、再読込時に二重加算される。
+    const shouldPrepareAwards = Number(G._annualAwardsPreparedSeason) !== awardSeason;
+    if (shouldPrepareAwards) {
+      // 受賞歴をキャリア記録に追加（プレイヤー団体・NPC団体ともに）
+      const aSeason = awardSeason;
       const aWeek = 49; // オフシーズン表彰式
 
       // 業界の賞と所属団体内の賞で同じ選手が選ばれることがある（団体内MVPは業界MVPと
@@ -12376,58 +12496,59 @@ const App = {
       if (Array.isArray(pendingAwards.hallOfFame)) {
         pendingAwards.hallOfFame = Engine.awards.checkHallOfFame(G);
       }
-    }
 
-    // Phase 4 E-05: 表彰式の関係値反映
-    if (G.relationships) {
-      const awardRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBE5B));
-      let relState = { ...G };
-      const rosterIds = (G.roster || []).filter(f => !f.isRental).map(f => f.id);
-      // 各賞の受賞者（プレイヤー団体所属のみ）に対して関係値を適用
-      const awardWinners = [];
-      if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.isPlayerOrg) {
-        awardWinners.push(pendingAwards.rookieOfYear.id);
-      }
-      if (pendingAwards.mvp && pendingAwards.mvp.isPlayerOrg) {
-        awardWinners.push(pendingAwards.mvp.fighter ? pendingAwards.mvp.fighter.id : pendingAwards.mvp.id);
-      }
-      for (const winnerId of awardWinners) {
-        if (!winnerId || !rosterIds.includes(winnerId)) continue;
-        const otherIds = rosterIds.filter(id => id !== winnerId);
-        if (otherIds.length === 0) continue;
-        // winner→roster: bond +2~+3
-        relState = Engine.relationships.applyToRoster(relState, winnerId, otherIds,
-          { min: 2, max: 3 }, { min: 0, max: 0 }, awardRelRng);
-        // roster→winner: bond +1~+2
-        relState = Engine.relationships.applyFromRoster(relState, otherIds, winnerId,
-          { min: 1, max: 2 }, { min: 0, max: 0 }, awardRelRng);
-        // OVR近接者(diff≤5)→winner: rivalry +2~+4
-        const winnerFighter = (G.roster || []).find(f => f.id === winnerId);
-        if (winnerFighter) {
-          const winnerOvr = Engine.util.ov(winnerFighter);
-          const closeIds = (G.roster || []).filter(f =>
-            f.id !== winnerId && !f.isRental && Math.abs(Engine.util.ov(f) - winnerOvr) <= 5
-          ).map(f => f.id);
-          if (closeIds.length > 0) {
-            relState = Engine.relationships.applyFromRoster(relState, closeIds, winnerId,
-              { min: 0, max: 0 }, { min: 2, max: 4 }, awardRelRng);
+      // Phase 4 E-05: 表彰式の関係値反映
+      if (G.relationships) {
+        const awardRelRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xBE5B));
+        let relState = { ...G };
+        const rosterIds = (G.roster || []).filter(f => !f.isRental).map(f => f.id);
+        // 各賞の受賞者（プレイヤー団体所属のみ）に対して関係値を適用
+        const awardWinners = [];
+        if (pendingAwards.rookieOfYear && pendingAwards.rookieOfYear.isPlayerOrg) {
+          awardWinners.push(pendingAwards.rookieOfYear.id);
+        }
+        if (pendingAwards.mvp && pendingAwards.mvp.isPlayerOrg) {
+          awardWinners.push(pendingAwards.mvp.fighter ? pendingAwards.mvp.fighter.id : pendingAwards.mvp.id);
+        }
+        for (const winnerId of awardWinners) {
+          if (!winnerId || !rosterIds.includes(winnerId)) continue;
+          const otherIds = rosterIds.filter(id => id !== winnerId);
+          if (otherIds.length === 0) continue;
+          // winner→roster: bond +2~+3
+          relState = Engine.relationships.applyToRoster(relState, winnerId, otherIds,
+            { min: 2, max: 3 }, { min: 0, max: 0 }, awardRelRng);
+          // roster→winner: bond +1~+2
+          relState = Engine.relationships.applyFromRoster(relState, otherIds, winnerId,
+            { min: 1, max: 2 }, { min: 0, max: 0 }, awardRelRng);
+          // OVR近接者(diff≤5)→winner: rivalry +2~+4
+          const winnerFighter = (G.roster || []).find(f => f.id === winnerId);
+          if (winnerFighter) {
+            const winnerOvr = Engine.util.ov(winnerFighter);
+            const closeIds = (G.roster || []).filter(f =>
+              f.id !== winnerId && !f.isRental && Math.abs(Engine.util.ov(f) - winnerOvr) <= 5
+            ).map(f => f.id);
+            if (closeIds.length > 0) {
+              relState = Engine.relationships.applyFromRoster(relState, closeIds, winnerId,
+                { min: 0, max: 0 }, { min: 2, max: 4 }, awardRelRng);
+            }
           }
         }
+        G = { ...G, relationships: relState.relationships };
       }
-      G = { ...G, relationships: relState.relationships };
+      // 引き止め成功でrosterに戻った選手を殿堂入り候補から除外
+      const rosterIds = new Set(G.roster.map(c => c.id));
+      pendingAwards.hallOfFame = (pendingAwards.hallOfFame || []).filter(h => !rosterIds.has(h.id));
+      // v1.4w: 殿堂入りの新聞イベント収集
+      if (pendingAwards.hallOfFame.length > 0) {
+        pendingAwards.hallOfFame.forEach(h => {
+          App._pushNewsEvent({ type: 'hallOfFame', characterId: h.id,
+            data: { name: h.name, titles: h.titleReigns || 0, defenses: h.totalDefenses || 0 } });
+        });
+      }
+      G = { ...G, _annualAwardsPreparedSeason: awardSeason };
+      Storage.autoSave();
     }
-    Storage.autoSave();
     refreshAll();
-    // 引き止め成功でrosterに戻った選手を殿堂入り候補から除外
-    const rosterIds = new Set(G.roster.map(c => c.id));
-    pendingAwards.hallOfFame = (pendingAwards.hallOfFame || []).filter(h => !rosterIds.has(h.id));
-    // v1.4w: 殿堂入りの新聞イベント収集
-    if (pendingAwards.hallOfFame.length > 0) {
-      pendingAwards.hallOfFame.forEach(h => {
-        App._pushNewsEvent({ type: 'hallOfFame', characterId: h.id,
-          data: { name: h.name, titles: h.titleReigns || 0, defenses: h.totalDefenses || 0 } });
-      });
-    }
     // 表彰式ポップアップ開始
     // WM-H05 表彰式（-17 LUFS 正規化済みのため vol は新音源基準へ）
     // WM-H05 表彰式。音量はミキサー実聴値（2026-07-27）
@@ -12445,13 +12566,26 @@ const App = {
       // 表彰式BGMフェードアウト後に通常BGMを再開
       App.restoreBgmForState(1600);
       // 表彰式完了後: 殿堂入り処理 + retiredFighters 清掃
-      G = Engine.awards.finalizeRetireeBuffer(G);
+      try {
+        G = Engine.awards.finalizeRetireeBuffer(G);
+      } catch (e) {
+        // 後処理の一部失敗を「式典未完了」に戻すと、次回起動時に同じ式典と
+        // 受賞副作用を再実行してしまう。記録して先へ進み、重複を防ぐ。
+        console.error('[WM] finalizeRetireeBuffer failed after awards:', e);
+      }
       const {
         pendingAwards: _finishedAwards,
         _annualAwardsCeremonyPending: _finishedStage,
         ...afterAwards
       } = G;
-      G = { ...afterAwards, lastAwards: pendingAwards };
+      G = {
+        ...afterAwards,
+        lastAwards: pendingAwards,
+        _annualAwardsCompletedSeason: Math.max(
+          Number(afterAwards._annualAwardsCompletedSeason) || 0,
+          awardSeason
+        ),
+      };
       Storage.autoSave();
       App._showNewsPanelIfNeeded(() => App._checkAndShowMilestone(
         () => App._maybeShowSeasonFanfare(() => App._showFarewellsThenReport())));

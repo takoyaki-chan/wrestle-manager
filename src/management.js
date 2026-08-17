@@ -2798,6 +2798,17 @@ const Engine = {
       return { state: this._clearArrivalNotification({ ...state, _pendingUnifiedIncomingMatch: null }), match: { ...match, slot } };
     },
 
+    removeParticipantsFromCard(card, participantIds) {
+      const reserved = new Set((participantIds || []).filter(id => id > 0));
+      return (Array.isArray(card) ? card : []).filter(match => {
+        if (!match) return false;
+        const ids = match.matchType === 'tag'
+          ? [match.teamA?.fighter1, match.teamA?.fighter2, match.teamB?.fighter1, match.teamB?.fighter2]
+          : [match.left, match.right];
+        return !ids.some(id => reserved.has(id));
+      });
+    },
+
     acceptPlayerTurn(state, fighterId) {
       const turn = state._pendingUnifiedPlayerTurn;
       if (!turn || !turn.eligibleIds.includes(fighterId)) return state;
@@ -17646,6 +17657,31 @@ const Engine = {
         // awards UI. The recycle cooldown data is kept separately.
         if ((s.retiredFighters || []).length > 0) {
           s = Engine.awards.finalizeRetireeBuffer(s);
+        }
+        // 表彰UIが異常終了したままオフシーズンを抜けても、未完了の式典状態を翌年へ
+        // 持ち越さない。結果は lastAwards に確定し、同じ年の式典は以後再発火させない。
+        // 通常UIでは第1週で完了済みなので、この分岐は壊れた旧セーブ/高速進行の保険だけ。
+        if (s.pendingAwards) {
+          const awardSeason = Number(s.pendingAwards.season) || Number(s.season) || 1;
+          const completedThrough = Math.max(
+            Number(s._annualAwardsCompletedSeason) || 0,
+            Number(s.lastAwards?.season) || 0,
+            awardSeason
+          );
+          const {
+            pendingAwards: unfinishedAwards,
+            _annualAwardsCeremonyPending: _unfinishedStage,
+            ...cleanAwardsState
+          } = s;
+          s = {
+            ...cleanAwardsState,
+            lastAwards: unfinishedAwards,
+            _annualAwardsCompletedSeason: completedThrough,
+          };
+          events.push(`📋 シーズン${awardSeason} 年間表彰結果を確定`);
+        } else if (s._annualAwardsCeremonyPending) {
+          const { _annualAwardsCeremonyPending: _staleStage, ...cleanAwardsState } = s;
+          s = cleanAwardsState;
         }
         // v0.95: Archive season stats before transition
         const oldSeason = s.season;

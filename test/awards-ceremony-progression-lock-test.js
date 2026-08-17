@@ -110,6 +110,8 @@ let recovered = 0;
 let resumed = 0;
 resumeContext.App = {
   _annualAwardsCeremonyActive: false,
+  _repairCompletedAnnualAwards() { return false; },
+  _annualAwardsCompletedThrough(state) { return Number(state?.lastAwards?.season) || 0; },
   _recoverPendingAwards() {
     recovered += 1;
     resumeContext.G = { ...resumeContext.G, pendingAwards:{ season:7 } };

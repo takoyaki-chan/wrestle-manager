@@ -87,7 +87,12 @@ context.showContractNegotiationModal = (_neg, _idx, _total, _state, onChoice) =>
 context.showContractResultModal = (_results, _changes, onDone) => results.push(onDone);
 context.App = {
   _buildContractRenewalSalaryChanges() { return []; },
-  _resolveContractChoice(_neg, _choice, _results, onDone) { onDone(); },
+  _resolveContractChoice(neg, _choice, stepResults, onDone, onResolved) {
+    const result = { type: 'stay', fighterId: neg.fighterId, fighterName: neg.fighterName, salaryDelta: 0 };
+    stepResults.push(result);
+    onResolved(result);
+    onDone();
+  },
   advanceWeek() { advanced += 1; },
 };
 const handle = vm.runInNewContext(`({${handleSource}}).handleContractNegotiations`, context);
@@ -104,5 +109,7 @@ assert.strictEqual(results.length, 1, 'all negotiations must reach one result sc
 results[0]();
 assert.strictEqual(advanced, 1, 'result acknowledgement must advance the offseason once');
 assert.strictEqual(context.App._contractNegotiationSession, null, 'completed contract session must release its lock');
+assert.strictEqual(context.G._contractNegotiationProgress, undefined,
+  'completed contract session must clear its durable resume cursor');
 
 console.log('annual-contract-single-flight-test: ok');

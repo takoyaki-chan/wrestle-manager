@@ -12,9 +12,9 @@
 // 慣例の正: task-87 同行者選択(.crq-party-cand)=選択チップ内の顔は素の<img>で
 // チップ全面がクリック=選択。
 //
-// カード編成ピッカー行(§4)も 2026-08-14 Keisuke 裁定で選択に統一:
-// 「行と同じ=選択に揃える。ただし選手詳細は名前クリックで見られるように」。
-// 顔は素通し+名前 span に stopPropagation+showFighterPopup の対で凍結。
+// カード編成ピッカー行(§4)は最新の実機報告を正とする:
+// 「名前/行クリック=選択、顔クリック=選手詳細」。顔のラッパーだけが
+// stopPropagation+showFighterPopup を持ち、名前は親行の選択へ伝播する。
 
 const assert = require('assert');
 const { readSource } = require('./helpers/source');
@@ -66,8 +66,8 @@ function linesAround(source, anchorRegex, before, after, label) {
 }
 
 // §4 カード編成ピッカー行(タッグ: App.setTagSlotFighter / シングル: _spSelectFighter)
-// 2026-08-14 Keisuke裁定: 行クリック=選択(顔も素通し)。選手詳細は名前クリックだけが開く。
-// 「顔に第4引数なし」と「名前クリックの showFighterPopup がある」を対で検査する。
+// 最新裁定: 名前/行クリック=選択、顔クリック=詳細。
+// 「顔ラッパーだけが詳細を開く」と「名前にonclickが無い」を対で検査する。
 {
   const anchors = [
     [/onclick="App\.setTagSlotFighter\(/, 'タッグスロットピッカー行'],
@@ -81,11 +81,13 @@ function linesAround(source, anchorRegex, before, after, label) {
       `${label}: 選手行(\${c.name} を含む行)が見つからない(検査が空振り=stale)。テンプレートが変わったなら本テストを新しい真実に合わせること`);
     for (const row of fighterRows) {
       assert.ok(!CLICKABLE_PORTRAIT.test(row),
-        `${label}内で portraitImg に第4引数(clickable)が渡されている。顔クリックが選択を飲み込む:\n${row}`);
-      assert.ok(row.includes('showFighterPopup'),
-        `${label}から名前クリックの選手詳細(showFighterPopup)が消えた。裁定(2026-08-14)は「行=選択・詳細は名前クリック」の対。詳細導線を別の形にしたなら本テストを更新すること:\n${row}`);
+        `${label}内の顔は専用ラッパーで操作を分ける。portraitImg自体へ第4引数を戻さないこと:\n${row}`);
+      assert.ok(/class="sp-picker-face-detail"[^>]*onclick="event\.stopPropagation\(\);showFighterPopup/.test(row),
+        `${label}の顔クリックが選手詳細に割り当てられていない:\n${row}`);
+      assert.ok(!/<span[^>]*onclick=[^>]*>\$\{c\.name\}<\/span>/.test(row),
+        `${label}の名前に詳細onclickが残っている。名前は親行へ伝播して選択する:\n${row}`);
     }
   }
 }
 
-console.log('selection-surface-portrait-guard-test: ok (大型イベントピック2/天頂戦エントリー行/通常PPV行/カード編成ピッカー行2 — 選択面の顔は素通し・ピッカー詳細は名前クリック)');
+console.log('selection-surface-portrait-guard-test: ok (一般選択面は全面選択／カード編成ピッカーは名前=選択・顔=詳細)');
