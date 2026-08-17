@@ -20271,8 +20271,13 @@ Engine.awards = {
       const matchStrRaw = (state.seasonStats && state.seasonStats.bestMQMatch) || '';
       const matchStr = matchStrRaw.replace(/^PPV\s+/, '');
       const parts = matchStr.split(' vs ');
-      const findF = name => (state.roster || []).find(f => f.name === name) ||
-                            (state.retiredFighters || []).find(f => f.name === name);
+      const allRosters = [
+        ...(state.roster || []),
+        ...(state.retiredFighters || []),
+        ...Object.values(state.aiOrgs || {}).flatMap(org => org?.roster || []),
+      ];
+      const findF = name => allRosters.find(f => f.name === name) ||
+                            ALL_CHARS.find(f => f.name === name);
       // タッグマッチは "A&B vs C&D" 形式。各チームの先頭(キャプテン)を代表として顔写真/セリフに使う
       const sideA = (parts[0] || '').trim();
       const sideB = (parts[1] || '').trim();

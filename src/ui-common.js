@@ -2708,6 +2708,27 @@ function _awPortrait(id, cssClass) {
   return ch ? ch.name.charAt(0) : '?';
 }
 
+// Best-match snapshots can outlive a transfer or release at season end.  Old
+// saves may therefore retain a name while their saved participant ID is null.
+// Resolve that name across every current roster before rendering the ceremony.
+function _awResolveAwardFighter(fighter) {
+  const entry = fighter && typeof fighter === 'object'
+    ? fighter
+    : { id: null, name: fighter || '', ovr: 0, style: 'Allround' };
+  if (entry.id != null) return entry;
+  const name = String(entry.name || '').trim();
+  if (!name) return entry;
+  const aiRosters = Object.values((typeof G !== 'undefined' && G.aiOrgs) || {})
+    .flatMap(org => Array.isArray(org?.roster) ? org.roster : []);
+  const resolved = [
+    ...((typeof G !== 'undefined' && G.roster) || []),
+    ...((typeof G !== 'undefined' && G.retiredFighters) || []),
+    ...aiRosters,
+    ...(typeof ALL_CHARS !== 'undefined' ? ALL_CHARS : []),
+  ].find(f => f && f.name === name);
+  return resolved ? { ...entry, id: resolved.id, style: entry.style || resolved.style } : entry;
+}
+
 // 表彰式: 選手名・選手画像から詳細を開けるようにする追加属性。
 // findFighter で引けない相手（id が無い/もうゲームのどこにも居ない）には付けない。
 // 押せそうに見えて無反応になるのが一番悪い（mockup-baseline-v0.1 §2-C）。
@@ -3124,8 +3145,8 @@ function _buildUnifiedChampionAward(d) {
 }
 
 function _buildBestMatchAward(d) {
-  const f1 = typeof d.fighter1 === 'object' ? d.fighter1 : { id: null, name: d.fighter1, ovr: 0, style: 'Allround' };
-  const f2 = typeof d.fighter2 === 'object' ? d.fighter2 : { id: null, name: d.fighter2, ovr: 0, style: 'Allround' };
+  const f1 = _awResolveAwardFighter(d.fighter1);
+  const f2 = _awResolveAwardFighter(d.fighter2);
   const line1 = _awardLine('bestMatch', f1);
   const line2 = _awardLine('bestMatch', f2);
   const f1OrgName = d.fighter1OrgName || d.orgName || '';

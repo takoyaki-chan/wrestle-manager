@@ -40,6 +40,7 @@ const QUICK = new Set([
   'ai-ace-title-system-test.js',
   'ai-contract-dormant-routing-test.js',
   'ai-retirement-test.js',
+  'award-newspaper-image-fallback-test.js',
   'autumn-war-live-engine-test.js',
   'autumn-war-match-dialogue-test.js',
   'autumn-war-mvp-lines-test.js',

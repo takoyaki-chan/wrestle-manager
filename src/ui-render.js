@@ -7580,6 +7580,7 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
   const tagPhotoIds = _npSpringTagStoryIds(G, ts, seasonNum);
   const isTagPhoto = tagPhotoIds.length >= 2;
   const primaryId = tagPhotoIds[0] || ts.characterId || null;
+  const photoBg = isTagPhoto ? '' : _npPhotoBg(primaryId, ts);
   const photoIds = isTagPhoto ? tagPhotoIds : (primaryId ? [primaryId] : []);
   // 組んだ2人(タッグ・同期)は「/」、戦った2人(歴代最高評価)は「vs」で繋ぐ
   const pairJoin = ts.type === 'mqAllTimeRecord' ? ' vs ' : ' / ';
@@ -7589,13 +7590,13 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
   const emblem = orgKey ? _npOrgEmblem(G, orgKey, 18) : '';
   const orgLine = (emblem || orgName) ? `<div class="np-top-org-line">${emblem}<span>${orgName || ''}</span></div>` : '';
 
-  const photoHtml = primaryId
+  const photoHtml = (isTagPhoto || photoBg)
     ? `<figure class="np-v3-topfig">
-        <div class="np-v3-photo-top${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${isTagPhoto ? '' : _npPhotoBg(primaryId, ts)}"
-             ${isTagPhoto ? '' : `onclick="showFighterPopup(${primaryId},null,true)"`}>
+        <div class="np-v3-photo-top${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${photoBg}"
+             ${primaryId && !isTagPhoto ? `onclick="showFighterPopup(${primaryId},null,true)"` : ''}>
           ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
-          <div class="stamp">EXCLUSIVE</div>
-          <div class="caption">${orgLine}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>
+          ${primaryId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
+          ${primaryId ? `<div class="caption">${orgLine}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
         </div>
       </figure>`
     : '';
