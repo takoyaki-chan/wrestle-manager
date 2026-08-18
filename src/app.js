@@ -13305,8 +13305,8 @@ const App = {
           characterId: payload.winnerId || null,
           data: {
             org: G.orgName || 'プレイヤー団体',
-            winFaction: payload.winFactionName || payload.factionAName || '?',
-            loseFaction: payload.loseFactionName || payload.factionBName || '?',
+            winFaction: payload.winnerFactionName || payload.factionAName || '?',
+            loseFaction: payload.loserFactionName || payload.factionBName || '?',
             loseLeader: payload.loseLeaderName || payload.leaderBName || '?',
           },
         });
