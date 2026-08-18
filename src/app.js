@@ -9412,14 +9412,23 @@ const App = {
     runPostInternalChallenge(() => runPostF09(() => {
       const popups = App._collectPostMatchPopupsForMatch(idx, result);
       if (popups.length === 0) { if (then) then(); return; }
-      _chainEventPopupQueueEmpty(() => { if (then) then(); });
+      // The shared queue can be extended by another post-show popup. Keep this
+      // match's completion local so its timeout cannot cancel that other wait.
+      let completed = false;
+      const finish = () => {
+        if (completed) return;
+        completed = true;
+        if (then) then();
+      };
+      _chainEventPopupQueueEmpty(finish);
       popups.forEach(p => showEventPopup(p));
       const maxWaitMs = popups.length * 2200 + 1500;
       setTimeout(() => {
-        if (_onEventPopupQueueEmpty) {
-          console.warn('[WM] postMatchFlavor safety net fired');
-          _onEventPopupQueueEmpty = null;
-          if (then) then();
+        if (!completed) {
+          // A queued ceremony may legitimately outlive this flavor popup.
+          // This is a progress fallback, not a user-visible warning.
+          console.debug('[WM] postMatchFlavor safety net fired');
+          finish();
         }
       }, maxWaitMs);
     }));
