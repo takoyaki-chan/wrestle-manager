@@ -9426,8 +9426,8 @@ const App = {
       setTimeout(() => {
         if (!completed) {
           // A queued ceremony may legitimately outlive this flavor popup.
-          // This is a progress fallback, not a user-visible warning.
-          console.debug('[WM] postMatchFlavor safety net fired');
+          // Reaching this point means this match itself did not complete.
+          console.warn('[WM] postMatchFlavor safety net fired');
           finish();
         }
       }, maxWaitMs);

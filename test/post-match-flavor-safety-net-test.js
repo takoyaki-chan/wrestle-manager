@@ -19,10 +19,8 @@ assert.ok(handler.includes('_chainEventPopupQueueEmpty(finish);'),
   'post-match flavor must wait for the shared popup queue through its local completion');
 assert.ok(handler.includes('if (!completed) {'),
   'safety timeout must only advance an unfinished match');
-assert.ok(handler.includes("console.debug('[WM] postMatchFlavor safety net fired');"),
-  'a benign delayed popup must not be recorded as a warning');
-assert.ok(!handler.includes('console.warn'),
-  'post-match flavor must not add false warnings to the flight recorder');
+assert.ok(handler.includes("console.warn('[WM] postMatchFlavor safety net fired');"),
+  'an unfinished post-match popup must remain reportable to players');
 assert.ok(!handler.includes('_onEventPopupQueueEmpty = null'),
   'post-match timeout must not cancel another popup flow');
 
