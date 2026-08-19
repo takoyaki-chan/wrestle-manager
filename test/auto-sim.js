@@ -39,8 +39,14 @@ const fs = require('fs');
 const { execFileSync } = require('child_process');
 
 const args = process.argv.slice(2);
-const targetSeasons = parseInt(args[0], 10) || 100;
-const userSeed = args[1] ? parseInt(args[1], 10) : (Date.now() ^ 0xABCD1234);
+// care-rework2 P0-5: フラグ(--care 等)を位置引数から分離する。
+// 既存の呼び出しは数値2つだけなので positional === args となり、従来動作は不変。
+const cliFlags = args.filter(a => a.startsWith('--'));
+const positionalArgs = args.filter(a => !a.startsWith('--'));
+const targetSeasons = parseInt(positionalArgs[0], 10) || 100;
+const userSeed = positionalArgs[1] ? parseInt(positionalArgs[1], 10) : (Date.now() ^ 0xABCD1234);
+// --care: 自動プレイヤーが毎週ケア書類(決裁書類)を決裁枠・資金の許す限り実行する
+const CARE_MODE = cliFlags.includes('--care');
 
 // Some non-match simulation paths still use Math.random(). Seed those calls as
 // well so commit-to-commit measurements with the same CLI seed are comparable.
@@ -1177,6 +1183,176 @@ function clearTransients(G) {
   return s;
 }
 
+// ══════════════════════════════════════════════════════════════════════════════
+//  care-rework2 P0-5: ケア自動実行モード (--care)
+//
+//  ■ 目的
+//    auto-sim は長らくケアアクション(決裁書類)を一度も実行してこなかった。
+//    その結果、7月以降のバランス較正がすべて「ケアを使わない世界」だけを物差しに
+//    行われてきた(docs/care-rework2-plan-v0.1.md §1.2)。以後の較正を
+//    「使う世界/使わない世界」の両方で確認できるようにするための計装。
+//
+//  ■ 自動プレイヤーの方針(すべて決定論。Math.random は使わない)
+//    毎週 manage フェーズで、指示書の優先順に決裁枠⚡と資金の許す限り実行する:
+//      bonus → party → refresh_leave → special_treatment → media → trainer → camp
+//    対象選手はプールから決定的な規則(下記)で選び、同順位は id 昇順で割る。
+//
+//  ■ 注意: これは「エンジンの発動条件」ではなく「自動プレイヤーの方針」である。
+//    refresh_leave / media / trainer / camp は activationCondition が null
+//    (=常時発動可)なので、素直に回すと毎週撃ち続けて実プレイと乖離する。
+//    そこで方針側に閾値ゲートを置いている(下記コメント参照)。閾値は
+//    エンジンには一切影響しない — auto-sim のプレイヤー判断の代用にすぎない。
+// ══════════════════════════════════════════════════════════════════════════════
+
+const CARE_PRIORITY = ['bonus', 'party', 'refresh_leave', 'special_treatment', 'media', 'trainer', 'camp'];
+const careStats = {
+  totalSpend: 0,
+  totalDp: 0,
+  counts: {},
+  errors: {},
+  trustSamples: [],
+  moraleSamples: [],
+};
+
+// 現場にいる選手(レンタル・怪我・休暇を除く)
+function careEligible(f) { return !!f && !f.isRental && !f.injury && !f.onLeave; }
+
+// 決定的な最小値/最大値選択(同値は id 昇順)
+function carePickBy(pool, scoreFn, wantMax) {
+  let best = null, bestScore = null;
+  for (const f of pool) {
+    const s = scoreFn(f);
+    if (bestScore === null
+      || (wantMax ? s > bestScore : s < bestScore)
+      || (s === bestScore && f.id < best.id)) {
+      best = f; bestScore = s;
+    }
+  }
+  return best;
+}
+
+// 書類ごとの対象選手 + options を決める。実行対象がなければ null。
+function carePickTarget(docId, G) {
+  const roster = G.roster || [];
+  const live = roster.filter(careEligible);
+
+  if (docId === 'bonus') {
+    // 発動条件と同じプール(trust<60)から、最も信頼が低い選手へ。
+    // 起案4案は index1 = 基準額×1.0 を選ぶ(×0.5 はプライド選手への侮辱帯なので避ける)。
+    const pool = live.filter(f => (f.trust != null ? f.trust : 50) < 60);
+    const t = carePickBy(pool, f => (f.trust != null ? f.trust : 50), false);
+    return t ? { fighterId: t.id, options: { presetIndex: 1 } } : null;
+  }
+  if (docId === 'party' || docId === 'camp') {
+    // 団体書類(対象指定なし)。発動可否と決裁枠・資金は execute 側が判定する。
+    // camp(⚡3)は優先順位が最後尾なので、上位書類が枠を使い切った週は自然に落ちる。
+    return live.length > 0 ? { fighterId: null, options: undefined } : null;
+  }
+  if (docId === 'refresh_leave') {
+    // 常時発動可。方針ゲート: 体調50未満の選手がいるときだけ、最も体調が低い1人に2週。
+    const pool = live.filter(f => (f.condition || 70) < 50);
+    const t = carePickBy(pool, f => (f.condition || 70), false);
+    return t ? { fighterId: t.id, options: { weeks: 2 } } : null;
+  }
+  if (docId === 'special_treatment') {
+    // 発動条件と同じプール(離脱2週以上)から、最も離脱が長い選手へ。
+    const pool = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+    const t = carePickBy(pool, f => f.injury.weeksLeft || 0, true);
+    return t ? { fighterId: t.id, options: undefined } : null;
+  }
+  if (docId === 'media') {
+    // 看板選手を広告塔に。最も人気の高い選手へ。
+    const t = carePickBy(live, f => f.popularity || 0, true);
+    return t ? { fighterId: t.id, options: undefined } : null;
+  }
+  if (docId === 'trainer') {
+    // §3.2 同時招聘は1件まで。空いているときだけ、伸びしろ(trainCap残)が最大の選手へ。
+    if (roster.some(f => f._inviteBuff)) return null;
+    const pool = live.filter(f => !f._inviteBuff);
+    const room = f => ['pw', 'te', 'sp', 'st'].reduce((s, k) => {
+      const cap = (f.trainCap && f.trainCap[k] != null) ? f.trainCap[k] : (f.pot && f.pot[k]) || f[k];
+      return s + Math.max(0, cap - (f[k] || 0));
+    }, 0);
+    const t = carePickBy(pool, room, true);
+    if (!t) return null;
+    // 今期市場の候補から、その選手に対する効果(mult)が最大のコーチを選ぶ。
+    const market = Engine.shachoshitsu.ensureInviteMarket(G);
+    const ids = (market && market.candidateIds) || [];
+    let bestCoach = null, bestMult = -1;
+    for (const cid of ids) {
+      const coach = ALL_COACHES.find(c => c.id === cid);
+      if (!coach) continue;
+      const m = Engine.shachoshitsu.calcInviteMult(coach, t, G).mult;
+      if (m > bestMult || (m === bestMult && bestCoach && coach.id < bestCoach.id)) { bestMult = m; bestCoach = coach; }
+    }
+    return bestCoach ? { fighterId: t.id, options: { coachId: bestCoach.id, autoRenew: false } } : null;
+  }
+  return null;
+}
+
+// 1週分のケア決裁。実プレイ(App.executeDecision)と同じ state 反映を行う。
+function autoExecuteCare(G) {
+  if (!CARE_MODE) return G;
+  if (G.offSeason || G.weekPhase !== 'manage') return G;
+
+  const availableIds = new Set(Engine.shachoshitsu.getAvailableDocs(G).map(d => d.id));
+  for (const docId of CARE_PRIORITY) {
+    if (!availableIds.has(docId)) continue;
+    if ((G._decisionDoneThisWeek || []).includes(docId)) continue;
+    const doc = Engine.shachoshitsu.getDoc(docId);
+    if (!doc) continue;
+    if ((G.decisionPoints || 0) < (doc.decisionCost || 0)) continue;
+
+    const pick = carePickTarget(docId, G);
+    if (!pick) continue;
+
+    const result = Engine.shachoshitsu.execute(docId, pick.fighterId, G, pick.options);
+    if (!result || result.error) {
+      const key = `${docId}:${(result && result.error) || 'null'}`;
+      careStats.errors[key] = (careStats.errors[key] || 0) + 1;
+      continue;
+    }
+
+    // ── state 反映(app.js App.executeDecision と同じ順序・同じフィールド) ──
+    if (result.factionState) G = result.factionState;
+    G = { ...G,
+      roster: result.roster,
+      funds: result.funds,
+      lockerRoomMorale: result.lockerRoomMorale != null ? result.lockerRoomMorale : (G.lockerRoomMorale || 60),
+      decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
+      _decisionWeekUsed: result._decisionWeekUsed || G._decisionWeekUsed || {},
+      _decisionDoneThisWeek: [...(G._decisionDoneThisWeek || []), docId],
+      gameLog: [],
+    };
+    if (result.relationships) G = { ...G, relationships: result.relationships };
+    if (result.h2h) G = { ...G, h2h: result.h2h };
+    if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
+    if (result.lastInvitedCoachId != null) G = { ...G, lastInvitedCoachId: result.lastInvitedCoachId };
+    if (result.orgPopDelta) {
+      const newOrgPop = Engine.util.clamp(
+        (G.orgPop || 0) + Engine.orgPop.applyOrgPopChange(result.orgPopDelta, G.orgPop, null), 0, 100);
+      G = { ...G, orgPop: newOrgPop };
+    }
+    if (result._industryNewsEvents && result._industryNewsEvents.length > 0) {
+      G = { ...G, _industryNewsEvents: [...(G._industryNewsEvents || []), ...result._industryNewsEvents] };
+    }
+
+    careStats.totalSpend += result.cost || 0;
+    careStats.totalDp += doc.decisionCost || 0;
+    careStats.counts[docId] = (careStats.counts[docId] || 0) + 1;
+  }
+  return G;
+}
+
+// 週次サンプリング(ケアあり/なしの比較用。--care でなくても採る)
+function careSample(G) {
+  const live = (G.roster || []).filter(f => !f.isRental);
+  if (live.length === 0) return;
+  careStats.trustSamples.push(
+    live.reduce((s, f) => s + (f.trust != null ? f.trust : 50), 0) / live.length);
+  careStats.moraleSamples.push(G.lockerRoomMorale != null ? G.lockerRoomMorale : 60);
+}
+
 // debugLogから違反を収集してクリア
 function collectViolations(G, violations) {
   if (G.debugLog && G.debugLog.length > 0) {
@@ -1381,6 +1557,9 @@ function runSimulation(seed, seasons) {
       if (G.weekPhase === 'contractNegotiation') {
         G = autoHandleContractNegotiation(G, simRng);
       }
+
+      // ── ケア自動実行 (--care) ── 実プレイと同じく manage フェーズ・興行前に決裁する
+      G = autoExecuteCare(G);
 
       // ── 興行週: カード自動編成→executeShow ──
       // 春のタッグリーグ開催週(Week12)はリーグ興行がその週の枠を占めるため、通常興行はスキップ
@@ -1676,6 +1855,7 @@ function runSimulation(seed, seasons) {
       // advanceWeek後にもvalidate
       G = Engine.validateGameState(G);
       G = collectViolations(G, violations);
+      careSample(G);
 
       // ── シーズン遷移検出 ──
       if (!G.offSeason && G.week === 1 && G.season > 1) {
@@ -2753,6 +2933,29 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
     if (f07.length) {
       console.log('  [F07 incidentType 内訳]');
       for (const [k, v] of f07) console.log(`    ${k.padEnd(24)} ${v}`);
+    }
+  }
+}
+// ── care-rework2 P0-5: ケア計装サマリー ──
+{
+  const avg = a => (a.length ? a.reduce((s, v) => s + v, 0) / a.length : 0);
+  console.log('--------------------------------------');
+  console.log(`[ケア計装] mode: ${CARE_MODE ? '--care (自動決裁ON)' : 'ケアなし(従来)'}`);
+  console.log(`  平均trust(自団体・週次平均):        ${avg(careStats.trustSamples).toFixed(2)}`);
+  console.log(`  平均lockerRoomMorale(週次平均):     ${avg(careStats.moraleSamples).toFixed(2)}`);
+  if (CARE_MODE) {
+    console.log(`  ケア総支出:                         ${Math.round(careStats.totalSpend)}万 (${(careStats.totalSpend / targetSeasons).toFixed(0)}万/season)`);
+    console.log(`  決裁枠⚡消費合計:                    ${careStats.totalDp} (${(careStats.totalDp / targetSeasons).toFixed(1)}/season)`);
+    console.log('  実行回数(書類別):');
+    for (const docId of CARE_PRIORITY) {
+      const n = careStats.counts[docId] || 0;
+      const doc = Engine.shachoshitsu.getDoc(docId);
+      console.log(`    ${(doc ? doc.label : docId).padEnd(18)} ${String(n).padStart(5)}  ${(n / targetSeasons).toFixed(2)}/season`);
+    }
+    const errEntries = Object.entries(careStats.errors).sort((a, b) => b[1] - a[1]);
+    if (errEntries.length) {
+      console.log('  実行できなかった内訳(書類:理由):');
+      for (const [k, v] of errEntries.slice(0, 10)) console.log(`    ${k.padEnd(36)} ${v}`);
     }
   }
 }
