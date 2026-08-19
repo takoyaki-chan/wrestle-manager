@@ -7904,7 +7904,11 @@ const Engine = {
         if ((G.roster || []).some(f => f._inviteBuff && f._inviteBuff.coachId === c.id)) return false;
         return true;
       });
-      const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
+      const shuffled = [...eligible];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Engine.rng.int(rng, 0, i);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
       const count = COACH_POOL_CFG.candidatesMin + Engine.rng.int(rng, 0, COACH_POOL_CFG.candidatesMax - COACH_POOL_CFG.candidatesMin);
       return shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
     },
@@ -13336,7 +13340,11 @@ const Engine = {
     // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)
     if (manage.coachAssign) s = { ...s, coachAssign: manage.coachAssign };
     // care-rework v0.1 §3.1: 四半期(12週)ごとに招聘候補市場を再抽選(periodKey変化時のみ)
-    s = { ...s, inviteMarket: Engine.shachoshitsu.ensureInviteMarket(s) };
+    const nextInviteMarket = Engine.shachoshitsu.ensureInviteMarket(s);
+    // §3.1「1回休み」: 再抽選で除外を1回適用したら消費済みにする(クリアしないと永久出禁になる)
+    const inviteMarketRerolled = !s.inviteMarket || s.inviteMarket.periodKey !== nextInviteMarket.periodKey;
+    s = { ...s, inviteMarket: nextInviteMarket };
+    if (inviteMarketRerolled && s.lastInvitedCoachId != null) s = { ...s, lastInvitedCoachId: null };
     // task-88 §D: 王座未創設時は同一stateを返しRNGも消費しない四半期フック。
     s = Engine.unifiedTitle.processQuarter(s);
     // v1.8: transient 成長イベントを state に乗せる
@@ -22295,8 +22303,9 @@ Engine.trust = {
 
     const changes = [];
     const newRoster = roster.map(fighter => {
-      // 怪我中は変動なし（noAppearStreakもリセットしない）
-      if (fighter.injury) return fighter;
+      // 怪我中・休暇中は変動なし（noAppearStreakもリセットしない）
+      // 休暇辞令で休ませた選手に不出場ペナルティを課すと、休暇の信頼収支が赤字になる
+      if (fighter.injury || fighter.onLeave) return fighter;
 
       const mental = fighter.mn || 50;
       const oldTrust = fighter.trust != null ? fighter.trust : 50;
@@ -22822,7 +22831,11 @@ Engine.shachoshitsu = {
       if ((c.minOrgPop || 0) > orgPop) return false;
       return true;
     });
-    const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
+    const shuffled = [...eligible];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Engine.rng.int(rng, 0, i);
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     const count = 2 + Engine.rng.int(rng, 0, 1);  // 2〜3名
     const candidateIds = shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
     return { periodKey, candidateIds };
@@ -22961,7 +22974,9 @@ Engine.shachoshitsu = {
         const renewalCost = Engine.shachoshitsu.getInviteCost(coach, state);
         const renewalDpCost = Engine.shachoshitsu.getInviteDecisionCost();
         if (markedBuf.autoRenew && coach && funds >= renewalCost && decisionPoints >= renewalDpCost) {
-          const refreshed = Engine.shachoshitsu.calcInviteMult(coach, f, state);
+          // §3.5: 自動継続も手動再招聘と同じ消化力逓減を通す。1期目はこの週に満了しているので、
+          // 同週に手動で再招聘した場合(_lastInviteEndWeek=今週)と同一の計算になる。
+          const refreshed = Engine.shachoshitsu.calcInviteMult(coach, { ...f, _lastInviteEndWeek: absoluteWeek }, state);
           funds -= renewalCost;
           decisionPoints = Math.max(0, decisionPoints - renewalDpCost);
           events.push(`🏋️ ${f.name}への${coachName}コーチ招聘を自動継続した(4週・${renewalCost}万/⚡${renewalDpCost})`);

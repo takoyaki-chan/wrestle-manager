@@ -8697,6 +8697,14 @@ function showLeaveWeeksModal(fighterId, state) {
 function showInviteCoachModal(state) {
   const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.trainer : null;
   if (!doc) return;
+  // §3.2 同時1件制の事前チェック。判定の権威はエンジン側だが、ここで見ないと
+  // コーチ選択→選手選択と進めた末に invite_active で全部破棄されてしまう。
+  const busy = (state.roster || []).find(f => f._inviteBuff);
+  if (busy) {
+    const busyCoach = ALL_COACHES.find(c => c.id === busy._inviteBuff.coachId);
+    showToast(`すでに招聘中のコーチがいます(${busyCoach ? busyCoach.name : '招聘コーチ'}・残${busy._inviteBuff.weeksLeft}週)`);
+    return;
+  }
   const market = Engine.shachoshitsu.ensureInviteMarket(state);
   const candidates = (market.candidateIds || []).map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
   if (candidates.length === 0) {
@@ -8704,6 +8712,13 @@ function showInviteCoachModal(state) {
     return;
   }
   const funds = state.funds || 0;
+  // 招聘費は書類ではなくコーチごとに決まる(doc.cost が null)ため決裁側の資金事前チェックが
+  // 素通りする。最安候補すら払えないなら他書類と同じ形でここで止める。
+  const cheapestCost = Math.min(...candidates.map(c => Engine.shachoshitsu.getInviteCost(c, state)));
+  if (cheapestCost > funds) {
+    showToast('資金が足りません');
+    return;
+  }
   const gradeLabel = { C: 'C級', B: 'B級', A: 'A級' };
   const defaultId = candidates.find(c => Engine.shachoshitsu.getInviteCost(c, state) <= funds)?.id ?? candidates[0].id;
   const cards = candidates.map((c) => {
@@ -8828,8 +8843,8 @@ function showInviteTargetModal(coachId, state) {
       <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">DP</span><strong>⚡${doc.decisionCost}</strong></span>
     </div>
     <label style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 14px;padding:10px 14px;max-width:360px;border:1px solid rgba(100,85,50,0.18);border-radius:8px;background:rgba(255,255,255,0.45);font-size:12px;color:var(--cream-text-main)">
-      <input type="checkbox" id="mdlAInviteAutoRenew" checked>
-      <span>満了後は自動継続する。途中で2週延長が入った場合は、その終了後に継続する。</span>
+      <input type="checkbox" id="mdlAInviteAutoRenew">
+      <span>満了後は自動継続する。途中で2週延長が入った場合は、その終了後に継続する。<span style="color:var(--cream-text-sub)">(4週ごとに費用と決裁枠⚡${doc.decisionCost}を再消費)</span></span>
     </label>
     <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 対 象 選 手</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px" id="mdlAInviteTargetGrid">
