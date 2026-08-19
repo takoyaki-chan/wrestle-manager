@@ -16,6 +16,7 @@
 | v2.1 | 2026-07-31 | 指数収束ブレーキ、追い込み熱量逓減、AI活動wearを追加 |
 | v2.2 | 2026-08-02 | AI成長パリティ。興行週練習、体調安全弁、熱量、追い込み代償、限定トレーナー、AI追い込み率をプレイヤーのbalance基準へ統合。`aiMatchWearCoef` / AI設定の死に倍率を廃止 |
 | v2.2.1 | 2026-08-20 | **現物合わせの遡及追記**（実装は2026-08-05 `13aa69e`、当時未記帳だったものをD-3調査で発見・記帳）: ①`遅咲き`特性を廃止（成熟度テーブルは`早熟`/`晩成`のみ） ②入団成熟度を引き上げ（`getEntryMaturityRatio`: 17歳0.75〜23歳+1.00、晩成は0.68〜） ③季末wearの試合量項を「キャリア平均試合数≥40で+3」から**当季試合数連動**（≤10: −1 / 19〜24: +2 / ≥25: +4）へ変更 |
+| v2.2.2 | 2026-08-20 | **招聘/合宿倍率の適用位置を量子化前へ移設**（care-rework2 P0-3・task-98）: 従来は `calcGrowth` 末尾の `ceil` の後（呼び出し側の `round` 連鎖）に掛かり、倍率1.45未満は成長0pt・1.45以上は実効2.0倍という二重の崖を作っていた。`getTrainerMult` を `baseGain` の乗算列（coachMulと同列）へ移設し、格・スタイル一致・相性が期待成長で単調に効く。招聘・合宿なしの成長はビット一致で不変 |
 
 ---
 
@@ -41,7 +42,7 @@ intensiveMul = intensiveHeatTable[_heat]（追い込み時のみ）
 statGrowth   = min(ceil(round(rawGain × intensiveMul × 10) / 10), remaining)
 ```
 
-`coachMul` は AI_COACH_CONFIG の固定値ではなく、プレイヤー・AIとも `Engine.coach.getCharGrowthMult` が実コーチから算出する。練習後には状態、招聘トレーナー、合宿、孤立、関係性、警告trustの乗算が追加される。
+`coachMul` は AI_COACH_CONFIG の固定値ではなく、プレイヤー・AIとも `Engine.coach.getCharGrowthMult` が実コーチから算出する。**招聘/合宿の倍率（`getTrainerMult`）は v2.2.2 から `baseGain` の乗算列（量子化前）に入る**。練習後には状態、孤立、関係性、警告trustの乗算が呼び出し側で追加される。
 
 ## §2 年齢倍率（ageMul）
 

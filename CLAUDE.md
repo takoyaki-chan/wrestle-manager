@@ -120,6 +120,7 @@ v0.85bで確立。すべての実装はこの原則に従う。
 ```bash
 node test/auto-sim.js 100         # 100シーズン(ランダムシード)
 node test/auto-sim.js 100 42      # 100シーズン(シード指定)
+node test/auto-sim.js 40 42 --care  # ケア自動実行モード(care-rework2 P0で追加。ケア系・成長系の較正は--careあり/なし両方で測る)
 # 拡張テスト(上限): 10シード × 100シーズン ≒ 70分
 for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "Result:"
 ```
