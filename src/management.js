@@ -8463,13 +8463,25 @@ const Engine = {
       // v0.2: 根性練習フレーバー — 成長 ×1.05
       const gritMul = overrideCoachMul ? 1.0 : Engine.coach.getFlavorGritGrowthMult(G, char.id);
 
+      // care-rework2 P0-3(丸めの死): 招聘(_inviteBuff)/合宿(_trainerBuff)の指導倍率。
+      // 従来は呼び出し側で末尾の Math.ceil の**後**に掛けていたため、倍率1.45未満
+      // (C級1.25 / B級1.30 / A級スタイル一致1.43 等、実質ほぼ全ての招聘)が
+      // 呼び出し側の Math.round に吸収され、成長に1ptも寄与していなかった。
+      // coachMul と同じ量子化前の乗算列へ移設し、格・スタイル一致・相性が
+      // 期待成長で単調に区別できる状態へ戻す。
+      // overrideCoachMul でゲートしない: このバフは G.coaches ではなく fighter 自身に
+      // 乗っており、AI団体(assignAISeasonTrainers の _inviteBuff)にも同じく効く。
+      // 移設前の呼び出し側3箇所も無条件に適用していたため、これが1:1の対応となる。
+      // getTrainerMult は rng を消費しない純粋な参照なので乱数列は変わらない。
+      const trainerMult = Engine.shachoshitsu.getTrainerMult(char);
+
       // §9 v3.0: 低morale時の成長ゼロ化（心が入ってない週）
       const _growthMorale = G.lockerRoomMorale != null ? G.lockerRoomMorale : 60;
       if (_growthMorale < 40 && Engine.rng.float(rng) < 0.15) return 0;
       if (_growthMorale < 50 && _growthMorale >= 40 && Engine.rng.float(rng) < 0.05) return 0;
 
-      // ★ 核心: baseLearning × 距離比率 × 年齢 × コーチ × 新人育成 × 根性練習
-      const baseGain = GROWTH_CONFIG.baseLearning * ratio * ageMul * coachMul * rookieMul * gritMul;
+      // ★ 核心: baseLearning × 距離比率 × 年齢 × コーチ × 新人育成 × 根性練習 × 招聘/合宿
+      const baseGain = GROWTH_CONFIG.baseLearning * ratio * ageMul * coachMul * rookieMul * gritMul * trainerMult;
 
       // 特性ボーナス
       let bonus = 1.0;
@@ -10441,11 +10453,11 @@ const Engine = {
           // calcGrowth に intensive を渡し、プレイヤーと同じ heat table を唯一の倍率源にする。
           const growth = Engine.growth.calcGrowth(rng, stateForCalc, { ...nc, intensive: isIntensive }, growStat);
           const statusMult = statusBlocked ? 0 : (nc.hotStreak ? 1.15 : 1.0);
-          const trainerMult = Engine.shachoshitsu.getTrainerMult(nc);
+          // care-rework2 P0-3: trainerMult(招聘/合宿) は calcGrowth 内の量子化前へ移設済み
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
-          const trainGrowth = Math.round(growth * statusMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
+          const trainGrowth = Math.round(growth * statusMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
 
           if (trainGrowth > 0) {
             const _gain = Math.round(Math.min(trainGrowth, Math.max(0, (nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100) - nc[growStat])));
@@ -12590,13 +12602,12 @@ const Engine = {
           const penMult = (rawPenMultI < 1.0 && Traits.has(nc, '適応力')) ? Math.min(1.0, rawPenMultI + 0.2) : rawPenMultI;
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
-          // v2.0: 専属トレーナーバフ
-          const trainerMult = Engine.shachoshitsu.getTrainerMult(nc);
+          // v2.0: 専属トレーナーバフ → care-rework2 P0-3 で calcGrowth 内の量子化前へ移設済み
           // §13.2: 練習孤立デバフ（成長効率×0.7）
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
-          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
           let actualGrowth = 0;
           if (trainGrowth > 0) {
             const _cap = nc.trainCap?.[growStat] ?? 100;
@@ -12670,13 +12681,12 @@ const Engine = {
           const penMult = (rawPenMultP < 1.0 && Traits.has(nc, '適応力')) ? Math.min(1.0, rawPenMultP + 0.2) : rawPenMultP;
           // v1.8: スランプ/モチベ喪失で成長停止、絶好調で×1.15
           const statusMult = (nc.slump || nc.motivationLoss) ? 0 : (nc.hotStreak ? 1.15 : 1.0);
-          // v2.0: 専属トレーナーバフ
-          const trainerMult = Engine.shachoshitsu.getTrainerMult(nc);
+          // v2.0: 専属トレーナーバフ → care-rework2 P0-3 で calcGrowth 内の量子化前へ移設済み
           // §13.2: 練習孤立デバフ（成長効率×0.7）
           const isolationMult = nc._isolationDebuff ? 0.7 : 1.0;
           const relationshipGrowthMult = nc._relationshipGrowthMult || 1.0;
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
-          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * trainerMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
+          const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
           if (trainGrowth > 0) {
             const _cap = nc.trainCap?.[growStat] ?? 100;
             const _clamped = Math.round(Math.min(trainGrowth, Math.max(0, _cap - nc[growStat])));
