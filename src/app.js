@@ -11627,7 +11627,7 @@ const App = {
     if (weekTrustReveals.length > 0) {
       const pick = [...weekTrustReveals].sort((a, b) => b.perWeekDelta - a.perWeekDelta)[0];
       const SOURCE_TEXTS = {
-        trainer: '専属トレーナーとの練習で',
+        trainer: '外部コーチの指導で',
         camp: '合宿の手応えで',
       };
       const prefix = SOURCE_TEXTS[pick.source] || '';
@@ -14395,6 +14395,14 @@ const App = {
     if (result.error === 'mode_required') { showToast('処置が選ばれていません'); return { ok: false }; }
     if (result.error === 'no_faction') { showToast('解散させる派閥がありません'); return { ok: false }; }
     if (result.error === 'not_sealed') { showToast('派閥は禁止されていません'); return { ok: false }; }
+    if (result.error === 'offseason_locked') { showToast('オフシーズン中は決裁できません'); return { ok: false }; }
+    // 未知のエラーコードをここで止める防壁。これがないとエラーオブジェクトを
+    // そのまま state に代入して G.roster が undefined になる。
+    if (result.error) {
+      console.warn('[WM] executeDecision: 未処理のエラーコード', { docId, error: result.error });
+      showToast('この決裁は実行できませんでした');
+      return { ok: false };
+    }
 
     // 派閥解散命令: factions / 各種CD / 進行中予約の削除を含む state ツリーごと差し替える。
     // 個別フィールドのマージでは「消したキー」を消せないため、下の {...G, ...} より先に置く。

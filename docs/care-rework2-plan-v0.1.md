@@ -124,7 +124,7 @@ CLAUDE.mdの魂に照らした総括: ケア書類は現在「数値操作にす
 
 ### P0 — 修理と計装(設計判断がほぼ不要。ただしP0-3は較正1本付き) — 🚧 着手済み(2026-08-20)
 
-> **委譲状況**: 機械修理(G1/G2/G3/G4/G6/G8/G10/G11文言)= `docs/codex-tasks/task-97-care-p0-repairs.md` / 丸め修正+auto-sim --care+G13 = `docs/codex-tasks/task-98-care-p0-growth-rounding-and-care-sim.md`(97→98の順で実施)。G6のshy行はFable設計値を指示書に確定済み(encourage 1.30/party 0.60/media 0.50等 — 内気は個別の声かけが響き、宴会・メディアが苦手)。G7(関係修復セリフ)はOpus起草→Keisuke全文レビュー→配線の別線。G14(記帳)は完了(worklog遡及+growth-system-spec v2.2.1)。G5/G12はP1で扱う。
+> **進捗(2026-08-20)**: 実行体制はKeisuke指示で**Opus実装(隔離worktree)+Fable検算マージ**に変更(Codex委譲から切替)。**task-97(機械修理G1/G2/G3/G4/G6/G8/G10/G11文言)= ✅ マージ済み(8668296)**、報告: `docs/codex-tasks/task-97-report.md`。**G7(関係修復セリフ)= ✅ 配線済み**(Opus起草・Keisuke承認・6a86daa)。**G14(記帳)= ✅ 完了**(worklog遡及+growth-system-spec v2.2.1)。**task-98(丸め修正+auto-sim --care+G13)= 🚧 Opus実装中**。G5/G12はP1で扱う。G4の残論点(孤立判定の母数に休暇を含めるか)はP2へ。
 
 1. **招聘市場バグ修理**: G1(Fisher-Yates化2箇所)/G2(1回休みの正実装)/G3(自動継続デフォルトOFF+逓減の対称化)。
 2. **休暇の赤字解消**: G4(欠場trustペナルティの除外にvacationを追加)。

@@ -2,7 +2,7 @@
 
 - **作成**: 2026-08-20(Opus起草・Fable一次レビュー済み)
 - **経緯**: care-rework2 P0のG7 — `CARE_REACTION_DIALOGUES` に `relationship_repair_success` / `relationship_repair_fail` キーが欠落し、関係修復斡旋書の結果モーダルの吹き出しが「…」になるバグの補充
-- **ステータス**: ⏳ **Keisuke全文レビュー待ち**。承認後にdata.jsの `CARE_REACTION_DIALOGUES` 宣言リテラル内へ配線(**ブラケット代入禁止** — GLIMPSE_B統一方針)
+- **ステータス**: ✅ **Keisuke承認済み(2026-08-20「良さそうです。OK」)・配線完了(同日)**。data.js の `CARE_REACTION_DIALOGUES` 宣言リテラル内(faction_decreeの直前)へ挿入。ブラケット代入不使用。全127名×2キーの解決テスト254/254通過
 - **文脈**: 話者は修復対象ペアの片方(idA)1名。相手の名前は地の文が背負うためセリフには入れない。成功=溝が「少し」埋まった(完全和解ではない)/失敗=不発(拒絶・意地・気まずさ)
 
 ```js
