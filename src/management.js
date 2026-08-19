@@ -22303,8 +22303,9 @@ Engine.trust = {
 
     const changes = [];
     const newRoster = roster.map(fighter => {
-      // 怪我中は変動なし（noAppearStreakもリセットしない）
-      if (fighter.injury) return fighter;
+      // 怪我中・休暇中は変動なし（noAppearStreakもリセットしない）
+      // 休暇辞令で休ませた選手に不出場ペナルティを課すと、休暇の信頼収支が赤字になる
+      if (fighter.injury || fighter.onLeave) return fighter;
 
       const mental = fighter.mn || 50;
       const oldTrust = fighter.trust != null ? fighter.trust : 50;
