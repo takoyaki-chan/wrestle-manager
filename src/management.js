@@ -15029,9 +15029,15 @@ const Engine = {
         : '🌐 全国統一王座の防衛戦が行われた');
     }
 
-    // v2.0: trust 月次更新（興行参加/不参加・勝敗・MQ・連敗・自然変動）
-    const trustResult = Engine.trust.applyShowTrust(s.roster, results, s.titles, s);
-    s = { ...s, roster: trustResult.roster, lockerRoomMorale: Engine.trust.updateLockerRoomMorale(s, trustResult) };
+    // care-rework2 P0-5 / G13: trust 月次更新はここでは行わない。
+    // 以前はここで applyShowTrust + updateLockerRoomMorale を適用していたが、
+    // executeShow は結果を s.lastShowResults に載せて返し、呼び出し元は必ず
+    // tickWeek → processSettlement を通す。processSettlement は同じ
+    // lastShowResults に対して同じ2関数を適用するため、**同じ興行に2回**
+    // 効いていた(auto-sim / dev-tools が該当。実プレイの app.js は
+    // Engine.executeShow を呼ばず自前の finalize 経路なので元から1回)。
+    // これにより auto-sim の士気・信頼が実プレイと乖離していたので、
+    // 適用箇所を processSettlement の1回に統一する。
 
     // v1.7: 育成補助金打ち切り通知（通常モードは補助金なし）
     if (state.difficultyMode !== 'hard' && state.orgPop < 40 && popResult.orgPop >= 40) {
