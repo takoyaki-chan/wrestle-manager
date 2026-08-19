@@ -8697,6 +8697,14 @@ function showLeaveWeeksModal(fighterId, state) {
 function showInviteCoachModal(state) {
   const doc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.trainer : null;
   if (!doc) return;
+  // §3.2 同時1件制の事前チェック。判定の権威はエンジン側だが、ここで見ないと
+  // コーチ選択→選手選択と進めた末に invite_active で全部破棄されてしまう。
+  const busy = (state.roster || []).find(f => f._inviteBuff);
+  if (busy) {
+    const busyCoach = ALL_COACHES.find(c => c.id === busy._inviteBuff.coachId);
+    showToast(`すでに招聘中のコーチがいます(${busyCoach ? busyCoach.name : '招聘コーチ'}・残${busy._inviteBuff.weeksLeft}週)`);
+    return;
+  }
   const market = Engine.shachoshitsu.ensureInviteMarket(state);
   const candidates = (market.candidateIds || []).map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
   if (candidates.length === 0) {
@@ -8704,6 +8712,13 @@ function showInviteCoachModal(state) {
     return;
   }
   const funds = state.funds || 0;
+  // 招聘費は書類ではなくコーチごとに決まる(doc.cost が null)ため決裁側の資金事前チェックが
+  // 素通りする。最安候補すら払えないなら他書類と同じ形でここで止める。
+  const cheapestCost = Math.min(...candidates.map(c => Engine.shachoshitsu.getInviteCost(c, state)));
+  if (cheapestCost > funds) {
+    showToast('資金が足りません');
+    return;
+  }
   const gradeLabel = { C: 'C級', B: 'B級', A: 'A級' };
   const defaultId = candidates.find(c => Engine.shachoshitsu.getInviteCost(c, state) <= funds)?.id ?? candidates[0].id;
   const cards = candidates.map((c) => {
