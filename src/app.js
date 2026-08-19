@@ -11627,7 +11627,7 @@ const App = {
     if (weekTrustReveals.length > 0) {
       const pick = [...weekTrustReveals].sort((a, b) => b.perWeekDelta - a.perWeekDelta)[0];
       const SOURCE_TEXTS = {
-        trainer: '専属トレーナーとの練習で',
+        trainer: '外部コーチの指導で',
         camp: '合宿の手応えで',
       };
       const prefix = SOURCE_TEXTS[pick.source] || '';
