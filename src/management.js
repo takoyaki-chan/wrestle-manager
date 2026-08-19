@@ -13340,7 +13340,11 @@ const Engine = {
     // care-rework v0.1 §3.5: 招聘終了に伴う雇用コーチ自動復帰(coachAssign)
     if (manage.coachAssign) s = { ...s, coachAssign: manage.coachAssign };
     // care-rework v0.1 §3.1: 四半期(12週)ごとに招聘候補市場を再抽選(periodKey変化時のみ)
-    s = { ...s, inviteMarket: Engine.shachoshitsu.ensureInviteMarket(s) };
+    const nextInviteMarket = Engine.shachoshitsu.ensureInviteMarket(s);
+    // §3.1「1回休み」: 再抽選で除外を1回適用したら消費済みにする(クリアしないと永久出禁になる)
+    const inviteMarketRerolled = !s.inviteMarket || s.inviteMarket.periodKey !== nextInviteMarket.periodKey;
+    s = { ...s, inviteMarket: nextInviteMarket };
+    if (inviteMarketRerolled && s.lastInvitedCoachId != null) s = { ...s, lastInvitedCoachId: null };
     // task-88 §D: 王座未創設時は同一stateを返しRNGも消費しない四半期フック。
     s = Engine.unifiedTitle.processQuarter(s);
     // v1.8: transient 成長イベントを state に乗せる
