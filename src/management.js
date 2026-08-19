@@ -7904,7 +7904,11 @@ const Engine = {
         if ((G.roster || []).some(f => f._inviteBuff && f._inviteBuff.coachId === c.id)) return false;
         return true;
       });
-      const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
+      const shuffled = [...eligible];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Engine.rng.int(rng, 0, i);
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
       const count = COACH_POOL_CFG.candidatesMin + Engine.rng.int(rng, 0, COACH_POOL_CFG.candidatesMax - COACH_POOL_CFG.candidatesMin);
       return shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
     },
@@ -22822,7 +22826,11 @@ Engine.shachoshitsu = {
       if ((c.minOrgPop || 0) > orgPop) return false;
       return true;
     });
-    const shuffled = [...eligible].sort(() => Engine.rng.float(rng) - 0.5);
+    const shuffled = [...eligible];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Engine.rng.int(rng, 0, i);
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
     const count = 2 + Engine.rng.int(rng, 0, 1);  // 2〜3名
     const candidateIds = shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
     return { periodKey, candidateIds };
