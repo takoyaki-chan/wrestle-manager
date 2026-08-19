@@ -22973,7 +22973,9 @@ Engine.shachoshitsu = {
         const renewalCost = Engine.shachoshitsu.getInviteCost(coach, state);
         const renewalDpCost = Engine.shachoshitsu.getInviteDecisionCost();
         if (markedBuf.autoRenew && coach && funds >= renewalCost && decisionPoints >= renewalDpCost) {
-          const refreshed = Engine.shachoshitsu.calcInviteMult(coach, f, state);
+          // §3.5: 自動継続も手動再招聘と同じ消化力逓減を通す。1期目はこの週に満了しているので、
+          // 同週に手動で再招聘した場合(_lastInviteEndWeek=今週)と同一の計算になる。
+          const refreshed = Engine.shachoshitsu.calcInviteMult(coach, { ...f, _lastInviteEndWeek: absoluteWeek }, state);
           funds -= renewalCost;
           decisionPoints = Math.max(0, decisionPoints - renewalDpCost);
           events.push(`🏋️ ${f.name}への${coachName}コーチ招聘を自動継続した(4週・${renewalCost}万/⚡${renewalDpCost})`);
