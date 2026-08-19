@@ -1,5 +1,18 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Session F ブラケット代入ブロック残5本を全処理・ガードを汎用ルール化（2026-08-20・Fable・挙動変更なし）
+
+CARE撤去(7d23984)の続き。src/data.js の Session F反映パッチ(468e57e由来)に残っていたブラケット代入ブロックを全処理した。チップ起票は4本(NOTIF/CHOICE_EVENT/LARGE_EVENT/RIVALRY)だったが、領域の機械棚卸しで**未申告の「SNAPSHOT_TEXTS 拡張」ブロックを発見**し対象に追加(計5ブロック・317push・1,187行)。領域内の `const CHOICE_EVENT_RESULT_DIALOGUES`(正軸の正当な宣言・management.js:24406で消費)はそのまま残した。
+
+- **到達性判定(CARE と同手法+参照同一性判定に強化)**: data.jsをNode実評価し、注入前スナップショットとの差分312セルを getDialoguePool 実物で全archetype×personality直積走査。「そのセルの配列参照がいずれかのコンボで返るか」で生死を機械判定 → **NOTIF 36 / CHOICE_EVENT 56 / LARGE_EVENT 60 = 全152セルDEAD**(旧軸personality→archetype型。第1パスで宣言側 standard.normal が必ずヒットし到達不能、CAREと同構造)、**RIVALRY 64 / SNAPSHOT_TEXTS 96 = 全160セルLIVE**(チップの警告どおり両者は**既に正軸の穴埋め**+無条件プール入りのscene追記で、現に実機で出ているセリフだった)
+- **処理**: DEADは撤去のみ(半角!?の口調バイブル未レビュー文を蘇生させない原則。文面はgit履歴に残存)。LIVEは宣言リテラルへ機械移植(tools/axis-rewrite.js の findKeyOffsets+scanExpr 再利用、配列は末尾追記でプール順保持・本文は1文字も変えない)→全ブロック撤去。data.js 31,085→30,065行
+- **挙動同値の全数検証**: 撤去前後のdata.jsを両方実評価し ①RIVALRY/SNAPSHOTのキー順無視deep-equal ②全テーブル×全キー×7×7コンボの解決結果2,009判定 → **全一致**(死にセルは元々解決に影響せず、生きセルは移植で完全保存)
+- **ガード汎用化**: test/glimpse-b-axis-guard-test.js のテーブル名指定検査(GLIMPSE_B/CARE個別)を廃し、ルールAに汎用ルールを追加 — 列0開始の `if (!TABLE[…])` ガード生成と `TABLE….push(…)` 実行文を**全ALL_CAPSテーブル・全src/*.jsで全面禁止**(現状違反0を確認済み)
+- **触ったファイル**: src/data.js(-1,020行) / test/glimpse-b-axis-guard-test.js(汎用ルール化)
+- **検証**: node --check OK / glimpse-b-axis-guard PASS / 挙動同値2,009判定全一致 / npm run test:quick 110本全PASS / auto-sim 20季 ALL CLEAR(違反0)
+- **前提の整理**: 本セッションのworktreeにはCARE撤去(7d23984, keen-shannonブランチ単独)が未取り込みだったため、作業前に fast-forward マージで取り込んだ(ガード汎用化の前提のため)
+- 残課題: なし(Session F型のブラケット代入はsrc/から全滅。以後はガードが機械的に再発を塞ぐ)
+
 ## CARE_REACTION_DIALOGUES 旧軸ブラケット代入ブロック撤去（2026-08-20・Fable・挙動変更なし）
 
 GLIMPSE_B統一(2026-08-12)で確立した「セリフテーブルへのブラケット代入禁止(ワークブック往復から不可視)」方針の適用。src/data.js 28061〜28302 の「CARE_REACTION_DIALOGUES 拡張」ブロック(Session F反映パッチ 468e57e 由来、10ケアキー×6セル=60セル・242行)を撤去した。

@@ -23,24 +23,27 @@ const SRC = path.join(__dirname, '..', 'src');
 
 // ── A. トップレベルのブラケット代入禁止 ──────────────────────────────
 const offenders = [];
+const pushOffenders = [];
 for (const file of fs.readdirSync(SRC).filter(f => f.endsWith('.js'))) {
   const text = fs.readFileSync(path.join(SRC, file), 'utf8').replace(/\r\n/g, '\n');
   text.split('\n').forEach((line, i) => {
     // 列0開始の `NAME['key']... = {` / `= [`。if文中のガード代入や .push(...) は対象外
     if (/^[A-Za-z_$][\w$]*\[.*\]\s*=\s*[\[{]/.test(line)) offenders.push(`${file}:${i + 1}: ${line.slice(0, 80)}`);
+    // 列0開始の `if (!TABLE[...])` ガード生成 / `TABLE….push(…)` 実行文(Session F型)。
+    // GLIMPSE_B(2026-08-12)・CARE(2026-08-20)と同型の NOTIF/CHOICE/LARGE/RIVALRY/SNAPSHOT
+    // ブロックを 2026-08-20 に全撤去し、テーブル名指定の個別検査から汎用ルールに昇格。
+    // 到達するセルでもワークブック往復から不可視になるため、生死を問わず全面禁止。
+    if (/^if \(![A-Z][A-Z0-9_]*[[.]/.test(line) || /^[A-Z][A-Z0-9_]*[[.].*\.push\(/.test(line))
+      pushOffenders.push(`${file}:${i + 1}: ${line.slice(0, 80)}`);
   });
 }
 assert.deepStrictEqual(offenders, [],
   'トップレベルのブラケット代入はワークブック往復から不可視になる(dotted path か const 内のキーにすること):\n' + offenders.join('\n'));
+assert.deepStrictEqual(pushOffenders, [],
+  'セリフテーブルへのガード付きpush実行文はワークブック往復から不可視になる(宣言リテラルに書くこと):\n' + pushOffenders.join('\n'));
 
 // ── B. GLIMPSE_B の単一定義と解決の分岐 ──────────────────────────────
 const data = fs.readFileSync(path.join(SRC, 'data.js'), 'utf8');
-assert.ok(!/^if \(!GLIMPSE_B_LINES/m.test(data), 'GLIMPSE_B への push実行文ガードが復活している');
-// CARE_REACTION_DIALOGUES も同型のガード付きpushブロック(旧軸・全60セル死にセル)を
-// 2026-08-20 に撤去済み。ルールAは `if (!X[...])` と `.push()` を対象外にしているため、
-// この形の復活はテーブル名で個別に塞ぐ(NOTIF/CHOICE/LARGE/RIVALRY の残ブロック撤去後に汎用化予定)
-assert.ok(!/^(?:if \(!)?CARE_REACTION_DIALOGUES\[/m.test(data),
-  'CARE_REACTION_DIALOGUES へのブラケット代入/push実行文が復活している(ワークブック往復から不可視になる)');
 
 const anchor = /^const GLIMPSE_B_LINES = /m.exec(data);
 assert.ok(anchor, 'const GLIMPSE_B_LINES が見つからない');
