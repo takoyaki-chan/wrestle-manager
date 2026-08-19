@@ -36,6 +36,11 @@ assert.deepStrictEqual(offenders, [],
 // ── B. GLIMPSE_B の単一定義と解決の分岐 ──────────────────────────────
 const data = fs.readFileSync(path.join(SRC, 'data.js'), 'utf8');
 assert.ok(!/^if \(!GLIMPSE_B_LINES/m.test(data), 'GLIMPSE_B への push実行文ガードが復活している');
+// CARE_REACTION_DIALOGUES も同型のガード付きpushブロック(旧軸・全60セル死にセル)を
+// 2026-08-20 に撤去済み。ルールAは `if (!X[...])` と `.push()` を対象外にしているため、
+// この形の復活はテーブル名で個別に塞ぐ(NOTIF/CHOICE/LARGE/RIVALRY の残ブロック撤去後に汎用化予定)
+assert.ok(!/^(?:if \(!)?CARE_REACTION_DIALOGUES\[/m.test(data),
+  'CARE_REACTION_DIALOGUES へのブラケット代入/push実行文が復活している(ワークブック往復から不可視になる)');
 
 const anchor = /^const GLIMPSE_B_LINES = /m.exec(data);
 assert.ok(anchor, 'const GLIMPSE_B_LINES が見つからない');

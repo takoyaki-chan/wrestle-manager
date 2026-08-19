@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## CARE_REACTION_DIALOGUES 旧軸ブラケット代入ブロック撤去（2026-08-20・Fable・挙動変更なし）
+
+GLIMPSE_B統一(2026-08-12)で確立した「セリフテーブルへのブラケット代入禁止(ワークブック往復から不可視)」方針の適用。src/data.js 28061〜28302 の「CARE_REACTION_DIALOGUES 拡張」ブロック(Session F反映パッチ 468e57e 由来、10ケアキー×6セル=60セル・242行)を撤去した。
+
+- **到達性判定: 全60セルが死にセル(移植対象ゼロ)**。判定はNodeでdata.jsを実評価し、getDialoguePool(data.js:15779)の解決順を全archetype×personality直積(7×7)で走らせて機械確認。根拠3点: ①注入トップレベルキーは normal/bold/quiet/easygoing(=personality値)だが、第1パスのバケツ探索キーは `[archetype,'standard','_default','normal']` のみで、実在archetype 7種(composed/cool/delinquent/ojousama/polite/seductive/standard)と交わらない ②フォールバック末尾の 'normal' バケツに落ちる前に、注入10キー全てで宣言側 `standard.normal` が必ずヒットして探索終了 ③第2パス(personality→archetype互換)は第1パス全空振り時のみで到達不能。生成選手も template.archetype||'standard' 由来のため値集合は同じ
+- **セリフ60本は蘇生しない**。半角「!?」のまま=口調バイブル全直し(Excel経由866件)を通っていない未レビュー文。正軸に移植すると未レビュー文が実機に出るため撤去のみとした(内容はgit履歴 1856dac 以前の data.js に残存。蘇生するならcare-rework2セリフ工程でOpus起草+Keisukeレビューを通すのが筋)
+- **ガードテスト拡張**: test/glimpse-b-axis-guard-test.js のルールAは `if (!X[...])` ガード代入と `.push()` を意図的に対象外としており本ブロックを検出できなかった。GLIMPSE_B専用検査(38行目)と同型式で `CARE_REACTION_DIALOGUES` へのブラケット代入/push実行文をテーブル名指定で禁止する assert を追加。撤去前の data.js に対して検出することを確認済み
+- **触ったファイル**: src/data.js(-242行) / test/glimpse-b-axis-guard-test.js(+7行)
+- **検証**: node --check OK / glimpse-b-axis-guard PASS / 撤去後に全10ケアキー×代表5コンボ(50件)が '…' フォールバックなしで解決 / auto-sim 20季 seed42 ALL CLEAR
+- **残課題(チップ起票)**: 同じSession Fパッチ内に同型ブロックが4つ残存 — NOTIF_DIALOGUES(27915〜)/CHOICE_EVENT_DIALOGUES/LARGE_EVENT_DIALOGUES/RIVALRY_MATCH_REACTION穴埋め。各テーブルの宣言構造・消費コードごとに到達性判定が要るため別タスク。全撤去後にガードのテーブル名指定を汎用ルール化する
+- 補足: roadmapの「special_treatmentキー重複バグ」(07-25)は現存せず — 19060の同名キーはDECISION_DOCS側で、CARE_REACTION_DIALOGUES宣言内のspecial_treatmentは1つ
+
 ## 遡及記帳: 未記帳コミット2本（実装は7〜8月、記帳2026-08-20・D-3調査G14で発見）
 
 D-3調査(care-rework2)のバランス変遷史調査で、worklogに記録のない仕様変更コミット2本を発見したため遡及記帳する。
