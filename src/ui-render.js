@@ -6736,7 +6736,7 @@ function _npPaperHeader(seasonNum, weekNum, isSeasonOpening) {
 const NP_GENERIC_PHOTO = {
   // 記事の種別 → image/news/ の基名。1カテゴリ3枚(_1.._3)から週で選ぶ
   springTagAnnounce: 'ring_empty', autumnWarAnnounce: 'ring_empty',
-  tenchosenAnnounce: 'arena_ext', juniorTournamentPreview: 'arena_ext',
+  tenchosenAnnounce: 'arena_ext', tenchosenFieldSet: 'arena_ext', juniorTournamentPreview: 'arena_ext',
   leagueElevation: 'crowd', lockerRoomCrisis: 'dojo',
   longInjury: 'medical', aiPracticeInjury: 'medical',
   transferDone: 'contract', retirementDeclare: 'press',
@@ -6799,7 +6799,10 @@ function _npSubPhotoHtml(ss) {
 // 対象一覧は関数の中に置く。この関数は各テストが本体だけを切り出して回すので、
 // 外の定数に頼ると抽出先で ReferenceError になる
 function _npSpringTagStoryIds(state, story, seasonNum) {
-  const PAIR_TYPES = ['springTagResult', 'fatedRivals', 'mqAllTimeRecord'];
+  // 一面で複数人を主役にする記事。天頂戦の告知も、候補が複数立つときは
+  // 大会写真ではなく並び肖像にする。人物が定まらない告知は呼び出し側でイベント画像へ落ちる。
+  const PAIR_TYPES = ['springTagResult', 'fatedRivals', 'mqAllTimeRecord',
+    'tenchosenAnnounce', 'tenchosenFieldSet', 'tenchosenBestBout', 'tenchosenSemiFinal'];
   if (!story || !PAIR_TYPES.includes(story.type)) return [];
   const direct = Array.isArray(story.characterIds)
     ? story.characterIds.filter(id => Number.isInteger(id) && id > 0).slice(0, 2)
@@ -7625,9 +7628,13 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
 function _npV3Shoulder(story) {
   if (!story) return '';
   const id = _npV3PrimaryId(story);
+  const ids = Array.isArray(story.characterIds)
+    ? story.characterIds.filter(n => Number.isInteger(n) && n > 0) : [];
   // P6 §3: 人物が取れない記事でも汎用画像で埋める。両方無いときだけ写真なし
   const bg = _npPhotoBg(id, story);
-  const photo = bg
+  const photo = ids.length >= 2
+    ? `<div class="np-v3-photo-kata-group">${_npSubPhotoHtml(story)}</div>`
+    : bg
     ? `<div class="np-v3-photo-kata" style="${bg}"${id ? ` onclick="showFighterPopup(${id},null,true)"` : ''}></div>`
     : '';
   // 右カラムは 200px しかないので、写真は回り込ませる。
@@ -7646,8 +7653,8 @@ function _npV3Shoulder(story) {
 // 準トップ(中段の横帯)。予告・特集向きの位置
 function _npV3JunTop(story) {
   if (!story) return '';
-  const id = _npV3PrimaryId(story);
-  const photo = id ? _npSubPhotoHtml(story) : '';
+  // 人物なしの告知もイベント画像を載せる。複数人物なら _npSubPhotoHtml が隊列にする。
+  const photo = _npSubPhotoHtml(story);
   const body = String(story.body || '');
   const wide = body.length >= 120 ? ' np-v3-cols' : '';
   return `<article class="np-v3-jun">

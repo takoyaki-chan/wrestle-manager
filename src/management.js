@@ -17856,9 +17856,12 @@ const Engine = {
         });
         events.push(`🎬 シーズン${s.season}開幕！`);
         if (Engine.ppvTournament.isTournamentSeason(s.season)) {
+          const tenchosenPreview = Engine.newspaper.buildTenchosenAnnouncementData(s);
           s = Engine.industryNews.push(s, {
             type: 'tenchosenAnnounce',
-            data: { season: s.season },
+            characterId: tenchosenPreview.characterId,
+            characterIds: tenchosenPreview.characterIds,
+            data: tenchosenPreview,
           });
           events.push('📰 今季は4年に一度の全国女子プロレス最強王者決定戦「天頂戦」開催年');
         }
@@ -18208,6 +18211,13 @@ const Engine = {
       s = returned.state;
       if (returned.event) events.push(returned.event.message);
       s = Engine.ppvTournament.startEntry(s, { tvMode: !s.ppvUnlocked });
+      const tenchosenField = Engine.newspaper.buildTenchosenFieldData(s);
+      s = Engine.industryNews.push(s, {
+        type: 'tenchosenFieldSet',
+        characterId: tenchosenField.characterId,
+        characterIds: tenchosenField.characterIds,
+        data: tenchosenField,
+      });
       if (s.ppvUnlocked && s.ppvTournament.phase === 'entry') {
         events.push('🏛️ 全国女子プロレス最強王者決定戦「天頂戦」エントリー受付開始');
       } else {
@@ -30071,6 +30081,7 @@ Engine.newspaper = {
     tenchosenBestBout:       205,
     tenchosenSemiFinal:      202,
     tenchosenAnnounce:       300,
+    tenchosenFieldSet:       285,
     juniorTournamentResult: 260,
     juniorTournamentPreview: 250,
     autumnWarResult:       240,
@@ -30725,6 +30736,52 @@ Engine.newspaper = {
       }
     }
     return s;
+  },
+
+  // 天頂戦の告知用素材。選手がまだ語れる段階でなければ characterIds は空にして、
+  // 描画側が大会のイベント画像を使う。保存データには従来どおり業界ニュースだけが残る。
+  buildTenchosenAnnouncementData(state) {
+    const candidates = Engine.ppvTournament
+      ? Engine.ppvTournament._allCandidates(state, !state.ppvUnlocked) : [];
+    const candidateIds = candidates.map(row => row.fighter.id);
+    const previousChampionId = state.unifiedTitle?.championId || null;
+    const picks = this.eventContenders(state, candidateIds, 3);
+    const ids = [];
+    if (previousChampionId && candidateIds.includes(previousChampionId)) ids.push(previousChampionId);
+    picks.forEach(row => { if (!ids.includes(row.id)) ids.push(row.id); });
+    const previousChampion = previousChampionId && this._findFighter(state, previousChampionId);
+    return {
+      season: state.season,
+      characterId: ids[0] || null,
+      characterIds: ids.slice(0, 3),
+      championWatch: previousChampion && candidateIds.includes(previousChampionId)
+        ? `前回覇者の${previousChampion.name}にも、4年越しの連覇を期待する声がある。` : '',
+      preview: this.eventPreviewParagraph(state, candidateIds),
+    };
+  },
+
+  // エントリー開始時は、特別招待と現時点の有力出場者を紙面へ渡す。
+  // プレイヤー枠が確定前でも「全出場者決定」とは書かず、保存互換性も保つ。
+  buildTenchosenFieldData(state) {
+    const tournament = state.ppvTournament || {};
+    const entryIds = (tournament.entries || []).map(row => row.id).filter(id => id != null);
+    const specialIds = (tournament.specialInvites || []).map(row => row.id).filter(id => id != null);
+    const picks = this.eventContenders(state, entryIds, 3);
+    const ids = [];
+    specialIds.forEach(id => { if (!ids.includes(id)) ids.push(id); });
+    picks.forEach(row => { if (!ids.includes(row.id)) ids.push(row.id); });
+    const inviteNames = specialIds.map(id => this._findFighter(state, id)?.name).filter(Boolean);
+    const previousChampionId = state.unifiedTitle?.championId || null;
+    const previousChampion = previousChampionId && this._findFighter(state, previousChampionId);
+    return {
+      season: state.season,
+      characterId: ids[0] || null,
+      characterIds: ids.slice(0, 3),
+      invites: inviteNames.length ? inviteNames.join('、') : '選考通過者',
+      championWatch: previousChampion && entryIds.includes(previousChampionId)
+        ? `前回覇者の${previousChampion.name}も出場圏内に入り、連覇への期待が高まる。` : '',
+      preview: this.eventPreviewParagraph(state, entryIds),
+    };
   },
 
   // ── P3 §2-6: 週次で拾うニュース源(大怪我 / 連勝・連敗の節目) ──────────

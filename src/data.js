@@ -17348,9 +17348,15 @@ const SEASON_REVIEW_LINES = {
 const NEWS_HEADLINE_TEMPLATES = {
   tenchosenAnnounce: [
     { headline: '4年に一度の「天頂戦」、今季第48週に開催',
-      body: '今季は4年に一度の開催年。全国女子プロレス最強王者決定戦「天頂戦」は第48週に行われ、全団体から選ばれた16名がシングルエリミネーション方式で優勝を争う。' },
+      body: '今季は4年に一度の開催年。全国女子プロレス最強王者決定戦「天頂戦」は第48週に行われ、全団体から選ばれた16名がシングルエリミネーション方式で優勝を争う。{championWatch}{preview}' },
     { headline: '全国女子プロレス最強王者決定戦「天頂戦」、開催年を迎える',
-      body: '第{season}シーズンの第48週に「天頂戦」が開催される。特別招待2名と団体枠14名の計16名が出場し、1回戦から決勝まで15試合を行う。' },
+      body: '第{season}シーズンの第48週に「天頂戦」が開催される。特別招待2名と団体枠14名の計16名が出場し、1回戦から決勝まで15試合を行う。{championWatch}{preview}' },
+  ],
+  tenchosenFieldSet: [
+    { headline: '「天頂戦」特別招待発表 — {invites}が名乗り',
+      body: '第48週開催の「天頂戦」へ、特別招待として{invites}が選ばれた。各団体の出場枠も動き出し、16人の顔ぶれが見え始めている。{championWatch}{preview}' },
+    { headline: '天頂戦へ視線集まる — 特別招待は{invites}',
+      body: '全国女子プロレス最強王者決定戦「天頂戦」は第48週に開幕する。特別招待に選ばれたのは{invites}。残る団体枠を巡る競争も本格化した。{championWatch}{preview}' },
   ],
   tenchosenResult: [
     { headline: '{championName}、全国女子プロレス最強王者決定戦「天頂戦」優勝',
