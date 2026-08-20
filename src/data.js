@@ -731,11 +731,24 @@ const ENG = {
   hpBase: 141, hpScale: 2.50,
   effPivot: 100, effSlopeAfterPivot: 1.0,
   hitBase: {1:97,2:97,3:96,4:94,5:92,6:89,7:86,8:84,9:81,10:78,11:76,12:74,13:72,14:70,15:68,16:66},
-  tecHitBonus: 0.17, spdDodgeBonus: 0.18, hitMin: 42, hitMax: 98,
-  counterBase: 3, counterTecScale: 0.055, counterSpdPenalty: 0.07, counterMin: 2, counterMax: 18,
+  // numeric-overhaul P1 (2026-08-20, docs/numeric-overhaul-proposal-v0.1.md):
+  // 命中とカウンターはTE/SPの絶対値参照をやめ「差分」参照に一本化した。
+  // 旧式(TE×0.17−SP×0.18)は絶対項が基礎値に積まれて上限98に張り付き、
+  // ステ帯がインフレするとTEの差が消えていた。差分ならどの帯でも同じ意味を持つ。
+  hitDiffScale: 0.18, hitMin: 42, hitMax: 98,
+  counterBase: 1.5, counterDiffScale: 0.06, counterMin: 2, counterMax: 25,
   counterDmgMult: 0.6, counterMomShift: 18,
   dmgPwrScale: 0.27, dmgTecScale: 0.115, dmgSpdScale: 0.115,
-  defStaScale: 0.025, defMntScale: 0.06, momDmgScale: 0.001,
+  // defMntScale 0.06→0.08 / pinAttemptMntPenalty 0.20→0.24 (P1較正):
+  // MN尖りが全帯で42〜45%と唯一罰されていたのを48〜53%へ戻すMN価値補強。
+  defStaScale: 0.025, defMntScale: 0.08, momDmgScale: 0.001,
+  // 内部戦闘力のべき平均指数 (P1較正の主レバー)。ダメージのOVR比補正だけが
+  // 算術平均ではなく p乗平均を参照する。p=1で旧仕様(算術平均)と完全一致、
+  // p>1は尖った配分ほど内部戦闘力が高く出る=「尖りプレミアム」の実体。
+  // p=4 で+24級尖りの対バランス勝率が53〜55%@OVR100帯(目標55%中心)。
+  // スケール不変なので「相対的な尖り」に反応する(低OVR帯の一芸ほど大きく光る)。
+  // 表示OVR(番付・給料・MQ天井・開幕大技の格差判定)は算術平均のまま変えない。
+  powerMeanP: 4,
   // タスク69: OVR比ダメージ補正の指数(v5.0 M1で導入)。通常打撃(atk側)の与ダメを
   // (attackerOvr/defenderOvr)^ovrGapDmgExponent で増減させる、実力差の主要な効き所。
   // 元は match-engine.js に 0.50 と直書きされていた値をここへ名前付き定数として抽出し、
@@ -752,7 +765,7 @@ const ENG = {
   gritDuration: 2, gritDmgReduction: 0.20, gritCounterBonus: 8,
   finisherUnlockHpThreshold: 0.50,
   pinAttemptHpThreshold: 0.35, pinAttemptMinDmg: 9, pinAttemptBaseRate: 36,
-  pinAttemptMomBonus: 0.03, pinAttemptMntPenalty: 0.20,
+  pinAttemptMomBonus: 0.03, pinAttemptMntPenalty: 0.24,
   pinAttemptSuccessBase: 23, pinAttemptClimax: 22,
   pinLowHpAttemptScale: 200, pinLowHpSuccessScale: 100,
   finishWeights: {
@@ -766,6 +779,11 @@ const ENG = {
   },
   kickoutMnScale: 0.50, kickoutMax: 2, kickoutClimaxMult: 0.7,
   guEscapeMnScale: 0.45, guEscapeMax: 2,
+  // numeric-overhaul P1: MNのハードクランプ(旧0.45/0.40)をsoft-kneeへ。
+  // MN80までは現行式(mn/100×MnScale)のまま、80超は逓減しながらcapへ漸近する。
+  // baseは接続点の値(0.8×MnScale)で低域と連続。「MN90超が1ptも効かない」死に帯の根治。
+  kickoutKnee: { start: 80, base: 0.40, range: 0.20, scale: 35, cap: 0.60 },
+  guEscapeKnee: { start: 80, base: 0.36, range: 0.16, scale: 35, cap: 0.52 },
   tkoConsecutiveThreshold: 3, tkoHpThreshold: 0.15, tkoBaseRate: 14,
   rollupHpThreshold: 0.35, rollupTecBonus: 0.18, rollupBaseSuccess: 10,
   openingExecutionCounterDmgMult: 1.4,

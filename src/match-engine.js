@@ -90,6 +90,18 @@ Engine.battle = {
       if (move.d <= 10) return 'medium';
       return 'big';
     },
+    // numeric-overhaul P1: 内部戦闘力 = 5ステのべき平均(p=powerMeanP)。
+    // ダメージのOVR比補正だけがこれを参照する。p=1で算術平均(旧仕様)と一致し、
+    // p>1は尖った配分ほど高く出る=尖りプレミアムの実体。スケール不変なので
+    // 「相対的な尖り」に反応する。表示OVR(番付/給料/MQ天井/開幕大技判定)は
+    // 従来どおり算術平均のまま — 「尖った子は同じ番付でも一撃が重い」を作る。
+    battlePower(c, _eng) {
+      const p = (_eng || ENG).powerMeanP || 1;
+      if (p === 1) return (c.pw + c.sp + c.te + c.st + c.mn) / 5;
+      return Math.pow(
+        (Math.pow(c.pw, p) + Math.pow(c.sp, p) + Math.pow(c.te, p) + Math.pow(c.st, p) + Math.pow(c.mn, p)) / 5,
+        1 / p);
+    },
     findMoveByName(name) {
       return MOVE_BY_NAME.get(name) || null;
     },
@@ -178,17 +190,19 @@ Engine.battle = {
       }
       return move;
     },
+    // numeric-overhaul P1: 命中はTEとSPの「差」で決まる(絶対値参照はレンジインフレで
+    // 上限98に張り付き、TEの差が消えていた)。同格(TE=SP)ではhitBaseがそのまま出る。
     calcHitRate(mv, atk, def) {
-      const eff = Engine.util.eff;
       const baseAcc = ENG.hitBase[Math.min(mv.d, 16)] || 70;
-      let rate = baseAcc + (eff(atk.te) * ENG.tecHitBonus) - (eff(def.sp) * ENG.spdDodgeBonus);
+      let rate = baseAcc + (atk.te - def.sp) * ENG.hitDiffScale;
       // 威圧感: 相手の命中率を低下させる
       if (Traits.has(def, '威圧感')) rate -= 2;
       return Engine.util.clamp(rate, ENG.hitMin, ENG.hitMax);
     },
+    // numeric-overhaul P1: カウンターも差分参照(防御側TE − 攻撃側SP)。
+    // 同格の実効値は旧式と同一(counterBase 1.5 = 旧3+5.5-7)。テクニシャンの見せ場。
     calcCounterRate(atk, def, ph) {
-      const eff = Engine.util.eff;
-      let rate = ENG.counterBase + (eff(def.te) * ENG.counterTecScale) - (eff(atk.sp) * ENG.counterSpdPenalty) + ph.counterBonus;
+      let rate = ENG.counterBase + (def.te - atk.sp) * ENG.counterDiffScale + ph.counterBonus;
       if (def.gritTurns > 0) rate += ENG.gritCounterBonus;
       // 威圧感: 相手のカウンター率を低下させる
       if (Traits.has(atk, '威圧感')) rate -= 2;
@@ -209,23 +223,31 @@ Engine.battle = {
     determineFinishType(rng, mv) {
       return Engine.rng.weighted(rng, ENG.finishWeights[mv.c] || ENG.finishWeights.strike);
     },
+    // numeric-overhaul P1: MN80超はハードクランプ(旧0.45)からsoft-knee漸近へ。
+    // 「MN90超がフォール脱出に1ptも効かない」死に帯の根治。盛った1ptは必ず効く。
     calcKickoutChance(def, ph, _eng, popAdv, popMult) {
       const e = _eng || ENG;
-      let chance = (def.mn / 100) * e.kickoutMnScale;
+      const knee = e.kickoutKnee;
+      let chance = def.mn <= knee.start
+        ? (def.mn / 100) * e.kickoutMnScale
+        : knee.base + knee.range * (1 - Math.exp(-(def.mn - knee.start) / knee.scale));
       if (popAdv != null) chance += popAdv * 0.07 * (popMult || 1);
       if (ph.name === 'Climax') chance *= e.kickoutClimaxMult;
       // 闘志: HP低下時のキックアウト率UP
       if (Traits.has(def, '闘志') && def.hp / def.mhp < 0.3) chance += 0.08;
-      chance = Engine.util.clamp(chance, 0.05, 0.45);
+      chance = Engine.util.clamp(chance, 0.05, knee.cap);
       if (def.kickoutCount >= e.kickoutMax) chance = 0;
       return chance;
     },
     calcGuEscapeChance(def, ph, _eng, popAdv, popMult) {
       const e = _eng || ENG;
-      let chance = (def.mn / 100) * e.guEscapeMnScale;
+      const knee = e.guEscapeKnee;
+      let chance = def.mn <= knee.start
+        ? (def.mn / 100) * e.guEscapeMnScale
+        : knee.base + knee.range * (1 - Math.exp(-(def.mn - knee.start) / knee.scale));
       if (popAdv != null) chance += popAdv * 0.07 * (popMult || 1);
       if (ph.name === 'Climax') chance *= 0.8;
-      chance = Engine.util.clamp(chance, 0.05, 0.40);
+      chance = Engine.util.clamp(chance, 0.05, knee.cap);
       if (def.kickoutCount >= e.guEscapeMax) chance = 0;
       return chance;
     },
@@ -529,8 +551,8 @@ Engine.battle = {
             // counterOvrGapMixin(0〜1)で通常打撃と同じOVR比補正をどれだけ混ぜるかを制御する(既定0=旧仕様のまま)。
             let _counterOvrMult = 1;
             if (eng.counterOvrGapMixin > 0) {
-              const _cAtkOvr = (def.pw + def.sp + def.te + def.st + def.mn) / 5;
-              const _cDefOvr = (atk.pw + atk.sp + atk.te + atk.st + atk.mn) / 5;
+              const _cAtkOvr = B.battlePower(def, eng);
+              const _cDefOvr = B.battlePower(atk, eng);
               const _fullCounterOvrMult = Math.pow(_cAtkOvr / Math.max(1, _cDefOvr), eng.ovrGapDmgExponent);
               _counterOvrMult = 1 + (_fullCounterOvrMult - 1) * eng.counterOvrGapMixin;
             }
@@ -545,9 +567,9 @@ Engine.battle = {
             }
           } else {
             let dmg = B.calcDamage(rng, mv, atk, def, mom, atkSide, ph);
-            // v5.0 M1: OVR比ダメージ補正
-            const _atkOvr = (atk.pw + atk.sp + atk.te + atk.st + atk.mn) / 5;
-            const _defOvr = (def.pw + def.sp + def.te + def.st + def.mn) / 5;
+            // v5.0 M1: OVR比ダメージ補正 — numeric-overhaul P1でべき平均(battlePower)参照へ
+            const _atkOvr = B.battlePower(atk, eng);
+            const _defOvr = B.battlePower(def, eng);
             const _ovrMult = Math.pow(_atkOvr / Math.max(1, _defOvr), eng.ovrGapDmgExponent);
             // v5.0 popularity: 防御側人気優位で被ダメ軽減
             const _popAdvD = ((def.popularity || 50) - (atk.popularity || 50)) / 100 * popularityInfluence;
