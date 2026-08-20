@@ -8103,7 +8103,13 @@ const COACH_MAX_ASSIGN = 3; // v2.0: 1コーチあたり最大担当選手数（
 // ║  SECTION 4C: GROWTH/DECLINE CONFIG (v0.6)                ║
 // ╚══════════════════════════════════════════════════════════╝
 const GROWTH_CONFIG = {
-  baseLearning: 3.0,        // v2.0: 1回の練習の基本成長量（距離比率=1.0時）
+  // numeric-overhaul P3b (2026-08-20): calcGrowthのMath.ceil 1pt下限を端数持ち越しへ是正した際の補償再較正。
+  // ceilは実質「壁際限定の成長フロア」で、γ1.3はそのフロア込みで較正されていた。フロア撤去後に
+  // baseLearning単独では補償不能(年間成長を合わせるとカンスト率が0%に崩壊)なため、(baseLearning, brakeGamma)
+  // の2軸で再フィット。アンカー(3シード×127名projection、γ1.3/bl3.0比):
+  //   追い込み連打カンスト率(27歳4stat98%+) 35.7%→36.7%(+2.8%) / キャリア年間成長 I -0.4% / N -4.3%
+  // γは開眼(kaiganActive時にγ→1.0解放)のブースト方向を保つため1.0超を維持。
+  baseLearning: 4.5,        // P3b: 3.0→4.5(ceil期待インフレの補償)。v2.0原義: 1回の練習の基本成長量（距離比率=1.0時）
   declineStartSeason: 4,  // decline begins after this many seasons
   declineRate: 0.6,       // stat points lost per decline check
   declineChance: 0.25,    // chance per stat per season-end
@@ -8113,7 +8119,7 @@ const GROWTH_CONFIG = {
   // 上限に近づくほど1ptが重くなる。放置層より能動プレイの上振れを狙い撃つ設計。
   // 較正の根拠: docs/growth-rebalance-baseline-measurement-v0.1.md +
   // docs/growth-lever-probe-report-v0.1.md (γ1.3でカンスト92%→22%、エースOVR100+ 48%→17%)
-  brakeGamma: 1.3,        // 収束ブレーキ指数(remaining/trainCap)^γ。1.0=旧線形
+  brakeGamma: 1.1,        // 収束ブレーキ指数(remaining/trainCap)^γ。1.0=旧線形。P3b: 1.3→1.1(ceilフロア撤去の補償、上記参照)
   // 追い込みの熱量逓減: 連用するほど効きが落ち(1.8→1.6→…→1.0)、通常練習-1/休養-2で回復。
   // 「毎週押すのが正解」を壊し、ここぞの数週間に使う切り札へ。負傷・wearの代償は満額のまま
   intensiveHeatTable: [1.8, 1.6, 1.4, 1.2, 1.0],

@@ -17,6 +17,7 @@
 | v2.2 | 2026-08-02 | AI成長パリティ。興行週練習、体調安全弁、熱量、追い込み代償、限定トレーナー、AI追い込み率をプレイヤーのbalance基準へ統合。`aiMatchWearCoef` / AI設定の死に倍率を廃止 |
 | v2.2.1 | 2026-08-20 | **現物合わせの遡及追記**（実装は2026-08-05 `13aa69e`、当時未記帳だったものをD-3調査で発見・記帳）: ①`遅咲き`特性を廃止（成熟度テーブルは`早熟`/`晩成`のみ） ②入団成熟度を引き上げ（`getEntryMaturityRatio`: 17歳0.75〜23歳+1.00、晩成は0.68〜） ③季末wearの試合量項を「キャリア平均試合数≥40で+3」から**当季試合数連動**（≤10: −1 / 19〜24: +2 / ≥25: +4）へ変更 |
 | v2.2.2 | 2026-08-20 | **招聘/合宿倍率の適用位置を量子化前へ移設**（care-rework2 P0-3・task-98）: 従来は `calcGrowth` 末尾の `ceil` の後（呼び出し側の `round` 連鎖）に掛かり、倍率1.45未満は成長0pt・1.45以上は実効2.0倍という二重の崖を作っていた。`getTrainerMult` を `baseGain` の乗算列（coachMulと同列）へ移設し、格・スタイル一致・相性が期待成長で単調に効く。招聘・合宿なしの成長はビット一致で不変 |
+| v2.2.3 | 2026-08-20 | **成長量子化を端数持ち越しへ是正**（numeric-overhaul P3b・task-98裁定Bの引き取り）: `calcGrowth` の `Math.ceil` 1pt下限（rawGain 0.4でも+1ptの隠しインフレ。cap近傍0.85帯で倍率差を潰す第2の量子化器）を廃止し、0.1刻みの小数を返す。整数化は呼び出し側3箇所（AI週処理/追い込み/通常練習）が `settleGrowthFraction` で行い、端数は `_growthFrac` に持ち越す（積み重ねは必ず実る）。ceilは実質「壁際限定の成長フロア」でγ1.3はフロア込みの較正だったため、補償は2軸再フィット: **baseLearning 3.0→4.5 / brakeGamma 1.3→1.1**。アンカー維持を3シード×127名projection+25季フルシミュで確認（追い込み連打カンスト率 35.7→36.7% / キャリア成長総量 -0.4〜+2.7% / AI-SトップOVR帯 -2.9%）。不変条件は `test/growth-frac-carry-test.js`（T1単調性/T3 cap近傍0.85帯/保存則/セーブ互換） |
 
 ---
 
@@ -32,17 +33,19 @@
 
 ## §1 核心式（練習成長）
 
-`GROWTH_CONFIG.brakeGamma = 1.3`。`remaining = trainCap - current`、`current < trainCap` のとき:
+`GROWTH_CONFIG.brakeGamma = 1.1` / `baseLearning = 4.5`（v2.2.3で 1.3 / 3.0 から再較正）。`remaining = trainCap - current`、`current < trainCap` のとき:
 
 ```
-ratio        = (remaining / trainCap) ^ 1.3
-baseGain     = 3.0 × ratio × ageMul × coachMul × rookieMul × gritMul
+ratio        = (remaining / trainCap) ^ 1.1
+baseGain     = 4.5 × ratio × ageMul × coachMul × rookieMul × gritMul × trainerMult
 rawGain      = baseGain × traitBonus × weeklyVariance
 intensiveMul = intensiveHeatTable[_heat]（追い込み時のみ）
-statGrowth   = min(ceil(round(rawGain × intensiveMul × 10) / 10), remaining)
+calcGrowth   = min(round(rawGain × intensiveMul × 10) / 10, remaining)   ※0.1刻みの小数のまま返す
 ```
 
-`coachMul` は AI_COACH_CONFIG の固定値ではなく、プレイヤー・AIとも `Engine.coach.getCharGrowthMult` が実コーチから算出する。**招聘/合宿の倍率（`getTrainerMult`）は v2.2.2 から `baseGain` の乗算列（量子化前）に入る**。練習後には状態、孤立、関係性、警告trustの乗算が呼び出し側で追加される。
+**適用（v2.2.3・端数持ち越し）**: 呼び出し側3箇所（AI週処理 / 追い込み / 通常練習）が状態・孤立・関係性・警告trust等の事後倍率を掛けたあと、`settleGrowthFraction(_growthFrac, 週次成長, capRemaining)` で「今週適用する整数pt」と「持ち越す端数」に分解する。ステ本体は常に整数を維持し、端数は選手の `_growthFrac`（0 ≤ frac < 1、旧セーブの未定義は0扱い、cap衝突時は超過端数を破棄）へ蓄積して、貯まった週に+1ptとして実る。`validateGameState` がNaN・範囲外を検出し0へ自動修正する。
+
+`coachMul` は AI_COACH_CONFIG の固定値ではなく、プレイヤー・AIとも `Engine.coach.getCharGrowthMult` が実コーチから算出する。**招聘/合宿の倍率（`getTrainerMult`）は v2.2.2 から `baseGain` の乗算列（量子化前）に入る**。
 
 ## §2 年齢倍率（ageMul）
 

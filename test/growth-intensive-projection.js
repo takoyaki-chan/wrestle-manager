@@ -63,7 +63,7 @@ const vm = require('vm');
 const argv = process.argv.slice(2);
 const positional = [];
 for (let index = 0; index < argv.length; index++) {
-  if (argv[index] === '--gamma' || argv[index] === '--heat') { index++; continue; }
+  if (argv[index] === '--gamma' || argv[index] === '--heat' || argv[index] === '--baseLearning') { index++; continue; }
   if (!argv[index].startsWith('--')) positional.push(argv[index]);
 }
 const optionValue = (name, fallback = null) => {
@@ -76,6 +76,8 @@ const userSeed = positional[0] ? parseInt(positional[0], 10) : 20260721;
 const outFile = positional[1] || null;
 const requestedGamma = Number(optionValue('--gamma', process.env.WM_BRAKE_GAMMA || '1.0'));
 const requestedHeat = optionValue('--heat', process.env.WM_INTENSIVE_HEAT || 'off');
+// P3b較正用: baseLearningの上書き(未指定なら data.js の GROWTH_CONFIG.baseLearning のまま)
+const requestedBaseLearning = optionValue('--baseLearning', process.env.WM_BASE_LEARNING || null);
 const HEAT_TABLES = { off: null, A: [1.8, 1.5, 1.25, 1.0], B: [1.8, 1.6, 1.4, 1.2, 1.0] };
 
 if (!HEAT_TABLES.hasOwnProperty(requestedHeat)) throw new Error(`Unknown heat table: ${requestedHeat}`);
@@ -116,6 +118,11 @@ loadAsGlobal('draft-negotiation.js');
 function injectGrowthConfig(brakeGamma, heatName) {
   GROWTH_CONFIG.brakeGamma = brakeGamma;
   GROWTH_CONFIG.intensiveHeatTable = HEAT_TABLES[heatName];
+  if (requestedBaseLearning != null) {
+    const bl = Number(requestedBaseLearning);
+    if (!Number.isFinite(bl) || bl <= 0) throw new Error(`Invalid baseLearning: ${requestedBaseLearning}`);
+    GROWTH_CONFIG.baseLearning = bl;
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -233,9 +240,11 @@ function simulateRegime(baseChar, regime, seed) {
         const growStat = Engine.coach.pickGrowthStat(rng, miniG, c.id);
         const growth = Engine.growth.calcGrowth(rng, miniG, c, growStat, ASSUMPTIONS.coachOverrideMul);
         if (growth > 0) {
+          // P3b: 本番の呼び出し元と同じ端数持ち越し(settleGrowthFraction)で整数化する
           const cap = c.trainCap[growStat];
-          const actual = Math.max(0, Math.min(growth, cap - c[growStat]));
-          c[growStat] += actual;
+          const settled = Engine.growth.settleGrowthFraction(c._growthFrac, growth, Math.max(0, cap - c[growStat]));
+          c._growthFrac = settled.frac;
+          c[growStat] += settled.gain;
         }
         const ironBonusI = Traits.has(c, '鉄人') ? 2 : 0;
         const hardWorkerBonusI = Traits.has(c, '努力家') ? 1 : 0;
@@ -256,9 +265,11 @@ function simulateRegime(baseChar, regime, seed) {
         const growStat = Engine.coach.pickGrowthStat(rng, miniG, c.id);
         const growth = Engine.growth.calcGrowth(rng, miniG, c, growStat, ASSUMPTIONS.coachOverrideMul);
         if (growth > 0) {
+          // P3b: 本番の呼び出し元と同じ端数持ち越し(settleGrowthFraction)で整数化する
           const cap = c.trainCap[growStat];
-          const actual = Math.max(0, Math.min(growth, cap - c[growStat]));
-          c[growStat] += actual;
+          const settled = Engine.growth.settleGrowthFraction(c._growthFrac, growth, Math.max(0, cap - c[growStat]));
+          c._growthFrac = settled.frac;
+          c[growStat] += settled.gain;
         }
         const ironBonus = Traits.has(c, '鉄人') ? 2 : 0;
         const hardWorkerBonus = Traits.has(c, '努力家') ? 1 : 0;
