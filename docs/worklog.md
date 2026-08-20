@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 数値オーバーホールP2+P3完了: RNG規約と残骸整理+trainCapソート化(+既存の統一王座所属バグ発見修正)（2026-08-20・Fable）
+
+- **P2① eff()残骸の全撤去**(裁定「100で切り捨てるスイッチはいらない」): Engine.util.eff定義(management.js)+ENG.effPivot/effSlopeAfterPivot(data.js)+呼び出し13箇所(match-engine.js 10箇所=ダメージ/HP/丸め込み/タッグ、management.js 3箇所=HP計算)を生値参照へ等価置換。**挙動不変を二重証明**: balance-baseline比較「逸脱なし」+auto-sim 20季42の意味指紋がP1後と完全一致(cd72de7c)
+- **P2② resolveMatchCard削除**(relationships.js): 呼び出し元ゼロのデッドコード。共有rngストリームを受けて複数試合を回す唯一の経路だった
+- **P2③ 共有ストリーム監査**: `Engine.rng.create`全数を分類 — 本体はtickWeek内も含め「コンテキストごとにcreate(derive)」が全面貫徹(週次rngはderive(seed,季,週)、AI/コーチ/関係性はさらに専用ソルト)。長寿命ストリームは実質`sessionRng`のみで、実消費はレンタル実行1箇所×数個=無害。**P2④ RNG本体差し替え(sfc32等)は不要と結論**(共有ストリームを作らない規約で担保)。規約はCLAUDE.mdのauto-simセクションに1行明文化
+- **P3 trainCapソート化**(Engine.rival.generateTrainCap): 係数5本を独立に引いた後、potの順位に降順で割り当てる方式へ。各ステ係数の周辺分布・総量ガチャは完全同一のまま最強ステ保存率68.5%→100%、尖りSD比0.87→1.28(個性が実現値で薄まらず際立つ)。呼び出し元4箇所は全て同一関数経由を確認済み、適用は新規生成のみ
+- **副産物: 既存バグ発見・修正** — P3で乱数経路が変わりauto-sim 40季42が「全国統一王者の所属不一致」(S19W49)を検出。真因は**季末のAI間引き抜き(aiPoach系のtarget.orgId直接書き換え)がunifiedTitle.orgIdに触らない**従来からのバグ(トレーニングcap変更とは無関係、経路が露出させただけ)。修正はadvanceWeekNormalized(8/14 R4で確立した全遷移境界の正規化帯)に`unifiedTitle.reconcile(silent)`を1本追加。同一シードで違反解消・ALL CLEAR確認
+- **P3b起票(見送り分)**: care-rework2裁定Bのceil量子化(端数持ち越し)は、calcGrowth呼び出し元の広い改修+成長総量の再較正(ceilの期待インフレ分をbaseLearningで補償)が必要なため独立タスク化。安易に入れると全体の成長速度が下がる
+- **P4受け入れ完了**: 100季42 **ALL CLEAR**(5300週・違反0・エラー0・Game overs 0)。npm test **252/252全PASS**(テスト側のEngine.util.eff参照9箇所×6ファイルを等価追随。うち3本がFAILしていた)。実機確認項目はバックログに集約済み(P1試合の見た目/尖り星取り/MN粘り、P3新規選手の個性、統一王座所属追随)
+
 ## 数値オーバーホールP1完了: 試合式の再設計 — 差分参照+soft-knee+べき平均の尖りプレミアム実装（2026-08-20・Fable）
 
 Keisuke全決定(計画ゴー/P3ソート方式/尖りプレミアム55%中心/eff撤去)を受け、P1を較正→本実装→検証まで完了。**橘のTE132やMN90超が「表示だけ強い」問題の根治+「尖った選手が番付以上に強い」世界の実装**。

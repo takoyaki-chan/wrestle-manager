@@ -114,8 +114,8 @@ for (const gap of gaps) {
 console.log(JSON.stringify({
   config: { trialsPerGap: trials, baseSeed, defStaScale, normalClimax, bigClimax, normalEnd, bigEnd },
   hp: {
-    normal: [40, 60, 90].map(st => Math.round(ENG.hpBase + Engine.util.eff(st) * ENG.hpScale)),
-    big: [40, 60, 90].map(st => Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(st) * BIGMATCH_ENG.hpScale)),
+    normal: [40, 60, 90].map(st => Math.round(ENG.hpBase + st * ENG.hpScale)),
+    big: [40, 60, 90].map(st => Math.round(BIGMATCH_ENG.hpBase + st * BIGMATCH_ENG.hpScale)),
   },
   normal: summarize(normal),
   big: summarize(big),

@@ -78,7 +78,7 @@ const output = {
   matchesPerCondition,
   seedsPerCondition,
   baseSeed,
-  eff: Object.fromEntries([80, 90, 99, 100, 101, 110].map(value => [value, Engine.util.eff(value)])),
+  eff: Object.fromEntries([80, 90, 99, 100, 101, 110].map(value => [value, value])),
   configs: [],
 };
 

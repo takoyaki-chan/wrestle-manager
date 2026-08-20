@@ -69,7 +69,7 @@ assert.deepStrictEqual(watchedFirst.bout, first.bout, 'watched and skipped bouts
 assert.deepStrictEqual(watchedFirst.state.autumnWar, first.state.autumnWar, 'watched and skipped tournament state must match');
 assert.ok(watchedFirst.replay?.result?.frames?.length > 0, 'watched bout must include replay frames');
 assert.strictEqual(Engine.autumnWar.MATCH_TIER, 1, 'autumn war must use normal match rules');
-const expectedLeftFullHp = Math.round(ENG.hpBase + Engine.util.eff(watchedFirst.replay.left.st) * ENG.hpScale);
+const expectedLeftFullHp = Math.round(ENG.hpBase + watchedFirst.replay.left.st * ENG.hpScale);
 assert.strictEqual(Engine.autumnWar._fullHp(watchedFirst.replay.left), expectedLeftFullHp, 'carry HP must use the normal-match HP scale');
 assert.strictEqual(
   watchedFirst.replay.left._hpOverride,

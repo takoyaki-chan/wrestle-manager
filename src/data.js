@@ -729,7 +729,7 @@ const PHASES = [
 ];
 const ENG = {
   hpBase: 141, hpScale: 2.50,
-  effPivot: 100, effSlopeAfterPivot: 1.0,
+  // effPivot/effSlopeAfterPivot は numeric-overhaul P2 で撤去(素通し残骸。2026-03-28に減衰撤廃済みだった)
   hitBase: {1:97,2:97,3:96,4:94,5:92,6:89,7:86,8:84,9:81,10:78,11:76,12:74,13:72,14:70,15:68,16:66},
   // numeric-overhaul P1 (2026-08-20, docs/numeric-overhaul-proposal-v0.1.md):
   // 命中とカウンターはTE/SPの絶対値参照をやめ「差分」参照に一本化した。

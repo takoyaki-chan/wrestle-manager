@@ -700,10 +700,9 @@ const Engine = {
       while (Engine.util.getCardWeight(normalized) < maxMatches) normalized.push({ left: 0, right: 0, isTitle: false });
       return normalized;
     },
-    eff(x) {
-      if (x <= ENG.effPivot) return x;
-      return ENG.effPivot + (x - ENG.effPivot) * ENG.effSlopeAfterPivot;
-    },
+    // eff() は numeric-overhaul P2 (2026-08-20) で撤去した。
+    // 初版の「100超×0.60減衰」は2026-03-28に撤廃済みで、以後ずっと素通しの残骸だった
+    // (「100で切り捨てるスイッチはいらない」Keisuke裁定)。呼び出し側は生のステ値を使う。
     getSalary(c, titles) {
       const ovr = c.contractOVR != null ? c.contractOVR : Engine.util.ov(c);
       const base = Math.max(0, SALARY_PARAMS.baseA * Math.exp(SALARY_PARAMS.baseB * ovr) + SALARY_PARAMS.offset);
@@ -9046,14 +9045,24 @@ const Engine = {
   // ── Rival System (IMMUTABLE) ───────────────────────────
   rival: {
     // Generate trainCap for a fighter (training-spec §1.4 v1.2: factor×Pot, 0ベース)
+    // numeric-overhaul P3「ソート方式」(2026-08-20, docs/numeric-overhaul-proposal-v0.1.md §3-P3):
+    // 係数を従来どおり独立に5本引いた後、potの順位に合わせて降順で割り当てる。
+    // 各ステ係数の周辺分布・キャラ間の総量ガチャは旧実装と完全同一のまま、
+    // potの形(最強ステ)が必ず保存される。旧実装(ステ独立割当)はpot尖りSD≥12のキャラで
+    // 31.5%の確率で最強ステが入れ替わり、設計した個性を実現値で薄めていた(尖りSD比0.87)。
+    // ソート方式は保存率100%・尖りSD比1.28(高potステに高係数が付くため個性はむしろ際立つ)。
+    // 適用は新規生成のみ(既存セーブの選手は再生成しない)。
     generateTrainCap(rng, _notionValue, potential, factorOverride) {
       const fMin = factorOverride ? factorOverride[0] : 0.55;
       const fMax = factorOverride ? factorOverride[1] : 0.80;
+      const stats = ['pw','sp','te','st','mn'];
+      const draws = stats.map(() => fMin + Engine.rng.float(rng) * (fMax - fMin));
+      draws.sort((a, b) => b - a);
+      // potの降順(タイはstats配列順で安定)に、係数の降順を対応させる
+      const order = stats.map((s, i) => [potential[s] || 0, i, s])
+        .sort((a, b) => b[0] - a[0] || a[1] - b[1]);
       const caps = {};
-      ['pw','sp','te','st','mn'].forEach(s => {
-        const factor = fMin + Engine.rng.float(rng) * (fMax - fMin);
-        caps[s] = Math.round(factor * (potential[s] || 0));
-      });
+      order.forEach(([pot, , s], rank) => { caps[s] = Math.round(draws[rank] * pot); });
       return caps;
     },
     // Entry maturity is shared by player, draft, scout and AI generation.
@@ -25724,12 +25733,17 @@ Engine.sanitizeFloats = function(G) {
 // 2026-08-14 R4追記: 季末の契約満了・移籍等でロスターを離れた選手を参照する直訴pendingも
 // ここで取り下げる(tickWeek末尾と同じ自浄)。auto-simはadvanceWeek直後にもvalidateGameStateを
 // 通すため、遷移APIが不整合な参照を返すと不変条件に捕まる(実測: Week49の引退・満了で発生)
+// 2026-08-20 追記: 統一王座のreconcileも同列に行う。季末のAI間引き抜き/移籍
+// (aiPoach系: target.orgId 直接書き換え)は unifiedTitle.orgId に触らないため、
+// 統一王者が引き抜かれた季末だけ所属不一致がvalidateGameStateに捕まっていた
+// (numeric-overhaul P3のtrainCap変更で経路が変わり実測。バグ自体は従来から存在)
 const advanceWeekWithAIGrowthParity = Engine.advanceWeek;
 Engine.advanceWeek = function advanceWeekNormalized(state) {
   const result = advanceWeekWithAIGrowthParity(state);
   if (!result || !result.state) return result;
   let s = Engine.challengeRequest.dropStalePending(result.state);
   if (s.aiOrgs) s = { ...s, aiOrgs: Engine.rival.sanitizeAIOrgs(s.aiOrgs) };
+  s = Engine.unifiedTitle.reconcile(s, { silent: true });
   return { ...result, state: s };
 };
 
@@ -27266,7 +27280,7 @@ Engine.juniorTournament = {
   _withTournamentHp(fighter, matchTier) {
     if (!fighter) return fighter;
     const eng = (matchTier || 1) >= 2 ? BIGMATCH_ENG : ENG;
-    const fullHp = Math.round(eng.hpBase + Engine.util.eff(fighter.st) * eng.hpScale);
+    const fullHp = Math.round(eng.hpBase + fighter.st * eng.hpScale);
     const carryHpPct = Engine.util.clamp(
       fighter.jtCarryHpPct != null ? fighter.jtCarryHpPct : 100,
       1,
@@ -27869,7 +27883,7 @@ Engine.ppvTournament = {
   },
 
   _fullHp(fighter) {
-    return Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(fighter.st) * BIGMATCH_ENG.hpScale);
+    return Math.round(BIGMATCH_ENG.hpBase + fighter.st * BIGMATCH_ENG.hpScale);
   },
 
   _withCarryHp(fighter, carryPct) {
@@ -29632,7 +29646,7 @@ Engine.autumnWar = {
   },
 
   _fullHp(fighter) {
-    return Math.round(ENG.hpBase + Engine.util.eff(fighter.st) * ENG.hpScale);
+    return Math.round(ENG.hpBase + fighter.st * ENG.hpScale);
   },
 
   /** 現在リング上にいる2人だけをシミュレートし、結果とRNG状態を保存する。 */

@@ -19,7 +19,7 @@ function assert(condition, message) {
 }
 
 function maxHp(eng, stamina) {
-  return Math.round(eng.hpBase + Engine.util.eff(stamina) * eng.hpScale);
+  return Math.round(eng.hpBase + stamina * eng.hpScale);
 }
 
 const normal40 = maxHp(ENG, 40);

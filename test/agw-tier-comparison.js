@@ -46,7 +46,7 @@ function prepareState(seed) {
 }
 
 function normalHpFighter(fighter) {
-  const fullHp = Math.round(ENG.hpBase + Engine.util.eff(fighter.st) * ENG.hpScale);
+  const fullHp = Math.round(ENG.hpBase + fighter.st * ENG.hpScale);
   return {
     ...fighter,
     _hpOverride: Engine.wear.toHpOverride(fighter.condition, fullHp),

@@ -132,6 +132,7 @@ for i in $(seq 1 10); do node test/auto-sim.js 100 $((i * 7919)); done | grep "R
 - **複数シード** → 較正値の再現性確認という明確な目的があるときだけ+1本(40年)。10シード×100年級のバッチや100×100は行わない
 - 同じ構成の検証を工程ごとに繰り返さない。既存の計測結果を使い回す
 - **app.js や UI のみの変更** → 不要
+- **試合の勝率計測は必ず試合ごとに `Engine.rng.create(Engine.rng.derive(...))` で新品rngを作る**(本体と同方式)。1本のrngストリームを共有して大量試合を回すと、乱数の長距離相関で勝率が最大35pt歪む(2026-08-20実測)。回帰は `node test/balance-baseline.js`(凍結ベースライン比較)、詳細は docs/numeric-overhaul-proposal-v0.1.md §1c
 
 ## specs/ 更新ルール (2026-04-05 追加)
 

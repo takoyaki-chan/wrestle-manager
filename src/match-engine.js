@@ -209,10 +209,10 @@ Engine.battle = {
       return Engine.util.clamp(rate, ENG.counterMin, ENG.counterMax);
     },
     calcDamage(rng, mv, atk, def, mom, atkSide, ph) {
-      const eff = Engine.util.eff;
-      const base = mv.d + (eff(atk.pw) * ENG.dmgPwrScale) + (eff(atk.te) * ENG.dmgTecScale)
-        + (eff(atk.sp) * ENG.dmgSpdScale);
-      const defense = (eff(def.st) * ENG.defStaScale) + (def.mn * ENG.defMntScale);
+      // numeric-overhaul P2: eff()残骸(素通し恒等関数)を撤去。値は生のステをそのまま使う
+      const base = mv.d + (atk.pw * ENG.dmgPwrScale) + (atk.te * ENG.dmgTecScale)
+        + (atk.sp * ENG.dmgSpdScale);
+      const defense = (def.st * ENG.defStaScale) + (def.mn * ENG.defMntScale);
       const mAdv = atkSide === 'left' ? mom : -mom;
       const mMod = 1 + (mAdv * ENG.momDmgScale);
       const rF = ENG.dmgRandMin + (Engine.rng.float(rng) * ENG.dmgRandRange);
@@ -290,9 +290,8 @@ Engine.battle = {
       const eng     = tier >= 2 ? BIGMATCH_ENG      : ENG;
       const popularityInfluence = opts && opts.popularityInfluence != null ? opts.popularityInfluence : 1.0;
 
-      const eff = Engine.util.eff;
-      const fullHpL = Math.round(eng.hpBase + eff(charL.st) * eng.hpScale);
-      const fullHpR = Math.round(eng.hpBase + eff(charR.st) * eng.hpScale);
+      const fullHpL = Math.round(eng.hpBase + charL.st * eng.hpScale);
+      const fullHpR = Math.round(eng.hpBase + charR.st * eng.hpScale);
       const L = {
         ...charL, hp: charL._hpOverride != null ? charL._hpOverride : fullHpL,
         mhp: fullHpL, gritTurns: 0, kickoutCount: 0, consecutiveHits: 0,
@@ -686,7 +685,7 @@ Engine.battle = {
               }
             }
             else if (!winner && mv.c === 'rollup' && def.hp / def.mhp < eng.rollupHpThreshold) {
-              let rSuccess = eng.rollupBaseSuccess + (Engine.util.eff(atk.te) * eng.rollupTecBonus);
+              let rSuccess = eng.rollupBaseSuccess + (atk.te * eng.rollupTecBonus);
               // 番狂わせ体質: 格上相手の丸め込み成功率UP
               if (Traits.has(atk, '番狂わせ体質') && Engine.util.ov(def) > Engine.util.ov(atk)) rSuccess += 8;
               if (Engine.rng.float(rng) * 100 < rSuccess) {
@@ -861,7 +860,7 @@ Engine.tagMatch = (() => {
 
   // 連戦消耗モジュール用: タッグ戦の満タンHPを事前算出したいときのヘルパー
   function calcFullHp(char) {
-    return Math.round(TAG_MATCH_CONFIG.hpBase + Engine.util.eff(char.st) * TAG_MATCH_CONFIG.hpScale);
+    return Math.round(TAG_MATCH_CONFIG.hpBase + char.st * TAG_MATCH_CONFIG.hpScale);
   }
 
   // ── HP減衰曲線 (§3.1.1): 後半急降下型。MNTで緩和 ──
@@ -979,7 +978,6 @@ Engine.tagMatch = (() => {
   function simulateTagMatch(teamA, teamB, rng, options) {
     const opts = options || {};
     const B = Engine.battle;
-    const eff = Engine.util.eff;
     const TC = TAG_MATCH_CONFIG;
     const recordFrames = !!opts.recordFrames;
 
@@ -989,7 +987,7 @@ Engine.tagMatch = (() => {
     const chemB = calcChemistry(bondB, opts.tagExp_B || 0, teamB.fighter1.style, teamB.fighter2.style);
 
     function initFighter(char) {
-      const hp = Math.round(TC.hpBase + eff(char.st) * TC.hpScale);
+      const hp = Math.round(TC.hpBase + char.st * TC.hpScale);
       // 連戦消耗モジュール(autumn-gauntlet-war-spec-v0.1 §3)用: _hpOverride が指定されていれば
       // 開始HPをその値にする(JT の jtCarryHpPct と同じ仕組み)。未指定時は従来通り満タン開始。
       const startHp = char._hpOverride != null ? Math.max(1, Math.min(hp, Math.round(char._hpOverride))) : hp;
@@ -1290,7 +1288,7 @@ Engine.tagMatch = (() => {
           }
           if (!winner && cMv.c === 'rollup' && atkFighter.hp > 0
               && atkFighter.hp / atkFighter.mhp <= ENG.rollupHpThreshold) {
-            let rSuccess = ENG.rollupBaseSuccess + (eff(def.te) * ENG.rollupTecBonus);
+            let rSuccess = ENG.rollupBaseSuccess + (def.te * ENG.rollupTecBonus);
             if (ph.name === 'Climax') rSuccess += 15;
             if (Engine.rng.float(rng) * 100 < rSuccess) {
               const apronAtk = isAAttacking ? apronA : apronB;
@@ -1483,7 +1481,7 @@ Engine.tagMatch = (() => {
           // 丸め込みは selMove の独立経路で選ばれたときだけ決着判定する。
           if (!winner && mv.c === 'rollup' && defFighter.hp > 0
               && defFighter.hp / defFighter.mhp <= ENG.rollupHpThreshold) {
-            let rSuccess = ENG.rollupBaseSuccess + (eff(atk.te) * ENG.rollupTecBonus);
+            let rSuccess = ENG.rollupBaseSuccess + (atk.te * ENG.rollupTecBonus);
             if (ph.name === 'Climax') rSuccess += 15;
             if (Engine.rng.float(rng) * 100 < rSuccess) {
               const apronDef = isAAttacking ? apronB : apronA;

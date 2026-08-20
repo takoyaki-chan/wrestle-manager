@@ -4118,29 +4118,10 @@ Engine.challengeRequest = {
     return Engine.util.normalizeShowCardForVenue(remaining, state.week, state.showVenue);
   },
 
-  resolveMatchCard(card, rng) {
-    const matches = [];
-    for (let i = 0; i < 3; i++) {
-      const fA = card.teamA[i];
-      const fB = card.teamB[i];
-      const res = Engine.battle.simulateMatch(fA, fB, rng, 1);
-      matches.push({
-        fighterA: fA,
-        fighterB: fB,
-        winner: res.winner,
-        mq: res.mq,
-        finType: res.finType,
-        finMove: res.finMove,
-      });
-    }
-    const winsA = matches.filter(m => m.winner === 'left').length;
-    const winsB = matches.filter(m => m.winner === 'right').length;
-    let teamWin = 'draw';
-    if (winsA > winsB) teamWin = 'A';
-    else if (winsB > winsA) teamWin = 'B';
-    return { matches, winsA, winsB, teamWin };
-  }
-
+  // resolveMatchCard は numeric-overhaul P2 (2026-08-20) で削除した。
+  // 呼び出し元ゼロのデッドコードで、かつ共有rngストリームを受けて複数試合を回す
+  // 唯一の経路だった(共有ストリーム消費はxorshift長距離相関の系統バイアス源 — P0実測)。
+  // 現行の実装は app.js 側(旧resolveMatchCardと同shapeを組み立てる)。
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

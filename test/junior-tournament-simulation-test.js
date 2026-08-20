@@ -52,7 +52,7 @@ function stable(value) {
 (function testJuniorTournamentCarryHpBecomesStartingHp() {
   const f = fighter(1, 80);
   const prepared = Engine.juniorTournament._withTournamentHp({ ...f, jtCarryHpPct: 50 }, 1);
-  const fullHp = Math.round(ENG.hpBase + Engine.util.eff(f.st) * ENG.hpScale);
+  const fullHp = Math.round(ENG.hpBase + f.st * ENG.hpScale);
 
   assert.strictEqual(prepared.condition, 80);
   assert.strictEqual(prepared.jtCarryHpPct, 50);
@@ -62,7 +62,7 @@ function stable(value) {
 (function testJuniorTournamentStartsAtFullHpByDefault() {
   const f = fighter(1, 80);
   const prepared = Engine.juniorTournament._withTournamentHp(f, 1);
-  const fullHp = Math.round(ENG.hpBase + Engine.util.eff(f.st) * ENG.hpScale);
+  const fullHp = Math.round(ENG.hpBase + f.st * ENG.hpScale);
 
   assert.strictEqual(prepared.jtCarryHpPct, 100);
   assert.strictEqual(prepared._hpOverride, fullHp);
@@ -190,7 +190,7 @@ function stable(value) {
     );
 
     const finalCall = calls[2];
-    const expectedFullHp = Math.round(BIGMATCH_ENG.hpBase + Engine.util.eff(finalCall.left.st) * BIGMATCH_ENG.hpScale);
+    const expectedFullHp = Math.round(BIGMATCH_ENG.hpBase + finalCall.left.st * BIGMATCH_ENG.hpScale);
     assert.strictEqual(result.rounds[0].matches[0].winnerId, 1);
     assert.strictEqual(result.rounds[1].matches[0].left.jtCarryHpPct, 45);
     assert.strictEqual(finalCall.left.jtCarryHpPct, 45);
