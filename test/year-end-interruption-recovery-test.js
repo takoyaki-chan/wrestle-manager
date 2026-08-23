@@ -202,4 +202,28 @@ loadGame({ full: true });
   assert.strictEqual(advanced._annualAwardsCompletedSeason, 3);
 }
 
+// 5) 第2週で表彰式を復旧した場合、完走後は週画面に取り残さず契約更新を再開する。
+{
+  const report = appMethod('_showFarewellsThenReport', '_checkAndShowAwards');
+  const context = {
+    G: { offSeason: true, offWeek: 2, weekPhase: 'contractNegotiation' },
+    showScreenCalls: [],
+    refreshes: 0,
+    showScreen(id) { context.showScreenCalls.push(id); },
+    refreshAll() { context.refreshes += 1; },
+  };
+  let resumed = 0;
+  context.App = {
+    _contractNegotiationSession: null,
+    handleContractNegotiations() { resumed += 1; },
+  };
+  const fn = vm.runInNewContext(
+    `({${report}\n})._showFarewellsThenReport`, context
+  );
+  fn.call(context.App);
+  assert.deepStrictEqual(Array.from(context.showScreenCalls), ['shachoshitsu']);
+  assert.strictEqual(resumed, 1, '第2週の表彰式復旧後に契約更新を再開していない');
+  assert.strictEqual(context.refreshes, 0, '契約更新前に週画面へ戻して進行を取り残している');
+}
+
 console.log('year-end-interruption-recovery-test: ok');

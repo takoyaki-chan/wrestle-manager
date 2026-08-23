@@ -12400,6 +12400,16 @@ const App = {
    *  `refreshAll()` だけでは背面にしていた別タブを切り替えないため、表彰式を閉じても
    *  offWeek 1 の総括が見えないことがあった。レポート週だけ今週画面へ戻す。 */
   _showFarewellsThenReport() {
+    // 表彰式が何らかの中断から offWeek 2 で復旧した場合、式典を閉じた後に
+    // 背面の週画面へ戻すだけでは契約更新の開始経路が失われる。通常の第1週では
+    // ここに来ないため、第2週かつ未開始の契約更新だけを明示的に再開する。
+    if (G.offSeason && G.offWeek === 2 && G.weekPhase === 'contractNegotiation') {
+      if (!App._contractNegotiationSession?.active) {
+        showScreen('shachoshitsu');
+        App.handleContractNegotiations();
+      }
+      return;
+    }
     if (G.offSeason && G.offWeek === 1 && typeof showScreen === 'function') {
       showScreen('week');
     }
