@@ -3,6 +3,10 @@
 - 日付: 2026-08-29
 - 調査者: Claude (Fable)
 - 種別: 調査・計測(コード変更なし)
+- **後続(同日)**: Keisuke裁定で原因①②を修正済み(Fix-A=AI週次に状態tick対称化 / Fix-B=normFighterのactive化+saveDoctor常時修復)。
+  同シード40季でAI凍結27.3%→2.5%・高pot若手凍結40%→2.8%・prospect残留158→0件、npm test 253/253。
+  詳細はworklog 2026-08-29(2本目)とspecs/ai-growth-parity-spec-v0.1.md §1.5。
+  原因③はKeisuke裁定「プレイヤー団体からも100超は出る。論点は尖った選手の強さ」につき対応せず
 - 発端: Keisukeの再申し立て「OVR100超はオールラウンダーばかり。深町真琴や高津小春のような
   尖った選手が100まで育たない。以前『気のせい』と説明されたが納得できない。徹底的に調べてほしい」
 - 前回調査: `docs/flat-vs-spiky-stats-investigation-v0.1.md`(2026-08-19)

@@ -1,5 +1,16 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Fix-A/B実装: AIスランプ永久化の解消(状態tick対称化)+ドラフト新人prospect残留の修正（2026-08-29・Fable）
+
+OVR100調査(下記)の原因①②をKeisuke裁定で実装。原因③(cap係数の団体差)は「プレイヤー団体からも100超は出る。論点は尖った選手の強さ」との裁定につき対応しない。
+
+- **Fix-A(management.js processAIWeek)**: ロスターmap先頭にプレイヤー週次(12500帯)と同順序・同怪我ガードの状態tick一式を追加 — growthPenaltyカウントダウン(+penalty_endスランプ判定)/絶好調カウントダウン(重傷即終了)/スランプ回復+週次モチベ転移/モチベ喪失回復/スランプ・モチベ中の能力微減。乱数は選手ごと`create(derive(seed,季,週,ソルト,id))`(ソルト0xA5C2〜0xA5C6)。意図した非対称2点=コーチ系倍率は中立1.0/自主引退はAI側ではロスター除去せず「その週は回復なし」(specs §1.5に明記)
+- **Fix-B(ui-common.js normFighter×3箇所 + test/auto-sim.js同型1箇所)**: `careerStage:'active'`を追加。**saveDoctor.repairOnLoadに常時修復を追加**(所属ロスター内のprospectをactive化、`roster_prospect_activated:N`でchanges記録) — migrateActiveは一度きりのマイグレーションで既存セーブの再発を拾えないため
+- **検証(同シード40季7919の修正前後比較・計装シム)**: AI停止48週+ 27.3%→**2.5%**(最長667→165週)/高pot若年凍結 40.0%→**2.8%**/prospect残留 158→**0件**/高津小春(若年入団)peak73凍結→**peak108**。auto-sim **ALL CLEAR**・npm test **253/253 PASS**・ai-growth-parity-test ok
+- **既知の副作用(要観察)**: AI世界が健全化し95+が52→72件・100+が30→43件(40季)。γ1.3較正(07-30)は凍結バグ込みの世界で行われたため、AIトップ層のOVR帯が7月較正時より上がる。過剰なら再較正はKeisuke判断
+- specs: `specs/ai-growth-parity-spec-v0.1.md` §1.5追補(見落とし非対称#6〜9と是正内容)+§1.4のgrowthPenalty記述訂正。**Keisukeのspecs diff確認待ち**
+- 残課題: AIのモチベ喪失自主引退(§5.5)は未対称(将来AI中途退団を設計する際の宿題)/FAプール滞在中のスランプ回復tickも無い(影響軽微・未対応)
+
 ## 調査: 「尖った選手がOVR100に届かない」徹底調査 — AIスランプ永久化バグ等5要因を特定（2026-08-29・Fable）
 
 Keisukeの再申し立て(「OVR100超はオールラウンダーばかり、深町真琴/高津小春が育たない。前回の『気のせい』説明に納得できない」)を受け、コード変更なしの徹底調査。**報告書は `docs/growth-ovr100-investigation-v0.1.md`**(結論・全実測値・コード位置・修正候補を集約)。

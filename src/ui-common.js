@@ -5925,6 +5925,8 @@ function startDraftNegotiation() {
     wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
     injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
     intensive: false, intensiveWeeks: 0,
+    // 2026-08-29 Fix-B: 候補(prospect)のまま所属入りすると季末にcareerSeasonsが増えない
+    careerStage: 'active',
   });
   const canAIDraftAcquire = (orgId, rosterLength) => {
     const ideal = (AI_SCOUT_CFG[orgId === 'org_s' ? 'S' : orgId === 'org_a' ? 'A' : 'B'] || {}).idealRoster || 13;
@@ -6248,6 +6250,8 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
     wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
     injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
     intensive: false, intensiveWeeks: 0,
+    // 2026-08-29 Fix-B: 候補(prospect)のまま所属入りすると季末にcareerSeasonsが増えない
+    careerStage: 'active',
   });
   const empressNames = [];
   for (const ev of empEvents) {
@@ -6625,6 +6629,8 @@ function draftNextCandidate() {
     wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
     injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
     intensive: false, intensiveWeeks: 0,
+    // 2026-08-29 Fix-B: 候補(prospect)のまま所属入りすると季末にcareerSeasonsが増えない
+    careerStage: 'active',
   });
 
   // 前の候補の結果を適用

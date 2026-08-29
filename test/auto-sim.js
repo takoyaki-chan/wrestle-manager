@@ -1111,6 +1111,8 @@ function autoHandleScoutEvent(G, simRng) {
     wins: f.wins || 0, losses: f.losses || 0, draws: f.draws || 0,
     injury: null, seasonGrowth: f.seasonGrowth || { pw: 0, sp: 0, te: 0, st: 0, mn: 0 },
     intensive: false, intensiveWeeks: 0,
+    // 2026-08-29 Fix-B追随: 本体(ui-common)のnormFighterと同じくactive化する
+    careerStage: 'active',
   });
 
   for (const r of draftResult.results) {

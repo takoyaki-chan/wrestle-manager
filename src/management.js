@@ -351,6 +351,23 @@ const Engine = {
       state.retiredIds = state.retiredIds.filter(id => !occupied.has(id));
       if (state.retiredIds.length !== prevRetired) changes.push(`retired_conflict_removed:${prevRetired - state.retiredIds.length}`);
 
+      // 2026-08-29 Fix-B: ドラフト獲得処理(ui-common normFighter)が careerStage を
+      // 'prospect' のまま所属ロスターへ入れていた既存セーブを常時修復する。
+      // 所属ロスター内の 'prospect' は正規の契約パスに存在しない(全パスがactive化する)。
+      // prospectのままだと季末に careerSeasons が増えない(applySeasonEndのFA処理と同じ分岐)。
+      {
+        let stuckProspects = 0;
+        const activateStage = c => {
+          if (c && c.careerStage === 'prospect') { stuckProspects++; return { ...c, careerStage: 'active' }; }
+          return c;
+        };
+        state.roster = state.roster.map(activateStage);
+        Object.keys(state.aiOrgs).forEach(orgId => {
+          state.aiOrgs[orgId] = { ...state.aiOrgs[orgId], roster: (state.aiOrgs[orgId].roster || []).map(activateStage) };
+        });
+        if (stuckProspects > 0) changes.push(`roster_prospect_activated:${stuckProspects}`);
+      }
+
       (state.retiredFighters || []).forEach(f => {
         if (f?.id && !occupied.has(f.id) && !state.retiredIds.includes(f.id)) state.retiredIds.push(f.id);
       });
@@ -10400,6 +10417,51 @@ const Engine = {
 
       roster = roster.map(f => {
         let nc = { ...f };
+
+        // AI/プレイヤー状態tick対称化(2026-08-29 Fix-A、調査: docs/growth-ovr100-investigation-v0.1.md):
+        // 回復判定(tickSlumpPassive/tickMotivationLossPassive)とgrowthPenalty/絶好調の
+        // カウントダウンがプレイヤーロスター週次(12500帯)にしか無く、AI所属選手は
+        // スランプ/モチベ喪失に一度入ると永久に回復せず成長が凍結していた
+        // (AI高pot若手の37〜40%が該当、2026-08-01「AI/プレイヤー成長対称」裁定違反)。
+        // プレイヤー側と同じ順序・同じ怪我ガードで回す。乱数は選手ごとderive
+        // (ソルト0xA5C2〜0xA5C6、プレイヤー側0x5C2〜0x5C5とは別系統)。
+        // 意図した非対称2点: コーチ系倍率はAIに存在しないため中立(1.0)/
+        // モチベ喪失の自主引退はAI側ではロスター除去に踏み込まず「その週は回復なし」に留める。
+        if (nc.growthPenalty) {
+          const gpRemaining = nc.growthPenalty.remainingWeeks - 1;
+          if (gpRemaining <= 0) {
+            nc.growthPenalty = null;
+            const aiPenSlumpRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xA5C6, nc.id));
+            if (Engine.growthEvents.checkSlump(aiPenSlumpRng, nc, 'penalty_end')) {
+              nc = Engine.growthEvents.applySlump(nc, 'penalty_end', state.season, state.week);
+            }
+          } else {
+            nc.growthPenalty = { ...nc.growthPenalty, remainingWeeks: gpRemaining };
+          }
+        }
+        if (nc.hotStreak) {
+          const hadSevere = !!(nc.injury && nc.injury.type === '重傷');
+          nc = Engine.growthEvents.tickHotStreak(nc, hadSevere).fighter;
+        }
+        if (nc.slump && !nc.injury) {
+          const aiSlumpTickRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xA5C2, nc.id));
+          const slumpResult = Engine.growthEvents.tickSlumpPassive(nc, aiSlumpTickRng, state.season, state.week, 1.0, nextOrgData.lockerRoomMorale ?? 60);
+          nc = slumpResult.fighter;
+          if (!slumpResult.recovered) {
+            const aiMotivRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xA5C3, nc.id));
+            if (Engine.growthEvents.checkMotivationLoss(aiMotivRng, nc, 'weekly')) {
+              nc = Engine.growthEvents.applyMotivationLoss(nc, state.season, state.week);
+            }
+          }
+        }
+        if (nc.motivationLoss && !nc.injury) {
+          const aiMotTickRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xA5C4, nc.id));
+          nc = Engine.growthEvents.tickMotivationLossPassive(nc, aiMotTickRng, state.season, state.week, nextOrgData.lockerRoomMorale ?? 60).fighter;
+        }
+        if ((nc.slump || nc.motivationLoss) && !nc.injury && !nc.isRental) {
+          const aiDecayRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week, 0xA5C5, nc.id));
+          nc = Engine.growthEvents.applyWeeklyStatDecay(aiDecayRng, nc);
+        }
 
         if (nc.injury) {
           nc.condition = Math.min(100, (nc.condition || 50) + 5);
