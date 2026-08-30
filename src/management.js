@@ -23105,11 +23105,18 @@ Engine.shachoshitsu = {
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, season, quarter, 0x1CB1));
     const hired = new Set(state.coaches || []);
     const orgPop = state.orgPop || 0;
+    const coachSlots = state.coachSlots || 1;
     const lastInvitedId = state.lastInvitedCoachId || null;
     const eligible = ALL_COACHES.filter(c => {
       if (hired.has(c.id)) return false;
       if (c.id === lastInvitedId) return false;  // 招聘直後のコーチは次回抽選を1回休む
-      if ((c.minOrgPop || 0) > orgPop) return false;
+      if ((c.minOrgPop || 0) > orgPop) {
+        // care-rework2 P3-4②: A級だけは雇用側と同じ通貨(コーチ枠4つ目の開放)でも解禁する。
+        // 「A級を雇えるのに招聘には来ない」という通貨の食い違いを解消するための例外で、
+        // C級(壁なし)/B級(知名度30)のゲートには手を付けない。
+        // 希少性は「知名度55 か 枠4つ目」というどちらも高い壁のままで維持される。
+        if (!(c.grade === 'A' && coachSlots >= 4)) return false;
+      }
       return true;
     });
     const shuffled = [...eligible];
@@ -23169,8 +23176,13 @@ Engine.shachoshitsu = {
     if (!coach || !fighter) return 1.0;
     const gradeBase = { C: 1.25, B: 1.30, A: 1.35 }[coach.grade] || 1.25;
     let mult = gradeBase;
-    if (coach.style === 'Allround') mult += COACH_STYLE_BONUS.allround;
-    else if (coach.style === fighter.style) mult += COACH_STYLE_BONUS.specialist;
+    // care-rework2 P3-4①: 判定順を「選手のスタイルと一致するか」先行にする。
+    // 旧順(Allroundコーチを先に見る)では、Allround選手にAllroundコーチが付いても
+    // 万能指導+0.05 で止まり、specialist(+0.08)の経路が定義上存在しなかった
+    // (Allround選手43名に「ピッタリ」が構造的に生まれない)。
+    // 変わるのは Allroundコーチ×Allround選手(0.05→0.08)だけで、他の組合せは不変。
+    if (coach.style === fighter.style) mult += COACH_STYLE_BONUS.specialist;
+    else if (coach.style === 'Allround') mult += COACH_STYLE_BONUS.allround;
     const compat = Engine.shachoshitsu.getCoachingCompat(coach.coachingType, fighter.personality);
     if (compat === 'good') mult += 0.10;
     else if (compat === 'bad') mult -= 0.10;
