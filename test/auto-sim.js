@@ -1218,6 +1218,8 @@ const careStats = {
   // care-rework2 P2-A 不変条件の検証プローブ(読み取り専用・--care でなくても採る)。
   // 休暇のwear回復が引退年齢の分布を動かしていないかを見る。
   retireAges: [],
+  // care-rework2 P2-G: 起用約束の3分岐が実際に発火しているか
+  pledgeOutcomes: { kept: 0, broken: 0, expired: 0 },
 };
 const careRetireSeenIds = new Set();
 
@@ -1362,6 +1364,62 @@ function autoExecuteCare(G) {
     careStats.totalDp += doc.decisionCost || 0;
     careStats.counts[docId] = (careStats.counts[docId] || 0) + 1;
   }
+  return G;
+}
+
+// ── care-rework2 P2-G: 起用約束(pledge)の自動実行 ────────────────────────────
+// pledge は encourage と同じく「机に並ばない書類」(DECISION_DOC_ORDER の外)なので
+// getAvailableDocs には現れない。実プレイで選手ポップアップから直接叩くのと同じく、
+// CARE_PRIORITY のループとは別に扱う。
+//
+// 方針(決定論。Math.random は使わない):
+//   有効な約束がなく、決裁枠が足りていて、CD外の bold 選手がいれば、id 最小の1人に約束する。
+//   カード編成は既存の自動編成に任せる — だから履行も破約も自然に出る。
+function autoExecutePledge(G) {
+  if (!CARE_MODE) return G;
+  if (G.offSeason || G.weekPhase !== 'manage') return G;
+  if (G.pledge && G.pledge.fighterId != null) return G;      // 同時1件
+  const doc = Engine.shachoshitsu.getDoc('pledge');
+  if (!doc) return G;                                        // 旧src参照時(WM_SOURCE_REF)は無いので何もしない
+  if ((G.decisionPoints || 0) < (doc.decisionCost || 0)) return G;
+
+  const cd = doc.cooldown != null ? doc.cooldown : 16;
+  const pool = (G.roster || []).filter(f => careEligible(f)
+    && String(f.personality || 'normal') === 'bold'
+    && (G.week - ((f._decisionWeekUsed || {}).pledge || -99)) >= cd);
+  const target = carePickBy(pool, f => f.id, false);
+  if (!target) return G;
+
+  const result = Engine.shachoshitsu.execute('pledge', target.id, G);
+  if (!result || result.error) {
+    const key = `pledge:${(result && result.error) || 'null'}`;
+    careStats.errors[key] = (careStats.errors[key] || 0) + 1;
+    return G;
+  }
+  G = { ...G,
+    roster: result.roster,
+    decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
+    _decisionWeekUsed: result._decisionWeekUsed || G._decisionWeekUsed || {},
+    gameLog: [],
+  };
+  if (result.pledge) G = { ...G, pledge: result.pledge };
+  careStats.totalDp += doc.decisionCost || 0;
+  careStats.counts.pledge = (careStats.counts.pledge || 0) + 1;
+  return G;
+}
+
+// 履行/破約/失効の実発火カウント(「書いてあるのに出ていない」検出用)。
+// tickWeek 直後に呼ぶ。_pendingPledgeResult は UI が消費する前にここで読む。
+let _pledgeWatchId = null;
+function pledgeProbe(G) {
+  const pending = G._pendingPledgeResult;
+  if (pending && pending.fighterId != null) {
+    careStats.pledgeOutcomes[pending.outcome] = (careStats.pledgeOutcomes[pending.outcome] || 0) + 1;
+  } else if (_pledgeWatchId != null && !(G.pledge && G.pledge.fighterId != null)) {
+    // 約束が結果を伴わずに消えた = 静かな失効
+    careStats.pledgeOutcomes.expired = (careStats.pledgeOutcomes.expired || 0) + 1;
+  }
+  _pledgeWatchId = (G.pledge && G.pledge.fighterId != null) ? G.pledge.fighterId : null;
   return G;
 }
 
@@ -1590,6 +1648,7 @@ function runSimulation(seed, seasons) {
 
       // ── ケア自動実行 (--care) ── 実プレイと同じく manage フェーズ・興行前に決裁する
       G = autoExecuteCare(G);
+      G = autoExecutePledge(G);
 
       // ── 興行週: カード自動編成→executeShow ──
       // 春のタッグリーグ開催週(Week12)はリーグ興行がその週の枠を占めるため、通常興行はスキップ
@@ -1885,6 +1944,7 @@ function runSimulation(seed, seasons) {
       // advanceWeek後にもvalidate
       G = Engine.validateGameState(G);
       G = collectViolations(G, violations);
+      G = pledgeProbe(G);
       careSample(G);
 
       // ── シーズン遷移検出 ──
@@ -2993,6 +3053,16 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
       const n = careStats.counts[docId] || 0;
       const doc = Engine.shachoshitsu.getDoc(docId);
       console.log(`    ${(doc ? doc.label : docId).padEnd(18)} ${String(n).padStart(5)}  ${(n / targetSeasons).toFixed(2)}/season`);
+    }
+    // care-rework2 P2-G: 起用約束は机に並ばない書類なので CARE_PRIORITY の外で出す
+    {
+      const n = careStats.counts.pledge || 0;
+      console.log(`    ${'起用の約束'.padEnd(18)} ${String(n).padStart(5)}  ${(n / targetSeasons).toFixed(2)}/season`);
+      const po = careStats.pledgeOutcomes;
+      console.log(`  起用約束の結果(3分岐の実発火):  履行 ${po.kept} / 破約 ${po.broken} / 失効 ${po.expired}`);
+      if (n > 0 && (po.kept + po.broken + po.expired) === 0) {
+        console.log('    ⚠ 約束は成立しているのに結果が1件も出ていない — 判定が配線されていない疑い');
+      }
     }
     const cdEntries = Object.entries(careStats.cooldownSkips).sort((a, b) => b[1] - a[1]);
     if (cdEntries.length) {
