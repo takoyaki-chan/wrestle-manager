@@ -8678,6 +8678,9 @@ const Engine = {
       }
       nc.seasonIntensiveWeeks = 0;
       nc.seasonMatchCount = 0;
+      // care-rework2 P2-A: 休暇による消耗回復の季あたり上限カウンタをリセット。
+      // 旧セーブに欠落していても undefined → 0 扱いで安全。
+      nc._wearRelievedThisSeason = 0;
       return nc;
     },
 
@@ -12655,14 +12658,25 @@ const Engine = {
           return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + indomitableBonus), _weekAction: '療養', intensive: false, growthLog: [..._gl, { season: G.season, week: G.week, type: 'injury', detail: nc.injury.type }] };
         }
 
-        // care-rework v0.1 §2: 休暇中 — 試合・プロモ・練習なし。
-        // 体調+10/週(上限100)、休暇2週目・4週目に消耗-1(1回の休暇で最大-2、下限0)
+        // care-rework v0.1 §2: 休暇中 — 試合・プロモ・練習なし。体調+10/週(上限100)。
+        // care-rework2 P2-A: 消耗の回復を**毎週-1**へ(1〜4週の休暇で-1〜-4)。
+        // 旧実装は2週目・4週目のみ(最大-2)で、年間wear +10〜15 に桁が合っていなかった。
+        // ただし季あたりの回復は選手ごと leaveWearReliefSeasonCap(=4)まで。
+        // 実際に消耗が減った週だけカウントする(wear=0 の選手が枠を空費しないため)。
+        // これはプレイヤーの休暇辞令経路だけに効く。AI団体の休養には入れない
+        // (AIにはそもそも onLeave 経路が無い)。
         if (nc.onLeave && nc.onLeave.weeksLeft > 0) {
-          const lvTotal = nc.onLeave.totalWeeks || nc.onLeave.weeksLeft;
-          const lvElapsed = lvTotal - nc.onLeave.weeksLeft + 1;  // 今週が休暇何週目か
           nc.condition = Math.min(100, nc.condition + 10);
-          if (lvElapsed % 2 === 0 && lvElapsed <= 4) {
-            nc.wear = Math.max(0, (nc.wear || 0) - 1);
+          const _wearReliefCap = GROWTH_CONFIG.leaveWearReliefSeasonCap;
+          const _wearRelieved = nc._wearRelievedThisSeason || 0;
+          if (_wearRelieved < _wearReliefCap && (nc.wear || 0) > 0) {
+            const _relief = Math.min(
+              GROWTH_CONFIG.leaveWearReliefPerWeek,
+              _wearReliefCap - _wearRelieved,
+              nc.wear || 0
+            );
+            nc.wear = Math.max(0, (nc.wear || 0) - _relief);
+            nc._wearRelievedThisSeason = _wearRelieved + _relief;
           }
           nc.intensive = false;
           nc._weekAction = '休暇';
@@ -23681,7 +23695,8 @@ Engine.shachoshitsu = {
         const lvWeeks = (f.onLeave && f.onLeave.totalWeeks) || 1;
         changes.push({ label: '休暇', emoji: '🏖️', text: `${lvWeeks}週間、興行を欠場して休養に入る` });
         changes.push({ label: '体調', emoji: '🌿', text: '休んでいる間、少しずつ調子を取り戻していく' });
-        if (lvWeeks >= 2) changes.push({ label: '疲労', emoji: '🕊️', text: '長い休みが、積み重なった消耗を癒やしていく' });
+        // care-rework2 P2-A: 消耗の回復は毎週効くので、1週の休暇でも必ず出す
+        changes.push({ label: '消耗', emoji: '🕊️', text: `${lvWeeks}週ぶんの休みが、積み重なった消耗を癒やしていく` });
         if (f.slump || f.motivationLoss) changes.push({ label: 'スランプ回復', emoji: '💪', text: '現場を離れることで、回復が大きく進みそうだ' });
       }
     }
