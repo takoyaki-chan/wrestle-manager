@@ -1,7 +1,7 @@
 # task-101: care-rework2 P2-G「起用を約束する」チャンネル実装
 
 - 起票: 2026-08-30(Fable)。実装: **Opus(隔離worktree)** → Fable検算マージ
-- **前提**: task-100マージ後に着手(同領域のため並列禁止)。セリフは `docs/dialogue/pledge-lines-draft-v0.1.md`(Opus起草→Fableレビュー済みの版)を焼き込む
+- **前提**: task-100マージ後に着手(同領域のため並列禁止)。セリフは `docs/dialogue/pledge-lines-draft-v0.1.md` — **✅ Keisuke全文承認済み(2026-08-30)。63本を一字も変えずに焼き込む**
 
 ## 1. 目的
 

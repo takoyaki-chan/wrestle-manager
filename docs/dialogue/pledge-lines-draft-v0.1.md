@@ -1,4 +1,6 @@
-# 起用約束セリフ草案 v0.1(task-101用・Keisukeレビュー前)
+# 起用約束セリフ草案 v0.1(task-101用)
+
+> **✅ Keisuke全文承認(2026-08-30)**「良さそうです。とてもいいですね」— クール×強気の外挿セル含め63本すべて確定版。task-101でこのままdata.jsへ焼き込む(文面変更禁止)
 
 - 対象: 新チャンネル「起用を約束する」(personality=bold 専用)。3場面 × archetype 7種 × 各3本 = **63本**
 - 準拠: `specs/dialogue-tone-spec-v1.0.md` + `docs/tone-bible/<属性>×強気.md`
