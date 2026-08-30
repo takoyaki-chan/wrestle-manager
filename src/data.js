@@ -8140,6 +8140,14 @@ const GROWTH_CONFIG = {
   wearCapDecayRatio: 0.5,
   intensiveWearPerWeek: 0.15,      // decayStartAge到達後: シーズン内の追い込み週数1週あたりwear加算
   strainDebtPerIntensiveWeek: 0.25, // decayStartAge到達前: 追い込み週数1週あたりに溜まる「ツケ」(strainDebt)。到達初年度にwearへ一括変換
+  // care-rework2 P2-A: 休暇辞令による消耗の回復。休暇中は**毎週**1ずつ返す。
+  // 旧実装は2週目・4週目のみ(1回の休暇で最大-2)で、年間wear +10〜15 に対して
+  // 桁が合わず「寿命ケア」として機能していなかった。消耗を減らす手段はゲーム中これだけ。
+  // 季あたりの回復上限は選手ごと4 — 休暇を2回取っても季-4までに留め、
+  // 「休ませ続ければ不老」にならないようにする(代償は既に重い: 4週の欠場+週給×4+50万)。
+  // 蓄積式(applySeasonTrainingWear)・WEAR_TABLE・decay式には一切手を触れていない。
+  leaveWearReliefPerWeek: 1,
+  leaveWearReliefSeasonCap: 4,
   // コーチの匂わせセリフの発火条件(演出専用。成長・消耗の計算には一切使わない)。
   // **累積**で見る。「今シーズン少し使った」だけで先々の話をされると、
   // まだ何も溜まっていない段階で言われることになり、警告が安くなる(2026-07-26 Keisuke)。
@@ -19151,15 +19159,17 @@ const DECISION_DOCS = {
     category: 'care',
     categoryLabel: '選手ケア',
     icon: '🏥',
-    cost: 200,
+    // care-rework2 P2-C: 長期離脱(総週数10以上)専用の劇的救済へ照準。
+    // 軽中傷は自然に治す=離脱のドラマを消さない。費用はエースの緊急手術の桁へ。
+    cost: 500,
     decisionCost: 1,
-    activationCondition: 'has_injured',
+    activationCondition: 'has_longterm_injured',
     minOrgPop: 0,
     cooldown: 1,
-    body: '離脱中の選手に専門医を手配し、復帰を早める',
-    detailText: '専門医による集中ケアを正式に発注。怪我からの離脱期間を確率的に短縮する、復帰前倒しの一手。確実な短縮量は治療結果次第。',
-    effectSummary: '対象選手の離脱期間が1〜4週短縮される',
-    recommendation: '主力選手や王座挑戦が控えている選手の離脱が痛手なときに。離脱が長引いている怪我ほど短縮量も大きくなりやすい。',
+    body: '長期離脱中の選手に専門医を手配し、復帰を早める',
+    detailText: '長い離脱を強いられた選手に、専門医による集中ケアを正式に発注する。残る離脱期間を大きく削り取る、復帰前倒しの切り札。削れる幅は治療の経過しだい。',
+    effectSummary: '対象選手の残り離脱期間が4割から半分ほど縮まる',
+    recommendation: '長期離脱(10週以上)の重傷を負った選手にだけ発注できる。数週間で治る怪我は、専門医を呼ぶまでもなく自然に癒える。',
     effect: { target: 'individual', special: 'treatment' },
   },
   refresh_leave: {
@@ -19177,9 +19187,10 @@ const DECISION_DOCS = {
     minOrgPop: 0,
     cooldown: 12,          // care-rework v0.1 §2.3: 4週→12週
     body: '心身の疲弊を察し、一定期間の休養を与える',
-    detailText: '1〜4週間の休暇を正式な辞令として発行する。休暇中の試合には欠場するが、そのぶん心身は着実に回復していく。長い休みは、積み重なった消耗までも癒やす。',
-    effectSummary: '休みの長さに応じて体調が戻り、長期なら蓄積した消耗も癒える。本人にも気遣いが伝わる',
-    recommendation: '疲れの見える主力を、大事な興行の前に立て直す疲労管理の要。休暇中の欠場と引き換えになる点は覚悟すること。',
+    // care-rework2 P2-A: 休暇=寿命ケア。休ませた週数だけ消耗が返る(季あたり上限4)。
+    detailText: '1〜4週間の休暇を正式な辞令として発行する。休暇中の試合には欠場するが、そのぶん心身は着実に回復していく。休ませた週の数だけ、積み重なった消耗が確かに癒えていく。',
+    effectSummary: '休んだ週数のぶんだけ蓄積した消耗が癒え、体調も戻る。本人にも気遣いが伝わる',
+    recommendation: '選手生命そのものを延ばせる唯一の手。長く働いてほしい主力ほど、思い切って休ませる価値がある。ただし癒やせる量には一年あたりの限りがあり、休暇中の欠場と引き換えになる点は覚悟すること。',
     effect: { target: 'individual', slumpMomentum: 12.0 },
   },
   party: {
@@ -19192,13 +19203,17 @@ const DECISION_DOCS = {
     decisionCost: 1,
     activationCondition: 'morale_low',
     minOrgPop: 0,
-    cooldown: 1,
+    // care-rework2 P2-B: 雰囲気の主対処へ。毎週打つ「作業」から「効く一手」に変える。
+    // 即時+6 に加えて翌週から+1×3週の余韻が乗り、そのぶん CD は 1→2週。
+    // 最大稼働で+9/2週=+4.5/週(旧スパム+5/週とほぼ同等)、決裁1回の意味は約2倍、
+    // クリック数は半分になる。
+    cooldown: 2,
     minHeadcount: 4,
     body: '団体の雰囲気を立て直すべく、慰労の宴席を設ける',
-    detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。',
-    effectSummary: '選手同士の会話が増え、ロッカールームと社長への空気が柔らかくなる',
-    recommendation: 'ロッカールームの空気に少し陰りが見えてきたときの応急処置として。単発では決定打にならない点に留意。',
-    effect: { target: 'team', trust: 1.84, morale: 5 },
+    detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。宴の効果は一晩では消えず、しばらく道場に残る。',
+    effectSummary: '選手同士の会話が増え、ロッカールームと社長への空気が柔らかくなる。和んだ空気はその後数週間ゆるやかに続く',
+    recommendation: 'ロッカールームの空気に陰りが見えてきたときに。一度開けば効果はしばらく尾を引くので、間を置いて打つほうが無駄がない。',
+    effect: { target: 'team', trust: 1.84, morale: 6, afterglowWeeks: 3 },
   },
   // shachoshitsu-care-rework v0.1 §3: 専属トレーナーを廃止し、外部コーチ招聘制に置き換え。
   // id は 'trainer' のまま(後方互換)。候補・費用は Engine.shachoshitsu.getInviteMarket/getInviteCost で算出。
@@ -19250,10 +19265,12 @@ const DECISION_DOCS = {
     minOrgPop: 20,
     cooldown: 2,
     body: '対象選手を広告塔とし、団体の知名度向上を図る',
-    detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人の体調維持を両立させる外向き施策。',
-    effectSummary: '選手人気と団体人気が上がり、体調が整う。本人も起用を前向きに受け止める',
-    recommendation: '団体人気がある程度育ってから解禁される書類。看板選手の体調管理と兼ねて回すと無駄がない。選手の人気を直接押し上げたい時にも有効。',
-    effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4, popGainMin: 6, popGainMax: 8 },
+    // care-rework2 P2-D: 人気の書類へ純化。trust 5.36→2.0(光が当たった喜び程度)、
+    // condition+5 を削除(メディア対応は休養ではない)。人気・団体知名度・嫉妬は不変。
+    detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度を押し上げ、彼女の名も世に広がっていく外向きの施策。ただし、脚光は当たった者だけのものではない。',
+    effectSummary: '選手人気と団体人気が上がる。本人も起用を前向きに受け止める',
+    recommendation: '団体人気がある程度育ってから解禁される書類。選手の人気を直接押し上げたいときに。ひとりだけを売り出し続けると、周囲の目が冷たくなる点には留意すること。',
+    effect: { target: 'individual', trust: 2.0, orgPopDelta: 0.4, popGainMin: 6, popGainMax: 8 },
   },
   // bond-rivalry plan P-6: 慢性的険悪ペア（W-1 累計4回以上）の関係修復。
   // ペア指定型のため target: 'pair'。回数無制限。
@@ -19330,25 +19347,33 @@ const DECISION_DOCS = {
 
 // 性格 × 書類 マトリクス (7性格 × 7書類)
 // shy は ALL_CHARS に5名実在する。行がないと無言で normal(全1.00)に落ちるため必ず持つこと。
+// care-rework2 P2-F: special_treatment 列を削除した。全行1.00の死にデータであり、
+// そもそも execute の special_treatment 分岐は calcUncertainty を呼ばない。
+// 治療は身体の問題であって、性格で効きが変わらないのは意図的な設計である
+// (列が無い組合せは calcUncertainty が 1.0 を返す既存挙動で安全)。
 const DECISION_PERSONALITY_MULT = {
-  normal:    { bonus: 1.00, encourage: 1.00, refresh_leave: 1.00, special_treatment: 1.00, party: 1.00, trainer: 1.00, camp: 1.00, media: 1.00 },
-  bold:      { bonus: 0.80, encourage: 0.70, refresh_leave: 0.90, special_treatment: 1.00, party: 1.00, trainer: 1.20, camp: 1.20, media: 1.00 },
-  quiet:     { bonus: 1.00, encourage: 1.20, refresh_leave: 1.10, special_treatment: 1.00, party: 0.70, trainer: 1.00, camp: 0.90, media: 0.60 },
+  normal:    { bonus: 1.00, encourage: 1.00, refresh_leave: 1.00, party: 1.00, trainer: 1.00, camp: 1.00, media: 1.00 },
+  bold:      { bonus: 0.80, encourage: 0.70, refresh_leave: 0.90, party: 1.00, trainer: 1.20, camp: 1.20, media: 1.00 },
+  quiet:     { bonus: 1.00, encourage: 1.20, refresh_leave: 1.10, party: 0.70, trainer: 1.00, camp: 0.90, media: 0.60 },
   // 内気: 個別の静かな声かけが最も響く。宴会・メディアは苦手。外部コーチ・合宿の集団は少し緊張
-  shy:       { bonus: 0.90, encourage: 1.30, refresh_leave: 1.10, special_treatment: 1.00, party: 0.60, trainer: 0.90, camp: 0.90, media: 0.50 },
-  easygoing: { bonus: 1.10, encourage: 1.00, refresh_leave: 1.00, special_treatment: 1.00, party: 1.20, trainer: 0.90, camp: 1.10, media: 1.10 },
-  earnest:   { bonus: 0.90, encourage: 1.20, refresh_leave: 1.10, special_treatment: 1.00, party: 0.90, trainer: 1.30, camp: 1.20, media: 1.00 },
-  emotional: { bonus: 1.30, encourage: 1.40, refresh_leave: 1.20, special_treatment: 1.00, party: 1.10, trainer: 1.00, camp: 1.10, media: 1.20 },
+  shy:       { bonus: 0.90, encourage: 1.30, refresh_leave: 1.10, party: 0.60, trainer: 0.90, camp: 0.90, media: 0.50 },
+  easygoing: { bonus: 1.10, encourage: 1.00, refresh_leave: 1.00, party: 1.20, trainer: 0.90, camp: 1.10, media: 1.10 },
+  earnest:   { bonus: 0.90, encourage: 1.20, refresh_leave: 1.10, party: 0.90, trainer: 1.30, camp: 1.20, media: 1.00 },
+  emotional: { bonus: 1.30, encourage: 1.40, refresh_leave: 1.20, party: 1.10, trainer: 1.00, camp: 1.10, media: 1.20 },
 };
 
-// アーキタイプ × 書類 マトリクス (normal 以外の4種)
+// アーキタイプ × 書類 マトリクス
 // 記載のないアーキタイプ+書類の組合せは 1.00 (影響なし)
 // spec §6.4 を拡張して全書類を扱う
+// care-rework2 P2-F: composed / polite の2行を追加(欠落の補完)。
+// standard は意図的に行を持たない — 平凡さも個性であり、全書類が等倍に響く。
 const DECISION_ARCHETYPE_MULT = {
   ojousama:   { bonus: 0.70, party: 1.00, media: 1.10, camp: 0.80 },       // 金には動じない、合宿は好まない
   delinquent: { bonus: 1.30, party: 1.30, media: 0.80, trainer: 1.10 },    // 金と酒は効く、メディアは嫌う、体育会系は好む
   cool:       { bonus: 0.70, party: 0.60, media: 0.80, encourage: 0.80 },  // 全体的に冷めている
   seductive:  { bonus: 1.00, party: 1.10, media: 1.30, refresh_leave: 1.10 }, // 華やかな場で輝く
+  composed:   { party: 0.80, encourage: 0.90, trainer: 1.15 },             // 宴より稽古が響く
+  polite:     { encourage: 1.15, party: 1.10, bonus: 0.85 },               // 言葉と場が届き、金銭は品に欠ける
 };
 
 // ─────────────────────────────────────────────────────────────────────────────

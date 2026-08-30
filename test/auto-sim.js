@@ -1212,9 +1212,14 @@ const careStats = {
   totalDp: 0,
   counts: {},
   errors: {},
+  cooldownSkips: {},
   trustSamples: [],
   moraleSamples: [],
+  // care-rework2 P2-A 不変条件の検証プローブ(読み取り専用・--care でなくても採る)。
+  // 休暇のwear回復が引退年齢の分布を動かしていないかを見る。
+  retireAges: [],
 };
+const careRetireSeenIds = new Set();
 
 // 現場にいる選手(レンタル・怪我・休暇を除く)
 function careEligible(f) { return !!f && !f.isRental && !f.injury && !f.onLeave; }
@@ -1257,8 +1262,14 @@ function carePickTarget(docId, G) {
     return t ? { fighterId: t.id, options: { weeks: 2 } } : null;
   }
   if (docId === 'special_treatment') {
-    // 発動条件と同じプール(離脱2週以上)から、最も離脱が長い選手へ。
-    const pool = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+    // care-rework2 P2-C: 発動条件と同じプール(総週数10以上の長期離脱)から、
+    // 最も離脱が長い選手へ。該当者がいない週はスキップ(長期重傷は季0〜1件)。
+    // WM_SOURCE_REF で P2 以前の src を読み込んだときは isLongTermInjured が
+    // 存在しないため、当時の条件(離脱2週以上)にフォールバックする。
+    const isLongTerm = typeof Engine.shachoshitsu.isLongTermInjured === 'function'
+      ? f => Engine.shachoshitsu.isLongTermInjured(f)
+      : f => f.injury && (f.injury.weeksLeft || 0) >= 2;
+    const pool = roster.filter(f => !f.isRental && f.injury && isLongTerm(f));
     const t = carePickBy(pool, f => f.injury.weeksLeft || 0, true);
     return t ? { fighterId: t.id, options: undefined } : null;
   }
@@ -1310,6 +1321,12 @@ function autoExecuteCare(G) {
 
     const result = Engine.shachoshitsu.execute(docId, pick.fighterId, G, pick.options);
     if (!result || result.error) {
+      // care-rework2 P2-B: 慰労会がCD2週になったため cooldown は「打てない週」の
+      // 正常な結果であって不具合ではない。件数だけ別枠で数え、errors には積まない。
+      if (result && result.error === 'cooldown') {
+        careStats.cooldownSkips[docId] = (careStats.cooldownSkips[docId] || 0) + 1;
+        continue;
+      }
       const key = `${docId}:${(result && result.error) || 'null'}`;
       careStats.errors[key] = (careStats.errors[key] || 0) + 1;
       continue;
@@ -1328,6 +1345,8 @@ function autoExecuteCare(G) {
     };
     if (result.relationships) G = { ...G, relationships: result.relationships };
     if (result.h2h) G = { ...G, h2h: result.h2h };
+    // care-rework2 P2-B: 慰労会の余韻(消化は tickWeek 側)
+    if (result._partyAfterglowWeeks) G = { ...G, _partyAfterglowWeeks: result._partyAfterglowWeeks };
     if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
     if (result.lastInvitedCoachId != null) G = { ...G, lastInvitedCoachId: result.lastInvitedCoachId };
     if (result.orgPopDelta) {
@@ -1353,6 +1372,15 @@ function careSample(G) {
   careStats.trustSamples.push(
     live.reduce((s, f) => s + (f.trust != null ? f.trust : 50), 0) / live.length);
   careStats.moraleSamples.push(G.lockerRoomMorale != null ? G.lockerRoomMorale : 60);
+
+  // care-rework2 P2-A: 引退年齢プローブ。state.retiredFighters は年度末に空にされる
+  // 一時バッファなので毎週さらう(殿堂入り計測と同じ理由)。自団体・AI団体の
+  // 両方がここに積まれるためリーグ全体の分布になる。id で重複排除。
+  (G.retiredFighters || []).forEach(f => {
+    if (!f || f.id == null || careRetireSeenIds.has(f.id)) return;
+    careRetireSeenIds.add(f.id);
+    if (typeof f.age === 'number' && isFinite(f.age)) careStats.retireAges.push(f.age);
+  });
 }
 
 // debugLogから違反を収集してクリア
@@ -2945,6 +2973,18 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
   console.log(`[ケア計装] mode: ${CARE_MODE ? '--care (自動決裁ON)' : 'ケアなし(従来)'}`);
   console.log(`  平均trust(自団体・週次平均):        ${avg(careStats.trustSamples).toFixed(2)}`);
   console.log(`  平均lockerRoomMorale(週次平均):     ${avg(careStats.moraleSamples).toFixed(2)}`);
+  // care-rework2 P2-A 不変条件: 休暇のwear回復が引退年齢を動かしていないか
+  {
+    const ages = careStats.retireAges.slice().sort((x, y) => x - y);
+    if (ages.length === 0) {
+      console.log('  引退年齢(リーグ全体):               引退者0人');
+    } else {
+      const mid = Math.floor(ages.length / 2);
+      const median = ages.length % 2 ? ages[mid] : (ages[mid - 1] + ages[mid]) / 2;
+      console.log(`  引退年齢(リーグ全体) 中央値:        ${median.toFixed(1)}  `
+        + `平均 ${avg(ages).toFixed(2)}  n=${ages.length}`);
+    }
+  }
   if (CARE_MODE) {
     console.log(`  ケア総支出:                         ${Math.round(careStats.totalSpend)}万 (${(careStats.totalSpend / targetSeasons).toFixed(0)}万/season)`);
     console.log(`  決裁枠⚡消費合計:                    ${careStats.totalDp} (${(careStats.totalDp / targetSeasons).toFixed(1)}/season)`);
@@ -2953,6 +2993,11 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
       const n = careStats.counts[docId] || 0;
       const doc = Engine.shachoshitsu.getDoc(docId);
       console.log(`    ${(doc ? doc.label : docId).padEnd(18)} ${String(n).padStart(5)}  ${(n / targetSeasons).toFixed(2)}/season`);
+    }
+    const cdEntries = Object.entries(careStats.cooldownSkips).sort((a, b) => b[1] - a[1]);
+    if (cdEntries.length) {
+      console.log('  CD中でスキップ(正常・不具合ではない):');
+      for (const [k, v] of cdEntries) console.log(`    ${k.padEnd(36)} ${v}`);
     }
     const errEntries = Object.entries(careStats.errors).sort((a, b) => b[1] - a[1]);
     if (errEntries.length) {

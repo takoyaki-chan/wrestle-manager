@@ -1651,7 +1651,10 @@ const Engine = {
       // 鉄人: 復帰期間-1週（最低1）
       if (Traits.has(fighter, '鉄人')) weeks = Math.max(1, weeks - 1);
       // v0.99: Reassess value on severe injury (pricing-balance-spec §4.2)
-      let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: weeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
+      // care-rework2 P2-C: totalWeeks は「この怪我が発生時に何週だったか」の記録のみ。
+      // 生成された weeks の値には一切手を触れていない(発生率・週数生成は完全不変)。
+      // 特別治療の対象判定(総週数10以上)がこれを読む。
+      let updatedFighter = { ...fighter, injury: { type: injury.type, weeksLeft: weeks, totalWeeks: weeks, color: injury.color }, condition: Math.min(fighter.condition, 30) };
       // v1.0b: Record pre-injury popularity for injury forgetting
       updatedFighter = Engine.popularity.recordPreInjury(updatedFighter);
       if (injury.type === '重傷' && updatedFighter.assessedValue) {
@@ -8675,6 +8678,9 @@ const Engine = {
       }
       nc.seasonIntensiveWeeks = 0;
       nc.seasonMatchCount = 0;
+      // care-rework2 P2-A: 休暇による消耗回復の季あたり上限カウンタをリセット。
+      // 旧セーブに欠落していても undefined → 0 扱いで安全。
+      nc._wearRelievedThisSeason = 0;
       return nc;
     },
 
@@ -10549,7 +10555,7 @@ const Engine = {
             nc.condition = Math.max(0, (nc.condition || 70) - Math.round(6 + Engine.rng.int(rng, 0, 7)) + adaptBonus);
             if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
               const weeks = 1 + Engine.rng.int(rng, 0, 1);
-              nc.injury = { type: 'training injury', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+              nc.injury = { type: 'training injury', weeksLeft: weeks, totalWeeks: weeks, severity: 'minor', color: '#f39c12' };
               nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
             }
             nc.intensiveWeeks = (nc.intensiveWeeks || 0) + 1;
@@ -10804,7 +10810,7 @@ const Engine = {
                 : isModerate ? (3 + Engine.rng.int(matchRng, 0, 2)) : (2 + Engine.rng.int(matchRng, 0, 3));
               const injType = isSevere ? '重傷' : isModerate ? '中傷' : '軽傷';
               const injColor = isSevere ? '#e74c3c' : isModerate ? '#e67e22' : '#f39c12';
-              nc.injury = { type: injType, weeksLeft: weeks, severity: isSevere ? 'severe' : isModerate ? 'moderate' : 'minor', color: injColor };
+              nc.injury = { type: injType, weeksLeft: weeks, totalWeeks: weeks, severity: isSevere ? 'severe' : isModerate ? 'moderate' : 'minor', color: injColor };
               nc.seasonInjuries = (nc.seasonInjuries || 0) + 1;
 
               // 重傷時の引退チェック（Engine.injury.checkと同等ロジック）
@@ -12652,14 +12658,25 @@ const Engine = {
           return { ...nc, condition: Math.min(100, nc.condition + (5 + Engine.rng.int(rng, 0, 4)) + indomitableBonus), _weekAction: '療養', intensive: false, growthLog: [..._gl, { season: G.season, week: G.week, type: 'injury', detail: nc.injury.type }] };
         }
 
-        // care-rework v0.1 §2: 休暇中 — 試合・プロモ・練習なし。
-        // 体調+10/週(上限100)、休暇2週目・4週目に消耗-1(1回の休暇で最大-2、下限0)
+        // care-rework v0.1 §2: 休暇中 — 試合・プロモ・練習なし。体調+10/週(上限100)。
+        // care-rework2 P2-A: 消耗の回復を**毎週-1**へ(1〜4週の休暇で-1〜-4)。
+        // 旧実装は2週目・4週目のみ(最大-2)で、年間wear +10〜15 に桁が合っていなかった。
+        // ただし季あたりの回復は選手ごと leaveWearReliefSeasonCap(=4)まで。
+        // 実際に消耗が減った週だけカウントする(wear=0 の選手が枠を空費しないため)。
+        // これはプレイヤーの休暇辞令経路だけに効く。AI団体の休養には入れない
+        // (AIにはそもそも onLeave 経路が無い)。
         if (nc.onLeave && nc.onLeave.weeksLeft > 0) {
-          const lvTotal = nc.onLeave.totalWeeks || nc.onLeave.weeksLeft;
-          const lvElapsed = lvTotal - nc.onLeave.weeksLeft + 1;  // 今週が休暇何週目か
           nc.condition = Math.min(100, nc.condition + 10);
-          if (lvElapsed % 2 === 0 && lvElapsed <= 4) {
-            nc.wear = Math.max(0, (nc.wear || 0) - 1);
+          const _wearReliefCap = GROWTH_CONFIG.leaveWearReliefSeasonCap;
+          const _wearRelieved = nc._wearRelievedThisSeason || 0;
+          if (_wearRelieved < _wearReliefCap && (nc.wear || 0) > 0) {
+            const _relief = Math.min(
+              GROWTH_CONFIG.leaveWearReliefPerWeek,
+              _wearReliefCap - _wearRelieved,
+              nc.wear || 0
+            );
+            nc.wear = Math.max(0, (nc.wear || 0) - _relief);
+            nc._wearRelievedThisSeason = _wearRelieved + _relief;
           }
           nc.intensive = false;
           nc._weekAction = '休暇';
@@ -12700,7 +12717,7 @@ const Engine = {
           nc.condition = Math.max(0, nc.condition - Math.round(5 + Engine.rng.int(rng, 0, 5)) + adaptBonus + ironBonusI + hardWorkerBonusI);
           if (Engine.rng.float(rng) < GROWTH_CONFIG.intensiveInjuryChance * Engine.coach.getInjuryMult(stateForCalc, nc.id) * (nc._relationshipInjuryMult || 1.0)) {
             const weeks = 1 + Engine.rng.int(rng, 0, 1);
-            nc.injury = { type: '練習負傷', weeksLeft: weeks, severity: 'minor', color: '#f39c12' };
+            nc.injury = { type: '練習負傷', weeksLeft: weeks, totalWeeks: weeks, severity: 'minor', color: '#f39c12' };
             // 自団体だけ seasonInjuries を数え落としていた(AI団体パスは数えていた)。
             // applySeasonEnd の wearBonus は seasonInjuries*2 を見るので、この漏れがあると
             // **自団体の追い込みでの怪我だけが先々に響かない**。追い込みの代償の主軸が
@@ -14039,6 +14056,18 @@ const Engine = {
     // (_decisionWeekUsed はクリアしない。各書類の cooldown 判定に使うため)
     if (s._decisionDoneThisWeek && s._decisionDoneThisWeek.length > 0) {
       s = { ...s, _decisionDoneThisWeek: [] };
+    }
+
+    // ── care-rework2 P2-B: 慰労会の余韻 ────────────────────────────────────
+    // 宴の効果は一晩では消えない。開催の翌週から3週にわたって雰囲気が +1 ずつ乗る。
+    // 通知は出さない(週次トースト禁止 — 道場の空気の描写で伝わればよい)。
+    // 旧セーブに _partyAfterglowWeeks が無くても undefined → 効果なしで安全。
+    if (!s.offSeason && (s._partyAfterglowWeeks || 0) > 0) {
+      const _afterglowMorale = s.lockerRoomMorale != null ? s.lockerRoomMorale : 60;
+      s = { ...s,
+        lockerRoomMorale: Engine.util.clamp(_afterglowMorale + 1, 0, 100),
+        _partyAfterglowWeeks: s._partyAfterglowWeeks - 1,
+      };
     }
 
     // リーダー気質: チャンピオン時orgPop+0.3/週（逓減適用）
@@ -22749,6 +22778,41 @@ Engine.shachoshitsu = {
     return null;
   },
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  // care-rework2 P2-C: 特別治療 = 長期離脱の劇的救済
+  //
+  // 対象を「総週数10以上」の長期重傷(発生率2%・季0〜1件)だけに絞る。
+  // 軽中傷(1〜9週)は自然に治す — 離脱のドラマを消さないため。
+  // 怪我の発生率・週数生成・軽中傷の回復分布は完全に不変で、対象外化のみを行う。
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  LONGTERM_INJURY_MIN_WEEKS: 10,
+
+  // 怪我の「発生時の総週数」。既存セーブには totalWeeks が無いため weeksLeft に
+  // フォールバックする(残り週数は総週数以下なので、旧セーブでは対象を取りこぼす
+  // 方向=安全側に倒れる。新しく発生した怪我からは正しく記録される)。
+  getInjuryTotalWeeks(injury) {
+    if (!injury) return 0;
+    return injury.totalWeeks != null ? injury.totalWeeks : (injury.weeksLeft || 0);
+  },
+
+  // 特別治療の対象になりうるか(総週数10以上 かつ まだ離脱が残っている)
+  isLongTermInjured(fighter) {
+    if (!fighter || !fighter.injury) return false;
+    if ((fighter.injury.weeksLeft || 0) <= 0) return false;
+    return Engine.shachoshitsu.getInjuryTotalWeeks(fighter.injury)
+      >= Engine.shachoshitsu.LONGTERM_INJURY_MIN_WEEKS;
+  },
+
+  // 短縮量 = 残り週数の40 / 45 / 50% を roll(round)、ただし最低4週。
+  // 16週の大怪我が8〜10週で帰ってくる桁。復帰は最低1週先に残す。
+  rollTreatmentReduction(weeksLeft, rng) {
+    const roll = Engine.rng.float(rng);
+    const pct = roll < 0.34 ? 0.40 : roll < 0.67 ? 0.45 : 0.50;
+    const reduction = Math.max(4, Math.round((weeksLeft || 0) * pct));
+    return { pct, reduction, reduced: Math.max(1, (weeksLeft || 0) - reduction) };
+  },
+
   // ── 発動条件チェック ──────────────────────────────────────────────────────
   // doc.activationCondition を見て、今週この書類を机に出す資格があるかを判定
   checkActivation(docId, state) {
@@ -22782,6 +22846,12 @@ Engine.shachoshitsu = {
     // 1週間の怪我に特別治療を使う意味がない(短縮後も最低1週残る)ため、2週以上に限定
     if (cond === 'has_injured') {
       return roster.some(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+    }
+
+    // care-rework2 P2-C: has_longterm_injured — 総週数10以上の長期重傷者が1人以上。
+    // 軽中傷(1〜9週)は対象外にして自然に治す(離脱のドラマを消さない)。
+    if (cond === 'has_longterm_injured') {
+      return roster.some(f => !f.isRental && Engine.shachoshitsu.isLongTermInjured(f));
     }
 
     // bond-rivalry plan P-6: 慢性的険悪ペア（W-1 累計 4 回以上）が存在
@@ -22831,10 +22901,21 @@ Engine.shachoshitsu = {
       if (!Engine.shachoshitsu.checkActivation(docId, state)) continue;
       // orgPop 条件
       if (doc.minOrgPop && (state.orgPop || 0) < doc.minOrgPop) continue;
-      // team書類: 今週すでに決裁済みなら除外(Phase 4 で state._decisionWeekUsed を更新する)
+      // team書類: cooldown 中なら除外(Phase 4 で state._decisionWeekUsed を更新する)
+      // care-rework2 P2-B: 従来は「今週決裁済みか」だけを見ていた(=常にCD1週相当)。
+      // 慰労会をCD2週にするため doc.cooldown を見る。合宿(cooldown:1)の挙動は不変。
+      // 当週決裁済みは従来どおり includeWeekUsed で朱印付き表示できる。
+      // 週はシーズンで巻き戻るため、差が負(=新シーズン)のときは cooldown を掛けない。
       if (doc.effect && doc.effect.target === 'team') {
         const used = (state._decisionWeekUsed || {})[docId];
-        if (used === state.week && !includeWeekUsed) continue;
+        if (used != null) {
+          const elapsed = state.week - used;
+          if (elapsed === 0) {
+            if (!includeWeekUsed) continue;
+          } else if (elapsed > 0 && elapsed < (doc.cooldown != null ? doc.cooldown : 1)) {
+            continue;
+          }
+        }
       }
       docs.push(doc);
     }
@@ -22911,8 +22992,15 @@ Engine.shachoshitsu = {
   },
 
   // §1.1: 起案4案 = 基準額×{0.5, 1.0, 2.0, 3.0}。50万単位(1000万超は100万単位)に
-  // 丸め、±10%ノイズで式を透けさせない。ノイズは (season, week, fighterId) 固定シード
+  // 丸め、ノイズで式を透けさせない。ノイズは (season, week, fighterId) 固定シード
   // 由来 — 書類を開き直しても4案は変わらない(リロール防止)。
+  //
+  // care-rework2 P2-E: ノイズ幅 ±10% → ±22%。
+  // ±10%では案と効果帯の対応が学習後に決定論化し、4案がただの予算スライダーに
+  // なっていた。±22%にすると案1(r0.39〜0.61)がinsult/token境界0.4を、
+  // 案2(r0.78〜1.22)がtoken/fair境界0.8を跨ぐ — 安い案は賭けになる。
+  // 効果帯の判定は「実際に払った額のr」のまま = 数値は嘘をつかない。
+  // 基準倍率{0.5,1.0,2.0,3.0}・丸め規則・下限50万・insultMaxは不変。
   getBonusProposals(fighter, state) {
     const base = Engine.shachoshitsu.getBonusBaseAmount(fighter, state);
     const rng = Engine.rng.create(Engine.rng.derive(
@@ -22920,7 +23008,7 @@ Engine.shachoshitsu = {
     ));
     const proud = Engine.shachoshitsu.isProudFighter(fighter);
     return [0.5, 1.0, 2.0, 3.0].map((mult, idx) => {
-      const noisy = base * mult * (0.9 + Engine.rng.float(rng) * 0.2);
+      const noisy = base * mult * (0.78 + Engine.rng.float(rng) * 0.44);
       const unit = noisy > 1000 ? 100 : 50;
       const amount = Math.max(50, Math.round(noisy / unit) * unit);
       const r = base > 0 ? amount / base : 0;
@@ -23331,6 +23419,8 @@ Engine.shachoshitsu = {
     let reactionKey = docId;
     let reactionFighterId = fighterId;
     let orgPopDelta = 0;
+    // care-rework2 P2-B: 慰労会の余韻週数(0 = 余韻なし)。party 分岐だけが立てる。
+    let partyAfterglowWeeks = 0;
 
     // §6.1: OVR傾斜係数(careActions と同じ式を移植)
     const careOvrMult = (fighter) => {
@@ -23517,24 +23607,23 @@ Engine.shachoshitsu = {
         const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[coach.coachingType]) || '';
         events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)`);
       } else if (docId === 'special_treatment') {
-        // 怪我選手の回復期間を確率ベースで短縮(executeSpecialTreatment と同じロジック)
+        // care-rework2 P2-C: 長期離脱(総週数10以上)専用。executeSpecialTreatment と同一ロジック。
         if (!f.injury) return { error: 'not_injured' };
+        if (!Engine.shachoshitsu.isLongTermInjured(f)) return { error: 'not_longterm_injured' };
         const cur = f.injury.weeksLeft || 0;
         const healRng = Engine.rng.create(
           Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xBE60, fighterId)
         );
-        const roll = Engine.rng.float(healRng);
-        let reduction = roll < 0.30 ? 1 : roll < 0.60 ? 2 : roll < 0.85 ? 3 : 4;
-        if (cur >= 8) reduction += 1;
-        const reduced = Math.max(1, cur - reduction);
+        const { reduced } = Engine.shachoshitsu.rollTreatmentReduction(cur, healRng);
         f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
         events.push(`🏥 ${f.name}に特別治療を実施(${cur}週→${reduced}週)`);
         changes.push({ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` });
       } else if (docId === 'media') {
-        // Phase 8: condition/orgPopDelta は固定、trust のみ不確実性
+        // Phase 8: orgPopDelta は固定、trust のみ不確実性
+        // care-rework2 P2-D: trust基礎 5.36→2.0(全書類中最大の信頼書類だった状態を解消)。
+        // condition+5 は削除 — メディア対応は休養ではない。人気・団体知名度・嫉妬は不変。
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('media', f);
-        f = applyTrust(f, (doc.effect.trust || 5.36) * currentFinalMult);
-        f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 5)) };
+        f = applyTrust(f, (doc.effect.trust || 2.0) * currentFinalMult);
         orgPopDelta = doc.effect.orgPopDelta || 0.4;
         // v2.5: メディア露出は選手人気にも直接効く（社長が推す意思決定）
         const mediaRng = Engine.rng.create(
@@ -23606,14 +23695,23 @@ Engine.shachoshitsu = {
         const lvWeeks = (f.onLeave && f.onLeave.totalWeeks) || 1;
         changes.push({ label: '休暇', emoji: '🏖️', text: `${lvWeeks}週間、興行を欠場して休養に入る` });
         changes.push({ label: '体調', emoji: '🌿', text: '休んでいる間、少しずつ調子を取り戻していく' });
-        if (lvWeeks >= 2) changes.push({ label: '疲労', emoji: '🕊️', text: '長い休みが、積み重なった消耗を癒やしていく' });
+        // care-rework2 P2-A: 消耗の回復は毎週効くので、1週の休暇でも必ず出す
+        changes.push({ label: '消耗', emoji: '🕊️', text: `${lvWeeks}週ぶんの休みが、積み重なった消耗を癒やしていく` });
         if (f.slump || f.motivationLoss) changes.push({ label: 'スランプ回復', emoji: '💪', text: '現場を離れることで、回復が大きく進みそうだ' });
       }
     }
 
     // ── 団体書類(target: 'team') ──
     if (doc.effect && doc.effect.target === 'team') {
-      if (_decisionWeekUsed[docId] === state.week) return { error: 'cooldown' };
+      // care-rework2 P2-B: 机の表示(getAvailableDocs)と同じ cooldown 判定。
+      // 合宿(cooldown:1)は従来どおり「同一週の二重決裁だけ」を弾く。
+      const _teamLastUsed = _decisionWeekUsed[docId];
+      if (_teamLastUsed != null) {
+        const _teamElapsed = state.week - _teamLastUsed;
+        if (_teamElapsed >= 0 && _teamElapsed < (doc.cooldown != null ? doc.cooldown : 1)) {
+          return { error: 'cooldown' };
+        }
+      }
       const _beforeMorale = lockerRoomMorale;
 
       if (docId === 'party') {
@@ -23624,9 +23722,12 @@ Engine.shachoshitsu = {
           const mult = Engine.shachoshitsu.calcUncertainty('party', f);
           return applyTrust(f, (doc.effect.trust || 1.84) * mult);
         });
-        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 5), 0, 100);
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 6), 0, 100);
+        // care-rework2 P2-B: 余韻。翌週から3週にわたって +1 ずつ効く(tickWeek で消化)。
+        partyAfterglowWeeks = (doc.effect.afterglowWeeks != null) ? doc.effect.afterglowWeeks : 3;
         changes.push({ label: 'ロッカーの様子', emoji: '🏠', text: '選手同士の会話が増え、社長への空気も柔らかくなった' });
         changes.push({ label: 'ロッカールーム', emoji: '🏠', before: Math.round(_beforeMorale), after: Math.round(lockerRoomMorale) });
+        changes.push({ label: '宴のあと', emoji: '🍻', text: 'この空気は、しばらく道場に残りそうだ' });
         events.push(`🍻 慰労会を開催(チームの雰囲気が良くなった)`);
         reactionFighterId = null;
       } else if (docId === 'camp') {
@@ -23818,6 +23919,8 @@ Engine.shachoshitsu = {
       reactionFighterId, changes, _decisionWeekUsed, decisionPoints: newDp,
     };
     if (orgPopDelta) result.orgPopDelta = orgPopDelta;
+    // care-rework2 P2-B: 余韻は GameState 側に積む(週次処理 tickWeek が消化する)
+    if (partyAfterglowWeeks > 0) result._partyAfterglowWeeks = partyAfterglowWeeks;
     // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
     if (coachAssignAfterInvite) result.coachAssign = coachAssignAfterInvite;
     if (newLastInvitedCoachId != null) result.lastInvitedCoachId = newLastInvitedCoachId;
@@ -23936,28 +24039,31 @@ Engine.shachoshitsu = {
   },
 
   // ── Phase 5: special_treatment を怪我発生ポップアップから実行 ─────────────
-  // 決裁枠は消費せず、資金のみ消費。怪我選手の回復期間を確率ベースで短縮。
-  // 返り値: { roster, funds, events, changes, cost } | { error: 'xxx' }
+  // care-rework2 P2-C: 机経路との不整合を解消。決裁枠⚡1 と 500万を消費し、
+  // 対象・短縮量も机経路と完全に同一(長期離脱=総週数10以上のみ)。
+  // 返り値: { roster, funds, decisionPoints, events, changes, cost } | { error: 'xxx' }
   executeSpecialTreatment(fighterId, state) {
-    const SPECIAL_TREATMENT_COST = 200;
-    if ((state.funds || 0) < SPECIAL_TREATMENT_COST) {
-      return { error: 'funds_insufficient' };
+    const doc = Engine.shachoshitsu.getDoc('special_treatment');
+    const cost = (doc && doc.cost != null) ? doc.cost : 500;
+    const dpCost = (doc && doc.decisionCost != null) ? doc.decisionCost : 1;
+    if ((state.decisionPoints || 0) < dpCost) {
+      return { error: 'decision_points_insufficient', dpCost };
+    }
+    if ((state.funds || 0) < cost) {
+      return { error: 'funds_insufficient', cost };
     }
     const roster = [...state.roster];
     const idx = roster.findIndex(f => f.id === fighterId);
     if (idx < 0) return { error: 'fighter_not_found' };
     let f = { ...roster[idx] };
     if (!f.injury) return { error: 'not_injured' };
+    if (!Engine.shachoshitsu.isLongTermInjured(f)) return { error: 'not_longterm_injured' };
 
     const cur = f.injury.weeksLeft || 0;
-    // 確率ベース短縮(30%:1週 / 30%:2週 / 25%:3週 / 15%:4週、8週以上で+1週)
     const healRng = Engine.rng.create(
       Engine.rng.derive(state.rngSeed || 0, state.season, state.week, 0xBE60, fighterId)
     );
-    const roll = Engine.rng.float(healRng);
-    let reduction = roll < 0.30 ? 1 : roll < 0.60 ? 2 : roll < 0.85 ? 3 : 4;
-    if (cur >= 8) reduction += 1;
-    const reduced = Math.max(1, cur - reduction);
+    const { reduced } = Engine.shachoshitsu.rollTreatmentReduction(cur, healRng);
     f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
     roster[idx] = f;
 
@@ -23965,8 +24071,9 @@ Engine.shachoshitsu = {
     const changes = [{ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` }];
     return {
       roster,
-      funds: (state.funds || 0) - SPECIAL_TREATMENT_COST,
-      cost: SPECIAL_TREATMENT_COST,
+      funds: (state.funds || 0) - cost,
+      decisionPoints: Math.max(0, (state.decisionPoints || 0) - dpCost),
+      cost,
       events,
       changes,
       fighterId,
@@ -24832,6 +24939,7 @@ Engine.eventSystem = {
         const mkInjury = (sev, weeks) => ({
           type: sev === 'moderate' ? '中傷' : '軽傷',
           weeksLeft: weeks,
+          totalWeeks: weeks,
           color: sev === 'moderate' ? '#e17055' : '#fdcb6e'
         });
         if (choiceIdx === 0 && funds >= 200) {
