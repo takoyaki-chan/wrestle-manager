@@ -102,13 +102,19 @@
     text-overflow: ellipsis;
   }
 
-  .top-bar-info .info-item:nth-child(4),
-  .top-bar-info .info-item:nth-child(5) {
+  /* care-rework2 P1-4: 決裁枠(3番目)が増えて6項目になった。
+     1行目=資金/人気/決裁、2行目=Heat/順位、3行目=王座(ポートレート＋選手名＋防衛数で
+     一番横幅を食うため全幅)。 */
+  .top-bar-info .info-item:nth-child(4) {
     grid-column: span 1;
   }
 
   .top-bar-info .info-item:nth-child(5) {
     grid-column: span 2;
+  }
+
+  .top-bar-info .info-item:nth-child(6) {
+    grid-column: 1 / -1;
   }
 
   .week-overview-grid {

@@ -261,6 +261,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 .info-val.positive{color:var(--green)}
 .info-val.negative{color:var(--red)}
 .info-val.gold{color:var(--gold-light)}
+/* care-rework2 P1-4: 決裁枠が満タン = 次の回復(4週ごと+2)が捨てられるサイン。
+   急かす演出にはせず、視界の端で気づく程度に淡く息をさせる。 */
+@keyframes dp-full-breathe{0%,100%{opacity:.55}50%{opacity:1}}
+.info-val.dp-full{color:var(--gold-light);animation:dp-full-breathe 2.6s ease-in-out infinite}
+.info-val.dp-empty{color:var(--text-dim)}
+@media(prefers-reduced-motion:reduce){.info-val.dp-full{animation:none;opacity:1}}
 .top-bar-audio{display:flex;align-items:center;border-left:1px solid var(--border);padding-left:8px}
 .top-bar-audio button{min-width:36px;min-height:36px;background:none;border:0;color:var(--text-sub);cursor:pointer;opacity:.62}
 /* 中間幅（タブレット〜小さめのPCウィンドウ）: 1行に日付＋5項目＋音声ボタンが収まらないので、
@@ -319,6 +325,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg-dark);color:var(-
 /* MQ再設計P4 §5.3: 新聞ナビの大ニュース未読バッジ */
 .nav-badge-dot{position:absolute;top:3px;right:5px;width:8px;height:8px;border-radius:50%;
   background:var(--red);box-shadow:0 0 6px rgba(196,30,58,0.7)}
+/* care-rework2 P1-4: 社長室ナビの「今週の案件あり」ドット。
+   新聞の未読(赤=速報)とは意味が違うので Office の金で分ける。 */
+.nav-badge-dot.is-office{background:var(--gold);box-shadow:0 0 6px rgba(212,168,67,0.7)}
 
 /* Panels */
 .screen{display:none}
@@ -6687,6 +6696,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   background: var(--cream-gold); opacity: 0.4; transition: opacity 180ms;
 }
 .mdl-a-decision-card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); border-color: var(--cream-gold); }
+/* care-rework2 P1-4: 選手単位のクールダウン中。並べるが選べない（「あと n週」を出すため） */
+.mdl-a-decision-card.is-cooling { opacity: .42; cursor: default; filter: grayscale(.55); }
+.mdl-a-decision-card.is-cooling:hover { transform: none; box-shadow: none; border-color: var(--cream-gold-dark); }
+.mdl-a-decision-card.is-cooling:hover::before { opacity: 0; }
 .mdl-a-decision-card:hover::before { opacity: 1; }
 .mdl-a-decision-letter {
   font-family: var(--font-label); font-size: 12px;
@@ -9854,6 +9867,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="top-bar-info">
       <div class="info-item"><span class="info-label">資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
       <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span><span id="dispSubsidy" class="subsidy-badge"></span></div>
+      <!-- care-rework2 P1-4: 決裁枠を常設表示（社長室に入るまで残量が分からなかった） -->
+      <div class="info-item" id="dispDpItem"><span class="info-label">決裁</span><span class="info-val" id="dispDp">⚡6/6</span></div>
       <div class="info-item"><span class="info-label">Heat</span><span class="info-val" id="dispHeat">➖ Neutral</span></div>
       <div class="info-item"><span class="info-label">順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
       <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
@@ -9877,7 +9892,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
     <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
     <button class="nav-btn" onclick="showScreen('roster',event)">👥 団体</button>
-    <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室</button>
+    <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室<span id="shachoshitsuBadge" class="nav-badge-dot is-office" style="display:none"></span></button>
     <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
     <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
     <button class="nav-btn" onclick="showScreen('newspaper',event)">📰 新聞<span id="newspaperBadge" class="nav-badge-dot" style="display:none"></span></button>

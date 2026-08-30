@@ -181,6 +181,14 @@ function refreshTopBar() {
   // MQ再設計P4 §5.3: 大ニュース未読バッジ（既存セーブでフィールドが無ければ静かに非表示）
   const npBadge = document.getElementById('newspaperBadge');
   if (npBadge) npBadge.style.display = G._bigNewsUnread ? '' : 'none';
+  // care-rework2 P1-4: 社長室ナビの「今週の案件あり」ドット（常時発動の書類は数えない）
+  const shBadge = document.getElementById('shachoshitsuBadge');
+  if (shBadge) {
+    const hasDocs = (typeof Engine !== 'undefined' && Engine.shachoshitsu
+      && typeof Engine.shachoshitsu.hasActionableDocs === 'function')
+      ? Engine.shachoshitsu.hasActionableDocs(G) : false;
+    shBadge.style.display = hasDocs ? '' : 'none';
+  }
   // Hide nav during draft/opening
   const navBar = document.querySelector('.nav-bar');
   if (navBar) navBar.style.display = (['draft','opening'].includes(G.weekPhase)) ? 'none' : '';
@@ -237,6 +245,25 @@ function refreshTopBar() {
       subsidyEl.onmouseout = () => hideCustomTooltip();
       subsidyEl.onclick = (e) => { e.stopPropagation(); showCustomTooltip(subsidyEl, tipHtml); };
     } else { subsidyEl.style.display = 'none'; }
+  }
+  // care-rework2 P1-4: 決裁枠(⚡)の常設表示。
+  // 社長室に入るまで残量が分からず、満タンのまま回復を捨てていることに気づけなかった。
+  // 満タンのときだけ淡く息をさせる(次の回復が捨てられるサイン)。数値の増減には触れない。
+  const dpEl = document.getElementById('dispDp');
+  if (dpEl) {
+    const dpMax = G.decisionPointsMax || 6;
+    const dpNow = G.decisionPoints != null ? G.decisionPoints : dpMax;
+    dpEl.textContent = `⚡${dpNow}/${dpMax}`;
+    dpEl.className = `info-val${dpNow >= dpMax ? ' dp-full' : (dpNow === 0 ? ' dp-empty' : '')}`;
+    const dpTip = `<strong style="color:var(--gold)">⚡ 決裁枠</strong><br>
+社長室の書類を決裁するのに使う。<br>
+<span style="color:#aaa"><strong style="color:#fff">4週ごとに2</strong>回復（上限${dpMax}）</span>${dpNow >= dpMax
+      ? '<br><br><span style="color:#aaa;font-size:11px">いまは満タン。<strong style="color:#fff">次の回復は捨てられる</strong></span>'
+      : ''}`;
+    dpEl.style.cursor = 'help';
+    dpEl.onmouseover = (e) => { e.stopPropagation(); showCustomTooltip(dpEl, dpTip); };
+    dpEl.onmouseout = () => hideCustomTooltip();
+    dpEl.onclick = (e) => { e.stopPropagation(); showCustomTooltip(dpEl, dpTip); };
   }
   const heat = getHeatLevel();
   const heatEl = document.getElementById('dispHeat');
@@ -4961,8 +4988,10 @@ function _renderShachoshitsuSummary(tab) {
 // ── Phase C: 決裁タブの机上 ──────────────────────────────────────────────────
 function _renderShachoshitsuDecisionDesk() {
   let html = '<div class="shachoshitsu-doc-grid">';
+  // care-rework2 P1-4: 今週決裁済みの団体書類も机に残す(朱印付き)。
+  // カードごと消えると「案件が無くなった」ように見え、次週また出ることが伝わらないため。
   const availableDocs = (typeof Engine !== 'undefined' && Engine.shachoshitsu)
-    ? Engine.shachoshitsu.getAvailableDocs(G) : [];
+    ? Engine.shachoshitsu.getAvailableDocs(G, { includeWeekUsed: true }) : [];
 
   if (availableDocs.length === 0) {
     const emptyMsg = G.offSeason
@@ -4980,7 +5009,11 @@ function _renderShachoshitsuDecisionDesk() {
     availableDocs.forEach((doc, renderIdx) => {
       const gridCol = (renderIdx % 4) + 1;
       const costDisplay = _formatShachoshitsuDocCost(doc);
-      const isApproved = doneThisWeek.includes(doc.id);
+      // includeWeekUsed で残した団体書類は必ず朱印側に倒す(押しても execute に弾かれるため)。
+      // _decisionDoneThisWeek は週送りでクリアされるので、翌週は通常のカードに戻る。
+      const teamUsedThisWeek = !!(doc.effect && doc.effect.target === 'team'
+        && (G._decisionWeekUsed || {})[doc.id] === G.week);
+      const isApproved = doneThisWeek.includes(doc.id) || teamUsedThisWeek;
       const approvedCls = isApproved ? ' is-approved' : '';
       const clickAttr = isApproved ? '' : ` onclick="App.onShachoshitsuDocClick('${doc.id}')"`;
       // 朱印(決裁済)で無反応な理由を説明する(「クリックできない」報告対策、data-tipでスマホ対応)

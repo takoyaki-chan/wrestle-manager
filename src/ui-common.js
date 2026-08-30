@@ -8342,15 +8342,23 @@ function showDecisionTargetModal(docId, state) {
     }
     // refresh_leave: care-rework v0.1 §2 でスランプ限定を廃止(常時可、疲労管理ツール)
   }
+  // care-rework2 P1-4: 選手単位のクールダウン中も候補として並べ、「あと n週」で理由を見せる。
+  // 一覧から消していたため、条件を満たしているはずの選手が居ないように見えていた。
+  // 選択はできない(押しても選ばれない)。判定式そのものは従来と同じ。
   const cooldown = doc.cooldown != null ? doc.cooldown : 1;
   const currentWeek = state.week || 0;
-  candidates = candidates.filter(f => {
+  const coolLeft = (f) => {
     const lastUsed = (f._decisionWeekUsed || {})[docId] || -99;
-    return (currentWeek - lastUsed) >= cooldown;
-  });
+    return Math.max(0, cooldown - (currentWeek - lastUsed));
+  };
+  // 選べる選手を先に、クールダウン中を後ろに
+  candidates = [...candidates].sort((a, b) => coolLeft(a) - coolLeft(b));
+  const selectable = candidates.filter(f => coolLeft(f) === 0);
 
-  if (candidates.length === 0) {
-    showToast('対象候補の選手がいません');
+  if (selectable.length === 0) {
+    showToast(candidates.length > 0
+      ? 'この書類は対象の選手がまだ受け取ったばかりです'
+      : '対象候補の選手がいません');
     return;
   }
 
@@ -8360,9 +8368,13 @@ function showDecisionTargetModal(docId, state) {
 
   const candidateCards = candidates.map((f, i) => {
     const lastName = f.name.split(/\s/).pop();
+    const cooling = coolLeft(f);
     let hintText = '';
     let hintCls = '';
-    if (docId === 'encourage') {
+    if (cooling > 0) {
+      hintText = `あと${cooling}週`;
+      hintCls = 'negative';
+    } else if (docId === 'encourage') {
       hintText = f.slump ? 'スランプ' : 'モチベ喪失';
       hintCls = 'negative';
     } else if (docId === 'refresh_leave') {
@@ -8382,8 +8394,9 @@ function showDecisionTargetModal(docId, state) {
     const bg = faceUrl
       ? `background-image:url('${faceUrl}');background-size:cover;background-position:center`
       : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
-    const selCls = i === 0 ? ' is-selected' : '';
-    return `<div class="mdl-a-decision-card${selCls}" data-id="${f.id}" style="text-align:center">
+    const selCls = (cooling === 0 && f.id === selectable[0].id) ? ' is-selected' : '';
+    const coolCls = cooling > 0 ? ' is-cooling' : '';
+    return `<div class="mdl-a-decision-card${selCls}${coolCls}" data-id="${f.id}"${cooling > 0 ? ' data-cooling="1"' : ''} style="text-align:center">
       <div style="width:72px;height:72px;margin:0 auto 8px;${bg};background-color:#2a2520;border:2px solid var(--cream-gold-dark);border-radius:50%"></div>
       <div class="mdl-a-decision-label" style="margin-bottom:4px">${lastName}</div>
       <div style="font-family:var(--font-label);font-size:9px;color:var(--cream-gold);letter-spacing:1.5px;margin-bottom:6px">AGE ${f.age || '—'} ・ OVR ${Engine.util.ov(f)}</div>
@@ -8417,13 +8430,15 @@ function showDecisionTargetModal(docId, state) {
 
   if (!_mdlAOpen(html)) return;
 
-  let selectedFighterId = candidates[0].id;
+  let selectedFighterId = selectable[0].id;
   const card = document.getElementById('mdlACard');
   const grid = card.querySelector('#mdlADecisionGrid');
   if (grid) {
     grid.addEventListener('click', e => {
       const el = e.target.closest('.mdl-a-decision-card');
       if (!el) return;
+      // care-rework2 P1-4: クールダウン中の選手は並べるだけで選ばせない
+      if (el.dataset.cooling === '1') return;
       selectedFighterId = parseInt(el.dataset.id);
       grid.querySelectorAll('.mdl-a-decision-card').forEach(c => c.classList.remove('is-selected'));
       el.classList.add('is-selected');

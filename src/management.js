@@ -22786,9 +22786,13 @@ Engine.shachoshitsu = {
   // ── 今週机に並べる書類リスト ──────────────────────────────────────────────
   // DECISION_DOC_ORDER の順で、発動条件/minOrgPop/団体cooldown を通過した書類を返す
   // オフシーズン中は決裁不可（試合がないため信頼/雰囲気変動が次シーズン開幕まで意味を持たない）
-  getAvailableDocs(state) {
+  // care-rework2 P1-4: opts.includeWeekUsed=true で「今週すでに決裁した団体書類」も返す。
+  // 机の描画だけがこれを使う(消えると「無くなった」ように見えるため、朱印付きで残す)。
+  // 既定値 false のときの返り値は従来と完全に同じ — 決裁の可否判定・auto-sim の選択母集団は不変。
+  getAvailableDocs(state, opts) {
     if (typeof DECISION_DOCS === 'undefined') return [];
     if (state.offSeason) return [];
+    const includeWeekUsed = !!(opts && opts.includeWeekUsed);
     const order = Engine.shachoshitsu.getDocOrder();
     const docs = [];
     for (const docId of order) {
@@ -22803,11 +22807,22 @@ Engine.shachoshitsu = {
       // team書類: 今週すでに決裁済みなら除外(Phase 4 で state._decisionWeekUsed を更新する)
       if (doc.effect && doc.effect.target === 'team') {
         const used = (state._decisionWeekUsed || {})[docId];
-        if (used === state.week) continue;
+        if (used === state.week && !includeWeekUsed) continue;
       }
       docs.push(doc);
     }
     return docs;
+  },
+
+  // ── 「今週の案件」があるか(社長室ナビのドット用) ──────────────────────────────
+  // care-rework2 P1-4: 常時発動の書類(activationCondition が null = 休暇/招聘/合宿/メディア等)は
+  // 毎週必ず机にあるため数えない。数えると「案件がある」の意味が消えてドットが常時点灯する。
+  // 数えるのは「発動条件を満たしたから今週出てきた」書類だけ。
+  hasActionableDocs(state) {
+    if (!state) return false;
+    const docs = Engine.shachoshitsu.getAvailableDocs(state);
+    const done = state._decisionDoneThisWeek || [];
+    return docs.some(d => d.activationCondition && !done.includes(d.id));
   },
 
   // ── コスト計算(団体書類は unitCost×人数、個人書類は cost をそのまま) ─────────
