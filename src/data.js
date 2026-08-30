@@ -19153,6 +19153,28 @@ const DECISION_DOCS = {
     recommendation: '気になる選手のポップアップから直接実行する。机には並ばない。',
     effect: { target: 'individual', trust: 0.77, slumpMomentum: { high: 4.0, low: 2.5 } },
   },
+  // care-rework2 P2-G / task-101: bold(強気)専用の「起用を約束する」。
+  // encourage と同じく机には並ばず(DECISION_DOC_ORDER に入れない)、
+  // 選手ポップアップから直接実行される。費用0・決裁枠⚡1・選手単位CD16週。
+  // 効果は即時ではない — 約束を交わすだけで、trust が動くのは次の通常興行の
+  // 結果(履行/破約)が確定したとき。だから effect.trust を持たない。
+  pledge: {
+    id: 'pledge',
+    label: '起用の約束',
+    category: 'care',
+    categoryLabel: '選手ケア',
+    icon: '🤝',
+    cost: 0,
+    decisionCost: 1,
+    activationCondition: null,
+    minOrgPop: 0,
+    cooldown: 16,
+    body: '次の通常興行のメインで使うと本人に約束する',
+    detailText: '言葉ではなく試合で応えるタイプの選手に、次の通常興行のメインイベントで使うと約束する。カード編成は縛られない — 約束を守るも破るも社長の判断。',
+    effectSummary: 'メインで起用すれば強く応える。約束を破れば信頼を失う',
+    recommendation: '強気な選手のポップアップから実行する。机には並ばない。',
+    effect: { target: 'individual' },
+  },
   special_treatment: {
     id: 'special_treatment',
     label: '特別治療指示書',
@@ -20772,6 +20794,22 @@ const CARE_REACTION_DIALOGUES = {
     }
   }
 };
+
+// ============================================================================
+// §3-2c-0: 起用約束チャンネルの定数（care-rework2 P2-G / task-101）
+//
+// bold(強気)は声かけが ×0.70 で「言葉が効かない」個性を持つ。これは守る前提で、
+// 言葉ではなく「試合で応える」経路を1つだけ与えるのがこのチャンネル。
+// PLEDGE_BOLD_MULT はそのための専用係数で、bold にとって初めて実効1.0を超える
+// ケアになるように置いている（DECISION_PERSONALITY_MULT に pledge 列は作らない
+// ＝ calcUncertainty が 1.00 を返すので、実効倍率はちょうど 1.3 になる）。
+// ============================================================================
+const PLEDGE_BOLD_MULT = 1.3;        // 履行時の trust に掛かる約束チャンネル専用係数
+const PLEDGE_KEPT_TRUST = 8;         // 履行の基礎 trust（×finalMult×PLEDGE_BOLD_MULT）
+const PLEDGE_BROKEN_TRUST = -6;      // 破約の trust（倍率なし・これを超えて下げない）
+const PLEDGE_KEPT_MOMENTUM = 8;      // 履行時、スランプ/モチベ喪失中の recoveryMomentum 加算
+const PLEDGE_EXPIRE_WEEKS = 12;      // 判定機会がないまま経過したら静かに失効する週数
+const PLEDGE_COOLDOWN_WEEKS = 16;    // 選手単位のCD（週）
 
 // ============================================================================
 // §3-2c: 起用約束セリフ（care-rework2 P2-G / task-101）
@@ -30488,6 +30526,9 @@ if (typeof module !== 'undefined' && module.exports) {
     MILESTONE_EVENTS, NOTIF_EVENT_TEXTS, NOTIF_DIALOGUES,
     DOME_FIRSTSHOW_LINES, DOME_SELLOUT_LINES,
     CAMP_FLAVOR_TEXTS, CARE_REACTION_DIALOGUES,
+    PLEDGE_LINES, getPledgeLinePool, pickPledgeLine,
+    PLEDGE_BOLD_MULT, PLEDGE_KEPT_TRUST, PLEDGE_BROKEN_TRUST,
+    PLEDGE_KEPT_MOMENTUM, PLEDGE_EXPIRE_WEEKS, PLEDGE_COOLDOWN_WEEKS,
     CHOICE_EVENT_DIALOGUES, LARGE_EVENT_TEXTS, LARGE_EVENT_DIALOGUES,
     MEDIA_OUTLET_NAMES,
     CM_ADVERTISER_NAMES, MAGAZINE_NAMES, VARIETY_SHOW_NAMES,

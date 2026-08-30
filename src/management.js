@@ -13504,6 +13504,32 @@ const Engine = {
     }
     const settle = Engine.season.processSettlement(s);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
+
+    // ── care-rework2 P2-G: 起用約束の判定(興行の精算が終わった直後) ──────────
+    // 判定は読み取りのみ。ここで G.pledge を必ず片付け、結果は
+    // _pendingPledgeResult に載せて UI(興行後ポップアップ)へ渡す。
+    // 失効は静かに消す — 通知もポップアップも出さず、ログ1行だけ残す。
+    if (s.pledge && s.pledge.fighterId != null) {
+      const pledgeOutcome = Engine.shachoshitsu.settlePledge(s);
+      if (pledgeOutcome) {
+        const pf = (pledgeOutcome.roster || []).find(f => f && f.id === pledgeOutcome.fighterId);
+        const pName = pf ? pf.name : '';
+        const pledgeLog = pledgeOutcome.outcome === 'expired'
+          ? `🤝 ${pName}への起用の約束は、機会がないまま流れた`
+          : pledgeOutcome.outcome === 'kept'
+            ? `🤝 ${pName}との約束どおり、メインを任せた`
+            : `🤝 ${pName}との約束を果たせなかった`;
+        s = { ...s,
+          roster: pledgeOutcome.roster,
+          pledge: undefined,
+          gameLog: [...(s.gameLog || []), pledgeLog],
+        };
+        // 失効は静かに消す(ログのみ)。履行/破約だけ興行後ポップアップへ渡す
+        if (pledgeOutcome.outcome !== 'expired') {
+          s = { ...s, _pendingPledgeResult: { fighterId: pledgeOutcome.fighterId, outcome: pledgeOutcome.outcome } };
+        }
+      }
+    }
     // transient: pending収入は settlement で消費済み — 次週への重複計上を防止
     delete s._pendingMediaIncomes;
     delete s._pendingPromoIncomes;
@@ -23421,6 +23447,8 @@ Engine.shachoshitsu = {
     let orgPopDelta = 0;
     // care-rework2 P2-B: 慰労会の余韻週数(0 = 余韻なし)。party 分岐だけが立てる。
     let partyAfterglowWeeks = 0;
+    // care-rework2 P2-G: 成立した起用約束。result.pledge として返し、呼び出し元が G へ載せる
+    let newPledge = null;
 
     // §6.1: OVR傾斜係数(careActions と同じ式を移植)
     const careOvrMult = (fighter) => {
@@ -23548,6 +23576,19 @@ Engine.shachoshitsu = {
         f = applyTrust(f, (doc.effect.trust || 0.77) * currentFinalMult);
         reactionKey = highTrust ? 'encourage_high_trust' : 'encourage';
         events.push(`💬 社長が${f.name}に声をかけた`);
+      } else if (docId === 'pledge') {
+        // care-rework2 P2-G: 「次の通常興行のメインで使う」と約束する。
+        // ここでは trust を一切動かさない — 約束はまだ何も果たしていないため。
+        // 実際の増減は processSettlement の履行/破約判定で確定する。
+        if (String(f.personality || 'normal') !== 'bold') return { error: 'not_bold' };
+        // 同時1件のみ。二枚舌(複数人に同じメインを約束する)の複雑系を作らない
+        if (state.pledge && state.pledge.fighterId != null) return { error: 'pledge_exists' };
+        newPledge = {
+          fighterId: f.id,
+          madeWeek: Engine.util.absWeek(state.season, state.week),
+        };
+        reactionKey = 'pledge_accept';
+        events.push(`🤝 社長が${f.name}に次の通常興行のメインを約束した`);
       } else if (docId === 'refresh_leave') {
         // care-rework v0.1 §2: 常時可・週数1〜4選択・休暇中は欠場
         const weeks = options && options.weeks != null ? Math.round(options.weeks) : 0;
@@ -23921,6 +23962,7 @@ Engine.shachoshitsu = {
     if (orgPopDelta) result.orgPopDelta = orgPopDelta;
     // care-rework2 P2-B: 余韻は GameState 側に積む(週次処理 tickWeek が消化する)
     if (partyAfterglowWeeks > 0) result._partyAfterglowWeeks = partyAfterglowWeeks;
+    if (newPledge) result.pledge = newPledge;
     // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
     if (coachAssignAfterInvite) result.coachAssign = coachAssignAfterInvite;
     if (newLastInvitedCoachId != null) result.lastInvitedCoachId = newLastInvitedCoachId;
@@ -23952,6 +23994,93 @@ Engine.shachoshitsu = {
     const dialogues = CARE_REACTION_DIALOGUES[docId];
     if (!dialogues) return '…';
     return pickDialogueLine(dialogues, fighter);
+  },
+
+  // ── care-rework2 P2-G: 起用約束の履行/破約/失効の判定 ──────────────────────
+  // 呼び出しは tickWeek の settlement 直後(週1回)。純粋関数。
+  //
+  // ■ 判定するのは自団体の「通常興行」だけ
+  //   特別興行・PPV週では判定しない(fail-open)。挑戦試合・遠征はそもそも
+  //   lastShowResults を通常興行として積まないため、ここには来ない。
+  //   判定機会がないまま PLEDGE_EXPIRE_WEEKS 週が過ぎたら静かに失効させる
+  //   (特別興行が続いた社長を破約扱いにするのは理不尽なので、罰は課さない)。
+  //
+  // ■ カード編成にも試合結果にも一切書き込まない
+  //   results を読むだけの走査。約束があってもカードは完全に自由 —
+  //   「破る自由」を残すことが、この機能を意思決定にしている。
+  //
+  // ■ メインイベントは results[0](= showCard[0])
+  //   このコードベースの一貫した規約(management.js の mainEventIdx = 0 /
+  //   isMainEvent: matchIndex === 0、表示側も idx===0 を「メインイベント」と出す)。
+  //
+  // 返り値: { roster, outcome: 'kept'|'broken'|'expired', fighterId } | null(判定なし)
+  settlePledge(state) {
+    const p = state && state.pledge;
+    if (!p || p.fighterId == null) return null;
+    const roster = state.roster || [];
+    const idx = roster.findIndex(f => f && f.id === p.fighterId);
+    // 対象が名簿から消えた(退団・引退)なら静かに解消する。罰は課さない
+    if (idx < 0) return { roster, outcome: 'expired', fighterId: p.fighterId };
+
+    const results = state.lastShowResults || [];
+    if (Engine.util.isRegularShowWeek(state.week) && results.length > 0) {
+      // ── メインイベント出場者の読み取り(タッグも拾う) ──
+      const main = results[0];
+      const mainIds = new Set();
+      if (main && main.matchType === 'tag') {
+        Object.keys(main.perFighter || {}).forEach(id => mainIds.add(Number(id)));
+      } else if (main) {
+        if (main.left) mainIds.add(main.left.id);
+        if (main.right) mainIds.add(main.right.id);
+      }
+      const kept = mainIds.has(p.fighterId);
+
+      // 信頼の係数チェーンは execute 側の applyTrust と同じものを使う
+      const careOvrMult = (fighter) => {
+        const ovr = Engine.util.ov(fighter);
+        return 0.7 + (100 - ovr) / 100 * 0.9;
+      };
+      const applyTrust = (fighter, delta, skipOvrScale) => {
+        const mental = fighter.mn || 50;
+        let adjusted = Engine.trust.applyCoeff(delta, mental);
+        if (!skipOvrScale) adjusted *= careOvrMult(fighter);
+        const oldTrust = fighter.trust != null ? fighter.trust : 50;
+        if (adjusted > 0) adjusted *= Engine.trust.gainMult(oldTrust);
+        return { ...fighter, trust: Engine.util.clamp(oldTrust + adjusted, 0, 100) };
+      };
+
+      const newRoster = roster.slice();
+      let f = { ...newRoster[idx] };
+      if (kept) {
+        // 履行: 8 × finalMult × 1.3。DECISION_PERSONALITY_MULT に pledge 列を
+        // 置いていないので finalMult は 1.00 になり、bold にとって実効1.3 —
+        // 「言葉は効かないが試合で応える」個性がここで初めて1.0を超える。
+        const finalMult = Engine.shachoshitsu.calcUncertainty('pledge', f);
+        f = applyTrust(f, PLEDGE_KEPT_TRUST * finalMult * PLEDGE_BOLD_MULT);
+        // 沈んでいる最中に約束が果たされたことは、立ち直りのきっかけになる
+        if (f.slump) {
+          f = { ...f, slump: { ...f.slump, recoveryMomentum: (f.slump.recoveryMomentum || 0) + PLEDGE_KEPT_MOMENTUM } };
+        }
+        if (f.motivationLoss) {
+          f = { ...f, motivationLoss: { ...f.motivationLoss, recoveryMomentum: (f.motivationLoss.recoveryMomentum || 0) + PLEDGE_KEPT_MOMENTUM } };
+        }
+      } else {
+        // 破約: -6 固定(finalMult を掛けない)。
+        // careOvrMult も掛けない — あの傾斜は「格下ほどケアが効く」という
+        // 増加側の設計で、罰に掛けると格下ほど重く罰する逆向きの意味になり、
+        // かつ -6 を超えて落ちうる(不変条件「破約は-6以内」を破る)。
+        f = applyTrust(f, PLEDGE_BROKEN_TRUST, true);
+      }
+      newRoster[idx] = f;
+      return { roster: newRoster, outcome: kept ? 'kept' : 'broken', fighterId: p.fighterId };
+    }
+
+    // 判定機会がないまま規定週を過ぎたら静かに失効(ログ1行のみ・ペナルティなし)
+    const elapsed = Engine.util.absWeek(state.season, state.week) - (p.madeWeek || 0);
+    if (elapsed >= PLEDGE_EXPIRE_WEEKS) {
+      return { roster, outcome: 'expired', fighterId: p.fighterId };
+    }
+    return null;
   },
 
   // ─── Phase 5: 旧 Engine.careActions から移植したヘルパー群 ─────────────────
