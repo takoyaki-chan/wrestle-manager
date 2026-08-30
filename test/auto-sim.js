@@ -1220,6 +1220,10 @@ const careStats = {
   retireAges: [],
   // care-rework2 P2-G: 起用約束の3分岐が実際に発火しているか
   pledgeOutcomes: { kept: 0, broken: 0, expired: 0 },
+  // care-rework2 P3-1: 指名リクエストの充足/不在の実発火(不在も「正直な報告」として正常)
+  coachRequest: { filed: 0, fulfilled: 0, absent: 0 },
+  // care-rework2 P3-2: 重点ステを指定した招聘の件数
+  inviteFocusRequested: 0,
 };
 const careRetireSeenIds = new Set();
 
@@ -1300,9 +1304,71 @@ function carePickTarget(docId, G) {
       const m = Engine.shachoshitsu.calcInviteMult(coach, t, G).mult;
       if (m > bestMult || (m === bestMult && bestCoach && coach.id < bestCoach.id)) { bestMult = m; bestCoach = coach; }
     }
-    return bestCoach ? { fighterId: t.id, options: { coachId: bestCoach.id, autoRenew: false } } : null;
+    if (!bestCoach) return null;
+    // care-rework2 P3-2: 重点ステ指導は「いちばん低いステを頼む」方針で決定的に指定する。
+    // 旧src(WM_SOURCE_REF)では options.focusStat が無視されるだけなので後方互換。
+    const focusStat = ['pw', 'sp', 'te', 'st']
+      .reduce((a, b) => ((t[b] || 0) < (t[a] || 0) ? b : a));
+    return { fighterId: t.id, options: { coachId: bestCoach.id, autoRenew: false, focusStat } };
   }
   return null;
+}
+
+// ── care-rework2 P3-1: 指名リクエスト(秘書に探してもらう)の自動実行 ────────────
+// 顔ぶれの期ごとに1回、いま市場に「欠けている軸」を決定的に依頼する。
+// 期の偶奇で軸を交互に振る(乱数は使わない):
+//   ・スタイル軸 … 看板選手のスタイルで候補にいないもの。C級に4〜7名いるので概ね充足する
+//   ・格軸       … 候補に出ていない格を上(A→B→C)から。A級は低知名度だと母集団に居ないので
+//                   「都合がつかなかった」が出る
+// これで充足と不在の両方が回り、ご都合補充が入っていないことの確認になる。
+function autoRequestCoach(G) {
+  if (!CARE_MODE) return G;
+  if (G.offSeason || G.weekPhase !== 'manage') return G;
+  if (typeof Engine.shachoshitsu.requestCoach !== 'function') return G;  // 旧src互換
+  if (Engine.shachoshitsu.hasCoachRequestThisQuarter(G)) return G;
+
+  const market = Engine.shachoshitsu.ensureInviteMarket(G);
+  const cands = ((market && market.candidateIds) || [])
+    .map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
+  const haveGrade = new Set(cands.map(c => c.grade));
+  const haveStyle = new Set(cands.map(c => c.style));
+
+  const missingGrade = () => ['A', 'B', 'C'].find(g => !haveGrade.has(g)) || null;
+  const missingStyle = () => {
+    const top = carePickBy((G.roster || []).filter(careEligible), f => Engine.util.ov(f), true);
+    return (top && top.style && !haveStyle.has(top.style)) ? top.style : null;
+  };
+
+  const order = (((G.season || 1) + Math.ceil((G.week || 1) / 12)) % 2 === 0)
+    ? [['style', missingStyle], ['grade', missingGrade]]
+    : [['grade', missingGrade], ['style', missingStyle]];
+
+  let axis = null, value = null;
+  for (const [ax, fn] of order) { const v = fn(); if (v) { axis = ax; value = v; break; } }
+  if (!axis) return G;
+
+  const r = Engine.shachoshitsu.requestCoach(G, axis, value);
+  if (!r || r.error) {
+    const key = `coachRequest:${(r && r.error) || 'null'}`;
+    careStats.errors[key] = (careStats.errors[key] || 0) + 1;
+    return G;
+  }
+  careStats.coachRequest.filed++;
+  return { ...G, coachRequest: r.coachRequest };
+}
+
+// 充足/不在の実発火カウント。市場は periodKey が変わった週に入れ替わるので、
+// その遷移を跨いだ1回だけ requestResult を読む(同じ四半期で二重に数えない)。
+let _coachRequestSeenKey = null;
+function coachRequestProbe(G) {
+  const mk = G.inviteMarket;
+  if (!mk || !mk.periodKey) return G;
+  if (mk.periodKey !== _coachRequestSeenKey) {
+    _coachRequestSeenKey = mk.periodKey;
+    const rr = mk.requestResult;
+    if (rr) careStats.coachRequest[rr.fulfilled ? 'fulfilled' : 'absent']++;
+  }
+  return G;
 }
 
 // 1週分のケア決裁。実プレイ(App.executeDecision)と同じ state 反映を行う。
@@ -1363,6 +1429,11 @@ function autoExecuteCare(G) {
     careStats.totalSpend += result.cost || 0;
     careStats.totalDp += doc.decisionCost || 0;
     careStats.counts[docId] = (careStats.counts[docId] || 0) + 1;
+    // care-rework2 P3-2: 実際に成立した招聘のうち、重点ステが載ったものだけ数える
+    if (docId === 'trainer' && pick.options && pick.options.focusStat) {
+      const invited = (G.roster || []).find(f => f.id === pick.fighterId);
+      if (invited && invited._inviteBuff && invited._inviteBuff.focusStat) careStats.inviteFocusRequested++;
+    }
   }
   return G;
 }
@@ -1649,6 +1720,7 @@ function runSimulation(seed, seasons) {
       // ── ケア自動実行 (--care) ── 実プレイと同じく manage フェーズ・興行前に決裁する
       G = autoExecuteCare(G);
       G = autoExecutePledge(G);
+      G = autoRequestCoach(G);
 
       // ── 興行週: カード自動編成→executeShow ──
       // 春のタッグリーグ開催週(Week12)はリーグ興行がその週の枠を占めるため、通常興行はスキップ
@@ -1945,6 +2017,7 @@ function runSimulation(seed, seasons) {
       G = Engine.validateGameState(G);
       G = collectViolations(G, violations);
       G = pledgeProbe(G);
+      G = coachRequestProbe(G);
       careSample(G);
 
       // ── シーズン遷移検出 ──
@@ -3063,6 +3136,18 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
       if (n > 0 && (po.kept + po.broken + po.expired) === 0) {
         console.log('    ⚠ 約束は成立しているのに結果が1件も出ていない — 判定が配線されていない疑い');
       }
+    }
+    // care-rework2 P3-1/P3-2: 指名リクエストと重点ステ指導の実発火
+    {
+      const cr = careStats.coachRequest;
+      console.log(`  指名リクエスト:                 依頼 ${cr.filed} / 充足 ${cr.fulfilled} / 都合つかず ${cr.absent}`);
+      if (cr.filed > 0 && (cr.fulfilled + cr.absent) === 0) {
+        console.log('    ⚠ 依頼しているのに結果が1件も出ていない — 四半期ロールで消費されていない疑い');
+      }
+      if (cr.filed > 0 && cr.absent === 0) {
+        console.log('    ⚠ 不在報告が1件も無い — ご都合補充が入っている疑い(母集団外は充足しないはず)');
+      }
+      console.log(`  重点ステ指導を指定した招聘:     ${careStats.inviteFocusRequested}件`);
     }
     const cdEntries = Object.entries(careStats.cooldownSkips).sort((a, b) => b[1] - a[1]);
     if (cdEntries.length) {

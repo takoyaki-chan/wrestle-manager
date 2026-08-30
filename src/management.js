@@ -13512,7 +13512,26 @@ const Engine = {
     // §3.1「1回休み」: 再抽選で除外を1回適用したら消費済みにする(クリアしないと永久出禁になる)
     const inviteMarketRerolled = !s.inviteMarket || s.inviteMarket.periodKey !== nextInviteMarket.periodKey;
     s = { ...s, inviteMarket: nextInviteMarket };
-    if (inviteMarketRerolled && s.lastInvitedCoachId != null) s = { ...s, lastInvitedCoachId: null };
+    // care-rework2 P3-1: 指名リクエストの結果報告(1行)とリクエストの片付け。
+    // 入れ替わった週にここで必ず使い切る — 持ち越すと翌四半期に二重に効いてしまう。
+    let coachRequestEvent = null;
+    if (inviteMarketRerolled) {
+      if (s.lastInvitedCoachId != null) s = { ...s, lastInvitedCoachId: null };
+      const rr = nextInviteMarket.requestResult;
+      if (rr) {
+        const wanted = Engine.shachoshitsu.formatCoachRequest(rr);
+        if (rr.fulfilled) {
+          const rc = ALL_COACHES.find(c => c.id === rr.coachId);
+          coachRequestEvent = `📇 秘書からの報告 — 頼んでいた${wanted}の件、${rc ? rc.name : 'その人'}コーチが今期の面談に応じる`;
+        } else {
+          coachRequestEvent = `📇 秘書からの報告 — 頼んでいた${wanted}は、今期は都合がつかなかった`;
+        }
+      }
+      if (s.coachRequest) {
+        const { coachRequest: _consumedRequest, ...restAfterRequest } = s;
+        s = restAfterRequest;
+      }
+    }
     // task-88 §D: 王座未創設時は同一stateを返しRNGも消費しない四半期フック。
     s = Engine.unifiedTitle.processQuarter(s);
     // v1.8: transient 成長イベントを state に乗せる
@@ -13757,6 +13776,8 @@ const Engine = {
       settle.summary,
     ];
     if (ppvUnlockEvent) events.push(ppvUnlockEvent);
+    // care-rework2 P3-1: 四半期頭の秘書報告(充足でも不在でも1行だけ)
+    if (coachRequestEvent) events.push(coachRequestEvent);
     // bankruptcy-redesign v1.1: 資金危機フェーズ判定（オフシーズン中はスキップ）
     // 毎週 _crisisColumnTag / _crisisJustEntered をリセットしてから設定
     s = { ...s, _crisisColumnTag: null, _crisisJustEntered: false };
@@ -23148,7 +23169,85 @@ Engine.shachoshitsu = {
     }
     const count = 2 + Engine.rng.int(rng, 0, 1);  // 2〜3名
     const candidateIds = shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
-    return { periodKey, candidateIds };
+
+    // ── care-rework2 P3-1: 前四半期に秘書へ出した指名リクエストの充足 ───────────
+    // リクエストが無いときは以下を一切通らず、返り値も従来と同一(ビット一致)。
+    // 充足の抽選は 0x1CB1 のストリームを一切消費せず、専用ソルト 0x1CB3 の
+    // 別rngで引く — これで「頼まなかった世界」の市場が1ビットも動かない。
+    const req = state.coachRequest;
+    if (!req || !req.quarterKey || req.quarterKey === periodKey) {
+      return { periodKey, candidateIds };
+    }
+    const matched = eligible.filter(c => Engine.shachoshitsu.matchesCoachRequest(c, req));
+    if (matched.length === 0) {
+      // ご都合補充はしない。母集団にいなければ正直に「都合がつかなかった」と報告する。
+      // orgPopゲートを超える格を連れて来ることも当然しない(eligible が既に効いている)。
+      return { periodKey, candidateIds, requestResult: { fulfilled: false, axis: req.axis, value: req.value } };
+    }
+    const reqRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, season, quarter, 0x1CB3));
+    const picked = matched[Engine.rng.int(reqRng, 0, matched.length - 1)];
+    // 候補の1枠目を該当者で確保する。枠数自体は増やさない(誰かが押し出される)。
+    // 既に候補入りしていた場合は先頭へ寄せるだけで、枠を余計に潰さない。
+    const withRequest = [picked.id, ...candidateIds.filter(id => id !== picked.id)]
+      .slice(0, Math.max(1, candidateIds.length));
+    return {
+      periodKey,
+      candidateIds: withRequest,
+      requestResult: { fulfilled: true, coachId: picked.id, axis: req.axis, value: req.value },
+    };
+  },
+
+  // ── care-rework2 P3-1: 指名リクエスト(秘書に探してもらう) ────────────────────
+  // 頼める軸は1つだけ: 「◯◯スタイルに合う人」か「◯◯級の人」。
+  // 誰が来るかは選べない(格・相性・特化はガチャのまま=正直な不確実性)。
+  getCoachRequestAxes() {
+    return {
+      style: ['Grappler', 'Striker', 'Submission', 'Aerial', 'Brawler', 'Allround'],
+      grade: ['C', 'B', 'A'],
+    };
+  },
+
+  matchesCoachRequest(coach, req) {
+    if (!coach || !req) return false;
+    if (req.axis === 'style') return coach.style === req.value;
+    if (req.axis === 'grade') return coach.grade === req.value;
+    return false;
+  },
+
+  // 「いま机に並んでいる顔ぶれ」の期。カレンダー上の四半期キーとは1週ずれることがある:
+  // 四半期の初週は、その週の tickWeek が終わるまで市場がまだ前期のままなので、
+  // 暦の四半期(getInvitePeriodKey)で数えると「まだ返事が来ていない依頼」を
+  // 上書きできてしまう。依頼の単位は暦ではなく“顔ぶれ”に合わせる。
+  getCurrentMarketPeriodKey(state) {
+    if (state && state.inviteMarket && state.inviteMarket.periodKey) return state.inviteMarket.periodKey;
+    return Engine.shachoshitsu.getInvitePeriodKey((state && state.season) || 1, (state && state.week) || 1);
+  },
+
+  // 依頼済み(同じ顔ぶれの期に1件まで)かどうか。UIのボタン活性判定にも使う。
+  hasCoachRequestThisQuarter(state) {
+    const req = state && state.coachRequest;
+    if (!req || !req.quarterKey) return false;
+    return req.quarterKey === Engine.shachoshitsu.getCurrentMarketPeriodKey(state);
+  },
+
+  // ⚡0・費用0。返り値は { coachRequest } か { error }。状態は呼び出し側で載せる。
+  requestCoach(state, axis, value) {
+    if (!state) return { error: 'no_state' };
+    if (state.offSeason) return { error: 'offseason_locked' };
+    const axes = Engine.shachoshitsu.getCoachRequestAxes();
+    if (!axes[axis] || !axes[axis].includes(value)) return { error: 'invalid_request' };
+    if (Engine.shachoshitsu.hasCoachRequestThisQuarter(state)) return { error: 'already_requested' };
+    return {
+      coachRequest: { axis, value, quarterKey: Engine.shachoshitsu.getCurrentMarketPeriodKey(state) },
+    };
+  },
+
+  // 指名リクエストのプレイヤー向け表記(内部語を出さない)
+  formatCoachRequest(req) {
+    if (!req) return '';
+    if (req.axis === 'grade') return `${req.value}級のコーチ`;
+    const label = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[req.value]) || req.value;
+    return `${label}に強いコーチ`;
   },
 
   // periodKey が現在と食い違っていれば再抽選、そうでなければそのまま返す(tickWeek から毎週呼ぶ)
