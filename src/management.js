@@ -14044,6 +14044,18 @@ const Engine = {
       s = { ...s, _decisionDoneThisWeek: [] };
     }
 
+    // ── care-rework2 P2-B: 慰労会の余韻 ────────────────────────────────────
+    // 宴の効果は一晩では消えない。開催の翌週から3週にわたって雰囲気が +1 ずつ乗る。
+    // 通知は出さない(週次トースト禁止 — 道場の空気の描写で伝わればよい)。
+    // 旧セーブに _partyAfterglowWeeks が無くても undefined → 効果なしで安全。
+    if (!s.offSeason && (s._partyAfterglowWeeks || 0) > 0) {
+      const _afterglowMorale = s.lockerRoomMorale != null ? s.lockerRoomMorale : 60;
+      s = { ...s,
+        lockerRoomMorale: Engine.util.clamp(_afterglowMorale + 1, 0, 100),
+        _partyAfterglowWeeks: s._partyAfterglowWeeks - 1,
+      };
+    }
+
     // リーダー気質: チャンピオン時orgPop+0.3/週（逓減適用）
     if (s.titles && s.titles.world && s.titles.world.championId) {
       const champId = s.titles.world.championId;
@@ -22875,10 +22887,21 @@ Engine.shachoshitsu = {
       if (!Engine.shachoshitsu.checkActivation(docId, state)) continue;
       // orgPop 条件
       if (doc.minOrgPop && (state.orgPop || 0) < doc.minOrgPop) continue;
-      // team書類: 今週すでに決裁済みなら除外(Phase 4 で state._decisionWeekUsed を更新する)
+      // team書類: cooldown 中なら除外(Phase 4 で state._decisionWeekUsed を更新する)
+      // care-rework2 P2-B: 従来は「今週決裁済みか」だけを見ていた(=常にCD1週相当)。
+      // 慰労会をCD2週にするため doc.cooldown を見る。合宿(cooldown:1)の挙動は不変。
+      // 当週決裁済みは従来どおり includeWeekUsed で朱印付き表示できる。
+      // 週はシーズンで巻き戻るため、差が負(=新シーズン)のときは cooldown を掛けない。
       if (doc.effect && doc.effect.target === 'team') {
         const used = (state._decisionWeekUsed || {})[docId];
-        if (used === state.week && !includeWeekUsed) continue;
+        if (used != null) {
+          const elapsed = state.week - used;
+          if (elapsed === 0) {
+            if (!includeWeekUsed) continue;
+          } else if (elapsed > 0 && elapsed < (doc.cooldown != null ? doc.cooldown : 1)) {
+            continue;
+          }
+        }
       }
       docs.push(doc);
     }
@@ -23382,6 +23405,8 @@ Engine.shachoshitsu = {
     let reactionKey = docId;
     let reactionFighterId = fighterId;
     let orgPopDelta = 0;
+    // care-rework2 P2-B: 慰労会の余韻週数(0 = 余韻なし)。party 分岐だけが立てる。
+    let partyAfterglowWeeks = 0;
 
     // §6.1: OVR傾斜係数(careActions と同じ式を移植)
     const careOvrMult = (fighter) => {
@@ -23663,7 +23688,15 @@ Engine.shachoshitsu = {
 
     // ── 団体書類(target: 'team') ──
     if (doc.effect && doc.effect.target === 'team') {
-      if (_decisionWeekUsed[docId] === state.week) return { error: 'cooldown' };
+      // care-rework2 P2-B: 机の表示(getAvailableDocs)と同じ cooldown 判定。
+      // 合宿(cooldown:1)は従来どおり「同一週の二重決裁だけ」を弾く。
+      const _teamLastUsed = _decisionWeekUsed[docId];
+      if (_teamLastUsed != null) {
+        const _teamElapsed = state.week - _teamLastUsed;
+        if (_teamElapsed >= 0 && _teamElapsed < (doc.cooldown != null ? doc.cooldown : 1)) {
+          return { error: 'cooldown' };
+        }
+      }
       const _beforeMorale = lockerRoomMorale;
 
       if (docId === 'party') {
@@ -23674,9 +23707,12 @@ Engine.shachoshitsu = {
           const mult = Engine.shachoshitsu.calcUncertainty('party', f);
           return applyTrust(f, (doc.effect.trust || 1.84) * mult);
         });
-        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 5), 0, 100);
+        lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 6), 0, 100);
+        // care-rework2 P2-B: 余韻。翌週から3週にわたって +1 ずつ効く(tickWeek で消化)。
+        partyAfterglowWeeks = (doc.effect.afterglowWeeks != null) ? doc.effect.afterglowWeeks : 3;
         changes.push({ label: 'ロッカーの様子', emoji: '🏠', text: '選手同士の会話が増え、社長への空気も柔らかくなった' });
         changes.push({ label: 'ロッカールーム', emoji: '🏠', before: Math.round(_beforeMorale), after: Math.round(lockerRoomMorale) });
+        changes.push({ label: '宴のあと', emoji: '🍻', text: 'この空気は、しばらく道場に残りそうだ' });
         events.push(`🍻 慰労会を開催(チームの雰囲気が良くなった)`);
         reactionFighterId = null;
       } else if (docId === 'camp') {
@@ -23868,6 +23904,8 @@ Engine.shachoshitsu = {
       reactionFighterId, changes, _decisionWeekUsed, decisionPoints: newDp,
     };
     if (orgPopDelta) result.orgPopDelta = orgPopDelta;
+    // care-rework2 P2-B: 余韻は GameState 側に積む(週次処理 tickWeek が消化する)
+    if (partyAfterglowWeeks > 0) result._partyAfterglowWeeks = partyAfterglowWeeks;
     // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
     if (coachAssignAfterInvite) result.coachAssign = coachAssignAfterInvite;
     if (newLastInvitedCoachId != null) result.lastInvitedCoachId = newLastInvitedCoachId;

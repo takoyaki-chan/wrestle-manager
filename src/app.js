@@ -14455,6 +14455,8 @@ const App = {
     };
     if (result.relationships) G = { ...G, relationships: result.relationships };
     if (result.h2h) G = { ...G, h2h: result.h2h };
+    // care-rework2 P2-B: 慰労会の余韻(翌週から+1×3週)。消化は tickWeek 側。
+    if (result._partyAfterglowWeeks) G = { ...G, _partyAfterglowWeeks: result._partyAfterglowWeeks };
     // care-rework v0.1 §3: 招聘に伴う雇用コーチ退避(coachAssign)と招聘履歴(lastInvitedCoachId)
     if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
     if (result.lastInvitedCoachId != null) G = { ...G, lastInvitedCoachId: result.lastInvitedCoachId };

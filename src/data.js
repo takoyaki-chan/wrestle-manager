@@ -19194,13 +19194,17 @@ const DECISION_DOCS = {
     decisionCost: 1,
     activationCondition: 'morale_low',
     minOrgPop: 0,
-    cooldown: 1,
+    // care-rework2 P2-B: 雰囲気の主対処へ。毎週打つ「作業」から「効く一手」に変える。
+    // 即時+6 に加えて翌週から+1×3週の余韻が乗り、そのぶん CD は 1→2週。
+    // 最大稼働で+9/2週=+4.5/週(旧スパム+5/週とほぼ同等)、決裁1回の意味は約2倍、
+    // クリック数は半分になる。
+    cooldown: 2,
     minHeadcount: 4,
     body: '団体の雰囲気を立て直すべく、慰労の宴席を設ける',
-    detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。',
-    effectSummary: '選手同士の会話が増え、ロッカールームと社長への空気が柔らかくなる',
-    recommendation: 'ロッカールームの空気に少し陰りが見えてきたときの応急処置として。単発では決定打にならない点に留意。',
-    effect: { target: 'team', trust: 1.84, morale: 5 },
+    detailText: '全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。宴の効果は一晩では消えず、しばらく道場に残る。',
+    effectSummary: '選手同士の会話が増え、ロッカールームと社長への空気が柔らかくなる。和んだ空気はその後数週間ゆるやかに続く',
+    recommendation: 'ロッカールームの空気に陰りが見えてきたときに。一度開けば効果はしばらく尾を引くので、間を置いて打つほうが無駄がない。',
+    effect: { target: 'team', trust: 1.84, morale: 6, afterglowWeeks: 3 },
   },
   // shachoshitsu-care-rework v0.1 §3: 専属トレーナーを廃止し、外部コーチ招聘制に置き換え。
   // id は 'trainer' のまま(後方互換)。候補・費用は Engine.shachoshitsu.getInviteMarket/getInviteCost で算出。

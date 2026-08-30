@@ -1212,6 +1212,7 @@ const careStats = {
   totalDp: 0,
   counts: {},
   errors: {},
+  cooldownSkips: {},
   trustSamples: [],
   moraleSamples: [],
 };
@@ -1311,6 +1312,12 @@ function autoExecuteCare(G) {
 
     const result = Engine.shachoshitsu.execute(docId, pick.fighterId, G, pick.options);
     if (!result || result.error) {
+      // care-rework2 P2-B: 慰労会がCD2週になったため cooldown は「打てない週」の
+      // 正常な結果であって不具合ではない。件数だけ別枠で数え、errors には積まない。
+      if (result && result.error === 'cooldown') {
+        careStats.cooldownSkips[docId] = (careStats.cooldownSkips[docId] || 0) + 1;
+        continue;
+      }
       const key = `${docId}:${(result && result.error) || 'null'}`;
       careStats.errors[key] = (careStats.errors[key] || 0) + 1;
       continue;
@@ -1329,6 +1336,8 @@ function autoExecuteCare(G) {
     };
     if (result.relationships) G = { ...G, relationships: result.relationships };
     if (result.h2h) G = { ...G, h2h: result.h2h };
+    // care-rework2 P2-B: 慰労会の余韻(消化は tickWeek 側)
+    if (result._partyAfterglowWeeks) G = { ...G, _partyAfterglowWeeks: result._partyAfterglowWeeks };
     if (result.coachAssign) G = { ...G, coachAssign: result.coachAssign };
     if (result.lastInvitedCoachId != null) G = { ...G, lastInvitedCoachId: result.lastInvitedCoachId };
     if (result.orgPopDelta) {
@@ -2954,6 +2963,11 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
       const n = careStats.counts[docId] || 0;
       const doc = Engine.shachoshitsu.getDoc(docId);
       console.log(`    ${(doc ? doc.label : docId).padEnd(18)} ${String(n).padStart(5)}  ${(n / targetSeasons).toFixed(2)}/season`);
+    }
+    const cdEntries = Object.entries(careStats.cooldownSkips).sort((a, b) => b[1] - a[1]);
+    if (cdEntries.length) {
+      console.log('  CD中でスキップ(正常・不具合ではない):');
+      for (const [k, v] of cdEntries) console.log(`    ${k.padEnd(36)} ${v}`);
     }
     const errEntries = Object.entries(careStats.errors).sort((a, b) => b[1] - a[1]);
     if (errEntries.length) {
