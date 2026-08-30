@@ -7710,10 +7710,20 @@ const Engine = {
       // Style match bonus (specialist +0.08 / allround +0.05)
       const char = G.roster.find(c => c.id === charId);
       if (char) {
-        if (coach.style === 'Allround') {
-          mult += COACH_STYLE_BONUS.allround;
-        } else if (coach.style === char.style) {
-          mult += COACH_STYLE_BONUS.specialist;
+        // care-rework2 P3 G15: スタイル一致ボーナスの二重計上を解消する。
+        // 招聘中は getCharCoach が招聘コーチを返すため、同じ一致ぶんが
+        // calcInviteMult(_inviteBuff.mult → trainerMult側)とここ(coachMul側)の
+        // 両方に乗り、一致ありの招聘だけ公称より約8%強く効いていた。
+        // 一致ボーナスの居場所は calcInviteMult に一本化し、招聘コーチ相手のときは
+        // ここでは足さない。gMult は「その期間の指導者の地力」なので残す。
+        // 雇用コーチ(coachAssign 経由)はこの分岐に入らないので従来どおり。
+        const isInvitedCoach = !!(char._inviteBuff && char._inviteBuff.coachId === coach.id);
+        if (!isInvitedCoach) {
+          if (coach.style === 'Allround') {
+            mult += COACH_STYLE_BONUS.allround;
+          } else if (coach.style === char.style) {
+            mult += COACH_STYLE_BONUS.specialist;
+          }
         }
       }
       // v0.2: 特殊能力の成長効果は Phase 2 で実装
