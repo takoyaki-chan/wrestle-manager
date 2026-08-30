@@ -295,8 +295,8 @@ function refreshTopBar() {
     dpEl.className = `info-val${dpNow >= dpMax ? ' dp-full' : (dpNow === 0 ? ' dp-empty' : '')}`;
     const dpTip = `<strong style="color:var(--gold)">⚡ 決裁枠</strong><br>
 社長室の書類を決裁するのに使う。<br>
-<span style="color:#aaa"><strong style="color:#fff">4週ごとに2</strong>回復（上限${dpMax}）</span>${dpNow >= dpMax
-      ? '<br><br><span style="color:#aaa;font-size:11px">いまは満タン。<strong style="color:#fff">次の回復は捨てられる</strong></span>'
+<span style="color:var(--text-sub)"><strong style="color:var(--text-main)">4週ごとに2</strong>回復（上限${dpMax}）</span>${dpNow >= dpMax
+      ? '<br><br><span style="color:var(--text-sub);font-size:11px">いまは満タン。<strong style="color:var(--text-main)">次の回復は捨てられる</strong></span>'
       : ''}`;
     dpEl.style.cursor = 'help';
     dpEl.onmouseover = (e) => { e.stopPropagation(); showCustomTooltip(dpEl, dpTip); };
