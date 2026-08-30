@@ -22015,7 +22015,13 @@ Engine.news = {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     const count = Math.min(shuffled.length, Engine.rng.int(rng, 3, 5));
-    return shuffled.slice(0, count);
+    const picked = shuffled.slice(0, count);
+    // care-rework2 P3-3: 招聘の顔ぶれが替わる前週の予告を1行。乱数を一切消費しない
+    // 確定枠として最後に足す(他の項目を押し出さない・既存の抽選列も動かさない)。
+    if (Engine.shachoshitsu.isInviteMarketEveWeek(state)) {
+      picked.push('【招聘】来週、招聘に応じるコーチの顔ぶれが入れ替わる');
+    }
+    return picked;
   },
 
   /** 新聞パネル記事生成（イベント配列から Article[] を生成） */
@@ -23240,6 +23246,25 @@ Engine.shachoshitsu = {
     return {
       coachRequest: { axis, value, quarterKey: Engine.shachoshitsu.getCurrentMarketPeriodKey(state) },
     };
+  },
+
+  // ── care-rework2 P3-3: 顔ぶれの入れ替わりまであと何週か ─────────────────────
+  // プレイヤーが市場を見るのは manage フェーズで、その週の tickWeek で引き直された
+  // 顔ぶれが見えるのは翌週の manage から。つまり「暦の四半期」より1週遅れて入れ替わる。
+  // パネルの残り週数はこの実際の見え方に合わせる(暦で数えると1週嘘をつく)。
+  // 返り値: 1 = 次の週に入れ替わる / null = 期を跨いでいて数えられない(オフシーズン等)
+  getInviteMarketWeeksLeft(state) {
+    if (!state || state.offSeason) return null;
+    const m = /^(\d+)-Q(\d+)$/.exec(Engine.shachoshitsu.getCurrentMarketPeriodKey(state) || '');
+    if (!m) return null;
+    if (parseInt(m[1], 10) !== (state.season || 1)) return null;
+    const left = (parseInt(m[2], 10) * 12 + 2) - (state.week || 1);
+    return left >= 1 ? left : null;
+  },
+
+  // 顔ぶれが替わる直前の週(ティッカーの予告1行を出す週)
+  isInviteMarketEveWeek(state) {
+    return Engine.shachoshitsu.getInviteMarketWeeksLeft(state) === 1;
   },
 
   // 指名リクエストのプレイヤー向け表記(内部語を出さない)

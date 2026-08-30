@@ -4612,6 +4612,45 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 /* スカウト・レンタルタブの縦積みラッパー */
 .shachoshitsu-desk-inner{display:flex;flex-direction:column;align-items:center;width:100%}
 .shachoshitsu-doc-grid{display:grid;grid-template-columns:repeat(4,196px);gap:16px;max-width:832px;margin:0 auto;min-height:260px}
+/* care-rework2 P3-3: 決裁タブは「書類の山 + 招聘市場の常設パネル」の縦積み */
+.shachoshitsu-decision-stack{display:flex;flex-direction:column;align-items:center;gap:18px;width:100%}
+.invite-market-panel{width:100%;max-width:832px;box-sizing:border-box;padding:14px 18px 16px;
+  background:var(--office-panel-cream-card);border:1px solid var(--cream-gold-dark);border-radius:6px;
+  color:var(--cream-text-main);font-family:'Noto Sans JP',sans-serif;
+  box-shadow:0 6px 18px rgba(0,0,0,0.32)}
+.invite-market-panel .imp-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;
+  padding-bottom:8px;border-bottom:1px solid rgba(100,85,50,0.24);margin-bottom:12px}
+.invite-market-panel .imp-title{font-size:14px;font-weight:700;letter-spacing:1px}
+.invite-market-panel .imp-swap{font-size:11px;color:var(--cream-gold)}
+.invite-market-panel .imp-cands{display:flex;flex-wrap:wrap;gap:14px}
+.invite-market-panel .imp-cand{display:flex;flex-direction:column;align-items:center;width:132px;text-align:center}
+.invite-market-panel .imp-face{width:40px;height:40px;border-radius:50%;margin-bottom:6px;
+  background-size:cover;background-position:top center;background-color:rgba(60,52,38,0.5);
+  border:2px solid var(--cream-gold-dark)}
+.invite-market-panel .imp-name{font-size:12px;font-weight:700;line-height:1.3}
+.invite-market-panel .imp-req-mark{display:inline-block;margin-left:4px;padding:0 4px;border-radius:2px;
+  font-size:9px;font-weight:700;color:var(--office-panel-cream-card);background:var(--cream-gold);cursor:help}
+.invite-market-panel .imp-meta{font-size:10px;color:var(--cream-gold);letter-spacing:0.5px;margin-top:2px}
+.invite-market-panel .imp-style{font-size:10px;color:var(--cream-text-sub);margin-top:2px}
+.invite-market-panel .imp-empty{font-size:12px;color:var(--cream-text-dim);padding:8px 0}
+.invite-market-panel .imp-note{font-size:10px;color:var(--cream-text-dim);margin-top:12px;line-height:1.6}
+.invite-market-panel .imp-request{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:8px;
+  padding-top:10px;border-top:1px solid rgba(100,85,50,0.18)}
+.invite-market-panel .imp-req-label{font-size:11px;color:var(--cream-text-sub)}
+.invite-market-panel .imp-req-state{flex:1 1 240px;font-size:11px;color:var(--cream-text-sub);line-height:1.5}
+.invite-market-panel .imp-req-select{font-family:inherit;font-size:11px;padding:4px 6px;
+  border:1px solid rgba(100,85,50,0.35);border-radius:4px;
+  background:var(--office-panel-cream);color:var(--cream-text-main)}
+.invite-market-panel .imp-req-btn{font-family:inherit;font-size:11px;padding:5px 14px;border-radius:4px;
+  border:1px solid var(--cream-gold-dark);background:transparent;color:var(--cream-text-dim);cursor:not-allowed}
+.invite-market-panel .imp-req-btn.is-active{background:var(--cream-gold);border-color:var(--cream-gold);
+  color:var(--office-panel-cream-card);cursor:pointer}
+.invite-market-panel .imp-req-btn.is-active:hover{background:var(--cream-gold-dark);border-color:var(--cream-gold-dark)}
+@media (max-width:640px){
+  .invite-market-panel{padding:12px 12px 14px}
+  .invite-market-panel .imp-cands{justify-content:center}
+  .invite-market-panel .imp-cand{width:104px}
+}
 .shachoshitsu-empty-note{grid-column:1/-1;display:flex;align-items:center;justify-content:center;
   min-height:260px;color:var(--cream-text-sub);font-size:13px;letter-spacing:1px;
   font-family:'Noto Sans JP',sans-serif;text-align:center;opacity:0.75}

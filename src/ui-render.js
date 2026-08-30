@@ -5062,7 +5062,7 @@ function _renderShachoshitsuSummary(tab) {
 
 // ── Phase C: 決裁タブの机上 ──────────────────────────────────────────────────
 function _renderShachoshitsuDecisionDesk() {
-  let html = '<div class="shachoshitsu-doc-grid">';
+  let html = '<div class="shachoshitsu-decision-stack"><div class="shachoshitsu-doc-grid">';
   // care-rework2 P1-4: 今週決裁済みの団体書類も机に残す(朱印付き)。
   // カードごと消えると「案件が無くなった」ように見え、次週また出ることが伝わらないため。
   const availableDocs = (typeof Engine !== 'undefined' && Engine.shachoshitsu)
@@ -5124,7 +5124,88 @@ function _renderShachoshitsuDecisionDesk() {
     });
   }
   html += '</div>'; // doc-grid
+  // care-rework2 P3-3: 招聘市場は書類を開かないと見えず、入れ替わりの予告も無かった。
+  // 机の上に常設で置いて「今そこに誰がいるか」「あと何週いるか」を見えるようにする。
+  html += _renderInviteMarketPanel();
+  html += '</div>'; // decision-stack
   return html;
+}
+
+// ── care-rework2 P3-3: 招聘市場の常設ミニパネル(決裁タブ) ────────────────────
+// 今期候補の顔ぶれ + 入れ替わりまでの週数 + 秘書への指名リクエスト。
+// モーダルは増やさない — 依頼もこのパネルの中で完結させる。
+function _renderInviteMarketPanel() {
+  if (!Engine.shachoshitsu || typeof Engine.shachoshitsu.ensureInviteMarket !== 'function') return '';
+  const market = Engine.shachoshitsu.ensureInviteMarket(G);
+  const candidates = ((market && market.candidateIds) || [])
+    .map(id => (typeof ALL_COACHES !== 'undefined' ? ALL_COACHES.find(c => c.id === id) : null))
+    .filter(Boolean);
+
+  const weeksLeft = Engine.shachoshitsu.getInviteMarketWeeksLeft(G);
+  const swapText = weeksLeft == null
+    ? 'まもなく入れ替わる'
+    : (weeksLeft === 1 ? '次の週で入れ替わる' : `入れ替わりまで あと${weeksLeft}週`);
+
+  const gradeLabel = { C: 'C級', B: 'B級', A: 'A級' };
+  const requestedId = (market && market.requestResult && market.requestResult.fulfilled)
+    ? market.requestResult.coachId : null;
+
+  let cardsHtml;
+  if (candidates.length === 0) {
+    cardsHtml = '<div class="imp-empty">今期、招聘に応じるコーチはいない</div>';
+  } else {
+    cardsHtml = candidates.map(c => {
+      const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[c.coachingType]) || '';
+      const styleLabel = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[c.style]) || c.style;
+      const faceUrl = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(c.id) : '';
+      const faceStyle = faceUrl ? `background-image:url('${faceUrl}')` : '';
+      const mark = c.id === requestedId
+        ? `<span class="imp-req-mark" ${_tipAttr('秘書に頼んで来てもらったコーチ')}>指名</span>` : '';
+      return `<div class="imp-cand">
+        <div class="imp-face" style="${faceStyle}"></div>
+        <div class="imp-name">${c.name}${mark}</div>
+        <div class="imp-meta">${gradeLabel[c.grade] || c.grade} ・ ${typeLabel}</div>
+        <div class="imp-style">得意: ${styleLabel}</div>
+      </div>`;
+    }).join('');
+  }
+
+  // ── 指名リクエスト行 ──
+  // 押せないときは理由をボタンのラベルにそのまま出す(なぜ押せないかを説明しない
+  // 無反応ボタンを机に置かない)。
+  let requestHtml;
+  const pending = G.coachRequest;
+  const alreadyAsked = Engine.shachoshitsu.hasCoachRequestThisQuarter(G);
+  if (G.offSeason) {
+    requestHtml = `<button class="imp-req-btn" disabled>オフシーズンは頼めない</button>`;
+  } else if (alreadyAsked && pending) {
+    const wanted = Engine.shachoshitsu.formatCoachRequest(pending);
+    requestHtml = `<span class="imp-req-state">秘書に${wanted}を探すよう頼んである。返事は次の入れ替わりで。</span>
+      <button class="imp-req-btn" disabled>今期は依頼済み</button>`;
+  } else {
+    const axes = Engine.shachoshitsu.getCoachRequestAxes();
+    const styleOpts = axes.style.map(s => {
+      const label = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[s]) || s;
+      return `<option value="style:${s}">${label}に強いコーチ</option>`;
+    }).join('');
+    const gradeOpts = axes.grade.map(g => `<option value="grade:${g}">${g}級のコーチ</option>`).join('');
+    requestHtml = `<label class="imp-req-label" for="impReqSelect">秘書に探してもらう</label>
+      <select class="imp-req-select" id="impReqSelect">
+        <optgroup label="得意スタイルで頼む">${styleOpts}</optgroup>
+        <optgroup label="格で頼む">${gradeOpts}</optgroup>
+      </select>
+      <button class="imp-req-btn is-active" onclick="App.requestInviteCoachFromPanel()">頼む</button>`;
+  }
+
+  return `<div class="invite-market-panel">
+    <div class="imp-head">
+      <span class="imp-title">招聘に応じるコーチ</span>
+      <span class="imp-swap">${swapText}</span>
+    </div>
+    <div class="imp-cands">${cardsHtml}</div>
+    <div class="imp-note">頼めるのは「どんな人を探すか」まで。誰が応じるかは決められない。</div>
+    <div class="imp-request">${requestHtml}</div>
+  </div>`;
 }
 
 // ── Phase C: スカウトタブの机上 ──────────────────────────────────────────────

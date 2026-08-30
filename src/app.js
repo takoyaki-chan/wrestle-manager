@@ -14507,6 +14507,15 @@ const App = {
     }
   },
 
+  // care-rework2 P3-3: 招聘市場パネルの「頼む」。選択値は "axis:value" の1本。
+  requestInviteCoachFromPanel() {
+    const sel = document.getElementById('impReqSelect');
+    if (!sel || !sel.value) { showToast('何を探すかが選ばれていません'); return; }
+    const sep = sel.value.indexOf(':');
+    if (sep < 0) { showToast('何を探すかが選ばれていません'); return; }
+    App.requestInviteCoach(sel.value.slice(0, sep), sel.value.slice(sep + 1));
+  },
+
   // care-rework2 P3-1: 招聘市場パネルから秘書に「◯◯を探してほしい」と1軸だけ頼む。
   // ⚡0・費用0・同一四半期に1件まで。結果が出るのは翌四半期の入れ替わり時。
   requestInviteCoach(axis, value) {
