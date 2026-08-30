@@ -12918,6 +12918,24 @@ const Engine = {
         const ptdResult = Engine.shachoshitsu.applyPendingTrustDeltas(roster);
         roster = ptdResult.roster;
         pendingTrustReveals = ptdResult.reveals;
+        // care-rework2 P1-5: 決裁の帰結を週次レポートに1行だけ静かに残す。
+        // 帰結が無い週は行を出さない(不在データの説明文は書かない原則)。
+        // 効果値も発現タイミングも変えていない — 出た事実を1行に束ねるだけ。
+        const campNames = new Set(), trainerNames = new Set();
+        for (const r of pendingTrustReveals) {
+          if (r.source === 'camp') campNames.add(r.fighterName);
+          else if (r.source === 'trainer') trainerNames.add(r.fighterName);
+        }
+        if (campNames.size > 0) {
+          events.push(campNames.size >= 2
+            ? `🤝 合宿の手応えが出てきた（${campNames.size}名）`
+            : `🤝 合宿の手応えで${[...campNames][0]}の気持ちが前向きになってきた`);
+        }
+        if (trainerNames.size > 0) {
+          events.push(trainerNames.size >= 2
+            ? `🤝 外部コーチの指導が実を結び始めた（${trainerNames.size}名）`
+            : `🤝 外部コーチの指導で${[...trainerNames][0]}の気持ちが前向きになってきた`);
+        }
       }
 
       // v2.0: 週次イベント生成（25%発生率、非興行週・通常シーズンのみ）
@@ -23864,15 +23882,19 @@ Engine.shachoshitsu = {
         const applied = delta.perWeekDelta * (delta.finalMult != null ? delta.finalMult : 1.0);
         trust = Engine.util.clamp(trust + applied, 0, 100);
         const nextRem = delta.weeksRemaining - 1;
-        // 最終週 (nextRem === 0) はバフ終了と同週のため、reveal を出さず静かに締める
-        // (バッジが消える週に「前向きになってきた」トーストが出るとユーザーに違和感を与えるため)
+        // care-rework2 P1-5: 最終週 (nextRem === 0) の発現も通知に乗せる。
+        // 旧実装はここで reveal を捨てていたため、trust は確かに上がっているのに
+        // 「最後の一週だけ何も言われない」状態になっていた(G11)。
+        // isFinal を渡し、締めの週だと分かる文面を通知側で選べるようにする。
+        // バフ残量の管理は不変 — 次週へ持ち越すのは従来どおり nextRem >= 1 のときだけ。
+        reveals.push({
+          fighterId: f.id,
+          fighterName: f.name,
+          source: delta.source,
+          perWeekDelta: applied,
+          isFinal: nextRem === 0,
+        });
         if (nextRem >= 1) {
-          reveals.push({
-            fighterId: f.id,
-            fighterName: f.name,
-            source: delta.source,
-            perWeekDelta: applied,
-          });
           remaining.push({ ...delta, weeksRemaining: nextRem });
         }
       }

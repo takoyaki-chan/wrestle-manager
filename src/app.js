@@ -11625,15 +11625,36 @@ const App = {
       G = cleanTr;
     }
     if (weekTrustReveals.length > 0) {
-      const pick = [...weekTrustReveals].sort((a, b) => b.perWeekDelta - a.perWeekDelta)[0];
-      const SOURCE_TEXTS = {
-        trainer: '外部コーチの指導で',
-        camp: '合宿の手応えで',
+      // care-rework2 P1-5: 合宿は全員に効いているのに週1人分しか出ていなかった(G11)。
+      // 人数で束ねて「効いた結果」が見えるようにする。トーストは従来どおり週1枚のまま
+      // (通知総量を増やさない原則) — 複数の出どころがある週だけ1枚に併記する。
+      // 効果値も発現タイミングも変えていない。束ね方だけの変更。
+      const SOURCE_LABELS = {
+        camp: { one: (n) => `合宿の手応えで${n}の気持ちが前向きになってきた`,
+                many: (c) => `合宿の手応えが出てきた（${c}名）` },
+        trainer: { one: (n) => `外部コーチの指導で${n}の気持ちが前向きになってきた`,
+                   many: (c) => `外部コーチの指導が実を結び始めた（${c}名）` },
       };
-      const prefix = SOURCE_TEXTS[pick.source] || '';
-      const msg = `🤝 ${prefix}${pick.fighterName}の気持ちが前向きになってきた`;
-      const baseDelayTr = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
-      setTimeout(() => showToast(msg, 5000), baseDelayTr);
+      const bySource = {};
+      weekTrustReveals.forEach(r => {
+        (bySource[r.source] = bySource[r.source] || new Map()).set(r.fighterId, r.fighterName);
+      });
+      const parts = [];
+      Object.keys(bySource).forEach(src => {
+        const names = [...bySource[src].values()];
+        const label = SOURCE_LABELS[src];
+        if (!label) {
+          // 未知の出どころも黙って落とさない(従来はどの source でも1枚出ていた)
+          parts.push(`${names[0]}の気持ちが前向きになってきた`);
+          return;
+        }
+        parts.push(names.length >= 2 ? label.many(names.length) : label.one(names[0]));
+      });
+      if (parts.length > 0) {
+        const msg = `🤝 ${parts.join('／')}`;
+        const baseDelayTr = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
+        setTimeout(() => showToast(msg, 5000), baseDelayTr);
+      }
     }
 
     // ★ 成長マイルストーン通知
