@@ -13509,6 +13509,13 @@ const Engine = {
     // 判定は読み取りのみ。ここで G.pledge を必ず片付け、結果は
     // _pendingPledgeResult に載せて UI(興行後ポップアップ)へ渡す。
     // 失効は静かに消す — 通知もポップアップも出さず、ログ1行だけ残す。
+    // 前週の結果は必ず捨てる。_pendingPledgeResult は「その週かぎり」の transient で、
+    // 消費側(closeShowResult)が通らない経路でも残り続けないようにここで面倒を見る。
+    // 残すと同じ約束の結果ポップアップが毎週出続ける。
+    if (s._pendingPledgeResult) {
+      s = { ...s };
+      delete s._pendingPledgeResult;
+    }
     if (s.pledge && s.pledge.fighterId != null) {
       const pledgeOutcome = Engine.shachoshitsu.settlePledge(s);
       if (pledgeOutcome) {
