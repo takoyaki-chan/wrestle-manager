@@ -7751,6 +7751,16 @@ const Engine = {
         const idx = stats.indexOf(specStat);
         if (idx >= 0) weights[idx] *= 1.40;
       }
+      // care-rework2 P3-2 重点ステ指導 — 招聘期間中だけ、社長が秘書経由で伝えた
+      // 重点ステの選択率 ×1.25。ステ特化abilityが空白の13セル(「TEを伸ばしたいのに
+      // TEに向くコーチが存在しない」)を、コーチのデータではなく仕組みで埋める。
+      // 同じステの特化(×1.40)を持つコーチが相手なら特化が優先・非累積 —
+      // 頼まなくても常時1.40 > 頼んで1.25 で、専門家の価値を保つ。
+      const focusStat = Engine.coach.getInviteFocusStat(G, charId);
+      if (focusStat && focusStat !== specStat) {
+        const fidx = stats.indexOf(focusStat);
+        if (fidx >= 0) weights[fidx] *= 1.25;
+      }
       // trainCap到達済みステのウェイトを0にする（成長機会の空振り防止）
       if (char) {
         const tcbAll = Engine.coach.getTrainCapBonus(G, charId);
@@ -7839,12 +7849,24 @@ const Engine = {
     },
     // v0.2: ステ特化 — 対象ステの練習選択率 ×1.40
     getStatSpecBoost(G, charId) {
-      const coach = Engine.coach.getCharCoach(G, charId);
+      return Engine.coach.getCoachStatSpec(Engine.coach.getCharCoach(G, charId));
+    },
+    // コーチ単体からステ特化abilityの対象ステを引く(招聘の重点ステ判定でも使う)
+    getCoachStatSpec(coach) {
       if (!coach) return null;
       const specAbility = (coach.abilities || []).find(a => a.startsWith('ステ特化'));
       if (!specAbility) return null;
       const statMap = { 'ステ特化PW':'pw', 'ステ特化SP':'sp', 'ステ特化TE':'te', 'ステ特化ST':'st' };
       return statMap[specAbility] || null;
+    },
+    // care-rework2 P3-2: 招聘の「重点ステ指導」対象。招聘期間中の選手にしか付かないので、
+    // 常勤(雇用)コーチの練習選択には影響しない。AI招聘(aiSeasonTrainer)は focusStat を
+    // 持たないため従来どおり。
+    getInviteFocusStat(G, charId) {
+      const char = (G.roster || []).find(c => c.id === charId);
+      const buf = char && char._inviteBuff;
+      if (!buf || !buf.focusStat) return null;
+      return ['pw','sp','te','st'].includes(buf.focusStat) ? buf.focusStat : null;
     },
     // v0.2: 怪我耐性 — 重傷→中傷格下げ 40%
     getInjurySeverityDowngrade(G, charId) {
@@ -23673,8 +23695,12 @@ Engine.shachoshitsu = {
           const current = (state.coachAssign && state.coachAssign[prevCoach.id]) || [];
           coachAssignAfterInvite = { ...(state.coachAssign || {}), [prevCoach.id]: current.filter(id => id !== fighterId) };
         }
+        // care-rework2 P3-2: 重点ステ指導(任意)。不正値・未指定は null=従来どおりの招聘。
+        const rawFocus = options && options.focusStat;
+        const focusStat = ['pw','sp','te','st'].includes(rawFocus) ? rawFocus : null;
         f._inviteBuff = {
           coachId: coach.id, weeksLeft: 4, totalWeeks: 4, mult, compat,
+          focusStat,
           prevCoachId: prevCoach ? prevCoach.id : null,
           autoRenew: !!(options && options.autoRenew),
           // P4: 発令時スナップショット。卒業レポートの伸び幅表示・化ける判定の元データ
@@ -23684,7 +23710,8 @@ Engine.shachoshitsu = {
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('trainer', f);
         f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', 4, currentFinalMult);
         const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[coach.coachingType]) || '';
-        events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)`);
+        const focusLabel = focusStat && typeof STAT_LABELS_JP !== 'undefined' ? STAT_LABELS_JP[focusStat] : '';
+        events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)${focusLabel ? `。重点は${focusLabel}` : ''}`);
       } else if (docId === 'special_treatment') {
         // care-rework2 P2-C: 長期離脱(総週数10以上)専用。executeSpecialTreatment と同一ロジック。
         if (!f.injury) return { error: 'not_injured' };
@@ -23743,6 +23770,19 @@ Engine.shachoshitsu = {
         else if (ib.compat === 'bad') compatHint = 'どこか噛み合わなさそうな、硬い空気が漂う';
         changes.push({ label: '成長速度', emoji: '📈', text: `4週間 +${growthPct}%${ib.diminished ? '(詰め込み気味で伸びは控えめ)' : ''}` });
         changes.push({ label: '指導の空気', emoji: '🎓', text: compatHint });
+        // care-rework2 P3-2: 重点ステを頼んだ場合だけ、何を伝えたかを一行残す。
+        // 専門家(同ステのステ特化持ち)が相手なら、頼むまでもなくそちらが上回る。
+        if (ib.focusStat && typeof STAT_LABELS_JP !== 'undefined') {
+          const fLabel = STAT_LABELS_JP[ib.focusStat] || '';
+          const invCoach = ALL_COACHES.find(c => c.id === ib.coachId);
+          const specStat = Engine.coach.getCoachStatSpec(invCoach);
+          changes.push({
+            label: '重点の指定', emoji: '🎯',
+            text: specStat === ib.focusStat
+              ? `${fLabel}は頼むまでもなく、${invCoach ? invCoach.name : 'この'}コーチが元から専門にしている領域だ`
+              : `${fLabel}を重点に据えて練習を組んでもらう`,
+          });
+        }
       } else if (docId !== 'special_treatment' && _after.trust !== _before.trust) {
         // 内部値は見せず、選手の反応として伝える。
         const trustDelta = _after.trust - _before.trust;

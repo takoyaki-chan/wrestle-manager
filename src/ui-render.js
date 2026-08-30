@@ -2149,6 +2149,11 @@ function _renderRosterDetailPanel(c, hired) {
   // (ここにガードが無いと招聘中の選手に雇用コーチを重ねて割り当てられてしまう)
   if (c._inviteBuff) {
     tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" style="color:#7a6530;font-style:italic">招聘中: ${coach ? coach.name : '外部コーチ'}（残${c._inviteBuff.weeksLeft}週・終了後は元の担当に自動復帰）</span></div>`;
+    // care-rework2 P3-2: 頼んだ重点は期間中ずっと見えるようにする(何を頼んだか忘れさせない)
+    const _focus = c._inviteBuff.focusStat;
+    if (_focus && typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[_focus]) {
+      tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">重点</span><span class="rd-meta-val">${STAT_LABELS_JP[_focus]}を重点に指導中</span></div>`;
+    }
   } else if (hired.length > 0) {
     let opts = `<option value="0"${!coach?' selected':''}>--- なし ---</option>`;
     hired.forEach(h => {
