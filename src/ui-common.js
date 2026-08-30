@@ -7885,7 +7885,16 @@ function showScreen(id, evt) {
     renderNewspaper();
     if (typeof refreshTopBar === 'function') refreshTopBar();
   }
-  if (id === 'shachoshitsu') renderShachoshitsu();
+  if (id === 'shachoshitsu') {
+    // care-rework2 P1-4(案b・未読方式): 社長室を開いたらナビのドットを消灯する。
+    // 新聞バッジ(_bigNewsUnread)と同じ管理系統 — showScreen で既読を書いて refreshTopBar。
+    // マーカーは週スコープなので、週が変われば発動条件つき書類が残っていても自然に再点灯する。
+    // 旧セーブでフィールドが無い場合は seenKey と一致せず「未読扱い」に倒れる(修復不要)。
+    const seenKey = `${G.season}:${G.week}`;
+    if (G._shachoshitsuSeenWeek !== seenKey) G = { ...G, _shachoshitsuSeenWeek: seenKey };
+    renderShachoshitsu();
+    if (typeof refreshTopBar === 'function') refreshTopBar();
+  }
   // 興行準備だけ再描画対象から漏れていた。#showPrepContent は開幕時などに一度書かれると
   // 誰も上書きしないので、**週が進んでも前の週の内容が残り続ける**。
   // 特別興行週のブロック表示(春タッグ/秋4団体戦/ジュニア)はボタンを持たないため、

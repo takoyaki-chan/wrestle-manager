@@ -220,12 +220,15 @@ function refreshTopBar() {
   const npBadge = document.getElementById('newspaperBadge');
   if (npBadge) npBadge.style.display = G._bigNewsUnread ? '' : 'none';
   // care-rework2 P1-4: 社長室ナビの「今週の案件あり」ドット（常時発動の書類は数えない）
+  // 案b(未読方式): その週に社長室を開いたら消灯し、週が変われば再点灯する。
+  // 既読マーカーが無い旧セーブは一致せず「未読扱い」に倒れる — 例外を投げず修復も要らない。
   const shBadge = document.getElementById('shachoshitsuBadge');
   if (shBadge) {
     const hasDocs = (typeof Engine !== 'undefined' && Engine.shachoshitsu
       && typeof Engine.shachoshitsu.hasActionableDocs === 'function')
       ? Engine.shachoshitsu.hasActionableDocs(G) : false;
-    shBadge.style.display = hasDocs ? '' : 'none';
+    const seenThisWeek = G._shachoshitsuSeenWeek === `${G.season}:${G.week}`;
+    shBadge.style.display = (hasDocs && !seenThisWeek) ? '' : 'none';
   }
   // Hide nav during draft/opening
   const navBar = document.querySelector('.nav-bar');
