@@ -1,5 +1,14 @@
 # 🏛️ 社長室システム設計書 v1.1
 
+> **⚠️ v1.2 現物合わせ追記(2026-08-30・care-rework2 P2「書類の役割再定義」task-100)** — 以下の値は本文の旧記述を上書きする。設計経緯は `docs/care-rework2-p2-design-v0.1.md`:
+> - **休暇辞令**: 消耗(wear)回復が毎週-1(1〜4週の休暇で-1〜-4)・**季あたり選手ごと上限-4**(`GROWTH_CONFIG.leaveWearReliefPerWeek/leaveWearReliefSeasonCap`)。旧「2週目・4週目のみ最大-2」を置き換え。寿命ケア専用のニッチ
+> - **慰労会**: 即時morale+6(旧+5)+**余韻+1×3週**(`effect.afterglowWeeks:3`、tickWeekで消化・通知なし)+**cooldown 2週**(旧1)。team書類のCD判定は`doc.cooldown`を正しく見るよう修正(従来は常に1週相当だった)
+> - **特別治療**: 対象=**総週数10以上の長期重傷のみ**(発動条件`has_longterm_injured`、`injury.totalWeeks`を発生時に記録・旧セーブはweeksLeftフォールバック=安全側)。短縮=残り週数の40/45/50%roll(最低4週)。費用500万(旧200)。**ポップアップ経路も⚡1消費に統一**
+> - **メディア露出**: trust基礎5.36→**2.0**、condition+5**削除**(人気ニッチへ純化。人気+6〜8逓減/orgPop+0.4/嫉妬bond-1は不変)
+> - **ボーナス4案**: 金額ノイズ±10%→**±22%**(帯判定は実際に払った額のrのまま。安い案が賭けになる)
+> - **倍率テーブル**: DECISION_PERSONALITY_MULTのspecial_treatment列を削除(全行1.00の死にデータ・治療は性格で効きが変わらないのは意図)。DECISION_ARCHETYPE_MULTに**composed行**({party:0.80, encourage:0.90, trainer:1.15})と**polite行**({encourage:1.15, party:1.10, bonus:0.85})を追加。standardは意図的に行なし(等倍)
+> - 可視化レイヤー(P1)は `care-visibility-spec-v1.0.md` 参照
+
 > **ステータス**: ✅ 実装完了 (Phase 1-9 全完了 2026-04-15)
 > **作成日**: 2026-04-14 / **最終更新**: 2026-04-15 (v1.1 逆輸入)
 > **依存**: trust-system-spec-v2.1.md / relationship-system-spec-v2.0.md / personality-archetype-spec-v1.0.md
