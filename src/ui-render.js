@@ -3028,7 +3028,7 @@ function renderShowPrep() {
         <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">🤝 起用の約束</div>
         <div style="font-size:12px;color:var(--text-sub);line-height:1.6">
           <strong>${escHtml(pf.name)}</strong> をメインで使うと約束している — 組むかどうかは社長次第<br>
-          <span style="color:${regular && inMain ? '#7bc46c' : 'var(--text-sub)'}">${escHtml(pledgeStatus)}</span>
+          <span style="color:${regular && inMain ? 'var(--accent-positive)' : 'var(--text-sub)'}">${escHtml(pledgeStatus)}</span>
         </div>
       </div>`;
     }
