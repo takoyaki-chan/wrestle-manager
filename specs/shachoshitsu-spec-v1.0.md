@@ -8,6 +8,7 @@
 > - **ボーナス4案**: 金額ノイズ±10%→**±22%**(帯判定は実際に払った額のrのまま。安い案が賭けになる)
 > - **倍率テーブル**: DECISION_PERSONALITY_MULTのspecial_treatment列を削除(全行1.00の死にデータ・治療は性格で効きが変わらないのは意図)。DECISION_ARCHETYPE_MULTに**composed行**({party:0.80, encourage:0.90, trainer:1.15})と**polite行**({encourage:1.15, party:1.10, bonus:0.85})を追加。standardは意図的に行なし(等倍)
 > - **起用の約束(pledge・P2-G/task-101)**: bold(強気)専用の新チャンネル。選手ポップアップから「次の通常興行のメイン(=showCard[0])で使う」と約束(⚡1・費用0・選手単位CD16週・同時1件=`G.pledge`)。次の通常興行の精算時に読み取り専用で判定 — 履行=trust+8×finalMult×1.3(`PLEDGE_BOLD_MULT`。boldで初の実効1.0超ケア。スランプ/モチベ喪失中はrecoveryMomentum+8)/破約=trust-6固定(OVR傾斜・finalMultなし=「-6以内」保証)/判定機会なし12週で静かに失効(罰なし)。カード編成はロックしない(破る自由が意思決定)。編成画面に予約印。セリフ`PLEDGE_LINES`63本(Keisuke承認済み・専用`pickPledgeLine`で解決)。定数: `PLEDGE_*`(data.js)
+> - **招聘市場の再設計(P3/task-102)**: ①**指名リクエスト** — 市場パネルから秘書に「スタイル/格」1軸を依頼(⚡0・費用0・顔ぶれの期に1回=`G.coachRequest`)。翌期ロールで該当者がいれば候補1枠目を確保(専用ソルト0x1CB3・**不使用時の市場ロールはビット一致**)、不在は正直に報告1行。依頼の単位は暦でなく「実際に見えている顔ぶれの期」(市場は暦の四半期より1週遅れて入れ替わる既存挙動) ②**重点ステ指導** — 招聘時に重点ステ指定→期間中その練習選択率×1.25(`_inviteBuff.focusStat`。特化ability×1.40と同ステは非累積・特化優先。AI招聘は対象外) ③**常設ミニパネル**(決裁タブ・候補+残り週数+依頼UI)+入れ替わり前週のティッカー予告1行 ④calcInviteMult分岐順修正=Allround×Allroundが+0.08(他35セル不変)/招聘A級解禁= orgPop≥55 || coachSlots≥4 ⑤`COACHING_COMPAT_ARCHETYPE`新設 — personality='normal'のみarchetype副表で相性判定(standardは±0) ⑥**G15修正**=招聘コーチのcoachMulからスタイル一致+0.08を除去(二重計上解消・一致招聘の実効約-6.3%、非一致はビット一致)
 > - 可視化レイヤー(P1)は `care-visibility-spec-v1.0.md` 参照
 
 > **ステータス**: ✅ 実装完了 (Phase 1-9 全完了 2026-04-15)
