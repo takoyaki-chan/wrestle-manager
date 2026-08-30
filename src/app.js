@@ -14326,17 +14326,21 @@ const App = {
   },
 
   // 社長室 Phase 5: 特別治療(怪我ポップアップの二次アクション)
-  // 決裁枠は消費せず、資金200万のみ消費。回復期間を1〜4週短縮。
+  // care-rework2 P2-C: 机経路と同じく決裁枠⚡1 + 資金500万を消費する。
+  // 対象は長期離脱(総週数10週以上)のみ。残り離脱期間を4〜5割短縮。
   executeSpecialTreatment(fighterId) {
     const result = Engine.shachoshitsu.executeSpecialTreatment(fighterId, G);
     if (!result) { showToast('特別治療に失敗しました'); return; }
-    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return; }
+    if (result.error === 'decision_points_insufficient') { showToast(`決裁枠が不足しています(必要: ⚡${result.dpCost || 1})`); return; }
+    if (result.error === 'funds_insufficient') { showToast(`資金が不足しています(必要: ${result.cost || 500}万)`); return; }
     if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return; }
     if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return; }
+    if (result.error === 'not_longterm_injured') { showToast('長期離脱(10週以上)の重傷にのみ発注できます'); return; }
     // state 更新
     G = { ...G,
       roster: result.roster,
       funds: result.funds,
+      decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
       gameLog: [...(G.gameLog || []), ...(result.events || [])],
     };
     Storage.autoSave();

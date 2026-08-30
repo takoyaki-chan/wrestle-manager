@@ -19151,15 +19151,17 @@ const DECISION_DOCS = {
     category: 'care',
     categoryLabel: '選手ケア',
     icon: '🏥',
-    cost: 200,
+    // care-rework2 P2-C: 長期離脱(総週数10以上)専用の劇的救済へ照準。
+    // 軽中傷は自然に治す=離脱のドラマを消さない。費用はエースの緊急手術の桁へ。
+    cost: 500,
     decisionCost: 1,
-    activationCondition: 'has_injured',
+    activationCondition: 'has_longterm_injured',
     minOrgPop: 0,
     cooldown: 1,
-    body: '離脱中の選手に専門医を手配し、復帰を早める',
-    detailText: '専門医による集中ケアを正式に発注。怪我からの離脱期間を確率的に短縮する、復帰前倒しの一手。確実な短縮量は治療結果次第。',
-    effectSummary: '対象選手の離脱期間が1〜4週短縮される',
-    recommendation: '主力選手や王座挑戦が控えている選手の離脱が痛手なときに。離脱が長引いている怪我ほど短縮量も大きくなりやすい。',
+    body: '長期離脱中の選手に専門医を手配し、復帰を早める',
+    detailText: '長い離脱を強いられた選手に、専門医による集中ケアを正式に発注する。残る離脱期間を大きく削り取る、復帰前倒しの切り札。削れる幅は治療の経過しだい。',
+    effectSummary: '対象選手の残り離脱期間が4割から半分ほど縮まる',
+    recommendation: '長期離脱(10週以上)の重傷を負った選手にだけ発注できる。数週間で治る怪我は、専門医を呼ぶまでもなく自然に癒える。',
     effect: { target: 'individual', special: 'treatment' },
   },
   refresh_leave: {

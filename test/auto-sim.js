@@ -1257,8 +1257,9 @@ function carePickTarget(docId, G) {
     return t ? { fighterId: t.id, options: { weeks: 2 } } : null;
   }
   if (docId === 'special_treatment') {
-    // 発動条件と同じプール(離脱2週以上)から、最も離脱が長い選手へ。
-    const pool = roster.filter(f => !f.isRental && f.injury && (f.injury.weeksLeft || 0) >= 2);
+    // care-rework2 P2-C: 発動条件と同じプール(総週数10以上の長期離脱)から、
+    // 最も離脱が長い選手へ。該当者がいない週はスキップ(長期重傷は季0〜1件)。
+    const pool = roster.filter(f => !f.isRental && Engine.shachoshitsu.isLongTermInjured(f));
     const t = carePickBy(pool, f => f.injury.weeksLeft || 0, true);
     return t ? { fighterId: t.id, options: undefined } : null;
   }
