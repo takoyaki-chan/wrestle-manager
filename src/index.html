@@ -634,6 +634,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .dojo-scene-fighters{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);display:flex;align-items:center;gap:8px;z-index:2}
 .dojo-scene-fighter-wrap{position:relative;cursor:pointer;flex-shrink:0}
 .dojo-scene-fighter-wrap:hover .dojo-scene-fighter{border-color:var(--gold);transform:scale(1.08)}
+/* care-rework2 P1-2: 立ち姿に添える低調サイン。額縁を足さず、隅に小さく置くだけ */
+.dojo-scene-quiet{position:absolute;right:-2px;bottom:-2px;font-size:11px;line-height:1;opacity:.85;
+  pointer-events:none;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.7))}
 .dojo-scene-fighter{width:40px;height:40px;border-radius:50%;border:2px solid rgba(255,255,255,0.5);overflow:hidden;background:rgba(0,0,0,0.3);transition:border-color .2s,transform .2s}
 .dojo-scene-fighter img,.dojo-scene-fighter .portrait{width:100%!important;height:100%!important;object-fit:cover;border-radius:50%}
 /* 選手の掛け声の明滅(14秒周期)は練習の動きを表す演出のためそのまま残す(2026-07-26 Keisuke裁定) */
@@ -684,6 +687,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .btn-intensive:disabled{opacity:0.3;cursor:not-allowed}
 .training-fatigue-sign{display:inline-flex;align-items:center;font-size:10px;line-height:1;color:var(--text-dim);opacity:.8;cursor:help;vertical-align:middle}
 .training-fatigue-sign.is-week{margin-right:4px}
+/* care-rework2 P1-2: 信頼40〜55帯の低調サイン。熱量😮‍💨と同じ「状態アイコン」の様式に揃える */
+.quiet-trust-sign{display:inline-flex;align-items:center;font-size:10px;line-height:1;color:var(--text-dim);opacity:.75;cursor:help;vertical-align:middle}
 /* G1 Cream Theme — 本拠地系画面（団体/コーチ/スカウト） */
 .cream-screen,#screen-roster{
   --bg-card:#ede8dc;--card-bg:#ede8dc;--panel-bg:#d4ccb8;--bg-main:#d4ccb8;

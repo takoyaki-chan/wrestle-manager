@@ -67,6 +67,44 @@ function renderTrainingFatigueSignal(fighter, placement) {
   return `<span class="training-fatigue-sign${placement === 'week' ? ' is-week' : ''}" title="${TRAINING_FATIGUE_TOOLTIP}" aria-label="${label}">😮‍💨</span>`;
 }
 
+// ── care-rework2 P1-2: 信頼40〜55帯の低調サイン ────────────────────────────────
+// 「💭よそよそしい」は40未満、ボーナス書類の発動条件は60未満 — その間の20ptが
+// 画面のどこにも出ず、ケアを打つきっかけが消えていた。熱量😮‍💨と同列の常設サインで埋める。
+// 数値は見せない。モーダルも週次レポート行もティッカーも出さない(常設サインのみ)。
+const QUIET_SIGN_LINES = [
+  '最近、目を合わせる回数が減った気がする',
+  '練習が終わると、すぐに帰るようになったらしい',
+  '話しかけると、少し間が空くようになった',
+];
+const QUIET_SIGN_ON_MIN = 40;   // これ未満は「💭よそよそしい」が受け持つ(濃い段階)
+const QUIET_SIGN_ON_MAX = 55;   // 点灯
+const QUIET_SIGN_OFF = 57;      // 消灯（ヒステリシス: 56で毎週チラつかせない）
+
+// 表示専用のヒステリシス記憶。GameStateにもセーブにも書かない —
+// エンジンの判定は一切これを読まないし、リロードで消えても素のtrust帯から立て直せる。
+const _quietSignState = new Map(); // fighterId -> { lit, absWeek }
+
+function isQuietSignLit(fighter) {
+  if (!fighter || fighter.isRental) return false;
+  const trust = fighter.trust != null ? fighter.trust : 50;
+  const absWeek = ((G.season || 1) - 1) * 48 + (G.week || 1);
+  const prev = _quietSignState.get(fighter.id);
+  if (prev && prev.absWeek === absWeek) return prev.lit; // 同じ週の再描画では揺らさない
+  const inBand = trust >= QUIET_SIGN_ON_MIN && trust <= QUIET_SIGN_ON_MAX;
+  // 記憶が無い週(初回/リロード直後)は素の帯から。点いていた週からは57まで持ちこたえる。
+  const lit = (prev && prev.lit)
+    ? (trust >= QUIET_SIGN_ON_MIN && trust < QUIET_SIGN_OFF)
+    : inBand;
+  _quietSignState.set(fighter.id, { lit, absWeek });
+  return lit;
+}
+
+function renderQuietTrustSignal(fighter) {
+  if (!isQuietSignLit(fighter)) return '';
+  const line = QUIET_SIGN_LINES[Math.abs(fighter.id || 0) % QUIET_SIGN_LINES.length];
+  return `<span class="quiet-trust-sign" ${_tipAttr(line)} aria-label="様子が気になる">🌫</span>`;
+}
+
 // v1.9: Roster sort state
 let _rosterSortKey = 'ovr';
 // 展開中のカードID(複数可)。**選手を見比べるための画面**なので、1枚しか開けないと
@@ -1866,6 +1904,8 @@ function _renderRosterDojoHeader() {
         html += `<div class="dojo-scene-fighter-wrap" style="margin-bottom:${offsetY}px" title="${c.name}" onclick="showFighterPopup(${c.id},'roster')">`;
         html += `<div class="dojo-scene-shout" style="--shout-cycle:${cycle}s;--shout-delay:${delay}s"></div>`;
         html += `<div class="dojo-scene-fighter">${portraitImg(c.id, 40)}</div>`;
+        // care-rework2 P1-2: 立ち姿にも同じ低調サインを添える(道場で気づけるように)
+        if (isQuietSignLit(c)) html += '<span class="dojo-scene-quiet" aria-hidden="true">🌫</span>';
         html += '</div>';
       });
       html += '</div>';
@@ -2368,7 +2408,7 @@ function renderRoster() {
               const invCoach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
               return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`${invCoach ? invCoach.name + 'コーチ招聘中' : 'コーチ招聘中'} — 練習効果アップ(残${c._inviteBuff.weeksLeft}週)`)}>🏋️${c._inviteBuff.weeksLeft}w</span>`;
             })() : ''}
-            ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}${renderTrainingFatigueSignal(c)}
+            ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}${renderQuietTrustSignal(c)}${renderTrainingFatigueSignal(c)}
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
             <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
