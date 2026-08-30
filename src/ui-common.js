@@ -8905,6 +8905,20 @@ function showInviteTargetModal(coachId, state) {
     </div>`;
   }).join('');
 
+  // care-rework2 P3-2: 重点ステ指導。秘書経由で「ここを伸ばしてほしい」を1つだけ伝える。
+  // 同じステの特化abilityを持つコーチなら、頼むまでもなくそちらが上回る(非累積)ので
+  // その旨をラベルに出し、選んでも損はないが意味が薄いことを先に見せる。
+  const coachSpecStat = (typeof Engine !== 'undefined' && Engine.coach && Engine.coach.getCoachStatSpec)
+    ? Engine.coach.getCoachStatSpec(coach) : null;
+  const focusStatList = ['pw', 'sp', 'te', 'st'];
+  const focusOptions = focusStatList.map(s => {
+    const label = (typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[s]) || s.toUpperCase();
+    return `<option value="${s}">${label}${s === coachSpecStat ? '（このコーチの専門）' : ''}</option>`;
+  }).join('');
+  const focusNote = coachSpecStat
+    ? `重点を伝えると、その練習を選ぶ機会が増える。${(typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[coachSpecStat]) || ''}は${coach.name}コーチの専門なので、頼まなくても最初からそこに寄る。`
+    : '重点を伝えると、その練習を選ぶ機会が増える。伸ばす上限までは変わらない。';
+
   const stageBody = `
     <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:12px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${coach.name}コーチを、誰に付ける。4週間の指導になる。指導との相性までは、始めてみないと分からない。</div>
     <div style="display:flex;justify-content:center;gap:18px;align-items:baseline;font-size:13px;color:var(--cream-text-main);margin-bottom:14px">
@@ -8912,10 +8926,18 @@ function showInviteTargetModal(coachId, state) {
       <span style="color:rgba(122,101,48,0.3)">|</span>
       <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">DP</span><strong>⚡${doc.decisionCost}</strong></span>
     </div>
-    <label style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 14px;padding:10px 14px;max-width:360px;border:1px solid rgba(100,85,50,0.18);border-radius:8px;background:rgba(255,255,255,0.45);font-size:12px;color:var(--cream-text-main)">
+    <label style="display:flex;align-items:center;justify-content:center;gap:8px;margin:0 auto 10px;padding:10px 14px;max-width:360px;border:1px solid rgba(100,85,50,0.18);border-radius:8px;background:rgba(255,255,255,0.45);font-size:12px;color:var(--cream-text-main)">
       <input type="checkbox" id="mdlAInviteAutoRenew">
       <span>満了後は自動継続する。途中で2週延長が入った場合は、その終了後に継続する。<span style="color:var(--cream-text-sub)">(4週ごとに費用と決裁枠⚡${doc.decisionCost}を再消費)</span></span>
     </label>
+    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin:0 auto 14px;padding:10px 14px;max-width:360px;border:1px solid rgba(100,85,50,0.18);border-radius:8px;background:rgba(255,255,255,0.45);font-size:12px;color:var(--cream-text-main)">
+      <label for="mdlAInviteFocusStat" style="white-space:nowrap">重点を頼む</label>
+      <select id="mdlAInviteFocusStat" style="flex:1;font-family:inherit;font-size:12px;padding:4px 6px;border:1px solid rgba(100,85,50,0.28);border-radius:4px;background:var(--office-panel-cream);color:var(--cream-text-main)">
+        <option value="">おまかせ（重点なし）</option>
+        ${focusOptions}
+      </select>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--cream-text-sub);margin:-8px auto 14px;max-width:400px;line-height:1.6">${focusNote}</div>
     <div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin-bottom:10px">CANDIDATES ・ 対 象 選 手</div>
     <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px" id="mdlAInviteTargetGrid">
       ${cards}
@@ -8954,9 +8976,10 @@ function showInviteTargetModal(coachId, state) {
   document.getElementById('mdlAInviteTargetConfirm').addEventListener('click', () => {
     Audio.play('click');
     const autoRenew = !!document.getElementById('mdlAInviteAutoRenew')?.checked;
+    const focusStat = document.getElementById('mdlAInviteFocusStat')?.value || null;
     _mdlAClose();
     if (typeof App !== 'undefined' && App.executeDecision) {
-      App.executeDecision('trainer', selectedFighterId, { coachId, autoRenew });
+      App.executeDecision('trainer', selectedFighterId, { coachId, autoRenew, focusStat });
     }
   });
 }

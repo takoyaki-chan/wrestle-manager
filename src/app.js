@@ -14507,6 +14507,31 @@ const App = {
     }
   },
 
+  // care-rework2 P3-3: 招聘市場パネルの「頼む」。選択値は "axis:value" の1本。
+  requestInviteCoachFromPanel() {
+    const sel = document.getElementById('impReqSelect');
+    if (!sel || !sel.value) { showToast('何を探すかが選ばれていません'); return; }
+    const sep = sel.value.indexOf(':');
+    if (sep < 0) { showToast('何を探すかが選ばれていません'); return; }
+    App.requestInviteCoach(sel.value.slice(0, sep), sel.value.slice(sep + 1));
+  },
+
+  // care-rework2 P3-1: 招聘市場パネルから秘書に「◯◯を探してほしい」と1軸だけ頼む。
+  // ⚡0・費用0・同一四半期に1件まで。結果が出るのは翌四半期の入れ替わり時。
+  requestInviteCoach(axis, value) {
+    Audio.play('click');
+    const result = Engine.shachoshitsu.requestCoach(G, axis, value);
+    if (result.error === 'offseason_locked') { showToast('オフシーズン中は依頼できません'); return; }
+    if (result.error === 'already_requested') { showToast('今期はもう秘書に頼んでいます'); return; }
+    if (result.error) { showToast('この依頼は出せませんでした'); return; }
+    G = { ...G, coachRequest: result.coachRequest };
+    const wanted = Engine.shachoshitsu.formatCoachRequest(result.coachRequest);
+    G = { ...G, gameLog: [...(G.gameLog || []), `📇 秘書に${wanted}を探すよう頼んだ`] };
+    showToast(`${wanted}を探すよう秘書に頼んだ。次の顔ぶれの入れ替わりで返事が来る`);
+    Storage.autoSave();
+    if (typeof renderShachoshitsu === 'function') renderShachoshitsu();
+  },
+
   // 社長室 Phase 4: 決裁実行エントリポイント
   // fighterId: 個人書類のとき対象選手ID、team書類のとき null
   // 返り値: { ok: true, displayData } | { ok: false, error? }

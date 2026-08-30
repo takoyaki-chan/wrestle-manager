@@ -7710,10 +7710,20 @@ const Engine = {
       // Style match bonus (specialist +0.08 / allround +0.05)
       const char = G.roster.find(c => c.id === charId);
       if (char) {
-        if (coach.style === 'Allround') {
-          mult += COACH_STYLE_BONUS.allround;
-        } else if (coach.style === char.style) {
-          mult += COACH_STYLE_BONUS.specialist;
+        // care-rework2 P3 G15: スタイル一致ボーナスの二重計上を解消する。
+        // 招聘中は getCharCoach が招聘コーチを返すため、同じ一致ぶんが
+        // calcInviteMult(_inviteBuff.mult → trainerMult側)とここ(coachMul側)の
+        // 両方に乗り、一致ありの招聘だけ公称より約8%強く効いていた。
+        // 一致ボーナスの居場所は calcInviteMult に一本化し、招聘コーチ相手のときは
+        // ここでは足さない。gMult は「その期間の指導者の地力」なので残す。
+        // 雇用コーチ(coachAssign 経由)はこの分岐に入らないので従来どおり。
+        const isInvitedCoach = !!(char._inviteBuff && char._inviteBuff.coachId === coach.id);
+        if (!isInvitedCoach) {
+          if (coach.style === 'Allround') {
+            mult += COACH_STYLE_BONUS.allround;
+          } else if (coach.style === char.style) {
+            mult += COACH_STYLE_BONUS.specialist;
+          }
         }
       }
       // v0.2: 特殊能力の成長効果は Phase 2 で実装
@@ -7740,6 +7750,16 @@ const Engine = {
       if (specStat) {
         const idx = stats.indexOf(specStat);
         if (idx >= 0) weights[idx] *= 1.40;
+      }
+      // care-rework2 P3-2 重点ステ指導 — 招聘期間中だけ、社長が秘書経由で伝えた
+      // 重点ステの選択率 ×1.25。ステ特化abilityが空白の13セル(「TEを伸ばしたいのに
+      // TEに向くコーチが存在しない」)を、コーチのデータではなく仕組みで埋める。
+      // 同じステの特化(×1.40)を持つコーチが相手なら特化が優先・非累積 —
+      // 頼まなくても常時1.40 > 頼んで1.25 で、専門家の価値を保つ。
+      const focusStat = Engine.coach.getInviteFocusStat(G, charId);
+      if (focusStat && focusStat !== specStat) {
+        const fidx = stats.indexOf(focusStat);
+        if (fidx >= 0) weights[fidx] *= 1.25;
       }
       // trainCap到達済みステのウェイトを0にする（成長機会の空振り防止）
       if (char) {
@@ -7829,12 +7849,24 @@ const Engine = {
     },
     // v0.2: ステ特化 — 対象ステの練習選択率 ×1.40
     getStatSpecBoost(G, charId) {
-      const coach = Engine.coach.getCharCoach(G, charId);
+      return Engine.coach.getCoachStatSpec(Engine.coach.getCharCoach(G, charId));
+    },
+    // コーチ単体からステ特化abilityの対象ステを引く(招聘の重点ステ判定でも使う)
+    getCoachStatSpec(coach) {
       if (!coach) return null;
       const specAbility = (coach.abilities || []).find(a => a.startsWith('ステ特化'));
       if (!specAbility) return null;
       const statMap = { 'ステ特化PW':'pw', 'ステ特化SP':'sp', 'ステ特化TE':'te', 'ステ特化ST':'st' };
       return statMap[specAbility] || null;
+    },
+    // care-rework2 P3-2: 招聘の「重点ステ指導」対象。招聘期間中の選手にしか付かないので、
+    // 常勤(雇用)コーチの練習選択には影響しない。AI招聘(aiSeasonTrainer)は focusStat を
+    // 持たないため従来どおり。
+    getInviteFocusStat(G, charId) {
+      const char = (G.roster || []).find(c => c.id === charId);
+      const buf = char && char._inviteBuff;
+      if (!buf || !buf.focusStat) return null;
+      return ['pw','sp','te','st'].includes(buf.focusStat) ? buf.focusStat : null;
     },
     // v0.2: 怪我耐性 — 重傷→中傷格下げ 40%
     getInjurySeverityDowngrade(G, charId) {
@@ -13480,7 +13512,26 @@ const Engine = {
     // §3.1「1回休み」: 再抽選で除外を1回適用したら消費済みにする(クリアしないと永久出禁になる)
     const inviteMarketRerolled = !s.inviteMarket || s.inviteMarket.periodKey !== nextInviteMarket.periodKey;
     s = { ...s, inviteMarket: nextInviteMarket };
-    if (inviteMarketRerolled && s.lastInvitedCoachId != null) s = { ...s, lastInvitedCoachId: null };
+    // care-rework2 P3-1: 指名リクエストの結果報告(1行)とリクエストの片付け。
+    // 入れ替わった週にここで必ず使い切る — 持ち越すと翌四半期に二重に効いてしまう。
+    let coachRequestEvent = null;
+    if (inviteMarketRerolled) {
+      if (s.lastInvitedCoachId != null) s = { ...s, lastInvitedCoachId: null };
+      const rr = nextInviteMarket.requestResult;
+      if (rr) {
+        const wanted = Engine.shachoshitsu.formatCoachRequest(rr);
+        if (rr.fulfilled) {
+          const rc = ALL_COACHES.find(c => c.id === rr.coachId);
+          coachRequestEvent = `📇 秘書からの報告 — 頼んでいた${wanted}の件、${rc ? rc.name : 'その人'}コーチが今期の面談に応じる`;
+        } else {
+          coachRequestEvent = `📇 秘書からの報告 — 頼んでいた${wanted}は、今期は都合がつかなかった`;
+        }
+      }
+      if (s.coachRequest) {
+        const { coachRequest: _consumedRequest, ...restAfterRequest } = s;
+        s = restAfterRequest;
+      }
+    }
     // task-88 §D: 王座未創設時は同一stateを返しRNGも消費しない四半期フック。
     s = Engine.unifiedTitle.processQuarter(s);
     // v1.8: transient 成長イベントを state に乗せる
@@ -13725,6 +13776,8 @@ const Engine = {
       settle.summary,
     ];
     if (ppvUnlockEvent) events.push(ppvUnlockEvent);
+    // care-rework2 P3-1: 四半期頭の秘書報告(充足でも不在でも1行だけ)
+    if (coachRequestEvent) events.push(coachRequestEvent);
     // bankruptcy-redesign v1.1: 資金危機フェーズ判定（オフシーズン中はスキップ）
     // 毎週 _crisisColumnTag / _crisisJustEntered をリセットしてから設定
     s = { ...s, _crisisColumnTag: null, _crisisJustEntered: false };
@@ -21962,7 +22015,13 @@ Engine.news = {
       [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
     const count = Math.min(shuffled.length, Engine.rng.int(rng, 3, 5));
-    return shuffled.slice(0, count);
+    const picked = shuffled.slice(0, count);
+    // care-rework2 P3-3: 招聘の顔ぶれが替わる前週の予告を1行。乱数を一切消費しない
+    // 確定枠として最後に足す(他の項目を押し出さない・既存の抽選列も動かさない)。
+    if (Engine.shachoshitsu.isInviteMarketEveWeek(state)) {
+      picked.push('【招聘】来週、招聘に応じるコーチの顔ぶれが入れ替わる');
+    }
+    return picked;
   },
 
   /** 新聞パネル記事生成（イベント配列から Article[] を生成） */
@@ -23095,11 +23154,18 @@ Engine.shachoshitsu = {
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, season, quarter, 0x1CB1));
     const hired = new Set(state.coaches || []);
     const orgPop = state.orgPop || 0;
+    const coachSlots = state.coachSlots || 1;
     const lastInvitedId = state.lastInvitedCoachId || null;
     const eligible = ALL_COACHES.filter(c => {
       if (hired.has(c.id)) return false;
       if (c.id === lastInvitedId) return false;  // 招聘直後のコーチは次回抽選を1回休む
-      if ((c.minOrgPop || 0) > orgPop) return false;
+      if ((c.minOrgPop || 0) > orgPop) {
+        // care-rework2 P3-4②: A級だけは雇用側と同じ通貨(コーチ枠4つ目の開放)でも解禁する。
+        // 「A級を雇えるのに招聘には来ない」という通貨の食い違いを解消するための例外で、
+        // C級(壁なし)/B級(知名度30)のゲートには手を付けない。
+        // 希少性は「知名度55 か 枠4つ目」というどちらも高い壁のままで維持される。
+        if (!(c.grade === 'A' && coachSlots >= 4)) return false;
+      }
       return true;
     });
     const shuffled = [...eligible];
@@ -23109,7 +23175,104 @@ Engine.shachoshitsu = {
     }
     const count = 2 + Engine.rng.int(rng, 0, 1);  // 2〜3名
     const candidateIds = shuffled.slice(0, Math.min(count, shuffled.length)).map(c => c.id);
-    return { periodKey, candidateIds };
+
+    // ── care-rework2 P3-1: 前四半期に秘書へ出した指名リクエストの充足 ───────────
+    // リクエストが無いときは以下を一切通らず、返り値も従来と同一(ビット一致)。
+    // 充足の抽選は 0x1CB1 のストリームを一切消費せず、専用ソルト 0x1CB3 の
+    // 別rngで引く — これで「頼まなかった世界」の市場が1ビットも動かない。
+    const req = state.coachRequest;
+    if (!req || !req.quarterKey || req.quarterKey === periodKey) {
+      return { periodKey, candidateIds };
+    }
+    const matched = eligible.filter(c => Engine.shachoshitsu.matchesCoachRequest(c, req));
+    if (matched.length === 0) {
+      // ご都合補充はしない。母集団にいなければ正直に「都合がつかなかった」と報告する。
+      // orgPopゲートを超える格を連れて来ることも当然しない(eligible が既に効いている)。
+      return { periodKey, candidateIds, requestResult: { fulfilled: false, axis: req.axis, value: req.value } };
+    }
+    const reqRng = Engine.rng.create(Engine.rng.derive(state.rngSeed || 1, season, quarter, 0x1CB3));
+    const picked = matched[Engine.rng.int(reqRng, 0, matched.length - 1)];
+    // 候補の1枠目を該当者で確保する。枠数自体は増やさない(誰かが押し出される)。
+    // 既に候補入りしていた場合は先頭へ寄せるだけで、枠を余計に潰さない。
+    const withRequest = [picked.id, ...candidateIds.filter(id => id !== picked.id)]
+      .slice(0, Math.max(1, candidateIds.length));
+    return {
+      periodKey,
+      candidateIds: withRequest,
+      requestResult: { fulfilled: true, coachId: picked.id, axis: req.axis, value: req.value },
+    };
+  },
+
+  // ── care-rework2 P3-1: 指名リクエスト(秘書に探してもらう) ────────────────────
+  // 頼める軸は1つだけ: 「◯◯スタイルに合う人」か「◯◯級の人」。
+  // 誰が来るかは選べない(格・相性・特化はガチャのまま=正直な不確実性)。
+  getCoachRequestAxes() {
+    return {
+      style: ['Grappler', 'Striker', 'Submission', 'Aerial', 'Brawler', 'Allround'],
+      grade: ['C', 'B', 'A'],
+    };
+  },
+
+  matchesCoachRequest(coach, req) {
+    if (!coach || !req) return false;
+    if (req.axis === 'style') return coach.style === req.value;
+    if (req.axis === 'grade') return coach.grade === req.value;
+    return false;
+  },
+
+  // 「いま机に並んでいる顔ぶれ」の期。カレンダー上の四半期キーとは1週ずれることがある:
+  // 四半期の初週は、その週の tickWeek が終わるまで市場がまだ前期のままなので、
+  // 暦の四半期(getInvitePeriodKey)で数えると「まだ返事が来ていない依頼」を
+  // 上書きできてしまう。依頼の単位は暦ではなく“顔ぶれ”に合わせる。
+  getCurrentMarketPeriodKey(state) {
+    if (state && state.inviteMarket && state.inviteMarket.periodKey) return state.inviteMarket.periodKey;
+    return Engine.shachoshitsu.getInvitePeriodKey((state && state.season) || 1, (state && state.week) || 1);
+  },
+
+  // 依頼済み(同じ顔ぶれの期に1件まで)かどうか。UIのボタン活性判定にも使う。
+  hasCoachRequestThisQuarter(state) {
+    const req = state && state.coachRequest;
+    if (!req || !req.quarterKey) return false;
+    return req.quarterKey === Engine.shachoshitsu.getCurrentMarketPeriodKey(state);
+  },
+
+  // ⚡0・費用0。返り値は { coachRequest } か { error }。状態は呼び出し側で載せる。
+  requestCoach(state, axis, value) {
+    if (!state) return { error: 'no_state' };
+    if (state.offSeason) return { error: 'offseason_locked' };
+    const axes = Engine.shachoshitsu.getCoachRequestAxes();
+    if (!axes[axis] || !axes[axis].includes(value)) return { error: 'invalid_request' };
+    if (Engine.shachoshitsu.hasCoachRequestThisQuarter(state)) return { error: 'already_requested' };
+    return {
+      coachRequest: { axis, value, quarterKey: Engine.shachoshitsu.getCurrentMarketPeriodKey(state) },
+    };
+  },
+
+  // ── care-rework2 P3-3: 顔ぶれの入れ替わりまであと何週か ─────────────────────
+  // プレイヤーが市場を見るのは manage フェーズで、その週の tickWeek で引き直された
+  // 顔ぶれが見えるのは翌週の manage から。つまり「暦の四半期」より1週遅れて入れ替わる。
+  // パネルの残り週数はこの実際の見え方に合わせる(暦で数えると1週嘘をつく)。
+  // 返り値: 1 = 次の週に入れ替わる / null = 期を跨いでいて数えられない(オフシーズン等)
+  getInviteMarketWeeksLeft(state) {
+    if (!state || state.offSeason) return null;
+    const m = /^(\d+)-Q(\d+)$/.exec(Engine.shachoshitsu.getCurrentMarketPeriodKey(state) || '');
+    if (!m) return null;
+    if (parseInt(m[1], 10) !== (state.season || 1)) return null;
+    const left = (parseInt(m[2], 10) * 12 + 2) - (state.week || 1);
+    return left >= 1 ? left : null;
+  },
+
+  // 顔ぶれが替わる直前の週(ティッカーの予告1行を出す週)
+  isInviteMarketEveWeek(state) {
+    return Engine.shachoshitsu.getInviteMarketWeeksLeft(state) === 1;
+  },
+
+  // 指名リクエストのプレイヤー向け表記(内部語を出さない)
+  formatCoachRequest(req) {
+    if (!req) return '';
+    if (req.axis === 'grade') return `${req.value}級のコーチ`;
+    const label = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[req.value]) || req.value;
+    return `${label}に強いコーチ`;
   },
 
   // periodKey が現在と食い違っていれば再抽選、そうでなければそのまま返す(tickWeek から毎週呼ぶ)
@@ -23141,12 +23304,21 @@ Engine.shachoshitsu = {
   },
 
   // §6.3: 指導タイプ×選手personalityの相性判定。'good' | 'bad' | 'normal'(普通)
-  getCoachingCompat(coachingType, personality) {
+  // care-rework2 P3-5: personality==='normal' のときだけ archetype 副表を見る
+  // (第3引数)。渡されなければ従来どおり必ず 'normal' を返す。
+  getCoachingCompat(coachingType, personality, archetype) {
     if (typeof COACHING_COMPAT_MATRIX === 'undefined') return 'normal';
     const row = COACHING_COMPAT_MATRIX[coachingType];
     if (!row) return 'normal';
     const p = personality || 'normal';
-    if (p === 'normal') return 'normal';
+    if (p === 'normal') {
+      if (typeof COACHING_COMPAT_ARCHETYPE === 'undefined' || !archetype) return 'normal';
+      const arow = COACHING_COMPAT_ARCHETYPE[coachingType];
+      if (!arow) return 'normal';
+      if ((arow.good || []).includes(archetype)) return 'good';
+      if ((arow.bad || []).includes(archetype)) return 'bad';
+      return 'normal';
+    }
     if ((row.good || []).includes(p)) return 'good';
     if ((row.bad || []).includes(p)) return 'bad';
     return 'normal';
@@ -23159,9 +23331,14 @@ Engine.shachoshitsu = {
     if (!coach || !fighter) return 1.0;
     const gradeBase = { C: 1.25, B: 1.30, A: 1.35 }[coach.grade] || 1.25;
     let mult = gradeBase;
-    if (coach.style === 'Allround') mult += COACH_STYLE_BONUS.allround;
-    else if (coach.style === fighter.style) mult += COACH_STYLE_BONUS.specialist;
-    const compat = Engine.shachoshitsu.getCoachingCompat(coach.coachingType, fighter.personality);
+    // care-rework2 P3-4①: 判定順を「選手のスタイルと一致するか」先行にする。
+    // 旧順(Allroundコーチを先に見る)では、Allround選手にAllroundコーチが付いても
+    // 万能指導+0.05 で止まり、specialist(+0.08)の経路が定義上存在しなかった
+    // (Allround選手43名に「ピッタリ」が構造的に生まれない)。
+    // 変わるのは Allroundコーチ×Allround選手(0.05→0.08)だけで、他の組合せは不変。
+    if (coach.style === fighter.style) mult += COACH_STYLE_BONUS.specialist;
+    else if (coach.style === 'Allround') mult += COACH_STYLE_BONUS.allround;
+    const compat = Engine.shachoshitsu.getCoachingCompat(coach.coachingType, fighter.personality, fighter.archetype);
     if (compat === 'good') mult += 0.10;
     else if (compat === 'bad') mult -= 0.10;
 
@@ -23642,8 +23819,12 @@ Engine.shachoshitsu = {
           const current = (state.coachAssign && state.coachAssign[prevCoach.id]) || [];
           coachAssignAfterInvite = { ...(state.coachAssign || {}), [prevCoach.id]: current.filter(id => id !== fighterId) };
         }
+        // care-rework2 P3-2: 重点ステ指導(任意)。不正値・未指定は null=従来どおりの招聘。
+        const rawFocus = options && options.focusStat;
+        const focusStat = ['pw','sp','te','st'].includes(rawFocus) ? rawFocus : null;
         f._inviteBuff = {
           coachId: coach.id, weeksLeft: 4, totalWeeks: 4, mult, compat,
+          focusStat,
           prevCoachId: prevCoach ? prevCoach.id : null,
           autoRenew: !!(options && options.autoRenew),
           // P4: 発令時スナップショット。卒業レポートの伸び幅表示・化ける判定の元データ
@@ -23653,7 +23834,8 @@ Engine.shachoshitsu = {
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('trainer', f);
         f = queueTrust(f, doc.effect.trust || 5.97, 'trainer', 4, currentFinalMult);
         const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[coach.coachingType]) || '';
-        events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)`);
+        const focusLabel = focusStat && typeof STAT_LABELS_JP !== 'undefined' ? STAT_LABELS_JP[focusStat] : '';
+        events.push(`💪 ${f.name}に${coach.name}コーチ(${typeLabel})を招聘(4週間・${actualCost}万)${focusLabel ? `。重点は${focusLabel}` : ''}`);
       } else if (docId === 'special_treatment') {
         // care-rework2 P2-C: 長期離脱(総週数10以上)専用。executeSpecialTreatment と同一ロジック。
         if (!f.injury) return { error: 'not_injured' };
@@ -23712,6 +23894,19 @@ Engine.shachoshitsu = {
         else if (ib.compat === 'bad') compatHint = 'どこか噛み合わなさそうな、硬い空気が漂う';
         changes.push({ label: '成長速度', emoji: '📈', text: `4週間 +${growthPct}%${ib.diminished ? '(詰め込み気味で伸びは控えめ)' : ''}` });
         changes.push({ label: '指導の空気', emoji: '🎓', text: compatHint });
+        // care-rework2 P3-2: 重点ステを頼んだ場合だけ、何を伝えたかを一行残す。
+        // 専門家(同ステのステ特化持ち)が相手なら、頼むまでもなくそちらが上回る。
+        if (ib.focusStat && typeof STAT_LABELS_JP !== 'undefined') {
+          const fLabel = STAT_LABELS_JP[ib.focusStat] || '';
+          const invCoach = ALL_COACHES.find(c => c.id === ib.coachId);
+          const specStat = Engine.coach.getCoachStatSpec(invCoach);
+          changes.push({
+            label: '重点の指定', emoji: '🎯',
+            text: specStat === ib.focusStat
+              ? `${fLabel}は頼むまでもなく、${invCoach ? invCoach.name : 'この'}コーチが元から専門にしている領域だ`
+              : `${fLabel}を重点に据えて練習を組んでもらう`,
+          });
+        }
       } else if (docId !== 'special_treatment' && _after.trust !== _before.trust) {
         // 内部値は見せず、選手の反応として伝える。
         const trustDelta = _after.trust - _before.trust;

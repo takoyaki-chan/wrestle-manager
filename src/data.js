@@ -7836,6 +7836,19 @@ const COACHING_COMPAT_MATRIX = {
   bigheart: { good: ['easygoing', 'emotional'], bad: ['quiet'] },
 };
 
+// care-rework2 P3-5: 上の性格マトリクスでは personality:'normal' の33名が常に「普通」で、
+// 相性の覚醒も衝突も構造的に起きなかった(全キャラの26%が不発)。
+// personality==='normal' のときだけ、この archetype 副表で相性を見る。
+// good +0.10 / bad -0.10 は性格軸と同じ幅で、非normalの判定には一切触れない。
+// 'standard'(標準)はどの指導タイプとも±0のまま — 平凡さも個性、という立場を保つ。
+const COACHING_COMPAT_ARCHETYPE = {
+  sparta:   { good: ['delinquent'], bad: ['ojousama'] },
+  theorist: { good: ['composed'],   bad: ['delinquent'] },
+  artisan:  { good: ['cool'],       bad: ['seductive'] },
+  mentor:   { good: ['polite'],     bad: ['cool'] },
+  bigheart: { good: ['seductive'],  bad: ['composed'] },
+};
+
 // コーチ枠（v0.2: 資金投資ベース、永続）
 const COACH_SLOT_COSTS = [0, 500, 1000, 5000]; // [1枠目:無料, 2枠目:500万, 3枠目:1000万, 4枠目:5000万]
 
