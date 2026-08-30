@@ -115,6 +115,33 @@ Engine.awards.generate = function generateAwardsWithUnifiedRecordsI6(rng, state)
   return awards;
 };
 
+// care-rework2 P3: 招聘の成長倍率が「どこで・何件」計算されたかの読み取り専用プローブ。
+// ケアなしのシムでも AI団体の季節トレーナー(assignAISeasonTrainers)経由で
+// calcInviteMult は回るので、G15/P3-4①/P3-5 のようなこの式への変更が
+// 「ケアなし側の意味指紋をどれだけ動かしうるか」の母数がこれで分かる。
+// 乱数も状態も触らない — 数えるだけ。
+const inviteMultProbe = {
+  calls: 0,
+  styleMatch: 0,            // 選手スタイルとコーチスタイルが一致(G15/P3-4①の対象)
+  allroundPair: 0,          // Allroundコーチ × Allround選手(P3-4①で 0.05→0.08 になる唯一のセル)
+  archetypeDecided: 0,      // personality:'normal' かつ archetype が相性を決めた(P3-5の対象)
+  compat: { good: 0, bad: 0, normal: 0 },
+};
+const calcInviteMultForProbe = Engine.shachoshitsu.calcInviteMult;
+Engine.shachoshitsu.calcInviteMult = function calcInviteMultWithProbe(coach, fighter, state) {
+  const out = calcInviteMultForProbe.call(this, coach, fighter, state);
+  if (coach && fighter) {
+    inviteMultProbe.calls++;
+    if (coach.style === fighter.style) inviteMultProbe.styleMatch++;
+    if (coach.style === 'Allround' && fighter.style === 'Allround') inviteMultProbe.allroundPair++;
+    if ((fighter.personality || 'normal') === 'normal' && out && out.compat !== 'normal') {
+      inviteMultProbe.archetypeDecided++;
+    }
+    if (out && out.compat) inviteMultProbe.compat[out.compat] = (inviteMultProbe.compat[out.compat] || 0) + 1;
+  }
+  return out;
+};
+
 function createPhaseTimingStats(maxTurn, climaxStart) {
   return {
     matches: 0,
@@ -3105,6 +3132,14 @@ if (process.env.WM_FACTION_FIXTURE === '1') {
   console.log('--------------------------------------');
   console.log(`[ケア計装] mode: ${CARE_MODE ? '--care (自動決裁ON)' : 'ケアなし(従来)'}`);
   console.log(`  平均trust(自団体・週次平均):        ${avg(careStats.trustSamples).toFixed(2)}`);
+  {
+    // care-rework2 P3: 招聘倍率式が回った母数(ケアなしでもAI季節トレーナー分は回る)
+    const p = inviteMultProbe;
+    console.log(`  招聘倍率式の呼び出し:               ${p.calls}件`
+      + ` (スタイル一致 ${p.styleMatch} / Allround×Allround ${p.allroundPair}`
+      + ` / normal性格をarchetypeが判定 ${p.archetypeDecided})`);
+    console.log(`    相性の内訳:                       ◎${p.compat.good || 0} ✕${p.compat.bad || 0} 普通${p.compat.normal || 0}`);
+  }
   console.log(`  平均lockerRoomMorale(週次平均):     ${avg(careStats.moraleSamples).toFixed(2)}`);
   // care-rework2 P2-A 不変条件: 休暇のwear回復が引退年齢を動かしていないか
   {
