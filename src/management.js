@@ -23538,10 +23538,11 @@ Engine.shachoshitsu = {
         events.push(`🏥 ${f.name}に特別治療を実施(${cur}週→${reduced}週)`);
         changes.push({ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` });
       } else if (docId === 'media') {
-        // Phase 8: condition/orgPopDelta は固定、trust のみ不確実性
+        // Phase 8: orgPopDelta は固定、trust のみ不確実性
+        // care-rework2 P2-D: trust基礎 5.36→2.0(全書類中最大の信頼書類だった状態を解消)。
+        // condition+5 は削除 — メディア対応は休養ではない。人気・団体知名度・嫉妬は不変。
         currentFinalMult = Engine.shachoshitsu.calcUncertainty('media', f);
-        f = applyTrust(f, (doc.effect.trust || 5.36) * currentFinalMult);
-        f = { ...f, condition: Math.min(100, (f.condition || 70) + (doc.effect.condition || 5)) };
+        f = applyTrust(f, (doc.effect.trust || 2.0) * currentFinalMult);
         orgPopDelta = doc.effect.orgPopDelta || 0.4;
         // v2.5: メディア露出は選手人気にも直接効く（社長が推す意思決定）
         const mediaRng = Engine.rng.create(

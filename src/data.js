@@ -19250,10 +19250,12 @@ const DECISION_DOCS = {
     minOrgPop: 20,
     cooldown: 2,
     body: '対象選手を広告塔とし、団体の知名度向上を図る',
-    detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度向上と本人の体調維持を両立させる外向き施策。',
-    effectSummary: '選手人気と団体人気が上がり、体調が整う。本人も起用を前向きに受け止める',
-    recommendation: '団体人気がある程度育ってから解禁される書類。看板選手の体調管理と兼ねて回すと無駄がない。選手の人気を直接押し上げたい時にも有効。',
-    effect: { target: 'individual', trust: 5.36, condition: 5, orgPopDelta: 0.4, popGainMin: 6, popGainMax: 8 },
+    // care-rework2 P2-D: 人気の書類へ純化。trust 5.36→2.0(光が当たった喜び程度)、
+    // condition+5 を削除(メディア対応は休養ではない)。人気・団体知名度・嫉妬は不変。
+    detailText: '対象選手をメディア露出の広告塔として起用。団体の知名度を押し上げ、彼女の名も世に広がっていく外向きの施策。ただし、脚光は当たった者だけのものではない。',
+    effectSummary: '選手人気と団体人気が上がる。本人も起用を前向きに受け止める',
+    recommendation: '団体人気がある程度育ってから解禁される書類。選手の人気を直接押し上げたいときに。ひとりだけを売り出し続けると、周囲の目が冷たくなる点には留意すること。',
+    effect: { target: 'individual', trust: 2.0, orgPopDelta: 0.4, popGainMin: 6, popGainMax: 8 },
   },
   // bond-rivalry plan P-6: 慢性的険悪ペア（W-1 累計4回以上）の関係修復。
   // ペア指定型のため target: 'pair'。回数無制限。
