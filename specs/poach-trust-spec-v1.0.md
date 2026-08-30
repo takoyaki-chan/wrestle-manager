@@ -167,7 +167,7 @@ trust 数値を直接見せずに、ロスター全体の雰囲気を週次で1�
 - `!G.offSeason`
 - 他の `pendingNotifEvent` / `pendingChoiceEvent` / `pendingTeamSpirit` がない
 - 既存のコーチ報告 (`pendingCoachReport`) とは共存可（別枠）
-- `G.week % 2 === 0`（2週に1度、ログノイズ抑制）
+- **確率30%・週1回まで**（`0xBF10` 派生rngで判定。care-rework2 P1-3/G5で改訂 — 旧仕様の `G.week % 2 === 0` は `isShowWeek(w)=w%2===0` と自己矛盾する恒偽条件で、本ログは実装から一度も発火していなかった。「2週に1度」の意図を偶奇でなく確率で復元）
 
 ### 3.3 分岐ロジック
 
@@ -189,7 +189,9 @@ generateLockerAirLog(rng, state) {
   if (veryLowTrust.length >= 1 || lowTrust.length >= 3 || morale < 50) {
     return { tone: 'warning', ...pickAirText(rng, 'warning', lowTrust) };
   }
-  if (highTrust.length >= roster.length * 0.6 && morale >= 70) {
+  if (highTrust.length >= roster.length * 0.6 && morale >= 58) {
+    // morale閾値は 70→58 (care-rework2 P1-1/G12。70は実測到達率0%だった。
+    // 58は雰囲気テキストL4帯の開始と一致 — care-visibility-spec-v1.0 §1 参照)
     return { tone: 'good', ...pickAirText(rng, 'good') };
   }
   // その他は何も出さない（ログ過多を避ける）

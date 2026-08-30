@@ -37,6 +37,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | weekly-gameloop-spec-v1_0.md | 週次ループ/シーズン構成/オフウィーク |
 | 技テーブル_全160技_v3_5.md | 全160技のデータテーブル |
 | draft-negotiation-spec-v1.0.md | ドラフト交渉システム(入札/ヒートゲージ/AI参加) |
+| care-visibility-spec-v1.0.md | ケア可視化レイヤー(care-rework2 P1: 雰囲気テキスト段階/信頼40-55サイン🌫/空気ログ復活/⚡・navドット・机カード/遅延発現の集約。表示層のみ、2026-08-30) |
 | poach-trust-spec-v1.0.md | 引き抜き・信頼度連動仕様 |
 | oyou-style-guide.md | 鷹揚(composed)口調スタイルガイド |
 | achievement-system-spec.md | 実績システム リデザイン仕様(未実装叩き台) |
