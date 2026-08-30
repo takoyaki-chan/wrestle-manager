@@ -3006,7 +3006,7 @@ function renderShowPrep() {
         <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">⚔ ${escHtml(bc1.factionName || '派閥')}内対決の予約</div>
         <div style="font-size:12px;color:var(--text-sub);line-height:1.6">
           <strong>${escHtml(bc1A.name)}</strong> × <strong>${escHtml(bc1B.name)}</strong> — 枠は自由。カード編成のどこに置くかは社長次第<br>
-          <span style="color:${bc1Placed ? '#7bc46c' : 'var(--text-sub)'}">${escHtml(bc1Status)}</span>
+          <span style="color:${bc1Placed ? 'var(--accent-positive)' : 'var(--text-sub)'}">${escHtml(bc1Status)}</span>
         </div>
       </div>`;
     }

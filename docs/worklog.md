@@ -1,5 +1,14 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Common-1予約バナーのハードコード16進カラー除去 — `#7bc46c`→`var(--accent-positive)`（2026-08-31・Fable直実装）
+
+task-101(care-rework2 P2-G)の起用約束バナー実装時に発見した既存違反の後始末。同パターンをコピーした起用約束側は6937ed5でトークン修正済みで、コピー元のCommon-1側だけ残っていた。
+
+- **変更**: `src/ui-render.js` renderShowPrep内、Common-1(派閥内対決の予約)バナーの状態行 `color:${bc1Placed ? '#7bc46c' : ...}` を `var(--accent-positive)`(#6fa28c、index.html定義)に置換。UI鉄則「ハードコード16進カラー禁止」への準拠。色味はわずかに変わる(#7bc46c→#6fa28c、やや落ち着いた緑)
+- 同ファイル2973行(派閥メイン推薦バナー)にも同色のハードコードが残るが、多数の16進が絡む別バナーのため今回のスコープ外
+- **検証**: ui-baseline-guard ok / npm test 256/256
+- specs/roadmap/manifest: 変更なし(色トークン準拠のみ・新規ファイルなし)
+
 ## v1.31実機バグ報告(アンケート最新・salone氏)の4件修正 — 表彰式進行不能/勝手に開始/統一王座週の枠ずれ/王座クールタイム誤消費（2026-08-30・Fable直実装）
 
 Googleフォーム最新回答(08-29・v1.31/Chrome)の進行系4バグ。Explore 3並行調査で全て根本原因を特定してから修正。
