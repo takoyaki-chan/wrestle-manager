@@ -8063,11 +8063,20 @@ const Engine = {
 
   // ── §3 Locker Room Visualization ──────────────────────
   lockerRoom: {
-    /** §3.3: 雰囲気テキスト取得（render時呼び出し、ノイズ付き） */
+    /** §3.3: 雰囲気テキスト取得（render時呼び出し、ノイズ付き）
+     *
+     * care-rework2 P1-1 (G12): 段階を実効レンジへ再割付した。
+     * 旧割付は 0-20/21-40/41-60/61-80/81+ の等間隔だったが、実測の週次moraleは
+     * ケアなし平均34.3 / ケアあり平均61.1 に偏っており、L5(81+)の到達率は0%。
+     * 道場が常に「特に変わった様子はない」と言うため、士気の罰が毎週効いているのに
+     * 平常に見えていた。閾値を実効レンジへ寄せ、ノイズも ±10 → ±4 に絞って
+     * 「moraleが動いたら道場の見た目も動く」対応関係を取り戻す。
+     * moraleの数値・力学は不変。ATMOSPHERE_TEXTS の文面も不変（割付のみの変更）。
+     */
     getAtmosphereText(rng, morale) {
-      const noise = Engine.rng.int(rng, -10, 10);
+      const noise = Engine.rng.int(rng, -4, 4);
       const ds = Engine.util.clamp(morale + noise, 0, 100);
-      const level = ds <= 20 ? 0 : ds <= 40 ? 1 : ds <= 60 ? 2 : ds <= 80 ? 3 : 4;
+      const level = ds <= 24 ? 0 : ds <= 41 ? 1 : ds <= 57 ? 2 : ds <= 65 ? 3 : 4;
       const pool = ATMOSPHERE_TEXTS[level];
       return { ...pool[Engine.rng.int(rng, 0, pool.length - 1)], level: level + 1 };
     }
@@ -12987,7 +12996,9 @@ const Engine = {
           airTone = 'danger';
         } else if (veryLowTrust.length >= 1 || lowTrust.length >= 3 || morale < 50) {
           airTone = 'warning';
-        } else if (ownedRoster.length > 0 && highTrust.length >= ownedRoster.length * 0.6 && morale >= 70) {
+        // care-rework2 P1-1 (G12): goodトーンの morale 閾値 70 は実測到達率0%だったため 58 へ。
+        // warning(<50) / danger(<35) は実効レンジ内で機能しているため変更しない。
+        } else if (ownedRoster.length > 0 && highTrust.length >= ownedRoster.length * 0.6 && morale >= 58) {
           airTone = 'good';
         }
 
