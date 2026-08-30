@@ -9,7 +9,7 @@ care-rework2 P3実装時の判断②(08-30)で別タスク化されていた宿�
 - **読んだ現物**: ui-render.js renderShachoshitsu系(4940〜5542)/ui-common.js 決裁・招聘モーダル群(8400〜9520)/app.js ハンドラ(6053〜/14498〜)/data.js DECISION_DOC_ORDER+DECISION_DOCS/index.html CSS(4589〜)/specs shachoshitsu v1.2+care-visibility v1.0/階層1・2+テンプレート
 - **触ったファイル**: docs/ui/03-screens/shachoshitsu.md(新規) / docs/game-system-roadmap.md(D-3行に1行追記)
 - **検証**: ドキュメントのみ(コード変更なし・auto-sim対象外)。manifest対象外(配布物でない)
-- 残: **Keisukeレビュー**(テンプレートのワークフロー3に従い、仕様書レビューが完了ゲート)
+- ~~残: Keisukeレビュー~~ → **同日承認済み**(レビュー3点=パターン分類「机ジオラマ型」/HUD二重表示の解釈/空状態文言、すべてOK)。残なし
 
 ## v1.31実機バグ報告(アンケート最新・salone氏)の4件修正 — 表彰式進行不能/勝手に開始/統一王座週の枠ずれ/王座クールタイム誤消費（2026-08-30・Fable直実装）
 
