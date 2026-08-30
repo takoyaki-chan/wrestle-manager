@@ -12980,11 +12980,20 @@ const Engine = {
         pendingCoachReport = Engine.coach.generateReport(reportRng, { ...G, roster });
       }
 
-      // §B-1: ロッカールーム空気ログ（2週に1度、非興行週、他通知がないとき）
+      // §B-1: ロッカールーム空気ログ（非興行週・週1回まで・確率30%、他通知がないとき）
+      //
+      // care-rework2 P1-3 (G5): 発火条件が自己矛盾していた。
+      // isShowWeek(w) は w%2===0 なので、`!isShowWeek(G.week) && G.week % 2 === 0` は恒偽 —
+      // LOCKER_AIR_TEXTS 14本が一度も出ないデッドコードだった。
+      // 「2週に1度」の意図を偶奇ではなく確率30%で復元する(そのまま直すと通知が増えるため)。
+      // 出力先は従来どおり events(ログ)のみ — モーダルもトーストも増やさない。
       let pendingLockerAir = null;
-      if (!Engine.util.isShowWeek(G.week) && !G.offSeason && G.week % 2 === 0
-          && !pendingNotifEvent && !pendingChoiceEvent && !pendingTeamSpirit && roster.length > 0) {
-        const airRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBF10));
+      const _airRng = (!Engine.util.isShowWeek(G.week) && !G.offSeason && roster.length > 0)
+        ? Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBF10))
+        : null;
+      const _airFires = !!_airRng && Engine.rng.int(_airRng, 1, 100) <= 30;
+      if (_airFires && !pendingNotifEvent && !pendingChoiceEvent && !pendingTeamSpirit) {
+        const airRng = _airRng;
         const morale = G.lockerRoomMorale != null ? G.lockerRoomMorale : 60;
         const ownedRoster = roster.filter(f => !f.isRental);
         const lowTrust = ownedRoster.filter(f => (f.trust != null ? f.trust : 50) < 45);
