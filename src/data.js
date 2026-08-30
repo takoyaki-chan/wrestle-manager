@@ -19330,25 +19330,33 @@ const DECISION_DOCS = {
 
 // 性格 × 書類 マトリクス (7性格 × 7書類)
 // shy は ALL_CHARS に5名実在する。行がないと無言で normal(全1.00)に落ちるため必ず持つこと。
+// care-rework2 P2-F: special_treatment 列を削除した。全行1.00の死にデータであり、
+// そもそも execute の special_treatment 分岐は calcUncertainty を呼ばない。
+// 治療は身体の問題であって、性格で効きが変わらないのは意図的な設計である
+// (列が無い組合せは calcUncertainty が 1.0 を返す既存挙動で安全)。
 const DECISION_PERSONALITY_MULT = {
-  normal:    { bonus: 1.00, encourage: 1.00, refresh_leave: 1.00, special_treatment: 1.00, party: 1.00, trainer: 1.00, camp: 1.00, media: 1.00 },
-  bold:      { bonus: 0.80, encourage: 0.70, refresh_leave: 0.90, special_treatment: 1.00, party: 1.00, trainer: 1.20, camp: 1.20, media: 1.00 },
-  quiet:     { bonus: 1.00, encourage: 1.20, refresh_leave: 1.10, special_treatment: 1.00, party: 0.70, trainer: 1.00, camp: 0.90, media: 0.60 },
+  normal:    { bonus: 1.00, encourage: 1.00, refresh_leave: 1.00, party: 1.00, trainer: 1.00, camp: 1.00, media: 1.00 },
+  bold:      { bonus: 0.80, encourage: 0.70, refresh_leave: 0.90, party: 1.00, trainer: 1.20, camp: 1.20, media: 1.00 },
+  quiet:     { bonus: 1.00, encourage: 1.20, refresh_leave: 1.10, party: 0.70, trainer: 1.00, camp: 0.90, media: 0.60 },
   // 内気: 個別の静かな声かけが最も響く。宴会・メディアは苦手。外部コーチ・合宿の集団は少し緊張
-  shy:       { bonus: 0.90, encourage: 1.30, refresh_leave: 1.10, special_treatment: 1.00, party: 0.60, trainer: 0.90, camp: 0.90, media: 0.50 },
-  easygoing: { bonus: 1.10, encourage: 1.00, refresh_leave: 1.00, special_treatment: 1.00, party: 1.20, trainer: 0.90, camp: 1.10, media: 1.10 },
-  earnest:   { bonus: 0.90, encourage: 1.20, refresh_leave: 1.10, special_treatment: 1.00, party: 0.90, trainer: 1.30, camp: 1.20, media: 1.00 },
-  emotional: { bonus: 1.30, encourage: 1.40, refresh_leave: 1.20, special_treatment: 1.00, party: 1.10, trainer: 1.00, camp: 1.10, media: 1.20 },
+  shy:       { bonus: 0.90, encourage: 1.30, refresh_leave: 1.10, party: 0.60, trainer: 0.90, camp: 0.90, media: 0.50 },
+  easygoing: { bonus: 1.10, encourage: 1.00, refresh_leave: 1.00, party: 1.20, trainer: 0.90, camp: 1.10, media: 1.10 },
+  earnest:   { bonus: 0.90, encourage: 1.20, refresh_leave: 1.10, party: 0.90, trainer: 1.30, camp: 1.20, media: 1.00 },
+  emotional: { bonus: 1.30, encourage: 1.40, refresh_leave: 1.20, party: 1.10, trainer: 1.00, camp: 1.10, media: 1.20 },
 };
 
-// アーキタイプ × 書類 マトリクス (normal 以外の4種)
+// アーキタイプ × 書類 マトリクス
 // 記載のないアーキタイプ+書類の組合せは 1.00 (影響なし)
 // spec §6.4 を拡張して全書類を扱う
+// care-rework2 P2-F: composed / polite の2行を追加(欠落の補完)。
+// standard は意図的に行を持たない — 平凡さも個性であり、全書類が等倍に響く。
 const DECISION_ARCHETYPE_MULT = {
   ojousama:   { bonus: 0.70, party: 1.00, media: 1.10, camp: 0.80 },       // 金には動じない、合宿は好まない
   delinquent: { bonus: 1.30, party: 1.30, media: 0.80, trainer: 1.10 },    // 金と酒は効く、メディアは嫌う、体育会系は好む
   cool:       { bonus: 0.70, party: 0.60, media: 0.80, encourage: 0.80 },  // 全体的に冷めている
   seductive:  { bonus: 1.00, party: 1.10, media: 1.30, refresh_leave: 1.10 }, // 華やかな場で輝く
+  composed:   { party: 0.80, encourage: 0.90, trainer: 1.15 },             // 宴より稽古が響く
+  polite:     { encourage: 1.15, party: 1.10, bonus: 0.85 },               // 言葉と場が届き、金銭は品に欠ける
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
