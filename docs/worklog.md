@@ -1,5 +1,14 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 数値オーバーホール P3b mainマージ+P4受け入れ完了 — **オーバーホール全工程完了**（2026-08-31・Fable / Keisuke承認）
+
+Keisuke指示「P3bマージ+P4も受け入れて」により、保留していたP3bブランチ(claude/recursing-nash-beea8a)をmainへマージし(d853659)、P4受け入れ検証を実施した。
+
+- **マージ**: src/data.js・src/management.js・test/run-all.jsは自動マージ。衝突はdocs4本(worklog/roadmap/提案書/実機確認バックログ、いずれも追記同士)のみ — 両側の記事を保持して解消
+- **P4受け入れ検証(マージ後mainで一式)**: node --check ok / `test/growth-frac-carry-test.js` **ALL PASS**(F1保存則〜F3自動修正/T1単調性/T3 cap近傍) / `test/balance-baseline.js` **ベースラインから逸脱なし** / npm test **257/257** / auto-sim 40季seed42 **--careなし・--careあり両方ALL CLEAR**(指紋 33a839e4 / 23b5aedf)
+- これで数値オーバーホールは**P0〜P3b+P4受け入れの全工程完了**。残: 実機確認のみ(バックログ§P3b「成長の端数持ち越し化」3項目)
+- **併せてリポジトリ棚卸し(同日)**: 社長室仕様書ブランチもマージ(e668167) / 中身ゼロを検証した空スタッシュ1本(08-01遺物)をdrop / マージ済みworktree 8つを除去(trusting-volhardのみ別プロセスがフォルダを掴んでおり空フォルダの残骸が残存・git登録は解除済み) / マージ済みブランチを削除。未マージで意図的に残すのは codex系3本(技画像パイプライン・Codex作業場)のみ
+
 ## 社長室の画面仕様書(03-screens/shachoshitsu.md)を新規作成 — 現物合わせの現状仕様化（2026-08-31・Fable）
 
 care-rework2 P3実装時の判断②(08-30)で別タスク化されていた宿題。社長室は階層3制度(2026-04)より古く画面仕様書が無いまま、決裁机の朱印残置・⚡可視化・招聘市場常設パネル(task-99〜102)などUIが積み上がっていたため、`docs/ui/03-screen-template.md` に沿って1枚書いた。**リデザイン提案ではなく現状の記録**(冒頭に性格を明記。数値・力学の正はspecs側と切り分け)。
