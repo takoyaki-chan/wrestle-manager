@@ -22911,8 +22911,15 @@ Engine.shachoshitsu = {
   },
 
   // §1.1: 起案4案 = 基準額×{0.5, 1.0, 2.0, 3.0}。50万単位(1000万超は100万単位)に
-  // 丸め、±10%ノイズで式を透けさせない。ノイズは (season, week, fighterId) 固定シード
+  // 丸め、ノイズで式を透けさせない。ノイズは (season, week, fighterId) 固定シード
   // 由来 — 書類を開き直しても4案は変わらない(リロール防止)。
+  //
+  // care-rework2 P2-E: ノイズ幅 ±10% → ±22%。
+  // ±10%では案と効果帯の対応が学習後に決定論化し、4案がただの予算スライダーに
+  // なっていた。±22%にすると案1(r0.39〜0.61)がinsult/token境界0.4を、
+  // 案2(r0.78〜1.22)がtoken/fair境界0.8を跨ぐ — 安い案は賭けになる。
+  // 効果帯の判定は「実際に払った額のr」のまま = 数値は嘘をつかない。
+  // 基準倍率{0.5,1.0,2.0,3.0}・丸め規則・下限50万・insultMaxは不変。
   getBonusProposals(fighter, state) {
     const base = Engine.shachoshitsu.getBonusBaseAmount(fighter, state);
     const rng = Engine.rng.create(Engine.rng.derive(
@@ -22920,7 +22927,7 @@ Engine.shachoshitsu = {
     ));
     const proud = Engine.shachoshitsu.isProudFighter(fighter);
     return [0.5, 1.0, 2.0, 3.0].map((mult, idx) => {
-      const noisy = base * mult * (0.9 + Engine.rng.float(rng) * 0.2);
+      const noisy = base * mult * (0.78 + Engine.rng.float(rng) * 0.44);
       const unit = noisy > 1000 ? 100 : 50;
       const amount = Math.max(50, Math.round(noisy / unit) * unit);
       const r = base > 0 ? amount / base : 0;
