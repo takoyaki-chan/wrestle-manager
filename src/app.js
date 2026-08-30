@@ -10850,6 +10850,37 @@ const App = {
     if (pendingResolutions.length > 0) {
       popupActions.push(done => showRivalryPopups(pendingResolutions, done));
     }
+    // care-rework2 P2-G: 起用約束の結果(履行/破約)を1枚だけ。
+    // 判定は上の tickWeek(エンジン側)で済んでおり、ここは表示のみ。
+    // 失効は _pendingPledgeResult に載らないので、静かに消えたまま何も出ない。
+    if (G._pendingPledgeResult && G._pendingPledgeResult.fighterId != null) {
+      const pr = G._pendingPledgeResult;
+      G = { ...G }; delete G._pendingPledgeResult;
+      const pf = (G.roster || []).find(f => f.id === pr.fighterId);
+      if (pf) {
+        popupActions.push(done => {
+          const kept = pr.outcome === 'kept';
+          showDecisionResultModal({
+            fighter: pf,
+            text: pickPledgeLine(kept ? 'kept' : 'broken', pf),
+            changes: [{
+              label: '本人の様子', emoji: '💭',
+              text: kept
+                ? '約束どおり最後の一戦を任され、応えるだけの顔をしている'
+                : '約束された場に立てず、その事実を飲み込めずにいる',
+            }],
+            cost: 0,
+            remainingFunds: G.funds,
+            icon: '🤝',
+            label: kept ? '約束を果たした' : '約束を破った',
+            docId: 'pledge',
+            reactionTone: null,
+          });
+          // showDecisionResultModal は done を持たない単発モーダルなので即座に次へ繋ぐ
+          if (done) done();
+        });
+      }
+    }
     // R3反応モーダル（bond 75+ 仲間の別れリアクション）は本人引退ポップアップの後に出す。
     // 旧実装は独立 setTimeout(800) で発火していたため、本人ポップアップが遅延すると
     // R3 が先に開いて本人ポップアップが出ない/見落とされる事故が発生していた。
@@ -14317,6 +14348,79 @@ const App = {
       docId: 'encourage',
       // Phase 8: 不確実性トーンマーカー (encourage も個人書類)
       reactionTone: result.reactionTone || null,
+    };
+    Audio.play('notify');
+    if (typeof showDecisionResultModal === 'function') {
+      showDecisionResultModal(displayData);
+    }
+    if (typeof refreshAll === 'function') refreshAll();
+  },
+
+  // care-rework2 P2-G: 選手ポップアップから「🤝 起用を約束する」(pledge)
+  // 強気(bold)の選手だけに出る。⚡1・費用0・選手単位CD16週・同時1件。
+  // ここでは trust を動かさない — 約束を交わすだけで、効くのは次の通常興行で
+  // 果たしたとき(履行)/果たさなかったとき(破約)。判定はエンジン側(tickWeek)。
+  pledgeFighter(fighterId) {
+    const target = G.roster.find(f => f.id === fighterId);
+    if (!target) { showToast('選手が見つかりません'); return; }
+    if (target.isRental || target.injury) { showToast('今は約束できない'); return; }
+    if (String(target.personality || 'normal') !== 'bold') {
+      showToast('この選手に響くやり方ではない');
+      return;
+    }
+    if (G.pledge && G.pledge.fighterId != null) {
+      const holder = G.roster.find(f => f.id === G.pledge.fighterId);
+      showToast(holder ? `すでに${holder.name}と約束がある` : 'すでに約束がある');
+      return;
+    }
+    // cooldown チェック(選手単位・16週)
+    const lastUsed = (target._decisionWeekUsed || {}).pledge || -99;
+    if ((G.week - lastUsed) < (PLEDGE_COOLDOWN_WEEKS || 16)) {
+      showToast('この選手にはしばらく約束できない');
+      return;
+    }
+
+    const result = Engine.shachoshitsu.execute('pledge', fighterId, G);
+    if (!result || result.error) {
+      const msg = {
+        doc_not_found: 'この行動は現在利用できません',
+        fighter_not_found: '選手が見つかりません',
+        not_bold: 'この選手に響くやり方ではない',
+        pledge_exists: 'すでに約束がある',
+        cooldown: 'この選手にはしばらく約束できない',
+        on_leave: '休暇中の選手には約束できない',
+        offseason_locked: 'オフシーズンには約束できない',
+        decision_points_insufficient: '決裁枠が不足しています(必要: ⚡1)',
+      }[result?.error] || '失敗しました';
+      showToast(msg);
+      return;
+    }
+
+    G = { ...G,
+      roster: result.roster,
+      funds: result.funds,
+      decisionPoints: result.decisionPoints != null ? result.decisionPoints : G.decisionPoints,
+      _decisionWeekUsed: result._decisionWeekUsed || G._decisionWeekUsed || {},
+      gameLog: [...(G.gameLog || []), ...(result.events || [])],
+    };
+    if (result.pledge) G = { ...G, pledge: result.pledge };
+    Storage.autoSave();
+
+    // 選手ポップアップを閉じてから結果モーダルを出す(声かけと同じ流れ)
+    if (typeof closeFighterPopup === 'function') closeFighterPopup();
+
+    const doc = Engine.shachoshitsu.getDoc('pledge');
+    const fighter = G.roster.find(f => f.id === fighterId);
+    const text = fighter ? pickPledgeLine('accept', fighter) : '';
+    const displayData = {
+      fighter, text,
+      changes: [{ label: '約束', emoji: '🤝', text: '次の通常興行のメインで使うと伝えた' }],
+      cost: 0,
+      remainingFunds: G.funds,
+      icon: doc?.icon || '🤝',
+      label: doc?.label || '起用の約束',
+      docId: 'pledge',
+      reactionTone: null,
     };
     Audio.play('notify');
     if (typeof showDecisionResultModal === 'function') {

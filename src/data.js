@@ -19171,7 +19171,7 @@ const DECISION_DOCS = {
     cooldown: 16,
     body: '次の通常興行のメインで使うと本人に約束する',
     detailText: '言葉ではなく試合で応えるタイプの選手に、次の通常興行のメインイベントで使うと約束する。カード編成は縛られない — 約束を守るも破るも社長の判断。',
-    effectSummary: 'メインで起用すれば強く応える。約束を破れば信頼を失う',
+    effectSummary: 'メインで起用すれば強く応える。果たせなければ、しこりが残る',
     recommendation: '強気な選手のポップアップから実行する。机には並ばない。',
     effect: { target: 'individual' },
   },

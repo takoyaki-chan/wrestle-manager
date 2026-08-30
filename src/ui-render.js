@@ -3007,6 +3007,33 @@ function renderShowPrep() {
     }
   }
 
+  // care-rework2 P2-G: 起用約束の予約印。
+  // 社長が約束を忘れてカードを組み、知らないうちに破約する理不尽を作らないための表示。
+  // 編成はロックしない — 破る自由を残すことが、この約束を意思決定にしている。
+  // メイン = カードの先頭枠(showCard[0])。
+  if (G.pledge && G.pledge.fighterId != null) {
+    const pf = (G.roster || []).find(c => c.id === G.pledge.fighterId);
+    if (pf) {
+      const mainSlot = (G.showCard || [])[0];
+      const inMain = !!(mainSlot && (mainSlot.matchType === 'tag'
+        ? [mainSlot.teamA?.fighter1, mainSlot.teamA?.fighter2, mainSlot.teamB?.fighter1, mainSlot.teamB?.fighter2].includes(pf.id)
+        : (mainSlot.left === pf.id || mainSlot.right === pf.id)));
+      const regular = Engine.util.isRegularShowWeek(G.week);
+      const pledgeStatus = !regular
+        ? '⚠ 特別興行につき今回は判定されません（次の通常興行へ持ち越し）'
+        : inMain
+          ? '✓ メインに組まれています'
+          : 'メイン（先頭の枠）に組まなければ、約束を破ったことになります';
+      html += `<div class="panel" style="border:1px solid var(--gold);margin-bottom:14px">
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">🤝 起用の約束</div>
+        <div style="font-size:12px;color:var(--text-sub);line-height:1.6">
+          <strong>${escHtml(pf.name)}</strong> をメインで使うと約束している — 組むかどうかは社長次第<br>
+          <span style="color:${regular && inMain ? '#7bc46c' : 'var(--text-sub)'}">${escHtml(pledgeStatus)}</span>
+        </div>
+      </div>`;
+    }
+  }
+
   // L1: 会場選択（全会場選択可能・リスク指標付き）
   html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
   const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);

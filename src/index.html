@@ -5098,6 +5098,32 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .fp-encourage-btn.is-done:hover{background:rgba(120,100,80,0.12);
   transform:none;box-shadow:none}
 
+/* ─── care-rework2 P2-G: 選手ポップアップ「起用を約束する」アクションバー ─── */
+/* 強気(bold)の選手にだけ出る。声かけバーの下に並ぶので、温度感(橙/緑)とは
+   別の色域=金で「約束」を表す。脈動はさせない — 危機の訴えではなく、
+   社長が差し出す取引なので静かに置く(01-foundations 原則11: 赤/橙は開戦級専用)。 */
+.fp-pledge-bar{display:flex;align-items:center;gap:14px;padding:12px 18px;
+  background:linear-gradient(90deg,rgba(var(--gold-rgb),0.12) 0%,rgba(var(--gold-rgb),0.05) 60%,rgba(var(--gold-rgb),0.02) 100%);
+  border-top:1px solid rgba(var(--gold-rgb),0.28);
+  border-bottom:1px solid rgba(var(--gold-rgb),0.28)}
+.fp-pledge-reason{flex:1;font-size:13px;line-height:1.5;font-style:italic;
+  letter-spacing:0.3px;color:var(--gold);text-shadow:0 1px 2px rgba(0,0,0,0.5)}
+.fp-pledge-btn{flex-shrink:0;font-size:14px;font-weight:700;padding:10px 22px;
+  border-radius:6px;cursor:pointer;font-family:'Noto Sans JP',sans-serif;
+  letter-spacing:0.5px;transition:all 0.2s;text-shadow:0 1px 2px rgba(0,0,0,0.5);
+  background:linear-gradient(135deg,rgba(var(--gold-rgb),0.28) 0%,rgba(var(--gold-rgb),0.12) 100%);
+  color:var(--gold);border:1.5px solid rgba(var(--gold-rgb),0.6)}
+.fp-pledge-btn:hover{
+  background:linear-gradient(135deg,rgba(var(--gold-rgb),0.45) 0%,rgba(var(--gold-rgb),0.20) 100%);
+  border-color:rgba(var(--gold-rgb),0.9);transform:scale(1.03);
+  box-shadow:0 6px 20px rgba(var(--gold-rgb),0.4)}
+/* 約束済み / CD中 / 枠不足 — 押せない状態は理由をそのままラベルにする */
+.fp-pledge-btn.is-done{background:rgba(120,100,80,0.12);color:var(--text-dim);
+  border:1px solid rgba(120,100,80,0.3);cursor:default;
+  font-weight:500;font-size:13px;padding:8px 18px}
+.fp-pledge-btn.is-done:hover{background:rgba(120,100,80,0.12);
+  transform:none;box-shadow:none;border-color:rgba(120,100,80,0.3)}
+
 /* ============================================================
    派閥イベント F01〜F05 シネマティックオーバーレイ
    ポート元: docs/ui/mockups/faction-events.html

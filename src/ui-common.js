@@ -4096,6 +4096,46 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       </div>`;
     }
 
+    // ── care-rework2 P2-G: 起用を約束する(強気の選手のみ) ──
+    // 強気の選手には声かけが響かない(×0.70)。言葉ではなく試合で応える型なので、
+    // 「次の通常興行のメインで使う」と約束する経路をここに置く。
+    // 声かけ自体は残す — 効かない選択をすることも社長の学びのうち。
+    const isBold = String(c.personality || 'normal') === 'bold';
+    const canPledge = isRoster && !c.isRental && !c.injury && !c.onLeave && isBold
+      && (typeof G !== 'undefined') && !G.offSeason;
+    if (canPledge) {
+      const pledgeCd = (typeof PLEDGE_COOLDOWN_WEEKS !== 'undefined') ? PLEDGE_COOLDOWN_WEEKS : 16;
+      const pledgeLastWeek = (c._decisionWeekUsed || {}).pledge || -99;
+      const pledgeOnCd = (G.week - pledgeLastWeek) < pledgeCd;
+      const activePledge = G.pledge && G.pledge.fighterId != null ? G.pledge : null;
+      const pledgedSelf = activePledge && activePledge.fighterId === c.id;
+      const pledgedOther = activePledge && activePledge.fighterId !== c.id;
+      const otherName = pledgedOther
+        ? ((G.roster || []).find(f => f.id === activePledge.fighterId) || {}).name || ''
+        : '';
+      const dpShort = (G.decisionPoints || 0) < 1;
+
+      let pledgeBtn;
+      if (pledgedSelf) {
+        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 次の通常興行のメインを約束済み</span>`;
+      } else if (pledgedOther) {
+        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 ${escHtml(otherName)}と約束中</span>`;
+      } else if (pledgeOnCd) {
+        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 しばらくは約束できない</span>`;
+      } else if (dpShort) {
+        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 決裁枠が足りない</span>`;
+      } else {
+        pledgeBtn = `<button class="fp-pledge-btn" onclick="App.pledgeFighter(${c.id})" title="次の通常興行のメインで使うと約束する(決裁枠⚡1・費用なし)。カード編成は縛られない">🤝 起用を約束する</button>`;
+      }
+      const pledgeReason = pledgedSelf
+        ? 'この約束は、次の通常興行のメインで果たされる。'
+        : '言葉より、試合で応えるタイプだ。';
+      html += `<div class="fp-pledge-bar">
+        <div class="fp-pledge-reason">${pledgeReason}</div>
+        ${pledgeBtn}
+      </div>`;
+    }
+
     // ── 相関図ボタン(全キャラ共通) ──
     // 契約更新交渉中・解雇面談中は社長室から動けない(showScreen がブロックする)。
     // そのまま出すと**押しても何も起きないボタン**になるので、その間は出さない。
