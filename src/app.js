@@ -6407,7 +6407,10 @@ const App = {
 
   // Set show card slot
   setShowCardSlot(slotIndex, side, newId) {
-    if (G.showCard?.[slotIndex]?._crMatchLocked || G.showCard?.[slotIndex]?._unifiedTitleLocked) {
+    if (G.showCard?.[slotIndex]?._unifiedTitleLocked) {
+      Audio.play('error'); showToast('🌐 全国統一王座戦の対戦者は固定です', 3000); return;
+    }
+    if (G.showCard?.[slotIndex]?._crMatchLocked) {
       Audio.play('error'); showToast('⚔ 挑戦試合の上位3枠は固定です', 3000); return;
     }
     newId = +newId;
@@ -8535,8 +8538,8 @@ const App = {
       }
     }
 
-    // v1.2: タイトルマッチ実施時に絶対週数を記録
-    const executedTitleMatch = validMatches.some(m => m.isTitle);
+    // v1.2: タイトルマッチ実施時に絶対週数を記録(統一王座戦は自団体王座のクールダウンを消費しない)
+    const executedTitleMatch = validMatches.some(m => m.isTitle && !m._unifiedTitleMatch);
     const lastTitleMatchWeek = executedTitleMatch
       ? Engine.title.getAbsWeek(s)
       : (s.lastTitleMatchWeek ?? null);
@@ -12353,8 +12356,12 @@ const App = {
     refreshAll();
 
     if (aiAlerts.length > 0) {
-      // ポップアップ解消待ちには時限保険を必ず併設する。キュー側の callback が失われても
-      // 表彰式の予約へ進め、年末進行を永久停止させない。
+      // ポップアップ解消待ちには時限保険を必ず併設する(§5-D 鉄則1)。ただし旧実装のように
+      // 保険から式典チェーンを**直接開始**すると、ユーザーが画面移動でアラートを畳んだ後、
+      // ログ・ランキング・新聞を閲覧中に無操作で式典が頭上に被さる(v1.31「勝手に始まる」報告)。
+      // 保険は「式典待ち」の記帳(_annualAwardsCeremonyPending)までにとどめ、実際に開くのは
+      // 既存の復旧機構(_guardAwardsStage → _resumeInterruptedAnnualAwards)が
+      // 次のユーザー操作(画面遷移・週送り)のタイミングで行う。進行保証は変わらない。
       let awardsChainStarted = false;
       const startAwardsChain = () => {
         if (awardsChainStarted) return;
@@ -12362,12 +12369,25 @@ const App = {
         App._safeAwardsChain();
       };
       showAIGrowthAlerts(aiAlerts, startAwardsChain);
-      setTimeout(() => {
-        if (!awardsChainStarted) {
-          console.warn('[WM] awards chain safety net fired — continuing without popup callback');
-          startAwardsChain();
+      const armPendingCeremony = () => {
+        if (awardsChainStarted) return;
+        if (typeof _isPopupActive === 'function' && _isPopupActive()) {
+          // アラートをまだ読んでいる(コールバックは生きている)。保険だけ延長する。
+          setTimeout(armPendingCeremony, 4000);
+          return;
         }
-      }, Math.max(8000, aiAlerts.length * 4000));
+        console.warn('[WM] awards chain callback lost — ceremony pending, resumes on next interaction');
+        awardsChainStarted = true; // 遅れて届いた旧コールバックからの二重開始を防ぐ
+        G = {
+          ...G,
+          _annualAwardsCeremonyPending: {
+            season: G.pendingAwards?.season || G.season,
+            recoveredFrom: 'aiAlertsCallbackLost',
+          },
+        };
+        try { Storage.autoSave(); } catch (_e) {}
+      };
+      setTimeout(armPendingCeremony, Math.max(8000, aiAlerts.length * 4000));
     } else {
       // v1.4: 引退者なしでも新聞パネル→エンディングチェック→表彰式チェック
       App._safeAwardsChain();

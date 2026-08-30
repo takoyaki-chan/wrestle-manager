@@ -23,8 +23,15 @@ assert.ok(/showAIGrowthAlerts\(aiAlerts, startAwardsChain\);/.test(advance),
   'AI成長ポップアップの完了後に表彰式チェーンを開始する');
 assert.ok(/let awardsChainStarted = false;[\s\S]*?if \(awardsChainStarted\) return;[\s\S]*?App\._safeAwardsChain\(\);/.test(advance),
   '通常完了と保険発火が表彰式チェーンを二重起動しない');
-assert.ok(/setTimeout\(\(\) => \{[\s\S]*?awards chain safety net fired[\s\S]*?startAwardsChain\(\);[\s\S]*?\}, Math\.max\(8000, aiAlerts\.length \* 4000\)\);/.test(advance),
-  'ポップアップ解消待ちのコールバックに時限保険がある');
+// 時限保険は「式典待ちの記帳」まで。旧実装のように保険から式典チェーンを直接開始すると、
+// ユーザーがログ・ランキング・新聞を閲覧中に無操作で式典が被さる(v1.31「勝手に始まる」報告)。
+// 実際に開くのは _guardAwardsStage → _resumeInterruptedAnnualAwards が次のユーザー操作で行う。
+assert.ok(/const armPendingCeremony = \(\) => \{[\s\S]*?_annualAwardsCeremonyPending:[\s\S]*?setTimeout\(armPendingCeremony, Math\.max\(8000, aiAlerts\.length \* 4000\)\);/.test(advance),
+  'ポップアップ解消待ちのコールバックに時限保険(式典待ちの記帳)がある');
+assert.ok(!/awards chain safety net fired/.test(advance),
+  '時限保険が式典チェーンを直接開始している(閲覧中に式典が勝手に始まる旧実装)');
+assert.ok(/if \(typeof _isPopupActive === 'function' && _isPopupActive\(\)\)/.test(advance),
+  'アラートをまだ読んでいる間(コールバック生存中)は保険を延長せず記帳してしまう');
 
 const finish = app.indexOf('const finishAwardsCeremony = () => {');
 const report = app.indexOf('_showFarewellsThenReport()', finish);

@@ -3078,11 +3078,17 @@ function renderShowPrep() {
 
   // Sanitize stale IDs (released/retired/transferred wrestlers still in card)
   // forcedRest（S3休養願い承認）の選手も除外
+  // 来訪選手(統一王座の挑戦者/B3の挑戦者)は自ロスターに居ないが有効なID。
+  // ここで除外すると統一王座枠が毎描画で0埋めされ、枠ずれの起点になる(v1.31報告)
   {
     const scheduledCR = getScheduledChallengeCard();
+    const scheduledSingle = Engine.challengeRequest?.getScheduledSingleChallenge?.(G);
+    const unifiedIncoming = Engine.unifiedTitle?.getIncomingMatch?.(G);
     const rosterMap = new Map([
       ...G.roster,
       ...(scheduledCR ? [...scheduledCR.teamA, ...scheduledCR.teamB] : []),
+      ...(scheduledSingle ? [scheduledSingle.playerFighter, scheduledSingle.challenger].filter(Boolean) : []),
+      ...(unifiedIncoming ? [unifiedIncoming.champion, unifiedIncoming.challenger].filter(Boolean) : []),
     ].map(c => [c.id, c]));
     let dirty = false;
     const _isOk = id => { const f = rosterMap.get(id); return id > 0 && f && !f.forcedRest; };
@@ -3103,6 +3109,21 @@ function renderShowPrep() {
         isTitle: !!m.isTitle && leftOk && rightOk };
     });
     if (dirty) G = { ...G, showCard: cleaned };
+  }
+
+  // ── 統一王座の孤児ロック解除: 予約マーカーを失った枠にロックだけ残ると
+  // 「動かせない空白枠」になる(〜v1.31の枠ずれバグが生成した残骸の救済) ──
+  {
+    let hadOrphan = false;
+    const healed = G.showCard.map(m => {
+      if (m && m._unifiedTitleLocked && !m._unifiedTitleMatch) {
+        hadOrphan = true;
+        const { _unifiedTitleLocked, ...rest } = m;
+        return rest;
+      }
+      return m;
+    });
+    if (hadOrphan) G = { ...G, showCard: healed };
   }
 
   // ── F08 ロック解除: ディレクティブが存在しないならロック flag を全スロットでクリア ──
@@ -3324,12 +3345,10 @@ function renderShowPrep() {
     if (scheduled) {
       scheduledUnifiedNotice = scheduled;
       if (!(G.showCard || []).some(m => m && m._unifiedTitleMatch)) {
-        const cleared = Engine.challengeRequest?.removeFightersFromCard
-          ? Engine.challengeRequest.removeFightersFromCard(G.showCard, [scheduled.championId, scheduled.challengerId])
-          : G.showCard;
-        const slot = { left: scheduled.championId, right: scheduled.challengerId, isTitle: true,
-          _unifiedTitleMatch: true, _unifiedTitleLocked: true };
-        G = { ...G, showCard: Engine.util.normalizeShowCardForVenue([slot, ...cleared], G.week, G.showVenue) };
+        // 予約枠の組み直しは stageIncomingUnifiedTitleCard に一本化。
+        // 旧実装は「枠を残す」removeFightersFromCard で0埋めしていたため、
+        // 操作のたびに空白枠が増えて全試合が1枠下にずれていた(v1.31報告)
+        stageIncomingUnifiedTitleCard();
       }
     } else {
       G = { ...G, _pendingUnifiedIncomingMatch: null,

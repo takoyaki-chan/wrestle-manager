@@ -2339,7 +2339,8 @@ const Engine = {
           const right = slot.right || 0;
           const allowed = !titleAssigned && left > 0 && right > 0 && left !== right
             && unifiedChampId != null && (left === unifiedChampId || right === unifiedChampId);
-          if (!allowed) return { ...slot, isTitle: false, _unifiedTitleMatch: false };
+          // 無効化時はロックも一緒に落とす。マーカーだけ剥がすと「動かせない空白枠」が残る(v1.31枠ずれ報告)
+          if (!allowed) return { ...slot, isTitle: false, _unifiedTitleMatch: false, _unifiedTitleLocked: false };
           titleAssigned = true;
           return { ...slot, isTitle: true, _unifiedTitleLocked: true };
         }

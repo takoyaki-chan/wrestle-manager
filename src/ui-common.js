@@ -3393,7 +3393,9 @@ function _awCreateInputGate(advance, options = {}) {
       if (!isAdvanceKey(e)) return;
       e.preventDefault();
       // 表彰式を開いた元ボタンで押されたキーのkeyupだけが飛んできた場合は無視する。
-      if (!keyHeld) return;
+      // ただし抑止は必ず解く: repeat中のkeydownがkeyHeldを立てないままInfinityを
+      // 積んでいると、ここで解かない限りクリックが恒久的に握り潰される
+      if (!keyHeld) { suppressClickUntil = now() + 180; return; }
       keyHeld = false;
       suppressClickUntil = now() + 180;
       requestAdvance();
@@ -3665,6 +3667,12 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   try { btnNext.focus({ preventScroll: true }); } catch (_e) { try { btnNext.focus(); } catch (__e) {} }
   headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[0].label;
   if (headerSection) headerSection.textContent = slideInfo[0].section || '';
+  // #aw-btn-next は静的DOMの使い回し。前回の finishCeremony が残した disabled と
+  // 「✕ 閉じる」文言をここで必ず初期化する。これが無いとセッション2年目以降の式典が
+  // 押せないボタンで開いて進行不能になる(v1.31報告・リロードで直るのは静的DOMだから)
+  btnNext.disabled = false;
+  btnNext.classList.remove('disabled');
+  btnNext.textContent = TOTAL === 1 ? '✕ 閉じる' : '次へ　→';
 
   // 冒頭ファンファーレSE
   setTimeout(() => _awPlayFanfare(), 1000);
@@ -4722,7 +4730,12 @@ function moveShowCard(idx, dir) {
   if (target < 0 || target >= G.showCard.length) return;
   // メインイベント(位置0)にタッグ枠を移動させない
   const card = [...G.showCard];
-  if (card[idx]?._crMatchLocked || card[target]?._crMatchLocked || card[idx]?._unifiedTitleLocked || card[target]?._unifiedTitleLocked) {
+  if (card[idx]?._unifiedTitleLocked || card[target]?._unifiedTitleLocked) {
+    Audio.play('error');
+    showToast('🌐 全国統一王座戦の枠は固定です', 3000);
+    return;
+  }
+  if (card[idx]?._crMatchLocked || card[target]?._crMatchLocked) {
     Audio.play('error');
     showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
     return;
@@ -4882,6 +4895,9 @@ function autoFillCardByDraw() {
 // ── 自動編成共通: メインイベントのタイトルマッチ判定 ──
 function _applyAutoTitleMatch(card) {
   if (!card.length || !G.titleEstablished) return;
+  // 統一王座戦のある興行には自団体王座戦を同居させない(sanitizeShowCardTitlesと同じ制約)。
+  // ここで組んでも開催時に無言で剥がされ、「チェックしたのに実施されない」体感を作る
+  if (card.some(m => m && (m._unifiedTitleMatch || m._unifiedTitleLocked))) return;
   const cdOk = Engine.title.canTitleMatch(G).allowed;
   if (!cdOk) return;
   const topRegularIdx = card.findIndex(m => m && !m._crMatchLocked && !m.isCRMatch
@@ -4925,6 +4941,13 @@ function toggleTitle(slotIndex) {
   const m = G.showCard[slotIndex];
   // v1.2: タイトルONにする場合のみクールダウンチェック（OFFにする場合はスキップ）
   if (!m.isTitle) {
+    // 統一王座戦のある興行では自団体王座戦は開催不可。従来は開催処理のサニタイズが
+    // 無言でチェックを剥がしていたため「実施されなかった」ように見えた(v1.31報告)。
+    // ここで理由を出して弾く
+    if ((G.showCard || []).some(s => s && s._unifiedTitleMatch)) {
+      alert('全国統一王座戦のある興行では、団体王座戦は同時開催できません');
+      return;
+    }
     const cd = Engine.title.canTitleMatch(G);
     if (!cd.allowed) { alert(`タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）`); return; }
     // Rental restriction
@@ -15944,6 +15967,8 @@ function showEndingCeremony(data, onDone) {
 
   // 表示開始
   headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[0].label;
+  btnNext.disabled = false;
+  btnNext.classList.remove('disabled');
   btnNext.textContent = '次へ　→';
   overlay.classList.add('active');
 
@@ -16229,6 +16254,8 @@ function showGameOverCeremony(data, onDone) {
   btnNext.onclick = nextSlide;
 
   headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[0].label;
+  btnNext.disabled = false;
+  btnNext.classList.remove('disabled');
   btnNext.textContent = '次へ　→';
   overlay.classList.add('active');
 }

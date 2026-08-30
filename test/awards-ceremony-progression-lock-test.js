@@ -82,6 +82,15 @@ const activeAt = ceremony.indexOf("overlay.classList.add('active');");
 const focusAt = ceremony.indexOf('btnNext.focus({ preventScroll: true })');
 assert.ok(activeAt >= 0 && focusAt > activeAt,
   '表彰式を開いた後、背面の週送りから「次へ」へフォーカスを移していない');
+// #aw-btn-next は静的DOMの使い回しで、finishCeremony が disabled=true を残す。
+// 開くときに解除しないと、セッション2年目以降の式典が押せない「✕ 閉じる」ボタンで
+// 開いて進行不能になる(v1.31実機報告)。
+assert.ok(ceremony.indexOf('btnNext.disabled = false;', activeAt) > activeAt,
+  '式典を開くときに前回の式典が残した disabled を解除していない');
+assert.ok(ceremony.indexOf("btnNext.classList.remove('disabled')", activeAt) > activeAt,
+  '式典を開くときに .disabled クラスを剥がしていない');
+assert.ok(/btnNext\.textContent = TOTAL === 1 \? '✕ 閉じる' : '次へ　→';/.test(ceremony.slice(activeAt)),
+  '式典を開くときにボタン文言を初期スライド用に戻していない');
 
 const showScreen = uiFunction('showScreen');
 assert.ok(showScreen.indexOf("App._guardAwardsStage('showScreen:' + id)") < showScreen.indexOf('dismissAllPopups()'),
@@ -157,5 +166,16 @@ assert.strictEqual(advances, 1, '短時間のダブルクリックで二重に�
 clock = 321;
 gate.onClick({ preventDefault() {} });
 assert.strictEqual(advances, 2, '独立した次のクリックまで拒否している');
+
+// フォーカス移動の途中で repeat 中の keydown から始まった場合(押下の追跡が無い)でも、
+// keyup で抑止(Infinity)を必ず解くこと。解かないと以後のクリックが blur まで
+// 恒久的に握り潰される(v1.31「閉じるが効かない」の副要因)。
+clock = 1000;
+gate.onKeyDown(keyEvent(true));
+gate.onKeyUp(keyEvent());
+assert.strictEqual(advances, 2, '追跡外のkeyupで進んでしまう');
+clock = 1200;
+gate.onClick({ preventDefault() {} });
+assert.strictEqual(advances, 3, 'repeat開始のkeydown後、クリックが恒久的に握り潰される');
 
 console.log('awards-ceremony-progression-lock-test: ok');

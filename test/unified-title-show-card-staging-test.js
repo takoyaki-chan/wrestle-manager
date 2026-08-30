@@ -82,4 +82,32 @@ const insert = app.indexOf('[scheduled.slot, ...cleared]', reservation);
 assert.ok(reservation >= 0 && insert > reservation, '確定時の統一王座枠が二重挿入される');
 assert.ok(app.includes("stageIncomingUnifiedTitleCard === 'function'"), '全クリアで統一王座の予約枠まで消える');
 
+// 予約が無効化されたら、マーカーとロックを両方落とす。片方だけ残すと
+// 「動かせない空白枠」が生まれ、操作のたびに枠が1つずつずれる(v1.31報告)。
+{
+  const state = { unifiedTitle: { championId: 1, orgId: 'player' }, roster: [], titles: { world: { championId: null } } };
+  const card = [{ left: 1, right: 0, isTitle: true, _unifiedTitleMatch: true, _unifiedTitleLocked: true }];
+  const out = Engine.title.sanitizeShowCardTitles(state, card);
+  assert.ok(!out[0]._unifiedTitleMatch && !out[0]._unifiedTitleLocked && !out[0].isTitle,
+    '無効化された統一王座枠にロック/マーカーが残る');
+}
+
+// renderShowPrep 内の第3の挿入パスは stageIncomingUnifiedTitleCard に一本化されている。
+// 旧実装(「枠を残す」removeFightersFromCard による0埋め+先頭差し込み)は空白枠を増殖させた。
+const render = fs.readFileSync(path.join(root, 'src', 'ui-render.js'), 'utf8').replace(/\r\n/g, '\n');
+assert.ok(!render.includes('removeFightersFromCard(G.showCard, [scheduled.championId'),
+  'renderShowPrep が「枠を残す」削除で統一枠を挿入している(空白枠が増殖する旧実装)');
+assert.ok(render.includes('stageIncomingUnifiedTitleCard();'),
+  'renderShowPrep の統一枠挿入が stageIncomingUnifiedTitleCard に一本化されていない');
+
+// 統一王座戦は自団体王座のクールダウンを消費しない。エンジン(management.js)と
+// UIミラー(app.js)の判定式は同一であること(v1.31: app.js側だけ除外漏れで、
+// 統一戦をやっただけで12週クールタイムが消費されていた)。
+const mgmt = fs.readFileSync(path.join(root, 'src', 'management.js'), 'utf8').replace(/\r\n/g, '\n');
+const cdExpr = 'validMatches.some(m => m.isTitle && !m._unifiedTitleMatch)';
+assert.ok(app.includes(cdExpr), 'app.js の executedTitleMatch が統一王座戦を除外していない');
+assert.ok(mgmt.includes(cdExpr), 'management.js の executedTitleMatch が統一王座戦を除外していない');
+assert.ok(!app.includes('validMatches.some(m => m.isTitle);'),
+  'app.js に統一王座戦を除外しない旧 executedTitleMatch が残っている');
+
 console.log('unified-title-show-card-staging-test: ok');

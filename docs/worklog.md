@@ -1,5 +1,16 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## v1.31実機バグ報告(アンケート最新・salone氏)の4件修正 — 表彰式進行不能/勝手に開始/統一王座週の枠ずれ/王座クールタイム誤消費（2026-08-30・Fable直実装）
+
+Googleフォーム最新回答(08-29・v1.31/Chrome)の進行系4バグ。Explore 3並行調査で全て根本原因を特定してから修正。
+
+- **①年間表彰式が2年目以降「✕ 閉じる」表示の押せないボタンで開き進行不能**(リロード+ロードで復帰、多くの年で発生): `#aw-btn-next`は静的DOM使い回しで、`finishCeremony`が立てる`disabled=true`と文言を**次の開扉時に誰もリセットしていなかった**(2026-08-03の連打対策`559be4d`で導入した`disabled=true`の対が無いまま残存)。開扉時に`disabled=false`+`.disabled`除去+文言初期化を追加(`ui-common.js` showAwardsCeremony)。同じボタンを共有するエンディング/ゲームオーバー式典にも同じ対を追加。副要因の入力ゲート抑止漏れ(repeat開始keydownで`suppressClickUntil=Infinity`が残留しblurまで全クリック握り潰し)も修正
+- **②オフシーズン0/4で放置すると5〜10秒で勝手に表彰式が始まる**: AIアラート待ちの**最短8秒保険タイマーが式典チェーンを直接開始**していた(画面移動で`dismissAllPopups`が`_popupQueue`ごとコールバックを廃棄→タイマーだけ発火→閲覧中の画面に式典が被さる)。保険を「式典待ちの記帳(`_annualAwardsCeremonyPending`)+autoSave」までに変更し、実際に開くのは既存復旧機構(`_guardAwardsStage`→`_resumeInterruptedAnnualAwards`)が**次のユーザー操作**で行う形へ(`app.js`)。アラートをまだ読んでいる間(`_isPopupActive`)は保険を延長。進行保証は不変
+- **③統一王座戦のある興行準備で選手変更/タイトル戦チェックのたびに全試合が1枠下にずれ空白枠が増殖**: 3欠陥の連鎖 — (a)描画時のstale-IDサニタイザが**来訪選手(統一挑戦者=AI団体所属)を無効ID扱い**して枠を0埋め(`ui-render.js`) → (b)`sanitizeShowCardTitles`が無効化時に`_unifiedTitleMatch`だけ剥がし`_unifiedTitleLocked`を残す=動かせない空白枠(`management.js:2342`) → (c)renderShowPrep内の第3の挿入パスだけ「枠を残す」`removeFightersFromCard`で0埋め+先頭差し込み=操作毎に+1枠ずれ末尾試合が会場上限で消滅。修正: (a)サニタイザのrosterMapに統一王座の王者/挑戦者+B3来訪者を追加 (b)無効化時はマーカーとロックを両方落とす (c)挿入を`stageIncomingUnifiedTitleCard()`に一本化(冪等)。加えて**壊れたセーブの救済**として孤児ロック(`_unifiedTitleLocked`だけ残った枠)を描画時に自動解除。誤メッセージ「⚔挑戦試合の上位3枠は固定です」を統一枠では「🌐全国統一王座戦の枠は固定です」に分離(moveShowCard/setShowCardSlot)
+- **④統一王座戦の週に自団体王座戦が実施されないのに12週クールタイムだけ消費**: 同居不可はspec仕様(unified-title-spec §1興行1タイトル)だが、(1)`app.js:8539`の`executedTitleMatch`に`&& !m._unifiedTitleMatch`が漏れており(task-88でengine側のみ修正・UIミラー取り残し)統一戦だけでクールタイム消費 → engine(`management.js:15080`)と同式に修正 (2)無言でチェックが剥がされ「実施されなかった」ように見えた → `toggleTitle`でON時に理由付きalertで明示拒否+おまかせ編成`_applyAutoTitleMatch`は統一週スキップ
+- **触ったファイル**: src/app.js(クールタイム式・保険タイマー・setShowCardSlotメッセージ) / src/ui-common.js(式典ボタン初期化×3式典・入力ゲート・toggleTitle・_applyAutoTitleMatch・moveShowCardメッセージ) / src/ui-render.js(サニタイザ・孤児ロック救済・挿入一本化) / src/management.js(sanitizeShowCardTitlesロック同時剥がし) / test 3本(回帰アサーション追加+②の意図変更に伴う保険テスト書き換え)
+- **検証**: npm test 256/256(awards-before-report-orderは②の設計変更に合わせ更新) / unified-title-staging+awards-progression-lockに新規回帰アサーション(開扉時ボタン初期化/ゲート抑止解除/クールタイム式のengine-UIミラー一致/挿入一本化/ロック同時剥がし) / walkthrough 1季完走 Issues:0 / ui-baseline-guard ok / auto-simはターン末フック
+- 残: Keisuke実機確認(バックログ§v1.31報告4件へ) / specs変更なし(④は既存specへの実装追従)
 ## care-rework2 P3「招聘市場の再設計」実装完了 — task-102マージで**P1〜P3実装工程が完走**（2026-08-30・Opus実装/Fable検算）
 
 D-3起点(08-20 TOMORI+Keisuke)のcare-rework2、最終実装工程。**ALL_COACHES 35名のデータはバイト単位で不変**(CRLF差を除き機械確認済み)のまま、市場の仕組み側だけで「ピッタリが来ない」を解消した。
