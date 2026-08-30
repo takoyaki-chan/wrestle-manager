@@ -236,6 +236,9 @@ const TABLE_MANIFEST = [
   T('BONUS_PROPOSAL_MEMOS', 'data.js', '11'),
   T('CAMP_FLAVOR_TEXTS', 'data.js', '11'),
   T('CARE_REACTION_DIALOGUES', 'data.js', '11'),
+  // 2026-08-30 追加(care-rework2 P2-G / task-101)。bold専用の起用約束チャンネル。
+  // 登録し忘れるとワークブック往復から不可視になる(GLIMPSE_B で踏んだ罠と同型)。
+  T('PLEDGE_LINES', 'data.js', '11'),
   T('CHOICE_EVENT_DIALOGUES', 'data.js', '11'),
   T('CHOICE_EVENT_RESULT_DIALOGUES', 'data.js', '11'),
   T('LARGE_EVENT_TEXTS', 'data.js', '11'),
