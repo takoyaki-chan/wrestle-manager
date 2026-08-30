@@ -8561,8 +8561,25 @@ const Engine = {
           : GROWTH_CONFIG.intensiveMult)
         : 1.0;
 
+      // numeric-overhaul P3b: 0.1刻みの小数のまま返す(旧: Math.ceilで1pt下限に切り上げ)。
+      // ceilは「rawGain 0.4でも+1pt」の隠しインフレで、cap近傍では招聘・合宿の倍率差を
+      // まるごと潰す第2の量子化器だった(care-rework2 task-98裁定B)。整数化は呼び出し側が
+      // settleGrowthFraction(端数持ち越し)で行う。ステ本体は常に整数を維持する。
       const finalGain = Math.max(0, Math.round(rawGain * intensiveMul * 10) / 10);
-      return Math.min(Math.ceil(finalGain), trainCap - current);
+      return Math.min(finalGain, trainCap - current);
+    },
+
+    // numeric-overhaul P3b: 端数持ち越しの清算(純関数)。
+    // calcGrowth(小数)×事後倍率の週次成長を「今週適用する整数pt」と「持ち越す端数」に分解する。
+    // 端数はキャラの _growthFrac に呼び出し側が保存する(セーブにそのまま乗る。未定義→0)。
+    // capRemaining(そのステの残り伸びしろ)に当たったら超過分の端数は捨てる —
+    // 壁の向こうに努力を貯金させない(端数が別ステへ漏れるのはcap未達時の通常運転のみ)。
+    settleGrowthFraction(prevFrac, gainF, capRemaining) {
+      const total = Math.round(((prevFrac || 0) + Math.max(0, gainF)) * 1000) / 1000;
+      let gain = Math.floor(total);
+      let frac = Math.round((total - gain) * 1000) / 1000;
+      if (gain >= capRemaining) { gain = Math.max(0, capRemaining); frac = 0; }
+      return { gain, frac };
     },
 
     // 実効 durability — durability 値に trait バイアスを合算したもの。
@@ -10579,8 +10596,11 @@ const Engine = {
           const trainGrowth = Math.round(growth * statusMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
 
           if (trainGrowth > 0) {
-            const _gain = Math.round(Math.min(trainGrowth, Math.max(0, (nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100) - nc[growStat])));
-            if (_gain > 0) { nc[growStat] += _gain; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + _gain; }
+            // P3b: 端数持ち越し。整数化はsettleGrowthFractionの1回だけ(round/ceilの二重量子化を廃止)
+            const _capRemain = Math.max(0, (nc.trainCap && nc.trainCap[growStat] ? nc.trainCap[growStat] : 100) - nc[growStat]);
+            const _settled = Engine.growth.settleGrowthFraction(nc._growthFrac, trainGrowth, _capRemain);
+            nc._growthFrac = _settled.frac;
+            if (_settled.gain > 0) { nc[growStat] += _settled.gain; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + _settled.gain; }
           }
 
           if (isIntensive) {
@@ -12740,8 +12760,11 @@ const Engine = {
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
           let actualGrowth = 0;
           if (trainGrowth > 0) {
+            // P3b: 端数持ち越し。整数化はsettleGrowthFractionの1回だけ(round/ceilの二重量子化を廃止)
             const _cap = nc.trainCap?.[growStat] ?? 100;
-            actualGrowth = Math.round(Math.min(trainGrowth, Math.max(0, _cap - nc[growStat])));
+            const _settled = Engine.growth.settleGrowthFraction(nc._growthFrac, trainGrowth, Math.max(0, _cap - nc[growStat]));
+            nc._growthFrac = _settled.frac;
+            actualGrowth = _settled.gain;
             if (actualGrowth > 0) { nc[growStat] += actualGrowth; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + actualGrowth; }
           }
           const adaptBonus = Traits.has(nc, '適応力') ? 2 : 0;
@@ -12818,9 +12841,11 @@ const Engine = {
           const warningTrustMult = nc._warningTrustDebuff ? 0.9 : 1.0;
           const trainGrowth = Math.round(growth * penMult * statusMult * trainingBoostMult * isolationMult * relationshipGrowthMult * warningTrustMult * 10) / 10;
           if (trainGrowth > 0) {
+            // P3b: 端数持ち越し。整数化はsettleGrowthFractionの1回だけ(round/ceilの二重量子化を廃止)
             const _cap = nc.trainCap?.[growStat] ?? 100;
-            const _clamped = Math.round(Math.min(trainGrowth, Math.max(0, _cap - nc[growStat])));
-            if (_clamped > 0) { nc[growStat] += _clamped; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + _clamped; }
+            const _settled = Engine.growth.settleGrowthFraction(nc._growthFrac, trainGrowth, Math.max(0, _cap - nc[growStat]));
+            nc._growthFrac = _settled.frac;
+            if (_settled.gain > 0) { nc[growStat] += _settled.gain; nc.seasonGrowth[growStat] = (nc.seasonGrowth[growStat] || 0) + _settled.gain; }
           }
           const ironBonus = Traits.has(nc, '鉄人') ? 2 : 0;
           const hardWorkerBonus = Traits.has(nc, '努力家') ? 1 : 0;
@@ -26414,6 +26439,17 @@ Engine.validateGameState = function(G) {
         warn(`${label} の${stat} 開眼適用capが開眼前より低下: ${cap} < ${floor}`);
       }
     });
+  });
+
+  // ── 成長端数 _growthFrac の健全性(numeric-overhaul P3b) ──
+  // 端数持ち越しの不変域は 0 <= frac < 1。NaN/範囲外は成長パイプライン外からの混入なので、
+  // 警告した上で0へ自動修正する(ステ非整数の自動修正と同じ扱い。ゲームは止めない)。
+  kaiganFighters.forEach(c => {
+    if (!c || c._growthFrac === undefined) return;
+    if (!isValidNum(c._growthFrac) || c._growthFrac < 0 || c._growthFrac >= 1) {
+      warn(`キャラ "${c.name}" (id:${c.id}) の_growthFracが不正値: ${c._growthFrac}→0に修正`);
+      c._growthFrac = 0;
+    }
   });
 
   // ── 直訴(challengeRequest)の参照整合性 ──
