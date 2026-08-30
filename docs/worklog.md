@@ -11,6 +11,7 @@ Googleフォーム最新回答(08-29・v1.31/Chrome)の進行系4バグ。Explor
 - **触ったファイル**: src/app.js(クールタイム式・保険タイマー・setShowCardSlotメッセージ) / src/ui-common.js(式典ボタン初期化×3式典・入力ゲート・toggleTitle・_applyAutoTitleMatch・moveShowCardメッセージ) / src/ui-render.js(サニタイザ・孤児ロック救済・挿入一本化) / src/management.js(sanitizeShowCardTitlesロック同時剥がし) / test 3本(回帰アサーション追加+②の意図変更に伴う保険テスト書き換え)
 - **検証**: npm test 256/256(awards-before-report-orderは②の設計変更に合わせ更新) / unified-title-staging+awards-progression-lockに新規回帰アサーション(開扉時ボタン初期化/ゲート抑止解除/クールタイム式のengine-UIミラー一致/挿入一本化/ロック同時剥がし) / walkthrough 1季完走 Issues:0 / ui-baseline-guard ok / auto-simはターン末フック
 - 残: Keisuke実機確認(バックログ§v1.31報告4件へ) / specs変更なし(④は既存specへの実装追従)
+- **同日追記: v1.32として配布**(Keisuke指示) — バージョン3箇所更新(manifest/タイトル画面/セーブ版数・version-consistency ok)→push(Cloudflare Pages自動デプロイ)→package-release.ps1(出荷ゲート29本全PASS・auto-sim20季クリア)→verify-package.ps1(ファイル完全性34+2 OK)。手動チェック4項目(タイトル表示/新規開始/週処理で第2週へ/コンソールエラーなし)はブラウザペインで代行確認済み。`release/dist/WrestleManager_1.32.zip`(63.1MB)。DLsite/BOOTH差し替えはKeisuke作業
 ## care-rework2 P3「招聘市場の再設計」実装完了 — task-102マージで**P1〜P3実装工程が完走**（2026-08-30・Opus実装/Fable検算）
 
 D-3起点(08-20 TOMORI+Keisuke)のcare-rework2、最終実装工程。**ALL_COACHES 35名のデータはバイト単位で不変**(CRLF差を除き機械確認済み)のまま、市場の仕組み側だけで「ピッタリが来ない」を解消した。
