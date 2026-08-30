@@ -23158,12 +23158,21 @@ Engine.shachoshitsu = {
   },
 
   // §6.3: 指導タイプ×選手personalityの相性判定。'good' | 'bad' | 'normal'(普通)
-  getCoachingCompat(coachingType, personality) {
+  // care-rework2 P3-5: personality==='normal' のときだけ archetype 副表を見る
+  // (第3引数)。渡されなければ従来どおり必ず 'normal' を返す。
+  getCoachingCompat(coachingType, personality, archetype) {
     if (typeof COACHING_COMPAT_MATRIX === 'undefined') return 'normal';
     const row = COACHING_COMPAT_MATRIX[coachingType];
     if (!row) return 'normal';
     const p = personality || 'normal';
-    if (p === 'normal') return 'normal';
+    if (p === 'normal') {
+      if (typeof COACHING_COMPAT_ARCHETYPE === 'undefined' || !archetype) return 'normal';
+      const arow = COACHING_COMPAT_ARCHETYPE[coachingType];
+      if (!arow) return 'normal';
+      if ((arow.good || []).includes(archetype)) return 'good';
+      if ((arow.bad || []).includes(archetype)) return 'bad';
+      return 'normal';
+    }
     if ((row.good || []).includes(p)) return 'good';
     if ((row.bad || []).includes(p)) return 'bad';
     return 'normal';
@@ -23183,7 +23192,7 @@ Engine.shachoshitsu = {
     // 変わるのは Allroundコーチ×Allround選手(0.05→0.08)だけで、他の組合せは不変。
     if (coach.style === fighter.style) mult += COACH_STYLE_BONUS.specialist;
     else if (coach.style === 'Allround') mult += COACH_STYLE_BONUS.allround;
-    const compat = Engine.shachoshitsu.getCoachingCompat(coach.coachingType, fighter.personality);
+    const compat = Engine.shachoshitsu.getCoachingCompat(coach.coachingType, fighter.personality, fighter.archetype);
     if (compat === 'good') mult += 0.10;
     else if (compat === 'bad') mult -= 0.10;
 
