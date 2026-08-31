@@ -2997,6 +2997,34 @@ const Storage = {
         G = { ...G, _migrated_mq_text_v1: true };
       }
 
+      // MQ表記一掃v2(2026-08-31・実セーブ棚のD3で検出したv1の取りこぼし2種):
+      // ①対象キー漏れ — currentNewspaper(表示中の新聞)とmvpRace(rankings[].narrative)が
+      //   walk対象に無く、そのまま画面へ出ていた
+      // ②「攻防はMQ 76を記録」「MQ89。」「沸かせ、MQ 78」型 — 直前が和文/句読点で
+      //   空白が無く、v1のどのパターンにも掛からない。\bMQ ?(?=数字)の包括形で拾う
+      //   (careerBestMQ等の識別子は直前が英字で語境界が立たず掛からない)
+      // v1適用済みセーブ(マーカーv1のみ)にも効かせるため別マーカーで再走査する
+      if (!G._migrated_mq_text_v2) {
+        const mqDigitFix = (s) => s.replace(/\bMQ ?(?=\d)/g, '試合評価');
+        const _mqFixWalk2 = (node) => {
+          if (Array.isArray(node)) {
+            for (let i = 0; i < node.length; i++) {
+              if (typeof node[i] === 'string') { if (node[i].includes('MQ')) node[i] = mqDigitFix(node[i]); }
+              else _mqFixWalk2(node[i]);
+            }
+          } else if (node && typeof node === 'object') {
+            for (const k of Object.keys(node)) {
+              if (typeof node[k] === 'string') { if (node[k].includes('MQ')) node[k] = mqDigitFix(node[k]); }
+              else _mqFixWalk2(node[k]);
+            }
+          }
+        };
+        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'currentNewspaper', 'mvpRace',
+         'hallOfFame', 'allHallOfFame', 'lastAwards', 'seasonHistory', 'chronicle', 'prologue']
+          .forEach(key => _mqFixWalk2(G[key]));
+        G = { ...G, _migrated_mq_text_v2: true };
+      }
+
       if (!G._migrated_factions_v1) {
         if (!Array.isArray(G.factions)) G = { ...G, factions: [] };
         if (!G.factionHostility || typeof G.factionHostility !== 'object') G = { ...G, factionHostility: {} };
@@ -9201,6 +9229,8 @@ const App = {
       const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
       lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
       let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
+      // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
+      updState = { ...updState, coachAssign: Engine.coach.sanitizeAssignments(updState) };
       // 団体年代記: アーカイブ登録 + 気風寄与積算 (player ロスター経由なので全件対象)
       retiredWithRecords.forEach(rf => {
         updState = Engine.chronicle.archiveFighter(updState, rf);
@@ -10763,6 +10793,8 @@ const App = {
           retiredIds: [...retiredIds],
           retiredSeasons,
         };
+        // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
+        G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
         const validated = Engine.title.validateChampion(G);
         if (validated.msg) {
           G = { ...G, titles: validated.titles, gameLog: [...(G.gameLog || []), validated.msg] };
@@ -11699,7 +11731,9 @@ const App = {
         delete retiredF.growthLog;
         G = { ...G,
           roster: G.roster.filter(c => c.id !== f.id),
-          retiredFighters: [...(G.retiredFighters || []), retiredF]
+          retiredFighters: [...(G.retiredFighters || []), retiredF],
+          // 退場者の後始末: コーチ担当から外す(engine側モチベ喪失パスと同じ扱い)
+          coachAssign: Engine.coach.unassignFromCoach(G, f.id),
         };
         // 団体年代記: アーカイブ + 気風寄与
         G = Engine.chronicle.archiveFighter(G, retiredF);
@@ -12995,6 +13029,8 @@ const App = {
       // 王者が放出/退団した場合は王座を空位にする
       const vcCE = Engine.title.validateChampion(G);
       if (vcCE.msg) { G = { ...G, titles: vcCE.titles, gameLog: [...(G.gameLog || []), vcCE.msg] }; }
+      // 退場者の後始末: コーチ担当から外す(直後の renderWeekScreen が自己修復を鳴らすため)
+      G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
     }
     Storage.autoSave();
     Audio.play('event');
@@ -16134,6 +16170,16 @@ App._renderPPVTvFallback = function() {
 App.closePPVTV = function() {
   // task-73: TV観戦(自団体不出場)の回も、コーチが見ての一言を必ず1枚出す
   if (App._tcwGate('ppv', {}, () => App.closePPVTV())) return;
+  // §5-D鉄則2: closePPVResult と同じ再入ガード。本体は tickWeek→advanceWeek を含む。
+  // 正規の閉じ時は advanceWeek が立てた 'ppvTV' のまま(initPPVTV は phase を変えない)
+  if (G.offSeason || G.weekPhase !== 'ppvTV') {
+    console.info('[WM] closePPVTV re-entry ignored — week already advanced', {
+      season: G.season, week: G.week, weekPhase: G.weekPhase, offSeason: !!G.offSeason,
+    });
+    const staleOverlay = document.getElementById('showResultOverlay');
+    if (staleOverlay) staleOverlay.classList.remove('active');
+    return;
+  }
   const overlay = document.getElementById('showResultOverlay');
   overlay.classList.remove('active');
   // 放送終了後も頂上決戦曲を残さない。画面遷移・直接の「事務所へ戻る」の両方で止める。

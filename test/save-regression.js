@@ -26,10 +26,9 @@ const withWalkthrough = process.argv.includes('--walkthrough');
 
 // 既知課題: 修正されるまで失敗を「⚠既知」として数えない(黙殺ではなく注記 —
 // 新しい退行と混ざらないようにするための区別。解消したら必ずここから消すこと)
-const KNOWN_ISSUES = {
-  'prerefix_S12W45_2026-07-27.json':
-    'オフシーズン進入時に[WM] progression state repairedが発火(v1.05世代の週回り状態が現行オフ進行と不整合→自己修復)。調査チップ起票済み(2026-08-31)',
-};
+// (prerefix_S12W45 のオフシーズン自己修復は 2026-08-31 解消 — 真因は旧セーブではなく
+//  引退確定パスの coachAssign 掃除漏れ。test/departure-coach-assign-test.js が回帰網)
+const KNOWN_ISSUES = {};
 
 const saves = fs.existsSync(SHELF)
   ? fs.readdirSync(SHELF).filter(f => f.endsWith('.json')).sort()
