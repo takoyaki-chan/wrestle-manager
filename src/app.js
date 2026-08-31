@@ -2972,6 +2972,11 @@ const Storage = {
           [/\(MQ(?=\d)/g, '(試合評価'],
           [/（MQ(?=\d)/g, '（試合評価'],
           [/ MQ(?=\d)/g, ' 試合評価'],
+          // 総仕上げ: 上のどれにも掛からない境界(読点直後「、MQ 84」/助詞直後「はMQ 85」/
+          // 文頭「MQ 96——」)を一般形で拾う。\bは日本語(非word)→Mで必ず立ち、
+          // careerBestMQ等の識別子(t→Mにword境界なし)には掛からない
+          [/\bMQ (?=\d)/g, '試合評価 '],
+          [/\bMQ(?=\d)/g, '試合評価'],
         ];
         const _mqFixStr = (s) => { for (const [re, rep] of mqTextFixes) s = s.replace(re, rep); return s; };
         const _mqFixWalk = (node) => {
@@ -2987,8 +2992,8 @@ const Storage = {
             }
           }
         };
-        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'hallOfFame', 'allHallOfFame',
-         'lastAwards', 'seasonHistory', 'chronicle', 'prologue'].forEach(key => _mqFixWalk(G[key]));
+        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'currentNewspaper', 'hallOfFame',
+         'allHallOfFame', 'lastAwards', 'seasonHistory', 'chronicle', 'prologue', 'mvpRace'].forEach(key => _mqFixWalk(G[key]));
         G = { ...G, _migrated_mq_text_v1: true };
       }
 
