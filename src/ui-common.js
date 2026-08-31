@@ -7706,17 +7706,21 @@ function renderPPVTvBroadcast(card, results, ppvName) {
   let advancing = false;
   let tornDown = false;
 
+  const _closestButton = (e) => {
+    const t = e && e.target;
+    return (t && typeof t.closest === 'function') ? t.closest('button') : null;
+  };
   const onSurfaceClick = (e) => {
     // 最終場面の「事務所へ戻る」など、専用ハンドラを持つボタンは横取りしない
-    const btn = e.target instanceof Element ? e.target.closest('button') : null;
-    if (btn && !btn.hasAttribute('data-ptv-next')) return;
+    const btn = _closestButton(e);
+    if (btn && typeof btn.hasAttribute === 'function' && !btn.hasAttribute('data-ptv-next')) return;
     advance();
   };
   const onKey = (e) => {
-    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight') return;
+    if (!e || (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight')) return;
     // ボタンにフォーカスがあるときはブラウザ既定の活性化に任せる(二重送りの防止)
-    if (e.target instanceof Element && e.target.closest('button')) return;
-    e.preventDefault();
+    if (_closestButton(e)) return;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
     advance();
   };
   const teardown = () => {

@@ -237,28 +237,46 @@ function section(name, fn) {
      return { renderPPVTvBroadcast };`
   );
 
+  // task-103(2026-08-31)で場面送りの契約が変わった: 場面ごとに .ptv-tv へ { once:true } を
+  // 張り直す方式をやめ、showResultOverlay への委譲クリック1本 + document の keydown に集約した。
+  // スタブもその契約(overlay/document の add/removeEventListener)に合わせる。
   function makePtvDom() {
     let html = '';
-    let clickHandler = null;
-    const tvEl = { addEventListener: (evt, cb) => { clickHandler = cb; } };
+    let surfaceHandler = null;
+    let keyHandler = null;
+    const tvEl = {};
     const box = {
       get innerHTML() { return html; },
-      set innerHTML(v) { html = v; clickHandler = null; },
+      set innerHTML(v) { html = v; },
+      // advance() は「中継がまだ画面に居るか」を .ptv-tv の在否で確かめる
       querySelector: (sel) => (sel === '.ptv-tv' ? tvEl : null),
     };
-    const overlay = { classList: { add() {}, remove() {} } };
+    const overlay = {
+      classList: { add() {}, remove() {} },
+      addEventListener: (evt, cb) => { if (evt === 'click') surfaceHandler = cb; },
+      removeEventListener: (evt, cb) => { if (evt === 'click' && surfaceHandler === cb) surfaceHandler = null; },
+    };
     const documentStub = {
       getElementById: (id) => (id === 'showResultBox' ? box : id === 'showResultOverlay' ? overlay : null),
+      addEventListener: (evt, cb) => { if (evt === 'keydown') keyHandler = cb; },
+      removeEventListener: (evt, cb) => { if (evt === 'keydown' && keyHandler === cb) keyHandler = null; },
     };
+    // 暗幕クリック相当(ボタンの上ではない)
+    const backdropEvent = { target: { closest: () => null } };
     return {
       documentStub, box,
-      click() { const cb = clickHandler; clickHandler = null; assert.ok(cb, 'クリック送りのハンドラが登録されている'); cb(); },
+      click() { assert.ok(surfaceHandler, '場面送りの委譲ハンドラが登録されている'); surfaceHandler(backdropEvent); },
+      pressEnter() {
+        assert.ok(keyHandler, 'キーボードの場面送りハンドラが登録されている');
+        keyHandler({ key: 'Enter', target: { closest: () => null }, preventDefault() {} });
+      },
+      isTornDown() { return surfaceHandler === null && keyHandler === null; },
     };
   }
 
   function makeBundle(opts) {
     opts = opts || {};
-    const { documentStub, box, click } = makePtvDom();
+    const { documentStub, box, click, pressEnter, isTornDown } = makePtvDom();
     const GStub = opts.G || { ppvTvWatchCount: 1 };
     const AudioStub = opts.Audio || { bgm: { playStage() {} }, play() {}, muted: true, sfxMasterVol: 1 };
     const windowStub = opts.window || { Audio: function () { return { volume: 0, play: () => ({ catch() {} }) }; } };
@@ -271,7 +289,7 @@ function section(name, fn) {
     };
     const portraitImgStub = opts.portraitImg || ((id, size) => `<img src="image/face/${id}.png" width="${size}">`);
     const built = build(documentStub, GStub, AudioStub, windowStub, EngineStub, portraitImgStub);
-    return { built, box, click };
+    return { built, box, click, pressEnter, isTornDown };
   }
 
   function fighter(id, name, orgId, orgName) {
@@ -312,6 +330,36 @@ function section(name, fn) {
     assert.ok(html.includes('ptv-sorg'), '頂上決戦VSが描画される');
     assert.ok(!html.includes('image/org/org-b-0.png'), '頂上決戦が同一団体どうしのときはエンブレムを出さない');
     assert.strictEqual((html.match(/団体B/g) || []).length, 2, '同一団体どうしでも両者の団体名テキストは出る');
+  });
+
+  // task-103: 「出口ゼロの画面」を二度と作らないための不変条件。
+  // 2026-08-31 に、①〜④の場面へ button も onclick も無く、団体人気30未満で年末を迎えた
+  // プレイヤーが毎年この画面で詰む状態になっていた(実セーブ棚の走破が D2_FREEZE で検出)。
+  section('every ppvTV scene carries a real, pressable exit (task-103 regression guard)', () => {
+    const card = [
+      { left: fighter(1, '風間サキ', 'player', 'プレイヤー団体'), right: fighter(2, '結城ミナ', 'org_a', 'ライバル団体A'), isSummit: false },
+      { left: fighter(3, '白鳥レイ', 'org_b', '団体B'), right: fighter(4, '東城カレン', 'org_a', 'ライバル団体A'), isSummit: true },
+    ];
+    const results = [
+      { winner: 'left', turns: 12, finType: 'pin', finMove: 'm1', mq: 72 },
+      { winner: 'right', turns: 15, finType: 'pin', finMove: 'm2', mq: 88 },
+    ];
+    const { built, box, click, pressEnter, isTornDown } = makeBundle({});
+    built.renderPPVTvBroadcast(card, results, 'GRAND FINAL');
+
+    // 場面①〜④: 押せる実ボタン「次へ ▶」が必ず居る(div の点滅テキストではない)
+    let scenes = 0;
+    while (!box.innerHTML.includes('事務所へ戻る')) {
+      assert.ok(box.innerHTML.includes('<button type="button" class="ptv-hint" data-ptv-next>'),
+        `場面${scenes + 1}に実ボタンの進行導線が無い(出口ゼロの画面を作ってはいけない)`);
+      scenes += 1;
+      assert.ok(scenes < 30, '場面送りが終わらない');
+      // クリックとキーボードを交互に使い、どちらの経路でも1操作=1場面だけ進むことを見る
+      if (scenes % 2 === 1) click(); else pressEnter();
+    }
+    assert.ok(scenes >= 4, `中継は複数場面ある想定(実測 ${scenes} 場面)`);
+    assert.ok(!box.innerHTML.includes('data-ptv-next'), '最終場面は「事務所へ戻る」に一本化する');
+    assert.ok(isTornDown(), '最終場面に達したら委譲リスナーを外す(他画面の操作を奪わない)');
   });
 
   section('escapes a hostile org name in the card list without throwing (unvariant 4, 5)', () => {
