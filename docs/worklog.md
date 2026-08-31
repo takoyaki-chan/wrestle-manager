@@ -1,5 +1,18 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 実セーブ棚チップ完遂 — 退場者coachAssign掃除の全経路化+回帰テスト新設+既知課題ゼロ化（2026-08-31・Fable worktree lucid-haslett）
+
+prerefix_S12W45のW49自己修復(`progression state repaired {changes: Array(1)}`)調査チップの完遂。ヘッドレス再現(エンジンのみでW45→offWeek1を走らせ各工程でrepairProgressionStateをプローブ)で`changes`の中身を**`coachAssign_stale_refs_removed`**と特定 — S12末に巳沼紗霧(id128・28歳)が引退し、`commitRetirements`がroster除外時にコーチ担当(coachAssign)だけ後始末していなかった(統一王座・派閥・関係値・王座・直訴は掃除済みなのにここだけ漏れ)。**チップの指示だった「saveDoctor.repairOnLoadでロード時正規化」は不採用** — セーブはロード時点で健全(stale参照ゼロを実測)で、歪みはプレイ中の引退確定で生まれるため、直すべきは退場処理側。
+
+- **並行作業との合流**: 同日main側で同型修正が着地済み(699a860=commitRetirements掃除+PPVクローズ二重tick根治 / 35398ea=ppvTV出口ゼロ根治)。`git merge main`で統合し、**重複部はmain実装を採用**(commitRetirements掃除・closePPVResultガード・driver.jsの偽陽性対策)。マージ前に自前実装でも6本個別✓まで到達していたが、走破ドライバの自前拡張(実時間待ち/座標クリック救済/.ptv-tvセレクタ)はmainの根治(タイムアウト5000ms+ポインタ退避+ppvTV実ボタン化)で不要になり破棄
+- **このworktree独自の修正(mainに無かった同族の穴)**: 退場者がcoachAssignに残る経路は`commitRetirements`だけではなかった。**残り6箇所**を同じ後始末(sanitizeAssignments/unassignFromCoach)で塞いだ — ①advanceWeek offWeek1の**ラストラン期限切れ即時除去**(management.js・引退ダイアログ前にrosterから抜ける) ②③executeShowの**興行中怪我引退**(左右2箇所・management.js) ④⑤app.jsの**ラストラン最終戦後の引退**(processShowResult/closeShowResult系の2箇所) ⑥**モチベ喪失引退**(app.js・engine側27638は掃除済みなのにUI側だけ漏れ) ⑦**選択イベントの放出/移籍退団**(applyChoiceEvent・直後のrenderWeekScreenが修復を鳴らす位置)
+- **closePPVTVにも二重tickガード追加**: mainの委譲除外(`_handlePatternBResultClose`)は`closePPVResult`文字列しか見ておらず、TV側の閉じボタンは対象外。closePPVResultと対称の「週が進んでいたらtickせず後片付けのみ」ガードを冒頭に(§5-D鉄則2)
+- **回帰テスト新設** [departure-coach-assign-test.js](test/departure-coach-assign-test.js): 物差しは修正箇所自身ではなく**検出器(repairProgressionState)**に置く3本 — commitRetirements後/ラストラン期限切れ後に`coachAssign_stale_refs_removed`が出ない+残留選手の担当が巻き添えで消えない+**逆向き(わざとstaleを作れば必ず鳴く)の検出器生存確認**
+- **MQ表記移行のv2追補(マージ後の棚再走で発見)**: fc637deのロード時テキスト移行(v1)に取りこぼし2種 — ①対象キー漏れ(`currentNewspaper`=表示中の新聞/`mvpRace.rankings[].narrative`) ②「攻防はMQ 76を記録」「MQ89。」型(直前が和文・句読点で空白なし)がどの置換パターンにも掛からない。プレイ済みセーブ(マーカーv1済み)にも効くよう`_migrated_mq_text_v2`として`\bMQ ?(?=数字)`の包括置換を別マーカーで追加(app.js)。**実セーブ6本全部をv1+v2で機械走査し残存0を確認**(v1のみだと5本に計123箇所残存し、新聞画面巡回(a168e42)でD3_TEXTが再発していた)
+- **既知課題ゼロ化**: test/save-regression.jsのKNOWN_ISSUESからprerefix行を削除(空に)。以後この棚の失敗はすべて新規退行として数える
+- **検証**: departure-coach-assign-test 3/3 / npm test **257/257**(マージ+MQ移行v2込みの最終盤で再実行) / `npm run test:save-regression -- --walkthrough` **SAVE REGRESSION: ALL CLEAR** — Phase1 doctor 6/6✓+Phase2 実ブラウザ走破 **6/6✓**(mobile 40s・prerefix 58s・ultralong 203s・v1.0x 129s・v1.20 282s・v1.25 190s、いずれもIssues:0)
+- 調査の副産物(記録のみ): 表彰式ファンファーレ(#aw-fanfare-overlay)はCSSアニメの実時間3秒でクリックを遮る/aw-btn-nextのhover変形(translateY)がPlaywrightのヒットターゲット検証と相性が悪い — いずれもmainのdriver修正(ポインタ退避+5000ms)が正解で、ここでは手を入れていない
+
 ## 実セーブ棚の初回走破 — 年末クラスタの実バグ3件+ハーネス偽陽性2件を発見・修正（2026-08-31・Fable、699a860）
 
 新設した実セーブ棚(`node test/save-regression.js --walkthrough`)の初回フル走破は6本中6本失敗。切り分けの結果、**実バグ3件/偽陽性2件/良性1件**に分解し全て処置:

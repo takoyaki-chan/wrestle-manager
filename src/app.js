@@ -2992,6 +2992,34 @@ const Storage = {
         G = { ...G, _migrated_mq_text_v1: true };
       }
 
+      // MQ表記一掃v2(2026-08-31・実セーブ棚のD3で検出したv1の取りこぼし2種):
+      // ①対象キー漏れ — currentNewspaper(表示中の新聞)とmvpRace(rankings[].narrative)が
+      //   walk対象に無く、そのまま画面へ出ていた
+      // ②「攻防はMQ 76を記録」「MQ89。」「沸かせ、MQ 78」型 — 直前が和文/句読点で
+      //   空白が無く、v1のどのパターンにも掛からない。\bMQ ?(?=数字)の包括形で拾う
+      //   (careerBestMQ等の識別子は直前が英字で語境界が立たず掛からない)
+      // v1適用済みセーブ(マーカーv1のみ)にも効かせるため別マーカーで再走査する
+      if (!G._migrated_mq_text_v2) {
+        const mqDigitFix = (s) => s.replace(/\bMQ ?(?=\d)/g, '試合評価');
+        const _mqFixWalk2 = (node) => {
+          if (Array.isArray(node)) {
+            for (let i = 0; i < node.length; i++) {
+              if (typeof node[i] === 'string') { if (node[i].includes('MQ')) node[i] = mqDigitFix(node[i]); }
+              else _mqFixWalk2(node[i]);
+            }
+          } else if (node && typeof node === 'object') {
+            for (const k of Object.keys(node)) {
+              if (typeof node[k] === 'string') { if (node[k].includes('MQ')) node[k] = mqDigitFix(node[k]); }
+              else _mqFixWalk2(node[k]);
+            }
+          }
+        };
+        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'currentNewspaper', 'mvpRace',
+         'hallOfFame', 'allHallOfFame', 'lastAwards', 'seasonHistory', 'chronicle', 'prologue']
+          .forEach(key => _mqFixWalk2(G[key]));
+        G = { ...G, _migrated_mq_text_v2: true };
+      }
+
       if (!G._migrated_factions_v1) {
         if (!Array.isArray(G.factions)) G = { ...G, factions: [] };
         if (!G.factionHostility || typeof G.factionHostility !== 'object') G = { ...G, factionHostility: {} };
