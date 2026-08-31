@@ -2952,8 +2952,12 @@ const Storage = {
       // MQ表記一掃: 旧セーブの表示用テキスト(ログ/新聞アーカイブ/殿堂ハイライト/年代記
       // キャッシュ等)に焼き込まれた「MQ」表記を、生成側の新表記と同じ日本語へ一度だけ
       // 書き換える。対象サブツリーは表示専用文字列のみで、内部キー('careerBestMQ'等の
-      // 値文字列)はどのパターンにも掛からない形にしてある
-      if (!G._migrated_mq_text_v1) {
+      // 値文字列)はどのパターンにも掛からない形にしてある。
+      // v2(2026-08-31): 初版v1は「currentNewspaper/mvpRaceのキー漏れ」と「読点直後・
+      // 文頭などの和文直結型が全パターン不一致」の取りこぼしがあり(実セーブ棚のD3で検出、
+      // 4セッションが独立発見)、v1マーカーが焼き付いたローカルセーブも救うためフラグを
+      // v2へ昇格して全文再走する。置換は冪等。回帰網は test/mq-text-migration-v2-test.js
+      if (!G._migrated_mq_text_v2) {
         const mqTextFixes = [
           [/\(MQ avg /g, '(平均試合評価 '],
           [/興行平均MQ: /g, '興行の平均試合評価: '],
@@ -2994,34 +2998,6 @@ const Storage = {
         };
         ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'currentNewspaper', 'hallOfFame',
          'allHallOfFame', 'lastAwards', 'seasonHistory', 'chronicle', 'prologue', 'mvpRace'].forEach(key => _mqFixWalk(G[key]));
-        G = { ...G, _migrated_mq_text_v1: true };
-      }
-
-      // MQ表記一掃v2(2026-08-31・実セーブ棚のD3で検出したv1の取りこぼし2種):
-      // ①対象キー漏れ — currentNewspaper(表示中の新聞)とmvpRace(rankings[].narrative)が
-      //   walk対象に無く、そのまま画面へ出ていた
-      // ②「攻防はMQ 76を記録」「MQ89。」「沸かせ、MQ 78」型 — 直前が和文/句読点で
-      //   空白が無く、v1のどのパターンにも掛からない。\bMQ ?(?=数字)の包括形で拾う
-      //   (careerBestMQ等の識別子は直前が英字で語境界が立たず掛からない)
-      // v1適用済みセーブ(マーカーv1のみ)にも効かせるため別マーカーで再走査する
-      if (!G._migrated_mq_text_v2) {
-        const mqDigitFix = (s) => s.replace(/\bMQ ?(?=\d)/g, '試合評価');
-        const _mqFixWalk2 = (node) => {
-          if (Array.isArray(node)) {
-            for (let i = 0; i < node.length; i++) {
-              if (typeof node[i] === 'string') { if (node[i].includes('MQ')) node[i] = mqDigitFix(node[i]); }
-              else _mqFixWalk2(node[i]);
-            }
-          } else if (node && typeof node === 'object') {
-            for (const k of Object.keys(node)) {
-              if (typeof node[k] === 'string') { if (node[k].includes('MQ')) node[k] = mqDigitFix(node[k]); }
-              else _mqFixWalk2(node[k]);
-            }
-          }
-        };
-        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'currentNewspaper', 'mvpRace',
-         'hallOfFame', 'allHallOfFame', 'lastAwards', 'seasonHistory', 'chronicle', 'prologue']
-          .forEach(key => _mqFixWalk2(G[key]));
         G = { ...G, _migrated_mq_text_v2: true };
       }
 
