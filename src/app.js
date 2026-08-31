@@ -5229,51 +5229,83 @@ const App = {
       '全員で一番を目指しましょう、社長。',
     ];
 
-    const overlay = document.createElement('div');
-    overlay.className = 'completion-overlay';
-    // 挨拶セリフは各選手の頭上に吹き出しで配置(セリフは吹き出しに収めるのが基本形・2026-07-23)
-    overlay.innerHTML = `
-      <div class="comp-vignette"></div>
-      <div class="team-photo">
-        ${teamMembers.map((m, i) => {
-          const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(m.id) : '';
-          return `<div class="team-member${m.isFixed ? ' fixed-mark' : ''}">
-            <div class="team-bubble" style="--greeting-index:${i}">${foundingGreetings[i]}</div>
-            ${upperUrl ? `<img src="${upperUrl}" alt="${m.name}">` : '<div style="width:100%;aspect-ratio:2/3;background:#222"></div>'}
-            <div class="team-member-name">${m.name}</div>
-          </div>`;
-        }).join('')}
-      </div>
-      <div class="comp-text">
-        <span class="org-name">${orgName}</span>
-        <span class="start">始動</span>
-      </div>
-    `;
-    document.body.appendChild(overlay);
-
-    // フェードイン
-    requestAnimationFrame(() => { requestAnimationFrame(() => { overlay.classList.add('show'); }); });
-
-    // クリームテーマをクリーンアップ
-    const appEl = document.querySelector('.app');
-    if (appEl) appEl.classList.remove('draft-cream');
-
-    // クリックで本編へ
+    // ── 本編への出口(task-103と同型の根治・2026-08-31) ──
+    // 旧実装は overlay への素の click 1本だけが出口で、button も onclick 属性も無く、
+    // キーボードでも進めなかった。.completion-overlay.show は z-index:400 の不透明幕で
+    // 背後の全ボタンを塞ぐため、リスナー登録や描画が一度転ぶとゲーム開始直後に恒久停止する。
+    // 実ボタン+キーボード+暗幕クリックを同じ leave() に集約し、本編への差し替えが
+    // 転んでも幕だけは必ず下ろす(§5-D 鉄則1「時限・保険」/ 鉄則2「1操作=1進行」)。
     let _leaving = false;
-    overlay.addEventListener('click', () => {
+    let overlay = null;
+    const onCompKey = (e) => {
+      if (!e || (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight')) return;
+      if (typeof e.preventDefault === 'function') e.preventDefault();
+      leave();
+    };
+    const leave = () => {
       if (_leaving) return;
       _leaving = true;
-      // オーバーレイが不透明なうちに背景をメインメニューへ差し替える。
-      // こうしないとフェード中に背後の旗揚げメンバー選択画面が透けて見え、
-      // 「選ぶ前の画面が一瞬出てからメニューへ移る」引っかかりになる。
-      Audio.bgm.play('management');
-      Storage.autoSave();
-      refreshAll();
-      // 背景が本編に差し替わってからフェードアウト → 透けて見えるのはメインメニュー
-      overlay.style.transition = 'opacity 1s ease';
-      overlay.style.opacity = '0';
-      setTimeout(() => { overlay.remove(); }, 1000);
-    });
+      document.removeEventListener('keydown', onCompKey);
+      try {
+        // オーバーレイが不透明なうちに背景をメインメニューへ差し替える。
+        // こうしないとフェード中に背後の旗揚げメンバー選択画面が透けて見え、
+        // 「選ぶ前の画面が一瞬出てからメニューへ移る」引っかかりになる。
+        Audio.bgm.play('management');
+        Storage.autoSave();
+        refreshAll();
+      } catch (e) {
+        // 本編の描画が転んでも幕の中に閉じ込めない — 幕を下ろす処理だけは必ず通す
+        console.warn('[WM] founding ceremony exit failed — dropping the curtain anyway:', e && e.message);
+      } finally {
+        if (overlay) {
+          // 背景が本編に差し替わってからフェードアウト → 透けて見えるのはメインメニュー
+          overlay.style.transition = 'opacity 1s ease';
+          overlay.style.opacity = '0';
+          const ov = overlay;
+          setTimeout(() => { ov.remove(); }, 1000);
+        }
+      }
+    };
+
+    try {
+      overlay = document.createElement('div');
+      overlay.className = 'completion-overlay';
+      // 挨拶セリフは各選手の頭上に吹き出しで配置(セリフは吹き出しに収めるのが基本形・2026-07-23)
+      overlay.innerHTML = `
+        <div class="comp-vignette"></div>
+        <div class="team-photo">
+          ${teamMembers.map((m, i) => {
+            const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(m.id) : '';
+            return `<div class="team-member${m.isFixed ? ' fixed-mark' : ''}">
+              <div class="team-bubble" style="--greeting-index:${i}">${foundingGreetings[i]}</div>
+              ${upperUrl ? `<img src="${upperUrl}" alt="${m.name}">` : '<div style="width:100%;aspect-ratio:2/3;background:#222"></div>'}
+              <div class="team-member-name">${m.name}</div>
+            </div>`;
+          }).join('')}
+        </div>
+        <div class="comp-text">
+          <span class="org-name">${orgName}</span>
+          <span class="start">始動</span>
+        </div>
+        <button type="button" class="comp-continue-btn" data-comp-continue>事務所へ ▶</button>
+      `;
+      document.body.appendChild(overlay);
+
+      // フェードイン
+      requestAnimationFrame(() => { requestAnimationFrame(() => { overlay.classList.add('show'); }); });
+
+      // クリームテーマをクリーンアップ
+      const appEl = document.querySelector('.app');
+      if (appEl) appEl.classList.remove('draft-cream');
+
+      // クリック(実ボタン・暗幕のどちらでも)とキーボードから同じ出口へ
+      overlay.addEventListener('click', leave);
+      document.addEventListener('keydown', onCompKey);
+    } catch (e) {
+      // 演出が組み立てられなくても旗揚げ自体は完了している。演出を諦めて本編へ直行する
+      console.warn('[WM] founding ceremony render failed — skipping straight to the office:', e && e.message);
+      leave();
+    }
   },
 
   // Initialize a new game (from save/load screen)
