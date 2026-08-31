@@ -214,6 +214,9 @@ async function main() {
         detectors,
         fixtureName: scenario ? path.basename(fixturePath) : options.fixture,
         maxSteps: effectiveMaxSteps,
+        // ナビ巡回はwalkモード限定。igniteはシナリオの誘導(boost/until)と手数予算が主役で、
+        // 自由閲覧画面の検査はwalk側が担う
+        navTour: !scenario,
         observe,
         page,
         reproductionCommand,
@@ -265,6 +268,16 @@ async function main() {
     console.log(`Duration: ${(elapsedMs / 1000).toFixed(2)}s`);
     console.log(`Final state: ${JSON.stringify(result.finalState)}`);
     console.log(`Special screens: ${result.specialScreens.length ? result.specialScreens.join(', ') : 'none'}`);
+    if (!scenario) {
+      const toured = result.navTourScreens || [];
+      const skipped = result.navTourSkipped || [];
+      console.log(`Nav tour: ${toured.length ? toured.join(', ') : 'none'}${skipped.length ? ` (undeparted: ${skipped.join(', ')})` : ''}`);
+    }
+    const recoveries = result.recoveries || [];
+    console.log(`Recovered-by-retry: ${recoveries.length}`);
+    for (const recovery of recoveries) {
+      console.log(`  step ${recovery.step}: ${recovery.action} -> recovered by ${recovery.recoveredBy}`);
+    }
     if (scenario) {
       console.log(`Observed overlays: ${[...seenOverlays].sort().join(', ') || 'none'}`);
       console.log(`Observed screens: ${[...seenScreens].sort().join(', ') || 'none'}`);

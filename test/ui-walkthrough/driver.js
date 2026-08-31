@@ -4,7 +4,34 @@ const { stableHash, writeFailureArtifacts } = require('./detectors');
 
 const CLICKABLE_SELECTOR = 'button, [role="button"], [onclick], [data-choice], [data-mdl-choice], [data-war-choice], .large-evt-fighter-pick, .travel-overlay.active';
 const DESTRUCTIVE_TEXT = /(?:削除|消去|ニューゲーム|NEW GAME|ロード|LOAD GAME|セーブ|SAVE|タイトルへ戻る|記録を消す)/i;
-const NAVIGATION_TEXT = /^(?:今週|興行準備|団体|社長室|ランキング|データベース|新聞|経営|ログ|ヘルプ)$/;
+// ナビ実物は「📅 今週」のように絵文字+空白つき(src/index.html の .nav-bar)。
+// 2026-08-31監査: 旧版は絵文字なし完全一致でナビ実物に一つもマッチしない死にガードだった
+// (全ナビラベルがスコア表フォールスルーの -Infinity で偶然押されていなかっただけ)。
+// 意図を確定する: **ナビタブはランダム走のスコアラーからは押さない**。自由閲覧画面の
+// 検査は runNavTour の決定論巡回が担当する。識別は .nav-btn クラスを一次、文言を保険にする。
+// 絵文字プレフィックスは記号面(U+2600台/U+1F000台+VS16)に限定 —「全団体」のような
+// 日本語プレフィックス付き実コンテンツボタンを誤って封じないため
+const NAVIGATION_TEXT = /^(?:[\u{2600}-\u{27BF}\u{1F000}-\u{1FAFF}\u{FE0F}]+\s*)?(?:今週|興行準備|団体|社長室|ランキング|データベース|新聞|経営|ログ|セーブ|ヘルプ)$/u;
+
+function isNavigationControl(candidate) {
+  if (/(?:^|\s)nav-btn(?:\s|$)/.test(candidate.className || '')) return true;
+  return NAVIGATION_TEXT.test(candidate.searchText || candidate.text || '');
+}
+
+// ナビ巡回の停車駅(②2026-08-31監査対応)。自然走破が構造的に到達できない自由閲覧画面を
+// 進行を妨げないクリーン状態で一巡し、開くだけ(中の操作はしない)でD1/D3走査を通す。
+// 「今週」「興行準備」は通常進行が毎週踏むため巡回対象外。
+const NAV_TOUR_STOPS = [
+  { label: '団体', screen: 'screen-roster' },
+  { label: '社長室', screen: 'screen-shachoshitsu' },
+  { label: 'ランキング', screen: 'screen-ranking' },
+  { label: 'データベース', screen: 'screen-database' },
+  { label: '新聞', screen: 'screen-newspaper' },
+  { label: '経営', screen: 'screen-finance' },
+  { label: 'ログ', screen: 'screen-log' },
+  { label: 'セーブ', screen: 'screen-save' },
+  { label: 'ヘルプ', screen: 'screen-help' },
+];
 
 function createSeededPrng(seed) {
   let state = Number(seed) >>> 0;
@@ -23,7 +50,7 @@ function normalizeText(value) {
 
 function actionScore(candidate, state) {
   const text = candidate.searchText || candidate.text;
-  if (!text || DESTRUCTIVE_TEXT.test(text) || NAVIGATION_TEXT.test(text)) return -Infinity;
+  if (!text || DESTRUCTIVE_TEXT.test(text) || isNavigationControl(candidate)) return -Infinity;
 
   if (/CONTINUE/i.test(text)) return 10000;
   if (candidate.id === 'travelSceneOverlay') return 9975;
@@ -215,6 +242,55 @@ async function clickWithOverlayRecovery(page, selected, snapshot, random, boost)
   }
 }
 
+// ナビ巡回本体。各駅で「開く→画面IDを検証→D3走査」だけを行い、issueが出たら
+// **現場画面を保ったまま**主ループへ返す(帰還クリックで screenshot の現場を消さない)。
+// 巡回中に予期しないポップアップ/モーダルが出たら進行保護を優先して打ち切る。
+// PRNGは一切消費しないので、同シード同経路の決定論を崩さない。
+async function runNavTour({ page, detectors, actionLog, navTourVisited, seed, step, tourKey }) {
+  for (const stop of NAV_TOUR_STOPS) {
+    const before = await detectors.snapshot(page);
+    // 続行判定を snapshot.overlays で見てはいけない: [class*="overlay"] は
+    // dojo-header-overlay(団体画面の装飾層)等も拾うため、画面を開いた直後は必ず非空に
+    // なる(2026-08-31 初走で実証)。本物のモーダルはナビ自体を覆ってクリックを不能に
+    // するので、popupキューの活性+クリック不能の2つで中断を判定する
+    if (before.popup && before.popup.active) {
+      process.stdout.write(`  nav-tour(${tourKey}) aborted before ${stop.label}: popup active\n`);
+      break;
+    }
+    const clicked = await page.locator('.nav-btn', { hasText: stop.label }).first()
+      .click({ timeout: 1500 }).then(() => true).catch(() => false);
+    if (!clicked) {
+      const blocked = await detectors.snapshot(page);
+      if ((blocked.overlays && blocked.overlays.length > 0) || (blocked.popup && blocked.popup.active)) {
+        process.stdout.write(`  nav-tour(${tourKey}) aborted before ${stop.label}: nav blocked (overlays=${(blocked.overlays || []).join('|') || 'none'}, popupActive=${!!(blocked.popup && blocked.popup.active)})\n`);
+        break;
+      }
+      // 遮蔽物が無いのに常設ナビが押せない=死にタブ。FREEZE級として記録
+      detectors.record('D2_FREEZE', `nav-tour: ${stop.label} click failed with no blocking overlay`, { stop, tourKey });
+      return;
+    }
+    await settleClock(page);
+    const after = await detectors.snapshot(page);
+    actionLog.push({ action: `nav-tour:${stop.label}`, after: after.state, before: before.state, seed, step });
+    if (after.activeScreen !== stop.screen) {
+      // クリックは通ったのに画面が開かない=死にタブ。FREEZE級として記録
+      detectors.record('D2_FREEZE', `nav-tour: ${stop.label} did not open ${stop.screen} (active=${after.activeScreen})`, {
+        activeScreen: after.activeScreen,
+        stop,
+        tourKey,
+      });
+      return;
+    }
+    navTourVisited.push(stop.screen);
+    process.stdout.write(`  nav-tour(${tourKey}): ${stop.label} -> ${stop.screen}\n`);
+    await detectors.scanText(page);
+    if (detectors.issues.length > 0) return;
+  }
+  // 帰還。失敗しても主ループの脱出口(「今週」への帰還)が拾う
+  await page.locator('.nav-btn', { hasText: '今週' }).first().click({ timeout: 1500 }).catch(() => {});
+  await settleClock(page);
+}
+
 async function runWalk(options) {
   const {
     artifactRoot,
@@ -222,6 +298,7 @@ async function runWalk(options) {
     fixtureName,
     boost = null,
     maxSteps = 1200,
+    navTour = false,
     observe = null,
     page,
     reproductionCommand,
@@ -232,6 +309,14 @@ async function runWalk(options) {
   const random = createSeededPrng(seed);
   const actionLog = [];
   const specialScreens = new Set();
+  // ナビ巡回の時刻表: 開幕直後の初回+コンテンツが溜まったweek10以降の2回(ゲーム状態
+  // キーなので決定論)。途中週開始のセーブでは満期分をまとめて1巡に畳む
+  const navTourPlan = navTour ? [
+    { key: 'early', when: () => true },
+    { key: 'late', when: state => state.week >= 10 },
+  ] : [];
+  const navTourVisited = [];
+  const recoveries = [];
   let initialState = null;
   let previousProgressKey = null;
 
@@ -259,6 +344,11 @@ async function runWalk(options) {
         completed: true,
         finalState: before.state,
         issues: detectors.issues,
+        // navTourSkipped: 発車条件に一度も合わなかった巡回キー。到達不能が黙って
+        // 復活しないよう(旧NAVIGATION_TEXTの轍)、未消化は必ずレポートに出す
+        navTourScreens: [...navTourVisited],
+        navTourSkipped: navTourPlan.map(entry => entry.key),
+        recoveries,
         specialScreens: [...specialScreens].sort(),
       };
     }
@@ -277,7 +367,28 @@ async function runWalk(options) {
         state: before,
         step,
       });
-      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
+    }
+
+    // ナビ巡回(②): 進行を一切妨げないクリーン状態のときだけ発車する。
+    // 条件はゲーム状態キーのみ(壁時計不使用)なので同シードなら同じ手番で発火する。
+    // showScreen側のナビブロック(交渉中/解雇面談中)と表彰式ガードには最初から近づかない
+    if (navTourPlan.length > 0 && before.state
+      && before.activeScreen === 'screen-week'
+      && !before.state.offSeason && !before.state.pendingAwards
+      && before.state.weekPhase !== 'contractNegotiation'
+      && (!before.overlays || before.overlays.length === 0)
+      && !(before.popup && before.popup.active)) {
+      const due = navTourPlan.filter(entry => entry.when(before.state));
+      if (due.length > 0) {
+        for (let index = navTourPlan.length - 1; index >= 0; index -= 1) {
+          if (navTourPlan[index].when(before.state)) navTourPlan.splice(index, 1);
+        }
+        const tourKey = due.map(entry => entry.key).join('+');
+        process.stdout.write(`  nav-tour(${tourKey}) departs: season=${before.state.season} week=${before.state.week} step=${step}\n`);
+        await runNavTour({ page, detectors, actionLog, navTourVisited, seed, step, tourKey });
+        continue;
+      }
     }
 
     let candidates = await listCandidates(page);
@@ -316,7 +427,7 @@ async function runWalk(options) {
         state: before,
         step,
       });
-      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
     }
 
     let label = actionLabel(selected);
@@ -346,7 +457,7 @@ async function runWalk(options) {
         state: before,
         step,
       });
-      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: before.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
     }
     const clicked = clickResult.candidate;
     if (clickResult.recovered) {
@@ -361,11 +472,22 @@ async function runWalk(options) {
     }), mutationWatch);
     const after = progress.after;
     if (observe && after) observe(after);
+    // ③2026-08-31監査対応: 押しても何も起きず兄弟ボタンで前進した=死にボタンの容疑。
+    // 回復自体は走破を止めないが、容疑者と回復役をレポートに残す(黙って揉み消さない)
+    let recoveredBy = null;
+    if (progress.recoveredByRetry) {
+      recoveredBy = Number.isInteger(progress.retryIndex) && retryPool[progress.retryIndex]
+        ? actionLabel(retryPool[progress.retryIndex])
+        : 'unknown';
+      recoveries.push({ action: label, recoveredBy, step });
+      process.stdout.write(`  recovered-by-retry: ${label} produced no progress; sibling ${recoveredBy} advanced\n`);
+    }
     const nextProgressKey = progressKey(after);
     actionLog.push({
       action: label,
       after: after.state,
       before: before.state,
+      ...(recoveredBy ? { recoveredBy } : {}),
       seed,
       step,
     });
@@ -394,7 +516,7 @@ async function runWalk(options) {
         state: after,
         step,
       });
-      return { actionLog, completed: false, finalState: after.state, issues: detectors.issues, artifactDirectory: directory, specialScreens: [...specialScreens].sort() };
+      return { actionLog, completed: false, finalState: after.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
     }
   }
 
@@ -410,7 +532,7 @@ async function runWalk(options) {
     state: finalSnapshot,
     step: maxSteps,
   });
-  return { actionLog, completed: false, finalState: finalSnapshot.state, issues: detectors.issues, artifactDirectory: directory, specialScreens: [...specialScreens].sort() };
+  return { actionLog, completed: false, finalState: finalSnapshot.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
 }
 
 module.exports = { createSeededPrng, listCandidates, runWalk };
