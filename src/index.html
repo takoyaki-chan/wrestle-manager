@@ -9856,7 +9856,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-telop-cat{display:inline-block;font-size:10px;font-weight:900;color:#111;background:var(--gold);border-radius:3px;padding:1px 7px;margin-right:9px;vertical-align:1px}
 .ptv-telop-main{font-size:13.5px;font-weight:800}
 .ptv-telop-sub{font-size:11px;color:var(--stage-text-sub);margin-top:1px}
-.ptv-hint{position:absolute;right:14px;bottom:52px;font-size:10.5px;color:var(--stage-text-sub);z-index:5;animation:ptvbl 2.4s infinite}
+/* 進行導線(task-103): 素の点滅テキストから実ボタンへ。10.5pxでテロップ帯に被って読めず、
+   キーボードでも押せなかった。帯(高さ約52px)の上に確実に逃がし、押せる見た目にする */
+.ptv-hint{position:absolute;right:14px;bottom:60px;z-index:6;
+  font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;line-height:1;
+  color:var(--stage-text);background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);
+  border-radius:6px;padding:6px 13px;cursor:pointer;animation:ptvbl 2.4s infinite}
+.ptv-hint:hover{background:rgba(255,255,255,.18);animation:none}
+.ptv-hint:focus-visible{outline:2px solid var(--gold);outline-offset:2px;animation:none}
 .ptv-upper{width:46px;height:66px;border-radius:var(--radius-md,8px);overflow:hidden;border:1px solid #44444e;flex:none;background:var(--stage-panel-2);position:relative}
 .ptv-upper img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
 .ptv-upper-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(135deg,#363642,#17171d);color:var(--gold);font-weight:900}

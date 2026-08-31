@@ -7566,7 +7566,11 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     <div><span class="ptv-telop-cat">${cat}</span><span class="ptv-telop-main">${main}</span></div>
     ${sub ? `<div class="ptv-telop-sub">${sub}</div>` : ''}
   </div>`;
-  const _hint = '<div class="ptv-hint">クリックで進む ▶</div>';
+  // 進行導線は**実ボタン**で出す(2026-08-31 task-103)。以前は素の div に点滅テキストを
+  // 置いているだけで、①〜④の場面には button も onclick も無く、クリック面も中央720pxの
+  // TV枠の中だけだった。キーボードでは一切進めず、描画が転ぶと出口ゼロの画面で止まる。
+  // 他の全画面演出(.cerem-skip / リプレイの「次へ」)と同じく、必ず押せる出口を1つ置く。
+  const _hint = '<button type="button" class="ptv-hint" data-ptv-next>次へ ▶</button>';
   const _resultSide = (fighter, otherF, outcome, size, showWinLabel) => {
     const mark = outcome === 'winner' ? '○' : outcome === 'loser' ? '×' : '△';
     const role = outcome === 'winner' ? '勝者' : outcome === 'loser' ? '敗者' : '引き分け';
@@ -7694,6 +7698,56 @@ function renderPPVTvBroadcast(card, results, ppvName) {
   });
 
   let sceneIdx = 0;
+  // ── 場面送り(§5-D 鉄則1「待ちに時限の保険」/ 鉄則2「1操作=1進行」) ──
+  // 旧実装は場面ごとに .ptv-tv へ { once:true } のリスナーを張り直していたため、
+  // 描画が一度でも転ぶと張り直しが起きず、ボタンの無い画面で恒久停止した。
+  // 委譲リスナーはオーバーレイに1本だけ張り、暗幕・TV枠・「次へ」ボタン・キーボードの
+  // どれから来ても同じ1つの出口(advance)に集約する。
+  let advancing = false;
+  let tornDown = false;
+
+  const _closestButton = (e) => {
+    const t = e && e.target;
+    return (t && typeof t.closest === 'function') ? t.closest('button') : null;
+  };
+  const onSurfaceClick = (e) => {
+    // 最終場面の「事務所へ戻る」など、専用ハンドラを持つボタンは横取りしない
+    const btn = _closestButton(e);
+    if (btn && typeof btn.hasAttribute === 'function' && !btn.hasAttribute('data-ptv-next')) return;
+    advance();
+  };
+  const onKey = (e) => {
+    if (!e || (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight')) return;
+    // ボタンにフォーカスがあるときはブラウザ既定の活性化に任せる(二重送りの防止)
+    if (_closestButton(e)) return;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    advance();
+  };
+  const teardown = () => {
+    if (tornDown) return;
+    tornDown = true;
+    overlay.removeEventListener('click', onSurfaceClick);
+    document.removeEventListener('keydown', onKey);
+    if (overlay._ptvSurfaceHandler === onSurfaceClick) {
+      overlay._ptvSurfaceHandler = null;
+      overlay._ptvKeyHandler = null;
+    }
+  };
+  function advance() {
+    if (advancing || tornDown) return;
+    // 中継が画面から降りた後にリスナーが生き残っていても、他画面の操作を奪わない
+    if (!box.querySelector('.ptv-tv')) { teardown(); return; }
+    if (sceneIdx >= scenes.length - 1) return; // 最終場面の出口は「事務所へ戻る」だけ
+    advancing = true;
+    sceneIdx += 1;
+    try { Audio.play('click'); } catch (e) {}
+    try {
+      show();
+    } finally {
+      advancing = false;
+    }
+  }
+
   const show = () => {
     const sc = scenes[sceneIdx];
     box.innerHTML = `<div class="ptv-tv"><div class="ptv-screen">${sc.html}</div></div>`;
@@ -7715,15 +7769,17 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         a.play().catch(() => {});
       } catch (e) {}
     }
-    if (!sc.final) {
-      const tv = box.querySelector('.ptv-tv');
-      if (tv) tv.addEventListener('click', () => {
-        sceneIdx++;
-        try { Audio.play('click'); } catch (e) {}
-        show();
-      }, { once: true });
-    }
+    if (sc.final) teardown(); // 出口は「事務所へ戻る」に一本化。以後クリックを拾わない
   };
+  // 中継が二重に起動しても、生きている委譲リスナーは常に1組だけにする(1操作=1進行)
+  if (overlay._ptvSurfaceHandler) {
+    overlay.removeEventListener('click', overlay._ptvSurfaceHandler);
+    document.removeEventListener('keydown', overlay._ptvKeyHandler);
+  }
+  overlay._ptvSurfaceHandler = onSurfaceClick;
+  overlay._ptvKeyHandler = onKey;
+  overlay.addEventListener('click', onSurfaceClick);
+  document.addEventListener('keydown', onKey);
   show();
   overlay.classList.add('active');
 }

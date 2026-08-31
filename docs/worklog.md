@@ -10,7 +10,48 @@
 4. **偽陽性2件(ハーネス側)**: 成熟セーブの年末同期連鎖(2.8秒)がクリックtimeout 1500msを超えD2誤報 → 5000msへ / hoverで変形するボタン上にポインタが残り無限フリッカー→D2誤報 → クリック後にポインタ退避([driver.js](test/ui-walkthrough/driver.js))
 5. **良性1件**: `[WM][awards] ignored background navigation`はガードの正常動作 → D1除外リストに明記
 
-処置後の再走破: **6本中5本✓**。残る1本(v1.0x世代S2W23、S2W48 ppvTVで進行不能・popup queue=1 active)は**実プレイヤー影響が疑われる本物のフリーズ**として、worktree隔離のOpusエージェント(task-103)で根治中。
+処置後の再走破: **6本中5本✓**。残る1本(v1.0x世代S2W23、S2W48 ppvTVで進行不能・popup queue=1 active)は**実プレイヤー影響が疑われる本物のフリーズ**として、worktree隔離のエージェント(task-103)で根治した(次エントリ)。
+
+## PPV TV観戦(ppvTV)の進行不能を根治 — 「出口ゼロの全画面」という型を発見（2026-08-31・task-103）
+
+実セーブ棚の実走で、最古の実セーブ `v1.0x_S2W23`（v1.0x世代）が **S2W48 の PPV TV観戦フェーズで必ず止まる**（D2_FREEZE: no safe progress control is visible）ことが判明。699a860（旧セーブ年末クラスタ修正）を取り込んでも同じ場所で落ちる。詳細レポートは `docs/codex-tasks/task-103-report.md`。
+
+### 真因: セーブ世代とは無関係の**画面構造の欠陥**
+
+`ui-common.js renderPPVTvBroadcast()` のPPV中継は8〜10場面の紙芝居で、**最終場面（放送終了）にだけ**実ボタン「事務所へ戻る」がある。①放送OP〜④頂上決戦の全場面には **button も onclick も role も tabindex も無く**、進行導線は素の `<div class="ptv-tv">` に付けた click リスナー1本だけ。唯一の案内は10.5pxの点滅 `div` テキスト（`bottom:52px`）で、テロップ帯に被って読めない。
+
+**新規fixtureを読み込んで同画面を強制点火しても操作可能要素は0件**だったため、旧セーブの欠落フィールドが原因ではないと確定（saveDoctor での正規化案は不採用）。
+
+**なぜ基準線走破がずっと緑だったか**: 第48週は `ppvUnlocked` で分岐し、true なら `ppvShow`（自団体が出場・専用UIに実ボタンあり）、false なら `ppvTV`（テレビで眺めるだけ）。走破ハーネスは毎週興行を打って勝ち続けるため**シーズン1のうちに団体人気30を超えて出場権を取り**、W43で `togglePPVPick`→`confirmPPVEntry` を踏んで `ppvShow` 側へ抜けていた（基準線ログ step260-261）。つまり**基準線はこの画面を一度も踏んでいない**。実害を受けるのは**団体人気30未満で年末を迎えるプレイヤー＝1〜2年目の全員と、伸び悩んでいる団体すべて**で、彼らは毎年この画面を通る。
+
+### 修正（対処療法＝ハーネス側の除外はしていない）
+
+- `.ptv-hint` を**実ボタン**「次へ ▶」へ。テロップ帯の上（`bottom:60px`）へ逃がし、hover/focus を可視化
+- 場面ごとの `{ once:true }` 張り直しを廃止。**オーバーレイへの委譲クリック1本 + document keydown（Enter/Space/→）**に集約し、**暗幕（TV枠の外）**からも進めるようにした（旧実装は中央720pxの枠内だけ）
+- `advance()` は `advancing`／`tornDown`／`.ptv-tv` の在否／最終場面かを検証してから進む（§5-D 鉄則2）。最終場面で委譲を外して出口を一本化。中継が二重起動しても生きた委譲は常に1組
+- `App.initPPVTV` は `renderPPVTvBroadcast` を try/catch で包み、転んだら `App._renderPPVTvFallback()`（「事務所へ戻る」だけの最小画面）へ着地（§5-D 鉄則1）。二重起動防止フラグを先に立てる都合上、3秒ネットは張り直されないためここが最後の砦
+- 回帰ガード新設: `u6-org-identity-safety-net-test.js` の `every ppvTV scene carries a real, pressable exit`（全場面に押せる実ボタンが居る／最終場面で委譲を外す／クリックとキーボードのどちらでも1操作=1場面）
+
+### 副産物: main側の既存の赤を1本回収
+
+`tenchosen-result-flow-guard-test.js` は **699a860 が `_handlePatternBResultClose` に足した `closeBtn.getAttribute('onclick')`** にテストスタブが追随しておらず、main側で既に落ちていた（`git log -S` で確認。本修正は当該関数に触れていない）。実物の `closest()` は Element を返すのでスタブを実物に合わせ、あわせて **「PPV結果のボタンには委譲しない」= 699a860 が直した幻の1週の不変条件**をテストとして固定した。
+
+### 検証（すべて実測）
+
+- 再現コマンド（上限なし）: **PASS** / S2W23→S3W1 / 196手 / Issues 0
+- `save-regression --walkthrough`: **ALL CLEAR**（doctor 6/6 ✓・走破 6/6 ✓ Issues 0）。**既知課題の `prerefix_S12W45` も本実行では再現せず ✓**（1回の非再現では消さないため KNOWN_ISSUES は据え置き。要再確認）
+- `npm run test:ui:walkthrough`: **PASS** / 316手 / digest `817e02f2dea24b7f` は**修正前と完全一致**＝基準線の通り道を一切動かしていない
+- `npm test`: **256/256 PASS** ／ `auto-sim 20季 seed42`: **ALL CLEAR ✓**
+
+### 同型の掃討 — あと3件残っている（別タスク起票済み）
+
+「進行手段が素の要素への `addEventListener('click')` だけで、button も onclick属性も role も無い全画面演出」を src 全体で洗った結果:
+
+1. `app.js:5187` 付近 `App.completeDraft()` の**旗揚げ完成演出**（`.completion-overlay`）— button も onclick も無く、`position:fixed;inset:0;z-index:400;pointer-events:auto` で背後のボタンも塞ぐ。**時限フォールバック無し＝PPVと完全に同じ恒久停止**
+2. `ui-render.js:419` 付近 `renderOpeningScreen()` の `.opening-overlay` — skip が `skip.onclick = fn` の**プロパティ代入**で属性ではないため実ボタンでも `[onclick]` でもない。**時限フォールバック無し**
+3. `ui-common.js:15762` 付近 `showLeagueElevationCeremony()` スライド2 — 進行は素の `#leClickArea` のみ。`#leCloseBtn` は実ボタンだが step5 まで `opacity:0`。**`display:none` に変えた瞬間に止まる**（いま通っているのは偶然）
+
+`u4-modal-frame-safety-net-test.js:427` はこれら3つのオーバーレイを列挙しているが、**z-indexの重なり検査であってクリック可能性を見ていない**ため、どのテストにも掛かっていない。
 
 ## 検査システム総点検 — 敵対監査3系統+実セーブ棚の新設で検出器の欠陥を計8件発見・修正（2026-08-31・Fable）
 

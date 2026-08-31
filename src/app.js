@@ -16051,7 +16051,14 @@ App.initPPVTV = function() {
   const _startBroadcast = () => {
     if (_ppvTvStarted) return;
     _ppvTvStarted = true;
-    renderPPVTvBroadcast(tvResult.card, tvResult.results, G.ppvName);
+    try {
+      renderPPVTvBroadcast(tvResult.card, tvResult.results, G.ppvName);
+    } catch (e) {
+      // 中継の組み立てが転んでも「準備中…」の出口ゼロ画面に置き去りにしない(§5-D 鉄則1)。
+      // 二重起動防止フラグは先に立ててあるのでネットは二度と張られない — ここが最後の砦。
+      console.warn('[WM] ppvTV broadcast render failed — falling back to the exit card:', e && e.message);
+      App._renderPPVTvFallback();
+    }
   };
   _chainEventPopupQueueEmpty(_startBroadcast);
   setTimeout(() => {
@@ -16060,6 +16067,20 @@ App.initPPVTV = function() {
       _startBroadcast();
     }
   }, 3000);
+};
+
+// 中継が描けなかったときの最小画面。週送りの出口(事務所へ戻る)だけは必ず届かせる。
+App._renderPPVTvFallback = function() {
+  const overlay = document.getElementById('showResultOverlay');
+  const box = document.getElementById('showResultBox');
+  if (!overlay || !box) return;
+  box.innerHTML = '<div class="ptv-tv"><div class="ptv-screen">'
+    + '<div class="ptv-chrome"><span class="ptv-ch">WRESTLE TV</span><span class="ptv-live is-off">放送終了</span></div>'
+    + '<div class="ptv-ending">'
+    + '<div class="ptv-end-msg">テレビの明かりを消す。<br><br>今年の年末も、画面の中は他所の景色だった。</div>'
+    + '<button type="button" class="ptv-btn" onclick="App.closePPVTV()">事務所へ戻る</button>'
+    + '</div></div></div>';
+  overlay.classList.add('active');
 };
 
 App.closePPVTV = function() {
