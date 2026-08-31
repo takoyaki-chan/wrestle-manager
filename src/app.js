@@ -2949,6 +2949,49 @@ const Storage = {
         G = { ...G, retiredSeasons: rs, _migrated_retiredSeasons_v1: true };
       }
 
+      // MQ表記一掃: 旧セーブの表示用テキスト(ログ/新聞アーカイブ/殿堂ハイライト/年代記
+      // キャッシュ等)に焼き込まれた「MQ」表記を、生成側の新表記と同じ日本語へ一度だけ
+      // 書き換える。対象サブツリーは表示専用文字列のみで、内部キー('careerBestMQ'等の
+      // 値文字列)はどのパターンにも掛からない形にしてある
+      if (!G._migrated_mq_text_v1) {
+        const mqTextFixes = [
+          [/\(MQ avg /g, '(平均試合評価 '],
+          [/興行平均MQ: /g, '興行の平均試合評価: '],
+          [/（MQ全試合 \+/g, '（全試合の評価+'],
+          [/ベストマッチ賞（MQ/g, 'ベストマッチ賞（試合評価'],
+          [/（最高MQ/g, '（最高評価'],
+          [/MQ(\d+)到達。/g, '試合評価$1到達。'],
+          [/自身のMQ最高値/g, '自身の試合評価の最高値'],
+          [/自身のベストMQを/g, '自身の最高評価を'],
+          [/MQ自己ベスト/g, '試合評価の自己ベスト'],
+          [/これだけのMQを/g, 'これだけの試合評価を'],
+          [/メインMQ (?=\d)/g, 'メイン試合評価 '],
+          [/平均MQ (?=\d)/g, '平均試合評価 '],
+          [/。MQ (?=\d)/g, '。試合評価 '],
+          [/ MQ (?=\d)/g, ' 試合評価 '],
+          [/\(MQ(?=\d)/g, '(試合評価'],
+          [/（MQ(?=\d)/g, '（試合評価'],
+          [/ MQ(?=\d)/g, ' 試合評価'],
+        ];
+        const _mqFixStr = (s) => { for (const [re, rep] of mqTextFixes) s = s.replace(re, rep); return s; };
+        const _mqFixWalk = (node) => {
+          if (Array.isArray(node)) {
+            for (let i = 0; i < node.length; i++) {
+              if (typeof node[i] === 'string') { if (node[i].includes('MQ')) node[i] = _mqFixStr(node[i]); }
+              else _mqFixWalk(node[i]);
+            }
+          } else if (node && typeof node === 'object') {
+            for (const k of Object.keys(node)) {
+              if (typeof node[k] === 'string') { if (node[k].includes('MQ')) node[k] = _mqFixStr(node[k]); }
+              else _mqFixWalk(node[k]);
+            }
+          }
+        };
+        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'hallOfFame', 'allHallOfFame',
+         'lastAwards', 'seasonHistory', 'chronicle', 'prologue'].forEach(key => _mqFixWalk(G[key]));
+        G = { ...G, _migrated_mq_text_v1: true };
+      }
+
       if (!G._migrated_factions_v1) {
         if (!Array.isArray(G.factions)) G = { ...G, factions: [] };
         if (!G.factionHostility || typeof G.factionHostility !== 'object') G = { ...G, factionHostility: {} };
@@ -8165,7 +8208,7 @@ const App = {
       };
       events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
     }
-    events.push(`📊 ★${appStars} (MQ avg ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push(`📊 ★${appStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // Heat — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
@@ -14857,9 +14900,9 @@ const App = {
       triggers.push({ id:'first_title_winner', tier:'red', characterId: champId,
         text:`${chName}が初代王者に。最初の頂が決まった。` });
     }
-    if (peakMQ >= 50) triggers.push({ id:'first_mq50', tier:'silver', text:`MQ50到達。観客の目つきが変わり始めた。` });
-    if (peakMQ >= 70) triggers.push({ id:'first_mq70', tier:'silver', text:`MQ70到達。名勝負と呼ぶに値する試合が出た。` });
-    if (peakMQ >= 80) triggers.push({ id:'first_mq80', tier:'gold', text:`MQ80到達。この章の選手が業界の壁を叩いた瞬間。` });
+    if (peakMQ >= 50) triggers.push({ id:'first_mq50', tier:'silver', text:`試合評価50到達。観客の目つきが変わり始めた。` });
+    if (peakMQ >= 70) triggers.push({ id:'first_mq70', tier:'silver', text:`試合評価70到達。名勝負と呼ぶに値する試合が出た。` });
+    if (peakMQ >= 80) triggers.push({ id:'first_mq80', tier:'gold', text:`試合評価80到達。この章の選手が業界の壁を叩いた瞬間。` });
     if (orgPop >= 25) triggers.push({ id:'pop_25', tier:'normal', text:`団体人気25到達。スポンサー筋に動きが出始めた。` });
     if (orgPop >= 50) triggers.push({ id:'pop_50', tier:'silver', text:`団体人気50到達。大会場での興行が現実的に。` });
     if (G.survivalCleared) triggers.push({ id:'survival_clear', tier:'red',
@@ -15214,7 +15257,7 @@ const App = {
     const events = [];
     wp.results.forEach((r, i) => {
       const icon = r.playerWon ? '🔵' : '🔴';
-      events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${r.playerWon ? r.playerFighter.name : r.aiFighter.name}勝利 (MQ${r.mq})`);
+      events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${r.playerWon ? r.playerFighter.name : r.aiFighter.name}勝利 (試合評価${r.mq})`);
     });
     const outcome = Engine.event.applyWarOutcome(G, playerWins, aiWins, ev.opponentOrgId);
     const eventWon = playerWins > aiWins;

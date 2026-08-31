@@ -6117,8 +6117,8 @@ const Engine = {
             break;
           case 'awardBestMatch':
             text = g.count >= 2
-              ? `<strong>${g.charName}</strong> ベストマッチ賞 ${g.count}度受賞${streak >= 2 ? `・${streak}年連続` : ''}（最高MQ${g.maxMq || '?'}）`
-              : `<strong>${g.charName}</strong> ベストマッチ賞（MQ${g.maxMq || '?'}）`;
+              ? `<strong>${g.charName}</strong> ベストマッチ賞 ${g.count}度受賞${streak >= 2 ? `・${streak}年連続` : ''}（最高評価${g.maxMq || '?'}）`
+              : `<strong>${g.charName}</strong> ベストマッチ賞（試合評価${g.maxMq || '?'}）`;
             break;
           case 'awardRookie':
             text = g.count >= 2
@@ -14770,7 +14770,7 @@ const Engine = {
       };
       events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
     }
-    events.push(`📊 ★${showStars} (MQ avg ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push(`📊 ★${showStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
 
     // プロモ改修 v1.0: 試合出場選手の promoStack をリセット
     const matchParticipantIds = new Set(results.flatMap(r =>
@@ -15396,7 +15396,7 @@ const Engine = {
         if (mainPenalty < 0 && Traits.has(c, '闘志')) mainPenalty = Math.round(mainPenalty / 2);
         if (mainPenalty < 0) {
           popDelta += mainPenalty; // penalties are not diminished
-          popEvents.push(`📉 メインイベントの低MQ(${result.mq})で${c.name}の人気${mainPenalty}`);
+          popEvents.push(`📉 メインイベントの低い試合評価(${result.mq})で${c.name}の人気${mainPenalty}`);
         }
       }
 
@@ -20282,9 +20282,9 @@ Engine.mvpRace = {
         `先週の練習で殻を破った気配——ここからの伸びが見もの。`,
       ]);
       if (sn.id === 'careerBestMQ') return pick([
-        `先週、自身のMQ最高値を更新。質で語れる戦いが増えてきた。`,
-        `自身のベストMQを先週更新。試合の中身で点数を稼ぎ始めた。`,
-        `MQ自己ベスト更新の余韻——この${m.age}歳がいま化けつつある。`,
+        `先週、自身の試合評価の最高値を更新。質で語れる戦いが増えてきた。`,
+        `自身の最高評価を先週更新。試合の中身で点数を稼ぎ始めた。`,
+        `試合評価の自己ベスト更新の余韻——この${m.age}歳がいま化けつつある。`,
       ]);
     }
     // 4. 特性句 + 役職 のフォールバック（バリエーション）
@@ -20937,7 +20937,7 @@ Engine.awards = {
           highlights.push({ type: 'awardMedia', season: ev.season, text: 'メディア功労賞 受賞' });
           break;
         case 'awardBestMatch':
-          highlights.push({ type: 'awardBestMatch', season: ev.season, text: `ベストマッチ賞（MQ ${ev.mq || '?'}）` });
+          highlights.push({ type: 'awardBestMatch', season: ev.season, text: `ベストマッチ賞（試合評価 ${ev.mq || '?'}）` });
           break;
         case 'domeMain':
           highlights.push({
@@ -32417,7 +32417,7 @@ Engine.newspaper = {
         page2Stories.push({
           type: 'juniorTournamentMatchResults',
           headline: `第${state.season}回ジュニアトーナメント 全試合結果`,
-          body: allMatches.map(m => `【${m.round}】${m.winner}（${m.winnerOrg}） def. ${m.loser}（${m.loserOrg}） MQ${m.mq}`).join('\n'),
+          body: allMatches.map(m => `【${m.round}】${m.winner}（${m.winnerOrg}） def. ${m.loser}（${m.loserOrg}） 試合評価${m.mq}`).join('\n'),
           matches: allMatches,
         });
         if (bestMatch) {

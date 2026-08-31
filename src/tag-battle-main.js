@@ -1617,7 +1617,7 @@ function showResult(fr){
   const mq = result.mq || 0;
   const mqCls = mq >= 80 ? 'mq-gold' : mq >= 60 ? 'mq-green' : mq >= 40 ? 'mq-normal' : 'mq-low';
   document.getElementById('vicStats').innerHTML =
-    `<div class="vic-stat"><div class="vic-stat-label">MQ</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>` +
+    `<div class="vic-stat"><div class="vic-stat-label">評価</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>` +
     `<div class="vic-stat"><div class="vic-stat-label">TURNS</div><div class="vic-stat-value">${result.turns}</div></div>` +
     `<div class="vic-stat"><div class="vic-stat-label">SEGS</div><div class="vic-stat-value">${segments}</div></div>`;
 

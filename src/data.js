@@ -7940,7 +7940,7 @@ const ALL_COACHES = [
    grade:'C', coachingType:'bigheart', gMult:1.08, observation:'B', style:'Allround', abilities:['新人育成'], flavor:'話術',
    salary:27, hireFee:216, minOrgPop:0,
    age:48, gender:'男', origin:'名古屋',
-   desc:'試合構成の達人。担当選手の試合MQを引き上げる。',
+   desc:'試合構成の達人。担当選手の試合評価を引き上げる。',
    profile:'元プロレス実況アナウンサーで試合構成を熟知するセコンドマン。リング外から「次の展開」を的確に指示し、試合のドラマ性を引き上げる。話術に長け、社交的な性格。'},
   {id:8, name:'白川 沙耶',          emoji:'📣', hasPortrait:true,
    grade:'C', coachingType:'theorist', gMult:1.08, observation:'D', style:'Allround', abilities:['スター製造'], flavor:null,
@@ -18280,7 +18280,7 @@ const MILESTONE_EVENTS = [
         label: '🎯 試合の質をもっと高める',
         effect: { type: 'mq_boost', amount: 3, weeks: 4, attendanceMultiplier: 1.15 },
         result: '練習メニューを見直し、試合構成にもこだわり始めた。',
-        effectLabel: '全試合MQ+3、集客×1.15（4週間）'
+        effectLabel: '全試合の試合評価+3、集客×1.15（4週間）'
       },
       {
         label: '🔍 新戦力の獲得を急ぐ',
@@ -18306,7 +18306,7 @@ const MILESTONE_EVENTS = [
         label: '⚔️ 熱いうちに大一番を組む',
         effect: { type: 'next_match_mq', amount: 3, attendanceMultiplier: 1.20 },
         result: '次の対戦が、特別な一戦になる予感がする。',
-        effectLabel: '次の対戦MQ+3、その興行の集客×1.20'
+        effectLabel: '次の対戦の試合評価+3、その興行の集客×1.20'
       },
       {
         label: '🌐 他の組み合わせも試したい',
