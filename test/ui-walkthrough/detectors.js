@@ -264,13 +264,15 @@ class WalkthroughDetectors {
     if (first.progressed) return first;
 
     let after = first.after;
-    for (const retry of retryActions) {
+    for (let retryIndex = 0; retryIndex < retryActions.length; retryIndex += 1) {
       const retryWatch = await this.beginMutationWatch(page);
-      await retry().catch(() => {});
+      await retryActions[retryIndex]().catch(() => {});
       const result = await this.waitForProgress(page, after, { mutationWatch: retryWatch });
       await retryWatch.dispose();
       after = result.after;
-      if (result.progressed) return { ...result, recoveredByRetry: true };
+      // retryIndex は「どの兄弟が回復させたか」を呼び出し元がレポートに記録するための添字
+      // (2026-08-31監査③: 回復した死にボタンの黙殺をやめる)
+      if (result.progressed) return { ...result, recoveredByRetry: true, retryIndex };
     }
 
     const issue = this.record('D2_FREEZE', `no observable progress after clicking ${action}`, {
