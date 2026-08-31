@@ -1563,12 +1563,19 @@ function pledgeProbe(G) {
 //      SALARY_REFIX_CAP(旧×1.6+10)を超えて跳んだら違反(下方向と加入直後は対象外)
 //   L2 更改の約束: 契約交渉1件の解決で給与が+60万を超えて動いたら違反
 //      (要求の設計上限50万+対案・丸めの余裕。それ以上は「言った額と違う」)
+//   L3 資金恒等式(v1.35新設): tickWeek/advanceWeek 1呼び出しを跨ぐ資金の変化が、
+//      週次収支明細(weeklyFinance.net)+プレイヤー可視の金額ログ(💰賞金/🏋️招聘自動継続)の
+//      合計で説明できなければ違反。説明側は「エンジンが自ら申告した構造化値」と
+//      「プレイヤーに見せた数字そのもの」の2系統だけを物差しにする(独立物差し原則)。
+//      詳細は installFundsLedger のコメント(経路棚卸しと丸め規約)を参照。
 const salaryLedger = {
   prevBase: new Map(),   // fighterId -> { base, tick }
   tick: 0,
   checked: 0,
   violations: [],        // L1
   negotiationViolations: [], // L2
+  fundsChecked: 0,       // L3: 検査した tickWeek/advanceWeek 呼び出し数
+  fundsViolations: [],   // L3
 };
 
 // ── 台帳検査の変異自己点検 (WM_LEDGER_MUTATION=<name>) ────────────────────────
@@ -1577,6 +1584,7 @@ const salaryLedger = {
 // どの変異も **Result: ISSUES FOUND になるのが正**。ALL CLEARが出たら検出器が死んでいる。
 //   refix_uncap   … 再固定の上限を撤廃(v1.32以前の給与一括ジャンプを再現)→ L1が鳴るはず
 //   raise_double  … 交渉昇給を約束額の2倍こっそり付与(言った額と違う)→ L2が鳴るはず
+//   funds_leak    … tickWeekが毎週37万を明細に載せず無言で抜く → L3(資金恒等式)が鳴るはず
 // 既知の限界(鳴らない型): 毎週+0.5級のゆっくりした静かな漂流はL1の跳び検査を潜る。
 const LEDGER_MUTATION = process.env.WM_LEDGER_MUTATION || '';
 if (LEDGER_MUTATION === 'refix_uncap') {
@@ -1597,6 +1605,19 @@ if (LEDGER_MUTATION === 'refix_uncap') {
           ? { ...f, salaryBonus: Math.min(100, (f.salaryBonus || 0) + d) }
           : f),
       };
+    }
+    return res;
+  };
+} else if (LEDGER_MUTATION === 'funds_leak') {
+  // L3の変異自己点検: 明細にも金額ログにも載らない資金流出を毎週合成する。
+  // このラッパーは後段の installFundsLedger より**先**に仕掛ける — L3の観測スパンの
+  // 内側でリークが起きる形になり、L3が生きていれば必ず捕まる。
+  console.log('[台帳検査] mutation=funds_leak: tickWeekが毎週37万を無言で抜く(ISSUES FOUNDが正)');
+  const _origTickForLeak = Engine.tickWeek;
+  Engine.tickWeek = function(state) {
+    const res = _origTickForLeak.call(this, state);
+    if (res && res.state && Number.isFinite(res.state.funds)) {
+      res.state = { ...res.state, funds: res.state.funds - 37 };
     }
     return res;
   };
@@ -1630,6 +1651,96 @@ if (CHAOS === 'throw_tick') {
   console.error(`[生存証明] 未知のchaos: ${CHAOS}`);
   process.exit(2);
 }
+
+// ── 台帳L3: 資金恒等式 (v1.35新設) ─────────────────────────────────────────
+// 資金(G.funds)を動かす全経路の棚卸し(2026-08-31実施)に基づく。エンジン内で
+// tickWeek/advanceWeek の呼び出しスパン内に資金を動かす経路は以下で全て:
+//   [tickWeek内]
+//     1. processSettlement … weeklyFinance.net として構造化申告される(明細=差分が構成的に一致)
+//     2. tickInviteBuffs の招聘自動継続(autoRenew) … 明細に載らず、週次ログ
+//        「🏋️ …自動継続した(4週・N万/⚡M)」だけが痕跡(棚卸しで発見した明細非掲載経路)
+//     3. sanitizeFloats(末尾) … funds を整数へ丸める(→tick側の許容は±0.5)
+//   [advanceWeek内]
+//     4. ppvTournament.apply(天頂戦・週48) … 賞金+ブランド収入。💰ログが対
+//     5. springTagLeague.apply(週12) … 賞金計+ブランド収入。💰ログが対
+//     (autumnWar.apply/juniorTournament.apply/applyPPVResults は現行コードでは
+//      スパン外=UI・ループ直呼びだが、経路が動いても偽陽性にならないよう説明表に含める)
+//   [スパン外=この恒等式の対象外(正直な死角申告)]
+//     ケア決裁・特別治療・招聘/延長/衝突の手動解決・契約交渉(引き留め金)・スカウト/FA契約・
+//     レンタル前払い・移籍(resolvePoach/playerPoach)・ドラフト入札・選択/大型/派閥イベント・
+//     コーチ枠購入 — いずれもプレイヤー操作のAPI呼び出しで、tickWeek/advanceWeekを通らない。
+// 説明側の物差しは (a)weeklyFinance.net (b)プレイヤーに見せた金額ログ の2系統のみ。
+// エンジンの定数・計算式は参照しない(L1の借り物差し事故=refix_uncap盲目化の再発防止)。
+// 丸め規約: tickWeek は sanitizeFloats の整数丸めを跨ぐため許容±0.5、
+// advanceWeek は丸めを持たないため許容±0.01(クレジットは文字列往復で正確に復元できる)。
+const LEDGER_L3_MONEY_LINES = [
+  // tickWeek内: 招聘自動継続(支出)。「見送られた」行はこの形に一致しない
+  { re: /^🏋️ .+コーチ招聘を自動継続した\(4週・([\d.]+)万\/⚡/, sign: -1 },
+  // advanceWeek内: 特別大会の即時クレジット(収入)
+  { re: /^💰 天頂戦賞金 ¥([\d.]+)万$/, sign: 1 },
+  { re: /^💰 天頂戦特別興行・ブランド収入 ¥([\d.]+)万$/, sign: 1 },
+  { re: /^💰 春のタッグリーグ特別興行・ブランド収入 ¥([\d.]+)万$/, sign: 1 },
+  { re: /^💰 春のタッグリーグ 賞金計¥([\d.]+)万/, sign: 1 }, // 括弧内の内訳¥N万は数えない
+  // 現行コードではスパン外の即時クレジット(呼び出し経路の将来移動に備えた保険)
+  { re: /^💰 秋の4団体特別大会 分配金([\d.]+)万/, sign: 1 },
+  { re: /^💰 4団体勝ち残り対抗戦 賞金([\d.]+)万を獲得$/, sign: 1 },
+  { re: /^💰 ジュニアトーナメント特別興行・ブランド収入 ¥([\d.]+)万$/, sign: 1 },
+  { re: /^💰 ジュニアトーナメント賞金 ¥([\d.]+)万 を獲得$/, sign: 1 },
+  { re: /^💰 PPV優勝賞金 ¥([\d.]+)万$/, sign: 1 },
+  { re: /^💰 PPV準優勝賞金 ¥([\d.]+)万$/, sign: 1 },
+  { re: /^💰 PPV出場賞金 ¥([\d.]+)万 × (\d+)名$/, sign: 1, countGroup: 2 },
+  { re: /^💰 PPV特別興行・ブランド収入 ¥([\d.]+)万$/, sign: 1 },
+];
+
+function ledgerParseMoneyEvents(events) {
+  let sum = 0;
+  for (const ev of (events || [])) {
+    if (typeof ev !== 'string') continue;
+    for (const fmt of LEDGER_L3_MONEY_LINES) {
+      const m = fmt.re.exec(ev);
+      if (m) {
+        const amount = parseFloat(m[1]) * (fmt.countGroup ? parseInt(m[fmt.countGroup], 10) : 1);
+        if (Number.isFinite(amount)) sum += fmt.sign * amount;
+        break;
+      }
+    }
+  }
+  return sum;
+}
+
+// tickWeek/advanceWeek を包み、1呼び出しごとに Δ資金 と説明合計を照合する。
+// 変異(funds_leak)・カオス(throw_tick)のラッパーより**後**に仕掛けること —
+// 注入された破壊が観測スパンの内側に入る(検出できる)配置になる。
+// fundsIn/fundsOut が非有限のときは検査しない(NaNの検出は tickWeek入口検査と
+// sanitizeFloats の記録義務の管轄。ここで重ねて鳴らすと二重報告になる)。
+function installFundsLedger(fnName, tolerance, explainFn) {
+  const orig = Engine[fnName];
+  Engine[fnName] = function(state) {
+    const fundsIn = state ? state.funds : undefined;
+    const result = orig.call(this, state);
+    const out = result && result.state;
+    if (out && Number.isFinite(fundsIn) && Number.isFinite(out.funds)) {
+      salaryLedger.fundsChecked += 1;
+      const explained = explainFn(out, result);
+      const delta = out.funds - fundsIn;
+      if (Math.abs(delta - explained) > tolerance) {
+        salaryLedger.fundsViolations.push({
+          season: state.season, week: state.week, fn: fnName,
+          delta: Math.round(delta * 100) / 100,
+          explained: Math.round(explained * 100) / 100,
+          // 診断用: 金額らしき文字列を含むイベント行を添える
+          moneyEvents: (result.events || [])
+            .filter(e => typeof e === 'string' && /[\d.]+万/.test(e)).slice(0, 6),
+        });
+      }
+    }
+    return result;
+  };
+}
+installFundsLedger('tickWeek', 0.500001, (out, result) =>
+  ((out.weeklyFinance && Number.isFinite(out.weeklyFinance.net)) ? out.weeklyFinance.net : 0)
+  + ledgerParseMoneyEvents(result.events));
+installFundsLedger('advanceWeek', 0.01, (out, result) => ledgerParseMoneyEvents(result.events));
 
 function ledgerBaseSalary(f) {
   // 契約条件だけの基本給: salaryBonus(交渉昇給)と王者加算を除いた純粋な契約値
@@ -3387,8 +3498,13 @@ console.log(`Elapsed: ${elapsed}s`);
   console.log(`[台帳検査] 更改の約束(実合意額±2万): 違反 ${salaryLedger.negotiationViolations.length}件`);
   salaryLedger.negotiationViolations.slice(0, 5).forEach(v => console.log(
     `  ! S${v.season} id${v.id} ${v.attitude}/choice${v.choice}: Δ${v.delta}万`));
+  console.log(`[台帳検査] 資金恒等式(Δ資金=明細+可視ログ): ${salaryLedger.fundsChecked}回検査 / 違反 ${salaryLedger.fundsViolations.length}件`);
+  salaryLedger.fundsViolations.slice(0, 5).forEach(v => console.log(
+    `  ! S${v.season}W${v.week} ${v.fn}: Δ${v.delta}万 ≠ 説明${v.explained}万`
+    + (v.moneyEvents.length ? ` | ${v.moneyEvents.join(' / ')}` : '')));
 }
-const ledgerClear = salaryLedger.violations.length === 0 && salaryLedger.negotiationViolations.length === 0;
+const ledgerClear = salaryLedger.violations.length === 0 && salaryLedger.negotiationViolations.length === 0
+  && salaryLedger.fundsViolations.length === 0;
 const allClear = uniqueViolations.length === 0 && result.errors.length === 0 && freqWarnings.length === 0 && ledgerClear;
 console.log(`Result: ${allClear ? 'ALL CLEAR ✓' : 'ISSUES FOUND'}`);
 console.log('(engine-integrity check — バランス判断にはプレイ実機確認が必要)');
