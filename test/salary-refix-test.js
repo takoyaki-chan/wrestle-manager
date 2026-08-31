@@ -41,6 +41,23 @@ function salary(f, titles = {}) {
   return Engine.util.getSalary(f, titles);
 }
 
+// ── 独立アンカー(2026-08-31監査への対処) ─────────────────────────────────────
+// このテストの期待値の大半は本番と同じ getSalary / SALARY_REFIX_CAP から計算される
+// 「結合した物差し」で、給与式の係数が壊れても期待値が一緒に壊れてPASSし続ける
+// (実証: baseA×10でも旧テストは全PASS)。ここだけは**手書きリテラル**で式の絶対値を
+// 縛る。式を正当に変えたらこの数字も意識的に更新すること(それがこのピンの目的)。
+{
+  // base = 2.4·e^(0.043·OVR) − 8, popBonus = 80·(pop/100)², champ +20
+  assert.strictEqual(salary({ contractOVR: 50, contractPop: 0, salaryBonus: 0 }), 13,
+    '給与式ピン: OVR50/pop0 = 13万');
+  assert.strictEqual(salary({ contractOVR: 80, contractPop: 50, salaryBonus: 0 }), 87,
+    '給与式ピン: OVR80/pop50 = 87万');
+  assert.strictEqual(salary({ contractOVR: 100, contractPop: 100, salaryBonus: 10 }), 259,
+    '給与式ピン: OVR100/pop100/bonus10 = 259万');
+  assert.strictEqual(SALARY_REFIX_CAP.mult, 1.6, '再固定上限ピン: mult=1.6');
+  assert.strictEqual(SALARY_REFIX_CAP.flat, 10, '再固定上限ピン: flat=10');
+}
+
 // I-2/I-3(v1.34改定): 上限内の成長は従来どおり一括追従。
 // 上限(旧基本給×1.6+10)を超えるギャップは部分更新で止まり、数季で適正へ収束する。
 {

@@ -368,6 +368,30 @@ const Engine = {
         if (stuckProspects > 0) changes.push(`roster_prospect_activated:${stuckProspects}`);
       }
 
+      // 契約フィールドの埋め漏れ(2026-08-31・実セーブ棚の初打席で発見):
+      // 契約OVR制(2026-03-15)より前のセーブに contractPop/contractOVR を持たない選手が
+      // 残り、不変条件「contractPopが未設定」が毎週鳴り続ける。
+      // **現在値ではなく保守的既定で埋める** — contractPop=0/contractOVR=現在OVR。
+      // getSalaryは従来から `contractPop ?? 0` で計算しており挙動は完全に不変
+      // (現在値で埋めると給与が即時ジャンプし、v1.34で塞いだ一括精算の再発になる。
+      // 適正への追従は毎季の再固定が上限つきで段階的に行う)
+      {
+        let missingContract = 0;
+        const backfillContract = c => {
+          if (!c) return c;
+          const needPop = c.contractPop == null;
+          const needOVR = c.contractOVR == null;
+          if (!needPop && !needOVR) return c;
+          missingContract++;
+          return { ...c,
+            ...(needPop ? { contractPop: 0 } : {}),
+            ...(needOVR ? { contractOVR: Engine.util.ov(c) } : {}),
+          };
+        };
+        state.roster = state.roster.map(backfillContract);
+        if (missingContract > 0) changes.push(`contract_fields_backfilled:${missingContract}`);
+      }
+
       (state.retiredFighters || []).forEach(f => {
         if (f?.id && !occupied.has(f.id) && !state.retiredIds.includes(f.id)) state.retiredIds.push(f.id);
       });
@@ -13497,6 +13521,18 @@ const Engine = {
   //  Output: { state, events }
   // ══════════════════════════════════════════════════════════
   tickWeek(state) {
+    // 2026-08-31監査(死2の完全版): 資金NaNは週次パイプライン内の `|| 0` 系再計算で
+    // **入口から出口までの間に無言で有限値へ洗浄される**(変異nan_fundsで実証 —
+    // sanitizeFloats到達時には既に別の数値になっていた)。洗浄の機会が一度も無い
+    // 「入口」で検査して記録する。全財産が黙って消える級の破損は必ず痕跡を残す。
+    if (state && state.funds !== undefined
+        && (typeof state.funds !== 'number' || !isFinite(state.funds))) {
+      const msg = `funds が不正値(${state.funds})でtickWeekに入った。破損源の調査が必要`;
+      console.warn(`[WM Debug] Week ${state.week}, Season ${state.season}: ${msg}`);
+      state = { ...state, debugLog: [...(Array.isArray(state.debugLog) ? state.debugLog : []), {
+        week: state.week, season: state.season, type: 'invariant_violation', message: msg, timestamp: Date.now(),
+      }] };
+    }
     // ★ 成長マイルストーン: 冒頭スナップショット（tickWeek末尾で前後比較に使用）
     const _milestoneSnapshot = state.roster.map(c => ({
       id: c.id,
@@ -26289,19 +26325,45 @@ Engine.sanitizeFloats = function(G) {
   if (!G) return G;
   const r2 = v => (typeof v === 'number' && isFinite(v)) ? Math.round(v * 100) / 100 : v;
 
+  // 2026-08-31監査(死2/死3): 従来の `Math.round(G.funds || 0)` はNaN/undefinedを
+  // **警告なしで0円に変換**し、直後のvalidateGameStateのNaN検査を恒久的に空振りさせて
+  // いた(修理が検出より先に走る構造)。資金NaNは「プレイヤーの全財産が無言で消える」
+  // 最悪級の破損なので、隠す前に必ずdebugLogへ記録してから応急修理する。
+  const _repairLog = [];
+  const _fundsRaw = G.funds;
+  if (typeof _fundsRaw !== 'number' || !isFinite(_fundsRaw)) {
+    if (_fundsRaw !== undefined) {
+      _repairLog.push(`funds が不正値(${_fundsRaw})→0へ応急修理。破損源の調査が必要`);
+    }
+  }
+
   // トップレベルフィールド
   G = { ...G,
-    funds: Math.round(G.funds || 0),
+    funds: Math.round((typeof _fundsRaw === 'number' && isFinite(_fundsRaw)) ? _fundsRaw : 0),
     orgPop: r2(G.orgPop),
     lockerRoomMorale: r2(G.lockerRoomMorale),
     attendanceMomentum: r2(G.attendanceMomentum),
   };
 
-  // battlePoints整数化
+  // battlePoints整数化(同上: NaNは記録してから0へ)
   if (G.battlePoints) {
     const bp = {};
-    for (const k in G.battlePoints) bp[k] = Math.round(G.battlePoints[k] || 0);
+    for (const k in G.battlePoints) {
+      const v = G.battlePoints[k];
+      if (v !== undefined && (typeof v !== 'number' || !isFinite(v))) {
+        _repairLog.push(`battlePoints.${k} が不正値(${v})→0へ応急修理`);
+      }
+      bp[k] = Math.round((typeof v === 'number' && isFinite(v)) ? v : 0);
+    }
     G = { ...G, battlePoints: bp };
+  }
+
+  if (_repairLog.length > 0) {
+    const log = Array.isArray(G.debugLog) ? G.debugLog : [];
+    _repairLog.forEach(msg => console.warn(`[WM Debug] Week ${G.week}, Season ${G.season}: ${msg}`));
+    G = { ...G, debugLog: [...log, ..._repairLog.map(msg => ({
+      week: G.week, season: G.season, type: 'invariant_violation', message: msg, timestamp: Date.now(),
+    }))] };
   }
 
   // ロスター全選手
@@ -26398,6 +26460,11 @@ Engine.validateGameState = function(G) {
     }
     G.roster.forEach(c => {
       if (!c || !c.id) { warn('ロスターにid未定義のキャラが存在'); return; }
+      // v1.34生存証明(WM_CHAOS=dupe_roster)で発覚: rosterIdsは重複検出のために
+      // 用意されたのにhas()判定が書かれておらず、同一選手の二重在籍が素通りしていた
+      if (rosterIds.has(c.id)) {
+        warn(`キャラID ${c.id} ("${c.name}") がロスターに重複して存在`);
+      }
       rosterIds.add(c.id);
       if (allCharIds && !allCharIds.has(c.id) && !c.isIntrusion) {
         warn(`キャラID ${c.id} ("${c.name}") がマスターデータに存在しない`);
@@ -26516,8 +26583,11 @@ Engine.validateGameState = function(G) {
     }
   }
   if (G.decisionPointsMax !== undefined) {
-    if (!isValidNum(G.decisionPointsMax) || G.decisionPointsMax < 1 || G.decisionPointsMax > 20) {
-      warn(`decisionPointsMaxが不正値: ${G.decisionPointsMax}`);
+    // 2026-08-31監査(借り物差し): 上の超過チェックは検査対象自身のdecisionPointsMaxを
+    // 借りるため、maxごと壊れると(例: dp=15/dpMax=15)両方素通りだった。
+    // 設計値6の独立コピーで縛る(spec §2.1。正当に拡張する日はここも意識的に更新)
+    if (!isValidNum(G.decisionPointsMax) || G.decisionPointsMax !== 6) {
+      warn(`decisionPointsMaxが設計値(6)と不一致: ${G.decisionPointsMax}`);
     }
   }
   // 社長室 Phase 4: 決裁消費関連のフィールド型チェック
@@ -26607,8 +26677,11 @@ Engine.validateGameState = function(G) {
     const venues = typeof VENUES !== 'undefined' ? VENUES : null;
     if (venues && venues[G.showVenue]) {
       const cap = venues[G.showVenue].cap;
-      if (G._lastAttendance && G._lastAttendance > cap * 1.5) {
-        warn(`観客数(${G._lastAttendance})が会場キャパ(${cap})の1.5倍を超過`);
+      // 2026-08-31監査(死1): 旧実装は誰も書かない幻のフィールド G._lastAttendance を
+      // 参照しており恒偽だった。実在の G.lastShowAttendance(finalizeShow/executeShowが
+      // 確定値を書く)へ配線し直して蘇生
+      if (G.lastShowAttendance && G.lastShowAttendance > cap * 1.5) {
+        warn(`観客数(${G.lastShowAttendance})が会場キャパ(${cap})の1.5倍を超過`);
       }
     }
   }

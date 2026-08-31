@@ -4,7 +4,12 @@ const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
-const RAW_VALUE_PATTERN = /undefined|NaN|\[object\s|\bnull\b/gi;
+// 2026-08-31監査: NaNのcase-insensitive部分一致は英語化で"finance"等に誤爆する時限爆弾
+// だったため、NaNのみ大文字小文字厳密+単語境界に分離。
+// MQトークンは追加を試したところ**実在の残存違反14箇所**(週次ログのMQ表記・DB対戦履歴の
+// MQ列・因縁のベスト試合MQ等)を全fixtureで検出した — 掃除タスク(チップ起票済み)完了後に
+// `|MQ` をここへ戻すこと。それまで検出器に入れると走破ゲートが恒常FAILになる
+const RAW_VALUE_PATTERN = /undefined|\bNaN\b|\[object\s|\bnull\b/g;
 const INTERNAL_TOKEN_PATTERN = /\b(?:morale|orgPop|weekPhase|condition)\b/g;
 
 function stableHash(value) {
@@ -145,7 +150,17 @@ class WalkthroughDetectors {
       this.consoleEntries.push(entry);
       // favicon.ico はブラウザの自動リクエストで、配信サーバに実体が無いだけのノイズ
       if (/Failed to load resource/.test(entry.text) && /favicon\.ico/.test(entry.url)) return;
-      if (entry.type === 'error' || (entry.type === 'warning' && entry.text.includes('[WM Debug]'))) {
+      // 2026-08-31監査: [WM Debug](不変条件違反)だけでなく [WM](自己修復・スキップ・
+      // オートセーブ失敗などの「壊れたが黙って立て直した」証拠ログ)も検出対象にする。
+      // 自己修復が走った走破は健全ではない — flight-recorderと同じ基準に揃える。
+      // 例外: 「不適切な入力を設計どおり拒否した」だけの情報ログは対象外
+      // ([WM][awards]の背景ナビ無視 = 表彰式中のadvanceWeek連打をガードが正しく弾いた記録。
+      //  状態は何も変わっておらず、走破ハーネス自身の連打が発生源。実セーブ棚の初回実走で
+      //  3本がこれだけで失敗したため区別を導入)
+      const isBenignRejection = entry.text.includes('ignored background navigation');
+      if (entry.type === 'error'
+          || (entry.type === 'warning' && !isBenignRejection
+              && (entry.text.includes('[WM Debug]') || entry.text.includes('[WM]')))) {
         this.record('D1_CONSOLE', entry.url ? `${entry.text} (${entry.url})` : entry.text, entry);
       }
     });

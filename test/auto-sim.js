@@ -1605,6 +1605,32 @@ if (LEDGER_MUTATION === 'refix_uncap') {
   process.exit(2);
 }
 
+// ── 検査パイプラインの生存証明 (WM_CHAOS=<name>) ────────────────────────────
+// validateGameState→debugLog→collectViolations→ALL CLEAR判定 の経路が端から端まで
+// 繋がっていることを、偽の破損を食わせて証明する常設スイッチ。**ISSUES FOUNDが合格**。
+//   nan_stat    … S2W5に選手1名のpwをNaNへ(NaN検出の違反が鳴るはず)
+//   dupe_roster … S2W5にロスター先頭の選手を複製(参照整合性の違反が鳴るはず)
+//   throw_tick  … S2W5のtickWeekで例外を1回投げる(errors集計に載るはず)
+//   nan_funds   … S2W5に資金をNaNへ(2026-08-31監査の死2: 旧実装は無言0円化で検出不能だった)
+const CHAOS = process.env.WM_CHAOS || '';
+if (CHAOS === 'throw_tick') {
+  console.log('[生存証明] chaos=throw_tick を注入(ISSUES FOUNDが正)');
+  const _origTickForChaos = Engine.tickWeek;
+  let _chaosThrown = false;
+  Engine.tickWeek = function(state) {
+    if (!_chaosThrown && state && state.season === 2 && state.week === 5) {
+      _chaosThrown = true;
+      throw new Error('chaos: injected tick failure');
+    }
+    return _origTickForChaos.call(this, state);
+  };
+} else if (CHAOS === 'nan_stat' || CHAOS === 'dupe_roster' || CHAOS === 'nan_funds') {
+  console.log(`[生存証明] chaos=${CHAOS} を注入予約(S2W5・ISSUES FOUNDが正)`);
+} else if (CHAOS) {
+  console.error(`[生存証明] 未知のchaos: ${CHAOS}`);
+  process.exit(2);
+}
+
 function ledgerBaseSalary(f) {
   // 契約条件だけの基本給: salaryBonus(交渉昇給)と王者加算を除いた純粋な契約値
   return Engine.util.getSalary({ ...f, salaryBonus: 0 }, {});
@@ -2046,6 +2072,18 @@ function runSimulation(seed, seasons) {
             : f),
         };
         console.log(`[台帳検査] gaptest: ${targets.map(f => f.name).join('/')} に査定ギャップを注入(旧版セーブの合成)`);
+      }
+
+      // ── 生存証明のカオス注入(WM_CHAOS・S2W5・1回きり) ──
+      if (CHAOS && G.season === 2 && G.week === 5 && !G._chaosInjected && G.roster && G.roster[0]) {
+        if (CHAOS === 'nan_stat') {
+          G = { ...G, _chaosInjected: true,
+            roster: G.roster.map((f, i) => i === 0 ? { ...f, pw: NaN } : f) };
+        } else if (CHAOS === 'dupe_roster') {
+          G = { ...G, _chaosInjected: true, roster: [...G.roster, { ...G.roster[0] }] };
+        } else if (CHAOS === 'nan_funds') {
+          G = { ...G, _chaosInjected: true, funds: NaN };
+        }
       }
 
       // ── tickWeek（週次パイプライン） ── validateGameStateはtickWeek内で実行される
@@ -3354,3 +3392,6 @@ const ledgerClear = salaryLedger.violations.length === 0 && salaryLedger.negotia
 const allClear = uniqueViolations.length === 0 && result.errors.length === 0 && freqWarnings.length === 0 && ledgerClear;
 console.log(`Result: ${allClear ? 'ALL CLEAR ✓' : 'ISSUES FOUND'}`);
 console.log('(engine-integrity check — バランス判断にはプレイ実機確認が必要)');
+// 2026-08-31監査で発覚: ISSUES FOUNDでも従来はexit 0だった(終了コードを見る
+// 全消費者=CI・フック連結・run-allが偽緑を見る)。結果を終了コードにも載せる
+process.exit(allClear ? 0 : 1);

@@ -157,6 +157,9 @@ const QUICK = new Set([
 // when you want the measurement. (Verified 0 asserts on 2026-07-24.)
 const EXCLUDE = new Set([
   'decay-longevity-test.js', // 5×30-season retirement profiler, ~120s, prints only
+  // 2026-08-31監査: assert 0件の計測スクリプト(毎回40秒+レポート再生成)。
+  // 「テストが通った」という偽の安心感の源だったため除外。実行は npm run measure:stats
+  'stat-contribution-test.js',
 ]);
 
 function discoverTests() {
@@ -206,9 +209,13 @@ function runEngineStage() {
   console.log(out.trim());
 
   const allClear = /ALL CLEAR/i.test(out);
-  const violationMatch = out.match(/(\d+)\s*violation/i);
+  // 2026-08-31監査: 旧regex /(\d+)\s*violation/ は実出力「Total violations: N」に
+  // 構造的にマッチしない死文だった(合否がALL CLEAR文字列の一本足になっていた)。
+  // 実出力形式に合わせ、さらにauto-sim側が終了コードを返すようになったので
+  // exitコードを一次判定・文字列を二次判定の二重化にする
+  const violationMatch = out.match(/Total violations:\s*(\d+)/i);
   const violations = violationMatch ? parseInt(violationMatch[1], 10) : (allClear ? 0 : null);
-  const ok = res.status === 0 && (allClear || violations === 0);
+  const ok = res.status === 0 && allClear && violations === 0;
 
   console.log(`engine stage: ${ok ? 'OK' : 'FAILED'} (${fmtMs(duration)})${violations != null ? `, violations=${violations}` : ''}`);
   return { ok, duration, violations };

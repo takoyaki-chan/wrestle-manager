@@ -150,8 +150,16 @@ Write-Host "  ✓ 全 $($Manifest.sourceFiles.Count + $Manifest.rootFiles.Count)
 # devOnlyFiles は「意図的に配布しない」と宣言済みなので警告対象から外す。
 # これで警告に残るのは本当に記載を忘れたファイルだけになる。
 $SrcDir = Join-Path $ProjectDir "src"
-$ActualSrcFiles = Get-ChildItem -Path $SrcDir -Include "*.js","*.css","*.html" -File |
+# 2026-08-31 監査で発覚: PS5.1の Get-ChildItem -Include はパスがワイルドカードで
+# 終わらないと常に0件を返し、この警告は実装以来一度も出たことがなかった(死んだ防波堤)。
+# `\*` を付けて蘇生し、あわせて WARNING → ERROR に格上げする(未記載ファイルは
+# 「配布されない=購入者環境でのみ404になる」即バグなので、警告で流してはいけない)。
+$ActualSrcFiles = Get-ChildItem -Path "$SrcDir\*" -Include "*.js","*.css","*.html" -File |
     ForEach-Object { "src/" + $_.Name }
+if (-not $ActualSrcFiles -or $ActualSrcFiles.Count -eq 0) {
+    Write-Host "ERROR: src/ のファイル列挙が0件です。未記載検査そのものが壊れています(監査ガード)。" -ForegroundColor Red
+    exit 1
+}
 $ManifestSrcSet = [System.Collections.Generic.HashSet[string]]($Manifest.sourceFiles)
 $DevOnlySet     = [System.Collections.Generic.HashSet[string]]($DevOnlyFiles)
 $Uncovered = $ActualSrcFiles | Where-Object {
@@ -160,12 +168,13 @@ $Uncovered = $ActualSrcFiles | Where-Object {
 
 if ($Uncovered) {
     Write-Host ""
-    Write-Host "WARNING: 以下のファイルは src/ に存在しますが manifest.json に記載がありません。" -ForegroundColor Yellow
-    Write-Host "         新規追加ファイルなら manifest.json に追加してください。" -ForegroundColor Yellow
-    Write-Host "         配布しない開発専用ファイルなら devOnlyFiles に追加してください。" -ForegroundColor Yellow
+    Write-Host "ERROR: 以下のファイルは src/ に存在しますが manifest.json に記載がありません。" -ForegroundColor Red
+    Write-Host "       新規追加ファイルなら manifest.json の sourceFiles に追加してください。" -ForegroundColor Red
+    Write-Host "       配布しない開発専用ファイルなら devOnlyFiles に追加してください。" -ForegroundColor Red
     foreach ($f in $Uncovered) {
-        Write-Host "  ! $f" -ForegroundColor Yellow
+        Write-Host "  ! $f" -ForegroundColor Red
     }
+    exit 1
 }
 
 # devOnlyFiles に載っているのに実体が無い＝除去ルールが古い可能性
