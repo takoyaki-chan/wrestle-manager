@@ -1114,7 +1114,7 @@ function renderWeekScreen() {
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end">
           <div style="font-size:12px;color:var(--text-dim)">
-            興行${stats.showCount||0}回 ｜ MQ最高${stats.bestMQ||0}${stats.eventsWon ? ` ｜ 抗争${stats.eventsWon}勝` : ''}
+            興行${stats.showCount||0}回 ｜ 最高評価${stats.bestMQ||0}${stats.eventsWon ? ` ｜ 抗争${stats.eventsWon}勝` : ''}
           </div>
           <svg width="${sparkW}" height="${sparkH}" style="opacity:0.6"><polyline points="${sparkPoints}" fill="none" stroke="${G.funds>=0?'#2ecc71':'#e74c3c'}" stroke-width="1.5"/></svg>
         </div>
@@ -3534,7 +3534,7 @@ function renderShowPrep() {
     </div>
     <div class="sp-metrics">
       <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
-      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('会場の熱気予測。ここに各試合の注目度(人気・因縁・タイトル・メイン枠など)を掛けた分だけ試合品質(MQ)に効きます。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${Math.round(estCrowdMQ.total * 10) / 10}</div><div class="sp-metric-label">会場の熱</div></div>` : ''}
+      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('会場の熱気予測。ここに各試合の注目度(人気・因縁・タイトル・メイン枠など)を掛けた分だけ試合評価に効きます。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${Math.round(estCrowdMQ.total * 10) / 10}</div><div class="sp-metric-label">会場の熱</div></div>` : ''}
       ${hasTitlePreview
         ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${validMatches.some(m => m?._unifiedTitleMatch) ? 'var(--unified)' : 'var(--gold)'}">${validMatches.some(m => m?._unifiedTitleMatch) ? '🌐' : '🏆'}</div><div class="sp-metric-label">${validMatches.some(m => m?._unifiedTitleMatch) ? '全国統一王座戦' : 'タイトル戦'}</div></div>`
         : (titleCd.allowed
@@ -3548,7 +3548,7 @@ function renderShowPrep() {
   // ファンの声 v7
   if (fanExpects.length > 0) {
     html += `<div class="sp-fan-voices">
-      <div class="sp-fan-voices-title">🎤 ファンの声${matchedCount > 0 ? ` <span style="color:var(--green);font-size:9px">（${matchedCount}件反映中 → MQ+5/試合）</span>` : ''}</div>
+      <div class="sp-fan-voices-title">🎤 ファンの声${matchedCount > 0 ? ` <span style="color:var(--green);font-size:9px">（${matchedCount}件反映中 → 評価+5/試合）</span>` : ''}</div>
       <div class="sp-fan-items">`;
     fanExpects.forEach(exp => {
       const isOnCard = validCurrent.some(m =>
@@ -3783,7 +3783,7 @@ function renderShowPrep() {
     if (slot._unifiedTitleMatch) {
       tagParts.push(`<span class="sp-match-tag sp-tag-title" style="background:color-mix(in srgb,var(--unified-deep) 28%,transparent);border-color:color-mix(in srgb,var(--unified) 60%,transparent);color:var(--unified-hi)">🌐 全国統一王座戦（固定）</span>`);
     }
-    if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} MQ+${rivalLvl.mqBonus}</span>`);
+    if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} 評価+${rivalLvl.mqBonus}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
       const isFresh = freshnessPreview.bonus > 0;
       // MQ再設計P3c(§1.3/G): 鮮度は集客(appeal)側の係数に移管済み。MQ表記はやめて動員への効きを示す。
@@ -4327,7 +4327,7 @@ function renderLog() {
   // v0.95: Enhanced log with filter
   const categories = [
     { key: 'all', label: '全て', icon: '全' },
-    { key: 'show', label: '興行', icon: '興', match: l => l.includes('興行') || l.includes('MQ') || l.includes('勝利') || l.includes('防衛') },
+    { key: 'show', label: '興行', icon: '興', match: l => l.includes('興行') || l.includes('評価') || l.includes('勝利') || l.includes('防衛') },
     { key: 'finance', label: '財務', icon: '金', match: l => l.includes('収入') || l.includes('支出') || l.includes('万') || l.includes('残高') },
     { key: 'event', label: 'イベント', icon: '戦', match: l => l.includes('対抗') || l.includes('挑戦') || l.includes('頂上') || l.includes('移籍') || l.includes('レンタル') || l.includes('引き抜き') },
     { key: 'season', label: 'シーズン', icon: '季', match: l => l.includes('シーズン') || l.includes('オフ') || l.includes('引退') || l.includes('開幕') || l.includes('ランキング') },
@@ -4964,7 +4964,7 @@ function renderRanking() {
   const _validHistory = (G.seasonHistory || []).filter(_hasValidRecord);
   if (_validHistory.length > 0) {
     html += '<section class="section bg-card history-wrap"><div class="section-marker"><div class="text"><div class="kicker">04 — History</div><div class="title">シーズン履歴</div></div></div>';
-    html += '<table><thead><tr><th>シーズン</th><th>順位</th><th>興行数</th><th>最高MQ</th><th>収支</th><th>最終資金</th><th>人数</th></tr></thead><tbody>';
+    html += '<table><thead><tr><th>シーズン</th><th>順位</th><th>興行数</th><th>最高評価</th><th>収支</th><th>最終資金</th><th>人数</th></tr></thead><tbody>';
     [..._validHistory].reverse().forEach(h => {
       const profit = (h.totalRevenue || 0) - (h.totalExpense || 0);
       const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
@@ -8194,7 +8194,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     })()}
     <div class="np-result-line">
       <div>${d.matchLabel || 'メインイベント'}</div>
-      <div class="mq-block"><label>MQ</label><strong>${d.mq || '?'}</strong></div>
+      <div class="mq-block"><label>評価</label><strong>${d.mq || '?'}</strong></div>
       <div class="duration">${_npTurnsToTime(d.turns) || (d.turns ? `${d.turns}ターン` : '')}</div>
     </div>
     ${d.article ? `<div class="np-show-article">${d.article}</div>` : ''}
@@ -8337,7 +8337,7 @@ function _npRenderDigest(d, seasonNum, weekNum) {
   return `<div class="np-digest">
     <div class="np-sec">興行ダイジェスト</div>
     <table class="np-digest-table">
-      <thead><tr><th>#</th><th></th><th>カード</th><th style="text-align:right">MQ</th></tr></thead>
+      <thead><tr><th>#</th><th></th><th>カード</th><th style="text-align:right">評価</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`;
@@ -8895,7 +8895,7 @@ function _npRenderPage3() {
   const facts = [];
   facts.push(`<span class="fact-item">通算<strong>${matches}</strong>戦</span>`);
   facts.push(`<span class="fact-item">${aName}<strong>${wA}</strong>勝 / ${bName}<strong>${wB}</strong>勝</span>`);
-  facts.push(`<span class="fact-item">ベスト試合 MQ<strong>${h2h.bestMQ || '?'}</strong></span>`);
+  facts.push(`<span class="fact-item">最高評価<strong>${h2h.bestMQ || '?'}</strong></span>`);
   if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験<strong>あり</strong></span>`);
   if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV対決<strong>あり</strong></span>`);
   if (h2h.lastMatch) facts.push(`<span class="fact-item">直近対戦 S<strong>${h2h.lastMatch.season}</strong>W<strong>${h2h.lastMatch.week}</strong></span>`);
@@ -8975,7 +8975,7 @@ function _npRenderPage3() {
           <div class="np-history-card">${aName} vs ${bName}</div>
           <div class="np-history-detail">${stageBadge}${h.t ? ` / ${h.t}T` : ''}</div>
         </div>
-        <div class="np-history-result ${cls}">${resultText}<span class="mq">MQ${h.mq || '?'}</span></div>
+        <div class="np-history-result ${cls}">${resultText}<span class="mq">評価${h.mq || '?'}</span></div>
       </div>`;
     });
     html += `</div>`;
@@ -8984,7 +8984,7 @@ function _npRenderPage3() {
     const summaryBits = [];
     summaryBits.push(`通算<strong>${matches}</strong>戦`);
     if (wA || wB || dr) summaryBits.push(`${aName} <strong>${wA}</strong>勝 / ${bName} <strong>${wB}</strong>勝`);
-    if (h2h.bestMQ) summaryBits.push(`ベスト試合 MQ<strong>${h2h.bestMQ}</strong>`);
+    if (h2h.bestMQ) summaryBits.push(`最高評価<strong>${h2h.bestMQ}</strong>`);
     if (h2h.lastMatch && h2h.lastMatch.season) summaryBits.push(`直近 S${h2h.lastMatch.season} W${h2h.lastMatch.week || '?'}`);
     if (h2h.hadTitleMatch) summaryBits.push(`タイトル戦経験<strong>あり</strong>`);
     if (h2h.hadPPV) summaryBits.push(`PPV経験<strong>あり</strong>`);
@@ -9053,7 +9053,7 @@ function _npRenderPage3() {
         <div class="np-relation-stats">
           <span>通算<strong>${r.h2h.matches || 0}</strong>戦</span>
           <span>${wAR}勝-${wBR}勝</span>
-          <span>最高MQ<strong>${r.h2h.bestMQ || '?'}</strong></span>
+          <span>最高評価<strong>${r.h2h.bestMQ || '?'}</strong></span>
         </div>
       </div>`;
     });
@@ -9411,7 +9411,7 @@ function _renderNewspaperExtraPage(wp, pageData) {
         html += `<td style="padding:4px;font-weight:700;color:#2d5e1e">${_newsClickableName(m.winner, m.winnerId)}</td>`;
         html += `<td style="padding:4px;color:#7a5b32;font-size:10px">def.</td>`;
         html += `<td style="padding:4px">${_newsClickableName(m.loser, m.loserId)}</td>`;
-        html += `<td style="padding:4px;text-align:right;color:${_mqColor(m.mq).color};font-weight:600">MQ${m.mq}</td>`;
+        html += `<td style="padding:4px;text-align:right;color:${_mqColor(m.mq).color};font-weight:600">評価${m.mq}</td>`;
         html += `</tr>`;
       });
       html += `</table>`;
@@ -11271,7 +11271,7 @@ function _renderPrologueBlock(prologue, chapters) {
           <div class="chron-era-stat-val">${titleCount}<span class="small">戴冠</span></div>
         </div>
         <div class="chron-era-stat">
-          <div class="chron-era-stat-key">PEAK MQ</div>
+          <div class="chron-era-stat-key">最高評価</div>
           <div class="chron-era-stat-val">${Math.round(peakMQ)}</div>
         </div>
         <div class="chron-era-stat">

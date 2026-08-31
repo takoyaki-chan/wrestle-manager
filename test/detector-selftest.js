@@ -38,6 +38,7 @@ console.log('=== 検出器自己点検バッテリー(全て「期待どおり�
 // ── 変異(台帳検査が鳴くこと) ──
 run('台帳L1: 再固定上限の撤廃', ['test/auto-sim.js', '6', '42'], { WM_LEDGER_MUTATION: 'refix_uncap' }, true);
 run('台帳L2: 昇給の2倍付与', ['test/auto-sim.js', '10', '42'], { WM_LEDGER_MUTATION: 'raise_double' }, true);
+run('台帳L3: 資金の無言リーク', ['test/auto-sim.js', '4', '42'], { WM_LEDGER_MUTATION: 'funds_leak' }, true);
 
 // ── カオス(validate→collect→判定パイプラインが鳴くこと) ──
 run('生存: ステータスNaN', ['test/auto-sim.js', '4', '42'], { WM_CHAOS: 'nan_stat' }, true);
