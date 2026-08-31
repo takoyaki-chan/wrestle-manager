@@ -9856,7 +9856,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .ptv-telop-cat{display:inline-block;font-size:10px;font-weight:900;color:#111;background:var(--gold);border-radius:3px;padding:1px 7px;margin-right:9px;vertical-align:1px}
 .ptv-telop-main{font-size:13.5px;font-weight:800}
 .ptv-telop-sub{font-size:11px;color:var(--stage-text-sub);margin-top:1px}
-.ptv-hint{position:absolute;right:14px;bottom:52px;font-size:10.5px;color:var(--stage-text-sub);z-index:5;animation:ptvbl 2.4s infinite}
+/* 進行導線(task-103): 素の点滅テキストから実ボタンへ。10.5pxでテロップ帯に被って読めず、
+   キーボードでも押せなかった。帯(高さ約52px)の上に確実に逃がし、押せる見た目にする */
+.ptv-hint{position:absolute;right:14px;bottom:60px;z-index:6;
+  font-family:inherit;font-size:11px;font-weight:800;letter-spacing:.06em;line-height:1;
+  color:var(--stage-text);background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.22);
+  border-radius:6px;padding:6px 13px;cursor:pointer;animation:ptvbl 2.4s infinite}
+.ptv-hint:hover{background:rgba(255,255,255,.18);animation:none}
+.ptv-hint:focus-visible{outline:2px solid var(--gold);outline-offset:2px;animation:none}
 .ptv-upper{width:46px;height:66px;border-radius:var(--radius-md,8px);overflow:hidden;border:1px solid #44444e;flex:none;background:var(--stage-panel-2);position:relative}
 .ptv-upper img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
 .ptv-upper-fallback{display:none;width:100%;height:100%;align-items:center;justify-content:center;background:linear-gradient(135deg,#363642,#17171d);color:var(--gold);font-weight:900}
@@ -10150,7 +10157,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           </button>
           <div class="help-body">
             <p>偶数週に対戦カードと会場を決めて興行を開催します。</p>
-            <p><strong style="color:var(--gold)">MQ（Match Quality＝試合品質）：</strong></p>
+            <p><strong style="color:var(--gold)">試合評価：</strong></p>
             <p>試合の面白さを表す指標で、団体の評判と収入に直結します。</p>
             <p>・実力の近い者同士は良い試合になりやすい</p>
             <p>・<strong>因縁の相手</strong>との一戦は大きく跳ねる</p>
@@ -10326,7 +10333,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <p><strong style="color:var(--gold)">2. 公民館から</strong></p>
             <p>満員を確実に取り、黒字を積む。背伸びは資金危機への近道です。</p>
             <p><strong style="color:var(--gold)">3. メインを大切に</strong></p>
-            <p>エース候補をメインに据えて高MQを。同じ相手と当て続ければ、因縁も育ちます。</p>
+            <p>エース候補をメインに据えて高い試合評価を。同じ相手と当て続ければ、因縁も育ちます。</p>
             <p><strong style="color:var(--gold)">4. 体調管理</strong></p>
             <p>怪我は長期離脱＋人気低下のダブルパンチ。⚡追込は使いどころを選んで。</p>
             <p><strong style="color:var(--gold)">5. コーチは早めに</strong></p>

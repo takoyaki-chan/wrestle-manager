@@ -3369,7 +3369,7 @@ Engine.factions = {
           break;
         case 'BOND': {
           const inc = ri(8, 12);
-          s = { ...s, funds: (s.funds || 0) + inc * 10000 };
+          s = { ...s, funds: (s.funds || 0) + inc };
           s = this.applyMomentumChange(s, factionId, 3);
           impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
           impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
@@ -3397,7 +3397,7 @@ Engine.factions = {
           break;
         case 'FACE': {
           const inc = ri(12, 18);
-          s = { ...s, funds: (s.funds || 0) + inc * 10000 };
+          s = { ...s, funds: (s.funds || 0) + inc };
           s = this.applyMomentumChange(s, factionId, 4);
           impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
           impactSummary.push({ label: `${factionName} 勢い`, delta: '+4' });
@@ -3419,7 +3419,7 @@ Engine.factions = {
       }
     } else if (choiceId === 'B') {
       const inc = ri(5, 10);
-      s = { ...s, funds: (s.funds || 0) + inc * 10000 };
+      s = { ...s, funds: (s.funds || 0) + inc };
       s = this.applyMomentumChange(s, factionId, 2);
       impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
       impactSummary.push({ label: `${factionName} 勢い`, delta: '+2' });

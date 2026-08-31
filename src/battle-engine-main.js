@@ -535,7 +535,7 @@ function _matchBadgeHtml(){
   const rec = mi.h2hRecord || null;
   if (!S._isBigMatch && !(rec && rec.matches > 0) && !(mi.rivalryTier > 0)) return '';
   const recordText = rec && rec.matches > 0
-    ? `${rec.matches} MATCHES  ${S.L ? escHtml(S.L.name) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(S.R.name) : 'RIGHT'}${rec.bestMQ ? `  BEST MQ ${rec.bestMQ}` : ''}`
+    ? `${rec.matches} MATCHES  ${S.L ? escHtml(S.L.name) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(S.R.name) : 'RIGHT'}${rec.bestMQ ? `  最高評価 ${rec.bestMQ}` : ''}`
     : 'FIRST MEETING';
   const title = S._isBigMatch ? 'BIG MATCH' : 'RIVALRY MATCH';
   return `<div class="wm-match-badge">
@@ -1542,7 +1542,7 @@ function showResult(fr){
           </div>
         </div>
         <div class="vic-stats">
-          <div class="vic-stat"><div class="vic-stat-label">MQ</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>
+          <div class="vic-stat"><div class="vic-stat-label">評価</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>
           <div class="vic-stat"><div class="vic-stat-label">Turns</div><div class="vic-stat-value">${turns}</div></div>
         </div>
       </div>

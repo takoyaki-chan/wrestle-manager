@@ -1,5 +1,154 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 実セーブ棚の初回走破 — 年末クラスタの実バグ3件+ハーネス偽陽性2件を発見・修正（2026-08-31・Fable、699a860）
+
+新設した実セーブ棚(`node test/save-regression.js --walkthrough`)の初回フル走破は6本中6本失敗。切り分けの結果、**実バグ3件/偽陽性2件/良性1件**に分解し全て処置:
+
+1. **PPV結果クローズの週二重tick(実バグ・年1回の幻の1週)**: PPV結果モーダルの閉じるボタンがインラインonclick(`closePPVResult`→tick込み進行)と`_handlePatternBResultClose`の委譲クローズ(こちらもtick)の**両方に届き、1クリックで2週進んでいた**。週48のPPVで毎年発生し、1週分の練習・決算・回復が余分に処理される(数値バグとして実害あり)。委譲側にPPV除外を追加(主修正・[ui-common.js](src/ui-common.js))+`closePPVResult`冒頭に`G.offSeason || G.week !== 48`の二重tickガード(保険・[app.js](src/app.js))
+2. **引退時のcoachAssign残骸(実バグ)**: `commitRetirements`が担当割当を掃除せず、引退のたびにsave-doctorの遅延修復(`coachAssign_stale_refs_removed`)が働いていた。引退処理側で即時掃除に([management.js](src/management.js))
+3. **旧セーブのcontract欄欠落(実バグ・v1.34修正の前提穴)**: v1.30以前のセーブは`contractOVR/contractPop`が無く、段階追従キャップの起点が不定 → save-doctorのロード時修復でバックフィル(`contractOVR=現OVR`/`contractPop=0`の保守値、`contract_fields_backfilled`タグ)
+4. **偽陽性2件(ハーネス側)**: 成熟セーブの年末同期連鎖(2.8秒)がクリックtimeout 1500msを超えD2誤報 → 5000msへ / hoverで変形するボタン上にポインタが残り無限フリッカー→D2誤報 → クリック後にポインタ退避([driver.js](test/ui-walkthrough/driver.js))
+5. **良性1件**: `[WM][awards] ignored background navigation`はガードの正常動作 → D1除外リストに明記
+
+処置後の再走破: **6本中5本✓**。残る1本(v1.0x世代S2W23、S2W48 ppvTVで進行不能・popup queue=1 active)は**実プレイヤー影響が疑われる本物のフリーズ**として、worktree隔離のエージェント(task-103)で根治した(次エントリ)。
+
+## PPV TV観戦(ppvTV)の進行不能を根治 — 「出口ゼロの全画面」という型を発見（2026-08-31・task-103）
+
+実セーブ棚の実走で、最古の実セーブ `v1.0x_S2W23`（v1.0x世代）が **S2W48 の PPV TV観戦フェーズで必ず止まる**（D2_FREEZE: no safe progress control is visible）ことが判明。699a860（旧セーブ年末クラスタ修正）を取り込んでも同じ場所で落ちる。詳細レポートは `docs/codex-tasks/task-103-report.md`。
+
+### 真因: セーブ世代とは無関係の**画面構造の欠陥**
+
+`ui-common.js renderPPVTvBroadcast()` のPPV中継は8〜10場面の紙芝居で、**最終場面（放送終了）にだけ**実ボタン「事務所へ戻る」がある。①放送OP〜④頂上決戦の全場面には **button も onclick も role も tabindex も無く**、進行導線は素の `<div class="ptv-tv">` に付けた click リスナー1本だけ。唯一の案内は10.5pxの点滅 `div` テキスト（`bottom:52px`）で、テロップ帯に被って読めない。
+
+**新規fixtureを読み込んで同画面を強制点火しても操作可能要素は0件**だったため、旧セーブの欠落フィールドが原因ではないと確定（saveDoctor での正規化案は不採用）。
+
+**なぜ基準線走破がずっと緑だったか**: 第48週は `ppvUnlocked` で分岐し、true なら `ppvShow`（自団体が出場・専用UIに実ボタンあり）、false なら `ppvTV`（テレビで眺めるだけ）。走破ハーネスは毎週興行を打って勝ち続けるため**シーズン1のうちに団体人気30を超えて出場権を取り**、W43で `togglePPVPick`→`confirmPPVEntry` を踏んで `ppvShow` 側へ抜けていた（基準線ログ step260-261）。つまり**基準線はこの画面を一度も踏んでいない**。実害を受けるのは**団体人気30未満で年末を迎えるプレイヤー＝1〜2年目の全員と、伸び悩んでいる団体すべて**で、彼らは毎年この画面を通る。
+
+### 修正（対処療法＝ハーネス側の除外はしていない）
+
+- `.ptv-hint` を**実ボタン**「次へ ▶」へ。テロップ帯の上（`bottom:60px`）へ逃がし、hover/focus を可視化
+- 場面ごとの `{ once:true }` 張り直しを廃止。**オーバーレイへの委譲クリック1本 + document keydown（Enter/Space/→）**に集約し、**暗幕（TV枠の外）**からも進めるようにした（旧実装は中央720pxの枠内だけ）
+- `advance()` は `advancing`／`tornDown`／`.ptv-tv` の在否／最終場面かを検証してから進む（§5-D 鉄則2）。最終場面で委譲を外して出口を一本化。中継が二重起動しても生きた委譲は常に1組
+- `App.initPPVTV` は `renderPPVTvBroadcast` を try/catch で包み、転んだら `App._renderPPVTvFallback()`（「事務所へ戻る」だけの最小画面）へ着地（§5-D 鉄則1）。二重起動防止フラグを先に立てる都合上、3秒ネットは張り直されないためここが最後の砦
+- 回帰ガード新設: `u6-org-identity-safety-net-test.js` の `every ppvTV scene carries a real, pressable exit`（全場面に押せる実ボタンが居る／最終場面で委譲を外す／クリックとキーボードのどちらでも1操作=1場面）
+
+### 副産物: main側の既存の赤を1本回収
+
+`tenchosen-result-flow-guard-test.js` は **699a860 が `_handlePatternBResultClose` に足した `closeBtn.getAttribute('onclick')`** にテストスタブが追随しておらず、main側で既に落ちていた（`git log -S` で確認。本修正は当該関数に触れていない）。実物の `closest()` は Element を返すのでスタブを実物に合わせ、あわせて **「PPV結果のボタンには委譲しない」= 699a860 が直した幻の1週の不変条件**をテストとして固定した。
+
+### 検証（すべて実測）
+
+- 再現コマンド（上限なし）: **PASS** / S2W23→S3W1 / 196手 / Issues 0
+- `save-regression --walkthrough`: **ALL CLEAR**（doctor 6/6 ✓・走破 6/6 ✓ Issues 0）。**既知課題の `prerefix_S12W45` も本実行では再現せず ✓**（1回の非再現では消さないため KNOWN_ISSUES は据え置き。要再確認）
+- `npm run test:ui:walkthrough`: **PASS** / 316手 / digest `817e02f2dea24b7f` は**修正前と完全一致**＝基準線の通り道を一切動かしていない
+- `npm test`: **256/256 PASS** ／ `auto-sim 20季 seed42`: **ALL CLEAR ✓**
+
+### 同型の掃討 — あと3件残っている（別タスク起票済み）
+
+「進行手段が素の要素への `addEventListener('click')` だけで、button も onclick属性も role も無い全画面演出」を src 全体で洗った結果:
+
+1. `app.js:5187` 付近 `App.completeDraft()` の**旗揚げ完成演出**（`.completion-overlay`）— button も onclick も無く、`position:fixed;inset:0;z-index:400;pointer-events:auto` で背後のボタンも塞ぐ。**時限フォールバック無し＝PPVと完全に同じ恒久停止**
+2. `ui-render.js:419` 付近 `renderOpeningScreen()` の `.opening-overlay` — skip が `skip.onclick = fn` の**プロパティ代入**で属性ではないため実ボタンでも `[onclick]` でもない。**時限フォールバック無し**
+3. `ui-common.js:15762` 付近 `showLeagueElevationCeremony()` スライド2 — 進行は素の `#leClickArea` のみ。`#leCloseBtn` は実ボタンだが step5 まで `opacity:0`。**`display:none` に変えた瞬間に止まる**（いま通っているのは偶然）
+
+`u4-modal-frame-safety-net-test.js:427` はこれら3つのオーバーレイを列挙しているが、**z-indexの重なり検査であってクリック可能性を見ていない**ため、どのテストにも掛かっていない。
+## 台帳検査L3「資金恒等式」新設 — 資金全経路の棚卸しで派閥取材の1万倍付与バグも発見・修正（2026-08-31・Fable直実装）
+
+総点検で「未実装(チップ)」と申告していた第3の恒等式。**tickWeek/advanceWeek 1呼び出しを跨ぐ資金の変化が、週次収支明細(weeklyFinance.net)+プレイヤー可視の金額ログ(💰賞金/🏋️招聘自動継続)の合計で説明できることを毎週assert**する。恒等式を書く前に、指示どおり資金(G.funds)を動かす**全代入箇所の棚卸し**を実施(management.js 40箇所超/factions.js 3箇所/app.js UI層を関数と呼び出し経路で分類)。
+
+### 棚卸しの結論(スパン内の資金経路は4つだけ)
+
+- **tickWeek内**: ①processSettlement(明細=差分が構成的に一致する唯一の構造化申告) ②tickInviteBuffsの招聘自動継続(**明細に載らない** — 週次ログ「🏋️…(4週・N万/⚡M)」だけが痕跡) ③sanitizeFloats末尾の整数丸め
+- **advanceWeek内**: ④特別大会apply 2種 — 天頂戦(week48: 賞金+ブランド収入)・春タッグ(week12: 賞金計+ブランド収入)。いずれも💰ログが対。autumnWar/JT/PPVのapplyは現行コードではスパン外(UI・ループ直呼び)だが、経路移動に備え説明表に含めた
+- **スパン外**=プレイヤー操作API(ケア決裁/特別治療/契約交渉の引き留め金/スカウト・FA契約/レンタル前払い/移籍/ドラフト入札/選択・大型・派閥イベント/コーチ枠購入) — L3の対象外(下の死角申告)
+
+### 発見2件(棚卸し自体の成果)
+
+1. **明細非掲載経路**: 招聘自動継続の費用はweeklyFinance(収支明細画面)に載らず、週次ログ1行のみ。L3はログの公称額を説明側に採用。収支明細への掲載は将来課題として記録
+2. **実バグ(即日修正)**: factions.js applyCommon5Choice(派閥メディア取材イベント)が、表示「メディア収入 ¥5〜18万」に対し **`funds += inc * 10000`(=公称の1万倍、5〜18億円)を付与**していた。specs/faction-common-events-spec-v0.1.md の設計値は¥5〜18万 — specに合わせ `+ inc` へ修正(3箇所)。「公称と実効の乖離」族そのもの。auto-simでは12季走でCOMMON_5発火0回(結成24週+勢い30+CD32週の条件が厳しい)のため資金爆増が一度も検査に映らなかった型
+
+### L3実装(test/auto-sim.js)
+
+- `installFundsLedger`: tickWeek/advanceWeekをラップし、呼び出し毎にΔ資金と説明合計を照合。**物差し独立** — エンジンの定数・計算式を参照せず、(a)エンジン自身の構造化申告(weeklyFinance.net) (b)プレイヤーに見せた金額ログのパース(見せた数字=起きた数字のL2精神) の2系統のみ
+- **丸め規約**: tick側±0.5(sanitizeFloatsの整数丸めを跨ぐため)/advance側±0.01(丸めなし・文字列往復は正確)。資金が非有限のときは検査スキップ(NaN検出は入口検査+sanitize記録義務の管轄、二重報告しない)
+- **変異自己点検**: `WM_LEDGER_MUTATION=funds_leak`(tickWeekが毎週37万を無言で抜く)を新設 → 4季で**違反212件ISSUES FOUND(exit 1)=検出能力の証明**。detector-selftestに1行追加(計10本マトリクス)
+- ALL CLEAR判定・台帳サマリーにL3を組み込み
+
+### 検証
+
+- auto-sim **40季42 なし/--care両方 ALL CLEAR**(資金恒等式 各4240回検査・違反0=**偽陽性なし**) / funds_leak変異=鳴く(両側証明) / npm test **256/256** / node --check 3ファイルok
+- 触ったファイル: test/auto-sim.js(L3本体+変異) / test/detector-selftest.js(1行) / src/factions.js(Common5単位修正)
+
+### 既知の死角(正直な申告)
+
+- L3が見るのはtickWeek/advanceWeekのスパン内のみ。**プレイヤー操作の資金移動(ケア・交渉・移籍・入札・app.js UI層)はスパン外で対象外**(それらは操作単位の約束照合=L2型の個別検査が管轄)
+- 招聘自動継続の説明則は、auto-simが`autoRenew: false`で招聘するため**シム内では実走しない**(規則は実装済み・実プレイのautoRenewで有効)
+- ログ文言が変わるとパーサが外れて**違反として鳴る**(無言で盲目化ではなく騒ぐ側に倒した設計。文言変更時はLEDGER_L3_MONEY_LINESも更新)
+
+残: Common5修正の実機確認(バックログへ追記)
+
+## MQ表記一掃 — プレイヤー可視の「MQ」全61箇所を日本語化+旧セーブのロード時テキスト移行+走破検出器へMQトークン復帰（2026-08-31・Fable直実装）
+
+前エントリ(検査総点検)でD3検出器にMQトークンを試験追加した際に発覚した残存違反の掃除。ルールはメモリ feedback_player_text_no_internal_tokens(内部変数名 morale/orgPop/MQ/condition はプレイヤーに見せない)。既知14箇所どころか全数列挙で**61箇所**(スコアボードのAvg MQ/Best MQ、結果チップのMQ 85、天頂戦・ジュニア・春タッグ・対抗戦・ゲームオーバー・年代記・ヘルプ等)あった。
+
+### 訳語体系(統一ルール)
+- 地の文・ログ・新聞: **試合評価**(task-80の既存訳語に合わせる)
+- 短ラベル(表ヘッダ/スコアボード/チップ): **評価**(「評価 85」「評価+2」)
+- 複合: Avg MQ→**平均評価** / Best MQ・最高MQ・ベスト試合MQ→**最高評価** / Total MQ→**通算評価** / Final MQ→**決勝評価** / ベストMQ→**ベスト評価** / 大会ベストMQチップ→**大会ベストバウト**
+
+### 変更ファイル
+- **src/ui-common.js**(30箇所): 対抗戦/興行/PPV/挑戦状/派閥/ジュニア/天頂戦/春タッグ/秋の対抗戦/ゲームオーバー/エンディングの結果表示・スコアボード・チップ・context行
+- **src/ui-render.js**(14箇所): 経営タブ最高評価/集客予測ツールチップ/ファンの声/因縁タグ/シーズン履歴表/新聞(結果行・ダイジェスト列・因縁特集ファクト・対戦履歴・ジュニア詳報表)/年代記PEAK MQ→最高評価/**ログフィルタ「興行」のマッチ条件を l.includes('MQ')→l.includes('評価') に追随**
+- **src/app.js**(3箇所+移行): 週次ログ「(MQ avg N)」→「(平均試合評価 N)」/対抗戦戦績ログ/年代記章トリガー「MQ50到達」→「試合評価50到達」
+- **src/management.js**(6箇所): 同ログ/低MQペナルティログ/年代記ベストマッチ賞/密着スナップショット3文/キャリアハイライト/ジュニア詳報body
+- **src/data.js**(3箇所): コーチdesc「試合MQ」→「試合評価」/社長決断effectLabel 2件
+- **src/kuroda-text.js**(1箇所)/src/battle-engine-main.js(2箇所: BEST MQ→最高評価、勝利画面ラベル)/src/tag-battle-main.js(1箇所: 同)/src/index.html(2箇所: ヘルプの用語定義「MQ(Match Quality)」→「試合評価」、序盤攻略)
+- **ロード時テキスト移行(app.js `_migrated_mq_text_v1`)**: 実プレイヤーの旧セーブには「(MQ avg 71)」「ベストマッチ賞（MQ 100）」等が**文字列として焼き込み済み**(gameLog/newspaperArchive/weeklyNewspaper/hallOfFame/allHallOfFame/lastAwards/seasonHistory/chronicle/prologueの9サブツリーで実測)。表示専用サブツリー限定のdeep-walk+表示形限定の17パターン置換で一度だけ書き換え。内部キー値('careerBestMQ'等)はどのパターンにも掛からないことを机上検証済み
+- **test/ui-walkthrough/detectors.js**: INTERNAL_TOKEN_PATTERNへMQ復帰。素の`\bMQ\b`は「MQ85」を素通しする(Q|8間に語境界なし)ため**`\bMQ(?![A-Za-z])`の強化形**で追加(識別子careerBestMQ等には前側境界がなく誤爆しない)
+- **specs**: mq-system-spec v1.0にプレイヤー向け表記の注記を新設/newspaper-and-orgcompare v2.0の「MQ列」「MQは業界略号として維持」を上書き/chronicle-prologue v1.0のPEAK MQラベル更新
+
+### 検証
+- node --check 全編集ファイルOK/移行regexの机上検証19サンプル全通過(検出器強化形で残留ゼロ+内部キー無傷)
+- `npm run test:detectors` 9本マトリクス全OK(走破self-test含む)
+- `npm run test:ui:walkthrough` **PASS**(MQ検出器復帰済みで Issues: 0、316手)
+- `npm run test:ui:ignite -- --scenario tenchosen / gameover` 両方PASS(Issues: 0。両画面の文言を触ったため)
+- `npm run test:save-regression -- --walkthrough`: doctor 6本✓、走破はMQ起因(D3_TEXT)ゼロ=移行が実セーブ6本で機能。ただし**表彰式/オフ進入系の既存問題でmobile/v1.0x/ultralong/v1.25の4本がD1/D2 FAIL** — クリーンHEAD(faa8071)worktreeで同型再現し既存と確定(既知課題prerefixと同族)。調査チップ起票済み(task_9a3fe8c8)
+
+### 残課題
+- ~~実セーブ棚の走破FAIL4件(上記・本件とは無関係の既存問題)~~ → **マージ時点で解決済み**: 並行して進んだ699a860(年末クラスタ修正)+task-103(ppvTV根治)が同じ問題の根治で、マージ後の棚は6/6✓(調査チップtask_9a3fe8c8は不要になった)
+- 実機確認は docs/実機確認バックログ.md 運用に従いKeisuke委任
+
+## UI走破ハーネス探索拡張 — 死にガード修正+ナビ巡回+recoveredByRetry記録（2026-08-31・Fable）
+
+2026-08-31監査で確定した走破ハーネスの既知の限界「ナビ配下の自由閲覧UIに構造的に到達不能(NAVIGATION_TEXTが絵文字不一致の死にガード)」への対応。チップ起票分3点をすべて実装。
+
+### ①NAVIGATION_TEXTの死にガード解消+意図確定(driver.js)
+
+- 旧regexは絵文字なし完全一致で実ナビ「📅 今週」等に一つもマッチしなかった。ただし**全ナビラベルはスコア表のどの規則にもマッチせずフォールスルーの-Infinityで偶然押されていなかった**(=修正しても既存経路は不変。seed42のdigestで確認済み)
+- 確定した意図: **ナビタブはランダム走のスコアラーからは押さない**。閲覧はナビ巡回(②)が担当
+- 識別は `.nav-btn` クラス一次+文言保険の二重化。文言側は絵文字プレフィックス許容だが記号面(U+2600台/U+1F000台+VS16)に限定 —「全団体」のような日本語プレフィックス付き実コンテンツボタンを誤封殺しない(単体検証: 実ラベル11種全マッチ+罠7種全拒否)
+
+### ②ナビ巡回 runNavTour(driver.js+run.js)
+
+- walkモード限定(igniteはシナリオ誘導が主役)。クリーン状態(週画面・popup非アクティブ・オーバーレイなし・オフ/表彰/交渉中でない)のときだけ発車し、9駅(団体/社長室/ランキング/データベース/新聞/経営/ログ/セーブ/ヘルプ)を固定順に開いて各画面でD3走査→「今週」へ帰還。**開くだけで中の操作はしない**
+- 時刻表は「開幕直後の初回+week10以降」の2回。条件はゲーム状態キーのみ(壁時計不使用)で**同シード同経路の決定論を維持**(seed42×2走でdigest `297cf8b844d2e2a3` 完全一致を実測)。途中週開始のレガシーセーブでは満期分を1巡に畳む(S22W47開始で early+late 統合発車を実測)
+- issue検出時は**現場画面を保ったまま**主ループへ返す(帰還クリックでscreenshotの現場を消さない)。ナビタブが画面を開けない場合は死にタブとしてD2_FREEZE
+- 巡回続行判定を snapshot.overlays で見てはいけない罠を初走で発見: `[class*="overlay"]` は団体画面の装飾層 dojo-header-overlay 等も拾い、画面を開いた直後は必ず非空になる。中断判定は「popupキュー活性+ナビクリック不能」の2つに変更(コメントに明記)
+- 巡回が一度も発車しなかった場合はレポートに `undeparted` として必ず表示(旧死にガードの轍=到達不能の無言復活を防ぐ)
+
+### ③recoveredByRetryのレポート記録(detectors.js+driver.js+run.js)
+
+- 押しても無進行→兄弟ボタンのリトライで前進した手=**死にボタンの容疑**が黙って揉み消されていた。detectStackが回復役の添字(retryIndex)を返し、driverが操作ログ(`recoveredBy`)とresult(`recoveries`)に記録、run.jsが `Recovered-by-retry:` 行(容疑者→回復役)を出力。回復した走破は失敗にしない(容疑の記録であり確定バグではない)
+
+### 検証
+
+- 検出器self-test: D1〜D5全PASS / seed42走破1季: PASS(334手・Issues 0・189秒・両巡回9駅完走) / 同シード再走: digest完全一致(決定論維持) / ignite gameover: PASS(巡回はwalk限定なので無干渉)
+- **発見(スコープ外・チップ起票済み)**: 実セーブ棚 mobile_S22W47 の1季走破が年間表彰式 #aw-btn-next のクリック不能(D2)で失敗。**巡回OFFでも再現するため今回の拡張とは無関係の既存問題**(faa8071時点で再現、失敗stepが27/21/18とばらつく壁時計依存レース。ボタンは可視なのにPlaywrightのactionability待ちが通らない) → **マージ時点で解決済み**: 並行の699a860がハーネス偽陽性(hoverフリッカー・ポインタ退避+timeout 5000ms)として根治済み。マージ後の棚でmobileは✓。当該チップは不要になった
+
+### 触ったファイル
+
+- test/ui-walkthrough/driver.js(ガード+巡回+回復記録) / detectors.js(retryIndex返却) / run.js(navTour配線+レポート3行) / README.md(ナビ巡回・recovered-by-retryの節を追加)
+
 ## 検査システム総点検 — 敵対監査3系統+実セーブ棚の新設で検出器の欠陥を計8件発見・修正（2026-08-31・Fable）
 
 Keisuke指弾「バグを探すシステムが本当に機能しているのか怪しい」「常に新しい調べ方で調べろ」を受け、**検査システム自体を被告席に置く総点検**を実施。手法: ①敵対監査エージェント3系統(テスト257本の中身/validateGameState全不変条件/走破ハーネス+出荷ゲート) ②変異・カオス自己点検の常設 ③実セーブのリグレッション棚新設。

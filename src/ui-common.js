@@ -614,6 +614,11 @@ function _handlePatternBResultClose(event) {
   if (!closeBtn) return;
   // トーナメント進行中は干渉しない（各ボタンは onclick で専用の次試合処理を行う）
   if (App._jtPreview || App._tcPreview || App._awPreview) return;
+  // 2026-08-31 実セーブ棚で発見: PPV結果のボタンはインラインonclick(closePPVResult)と
+  // この委譲の**両方**に届き、委譲側がW48を先にtickした後、コーチ総括のresumeが
+  // closePPVResultでもう一度tickして**幻の1週(練習・決算)が年1回余分に処理**されていた。
+  // 専用ハンドラを持つPPVボタンには委譲しない(app.js closePPVResult側にも二重tickガードあり)
+  if ((closeBtn.getAttribute('onclick') || '').includes('closePPVResult')) return;
   event.preventDefault();
   event.stopPropagation();
   try {
@@ -1138,7 +1143,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
       <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
-      <div class="pb-score-lbl">Avg MQ</div>
+      <div class="pb-score-lbl">平均評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" ${heatFooterCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatFooterCls === 'is-cold' ? 'style="color:var(--c-info)"' : 'class="is-neutral"'}>${escHtml(heat.label.toUpperCase())}</div>
@@ -2469,7 +2474,7 @@ function showRetireAdviseResultPopup(accepted, fighter, line) {
 
   const subText = accepted
     ? `ラストラン状態に入りました。次の興行で引退試合を組みましょう。`
-    : (fighter.proveMode > 0 ? '🔥 見返しモード（4週間MQ+2）発動！' : 'ロッカールームに影響が出ました。');
+    : (fighter.proveMode > 0 ? '🔥 見返しモード（4週間 評価+2）発動！' : 'ロッカールームに影響が出ました。');
 
   const html = `
     ${_mdlBTitleBand(title, titleCls, sub)}
@@ -3324,7 +3329,7 @@ function _buildAwardsSummary(a) {
   if (a.bestMatch) {
     const bm1 = typeof a.bestMatch.fighter1 === 'object' ? a.bestMatch.fighter1.name : a.bestMatch.fighter1;
     const bm2 = typeof a.bestMatch.fighter2 === 'object' ? a.bestMatch.fighter2.name : a.bestMatch.fighter2;
-    html += item('🎬', 'ベストマッチ', `${bm1} vs ${bm2}`, `MQ ${a.bestMatch.mq}`);
+    html += item('🎬', 'ベストマッチ', `${bm1} vs ${bm2}`, `評価 ${a.bestMatch.mq}`);
   }
   if (a.champions && a.champions.length > 0) {
     const c1 = a.champions[0];
@@ -4365,7 +4370,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             <span style="color:#e74c3c;font-weight:700">${losses}敗</span>
             <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
             ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
-            ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベストMQ</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
+            ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベスト評価</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
             ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${_champDefenses}防衛）</span>` : ''}
             ${isUnifiedChamp ? `<span style="color:var(--unified);font-size:12px;font-weight:700">｜ 🌐 全国統一王者（${G.unifiedTitle.defenses || 0}防衛）</span>` : ''}
             ${summary.peakOVR > 0 && Engine.util.ov(c) < summary.peakOVR ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
@@ -5287,7 +5292,7 @@ function renderMatchPreview() {
         html += `<div class="smc-result">
           <span class="winner-tag">🏆 ${wNames} 勝利</span>
           <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
-          <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">MQ ${result.mq}</span>
+          <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">評価 ${result.mq}</span>
         </div>`;
       } else if (isNext) {
         html += `<div class="smc-action">
@@ -5320,7 +5325,7 @@ function renderMatchPreview() {
     const rivalLvl = getRivalryLevel(charL.id, charR.id);
     const relParts = [];
     if (rivalLvl) {
-      relParts.push(`<span style="color:${rivalLvl.color};font-weight:700">${rivalLvl.emoji}${rivalLvl.label}（MQ+${rivalLvl.mqBonus}）</span>`);
+      relParts.push(`<span style="color:${rivalLvl.color};font-weight:700">${rivalLvl.emoji}${rivalLvl.label}（評価+${rivalLvl.mqBonus}）</span>`);
     } else if (rivMax > 10) {
       relParts.push(`<span style="color:#e67e22">⚡ 因縁 ${Math.round(rivMax)}</span>`);
     }
@@ -5364,7 +5369,7 @@ function renderMatchPreview() {
         </div>`;
       };
       const awayRelParts = [];
-      if (rivalLvl) awayRelParts.push(`<span class="smc-away-chip is-fate">${rivalLvl.emoji}${escHtml(rivalLvl.label)} MQ+${rivalLvl.mqBonus}</span>`);
+      if (rivalLvl) awayRelParts.push(`<span class="smc-away-chip is-fate">${rivalLvl.emoji}${escHtml(rivalLvl.label)} 評価+${rivalLvl.mqBonus}</span>`);
       else if (rivMax > 10) awayRelParts.push(`<span class="smc-away-chip is-fate">⚡ 因縁 ${Math.round(rivMax)}</span>`);
       awayRelParts.push(`<span class="smc-away-chip">🤝 友好 ${bondAvg}</span>`);
       html += `<div class="smc-away-arena">
@@ -5424,7 +5429,7 @@ function renderMatchPreview() {
       html += `<div class="smc-result">
         <span class="winner-tag">🏆 ${wName} 勝利</span>
         <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
-        <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">MQ ${result.mq}</span>
+        <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">評価 ${result.mq}</span>
       </div>`;
     } else if (isNext) {
       html += `<div class="smc-action">
@@ -5626,7 +5631,7 @@ function renderShowResult(results, injuryResults) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${avgStarsHtml}</div>
       <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
-      <div class="pb-score-lbl">Avg MQ</div>
+      <div class="pb-score-lbl">平均評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val ${heatScoreCls === 'is-neutral' ? 'is-neutral' : ''}" ${heatScoreCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatScoreCls === 'is-cold' ? 'style="color:var(--c-info)"' : ''}>${heatScoreVal}</div>
@@ -5857,7 +5862,7 @@ function _pbResultColumn({ winnerLabel, winnerIsDraw, finishText, turns, mq }) {
     <div class="pb-result-turns">${turns} Turns</div>
     <div class="pb-result-mq">
       <span class="pb-result-mq-stars">${_pbStars(mq)}</span>
-      <span>MQ</span>
+      <span>評価</span>
       <span class="pb-result-mq-val">${mq}</span>
     </div>
   </div>`;
@@ -6926,7 +6931,7 @@ function executeEvent() {
     const won = result.winner === 'left'; // player is left
     eventWon = won;
     const popDelta = won ? 3 : -1;
-    events.push(`🔥 挑戦状結果: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！' : '敗北…'} (MQ${result.mq}, 人気${popDelta >= 0 ? '+' : ''}${popDelta})`);
+    events.push(`🔥 挑戦状結果: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！' : '敗北…'} (試合評価${result.mq}, 人気${popDelta >= 0 ? '+' : ''}${popDelta})`);
     G = { ...G, orgPop: Math.max(0, Math.min(100, G.orgPop + popDelta)), pendingEvent: null,
           gameLog: [...G.gameLog, ...events] };
 
@@ -7184,7 +7189,7 @@ function renderPPVMatchPreview() {
             <div class="ppvprog-mdw"><span class="w">✓ ${wName}</span>${loser ? ` <span style="color:#555">def.</span> ${loser}` : ''}</div>
             ${fin ? `<div class="ppvprog-mdr">${fin}</div>` : ''}
           </div>
-          <div class="ppvprog-mdmq ${mqCls}">MQ ${result.mq}</div>
+          <div class="ppvprog-mdmq ${mqCls}">評価 ${result.mq}</div>
         </div>
       </div>`;
       continue;
@@ -7349,12 +7354,12 @@ function renderPPVMatchResultPopup(idx, onContinue) {
   showEventMatchResultPopup({
     theme: 'ppv', title: `第${idx + 1}試合　結果`, meta: `YEAR ${G.season} ・ ${G.ppvName || 'GRAND FINAL'} ・ 第${idx + 1}試合 / 全${total}試合`,
     progress: `${idx + 1} / ${total}`, progressLabel: match.isSummit ? 'MAIN EVENT' : idx === total - 2 ? 'CO-MAIN' : 'LIVE',
-    context: [['カード', match.isSummit ? '頂上決戦' : `第${idx + 1}試合`], ['大会最高MQ', String(bestMq)], ['次戦', next >= 0 ? `第${next + 1}試合` : '大会結果']],
+    context: [['カード', match.isSummit ? '頂上決戦' : `第${idx + 1}試合`], ['大会最高評価', String(bestMq)], ['次戦', next >= 0 ? `第${next + 1}試合` : '大会結果']],
     left: { ...match.left, org: match.left._ppvOrgName || '', orgId: match.left._ppvOrgId }, right: { ...match.right, org: match.right._ppvOrgName || '', orgId: match.right._ppvOrgId }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'NO CONTEST' : match.isSummit ? 'SUMMIT WIN' : 'VICTORY',
     finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine,
     loserLine: oppLines.loserLine,
-    chips: [match.isSummit ? 'PPV MAIN EVENT' : `PPV 第${idx + 1}試合`, result.mq === bestMq ? '大会ベストMQ' : '', match.isRivalry ? '因縁対決' : ''],
+    chips: [match.isSummit ? 'PPV MAIN EVENT' : `PPV 第${idx + 1}試合`, result.mq === bestMq ? '大会ベストバウト' : '', match.isRivalry ? '因縁対決' : ''],
     hpLeft: result.hpLeft, hpRight: result.hpRight, hpLabel: 'FINAL HP', footNote: winnerSide === 'draw' ? 'PPV ・ 決着つかず' : `PPV ・ ${winner?.name || ''} 勝利`,
     nextLabel: _matchNextLabel(pp.results.every(Boolean)), onContinue,
   });
@@ -7393,12 +7398,12 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
       <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
-      <div class="pb-score-lbl">Avg MQ</div>
+      <div class="pb-score-lbl">平均評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(bestMQ)}</div>
       <div class="pb-score-val" style="margin-top:3px">${bestMQ}</div>
-      <div class="pb-score-lbl">Best MQ</div>
+      <div class="pb-score-lbl">最高評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" ${heatFooterCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatFooterCls === 'is-cold' ? 'style="color:var(--c-info)"' : 'class="is-neutral"'}>${escHtml(heat.label.toUpperCase())}</div>
@@ -7561,7 +7566,11 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     <div><span class="ptv-telop-cat">${cat}</span><span class="ptv-telop-main">${main}</span></div>
     ${sub ? `<div class="ptv-telop-sub">${sub}</div>` : ''}
   </div>`;
-  const _hint = '<div class="ptv-hint">クリックで進む ▶</div>';
+  // 進行導線は**実ボタン**で出す(2026-08-31 task-103)。以前は素の div に点滅テキストを
+  // 置いているだけで、①〜④の場面には button も onclick も無く、クリック面も中央720pxの
+  // TV枠の中だけだった。キーボードでは一切進めず、描画が転ぶと出口ゼロの画面で止まる。
+  // 他の全画面演出(.cerem-skip / リプレイの「次へ」)と同じく、必ず押せる出口を1つ置く。
+  const _hint = '<button type="button" class="ptv-hint" data-ptv-next>次へ ▶</button>';
   const _resultSide = (fighter, otherF, outcome, size, showWinLabel) => {
     const mark = outcome === 'winner' ? '○' : outcome === 'loser' ? '×' : '△';
     const role = outcome === 'winner' ? '勝者' : outcome === 'loser' ? '敗者' : '引き分け';
@@ -7629,7 +7638,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         <div class="ptv-flash-band">
           <div class="ptv-flash-kicker">RESULT — 第${pos + 1}試合</div>
           ${resultBlock}
-          <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove))}</b>`} ／ MQ <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
+          <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove))}</b>`} ／ 評価 <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
         </div>
         <div class="ptv-commentary"><div class="ptv-who">実況</div>「${_liveLine(r)}」</div>
         <div class="ptv-dots">${dots}</div>
@@ -7670,7 +7679,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         <div class="ptv-summit-result">${r.turns || 0}ターンの死闘の末に——
           <div class="ptv-win-line">${isDraw ? '△ 両者譲らず、DRAW' : `🏆 ${escHtml(winF.name)}、業界の頂点へ`}</div>
         </div>
-      </div>` + _hint + _telop('速報', `頂上決戦 決着 — MQ ${r.mq} ${_pbStars(r.mq)}`, isDraw ? '決着は、来年に持ち越された。' : 'これが、頂点の景色。'),
+      </div>` + _hint + _telop('速報', `頂上決戦 決着 — 評価 ${r.mq} ${_pbStars(r.mq)}`, isDraw ? '決着は、来年に持ち越された。' : 'これが、頂点の景色。'),
     });
   }
 
@@ -7689,6 +7698,56 @@ function renderPPVTvBroadcast(card, results, ppvName) {
   });
 
   let sceneIdx = 0;
+  // ── 場面送り(§5-D 鉄則1「待ちに時限の保険」/ 鉄則2「1操作=1進行」) ──
+  // 旧実装は場面ごとに .ptv-tv へ { once:true } のリスナーを張り直していたため、
+  // 描画が一度でも転ぶと張り直しが起きず、ボタンの無い画面で恒久停止した。
+  // 委譲リスナーはオーバーレイに1本だけ張り、暗幕・TV枠・「次へ」ボタン・キーボードの
+  // どれから来ても同じ1つの出口(advance)に集約する。
+  let advancing = false;
+  let tornDown = false;
+
+  const _closestButton = (e) => {
+    const t = e && e.target;
+    return (t && typeof t.closest === 'function') ? t.closest('button') : null;
+  };
+  const onSurfaceClick = (e) => {
+    // 最終場面の「事務所へ戻る」など、専用ハンドラを持つボタンは横取りしない
+    const btn = _closestButton(e);
+    if (btn && typeof btn.hasAttribute === 'function' && !btn.hasAttribute('data-ptv-next')) return;
+    advance();
+  };
+  const onKey = (e) => {
+    if (!e || (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight')) return;
+    // ボタンにフォーカスがあるときはブラウザ既定の活性化に任せる(二重送りの防止)
+    if (_closestButton(e)) return;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    advance();
+  };
+  const teardown = () => {
+    if (tornDown) return;
+    tornDown = true;
+    overlay.removeEventListener('click', onSurfaceClick);
+    document.removeEventListener('keydown', onKey);
+    if (overlay._ptvSurfaceHandler === onSurfaceClick) {
+      overlay._ptvSurfaceHandler = null;
+      overlay._ptvKeyHandler = null;
+    }
+  };
+  function advance() {
+    if (advancing || tornDown) return;
+    // 中継が画面から降りた後にリスナーが生き残っていても、他画面の操作を奪わない
+    if (!box.querySelector('.ptv-tv')) { teardown(); return; }
+    if (sceneIdx >= scenes.length - 1) return; // 最終場面の出口は「事務所へ戻る」だけ
+    advancing = true;
+    sceneIdx += 1;
+    try { Audio.play('click'); } catch (e) {}
+    try {
+      show();
+    } finally {
+      advancing = false;
+    }
+  }
+
   const show = () => {
     const sc = scenes[sceneIdx];
     box.innerHTML = `<div class="ptv-tv"><div class="ptv-screen">${sc.html}</div></div>`;
@@ -7710,15 +7769,17 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         a.play().catch(() => {});
       } catch (e) {}
     }
-    if (!sc.final) {
-      const tv = box.querySelector('.ptv-tv');
-      if (tv) tv.addEventListener('click', () => {
-        sceneIdx++;
-        try { Audio.play('click'); } catch (e) {}
-        show();
-      }, { once: true });
-    }
+    if (sc.final) teardown(); // 出口は「事務所へ戻る」に一本化。以後クリックを拾わない
   };
+  // 中継が二重に起動しても、生きている委譲リスナーは常に1組だけにする(1操作=1進行)
+  if (overlay._ptvSurfaceHandler) {
+    overlay.removeEventListener('click', overlay._ptvSurfaceHandler);
+    document.removeEventListener('keydown', overlay._ptvKeyHandler);
+  }
+  overlay._ptvSurfaceHandler = onSurfaceClick;
+  overlay._ptvKeyHandler = onKey;
+  overlay.addEventListener('click', onSurfaceClick);
+  document.addEventListener('keydown', onKey);
   show();
   overlay.classList.add('active');
 }
@@ -13580,7 +13641,7 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
       <div class="crrm-row-side crrm-row-a">${mark(leftSide)} <span class="crrm-name">${escHtml(leftFighter.name)}${relText(leftFighter)}</span></div>
       <div class="crrm-row-vs">vs</div>
       <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(rightFighter.name)}${relText(rightFighter)}</span> ${mark(rightSide)}</div>
-      <div class="crrm-row-mq">MQ ${Math.round(match.mq || 0)}</div>
+      <div class="crrm-row-mq">評価 ${Math.round(match.mq || 0)}</div>
       <div class="crrm-row-fin">${match.finMove ? escHtml(match.finMove) : ''}</div>
     </div>`;
   }).join('');
@@ -13745,7 +13806,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         <div class="crrm-row-side crrm-row-a">${leftLabel} <span class="crrm-name">${escHtml(leftFighter.name)}${relText(leftFighter)}</span></div>
         <div class="crrm-row-vs">vs</div>
         <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(rightFighter.name)}${relText(rightFighter)}</span> ${rightLabel}</div>
-        <div class="crrm-row-mq">MQ ${Math.round(m.mq || 0)}</div>
+        <div class="crrm-row-mq">評価 ${Math.round(m.mq || 0)}</div>
         <div class="crrm-row-fin">${finLabel}</div>
       </div>`;
   }).join('');
@@ -14341,7 +14402,7 @@ function _buildB3Step3(event, state, roster) {
 
   const resultRows = `
     <div class="mdl-a-result-row"><span>対戦相手</span><strong>${escHtml(challenger.name || '???')}（${escHtml(orgName)}）</strong></div>
-    <div class="mdl-a-result-row"><span>MQ</span><span class="gold">${result.mq ? '★' + result.mq : '?'}</span></div>`;
+    <div class="mdl-a-result-row"><span>試合評価</span><span class="gold">${result.mq ? '★' + result.mq : '?'}</span></div>`;
 
   const closePart = isDraw
     ? `<div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-choice="0">— 了 解 —</button></div>`
@@ -14658,7 +14719,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
     resultLine,
     escHtmlSafe(applyResult.resultText || `${factionName}内の序列を懸けた一戦に決着がついた。`),
   ].map(line => `<span>${line}</span>`).join('');
-  const summaryRows = `<div class="mdl-a-result-row"><span>試合結果</span><strong>${escHtmlSafe(finText)} · ${Number(matchResult.turns) || 0} TURN · MQ ${Number(matchResult.mq) || 0}</strong></div>${impactRows}`;
+  const summaryRows = `<div class="mdl-a-result-row"><span>試合結果</span><strong>${escHtmlSafe(finText)} · ${Number(matchResult.turns) || 0} TURN · 評価 ${Number(matchResult.mq) || 0}</strong></div>${impactRows}`;
   const firstPerson = isDraw ? fA : winChar;
   const secondPerson = isDraw ? fB : loseChar;
   const firstLine = isDraw ? '' : winnerLine;
@@ -14754,7 +14815,7 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
       <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
-      <div class="pb-score-lbl">MQ</div>
+      <div class="pb-score-lbl">評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(matchResult.finType, matchResult.finMove))}</div>
@@ -14946,7 +15007,7 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
       <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
-      <div class="pb-score-lbl">MQ</div>
+      <div class="pb-score-lbl">評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" style="font-size:13px;color:var(--c-rivalry)">${escHtml(relationText)}</div>
@@ -15812,7 +15873,7 @@ function showEndingCeremony(data, onDone) {
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
           <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">ベストマッチ</span>
-          <span style="font-size:14px;font-weight:700;color:var(--gold-light)">MQ ${data.bestMQ}</span>
+          <span style="font-size:14px;font-weight:700;color:var(--gold-light)">評価 ${data.bestMQ}</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0">
           <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">殿堂入り</span>
@@ -15997,7 +16058,7 @@ function showGameOverScreen(summary) {
       <div class="gameover-stat-row"><span>最高資金</span><span>${fmt(summary.peakFunds)} 万</span></div>
       <div class="gameover-stat-row"><span>最高団体人気</span><span>${fmt(Math.round(summary.peakOrgPop))}</span></div>
       <div class="gameover-stat-row"><span>興行回数</span><span>${summary.totalShows} 回</span></div>
-      <div class="gameover-stat-row"><span>ベストマッチ</span><span>${summary.bestMQMatch || '—'} (MQ ${summary.bestMQ})</span></div>
+      <div class="gameover-stat-row"><span>ベストマッチ</span><span>${summary.bestMQMatch || '—'} (評価 ${summary.bestMQ})</span></div>
       <div class="gameover-stat-row"><span>殿堂入り</span><span>${summary.hallOfFameCount} 名</span></div>
     </div>
     <button class="gameover-btn" id="gameoverBtn1" onclick="
@@ -16093,7 +16154,7 @@ function showGameOverCeremony(data, onDone) {
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">ベストマッチ</span>
-          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestMQMatch || '—'} (MQ ${data.bestMQ})</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestMQMatch || '—'} (評価 ${data.bestMQ})</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">殿堂入り</span>
@@ -17355,7 +17416,7 @@ function _jtcFx(f, isWin, isLose) {
 /** 決着時間 / MQ チップ */
 function _jtcMinfo(match) {
   const t = typeof _npTurnsToTime === 'function' ? _npTurnsToTime(match.turns) : '';
-  return `<div class="jtc-minfo">${t ? `<span class="t">${t}</span><span class="jtc-minfo-dot">/</span>` : ''}<span class="mq">MQ ${match.mq}</span></div>`;
+  return `<div class="jtc-minfo">${t ? `<span class="t">${t}</span><span class="jtc-minfo-dot">/</span>` : ''}<span class="mq">評価 ${match.mq}</span></div>`;
 }
 
 /** 通常段(準々決勝/準決勝)の行。8名時は準々決勝(4試合)のみ縮小サイズになる */
@@ -18003,8 +18064,8 @@ function showEventMatchResultPopup(opts) {
   // 自団体だけの試合(通常興行の通常カード・PPV等)ではバッジそのものを省略する。
   const crossOrg = _emrCrossOrg(opts);
   const sides = isTag
-    ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'TEAM WIN'))}</div>${_emrTagFinishActors(opts, winnerSide)}<div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">MQ <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide, bubbleRight, crossOrg)}`
-    : `${_emrSingleSide(opts.left, 'left', winnerSide, opts.leftRole, opts.leftStatLabel, opts.leftStat, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">MQ <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrSingleSide(opts.right, 'right', winnerSide, opts.rightRole, opts.rightStatLabel, opts.rightStat, bubbleRight, crossOrg)}`;
+    ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'TEAM WIN'))}</div>${_emrTagFinishActors(opts, winnerSide)}<div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">評価 <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide, bubbleRight, crossOrg)}`
+    : `${_emrSingleSide(opts.left, 'left', winnerSide, opts.leftRole, opts.leftStatLabel, opts.leftStat, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">評価 <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrSingleSide(opts.right, 'right', winnerSide, opts.rightRole, opts.rightStatLabel, opts.rightStat, bubbleRight, crossOrg)}`;
   const chips = (opts.chips || []).filter(Boolean).map(chip => `<span class="emr-chip">${escHtml(chip)}</span>`).join('');
   const layer = document.createElement('div');
   layer.className = `emr-layer ${theme.cls}`.trim();
@@ -18064,7 +18125,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
     const boutNumber = total - idx;
     showEventMatchResultPopup({
       theme: 'normal', title: resultTitle, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${boutNumber}試合 / 全${total}試合`,
-      progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', 'TAG MATCH'], ['MQ', String(result.mq ?? '—')]],
+      progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', 'TAG MATCH'], ['試合評価', String(result.mq ?? '—')]],
       isTag: true, teamLeft: { members: membersA, org: leftOrg, orgId: leftOrgId }, teamRight: { members: membersB, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter,
       winAttribution: result.winAttribution, finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: ['通常興行', 'タッグマッチ'], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
       footNote: '通常興行 ・ 試合結果', nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
@@ -18099,12 +18160,12 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   }
   showEventMatchResultPopup({
     theme: 'normal', title: resultTitle, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${boutNumber}試合 / 全${total}試合`,
-    progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', isUnified ? 'UNIFIED TITLE' : isChallenge ? 'CHALLENGE MATCH' : match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], ['MQ', String(result.mq ?? '—')]],
+    progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', isUnified ? 'UNIFIED TITLE' : isChallenge ? 'CHALLENGE MATCH' : match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], ['試合評価', String(result.mq ?? '—')]],
     left: { ...left, org: leftOrg, orgId: leftOrgId }, right: { ...right, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'NO CONTEST' : match.isTitle ? 'TITLE WIN' : 'WIN',
     finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq,
     victoryLine, loserLine, showVictoryLine,
-    chips: [isUnified ? '全国統一王座' : isChallenge ? '挑戦試合' : match.isTitle ? 'タイトルマッチ' : '通常興行', `MQ ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
+    chips: [isUnified ? '全国統一王座' : isChallenge ? '挑戦試合' : match.isTitle ? 'タイトルマッチ' : '通常興行', `評価 ${result.mq}`], hpLeft: result.hpLeft, hpRight: result.hpRight,
     footNote: (isUnified || isChallenge) ? `${leftOrg} vs ${rightOrg}` : '通常興行 ・ 試合結果', nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
   });
 }
@@ -18138,7 +18199,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
       left: { ...left, org: match.left._orgName || '', orgId: match.left._orgId }, right: { ...right, org: match.right._orgName || '', orgId: match.right._orgId }, winnerSide: leftWins ? 'left' : 'right', winnerFighter: winner,
       leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
       finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq, victoryLine: winLine,
-      chips: [isFinal ? 'ジュニア王者' : '次戦進出', `${roundLabel}`, `MQ ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
+      chips: [isFinal ? 'ジュニア王者' : '次戦進出', `${roundLabel}`, `評価 ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
       footNote: `夏季ジュニア ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: _matchNextLabel(isFinal),
       onContinue: () => App.jtAdvanceAfterResult(ri, mi),
     });
@@ -18202,7 +18263,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(match.mq)}</div>
       <div class="pb-score-val" style="margin-top:3px">${match.mq}</div>
-      <div class="pb-score-lbl">MQ</div>
+      <div class="pb-score-lbl">評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove))}</div>
@@ -18424,12 +18485,12 @@ function renderJuniorTournamentResult() {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(Math.round(totalMQ / Math.max(1, championMatchCount)))}</div>
       <div class="pb-score-val" style="margin-top:3px">${totalMQ}</div>
-      <div class="pb-score-lbl">Total MQ</div>
+      <div class="pb-score-lbl">通算評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(finalMQ)}</div>
       <div class="pb-score-val" style="margin-top:3px">${finalMQ}</div>
-      <div class="pb-score-lbl">Final MQ</div>
+      <div class="pb-score-lbl">決勝評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" style="color:var(--gold);font-size:22px">¥${PRIZE.champion}<span style="font-size:12px"> 万</span></div>
@@ -18602,7 +18663,7 @@ function _stlLastMatchStripHtml(m) {
     <span class="stl-lastmatch-duo ${aWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}<span class="n">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}${aWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
     <span class="stl-lastmatch-vs">VS</span>
     <span class="stl-lastmatch-duo ${bWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}<span class="n">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}${bWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
-    <span class="stl-lastmatch-meta">MQ ${m.mq}${closeBonus ? '<span class="bonus">接戦+1pt（両者)</span>' : ''}<span class="stl-lastmatch-time">${escHtml(timeStr || '')}</span></span>
+    <span class="stl-lastmatch-meta">評価 ${m.mq}${closeBonus ? '<span class="bonus">接戦+1pt（両者)</span>' : ''}<span class="stl-lastmatch-time">${escHtml(timeStr || '')}</span></span>
   </div>`;
 }
 
@@ -19331,7 +19392,7 @@ function _agwFocusHtml(match, boutIndex, displayOrgIds) {
       <button type="button" class="btn" onclick="App.awRevealBout()">この試合の結果を見る ▶</button>
       <button type="button" class="btn agw-team-skip" onclick="App.awSkipTeamMatch()">まとめてスキップ</button>
     </div>
-    ${last ? `<div class="agw-last-result">前フォール: ${escHtml(last.draw ? '決着つかず' : `${last.winnerId === last.left.id ? last.left.name : last.right.name} 勝利`)} / MQ ${last.mq}</div>` : ''}
+    ${last ? `<div class="agw-last-result">前フォール: ${escHtml(last.draw ? '決着つかず' : `${last.winnerId === last.left.id ? last.left.name : last.right.name} 勝利`)} / 評価 ${last.mq}</div>` : ''}
   </div>`;
 }
 
@@ -20158,7 +20219,7 @@ function renderTenchosenMatchResult(ri, mi) {
       left, right, winnerSide: leftWins ? 'left' : 'right', winnerFighter: winner,
       leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
       finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
-      chips: [`第${_tcEditionNo()}回天頂戦`, isFinal ? '最強王者' : '次戦進出', `MQ ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
+      chips: [`第${_tcEditionNo()}回天頂戦`, isFinal ? '最強王者' : '次戦進出', `評価 ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
       footNote: `天頂戦 ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: _matchNextLabel(isFinal),
       onContinue: () => App.tcAdvanceAfterResult(ri, mi),
     });
@@ -20212,7 +20273,7 @@ function renderTenchosenMatchResult(ri, mi) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(match.mq)}</div>
       <div class="pb-score-val" style="margin-top:3px">${match.mq}</div>
-      <div class="pb-score-lbl">MQ</div>
+      <div class="pb-score-lbl">評価</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove))}</div>
@@ -20356,7 +20417,7 @@ function renderTenchosenDrama(idx) {
   const winner = match.winnerId === match.left.id ? match.left : match.right;
   const loser = match.winnerId === match.left.id ? match.right : match.left;
   const roundLabel = round.name === 'final' ? '決勝' : `${_tcRoundLabel(round.name)} 第${ev.matchRef.index + 1}試合`;
-  const mqNote = ev.class === 'epic' ? ` (MQ ${match.mq})` : '';
+  const mqNote = ev.class === 'epic' ? ` (評価 ${match.mq})` : '';
 
   const lineBySpeaker = {};
   (ev.lines || []).forEach(l => { lineBySpeaker[l.speakerId] = l.text; });
@@ -20425,7 +20486,7 @@ function renderTenchosenTVResult() {
         <span class="w">○ ${escHtml(w.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(w._orgName || '')})</span>
         <span style="color:var(--stage-text-dim)">—</span>
         <span>× ${escHtml(l.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(l._orgName || '')})</span>
-        <span class="mq">MQ ${m.mq}</span>
+        <span class="mq">評価 ${m.mq}</span>
       </div>`;
     });
   });
