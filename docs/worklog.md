@@ -52,6 +52,40 @@
 3. `ui-common.js:15762` 付近 `showLeagueElevationCeremony()` スライド2 — 進行は素の `#leClickArea` のみ。`#leCloseBtn` は実ボタンだが step5 まで `opacity:0`。**`display:none` に変えた瞬間に止まる**（いま通っているのは偶然）
 
 `u4-modal-frame-safety-net-test.js:427` はこれら3つのオーバーレイを列挙しているが、**z-indexの重なり検査であってクリック可能性を見ていない**ため、どのテストにも掛かっていない。
+## 台帳検査L3「資金恒等式」新設 — 資金全経路の棚卸しで派閥取材の1万倍付与バグも発見・修正（2026-08-31・Fable直実装）
+
+総点検で「未実装(チップ)」と申告していた第3の恒等式。**tickWeek/advanceWeek 1呼び出しを跨ぐ資金の変化が、週次収支明細(weeklyFinance.net)+プレイヤー可視の金額ログ(💰賞金/🏋️招聘自動継続)の合計で説明できることを毎週assert**する。恒等式を書く前に、指示どおり資金(G.funds)を動かす**全代入箇所の棚卸し**を実施(management.js 40箇所超/factions.js 3箇所/app.js UI層を関数と呼び出し経路で分類)。
+
+### 棚卸しの結論(スパン内の資金経路は4つだけ)
+
+- **tickWeek内**: ①processSettlement(明細=差分が構成的に一致する唯一の構造化申告) ②tickInviteBuffsの招聘自動継続(**明細に載らない** — 週次ログ「🏋️…(4週・N万/⚡M)」だけが痕跡) ③sanitizeFloats末尾の整数丸め
+- **advanceWeek内**: ④特別大会apply 2種 — 天頂戦(week48: 賞金+ブランド収入)・春タッグ(week12: 賞金計+ブランド収入)。いずれも💰ログが対。autumnWar/JT/PPVのapplyは現行コードではスパン外(UI・ループ直呼び)だが、経路移動に備え説明表に含めた
+- **スパン外**=プレイヤー操作API(ケア決裁/特別治療/契約交渉の引き留め金/スカウト・FA契約/レンタル前払い/移籍/ドラフト入札/選択・大型・派閥イベント/コーチ枠購入) — L3の対象外(下の死角申告)
+
+### 発見2件(棚卸し自体の成果)
+
+1. **明細非掲載経路**: 招聘自動継続の費用はweeklyFinance(収支明細画面)に載らず、週次ログ1行のみ。L3はログの公称額を説明側に採用。収支明細への掲載は将来課題として記録
+2. **実バグ(即日修正)**: factions.js applyCommon5Choice(派閥メディア取材イベント)が、表示「メディア収入 ¥5〜18万」に対し **`funds += inc * 10000`(=公称の1万倍、5〜18億円)を付与**していた。specs/faction-common-events-spec-v0.1.md の設計値は¥5〜18万 — specに合わせ `+ inc` へ修正(3箇所)。「公称と実効の乖離」族そのもの。auto-simでは12季走でCOMMON_5発火0回(結成24週+勢い30+CD32週の条件が厳しい)のため資金爆増が一度も検査に映らなかった型
+
+### L3実装(test/auto-sim.js)
+
+- `installFundsLedger`: tickWeek/advanceWeekをラップし、呼び出し毎にΔ資金と説明合計を照合。**物差し独立** — エンジンの定数・計算式を参照せず、(a)エンジン自身の構造化申告(weeklyFinance.net) (b)プレイヤーに見せた金額ログのパース(見せた数字=起きた数字のL2精神) の2系統のみ
+- **丸め規約**: tick側±0.5(sanitizeFloatsの整数丸めを跨ぐため)/advance側±0.01(丸めなし・文字列往復は正確)。資金が非有限のときは検査スキップ(NaN検出は入口検査+sanitize記録義務の管轄、二重報告しない)
+- **変異自己点検**: `WM_LEDGER_MUTATION=funds_leak`(tickWeekが毎週37万を無言で抜く)を新設 → 4季で**違反212件ISSUES FOUND(exit 1)=検出能力の証明**。detector-selftestに1行追加(計10本マトリクス)
+- ALL CLEAR判定・台帳サマリーにL3を組み込み
+
+### 検証
+
+- auto-sim **40季42 なし/--care両方 ALL CLEAR**(資金恒等式 各4240回検査・違反0=**偽陽性なし**) / funds_leak変異=鳴く(両側証明) / npm test **256/256** / node --check 3ファイルok
+- 触ったファイル: test/auto-sim.js(L3本体+変異) / test/detector-selftest.js(1行) / src/factions.js(Common5単位修正)
+
+### 既知の死角(正直な申告)
+
+- L3が見るのはtickWeek/advanceWeekのスパン内のみ。**プレイヤー操作の資金移動(ケア・交渉・移籍・入札・app.js UI層)はスパン外で対象外**(それらは操作単位の約束照合=L2型の個別検査が管轄)
+- 招聘自動継続の説明則は、auto-simが`autoRenew: false`で招聘するため**シム内では実走しない**(規則は実装済み・実プレイのautoRenewで有効)
+- ログ文言が変わるとパーサが外れて**違反として鳴る**(無言で盲目化ではなく騒ぐ側に倒した設計。文言変更時はLEDGER_L3_MONEY_LINESも更新)
+
+残: Common5修正の実機確認(バックログへ追記)
 
 ## 検査システム総点検 — 敵対監査3系統+実セーブ棚の新設で検出器の欠陥を計8件発見・修正（2026-08-31・Fable）
 
