@@ -8359,24 +8359,35 @@ function showSeasonFanfare(season, onDone) {
   const overlay = document.getElementById('seasonFanfareOverlay');
   const box = document.getElementById('seasonFanfareBox');
   if (!overlay || !box) { if (onDone) onDone(); return; }
+  // 「タップで続行」は実ボタン(task-103と同型・2026-08-31)。60秒の自己復帰があるので
+  // 恒久停止はしないが、他の全画面演出と同じく実ボタン+キーボードの出口も持たせる
   box.innerHTML = `
     <div style="font-family:'Bebas Neue',sans-serif;font-size:72px;letter-spacing:4px;line-height:1;
       background:linear-gradient(180deg,#fff 20%,var(--gold-light));-webkit-background-clip:text;
       -webkit-text-fill-color:transparent;background-clip:text">SEASON ${season}</div>
     <div style="font-size:20px;color:var(--gold);margin-top:8px;font-family:'Oswald',sans-serif;
       letter-spacing:4px;text-transform:uppercase">シーズン開幕</div>
-    <div style="font-size:12px;color:var(--text-dim);margin-top:14px">— タップで続行 —</div>
+    <button type="button" class="sf-continue-btn" data-sf-continue>— タップで続行 —</button>
   `;
   overlay.classList.add('show');
   Audio.play('fanfare');
+  // 二重起動しても、生きている keydown リスナーは常に1本だけにする(1操作=1進行)
+  if (window._sfKeyHandler) document.removeEventListener('keydown', window._sfKeyHandler);
+  window._sfKeyHandler = (e) => {
+    if (!e || (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight')) return;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    if (window._sfDismiss) window._sfDismiss();
+  };
   window._sfDismiss = () => {
     overlay.classList.remove('show');
     overlay.removeEventListener('click', window._sfDismiss);
+    if (window._sfKeyHandler) { document.removeEventListener('keydown', window._sfKeyHandler); window._sfKeyHandler = null; }
     window._sfDismiss = null;
     if (onDone) setTimeout(onDone, 100);
     _drainPopupQueue();
   };
   overlay.addEventListener('click', window._sfDismiss);
+  document.addEventListener('keydown', window._sfKeyHandler);
   // 安全策: 通常はタップで閉じるが、万が一に備えて長めのフォールバックを残す
   clearTimeout(window._sfTimer);
   window._sfTimer = setTimeout(() => { if (window._sfDismiss) window._sfDismiss(); }, 60000);

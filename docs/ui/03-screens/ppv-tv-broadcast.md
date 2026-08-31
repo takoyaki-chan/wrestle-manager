@@ -48,6 +48,11 @@ PPV未解禁（団体人気30未満）の年の第48週、他団体のPPV GRAND 
   二重起動防止フラグを先に立てる都合上、3秒のセーフティネットは二度と張られないため、ここが最後の砦
 - 回帰ガード: `test/u6-org-identity-safety-net-test.js` の
   `every ppvTV scene carries a real, pressable exit`
+- **同型の横展開（2026-08-31）**: 同じ「出口ゼロの全画面」だった旗揚げ完成演出
+  （`App.completeDraft`）・オープニング（`renderOpeningScreen`）・リーグ昇格セレモニー
+  （`showLeagueElevationCeremony`）・シーズン開幕ファンファーレ（`showSeasonFanfare`）も
+  この型（実ボタン＋キーボード＋二重起動防止＋fail-open）に統一した。
+  回帰ガードは `test/fullscreen-exit-zero-guard-test.js`
 
 ## BGM / SE
 

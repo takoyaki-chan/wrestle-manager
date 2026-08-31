@@ -1,5 +1,42 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 出口ゼロ画面の残り3件+1を根治 — task-103の型の横展開完了（2026-08-31・worktree nostalgic-gagarin）
+
+task-103（ppvTVフリーズ根治）で確定した構造欠陥の型——進行手段が「素の要素への `addEventListener('click')`」だけで、`<button>` / onclick属性 / role のいずれも無い全画面は、(a)クリック面が限定され (b)キーボードで進めず (c)描画や進行が一度転ぶと**出口ゼロで恒久停止**する——の同型残存3件を、`renderPPVTvBroadcast` と同じ「実ボタン＋キーボード＋二重起動防止＋fail-open」へ作り直した。余力枠の1件も同じ型に統一。
+
+### 対象と修正
+
+1. **旗揚げ完成演出 `App.completeDraft()`**（[app.js](src/app.js)・最優先）— `.completion-overlay` は `z-index:400` の不透明幕で背後の全ボタンを塞ぐのに、出口は overlay click 1本・時限保険なしだった。右下に実ボタン「事務所へ ▶」（集合写真が揃ってからフェードイン、DOMには最初から居る）＋document keydown（Enter/Space/→）＋`_leaving` フラグ。本編差し替え（refreshAll）が転んでも **finally で幕だけは必ず下ろす**。演出の組み立て自体が転んだら演出を諦めて本編へ直行（旗揚げは完了済みなので閉じ込めない）
+2. **オープニング4幕 `renderOpeningScreen()`**（[ui-render.js](src/ui-render.js)）— skip を div への `onclick` プロパティ代入から**実 `<button>`** へ、CLICK TO CONTINUE も実ボタン化（見た目は従来のまま）。keydown を ESC 専用から Enter/Space/→（幕送り）＋ESC（スキップ）へ拡張。幕送りロック `_openingTransitioning` に**3秒の時限保険**、幕送りが転んだら fail-open でドラフトへ直行。再描画時に旧 keydown リスナーと skip の取り残しを掃除（従来はリスナーが漏れて二重進行の芽だった）
+3. **業界底上げセレモニー `showLeagueElevationCeremony()` スライド2**（[ui-common.js](src/ui-common.js)）— 進行が素の全画面div `#leClickArea` のみで、`locked` は setTimeout の unlock() だけが解くため**1ステップ転ぶと永久ロック**だった（`#leCloseBtn` は step5 まで opacity:0。検査に拾われていたのは偶然）。「▼ クリックで次へ」の点滅ヒント自体を**実ボタン化**（visible のときだけ押せる）、ロックを**期限付き（正常系900ms・保険4秒で自然解除）**へ、ステップ実行を try/catch で包み転んだら締めブロック（続ける ▶）を強制表示、それも無理なら onDone へ直行。keydown（Enter/Space/→）は「出口が見えていればその出口、でなければ場面送り」。onDone が転んでも幕は必ず畳む
+4. **シーズン開幕ファンファーレ `showSeasonFanfare()`**（余力枠）— 60秒自己復帰があり恒久停止はしないが、「— タップで続行 —」を実ボタン化＋keydown＋リスナー単一化で同じ型に統一
+
+CSSは [index.html](src/index.html)（`.comp-continue-btn` 新設 / `.opening-skip`・`.opening-click-hint`・`.le-click-hint`・`.sf-continue-btn` のボタンリセット＋focus-visible。ハードコード16進なし・全てトークン/rgba）。
+
+### 回帰ガード新設: `test/fullscreen-exit-zero-guard-test.js`（15セクション）
+
+u6の見本と同方式（実関数を new Function で抽出し最小スタブで実行）。各画面で「実ボタンの出口がある／クリックとキーボードの両方で進める／1操作=1進行（二重クリック・二重ESC・二重起動でも進行1回・リスナー1本）／fail-open（refreshAll・幕送り・ステップ・onDone が転んでも閉じ込めない）／永久ロックにならない（期限切れで自然解除）」を検査。CSS側の「押せる見た目」の残存も確認。
+
+### 副産物: 実セーブ棚が新たに検出した MQ テキスト移行の取りこぼし（v2 で根治）
+
+検証中の実セーブ棚で `ultralong_S73W14` が D3（MQ exposed in visible text）で新規FAIL。**本タスクの4画面とは無関係**で、本日mainマージのMQ表記一掃（fc637de）のロード時テキスト移行の穴だった:
+- **対象リストから `currentNewspaper`（📰新聞の自団体興行欄 playerShowData の供給元）と `mvpRace`（記録タブの語り）が漏れていた**（6本中5本の実セーブに残存を確認）
+- **「沸かせ、MQ 84」「攻防はMQ 76」「興行でMQ98」の和文直結型がどのパターンにも掛からず**、しかも一度 v1 フラグが立ったセーブは二度と再走されないため**恒久残留**する構造だった
+
+キー2本追加＋和文字直結の汎用パターン（`([、-ヿ一-鿿])MQ(?= ?\d)` — 'careerBestMQ' 等の識別子は直前が英字なので掛からない）＋ `_migrated_mq_text_v2` フラグで全セーブ再走（書き換えは冪等）。回帰ガード `test/mq-text-migration-v2-test.js` 新設（実移行ブロックを抽出し、実セーブから採った実物の焼き込み文字列で検査・4セクション）。
+
+### 検証（すべて実測）
+
+- `npm test`: **258/258 PASS**（新規ガード2本込み）
+- `npm run test:ui:walkthrough`: **PASS**（334手・Issues 0。S1→S2跨ぎ=新ボタン経由のファンファーレも通過。手数がtask-103時の316と違うのは本日mainのナビ巡回拡張a168e42によるもの）
+- `node test/save-regression.js --walkthrough`: **ALL CLEAR**（doctor 6/6 ✓・走破 6/6 ✓ Issues 0。既知課題 `prerefix_S12W45` も本実行では再現せず。MQ v2 修正前は `ultralong` が D3 で1件FAILだった）
+- `node test/auto-sim.js 20 42`: **ALL CLEAR ✓**（台帳検査3層も違反0）
+- `node test/ui-baseline-guard-test.js`: ok / ui-check 7項目目視: 該当5項目は変更なし・鉄則1/2は本タスクの主題として全画面で対応
+
+### 実機確認
+
+`docs/実機確認バックログ.md` に「出口ゼロ画面の残り3件+1根治」（4項目）と「旧セーブの新聞・MVPレース（v2追い移行）」を追記。画面仕様書は [ppv-tv-broadcast.md](docs/ui/03-screens/ppv-tv-broadcast.md) の「場面送りの導線」節に横展開の記録を追記（対象3画面の個別仕様書は存在しないため新設せず——既存画面の導線修理であり新画面ではない）。
+
 ## 実セーブ棚の初回走破 — 年末クラスタの実バグ3件+ハーネス偽陽性2件を発見・修正（2026-08-31・Fable、699a860）
 
 新設した実セーブ棚(`node test/save-regression.js --walkthrough`)の初回フル走破は6本中6本失敗。切り分けの結果、**実バグ3件/偽陽性2件/良性1件**に分解し全て処置:

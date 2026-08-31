@@ -2429,6 +2429,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   transition:opacity .4s,background .4s}
 .season-fanfare-overlay.show{opacity:1;background:rgba(0,0,0,0.82);pointer-events:all}
 .season-fanfare-box{text-align:center;animation:sfPulse .55s cubic-bezier(0.22,1,0.36,1)}
+/* 「タップで続行」の実ボタン(task-103と同型・2026-08-31)。見た目は従来の控えめテキストのまま */
+.sf-continue-btn{display:inline-block;margin-top:14px;font-size:12px;color:var(--text-dim);
+  background:none;border:none;cursor:pointer;padding:6px 12px;font-family:inherit;letter-spacing:.06em}
+.sf-continue-btn:hover{color:var(--gold-light)}
+.sf-continue-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @keyframes sfPulse{0%{transform:scale(0.82) translateY(24px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
 
 /* v1.4w: ニュースティッカー */
