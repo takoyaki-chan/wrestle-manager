@@ -1084,6 +1084,9 @@ function autoHandleContractNegotiation(G, simRng) {
         choice: ['A', 'B', 'C'][choiceIdx],
       });
     }
+    // 台帳L2: 交渉1件の約束照合 — 解決前後の給与差が設計上限(+60万)を超えたら違反
+    const _ledgerPre = (state.roster || []).find(x => x && x.id === neg.fighterId);
+    const _ledgerPreSalary = _ledgerPre ? Engine.util.getSalary(_ledgerPre, state.titles || {}) : null;
     const result = Engine.contract.resolveNegotiation(resolveRng, state, neg, choiceIdx, subChoice);
     state = result.state;
     // 昇給拒否→移籍志願に発展した場合、引き留めを試みる
@@ -1091,6 +1094,18 @@ function autoHandleContractNegotiation(G, simRng) {
       const escNeg = { ...neg, attitude: 'transfer' };
       const escResult = Engine.contract.resolveNegotiation(resolveRng, state, escNeg, 0);
       state = escResult.state;
+    }
+    if (_ledgerPreSalary != null) {
+      const _ledgerPost = (state.roster || []).find(x => x && x.id === neg.fighterId);
+      if (_ledgerPost) {
+        const _delta = Engine.util.getSalary(_ledgerPost, state.titles || {}) - _ledgerPreSalary;
+        if (_delta > 60) {
+          salaryLedger.negotiationViolations.push({
+            season: state.season, id: neg.fighterId, attitude: neg.attitude,
+            choice: choiceIdx, delta: _delta,
+          });
+        }
+      }
     }
   }
   // transientフィールドクリア
@@ -1522,7 +1537,53 @@ function pledgeProbe(G) {
 }
 
 // 週次サンプリング(ケアあり/なしの比較用。--care でなくても採る)
+// ── 台帳検査(v1.34新設): 「プレイヤーに見せた数字」と「実際に起きた数字」の恒等式 ──
+// 発端: 2026-08-31プレイヤー報告(契約更改+25万のはずが給与×4〜7)。この族のバグ
+// (公称と実効の乖離)は状態としては健全なため validateGameState / UI走破 / 単体テストを
+// 全てすり抜け、プレイヤーからしか見つけられなかった。以後この層が毎週検算する。
+//   L1 給与連続性: 選手の基本給(契約由来・bonus/王者加算除く)が、連続観測中に
+//      SALARY_REFIX_CAP(旧×1.6+10)を超えて跳んだら違反(下方向と加入直後は対象外)
+//   L2 更改の約束: 契約交渉1件の解決で給与が+60万を超えて動いたら違反
+//      (要求の設計上限50万+対案・丸めの余裕。それ以上は「言った額と違う」)
+const salaryLedger = {
+  prevBase: new Map(),   // fighterId -> { base, tick }
+  tick: 0,
+  checked: 0,
+  violations: [],        // L1
+  negotiationViolations: [], // L2
+};
+
+function ledgerBaseSalary(f) {
+  // 契約条件だけの基本給: salaryBonus(交渉昇給)と王者加算を除いた純粋な契約値
+  return Engine.util.getSalary({ ...f, salaryBonus: 0 }, {});
+}
+
+function ledgerSample(G) {
+  salaryLedger.tick += 1;
+  const capMult = (typeof SALARY_REFIX_CAP !== 'undefined') ? SALARY_REFIX_CAP.mult : 1.6;
+  const capFlat = (typeof SALARY_REFIX_CAP !== 'undefined') ? SALARY_REFIX_CAP.flat : 10;
+  for (const f of (G.roster || [])) {
+    if (!f || f.id == null || f.isRental) continue;
+    const base = ledgerBaseSalary(f);
+    const prev = salaryLedger.prevBase.get(f.id);
+    // 連続観測(tick差2以内)のときだけ検査する。差が開いている=退団→再加入で、
+    // 加入時の契約再設定(現在値へ固定)は正当な跳びなので対象外
+    if (prev && salaryLedger.tick - prev.tick <= 2) {
+      salaryLedger.checked += 1;
+      const limit = Math.round(prev.base * capMult + capFlat) + 1;
+      if (base > limit) {
+        salaryLedger.violations.push({
+          season: G.season, week: G.week, id: f.id, name: f.name,
+          from: prev.base, to: base, limit,
+        });
+      }
+    }
+    salaryLedger.prevBase.set(f.id, { base, tick: salaryLedger.tick });
+  }
+}
+
 function careSample(G) {
+  ledgerSample(G);
   const live = (G.roster || []).filter(f => !f.isRental);
   if (live.length === 0) return;
   careStats.trustSamples.push(
@@ -1911,6 +1972,23 @@ function runSimulation(seed, seasons) {
       G = autoHandleChoiceEvent(G, simRng);
       G = autoHandleLargeEvent(G, simRng);
       G = clearTransients(G);
+
+      // ── 台帳検査の検出能力証明 (WM_LEDGER_GAPTEST=1) ──────────────────────
+      // 旧版(v1.14〜v1.29、再固定が死んでいた期間)から持ち越したセーブを合成する:
+      // S2W1で上位3名のcontractOVR/contractPopを大きく引き下げ、数季分の査定ギャップを
+      // 注入する。上限のない旧refix(WM_SOURCE_REF指定)ではL1台帳違反が鳴り、
+      // 上限つきの現行refixでは鳴らない — これが台帳層の検出能力の証明になる。
+      if (process.env.WM_LEDGER_GAPTEST === '1' && G.season === 2 && G.week === 1 && !G._ledgerGapInjected) {
+        const targets = (G.roster || []).filter(f => !f.isRental)
+          .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 3);
+        const targetIds = new Set(targets.map(f => f.id));
+        G = { ...G, _ledgerGapInjected: true,
+          roster: G.roster.map(f => targetIds.has(f.id)
+            ? { ...f, contractOVR: Math.max(20, Engine.util.ov(f) - 35), contractPop: 0 }
+            : f),
+        };
+        console.log(`[台帳検査] gaptest: ${targets.map(f => f.name).join('/')} に査定ギャップを注入(旧版セーブの合成)`);
+      }
 
       // ── tickWeek（週次パイプライン） ── validateGameStateはtickWeek内で実行される
       const tickResult = Engine.tickWeek(G);
@@ -3204,6 +3282,17 @@ console.log(`Total weeks simulated: ${result.totalWeeks}`);
 console.log(`Game overs: ${result.gameOverCount}`);
 console.log(`Semantic fingerprint: ${result.semanticFingerprint}`);
 console.log(`Elapsed: ${elapsed}s`);
-const allClear = uniqueViolations.length === 0 && result.errors.length === 0 && freqWarnings.length === 0;
+// ── 台帳検査サマリー(v1.34) ──
+{
+  console.log('--------------------------------------');
+  console.log(`[台帳検査] 給与連続性: ${salaryLedger.checked}件検査 / 違反 ${salaryLedger.violations.length}件`);
+  salaryLedger.violations.slice(0, 5).forEach(v => console.log(
+    `  ! S${v.season}W${v.week} ${v.name}: 基本給${v.from}万 → ${v.to}万 (上限${v.limit}万を超過)`));
+  console.log(`[台帳検査] 更改の約束(±60万): 違反 ${salaryLedger.negotiationViolations.length}件`);
+  salaryLedger.negotiationViolations.slice(0, 5).forEach(v => console.log(
+    `  ! S${v.season} id${v.id} ${v.attitude}/choice${v.choice}: Δ${v.delta}万`));
+}
+const ledgerClear = salaryLedger.violations.length === 0 && salaryLedger.negotiationViolations.length === 0;
+const allClear = uniqueViolations.length === 0 && result.errors.length === 0 && freqWarnings.length === 0 && ledgerClear;
 console.log(`Result: ${allClear ? 'ALL CLEAR ✓' : 'ISSUES FOUND'}`);
 console.log('(engine-integrity check — バランス判断にはプレイ実機確認が必要)');

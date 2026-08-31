@@ -1,5 +1,5 @@
 {
-  "version": "1.33",
+  "version": "1.34",
   "description": "Wrestle Manager 配布対象ファイル一覧。新規JS/CSS追加時は必ずここも更新すること。manifest に載っていないファイルは配布されないため、追加忘れは即バグになる。",
   "sourceFiles": [
     "src/index.html",

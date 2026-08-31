@@ -41,8 +41,28 @@ function salary(f, titles = {}) {
   return Engine.util.getSalary(f, titles);
 }
 
-// I-2/I-3: 成長分が基本給へ移った範囲だけ bonus を吸収し、総額を二重に増やさない。
+// I-2/I-3(v1.34改定): 上限内の成長は従来どおり一括追従。
+// 上限(旧基本給×1.6+10)を超えるギャップは部分更新で止まり、数季で適正へ収束する。
 {
+  // ── 健全ケース(1季ぶんの成長=上限内): 従来挙動と完全一致 ──
+  const healthy = fighter({
+    pw: 74, sp: 74, te: 74, st: 74, mn: 74,
+    popularity: 60,
+    contractOVR: 70,
+    contractPop: 55,
+    salaryBonus: 12,
+  });
+  const healthyFair = salary({
+    ...healthy, contractOVR: Engine.util.ov(healthy), contractPop: healthy.popularity, salaryBonus: 0,
+  });
+  const healthyAfter = Engine.contract.refixRoster([healthy])[0];
+  assert.strictEqual(healthyAfter.contractOVR, Engine.util.ov(healthy),
+    '上限内の成長はcontractOVRを現在値へ一括更新すること');
+  assert.strictEqual(healthyAfter.contractPop, healthy.popularity);
+  assert.ok(Math.abs(salary(healthyAfter) - Math.max(salary(healthy), healthyFair)) <= 1,
+    '上限内の再固定後給与は従来どおり max(前給, 適正給) になること');
+
+  // ── ギャップケース(旧版持ち越し級): 1季の上昇は capBP で止まる ──
   const before = fighter({
     pw: 75, sp: 75, te: 75, st: 75, mn: 75,
     popularity: 60,
@@ -50,20 +70,35 @@ function salary(f, titles = {}) {
     contractPop: 10,
     salaryBonus: 30,
   });
-  const beforeSalary = salary(before);
+  const oldBase = salary({ ...before, salaryBonus: 0 });
+  const capBP = Math.round(oldBase * SALARY_REFIX_CAP.mult + SALARY_REFIX_CAP.flat);
   const fairSalary = salary({
     ...before,
     contractOVR: Engine.util.ov(before),
     contractPop: before.popularity,
     salaryBonus: 0,
   });
+  assert.ok(fairSalary > capBP, '前提: このケースは上限を超えるギャップであること');
   const after = Engine.contract.refixRoster([before])[0];
-  assert.strictEqual(after.contractOVR, Engine.util.ov(before));
-  assert.strictEqual(after.contractPop, before.popularity);
-  assert.ok(Math.abs(salary(after) - Math.max(beforeSalary, fairSalary)) <= 1,
-    '成長選手の再固定後給与は max(前給, 適正給) になること');
+  assert.ok(after.contractOVR > before.contractOVR && after.contractOVR < Engine.util.ov(before),
+    'ギャップ超過時は部分更新(旧契約値と現在値の間)になること');
+  assert.ok(salary({ ...after, salaryBonus: 0 }) <= capBP + 1,
+    '1季の基本給上昇は上限(旧基本給×1.6+10)以内に収まること');
   assert.ok(after.salaryBonus >= 0 && after.salaryBonus <= before.salaryBonus,
     '吸収後bonusは負値にならず、再固定で増えないこと');
+
+  // ── 収束: 毎季refixを繰り返すと単調非減少で有限季内に適正給へ到達する ──
+  let cur = after;
+  let prevBase = salary({ ...cur, salaryBonus: 0 });
+  let converged = false;
+  for (let seasonI = 0; seasonI < 8; seasonI++) {
+    cur = Engine.contract.refixRoster([cur])[0];
+    const base = salary({ ...cur, salaryBonus: 0 });
+    assert.ok(base >= prevBase - 1, '段階追従中の基本給は単調非減少であること');
+    prevBase = base;
+    if (Math.abs(base - fairSalary) <= 1) { converged = true; break; }
+  }
+  assert.ok(converged, 'ギャップは8季以内に適正給へ収束すること');
 }
 
 // I-2/I-3: 衰えた選手は bonus を追加削減せず、base+pop部分だけが下がる。
@@ -215,7 +250,14 @@ try {
     const off3 = Engine.advanceWeek(afterNegotiation).state;
     assert.strictEqual(off3.offWeek, 3);
     assert.strictEqual(refixCalls, 1, '交渉発生季もoffWeek3で再固定が1回だけ走ること');
-    assert.strictEqual(off3.roster[0].contractOVR, Engine.util.ov(off3.roster[0]));
+    // v1.34: このケース(contractOVR 35→78級)は移行ギャップなので部分更新で止まる。
+    // 前進していること+上限以内であることを検査する
+    assert.ok(off3.roster[0].contractOVR > underpaid.contractOVR,
+      '再固定でcontractOVRが前進していること');
+    const _off3OldBase = Engine.util.getSalary({ ...underpaid, salaryBonus: 0 }, {});
+    assert.ok(Engine.util.getSalary({ ...off3.roster[0], salaryBonus: 0 }, {})
+      <= Math.round(_off3OldBase * SALARY_REFIX_CAP.mult + SALARY_REFIX_CAP.flat) + 1,
+      'ギャップ持ちの再固定は上限給以内に収まること');
   }
 
   // I-1: 交渉なしの季もoffWeek2では走らず、offWeek3で1回だけ走る。

@@ -17863,7 +17863,30 @@ const Engine = {
       } else if (offWeek === 3) {
         // 契約OVR制: 交渉の有無に関係なく毎季1回、来季基準へ再固定する。
         // 昇給で先払いされた適正給の上昇分は salaryBonus から吸収し、二重乗りを防ぐ。
+        // v1.34: 改定の可視化 — これまで再固定はどの画面にも出ず、給与が動いた理由が
+        // プレイヤーから見えなかった(台帳原則: 数字が動いたら理由を見せる)。
+        const _preRefix = new Map((s.roster || []).filter(f => !f.isRental)
+          .map(f => [f.id, Engine.util.getSalary(f, s.titles)]));
         s = { ...s, roster: Engine.contract.refixRoster(s.roster) };
+        {
+          let _refixUp = 0, _refixDown = 0;
+          const _refixLines = [];
+          (s.roster || []).forEach(f => {
+            if (f.isRental || !_preRefix.has(f.id)) return;
+            const before = _preRefix.get(f.id);
+            const after = Engine.util.getSalary(f, s.titles);
+            const d = after - before;
+            if (d > 0) _refixUp += d; else if (d < 0) _refixDown += d;
+            if (Math.abs(d) >= 20) _refixLines.push(`　└ ${f.name}: 週給${before}万 → ${after}万`);
+          });
+          if (_refixUp > 0 || _refixDown < 0) {
+            const parts = [];
+            if (_refixUp > 0) parts.push(`+${_refixUp}万`);
+            if (_refixDown < 0) parts.push(`${_refixDown}万`);
+            events.push(`📋 契約査定の改定 — 各選手の基本給を今の実力・人気に合わせて見直した(週給合計 ${parts.join(' / ')})`);
+            _refixLines.slice(0, 8).forEach(l => events.push(l));
+          }
+        }
 
         // OffWeek 3: Draft Negotiation (draft-negotiation-spec §3.1)
         // 新フロー: 全候補を共通プールから生成 → 関心マーク決定 → セリ交渉
@@ -26835,12 +26858,44 @@ Engine.contract = {
   },
 
   // 契約OVR制: 現在の実力・人気へ再固定し、基本給へ織り込まれた昇給分を吸収する。
+  //
+  // v1.34: 上向き改定に季あたり上限(SALARY_REFIX_CAP: 旧基本給×1.6+10)を導入。
+  // 再固定はv1.14〜v1.29の間死んでいたため、旧版セーブは数季分の査定ギャップを抱えており、
+  // v1.30の復活で初回オフシーズンに給与が×4〜7へ一括ジャンプしていた(2026-08-31報告)。
+  // 上限に達する場合はcontractOVR/contractPopを旧契約値→現在値の線内で部分更新し、
+  // 数季かけて段階的に追従する(健全セーブの1季追従は実測max×1.53で上限に触れない)。
+  // 下向き(査定ダウン)は従来どおり無制限(下り交渉カードの管轄)。
   refixRoster(roster) {
     return (roster || []).map(f => {
       if (f.isRental) return f;
       const oldBP = Engine.util.getSalary({ ...f, salaryBonus: 0 }, {});
-      const contractOVR = Engine.util.ov(f);
-      const contractPop = f.popularity || 0;
+      const targetOVR = Engine.util.ov(f);
+      const targetPop = f.popularity || 0;
+      const fullBP = Engine.util.getSalary(
+        { ...f, salaryBonus: 0, contractOVR: targetOVR, contractPop: targetPop }, {}
+      );
+      let contractOVR = targetOVR;
+      let contractPop = targetPop;
+      const cap = (typeof SALARY_REFIX_CAP !== 'undefined') ? SALARY_REFIX_CAP : null;
+      const capBP = cap ? Math.round(oldBP * cap.mult + cap.flat) : Infinity;
+      if (fullBP > oldBP && fullBP > capBP) {
+        // 旧契約値→現在値の線分上で、上限給に届く点を探して部分更新する。
+        // 給与は連続なので二分探索で十分(下限側lo=上限以内が保証される点を採る)
+        const o0 = f.contractOVR != null ? f.contractOVR : targetOVR;
+        const p0 = f.contractPop != null ? f.contractPop : targetPop;
+        const bpAt = (t) => Engine.util.getSalary({
+          ...f, salaryBonus: 0,
+          contractOVR: o0 + (targetOVR - o0) * t,
+          contractPop: p0 + (targetPop - p0) * t,
+        }, {});
+        let lo = 0, hi = 1;
+        for (let i = 0; i < 24; i++) {
+          const t = (lo + hi) / 2;
+          if (bpAt(t) > capBP) hi = t; else lo = t;
+        }
+        contractOVR = Math.round((o0 + (targetOVR - o0) * lo) * 10) / 10;
+        contractPop = Math.round((p0 + (targetPop - p0) * lo) * 10) / 10;
+      }
       const newBP = Engine.util.getSalary(
         { ...f, salaryBonus: 0, contractOVR, contractPop }, {}
       );

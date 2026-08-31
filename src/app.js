@@ -2027,7 +2027,7 @@ const Storage = {
         }
       });
     }
-    state._saveVersion = '1.33';
+    state._saveVersion = '1.34';
     state._saveDate = new Date().toISOString();
     const sanitizedName = Storage._sanitizeSaveNameLabel(saveNameOverride);
     if (sanitizedName) state._saveName = sanitizedName; else delete state._saveName;
@@ -5774,7 +5774,26 @@ const App = {
   handleContractNegotiations() {
     // A contract queue must be single-flight: duplicate UI callbacks otherwise
     // advance separate cursors and can skip negotiations.
-    if (App._contractNegotiationSession?.active) return;
+    if (App._contractNegotiationSession?.active) {
+      // v1.34(§5-D鉄則1の欠落対策): チェーン内で例外が1つ出るとセッションが active の
+      // まま死に、以後この入口が全て無言returnして恒久フリーズしていた(リロードでしか
+      // 直らない — 2026-08-31プレイヤー報告と一致)。看視は慎重に2段構え:
+      //   ・交渉ボタン(.neg-btn)が描画されていれば生存(即return、疑いも解除)
+      //   ・DOM不在(ヘッドレス/テスト環境)は常に生存扱い(誤発動ゼロを保証)
+      //   ・応答不能が「2回連続の入口到達+1.5秒以上」続いたときだけ死亡と判定し、
+      //     セッションを破棄して保存済みカーソル(_contractNegotiationProgress・毎手保存)
+      //     から再開する。健全なモーダル遷移の隙間(ms単位)では発動しない。
+      // 万一生きたチェーンを誤検知しても、旧セッションのコールバックは isCurrentSession()
+      // の同一性検査で無効化され、再開はカーソルから続くため結果の二重適用は起きない。
+      const staleSession = App._contractNegotiationSession;
+      const hasLiveNegotiationUi = typeof document === 'undefined' || !!document.querySelector('.neg-btn');
+      if (hasLiveNegotiationUi) { staleSession._watchdogSuspectAt = 0; return; }
+      const now = Date.now();
+      if (!staleSession._watchdogSuspectAt) { staleSession._watchdogSuspectAt = now; return; }
+      if (now - staleSession._watchdogSuspectAt < 1500) return;
+      try { console.warn('[WM] 契約更改チェーンが応答不能と判定されたため、保存済みの進行から再開します'); } catch (_e) {}
+      App._contractNegotiationSession = null;
+    }
     const negotiations = G.pendingContractNegotiations || [];
     const autoCount = G._contractAutoRenewed || 0;
     if (negotiations.length === 0) {
