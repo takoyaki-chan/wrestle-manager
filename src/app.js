@@ -15913,6 +15913,19 @@ App.finalizePPV = function() {
 App.closePPVResult = function() {
   // task-73: 週次処理へ入る前にコーチが1枚だけ締める。表示したら resume でここへ戻ってくる
   if (App._tcwGate('ppv', App._tcwPpvArgs || {}, () => App.closePPVResult())) return;
+  // 2026-08-31: 二重tickガード(保険)。委譲側の除外(ui-common _handlePatternBResultClose)が
+  // 主修正だが、何らかの経路で既に週が進んでいた場合はtickせず後片付けだけで戻る。
+  // PPVは常にW48なので「オフシーズン入り or 週が48でない」=処理済みの証拠
+  if (G.offSeason || G.week !== 48) {
+    console.warn('[WM] closePPVResult: 週が既に進んでいるためtickを省略(二重実行ガード)');
+    const staleOverlay = document.getElementById('showResultOverlay');
+    if (staleOverlay) staleOverlay.classList.remove('active');
+    Audio.play('click');
+    Audio.bgm.playForState();
+    showScreen('week');
+    if (typeof refreshAll === 'function') refreshAll();
+    return;
+  }
   const resultOverlay = document.getElementById('showResultOverlay');
   resultOverlay.classList.remove('active');
   Audio.play('click');

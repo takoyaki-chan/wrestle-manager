@@ -7572,6 +7572,20 @@ const Engine = {
       const unifiedRetiree = retiredWithRecords.find(f => f.id === state.unifiedTitle?.championId);
       if (unifiedRetiree) s = Engine.unifiedTitle.vacate(s, 'retirement', unifiedRetiree);
 
+      // 2026-08-31 実セーブ棚で発見: コーチ配属(coachAssign)だけが掃除されず、
+      // 担当コーチ付き選手の引退直後にrepairProgressionStateの
+      // coachAssign_stale_refs_removed(遅延修復+「セーブデータ自動修復」ログ)を毎回踏んでいた。
+      // 遅延修復がやっていたことをここで即時に行う(挙動の実体は同じ・修復ログが消えるだけ)
+      if (s.coachAssign) {
+        let _assignChanged = false;
+        const cleanedAssign = Object.fromEntries(Object.entries(s.coachAssign).map(([coachId, ids]) => {
+          const kept = (ids || []).filter(id => !retireeIds.has(id));
+          if (kept.length !== (ids || []).length) _assignChanged = true;
+          return [coachId, kept];
+        }));
+        if (_assignChanged) s = { ...s, coachAssign: cleanedAssign };
+      }
+
       // Keep faction membership consistent immediately; waiting for the next weekly
       // reconciliation lets retired members survive in a saved faction state.
       if (Engine.factions?.reconcileRoster) {

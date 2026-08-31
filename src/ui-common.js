@@ -614,6 +614,11 @@ function _handlePatternBResultClose(event) {
   if (!closeBtn) return;
   // トーナメント進行中は干渉しない（各ボタンは onclick で専用の次試合処理を行う）
   if (App._jtPreview || App._tcPreview || App._awPreview) return;
+  // 2026-08-31 実セーブ棚で発見: PPV結果のボタンはインラインonclick(closePPVResult)と
+  // この委譲の**両方**に届き、委譲側がW48を先にtickした後、コーチ総括のresumeが
+  // closePPVResultでもう一度tickして**幻の1週(練習・決算)が年1回余分に処理**されていた。
+  // 専用ハンドラを持つPPVボタンには委譲しない(app.js closePPVResult側にも二重tickガードあり)
+  if ((closeBtn.getAttribute('onclick') || '').includes('closePPVResult')) return;
   event.preventDefault();
   event.stopPropagation();
   try {

@@ -197,7 +197,15 @@ async function waitForTimedUi(page, milliseconds) {
 async function clickCandidate(candidate, page) {
   await candidate.locator.scrollIntoViewIfNeeded().catch(() => {});
   // カード編成ピッカーは名前/行が選択、顔だけが詳細。中央クリックは名前側へ入る。
-  await candidate.locator.click({ timeout: 1500 });
+  // 2026-08-31 実セーブ棚の偽陽性2件への対処:
+  //  - timeout 1500→5000ms: 成熟セーブの年末同期連鎖(表彰式準備等)は実測2.8秒かかり、
+  //    1500msだとハンドラ実行中にタイムアウトして偽D2になる(本物の死にボタンは5秒でも死んだまま)
+  await candidate.locator.click({ timeout: 5000 });
+  //  - クリック後にポインタを固定位置へ退避: 仮想マウスが前クリック位置に残ると、
+  //    hover変形(translateY)を持つボタンが移動してきたときに hover⇄非hover の無限フリッカーが
+  //    起き、Playwrightの安定性検査が永遠に通らず偽D2になる(aw-btn-nextで実測)。
+  //    退避先は固定なのでシード決定論は崩れない
+  await page.mouse.move(0, 0).catch(() => {});
   await settleClock(page);
 }
 
