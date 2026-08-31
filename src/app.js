@@ -2027,7 +2027,7 @@ const Storage = {
         }
       });
     }
-    state._saveVersion = '1.32';
+    state._saveVersion = '1.33';
     state._saveDate = new Date().toISOString();
     const sanitizedName = Storage._sanitizeSaveNameLabel(saveNameOverride);
     if (sanitizedName) state._saveName = sanitizedName; else delete state._saveName;
@@ -2758,7 +2758,8 @@ const Storage = {
         const repairedRank1Unlock = App.hasPermanentRosterCap16Unlock(G);
         G = {
           ...G,
-          rosterCap: App.getRosterCapTarget(G),
+          // ラチェット: ロード時の再計算でも既に開いた枠は閉じない(週次側と同じ理由)
+          rosterCap: Math.max(G.rosterCap || 8, App.getRosterCapTarget(G)),
           rosterCapRank1Notified: repairedRank1Unlock,
           _migrated_roster_cap_away_guest_repair_v1: true,
         };
@@ -2773,6 +2774,9 @@ const Storage = {
         if (orgPop >= 50) cap = 12;
         if (orgPop >= 70) cap = 14;
         if (rank1Unlocked) cap = 16;
+        // キャップ制導入前のセーブが移行直後から「超過」扱いにならないよう、
+        // 既に抱えている所属数(非レンタル)を下回らない(既得は取り上げない)
+        cap = Math.max(cap, (G.roster || []).filter(f => !f.isRental).length);
         G = {
           ...G,
           rosterCap: cap,
@@ -14798,7 +14802,12 @@ const App = {
       popups.push({ cap: 16, message: '\u30E9\u30F3\u30AD\u30F3\u30B01\u4F4D\u5230\u9054\uFF01 \u738B\u8005\u306E\u56E3\u4F53\u306B\u3075\u3055\u308F\u3057\u3044\u6700\u5927\u5951\u7D04\u67A0\u304C\u89E3\u653E\u3055\u308C\u307E\u3057\u305F\u3002' });
     }
 
-    const newCap = App.getRosterCapTarget(G);
+    // 契約枠はラチェット(拡大のみ)。人気連動のターゲットをそのまま代入すると
+    // 人気低下で枠が**無言で縮み**、合法に抱えた所属数が不変条件「キャップ超過」を
+    // 毎週鳴らし続ける(2026-08-31 リリース前走破で発覚: 12名/枠16→人気下落で枠10)。
+    // プレイヤーへの通知は「拡大!」ポップアップしか存在せず、縮小はそもそも
+    // 伝達手段のない挙動だった。一度開いた枠は閉じない。
+    const newCap = Math.max(G.rosterCap || 8, App.getRosterCapTarget(G));
     if ((G.rosterCap || 8) !== newCap) nextUpdates.rosterCap = newCap;
     if (Object.keys(nextUpdates).length === 0) return;
     G = { ...G, ...nextUpdates };

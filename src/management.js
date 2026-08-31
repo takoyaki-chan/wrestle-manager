@@ -26363,8 +26363,15 @@ Engine.validateGameState = function(G) {
   const STATS = ['pw', 'sp', 'te', 'st', 'mn'];
 
   if (Array.isArray(G.roster)) {
-    if (G.rosterCap && G.roster.filter(c => !c.isRental).length > G.rosterCap) {
-      warn(`ロスター人数(${G.roster.filter(c => !c.isRental).length})がキャップ(${G.rosterCap})を超過`);
+    // キャップの対象は「契約枠を使う正所属」だけ。挑戦試合・遠征・統一王座戦・乱入・
+    // 奪還戦で興行中だけ一時参加するゲスト(セーブ時にも除外される app.js serialize と
+    // 同じフラグ族)を数えると、ゲストの居る興行週だけ偽陽性で鳴る
+    // (2026-08-31 リリース前走破で発覚: 正所属10+CRゲスト2を12>10と誤検出)。
+    const _capCounted = G.roster.filter(c => !c.isRental && !c.isCRGuest
+      && !c.isB3ChallengeGuest && !c.isAwayChallengeGuest && !c.isUnifiedTitleGuest
+      && !c.isIntrusion && !c.isReclaim);
+    if (G.rosterCap && _capCounted.length > G.rosterCap) {
+      warn(`ロスター人数(${_capCounted.length})がキャップ(${G.rosterCap})を超過`);
     }
     G.roster.forEach(c => {
       if (!c || !c.id) { warn('ロスターにid未定義のキャラが存在'); return; }
