@@ -106,8 +106,133 @@ W43で `togglePPVPick` → `confirmPPVEntry` を踏んで `ppvShow` 側へ抜け
 
 ## 3. 修正
 
-(実装後に追記)
+対処療法(ハーネス側の除外)は取らず、**画面に出口が無いこと自体**を直した。
+`saveDoctor.repairOnLoad` は触っていない(2-2 のとおり、セーブデータは原因ではない)。
 
-## 4. 検証
+### 3-1. `src/ui-common.js` `renderPPVTvBroadcast()`
 
-(実装後に追記)
+| 変更 | 内容 |
+|---|---|
+| 進行導線の実体化 | `_hint` を `<div class="ptv-hint">クリックで進む ▶</div>` から **実ボタン** `<button type="button" class="ptv-hint" data-ptv-next>次へ ▶</button>` へ |
+| 押せる面の拡張 | 場面ごとの `.ptv-tv` への `{ once:true }` 張り直しを廃止。委譲クリックリスナーを `showResultOverlay` に**1本だけ**張り、**TV枠の外の暗幕**からも同じ `advance()` に入る |
+| キーボード | `document` の keydown で Enter / Space / → を受ける。ボタンにフォーカスがあるときは既定の活性化に任せ、二重送りしない |
+| 1操作=1進行(鉄則2) | `advance()` は `advancing` / `tornDown` / `.ptv-tv` の在否 / 最終場面かを検証してから進む |
+| 出口の一本化 | 最終場面を描いたら委譲を外す(`teardown()`)。以後の出口は「事務所へ戻る」だけ |
+| 二重起動の単一化 | `overlay._ptvSurfaceHandler` / `_ptvKeyHandler` に張ったハンドラを覚え、中継が二重に起動しても**生きている委譲は常に1組**にする |
+
+### 3-2. `src/app.js` `App.initPPVTV()` / `App._renderPPVTvFallback()`(新規)
+
+`renderPPVTvBroadcast` を try/catch で包み、組み立てが転んだら
+`App._renderPPVTvFallback()`(「事務所へ戻る」だけの最小TV画面)へ着地させる。
+`_ppvTvStarted` を**先に**立てる二重起動防止の都合上、3秒のセーフティネットは二度と
+張り直されない。ここが最後の砦になる(§5-D 鉄則1)。
+
+### 3-3. `src/index.html` `.ptv-hint`
+
+ボタンとして成立させ、テロップ帯(高さ約52px)に被らないよう `bottom:52px → 60px`。
+`:hover` / `:focus-visible` を追加(点滅は停止して押下対象だと分かるようにする)。
+色は `var(--stage-text)` / `var(--gold)` と、同ブロックの既存イディオムに揃えた
+`rgba(255,255,255,…)`。ハードコード16進は追加していない。
+
+### 3-4. `docs/ui/03-screens/ppv-tv-broadcast.md`
+
+「場面送りの導線」節を追加し、実装状況と実機確認ポイントを更新。
+
+## 4. 検証(すべて実測。ベース 699a860 → 本ブランチ)
+
+### ① 再現コマンド
+
+| | 修正前(699a860) | 修正後 |
+|---|---|---|
+| `--max-steps 160`(アーティファクトが記録した再現コマンド) | **FAIL** / D2_FREEZE: no safe progress control is visible / 159手 / 94.4s | D2は消滅。step160 で `button.ptv-hint:次へ ▶` を押して前進。残る FAIL は **人為的な160手上限による D5_WATCHDOG**(1季走破に160手では足りない。上限を外すと下段のとおり通る) |
+| 上限なし(=`save-regression` が回す本番条件) | (同じ場所で停止) | **PASS** / S2W23 → S3W1 / 196手 / Issues 0 / 125.1s |
+
+### ③ 基準線走破 `npm run test:ui:walkthrough`
+
+**PASS** / 316手 / Issues 0 / 189.8s / digest `817e02f2dea24b7f`。
+**digest は修正前の実行と完全一致**(修正前も `817e02f2dea24b7f`)。
+基準線は ppvTV を踏まない経路(W43でPPV出場権を得て ppvShow へ抜ける)なので、
+今回の変更が既存の通り道を一切動かしていないことの裏付けになる。
+
+### ⑤ `node test/auto-sim.js 20 42`
+
+**Result: ALL CLEAR ✓**
+
+### ④ `npm test`
+
+初回実行で 256本中 2本 FAIL。内訳と処置:
+
+1. `u6-org-identity-safety-net-test.js` — **本修正が壊した**。DOMスタブが旧契約
+   (`.ptv-tv` への `addEventListener`)しか持たず、`overlay.addEventListener` で落ちていた。
+   スタブを新契約(overlay委譲 + document keydown)へ追随させ、あわせて
+   **「①〜④の全場面に押せる実ボタンが居る / 最終場面で委譲を外す」不変条件を新設**
+   (`every ppvTV scene carries a real, pressable exit`)。クリックとキーボードを交互に使い、
+   どちらの経路でも1操作=1場面だけ進むことも見る。→ 13 sections ok
+2. `tenchosen-result-flow-guard-test.js` — **本修正とは無関係の既存の赤**。
+   `git log -S` で確認したとおり `closeBtn.getAttribute('onclick')` は **699a860(main側)** が
+   追加した行で、テスト側の `closest()` スタブが `getAttribute` を持たないため落ちていた
+   (`git diff 699a860..HEAD -- src/ui-common.js` に当該関数は現れない)。
+   実物の `closest()` は Element を返すので getAttribute を持つ ⇒ スタブを実物に合わせた。
+   あわせて **「PPV結果のボタンには委譲しない」= 699a860 が直した幻の1週の不変条件**を
+   テストとして固定した。→ ok
+
+修正後の `npm test` 再実行結果は下記「再実行」に記載。
+
+### ② `node test/save-regression.js --walkthrough`
+
+Phase 1(save-doctor 診断・6本): **全て ✓**
+(既存の指摘は重複ID・欠番IDなど棚新設時から出ている既知の内容で、本件とは別件)
+
+Phase 2(実ブラウザ1季走破・6本): **6/6 ✓ Issues 0** → `SAVE REGRESSION: ALL CLEAR`(exit 0)
+
+| セーブ | 結果 | 所要 |
+|---|---|---|
+| `mobile_S22W47_2026-04-06.json` | ✓ Issues: 0 | 34s |
+| `prerefix_S12W45_2026-07-27.json` | ✓ Issues: 0 | 42s |
+| `ultralong_S73W14_2026-04-11.json` | ✓ Issues: 0 | 186s |
+| **`v1.0x_S2W23_2026-03-21.json`(本件の対象)** | **✓ Issues: 0** | 115s |
+| `v1.20_S4W3_2026-07-20.json` | ✓ Issues: 0 | 207s |
+| `v1.25_S3W11_2026-08-03.json` | ✓ Issues: 0 | 170s |
+
+**既知課題(KNOWN_ISSUES)も含めて全本 ✓ になった。**
+`prerefix_S12W45` に登録されていた「オフシーズン進入時に `[WM] progression state repaired` が発火」は
+本実行では再現せず ✓。699a860(旧セーブ年末クラスタ修正)の効果と思われる。
+`test/save-regression.js` の `KNOWN_ISSUES` からこのエントリを外せるか、
+**Fable側でもう1本走らせて再現しないことを確かめてから**判断してほしい
+(1回の非再現では消さない。本タスクでは外していない)。
+
+### 再実行
+
+`npm test` → **total: 256 / passed: 256 / failed: 0 / timed out: 0**
+
+### まとめ
+
+| # | 検証項目 | 結果 |
+|---|---|---|
+| ① | 再現コマンド(上限なし) | **PASS** — D2_FREEZE消滅 |
+| ② | `save-regression --walkthrough` | **ALL CLEAR** — 6/6 ✓(既知課題も含め全緑) |
+| ③ | `npm run test:ui:walkthrough` | **PASS** — digest は修正前と完全一致 |
+| ④ | `npm test` | **256/256 PASS** |
+| ⑤ | `auto-sim 20 42` | **ALL CLEAR ✓** |
+
+---
+
+## 5. 同型の掃討(本タスク範囲外・別途起票済み)
+
+「進行手段が素の要素への `addEventListener('click')` だけで、`button` / `onclick`属性 / `role="button"`
+のいずれも持たない全画面演出」を `src/app.js` / `src/ui-common.js` / `src/ui-render.js` 全体で洗い出した。
+**同じ型があと3件残っている**(いずれも走破の通り道に無いか、偶然だけで検査を通っている)。
+
+| 優先 | 箇所 | 状態 |
+|---|---|---|
+| 1 | `src/app.js:5187` 付近 `App.completeDraft()` の旗揚げ完成演出(`.completion-overlay`) | button も onclick 属性も無く、進行は overlay の click 1本。`position:fixed;inset:0;z-index:400;pointer-events:auto` で背後のボタンも塞ぐ。**時限フォールバック無し = PPVと完全に同じ恒久停止** |
+| 2 | `src/ui-render.js:419` 付近 `renderOpeningScreen()` の `.opening-overlay` | 幕1〜4は素の div。skip は `<div class="opening-skip">` への **`skip.onclick = fn` プロパティ代入**で、属性ではないため実ボタンでも `[onclick]` でもない。**時限フォールバック無し** |
+| 3 | `src/ui-common.js:15762` 付近 `showLeagueElevationCeremony()` スライド2 | step 0〜4 の進行は素の `#leClickArea` のみ。`#leCloseBtn` は実ボタンだが step 5 まで `opacity:0`。**`display:none` に変えた瞬間に停止する**(いま通っているのは偶然) |
+| 低 | `src/ui-common.js:8379` `showSeasonFanfare()` | overlay click のみだが60秒の自己復帰があるため恒久停止はしない |
+
+`test/u4-modal-frame-safety-net-test.js:427` は `.opening-overlay` / `.completion-overlay` /
+`.season-fanfare-overlay` を列挙しているが、**z-indexの重なり検査であってクリック可能性は見ていない**ため、
+上の3件はどのテストにも掛かっていない。
+
+→ 別タスクとして起票済み(チップ「Fix exit-less overlays in draft completion and opening」)。
+本タスクの範囲は ppvTV の根治に留め、他画面は同じ方針で個別に直す。
