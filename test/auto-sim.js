@@ -1084,25 +1084,43 @@ function autoHandleContractNegotiation(G, simRng) {
         choice: ['A', 'B', 'C'][choiceIdx],
       });
     }
-    // 台帳L2: 交渉1件の約束照合 — 解決前後の給与差が設計上限(+60万)を超えたら違反
+    // 台帳L2: 交渉1件の約束照合 — resolveNegotiationが返す salaryDelta(=画面が
+    // プレイヤーに約束する金額)と、実際の給与変化を突き合わせる。
+    // 期待値は約束額をbonusクランプ[0,100]の範囲で丸めたもの(クランプは設計仕様)。
+    // ±2万(丸め)を超えるズレ=「言った額と違う」で違反。
     const _ledgerPre = (state.roster || []).find(x => x && x.id === neg.fighterId);
     const _ledgerPreSalary = _ledgerPre ? Engine.util.getSalary(_ledgerPre, state.titles || {}) : null;
+    const _ledgerPreBonus = _ledgerPre ? (_ledgerPre.salaryBonus || 0) : 0;
     const result = Engine.contract.resolveNegotiation(resolveRng, state, neg, choiceIdx, subChoice);
     state = result.state;
+    let _promised = (result.result && typeof result.result.salaryDelta === 'number')
+      ? result.result.salaryDelta : null;
     // 昇給拒否→移籍志願に発展した場合、引き留めを試みる
     if (result.result.escalated) {
       const escNeg = { ...neg, attitude: 'transfer' };
       const escResult = Engine.contract.resolveNegotiation(resolveRng, state, escNeg, 0);
       state = escResult.state;
+      if (escResult.result && typeof escResult.result.salaryDelta === 'number') {
+        _promised = (_promised || 0) + escResult.result.salaryDelta;
+      }
     }
     if (_ledgerPreSalary != null) {
       const _ledgerPost = (state.roster || []).find(x => x && x.id === neg.fighterId);
+      // 退団・移籍で名簿から消えた場合は照合対象外(給与の約束自体が消滅)
       if (_ledgerPost) {
         const _delta = Engine.util.getSalary(_ledgerPost, state.titles || {}) - _ledgerPreSalary;
-        if (_delta > 60) {
+        let violated = false;
+        let _expected = null;
+        if (_promised != null) {
+          _expected = Engine.util.clamp(_promised, -_ledgerPreBonus, 100 - _ledgerPreBonus);
+          violated = Math.abs(_delta - _expected) > 2;
+        } else {
+          violated = _delta > 60; // salaryDeltaを返さない経路の粗い網(後方互換)
+        }
+        if (violated) {
           salaryLedger.negotiationViolations.push({
             season: state.season, id: neg.fighterId, attitude: neg.attitude,
-            choice: choiceIdx, delta: _delta,
+            choice: choiceIdx, promised: _promised, expected: _expected, delta: _delta,
           });
         }
       }
@@ -1553,15 +1571,55 @@ const salaryLedger = {
   negotiationViolations: [], // L2
 };
 
+// ── 台帳検査の変異自己点検 (WM_LEDGER_MUTATION=<name>) ────────────────────────
+// 「検出器が本当に機能しているか」を疑えるように、わざと壊したエンジンで走らせる
+// 常設スイッチ(2026-08-31 Keisuke指摘「本当に機能しているのか怪しい」への恒久回答)。
+// どの変異も **Result: ISSUES FOUND になるのが正**。ALL CLEARが出たら検出器が死んでいる。
+//   refix_uncap   … 再固定の上限を撤廃(v1.32以前の給与一括ジャンプを再現)→ L1が鳴るはず
+//   raise_double  … 交渉昇給を約束額の2倍こっそり付与(言った額と違う)→ L2が鳴るはず
+// 既知の限界(鳴らない型): 毎週+0.5級のゆっくりした静かな漂流はL1の跳び検査を潜る。
+const LEDGER_MUTATION = process.env.WM_LEDGER_MUTATION || '';
+if (LEDGER_MUTATION === 'refix_uncap') {
+  console.log('[台帳検査] mutation=refix_uncap: 再固定上限を撤廃+旧版ギャップを合成(ISSUES FOUNDが正)');
+  SALARY_REFIX_CAP.mult = 1e9;
+  SALARY_REFIX_CAP.flat = 1e9;
+  process.env.WM_LEDGER_GAPTEST = '1'; // ギャップが無いと上限撤廃は無症状のため合成する
+} else if (LEDGER_MUTATION === 'raise_double') {
+  console.log('[台帳検査] mutation=raise_double: 交渉昇給を約束額の2倍付与(ISSUES FOUNDが正)');
+  const _origResolveForMutation = Engine.contract.resolveNegotiation;
+  Engine.contract.resolveNegotiation = function(rng, state, neg, choiceIdx, subChoice) {
+    const res = _origResolveForMutation.call(this, rng, state, neg, choiceIdx, subChoice);
+    const d = res && res.result && res.result.salaryDelta;
+    if (typeof d === 'number' && d > 0 && res.state && Array.isArray(res.state.roster)) {
+      res.state = {
+        ...res.state,
+        roster: res.state.roster.map(f => (f && f.id === neg.fighterId)
+          ? { ...f, salaryBonus: Math.min(100, (f.salaryBonus || 0) + d) }
+          : f),
+      };
+    }
+    return res;
+  };
+} else if (LEDGER_MUTATION) {
+  console.error(`[台帳検査] 未知のmutation: ${LEDGER_MUTATION}`);
+  process.exit(2);
+}
+
 function ledgerBaseSalary(f) {
   // 契約条件だけの基本給: salaryBonus(交渉昇給)と王者加算を除いた純粋な契約値
   return Engine.util.getSalary({ ...f, salaryBonus: 0 }, {});
 }
 
+// 台帳L1の物差しは**意図的にエンジン定数(SALARY_REFIX_CAP)を参照しない独立コピー**。
+// 変異自己点検(refix_uncap)で発覚: 検出器が検査対象の定数を借りると、エンジン側の
+// 定数が壊れた(変わった)瞬間に検出器も一緒に盲目になる。監視役は自分の定規を持つ。
+// SALARY_REFIX_CAPを正当に変更する場合は、ここも**意識的に**合わせて更新すること。
+const LEDGER_L1_CAP = { mult: 1.6, flat: 10 };
+
 function ledgerSample(G) {
   salaryLedger.tick += 1;
-  const capMult = (typeof SALARY_REFIX_CAP !== 'undefined') ? SALARY_REFIX_CAP.mult : 1.6;
-  const capFlat = (typeof SALARY_REFIX_CAP !== 'undefined') ? SALARY_REFIX_CAP.flat : 10;
+  const capMult = LEDGER_L1_CAP.mult;
+  const capFlat = LEDGER_L1_CAP.flat;
   for (const f of (G.roster || [])) {
     if (!f || f.id == null || f.isRental) continue;
     const base = ledgerBaseSalary(f);
@@ -3288,7 +3346,7 @@ console.log(`Elapsed: ${elapsed}s`);
   console.log(`[台帳検査] 給与連続性: ${salaryLedger.checked}件検査 / 違反 ${salaryLedger.violations.length}件`);
   salaryLedger.violations.slice(0, 5).forEach(v => console.log(
     `  ! S${v.season}W${v.week} ${v.name}: 基本給${v.from}万 → ${v.to}万 (上限${v.limit}万を超過)`));
-  console.log(`[台帳検査] 更改の約束(±60万): 違反 ${salaryLedger.negotiationViolations.length}件`);
+  console.log(`[台帳検査] 更改の約束(実合意額±2万): 違反 ${salaryLedger.negotiationViolations.length}件`);
   salaryLedger.negotiationViolations.slice(0, 5).forEach(v => console.log(
     `  ! S${v.season} id${v.id} ${v.attitude}/choice${v.choice}: Δ${v.delta}万`));
 }
