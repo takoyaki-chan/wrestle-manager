@@ -1980,8 +1980,12 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .le-closing-block .le-btn.visible{opacity:1}
 .le-content[data-slide="1"] .le-slide-sequence,.le-content[data-slide="2"] .le-slide-impact{display:none}
 /* クリック送り */
-.le-click-hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;font-size:12px;color:rgba(255,180,160,.35);letter-spacing:.1em;opacity:0;transition:opacity .5s;pointer-events:none}
-.le-click-hint.visible{opacity:1}
+/* task-103と同型の根治(2026-08-31): クリックで次へ は実<button>。見た目は従来の点滅テキストのまま、
+   visible のときだけ押せる(素の #leClickArea だけに進行を依存させない) */
+.le-click-hint{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:20;font-size:12px;color:rgba(255,180,160,.35);letter-spacing:.1em;opacity:0;transition:opacity .5s;pointer-events:none;background:none;border:none;cursor:pointer;font-family:inherit;padding:6px 12px}
+.le-click-hint.visible{opacity:1;pointer-events:auto}
+.le-click-hint:hover{color:rgba(255,200,180,.7)}
+.le-click-hint:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .le-click-hint .blink{animation:leHintBlink 1.2s ease-in-out infinite}
 @keyframes leHintBlink{0%,100%{opacity:.4}50%{opacity:1}}
 .le-click-area{position:fixed;inset:0;z-index:15;cursor:pointer}
@@ -4390,14 +4394,19 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .opening-portrait-name{text-align:center;font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;
   letter-spacing:0.15em;color:var(--text-main);margin-top:14px;padding-top:8px;
   border-top:1px solid rgba(212,168,67,0.3)}
-/* skip link。U4: 親.opening-overlay(400)の上に浮かせる必要があるため+1(同一階層内の前後) */
+/* skip link。U4: 親.opening-overlay(400)の上に浮かせる必要があるため+1(同一階層内の前後)
+   task-103と同型の根治(2026-08-31): skip と CLICK TO CONTINUE は実<button>。見た目は従来の
+   控えめなテキストのまま、ブラウザ既定のボタン装飾だけ剥がす */
 .opening-skip{position:fixed;bottom:18px;right:22px;font-family:'Oswald',sans-serif;font-size:11px;
   letter-spacing:2px;color:rgba(232,230,224,0.35);text-decoration:none;padding:6px 10px;
-  cursor:pointer;z-index:401;user-select:none;transition:color 0.3s}
+  cursor:pointer;z-index:401;user-select:none;transition:color 0.3s;background:none;border:none}
 .opening-skip:hover{color:var(--gold)}
+.opening-skip:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 .opening-click-hint{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);
   font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:3px;color:rgba(232,230,224,0.25);
-  animation:opening-pulse 2.4s ease-in-out infinite}
+  animation:opening-pulse 2.4s ease-in-out infinite;
+  background:none;border:none;cursor:pointer;padding:6px 12px}
+.opening-click-hint:focus-visible{outline:2px solid var(--gold);outline-offset:2px;animation:none;opacity:0.6}
 @keyframes opening-pulse{0%,100%{opacity:0.25}50%{opacity:0.6}}
 
 /* ============================================================
@@ -4431,6 +4440,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .completion-overlay.show .comp-text{opacity:1;transform:translateY(0)}
 .comp-text .org-name{font-size:18px;letter-spacing:0.2em;color:var(--text-main);font-weight:500}
 .comp-text .start{font-size:32px;letter-spacing:0.4em;color:var(--gold);font-weight:700;display:block;margin-top:8px}
+/* 出口の実ボタン(task-103と同型・2026-08-31)。暗幕クリック・キーボードと同じ leave() に集約。
+   集合写真が揃ってから浮かぶが、DOMには最初から居るので描画が転んでも押せる */
+.comp-continue-btn{position:absolute;right:22px;bottom:22px;z-index:3;
+  font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;line-height:1;
+  color:rgba(232,230,224,0.55);background:rgba(255,255,255,0.06);border:1px solid rgba(232,230,224,0.25);
+  border-radius:6px;padding:8px 16px;cursor:pointer;opacity:0;transition:opacity .8s ease 1.8s,color .3s,border-color .3s}
+.completion-overlay.show .comp-continue-btn{opacity:1}
+.comp-continue-btn:hover{color:var(--gold-light);border-color:var(--gold)}
+.comp-continue-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 /* 旗揚げ挨拶: 各選手の頭上に吹き出しで表示(セリフは吹き出しに収めるのが基本形・2026-07-23) */
 .team-member{display:flex;flex-direction:column;justify-content:flex-end}
 .team-bubble{position:relative;background:var(--cream-bg-card);color:var(--cream-text-main);border-radius:10px;

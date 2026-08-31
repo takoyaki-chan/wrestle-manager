@@ -15620,7 +15620,7 @@ function showLeagueElevationCeremony(state, onDone) {
     <div class="le-noise"></div>
     <div class="le-flash" id="leFlash"></div>
     <div class="le-click-area disabled" id="leClickArea"></div>
-    <div class="le-click-hint" id="leClickHint"><span class="blink">▼</span> クリックで次へ</div>
+    <button type="button" class="le-click-hint" id="leClickHint" data-le-next><span class="blink">▼</span> クリックで次へ</button>
     <div class="le-content" id="leContent" data-slide="1">
       <div class="le-slide-impact">
         <div class="le-impact-icon">⚡</div>
@@ -15692,14 +15692,20 @@ function showLeagueElevationCeremony(state, onDone) {
   }
 
   // ── ステップ管理（クリック送り） ──
+  // task-103と同型の根治(2026-08-31): 旧実装は locked=true を setTimeout の unlock() だけが
+  // 解いていたため、演出の1ステップが転ぶと永久ロック+出口ゼロ(進行導線は素の div の
+  // #leClickArea のみ・#leCloseBtn は step 5 まで opacity:0)で恒久停止した。
+  // ロックは期限付きにし(§5-D 鉄則1)、ステップ実行は fail-open で締めのブロックへ抜く。
   let currentStep = -1;
-  let locked = false;
+  let lockedUntil = 0;
+  const LOCK_INSURANCE_MS = 4000; // 正常系の最長ロックは900ms。4秒残っていたら異常とみなして解く
 
   function unlock(delay) {
+    const d = delay || 400;
+    lockedUntil = Date.now() + d;
     setTimeout(() => {
-      locked = false;
       if (currentStep < steps.length - 1) clickHint.classList.add('visible');
-    }, delay || 400);
+    }, d);
   }
 
   const steps = [
@@ -15750,16 +15756,40 @@ function showLeagueElevationCeremony(state, onDone) {
     },
   ];
 
+  // 演出の1ステップが転んでも出口ゼロにしない(fail-open)。締めのブロックへ直行し、
+  // それすら描けない状態なら overlay を畳んで onDone へ直行する — ここが最後の砦。
+  function forceExit(reason) {
+    console.warn('[WM] league elevation ceremony failed open:', reason);
+    try {
+      currentStep = steps.length; // 以後の場面送りは無効
+      lockedUntil = 0;
+      clickHint.classList.remove('visible');
+      clickArea.classList.add('disabled');
+      content.dataset.slide = '2';
+      document.getElementById('leClosingText').classList.add('visible');
+      document.getElementById('leCloseBtn').classList.add('visible');
+    } catch (e2) {
+      closeCeremony();
+    }
+  }
+
   function advanceStep() {
-    if (locked) return;
+    if (Date.now() < lockedUntil) return;
     currentStep++;
     if (currentStep >= steps.length) return;
-    locked = true;
+    lockedUntil = Date.now() + LOCK_INSURANCE_MS; // 保険: unlock() が来なくても自然解除される
     clickHint.classList.remove('visible');
-    steps[currentStep]();
+    try {
+      steps[currentStep]();
+    } catch (e) {
+      forceExit(e && e.message);
+    }
   }
 
   clickArea.addEventListener('click', advanceStep);
+  // 実ボタンの進行導線。#leClickArea(素の全画面div)が塞がれても・押せなくても、
+  // このボタンとキーボードから同じ advanceStep に届く
+  clickHint.addEventListener('click', advanceStep);
 
   // ── 「次へ」ボタン（スライド1→2） ──
   document.getElementById('leNextBtn').addEventListener('click', () => {
@@ -15777,22 +15807,53 @@ function showLeagueElevationCeremony(state, onDone) {
 
   // ── 「続ける」ボタン ──
   let _leClosing = false;
-  document.getElementById('leCloseBtn').addEventListener('click', () => {
+  function closeCeremony() {
     if (_leClosing) return;
     _leClosing = true;
-    if (typeof Audio !== 'undefined' && Audio.fileBgm) Audio.fileBgm.fadeOut(1500);
+    document.removeEventListener('keydown', onLeKey);
+    if (overlay._leKeyHandler === onLeKey) overlay._leKeyHandler = null;
+    if (typeof Audio !== 'undefined' && Audio.fileBgm) { try { Audio.fileBgm.fadeOut(1500); } catch (e) {} }
     overlay.style.transition = 'opacity .6s';
     overlay.style.opacity = '0';
     // オーバーレイが不透明なうちに背景を正しい画面へ差し替える。
     // フェード完了を待つと、透けて見える間だけ演出前の古い画面が一瞬映ってしまう。
-    if (onDone) onDone();
+    // onDone が転んでも幕は必ず畳む(下の setTimeout を必ず登録する)。
+    try { if (onDone) onDone(); } catch (e) {
+      console.warn('[WM] league elevation onDone failed — dropping the curtain anyway:', e && e.message);
+    }
     setTimeout(() => {
       overlay.classList.remove('active');
       overlay.innerHTML = '';
       overlay.style.opacity = '';
       overlay.style.transition = '';
     }, 600);
-  });
+  }
+  document.getElementById('leCloseBtn').addEventListener('click', closeCeremony);
+
+  // ── キーボードでも進める(Enter/Space/→) ──
+  // 出口が見えている画面ではその出口を、それ以外では場面送りを叩く。
+  function onLeKey(e) {
+    if (!e || (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight')) return;
+    // セレモニーが画面から降りた後にリスナーが生き残っていても、他画面の操作を奪わない
+    if (!document.getElementById('leContent') || !overlay.classList.contains('active')) {
+      document.removeEventListener('keydown', onLeKey);
+      if (overlay._leKeyHandler === onLeKey) overlay._leKeyHandler = null;
+      return;
+    }
+    // ボタンにフォーカスがあるときはブラウザ既定の活性化に任せる(二重送りの防止)
+    const t = e.target;
+    if (t && typeof t.closest === 'function' && t.closest('button')) return;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    const closeBtn = document.getElementById('leCloseBtn');
+    if (closeBtn && closeBtn.classList.contains('visible')) { closeCeremony(); return; }
+    const nextBtn = document.getElementById('leNextBtn');
+    if (content.dataset.slide === '1' && nextBtn) { nextBtn.click(); return; }
+    advanceStep();
+  }
+  // セレモニーが二重に起動しても、生きている keydown リスナーは常に1本だけにする(1操作=1進行)
+  if (overlay._leKeyHandler) document.removeEventListener('keydown', overlay._leKeyHandler);
+  overlay._leKeyHandler = onLeKey;
+  document.addEventListener('keydown', onLeKey);
 
   if (typeof Audio !== 'undefined' && Audio.play) Audio.play('reveal');
 }

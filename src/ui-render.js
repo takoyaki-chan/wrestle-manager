@@ -329,13 +329,22 @@ function refreshTopBar() {
 let _openingAct = 0;
 let _openingOverlay = null;
 let _openingTransitioning = false;
+let _openingLockSafety = null; // 幕送りロックの時限保険(§5-D 鉄則1)
+let _openingFinishing = false; // _finishOpening の二重実行防止(§5-D 鉄則2)
 
 function renderOpeningScreen() {
   const el = document.getElementById('weekContent');
   el.innerHTML = ''; // 本体は空 — オーバーレイで描画
 
-  // 既存オーバーレイがあれば除去
-  if (_openingOverlay) { _openingOverlay.remove(); _openingOverlay = null; }
+  // 既存オーバーレイがあれば、document に張ったリスナーと skip ボタンごと除去する
+  // (overlay.remove() だけだと keydown リスナーが漏れて二重進行の芽になる)
+  if (_openingOverlay) {
+    if (_openingOverlay._keyHandler) document.removeEventListener('keydown', _openingOverlay._keyHandler);
+    if (_openingOverlay._skipEl) _openingOverlay._skipEl.remove();
+    _openingOverlay.remove();
+    _openingOverlay = null;
+  }
+  _openingFinishing = false;
 
   const orgName = G.orgName || 'プレイヤー団体';
   const fixed = Engine.draft.getFixedInfo();
@@ -397,30 +406,43 @@ function renderOpeningScreen() {
   ];
 
   // ── オーバーレイ構築 ──
+  // 進行導線は**実ボタン**で出す(task-103と同型の根治・2026-08-31)。以前は素の div の
+  // 点滅テキストと skip の div プロパティ代入だけで、button も onclick 属性も無く、
+  // キーボードは ESC しか効かなかった。描画や幕送りが一度転ぶと出口ゼロで恒久停止する。
   const overlay = document.createElement('div');
   overlay.className = 'opening-overlay';
   overlay.innerHTML = `
     <div class="opening-vignette"></div>
     ${acts.join('')}
-    <div class="opening-click-hint">CLICK TO CONTINUE</div>
+    <button type="button" class="opening-click-hint" data-opening-next>CLICK TO CONTINUE</button>
   `;
   document.body.appendChild(overlay);
   _openingOverlay = overlay;
 
-  // skip リンク
-  const skip = document.createElement('div');
+  // skip も実ボタン(_finishOpening へ直行する、この画面のもう1つの出口)
+  const skip = document.createElement('button');
+  skip.type = 'button';
   skip.className = 'opening-skip';
   skip.textContent = '>> skip';
-  skip.onclick = (e) => { e.stopPropagation(); _finishOpening(); };
+  skip.addEventListener('click', (e) => { e.stopPropagation(); _finishOpening(); });
   document.body.appendChild(skip);
   overlay._skipEl = skip;
 
-  // クリックで進行
+  // クリックで進行(委譲1本。CLICK TO CONTINUE の実ボタンも同じ出口に集約される)
   overlay.addEventListener('click', _advanceOpening);
 
-  // ESCキーでスキップ
-  overlay._escHandler = (e) => { if (e.key === 'Escape') _finishOpening(); };
-  document.addEventListener('keydown', overlay._escHandler);
+  // キーボードでも進める: Enter/Space/→ で幕送り、ESC でスキップ
+  overlay._keyHandler = (e) => {
+    if (!e) return;
+    if (e.key === 'Escape') { _finishOpening(); return; }
+    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar' && e.key !== 'ArrowRight') return;
+    // ボタンにフォーカスがあるときはブラウザ既定の活性化(click発火)に任せる(二重送りの防止)
+    const t = e.target;
+    if (t && typeof t.closest === 'function' && t.closest('button')) return;
+    if (typeof e.preventDefault === 'function') e.preventDefault();
+    _advanceOpening();
+  };
+  document.addEventListener('keydown', overlay._keyHandler);
 
   // 幕1をフェードイン
   requestAnimationFrame(() => {
@@ -437,37 +459,63 @@ function _advanceOpening() {
   if (nextAct >= 4) { _finishOpening(); return; }
 
   _openingTransitioning = true;
-  const currentEl = document.getElementById('openingAct' + _openingAct);
-  if (currentEl) currentEl.classList.remove('show');
+  // 時限の保険(§5-D 鉄則1): 幕送りの途中で例外や取りこぼしがあってもロックを永久に残さない。
+  // 正常系は 450ms+700ms で解けるので、3秒残っていたら異常とみなして解く
+  if (_openingLockSafety) clearTimeout(_openingLockSafety);
+  _openingLockSafety = setTimeout(() => { _openingTransitioning = false; }, 3000);
+  const _unlock = () => {
+    if (_openingLockSafety) { clearTimeout(_openingLockSafety); _openingLockSafety = null; }
+    _openingTransitioning = false;
+  };
+  try {
+    const currentEl = document.getElementById('openingAct' + _openingAct);
+    if (currentEl) currentEl.classList.remove('show');
 
-  // 前の文章を完全に隠してから次を表示し、二重描画を防ぐ。
-  setTimeout(() => {
-    if (currentEl) currentEl.style.display = 'none';
-    _openingAct = nextAct;
-    const nextEl = document.getElementById('openingAct' + _openingAct);
-    if (!nextEl) { _openingTransitioning = false; return; }
-    nextEl.style.display = '';
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        nextEl.classList.add('show');
-        setTimeout(() => { _openingTransitioning = false; }, 700);
-      });
-    });
-  }, 450);
+    // 前の文章を完全に隠してから次を表示し、二重描画を防ぐ。
+    setTimeout(() => {
+      try {
+        if (currentEl) currentEl.style.display = 'none';
+        _openingAct = nextAct;
+        const nextEl = document.getElementById('openingAct' + _openingAct);
+        if (!nextEl) { _unlock(); return; }
+        nextEl.style.display = '';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            nextEl.classList.add('show');
+            setTimeout(_unlock, 700);
+          });
+        });
+      } catch (e) {
+        // 幕送りが転んだら暗幕に閉じ込めず、そのままドラフトへ抜ける(fail-open)
+        console.warn('[WM] opening act transition failed — skipping to draft:', e && e.message);
+        _finishOpening();
+      }
+    }, 450);
+  } catch (e) {
+    console.warn('[WM] opening act transition failed — skipping to draft:', e && e.message);
+    _finishOpening();
+  }
 }
 
 function _finishOpening() {
+  if (_openingFinishing) return; // ESC とクリックが同時に来ても遷移は1回だけ(1操作=1進行)
+  _openingFinishing = true;
   _openingTransitioning = false;
-  // クリーンアップ
+  if (_openingLockSafety) { clearTimeout(_openingLockSafety); _openingLockSafety = null; }
+  // クリーンアップ(本編の描画が転んでも暗幕だけは必ず下ろす)
   if (_openingOverlay) {
-    if (_openingOverlay._escHandler) document.removeEventListener('keydown', _openingOverlay._escHandler);
+    if (_openingOverlay._keyHandler) document.removeEventListener('keydown', _openingOverlay._keyHandler);
     if (_openingOverlay._skipEl) _openingOverlay._skipEl.remove();
     _openingOverlay.classList.add('hidden');
     setTimeout(() => { if (_openingOverlay) { _openingOverlay.remove(); _openingOverlay = null; } }, 900);
   }
   // draft フェーズに遷移
-  G.weekPhase = 'draft';
-  refreshAll();
+  try {
+    G.weekPhase = 'draft';
+    refreshAll();
+  } catch (e) {
+    console.warn('[WM] opening exit render failed:', e && e.message);
+  }
   // 無音のオープニングを抜けて WM-C08 ドラフト選択へ（refreshAll はBGMに触れない）
   try { Audio.bgm.playForState(); } catch (e) {}
 }
