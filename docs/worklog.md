@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 実セーブ棚の初回走破 — 年末クラスタの実バグ3件+ハーネス偽陽性2件を発見・修正（2026-08-31・Fable、699a860）
+
+新設した実セーブ棚(`node test/save-regression.js --walkthrough`)の初回フル走破は6本中6本失敗。切り分けの結果、**実バグ3件/偽陽性2件/良性1件**に分解し全て処置:
+
+1. **PPV結果クローズの週二重tick(実バグ・年1回の幻の1週)**: PPV結果モーダルの閉じるボタンがインラインonclick(`closePPVResult`→tick込み進行)と`_handlePatternBResultClose`の委譲クローズ(こちらもtick)の**両方に届き、1クリックで2週進んでいた**。週48のPPVで毎年発生し、1週分の練習・決算・回復が余分に処理される(数値バグとして実害あり)。委譲側にPPV除外を追加(主修正・[ui-common.js](src/ui-common.js))+`closePPVResult`冒頭に`G.offSeason || G.week !== 48`の二重tickガード(保険・[app.js](src/app.js))
+2. **引退時のcoachAssign残骸(実バグ)**: `commitRetirements`が担当割当を掃除せず、引退のたびにsave-doctorの遅延修復(`coachAssign_stale_refs_removed`)が働いていた。引退処理側で即時掃除に([management.js](src/management.js))
+3. **旧セーブのcontract欄欠落(実バグ・v1.34修正の前提穴)**: v1.30以前のセーブは`contractOVR/contractPop`が無く、段階追従キャップの起点が不定 → save-doctorのロード時修復でバックフィル(`contractOVR=現OVR`/`contractPop=0`の保守値、`contract_fields_backfilled`タグ)
+4. **偽陽性2件(ハーネス側)**: 成熟セーブの年末同期連鎖(2.8秒)がクリックtimeout 1500msを超えD2誤報 → 5000msへ / hoverで変形するボタン上にポインタが残り無限フリッカー→D2誤報 → クリック後にポインタ退避([driver.js](test/ui-walkthrough/driver.js))
+5. **良性1件**: `[WM][awards] ignored background navigation`はガードの正常動作 → D1除外リストに明記
+
+処置後の再走破: **6本中5本✓**。残る1本(v1.0x世代S2W23、S2W48 ppvTVで進行不能・popup queue=1 active)は**実プレイヤー影響が疑われる本物のフリーズ**として、worktree隔離のOpusエージェント(task-103)で根治中。
+
 ## 検査システム総点検 — 敵対監査3系統+実セーブ棚の新設で検出器の欠陥を計8件発見・修正（2026-08-31・Fable）
 
 Keisuke指弾「バグを探すシステムが本当に機能しているのか怪しい」「常に新しい調べ方で調べろ」を受け、**検査システム自体を被告席に置く総点検**を実施。手法: ①敵対監査エージェント3系統(テスト257本の中身/validateGameState全不変条件/走破ハーネス+出荷ゲート) ②変異・カオス自己点検の常設 ③実セーブのリグレッション棚新設。
