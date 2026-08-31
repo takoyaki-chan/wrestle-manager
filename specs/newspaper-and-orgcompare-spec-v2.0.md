@@ -60,7 +60,7 @@
 4. **np-sub-stories** — 2col グリッド。subStories の portrait + headline + body、まとめ末尾に黒田寸評
 5. **np-preview** — 次回展望
 
-ダイジェスト ★算出: 廃止(モックアップ準拠で MQ列のみ)。寸評は `NEWSPAPER_DIGEST_COMMENTS.{great|good|average|poor|bad|draw|upset|dominant|titleMatch}` から `Engine.rng.derive(season, week, idx, 0xD1C0)` でseeded pick。
+ダイジェスト ★算出: 廃止(モックアップ準拠で評価列のみ。列見出しは2026-08-31のMQ表記一掃で「MQ」→「評価」)。寸評は `NEWSPAPER_DIGEST_COMMENTS.{great|good|average|poor|bad|draw|upset|dominant|titleMatch}` から `Engine.rng.derive(season, week, idx, 0xD1C0)` でseeded pick。
 
 **期待MQの算出 (`_calcExpectedMQ`)**: 寸評プール選択は `diff = mq - expectedMQ` を `+15/+5/-4/-15` で5段階に分類する相対判定 (`great/good/average/poor/bad`)。`expectedMQ` は会場index×orgPopから `EXPECTED_MQ_BY_VENUE[idx].base + orgPop × popCoef` で算出し、上限80でクランプ。**この per-match 期待MQはショー評価系 `SHOW_RATING_CONFIG.expectedMQTotal` (data.js) と整合させる**: ショー評価が「6試合合計220」を基準にする(=平均≒37/試合)のに対し、寸評側はそれと同帯〜やや上 (公民館32〜ドーム80) を per-match 期待値とする。両者が乖離するとショー4★の興行で全undercardが`bad`プールに落ちる自己矛盾が生じるため。テーブル数値: 公民館 base30/coef0.15 → ドーム base65/coef0.40、cap80。
 
@@ -133,7 +133,7 @@
 - v2.0 (Phase 2-3, 2026-04-26): 額装200×240/4軸バーレーダー/`.ndt-port` 48px/KURODA +120本/`.sec-label` 重複整理
 - **v3.0 (2026-04-26): 新聞タブ独立化 + 780px 統一 + v8 mockup 準拠で全面書き直し + バーレーダー単色化 + 3面 stand 320px・OVR/年齢中央寄せ**
 - **v3.2 (2026-05-03): ダイジェスト寸評の期待MQ式を見直し。**`EXPECTED_MQ_BY_VENUE` (`src/ui-render.js:7951`) を base 18→30〜60→65・popCoef 0.30→0.15〜0.80→0.40 に圧縮し、cap を95→80に引き下げ。原因: 旧テーブルではドーム×高人気で expectedMQ が95に張り付き、`bad` 閾値 (diff<-15) 換算で MQ ≦79 がすべて `bad` プールに落ち、ショー4★の興行で undercard 全試合が「退屈な試合」「興行のテンポを完全に殺した」と書かれる自己矛盾が発生していた。ショー評価系 `expectedMQTotal[6]=220` (per-match 平均≒37) と整合する水準まで下げ、新値ではドーム×orgPop50 で expectedMQ≒80、MQ77 → diff -3 → `average` として再判定される。`bad` プールは MQ50台以下 + 高期待会場の極端な駄試合に限定。黒田の辛辣トーン自体 (プール文言) は据え置き。
-- **v3.1 (2026-04-29): 4面「年間MVPレース」を追加。タブ表記=「📊 4面 MVPレース」、紙面内見出し=「📊 4面 ・ 年間MVPレース」(タブは短く、紙面は正式名称)。1〜3位カードに `Engine.mvpRace.generateRichBlocks` の補強行(直近名勝負ファクト)、2/3位ミニカードに事績チップ + フレーバー文、4位以下は3段リッチ行(順位ヘッダ + 事績チップ + フレーバー1行)に再構築。英字ラベル `RANK / POINTS / PT / NEW / TOP3` を「順位 / ポイント / 初登場 / 三傑」など日本語/カタカナへ統一（`OVR / MQ / PPV / pt` は業界略号として維持）。データ源: `careerRecord.history` / `state.h2h` / `state.relationships` / `G.snapshots` / `fighter.traits`。実装: [src/management.js](../src/management.js) `Engine.mvpRace.generateRichBlocks` + 補助関数群、[src/ui-render.js](../src/ui-render.js) `_npRenderPage4 / _npMvpRaceRank1Card / _npMvpRaceMinorCard / _npMvpRaceListRow`、[src/index.html](../src/index.html) `np-mvprace-list-row--rich / np-mvprace-fact-chip / np-mvprace-flavor / np-mvprace-rich-line` CSS。
+- **v3.1 (2026-04-29): 4面「年間MVPレース」を追加。タブ表記=「📊 4面 MVPレース」、紙面内見出し=「📊 4面 ・ 年間MVPレース」(タブは短く、紙面は正式名称)。1〜3位カードに `Engine.mvpRace.generateRichBlocks` の補強行(直近名勝負ファクト)、2/3位ミニカードに事績チップ + フレーバー文、4位以下は3段リッチ行(順位ヘッダ + 事績チップ + フレーバー1行)に再構築。英字ラベル `RANK / POINTS / PT / NEW / TOP3` を「順位 / ポイント / 初登場 / 三傑」など日本語/カタカナへ統一（`OVR / PPV / pt` は業界略号として維持。`MQ` も当初は維持だったが、2026-08-31のMQ表記一掃で「試合評価/評価」へ全面置換）。データ源: `careerRecord.history` / `state.h2h` / `state.relationships` / `G.snapshots` / `fighter.traits`。実装: [src/management.js](../src/management.js) `Engine.mvpRace.generateRichBlocks` + 補助関数群、[src/ui-render.js](../src/ui-render.js) `_npRenderPage4 / _npMvpRaceRank1Card / _npMvpRaceMinorCard / _npMvpRaceListRow`、[src/index.html](../src/index.html) `np-mvprace-list-row--rich / np-mvprace-fact-chip / np-mvprace-flavor / np-mvprace-rich-line` CSS。
 - **v3.3 (2026-07-27): 業界ニュースを新聞へ一本化 + 掲載枠あふれの持ち越し + シーズン開幕号の知らせ。**
 
   **旧「v1.4w 新聞パネル」(`showNewspaperPanel`) を撤去した。** 業界ニュースは `_newsEvents` という

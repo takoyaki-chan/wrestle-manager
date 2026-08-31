@@ -113,7 +113,7 @@ PrologueHighlight = {
 5. **記者の見立て** (`.chron-prologue-quote`): in_progress 中のみ表示
 6. **Two-col body**:
    - 左: 主な出来事 (highlights, season 順 / tier 色分け)
-   - 右: 通算 stats (TITLES / PEAK MQ / PEAK POP / STATUS)
+   - 右: 通算 stats (TITLES / 最高評価 / PEAK POP / STATUS) ※旧ラベル「PEAK MQ」は2026-08-31のMQ表記一掃で「最高評価」へ
 7. **Closing** (`.chron-closing`): in_progress または confirmed の closing 文 + ノート
 8. **Nav**: 序章は前章なし、次章ボタンで CH.1 へ
 

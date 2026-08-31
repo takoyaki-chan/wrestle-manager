@@ -87,6 +87,37 @@
 
 残: Common5修正の実機確認(バックログへ追記)
 
+## MQ表記一掃 — プレイヤー可視の「MQ」全61箇所を日本語化+旧セーブのロード時テキスト移行+走破検出器へMQトークン復帰（2026-08-31・Fable直実装）
+
+前エントリ(検査総点検)でD3検出器にMQトークンを試験追加した際に発覚した残存違反の掃除。ルールはメモリ feedback_player_text_no_internal_tokens(内部変数名 morale/orgPop/MQ/condition はプレイヤーに見せない)。既知14箇所どころか全数列挙で**61箇所**(スコアボードのAvg MQ/Best MQ、結果チップのMQ 85、天頂戦・ジュニア・春タッグ・対抗戦・ゲームオーバー・年代記・ヘルプ等)あった。
+
+### 訳語体系(統一ルール)
+- 地の文・ログ・新聞: **試合評価**(task-80の既存訳語に合わせる)
+- 短ラベル(表ヘッダ/スコアボード/チップ): **評価**(「評価 85」「評価+2」)
+- 複合: Avg MQ→**平均評価** / Best MQ・最高MQ・ベスト試合MQ→**最高評価** / Total MQ→**通算評価** / Final MQ→**決勝評価** / ベストMQ→**ベスト評価** / 大会ベストMQチップ→**大会ベストバウト**
+
+### 変更ファイル
+- **src/ui-common.js**(30箇所): 対抗戦/興行/PPV/挑戦状/派閥/ジュニア/天頂戦/春タッグ/秋の対抗戦/ゲームオーバー/エンディングの結果表示・スコアボード・チップ・context行
+- **src/ui-render.js**(14箇所): 経営タブ最高評価/集客予測ツールチップ/ファンの声/因縁タグ/シーズン履歴表/新聞(結果行・ダイジェスト列・因縁特集ファクト・対戦履歴・ジュニア詳報表)/年代記PEAK MQ→最高評価/**ログフィルタ「興行」のマッチ条件を l.includes('MQ')→l.includes('評価') に追随**
+- **src/app.js**(3箇所+移行): 週次ログ「(MQ avg N)」→「(平均試合評価 N)」/対抗戦戦績ログ/年代記章トリガー「MQ50到達」→「試合評価50到達」
+- **src/management.js**(6箇所): 同ログ/低MQペナルティログ/年代記ベストマッチ賞/密着スナップショット3文/キャリアハイライト/ジュニア詳報body
+- **src/data.js**(3箇所): コーチdesc「試合MQ」→「試合評価」/社長決断effectLabel 2件
+- **src/kuroda-text.js**(1箇所)/src/battle-engine-main.js(2箇所: BEST MQ→最高評価、勝利画面ラベル)/src/tag-battle-main.js(1箇所: 同)/src/index.html(2箇所: ヘルプの用語定義「MQ(Match Quality)」→「試合評価」、序盤攻略)
+- **ロード時テキスト移行(app.js `_migrated_mq_text_v1`)**: 実プレイヤーの旧セーブには「(MQ avg 71)」「ベストマッチ賞（MQ 100）」等が**文字列として焼き込み済み**(gameLog/newspaperArchive/weeklyNewspaper/hallOfFame/allHallOfFame/lastAwards/seasonHistory/chronicle/prologueの9サブツリーで実測)。表示専用サブツリー限定のdeep-walk+表示形限定の17パターン置換で一度だけ書き換え。内部キー値('careerBestMQ'等)はどのパターンにも掛からないことを机上検証済み
+- **test/ui-walkthrough/detectors.js**: INTERNAL_TOKEN_PATTERNへMQ復帰。素の`\bMQ\b`は「MQ85」を素通しする(Q|8間に語境界なし)ため**`\bMQ(?![A-Za-z])`の強化形**で追加(識別子careerBestMQ等には前側境界がなく誤爆しない)
+- **specs**: mq-system-spec v1.0にプレイヤー向け表記の注記を新設/newspaper-and-orgcompare v2.0の「MQ列」「MQは業界略号として維持」を上書き/chronicle-prologue v1.0のPEAK MQラベル更新
+
+### 検証
+- node --check 全編集ファイルOK/移行regexの机上検証19サンプル全通過(検出器強化形で残留ゼロ+内部キー無傷)
+- `npm run test:detectors` 9本マトリクス全OK(走破self-test含む)
+- `npm run test:ui:walkthrough` **PASS**(MQ検出器復帰済みで Issues: 0、316手)
+- `npm run test:ui:ignite -- --scenario tenchosen / gameover` 両方PASS(Issues: 0。両画面の文言を触ったため)
+- `npm run test:save-regression -- --walkthrough`: doctor 6本✓、走破はMQ起因(D3_TEXT)ゼロ=移行が実セーブ6本で機能。ただし**表彰式/オフ進入系の既存問題でmobile/v1.0x/ultralong/v1.25の4本がD1/D2 FAIL** — クリーンHEAD(faa8071)worktreeで同型再現し既存と確定(既知課題prerefixと同族)。調査チップ起票済み(task_9a3fe8c8)
+
+### 残課題
+- ~~実セーブ棚の走破FAIL4件(上記・本件とは無関係の既存問題)~~ → **マージ時点で解決済み**: 並行して進んだ699a860(年末クラスタ修正)+task-103(ppvTV根治)が同じ問題の根治で、マージ後の棚は6/6✓(調査チップtask_9a3fe8c8は不要になった)
+- 実機確認は docs/実機確認バックログ.md 運用に従いKeisuke委任
+
 ## 検査システム総点検 — 敵対監査3系統+実セーブ棚の新設で検出器の欠陥を計8件発見・修正（2026-08-31・Fable）
 
 Keisuke指弾「バグを探すシステムが本当に機能しているのか怪しい」「常に新しい調べ方で調べろ」を受け、**検査システム自体を被告席に置く総点検**を実施。手法: ①敵対監査エージェント3系統(テスト257本の中身/validateGameState全不変条件/走破ハーネス+出荷ゲート) ②変異・カオス自己点検の常設 ③実セーブのリグレッション棚新設。

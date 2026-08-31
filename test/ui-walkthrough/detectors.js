@@ -6,11 +6,12 @@ const path = require('path');
 
 // 2026-08-31監査: NaNのcase-insensitive部分一致は英語化で"finance"等に誤爆する時限爆弾
 // だったため、NaNのみ大文字小文字厳密+単語境界に分離。
-// MQトークンは追加を試したところ**実在の残存違反14箇所**(週次ログのMQ表記・DB対戦履歴の
-// MQ列・因縁のベスト試合MQ等)を全fixtureで検出した — 掃除タスク(チップ起票済み)完了後に
-// `|MQ` をここへ戻すこと。それまで検出器に入れると走破ゲートが恒常FAILになる
+// MQトークンは2026-08-31のUI掃除(src全域を「試合評価/評価」へ日本語化+旧セーブの
+// ロード時テキスト移行)完了に伴い復帰。`\bMQ(?![A-Za-z])` は「MQ85」「MQ+3」のような
+// 数字/記号直結型も拾う(素の\bMQ\bではQ|8間に語境界が無く素通りする)。
+// 「careerBestMQ」等の識別子は前側の語境界が無いため誤爆しない
 const RAW_VALUE_PATTERN = /undefined|\bNaN\b|\[object\s|\bnull\b/g;
-const INTERNAL_TOKEN_PATTERN = /\b(?:morale|orgPop|weekPhase|condition)\b/g;
+const INTERNAL_TOKEN_PATTERN = /\b(?:morale|orgPop|weekPhase|condition)\b|\bMQ(?![A-Za-z])/g;
 
 function stableHash(value) {
   return crypto.createHash('sha256').update(String(value)).digest('hex').slice(0, 16);
