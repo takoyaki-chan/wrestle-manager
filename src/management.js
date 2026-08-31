@@ -7569,6 +7569,11 @@ const Engine = {
       const _newRetiredSeasons = { ...(s.retiredSeasons || {}) };
       retiredWithRecords.forEach(f => { _newRetiredSeasons[f.id] = s.season; });
       s = { ...s, roster: surviving, retiredFighters: [...(s.retiredFighters || []), ...retiredWithRecords], retiredIds: _newRetiredIds, retiredSeasons: _newRetiredSeasons };
+      // 2b. 雇用コーチのアサインから外す。解雇/引き抜き/モチベ喪失と同じ「退場者が残す
+      // 参照の後始末」— ここだけ漏れており、引退者の担当が coachAssign に残って
+      // repairProgressionState の自己修復(coachAssign_stale_refs_removed)が鳴っていた
+      // (実セーブ棚 prerefix_S12W45 のオフシーズン走破で発見・2026-08-31)
+      s = { ...s, coachAssign: Engine.coach.sanitizeAssignments(s) };
       const unifiedRetiree = retiredWithRecords.find(f => f.id === state.unifiedTitle?.championId);
       if (unifiedRetiree) s = Engine.unifiedTitle.vacate(s, 'retirement', unifiedRetiree);
 
@@ -14825,6 +14830,8 @@ const Engine = {
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== lc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== lc.id), lc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [lc.id]: s.season } };
+          // 退場者の後始末: コーチ担当から外す(roster はローカル変数のため合成して渡す)
+          s = { ...s, coachAssign: Engine.coach.sanitizeAssignments({ ...s, roster }) };
           s = Engine.rental.terminateForRetirement(s, lc.id);
           // 団体年代記: アーカイブ + 気風寄与
           s = Engine.chronicle.archiveFighter(s, retiredF);
@@ -14853,6 +14860,8 @@ const Engine = {
           delete retiredF.growthLog;
           roster = roster.filter(c => c.id !== rc.id);
           s = { ...s, retiredFighters: [...(s.retiredFighters || []), retiredF], retiredIds: [...(s.retiredIds || []).filter(id => id !== rc.id), rc.id], retiredSeasons: { ...(s.retiredSeasons || {}), [rc.id]: s.season } };
+          // 退場者の後始末: コーチ担当から外す(roster はローカル変数のため合成して渡す)
+          s = { ...s, coachAssign: Engine.coach.sanitizeAssignments({ ...s, roster }) };
           s = Engine.rental.terminateForRetirement(s, rc.id);
           // 団体年代記: アーカイブ + 気風寄与
           s = Engine.chronicle.archiveFighter(s, retiredF);
@@ -17647,6 +17656,11 @@ const Engine = {
           }
         });
         s = { ...s, roster: lastRunActive };
+        // 期限切れ組は commit を待たずここで roster から抜ける。コーチ担当も同時に
+        // 外さないと、引退ダイアログまでの間 coachAssign に stale 参照が残る
+        if (lastRunExpiredList.length > 0) {
+          s = { ...s, coachAssign: Engine.coach.sanitizeAssignments(s) };
+        }
 
         // Player retirement check (skip rental fighters — they return to their org)
         // 検出フェーズのみ: roster 削除・タイトル没収・HoF 反映・関係値凍結等は

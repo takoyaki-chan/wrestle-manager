@@ -9153,6 +9153,8 @@ const App = {
       const _lrRetiredSeasons = { ...(G.retiredSeasons || {}) };
       lastRunRetirees.forEach(c => { _lrRetiredSeasons[c.id] = G.season; });
       let updState = { ...G, roster: survivingRoster, retiredFighters: [...(G.retiredFighters || []), ...retiredWithRecords], retiredIds: newRetiredIds, retiredSeasons: _lrRetiredSeasons };
+      // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
+      updState = { ...updState, coachAssign: Engine.coach.sanitizeAssignments(updState) };
       // 団体年代記: アーカイブ登録 + 気風寄与積算 (player ロスター経由なので全件対象)
       retiredWithRecords.forEach(rf => {
         updState = Engine.chronicle.archiveFighter(updState, rf);
@@ -10715,6 +10717,8 @@ const App = {
           retiredIds: [...retiredIds],
           retiredSeasons,
         };
+        // 退場者の後始末: 雇用コーチの担当から外す(残すと自己修復 coachAssign_stale_refs_removed が鳴る)
+        G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
         const validated = Engine.title.validateChampion(G);
         if (validated.msg) {
           G = { ...G, titles: validated.titles, gameLog: [...(G.gameLog || []), validated.msg] };
@@ -11651,7 +11655,9 @@ const App = {
         delete retiredF.growthLog;
         G = { ...G,
           roster: G.roster.filter(c => c.id !== f.id),
-          retiredFighters: [...(G.retiredFighters || []), retiredF]
+          retiredFighters: [...(G.retiredFighters || []), retiredF],
+          // 退場者の後始末: コーチ担当から外す(engine側モチベ喪失パスと同じ扱い)
+          coachAssign: Engine.coach.unassignFromCoach(G, f.id),
         };
         // 団体年代記: アーカイブ + 気風寄与
         G = Engine.chronicle.archiveFighter(G, retiredF);
@@ -12947,6 +12953,8 @@ const App = {
       // 王者が放出/退団した場合は王座を空位にする
       const vcCE = Engine.title.validateChampion(G);
       if (vcCE.msg) { G = { ...G, titles: vcCE.titles, gameLog: [...(G.gameLog || []), vcCE.msg] }; }
+      // 退場者の後始末: コーチ担当から外す(直後の renderWeekScreen が自己修復を鳴らすため)
+      G = { ...G, coachAssign: Engine.coach.sanitizeAssignments(G) };
     }
     Storage.autoSave();
     Audio.play('event');
@@ -15913,6 +15921,19 @@ App.finalizePPV = function() {
 App.closePPVResult = function() {
   // task-73: 週次処理へ入る前にコーチが1枚だけ締める。表示したら resume でここへ戻ってくる
   if (App._tcwGate('ppv', App._tcwPpvArgs || {}, () => App.closePPVResult())) return;
+  // §5-D鉄則2(1操作=1進行): 本体は tickWeek→advanceWeek を含むため、週が既に進んだ後の
+  // 再入(遅延した保険タイマー/resume の重複・連打)では実行しない。再入を許すと
+  // オフシーズン進入後に tickWeek がもう一度走り、weekPhase='settled' が残って
+  // 自己修復(offseason_phase_recovered)が鳴る(実セーブ棚の走破で実測・2026-08-31)。
+  // closeShowResult(10534)と同じガード型。正規の閉じ時は finalizePPV が 'showExec' を立てている
+  if (G.offSeason || G.weekPhase !== 'showExec') {
+    console.info('[WM] closePPVResult re-entry ignored — week already advanced', {
+      season: G.season, week: G.week, weekPhase: G.weekPhase, offSeason: !!G.offSeason,
+    });
+    const staleOverlay = document.getElementById('showResultOverlay');
+    if (staleOverlay) staleOverlay.classList.remove('active');
+    return;
+  }
   const resultOverlay = document.getElementById('showResultOverlay');
   resultOverlay.classList.remove('active');
   Audio.play('click');
@@ -16052,6 +16073,16 @@ App.initPPVTV = function() {
 App.closePPVTV = function() {
   // task-73: TV観戦(自団体不出場)の回も、コーチが見ての一言を必ず1枚出す
   if (App._tcwGate('ppv', {}, () => App.closePPVTV())) return;
+  // §5-D鉄則2: closePPVResult と同じ再入ガード。本体は tickWeek→advanceWeek を含む。
+  // 正規の閉じ時は advanceWeek が立てた 'ppvTV' のまま(initPPVTV は phase を変えない)
+  if (G.offSeason || G.weekPhase !== 'ppvTV') {
+    console.info('[WM] closePPVTV re-entry ignored — week already advanced', {
+      season: G.season, week: G.week, weekPhase: G.weekPhase, offSeason: !!G.offSeason,
+    });
+    const staleOverlay = document.getElementById('showResultOverlay');
+    if (staleOverlay) staleOverlay.classList.remove('active');
+    return;
+  }
   const overlay = document.getElementById('showResultOverlay');
   overlay.classList.remove('active');
   // 放送終了後も頂上決戦曲を残さない。画面遷移・直接の「事務所へ戻る」の両方で止める。

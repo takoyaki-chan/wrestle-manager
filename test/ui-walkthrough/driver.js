@@ -2,7 +2,11 @@
 
 const { stableHash, writeFailureArtifacts } = require('./detectors');
 
-const CLICKABLE_SELECTOR = 'button, [role="button"], [onclick], [data-choice], [data-mdl-choice], [data-war-choice], .large-evt-fighter-pick, .travel-overlay.active';
+// .ptv-tv:has(.ptv-hint): PPV TV中継の場面送りは画面クリック(addEventListenerのみ・
+// onclick属性なし)で、ボタン系セレクタからは不可視だった。「クリックで進む」ヒントが
+// 付く場面だけを候補化する(最終場面はヒントなし+「事務所へ戻る」ボタンがあるので対象外)
+// — 実セーブ棚 v1.0x がW48のTV中継1場面目で「no safe progress control」化した(2026-08-31)
+const CLICKABLE_SELECTOR = 'button, [role="button"], [onclick], [data-choice], [data-mdl-choice], [data-war-choice], .large-evt-fighter-pick, .travel-overlay.active, .ptv-tv:has(.ptv-hint)';
 const DESTRUCTIVE_TEXT = /(?:削除|消去|ニューゲーム|NEW GAME|ロード|LOAD GAME|セーブ|SAVE|タイトルへ戻る|記録を消す)/i;
 const NAVIGATION_TEXT = /^(?:今週|興行準備|団体|社長室|ランキング|データベース|新聞|経営|ログ|ヘルプ)$/;
 
@@ -23,6 +27,8 @@ function normalizeText(value) {
 
 function actionScore(candidate, state) {
   const text = candidate.searchText || candidate.text;
+  // PPV TV中継の場面送り面(.ptv-tv)。場面テキストが長文で文面フィルタに誤爆するため先に判定
+  if (String(candidate.className || '').includes('ptv-tv')) return 9955;
   if (!text || DESTRUCTIVE_TEXT.test(text) || NAVIGATION_TEXT.test(text)) return -Infinity;
 
   if (/CONTINUE/i.test(text)) return 10000;
@@ -110,6 +116,7 @@ async function listCandidates(page) {
   for (const metadata of entries) {
     const text = normalizeText(metadata.text || metadata.ariaLabel);
     if (metadata.id !== 'travelSceneOverlay' && metadata.tagName !== 'BUTTON' && !metadata.fullSurface
+      && !String(metadata.className || '').includes('ptv-tv')
       && (text.length > 100 || /Overlay$/i.test(metadata.id))) continue;
     candidates.push({
       ...metadata,
@@ -207,6 +214,34 @@ async function clickWithOverlayRecovery(page, selected, snapshot, random, boost)
     return { candidate: selected, recovered: false };
   } catch (error) {
     await settleClock(page, 3000);
+    // 表彰式ファンファーレ(#aw-fanfare-overlay)のような時限CSSレイヤーは実時間で
+    // 3秒間クリックを遮る。クリック自体は着弾済みでもPlaywrightの再検証が幕に
+    // 遮られてタイムアウトし、fake clockのsettleClockでは幕が晴れない
+    // (CSSアニメは実時間で動く)。waitForTimedUiで実時間の窓を与えてから
+    // 代替候補を拾い直す(実セーブ棚 prerefix/mobile の偽D2フリーズ・2026-08-31)
+    await waitForTimedUi(page, 3200);
+    // locator.click のヒットターゲット検証は fake clock 下で稀に固着する。
+    // 要素が健在で自分自身が最前面(=本当は押せる)なら座標クリックで通す。
+    // 機能しているUIをFREEZE誤判定しないための救済で、真のフリーズは
+    // この先も進行が起きずD5番犬(週が進まない)が捕まえる
+    // (実測: 実セーブ棚mobileのMVPスライド — elementsFromPoint最前面・disabled=false・
+    //  raw mouse.clickは即進行するのにlocator.clickだけがタイムアウトした・2026-08-31)
+    const selfHit = await (async () => {
+      const handle = await selected.locator.elementHandle().catch(() => null);
+      if (!handle) return null;
+      const box = await selected.locator.boundingBox().catch(() => null);
+      if (!box) return null;
+      const topmost = await handle.evaluate((el, pt) => {
+        const hit = document.elementFromPoint(pt.x, pt.y);
+        return !!hit && (hit === el || el.contains(hit));
+      }, { x: box.x + box.width / 2, y: box.y + box.height / 2 }).catch(() => false);
+      return topmost ? box : null;
+    })();
+    if (selfHit) {
+      await page.mouse.click(selfHit.x + selfHit.width / 2, selfHit.y + selfHit.height / 2);
+      await settleClock(page);
+      return { candidate: selected, recovered: true };
+    }
     const current = await listCandidates(page);
     const replacement = chooseCandidate(current, snapshot, random, boost);
     if (!replacement) throw error;
