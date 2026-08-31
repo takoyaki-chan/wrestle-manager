@@ -2953,7 +2953,13 @@ const Storage = {
       // キャッシュ等)に焼き込まれた「MQ」表記を、生成側の新表記と同じ日本語へ一度だけ
       // 書き換える。対象サブツリーは表示専用文字列のみで、内部キー('careerBestMQ'等の
       // 値文字列)はどのパターンにも掛からない形にしてある
-      if (!G._migrated_mq_text_v1) {
+      // v2 (2026-08-31): 実セーブ棚のD3検出で取りこぼし2種が判明し再走。
+      //   ①currentNewspaper(新聞のplayerShowData供給元)とmvpRace(記録タブの語り)が
+      //     対象リストから漏れていた ②「沸かせ、MQ 84」「攻防はMQ 76」「興行でMQ98」の
+      //     ような和文直結型がどのパターンにも掛からなかった(和文字+MQ+数字の汎用形を追加。
+      //     'careerBestMQ'等の識別子は直前が英字なので掛からない)。書き換えは冪等なので
+      //     v1適用済みセーブにもう一度通してよい
+      if (!G._migrated_mq_text_v2) {
         const mqTextFixes = [
           [/\(MQ avg /g, '(平均試合評価 '],
           [/興行平均MQ: /g, '興行の平均試合評価: '],
@@ -2972,6 +2978,8 @@ const Storage = {
           [/\(MQ(?=\d)/g, '(試合評価'],
           [/（MQ(?=\d)/g, '（試合評価'],
           [/ MQ(?=\d)/g, ' 試合評価'],
+          // v2: 和文字(句読点・かな・漢字)直結型。後ろに数字(空白1個まで許容)が続くものだけ
+          [/([、-ヿ一-鿿])MQ(?= ?\d)/g, '$1試合評価'],
         ];
         const _mqFixStr = (s) => { for (const [re, rep] of mqTextFixes) s = s.replace(re, rep); return s; };
         const _mqFixWalk = (node) => {
@@ -2987,9 +2995,10 @@ const Storage = {
             }
           }
         };
-        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'hallOfFame', 'allHallOfFame',
+        ['gameLog', 'newspaperArchive', 'weeklyNewspaper', 'currentNewspaper', 'mvpRace',
+         'hallOfFame', 'allHallOfFame',
          'lastAwards', 'seasonHistory', 'chronicle', 'prologue'].forEach(key => _mqFixWalk(G[key]));
-        G = { ...G, _migrated_mq_text_v1: true };
+        G = { ...G, _migrated_mq_text_v2: true };
       }
 
       if (!G._migrated_factions_v1) {
