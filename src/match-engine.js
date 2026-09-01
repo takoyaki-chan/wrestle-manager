@@ -824,23 +824,14 @@ Engine.battle = {
     }
 };
 
+// i18n Stage A P3a: 表示文言はdata.jsのFINISH_TEXTテーブルに抽出済み。ここはテーブルを読むだけ。
 Engine.formatFinish = function(finType, finMove, isFinisher) {
-  if (finType === 'HP判定') return '判定勝ち';
-  if (!finMove) return finType || '激闘決着';
+  if (finType === 'HP判定') return FINISH_TEXT['HP判定'];
+  if (!finMove) return finType || FINISH_TEXT_FALLBACK;
+  const tmpl = FINISH_TEXT[finType];
+  if (!tmpl) return finType || FINISH_TEXT_FALLBACK;
   const prefix = isFinisher ? '★ ' : '';
-  switch (finType) {
-    case 'フォール':
-    case 'ピン':
-      return `${prefix}${finMove} → 3カウント`;
-    case 'ギブアップ':
-      return `${prefix}${finMove} → ギブアップ`;
-    case 'TKO':
-      return `${prefix}${finMove} → レフェリーストップ`;
-    case '丸め込み':
-      return `${prefix}${finMove} → 丸め込み`;
-    default:
-      return finType || '激闘決着';
-  }
+  return prefix + tmpl.replace('{move}', finMove);
 };
 
 // ╔══════════════════════════════════════════════════════════╗

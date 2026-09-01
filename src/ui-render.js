@@ -592,7 +592,7 @@ function _renderSeasonReview(review, state) {
   const heroImg = review.hero ? getStandUrl(review.hero.id, review.hero.ovr) : '';
   h += `<div class="sr-verdict">
     <div class="sr-verdict-l">
-      <div class="sr-seal"><span class="sr-w">${review.headline}</span></div>
+      <div class="sr-seal"><span class="sr-w">${WM_I18N.t(seasonHeadlineLabel(review.headline))}</span></div>
       <div class="sr-rank-line"><span class="sr-num">${review.rank}</span><span class="sr-suf">位</span>${deltaHtml}</div>
       <div class="sr-rank-cap">Final Standing — 最終順位</div>
       <div class="sr-lead">${review.lead}</div>
