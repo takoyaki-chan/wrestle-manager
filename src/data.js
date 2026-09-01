@@ -17972,6 +17972,152 @@ const RETIREMENT_TEMPLATES = {
   ],
 };
 
+// i18n Stage A P3a-2: 完全文テンプレートの{name}プレースホルダ埋め込み共通ヘルパー。
+// i18n.js WM_I18N.t()のプレースホルダ規約(split/join・値はString()で強制変換)と同型の
+// 軽量な自前実装。EngineはWM_I18Nを直接呼ばない(P3a設計の共通原則)ため、テンプレ選択・
+// 整形はこちらを使う。値がnull/undefinedでも従来のテンプレートリテラル${x}と同じ
+// 挙動(文字列"undefined"/"null"化)になるよう、存在するキーは無条件に置換する。
+function fillTemplateVars(tpl, vars) {
+  if (typeof tpl !== 'string' || !vars) return tpl;
+  let out = tpl;
+  Object.keys(vars).forEach((key) => {
+    out = out.split('{' + key + '}').join(String(vars[key]));
+  });
+  return out;
+}
+
+// i18n Stage A P3a-2: 頂上決戦記事(_buildPpvSummitStory)の見出し完全文テンプレ表
+// (management.js:30728-30745で選択)。分岐は既に相互排他な変種として確定していたため
+// テーブル移設のみ(監査3-4)。プレースホルダはfillTemplateVarsで埋める。
+const PPV_SUMMIT_HEADLINE_TEMPLATES = {
+  longRivalryMasterpiece: '🏆 因縁の頂上決戦 — {winner}、{rematchNum}度目の対戦で{loser}を下す',
+  closeMasterpiece: '🏆 {player} vs {ai} 死闘の末 — {winner}が栄冠',
+  masterpiece: '🏆 {player} vs {ai} — 歴史に刻まれる頂上決戦、{winner}に軍配',
+  overwhelmWithOrg: '🏆 {winner}、{loser}を完封 — {winnerOrg}が頂点に立つ',
+  overwhelmNoOrg: '🏆 {winner}、{loser}を完封 — 頂点に立つ',
+  close: '🏆 {player} vs {ai} — 接戦を制し{winner}が勝利',
+  aiWon: '🏆 頂上決戦 — {ai}、{player}を下し頂点へ',
+  default: '🏆 頂上決戦 {player} vs {ai} — {winner}が制す',
+};
+
+// i18n Stage A P3a-2: 頂上決戦記事本文のmatchPart(management.js:30778-30790)。
+// 元は「{turns}ターンに及ぶ」+決着タイプ3種+「{phase}に」+固定核、の4段を条件付きで
+// 連結していた(監査3-1・最優先)。SOV語順が翻訳時に固定されてしまうのを避けるため、
+// ターン数の有無×決着タイプ3種×フェーズラベルの有無、全12通りを完全な一文として列挙する
+// (変種数の上限=12ちょうど)。HP残量の追記文(「HP残り僅か…」「…圧勝。」)は末尾の
+// 「。」境界の直後に続く独立した文なので、別テーブルへ分割する(設計書の上限超過時ルール)。
+const PPV_SUMMIT_MATCHPART_TEMPLATES = {
+  close: {
+    turnsPhase: '{turns}ターンに及ぶ死闘の末、{phase}に{winner}が{finish}で{loser}を下した。',
+    turnsNoPhase: '{turns}ターンに及ぶ死闘の末、{winner}が{finish}で{loser}を下した。',
+    noTurnsPhase: '死闘の末、{phase}に{winner}が{finish}で{loser}を下した。',
+    noTurnsNoPhase: '死闘の末、{winner}が{finish}で{loser}を下した。',
+  },
+  overwhelm: {
+    turnsPhase: '{turns}ターンに及ぶ一方的な展開で、{phase}に{winner}が{finish}で{loser}を下した。',
+    turnsNoPhase: '{turns}ターンに及ぶ一方的な展開で、{winner}が{finish}で{loser}を下した。',
+    noTurnsPhase: '一方的な展開で、{phase}に{winner}が{finish}で{loser}を下した。',
+    noTurnsNoPhase: '一方的な展開で、{winner}が{finish}で{loser}を下した。',
+  },
+  attrition: {
+    turnsPhase: '{turns}ターンに及ぶ攻防の末、{phase}に{winner}が{finish}で{loser}を下した。',
+    turnsNoPhase: '{turns}ターンに及ぶ攻防の末、{winner}が{finish}で{loser}を下した。',
+    noTurnsPhase: '攻防の末、{phase}に{winner}が{finish}で{loser}を下した。',
+    noTurnsNoPhase: '攻防の末、{winner}が{finish}で{loser}を下した。',
+  },
+};
+// matchPartの続き(「。」境界での分割・上記コメント参照)。isOverwhelmは無条件で追記、
+// isCloseFight&&winnerHpFinal<15のときのみ追記、それ以外は何も追記しない(keyがnull)。
+const PPV_SUMMIT_HPNOTE_TEMPLATES = {
+  closeLowHp: 'HP残り僅か{hp}での辛勝だった。',
+  overwhelm: '{winner}はHPを{hp}残しての圧勝。',
+};
+
+// i18n Stage A P3a-2: PPVアンダーカード記事(management.js:31868-31891・監査3-2)。
+// 見出しはisTitleMatch/mq>=75の2分岐は元コードが所属名を無条件連結(分岐なし)だったので
+// そのままプレースホルダに、elseブロックのみ元コードが所属の有無で「の」の有無を分岐して
+// いたため2変種に分ける。本文は元コードのターン数有無×勝者所属有無×敗者所属有無の
+// 3条件がすべて独立した三項演算子だったため、8通りの完全文として列挙する(上限12以内)。
+const PPV_UNDERCARD_HEADLINE_TEMPLATES = {
+  title: '🏆 PPV — {winnerOrg}{winner}、{loserOrg}{loser}を下しタイトル戦制す',
+  highMq: 'PPV {tone} — {winnerOrg}{winner}が{loserOrg}{loser}を撃破（試合評価{mq}）',
+  elseWithOrg: '{winnerOrg}の{winner}、PPVで{loserOrg}{loser}を下す',
+  elseNoOrg: '{winner}、PPVで{loserOrg}{loser}を下す',
+};
+const PPV_UNDERCARD_BODY_TEMPLATES = {
+  turns_wOrg_lOrg: '{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。',
+  turns_wOrg_noOrg: '{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。',
+  turns_noOrg_lOrg: '{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。',
+  turns_noOrg_noOrg: '{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。',
+  noTurns_wOrg_lOrg: '{stamp}。{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。',
+  noTurns_wOrg_noOrg: '{stamp}。{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。',
+  noTurns_noOrg_lOrg: '{stamp}。{tone}の末、{winner}が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。',
+  noTurns_noOrg_noOrg: '{stamp}。{tone}の末、{winner}が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。',
+};
+
+// i18n Stage A P3a-2: 小規模連結4族(監査3-5「同法」)のうち業界底上げ記事
+// (management.js:31776-31786)。分岐なしの単一テンプレ(orgNameの既定値のみ)なので
+// そのままテーブル化。
+const LEAGUE_ELEVATION_TEXT = {
+  headline: '業界再編！ライバル団体が大幅強化',
+  body: '業界1位の座を奪取した「{orgName}」の快挙に触発され、ライバル団体が選手強化策とコーチ招聘に乗り出した。A級・B級団体が大型補強に動き、もはや安泰の時代は終わった。真の群雄割拠が始まる——。',
+};
+
+// i18n Stage A P3a-2: 小規模連結4族のうち対抗戦結果記事(management.js:31826-31834)。
+// ベストバウトの追記文は元コードで「。」の直後に続く三項演算子だったため、
+// 本文を基部+独立した追記文の2テーブルに分割する(PPV_SUMMIT_HPNOTE_TEMPLATESと同法)。
+const CROSS_WAR_RESULT_TEXT = {
+  headline: '⚔ 対抗戦 vs {opponent} — {playerWins}勝{aiWins}敗で{result}',
+  bodyBase: '{stamp}。{opponent}との対抗戦が行われ、{playerWins}勝{aiWins}敗で{result}。',
+  bestMatchSuffix: 'ベストバウトは{player} vs {ai}（試合評価{mq}）。',
+};
+
+// i18n Stage A P3a-2: 小規模連結4族のうちAI怪我引退記事(management.js:31955-31970)。
+// 見出しはinjuryType(careerEnding/それ以外)の2分岐、本文はさらにisAce(careerEnding側)
+// /titleReigns>0(それ以外側)の追記文分岐を持つため、type別に見出し1+本文2の入れ子。
+const AI_INJURY_RETIREMENT_TEMPLATES = {
+  careerEnding: {
+    headline: '{org}の{name}（{age}歳）、壊滅的な怪我で緊急引退——リング上で悲劇',
+    bodyAce: '{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。エース級の突然の退場は団体に激震を走らせた。',
+    bodyNotAce: '{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。リング上での悲劇に関係者は言葉を失った。',
+  },
+  default: {
+    headline: '{org}の{name}（{age}歳）、度重なる怪我で引退——{seasons}シーズンの現役生活に幕',
+    bodyHasReigns: '{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。通算{reigns}度の戴冠を誇る。',
+    bodyNoReigns: '{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。',
+  },
+};
+
+// i18n Stage A P3a-2: 小規模連結4族のうちAI契約退団記事(management.js:31988-32003)。
+// destination(transfer/fa/dormant/それ以外)の4分岐は元コードが既に相互排他な
+// if/elseif/elseチェーンだったため、テーブル移設のみ(PPV_SUMMIT_HEADLINE_TEMPLATESと同法)。
+const AI_CONTRACT_DEPARTURE_TEMPLATES = {
+  transfer: {
+    headline: '{org}の{name}が契約満了——{destOrg}に移籍',
+    body: '{org}の{name}（{age}歳）が新天地を求めて{destOrg}に移籍。',
+  },
+  fa: {
+    headline: '{org}の{name}が退団、フリーエージェントに',
+    body: '{org}の{name}（{age}歳）が退団しフリーエージェントとなった。',
+  },
+  dormant: {
+    headline: '{org}の{name}が退団、市場から姿を消す',
+    body: '{org}の{name}（{age}歳）が退団したが、フリーエージェント枠満杯のため市場名簿には載らなかった。',
+  },
+  default: {
+    headline: '{org}の{name}が現役引退を決断',
+    body: '{org}の{name}（{age}歳）が現役引退。リングに別れを告げた。',
+  },
+};
+
+// i18n Stage A P3a-2: 自団体新聞のサブヘッドライン(app.js:9803-9811・監査3-3)。
+// 3分岐(引き分け/他に高MQあり/通常)×データ差し込みを3テンプレへ展開。
+const NEWSPAPER_SUB_TEMPLATES = {
+  draw: '{showName}・{venue}。観客{attendance}人、{turns}ターンの攻防は決着を見ず。全{totalMatches}試合の平均試合評価{avgMQ}',
+  otherHighMQ: '{venue}大会、観客{attendance}人。全{totalMatches}試合平均試合評価{avgMQ}——好カード続出の{showName}',
+  default: '{showName}・{venue}。観客{attendance}人。メイン試合評価{mq}、全{totalMatches}試合平均試合評価{avgMQ}',
+};
+
 // task-77 §5-D: ドラフト自団体1面(リード+注目選手1〜2名+締め)。確定版・一字一句変更不可。
 // featured は assessedTier(superElite/elite/promising)ごとのバリアント。raw/material は言及しない
 const DRAFT_PLAYER_RESULT_PARTS = {

@@ -30725,24 +30725,32 @@ function _buildPpvSummitStory(sr, season, week, P) {
   const isRematch = hasHistory && ph.matches >= 1;
   const isLongRivalry = hasHistory && ph.matches >= 3;
 
-  let headline;
+  // i18n Stage A P3a-2: 見出しはPPV_SUMMIT_HEADLINE_TEMPLATES(data.js)のテーブル移設
+  // (監査3-4)。分岐は元コードのif/elseifチェーンと1:1・追加の組み合わせ拡張はしない。
+  let headlineKey;
   if (isLongRivalry && isMasterpiece) {
-    headline = `🏆 因縁の頂上決戦 — ${winnerName}、${ph.matches + 1}度目の対戦で${loserName}を下す`;
+    headlineKey = 'longRivalryMasterpiece';
   } else if (isCloseFight && isMasterpiece) {
-    headline = `🏆 ${sr.playerName} vs ${sr.aiName} 死闘の末 — ${winnerName}が栄冠`;
+    headlineKey = 'closeMasterpiece';
   } else if (isMasterpiece) {
-    headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 歴史に刻まれる頂上決戦、${winnerName}に軍配`;
+    headlineKey = 'masterpiece';
   } else if (isOverwhelm) {
-    headline = winnerOrgName
-      ? `🏆 ${winnerName}、${loserName}を完封 — ${winnerOrgName}が頂点に立つ`
-      : `🏆 ${winnerName}、${loserName}を完封 — 頂点に立つ`;
+    headlineKey = winnerOrgName ? 'overwhelmWithOrg' : 'overwhelmNoOrg';
   } else if (isCloseFight) {
-    headline = `🏆 ${sr.playerName} vs ${sr.aiName} — 接戦を制し${winnerName}が勝利`;
+    headlineKey = 'close';
   } else if (sr.playerInvolved && !sr.won) {
-    headline = `🏆 頂上決戦 — ${sr.aiName}、${sr.playerName}を下し頂点へ`;
+    headlineKey = 'aiWon';
   } else {
-    headline = `🏆 頂上決戦 ${sr.playerName} vs ${sr.aiName} — ${winnerName}が制す`;
+    headlineKey = 'default';
   }
+  const headline = fillTemplateVars(PPV_SUMMIT_HEADLINE_TEMPLATES[headlineKey], {
+    winner: winnerName,
+    loser: loserName,
+    rematchNum: hasHistory ? (ph.matches + 1) : '',
+    player: sr.playerName,
+    ai: sr.aiName,
+    winnerOrg: winnerOrgName,
+  });
 
   const bodyParts = [];
 
@@ -30775,17 +30783,30 @@ function _buildPpvSummitStory(sr, season, week, P) {
   const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && sr.finMove)
     ? Engine.formatFinish(sr.finType, sr.finMove, false)
     : (sr.finMove ? `${sr.finMove}` : (sr.finType || '激闘決着'));
-  let matchPart = '';
-  if (sr.turns) matchPart += `${sr.turns}ターンに及ぶ`;
-  if (isCloseFight) matchPart += '死闘の末、';
-  else if (isOverwhelm) matchPart += '一方的な展開で、';
-  else matchPart += '攻防の末、';
-  if (phaseLabel) matchPart += `${phaseLabel}に`;
-  matchPart += `${winnerName}が${finishStr}で${loserName}を下した。`;
-  if (isCloseFight && sr.winnerHpFinal < 15) {
-    matchPart += `HP残り僅か${Math.round(sr.winnerHpFinal)}での辛勝だった。`;
-  } else if (isOverwhelm) {
-    matchPart += `${winnerName}はHPを${Math.round(sr.winnerHpFinal)}残しての圧勝。`;
+  // i18n Stage A P3a-2: PPV_SUMMIT_MATCHPART_TEMPLATES(data.js)から完全文を選ぶ
+  // (監査3-1・最優先)。ターン数有無×決着タイプ3種×フェーズラベル有無の全12通り。
+  const fightKey = isCloseFight ? 'close' : (isOverwhelm ? 'overwhelm' : 'attrition');
+  let turnsPhaseKey;
+  if (sr.turns && phaseLabel) turnsPhaseKey = 'turnsPhase';
+  else if (sr.turns && !phaseLabel) turnsPhaseKey = 'turnsNoPhase';
+  else if (!sr.turns && phaseLabel) turnsPhaseKey = 'noTurnsPhase';
+  else turnsPhaseKey = 'noTurnsNoPhase';
+  let matchPart = fillTemplateVars(PPV_SUMMIT_MATCHPART_TEMPLATES[fightKey][turnsPhaseKey], {
+    turns: sr.turns,
+    phase: phaseLabel,
+    winner: winnerName,
+    finish: finishStr,
+    loser: loserName,
+  });
+  // HP補足は「。」境界の直後に続く独立文(PPV_SUMMIT_HPNOTE_TEMPLATES)。
+  let hpNoteKey = null;
+  if (isCloseFight && sr.winnerHpFinal < 15) hpNoteKey = 'closeLowHp';
+  else if (isOverwhelm) hpNoteKey = 'overwhelm';
+  if (hpNoteKey) {
+    matchPart += fillTemplateVars(PPV_SUMMIT_HPNOTE_TEMPLATES[hpNoteKey], {
+      hp: Math.round(sr.winnerHpFinal),
+      winner: winnerName,
+    });
   }
   bodyParts.push(matchPart);
 
@@ -31773,14 +31794,12 @@ Engine.newspaper = {
     // === 業界底上げ記事（発動シーズンの最初の2週のみ）===
     if (state.leagueElevated && state.endingClearedSeason != null &&
         state.season === state.endingClearedSeason + 1 && state.week <= 2) {
+      // i18n Stage A P3a-2: LEAGUE_ELEVATION_TEXT(data.js・監査3-5「同法」)。
       stories.push({
         type: 'leagueElevation',
         priority: P.leagueElevation,
-        headline: '業界再編！ライバル団体が大幅強化',
-        body: '業界1位の座を奪取した「' + (state.orgName || '団体') + '」の快挙に触発され、' +
-              'ライバル団体が選手強化策とコーチ招聘に乗り出した。' +
-              'A級・B級団体が大型補強に動き、もはや安泰の時代は終わった。' +
-              '真の群雄割拠が始まる——。',
+        headline: LEAGUE_ELEVATION_TEXT.headline,
+        body: fillTemplateVars(LEAGUE_ELEVATION_TEXT.body, { orgName: state.orgName || '団体' }),
         characterId: null,
       });
     }
@@ -31823,11 +31842,17 @@ Engine.newspaper = {
       const resultLabel = wr.won ? '勝ち越し' : wr.draw ? '決着つかず' : '敗北';
       const bestMatch = wr.matches.reduce((best, m) => m.mq > (best?.mq || 0) ? m : best, null);
       const stamp = `第${state.season}年度・第${state.week}週 対抗戦`;
+      // i18n Stage A P3a-2: CROSS_WAR_RESULT_TEXT(data.js・監査3-5「同法」)。
+      // ベストバウト追記文は「。」境界の直後に続く独立文なので基部+追記の2段合成。
+      const warVars = { opponent: wr.opponentName, playerWins: wr.playerWins, aiWins: wr.aiWins, result: resultLabel };
+      const bestMatchText = bestMatch ? fillTemplateVars(CROSS_WAR_RESULT_TEXT.bestMatchSuffix, {
+        player: bestMatch.playerName, ai: bestMatch.aiName, mq: bestMatch.mq,
+      }) : '';
       stories.push({
         type: 'crossWarResult',
         priority: P.crossWarResult,
-        headline: `⚔ 対抗戦 vs ${wr.opponentName} — ${wr.playerWins}勝${wr.aiWins}敗で${resultLabel}`,
-        body: `${stamp}。${wr.opponentName}との対抗戦が行われ、${wr.playerWins}勝${wr.aiWins}敗で${resultLabel}。${bestMatch ? `ベストバウトは${bestMatch.playerName} vs ${bestMatch.aiName}（試合評価${bestMatch.mq}）。` : ''}`,
+        headline: fillTemplateVars(CROSS_WAR_RESULT_TEXT.headline, warVars),
+        body: fillTemplateVars(CROSS_WAR_RESULT_TEXT.bodyBase, { ...warVars, stamp }) + bestMatchText,
         characterId: bestMatch ? (bestMatch.playerWon ? bestMatch.playerId : bestMatch.aiId) : null,
         warData: wr,
         situation: stamp,
@@ -31866,21 +31891,36 @@ Engine.newspaper = {
           ? Engine.formatFinish(uc.finType, uc.finMove, false)
           : (uc.finMove || uc.finType || '激闘決着');
         const tone = uc.mq >= 80 ? '名勝負' : uc.mq >= 65 ? '好勝負' : uc.mq >= 50 ? '熱戦' : (uc.mq <= 30 ? '一方的な展開' : '見応えある一戦');
-        // 所属が解決できない場合(理論上ほぼ発生しない)は「他団体」で埋めず、
-        // 所属を示す語(「の」・丸括弧)ごと省いた文型に切り替える。
-        const winnerOrgOf = uc.winnerOrgName ? `${uc.winnerOrgName}の` : '';
-        const winnerOrgParen = uc.winnerOrgName ? `（${uc.winnerOrgName}）` : '';
-        const loserOrgParen = uc.loserOrgName ? `（${uc.loserOrgName}）` : '';
-        let headline;
-        if (uc.isTitleMatch) {
-          headline = `🏆 PPV — ${uc.winnerOrgName}${uc.winnerName}、${uc.loserOrgName}${uc.loserName}を下しタイトル戦制す`;
-        } else if (uc.mq >= 75) {
-          headline = `PPV ${tone} — ${uc.winnerOrgName}${uc.winnerName}が${uc.loserOrgName}${uc.loserName}を撃破（試合評価${uc.mq}）`;
-        } else {
-          headline = `${winnerOrgOf}${uc.winnerName}、PPVで${uc.loserOrgName}${uc.loserName}を下す`;
-        }
-        const turnsPart = uc.turns ? `${uc.turns}ターンに及ぶ${tone}の末、` : `${tone}の末、`;
-        const body = `${stamp}。${turnsPart}${uc.winnerName}${winnerOrgParen}が${finishStr}で${uc.loserName}${loserOrgParen}から3カウントを奪取。試合評価${uc.mq}の${tone}となった。`;
+        // i18n Stage A P3a-2: PPV_UNDERCARD_HEADLINE_TEMPLATES/PPV_UNDERCARD_BODY_TEMPLATES
+        // (data.js・監査3-2)。所属の有無は元コードの分岐に合わせてテンプレを分ける
+        // (見出しはisTitleMatch/highMqの2分岐が元々所属名を無条件連結・elseのみ「の」の
+        // 有無で2変種。本文はターン数有無×勝者所属有無×敗者所属有無の8通り)。
+        let headlineKey;
+        if (uc.isTitleMatch) headlineKey = 'title';
+        else if (uc.mq >= 75) headlineKey = 'highMq';
+        else headlineKey = uc.winnerOrgName ? 'elseWithOrg' : 'elseNoOrg';
+        const headline = fillTemplateVars(PPV_UNDERCARD_HEADLINE_TEMPLATES[headlineKey], {
+          winnerOrg: uc.winnerOrgName,
+          winner: uc.winnerName,
+          loserOrg: uc.loserOrgName,
+          loser: uc.loserName,
+          mq: uc.mq,
+          tone,
+        });
+        const bodyKey = (uc.turns ? 'turns' : 'noTurns') + '_'
+          + (uc.winnerOrgName ? 'wOrg' : 'noOrg') + '_'
+          + (uc.loserOrgName ? 'lOrg' : 'noOrg');
+        const body = fillTemplateVars(PPV_UNDERCARD_BODY_TEMPLATES[bodyKey], {
+          stamp,
+          turns: uc.turns,
+          tone,
+          winner: uc.winnerName,
+          winnerOrg: uc.winnerOrgName,
+          finish: finishStr,
+          loser: uc.loserName,
+          loserOrg: uc.loserOrgName,
+          mq: uc.mq,
+        });
         stories.push({
           type: uc.isTitleMatch ? 'ppvUndercardTitle' : 'ppvUndercard',
           priority: (uc.isTitleMatch ? P.ppvUndercardTitle : P.ppvUndercard) + Math.min(20, Math.floor(uc.mq / 5)),
@@ -31953,13 +31993,17 @@ Engine.newspaper = {
         if (aiData._newsInjuryRetirement) {
           aiData._newsInjuryRetirement.forEach(ev => {
             const isAce = ev.ovr >= 75;
+            // i18n Stage A P3a-2: AI_INJURY_RETIREMENT_TEMPLATES(data.js・監査3-5「同法」)。
+            const injVars = { org: ev.orgName, name: ev.fighterName, age: ev.age, seasons: ev.careerSeasons, reigns: ev.titleReigns };
             let headline, body;
             if (ev.injuryType === 'careerEnding') {
-              headline = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）、壊滅的な怪我で緊急引退——リング上で悲劇`;
-              body = `${ev.orgName}の${ev.fighterName}が試合中の壊滅的な怪我により緊急引退を発表。${ev.careerSeasons}シーズンのキャリアが予期せぬ形で幕を閉じた。${isAce ? 'エース級の突然の退場は団体に激震を走らせた。' : 'リング上での悲劇に関係者は言葉を失った。'}`;
+              const T = AI_INJURY_RETIREMENT_TEMPLATES.careerEnding;
+              headline = fillTemplateVars(T.headline, injVars);
+              body = fillTemplateVars(isAce ? T.bodyAce : T.bodyNotAce, injVars);
             } else {
-              headline = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）、度重なる怪我で引退——${ev.careerSeasons}シーズンの現役生活に幕`;
-              body = `${ev.orgName}の${ev.fighterName}が蓄積されたダメージにより引退を決断。${ev.careerSeasons}シーズンにわたる現役生活にピリオドを打った。${ev.titleReigns > 0 ? `通算${ev.titleReigns}度の戴冠を誇る。` : ''}`;
+              const T = AI_INJURY_RETIREMENT_TEMPLATES.default;
+              headline = fillTemplateVars(T.headline, injVars);
+              body = fillTemplateVars(ev.titleReigns > 0 ? T.bodyHasReigns : T.bodyNoReigns, injVars);
             }
             stories.push({
               type: 'aiInjuryRetirement',
@@ -31987,20 +32031,16 @@ Engine.newspaper = {
           } else {
             deps.forEach(ev => {
               const isAce = ev.ovr >= 75;
-              let headline, body;
-              if (ev.destination === 'transfer') {
-                headline = `${ev.orgName}の${ev.fighterName}が契約満了——${ev.destOrgName}に移籍`;
-                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が新天地を求めて${ev.destOrgName}に移籍。`;
-              } else if (ev.destination === 'fa') {
-                headline = `${ev.orgName}の${ev.fighterName}が退団、フリーエージェントに`;
-                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が退団しフリーエージェントとなった。`;
-              } else if (ev.destination === 'dormant') {
-                headline = `${ev.orgName}の${ev.fighterName}が退団、市場から姿を消す`;
-                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が退団したが、フリーエージェント枠満杯のため市場名簿には載らなかった。`;
-              } else {
-                headline = `${ev.orgName}の${ev.fighterName}が現役引退を決断`;
-                body = `${ev.orgName}の${ev.fighterName}（${ev.age}歳）が現役引退。リングに別れを告げた。`;
-              }
+              // i18n Stage A P3a-2: AI_CONTRACT_DEPARTURE_TEMPLATES(data.js・監査3-5「同法」)。
+              // destination別の分岐は元コードのif/elseifチェーンと1:1(テーブル移設のみ)。
+              const depKey = ev.destination === 'transfer' ? 'transfer'
+                : ev.destination === 'fa' ? 'fa'
+                : ev.destination === 'dormant' ? 'dormant'
+                : 'default';
+              const T = AI_CONTRACT_DEPARTURE_TEMPLATES[depKey];
+              const depVars = { org: ev.orgName, name: ev.fighterName, age: ev.age, destOrg: ev.destOrgName };
+              const headline = fillTemplateVars(T.headline, depVars);
+              const body = fillTemplateVars(T.body, depVars);
               stories.push({
                 type: 'aiContractDeparture',
                 priority: P.aiContractDeparture + (isAce ? 20 : 0),

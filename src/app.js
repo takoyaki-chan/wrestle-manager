@@ -9801,14 +9801,20 @@ const App = {
     const headline = pick(HL[cat] || HL.normal)(d);
 
     // サブヘッドライン：常にカードと数値情報
-    let subheadline;
-    if (d.isDraw) {
-      subheadline = `${d.showName}・${d.venue.name}。観客${d.attendance.toLocaleString()}人、${d.turns}ターンの攻防は決着を見ず。全${d.totalMatches}試合の平均試合評価${d.avgMQ}`;
-    } else if (d.otherHighMQ.length > 0) {
-      subheadline = `${d.venue.name}大会、観客${d.attendance.toLocaleString()}人。全${d.totalMatches}試合平均試合評価${d.avgMQ}——好カード続出の${d.showName}`;
-    } else {
-      subheadline = `${d.showName}・${d.venue.name}。観客${d.attendance.toLocaleString()}人。メイン試合評価${d.mq}、全${d.totalMatches}試合平均試合評価${d.avgMQ}`;
-    }
+    // i18n Stage A P3a-2: NEWSPAPER_SUB_TEMPLATES(data.js・監査3-3)。3分岐→3テンプレ。
+    let subKey;
+    if (d.isDraw) subKey = 'draw';
+    else if (d.otherHighMQ.length > 0) subKey = 'otherHighMQ';
+    else subKey = 'default';
+    const subheadline = fillTemplateVars(NEWSPAPER_SUB_TEMPLATES[subKey], {
+      showName: d.showName,
+      venue: d.venue.name,
+      attendance: d.attendance.toLocaleString(),
+      turns: d.turns,
+      totalMatches: d.totalMatches,
+      avgMQ: d.avgMQ,
+      mq: d.mq,
+    });
 
     // 記事本文
     let articleCat = cat;
