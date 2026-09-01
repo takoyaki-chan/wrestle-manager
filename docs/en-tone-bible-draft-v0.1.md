@@ -87,6 +87,18 @@
 | 私は……まだまだ強くなれる | I can become... stronger still. |
 | …この程度か。……話にならない。 | ...Is this all you have. ...Then there is nothing more to say. |
 
+**強気帯(大河内)の追加道具**: 「〜してくれないかしら」= **"Do try to..."**(上からの丁寧の英語定番記号)/
+「〜でしょうね」= 偽の同情 "I am afraid..." / 「退屈」= understatement("tedious")。
+boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑える** — 強気は音量でなく視線の高さで出す。
+「ふふ」は "My..." 等に機能で置換("Fufu"の音写は翻訳調として禁止)。
+「私/わたくし」の格差は英語では消える。一人称 "one" での代替は英国コスプレのため非推奨(鉄則§1-10と同根)。
+
+| JA(大河内紗代子・お嬢様×強気) | EN |
+|---|---|
+| …まったく…身の程知らずもいいところね | ...Honestly... you truly do not know your place, do you. |
+| 頂点に立つ者の重み…あなたには一生わからないでしょうね。 | The weight of standing at the very top... I am afraid you will never know it. |
+| ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | My... what a tedious match. Do try to entertain me a little more. |
+
 ### 2-3. クール(cool)
 
 - **レシピ**: 文断片・一語文・言い切り。修飾語と理由説明を削り切る。英語が最も得意とする属性
