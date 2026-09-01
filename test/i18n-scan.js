@@ -101,61 +101,79 @@ const FILE_CATEGORY = {
   'dev-tools.js': '開発用(対象外)', 'dev-event-catalog.js': '開発用(対象外)',
 };
 
-const srcDir = process.argv[2] || 'src';
-const files = fs.readdirSync(srcDir).filter(f => /\.(js|html)$/.test(f));
-const perFile = [];
-const categories = {};
-function addCat(cat, a) {
-  if (!categories[cat]) categories[cat] = { jaCount: 0, jaChars: 0 };
-  categories[cat].jaCount += a.jaCount; categories[cat].jaChars += a.jaChars;
-}
+// i18n-ratchet.js(test/i18n-ratchet.js)から流用するための計測本体。
+// CLI出力(console.log)を一切含まない純粋な集計関数にしてあるので、
+// このファイルを require() すれば計測ロジックを再実装せずに使い回せる。
+function scanDir(srcDir) {
+  const files = fs.readdirSync(srcDir).filter(f => /\.(js|html)$/.test(f));
+  const perFile = [];
+  const categories = {};
+  function addCat(cat, a) {
+    if (!categories[cat]) categories[cat] = { jaCount: 0, jaChars: 0 };
+    categories[cat].jaCount += a.jaCount; categories[cat].jaChars += a.jaChars;
+  }
 
-for (const f of files) {
-  const src = fs.readFileSync(path.join(srcDir, f), 'utf8');
-  let a, markup = 0;
-  if (f.endsWith('.html')) {
-    const h = scanHTML(src);
-    a = analyze(h.strings); markup = h.markupJaChars;
-    a.jaChars += markup; a.jaCount += markup > 0 ? 1 : 0;
-  } else if (f === 'data.js') {
-    // セクション単位でカテゴリ集計
-    const lines = src.split('\n');
-    const secs = [];
-    for (let li = 0; li < lines.length; li++) {
-      const m = lines[li].match(/^(?:const|let|var)\s+([A-Za-z0-9_$]+)\s*=/);
-      if (m) secs.push({ name: m[1], start: li });
-    }
-    secs.push({ name: '(EOF)', start: lines.length });
-    a = { jaCount: 0, jaChars: 0 };
-    for (let si = 0; si < secs.length - 1; si++) {
-      const chunk = lines.slice(secs[si].start, secs[si + 1].start).join('\n');
-      const r = chunkScan(chunk);
-      const sa = analyze(r.strings);
-      a.jaCount += sa.jaCount; a.jaChars += sa.jaChars;
-      addCat('data.js:' + dataSectionCategory(secs[si].name), sa);
+  for (const f of files) {
+    const src = fs.readFileSync(path.join(srcDir, f), 'utf8');
+    let a, markup = 0;
+    if (f.endsWith('.html')) {
+      const h = scanHTML(src);
+      a = analyze(h.strings); markup = h.markupJaChars;
+      a.jaChars += markup; a.jaCount += markup > 0 ? 1 : 0;
+    } else if (f === 'data.js') {
+      // セクション単位でカテゴリ集計
+      const lines = src.split('\n');
+      const secs = [];
+      for (let li = 0; li < lines.length; li++) {
+        const m = lines[li].match(/^(?:const|let|var)\s+([A-Za-z0-9_$]+)\s*=/);
+        if (m) secs.push({ name: m[1], start: li });
+      }
+      secs.push({ name: '(EOF)', start: lines.length });
+      a = { jaCount: 0, jaChars: 0 };
+      for (let si = 0; si < secs.length - 1; si++) {
+        const chunk = lines.slice(secs[si].start, secs[si + 1].start).join('\n');
+        const r = chunkScan(chunk);
+        const sa = analyze(r.strings);
+        a.jaCount += sa.jaCount; a.jaChars += sa.jaChars;
+        addCat('data.js:' + dataSectionCategory(secs[si].name), sa);
+      }
+      perFile.push({ file: f, ...a });
+      continue;
+    } else {
+      const r = chunkScan(src);
+      a = analyze(r.strings);
     }
     perFile.push({ file: f, ...a });
-    continue;
-  } else {
-    const r = chunkScan(src);
-    a = analyze(r.strings);
+    addCat(FILE_CATEGORY[f] || '未分類:' + f, a);
   }
-  perFile.push({ file: f, ...a });
-  addCat(FILE_CATEGORY[f] || '未分類:' + f, a);
+
+  perFile.sort((x, y) => y.jaChars - x.jaChars);
+  return { perFile, categories };
 }
 
-perFile.sort((x, y) => y.jaChars - x.jaChars);
-console.log('=== ファイル別 (JA文字列本数 / JA文字数) ===');
-let tCount = 0, tChars = 0;
-for (const r of perFile) {
-  if (!r.jaCount) continue;
-  console.log(r.file.padEnd(28), String(r.jaCount).padStart(7), String(r.jaChars).padStart(9));
-  tCount += r.jaCount; tChars += r.jaChars;
-}
-console.log('TOTAL'.padEnd(28), String(tCount).padStart(7), String(tChars).padStart(9));
+function printReport(srcDir) {
+  const { perFile, categories } = scanDir(srcDir);
 
-console.log('\n=== カテゴリ別集計 (JA文字列本数 / JA文字数) ===');
-const cats = Object.entries(categories).sort((x, y) => y[1].jaChars - x[1].jaChars);
-for (const [name, v] of cats) {
-  console.log(name.padEnd(32), String(v.jaCount).padStart(7), String(v.jaChars).padStart(9));
+  console.log('=== ファイル別 (JA文字列本数 / JA文字数) ===');
+  let tCount = 0, tChars = 0;
+  for (const r of perFile) {
+    if (!r.jaCount) continue;
+    console.log(r.file.padEnd(28), String(r.jaCount).padStart(7), String(r.jaChars).padStart(9));
+    tCount += r.jaCount; tChars += r.jaChars;
+  }
+  console.log('TOTAL'.padEnd(28), String(tCount).padStart(7), String(tChars).padStart(9));
+
+  console.log('\n=== カテゴリ別集計 (JA文字列本数 / JA文字数) ===');
+  const cats = Object.entries(categories).sort((x, y) => y[1].jaChars - x[1].jaChars);
+  for (const [name, v] of cats) {
+    console.log(name.padEnd(32), String(v.jaCount).padStart(7), String(v.jaChars).padStart(9));
+  }
+}
+
+module.exports = { scanDir };
+
+// CLIとして直接実行された場合だけ従来どおりレポートを標準出力に書く
+// (require() されたときは何も出力しない)。
+if (require.main === module) {
+  printReport(process.argv[2] || 'src');
 }
