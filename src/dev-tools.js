@@ -381,7 +381,13 @@
     const checkpoints = checkpointKeys().map(key => { try { const s = Storage._parseRaw(localStorage.getItem(key)); return { key, label: s._saveName || key.slice(DEV_CHECKPOINT_PREFIX.length), phase: phaseLabel(s) }; } catch (_) { return null; } }).filter(Boolean);
     const presets = presetRows().map(([name, season, week]) => `<button data-dev-preset="${season}:${week}:${esc(name)}">${esc(name)}<small>S${season} W${week}</small></button>`).join('');
     const restores = checkpoints.length ? checkpoints.map(c => `<button data-dev-restore="${esc(c.key)}">${esc(c.label)}<small>${esc(c.phase)}</small></button>`).join('') : '<div class="wm-dev-empty">まだ開発用チェックポイントはありません。</div>';
-    panel.innerHTML = `<div class="wm-dev-backdrop" data-dev-close></div><section class="wm-dev-card" role="dialog" aria-modal="true" aria-label="開発者モード"><header><div><b>DEVELOPER MODE</b><span>通常オートセーブは保護されています</span></div><button data-dev-close aria-label="閉じる">×</button></header><p class="wm-dev-status">${esc(message || `${phaseLabel(G)} — すべての自動選択は既定値で処理します。`)}</p><div class="wm-dev-grid"><label>シーズン<input id="wmDevSeason" type="number" min="1" value="${G.season || 1}"></label><label>週<input id="wmDevWeek" type="number" min="1" max="48" value="${G.week || 1}"></label></div><button class="wm-dev-primary" data-dev-go>指定週まで高速進行して保存</button><div class="wm-dev-section"><b>大会プリセット</b><div class="wm-dev-buttons">${presets}</div></div><div class="wm-dev-section"><b>イベント即時発火</b><div class="wm-dev-buttons"><button data-dev-fire="forward">挑戦の直訴（自団体→他団体）<small>条件を無視して即表示</small></button><button data-dev-fire="inverse">挑戦の直訴（他団体→自団体）<small>条件を無視して即表示</small></button></div></div><div class="wm-dev-section"><b>検証用チェックポイント</b><div class="wm-dev-buttons"><button data-dev-base>開発開始地点へ戻す</button><button data-dev-save>現在地を保存</button><button data-dev-clear>保存を全部消す<small>保存領域が足りないとき</small></button>${restores}</div></div><p class="wm-dev-note">開く: Ctrl + Shift + D ／ 高速進行中は興行・選択イベントを既定値で自動処理します。通常のオートセーブと手動セーブには書き込みません。</p></section>`;
+    // i18n Stage A P1: プレイヤー向け言語設定UIはまだ無い(D9)。開発者モードにだけ
+    // 検証用の切替を置く。日本語版の見た目は既定'ja'のままなら一切変わらない。
+    const currentLang = (typeof WM_I18N !== 'undefined') ? WM_I18N.lang : 'ja';
+    const langButtons = [['ja', '日本語'], ['en', 'English'], ['pseudo', '擬似ロケール']]
+      .map(([code, label]) => `<button data-dev-lang="${code}"${code === currentLang ? ' style="border-color:#f2c24a;color:#fff"' : ''}>${esc(label)}${code === currentLang ? '<small>現在の表示</small>' : ''}</button>`)
+      .join('');
+    panel.innerHTML = `<div class="wm-dev-backdrop" data-dev-close></div><section class="wm-dev-card" role="dialog" aria-modal="true" aria-label="開発者モード"><header><div><b>DEVELOPER MODE</b><span>通常オートセーブは保護されています</span></div><button data-dev-close aria-label="閉じる">×</button></header><p class="wm-dev-status">${esc(message || `${phaseLabel(G)} — すべての自動選択は既定値で処理します。`)}</p><div class="wm-dev-grid"><label>シーズン<input id="wmDevSeason" type="number" min="1" value="${G.season || 1}"></label><label>週<input id="wmDevWeek" type="number" min="1" max="48" value="${G.week || 1}"></label></div><button class="wm-dev-primary" data-dev-go>指定週まで高速進行して保存</button><div class="wm-dev-section"><b>大会プリセット</b><div class="wm-dev-buttons">${presets}</div></div><div class="wm-dev-section"><b>イベント即時発火</b><div class="wm-dev-buttons"><button data-dev-fire="forward">挑戦の直訴（自団体→他団体）<small>条件を無視して即表示</small></button><button data-dev-fire="inverse">挑戦の直訴（他団体→自団体）<small>条件を無視して即表示</small></button></div></div><div class="wm-dev-section"><b>言語(i18n検証用)</b><div class="wm-dev-buttons">${langButtons}</div></div><div class="wm-dev-section"><b>検証用チェックポイント</b><div class="wm-dev-buttons"><button data-dev-base>開発開始地点へ戻す</button><button data-dev-save>現在地を保存</button><button data-dev-clear>保存を全部消す<small>保存領域が足りないとき</small></button>${restores}</div></div><p class="wm-dev-note">開く: Ctrl + Shift + D ／ 高速進行中は興行・選択イベントを既定値で自動処理します。通常のオートセーブと手動セーブには書き込みません。</p></section>`;
     const card = panel.querySelector('.wm-dev-card');
     if (card) card.insertAdjacentHTML('beforeend', explorerHtml());
     panel.querySelectorAll('[data-dev-close]').forEach(el => el.addEventListener('click', close));
@@ -391,6 +397,14 @@
     panel.querySelector('[data-dev-save]').addEventListener('click', () => { try { renderPanel(`「${saveCheckpoint(phaseLabel(G))}」を保存しました。`); } catch (e) { renderPanel(e.message); } });
     panel.querySelector('[data-dev-clear]').addEventListener('click', () => { const n = pruneCheckpoints(0); renderPanel(`チェックポイントを${n}件消しました。開発開始地点と開発用オートセーブは残しています。`); });
     panel.querySelector('[data-dev-base]').addEventListener('click', () => { try { restore(localStorage.getItem(DEV_SESSION_BASE_KEY)); renderPanel('開発開始地点へ戻しました。'); } catch (e) { renderPanel(e.message); } });
+    panel.querySelectorAll('[data-dev-lang]').forEach(el => el.addEventListener('click', () => {
+      try {
+        const code = el.dataset.devLang;
+        WM_I18N.setLang(code);
+        if (typeof refreshAll === 'function') refreshAll();
+        renderPanel(`表示言語を切り替えました: ${code}${code !== 'ja' ? '（Stage A時点は辞書が空のため原文/擬似表記のまま出ます）' : ''}`);
+      } catch (e) { renderPanel(e.message); }
+    }));
     panel.querySelectorAll('[data-dev-restore]').forEach(el => el.addEventListener('click', () => { try { restore(localStorage.getItem(el.dataset.devRestore)); renderPanel('チェックポイントを復元しました。'); } catch (e) { renderPanel(e.message); } }));
     const eventFilterEl = panel.querySelector('#wmDevEventFilter');
     if (eventFilterEl) eventFilterEl.addEventListener('change', () => { eventFilter = eventFilterEl.value; renderPanel(); });

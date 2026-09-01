@@ -1468,7 +1468,7 @@ function renderWeekScreen() {
   else if (G.weekPhase === 'weekSummary') {
     // v2.0-C3: Brief weekly summary — non-month-end weeks stop here
     const dateStr = G.offSeason ? `オフシーズン ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
-    document.getElementById('weekTitle').textContent = '完了';
+    document.getElementById('weekTitle').textContent = WM_I18N.t('完了');
     // 直近4週バッファを集計（_tryAutoAdvance で当週分が push 済み）
     const _wsCycleNum = Math.ceil(G.week / 4);
     const _wsMonthStart = (_wsCycleNum - 1) * 4 + 1;
@@ -1608,7 +1608,7 @@ function renderWeekScreen() {
   }
   // ── C-4: TRANSFER WINDOW UI ──
   else if (G.weekPhase === 'transfer') {
-    document.getElementById('weekTitle').textContent = '🔄 移籍ウィンドウ';
+    document.getElementById('weekTitle').textContent = WM_I18N.t('🔄 移籍ウィンドウ');
     const pending = G.pendingPoach || [];
     if (pending.length > 0) {
       html += '<h3 style="color:#e17055;margin-bottom:12px">⚠️ 引き抜きオファー</h3>';
@@ -1660,7 +1660,7 @@ function renderWeekScreen() {
       html += '<h3 style="color:var(--text-sub)">イベントデータなし</h3>';
       html += '<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">スキップ →</button></div>';
     } else if (ev.type === 'war') {
-      document.getElementById('weekTitle').textContent = '⚔ 対抗戦';
+      document.getElementById('weekTitle').textContent = WM_I18N.t('⚔ 対抗戦');
       html += `<div style="background:linear-gradient(135deg,rgba(196,30,58,0.15),rgba(231,76,60,0.1));border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
         <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦の申し入れ</h3>
         <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.opponentName}から挑戦状が届いています</p>
@@ -1676,7 +1676,7 @@ function renderWeekScreen() {
   // ── PPV ENTRY PHASE ──
   else if (G.weekPhase === 'ppvEntry') {
     const ppvName = G.ppvName || 'GRAND FINAL';
-    document.getElementById('weekTitle').textContent = '🏟️ PPV GRAND FINAL';
+    document.getElementById('weekTitle').textContent = WM_I18N.t('🏟️ PPV GRAND FINAL');
     const rankings = G.rankings || [];
     const pRank = Engine.ranking.getPlayerRank(rankings);
     const maxSlots = Engine.ppv.getSlotCount(pRank);
@@ -1743,7 +1743,7 @@ function renderWeekScreen() {
   }
   // ── PPV SHOW DAY PHASE ──
   else if (G.weekPhase === 'ppvShow') {
-    document.getElementById('weekTitle').textContent = '🏟️ PPV GRAND FINAL';
+    document.getElementById('weekTitle').textContent = WM_I18N.t('🏟️ PPV GRAND FINAL');
     html += `<div style="text-align:center;padding:24px">
       <div style="color:var(--gold);font-size:18px;margin-bottom:16px">PPV GRAND FINAL「${G.ppvName || 'GRAND FINAL'}」開催日！</div>
       <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">🏟️ PPV カードを表示</button>
@@ -1751,7 +1751,7 @@ function renderWeekScreen() {
   }
   // ── PPV TV PHASE ──
   else if (G.weekPhase === 'ppvTV') {
-    document.getElementById('weekTitle').textContent = '📺 PPV テレビ中継';
+    document.getElementById('weekTitle').textContent = WM_I18N.t('📺 PPV テレビ中継');
     html += `<div style="text-align:center;padding:24px">
       <div style="color:var(--text-sub);font-size:16px;margin-bottom:16px">📺 PPV GRAND FINAL テレビ中継中…</div>
       <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">📺 テレビ中継を見る</button>
@@ -6273,7 +6273,7 @@ function renderScoutEvent() {
   // draft-negotiation-spec: 交渉画面表示（セリ進行中）
   if (G._draftNegotiation) {
     const titleEl = document.getElementById('scoutEventTitle');
-    if (titleEl) titleEl.textContent = '⚖ ドラフト交渉';
+    if (titleEl) titleEl.textContent = WM_I18N.t('⚖ ドラフト交渉');
     // ダークテーマに切替
     if (screenEl) screenEl.classList.add('dn-dark-mode');
     if (panelEl) panelEl.classList.add('dn-dark-panel');
@@ -6292,7 +6292,7 @@ function renderScoutEvent() {
   if (G.weekPhase === 'scoutEvent' && !G._draftNegotiationStarted
       && (candidates.length === 0 || !G._draftInterests)) {
     const titleEl0 = document.getElementById('scoutEventTitle');
-    if (titleEl0) titleEl0.textContent = '⚖ ドラフト';
+    if (titleEl0) titleEl0.textContent = WM_I18N.t('⚖ ドラフト');
     el.innerHTML = `<div style="max-width:520px;margin:24px auto;text-align:center">
       <div style="font-size:14px;color:var(--text-main);margin-bottom:8px">今年のドラフトは行われませんでした。</div>
       <div style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-bottom:20px">
@@ -6306,7 +6306,7 @@ function renderScoutEvent() {
   // draft-negotiation-spec: ドラフト速報表示（_draftInterests がある場合）
   if (G._draftInterests && !G._draftNegotiationStarted) {
     const titleEl = document.getElementById('scoutEventTitle');
-    if (titleEl) titleEl.textContent = '📰 ドラフト速報';
+    if (titleEl) titleEl.textContent = WM_I18N.t('📰 ドラフト速報');
     el.innerHTML = _renderDraftCandidateList(candidates, {
       draftInterests: G._draftInterests,
       maxPicks: G.scoutMaxPicks || 4,

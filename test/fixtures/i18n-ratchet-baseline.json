@@ -1,0 +1,129 @@
+{
+  "generatedAt": "2026-09-01T22:59:41.044Z",
+  "files": {
+    "data.js": {
+      "jaCount": 16539,
+      "jaChars": 298284
+    },
+    "kuroda-text.js": {
+      "jaCount": 896,
+      "jaChars": 31257
+    },
+    "management.js": {
+      "jaCount": 2365,
+      "jaChars": 26430
+    },
+    "ui-common.js": {
+      "jaCount": 1674,
+      "jaChars": 16791
+    },
+    "ui-render.js": {
+      "jaCount": 1554,
+      "jaChars": 16606
+    },
+    "tenchosen-final-lines.js": {
+      "jaCount": 666,
+      "jaChars": 15434
+    },
+    "victory-lines.js": {
+      "jaCount": 760,
+      "jaChars": 14589
+    },
+    "coach-lines.js": {
+      "jaCount": 483,
+      "jaChars": 9816
+    },
+    "flag-dialogue.js": {
+      "jaCount": 449,
+      "jaChars": 8241
+    },
+    "app.js": {
+      "jaCount": 589,
+      "jaChars": 7560
+    },
+    "tag-battle-lines.js": {
+      "jaCount": 839,
+      "jaChars": 7482
+    },
+    "battle-engine-main.js": {
+      "jaCount": 545,
+      "jaChars": 5027
+    },
+    "index.html": {
+      "jaCount": 3,
+      "jaChars": 4939
+    },
+    "data-faction-dialogue.js": {
+      "jaCount": 317,
+      "jaChars": 4297
+    },
+    "factions.js": {
+      "jaCount": 366,
+      "jaChars": 2935
+    },
+    "dev-event-catalog.js": {
+      "jaCount": 187,
+      "jaChars": 1611
+    },
+    "battle-lines.js": {
+      "jaCount": 154,
+      "jaChars": 1220
+    },
+    "ppv-lines.js": {
+      "jaCount": 56,
+      "jaChars": 1206
+    },
+    "tag-battle-main.js": {
+      "jaCount": 102,
+      "jaChars": 997
+    },
+    "dev-tools.js": {
+      "jaCount": 51,
+      "jaChars": 938
+    },
+    "match-engine.js": {
+      "jaCount": 105,
+      "jaChars": 694
+    },
+    "draft-negotiation.js": {
+      "jaCount": 53,
+      "jaChars": 597
+    },
+    "relationships.js": {
+      "jaCount": 51,
+      "jaChars": 479
+    },
+    "flight-recorder.js": {
+      "jaCount": 13,
+      "jaChars": 140
+    },
+    "tag-battle.html": {
+      "jaCount": 1,
+      "jaChars": 14
+    },
+    "battle-engine.html": {
+      "jaCount": 1,
+      "jaChars": 13
+    },
+    "battle-anim.js": {
+      "jaCount": 0,
+      "jaChars": 0
+    },
+    "battle-replay-core.js": {
+      "jaCount": 0,
+      "jaChars": 0
+    },
+    "battle-sfx.js": {
+      "jaCount": 0,
+      "jaChars": 0
+    },
+    "i18n.js": {
+      "jaCount": 0,
+      "jaChars": 0
+    },
+    "lz-string.min.js": {
+      "jaCount": 0,
+      "jaChars": 0
+    }
+  }
+}
