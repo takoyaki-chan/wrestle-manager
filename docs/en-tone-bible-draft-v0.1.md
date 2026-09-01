@@ -49,6 +49,10 @@
    **短く訳せるならそれが正**。クール・寡黙帯はさらに短く
 10. **(英語固有)** 方言コスプレ禁止: 英国綴り・南部訛り・実況アナ調など**実在方言の記号を属性に貼らない**。
     声はregisterで作る(§2各論)。ALL CAPSの絶叫表記も禁止(安い)
+11. **(英語固有・2026-09-01裁定)** 疑問文には必ず疑問符を付ける(疑問形をピリオドで終える技巧は不採用)。
+    「……」の後に**新しい文**が始まるときは大文字で起こす("...Honestly... You truly...")。文中の溜めの継続は小文字のまま
+12. **(英語固有・2026-09-01裁定)** **試合後の評は過去形**。終わった試合への評価・相手評は past tense
+    ("You were stronger than I expected")。現在形は目の前の進行中にのみ使う
 
 ---
 
@@ -63,14 +67,14 @@
 
 | JA(高津小春・標準×強気) | EN |
 |---|---|
-| は？私が勝つのは当たり前よ？ | Huh? Of course I won. That's just how it works. |
+| は？私が勝つのは当たり前よ？ | Huh? Was there ever any doubt I'd win? |
 | 自信を無くす必要はないわよ。アンタは格上に負けたんだから | Don't beat yourself up. You lost to someone better — that's all. |
-| はぁ…はぁ…勝ったぁ | Hah... hah... I... I won... |
+| はぁ…はぁ…勝ったぁ | Haah... haah... I won. |
 
 | JA(宇田川里奈・標準×お気楽) | EN |
 |---|---|
 | やった～♡ 今日のカワイイ私、完全勝利じゃん♪ | Yesss ♡ Cute and undefeated today — obviously ♪ |
-| いい女は、リングでも手を抜かないの♡ | A good woman never phones it in — not even in the ring ♡ |
+| いい女は、リングでも手を抜かないの♡ | A hot girl never slacks off — not even in the ring ♡ |
 
 ### 2-2. お嬢様(ojousama)
 
@@ -78,14 +82,14 @@
   これが「ですわ」の英語版アクセント — 目立たないが全行に品格が乗る。
   Keisuke既裁定「語彙で品格を作り、装飾語尾はアクセント程度」と同じ思想:
   英国方言・"my dear"型の芝居がかった記号は使わない
-- **冷たさの型**: 疑問の形をした文をピリオドで終える("Is this all you have.")— 突き放しの英語的表現
+- ~~冷たさの型: 疑問文をピリオドで終える~~ → **不採用(2026-09-01 Keisuke裁定: 疑問形には疑問符を付ける)**。突き放しは語彙と間("...")で出す
 - **NG**: 英国綴り(favour等)、"I say" "darling"、短縮形(強い感情の行のみ例外可)
 
 | JA(富岡加奈子・お嬢様×ノーマル) | EN |
 |---|---|
 | 日々の努力は裏切らない | Daily practice does not betray you. |
 | 私は……まだまだ強くなれる | I can become... stronger still. |
-| …この程度か。……話にならない。 | ...Is this all you have. ...Then there is nothing more to say. |
+| …この程度か。……話にならない。 | ...Is this all you have? ...Then there is nothing more to say. |
 
 **強気帯(大河内)の追加道具**: 「〜してくれないかしら」= **"Do try to..."**(上からの丁寧の英語定番記号)/
 「〜でしょうね」= 偽の同情 "I am afraid..." / 「退屈」= understatement("tedious")。
@@ -104,9 +108,9 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
 
 | JA(大河内紗代子・お嬢様×強気) | EN |
 |---|---|
-| …まったく…身の程知らずもいいところね | ...Honestly... you truly do not know your place, do you. |
-| 頂点に立つ者の重み…あなたには一生わからないでしょうね。 | The weight of standing at the very top... I am afraid you will never know it. |
-| ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | My... what a tedious match. Do try to entertain me a little more. |
+| …まったく…身の程知らずもいいところね | ...Honestly... You truly did not know your place, did you. |
+| 頂点に立つ者の重み…あなたには一生わからないでしょうね。 | The weight of standing at the summit... I am afraid you will never know it. |
+| ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | My... what a tedious match. Do try to entertain me a little better. |
 
 ### 2-3. クール(cool)
 
@@ -140,7 +144,7 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
 
 | JA(川野辺菜穂子・丁寧×真面目) | EN |
 |---|---|
-| いい試合だった！ また戦おうね！ | That was a wonderful match! Let's do it again sometime! |
+| いい試合だった！ また戦おうね！ | That was a great match! Let's do it again sometime! |
 | ふぅ、なんとかなったぁ。 | Phew... I made it through somehow. |
 | 負け続きでも腐らなかった。…やっと報われた気がする！ | All those losses, and I never let myself quit. ...I think it finally paid off! |
 
@@ -154,7 +158,7 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
 |---|---|
 | ごめんね。まだまだ負けられないんだ… | Sorry. I'm not ready to start losing just yet... |
 | 頑張ったね。今回は私の勝ちだ。 | Good effort. This one's mine, though. |
-| …思ったよりも強かったよ | ...You're stronger than I expected. |
+| …思ったよりも強かったよ | ...You were stronger than I expected. |
 
 ### 2-7. 蠱惑(seductive)
 
@@ -166,7 +170,7 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
 |---|---|
 | …あら、もう終わり？もっと苦しむ顔が見たかったのに。 | ...Oh my. Over already? I was hoping to savor that face a while longer. |
 | 関節が軋む音…心地いいわ。 | That little creak in your joints... how soothing. |
-| 負けて無様な姿をさらして…　いい気味ね♪ | Sprawled out and sorry... it rather suits you ♪ |
+| 負けて無様な姿をさらして…　いい気味ね♪ | Beaten, sprawled out for everyone to see... it suits you ♪ |
 
 ---
 
