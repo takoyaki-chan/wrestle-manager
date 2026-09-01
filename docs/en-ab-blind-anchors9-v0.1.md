@@ -1,0 +1,80 @@
+# 英訳A/Bブラインド 第2弾 — アンカー9名・24本(キャラ別判定表)
+
+- 作成: 2026-09-01(Fable)。Keisuke依頼「大河内・高津・富岡を含む多めのキャラの表」
+- 題材: バイブル見本に使ったアンカー9名の固有台詞。**もう一方の筆には見本英訳を伏せたバイブルを渡して独立に翻訳させた**(レシピ・鉄則は共有)ため、公正な比較になっている
+- 著者はキャラブロックごとにA/Bを入れ替え(割当キーは判定後に開示)。**行ごとにA/B/引き分け**を判定欄へ
+- 「≒」= 両稿ほぼ同文(同じレシピからの自然な収束)。判定を飛ばしてよい
+
+## 高津小春(標準×強気)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 1 | は？私が勝つのは当たり前よ？ | Huh? Of course I won. That's just how it works. | Huh? Was there ever any doubt I'd win? | |
+| 2 ≒ | 自信を無くす必要はないわよ。アンタは格上に負けたんだから | Don't beat yourself up. You lost to someone better — that's all. | Hey, don't beat yourself up. You lost to someone above you, that's all. | |
+| 3 | はぁ…はぁ…勝ったぁ | Hah... hah... I... I won... | Haah... haah... I won. | |
+
+## 宇田川里奈(標準×お気楽)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 4 | いい女は、リングでも手を抜かないの♡ | A hot girl never slacks off — not even in the ring ♡ | A good woman never phones it in — not even in the ring ♡ | |
+
+## 富岡加奈子(お嬢様×ノーマル)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 5 | 日々の努力は裏切らない | The work I put in every day does not betray me. | Daily practice does not betray you. | |
+| 6 | 私は……まだまだ強くなれる | I... can still become stronger. Much stronger. | I can become... stronger still. | |
+| 7 | …この程度か。……話にならない。 | ...So this is your limit. ...There is nothing to discuss. | ...Is this all you have. ...Then there is nothing more to say. | |
+
+## 大河内紗代子(お嬢様×強気)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 8 ≒ | …まったく…身の程知らずもいいところね | ...Honestly... you truly do not know your place, do you. | ...Honestly... you truly did not know your place, did you. | |
+| 9 | 頂点に立つ者の重み…あなたには一生わからないでしょうね。 | The weight of standing at the very top... I am afraid you will never know it. | The weight of standing at the summit... I am afraid you will never know it. | |
+| 10 ≒ | ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | My... what a tedious match. Do try to entertain me a little more. | My... what a tedious match. Do try to entertain me a little better. | |
+
+## 堂前ユキ(クール×寡黙)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 11 | …一撃で決める。それだけ。 | ...One strike. That's all. | ...One strike ends it. That's all. | |
+| 12 ≒ | ……次。 | ...Next. | ...Next. | |
+
+## 本郷真理子(ヤンキー×強気)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 13 | 喧嘩とおんなじで、リングの上でも強けりゃ勝つんだよ | Ring's no different from a street fight. Strong one wins. Period. | Same as a street fight. Ring's no different — whoever's stronger wins. | |
+| 14 | ルール？ 勝てばいいのよ。手段は選ばない。 | Rules? All that matters is winning. Don't care how. | Rules? You win, that's it. Don't care how I get there. | |
+| 15 | 実力の違い、わかったかなぁ？ | Well? Got a good look at the difference between us? | Get it now? That's how far apart we are. | |
+
+## 川野辺菜穂子(丁寧×真面目)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 16 ≒ | いい試合だった！ また戦おうね！ | That was a wonderful match! Let's do it again sometime! | That was a great match! Let's do it again sometime! | |
+| 17 ≒ | ふぅ、なんとかなったぁ。 | Phew... I made it through somehow. | Phew... I made it through somehow. | |
+| 18 | 負け続きでも腐らなかった。…やっと報われた気がする！ | All those losses, and I never let myself quit. ...I think it finally paid off! | I kept losing, but I never let it get to me. ...It finally paid off! | |
+
+## 阿武隈塔子(鷹揚×ノーマル)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 19 | ごめんね。まだまだ負けられないんだ… | Sorry about that. I can't afford to lose just yet... | Sorry. I'm not ready to start losing just yet... | |
+| 20 | 頑張ったね。今回は私の勝ちだ。 | You fought well. This one goes to me, though. | Good effort. This one's mine, though. | |
+| 21 ≒ | …思ったよりも強かったよ | ...You were stronger than I expected. | ...You're stronger than I expected. | |
+
+## 橘玲美(蠱惑×ノーマル)
+
+| # | 日本語 | 稿A | 稿B | 判定 |
+|---|---|---|---|---|
+| 22 | …あら、もう終わり？もっと苦しむ顔が見たかったのに。 | ...Oh my. Over already? I was hoping to savor that face a while longer. | ...Oh my, over already? I wanted to watch you suffer a while longer. | |
+| 23 | 関節が軋む音…心地いいわ。 | That little creak in your joints... how soothing. | The way a joint creaks... such a lovely sound. | |
+| 24 | 負けて無様な姿をさらして…　いい気味ね♪ | Sprawled out and sorry... it rather suits you ♪ | Beaten, sprawled out for everyone to see... it suits you ♪ | |
+
+---
+
+- 総合メモ: 
+- ネイティブ検品(Patreonフォロワー)所感: 
