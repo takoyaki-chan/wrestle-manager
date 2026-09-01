@@ -803,6 +803,23 @@ const ENG = {
   }
 };
 
+// i18n Stage A P3a: 決着タイプ(finType)ごとの試合結果表示テンプレート。
+// Engine.formatFinish(match-engine.js)が参照する。キーはmatch-engineのfinType
+// ロジックキーと同一(試合結果の一時データ・セーブ非対象なので日本語のまま維持)。
+// '{move}'は決め技名のプレースホルダ(P1のt()仕様{name}形式と同型)。
+// battle-engine-main.js は本ファイルを読み込まない構成のため同値のローカル複製を持つ
+// (重複の正はこちら側 — 値を変えるときは両方直すこと)。
+const FINISH_TEXT = {
+  'HP判定': '判定勝ち',
+  'フォール': '{move} → 3カウント',
+  'ピン': '{move} → 3カウント',
+  'ギブアップ': '{move} → ギブアップ',
+  'TKO': '{move} → レフェリーストップ',
+  '丸め込み': '{move} → 丸め込み',
+};
+// finTypeがテーブルに無い(想定外)ときの表示フォールバック。
+const FINISH_TEXT_FALLBACK = '激闘決着';
+
 // ── Tier 2: ビッグマッチ用パラメータ（PPV/タイトル/対抗戦/トーナメント）──
 const BIGMATCH_MAX_T = 33;
 const BIGMATCH_PHASES = [
@@ -3844,6 +3861,24 @@ const INJURY_LABEL_SHORT = {
 function injuryLabelShort(type) {
   if (!type) return '';
   return INJURY_LABEL_SHORT[type] || String(type);
+}
+
+// i18n Stage A P3a: シーズン総括見出し(金銘板)の表示ラベル。
+// キーはEngine.seasonReview._decideHeadline(management.js)が返すロジックキーと同一
+// (戴冠/世代交代/飛躍/雌伏/地固め/試練/船出)。JA時はキーと同値だが、Stage Bで
+// 英語辞書を差し替えるための表示分離としてinjuryLabelと同型に用意する。
+const SEASON_HEADLINE_LABEL = {
+  '戴冠': '戴冠',
+  '世代交代': '世代交代',
+  '飛躍': '飛躍',
+  '雌伏': '雌伏',
+  '地固め': '地固め',
+  '試練': '試練',
+  '船出': '船出',
+};
+function seasonHeadlineLabel(headline) {
+  if (!headline) return '';
+  return SEASON_HEADLINE_LABEL[headline] || String(headline);
 }
 
 // v1.3-2: Growth penalty table by injury severity

@@ -1576,15 +1576,21 @@ function showResult(fr){
   }, 1200);
 }
 
+// i18n Stage A P3a: data.js FINISH_TEXTと同値のローカル複製。
+// battle-engine.htmlはdata.jsを読み込まない独立構成のためテーブルを共通化できない
+// (重複の正はdata.js側のFINISH_TEXT — 値を変えるときは両方直すこと)。
+const _LOCAL_FINISH_TEXT = {
+  'フォール': '{move} → 3カウント',
+  'ピン': '{move} → 3カウント',
+  'ギブアップ': '{move} → ギブアップ',
+  'TKO': '{move} → レフェリーストップ',
+  '丸め込み': '{move} → 丸め込み',
+};
 function _localFormatFinish(finType, finMove){
   if (!finMove) return finType || '激闘決着';
-  switch (finType) {
-    case 'フォール': case 'ピン': return `${finMove} → 3カウント`;
-    case 'ギブアップ':           return `${finMove} → ギブアップ`;
-    case 'TKO':                  return `${finMove} → レフェリーストップ`;
-    case '丸め込み':             return `${finMove} → 丸め込み`;
-    default:                     return `${finMove} (${finType || '決着'})`;
-  }
+  const tmpl = _LOCAL_FINISH_TEXT[finType];
+  if (tmpl) return tmpl.replace('{move}', finMove);
+  return `${finMove} (${finType || '決着'})`;
 }
 
 // ─── 試合終了 → 親フレームへ結果通知 ────────────────────────────────────

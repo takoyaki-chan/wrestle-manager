@@ -29,9 +29,17 @@ const tagTimeout = source.slice(tagStart, tagEnd);
 assert.ok(tagTimeout.includes('resolveTimeoutWinner(totalHpA, totalHpB'), 'タッグ戦の時間切れが共通判定を通っていない');
 assert.ok(!tagTimeout.includes("winner = 'draw'"), 'タッグ戦の時間切れにdraw生成が残っている');
 
+// i18n Stage A P3a: formatFinishの表示文言はdata.jsのFINISH_TEXTテーブル参照に変わったため、
+// 単体評価にはそのテーブル定義もあわせて持ち込む(テーブルの正はdata.js側)。
+const dataSource = readSource('src', 'data.js');
+const finishTextStart = dataSource.indexOf('const FINISH_TEXT = {');
+const finishTextEnd = dataSource.indexOf('\n', dataSource.indexOf("const FINISH_TEXT_FALLBACK = '激闘決着';", finishTextStart)) + 1;
+assert.ok(finishTextStart >= 0 && finishTextEnd > finishTextStart, 'FINISH_TEXTテーブルが見つからない');
+const finishTextSource = dataSource.slice(finishTextStart, finishTextEnd);
+
 const formatStart = source.indexOf('Engine.formatFinish = function(');
 const formatEnd = source.indexOf('// ╔', formatStart);
-const formatFinish = new Function('Engine', `${source.slice(formatStart, formatEnd)}; return Engine.formatFinish;`)({});
+const formatFinish = new Function('Engine', `${finishTextSource}\n${source.slice(formatStart, formatEnd)}; return Engine.formatFinish;`)({});
 assert.strictEqual(formatFinish('HP判定', ''), '判定勝ち', '結果画面・新聞で時間切れの白星根拠が伝わらない');
 assert.ok(source.includes('時間切れ判定により、${winner === \'left\' ? L.name : R.name}の勝利'),
   '試合ログに判定勝ちの一言が無い');
