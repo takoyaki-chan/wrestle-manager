@@ -12627,7 +12627,7 @@ const Engine = {
         const prev = preInjuryRoster.find(p => p.id === c.id);
         if (!prev || !prev.injury || c.injury) return c; // 復帰していない
         const severity = prev.injury.type;
-        const trigger = severity === '重傷' ? 'injury_severe_recovery' : '中傷' ? 'injury_moderate_recovery' : null;
+        const trigger = severity === '重傷' ? 'injury_severe_recovery' : severity === '中傷' ? 'injury_moderate_recovery' : null;
         if (!trigger) return c;
         if (Engine.growthEvents.checkSlump(geSlumpRng, c, trigger, Engine.coach.getFlavorSlumpEntryMult(G, c.id))) {
           const newC = Engine.growthEvents.applySlump(c, trigger, G.season, G.week);
