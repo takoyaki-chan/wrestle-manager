@@ -12,10 +12,11 @@
 | 17 | 木ノ内幸音(丁寧×お気楽) / 「よーっ」の処理 | 見てましたか！？ 私、やりましたよーっ！ | Did you see that!? I did iiit! | Did you see that!? I did it! I really did it! |B(ただし反復は不要=個人意見) |
 | 20 | 高島さや(丁寧×内気) / 「生きてたい」の重さ | 明日も生きてたい…だから、今日も戦うの…！ | I want to still be here tomorrow... so I fight today, too...!(和らげ) | I want to live to see tomorrow... that's why I fight today...!(直球) |保留 |
 | 23 | 高槻千歳(蠱惑×寡黙) / 支配宣言 | 支配する側と、される側。…この結果でハッキリしたわね？ | Those who rule, and those who are ruled. ...Now we know which is which, don't we? | One who dominates, one who is dominated. ...That much is clear now, isn't it? |B(強いて言えば) |
-| 24 | 倉見菜々(蠱惑×お気楽) / 日本語をどこまで残すか | 勝った勝った♪　ファイトマネーで焼き肉ね♪ | Winner, winner ♪ Tonight the fight money's buying yakiniku ♪ | Won it, won it ♪ That purse is going straight to barbecue ♪ |保留 |
+| 24 | 倉見菜々(蠱惑×お気楽) / 日本語をどこまで残すか | 勝った勝った♪　ファイトマネーで焼き肉ね♪ | Winner, winner ♪ Tonight the fight money's buying yakiniku ♪ | Won it, won it ♪ That purse is going straight to barbecue ♪ |B(ただしbarbecueではなく焼肉=yakinikuを維持) |
 | 27 | 副沢たまき(鷹揚×お気楽) / 自称あだ名の処理 | この副ちゃんさんを、舐めないでよね～ | Hey now, don't go underestimating Ms. Fuku here~ | Hey now — show good ol' Fuku-chan a little respect~ |B |
-| 28 | 北畠吉乃(鷹揚×寡黙) / 「グラウンド」の訳語 | グラウンドは得意なの。……みんな逃げられないよ？ | Groundwork is what I'm good at. ...Nobody gets away from it, you know? | I'm at my best on the mat. ...Nobody gets away down there. |保留 |
+| 28 | 北畠吉乃(鷹揚×寡黙) / 「グラウンド」の訳語 | グラウンドは得意なの。……みんな逃げられないよ？ | Groundwork is what I'm good at. ...Nobody gets away from it, you know? | I'm at my best on the mat. ...Nobody gets away down there. |B(強いて言えば) |
 
-- 判定記入: 2026-09-01 Keisuke(7/10判定・3件保留)
+- 判定記入: 2026-09-01 Keisuke(9/10判定。残る保留は#20のみ)
+- 追加裁定(2026-09-01): 「素直に訳そうとしすぎて英語として不自然」を避ける — バイブル§0最重要則2へ昇格済み
 - 総合(量産の筆): 保留3件(#20/#24/#28)の判定待ち
 - 備考(Keisuke): ネイティブなアメリカ人の所感として「Bが無理やり直訳して英語にはない言葉の使い方をしている」箇所が気になる由。該当行の特定済み(2026-09-01): 「今日の私」型=バイブル§2-1宇田川旧見本(修正済み) / 「今日も戦う」の too 直訳=**#20稿A**。いずれもバイブル§4-6翻訳調検査リストへ登録済み。指摘者はキャラに詳しい英語ネイティブ(KeisukeのPatreonフォロワー)で信憑性あり→検証計画§5-2の検品担当に位置づけ
