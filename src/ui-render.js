@@ -656,7 +656,7 @@ function _renderSeasonReview(review, state) {
       <div class="sr-chart-head"><span class="sr-chart-title">${WM_I18N.t('今季の収支')}</span></div>
       <div class="sr-pl-row"><span class="sr-pl-lbl">${WM_I18N.t('収入')}</span><div class="sr-pl-track"><div class="sr-pl-fill sr-rev" style="width:${Math.max(4, Math.round(rev / maxV * 100))}%">${WM_I18N.t('{v}万', { v: rev.toLocaleString() })}</div></div></div>
       <div class="sr-pl-row"><span class="sr-pl-lbl">${WM_I18N.t('支出')}</span><div class="sr-pl-track"><div class="sr-pl-fill sr-exp" style="width:${Math.max(4, Math.round(exp / maxV * 100))}%">${WM_I18N.t('{v}万', { v: exp.toLocaleString() })}</div></div></div>
-      <div class="sr-pl-net">${WM_I18N.t('純益')}<b${net < 0 ? ' class="sr-negnet"' : ''}>${WM_I18N.t('{sign}{v}万', { sign: net >= 0 ? '+' : '', v: net.toLocaleString() })}</b></div>
+      <div class="sr-pl-net">${WM_I18N.t('純益')}<b${net < 0 ? ' class="sr-negnet"' : ''}>${WM_I18N.t('{sign}{v}万', { sign: net >= 0 ? '+' : '-', v: Math.abs(net).toLocaleString() })}</b></div>
     </div>`;
   }
   h += `</div></div>`;
@@ -1144,7 +1144,7 @@ function renderWeekScreen() {
       const weekInMonth = manageBuf.length + 1;
       html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 12px;background:rgba(200,190,170,0.025);border:1px solid rgba(200,190,170,0.05);border-radius:5px;font-size:12px">
         <span style="color:var(--text-dim);flex-shrink:0">${WM_I18N.t('月{n}週目:', { n: weekInMonth })}</span>
-        <span style="color:${netColor};font-weight:700">${WM_I18N.t('{sign}{v}万', { sign: mNet >= 0 ? '+' : '', v: Math.round(mNet) })}</span>
+        <span style="color:${netColor};font-weight:700">${WM_I18N.t('{sign}{v}万', { sign: mNet >= 0 ? '+' : '-', v: Math.abs(Math.round(mNet)) })}</span>
         <span style="color:var(--text-dim);font-size:11px">${WM_I18N.t('収入{a}万 / 支出{b}万', { a: Math.round(mIncome), b: Math.round(mExpense) })}</span>
       </div>`;
     }
@@ -1209,9 +1209,9 @@ function renderWeekScreen() {
       html += '<div class="survival-stats">';
       // Weekly burn rate
       const netColor = sNet.weeklyNet >= 0 ? '#2ecc71' : '#e74c3c';
-      const netSign = sNet.weeklyNet >= 0 ? '+' : '';
+      const netSign = sNet.weeklyNet >= 0 ? '+' : '-';
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${netColor}">${WM_I18N.t('{sign}{v}万', { sign: netSign, v: Math.round(sNet.weeklyNet) })}</span>
+        <span class="survival-stat-val" style="color:${netColor}">${WM_I18N.t('{sign}{v}万', { sign: netSign, v: Math.abs(Math.round(sNet.weeklyNet)) })}</span>
         <span class="survival-stat-label">${WM_I18N.t('推定週間収支')}</span>
       </div>`;
       // Weeks until bankrupt
@@ -1232,7 +1232,7 @@ function renderWeekScreen() {
       const rollingSum = buf.reduce((a,b) => a+b, 0);
       const r4count = G.rollingNet4Count || 0;
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${WM_I18N.t('{sign}{v}万', { sign: rollingSum >= 0 ? '+' : '', v: Math.round(rollingSum) })}</span>
+        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${WM_I18N.t('{sign}{v}万', { sign: rollingSum >= 0 ? '+' : '-', v: Math.abs(Math.round(rollingSum)) })}</span>
         <span class="survival-stat-label">${WM_I18N.t('月次収支(4週)')}</span>
       </div>`;
       // Weekly expense
@@ -1242,7 +1242,7 @@ function renderWeekScreen() {
       </div>`;
       // Weekly base income
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${WM_I18N.t('{sign}{v}万', { sign: sNet.totalBaseIncome > 0 ? '+' : '', v: Math.round(sNet.totalBaseIncome) })}</span>
+        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${WM_I18N.t('{sign}{v}万', { sign: sNet.totalBaseIncome > 0 ? '+' : (sNet.totalBaseIncome < 0 ? '-' : ''), v: Math.abs(Math.round(sNet.totalBaseIncome)) })}</span>
         <span class="survival-stat-label">${WM_I18N.t('固定収入')}</span>
       </div>`;
       html += '</div>'; // .survival-stats
@@ -1506,7 +1506,7 @@ function renderWeekScreen() {
     html += `<div style="display:flex;justify-content:center;gap:18px;font-size:13px;margin-bottom:10px">
       <span>${WM_I18N.t('収入')} <span style="color:var(--green);font-weight:600">${WM_I18N.t('+{v}万', { v: Math.round(wsIncome).toLocaleString() })}</span></span>
       <span>${WM_I18N.t('支出')} <span style="color:var(--red);font-weight:600">${WM_I18N.t('-{v}万', { v: Math.round(wsExpense).toLocaleString() })}</span></span>
-      <span>${WM_I18N.t('収支')} <span style="color:${netColor};font-weight:600">${WM_I18N.t('{sign}{v}万', { sign: wsNet >= 0 ? '+' : '', v: Math.round(wsNet).toLocaleString() })}</span></span>
+      <span>${WM_I18N.t('収支')} <span style="color:${netColor};font-weight:600">${WM_I18N.t('{sign}{v}万', { sign: wsNet >= 0 ? '+' : '-', v: Math.abs(Math.round(wsNet)).toLocaleString() })}</span></span>
     </div>`;
     html += `<div style="font-size:15px">${WM_I18N.t('残高:')} <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</strong></div>`;
     html += `</div>`;
@@ -1597,7 +1597,7 @@ function renderWeekScreen() {
     }
 
     html += `<div style="border-top:2px solid var(--border);margin:8px 0"></div>`;
-    html += `<div class="finance-row finance-total"><span>${WM_I18N.t('月間収支')}</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${WM_I18N.t('{sign}{v}万', { sign: monthNet >= 0 ? '+' : '', v: Math.round(monthNet).toLocaleString() })}</span></div>`;
+    html += `<div class="finance-row finance-total"><span>${WM_I18N.t('月間収支')}</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${WM_I18N.t('{sign}{v}万', { sign: monthNet >= 0 ? '+' : '-', v: Math.abs(Math.round(monthNet)).toLocaleString() })}</span></div>`;
     html += `<div style="margin-top:8px;font-size:13px">${WM_I18N.t('残高:')} <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</strong></div>`;
 
     // v0.97: Survival gauge mini-status in settlement

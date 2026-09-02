@@ -17972,16 +17972,53 @@ const RETIREMENT_TEMPLATES = {
   ],
 };
 
+// i18n Stage B P6 (D-P6-5): 通貨B方式フィルタ `man`。src/i18n.js の manFilter と同一契約
+// (万単位の数値/カンマ区切り数字文字列を k/M 表記へ変換、非数値はfail-openでそのまま)。
+// data.jsはi18n.js抜きでも(auto-sim等)単体で読み込まれるため、依存を作らず自前で持つ
+// (下のfillTemplateVars本体のコメント参照 — 元々そういう設計方針のファイル)。
+function _wmManFilter(raw) {
+  if (raw === null || raw === undefined) return raw;
+  const stripped = (typeof raw === 'string') ? raw.replace(/,/g, '').trim() : raw;
+  const num = (typeof stripped === 'number') ? stripped : parseFloat(stripped);
+  if (typeof stripped === 'string' && stripped === '') return raw;
+  if (!isFinite(num)) return raw;
+  const neg = num < 0;
+  const abs = Math.abs(num);
+  let out;
+  if (abs < 100) {
+    out = String(Math.round(abs * 10)) + 'k';
+  } else {
+    let m = Math.round((abs / 100) * 10) / 10;
+    let mStr = m.toFixed(1);
+    if (mStr.slice(-2) === '.0') mStr = mStr.slice(0, -2);
+    out = mStr + 'M';
+  }
+  return (neg ? '-' : '') + out;
+}
+const _WM_TEMPLATE_FILTERS = { man: _wmManFilter };
+function _wmEscapeRegExp(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 // i18n Stage A P3a-2: 完全文テンプレートの{name}プレースホルダ埋め込み共通ヘルパー。
 // i18n.js WM_I18N.t()のプレースホルダ規約(split/join・値はString()で強制変換)と同型の
 // 軽量な自前実装。EngineはWM_I18Nを直接呼ばない(P3a設計の共通原則)ため、テンプレ選択・
 // 整形はこちらを使う。値がnull/undefinedでも従来のテンプレートリテラル${x}と同じ
 // 挙動(文字列"undefined"/"null"化)になるよう、存在するキーは無条件に置換する。
+// i18n Stage B P6: `{name:man}` 形のフィルタ記法にも対応(i18n.js applyParamsと同型)。
+// ja側テンプレは常にフィルタ無し`{name}`のままなので、この対応追加後もja出力は不変。
 function fillTemplateVars(tpl, vars) {
   if (typeof tpl !== 'string' || !vars) return tpl;
   let out = tpl;
   Object.keys(vars).forEach((key) => {
-    out = out.split('{' + key + '}').join(String(vars[key]));
+    const re = new RegExp('\\{' + _wmEscapeRegExp(key) + '(?::([A-Za-z_][A-Za-z0-9_]*))?\\}', 'g');
+    out = out.replace(re, (_match, filterName) => {
+      const raw = vars[key];
+      if (filterName && Object.prototype.hasOwnProperty.call(_WM_TEMPLATE_FILTERS, filterName)) {
+        return String(_WM_TEMPLATE_FILTERS[filterName](raw));
+      }
+      return String(raw);
+    });
   });
   return out;
 }

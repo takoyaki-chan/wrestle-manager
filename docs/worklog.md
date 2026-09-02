@@ -1,5 +1,44 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6 — 通貨B方式({v:man}フィルタ)実装（2026-09-02・Sonnet worktree agent-a3e0eb75c27078211）
+
+裁定: `docs/i18n-stage-b-p6-design-v0.1.md` D-P6-5(通貨はB方式=英語圏標準)。300万→¥3M/15万→¥150k/120万→¥1.2M/3億→¥300M。開始前にworktreeブランチをmain先端(e4ceb77、P4-2マージ済み)へfast-forward済み。
+
+### 1. プレースホルダフィルタ `{name:filter}` の実装
+`src/i18n.js`の`applyParams`と`src/data.js`の`fillTemplateVars`(それぞれ独立実装 — data.jsはi18n.js非依存でauto-sim等から単体読込されるため)に、`{name:filter}`記法を追加。基底名(`name`)は従来通りparamsキーで解決し、`:filter`部分が付いていればフィルタ関数へ通してから埋め込む。ja側テンプレは常に無フィルタの`{name}`のままでよい設計(D-P6-5)。正規表現は`\{name(?::([A-Za-z_][A-Za-z0-9_]*))?\}`形でkey毎に構築し、`.replace()`のコールバックでフィルタ適用/素通しを分岐する(旧`split('{'+key+'}').join(...)`と完全互換 — フィルタ無指定時は同一出力になることをja-goldenで確認)。
+- 唯一のフィルタ`man`(通貨B方式): 万単位の数値(number/カンマ区切り文字列/符号付き)を受け取り、絶対値<100→整数k(`Math.round(abs*10)+'k'`)、絶対値>=100→小数1桁までのM(末尾`.0`削除)に変換し、符号を頭に付与する。非数値・空文字はfail-open(値をそのまま挿入)。未知のフィルタ名もfail-open(素通し)
+
+### 2. build-dict機械検査をフィルタ記法に対応
+`test/i18n-build-dict.js`・`test/i18n-build-template-dict.js`のプレースホルダ完全性検査(D-B4-1)を、`{name}`/`{name:filter}`いずれにもマッチし基底名だけを集合に入れる正規表現へ変更。`{cost:man}`(en)と`{cost}`(ja)を同一視するようになった。他の検査(重複キー/日本語残り/黒田禁止語)は無変更
+
+### 3. `i18n/ui-ledger.json`の書き換え(43エントリ)
+旧・素朴x10変換(値をそのまま`{v}0k`のように後置するだけの実装 — 3桁以上の万単位やカンマ入り数値で破綻する)を使っていたエントリを`¥{name:man}`形へ一括置換した。
+- **40件**: プレースホルダ経由(`{v}万`→`¥{v}0k`だったものを`¥{v:man}`へ、等)
+- **3件**: プレースホルダの無い直値文の再計算——` / 目標3,000万`→` / target ¥30M`(旧`¥30,000k`)、`あと少し！…資金3,000万以上…`の埋め込み値も同様、`特別治療（-200万）`→`Special treatment (-¥2M)`(旧`-¥2,000k`)
+- **据え置き5件**: `資金 (万)`→`Funds (×10k)`等の列見出し・単位ラベル。呼び出し元がプレースホルダ無しで生の数字と`t('万')`を連結しており、B方式化には表示側の改修が要るため対象外(specs/i18n-runtime-spec-v1.0.md §7に理由を記載)
+- **据え置き1件(検算のみ)**: `¥5〜10万`→`¥50–100k`の範囲表記は両端とも100万未満のためB方式でも変わらない(生成ロジックで再検算し一致を確認、書き換えは行っていない)
+- `node test/i18n-build-dict.js`で`src/lang-en.js`を再生成(43行変更のみの差分をgit diffで確認)
+
+### 4. 副次バグ修正: `{sign}{v}万`の符号位置(ui-render.js 7箇所)
+vm検証で発見。この7箇所(純益/週次収支/月次収支等)は元々「`sign`は'+'のみ・負値は`v`自身のtoLocaleString()/Math.round()が持つ"-"に委ねる」設計だったが、`{sign}¥{v:man}`テンプレだと`¥`と符号の順序が入れ替わり`¥-2M`になってしまう(旧`{v}0k`後置方式でも実は同じ順序バグがあったが目立たなかった)。7箇所すべてを「`sign`は'+'/'-'を明示・`v`は絶対値」の形に統一して修正した。ja側は`sign+v`の文字列結合として計算上完全に同一のため出力は1バイトも変わらない(ja-goldenで確認)。対象: ui-render.js 659行(純益)/1147行(月内週次収支)/1214行(週間収支)/1235行(4週収支)/1245行(固定収入)/1509行(週次収支)/1600行(月間収支)
+
+### 検証(全項目実施)
+- `node test/i18n-build-dict.js` — green(3,108キー・訳文3,108・未訳0)
+- `node --check src/i18n.js src/lang-en.js src/data.js src/ui-render.js` — 構文エラーなし
+- `node test/ja-golden.js` — **完全一致**(hash `6b3d05c8...`不変、20季11,233行)
+- `node test/i18n-ratchet.js` — **増加なし**(files=31 totalJaStrings=28075、Stage B P4-2時点と同値)
+- `npm test` — **260/260 PASS**
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・season=2 week=1到達・duration 186.78s・recovered-by-retry 0)
+- vm検証(使い捨てスクリプト、代表12ケース): 15万→¥150k / 120万→¥1.2M / 300万→¥3M / 3000万→¥30M / 3億(30000万)→¥300M / カンマ文字列"1,234"→¥12.3M / 符号+絶対値パターン(sign:'-',v:200)→-¥2M / 非数値"N/A"→¥N/A(fail-open) / 0→¥0k / 直値エントリ特別治療→Special treatment (-¥2M) / 静的マイナステンプレ-{v}万→-¥500k / 辞書ミスfail-open→ja原文 、および ja素通し2ケース(フィルタ無効・符号埋め込み文字列も含め1バイト不変) — 全PASS
+
+### 厳守事項の遵守
+`i18n/template-ledger.json`・`src/lang-en-templates.js`は一切変更していない(検証目的で`node test/i18n-build-template-dict.js`を1回実行したが、生成内容に差分が無いことを確認した上で`git checkout --`で復元し、コミット対象から除外した)
+
+### 残課題
+- 「据え置き5件」(資金 (万)等の単位ラベル)をB方式へ揃えるかどうかはFable/Keisuke裁定待ち。揃えるなら該当call siteのリファクタが別途必要
+- P4-3テンプレ英訳バッチ(進行中・別エージェント領分)
+
+---
 ## 🌐 Stage B P4-3a — テンプレ英訳・第1弾（見出し以外の209本）（2026-09-02・Opus worktree agent-aacb040121d67e5d2）
 
 英語対応P4の第3工程・前半。`i18n/template-ledger.json`(P4-2で新設・全550本)のうち **NEWS_HEADLINE_TEMPLATES(341本)以外の全209本**のen列を書き下ろし翻訳した。物差しは `docs/en-kuroda-style-draft-v0.1.md`(三層主語/断片リズム/慨嘆4道具/見出し文法/プレースホルダ安全則/禁止語grep)+`docs/en-tone-bible-draft-v0.1.md`§0-§1+`docs/en-proper-nouns-draft-v0.1.md`、用語はP3b用語集(`i18n/ui-ledger.json`のen列)に合わせた。**`i18n/ui-ledger.json` / `src/lang-en.js` / `src/i18n.js` は別エージェント作業中のため一切触っていない**。開始前にworktreeブランチをmain先端(e4ceb77)へfast-forward済み。

@@ -18,6 +18,11 @@
 //  ■ D8: 擬似ロケール。`⟦` + 原文 + 原文の長さ40%分の `~` + `⟧`。
 //    翻訳漏れ(t()を通っていない文字列)の可視化と、英語の文字数増によるレイアウト
 //    溢れを翻訳ゼロの段階で検査するためのもの。
+//  ■ プレースホルダフィルタ記法(Stage B P6 D-P6-5): `{name:filter}` の形で書くと、
+//    params[name] の値をフィルタ関数へ通してから埋め込む。ja側テンプレは素の `{name}` の
+//    ままでよい(フィルタ有無に関わらず基底名が同じなら同一パラメータとして解決される)。
+//    現在の唯一のフィルタは `man`(通貨B方式変換。詳細は下のFILTERS定義参照)。
+//    未知のフィルタ名・非数値入力はいずれもfail-open(値をそのまま挿入)。
 //  ■ applyDom (Stage A P3a-4d): index.htmlの静的HTMLテキストノード用。
 //    JS生成文字列と違い、静的HTMLはt()を直接通せない。そこで data-i18n / data-i18n-attr
 //    属性でマークした要素をDOM走査時にt()へ通す。
@@ -55,12 +60,53 @@
 
   let currentLang = readStoredLang();
 
-  // {key} プレースホルダを params[key] で置換する。params が無ければ何もしない。
+  // ── D-P6-5: 通貨B方式フィルタ `man` ──
+  // 値=万単位の数値(number または "1,234"のようなカンマ区切り数字文字列。符号"-"可)を
+  // 英語圏標準の k/M 表記へ変換する。
+  //   100万未満(絶対値<100) → {v*10}k (整数・カンマ不要の桁。例: 15→150k)
+  //   100万以上(絶対値>=100) → {v/100}M (小数1桁まで・末尾.0は削除。例: 300→3M, 120→1.2M)
+  // 符号はk/M表記の頭に付与する(例: -500 → -5M)。数値化できない値はfail-openでそのまま返す。
+  function manFilter(raw) {
+    if (raw === null || raw === undefined) return raw;
+    const stripped = (typeof raw === 'string') ? raw.replace(/,/g, '').trim() : raw;
+    const num = (typeof stripped === 'number') ? stripped : parseFloat(stripped);
+    if (typeof stripped === 'string' && stripped === '') return raw;
+    if (!isFinite(num)) return raw;
+    const neg = num < 0;
+    const abs = Math.abs(num);
+    let out;
+    if (abs < 100) {
+      out = String(Math.round(abs * 10)) + 'k';
+    } else {
+      let m = Math.round((abs / 100) * 10) / 10;
+      let mStr = m.toFixed(1);
+      if (mStr.slice(-2) === '.0') mStr = mStr.slice(0, -2);
+      out = mStr + 'M';
+    }
+    return (neg ? '-' : '') + out;
+  }
+
+  const FILTERS = { man: manFilter };
+
+  function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  // {key} または {key:filter} プレースホルダを params[key] で置換する。
+  // params が無ければ何もしない。フィルタ指定が無ければ従来通り値をそのまま挿入する
+  // (split/joinと同じくString化されるだけで、フィルタ関連の挙動は一切変わらない)。
   function applyParams(str, params) {
     if (!params || typeof str !== 'string') return str;
     let out = str;
     Object.keys(params).forEach((key) => {
-      out = out.split('{' + key + '}').join(params[key]);
+      const re = new RegExp('\\{' + escapeRegExp(key) + '(?::([A-Za-z_][A-Za-z0-9_]*))?\\}', 'g');
+      out = out.replace(re, (_match, filterName) => {
+        const raw = params[key];
+        if (filterName && Object.prototype.hasOwnProperty.call(FILTERS, filterName)) {
+          return String(FILTERS[filterName](raw));
+        }
+        return String(raw);
+      });
     });
     return out;
   }
