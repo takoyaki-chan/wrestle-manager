@@ -1,5 +1,185 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P3b-6 — 固有名詞入りUIキー90件の英訳（P3b最終・台帳未訳0）（2026-09-02・Opus worktree agent-a35c296ee521c41da）
+
+固有名詞の裁定確定（2026-09-02 Keisuke・`docs/en-proper-nouns-draft-v0.1.md` 冒頭ブロック）を受け、D-B5で保留していた最後の90キーを英訳した。**これで `i18n/ui-ledger.json` の未訳は0件**、P3b（UI・システム文の英訳）は完走。開始前にworktreeブランチをmain先端（35fd58b、P3b-5マージ済み）へfast-forward済み。
+
+### 採用した固有名詞（ドラフトの◎推奨案どおり）
+| JA | EN | 出典 |
+|---|---|---|
+| 4団体勝ち残り対抗戦 | **Autumn Gauntlet War** | ドラフト §5（既存の内部英語名 `specs/autumn-gauntlet-war-spec-v0.1.md`。"Survival Series" はWWEの年次PPV名なので回避） |
+| 天頂戦 | **Tenchosen**（音写） | ドラフト §5。5大会で唯一の音写＝「この大会だけ別格」を語法の差で見せる |
+| 天 頂 戦（字間空きの大見出し） | **TENCHOSEN** | 指示どおり演出形（全大文字）。字間空きはCSS側の見せ方に委ねる |
+| 春のタッグリーグ | **Spring Tag League** | ドラフト §5（意訳） |
+| PPV GRAND FINAL | **PPV GRAND FINAL**（原文維持） | ドラフト §5。すでに英語・大文字も維持 |
+| 団体王座 | **Promotion Championship** / 文中は promotion title | ドラフト §6。**"World Championship" は禁止**（2026-07-16 ナレーション裁定を英語でも維持） |
+| ドーム（会場最上段） | **Dome** | ドラフト §7 |
+| 公民館 | **Community Center** | ドラフト §7（米綴り・裁定#5） |
+
+### 追加起案（ドラフトに無く、今回ドラフトの流儀で自分が起案したもの）
+**Keisukeの確認をいただきたいのはこの5件です。**
+
+| # | JA | 採用したEN | 起案理由 |
+|---|---|---|---|
+| 1 | 全国統一王座 / 全国統一王座戦 | **Unified National Championship** / **Unified National Title Match** | ドラフト§6の◎は `National Unified Championship` だが、**P3bバッチ1〜4で既に出荷済みの訳が `Unified National Champion`**（「🌐 全国統一王者（{n}防衛）」「初代 全国統一王者」ほか計5行）。◎をそのまま採ると同じ画面で王者=Unified National / 王座=National Unified と語順が割れる。ドラフトが**対案として明記している** `Unified National Championship` を採ることで王者・王座・王座戦が一列に揃うため、**意図的に対案を採用**した。◎に戻す場合は既訳5行の側を直すことになる |
+| 2 | ドーム圏（団体人気90ライン） | **Dome range** | ドラフトは会場名 `Dome` までしか定めていない。人気推移グラフの閾値ラベル・「あと{n}ポイント」・「圏内です！」の3箇所で使う共通語が要るため造語。9pxの図中ラベルにも収まる短さを優先 |
+| 3 | 覇者（天頂戦） | **Champion**（優勝=Winner と書き分け） | JAが天頂戦にだけ「覇者」を使い他大会の「優勝」と区別しているので、英語でも Champion / Winner で書き分けた。天頂戦の覇者は実際に全国統一王座を保持するため Champion が実態にも合う |
+| 4 | 天頂戦の初出副題 | **Tenchosen — the Summit** をエントリー受付バナー1箇所に付与 | ドラフト §5 が「初出のみ副題を添える運用を推奨」としているが**どこを初出とするかは未指定**。プレイヤーが天頂戦を最初に認識するのは開催週前のエントリー受付バナーなので、そこ1箇所に限って `the Summit` を添えた（他の天頂戦キーには付けない） |
+| 5 | 秋の4団体勝ち残り対抗戦優勝 | **Autumn Gauntlet War Winner** | 「秋の」は大会名の `Autumn` に吸収させ、英語では重複させない |
+
+### 既訳1行の差し替え（同一画面の矛盾解消）
+`"勝ち残り対抗戦 優勝"`（表彰式スライドのラベル・ui-common.js:3457）だけ大会名が落ちた訳 `Survivor Interpromotional Match — Winner` になっており、同じ授賞のスライド本体が使う `"4団体勝ち残り対抗戦 優勝"` = `Autumn Gauntlet War — Winner` と**同じ画面で大会名が食い違っていた**。ラベル側を `Autumn Gauntlet War — Winner` に揃えた（差し替え1行のみ・他への影響なし）。
+
+### 訳語の決めどころ（既存バッチからの継承）
+- `X 優勝`（半角スペースあり・授賞ラベル）は既存precedent（`ジュニアトーナメント 優勝` → `Junior Tournament — Winner`）に合わせ **`X — Winner`**、スペース無しの `X優勝`（バッジ用ラベル）は **`X Winner`**。バッジは `{label}(第{n}回)` = `{label} (#{n})` に包まれるため、合成すると `Tenchosen Winner (#5)` / `Autumn Gauntlet War Winner (#4)` になる
+- `第{n}回 X` は既存precedent（`第{n}回 ジュニアトーナメント` → `Junior Tournament No. {n}`）に合わせ **`X No. {n}`**
+- `「{name}」` の鉤括弧は既存precedent（`派閥「{name}」` → `Faction {name}`）どおり**英語では落とす**（引用符を足さない）
+- `・` は既存precedent（`夏季ジュニア ・ {name} {result}` → `Summer Junior · {name} {result}`）どおり **`·`**
+- `全角スペース区切り` は既存precedent（`{org}興行　遠征試合結果` → `{org} show — Away match results`）どおり **` — `**
+
+### 実装上の注意（今回踏んだ地雷）
+- **`onclick="showToast('...')"` に入るキーが1件ある**（ui-render.js:3124「今シーズンは既にドーム興行を開催済みです。…」）。訳文にアポストロフィが入るとHTML属性内のJS文字列リテラルが割れるため、**この1件だけ意図的にアポストロフィを使わない英文**にした（`You have already run…` / `You've` にしない）。同種の危険箇所は未訳90件を機械走査して他に無いことを確認済み
+- アポストロフィは既存バッチと同じ**直（`'`）で統一**（台帳の既訳155行がすべて直・カーリー0行）。台帳のシリアライズも既存と同じ**CRLF+末尾改行**で書き戻し、diffが `en` フィールド以外に出ないことを機械確認した
+- `"🏟️ ドーム圏内です！今シーズン{status}"` は `{status}` に既訳の断片（`(already used this season)` / ` — consider making a run at it`）が入る。片方が先頭スペース持ちのため合成で二重スペースになるが、**innerHTML描画でHTMLが空白を畳む**ため表示は正しい
+
+### 副産物: 台帳のstaleキー2件（本タスク外・申し送り）
+未訳90件を実ソースへ突き合わせたところ、**src/ に現存しないキーが2件**あった。
+- `"団体の実績が認められ、団体王座を設立できるようになりました！"`（台帳 files=app.js）
+- `"団体王座 設立！"`（同上）
+
+いずれも app.js から消えており（現存する近縁の生文字列は app.js:14957 `団体王座の設立が認定された。` のみ）、P3b-5の申し送り「台帳が定期的にsrcとズレる構造的リスク」の同型。**訳文は入れてある**（辞書に載っても参照されないだけで無害）が、次に `node test/i18n-extract-ui.js` を回す人はこの2件が落ちることを想定しておくこと。
+
+### 検証（全項目実施）
+- `node test/i18n-build-dict.js` — **green**。プレースホルダ完全性／重複キー／en内の日本語残り、いずれも違反0。**台帳総キー3,108・訳文あり3,108・未訳(fail-open)0**
+- `node --check src/lang-en.js` — 成功
+- `node test/ja-golden.js` — **完全一致**（lines=11233, hash `6b3d05c8daa3d93f62c7e2fcb3b21e7d6ffebc6dc1c4951919a229a2d4b8c1b3` = P3b-5から不変）
+- `node test/i18n-ratchet.js` — **増加なし**（files=31 totalJaStrings=28075、P3b-5と同値）
+- `npm test` — **260/260 PASS**
+- `npm run test:ui:walkthrough` — **PASS・issues 0**（328操作 digest `1052faa82eaf7991`＝P3b-5と同一、duration 190.3s、season=2 week=1到達、recovered-by-retry 0）
+- **ENモード実動作確認（vmサンドボックス）**: `src/i18n.js` + `src/lang-en.js` を実ロードして `lang='en'` で `t()` を評価。代表20本＋合成5本を抜き取り、さらに**台帳3,108キー全件を `t()` に通してfail-openが0件**（`WM_I18N._misses.size === 0`）であることを機械確認した。合成の実例:
+  - `t('{label}(第{n}回)', {label: t('天頂戦優勝'), n:5})` → `Tenchosen Winner (#5)`
+  - `t('ドーム圏まであと') + ' 5.2 ' + t('ポイント')` → `Short of Dome range by 5.2 Points`
+  - `t('🏟️ ドーム圏内です！今シーズン{status}', {status: t('（今季使用済み）')})` → `🏟️ You're in Dome range! (already used this season)`
+  - `t('⚔️ 4団体勝ち残り対抗戦 {roundLabel}', {roundLabel: t('決勝')})` → `⚔️ Autumn Gauntlet War Final`
+
+### 台帳の最終統計
+| 指標 | 値 |
+|---|---|
+| 総キー数 | 3,108 |
+| 訳文あり | **3,108（100%）** |
+| 未訳（fail-open） | **0** |
+| うち `hasProperNoun` | 89（今回全件充填） |
+| うち `hasPlaceholder` | 720 |
+| en が ja と同一（元から英語のキー） | 9（`🏟️ PPV GRAND FINAL` を今回追加。既存8件と同じ扱い） |
+| ファイル別キー数 | ui-render.js 1,319 / ui-common.js 1,294 / app.js 295 / factions.js 253 / index.html 92 / tag-battle-main.js 42 / battle-engine-main.js 35 |
+
+### 実機で見ていただきたい画面（ENモード）
+`localStorage.wm_lang = 'en'` にしてリロード後、
+1. **天頂戦**（4年に一度）— 大見出し `TENCHOSEN` / エントリー受付バナー（`the Summit` の副題）/ エントリーモーダル / 準決勝・決勝ヘッダー / 戴冠（`Tenchosen No. {n} Champion`）
+2. **4団体勝ち残り対抗戦** — 出場団体決定バナー・決着バナー・試合ヘッダー・表彰式スライド（`Autumn Gauntlet War — Winner` がラベルと本体で揃っているか）
+3. **春のタッグリーグ** — 編成期間バナー・編成モーダル・ヘッダー副題（`Round robin across Blocks A and B`）
+4. **全国統一王座** — 遠征の移動演出見出し・王座戦の固定枠表示・試合結果・戴冠/返還式
+5. **興行準備の会場選択** — ドームがロックされているときのトースト（アポストロフィ回避の1件）
+6. **データベース > 記録** — 天頂戦 歴代優勝 / 殿堂ポイント内訳の1行 / 団体人気推移グラフ（`Dome range` ラベルと「あと{n}ポイント」）
+
+### 次工程
+P3b完走により、律速だった固有名詞ドラフトの適用先は **P4（新聞テンプレの英語執筆）／ P5（セリフ）** に移る。人名127＋コーチ35の辞書化（P6）はP5の先行依存として別途起票が要る。
+
+### 対訳一覧（今回変更した91行＝新規90＋既訳差し替え1）
+| JA | EN |
+|---|---|
+| 4団体勝ち残り対抗戦 | Autumn Gauntlet War |
+| 4団体勝ち残り対抗戦 優勝 | Autumn Gauntlet War — Winner |
+| 4団体勝ち残り対抗戦 出場団体決定 | Autumn Gauntlet War — Field Set |
+| 4団体勝ち残り対抗戦 決着 | Autumn Gauntlet War — Settled |
+| 4団体勝ち残り対抗戦優勝 | Autumn Gauntlet War Winner |
+| GRAND FINAL を準備中… | Preparing the GRAND FINAL… |
+| PPV GRAND FINAL テレビ中継中… | PPV GRAND FINAL is on the air… |
+| PPV GRAND FINAL 最終戦勝者 | PPV GRAND FINAL — Final Match Winner |
+| PPV GRAND FINAL「{name}」開催日！ | PPV GRAND FINAL {name} — show day! |
+| PPV GRAND FINAL優勝 | PPV GRAND FINAL Winner |
+| {org} に持ち去られた団体王座を取り戻せ！ | Take back the promotion title {org} carried off! |
+| — 全国統一王座へ — | — To the Unified National Championship — |
+| ⚔️ 4団体勝ち残り対抗戦 {roundLabel} | ⚔️ Autumn Gauntlet War {roundLabel} |
+| ⚠ 全国統一王座への遠征条件が整わないため、予約を解除しました | ⚠ The away trip for the Unified National Championship was cancelled — its conditions were not met |
+| ⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました | ⚠ The Unified National Title Match was cancelled — its conditions were not met |
+| ⚠ 挑戦資格が失われたため、全国統一王座戦を解除しました | ⚠ The challenge is no longer valid, so the Unified National Title Match was cancelled |
+| ドーム | Dome |
+| ドーム圏 | Dome range |
+| ドーム圏まであと | Short of Dome range by |
+| ドーム挑戦圏 — 理想のカードで成功も | In range for the Dome — the right card could pull it off |
+| ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる | The belt returns to the tournament, and next week's Tenchosen crowns a new champion |
+| メジャー — ドームを意識し始めるレベル | Major — the Dome starts to come into view |
+| 今シーズンは既にドーム興行を開催済みです。次シーズンに挑戦してください。 | You have already run a Dome show this season. Try again next season. |
+| 今週は4団体勝ち残り対抗戦 | The Autumn Gauntlet War is this week |
+| 今週はPPV GRAND FINAL | The PPV GRAND FINAL is this week |
+| 今週は天頂戦 | Tenchosen is this week |
+| 今週は春のタッグリーグ開催週 | The Spring Tag League runs this week |
+| 全国統一王座 | Unified National Championship |
+| 全国統一王座 挑戦権 | Unified National Championship — Title Shot |
+| 全国統一王座への挑戦は届きませんでした | The challenge for the Unified National Championship fell short |
+| 全国統一王座戦 | Unified National Title Match |
+| 全国統一王座戦　試合結果 | Unified National Title Match — Result |
+| 全国統一王座戦のある興行では、団体王座戦は同時開催できません | A show with a Unified National Title Match cannot also stage a promotion title match |
+| 全国統一王座戦をメインイベントに固定しています。残りの枠に通常カードを編成してください。 | The Unified National Title Match is locked into the main event. Book regular matches in the remaining slots. |
+| 公民館（150人）からドーム（22,500人）まで10段階。大きい会場ほどコストが上がり、試合枠が増えます。 | Ten steps, from the Community Center (150) up to the Dome (22,500). Bigger venues cost more and open up more match slots. |
+| 勝ち残り対抗戦 優勝 | Autumn Gauntlet War — Winner **(既訳を差し替え: Survivor Interpromotional Match — Winner)** |
+| 団体の実績が認められ、団体王座を設立できるようになりました！ | Your promotion's record now qualifies it to establish the Promotion Championship! |
+| 団体人気{n}以上で PPV GRAND FINAL への出場資格を獲得できます | Reach promotion popularity {n} to qualify for the PPV GRAND FINAL |
+| 団体王座 設立！ | Promotion Championship Established! |
+| 団体王座: | Promotion title: |
+| 団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立） | The promotion title has not been established yet (it needs 3 shows, popularity 15 and a roster of 5) |
+| 団体王座戦の幕が下りた。 | The curtain falls on the promotion title match. |
+| 天 頂 戦 | TENCHOSEN |
+| 天頂戦 | Tenchosen |
+| 天頂戦 エントリー | Tenchosen Entry |
+| 天頂戦 エントリー受付中 — 4年に一度の全国女子プロレス最強王者決定戦 | Tenchosen entries open — the Summit, held every four years to crown the strongest in women's wrestling |
+| 天頂戦 ・ {name} {result} | Tenchosen · {name} {result} |
+| 天頂戦 出場選手 確定済み | Tenchosen — Entries Confirmed |
+| 天頂戦 歴代優勝 | Tenchosen — All-Time Winners |
+| 天頂戦 覇者 | Tenchosen Champion |
+| 天頂戦優勝 | Tenchosen Winner |
+| 天頂戦前夜 | Tenchosen Eve |
+| 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5 ／ 天頂戦 優勝8・準優勝5・ベスト4 3 | Title won 1 / Defense 1 / Junior Tournament win 4 / Spring Tag League win 3 / PPV win 5 / Interpromotional win 1.5 / Tenchosen win 8 · runner-up 5 · semifinal 3 |
+| 折れ線: 各シーズン末の団体人気 ／ 破線: ドーム圏(90) | Line: promotion popularity at each season's end / Dashed: Dome range (90) |
+| 春のタッグリーグ | Spring Tag League |
+| 春のタッグリーグ — A/Bブロック総当たり戦 | Round robin across Blocks A and B |
+| 春のタッグリーグ 優勝 | Spring Tag League — Winners |
+| 春のタッグリーグ 全{n}チーム編成済み | Spring Tag League — All {n} Teams Entered |
+| 春のタッグリーグ 出場{n}チーム決定 | Spring Tag League — {n} Team Slots Set |
+| 春のタッグリーグ 出場チーム編成 | Spring Tag League Team Entry |
+| 春のタッグリーグ 出場チーム編成期間 | Spring Tag League — Team Entry Week |
+| 春のタッグリーグ優勝 | Spring Tag League Winners |
+| 春のタッグリーグ優勝 / タッグ王者 | Spring Tag League Winners / Tag Champions |
+| 春のタッグリーグ優勝(第{n}回) | Spring Tag League Winners (#{n}) |
+| 次の興行で全国統一王座を防衛する | Defend the Unified National Championship on your next show |
+| 秋の4団体勝ち残り対抗戦優勝 | Autumn Gauntlet War Winner |
+| 第{n}回 天頂戦 ・ 第{pos}試合 / 全{total}試合 | Tenchosen No. {n} · Match {pos} of {total} |
+| 第{n}回 天頂戦 覇者 | Tenchosen No. {n} Champion |
+| 第{n}回 天頂戦覇者 | Tenchosen No. {n} Champion |
+| 第{n}回大会 ・ 春のタッグリーグ | Tournament No. {n} · Spring Tag League |
+| 第{n}回天頂戦 | Tenchosen No. {n} |
+| 第{w}週は通常興行の代わりに、4年に一度の天頂戦が開催されます。今週のカード編成はありません。 | In week {w} Tenchosen, held once every four years, replaces the regular show. There is no card to book this week. |
+| 第{w}週は通常興行の代わりに春のタッグリーグ(A/Bブロック各6試合+ブロック1位同士の優勝決定戦)が開催されます。今週のカード編成はありません。 | In week {w} the Spring Tag League replaces the regular show (six matches in each of Blocks A and B, then a final between the block winners). There is no card to book this week. |
+| 選手の週間スケジュールを確認し、週を進めてください（今週は4団体勝ち残り対抗戦）。 | Check the weekly schedules, then advance the week (the Autumn Gauntlet War runs this week). |
+| 選手の週間スケジュールを確認し、週を進めてください（今週は天頂戦開催週）。 | Check the weekly schedules, then advance the week (Tenchosen runs this week). |
+| 選手の週間スケジュールを確認し、週を進めてください（今週は春のタッグリーグ開催週）。 | Check the weekly schedules, then advance the week (the Spring Tag League runs this week). |
+| 頂点 — ドーム満員が狙える | Peak — a sold-out Dome is within reach |
+| 🌐 全国統一王座 | 🌐 Unified National Championship |
+| 🌐 全国統一王座を奪取しました！ | 🌐 You have taken the Unified National Championship! |
+| 🌐 全国統一王座戦 | 🌐 Unified National Title Match |
+| 🌐 全国統一王座戦の対戦者は固定です | 🌐 The wrestlers in the Unified National Title Match are locked |
+| 🌐 全国統一王座戦の枠は固定です | 🌐 The Unified National Title Match slot is locked |
+| 🌐 全国統一王座戦（固定） | 🌐 Unified National Title Match (locked) |
+| 🌸 春のタッグリーグ {a}/{b}チームを編成しました | 🌸 Spring Tag League: {a}/{b} teams entered |
+| 🌸 春のタッグリーグ {roundLabel} | 🌸 Spring Tag League {roundLabel} |
+| 🏟️ PPV GRAND FINAL | 🏟️ PPV GRAND FINAL |
+| 🏟️ PPV GRAND FINAL「{name}」 | 🏟️ PPV GRAND FINAL {name} |
+| 🏟️ エントリー完了！PPV GRAND FINAL は第{week}週に開催されます | 🏟️ Entry complete! The PPV GRAND FINAL takes place in week {week} |
+| 🏟️ ドーム圏内です！今シーズン{status} | 🏟️ You're in Dome range! {status} |
+| 👑 天頂戦 {round} | 👑 Tenchosen {round} |
+| 👑 天頂戦 出場選手を確定しました | 👑 Tenchosen entries confirmed |
+
 ## 🌐 Stage B P3b-5 — 構造スキップ36キーの原文再テンプレ化+新規英訳（2026-09-02・Sonnet worktree agent-a05c6d938cfe7a4e0）
 
 P3b翻訳バッチ1〜4が「原文側の構造問題で英訳不能」としてスキップ登録した計36キー(正しくは固有名詞1件「天 頂 戦」を除く**35キー**)を、`docs/i18n-stage-a-p3a-design-v0.1.md`「統合タスク」どおり1本のタスクで解消した。開始前にworktreeブランチをmain先端(a627c78、P3b実質完走+applyDom修正)へfast-forward済み。
