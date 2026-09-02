@@ -39,7 +39,7 @@ const S = {
 function renderWaiting(){
   document.getElementById('mainContainer').innerHTML = `<div class="waiting">
     <div class="waiting-title">STANDBY</div>
-    <div class="waiting-sub">タッグマッチデータの受信を待機中…</div>
+    <div class="waiting-sub">${WM_I18N.t('タッグマッチデータの受信を待機中…')}</div>
     <div class="waiting-pulse"></div>
   </div>`;
 }
@@ -108,13 +108,13 @@ function _getCurrentFrame(){ return S.frameIdx > 0 && S.frames[S.frameIdx - 1] ?
 // Replay の action / events を初心者向けの技説明とカメラ指示へ翻訳する。
 // 数値・フレーム・乱数には一切触れない。
 const TAG_MOVE_PRESENTATION = {
-  strike:     { label: '打撃技', guide: 'パンチやキックなどで相手の姿勢を崩し、次の攻めにつなげる。' },
-  throw:      { label: '投げ技', guide: '相手の重心を奪い、持ち上げるか回転させてマットへ叩きつける。' },
-  submission: { label: '関節・絞め技', guide: '関節や首を捕らえて動きを奪い、ギブアップや消耗を狙う。' },
-  aerial:     { label: '飛び技', guide: '跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。' },
-  ground:     { label: 'グラウンド攻撃', guide: '倒れた相手へ追撃し、起き上がる余裕と体力を奪う。' },
-  rollup:     { label: '丸め込み', guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
-  tag:        { label: '連携技', guide: 'パートナーと呼吸を合わせ、二人の動きを一つの攻撃へつなげる。' },
+  strike:     { label: WM_I18N.t('打撃技'), guide: 'パンチやキックなどで相手の姿勢を崩し、次の攻めにつなげる。' },
+  throw:      { label: WM_I18N.t('投げ技'), guide: '相手の重心を奪い、持ち上げるか回転させてマットへ叩きつける。' },
+  submission: { label: WM_I18N.t('関節・絞め技'), guide: '関節や首を捕らえて動きを奪い、ギブアップや消耗を狙う。' },
+  aerial:     { label: WM_I18N.t('飛び技'), guide: '跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。' },
+  ground:     { label: WM_I18N.t('グラウンド攻撃'), guide: '倒れた相手へ追撃し、起き上がる余裕と体力を奪う。' },
+  rollup:     { label: WM_I18N.t('丸め込み'), guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
+  tag:        { label: WM_I18N.t('連携技'), guide: 'パートナーと呼吸を合わせ、二人の動きを一つの攻撃へつなげる。' },
 };
 
 function _actionMoveName(action){
@@ -141,7 +141,7 @@ function _movePresentation(action, fr){
 }
 
 function _moveResultText(action){
-  if (!action) return '試合開始';
+  if (!action) return WM_I18N.t('試合開始');
   const state = action.kind === 'miss' ? 'MISS'
     : action.kind === 'counter' ? 'COUNTER'
     : action.isCrit ? 'BIG HIT' : 'HIT';
@@ -170,7 +170,7 @@ function _applyCamera(force){
   if (!ring) return;
   if (!force && S.cameraMode === 'auto' && S.cameraLocked) {
     const chip = document.getElementById('cameraChip');
-    if (chip) chip.textContent = `カメラ · 自動・交代中固定`;
+    if (chip) chip.textContent = `${WM_I18N.t('カメラ')} · ${WM_I18N.t('自動・交代中固定')}`;
     return;
   }
   const idx = Math.max(0, S.frameIdx - 1);
@@ -178,8 +178,8 @@ function _applyCamera(force){
   ring.classList.toggle('camera-close', close);
   const chip = document.getElementById('cameraChip');
   if (chip) chip.textContent = S.cameraMode === 'auto'
-    ? `カメラ · 自動${close ? 'アップ' : '全景'}`
-    : `カメラ · ${close ? 'アップ' : '全景'}`;
+    ? `${WM_I18N.t('カメラ')} · ${WM_I18N.t('自動')}${close ? WM_I18N.t('アップ') : WM_I18N.t('全景')}`
+    : `${WM_I18N.t('カメラ')} · ${close ? WM_I18N.t('アップ') : WM_I18N.t('全景')}`;
 }
 
 function setCameraMode(mode){
@@ -211,9 +211,9 @@ function renderMatchFrame(){
       <div class="wm-tag-lower-dock">
         ${_teamCardHtml('a')}
         <section class="wm-tag-exchange-panel" id="col-center">
-          <div class="wm-tag-exchange-head"><span>直近の攻防</span><span>最新が上</span></div>
+          <div class="wm-tag-exchange-head"><span>${WM_I18N.t('直近の攻防')}</span><span>${WM_I18N.t('最新が上')}</span></div>
           <div class="wm-tag-exchange-grid">
-            <div class="battle-log" id="battleLog">${S.logHtml || '<div class="log-empty">ゴングを待っています</div>'}</div>
+            <div class="battle-log" id="battleLog">${S.logHtml || `<div class="log-empty">${WM_I18N.t('ゴングを待っています')}</div>`}</div>
             ${_moveDisplayHtml(curFrame)}
           </div>
         </section>
@@ -255,16 +255,16 @@ function _hudHtml(fr){
           <div class="wm-hud-face apron"><img id="hudFaceAApron" src="${getFaceUrl(apronA)}" onerror="this.style.display='none'"></div>
         </div>
         <div class="wm-hud-meta">
-          <div class="wm-hud-label">青コーナー</div>
+          <div class="wm-hud-label">${WM_I18N.t('青コーナー')}</div>
           <div class="wm-hud-name" id="hudTeamNameA">${escHtml(legalA.name)} ＆ ${escHtml(apronA.name)}</div>
-          <div class="wm-hud-active-label" id="hudActiveA">リング上 · ${escHtml(legalA.name)}</div>
+          <div class="wm-hud-active-label" id="hudActiveA">${WM_I18N.t('リング上')} · ${escHtml(legalA.name)}</div>
         </div>
       </div>
       <div class="wm-hud-center">
         <div class="wm-hud-turn" id="hudTurn">TURN ${turn || 1}</div>
         <div class="wm-hud-phase" id="hudPhase">${escHtml(String(phase).toUpperCase())}</div>
         <div class="wm-hud-seg" id="hudSeg">SEG ${segIdx + 1}　${escHtml(header)}</div>
-        <div class="wm-tag-chem">連携 <strong>A ${Math.round(S.chemA)}</strong><span>／</span><strong>B ${Math.round(S.chemB)}</strong></div>
+        <div class="wm-tag-chem">${WM_I18N.t('連携')} <strong>A ${Math.round(S.chemA)}</strong><span>／</span><strong>B ${Math.round(S.chemB)}</strong></div>
       </div>
       <div class="wm-hud-side" style="flex-direction:row-reverse">
         <div class="wm-hud-faces">
@@ -272,9 +272,9 @@ function _hudHtml(fr){
           <div class="wm-hud-face apron"><img id="hudFaceBApron" src="${getFaceUrl(apronB)}" onerror="this.style.display='none'"></div>
         </div>
         <div class="wm-hud-meta right">
-          <div class="wm-hud-label">赤コーナー</div>
+          <div class="wm-hud-label">${WM_I18N.t('赤コーナー')}</div>
           <div class="wm-hud-name" id="hudTeamNameB">${escHtml(legalB.name)} ＆ ${escHtml(apronB.name)}</div>
-          <div class="wm-hud-active-label" id="hudActiveB">リング上 · ${escHtml(legalB.name)}</div>
+          <div class="wm-hud-active-label" id="hudActiveB">${WM_I18N.t('リング上')} · ${escHtml(legalB.name)}</div>
         </div>
       </div>
     </div>
@@ -286,14 +286,14 @@ function _hudHtml(fr){
       <span class="wm-hp-name" id="hudHpNameA">${escHtml(legalA.name)}</span>
       <span class="wm-hp-pct ${hpCls(hpA.ratio)}" id="hudHpPctA">${hpA.pct}%</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill left ${hpCls(hpA.ratio)}" id="hudHpFillA" style="width:${hpA.pct}%"></div></div>
-      <span class="wm-hp-label">リング上 HP</span>
+      <span class="wm-hp-label">${WM_I18N.t('リング上 HP')}</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill right ${hpCls(hpB.ratio)}" id="hudHpFillB" style="width:${hpB.pct}%"></div></div>
       <span class="wm-hp-pct ${hpCls(hpB.ratio)}" id="hudHpPctB">${hpB.pct}%</span>
       <span class="wm-hp-name right" id="hudHpNameB">${escHtml(legalB.name)}</span>
     </div>
     <div class="wm-apron-hp-row">
       <div class="wm-apron-hp-side left"><span class="wm-apron-hp-name" id="hudApronNameA">${escHtml(apronA.name)}</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill left ${hpCls(hpApronA.ratio)}" id="hudApronFillA" style="width:${hpApronA.pct}%"></div></div><span class="wm-apron-hp-pct" id="hudApronPctA">${hpApronA.pct}%</span></div>
-      <span class="wm-apron-hp-label">控え HP</span>
+      <span class="wm-apron-hp-label">${WM_I18N.t('控え HP')}</span>
       <div class="wm-apron-hp-side right"><span class="wm-apron-hp-pct" id="hudApronPctB">${hpApronB.pct}%</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill right ${hpCls(hpApronB.ratio)}" id="hudApronFillB" style="width:${hpApronB.pct}%"></div></div><span class="wm-apron-hp-name" id="hudApronNameB">${escHtml(apronB.name)}</span></div>
     </div>
   </div>`;
@@ -301,10 +301,10 @@ function _hudHtml(fr){
 
 function _chemBarHtml(){
   return `<div class="chem-bar">
-    <span class="chem-label">連携 A</span>
+    <span class="chem-label">${WM_I18N.t('連携')} A</span>
     <span class="chem-a">${Math.round(S.chemA)}</span>
     <span class="chem-sep">／</span>
-    <span class="chem-label">連携 B</span>
+    <span class="chem-label">${WM_I18N.t('連携')} B</span>
     <span class="chem-b">${Math.round(S.chemB)}</span>
   </div>`;
 }
@@ -324,7 +324,7 @@ function _playerCardHtml(side, layer, posKey){
       <div class="danger-glow" id="dangerGlow-${side}"${ratio <= 0.25 && ratio > 0 ? ' style="opacity:1"' : ''}></div>
       <div class="speech-bubble" id="sp-${side}"></div>
     </div>
-    <button class="wm-tag-ring-nameplate" onclick="openBp('${posKey}')"><span>リング上</span><b class="player-name">${escHtml(ch.name)}</b></button>
+    <button class="wm-tag-ring-nameplate" onclick="openBp('${posKey}')"><span>${WM_I18N.t('リング上')}</span><b class="player-name">${escHtml(ch.name)}</b></button>
   </div>`;
 }
 
@@ -361,13 +361,13 @@ function _liveRingHtml(fr){
   const nar = fr ? _narrateFrame(fr) : { text:'ゴング！ 「次の攻防」で試合を進めてください', dramatic:false };
   const header = (S.matchInfo && S.matchInfo.header) || 'TAG MATCH';
   return `<section class="wm-tag-live-ring" id="liveRing">
-    <img class="wm-tag-ring-bg" src="../image/battle-ring-bg-mockup-v2.webp" alt="プロレス会場のリング" onerror="this.src='../image/battle-bg_venue_4.webp'">
+    <img class="wm-tag-ring-bg" src="../image/battle-ring-bg-mockup-v2.webp" alt="${WM_I18N.t('プロレス会場のリング')}" onerror="this.src='../image/battle-bg_venue_4.webp'">
     <div class="wm-tag-ring-grade"></div>
     <div class="wm-tag-team-light left"></div><div class="wm-tag-team-light right"></div>
     <div class="wm-tag-live-label"><i></i>LIVE RING</div>
     <div class="wm-tag-match-chip">${escHtml(header)}</div>
     <div class="wm-tag-phase-chip"><span id="pill">${escHtml(phase)}</span><span id="turnLbl">T${turn}</span></div>
-    <div class="wm-tag-camera-chip" id="cameraChip">カメラ · 自動全景</div>
+    <div class="wm-tag-camera-chip" id="cameraChip">${WM_I18N.t('カメラ')} · ${WM_I18N.t('自動')}${WM_I18N.t('全景')}</div>
     ${_playerCardHtml('a', 'legal', S.pos.legalA)}${_playerCardHtml('b', 'legal', S.pos.legalB)}
     ${_apronCardHtml('a', S.pos.apronA)}${_apronCardHtml('b', S.pos.apronB)}
     <div class="attack-arrow-layer wm-tag-ring-arrow-layer" id="arrowLayer"></div>
@@ -390,8 +390,8 @@ function _teamMemberHtml(side, layer, posKey){
   const ch = f(posKey);
   const hp = _fighterHpPct(ch);
   const active = layer === 'legal';
-  const role = active ? 'リング上' : '控え';
-  const recovery = active ? '' : ' · 回復中';
+  const role = active ? WM_I18N.t('リング上') : WM_I18N.t('控え');
+  const recovery = active ? '' : ' · ' + WM_I18N.t('回復中');
   return `<div class="wm-tag-member${active?' active':''}" id="team-${side}-${layer}" data-fighter-key="${posKey}">
     <img class="wm-tag-member-upper" src="${getUpperUrl(ch)}" alt="" onerror="this.style.display='none'">
     <div class="wm-tag-member-profile">
@@ -456,22 +456,22 @@ function _controlsHtml(){
   const curFrame = _getCurrentFrame();
   const winnerFrame = curFrame && curFrame.winner;
   const endState = winnerFrame || S.frameIdx >= S.frames.length;
-  const btnLabel = winnerFrame ? '結果を見る' : (endState ? '試合終了' : '次の攻防 ▶');
+  const btnLabel = winnerFrame ? WM_I18N.t('結果を見る') : (endState ? WM_I18N.t('試合終了') : WM_I18N.t('次の攻防 ▶'));
   const btnDisabled = S.anim || S.pendingCutin;
   const dots = [0,1,2].map(i => `<button class="speed-dot wm-speed-btn ${i === S.speedIdx ? 'on' : 'off'}" onclick="setSpeed(${i})">${i+1}×</button>`).join('');
   return `<div class="controls-sub">
     <div class="wm-control-left">
-      <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">自動再生<span>${S.autoAdvance?'再生中':'停止'}</span></button>
-      <div class="wm-control-set"><span>速度</span><div class="speed-dots">${dots}</div></div>
+      <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">${WM_I18N.t('自動再生')}<span>${S.autoAdvance?WM_I18N.t('再生中'):WM_I18N.t('停止')}</span></button>
+      <div class="wm-control-set"><span>${WM_I18N.t('速度')}</span><div class="speed-dots">${dots}</div></div>
     </div>
     <div class="wm-control-center"><button class="btn-main" id="nBtn"${btnDisabled ? ' disabled' : ''}>${btnLabel}</button></div>
     <div class="wm-control-right">
-      <div class="wm-control-set"><span>カメラ</span><div class="wm-camera-buttons">
-        <button data-camera="auto" class="${S.cameraMode==='auto'?'active':''}" onclick="setCameraMode('auto')">自動</button>
-        <button data-camera="wide" class="${S.cameraMode==='wide'?'active':''}" onclick="setCameraMode('wide')">全景</button>
-        <button data-camera="close" class="${S.cameraMode==='close'?'active':''}" onclick="setCameraMode('close')">アップ</button>
+      <div class="wm-control-set"><span>${WM_I18N.t('カメラ')}</span><div class="wm-camera-buttons">
+        <button data-camera="auto" class="${S.cameraMode==='auto'?'active':''}" onclick="setCameraMode('auto')">${WM_I18N.t('自動')}</button>
+        <button data-camera="wide" class="${S.cameraMode==='wide'?'active':''}" onclick="setCameraMode('wide')">${WM_I18N.t('全景')}</button>
+        <button data-camera="close" class="${S.cameraMode==='close'?'active':''}" onclick="setCameraMode('close')">${WM_I18N.t('アップ')}</button>
       </div></div>
-      <label class="wm-number-toggle"><input id="numberToggle" type="checkbox" onchange="toggleBattleNumbers()"${S.showNumbers?' checked':''}> 正確な数値</label>
+      <label class="wm-number-toggle"><input id="numberToggle" type="checkbox" onchange="toggleBattleNumbers()"${S.showNumbers?' checked':''}> ${WM_I18N.t('正確な数値')}</label>
     </div>
   </div>`;
 }
@@ -521,8 +521,8 @@ function _updateHud(){
   const activeB = document.getElementById('hudActiveB');
   if (teamNameA) teamNameA.textContent = `${legalA.name} ＆ ${apronA.name}`;
   if (teamNameB) teamNameB.textContent = `${legalB.name} ＆ ${apronB.name}`;
-  if (activeA) activeA.textContent = `リング上 · ${legalA.name}`;
-  if (activeB) activeB.textContent = `リング上 · ${legalB.name}`;
+  if (activeA) activeA.textContent = `${WM_I18N.t('リング上')} · ${legalA.name}`;
+  if (activeB) activeB.textContent = `${WM_I18N.t('リング上')} · ${legalB.name}`;
   [['hudFaceALegal',legalA],['hudFaceAApron',apronA],['hudFaceBLegal',legalB],['hudFaceBApron',apronB]].forEach(([id,ch]) => {
     const img = document.getElementById(id);
     if (img) { img.src = getFaceUrl(ch); img.style.display = ''; }
@@ -942,14 +942,14 @@ function _showRingHelperFor(side, duration){
 
 function animateEvent(ev, fr){
   if (ev.type === 'hotTag') {
-    showBanner('反撃のタッチ！', 'gold');
+    showBanner(WM_I18N.t('反撃のタッチ！'), 'gold');
     try { sfx.hotTagSE(); } catch(e){}
     flashGold();
     const teamKey = ev.team === 'A' ? S.pos.legalA : S.pos.legalB;
     const fighter = f(teamKey);
     if (fighter) showCutin(fighter, ev.team === 'A' ? 'left' : 'right', pickHotTagLine(fighter), 'tag-hot');
   } else if (ev.type === 'doubleTeam') {
-    showBanner('ダブルチーム！', 'red');
+    showBanner(WM_I18N.t('ダブルチーム！'), 'red');
     try { sfx.doubleTeamSE(); } catch(e){}
     const firstKey = keyById(Array.isArray(ev.by) ? ev.by[0] : ev.by);
     if (firstKey) _showRingHelperFor(firstKey === 'a1' || firstKey === 'a2' ? 'a' : 'b', 1500);
@@ -958,7 +958,7 @@ function animateEvent(ev, fr){
     const hasPinCutin = fr && fr.events && fr.events.some(e => e.type === 'pinAttempt' && e.outcome === 'cutinSave');
     if (hasPinCutin) return;
     const saverKey = keyById(ev.by);
-    showBanner('カットイン！', 'gold');
+    showBanner(WM_I18N.t('カットイン！'), 'gold');
     try { sfx.cutinSlide(); } catch(e){}
     const saver = f(saverKey);
     if (saver) {
@@ -967,14 +967,14 @@ function animateEvent(ev, fr){
       showCutin(saver, side, pickCutinSaveLine(saver), 'tag-save');
     }
   } else if (ev.type === 'friendlyFire') {
-    showBanner('同士討ち！', 'yellow');
+    showBanner(WM_I18N.t('同士討ち！'), 'yellow');
     try { sfx.friendlyFireSE(); } catch(e){}
     const victimKey = keyById(ev.victim);
     const side = (victimKey === 'a1' || victimKey === 'a2') ? 'a' : 'b';
     const card = document.getElementById(`card-${side}-legal`);
     if (card) { card.classList.add('ff-flash'); setTimeout(() => card.classList.remove('ff-flash'), 650); }
   } else if (ev.type === 'betrayal') {
-    showBanner('…見殺し', 'grey');
+    showBanner(WM_I18N.t('…見殺し'), 'grey');
     try { sfx.betrayalSE(); } catch(e){}
     const betrayerKey = keyById(ev.by);
     const side = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'a' : 'b';
@@ -1029,7 +1029,7 @@ function animateTouchSwap(side, fr){
   setTimeout(() => {
     const banner = document.getElementById('tagBanner');
     if (banner && newLegal) {
-      banner.textContent = isHot ? `🔥 反撃のタッチ！ ${newLegal.name}` : `🔄 タッチ → ${newLegal.name}`;
+      banner.textContent = isHot ? `🔥 ${WM_I18N.t('反撃のタッチ！')} ${newLegal.name}` : `🔄 ${WM_I18N.t('タッチ')} → ${newLegal.name}`;
       banner.className = 'tag-banner' + (isHot ? ' hottag' : '') + ' show';
       setTimeout(() => banner.classList.remove('show'), 1800);
     }
@@ -1249,7 +1249,7 @@ function _executePinStep(idx){
   } else if (step.kind === 'cutin') {
     // カットインは showCutin が pendingCutin=true を立てる。
     // クリックで dismissCutin → dismissCutin 側で pinCtrl 判定し _finishPinSeq を呼ぶ。
-    showBanner('カットイン！', 'gold');
+    showBanner(WM_I18N.t('カットイン！'), 'gold');
     try { sfx.cutinSlide(); } catch(e){}
     _showRingHelperFor(step.side === 'left' ? 'a' : 'b', 1500);
     showCutin(step.saver, step.side, step.line, 'tag-save');
@@ -1510,7 +1510,7 @@ function toggleAuto(){
   const b = document.getElementById('autoBtn');
   if (b) {
     b.classList.toggle('active', S.autoAdvance);
-    b.innerHTML = '自動再生<span>' + (S.autoAdvance ? '再生中' : '停止') + '</span>';
+    b.innerHTML = WM_I18N.t('自動再生') + '<span>' + (S.autoAdvance ? WM_I18N.t('再生中') : WM_I18N.t('停止')) + '</span>';
   }
   if (S.autoAdvance) {
     if (!S.anim && !S.pendingCutin && S.frameIdx < S.frames.length) {
@@ -1629,7 +1629,7 @@ function showResult(fr){
   const mq = result.mq || 0;
   const mqCls = mq >= 80 ? 'mq-gold' : mq >= 60 ? 'mq-green' : mq >= 40 ? 'mq-normal' : 'mq-low';
   document.getElementById('vicStats').innerHTML =
-    `<div class="vic-stat"><div class="vic-stat-label">評価</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>` +
+    `<div class="vic-stat"><div class="vic-stat-label">${WM_I18N.t('評価')}</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>` +
     `<div class="vic-stat"><div class="vic-stat-label">TURNS</div><div class="vic-stat-value">${result.turns}</div></div>` +
     `<div class="vic-stat"><div class="vic-stat-label">SEGS</div><div class="vic-stat-value">${segments}</div></div>`;
 
@@ -1683,7 +1683,7 @@ function openBp(posKey){
         <div class="bp-stat-track"><div class="bp-stat-fill ${s.k}" style="width:${s.v}%"></div></div>
         <span class="bp-stat-val">${s.v}</span>
       </div>`).join('')}</div>
-      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">現在HP: ${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${hpPct}%)</div>
+      <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">${WM_I18N.t('現在HP')}: ${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${hpPct}%)</div>
       ${ch.profile ? `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,0.03);border-radius:3px;font-size:12px;line-height:1.6;color:var(--text-sub)">${escHtml(ch.profile)}</div>` : ''}
     </div>
   </div>`;

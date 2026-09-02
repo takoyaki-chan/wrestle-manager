@@ -295,12 +295,12 @@ function _getFaceUrl(ch) { return typeof getFaceUrl  === 'function' ? getFaceUrl
 // ─── Presentation helpers ─────────────────────────────────────────────────
 // 数値やフレーム内容を変えず、action を初心者向けの表示文へ翻訳する。
 const MOVE_PRESENTATION = {
-  strike:     { label: '打撃技', guide: 'パンチやキックなどで相手の姿勢を崩し、次の攻めにつなげる。' },
-  throw:      { label: '投げ技', guide: '相手の重心を奪い、持ち上げるか回転させてマットへ叩きつける。' },
-  submission: { label: '関節・絞め技', guide: '関節や首を捕らえて動きを奪い、ギブアップや消耗を狙う。' },
-  aerial:     { label: '飛び技', guide: '跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。' },
-  ground:     { label: 'グラウンド攻撃', guide: '倒れた相手へ追撃し、起き上がる余裕と体力を奪う。' },
-  rollup:     { label: '丸め込み', guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
+  strike:     { label: WM_I18N.t('打撃技'), guide: 'パンチやキックなどで相手の姿勢を崩し、次の攻めにつなげる。' },
+  throw:      { label: WM_I18N.t('投げ技'), guide: '相手の重心を奪い、持ち上げるか回転させてマットへ叩きつける。' },
+  submission: { label: WM_I18N.t('関節・絞め技'), guide: '関節や首を捕らえて動きを奪い、ギブアップや消耗を狙う。' },
+  aerial:     { label: WM_I18N.t('飛び技'), guide: '跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。' },
+  ground:     { label: WM_I18N.t('グラウンド攻撃'), guide: '倒れた相手へ追撃し、起き上がる余裕と体力を奪う。' },
+  rollup:     { label: WM_I18N.t('丸め込み'), guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
 };
 
 function _actionMoveName(action){
@@ -326,7 +326,7 @@ function _movePresentation(action){
 }
 
 function _moveResultText(action){
-  if (!action) return '試合開始';
+  if (!action) return WM_I18N.t('試合開始');
   const state = action.kind === 'miss' ? 'MISS'
     : action.kind === 'counter' ? 'COUNTER'
     : action.isCrit ? 'BIG HIT' : 'HIT';
@@ -378,7 +378,7 @@ function renderWaiting(){
   const c = document.getElementById('mainContainer');
   if (c) c.innerHTML = `<div class="waiting">
     <div class="waiting-title">STANDBY</div>
-    <div class="waiting-sub">試合データの受信を待機中…</div>
+    <div class="waiting-sub">${WM_I18N.t('試合データの受信を待機中…')}</div>
     <div class="waiting-pulse"></div>
   </div>`;
 }
@@ -462,9 +462,9 @@ function renderMatchFrame(){
       <div class="wm-lower-dock">
         ${_statCardHtml(S.L, 'L')}
         <section class="wm-exchange-panel" id="colCenter">
-          <div class="wm-exchange-head"><span>直近の攻防</span><span>最新が上</span></div>
+          <div class="wm-exchange-head"><span>${WM_I18N.t('直近の攻防')}</span><span>${WM_I18N.t('最新が上')}</span></div>
           <div class="wm-exchange-grid">
-            <div class="battle-log" id="battleLog">${S.logHtml || '<div class="log-empty">ゴングを待っています</div>'}</div>
+            <div class="battle-log" id="battleLog">${S.logHtml || `<div class="log-empty">${WM_I18N.t('ゴングを待っています')}</div>`}</div>
             ${_centerHtml(fr)}
           </div>
         </section>
@@ -535,7 +535,7 @@ function _matchBadgeHtml(){
   const rec = mi.h2hRecord || null;
   if (!S._isBigMatch && !(rec && rec.matches > 0) && !(mi.rivalryTier > 0)) return '';
   const recordText = rec && rec.matches > 0
-    ? `${rec.matches} MATCHES  ${S.L ? escHtml(S.L.name) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(S.R.name) : 'RIGHT'}${rec.bestMQ ? `  最高評価 ${rec.bestMQ}` : ''}`
+    ? `${rec.matches} MATCHES  ${S.L ? escHtml(S.L.name) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(S.R.name) : 'RIGHT'}${rec.bestMQ ? `  ${WM_I18N.t('最高評価')} ${rec.bestMQ}` : ''}`
     : 'FIRST MEETING';
   const title = S._isBigMatch ? 'BIG MATCH' : 'RIVALRY MATCH';
   return `<div class="wm-match-badge">
@@ -549,7 +549,7 @@ function _liveRingHtml(fr){
   const phase = fr ? (fr.phase || 'Opening') : 'Opening';
   const turn = fr ? fr.turn : 1;
   return `<section class="wm-live-ring" id="liveRing">
-    <img class="wm-ring-bg" src="../image/battle-ring-bg-mockup-v2.webp" alt="プロレス会場のリング"
+    <img class="wm-ring-bg" src="../image/battle-ring-bg-mockup-v2.webp" alt="${WM_I18N.t('プロレス会場のリング')}"
       onerror="this.src='../image/battle-bg_venue_4.webp'">
     <div class="wm-ring-grade"></div>
     <div class="wm-ring-light left"></div><div class="wm-ring-light right"></div>
@@ -562,7 +562,7 @@ function _liveRingHtml(fr){
     <div class="wm-ring-impact" id="ringImpact"></div>
     <div class="bigmove-name" id="bigmoveName"></div>
     <div class="narration-box wm-commentary" id="narBox">
-      <div class="wm-commentary-label">実況</div>
+      <div class="wm-commentary-label">${WM_I18N.t('実況')}</div>
       <div class="nar-empty">ゴング！　「次の攻防」で試合を進めてください</div>
     </div>
   </section>`;
@@ -607,7 +607,7 @@ function _statCardHtml(ch, side){
       <div class="wm-stat-head"><button onclick="openBp('${side}')">${escHtml(ch.name)}</button><strong>OVR ${_calcOvr(ch)}</strong></div>
       <div class="wm-stat-meta"><span class="f-role-tag ${rc}">${escHtml(ch.role || 'Neutral')}</span> · ${escHtml(ch.style || '')}</div>
       <div class="ability-bars">${rows}</div>
-      <div class="grit-indicator${ch.gritTurns>0?' active':''}" id="grit-${side}">⚡ 闘志 (${ch.gritTurns})</div>
+      <div class="grit-indicator${ch.gritTurns>0?' active':''}" id="grit-${side}">⚡ ${WM_I18N.t('闘志 ({n})', {n: ch.gritTurns})}</div>
     </div>
     ${!isL ? `<img class="wm-stat-upper" src="${_getUpperUrl(ch)}" alt="" onerror="this.style.display='none'">` : ''}
   </article>`;
@@ -629,25 +629,25 @@ function _centerHtml(fr){
 function _controlsHtml(){
   const fr = _getCurrentFrame();
   const isEnd = (fr && fr.winner) || S.frameIdx >= S.frames.length;
-  const label = (fr && fr.winner) ? '結果を見る' : (isEnd ? '試合終了' : '次の攻防 ▶');
+  const label = (fr && fr.winner) ? WM_I18N.t('結果を見る') : (isEnd ? WM_I18N.t('試合終了') : WM_I18N.t('次の攻防 ▶'));
   const disabled = S.anim || S.pendingCutin;
   const dots = [0,1,2].map(i =>
     `<button class="speed-dot wm-speed-btn ${i === S.speedIdx?'on':'off'}" onclick="setSpeed(${i})">${i+1}×</button>`
   ).join('');
   return `<div class="controls-sub">
     <div class="wm-control-left">
-      <button class="btn wm-prev-btn" id="prevBtn" onclick="previousFrame()"${disabled||S.frameIdx===0?' disabled':''}>◀ ひとつ戻る</button>
-      <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">自動再生<span>${S.autoAdvance?'再生中':'停止'}</span></button>
-      <div class="wm-control-set"><span>速度</span><div class="speed-dots">${dots}</div></div>
+      <button class="btn wm-prev-btn" id="prevBtn" onclick="previousFrame()"${disabled||S.frameIdx===0?' disabled':''}>◀ ${WM_I18N.t('ひとつ戻る')}</button>
+      <button class="btn btn-auto${S.autoAdvance?' active':''}" id="autoBtn" onclick="toggleAuto()">${WM_I18N.t('自動再生')}<span>${S.autoAdvance?WM_I18N.t('再生中'):WM_I18N.t('停止')}</span></button>
+      <div class="wm-control-set"><span>${WM_I18N.t('速度')}</span><div class="speed-dots">${dots}</div></div>
     </div>
     <div class="wm-control-center"><button class="btn-main" id="nBtn"${disabled?' disabled':''}>${label}</button></div>
     <div class="wm-control-right">
-      <div class="wm-control-set"><span>カメラ</span><div class="wm-camera-buttons">
-        <button data-camera="auto" class="${S.cameraMode==='auto'?'active':''}" onclick="setCameraMode('auto')">自動</button>
-        <button data-camera="wide" class="${S.cameraMode==='wide'?'active':''}" onclick="setCameraMode('wide')">全景</button>
-        <button data-camera="close" class="${S.cameraMode==='close'?'active':''}" onclick="setCameraMode('close')">アップ</button>
+      <div class="wm-control-set"><span>${WM_I18N.t('カメラ')}</span><div class="wm-camera-buttons">
+        <button data-camera="auto" class="${S.cameraMode==='auto'?'active':''}" onclick="setCameraMode('auto')">${WM_I18N.t('自動')}</button>
+        <button data-camera="wide" class="${S.cameraMode==='wide'?'active':''}" onclick="setCameraMode('wide')">${WM_I18N.t('全景')}</button>
+        <button data-camera="close" class="${S.cameraMode==='close'?'active':''}" onclick="setCameraMode('close')">${WM_I18N.t('アップ')}</button>
       </div></div>
-      <label class="wm-number-toggle"><input id="numberToggle" type="checkbox" onchange="toggleBattleNumbers()"${S.showNumbers?' checked':''}> 正確な数値</label>
+      <label class="wm-number-toggle"><input id="numberToggle" type="checkbox" onchange="toggleBattleNumbers()"${S.showNumbers?' checked':''}> ${WM_I18N.t('正確な数値')}</label>
     </div>
   </div>`;
 }
@@ -715,7 +715,7 @@ function _updatePanel(side){
   if (glow) { if (hp.ratio <= 0.25 && hp.ratio > 0) glow.classList.add('show'); else glow.classList.remove('show'); }
   // grit indicator
   const gi = document.getElementById(`grit-${side}`);
-  if (gi){ gi.textContent = `⚡ 闘志 (${ch.gritTurns})`; gi.className = 'grit-indicator' + (ch.gritTurns>0?' active':''); }
+  if (gi){ gi.textContent = '⚡ ' + WM_I18N.t('闘志 ({n})', {n: ch.gritTurns}); gi.className = 'grit-indicator' + (ch.gritTurns>0?' active':''); }
 }
 
 // 結末を示唆するログ行を判定。pin/rollup/tkoStop シーケンスフレームでのみ hold する。
@@ -1472,7 +1472,7 @@ function previousFrame(){
 function toggleAuto(){
   S.autoAdvance = !S.autoAdvance;
   const b = document.getElementById('autoBtn');
-  if (b){ b.classList.toggle('active', S.autoAdvance); b.innerHTML = '自動再生<span>' + (S.autoAdvance?'再生中':'停止') + '</span>'; }
+  if (b){ b.classList.toggle('active', S.autoAdvance); b.innerHTML = WM_I18N.t('自動再生') + '<span>' + (S.autoAdvance?WM_I18N.t('再生中'):WM_I18N.t('停止')) + '</span>'; }
   if (S.autoAdvance) {
     if (!S.anim && !S.pendingCutin && S.frameIdx < S.frames.length)
       S.autoTimer = setTimeout(() => nextFrame(), 500);
@@ -1520,7 +1520,7 @@ function showResult(fr){
     victoryOv.innerHTML = `<div class="result-box">
       <div class="result-draw-content">
         <div class="result-winner">NO CONTEST</div>
-        <div class="result-type">タイムアップ — 決着つかず</div>
+        <div class="result-type">${WM_I18N.t('タイムアップ — 決着つかず')}</div>
       </div>
       <button class="btn-end" id="eBtn">CLOSE</button>
     </div>`;
@@ -1542,7 +1542,7 @@ function showResult(fr){
           </div>
         </div>
         <div class="vic-stats">
-          <div class="vic-stat"><div class="vic-stat-label">評価</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>
+          <div class="vic-stat"><div class="vic-stat-label">${WM_I18N.t('評価')}</div><div class="vic-stat-value ${mqCls}">${mq}</div></div>
           <div class="vic-stat"><div class="vic-stat-label">Turns</div><div class="vic-stat-value">${turns}</div></div>
         </div>
       </div>
@@ -1649,8 +1649,8 @@ function openBp(side){
       <div class="bp-stats">${stats.map(s=>`<div class="bp-stat-row"><span class="bp-stat-name">${s.l}</span><div class="bp-stat-track"><div class="bp-stat-fill ${s.k}" style="width:${s.v}%"></div></div><span class="bp-stat-val">${s.v}</span></div>`).join('')}</div>
       <div class="bp-divider"></div>
       <div class="bp-details">
-        <div class="bp-detail-item"><span class="bp-detail-label">現在HP</span><span class="bp-detail-value">${Math.max(0, Math.round(ch.hp))} / ${ch.mhp} (${hp.pct}%)</span></div>
-        <div class="bp-detail-item"><span class="bp-detail-label">モメンタム</span><span class="bp-detail-value">${S.mom > 15 ? (side==='L'?'優勢':'劣勢') : S.mom < -15 ? (side==='L'?'劣勢':'優勢') : '互角'}</span></div>
+        <div class="bp-detail-item"><span class="bp-detail-label">${WM_I18N.t('現在HP')}</span><span class="bp-detail-value">${Math.max(0, Math.round(ch.hp))} / ${ch.mhp} (${hp.pct}%)</span></div>
+        <div class="bp-detail-item"><span class="bp-detail-label">${WM_I18N.t('モメンタム')}</span><span class="bp-detail-value">${S.mom > 15 ? (side==='L'?WM_I18N.t('優勢'):WM_I18N.t('劣勢')) : S.mom < -15 ? (side==='L'?WM_I18N.t('劣勢'):WM_I18N.t('優勢')) : WM_I18N.t('互角')}</span></div>
       </div>
       ${ch.profile?`<div class="bp-divider"></div><div class="bp-profile"><div class="bp-profile-label">PROFILE</div><div class="bp-profile-text">${escHtml(ch.profile)}</div></div>`:''}
       ${badges?`<div class="bp-badges">${badges}</div>`:''}
@@ -1682,9 +1682,9 @@ document.addEventListener('keydown', e => {
 const _spTimers = {};
 function _narrationHtml(nar){
   if (!nar || !nar.text) {
-    return '<div class="wm-commentary-label">実況</div><div class="nar-empty">ゴング！　「次の攻防」で試合を進めてください</div>';
+    return '<div class="wm-commentary-label">' + WM_I18N.t('実況') + '</div><div class="nar-empty">ゴング！　「次の攻防」で試合を進めてください</div>';
   }
-  return `<div class="wm-commentary-label">実況</div><div class="nar-line nar-main show${nar.dramatic ? ' dramatic' : ''}">${escHtml(nar.text)}</div>`;
+  return `<div class="wm-commentary-label">${WM_I18N.t('実況')}</div><div class="nar-line nar-main show${nar.dramatic ? ' dramatic' : ''}">${escHtml(nar.text)}</div>`;
 }
 
 function _narrateFrame(fr){

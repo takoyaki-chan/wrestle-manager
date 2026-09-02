@@ -37,9 +37,11 @@ assert.ok(!main.includes('battle-ring-bg-mockup-v2.png'), 'tag viewer must not r
 assert.ok(main.includes('hudApronFillA') && main.includes('hudApronFillB'), 'both apron HP meters must remain visible in the HUD');
 assert.ok(main.includes('S.logHtml = turnMarker + lines + S.logHtml'), 'new tag replay log entries must be prepended');
 
-assert.ok(main.includes("showBanner('反撃のタッチ！'"), 'hot-tag presentation must use the approved Japanese label');
-assert.ok(main.includes("showBanner('ダブルチーム！'"), 'double-team presentation must use Japanese');
-assert.ok(main.includes("showBanner('カットイン！'"), 'save presentation must use Japanese');
+// i18n Stage A P3a-4e: 固定イベントバナーはWM_I18N.t()経由になった(ja表示は不変)。
+// 文字列自体はソースにそのまま残るので t() 呼び出しごと照合する。
+assert.ok(main.includes("showBanner(WM_I18N.t('反撃のタッチ！')"), 'hot-tag presentation must use the approved Japanese label via WM_I18N.t()');
+assert.ok(main.includes("showBanner(WM_I18N.t('ダブルチーム！')"), 'double-team presentation must use Japanese via WM_I18N.t()');
+assert.ok(main.includes("showBanner(WM_I18N.t('カットイン！')"), 'save presentation must use Japanese via WM_I18N.t()');
 assert.ok(!main.includes("showBanner('HOT TAG!'") && !main.includes("showBanner('DOUBLE TEAM!'") && !main.includes("showBanner('CUT IN!'"), 'legacy English-only event banners must be removed');
 
 assert.ok(html.includes('.wm-tag-ring-helper{z-index:6;opacity:0'), 'apron figures must be hidden outside an actual ring entry');

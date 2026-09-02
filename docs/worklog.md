@@ -1,5 +1,51 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Stage A P3a バッチ4e — 観戦モード(battle-engine/tag-battle)のt()移行+iframe配線(P3a最終区画)（2026-09-02・Sonnet worktree agent-a5b095cbfbcd4c465）
+
+バッチ4a(ui-render.js)〜4d(index.html/factions.js)に続く、観戦モード(シングル戦iframe battle-engine.html / タッグ戦iframe tag-battle.html)のt()移行。両iframeは親(index.html)とは別Documentのため独立したWM_I18Nインスタンスが必要で、これまでi18n.jsを読み込んでいなかった。開始前にworktreeブランチをmain先端(f95f508、バッチ4完走コミット)へfast-forward済み。
+
+### iframe配線: `<script src="i18n.js"></script>` を他の全スクリプトより先に追加
+- `src/battle-engine.html` / `src/tag-battle.html` の双方に追加(PORTRAIT等を定義する先頭`<script>`ブロックより前)
+- コメントで明記した設計判断: 両iframeは`localStorage 'wm_lang'`を共有するので言語設定自体は揃うが、観戦は試合ごとに`iframe.src`を書き換えて開き直す作りのため(app.js側の`iframe.src = 'battle-engine.html?t='+Date.now()`等)、**開いている最中に親のsetLang()へ追従する必要はない**(次に開いたときの読み込み時点で最新のwm_langを反映すれば十分)
+- release/manifest.jsonへの追記は不要(i18n.js・battle-engine.html・tag-battle.htmlはいずれも既存登録ファイル。新規ファイル追加なし)
+
+### src/battle-engine-main.js: WM_I18N.t() 31箇所
+### src/tag-battle-main.js: WM_I18N.t() 48箇所
+観戦UIのクローム(ボタン・ヘッダー・ステータスラベル・勝敗表示まわりの固定文言)を対象にt()化。主な対象:
+- 待受画面の受信待ちメッセージ、技カテゴリラベル(打撃技/投げ技/関節・絞め技/飛び技/グラウンド攻撃/丸め込み/連携技=tag限定)、`_moveResultText`の「試合開始」
+- 直近攻防ヘッダー(直近の攻防/最新が上)・ログ空表示(ゴングを待っています)・リング背景alt(プロレス会場のリング)・実況パネルラベル(実況、single限定)
+- コントロール群: 次の攻防▶/結果を見る/試合終了/ひとつ戻る/自動再生/再生中/停止/速度/カメラ/自動/全景/アップ/正確な数値(toggleAuto()内の重複箇所も含め両ファイルで統一)
+- 闘志インジケータ「闘志 ({n})」(プレースホルダ形式、single限定)・最高評価(h2h戦績バッジ、single限定)
+- tag限定: 青コーナー/赤コーナー・リング上/控え/回復中・「リング上 HP」/「控え HP」・連携(A/B)・カメラチップ(カメラ/自動・交代中固定/自動+アップ/全景の組み合わせ生成)・イベントバナー5種(反撃のタッチ！/ダブルチーム！/カットイン！×2箇所/同士討ち！/…見殺し)とタッチ交代バナーの「反撃のタッチ！」「タッチ」再利用
+- 結果画面: タイムアップ — 決着つかず(引き分け)・評価(both)、選手ポップアップ: 現在HP(both)・モメンタム/優勢/劣勢/互角(single限定、tagにはモメンタム欄なし)
+
+### スキップ判断(記録)
+1. **CUTIN_LINES(archetype×personality台詞テーブル)・FINISH_SUSPENSE(フィニッシュ実況プール)・pinシーケンスの導入ナレーション/カウント文言("ワン！""ツー！""3ーーーっ！！"等)** — 実況テキストのテンプレート・セリフ(Stage B領分)として指示書どおり非対象
+2. **narBox/moveNarrationの動的実況コンテンツ**(「ゴング！　「次の攻防」で試合を進めてください」の初期文言、「決着！」の試合終了文言、`_narrateFrame`の技描写文): 実況パネルの"ラベル"(「実況」)はt()化したが、その中に表示される内容自体は_narrateFrame由来の実況テキストと同種と判断し非対象に統一(single/tag両方)
+3. **MOVE_PRESENTATION/TAG_MOVE_PRESENTATIONのguideフィールド(技カテゴリの説明文、base 6〜7種+ドロップキック等の正規表現オーバーライド約7件)**: labelフィールド(短い分類名)はステータスラベルとしてt()化したが、guideは1〜2文の説明的な地の文で「ボタン・ヘッダー・ステータスラベル・勝敗表示」の指示範囲から外れると判断し非対象(将来Stage Bまたは別バッチで検討)
+4. **`_SPOILER_LINE_RE`(結末示唆行のキーワード判定、single/tag両方に存在)**: ログ本文(JAのまま)に対する部分一致判定のロジックキー。指示書の除外対象「ロジックキー・CSSクラス判定」に該当し非対象
+5. **`_LOCAL_FINISH_TEXT`/`_localFormatFinish`**: 指示書の明示指定どおり「構造は既に翻訳可能」につきそのまま
+6. **`age + '歳'`(bp popup)**: 数値+単位語として非対象
+7. **`content:'実況'`(battle-engine.htmlのCSS `::after`)**: CSSのcontentプロパティはJS実行コンテキストを持たずt()を通せない。既存テスト(`test/battle-presentation-ui-test.js`)がこのCSSリテラルを照合しているため意図的に非対象のまま据え置き
+8. **battle-anim.js/battle-sfx.js/battle-replay-core.js**: 目視確認の結果、表示文字列はコメントのみで対象なし(text自体は呼び出し元のbattle-engine-main.js/tag-battle-main.js側で選定されており、既にt()化対象に含まれている)
+
+### 検証
+- `node --check src/battle-engine-main.js src/tag-battle-main.js` — 成功
+- `node test/ja-golden.js` — 完全一致(hash `6b3d05c8...` 不変、両ファイルはja-goldenの読み込み対象外のため影響なし)
+- `node test/i18n-ratchet.js` — 増加なし(files=31 totalJaStrings=28075、既存t()化と同様に文字列自体はソースに残るためカウント自体は不変)
+- `npm test` — **260/260 PASS**。1本を追従修正: `test/tag-battle-presentation-ui-test.js`が`showBanner('反撃のタッチ！'`等の文字列直後一致でイベントバナーを検出していたため、`showBanner(WM_I18N.t('反撃のタッチ！')`形へ照合パターンを更新(意図=「イベントバナーが承認済みの日本語文言を使っている」ことの確認は維持)
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・季末season=2 week=1まで到達。観戦モード自体は自然走破のルート上では踏まないが、退行ゼロを確認)
+
+### 数値
+- `WM_I18N.t()`呼び出し: battle-engine-main.js **0 → 31箇所** / tag-battle-main.js **0 → 48箇所**(計79箇所)
+- iframe配線: battle-engine.html / tag-battle.html に`<script src="i18n.js">`を追加(計2ファイル)
+
+### P3a完了について
+**本バッチでStage A P3a(バッチ1〜4e)が完了**。バッチ4a〜4dで完走したui-render.js/ui-common.js/app.js/index.html/factions.jsに続き、本バッチで観戦モード(battle-engine/tag-battle)のUIクロームもt()化された。残っているのは`docs/i18n-stage-a-p3a-design-v0.1.md`「バッチ4の積み残し台帳」に記録済みの個別保留事項(index.htmlヘルプ画面の`<strong>`混在段落・`getHostilityLabel`中立キー分離・`SURVIVAL_MILESTONES`/`PHASES`のモジュールロード時定数等、いずれも構造対処が必要と判明済みで意図的な保留)と、本バッチで新たに記録した上記スキップ判断3件(narBox動的実況/MOVE_PRESENTATION guide/CSS content)のみ。Stage B(翻訳本体)は既に判断材料完備・ゴー判断待ちの状態が継続。
+
+### 残課題
+- 実機確認: シングル観戦(battle-engine.html)・タッグ観戦(tag-battle.html)を実際に開き、コントロールボタン群(次の攻防/自動再生/速度/カメラ/正確な数値)・HUD(闘志インジケータ/最高評価バッジ/青赤コーナー/リング上・控えラベル/連携表示)・イベントバナー(タッグの反撃のタッチ！等5種)・結果画面(評価/現在HP/モメンタム)の表示が崩れていないか目視確認いただけると安心(JA出力は不変のはずだが、t()呼び出しの参照ミスが無いかの最終目視)
+
 ## Stage A P3a バッチ4d — index.html data-i18n化 + factions.js t()移行(バッチ4完走)（2026-09-02・Sonnet worktree agent-a7bd9a67da65defa4）
 
 バッチ4a(ui-render.js)〜4c(app.js)に続く最終ファイル。**index.html は静的HTMLテキストノードのためt()を直接通せない**という新規課題に対応する `WM_I18N.applyDom()` 機構を新設し、静的UI文言へ `data-i18n`/`data-i18n-attr` 属性を付与。あわせて factions.js(元は本バッチ設計書の対象外だったが今回追加指定)のプレイヤー可視文字列を `WM_I18N.t()` 化した。開始前にworktreeブランチをmain先端(d63f27d)へfast-forward済み。
