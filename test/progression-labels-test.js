@@ -14,7 +14,8 @@ assert.strictEqual(
   'generic post-match dialogue buttons must use the 次へ label'
 );
 assert.ok(
-  source.includes('<button class="crrm-sequence-next crrm-sequence-forward" type="button">次へ</button>'),
+  source.includes('<button class="crrm-sequence-next crrm-sequence-forward" type="button">次へ</button>') ||
+    source.includes('<button class="crrm-sequence-next crrm-sequence-forward" type="button">${WM_I18N.t(\'次へ\')}</button>'),
   'the challenge result sequence must use the 次へ label'
 );
 assert.ok(

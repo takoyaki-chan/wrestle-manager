@@ -24,14 +24,23 @@ function functionSource(name) {
   throw new Error(`${name} end not found`);
 }
 
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他テストと同じスタブ)。
+const WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
 const build = new Function(
   'Engine',
   'CHALLENGE_REQUEST_OPPONENT_REACTIONS',
+  'WM_I18N',
   `${functionSource('_challengeRequestResultReaction')};
    ${functionSource('_challengeRequestOpponentReaction')};
    return { self: _challengeRequestResultReaction, foe: _challengeRequestOpponentReaction };`
 );
-const built = build(Engine, CHALLENGE_REQUEST_OPPONENT_REACTIONS);
+const built = build(Engine, CHALLENGE_REQUEST_OPPONENT_REACTIONS, WM_I18N_STUB);
 const reactionFor = built.self;
 const foeReactionFor = built.foe;
 const state = { rngSeed: 42, season: 3, week: 12 };

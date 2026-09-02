@@ -137,7 +137,7 @@ function logGap(msg) {
 // ===========================================================================
 (function challengeRequestResultSuite() {
   const build = new Function(
-    'Engine', 'document', 'getUpperUrl', 'getCoachPortraitUrl', 'RIVAL_ORGS', 'G',
+    'Engine', 'document', 'getUpperUrl', 'getCoachPortraitUrl', 'RIVAL_ORGS', 'G', 'WM_I18N',
     `let _popupQueue = [];
      const _POPUP_OVERLAY_IDS = [];
      ${uiFn('escHtml')}
@@ -192,6 +192,15 @@ function logGap(msg) {
     }, overrides || {});
   }
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   function makeBundle(opts) {
     opts = opts || {};
     const { doc, getRoot } = makeDom();
@@ -200,7 +209,7 @@ function logGap(msg) {
     const getCoachPortraitUrlStub = () => '';
     const RIVAL_ORGS_STUB = opts.RIVAL_ORGS || [{ id: 'org_a', name: 'ライバル団体' }];
     const GStub = opts.G || {};
-    const built = build(EngineStub, doc, getUpperUrlStub, getCoachPortraitUrlStub, RIVAL_ORGS_STUB, GStub);
+    const built = build(EngineStub, doc, getUpperUrlStub, getCoachPortraitUrlStub, RIVAL_ORGS_STUB, GStub, WM_I18N_STUB);
     return { built, getRoot };
   }
 
@@ -320,7 +329,7 @@ function logGap(msg) {
 // ===========================================================================
 (function springTagLeagueSuite() {
   const build = new Function(
-    'Engine', 'document', 'App', 'G', 'getPortraitUrl', 'requestAnimationFrame',
+    'Engine', 'document', 'App', 'G', 'getPortraitUrl', 'requestAnimationFrame', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_stlOrgTeam')}
      ${uiFn('_stlFighterOf')}
@@ -354,6 +363,15 @@ function logGap(msg) {
     ];
   }
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   function makeBundle(opts) {
     opts = opts || {};
     const box = { innerHTML: '', style: {} };
@@ -366,7 +384,7 @@ function logGap(msg) {
     const AppStub = opts.App || { _stlPreview: { idx: 3, phase: 'inProgress' } };
     const GStub = opts.G || baseG();
     const getPortraitUrlStub = opts.getPortraitUrl || ((id) => `image/face/${id}.png`);
-    const built = build(EngineStub, doc, AppStub, GStub, getPortraitUrlStub, () => {});
+    const built = build(EngineStub, doc, AppStub, GStub, getPortraitUrlStub, () => {}, WM_I18N_STUB);
     return { built, box };
   }
 
@@ -488,7 +506,7 @@ function logGap(msg) {
 // ===========================================================================
 (function autumnWarSuite() {
   const buildFocus = new Function(
-    'Engine', 'G', 'App',
+    'Engine', 'G', 'App', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_agwTeam')}
      ${uiFn('_agwFighter')}
@@ -508,6 +526,15 @@ function logGap(msg) {
 
   const ENGINE_AW = { INITIAL_CONDITION: 60, CEILING: 100 };
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   function makeFocusBundle(opts) {
     opts = opts || {};
     const EngineStub = opts.Engine || {
@@ -520,7 +547,7 @@ function logGap(msg) {
       { orgId: 'org_a', orgName: '鬼道場', memberIds: [11, 12, 13] },
     ] }, roster: [{ id: 1, name: '選手1' }, { id: 2, name: '選手2' }, { id: 3, name: '選手3' }], aiOrgs: { org_a: { roster: [{ id: 11, name: '敵1' }, { id: 12, name: '敵2' }, { id: 13, name: '敵3' }] } } };
     const AppStub = opts.App || {};
-    return buildFocus(EngineStub, GStub, AppStub);
+    return buildFocus(EngineStub, GStub, AppStub, WM_I18N_STUB);
   }
 
   // --- 3a. 団体戦決着時: 自団体が左でも右でもスコアの取り違えが無い(最重要: 不変条件3) ---
@@ -596,7 +623,7 @@ function logGap(msg) {
 
   // --- renderAutumnWarResult: 決勝の最終スコア(champion vs runnerUp) ---
   const buildResult = new Function(
-    'Engine', 'G', 'App', 'document',
+    'Engine', 'G', 'App', 'document', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_agwTeam')}
      ${uiFn('_agwFighter')}
@@ -643,7 +670,7 @@ function logGap(msg) {
       ] },
     };
     const AppStub = opts.App || { _awPreview: opts.p };
-    const built = buildResult(EngineStub, GStub, AppStub, doc);
+    const built = buildResult(EngineStub, GStub, AppStub, doc, WM_I18N_STUB);
     return { built, getScreen };
   }
 
@@ -931,7 +958,7 @@ function logGap(msg) {
 // ===========================================================================
 (function step3Suite() {
   const build = new Function(
-    'Engine', 'getUpperUrl',
+    'Engine', 'getUpperUrl', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_u3bSideHtml')}
      ${uiFn('_mdlAFlowPortraitHtml')}
@@ -943,11 +970,20 @@ function logGap(msg) {
      return { _buildB2Step3, _buildB3Step3 };`
   );
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   function makeBundle(opts) {
     opts = opts || {};
     const EngineStub = opts.Engine || { rng: { derive: () => 1 }, util: { ov: () => 60 } };
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
-    return build(EngineStub, getUpperUrlStub);
+    return build(EngineStub, getUpperUrlStub, WM_I18N_STUB);
   }
 
   const roster = [{ id: 1, name: '選手A', age: 20 }, { id: 2, name: '選手B', age: 22 }];

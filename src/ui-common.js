@@ -20277,7 +20277,7 @@ function renderTenchosenMatchResult(ri, mi) {
     const total = rounds.reduce((sum, item) => sum + item.matches.length, 0);
     const position = rounds.slice(0, ri).reduce((sum, item) => sum + item.matches.length, 0) + mi + 1;
     const isFinal = round.name === 'final';
-    const roundLabel = isFinal ? '決勝' : _tcRoundLabel(round.name);
+    const roundLabel = isFinal ? WM_I18N.t('決勝') : _tcRoundLabel(round.name);
     const leftFull = _tcFindFighterAnywhere(match.left.id) || match.left;
     const rightFull = _tcFindFighterAnywhere(match.right.id) || match.right;
     const left = { ...leftFull, ..._jtFighterShim(match.left), org: match.left._orgName || '', orgId: match.left.orgId };
@@ -20290,14 +20290,14 @@ function renderTenchosenMatchResult(ri, mi) {
       return target && target['jt-recover-pct'] != null ? target['jt-recover-pct'] : (side === 'left' ? match.hpLeft : match.hpRight);
     };
     showEventMatchResultPopup({
-      theme: 'tenchosen', title: `${roundLabel} 第${mi + 1}試合　結果`, meta: `第${_tcEditionNo()}回 天頂戦 ・ 第${position}試合 / 全${total}試合`,
+      theme: 'tenchosen', title: `${roundLabel} ${WM_I18N.t('第{n}試合　結果', { n: mi + 1 })}`, meta: WM_I18N.t('第{n}回 天頂戦 ・ 第{pos}試合 / 全{total}試合', { n: _tcEditionNo(), pos: position, total }),
       progress: `${position} / ${total}`, progressLabel: isFinal ? 'FINAL' : 'QUADRENNIAL',
-      context: [['Round', roundLabel], ['次戦', isFinal ? '優勝発表' : '勝ち上がり'], ['4年周期', `第${_tcEditionNo()}回大会`]],
+      context: [['Round', roundLabel], [WM_I18N.t('次戦'), isFinal ? WM_I18N.t('優勝発表') : WM_I18N.t('勝ち上がり')], [WM_I18N.t('4年周期'), WM_I18N.t('第{n}回大会', { n: _tcEditionNo() })]],
       left, right, winnerSide: leftWins ? 'left' : 'right', winnerFighter: winner,
       leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
       finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
-      chips: [`第${_tcEditionNo()}回天頂戦`, isFinal ? '最強王者' : '次戦進出', `評価 ${match.mq}`], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : '回復後HP',
-      footNote: `天頂戦 ・ ${winner.name} ${isFinal ? '優勝' : '勝ち上がり'}`, nextLabel: _matchNextLabel(isFinal),
+      chips: [WM_I18N.t('第{n}回天頂戦', { n: _tcEditionNo() }), isFinal ? WM_I18N.t('最強王者') : WM_I18N.t('次戦進出'), WM_I18N.t('評価 {n}', { n: match.mq })], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : WM_I18N.t('回復後HP'),
+      footNote: WM_I18N.t('天頂戦 ・ {name} {result}', { name: winner.name, result: isFinal ? WM_I18N.t('優勝') : WM_I18N.t('勝ち上がり') }), nextLabel: _matchNextLabel(isFinal),
       onContinue: () => App.tcAdvanceAfterResult(ri, mi),
     });
     return;
@@ -20419,20 +20419,20 @@ function renderTenchosenResult() {
       <div class="ch-head">
         <div class="ch-emb"><img src="../image/emblem-tenchosen.png" alt="" onerror="this.style.display='none'"></div>
         <div class="ch-kicker">Season ${G.season} — Quadrennial Tournament</div>
-        <div class="ch-title">天 頂 戦</div>
-        <div class="ch-meta">全国女子プロレス最強王者決定戦 ・ 第${_tcEditionNo()}回</div>
+        <div class="ch-title">${WM_I18N.t('天 頂 戦')}</div>
+        <div class="ch-meta">${WM_I18N.t('全国女子プロレス最強王者決定戦')} ・ ${WM_I18N.t('第{n}回', { n: _tcEditionNo() })}</div>
       </div>
       <div class="ch-hero">
         ${_chBubbleSlot(champLine)}
         <div class="ch-por-wrap"><span class="ch-glow"></span><span class="ch-crown">👑</span><div class="ch-por">${_chPortraitImg(champion)}</div></div>
         <div class="ch-name">${escHtml(champion.name)}</div>
-        <div class="ch-role">戴冠</div>
+        <div class="ch-role">${WM_I18N.t('戴冠')}</div>
         ${_chOrgBadgeHtml(champion.orgId, champion._orgName)}
         <div class="ch-stat"><small>WINS</small>${winCount}</div>
       </div>
-      ${isPlayerChamp ? `<div class="ch-foot"><span class="ch-prize">優勝賞金<b>¥${prize.toLocaleString()}万</b></span></div>` : ''}
+      ${isPlayerChamp ? `<div class="ch-foot"><span class="ch-prize">${WM_I18N.t('優勝賞金')}<b>¥${prize.toLocaleString()}万</b></span></div>` : ''}
     </div>
-    <div class="tcwn-tap">タップして進む ▶</div>
+    <div class="tcwn-tap">${WM_I18N.t('タップして進む')} ▶</div>
   </div>`;
 
   box.innerHTML = html;
@@ -20449,17 +20449,17 @@ function _tcDramaNarration(evClass, winner, loser) {
 
 /** 関係性ドラマ: 関係変化チップ */
 function _tcDramaChip(evClass, winner, loser) {
-  if (evClass === 'epic') return `<span class="tcdr-chip bond">好敵手 — 絆・因縁 ともに上昇(相互)</span>`;
-  if (evClass === 'humiliation') return `<span class="tcdr-chip riv">因縁 激発展(${escHtml(loser.name)} → ${escHtml(winner.name)})</span>`;
-  if (evClass === 'stablemate_rift') return `<span class="tcdr-chip riv">絆に亀裂</span>`;
-  return `<span class="tcdr-chip bond">絆 深化</span>`;
+  if (evClass === 'epic') return `<span class="tcdr-chip bond">${WM_I18N.t('好敵手 — 絆・因縁 ともに上昇(相互)')}</span>`;
+  if (evClass === 'humiliation') return `<span class="tcdr-chip riv">${WM_I18N.t('因縁 激発展({loser} → {winner})', { loser: escHtml(loser.name), winner: escHtml(winner.name) })}</span>`;
+  if (evClass === 'stablemate_rift') return `<span class="tcdr-chip riv">${WM_I18N.t('絆に亀裂')}</span>`;
+  return `<span class="tcdr-chip bond">${WM_I18N.t('絆 深化')}</span>`;
 }
 
 /** 関係性ドラマ: 相手側の感情バッジ(非相互時) */
 function _tcDramaEmoBadge(evClass) {
-  if (evClass === 'humiliation') return '⚡ 因縁を刻まれた';
-  if (evClass === 'stablemate_rift') return '…… 亀裂が生まれた';
-  return '🤝 絆が深まった';
+  if (evClass === 'humiliation') return `⚡ ${WM_I18N.t('因縁を刻まれた')}`;
+  if (evClass === 'stablemate_rift') return `…… ${WM_I18N.t('亀裂が生まれた')}`;
+  return `🤝 ${WM_I18N.t('絆が深まった')}`;
 }
 
 /** 関係性ドラマ: 出演者1名ぶんのカラム(頭上白吹き出し or 感情バッジ + 2:3矩形) */
@@ -20493,8 +20493,8 @@ function renderTenchosenDrama(idx) {
   const match = (round.matches && round.matches[ev.matchRef.index]) || round.matches[0];
   const winner = match.winnerId === match.left.id ? match.left : match.right;
   const loser = match.winnerId === match.left.id ? match.right : match.left;
-  const roundLabel = round.name === 'final' ? '決勝' : `${_tcRoundLabel(round.name)} 第${ev.matchRef.index + 1}試合`;
-  const mqNote = ev.class === 'epic' ? ` (評価 ${match.mq})` : '';
+  const roundLabel = round.name === 'final' ? WM_I18N.t('決勝') : `${_tcRoundLabel(round.name)} ${WM_I18N.t('第{n}試合', { n: ev.matchRef.index + 1 })}`;
+  const mqNote = ev.class === 'epic' ? WM_I18N.t(' (評価 {n})', { n: match.mq }) : '';
 
   const lineBySpeaker = {};
   (ev.lines || []).forEach(l => { lineBySpeaker[l.speakerId] = l.text; });
@@ -20513,7 +20513,7 @@ function renderTenchosenDrama(idx) {
   const isLast = idx + 1 >= events.length;
   let html = `<div class="tcdr-wrap">
     <div class="tcdr-head">Aftermath — Backstage</div>
-    <div class="tcdr-head-jp">大会が生んだ関係</div>
+    <div class="tcdr-head-jp">${WM_I18N.t('大会が生んだ関係')}</div>
     <div class="tcdr-card jt-su">
       <div class="tcdr-src">${escHtml(roundLabel)} — ${escHtml(winner.name)} ○ ${escHtml(loser.name)} ×${mqNote}</div>
       <div class="tcdr-narr">${escHtml(_tcDramaNarration(ev.class, winner, loser))}</div>
@@ -20521,7 +20521,7 @@ function renderTenchosenDrama(idx) {
       <div class="tcdr-chips">${_tcDramaChip(ev.class, winner, loser)}</div>
     </div>
     <div style="text-align:center;margin-top:8px">
-      <button class="btn btn-gold" style="padding:9px 28px;font-size:13px" onclick="App.tcNextDrama(${idx + 1})">${isLast ? '閉じる' : '次へ ▶'}</button>
+      <button class="btn btn-gold" style="padding:9px 28px;font-size:13px" onclick="App.tcNextDrama(${idx + 1})">${isLast ? WM_I18N.t('閉じる') : `${WM_I18N.t('次へ')} ▶`}</button>
     </div>
   </div>`;
 
@@ -20547,9 +20547,9 @@ function renderTenchosenTVResult() {
   let html = `<div class="jt-wrap" style="max-width:640px;padding:0;--jtc-color:var(--gold);--jtc-color-rgb:var(--gold-rgb)">${_tcHeader()}</div>`;
   html += `<div class="pb-container">`;
   html += `<div class="pb-banner">
-    <div class="pb-live is-ppvtv">📺 テレビ観戦</div>
-    <div class="pb-banner-title is-ppvtv">天頂戦</div>
-    <div class="pb-banner-sub">第${_tcEditionNo()}回大会<span class="dot">·</span>テレビの前で</div>
+    <div class="pb-live is-ppvtv">📺 ${WM_I18N.t('テレビ観戦')}</div>
+    <div class="pb-banner-title is-ppvtv">${WM_I18N.t('天頂戦')}</div>
+    <div class="pb-banner-sub">${WM_I18N.t('第{n}回大会', { n: _tcEditionNo() })}<span class="dot">·</span>${WM_I18N.t('テレビの前で')}</div>
   </div>`;
 
   html += `<div class="pb-matches">`;
@@ -20563,7 +20563,7 @@ function renderTenchosenTVResult() {
         <span class="w">○ ${escHtml(w.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(w._orgName || '')})</span>
         <span style="color:var(--stage-text-dim)">—</span>
         <span>× ${escHtml(l.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(l._orgName || '')})</span>
-        <span class="mq">評価 ${m.mq}</span>
+        <span class="mq">${WM_I18N.t('評価 {n}', { n: m.mq })}</span>
       </div>`;
     });
   });
@@ -20575,11 +20575,11 @@ function renderTenchosenTVResult() {
     </div>
     <div style="font-family:var(--font-label);font-size:10px;letter-spacing:5px;color:var(--gold);text-transform:uppercase">Champion</div>
     <div style="font-size:22px;font-weight:900;color:var(--stage-text-main);margin-top:2px">${escHtml(champion.name)}</div>
-    <div style="font-size:11px;color:var(--stage-text-sub);margin-top:2px">${escHtml(champion._orgName || '')} — 第${_tcEditionNo()}回 天頂戦 覇者</div>
+    <div style="font-size:11px;color:var(--stage-text-sub);margin-top:2px">${escHtml(champion._orgName || '')} — ${WM_I18N.t('第{n}回 天頂戦 覇者', { n: _tcEditionNo() })}</div>
   </div>`;
 
   html += `<div class="pb-footer">
-    <button type="button" class="pb-close-btn" onclick="App.finalizeTenchosen()">閉じる</button>
+    <button type="button" class="pb-close-btn" onclick="App.finalizeTenchosen()">${WM_I18N.t('閉じる')}</button>
   </div>`;
   html += `</div>`;
 
@@ -20607,11 +20607,11 @@ function renderTenchosenPreEvent() {
   const coachFaceUrl = coach && typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(coach.id) : '';
   const coachHtml = coach ? `
     <div class="tcpe-coach">
-      <div class="tcdr-bub"><div class="sp">${escHtml(coach.name)} コーチ</div>「${escHtml(coach.line)}」</div>
+      <div class="tcdr-bub"><div class="sp">${escHtml(coach.name)} ${WM_I18N.t('コーチ')}</div>「${escHtml(coach.line)}」</div>
       <div class="tc-cir w">${coachFaceUrl
         ? `<img src="${coachFaceUrl}" alt="" onerror="this.style.display='none'">`
         : `<span class="tcpe-coach-face">👩‍🏫</span>`}</div>
-      <div class="tcdr-name">${escHtml(coach.name)} コーチ</div>
+      <div class="tcdr-name">${escHtml(coach.name)} ${WM_I18N.t('コーチ')}</div>
     </div>` : '';
 
   const fightersHtml = (tp.fighters || []).map(f => {
@@ -20625,10 +20625,10 @@ function renderTenchosenPreEvent() {
 
   const html = `<div class="tcpe-wrap">
     <img class="tcpe-emblem" src="../image/emblem-tenchosen.png" alt="" onerror="this.style.display='none'">
-    <div class="tcpe-head-jp">4年に一度の大舞台まで、あと6週</div>
+    <div class="tcpe-head-jp">${WM_I18N.t('4年に一度の大舞台まで、あと6週')}</div>
     ${coachHtml}
     <div class="tcpe-fighters">${fightersHtml}</div>
-    <div class="tcpe-bt"><button class="btn btn-gold" onclick="App.closeTenchosenPreEvent()">閉じる</button></div>
+    <div class="tcpe-bt"><button class="btn btn-gold" onclick="App.closeTenchosenPreEvent()">${WM_I18N.t('閉じる')}</button></div>
   </div>`;
 
   box.innerHTML = html;
@@ -20647,11 +20647,11 @@ function _tcEntryModalHtml() {
   const champId = G.titles && G.titles.world ? G.titles.world.championId : null;
   const champLocked = champId != null && candidates.some(f => f.id === champId);
 
-  let html = _mdlAHeader('👑 天頂戦 エントリー', `SEASON ${G.season} ・ 第${_tcEditionNo()}回大会 ・ 16名トーナメント`);
-  html += `<div class="tc-entry-lead">4年に一度の全国女子プロレス最強王者決定戦。<br>特別招待2名に続き、団体枠 ${expected}名を選出してください。</div>`;
+  let html = _mdlAHeader(`👑 ${WM_I18N.t('天頂戦 エントリー')}`, `SEASON ${G.season} ・ ${WM_I18N.t('第{n}回大会 ・ 16名トーナメント', { n: _tcEditionNo() })}`);
+  html += `<div class="tc-entry-lead">${WM_I18N.t('4年に一度の全国女子プロレス最強王者決定戦。<br>特別招待2名に続き、団体枠 {n}名を選出してください。', { n: expected })}</div>`;
 
   // 特別招待2名の発表ブロック
-  html += `<div class="tc-entry-section-label">特別招待 — 先行確定</div>`;
+  html += `<div class="tc-entry-section-label">${WM_I18N.t('特別招待 — 先行確定')}</div>`;
   html += `<div class="tc-invite-row">`;
   (t.specialInvites || []).forEach(inv => {
     const f = _tcFindFighterAnywhere(inv.id);
@@ -20659,7 +20659,7 @@ function _tcEntryModalHtml() {
     const orgName = typeof Engine.ppvTournament._orgName === 'function'
       ? Engine.ppvTournament._orgName(G, inv.orgId) : '';
     const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
-    const kindLabel = inv.kind === 'ranking' ? '個人ランキング 1位' : '人気 1位';
+    const kindLabel = inv.kind === 'ranking' ? WM_I18N.t('個人ランキング 1位') : WM_I18N.t('人気 1位');
     html += `<div class="tc-invite-card" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)">
       <div class="tc-invite-kind">${kindLabel}</div>
       <div class="tc-invite-up">${upperUrl ? `<img src="${upperUrl}" alt="">` : ''}</div>
@@ -20670,7 +20670,7 @@ function _tcEntryModalHtml() {
   html += `</div>`;
 
   // 団体枠の選択
-  html += `<div class="tc-entry-section-label">団体枠 — ${expected}名を選出(団体順位による)</div>`;
+  html += `<div class="tc-entry-section-label">${WM_I18N.t('団体枠 — {n}名を選出(団体順位による)', { n: expected })}</div>`;
   html += `<div class="tc-entry-list">`;
   candidates.forEach(f => {
     const ovr = Engine.util.ov(f);
@@ -20682,19 +20682,19 @@ function _tcEntryModalHtml() {
     html += `<div class="${cls}" style="border:1px solid var(--stage-border-lit);border-radius:6px;cursor:${isChamp ? 'default' : 'pointer'}"${click}>
       <span style="font-size:18px;width:24px;text-align:center">${picked ? (isChamp ? '👑' : '✅') : '⬜'}</span>
       ${portraitImg(f.id, 40)}
-      <span style="flex:1;font-size:13px;color:var(--stage-text-main)">${escHtml(f.name)}${isChamp ? ' <span style="font-size:10px;color:var(--gold)">王者・出場必須</span>' : ''}</span>
+      <span style="flex:1;font-size:13px;color:var(--stage-text-main)">${escHtml(f.name)}${isChamp ? ` <span style="font-size:10px;color:var(--gold)">${WM_I18N.t('王者・出場必須')}</span>` : ''}</span>
       <span style="font-size:11px;color:var(--stage-text-sub)">OVR ${ovr}</span>
-      <span style="font-size:11px;color:var(--stage-text-dim)">人気 ${Math.round(f.popularity || 0)}</span>
+      <span style="font-size:11px;color:var(--stage-text-dim)">${WM_I18N.t('人気')} ${Math.round(f.popularity || 0)}</span>
     </div>`;
   });
   html += `</div>`;
 
-  html += `<div class="tc-entry-lead" style="font-size:11px;color:var(--stage-text-dim);padding-top:8px">※ 大会当日までに負傷した場合は自動で補充されます。未確定のまま大会週を迎えた場合はおまかせ編成で出場します。</div>`;
+  html += `<div class="tc-entry-lead" style="font-size:11px;color:var(--stage-text-dim);padding-top:8px">${WM_I18N.t('※ 大会当日までに負傷した場合は自動で補充されます。未確定のまま大会週を迎えた場合はおまかせ編成で出場します。')}</div>`;
 
   const canConfirm = picks.length === expected;
   html += `<div class="tc-entry-footer">
-    <button class="btn" style="padding:9px 18px;font-size:12px" onclick="App.tcSuggestPicks()">おまかせ選出</button>
-    <button class="btn btn-gold" style="padding:9px 24px;font-size:13px" ${canConfirm ? '' : 'disabled'} onclick="App.tcConfirmEntries()">エントリー確定（${picks.length}/${expected}名）</button>
+    <button class="btn" style="padding:9px 18px;font-size:12px" onclick="App.tcSuggestPicks()">${WM_I18N.t('おまかせ選出')}</button>
+    <button class="btn btn-gold" style="padding:9px 24px;font-size:13px" ${canConfirm ? '' : 'disabled'} onclick="App.tcConfirmEntries()">${WM_I18N.t('エントリー確定（{a}/{b}名）', { a: picks.length, b: expected })}</button>
   </div>`;
   return html;
 }

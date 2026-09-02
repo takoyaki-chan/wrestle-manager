@@ -8,9 +8,11 @@ const root = path.resolve(__dirname, '..');
 const ui = fs.readFileSync(path.join(root, 'src', 'ui-common.js'), 'utf8');
 const css = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
 
-assert.ok(ui.includes("const venueLabel = isInverse ? '自団体で迎撃' : '遠征興行';"),
+assert.ok(ui.includes("const venueLabel = isInverse ? '自団体で迎撃' : '遠征興行';") ||
+  ui.includes("const venueLabel = isInverse ? WM_I18N.t('自団体で迎撃') : WM_I18N.t('遠征興行');"),
   'challenge petition must explicitly distinguish an away event from a home defense');
-assert.ok(ui.includes("const formatLabel = '3人制・シングル3連戦';"),
+assert.ok(ui.includes("const formatLabel = '3人制・シングル3連戦';") ||
+  ui.includes("const formatLabel = WM_I18N.t('3人制・シングル3連戦');"),
   'challenge petition must explicitly identify the three-person, three-match format');
 assert.match(ui, /class="crq-briefing"[\s\S]*開催地[\s\S]*試合形式/,
   'location and match format must be displayed together before the fighter comparison');

@@ -25,8 +25,8 @@ assert.ok(ui.includes('stl-slot-tabs') && ui.includes('App.stlSelectEntrySlot(')
 
 assert.match(ui, /html \+= renderTable\('A'\);\s*html \+= renderTable\('B'\);/,
   'league board must vertically render A then B tables');
-assert.ok(ui.includes('<span class="stl-block-origin">A1位</span>')
-  && ui.includes('<span class="stl-block-origin">B1位</span>'),
+assert.ok((ui.includes('<span class="stl-block-origin">A1位</span>') || ui.includes('<span class="stl-block-origin">${WM_I18N.t(\'A1位\')}</span>'))
+  && (ui.includes('<span class="stl-block-origin">B1位</span>') || ui.includes('<span class="stl-block-origin">${WM_I18N.t(\'B1位\')}</span>')),
   'final card must identify both block origins');
 // 総試合数は実データから数える(8チーム=13、6〜7チーム開催や旧形式=7〜10に追随)
 assert.ok(app.includes('totalMatches: totalStlMatches')

@@ -23,6 +23,15 @@ function functionSource(source, name) {
   throw new Error(`${name} end not found`);
 }
 
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他テストと同じスタブ)。
+const WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 (function auroraTokensMatchApprovedMock() {
   const expected = {
     unified: '#7de0c8',
@@ -77,7 +86,7 @@ function functionSource(source, name) {
   };
   const build = new Function(
     'App', 'G', 'VENUES', 'Engine', 'EVENT_LINES_BY_KEY', 'POST_MATCH_FLAVOR_LINES',
-    'pickDialogueLine', 'showEventMatchResultPopup', '_matchNextLabel',
+    'pickDialogueLine', 'showEventMatchResultPopup', '_matchNextLabel', 'WM_I18N',
     `${functionSource(ui, '_pickUnifiedTitleLine')}
      ${functionSource(ui, 'renderRegularMatchResultPopup')}
      return renderRegularMatchResultPopup;`
@@ -98,7 +107,7 @@ function functionSource(source, name) {
     };
     const G = { season: 8, week: 12, totalShows: 1, showVenue: 0, orgName: '自団体', rngSeed: 42, roster: [player, opponent] };
     const render = build(App, G, [{ name: '会場' }], Engine, EVENT_LINES_BY_KEY, { winner: {} },
-      () => '通常勝者台詞', options => captured.push(options), () => '結果へ →');
+      () => '通常勝者台詞', options => captured.push(options), () => '結果へ →', WM_I18N_STUB);
     render(0, () => {});
     return captured.at(-1);
   };
@@ -122,8 +131,8 @@ function functionSource(source, name) {
     /unified-challenge-champion>img[^}]*width:132px;height:194px/,
     /unified-challenge-face[^}]*width:52px;height:52px;max-width:52px;max-height:52px/,
   ].forEach(pattern => assert.match(html, pattern));
-  assert.match(ui, /variant:\s*'unifiedTitle'[\s\S]*title:\s*'挑 戦 表 明'/);
-  assert.match(ui, /choices:\s*\[\{ letter: '🌐', label: '受けて立つ'/);
+  assert.match(ui, /variant:\s*'unifiedTitle'[\s\S]*title:\s*(?:'挑 戦 表 明'|WM_I18N\.t\('挑 戦 表 明'\))/);
+  assert.match(ui, /choices:\s*\[\{ letter: '🌐', label:\s*(?:'受けて立つ'|WM_I18N\.t\('受けて立つ'\))/);
   assert.ok(!functionSource(ui, 'showUnifiedTitleChallengerArrival').includes('var(--accent-hostility)'));
   assert.ok(ui.includes('今回は見送る(次は約9か月後)'));
 })();
@@ -164,11 +173,11 @@ function functionSource(source, name) {
   };
   const build = new Function(
     'document', 'getUpperUrl', 'escHtml', '_pickUnifiedTitleLine', 'setTimeout', 'clearTimeout',
-    'requestAnimationFrame', 'Audio',
+    'requestAnimationFrame', 'Audio', 'WM_I18N',
     `${functionSource(ui, 'showUnifiedTitleCoronation')}; return showUnifiedTitleCoronation;`
   );
   const show = build(document, () => '', String, () => '承認済みセリフ',
-    (fn, ms) => (timers.push({ fn, ms }), timers.length), () => {}, fn => fn(), { play() {} });
+    (fn, ms) => (timers.push({ fn, ms }), timers.length), () => {}, fn => fn(), { play() {} }, WM_I18N_STUB);
   let calls = 0;
   show({ fighter: { id: 1, name: '王者' }, state: {}, safetyTimeoutMs: 30 }, () => { calls++; });
   button.click();
@@ -205,12 +214,12 @@ function functionSource(source, name) {
   const build = new Function(
     'Engine', 'document', '_isPopupActive', '_popupQueue', 'getUpperUrl', '_u3bOrgBadgeHtml',
     'portraitImg', 'escHtml', '_mdlAHeader', '_mdlASeasonLabel', '_mdlAReporterStrip',
-    '_mdlAOpen', '_mdlAClose', 'setTimeout', 'clearTimeout', 'Audio',
+    '_mdlAOpen', '_mdlAClose', 'setTimeout', 'clearTimeout', 'Audio', 'WM_I18N',
     `${functionSource(ui, 'showUnifiedTitleChallengeModal')}; return showUnifiedTitleChallengeModal;`
   );
   const show = build(Engine, document, () => false, [], () => '', () => '', () => '<img>', String,
     () => '', () => '', () => '', () => true, () => {},
-    (fn, ms) => (timers.push({ fn, ms }), timers.length), () => {}, { play() {} });
+    (fn, ms) => (timers.push({ fn, ms }), timers.length), () => {}, { play() {} }, WM_I18N_STUB);
   let calls = 0;
   show({ championId: 2, eligibleIds: [1] }, state, () => { calls++; });
   send.click();

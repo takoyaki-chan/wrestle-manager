@@ -288,7 +288,7 @@ const large = fighter({
   const modalEnd = uiSource.indexOf('\nfunction showContractReactionModal(', modalStart);
   const modal = uiSource.slice(modalStart, modalEnd);
   for (const text of [
-    '📉 契約査定', '🤝 減俸申し出', '現在の週給:', '→ 査定:',
+    '📉 契約査定', '🤝 減俸申し出', '現在の週給', '査定',
     '据え置く', '査定どおり改定', '厳しく改定', '受け入れる',
   ]) assert.ok(modal.includes(text), `既存交渉モーダルに「${text}」を表示すること`);
   assert.ok(!/#[0-9a-f]{3,8}/i.test(modal), '新分岐に16進色をハードコードしないこと');

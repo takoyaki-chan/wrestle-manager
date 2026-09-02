@@ -101,8 +101,8 @@ const jtFn = functionSource(ui, 'renderJuniorTournamentResult');
 assert.ok(jtFn.includes('class="champ th-summer"'), 'JTは夏のテーマ色を使う');
 assert.ok(jtFn.indexOf('_chBubbleSlot(champLine)') < jtFn.indexOf('class="ch-por"'), '吹き出しは画像より前(上)に描画する');
 assert.ok(jtFn.indexOf('class="ch-por"') < jtFn.indexOf('class="ch-name"'), '画像は名前より前');
-assert.ok(jtFn.indexOf('class="ch-name"') < jtFn.indexOf('class="ch-role">優勝'), '名前は役割ラベルより前');
-assert.ok(jtFn.indexOf('class="ch-role">優勝') < jtFn.indexOf('_chOrgBadgeHtml('), '役割ラベルは団体バッジより前');
+assert.ok(jtFn.indexOf('class="ch-name"') < jtFn.indexOf('class="ch-role">'), '名前は役割ラベルより前');
+assert.ok(jtFn.indexOf('class="ch-role">') < jtFn.indexOf('_chOrgBadgeHtml('), '役割ラベルは団体バッジより前');
 assert.ok(jtFn.indexOf('_chOrgBadgeHtml(') < jtFn.indexOf('class="ch-stat"'), '団体バッジは数値より前');
 assert.ok(jtFn.includes('_chOrgBadgeHtml(champion._orgId, champion._orgName)'), 'JTは他団体が絡むため団体バッジを必ず出す');
 

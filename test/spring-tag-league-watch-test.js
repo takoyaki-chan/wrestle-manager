@@ -100,7 +100,9 @@ assert.ok(app.includes('_shouldStartSpringTagLeagueReplay()') && app.includes('_
   'spring tag league must discard replay reservations outside the scheduled week');
 assert.ok(!app.includes('_showSpringTagCardIntro(stl,'),
   'spring tag league must not reuse the PPV-style vertical card intro');
-assert.ok(ui.includes('onclick="App.stlWatchMatch()">🎬 観戦する</button>') && ui.includes('結果を見る ▶'),
+assert.ok(
+  (ui.includes('onclick="App.stlWatchMatch()">🎬 観戦する</button>') || ui.includes('onclick="App.stlWatchMatch()">🎬 ${WM_I18N.t(\'観戦する\')}</button>')) &&
+    (ui.includes('結果を見る ▶') || ui.includes("${WM_I18N.t('結果を見る')} ▶")),
   'league matches and the final must offer watch or result choices');
 assert.ok(mobile.includes('.stl-progress-btn-row .btn { flex: 1 1 130px;') && mobile.includes('min-height: 44px;'),
   'spring tag watch choices must remain tappable on phones');

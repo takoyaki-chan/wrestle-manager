@@ -30,7 +30,8 @@ assert.ok(!ui.includes('TBD'), 'JT UI should not expose an internal TBD label');
 
 const jtFocus = bodyOf('function _jtFocusCard');
 assert.ok(!jtFocus.includes('START HP'), 'JT pre-match card should not show internal English start HP label');
-assert.ok(jtFocus.includes("hpMidLabel: '開始HP'"), 'JT pre-match card should use player-facing start HP label');
+assert.ok(jtFocus.includes("hpMidLabel: '開始HP'") || jtFocus.includes("hpMidLabel: WM_I18N.t('開始HP')"),
+  'JT pre-match card should use player-facing start HP label');
 
 const c1Result = bodyOf('function _renderCommon1MatchResult');
 assert.ok(!c1Result.includes('finishPhase'), 'Common1 result should not expose battle engine phase labels');

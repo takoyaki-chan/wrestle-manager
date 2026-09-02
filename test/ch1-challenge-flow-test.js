@@ -131,7 +131,7 @@ function makeFakeDom() {
 
 const buildUi = new Function(
   'Engine', 'document', 'getUpperUrl', '_u3bSideHtml', '_u3bOrgBadgeHtml',
-  '_factionReporterStrip', '_factionSeasonLabel', '_mdlASeasonLabel', 'EVENT_LINES_BY_KEY', 'setTimeout',
+  '_factionReporterStrip', '_factionSeasonLabel', '_mdlASeasonLabel', 'EVENT_LINES_BY_KEY', 'setTimeout', 'WM_I18N',
   `let _popupQueue = [];
    function _isPopupActive() { return false; }
    function _enqueuePopup(fn) { fn(); }
@@ -151,6 +151,15 @@ function fighter(id, name, ovr = 60, extra = {}) {
   return { id, name, archetype: 'standard', pw: ovr, sp: ovr, te: ovr, st: ovr, mn: ovr, ...extra };
 }
 
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他テストと同じスタブ)。
+const WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 function makeUiBundle() {
   const fake = makeFakeDom();
   const EngineStub = {
@@ -169,7 +178,8 @@ function makeUiBundle() {
     state => `WEEK ${state.week}`,
     state => `WEEK ${state.week}`,
     EVENT_LINES_BY_KEY,
-    () => 0
+    () => 0,
+    WM_I18N_STUB
   );
   return { ...fake, ui };
 }

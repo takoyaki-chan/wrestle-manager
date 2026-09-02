@@ -107,7 +107,8 @@ assert.ok(!ui.includes('crrm-reaction-figure'), '旧ラッパー(crrm-reaction-f
 assert.ok(!css.includes('.c1r-card{'), '旧Common-1専用結果カードCSSは廃止し、既存A型へ一本化する');
 
 const c1rSrc = functionSource('_renderCommon1MatchResult');
-assert.ok(c1rSrc.includes("_mdlAHeader('⚔ 派閥内対決・決着'"), '既存A型ヘッダーを使う');
+assert.ok(c1rSrc.includes("_mdlAHeader('⚔ 派閥内対決・決着'") || c1rSrc.includes("_mdlAHeader(`⚔ ${WM_I18N.t('派閥内対決・決着')}`"),
+  '既存A型ヘッダーを使う');
 assert.ok(c1rSrc.includes('mdl-a-title-result'), '戴冠・節目防衛と同じA型結果本体を使う');
 assert.ok(c1rSrc.includes('mdl-a-title-pair'), '既存A型の2名並置を使う');
 assert.ok(c1rSrc.includes('mdl-a-title-bubble'), 'セリフは既存A型の頭上吹き出しへ置く');
@@ -136,8 +137,17 @@ assert.ok(!c1rSrc.includes('_emrSingleSide('), '単発試合カードではな�
   const fakeButton = { addEventListener() {} };
   const documentStub = { getElementById: (id) => (id === 'c1rCloseBtn' ? fakeButton : null) };
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他テストと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   const build = new Function(
-    'Engine', 'G', 'document', 'escHtml', 'getUpperUrl', 'Math',
+    'Engine', 'G', 'document', 'escHtml', 'getUpperUrl', 'Math', 'WM_I18N',
     `let _capturedHtml = '', _capturedOpts = null;
      function showFighterPopup() {}
      function _mdlAOpen(html, opts) { _capturedHtml = html; _capturedOpts = opts; return true; }
@@ -147,7 +157,7 @@ assert.ok(!c1rSrc.includes('_emrSingleSide('), '単発試合カードではな�
      ${functionSource('_renderCommon1MatchResult')}
      return { _renderCommon1MatchResult, getHtml: () => _capturedHtml, getOpts: () => _capturedOpts };`
   );
-  const built = build(EngineStub, Gstub, documentStub, escHtml, getUpperUrl, Math);
+  const built = build(EngineStub, Gstub, documentStub, escHtml, getUpperUrl, Math, WM_I18N_STUB);
 
   const fA = { id: 11, name: 'A選手', pw: 80, sp: 78, te: 76, st: 82, mn: 74 };
   const fB = { id: 22, name: 'B選手', pw: 70, sp: 68, te: 66, st: 72, mn: 64 };

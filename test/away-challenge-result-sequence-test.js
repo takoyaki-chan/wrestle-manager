@@ -41,16 +41,25 @@ const EngineStub = {
     pickLine: (fighter, scene) => `EXISTING_${scene}_${fighter.id}`,
   },
 };
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他テストと同じスタブ)。
+const WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
 const pure = new Function(
   'Engine',
   'AWAY_CHALLENGE_RESULT_LINES',
+  'WM_I18N',
   `${helperSources}; return {
     winner: _challengeRequestWinnerRepresentative,
     loser: _challengeRequestLoserRepresentative,
     scene: _challengeRequestLoserScene,
     build: _challengeRequestBuildResultSequence
   };`
-)(EngineStub, AWAY_CHALLENGE_RESULT_LINES);
+)(EngineStub, AWAY_CHALLENGE_RESULT_LINES, WM_I18N_STUB);
 
 function fighter(id, name, archetype = 'standard') {
   return { id, name, archetype, personality: 'normal' };
@@ -185,7 +194,7 @@ function makeSequenceBundle() {
   let overlayCloseCalls = 0;
   const build = new Function(
     'Engine', 'AWAY_CHALLENGE_RESULT_LINES', '_factionEnsureOverlayRoot', '_factionCloseCinematicOverlay',
-    '_factionUpperUrl', 'escHtml', 'setTimeout', 'clearTimeout', 'Audio',
+    '_factionUpperUrl', 'escHtml', 'setTimeout', 'clearTimeout', 'Audio', 'WM_I18N',
     `let _challengeRequestResultSequenceActive = false;
      ${helperSources}
      ${showSequenceSource}
@@ -200,7 +209,8 @@ function makeSequenceBundle() {
     value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]),
     fn => timers.set(fn),
     id => timers.clear(id),
-    undefined
+    undefined,
+    WM_I18N_STUB
   );
   return { ...dom, timers, ui, getOverlayCloseCalls: () => overlayCloseCalls };
 }

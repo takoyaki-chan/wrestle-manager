@@ -62,10 +62,18 @@ function makeSandbox() {
     },
     body: { appendChild(el) { el.parentNode = { removeChild() { el.parentNode = null; } }; } },
   };
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他テストと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
   const api = new Function(
     'Engine', 'ALL_COACHES', 'getCoachVoiceKey', 'COACH_WRAPUP_VERDICT_LINES',
     'COACH_WRAPUP_MENTION_LINES', 'getCoachPortraitUrl', 'escHtml', '_u3bSideHtml',
-    '_drainPopupQueue', 'Audio', 'document', 'setTimeout', 'clearTimeout',
+    '_drainPopupQueue', 'Audio', 'document', 'setTimeout', 'clearTimeout', 'WM_I18N',
     `${blockSrc}
      return { buildCoachTournamentWrapup, showCoachTournamentWrapup, _tcwPickMentions, TCW_EVENT_META };`
   )(
@@ -81,7 +89,8 @@ function makeSandbox() {
     { play() {} },
     doc,
     (fn, ms) => { const t = { fn, ms, cleared: false }; timers.push(t); return t; },
-    t => { if (t) t.cleared = true; }
+    t => { if (t) t.cleared = true; },
+    WM_I18N_STUB
   );
   return { api, timers, listeners, created };
 }
@@ -166,7 +175,7 @@ section('A3. _tcwGate は失敗しても false を返して呼び出し元を通
 });
 
 section('A4. 顔出しは共通部品 _u3bSideHtml を使う(新しい顔出しブロックを作らない)', () => {
-  assert.ok(/_u3bSideHtml\(\{[\s\S]{0,400}role: 'コーチ'/.test(blockSrc),
+  assert.ok(/_u3bSideHtml\(\{[\s\S]{0,400}role: (?:'コーチ'|WM_I18N\.t\('コーチ'\))/.test(blockSrc),
     'コーチの顔出しが _u3bSideHtml 経由でない、または役割ラベルが無い');
   assert.ok(!/<img[^>]*coach/i.test(blockSrc), '生の <img> で顔出しを自作している');
 });

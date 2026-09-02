@@ -49,7 +49,8 @@ assert.strictEqual(failed.result.type, 'depart', '引き留め失敗時は従来
 assert.strictEqual(failed.result.salaryDelta, 0, '引き留め失敗時は昇給しないこと');
 
 const uiSource = fs.readFileSync(path.join(srcDir, 'ui-common.js'), 'utf8');
-assert.ok(uiSource.includes('一時金${neg.retentionBonus}万 + 給与+${retentionRaise}万/週'),
+assert.ok(uiSource.includes('一時金${neg.retentionBonus}万 + 給与+${retentionRaise}万/週') ||
+  uiSource.includes("WM_I18N.t('一時金{a}万 + 給与+{b}万/週', { a: neg.retentionBonus, b: retentionRaise })"),
   '引き留め選択肢に一時金と昇給の両方を表示すること');
 
 console.log('contract-retention-salary-test: PASS');

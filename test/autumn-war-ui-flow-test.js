@@ -176,7 +176,7 @@ function section(source, startMarker, endMarker) {
   assert.ok(liveTeam.includes('const names = displayOrder.map'), 'live-board nameplates must follow the reordered wrestler positions');
   assert.ok(liveTeam.includes('agw-live-slot-${index}'), 'every active, waiting, or eliminated wrestler must receive a unique board slot');
   assert.ok(board.includes('agw-status-rail'), 'four-team status rail missing');
-  assert.ok(board.includes('この試合の結果を見る ▶'));
+  assert.ok(board.includes('この試合の結果を見る ▶') || board.includes("${WM_I18N.t('この試合の結果を見る')} ▶"));
   assert.ok(board.includes('App.awSkipTeamMatch()'));
   assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure img{transform:scaleX(-1)}'), 'only the left team should be mirrored toward center');
   assert.ok(html.includes('.agw-live-team.is-left .agw-live-figure.agw-live-slot-0{right:0;left:auto;z-index:6}'), 'the active wrestler must stand closest to center on the left team');

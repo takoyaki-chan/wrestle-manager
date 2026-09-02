@@ -320,9 +320,18 @@ function makeEl(id) {
 (function leagueElevationSuite() {
   const build = new Function(
     'document', 'Audio', 'window', 'Engine', 'RIVAL_ORGS', 'getUpperUrl', 'orgIconHtml',
-    'setTimeout', 'Date',
+    'setTimeout', 'Date', 'WM_I18N',
     `${uiFn('showLeagueElevationCeremony')} return { showLeagueElevationCeremony };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -350,7 +359,8 @@ function makeEl(id) {
       { util: { ov: () => 50 } },
       [{ name: 'S団体', emoji: '', color: '#111' }, { name: 'A団体', emoji: '', color: '#222' }, { name: 'B団体', emoji: '', color: '#333' }],
       () => '', () => '',
-      timers.setTimeout, { now: () => clock.t }
+      timers.setTimeout, { now: () => clock.t },
+      WM_I18N_STUB
     );
     const pressKey = (key, target) => keydowns.slice().forEach(cb => cb({
       key, preventDefault() {}, target: target || { closest: () => null },

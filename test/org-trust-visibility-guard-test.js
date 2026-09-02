@@ -31,7 +31,8 @@ assert.ok(docsStart >= 0 && docsEnd > docsStart);
 const decisionDocs = data.slice(docsStart, docsEnd);
 assert.ok(!/effectSummary:\s*['`][^'`]*(?:信頼|trust)/.test(decisionDocs), 'decision summaries must not name hidden trust changes');
 
-assert.ok(ui.includes('因縁 ${signed(delta.rivalry)} / 相手との関係 ${signed(delta.bond)}'),
+assert.ok(ui.includes('因縁 ${signed(delta.rivalry)} / 相手との関係 ${signed(delta.bond)}') ||
+  ui.includes("WM_I18N.t('因縁 {a} / 相手との関係 {b}', { a: signed(delta.rivalry), b: signed(delta.bond) })"),
   'challenge results should continue to show numeric inter-wrestler relationship changes');
 
 console.log('org-trust-visibility-guard-test: ok');
