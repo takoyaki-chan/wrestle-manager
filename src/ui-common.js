@@ -9595,8 +9595,8 @@ function showDecisionResultModal(displayData) {
   let costHtml = '';
   if (cost > 0) {
     costHtml = `<div style="text-align:center;font-size:12px;color:var(--cream-text-sub);margin-top:12px">
-      費用 <strong style="color:#a83828">-${cost}万</strong>
-      ｜ 残金 <strong style="color:var(--cream-gold-dark)">${Math.round(remainingFunds).toLocaleString()}万</strong>
+      ${WM_I18N.t('費用')} <strong style="color:#a83828">-${cost}万</strong>
+      ｜ ${WM_I18N.t('残金')} <strong style="color:var(--cream-gold-dark)">${Math.round(remainingFunds).toLocaleString()}万</strong>
     </div>`;
   }
 
@@ -9614,11 +9614,11 @@ function showDecisionResultModal(displayData) {
     : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
 
   const html = `
-    ${_mdlAHeader(`${icon || '📝'} ${label} — 決裁完了`, `RESULT ・ ${_mdlASeasonLabel(typeof G !== 'undefined' ? G : {})}`)}
+    ${_mdlAHeader(`${icon || '📝'} ${label} — ${WM_I18N.t('決裁完了')}`, `RESULT ・ ${_mdlASeasonLabel(typeof G !== 'undefined' ? G : {})}`)}
     ${_mdlAReporterStrip(typeof G !== 'undefined' ? G : {}, '決裁の結果をお伝えします')}
     ${subjectHtml}
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" id="mdlADecisionResultClose">— 見 届 け る —</button>
+      <button class="mdl-a-continue-btn" id="mdlADecisionResultClose">${WM_I18N.t('— 見 届 け る —')}</button>
     </div>
   `;
 
@@ -9668,13 +9668,13 @@ function showChoiceEventModal(event, state, onChoice) {
   const fighter = event.fighter != null ? roster.find(f => f.id === event.fighter) : null;
 
   const typeLabels = {
-    S1: '📋 タイトル挑戦要求', S2: '⚔ 対戦要求', S3: '🛌 休養願い',
-    S4: '💢 不満・退団示唆',  S5: '⚡ 特訓志願', S6: '🎓 後輩指導申し出',
-    E1: '📺 メディア出演オファー', E2: '💼 スポンサー提案',
-    E3: '🤝 合同練習の誘い',  E4: '🔍 スカウト情報',
-    E5: '💴 営業試合依頼',   E6: '🚨 他団体からの引き抜き',
-    S_boycott: '🚫 練習ボイコット', S_grumble: '😤 ロッカールームの愚痴',
-    S_sns: '📱 SNS匂わせ',
+    S1: WM_I18N.t('📋 タイトル挑戦要求'), S2: WM_I18N.t('⚔ 対戦要求'), S3: WM_I18N.t('🛌 休養願い'),
+    S4: WM_I18N.t('💢 不満・退団示唆'),  S5: WM_I18N.t('⚡ 特訓志願'), S6: WM_I18N.t('🎓 後輩指導申し出'),
+    E1: WM_I18N.t('📺 メディア出演オファー'), E2: WM_I18N.t('💼 スポンサー提案'),
+    E3: WM_I18N.t('🤝 合同練習の誘い'),  E4: WM_I18N.t('🔍 スカウト情報'),
+    E5: WM_I18N.t('💴 営業試合依頼'),   E6: WM_I18N.t('🚨 他団体からの引き抜き'),
+    S_boycott: WM_I18N.t('🚫 練習ボイコット'), S_grumble: WM_I18N.t('😤 ロッカールームの愚痴'),
+    S_sns: WM_I18N.t('📱 SNS匂わせ'),
   };
   const title = typeLabels[event.type] || event.type;
   const isUrgent = event.type === 'S4' || event.type === 'E6' || event.type === 'S_grumble' || event.type === 'S_sns';
@@ -9686,11 +9686,11 @@ function showChoiceEventModal(event, state, onChoice) {
   let stageBody = '';
   if (fighter) {
     stageBody = `<div class="mdl-a-observation centered" style="padding-top:6px">
-      <span class="marker">${fighter.name || ''}</span>からの申し入れです。
+      <span class="marker">${fighter.name || ''}</span>${WM_I18N.t('からの申し入れです。')}
     </div>`;
   } else if (event.type === 'E5') {
     stageBody = `<div class="mdl-a-observation centered">
-      📣 近隣エリアの地域イベント実行委員会から営業試合の依頼が届きました。
+      ${WM_I18N.t('📣 近隣エリアの地域イベント実行委員会から営業試合の依頼が届きました。')}
     </div>`;
   }
 
@@ -9698,7 +9698,7 @@ function showChoiceEventModal(event, state, onChoice) {
     ? _mdlASubjectStage(fighter, stageBody, { small: true, speech: event.dialogue || '' })
     : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
 
-  const choices = event.choices || [{ label: '了解', hint: '', idx: 0 }];
+  const choices = event.choices || [{ label: WM_I18N.t('了解'), hint: '', idx: 0 }];
   const trayCls = choices.length === 2 ? 'mdl-a-decision-tray two' : 'mdl-a-decision-tray';
   const trayCards = choices.map(c => {
     const letter = c.letter || (c.idx != null ? String.fromCharCode(65 + c.idx) : '?');
@@ -9715,7 +9715,7 @@ function showChoiceEventModal(event, state, onChoice) {
     ${_mdlAHeader(title, _mdlASeasonLabel(state), { urgent: isUrgent })}
     ${_mdlAReporterStrip(state, reporterLine)}
     ${subjectHtml}
-    <div class="mdl-a-prompt">どう対応しますか？</div>
+    <div class="mdl-a-prompt">${WM_I18N.t('どう対応しますか？')}</div>
     <div class="${trayCls}">${trayCards}</div>
   `;
 
@@ -9750,13 +9750,13 @@ function showChoiceEventResult(event, resultTexts, state, opts) {
   const fighter = reactionFighter
     || (event.fighter != null ? roster.find(f => f.id === event.fighter) : null);
   const typeLabels = {
-    S1: '📋 タイトル挑戦要求', S2: '⚔ 対戦要求', S3: '🛌 休養願い',
-    S4: '💢 不満・退団示唆',  S5: '⚡ 特訓志願', S6: '🎓 後輩指導申し出',
-    E1: '📺 メディア出演オファー', E2: '💼 スポンサー提案',
-    E3: '🤝 合同練習の誘い',  E4: '🔍 スカウト情報',
-    E5: '💴 営業試合依頼',   E6: '🚨 他団体からの引き抜き',
-    S_boycott: '🚫 練習ボイコット', S_grumble: '😤 ロッカールームの愚痴',
-    S_sns: '📱 SNS匂わせ',
+    S1: WM_I18N.t('📋 タイトル挑戦要求'), S2: WM_I18N.t('⚔ 対戦要求'), S3: WM_I18N.t('🛌 休養願い'),
+    S4: WM_I18N.t('💢 不満・退団示唆'),  S5: WM_I18N.t('⚡ 特訓志願'), S6: WM_I18N.t('🎓 後輩指導申し出'),
+    E1: WM_I18N.t('📺 メディア出演オファー'), E2: WM_I18N.t('💼 スポンサー提案'),
+    E3: WM_I18N.t('🤝 合同練習の誘い'),  E4: WM_I18N.t('🔍 スカウト情報'),
+    E5: WM_I18N.t('💴 営業試合依頼'),   E6: WM_I18N.t('🚨 他団体からの引き抜き'),
+    S_boycott: WM_I18N.t('🚫 練習ボイコット'), S_grumble: WM_I18N.t('😤 ロッカールームの愚痴'),
+    S_sns: WM_I18N.t('📱 SNS匂わせ'),
   };
   const title = typeLabels[event.type] || event.type;
 
@@ -9764,7 +9764,7 @@ function showChoiceEventResult(event, resultTexts, state, opts) {
     ? `<div class="mdl-a-observation centered" style="padding-top:6px" data-mdl-choice-result="1">
         ${resultTexts.map(t => `<div style="padding:8px 12px;background:rgba(255,255,255,0.4);border:1px solid rgba(100,85,50,0.15);border-radius:6px;margin-bottom:6px;line-height:1.6">${t}</div>`).join('')}
       </div>`
-    : `<div class="mdl-a-observation centered" data-mdl-choice-result="1">決定が適用されました。</div>`;
+    : `<div class="mdl-a-observation centered" data-mdl-choice-result="1">${WM_I18N.t('決定が適用されました。')}</div>`;
 
   // リアクション吹き出し（あれば結果ブロックの上に表示）
   const reactionBlock = (reaction && reaction.line && reactionFighter)
@@ -9783,11 +9783,11 @@ function showChoiceEventResult(event, resultTexts, state, opts) {
     : `<div class="mdl-a-subject-stage">${stageBody}</div>`;
 
   const html = `
-    ${_mdlAHeader('📝 ' + title + ' — 結果', _mdlASeasonLabel(state))}
+    ${_mdlAHeader('📝 ' + title + ' — ' + WM_I18N.t('結果'), _mdlASeasonLabel(state))}
     ${_mdlAReporterStrip(state, 'ご判断の結果をお伝えします')}
     ${subjectHtml}
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" id="mdlAChoiceResultClose">— 見 届 け る —</button>
+      <button class="mdl-a-continue-btn" id="mdlAChoiceResultClose">${WM_I18N.t('— 見 届 け る —')}</button>
     </div>
   `;
 
@@ -9840,11 +9840,11 @@ function _factionReporterStrip(state, line) {
     url = (typeof getCoachUpperUrl === 'function') ? getCoachUpperUrl(pick.ref.id)
       : ((typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(pick.ref.id) : '');
     name = String(pick.ref.name);
-    role = 'コーチ';
+    role = WM_I18N.t('コーチ');
   } else if (pick && pick.kind === 'veteran') {
     url = _factionUpperUrl(pick.ref.id);
     name = String(pick.ref.name);
-    role = '古参選手';
+    role = WM_I18N.t('古参選手');
   }
   return `<div class="fevt-reporter-strip u3b-theme-dark">${_u3bSideHtml({
     name, role, line: String(line || ''), size: 'chip', imgUrl: url,
@@ -9864,6 +9864,7 @@ function _factionSeasonLabel(state) {
   return `WEEK ${pad(week)} ・ ${season}Y`;
 }
 // F01 アーキタイプ別の前置き文 + A 選択肢補足（spec faction-archetype-rework-spec-v0.1.md §5.1）
+// モジュールロード時定数のためt()は宣言側で評価しない(参照側で評価してsetLang追従させる。FLAG_MODAL_METAと同流儀)
 const _F01_ARCHETYPE_META = {
   authoritarian: {
     flavorText: 'リーダーへの一方向の追従が強く、トップダウンの色が濃いようです。',
@@ -9926,11 +9927,11 @@ function showFactionF01Modal(payload, state, onChoice) {
   const followerSurnames = [fol1, fol2].filter(Boolean).map(f => _factionSurname(f));
   let followerText;
   if (followerSurnames.length >= 2) {
-    followerText = `${followerSurnames.join('・')}の${followerSurnames.length}人が自然と集まりを作っているようです。`;
+    followerText = WM_I18N.t('{names}の{n}人が自然と集まりを作っているようです。', { names: followerSurnames.join('・'), n: followerSurnames.length });
   } else if (followerSurnames.length === 1) {
-    followerText = `${followerSurnames[0]}が自然と寄り添っているようです。`;
+    followerText = WM_I18N.t('{name}が自然と寄り添っているようです。', { name: followerSurnames[0] });
   } else {
-    followerText = '周囲の数名が自然と集まっているようです。';
+    followerText = WM_I18N.t('周囲の数名が自然と集まっているようです。');
   }
 
   // v0.2: アーキタイプ別前置き + A 選択肢ヒント
@@ -9946,7 +9947,7 @@ function showFactionF01Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtF01Overlay">
       <div class="fevt-report-card">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">🎭 ロッカールーム報告</div>
+          <div class="fevt-report-title">${WM_I18N.t('🎭 ロッカールーム報告')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, '社長、ちょっと気になる動きがあるのですが')}
@@ -9960,27 +9961,27 @@ function showFactionF01Modal(payload, state, onChoice) {
           <div class="fevt-subject-org">${leaderMeta}</div>
           <div class="fevt-subject-divider"></div>
           <div class="fevt-observation-note">
-            <span class="marker">${String(leaderSurname)}</span>を中心として、${String(followerText)}<br>
-            ${archMeta.flavorText}<br>
-            <span style="color:var(--cream-text-sub);font-size:13px">これは <strong>${archMeta.archLabel}</strong> の集まりになりそうです。</span>
+            <span class="marker">${String(leaderSurname)}</span>${WM_I18N.t('を中心として、')}${String(followerText)}<br>
+            ${WM_I18N.t(archMeta.flavorText)}<br>
+            <span style="color:var(--cream-text-sub);font-size:13px">${WM_I18N.t('これは')} <strong>${WM_I18N.t(archMeta.archLabel)}</strong> ${WM_I18N.t('の集まりになりそうです。')}</span>
           </div>
         </div>
-        <div class="fevt-decision-prompt">この動きについて、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この動きについて、社長としてどう扱いますか？')}</div>
         <div class="fevt-decision-tray">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">${archMeta.aLabel}</div>
-            <div class="fevt-decision-hint">${archMeta.aHint}</div>
+            <div class="fevt-decision-label">${WM_I18N.t(archMeta.aLabel)}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t(archMeta.aHint)}</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">今はそれどころじゃないと釘を刺す</div>
-            <div class="fevt-decision-hint">派閥不成立。本人と周囲に角が立つ</div>
+            <div class="fevt-decision-label">${WM_I18N.t('今はそれどころじゃないと釘を刺す')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('派閥不成立。本人と周囲に角が立つ')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="C">
             <div class="fevt-decision-letter">C</div>
-            <div class="fevt-decision-label">静観する</div>
-            <div class="fevt-decision-hint">派閥成立（自然発生）。アーキタイプ専用タグなし</div>
+            <div class="fevt-decision-label">${WM_I18N.t('静観する')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('派閥成立（自然発生）。アーキタイプ専用タグなし')}</div>
           </div>
         </div>
       </div>
@@ -10016,8 +10017,8 @@ function _factionF02RenderClash(payload, state, onChoice) {
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const factionAName = payload.factionAName || '派閥A';
-  const factionBName = payload.factionBName || '派閥B';
+  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
+  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
   const aName = leaderA ? leaderA.name : '???';
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
@@ -10033,7 +10034,7 @@ function _factionF02RenderClash(payload, state, onChoice) {
   const html = `
     <div class="fevt-overlay-stage" id="fevtF02Overlay">
       <div class="fevt-title-band">
-        <div class="fevt-title-main clash">⚔ 抗 争 の 勃 発</div>
+        <div class="fevt-title-main clash">${WM_I18N.t('⚔ 抗 争 の 勃 発')}</div>
         <div class="fevt-title-divider"></div>
         <div class="fevt-title-sub">FACTION CLASH ・ WEEK ${(state && state.week) || '—'}</div>
       </div>
@@ -10048,7 +10049,7 @@ function _factionF02RenderClash(payload, state, onChoice) {
         </div>
         <div class="fevt-vs-col">
           <div class="fevt-silent-mark">
-            — 沈 黙 —
+            ${WM_I18N.t('— 沈 黙 —')}
             <span>NO WORDS EXCHANGED</span>
           </div>
         </div>
@@ -10062,13 +10063,13 @@ function _factionF02RenderClash(payload, state, onChoice) {
       </div>
 
       <div class="fevt-clash-atmosphere">
-        ロッカールームには、冷たい対立の空気が満ちているようです。
+        ${WM_I18N.t('ロッカールームには、冷たい対立の空気が満ちているようです。')}
       </div>
 
       <div class="fevt-stage-decision">
-        <button class="fevt-stage-btn" data-choice="A">A ・ 煽 る<span class="fevt-stage-btn-label">抗争を公式戦に仕立てる</span></button>
-        <button class="fevt-stage-btn" data-choice="B">B ・ 仲 裁<span class="fevt-stage-btn-label">仲介して収める</span></button>
-        <button class="fevt-stage-btn" data-choice="C">C ・ 介入しない<span class="fevt-stage-btn-label">成り行きに任せる</span></button>
+        <button class="fevt-stage-btn" data-choice="A">A ・ ${WM_I18N.t('煽 る')}<span class="fevt-stage-btn-label">${WM_I18N.t('抗争を公式戦に仕立てる')}</span></button>
+        <button class="fevt-stage-btn" data-choice="B">B ・ ${WM_I18N.t('仲 裁')}<span class="fevt-stage-btn-label">${WM_I18N.t('仲介して収める')}</span></button>
+        <button class="fevt-stage-btn" data-choice="C">C ・ ${WM_I18N.t('介入しない')}<span class="fevt-stage-btn-label">${WM_I18N.t('成り行きに任せる')}</span></button>
       </div>
     </div>
   `;
@@ -10097,8 +10098,8 @@ function showFactionF02Modal(payload, state, onChoice) {
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const factionAName = payload.factionAName || '派閥A';
-  const factionBName = payload.factionBName || '派閥B';
+  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
+  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const bUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
 
@@ -10122,7 +10123,7 @@ function showFactionF02Modal(payload, state, onChoice) {
         ${narLines.map((t, i) => `<span class="fevt-nar-line" data-idx="${i}">${t}</span>`).join('')}
         <span class="fevt-nar-hint" id="fevtF02NarHint">▼ CLICK TO CONTINUE</span>
       </div>
-      <button class="fevt-nar-proceed" id="fevtF02NarProceed">— 目撃する —</button>
+      <button class="fevt-nar-proceed" id="fevtF02NarProceed">${WM_I18N.t('— 目撃する —')}</button>
     </div>
   `;
 
@@ -10215,7 +10216,7 @@ function showFactionF03Modal(payload, state, onContinue) {
 
   // 生存者セリフはペイロード優先、なければ reason デフォルト
   const survivorLine = payload.survivorLine || meta.line;
-  const factionName = payload.factionName || '派閥';
+  const factionName = payload.factionName || WM_I18N.t('派閥');
   const oldLeaderName = payload.oldLeaderName || (oldLeader ? oldLeader.name : '???');
   const lostImgUrl = oldLeader ? _factionUpperUrl(oldLeader.id) : null;
   const survivorImgUrl = survivor ? _factionUpperUrl(survivor.id) : null;
@@ -10236,7 +10237,7 @@ function showFactionF03Modal(payload, state, onContinue) {
   const html = `
     <div class="fevt-overlay-stage sepia f03-dissolution" id="fevtF03Overlay">
       <div class="fevt-title-band">
-        <div class="fevt-title-main dissolve">解 　 散</div>
+        <div class="fevt-title-main dissolve">${WM_I18N.t('解 　 散')}</div>
         <div class="fevt-title-divider"></div>
         <div class="fevt-title-sub">${meta.sub}</div>
       </div>
@@ -10281,7 +10282,7 @@ function showFactionHiatusModal(payload, state, onContinue) {
   const leader = payload.leaderId ? roster.find(c => c.id === payload.leaderId) : null;
 
   const weeks = payload.estimatedWeeks || 8;
-  const factionName = payload.factionName || '派閥';
+  const factionName = payload.factionName || WM_I18N.t('派閥');
   const leaderName = payload.leaderName || (leader ? leader.name : '???');
   const lostImgUrl = leader ? _factionUpperUrl(leader.id) : null;
   const survivorImgUrl = survivor ? _factionUpperUrl(survivor.id) : null;
@@ -10303,21 +10304,21 @@ function showFactionHiatusModal(payload, state, onContinue) {
   const html = `
     <div class="fevt-overlay-stage sepia" id="fevtHiatusOverlay">
       <div class="fevt-title-band">
-        <div class="fevt-title-main dissolve">活 動 休 止</div>
+        <div class="fevt-title-main dissolve">${WM_I18N.t('活 動 休 止')}</div>
         <div class="fevt-title-divider"></div>
         <div class="fevt-title-sub">FACTION ON HIATUS ・ LEADER ABSENT</div>
       </div>
       <div class="fevt-faded-banner">
         <div class="fevt-faded-flag">${String(factionName)}</div>
-        <div class="fevt-faded-caption">旗は畳まれ、主の帰りを待っている</div>
+        <div class="fevt-faded-caption">${WM_I18N.t('旗は畳まれ、主の帰りを待っている')}</div>
       </div>
       <div class="fevt-lost-leader">
         ${lostUpper}
         <div class="fevt-lost-name">${String(leaderName)}</div>
-        <div class="fevt-lost-reason">ABSENCE ・ 長 期 離 脱（推 定 ${weeks} 週 +）</div>
+        <div class="fevt-lost-reason">ABSENCE ・ ${WM_I18N.t('長 期 離 脱（推 定 {n} 週 +）', { n: weeks })}</div>
       </div>
       ${survivorBlock}
-      <button class="fevt-continue-btn" id="fevtHiatusContinue">続 け る</button>
+      <button class="fevt-continue-btn" id="fevtHiatusContinue">${WM_I18N.t('続 け る')}</button>
     </div>
   `;
 
@@ -10362,7 +10363,7 @@ function showFactionEventResult(arg, onClose) {
     ? opts.factionPair.filter(entry => entry && (entry.factionName || entry.leaderId != null)).slice(0, 2)
     : [];
 
-  const titleHtml = `🎭 ${opts.category || '結果'}`;
+  const titleHtml = `🎭 ${opts.category || WM_I18N.t('結果')}`;
   const metaParts = [];
   if (eventId) metaParts.push(eventId);
   metaParts.push(_mdlASeasonLabel(state));
@@ -10389,13 +10390,13 @@ function showFactionEventResult(arg, onClose) {
     const factionSideHtml = (entry) => {
       const leader = entry.leaderId != null ? roster.find(c => c.id === entry.leaderId) : null;
       const portraitUrl = leader ? _factionUpperUrl(leader.id) : '';
-      const leaderName = entry.leaderName || (leader ? leader.name : '') || '代表選手';
+      const leaderName = entry.leaderName || (leader ? leader.name : '') || WM_I18N.t('代表選手');
       const portraitStyle = portraitUrl ? ` style="background-image:url('${portraitUrl}')"` : '';
       const portraitFallback = portraitUrl ? '' : '<span>LEADER</span>';
       return `<div class="mdl-a-faction-clash-side">
         <div class="mdl-a-faction-clash-side-label">${entry.sideLabel || 'FACTION'}</div>
         <div class="mdl-a-faction-clash-portrait"${portraitStyle}>${portraitFallback}</div>
-        <div class="mdl-a-faction-clash-faction">${entry.factionName || '派閥'}</div>
+        <div class="mdl-a-faction-clash-faction">${entry.factionName || WM_I18N.t('派閥')}</div>
         <div class="mdl-a-faction-clash-leader">${leaderName}</div>
       </div>`;
     };
@@ -10406,7 +10407,7 @@ function showFactionEventResult(arg, onClose) {
         <div class="mdl-a-faction-clash-vs">VS</div>
         ${factionSideHtml(factionPair[1])}
       </div>
-      <div class="mdl-a-faction-clash-caption">両派閥の抗争は、団体公認のメインイベントへ</div>
+      <div class="mdl-a-faction-clash-caption">${WM_I18N.t('両派閥の抗争は、団体公認のメインイベントへ')}</div>
       ${stageBody}
     </div>`;
   } else if (opts.factionName) {
@@ -10432,7 +10433,7 @@ function showFactionEventResult(arg, onClose) {
     ${_mdlAReporterStrip(state, opts.reporterText || '派閥について、ひとつご報告があります')}
     ${subjectHtml}
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" id="fevtResultClose">— 見 届 け る —</button>
+      <button class="mdl-a-continue-btn" id="fevtResultClose">${WM_I18N.t('— 見 届 け る —')}</button>
     </div>
   `;
 
@@ -10470,8 +10471,8 @@ function showFactionF04Modal(payload, state, onChoice) {
   const targetMeta = target
     ? `AGE ${target.age || '—'} ・ OVR ${Engine.util.ov(target)} ・ ${String(target.style || '').toUpperCase() || 'FIGHTER'}`
     : '';
-  const fromFactionName = payload.fromFactionName || '派閥A';
-  const toFactionName = payload.toFactionName || '派閥B';
+  const fromFactionName = payload.fromFactionName || WM_I18N.t('派閥A');
+  const toFactionName = payload.toFactionName || WM_I18N.t('派閥B');
 
   const subjectPortrait = targetUrl
     ? `<div class="fevt-subject-portrait-wrap" style="background-image:url('${targetUrl}')"></div>`
@@ -10481,7 +10482,7 @@ function showFactionF04Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtF04Overlay">
       <div class="fevt-report-card f04">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">🕯 ロッカールーム報告（移籍）</div>
+          <div class="fevt-report-title">${WM_I18N.t('🕯 ロッカールーム報告（移籍）')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, '社長。ひとつ、事実としてお伝えしておくべきことが')}
@@ -10498,13 +10499,13 @@ function showFactionF04Modal(payload, state, onChoice) {
 
           <div class="fevt-subject-divider" style="margin-top:14px"></div>
           <div class="fevt-observation-note" style="text-align:center">
-            <span class="marker">${String(targetSurname)}</span>は<span class="marker">${String(toFactionName)}</span>と既に話をつけているようです。<br>
-            練習後の合流、食事、移動——動きはもう表に出始めています。<br>
-            <span style="color:var(--cream-text-sub);font-size:13px">報告として、お耳に入れておきます。</span>
+            <span class="marker">${String(targetSurname)}</span>${WM_I18N.t('は')}<span class="marker">${String(toFactionName)}</span>${WM_I18N.t('と既に話をつけているようです。')}<br>
+            ${WM_I18N.t('練習後の合流、食事、移動——動きはもう表に出始めています。')}<br>
+            <span style="color:var(--cream-text-sub);font-size:13px">${WM_I18N.t('報告として、お耳に入れておきます。')}</span>
           </div>
         </div>
         <div class="fevt-decision-prompt" style="padding-bottom:24px">
-          <button class="fevt-continue-btn" id="fevtF04Continue" style="color:var(--cream-text-sub);border-color:rgba(100,85,50,0.3);background:rgba(255,255,255,0.3)">見 届 け る</button>
+          <button class="fevt-continue-btn" id="fevtF04Continue" style="color:var(--cream-text-sub);border-color:rgba(100,85,50,0.3);background:rgba(255,255,255,0.3)">${WM_I18N.t('見 届 け る')}</button>
         </div>
       </div>
     </div>
@@ -10555,7 +10556,7 @@ function showFactionF05Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtF05Overlay">
       <div class="fevt-report-card f05">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">⚙ 派閥内に火種</div>
+          <div class="fevt-report-title">${WM_I18N.t('⚙ 派閥内に火種')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ FOR YOUR INFORMATION</div>
         </div>
         ${_factionReporterStrip(state, '社長。お耳に入れておきます。あの組、中で軋みが出てるみたいです')}
@@ -10567,14 +10568,14 @@ function showFactionF05Modal(payload, state, onChoice) {
           })}
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-observation-note">
-            練習後のロッカーでの会話が減った。<span class="marker">${String(ringleaderSurname)}</span>はリーダー
-            <span class="marker">${String(leaderSurname)}</span>の方針に
-            <span class="marker hostile">不満を抱えている</span>ようだ。<br>
-            まだ表には出ていないが、このまま放っておけば派閥が割れるかもしれない。
+            ${WM_I18N.t('練習後のロッカーでの会話が減った。')}<span class="marker">${String(ringleaderSurname)}</span>${WM_I18N.t('はリーダー')}
+            <span class="marker">${String(leaderSurname)}</span>${WM_I18N.t('の方針に')}
+            <span class="marker hostile">${WM_I18N.t('不満を抱えている')}</span>${WM_I18N.t('ようだ。')}<br>
+            ${WM_I18N.t('まだ表には出ていないが、このまま放っておけば派閥が割れるかもしれない。')}
           </div>
         </div>
         <div class="fevt-decision-prompt" style="padding-bottom:24px">
-          <button class="fevt-continue-btn" id="fevtF05Continue" style="color:var(--cream-text-sub);border-color:rgba(100,85,50,0.3);background:rgba(255,255,255,0.3)">見 守 る ✓</button>
+          <button class="fevt-continue-btn" id="fevtF05Continue" style="color:var(--cream-text-sub);border-color:rgba(100,85,50,0.3);background:rgba(255,255,255,0.3)">${WM_I18N.t('見 守 る ✓')}</button>
         </div>
       </div>
     </div>
@@ -10615,8 +10616,8 @@ function showFactionF06Modal(payload, state, onChoice) {
   const leaderBSurname = leaderB ? _factionSurname(leaderB) : leaderBName;
   const leaderAUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const leaderBUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
-  const factionAName = payload.factionAName || '派閥A';
-  const factionBName = payload.factionBName || '派閥B';
+  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
+  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
 
   // 敵対度平均（表示用）
   let hostAvg = '—';
@@ -10641,7 +10642,7 @@ function showFactionF06Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtF06Overlay">
       <div class="fevt-report-card f06">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">🌱 和解の兆し</div>
+          <div class="fevt-report-title">${WM_I18N.t('🌱 和解の兆し')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, 'あの2組、もう揉めてませんよ。先週の合同練習でも、普通に挨拶してました')}
@@ -10663,25 +10664,25 @@ function showFactionF06Modal(payload, state, onChoice) {
               })}
             </div>
           </div>
-          <div class="fevt-subject-org" style="margin-top:6px">かつての因縁 ・ ${hostLabel}</div>
+          <div class="fevt-subject-org" style="margin-top:6px">${WM_I18N.t('かつての因縁')} ・ ${hostLabel}</div>
           <div class="fevt-subject-divider" style="margin-top:12px"></div>
           <div class="fevt-observation-note">
-            対立が始まって以来、両派閥のリーダー<span class="marker">${String(leaderASurname)}</span>と<span class="marker">${String(leaderBSurname)}</span>の間にあった棘は、
-            ここ数週間で<span class="marker peace">明らかに和らいで</span>いる。<br>
-            メンバー間でも私的な交流が戻り始めた。社長の一押しがあれば、抗争は完全に終結する。
+            ${WM_I18N.t('対立が始まって以来、両派閥のリーダー')}<span class="marker">${String(leaderASurname)}</span>${WM_I18N.t('と')}<span class="marker">${String(leaderBSurname)}</span>${WM_I18N.t('の間にあった棘は、')}
+            ${WM_I18N.t('ここ数週間で')}<span class="marker peace">${WM_I18N.t('明らかに和らいで')}</span>${WM_I18N.t('いる。')}<br>
+            ${WM_I18N.t('メンバー間でも私的な交流が戻り始めた。社長の一押しがあれば、抗争は完全に終結する。')}
           </div>
         </div>
-        <div class="fevt-decision-prompt">この空気を、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この空気を、社長としてどう扱いますか？')}</div>
         <div class="fevt-decision-tray two">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">そっと結束を後押しする</div>
-            <div class="fevt-decision-hint">敵対度を一気に解消。両リーダーも社長の仲裁を好意的に受け止める、静かな終結</div>
+            <div class="fevt-decision-label">${WM_I18N.t('そっと結束を後押しする')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('敵対度を一気に解消。両リーダーも社長の仲裁を好意的に受け止める、静かな終結')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">何もしない</div>
-            <div class="fevt-decision-hint">介入なし。自然減衰に任せる（CD 16週まで再判定なし）</div>
+            <div class="fevt-decision-label">${WM_I18N.t('何もしない')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('介入なし。自然減衰に任せる（CD 16週まで再判定なし）')}</div>
           </div>
         </div>
       </div>
@@ -10710,6 +10711,7 @@ function showFactionF06Modal(payload, state, onChoice) {
 // F07 v0.4: 派閥動向（Office 応接室型 / modalShape choice2 or choice3）
 // trio 配置は維持し、incidentType により本文・選択肢を分岐。
 // 互換: incidentType 未指定の場合は旧 DEMAND_ABSTRACT 3 択挙動を表示。
+// モジュールロード時定数のためt()は宣言側で評価しない(参照側で評価してsetLang追従させる。FLAG_MODAL_METAと同流儀)
 const _F07_INCIDENT_META = {
   DEMAND_MAIN: { titleEmoji: '👑', titleText: 'メインカード相談', shape: 'choice3', source: 'leader',
     choices: [
@@ -10865,14 +10867,14 @@ function showFactionF07Modal(payload, state, onChoice) {
     : (coachLine || `${factionName}の動向について報告があります。`);
 
   const observationNote = meta.source === 'leader'
-    ? `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>と${factionName}の動きについて、社長室での相談です。</div>`
-    : `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>と${factionName}の様子について、社長の判断を仰ぎたいとのことです。</div>`;
+    ? `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>${WM_I18N.t('と{faction}の動きについて、社長室での相談です。', { faction: factionName })}</div>`
+    : `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>${WM_I18N.t('と{faction}の様子について、社長の判断を仰ぎたいとのことです。', { faction: factionName })}</div>`;
 
   const decisionCardsHtml = meta.choices.map(c => `
     <div class="fevt-decision-card" data-choice="${c.id}">
       <div class="fevt-decision-letter">${c.id}</div>
-      <div class="fevt-decision-label">${c.label}</div>
-      <div class="fevt-decision-hint">${c.hint.split('{factionName}').join(factionName).split('{targetName}').join(targetName || '対象')}</div>
+      <div class="fevt-decision-label">${WM_I18N.t(c.label)}</div>
+      <div class="fevt-decision-hint">${WM_I18N.t(c.hint).split('{factionName}').join(factionName).split('{targetName}').join(targetName || WM_I18N.t('対象'))}</div>
     </div>
   `).join('');
 
@@ -10880,7 +10882,7 @@ function showFactionF07Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtF07Overlay">
       <div class="fevt-report-card f07">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">${meta.titleEmoji} ${meta.titleText}</div>
+          <div class="fevt-report-title">${meta.titleEmoji} ${WM_I18N.t(meta.titleText)}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, reporterText)}
@@ -10895,7 +10897,7 @@ function showFactionF07Modal(payload, state, onChoice) {
           <div class="fevt-subject-divider"></div>
           ${observationNote}
         </div>
-        <div class="fevt-decision-prompt">この件、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この件、社長としてどう扱いますか？')}</div>
         <div class="fevt-decision-tray">
           ${decisionCardsHtml}
         </div>
@@ -10939,8 +10941,8 @@ function showFactionF08Modal(payload, state, onChoice) {
   const leaderBUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
   const leaderAOvr = leaderA ? Engine.util.ov(leaderA) : '—';
   const leaderBOvr = leaderB ? Engine.util.ov(leaderB) : '—';
-  const factionAName = payload.factionAName || '派閥A';
-  const factionBName = payload.factionBName || '派閥B';
+  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
+  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
   const hostilityPeak = payload.hostilityPeak != null ? payload.hostilityPeak : '—';
   const hostilityLabel = Engine.factions.getHostilityLabel(hostilityPeak === '—' ? 0 : Number(hostilityPeak));
 
@@ -10957,8 +10959,8 @@ function showFactionF08Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtF08Overlay">
       <div class="fevt-report-card f08">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">🔥 対立ヒートアップ</div>
-          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ ${hostilityLabel}の対立</div>
+          <div class="fevt-report-title">${WM_I18N.t('🔥 対立ヒートアップ')}</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ ${WM_I18N.t('{label}の対立', { label: hostilityLabel })}</div>
         </div>
         ${_factionReporterStrip(state, '……もう、止めても無駄だと思います。両方とも、リングで決着つける覚悟です')}
         <div class="fevt-subject-stage u3b-theme-cream">
@@ -10981,27 +10983,27 @@ function showFactionF08Modal(payload, state, onChoice) {
           </div>
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-observation-note">
-            二人の対立は、<span class="marker hostile">${hostilityLabel}の段階</span>まで来ている。
-            ロッカールームの緊張は限界に近く、メンバー全員が次の興行のカード編成を待っている。<br>
-            この熱を、どこに着火させるかは社長の手の中にある。
+            ${WM_I18N.t('二人の対立は、')}<span class="marker hostile">${WM_I18N.t('{label}の段階', { label: hostilityLabel })}</span>${WM_I18N.t('まで来ている。')}
+            ${WM_I18N.t('ロッカールームの緊張は限界に近く、メンバー全員が次の興行のカード編成を待っている。')}<br>
+            ${WM_I18N.t('この熱を、どこに着火させるかは社長の手の中にある。')}
           </div>
         </div>
-        <div class="fevt-decision-prompt">この熱を、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この熱を、社長としてどう扱いますか？')}</div>
         <div class="fevt-decision-tray">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">直接対決をメインに組む</div>
-            <div class="fevt-decision-hint">集客 +12%、両リーダー間の因縁が一気に深まる（rivalry 大幅増）。負けた派閥は崩壊リスク</div>
+            <div class="fevt-decision-label">${WM_I18N.t('直接対決をメインに組む')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('集客 +12%、両リーダー間の因縁が一気に深まる（rivalry 大幅増）。負けた派閥は崩壊リスク')}</div>
           </div>
           <div class="fevt-decision-card label-disabled" data-choice="B">
             <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">仲裁する（条件未達）</div>
-            <div class="fevt-decision-hint">ここまで燃え広がった対立は、もう言葉では止まらない。火が弱まれば、仲裁の余地も生まれる</div>
+            <div class="fevt-decision-label">${WM_I18N.t('仲裁する（条件未達）')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('ここまで燃え広がった対立は、もう言葉では止まらない。火が弱まれば、仲裁の余地も生まれる')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="C">
             <div class="fevt-decision-letter">C</div>
-            <div class="fevt-decision-label">煽らず、組まず</div>
-            <div class="fevt-decision-hint">熱は持続。次興行に持ち越し。CD 24週は走らない（再判定継続）</div>
+            <div class="fevt-decision-label">${WM_I18N.t('煽らず、組まず')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('熱は持続。次興行に持ち越し。CD 24週は走らない（再判定継続）')}</div>
           </div>
         </div>
       </div>
@@ -11048,7 +11050,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
     <div class="fevt-overlay-arena" id="fevtF08PreOverlay">
       <div class="fevt-arena-card f08-pre">
         <div class="fevt-arena-header">
-          <div class="fevt-arena-title">🔥 直接対決</div>
+          <div class="fevt-arena-title">${WM_I18N.t('🔥 直接対決')}</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ DIRECT CONFRONTATION</div>
         </div>
         <div class="fevt-arena-narration">${escHtml(data.narration)}</div>
@@ -11072,7 +11074,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
           </div>
         </div>
         <div class="fevt-arena-actions">
-          <button class="fevt-arena-btn" id="fevtF08PreBtn">試合へ進む →</button>
+          <button class="fevt-arena-btn" id="fevtF08PreBtn">${WM_I18N.t('試合へ進む →')}</button>
         </div>
       </div>
     </div>
@@ -11125,7 +11127,7 @@ function showFactionF08AftermathModal(data, state, onContinue) {
     <div class="fevt-overlay-arena" id="fevtF08PostOverlay">
       <div class="fevt-arena-card f08-post">
         <div class="fevt-arena-header">
-          <div class="fevt-arena-title">⚔ 決着の夜</div>
+          <div class="fevt-arena-title">${WM_I18N.t('⚔ 決着の夜')}</div>
           <div class="fevt-arena-meta">${_factionSeasonLabel(state)} ・ AFTERMATH</div>
         </div>
         <div class="fevt-arena-narration">${escHtml(data.narrationOpen)}</div>
@@ -11144,7 +11146,7 @@ function showFactionF08AftermathModal(data, state, onContinue) {
         </div>
         <div class="fevt-arena-narration close">${escHtml(data.narrationClose)}</div>
         <div class="fevt-arena-actions">
-          <button class="fevt-arena-btn" id="fevtF08PostBtn">閉じる</button>
+          <button class="fevt-arena-btn" id="fevtF08PostBtn">${WM_I18N.t('閉じる')}</button>
         </div>
       </div>
     </div>
@@ -11621,8 +11623,8 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const factionAName = payload.factionAName || '派閥A';
-  const factionBName = payload.factionBName || '派閥B';
+  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
+  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
   const aName = leaderA ? leaderA.name : '???';
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
@@ -11726,8 +11728,8 @@ function showFactionF02PeaceModal(payload, state, onContinue) {
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const factionAName = payload.factionAName || '派閥A';
-  const factionBName = payload.factionBName || '派閥B';
+  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
+  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
   const aName = leaderA ? leaderA.name : '???';
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
@@ -11851,8 +11853,8 @@ function showFactionF02EndlessModal(payload, state, onContinue) {
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const factionAName = payload.factionAName || '派閥A';
-  const factionBName = payload.factionBName || '派閥B';
+  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
+  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
   const aName = leaderA ? leaderA.name : '???';
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
@@ -12324,8 +12326,8 @@ function showFactionCommon7Modal(payload, state, onChoice) {
   const lB = roster.find(c => c.id === payload.leaderBId);
   const lAName = lA ? lA.name : (payload.leaderAName || '???');
   const lBName = lB ? lB.name : (payload.leaderBName || '???');
-  const factionAName = String(payload.factionAName || '派閥A');
-  const factionBName = String(payload.factionBName || '派閥B');
+  const factionAName = String(payload.factionAName || WM_I18N.t('派閥A'));
+  const factionBName = String(payload.factionBName || WM_I18N.t('派閥B'));
   const planType = String(payload.planType || '合同企画');
   const archA = payload.archetypeAId || null;
   const archB = payload.archetypeBId || null;
@@ -14303,7 +14305,7 @@ function _buildB2Step3b(event, state, roster) {
     </div>
     <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" data-choice="0">— 見 届 け る —</button>
+      <button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('— 見 届 け る —')}</button>
     </div>`;
 }
 
@@ -14505,7 +14507,7 @@ function _buildB3Step3b(event, state, roster) {
     </div>
     <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" data-choice="0">— 見 届 け る —</button>
+      <button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('— 見 届 け る —')}</button>
     </div>`;
 }
 
@@ -15328,7 +15330,7 @@ function _renderNextMatchDialogue() {
       </div>
       ${_rivalryCol(d.loserId, d.loserName, d.loseLine, false)}
     </div>
-    <div class="vd-foot"><button class="vd-btn" onclick="closeMatchDialogue()">— 見 届 け る —</button></div>
+    <div class="vd-foot"><button class="vd-btn" onclick="closeMatchDialogue()">${WM_I18N.t('— 見 届 け る —')}</button></div>
   `;
   overlay.classList.add('active');
   if (typeof Audio !== 'undefined' && Audio.play) Audio.play(d.isUpset ? 'rivalry_resolution' : 'event');
