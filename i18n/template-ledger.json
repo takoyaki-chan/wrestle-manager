@@ -1691,7 +1691,7 @@
   },
   {
     "key": "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。",
-    "en": "{org}'s {name} has decided to retire on accumulated damage, closing a {seasons}-season career.",
+    "en": "{org}'s {name} has decided to retire on accumulated damage, closing out {seasons} seasons in the ring.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1701,7 +1701,7 @@
   },
   {
     "key": "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。通算{reigns}度の戴冠を誇る。",
-    "en": "{org}'s {name} has decided to retire on accumulated damage, closing a {seasons}-season career. Title reigns over that span: {reigns}.",
+    "en": "{org}'s {name} has decided to retire on accumulated damage, closing out {seasons} seasons in the ring. Title reigns over that span: {reigns}.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1711,7 +1711,7 @@
   },
   {
     "key": "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。エース級の突然の退場は団体に激震を走らせた。",
-    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career closed with no warning. Losing an ace this way leaves the promotion with a hole it never planned for.",
+    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. {seasons} seasons in the ring, closed with no warning. Losing an ace this way leaves the promotion with a hole it never planned for.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1721,7 +1721,7 @@
   },
   {
     "key": "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。リング上での悲劇に関係者は言葉を失った。",
-    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career closed with no warning. Nobody around the promotion had anything to say about what they had just seen.",
+    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. {seasons} seasons in the ring, closed with no warning. Nobody around the promotion had anything to say about what they had just seen.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1811,7 +1811,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）、度重なる怪我で引退——{seasons}シーズンの現役生活に幕",
-    "en": "{org}'s {name}, {age}, retires on repeated injuries — a {seasons}-season career ends",
+    "en": "{org}'s {name}, {age}, retires on repeated injuries — {seasons} seasons in the ring come to an end",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -2341,7 +2341,7 @@
   },
   {
     "key": "{showName}・{venue}。観客{attendance}人、{turns}ターンの攻防は決着を見ず。全{totalMatches}試合の平均試合評価{avgMQ}",
-    "en": "{showName}, {venue}. {attendance} in the building; a {turns}-turn main ended without a decision. {totalMatches} on the card, average rating {avgMQ}",
+    "en": "{showName}, {venue}. {attendance} in the building; {turns} turns in the main event and no decision. {totalMatches} on the card, average rating {avgMQ}",
     "files": [
       "NEWSPAPER_SUB_TEMPLATES"
     ],
@@ -2411,7 +2411,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "{stamp}. A {turns}-turn match, and {winner} took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
+    "en": "{stamp}. {turns} turns, and {winner} took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2421,7 +2421,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "{stamp}. A {turns}-turn match, and {winner} took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
+    "en": "{stamp}. {turns} turns, and {winner} took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2431,7 +2431,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "{stamp}. A {turns}-turn match, and {winner} ({winnerOrg}) took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
+    "en": "{stamp}. {turns} turns, and {winner} ({winnerOrg}) took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2441,7 +2441,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "{stamp}. A {turns}-turn match, and {winner} ({winnerOrg}) took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
+    "en": "{stamp}. {turns} turns, and {winner} ({winnerOrg}) took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2551,7 +2551,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ攻防の末、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "A {turns}-turn exchange, and {winner} finished {loser}: {finish} ({phase}).",
+    "en": "{turns} turns of back-and-forth, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2561,7 +2561,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ攻防の末、{winner}が{finish}で{loser}を下した。",
-    "en": "A {turns}-turn exchange, and {winner} finished {loser}: {finish}.",
+    "en": "{turns} turns of back-and-forth, and {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2571,7 +2571,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ死闘の末、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "A {turns}-turn war, and {winner} finished {loser}: {finish} ({phase}).",
+    "en": "{turns} turns of war, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2581,7 +2581,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ死闘の末、{winner}が{finish}で{loser}を下した。",
-    "en": "A {turns}-turn war, and {winner} finished {loser}: {finish}.",
+    "en": "{turns} turns of war, and {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -3421,7 +3421,7 @@
   },
   {
     "key": "⚖ ドラフト: {name} [{tierLabel}] → {orgName} ({cost}万 R{round})",
-    "en": "⚖ Draft: {name} [{tierLabel}] → {orgName} (¥{cost}0k, R{round})",
+    "en": "⚖ Draft: {name} [{tierLabel}] → {orgName} (¥{cost:man}, R{round})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3461,7 +3461,7 @@
   },
   {
     "key": "⚖ ドラフト獲得: {name} [{tierLabel}] 契約金{cost}万 (R{round})",
-    "en": "⚖ Drafted: {name} [{tierLabel}], signing fee ¥{cost}0k (R{round})",
+    "en": "⚖ Drafted: {name} [{tierLabel}], signing fee ¥{cost:man} (R{round})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4901,7 +4901,7 @@
   },
   {
     "key": "🎉 {name}の引き抜き交渉成功！（-{cost}万）",
-    "en": "🎉 Poaching talks for {name} came off! (-¥{cost}0k)",
+    "en": "🎉 Poaching talks for {name} came off! (-¥{cost:man})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4911,7 +4911,7 @@
   },
   {
     "key": "🎉 新団体設立！ 初期資金{funds}万でスタート。",
-    "en": "🎉 A new promotion is founded! Starting funds: ¥{funds}0k.",
+    "en": "🎉 A new promotion is founded! Starting funds: ¥{funds:man}.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4921,7 +4921,7 @@
   },
   {
     "key": "🎓 {name}をコーチとして雇用（雇用費: {fee}万、決裁枠 -{dpCost}）",
-    "en": "🎓 Hired {name} as a coach (fee: ¥{fee}0k, approvals -{dpCost})",
+    "en": "🎓 Hired {name} as a coach (fee: ¥{fee:man}, approvals -{dpCost})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4931,7 +4931,7 @@
   },
   {
     "key": "🎓 コーチ枠を{slots}枠に拡張（投資: {cost}万）",
-    "en": "🎓 Coach slots expanded to {slots} (investment: ¥{cost}0k)",
+    "en": "🎓 Coach slots expanded to {slots} (investment: ¥{cost:man})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5131,7 +5131,7 @@
   },
   {
     "key": "💰 残り資金: {funds}万",
-    "en": "💰 Funds remaining: ¥{funds}0k",
+    "en": "💰 Funds remaining: ¥{funds:man}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5211,7 +5211,7 @@
   },
   {
     "key": "📋 ドラフト完了！ {rosterCount}名の所属選手で船出。（契約金合計: {totalCost}万）",
-    "en": "📋 Draft complete! Setting out with a roster of {rosterCount}. (Signing fees total: ¥{totalCost}0k)",
+    "en": "📋 Draft complete! Setting out with a roster of {rosterCount}. (Signing fees total: ¥{totalCost:man})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5231,7 +5231,7 @@
   },
   {
     "key": "📝 {name}と契約（契約金: {cost}万 [{tierLabel}]{scoutDiscSuffix}）",
-    "en": "📝 Signed {name} (signing fee: ¥{cost}0k [{tierLabel}]{scoutDiscSuffix})",
+    "en": "📝 Signed {name} (signing fee: ¥{cost:man} [{tierLabel}]{scoutDiscSuffix})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5241,7 +5241,7 @@
   },
   {
     "key": "📝 {name}と契約（契約金: {cost}万）[{tierLabel}]{scoutDiscSuffix}",
-    "en": "📝 Signed {name} (signing fee: ¥{cost}0k) [{tierLabel}]{scoutDiscSuffix}",
+    "en": "📝 Signed {name} (signing fee: ¥{cost:man}) [{tierLabel}]{scoutDiscSuffix}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5251,7 +5251,7 @@
   },
   {
     "key": "📝 スカウト獲得 {name} [{tierLabel}] 契約金{cost}万",
-    "en": "📝 Scouted and signed {name} [{tierLabel}], signing fee ¥{cost}0k",
+    "en": "📝 Scouted and signed {name} [{tierLabel}], signing fee ¥{cost:man}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5341,7 +5341,7 @@
   },
   {
     "key": "🔍 スカウト獲得: {name} [{tierLabel}] 契約金{cost}万",
-    "en": "🔍 Scouted: {name} [{tierLabel}], signing fee ¥{cost}0k",
+    "en": "🔍 Scouted: {name} [{tierLabel}], signing fee ¥{cost:man}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
