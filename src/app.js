@@ -10990,15 +10990,15 @@ const App = {
             fighter: pf,
             text: pickPledgeLine(kept ? 'kept' : 'broken', pf),
             changes: [{
-              label: '本人の様子', emoji: '💭',
+              label: WM_I18N.t('本人の様子'), emoji: '💭',
               text: kept
-                ? '約束どおり最後の一戦を任され、応えるだけの顔をしている'
-                : '約束された場に立てず、その事実を飲み込めずにいる',
+                ? WM_I18N.t('約束どおり最後の一戦を任され、応えるだけの顔をしている')
+                : WM_I18N.t('約束された場に立てず、その事実を飲み込めずにいる'),
             }],
             cost: 0,
             remainingFunds: G.funds,
             icon: '🤝',
-            label: kept ? '約束を果たした' : '約束を破った',
+            label: kept ? WM_I18N.t('約束を果たした') : WM_I18N.t('約束を破った'),
             docId: 'pledge',
             reactionTone: null,
           });
@@ -11592,7 +11592,7 @@ const App = {
       G = cleanG;
       if (notif.decay > 0) {
         const nowPop = Math.round(notif.nowPop * 10) / 10;
-        setTimeout(() => showToast(`📣 オフシーズンで団体人気が -${notif.decay} 減衰しました（現在: ${nowPop}）`, 6000), 800);
+        setTimeout(() => showToast(WM_I18N.t('📣 オフシーズンで団体人気が -{decay} 減衰しました（現在: {pop}）', { decay: notif.decay, pop: nowPop }), 6000), 800);
       }
     }
     return true;
@@ -11665,7 +11665,7 @@ const App = {
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
-        speech: getTraitQuote('injury', c), detail:`🏥 ${injuryLabel(c.injury.type)} — 全治${c.injury.weeksLeft}週間` }), i * 100);
+        speech: getTraitQuote('injury', c), detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(c.injury.type), weeks: c.injury.weeksLeft }) }), i * 100);
     });
     // v1.2-9: Flavor event popups (雑誌取材・TV出演)
     const flavorEvents = G._flavorEvents || [];
@@ -11674,8 +11674,8 @@ const App = {
       flavorEvents.forEach((ev, i) => {
         const tone = ev.type === 'magazine' ? 'positive' : 'positive';
         const detail = ev.type === 'magazine'
-          ? `人気 +${ev.popGain}`
-          : `ヒート +${ev.heatGain}`;
+          ? WM_I18N.t('人気 +{n}', { n: ev.popGain })
+          : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone, message: ev.headline, detail
@@ -11789,10 +11789,10 @@ const App = {
       // (通知総量を増やさない原則) — 複数の出どころがある週だけ1枚に併記する。
       // 効果値も発現タイミングも変えていない。束ね方だけの変更。
       const SOURCE_LABELS = {
-        camp: { one: (n) => `合宿の手応えで${n}の気持ちが前向きになってきた`,
-                many: (c) => `合宿の手応えが出てきた（${c}名）` },
-        trainer: { one: (n) => `外部コーチの指導で${n}の気持ちが前向きになってきた`,
-                   many: (c) => `外部コーチの指導が実を結び始めた（${c}名）` },
+        camp: { one: (n) => WM_I18N.t('合宿の手応えで{name}の気持ちが前向きになってきた', { name: n }),
+                many: (c) => WM_I18N.t('合宿の手応えが出てきた（{n}名）', { n: c }) },
+        trainer: { one: (n) => WM_I18N.t('外部コーチの指導で{name}の気持ちが前向きになってきた', { name: n }),
+                   many: (c) => WM_I18N.t('外部コーチの指導が実を結び始めた（{n}名）', { n: c }) },
       };
       const bySource = {};
       weekTrustReveals.forEach(r => {
@@ -11804,13 +11804,13 @@ const App = {
         const label = SOURCE_LABELS[src];
         if (!label) {
           // 未知の出どころも黙って落とさない(従来はどの source でも1枚出ていた)
-          parts.push(`${names[0]}の気持ちが前向きになってきた`);
+          parts.push(WM_I18N.t('{name}の気持ちが前向きになってきた', { name: names[0] }));
           return;
         }
         parts.push(names.length >= 2 ? label.many(names.length) : label.one(names[0]));
       });
       if (parts.length > 0) {
-        const msg = `🤝 ${parts.join('／')}`;
+        const msg = WM_I18N.t('🤝 {text}', { text: parts.join('／') });
         const baseDelayTr = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 600;
         setTimeout(() => showToast(msg, 5000), baseDelayTr);
       }
@@ -11865,8 +11865,8 @@ const App = {
           type: 'N_sudden_departure',
           fighter: d.id,
           name: d.name,
-          text: `🚪 ${d.name}が荷物をまとめて団体を去った。誰も止められなかった。`,
-          detail: d.destination === 'rival' ? `${d.name}は他団体へ移籍した。` : `${d.name}はフリーとなった。`,
+          text: WM_I18N.t('🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。', { name: d.name }),
+          detail: d.destination === 'rival' ? WM_I18N.t('{name}は他団体へ移籍した。', { name: d.name }) : WM_I18N.t('{name}はフリーとなった。', { name: d.name }),
         }), sdDelay + i * 200);
       });
     }
@@ -11883,8 +11883,8 @@ const App = {
         setTimeout(() => showNotifEventToast({
           type: 'N_scandal',
           fighter: sc.fighterId,
-          text: `📰 ${sc.fighterName}のスキャンダルが週刊誌に掲載された！`,
-          detail: `ファンの間に動揺が広がっている（人気${sc.popDelta}）`,
+          text: WM_I18N.t('📰 {name}のスキャンダルが週刊誌に掲載された！', { name: sc.fighterName }),
+          detail: WM_I18N.t('ファンの間に動揺が広がっている（人気{delta}）', { delta: sc.popDelta }),
         }), scandalDelay + i * 300);
       });
     }
@@ -11898,7 +11898,7 @@ const App = {
     if (pendingInjuryPopDecay && pendingInjuryPopDecay.length > 0) {
       const ipdDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 100;
       pendingInjuryPopDecay.forEach((ipd, i) => {
-        setTimeout(() => showToast(`📉 ${ipd.fighterName}の人気がじわじわ下がっている…（離脱中）`, 5000), ipdDelay + i * 200);
+        setTimeout(() => showToast(WM_I18N.t('📉 {name}の人気がじわじわ下がっている…（離脱中）', { name: ipd.fighterName }), 5000), ipdDelay + i * 200);
       });
     }
 
@@ -11946,8 +11946,8 @@ const App = {
           fighter: w.fighterId,
           text: w.text,
           detail: w.tone === 'serious'
-            ? '⚠️ 来週は移籍ウィンドウです。信頼ケアの最後のチャンスかもしれません。'
-            : '👁️ 来週は移籍ウィンドウです。動向を注視しましょう。',
+            ? WM_I18N.t('⚠️ 来週は移籍ウィンドウです。信頼ケアの最後のチャンスかもしれません。')
+            : WM_I18N.t('👁️ 来週は移籍ウィンドウです。動向を注視しましょう。'),
         }), pwDelay + i * 300);
       });
     }
@@ -12082,12 +12082,12 @@ const App = {
         Audio.play('fanfare');
         showEventPopup({
           type: 'system', emoji: '🏅', tone: 'gold',
-          message: '🎊 逸材特別交渉枠を獲得！ 🎊',
-          detail: '団体の名声が業界に轟いた！\n'
-                + '逸材クラスの選手たちが、あなたの団体に注目しています。\n\n'
-                + '💎 FA市場で逸材ランクの選手1名と特別に交渉可能\n'
-                + '⏳ いつでも使用可能（温存OK）\n'
-                + '⚠️ 1回限り / 超逸材には使用不可'
+          message: WM_I18N.t('🎊 逸材特別交渉枠を獲得！ 🎊'),
+          detail: WM_I18N.t('団体の名声が業界に轟いた！\n')
+                + WM_I18N.t('逸材クラスの選手たちが、あなたの団体に注目しています。\n\n')
+                + WM_I18N.t('💎 FA市場で逸材ランクの選手1名と特別に交渉可能\n')
+                + WM_I18N.t('⏳ いつでも使用可能（温存OK）\n')
+                + WM_I18N.t('⚠️ 1回限り / 超逸材には使用不可')
         });
       }, etDelay);
     }
@@ -12929,9 +12929,9 @@ const App = {
         && f.status !== 'retired' && !f.isRental)
       .sort((a, b) => (b.pop || 0) - (a.pop || 0))[0];
     return [
-      mainLeft  ? { fighter: mainLeft,  roleLabel: 'MAIN EVENT ・ 赤コーナー' } : null,
-      mainRight ? { fighter: mainRight, roleLabel: 'MAIN EVENT ・ 青コーナー' } : null,
-      veteran   ? { fighter: veteran,   roleLabel: 'VETERAN ・ ロッカールーム代表' } : null
+      mainLeft  ? { fighter: mainLeft,  roleLabel: 'MAIN EVENT ・ ' + WM_I18N.t('赤コーナー') } : null,
+      mainRight ? { fighter: mainRight, roleLabel: 'MAIN EVENT ・ ' + WM_I18N.t('青コーナー') } : null,
+      veteran   ? { fighter: veteran,   roleLabel: 'VETERAN ・ ' + WM_I18N.t('ロッカールーム代表') } : null
     ].filter(Boolean);
   },
 
@@ -13114,13 +13114,13 @@ const App = {
           }
           if (!dialogue) dialogue = '…精一杯やります';
           const activityLabel = (typeof TALENT_ACTIVITY_LABELS !== 'undefined' && event.activityType)
-            ? (TALENT_ACTIVITY_LABELS[event.activityType] || 'タレント活動')
-            : '密着取材';
+            ? (TALENT_ACTIVITY_LABELS[event.activityType] || WM_I18N.t('タレント活動'))
+            : WM_I18N.t('密着取材');
           // closeAndChoice 直後の overlay クローズ完了を確実にしてから表示
           setTimeout(() => showEventPopup({
             type: 'fighter', id: selectedFighter.id, name: selectedFighter.name,
             tone: 'gold', speech: dialogue,
-            detail: `📺 ${event.outletName || 'メディア'}・${activityLabel}`,
+            detail: WM_I18N.t('📺 {outlet}・{activity}', { outlet: event.outletName || WM_I18N.t('メディア'), activity: activityLabel }),
           }), 250);
         }
       }
@@ -13194,7 +13194,7 @@ const App = {
             Storage.autoSave();
             Audio.play('error');
             renderWeekScreen && renderWeekScreen();
-            showToast(`${reqName} の直訴を受けたが、メンバー編成が整わず実現できなかった。`);
+            showToast(WM_I18N.t('{name} の直訴を受けたが、メンバー編成が整わず実現できなかった。', { name: reqName }));
             finalizeCRAudio();
             return;
           }
@@ -13228,8 +13228,8 @@ const App = {
             showEventPopup({
               type: 'fighter', id: payload.selfId,
               name: reqName, tone: 'positive',
-              message: `⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう`,
-              detail: `${reqName} らは次の自団体興行を組む前に、${card.opponentOrgName}の興行へ遠征する。`,
+              message: WM_I18N.t('⚔ 直訴を受理。次の通常興行週、まず敵地へ向かう'),
+              detail: WM_I18N.t('{name} らは次の自団体興行を組む前に、{org}の興行へ遠征する。', { name: reqName, org: card.opponentOrgName }),
             });
             renderWeekScreen && renderWeekScreen();
             finalizeCRAudio();
@@ -13282,7 +13282,7 @@ const App = {
         const requester = _findRequester();
         const reqName = requester.name || '';
         // archetype 別ティッカーセリフ（CHALLENGE_REQUEST_NO_LINES から1行抽選）
-        let noLine = `${reqName} の直訴を見送った。`;
+        let noLine = WM_I18N.t('{name} の直訴を見送った。', { name: reqName });
         if (typeof CHALLENGE_REQUEST_NO_LINES !== 'undefined') {
           const arch = requester.archetype || 'standard';
           const arr = CHALLENGE_REQUEST_NO_LINES[arch] || CHALLENGE_REQUEST_NO_LINES.standard;
@@ -13360,9 +13360,9 @@ const App = {
             Storage.autoSave();
             renderWeekScreen && renderWeekScreen();
           } else if (result.error === 'funds_insufficient') {
-            showToast('資金が足りません');
+            showToast(WM_I18N.t('資金が足りません'));
           } else if (result.error === 'decision_points_insufficient') {
-            showToast('決裁枠が足りません');
+            showToast(WM_I18N.t('決裁枠が足りません'));
           }
           next();
         });
@@ -13402,7 +13402,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'F01',
-          category: '派閥成立',
+          category: WM_I18N.t('派閥成立'),
           resultText: result.resultText,
           charId: payload.leaderId,
           charName: leader ? leader.name : payload.leaderName,
@@ -13435,7 +13435,7 @@ const App = {
         const leaderA = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'F02',
-          category: '派閥抗争',
+          category: WM_I18N.t('派閥抗争'),
           resultText: result.resultText,
           charId: payload.leaderAId,
           charName: leaderA ? leaderA.name : payload.leaderAName,
@@ -13465,9 +13465,9 @@ const App = {
         renderWeekScreen();
         showFactionEventResult({
           eventId: 'F02_PEACE',
-          category: '抗争沈静化',
+          category: WM_I18N.t('抗争沈静化'),
           resultText: result.resultText,
-          factionName: payload.factionAName || payload.factionBName || '派閥',
+          factionName: payload.factionAName || payload.factionBName || WM_I18N.t('派閥'),
           factionTone: 'allied',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
@@ -13486,25 +13486,25 @@ const App = {
         renderWeekScreen();
         showFactionEventResult({
           eventId: 'F02_IGNITE',
-          category: '抗争発火',
+          category: WM_I18N.t('抗争発火'),
           resultText: result.resultText,
-          factionName: payload.factionAName || payload.factionBName || '派閥',
+          factionName: payload.factionAName || payload.factionBName || WM_I18N.t('派閥'),
           factionTone: 'hostile',
           factionPair: [
             {
               factionName: payload.factionAName,
               leaderId: payload.leaderAId,
               leaderName: payload.leaderAName,
-              sideLabel: '抗争側',
+              sideLabel: WM_I18N.t('抗争側'),
             },
             {
               factionName: payload.factionBName,
               leaderId: payload.leaderBId,
               leaderName: payload.leaderBName,
-              sideLabel: '対抗側',
+              sideLabel: WM_I18N.t('対抗側'),
             },
           ],
-          reporterText: `${payload.factionAName || '派閥'}と${payload.factionBName || '派閥'}のリーダー対決を、今週のメインイベントとして公式戦に組みました`,
+          reporterText: WM_I18N.t('{a}と{b}のリーダー対決を、今週のメインイベントとして公式戦に組みました', { a: payload.factionAName || WM_I18N.t('派閥'), b: payload.factionBName || WM_I18N.t('派閥') }),
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
           state: G,
@@ -13534,7 +13534,7 @@ const App = {
         const winner = (G.roster || []).find(c => c.id === payload.winnerId);
         showFactionEventResult({
           eventId: 'F02_RESOLUTION',
-          category: '抗争決着',
+          category: WM_I18N.t('抗争決着'),
           resultText: result.resultText,
           charId: payload.winnerId,
           charName: winner ? winner.name : payload.winnerName,
@@ -13564,9 +13564,9 @@ const App = {
         renderWeekScreen();
         showFactionEventResult({
           eventId: 'F02_ENDLESS',
-          category: '無限抗争',
+          category: WM_I18N.t('無限抗争'),
           resultText: result.resultText,
-          factionName: payload.factionAName || payload.factionBName || '派閥',
+          factionName: payload.factionAName || payload.factionBName || WM_I18N.t('派閥'),
           factionTone: 'hostile',
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
@@ -13610,7 +13610,7 @@ const App = {
         const newLeader = payload.newLeaderId ? (G.roster || []).find(c => c.id === payload.newLeaderId) : null;
         showFactionEventResult({
           eventId: 'F03',
-          category: 'リーダー喪失',
+          category: WM_I18N.t('リーダー喪失'),
           resultText: result.resultText,
           charId: payload.newLeaderId || null,
           charName: newLeader ? newLeader.name : (payload.newLeaderName || ''),
@@ -13647,7 +13647,7 @@ const App = {
         const target = (G.roster || []).find(c => c.id === payload.targetId);
         showFactionEventResult({
           eventId: 'F04',
-          category: '移籍',
+          category: WM_I18N.t('移籍'),
           resultText: result.resultText,
           charId: payload.targetId,
           charName: target ? target.name : payload.targetName,
@@ -13677,7 +13677,7 @@ const App = {
         const leaderH = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'F05H',
-          category: '活動休止',
+          category: WM_I18N.t('活動休止'),
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leaderH ? leaderH.name : payload.leaderName,
@@ -13710,7 +13710,7 @@ const App = {
         const ringleader = (G.roster || []).find(c => c.id === payload.ringleaderId);
         showFactionEventResult({
           eventId: 'F05',
-          category: '派閥分裂',
+          category: WM_I18N.t('派閥分裂'),
           resultText: result.resultText,
           charId: payload.ringleaderId || null,
           charName: ringleader ? ringleader.name : payload.ringleaderName,
@@ -13743,7 +13743,7 @@ const App = {
         const leader6 = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'F06',
-          category: '同盟締結',
+          category: WM_I18N.t('同盟締結'),
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader6 ? leader6.name : payload.leaderAName,
@@ -13783,7 +13783,7 @@ const App = {
         const fullResultText = targetLine ? `${result.resultText}\n${targetLine}` : result.resultText;
         showFactionEventResult({
           eventId: 'F07',
-          category: '派閥動向',
+          category: WM_I18N.t('派閥動向'),
           resultText: fullResultText,
           charId: payload.leaderId,
           charName: leader ? leader.name : payload.leaderName,
@@ -13819,7 +13819,7 @@ const App = {
         const leader8 = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'F08',
-          category: '直接対決',
+          category: WM_I18N.t('直接対決'),
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leader8 ? leader8.name : payload.leaderAName,
@@ -13844,7 +13844,7 @@ const App = {
         })();
       if (!common1Fighters.valid) {
         wmDiag('[WM Faction] Common-1 cancelled: a deferred opponent is no longer in the roster');
-        showToast('派閥内対決は、対象選手の在籍状況が変わったため取り消されました');
+        showToast(WM_I18N.t('派閥内対決は、対象選手の在籍状況が変わったため取り消されました'));
         finalizeAudio();
         return;
       }
@@ -13863,7 +13863,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_1',
-          category: '派閥内対決',
+          category: WM_I18N.t('派閥内対決'),
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : '',
@@ -13899,7 +13899,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_5',
-          category: 'メディア取材',
+          category: WM_I18N.t('メディア取材'),
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : payload.leaderName,
@@ -13935,7 +13935,7 @@ const App = {
         const leaderA = (G.roster || []).find(c => c.id === payload.leaderAId);
         showFactionEventResult({
           eventId: 'COMMON_7',
-          category: '派閥合同企画',
+          category: WM_I18N.t('派閥合同企画'),
           resultText: result.resultText,
           charId: payload.leaderAId || null,
           charName: leaderA ? leaderA.name : payload.leaderAName,
@@ -13968,7 +13968,7 @@ const App = {
         const leader = (G.roster || []).find(c => c.id === payload.leaderId);
         showFactionEventResult({
           eventId: 'COMMON_4',
-          category: '派閥合宿',
+          category: WM_I18N.t('派閥合宿'),
           resultText: result.resultText,
           charId: payload.leaderId || null,
           charName: leader ? leader.name : payload.leaderName,
@@ -14438,29 +14438,29 @@ const App = {
   // UI 側で 2段階の温度感(is-urgent: slump/motivLoss/trust<40, is-gentle: trust<50)
   encourageFighter(fighterId) {
     const target = G.roster.find(f => f.id === fighterId);
-    if (!target) { showToast('選手が見つかりません'); return; }
-    if (target.isRental || target.injury) { showToast('今は声をかけられない'); return; }
+    if (!target) { showToast(WM_I18N.t('選手が見つかりません')); return; }
+    if (target.isRental || target.injury) { showToast(WM_I18N.t('今は声をかけられない')); return; }
     const targetTrust = target.trust != null ? target.trust : 50;
     if (!target.slump && !target.motivationLoss && targetTrust >= 50) {
-      showToast('この選手には今、声をかける理由がない');
+      showToast(WM_I18N.t('この選手には今、声をかける理由がない'));
       return;
     }
     // cooldown チェック(選手単位、1週)
     const lastUsed = (target._decisionWeekUsed || {}).encourage || -99;
-    if ((G.week - lastUsed) < 1) { showToast('今週はもう声をかけた'); return; }
+    if ((G.week - lastUsed) < 1) { showToast(WM_I18N.t('今週はもう声をかけた')); return; }
 
     // Engine.shachoshitsu.execute を再利用(決裁枠0の書類なので dp 消費なし)
     const result = Engine.shachoshitsu.execute('encourage', fighterId, G);
     if (!result || result.error) {
       const msg = {
-        doc_not_found: 'この行動は現在利用できません',
-        fighter_not_found: '選手が見つかりません',
-        not_needed: 'この選手には今、声をかける理由がない',
-        not_slump: 'この選手には今、声をかける理由がない',  // 旧エラーIDの互換
-        cooldown: '今週はもう声をかけた',
-        condition_not_met: '声をかける状況ではない',
-        funds_insufficient: '資金が不足しています',
-      }[result?.error] || '失敗しました';
+        doc_not_found: WM_I18N.t('この行動は現在利用できません'),
+        fighter_not_found: WM_I18N.t('選手が見つかりません'),
+        not_needed: WM_I18N.t('この選手には今、声をかける理由がない'),
+        not_slump: WM_I18N.t('この選手には今、声をかける理由がない'),  // 旧エラーIDの互換
+        cooldown: WM_I18N.t('今週はもう声をかけた'),
+        condition_not_met: WM_I18N.t('声をかける状況ではない'),
+        funds_insufficient: WM_I18N.t('資金が不足しています'),
+      }[result?.error] || WM_I18N.t('失敗しました');
       showToast(msg);
       return;
     }
@@ -14491,7 +14491,7 @@ const App = {
       cost: result.cost || 0,
       remainingFunds: result.funds,
       icon: doc?.icon || '💬',
-      label: doc?.label || '声かけ',
+      label: doc?.label || WM_I18N.t('声かけ'),
       docId: 'encourage',
       // Phase 8: 不確実性トーンマーカー (encourage も個人書類)
       reactionTone: result.reactionTone || null,
@@ -14509,36 +14509,36 @@ const App = {
   // 果たしたとき(履行)/果たさなかったとき(破約)。判定はエンジン側(tickWeek)。
   pledgeFighter(fighterId) {
     const target = G.roster.find(f => f.id === fighterId);
-    if (!target) { showToast('選手が見つかりません'); return; }
-    if (target.isRental || target.injury) { showToast('今は約束できない'); return; }
+    if (!target) { showToast(WM_I18N.t('選手が見つかりません')); return; }
+    if (target.isRental || target.injury) { showToast(WM_I18N.t('今は約束できない')); return; }
     if (String(target.personality || 'normal') !== 'bold') {
-      showToast('この選手に響くやり方ではない');
+      showToast(WM_I18N.t('この選手に響くやり方ではない'));
       return;
     }
     if (G.pledge && G.pledge.fighterId != null) {
       const holder = G.roster.find(f => f.id === G.pledge.fighterId);
-      showToast(holder ? `すでに${holder.name}と約束がある` : 'すでに約束がある');
+      showToast(holder ? WM_I18N.t('すでに{name}と約束がある', { name: holder.name }) : WM_I18N.t('すでに約束がある'));
       return;
     }
     // cooldown チェック(選手単位・16週)
     const lastUsed = (target._decisionWeekUsed || {}).pledge || -99;
     if ((G.week - lastUsed) < (PLEDGE_COOLDOWN_WEEKS || 16)) {
-      showToast('この選手にはしばらく約束できない');
+      showToast(WM_I18N.t('この選手にはしばらく約束できない'));
       return;
     }
 
     const result = Engine.shachoshitsu.execute('pledge', fighterId, G);
     if (!result || result.error) {
       const msg = {
-        doc_not_found: 'この行動は現在利用できません',
-        fighter_not_found: '選手が見つかりません',
-        not_bold: 'この選手に響くやり方ではない',
-        pledge_exists: 'すでに約束がある',
-        cooldown: 'この選手にはしばらく約束できない',
-        on_leave: '休暇中の選手には約束できない',
-        offseason_locked: 'オフシーズンには約束できない',
-        decision_points_insufficient: '決裁枠が不足しています(必要: ⚡1)',
-      }[result?.error] || '失敗しました';
+        doc_not_found: WM_I18N.t('この行動は現在利用できません'),
+        fighter_not_found: WM_I18N.t('選手が見つかりません'),
+        not_bold: WM_I18N.t('この選手に響くやり方ではない'),
+        pledge_exists: WM_I18N.t('すでに約束がある'),
+        cooldown: WM_I18N.t('この選手にはしばらく約束できない'),
+        on_leave: WM_I18N.t('休暇中の選手には約束できない'),
+        offseason_locked: WM_I18N.t('オフシーズンには約束できない'),
+        decision_points_insufficient: WM_I18N.t('決裁枠が不足しています(必要: ⚡1)'),
+      }[result?.error] || WM_I18N.t('失敗しました');
       showToast(msg);
       return;
     }
@@ -14561,11 +14561,11 @@ const App = {
     const text = fighter ? pickPledgeLine('accept', fighter) : '';
     const displayData = {
       fighter, text,
-      changes: [{ label: '約束', emoji: '🤝', text: '次の通常興行のメインで使うと伝えた' }],
+      changes: [{ label: WM_I18N.t('約束'), emoji: '🤝', text: WM_I18N.t('次の通常興行のメインで使うと伝えた') }],
       cost: 0,
       remainingFunds: G.funds,
       icon: doc?.icon || '🤝',
-      label: doc?.label || '起用の約束',
+      label: doc?.label || WM_I18N.t('起用の約束'),
       docId: 'pledge',
       reactionTone: null,
     };
@@ -14581,12 +14581,12 @@ const App = {
   // 対象は長期離脱(総週数10週以上)のみ。残り離脱期間を4〜5割短縮。
   executeSpecialTreatment(fighterId) {
     const result = Engine.shachoshitsu.executeSpecialTreatment(fighterId, G);
-    if (!result) { showToast('特別治療に失敗しました'); return; }
-    if (result.error === 'decision_points_insufficient') { showToast(`決裁枠が不足しています(必要: ⚡${result.dpCost || 1})`); return; }
-    if (result.error === 'funds_insufficient') { showToast(`資金が不足しています(必要: ${result.cost || 500}万)`); return; }
-    if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return; }
-    if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return; }
-    if (result.error === 'not_longterm_injured') { showToast('長期離脱(10週以上)の重傷にのみ発注できます'); return; }
+    if (!result) { showToast(WM_I18N.t('特別治療に失敗しました')); return; }
+    if (result.error === 'decision_points_insufficient') { showToast(WM_I18N.t('決裁枠が不足しています(必要: ⚡{n})', { n: result.dpCost || 1 })); return; }
+    if (result.error === 'funds_insufficient') { showToast(WM_I18N.t('資金が不足しています(必要: {n}万)', { n: result.cost || 500 })); return; }
+    if (result.error === 'fighter_not_found') { showToast(WM_I18N.t('選手が見つかりません')); return; }
+    if (result.error === 'not_injured') { showToast(WM_I18N.t('怪我をしていない選手には使用できません')); return; }
+    if (result.error === 'not_longterm_injured') { showToast(WM_I18N.t('長期離脱(10週以上)の重傷にのみ発注できます')); return; }
     // state 更新
     G = { ...G,
       roster: result.roster,
@@ -14611,12 +14611,12 @@ const App = {
         cost: result.cost || 0,
         remainingFunds: result.funds,
         icon: doc?.icon || '🏥',
-        label: doc?.label || '特別治療指示書',
+        label: doc?.label || WM_I18N.t('特別治療指示書'),
         docId: 'special_treatment',
       };
       showDecisionResultModal(displayData);
     } else {
-      showToast(`🏥 ${result.cur}週 → ${result.reduced}週に短縮（-${result.cost}万）`);
+      showToast(WM_I18N.t('🏥 {cur}週 → {reduced}週に短縮（-{cost}万）', { cur: result.cur, reduced: result.reduced, cost: result.cost }));
     }
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
   },
@@ -14631,12 +14631,12 @@ const App = {
     // 事前チェック(UX: モーダルを開く前にはじく)
     const dpCost = doc.decisionCost || 0;
     if ((G.decisionPoints || 0) < dpCost) {
-      showToast(`決裁枠が不足しています(必要: ⚡${dpCost})`);
+      showToast(WM_I18N.t('決裁枠が不足しています(必要: ⚡{n})', { n: dpCost }));
       return;
     }
     const actualCost = Engine.shachoshitsu.calcCost(doc, G);
     if ((G.funds || 0) < actualCost) {
-      showToast(`資金が不足しています(必要: ${actualCost}万)`);
+      showToast(WM_I18N.t('資金が不足しています(必要: {n}万)', { n: actualCost }));
       return;
     }
     // 個人書類 / 団体書類 / ペア書類 で分岐
@@ -14657,9 +14657,9 @@ const App = {
   // care-rework2 P3-3: 招聘市場パネルの「頼む」。選択値は "axis:value" の1本。
   requestInviteCoachFromPanel() {
     const sel = document.getElementById('impReqSelect');
-    if (!sel || !sel.value) { showToast('何を探すかが選ばれていません'); return; }
+    if (!sel || !sel.value) { showToast(WM_I18N.t('何を探すかが選ばれていません')); return; }
     const sep = sel.value.indexOf(':');
-    if (sep < 0) { showToast('何を探すかが選ばれていません'); return; }
+    if (sep < 0) { showToast(WM_I18N.t('何を探すかが選ばれていません')); return; }
     App.requestInviteCoach(sel.value.slice(0, sep), sel.value.slice(sep + 1));
   },
 
@@ -14668,13 +14668,13 @@ const App = {
   requestInviteCoach(axis, value) {
     Audio.play('click');
     const result = Engine.shachoshitsu.requestCoach(G, axis, value);
-    if (result.error === 'offseason_locked') { showToast('オフシーズン中は依頼できません'); return; }
-    if (result.error === 'already_requested') { showToast('今期はもう秘書に頼んでいます'); return; }
-    if (result.error) { showToast('この依頼は出せませんでした'); return; }
+    if (result.error === 'offseason_locked') { showToast(WM_I18N.t('オフシーズン中は依頼できません')); return; }
+    if (result.error === 'already_requested') { showToast(WM_I18N.t('今期はもう秘書に頼んでいます')); return; }
+    if (result.error) { showToast(WM_I18N.t('この依頼は出せませんでした')); return; }
     G = { ...G, coachRequest: result.coachRequest };
     const wanted = Engine.shachoshitsu.formatCoachRequest(result.coachRequest);
     G = { ...G, gameLog: [...(G.gameLog || []), { type: 'secretary_request_sent', data: { wanted }, s: G.season, w: G.week }] };
-    showToast(`${wanted}を探すよう秘書に頼んだ。次の顔ぶれの入れ替わりで返事が来る`);
+    showToast(WM_I18N.t('{wanted}を探すよう秘書に頼んだ。次の顔ぶれの入れ替わりで返事が来る', { wanted }));
     Storage.autoSave();
     if (typeof renderShachoshitsu === 'function') renderShachoshitsu();
   },
@@ -14685,33 +14685,33 @@ const App = {
   // options: bonus → { presetIndex: 0..3 } / refresh_leave → { weeks: 1..4 }(care-rework v0.1)
   executeDecision(docId, fighterId, options) {
     const result = Engine.shachoshitsu.execute(docId, fighterId, G, options);
-    if (!result) { showToast('書類が見つかりません'); return { ok: false }; }
-    if (result.error === 'doc_not_found') { showToast('書類が見つかりません'); return { ok: false }; }
-    if (result.error === 'decision_points_insufficient') { showToast('決裁枠が不足しています'); return { ok: false }; }
-    if (result.error === 'funds_insufficient') { showToast('資金が不足しています'); return { ok: false }; }
-    if (result.error === 'fighter_not_found') { showToast('選手が見つかりません'); return { ok: false }; }
-    if (result.error === 'not_slump') { showToast('スランプ中の選手ではありません'); return { ok: false }; }
-    if (result.error === 'preset_required') { showToast('支給額が選ばれていません'); return { ok: false }; }
-    if (result.error === 'weeks_required') { showToast('休暇の週数が選ばれていません'); return { ok: false }; }
-    if (result.error === 'on_leave') { showToast('休暇中の選手には使用できません'); return { ok: false }; }
-    if (result.error === 'not_injured') { showToast('怪我をしていない選手には使用できません'); return { ok: false }; }
-    if (result.error === 'cooldown') { showToast('今週はすでに決裁済みです'); return { ok: false }; }
-    if (result.error === 'orgpop_locked') { showToast(`団体の知名度が足りません(${result.required} 必要)`); return { ok: false }; }
-    if (result.error === 'condition_not_met') { showToast('この書類の発動条件を満たしていません'); return { ok: false }; }
+    if (!result) { showToast(WM_I18N.t('書類が見つかりません')); return { ok: false }; }
+    if (result.error === 'doc_not_found') { showToast(WM_I18N.t('書類が見つかりません')); return { ok: false }; }
+    if (result.error === 'decision_points_insufficient') { showToast(WM_I18N.t('決裁枠が不足しています')); return { ok: false }; }
+    if (result.error === 'funds_insufficient') { showToast(WM_I18N.t('資金が不足しています')); return { ok: false }; }
+    if (result.error === 'fighter_not_found') { showToast(WM_I18N.t('選手が見つかりません')); return { ok: false }; }
+    if (result.error === 'not_slump') { showToast(WM_I18N.t('スランプ中の選手ではありません')); return { ok: false }; }
+    if (result.error === 'preset_required') { showToast(WM_I18N.t('支給額が選ばれていません')); return { ok: false }; }
+    if (result.error === 'weeks_required') { showToast(WM_I18N.t('休暇の週数が選ばれていません')); return { ok: false }; }
+    if (result.error === 'on_leave') { showToast(WM_I18N.t('休暇中の選手には使用できません')); return { ok: false }; }
+    if (result.error === 'not_injured') { showToast(WM_I18N.t('怪我をしていない選手には使用できません')); return { ok: false }; }
+    if (result.error === 'cooldown') { showToast(WM_I18N.t('今週はすでに決裁済みです')); return { ok: false }; }
+    if (result.error === 'orgpop_locked') { showToast(WM_I18N.t('団体の知名度が足りません({n} 必要)', { n: result.required })); return { ok: false }; }
+    if (result.error === 'condition_not_met') { showToast(WM_I18N.t('この書類の発動条件を満たしていません')); return { ok: false }; }
     // care-rework v0.1 §3: 招聘制の専用エラー
-    if (result.error === 'invite_active') { showToast('すでに招聘中のコーチがいます'); return { ok: false }; }
-    if (result.error === 'invalid_coach') { showToast('今期の候補にいないコーチです'); return { ok: false }; }
-    if (result.error === 'unsupported_doc') { showToast(`未対応の書類です: ${result.docId}`); return { ok: false }; }
+    if (result.error === 'invite_active') { showToast(WM_I18N.t('すでに招聘中のコーチがいます')); return { ok: false }; }
+    if (result.error === 'invalid_coach') { showToast(WM_I18N.t('今期の候補にいないコーチです')); return { ok: false }; }
+    if (result.error === 'unsupported_doc') { showToast(WM_I18N.t('未対応の書類です: {id}', { id: result.docId })); return { ok: false }; }
     // 派閥解散命令の専用エラー
-    if (result.error === 'mode_required') { showToast('処置が選ばれていません'); return { ok: false }; }
-    if (result.error === 'no_faction') { showToast('解散させる派閥がありません'); return { ok: false }; }
-    if (result.error === 'not_sealed') { showToast('派閥は禁止されていません'); return { ok: false }; }
-    if (result.error === 'offseason_locked') { showToast('オフシーズン中は決裁できません'); return { ok: false }; }
+    if (result.error === 'mode_required') { showToast(WM_I18N.t('処置が選ばれていません')); return { ok: false }; }
+    if (result.error === 'no_faction') { showToast(WM_I18N.t('解散させる派閥がありません')); return { ok: false }; }
+    if (result.error === 'not_sealed') { showToast(WM_I18N.t('派閥は禁止されていません')); return { ok: false }; }
+    if (result.error === 'offseason_locked') { showToast(WM_I18N.t('オフシーズン中は決裁できません')); return { ok: false }; }
     // 未知のエラーコードをここで止める防壁。これがないとエラーオブジェクトを
     // そのまま state に代入して G.roster が undefined になる。
     if (result.error) {
       console.warn('[WM] executeDecision: 未処理のエラーコード', { docId, error: result.error });
-      showToast('この決裁は実行できませんでした');
+      showToast(WM_I18N.t('この決裁は実行できませんでした'));
       return { ok: false };
     }
 
@@ -14893,9 +14893,9 @@ const App = {
       setTimeout(() => showEventPopup({
         type: 'generic',
         emoji: '\uD83C\uDFE2',
-        name: '\u5951\u7D04\u67A0\u62E1\u5927\uFF01',
+        name: WM_I18N.t('\u5951\u7D04\u67A0\u62E1\u5927\uFF01'),
         message: popup.message,
-        detail: `\u9078\u624B\u3068\u306E\u5951\u7D04\u67A0\u304C ${popup.cap} \u540D\u306B\u62E1\u5927\u3057\u307E\u3057\u305F\uFF01`,
+        detail: WM_I18N.t('\u9078\u624B\u3068\u306E\u5951\u7D04\u67A0\u304C {cap} \u540D\u306B\u62E1\u5927\u3057\u307E\u3057\u305F\uFF01', { cap: popup.cap }),
         tone: 'gold',
         sound: 'fanfare'
       }), 220 + idx * 140);
@@ -14910,19 +14910,19 @@ const App = {
 
     if (orgPop >= 25 && !G.rosterCapPop25Notified) {
       nextUpdates.rosterCapPop25Notified = true;
-      popups.push({ cap: 10, message: '\u56E3\u4F53\u4EBA\u6C17\u304C25\u3092\u7A81\u7834\uFF01 \u56E3\u4F53\u898F\u6A21\u306E\u62E1\u5927\u3067\u5951\u7D04\u67A0\u306B\u4F59\u88D5\u304C\u3067\u304D\u307E\u3057\u305F\u3002' });
+      popups.push({ cap: 10, message: WM_I18N.t('\u56E3\u4F53\u4EBA\u6C17\u304C25\u3092\u7A81\u7834\uFF01 \u56E3\u4F53\u898F\u6A21\u306E\u62E1\u5927\u3067\u5951\u7D04\u67A0\u306B\u4F59\u88D5\u304C\u3067\u304D\u307E\u3057\u305F\u3002') });
     }
     if (orgPop >= 50 && !G.rosterCapPop50Notified) {
       nextUpdates.rosterCapPop50Notified = true;
-      popups.push({ cap: 12, message: '\u56E3\u4F53\u4EBA\u6C17\u304C50\u3092\u7A81\u7834\uFF01 \u4E3B\u529B\u3068\u82E5\u624B\u3092\u3088\u308A\u539A\u304F\u62B1\u3048\u3089\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002' });
+      popups.push({ cap: 12, message: WM_I18N.t('\u56E3\u4F53\u4EBA\u6C17\u304C50\u3092\u7A81\u7834\uFF01 \u4E3B\u529B\u3068\u82E5\u624B\u3092\u3088\u308A\u539A\u304F\u62B1\u3048\u3089\u308C\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\u3002') });
     }
     if (orgPop >= 70 && !G.rosterCapPop70Notified) {
       nextUpdates.rosterCapPop70Notified = true;
-      popups.push({ cap: 14, message: '団体人気が70を突破！ メジャー団体の規模にふさわしい契約枠が確保されました。' });
+      popups.push({ cap: 14, message: WM_I18N.t('団体人気が70を突破！ メジャー団体の規模にふさわしい契約枠が確保されました。') });
     }
     if (rank1Unlocked && !G.rosterCapRank1Notified) {
       nextUpdates.rosterCapRank1Notified = true;
-      popups.push({ cap: 16, message: '\u30E9\u30F3\u30AD\u30F3\u30B01\u4F4D\u5230\u9054\uFF01 \u738B\u8005\u306E\u56E3\u4F53\u306B\u3075\u3055\u308F\u3057\u3044\u6700\u5927\u5951\u7D04\u67A0\u304C\u89E3\u653E\u3055\u308C\u307E\u3057\u305F\u3002' });
+      popups.push({ cap: 16, message: WM_I18N.t('\u30E9\u30F3\u30AD\u30F3\u30B01\u4F4D\u5230\u9054\uFF01 \u738B\u8005\u306E\u56E3\u4F53\u306B\u3075\u3055\u308F\u3057\u3044\u6700\u5927\u5951\u7D04\u67A0\u304C\u89E3\u653E\u3055\u308C\u307E\u3057\u305F\u3002') });
     }
 
     // 契約枠はラチェット(拡大のみ)。人気連動のターゲットをそのまま代入すると
@@ -14994,9 +14994,9 @@ const App = {
     if (Engine.title.checkTitleEstablishment(G)) {
       G = { ...G, titleEstablished: true };
       setTimeout(() => showEventPopup({
-        type: 'generic', emoji: '\uD83C\uDFC6', name: '\u56E3\u4F53\u738B\u5EA7 \u8A2D\u7ACB\uFF01',
-        message: '\u56E3\u4F53\u306E\u5B9F\u7E3E\u304C\u8A8D\u3081\u3089\u308C\u3001\u56E3\u4F53\u738B\u5EA7\u3092\u8A2D\u7ACB\u3067\u304D\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\uFF01',
-        detail: '\uD83C\uDF96\uFE0F \u8208\u884C\u3067\u300C\u521D\u4EE3\u738B\u8005\u6C7A\u5B9A\u6226\u300D\u3092\u7D44\u3093\u3067\u3001\u521D\u4EE3\u30C1\u30E3\u30F3\u30D4\u30AA\u30F3\u3092\u6C7A\u3081\u307E\u3057\u3087\u3046\uFF01',
+        type: 'generic', emoji: '\uD83C\uDFC6', name: WM_I18N.t('\u56E3\u4F53\u738B\u5EA7 \u8A2D\u7ACB\uFF01'),
+        message: WM_I18N.t('\u56E3\u4F53\u306E\u5B9F\u7E3E\u304C\u8A8D\u3081\u3089\u308C\u3001\u56E3\u4F53\u738B\u5EA7\u3092\u8A2D\u7ACB\u3067\u304D\u308B\u3088\u3046\u306B\u306A\u308A\u307E\u3057\u305F\uFF01'),
+        detail: WM_I18N.t('\uD83C\uDF96\uFE0F \u8208\u884C\u3067\u300C\u521D\u4EE3\u738B\u8005\u6C7A\u5B9A\u6226\u300D\u3092\u7D44\u3093\u3067\u3001\u521D\u4EE3\u30C1\u30E3\u30F3\u30D4\u30AA\u30F3\u3092\u6C7A\u3081\u307E\u3057\u3087\u3046\uFF01'),
         tone: 'gold'
       }), 300);
     }
