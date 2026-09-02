@@ -49,3 +49,12 @@
 - **生成箇所が見つからない(死んだテンプレ変種の疑い)**: `{careerLine}` — 1件、要Fable裁定
 
 HIGH群のうち `{semi1}`/`{semi2}`/`{finalResult}`/`{tieBreakNote}` は同じ `matchSummary()` 関数(秋の4団体勝ち残り対抗戦)に依存しており、そこを1本直せば4項目まとめて解決する。`{closing}`(12b)と`{body}`(draftPlayerResult)はどちらも `DRAFT_PLAYER_RESULT_PARTS` という専用プールが出所で、これも1つの作業(専用プールの翻訳インフラ整備)でまとめて片付く。実質的な独立ワークアイテムは「detail分散処理」「preview断片連結の再設計」「matchSummary系の完全文テンプレ化」「DRAFT_PLAYER_RESULT_PARTS専用プールの翻訳対応」の4件+careerLineの裁定、という粒度で捉えるとP4-3以降の見積りがしやすい。
+
+
+## P4-3aで発見された追加の成形済み値11種(2026-09-02・見出し族20種とは別系統)
+
+いずれも英文側は「値を文法に埋めない」形で防御済みだが、生成元が日本語を出す:
+`{phase}`(序盤/中盤/終盤 management.js:30790) / `{tone}`(名勝負/好勝負/熱戦 31912) / `{stamp}`(第N年度・第M週 31863,31907) / `{result}`(勝ち越し/敗北 31861) / `{crowdLabel}`(data.js:1332 FILL_PRESSURE_BANDS) / `{tierLabel}`(management.js:16170 Engine.scout.TIERS) / `{label}`(1961) / `{outcome}`(ui-common.js:6940) / `{wanted}`(management.js:23387) / `{changes}`(saveDoctor) / `{scoutDiscSuffix}`(app.js:5354)
+
+**即効の2件**: `{tierLabel}`と`{wanted}`は英訳がui-ledgerに既存 — 生成元にt()を1個ずつ足すだけで解決。
+確認済みで対処不要: `{oldLabel}`/`{newLabel}`(HEAT_LEVELSは既に英語)/`{ejectedSuffix}`/符号付き数値文字列。
