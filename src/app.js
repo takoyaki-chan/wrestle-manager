@@ -1674,10 +1674,10 @@ function showCeremonyEvent(evt, speakers, onContinue) {
         <div class="cerem-trio${speakerCountClass}">${speakerHtml}</div>
       </div>
       <div class="cerem-phase-zone bottom">
-        <button class="cerem-continue-btn">${evt.continueLabel || '続ける'}</button>
+        <button class="cerem-continue-btn">${evt.continueLabel || WM_I18N.t('続ける')}</button>
       </div>
     </div>
-    <div class="cerem-hint">▼ クリックで進む</div>
+    <div class="cerem-hint">${WM_I18N.t('▼ クリックで進む')}</div>
     <button class="cerem-skip" data-cerem-skip>▷ SKIP</button>
   `;
 
@@ -3704,7 +3704,7 @@ const Storage = {
       G = { ...G, gameLog: [...G.gameLog, { type: 'save_slot', data: { slot }, s: G.season, w: G.week }] };
       refreshAll();
       return true;
-    } catch(e) { alert('セーブに失敗しました: ' + e.message); return false; }
+    } catch(e) { alert(WM_I18N.t('セーブに失敗しました: ') + e.message); return false; }
   },
 
   // ─── スロットのセーブ名だけを変更する（ゲーム進行状態には一切触れない） ───
@@ -3723,7 +3723,7 @@ const Storage = {
 
   load(slot) {
     const data = localStorage.getItem(SAVE_KEY + slot);
-    if (!data) { alert('セーブデータがありません'); return false; }
+    if (!data) { alert(WM_I18N.t('セーブデータがありません')); return false; }
     if (Storage.deserialize(data)) {
       G = { ...G, gameLog: [...G.gameLog, { type: 'load_slot', data: { slot }, s: G.season, w: G.week }] };
       // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
@@ -3733,7 +3733,7 @@ const Storage = {
       App.resumeLoadedSpecialPhase();
       return true;
     }
-    alert('セーブデータの読み込みに失敗しました。コンソールを確認してください。');
+    alert(WM_I18N.t('セーブデータの読み込みに失敗しました。コンソールを確認してください。'));
     return false;
   },
 
@@ -3781,7 +3781,7 @@ const Storage = {
   exportToFile(slotOrAuto) {
     const key = slotOrAuto === 'auto' ? AUTOSAVE_KEY : SAVE_KEY + slotOrAuto;
     const raw = localStorage.getItem(key);
-    if (!raw) { alert('セーブデータがありません'); return; }
+    if (!raw) { alert(WM_I18N.t('セーブデータがありません')); return; }
 
     const parsed = Storage._parseRaw(raw);
     const datePart = new Date().toISOString().slice(0, 10);
@@ -3819,11 +3819,11 @@ const Storage = {
         try {
           const parsed = JSON.parse(raw);
           if (!parsed.season || !parsed.roster || !parsed.rngSeed) {
-            alert('有効なセーブデータではありません');
+            alert(WM_I18N.t('有効なセーブデータではありません'));
             return;
           }
         } catch {
-          alert('ファイルの読み込みに失敗しました');
+          alert(WM_I18N.t('ファイルの読み込みに失敗しました'));
           return;
         }
 
@@ -3837,7 +3837,7 @@ const Storage = {
           Audio.bgm.playForState();
           Audio.play('save');
         } else {
-          alert('データの読み込みに失敗しました。ファイルが破損している可能性があります。');
+          alert(WM_I18N.t('データの読み込みに失敗しました。ファイルが破損している可能性があります。'));
         }
       };
       reader.readAsText(file);
@@ -4059,7 +4059,7 @@ const App = {
     const selection = G._juniorTournamentSelection || Engine.juniorTournament.select(G);
     if (!selection || selection.cancelled) {
       App.cancelJuniorTournamentForInsufficientParticipants();
-      if (typeof showToast === 'function') showToast('ジュニアトーナメントは出場条件を満たす選手が足りないため開催されませんでした。');
+      if (typeof showToast === 'function') showToast(WM_I18N.t('ジュニアトーナメントは出場条件を満たす選手が足りないため開催されませんでした。'));
       if (options && options.processWeekOnCancel && typeof App.processWeek === 'function') {
         App.processWeek();
         return true;
@@ -4314,8 +4314,8 @@ const App = {
     const match = p?.result?.results?.[p.matchIndex];
     if (!p || !match || match.winnerOrg || p.phase !== 'board') return;
     showConfirm(
-      'この団体戦の残り全試合を自動進行し、団体戦の決着画面へ移ります。',
-      'まとめてスキップ',
+      WM_I18N.t('この団体戦の残り全試合を自動進行し、団体戦の決着画面へ移ります。'),
+      WM_I18N.t('まとめてスキップ'),
       () => App._awSkipTeamMatchConfirmed()
     );
   },
@@ -4396,15 +4396,15 @@ const App = {
       profile: CHAR_PROFILES[fighter.id] || '',
       vl: fighter.voiceLines || fighter.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[fighter.id]) || ['…！'],
     });
-    const roundLabel = match.round === 'final' ? '決勝' : '準決勝';
+    const roundLabel = match.round === 'final' ? WM_I18N.t('決勝') : WM_I18N.t('準決勝');
     const msg = {
       type: 'START_MATCH',
       left: profile(displayReplay.left),
       right: profile(displayReplay.right),
       result: displayReplay.result,
       matchInfo: {
-        header: `⚔️ 4団体勝ち残り対抗戦 ${roundLabel}`,
-        subHeader: `第${resolved.bout.index}フォール・勝者はリングに残る`,
+        header: WM_I18N.t('⚔️ 4団体勝ち残り対抗戦 {roundLabel}', { roundLabel }),
+        subHeader: WM_I18N.t('第{n}フォール・勝者はリングに残る', { n: resolved.bout.index }),
         matchNum: resolved.bout.index,
         totalMatches: 5,
         matchTier: Engine.autumnWar.MATCH_TIER,
@@ -4691,7 +4691,7 @@ const App = {
     _mdlAClose();
     Audio.play('select');
     try { Storage.autoSave(); } catch (_e) {}
-    if (typeof showToast === 'function') showToast(`🌸 春のタッグリーグ ${confirmedCount}/${playerTeams.length}チームを編成しました`);
+    if (typeof showToast === 'function') showToast(WM_I18N.t('🌸 春のタッグリーグ {a}/{b}チームを編成しました', { a: confirmedCount, b: playerTeams.length }));
     if (typeof renderWeekScreen === 'function') renderWeekScreen();
     if (typeof refreshAll === 'function') refreshAll();
   },
@@ -4849,7 +4849,7 @@ const App = {
       profile: CHAR_PROFILES[fighter.id] || '',
     });
     const { fA1, fA2, fB1, fB2 } = replay.fighters;
-    const roundLabel = isFinal ? '優勝決定戦' : `${match.block || ''}ブロック 第${match.blockRound || matchIndex + 1}試合`;
+    const roundLabel = isFinal ? WM_I18N.t('優勝決定戦') : WM_I18N.t('{block}ブロック 第{n}試合', { block: match.block || '', n: match.blockRound || matchIndex + 1 });
     // 総試合数は実データから数える(8チーム=13、7チーム=10、6チーム=7、旧4チーム形式=7)
     const totalStlMatches = ((G.springTagLeague && G.springTagLeague.matches) || []).length + 1;
     const msg = {
@@ -4858,7 +4858,7 @@ const App = {
       teamB: { fighter1: profile(fB1), fighter2: profile(fB2) },
       result: replay.result,
       matchInfo: {
-        header: `🌸 春のタッグリーグ ${roundLabel}`,
+        header: WM_I18N.t('🌸 春のタッグリーグ {roundLabel}', { roundLabel }),
         matchNum: isFinal ? totalStlMatches : matchIndex + 1,
         totalMatches: totalStlMatches,
         preserveParentFileBgm: true,
@@ -5045,7 +5045,7 @@ const App = {
     if (!Storage.loadAutoSave()) {
       Audio.play('error');
       App.showTitleScreen();
-      alert('オートセーブの読み込みに失敗しました。');
+      alert(WM_I18N.t('オートセーブの読み込みに失敗しました。'));
       return;
     }
     sessionRng = Engine.rng.create(G.rngSeed);
@@ -5144,7 +5144,7 @@ const App = {
       const nextPicks = [...picks, charId];
       if (!Engine.draft.canAffordSelection(G, nextPicks, G.rngSeed)) {
         Audio.play('error');
-        alert('資金不足です。より安い候補を選んでください。');
+        alert(WM_I18N.t('資金不足です。より安い候補を選んでください。'));
         return;
       }
       newPicks = nextPicks;
@@ -5163,7 +5163,7 @@ const App = {
     if (!Engine.draft.isValidPicks(picks)) return;
     if (!Engine.draft.canAffordSelection(G, picks, G.rngSeed)) {
       Audio.play('error');
-      alert('資金不足です。より安い候補を選んでください。');
+      alert(WM_I18N.t('資金不足です。より安い候補を選んでください。'));
       return;
     }
     Audio.play('award');
@@ -5192,7 +5192,7 @@ const App = {
     sessionRng = Engine.rng.create(G.rngSeed);
 
     // ── 完了演出: 5名横並び集合写真 ──
-    const orgName = G.orgName || 'プレイヤー団体';
+    const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
     // 並び順: 固定メンバー左 → 選択3名 → 固定メンバー右
     const fixedIds = DRAFT_CONFIG.fixed;
     const teamOrder = [fixedIds[0], ...picks, fixedIds[1]];
@@ -5264,9 +5264,9 @@ const App = {
         </div>
         <div class="comp-text">
           <span class="org-name">${orgName}</span>
-          <span class="start">始動</span>
+          <span class="start">${WM_I18N.t('始動')}</span>
         </div>
-        <button type="button" class="comp-continue-btn" data-comp-continue>事務所へ ▶</button>
+        <button type="button" class="comp-continue-btn" data-comp-continue>${WM_I18N.t('事務所へ ▶')}</button>
       `;
       document.body.appendChild(overlay);
 
@@ -5299,15 +5299,15 @@ const App = {
     const fighter = G.freeAgents[idx];
     // 最終重複チェック（最後の砦）：同一defIdがロスターに既に存在しないか確認
     if (G.roster.some(c => c.id === charId)) {
-      Audio.play('error'); alert('この選手はすでに自団体に所属しています'); return;
+      Audio.play('error'); alert(WM_I18N.t('この選手はすでに自団体に所属しています')); return;
     }
     // Gate: check orgPop requirement (pricing-balance-spec §2) — FA context with eliteTicket support
     if (!Engine.scout.canNegotiate(G.orgPop || 0, fighter, 'fa', G)) {
-      Audio.play('error'); alert('団体の知名度が足りません！'); return;
+      Audio.play('error'); alert(WM_I18N.t('団体の知名度が足りません！')); return;
     }
     const usedEliteTicket = Engine.scout.isEliteTicketRequired(G.orgPop || 0, fighter, G);
     const finalCost = Engine.scout.getSigningCost(fighter, G.orgPop || 0);
-    if (G.funds < finalCost) { Audio.play('error'); alert('資金が足りません！'); return; }
+    if (G.funds < finalCost) { Audio.play('error'); alert(WM_I18N.t('資金が足りません！')); return; }
     if (G.roster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
       App._queueRosterOverflowSigning({
         source: 'fa',
@@ -5361,7 +5361,7 @@ const App = {
     const faSigningLine = getSigningLine(fighter, 'fa_signing');
     showEventPopup({ type:'fighter', id: fighter.id, name: fighter.name,
       tone:'positive', speech: faSigningLine,
-      detail:`📝 契約金: ${finalCost}万 [${tierCfg.label}]` });
+      detail: WM_I18N.t('📝 契約金: {cost}万 [{tier}]', { cost: finalCost, tier: tierCfg.label }) });
     refreshAll();
   },
 
@@ -5479,21 +5479,21 @@ const App = {
     }
     if (G.funds < pending.cost) {
       Audio.play('error');
-      alert('資金が足りません！');
+      alert(WM_I18N.t('資金が足りません！'));
       return;
     }
     if (pending.source === 'fa' && !G.freeAgents.some(c => c.id === pending.fighterId)) {
       G = { ...G, pendingRosterOverflowSigning: null };
       refreshAll();
       Audio.play('error');
-      alert('対象選手が市場に見つかりませんでした。');
+      alert(WM_I18N.t('対象選手が市場に見つかりませんでした。'));
       return;
     }
     if (pending.source === 'scout' && !(G.scoutCandidates || []).some(c => c.id === pending.fighterId) && !pending.fighter) {
       G = { ...G, pendingRosterOverflowSigning: null };
       refreshAll();
       Audio.play('error');
-      alert('対象選手がスカウト候補に見つかりませんでした。');
+      alert(WM_I18N.t('対象選手がスカウト候補に見つかりませんでした。'));
       return;
     }
     if (pending.source === 'negotiation') {
@@ -5503,16 +5503,16 @@ const App = {
         G = { ...G, pendingRosterOverflowSigning: null, negotiationResult: null };
         refreshAll();
         Audio.play('error');
-        alert('交渉対象の選手が見つかりませんでした。');
+        alert(WM_I18N.t('交渉対象の選手が見つかりませんでした。'));
         return;
       }
     }
     const released = App._releaseFighterForOverflow(releaseId);
     if (!released) return;
     let signedFighter = pending.fighter;
-    let detail = `解雇: ${released.name}`;
+    let detail = WM_I18N.t('解雇: {name}', { name: released.name });
     let speech = '';
-    let message = '契約が成立しました';
+    let message = WM_I18N.t('契約が成立しました');
     if (pending.source === 'fa') {
       const idx = G.freeAgents.findIndex(c => c.id === pending.fighterId);
       const fighter = G.freeAgents[idx];
@@ -5533,7 +5533,7 @@ const App = {
       if (usedEliteTicket) log.push({ type: 'elite_ticket_used', data: {}, s: G.season, w: G.week });
       G = { ...G, funds: G.funds - pending.cost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, eliteTicket: usedEliteTicket ? false : G.eliteTicket, eliteTicketUsed: usedEliteTicket ? true : G.eliteTicketUsed };
       signedFighter = normalized;
-      detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
+      detail = WM_I18N.t('解雇: {name} / 契約金: {cost}万', { name: released.name, cost: pending.cost });
       speech = getSigningLine(fighter, 'fa_signing');
       message = '';
     } else if (pending.source === 'scout') {
@@ -5558,7 +5558,7 @@ const App = {
       if (titleMsg) log.push(titleMsg);
       G = { ...G, roster: newRoster, scoutCandidates: candidates, scoutPicks: picks, funds: G.funds - pending.cost, titles, gameLog: log };
       signedFighter = normalizedSigned;
-      detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
+      detail = WM_I18N.t('解雇: {name} / 契約金: {cost}万', { name: released.name, cost: pending.cost });
       speech = getSigningLine(cand, pending.meta?.choice === 'direct' ? 'direct' : 'competition_won');
       message = '';
     } else if (pending.source === 'negotiation') {
@@ -5575,8 +5575,8 @@ const App = {
       App._pushNewsEvent({ type: 'poachSuccess', characterId: resetFighter.id,
         data: { name: resetFighter.name, toOrg: G.orgName || '\u3042\u306a\u305f\u306e\u56e3\u4f53', fromOrg: fromOrgName, ovr: Engine.util.ov(resetFighter), cost: pending.cost } });
       signedFighter = resetFighter;
-      detail = `解雇: ${released.name} / 移籍金: ${pending.cost}万`;
-      message = `${resetFighter.name}との契約が成立した`;
+      detail = WM_I18N.t('解雇: {name} / 移籍金: {cost}万', { name: released.name, cost: pending.cost });
+      message = WM_I18N.t('{name}との契約が成立した', { name: resetFighter.name });
     }
     G = { ...G, pendingRosterOverflowSigning: null };
     Storage.autoSave();
@@ -5597,13 +5597,13 @@ const App = {
     if (!cand) return;
     const picks = G.scoutPicks || [];
     if (picks.length >= (G.scoutMaxPicks || 3)) {
-      Audio.play('error'); alert(`今回の獲得上限（${G.scoutMaxPicks}名）に達しています`); return;
+      Audio.play('error'); alert(WM_I18N.t('今回の獲得上限（{n}名）に達しています', { n: G.scoutMaxPicks })); return;
     }
     if (!Engine.scout.canNegotiate(G.orgPop || 0, cand)) {
-      Audio.play('error'); alert('団体の知名度が足りません！'); return;
+      Audio.play('error'); alert(WM_I18N.t('団体の知名度が足りません！')); return;
     }
     const baseCost = Engine.scout.getSigningCost(cand, G.orgPop || 0);
-    if (G.funds < baseCost) { Audio.play('error'); alert('資金が足りません！'); return; }
+    if (G.funds < baseCost) { Audio.play('error'); alert(WM_I18N.t('資金が足りません！')); return; }
 
     if (cand._hasCompetition) {
       // Show competition resolution modal
@@ -5657,7 +5657,7 @@ const App = {
     });
 
     if (result.result === 'success') {
-      if (newFunds < result.cost) { Audio.play('error'); alert('資金が足りません！'); return; }
+      if (newFunds < result.cost) { Audio.play('error'); alert(WM_I18N.t('資金が足りません！')); return; }
       if (newRoster.filter(f => !f.isRental).length >= (G.rosterCap || 8)) {
         App._queueRosterOverflowSigning({
           source: 'scout',
@@ -5694,7 +5694,7 @@ const App = {
       // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
       var _scoutSigningPopup = { type:'fighter', id: cand.id, name: cand.name,
         tone:'positive', speech: getJoinGreeting(normalizedSigned),
-        detail:`${cand.name}が加入しました！(スカウト獲得)` };
+        detail: WM_I18N.t('{name}が加入しました！(スカウト獲得)', { name: cand.name }) };
       var _scoutSigningFanfare = (signingContext === 'competition_won');
     } else if (result.result === 'lost') {
       Audio.play('error');
@@ -5728,7 +5728,7 @@ const App = {
       candidates = candidates.filter(c => c.id !== candidateId);
       // ポップアップは showScreen 後に表示（showScreen が dismissAllPopups を呼ぶため）
       var _scoutSigningPopup = { type:'scout', tone:'negative',
-        message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' };
+        message: WM_I18N.t('{name}の獲得に失敗…', { name: cand.name }), detail: WM_I18N.t('他団体との競合に敗れました') };
     } else if (result.result === 'skipped') {
       // v1.7: 見送り時はリストから削除しない（再検討可能にする）
       log.push({ type: 'scout_skipped', data: { name: cand.name }, s: G.season, w: G.week });
@@ -6156,7 +6156,7 @@ const App = {
     // 引き留め成功セリフ表示
     showEventPopup({
       type: 'fighter', id: fighter.id, name: fighter.name, tone: 'positive',
-      speech: retainLine, detail: `${fighter.name}の引き留めに成功しました（引き留め ${updatedFighter.retainCount}/2回目）`,
+      speech: retainLine, detail: WM_I18N.t('{name}の引き留めに成功しました（引き留め {count}/2回目）', { name: fighter.name, count: updatedFighter.retainCount }),
     });
   },
 
@@ -6270,18 +6270,18 @@ const App = {
     closeFighterPopup();
     refreshAll();
     showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',
-      speech: getTraitQuote('release', c), detail:`${cName}が団体を去りました` });
+      speech: getTraitQuote('release', c), detail: WM_I18N.t('{name}が団体を去りました', { name: cName }) });
   },
 
   // ── タイトル奪還挑戦状（Phase 4） ─────────────────────────────────────
   openReclaimDialog() {
     if (!G.titles?.world?.externalHolder) return;
     if (!Engine.title.canIssueReclaim(G, 'world')) {
-      Audio.play('error'); alert('現在は挑戦状を発行できません。'); return;
+      Audio.play('error'); alert(WM_I18N.t('現在は挑戦状を発行できません。')); return;
     }
     const eligible = G.roster.filter(c => !c.injury && !c.isRental && !c.forcedRest);
     if (eligible.length === 0) {
-      Audio.play('error'); alert('挑戦可能な選手がいません。'); return;
+      Audio.play('error'); alert(WM_I18N.t('挑戦可能な選手がいません。')); return;
     }
     const eh = G.titles.world.externalHolder;
     const heldByOrg = G.aiOrgs?.[eh.orgId];
@@ -6300,18 +6300,18 @@ const App = {
       .join('');
     dlg.innerHTML = `
       <div style="background:#1a1a24;border:1px solid #d4607a;border-radius:8px;padding:20px 24px;width:90%;max-width:480px;color:#eee">
-        <div style="font-size:16px;font-weight:700;color:#ffb3c1;margin-bottom:10px">⚔ 奪還挑戦状の発行</div>
+        <div style="font-size:16px;font-weight:700;color:#ffb3c1;margin-bottom:10px">${WM_I18N.t('⚔ 奪還挑戦状の発行')}</div>
         <div style="font-size:12px;color:#bbb;line-height:1.7;margin-bottom:14px">
-          <strong>${heldByOrgName}</strong> の <strong>${exChampName}</strong> に対して挑戦状を叩きつけます。<br>
-          次の興行のメインで決戦。敗北時は12週間再挑戦できません。
+          ${WM_I18N.t('{org} の {champ} に対して挑戦状を叩きつけます。', { org: `<strong>${heldByOrgName}</strong>`, champ: `<strong>${exChampName}</strong>` })}<br>
+          ${WM_I18N.t('次の興行のメインで決戦。敗北時は12週間再挑戦できません。')}
         </div>
         <div style="margin-bottom:14px">
-          <label style="font-size:12px;color:#aaa;display:block;margin-bottom:6px">挑戦者を選ぶ</label>
+          <label style="font-size:12px;color:#aaa;display:block;margin-bottom:6px">${WM_I18N.t('挑戦者を選ぶ')}</label>
           <select id="reclaimChallengerSelect" style="width:100%;padding:8px;background:#0f0f18;border:1px solid #444;border-radius:4px;color:#eee;font-size:13px">${opts}</select>
         </div>
         <div style="display:flex;gap:8px;justify-content:flex-end">
-          <button onclick="App._closeReclaimDialog()" style="padding:8px 16px;background:#333;border:1px solid #555;color:#ccc;border-radius:4px;cursor:pointer">キャンセル</button>
-          <button onclick="App.confirmReclaim()" style="padding:8px 16px;background:linear-gradient(135deg,#d4607a,#a8334d);border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:600">挑戦状を発行</button>
+          <button onclick="App._closeReclaimDialog()" style="padding:8px 16px;background:#333;border:1px solid #555;color:#ccc;border-radius:4px;cursor:pointer">${WM_I18N.t('キャンセル')}</button>
+          <button onclick="App.confirmReclaim()" style="padding:8px 16px;background:linear-gradient(135deg,#d4607a,#a8334d);border:none;color:#fff;border-radius:4px;cursor:pointer;font-weight:600">${WM_I18N.t('挑戦状を発行')}</button>
         </div>
       </div>`;
     document.body.appendChild(dlg);
@@ -6346,9 +6346,9 @@ const App = {
     });
     showEventPopup({
       type: 'fighter', id: challengerId,
-      name: c?.name || '挑戦者', tone: 'positive',
-      message: `📜 ${c?.name} が ${orgName} へ挑戦状を叩きつけた！`,
-      detail: `次の興行のメインで王座奪還の決戦が行われる。`,
+      name: c?.name || WM_I18N.t('挑戦者'), tone: 'positive',
+      message: WM_I18N.t('📜 {name} が {org} へ挑戦状を叩きつけた！', { name: c?.name || WM_I18N.t('挑戦者'), org: orgName }),
+      detail: WM_I18N.t('次の興行のメインで王座奪還の決戦が行われる。'),
     });
   },
   // Phase 6: 契約裏切り → 新聞ヘッドライン振り分け
@@ -6373,7 +6373,7 @@ const App = {
 
   cancelReclaim() {
     if (!G._pendingReclaim) return;
-    if (!confirm('挑戦状を取り下げますか？（今シーズンの挑戦履歴は残ります）')) return;
+    if (!confirm(WM_I18N.t('挑戦状を取り下げますか？（今シーズンの挑戦履歴は残ります）'))) return;
     // pending challenge を取り下げ：reclaimChallenges から最新の未解決エントリを除去
     const newChallenges = (G.reclaimChallenges || []).filter((c, i, arr) => {
       // 直近の pending を1件だけ削除
@@ -6393,20 +6393,20 @@ const App = {
     if (!coach) return;
     // 外部招聘(_inviteBuff)で指導中のコーチは雇用不可(専属と雇用の同時登録・二重支払いの防止)
     if ((G.roster || []).some(f => f._inviteBuff && f._inviteBuff.coachId === coachId)) {
-      Audio.play('error'); alert(`${coach.name}は現在、外部コーチとして招聘期間中のため雇用できません`); return;
+      Audio.play('error'); alert(WM_I18N.t('{name}は現在、外部コーチとして招聘期間中のため雇用できません', { name: coach.name })); return;
     }
     const maxCoaches = Engine.coach.getMaxCoaches(G);
-    if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(`コーチは現在最大${maxCoaches}名まで（枠拡張で増加）`); return; }
+    if (G.coaches.length >= maxCoaches) { Audio.play('error'); alert(WM_I18N.t('コーチは現在最大{n}名まで（枠拡張で増加）', { n: maxCoaches })); return; }
     // A級雇用条件: 4枠目開放済み
-    if (coach.grade === 'A' && (G.coachSlots || 1) < 4) { Audio.play('error'); alert('A級コーチの雇用には4枠目の開放が必要です'); return; }
+    if (coach.grade === 'A' && (G.coachSlots || 1) < 4) { Audio.play('error'); alert(WM_I18N.t('A級コーチの雇用には4枠目の開放が必要です')); return; }
     const fee = coach.hireFee || COACH_HIRE_FEE;
-    if (G.funds < fee) { Audio.play('error'); alert('資金が足りません！'); return; }
+    if (G.funds < fee) { Audio.play('error'); alert(WM_I18N.t('資金が足りません！')); return; }
     // 社長室 Phase 5: コーチ雇用は「コーチ雇用決裁書」(決裁枠2)を消費する
     const hireDoc = (typeof DECISION_DOCS !== 'undefined') ? DECISION_DOCS.hireCoach : null;
     const dpCost = (hireDoc && hireDoc.decisionCost) || 2;
     if ((G.decisionPoints || 0) < dpCost) {
       Audio.play('error');
-      alert(`コーチ雇用には決裁枠 ⚡${dpCost} が必要です（現在: ⚡${G.decisionPoints || 0}）`);
+      alert(WM_I18N.t('コーチ雇用には決裁枠 ⚡{cost} が必要です（現在: ⚡{cur}）', { cost: dpCost, cur: G.decisionPoints || 0 }));
       return;
     }
     G = {
@@ -6421,14 +6421,14 @@ const App = {
     Audio.play('link');
     refreshAll();
     showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
-      speech: pickCoachVoiceQuote('coachHire', coachId), detail:`🎓 ${coach.name}がコーチとして加入！（雇用費: ${fee}万、決裁枠 -${dpCost}）` });
+      speech: pickCoachVoiceQuote('coachHire', coachId), detail: WM_I18N.t('🎓 {name}がコーチとして加入！（雇用費: {fee}万、決裁枠 -{dp}）', { name: coach.name, fee, dp: dpCost }) });
   },
 
   // Expand coach slot
   expandCoachSlot() {
     const result = Engine.coach.expandSlot(G);
-    if (result.error === 'max_slots') { Audio.play('error'); alert('すでに全枠を開放しています'); return; }
-    if (result.error === 'funds_insufficient') { Audio.play('error'); alert(`資金が足りません（必要: ${result.cost}万）`); return; }
+    if (result.error === 'max_slots') { Audio.play('error'); alert(WM_I18N.t('すでに全枠を開放しています')); return; }
+    if (result.error === 'funds_insufficient') { Audio.play('error'); alert(WM_I18N.t('資金が足りません（必要: {cost}万）', { cost: result.cost })); return; }
     G = {
       ...G,
       coachSlots: result.coachSlots,
@@ -6440,13 +6440,14 @@ const App = {
     refreshAll();
     const slotNum = result.coachSlots;
     const msgs = {
-      2: '道場に新しいトレーニングスペースを増設した。',
-      3: '専用のコーチルームを設置。複数のコーチが同時に指導できる環境が整った。',
-      4: '最高級のトレーニング施設を完備。伝説級のコーチを招聘する準備が整った。'
+      2: WM_I18N.t('道場に新しいトレーニングスペースを増設した。'),
+      3: WM_I18N.t('専用のコーチルームを設置。複数のコーチが同時に指導できる環境が整った。'),
+      4: WM_I18N.t('最高級のトレーニング施設を完備。伝説級のコーチを招聘する準備が整った。')
     };
     showEventPopup({ type:'system', tone:'positive',
-      message: msgs[slotNum] || 'コーチ枠を拡張しました。',
-      detail: `🎓 コーチ枠が${slotNum}枠に拡張されました！（投資: ${result.cost}万）${slotNum >= 4 ? '\n⭐ A級コーチの雇用が解禁されました！' : ''}` });
+      message: msgs[slotNum] || WM_I18N.t('コーチ枠を拡張しました。'),
+      detail: WM_I18N.t('🎓 コーチ枠が{n}枠に拡張されました！（投資: {cost}万）', { n: slotNum, cost: result.cost })
+        + (slotNum >= 4 ? '\n' + WM_I18N.t('⭐ A級コーチの雇用が解禁されました！') : '') });
   },
 
   // Fire coach
@@ -6463,14 +6464,14 @@ const App = {
     Audio.play('unlink');
     refreshAll();
     if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
-      speech: pickCoachVoiceQuote('coachFire', coachId), detail:`${coach.name}がチームを去りました` });
+      speech: pickCoachVoiceQuote('coachFire', coachId), detail: WM_I18N.t('{name}がチームを去りました', { name: coach.name }) });
   },
 
   // Assign character to coach
   assignToCoach(coachId, charId) {
     const unassigned = Engine.coach.unassignFromCoach(G, charId);
     const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, coachId, charId);
-    if (!success) { Audio.play('error'); alert('このコーチのアサイン枠が満員です'); return; }
+    if (!success) { Audio.play('error'); alert(WM_I18N.t('このコーチのアサイン枠が満員です')); return; }
     Audio.play('link');
     G = { ...G, coachAssign };
     refreshAll();
@@ -6492,7 +6493,7 @@ const App = {
     if (G.offSeason || G.weekPhase !== 'manage' || !isRegularShowWeek(G.week)) {
       Audio.play('error');
       if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
-        showToast('今週は季節の特別興行です。通常興行は行えません。');
+        showToast(WM_I18N.t('今週は季節の特別興行です。通常興行は行えません。'));
       }
       return;
     }
@@ -6518,17 +6519,17 @@ const App = {
   // Set show card slot
   setShowCardSlot(slotIndex, side, newId) {
     if (G.showCard?.[slotIndex]?._unifiedTitleLocked) {
-      Audio.play('error'); showToast('🌐 全国統一王座戦の対戦者は固定です', 3000); return;
+      Audio.play('error'); showToast(WM_I18N.t('🌐 全国統一王座戦の対戦者は固定です'), 3000); return;
     }
     if (G.showCard?.[slotIndex]?._crMatchLocked) {
-      Audio.play('error'); showToast('⚔ 挑戦試合の上位3枠は固定です', 3000); return;
+      Audio.play('error'); showToast(WM_I18N.t('⚔ 挑戦試合の上位3枠は固定です'), 3000); return;
     }
     newId = +newId;
     const reservedCRIds = typeof getChallengeUnavailableIds === 'function'
       ? getChallengeUnavailableIds()
       : new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
     if (newId > 0 && reservedCRIds.has(newId)) {
-      Audio.play('error'); showToast('⚔ この選手は挑戦試合への出場が決まっています', 3000); return;
+      Audio.play('error'); showToast(WM_I18N.t('⚔ この選手は挑戦試合への出場が決まっています'), 3000); return;
     }
     const newCard = G.showCard.map(s => ({ ...s }));
     // Swap: if newId is already used in another slot, exchange fighters
@@ -6587,11 +6588,11 @@ const App = {
     const card = [...G.showCard];
     if (idx < 0 || idx + 1 >= card.length) return;
     if (card[idx]?._crMatchLocked || card[idx + 1]?._crMatchLocked || card[idx]?._unifiedTitleLocked || card[idx + 1]?._unifiedTitleLocked) {
-      Audio.play('error'); showToast('⚔ 挑戦試合の固定枠はタッグに変更できません', 3000); return;
+      Audio.play('error'); showToast(WM_I18N.t('⚔ 挑戦試合の固定枠はタッグに変更できません'), 3000); return;
     }
-    if (idx === 0) { Audio.play('error'); showToast('メインイベントはシングルマッチのみです'); return; }
+    if (idx === 0) { Audio.play('error'); showToast(WM_I18N.t('メインイベントはシングルマッチのみです')); return; }
     if (card[idx].matchType === 'tag' || card[idx + 1].matchType === 'tag') {
-      Audio.play('error'); showToast('タッグ枠同士は合体できません'); return;
+      Audio.play('error'); showToast(WM_I18N.t('タッグ枠同士は合体できません')); return;
     }
     const s1 = card[idx], s2 = card[idx + 1];
     // 左コーナー同士→チームA、右コーナー同士→チームB
@@ -6625,7 +6626,7 @@ const App = {
       ? getChallengeUnavailableIds()
       : new Set(Engine.challengeRequest?.getScheduledCard?.(G)?.reservedIds || []);
     if (fighterId > 0 && reservedCRIds.has(fighterId)) {
-      Audio.play('error'); showToast('⚔ この選手は挑戦試合への出場が決まっています', 3000); return;
+      Audio.play('error'); showToast(WM_I18N.t('⚔ この選手は挑戦試合への出場が決まっています'), 3000); return;
     }
     const newCard = G.showCard.map(s => s.matchType === 'tag'
       ? { ...s, teamA: { ...s.teamA }, teamB: { ...s.teamB } }
@@ -6672,7 +6673,7 @@ const App = {
       return;
     }
     if (G.showCard?.[slotIndex]?._crMatchLocked || G.showCard?.[slotIndex]?._unifiedTitleLocked) {
-      Audio.play('error'); showToast('⚔ 挑戦試合の固定枠はタイトル戦に変更できません', 3000); return;
+      Audio.play('error'); showToast(WM_I18N.t('⚔ 挑戦試合の固定枠はタイトル戦に変更できません'), 3000); return;
     }
     const newVal = !G.showCard[slotIndex].isTitle;
     // ONにするときは必ず他スロットのisTitleをクリア（チャンピオン在籍/空位どちらも）
@@ -6700,8 +6701,8 @@ const App = {
     if (!isRegularShowWeek(G.week)) {
       Audio.play('error');
       showToast(Engine.util.isSeasonSpecialEventWeek(G.week)
-        ? '今週は季節の特別興行です。通常興行は行えません。'
-        : '今週は通常興行を開催できる週ではありません。');
+        ? WM_I18N.t('今週は季節の特別興行です。通常興行は行えません。')
+        : WM_I18N.t('今週は通常興行を開催できる週ではありません。'));
       return;
     }
     // An accepted away challenge must be resolved before the local show.  The
@@ -6744,7 +6745,7 @@ const App = {
         const clearedCard = Engine.challengeRequest.clearReservedMatches(G, G.showCard);
         const { _pendingIncomingChallengeMatch: _invalidIncomingCR, _pendingChallengeMatch: _legacyIncomingCR, ...rest } = G;
         G = { ...rest, showCard: clearedCard };
-        showToast('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました', 5000);
+        showToast(WM_I18N.t('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました'), 5000);
       }
     }
     // task-88: 挑戦シリーズの次、B3より前に統一王座戦をメインへ予約する。
@@ -6771,7 +6772,7 @@ const App = {
         App._unifiedTitleShowData = { ...scheduled, guestIds: guests.map(f => f.id) };
       } else {
         G = reservedUnified.state;
-        showToast('⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました', 5000);
+        showToast(WM_I18N.t('⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました'), 5000);
       }
     }
     App._b3ShowData = null;
@@ -6791,7 +6792,7 @@ const App = {
       } else {
         const { _pendingIncomingB3Match: _invalidB3, ...rest } = G;
         G = { ...rest, showCard: Engine.challengeRequest.clearReservedMatches(G, G.showCard) };
-        showToast('⚠ 挑戦試合の出場条件が整わないため、予約を解除しました', 5000);
+        showToast(WM_I18N.t('⚠ 挑戦試合の出場条件が整わないため、予約を解除しました'), 5000);
       }
     }
     // I-1保険: 今週すでに遠征で試合した選手が(手動編集や旧セーブ経由で)カードに
@@ -6839,8 +6840,8 @@ const App = {
       Audio.play('error');
       if (hadStaleRef) refreshAll();
       alert(hadStaleRef
-        ? 'カードに在籍していない選手が含まれていたため自動で解除しました。カードを確認してください。'
-        : '少なくとも1試合を組んでください');
+        ? WM_I18N.t('カードに在籍していない選手が含まれていたため自動で解除しました。カードを確認してください。')
+        : WM_I18N.t('少なくとも1試合を組んでください'));
       return;
     }
 
@@ -6853,7 +6854,7 @@ const App = {
         // クールダウン中のタイトルフラグを自動で外す
         G = { ...G, showCard: G.showCard.map(m => ({ ...m, isTitle: false })) };
         refreshAll();
-        alert(`タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）`);
+        alert(WM_I18N.t('タイトルマッチは12週に1回のみ開催できます（あと{n}週）', { n: cd.weeksLeft }));
         return;
       }
     }
@@ -6900,8 +6901,8 @@ const App = {
           showEventPopup({
             type: 'fighter', id: pr.challengerId,
             name: challenger.name, tone: 'positive',
-            message: `⚔ 王座奪還の決戦！ ${challenger.name} vs ${defender.name}`,
-            detail: `${aiOrg?.name || eh.orgId} に持ち去られた団体王座を取り戻せ！`,
+            message: WM_I18N.t('⚔ 王座奪還の決戦！ {a} vs {b}', { a: challenger.name, b: defender.name }),
+            detail: WM_I18N.t('{org} に持ち去られた団体王座を取り戻せ！', { org: aiOrg?.name || eh.orgId }),
           });
         }
       }
@@ -6940,8 +6941,8 @@ const App = {
         showEventPopup({
           type: 'fighter', id: pcm.requesterId,
           name: teamACR[0].name, tone: 'positive',
-          message: `⚔ 直訴の一戦、この興行で決着`,
-          detail: `${teamACR[0].name} が持ち込んだ舞台が、今日のカードに組み込まれた。`,
+          message: WM_I18N.t('⚔ 直訴の一戦、この興行で決着'),
+          detail: WM_I18N.t('{name} が持ち込んだ舞台が、今日のカードに組み込まれた。', { name: teamACR[0].name }),
         });
       } else {
         // 出場メンバーが揃わない（怪我・離脱等）→ 静かに取り下げ
@@ -6989,8 +6990,8 @@ const App = {
           id: intrusion.intruder.id,
           name: intrusion.intruder.name,
           tone: 'negative',
-          message: `⚡ ${intrusion.fromOrgName}の${intrusion.intruder.name}が乱入！`,
-          detail: `タイトルマッチの挑戦者が差し替わった！\nOVR ${Engine.util.ov(intrusion.intruder)} の強敵が王座を狙う！`
+          message: WM_I18N.t('⚡ {org}の{name}が乱入！', { org: intrusion.fromOrgName, name: intrusion.intruder.name }),
+          detail: WM_I18N.t('タイトルマッチの挑戦者が差し替わった！\nOVR {ovr} の強敵が王座を狙う！', { ovr: Engine.util.ov(intrusion.intruder) })
         });
       }
     }
@@ -7274,7 +7275,7 @@ const App = {
       right: { ...charR, portraitUrl: getPortraitUrl(charR.id), profile: CHAR_PROFILES[charR.id] || '', vl: App._buildVlVsPlayerForExEmployee(charR, G.season, G.week, charL.orgId), vsExHit: App._buildVsExHitLines(charR, G.season, G.week, charL.orgId) },
       result,
       matchInfo: {
-        header: m._unifiedTitleMatch ? '🌐 全国統一王座戦' : m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : '🏆 初代王者決定戦') : (idx === 0 ? 'メインイベント' : `第${sp.validMatches.length - idx}試合`),
+        header: m._unifiedTitleMatch ? WM_I18N.t('🌐 全国統一王座戦') : m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : WM_I18N.t('🏆 初代王者決定戦')) : (idx === 0 ? WM_I18N.t('メインイベント') : WM_I18N.t('第{n}試合', { n: sp.validMatches.length - idx })),
         subHeader: `${charL.name} vs ${charR.name}`,
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
@@ -7382,7 +7383,7 @@ const App = {
       teamB: { fighter1: mkProfile(f3), fighter2: mkProfile(f4) },
       result,
       matchInfo: {
-        header: idx === 0 ? 'メインイベント(タッグ)' : `第${sp.validMatches.length - idx}試合(タッグ)`,
+        header: idx === 0 ? WM_I18N.t('メインイベント(タッグ)') : WM_I18N.t('第{n}試合(タッグ)', { n: sp.validMatches.length - idx }),
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
         sfxMasterVol: Audio.sfxMasterVol,
@@ -7685,7 +7686,7 @@ const App = {
           App._showPreview = null;
           try { document.getElementById('showResultOverlay')?.classList.remove('active'); } catch (_e) {}
           try { Audio.bgm.playForState(); } catch (_e) {}
-          try { showToast('⚠️ 興行処理中に問題が発生しました。状態を復元しました。', 6000); } catch (_e) {}
+          try { showToast(WM_I18N.t('⚠️ 興行処理中に問題が発生しました。状態を復元しました。'), 6000); } catch (_e) {}
           try { Storage.autoSave(); } catch (_e) {}
           try { showScreen('week'); refreshAll(); } catch (_e) {}
         }
@@ -7706,7 +7707,7 @@ const App = {
       console.error('finalizeShow: unresolved results', { validMatches, results });
       Audio.play('error');
       renderMatchPreview();
-      alert('試合結果の確定に失敗しました。カードに不整合がある可能性があります。');
+      alert(WM_I18N.t('試合結果の確定に失敗しました。カードに不整合がある可能性があります。'));
       return;
     }
     let s = { ...G, totalShows: G.totalShows + 1, weekPhase: 'showExec' };
@@ -9186,7 +9187,7 @@ const App = {
 
     // v2.0 Phase1-6: メディアスポットライトの興行後処理
     if (G.mediaSpotlight) {
-      const _spotlightName = G.mediaSpotlight.fighterName || '選手';
+      const _spotlightName = G.mediaSpotlight.fighterName || WM_I18N.t('選手');
       const spotRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xB4B4));
       const spotResult = Engine.eventSystem.processMediaSpotlight(G, results, validMatches, spotRng);
       if (spotResult) {
@@ -9201,7 +9202,7 @@ const App = {
         }
         // P6: メディアスポットライト終了トースト
         if (spotResult.mediaSpotlight === null) {
-          setTimeout(() => showToast(`📺 ${_spotlightName}のメディア密着取材が終了した`, 5000), 500);
+          setTimeout(() => showToast(WM_I18N.t('📺 {name}のメディア密着取材が終了した', { name: _spotlightName }), 5000), 500);
         }
       }
     }
@@ -9388,11 +9389,11 @@ const App = {
       const rightLine = pickDialogueLine(FIRST_MEET_LINES, rightFighter);
       popups.push({
         type: 'fighter', id: leftId, name: leftFighter.name,
-        speech: leftLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
+        speech: leftLine, detail: WM_I18N.t('✨ 初対決'), autoCloseMs: 1800, sound: 'event',
       });
       popups.push({
         type: 'fighter', id: rightId, name: rightFighter.name,
-        speech: rightLine, detail: '✨ 初対決', autoCloseMs: 1800, sound: 'event',
+        speech: rightLine, detail: WM_I18N.t('✨ 初対決'), autoCloseMs: 1800, sound: 'event',
       });
     }
     // ── 段階拡張ポイント: 他のプラス効果はここに追加 ──
@@ -9417,7 +9418,7 @@ const App = {
     const loseLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.loser,  loserFighter);
     popups.push({
       type: 'fighter', id: loserId, name: loserFighter.name,
-      speech: loseLine, detail: '— 敗者の心 —', autoCloseMs: 1800, sound: 'event',
+      speech: loseLine, detail: WM_I18N.t('— 敗者の心 —'), autoCloseMs: 1800, sound: 'event',
     });
     return popups;
   },
@@ -9875,7 +9876,7 @@ const App = {
         isTitleMatch: false,
         isTag: true,
         matchNumber: originalIndex === 0 ? totalMatches : Math.max(1, totalMatches - originalIndex),
-        matchLabel: originalIndex === 0 ? 'メインイベント' : `第${Math.max(1, totalMatches - originalIndex)}試合`,
+        matchLabel: originalIndex === 0 ? WM_I18N.t('メインイベント') : WM_I18N.t('第{n}試合', { n: Math.max(1, totalMatches - originalIndex) }),
       };
     };
 
@@ -9906,7 +9907,7 @@ const App = {
     const loser = isDraw ? null : (main.winner === 'left' ? main.right : main.left);
     const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
     const attendance = G.lastShowAttendance || 0;
-    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? '特別興行' : `第${G.totalShows}回 定期興行`);
+    const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? WM_I18N.t('特別興行') : WM_I18N.t('第{n}回 定期興行', { n: G.totalShows }));
     const finishLabel = Engine.formatFinish(main.finType, main.finMove);
     const turns = main.turns || 0;
     const mq = main.mq || avgMQ;
@@ -10010,7 +10011,7 @@ const App = {
         isTitleMatch: !!r.isTitleMatch,
         isTag: false,
         matchNumber: Math.max(1, totalMatches - originalIndex),
-        matchLabel: `第${Math.max(1, totalMatches - originalIndex)}試合`,
+        matchLabel: WM_I18N.t('第{n}試合', { n: Math.max(1, totalMatches - originalIndex) }),
       };
     }).filter(Boolean);
 
@@ -10081,7 +10082,7 @@ const App = {
       winner, loser, left: main.left, right: main.right, isDraw, finishLabel,
       turns, mq, hpLeft: hpL, hpRight: hpR, isTitleMatch: !!main.isTitleMatch,
       isTag: !!main.isTag, teamA: main.teamA || null, teamB: main.teamB || null,
-      matchNumber: main.matchNumber || totalMatches, matchLabel: main.matchLabel || 'メインイベント',
+      matchNumber: main.matchNumber || totalMatches, matchLabel: main.matchLabel || WM_I18N.t('メインイベント'),
       injuries: (App._lastInjuries || []).filter(ir => ir && ir.injury && !ir.retireType).map(ir => ({
         name: ir.name,
         type: ir.injury.type,
@@ -10190,7 +10191,7 @@ const App = {
     if (teamA.length !== 3 || teamB.length !== 3 || !teamA.every(healthy) || !teamB.every(healthy)) {
       const { _pendingAwayChallengeMatch: _invalidAway, ...rest } = G;
       G = rest;
-      showToast('⚠ 遠征メンバーが揃わないため、挑戦試合は中止になりました', 5000);
+      showToast(WM_I18N.t('⚠ 遠征メンバーが揃わないため、挑戦試合は中止になりました'), 5000);
       try { Storage.autoSave(); } catch (_e) {}
       return false;
     }
@@ -10231,13 +10232,13 @@ const App = {
     if (!champion || !challenger || challenger.orgId !== 'player'
         || !Engine.unifiedTitle._available(champion.fighter) || !Engine.unifiedTitle._available(challenger.fighter)) {
       G = { ...G, _pendingUnifiedAwayMatch: null };
-      showToast('⚠ 全国統一王座への遠征条件が整わないため、予約を解除しました', 5000);
+      showToast(WM_I18N.t('⚠ 全国統一王座への遠征条件が整わないため、予約を解除しました'), 5000);
       return false;
     }
     try { Engine.unifiedTitle.assertEligibleChallenger(G, 'player', challenger.fighter.id, champion.fighter.id); }
     catch (_err) {
       G = { ...G, _pendingUnifiedAwayMatch: null };
-      showToast('⚠ 挑戦資格が失われたため、全国統一王座戦を解除しました', 5000);
+      showToast(WM_I18N.t('⚠ 挑戦資格が失われたため、全国統一王座戦を解除しました'), 5000);
       return false;
     }
     const guest = { ...champion.fighter, isUnifiedTitleGuest: true, _unifiedGuestOrgId: champion.orgId };
@@ -10269,11 +10270,11 @@ const App = {
     const start = () => App._startUnifiedTitleAwayShow();
     if (typeof showTravelScene !== 'function') { start(); return; }
     showTravelScene({
-      heading: '— 全国統一王座へ —',
-      from: { label: G.orgName || 'プレイヤー団体', emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
+      heading: WM_I18N.t('— 全国統一王座へ —'),
+      from: { label: G.orgName || WM_I18N.t('プレイヤー団体'), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
       to: { label: Engine.unifiedTitle._orgName(G, champion.orgId), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(champion.orgId, 22) : ''), accent: 'var(--unified)' },
       party: [{ id: challenger.fighter.id, name: challenger.fighter.name }],
-      lines: [`${challenger.fighter.name}が、全国統一王者の待つ敵地へ向かっています。`, '業界の頂点を懸けた一戦です。'],
+      lines: [WM_I18N.t('{name}が、全国統一王者の待つ敵地へ向かっています。', { name: challenger.fighter.name }), WM_I18N.t('業界の頂点を懸けた一戦です。')],
       vehicleIcon: '🚌', durationMs: 5800,
     }, start);
   },
@@ -10315,7 +10316,7 @@ const App = {
     G = s;
     App._showPreview = null;
     try { Storage.autoSave(); } catch (_e) {}
-    showToast(won ? '🌐 全国統一王座を奪取しました！' : '全国統一王座への挑戦は届きませんでした', 5000);
+    showToast(won ? WM_I18N.t('🌐 全国統一王座を奪取しました！') : WM_I18N.t('全国統一王座への挑戦は届きませんでした'), 5000);
     showScreen('show');
     refreshAll();
     if (typeof renderShowPrep === 'function') renderShowPrep();
@@ -10418,7 +10419,7 @@ const App = {
       || !['manage', 'showPrep'].includes(G.weekPhase)
       || !Engine.challengeRequest?.isEligibleHomeShow?.(G)) {
       Audio.play('error');
-      showToast('この週は遠征対抗戦を実行できません。', 3000);
+      showToast(WM_I18N.t('この週は遠征対抗戦を実行できません。'), 3000);
       return false;
     }
     App._awayChallengeManualStart = true;
@@ -10448,23 +10449,23 @@ const App = {
     const ownIds = ownIsRequester ? booking.teamAIds : booking.teamBIds;
     const partyFighters = (ownIds || []).map(id => (G.roster || []).find(f => f.id === id)).filter(Boolean);
     const destOrgId = ownIsRequester ? booking.opponentOrgId : booking.requesterOrgId;
-    const destOrgName = (ownIsRequester ? booking.opponentOrgName : booking.requesterOrgName) || destOrgId || '相手団体';
-    const selfOrgName = (ownIsRequester ? booking.requesterOrgName : booking.opponentOrgName) || G.orgName || 'プレイヤー団体';
+    const destOrgName = (ownIsRequester ? booking.opponentOrgName : booking.requesterOrgName) || destOrgId || WM_I18N.t('相手団体');
+    const selfOrgName = (ownIsRequester ? booking.requesterOrgName : booking.opponentOrgName) || G.orgName || WM_I18N.t('プレイヤー団体');
     // 名指しされた相手本人の現在の名前（受理から数週経ち、入れ替わっている可能性を考慮して再取得）
     const namedOpponentId = ownIsRequester ? booking.opponentId : booking.requesterId;
     const destRoster = destOrgId === 'player' ? (G.roster || []) : ((G.aiOrgs && G.aiOrgs[destOrgId] && G.aiOrgs[destOrgId].roster) || []);
-    const namedOpponentName = (destRoster.find(f => f.id === namedOpponentId) || {}).name || `${destOrgName}の選手`;
-    const partyCountLabel = partyFighters.length === 1 ? '一人' : partyFighters.length === 2 ? '二人' : partyFighters.length === 3 ? '三人' : `${partyFighters.length}人`;
+    const namedOpponentName = (destRoster.find(f => f.id === namedOpponentId) || {}).name || WM_I18N.t('{org}の選手', { org: destOrgName });
+    const partyCountLabel = partyFighters.length === 1 ? WM_I18N.t('一人') : partyFighters.length === 2 ? WM_I18N.t('二人') : partyFighters.length === 3 ? WM_I18N.t('三人') : WM_I18N.t('{n}人', { n: partyFighters.length });
 
     App._awayChallengeManualStart = true;
     showTravelScene({
-      heading: '— 移 動 中 —',
+      heading: WM_I18N.t('— 移 動 中 —'),
       from: { label: selfOrgName, emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
       to: { label: destOrgName, emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(destOrgId, 22) : ''), accent: 'var(--accent-hostility)' },
       party: partyFighters.map(f => ({ id: f.id, name: f.name })),
       lines: [
-        `${partyCountLabel}を乗せた車が、他団体の会場へ向かっています。`,
-        `迎えるのは、名指しされた${namedOpponentName}。ここから先は敵地です。`,
+        WM_I18N.t('{count}を乗せた車が、他団体の会場へ向かっています。', { count: partyCountLabel }),
+        WM_I18N.t('迎えるのは、名指しされた{name}。ここから先は敵地です。', { name: namedOpponentName }),
       ],
       vehicleIcon: '🚌',
       durationMs: 5800,
@@ -10494,7 +10495,7 @@ const App = {
     App._awayChallengeManualStart = false;
     App._awayChallengeCompletedForClose = !wasManualStart && G.weekPhase === 'showExec';
     try { Storage.autoSave(); } catch (_e) {}
-    try { showToast('⚠️ 遠征対抗戦の処理に問題が発生したため、相手選手を除去して予約を解除しました。', 6000); } catch (_e) {}
+    try { showToast(WM_I18N.t('⚠️ 遠征対抗戦の処理に問題が発生したため、相手選手を除去して予約を解除しました。'), 6000); } catch (_e) {}
     if (wasManualStart || G.weekPhase !== 'showExec') {
       try { Audio.bgm.playForState(); } catch (_e) {}
       try { showScreen('week'); refreshAll(); } catch (_e) {}
@@ -10841,7 +10842,7 @@ const App = {
         type: 'fighter', id: winnerId, name: winnerName,
         tone: isGood ? 'gold' : 'neutral',
         speech: winnerLine,
-        detail: `📣 ${crowdText}`,
+        detail: WM_I18N.t('📣 {text}', { text: crowdText }),
         autoCloseMs: 2500,
       }), i * 100);
     });
@@ -10858,7 +10859,7 @@ const App = {
         showEventPopup({
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
           speech: getTraitQuote('injury', ch),
-          detail: `🏥 ${injuryLabel(ir.injury.type)} — 全治${ir.injury.weeksLeft}週間`,
+          detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(ir.injury.type), weeks: ir.injury.weeksLeft }),
         });
       }, i * 100);
     });
@@ -10873,12 +10874,12 @@ const App = {
       hasEventPopups = true;
       if (wasIntruderCrowned) {
         setTimeout(() => showEventPopup({ type:'fighter', id:intruderId, name:id.intruder.name, tone:'negative',
-          message: `${id.fromOrgName}の${id.intruder.name}に王座を奪われた…`,
-          detail: `王座は空位に。次のタイトルマッチで新王者を決定してください。` }), popupDelay);
+          message: WM_I18N.t('{org}の{name}に王座を奪われた…', { org: id.fromOrgName, name: id.intruder.name }),
+          detail: WM_I18N.t('王座は空位に。次のタイトルマッチで新王者を決定してください。') }), popupDelay);
       } else {
         setTimeout(() => showEventPopup({ type:'fighter', id:G.titles.world.championId, name:id.champName, tone:'gold',
-          message: `乱入者を退けた！`,
-          detail: `👑 ${id.champName}が${id.fromOrgName}の${id.intruder.name}を撃破！ 団体人気+2` }), popupDelay);
+          message: WM_I18N.t('乱入者を退けた！'),
+          detail: WM_I18N.t('👑 {champ}が{org}の{name}を撃破！ 団体人気+2', { champ: id.champName, org: id.fromOrgName, name: id.intruder.name }) }), popupDelay);
       }
       App._intrusionData = null;
     }
@@ -10925,7 +10926,7 @@ const App = {
     if (showFlavorEvents.length > 0) {
       showFlavorEvents.forEach((ev, i) => {
         hasEventPopups = true;
-        const detail = ev.type === 'magazine' ? `人気 +${ev.popGain}` : `ヒート +${ev.heatGain}`;
+        const detail = ev.type === 'magazine' ? WM_I18N.t('人気 +{n}', { n: ev.popGain }) : WM_I18N.t('ヒート +{n}', { n: ev.heatGain });
         setTimeout(() => showEventPopup({
           type: 'fighter', id: ev.fighterId, name: ev.fighterName,
           tone: 'positive', message: ev.headline, detail
@@ -14852,9 +14853,9 @@ const App = {
       id: speaker.id,
       name: speaker.name,
       tone: 'negative',
-      title: '🚨 資金危機',
+      title: WM_I18N.t('🚨 資金危機'),
       speech: line,
-      detail: `残り猶予${Math.max(0, G.crisisWeeksRemaining || 0)}週 — 立て直すか、解散か`,
+      detail: WM_I18N.t('残り猶予{weeks}週 — 立て直すか、解散か', { weeks: Math.max(0, G.crisisWeeksRemaining || 0) }),
     }), 250);
   },
 
@@ -14865,9 +14866,9 @@ const App = {
     G = sResult.state;
     if (sResult.graduated && !wasCleared) {
       setTimeout(() => showEventPopup({
-        type: 'generic', emoji: '\uD83C\uDF8A', name: '\u7D4C\u55B6\u5B89\u5B9A\u5316\u9054\u6210\uFF01',
-        message: '\u8D64\u5B57\u5730\u7344\u3092\u4E57\u308A\u8D8A\u3048\u3001\u3064\u3044\u306B\u5B89\u5B9A\u3057\u305F\u9ED2\u5B57\u7D4C\u55B6\u3092\u9054\u6210\u3057\u307E\u3057\u305F\uFF01',
-        detail: '\uD83D\uDCAA \u3053\u308C\u304B\u3089\u306F\u6210\u9577\u30D5\u30A7\u30FC\u30BA\u3067\u3059\u3002\u66F4\u306A\u308B\u9AD8\u307F\u3092\u76EE\u6307\u3057\u307E\u3057\u3087\u3046\uFF01',
+        type: 'generic', emoji: '\uD83C\uDF8A', name: WM_I18N.t('\u7D4C\u55B6\u5B89\u5B9A\u5316\u9054\u6210\uFF01'),
+        message: WM_I18N.t('\u8D64\u5B57\u5730\u7344\u3092\u4E57\u308A\u8D8A\u3048\u3001\u3064\u3044\u306B\u5B89\u5B9A\u3057\u305F\u9ED2\u5B57\u7D4C\u55B6\u3092\u9054\u6210\u3057\u307E\u3057\u305F\uFF01'),
+        detail: WM_I18N.t('\uD83D\uDCAA \u3053\u308C\u304B\u3089\u306F\u6210\u9577\u30D5\u30A7\u30FC\u30BA\u3067\u3059\u3002\u66F4\u306A\u308B\u9AD8\u307F\u3092\u76EE\u6307\u3057\u307E\u3057\u3087\u3046\uFF01'),
         tone: 'gold'
       }), 200);
     }
