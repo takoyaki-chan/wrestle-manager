@@ -23,6 +23,12 @@
 3. 翻訳バッチ(Opus・テーブル族ごと): GAMELOG 66型→ティッカー→見出しテンプレ→PPV/対抗戦記事→新聞文プール→kuroda-text.js(最大の山・英文体プロトタイプ承認後)
 4. 検証: ja-golden完全一致+build-dict系機械検査+**lang=enでの生成スモーク**(固定シードでEN新聞を生成して目視・ネイティブ検品用サンプルにも流用)
 
+## 黒田英文体プロトタイプで発見された構造穴(2026-09-02・P4-2で対処)
+
+1. **成形済みプレースホルダ約20値**({milestone}=「通算100勝」等、日本語で組み立てた値がテンプレに充填される)— テンプレ台帳と別に**値生成式の側**をテンプレ化/t()経由にする棚卸しが必要。対象候補: {milestone}{recordLine}{careerLine}{detail}{entrySummary}{preview}{championWatch}{semi1}{semi2}{finalResult}{gauntletNote}{tieBreakNote}{closing}{names}{round}{stage}{what}{how}{stat}{body}
+2. **関数内実行文のプール**(Engine.mvpRace.generateKurodaComment等の貫一郎プール)— テーブルでないため抽出器が拾えない。抽出器の対象定義に実行文プールの走査を足すか、テーブル化リファクタで対応
+3. 黒田英文体の正: docs/en-kuroda-style-draft-v0.1.md(三層主語/断片リズム/見出し文法/禁止語grep/maxim検査)。未決裁定6件は同書§5
+
 ## 対象外
 
 - セリフ層(P5)/年代記・MVP文プール翻訳はP4後半で同機構に乗せる(まず新聞系で機構を確立)
