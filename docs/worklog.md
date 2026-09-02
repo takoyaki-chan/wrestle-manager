@@ -1,5 +1,17 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage A(翻訳可能化工事)完了 — P1〜P3a全工程完走・specs昇格・擬似ロケール実動作確認（2026-09-02・Fable指揮/Sonnet worktree実装×9）
+
+英語対応の**Stage Aが完了**した。2026-09-01のトーンバイブル較正から二日弱で、P1(基盤)→P2(監査)→P3a(抽出工事: バッチ1〜3+4a×3+4b×3+4c+4d+4e)を、worktree実装→Fableレビュー→マージのループで完走。
+
+- **総量**: t()移行 約4,000箇所(ui-render 1,344/ui-common 1,894/app 314/factions 377/観戦79)+index.html data-i18n 84要素・属性8+完全文テンプレ表10+GAMELOG_TEMPLATES 66型+ガード3種(JAゴールデン/ラチェット/擬似ロケール)
+- **品質線**: 全バッチで JAゴールデン完全一致(hash 6b3d05c8…・日本語版は1バイト不変)/npm test 260/260/walkthrough PASS(issues 0)を維持
+- **実動作確認**: ブラウザで wm_lang=pseudo に切替え、タイトル画面・旗揚げ画面の全クローム(ボタン・プレースホルダ・注記)が⟦…⟧化し、ナレーションだけ原文のまま=スキップ判断も設計どおりであることをスクリーンショットで確認
+- **specs昇格**: [specs/i18n-runtime-spec-v1.0.md](specs/i18n-runtime-spec-v1.0.md)新設+INDEX追記(WM_I18N API/構造規約7条/常設ガード)
+- **副産物(実バグ4件)**: スランプ判定三項演算子(5450e3c)/再接触イベント文字化け4文(0650377・vendettaはFable再作文)/表示兼ロジックキー2件と死コード2ブロックの発見(台帳化)/年代記性格フレーバー6種の休眠発見(未修復・下記)
+- **残(Stage A後続の小物)**: 積み残し台帳(p3a-design§バッチ4の積み残し台帳)の構造4件+4c-1追記分/年代記性格フレーバー修復(JA出力が変わるためgolden再採取込み単独fix)/実機確認バックログの消化はKeisukeの都合で
+- **次の判断**: Stage B(翻訳)のゴー。材料は完備——トーンバイブル較正済み+量産体制確定(主筆Opus/Fableレビュー/ネイティブ検品)+台帳側は「英語列を足すだけ」の状態
+
 ## Stage A P3a バッチ4e — 観戦モード(battle-engine/tag-battle)のt()移行+iframe配線(P3a最終区画)（2026-09-02・Sonnet worktree agent-a5b095cbfbcd4c465）
 
 バッチ4a(ui-render.js)〜4d(index.html/factions.js)に続く、観戦モード(シングル戦iframe battle-engine.html / タッグ戦iframe tag-battle.html)のt()移行。両iframeは親(index.html)とは別Documentのため独立したWM_I18Nインスタンスが必要で、これまでi18n.jsを読み込んでいなかった。開始前にworktreeブランチをmain先端(f95f508、バッチ4完走コミット)へfast-forward済み。
