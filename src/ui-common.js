@@ -739,7 +739,7 @@ function showWarChallenge() {
 
   const html =
     `<div class="mdl-a-header danger">
-      <div class="mdl-a-header-title">📜 対 抗 戦 ・ 挑 戦 状</div>
+      <div class="mdl-a-header-title">${WM_I18N.t('📜 対 抗 戦 ・ 挑 戦 状')}</div>
       <div class="mdl-a-header-meta">${seasonMeta}</div>
     </div>
     ${_mdlAReporterStrip(G, `${ev.opponentName}から正式な対抗戦の申し入れが届きました`)}
@@ -754,20 +754,20 @@ function showWarChallenge() {
       <div class="mdl-a-subject-org danger">${ev.opponentName} ・ ACE</div>
       <div class="mdl-a-subject-ovr danger"><span class="label">OVR</span>${aceOvr}</div>
       <div class="mdl-a-subject-divider"></div>
-      <div class="mdl-a-observation"><span class="marker danger">${ev.matchCount}試合の団体対決</span>。敗北はランクにも影響します。</div>
+      <div class="mdl-a-observation"><span class="marker danger">${WM_I18N.t('{n}試合の団体対決', { n: ev.matchCount })}</span>。${WM_I18N.t('敗北はランクにも影響します。')}</div>
     </div>
-    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
-    <div class="mdl-a-prompt">この挑戦、どう受けますか？</div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
+    <div class="mdl-a-prompt">${WM_I18N.t('この挑戦、どう受けますか？')}</div>
     <div class="mdl-a-decision-tray two">
       <div class="mdl-a-decision-card danger-accent" data-war-choice="accept">
-        <div class="mdl-a-decision-letter">⚔ 受けて立つ</div>
-        <div class="mdl-a-decision-label">対抗戦を受諾する</div>
-        <div class="mdl-a-decision-hint">試合カード編成へ進む</div>
+        <div class="mdl-a-decision-letter">${WM_I18N.t('⚔ 受けて立つ')}</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('対抗戦を受諾する')}</div>
+        <div class="mdl-a-decision-hint">${WM_I18N.t('試合カード編成へ進む')}</div>
       </div>
       <div class="mdl-a-decision-card" data-war-choice="decline">
-        <div class="mdl-a-decision-letter">辞退</div>
-        <div class="mdl-a-decision-label">今回は見送る</div>
-        <div class="mdl-a-decision-hint negative">団体評価↓ ／ 関係悪化</div>
+        <div class="mdl-a-decision-letter">${WM_I18N.t('辞退')}</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('今回は見送る')}</div>
+        <div class="mdl-a-decision-hint negative">${WM_I18N.t('団体評価↓ ／ 関係悪化')}</div>
       </div>
     </div>`;
 
@@ -823,7 +823,7 @@ function _warEntrySelectionHtml() {
 
   return `
     <div class="mdl-a-header danger">
-      <div class="mdl-a-header-title">⚔ 対 抗 戦 ・ 代 表 選 出</div>
+      <div class="mdl-a-header-title">${WM_I18N.t('⚔ 対 抗 戦 ・ 代 表 選 出')}</div>
       <div class="mdl-a-header-meta">${required} VS ${required} ・ ${escHtml(_mdlASeasonLabel(G))}</div>
     </div>
     ${_mdlAReporterStrip(G, `${required}名の代表を選んでください。団体の威信を懸けた総力戦です`)}
@@ -831,23 +831,23 @@ function _warEntrySelectionHtml() {
       <div class="mdl-a-opponent-bar">
         <div class="mdl-a-opponent-upper" style="${enemyStyle}"></div>
         <div class="mdl-a-opponent-text">
-          <div class="mdl-a-opponent-label">OPPONENT ・ 対 戦 団 体</div>
-          <div class="mdl-a-opponent-name">${escHtml(ev.opponentName || '他団体')}</div>
-          <div class="mdl-a-opponent-meta">${required}試合の団体対決${enemyAce ? ` ・ ACE ${escHtml(enemyAce.name)}` : ''}</div>
+          <div class="mdl-a-opponent-label">OPPONENT ・ ${WM_I18N.t('対 戦 団 体')}</div>
+          <div class="mdl-a-opponent-name">${escHtml(ev.opponentName || WM_I18N.t('他団体'))}</div>
+          <div class="mdl-a-opponent-meta">${WM_I18N.t('{n}試合の団体対決', { n: required })}${enemyAce ? ` ・ ACE ${escHtml(enemyAce.name)}` : ''}</div>
         </div>
-        <div class="war-entry-versus">${required}<span>対</span>${required}</div>
+        <div class="war-entry-versus">${required}<span>${WM_I18N.t('対')}</span>${required}</div>
       </div>
-      <div class="mdl-a-candidate-title">— CANDIDATES ・ 自団体の代表候補 —</div>
+      <div class="mdl-a-candidate-title">— CANDIDATES ・ ${WM_I18N.t('自団体の代表候補')} —</div>
       <div class="mdl-a-candidate-grid war-entry-candidate-grid">${candidateCards}</div>
     </div>
     <div class="war-entry-summary">
-      <span class="war-entry-summary-label">選択中 ${selected.length}/${required}</span>
-      <span class="war-entry-summary-names">${selectedNames.length ? selectedNames.join(' ／ ') : '代表選手を選んでください'}</span>
+      <span class="war-entry-summary-label">${WM_I18N.t('選択中 {a}/{b}', { a: selected.length, b: required })}</span>
+      <span class="war-entry-summary-names">${selectedNames.length ? selectedNames.join(' ／ ') : WM_I18N.t('代表選手を選んでください')}</span>
     </div>
     <div class="war-entry-footer">
-      <button type="button" class="mdl-a-continue-btn" onclick="App.warReturnToChallenge()">— 戻 る —</button>
-      <button type="button" class="mdl-a-continue-btn" onclick="App.warAutoSelectEntry()">おまかせ選出</button>
-      <button type="button" class="mdl-a-continue-btn is-primary" ${canConfirm ? '' : 'disabled'} onclick="App.warConfirmEntry()">この${required}名で開戦する</button>
+      <button type="button" class="mdl-a-continue-btn" onclick="App.warReturnToChallenge()">${WM_I18N.t('— 戻 る —')}</button>
+      <button type="button" class="mdl-a-continue-btn" onclick="App.warAutoSelectEntry()">${WM_I18N.t('おまかせ選出')}</button>
+      <button type="button" class="mdl-a-continue-btn is-primary" ${canConfirm ? '' : 'disabled'} onclick="App.warConfirmEntry()">${WM_I18N.t('この{n}名で開戦する', { n: required })}</button>
     </div>`;
 }
 
@@ -950,19 +950,19 @@ function renderWarMatchPreview() {
   let nextIdx = -1;
   for (let i = 0; i < total; i++) { if (wp.results[i] === null) { nextIdx = i; break; } }
 
-  const statusText = playerWins > aiWins ? '勝ち越し中' : playerWins === aiWins ? (resolved > 0 ? 'タイ' : '試合開始') : '負け越し中';
+  const statusText = playerWins > aiWins ? WM_I18N.t('勝ち越し中') : playerWins === aiWins ? (resolved > 0 ? WM_I18N.t('タイ') : WM_I18N.t('試合開始')) : WM_I18N.t('負け越し中');
   const statusColor = playerWins > aiWins ? 'var(--c-info)' : playerWins === aiWins ? 'var(--stage-text-sub)' : 'var(--c-negative)';
   const nextMatch = nextIdx >= 0 ? wp.card[nextIdx] : null;
   const nextLabel = nextMatch ? `${nextMatch.playerFighter.name} vs ${nextMatch.aiFighter.name}` : '—';
 
-  const tierLabel = orgCfg.tier === 'S' ? 'Sランク王者' : orgCfg.tier === 'A' ? 'Aランク挑戦者' : 'Bランク';
-  const playerOrgName = G.orgName || 'プレイヤー団体';
+  const tierLabel = orgCfg.tier === 'S' ? WM_I18N.t('Sランク王者') : orgCfg.tier === 'A' ? WM_I18N.t('Aランク挑戦者') : WM_I18N.t('Bランク');
+  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
 
   let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
 
   html += `<div class="pb-banner">
     <div class="pb-live is-war">⚔ WAR</div>
-    <div class="pb-banner-title is-war">対 抗 戦</div>
+    <div class="pb-banner-title is-war">${WM_I18N.t('対 抗 戦')}</div>
     <div class="pb-banner-sub">${escHtml(playerOrgName)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(orgCfg.emoji || '')} ${escHtml(ev.opponentName)}<span class="dot">·</span>${escHtml(tierLabel)}</div>
   </div>`;
 
@@ -1004,7 +1004,7 @@ function renderWarMatchPreview() {
     const isMain = idx === total - 1;
 
     if (isMain && !shownMainLabel) {
-      html += `<div class="pb-divider is-main">⚔ MAIN — 第 ${matchNum} 試合</div>`;
+      html += `<div class="pb-divider is-main">⚔ MAIN — ${WM_I18N.t('第 {n} 試合', { n: matchNum })}</div>`;
       shownMainLabel = true;
     } else if (!isMain && !shownUndercardLabel && shownMainLabel) {
       html += `<div class="pb-divider">UNDERCARD</div>`;
@@ -1049,17 +1049,17 @@ function renderWarMatchPreview() {
       html += leftBlock;
       html += `<div class="pb-result">
         <div class="pb-result-vs">VS</div>
-        <div class="pb-result-winner" style="color:var(--c-rivalry);font-size:18px">第 ${matchNum} 試合</div>
-        <div class="pb-result-finish sub" style="color:var(--stage-text-sub)">次の試合</div>
+        <div class="pb-result-winner" style="color:var(--c-rivalry);font-size:18px">${WM_I18N.t('第 {n} 試合', { n: matchNum })}</div>
+        <div class="pb-result-finish sub" style="color:var(--stage-text-sub)">${WM_I18N.t('次の試合')}</div>
       </div>`;
       html += rightBlock;
       html += `<div class="pb-war-actions">
-        <button type="button" class="pb-war-btn is-watch" onclick="App.warWatchMatch(${idx})">🎬 試合を観る</button>
-        <button type="button" class="pb-war-btn is-skip" onclick="App.warSkipMatch(${idx})">≫ スキップ</button>
+        <button type="button" class="pb-war-btn is-watch" onclick="App.warWatchMatch(${idx})">${WM_I18N.t('🎬 試合を観る')}</button>
+        <button type="button" class="pb-war-btn is-skip" onclick="App.warSkipMatch(${idx})">${WM_I18N.t('≫ スキップ')}</button>
       </div>`;
       html += `</div>`;
     } else if (isPending) {
-      html += `<div class="pb-mrow is-pending"><div class="pb-pending-text">第${matchNum}試合 — ${escHtml(pf.name)} vs ${escHtml(af.name)}</div></div>`;
+      html += `<div class="pb-mrow is-pending"><div class="pb-pending-text">${WM_I18N.t('第{n}試合', { n: matchNum })} — ${escHtml(pf.name)} vs ${escHtml(af.name)}</div></div>`;
     }
   }
   html += `</div>`; // .pb-matches
@@ -1067,7 +1067,7 @@ function renderWarMatchPreview() {
   // Skip all
   const remaining = wp.results.filter(r => r === null).length;
   if (remaining > 1) {
-    html += `<div class="pb-war-skipall"><button type="button" onclick="App.warSkipAll()">残り全試合をスキップ（${remaining}試合）</button></div>`;
+    html += `<div class="pb-war-skipall"><button type="button" onclick="App.warSkipAll()">${WM_I18N.t('残り全試合をスキップ（{n}試合）', { n: remaining })}</button></div>`;
   }
 
   html += `</div>`; // .pb-container
@@ -1114,19 +1114,19 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
 
   // 勝敗ラベル + 色
   let verdictLabel, verdictColor;
-  if (playerWins > aiWins) { verdictLabel = '🏆 勝ち越し'; verdictColor = 'var(--gold)'; }
-  else if (playerWins === aiWins) { verdictLabel = '⚖ 決着つかず'; verdictColor = 'var(--c-warning)'; }
-  else { verdictLabel = '💀 負け越し'; verdictColor = 'var(--c-negative)'; }
+  if (playerWins > aiWins) { verdictLabel = WM_I18N.t('🏆 勝ち越し'); verdictColor = 'var(--gold)'; }
+  else if (playerWins === aiWins) { verdictLabel = WM_I18N.t('⚖ 決着つかず'); verdictColor = 'var(--c-warning)'; }
+  else { verdictLabel = WM_I18N.t('💀 負け越し'); verdictColor = 'var(--c-negative)'; }
 
-  const tierLabel = orgCfg.tier === 'S' ? 'Sランク王者' : orgCfg.tier === 'A' ? 'Aランク挑戦者' : 'Bランク';
-  const playerOrgName = G.orgName || 'プレイヤー団体';
+  const tierLabel = orgCfg.tier === 'S' ? WM_I18N.t('Sランク王者') : orgCfg.tier === 'A' ? WM_I18N.t('Aランク挑戦者') : WM_I18N.t('Bランク');
+  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
 
   let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
 
   // Banner
   html += `<div class="pb-banner">
     <div class="pb-live is-war">⚔ WAR</div>
-    <div class="pb-banner-title is-war">対 抗 戦 結 果</div>
+    <div class="pb-banner-title is-war">${WM_I18N.t('対 抗 戦 結 果')}</div>
     <div class="pb-banner-sub">${escHtml(playerOrgName)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(orgCfg.emoji || '')} ${escHtml(ev.opponentName)}<span class="dot">·</span>${escHtml(tierLabel)}</div>
   </div>`;
 
@@ -1143,7 +1143,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(avgMQ)}</div>
       <div class="pb-score-val" style="margin-top:3px">${avgMQ}</div>
-      <div class="pb-score-lbl">平均評価</div>
+      <div class="pb-score-lbl">${WM_I18N.t('平均評価')}</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" ${heatFooterCls === 'is-hot' ? 'style="color:var(--c-rivalry)"' : heatFooterCls === 'is-cold' ? 'style="color:var(--c-info)"' : 'class="is-neutral"'}>${escHtml(heat.label.toUpperCase())}</div>
@@ -1153,9 +1153,9 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
 
   // Flavor
   if (eventWon) {
-    html += `<div class="pb-war-flavor"><em>${escHtml(tierLabel)}・${escHtml(ev.opponentName)}に勝利！</em>団体の格が上がった。</div>`;
+    html += `<div class="pb-war-flavor"><em>${WM_I18N.t('{tier}・{name}に勝利！', { tier: escHtml(tierLabel), name: escHtml(ev.opponentName) })}</em>${WM_I18N.t('団体の格が上がった。')}</div>`;
   } else if (playerWins < aiWins) {
-    html += `<div class="pb-war-flavor">${escHtml(tierLabel)}・${escHtml(ev.opponentName)}に敗北…悔しさをバネに這い上がれ。</div>`;
+    html += `<div class="pb-war-flavor">${WM_I18N.t('{tier}・{name}に敗北…悔しさをバネに這い上がれ。', { tier: escHtml(tierLabel), name: escHtml(ev.opponentName) })}</div>`;
   }
 
   // Matches: メイン→降順
@@ -1167,7 +1167,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     const matchNum = di + 1;
 
     if (isMain) {
-      html += `<div class="pb-divider is-main">⚔ MAIN — 第 ${matchNum} 試合</div>`;
+      html += `<div class="pb-divider is-main">⚔ MAIN — ${WM_I18N.t('第 {n} 試合', { n: matchNum })}</div>`;
     } else if (di === total - 2) {
       html += `<div class="pb-divider">UNDERCARD</div>`;
     }
@@ -1206,7 +1206,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   // Footer
   html += `<div class="pb-footer">
     <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
-    <button type="button" class="pb-close-btn" onclick="event.stopPropagation();closeWarFinalResult(${eventWon})">閉じる</button>
+    <button type="button" class="pb-close-btn" onclick="event.stopPropagation();closeWarFinalResult(${eventWon})">${WM_I18N.t('閉じる')}</button>
   </div>`;
 
   html += `</div>`; // .pb-container
@@ -1267,7 +1267,7 @@ function _showWarVictoryChain(list, idx, onDone) {
   overlay.innerHTML = `
     <div class="war-victory-modal">
       ${sideHtml}
-      <button class="war-victory-close">次へ</button>
+      <button class="war-victory-close">${WM_I18N.t('次へ')}</button>
     </div>
   `;
   overlay.querySelector('.war-victory-close').addEventListener('click', () => {
@@ -1286,7 +1286,7 @@ function _showWarEnemyAceStatement(onDone) {
   const ctx = _warPostCtx;
   if (!ctx || !ctx.enemyAce) { if (onDone) onDone(); return; }
   const { ev, orgCfg, eventWon, playerWins, aiWins, enemyAce } = ctx;
-  const playerOrgName = G.orgName || 'プレイヤー団体';
+  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
   const dialogue = getWarPostDialogue(enemyAce, playerOrgName, eventWon, playerWins, aiWins);
   const upperUrl = getUpperUrl(enemyAce.id);
   const eColor = orgCfg.color || '#e74c3c';
@@ -1314,7 +1314,7 @@ function _showWarEnemyAceStatement(onDone) {
         ${sideHtml}
       </div>
       <div style="text-align:center;margin-top:16px">
-        <button class="war-victory-close war-ace-close" type="button">次へ</button>
+        <button class="war-victory-close war-ace-close" type="button">${WM_I18N.t('次へ')}</button>
       </div>
     </div>
   `;
@@ -1376,8 +1376,8 @@ function showR3Modal({ fighterId, fighterName, fighterFace, departedName, reason
 
   const isRetired = reason && (reason.includes('引退') || reason === 'retired');
   const departureText = isRetired
-    ? `${departedName} が引退した。`
-    : `${departedName} が去った。`;
+    ? WM_I18N.t('{name} が引退した。', { name: departedName })
+    : WM_I18N.t('{name} が去った。', { name: departedName });
 
   // 2:3の縦枠に正方形の顔アイコンを引き伸ばして入れない(2026-08-13 Keisuke指摘)。
   // 他の画面と同じくアッパー画像(256×384)を使い、取れないときだけ旧fighterFaceへ落とす
@@ -1391,7 +1391,7 @@ function showR3Modal({ fighterId, fighterName, fighterFace, departedName, reason
     })}</div>
     <div class="mdl-d-body">${departureText}</div>
     <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue()">閉じる</button>
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue()">${WM_I18N.t('閉じる')}</button>
     </div>
   `);
 }
@@ -1415,8 +1415,8 @@ function showBigNewsPopup(topStory, variant) {
     <div class="bignews-icon-dropin">📰</div>
     <div class="mdl-d-title" style="text-align:center">${_escapeHtml(lead)}</div>
     <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue();setNewspaperSubPage(1);showScreen('newspaper')">紙面を読む</button>
-      <button class="mdl-d-btn secondary" onclick="_mdlDClose();_drainPopupQueue()">あとで</button>
+      <button class="mdl-d-btn primary" onclick="_mdlDClose();_drainPopupQueue();setNewspaperSubPage(1);showScreen('newspaper')">${WM_I18N.t('紙面を読む')}</button>
+      <button class="mdl-d-btn secondary" onclick="_mdlDClose();_drainPopupQueue()">${WM_I18N.t('あとで')}</button>
     </div>
   `, 'cream bignews');
 }
@@ -1425,11 +1425,11 @@ function showConfirm(msg, yesLabel, onYes) {
   Audio.play('notify');
   window._confirmYes = onYes;
   _mdlDOpen(`
-    <div class="mdl-d-title">確認</div>
+    <div class="mdl-d-title">${WM_I18N.t('確認')}</div>
     <div class="mdl-d-body">${msg}</div>
     <div class="mdl-d-actions">
       <button class="mdl-d-btn primary" onclick="_mdlDClose();if(window._confirmYes)window._confirmYes()">${yesLabel}</button>
-      <button class="mdl-d-btn secondary" onclick="_mdlDClose()">いいえ</button>
+      <button class="mdl-d-btn secondary" onclick="_mdlDClose()">${WM_I18N.t('いいえ')}</button>
     </div>
   `);
 }
@@ -1444,14 +1444,14 @@ function showSaveNameModal(slot) {
   const currentName = (info && info.name) || '';
   window._saveNameModalSlot = slot;
   _mdlDOpen(`
-    <div class="mdl-d-title">セーブ名を変更</div>
-    <div class="mdl-d-body">スロット${slot}の表示名を設定します。空欄のまま決定すると名前を解除します。</div>
+    <div class="mdl-d-title">${WM_I18N.t('セーブ名を変更')}</div>
+    <div class="mdl-d-body">${WM_I18N.t('スロット{slot}の表示名を設定します。空欄のまま決定すると名前を解除します。', { slot })}</div>
     <input id="mdlSaveNameInput" class="mdl-d-input" type="text" maxlength="${SAVE_NAME_MAX_LEN * 2}"
-      value="${_escapeHtml(currentName)}" placeholder="例: メインセーブ（${SAVE_NAME_MAX_LEN}文字まで）"
+      value="${_escapeHtml(currentName)}" placeholder="${WM_I18N.t('例: メインセーブ（{n}文字まで）', { n: SAVE_NAME_MAX_LEN })}"
       onkeydown="if(event.key==='Enter'){event.preventDefault();_confirmSaveNameModal();}">
     <div class="mdl-d-actions">
-      <button class="mdl-d-btn primary" onclick="_confirmSaveNameModal()">決定</button>
-      <button class="mdl-d-btn secondary" onclick="_mdlDClose()">キャンセル</button>
+      <button class="mdl-d-btn primary" onclick="_confirmSaveNameModal()">${WM_I18N.t('決定')}</button>
+      <button class="mdl-d-btn secondary" onclick="_mdlDClose()">${WM_I18N.t('キャンセル')}</button>
     </div>
   `);
   setTimeout(() => {
@@ -1473,20 +1473,20 @@ function showRosterOverflowSigningModal(pending) {
   if (!pending) return;
   const fighter = pending.fighter || {};
   const releaseCandidates = (G.roster || []).filter(c => !c.isRental && !c.lastRun);
-  const sourceLabel = pending.source === 'negotiation' ? '交渉成立選手' : '加入予定選手';
+  const sourceLabel = pending.source === 'negotiation' ? WM_I18N.t('交渉成立選手') : WM_I18N.t('加入予定選手');
 
   const fighterBlock = `
     <div style="background:rgba(255,255,255,0.5);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 14px;margin:10px auto 12px;max-width:460px;text-align:center">
       <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:4px">${sourceLabel}</div>
-      <div style="font-size:16px;font-weight:700;color:var(--cream-text-main);margin-bottom:4px">${fighter.name || '選手'}</div>
-      <div style="font-size:12px;color:var(--cream-text-sub)">OVR ${Engine.util.ov(fighter || {})} ・ ${fighter.age || '?'}歳 ・ 契約金 ${pending.cost || 0}万</div>
+      <div style="font-size:16px;font-weight:700;color:var(--cream-text-main);margin-bottom:4px">${fighter.name || WM_I18N.t('選手')}</div>
+      <div style="font-size:12px;color:var(--cream-text-sub)">OVR ${Engine.util.ov(fighter || {})} ・ ${fighter.age || '?'}歳 ・ ${WM_I18N.t('契約金')} ${pending.cost || 0}万</div>
     </div>`;
 
   let candidatesHtml = '';
   if (releaseCandidates.length === 0) {
-    candidatesHtml = `<div class="mdl-a-observation centered" style="color:var(--accent-negative);font-size:13px">解雇できる所属選手がいません。</div>`;
+    candidatesHtml = `<div class="mdl-a-observation centered" style="color:var(--accent-negative);font-size:13px">${WM_I18N.t('解雇できる所属選手がいません。')}</div>`;
   } else {
-    candidatesHtml += `<div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin:12px 0 8px">RELEASE ・ 解 雇 す る 選 手</div>`;
+    candidatesHtml += `<div style="font-family:var(--font-label);font-size:11px;color:var(--cream-gold);letter-spacing:2px;text-align:center;margin:12px 0 8px">RELEASE ・ ${WM_I18N.t('解 雇 す る 選 手')}</div>`;
     candidatesHtml += `<div style="display:grid;gap:6px;max-height:280px;overflow-y:auto;padding:0 8px">`;
     releaseCandidates.forEach(c => {
       candidatesHtml += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15)">
@@ -1494,7 +1494,7 @@ function showRosterOverflowSigningModal(pending) {
           <div style="font-size:13px;font-weight:700;color:var(--cream-text-main)">${c.name}</div>
           <div style="font-size:11px;color:var(--cream-text-sub)">OVR ${ov(c)} ・ ${c.age || '?'}歳</div>
         </div>
-        <button class="mdl-a-continue-btn" style="padding:6px 12px;font-size:11px;letter-spacing:2px;background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)" onclick="confirmRosterOverflowSigning(${c.id})">解雇して契約</button>
+        <button class="mdl-a-continue-btn" style="padding:6px 12px;font-size:11px;letter-spacing:2px;background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)" onclick="confirmRosterOverflowSigning(${c.id})">${WM_I18N.t('解雇して契約')}</button>
       </div>`;
     });
     candidatesHtml += `</div>`;
@@ -1502,19 +1502,19 @@ function showRosterOverflowSigningModal(pending) {
 
   const stageBody = `
     <div class="mdl-a-observation centered" style="font-size:14px;line-height:1.9;max-width:460px">
-      新契約を結ぶと、<span class="marker">ロスター定員を超過</span>します。<br>
-      既存選手の１名と契約を解除する必要があります。
+      ${WM_I18N.t('新契約を結ぶと、')}<span class="marker">${WM_I18N.t('ロスター定員を超過')}</span>${WM_I18N.t('します。')}<br>
+      ${WM_I18N.t('既存選手の１名と契約を解除する必要があります。')}
     </div>
     ${fighterBlock}
     ${candidatesHtml}
   `;
 
   const html = `
-    ${_mdlAHeader('⚠ ロスター超過のお知らせ', `URGENT ・ ${_mdlASeasonLabel(G)}`, { urgent: true })}
+    ${_mdlAHeader(WM_I18N.t('⚠ ロスター超過のお知らせ'), `URGENT ・ ${_mdlASeasonLabel(G)}`, { urgent: true })}
     ${_mdlAReporterStrip(G, '社長、判断をお願いします')}
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-bottom:22px">
-      <button class="mdl-a-continue-btn" onclick="cancelRosterOverflowSigning()">— 契約を見送る —</button>
+      <button class="mdl-a-continue-btn" onclick="cancelRosterOverflowSigning()">${WM_I18N.t('— 契約を見送る —')}</button>
     </div>
   `;
 
@@ -1551,7 +1551,7 @@ function showNegotiatePopup(orgId, fighterId) {
         size: 's',
         imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '',
       })}</div>
-      <div style="margin-top:12px">${fighter.name}は今の団体に強い忠誠を抱いており、交渉に応じません。</div>`,
+      <div style="margin-top:12px">${WM_I18N.t('{name}は今の団体に強い忠誠を抱いており、交渉に応じません。', { name: fighter.name })}</div>`,
       'OK', () => {}
     );
     return;
@@ -1559,11 +1559,11 @@ function showNegotiatePopup(orgId, fighterId) {
 
   // Check constraints
   if (G.pendingNegotiation) {
-    showConfirm('現在交渉中の案件があります。同時に交渉できるのは1件までです。', 'OK', () => {});
+    showConfirm(WM_I18N.t('現在交渉中の案件があります。同時に交渉できるのは1件までです。'), 'OK', () => {});
     return;
   }
   if ((G.negotiatedThisSeason || []).includes(fighterId)) {
-    showConfirm('この選手とは今シーズン既に交渉済みです。', 'OK', () => {});
+    showConfirm(WM_I18N.t('この選手とは今シーズン既に交渉済みです。'), 'OK', () => {});
     return;
   }
 
@@ -1581,7 +1581,7 @@ function showNegotiatePopup(orgId, fighterId) {
   let html = '';
   // Header
   html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:16px 20px 12px;background:linear-gradient(180deg,${rc}20,transparent);border-radius:12px 12px 0 0">`;
-  html += `<div style="font-size:13px;letter-spacing:2px;color:${rc};font-weight:700">🤝 引き抜き交渉</div>`;
+  html += `<div style="font-size:13px;letter-spacing:2px;color:${rc};font-weight:700">${WM_I18N.t('🤝 引き抜き交渉')}</div>`;
   html += `<div style="font-size:11px;color:var(--text-sub);margin-top:4px">${orgCfg.emoji} ${orgCfg.name}（${orgCfg.tier}級）</div>`;
   html += `</div>`;
 
@@ -1600,11 +1600,11 @@ function showNegotiatePopup(orgId, fighterId) {
   })}</div>`;
 
   // 3 Plans
-  const planLabels = ['🅰 堅実', '🅱 勝負', '🅲 本気'];
-  const planDescs = ['リスク低め', 'バランス型', 'ハイリターン'];
+  const planLabels = [WM_I18N.t('🅰 堅実'), WM_I18N.t('🅱 勝負'), WM_I18N.t('🅲 本気')];
+  const planDescs = [WM_I18N.t('リスク低め'), WM_I18N.t('バランス型'), WM_I18N.t('ハイリターン')];
   const cfg = NEGOTIATION_CONFIG;
   html += `<div style="margin:0 8px 16px">`;
-  html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">交渉プランを選択:</div>`;
+  html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px">${WM_I18N.t('交渉プランを選択:')}</div>`;
   for (let i = 0; i < 3; i++) {
     const cost = Math.round(baseFee * cfg.baseFeeMultipliers[i]);
     const failCost = Math.round(cost * cfg.failureCostRatio);
@@ -1615,19 +1615,19 @@ function showNegotiatePopup(orgId, fighterId) {
     html += `<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;margin-bottom:6px;background:var(--bg-card);${borderStyle};border-radius:6px;opacity:${opacity}">`;
     html += `<div><div style="font-size:13px;font-weight:700;color:${canAfford ? rc : 'var(--text-dim)'}">${planLabels[i]} <span style="font-size:11px;font-weight:400;color:var(--text-sub)">${planDescs[i]}</span></div>`;
     const rateLabel = Engine.negotiate.getRateLabel(rate);
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">費用: ${cost}万 ｜ 失敗時損失: ${failCost}万 ｜ 見通し: <span style="color:${rateLabel.color};font-weight:600">${rateLabel.text}</span></div></div>`;
-    html += `<button class="btn" style="font-size:12px;padding:6px 14px;background:${canAfford ? rc+'20' : 'var(--bg-mid)'};color:${canAfford ? rc : '#666'};border:1px solid ${canAfford ? rc+'40' : '#444'}" ${canAfford ? `onclick="confirmNegotiation('${orgId}',${fighterId},${i})"` : 'disabled'}>選択</button>`;
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-top:2px">${WM_I18N.t('費用')}: ${cost}万 ｜ ${WM_I18N.t('失敗時損失')}: ${failCost}万 ｜ ${WM_I18N.t('見通し')}: <span style="color:${rateLabel.color};font-weight:600">${rateLabel.text}</span></div></div>`;
+    html += `<button class="btn" style="font-size:12px;padding:6px 14px;background:${canAfford ? rc+'20' : 'var(--bg-mid)'};color:${canAfford ? rc : '#666'};border:1px solid ${canAfford ? rc+'40' : '#444'}" ${canAfford ? `onclick="confirmNegotiation('${orgId}',${fighterId},${i})"` : 'disabled'}>${WM_I18N.t('選択')}</button>`;
     html += `</div>`;
   }
   html += `</div>`;
 
   // Pending negotiation info
   if (G.pendingNegotiation) {
-    html += `<div style="font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:8px">⚠ 交渉中: ${G.pendingNegotiation.fighterName}（残り${G.pendingNegotiation.resolveWeek - G.week}週）</div>`;
+    html += `<div style="font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:8px">⚠ ${WM_I18N.t('交渉中')}: ${G.pendingNegotiation.fighterName}（${WM_I18N.t('残り{n}週', { n: G.pendingNegotiation.resolveWeek - G.week })}）</div>`;
   }
 
   // Close button
-  html += `<div style="text-align:center"><button class="btn" style="padding:8px 20px;font-size:12px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('showResultOverlay').classList.remove('active')">戻る</button></div>`;
+  html += `<div style="text-align:center"><button class="btn" style="padding:8px 20px;font-size:12px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('showResultOverlay').classList.remove('active')">${WM_I18N.t('戻る')}</button></div>`;
 
   box.innerHTML = html;
   overlay.classList.add('active');
@@ -1644,18 +1644,18 @@ function confirmNegotiation(orgId, fighterId, planIndex) {
   const faDiscountBuff = (G.milestoneBuffs || []).find(b => b.type === 'fa_discount');
   if (faDiscountBuff) baseFee = Math.round(baseFee * (1 - faDiscountBuff.percent / 100));
   const cost = Math.round(baseFee * NEGOTIATION_CONFIG.baseFeeMultipliers[planIndex]);
-  const planLabels = ['🅰 堅実', '🅱 勝負', '🅲 本気'];
+  const planLabels = [WM_I18N.t('🅰 堅実'), WM_I18N.t('🅱 勝負'), WM_I18N.t('🅲 本気')];
 
   const confirmRate = Engine.negotiate.calcSuccessRate(G, fighter, orgCfg, planIndex);
   const confirmRateLabel = Engine.negotiate.getRateLabel(confirmRate);
   document.getElementById('showResultOverlay').classList.remove('active');
   showConfirm(
-    `<div style="text-align:center"><strong>${fighter.name}</strong>への引き抜き交渉を開始します。<br><br>` +
-    `プラン: ${planLabels[planIndex]}（費用: ${cost}万）<br>` +
-    `見通し: <strong style="color:${confirmRateLabel.color}">${confirmRateLabel.text}</strong><br>` +
-    `交渉期間: 4週間（キャンセル不可）<br><br>` +
-    `よろしいですか？</div>`,
-    '交渉開始',
+    `<div style="text-align:center"><strong>${fighter.name}</strong>${WM_I18N.t('への引き抜き交渉を開始します。')}<br><br>` +
+    `${WM_I18N.t('プラン')}: ${planLabels[planIndex]}（${WM_I18N.t('費用')}: ${cost}万）<br>` +
+    `${WM_I18N.t('見通し')}: <strong style="color:${confirmRateLabel.color}">${confirmRateLabel.text}</strong><br>` +
+    `${WM_I18N.t('交渉期間: 4週間（キャンセル不可）')}<br><br>` +
+    `${WM_I18N.t('よろしいですか？')}</div>`,
+    WM_I18N.t('交渉開始'),
     () => {
       Audio.play('offer');
       // v1.5s25b: fa_discount 消費（1回限り）
@@ -1683,7 +1683,7 @@ function showNegotiationResult() {
   const phase = nr.success ? 'success' : 'fail';
   const dialogue = Engine.negotiate.getDialogue(fighter, phase);
   const color = nr.success ? 'var(--gold)' : 'var(--red)';
-  const title = nr.success ? '🎉 交渉成功！' : '😞 交渉失敗…';
+  const title = nr.success ? WM_I18N.t('🎉 交渉成功！') : WM_I18N.t('😞 交渉失敗…');
 
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
@@ -1696,11 +1696,11 @@ function showNegotiationResult() {
     line: dialogue,
     size: 's',
     imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : getPortraitUrl(fighter.id),
-    role: nr.success ? '交渉成立' : '交渉不成立',
+    role: nr.success ? WM_I18N.t('交渉成立') : WM_I18N.t('交渉不成立'),
   })}</div>`;
 
   if (nr.success) {
-    html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:12px">${fighter.name}がロスターに加わりました！</div>`;
+    html += `<div style="text-align:center;font-size:13px;color:var(--text-sub);margin-bottom:12px">${WM_I18N.t('{name}がロスターに加わりました！', { name: fighter.name })}</div>`;
   }
 
   html += `<div style="text-align:center"><button class="btn btn-gold" style="min-width:140px;padding:10px 24px" onclick="document.getElementById('showResultOverlay').classList.remove('active');G.negotiationResult=null;Storage.autoSave();refreshAll()">OK</button></div>`;
@@ -1731,7 +1731,7 @@ function showSigningCeremony(charId) {
 
   // Header
   html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:16px 20px 12px;background:linear-gradient(180deg,${color}20,transparent);border-radius:12px 12px 0 0">`;
-  html += `<div style="font-size:13px;letter-spacing:2px;color:${color};font-weight:700">✍ 契約セレモニー ${getJoinSourceBadge('fa')}</div>`;
+  html += `<div style="font-size:13px;letter-spacing:2px;color:${color};font-weight:700">${WM_I18N.t('✍ 契約セレモニー')} ${getJoinSourceBadge('fa')}</div>`;
   html += `</div>`;
 
   const fUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : getPortraitUrl(fighter.id);
@@ -1748,18 +1748,18 @@ function showSigningCeremony(charId) {
   // Contract details
   html += `<div style="margin:0 8px 12px;padding:12px;background:var(--bg-card);border:1px solid rgba(212,168,67,0.2);border-radius:8px">`;
   html += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px">`;
-  html += `<span style="color:var(--text-sub)">契約金</span>`;
+  html += `<span style="color:var(--text-sub)">${WM_I18N.t('契約金')}</span>`;
   html += `<span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${Math.round(signingCost).toLocaleString()}万</span>`;
   html += `</div>`;
   html += `<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--text-dim)">`;
-  html += `<span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>`;
-  html += `<span>給与: ${salary}万/週</span>`;
+  html += `<span>${WM_I18N.t('ランク')}: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>`;
+  html += `<span>${WM_I18N.t('給与')}: ${salary}万/週</span>`;
   html += `</div></div>`;
 
   // Buttons
   html += `<div style="display:flex;gap:10px;justify-content:center;margin-top:8px">`;
-  html += `<button class="btn btn-gold" style="min-width:120px;padding:10px 24px" onclick="confirmSigning(${charId})">✍ 契約する</button>`;
-  html += `<button class="btn" style="min-width:100px;padding:10px 20px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('showResultOverlay').classList.remove('active')">やめる</button>`;
+  html += `<button class="btn btn-gold" style="min-width:120px;padding:10px 24px" onclick="confirmSigning(${charId})">${WM_I18N.t('✍ 契約する')}</button>`;
+  html += `<button class="btn" style="min-width:100px;padding:10px 20px;background:var(--bg-mid);color:var(--text-sub)" onclick="document.getElementById('showResultOverlay').classList.remove('active')">${WM_I18N.t('やめる')}</button>`;
   html += `</div>`;
 
   box.innerHTML = html;
@@ -1789,7 +1789,7 @@ function confirmSigning(charId) {
     type: 'fighter', id: fighterId, name,
     tone: 'positive',
     speech: welcomeQuote,
-    detail: `${name}がロスターに加わりました！`
+    detail: WM_I18N.t('{name}がロスターに加わりました！', { name })
   });
 }
 
@@ -1835,13 +1835,13 @@ function showCoachTooltip(coachId) {
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
         <span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
         ${(c.abilities||[]).map(a => `<span class="coach-trait">${a}</span>`).join(' ')}
-        ${isHired ? '<span style="font-size:12px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 6px;border-radius:3px">雇用中</span>' : ''}
+        ${isHired ? `<span style="font-size:12px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 6px;border-radius:3px">${WM_I18N.t('雇用中')}</span>` : ''}
       </div>
       <div style="font-size:13px;color:var(--text);line-height:1.8">
         <div style="display:flex;gap:12px;flex-wrap:wrap">
-          <span style="color:var(--text-sub)">成長倍率 <strong style="color:var(--gold)">×${gMult}</strong></span>
-          <span style="color:var(--text-sub)">観察眼 <strong style="color:${color}">${c.observation}</strong></span>
-          <span style="color:var(--text-sub)">得意 <span class="badge badge-${c.style}" style="font-size:12px;padding:1px 6px">${c.style}</span></span>
+          <span style="color:var(--text-sub)">${WM_I18N.t('成長倍率')} <strong style="color:var(--gold)">×${gMult}</strong></span>
+          <span style="color:var(--text-sub)">${WM_I18N.t('観察眼')} <strong style="color:${color}">${c.observation}</strong></span>
+          <span style="color:var(--text-sub)">${WM_I18N.t('得意')} <span class="badge badge-${c.style}" style="font-size:12px;padding:1px 6px">${c.style}</span></span>
         </div>
       </div>
     </div>`;
@@ -1853,7 +1853,7 @@ function showCoachTooltip(coachId) {
 
   // Abilities
   html += `<div class="coach-tooltip-section">
-    <div class="coach-tooltip-label">特殊能力</div>
+    <div class="coach-tooltip-label">${WM_I18N.t('特殊能力')}</div>
     <div style="font-size:13px;color:var(--text);line-height:1.6">${(c.abilities||[]).map(a => {
       const cat = COACH_ABILITY_CATALOG[a];
       return cat ? `<div><strong>${a}</strong> <span style="font-size:11px;color:var(--text-sub)">(${cat.grade}級)</span> — ${cat.desc}</div>` : `<div>${a}</div>`;
@@ -1862,18 +1862,18 @@ function showCoachTooltip(coachId) {
 
   // Cost
   html += `<div class="coach-tooltip-section">
-    <div class="coach-tooltip-label">コスト</div>
+    <div class="coach-tooltip-label">${WM_I18N.t('コスト')}</div>
     <div style="display:flex;gap:16px;font-size:12px">
-      <span style="color:var(--text-sub)">雇用費: <strong style="color:var(--text)">${c.hireFee}万</strong></span>
-      <span style="color:var(--text-sub)">給与: <strong style="color:var(--text)">${c.salary}万/週</strong></span>
-      <span style="color:var(--text-sub)">担当上限: <strong style="color:var(--text)">${COACH_MAX_ASSIGN}名</strong></span>
+      <span style="color:var(--text-sub)">${WM_I18N.t('雇用費')}: <strong style="color:var(--text)">${c.hireFee}万</strong></span>
+      <span style="color:var(--text-sub)">${WM_I18N.t('給与')}: <strong style="color:var(--text)">${c.salary}万/週</strong></span>
+      <span style="color:var(--text-sub)">${WM_I18N.t('担当上限')}: <strong style="color:var(--text)">${COACH_MAX_ASSIGN}名</strong></span>
     </div>
   </div>`;
 
   // Assigned fighters
   if (isHired) {
     html += `<div class="coach-tooltip-section">
-      <div class="coach-tooltip-label">担当選手 (${assigned.length}/${COACH_MAX_ASSIGN})</div>`;
+      <div class="coach-tooltip-label">${WM_I18N.t('担当選手 ({a}/{b})', { a: assigned.length, b: COACH_MAX_ASSIGN })}</div>`;
     if (assignedChars.length > 0) {
       html += '<div style="display:flex;flex-wrap:wrap;gap:4px">';
       assignedChars.forEach(ch => {
@@ -1883,7 +1883,7 @@ function showCoachTooltip(coachId) {
       });
       html += '</div>';
     } else {
-      html += '<div style="font-size:12px;color:var(--text-dim)">担当選手なし（団体画面でアサインできます）</div>';
+      html += `<div style="font-size:12px;color:var(--text-dim)">${WM_I18N.t('担当選手なし（団体画面でアサインできます）')}</div>`;
     }
     html += '</div>';
   }
@@ -1891,7 +1891,7 @@ function showCoachTooltip(coachId) {
   // Profile
   if (c.profile) {
     html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(200,190,170,0.08);padding-top:12px">
-      <div class="coach-tooltip-label">プロフィール</div>
+      <div class="coach-tooltip-label">${WM_I18N.t('プロフィール')}</div>
       <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">
         ${c.age ? c.age + '歳' : ''} ${c.gender ? '｜ ' + c.gender + '性' : ''} ${c.origin ? '｜ ' + c.origin + '出身' : ''}
       </div>
@@ -1899,7 +1899,7 @@ function showCoachTooltip(coachId) {
     </div>`;
   } else if (c.desc) {
     html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(200,190,170,0.08);padding-top:12px">
-      <div class="coach-tooltip-label">紹介</div>
+      <div class="coach-tooltip-label">${WM_I18N.t('紹介')}</div>
       <div style="font-size:12px;color:var(--text);line-height:1.7">${c.desc}</div>
     </div>`;
   }
@@ -2013,7 +2013,7 @@ function _flagBuildPopupOpts(modal) {
     name: (speaker && speaker.name) || (target && target.name) || '',
     tone: meta.tone || '',
     speech: message || '…',
-    detail: meta.title,
+    detail: WM_I18N.t(meta.title),
   };
 }
 
@@ -2043,7 +2043,7 @@ function _flagBuildM12(modal, meta) {
     name: (returner && returner.name) || '',
     tone: '',
     speech: _flagFormatLine(rLine, returner) || '…',
-    detail: `${meta.title}<br><div style="margin-top:8px;font-size:12px;text-align:left;line-height:1.6">${reactionLines.join('<br>')}</div>`,
+    detail: `${WM_I18N.t(meta.title)}<br><div style="margin-top:8px;font-size:12px;text-align:left;line-height:1.6">${reactionLines.join('<br>')}</div>`,
   };
 }
 
@@ -2067,7 +2067,7 @@ function _flagBuildM13(modal, meta) {
     name: (master && master.name) || '',
     tone: meta.tone,
     speech: _flagFormatLine(mLine, master, disciple) || '…',
-    detail: `${meta.title}<br><div style="margin-top:6px;font-size:12px;font-style:italic">${(disciple && disciple.name) || '弟子'}: ${_flagFormatLine(dLine, disciple, master)}</div>`,
+    detail: `${WM_I18N.t(meta.title)}<br><div style="margin-top:6px;font-size:12px;font-style:italic">${(disciple && disciple.name) || WM_I18N.t('弟子')}: ${_flagFormatLine(dLine, disciple, master)}</div>`,
   };
 }
 
@@ -2138,10 +2138,10 @@ function _showEventPopupAsChoice(opts) {
     }).join('');
 
     const html = `
-      ${_mdlAHeader(opts.title || '💬 選手からの申し入れ', _mdlASeasonLabel(G))}
+      ${_mdlAHeader(opts.title || WM_I18N.t('💬 選手からの申し入れ'), _mdlASeasonLabel(G))}
       ${_mdlAReporterStrip(G, opts.reporterLine || '本人が直接お話ししたいそうです')}
       ${subjectHtml}
-      <div class="mdl-a-prompt">${opts.prompt || 'この申し入れ、どう受けますか？'}</div>
+      <div class="mdl-a-prompt">${opts.prompt || WM_I18N.t('この申し入れ、どう受けますか？')}</div>
       <div class="${trayCls}">${trayCards}</div>
     `;
 
@@ -2182,7 +2182,7 @@ function _renderEventPopupAsC3() {
       : (typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(o.id) : '');
     characterHtml = `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
       name: o.name || '', line: o.speech || '', reserveBubble: !!o.speech,
-      role: 'コーチ', size: 'm', imgUrl: coachUrl,
+      role: WM_I18N.t('コーチ'), size: 'm', imgUrl: coachUrl,
     })}</div>`;
   }
 
@@ -2202,7 +2202,7 @@ function _renderEventPopupAsC3() {
       ${actionHtml}
     </div>
     <div class="mdl-c-footer" style="justify-content:center">
-      <button class="mdl-c-footer-btn" onclick="closeEventPopup()">${o.action ? '閉じる' : 'OK'}</button>
+      <button class="mdl-c-footer-btn" onclick="closeEventPopup()">${o.action ? WM_I18N.t('閉じる') : 'OK'}</button>
     </div>
   `;
 
@@ -2322,11 +2322,11 @@ function _renderRetirementPopup() {
   // **引退であって死ではない**ので、命に関わる書き方はしない(spec v0.2 §3-C)
   const fk = (r.farewellKind && typeof FAREWELL_KIND_TEXT !== 'undefined')
     ? FAREWELL_KIND_TEXT[r.farewellKind] : null;
-  const title = fk ? fk.title : (isInjury ? '無 念 の 引 退' : '旅 　 立 ち');
+  const title = fk ? fk.title : (isInjury ? WM_I18N.t('無 念 の 引 退') : WM_I18N.t('旅 　 立 ち'));
   // 型の見出しには「引退」の語が入らないので、**副題で必ず引退だと分かるようにする**
-  const sub = fk ? '現 役 引 退 ・ FAREWELL'
+  const sub = fk ? WM_I18N.t('現 役 引 退 ・ FAREWELL')
     : (isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`);
-  const meta = `年齢 ${f.age || '—'} ・ 現役期間 ${careerYears}年間`;
+  const meta = `${WM_I18N.t('年齢')} ${f.age || '—'} ・ ${WM_I18N.t('現役期間')} ${careerYears}年間`;
 
   // 引退選手のキャリアハイライトをB型ステージ下に挟む
   // 型ごとの地の文。セリフではないので白い吹き出しには入れない(ベースライン §3)
@@ -2338,7 +2338,7 @@ function _renderRetirementPopup() {
     : '';
   const careerHtml = summary.length > 0
     ? `<div style="max-width:560px;margin:0 auto 18px;background:rgba(20,18,15,0.55);border:1px solid rgba(200,180,150,0.12);border-radius:6px;padding:12px 16px">
-         <div style="font-family:var(--font-label);font-size:10px;color:rgba(200,180,150,0.7);letter-spacing:2px;text-align:center;margin-bottom:8px">━━ ${careerYears}年間の軌跡 ━━</div>
+         <div style="font-family:var(--font-label);font-size:10px;color:rgba(200,180,150,0.7);letter-spacing:2px;text-align:center;margin-bottom:8px">${WM_I18N.t('━━ {n}年間の軌跡 ━━', { n: careerYears })}</div>
          ${summary.map(item => `<div style="font-size:13px;color:rgba(232,220,200,0.88);line-height:1.7;display:flex;gap:8px;align-items:baseline">
            <span style="font-size:14px">${item.icon}</span><span>${item.text}</span>
          </div>`).join('')}
@@ -2347,25 +2347,25 @@ function _renderRetirementPopup() {
 
   const statsRow = `
     <div class="mdl-b-stats-row">
-      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">戦績</div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">${WM_I18N.t('戦績')}</div>
         <div class="mdl-b-stat-value small" style="font-size:16px">${wins}勝 ${losses}敗</div></div>
-      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">現役期間</div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">${WM_I18N.t('現役期間')}</div>
         <div class="mdl-b-stat-value">${careerYears}<span style="font-size:14px">年間</span></div></div>
-      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">自己最高OVR</div>
+      <div class="mdl-b-stat-box"><div class="mdl-b-stat-label">${WM_I18N.t('自己最高OVR')}</div>
         <div class="mdl-b-stat-value">${f.peakOVR || (typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : '—')}</div></div>
     </div>`;
 
   const notes = [
     isInjury && r.injuryType ? `🏥 ${injuryLabel(r.injuryType)}` : '',
-    r.wasChampion ? '🏆 王座返上' : ''
+    r.wasChampion ? WM_I18N.t('🏆 王座返上') : ''
   ].filter(Boolean).join('　');
   const noteHtml = notes ? `<div style="text-align:center;color:rgba(200,180,150,0.85);font-size:13px;margin-bottom:10px">${notes}</div>` : '';
 
-  const btnLabel = isInjury ? '— …… —' : '— 見 送 る —';
+  const btnLabel = isInjury ? '— …… —' : WM_I18N.t('— 見 送 る —');
   const canRetain = r.canRetain && !isInjury;
   const retainCount = f.retainCount || 0;
   const retainBtn = canRetain
-    ? { label: `🤝 引き留める（あと${2 - retainCount}回）`, id: 'mdlBRetainBtn' }
+    ? { label: WM_I18N.t('🤝 引き留める（あと{n}回）', { n: 2 - retainCount }), id: 'mdlBRetainBtn' }
     : null;
   const buttons = [{ label: btnLabel, primary: true, id: 'mdlBRetireClose' }];
   if (retainBtn) buttons.push(retainBtn);
@@ -2464,7 +2464,7 @@ function _showChampionWorryBubble(fighter, line, onClose) {
 
 // ── 引退勧告結果ポップアップ ────────────────
 function showRetireAdviseResultPopup(accepted, fighter, line) {
-  const title = accepted ? '引 退 受 諾' : '引 退 拒 否';
+  const title = accepted ? WM_I18N.t('引 退 受 諾') : WM_I18N.t('引 退 拒 否');
   const titleCls = accepted ? 'dissolve' : 'rival';
   const sub = accepted
     ? 'LAST RUN BEGINS'
@@ -2473,14 +2473,14 @@ function showRetireAdviseResultPopup(accepted, fighter, line) {
   const speechVariant = accepted ? 'soft' : 'rival';
 
   const subText = accepted
-    ? `ラストラン状態に入りました。次の興行で引退試合を組みましょう。`
-    : (fighter.proveMode > 0 ? '🔥 見返しモード（4週間 評価+2）発動！' : 'ロッカールームに影響が出ました。');
+    ? WM_I18N.t('ラストラン状態に入りました。次の興行で引退試合を組みましょう。')
+    : (fighter.proveMode > 0 ? WM_I18N.t('🔥 見返しモード（4週間 評価+2）発動！') : WM_I18N.t('ロッカールームに影響が出ました。'));
 
   const html = `
     ${_mdlBTitleBand(title, titleCls, sub)}
     ${_mdlBSoloStage(fighter, { speaker: fighter.name, text: line, variant: speechVariant, size: 'large' }, { sepia: accepted })}
     <div class="mdl-b-atmosphere" style="margin-bottom:14px">${subText}</div>
-    ${_mdlBActions([{ label: '— 閉 じ る —', primary: true, id: 'mdlBRetireAdviseClose' }])}
+    ${_mdlBActions([{ label: WM_I18N.t('— 閉 じ る —'), primary: true, id: 'mdlBRetireAdviseClose' }])}
   `;
 
   _mdlBOpen(html, variant);
@@ -2555,14 +2555,14 @@ function _renderRivalryPopup() {
     if (o.isBitter) {
       const leftLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.leftSide || 'behind'], leftFighter);
       const rightLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.rightSide || 'behind'], rightFighter);
-      title = '遺 恨 再 燃';
+      title = WM_I18N.t('遺 恨 再 燃');
       sub = 'GRUDGE REKINDLED';
       toneCls = 'tone-bitter';
       leftHtml = _rivalryCol(o.leftId, o.leftName, leftLine, true, { hideBadge: true });
       rightHtml = _rivalryCol(o.rightId, o.rightName, rightLine, false, { hideBadge: true });
       vsIcon = '💀';
-      vsLabel = '再 燃';
-      resultHtml = `<div class="vd-tag">💀 消えなかったものが、また火を持った</div>`;
+      vsLabel = WM_I18N.t('再 燃');
+      resultHtml = `<div class="vd-tag">${WM_I18N.t('💀 消えなかったものが、また火を持った')}</div>`;
       audioKey = 'fate_confrontation';
     } else if (rivalryVal >= 90) {
       attackerPool = RIVALRY_CONFRONTATION_LINES_90.attacker;
@@ -2580,14 +2580,14 @@ function _renderRivalryPopup() {
     if (!o.isBitter) {
       const leftLine = pickDialogueLine(attackerPool, leftFighter);
       const rightLine = pickDialogueLine(defenderPool, rightFighter);
-      title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決';
+      title = rivalryVal >= 70 ? WM_I18N.t('因 縁 勃 発') : WM_I18N.t('宿 敵 対 決');
       sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
       toneCls = 'tone-confront';
       leftHtml = _rivalryCol(o.leftId, o.leftName, leftLine, true, { hideBadge: true });
       rightHtml = _rivalryCol(o.rightId, o.rightName, rightLine, false, { hideBadge: true });
       vsIcon = '⚡';
-      vsLabel = '勃 発';
-      resultHtml = `<div class="vd-tag">⚡ ふたりの間に火花が散った</div>`;
+      vsLabel = WM_I18N.t('勃 発');
+      resultHtml = `<div class="vd-tag">${WM_I18N.t('⚡ ふたりの間に火花が散った')}</div>`;
       audioKey = o.isFate ? 'fate_confrontation' : 'rivalry_confrontation';
 
     }
@@ -2608,10 +2608,10 @@ function _renderRivalryPopup() {
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
     const winLine = pickDialogueLine(winLineObj, winFighter);
     const loseLine = pickDialogueLine(loseLineObj, loseFighter);
-    title = isBitter ? '決 着。し か し、宿 怨 は 消 え ず'
-      : isGoodRival ? '好 敵 手 誕 生'
-      : isFirstWin ? '宿 敵 戦 勝 利'
-      : (o.isSecondResolution ? '最 終 決 着' : (o.isFate ? '宿命の相手 決着' : '因 縁 決 着'));
+    title = isBitter ? WM_I18N.t('決 着。し か し、宿 怨 は 消 え ず')
+      : isGoodRival ? WM_I18N.t('好 敵 手 誕 生')
+      : isFirstWin ? WM_I18N.t('宿 敵 戦 勝 利')
+      : (o.isSecondResolution ? WM_I18N.t('最 終 決 着') : (o.isFate ? WM_I18N.t('宿命の相手 決着') : WM_I18N.t('因 縁 決 着')));
     sub = isBitter ? 'THE MATCH IS OVER ・ THE GRUDGE REMAINS'
       : isGoodRival ? 'GOOD RIVALS ・ MUTUAL RESPECT'
       : isFirstWin ? 'RIVALRY MATCH ・ VICTORY'
@@ -2622,13 +2622,13 @@ function _renderRivalryPopup() {
     leftHtml = _rivalryCol(o.winnerId, o.winnerName, winLine, true);
     rightHtml = _rivalryCol(o.loserId, o.loserName, loseLine, false);
     vsIcon = '⚔';
-    vsLabel = isFirstWin ? '勝 利' : '決 着';
-    const bonusLine = `📈 両選手の人気 ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　🏢 団体人気 ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
-    const tagText = isGoodRival ? '🤝 ふたりは「好敵手」になった'
-      : isBitter ? '💀 勝敗は決した。しかし、遺恨は消えなかった'
-      : isFirstWin ? '🔥 宿敵との一戦を制した'
-      : o.isFate ? '✨ 宿命の相手との決着がついた'
-      : '🔥 宿敵の決着';
+    vsLabel = isFirstWin ? WM_I18N.t('勝 利') : WM_I18N.t('決 着');
+    const bonusLine = `📈 ${WM_I18N.t('両選手の人気')} ${Engine.util.formatSignedStatDelta(o.popBonus, 0)}　🏢 ${WM_I18N.t('団体人気')} ${Engine.util.formatSignedStatDelta(o.orgPopBonus, 1)}`;
+    const tagText = isGoodRival ? WM_I18N.t('🤝 ふたりは「好敵手」になった')
+      : isBitter ? WM_I18N.t('💀 勝敗は決した。しかし、遺恨は消えなかった')
+      : isFirstWin ? WM_I18N.t('🔥 宿敵との一戦を制した')
+      : o.isFate ? WM_I18N.t('✨ 宿命の相手との決着がついた')
+      : WM_I18N.t('🔥 宿敵の決着');
     resultHtml = `<div class="vd-tag">${tagText}</div><div class="vd-bonus">${bonusLine}</div>`;
     audioKey = (o.isFate || isGoodRival || isBitter) ? 'fate_resolution' : 'rivalry_resolution';
   }
@@ -2650,7 +2650,7 @@ function _renderRivalryPopup() {
       ${rightHtml}
     </div>
     <div class="vd-result">${resultHtml}</div>
-    <div class="vd-foot"><button class="vd-btn" id="mdlBRivalryClose">— 見 届 け る —</button></div>
+    <div class="vd-foot"><button class="vd-btn" id="mdlBRivalryClose">${WM_I18N.t('— 見 届 け る —')}</button></div>
   `;
   overlay.classList.add('active');
   setTimeout(() => { if (typeof Audio !== 'undefined' && Audio.play) Audio.play(audioKey); }, 200);
@@ -2702,8 +2702,8 @@ function _awardLine(key, fighterOrId) {
 }
 
 function _styleJa(style) {
-  return { Grappler:'グラップラー', Striker:'ストライカー', Submission:'サブミッション',
-           Aerial:'エアリアル', Allround:'オールラウンダー', Brawler:'ブロウラー' }[style] || style;
+  return WM_I18N.t({ Grappler:'グラップラー', Striker:'ストライカー', Submission:'サブミッション',
+           Aerial:'エアリアル', Allround:'オールラウンダー', Brawler:'ブロウラー' }[style] || style);
 }
 
 function _awPortrait(id, cssClass) {
@@ -2844,7 +2844,7 @@ function _travelFaceHtml(member) {
 function showTravelScene(opts, onDone) {
   opts = opts || {};
   const root = _travelSceneEnsureRoot();
-  const heading = opts.heading || '— 移 動 中 —';
+  const heading = opts.heading || WM_I18N.t('— 移 動 中 —');
   const from = opts.from || {};
   const to = opts.to || {};
   const fromAccent = from.accent || 'var(--gold)';
@@ -2879,7 +2879,7 @@ function showTravelScene(opts, onDone) {
           <div class="travel-convoy" id="travelConvoy">${convoyHtml}</div>
         </div>
         <div class="travel-msg">${escHtml(primaryLine)}${secondaryLine ? `<small>${escHtml(secondaryLine)}</small>` : ''}</div>
-        <div class="travel-skip">画面をクリックで<b>すぐ進む</b>　／　そのままでも自動で進みます</div>
+        <div class="travel-skip">${WM_I18N.t('画面をクリックで')}<b>${WM_I18N.t('すぐ進む')}</b>　／　${WM_I18N.t('そのままでも自動で進みます')}</div>
       </div>
     </div>`;
 
@@ -3059,18 +3059,18 @@ function _buildMediaAward(d) {
   const totalRevDisp = Math.round(d.totalRev).toLocaleString();
   const mediaRevDisp = Math.round(d.mediaRevSeason).toLocaleString();
   const talentRevDisp = Math.round(d.talentRevSeason).toLocaleString();
-  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">📺</span><span class="badge-jp">メディア功労賞</span></div>
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">📺</span><span class="badge-jp">${WM_I18N.t('メディア功労賞')}</span></div>
   <div class="media-layout">
     ${_awWinnerBlock(d, { line, glow: true, role: _styleJa(d.style) })}
     <div class="media-stats">
       <div class="media-total">${totalRevDisp}万円</div>
-      <div class="media-total-label">年間メディア貢献</div>
+      <div class="media-total-label">${WM_I18N.t('年間メディア貢献')}</div>
       <div class="media-breakdown">
-        <div class="media-breakdown-item"><div class="media-breakdown-val">${mediaRevDisp}万</div><div class="media-breakdown-label">出演料等</div></div>
-        <div class="media-breakdown-item"><div class="media-breakdown-val">${talentRevDisp}万</div><div class="media-breakdown-label">タレント活動</div></div>
+        <div class="media-breakdown-item"><div class="media-breakdown-val">${mediaRevDisp}万</div><div class="media-breakdown-label">${WM_I18N.t('出演料等')}</div></div>
+        <div class="media-breakdown-item"><div class="media-breakdown-val">${talentRevDisp}万</div><div class="media-breakdown-label">${WM_I18N.t('タレント活動')}</div></div>
       </div>
-      ${d.promoCountSeason > 0 ? `<div class="media-activity-count">📢 プロモ活動 ${d.promoCountSeason}週</div>` : ''}
-      ${d.talentCountSeason > 0 ? `<div class="media-activity-count">📋 タレント活動 ${d.talentCountSeason}回</div>` : ''}
+      ${d.promoCountSeason > 0 ? `<div class="media-activity-count">${WM_I18N.t('📢 プロモ活動 {n}週', { n: d.promoCountSeason })}</div>` : ''}
+      ${d.talentCountSeason > 0 ? `<div class="media-activity-count">${WM_I18N.t('📋 タレント活動 {n}回', { n: d.talentCountSeason })}</div>` : ''}
     </div>
   </div></div>`;
 }
@@ -3078,13 +3078,13 @@ function _buildMediaAward(d) {
 function _buildJTChampionAward(d) {
   // 新人王はジュニアトーナメント優勝者に授与される。受賞セリフは rookie プールが正。
   const line = _awardLine('rookie', d);
-  const runnerUpText = d.runnerUp ? `決勝: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
-  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">ジュニアトーナメント 優勝</span></div>
+  const runnerUpText = d.runnerUp ? `${WM_I18N.t('決勝')}: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">${WM_I18N.t('ジュニアトーナメント 優勝')}</span></div>
   <div class="rookie-layout">
     ${_awWinnerBlock(d, { line, glow: true, role: d.age != null ? `${d.age}歳` : '' })}
     <div>
       <div class="winner-tags">
-        <span class="aw-tag">新人王</span>
+        <span class="aw-tag">${WM_I18N.t('新人王')}</span>
         <span class="aw-tag neutral">${_styleJa(d.style)}</span>
         <span class="aw-tag neutral">OVR ${d.ovr}</span>
       </div>
@@ -3098,10 +3098,10 @@ function _buildSeasonEventChampionAward(d, kind) {
   // title = その大会の優勝が同時に授与する称号。大会結果と称号を1枚に収め、
   // 同じ選手が「優勝」と「称号」で2枚続くのを避ける。
   const cfg = {
-    springTag: { icon: '🌸', label: '春のタッグリーグ 優勝', title: 'タッグ王者' },
-    autumnWar: { icon: '🍁', label: '4団体勝ち残り対抗戦 優勝', title: null },
-    tenchosen: { icon: '👑', label: '天頂戦 覇者', title: null },
-    ppvFinal: { icon: '🏆', label: 'PPV GRAND FINAL 最終戦勝者', title: null },
+    springTag: { icon: '🌸', label: WM_I18N.t('春のタッグリーグ 優勝'), title: WM_I18N.t('タッグ王者') },
+    autumnWar: { icon: '🍁', label: WM_I18N.t('4団体勝ち残り対抗戦 優勝'), title: null },
+    tenchosen: { icon: '👑', label: WM_I18N.t('天頂戦 覇者'), title: null },
+    ppvFinal: { icon: '🏆', label: WM_I18N.t('PPV GRAND FINAL 最終戦勝者'), title: null },
   }[kind];
   if (!cfg) return null;
   const fighters = d.fighters || [d];
@@ -3136,14 +3136,14 @@ function _buildUnifiedChampionAward(d) {
   const line = _awardLine('champion', d);
   const heldYears = d.heldYears ?? 0;
   const defenses = Math.max(0, Number(d.defensesThisSeason) || 0);
-  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🌐</span><span class="badge-jp">全国統一王者</span></div>
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🌐</span><span class="badge-jp">${WM_I18N.t('全国統一王者')}</span></div>
     <div class="aw-event-solo">
       ${_awWinnerBlock(d, { line, glow: true, role: d.orgName || '' })}
       <div style="text-align:center">
-        <div class="unified-beltband">全国統一王者</div>
+        <div class="unified-beltband">${WM_I18N.t('全国統一王者')}</div>
         <div class="winner-tags" style="justify-content:center;margin-top:16px">
-          <span class="aw-tag neutral">在位 ${heldYears}年</span>
-          <span class="aw-tag neutral">今季防衛 ${defenses}回</span>
+          <span class="aw-tag neutral">${WM_I18N.t('在位 {n}年', { n: heldYears })}</span>
+          <span class="aw-tag neutral">${WM_I18N.t('今季防衛 {n}回', { n: defenses })}</span>
         </div>
       </div>
     </div></div>`;
@@ -3158,7 +3158,7 @@ function _buildBestMatchAward(d) {
   const f2OrgName = d.fighter2OrgName || d.orgName || '';
   const open1Attr = _awOpenAttr(f1.id);
   const open2Attr = _awOpenAttr(f2.id);
-  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🎬</span><span class="badge-jp">ベストマッチ</span></div>
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🎬</span><span class="badge-jp">${WM_I18N.t('ベストマッチ')}</span></div>
   <div class="bestmatch-fighters">
     <div class="fighter-side">
       ${_awSpeechSlot(line1)}<div class="portrait-sm"${open1Attr}>${_awPortrait(f1.id)}</div>
@@ -3193,21 +3193,21 @@ function _buildChampionsAward(champions) {
   const buildCol = (c, rank) => {
     if (!c) return '';
     const line = _awardLine('champion', c);
-    const defText = c.defenses != null ? `防衛 ${c.defenses}回` : '';
+    const defText = c.defenses != null ? WM_I18N.t('防衛 {n}回', { n: c.defenses }) : '';
     const isPlayer = c.isPlayer;
     const openAttr = _awOpenAttr(c.id);
     // 団体名はエンブレムと並べて出す。1位は2位・3位より一段大きく（.rank-1 .champ-orgname）、
     // 自団体は既存の --gold で強調する（champ-defense の isPlayer 着色と同じ考え方）。
     return `<div class="champ-col rank-${rank}" id="aw-champ-rank${rank}">
       <div class="champ-quote">${_awSpeechSlot(line)}</div>
-      <div class="champ-portrait"${openAttr}><span class="rank-badge">${rank}位</span>${_awPortrait(c.id)}</div>
+      <div class="champ-portrait"${openAttr}><span class="rank-badge">${WM_I18N.t('{n}位', { n: rank })}</span>${_awPortrait(c.id)}</div>
       <div class="champ-name"${openAttr}>${c.name}</div>
       ${defText ? `<div class="champ-defense" ${isPlayer ? 'style="color:var(--gold)"' : ''}>${defText}</div>` : ''}
       <div class="champ-org">${_awOrgEmblem(c.orgName, c.isPlayer, rank === 1 ? 36 : 24)}<span class="champ-orgname"${isPlayer ? ' style="color:var(--gold)"' : ''}>${c.orgName}</span></div>
     </div>`;
   };
 
-  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏆</span><span class="badge-jp">タイトル王者</span></div>
+  return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏆</span><span class="badge-jp">${WM_I18N.t('タイトル王者')}</span></div>
   <div class="champions-layout" id="aw-champions-layout">
     <div class="champ-slot">${buildCol(c2, 2)}</div>
     <div class="champ-slot">${buildCol(c1, 1)}</div>
@@ -3223,8 +3223,8 @@ function _buildMVPAward(d) {
   // 実績リスト構築
   const achievements = [];
   achievements.push({ icon: '💪', text: `OVR ${d.ovr}`, sub: _styleJa(d.style) });
-  achievements.push({ icon: '🌟', text: `人気 ${Engine.util.dispPop(d.popularity)}`, sub: `${wins}勝${losses}敗` });
-  if (d.isChampion) achievements.push({ icon: '🏆', text: '現王者', sub: defenses > 0 ? `防衛 ${defenses}回` : '王座保持中' });
+  achievements.push({ icon: '🌟', text: `${WM_I18N.t('人気')} ${Engine.util.dispPop(d.popularity)}`, sub: `${wins}勝${losses}敗` });
+  if (d.isChampion) achievements.push({ icon: '🏆', text: WM_I18N.t('現王者'), sub: defenses > 0 ? WM_I18N.t('防衛 {n}回', { n: defenses }) : WM_I18N.t('王座保持中') });
   // careerRecordから当シーズン実績を表示
   const hist = [];
   if (typeof G !== 'undefined') {
@@ -3240,13 +3240,13 @@ function _buildMVPAward(d) {
     if (f && f.careerRecord && f.careerRecord.history) {
       f.careerRecord.history.forEach(ev => {
         if (ev.season !== G.season) return;
-        if (ev.type === 'titleWin') hist.push({ icon: '👑', text: '王座獲得' });
+        if (ev.type === 'titleWin') hist.push({ icon: '👑', text: WM_I18N.t('王座獲得') });
         if (ev.type === 'titleDefense') {
           const defenseCount = ev.count ?? ev.defenseCount ?? '';
-          hist.push({ icon: '🛡️', text: `王座防衛（${defenseCount}回目）` });
+          hist.push({ icon: '🛡️', text: WM_I18N.t('王座防衛（{n}回目）', { n: defenseCount }) });
         }
-        if (ev.type === 'ppvMainEvent' && ev.won) hist.push({ icon: '🏟️', text: 'PPV優勝' });
-        if (ev.type === 'juniorTournament' && ev.result === 'champion') hist.push({ icon: '🏅', text: 'JT優勝' });
+        if (ev.type === 'ppvMainEvent' && ev.won) hist.push({ icon: '🏟️', text: WM_I18N.t('PPV優勝') });
+        if (ev.type === 'juniorTournament' && ev.result === 'champion') hist.push({ icon: '🏅', text: WM_I18N.t('JT優勝') });
       });
     }
   }
@@ -3278,14 +3278,14 @@ function _buildHallOfFame(d) {
   const stars = Array(starCount).fill('✦').join(' ');
 
   const statsLine = [];
-  if (d.totalDefenses > 0) statsLine.push(`通算防衛 ${d.totalDefenses}回`);
-  if (d.titleReigns > 0) statsLine.push(`王座${d.titleReigns}回獲得`);
-  if (d.juniorTournamentWins > 0) statsLine.push(`JT優勝${d.juniorTournamentWins}回`);
-  if (d.ppvMainEventWins > 0) statsLine.push(`PPV優勝${d.ppvMainEventWins}回`);
+  if (d.totalDefenses > 0) statsLine.push(WM_I18N.t('通算防衛 {n}回', { n: d.totalDefenses }));
+  if (d.titleReigns > 0) statsLine.push(WM_I18N.t('王座{n}回獲得', { n: d.titleReigns }));
+  if (d.juniorTournamentWins > 0) statsLine.push(WM_I18N.t('JT優勝{n}回', { n: d.juniorTournamentWins }));
+  if (d.ppvMainEventWins > 0) statsLine.push(WM_I18N.t('PPV優勝{n}回', { n: d.ppvMainEventWins }));
   const plaqueText = statsLine.join(' · ') || `${d.activeYears || ''}`;
   const openAttr = _awOpenAttr(d.id);
 
-  return `<div class="award-card" style="text-align:center"><div class="award-badge" style="justify-content:center"><span class="badge-icon">🏛️</span><span class="badge-jp">殿堂入り</span></div>
+  return `<div class="award-card" style="text-align:center"><div class="award-badge" style="justify-content:center"><span class="badge-icon">🏛️</span><span class="badge-jp">${WM_I18N.t('殿堂入り')}</span></div>
   <div class="hof-layout">
     <div class="aw-winner-block hof-winner-block">
       ${_awSpeechSlot(line)}
@@ -3295,7 +3295,7 @@ function _buildHallOfFame(d) {
     </div>
     <div class="hof-stars">${stars}</div>
     <div class="hof-plaque">${plaqueText}</div>
-    <div class="hof-player-speech"><div class="hof-tap-hint">タップして続きを見る</div></div>
+    <div class="hof-player-speech"><div class="hof-tap-hint">${WM_I18N.t('タップして続きを見る')}</div></div>
   </div></div>`;
 }
 
@@ -3308,33 +3308,33 @@ function _buildAwardsSummary(a) {
       ${detail ? `<div class="summary-org">${detail}</div>` : ''}
       </div></div>`;
 
-  let html = '<div class="award-card"><div class="award-badge"><span class="badge-icon">📜</span><span class="badge-jp">全受賞者一覧</span></div><div class="summary-grid">';
+  let html = `<div class="award-card"><div class="award-badge"><span class="badge-icon">📜</span><span class="badge-jp">${WM_I18N.t('全受賞者一覧')}</span></div><div class="summary-grid">`;
 
   // 今年の大会（開催週の順）
   if (a.springTagChampion)
-    html += item('🌸', '春のタッグリーグ優勝 / タッグ王者', a.springTagChampion.fighters.map(f => f.name).join(' & '), a.springTagChampion.orgName);
+    html += item('🌸', WM_I18N.t('春のタッグリーグ優勝 / タッグ王者'), a.springTagChampion.fighters.map(f => f.name).join(' & '), a.springTagChampion.orgName);
   if (a.jtChampion)
-    html += item('🏟️', 'JT優勝 / 新人王', a.jtChampion.name, a.jtChampion.orgName);
+    html += item('🏟️', WM_I18N.t('JT優勝 / 新人王'), a.jtChampion.name, a.jtChampion.orgName);
   if (a.autumnWarChampion)
-    html += item('🍁', '4団体勝ち残り対抗戦優勝', a.autumnWarChampion.orgName, a.autumnWarChampion.fighters.map(f => f.name).join(' · '));
+    html += item('🍁', WM_I18N.t('4団体勝ち残り対抗戦優勝'), a.autumnWarChampion.orgName, a.autumnWarChampion.fighters.map(f => f.name).join(' · '));
   if (a.tenchosenChampion)
-    html += item('👑', '天頂戦 覇者', a.tenchosenChampion.name, a.tenchosenChampion.orgName);
+    html += item('👑', WM_I18N.t('天頂戦 覇者'), a.tenchosenChampion.name, a.tenchosenChampion.orgName);
   if (a.ppvFinalWinner)
-    html += item('🏆', 'PPV最終戦勝者', a.ppvFinalWinner.name, a.ppvFinalWinner.orgName);
+    html += item('🏆', WM_I18N.t('PPV最終戦勝者'), a.ppvFinalWinner.name, a.ppvFinalWinner.orgName);
   if (a.unifiedChampion)
-    html += item('🌐', '全国統一王者', a.unifiedChampion.name, `${a.unifiedChampion.orgName} / 今季防衛 ${a.unifiedChampion.defensesThisSeason || 0}回`);
+    html += item('🌐', WM_I18N.t('全国統一王者'), a.unifiedChampion.name, `${a.unifiedChampion.orgName} / ${WM_I18N.t('今季防衛 {n}回', { n: a.unifiedChampion.defensesThisSeason || 0 })}`);
   // 個人表彰
   if (a.mediaAward)
-    html += item('📺', 'メディア功労賞', a.mediaAward.name, `貢献 ${Math.round(a.mediaAward.totalRev).toLocaleString()}万円`);
+    html += item('📺', WM_I18N.t('メディア功労賞'), a.mediaAward.name, `${WM_I18N.t('貢献')} ${Math.round(a.mediaAward.totalRev).toLocaleString()}万円`);
   if (a.bestMatch) {
     const bm1 = typeof a.bestMatch.fighter1 === 'object' ? a.bestMatch.fighter1.name : a.bestMatch.fighter1;
     const bm2 = typeof a.bestMatch.fighter2 === 'object' ? a.bestMatch.fighter2.name : a.bestMatch.fighter2;
-    html += item('🎬', 'ベストマッチ', `${bm1} vs ${bm2}`, `評価 ${a.bestMatch.mq}`);
+    html += item('🎬', WM_I18N.t('ベストマッチ'), `${bm1} vs ${bm2}`, `${WM_I18N.t('評価')} ${a.bestMatch.mq}`);
   }
   if (a.champions && a.champions.length > 0) {
     const c1 = a.champions[0];
-    const defText = c1.defenses != null ? `防衛 ${c1.defenses}回` : c1.orgName;
-    html += item('🏆', 'タイトル王者 1位', c1.name, defText);
+    const defText = c1.defenses != null ? WM_I18N.t('防衛 {n}回', { n: c1.defenses }) : c1.orgName;
+    html += item('🏆', WM_I18N.t('タイトル王者 1位'), c1.name, defText);
   }
   if (a.mvp)
     html += item('👑', 'MVP', a.mvp.name, a.mvp.orgName);
@@ -3349,7 +3349,7 @@ function _buildAwardsSummary(a) {
   if (allInductees.length > 0) {
     const names = allInductees.map(h => h.name).join(' / ');
     const details = allInductees.map(h => h.orgName || '').filter(Boolean).join(' / ');
-    html += item('🏛️', '殿堂入り', names, details, true);
+    html += item('🏛️', WM_I18N.t('殿堂入り'), names, details, true);
   }
 
   html += '</div></div>';
@@ -3444,38 +3444,38 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   // 構成は2部。第1部は今年の大会を開催週の順に並べ、その優勝が兼ねる称号
   // （タッグ王者・新人王）は各大会スライドの中で示す。第2部は個人表彰で、
   // メディア功労賞→ベストマッチ→タイトル王者→MVP→殿堂入りと重みを上げていく。
-  const SEC_EVENT = '今年の大会';
-  const SEC_AWARD = '個人表彰';
+  const SEC_EVENT = WM_I18N.t('今年の大会');
+  const SEC_AWARD = WM_I18N.t('個人表彰');
   const slideInfo = []; // { html, label, section, se, isChampions, isMvp, isHof, hofData }
 
   // ── 第1部: 今年の大会 ──
   if (awards.springTagChampion)
-    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.springTagChampion, 'springTag'), label: '春タッグ優勝', section: SEC_EVENT, se: 'normal' });
+    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.springTagChampion, 'springTag'), label: WM_I18N.t('春タッグ優勝'), section: SEC_EVENT, se: 'normal' });
   if (awards.jtChampion)
-    slideInfo.push({ html: _buildJTChampionAward(awards.jtChampion), label: 'JT優勝・新人王', section: SEC_EVENT, se: 'normal' });
+    slideInfo.push({ html: _buildJTChampionAward(awards.jtChampion), label: WM_I18N.t('JT優勝・新人王'), section: SEC_EVENT, se: 'normal' });
   if (awards.autumnWarChampion)
-    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.autumnWarChampion, 'autumnWar'), label: '勝ち残り対抗戦 優勝', section: SEC_EVENT, se: 'normal' });
+    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.autumnWarChampion, 'autumnWar'), label: WM_I18N.t('勝ち残り対抗戦 優勝'), section: SEC_EVENT, se: 'normal' });
   // 天頂戦シーズンは通常のPPV GRAND FINALが開催されないため、この2枚は排他になる。
   if (awards.tenchosenChampion)
-    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.tenchosenChampion, 'tenchosen'), label: '天頂戦 覇者', section: SEC_EVENT, se: 'normal' });
+    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.tenchosenChampion, 'tenchosen'), label: WM_I18N.t('天頂戦 覇者'), section: SEC_EVENT, se: 'normal' });
   if (awards.ppvFinalWinner)
-    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.ppvFinalWinner, 'ppvFinal'), label: 'PPV最終戦勝者', section: SEC_EVENT, se: 'normal' });
+    slideInfo.push({ html: _buildSeasonEventChampionAward(awards.ppvFinalWinner, 'ppvFinal'), label: WM_I18N.t('PPV最終戦勝者'), section: SEC_EVENT, se: 'normal' });
   if (awards.unifiedChampion)
-    slideInfo.push({ html: _buildUnifiedChampionAward(awards.unifiedChampion), label: '全国統一王者', section: SEC_EVENT, se: 'normal' });
+    slideInfo.push({ html: _buildUnifiedChampionAward(awards.unifiedChampion), label: WM_I18N.t('全国統一王者'), section: SEC_EVENT, se: 'normal' });
 
   // ── 第2部: 個人表彰 ──
   if (awards.mediaAward)
-    slideInfo.push({ html: _buildMediaAward(awards.mediaAward), label: 'メディア功労賞', section: SEC_AWARD, se: 'normal' });
+    slideInfo.push({ html: _buildMediaAward(awards.mediaAward), label: WM_I18N.t('メディア功労賞'), section: SEC_AWARD, se: 'normal' });
   if (awards.bestMatch)
-    slideInfo.push({ html: _buildBestMatchAward(awards.bestMatch), label: 'ベストマッチ', section: SEC_AWARD, se: 'normal' });
+    slideInfo.push({ html: _buildBestMatchAward(awards.bestMatch), label: WM_I18N.t('ベストマッチ'), section: SEC_AWARD, se: 'normal' });
   const champHtml = _buildChampionsAward(awards.champions);
   if (champHtml)
-    slideInfo.push({ html: champHtml, label: 'タイトル王者', section: SEC_AWARD, se: 'normal', isChampions: true });
+    slideInfo.push({ html: champHtml, label: WM_I18N.t('タイトル王者'), section: SEC_AWARD, se: 'normal', isChampions: true });
   if (awards.mvp)
     slideInfo.push({ html: _buildMVPAward(awards.mvp), label: 'MVP', section: SEC_AWARD, se: 'mvp' });
   if (awards.hallOfFame && awards.hallOfFame.length > 0) {
     awards.hallOfFame.forEach(inductee => {
-      slideInfo.push({ html: _buildHallOfFame(inductee), label: '殿堂入り', section: SEC_AWARD, se: 'hof', isHof: true, hofData: inductee });
+      slideInfo.push({ html: _buildHallOfFame(inductee), label: WM_I18N.t('殿堂入り'), section: SEC_AWARD, se: 'hof', isHof: true, hofData: inductee });
     });
   }
   // 受賞が一つもない年は、該当なしの説明を出さず式典自体を静かに省略する。
@@ -3486,7 +3486,7 @@ function showAwardsCeremony(awards, onDone, onOpen) {
     return;
   }
   // 全受賞者一覧は、成立した受賞がある年だけの締めの1枚。
-  slideInfo.push({ html: _buildAwardsSummary(awards), label: '全受賞者一覧', se: 'normal' });
+  slideInfo.push({ html: _buildAwardsSummary(awards), label: WM_I18N.t('全受賞者一覧'), se: 'normal' });
 
   const overlay = document.getElementById('awardsOverlay');
   const slideWrap = document.getElementById('aw-slide-wrap');
@@ -3518,10 +3518,10 @@ function showAwardsCeremony(awards, onDone, onOpen) {
 
   // ファンファーレ
   fanfareEl.innerHTML = `
-    <div class="fanfare-line-1">シーズン ${awards.season}</div>
-    <div class="fanfare-line-2">年間表彰式</div>
+    <div class="fanfare-line-1">${WM_I18N.t('シーズン {n}', { n: awards.season })}</div>
+    <div class="fanfare-line-2">${WM_I18N.t('年間表彰式')}</div>
     <div class="fanfare-divider"></div>
-    <div class="fanfare-sub">全受賞者発表</div>`;
+    <div class="fanfare-sub">${WM_I18N.t('全受賞者発表')}</div>`;
   fanfareEl.style.animation = 'none';
   requestAnimationFrame(() => { fanfareEl.style.animation = ''; });
 
@@ -3551,9 +3551,9 @@ function showAwardsCeremony(awards, onDone, onOpen) {
     try { overlay.scrollTo({ top: 0, behavior: 'auto' }); }
     catch (_e) { overlay.scrollTop = 0; }
 
-    headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[current].label;
+    headerLabel.textContent = WM_I18N.t('シーズン {n}', { n: awards.season }) + ' — ' + slideInfo[current].label;
     if (headerSection) headerSection.textContent = slideInfo[current].section || '';
-    btnNext.textContent = current === TOTAL - 1 ? '✕ 閉じる' : '次へ　→';
+    btnNext.textContent = current === TOTAL - 1 ? WM_I18N.t('✕ 閉じる') : WM_I18N.t('次へ　→');
 
     setTimeout(() => _awPlaySE(slideInfo[current].se), 50);
 
@@ -3670,14 +3670,14 @@ function showAwardsCeremony(awards, onDone, onOpen) {
   // 背面の「次の週へ」にフォーカスが残っていると、Enter/Spaceで式典を飛ばして
   // オフシーズン第2週へ進めてしまう。表示した時点で操作焦点を式典へ移す。
   try { btnNext.focus({ preventScroll: true }); } catch (_e) { try { btnNext.focus(); } catch (__e) {} }
-  headerLabel.textContent = 'シーズン ' + awards.season + ' — ' + slideInfo[0].label;
+  headerLabel.textContent = WM_I18N.t('シーズン {n}', { n: awards.season }) + ' — ' + slideInfo[0].label;
   if (headerSection) headerSection.textContent = slideInfo[0].section || '';
   // #aw-btn-next は静的DOMの使い回し。前回の finishCeremony が残した disabled と
   // 「✕ 閉じる」文言をここで必ず初期化する。これが無いとセッション2年目以降の式典が
   // 押せないボタンで開いて進行不能になる(v1.31報告・リロードで直るのは静的DOMだから)
   btnNext.disabled = false;
   btnNext.classList.remove('disabled');
-  btnNext.textContent = TOTAL === 1 ? '✕ 閉じる' : '次へ　→';
+  btnNext.textContent = TOTAL === 1 ? WM_I18N.t('✕ 閉じる') : WM_I18N.t('次へ　→');
 
   // 冒頭ファンファーレSE
   setTimeout(() => _awPlayFanfare(), 1000);
@@ -3736,7 +3736,7 @@ function _awShowCoachFg(hofData, awards) {
 
   coachFg.innerHTML = _u3bSideHtml({
     name: coach.name, line, imgUrl: coachPortUrl, fallback: coach.emoji || '👩‍🏫',
-    role: 'コーチ', size: 's',
+    role: WM_I18N.t('コーチ'), size: 's',
     bubbleClass: 'coach-fg-bubble',
   });
 
@@ -3825,7 +3825,7 @@ function getJoinGreeting(char) {
 function getJoinSourceBadge(source) {
   const isFA = source === 'fa';
   const color = isFA ? 'var(--blue)' : 'var(--green)';
-  const label = isFA ? 'FA' : '発掘';
+  const label = isFA ? 'FA' : WM_I18N.t('発掘');
   return `<span style="display:inline-block;padding:2px 6px;border:1px solid ${color};border-radius:3px;background:color-mix(in srgb,${color} 14%,transparent);color:${color};font-family:Oswald,sans-serif;font-size:10px;font-weight:700;letter-spacing:0.12em;line-height:1">${label}</span>`;
 }
 
@@ -3965,11 +3965,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
   // Stats
   const STATS = [
-    {key:'pw',label:'PW',color:'#e74c3c',name:'パワー'},
-    {key:'sp',label:'SP',color:'#2ecc71',name:'スピード'},
-    {key:'te',label:'TE',color:'#3498db',name:'テクニック'},
-    {key:'st',label:'ST',color:'#f39c12',name:'スタミナ'},
-    {key:'mn',label:'MN',color:'#9b59b6',name:'マインド'}
+    {key:'pw',label:'PW',color:'#e74c3c',name:WM_I18N.t('パワー')},
+    {key:'sp',label:'SP',color:'#2ecc71',name:WM_I18N.t('スピード')},
+    {key:'te',label:'TE',color:'#3498db',name:WM_I18N.t('テクニック')},
+    {key:'st',label:'ST',color:'#f39c12',name:WM_I18N.t('スタミナ')},
+    {key:'mn',label:'MN',color:'#9b59b6',name:WM_I18N.t('マインド')}
   ];
 
   // Tab state (stored on window for re-rendering)
@@ -4006,11 +4006,11 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
             <span class="badge badge-${c.style}" style="font-size:13px;padding:3px 10px">${c.style}</span>
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
-            ${isChamp ? '<span style="font-size:14px;color:var(--gold);font-weight:700">👑 王者</span>' : ''}
-            ${isUnifiedChamp ? '<span style="font-size:14px;color:var(--unified);font-weight:700">🌐 全国統一王者</span>' : ''}
-            ${_isBestTagTeam ? `<span style="font-size:13px;color:#ff6f9c;font-weight:700">🌸 総合ベストタッグ（第${_bestTagSeason}回${_bestTagPartnerName ? '・' + _bestTagPartnerName + 'と' : ''}）</span>` : ''}
-            ${c.lastRun ? '<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">🌅 ラストラン</span>' : ''}
-            ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">🤝 レンタル（残${ct ? ct.weeksLeft : '?'}週）</span>`; })() : ''}
+            ${isChamp ? `<span style="font-size:14px;color:var(--gold);font-weight:700">${WM_I18N.t('👑 王者')}</span>` : ''}
+            ${isUnifiedChamp ? `<span style="font-size:14px;color:var(--unified);font-weight:700">${WM_I18N.t('🌐 全国統一王者')}</span>` : ''}
+            ${_isBestTagTeam ? `<span style="font-size:13px;color:#ff6f9c;font-weight:700">${WM_I18N.t('🌸 総合ベストタッグ（第{n}回', { n: _bestTagSeason })}${_bestTagPartnerName ? '・' + _bestTagPartnerName + WM_I18N.t('と') : ''}）</span>` : ''}
+            ${c.lastRun ? `<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">${WM_I18N.t('🌅 ラストラン')}</span>` : ''}
+            ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">${WM_I18N.t('🤝 レンタル（残{n}週）', { n: ct ? ct.weeksLeft : '?' })}</span>`; })() : ''}
             ${(() => {
               if (!G.factions || !Engine.factions) return '';
               const f = Engine.factions.getFactionByFighterId(G, c.id);
@@ -4019,9 +4019,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
               // 同じ判定材料(isLeader/isExecutive)からroleとiconを独立に確定させる。
               const isLeaderRole = f.leaderId === c.id;
               const isExecRole = !isLeaderRole && Engine.factions.isExecutive(G, c.id);
-              const role = isLeaderRole ? 'リーダー' : isExecRole ? '幹部' : 'メンバー';
+              const role = isLeaderRole ? WM_I18N.t('リーダー') : isExecRole ? WM_I18N.t('幹部') : WM_I18N.t('メンバー');
               const icon = isLeaderRole ? '👑' : isExecRole ? '⭐' : '🎭';
-              return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="派閥タブで詳細を見る">${icon} ${f.name}・${role}</span>`;
+              return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="${WM_I18N.t('派閥タブで詳細を見る')}">${icon} ${f.name}・${role}</span>`;
             })()}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
@@ -4031,30 +4031,30 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--text-sub)">
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
             ${c.h ? `<span>📏 ${c.h}cm</span>` : ''}
-            ${(() => { const decline = Engine.retirement.getDeclinePresentation(c); if (decline.stage === 'terminal') return '<span style="color:#e74c3c">⬇⬇ 限界</span>'; if (decline.stage === 'major') return '<span style="color:#e67e22">⬇ 衰退期</span>'; if (decline.stage === 'early') return '<span style="color:#f1c40f">⚠ 衰え</span>'; return ''; })()}
-            ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? '成長大幅低下' : m <= 0.5 ? '成長低下' : '成長やや低下'; return `<span style="color:#a29bfe">🩹 ${lbl}（残り${gp.remainingWeeks}週）</span>`; })()}
-            ${c.hotStreak ? `<span style="color:#ff9500">🔥 絶好調（残り${c.hotStreak.remainingWeeks}週 / OVR+${c.hotStreak.ovrBuff}）</span>` : ''}
+            ${(() => { const decline = Engine.retirement.getDeclinePresentation(c); if (decline.stage === 'terminal') return `<span style="color:#e74c3c">${WM_I18N.t('⬇⬇ 限界')}</span>`; if (decline.stage === 'major') return `<span style="color:#e67e22">${WM_I18N.t('⬇ 衰退期')}</span>`; if (decline.stage === 'early') return `<span style="color:#f1c40f">${WM_I18N.t('⚠ 衰え')}</span>`; return ''; })()}
+            ${(() => { const gp = c.growthPenalty; if (!gp) return ''; const m = gp.multiplier; const lbl = m <= 0.2 ? WM_I18N.t('成長大幅低下') : m <= 0.5 ? WM_I18N.t('成長低下') : WM_I18N.t('成長やや低下'); return `<span style="color:#a29bfe">🩹 ${lbl}${WM_I18N.t('（残り{n}週）', { n: gp.remainingWeeks })}</span>`; })()}
+            ${c.hotStreak ? `<span style="color:#ff9500">${WM_I18N.t('🔥 絶好調（残り{n}週 / OVR+{m}）', { n: c.hotStreak.remainingWeeks, m: c.hotStreak.ovrBuff })}</span>` : ''}
             ${c._trainerBuff ? (() => {
               // 社長室 Phase 7: 成長バフと、合宿に馴染んでいる様子を表示
               // _trainerBuff は現在 camp 由来のみ(trainer は care-rework v0.1 で _inviteBuff に移行、既存セーブ互換のため残置)
               const weeks = c._trainerBuff.weeksLeft;
-              return `<span style="color:#d4a843">🏋️ 合宿 残り${weeks}週 — 団体にも馴染んできている</span>`;
+              return `<span style="color:#d4a843">${WM_I18N.t('🏋️ 合宿 残り{n}週 — 団体にも馴染んできている', { n: weeks })}</span>`;
             })() : ''}
             ${c._inviteBuff ? (() => {
               // care-rework v0.1 §3: 招聘中コーチの表示
               const coach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
-              const coachName = coach ? coach.name : '招聘コーチ';
-              return `<span style="color:#d4a843">🎓 ${coachName}コーチ招聘中 残り${c._inviteBuff.weeksLeft}週</span>`;
+              const coachName = coach ? coach.name : WM_I18N.t('招聘コーチ');
+              return `<span style="color:#d4a843">🎓 ${coachName}${WM_I18N.t('コーチ招聘中 残り{n}週', { n: c._inviteBuff.weeksLeft })}</span>`;
             })() : ''}
-            ${c.slump ? `<span style="color:#7f8c8d">📉 スランプ中（${c.slump.weeksSinceStart}週目 / 回復確率${(2 + (c.slump.recoveryMomentum || 0)).toFixed(1)}%）</span>` : ''}
-            ${c.motivationLoss ? `<span style="color:#95a5a6">😞 モチベ喪失（${c.motivationLoss.weeksSinceStart}週目）</span>` : ''}
-            ${(isRoster && !c.isRental && (c.trust != null ? c.trust : 50) < 40) ? '<span style="color:#e67e22;font-weight:700">💭 最近よそよそしい</span>' : ''}
-            ${isRoster ? '<span style="color:#2ecc71">🏠 所属中</span>' : ''}
-            ${isFree ? '<span style="color:#8bc4f0">🆓 フリー</span>' : ''}
-            ${isScoutCandidate ? '<span style="color:#f39c12">🔍 スカウト候補</span>' : ''}
-            ${isScoutCandidate && c._isSeed ? '<span style="color:#f1c40f">⭐ 注目候補</span>' : ''}
-            ${isScoutCandidate && c._hasCompetition ? '<span style="color:#e74c3c">⚔ 他団体注目</span>' : ''}
-            ${orgLabel ? `<span>${orgLabel} 所属</span>` : ''}
+            ${c.slump ? `<span style="color:#7f8c8d">${WM_I18N.t('📉 スランプ中（{n}週目 / 回復確率{p}%）', { n: c.slump.weeksSinceStart, p: (2 + (c.slump.recoveryMomentum || 0)).toFixed(1) })}</span>` : ''}
+            ${c.motivationLoss ? `<span style="color:#95a5a6">${WM_I18N.t('😞 モチベ喪失（{n}週目）', { n: c.motivationLoss.weeksSinceStart })}</span>` : ''}
+            ${(isRoster && !c.isRental && (c.trust != null ? c.trust : 50) < 40) ? `<span style="color:#e67e22;font-weight:700">${WM_I18N.t('💭 最近よそよそしい')}</span>` : ''}
+            ${isRoster ? `<span style="color:#2ecc71">${WM_I18N.t('🏠 所属中')}</span>` : ''}
+            ${isFree ? `<span style="color:#8bc4f0">${WM_I18N.t('🆓 フリー')}</span>` : ''}
+            ${isScoutCandidate ? `<span style="color:#f39c12">${WM_I18N.t('🔍 スカウト候補')}</span>` : ''}
+            ${isScoutCandidate && c._isSeed ? `<span style="color:#f1c40f">${WM_I18N.t('⭐ 注目候補')}</span>` : ''}
+            ${isScoutCandidate && c._hasCompetition ? `<span style="color:#e74c3c">${WM_I18N.t('⚔ 他団体注目')}</span>` : ''}
+            ${orgLabel ? `<span>${WM_I18N.t('{org} 所属', { org: orgLabel })}</span>` : ''}
           </div>
         </div>
         <button onclick="closeFighterPopup()" style="background:none;border:none;color:var(--text-dim);font-size:22px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0">✕</button>
@@ -4066,13 +4066,13 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       const trustBlocked = negotiateOrgId && Engine.negotiate.isNegotiationBlocked(c);
       const canNeg = !trustBlocked && !G.pendingNegotiation && !(G.negotiatedThisSeason || []).includes(c.id);
       const negLabel = trustBlocked
-        ? '🔒 忠誠度が高く交渉に応じない'
+        ? WM_I18N.t('🔒 忠誠度が高く交渉に応じない')
         : G.pendingNegotiation
-          ? (G.pendingNegotiation.fighterId === c.id ? '⏳ 交渉中' : '— 他の選手と交渉中')
-          : (G.negotiatedThisSeason || []).includes(c.id) ? '✓ 今季交渉済' : null;
+          ? (G.pendingNegotiation.fighterId === c.id ? WM_I18N.t('⏳ 交渉中') : WM_I18N.t('— 他の選手と交渉中'))
+          : (G.negotiatedThisSeason || []).includes(c.id) ? WM_I18N.t('✓ 今季交渉済') : null;
       html += `<div style="padding:8px 16px;background:rgba(0,0,0,0.2);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:10px">`;
       if (canNeg) {
-        html += `<button onclick="closeFighterPopup();showNegotiatePopup('${negotiateOrgId}',${c.id})" style="font-size:13px;padding:6px 18px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.4);border-radius:4px;cursor:pointer;font-weight:700">🤝 選手を引き抜く</button>`;
+        html += `<button onclick="closeFighterPopup();showNegotiatePopup('${negotiateOrgId}',${c.id})" style="font-size:13px;padding:6px 18px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.4);border-radius:4px;cursor:pointer;font-weight:700">${WM_I18N.t('🤝 選手を引き抜く')}</button>`;
       } else {
         html += `<span style="font-size:13px;color:var(--text-dim)">${negLabel}</span>`;
       }
@@ -4097,15 +4097,15 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     if (canEncourage) {
       // 理由テキスト(温度感別)
       let reasonText = '';
-      if (c.slump) reasonText = 'スランプ中の選手だ。今日は、少し時間を取ろう。';
-      else if (c.motivationLoss) reasonText = 'モチベーションを失いかけている。放っておけない。';
-      else if (hasUrgentTrust) reasonText = '最近、この選手の様子が気になっている。';
-      else reasonText = '最近、少し様子が気になっている。';
+      if (c.slump) reasonText = WM_I18N.t('スランプ中の選手だ。今日は、少し時間を取ろう。');
+      else if (c.motivationLoss) reasonText = WM_I18N.t('モチベーションを失いかけている。放っておけない。');
+      else if (hasUrgentTrust) reasonText = WM_I18N.t('最近、この選手の様子が気になっている。');
+      else reasonText = WM_I18N.t('最近、少し様子が気になっている。');
 
       const variantCls = isUrgent ? 'is-urgent' : 'is-gentle';
       const btnHtml = encourageUsedThisWeek
-        ? `<span class="fp-encourage-btn is-done">💬 今週はもう声をかけた</span>`
-        : `<button class="fp-encourage-btn ${variantCls}" onclick="App.encourageFighter(${c.id})" title="社長自ら足を運んで声をかける(決裁枠・資金とも消費しない)">💬 声をかけに行く</button>`;
+        ? `<span class="fp-encourage-btn is-done">${WM_I18N.t('💬 今週はもう声をかけた')}</span>`
+        : `<button class="fp-encourage-btn ${variantCls}" onclick="App.encourageFighter(${c.id})" title="${WM_I18N.t('社長自ら足を運んで声をかける(決裁枠・資金とも消費しない)')}">${WM_I18N.t('💬 声をかけに行く')}</button>`;
       html += `<div class="fp-encourage-bar ${variantCls}">
         <div class="fp-encourage-reason">${reasonText}</div>
         ${btnHtml}
@@ -4133,19 +4133,19 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
       let pledgeBtn;
       if (pledgedSelf) {
-        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 次の通常興行のメインを約束済み</span>`;
+        pledgeBtn = `<span class="fp-pledge-btn is-done">${WM_I18N.t('🤝 次の通常興行のメインを約束済み')}</span>`;
       } else if (pledgedOther) {
-        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 ${escHtml(otherName)}と約束中</span>`;
+        pledgeBtn = `<span class="fp-pledge-btn is-done">${WM_I18N.t('🤝 {name}と約束中', { name: escHtml(otherName) })}</span>`;
       } else if (pledgeOnCd) {
-        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 しばらくは約束できない</span>`;
+        pledgeBtn = `<span class="fp-pledge-btn is-done">${WM_I18N.t('🤝 しばらくは約束できない')}</span>`;
       } else if (dpShort) {
-        pledgeBtn = `<span class="fp-pledge-btn is-done">🤝 決裁枠が足りない</span>`;
+        pledgeBtn = `<span class="fp-pledge-btn is-done">${WM_I18N.t('🤝 決裁枠が足りない')}</span>`;
       } else {
-        pledgeBtn = `<button class="fp-pledge-btn" onclick="App.pledgeFighter(${c.id})" title="次の通常興行のメインで使うと約束する(決裁枠⚡1・費用なし)。カード編成は縛られない">🤝 起用を約束する</button>`;
+        pledgeBtn = `<button class="fp-pledge-btn" onclick="App.pledgeFighter(${c.id})" title="${WM_I18N.t('次の通常興行のメインで使うと約束する(決裁枠⚡1・費用なし)。カード編成は縛られない')}">${WM_I18N.t('🤝 起用を約束する')}</button>`;
       }
       const pledgeReason = pledgedSelf
-        ? 'この約束は、次の通常興行のメインで果たされる。'
-        : '言葉より、試合で応えるタイプだ。';
+        ? WM_I18N.t('この約束は、次の通常興行のメインで果たされる。')
+        : WM_I18N.t('言葉より、試合で応えるタイプだ。');
       html += `<div class="fp-pledge-bar">
         <div class="fp-pledge-reason">${pledgeReason}</div>
         ${pledgeBtn}
@@ -4159,14 +4159,14 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       && (G.weekPhase === 'contractNegotiation' || !!G._releaseInterviewTarget);
     if (!_navLocked) {
       html += `<div style="padding:6px 16px;background:rgba(0,0,0,0.15);border-bottom:1px solid rgba(200,190,170,0.08);display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">🔗 相関図</button>
+        <button onclick="openRelationshipMap(${c.id})" style="font-size:12px;padding:5px 14px;background:rgba(74,143,212,0.12);color:#74b9ff;border:1px solid rgba(74,143,212,0.3);border-radius:4px;cursor:pointer;font-family:'Oswald',sans-serif;letter-spacing:1px;transition:all .2s" onmouseover="this.style.borderColor='rgba(74,143,212,0.6)'" onmouseout="this.style.borderColor='rgba(74,143,212,0.3)'">${WM_I18N.t('🔗 相関図')}</button>
       </div>`;
     }
 
     // ── Tab bar（NPC記録統一: 全選手に戦績・経歴タブ表示）──
-    const tabs = ['📊 能力'];
-    tabs.push('📋 戦績・経歴');
-    if (isRoster) tabs.push('⚙️ 管理');
+    const tabs = [WM_I18N.t('📊 能力')];
+    tabs.push(WM_I18N.t('📋 戦績・経歴'));
+    if (isRoster) tabs.push(WM_I18N.t('⚙️ 管理'));
     if (tabIdx >= tabs.length) tabIdx = 0;
     html += `<div style="display:flex;border-bottom:1px solid rgba(200,190,170,0.08);background:rgba(0,0,0,0.15)">
       ${tabs.map((t, i) => `<button onclick="event.stopPropagation();_switchFighterTab(${c.id},'${source||''}',${i})"
@@ -4194,7 +4194,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
         html += `<div class="fighter-popup-section" style="display:flex;gap:16px;font-size:13px;margin-bottom:12px">
           <div style="flex:1">
-            <span style="color:var(--text-dim)">開発率</span>
+            <span style="color:var(--text-dim)">${WM_I18N.t('開発率')}</span>
             <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
               <div style="flex:1;height:5px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden">
                 <div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div>
@@ -4203,7 +4203,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             </div>
           </div>
           <div style="flex:1">
-            <span style="color:var(--text-dim)">体調</span>
+            <span style="color:var(--text-dim)">${WM_I18N.t('体調')}</span>
             <div style="display:flex;align-items:center;gap:4px;margin-top:2px">
               <div style="flex:1;height:5px;background:rgba(200,190,170,0.08);border-radius:3px;overflow:hidden">
                 <div style="width:${condPct}%;height:100%;background:${condCls};border-radius:3px"></div>
@@ -4218,31 +4218,31 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       if (isRoster) {
         html += `<div class="fighter-popup-section" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px;margin-bottom:10px">
           <div style="padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
-            <span style="color:var(--text-dim)">人気</span><br>
+            <span style="color:var(--text-dim)">${WM_I18N.t('人気')}</span><br>
             <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))};font-size:16px">${Engine.util.dispPop(c.popularity)}</strong>
           </div>
           <div style="padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
-            <span style="color:var(--text-dim)">給与</span><br>
+            <span style="color:var(--text-dim)">${WM_I18N.t('給与')}</span><br>
             <strong style="color:var(--text);font-size:13px">${getSalary(c)}万/週</strong>
           </div>
         </div>`;
       }
       if (isFree) {
         html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</strong></span>
-          <span style="margin-left:12px">給与見込: <strong style="color:var(--text)">${getSalary(c)}万/週</strong></span>
+          <span>${WM_I18N.t('人気')}: <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</strong></span>
+          <span style="margin-left:12px">${WM_I18N.t('給与見込')}: <strong style="color:var(--text)">${getSalary(c)}万/週</strong></span>
         </div>`;
       }
       if (!isRoster && !isFree && c.popularity !== undefined) {
         html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);margin-bottom:10px">
-          <span>人気: <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</strong></span>
+          <span>${WM_I18N.t('人気')}: <strong style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</strong></span>
         </div>`;
       }
 
       // Injury
       if (c.injury) {
         html += `<div style="padding:6px 10px;background:rgba(214,48,49,0.1);border:1px solid rgba(214,48,49,0.3);border-radius:4px;font-size:11px;color:#f08b9e;margin-bottom:8px">
-          🏥 ${injuryLabel(c.injury.type)} — 残り${c.injury.weeksLeft}週
+          🏥 ${injuryLabel(c.injury.type)} — ${WM_I18N.t('残り{n}週', { n: c.injury.weeksLeft })}
         </div>`;
       }
 
@@ -4251,10 +4251,10 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         const coach = getCharCoach(c.id);
         if (coach) {
           const sm = getCoachStyleMatch(coach, c);
-          const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}" style="margin-left:4px">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span class="coach-match-badge none" style="margin-left:4px">不一致</span>';
+          const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}" style="margin-left:4px">${sm.icon}${sm.label}+${sm.bonus}</span>` : `<span class="coach-match-badge none" style="margin-left:4px">${WM_I18N.t('不一致')}</span>`;
           const styleBadgeCls = sm.type === 'none' ? 'style="font-size:10px;padding:1px 5px;margin-left:4px;border-radius:3px;background:rgba(136,136,136,0.08);color:#888;border:1px solid rgba(136,136,136,0.2);opacity:0.7"' : `class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px;margin-left:4px"`;
           html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
-            🎓 <span style="color:var(--text-dim)">担当コーチ:</span>
+            🎓 <span style="color:var(--text-dim)">${WM_I18N.t('担当コーチ')}:</span>
             <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
             <span ${styleBadgeCls}>${coach.style}</span>
             ${matchHtml}
@@ -4262,7 +4262,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           </div>`;
         } else {
           html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.02);border-radius:4px">
-            🎓 担当コーチ: なし
+            🎓 ${WM_I18N.t('担当コーチ')}: ${WM_I18N.t('なし')}
           </div>`;
         }
       }
@@ -4285,7 +4285,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
       if (myRivalries.length > 0 || myExpects.length > 0 || isRoster) {
         html += `<div class="fighter-popup-section" style="padding:10px 12px;background:rgba(200,190,170,0.02);border:1px solid rgba(200,190,170,0.08);border-radius:6px;margin-bottom:10px">
-          <div style="font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px">⚔ 試合情報</div>`;
+          <div style="font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px">${WM_I18N.t('⚔ 試合情報')}</div>`;
         if (myRivalries.length > 0) {
           myRivalries.forEach(r => {
             const other = findFighter(r.otherId);
@@ -4297,14 +4297,14 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           myExpects.forEach(e => {
             const otherId = e.leftId === c.id ? e.rightId : e.leftId;
             const other = findFighter(otherId);
-            html += `<div style="font-size:12px;color:#f1c40f;margin-bottom:3px">👥 vs ${other ? other.name : `ID#${otherId}`} が見たい！</div>`;
+            html += `<div style="font-size:12px;color:#f1c40f;margin-bottom:3px">👥 vs ${other ? other.name : `ID#${otherId}`} ${WM_I18N.t('が見たい！')}</div>`;
           });
         }
         if (isRoster) {
           const w = c.wins || 0, l = c.losses || 0, d = c.draws || 0;
           const tot = w + l + d;
           const rate = tot > 0 ? Math.round(w / tot * 100) : 0;
-          html += `<div style="font-size:12px;color:var(--text-sub);margin-top:${(myRivalries.length > 0 || myExpects.length > 0) ? 4 : 0}px">📊 通算: <span style="color:#2ecc71">${w}勝</span> <span style="color:#e74c3c">${l}敗</span> <span style="color:var(--text-dim)">(勝率${rate}%)</span></div>`;
+          html += `<div style="font-size:12px;color:var(--text-sub);margin-top:${(myRivalries.length > 0 || myExpects.length > 0) ? 4 : 0}px">📊 ${WM_I18N.t('通算')}: <span style="color:#2ecc71">${w}勝</span> <span style="color:#e74c3c">${l}敗</span> <span style="color:var(--text-dim)">(${WM_I18N.t('勝率{rate}%', { rate })})</span></div>`;
           // 直近5戦表示
           const rm = c.recentMatches || [];
           if (rm.length > 0) {
@@ -4319,7 +4319,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
               const color = m.result === 'win' ? '#2ecc71' : m.result === 'loss' ? '#e74c3c' : '#999';
               return `<span style="color:${color};white-space:nowrap">${mark}${shortName}</span>`;
             });
-            html += `<div style="font-size:11px;color:var(--text-sub);margin-top:2px">直近: ${items.join(' ')}</div>`;
+            html += `<div style="font-size:11px;color:var(--text-sub);margin-top:2px">${WM_I18N.t('直近')}: ${items.join(' ')}</div>`;
           }
         }
         html += `</div>`;
@@ -4328,7 +4328,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       // Traits section（セーブデータから引く。_migrated_npc_traits で付与済み）
       const displayTraits = c.traits || [];
       if (displayTraits.length > 0) {
-        html += '<div class="fighter-popup-section" style="margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px">固有特性</div>';
+        html += `<div class="fighter-popup-section" style="margin-bottom:10px"><div style="font-size:13px;font-weight:600;color:var(--text-dim);margin-bottom:8px">${WM_I18N.t('固有特性')}</div>`;
         displayTraits.forEach(t => {
           const td = TRAIT_DEFS[t];
           if (!td) return;
@@ -4359,7 +4359,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
       // ── Build career display from milestones ──
       const milestones = Engine.milestone.get(G, c.id);
-      const pOrgName = G.orgName || 'プレイヤー団体';
+      const pOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
       const winRateFmt = totalMatches > 0 ? (wins / totalMatches).toFixed(3).slice(1) : '.000';
 
       // ── Compact Record Row（NPC記録統一: 全選手に戦績表示）──
@@ -4368,27 +4368,27 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         const bestMQ = summary.bestMQ || c.bestMQ || (c.careerBestMQ || 0);
         html += `<div style="margin-bottom:12px;padding:9px 12px;background:rgba(200,190,170,0.04);border:1px solid var(--border);border-radius:6px">
           <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px">
-            <span style="font-size:11px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.18);padding:2px 7px;border-radius:3px;flex-shrink:0">戦績</span>
+            <span style="font-size:11px;font-weight:700;color:var(--gold);background:rgba(212,168,67,0.18);padding:2px 7px;border-radius:3px;flex-shrink:0">${WM_I18N.t('戦績')}</span>
             <span style="color:#2ecc71;font-weight:700">${wins}勝</span>
             <span style="color:#e74c3c;font-weight:700">${losses}敗</span>
             <span style="color:var(--text-dim);font-size:11px">(${winRateFmt})</span>
-            ${totalMatches > 0 ? `<span style="color:var(--text-dim)">勝率</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
-            ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ベスト評価</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
-            ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ 👑 王者（${_champDefenses}防衛）</span>` : ''}
-            ${isUnifiedChamp ? `<span style="color:var(--unified);font-size:12px;font-weight:700">｜ 🌐 全国統一王者（${G.unifiedTitle.defenses || 0}防衛）</span>` : ''}
-            ${summary.peakOVR > 0 && Engine.util.ov(c) < summary.peakOVR ? `<span style="color:var(--text-dim);margin-left:2px">｜ ピーク</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
+            ${totalMatches > 0 ? `<span style="color:var(--text-dim)">${WM_I18N.t('勝率')}</span><span style="color:var(--gold);font-weight:700">${winRate}%</span>` : ''}
+            ${bestMQ ? `<span style="color:var(--text-dim);margin-left:2px">｜ ${WM_I18N.t('ベスト評価')}</span><span style="${_scale6Style(_mqColor(bestMQ))};font-weight:700">${bestMQ}</span>` : ''}
+            ${isChamp ? `<span style="color:var(--gold);font-size:12px;font-weight:700">｜ ${WM_I18N.t('👑 王者（{n}防衛）', { n: _champDefenses })}</span>` : ''}
+            ${isUnifiedChamp ? `<span style="color:var(--unified);font-size:12px;font-weight:700">｜ ${WM_I18N.t('🌐 全国統一王者（{n}防衛）', { n: G.unifiedTitle.defenses || 0 })}</span>` : ''}
+            ${summary.peakOVR > 0 && Engine.util.ov(c) < summary.peakOVR ? `<span style="color:var(--text-dim);margin-left:2px">｜ ${WM_I18N.t('ピーク')}</span><span style="${_scale6Style(_ovrColor(summary.peakOVR))};font-weight:700">OVR ${summary.peakOVR}</span><span style="color:var(--text-dim);font-size:11px">(S${summary.peakSeason})</span>` : ''}
           </div>
           ${(() => {
             const tbo = summary.titleByOrg || [];
             if (tbo.length === 0) return summary.titleSummary ? `<div style="margin-top:6px;font-size:12px;color:var(--gold)">🏆 ${summary.titleSummary}</div>` : '';
             return tbo.map(t => {
               const body = t.wins > 1 ? `${t.wins}度戴冠・通算${t.defenses}度防衛` : `${t.defenses}度防衛`;
-              return `<div style="margin-top:6px;font-size:12px;color:var(--gold)">🏆 元${t.orgName}王者（${body}）</div>`;
+              return `<div style="margin-top:6px;font-size:12px;color:var(--gold)">🏆 ${WM_I18N.t('元')}${t.orgName}${WM_I18N.t('王者')}（${body}）</div>`;
             }).join('');
           })()}
-          ${summary.juniorTournamentWins > 0 || summary.ppvMainEventWins > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px">${summary.juniorTournamentWins > 0 ? `<span style="color:#e67e22">🏅 JT優勝 <strong>${summary.juniorTournamentWins}</strong>回</span>` : ''}${summary.ppvMainEventWins > 0 ? `<span style="color:#9b59b6">🏅 PPV優勝 <strong>${summary.ppvMainEventWins}</strong>回</span>` : ''}</div>` : ''}
-          ${(() => { const _hAll = ((c.careerRecord || {}).history || []); const _js = Engine.career.joinSeason(c); const warEvts = Engine.career.filterPostJoin(_hAll, _js).filter(e => e.type === 'war'); const wW = warEvts.filter(e => e.won).length; const wL = warEvts.length - wW; return warEvts.length > 0 ? `<div style="margin-top:4px;font-size:12px"><span style="color:#2c3e50">🏴 対抗戦 <strong style="color:#2ecc71">${wW}勝</strong> <strong style="color:#e74c3c">${wL}敗</strong></span></div>` : ''; })()}
-          ${(() => { const _hAll = (c.careerRecord || {}).history || []; const _js = Engine.career.joinSeason(c); const hist = Engine.career.filterPostJoin(_hAll, _js); const mvp = hist.filter(e => e.type === 'awardMVP').length; const rookie = hist.some(e => e.type === 'awardRookie'); const bm = hist.filter(e => e.type === 'awardBestMatch').length; const media = hist.filter(e => e.type === 'awardMedia').length; const parts = []; if (mvp) parts.push(`<span style="color:#f1c40f">👑 MVP <strong>${mvp}</strong>回</span>`); if (rookie) parts.push(`<span style="color:#f1c40f">🌟 新人王</span>`); if (bm) parts.push(`<span style="color:#e67e22">🎬 ベストマッチ <strong>${bm}</strong>回</span>`); if (media) parts.push(`<span style="color:#3498db">📺 メディア功労賞 <strong>${media}</strong>回</span>`); return parts.length > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap">${parts.join('')}</div>` : ''; })()}
+          ${summary.juniorTournamentWins > 0 || summary.ppvMainEventWins > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px">${summary.juniorTournamentWins > 0 ? `<span style="color:#e67e22">🏅 ${WM_I18N.t('JT優勝')} <strong>${summary.juniorTournamentWins}</strong>回</span>` : ''}${summary.ppvMainEventWins > 0 ? `<span style="color:#9b59b6">🏅 ${WM_I18N.t('PPV優勝')} <strong>${summary.ppvMainEventWins}</strong>回</span>` : ''}</div>` : ''}
+          ${(() => { const _hAll = ((c.careerRecord || {}).history || []); const _js = Engine.career.joinSeason(c); const warEvts = Engine.career.filterPostJoin(_hAll, _js).filter(e => e.type === 'war'); const wW = warEvts.filter(e => e.won).length; const wL = warEvts.length - wW; return warEvts.length > 0 ? `<div style="margin-top:4px;font-size:12px"><span style="color:#2c3e50">🏴 ${WM_I18N.t('対抗戦')} <strong style="color:#2ecc71">${wW}勝</strong> <strong style="color:#e74c3c">${wL}敗</strong></span></div>` : ''; })()}
+          ${(() => { const _hAll = (c.careerRecord || {}).history || []; const _js = Engine.career.joinSeason(c); const hist = Engine.career.filterPostJoin(_hAll, _js); const mvp = hist.filter(e => e.type === 'awardMVP').length; const rookie = hist.some(e => e.type === 'awardRookie'); const bm = hist.filter(e => e.type === 'awardBestMatch').length; const media = hist.filter(e => e.type === 'awardMedia').length; const parts = []; if (mvp) parts.push(`<span style="color:#f1c40f">👑 MVP <strong>${mvp}</strong>回</span>`); if (rookie) parts.push(`<span style="color:#f1c40f">🌟 ${WM_I18N.t('新人王')}</span>`); if (bm) parts.push(`<span style="color:#e67e22">🎬 ${WM_I18N.t('ベストマッチ')} <strong>${bm}</strong>回</span>`); if (media) parts.push(`<span style="color:#3498db">📺 ${WM_I18N.t('メディア功労賞')} <strong>${media}</strong>回</span>`); return parts.length > 0 ? `<div style="margin-top:4px;font-size:12px;display:flex;gap:12px;flex-wrap:wrap">${parts.join('')}</div>` : ''; })()}
         </div>`;
       }
 
@@ -4406,8 +4406,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:8px;display:flex;align-items:center;gap:6px">
-            <span style="background:#3498db;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">年表</span>
-            キャリア年表
+            <span style="background:#3498db;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">${WM_I18N.t('年表')}</span>
+            ${WM_I18N.t('キャリア年表')}
           </h5>
           <div style="border:1px solid rgba(200,190,170,0.12);border-radius:8px;overflow:hidden;background:rgba(200,190,170,0.02)">`;
 
@@ -4420,17 +4420,17 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const isCurrentSeason = s === _currentRel;
           const seasonMeta = summary
             ? summary.detail
-            : (isCurrentSeason ? 'シーズン進行中' : '');
+            : (isCurrentSeason ? WM_I18N.t('シーズン進行中') : '');
 
           html += `<section style="display:grid;grid-template-columns:84px minmax(0,1fr);border-top:${s === seasons[0] ? '0' : '1px solid rgba(200,190,170,0.08)'}">
             <div style="padding:10px 9px;background:rgba(212,168,67,0.06);border-right:1px solid rgba(200,190,170,0.08)">
-              <div style="font-size:13px;font-weight:900;color:var(--text);line-height:1.15">\u30ad\u30e3\u30ea\u30a2${s}\u5e74\u76ee</div>
+              <div style="font-size:13px;font-weight:900;color:var(--text);line-height:1.15">${WM_I18N.t('\u30ad\u30e3\u30ea\u30a2{n}\u5e74\u76ee', { n: s })}</div>
               ${seasonMeta ? `<div style="margin-top:4px;font-size:10px;line-height:1.35;color:${isCurrentSeason ? 'var(--blue)' : 'var(--text-dim)'}">${seasonMeta}</div>` : ''}
             </div>
             <div style="padding:9px 10px;background:rgba(255,255,255,0.015)">`;
 
           if (nonSummary.length === 0) {
-            html += `<div style="font-size:11px;color:var(--text-dim);line-height:1.35">\u7279\u8a18\u4e8b\u9805\u306a\u3057</div>`;
+            html += `<div style="font-size:11px;color:var(--text-dim);line-height:1.35">${WM_I18N.t('\u7279\u8a18\u4e8b\u9805\u306a\u3057')}</div>`;
           } else {
             nonSummary.forEach(m => {
               const typeStyle = Engine.milestone._typeStyle(m.type);
@@ -4448,7 +4448,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
         html += `</div></div>`;
       } else {
-        html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(200,190,170,0.02);border-radius:6px">まだキャリア記録がありません</div>`;
+        html += `<div style="font-size:13px;color:var(--text-dim);padding:14px;text-align:center;background:rgba(200,190,170,0.02);border-radius:6px">${WM_I18N.t('まだキャリア記録がありません')}</div>`;
       }
 
       // v1.3-2: §4.4/§7.1 経歴（怪我記録）セクション（NPC記録統一: 全選手に表示）
@@ -4458,14 +4458,14 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       if (hist.length > 0) {
         html += `<div style="margin-bottom:14px">
           <h5 style="font-size:14px;color:var(--text-dim);margin-bottom:10px;display:flex;align-items:center;gap:6px">
-            <span style="background:#a29bfe;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">経歴</span>
-            怪我・重大事項
+            <span style="background:#a29bfe;color:#fff;padding:2px 7px;border-radius:3px;font-size:11px;font-weight:700">${WM_I18N.t('経歴')}</span>
+            ${WM_I18N.t('怪我・重大事項')}
           </h5>`;
         [...hist].reverse().forEach(h => {
           const typeColor = h.type === 'injury_retirement' ? '#e74c3c' : '#e17055';
           const typeIcon  = h.type === 'injury_retirement' ? '🏁' : '🩹';
           const _relS = Engine.career.relSeason(h.season, _histJoinS);
-          const seasonStr = h.season ? `キャリア${_relS}年目` : '';
+          const seasonStr = h.season ? WM_I18N.t('キャリア{n}年目', { n: _relS }) : '';
           const weekStr   = h.week   ? ` ${h.week}週` : '';
           html += `<div style="padding:6px 10px;margin-bottom:4px;font-size:13px;display:flex;align-items:baseline;gap:8px;border-left:2px solid ${typeColor}33;padding-left:10px;line-height:1.5">
             <span style="color:var(--text-dim);font-size:11px;flex-shrink:0;min-width:70px;font-family:'Courier New',monospace">${seasonStr}${weekStr}</span>
@@ -4488,24 +4488,24 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const currentAbsWeek = Engine.util.absWeekTotal(G.season, G.week, G.offSeason, G.offWeek);
           const weeksLeft = Math.max(0, 4 - (currentAbsWeek - lastRunStart));
           html += `<div style="margin-top:8px;padding:12px 14px;background:rgba(212,168,67,0.08);border:1px solid rgba(212,168,67,0.3);border-radius:6px;margin-bottom:10px">
-            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">🌅 ラストラン中</div>
-            <div style="font-size:12px;color:var(--text-sub)">引退試合をカードに組みましょう。（期限 あと約${weeksLeft}週）</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gold);margin-bottom:4px">${WM_I18N.t('🌅 ラストラン中')}</div>
+            <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('引退試合をカードに組みましょう。（期限 あと約{n}週）', { n: weeksLeft })}</div>
           </div>`;
         } else if (canAdvise) {
           // 引退勧告可能
           const cooldown = c.retireAdviceCooldown || 0;
           const advice = Engine.coach.getRetireAdvice(G, c.id);
           html += `<div style="margin-top:8px;padding:12px 14px;background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.2);border-radius:6px;margin-bottom:10px">
-            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px;border-bottom:1px solid rgba(212,168,67,0.15);padding-bottom:4px">─── 引退 ───</div>`;
+            <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px;border-bottom:1px solid rgba(212,168,67,0.15);padding-bottom:4px">${WM_I18N.t('─── 引退 ───')}</div>`;
           if (advice.text) {
             html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px;border-left:2px solid rgba(212,168,67,0.4)">
               💬 <span style="color:var(--text-dim)">${advice.coachName}</span>「${advice.text}」
             </div>`;
           }
           if (cooldown > 0) {
-            html += `<button disabled style="font-size:13px;padding:8px 14px;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.1);color:var(--text-dim);border-radius:6px;width:100%;cursor:not-allowed">🌅 引退を勧める（クールダウン ${cooldown}週）</button>`;
+            html += `<button disabled style="font-size:13px;padding:8px 14px;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.1);color:var(--text-dim);border-radius:6px;width:100%;cursor:not-allowed">${WM_I18N.t('🌅 引退を勧める（クールダウン {n}週）', { n: cooldown })}</button>`;
           } else {
-            html += `<button onclick="closeFighterPopup();doRetireAdvise(${c.id})" style="font-size:13px;padding:8px 14px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.4);color:var(--gold);border-radius:6px;width:100%;cursor:pointer;font-weight:700">🌅 引退を勧める</button>`;
+            html += `<button onclick="closeFighterPopup();doRetireAdvise(${c.id})" style="font-size:13px;padding:8px 14px;background:rgba(212,168,67,0.15);border:1px solid rgba(212,168,67,0.4);color:var(--gold);border-radius:6px;width:100%;cursor:pointer;font-weight:700">${WM_I18N.t('🌅 引退を勧める')}</button>`;
           }
           html += `</div>`;
         }
@@ -4513,14 +4513,14 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         // 解雇ボタン
         const inCard = G.showCard.some(m => m.left === c.id || m.right === c.id);
         html += `<div style="margin-top:4px;padding:14px;background:rgba(196,30,58,0.06);border:1px solid rgba(196,30,58,0.15);border-radius:6px">
-          <div style="font-size:12px;font-weight:700;color:#f08b9e;margin-bottom:6px;border-bottom:1px solid rgba(196,30,58,0.2);padding-bottom:4px">─── 契約 ───</div>
-          <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px">⚠️ 選手の解雇は取り消せません。</div>
-          <button onclick="closeFighterPopup();App.startReleaseInterview(${c.id})" style="font-size:13px;padding:10px 16px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:6px;width:100%" ${inCard ? 'disabled title="カード登録中"' : ''}>🚪 この選手を解雇する</button>
-          ${inCard ? '<div style="font-size:11px;color:var(--text-dim);margin-top:8px;text-align:center">※興行カード登録中のため解雇できません</div>' : ''}
+          <div style="font-size:12px;font-weight:700;color:#f08b9e;margin-bottom:6px;border-bottom:1px solid rgba(196,30,58,0.2);padding-bottom:4px">${WM_I18N.t('─── 契約 ───')}</div>
+          <div style="font-size:13px;color:var(--text-sub);margin-bottom:10px">${WM_I18N.t('⚠️ 選手の解雇は取り消せません。')}</div>
+          <button onclick="closeFighterPopup();App.startReleaseInterview(${c.id})" style="font-size:13px;padding:10px 16px;cursor:pointer;background:rgba(196,30,58,0.2);border:1px solid rgba(196,30,58,0.4);color:#f08b9e;border-radius:6px;width:100%" ${inCard ? `disabled title="${WM_I18N.t('カード登録中')}"` : ''}>${WM_I18N.t('🚪 この選手を解雇する')}</button>
+          ${inCard ? `<div style="font-size:11px;color:var(--text-dim);margin-top:8px;text-align:center">${WM_I18N.t('※興行カード登録中のため解雇できません')}</div>` : ''}
         </div>`;
       }
       if (c.isRental) {
-        html += `<div style="font-size:11px;color:#f39c12;padding:8px;text-align:center">🤝 レンタル選手のため管理操作は制限されています</div>`;
+        html += `<div style="font-size:11px;color:#f39c12;padding:8px;text-align:center">${WM_I18N.t('🤝 レンタル選手のため管理操作は制限されています')}</div>`;
       }
     }
 
@@ -4538,21 +4538,21 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       const _rosterFull = _ownRosterCount >= _rCap;
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
-          <span style="color:var(--text-sub)">契約金</span>
+          <span style="color:var(--text-sub)">${WM_I18N.t('契約金')}</span>
           <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${Math.round(signingCost).toLocaleString()}万</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:12px;color:var(--text-dim)">
-          <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
-          <span>給与: ${getSalary(c)}万/週</span>
-          ${scoutDisc > 0 ? `<span style="color:#f39c12">🔍 スカウト網割引${scoutDisc}%</span>` : ''}
+          <span>${WM_I18N.t('ランク')}: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
+          <span>${WM_I18N.t('給与')}: ${getSalary(c)}万/週</span>
+          ${scoutDisc > 0 ? `<span style="color:#f39c12">${WM_I18N.t('🔍 スカウト網割引{n}%', { n: scoutDisc })}</span>` : ''}
         </div>
-        ${viaTicket ? '<div style="text-align:center;font-size:13px;color:#f1c40f;padding:6px 8px;margin-bottom:8px;background:rgba(241,196,15,0.1);border:1px solid rgba(241,196,15,0.3);border-radius:6px">🎫 逸材特別交渉枠を使用します（1回限り）</div>' : ''}
+        ${viaTicket ? `<div style="text-align:center;font-size:13px;color:#f1c40f;padding:6px 8px;margin-bottom:8px;background:rgba(241,196,15,0.1);border:1px solid rgba(241,196,15,0.3);border-radius:6px">${WM_I18N.t('🎫 逸材特別交渉枠を使用します（1回限り）')}</div>` : ''}
         ${_rosterFull
-          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">🏢 ロスター枠が上限（${_rCap}名）に達しています</div>`
+          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">${WM_I18N.t('🏢 ロスター枠が上限（{n}名）に達しています', { n: _rCap })}</div>`
           : !canNeg
-            ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
-            : `<button onclick="closeFighterPopup();showSigningCeremony(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ この選手と契約する</button>
-            ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
+            ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">${WM_I18N.t('⛔ 知名度不足（団体人気 {n} 以上で交渉可能）', { n: tierCfg.reqPop })}</div>`
+            : `<button onclick="closeFighterPopup();showSigningCeremony(${c.id})" style="width:100%;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>${WM_I18N.t('✍ この選手と契約する')}</button>
+            ${!canAfford ? `<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">${WM_I18N.t('💸 資金不足')}</div>` : ''}`
         }
       </div>`;
     }
@@ -4571,26 +4571,26 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       const _scoutFull = _scoutOwnCount >= _scoutCap;
       html += `<div style="margin-top:12px;padding:14px;background:rgba(46,204,113,0.06);border:1px solid rgba(46,204,113,0.15);border-radius:8px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:13px">
-          <span style="color:var(--text-sub)">契約金</span>
+          <span style="color:var(--text-sub)">${WM_I18N.t('契約金')}</span>
           <span style="color:var(--gold);font-weight:700;font-size:16px">💰 ${Math.round(signingCost).toLocaleString()}万</span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;font-size:12px;color:var(--text-dim)">
-          <span>ランク: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
-          <span>獲得枠: ${picks.length}/${maxPicks}</span>
-          ${scoutDisc > 0 ? `<span style="color:#f39c12">🔍 割引${scoutDisc}%</span>` : ''}
+          <span>${WM_I18N.t('ランク')}: <span style="color:${tierCfg.color}">${tierCfg.label}</span></span>
+          <span>${WM_I18N.t('獲得枠: {a}/{b}', { a: picks.length, b: maxPicks })}</span>
+          ${scoutDisc > 0 ? `<span style="color:#f39c12">${WM_I18N.t('🔍 割引{n}%', { n: scoutDisc })}</span>` : ''}
         </div>
-        ${c._hasCompetition ? `<div style="font-size:11px;color:#e74c3c;margin-bottom:8px;padding:4px 8px;background:rgba(231,76,60,0.1);border-radius:4px">⚔ 他団体が注目 — 競合時: ${Math.round(signingCost * (c._compMultiplier || 1.5))}万</div>` : ''}
+        ${c._hasCompetition ? `<div style="font-size:11px;color:#e74c3c;margin-bottom:8px;padding:4px 8px;background:rgba(231,76,60,0.1);border-radius:4px">${WM_I18N.t('⚔ 他団体が注目 — 競合時: {n}万', { n: Math.round(signingCost * (c._compMultiplier || 1.5)) })}</div>` : ''}
         ${_scoutFull
-          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">🏢 ロスター枠が上限（${_scoutCap}名）に達しています</div>`
+          ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">${WM_I18N.t('🏢 ロスター枠が上限（{n}名）に達しています', { n: _scoutCap })}</div>`
           : !canNeg
-            ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">⛔ 知名度不足（団体人気 ${tierCfg.reqPop} 以上で交渉可能）</div>`
+            ? `<div style="text-align:center;font-size:13px;color:#e74c3c;padding:8px">${WM_I18N.t('⛔ 知名度不足（団体人気 {n} 以上で交渉可能）', { n: tierCfg.reqPop })}</div>`
             : !slotsLeft
-            ? `<div style="text-align:center;font-size:13px;color:var(--text-dim);padding:8px">獲得枠上限に達しています</div>`
+            ? `<div style="text-align:center;font-size:13px;color:var(--text-dim);padding:8px">${WM_I18N.t('獲得枠上限に達しています')}</div>`
             : `<div style="display:flex;gap:8px">
-                <button onclick="closeFighterPopup();scoutPick(${c.id})" style="flex:1;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>✍ 獲得指名</button>
-                <button onclick="closeFighterPopup();scoutResolve(${c.id},'skip')" style="padding:10px 16px;font-size:13px;cursor:pointer;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.12);color:var(--text-dim);border-radius:6px">見送り</button>
+                <button onclick="closeFighterPopup();scoutPick(${c.id})" style="flex:1;padding:10px;font-size:14px;font-weight:700;cursor:pointer;background:rgba(46,204,113,0.2);border:1px solid rgba(46,204,113,0.4);color:#2ecc71;border-radius:6px" ${canAfford?'':'disabled'}>${WM_I18N.t('✍ 獲得指名')}</button>
+                <button onclick="closeFighterPopup();scoutResolve(${c.id},'skip')" style="padding:10px 16px;font-size:13px;cursor:pointer;background:rgba(200,190,170,0.04);border:1px solid rgba(200,190,170,0.12);color:var(--text-dim);border-radius:6px">${WM_I18N.t('見送り')}</button>
               </div>
-              ${!canAfford ? '<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">💸 資金不足</div>' : ''}`
+              ${!canAfford ? `<div style="font-size:11px;color:#e74c3c;text-align:center;margin-top:6px">${WM_I18N.t('💸 資金不足')}</div>` : ''}`
         }
       </div>`;
     }
@@ -4740,12 +4740,12 @@ function moveShowCard(idx, dir) {
   const card = [...G.showCard];
   if (card[idx]?._unifiedTitleLocked || card[target]?._unifiedTitleLocked) {
     Audio.play('error');
-    showToast('🌐 全国統一王座戦の枠は固定です', 3000);
+    showToast(WM_I18N.t('🌐 全国統一王座戦の枠は固定です'), 3000);
     return;
   }
   if (card[idx]?._crMatchLocked || card[target]?._crMatchLocked) {
     Audio.play('error');
-    showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
+    showToast(WM_I18N.t('⚔ 挑戦試合の上位3枠は固定です'), 3000);
     return;
   }
   if (target === 0 && card[idx].matchType === 'tag') { Audio.play('error'); return; }
@@ -4931,7 +4931,7 @@ function _applyAutoTitleMatch(card) {
 }
 
 function toggleTitle(slotIndex) {
-  if (!G.titleEstablished) { alert('団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立）'); return; }
+  if (!G.titleEstablished) { alert(WM_I18N.t('団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立）')); return; }
   // 画面に出ている枠と G.showCard がずれていたら、**例外で落とさず描き直して合わせる**。
   // ここで throw すると以降のクリックが全部死に、興行開催ボタンまで効かなくなる
   // (2026-07-31 Keisuke 実機: isTitle の TypeError と「開催ボタンが押せない」が同時発生)。
@@ -4953,20 +4953,20 @@ function toggleTitle(slotIndex) {
     // 無言でチェックを剥がしていたため「実施されなかった」ように見えた(v1.31報告)。
     // ここで理由を出して弾く
     if ((G.showCard || []).some(s => s && s._unifiedTitleMatch)) {
-      alert('全国統一王座戦のある興行では、団体王座戦は同時開催できません');
+      alert(WM_I18N.t('全国統一王座戦のある興行では、団体王座戦は同時開催できません'));
       return;
     }
     const cd = Engine.title.canTitleMatch(G);
-    if (!cd.allowed) { alert(`タイトルマッチは12週に1回のみ開催できます（あと${cd.weeksLeft}週）`); return; }
+    if (!cd.allowed) { alert(WM_I18N.t('タイトルマッチは12週に1回のみ開催できます（あと{n}週）', { n: cd.weeksLeft })); return; }
     // Rental restriction
     const hasRental = [m.left, m.right].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
-    if (hasRental) { alert('レンタル選手はタイトルマッチに出場できません'); return; }
+    if (hasRental) { alert(WM_I18N.t('レンタル選手はタイトルマッチに出場できません')); return; }
   }
   const champId = G.titles.world.championId;
   if (!champId && !m.isTitle) {
-    if (!(m.left > 0 && m.right > 0)) { alert('両選手を選んでください'); return; }
+    if (!(m.left > 0 && m.right > 0)) { alert(WM_I18N.t('両選手を選んでください')); return; }
   } else if (champId) {
-    if (m.left !== champId && m.right !== champId) { alert('タイトルマッチはチャンピオンを含む必要があります'); return; }
+    if (m.left !== champId && m.right !== champId) { alert(WM_I18N.t('タイトルマッチはチャンピオンを含む必要があります')); return; }
     // 挑戦資格チェック（タイトルON時のみ）
     if (!m.isTitle) {
       const challengerId = m.left === champId ? m.right : m.left;
@@ -4974,7 +4974,7 @@ function toggleTitle(slotIndex) {
         const eligibleIds = Engine.title.getEligibleChallengers(G.roster, champId);
         if (!eligibleIds.includes(challengerId)) {
           const chal = G.roster.find(c => c.id === challengerId);
-          alert(`${chal?.name || '選手'}はタイトル挑戦資格がありません（OVR上位5位以内 or 最高OVRとの差8以内）`);
+          alert(WM_I18N.t('{name}はタイトル挑戦資格がありません（OVR上位5位以内 or 最高OVRとの差8以内）', { name: chal?.name || WM_I18N.t('選手') }));
           return;
         }
       }
@@ -4990,7 +4990,7 @@ function startShowPrep() {
   if (G.offSeason || G.weekPhase !== 'manage' || !Engine.util.isRegularShowWeek(G.week)) {
     Audio.play('error');
     if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
-      showToast('今週は季節の特別興行です。通常興行は行えません。', 4000);
+      showToast(WM_I18N.t('今週は季節の特別興行です。通常興行は行えません。'), 4000);
     }
     return;
   }
@@ -5044,7 +5044,7 @@ function resumeShowPrep() {
   if (G.offSeason || !Engine.util.isRegularShowWeek(G.week)) {
     Audio.play('error');
     if (Engine.util.isSeasonSpecialEventWeek(G.week)) {
-      showToast('今週は季節の特別興行です。通常興行は行えません。', 4000);
+      showToast(WM_I18N.t('今週は季節の特別興行です。通常興行は行えません。'), 4000);
     }
     showScreen('week');
     refreshAll();
@@ -5089,7 +5089,7 @@ function updateSchedulePreview(fighterId, newSchedule) {
     if (action === 'balance') action = isShowWeek(G.week) ? 'promo' : 'practice';
     if (action !== 'rest' && c.condition < 60) action = 'auto_rest';
   }
-  const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
+  const actionLabels = {practice:WM_I18N.t('練習'),promo:WM_I18N.t('プロモ'),rest:WM_I18N.t('休養'),auto_rest:'🔄'+WM_I18N.t('休養'),balance:WM_I18N.t('バランス'),'療養':WM_I18N.t('療養'),intensive:'⚡'+WM_I18N.t('強化')};
   const label = actionLabels[action] || action;
   // Update the cell in the table
   const cell = document.getElementById('action-' + fighterId);
@@ -5152,11 +5152,11 @@ function renderMatchPreview() {
       console.error('finalizeShow error:', e);
       const overlay = document.getElementById('showResultOverlay');
       const box = document.getElementById('showResultBox');
-      box.innerHTML = `<div class="show-result-title">エラー</div>
-        <div style="text-align:center;color:var(--text-sub);margin-bottom:16px">興行結果の処理中にエラーが発生しました。<br><span style="font-size:11px;color:var(--text-dim)">${e.message}</span></div>
+      box.innerHTML = `<div class="show-result-title">${WM_I18N.t('エラー')}</div>
+        <div style="text-align:center;color:var(--text-sub);margin-bottom:16px">${WM_I18N.t('興行結果の処理中にエラーが発生しました。')}<br><span style="font-size:11px;color:var(--text-dim)">${e.message}</span></div>
         <div style="display:flex;gap:8px;justify-content:center">
-          <button class="btn btn-gold" onclick="try{App.finalizeShow()}catch(e){alert('再試行失敗: '+e.message)}">🔄 再試行</button>
-          <button class="btn" style="background:var(--bg-mid);color:var(--text-sub)" onclick="App.skipAllMatches()">⏩ スキップで確定</button>
+          <button class="btn btn-gold" onclick="try{App.finalizeShow()}catch(e){alert(WM_I18N.t('再試行失敗: ')+e.message)}">${WM_I18N.t('🔄 再試行')}</button>
+          <button class="btn" style="background:var(--bg-mid);color:var(--text-sub)" onclick="App.skipAllMatches()">${WM_I18N.t('⏩ スキップで確定')}</button>
         </div>`;
       overlay.classList.add('active');
     }
@@ -5168,8 +5168,8 @@ function renderMatchPreview() {
   const special = isSpecialShow(G.week);
   const ppv = isPPV(G.week);
   const showName = sp.isAwayChallenge
-    ? `🚌 ${sp.awayBooking?.opponentOrgName || '相手団体'} 興行・遠征試合`
-    : ppv ? '🏆 PPV GRAND FINAL' : special ? '⭐ 特別興行' : `第${G.totalShows + 1}回 定期興行`;
+    ? WM_I18N.t('🚌 {org} 興行・遠征試合', { org: sp.awayBooking?.opponentOrgName || WM_I18N.t('相手団体') })
+    : ppv ? '🏆 PPV GRAND FINAL' : special ? WM_I18N.t('⭐ 特別興行') : WM_I18N.t('第{n}回 定期興行', { n: G.totalShows + 1 });
   const resolved = sp.results.filter(r => r !== null).length;
   const total = sp.validMatches.length;
 
@@ -5182,13 +5182,13 @@ function renderMatchPreview() {
   // 構造(縦並びの試合カード)は変えず、.away修飾クラスによる色replaceと補助情報の追加のみ。
   const isAway = !!sp.isAwayChallenge;
   const awayOpponentOrgId = isAway ? (sp.awayBooking?.opponentOrgId || '') : '';
-  const awayOpponentOrgName = isAway ? (sp.awayBooking?.opponentOrgName || '相手団体') : '';
-  const awaySelfOrgName = isAway ? (sp.awayBooking?.requesterOrgName || G.orgName || '自団体') : '';
+  const awayOpponentOrgName = isAway ? (sp.awayBooking?.opponentOrgName || WM_I18N.t('相手団体')) : '';
+  const awaySelfOrgName = isAway ? (sp.awayBooking?.requesterOrgName || G.orgName || WM_I18N.t('自団体')) : '';
   const hdrEmblemHtml = isAway
     ? `<div class="hdr-emblem">${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 58) : ''}</div>`
     : '';
   const awayBarHtml = isAway
-    ? `<div class="awaybar">${typeof orgIconHtml === 'function' ? orgIconHtml('player', 20) : ''}${escHtml(awaySelfOrgName)}<span class="awaybar-sep">が</span>${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 20) : ''}${escHtml(awayOpponentOrgName)}のリングへ乗り込む</div>`
+    ? `<div class="awaybar">${typeof orgIconHtml === 'function' ? orgIconHtml('player', 20) : ''}${escHtml(awaySelfOrgName)}<span class="awaybar-sep">${WM_I18N.t('が')}</span>${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 20) : ''}${escHtml(awayOpponentOrgName)}${WM_I18N.t('のリングへ乗り込む')}</div>`
     : '';
   // 試合行の選手名下に出す所属団体ラベル（自陣=緑ドット／敵地=赤茶ドット）
   // 他団体が絡む試合でだけ所属を出す(mockup-baseline-v0.1 §5)。
@@ -5206,8 +5206,8 @@ function renderMatchPreview() {
     if (!emblem) return '';
     const guestOrgId = guestOrgIdOf(fighter);
     const name = guestOrgId
-      ? ((RIVAL_ORGS.find(o => o.id === guestOrgId) || {}).name || '他団体')
-      : (G.orgName || '自団体');
+      ? ((RIVAL_ORGS.find(o => o.id === guestOrgId) || {}).name || WM_I18N.t('他団体'))
+      : (G.orgName || WM_I18N.t('自団体'));
     return `<div class="forg">${emblem}<span class="dot ${guestOrgId ? 'away' : 'home'}"></span>${escHtml(name)}</div>`;
   };
 
@@ -5216,7 +5216,7 @@ function renderMatchPreview() {
     ${hdrEmblemHtml}
     <div class="show-label">${sp.isAwayChallenge ? 'Away Challenge' : 'Weekly Show'}</div>
     <div class="show-title">${showName}</div>
-    <div class="show-progress">全${total}試合 ─ ${resolved}/${total} 完了</div>
+    <div class="show-progress">${WM_I18N.t('全{n}試合 ─ {a}/{b} 完了', { n: total, a: resolved, b: total })}</div>
   </div>${awayBarHtml}`;
 
   html += `<div class="match-list">`;
@@ -5227,13 +5227,13 @@ function renderMatchPreview() {
     const isNext = idx === nextIdx;
     const isMain = idx === 0;
     const order = total - idx;
-    const matchLabel = isMain ? '★ メインイベント' : `第${order}試合`;
+    const matchLabel = isMain ? WM_I18N.t('★ メインイベント') : WM_I18N.t('第{n}試合', { n: order });
     const cardClass = isMain ? 'card-main' : 'card-sub';
     const cardStateClass = isResolved ? ' is-resolved' : isNext ? ' is-next' : ' is-waiting';
     const statusBadge = isResolved
-      ? '<span class="smc-badge done">完了</span>'
-      : isNext ? '<span class="smc-badge next">次戦</span>'
-      : '<span class="smc-badge wait">待機</span>';
+      ? `<span class="smc-badge done">${WM_I18N.t('完了')}</span>`
+      : isNext ? `<span class="smc-badge next">${WM_I18N.t('次戦')}</span>`
+      : `<span class="smc-badge wait">${WM_I18N.t('待機')}</span>`;
 
     // ── タッグマッチプレビュー ──
     if (m.matchType === 'tag') {
@@ -5279,7 +5279,7 @@ function renderMatchPreview() {
       // bond-rivalry plan P-1: bond ≤ 20 不仲ペアの警告マーカー
       const _chemHtml = (bond) => {
         if (bond <= 20) {
-          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">⚠ 不仲 ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">能力-3 / 連携不可 / 相手との関係-1</div></div>`;
+          return `<div class="smc-tag-chem" style="color:#ff7675;font-weight:900">${WM_I18N.t('⚠ 不仲')} ${Math.round(bond)}<div style="font-size:10px;font-weight:700;opacity:0.85;margin-top:2px">${WM_I18N.t('能力-3 / 連携不可 / 相手との関係-1')}</div></div>`;
         }
         return `<div class="smc-tag-chem">🤝 ${Math.round(bond)}</div>`;
       };
@@ -5289,18 +5289,18 @@ function renderMatchPreview() {
         <div class="smc-tag-team right"><div class="smc-tag-lineup">${_tagFighter(tB1)}${_tagFighter(tB2)}</div>${_chemHtml(bondB)}</div>
       </div>`;
       if (isResolved) {
-        let wNames = '決着つかず';
+        let wNames = WM_I18N.t('決着つかず');
         if (result.winner === 'teamA') wNames = `${tA1.name} & ${tA2.name}`;
         else if (result.winner === 'teamB') wNames = `${tB1.name} & ${tB2.name}`;
         html += `<div class="smc-result">
-          <span class="winner-tag">🏆 ${wNames} 勝利</span>
+          <span class="winner-tag">${WM_I18N.t('🏆 {names} 勝利', { names: wNames })}</span>
           <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
-          <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">評価 ${result.mq}</span>
+          <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">${WM_I18N.t('評価')} ${result.mq}</span>
         </div>`;
       } else if (isNext) {
         html += `<div class="smc-action">
-          <button class="smc-btn-watch" onclick="App.watchMatch(${idx})">🎬 試合を観る</button>
-          <button class="smc-btn-skip" onclick="App.skipMatch(${idx})">≫ スキップ</button>
+          <button class="smc-btn-watch" onclick="App.watchMatch(${idx})">${WM_I18N.t('🎬 試合を観る')}</button>
+          <button class="smc-btn-skip" onclick="App.skipMatch(${idx})">${WM_I18N.t('≫ スキップ')}</button>
         </div>`;
       }
       html += `</div>`;
@@ -5311,7 +5311,7 @@ function renderMatchPreview() {
     const charL = G.roster.find(c => c.id === m.left);
     const charR = G.roster.find(c => c.id === m.right);
     if (!charL || !charR) continue;
-    const titleTag = m.isTitle ? ' <span class="smc-title-tag">🏆 タイトル戦</span>' : '';
+    const titleTag = m.isTitle ? ` <span class="smc-title-tag">${WM_I18N.t('🏆 タイトル戦')}</span>` : '';
 
     const upperL = getUpperUrl(charL.id);
     const upperR = getUpperUrl(charR.id);
@@ -5328,11 +5328,11 @@ function renderMatchPreview() {
     const rivalLvl = getRivalryLevel(charL.id, charR.id);
     const relParts = [];
     if (rivalLvl) {
-      relParts.push(`<span style="color:${rivalLvl.color};font-weight:700">${rivalLvl.emoji}${rivalLvl.label}（評価+${rivalLvl.mqBonus}）</span>`);
+      relParts.push(`<span style="color:${rivalLvl.color};font-weight:700">${rivalLvl.emoji}${rivalLvl.label}${WM_I18N.t('（評価+{n}）', { n: rivalLvl.mqBonus })}</span>`);
     } else if (rivMax > 10) {
-      relParts.push(`<span style="color:#e67e22">⚡ 因縁 ${Math.round(rivMax)}</span>`);
+      relParts.push(`<span style="color:#e67e22">${WM_I18N.t('⚡ 因縁')} ${Math.round(rivMax)}</span>`);
     }
-    relParts.push(`<span style="color:${bondColor}">🤝 友好 ${bondAvg}</span>`);
+    relParts.push(`<span style="color:${bondColor}">${WM_I18N.t('🤝 友好')} ${bondAvg}</span>`);
 
     // 勝者/敗者判定（完了試合用）
     const leftIsWinner = isResolved && result.winner === 'left';
@@ -5372,9 +5372,9 @@ function renderMatchPreview() {
         </div>`;
       };
       const awayRelParts = [];
-      if (rivalLvl) awayRelParts.push(`<span class="smc-away-chip is-fate">${rivalLvl.emoji}${escHtml(rivalLvl.label)} 評価+${rivalLvl.mqBonus}</span>`);
-      else if (rivMax > 10) awayRelParts.push(`<span class="smc-away-chip is-fate">⚡ 因縁 ${Math.round(rivMax)}</span>`);
-      awayRelParts.push(`<span class="smc-away-chip">🤝 友好 ${bondAvg}</span>`);
+      if (rivalLvl) awayRelParts.push(`<span class="smc-away-chip is-fate">${rivalLvl.emoji}${escHtml(rivalLvl.label)} ${WM_I18N.t('評価+{n}', { n: rivalLvl.mqBonus })}</span>`);
+      else if (rivMax > 10) awayRelParts.push(`<span class="smc-away-chip is-fate">${WM_I18N.t('⚡ 因縁')} ${Math.round(rivMax)}</span>`);
+      awayRelParts.push(`<span class="smc-away-chip">${WM_I18N.t('🤝 友好')} ${bondAvg}</span>`);
       html += `<div class="smc-away-arena">
         ${awaySideHtml(charL, charR, upperL, ovrL, leftCharClass)}
         <div class="smc-away-mid"><div class="smc-vs-text">VS</div>${awayRelParts.join('')}</div>
@@ -5428,16 +5428,16 @@ function renderMatchPreview() {
 
     // ステータス別ボトム
     if (isResolved) {
-      const wName = result.winner === 'draw' ? '決着つかず' : result.winner === 'left' ? charL.name : charR.name;
+      const wName = result.winner === 'draw' ? WM_I18N.t('決着つかず') : result.winner === 'left' ? charL.name : charR.name;
       html += `<div class="smc-result">
-        <span class="winner-tag">🏆 ${wName} 勝利</span>
+        <span class="winner-tag">${WM_I18N.t('🏆 {name} 勝利', { name: wName })}</span>
         <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
-        <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">評価 ${result.mq}</span>
+        <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">${WM_I18N.t('評価')} ${result.mq}</span>
       </div>`;
     } else if (isNext) {
       html += `<div class="smc-action">
-        <button class="smc-btn-watch" onclick="App.watchMatch(${idx})">🎬 試合を観る</button>
-        <button class="smc-btn-skip" onclick="App.skipMatch(${idx})">≫ スキップ</button>
+        <button class="smc-btn-watch" onclick="App.watchMatch(${idx})">${WM_I18N.t('🎬 試合を観る')}</button>
+        <button class="smc-btn-skip" onclick="App.skipMatch(${idx})">${WM_I18N.t('≫ スキップ')}</button>
       </div>`;
     }
 
@@ -5447,7 +5447,7 @@ function renderMatchPreview() {
 
   const remaining = sp.results.filter(r => r === null).length;
   if (remaining > 0) {
-    html += `<div class="smc-skip-all"><button onclick="App.skipAllMatches()">残り全試合をスキップ（${remaining}試合）</button></div>`;
+    html += `<div class="smc-skip-all"><button onclick="App.skipAllMatches()">${WM_I18N.t('残り全試合をスキップ（{n}試合）', { n: remaining })}</button></div>`;
   }
   html += `</div>`; // .show-pregame-a
 
