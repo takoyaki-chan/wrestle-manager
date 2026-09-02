@@ -825,13 +825,18 @@ Engine.battle = {
 };
 
 // i18n Stage A P3a: 表示文言はdata.jsのFINISH_TEXTテーブルに抽出済み。ここはテーブルを読むだけ。
-Engine.formatFinish = function(finType, finMove, isFinisher) {
-  if (finType === 'HP判定') return FINISH_TEXT['HP判定'];
+// i18n Stage B P4-2(D-P4-2): 第4引数 dict は任意の「辞書参照関数」(text => text の形)。
+// Engine純粋性のためグローバルWM_I18Nは直接参照しない — 省略時は従来どおりFINISH_TEXTの
+// JA原文をそのまま使う(呼び出し元の大半である既存UI/Engineコールは無改修で不変)。
+// UI表示時点で呼ぶ場合はWM_I18N.tを、Engine内で生成しGへ焼く場合は糸通しされたdict関数を渡す。
+Engine.formatFinish = function(finType, finMove, isFinisher, dict) {
+  const T = (typeof dict === 'function') ? dict : (s) => s;
+  if (finType === 'HP判定') return T(FINISH_TEXT['HP判定']);
   if (!finMove) return finType || FINISH_TEXT_FALLBACK;
   const tmpl = FINISH_TEXT[finType];
   if (!tmpl) return finType || FINISH_TEXT_FALLBACK;
   const prefix = isFinisher ? '★ ' : '';
-  return prefix + tmpl.replace('{move}', finMove);
+  return prefix + T(tmpl).replace('{move}', finMove);
 };
 
 // ╔══════════════════════════════════════════════════════════╗

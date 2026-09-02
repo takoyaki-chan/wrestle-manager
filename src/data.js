@@ -30811,6 +30811,16 @@ const GAMELOG_TEMPLATES = {
   recontact_unfinished: '🔥 {nameA}と{nameB}——あの時の決着をつける時が来た',
 };
 
+// i18n Stage B P4-2(D-P4-2): gameLogEntryTextは表示時にui-render.jsから呼ばれる
+// 「UI側で整形するもの」(Engineが生成時にGへ焼くのではなく、毎回表示時に再整形する)。
+// そのためテンプレ選択直後・fillTemplateVars直前にWM_I18N.tを1回通すだけでよい。
+// data.jsはブラウザ以外(Node単体require、auto-sim等)からも読み込まれ、その環境には
+// WM_I18Nが存在しないため、存在チェックしてfail-open(ja/未定義時は原文のまま)にする。
+function _gameLogT(text) {
+  return (typeof WM_I18N !== 'undefined' && WM_I18N && typeof WM_I18N.t === 'function')
+    ? WM_I18N.t(text) : text;
+}
+
 /**
  * gameLogエントリを表示文字列へ整形する(D-G2の二刀流)。
  * - 文字列エントリ(旧形式・Engine素通しmsg/events含む): そのまま返す
@@ -30826,7 +30836,7 @@ function gameLogEntryText(entry) {
   if (tpl == null) return '';
   const resolved = (typeof tpl === 'object') ? tpl[entry.data && entry.data.variant] : tpl;
   if (typeof resolved !== 'string') return '';
-  return fillTemplateVars(resolved, entry.data || {});
+  return fillTemplateVars(_gameLogT(resolved), entry.data || {});
 }
 
 // D-G3: gameLogのUI分類フィルタ用。typeの族→カテゴリキー配列('show'|'finance'|'event'|'season'の

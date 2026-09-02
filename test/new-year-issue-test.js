@@ -97,9 +97,11 @@ function baseState(overrides = {}) {
 // ── 6. 手順が2箇所に書き写されていないこと ──
 {
   const src = stripComments(mgmt);
-  assert.ok(/s = Engine\.newspaper\.publish\(s, newsRng\);/.test(src),
+  // i18n Stage B P4-2: 両呼び出しとも opts({ lang, dict })を追加で糸通ししたため、
+  // 呼び出し文の末尾が変わった(publish自体は変わらず同じ関数を指している)。
+  assert.ok(/s = Engine\.newspaper\.publish\(s, newsRng, opts \? \{ opts \} : undefined\);/.test(src),
     'tickWeek が共通手順(publish)を使っていない');
-  assert.ok(/Engine\.newspaper\.publish\(s, newYearRng, \{ isSeasonOpening: true, forcePlayerShowDataNull: true \}\)/.test(src),
+  assert.ok(/Engine\.newspaper\.publish\(s, newYearRng, \{ isSeasonOpening: true, forcePlayerShowDataNull: true, opts \}\)/.test(src),
     'シーズン移行部で新年号を発行していない');
   // バックナンバー退避のコードが publish 以外に残っていないか
   const archivePushes = (src.match(/archive\.unshift\(s\.weeklyNewspaper\)/g) || []).length;

@@ -9808,11 +9808,13 @@ const App = {
 
     // サブヘッドライン：常にカードと数値情報
     // i18n Stage A P3a-2: NEWSPAPER_SUB_TEMPLATES(data.js・監査3-3)。3分岐→3テンプレ。
+    // i18n Stage B P4-2(D-P4-2): 自団体新聞は生成時にGへ焼くため、生成時点のWM_I18N.langで
+    // 確定させる。app.jsは(Engineと違い)WM_I18Nを直接呼んでよいレイヤーなのでt()を直接通す。
     let subKey;
     if (d.isDraw) subKey = 'draw';
     else if (d.otherHighMQ.length > 0) subKey = 'otherHighMQ';
     else subKey = 'default';
-    const subheadline = fillTemplateVars(NEWSPAPER_SUB_TEMPLATES[subKey], {
+    const subheadline = fillTemplateVars(WM_I18N.t(NEWSPAPER_SUB_TEMPLATES[subKey]), {
       showName: d.showName,
       venue: d.venue.name,
       attendance: d.attendance.toLocaleString(),
@@ -10890,7 +10892,7 @@ const App = {
     const _preDefenses = G.titles?.world?.defenses || 0;
     const _preChampId = G.titles?.world?.championId;
 
-    const result = Engine.tickWeek(G);
+    const result = Engine.tickWeek(G, { lang: WM_I18N.lang, dict: WM_I18N.t });
     // v0.95: Track finances
     const stats = { ...G.seasonStats };
     if (result.state.weeklyFinance) {
@@ -11125,7 +11127,7 @@ const App = {
       try {
         if (G && G.weekPhase === 'showExec') {
           try {
-            const _recovery = Engine.tickWeek(G);
+            const _recovery = Engine.tickWeek(G, { lang: WM_I18N.lang, dict: WM_I18N.t });
             G = { ..._recovery.state, gameLog: [...(G.gameLog || []), ...(_recovery.events || [])] };
           } catch (_tickErr) {
             console.error('closeShowResult recovery tickWeek failed:', _tickErr);
@@ -11147,10 +11149,12 @@ const App = {
   },
 
   // v1.4w: ティッカーニュース再生成（manage画面表示用）
+  // i18n Stage B P4-2(D-P4-2): 生成時点のWM_I18N.tを糸通しする(Engineは直接WM_I18Nを
+  // 呼ばないため、辞書参照関数として引数で渡す)。ja時はt()が素通しなので表示不変。
   _refreshTicker() {
     if (!G || G.offSeason) return;
     const tickerRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBEEF));
-    G = { ...G, _tickerItems: Engine.news.generateTicker(tickerRng, G) };
+    G = { ...G, _tickerItems: Engine.news.generateTicker(tickerRng, G, { lang: WM_I18N.lang, dict: WM_I18N.t }) };
   },
 
   // 業界ニュースを新聞へ積む（2026-07-27 に旧「新聞パネル」から移管）。
@@ -11516,7 +11520,7 @@ const App = {
     if (App.repairProgressionState('advanceFromWeekSummary')) {
       try { Storage.autoSave(); } catch (_e) {}
     }
-    const result = Engine.advanceWeek(G);
+    const result = Engine.advanceWeek(G, { lang: WM_I18N.lang, dict: WM_I18N.t });
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
     console.info('[WM][week-advance] summary handler advanced exactly once', {
       from: before,
@@ -11624,7 +11628,7 @@ const App = {
     // 今週のログフィードをリセット（前週分クリア）
     G = { ...G, weekLogFeed: [] };
     const oldRoster = G.roster.map(c => ({ id: c.id, injured: !!c.injury }));
-    const result = Engine.tickWeek(G);
+    const result = Engine.tickWeek(G, { lang: WM_I18N.lang, dict: WM_I18N.t });
     const stats = { ...G.seasonStats };
     if (result.state.weeklyFinance) {
       stats.totalRevenue += result.state.weeklyFinance.income || 0;
@@ -12296,7 +12300,7 @@ const App = {
       try { Storage.autoSave(); } catch (_e) {}
     }
     dismissAllPopups(); // 残存ポップアップを強制クリア
-    const result = Engine.advanceWeek(G);
+    const result = Engine.advanceWeek(G, { lang: WM_I18N.lang, dict: WM_I18N.t });
     G = { ...result.state, gameLog: [...G.gameLog, ...result.events] };
     // 週が進んだ時点でヘッダーの日付を直す(2026-07-27)。
     // この下には特別興行(PPV/天頂戦/秋4団体/ジュニア)や交渉フェーズへ**そのまま return する**
@@ -16052,7 +16056,7 @@ App.closePPVResult = function() {
   App._pendingRivalryResolutions = [];
 
   // tickWeek→settlement→week48完了
-  const result = Engine.tickWeek(G);
+  const result = Engine.tickWeek(G, { lang: WM_I18N.lang, dict: WM_I18N.t });
   const stats = { ...G.seasonStats };
   if (result.state.weeklyFinance) {
     stats.totalRevenue += result.state.weeklyFinance.income || 0;
@@ -16208,7 +16212,7 @@ App.closePPVTV = function() {
   Audio.play('click');
 
   // tickWeek: PPV TV観戦中でも週次処理（訓練・給与・関係値）は実行する
-  const result = Engine.tickWeek(G);
+  const result = Engine.tickWeek(G, { lang: WM_I18N.lang, dict: WM_I18N.t });
   const stats = { ...G.seasonStats };
   if (result.state.weeklyFinance) {
     stats.totalRevenue += result.state.weeklyFinance.income || 0;
@@ -16760,8 +16764,9 @@ App.finalizeJuniorTournament = function() {
   G = { ...applied.state, gameLog: [...G.gameLog, ...applied.events] };
 
   // 新聞を再生成（JT結果を反映させる）
+  // i18n Stage B P4-2(D-P4-2): 生成時点のWM_I18N.tを糸通しする(理由は_refreshTicker参照)。
   const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));
-  G = { ...G, weeklyNewspaper: Engine.newspaper.generate(G, newsRng) };
+  G = { ...G, weeklyNewspaper: Engine.newspaper.generate(G, newsRng, { lang: WM_I18N.lang, dict: WM_I18N.t }) };
   App.preloadNewspaperImages(G.weeklyNewspaper);
 
   // 自団体出場選手の感想チェーンを構築（レンタル選手は元所属団体枠で出場）

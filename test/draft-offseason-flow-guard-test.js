@@ -38,7 +38,9 @@ assert.ok(
 );
 
 const scoutGuardInAdvanceWeek = advanceWeek.indexOf("G.weekPhase === 'scoutEvent'");
-const engineAdvance = advanceWeek.indexOf('Engine.advanceWeek(G)');
+// i18n Stage B P4-2: Engine.advanceWeek(G) の呼び出しに opts({ lang, dict })引数を追加したため、
+// 呼び出し文の末尾が変わった(Engine.advanceWeek自体は変わらず同じ関数を指している)。
+const engineAdvance = advanceWeek.indexOf('Engine.advanceWeek(G,');
 
 assert.ok(scoutGuardInAdvanceWeek >= 0, 'advanceWeek should guard scoutEvent');
 assert.ok(engineAdvance >= 0, 'advanceWeek should still call Engine.advanceWeek for normal flow');
