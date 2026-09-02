@@ -9784,11 +9784,11 @@ function _recordBookSources() {
   const add = (fighters, orgName, active = false) => (fighters || []).forEach(fighter => {
     if (fighter && fighter.id != null) sources.push({ fighter, orgName: fighter.orgName || orgName || '', active });
   });
-  add(G.roster, G.orgName || 'あなたの団体', true);
+  add(G.roster, G.orgName || WM_I18N.t('あなたの団体'), true);
   Object.entries(G.aiOrgs || {}).forEach(([orgId, org]) => add(org.roster, org.orgName || org.name || _getHofOrgName(orgId), true));
-  add(G.freeAgents, 'フリー', true);
-  add(G.retiredFighters, '引退');
-  add((G.chronicle || {}).fighterArchive, G.orgName || 'あなたの団体');
+  add(G.freeAgents, WM_I18N.t('フリー'), true);
+  add(G.retiredFighters, WM_I18N.t('引退'));
+  add((G.chronicle || {}).fighterArchive, G.orgName || WM_I18N.t('あなたの団体'));
   Object.values(G.allHallOfFame || {}).forEach(entries => add(entries, ''));
   add(G.hallOfFame, '');
 
@@ -9822,7 +9822,7 @@ function _recordBookFace(id, name) {
 function _recordBookUpper(source, sizeClass) {
   const fighter = source && source.fighter;
   const id = fighter && fighter.id;
-  const name = (fighter && fighter.name) || '記録保持者';
+  const name = (fighter && fighter.name) || WM_I18N.t('記録保持者');
   const url = id != null ? getUpperUrl(id, _recordBookPeak(source)) : '';
   const initial = escHtml(name.charAt(0));
   return `<div class="db-record-upper ${sizeClass}"${url ? ` data-initial="${initial}"` : ''}>${url ? `<img src="${url}" alt="${escHtml(name)}" onerror="this.remove();this.parentElement.classList.add('is-image-missing')">` : `<span class="db-record-upper-initial">${initial}</span>`}</div>`;
@@ -9847,21 +9847,21 @@ function _renderDbRecordStrip(record, label, isTag) {
   const match = updated
     ? `<div class="db-record-strip-match"><span class="db-record-faces">${faces}</span><span>${escHtml(names.slice(0, Math.ceil(names.length / 2)).join('・'))}</span><span class="db-record-vs">VS</span><span>${escHtml(names.slice(Math.ceil(names.length / 2)).join('・'))}</span></div>`
     : '';
-  const stage = updated ? (Engine.mq.STAGE_LABELS[record.stage] || '興行') : '';
+  const stage = updated ? (Engine.mq.STAGE_LABELS[record.stage] || WM_I18N.t('興行')) : '';
   const when = updated ? `<div class="db-record-strip-when">${label} ─ S${record.season}・第${record.week}週 ─ ${escHtml(stage)}</div>` : '';
   const isNew = updated && record.season === G.season && record.week === G.week;
   const value = Math.round(Number(record && record.value) || (isTag ? 94 : 90));
   return `<div class="db-record-strip${isTag ? ' tag' : ''}">
-    <span class="db-record-strip-label">歴代最高</span>
+    <span class="db-record-strip-label">${WM_I18N.t('歴代最高')}</span>
     <span class="db-record-strip-value${updated ? '' : ' is-dim'}">${value}</span>
     <div class="db-record-strip-detail">${match}${when}</div>
-    ${isNew ? '<span class="db-record-new">記録更新!</span>' : ''}
+    ${isNew ? `<span class="db-record-new">${WM_I18N.t('記録更新!')}</span>` : ''}
   </div>`;
 }
 
 function _recordBookName(source) {
   const fighter = source && source.fighter;
-  return (fighter && fighter.name) || (fighter && Engine.career.resolveFighterName(G, fighter.id)) || '記録保持者';
+  return (fighter && fighter.name) || (fighter && Engine.career.resolveFighterName(G, fighter.id)) || WM_I18N.t('記録保持者');
 }
 
 function _recordBookDisplayOvr(source) {
@@ -9880,7 +9880,7 @@ function _renderDbRecordWinnerCard(item, index, kind) {
   const ovrClass = typeof valueClassOvr === 'function' ? valueClassOvr(ovr) : '';
   const orgName = (source && source.orgName) || '';
   const className = kind === 'tenchosen' ? 'db-record-glory-card' : 'db-record-glory-card db-record-ppv-card';
-  const cardNumber = kind === 'tenchosen' ? `<div class="db-record-glory-sub">第${index + 1}回 王者</div>` : '';
+  const cardNumber = kind === 'tenchosen' ? `<div class="db-record-glory-sub">${WM_I18N.t('第{n}回 王者', { n: index + 1 })}</div>` : '';
   return `<div class="${className}"${_recordBookOpen(source && source.fighter)}>
     ${_recordBookUpper(source, kind === 'tenchosen' ? 'is-tenchosen' : 'is-ppv')}
     <div class="db-record-nameband"><div><span>${escHtml(name)}</span><b class="db-record-ovr ${ovrClass}">OVR ${ovr}</b></div>${orgName ? `<small>${escHtml(orgName)}</small>` : ''}</div>
@@ -9903,7 +9903,7 @@ function _recordBookDefenseLeader(sources) {
     const history = ((source.fighter || {}).careerRecord || {}).history || [];
     history.forEach((event, index) => {
       if (event && event.type === 'titleLoss' && Number(event.defenses) > 0) {
-        candidates.push({ source, defenses: Number(event.defenses), titleName: event.orgName || `${source.orgName || '団体'}王座`, period: _recordBookTitlePeriod(history, index, event.season), endSeason: event.season || 0, active: false });
+        candidates.push({ source, defenses: Number(event.defenses), titleName: event.orgName || WM_I18N.t('{org}王座', { org: source.orgName || WM_I18N.t('団体') }), period: _recordBookTitlePeriod(history, index, event.season), endSeason: event.season || 0, active: false });
       }
     });
   });
@@ -9915,10 +9915,10 @@ function _recordBookDefenseLeader(sources) {
     const win = history.slice().reverse().find(event => event && event.type === 'titleWin' && (event.beltId || 'world') === 'world');
     const endSeason = G.season || 0;
     const startSeason = win && win.season;
-    candidates.push({ source, defenses: Number(title.defenses), titleName: `${orgName}王座`, period: startSeason && startSeason !== endSeason ? `S${startSeason}〜S${endSeason}` : `S${endSeason}`, endSeason, active: true });
+    candidates.push({ source, defenses: Number(title.defenses), titleName: WM_I18N.t('{org}王座', { org: orgName }), period: startSeason && startSeason !== endSeason ? `S${startSeason}〜S${endSeason}` : `S${endSeason}`, endSeason, active: true });
   };
-  addActive((G.titles || {}).world, G.orgName || 'あなたの団体');
-  Object.values(G.aiOrgs || {}).forEach(org => addActive((org.titles || {}).world, org.orgName || org.name || '団体'));
+  addActive((G.titles || {}).world, G.orgName || WM_I18N.t('あなたの団体'));
+  Object.values(G.aiOrgs || {}).forEach(org => addActive((org.titles || {}).world, org.orgName || org.name || WM_I18N.t('団体')));
   candidates.sort((a, b) => b.defenses - a.defenses || Number(b.active) - Number(a.active) || b.endSeason - a.endSeason);
   return candidates[0] || null;
 }
@@ -9968,12 +9968,12 @@ function _recordBookUnifiedReigns(sources) {
   history.forEach(event => {
     if (!event) return;
     if (['creation', 'crown', 'repeat'].includes(event.type)) {
-      if (current) finishReign(pendingReturn || event, '返還');
+      if (current) finishReign(pendingReturn || event, WM_I18N.t('返還'));
       startReign(event);
       return;
     }
     if (event.type === 'move') {
-      if (current) finishReign(event, '陥落');
+      if (current) finishReign(event, WM_I18N.t('陥落'));
       startReign(event);
       return;
     }
@@ -9986,7 +9986,7 @@ function _recordBookUnifiedReigns(sources) {
       pendingReturn = event;
       return;
     }
-    if (event.type === 'vacate' && current) finishReign(event, '返上');
+    if (event.type === 'vacate' && current) finishReign(event, WM_I18N.t('返上'));
   });
 
   if (current && G.unifiedTitle.championId === current.championId) {
@@ -9997,7 +9997,7 @@ function _recordBookUnifiedReigns(sources) {
       defenses: Math.max(current.defenses, Number(G.unifiedTitle.defenses) || 0),
       endSeason,
       endWeek,
-      endReason: '在位中',
+      endReason: WM_I18N.t('在位中'),
       active: true,
       durationWeeks: Math.max(0, absWeek(endSeason, endWeek) - absWeek(current.startSeason, current.startWeek)),
     });
@@ -10024,12 +10024,12 @@ function _renderDbUnifiedTitleRecords(sources) {
   const recordCard = (label, reign, value) => reign ? `<div class="db-record-strip"${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
     <span class="db-record-strip-label">${label}</span>
     <span class="db-record-strip-value">${value}</span>
-    <div class="db-record-strip-detail"><strong>${escHtml(holderName(reign))}</strong><br><span>第${reign.generation}代 / ${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</span></div>
+    <div class="db-record-strip-detail"><strong>${escHtml(holderName(reign))}</strong><br><span>${WM_I18N.t('第{n}代', { n: reign.generation })} / ${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</span></div>
   </div>` : '';
   const rows = reigns.map(reign => {
-    const period = `S${reign.startSeason} 第${reign.startWeek}週〜${reign.active ? '現在' : `S${reign.endSeason} 第${reign.endWeek}週`}`;
+    const period = `S${reign.startSeason} 第${reign.startWeek}週〜${reign.active ? WM_I18N.t('現在') : `S${reign.endSeason} 第${reign.endWeek}週`}`;
     return `<tr${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
-      <td class="num">第${reign.generation}代</td>
+      <td class="num">${WM_I18N.t('第{n}代', { n: reign.generation })}</td>
       <td>${escHtml(holderName(reign))}</td>
       <td>${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</td>
       <td>${period}</td>
@@ -10039,12 +10039,12 @@ function _renderDbUnifiedTitleRecords(sources) {
   }).join('');
 
   return `<section class="db-record-hall db-record-unified-hall">
-    <div class="db-record-cere-head"><span>━━</span><h3>🌐 全国統一王座</h3><span>━━</span></div>
+    <div class="db-record-cere-head"><span>━━</span><h3>${WM_I18N.t('🌐 全国統一王座')}</h3><span>━━</span></div>
     ${reigns.length > 0 ? `<div class="db-record-strips">
-      ${recordCard('最多防衛', defenseLeader, `${defenseLeader.defenses}度`)}
-      ${recordCard('最長在位', longest, _recordBookUnifiedDuration(longest.durationWeeks))}
+      ${recordCard(WM_I18N.t('最多防衛'), defenseLeader, `${defenseLeader.defenses}度`)}
+      ${recordCard(WM_I18N.t('最長在位'), longest, _recordBookUnifiedDuration(longest.durationWeeks))}
     </div>
-    <div class="db-table-scroll"><table class="db-table"><thead><tr><th>世代</th><th>王者</th><th>団体</th><th>在位期間</th><th>防衛</th><th>終わり方</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+    <div class="db-table-scroll"><table class="db-table"><thead><tr><th>${WM_I18N.t('世代')}</th><th>${WM_I18N.t('王者')}</th><th>${WM_I18N.t('団体')}</th><th>${WM_I18N.t('在位期間')}</th><th>${WM_I18N.t('防衛')}</th><th>${WM_I18N.t('終わり方')}</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
   </section>`;
 }
 
@@ -10058,32 +10058,32 @@ function _renderDbRecordBook() {
   const leader = _recordBookDefenseLeader(sources);
 
   let html = `<div class="db-record-book">
-    <div class="db-record-strips">${_renderDbRecordStrip(G.mqRecord, 'シングル', false)}${_renderDbRecordStrip(G.mqRecordTag, 'タッグ', true)}</div>
+    <div class="db-record-strips">${_renderDbRecordStrip(G.mqRecord, WM_I18N.t('シングル'), false)}${_renderDbRecordStrip(G.mqRecordTag, WM_I18N.t('タッグ'), true)}</div>
     ${_renderDbUnifiedTitleRecords(sources)}
     <section class="db-record-hall db-record-tenchosen-hall">
-      <div class="db-record-cere-head"><span>━━</span><h3>天頂戦 歴代優勝</h3><span>━━</span></div>
-      <p class="db-record-cere-lead">4年に一度、業界の頂を決める舞台</p>
+      <div class="db-record-cere-head"><span>━━</span><h3>${WM_I18N.t('天頂戦 歴代優勝')}</h3><span>━━</span></div>
+      <p class="db-record-cere-lead">${WM_I18N.t('4年に一度、業界の頂を決める舞台')}</p>
       <div class="db-record-glory-row">${tenchosen.map((item, index) => _renderDbRecordWinnerCard(item, index, 'tenchosen')).join('')}
-        <div class="db-record-glory-card is-empty"><div class="db-record-upper is-tenchosen"><span>⛰</span><small>次回<br>S${nextTenchosen}</small></div><div class="db-record-glory-plate">S${nextTenchosen}</div><div class="db-record-glory-sub">開催前</div></div>
+        <div class="db-record-glory-card is-empty"><div class="db-record-upper is-tenchosen"><span>⛰</span><small>${WM_I18N.t('次回<br>S{season}', { season: nextTenchosen })}</small></div><div class="db-record-glory-plate">S${nextTenchosen}</div><div class="db-record-glory-sub">${WM_I18N.t('開催前')}</div></div>
       </div>
     </section>`;
   html += `<section class="db-record-hall db-record-ppv-hall">
-    <div class="db-record-cere-head is-ppv"><span>━━</span><h3>PPV GRAND FINAL 歴代優勝</h3><span>━━</span></div>
-    <p class="db-record-cere-lead">毎年の頂点 ─ 直近から</p>
+    <div class="db-record-cere-head is-ppv"><span>━━</span><h3>PPV GRAND FINAL ${WM_I18N.t('歴代優勝')}</h3><span>━━</span></div>
+    <p class="db-record-cere-lead">${WM_I18N.t('毎年の頂点 ─ 直近から')}</p>
     <div class="db-record-ppv-row">${ppv.map((item, index) => _renderDbRecordWinnerCard(item, index, 'ppv')).join('')}</div>
   </section>`;
   if (leader) {
     const name = _recordBookName(leader.source);
     html += `<section class="db-record-defense-band"${_recordBookOpen(leader.source.fighter)}>
       <div class="db-record-defense-portrait"><span>👑</span>${_recordBookUpper(leader.source, 'is-defense')}</div>
-      <div class="db-record-defense-info"><div>最多連続防衛</div><p><strong>${leader.defenses}</strong><span>度防衛</span></p><h3>${escHtml(name)}</h3><small>${escHtml(leader.titleName)} ─ ${leader.period}${leader.active ? ' ─ 継続中' : ''}</small></div>
+      <div class="db-record-defense-info"><div>${WM_I18N.t('最多連続防衛')}</div><p><strong>${leader.defenses}</strong><span>度防衛</span></p><h3>${escHtml(name)}</h3><small>${escHtml(leader.titleName)} ─ ${leader.period}${leader.active ? WM_I18N.t(' ─ 継続中') : ''}</small></div>
     </section>`;
   }
   return html + `</div>`;
 }
 
 // ── 殿堂一覧 v2.0 ──────────────────────────────────────────────
-function _getHofStarText(level) { return level >= 3 ? '★★★ レジェンド' : level >= 2 ? '★★ ゴールド殿堂' : '★ 殿堂入り'; }
+function _getHofStarText(level) { return level >= 3 ? WM_I18N.t('★★★ レジェンド') : level >= 2 ? WM_I18N.t('★★ ゴールド殿堂') : WM_I18N.t('★ 殿堂入り'); }
 function _getHofBorderColor(level) { return level >= 3 ? '#f39c12' : level >= 2 ? '#d4a843' : '#bdc3c7'; }
 function _getHofShieldEmoji(level) { return level >= 3 ? '🏆' : level >= 2 ? '🥇' : '🛡️'; }
 function _hofShieldImg(level, id, size) {
@@ -10109,7 +10109,7 @@ function _getAllHofEntries() {
 }
 
 function _getHofOrgName(orgId) {
-  if (orgId === 'player') return G.orgName || 'あなたの団体';
+  if (orgId === 'player') return G.orgName || WM_I18N.t('あなたの団体');
   const org = RIVAL_ORGS.find(o => o.id === orgId);
   const aiData = G.aiOrgs && G.aiOrgs[orgId];
   return (aiData && aiData.orgName) || (org && org.name) || orgId;
@@ -10125,15 +10125,15 @@ function _renderDbHallOfFame() {
 
   let html = `<div class="db-hof-filter-bar">`;
   orgKeys.forEach(k => {
-    const label = k === 'all' ? '全団体' : _getHofOrgName(k);
+    const label = k === 'all' ? WM_I18N.t('全団体') : _getHofOrgName(k);
     const active = _dbHofFilter === k ? ' active' : '';
     html += `<button class="db-hof-filter-btn${active}" onclick="_dbHofFilter='${k}';renderDatabase()">${label}(${orgCounts[k]})</button>`;
   });
   html += `</div>`;
 
   // ソート
-  html += `<div class="db-hof-sort-bar"><span style="color:var(--text-dim);font-size:11px">並び替え:</span>`;
-  [['season_desc','殿堂入り順'],['points_desc','ポイント順'],['name','名前順']].forEach(([k,label]) => {
+  html += `<div class="db-hof-sort-bar"><span style="color:var(--text-dim);font-size:11px">${WM_I18N.t('並び替え:')}</span>`;
+  [['season_desc',WM_I18N.t('殿堂入り順')],['points_desc',WM_I18N.t('ポイント順')],['name',WM_I18N.t('名前順')]].forEach(([k,label]) => {
     const active = _dbHofSort === k ? ' active' : '';
     html += `<button class="db-hof-sort-btn${active}" onclick="_dbHofSort='${k}';renderDatabase()">${label}</button>`;
   });
@@ -10150,11 +10150,11 @@ function _renderDbHallOfFame() {
   if (filtered.length === 0) {
     html += `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
       <div style="font-size:40px;margin-bottom:12px">🏅</div>
-      <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
-      <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>
+      <div style="font-size:15px;margin-bottom:8px">${WM_I18N.t('まだ殿堂入りした選手はいません')}</div>
+      <div style="font-size:13px;color:var(--text-dim)">${WM_I18N.t('殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>')}
       <span style="display:inline-block;margin-top:8px;text-align:left;line-height:1.8">
-      <span style="color:var(--text-sub)">【実績】</span> 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5 ／ 天頂戦 優勝8・準優勝5・ベスト4 3<br>
-      <span style="color:var(--text-sub)">【表彰】</span> MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5
+      <span style="color:var(--text-sub)">${WM_I18N.t('【実績】')}</span> ${WM_I18N.t('戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5 ／ 天頂戦 優勝8・準優勝5・ベスト4 3')}<br>
+      <span style="color:var(--text-sub)">${WM_I18N.t('【表彰】')}</span> ${WM_I18N.t('MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5')}
       </span></div>
     </div>`;
     return html;
@@ -10178,7 +10178,7 @@ function _renderDbHallOfFame() {
       <div style="margin:4px 0">${imgHtml}</div>
       <div class="db-hof-name">${h.name}</div>
       <div class="db-hof-row">${h.orgName || _getHofOrgName(h.orgId)}</div>
-      <div class="db-hof-row">王座${h.titleReigns || 0}/防衛${h.totalDefenses || 0}</div>
+      <div class="db-hof-row">${WM_I18N.t('王座{reigns}/防衛{defenses}', { reigns: h.titleReigns || 0, defenses: h.totalDefenses || 0 })}</div>
     </div>`;
   });
   html += `</div>`;
@@ -10231,7 +10231,7 @@ function showHofDetail(idx) {
   }
   let highlightsHtml = '';
   if (highlights.length > 0) {
-    highlightsHtml = `<div class="db-hof-detail-section" style="text-align:center">━━ キャリアハイライト ━━</div><div class="db-hof-highlights" style="display:inline-block;text-align:left">`;
+    highlightsHtml = `<div class="db-hof-detail-section" style="text-align:center">${WM_I18N.t('━━ キャリアハイライト ━━')}</div><div class="db-hof-highlights" style="display:inline-block;text-align:left">`;
     highlights.forEach(hl => {
       highlightsHtml += `<div class="db-hof-hl-row"><span class="db-hof-hl-season" style="font-family:monospace">S${hl.season}</span><span>${_getHighlightIcon(hl.type)} ${hl.text}</span></div>`;
     });
@@ -10252,18 +10252,18 @@ function showHofDetail(idx) {
   }
 
   // 通算実績
-  const statsHtml = `<div class="db-hof-detail-section" style="text-align:center">━━ 通算実績 ━━</div>
+  const statsHtml = `<div class="db-hof-detail-section" style="text-align:center">${WM_I18N.t('━━ 通算実績 ━━')}</div>
     <div class="db-hof-stats-grid" style="max-width:280px;margin:0 auto">
-      <div>王座獲得 <strong>${h.titleReigns || 0}</strong>回</div>
-      <div>通算防衛 <strong>${h.totalDefenses || 0}</strong>回</div>
-      ${h.juniorTournamentWins ? `<div>JT優勝 <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
-      ${h.ppvMainEventWins ? `<div>PPV優勝 <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
-      ${_warW + _warL > 0 ? `<div style="grid-column:1/-1;margin-top:4px">🏴 対抗戦 <strong style="color:#2ecc71">${_warW}勝</strong> <strong style="color:#e74c3c">${_warL}敗</strong></div>` : ''}
+      <div>${WM_I18N.t('王座獲得')} <strong>${h.titleReigns || 0}</strong>回</div>
+      <div>${WM_I18N.t('通算防衛')} <strong>${h.totalDefenses || 0}</strong>回</div>
+      ${h.juniorTournamentWins ? `<div>${WM_I18N.t('JT優勝')} <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
+      ${h.ppvMainEventWins ? `<div>PPV${WM_I18N.t('優勝')} <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
+      ${_warW + _warL > 0 ? `<div style="grid-column:1/-1;margin-top:4px">🏴 ${WM_I18N.t('対抗戦')} <strong style="color:#2ecc71">${_warW}勝</strong> <strong style="color:#e74c3c">${_warL}敗</strong></div>` : ''}
     </div>`;
 
   // §4 引退時OVR
   const retireInfo = h.retireOVR
-    ? `<div style="font-size:12px;color:var(--text-sub)">引退時OVR ${h.retireOVR}${h.retireAge ? `（${h.retireAge}歳）` : ''}</div>`
+    ? `<div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('引退時OVR {ovr}{age}', { ovr: h.retireOVR, age: h.retireAge ? WM_I18N.t('（{age}歳）', { age: h.retireAge }) : '' })}</div>`
     : '';
 
   const legendGlow = level >= 3 ? 'box-shadow:0 0 20px rgba(243,156,18,0.3);' : '';
@@ -10289,8 +10289,8 @@ function showHofDetail(idx) {
         <div style="font-size:18px;font-weight:700;color:var(--text-main)">${h.name}</div>
         <div style="font-size:15px;color:var(--gold);margin:4px 0">── 「${epithet}」──</div>
         <div style="font-size:13px;color:var(--text-sub)">${orgName} / ${h.style || 'Allround'}</div>
-        <div style="font-size:12px;color:var(--text-sub)">${h.activeYears || ''}（${(h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1}シーズン）</div>
-        <div style="font-size:12px;color:var(--text-sub)">最高OVR ${h.peakOVR || 0}（S${h.peakOVRSeason || '?'}）</div>
+        <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('{years}（{n}シーズン）', { years: h.activeYears || '', n: (h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1 })}</div>
+        <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('最高OVR {ovr}（S{season}）', { ovr: h.peakOVR || 0, season: h.peakOVRSeason || '?' })}</div>
         ${retireInfo}
       </div>
     </div>
@@ -10300,11 +10300,11 @@ function showHofDetail(idx) {
     ${sep}
     ${statsHtml}
     <div style="margin-top:14px;font-size:13px;color:${borderColor}">
-      殿堂pt: ${h.hofPoints || 0} ／ 殿堂入り: S${h.inductionSeason || '?'}
+      ${WM_I18N.t('殿堂pt: {pt} ／ 殿堂入り: S{season}', { pt: h.hofPoints || 0, season: h.inductionSeason || '?' })}
     </div>
     <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-      ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id})">📖 年代記で見る</button>` : ''}
-      <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove();_drainPopupQueue()">閉じる</button>
+      ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id})">${WM_I18N.t('📖 年代記で見る')}</button>` : ''}
+      <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove();_drainPopupQueue()">${WM_I18N.t('閉じる')}</button>
     </div>
   </div>`;
   document.body.appendChild(modal);

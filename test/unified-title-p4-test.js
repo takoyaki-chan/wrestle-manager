@@ -217,7 +217,15 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
 // E/I-5: historyを世代別に復元し、未創設ならセクションごと返さない。
 {
   const ui = read('src/ui-render.js');
-  const makeReigns = new Function('G', 'Engine',
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB_UNIFIED = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+  const makeReigns = new Function('G', 'Engine', 'WM_I18N',
     `${functionSource(ui, '_recordBookUnifiedReigns')}; return _recordBookUnifiedReigns;`)(
     {
       season: 8, week: 48,
@@ -235,6 +243,7 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
       },
     },
     Engine,
+    WM_I18N_STUB_UNIFIED,
   );
   const sources = [1, 2, 3].map(id => ({ fighter: { id, name: `選手${id}` }, orgName: '' }));
   const reigns = makeReigns(sources);
