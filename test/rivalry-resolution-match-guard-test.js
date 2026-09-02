@@ -35,7 +35,7 @@ assert.ok(app.includes('rivalry settlement skipped: card/result participants dif
   'rivalry settlement must reject mismatched card/result pairs');
 assert.ok(common.includes('r, leftIsWinner, isDraw, `Match ${results.length - i}`, sourceMatch,'),
   'regular-show inline rivalry comments must receive the booked match for verification');
-assert.ok(common.includes("_queueRivalryMatchDialogue(r, leftIsWinner, isDraw, isMain ? '頂上決戦' : `Match ${matchNum}`, match)"),
+assert.ok(common.includes("_queueRivalryMatchDialogue(r, leftIsWinner, isDraw, isMain ? WM_I18N.t('頂上決戦') : `Match ${matchNum}`, match)"),
   'PPV rivalry comments must receive the booked match for verification');
 const buildDialogue = section(common, 'function _buildRivalryMatchDialogue(', '\n}\n\n/** 独立した試合後モーダル用');
 assert.ok(buildDialogue.includes('if (r.rivalryResolved) return;'),

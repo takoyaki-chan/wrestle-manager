@@ -19,6 +19,15 @@ function functionSource(name) {
   throw new Error(`${name} end not found`);
 }
 
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+const WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 function buildEndingModal(mocks) {
   return new Function(
     '_isPopupActive',
@@ -31,6 +40,7 @@ function buildEndingModal(mocks) {
     'Audio',
     '_u3bSideHtml',
     'escHtml',
+    'WM_I18N',
     `${functionSource('showFactionF09EndingModal')}; return showFactionF09EndingModal;`
   )(
     mocks._isPopupActive,
@@ -42,7 +52,8 @@ function buildEndingModal(mocks) {
     mocks._f09BgmStop,
     mocks.Audio,
     mocks._u3bSideHtml,
-    mocks.escHtml
+    mocks.escHtml,
+    WM_I18N_STUB
   );
 }
 

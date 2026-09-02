@@ -239,8 +239,17 @@ function makeFactionDom() {
   return { doc, getRoot: () => root };
 }
 
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。rivalryPopupSuite 内の同名スタブと同じ契約)。
+const FACTION_WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 const buildFaction = new Function(
-  'Engine', 'document', 'getUpperUrl', '_factionLine', '_factionReporterStrip', '_awOrgEmblem',
+  'Engine', 'document', 'getUpperUrl', '_factionLine', '_factionReporterStrip', '_awOrgEmblem', 'WM_I18N',
   `let _popupQueue = [];
    let FACTION_F08_LEADER_LINES = {};
    let EVENT_LINES_BY_KEY = { challengeArrival: { standard: ['ARRIVAL_LINE_MARKER'] } };
@@ -303,7 +312,7 @@ function makeFactionBundle(overrides) {
   const reporterStripStub = overrides._factionReporterStrip
     || ((state, line) => `<div class="fevt-reporter-strip">${line}</div>`);
   const orgEmblemStub = overrides._awOrgEmblem || (() => '<span class="org-emblem-stub"></span>');
-  const built = buildFaction(EngineStub, doc, getUpperUrlStub, factionLineStub, reporterStripStub, orgEmblemStub);
+  const built = buildFaction(EngineStub, doc, getUpperUrlStub, factionLineStub, reporterStripStub, orgEmblemStub, FACTION_WM_I18N_STUB);
   return { built, getRoot };
 }
 

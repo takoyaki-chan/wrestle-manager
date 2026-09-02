@@ -100,6 +100,15 @@ body.appendChild = function(child) {
   return child;
 };
 
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+const WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 const build = new Function(
   'document',
   'Audio',
@@ -107,6 +116,7 @@ const build = new Function(
   '_popupQueue',
   '_drainPopupQueue',
   'setTimeout',
+  'WM_I18N',
   [
     functionSource('_factionUpperUrl'),
     functionSource('_factionEnsureOverlayRoot'),
@@ -124,7 +134,8 @@ const { showFactionF03Modal } = build(
   () => false,
   [],
   () => { drained++; },
-  fn => fn()
+  fn => fn(),
+  WM_I18N_STUB
 );
 
 let continued = 0;

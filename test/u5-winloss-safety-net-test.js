@@ -816,8 +816,16 @@ function logGap(msg) {
 //    (ui-common.js)
 // ===========================================================================
 (function b2b3MatchResultSuite() {
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
   const build = new Function(
-    'Engine', 'document', 'RIVAL_ORGS', 'G', 'getUpperUrl', 'pickDialogueLine', 'RIVALRY_MATCH_REACTION', 'WAR_POST_DIALOGUE',
+    'Engine', 'document', 'RIVAL_ORGS', 'G', 'getUpperUrl', 'pickDialogueLine', 'RIVALRY_MATCH_REACTION', 'WAR_POST_DIALOGUE', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('fLink')}
      ${uiFn('_pbStars')}
@@ -845,7 +853,7 @@ function logGap(msg) {
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
     const pickDialogueLineStub = opts.pickDialogueLine || ((pool, f) => `LINE_${f && f.id}`);
     const RMR = opts.RIVALRY_MATCH_REACTION || { winnerLines: ['w'], loserLines: ['l'] };
-    const built = build(EngineStub, doc, RIVAL_ORGS_STUB, GStub, getUpperUrlStub, pickDialogueLineStub, RMR, undefined);
+    const built = build(EngineStub, doc, RIVAL_ORGS_STUB, GStub, getUpperUrlStub, pickDialogueLineStub, RMR, undefined, WM_I18N_STUB);
     return { built, box };
   }
 

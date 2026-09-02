@@ -228,8 +228,16 @@ function section(name, fn) {
 //    同一団体どうしの組み合わせも起こり得るため、出す条件(cross-org)のテストも兼ねる。
 // ===========================================================================
 (function ppvTvBroadcastSuite() {
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
   const build = new Function(
-    'document', 'G', 'Audio', 'window', 'Engine', 'portraitImg',
+    'document', 'G', 'Audio', 'window', 'Engine', 'portraitImg', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('orgIconHtml')}
      ${uiFn('_pbStars')}
@@ -288,7 +296,7 @@ function section(name, fn) {
       },
     };
     const portraitImgStub = opts.portraitImg || ((id, size) => `<img src="image/face/${id}.png" width="${size}">`);
-    const built = build(documentStub, GStub, AudioStub, windowStub, EngineStub, portraitImgStub);
+    const built = build(documentStub, GStub, AudioStub, windowStub, EngineStub, portraitImgStub, WM_I18N_STUB);
     return { built, box, click, pressEnter, isTornDown };
   }
 

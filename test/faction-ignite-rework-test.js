@@ -84,10 +84,19 @@ assert.strictEqual(trigger.payload.memberCountB, 1, '派閥Bの人数を返す')
 assert.deepStrictEqual(trigger.payload.membersA, ['東リーダー', '東メンバー', '生成メンバー'],
   '互換用の氏名配列は残す');
 
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+const WM_I18N_STUB = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 const modalRoot = { innerHTML: '', querySelector() { return null; } };
 const showIgnite = new Function(
   '_isPopupActive', '_popupQueue', '_factionUpperUrl', 'escHtml', 'Engine', 'FACTION_IGNITE_LINES',
-  '_factionF02StageMount', '_factionF02StageBtnBind',
+  '_factionF02StageMount', '_factionF02StageBtnBind', 'WM_I18N',
   `${functionSource(ui, '_factionIgniteLine')};${functionSource(ui, 'showFactionF02IgniteModal')};return showFactionF02IgniteModal;`
 )(
   () => false,
@@ -98,7 +107,8 @@ const showIgnite = new Function(
   Engine,
   data.FACTION_IGNITE_LINES,
   html => { modalRoot.innerHTML = html; return modalRoot; },
-  () => {}
+  () => {},
+  WM_I18N_STUB
 );
 
 const before = JSON.stringify(state);
@@ -136,6 +146,7 @@ function renderF09(name, payload) {
     _f09BgmStart: () => {},
     _f09BgmStop: () => {},
     Audio: {},
+    WM_I18N: WM_I18N_STUB,
   };
   buildF09Modal(name, dependencies)(payload, {}, () => {});
   return renderRoot.innerHTML;

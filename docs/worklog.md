@@ -1,5 +1,38 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Stage A P3a バッチ4b-2 — ui-common.jsのt()移行(中盤)（2026-09-02・Sonnet worktree agent-a4e06ceb51f5c4e18）
+
+4b-1の続行点(5475行目、`_pendingMatchDialogues`/`renderShowResult`直前)からui-common.js(20,701行)の**12064行目（`showFactionCommon4Modal`直前、関数境界）**までを対象にUIクロームを`WM_I18N.t()`経由へ移行。**残り8,637行(約42%)は未着手** — 続きは4b-3が12065行目(`showFactionCommon4Modal`)から引き継ぐ。
+
+### 対象と方針
+- 通常興行/PPV試合結果画面(`renderShowResult`〜`renderPPVResult`〜PPV TV中継5場面構成)・レンタル確認/実行・成長イベントポップアップ(ブレークスルー/スランプ/モチベ喪失/AI脅威アラート)・シーズン開幕ファンファーレ・社長室決裁モーダル群(個人書類/団体書類/ペア書類/コーチ招聘2ステップ/コーチ招聘中4イベント)・選択型イベントモーダル(showChoiceEventModal/Result)・派閥イベントモーダル一式(F01結成/F02抗争4段階(ignite/peace/resolution/endless)/F03解散/F04寝返り/F05火種/F06和解/F07動向9種/F08ヒートアップ+試合前後/F09派閥対抗戦4種/Common3加入/Common4合宿/アーキタイプ遷移)のボタン・見出し・進行ラベル・システムメッセージ・showToast文言を機械的にt()化
+- 補間入りは4a/4bの慣例どおり`{name}`形式。数値埋め込みは「文脈のあるラベルに埋め込まれた数」(`第{n}試合`/`全{n}試合`/`{n}週間のスランプを乗り越えた！`等)は積極的にラップし、「裸の数値+単位のみ」(`${age}歳`/`${cost}万`/`${wins}勝`)は非ラップで統一 — 4b-1バッチの実例(`残り{n}週`等が多数ラップ済み)を確認して「数値直付けの単位語は非ラップ」の適用範囲を修正(タグ跨ぎ裸単位語に限定されると誤認していた4b-1の記述より広く、文脈語が付けば埋め込む)
+- **重要な設計上の修正**: `_F01_ARCHETYPE_META`/`_F07_INCIDENT_META`はモジュールロード時定数(トップレベル`const`)であるため、宣言側の値を直接`WM_I18N.t()`で包むと言語切替(`setLang`)に追従できない(スクリプト読み込み時点の言語で固定されてしまう)。作業中に一度この誤りを作り込み、ja-golden通過(ja既定言語では無害)を過信せず気づいて訂正。既存の`FLAG_MODAL_META`と同じ流儀(宣言は生JAテキストのまま据え置き、参照側=実際にHTMLへ差し込む箇所で`WM_I18N.t(meta.xxx)`評価)に統一した
+
+### スキップ判断のまとめ
+1. **記者文/ナレーション**(`_mdlAReporterStrip`/`_factionReporterStrip`の`line`引数、PPV TV中継の実況コメント`LIVE_LINES`、F02act1ナレーション`narLines`、F03/F06/F08等のキャラ台詞フォールバック(`survivorLine`/`line`)、`Engine.factions.getF0xLine`/`getF08PreMatchData`等Engine生成narration、F03の`reasonMap[].line`)— 4b-1の指示書除外を踏襲。特に`_mdlAReporterStrip`は処理済み区間で一件も未ラップだった実例を確認し、一貫して据え置いた
+2. **data.js GAMELOG_TEMPLATES/newspaper記事本文が消費するデータ値** — `outcome: won ? '勝利！' : '敗北…'`のようなgameLog `data:{}`フィールドは、data.js側のテンプレ文字列自体が本バッチ(4b, ui-common/ui-render/app/index.html対象)のスコープ外でまだ未ラップのため、部分ラップだと英語版で欠落した単語だけ残る破損を招く。テンプレ側の対応(別バッチ)まで両方非ラップで統一
+3. **数値直付けの単位語(裸)** — `${age}歳`/`${cost}万`/`${weeksLeft}週`等、他の語を伴わず数値の直後に単位だけが付く形。ただし「全治 {n}週間」「残り{n}週」のように動詞的接頭辞や文脈語が付く場合は4b-1実例に倣いラップ
+4. **N勝M敗の対戦成績表記** — `${wins}勝 - ${losses}勝`型。4b-1の処理済み区間でも一貫して非ラップと確認
+5. **ns.log(未使用の内部デバッグログ)** — draft-negotiation.jsのnegState.log同様、描画箇所が存在しない内部専用ログ
+6. **固有名詞・データ値** — `orgName`/`fighter.name`等
+
+### 検証
+- `node --check src/ui-common.js` — 都度成功
+- `node test/ja-golden.js` — 完全一致(hash `6b3d05c8...` 不変)。作業中に2箇所ミスを検出即修正: (a)全角括弧→半角括弧の誤入力、(b)`_F01_ARCHETYPE_META`のモジュールロード時定数t()誤包み(上記参照)
+- `node test/i18n-ratchet.js` — 直書きJA文字列の増加なし(28294→28226、減少のみ)
+- `npm test` — 260/260 PASS。**8本をt()化後の形に追従修正**:
+  - ソースパターン照合1本(`rivalry-resolution-match-guard-test.js`)— `isMain ? '頂上決戦' : ...`のリテラル一致を`WM_I18N.t('頂上決戦')`形へ更新
+  - `new Function`/`eval`サンドボックス系7本(`faction-f09-ending-score-order-test.js`/`faction-ignite-rework-test.js`/`faction-f03-modal-flow-test.js`/`fullscreen-exit-zero-guard-test.js`/`u3-group-b-safety-net-test.js`/`u5-winloss-safety-net-test.js`/`u6-org-identity-safety-net-test.js`)— t()呼び出しを追加した関数を抽出実行する箇所で`WM_I18N is not defined`。4b-1確立の`WM_I18N_STUB`(ja素通し+プレースホルダ置換のみ)パターンを各ファイルの該当スイートへ横展開(スコープが別IIFEのため`u3-group-b`は`FACTION_WM_I18N_STUB`として新規定義)
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・季末S2W1まで到達)
+
+### 数値
+- `WM_I18N.t()`呼び出し: ui-common.js 379→966箇所(本バッチで+587、対象範囲5475〜12064行目)
+
+### 残課題
+- **バッチ4b-3**: ui-common.js 12065行目(`showFactionCommon4Modal`)〜末尾(20,701行目)を引き継ぐ
+- 実機確認: 通常興行/PPV結果画面・PPV TV中継5場面・レンタル確認・成長イベントポップアップ各種・シーズン開幕演出・社長室決裁モーダル群(特にコーチ招聘2ステップ)・選択型イベント・派閥イベント一式(F01〜F09、特にF02の4段階演出とF07の9種インシデント)を一通り開き、レイアウト崩れ・文言欠落が無いか確認いただけると安心(JA出力は不変のはずだが、t()呼び出しの参照ミスが無いかの最終目視)
+
 ## Stage A P3a バッチ4b-1 — ui-common.jsのt()移行(前半)（2026-09-02・Sonnet worktree agent-a3829b2ada4e59fea）
 
 設計書 [i18n-stage-a-p3a-design-v0.1.md](docs/i18n-stage-a-p3a-design-v0.1.md)「バッチ4」に基づき、ui-common.js(20,701行)の**ファイル先頭〜5474行目(`renderMatchPreview` 完了、関数境界)**を対象にUIクロームを`WM_I18N.t()`経由へ移行。ui-render.js(4a-1〜4a-3で完走済み)に続くバッチ4bの1本目。**残り15,227行(約74%)は未着手** — 続きは4b-2が5475行目(`_pendingMatchDialogues`/`renderShowResult`直前)から引き継ぐ。

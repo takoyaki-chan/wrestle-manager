@@ -441,9 +441,17 @@ function makeEl(id) {
 //    60秒の自己復帰があるため恒久停止はしないが、同じ型(実ボタン+キーボード)に揃えた。
 // ===========================================================================
 (function seasonFanfareSuite() {
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
   const build = new Function(
     'document', 'Audio', 'window', '_isPopupActive', '_popupQueue', '_drainPopupQueue',
-    'setTimeout', 'clearTimeout',
+    'setTimeout', 'clearTimeout', 'WM_I18N',
     `${uiFn('showSeasonFanfare')} return { showSeasonFanfare };`
   );
 
@@ -464,7 +472,8 @@ function makeEl(id) {
     const built = build(
       documentStub, { play() {} }, windowStub,
       () => false, [], () => {},
-      timers.setTimeout, () => {}
+      timers.setTimeout, () => {},
+      WM_I18N_STUB
     );
     built.showSeasonFanfare(3, () => { done++; });
     assert.ok(box.innerHTML.includes('<button type="button" class="sf-continue-btn" data-sf-continue>'),
