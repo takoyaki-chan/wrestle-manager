@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T00:44:53.541Z",
+  "generatedAt": "2026-09-02T08:54:15.007Z",
   "files": {
     "data.js": {
       "jaCount": 16694,
@@ -13,14 +13,6 @@
       "jaCount": 2314,
       "jaChars": 25705
     },
-    "ui-common.js": {
-      "jaCount": 1658,
-      "jaChars": 16638
-    },
-    "ui-render.js": {
-      "jaCount": 1544,
-      "jaChars": 16583
-    },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
       "jaChars": 15434
@@ -33,6 +25,14 @@
       "jaCount": 483,
       "jaChars": 9816
     },
+    "ui-common.js": {
+      "jaCount": 1376,
+      "jaChars": 9708
+    },
+    "ui-render.js": {
+      "jaCount": 1081,
+      "jaChars": 9317
+    },
     "flag-dialogue.js": {
       "jaCount": 449,
       "jaChars": 8241
@@ -42,8 +42,8 @@
       "jaChars": 7482
     },
     "app.js": {
-      "jaCount": 542,
-      "jaChars": 6826
+      "jaCount": 541,
+      "jaChars": 6622
     },
     "battle-engine-main.js": {
       "jaCount": 546,
@@ -58,8 +58,8 @@
       "jaChars": 4297
     },
     "factions.js": {
-      "jaCount": 366,
-      "jaChars": 2935
+      "jaCount": 367,
+      "jaChars": 2937
     },
     "dev-event-catalog.js": {
       "jaCount": 187,

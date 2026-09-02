@@ -10,6 +10,14 @@ const vm = require('vm');
 const { execFileSync } = require('child_process');
 
 global.window = { IS_TRIAL: false };
+// i18n Stage A P3a-4d: factions.js/app.js が WM_I18N.t() を呼ぶようになったため、
+// i18n.js 本体は読み込まずスタブで賄う（ja では素通し+プレースホルダ置換）。
+global.WM_I18N = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
 const root = path.join(__dirname, '..');
 const srcDir = path.join(root, 'src');
 

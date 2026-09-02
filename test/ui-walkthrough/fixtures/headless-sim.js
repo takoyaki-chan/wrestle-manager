@@ -17,6 +17,14 @@ let enginesLoaded = false;
 function loadEngines() {
   if (enginesLoaded) return;
   global.window = global.window || { IS_TRIAL: false };
+  // i18n Stage A P3a-4d: factions.js が WM_I18N.t() を呼ぶようになったため、
+  // i18n.js 本体は読み込まずスタブで賄う（ja では素通し+プレースホルダ置換）。
+  global.WM_I18N = global.WM_I18N || { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
   const files = [
     'victory-lines.js',
     'data.js',

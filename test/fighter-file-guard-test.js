@@ -79,8 +79,9 @@ const confidentialLines = [
   '各選手の潜在能力は機密事項。さらに同じ選手であっても、その数値はプレイごとに変化する。',
   '※ 記載の能力値は各選手の能力基準値。',
 ];
-const noticeMain = indexSource.match(/<div class="fighter-file-notice-main">([^<]*)<\/div>/);
-const noticeSub = indexSource.match(/<div class="fighter-file-notice-sub">([^<]*)<br>([^<]*)<\/div>/);
+// i18n Stage A P3a-4d: data-i18n属性がclass直後に付く(HTML構造は不変・属性追加のみ)。
+const noticeMain = indexSource.match(/<div class="fighter-file-notice-main"[^>]*>([^<]*)<\/div>/);
+const noticeSub = indexSource.match(/<div class="fighter-file-notice-sub"[^>]*>([^<]*)<br>([^<]*)<\/div>/);
 assert.ok(noticeMain && noticeSub, '機密注記の3行DOMが見つかる');
 assert.strictEqual(noticeMain[1], confidentialLines[0]);
 assert.strictEqual(noticeSub[1], confidentialLines[1]);

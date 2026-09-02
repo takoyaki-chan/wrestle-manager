@@ -59,6 +59,16 @@ Math.random = function seededLegacyRandom() {
 // window stub（Engine内で IS_TRIAL 参照がある）
 global.window = { IS_TRIAL: false };
 
+// i18n Stage A P3a-4d: factions.js が WM_I18N.t() を呼ぶようになったため、
+// i18n.js 本体は読み込まずスタブで賄う（WM_I18N.t() は ja では素通し+プレースホルダ置換。
+// 契約は src/i18n.js の D1/D2 参照。他の複数テストファイルと同じスタブ）。
+global.WM_I18N = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 // ── Step 1: ソースコードをグローバルスコープで実行 ──
 // data.js / engine.js はブラウザ向けのグローバル const で宣言されているため、
 // require() の module wrapper ではスコープが閉じてしまう。

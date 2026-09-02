@@ -48,6 +48,16 @@ const baselinePath = path.join(__dirname, 'fixtures', 'ja-golden-baseline.json')
 // ── Step 1: ソースコードをグローバルスコープで実行(test/auto-sim.js と同じ作法) ──
 global.window = { IS_TRIAL: false };
 
+// i18n Stage A P3a-4d: factions.js が WM_I18N.t() を呼ぶようになったため、
+// i18n.js 本体は読み込まずスタブで賄う（WM_I18N.t() は ja では素通し+プレースホルダ置換。
+// 契約は src/i18n.js の D1/D2 参照。他の複数テストファイルと同じスタブ）。
+global.WM_I18N = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
+
 // auto-sim.js 同様、Math.random に依存する残存経路も固定シードで再現可能にする。
 let legacyRandomState = SEED >>> 0;
 Math.random = function seededLegacyRandom() {
