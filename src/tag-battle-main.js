@@ -637,15 +637,27 @@ function _detectEventClass(fr){
 function _logLineHtml(line, fr){
   const t = line.trim();
   if (!t) return '';
-  if (t.includes('★ 決着') || t.includes('★ ピン') || t.includes('★ タッグ技') || t.includes('時間切れ') || t.includes('丸め込みで逆転')) {
-    return `<div class="log-event finish"><span class="log-event-text log-finish-text">${escHtml(t)}</span></div>`;
+  // i18n Stage A P3a-3 D-G4: 生成元(match-engine.js simulateTagMatchのpushLog)が
+  // 確定させたクラスをfr.logLineClasses経由で最優先に使う(logLinesと同じ添字)。
+  // 完成文の部分一致判定(翻訳した瞬間に無音故障する最危険パターン)は、クラス情報を
+  // 持たない旧フレーム(念のための保険)に限りフォールバックとして残す。
+  let cls;
+  if (fr && Array.isArray(fr.logLines) && Array.isArray(fr.logLineClasses)) {
+    const idx = fr.logLines.indexOf(line);
+    if (idx >= 0) cls = fr.logLineClasses[idx]; // null=無分類確定 / 'finish'等の文字列=分類確定
   }
-  if (t.includes('反撃のタッチ')) return `<div class="log-event hottag"><span class="log-event-text log-hottag-text">${escHtml(t)}</span></div>`;
-  if (t.includes('ダブルチーム') || t.includes('タッグ技')) return `<div class="log-event double"><span class="log-event-text log-double-text">${escHtml(t)}</span></div>`;
-  if (t.includes('カットイン')) return `<div class="log-event cutin"><span class="log-event-text log-cutin-text">${escHtml(t)}</span></div>`;
-  if (t.includes('同士討ち')) return `<div class="log-event friendly"><span class="log-event-text log-friendly-text">${escHtml(t)}</span></div>`;
-  if (t.includes('見殺し')) return `<div class="log-event betrayal"><span class="log-event-text log-betrayal-text">${escHtml(t)}</span></div>`;
-  if (t.includes('↔ タッチ')) return `<div class="log-event touch"><span class="log-event-text log-touch-text">${escHtml(t)}</span></div>`;
+  if (cls === undefined) {
+    if (t.includes('★ 決着') || t.includes('★ ピン') || t.includes('★ タッグ技') || t.includes('時間切れ') || t.includes('丸め込みで逆転')) cls = 'finish';
+    else if (t.includes('反撃のタッチ')) cls = 'hottag';
+    else if (t.includes('ダブルチーム') || t.includes('タッグ技')) cls = 'double';
+    else if (t.includes('カットイン')) cls = 'cutin';
+    else if (t.includes('同士討ち')) cls = 'friendly';
+    else if (t.includes('見殺し')) cls = 'betrayal';
+    else if (t.includes('↔ タッチ')) cls = 'touch';
+  }
+  if (cls) {
+    return `<div class="log-event ${cls}"><span class="log-event-text log-${cls}-text">${escHtml(t)}</span></div>`;
+  }
   // 通常ターンログ: T1 [phase] ... 形式
   const m = t.match(/^T(\d+)\s+\[[^\]]+\]\s+(.*)$/);
   if (m) return `<div class="log-line"><span style="color:#444">T${m[1]}</span> ${escHtml(m[2])}</div>`;
