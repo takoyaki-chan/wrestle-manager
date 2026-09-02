@@ -1,5 +1,71 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P3b 翻訳バッチ2 — UI文字列800キーの英訳（2026-09-02・Opus主筆 worktree agent-a4b9d80bfd6db73b3）
+
+バッチ1に続く第2弾。開始前にworktreeブランチをmain先端(a4b306b)へfast-forward。台帳 `i18n/ui-ledger.json` の **hasProperNoun=false かつ en が空の行のうち先頭から800行**を対象に `en` 列を充填 → `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成。
+
+規範はバッチ1と同じ(`docs/i18n-stage-b-p3b-design-v0.1.md` D-B3+用語集シード20語 / `docs/en-tone-bible-draft-v0.1.md` §0最重要則2・§1鉄則・§4-6)。**加えてバッチ1の新規訳語決定リスト22件を全面継承**(因縁=grudge / 宿敵=nemesis / 知名度=renown / 集客力=draw / レンタル=loan / 遠征=away / 先鋒・中堅・大将=Lead-off・Middle・Captain / 決裁=approvals(⚡) / 通常興行=regular show ほか)。
+
+### 対象範囲の決め方(バッチ1のスキップ22行を除外した)
+候補列の先頭22行は**バッチ1が「断片連結」としてスキップ済みの同じ22キー**(en空のまま残るので再び先頭に来る)。これを再スキップして800行を数えると実質778行しか進まないため、**この22キーを対象から除外した上で先頭800行**を取った(台帳index 816〜1649)。22キーは原文側の再テンプレート化を待つ独立タスクとして P3a積み残し台帳(`docs/i18n-stage-a-p3a-design-v0.1.md`)に既に起票済み。
+
+### 成果
+- **充填 795行 / スキップ 5行**(台帳総キー3,123・訳文あり**1,573**(50.4%)・未訳1,550はfail-open)
+- 固有名詞入り89行は引き続き手つかず(D-B5)
+
+### スキップ5行(理由付き)
+| index | キー | 理由 |
+|---|---|---|
+| 1081 | 「ロッカールームに満ちていた争いの空気は、」 | **断片連結の追加発見**。ui-common.js:11825〜11826 で `<em>勝者</em>と<em>敗者</em>という、はっきりとした形に決着した。` と連結される導入部。末尾側2キーはバッチ1が既にスキップ済みで、その**頭**にあたる断片 |
+| 1124 | 「不満を抱えている」 | 同上。ui-common.js:10571-10573 の `{name}はリーダー{leader}の方針に<marker>不満を抱えている</marker>ようだ。` の marker 本体。英語では「不満」が対象の**前**に来るため、周囲の助詞キーが訳されない限り単独で訳しても文にならない(count=1・この経路専用) |
+| 1172 | 「二人の対立は、」 | 同上。ui-common.js:10986 の `二人の対立は、<marker>{label}の段階</marker>まで来ている。` の導入部。末尾「まで来ている。」はバッチ1スキップ済み |
+| 1289 | 「位」 | **序数接尾辞の構造問題**。ui-render.js:598 が `<span class="sr-num">{rank}</span><span class="sr-suf">位</span>` と数字を**キーの外**に置いているため、英語の 1st/2nd/3rd/4th を選べない。"th" は1位で破綻し、" place" も英語として半端。**原文側を `t('{n}位')` に変えれば "#{n}" で解決する**(バッチ1が既に「3位」→"3rd"、「{block}ブロック{n}位」→"Block {block} #{n}" と訳せている)ので、積み残し台帳へ回す |
+| 1610 | 「天 頂 戦」 | **固有名詞(D-B5)**。台帳の `hasProperNoun` は文字列部分一致なので、字間を空けた「天 頂 戦」だけが検出をすり抜けていた。素の「天頂戦」を含む10キーはすべて hasProperNoun=true で未訳のまま。固有名詞辞書のKeisuke承認後に一括で訳す |
+
+### 新規訳語決定リスト(バッチ1に無かった分・18件)
+| JA | EN | 補足 |
+|---|---|---|
+| 主力層 / 中堅級 / 主力級 / 基礎力 | Core tier / Mid-tier / Core-tier / Base strength | 団体力の階層語。バッチ1の「コア戦力=Core strength」に接続 |
+| 中堅(役割) | Mid-card | MidCarder役の訳。`3RD · Mid-card` の隊列表示とも両立する語を選んだ |
+| 副将 / 実力副官 | Deputy / Backbone | 派閥カードの2番手(dfc)と、年代記の役割タグ4種(アイドル/若手ホープ/ベテラン/実力副官)の4つ目 |
+| レンタル供給元 | Loaned from | バッチ1の loan に接続 |
+| 王座が不在 | Vacant | 「王者: 不在」。エース不在にも同語を使う |
+| グッズ / プロモ / ブランド | Merch / Promo / Brand | 収入項目の統一 |
+| タレント活動 / メディア取材 | Media Appearances / Press Interview | 内部語を出さず、スケジュール枠と取材イベントを訳し分ける |
+| 外部コーチ / コーチ招聘中 | Guest coach / Guest coach on site | 「招聘」を hire ではなく guest で通す(常勤コーチと区別) |
+| 好敵手 | Worthy rival | 因縁=grudge / 宿敵=nemesis / ライバル=rival に続く4語目 |
+| 下剋上 | Coup | 儀式バナー「下 剋 上」も同語(COUP) |
+| 号外 | EXTRA | 新聞スタンプ。英字大文字が新聞の慣行 |
+| 丸め込み | Roll-up | 決まり手 |
+| 同士討ち / ダブルチーム / 反撃のタッチ | Friendly fire / Double team / The tag for the comeback | タッグ戦の実況語 |
+| 交渉プラン3種 | Low Risk / Balanced / High Return | リスク低め・バランス型・ハイリターン |
+| 因縁タグの1字ラベル | 友=Ally / 冷=Cold | 相関図の9種タグ。**残る5種(熱=Heat / 激=Bitter / 宿=Fated / 敬=Respect / 緩=Casual)は次バッチで同じ語を使う** |
+| ログ絞り込みの1字アイコン | 全=📋 / 季=📅 | `${icon} ${label}` の icon 側。英語に1字アイコンが無いので**絵文字に置換**した(D-B3の「原文の絵文字は位置を維持」に対し、これは原文に絵文字が無い枠へ新規に置く判断)。**残る3種は 興=🎪 / 金=💰 / 戦=⚔ を次バッチで使う** |
+| CANDIDATES ・ 候 補 者 | The Shortlist | `英語 ・ 日本語` の対訳見出し。素直に "Candidates" と訳すと `CANDIDATES · Candidates` と重複して不具合に見えるため、意味を保った別語を当てた(兄弟の `DECREE ・ 処 置`→Treatment、`DURATION ・ 休 暇 週 数`→Weeks Off は重複しないのでそのまま訳) |
+| 儀式バナー(字間空け) | VICTORY / OUTBREAK / REIGNITED / RECONCILED / NEVER AGAIN / A GRUDGE IS BORN / GRUDGE SETTLED / THE GRUDGE MATCH / A WORTHY RIVAL / OVER A YEAR / CHAMPION / MEDIATE / COUP | バッチ1の方針どおり**字間空けは再現しない**。儀式バナーは大文字、パネル見出し(出 入 り→Ins and Outs / 候 補 者 / 処 置 / 休 暇 週 数)はTitle Caseと役割で使い分けた |
+
+### 要裁定の追補: 通貨「万」の**単独キー**
+バッチ1が決めた `{v}万` → `¥{v}0k` は**プレースホルダがキー内にある**から成立する。今回、数字が**キーの外**にある単独キーが3件出た(ui-render.js:940/954、`<strong>{値}</strong> ${t('万')}` の形)。ここに "0k" を当てると `120 0k` と誤植に見えるため、**「万」単独 → `×10k`**(`120 ×10k`)とした。桁は常に正確で、単位の乗数として読める。同じ理由で「万 ／ 残り資金」→`×10k / Remaining funds`、「契約金 (万)」→`Signing fee (×10k)`。**P6の数値フォーマッタ(¥30M表記等)が入れば両方まとめて解消する**ので、裁定はP6に統合したい。
+
+### 表記の整理
+バッチ1の正規化を継承(`・`→ 箇条書きは `•` / 区切りは `·`、`／`→`/`、`（）`→`()`、全角空白→半角)。米綴り統一(color / center)。絵文字・記号(⚡🟢📥★◆等)は原文の位置のまま。
+
+### 検証(全項目実施)
+- `node test/i18n-build-dict.js` — 機械検査green(プレースホルダ完全性/重複キー/日本語残り)。`src/lang-en.js` 生成: 総キー3,123・訳文あり1,573・未訳1,550
+- `node --check src/lang-en.js` — 成功
+- `node test/ja-golden.js` — **完全一致**(hash `6b3d05c8...` 不変)
+- `node test/i18n-ratchet.js` — **増加なし**(files=31 totalJaStrings=28075)
+- `npm test` — **260/260 PASS**
+- `npm run test:ui:walkthrough` — **PASS**(328操作・**issues 0**・季末season=2 week=1到達・duration 196s・recovered-by-retry 0)
+- **ENモード実動作の抜き取り確認**: vm上で `src/i18n.js` + `src/lang-en.js` を実ロードし `setLang('en')` 後の `t()` を検証(使い捨てスクリプト)。代表20キー(短ラベル/儀式バナー/プレースホルダ4種/HTML入り/⚡絵文字入り/通貨¥0k)+ **fail-open 3件**(スキップした「天 頂 戦」「位」・台帳に無い文字列がいずれも原文のまま返り `[i18n-miss]` を記録)+ **ja復帰2件** の**計25件すべてOK**
+- 適用スクリプト側でも機械検査を実施: 800行の被覆確認(795訳+5スキップ、過不足なし)/プレースホルダ集合のja-en一致/en内の日本語残り/全角約物混入/英綴り(colour・centre等)混入 — **違反0**。台帳のCRLF構造改行を保存して書き戻し、diffは**795行の置換のみ**
+
+### 残課題
+- 次バッチは hasProperNoun=false の**残1,434行**(登録済みスキップ27行=バッチ1の22+今回の5 を除く)
+- 上記スキップ5行のうち4行(1081/1124/1172/1289)は**原文側の再テンプレート化**が要る。**P3a積み残し台帳(`docs/i18n-stage-a-p3a-design-v0.1.md`)への追記は本バッチの編集対象外としたため未実施** — バッチ1の a4b306b と同型の1行追記が別途必要(断片連結3件の追加+「位」の序数接尾辞)
+- 「天 頂 戦」は固有名詞辞書のKeisuke承認待ち
+- 通貨「万」の表記はP6の数値フォーマッタ裁定へ統合したい
+
 ## 🌐 Stage B P3b 翻訳バッチ1 — UI文字列800キーの英訳（2026-09-02・Opus主筆 worktree agent-ae725208ac2f6837e）
 
 P3b-1で敷いたパイプラインに最初の訳文を流した。台帳 `i18n/ui-ledger.json` の **hasProperNoun=false 3,034行のうち先頭800行**を対象に、`en`列を充填 → `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成。開始前にworktreeブランチをmain先端(d942b14)へfast-forward済み。
