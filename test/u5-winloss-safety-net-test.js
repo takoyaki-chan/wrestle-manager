@@ -993,7 +993,7 @@ function logGap(msg) {
 // ===========================================================================
 (function npDigestSuite() {
   const build = new Function(
-    'G', 'Engine',
+    'G', 'Engine', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiRenderFn('_npTurnsToTime')}
      ${uiRenderFn('_npThumbBg')}
@@ -1001,11 +1001,20 @@ function logGap(msg) {
      return { _npRenderDigest };`
   );
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB_DIGEST = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   function makeBundle(opts) {
     opts = opts || {};
     const GStub = opts.G || { showVenue: 0, orgPop: 50 };
     const EngineStub = opts.Engine || {};
-    return build(GStub, EngineStub);
+    return build(GStub, EngineStub, WM_I18N_STUB_DIGEST);
   }
 
   function m(overrides) {
@@ -1066,7 +1075,7 @@ function logGap(msg) {
 // ===========================================================================
 (function npPlayerShowSuite() {
   const build = new Function(
-    'G', 'Engine', 'getUpperUrl',
+    'G', 'Engine', 'getUpperUrl', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiRenderFn('_npPhotoBg')}
      ${uiRenderFn('_npTurnsToTime')}
@@ -1077,12 +1086,21 @@ function logGap(msg) {
      return { _npRenderPlayerShow };`
   );
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB_PLAYERSHOW = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   function makeBundle(opts) {
     opts = opts || {};
     const GStub = opts.G || { showVenue: 0, orgPop: 50, orgName: '自団体' };
     const EngineStub = opts.Engine || {};
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
-    return build(GStub, EngineStub, getUpperUrlStub);
+    return build(GStub, EngineStub, getUpperUrlStub, WM_I18N_STUB_PLAYERSHOW);
   }
 
   function baseD(overrides) {
@@ -1185,7 +1203,7 @@ function logGap(msg) {
 
   // --- 9c. _npRenderPage2: 通算戦績が紙面テキストに正しく反映される(実行ベース, 不変条件2, 3, 4) ---
   const buildPage2 = new Function(
-    'G', 'Engine', 'RIVAL_ORGS',
+    'G', 'Engine', 'RIVAL_ORGS', 'WM_I18N',
     `let _dbCompareTarget = null;
      const NP_KURODA_BYLINE = { news: 'x', rating: 'x', editorial: 'x', rivalry: 'x', warRecord: 'x' };
      ${uiFn('escHtml')}
@@ -1202,6 +1220,15 @@ function logGap(msg) {
      ${uiRenderFn('_npRenderPage2')}
      return { _npRenderPage2, getCompareTarget: () => _dbCompareTarget };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB_PAGE2 = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makePage2D(overrides) {
     return Object.assign({
@@ -1230,7 +1257,7 @@ function logGap(msg) {
       roster: [{ id: 1, name: '選手1' }],
       aiOrgs: { org_a: { roster: [{ id: 101, name: '敵1', pw: 60, sp: 60, te: 60, st: 60, mn: 60, popularity: 50, age: 25 }] } },
     };
-    const built = buildPage2(GStub, EngineStub, RIVAL_ORGS_STUB);
+    const built = buildPage2(GStub, EngineStub, RIVAL_ORGS_STUB, WM_I18N_STUB_PAGE2);
     return { built, G: GStub };
   }
 
