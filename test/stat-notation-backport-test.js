@@ -76,6 +76,14 @@ const dbContext = {
   _dbFilterOrg: '', _dbFilterStyle: '', _dbFilterName: '', _dbSortKey: 'ovr', _dbSortAsc: false,
   portraitImg: id => `<span class="portrait">${id}</span>`,
   _popColor: () => ({ color: '#pop-preserved' }),
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  WM_I18N: { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } },
 };
 vm.runInNewContext(`${statBlock}
 ${extractFunction(uiRender, '_statCell')}

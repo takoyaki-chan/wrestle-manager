@@ -51,6 +51,14 @@ section('1-2. プレイヤー向け文言にサッカー用語を残さない', 
 section('3. 歴代優勝カードはOVRを表示し、引退者はpeakOVRへフォールバックする', () => {
   const escHtml = value => String(value);
   const Engine = { util: { ov: fighter => fighter.currentOvr }, career: { resolveFighterName: () => '' } };
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
   const upper = loadFunction(uiRender, '_recordBookUpper', { escHtml, getUpperUrl: () => '', _recordBookPeak: () => 0 });
   const name = loadFunction(uiRender, '_recordBookName', { Engine, G: {} });
   const displayOvr = loadFunction(uiRender, '_recordBookDisplayOvr', { Engine });
@@ -61,6 +69,7 @@ section('3. 歴代優勝カードはOVRを表示し、引退者はpeakOVRへフ�
     _recordBookName: name,
     _recordBookDisplayOvr: displayOvr,
     _recordBookOpen: () => '',
+    WM_I18N,
   });
   const active = renderCard({ source: { active: true, orgName: '団体', fighter: { id: 1, name: '現役', currentOvr: 120 } }, event: { season: 8 } }, 0, 'tenchosen');
   const retired = renderCard({ source: { active: false, orgName: '引退', fighter: { id: 2, name: '引退', currentOvr: 90, careerRecord: { peakOVR: 129 } } }, event: { season: 7 } }, 0, 'ppv');

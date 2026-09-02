@@ -3038,12 +3038,12 @@ function renderShowPrep() {
       const total = dir.totalShows != null ? dir.totalShows : remaining;
       const periodLabel = total > 1 ? `（残り ${remaining}/${total} 興行）` : '';
       html += `<div style="background:linear-gradient(135deg,${ok ? '#1d2e1a,#2a4422' : '#2e2a1a,#443a22'});border:1px solid ${ok ? '#7bc46c' : '#e0c98a'};border-radius:8px;padding:10px 14px;margin-bottom:14px">
-        <div style="font-size:13px;font-weight:700;color:${ok ? '#bff5b3' : '#f0d99a'};letter-spacing:1px;margin-bottom:4px">📣 ${fac.name} からのメイン推薦${periodLabel}</div>
+        <div style="font-size:13px;font-weight:700;color:${ok ? '#bff5b3' : '#f0d99a'};letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('📣 {name} からのメイン推薦{period}', { name: fac.name, period: periodLabel })}</div>
         <div style="font-size:12px;color:#dcd6c0;line-height:1.55">
-          メイン枠に <strong>${fac.name}</strong> のメンバーを推す約束をしています。<br>
-          <span style="color:#aaa;font-size:11px">候補: ${memberNames || '—'}</span><br>
+          ${WM_I18N.t('メイン枠に <strong>{name}</strong> のメンバーを推す約束をしています。', { name: fac.name })}<br>
+          <span style="color:#aaa;font-size:11px">${WM_I18N.t('候補: {names}', { names: memberNames || '—' })}</span><br>
           <span style="color:${ok ? '#9be08a' : '#e0a85a'};font-size:11px;margin-top:2px;display:inline-block">
-            ${ok ? '✓ 現在のメインに該当メンバーが入っています' : '⚠ 現在のメインに該当メンバー無し（リーダーが不満を募らせます）'}
+            ${ok ? WM_I18N.t('✓ 現在のメインに該当メンバーが入っています') : WM_I18N.t('⚠ 現在のメインに該当メンバー無し（リーダーが不満を募らせます）')}
           </span>
         </div>
       </div>`;
@@ -3065,14 +3065,14 @@ function renderShowPrep() {
         ((m.left === bc1.fighterAId && m.right === bc1.fighterBId) ||
          (m.left === bc1.fighterBId && m.right === bc1.fighterAId)));
       const bc1Status = !bc1Eligible
-        ? '⚠ 特別興行につき今回は組み込まれません（次の通常興行へ繰り越し）'
+        ? WM_I18N.t('⚠ 特別興行につき今回は組み込まれません（次の通常興行へ繰り越し）')
         : bc1Placed
-          ? '✓ 今週のカードに組まれています'
-          : 'カードのどこか(メイン/セミ/中盤)に組んでください';
+          ? WM_I18N.t('✓ 今週のカードに組まれています')
+          : WM_I18N.t('カードのどこか(メイン/セミ/中盤)に組んでください');
       html += `<div class="panel" style="border:1px solid var(--gold);margin-bottom:14px">
-        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">⚔ ${escHtml(bc1.factionName || '派閥')}内対決の予約</div>
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('⚔ {faction}内対決の予約', { faction: escHtml(bc1.factionName || '派閥') })}</div>
         <div style="font-size:12px;color:var(--text-sub);line-height:1.6">
-          <strong>${escHtml(bc1A.name)}</strong> × <strong>${escHtml(bc1B.name)}</strong> — 枠は自由。カード編成のどこに置くかは社長次第<br>
+          ${WM_I18N.t('<strong>{a}</strong> × <strong>{b}</strong> — 枠は自由。カード編成のどこに置くかは社長次第', { a: escHtml(bc1A.name), b: escHtml(bc1B.name) })}<br>
           <span style="color:${bc1Placed ? 'var(--accent-positive)' : 'var(--text-sub)'}">${escHtml(bc1Status)}</span>
         </div>
       </div>`;
@@ -3092,14 +3092,14 @@ function renderShowPrep() {
         : (mainSlot.left === pf.id || mainSlot.right === pf.id)));
       const regular = Engine.util.isRegularShowWeek(G.week);
       const pledgeStatus = !regular
-        ? '⚠ 特別興行につき今回は判定されません（次の通常興行へ持ち越し）'
+        ? WM_I18N.t('⚠ 特別興行につき今回は判定されません（次の通常興行へ持ち越し）')
         : inMain
-          ? '✓ メインに組まれています'
-          : 'メイン（先頭の枠）に組まなければ、約束を破ったことになります';
+          ? WM_I18N.t('✓ メインに組まれています')
+          : WM_I18N.t('メイン（先頭の枠）に組まなければ、約束を破ったことになります');
       html += `<div class="panel" style="border:1px solid var(--gold);margin-bottom:14px">
-        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">🤝 起用の約束</div>
+        <div style="font-size:13px;font-weight:700;color:var(--gold);letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('🤝 起用の約束')}</div>
         <div style="font-size:12px;color:var(--text-sub);line-height:1.6">
-          <strong>${escHtml(pf.name)}</strong> をメインで使うと約束している — 組むかどうかは社長次第<br>
+          ${WM_I18N.t('<strong>{name}</strong> をメインで使うと約束している — 組むかどうかは社長次第', { name: escHtml(pf.name) })}<br>
           <span style="color:${regular && inMain ? 'var(--accent-positive)' : 'var(--text-sub)'}">${escHtml(pledgeStatus)}</span>
         </div>
       </div>`;
@@ -3107,7 +3107,7 @@ function renderShowPrep() {
   }
 
   // L1: 会場選択（全会場選択可能・リスク指標付き）
-  html += '<div class="panel-title" style="margin-top:0">会場選択</div>';
+  html += `<div class="panel-title" style="margin-top:0">${WM_I18N.t('会場選択')}</div>`;
   const baseAtt = Engine.economy.calcBaseAttendance(G.orgPop);
   html += '<div class="venue-grid">';
   VENUES.forEach((v, i) => {
@@ -3116,21 +3116,21 @@ function renderShowPrep() {
     // orgPop リバランス v1.1 §5: ドーム年1回制限チェック
     const isDomeLocked = (i === 9 && (G.domeShowsThisSeason || 0) >= 1);
     let riskClass = '', riskLabel = '';
-    if (isDomeLocked) { riskClass = 'venue-danger'; riskLabel = '🔒 今季使用済み'; }
-    else if (fillRate >= 0.7) { riskClass = 'venue-safe'; riskLabel = '◎ 安全'; }
-    else if (fillRate >= 0.4) { riskClass = 'venue-risky'; riskLabel = '△ 挑戦'; }
-    else { riskClass = 'venue-danger'; riskLabel = '✕ 危険'; }
+    if (isDomeLocked) { riskClass = 'venue-danger'; riskLabel = WM_I18N.t('🔒 今季使用済み'); }
+    else if (fillRate >= 0.7) { riskClass = 'venue-safe'; riskLabel = WM_I18N.t('◎ 安全'); }
+    else if (fillRate >= 0.4) { riskClass = 'venue-risky'; riskLabel = WM_I18N.t('△ 挑戦'); }
+    else { riskClass = 'venue-danger'; riskLabel = WM_I18N.t('✕ 危険'); }
     const clickHandler = isDomeLocked
-      ? `onclick="showToast('今シーズンは既にドーム興行を開催済みです。次シーズンに挑戦してください。', 4000)"`
+      ? `onclick="showToast('${WM_I18N.t('今シーズンは既にドーム興行を開催済みです。次シーズンに挑戦してください。')}', 4000)"`
       : `onclick="App.setShowVenue(${i});renderShowPrep()"`;
     html += `<div class="venue-card ${selected ? 'selected' : ''} ${riskClass}${isDomeLocked ? ' venue-locked' : ''}"
       ${clickHandler}
       style="${isDomeLocked ? 'opacity:0.55;cursor:not-allowed' : ''}">
       ${v.img ? `<img src="${v.img}" style="width:100%;height:80px;object-fit:cover;border-radius:4px 4px 0 0;opacity:0.8" onerror="this.style.display='none'" alt="">` : ''}
       <div class="venue-name">${v.name}</div>
-      <div class="venue-info">キャパ: ${v.cap.toLocaleString()}人</div>
-      <div class="venue-info">コスト: ${v.cost}万</div>
-      <div class="venue-info">試合枠: ${v.maxMatches}試合</div>
+      <div class="venue-info">${WM_I18N.t('キャパ: {cap}人', { cap: v.cap.toLocaleString() })}</div>
+      <div class="venue-info">${WM_I18N.t('コスト: {cost}万', { cost: v.cost })}</div>
+      <div class="venue-info">${WM_I18N.t('試合枠: {n}試合', { n: v.maxMatches })}</div>
       <div class="venue-risk">${riskLabel}</div>
     </div>`;
   });
@@ -3402,7 +3402,7 @@ function renderShowPrep() {
       const clearedCard = Engine.challengeRequest.clearReservedMatches(G, G.showCard);
       const { _pendingIncomingChallengeMatch: _invalidIncomingCR, _pendingChallengeMatch: _legacyIncomingCR, ...rest } = G;
       G = { ...rest, showCard: clearedCard };
-      if (typeof showToast === 'function') showToast('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました', 5000);
+      if (typeof showToast === 'function') showToast(WM_I18N.t('⚠ 挑戦試合の出場メンバーが揃わないため、予約を解除しました'), 5000);
     }
   }
 
@@ -3420,7 +3420,7 @@ function renderShowPrep() {
     } else {
       G = { ...G, _pendingUnifiedIncomingMatch: null,
         showCard: (G.showCard || []).filter(m => !m?._unifiedTitleMatch) };
-      if (typeof showToast === 'function') showToast('⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました', 5000);
+      if (typeof showToast === 'function') showToast(WM_I18N.t('⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました'), 5000);
     }
   }
 
@@ -3434,7 +3434,7 @@ function renderShowPrep() {
     } else {
       const { _pendingIncomingB3Match: _invalidB3, ...rest } = G;
       G = { ...rest, showCard: Engine.challengeRequest.clearReservedMatches(G, G.showCard) };
-      if (typeof showToast === 'function') showToast('⚠ 挑戦試合の出場条件が整わないため、予約を解除しました', 5000);
+      if (typeof showToast === 'function') showToast(WM_I18N.t('⚠ 挑戦試合の出場条件が整わないため、予約を解除しました'), 5000);
     }
   }
 
@@ -3442,23 +3442,23 @@ function renderShowPrep() {
   if (scheduledCRNotice) {
     const maxMatches = Engine.util.getMaxMatches(G.week, G.showVenue);
     const regularSlots = Math.max(0, maxMatches - 3);
-    const requesterName = scheduledCRNotice.requesterOrgName || scheduledCRNotice.requesterOrgId || '挑戦側';
-    const opponentName = scheduledCRNotice.opponentOrgName || scheduledCRNotice.opponentOrgId || '迎撃側';
+    const requesterName = scheduledCRNotice.requesterOrgName || scheduledCRNotice.requesterOrgId || WM_I18N.t('挑戦側');
+    const opponentName = scheduledCRNotice.opponentOrgName || scheduledCRNotice.opponentOrgId || WM_I18N.t('迎撃側');
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid rgba(235,105,90,.55);background:rgba(145,45,40,.18);border-radius:6px;color:#ffd9d2;font-size:12px;line-height:1.65">
-      <strong style="color:#ff9e8f">⚔ 他団体挑戦シリーズ</strong>　${requesterName} vs ${opponentName}<br>
-      メインイベントから上位3試合を固定しています。会場の全${maxMatches}枠のうち、通常カードは残り${regularSlots}枠です。各挑戦試合には集客評価+${MATCH_APPEAL_CONFIG.challengeRequestAppeal}が入ります。
+      <strong style="color:#ff9e8f">${WM_I18N.t('⚔ 他団体挑戦シリーズ')}</strong>　${requesterName} vs ${opponentName}<br>
+      ${WM_I18N.t('メインイベントから上位3試合を固定しています。会場の全{maxMatches}枠のうち、通常カードは残り{regularSlots}枠です。各挑戦試合には集客評価+{appeal}が入ります。', { maxMatches, regularSlots, appeal: MATCH_APPEAL_CONFIG.challengeRequestAppeal })}
     </div>`;
   }
   if (scheduledUnifiedNotice) {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid color-mix(in srgb,var(--unified) 60%,transparent);background:color-mix(in srgb,var(--unified-deep) 20%,transparent);border-radius:6px;color:var(--unified-hi);font-size:12px;line-height:1.65">
-      <strong style="color:var(--unified)">🌐 全国統一王座戦</strong>　${scheduledUnifiedNotice.champion.name} vs ${scheduledUnifiedNotice.challenger.name}<br>
-      全国統一王座戦をメインイベントに固定しています。残りの枠に通常カードを編成してください。
+      <strong style="color:var(--unified)">${WM_I18N.t('🌐 全国統一王座戦')}</strong>　${scheduledUnifiedNotice.champion.name} vs ${scheduledUnifiedNotice.challenger.name}<br>
+      ${WM_I18N.t('全国統一王座戦をメインイベントに固定しています。残りの枠に通常カードを編成してください。')}
     </div>`;
   }
   if (scheduledSingleNotice) {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-negative);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
-      <strong style="color:var(--c-negative)">⚔ 挑戦状によるメインイベント</strong>　${scheduledSingleNotice.playerFighter.name} vs ${scheduledSingleNotice.challenger.name}<br>
-      挑戦試合をメインイベントに固定しています。残りの枠に通常カードを編成してください。
+      <strong style="color:var(--c-negative)">${WM_I18N.t('⚔ 挑戦状によるメインイベント')}</strong>　${scheduledSingleNotice.playerFighter.name} vs ${scheduledSingleNotice.challenger.name}<br>
+      ${WM_I18N.t('挑戦試合をメインイベントに固定しています。残りの枠に通常カードを編成してください。')}
     </div>`;
   }
   const incomingDeferredByAway = eligibleChallengeShow && weeklyChallengeSide === 'away'
@@ -3466,14 +3466,14 @@ function renderShowPrep() {
       || G._pendingUnifiedIncomingMatch || G._pendingIncomingB3Match);
   if (incomingDeferredByAway) {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
-      <strong style="color:var(--c-info)">📨 挑戦試合は次の通常興行へ</strong><br>
-      同じ週に敵地遠征があるため、受けた挑戦試合は破棄せず次の通常興行まで持ち越します。
+      <strong style="color:var(--c-info)">${WM_I18N.t('📨 挑戦試合は次の通常興行へ')}</strong><br>
+      ${WM_I18N.t('同じ週に敵地遠征があるため、受けた挑戦試合は破棄せず次の通常興行まで持ち越します。')}
     </div>`;
   }
   if (!eligibleChallengeShow && (G._pendingIncomingChallengeMatch || G._pendingIncomingB3Match)) {
     html += `<div style="margin:10px 0;padding:12px 14px;border:1px solid var(--c-info);background:var(--bg-mid);border-radius:6px;color:var(--text-sub);font-size:12px;line-height:1.65">
-      <strong style="color:var(--c-info)">📨 挑戦試合は次の通常興行へ</strong><br>
-      今回は固定興行のためカードへ割り込まず、挑戦試合は次の通常興行まで持ち越されます。
+      <strong style="color:var(--c-info)">${WM_I18N.t('📨 挑戦試合は次の通常興行へ')}</strong><br>
+      ${WM_I18N.t('今回は固定興行のためカードへ割り込まず、挑戦試合は次の通常興行まで持ち越されます。')}
     </div>`;
   }
   // away-flow-redesign CH-2: 「🚌 敵地遠征の予約」バナーと手動起動ボタンは廃止。
@@ -3553,21 +3553,21 @@ function renderShowPrep() {
     </div>
     <div class="sp-metrics">
       <div class="sp-metric"><div class="sp-metric-val" style="color:${heat.color}">${heat.label}</div><div class="sp-metric-label">Heat</div></div>
-      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr('会場の熱気予測。ここに各試合の注目度(人気・因縁・タイトル・メイン枠など)を掛けた分だけ試合評価に効きます。超満員は試合を熱くし、ガラガラは冷やします。')}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${Math.round(estCrowdMQ.total * 10) / 10}</div><div class="sp-metric-label">会場の熱</div></div>` : ''}
+      ${estCrowdMQ.total !== 0 ? `<div class="sp-metric" style="cursor:help" ${_tipAttr(WM_I18N.t('会場の熱気予測。ここに各試合の注目度(人気・因縁・タイトル・メイン枠など)を掛けた分だけ試合評価に効きます。超満員は試合を熱くし、ガラガラは冷やします。'))}><div class="sp-metric-val" style="color:${estCrowdMQ.total > 0 ? 'var(--green)' : 'var(--red)'}">${estCrowdMQ.total >= 0 ? '+' : ''}${Math.round(estCrowdMQ.total * 10) / 10}</div><div class="sp-metric-label">${WM_I18N.t('会場の熱')}</div></div>` : ''}
       ${hasTitlePreview
-        ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${validMatches.some(m => m?._unifiedTitleMatch) ? 'var(--unified)' : 'var(--gold)'}">${validMatches.some(m => m?._unifiedTitleMatch) ? '🌐' : '🏆'}</div><div class="sp-metric-label">${validMatches.some(m => m?._unifiedTitleMatch) ? '全国統一王座戦' : 'タイトル戦'}</div></div>`
+        ? `<div class="sp-metric"><div class="sp-metric-val" style="color:${validMatches.some(m => m?._unifiedTitleMatch) ? 'var(--unified)' : 'var(--gold)'}">${validMatches.some(m => m?._unifiedTitleMatch) ? '🌐' : '🏆'}</div><div class="sp-metric-label">${validMatches.some(m => m?._unifiedTitleMatch) ? WM_I18N.t('全国統一王座戦') : WM_I18N.t('タイトル戦')}</div></div>`
         : (titleCd.allowed
-          ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">王座戦 解禁中</div></div>`
-          : `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-dim);font-size:18px">⏳${titleCd.weeksLeft}週</div><div class="sp-metric-label">王座戦 解禁まで</div></div>`)}
-      <div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-sub)">${v.cap.toLocaleString()}</div><div class="sp-metric-label">会場席数</div></div>
-      <div class="sp-metric"><div class="sp-metric-val" style="color:#e17055">-${v.cost}万</div><div class="sp-metric-label">会場費</div></div>
+          ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">${WM_I18N.t('王座戦 解禁中')}</div></div>`
+          : `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-dim);font-size:18px">${WM_I18N.t('⏳{n}週', { n: titleCd.weeksLeft })}</div><div class="sp-metric-label">${WM_I18N.t('王座戦 解禁まで')}</div></div>`)}
+      <div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-sub)">${v.cap.toLocaleString()}</div><div class="sp-metric-label">${WM_I18N.t('会場席数')}</div></div>
+      <div class="sp-metric"><div class="sp-metric-val" style="color:#e17055">-${v.cost}万</div><div class="sp-metric-label">${WM_I18N.t('会場費')}</div></div>
     </div>
   </div>`;
 
   // ファンの声 v7
   if (fanExpects.length > 0) {
     html += `<div class="sp-fan-voices">
-      <div class="sp-fan-voices-title">🎤 ファンの声${matchedCount > 0 ? ` <span style="color:var(--green);font-size:9px">（${matchedCount}件反映中 → 評価+5/試合）</span>` : ''}</div>
+      <div class="sp-fan-voices-title">${WM_I18N.t('🎤 ファンの声')}${matchedCount > 0 ? ` <span style="color:var(--green);font-size:9px">${WM_I18N.t('（{n}件反映中 → 評価+5/試合）', { n: matchedCount })}</span>` : ''}</div>
       <div class="sp-fan-items">`;
     fanExpects.forEach(exp => {
       const isOnCard = validCurrent.some(m =>
@@ -3580,18 +3580,18 @@ function renderShowPrep() {
 
   // カードヘッダー v7
   html += `<div class="sp-card-header">
-    <span class="sp-card-header-title">Match Card</span>${_tipIcon('<strong style="color:var(--gold)">おまかせ編成</strong><br>・🔥おすすめ — 因縁・鮮度・話題性を考慮した最適カード<br>・💪OVR順 — 実力上位同士をマッチング<br>・🎤集客力順 — 集客力の高い選手をメインに')}
-    <button class="btn btn-sm" style="background:rgba(255,140,0,0.18);border:1px solid rgba(255,140,0,0.5);color:#ff8c00" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCardByAppeal();renderShowPrep()" title="因縁・鮮度・話題性を考慮した最適カード">🔥 おすすめ</button>
-    <button class="btn btn-sm" style="background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.4);color:#3498db" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCard();renderShowPrep()" title="OVR上位同士をマッチング">💪 OVR順</button>
-    <button class="btn btn-sm" style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCardByDraw();renderShowPrep()" title="個人集客力が高い選手をメインに">🎤 集客力順</button>
-    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="_spActivePicker=null;App.clearShowCard()">🗑 全クリア</button>
-    <span class="sp-venue-info">${v.name}（${v.cap.toLocaleString()}席）</span>
+    <span class="sp-card-header-title">Match Card</span>${_tipIcon(WM_I18N.t('<strong style="color:var(--gold)">おまかせ編成</strong><br>・🔥おすすめ — 因縁・鮮度・話題性を考慮した最適カード<br>・💪OVR順 — 実力上位同士をマッチング<br>・🎤集客力順 — 集客力の高い選手をメインに'))}
+    <button class="btn btn-sm" style="background:rgba(255,140,0,0.18);border:1px solid rgba(255,140,0,0.5);color:#ff8c00" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCardByAppeal();renderShowPrep()" title="${WM_I18N.t('因縁・鮮度・話題性を考慮した最適カード')}">${WM_I18N.t('🔥 おすすめ')}</button>
+    <button class="btn btn-sm" style="background:rgba(52,152,219,0.15);border:1px solid rgba(52,152,219,0.4);color:#3498db" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCard();renderShowPrep()" title="${WM_I18N.t('OVR上位同士をマッチング')}">${WM_I18N.t('💪 OVR順')}</button>
+    <button class="btn btn-sm" style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.4);color:#9b59b6" onclick="_spActivePicker=null;Audio.play('cardComplete');autoFillCardByDraw();renderShowPrep()" title="${WM_I18N.t('個人集客力が高い選手をメインに')}">${WM_I18N.t('🎤 集客力順')}</button>
+    <button class="btn btn-sm" style="background:rgba(231,76,60,0.15);border:1px solid rgba(231,76,60,0.4);color:#e74c3c" onclick="_spActivePicker=null;App.clearShowCard()">${WM_I18N.t('🗑 全クリア')}</button>
+    <span class="sp-venue-info">${WM_I18N.t('{name}（{cap}席）', { name: v.name, cap: v.cap.toLocaleString() })}</span>
   </div>`;
 
   // マッチスロット v7
   const _spFighterInfo = (f, side, slotIdx, drawData) => {
     if (!f) {
-      return `<div class="sp-fighter-info ${side}"><div class="sp-fighter-name empty" onclick="_spOpenPicker(${slotIdx},'${side}')">— 選手選択 —</div></div>`;
+      return `<div class="sp-fighter-info ${side}"><div class="sp-fighter-name empty" onclick="_spOpenPicker(${slotIdx},'${side}')">${WM_I18N.t('— 選手選択 —')}</div></div>`;
     }
     const isChamp = G.titles?.world?.championId === f.id;
     const isUnifiedChamp = G.unifiedTitle?.championId === f.id;
@@ -3600,13 +3600,13 @@ function renderShowPrep() {
     if (drawData) {
       const dets = [...(drawData.traits || []), ...(drawData.details || [])]
         .map(d => `<span class="sp-draw-detail">${d.label}+${d.value}</span>`).join(' ');
-      drawHtml = `<div class="sp-draw-block"><span class="sp-draw-head">集客力</span> <span class="sp-draw-val" style="${_scale6Style(_popColor(drawData.total))}">${drawData.total}</span>${dets ? `<div class="sp-draw-sub">${dets}</div>` : ''}</div>`;
+      drawHtml = `<div class="sp-draw-block"><span class="sp-draw-head">${WM_I18N.t('集客力')}</span> <span class="sp-draw-val" style="${_scale6Style(_popColor(drawData.total))}">${drawData.total}</span>${dets ? `<div class="sp-draw-sub">${dets}</div>` : ''}</div>`;
     }
     return `<div class="sp-fighter-info ${side}">
-      ${isChamp ? '<div class="sp-champ">👑 王者</div>' : ''}
-      ${isUnifiedChamp ? '<div class="sp-champ" style="color:var(--unified)">🌐 統一王者</div>' : ''}
+      ${isChamp ? `<div class="sp-champ">${WM_I18N.t('👑 王者')}</div>` : ''}
+      ${isUnifiedChamp ? `<div class="sp-champ" style="color:var(--unified)">${WM_I18N.t('🌐 統一王者')}</div>` : ''}
       <div class="sp-fighter-name" onclick="_spOpenPicker(${slotIdx},'${side}')">${f.name}</div>
-      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">体調 <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
+      <div class="sp-ovr-row"><span class="sp-ovr-label">OVR</span><span class="sp-ovr-val">${ov(f)}</span><span class="sp-fighter-cond" style="margin-left:6px">${WM_I18N.t('体調')} <span style="${_scale6Style(_condColor(Math.round(f.condition || 100)))}">${Math.round(f.condition || 100)}</span></span></div>
       ${drawHtml}
     </div>`;
   };
@@ -3633,24 +3633,24 @@ function renderShowPrep() {
       const tagExpA = (tA1 && tA2) ? Engine.tagExp.getCount(G, tA1.id, tA2.id) : 0;
       const tagExpB = (tB1 && tB2) ? Engine.tagExp.getCount(G, tB1.id, tB2.id) : 0;
       const _tagFighterHtml = (f, team, pos, side) => {
-        if (!f) return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:72px;height:72px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">— 選択 —</div></div></div>`;
+        if (!f) return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')"><div style="width:72px;height:72px;border-radius:6px;border:1px dashed rgba(200,190,170,.15);flex-shrink:0"></div><div class="sp-tag-fighter-info"><div class="sp-tag-fighter-name empty">${WM_I18N.t('— 選択 —')}</div></div></div>`;
         const cond = Math.round(f.condition || 100);
         const drawPow = Math.round(Engine.attendanceV2.calcDrawPower(f, G));
         const isChamp = G.titles?.world?.championId === f.id;
         return `<div class="sp-tag-fighter ${side}" onclick="_spOpenTagPicker(${i},'${team}','${pos}')">
           ${portraitImg(f.id, 72, '', 'roster')}
           <div class="sp-tag-fighter-info">
-            ${isChamp ? '<div style="font-size:9px;color:var(--gold)">👑 王者</div>' : ''}
+            ${isChamp ? `<div style="font-size:9px;color:var(--gold)">${WM_I18N.t('👑 王者')}</div>` : ''}
             <div class="sp-tag-fighter-name">${f.name}</div>
             <div class="sp-tag-fighter-ovr">OVR <span style="font-size:20px;color:var(--text-main);font-weight:700">${ov(f)}</span></div>
-            <div style="font-size:10px;color:var(--text-dim)">体調 <span style="${_scale6Style(_condColor(cond))}">${cond}</span></div>
-            <div style="font-size:10px;color:var(--text-dim)">集客力 <span style="${_scale6Style(_popColor(drawPow))}">${drawPow}</span></div>
+            <div style="font-size:10px;color:var(--text-dim)">${WM_I18N.t('体調')} <span style="${_scale6Style(_condColor(cond))}">${cond}</span></div>
+            <div style="font-size:10px;color:var(--text-dim)">${WM_I18N.t('集客力')} <span style="${_scale6Style(_popColor(drawPow))}">${drawPow}</span></div>
           </div>
         </div>`;
       };
       const _bondColor = b => b >= 70 ? 'var(--green)' : b >= 40 ? 'var(--text-sub)' : 'var(--red)';
-      const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
-      const moveDnBtn = i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+      const moveUpBtn = i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="${WM_I18N.t('上へ')}">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+      const moveDnBtn = i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="${WM_I18N.t('下へ')}">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
       // ピッカー
       const isTagPickerOpen = _spActivePicker && _spActivePicker.slotIdx === i && _spActivePicker.tagTeam;
       let tagPickerInner = '';
@@ -3676,10 +3676,10 @@ function renderShowPrep() {
           // 最新の実機裁定: 名前/行クリック=選択、顔クリック=選手詳細。顔だけで伝播を止める。
           return `<div class="${cls}" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',${c.id});_spActivePicker=null"><span class="sp-picker-face-detail" style="display:inline-flex;cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${portraitImg(c.id, 24)}</span><span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span><span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
         }).join('');
-        const removeRow = curInPos > 0 ? `<div class="sp-picker-row" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',0);_spActivePicker=null" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
-        const teamLabel = tagTeam === 'teamA' ? 'チームA' : 'チームB';
-        const posLabel = tagPos === 'fighter1' ? '1人目' : '2人目';
-        tagPickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${teamLabel} ${posLabel}を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
+        const removeRow = curInPos > 0 ? `<div class="sp-picker-row" onclick="App.setTagSlotFighter(${i},'${tagTeam}','${tagPos}',0);_spActivePicker=null" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">${WM_I18N.t('✕ この選手を外す')}</div>` : '';
+        const teamLabel = tagTeam === 'teamA' ? WM_I18N.t('チームA') : WM_I18N.t('チームB');
+        const posLabel = tagPos === 'fighter1' ? WM_I18N.t('1人目') : WM_I18N.t('2人目');
+        tagPickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${WM_I18N.t('{team} {pos}を選択', { team: teamLabel, pos: posLabel })}</span><span class="sp-picker-close" onclick="_spClosePicker()">${WM_I18N.t('閉じる')}</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
       }
       // 試合番号
       let tagMatchNum = 0;
@@ -3691,14 +3691,14 @@ function renderShowPrep() {
           else if (sj.left > 0 && sj.right > 0) tagMatchNum++;
         }
       }
-      const tagMatchLabel = tagFilled ? `第${tagMatchNum}試合` : '';
+      const tagMatchLabel = tagFilled ? WM_I18N.t('第{n}試合', { n: tagMatchNum }) : '';
       html += `<div class="sp-match-card tag-match" id="sp-slot-${i}">
         <div class="sp-match-card-inner">
           <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
           <div class="sp-tag-team left">
             ${_tagFighterHtml(tA1, 'teamA', 'fighter1', 'left')}
             ${_tagFighterHtml(tA2, 'teamA', 'fighter2', 'left')}
-            ${tA1 && tA2 ? `<div class="sp-tag-chem">🤝 友好 <span class="sp-tag-chem-val" style="color:${_bondColor(bondA)}">${Math.round(bondA)}</span>${tagExpA > 0 ? ` ・タッグ経験${tagExpA}` : ''}</div>` : ''}
+            ${tA1 && tA2 ? `<div class="sp-tag-chem">${WM_I18N.t('🤝 友好')} <span class="sp-tag-chem-val" style="color:${_bondColor(bondA)}">${Math.round(bondA)}</span>${tagExpA > 0 ? ` ${WM_I18N.t('・タッグ経験{n}', { n: tagExpA })}` : ''}</div>` : ''}
           </div>
           <div class="sp-match-center">
             ${tagMatchLabel ? `<div class="sp-match-num">${tagMatchLabel}</div>` : ''}
@@ -3706,17 +3706,17 @@ function renderShowPrep() {
               if (!tagFilled) return '';
               const ids = [tA1, tA2, tB1, tB2];
               const tagAppeal = Math.round(ids.reduce((sum, f) => sum + Engine.attendanceV2.calcDrawPower(f, G), 0) / 2);
-              return `<div class="sp-appeal-label">カード魅力</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(tagAppeal))}">${tagAppeal}</div>`;
+              return `<div class="sp-appeal-label">${WM_I18N.t('カード魅力')}</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(tagAppeal))}">${tagAppeal}</div>`;
             })()}
             <div class="sp-tag-badge">TAG MATCH</div>
             <div class="sp-match-vs" style="font-size:20px;margin:8px 0">VS</div>
-            <div style="font-size:10px;color:var(--text-dim)">20分1本勝負</div>
-            <div class="sp-tag-remove-btn" onclick="App.removeTagSlot(${i})">シングルに戻す</div>
+            <div style="font-size:10px;color:var(--text-dim)">${WM_I18N.t('20分1本勝負')}</div>
+            <div class="sp-tag-remove-btn" onclick="App.removeTagSlot(${i})">${WM_I18N.t('シングルに戻す')}</div>
           </div>
           <div class="sp-tag-team right">
             ${_tagFighterHtml(tB1, 'teamB', 'fighter1', 'right')}
             ${_tagFighterHtml(tB2, 'teamB', 'fighter2', 'right')}
-            ${tB1 && tB2 ? `<div class="sp-tag-chem">🤝 友好 <span class="sp-tag-chem-val" style="color:${_bondColor(bondB)}">${Math.round(bondB)}</span>${tagExpB > 0 ? ` ・タッグ経験${tagExpB}` : ''}</div>` : ''}
+            ${tB1 && tB2 ? `<div class="sp-tag-chem">${WM_I18N.t('🤝 友好')} <span class="sp-tag-chem-val" style="color:${_bondColor(bondB)}">${Math.round(bondB)}</span>${tagExpB > 0 ? ` ${WM_I18N.t('・タッグ経験{n}', { n: tagExpB })}` : ''}</div>` : ''}
           </div>
           <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
         </div>
@@ -3752,8 +3752,8 @@ function renderShowPrep() {
         else if (sj.left > 0 && sj.right > 0) matchNum++;
       }
     }
-    const matchLabel = (i === 0 && isFilled) ? 'MAIN EVENT' : isFilled ? `第${matchNum}試合` : '';
-    const matchRule = isFilled ? (i === 0 ? '30分1本勝負' : (G.showCard.length >= 3 && i >= G.showCard.length - 2) ? '15分1本勝負' : '20分1本勝負') : '';
+    const matchLabel = (i === 0 && isFilled) ? 'MAIN EVENT' : isFilled ? WM_I18N.t('第{n}試合', { n: matchNum }) : '';
+    const matchRule = isFilled ? (i === 0 ? WM_I18N.t('30分1本勝負') : (G.showCard.length >= 3 && i >= G.showCard.length - 2) ? WM_I18N.t('15分1本勝負') : WM_I18N.t('20分1本勝負')) : '';
 
     // タグ計算
     const champId = G.titles.world.championId;
@@ -3764,7 +3764,7 @@ function renderShowPrep() {
     const slotHasRental = [curL, curR].some(id => id > 0 && G.roster.find(c => c.id === id)?.isRental);
     const canTitle = !slot._crMatchLocked && !slot._unifiedTitleLocked && titleEligible && cdCheck.allowed && !slotHasRental;
     const isTitle = G.showCard[i].isTitle || false;
-    const titleLabel = isVacant ? '初代王者決定戦' : 'タイトル戦';
+    const titleLabel = isVacant ? WM_I18N.t('初代王者決定戦') : WM_I18N.t('タイトル戦');
     const rivalLvl = (curL > 0 && curR > 0) ? getRivalryLevel(curL, curR) : null;
     const freshnessPreview = (curL > 0 && curR > 0)
       ? Engine.freshness.calc(G.matchupLog || [], curL, curR, G.totalShows || 0, G.roster.length, null)
@@ -3781,36 +3781,36 @@ function renderShowPrep() {
     if (canTitle) {
       tagParts.push(`<label class="sp-match-tag sp-tag-title"><input type="checkbox" ${isTitle ? 'checked' : ''} onchange="toggleTitle(${i});renderShowPrep()" style="margin-right:3px;vertical-align:middle"> 🏆${titleLabel}</label>`);
     }
-    if (titleEligible && !cdCheck.allowed) tagParts.push(`<span class="sp-match-tag sp-tag-dim">⏳${cdCheck.weeksLeft}週後</span>`);
-    if (titleEligible && cdCheck.allowed && slotHasRental) tagParts.push(`<span class="sp-match-tag sp-tag-dim">🤝レンタル不可</span>`);
-    if (!G.titleEstablished && curL > 0 && curR > 0) tagParts.push(`<span class="sp-match-tag sp-tag-dim">🔒王座未設立</span>`);
+    if (titleEligible && !cdCheck.allowed) tagParts.push(`<span class="sp-match-tag sp-tag-dim">${WM_I18N.t('⏳{n}週後', { n: cdCheck.weeksLeft })}</span>`);
+    if (titleEligible && cdCheck.allowed && slotHasRental) tagParts.push(`<span class="sp-match-tag sp-tag-dim">${WM_I18N.t('🤝レンタル不可')}</span>`);
+    if (!G.titleEstablished && curL > 0 && curR > 0) tagParts.push(`<span class="sp-match-tag sp-tag-dim">${WM_I18N.t('🔒王座未設立')}</span>`);
     if (isFactionFeud) {
       const fA = Engine.factions.getFactionByFighterId(G, curL);
       const fB = Engine.factions.getFactionByFighterId(G, curR);
-      const label = (fA && fB) ? `${fA.name} vs ${fB.name}` : '派閥抗争';
-      tagParts.push(`<span class="sp-match-tag sp-tag-faction" style="cursor:help" ${_tipAttr('派閥の顔役同士の試合：集客ブースト')}>🏴vs🏴 ${label}</span>`);
+      const label = (fA && fB) ? `${fA.name} vs ${fB.name}` : WM_I18N.t('派閥抗争');
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" style="cursor:help" ${_tipAttr(WM_I18N.t('派閥の顔役同士の試合：集客ブースト'))}>🏴vs🏴 ${label}</span>`);
     }
     if (slot._f08Locked) {
-      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('派閥対立のヒートアップによる直接対決：この試合は固定枠です')} style="background:rgba(255,90,40,0.22);border-color:rgba(255,90,40,0.55);color:#ffd2b0;cursor:help">🔥 直接対決（固定）</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr(WM_I18N.t('派閥対立のヒートアップによる直接対決：この試合は固定枠です'))} style="background:rgba(255,90,40,0.22);border-color:rgba(255,90,40,0.55);color:#ffd2b0;cursor:help">${WM_I18N.t('🔥 直接対決（固定）')}</span>`);
     }
     if (slot._internalChallengeLocked) {
-      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('派閥内序列戦：挑戦者がリーダーの座を狙う、固定枠です')} style="background:rgba(120,60,180,0.28);border-color:rgba(170,120,220,0.55);color:#e6c8ff;cursor:help">⚔ 派閥内序列戦（固定）</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr(WM_I18N.t('派閥内序列戦：挑戦者がリーダーの座を狙う、固定枠です'))} style="background:rgba(120,60,180,0.28);border-color:rgba(170,120,220,0.55);color:#e6c8ff;cursor:help">${WM_I18N.t('⚔ 派閥内序列戦（固定）')}</span>`);
     }
     if (slot._crMatchLocked) {
-      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr('他団体との3試合挑戦シリーズ：会場枠内の上位3試合として固定され、カード魅力に専用ボーナスが入ります')} style="background:rgba(170,55,55,0.28);border-color:rgba(235,105,90,0.6);color:#ffd0c8;cursor:help">⚔ 他団体挑戦（固定）</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-faction" ${_tipAttr(WM_I18N.t('他団体との3試合挑戦シリーズ：会場枠内の上位3試合として固定され、カード魅力に専用ボーナスが入ります'))} style="background:rgba(170,55,55,0.28);border-color:rgba(235,105,90,0.6);color:#ffd0c8;cursor:help">${WM_I18N.t('⚔ 他団体挑戦（固定）')}</span>`);
     }
     if (slot._unifiedTitleMatch) {
-      tagParts.push(`<span class="sp-match-tag sp-tag-title" style="background:color-mix(in srgb,var(--unified-deep) 28%,transparent);border-color:color-mix(in srgb,var(--unified) 60%,transparent);color:var(--unified-hi)">🌐 全国統一王座戦（固定）</span>`);
+      tagParts.push(`<span class="sp-match-tag sp-tag-title" style="background:color-mix(in srgb,var(--unified-deep) 28%,transparent);border-color:color-mix(in srgb,var(--unified) 60%,transparent);color:var(--unified-hi)">${WM_I18N.t('🌐 全国統一王座戦（固定）')}</span>`);
     }
-    if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} 評価+${rivalLvl.mqBonus}</span>`);
+    if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} ${WM_I18N.t('評価+{n}', { n: rivalLvl.mqBonus })}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
       const isFresh = freshnessPreview.bonus > 0;
       // MQ再設計P3c(§1.3/G): 鮮度は集客(appeal)側の係数に移管済み。MQ表記はやめて動員への効きを示す。
       const freshMult = Engine.freshness.attendanceMult(freshnessPreview.bonus);
-      tagParts.push(`<span class="sp-match-tag ${isFresh ? 'sp-tag-fresh' : 'sp-tag-stale'}">${isFresh ? '✨' : '😐'}${freshnessPreview.label} 動員×${freshMult.toFixed(2)}</span>`);
+      tagParts.push(`<span class="sp-match-tag ${isFresh ? 'sp-tag-fresh' : 'sp-tag-stale'}">${isFresh ? '✨' : '😐'}${freshnessPreview.label} ${WM_I18N.t('動員×{mult}', { mult: freshMult.toFixed(2) })}</span>`);
     }
-    if (isFanExpect) tagParts.push(`<span class="sp-match-tag sp-tag-fanexpect">📣ファン期待</span>`);
-    if (isLastRunMatch) tagParts.push(`<span class="sp-match-tag sp-tag-lastrun">🌅ラストマッチ</span>`);
+    if (isFanExpect) tagParts.push(`<span class="sp-match-tag sp-tag-fanexpect">${WM_I18N.t('📣ファン期待')}</span>`);
+    if (isLastRunMatch) tagParts.push(`<span class="sp-match-tag sp-tag-lastrun">${WM_I18N.t('🌅ラストマッチ')}</span>`);
     // タイトル格差ペナルティ表示は MQ外部ボーナス整理で廃止
 
     // 集客力内訳
@@ -3849,19 +3849,19 @@ function renderShowPrep() {
         // 最新の実機裁定: 名前/行クリック=選択、顔クリック=選手詳細。顔だけで伝播を止める。
         return `<div class="${cls}" onclick="_spSelectFighter(${i},'${pickerSide}',${c.id})"${hoverEvts}><span class="sp-picker-face-detail" style="display:inline-flex;cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${portraitImg(c.id, 24)}</span><span style="font-weight:700;font-size:12px;flex:1;min-width:0;padding-left:4px">${c.name}</span>${champBadge}<span style="font-family:'Bebas Neue',sans-serif;font-size:16px;color:rgba(200,190,170,0.4);flex-shrink:0;margin-left:4px">${ov(c)}</span></div>`;
       }).join('');
-      const removeRow = curInSide > 0 ? `<div class="sp-picker-row" onclick="_spSelectFighter(${i},'${pickerSide}',0)" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">✕ この選手を外す</div>` : '';
-      pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${pickerSide === 'left' ? '赤コーナー' : '青コーナー'}選手を選択</span><span class="sp-picker-close" onclick="_spClosePicker()">閉じる</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
+      const removeRow = curInSide > 0 ? `<div class="sp-picker-row" onclick="_spSelectFighter(${i},'${pickerSide}',0)" style="justify-content:center;color:#e74c3c;font-weight:700;font-size:12px;border:1px dashed rgba(231,76,60,.25);margin-bottom:4px">${WM_I18N.t('✕ この選手を外す')}</div>` : '';
+      pickerInner = `<div class="sp-picker-header"><span class="sp-picker-title">${WM_I18N.t('{corner}選手を選択', { corner: pickerSide === 'left' ? WM_I18N.t('赤コーナー') : WM_I18N.t('青コーナー') })}</span><span class="sp-picker-close" onclick="_spClosePicker()">${WM_I18N.t('閉じる')}</span></div><div class="sp-picker-list">${removeRow}${rows}</div>`;
     }
 
     // カード魅力の内訳ボーナス
     const appealParts = [];
     if (slotBD) {
-      if (slotBD.parityBonus !== 0) appealParts.push(`🤝拮抗${slotBD.parityBonus > 0 ? '+' : ''}${slotBD.parityBonus}`);
-      if (slotBD.rivalryAppeal > 0) appealParts.push(`⚡因縁+${slotBD.rivalryAppeal}`);
-      if (slotBD.titleBonus > 0) appealParts.push(`🏆タイトル+${slotBD.titleBonus}`);
-      if (slotBD.fanExpectBonus > 0) appealParts.push(`📣期待+${slotBD.fanExpectBonus}`);
-      if (slotBD.challengeRequestBonus > 0) appealParts.push(`⚔他団体挑戦+${slotBD.challengeRequestBonus}`);
-      if (slotBD.heelFaceBonus > 0) appealParts.push(`😈善悪+${slotBD.heelFaceBonus}`);
+      if (slotBD.parityBonus !== 0) appealParts.push(WM_I18N.t('🤝拮抗{sign}{n}', { sign: slotBD.parityBonus > 0 ? '+' : '', n: slotBD.parityBonus }));
+      if (slotBD.rivalryAppeal > 0) appealParts.push(WM_I18N.t('⚡因縁+{n}', { n: slotBD.rivalryAppeal }));
+      if (slotBD.titleBonus > 0) appealParts.push(WM_I18N.t('🏆タイトル+{n}', { n: slotBD.titleBonus }));
+      if (slotBD.fanExpectBonus > 0) appealParts.push(WM_I18N.t('📣期待+{n}', { n: slotBD.fanExpectBonus }));
+      if (slotBD.challengeRequestBonus > 0) appealParts.push(WM_I18N.t('⚔他団体挑戦+{n}', { n: slotBD.challengeRequestBonus }));
+      if (slotBD.heelFaceBonus > 0) appealParts.push(WM_I18N.t('😈善悪+{n}', { n: slotBD.heelFaceBonus }));
     }
 
     const cardBorder = slot._unifiedTitleMatch
@@ -3869,8 +3869,8 @@ function renderShowPrep() {
       : slot._crMatchLocked
       ? ' style="border-color:rgba(235,105,90,0.5)"'
       : isLastRunMatch ? ' style="border-color:rgba(212,168,67,0.4)"' : '';
-    const moveUpBtn = !slot._crMatchLocked && !slot._unifiedTitleLocked && i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="上へ">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
-    const moveDnBtn = !slot._crMatchLocked && !slot._unifiedTitleLocked && i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="下へ">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const moveUpBtn = !slot._crMatchLocked && !slot._unifiedTitleLocked && i > 0 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},-1)" title="${WM_I18N.t('上へ')}">▲</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
+    const moveDnBtn = !slot._crMatchLocked && !slot._unifiedTitleLocked && i < G.showCard.length - 1 ? `<button class="sp-move-btn" onclick="moveShowCard(${i},1)" title="${WM_I18N.t('下へ')}">▼</button>` : `<span class="sp-move-btn sp-move-btn-disabled"></span>`;
     html += `<div class="sp-match-card ${tier}" id="sp-slot-${i}"${cardBorder}>
       <div class="sp-match-card-inner">
         <div class="sp-move-btns">${moveUpBtn}${moveDnBtn}</div>
@@ -3878,12 +3878,12 @@ function renderShowPrep() {
         ${_spPortrait(fl, ps)}
         <div class="sp-match-center">
           ${matchLabel ? `<div class="sp-match-num">${matchLabel}</div>` : ''}
-          ${slotBD ? `<div class="sp-appeal-label" style="cursor:help" ${_tipAttr('この一戦がどれだけ客を呼べるか。両選手の人気と実力に、拮抗・因縁・タイトル戦などの注目度が上乗せされます。')}>カード魅力</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(slotBD.total))}">${slotBD.total}</div>` : ''}
+          ${slotBD ? `<div class="sp-appeal-label" style="cursor:help" ${_tipAttr(WM_I18N.t('この一戦がどれだけ客を呼べるか。両選手の人気と実力に、拮抗・因縁・タイトル戦などの注目度が上乗せされます。'))}>${WM_I18N.t('カード魅力')}</div><div class="sp-appeal-score" style="${_scale6Style(_mqColor(slotBD.total))}">${slotBD.total}</div>` : ''}
           ${appealParts.length > 0 ? `<div class="sp-appeal-bonuses">${appealParts.join('  ')}</div>` : ''}
           <div class="sp-match-vs">VS</div>
           ${matchRule ? `<div class="sp-match-rule">${matchRule}</div>` : ''}
           ${tagParts.length > 0 ? `<div class="sp-match-tags">${tagParts.join('')}</div>` : ''}
-          ${(!slot._crMatchLocked && i > 0 && i + 1 < G.showCard.length && !G.showCard[i + 1]?._crMatchLocked && G.showCard[i + 1]?.matchType !== 'tag') ? `<div class="sp-tag-merge-btn" onclick="App.mergeToTagSlot(${i})" title="下の枠と合体してタッグマッチに">🤝 タッグに変換</div>` : ''}
+          ${(!slot._crMatchLocked && i > 0 && i + 1 < G.showCard.length && !G.showCard[i + 1]?._crMatchLocked && G.showCard[i + 1]?.matchType !== 'tag') ? `<div class="sp-tag-merge-btn" onclick="App.mergeToTagSlot(${i})" title="${WM_I18N.t('下の枠と合体してタッグマッチに')}">${WM_I18N.t('🤝 タッグに変換')}</div>` : ''}
         </div>
         ${_spPortrait(fr, ps)}
         ${_spFighterInfo(fr, 'right', i, slotBD?.drawB)}
@@ -3895,8 +3895,8 @@ function renderShowPrep() {
 
   // 開催ボタン v7
   html += `<div class="sp-action-row">
-    <button class="btn btn-gold" onclick="confirmExecuteShow()" ${validMatches.length === 0 ? 'disabled' : ''}>興行開催！（${validMatches.length}試合）</button>
-    <button class="btn btn-blue" onclick="G={...G,weekPhase:'manage'};showScreen('week');refreshAll()">← 戻る</button>
+    <button class="btn btn-gold" onclick="confirmExecuteShow()" ${validMatches.length === 0 ? 'disabled' : ''}>${WM_I18N.t('興行開催！（{n}試合）', { n: validMatches.length })}</button>
+    <button class="btn btn-blue" onclick="G={...G,weekPhase:'manage'};showScreen('week');refreshAll()">${WM_I18N.t('← 戻る')}</button>
   </div>`;
 
   el.innerHTML = html;
@@ -3985,7 +3985,7 @@ function _financeChart(values, options = {}) {
  * @returns {string} SVG HTML文字列
  */
 function _orgPopChart(points) {
-  if (!points || points.length < 2) return '<div style="font-size:12px;color:var(--text-dim);padding:8px 0">まだデータが不足しています（2シーズン以上経過後に表示）</div>';
+  if (!points || points.length < 2) return `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">${WM_I18N.t('まだデータが不足しています（2シーズン以上経過後に表示）')}</div>`;
   const height = 140, width = 350, leftPad = 42, bottomPad = 20;
   const plotW = width - leftPad;
   const plotH = height - bottomPad;
@@ -4013,15 +4013,15 @@ function _orgPopChart(points) {
     svg += `<text x="${leftPad - 5}" y="${y + 3}" text-anchor="end" fill="rgba(200,190,170,${isTarget ? 0.6 : 0.25})" font-size="10">${v}</text>`;
   });
   // ドーム閾値ラベル
-  svg += `<text x="${leftPad + 4}" y="${domeY - 4}" fill="rgba(241,196,15,0.55)" font-size="9">ドーム圏</text>`;
+  svg += `<text x="${leftPad + 4}" y="${domeY - 4}" fill="rgba(241,196,15,0.55)" font-size="9">${WM_I18N.t('ドーム圏')}</text>`;
   // 折れ線
   svg += `<polyline points="${polyline}" fill="none" stroke="${lineColor}" stroke-width="2.5"/>`;
   // データ点（ホバーtitleつき）+ 5シーズンおきにシーズン番号
   pts.forEach((p, i) => {
-    svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${lineColor}" stroke="var(--bg-main)" stroke-width="1.5"><title>${p.season}年目: ${Math.round(p.pop * 10) / 10}</title></circle>`;
+    svg += `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${lineColor}" stroke="var(--bg-main)" stroke-width="1.5"><title>${WM_I18N.t('{season}年目: {pop}', { season: p.season, pop: Math.round(p.pop * 10) / 10 })}</title></circle>`;
     // シーズン番号ラベル（5の倍数 or 最初と最後）
     if (p.season % 5 === 0 || i === 0 || i === pts.length - 1) {
-      svg += `<text x="${p.x}" y="${height - 2}" text-anchor="middle" fill="rgba(200,190,170,0.35)" font-size="9">${p.season}年</text>`;
+      svg += `<text x="${p.x}" y="${height - 2}" text-anchor="middle" fill="rgba(200,190,170,0.35)" font-size="9">${WM_I18N.t('{season}年', { season: p.season })}</text>`;
     }
   });
   // 最新値ラベル
@@ -4076,7 +4076,7 @@ function renderFinance() {
   const filtered = _getFilteredFinance(period);
 
   // ── 期間フィルタバー ──
-  const periodDefs = [{ k:'month', l:'今月' }, { k:'year', l:'年間' }, { k:'all', l:'全期間' }];
+  const periodDefs = [{ k:'month', l:WM_I18N.t('今月') }, { k:'year', l:WM_I18N.t('年間') }, { k:'all', l:WM_I18N.t('全期間') }];
   let html = `<div style="display:flex;gap:6px;margin-bottom:10px">`;
   periodDefs.forEach(p => {
     const a = period === p.k;
@@ -4085,7 +4085,7 @@ function renderFinance() {
   html += `</div>`;
 
   // ── サブタブバー ──
-  const tabDefs = [{ k:'summary', l:'📊 総合' }, { k:'income', l:'📈 収入' }, { k:'expense', l:'📉 支出' }, { k:'salary', l:'💰 給与' }, { k:'orgpop', l:'📣 団体人気' }];
+  const tabDefs = [{ k:'summary', l:WM_I18N.t('📊 総合') }, { k:'income', l:WM_I18N.t('📈 収入') }, { k:'expense', l:WM_I18N.t('📉 支出') }, { k:'salary', l:WM_I18N.t('💰 給与') }, { k:'orgpop', l:WM_I18N.t('📣 団体人気') }];
   html += `<div style="display:flex;gap:4px;margin-bottom:14px">`;
   tabDefs.forEach(t => {
     const a = tab === t.k;
@@ -4104,13 +4104,13 @@ function renderFinance() {
     let fh, fhLabel;
     if (period === 'month') {
       fh = fhRaw.slice(-4);
-      fhLabel = `💹 資金推移 (直近${fh.length}週)`;
+      fhLabel = WM_I18N.t('💹 資金推移 (直近{n}週)', { n: fh.length });
     } else if (period === 'all' && (G.seasonHistory || []).length >= 1) {
       fh = [...G.seasonHistory.map(h => h.funds || 0), G.funds];
-      fhLabel = `💹 資金推移 (シーズン末値・${fh.length}年分)`;
+      fhLabel = WM_I18N.t('💹 資金推移 (シーズン末値・{n}年分)', { n: fh.length });
     } else {
       fh = _monthlySnapshotValues(fhRaw);
-      fhLabel = `💹 資金推移 (今シーズン ${fh.length}ヶ月)`;
+      fhLabel = WM_I18N.t('💹 資金推移 (今シーズン {n}ヶ月)', { n: fh.length });
     }
     html += _financeChart(fh, { color: '#2ecc71', negColor: '#e74c3c', label: fhLabel, showZeroLine: true });
 
@@ -4119,21 +4119,21 @@ function renderFinance() {
       let totalIncome = 0, totalExpense = 0;
       filtered.forEach(h => { totalIncome += h.income || 0; totalExpense += h.expense || 0; });
       const totalNet = totalIncome - totalExpense;
-      const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
-      html += `<div class="panel-title">期間サマリ — ${periodLabel} <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${filtered.length}週)</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">📈 総収入</span><span class="f-val income">+${Math.round(totalIncome).toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">📉 総支出</span><span class="f-val expense">-${Math.round(totalExpense).toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row finance-total"><span>純利益</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${Math.round(totalNet).toLocaleString()}万</span></div>`;
+      const periodLabel = period === 'month' ? WM_I18N.t('今月') : period === 'year' ? WM_I18N.t('今シーズン') : WM_I18N.t('全期間');
+      html += `<div class="panel-title">${WM_I18N.t('期間サマリ — {period}', { period: periodLabel })} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${WM_I18N.t('({n}週)', { n: filtered.length })}</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('📈 総収入')}</span><span class="f-val income">+${Math.round(totalIncome).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('📉 総支出')}</span><span class="f-val expense">-${Math.round(totalExpense).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('純利益')}</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${Math.round(totalNet).toLocaleString()}万</span></div>`;
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の記録はまだありません</div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">${WM_I18N.t('この期間の記録はまだありません')}</div>`;
       // 推定週間コスト（初回表示用）
-      html += '<div class="panel-title" style="margin-top:12px">週間コスト内訳（推定）</div>';
-      html += `<div class="finance-row"><span class="f-label">選手給与合計</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">事務運営費</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
+      html += `<div class="panel-title" style="margin-top:12px">${WM_I18N.t('週間コスト内訳（推定）')}</div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('選手給与合計')}</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('事務運営費')}</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
       const coachTotal = getCoachSalaryTotal();
-      if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">コーチ給与（${G.coaches.length}名）</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">グッズ収入</span><span class="f-val income">+${Engine.economy.calcWeeklyGoodsRev(G.roster)}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">メディア収入</span><span class="f-val income">+${Engine.economy.calcWeeklyMediaRev(G.orgPop)}万/週</span></div>`;
+      if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('コーチ給与（{n}名）', { n: G.coaches.length })}</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('グッズ収入')}</span><span class="f-val income">+${Engine.economy.calcWeeklyGoodsRev(G.roster)}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('メディア収入')}</span><span class="f-val income">+${Engine.economy.calcWeeklyMediaRev(G.orgPop)}万/週</span></div>`;
     }
   }
 
@@ -4143,17 +4143,17 @@ function renderFinance() {
     const isMonthlyI = period !== 'month';
     const incomeChart = isMonthlyI ? _monthlyAverageValues(incomeRaw) : incomeRaw;
     const incomeChartLabel = isMonthlyI
-      ? `📈 月間平均収入推移 (${incomeChart.length}ヶ月)`
-      : `📈 週間収入推移 (${filtered.length}週)`;
+      ? WM_I18N.t('📈 月間平均収入推移 ({n}ヶ月)', { n: incomeChart.length })
+      : WM_I18N.t('📈 週間収入推移 ({n}週)', { n: filtered.length });
     html += _financeChart(incomeChart, { color: '#2ecc71', label: incomeChartLabel });
 
     // カテゴリ別集計
     const catDefs = [
-      { key: 'ticket', label: '興行収入', items: {} },
-      { key: 'goods',  label: 'グッズ収入', items: {} },
-      { key: 'media',  label: 'メディア収入', items: {} },
-      { key: 'promo',  label: 'プロモ収入', items: {} },
-      { key: 'other',  label: 'その他', items: {} },
+      { key: 'ticket', label: WM_I18N.t('興行収入'), items: {} },
+      { key: 'goods',  label: WM_I18N.t('グッズ収入'), items: {} },
+      { key: 'media',  label: WM_I18N.t('メディア収入'), items: {} },
+      { key: 'promo',  label: WM_I18N.t('プロモ収入'), items: {} },
+      { key: 'other',  label: WM_I18N.t('その他'), items: {} },
     ];
     const catMap = {};
     catDefs.forEach(c => { catMap[c.key] = c; });
@@ -4176,12 +4176,12 @@ function renderFinance() {
       const ticketCat = catMap.ticket;
       const ticketTotal = Object.values(ticketCat.items).reduce((s, i) => s + i.val, 0);
       if (ticketTotal > 0) {
-        html += `<div class="panel-title" style="margin-top:6px">■ 興行収入</div>`;
+        html += `<div class="panel-title" style="margin-top:6px">${WM_I18N.t('■ 興行収入')}</div>`;
         Object.values(ticketCat.items).sort((a, b) => b.val - a.val).forEach(d => {
           html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
         });
         html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
-        html += `<div class="finance-row" style="font-weight:600"><span>小計</span><span class="f-val income">+${Math.round(ticketTotal).toLocaleString()}万</span></div>`;
+        html += `<div class="finance-row" style="font-weight:600"><span>${WM_I18N.t('小計')}</span><span class="f-val income">+${Math.round(ticketTotal).toLocaleString()}万</span></div>`;
       }
 
       // ブランド収入セクション
@@ -4189,7 +4189,7 @@ function renderFinance() {
       const brandTotal = brandCats.reduce((s, k) => s + Object.values(catMap[k].items).reduce((ss, i) => ss + i.val, 0), 0);
       const otherTotal = Object.values(catMap.other.items).reduce((s, i) => s + i.val, 0);
       if (brandTotal + otherTotal > 0) {
-        html += `<div class="panel-title" style="margin-top:10px">■ ブランド収入</div>`;
+        html += `<div class="panel-title" style="margin-top:10px">${WM_I18N.t('■ ブランド収入')}</div>`;
         brandCats.forEach(catKey => {
           const cat = catMap[catKey];
           const catTotal = Object.values(cat.items).reduce((s, i) => s + i.val, 0);
@@ -4214,13 +4214,13 @@ function renderFinance() {
           });
         }
         html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
-        html += `<div class="finance-row" style="font-weight:600"><span>小計</span><span class="f-val income">+${Math.round(brandTotal + otherTotal).toLocaleString()}万</span></div>`;
+        html += `<div class="finance-row" style="font-weight:600"><span>${WM_I18N.t('小計')}</span><span class="f-val income">+${Math.round(brandTotal + otherTotal).toLocaleString()}万</span></div>`;
       }
 
       html += `<div style="border-top:2px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>総収入</span><span class="f-val income">+${Math.round(grandTotal).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('総収入')}</span><span class="f-val income">+${Math.round(grandTotal).toLocaleString()}万</span></div>`;
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の収入記録はありません</div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">${WM_I18N.t('この期間の収入記録はありません')}</div>`;
     }
   }
 
@@ -4230,8 +4230,8 @@ function renderFinance() {
     const isMonthlyE = period !== 'month';
     const expenseChart = isMonthlyE ? _monthlyAverageValues(expenseRaw) : expenseRaw;
     const expenseChartLabel = isMonthlyE
-      ? `📉 月間平均支出推移 (${expenseChart.length}ヶ月)`
-      : `📉 週間支出推移 (${filtered.length}週)`;
+      ? WM_I18N.t('📉 月間平均支出推移 ({n}ヶ月)', { n: expenseChart.length })
+      : WM_I18N.t('📉 週間支出推移 ({n}週)', { n: filtered.length });
     html += _financeChart(expenseChart, { color: '#e74c3c', label: expenseChartLabel });
     const items = {};
     filtered.forEach(h => {
@@ -4249,9 +4249,9 @@ function renderFinance() {
         html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val expense">${Math.round(d.val).toLocaleString()}万</span></span></div>`;
       });
       html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>総支出</span><span class="f-val expense">${Math.round(total).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('総支出')}</span><span class="f-val expense">${Math.round(total).toLocaleString()}万</span></div>`;
     } else {
-      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">この期間の支出記録はありません</div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">${WM_I18N.t('この期間の支出記録はありません')}</div>`;
     }
   }
 
@@ -4263,8 +4263,8 @@ function renderFinance() {
     const isMonthlyS = period !== 'month';
     const salaryChart = isMonthlyS ? _monthlyAverageValues(salaryAbs) : salaryAbs;
     const salaryChartLabel = isMonthlyS
-      ? `💰 月間平均給与推移 (${salaryChart.length}ヶ月)`
-      : `💰 週間給与推移 (${filtered.length}週)`;
+      ? WM_I18N.t('💰 月間平均給与推移 ({n}ヶ月)', { n: salaryChart.length })
+      : WM_I18N.t('💰 週間給与推移 ({n}週)', { n: filtered.length });
     html += _financeChart(salaryChart, { color: '#e67e22', label: salaryChartLabel });
     // 期間中の給与支払い合計
     let salaryTotal = 0, salaryWeeks = 0;
@@ -4275,22 +4275,22 @@ function renderFinance() {
       });
     });
     if (salaryWeeks > 0) {
-      const periodLabel = period === 'month' ? '今月' : period === 'year' ? '今シーズン' : '全期間';
-      html += `<div class="panel-title">${periodLabel}の給与支払い</div>`;
-      html += `<div class="finance-row finance-total"><span>給与支払い合計 <span style="font-size:11px;color:var(--text-dim);font-weight:400">(${salaryWeeks}週)</span></span><span class="f-val expense">${Math.round(salaryTotal).toLocaleString()}万</span></div>`;
+      const periodLabel = period === 'month' ? WM_I18N.t('今月') : period === 'year' ? WM_I18N.t('今シーズン') : WM_I18N.t('全期間');
+      html += `<div class="panel-title">${WM_I18N.t('{period}の給与支払い', { period: periodLabel })}</div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('給与支払い合計')} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${WM_I18N.t('({n}週)', { n: salaryWeeks })}</span></span><span class="f-val expense">${Math.round(salaryTotal).toLocaleString()}万</span></div>`;
       html += `<div style="margin-bottom:14px"></div>`;
     }
     // 選手別給与（現在のスナップショット）
     const ownFightersForSalary = G.roster.filter(c => !c.isRental);
     const rentalFightersForSalary = G.roster.filter(c => c.isRental);
-    html += '<div class="panel-title">選手別給与（現在）</div>';
-    html += '<table class="data-table"><tr><th>名前</th><th>総合</th><th>給与</th></tr>';
+    html += `<div class="panel-title">${WM_I18N.t('選手別給与（現在）')}</div>`;
+    html += `<table class="data-table"><tr><th>${WM_I18N.t('名前')}</th><th>${WM_I18N.t('総合')}</th><th>${WM_I18N.t('給与')}</th></tr>`;
     [...ownFightersForSalary].sort((a, b) => getSalary(b) - getSalary(a)).forEach(c => {
       html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}万</td></tr>`;
     });
     html += '</table>';
     if (rentalFightersForSalary.length > 0) {
-      html += `<div style="font-size:11px;color:var(--text-dim);margin-top:6px">🤝 レンタル選手（${rentalFightersForSalary.map(c => c.name).join('、')}）は前払い契約のため給与なし</div>`;
+      html += `<div style="font-size:11px;color:var(--text-dim);margin-top:6px">${WM_I18N.t('🤝 レンタル選手（{names}）は前払い契約のため給与なし', { names: rentalFightersForSalary.map(c => c.name).join('、') })}</div>`;
     }
   }
 
@@ -4302,19 +4302,19 @@ function renderFinance() {
     // 現在シーズンの現在値を末尾に追加
     chartPoints.push({ season: G.season, pop: G.orgPop || 0 });
 
-    html += `<div class="panel-title" style="margin-top:0">団体人気推移</div>`;
-    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">折れ線: 各シーズン末の団体人気 ／ 破線: ドーム圏(90)</div>`;
+    html += `<div class="panel-title" style="margin-top:0">${WM_I18N.t('団体人気推移')}</div>`;
+    html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">${WM_I18N.t('折れ線: 各シーズン末の団体人気 ／ 破線: ドーム圏(90)')}</div>`;
     html += _orgPopChart(chartPoints);
 
     // 現在のorgPop状態説明
     const curPop = G.orgPop || 0;
     let popDesc = '', popColor = 'var(--text-dim)';
-    if (curPop >= 95) { popDesc = '頂点 — ドーム満員が狙える'; popColor = '#f1c40f'; }
-    else if (curPop >= 90) { popDesc = 'ドーム挑戦圏 — 理想のカードで成功も'; popColor = '#2ecc71'; }
-    else if (curPop >= 80) { popDesc = 'メジャー — ドームを意識し始めるレベル'; popColor = '#3498db'; }
-    else if (curPop >= 65) { popDesc = '中堅上位 — じわじわ登り続けよう'; popColor = '#aaa'; }
-    else if (curPop >= 50) { popDesc = '中堅 — 着実に興行を重ねて'; popColor = '#aaa'; }
-    else { popDesc = '発展中 — まだまだここから'; popColor = '#aaa'; }
+    if (curPop >= 95) { popDesc = WM_I18N.t('頂点 — ドーム満員が狙える'); popColor = '#f1c40f'; }
+    else if (curPop >= 90) { popDesc = WM_I18N.t('ドーム挑戦圏 — 理想のカードで成功も'); popColor = '#2ecc71'; }
+    else if (curPop >= 80) { popDesc = WM_I18N.t('メジャー — ドームを意識し始めるレベル'); popColor = '#3498db'; }
+    else if (curPop >= 65) { popDesc = WM_I18N.t('中堅上位 — じわじわ登り続けよう'); popColor = '#aaa'; }
+    else if (curPop >= 50) { popDesc = WM_I18N.t('中堅 — 着実に興行を重ねて'); popColor = '#aaa'; }
+    else { popDesc = WM_I18N.t('発展中 — まだまだここから'); popColor = '#aaa'; }
     html += `<div style="padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px;margin-bottom:10px">`;
     html += `<div style="font-size:22px;font-weight:900;color:${popColor}">${Math.round(curPop * 10) / 10} <span style="font-size:12px;font-weight:400;color:var(--text-dim)">/ 100</span></div>`;
     html += `<div style="font-size:12px;color:${popColor};margin-top:2px">${popDesc}</div>`;
@@ -4327,14 +4327,14 @@ function renderFinance() {
       const delta = curPop - prevPop;
       const deltaStr = `${delta >= 0 ? '+' : ''}${Math.round(delta * 10) / 10}`;
       const deltaColor = delta >= 0 ? '#2ecc71' : '#e74c3c';
-      html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">前シーズン比: <span style="color:${deltaColor};font-weight:700">${deltaStr}</span>（S${prev.season}: ${Math.round(prevPop * 10) / 10} → 現在: ${Math.round(curPop * 10) / 10}）</div>`;
+      html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${WM_I18N.t('前シーズン比:')} <span style="color:${deltaColor};font-weight:700">${deltaStr}</span>${WM_I18N.t('（S{season}: {prev} → 現在: {cur}）', { season: prev.season, prev: Math.round(prevPop * 10) / 10, cur: Math.round(curPop * 10) / 10 })}</div>`;
     }
 
     // ドームまでの距離
     if (curPop < 90) {
-      html += `<div style="font-size:12px;color:rgba(241,196,15,0.6);margin-top:6px">ドーム圏まであと <strong style="color:rgba(241,196,15,0.9)">${Math.round((90 - curPop) * 10) / 10}</strong> ポイント</div>`;
+      html += `<div style="font-size:12px;color:rgba(241,196,15,0.6);margin-top:6px">${WM_I18N.t('ドーム圏まであと')} <strong style="color:rgba(241,196,15,0.9)">${Math.round((90 - curPop) * 10) / 10}</strong> ${WM_I18N.t('ポイント')}</div>`;
     } else {
-      html += `<div style="font-size:12px;color:rgba(241,196,15,0.8);margin-top:6px">🏟️ ドーム圏内です！今シーズン${(G.domeShowsThisSeason || 0) >= 1 ? '（今季使用済み）' : 'の挑戦を検討してください'}</div>`;
+      html += `<div style="font-size:12px;color:rgba(241,196,15,0.8);margin-top:6px">${WM_I18N.t('🏟️ ドーム圏内です！今シーズン{status}', { status: (G.domeShowsThisSeason || 0) >= 1 ? WM_I18N.t('（今季使用済み）') : WM_I18N.t('の挑戦を検討してください') })}</div>`;
     }
   }
 
@@ -4344,10 +4344,10 @@ function renderFinance() {
 function renderLog() {
   const el = document.getElementById('logContent');
   // ゲーム設定バッジ
-  const modeLabel = G.difficultyMode === 'hard' ? '通常モード（補助金なし）' : '補助金モード';
+  const modeLabel = G.difficultyMode === 'hard' ? WM_I18N.t('通常モード（補助金なし）') : WM_I18N.t('補助金モード');
   const modeColor = G.difficultyMode === 'hard' ? '#e74c3c' : '#3498db';
   const survivalBadge = G.survivalCleared
-    ? '<span style="color:#2ecc71;border:1px solid rgba(46,204,113,0.25);border-radius:3px;padding:1px 6px;font-weight:700;margin-left:6px">🎊 経営安定化クリア</span>'
+    ? `<span style="color:#2ecc71;border:1px solid rgba(46,204,113,0.25);border-radius:3px;padding:1px 6px;font-weight:700;margin-left:6px">${WM_I18N.t('🎊 経営安定化クリア')}</span>`
     : '';
   let html = `<div style="margin-bottom:10px;font-size:11px;color:var(--text-dim)">
     <span style="color:${modeColor};border:1px solid ${modeColor}44;border-radius:3px;padding:1px 6px;font-weight:700">${modeLabel}</span>${survivalBadge}
@@ -4355,11 +4355,11 @@ function renderLog() {
   </div>`;
   // v0.95: Enhanced log with filter
   const categories = [
-    { key: 'all', label: '全て', icon: '全' },
-    { key: 'show', label: '興行', icon: '興', match: l => l.includes('興行') || l.includes('評価') || l.includes('勝利') || l.includes('防衛') },
-    { key: 'finance', label: '財務', icon: '金', match: l => l.includes('収入') || l.includes('支出') || l.includes('万') || l.includes('残高') },
-    { key: 'event', label: 'イベント', icon: '戦', match: l => l.includes('対抗') || l.includes('挑戦') || l.includes('頂上') || l.includes('移籍') || l.includes('レンタル') || l.includes('引き抜き') },
-    { key: 'season', label: 'シーズン', icon: '季', match: l => l.includes('シーズン') || l.includes('オフ') || l.includes('引退') || l.includes('開幕') || l.includes('ランキング') },
+    { key: 'all', label: WM_I18N.t('全て'), icon: WM_I18N.t('全') },
+    { key: 'show', label: WM_I18N.t('興行'), icon: WM_I18N.t('興'), match: l => l.includes('興行') || l.includes('評価') || l.includes('勝利') || l.includes('防衛') },
+    { key: 'finance', label: WM_I18N.t('財務'), icon: WM_I18N.t('金'), match: l => l.includes('収入') || l.includes('支出') || l.includes('万') || l.includes('残高') },
+    { key: 'event', label: WM_I18N.t('イベント'), icon: WM_I18N.t('戦'), match: l => l.includes('対抗') || l.includes('挑戦') || l.includes('頂上') || l.includes('移籍') || l.includes('レンタル') || l.includes('引き抜き') },
+    { key: 'season', label: WM_I18N.t('シーズン'), icon: WM_I18N.t('季'), match: l => l.includes('シーズン') || l.includes('オフ') || l.includes('引退') || l.includes('開幕') || l.includes('ランキング') },
   ];
   const currentFilter = el.dataset.filter || 'all';
   html += '<div style="display:flex;gap:4px;margin-bottom:8px;flex-wrap:wrap">';
@@ -4385,7 +4385,7 @@ function renderLog() {
     return cats.includes(currentFilter);
   });
   const display = filtered.slice(-100).reverse();
-  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${filtered.length}件中 最新${Math.min(display.length, 100)}件</div>`;
+  html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${WM_I18N.t('{total}件中 最新{shown}件', { total: filtered.length, shown: Math.min(display.length, 100) })}</div>`;
   display.forEach(l => {
     if (isSnapshot(l)) {
       html += `<div class="log-snapshot" style="padding:3px 0;border-bottom:1px solid rgba(200,190,170,0.03);font-size:11px">\u{1F4AD} ${l.text}</div>`;
@@ -4414,7 +4414,7 @@ function renderRanking() {
     mastEl.outerHTML = `<div id="rankingMast" class="popup-mast">
       <div class="popup-mast-title">INDUSTRY STANDINGS</div>
       <div class="popup-mast-meta">
-        <div class="issue">第${G.season || 1} シーズン・全4団体</div>
+        <div class="issue">${WM_I18N.t('第{season} シーズン・全4団体', { season: G.season || 1 })}</div>
         <div class="date">${Engine.util.formatDate(G.season || 1, G.week || 1)}</div>
       </div>
     </div>`;
@@ -4424,22 +4424,22 @@ function renderRanking() {
     if (top1 && playerEntry) {
       if (top1.orgId === 'player') {
         vbarHtml = `<div id="rankingVictoryBar" class="victory-bar is-top">
-          <div class="vb-top">👑 業界1位 ／ あなたの団体が頂点に立っています</div>
+          <div class="vb-top">${WM_I18N.t('👑 業界1位 ／ あなたの団体が頂点に立っています')}</div>
         </div>`;
       } else {
         const gap = Math.max(0, Math.round(top1.rating - playerEntry.rating));
         vbarHtml = `<div id="rankingVictoryBar" class="victory-bar">
           <div class="vb-side vb-target">
-            <span class="vb-label">▲ 1位</span>
+            <span class="vb-label">${WM_I18N.t('▲ 1位')}</span>
             <span class="vb-org">${escHtml(top1.name)}</span>
             <span class="vb-pt">${Math.round(top1.rating)}<span class="unit">pt</span></span>
           </div>
           <div class="vb-middle">
             <div class="vb-gap-num">−${gap}</div>
-            <div class="vb-gap-label">pt で頂点</div>
+            <div class="vb-gap-label">${WM_I18N.t('pt で頂点')}</div>
           </div>
           <div class="vb-side vb-player">
-            <span class="vb-label">▼ 自団体</span>
+            <span class="vb-label">${WM_I18N.t('▼ 自団体')}</span>
             <span class="vb-org">${escHtml(playerEntry.name)}</span>
             <span class="vb-pt">${Math.round(playerEntry.rating)}<span class="unit">pt</span></span>
           </div>
@@ -4476,9 +4476,9 @@ function renderRanking() {
   const roleBadgesHtml = (f, championId, boardId, coreIds) => {
     if (!f) return '';
     const badges = [];
-    if (championId === f.id) badges.push('<span class="badge champ">王者</span>');
-    if (boardId === f.id) badges.push('<span class="badge board">看板</span>');
-    if (coreIds && coreIds.has(f.id) && championId !== f.id && boardId !== f.id) badges.push('<span class="badge core">主力</span>');
+    if (championId === f.id) badges.push(`<span class="badge champ">${WM_I18N.t('王者')}</span>`);
+    if (boardId === f.id) badges.push(`<span class="badge board">${WM_I18N.t('看板')}</span>`);
+    if (coreIds && coreIds.has(f.id) && championId !== f.id && boardId !== f.id) badges.push(`<span class="badge core">${WM_I18N.t('主力')}</span>`);
     return badges.length ? `<span class="role-badges">${badges.join('')}</span>` : '';
   };
   const _ovrCss = (o) => valueClassOvr(o);
@@ -4496,13 +4496,13 @@ function renderRanking() {
     </div>`;
   };
 
-  html += '<section class="section bg-card"><div class="section-marker"><div class="text"><div class="kicker">02 — Roster</div><div class="title">全団体ロースター</div></div></div><div class="orgs-grid">';
+  html += `<section class="section bg-card"><div class="section-marker"><div class="text"><div class="kicker">${WM_I18N.t('02 — Roster')}</div><div class="title">${WM_I18N.t('全団体ロースター')}</div></div></div><div class="orgs-grid">`;
 
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
     const orgName = isPlayer ? (G.orgName || WM_I18N.t('プレイヤー団体')) : (org ? org.name : r.name);
-    const tier = isPlayer ? '自' : (org ? org.tier : '');
+    const tier = isPlayer ? WM_I18N.t('自') : (org ? org.tier : '');
     const rankClass = `is-rank-${r.rank}`;
     const playerClass = isPlayer ? ' is-player' : '';
 
@@ -4537,16 +4537,16 @@ function renderRanking() {
       </div>
       <div class="orgcell-foot">
         <div class="pt-block rank-metric">
-          <div class="label">評価</div>
+          <div class="label">${WM_I18N.t('評価')}</div>
           <div class="v">${Math.round(r.rating)}<span class="unit">pt</span></div>
-          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。</div></div>
+          <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('評価 — 総合順位の決定値')}</div><div class="rmt-text">${WM_I18N.t('基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。')}</div></div>
         </div>
         <div class="meta-block">
-          <div class="depth-line rank-metric">層の厚み ${Math.round(r.depth || 0)}<span class="unit">/30</span>
-            <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 実戦を支える選手層</div><div class="rmt-text">4〜8番手の主力層と、9〜12番手の控え層を別々に評価。基準は業界の主力水準に連動します。怪我人・レンタルは含みません。</div></div>
+          <div class="depth-line rank-metric">${WM_I18N.t('層の厚み {n}', { n: Math.round(r.depth || 0) })}<span class="unit">/30</span>
+            <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('層の厚み — 実戦を支える選手層')}</div><div class="rmt-text">${WM_I18N.t('4〜8番手の主力層と、9〜12番手の控え層を別々に評価。基準は業界の主力水準に連動します。怪我人・レンタルは含みません。')}</div></div>
           </div>
-          <div class="${battleClass} rank-metric">対戦PT ${battleSign}${Math.round(r.battlePt)}
-            <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>シーズンを跨いで保持される。</div></div>
+          <div class="${battleClass} rank-metric">${WM_I18N.t('対戦PT {sign}{n}', { sign: battleSign, n: Math.round(r.battlePt) })}
+            <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('対戦PT — 団体間の勝敗ポイント')}</div><div class="rmt-text">${WM_I18N.t('対抗戦・サミットの勝敗で増減する団体間ポイント。<br>シーズンを跨いで保持される。')}</div></div>
           </div>
         </div>
       </div>
@@ -4555,7 +4555,7 @@ function renderRanking() {
   html += '</div></section>';
 
   // ── 03 団体プロファイル（戦力層台帳） ──
-  const RANK_TIER = { 1: 'S級', 2: '自団体', 3: 'A級', 4: 'B級' };
+  const RANK_TIER = { 1: WM_I18N.t('S級'), 2: WM_I18N.t('自団体'), 3: WM_I18N.t('A級'), 4: WM_I18N.t('B級') };
   const DEPTH_TOTAL = { 1: 8, 2: 6, 3: 5, 4: 4 };
   const rank1Entry = rankings.find(x => x.rank === 1);
   const _countOvrAtLeast = (list, min) => list.filter(f => Engine.util.ov(f) >= min).length;
@@ -4772,7 +4772,7 @@ function renderRanking() {
   const _buildAchievementTooltip = (r, currentSeason) => {
     const items = (r && r.achievementItems) || [];
     if (items.length === 0) {
-      return 'このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。';
+      return WM_I18N.t('このシーズンの勲章はまだない。<br>※ PPV優勝/MVP/ベストマッチ賞/ジュニアトーナメント優勝/メディア功労賞などで加点。<br>翌シーズンまで満額、その後毎年半減。1pt未満で消滅。');
     }
     // age (シーズン跨ぎ回数) でグルーピング: 0=当シーズン, 1=1年前, ...
     const buckets = {};
@@ -4784,9 +4784,9 @@ function renderRanking() {
     const decay = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG.decayRate != null) ? ACHIEVEMENT_CONFIG.decayRate : 0.5;
     const grace = (typeof ACHIEVEMENT_CONFIG !== 'undefined' && ACHIEVEMENT_CONFIG.graceAge != null) ? ACHIEVEMENT_CONFIG.graceAge : 1;
     const ageLabel = (age) => {
-      if (age === 0) return `当シーズン (${currentSeason}年目)`;
+      if (age === 0) return WM_I18N.t('当シーズン ({season}年目)', { season: currentSeason });
       const seasonNum = currentSeason - age;
-      return `${age}年前 (${seasonNum}年目)`;
+      return WM_I18N.t('{age}年前 ({season}年目)', { age, season: seasonNum });
     };
     const currentPt = (it) => {
       const age = it.age || 0;
@@ -4807,8 +4807,8 @@ function renderRanking() {
         lines.push(`　${escHtml(it.label)}${winnerSuffix} +${ptDisp}`);
       });
     });
-    lines.push(`<b>合計 ${Math.round(total)}pt</b>`);
-    lines.push('<span style="opacity:0.7">※ 翌シーズンまで満額、その後毎年半減。1pt未満で消滅。</span>');
+    lines.push(`<b>${WM_I18N.t('合計 {n}pt', { n: Math.round(total) })}</b>`);
+    lines.push(`<span style="opacity:0.7">${WM_I18N.t('※ 翌シーズンまで満額、その後毎年半減。1pt未満で消滅。')}</span>`);
     return lines.join('<br>');
   };
 
@@ -4861,7 +4861,7 @@ function renderRanking() {
 
     return [first, second, third].filter(Boolean).join('');
   };
-  html += '<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">03 — 団体詳細</div><div class="title">団体プロフィール</div></div></div><div class="rp-profiles">';
+  html += `<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">${WM_I18N.t('03 — 団体詳細')}</div><div class="title">${WM_I18N.t('団体プロフィール')}</div></div></div><div class="rp-profiles">`;
 
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
@@ -4906,14 +4906,14 @@ function renderRanking() {
     const popColor = _orgPopColor(popDisplay).color;
     const coreDepth = `${Math.round(r.depthCore || 0)}/20`;
     const reserveDepth = `${Math.round(r.depthReserve || 0)}/10`;
-    const tierLabel = isPlayer ? '自団体' : (org ? org.tier : (RANK_TIER[r.rank] || ''));
-    const tierMeta = isPlayer ? `${rosterAll.length}名` : `${rosterAll.length}名`;
+    const tierLabel = isPlayer ? WM_I18N.t('自団体') : (org ? org.tier : (RANK_TIER[r.rank] || ''));
+    const tierMeta = WM_I18N.t('{n}名', { n: rosterAll.length });
     const aceOvr = featured ? Engine.util.ov(featured) : null;
     const aceImgUrl = featured ? getUpperUrl(featured.id) : '';
     const aceImg = aceImgUrl ? `<img src="${aceImgUrl}" alt="" onerror="this.style.display='none'">` : '';
     const aceRoles = featured ? [
-      championId === featured.id ? '<span class="rp-ace-role-champ">王者</span>' : '',
-      boardId === featured.id ? '<span class="rp-ace-role-board">看板</span>' : ''
+      championId === featured.id ? `<span class="rp-ace-role-champ">${WM_I18N.t('王者')}</span>` : '',
+      boardId === featured.id ? `<span class="rp-ace-role-board">${WM_I18N.t('看板')}</span>` : ''
     ].filter(Boolean).join('<span class="rp-ace-role-sep"> / </span>') : '';
     const secondOvr = sortedAll[1] ? Engine.util.ov(sortedAll[1]) : 0;
     const thirdOvr = sortedAll[2] ? Engine.util.ov(sortedAll[2]) : 0;
@@ -4931,7 +4931,7 @@ function renderRanking() {
       seed: _orgSeed,
     });
     const scoreLine = depthFaces.length
-      ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + '台多数'
+      ? [aceOvr, ...depthFaces.map(f => Engine.util.ov(f))].join(' / ') + WM_I18N.t('台多数')
       : (aceOvr == null ? '—' : `${aceOvr}`);
     const dynamicLead = _buildLeadSentences({ tags: _tagInfo.tags, featured, champion, gapTop: _tagInfo.gapTop, gapAbove: _tagInfo.gapAbove, seed: _orgSeed, r });
     const dynamicDepthNote = _buildDepthNoteV2({ sortedAll, featured, rentalRoster, readyOvr: r.depthReadyOvr });
@@ -4957,37 +4957,37 @@ function renderRanking() {
     html += `<div class="rp-card ${rankClass}${playerClass}">
       <div class="rp-rank">${_embHtml}</div>
       <div class="rp-info">
-        <div class="rp-tags"><span>${tierLabel}</span><span>${tierMeta}</span>${champion ? '<span>王者保持</span>' : '<span>追走中</span>'}</div>
+        <div class="rp-tags"><span>${tierLabel}</span><span>${tierMeta}</span>${champion ? `<span>${WM_I18N.t('王者保持')}</span>` : `<span>${WM_I18N.t('追走中')}</span>`}</div>
         <h3>${escHtml(orgName)}</h3>
         <p>${escHtml(dynamicLead)}</p>
       </div>
       <div class="rp-ace" onclick="${featured ? `showFighterPopup(${featured.id},'${popupSource}')` : ''}">
         <div class="rp-ace-text">
           <div class="rp-ace-role">${aceRoles}</div>
-          <strong>${featured ? `${escHtml(featured.name)} / OVR${aceOvr}` : '不在'}</strong>
+          <strong>${featured ? `${escHtml(featured.name)} / OVR${aceOvr}` : WM_I18N.t('不在')}</strong>
           <p>${escHtml(aceCopy)}</p>
-          <dl><dt>主力層</dt><dd>${coreDepth}</dd><dt>控え層</dt><dd>${reserveDepth}</dd></dl>
+          <dl><dt>${WM_I18N.t('主力層')}</dt><dd>${coreDepth}</dd><dt>${WM_I18N.t('控え層')}</dt><dd>${reserveDepth}</dd></dl>
         </div>
         <div class="rp-ace-img">${aceImg}</div>
       </div>
       <div class="rp-depth">
-        <div class="rp-depth-head"><strong>主力層 ${visibleTotal}名（大枠含む）</strong><span>${scoreLine}</span></div>
+        <div class="rp-depth-head"><strong>${WM_I18N.t('主力層 {n}名（大枠含む）', { n: visibleTotal })}</strong><span>${scoreLine}</span></div>
         <div class="rp-faces">${depthFacesHtml}</div>
         <div class="rp-depth-note">${escHtml(dynamicDepthNote)}</div>
       </div>
       <div class="rp-metrics">
-        <div class="rank-metric"><span>評価</span><b>${Math.round(r.rating)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">評価 — 総合順位の決定値</div><div class="rmt-text">基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。</div></div></div>
-        <div class="rank-metric"><span>基礎力</span><b>${Math.round(r.baseScore)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">基礎力 — 今そこにある戦力</div><div class="rmt-text">3軸の合算:<br>・コア戦力 ${Math.round((r.force||0))}　TOP8加重OVR×1.2 ＋ 加重人気×0.6<br>・層の厚み ${Math.round((r.depth||0))}　主力層 ${Math.round(r.depthCore || 0)}/20 ＋ 控え層 ${Math.round(r.depthReserve || 0)}/10<br>・看板スター ${Math.round((r.marquee||0))}　TOP3人気の突出加重×0.45<br>怪我人・引退・レンタル選手は除外。</div></div></div>
-        <div class="rank-metric"><span>層の厚み</span><b>${Math.round(r.depth || 0)}<small>/30</small></b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">層の厚み — 興行を回す戦力</div><div class="rmt-text">主力層: 4〜8番手(最大20点)／控え層: 9〜12番手(最大10点)。<br>満点の基準は業界の主力水準に連動し、業界全体が強くなるほど厳しくなります。<br>怪我人・レンタルは含みません。</div></div></div>
-        <div class="rank-metric"><span>対戦PT</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">対戦PT — 団体間の勝敗ポイント</div><div class="rmt-text">対抗戦・サミットの勝敗で増減する団体間ポイント。<br>勝つと積み上がり、負けると目減りする。</div></div></div>
-        <div class="rank-metric"><span>レガシー</span><b>${Math.round(r.legacyScore)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">レガシー — 積み上げた歴史（上限50pt）</div><div class="rmt-text">団体格ベース（自団体0 / S級+50 / A級+30 / B級+15）<br>＋ 殿堂入り盾（★殿堂+8 / ★★ゴールド+10 / ★★★レジェンド+13）<br>＋ 対抗戦通算勝利数 ÷ 5</div></div></div>
-        <div class="rank-metric"><span>実績</span><b>${Math.round(r.achievementScore || 0)}</b>
-          <div class="rank-metric-tooltip"><div class="rmt-label">実績 — シーズンで勝ち取った勲章とその余韻</div><div class="rmt-text">${_buildAchievementTooltip(r, G.season)}</div></div></div>
+        <div class="rank-metric"><span>${WM_I18N.t('評価')}</span><b>${Math.round(r.rating)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('評価 — 総合順位の決定値')}</div><div class="rmt-text">${WM_I18N.t('基礎力 ＋ レガシー ＋ 対戦PT ＋ 実績 の合計。<br>このポイントで業界順位が決まる。')}</div></div></div>
+        <div class="rank-metric"><span>${WM_I18N.t('基礎力')}</span><b>${Math.round(r.baseScore)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('基礎力 — 今そこにある戦力')}</div><div class="rmt-text">${WM_I18N.t('3軸の合算:<br>・コア戦力 {force}　TOP8加重OVR×1.2 ＋ 加重人気×0.6<br>・層の厚み {depth}　主力層 {depthCore}/20 ＋ 控え層 {depthReserve}/10<br>・看板スター {marquee}　TOP3人気の突出加重×0.45<br>怪我人・引退・レンタル選手は除外。', { force: Math.round((r.force||0)), depth: Math.round((r.depth||0)), depthCore: Math.round(r.depthCore || 0), depthReserve: Math.round(r.depthReserve || 0), marquee: Math.round((r.marquee||0)) })}</div></div></div>
+        <div class="rank-metric"><span>${WM_I18N.t('層の厚み')}</span><b>${Math.round(r.depth || 0)}<small>/30</small></b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('層の厚み — 興行を回す戦力')}</div><div class="rmt-text">${WM_I18N.t('主力層: 4〜8番手(最大20点)／控え層: 9〜12番手(最大10点)。<br>満点の基準は業界の主力水準に連動し、業界全体が強くなるほど厳しくなります。<br>怪我人・レンタルは含みません。')}</div></div></div>
+        <div class="rank-metric"><span>${WM_I18N.t('対戦PT')}</span><b class="${battleClass}">${battleSign}${Math.round(r.battlePt)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('対戦PT — 団体間の勝敗ポイント')}</div><div class="rmt-text">${WM_I18N.t('対抗戦・サミットの勝敗で増減する団体間ポイント。<br>勝つと積み上がり、負けると目減りする。')}</div></div></div>
+        <div class="rank-metric"><span>${WM_I18N.t('レガシー')}</span><b>${Math.round(r.legacyScore)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('レガシー — 積み上げた歴史（上限50pt）')}</div><div class="rmt-text">${WM_I18N.t('団体格ベース（自団体0 / S級+50 / A級+30 / B級+15）<br>＋ 殿堂入り盾（★殿堂+8 / ★★ゴールド+10 / ★★★レジェンド+13）<br>＋ 対抗戦通算勝利数 ÷ 5')}</div></div></div>
+        <div class="rank-metric"><span>${WM_I18N.t('実績')}</span><b>${Math.round(r.achievementScore || 0)}</b>
+          <div class="rank-metric-tooltip"><div class="rmt-label">${WM_I18N.t('実績 — シーズンで勝ち取った勲章とその余韻')}</div><div class="rmt-text">${_buildAchievementTooltip(r, G.season)}</div></div></div>
       </div>
     </div>`;
   });
@@ -4998,14 +4998,14 @@ function renderRanking() {
   const _hasValidRecord = (h) => (h.showCount || 0) > 0 || (h.totalRevenue || 0) > 0 || (h.bestMQ || 0) > 0;
   const _validHistory = (G.seasonHistory || []).filter(_hasValidRecord);
   if (_validHistory.length > 0) {
-    html += '<section class="section bg-card history-wrap"><div class="section-marker"><div class="text"><div class="kicker">04 — History</div><div class="title">シーズン履歴</div></div></div>';
-    html += '<table><thead><tr><th>シーズン</th><th>順位</th><th>興行数</th><th>最高評価</th><th>収支</th><th>最終資金</th><th>人数</th></tr></thead><tbody>';
+    html += `<section class="section bg-card history-wrap"><div class="section-marker"><div class="text"><div class="kicker">${WM_I18N.t('04 — History')}</div><div class="title">${WM_I18N.t('シーズン履歴')}</div></div></div>`;
+    html += `<table><thead><tr><th>${WM_I18N.t('シーズン')}</th><th>${WM_I18N.t('順位')}</th><th>${WM_I18N.t('興行数')}</th><th>${WM_I18N.t('最高評価')}</th><th>${WM_I18N.t('収支')}</th><th>${WM_I18N.t('最終資金')}</th><th>${WM_I18N.t('人数')}</th></tr></thead><tbody>`;
     [..._validHistory].reverse().forEach(h => {
       const profit = (h.totalRevenue || 0) - (h.totalExpense || 0);
       const profitClass = profit >= 0 ? 'profit-pos' : 'profit-neg';
       html += `<tr>
-        <td>${h.season}年目</td>
-        <td class="h-rank-${h.rank}">${h.rank}位</td>
+        <td>${WM_I18N.t('{n}年目', { n: h.season })}</td>
+        <td class="h-rank-${h.rank}">${WM_I18N.t('{n}位', { n: h.rank })}</td>
         <td>${h.showCount || 0}</td>
         <td>${h.bestMQ || 0}</td>
         <td class="${profitClass}">${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString()}万</td>
@@ -5030,10 +5030,10 @@ function renderRanking() {
 // cost null (hireCoach) → "—"(机には並ばないが念のため)
 // cost > 0              → "50万"
 function _formatShachoshitsuDocCost(doc) {
-  if (doc.unitCost) return `${doc.unitCost}万×人数`;
+  if (doc.unitCost) return WM_I18N.t('{cost}万×人数', { cost: doc.unitCost });
   if (doc.costLabel) return doc.costLabel;  // 動的コスト書類(ボーナス/休暇/招聘)は「—」でなく説明を出す
   if (doc.cost == null) return '—';
-  if (doc.cost === 0) return '無料';
+  if (doc.cost === 0) return WM_I18N.t('無料');
   return `${doc.cost}万`;
 }
 
@@ -5061,9 +5061,9 @@ function renderShachoshitsu() {
   const scoutBadge = hasDraft ? '<span class="shachoshitsu-tab-badge">📰</span>' : '';
   const rentalDot = (G.rentals || []).length > 0 ? '<span class="shachoshitsu-tab-dot"></span>' : '';
   html += `<div class="shachoshitsu-tabs">
-    <button class="shachoshitsu-tab${tab === 'decision' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('decision')">📋 決裁</button>
-    <button class="shachoshitsu-tab${tab === 'scout' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('scout')">🔍 スカウト${scoutBadge}</button>
-    <button class="shachoshitsu-tab${tab === 'rental' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('rental')">🤝 レンタル${rentalDot}</button>
+    <button class="shachoshitsu-tab${tab === 'decision' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('decision')">${WM_I18N.t('📋 決裁')}</button>
+    <button class="shachoshitsu-tab${tab === 'scout' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('scout')">${WM_I18N.t('🔍 スカウト')}${scoutBadge}</button>
+    <button class="shachoshitsu-tab${tab === 'rental' ? ' active' : ''}" onclick="App.switchShachoshitsuTab('rental')">${WM_I18N.t('🤝 レンタル')}${rentalDot}</button>
   </div>`;
   // ── サマリーバー ──
   html += _renderShachoshitsuSummary(tab);
@@ -5101,10 +5101,10 @@ function _renderShachoshitsuHudForTab(tab) {
     let hankos = '';
     for (let i = 0; i < dpMax; i++) {
       const cls = i < dp ? 'hanko available' : 'hanko used';
-      hankos += `<img class="${cls}" src="../image/shachoshitsu/hanko.webp" alt="決裁枠">`;
+      hankos += `<img class="${cls}" src="../image/shachoshitsu/hanko.webp" alt="${WM_I18N.t('決裁枠')}">`;
     }
     rightHtml = `
-      <span class="shachoshitsu-hud-dp-label">決裁枠</span>
+      <span class="shachoshitsu-hud-dp-label">${WM_I18N.t('決裁枠')}</span>
       <span class="shachoshitsu-hud-dp-count">⚡${dp}/${dpMax}</span>
       <div class="shachoshitsu-hankos">${hankos}</div>`;
   } else if (tab === 'scout') {
@@ -5112,9 +5112,9 @@ function _renderShachoshitsuHudForTab(tab) {
     const rCap = G.rosterCap || 8;
     const visibleFAIds = Engine.util.getVisibleFAIds(G);
     rightHtml = `<span style="font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--text-sub)">
-      所属 <b style="color:var(--text-main)">${ownCount}/${rCap}名</b>
+      ${WM_I18N.t('所属')} <b style="color:var(--text-main)">${WM_I18N.t('{n}/{cap}名', { n: ownCount, cap: rCap })}</b>
       <span style="margin:0 6px;opacity:0.4">｜</span>
-      紹介枠 <b style="color:var(--text-main)">${visibleFAIds.length}名</b>
+      ${WM_I18N.t('紹介枠')} <b style="color:var(--text-main)">${WM_I18N.t('{n}名', { n: visibleFAIds.length })}</b>
     </span>`;
   } else if (tab === 'rental') {
     const activeRentals = G.rentals || [];
@@ -5122,16 +5122,16 @@ function _renderShachoshitsuHudForTab(tab) {
     const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
     const remaining = Math.max(0, maxSlots - activeRentals.length);
     rightHtml = `<span style="font-family:'Noto Sans JP',sans-serif;font-size:12px;color:var(--text-sub)">
-      レンタル枠 <b style="color:var(--text-main)">${activeRentals.length}/${maxSlots}枠</b>
+      ${WM_I18N.t('レンタル枠')} <b style="color:var(--text-main)">${WM_I18N.t('{n}/{max}枠', { n: activeRentals.length, max: maxSlots })}</b>
       <span style="margin:0 6px;opacity:0.4">｜</span>
-      残り <b style="color:var(--text-main)">${remaining}枠</b>
+      ${WM_I18N.t('残り')} <b style="color:var(--text-main)">${WM_I18N.t('{n}枠', { n: remaining })}</b>
     </span>`;
   }
   return `
     <div class="shachoshitsu-hud">
       <div class="shachoshitsu-hud-left">
         <span class="shachoshitsu-hud-date">${dateStr}</span>
-        <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
+        <span class="shachoshitsu-hud-funds">${WM_I18N.t('資金 {funds}万', { funds: fundsStr })}</span>
       </div>
       <div class="shachoshitsu-hud-right">${rightHtml}</div>
     </div>`;
@@ -5142,7 +5142,7 @@ function _renderShachoshitsuSummary(tab) {
   if (tab === 'decision') {
     const docs = (typeof Engine !== 'undefined' && Engine.shachoshitsu)
       ? Engine.shachoshitsu.getAvailableDocs(G) : [];
-    return `<div class="shachoshitsu-summary">案件 <b>${docs.length}件</b></div>`;
+    return `<div class="shachoshitsu-summary">${WM_I18N.t('案件')} <b>${WM_I18N.t('{n}件', { n: docs.length })}</b></div>`;
   }
   if (tab === 'scout') {
     const ownCount = G.roster.filter(f => !f.isRental).length;
@@ -5150,14 +5150,14 @@ function _renderShachoshitsuSummary(tab) {
     const visibleFAIds = Engine.util.getVisibleFAIds(G);
     const currentQ = getQuarter(G.week);
     const qLabel = QUARTER_LABELS[currentQ] || '';
-    return `<div class="shachoshitsu-summary">所属: <b>${ownCount}/${rCap}名</b> ｜ FA: <b>${G.freeAgents.length}名</b> ｜ 紹介枠: <b>${visibleFAIds.length}名</b>（${qLabel}入替）</div>`;
+    return `<div class="shachoshitsu-summary">${WM_I18N.t('所属:')} <b>${WM_I18N.t('{n}/{cap}名', { n: ownCount, cap: rCap })}</b> ｜ FA: <b>${WM_I18N.t('{n}名', { n: G.freeAgents.length })}</b> ｜ ${WM_I18N.t('紹介枠:')} <b>${WM_I18N.t('{n}名', { n: visibleFAIds.length })}</b>${WM_I18N.t('（{q}入替）', { q: qLabel })}</div>`;
   }
   if (tab === 'rental') {
     const activeRentals = G.rentals || [];
     const ownRoster = G.roster.filter(c => !c.isRental);
     const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownRoster.length);
     const visibleRentalIds = Engine.util.getVisibleRentalIds(G);
-    return `<div class="shachoshitsu-summary">レンタル枠: <b>${activeRentals.length}/${maxSlots}枠</b> ｜ 紹介枠: <b>${visibleRentalIds.length}名</b>（四半期入替）</div>`;
+    return `<div class="shachoshitsu-summary">${WM_I18N.t('レンタル枠:')} <b>${WM_I18N.t('{n}/{max}枠', { n: activeRentals.length, max: maxSlots })}</b> ｜ ${WM_I18N.t('紹介枠:')} <b>${WM_I18N.t('{n}名', { n: visibleRentalIds.length })}</b>${WM_I18N.t('（四半期入替）')}</div>`;
   }
   return '';
 }
@@ -5172,8 +5172,8 @@ function _renderShachoshitsuDecisionDesk() {
 
   if (availableDocs.length === 0) {
     const emptyMsg = G.offSeason
-      ? 'オフシーズン — 案件なし'
-      : '今週は机に並ぶ案件がありません';
+      ? WM_I18N.t('オフシーズン — 案件なし')
+      : WM_I18N.t('今週は机に並ぶ案件がありません');
     html += `<div class="shachoshitsu-empty-note">${emptyMsg}</div>`;
   } else {
     const doneThisWeek = G._decisionDoneThisWeek || [];
@@ -5194,7 +5194,7 @@ function _renderShachoshitsuDecisionDesk() {
       const approvedCls = isApproved ? ' is-approved' : '';
       const clickAttr = isApproved ? '' : ` onclick="App.onShachoshitsuDocClick('${doc.id}')"`;
       // 朱印(決裁済)で無反応な理由を説明する(「クリックできない」報告対策、data-tipでスマホ対応)
-      const titleAttr = isApproved ? ` ${_tipAttr('この書類は今週すでに決裁済みです。週を進めるとまた検討できます')}` : '';
+      const titleAttr = isApproved ? ` ${_tipAttr(WM_I18N.t('この書類は今週すでに決裁済みです。週を進めるとまた検討できます'))}` : '';
       const rot = docRotation(doc.id, G.week);
       html += `
         <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}" style="--doc-rotate:${rot}deg"${clickAttr}${titleAttr}>
@@ -5209,15 +5209,15 @@ function _renderShachoshitsuDecisionDesk() {
           </div>
           <div class="shachoshitsu-doc-tooltip">
             <div class="tooltip-section">
-              <div class="tooltip-label">詳細</div>
+              <div class="tooltip-label">${WM_I18N.t('詳細')}</div>
               <div class="tooltip-text">${doc.detailText}</div>
             </div>
             <div class="tooltip-section">
-              <div class="tooltip-label">効果</div>
+              <div class="tooltip-label">${WM_I18N.t('効果')}</div>
               <div class="tooltip-text">${doc.effectSummary}</div>
             </div>
             <div class="tooltip-section">
-              <div class="tooltip-label">使いどころ</div>
+              <div class="tooltip-label">${WM_I18N.t('使いどころ')}</div>
               <div class="tooltip-text">${doc.recommendation}</div>
             </div>
           </div>
@@ -5245,16 +5245,16 @@ function _renderInviteMarketPanel() {
 
   const weeksLeft = Engine.shachoshitsu.getInviteMarketWeeksLeft(G);
   const swapText = weeksLeft == null
-    ? 'まもなく入れ替わる'
-    : (weeksLeft === 1 ? '次の週で入れ替わる' : `入れ替わりまで あと${weeksLeft}週`);
+    ? WM_I18N.t('まもなく入れ替わる')
+    : (weeksLeft === 1 ? WM_I18N.t('次の週で入れ替わる') : WM_I18N.t('入れ替わりまで あと{n}週', { n: weeksLeft }));
 
-  const gradeLabel = { C: 'C級', B: 'B級', A: 'A級' };
+  const gradeLabel = { C: WM_I18N.t('C級'), B: WM_I18N.t('B級'), A: WM_I18N.t('A級') };
   const requestedId = (market && market.requestResult && market.requestResult.fulfilled)
     ? market.requestResult.coachId : null;
 
   let cardsHtml;
   if (candidates.length === 0) {
-    cardsHtml = '<div class="imp-empty">今期、招聘に応じるコーチはいない</div>';
+    cardsHtml = `<div class="imp-empty">${WM_I18N.t('今期、招聘に応じるコーチはいない')}</div>`;
   } else {
     cardsHtml = candidates.map(c => {
       const typeLabel = (typeof COACHING_TYPE_LABELS !== 'undefined' && COACHING_TYPE_LABELS[c.coachingType]) || '';
@@ -5262,12 +5262,12 @@ function _renderInviteMarketPanel() {
       const faceUrl = (typeof getCoachPortraitUrl === 'function') ? getCoachPortraitUrl(c.id) : '';
       const faceStyle = faceUrl ? `background-image:url('${faceUrl}')` : '';
       const mark = c.id === requestedId
-        ? `<span class="imp-req-mark" ${_tipAttr('秘書に頼んで来てもらったコーチ')}>指名</span>` : '';
+        ? `<span class="imp-req-mark" ${_tipAttr(WM_I18N.t('秘書に頼んで来てもらったコーチ'))}>${WM_I18N.t('指名')}</span>` : '';
       return `<div class="imp-cand">
         <div class="imp-face" style="${faceStyle}"></div>
         <div class="imp-name">${c.name}${mark}</div>
         <div class="imp-meta">${gradeLabel[c.grade] || c.grade} ・ ${typeLabel}</div>
-        <div class="imp-style">得意: ${styleLabel}</div>
+        <div class="imp-style">${WM_I18N.t('得意: {style}', { style: styleLabel })}</div>
       </div>`;
     }).join('');
   }
@@ -5279,33 +5279,33 @@ function _renderInviteMarketPanel() {
   const pending = G.coachRequest;
   const alreadyAsked = Engine.shachoshitsu.hasCoachRequestThisQuarter(G);
   if (G.offSeason) {
-    requestHtml = `<button class="imp-req-btn" disabled>オフシーズンは頼めない</button>`;
+    requestHtml = `<button class="imp-req-btn" disabled>${WM_I18N.t('オフシーズンは頼めない')}</button>`;
   } else if (alreadyAsked && pending) {
     const wanted = Engine.shachoshitsu.formatCoachRequest(pending);
-    requestHtml = `<span class="imp-req-state">秘書に${wanted}を探すよう頼んである。返事は次の入れ替わりで。</span>
-      <button class="imp-req-btn" disabled>今期は依頼済み</button>`;
+    requestHtml = `<span class="imp-req-state">${WM_I18N.t('秘書に{wanted}を探すよう頼んである。返事は次の入れ替わりで。', { wanted })}</span>
+      <button class="imp-req-btn" disabled>${WM_I18N.t('今期は依頼済み')}</button>`;
   } else {
     const axes = Engine.shachoshitsu.getCoachRequestAxes();
     const styleOpts = axes.style.map(s => {
       const label = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[s]) || s;
-      return `<option value="style:${s}">${label}に強いコーチ</option>`;
+      return `<option value="style:${s}">${WM_I18N.t('{label}に強いコーチ', { label })}</option>`;
     }).join('');
-    const gradeOpts = axes.grade.map(g => `<option value="grade:${g}">${g}級のコーチ</option>`).join('');
-    requestHtml = `<label class="imp-req-label" for="impReqSelect">秘書に探してもらう</label>
+    const gradeOpts = axes.grade.map(g => `<option value="grade:${g}">${WM_I18N.t('{g}級のコーチ', { g })}</option>`).join('');
+    requestHtml = `<label class="imp-req-label" for="impReqSelect">${WM_I18N.t('秘書に探してもらう')}</label>
       <select class="imp-req-select" id="impReqSelect">
-        <optgroup label="得意スタイルで頼む">${styleOpts}</optgroup>
-        <optgroup label="格で頼む">${gradeOpts}</optgroup>
+        <optgroup label="${WM_I18N.t('得意スタイルで頼む')}">${styleOpts}</optgroup>
+        <optgroup label="${WM_I18N.t('格で頼む')}">${gradeOpts}</optgroup>
       </select>
-      <button class="imp-req-btn is-active" onclick="App.requestInviteCoachFromPanel()">頼む</button>`;
+      <button class="imp-req-btn is-active" onclick="App.requestInviteCoachFromPanel()">${WM_I18N.t('頼む')}</button>`;
   }
 
   return `<div class="invite-market-panel">
     <div class="imp-head">
-      <span class="imp-title">招聘に応じるコーチ</span>
+      <span class="imp-title">${WM_I18N.t('招聘に応じるコーチ')}</span>
       <span class="imp-swap">${swapText}</span>
     </div>
     <div class="imp-cands">${cardsHtml}</div>
-    <div class="imp-note">頼めるのは「どんな人を探すか」まで。誰が応じるかは決められない。</div>
+    <div class="imp-note">${WM_I18N.t('頼めるのは「どんな人を探すか」まで。誰が応じるかは決められない。')}</div>
     <div class="imp-request">${requestHtml}</div>
   </div>`;
 }
@@ -5317,9 +5317,9 @@ function _renderShachoshitsuScoutDesk() {
   const draftStarted = !!G._draftNegotiationStarted;
   if (hasDraft && !draftStarted) {
     return `<div class="shachoshitsu-draft-notice">
-      <div class="headline">📰 ドラフト速報が届いています</div>
-      <div class="sub">候補 ${G.scoutCandidates.length}名の調査報告が届きました。<br>ドラフト会場で交渉が始まります。</div>
-      <button onclick="showScreen('scoutEvent');Audio.bgm.play('tension')">⚖ ドラフトへ</button>
+      <div class="headline">${WM_I18N.t('📰 ドラフト速報が届いています')}</div>
+      <div class="sub">${WM_I18N.t('候補 {n}名の調査報告が届きました。<br>ドラフト会場で交渉が始まります。', { n: G.scoutCandidates.length })}</div>
+      <button onclick="showScreen('scoutEvent');Audio.bgm.play('tension')">${WM_I18N.t('⚖ ドラフトへ')}</button>
     </div>`;
   }
 
@@ -5338,7 +5338,7 @@ function _renderShachoshitsuScoutDesk() {
   const sortedFA = [...canNegList, ...cantNegList];
 
   if (sortedFA.length === 0) {
-    return '<div class="shachoshitsu-empty-note">この四半期の紹介枠にフリーエージェントはいません</div>';
+    return `<div class="shachoshitsu-empty-note">${WM_I18N.t('この四半期の紹介枠にフリーエージェントはいません')}</div>`;
   }
 
   const PAGE_SIZE = 3;
@@ -5380,24 +5380,24 @@ function _renderShachoshitsuScoutDesk() {
     const _disBtn = (label, tip) => `<span ${_tipAttr(tip)} style="display:inline-block;cursor:help"><button disabled style="pointer-events:none">${label}</button></span>`;
     if (!canNeg) {
       const tierReq = Engine.scout.getTierConfig(c.assessedTier || 'material');
-      btnHtml = _disBtn('⛔ 知名度不足', `団体人気${Engine.util.dispOrgPop(tierReq.reqPop)}以上で交渉可能`);
+      btnHtml = _disBtn(WM_I18N.t('⛔ 知名度不足'), WM_I18N.t('団体人気{pop}以上で交渉可能', { pop: Engine.util.dispOrgPop(tierReq.reqPop) }));
     } else if (_capFull) {
-      btnHtml = _disBtn('⛔ 枠上限', 'ロスター枠が上限です');
+      btnHtml = _disBtn(WM_I18N.t('⛔ 枠上限'), WM_I18N.t('ロスター枠が上限です'));
     } else {
-      btnHtml = `<button class="primary" onclick="event.stopPropagation();showFighterPopup(${c.id},'free',true)">✒️ 契約交渉</button>`;
+      btnHtml = `<button class="primary" onclick="event.stopPropagation();showFighterPopup(${c.id},'free',true)">${WM_I18N.t('✒️ 契約交渉')}</button>`;
     }
 
     html += `
       <div class="shachoshitsu-resume${unavailCls}" style="animation-delay:${idx * 0.05}s">
-        ${!canNeg ? '<div class="shachoshitsu-resume-stamp">契約不可</div>' : ''}
+        ${!canNeg ? `<div class="shachoshitsu-resume-stamp">${WM_I18N.t('契約不可')}</div>` : ''}
         <div class="shachoshitsu-resume-tags">
           ${getJoinSourceBadge('fa')}
-          ${viaTicket ? '<span class="shachoshitsu-resume-tag source">🎫 特別枠</span>' : ''}
+          ${viaTicket ? `<span class="shachoshitsu-resume-tag source">${WM_I18N.t('🎫 特別枠')}</span>` : ''}
           <span class="shachoshitsu-resume-tag tier" style="color:${tierCfg.color};border-color:${tierCfg.color}66;background:${tierCfg.color}22">${tierCfg.label}</span>
         </div>
         ${imgTag}
         <div class="shachoshitsu-resume-name">${c.name}</div>
-        <div class="shachoshitsu-resume-age">${c.age}歳</div>
+        <div class="shachoshitsu-resume-age">${WM_I18N.t('{age}歳', { age: c.age })}</div>
         <div class="shachoshitsu-resume-ovr" style="color:${_ovrColor(ov(c)).color}">${ov(c)}<span>OVR</span></div>
         <div class="shachoshitsu-resume-style">
           <span class="badge badge-${c.style}">${c.style}</span>
@@ -5415,11 +5415,11 @@ function _renderShachoshitsuScoutDesk() {
           }).join('')}
         </div>
         <div class="shachoshitsu-resume-cost">
-          契約金 <b class="signing">${signingCost.toLocaleString()}万</b><br>
-          <span class="salary">給与 ${salary}万/週</span>
+          ${WM_I18N.t('契約金')} <b class="signing">${signingCost.toLocaleString()}万</b><br>
+          <span class="salary">${WM_I18N.t('給与 {salary}万/週', { salary })}</span>
         </div>
         <div class="shachoshitsu-resume-btns">
-          <button onclick="showFighterPopup(${c.id},'free')">📋 詳細</button>
+          <button onclick="showFighterPopup(${c.id},'free')">${WM_I18N.t('📋 詳細')}</button>
           ${btnHtml}
         </div>
       </div>`;
@@ -5429,9 +5429,9 @@ function _renderShachoshitsuScoutDesk() {
   // ページナビ（グリッドの下）
   if (totalPages > 1) {
     html += `<div class="shachoshitsu-page-nav">
-      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage - 1})" ${safePage <= 0 ? 'disabled' : ''}>◀ 前へ</button>
+      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage - 1})" ${safePage <= 0 ? 'disabled' : ''}>${WM_I18N.t('◀ 前へ')}</button>
       <span class="shachoshitsu-page-info">${safePage + 1} / ${totalPages}</span>
-      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage + 1})" ${safePage >= totalPages - 1 ? 'disabled' : ''}>次へ ▶</button>
+      <button class="shachoshitsu-page-btn" onclick="App.shachoshitsuScoutPage(${safePage + 1})" ${safePage >= totalPages - 1 ? 'disabled' : ''}>${WM_I18N.t('次へ ▶')}</button>
     </div>`;
   }
 
@@ -5447,11 +5447,11 @@ function _renderShachoshitsuRentalDesk() {
 
   // オフシーズン
   if (G.offSeason) {
-    return '<div class="shachoshitsu-empty-note">オフシーズン中はレンタルできません</div>';
+    return `<div class="shachoshitsu-empty-note">${WM_I18N.t('オフシーズン中はレンタルできません')}</div>`;
   }
   // 枠上限
   if (remainingSlots <= 0) {
-    return '<div class="shachoshitsu-empty-note">レンタル枠が満員です</div>';
+    return `<div class="shachoshitsu-empty-note">${WM_I18N.t('レンタル枠が満員です')}</div>`;
   }
 
   const rentals = Engine.rental.getAvailableRentals(G);
@@ -5459,7 +5459,7 @@ function _renderShachoshitsuRentalDesk() {
   const visibleRentals = rentals.filter(r => visibleRentalIds.includes(r.fighter.id));
 
   if (visibleRentals.length === 0) {
-    return '<div class="shachoshitsu-empty-note">レンタル可能な選手がいません</div>';
+    return `<div class="shachoshitsu-empty-note">${WM_I18N.t('レンタル可能な選手がいません')}</div>`;
   }
 
   // ソート
@@ -5472,16 +5472,16 @@ function _renderShachoshitsuRentalDesk() {
   // ソートボタン
   const arrow = sortDir === 'asc' ? '▲' : '▼';
   html += `<div class="shachoshitsu-rental-sort">
-    <span class="sort-label">並び替え:</span>
-    <button onclick="window._rentalSortDir=window._rentalSortDir==='asc'?'desc':'asc';renderShachoshitsu()">💰 費用 ${sortDir === 'asc' ? '安い順' : '高い順'} ${arrow}</button>
+    <span class="sort-label">${WM_I18N.t('並び替え:')}</span>
+    <button onclick="window._rentalSortDir=window._rentalSortDir==='asc'?'desc':'asc';renderShachoshitsu()">${WM_I18N.t('💰 費用 {order} {arrow}', { order: sortDir === 'asc' ? WM_I18N.t('安い順') : WM_I18N.t('高い順'), arrow })}</button>
   </div>`;
   html += '<div class="shachoshitsu-rental-grid">';
   sorted.forEach((r, idx) => {
     const f = r.fighter;
-    const srcLabel = r.source === 'rival' ? (r.org?.name || '他団体') : 'フリー';
+    const srcLabel = r.source === 'rival' ? (r.org?.name || WM_I18N.t('他団体')) : WM_I18N.t('フリー');
     const feeFor1 = r.fees[1];
     const selectId = `rentalSeasons_${f.id}`;
-    const seasonOpts = [1, 2, 3, 4].map(n => `<option value="${n}">${n}期</option>`).join('');
+    const seasonOpts = [1, 2, 3, 4].map(n => `<option value="${n}">${WM_I18N.t('{n}期', { n })}</option>`).join('');
     const srcLink = r.source === 'rival' ? `ai:${r.org.id}` : 'free';
 
     html += `
@@ -5496,12 +5496,12 @@ function _renderShachoshitsuRentalDesk() {
           <div class="shachoshitsu-rental-mini-ovr" style="color:${_ovrColor(Engine.util.ov(f)).color}">${Engine.util.ov(f)}<span>OVR</span></div>
         </div>
         <div class="shachoshitsu-rental-mini-fee">
-          <b><span id="rentalFee_${f.id}">${feeFor1}</span>万</b>/期
+          <b><span id="rentalFee_${f.id}">${feeFor1}</span>万</b>${WM_I18N.t('/期')}
           <select id="${selectId}" onchange="updateRentalFee(${f.id})">
             ${seasonOpts}
           </select>
         </div>
-        <button id="rentalBtn_${f.id}" onclick="requestRental(${f.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" ${G.funds >= feeFor1 ? '' : 'disabled'}>🤝 契約</button>
+        <button id="rentalBtn_${f.id}" onclick="requestRental(${f.id},'${r.source}','${r.source === 'rival' ? r.org.id : ''}')" ${G.funds >= feeFor1 ? '' : 'disabled'}>${WM_I18N.t('🤝 契約')}</button>
       </div>`;
   });
   html += '</div>'; // rental-grid
@@ -5521,8 +5521,8 @@ function _renderShachoshitsuWallRentals() {
     // U7 §2-C: 選手名が出ている一覧は押せば詳細が開く
     const open = rentalF ? ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(rentalF.id)},'rental',true)"` : '';
     html += `<div class="shachoshitsu-wall-rental-card"${open}>
-      <div class="name">${rentalF ? rentalF.name : '不明'} ← ${fromLabel}</div>
-      <div class="meta">残り${contract.weeksLeft}週</div>
+      <div class="name">${rentalF ? rentalF.name : WM_I18N.t('不明')} ← ${fromLabel}</div>
+      <div class="meta">${WM_I18N.t('残り{n}週', { n: contract.weeksLeft })}</div>
     </div>`;
   });
   html += '</div>';
@@ -5548,10 +5548,10 @@ function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
     <div class="shachoshitsu-hud">
       <div class="shachoshitsu-hud-left">
         <span class="shachoshitsu-hud-date">${dateStr}</span>
-        <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
+        <span class="shachoshitsu-hud-funds">${WM_I18N.t('資金 {funds}万', { funds: fundsStr })}</span>
       </div>
       <div class="shachoshitsu-hud-right">
-        <span class="neg-hud-label">📋 シーズン${season} 契約更新</span>
+        <span class="neg-hud-label">${WM_I18N.t('📋 シーズン{season} 契約更新', { season })}</span>
       </div>
     </div>
     <div class="shachoshitsu-wall negotiation-wall${wallHasSpeaker ? ' negotiation-wall-dialogue' : ''}" style="background-image:url('../image/shachoshitsu/wall-window-winter.webp')">
@@ -5591,15 +5591,15 @@ function renderShachoshitsuReleaseInterview(fighter, dialogue) {
     </div>`;
 
   const deskHtml = `
-    <div class="neg-card-title">🚪 解雇の確認</div>
+    <div class="neg-card-title">${WM_I18N.t('🚪 解雇の確認')}</div>
     <div class="release-card-fighter-name">${escHtml(fighter.name)}</div>
-    <div class="release-card-warning">⚠️ 選手の解雇は取り消せません</div>
+    <div class="release-card-warning">${WM_I18N.t('⚠️ 選手の解雇は取り消せません')}</div>
     <div class="neg-choices release-choices">
       <button class="neg-btn release-confirm-btn" onclick="App.confirmRelease(${fighter.id})">
-        <span>解雇を実行する</span>
+        <span>${WM_I18N.t('解雇を実行する')}</span>
       </button>
       <button class="neg-btn release-cancel-btn" onclick="App.cancelReleaseInterview()">
-        <span>やっぱりやめる</span>
+        <span>${WM_I18N.t('やっぱりやめる')}</span>
       </button>
     </div>`;
 
@@ -5607,10 +5607,10 @@ function renderShachoshitsuReleaseInterview(fighter, dialogue) {
     <div class="shachoshitsu-hud">
       <div class="shachoshitsu-hud-left">
         <span class="shachoshitsu-hud-date">${dateStr}</span>
-        <span class="shachoshitsu-hud-funds">資金 ${fundsStr}万</span>
+        <span class="shachoshitsu-hud-funds">${WM_I18N.t('資金 {funds}万', { funds: fundsStr })}</span>
       </div>
       <div class="shachoshitsu-hud-right">
-        <span class="neg-hud-label">🚪 解雇面談</span>
+        <span class="neg-hud-label">${WM_I18N.t('🚪 解雇面談')}</span>
       </div>
     </div>
     <div class="shachoshitsu-wall negotiation-wall" style="background-image:url('../image/shachoshitsu/wall-window-${seasonId}.webp')">
@@ -5632,7 +5632,7 @@ function _renderDraftCandidateList(candidates, context) {
   const funds = context.funds || 0;
   const season = context.season || 1;
   const eventType = context.eventType || 'offseason';
-  const weekLabel = eventType === 'offseason' ? `シーズン${season} オフ第3週` : `シーズン${season} 第${context.week || '?'}週`;
+  const weekLabel = eventType === 'offseason' ? WM_I18N.t('シーズン{season} オフ第3週', { season }) : WM_I18N.t('シーズン{season} 第{week}週', { season, week: context.week || '?' });
 
   // Sort by assessedValue desc
   const sorted = [...candidates].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0));
@@ -5642,9 +5642,9 @@ function _renderDraftCandidateList(candidates, context) {
   const mid = sorted.slice(3, 8);                // 4〜8位 → 有望株欄
   const rest = sorted.slice(8);                   // 9位以降 → その他テーブル
 
-  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
-  const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
-  const ROLE_JP = { Babyface: 'ベビーフェイス', Heel: 'ヒール', Neutral: '中立' };
+  const TIER_LABELS = { superElite: WM_I18N.t('超逸材'), elite: WM_I18N.t('逸材'), promising: WM_I18N.t('有望'), raw: WM_I18N.t('原石'), material: WM_I18N.t('素材') };
+  const STYLE_JP = { Grappler: WM_I18N.t('グラップラー'), Striker: WM_I18N.t('ストライカー'), Submission: WM_I18N.t('サブミッション'), Aerial: WM_I18N.t('エアリアル'), Allround: WM_I18N.t('オールラウンド'), Brawler: WM_I18N.t('ブロウラー') };
+  const ROLE_JP = { Babyface: WM_I18N.t('ベビーフェイス'), Heel: WM_I18N.t('ヒール'), Neutral: WM_I18N.t('中立') };
   const MARK_DISPLAY = { honmei: { text: '◎', cls: 'mark-bullseye' }, taikou: { text: '○', cls: 'mark-contender' }, osae: { text: '△', cls: 'mark-outside' } };
   const _rOrgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
   const ORG_ABBR = { org_s: _rOrgName('org_s').slice(0,3).toUpperCase(), org_a: _rOrgName('org_a').slice(0,3).toUpperCase(), org_b: _rOrgName('org_b').slice(0,3).toUpperCase() };
@@ -5707,11 +5707,11 @@ function _renderDraftCandidateList(candidates, context) {
     const sz = size || 'md';
     const fs = sz === 'lg' ? '24px' : sz === 'sm' ? '18px' : '20px';
     const pad = sz === 'lg' ? '4px 6px' : '3px 5px';
-    return `<button class="draft-star-btn${selected ? ' draft-star-on' : ''}" onclick="toggleDraftSelection(${candId})" style="font-size:${fs};padding:${pad};" title="${selected ? '選択解除' : '交渉候補に追加'}">${selected ? '★' : '☆'}</button>`;
+    return `<button class="draft-star-btn${selected ? ' draft-star-on' : ''}" onclick="toggleDraftSelection(${candId})" style="font-size:${fs};padding:${pad};" title="${selected ? WM_I18N.t('選択解除') : WM_I18N.t('交渉候補に追加')}">${selected ? '★' : '☆'}</button>`;
   }
 
   // Find lead headline name (top candidate)
-  const leadName = top[0] ? top[0].name : '注目の新人';
+  const leadName = top[0] ? top[0].name : WM_I18N.t('注目の新人');
   const totalCount = candidates.length;
 
   let html = '';
@@ -5723,24 +5723,24 @@ function _renderDraftCandidateList(candidates, context) {
   html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 22px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
     <div style="display:flex;align-items:center;gap:16px;">
-      <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:700;">★ 選択中 <span style="font-size:16px;color:${selections.length >= maxPicks ? '#f08b9e' : '#f0d078'};">${selections.length}</span> / ${maxPicks}名${selections.length >= maxPicks ? ' <span style="font-size:10px;color:#f08b9e;animation:dn-pulse 1.2s infinite;">上限</span>' : ''}</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);font-weight:700;">${WM_I18N.t('★ 選択中')} <span style="font-size:16px;color:${selections.length >= maxPicks ? '#f08b9e' : '#f0d078'};">${selections.length}</span> / ${WM_I18N.t('{n}名', { n: maxPicks })}${selections.length >= maxPicks ? ` <span style="font-size:10px;color:#f08b9e;animation:dn-pulse 1.2s infinite;">${WM_I18N.t('上限')}</span>` : ''}</div>
       <div style="font-size:16px;font-weight:900;color:#fff;letter-spacing:1px;">${weekLabel}</div>
     </div>
   </div>`;
 
   // ── Feature header ──
   html += `<div style="text-align:center;padding:18px 22px 16px;border-bottom:3px double rgba(95,69,35,0.35);">
-    <div style="display:inline-block;font-size:11px;letter-spacing:4px;color:#fff;background:#8b1a1a;padding:4px 14px;font-weight:700;margin-bottom:12px;">◆ ドラフト速報 ◆</div>
-    <div style="font-size:28px;font-weight:900;color:#1f1710;line-height:1.25;letter-spacing:1px;margin-bottom:8px;">${season + 2024}年度 新人交渉、本日開幕</div>
+    <div style="display:inline-block;font-size:11px;letter-spacing:4px;color:#fff;background:#8b1a1a;padding:4px 14px;font-weight:700;margin-bottom:12px;">${WM_I18N.t('◆ ドラフト速報 ◆')}</div>
+    <div style="font-size:28px;font-weight:900;color:#1f1710;line-height:1.25;letter-spacing:1px;margin-bottom:8px;">${WM_I18N.t('{year}年度 新人交渉、本日開幕', { year: season + 2024 })}</div>
     <div style="font-size:13px;color:#3a2e1c;line-height:1.7;max-width:640px;margin:0 auto;font-weight:500;">
-      若き才能${totalCount}名が業界の門を叩く。${top[0] ? `最大の注目は${top[0].age}歳の${TIER_LABELS[top[0].assessedTier] || '注目株'}・${leadName}。` : ''}複数団体が本気の獲得を狙う。
+      ${WM_I18N.t('若き才能{n}名が業界の門を叩く。', { n: totalCount })}${top[0] ? WM_I18N.t('最大の注目は{age}歳の{tier}・{name}。', { age: top[0].age, tier: TIER_LABELS[top[0].assessedTier] || WM_I18N.t('注目株'), name: leadName }) : ''}${WM_I18N.t('複数団体が本気の獲得を狙う。')}
     </div>
   </div>`;
 
   // ── TOP 3 Feature Grid ──
   if (top.length > 0) {
     html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
-      <div class="news-sec-label">注目の上位指名候補 — ${top.length}名</div>
+      <div class="news-sec-label">${WM_I18N.t('注目の上位指名候補 — {n}名', { n: top.length })}</div>
       <div style="display:grid;grid-template-columns:${top.length >= 3 ? '1.5fr 1fr 1fr' : top.length === 2 ? '1fr 1fr' : '1fr'};gap:16px;">`;
     top.forEach((c, idx) => {
       const isLead = idx === 0;
@@ -5760,14 +5760,14 @@ function _renderDraftCandidateList(candidates, context) {
             <div style="font-size:${nameSize};font-weight:900;color:#1f1710;line-height:1.2;margin-bottom:5px;">${c.name}</div>
             <div style="font-size:11px;color:#3a2e1c;line-height:1.6;">
               <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
-              ${c.age}歳・${STYLE_JP[c.style] || c.style}${c.role ? '・<strong>' + (ROLE_JP[c.role] || c.role) + '</strong>' : ''}<br>
-              推定契約金 <strong>¥${baseCost.toLocaleString()}万</strong>
+              ${WM_I18N.t('{age}歳・{style}', { age: c.age, style: STYLE_JP[c.style] || c.style })}${c.role ? '・<strong>' + (ROLE_JP[c.role] || c.role) + '</strong>' : ''}<br>
+              ${WM_I18N.t('推定契約金')} <strong>¥${baseCost.toLocaleString()}万</strong>
             </div>
           </div>
         </div>
         ${_miniStats(c)}
         ${_scoutComment(c) ? `<div style="font-size:12px;line-height:1.7;color:#3a2e1c;margin:8px 0 0;padding:8px 12px;background:rgba(200,190,170,0.22);border-radius:6px;border-left:3px solid #9a7020;">
-          <div style="font-size:9px;letter-spacing:1px;color:#9a7020;font-weight:700;margin-bottom:3px;">記者の目</div>
+          <div style="font-size:9px;letter-spacing:1px;color:#9a7020;font-weight:700;margin-bottom:3px;">${WM_I18N.t('記者の目')}</div>
           ${_scoutComment(c)}
         </div>` : ''}
         <div style="display:flex;gap:8px;padding:8px 0 0;margin-top:8px;border-top:1px solid rgba(95,69,35,0.12);">
@@ -5784,7 +5784,7 @@ function _renderDraftCandidateList(candidates, context) {
   // ── MID Grid (有望) ──
   if (mid.length > 0) {
     html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
-      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">有望株 — 育成価値の高い${mid.length}名</div>
+      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">${WM_I18N.t('有望株 — 育成価値の高い{n}名', { n: mid.length })}</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;">`;
     mid.forEach((c, idx) => {
       const globalIdx = top.length + idx + 1;
@@ -5802,8 +5802,8 @@ function _renderDraftCandidateList(candidates, context) {
           </div>
           <div style="font-size:10px;line-height:1.5;color:#3a2e1c;margin-bottom:4px;">
             <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
-            ${c.age}歳・${STYLE_JP[c.style] || c.style}${c.role ? '・' + (ROLE_JP[c.role] || c.role) : ''}<br>
-            推定契約金 <strong style="color:#1f1710;">¥${baseCost.toLocaleString()}万</strong>
+            ${WM_I18N.t('{age}歳・{style}', { age: c.age, style: STYLE_JP[c.style] || c.style })}${c.role ? '・' + (ROLE_JP[c.role] || c.role) : ''}<br>
+            ${WM_I18N.t('推定契約金')} <strong style="color:#1f1710;">¥${baseCost.toLocaleString()}万</strong>
           </div>
           <div style="display:flex;gap:12px;padding-top:4px;border-top:1px dotted rgba(95,69,35,0.18);">
             ${['org_s','org_a','org_b'].map(oid => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">
@@ -5819,15 +5819,15 @@ function _renderDraftCandidateList(candidates, context) {
   // ── Short Table (原石+素材) ──
   if (rest.length > 0) {
     html += `<div style="padding:14px 22px;border-top:1px solid rgba(95,69,35,0.18);">
-      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">その他指名候補 — ${rest.length}名</div>
+      <div style="font-size:11px;letter-spacing:0.15em;color:#6a4a10;font-weight:900;margin-bottom:10px;padding-left:8px;border-left:3px solid #9a7020;">${WM_I18N.t('その他指名候補 — {n}名', { n: rest.length })}</div>
       <table style="width:100%;border-collapse:collapse;font-size:11px;">
         <thead><tr>
           <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:30px;"></th>
           <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:40px;"></th>
-          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);">名前</th>
-          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:32px;">歳</th>
-          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:48px;">分類</th>
-          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:62px;">契約金</th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);">${WM_I18N.t('名前')}</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:32px;">${WM_I18N.t('歳')}</th>
+          <th style="text-align:left;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:48px;">${WM_I18N.t('分類')}</th>
+          <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:62px;">${WM_I18N.t('契約金')}</th>
           <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">EMP</th>
           <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">NOV</th>
           <th style="text-align:center;font-size:9px;letter-spacing:1px;color:#7a5b32;font-weight:700;padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.35);background:rgba(95,69,35,0.06);width:38px;">CRE</th>
@@ -5858,25 +5858,25 @@ function _renderDraftCandidateList(candidates, context) {
   // ── Footer bar ──
   html += `<div style="margin:0 22px;padding:14px 0 16px;border-top:2px double rgba(95,69,35,0.35);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
     <div style="display:flex;gap:24px;">
-      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">獲得上限<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${maxPicks}名</strong></div>
-      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">選択中<br><strong style="display:block;font-size:22px;color:${selections.length >= maxPicks ? '#c22020' : '#9a7020'};letter-spacing:1px;margin-top:1px;font-weight:400;">${selections.length} / ${maxPicks}名</strong></div>
-      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">残資金<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">${WM_I18N.t('獲得上限')}<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${WM_I18N.t('{n}名', { n: maxPicks })}</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">${WM_I18N.t('選択中')}<br><strong style="display:block;font-size:22px;color:${selections.length >= maxPicks ? '#c22020' : '#9a7020'};letter-spacing:1px;margin-top:1px;font-weight:400;">${selections.length} / ${WM_I18N.t('{n}名', { n: maxPicks })}</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">${WM_I18N.t('残資金')}<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
     </div>
     ${selections.length > 0
-      ? `<button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,#8b1a1a,#c22020);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;">交渉開始（${selections.length}名）→</button>`
+      ? `<button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,#8b1a1a,#c22020);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;">${WM_I18N.t('交渉開始（{n}名）→', { n: selections.length })}</button>`
       : `<div style="display:flex;align-items:center;gap:14px;">
-          <span style="font-size:11px;color:#7a5b32;letter-spacing:1px;">★ 指名する候補を選んでください</span>
-          <button onclick="declineDraft()" style="font-size:12px;letter-spacing:2px;padding:11px 22px;background:transparent;color:#7a5b32;border:1px solid rgba(95,69,35,0.45);border-radius:4px;cursor:pointer;font-weight:700;">指名を見送る →</button>
+          <span style="font-size:11px;color:#7a5b32;letter-spacing:1px;">${WM_I18N.t('★ 指名する候補を選んでください')}</span>
+          <button onclick="declineDraft()" style="font-size:12px;letter-spacing:2px;padding:11px 22px;background:transparent;color:#7a5b32;border:1px solid rgba(95,69,35,0.45);border-radius:4px;cursor:pointer;font-weight:700;">${WM_I18N.t('指名を見送る →')}</button>
         </div>`}
   </div>`;
 
   // ── Legend ──
   html += `<div style="padding:10px 22px 16px;font-size:10px;color:#7a5b32;text-align:center;line-height:1.7;border-top:1px solid rgba(95,69,35,0.12);">
-    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">◎</strong> 本命 &nbsp;&nbsp;
-    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">○</strong> 対抗 &nbsp;&nbsp;
-    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">△</strong> 押さえ &nbsp;&nbsp;
-    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">—</strong> 興味なし<br>
-    各団体の関心は事前情報。実際の交渉では予測と異なる動きを見せることもある。
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">◎</strong> ${WM_I18N.t('本命')} &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">○</strong> ${WM_I18N.t('対抗')} &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">△</strong> ${WM_I18N.t('押さえ')} &nbsp;&nbsp;
+    <strong style="font-weight:900;color:#5b4b34;font-size:12px;">—</strong> ${WM_I18N.t('興味なし')}<br>
+    ${WM_I18N.t('各団体の関心は事前情報。実際の交渉では予測と異なる動きを見せることもある。')}
   </div>`;
 
   html += `</div>`; // end paper
@@ -5888,7 +5888,7 @@ function _renderDraftCandidateList(candidates, context) {
 // draft-negotiation-spec §7.2 / docs/draft-mockup-negotiation-C-venue-v3.html
 function _renderDraftNegotiation() {
   const dn = G._draftNegotiation;
-  if (!dn) return '<div style="text-align:center;padding:60px;color:var(--text-dim)">交渉データがありません</div>';
+  if (!dn) return `<div style="text-align:center;padding:60px;color:var(--text-dim)">${WM_I18N.t('交渉データがありません')}</div>`;
 
   const cand = dn.candidate;
   const ns = dn.negState;
@@ -5898,14 +5898,14 @@ function _renderDraftNegotiation() {
   const maxPicks = dn.maxPicks || 4;
   const acquired = dn.acquiredThisSession || [];
 
-  const TIER_LABELS = { superElite: '超逸材', elite: '逸材', promising: '有望', raw: '原石', material: '素材' };
-  const STYLE_JP = { Grappler: 'グラップラー', Striker: 'ストライカー', Submission: 'サブミッション', Aerial: 'エアリアル', Allround: 'オールラウンド', Brawler: 'ブロウラー' };
-  const ROLE_JP = { Babyface: 'ベビーフェイス', Heel: 'ヒール', Neutral: '中立' };
+  const TIER_LABELS = { superElite: WM_I18N.t('超逸材'), elite: WM_I18N.t('逸材'), promising: WM_I18N.t('有望'), raw: WM_I18N.t('原石'), material: WM_I18N.t('素材') };
+  const STYLE_JP = { Grappler: WM_I18N.t('グラップラー'), Striker: WM_I18N.t('ストライカー'), Submission: WM_I18N.t('サブミッション'), Aerial: WM_I18N.t('エアリアル'), Allround: WM_I18N.t('オールラウンド'), Brawler: WM_I18N.t('ブロウラー') };
+  const ROLE_JP = { Babyface: WM_I18N.t('ベビーフェイス'), Heel: WM_I18N.t('ヒール'), Neutral: WM_I18N.t('中立') };
   const _orgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
   const ORG_META = {
-    org_s: { name: _orgName('org_s'), tier: 'S級', emblCls: 'empress', embl: '../image/org/org-s-0.png' },
-    org_a: { name: _orgName('org_a'), tier: 'A級', emblCls: 'nova',    embl: '../image/org/org-a-0.png' },
-    org_b: { name: _orgName('org_b'), tier: 'B級', emblCls: 'crescent',embl: '../image/org/org-b-0.png' },
+    org_s: { name: _orgName('org_s'), tier: WM_I18N.t('S級'), emblCls: 'empress', embl: '../image/org/org-s-0.png' },
+    org_a: { name: _orgName('org_a'), tier: WM_I18N.t('A級'), emblCls: 'nova',    embl: '../image/org/org-a-0.png' },
+    org_b: { name: _orgName('org_b'), tier: WM_I18N.t('B級'), emblCls: 'crescent',embl: '../image/org/org-b-0.png' },
   };
   const MARK_DISPLAY = { honmei: { text: '◎', cls: 'dn-mark-bullseye' }, taikou: { text: '○', cls: 'dn-mark-contender' }, osae: { text: '△', cls: 'dn-mark-outside' } };
 
@@ -5935,21 +5935,21 @@ function _renderDraftNegotiation() {
   html += `<div class="dn-banner">
     <img src="../image/draft-header.webp" alt="Draft Conference" class="dn-banner-img" onerror="this.style.display='none'">
     <div class="dn-banner-strip">
-      <span>シーズン${G.season || '?'} オフ第${G.offWeek || '?'}週</span>
+      <span>${WM_I18N.t('シーズン{season} オフ第{week}週', { season: G.season || '?', week: G.offWeek || '?' })}</span>
       <span>ROUND ${String(ns.round || 0).padStart(2, '0')}</span>
     </div>
   </div>`;
 
   // ── Status strip ──
   html += `<div class="dn-status">
-    <div class="dn-status-block"><div class="dn-status-label">獲得</div><div class="dn-status-val">${acquired.length} / ${maxPicks}</div></div>
-    <div class="dn-status-block"><div class="dn-status-label">候補</div><div class="dn-status-val">${String(candIdx + 1).padStart(2,'0')} / ${totalCands}</div></div>
-    <div class="dn-status-block"><div class="dn-status-label">残資金</div><div class="dn-status-val dn-gold">¥ ${Math.round(G.funds).toLocaleString()}万</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">${WM_I18N.t('獲得')}</div><div class="dn-status-val">${acquired.length} / ${maxPicks}</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">${WM_I18N.t('候補')}</div><div class="dn-status-val">${String(candIdx + 1).padStart(2,'0')} / ${totalCands}</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">${WM_I18N.t('残資金')}</div><div class="dn-status-val dn-gold">¥ ${Math.round(G.funds).toLocaleString()}万</div></div>
   </div>`;
 
   // ── Stage ──
   html += `<div class="dn-stage">
-    <div class="dn-eyebrow">交渉中</div>
+    <div class="dn-eyebrow">${WM_I18N.t('交渉中')}</div>
     <div class="dn-portrait">${portHtml}</div>
     <div class="dn-cand-name">${cand.name}</div>
     <div class="dn-cand-meta">
@@ -5961,18 +5961,18 @@ function _renderDraftNegotiation() {
     <div class="dn-bid-display">
       <div class="dn-bid-label">CURRENT BID</div>
       <div class="dn-bid-amount">¥ ${ns.currentBid.toLocaleString()}万</div>
-      <div class="dn-bid-base">推定相場 <strong>¥${baseCost.toLocaleString()}万</strong> · ${bidRatio}×</div>
+      <div class="dn-bid-base">${WM_I18N.t('推定相場')} <strong>¥${baseCost.toLocaleString()}万</strong> · ${bidRatio}×</div>
     </div>
   </div>`;
 
   // ── Bid cards ──
   html += `<div class="dn-cards-section">
-    <div class="dn-cards-label">▎ 入札卓 ▎</div>
-    <div class="dn-heat-legend">各カード下部のゲージ＝粘り度（右に行くほど限界に近い）&nbsp;
-      <span class="dn-heat-composed">●</span>余裕 &nbsp;
-      <span class="dn-heat-steady">●</span>まだ余裕 &nbsp;
-      <span class="dn-heat-heated">●</span>熱が入る &nbsp;
-      <span class="dn-heat-strained">●</span>限界
+    <div class="dn-cards-label">${WM_I18N.t('▎ 入札卓 ▎')}</div>
+    <div class="dn-heat-legend">${WM_I18N.t('各カード下部のゲージ＝粘り度（右に行くほど限界に近い）')}&nbsp;
+      <span class="dn-heat-composed">●</span>${WM_I18N.t('余裕')} &nbsp;
+      <span class="dn-heat-steady">●</span>${WM_I18N.t('まだ余裕')} &nbsp;
+      <span class="dn-heat-heated">●</span>${WM_I18N.t('熱が入る')} &nbsp;
+      <span class="dn-heat-strained">●</span>${WM_I18N.t('限界')}
     </div>
     <div class="dn-cards">`;
 
@@ -6000,15 +6000,15 @@ function _renderDraftNegotiation() {
       <div class="dn-card-name">${om.name}</div>
       <div class="dn-card-tier">${om.tier}</div>
       <div class="dn-card-bid-row">
-        ${!isParticipating ? '<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">不参加</span>'
+        ${!isParticipating ? `<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">${WM_I18N.t('不参加')}</span>`
         : isDropped ? `<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">PASSED</span>`
         : `<span class="dn-card-mark ${mark ? mark.cls : ''}">${mark ? mark.text : '—'}</span>
            <span class="dn-card-bid${isLeader ? ' dn-bid-lead' : ''}">¥${ns.currentBid.toLocaleString()}万</span>`}
       </div>
       <div class="dn-card-heat-section">
-        <div class="dn-card-heat-title">粘り度</div>
+        <div class="dn-card-heat-title">${WM_I18N.t('粘り度')}</div>
         <div class="dn-card-heat"><div class="dn-card-heat-fill dn-heat-${isDropped ? 'dropped' : heat.cls}" style="width:${isDropped ? 0 : heat.pct}%"></div></div>
-        <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? `R${interest._droppedAtRound || '?'}で離脱` : !isParticipating ? '不参加' : heat.labelJp}</div>
+        <div class="dn-card-heat-label dn-heat-${isDropped ? 'dropped' : heat.cls}">${isDropped ? WM_I18N.t('R{n}で離脱', { n: interest._droppedAtRound || '?' }) : !isParticipating ? WM_I18N.t('不参加') : heat.labelJp}</div>
       </div>
     </div>`;
   }
@@ -6026,7 +6026,7 @@ function _renderDraftNegotiation() {
       : `<span class="dn-card-bid">¥${ns.currentBid.toLocaleString()}万</span>`}
     </div>
     <div class="dn-card-heat-section">
-      <div class="dn-card-heat-label" style="color:rgba(232,230,224,0.3);margin-top:6px;">${playerDropped ? '離脱済み' : '— あなたの判断 —'}</div>
+      <div class="dn-card-heat-label" style="color:rgba(232,230,224,0.3);margin-top:6px;">${playerDropped ? WM_I18N.t('離脱済み') : WM_I18N.t('— あなたの判断 —')}</div>
     </div>
   </div>`;
 
@@ -6041,39 +6041,39 @@ function _renderDraftNegotiation() {
   if (ns._isSoloConfirm && ns.finished && ns.winner === 'player') {
     // 単独指名確認モード
     html += `<div class="dn-actions" style="text-align:center;">
-      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">単独指名 — 競合なし</div>
-      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">契約金: ¥${(ns.finalBid || 0).toLocaleString()}万</div>
+      <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">${WM_I18N.t('単独指名 — 競合なし')}</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">${WM_I18N.t('契約金: ¥{n}万', { n: (ns.finalBid || 0).toLocaleString() })}</div>
       <div style="display:flex;gap:10px;justify-content:center;">
         <button class="dn-action-btn dn-action-standard" onclick="draftSoloConfirm(true)">
-          <div class="dn-action-label">契約する</div>
+          <div class="dn-action-label">${WM_I18N.t('契約する')}</div>
         </button>
         <button class="dn-action-btn dn-action-withdraw" onclick="draftSoloConfirm(false)">
-          <div class="dn-action-label">見送る</div>
+          <div class="dn-action-label">${WM_I18N.t('見送る')}</div>
         </button>
       </div>
     </div>`;
   } else if (ns.finished) {
     // 通常の結果表示
-    const winnerLabel = ns.winner === 'player' ? (G.orgName || 'あなた') + 'が獲得！'
-      : ns.winner ? (ORG_META[ns.winner]?.name || ns.winner) + ' が獲得'
-      : '流札（フリー市場へ）';
+    const winnerLabel = ns.winner === 'player' ? WM_I18N.t('{org}が獲得！', { org: G.orgName || WM_I18N.t('あなた') })
+      : ns.winner ? WM_I18N.t('{org} が獲得', { org: ORG_META[ns.winner]?.name || ns.winner })
+      : WM_I18N.t('流札（フリー市場へ）');
     html += `<div class="dn-actions" style="text-align:center;">
       <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">${winnerLabel}</div>
-      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">最終額: ¥${(ns.finalBid || 0).toLocaleString()}万 (R${ns.round})</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">${WM_I18N.t('最終額: ¥{n}万 (R{round})', { n: (ns.finalBid || 0).toLocaleString(), round: ns.round })}</div>
       <button class="dn-action-btn dn-action-standard" onclick="draftNextCandidate()">
-        <div class="dn-action-label">${candIdx + 1 < totalCands ? '次の候補へ →' : '交渉終了'}</div>
+        <div class="dn-action-label">${candIdx + 1 < totalCands ? WM_I18N.t('次の候補へ →') : WM_I18N.t('交渉終了')}</div>
       </button>
     </div>`;
   } else if (!ns.playerIn) {
     // プレイヤー降り後 → 結果表示（観戦モード廃止、即座に決着済み）
     const winnerLabel = ns.winner
-      ? (RIVAL_ORGS.find(o => o.id === ns.winner)?.name || ns.winner) + ' が獲得'
-      : '流札（フリー市場へ）';
+      ? WM_I18N.t('{org} が獲得', { org: RIVAL_ORGS.find(o => o.id === ns.winner)?.name || ns.winner })
+      : WM_I18N.t('流札（フリー市場へ）');
     html += `<div class="dn-actions" style="text-align:center;">
       <div style="font-size:18px;font-weight:900;color:var(--text-main);margin-bottom:8px;">${winnerLabel}</div>
-      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">最終額: ¥${(ns.finalBid || 0).toLocaleString()}万 (R${ns.round})</div>
+      <div style="font-size:13px;color:var(--text-sub);margin-bottom:16px;">${WM_I18N.t('最終額: ¥{n}万 (R{round})', { n: (ns.finalBid || 0).toLocaleString(), round: ns.round })}</div>
       <button class="dn-action-btn dn-action-standard" onclick="draftNextCandidate()">
-        <div class="dn-action-label">${candIdx + 1 < totalCands ? '次の候補へ →' : '交渉終了'}</div>
+        <div class="dn-action-label">${candIdx + 1 < totalCands ? WM_I18N.t('次の候補へ →') : WM_I18N.t('交渉終了')}</div>
       </button>
     </div>`;
   } else {
@@ -6081,20 +6081,20 @@ function _renderDraftNegotiation() {
     const aggressiveBid = Math.round(ns.currentBid * DRAFT_BID_MUL.aggressive);
     const standardBid = Math.round(ns.currentBid * DRAFT_BID_MUL.standard);
     html += `<div class="dn-actions">
-      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')" title="相手が降りやすくなる。ただし一部の相手には逆効果の場合も">
-        <div class="dn-action-label">強気で押す</div>
+      <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')" title="${WM_I18N.t('相手が降りやすくなる。ただし一部の相手には逆効果の場合も')}">
+        <div class="dn-action-label">${WM_I18N.t('強気で押す')}</div>
         <div class="dn-action-detail">→ <strong>¥${aggressiveBid.toLocaleString()}万</strong></div>
-        <div class="dn-action-hint">相手の心を揺さぶる</div>
+        <div class="dn-action-hint">${WM_I18N.t('相手の心を揺さぶる')}</div>
       </button>
-      <button class="dn-action-btn dn-action-standard" onclick="draftPlayerAction('standard')" title="通常の入札倍率で金額を上げる">
-        <div class="dn-action-label">標準で粘る</div>
+      <button class="dn-action-btn dn-action-standard" onclick="draftPlayerAction('standard')" title="${WM_I18N.t('通常の入札倍率で金額を上げる')}">
+        <div class="dn-action-label">${WM_I18N.t('標準で粘る')}</div>
         <div class="dn-action-detail">→ <strong>¥${standardBid.toLocaleString()}万</strong></div>
-        <div class="dn-action-hint">粘り強く交渉を続ける</div>
+        <div class="dn-action-hint">${WM_I18N.t('粘り強く交渉を続ける')}</div>
       </button>
-      <button class="dn-action-btn dn-action-withdraw" onclick="draftPlayerAction('drop')" title="この選手の交渉から離脱する">
-        <div class="dn-action-label">ここで降りる</div>
-        <div class="dn-action-detail">交渉から離脱</div>
-        <div class="dn-action-hint">残りはAI同士で決着</div>
+      <button class="dn-action-btn dn-action-withdraw" onclick="draftPlayerAction('drop')" title="${WM_I18N.t('この選手の交渉から離脱する')}">
+        <div class="dn-action-label">${WM_I18N.t('ここで降りる')}</div>
+        <div class="dn-action-detail">${WM_I18N.t('交渉から離脱')}</div>
+        <div class="dn-action-hint">${WM_I18N.t('残りはAI同士で決着')}</div>
       </button>
     </div>`;
   }
@@ -6271,7 +6271,7 @@ function renderScoutEvent() {
     const page = pages[idx];
     const isLast = idx >= pages.length - 1;
     const titleEl = document.getElementById('scoutEventTitle');
-    if (titleEl) titleEl.textContent = page.title || 'ドラフト結果';
+    if (titleEl) titleEl.textContent = page.title || WM_I18N.t('ドラフト結果');
     // ダークテーマをリセット
     const screenEl = document.getElementById('screen-scoutEvent');
     const panelEl = screenEl ? screenEl.querySelector('.panel') : null;
@@ -6289,7 +6289,7 @@ function renderScoutEvent() {
     }
     el.innerHTML = pageHtml
       + `<div class="btn-row" style="justify-content:center;margin-top:20px;">
-        <button class="btn btn-gold" onclick="_draftResultNext()">${isLast ? '▶ 経営画面へ' : '▶ 次へ進む'}</button>
+        <button class="btn btn-gold" onclick="_draftResultNext()">${isLast ? WM_I18N.t('▶ 経営画面へ') : WM_I18N.t('▶ 次へ進む')}</button>
       </div>`;
     return;
   }
@@ -6299,7 +6299,7 @@ function renderScoutEvent() {
   const maxPicks = G.scoutMaxPicks || 3;
   const discount = 0;
   const orgPop = G.orgPop || 0;
-  const eventLabel = 'メインドラフト';
+  const eventLabel = WM_I18N.t('メインドラフト');
 
   // 交渉画面 / ドラフト速報 のダーク/クリーム切替
   const screenEl = document.getElementById('screen-scoutEvent');
@@ -6329,11 +6329,11 @@ function renderScoutEvent() {
     const titleEl0 = document.getElementById('scoutEventTitle');
     if (titleEl0) titleEl0.textContent = WM_I18N.t('⚖ ドラフト');
     el.innerHTML = `<div style="max-width:520px;margin:24px auto;text-align:center">
-      <div style="font-size:14px;color:var(--text-main);margin-bottom:8px">今年のドラフトは行われませんでした。</div>
+      <div style="font-size:14px;color:var(--text-main);margin-bottom:8px">${WM_I18N.t('今年のドラフトは行われませんでした。')}</div>
       <div style="font-size:12px;color:var(--text-sub);line-height:1.7;margin-bottom:20px">
-        指名できる候補の情報が届いていません。<br>このまま新シーズンの準備へ進みます。
+        ${WM_I18N.t('指名できる候補の情報が届いていません。<br>このまま新シーズンの準備へ進みます。')}
       </div>
-      <button class="btn btn-gold" onclick="App.scoutEventFinish()">▶ 経営画面へ</button>
+      <button class="btn btn-gold" onclick="App.scoutEventFinish()">${WM_I18N.t('▶ 経営画面へ')}</button>
     </div>`;
     return;
   }
@@ -6355,7 +6355,7 @@ function renderScoutEvent() {
   }
 
   const titleEl = document.getElementById('scoutEventTitle');
-  if (titleEl) titleEl.textContent = `🔍 ${eventLabel} — 候補 ${candidates.length}名`;
+  if (titleEl) titleEl.textContent = WM_I18N.t('🔍 {eventLabel} — 候補 {n}名', { eventLabel, n: candidates.length });
 
   const STYLE_META = {
     Grappler:   {color:'#bb8fce',icon:'GRP'}, Striker:    {color:'#e74c3c',icon:'STK'},
@@ -6364,14 +6364,14 @@ function renderScoutEvent() {
   };
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-    <span style="font-size:14px;color:var(--text-sub)">資金: <strong style="color:var(--gold)">${Math.round(G.funds).toLocaleString()}万</strong></span>
-    <span style="font-size:14px;color:var(--text-sub)">獲得: <strong style="color:#2ecc71">${picks.length} / ${maxPicks}名</strong></span>
-    <span style="font-size:14px;color:var(--text-sub)">団体人気: <strong style="${_scale6Style(_orgPopColor(Engine.util.dispOrgPop(orgPop)))}">${Engine.util.dispOrgPop(orgPop)}</strong></span>
-    
+    <span style="font-size:14px;color:var(--text-sub)">${WM_I18N.t('資金:')} <strong style="color:var(--gold)">${Math.round(G.funds).toLocaleString()}万</strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">${WM_I18N.t('獲得:')} <strong style="color:#2ecc71">${WM_I18N.t('{n} / {max}名', { n: picks.length, max: maxPicks })}</strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">${WM_I18N.t('団体人気:')} <strong style="${_scale6Style(_orgPopColor(Engine.util.dispOrgPop(orgPop)))}">${Engine.util.dispOrgPop(orgPop)}</strong></span>
+
   </div>`;
 
   if (candidates.length === 0) {
-    html += '<div style="text-align:center;padding:32px;color:var(--text-dim)">全候補の確認が完了しました</div>';
+    html += `<div style="text-align:center;padding:32px;color:var(--text-dim)">${WM_I18N.t('全候補の確認が完了しました')}</div>`;
   }
 
   candidates.forEach(c => {
@@ -6387,28 +6387,28 @@ function renderScoutEvent() {
       <div style="flex:1;min-width:0">
         <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
           <span class="flink" style="font-size:17px;font-weight:700">${c.name}</span>
-          <span style="font-size:14px;color:var(--text-dim)">${c.age}歳</span>
+          <span style="font-size:14px;color:var(--text-dim)">${WM_I18N.t('{age}歳', { age: c.age })}</span>
           ${getJoinSourceBadge('scout')}
           <span class="badge badge-${c.style}" style="font-size:12px;padding:2px 8px">${c.style}</span>
-          <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role==='Babyface'?'ベビーフェイス':c.role==='Heel'?'ヒール':'中立'}</span>
+          <span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:12px;padding:2px 8px">${c.role==='Babyface'?WM_I18N.t('ベビーフェイス'):c.role==='Heel'?WM_I18N.t('ヒール'):WM_I18N.t('中立')}</span>
         </div>
         <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
           <span style="font-size:13px;padding:3px 10px;border-radius:4px;background:${tierCfg.color}22;color:${tierCfg.color};border:1px solid ${tierCfg.color}44;font-weight:600">${tierCfg.label}</span>
-          ${c._isSeed ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">⭐ 注目</span>' : ''}
-          ${c._hasCompetition ? '<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⚔ 競合</span>' : ''}
-          ${!canNeg ? '<span style="font-size:13px;color:#e74c3c">⛔ 知名度不足</span>' : ''}
+          ${c._isSeed ? `<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(241,196,15,0.2);color:#f1c40f;border:1px solid rgba(241,196,15,0.4)">${WM_I18N.t('⭐ 注目')}</span>` : ''}
+          ${c._hasCompetition ? `<span style="font-size:13px;padding:3px 10px;border-radius:4px;background:rgba(231,76,60,0.15);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">${WM_I18N.t('⚔ 競合')}</span>` : ''}
+          ${!canNeg ? `<span style="font-size:13px;color:#e74c3c">${WM_I18N.t('⛔ 知名度不足')}</span>` : ''}
         </div>
       </div>
       <div style="flex-shrink:0;text-align:right">
         <div style="font-size:28px;font-weight:900;color:var(--gold)">${estAvg}</div>
-        <div style="font-size:12px;color:var(--text-dim)">推定OVR</div>
+        <div style="font-size:12px;color:var(--text-dim)">${WM_I18N.t('推定OVR')}</div>
       </div>
     </div>`;
   });
 
   html += `<div class="btn-row" style="margin-top:16px">
-    <button class="btn btn-gold" onclick="scoutFinish()">⚖ ドラフト終了</button>
-    <button class="btn btn-blue" onclick="showScreen('week')">← 週画面に戻る</button>
+    <button class="btn btn-gold" onclick="scoutFinish()">${WM_I18N.t('⚖ ドラフト終了')}</button>
+    <button class="btn btn-blue" onclick="showScreen('week')">${WM_I18N.t('← 週画面に戻る')}</button>
   </div>`;
 
   el.innerHTML = html;
@@ -6427,22 +6427,22 @@ function renderScoutCompetitionModal(cand, baseCost, discount) {
   // 直前のモーダルが残したバリアント(cream 等)を必ず落とす。この中身は暗色地前提。
   box.className = 'mdl-d-box';
   box.innerHTML = `
-    <div class="mdl-d-title urgent">⚔ 他団体との競合発生！</div>
-    <div class="mdl-d-speaker">${cand.name} ・ ${tierCfg.label} / ${cand.style} / ${cand.age}歳</div>
+    <div class="mdl-d-title urgent">${WM_I18N.t('⚔ 他団体との競合発生！')}</div>
+    <div class="mdl-d-speaker">${cand.name} ・ ${tierCfg.label} / ${cand.style} / ${WM_I18N.t('{age}歳', { age: cand.age })}</div>
     <div class="mdl-d-detail">
-      通常契約金: <strong>${baseCost}万</strong> &nbsp;|&nbsp;
-      競合上乗せ (×${cand._compMultiplier}): <strong style="color:#ff9080">${compCost}万</strong> &nbsp;|&nbsp;
-      通常額勝率: <strong style="color:var(--gold)">${winRate}%</strong>
+      ${WM_I18N.t('通常契約金:')} <strong>${baseCost}万</strong> &nbsp;|&nbsp;
+      ${WM_I18N.t('競合上乗せ (×{mult}):', { mult: cand._compMultiplier })} <strong style="color:#ff9080">${compCost}万</strong> &nbsp;|&nbsp;
+      ${WM_I18N.t('通常額勝率:')} <strong style="color:var(--gold)">${winRate}%</strong>
     </div>
     <div class="mdl-d-actions" style="flex-direction:column;gap:8px">
       <button class="mdl-d-btn primary" onclick="document.getElementById('mdlDOverlay').classList.remove('active');scoutResolve(${candId},'pay')" ${G.funds >= compCost ? '' : 'disabled'}>
-        💰 上乗せ確定獲得 (${compCost}万)
+        ${WM_I18N.t('💰 上乗せ確定獲得 ({n}万)', { n: compCost })}
       </button>
       <button class="mdl-d-btn secondary" onclick="document.getElementById('mdlDOverlay').classList.remove('active');scoutResolve(${candId},'gamble')">
-        🎲 通常額で勝負 (${baseCost}万 / 勝率${winRate}%)
+        ${WM_I18N.t('🎲 通常額で勝負 ({n}万 / 勝率{rate}%)', { n: baseCost, rate: winRate })}
       </button>
       <button class="mdl-d-btn secondary" onclick="document.getElementById('mdlDOverlay').classList.remove('active');scoutResolve(${candId},'skip')">
-        ❌ 諦める
+        ${WM_I18N.t('❌ 諦める')}
       </button>
     </div>
   `;
@@ -6477,16 +6477,16 @@ function renderCoach() {
 
   const maxCoaches = Engine.coach.getMaxCoaches(G);
   const nextCost = Engine.coach.getNextSlotCost(G);
-  const slotText = nextCost != null ? `次の枠拡張: ${nextCost}万` : '全枠解放済み';
+  const slotText = nextCost != null ? WM_I18N.t('次の枠拡張: {n}万', { n: nextCost }) : WM_I18N.t('全枠解放済み');
   let html = `<div style="font-size:12px;color:var(--text-sub);margin-bottom:12px">
-    雇用中: ${hired.length}/${maxCoaches}名 ｜ スタッフ給与合計: ${getCoachSalaryTotal()}万/週 ｜ ${slotText}
-    ${nextCost != null ? `<button onclick="expandCoachSlot()" style="font-size:11px;padding:2px 8px;margin-left:8px;background:var(--gold);color:#1a1a1a;border:none;border-radius:4px;cursor:pointer;font-weight:700">＋ 枠拡張 (${nextCost}万)</button>` : ''}
-    <br><span style="font-size:12px;color:var(--text-dim)">※ 選手のアサインは「🏋️ 育成」画面で行えます ｜ コーチ名タップで詳細</span>
+    ${WM_I18N.t('雇用中: {n}/{max}名 ｜ スタッフ給与合計: {salary}万/週 ｜ {slotText}', { n: hired.length, max: maxCoaches, salary: getCoachSalaryTotal(), slotText })}
+    ${nextCost != null ? `<button onclick="expandCoachSlot()" style="font-size:11px;padding:2px 8px;margin-left:8px;background:var(--gold);color:#1a1a1a;border:none;border-radius:4px;cursor:pointer;font-weight:700">${WM_I18N.t('＋ 枠拡張 ({n}万)', { n: nextCost })}</button>` : ''}
+    <br><span style="font-size:12px;color:var(--text-dim)">${WM_I18N.t('※ 選手のアサインは「🏋️ 育成」画面で行えます ｜ コーチ名タップで詳細')}</span>
   </div>`;
 
   // Hired coaches
   if (hired.length > 0) {
-    html += '<div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:10px">雇用中のコーチ</div>';
+    html += `<div style="font-size:14px;font-weight:700;color:var(--gold);margin-bottom:10px">${WM_I18N.t('雇用中のコーチ')}</div>`;
     hired.forEach(c => {
       const assigned = getCoachAssignees(c.id);
       const assignedChars = assigned.map(cid => G.roster.find(r => r.id === cid)).filter(Boolean);
@@ -6499,7 +6499,7 @@ function renderCoach() {
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
           <div style="margin-top:6px;font-size:12px;color:#6a6050">
-            給与: <b style="color:#4a4035">${c.salary}万/週</b> ｜ 担当: ${assigned.length}/${COACH_MAX_ASSIGN}名
+            ${WM_I18N.t('給与:')} <b style="color:#4a4035">${c.salary}万/週</b> ｜ ${WM_I18N.t('担当: {n}/{max}名', { n: assigned.length, max: COACH_MAX_ASSIGN })}
           </div>`;
       if (assignedChars.length > 0) {
         html += `<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px">`;
@@ -6510,10 +6510,10 @@ function renderCoach() {
         });
         html += `</div>`;
       } else {
-        html += `<div style="margin-top:5px;font-size:12px;color:var(--text-dim);font-style:italic">└ 担当選手なし</div>`;
+        html += `<div style="margin-top:5px;font-size:12px;color:var(--text-dim);font-style:italic">${WM_I18N.t('└ 担当選手なし')}</div>`;
       }
       html += `</div>
-        <button class="btn btn-red btn-sm" onclick="showConfirm('${c.name}を解任しますか？\\n担当選手のアサインも解除されます','解任',()=>fireCoach(${c.id}))">解任</button>
+        <button class="btn btn-red btn-sm" onclick="showConfirm('${WM_I18N.t('{name}を解任しますか？\\n担当選手のアサインも解除されます', { name: c.name })}','${WM_I18N.t('解任')}',()=>fireCoach(${c.id}))">${WM_I18N.t('解任')}</button>
       </div>`;
     });
   }
@@ -6521,7 +6521,7 @@ function renderCoach() {
   // Available coaches
   const available = G.availableCoaches.map(id => ALL_COACHES.find(c => c.id === id)).filter(Boolean);
   if (available.length > 0) {
-    html += '<div style="font-size:14px;font-weight:700;color:var(--text-sub);margin-top:18px;margin-bottom:10px">雇用可能なコーチ</div>';
+    html += `<div style="font-size:14px;font-weight:700;color:var(--text-sub);margin-top:18px;margin-bottom:10px">${WM_I18N.t('雇用可能なコーチ')}</div>`;
     // 社長室 Phase 5: 雇用には決裁枠2を消費
     const hireDpCost = (typeof DECISION_DOCS !== 'undefined' && DECISION_DOCS.hireCoach?.decisionCost) || 2;
     const hasDp = (G.decisionPoints || 0) >= hireDpCost;
@@ -6529,10 +6529,10 @@ function renderCoach() {
       const fee = c.hireFee || COACH_HIRE_FEE;
       const canHire = G.coaches.length < maxCoaches && G.funds >= fee && hasDp;
       let btnLabel;
-      if (canHire) btnLabel = `雇用 (${fee}万 / ⚡${hireDpCost})`;
-      else if (G.coaches.length >= maxCoaches) btnLabel = '上限';
-      else if (G.funds < fee) btnLabel = '資金不足';
-      else btnLabel = `決裁枠不足 (⚡${hireDpCost}必要)`;
+      if (canHire) btnLabel = WM_I18N.t('雇用 ({fee}万 / ⚡{dp})', { fee, dp: hireDpCost });
+      else if (G.coaches.length >= maxCoaches) btnLabel = WM_I18N.t('上限');
+      else if (G.funds < fee) btnLabel = WM_I18N.t('資金不足');
+      else btnLabel = WM_I18N.t('決裁枠不足 (⚡{dp}必要)', { dp: hireDpCost });
       html += `<div class="coach-card">
         <div class="coach-avatar" onclick="showCoachTooltip(${c.id})" style="cursor:pointer;display:flex;align-items:center;justify-content:center">${coachPortraitImg(c, 48)}</div>
         <div class="coach-info">
@@ -6541,7 +6541,7 @@ function renderCoach() {
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
-          <div style="margin-top:5px;font-size:12px;color:#6a6050">雇用費: <b style="color:#4a4035">${fee}万</b> ｜ 給与: <b style="color:#4a4035">${c.salary}万/週</b> ｜ 決裁枠: <b style="color:#c00000">⚡${hireDpCost}</b></div>
+          <div style="margin-top:5px;font-size:12px;color:#6a6050">${WM_I18N.t('雇用費:')} <b style="color:#4a4035">${fee}万</b> ｜ ${WM_I18N.t('給与:')} <b style="color:#4a4035">${c.salary}万/週</b> ｜ ${WM_I18N.t('決裁枠:')} <b style="color:#c00000">⚡${hireDpCost}</b></div>
         </div>
         <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
           onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${btnLabel}</button>
@@ -6562,69 +6562,69 @@ function renderSave() {
   if (!window.IS_TRIAL) {
     const autoInfo = getAutoSaveInfo();
     html += '<div style="margin-bottom:16px">';
-    html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚡ オートセーブ</div>';
+    html += `<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">${WM_I18N.t('⚡ オートセーブ')}</div>`;
     if (autoInfo) {
       html += `<div class="save-slot has-data">
         <div>
-          <div class="save-slot-title">オートセーブ</div>
-          <div class="save-slot-meta">${Engine.util.formatDate(autoInfo.season, autoInfo.week)} ｜ 資金${Math.round(autoInfo.funds).toLocaleString()}万 ｜ ${new Date(autoInfo.date).toLocaleString('ja-JP')}</div>
+          <div class="save-slot-title">${WM_I18N.t('オートセーブ')}</div>
+          <div class="save-slot-meta">${WM_I18N.t('{date} ｜ 資金{funds}万 ｜ {saved}', { date: Engine.util.formatDate(autoInfo.season, autoInfo.week), funds: Math.round(autoInfo.funds).toLocaleString(), saved: new Date(autoInfo.date).toLocaleString('ja-JP') })}</div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-blue btn-sm" onclick="showConfirm('オートセーブからロードしますか？\\n現在の進行は失われます。','ロード',()=>{loadAutoSave();refreshAll()})">ロード</button>
-          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave('auto')">📥 書出</button>
+          <button class="btn btn-blue btn-sm" onclick="showConfirm('${WM_I18N.t('オートセーブからロードしますか？\\n現在の進行は失われます。')}','${WM_I18N.t('ロード')}',()=>{loadAutoSave();refreshAll()})">${WM_I18N.t('ロード')}</button>
+          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave('auto')">${WM_I18N.t('📥 書出')}</button>
         </div>
       </div>`;
     } else {
-      html += '<div class="save-slot"><div class="save-slot-info">オートセーブデータなし（週を進めると自動保存されます）</div></div>';
+      html += `<div class="save-slot"><div class="save-slot-info">${WM_I18N.t('オートセーブデータなし（週を進めると自動保存されます）')}</div></div>`;
     }
     html += '</div>';
   }
 
   // Manual save slots
   const maxSlots = window.IS_TRIAL ? 1 : SAVE_SLOTS;
-  html += '<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">💾 手動セーブスロット</div>';
+  html += `<div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">${WM_I18N.t('💾 手動セーブスロット')}</div>`;
   for (let i = 1; i <= maxSlots; i++) {
     const info = getSaveInfo(i);
     if (info) {
       const slotTitle = info.name
-        ? `${_escapeHtml(info.name)}<span style="font-weight:400;font-size:11px;color:var(--text-dim);margin-left:6px">スロット ${i}</span>`
-        : `スロット ${i}`;
+        ? `${_escapeHtml(info.name)}<span style="font-weight:400;font-size:11px;color:var(--text-dim);margin-left:6px">${WM_I18N.t('スロット {n}', { n: i })}</span>`
+        : WM_I18N.t('スロット {n}', { n: i });
       html += `<div class="save-slot has-data">
         <div>
           <div class="save-slot-title">${slotTitle}</div>
-          <div class="save-slot-meta">${Engine.util.formatDate(info.season, info.week)} ｜ 資金${Math.round(info.funds).toLocaleString()}万 ｜ 人気${Engine.util.dispOrgPop(info.orgPop)} ｜ 所属${info.rosterSize}名</div>
+          <div class="save-slot-meta">${WM_I18N.t('{date} ｜ 資金{funds}万 ｜ 人気{pop} ｜ 所属{n}名', { date: Engine.util.formatDate(info.season, info.week), funds: Math.round(info.funds).toLocaleString(), pop: Engine.util.dispOrgPop(info.orgPop), n: info.rosterSize })}</div>
           <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
         </div>
         <div class="btn-row">
-          <button class="btn btn-gold btn-sm" onclick="showConfirm('スロット${i}に上書きセーブしますか？','セーブ',()=>saveGame(${i}))">セーブ</button>
-          <button class="btn btn-blue btn-sm" onclick="showConfirm('スロット${i}からロードしますか？\\n現在の進行は失われます。','ロード',()=>loadGame(${i}))">ロード</button>
-          <button class="btn btn-red btn-sm" onclick="showConfirm('スロット${i}のデータを削除しますか？','削除',()=>deleteSave(${i}))">削除</button>
-          <button class="btn btn-sm" style="background:rgba(212,168,67,0.08);color:var(--gold-light);border:1px solid rgba(212,168,67,0.25)" onclick="showSaveNameModal(${i})">✏️ 名前</button>
-          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave(${i})">📥 書出</button>
+          <button class="btn btn-gold btn-sm" onclick="showConfirm('${WM_I18N.t('スロット{n}に上書きセーブしますか？', { n: i })}','${WM_I18N.t('セーブ')}',()=>saveGame(${i}))">${WM_I18N.t('セーブ')}</button>
+          <button class="btn btn-blue btn-sm" onclick="showConfirm('${WM_I18N.t('スロット{n}からロードしますか？\\n現在の進行は失われます。', { n: i })}','${WM_I18N.t('ロード')}',()=>loadGame(${i}))">${WM_I18N.t('ロード')}</button>
+          <button class="btn btn-red btn-sm" onclick="showConfirm('${WM_I18N.t('スロット{n}のデータを削除しますか？', { n: i })}','${WM_I18N.t('削除')}',()=>deleteSave(${i}))">${WM_I18N.t('削除')}</button>
+          <button class="btn btn-sm" style="background:rgba(212,168,67,0.08);color:var(--gold-light);border:1px solid rgba(212,168,67,0.25)" onclick="showSaveNameModal(${i})">${WM_I18N.t('✏️ 名前')}</button>
+          <button class="btn btn-sm" style="background:rgba(116,185,255,0.08);color:#74b9ff;border:1px solid rgba(116,185,255,0.25)" onclick="exportSave(${i})">${WM_I18N.t('📥 書出')}</button>
         </div>
       </div>`;
     } else {
       html += `<div class="save-slot">
         <div>
-          <div class="save-slot-title" style="color:var(--text-dim)">スロット ${i}</div>
-          <div class="save-slot-meta">空きスロット</div>
+          <div class="save-slot-title" style="color:var(--text-dim)">${WM_I18N.t('スロット {n}', { n: i })}</div>
+          <div class="save-slot-meta">${WM_I18N.t('空きスロット')}</div>
         </div>
-        <button class="btn btn-gold btn-sm" onclick="saveGame(${i})">セーブ</button>
+        <button class="btn btn-gold btn-sm" onclick="saveGame(${i})">${WM_I18N.t('セーブ')}</button>
       </div>`;
     }
   }
   // セーブデータ注意書き（スロット下）
   html += `<div style="margin-top:18px;padding:14px 16px;background:linear-gradient(135deg,rgba(231,112,85,0.18),rgba(231,112,85,0.10));border:2px solid rgba(231,112,85,0.55);border-radius:8px">
     <div style="font-size:14px;font-weight:900;color:#ff8c6b;margin-bottom:8px;display:flex;align-items:center;gap:6px">
-      <span style="font-size:18px">⚠️</span>セーブデータについて必ずお読みください
+      <span style="font-size:18px">⚠️</span>${WM_I18N.t('セーブデータについて必ずお読みください')}
     </div>
     <div style="font-size:12px;color:#f5e8e0;line-height:1.75">
-      このゲームのセーブデータは<span style="color:#ffb59a;font-weight:700">ブラウザのローカルストレージ</span>に保存されます。<br>
-      ブラウザのキャッシュクリア・再インストール・プライベートモード終了で<span style="color:#ff7a55;font-weight:700">データが完全に消失</span>します。<br>
-      <span style="color:#ffd1bd;font-weight:700">📥 大切なデータは必ず「書出」ボタンでファイルにバックアップしてください。</span>
+      ${WM_I18N.t('このゲームのセーブデータは<span style="color:#ffb59a;font-weight:700">ブラウザのローカルストレージ</span>に保存されます。<br>')}
+      ${WM_I18N.t('ブラウザのキャッシュクリア・再インストール・プライベートモード終了で<span style="color:#ff7a55;font-weight:700">データが完全に消失</span>します。<br>')}
+      <span style="color:#ffd1bd;font-weight:700">${WM_I18N.t('📥 大切なデータは必ず「書出」ボタンでファイルにバックアップしてください。')}</span>
     </div>
     <div style="margin-top:10px;padding:8px 10px;background:rgba(0,0,0,0.25);border-radius:5px;font-size:11px;color:#e0d4cc;line-height:1.7">
-      こまめにセーブしましょう。こまめに書き出しセーブもしましょう。
+      ${WM_I18N.t('こまめにセーブしましょう。こまめに書き出しセーブもしましょう。')}
     </div>
   </div>`;
 
@@ -6633,8 +6633,8 @@ function renderSave() {
     for (let i = maxSlots + 1; i <= SAVE_SLOTS; i++) {
       html += `<div class="save-slot" style="opacity:0.5">
         <div>
-          <div class="save-slot-title" style="color:var(--text-dim)">🔒 スロット ${i}</div>
-          <div class="save-slot-meta">製品版で解放されます</div>
+          <div class="save-slot-title" style="color:var(--text-dim)">${WM_I18N.t('🔒 スロット {n}', { n: i })}</div>
+          <div class="save-slot-meta">${WM_I18N.t('製品版で解放されます')}</div>
         </div>
       </div>`;
     }
@@ -6642,34 +6642,34 @@ function renderSave() {
 
   // Data Transfer section
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
-  <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">📦 データ移行</div>
+  <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">${WM_I18N.t('📦 データ移行')}</div>
   <div style="font-size:11px;color:var(--text-dim);margin-bottom:10px;line-height:1.6">
-    セーブデータをファイルとして書き出し、別のデバイスやブラウザに移行できます。<br>
-    上のスロットの「📥 書出」でファイル保存、下の「読み込む」で復元してください。
+    ${WM_I18N.t('セーブデータをファイルとして書き出し、別のデバイスやブラウザに移行できます。<br>')}
+    ${WM_I18N.t('上のスロットの「📥 書出」でファイル保存、下の「読み込む」で復元してください。')}
   </div>
   <div class="save-slot" style="border-color:rgba(116,185,255,0.2);background:rgba(116,185,255,0.03)">
     <div>
-      <div class="save-slot-title" style="color:#74b9ff">📤 ファイルから読み込む</div>
-      <div class="save-slot-meta">JSONファイルを選択するとすぐにロードされます</div>
+      <div class="save-slot-title" style="color:#74b9ff">${WM_I18N.t('📤 ファイルから読み込む')}</div>
+      <div class="save-slot-meta">${WM_I18N.t('JSONファイルを選択するとすぐにロードされます')}</div>
     </div>
-    <button class="btn btn-blue btn-sm" onclick="importSave()">ファイルを選択</button>
+    <button class="btn btn-blue btn-sm" onclick="importSave()">${WM_I18N.t('ファイルを選択')}</button>
   </div>
 </div>`;
 
   // Settings: Org name change
   html += `<div style="margin-top:20px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
-    <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚙️ 設定</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">${WM_I18N.t('⚙️ 設定')}</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
-      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">🏢 団体名:</label>
+      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">${WM_I18N.t('🏢 団体名:')}</label>
       <input id="settingsOrgName" type="text" value="${G.orgName || WM_I18N.t('プレイヤー団体')}" maxlength="20"
         style="flex:1;max-width:240px;background:rgba(200,190,170,0.08);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;font-weight:700"
-        placeholder="団体名を入力">
-      <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('save')}">変更</button>
+        placeholder="${WM_I18N.t('団体名を入力')}">
+      <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('save')}">${WM_I18N.t('変更')}</button>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:12px">
-      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">🛡️ エンブレム:</label>
+      <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">${WM_I18N.t('🛡️ エンブレム:')}</label>
       <img src="../image/org/org-player-${G.playerOrgIcon ?? 0}.png" width="32" height="32" style="border-radius:4px;vertical-align:middle" alt="">
-      <button class="btn btn-sm" style="font-size:11px" onclick="document.getElementById('settingsOrgIconGrid').style.display=document.getElementById('settingsOrgIconGrid').style.display==='none'?'flex':'none';Audio.play('click')">変更</button>
+      <button class="btn btn-sm" style="font-size:11px" onclick="document.getElementById('settingsOrgIconGrid').style.display=document.getElementById('settingsOrgIconGrid').style.display==='none'?'flex':'none';Audio.play('click')">${WM_I18N.t('変更')}</button>
     </div>
     <div id="settingsOrgIconGrid" style="display:none;flex-wrap:wrap;gap:6px;margin-top:8px;margin-left:2px">
       ${(() => {
@@ -6692,7 +6692,7 @@ function renderSave() {
   const bgmMv = Math.round(Audio.bgmMasterVol * 100);
   const sfxMv = Math.round(Audio.sfxMasterVol * 100);
   html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
-    <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:10px">🔊 音量設定</div>
+    <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:10px">${WM_I18N.t('🔊 音量設定')}</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
       <label style="color:var(--text-sub);font-size:12px;white-space:nowrap;min-width:56px">🎵 BGM</label>
       <input type="range" min="0" max="100" step="10" value="${bgmMv}" id="settingsBgmVol"
@@ -6711,7 +6711,7 @@ function renderSave() {
 
   // New game button
   html += `<div style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(200,190,170,0.08)">
-    <button class="btn btn-red" onclick="showConfirm('本当にニューゲームを開始しますか？\\n現在の進行は失われます。','ニューゲーム',()=>{location.reload()})">🔄 ニューゲーム</button>
+    <button class="btn btn-red" onclick="showConfirm('${WM_I18N.t('本当にニューゲームを開始しますか？\\n現在の進行は失われます。')}','${WM_I18N.t('ニューゲーム')}',()=>{location.reload()})">${WM_I18N.t('🔄 ニューゲーム')}</button>
   </div>`;
 
   el.innerHTML = html;
@@ -6734,14 +6734,14 @@ function changeCoachAssign(charId, newCoachId) {
   const targetChar = (G.roster || []).find(f => f.id === charId);
   if (targetChar && targetChar._inviteBuff) {
     Audio.play('error');
-    alert('外部コーチの招聘期間中は担当コーチを変更できません（終了後に自動で元へ戻ります）');
+    alert(WM_I18N.t('外部コーチの招聘期間中は担当コーチを変更できません（終了後に自動で元へ戻ります）'));
     return;
   }
   // First unassign from any current coach
   const unassigned = Engine.coach.unassignFromCoach(G, charId);
   if (newCoachId > 0) {
     const { coachAssign, success } = Engine.coach.assignToCoach({ ...G, coachAssign: unassigned }, newCoachId, charId);
-    if (!success) { Audio.play('error'); alert('このコーチのアサイン枠が満員です'); return; }
+    if (!success) { Audio.play('error'); alert(WM_I18N.t('このコーチのアサイン枠が満員です')); return; }
     Audio.play('link');
     G = { ...G, coachAssign };
   } else {
@@ -6771,8 +6771,8 @@ function getGrowthTendency(charId) {
   const coach = getCharCoach(charId);
   const stats = ['pw','sp','te','st','mn'];
   const labels = {pw:'PW',sp:'SP',te:'TE',st:'ST',mn:'MN'};
-  if (!coach) return {text: '均等', arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '→'}))};
-  return {text: `${coach.grade}級コーチ`, arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
+  if (!coach) return {text: WM_I18N.t('均等'), arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'eq', arrow: '→'}))};
+  return {text: WM_I18N.t('{grade}級コーチ', { grade: coach.grade }), arrows: stats.map(s => ({stat: s, label: labels[s], cls: 'up1', arrow: '↑'}))};
 }
 
 /** ドラフト専用画面が、進行中の材料をGameStateに持たないまま表示され続けていないか見る。
@@ -6838,6 +6838,8 @@ let _dbCoachFilterGrade = '';
 let _dbCoachFilterName = '';
 // Phase 6v2: 相関図 state (force-directed network)
 // C-4宿題: 絆/因縁バーの説明ティップス(data-tip)。内部変数名(bond/rivalry)は出さず日本語のみ
+// i18n Stage A: 言語切替(dev-tools)はページ再読込を伴わないため、t()呼び出しは
+// 参照時(_tipAttr渡し時)に行う。モジュールロード時に一度だけ評価される定数化はしない。
 const _RM_TIP_BOND = '一緒に過ごした時間や共闘で深まる、相手への信頼と親愛。高いほど息が合いやすくなります';
 const _RM_TIP_RIVALRY = '対戦の因縁や敵意。高いほど試合が激しくなります';
 let _relmapCenterId = null;
@@ -6902,15 +6904,15 @@ function renderDatabase() {
   // 社長室からの解除導線にも辿り着けない（2026-07-27 実機で発覚）。
   const hasFactions = !!(G.factions && G.factions.length > 0) || !!G.factionsSealed;
   const subTabs = [
-    { label: '👤 全選手', idx: 0 },
-    { label: '🏋️ 全コーチ', idx: 1 },
-    { label: '🔗 相関図', idx: 4 },
-    ...(hasFactions ? [{ label: '🎭 派閥', idx: 7 }] : []),
-    { label: `📜 記録${[G.mqRecord, G.mqRecordTag].some(r => r && r.season === G.season && r.week === G.week) ? '<span class="db-record-new-tab">NEW</span>' : ''}`, idx: 3 },
-    { label: '📖 年代記', idx: 6 },
+    { label: WM_I18N.t('👤 全選手'), idx: 0 },
+    { label: WM_I18N.t('🏋️ 全コーチ'), idx: 1 },
+    { label: WM_I18N.t('🔗 相関図'), idx: 4 },
+    ...(hasFactions ? [{ label: WM_I18N.t('🎭 派閥'), idx: 7 }] : []),
+    { label: `${WM_I18N.t('📜 記録')}${[G.mqRecord, G.mqRecordTag].some(r => r && r.season === G.season && r.week === G.week) ? '<span class="db-record-new-tab">NEW</span>' : ''}`, idx: 3 },
+    { label: WM_I18N.t('📖 年代記'), idx: 6 },
   ];
 
-  let html = `<div class="panel-title">📊 データベース</div>`;
+  let html = `<div class="panel-title">${WM_I18N.t('📊 データベース')}</div>`;
   html += `<div class="db-subtab-bar">`;
   subTabs.forEach(t => {
     html += `<button class="db-subtab-btn${_dbSubTab === t.idx ? ' active' : ''}" onclick="setDbSubTab(${t.idx})">${t.label}</button>`;
@@ -6985,10 +6987,10 @@ function renderNewspaper() {
   if ((_newspaperSubPage === 2 || _newspaperSubPage === 3) && !_npFeatureOn(_newspaperSubPage)) _newspaperSubPage = 1;
 
   let html = `<div class="np-outer-tabs">
-    <button class="np-tab${_newspaperSubPage === 1 ? ' active' : ''}" onclick="setNewspaperSubPage(1)">📰 1面 興行</button>
-    ${_npFeatureOn(2) ? `<button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">⚔ 2面 団体比較</button>` : ''}
-    ${_npFeatureOn(3) ? `<button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">🔥 3面 因縁列伝</button>` : ''}
-    ${_newspaperSubPage === 4 ? `<button class="np-tab active" onclick="setNewspaperSubPage(4)">📊 4面 MVPレース</button>` : ''}
+    <button class="np-tab${_newspaperSubPage === 1 ? ' active' : ''}" onclick="setNewspaperSubPage(1)">${WM_I18N.t('📰 1面 興行')}</button>
+    ${_npFeatureOn(2) ? `<button class="np-tab${_newspaperSubPage === 2 ? ' active' : ''}" onclick="setNewspaperSubPage(2)">${WM_I18N.t('⚔ 2面 団体比較')}</button>` : ''}
+    ${_npFeatureOn(3) ? `<button class="np-tab${_newspaperSubPage === 3 ? ' active' : ''}" onclick="setNewspaperSubPage(3)">${WM_I18N.t('🔥 3面 因縁列伝')}</button>` : ''}
+    ${_newspaperSubPage === 4 ? `<button class="np-tab active" onclick="setNewspaperSubPage(4)">${WM_I18N.t('📊 4面 MVPレース')}</button>` : ''}
   </div>`;
 
   if (_newspaperSubPage === 1) html += _npRenderPage1();
@@ -7010,8 +7012,8 @@ function _npPaperHeader(seasonNum, weekNum, isSeasonOpening) {
   // task-52: 新年号(シーズン開幕時に1週早く発行される号)は同じ「シーズンX 第1週」表記の
   // 号が2つ並ぶため、【新年号】を前置して区別する。新しい色は増やさず既存の .issue に載せる
   const issueLabel = isSeasonOpening
-    ? `【新年号】シーズン${seasonNum} 第${weekNum}週`
-    : `シーズン${seasonNum} 第${weekNum}週`;
+    ? WM_I18N.t('【新年号】シーズン{season} 第{week}週', { season: seasonNum, week: weekNum })
+    : WM_I18N.t('シーズン{season} 第{week}週', { season: seasonNum, week: weekNum });
   return `<div class="np-paper-header">
     <div class="logo">週刊グラップル</div>
     <div class="issue">${issueLabel}<small>${today}</small></div>
@@ -7161,9 +7163,9 @@ function _npRenderBignewsTag(state, ts, seasonNum, weekNum) {
     <div class="np-bignews-photobar">
       ${photoHtml}
       <div class="np-bignews-stamp">EXCLUSIVE</div>
-      <div class="np-bignews-caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>
+      <div class="np-bignews-caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || WM_I18N.t('{season}-{week}号 紙面より', { season: seasonNum, week: weekNum })}</div>
     </div>
-    <div class="np-sec-gold">大ニュース・タッグ歴代最高評価</div>
+    <div class="np-sec-gold">${WM_I18N.t('大ニュース・タッグ歴代最高評価')}</div>
     ${ts.situation ? `<div class="np-bignews-situation">${ts.situation}</div>` : ''}
     <h2 class="np-bignews-headline">${ts.headline || '——'}</h2>
     <div class="np-bignews-text">${bodyHtml}</div>
@@ -7343,7 +7345,7 @@ function _npRenderPage1() {
   if (!wp) {
     return `<div class="np-paper">
       ${_npPaperHeader(G.season || 1, G.week || 1)}
-      <div class="np-content"><div class="np-empty">📰 まだ新聞は届いていない。週を進めると最新号が掲載される。</div></div>
+      <div class="np-content"><div class="np-empty">${WM_I18N.t('📰 まだ新聞は届いていない。週を進めると最新号が掲載される。')}</div></div>
     </div>`;
   }
 
@@ -7356,12 +7358,12 @@ function _npRenderPage1() {
   const canNewer = !isLatest;
   let archiveNav = '';
   if (archiveTotal > 0) {
-    const label = isLatest ? '最新号' : `バックナンバー ${_newspaperArchiveIdx + 1}/${archiveTotal}`;
+    const label = isLatest ? WM_I18N.t('最新号') : WM_I18N.t('バックナンバー {n}/{total}', { n: _newspaperArchiveIdx + 1, total: archiveTotal });
     archiveNav = `<div class="np-archive-nav">
-      ${canNewer ? `<button onclick="setNewspaperArchiveIdx(${_newspaperArchiveIdx - 1})">◀ 次の号</button>` : ''}
+      ${canNewer ? `<button onclick="setNewspaperArchiveIdx(${_newspaperArchiveIdx - 1})">${WM_I18N.t('◀ 次の号')}</button>` : ''}
       <span class="label">${label}</span>
-      ${canOlder ? `<button onclick="setNewspaperArchiveIdx(${isLatest ? 0 : _newspaperArchiveIdx + 1})">前の号 ▶</button>` : ''}
-      ${!isLatest ? `<button class="gold" onclick="setNewspaperArchiveIdx(-1)">最新号</button>` : ''}
+      ${canOlder ? `<button onclick="setNewspaperArchiveIdx(${isLatest ? 0 : _newspaperArchiveIdx + 1})">${WM_I18N.t('前の号 ▶')}</button>` : ''}
+      ${!isLatest ? `<button class="gold" onclick="setNewspaperArchiveIdx(-1)">${WM_I18N.t('最新号')}</button>` : ''}
     </div>`;
   }
 
@@ -7389,7 +7391,7 @@ function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
   const headline = (pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
   const body = (pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
   return `<section class="np-kuroda-crisis" style="background:linear-gradient(180deg,#1a0808 0%,#2a0f0f 100%);border-left:4px solid #aa2020;border-radius:4px;padding:14px 18px;margin-bottom:16px;color:#f4d8d8;box-shadow:0 0 12px rgba(170,30,30,0.25) inset">
-    <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">編集記事 — 黒田幸子</div>
+    <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">${WM_I18N.t('編集記事 — {name}', { name: '黒田幸子' })}</div>
     <h3 style="margin:0 0 8px 0;font-size:18px;color:#ffd6d6;font-weight:700">${headline}</h3>
     <p style="margin:0;font-size:13px;line-height:1.8;white-space:pre-wrap">${body}</p>
     <div style="text-align:right;margin-top:10px;font-size:11px;color:#cc8888">${NP_KURODA_BYLINE.editorial}</div>
@@ -7545,10 +7547,10 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
       <div class="np-top-photo${isTagPhoto ? ' np-top-photo--tag' : ''}" style="${photoBg}">
         ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
         ${primaryId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
-        ${primaryId ? `<div class="caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
+        ${primaryId ? `<div class="caption">${tsOrgLineHtml}<strong>${tsName}</strong>${ts.captionExtra || WM_I18N.t('{season}-{week}号 紙面より', { season: seasonNum, week: weekNum })}</div>` : ''}
       </div>
       <div class="np-top-body">
-        <div class="np-sec">一面記事</div>
+        <div class="np-sec">${WM_I18N.t('一面記事')}</div>
         ${ts.situation ? `<div class="np-top-situation">${ts.situation}</div>` : ''}
         <h2 class="np-top-headline">${ts.headline || '——'}</h2>
         ${ts.subhead ? `<div class="np-top-sub">${ts.subhead}</div>` : ''}
@@ -7587,7 +7589,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
 
   // 業界ニュース (常に表示、空時はプレースホルダー)
   html += `<section class="np-sub-stories">
-    <div class="np-sec-gold">業界ニュース</div>`;
+    <div class="np-sec-gold">${WM_I18N.t('業界ニュース')}</div>`;
   if (wp.subStories && wp.subStories.length > 0) {
     html += `<div class="np-sub-grid">`;
     wp.subStories.forEach((ss, idx) => {
@@ -7628,7 +7630,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
       }
     }
   } else {
-    html += `<div class="np-empty-substory">今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。</div>`;
+    html += `<div class="np-empty-substory">${WM_I18N.t('今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。')}</div>`;
   }
   html += `</section>`;
 
@@ -7720,18 +7722,18 @@ function _npV3Paragraphs(body) {
 function _npV3IndexBar(wp, isLatest) {
   const items = [];
   if (wp.playerShowData) {
-    items.push(`<span class="pg" onclick="npScrollToShowDetail()"><u>つづき</u> 自団体興行 詳報</span>`);
+    items.push(`<span class="pg" onclick="npScrollToShowDetail()"><u>${WM_I18N.t('つづき')}</u> ${WM_I18N.t('自団体興行 詳報')}</span>`);
   }
   // 外側タブと同じ _npFeatureOn で判定する。特集の無い週に目次だけ二面/三面を載せると、
   // クリックしても renderNewspaper の空面ガードで1面へ弾かれ「書いてあるのに見れない」になる。
   // typeofガードはテストの関数単体抽出環境(この関数だけをevalする)のため
   const _featOn = (p) => (typeof _npFeatureOn === 'function' ? _npFeatureOn(p) : true);
-  if (_featOn(2)) items.push(`<span class="pg" onclick="setNewspaperSubPage(2)"><u>二面</u> 団体比較</span>`);
-  if (_featOn(3)) items.push(`<span class="pg" onclick="setNewspaperSubPage(3)"><u>三面</u> 因縁列伝</span>`);
+  if (_featOn(2)) items.push(`<span class="pg" onclick="setNewspaperSubPage(2)"><u>${WM_I18N.t('二面')}</u> ${WM_I18N.t('団体比較')}</span>`);
+  if (_featOn(3)) items.push(`<span class="pg" onclick="setNewspaperSubPage(3)"><u>${WM_I18N.t('三面')}</u> ${WM_I18N.t('因縁列伝')}</span>`);
   if (isLatest && G.mvpRace && (G.mvpRace.rankings || []).length > 0) {
-    items.push(`<span class="pg np-v3-index-right" onclick="setNewspaperSubPage(4)"><u>MVPレース詳細 ▶</u></span>`);
+    items.push(`<span class="pg np-v3-index-right" onclick="setNewspaperSubPage(4)"><u>${WM_I18N.t('MVPレース詳細 ▶')}</u></span>`);
   }
-  return `<div class="np-v3-indexbar"><b>きょうの紙面</b>${items.join('')}</div>`;
+  return `<div class="np-v3-indexbar"><b>${WM_I18N.t('きょうの紙面')}</b>${items.join('')}</div>`;
 }
 function npScrollToShowDetail() {
   const el = document.getElementById('npShowDetail');
@@ -7748,11 +7750,11 @@ function _npV3MvpBox(isLatest) {
       <span class="rank">${e.rank}</span><span class="who">${escHtml(e.fighterName || '')}</span><span class="pt">${Math.round(e.points || 0)}</span>
     </div>`).join('');
   const chase = rows.slice(3, 5)
-    .map(e => `${e.rank}位 ${escHtml(e.fighterName || '')} ${Math.round(e.points || 0)}`)
+    .map(e => WM_I18N.t('{rank}位 {name} {pts}', { rank: e.rank, name: escHtml(e.fighterName || ''), pts: Math.round(e.points || 0) }))
     .join(' / ');
   const chaseHtml = chase ? `<div class="np-v3-mvpchase">${chase}</div>` : '';
   return `<div class="np-v3-mvpbox">
-    <div class="ttl">MVPレース<span class="more" onclick="setNewspaperSubPage(4)">詳細 ▶</span></div>
+    <div class="ttl">${WM_I18N.t('MVPレース')}<span class="more" onclick="setNewspaperSubPage(4)">${WM_I18N.t('詳細 ▶')}</span></div>
     ${top3}${chaseHtml}
   </div>`;
 }
@@ -7812,43 +7814,43 @@ function _npV3HallOfFameRetirement(ts, seasonNum, weekNum) {
   const portrait = id && typeof getPortraitUrl === 'function' ? getPortraitUrl(id) : '';
   const src = upper || portrait;
   const hofLevel = Math.max(1, Math.min(3, Number(data.hofLevel || entry.hofLevel) || 1));
-  const levelLabel = hofLevel >= 3 ? '最高位・レジェンド殿堂' : hofLevel >= 2 ? 'ゴールド殿堂' : '殿堂';
-  const levelDisplay = `${levelLabel}入り`;
+  const levelLabel = hofLevel >= 3 ? WM_I18N.t('最高位・レジェンド殿堂') : hofLevel >= 2 ? WM_I18N.t('ゴールド殿堂') : WM_I18N.t('殿堂');
+  const levelDisplay = WM_I18N.t('{level}入り', { level: levelLabel });
   const stars = '★'.repeat(hofLevel);
   const seasons = Number(data.seasons) || Math.max(0,
     (Number(entry.activeSeasonsEnd) || 0) - (Number(entry.activeSeasonsStart) || 0) + 1);
   const reigns = Math.max(Number(data.titleReigns) || 0, Number(data.reigns) || 0, Number(entry.titleReigns) || 0);
   const defenses = Math.max(Number(data.totalDefenses) || 0, Number(entry.totalDefenses) || 0);
   const facts = [
-    seasons > 0 ? `<span><b>${seasons}</b>シーズン</span>` : '',
-    reigns > 0 ? `<span><b>${reigns}</b>度戴冠</span>` : '',
-    defenses > 0 ? `<span><b>${defenses}</b>度防衛</span>` : '',
+    seasons > 0 ? `<span>${WM_I18N.t('<b>{n}</b>シーズン', { n: seasons })}</span>` : '',
+    reigns > 0 ? `<span>${WM_I18N.t('<b>{n}</b>度戴冠', { n: reigns })}</span>` : '',
+    defenses > 0 ? `<span>${WM_I18N.t('<b>{n}</b>度防衛', { n: defenses })}</span>` : '',
   ].filter(Boolean).join('');
   const headline = data.hallOfFameRetirement
-    ? (ts.headline || `${name}、殿堂入り`) : `${name}、殿堂入り——${orgName || '団体'}の一時代に幕`;
+    ? (ts.headline || WM_I18N.t('{name}、殿堂入り', { name })) : WM_I18N.t('{name}、殿堂入り——{org}の一時代に幕', { name, org: orgName || WM_I18N.t('団体') });
   const paras = _npV3Paragraphs(ts.body);
   const bodyHtml = (paras.length ? paras : ['']).map(p => `<p>${p}</p>`).join('');
 
   return `<article class="np-v3-hof-retirement">
     <div class="np-v3-hof-mast">
-      <div class="np-v3-hof-seal" aria-hidden="true">殿</div>
+      <div class="np-v3-hof-seal" aria-hidden="true">${WM_I18N.t('殿')}</div>
       <div class="np-v3-hof-mast-copy">
-        <span>永久保存版</span>
+        <span>${WM_I18N.t('永久保存版')}</span>
         <strong>HALL OF FAME</strong>
-        <small>殿堂入り・引退特別号</small>
+        <small>${WM_I18N.t('殿堂入り・引退特別号')}</small>
       </div>
       <div class="np-v3-hof-stars">${stars}</div>
     </div>
     ${ts.situation ? `<div class="np-v3-hof-situation">${ts.situation}</div>` : ''}
     <h2 class="np-v3-hof-headline">${headline}</h2>
-    <div class="np-v3-hof-deck">${ts.subhead || `${levelDisplay}。その功績を永久保存版で振り返る`}</div>
+    <div class="np-v3-hof-deck">${ts.subhead || WM_I18N.t('{level}。その功績を永久保存版で振り返る', { level: levelDisplay })}</div>
     <div class="np-v3-hof-hero">
       <figure class="np-v3-hof-figure">
         <div class="np-v3-hof-photo"${id ? ` onclick="showFighterPopup(${id},null,true)"` : ''}>
           ${src ? `<img src="${src}" alt="${escHtml(name)}">` : ''}
           <div class="np-v3-hof-medallion">HALL<br>OF FAME</div>
         </div>
-        <figcaption>${emblem}<strong>${name}</strong><span>${orgName || ts.captionExtra || `${seasonNum}-${weekNum}号`}</span></figcaption>
+        <figcaption>${emblem}<strong>${name}</strong><span>${orgName || ts.captionExtra || WM_I18N.t('{season}-{week}号', { season: seasonNum, week: weekNum })}</span></figcaption>
       </figure>
       <div class="np-v3-hof-copy">
         <div class="np-v3-hof-rank"><span>${stars}</span>${levelDisplay}</div>
@@ -7890,7 +7892,7 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
              ${primaryId && !isTagPhoto ? `onclick="showFighterPopup(${primaryId},null,true)"` : ''}>
           ${isTagPhoto ? _npTopTagPhotoHtml(tagPhotoIds) : ''}
           ${primaryId ? `<div class="stamp">EXCLUSIVE</div>` : ''}
-          ${primaryId ? `<div class="caption">${orgLine}<strong>${tsName}</strong>${ts.captionExtra || `${seasonNum}-${weekNum}号 紙面より`}</div>` : ''}
+          ${primaryId ? `<div class="caption">${orgLine}<strong>${tsName}</strong>${ts.captionExtra || WM_I18N.t('{season}-{week}号 紙面より', { season: seasonNum, week: weekNum })}</div>` : ''}
         </div>
       </figure>`
     : '';
@@ -7906,7 +7908,7 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
     : '';
 
   return `<article class="np-v3-top">
-    <span class="np-v3-kicker red">一面トップ</span>
+    <span class="np-v3-kicker red">${WM_I18N.t('一面トップ')}</span>
     ${ts.situation ? `<div class="np-top-situation">${ts.situation}</div>` : ''}
     <h2 class="np-v3-hl-top">${ts.headline || '——'}</h2>
     ${ts.subhead ? `<div class="np-v3-deck">${ts.subhead}</div>` : ''}
@@ -7933,7 +7935,7 @@ function _npV3Shoulder(story) {
   const paras = _npV3Paragraphs(story.body);
   const bodyHtml = (paras.length ? paras : ['']).map(p => `<p class="np-v3-noindent">${p}</p>`).join('');
   return `<article class="np-v3-kata">
-    <span class="np-v3-kicker">肩記事</span>
+    <span class="np-v3-kicker">${WM_I18N.t('肩記事')}</span>
     ${story.situation ? `<div class="np-sub-situation">${story.situation}</div>` : ''}
     ${_npV3OrgLine(story, 14)}
     <h3 class="np-v3-hl-kata">${story.headline || ''}</h3>
@@ -7949,7 +7951,7 @@ function _npV3JunTop(story) {
   const body = String(story.body || '');
   const wide = body.length >= 120 ? ' np-v3-cols' : '';
   return `<article class="np-v3-jun">
-    <span class="np-v3-kicker">準トップ</span>
+    <span class="np-v3-kicker">${WM_I18N.t('準トップ')}</span>
     ${story.situation ? `<div class="np-sub-situation">${story.situation}</div>` : ''}
     ${_npV3OrgLine(story, 14)}
     <h3 class="np-v3-hl-jun">${story.headline || ''}</h3>
@@ -7980,7 +7982,7 @@ function _npV3Small(story) {
 function _npV3Briefs(stories) {
   const items = (stories || []).map(s => (s && s.headline) ? String(s.headline).trim() : '').filter(Boolean);
   if (items.length === 0) return '';
-  return `<div class="np-v3-beta"><b>短信</b>${items.join('<span class="np-v3-beta-sep">▼</span>')}</div>`;
+  return `<div class="np-v3-beta"><b>${WM_I18N.t('短信')}</b>${items.join('<span class="np-v3-beta-sep">▼</span>')}</div>`;
 }
 
 function _npFrontV3(wp, seasonNum, weekNum, isLatest) {
@@ -8032,7 +8034,7 @@ function _npFrontV3(wp, seasonNum, weekNum, isLatest) {
     if (betaHtml) cells.push(`<div${cells.length > 0 ? ' class="np-v3-vr"' : ''}>${betaHtml}</div>`);
     html += `<div class="np-v3-bottom-grid cols-${cells.length}">${cells.join('')}</div>`;
   } else if (!shoulder && !junTop) {
-    html += `<div class="np-empty-substory">今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。</div>`;
+    html += `<div class="np-empty-substory">${WM_I18N.t('今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。')}</div>`;
   }
 
   // ── 黒田コラム(最下段固定) ──
@@ -8046,7 +8048,7 @@ function _npFrontV3(wp, seasonNum, weekNum, isLatest) {
     // 一面トップが自団体興行なら、詳報のメインは第2試合へ繰り上げる(同じ試合を二度語らない)
     const psd = topIsPlayerShow ? _npSwapMainToSecondCard(wp.playerShowData, seasonNum, weekNum) : wp.playerShowData;
     if (psd) {
-      html += `<div class="np-v3-fold" id="npShowDetail"><span>本紙つづき</span>自団体興行 詳報</div>`;
+      html += `<div class="np-v3-fold" id="npShowDetail"><span>${WM_I18N.t('本紙つづき')}</span>${WM_I18N.t('自団体興行 詳報')}</div>`;
       html += _npRenderPlayerShow(psd, seasonNum, weekNum);
     }
   }
@@ -8104,13 +8106,13 @@ function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
     isTitleMatch: !!m.isTitleMatch,
     isUpset: !!m.isUpset,
     isDominant: !!m.isDominant,
-    finishLabel: m.finishLabel || '決着',
+    finishLabel: m.finishLabel || WM_I18N.t('決着'),
     turns: m.turns || 0,
     mq: m.mq || 0,
-    venue: { name: d.venueName || (VENUES[d.venueIdx]?.name) || '会場' },
+    venue: { name: d.venueName || (VENUES[d.venueIdx]?.name) || WM_I18N.t('会場') },
     attendance: d.attendance || 0,
-    showName: d.showName || '定期興行',
-    rivalLabel: '宿命のカード',
+    showName: d.showName || WM_I18N.t('定期興行'),
+    rivalLabel: WM_I18N.t('宿命のカード'),
     ovrGap: Math.abs((m.left.ovr || 0) - (m.right.ovr || 0)),
   };
   // カテゴリ選択（メインと重複しないよう titleWin/titleDefend は使わず、汎用記事プールから選ぶ）
@@ -8159,10 +8161,10 @@ function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
     isUpset: !!m.isUpset,
     isDominant: !!m.isDominant,
     finishLabel: m.finishLabel || '',
-    matchLabel: m.isTitleMatch ? '王座戦' : 'セミファイナル',
+    matchLabel: m.isTitleMatch ? WM_I18N.t('王座戦') : WM_I18N.t('セミファイナル'),
     headline: m.isTitleMatch
-      ? `王座戦 ${m.left.name} vs ${m.right.name}`
-      : `セミファイナル ${m.left.name} vs ${m.right.name}`,
+      ? WM_I18N.t('王座戦 {a} vs {b}', { a: m.left.name, b: m.right.name })
+      : WM_I18N.t('セミファイナル {a} vs {b}', { a: m.left.name, b: m.right.name }),
     article: promotedArticle,
     // 元メインを ダイジェスト先頭に押し下げ、残りは元の順を保つ
     allMatches: [origMainAsRow].concat(d.allMatches.slice(1)),
@@ -8192,8 +8194,8 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
   };
 
   let html = `<section class="np-show-result">
-    <div class="np-sec">自団体 興行結果</div>
-    <h3 class="np-show-headline">${d.headline || '定期興行'}</h3>
+    <div class="np-sec">${WM_I18N.t('自団体 興行結果')}</div>
+    <h3 class="np-show-headline">${d.headline || WM_I18N.t('定期興行')}</h3>
     <div class="np-versus-grid">
       <div class="${leftCls}">
         ${d.isTag && d.teamA ? tagPhotos(d.teamA, leftWin) : `<div class="np-fphoto" style="${leftBg}" onclick="showFighterPopup(${d.left.id})"></div>`}
@@ -8217,19 +8219,19 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
       const turnsTail = timeStr ? (d.turns ? `<span class="dec-turns">（${d.turns}ターン）</span>` : '') : (d.turns ? `<span class="dec-time">${d.turns}ターン</span>` : '');
       const timeMain = timeStr ? `<span class="dec-time">決着時間 ${timeStr}</span>` : '';
       if (d.isDraw) {
-        return `<div class="np-show-decision"><span class="dec-text">決着つかず</span></div>`;
+        return `<div class="np-show-decision"><span class="dec-text">${WM_I18N.t('決着つかず')}</span></div>`;
       }
       const winName = leftWin ? escHtml(d.left.name) : (rightWin ? escHtml(d.right.name) : null);
       if (!winName) return '';
       return `<div class="np-show-decision">
-        <span class="dec-winner"><strong>${winName}</strong> 勝利</span>
-        ${d.finishLabel ? `<span class="dec-finish">決着技：${d.finishLabel}</span>` : ''}
+        <span class="dec-winner"><strong>${winName}</strong> ${WM_I18N.t('勝利')}</span>
+        ${d.finishLabel ? `<span class="dec-finish">${WM_I18N.t('決着技：{finish}', { finish: d.finishLabel })}</span>` : ''}
         ${timeMain}${turnsTail}
       </div>`;
     })()}
     <div class="np-result-line">
-      <div>${d.matchLabel || 'メインイベント'}</div>
-      <div class="mq-block"><label>評価</label><strong>${d.mq || '?'}</strong></div>
+      <div>${d.matchLabel || WM_I18N.t('メインイベント')}</div>
+      <div class="mq-block"><label>${WM_I18N.t('評価')}</label><strong>${d.mq || '?'}</strong></div>
       <div class="duration">${_npTurnsToTime(d.turns) || (d.turns ? `${d.turns}ターン` : '')}</div>
     </div>
     ${d.article ? `<div class="np-show-article">${d.article}</div>` : ''}
@@ -8244,11 +8246,11 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     if (pool && pool.length) {
       const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC5A1));
       const fn = Engine.rng.pick(rng, pool);
-      try { comment = fn({ playerName: G.orgName || '我が団体', avgMQ: d.avgMQ || d.mq || 0 }); } catch(e) {}
+      try { comment = fn({ playerName: G.orgName || WM_I18N.t('我が団体'), avgMQ: d.avgMQ || d.mq || 0 }); } catch(e) {}
     }
     html += `<div class="np-rating">
       <div class="np-rating-stars">${starHtml}</div>
-      <div class="np-rating-headline">観客満足度 ${stars}.0 / 5</div>
+      <div class="np-rating-headline">${WM_I18N.t('観客満足度 {n}.0 / 5', { n: stars })}</div>
       ${comment ? `<div class="np-rating-comment">「${comment}」</div>` : ''}
     </div>`;
   }
@@ -8266,10 +8268,10 @@ function _renderNewspaperInjuries(d) {
   const injuries = (d && Array.isArray(d.injuries)) ? d.injuries.filter(ir => ir && ir.name) : [];
   if (!injuries.length) return '';
   const rows = injuries.map(ir => {
-    const weeks = ir.weeksLeft != null ? ` / ${ir.weeksLeft}週離脱` : '';
-    return `<div class="news-injury-row" style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(137,41,41,0.16);"><strong>${ir.name}</strong><span>${injuryLabel(ir.type) || '負傷'}${weeks}</span></div>`;
+    const weeks = ir.weeksLeft != null ? WM_I18N.t(' / {n}週離脱', { n: ir.weeksLeft }) : '';
+    return `<div class="news-injury-row" style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(137,41,41,0.16);"><strong>${ir.name}</strong><span>${injuryLabel(ir.type) || WM_I18N.t('負傷')}${weeks}</span></div>`;
   }).join('');
-  return `<div class="news-injury-report" style="margin-top:10px;padding:8px 10px;border:1px solid rgba(137,41,41,0.22);background:rgba(137,41,41,0.06);border-radius:8px;color:#4a241d;"><div class="news-sec-label">負傷者情報</div>${rows}</div>`;
+  return `<div class="news-injury-report" style="margin-top:10px;padding:8px 10px;border:1px solid rgba(137,41,41,0.22);background:rgba(137,41,41,0.06);border-radius:8px;color:#4a241d;"><div class="news-sec-label">${WM_I18N.t('負傷者情報')}</div>${rows}</div>`;
 }
 
 function _npRenderDigest(d, seasonNum, weekNum) {
@@ -8292,8 +8294,8 @@ function _npRenderDigest(d, seasonNum, weekNum) {
     const lName = escHtml(m.isDraw ? m.right.name : loserName);
 
     let badge = '';
-    if (m.isTitleMatch) badge = '<span class="badge-title">王座戦</span>';
-    else if (m.isUpset) badge = '<span class="badge-upset">番狂わせ</span>';
+    if (m.isTitleMatch) badge = `<span class="badge-title">${WM_I18N.t('王座戦')}</span>`;
+    else if (m.isUpset) badge = `<span class="badge-upset">${WM_I18N.t('番狂わせ')}</span>`;
 
     const mqClass = m.mq >= 75 ? 'high' : m.mq >= 55 ? 'mid' : 'low';
 
@@ -8329,13 +8331,15 @@ function _npRenderDigest(d, seasonNum, weekNum) {
       : (m.turns ? `<span class="np-digest-time">${m.turns}ターン</span>` : '');
     let finishLine = '';
     if (m.isDraw) {
-      finishLine = `<span class="np-digest-finish-text">決着つかず</span>`;
+      finishLine = `<span class="np-digest-finish-text">${WM_I18N.t('決着つかず')}</span>`;
     } else if (wName) {
-      const finBit = m.finishLabel ? `<strong>${m.finishLabel}</strong>で勝利` : '勝利';
-      finishLine = `<span class="np-digest-finish-text"><strong>${wName}</strong>が${finBit}</span>${dTimeMain}${dTurnsSub}`;
+      const winPhrase = m.finishLabel
+        ? WM_I18N.t('<strong>{winner}</strong>が<strong>{finish}</strong>で勝利', { winner: wName, finish: m.finishLabel })
+        : WM_I18N.t('<strong>{winner}</strong>が勝利', { winner: wName });
+      finishLine = `<span class="np-digest-finish-text">${winPhrase}</span>${dTimeMain}${dTurnsSub}`;
     }
     const rowNo = m.matchNumber || (idx + 2);
-    const rowLabel = m.matchLabel || (rowNo ? `第${rowNo}試合` : '');
+    const rowLabel = m.matchLabel || (rowNo ? WM_I18N.t('第{n}試合', { n: rowNo }) : '');
     const digestTagThumbs = (team, isWinner) => {
       const members = (team?.members || []).filter(f => f && f.id).slice(0, 2);
       if (!members.length) return '';
@@ -8370,9 +8374,9 @@ function _npRenderDigest(d, seasonNum, weekNum) {
   });
 
   return `<div class="np-digest">
-    <div class="np-sec">興行ダイジェスト</div>
+    <div class="np-sec">${WM_I18N.t('興行ダイジェスト')}</div>
     <table class="np-digest-table">
-      <thead><tr><th>#</th><th></th><th>カード</th><th style="text-align:right">評価</th></tr></thead>
+      <thead><tr><th>#</th><th></th><th>${WM_I18N.t('カード')}</th><th style="text-align:right">${WM_I18N.t('評価')}</th></tr></thead>
       <tbody>${rows}</tbody>
     </table>
   </div>`;
@@ -8418,13 +8422,13 @@ function _npRenderPage2() {
   let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}<div class="np-content">`;
 
   if (orgs.length === 0 || !_dbCompareTarget) {
-    html += `<div class="np-empty">比較対象の団体が存在しない。</div></div></div>`;
+    html += `<div class="np-empty">${WM_I18N.t('比較対象の団体が存在しない。')}</div></div></div>`;
     return html;
   }
 
   // セレクタ
   html += `<div class="np-cmp-select">
-    <label>📊 比較対象</label>
+    <label>${WM_I18N.t('📊 比較対象')}</label>
     <select onchange="_dbCompareTarget=this.value;renderNewspaper()">`;
   orgs.forEach(o => {
     const sel = (o.id === _dbCompareTarget) ? ' selected' : '';
@@ -8471,16 +8475,16 @@ function _npRenderPage2() {
             <div class="np-org-sub">${d.playerSubtitle || ''}</div>
           </div>
         </div>
-        <div class="np-org-tier">プレイヤー</div>
+        <div class="np-org-tier">${WM_I18N.t('プレイヤー')}</div>
       </div>
       <div class="np-org-tags">${(d.playerTags || []).map(t => `<span class="np-org-tag">${t}</span>`).join('')}</div>
       <div class="np-org-stats">
-        <div class="stat-item"><label>選手</label><strong>${d.playerRosterCount}</strong></div>
-        <div class="stat-item"><label>団体人気</label><strong>${d.pOrgPop}</strong></div>
-        <div class="stat-item"><label>TOP5実力</label><strong>${d.pTop5Ovr}</strong></div>
-        <div class="stat-item"><label>エース</label><strong>${d.playerScores.ace}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('選手')}</label><strong>${d.playerRosterCount}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('団体人気')}</label><strong>${d.pOrgPop}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('TOP5実力')}</label><strong>${d.pTop5Ovr}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('エース')}</label><strong>${d.playerScores.ace}</strong></div>
       </div>
-      <div class="np-org-champ">王者: ${playerChamp ? `<strong>${escHtml(playerChamp.name)}</strong>` : '<strong>不在</strong>'}</div>
+      <div class="np-org-champ">${WM_I18N.t('王者:')} ${playerChamp ? `<strong>${escHtml(playerChamp.name)}</strong>` : `<strong>${WM_I18N.t('不在')}</strong>`}</div>
     </div>
     <div class="np-versus-mark">VS</div>
     <div class="np-org-card rival">
@@ -8496,12 +8500,12 @@ function _npRenderPage2() {
       </div>
       <div class="np-org-tags">${(d.rivalTags || []).map(t => `<span class="np-org-tag">${t}</span>`).join('')}</div>
       <div class="np-org-stats">
-        <div class="stat-item"><label>選手</label><strong>${d.rivalRosterCount}</strong></div>
-        <div class="stat-item"><label>団体人気</label><strong>${d.rOrgPop}</strong></div>
-        <div class="stat-item"><label>TOP5実力</label><strong>${d.rTop5Ovr}</strong></div>
-        <div class="stat-item"><label>エース</label><strong>${d.rivalScores.ace}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('選手')}</label><strong>${d.rivalRosterCount}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('団体人気')}</label><strong>${d.rOrgPop}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('TOP5実力')}</label><strong>${d.rTop5Ovr}</strong></div>
+        <div class="stat-item"><label>${WM_I18N.t('エース')}</label><strong>${d.rivalScores.ace}</strong></div>
       </div>
-      <div class="np-org-champ">王者: ${rivalChamp ? `<strong>${escHtml(rivalChamp.name)}</strong>` : '<strong>不在</strong>'}</div>
+      <div class="np-org-champ">${WM_I18N.t('王者:')} ${rivalChamp ? `<strong>${escHtml(rivalChamp.name)}</strong>` : `<strong>${WM_I18N.t('不在')}</strong>`}</div>
     </div>
   </div>`;
 
@@ -8511,7 +8515,7 @@ function _npRenderPage2() {
     const hasStreak = (warStats.streakKind === 'win' || warStats.streakKind === 'lose') && warStats.streak >= 2;
     const streakCls = hasStreak ? warStats.streakKind : 'even';
     const streakLabel = hasStreak
-      ? (warStats.streakKind === 'win' ? `${warStats.streak}連勝中` : `${warStats.streak}連敗中`)
+      ? (warStats.streakKind === 'win' ? WM_I18N.t('{n}連勝中', { n: warStats.streak }) : WM_I18N.t('{n}連敗中', { n: warStats.streak }))
       : '';
     let warComment = '';
     if (typeof KURODA_WAR_RECORD !== 'undefined') {
@@ -8552,16 +8556,16 @@ function _npRenderPage2() {
         : `通算${warStats.total}戦で互角。次戦が大きな分岐点になりそうだ。`;
     }
     html += `<div class="np-war-record">
-      <div class="np-sec-gold">過去対戦成績</div>
+      <div class="np-sec-gold">${WM_I18N.t('過去対戦成績')}</div>
       <div class="np-war-grid">
         <div class="np-war-overall">
-          <span class="lbl">通算（団体間ガチンコのみ）</span>
-          <span class="wl">${warStats.wins}勝${warStats.losses}敗</span>
+          <span class="lbl">${WM_I18N.t('通算（団体間ガチンコのみ）')}</span>
+          <span class="wl">${WM_I18N.t('{w}勝{l}敗', { w: warStats.wins, l: warStats.losses })}</span>
         </div>
         <div class="np-war-breakdown">
-          <div class="item"><label>対抗戦</label><span>${warStats.byWar.w}勝${warStats.byWar.l}敗</span></div>
-          <div class="item"><label>PPV</label><span>${warStats.byPpv.w}勝${warStats.byPpv.l}敗</span></div>
-          <div class="item"><label>挑戦状</label><span>${warStats.byB3.w}勝${warStats.byB3.l}敗</span></div>
+          <div class="item"><label>${WM_I18N.t('対抗戦')}</label><span>${WM_I18N.t('{w}勝{l}敗', { w: warStats.byWar.w, l: warStats.byWar.l })}</span></div>
+          <div class="item"><label>PPV</label><span>${WM_I18N.t('{w}勝{l}敗', { w: warStats.byPpv.w, l: warStats.byPpv.l })}</span></div>
+          <div class="item"><label>${WM_I18N.t('挑戦状')}</label><span>${WM_I18N.t('{w}勝{l}敗', { w: warStats.byB3.w, l: warStats.byB3.l })}</span></div>
         </div>
         ${streakLabel ? `<div class="np-war-streak ${streakCls}">${streakLabel}</div>` : ''}
       </div>
@@ -8578,10 +8582,10 @@ function _npRenderPage2() {
   if (aceP && aceR) {
     const aceDiff = aceP.ovr - aceR.ovr;
     const edgeCls = aceDiff > 3 ? 'player' : aceDiff < -3 ? 'rival' : 'even';
-    const edgeText = aceDiff > 3 ? `${d.playerName}優位 +${aceDiff}` : aceDiff < -3 ? `${d.rivalName}優位 ${aceDiff}` : '互角';
+    const edgeText = aceDiff > 3 ? WM_I18N.t('{name}優位 +{diff}', { name: d.playerName, diff: aceDiff }) : aceDiff < -3 ? WM_I18N.t('{name}優位 {diff}', { name: d.rivalName, diff: aceDiff }) : WM_I18N.t('互角');
     html += `<div class="np-ace-confront">
       <div class="np-ace-top">
-        <span class="role-chip">エース対決</span>
+        <span class="role-chip">${WM_I18N.t('エース対決')}</span>
         <span class="edge ${edgeCls}">${edgeText}</span>
       </div>
       <div class="np-ace-arena">
@@ -8596,12 +8600,12 @@ function _npRenderPage2() {
         <div class="np-ace-side">
           <div class="org">${_npOrgEmblem(G, 'player', 16)}<span>${d.playerName}</span></div>
           <div class="name">${_npClickName(aceP.name, aceP.id)}</div>
-          <div class="ovr-line">OVR<strong>${aceP.ovr}</strong> / 人気<strong>${aceP.pop}</strong></div>
+          <div class="ovr-line">${WM_I18N.t('OVR<strong>{ovr}</strong> / 人気<strong>{pop}</strong>', { ovr: aceP.ovr, pop: aceP.pop })}</div>
         </div>
         <div class="np-ace-side">
           <div class="org">${_npOrgEmblem(G, _dbCompareTarget, 16)}<span>${d.rivalName}</span></div>
           <div class="name">${_npClickName(aceR.name, aceR.id)}</div>
-          <div class="ovr-line">OVR<strong>${aceR.ovr}</strong> / 人気<strong>${aceR.pop}</strong></div>
+          <div class="ovr-line">${WM_I18N.t('OVR<strong>{ovr}</strong> / 人気<strong>{pop}</strong>', { ovr: aceR.ovr, pop: aceR.pop })}</div>
         </div>
       </div>
       <div class="np-ace-flavor">${d.opportunity || ''}</div>
@@ -8610,12 +8614,12 @@ function _npRenderPage2() {
 
   // 主力対決リスト (matchups[1..]) — モックアップ準拠で各行に黒田寸評
   if (d.matchups && d.matchups.length > 1) {
-    html += `<div class="np-sec-gold">主力対決</div>`;
+    html += `<div class="np-sec-gold">${WM_I18N.t('主力対決')}</div>`;
     html += `<div class="np-matchup-list">`;
     d.matchups.slice(1).forEach((m, idx) => {
       const diff = m.player.ovr - m.rival.ovr;
       const verdictCls = diff > 3 ? 'player' : diff < -3 ? 'rival' : 'even';
-      const verdictText = diff > 3 ? '優勢' : diff < -3 ? '劣勢' : '互角';
+      const verdictText = diff > 3 ? WM_I18N.t('優勢') : diff < -3 ? WM_I18N.t('劣勢') : WM_I18N.t('互角');
       // 寸評
       // 実際の対戦成績・スタイル・年齢から2文を組む(存在しないキーを引いていたのを是正)
       let comment = _npMatchupFlavorText(m, d, seasonNum, weekNum);
@@ -8632,7 +8636,7 @@ function _npRenderPage2() {
           <div>
             <div class="np-matchup-org-line">${pEmblem}<span>${d.playerName}</span></div>
             <div class="np-matchup-name">${escHtml(m.player.name)}</div>
-            <div class="np-matchup-ovr">OVR<strong>${m.player.ovr}</strong> 人気<strong>${m.player.pop}</strong></div>
+            <div class="np-matchup-ovr">${WM_I18N.t('OVR<strong>{ovr}</strong> 人気<strong>{pop}</strong>', { ovr: m.player.ovr, pop: m.player.pop })}</div>
           </div>
         </div>
         <div class="np-matchup-vs">
@@ -8644,7 +8648,7 @@ function _npRenderPage2() {
           <div>
             <div class="np-matchup-org-line right">${rEmblem}<span>${d.rivalName}</span></div>
             <div class="np-matchup-name">${escHtml(m.rival.name)}</div>
-            <div class="np-matchup-ovr">OVR<strong>${m.rival.ovr}</strong> 人気<strong>${m.rival.pop}</strong></div>
+            <div class="np-matchup-ovr">${WM_I18N.t('OVR<strong>{ovr}</strong> 人気<strong>{pop}</strong>', { ovr: m.rival.ovr, pop: m.rival.pop })}</div>
           </div>
         </div>
         <div class="np-matchup-comment">${comment}</div>
@@ -8655,10 +8659,10 @@ function _npRenderPage2() {
 
   // 戦力レーダー (4軸 単色バー) — 値を両端に + 業界基準注記
   const AXES = [
-    { key: 'ace', label: 'エース力', basis: 'TOP3平均OVRが100で100点 (上限100)' },
-    { key: 'depth', label: '層の厚み', basis: '4〜8位5人の平均OVRが80で100点 (8人未満は不足枠OVR=0)' },
-    { key: 'popularity', label: '集客力', basis: '団体人気をそのまま0〜100で点数化' },
-    { key: 'starPower', label: 'タイトル力', basis: 'TOP5平均人気が80で100点 (上限100)' },
+    { key: 'ace', label: WM_I18N.t('エース力'), basis: WM_I18N.t('TOP3平均OVRが100で100点 (上限100)') },
+    { key: 'depth', label: WM_I18N.t('層の厚み'), basis: WM_I18N.t('4〜8位5人の平均OVRが80で100点 (8人未満は不足枠OVR=0)') },
+    { key: 'popularity', label: WM_I18N.t('集客力'), basis: WM_I18N.t('団体人気をそのまま0〜100で点数化') },
+    { key: 'starPower', label: WM_I18N.t('タイトル力'), basis: WM_I18N.t('TOP5平均人気が80で100点 (上限100)') },
   ];
   let powerRows = '';
   AXES.forEach(ax => {
@@ -8680,8 +8684,8 @@ function _npRenderPage2() {
     </div>`;
   });
   html += `<div class="np-power-section">
-    <div class="heading">戦力レーダー (4軸 / 100点満点)</div>
-    <div class="heading-note">エース力=看板3人のOVR (TOP3平均÷100×100) / 層の厚み=控え5人のOVR (4〜8位平均÷80×100、不足枠は0扱い) / 集客力=団体人気そのまま / タイトル力=看板5人の人気 (TOP5平均人気÷80×100)</div>
+    <div class="heading">${WM_I18N.t('戦力レーダー (4軸 / 100点満点)')}</div>
+    <div class="heading-note">${WM_I18N.t('エース力=看板3人のOVR (TOP3平均÷100×100) / 層の厚み=控え5人のOVR (4〜8位平均÷80×100、不足枠は0扱い) / 集客力=団体人気そのまま / タイトル力=看板5人の人気 (TOP5平均人気÷80×100)')}</div>
     ${powerRows}
   </div>`;
 
@@ -8693,7 +8697,7 @@ function _npRenderPage2() {
       <div class="np-editorial-head">
         <div class="np-kuroda-face sm" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
         <div style="flex:1">
-          <div class="np-editorial-text">${editorialLead ? `${editorialLead}<br>` : ''}${d.summaryText || ''}<br>勝ち筋: ${d.opportunity || ''}<br>リスク: ${d.risk || ''}<br>補強提案: ${d.scout || ''}</div>
+          <div class="np-editorial-text">${editorialLead ? `${editorialLead}<br>` : ''}${d.summaryText || ''}<br>${WM_I18N.t('勝ち筋:')} ${d.opportunity || ''}<br>${WM_I18N.t('リスク:')} ${d.risk || ''}<br>${WM_I18N.t('補強提案:')} ${d.scout || ''}</div>
           <div class="np-editorial-byline">${NP_KURODA_BYLINE.editorial}</div>
         </div>
       </div>
@@ -8705,11 +8709,11 @@ function _npRenderPage2() {
   const rTop3 = [...rRoster].sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a)).slice(0, 3);
   if (rTop3.length > 0) {
     const rivalEmblem = _npOrgEmblem(G, _dbCompareTarget, 16);
-    html += `<div class="np-sec-gold" style="margin-top:14px">${rivalEmblem} ${d.rivalName} 注目選手</div>`;
+    html += `<div class="np-sec-gold" style="margin-top:14px">${rivalEmblem} ${WM_I18N.t('{name} 注目選手', { name: d.rivalName })}</div>`;
     html += `<div class="np-spotlight-grid">`;
     rTop3.forEach((f, i) => {
       const tagCls = i === 0 ? 'ace' : i === 1 ? 'star' : 'threat';
-      const tagText = i === 0 ? 'エース級' : i === 1 ? '主力級' : '中堅級';
+      const tagText = i === 0 ? WM_I18N.t('エース級') : i === 1 ? WM_I18N.t('主力級') : WM_I18N.t('中堅級');
       const fOvr = Engine.util.ov(f);
       const fPop = Math.round(f.popularity || 0);
       const fAge = f.age != null ? f.age : '?';
@@ -8748,7 +8752,7 @@ function _npRenderPage2() {
           <div class="np-spotlight-photo" style="${_npThumbBg(f.id)}" onclick="showFighterPopup(${f.id})"></div>
           <div style="flex:1;min-width:0">
             <div class="np-spotlight-name">${escHtml(f.name)}</div>
-            <div class="np-spotlight-meta">OVR<strong>${fOvr}</strong> / 人気<strong>${fPop}</strong> / 年齢<strong>${fAge}</strong></div>
+            <div class="np-spotlight-meta">${WM_I18N.t('OVR<strong>{ovr}</strong> / 人気<strong>{pop}</strong> / 年齢<strong>{age}</strong>', { ovr: fOvr, pop: fPop, age: fAge })}</div>
           </div>
           <span class="np-spotlight-tag ${tagCls}">${tagText}</span>
         </div>
@@ -8779,7 +8783,7 @@ function _npRenderPage2() {
     });
     if (fans.length > 0) {
       html += `<div class="np-fan-section">
-        <div class="np-sec">ファンの声</div>
+        <div class="np-sec">${WM_I18N.t('ファンの声')}</div>
         <div class="np-fan-list">`;
       fans.forEach(f => {
         html += `<div class="np-fan-comment">
@@ -8823,21 +8827,21 @@ function _npRenderPage3() {
   let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}<div class="np-content">`;
 
   if (!featured) {
-    html += `<div class="np-empty">記事にする価値のある因縁が、まだ業界には育っていない。<br>記者として、もう少し時間が要ると見ている。</div></div></div>`;
+    html += `<div class="np-empty">${WM_I18N.t('記事にする価値のある因縁が、まだ業界には育っていない。<br>記者として、もう少し時間が要ると見ている。')}</div></div></div>`;
     return html;
   }
 
   let _npRivalryPairIndex = 0; // N-7: 見出しと本文を対にするための共有 index
   // 大見出し — KURODA_RELATION_NARRATIVE.headlines から動的 pick
   const tagPreMap = {
-    fated_admiration: '深層リポート', pure_hatred: '対立の深淵', destined_rival: '宿命対決',
-    allied_rivalry: '友情と闘志', bitter_feud: '骨肉の争い', standard_rivalry: '互角の宿敵',
-    mutual_respect: '相互尊敬', cold_rivalry: '冷戦', casual_rivalry: '緩やかな宿敵',
+    fated_admiration: WM_I18N.t('深層リポート'), pure_hatred: WM_I18N.t('対立の深淵'), destined_rival: WM_I18N.t('宿命対決'),
+    allied_rivalry: WM_I18N.t('友情と闘志'), bitter_feud: WM_I18N.t('骨肉の争い'), standard_rivalry: WM_I18N.t('互角の宿敵'),
+    mutual_respect: WM_I18N.t('相互尊敬'), cold_rivalry: WM_I18N.t('冷戦'), casual_rivalry: WM_I18N.t('緩やかな宿敵'),
   };
   const tagSubMap = {
-    fated_admiration: '頂点を分け合う二人の物語', pure_hatred: '埋まらぬ亀裂の裏側', destined_rival: '運命に導かれた敵対関係',
-    allied_rivalry: '同じ志、別の道', bitter_feud: '冷めぬ確執の記録', standard_rivalry: '互いを高め合う関係',
-    mutual_respect: 'リングの上での敬意', cold_rivalry: '静かな確執', casual_rivalry: '日々のリング上で',
+    fated_admiration: WM_I18N.t('頂点を分け合う二人の物語'), pure_hatred: WM_I18N.t('埋まらぬ亀裂の裏側'), destined_rival: WM_I18N.t('運命に導かれた敵対関係'),
+    allied_rivalry: WM_I18N.t('同じ志、別の道'), bitter_feud: WM_I18N.t('冷めぬ確執の記録'), standard_rivalry: WM_I18N.t('互いを高め合う関係'),
+    mutual_respect: WM_I18N.t('リングの上での敬意'), cold_rivalry: WM_I18N.t('静かな確執'), casual_rivalry: WM_I18N.t('日々のリング上で'),
   };
   const _hd_h2h = featured.h2h || {};
   const yearsApprox = _npH2HYearsApprox(_hd_h2h, G);
@@ -8855,8 +8859,8 @@ function _npRenderPage3() {
     }
   }
   html += `<div class="np-rivalry-headline">
-    <div class="pre">${tagPreMap[featured.tag] || '深層リポート'}</div>
-    <div class="title">${dynHeadline || `${featured.charA.name}と${featured.charB.name}——${tagSubMap[featured.tag] || ''}`}</div>
+    <div class="pre">${tagPreMap[featured.tag] || WM_I18N.t('深層リポート')}</div>
+    <div class="title">${dynHeadline || WM_I18N.t('{a}と{b}——{sub}', { a: featured.charA.name, b: featured.charB.name, sub: tagSubMap[featured.tag] || '' })}</div>
   </div>`;
 
   // メイン featured
@@ -8928,19 +8932,19 @@ function _npRenderPage3() {
 
   // 事実段落: h2h データを最大限盛り込む
   const facts = [];
-  facts.push(`<span class="fact-item">通算<strong>${matches}</strong>戦</span>`);
-  facts.push(`<span class="fact-item">${aName}<strong>${wA}</strong>勝 / ${bName}<strong>${wB}</strong>勝</span>`);
-  facts.push(`<span class="fact-item">最高評価<strong>${h2h.bestMQ || '?'}</strong></span>`);
-  if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">タイトル戦経験<strong>あり</strong></span>`);
-  if (h2h.hadPPV) facts.push(`<span class="fact-item">PPV対決<strong>あり</strong></span>`);
-  if (h2h.lastMatch) facts.push(`<span class="fact-item">直近対戦 S<strong>${h2h.lastMatch.season}</strong>W<strong>${h2h.lastMatch.week}</strong></span>`);
+  facts.push(`<span class="fact-item">${WM_I18N.t('通算<strong>{n}</strong>戦', { n: matches })}</span>`);
+  facts.push(`<span class="fact-item">${WM_I18N.t('{a}<strong>{wa}</strong>勝 / {b}<strong>{wb}</strong>勝', { a: aName, wa: wA, b: bName, wb: wB })}</span>`);
+  facts.push(`<span class="fact-item">${WM_I18N.t('最高評価<strong>{mq}</strong>', { mq: h2h.bestMQ || '?' })}</span>`);
+  if (h2h.hadTitleMatch) facts.push(`<span class="fact-item">${WM_I18N.t('タイトル戦経験<strong>あり</strong>')}</span>`);
+  if (h2h.hadPPV) facts.push(`<span class="fact-item">${WM_I18N.t('PPV対決<strong>あり</strong>')}</span>`);
+  if (h2h.lastMatch) facts.push(`<span class="fact-item">${WM_I18N.t('直近対戦 S<strong>{season}</strong>W<strong>{week}</strong>', { season: h2h.lastMatch.season, week: h2h.lastMatch.week })}</span>`);
   // 関係性数値 (bond / rivalry 平均)
-  facts.push(`<span class="fact-item">親密度<strong>${Math.round(featured.bond)}</strong> / ライバル度<strong>${Math.round(featured.rivalry)}</strong></span>`);
+  facts.push(`<span class="fact-item">${WM_I18N.t('親密度<strong>{bond}</strong> / ライバル度<strong>{rivalry}</strong>', { bond: Math.round(featured.bond), rivalry: Math.round(featured.rivalry) })}</span>`);
   // 過去同団体経験
   if (typeof Engine !== 'undefined' && Engine.orgTimeline && Engine.orgTimeline.wereColleagues) {
     try {
       if (Engine.orgTimeline.wereColleagues(G, featured.idA, featured.idB)) {
-        facts.push(`<span class="fact-item">過去同団体<strong>あり</strong></span>`);
+        facts.push(`<span class="fact-item">${WM_I18N.t('過去同団体<strong>あり</strong>')}</span>`);
       }
     } catch(e) {}
   }
@@ -8956,8 +8960,8 @@ function _npRenderPage3() {
       <div class="np-rivalry-stand"><div class="img" style="${_npPhotoBg(a.id)}"></div></div>
       <div class="np-rivalry-vs">
         <div class="vs">VS</div>
-        <div class="h2h">${wA}勝-${wB}勝</div>
-        <div class="h2h-lbl">通算${matches}戦</div>
+        <div class="h2h">${WM_I18N.t('{wa}勝-{wb}勝', { wa: wA, wb: wB })}</div>
+        <div class="h2h-lbl">${WM_I18N.t('通算{n}戦', { n: matches })}</div>
       </div>
       <!-- アッパー画像は左右反転しない(顔が崩れるため。反転してよいのはスタンド画像の対面だけ) -->
       <div class="np-rivalry-stand"><div class="img" style="${_npPhotoBg(b.id)}"></div></div>
@@ -8968,9 +8972,9 @@ function _npRenderPage3() {
         <div class="name">${_npClickName(aName, a.id)}</div>
         <div class="role">${aRole}</div>
         <div class="stats">
-          <span>OVR<strong>${aOvr}</strong></span>
-          <span>年齢<strong>${aAge}</strong></span>
-          <span>勝<strong>${wA}</strong></span>
+          <span>${WM_I18N.t('OVR<strong>{ovr}</strong>', { ovr: aOvr })}</span>
+          <span>${WM_I18N.t('年齢<strong>{age}</strong>', { age: aAge })}</span>
+          <span>${WM_I18N.t('勝<strong>{n}</strong>', { n: wA })}</span>
         </div>
       </div>
       <div class="np-rivalry-side">
@@ -8978,9 +8982,9 @@ function _npRenderPage3() {
         <div class="name">${_npClickName(bName, b.id)}</div>
         <div class="role">${bRole}</div>
         <div class="stats">
-          <span>OVR<strong>${bOvr}</strong></span>
-          <span>年齢<strong>${bAge}</strong></span>
-          <span>勝<strong>${wB}</strong></span>
+          <span>${WM_I18N.t('OVR<strong>{ovr}</strong>', { ovr: bOvr })}</span>
+          <span>${WM_I18N.t('年齢<strong>{age}</strong>', { age: bAge })}</span>
+          <span>${WM_I18N.t('勝<strong>{n}</strong>', { n: wB })}</span>
         </div>
       </div>
     </div>
@@ -8993,7 +8997,7 @@ function _npRenderPage3() {
 
   // 過去対戦タイムライン
   html += `<div class="np-history">
-    <div class="np-sec-gold">対戦の軌跡</div>`;
+    <div class="np-sec-gold">${WM_I18N.t('対戦の軌跡')}</div>`;
   if (h2h.history && h2h.history.length > 0) {
     html += `<div class="np-history-list">`;
     const recent = h2h.history.slice(-10).reverse();
@@ -9001,53 +9005,53 @@ function _npRenderPage3() {
       const isPlayerA = _isPlayerSide(G, a.id);
       const playerWin = h.win === 'A' ? isPlayerA : (h.win === 'B' ? !isPlayerA : null);
       const cls = playerWin === true ? 'win-player' : playerWin === false ? 'win-rival' : 'draw';
-      const stageBadge = h.st === 'ppv' ? 'PPV' : h.st === 'war' ? '対抗戦' : '興行';
+      const stageBadge = h.st === 'ppv' ? 'PPV' : h.st === 'war' ? WM_I18N.t('対抗戦') : WM_I18N.t('興行');
       const winnerName = h.win === 'A' ? aName : (h.win === 'B' ? bName : '——');
-      const resultText = h.win === 'd' ? '決着つかず' : `${winnerName} 勝`;
+      const resultText = h.win === 'd' ? WM_I18N.t('決着つかず') : WM_I18N.t('{name} 勝', { name: winnerName });
       html += `<div class="np-history-row ${cls}">
         <div class="np-history-when">S${h.s}<span class="week-num">W${h.w}</span></div>
         <div>
           <div class="np-history-card">${aName} vs ${bName}</div>
           <div class="np-history-detail">${stageBadge}${h.t ? ` / ${h.t}T` : ''}</div>
         </div>
-        <div class="np-history-result ${cls}">${resultText}<span class="mq">評価${h.mq || '?'}</span></div>
+        <div class="np-history-result ${cls}">${resultText}<span class="mq">${WM_I18N.t('評価{mq}', { mq: h.mq || '?' })}</span></div>
       </div>`;
     });
     html += `</div>`;
   } else {
     // 個別履歴は無いが、サマリが残っている場合に概要を1行に集約して見せる
     const summaryBits = [];
-    summaryBits.push(`通算<strong>${matches}</strong>戦`);
-    if (wA || wB || dr) summaryBits.push(`${aName} <strong>${wA}</strong>勝 / ${bName} <strong>${wB}</strong>勝`);
-    if (h2h.bestMQ) summaryBits.push(`最高評価<strong>${h2h.bestMQ}</strong>`);
-    if (h2h.lastMatch && h2h.lastMatch.season) summaryBits.push(`直近 S${h2h.lastMatch.season} W${h2h.lastMatch.week || '?'}`);
-    if (h2h.hadTitleMatch) summaryBits.push(`タイトル戦経験<strong>あり</strong>`);
-    if (h2h.hadPPV) summaryBits.push(`PPV経験<strong>あり</strong>`);
+    summaryBits.push(WM_I18N.t('通算<strong>{n}</strong>戦', { n: matches }));
+    if (wA || wB || dr) summaryBits.push(WM_I18N.t('{a} <strong>{wa}</strong>勝 / {b} <strong>{wb}</strong>勝', { a: aName, wa: wA, b: bName, wb: wB }));
+    if (h2h.bestMQ) summaryBits.push(WM_I18N.t('最高評価<strong>{mq}</strong>', { mq: h2h.bestMQ }));
+    if (h2h.lastMatch && h2h.lastMatch.season) summaryBits.push(WM_I18N.t('直近 S{season} W{week}', { season: h2h.lastMatch.season, week: h2h.lastMatch.week || '?' }));
+    if (h2h.hadTitleMatch) summaryBits.push(WM_I18N.t('タイトル戦経験<strong>あり</strong>'));
+    if (h2h.hadPPV) summaryBits.push(WM_I18N.t('PPV経験<strong>あり</strong>'));
     if (matches > 0) {
       html += `<div class="np-history-summary-row">${summaryBits.join(' ・ ')}</div>`;
-      html += `<div class="np-history-note">個別の試合データは記録に残っていない。次戦からは時系列で刻まれる。</div>`;
+      html += `<div class="np-history-note">${WM_I18N.t('個別の試合データは記録に残っていない。次戦からは時系列で刻まれる。')}</div>`;
     } else {
-      html += `<div class="np-empty-substory">対戦履歴はまだ刻まれていない。本紙としては、最初の一戦が組まれる日を待ちたい。</div>`;
+      html += `<div class="np-empty-substory">${WM_I18N.t('対戦履歴はまだ刻まれていない。本紙としては、最初の一戦が組まれる日を待ちたい。')}</div>`;
     }
   }
   html += `</div>`;
 
   // 他にも続く因縁 — タグ別カラー/説明 + 団体名/エンブレム/戦績
   const TAG_DESC = {
-    fated_admiration: { cls: 'respect', label: '熱', desc: '認め合うがゆえに、退けない関係' },
-    pure_hatred: { cls: 'heat', label: '激', desc: '楽屋で目を合わせない、純粋な敵意' },
-    destined_rival: { cls: 'heat', label: '宿', desc: '幾度も交差する宿命の軌道' },
-    allied_rivalry: { cls: 'respect', label: '友', desc: '友情と闘志、矛盾しない関係' },
-    bitter_feud: { cls: 'heat', label: '激', desc: '水と油、リングでも楽屋でも' },
-    standard_rivalry: { cls: 'heat', label: '宿', desc: '拮抗する数字、燃える夜' },
-    mutual_respect: { cls: 'respect', label: '敬', desc: '言葉なき信頼、リング上の敬意' },
-    cold_rivalry: { cls: 'cold', label: '冷', desc: '言葉なき戦い、静かな確執' },
-    casual_rivalry: { cls: 'cold', label: '緩', desc: '日々のリング上で続く小競り合い' },
+    fated_admiration: { cls: 'respect', label: WM_I18N.t('熱'), desc: WM_I18N.t('認め合うがゆえに、退けない関係') },
+    pure_hatred: { cls: 'heat', label: WM_I18N.t('激'), desc: WM_I18N.t('楽屋で目を合わせない、純粋な敵意') },
+    destined_rival: { cls: 'heat', label: WM_I18N.t('宿'), desc: WM_I18N.t('幾度も交差する宿命の軌道') },
+    allied_rivalry: { cls: 'respect', label: WM_I18N.t('友'), desc: WM_I18N.t('友情と闘志、矛盾しない関係') },
+    bitter_feud: { cls: 'heat', label: WM_I18N.t('激'), desc: WM_I18N.t('水と油、リングでも楽屋でも') },
+    standard_rivalry: { cls: 'heat', label: WM_I18N.t('宿'), desc: WM_I18N.t('拮抗する数字、燃える夜') },
+    mutual_respect: { cls: 'respect', label: WM_I18N.t('敬'), desc: WM_I18N.t('言葉なき信頼、リング上の敬意') },
+    cold_rivalry: { cls: 'cold', label: WM_I18N.t('冷'), desc: WM_I18N.t('言葉なき戦い、静かな確執') },
+    casual_rivalry: { cls: 'cold', label: WM_I18N.t('緩'), desc: WM_I18N.t('日々のリング上で続く小競り合い') },
   };
 
   if (relations && relations.length > 0) {
     html += `<div class="np-relations">
-      <div class="np-sec-gold">他にも続く因縁(全業界)</div>
+      <div class="np-sec-gold">${WM_I18N.t('他にも続く因縁(全業界)')}</div>
       <div class="np-relations-grid">`;
     relations.forEach(r => {
       const td = TAG_DESC[r.tag] || TAG_DESC.casual_rivalry;
@@ -9083,12 +9087,12 @@ function _npRenderPage3() {
         </div>
         <div class="np-relation-card-names">${_npClickName(r.charA.name, r.idA)} × ${_npClickName(r.charB.name, r.idB)}</div>
         <div class="np-relation-org-line">${_npOrgEmblem(G, aOrgKeyR, 16)}<span>${aOrgNameR}</span><span class="vs">vs</span>${_npOrgEmblem(G, bOrgKeyR, 16)}<span>${bOrgNameR}</span></div>
-        <div class="np-relation-card-text">${summary || `${r.charA.name}と${r.charB.name}。${r.h2h.matches || 0}戦のぶつかり合い。`}</div>
+        <div class="np-relation-card-text">${summary || WM_I18N.t('{a}と{b}。{n}戦のぶつかり合い。', { a: r.charA.name, b: r.charB.name, n: r.h2h.matches || 0 })}</div>
         <div class="np-relation-tag-desc">「${td.label}」: ${td.desc}</div>
         <div class="np-relation-stats">
-          <span>通算<strong>${r.h2h.matches || 0}</strong>戦</span>
-          <span>${wAR}勝-${wBR}勝</span>
-          <span>最高評価<strong>${r.h2h.bestMQ || '?'}</strong></span>
+          <span>${WM_I18N.t('通算<strong>{n}</strong>戦', { n: r.h2h.matches || 0 })}</span>
+          <span>${WM_I18N.t('{wa}勝-{wb}勝', { wa: wAR, wb: wBR })}</span>
+          <span>${WM_I18N.t('最高評価<strong>{mq}</strong>', { mq: r.h2h.bestMQ || '?' })}</span>
         </div>
       </div>`;
     });
@@ -9108,19 +9112,19 @@ function _npRenderPage4() {
 
   const race = G.mvpRace;
   if (!race || !race.rankings || race.rankings.length === 0) {
-    html += `<div class="np-sec-gold">📊 4面 ・ 年間MVPレース</div>`;
-    html += `<div class="np-empty" style="padding:24px;text-align:center;color:#5b4b34;font-size:13px">📊 まだMVPレースのデータがない。週を進めると更新される。</div>`;
+    html += `<div class="np-sec-gold">${WM_I18N.t('📊 4面 ・ 年間MVPレース')}</div>`;
+    html += `<div class="np-empty" style="padding:24px;text-align:center;color:#5b4b34;font-size:13px">${WM_I18N.t('📊 まだMVPレースのデータがない。週を進めると更新される。')}</div>`;
     html += `</div></div>`;
     return html;
   }
 
-  html += `<div class="np-sec-gold">📊 4面 ・ 年間MVPレース</div>`;
+  html += `<div class="np-sec-gold">${WM_I18N.t('📊 4面 ・ 年間MVPレース')}</div>`;
   // 既存セーブでキャッシュ済みの古いテキストには 5.159999...pt のような小数が残っているので
   // レンダー時に整数化する (例: "5.16pt" / "0.000003pt" → "5pt" / "0pt")
   const _sanitizePts = (txt) => (txt || '').replace(/(\d+(?:\.\d+)?)pt/g, (_, n) => `${Math.round(parseFloat(n))}pt`);
   html += `<h2 class="np-page-headline">${_escapeHtml(_sanitizePts(race.pageHeadline))}</h2>`;
   html += `<p class="np-page-lead">${_escapeHtml(_sanitizePts(race.pageLead))}</p>`;
-  html += `<div class="np-page-meta">第${weekNum}週時点 ・ 注目選手 上位三傑 ・ 全団体合同</div>`;
+  html += `<div class="np-page-meta">${WM_I18N.t('第{week}週時点 ・ 注目選手 上位三傑 ・ 全団体合同', { week: weekNum })}</div>`;
 
   // TOP3カード
   html += `<div class="np-mvprace-list">`;
@@ -9135,14 +9139,14 @@ function _npRenderPage4() {
       <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
       <div>
         <div class="np-kuroda-text">${_escapeHtml(race.kurodaComment)}</div>
-        <div class="np-kuroda-byline">— 編集長 黒田 貫一郎</div>
+        <div class="np-kuroda-byline">${WM_I18N.t('— 編集長 {name}', { name: '黒田 貫一郎' })}</div>
       </div>
     </div>`;
   }
 
   // 4-10位
   if (race.rankings.length > 3) {
-    html += `<div class="np-mvprace-divider">— 4 位 以 下 ・ 追 走 集 団 —</div>`;
+    html += `<div class="np-mvprace-divider">${WM_I18N.t('— 4 位 以 下 ・ 追 走 集 団 —')}</div>`;
     for (let i = 3; i < race.rankings.length; i++) {
       html += _npMvpRaceListRow(race.rankings[i]);
     }
@@ -9154,30 +9158,30 @@ function _npRenderPage4() {
 
 // ── 4面 補助: 矢印チップ ───────────────────────────
 function _npMvpRaceArrowText(arrow, delta) {
-  if (arrow === 'new') return '初登場';
+  if (arrow === 'new') return WM_I18N.t('初登場');
   if (arrow === 'same') return '−';
   if (arrow === 'up') return `▲ ${delta || 1}`;
   if (arrow === 'down') return `▼ ${Math.abs(delta || 1)}`;
   return '';
 }
 function _npMvpRaceArrow1ChipText(arrow, prevRank) {
-  if (arrow === 'new') return '初登場';
-  if (arrow === 'same') return `前週 ${prevRank}位`;
-  if (arrow === 'up') return `前週 ${prevRank}位 から上昇`;
-  if (arrow === 'down') return `前週 ${prevRank}位 から下降`;
+  if (arrow === 'new') return WM_I18N.t('初登場');
+  if (arrow === 'same') return WM_I18N.t('前週 {n}位', { n: prevRank });
+  if (arrow === 'up') return WM_I18N.t('前週 {n}位 から上昇', { n: prevRank });
+  if (arrow === 'down') return WM_I18N.t('前週 {n}位 から下降', { n: prevRank });
   return '';
 }
 function _npMvpRaceMetaChips(entry) {
   const m = entry.breakdown.meta;
   const chips = [];
-  if (m.isCurrentChamp) chips.push(`<span class="np-mvprace-meta-chip champ">👑 現王者</span>`);
-  if (m.role === 'Ace') chips.push(`<span class="np-mvprace-meta-chip">エース</span>`);
-  else if (m.role === 'MidCarder' || m.role === 'Midcarder') chips.push(`<span class="np-mvprace-meta-chip">中堅</span>`);
-  else if (m.role === 'Heel') chips.push(`<span class="np-mvprace-meta-chip">ヒール</span>`);
-  else if (m.role === 'Babyface') chips.push(`<span class="np-mvprace-meta-chip">ベビーフェイス</span>`);
-  else if (m.role === 'Veteran') chips.push(`<span class="np-mvprace-meta-chip">ベテラン</span>`);
-  else if (m.role === 'Rookie' || m.role === 'Young') chips.push(`<span class="np-mvprace-meta-chip">新人</span>`);
-  if (m.age > 0) chips.push(`<span class="np-mvprace-meta-chip">${m.age}歳</span>`);
+  if (m.isCurrentChamp) chips.push(`<span class="np-mvprace-meta-chip champ">${WM_I18N.t('👑 現王者')}</span>`);
+  if (m.role === 'Ace') chips.push(`<span class="np-mvprace-meta-chip">${WM_I18N.t('エース')}</span>`);
+  else if (m.role === 'MidCarder' || m.role === 'Midcarder') chips.push(`<span class="np-mvprace-meta-chip">${WM_I18N.t('中堅')}</span>`);
+  else if (m.role === 'Heel') chips.push(`<span class="np-mvprace-meta-chip">${WM_I18N.t('ヒール')}</span>`);
+  else if (m.role === 'Babyface') chips.push(`<span class="np-mvprace-meta-chip">${WM_I18N.t('ベビーフェイス')}</span>`);
+  else if (m.role === 'Veteran') chips.push(`<span class="np-mvprace-meta-chip">${WM_I18N.t('ベテラン')}</span>`);
+  else if (m.role === 'Rookie' || m.role === 'Young') chips.push(`<span class="np-mvprace-meta-chip">${WM_I18N.t('新人')}</span>`);
+  if (m.age > 0) chips.push(`<span class="np-mvprace-meta-chip">${WM_I18N.t('{age}歳', { age: m.age })}</span>`);
   return chips.join('');
 }
 function _npMvpRaceOrgEmblemBg(orgId) {
@@ -9202,23 +9206,23 @@ function _npMvpRaceRank1Card(entry) {
   const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
     ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
   const titleDetail = m.titleWins > 0 || m.titleDefenses > 0 || m.isCurrentChamp
-    ? `奪取${m.titleWins}+防衛${m.titleDefenses}${m.isCurrentChamp ? '+保持' : ''}` : '王座なし';
-  const ppvDetail = m.ppvChampion > 0 ? `優勝${m.ppvChampion}回` : (m.ppvRunnerUp > 0 ? `準V${m.ppvRunnerUp}回` : (m.ppvParticipation > 0 ? `出場${m.ppvParticipation}回` : '未開催'));
+    ? WM_I18N.t('奪取{wins}+防衛{defenses}{holding}', { wins: m.titleWins, defenses: m.titleDefenses, holding: m.isCurrentChamp ? WM_I18N.t('+保持') : '' }) : WM_I18N.t('王座なし');
+  const ppvDetail = m.ppvChampion > 0 ? WM_I18N.t('優勝{n}回', { n: m.ppvChampion }) : (m.ppvRunnerUp > 0 ? WM_I18N.t('準V{n}回', { n: m.ppvRunnerUp }) : (m.ppvParticipation > 0 ? WM_I18N.t('出場{n}回', { n: m.ppvParticipation }) : WM_I18N.t('未開催')));
   const warDetail = (m.warWins + m.warLosses + m.warDraws) > 0
-    ? `${m.warWins}勝${m.warLosses}敗` : '出場なし';
-  const domeDetail = m.domeAppearances > 0 ? `メイン${m.domeAppearances}回出場` : 'なし';
+    ? WM_I18N.t('{w}勝{l}敗', { w: m.warWins, l: m.warLosses }) : WM_I18N.t('出場なし');
+  const domeDetail = m.domeAppearances > 0 ? WM_I18N.t('メイン{n}回出場', { n: m.domeAppearances }) : WM_I18N.t('なし');
   const titleZero = bd.title === 0 ? ' zero' : '';
   const ppvZero = bd.ppv === 0 ? ' zero' : '';
   const warZero = bd.war === 0 ? ' zero' : '';
   const domeZero = bd.dome === 0 ? ' zero' : '';
   const drawZero = (bd.draw || 0) === 0 ? ' zero' : '';
   const drawPts = Math.round(bd.draw || 0);
-  const drawDetail = `人気${Math.round(m.popularity || 0)}・集客${Math.round(m.drawPower || 0)}`;
+  const drawDetail = WM_I18N.t('人気{pop}・集客{draw}', { pop: Math.round(m.popularity || 0), draw: Math.round(m.drawPower || 0) });
 
   return `<div class="np-mvprace-card np-mvprace-card-1${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId},null,true)">
     <div class="np-mvprace-photo">
       <div class="char-img-lg" style="${photoBg};width:100%;height:100%;background-size:cover;background-position:center top;background-repeat:no-repeat;background-color:#2a1a10"></div>
-      <div class="np-mvprace-rank-overlay"><span class="lbl">順位</span>1</div>
+      <div class="np-mvprace-rank-overlay"><span class="lbl">${WM_I18N.t('順位')}</span>1</div>
       <div class="np-mvprace-emb-overlay" style="${embBg}"></div>
     </div>
     <div class="np-mvprace-info">
@@ -9229,23 +9233,23 @@ function _npMvpRaceRank1Card(entry) {
       <div class="np-mvprace-meta">${meta}</div>
       <div class="np-mvprace-stats">
         <div class="np-mvprace-stat-box ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
-        <div class="np-mvprace-stat-box pts"><span class="lbl">ポイント</span><strong>${Math.round(entry.points)}<span class="unit">pt</span></strong></div>
+        <div class="np-mvprace-stat-box pts"><span class="lbl">${WM_I18N.t('ポイント')}</span><strong>${Math.round(entry.points)}<span class="unit">pt</span></strong></div>
       </div>
       ${entry.narrative ? `<div class="np-mvprace-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
       ${rich.headlineLine ? `<div class="np-mvprace-rich-line">${_escapeHtml(rich.headlineLine)}</div>` : ''}
       <div class="np-mvprace-badges">
         <div class="np-mvprace-badge${titleZero}">
-          <div class="icon-row">👑<span class="lbl">王者</span></div>
+          <div class="icon-row">👑<span class="lbl">${WM_I18N.t('王者')}</span></div>
           <div class="pts">+${bd.title}</div>
           <div class="detail">${_escapeHtml(titleDetail)}</div>
         </div>
         <div class="np-mvprace-badge${domeZero}">
-          <div class="icon-row">🏟<span class="lbl">ドーム</span></div>
+          <div class="icon-row">🏟<span class="lbl">${WM_I18N.t('ドーム')}</span></div>
           <div class="pts">+${bd.dome}</div>
           <div class="detail">${_escapeHtml(domeDetail)}</div>
         </div>
         <div class="np-mvprace-badge${warZero}">
-          <div class="icon-row">⚔<span class="lbl">対抗戦</span></div>
+          <div class="icon-row">⚔<span class="lbl">${WM_I18N.t('対抗戦')}</span></div>
           <div class="pts">+${bd.war}</div>
           <div class="detail">${_escapeHtml(warDetail)}</div>
         </div>
@@ -9255,7 +9259,7 @@ function _npMvpRaceRank1Card(entry) {
           <div class="detail">${_escapeHtml(ppvDetail)}</div>
         </div>
         <div class="np-mvprace-badge${drawZero}">
-          <div class="icon-row">⭐<span class="lbl">人気</span></div>
+          <div class="icon-row">⭐<span class="lbl">${WM_I18N.t('人気')}</span></div>
           <div class="pts">+${drawPts}</div>
           <div class="detail">${_escapeHtml(drawDetail)}</div>
         </div>
@@ -9272,21 +9276,21 @@ function _npMvpRaceMinorCard(entry, rank) {
   const arrowText = _npMvpRaceArrowText(entry.arrow, entry.arrowDelta);
   const m = entry.breakdown.meta;
   const bd = entry.breakdown;
-  const role = (m.role === 'Ace') ? 'エース'
-    : (m.role === 'MidCarder' || m.role === 'Midcarder') ? '中堅'
-    : (m.role === 'Heel') ? 'ヒール'
-    : (m.role === 'Babyface') ? 'ベビーフェイス'
-    : (m.role === 'Rookie' || m.role === 'Young') ? '新人'
-    : (m.role === 'Veteran') ? 'ベテラン' : '';
+  const role = (m.role === 'Ace') ? WM_I18N.t('エース')
+    : (m.role === 'MidCarder' || m.role === 'Midcarder') ? WM_I18N.t('中堅')
+    : (m.role === 'Heel') ? WM_I18N.t('ヒール')
+    : (m.role === 'Babyface') ? WM_I18N.t('ベビーフェイス')
+    : (m.role === 'Rookie' || m.role === 'Young') ? WM_I18N.t('新人')
+    : (m.role === 'Veteran') ? WM_I18N.t('ベテラン') : '';
 
   // ピル: 王者 / PPV / 対抗戦 / ドーム / 大試合 (上位4のみ表示)
   const pillCandidates = [
-    { icon: '👑', label: '王者', val: bd.title },
+    { icon: '👑', label: WM_I18N.t('王者'), val: bd.title },
     { icon: '🏆', label: 'PPV', val: bd.ppv },
-    { icon: '⚔', label: '対抗戦', val: bd.war },
-    { icon: '🏟', label: 'ドーム', val: bd.dome },
-    { icon: '🥊', label: '大試合', val: bd.mq },
-    { icon: '⭐', label: '人気', val: Math.round(bd.draw || 0) },
+    { icon: '⚔', label: WM_I18N.t('対抗戦'), val: bd.war },
+    { icon: '🏟', label: WM_I18N.t('ドーム'), val: bd.dome },
+    { icon: '🥊', label: WM_I18N.t('大試合'), val: bd.mq },
+    { icon: '⭐', label: WM_I18N.t('人気'), val: Math.round(bd.draw || 0) },
   ];
   pillCandidates.sort((a, b) => Math.abs(b.val) - Math.abs(a.val));
   const pills = pillCandidates.slice(0, 4).map(p => {
@@ -9312,7 +9316,7 @@ function _npMvpRaceMinorCard(entry, rank) {
         <div class="np-mvprace-minor-name">${_escapeHtml(entry.fighterName)}</div>
         ${arrowText ? `<span class="np-mvprace-minor-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</span>` : ''}
       </div>
-      <div class="np-mvprace-minor-meta">${_escapeHtml(entry.orgName)}${role ? `<span class="div">/</span><span>${role}</span>` : ''}${m.age ? `<span class="div">/</span><span>${m.age}歳</span>` : ''}</div>
+      <div class="np-mvprace-minor-meta">${_escapeHtml(entry.orgName)}${role ? `<span class="div">/</span><span>${role}</span>` : ''}${m.age ? `<span class="div">/</span><span>${WM_I18N.t('{age}歳', { age: m.age })}</span>` : ''}</div>
       ${entry.narrative ? `<div class="np-mvprace-minor-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
       ${factChipsHtml}
       ${flavorHtml}
@@ -9320,7 +9324,7 @@ function _npMvpRaceMinorCard(entry, rank) {
     </div>
     <div class="np-mvprace-minor-num">
       <div class="np-mvprace-minor-num-box ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
-      <div class="np-mvprace-minor-num-box pts"><span class="lbl">ポイント</span><strong>${Math.round(entry.points)}</strong></div>
+      <div class="np-mvprace-minor-num-box pts"><span class="lbl">${WM_I18N.t('ポイント')}</span><strong>${Math.round(entry.points)}</strong></div>
     </div>
   </div>`;
 }
@@ -9332,13 +9336,13 @@ function _npMvpRaceListRow(entry) {
   const embBg = _npMvpRaceOrgEmblemBg(entry.orgId);
   const arrowText = _npMvpRaceArrowText(entry.arrow, entry.arrowDelta);
   const m = entry.breakdown && entry.breakdown.meta || {};
-  const role = (m.role === 'Ace') ? 'エース'
-    : (m.role === 'MidCarder' || m.role === 'Midcarder') ? '中堅'
-    : (m.role === 'Heel') ? 'ヒール'
-    : (m.role === 'Babyface') ? 'ベビーフェイス'
-    : (m.role === 'Rookie' || m.role === 'Young') ? '新人'
-    : (m.role === 'Veteran') ? 'ベテラン' : '';
-  const champBadge = m.isCurrentChamp ? `<span class="np-mvprace-list-champ">👑 現王者</span>` : '';
+  const role = (m.role === 'Ace') ? WM_I18N.t('エース')
+    : (m.role === 'MidCarder' || m.role === 'Midcarder') ? WM_I18N.t('中堅')
+    : (m.role === 'Heel') ? WM_I18N.t('ヒール')
+    : (m.role === 'Babyface') ? WM_I18N.t('ベビーフェイス')
+    : (m.role === 'Rookie' || m.role === 'Young') ? WM_I18N.t('新人')
+    : (m.role === 'Veteran') ? WM_I18N.t('ベテラン') : '';
+  const champBadge = m.isCurrentChamp ? `<span class="np-mvprace-list-champ">${WM_I18N.t('👑 現王者')}</span>` : '';
   const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
     ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
   const factChipsHtml = rich.factChips && rich.factChips.length > 0
@@ -9346,7 +9350,7 @@ function _npMvpRaceListRow(entry) {
   const flavorHtml = rich.flavorLine
     ? `<div class="np-mvprace-list-flavor">${_escapeHtml(rich.flavorLine)}</div>`
     : (entry.tagline ? `<div class="np-mvprace-list-flavor">${_escapeHtml(entry.tagline)}</div>` : '');
-  const metaLine = [role, m.age ? `${m.age}歳` : ''].filter(Boolean).join(' / ');
+  const metaLine = [role, m.age ? WM_I18N.t('{age}歳', { age: m.age }) : ''].filter(Boolean).join(' / ');
 
   return `<div class="np-mvprace-list-row np-mvprace-list-row--rich${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId},null,true)">
     <div class="np-mvprace-list-rank">${entry.rank}</div>
@@ -9418,7 +9422,7 @@ function _renderNewspaperExtraPage(wp, pageData) {
   let html = `<div style="max-width:560px;margin:0 auto 12px;background:linear-gradient(180deg,#f8eed2 0%,#f0e0ba 100%);color:#1f1710;border:1px solid rgba(120,84,39,0.32);border-radius:8px;box-shadow:0 8px 32px rgba(0,0,0,0.25);overflow:hidden;">`;
   html += `<div style="background:linear-gradient(90deg,#8b1a1a,#c22020);padding:10px 20px;display:flex;align-items:center;justify-content:space-between;">
     <div style="font-size:18px;font-weight:900;color:#fff;letter-spacing:2px;">週刊グラップル</div>
-    <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;">${wp.isSeasonOpening ? '新年号 ' : ''}S${wp.season || '?'} W${wp.week || '?'} — ${pageData.title || '特集'}</div>
+    <div style="font-size:11px;color:rgba(255,255,255,0.8);font-weight:700;">${wp.isSeasonOpening ? WM_I18N.t('新年号 ') : ''}S${wp.season || '?'} W${wp.week || '?'} — ${pageData.title || WM_I18N.t('特集')}</div>
   </div>`;
 
   pageData.stories.forEach(story => {
@@ -9429,7 +9433,7 @@ function _renderNewspaperExtraPage(wp, pageData) {
     if (story.type === 'juniorTournamentPreviewRoster' && story.participants) {
       html += `<div style="font-size:13px;line-height:1.6;color:#3a2e1c;margin-bottom:8px">${story.body}</div>`;
       html += `<table style="width:100%;font-size:12px;border-collapse:collapse">`;
-      html += `<tr style="border-bottom:1px solid rgba(95,69,35,0.25)"><th style="text-align:left;padding:4px">選手名</th><th>所属</th><th>OVR</th><th>年齢</th><th>スタイル</th></tr>`;
+      html += `<tr style="border-bottom:1px solid rgba(95,69,35,0.25)"><th style="text-align:left;padding:4px">${WM_I18N.t('選手名')}</th><th>${WM_I18N.t('所属')}</th><th>OVR</th><th>${WM_I18N.t('年齢')}</th><th>${WM_I18N.t('スタイル')}</th></tr>`;
       story.participants.forEach((p, i) => {
         const bg = i % 2 === 0 ? 'rgba(200,190,170,0.15)' : '';
         html += `<tr style="background:${bg}"><td style="padding:3px 4px;font-weight:600">${_newsClickableName(p.name, p.id)}</td><td style="text-align:center">${p.orgName}</td><td style="text-align:center">${p.ovr}</td><td style="text-align:center">${p.age}</td><td style="text-align:center">${p.style || '-'}</td></tr>`;
@@ -9446,7 +9450,7 @@ function _renderNewspaperExtraPage(wp, pageData) {
         html += `<td style="padding:4px;font-weight:700;color:#2d5e1e">${_newsClickableName(m.winner, m.winnerId)}</td>`;
         html += `<td style="padding:4px;color:#7a5b32;font-size:10px">def.</td>`;
         html += `<td style="padding:4px">${_newsClickableName(m.loser, m.loserId)}</td>`;
-        html += `<td style="padding:4px;text-align:right;color:${_mqColor(m.mq).color};font-weight:600">評価${m.mq}</td>`;
+        html += `<td style="padding:4px;text-align:right;color:${_mqColor(m.mq).color};font-weight:600">${WM_I18N.t('評価{mq}', { mq: m.mq })}</td>`;
         html += `</tr>`;
       });
       html += `</table>`;
@@ -9523,19 +9527,19 @@ function _dbBuildFighterTitleBadges(fighterId, championIds, tournamentChampions,
   const tournamentBadge = (key, emoji, colorToken, label) => {
     const title = tournamentChampions[key];
     if (!title || !title.ids.has(fighterId) || !Number.isFinite(title.season)) return '';
-    return badge(emoji, colorToken, label + '(第' + title.season + '回)');
+    return badge(emoji, colorToken, WM_I18N.t('{label}(第{n}回)', { label, n: title.season }));
   };
   const bestTagRound = Number(bestTagSeason);
   const badges = [];
-  if (championIds.has(fighterId)) badges.push(badge('👑', '--gold', '王座保持者'));
-  badges.push(tournamentBadge('summit', '⛰️', '--ev-winter', '天頂戦優勝'));
-  badges.push(tournamentBadge('ppv', '🏆', '--ppv-accent', 'PPV GRAND FINAL優勝'));
-  badges.push(tournamentBadge('junior', '🏟️', '--ev-summer', 'ジュニアトーナメント優勝'));
-  badges.push(tournamentBadge('autumn', '⚔️', '--ev-autumn', '秋の4団体勝ち残り対抗戦優勝'));
+  if (championIds.has(fighterId)) badges.push(badge('👑', '--gold', WM_I18N.t('王座保持者')));
+  badges.push(tournamentBadge('summit', '⛰️', '--ev-winter', WM_I18N.t('天頂戦優勝')));
+  badges.push(tournamentBadge('ppv', '🏆', '--ppv-accent', WM_I18N.t('PPV GRAND FINAL優勝')));
+  badges.push(tournamentBadge('junior', '🏟️', '--ev-summer', WM_I18N.t('ジュニアトーナメント優勝')));
+  badges.push(tournamentBadge('autumn', '⚔️', '--ev-autumn', WM_I18N.t('秋の4団体勝ち残り対抗戦優勝')));
   if (bestTagIds.has(fighterId)) {
     badges.push(badge('🌸', '--db-title-spring', Number.isFinite(bestTagRound)
-      ? '春のタッグリーグ優勝(第' + bestTagRound + '回)'
-      : '春のタッグリーグ優勝'));
+      ? WM_I18N.t('春のタッグリーグ優勝(第{n}回)', { n: bestTagRound })
+      : WM_I18N.t('春のタッグリーグ優勝')));
   }
   return badges.filter(Boolean).join('');
 }
@@ -9551,7 +9555,7 @@ function _renderDbFighters() {
     ...activeFighters,
     ...(G.retiredFighters || [])
       .filter(f => f?.id != null && !activeIds.has(f.id))
-      .map(f => ({ ...f, _orgId: 'retired', _orgName: '引退', _orgTier: 'retired' })),
+      .map(f => ({ ...f, _orgId: 'retired', _orgName: WM_I18N.t('引退'), _orgTier: 'retired' })),
   ];
 
   // フィルタ
@@ -9589,7 +9593,7 @@ function _renderDbFighters() {
 
   // フィルタバー
   const orgOptions = [
-    { id: '', label: '全て' },
+    { id: '', label: WM_I18N.t('全て') },
     { id: 'player', label: G.orgName || WM_I18N.t('プレイヤー団体') },
     ...RIVAL_ORGS.map(o => ({ id: o.id, label: `${o.name || o.id} (${o.tier})` })),
     { id: 'fa', label: 'FA' },
@@ -9601,12 +9605,12 @@ function _renderDbFighters() {
       ${orgOptions.map(o => `<option value="${o.id}" ${_dbFilterOrg === o.id ? 'selected' : ''}>${o.label}</option>`).join('')}
     </select>
     <select onchange="_dbFilterStyle=this.value;renderDatabase()">
-      <option value="" ${_dbFilterStyle === '' ? 'selected' : ''}>スタイル: 全て</option>
+      <option value="" ${_dbFilterStyle === '' ? 'selected' : ''}>${WM_I18N.t('スタイル: 全て')}</option>
       ${styles.map(s => `<option value="${s}" ${_dbFilterStyle === s ? 'selected' : ''}>${s}</option>`).join('')}
     </select>
-    <input type="text" placeholder="🔍 名前検索..." value="${_dbFilterName}"
+    <input type="text" placeholder="${WM_I18N.t('🔍 名前検索...')}" value="${_dbFilterName}"
       oninput="_dbFilterName=this.value;renderDatabase()" style="max-width:160px">
-    <span class="db-count">全${all.length}名 / 表示中: ${filtered.length}名</span>
+    <span class="db-count">${WM_I18N.t('全{total}名 / 表示中: {shown}名', { total: all.length, shown: filtered.length })}</span>
   </div>`;
 
   // ソート用ヘッダー生成
@@ -9619,17 +9623,17 @@ function _renderDbFighters() {
   html += `<div class="db-table-scroll"><table class="db-table db-fighter-table">
     <thead><tr>
       <th style="width:40px"></th>
-      ${th('name', '名前')}
-      ${th('org', '団体', '110px')}
-      ${th('style', 'スタイル', '80px')}
+      ${th('name', WM_I18N.t('名前'))}
+      ${th('org', WM_I18N.t('団体'), '110px')}
+      ${th('style', WM_I18N.t('スタイル'), '80px')}
       ${th('ovr', 'OVR', '50px')}
       ${th('pw', 'PW', '40px')}
       ${th('sp', 'SP', '40px')}
       ${th('te', 'TE', '40px')}
       ${th('st', 'ST', '40px')}
       ${th('mn', 'MN', '40px')}
-      ${th('age', '年齢', '45px')}
-      ${th('pop', '人気', '50px')}
+      ${th('age', WM_I18N.t('年齢'), '45px')}
+      ${th('pop', WM_I18N.t('人気'), '50px')}
     </tr></thead>
     <tbody>`;
 
@@ -9654,7 +9658,7 @@ function _renderDbFighters() {
       ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(139,196,240,0.15);color:#8bc4f0;border:1px solid rgba(139,196,240,0.3)">FA</span>`
       : '';
     const playerBadge = f._orgTier === 'player'
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">自</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:2px;background:rgba(212,168,67,0.15);color:var(--gold);border:1px solid rgba(212,168,67,0.3)">${WM_I18N.t('自')}</span>`
       : '';
     const titleBadges = _dbBuildFighterTitleBadges(
       f.id, _champIds, _dbTournamentChampions, _bestTagIds, _dbActiveBestTag?.awardedSeason
@@ -9712,14 +9716,14 @@ function _renderDbCoaches() {
   // フィルタバー
   let html = `<div class="db-filter-bar">
     <select onchange="_dbCoachFilterGrade=this.value;renderDatabase()">
-      <option value="">グレード: 全て</option>
-      <option value="A" ${_dbCoachFilterGrade === 'A' ? 'selected' : ''}>A級</option>
-      <option value="B" ${_dbCoachFilterGrade === 'B' ? 'selected' : ''}>B級</option>
-      <option value="C" ${_dbCoachFilterGrade === 'C' ? 'selected' : ''}>C級</option>
+      <option value="">${WM_I18N.t('グレード: 全て')}</option>
+      <option value="A" ${_dbCoachFilterGrade === 'A' ? 'selected' : ''}>${WM_I18N.t('A級')}</option>
+      <option value="B" ${_dbCoachFilterGrade === 'B' ? 'selected' : ''}>${WM_I18N.t('B級')}</option>
+      <option value="C" ${_dbCoachFilterGrade === 'C' ? 'selected' : ''}>${WM_I18N.t('C級')}</option>
     </select>
-    <input type="text" placeholder="🔍 名前検索..." value="${_dbCoachFilterName}"
+    <input type="text" placeholder="${WM_I18N.t('🔍 名前検索...')}" value="${_dbCoachFilterName}"
       oninput="_dbCoachFilterName=this.value;renderDatabase()" style="max-width:160px">
-    <span class="db-count">全${ALL_COACHES.length}名 / 表示中: ${coaches.length}名</span>
+    <span class="db-count">${WM_I18N.t('全{total}名 / 表示中: {shown}名', { total: ALL_COACHES.length, shown: coaches.length })}</span>
   </div>`;
 
   // ソート用ヘッダー
@@ -9732,15 +9736,15 @@ function _renderDbCoaches() {
   html += `<div class="db-table-scroll"><table class="db-table">
     <thead><tr>
       <th style="width:40px"></th>
-      ${th('name', '名前')}
-      ${th('grade', 'グレード', '80px')}
-      ${th('gMult', '成長倍率', '70px')}
-      ${th('observation', '観察眼', '65px')}
-      ${th('style', '得意', '90px')}
-      <th style="width:140px">能力</th>
-      ${th('salary', '給与', '70px')}
-      ${th('hireFee', '雇用費', '70px')}
-      <th style="width:55px">状態</th>
+      ${th('name', WM_I18N.t('名前'))}
+      ${th('grade', WM_I18N.t('グレード'), '80px')}
+      ${th('gMult', WM_I18N.t('成長倍率'), '70px')}
+      ${th('observation', WM_I18N.t('観察眼'), '65px')}
+      ${th('style', WM_I18N.t('得意'), '90px')}
+      <th style="width:140px">${WM_I18N.t('能力')}</th>
+      ${th('salary', WM_I18N.t('給与'), '70px')}
+      ${th('hireFee', WM_I18N.t('雇用費'), '70px')}
+      <th style="width:55px">${WM_I18N.t('状態')}</th>
     </tr></thead>
     <tbody>`;
 
@@ -9757,7 +9761,7 @@ function _renderDbCoaches() {
       <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).join('・')}${c.flavor ? ` <span style="color:var(--text-dim)">[${c.flavor}]</span>` : ''}</td>
       <td class="num" style="font-size:12px">${c.salary}万</td>
       <td class="num" style="font-size:12px">${c.hireFee}万</td>
-      <td>${isHired ? '<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">雇用中</span>' : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>
+      <td>${isHired ? `<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">${WM_I18N.t('雇用中')}</span>` : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>
     </tr>`;
   });
 
@@ -9769,8 +9773,8 @@ function _renderDbCoaches() {
 function _renderDbRecordsTab() {
   const hofActive = _dbRecSeg === 'hof';
   let html = `<div class="db-record-seg" role="tablist">
-    <button class="db-record-seg-btn${hofActive ? ' active' : ''}" onclick="_dbRecSeg='hof';renderDatabase()">🏅 殿堂入り</button>
-    <button class="db-record-seg-btn${hofActive ? '' : ' active'}" onclick="_dbRecSeg='records';renderDatabase()">📜 歴代記録</button>
+    <button class="db-record-seg-btn${hofActive ? ' active' : ''}" onclick="_dbRecSeg='hof';renderDatabase()">${WM_I18N.t('🏅 殿堂入り')}</button>
+    <button class="db-record-seg-btn${hofActive ? '' : ' active'}" onclick="_dbRecSeg='records';renderDatabase()">${WM_I18N.t('📜 歴代記録')}</button>
   </div>`;
   return html + (hofActive ? _renderDbHallOfFame() : _renderDbRecordBook());
 }
@@ -9780,11 +9784,11 @@ function _recordBookSources() {
   const add = (fighters, orgName, active = false) => (fighters || []).forEach(fighter => {
     if (fighter && fighter.id != null) sources.push({ fighter, orgName: fighter.orgName || orgName || '', active });
   });
-  add(G.roster, G.orgName || 'あなたの団体', true);
+  add(G.roster, G.orgName || WM_I18N.t('あなたの団体'), true);
   Object.entries(G.aiOrgs || {}).forEach(([orgId, org]) => add(org.roster, org.orgName || org.name || _getHofOrgName(orgId), true));
-  add(G.freeAgents, 'フリー', true);
-  add(G.retiredFighters, '引退');
-  add((G.chronicle || {}).fighterArchive, G.orgName || 'あなたの団体');
+  add(G.freeAgents, WM_I18N.t('フリー'), true);
+  add(G.retiredFighters, WM_I18N.t('引退'));
+  add((G.chronicle || {}).fighterArchive, G.orgName || WM_I18N.t('あなたの団体'));
   Object.values(G.allHallOfFame || {}).forEach(entries => add(entries, ''));
   add(G.hallOfFame, '');
 
@@ -9818,7 +9822,7 @@ function _recordBookFace(id, name) {
 function _recordBookUpper(source, sizeClass) {
   const fighter = source && source.fighter;
   const id = fighter && fighter.id;
-  const name = (fighter && fighter.name) || '記録保持者';
+  const name = (fighter && fighter.name) || WM_I18N.t('記録保持者');
   const url = id != null ? getUpperUrl(id, _recordBookPeak(source)) : '';
   const initial = escHtml(name.charAt(0));
   return `<div class="db-record-upper ${sizeClass}"${url ? ` data-initial="${initial}"` : ''}>${url ? `<img src="${url}" alt="${escHtml(name)}" onerror="this.remove();this.parentElement.classList.add('is-image-missing')">` : `<span class="db-record-upper-initial">${initial}</span>`}</div>`;
@@ -9843,21 +9847,21 @@ function _renderDbRecordStrip(record, label, isTag) {
   const match = updated
     ? `<div class="db-record-strip-match"><span class="db-record-faces">${faces}</span><span>${escHtml(names.slice(0, Math.ceil(names.length / 2)).join('・'))}</span><span class="db-record-vs">VS</span><span>${escHtml(names.slice(Math.ceil(names.length / 2)).join('・'))}</span></div>`
     : '';
-  const stage = updated ? (Engine.mq.STAGE_LABELS[record.stage] || '興行') : '';
+  const stage = updated ? (Engine.mq.STAGE_LABELS[record.stage] || WM_I18N.t('興行')) : '';
   const when = updated ? `<div class="db-record-strip-when">${label} ─ S${record.season}・第${record.week}週 ─ ${escHtml(stage)}</div>` : '';
   const isNew = updated && record.season === G.season && record.week === G.week;
   const value = Math.round(Number(record && record.value) || (isTag ? 94 : 90));
   return `<div class="db-record-strip${isTag ? ' tag' : ''}">
-    <span class="db-record-strip-label">歴代最高</span>
+    <span class="db-record-strip-label">${WM_I18N.t('歴代最高')}</span>
     <span class="db-record-strip-value${updated ? '' : ' is-dim'}">${value}</span>
     <div class="db-record-strip-detail">${match}${when}</div>
-    ${isNew ? '<span class="db-record-new">記録更新!</span>' : ''}
+    ${isNew ? `<span class="db-record-new">${WM_I18N.t('記録更新!')}</span>` : ''}
   </div>`;
 }
 
 function _recordBookName(source) {
   const fighter = source && source.fighter;
-  return (fighter && fighter.name) || (fighter && Engine.career.resolveFighterName(G, fighter.id)) || '記録保持者';
+  return (fighter && fighter.name) || (fighter && Engine.career.resolveFighterName(G, fighter.id)) || WM_I18N.t('記録保持者');
 }
 
 function _recordBookDisplayOvr(source) {
@@ -9876,7 +9880,7 @@ function _renderDbRecordWinnerCard(item, index, kind) {
   const ovrClass = typeof valueClassOvr === 'function' ? valueClassOvr(ovr) : '';
   const orgName = (source && source.orgName) || '';
   const className = kind === 'tenchosen' ? 'db-record-glory-card' : 'db-record-glory-card db-record-ppv-card';
-  const cardNumber = kind === 'tenchosen' ? `<div class="db-record-glory-sub">第${index + 1}回 王者</div>` : '';
+  const cardNumber = kind === 'tenchosen' ? `<div class="db-record-glory-sub">${WM_I18N.t('第{n}回 王者', { n: index + 1 })}</div>` : '';
   return `<div class="${className}"${_recordBookOpen(source && source.fighter)}>
     ${_recordBookUpper(source, kind === 'tenchosen' ? 'is-tenchosen' : 'is-ppv')}
     <div class="db-record-nameband"><div><span>${escHtml(name)}</span><b class="db-record-ovr ${ovrClass}">OVR ${ovr}</b></div>${orgName ? `<small>${escHtml(orgName)}</small>` : ''}</div>
@@ -9899,7 +9903,7 @@ function _recordBookDefenseLeader(sources) {
     const history = ((source.fighter || {}).careerRecord || {}).history || [];
     history.forEach((event, index) => {
       if (event && event.type === 'titleLoss' && Number(event.defenses) > 0) {
-        candidates.push({ source, defenses: Number(event.defenses), titleName: event.orgName || `${source.orgName || '団体'}王座`, period: _recordBookTitlePeriod(history, index, event.season), endSeason: event.season || 0, active: false });
+        candidates.push({ source, defenses: Number(event.defenses), titleName: event.orgName || WM_I18N.t('{org}王座', { org: source.orgName || WM_I18N.t('団体') }), period: _recordBookTitlePeriod(history, index, event.season), endSeason: event.season || 0, active: false });
       }
     });
   });
@@ -9911,10 +9915,10 @@ function _recordBookDefenseLeader(sources) {
     const win = history.slice().reverse().find(event => event && event.type === 'titleWin' && (event.beltId || 'world') === 'world');
     const endSeason = G.season || 0;
     const startSeason = win && win.season;
-    candidates.push({ source, defenses: Number(title.defenses), titleName: `${orgName}王座`, period: startSeason && startSeason !== endSeason ? `S${startSeason}〜S${endSeason}` : `S${endSeason}`, endSeason, active: true });
+    candidates.push({ source, defenses: Number(title.defenses), titleName: WM_I18N.t('{org}王座', { org: orgName }), period: startSeason && startSeason !== endSeason ? `S${startSeason}〜S${endSeason}` : `S${endSeason}`, endSeason, active: true });
   };
-  addActive((G.titles || {}).world, G.orgName || 'あなたの団体');
-  Object.values(G.aiOrgs || {}).forEach(org => addActive((org.titles || {}).world, org.orgName || org.name || '団体'));
+  addActive((G.titles || {}).world, G.orgName || WM_I18N.t('あなたの団体'));
+  Object.values(G.aiOrgs || {}).forEach(org => addActive((org.titles || {}).world, org.orgName || org.name || WM_I18N.t('団体')));
   candidates.sort((a, b) => b.defenses - a.defenses || Number(b.active) - Number(a.active) || b.endSeason - a.endSeason);
   return candidates[0] || null;
 }
@@ -9964,12 +9968,12 @@ function _recordBookUnifiedReigns(sources) {
   history.forEach(event => {
     if (!event) return;
     if (['creation', 'crown', 'repeat'].includes(event.type)) {
-      if (current) finishReign(pendingReturn || event, '返還');
+      if (current) finishReign(pendingReturn || event, WM_I18N.t('返還'));
       startReign(event);
       return;
     }
     if (event.type === 'move') {
-      if (current) finishReign(event, '陥落');
+      if (current) finishReign(event, WM_I18N.t('陥落'));
       startReign(event);
       return;
     }
@@ -9982,7 +9986,7 @@ function _recordBookUnifiedReigns(sources) {
       pendingReturn = event;
       return;
     }
-    if (event.type === 'vacate' && current) finishReign(event, '返上');
+    if (event.type === 'vacate' && current) finishReign(event, WM_I18N.t('返上'));
   });
 
   if (current && G.unifiedTitle.championId === current.championId) {
@@ -9993,7 +9997,7 @@ function _recordBookUnifiedReigns(sources) {
       defenses: Math.max(current.defenses, Number(G.unifiedTitle.defenses) || 0),
       endSeason,
       endWeek,
-      endReason: '在位中',
+      endReason: WM_I18N.t('在位中'),
       active: true,
       durationWeeks: Math.max(0, absWeek(endSeason, endWeek) - absWeek(current.startSeason, current.startWeek)),
     });
@@ -10020,12 +10024,12 @@ function _renderDbUnifiedTitleRecords(sources) {
   const recordCard = (label, reign, value) => reign ? `<div class="db-record-strip"${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
     <span class="db-record-strip-label">${label}</span>
     <span class="db-record-strip-value">${value}</span>
-    <div class="db-record-strip-detail"><strong>${escHtml(holderName(reign))}</strong><br><span>第${reign.generation}代 / ${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</span></div>
+    <div class="db-record-strip-detail"><strong>${escHtml(holderName(reign))}</strong><br><span>${WM_I18N.t('第{n}代', { n: reign.generation })} / ${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</span></div>
   </div>` : '';
   const rows = reigns.map(reign => {
-    const period = `S${reign.startSeason} 第${reign.startWeek}週〜${reign.active ? '現在' : `S${reign.endSeason} 第${reign.endWeek}週`}`;
+    const period = `S${reign.startSeason} 第${reign.startWeek}週〜${reign.active ? WM_I18N.t('現在') : `S${reign.endSeason} 第${reign.endWeek}週`}`;
     return `<tr${reign.source ? _recordBookOpen(reign.source.fighter) : ''}>
-      <td class="num">第${reign.generation}代</td>
+      <td class="num">${WM_I18N.t('第{n}代', { n: reign.generation })}</td>
       <td>${escHtml(holderName(reign))}</td>
       <td>${escHtml(reign.orgId ? _getHofOrgName(reign.orgId) : '')}</td>
       <td>${period}</td>
@@ -10035,12 +10039,12 @@ function _renderDbUnifiedTitleRecords(sources) {
   }).join('');
 
   return `<section class="db-record-hall db-record-unified-hall">
-    <div class="db-record-cere-head"><span>━━</span><h3>🌐 全国統一王座</h3><span>━━</span></div>
+    <div class="db-record-cere-head"><span>━━</span><h3>${WM_I18N.t('🌐 全国統一王座')}</h3><span>━━</span></div>
     ${reigns.length > 0 ? `<div class="db-record-strips">
-      ${recordCard('最多防衛', defenseLeader, `${defenseLeader.defenses}度`)}
-      ${recordCard('最長在位', longest, _recordBookUnifiedDuration(longest.durationWeeks))}
+      ${recordCard(WM_I18N.t('最多防衛'), defenseLeader, `${defenseLeader.defenses}度`)}
+      ${recordCard(WM_I18N.t('最長在位'), longest, _recordBookUnifiedDuration(longest.durationWeeks))}
     </div>
-    <div class="db-table-scroll"><table class="db-table"><thead><tr><th>世代</th><th>王者</th><th>団体</th><th>在位期間</th><th>防衛</th><th>終わり方</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
+    <div class="db-table-scroll"><table class="db-table"><thead><tr><th>${WM_I18N.t('世代')}</th><th>${WM_I18N.t('王者')}</th><th>${WM_I18N.t('団体')}</th><th>${WM_I18N.t('在位期間')}</th><th>${WM_I18N.t('防衛')}</th><th>${WM_I18N.t('終わり方')}</th></tr></thead><tbody>${rows}</tbody></table></div>` : ''}
   </section>`;
 }
 
@@ -10054,32 +10058,32 @@ function _renderDbRecordBook() {
   const leader = _recordBookDefenseLeader(sources);
 
   let html = `<div class="db-record-book">
-    <div class="db-record-strips">${_renderDbRecordStrip(G.mqRecord, 'シングル', false)}${_renderDbRecordStrip(G.mqRecordTag, 'タッグ', true)}</div>
+    <div class="db-record-strips">${_renderDbRecordStrip(G.mqRecord, WM_I18N.t('シングル'), false)}${_renderDbRecordStrip(G.mqRecordTag, WM_I18N.t('タッグ'), true)}</div>
     ${_renderDbUnifiedTitleRecords(sources)}
     <section class="db-record-hall db-record-tenchosen-hall">
-      <div class="db-record-cere-head"><span>━━</span><h3>天頂戦 歴代優勝</h3><span>━━</span></div>
-      <p class="db-record-cere-lead">4年に一度、業界の頂を決める舞台</p>
+      <div class="db-record-cere-head"><span>━━</span><h3>${WM_I18N.t('天頂戦 歴代優勝')}</h3><span>━━</span></div>
+      <p class="db-record-cere-lead">${WM_I18N.t('4年に一度、業界の頂を決める舞台')}</p>
       <div class="db-record-glory-row">${tenchosen.map((item, index) => _renderDbRecordWinnerCard(item, index, 'tenchosen')).join('')}
-        <div class="db-record-glory-card is-empty"><div class="db-record-upper is-tenchosen"><span>⛰</span><small>次回<br>S${nextTenchosen}</small></div><div class="db-record-glory-plate">S${nextTenchosen}</div><div class="db-record-glory-sub">開催前</div></div>
+        <div class="db-record-glory-card is-empty"><div class="db-record-upper is-tenchosen"><span>⛰</span><small>${WM_I18N.t('次回<br>S{season}', { season: nextTenchosen })}</small></div><div class="db-record-glory-plate">S${nextTenchosen}</div><div class="db-record-glory-sub">${WM_I18N.t('開催前')}</div></div>
       </div>
     </section>`;
   html += `<section class="db-record-hall db-record-ppv-hall">
-    <div class="db-record-cere-head is-ppv"><span>━━</span><h3>PPV GRAND FINAL 歴代優勝</h3><span>━━</span></div>
-    <p class="db-record-cere-lead">毎年の頂点 ─ 直近から</p>
+    <div class="db-record-cere-head is-ppv"><span>━━</span><h3>PPV GRAND FINAL ${WM_I18N.t('歴代優勝')}</h3><span>━━</span></div>
+    <p class="db-record-cere-lead">${WM_I18N.t('毎年の頂点 ─ 直近から')}</p>
     <div class="db-record-ppv-row">${ppv.map((item, index) => _renderDbRecordWinnerCard(item, index, 'ppv')).join('')}</div>
   </section>`;
   if (leader) {
     const name = _recordBookName(leader.source);
     html += `<section class="db-record-defense-band"${_recordBookOpen(leader.source.fighter)}>
       <div class="db-record-defense-portrait"><span>👑</span>${_recordBookUpper(leader.source, 'is-defense')}</div>
-      <div class="db-record-defense-info"><div>最多連続防衛</div><p><strong>${leader.defenses}</strong><span>度防衛</span></p><h3>${escHtml(name)}</h3><small>${escHtml(leader.titleName)} ─ ${leader.period}${leader.active ? ' ─ 継続中' : ''}</small></div>
+      <div class="db-record-defense-info"><div>${WM_I18N.t('最多連続防衛')}</div><p><strong>${leader.defenses}</strong><span>度防衛</span></p><h3>${escHtml(name)}</h3><small>${escHtml(leader.titleName)} ─ ${leader.period}${leader.active ? WM_I18N.t(' ─ 継続中') : ''}</small></div>
     </section>`;
   }
   return html + `</div>`;
 }
 
 // ── 殿堂一覧 v2.0 ──────────────────────────────────────────────
-function _getHofStarText(level) { return level >= 3 ? '★★★ レジェンド' : level >= 2 ? '★★ ゴールド殿堂' : '★ 殿堂入り'; }
+function _getHofStarText(level) { return level >= 3 ? WM_I18N.t('★★★ レジェンド') : level >= 2 ? WM_I18N.t('★★ ゴールド殿堂') : WM_I18N.t('★ 殿堂入り'); }
 function _getHofBorderColor(level) { return level >= 3 ? '#f39c12' : level >= 2 ? '#d4a843' : '#bdc3c7'; }
 function _getHofShieldEmoji(level) { return level >= 3 ? '🏆' : level >= 2 ? '🥇' : '🛡️'; }
 function _hofShieldImg(level, id, size) {
@@ -10105,7 +10109,7 @@ function _getAllHofEntries() {
 }
 
 function _getHofOrgName(orgId) {
-  if (orgId === 'player') return G.orgName || 'あなたの団体';
+  if (orgId === 'player') return G.orgName || WM_I18N.t('あなたの団体');
   const org = RIVAL_ORGS.find(o => o.id === orgId);
   const aiData = G.aiOrgs && G.aiOrgs[orgId];
   return (aiData && aiData.orgName) || (org && org.name) || orgId;
@@ -10121,15 +10125,15 @@ function _renderDbHallOfFame() {
 
   let html = `<div class="db-hof-filter-bar">`;
   orgKeys.forEach(k => {
-    const label = k === 'all' ? '全団体' : _getHofOrgName(k);
+    const label = k === 'all' ? WM_I18N.t('全団体') : _getHofOrgName(k);
     const active = _dbHofFilter === k ? ' active' : '';
     html += `<button class="db-hof-filter-btn${active}" onclick="_dbHofFilter='${k}';renderDatabase()">${label}(${orgCounts[k]})</button>`;
   });
   html += `</div>`;
 
   // ソート
-  html += `<div class="db-hof-sort-bar"><span style="color:var(--text-dim);font-size:11px">並び替え:</span>`;
-  [['season_desc','殿堂入り順'],['points_desc','ポイント順'],['name','名前順']].forEach(([k,label]) => {
+  html += `<div class="db-hof-sort-bar"><span style="color:var(--text-dim);font-size:11px">${WM_I18N.t('並び替え:')}</span>`;
+  [['season_desc',WM_I18N.t('殿堂入り順')],['points_desc',WM_I18N.t('ポイント順')],['name',WM_I18N.t('名前順')]].forEach(([k,label]) => {
     const active = _dbHofSort === k ? ' active' : '';
     html += `<button class="db-hof-sort-btn${active}" onclick="_dbHofSort='${k}';renderDatabase()">${label}</button>`;
   });
@@ -10146,11 +10150,11 @@ function _renderDbHallOfFame() {
   if (filtered.length === 0) {
     html += `<div style="text-align:center;padding:40px 20px;color:var(--text-dim)">
       <div style="font-size:40px;margin-bottom:12px">🏅</div>
-      <div style="font-size:15px;margin-bottom:8px">まだ殿堂入りした選手はいません</div>
-      <div style="font-size:13px;color:var(--text-dim)">殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>
+      <div style="font-size:15px;margin-bottom:8px">${WM_I18N.t('まだ殿堂入りした選手はいません')}</div>
+      <div style="font-size:13px;color:var(--text-dim)">${WM_I18N.t('殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>')}
       <span style="display:inline-block;margin-top:8px;text-align:left;line-height:1.8">
-      <span style="color:var(--text-sub)">【実績】</span> 戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5 ／ 天頂戦 優勝8・準優勝5・ベスト4 3<br>
-      <span style="color:var(--text-sub)">【表彰】</span> MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5
+      <span style="color:var(--text-sub)">${WM_I18N.t('【実績】')}</span> ${WM_I18N.t('戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5 ／ 天頂戦 優勝8・準優勝5・ベスト4 3')}<br>
+      <span style="color:var(--text-sub)">${WM_I18N.t('【表彰】')}</span> ${WM_I18N.t('MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5')}
       </span></div>
     </div>`;
     return html;
@@ -10174,7 +10178,7 @@ function _renderDbHallOfFame() {
       <div style="margin:4px 0">${imgHtml}</div>
       <div class="db-hof-name">${h.name}</div>
       <div class="db-hof-row">${h.orgName || _getHofOrgName(h.orgId)}</div>
-      <div class="db-hof-row">王座${h.titleReigns || 0}/防衛${h.totalDefenses || 0}</div>
+      <div class="db-hof-row">${WM_I18N.t('王座{reigns}/防衛{defenses}', { reigns: h.titleReigns || 0, defenses: h.totalDefenses || 0 })}</div>
     </div>`;
   });
   html += `</div>`;
@@ -10227,7 +10231,7 @@ function showHofDetail(idx) {
   }
   let highlightsHtml = '';
   if (highlights.length > 0) {
-    highlightsHtml = `<div class="db-hof-detail-section" style="text-align:center">━━ キャリアハイライト ━━</div><div class="db-hof-highlights" style="display:inline-block;text-align:left">`;
+    highlightsHtml = `<div class="db-hof-detail-section" style="text-align:center">${WM_I18N.t('━━ キャリアハイライト ━━')}</div><div class="db-hof-highlights" style="display:inline-block;text-align:left">`;
     highlights.forEach(hl => {
       highlightsHtml += `<div class="db-hof-hl-row"><span class="db-hof-hl-season" style="font-family:monospace">S${hl.season}</span><span>${_getHighlightIcon(hl.type)} ${hl.text}</span></div>`;
     });
@@ -10248,18 +10252,18 @@ function showHofDetail(idx) {
   }
 
   // 通算実績
-  const statsHtml = `<div class="db-hof-detail-section" style="text-align:center">━━ 通算実績 ━━</div>
+  const statsHtml = `<div class="db-hof-detail-section" style="text-align:center">${WM_I18N.t('━━ 通算実績 ━━')}</div>
     <div class="db-hof-stats-grid" style="max-width:280px;margin:0 auto">
-      <div>王座獲得 <strong>${h.titleReigns || 0}</strong>回</div>
-      <div>通算防衛 <strong>${h.totalDefenses || 0}</strong>回</div>
-      ${h.juniorTournamentWins ? `<div>JT優勝 <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
-      ${h.ppvMainEventWins ? `<div>PPV優勝 <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
-      ${_warW + _warL > 0 ? `<div style="grid-column:1/-1;margin-top:4px">🏴 対抗戦 <strong style="color:#2ecc71">${_warW}勝</strong> <strong style="color:#e74c3c">${_warL}敗</strong></div>` : ''}
+      <div>${WM_I18N.t('王座獲得')} <strong>${h.titleReigns || 0}</strong>回</div>
+      <div>${WM_I18N.t('通算防衛')} <strong>${h.totalDefenses || 0}</strong>回</div>
+      ${h.juniorTournamentWins ? `<div>${WM_I18N.t('JT優勝')} <strong>${h.juniorTournamentWins}</strong>回</div>` : '<div></div>'}
+      ${h.ppvMainEventWins ? `<div>PPV${WM_I18N.t('優勝')} <strong>${h.ppvMainEventWins}</strong>回</div>` : '<div></div>'}
+      ${_warW + _warL > 0 ? `<div style="grid-column:1/-1;margin-top:4px">🏴 ${WM_I18N.t('対抗戦')} <strong style="color:#2ecc71">${_warW}勝</strong> <strong style="color:#e74c3c">${_warL}敗</strong></div>` : ''}
     </div>`;
 
   // §4 引退時OVR
   const retireInfo = h.retireOVR
-    ? `<div style="font-size:12px;color:var(--text-sub)">引退時OVR ${h.retireOVR}${h.retireAge ? `（${h.retireAge}歳）` : ''}</div>`
+    ? `<div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('引退時OVR {ovr}{age}', { ovr: h.retireOVR, age: h.retireAge ? WM_I18N.t('（{age}歳）', { age: h.retireAge }) : '' })}</div>`
     : '';
 
   const legendGlow = level >= 3 ? 'box-shadow:0 0 20px rgba(243,156,18,0.3);' : '';
@@ -10285,8 +10289,8 @@ function showHofDetail(idx) {
         <div style="font-size:18px;font-weight:700;color:var(--text-main)">${h.name}</div>
         <div style="font-size:15px;color:var(--gold);margin:4px 0">── 「${epithet}」──</div>
         <div style="font-size:13px;color:var(--text-sub)">${orgName} / ${h.style || 'Allround'}</div>
-        <div style="font-size:12px;color:var(--text-sub)">${h.activeYears || ''}（${(h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1}シーズン）</div>
-        <div style="font-size:12px;color:var(--text-sub)">最高OVR ${h.peakOVR || 0}（S${h.peakOVRSeason || '?'}）</div>
+        <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('{years}（{n}シーズン）', { years: h.activeYears || '', n: (h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1 })}</div>
+        <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('最高OVR {ovr}（S{season}）', { ovr: h.peakOVR || 0, season: h.peakOVRSeason || '?' })}</div>
         ${retireInfo}
       </div>
     </div>
@@ -10296,11 +10300,11 @@ function showHofDetail(idx) {
     ${sep}
     ${statsHtml}
     <div style="margin-top:14px;font-size:13px;color:${borderColor}">
-      殿堂pt: ${h.hofPoints || 0} ／ 殿堂入り: S${h.inductionSeason || '?'}
+      ${WM_I18N.t('殿堂pt: {pt} ／ 殿堂入り: S{season}', { pt: h.hofPoints || 0, season: h.inductionSeason || '?' })}
     </div>
     <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-      ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id})">📖 年代記で見る</button>` : ''}
-      <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove();_drainPopupQueue()">閉じる</button>
+      ${hasChronicleChapter ? `<button class="db-hof-detail-btn" style="background:rgba(154,112,32,0.12);border-color:rgba(184,137,42,0.6);color:#c9a84c" onclick="openChronicleForFighter(${h.id})">${WM_I18N.t('📖 年代記で見る')}</button>` : ''}
+      <button class="db-hof-detail-btn" onclick="this.closest('.db-hof-detail-overlay').remove();_drainPopupQueue()">${WM_I18N.t('閉じる')}</button>
     </div>
   </div>`;
   document.body.appendChild(modal);
@@ -15268,7 +15272,7 @@ function _relmapShowDetailForNode(nodeId) {
 
   panel.innerHTML = `<div class="rm-detail-faces"><div class="rm-detail-face" style="border-color:${n.color}" onclick="showFighterPopup(${n.id})">${_relmapFaceHtml(n.id, 42)}</div><span class="rm-detail-arr">\u21C4</span><div class="rm-detail-face" style="border-color:${other.color}" onclick="showFighterPopup(${other.id})">${_relmapFaceHtml(other.id, 42)}</div></div>
     <div class="rm-detail-info"><div class="rm-detail-names"><span style="cursor:pointer" onclick="showFighterPopup(${n.id})">${n.name}</span><span style="color:var(--text-dim);font-size:11px">\u21C4</span><span style="cursor:pointer" onclick="showFighterPopup(${other.id})">${other.name}</span>${tb}</div>
-    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rfc}">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:${rfc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rrc}">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:${rrc}"></div></div></div></div></div>
+    <div class="rm-detail-meters"><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_BOND))}>${n.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${bfc}">${Math.round(bf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${bf}%;background:${bfc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_BOND))}>${other.name.slice(0,3)}\u2192親</div><div class="rm-detail-meter-val" style="color:${brc}">${Math.round(br)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${br}%;background:${brc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_RIVALRY))}>${n.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rfc}">${Math.round(rf)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rf}%;background:${rfc}"></div></div></div><div><div class="rm-detail-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_RIVALRY))}>${other.name.slice(0,3)}\u2192競</div><div class="rm-detail-meter-val" style="color:${rrc}">${Math.round(rr)}</div><div class="rm-detail-meter-bar"><div class="rm-detail-meter-fill" style="width:${rr}%;background:${rrc}"></div></div></div></div></div>
     <div style="text-align:right;font-size:10px;color:var(--text-dim);flex-shrink:0">他 ${nl.length-1}件<br><span style="cursor:pointer;color:var(--gold)" onclick="showFighterPopup(${n.id})">\uD83D\uDCCB 詳細</span><span style="margin-left:8px;cursor:pointer;color:#74b9ff" onclick="_relmapCompareA=${n.id};_relmapCompareB=${other.id};_relmapShowComparePopup()">\u2696 比較</span></div>`;
   panel.classList.add('show');
 }
@@ -15328,8 +15332,8 @@ function _relmapShowComparePopup() {
   if (rel) {
     h += `<div class="rm-cmp-rel-inline">`;
     h += `<div class="rm-cmp-rel-direction" style="color:${bColor}">→ ${b.name.slice(0,5)} への感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_BOND))}>親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cAB}">${Math.round(bAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bAtoB}%;background:${cAB}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_RIVALRY))}>競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rAtoB)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rAtoB}%;background:#e17055"></div></div></div>`;
     const emotionAtoB = getEmotionText(bAtoB, rAtoB, a.ovr, b.ovr, a._char?.archetype);
     h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionAtoB}</div>`;
     h += `</div>`;
@@ -15341,8 +15345,8 @@ function _relmapShowComparePopup() {
   if (rel) {
     h += `<div class="rm-cmp-rel-inline">`;
     h += `<div class="rm-cmp-rel-direction" style="color:${aColor}">← ${a.name.slice(0,5)} への感情</div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_BOND)}>親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
-    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(_RM_TIP_RIVALRY)}>競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_BOND))}>親密度</div><div class="rm-cmp-rel-meter-val" style="color:${cBA}">${Math.round(bBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${bBtoA}%;background:${cBA}"></div></div></div>`;
+    h += `<div class="rm-cmp-rel-meter"><div class="rm-cmp-rel-meter-label" style="cursor:help" ${_tipAttr(WM_I18N.t(_RM_TIP_RIVALRY))}>競争意識</div><div class="rm-cmp-rel-meter-val" style="color:#e17055">${Math.round(rBtoA)}</div><div class="rm-cmp-rel-meter-bar"><div class="rm-cmp-rel-meter-fill" style="width:${rBtoA}%;background:#e17055"></div></div></div>`;
     const emotionBtoA = getEmotionText(bBtoA, rBtoA, b.ovr, a.ovr, b._char?.archetype);
     h += `<div class="rm-cmp-emotion-text">\uD83D\uDCAD ${emotionBtoA}</div>`;
     h += `</div>`;
