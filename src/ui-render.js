@@ -595,7 +595,7 @@ function _renderSeasonReview(review, state) {
   h += `<div class="sr-verdict">
     <div class="sr-verdict-l">
       <div class="sr-seal"><span class="sr-w">${WM_I18N.t(seasonHeadlineLabel(review.headline))}</span></div>
-      <div class="sr-rank-line"><span class="sr-num">${review.rank}</span><span class="sr-suf">${WM_I18N.t('位')}</span>${deltaHtml}</div>
+      <div class="sr-rank-line">${WM_I18N.t('<span class="sr-num">{n}</span><span class="sr-suf">位</span>', { n: review.rank })}${deltaHtml}</div>
       <div class="sr-rank-cap">${WM_I18N.t('Final Standing — 最終順位')}</div>
       <div class="sr-lead">${review.lead}</div>
     </div>
