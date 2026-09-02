@@ -2151,7 +2151,7 @@
     "焦点: SEASON {season}": "Focus: SEASON {season}",
     "煽 る": "Stir It Up",
     "煽らず、組まず": "No stirring, no booking",
-    "熱": "Heat",
+    "熱": "Fire",
     "熱が入る": "Fired up",
     "熱は持続。次興行に持ち越し。CD 24週は走らない（再判定継続）": "The heat holds and carries to the next show. The 24-week cooldown does not start (it will be checked again)",
     "燻り続ける": "Still smoldering",
