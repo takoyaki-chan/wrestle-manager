@@ -1,5 +1,82 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P4-3a — テンプレ英訳・第1弾（見出し以外の209本）（2026-09-02・Opus worktree agent-aacb040121d67e5d2）
+
+英語対応P4の第3工程・前半。`i18n/template-ledger.json`(P4-2で新設・全550本)のうち **NEWS_HEADLINE_TEMPLATES(341本)以外の全209本**のen列を書き下ろし翻訳した。物差しは `docs/en-kuroda-style-draft-v0.1.md`(三層主語/断片リズム/慨嘆4道具/見出し文法/プレースホルダ安全則/禁止語grep)+`docs/en-tone-bible-draft-v0.1.md`§0-§1+`docs/en-proper-nouns-draft-v0.1.md`、用語はP3b用語集(`i18n/ui-ledger.json`のen列)に合わせた。**`i18n/ui-ledger.json` / `src/lang-en.js` / `src/i18n.js` は別エージェント作業中のため一切触っていない**。開始前にworktreeブランチをmain先端(e4ceb77)へfast-forward済み。
+
+### 1. 埋めた本数（テーブル別・計209/209、スキップ0）
+GAMELOG_TEMPLATES 73 / NEWS_TICKER_TEMPLATES 75 / FINISH_TEXT 5 / PPV_SUMMIT_HEADLINE_TEMPLATES 8 / PPV_SUMMIT_MATCHPART_TEMPLATES 12 / PPV_SUMMIT_HPNOTE_TEMPLATES 2 / PPV_UNDERCARD_HEADLINE_TEMPLATES 4 / PPV_UNDERCARD_BODY_TEMPLATES 8 / AI_INJURY_RETIREMENT_TEMPLATES 6 / AI_CONTRACT_DEPARTURE_TEMPLATES 8 / CROSS_WAR_RESULT_TEXT 3 / LEAGUE_ELEVATION_TEXT 2 / NEWSPAPER_SUB_TEMPLATES 3。
+- 台帳の総数は550・訳文あり209・未訳(fail-open)341(=NEWS_HEADLINE、P4-3bの担当)
+- P4-2ログのテーブル別内訳はユニーク化前の生値。実台帳ではGAMELOG 73(重複1件統合済み)/FINISH_TEXT 5(フォールとピンが同一文字列)なので、指示書の「74/6」との差1本ずつは**取りこぼしではなく重複統合**である
+
+### 2. 文体の適用方針（黒田英文体の三層をテーブル族へ割り当て）
+- **GAMELOG**(UIログ)= ゲーム自身の声。絵文字位置と先頭スペースをバイト単位で維持し、簡潔な平叙。JA原文に「！」がある行は「！」を保つ(温度を上げない=最重要則。逆に**足さない**)。コーチ報告6変種は社長への呼びかけを裁定#4どおり "Boss," に統一
+- **NEWS_TICKER**(ティッカー)= 無署名デスクの短信。見出し文法に準ずる(現在形・冠詞省略寄り)が、原文が完全文の族なので文としては成立させた。**JA「！」の3行はダッシュ+強い名詞句に載せ替えて感嘆符を落とした**(§1-5「英語の"!"は日本語より2段階うるさい」・H7と同法)。「注目が集まる」は禁止直訳を避け "the one to watch" / "worth watching" 系へ
+- **記事系**(PPV/対抗戦/AI引退退団/新聞サブ/業界底上げ)= 事実文+抑えた慨嘆。「悲劇」「激震」はタブロイド語彙に落とさず**事実へ差し替え**(§1-4道具3): 例「リング上での悲劇に関係者は言葉を失った」→ "Nobody around the promotion had anything to say about what they had just seen."。LEAGUE_ELEVATIONの締め「真の群雄割拠が始まる——。」はmaxim検査(§1-6-3)に掛けて主語を業界に具体化 "No promotion's position is settled now."
+- **単複安全則**(§3-4規則23/24)を全行に適用: `{turns}ターンに及ぶ` → `a {turns}-turn war`(ハイフン限定用法)、`{count}連勝` → `{count} in a row`、`{seasons}シーズンの現役生活` → `a {seasons}-season career`、`{defenses}回防衛` → `Defense number {defenses}`、`{rematchNum}度目` → `meeting number {rematchNum}`、`全{totalMatches}試合` → `{totalMatches} on the card`、`フリーエージェント{count}名` → `Free agents available to scout: {count}.`
+- **試合評価は "rated {mq}"**(§1-7・"{mq} points" 禁止をgrepでも担保)
+
+### 3. ⚠ 成形済み値プレースホルダ — **新たに11種を発見**し、全て「値が日本語のまま入っても英文が壊れない位置」へ退避した
+`i18n/preformatted-values-audit.md`(P4-2)は見出し族から見つかった約20値の台帳だが、**今回の209本には audit に載っていない別の成形済み値が11種入っていた**。テンプレ側は訳しても、この値の生成式を直すまで紙面/ログに日本語が残る。該当行と退避のしかた:
+
+| # | プレースホルダ | JA値の例 | 生成箇所 | 該当テンプレ | 退避のしかた | 難易度 |
+|---|---|---|---|---|---|---|
+| A | `{phase}` | 序盤/中盤/終盤/長期戦の末 | management.js:30790-30795(インライン辞書) | PPV_SUMMIT_MATCHPART の …Phase 6行 | 文末の括弧へ `… ({phase}).` | LOW |
+| B | `{tone}` | 名勝負/好勝負/熱戦/一方的な展開/見応えある一戦 | management.js:31912(インライン三項) | PPV_UNDERCARD_HEADLINE 1 + BODY 8 | 見出しは "PPV {tone} —" の独立タグ位置、本文は末尾 `Rated {mq} — {tone}.`。**JA本文は{tone}を2回使うがEN は1回**(機械検査は集合一致なので合法・2箇所目は文法に埋まるため落とした) | LOW |
+| C | `{stamp}` | 第N年度・第M週 PPV GRAND FINAL / …対抗戦 | management.js:31863, 31907 | UNDERCARD BODY 8 + CROSS_WAR bodyBase 1 | 文頭+ピリオドの独立タグのまま維持 | MEDIUM |
+| D | `{result}` | 勝ち越し/決着つかず/敗北 | management.js:31861 | CROSS_WAR headline + bodyBase | カンマ後/コロン後の文末 | LOW |
+| E | `{crowdLabel}` | 客席が沸き返る超満員/押し寄せる大盛況/空席が目立つ客入り/閑古鳥の会場 | data.js:1332 `FILL_PRESSURE_BANDS` | GAMELOG venue_heat_crowd | 文頭独立句+括弧の補足 | LOW(既に構造化テーブル) |
+| F | `{tierLabel}` | 超逸材/逸材/有望/原石/素材 | management.js:16170 `Engine.scout.TIERS` | GAMELOG 11行 | JA同様 `[{tierLabel}]` の角括弧に隔離済み。**EN語はui-ledgerに既存**(Elite Prospect/Standout/Promising/Diamond in the rough/Raw) | LOW |
+| G | `{label}` | 宿敵戦勝利/最終決着 ほか | management.js:1961 / app.js:8192 | GAMELOG rivalry_resolution | em ダッシュ後 | LOW |
+| H | `{outcome}` | 勝利！/敗北… | ui-common.js:6940 | GAMELOG challenge_event_result | `→` の後 | LOW |
+| I | `{wanted}` | 「{g}級のコーチ」「{label}に強いコーチ」 | management.js:23387 `formatCoachRequest` | GAMELOG secretary_request_sent | `look for: {wanted}` へ組み替え(JAは「秘書に{wanted}を探すよう」と文中に埋めていた)。**この2文のEN訳はui-ledgerに既に存在**("a Class {g} coach" / "A coach strong in {label}")ので、formatCoachRequestをt()化するだけで解決 | MEDIUM |
+| J | `{changes}` | saveDoctorの修復内容(JA) | management.js `Engine.saveDoctor` | GAMELOG save_repair_applied | コロン後(JAと同位置) | HIGH(散在) |
+| K | `{scoutDiscSuffix}` | ` / スカウト網割引N%` | app.js:5354 | GAMELOG fighter_signed ×2 | 括弧内の末尾 | LOW |
+
+- **危険なしと確認できたもの**: `{oldLabel}`/`{newLabel}`(HEAT_LEVELS は元から英語 Ice Cold/Cold/Neutral/Warm/Hot/On Fire!)、`{ejectedSuffix}`(` / out: {name}` で元から英語)、`{icon}`/`{emoji}`(絵文字)、`{heatText}`/`{orgPopDelta}`/`{delta}`/`{popDelta}`/`{popDeltaStr}`/`{penalty}`/`{stars}`(符号付き数値文字列)
+- `{showName}`/`{venue}`(NEWSPAPER_SUB 3行)は会場名・大会名=**P6固有名詞辞書の範囲**なので今回は先頭タグ位置に置くだけに留めた
+
+### 4. ⚠ 通貨表記は暫定でA方式(`¥{v}0k`)を採用 — **要裁定**
+指示書は「通貨は`{v:man}`フィルタ形(¥3M方式)で書く」だったが、**現時点のツリーでは書けない**ため既存A方式に合わせた。理由:
+- `src/i18n.js`の`applyParams`はフィルタ記法を解さない(実装は`{v:man}`対応と併せてP6の作業。当該ファイルは別エージェント作業中で本タスクの編集対象外)
+- `test/i18n-build-template-dict.js`のプレースホルダ検査正規表現が `\{[A-Za-z_][A-Za-z0-9_]*\}` のため`{cost:man}`は**プレースホルダとして認識されず必ず不一致で exit 1** になる(=指示書の「build-dict green」と両立しない)
+- `src/lang-en.js`(P3b)の既存64行も現状すべてA方式であり、`docs/i18n-stage-b-p6-design-v0.1.md` の D-P6-5 が「既存辞書の`¥{v}0k`行を一括でB方式へ置換」と明記している。**本バッチの11行も同じ一括置換の射程に入る**ため、混在させない方が移行が1回で済む
+- 該当11行: GAMELOG の draft_ai_acquired / draft_player_acquired / poach_negotiate_success / startup_org_founded / coach_hired / coach_slot_expanded / startup_remaining_funds / startup_draft_complete / fighter_signed / fighter_signed_overflow / scout_signed / scout_acquired(`¥{cost}0k` `¥{funds}0k` `¥{fee}0k` `¥{totalCost}0k`)
+
+### 5. 検証（すべて実行済み）
+- `node test/i18n-build-template-dict.js` → green(**一発green・禁止語grep9パターン含む機械検査で違反0**)。「台帳総キー数=550 訳文あり=209 未訳(fail-open)=341」
+- `node --check src/lang-en-templates.js` → OK
+- `node test/ja-golden.js` → **基準と完全一致**(lines=11233, hash=6b3d05c8…4b8c1b3)。JA表示は1バイトも変わっていない
+- `npm test` → **260/260 PASS / failed 0**
+- **lang='en' 実抜き取り(vm)**: `src/i18n.js`+`src/lang-en-templates.js`をlocalStorage `wm_lang='en'`で読み込み、`Engine.formatFinish`5本 / `gameLogEntryText`10本 / ティッカー5本 / 記事系10本の計30本を実際に整形して**日本語残り0**を確認。未訳のNEWS_HEADLINEキーはfail-openでJA原文のまま出ることも同時に確認(`[WM] [i18n-miss]`ログ付き)
+
+### 6. 代表対訳15本
+| # | JA | EN |
+|---|---|---|
+| 1 | `{move} → 3カウント` | `{move} → 3-count` |
+| 2 | `判定勝ち` | `Win by decision` |
+| 3 | `{turns}ターンに及ぶ死闘の末、{phase}に{winner}が{finish}で{loser}を下した。` | `A {turns}-turn war, and {winner} finished {loser}: {finish} ({phase}).` |
+| 4 | `HP残り僅か{hp}での辛勝だった。` | `{hp} HP left at the finish. A narrow win.` |
+| 5 | `🏆 因縁の頂上決戦 — {winner}、{rematchNum}度目の対戦で{loser}を下す` | `🏆 A grudge at the summit — {winner} beats {loser} in meeting number {rematchNum}` |
+| 6 | `{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。` | `{stamp}. A {turns}-turn match, and {winner} ({winnerOrg}) took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.` |
+| 7 | `{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。リング上での悲劇に関係者は言葉を失った。` | `{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career closed with no warning. Nobody around the promotion had anything to say about what they had just seen.` |
+| 8 | `{org}の{name}（{age}歳）、度重なる怪我で引退——{seasons}シーズンの現役生活に幕` | `{org}'s {name}, {age}, retires on repeated injuries — a {seasons}-season career ends` |
+| 9 | `⚔ 対抗戦 vs {opponent} — {playerWins}勝{aiWins}敗で{result}` | `⚔ Interpromotional series vs {opponent} — {playerWins}-{aiWins}, {result}` |
+| 10 | `業界再編！ライバル団体が大幅強化` | `The business realigns — rival promotions reinforce hard` |
+| 11 | `{venue}大会、観客{attendance}人。全{totalMatches}試合平均試合評価{avgMQ}——好カード続出の{showName}` | `{venue}, {attendance} in the building. {totalMatches} on the card at an average of {avgMQ} — a deep card at {showName}` |
+| 12 | `◆ 止まらない{name}！ {count}連勝で注目度が急上昇` | `◆ No stopping {name} — {count} in a row, and every eye on her` |
+| 13 | `◆ {name}の王座はもはや鉄壁。{defenses}度防衛の壁を越える者は現れるか` | `◆ {name}'s title looks sealed. Is anyone getting past defense number {defenses}?` |
+| 14 | `社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手の直訴…結果が伴いませんでした。` | `Boss, the challenge match went {playerScore} — {aiScore}. {reqName} asked for this one herself... the result did not follow.` |
+| 15 | `😱 {fromOrgName}の{intruderName}に王座を奪われた！ 王座は空位に… ヒート{penalty}、対戦pt-{intrusionPt}` | `😱 {fromOrgName}'s {intruderName} has taken the title! The belt is vacant... Heat {penalty}, H2H Pts -{intrusionPt}` |
+
+### 7. 残タスク（P4-3b以降へ申し送り）
+- **NEWS_HEADLINE_TEMPLATES 341本の英訳**(P4-3b)。見出し文法§3-1〜3-3の機械適用+長さ予算§3-5(≤56/上限64半角)の実測が要る
+- **上表A〜Kの成形済み値11種の生成式修正**。とくに F(tierLabel) と I(wanted) は**ENの語がui-ledgerに既に存在する**ため、t()を通すだけで片付く最短の2件
+- 通貨B方式(`{v:man}`)への一括移行時に、本バッチの11行も同時に置換すること
+- Keisuke実機確認(言語設定=EN での ゲームログ / ティッカー / 週刊新聞・自団体新聞の記事本文 / PPV GRAND FINAL 結果記事)
+
+---
+
 ## 🌐 Stage B P4-2 — テンプレ台帳の整備+EN配線（2026-09-02・Sonnet worktree agent-aa01d78ad060fd557）
 
 英語対応P4(ニュース/新聞/記録テンプレの英語化)の第2工程。設計は `docs/i18n-stage-b-p4-design-v0.1.md`(D-P4-1/D-P4-2)。**注意: `i18n/ui-ledger.json`と`src/lang-en.js`は別エージェント(P3b-6)が同時作業中のため一切触っていない**(本タスクの生成物は別ファイル)。開始前にworktreeブランチをmain先端(cfd4f61)へfast-forward済み。
