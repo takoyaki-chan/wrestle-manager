@@ -1,5 +1,40 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P3b-1 — UI文字列抽出台帳+EN辞書生成パイプライン+lang-en.js配線（2026-09-02・Sonnet worktree agent-aaa38af31d0ba7560）
+
+Stage B(翻訳)ゴー後の第1工程。設計は `docs/i18n-stage-b-p3b-design-v0.1.md`(D-B1〜D-B5)。開始前にworktreeブランチをmain先端(7395130、Stage B P3b設計コミット)へfast-forward済み。
+
+### 新規: 抽出→台帳→辞書の機械パイプライン
+- **`test/i18n-extract-ui.js`**: src/{ui-render,ui-common,app,factions,battle-engine-main,tag-battle-main}.js の全`WM_I18N.t()`第1引数リテラル(シングル/ダブルクォート+`${}`補間の無い静的テンプレートリテラル。テンプレートリテラルは実装中に3箇所実在=ui-render.jsの補助金/決裁枠ツールチップを確認、いずれも補間なしのため正常抽出)を、独自の軽量トークナイザ(WM_I18N.t(の出現位置を起点に第1引数だけを解析。識別子・関数呼び出し引数は非リテラルとしてスキップ)で抽出。合わせてsrc/{index,battle-engine,tag-battle}.htmlの`[data-i18n]`textContent・`[data-i18n-attr]`対象属性値を引用符を意識した簡易タグパーサで抽出し、`i18n/ui-ledger.json`(新設ディレクトリ・配布対象外・manifest未登録)を生成する
+- 台帳スキーマ: `{ key, en, files, count, hasPlaceholder, hasProperNoun }`。`hasProperNoun`はdata.jsから機械組み立てした固有名詞リスト(ALL_CHARSのname/surname 127名分・ALL_COACHESのname 35名分・VENUESのname 10件・RIVAL_ORG_NAME_POOL 12件・TITLESのname 2件・SPECIAL_EVENT_INTROのtitle=絵文字接頭辞を除去した大会名6件+明示リテラル「天頂戦」「GRAND FINAL」、計319件)との部分一致で判定
+- **`test/i18n-build-dict.js`**: 台帳の`en`列が非空の行だけを対象に機械検査(D-B4)を通した上で`src/lang-en.js`を生成。検査は①プレースホルダ`{name}`集合のja/en完全一致②台帳内重複キー検出③en内の日本語残り検出(既存i18n-scan.jsのJA判定文字レンジを流用)の3種。ダミーデータ(プレースホルダ不一致1件・重複キー1件・日本語残り1件)で違反検知→exit 1を実地確認してから本番台帳に戻した
+- **`src/lang-en.js`**: 自動生成物(手編集禁止コメント明記)。P3b-1時点ではen列が全行空のため`WM_I18N.addDict({})`(空辞書)。今後の翻訳バッチはledgerのen列を埋める→本スクリプト再実行、のループになる
+
+### 配線
+- index.html / battle-engine.html / tag-battle.html の3箇所すべてで`<script src="i18n.js">`直後に`<script src="lang-en.js">`を追加(D-B1どおり。ja表示時はaddDictされても辞書参照自体が発生しないため無害)
+- `release/manifest.json` の `sourceFiles` に `src/lang-en.js` を `src/i18n.js` の直後へ追記
+
+### 抽出結果(実測)
+- **総キー数=3,123 / hasProperNoun=89 / hasPlaceholder=705**
+- ファイル別 呼び出し・要素の総数(キー重複統合前): ui-render.js 1,694 / ui-common.js 1,883 / app.js 345 / factions.js 377 / battle-engine-main.js 43 / tag-battle-main.js 65 / index.html 94(data-i18n本文84+data-i18n-attr対象属性10) / battle-engine.html 0 / tag-battle.html 0(観戦iframeは現時点でdata-i18n未使用)
+- ファイル別 ユニークキー数(台帳の`files`集計。複数ファイルで共有される定型文言がある分、単純合計3,344は総キー数3,123を上回る): index.html 92 / ui-render.js 1,319 / ui-common.js 1,308 / factions.js 253 / app.js 295 / tag-battle-main.js 42 / battle-engine-main.js 35
+- 抽出の正しさは「WM_I18N.t(」の生出現回数(grep実測: ui-render.js 1,704件・ui-common.js 1,893件)との差分が非リテラル引数呼び出し(定数参照・関数呼び出し引数)の件数(各10件)と一致することでクロスチェック済み
+
+### 検証(全項目実施)
+- `node --check src/lang-en.js` — 成功
+- `node test/ja-golden.js` — **完全一致**(hash `6b3d05c8...`不変。ja-goldenはJSのみロードしlang-en.js/HTML配線は対象外のため無影響)
+- `node test/i18n-ratchet.js` — **増加なし**(files=32 totalJaStrings=28075。src/lang-en.jsが新規ファイルとして加わったがtotalJaStrings自体は不変=空辞書のうちは日本語のstring literalを含まないため。将来の翻訳バッチでen列にjaキーが充填されるとlang-en.js自体がJSON.stringifyされたjaキー文字列を含むようになり、ラチェットの「新規直書き検知」ロジックが誤検知しうる点は次工程の留意事項として記録)
+- `npm test` — **260/260 PASS**
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・季末season=2 week=1到達・duration 188s)
+- manifest未記載チェック: src/配下の`.js/.css/.html`全ファイルがmanifest.jsonの`sourceFiles`/`devOnlyFiles`いずれかに存在することをスクリプトで確認(package-release.ps1と同じ突き合わせロジック)。警告なしを確認
+
+### specs
+- `specs/i18n-runtime-spec-v1.0.md` に「§5 EN辞書の生成パイプライン」を追記(抽出/検査/配線の3点を記録)
+
+### 残課題
+- 台帳の`en`列は全行空(翻訳バッチ本体はP3b-1の次工程)。以後は`docs/i18n-stage-b-p3b-design-v0.1.md`の工程2(Opus主筆の翻訳バッチ)へ
+- 上記ラチェットの留意事項(lang-en.js充填後のfalse-positive懸念)は次工程開始時に一度実地確認し、必要ならlang-en.jsをi18n-scan.jsのJA計測対象から除外する対応を検討
+
 ## 🌐 Stage A(翻訳可能化工事)完了 — P1〜P3a全工程完走・specs昇格・擬似ロケール実動作確認（2026-09-02・Fable指揮/Sonnet worktree実装×9）
 
 英語対応の**Stage Aが完了**した。2026-09-01のトーンバイブル較正から二日弱で、P1(基盤)→P2(監査)→P3a(抽出工事: バッチ1〜3+4a×3+4b×3+4c+4d+4e)を、worktree実装→Fableレビュー→マージのループで完走。
