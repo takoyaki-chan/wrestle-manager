@@ -18,6 +18,18 @@
 //  ■ D8: 擬似ロケール。`⟦` + 原文 + 原文の長さ40%分の `~` + `⟧`。
 //    翻訳漏れ(t()を通っていない文字列)の可視化と、英語の文字数増によるレイアウト
 //    溢れを翻訳ゼロの段階で検査するためのもの。
+//  ■ applyDom (Stage A P3a-4d): index.htmlの静的HTMLテキストノード用。
+//    JS生成文字列と違い、静的HTMLはt()を直接通せない。そこで data-i18n / data-i18n-attr
+//    属性でマークした要素をDOM走査時にt()へ通す。
+//    - [data-i18n] 要素: 初回のtextContentを data-i18n-orig 属性へ退避し、以後は
+//      その原文から t(原文) を再計算してtextContentへ書き戻す(2回目以降もdatasetの
+//      原文を参照するので、setLang()での再適用や多重呼び出しでも文字化けない)。
+//      要素の子に他のタグが混在するケース(インライン装飾)は対象外
+//      (textContent置換で子要素が消えるため、該当箇所はdata-i18nを付与しないこと)。
+//    - [data-i18n-attr="attr1,attr2"] 要素: 指定した属性名(カンマ区切り)の原文を
+//      data-i18n-attr-orig 属性へ JSON で退避し、同様に t() で書き戻す。
+//    - DOMContentLoaded時とsetLang()時に自動で document 全体へ適用する。
+//    - ja時はt()がno-opなので、applyDomを何度呼んでも描画結果は原文のまま(1バイト不変)。
 // ══════════════════════════════════════════════════════════════════════════════
 (function (global) {
   'use strict';
@@ -93,12 +105,59 @@
     return applyParams(translated, params);
   }
 
+  // ── applyDom: 静的HTMLの [data-i18n] / [data-i18n-attr] 要素をt()へ通す ──
+  // root: 走査開始ノード(省略時はdocument全体)。document不在環境(node等)では何もしない。
+  function applyDom(root) {
+    const doc = (root && typeof root.querySelectorAll === 'function')
+      ? root
+      : (typeof document !== 'undefined' ? document : null);
+    if (!doc) return;
+
+    // [data-i18n]: textContent 全体を置換。子要素混在テキストへは付与しない運用前提。
+    const textNodes = doc.querySelectorAll('[data-i18n]');
+    for (let i = 0; i < textNodes.length; i++) {
+      const el = textNodes[i];
+      let orig = el.getAttribute('data-i18n-orig');
+      if (orig === null) {
+        orig = el.textContent;
+        el.setAttribute('data-i18n-orig', orig);
+      }
+      el.textContent = t(orig);
+    }
+
+    // [data-i18n-attr="title,placeholder"]: 属性値をt()へ通す。複数属性はカンマ区切り。
+    const attrNodes = doc.querySelectorAll('[data-i18n-attr]');
+    for (let i = 0; i < attrNodes.length; i++) {
+      const el = attrNodes[i];
+      const spec = el.getAttribute('data-i18n-attr');
+      if (!spec) continue;
+      const names = spec.split(',').map((s) => s.trim()).filter(Boolean);
+      if (!names.length) continue;
+      let origMap = null;
+      const stored = el.getAttribute('data-i18n-attr-orig');
+      if (stored) {
+        try { origMap = JSON.parse(stored); } catch (_e) { origMap = null; }
+      }
+      if (!origMap) {
+        origMap = {};
+        names.forEach((name) => { origMap[name] = el.getAttribute(name) || ''; });
+        el.setAttribute('data-i18n-attr-orig', JSON.stringify(origMap));
+      }
+      names.forEach((name) => {
+        if (Object.prototype.hasOwnProperty.call(origMap, name)) {
+          el.setAttribute(name, t(origMap[name]));
+        }
+      });
+    }
+  }
+
   function setLang(lang) {
     if (VALID_LANGS.indexOf(lang) < 0) return;
     currentLang = lang;
     try {
       if (global.localStorage) global.localStorage.setItem(STORAGE_KEY, lang);
     } catch (_e) { /* 保存不可でも動作は続行(既定'ja'に落ちるだけ) */ }
+    applyDom();
   }
 
   // Stage Bで英語辞書を登録するための入口。{ 原文: 訳文 } のマップをマージする。
@@ -107,11 +166,23 @@
     Object.keys(map).forEach((key) => { dict[key] = map[key]; });
   }
 
+  // DOMContentLoaded時に自動適用。i18n.jsはbody内の他スクリプトより前に読み込まれる
+  // (index.htmlのコメント参照)ため、それまでにパースされた静的要素は既にDOM上に
+  // 存在している。念のためDOMContentLoadedでも再適用し、取りこぼしを防ぐ。
+  if (typeof document !== 'undefined') {
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => applyDom());
+    } else {
+      applyDom();
+    }
+  }
+
   global.WM_I18N = {
     get lang() { return currentLang; },
     setLang,
     t,
     addDict,
+    applyDom,
     // D7: 翻訳漏れログの記録先。テスト/デバッグから中身を読めるようSetのまま公開する。
     _misses: missSeen,
   };

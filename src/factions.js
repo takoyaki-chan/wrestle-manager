@@ -79,11 +79,11 @@ Engine.factions = {
 
   // ── §1.3 フレーバー変換 ─────────────────────────────────────
   getMomentumLabel(momentum) {
-    if (momentum >= 60) return '隆盛';
-    if (momentum >= 30) return '上昇';
-    if (momentum >= -29) return '平常';
-    if (momentum >= -59) return '陰り';
-    return '衰退';
+    if (momentum >= 60) return WM_I18N.t('隆盛');
+    if (momentum >= 30) return WM_I18N.t('上昇');
+    if (momentum >= -29) return WM_I18N.t('平常');
+    if (momentum >= -59) return WM_I18N.t('陰り');
+    return WM_I18N.t('衰退');
   },
 
   // i18n Stage A P3a-3 D-G5: getMomentumLabelと同じ閾値から中立キーを返す。
@@ -97,6 +97,10 @@ Engine.factions = {
     return 'fade';
   },
 
+  // i18n Stage A P3a-4d: 表示兼ロジックキー(要判断・据え置き)。ui-common.jsの
+  // hostilityBands配列(冷え込み/小競り合い/抗争/泥沼/血みどろ)がこの戻り値をindexOfで
+  // 位置判定に使っており、momentum/solidarityのようにgetXKey相当の中立キーが未整備。
+  // ここでt()化するとen/pseudoでindexOfが不一致になるため、中立キー分離まで非ラップ据え置き。
   getHostilityLabel(hostility) {
     if (hostility >= 80) return '血みどろ';
     if (hostility >= 60) return '泥沼';
@@ -106,15 +110,15 @@ Engine.factions = {
   },
 
   getSolidarityLabel(faction, state) {
-    if (!faction || !state) return '平穏';
+    if (!faction || !state) return WM_I18N.t('平穏');
     const leaderId = faction.leaderId;
     const others = faction.memberIds.filter(id => id !== leaderId);
-    if (!others.length) return '平穏';
+    if (!others.length) return WM_I18N.t('平穏');
     const avg = this._avgBond(state, leaderId, others);
-    if (avg >= 70) return '強固';
-    if (avg >= 50) return '安定';
-    if (avg >= 40) return '揺らぎ';
-    return '崩壊寸前';
+    if (avg >= 70) return WM_I18N.t('強固');
+    if (avg >= 50) return WM_I18N.t('安定');
+    if (avg >= 40) return WM_I18N.t('揺らぎ');
+    return WM_I18N.t('崩壊寸前');
   },
 
   // i18n Stage A P3a-3 D-G5: getSolidarityLabelと同じ閾値から中立キーを返す。
@@ -1315,7 +1319,7 @@ Engine.factions = {
       || (state.retiredFighters || []).find(c => c.id === faction.leaderId)
       || (state.freeAgents || []).find(c => c.id === faction.leaderId)
       || null;
-    const oldLeaderName = oldLeaderSource ? oldLeaderSource.name : '前リーダー';
+    const oldLeaderName = oldLeaderSource ? oldLeaderSource.name : WM_I18N.t('前リーダー');
     const oldLeaderOvr = oldLeaderSource && oldLeaderSource.pw ? Engine.util.ov(oldLeaderSource) : 75;
 
     // 残メンバーは roster にいる非リーダー
@@ -1428,11 +1432,11 @@ Engine.factions = {
     wmDiag(`[WM Faction] ${faction.name} entered hiatus (leader absent ${payload.estimatedWeeks || 8}w+)`);
     return {
       state: { ...state, factions: newFactions },
-      resultText: `派閥「${faction.name}」は旗を畳み、活動を一時休止した。`,
+      resultText: WM_I18N.t('派閥「{name}」は旗を畳み、活動を一時休止した。', { name: faction.name }),
       impactSummary: [
-        { label: `派閥「${faction.name}」`, delta: '活動休止' },
-        { label: 'リーダー離脱見込み', delta: `${payload.estimatedWeeks || 8}週+` },
-        { label: '抗争状態 / 勢い', delta: 'リセット' },
+        { label: WM_I18N.t('派閥「{name}」', { name: faction.name }), delta: WM_I18N.t('活動休止') },
+        { label: WM_I18N.t('リーダー離脱見込み'), delta: WM_I18N.t('{n}週+', { n: payload.estimatedWeeks || 8 }) },
+        { label: WM_I18N.t('抗争状態 / 勢い'), delta: WM_I18N.t('リセット') },
       ],
     };
   },
@@ -1579,20 +1583,20 @@ Engine.factions = {
     wmDiag(`[WM Faction] F02 resolved: ${facW.name} (winner) vs ${facL.name} (loser)`);
 
     const impactSummary = [
-      { label: `${facW.name} 勢い`, delta: `+${mW}` },
-      { label: `${facL.name} 勢い`, delta: `${mL}` },
-      { label: `勝者リーダー trust`, delta: `+${tW}` },
-      { label: `敗者リーダー trust`, delta: `${tL}` },
-      { label: `${facW.name} 求心力 (mem→leader bond)`, delta: `+${wBond}` },
-      { label: `${facL.name} 求心力 (mem→leader bond)`, delta: `${lBond}` },
-      { label: `${facW.name} ⇄ ${facL.name} 対立度`, delta: '-40（両方向）' },
+      { label: WM_I18N.t('{name} 勢い', { name: facW.name }), delta: `+${mW}` },
+      { label: WM_I18N.t('{name} 勢い', { name: facL.name }), delta: `${mL}` },
+      { label: WM_I18N.t('勝者リーダー trust'), delta: `+${tW}` },
+      { label: WM_I18N.t('敗者リーダー trust'), delta: `${tL}` },
+      { label: WM_I18N.t('{name} 求心力 (mem→leader bond)', { name: facW.name }), delta: `+${wBond}` },
+      { label: WM_I18N.t('{name} 求心力 (mem→leader bond)', { name: facL.name }), delta: `${lBond}` },
+      { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: facW.name, b: facL.name }), delta: WM_I18N.t('-40（両方向）') },
     ];
     if (bottomMembers.length > 0) {
-      impactSummary.push({ label: `${facL.name} 下位${bottomMembers.length}名 trust`, delta: '低下（離脱リスク）' });
+      impactSummary.push({ label: WM_I18N.t('{name} 下位{n}名 trust', { name: facL.name, n: bottomMembers.length }), delta: WM_I18N.t('低下（離脱リスク）') });
     }
     return {
       state: s,
-      resultText: `「${facW.name}」が「${facL.name}」を下した。リング上で、ようやく決着がついた。`,
+      resultText: WM_I18N.t('「{a}」が「{b}」を下した。リング上で、ようやく決着がついた。', { a: facW.name, b: facL.name }),
       impactSummary,
     };
   },
@@ -1611,7 +1615,7 @@ Engine.factions = {
         eventId: 'F03',
         payload: {
           factionId: leaderLoss.factionId,
-          factionName: faction ? faction.name : '派閥',
+          factionName: faction ? faction.name : WM_I18N.t('派閥'),
           reason: leaderLoss.reason,
           ...branch,
         },
@@ -1627,7 +1631,7 @@ Engine.factions = {
         eventId: 'F05H',
         payload: {
           factionId: hiatusTrig.factionId,
-          factionName: fac ? fac.name : '派閥',
+          factionName: fac ? fac.name : WM_I18N.t('派閥'),
           leaderId: fac ? fac.leaderId : null,
           leaderName: leader ? leader.name : '???',
           estimatedWeeks: hiatusTrig.estimatedWeeks,
@@ -1692,8 +1696,8 @@ Engine.factions = {
           payload: {
             factionAId: rivCheck.factionAId,
             factionBId: rivCheck.factionBId,
-            factionAName: factionA ? factionA.name : '派閥A',
-            factionBName: factionB ? factionB.name : '派閥B',
+            factionAName: factionA ? factionA.name : WM_I18N.t('派閥A'),
+            factionBName: factionB ? factionB.name : WM_I18N.t('派閥B'),
             leaderAId: rivCheck.leaderAId,
             leaderBId: rivCheck.leaderBId,
             leaderAName: leaderA ? leaderA.name : '???',
@@ -1794,18 +1798,18 @@ Engine.factions = {
       }
       const archLabel = this._archetypeLabel(arch);
       const impactSummary = [
-        { label: `${leaderName} trust`, delta: `+${rawTrust}` },
-        { label: '派閥成立', delta: `${leaderSurname}派（${archLabel}）` },
+        { label: WM_I18N.t('{name} trust', { name: leaderName }), delta: `+${rawTrust}` },
+        { label: WM_I18N.t('派閥成立'), delta: WM_I18N.t('{name}派（{arch}）', { name: leaderSurname, arch: archLabel }) },
       ];
       if (moraleEffect.bondDelta !== 0) {
         const sign = moraleEffect.bondDelta > 0 ? '+' : '';
-        impactSummary.push({ label: 'メンバー間 bond', delta: `${sign}${moraleEffect.bondDelta}` });
+        impactSummary.push({ label: WM_I18N.t('メンバー間 bond'), delta: `${sign}${moraleEffect.bondDelta}` });
       }
       if (moraleEffect.moraleDelta !== 0) {
         const sign = moraleEffect.moraleDelta > 0 ? '+' : '';
-        impactSummary.push({ label: 'ロッカー士気', delta: `${sign}${moraleEffect.moraleDelta}` });
+        impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: `${sign}${moraleEffect.moraleDelta}` });
       }
-      return { state: s, resultText: `${leaderName}を中心に派閥「${leaderSurname}派」が旗揚げされた（${archLabel}）。`, impactSummary };
+      return { state: s, resultText: WM_I18N.t('{name}を中心に派閥「{surname}派」が旗揚げされた（{arch}）。', { name: leaderName, surname: leaderSurname, arch: archLabel }), impactSummary };
     }
     if (choiceId === 'B') {
       // 派閥不成立 + リーダー trust -5〜-8 + フォロワー→リーダー bond -5〜-8 + 士気 +1〜+3 + クールダウン12週
@@ -1825,21 +1829,21 @@ Engine.factions = {
         },
       };
       const impactSummary = [
-        { label: `${leaderName} trust`, delta: `${rawTrust}` },
-        { label: `フォロワー → ${leaderName} bond`, delta: `${bondDelta}` },
-        { label: 'ロッカー士気', delta: `+${moraleBonus}` },
-        { label: '派閥結成', delta: `12週 CD` },
+        { label: WM_I18N.t('{name} trust', { name: leaderName }), delta: `${rawTrust}` },
+        { label: WM_I18N.t('フォロワー → {name} bond', { name: leaderName }), delta: `${bondDelta}` },
+        { label: WM_I18N.t('ロッカー士気'), delta: `+${moraleBonus}` },
+        { label: WM_I18N.t('派閥結成'), delta: WM_I18N.t('12週 CD') },
       ];
-      return { state: s, resultText: `${leaderName}に釘を刺した。派閥結成の動きは一旦沈静化した。`, impactSummary };
+      return { state: s, resultText: WM_I18N.t('{name}に釘を刺した。派閥結成の動きは一旦沈静化した。', { name: leaderName }), impactSummary };
     }
     // 'C' 静観 — 派閥成立だがアーキタイプ専用タグなし（flavor のみ記録）
     s = this.createFaction(s, leaderId, members, { type: 'loyal', flavor: arch });
     const archLabelC = this._archetypeLabel(arch);
     const impactSummary = [
-      { label: '派閥成立', delta: `${leaderSurname}派（${archLabelC}）` },
-      { label: '専用タグ', delta: 'なし（静観）' },
+      { label: WM_I18N.t('派閥成立'), delta: WM_I18N.t('{name}派（{arch}）', { name: leaderSurname, arch: archLabelC }) },
+      { label: WM_I18N.t('専用タグ'), delta: WM_I18N.t('なし（静観）') },
     ];
-    return { state: s, resultText: `${leaderName}を中心とした集まりを静かに見守ることにした。`, impactSummary };
+    return { state: s, resultText: WM_I18N.t('{name}を中心とした集まりを静かに見守ることにした。', { name: leaderName }), impactSummary };
   },
 
   // v0.2: アーキタイプ → createFaction options のタグ変換
@@ -1871,10 +1875,10 @@ Engine.factions = {
 
   _archetypeLabel(arch) {
     const map = {
-      authoritarian: '権威型', bond_first: '結束型', meritocratic: '実力主義',
-      heel: 'ヒール派閥', face: '正統派', combat: '武闘派', neutral: '自然型',
+      authoritarian: WM_I18N.t('権威型'), bond_first: WM_I18N.t('結束型'), meritocratic: WM_I18N.t('実力主義'),
+      heel: WM_I18N.t('ヒール派閥'), face: WM_I18N.t('正統派'), combat: WM_I18N.t('武闘派'), neutral: WM_I18N.t('自然型'),
     };
-    return map[arch] || '結束型';
+    return map[arch] || WM_I18N.t('結束型');
   },
 
   // ── §9.2 F02 選択肢効果適用（派閥抗争の勃発、v4 3択版）──
@@ -1930,14 +1934,14 @@ Engine.factions = {
       };
       return {
         state: s,
-        resultText: `${leaderAName}と${leaderBName}の争いをリングに持ち込む方針を取った。観客はこの火種を見逃さないだろう。`,
+        resultText: WM_I18N.t('{a}と{b}の争いをリングに持ち込む方針を取った。観客はこの火種を見逃さないだろう。', { a: leaderAName, b: leaderBName }),
         impactSummary: [
-          { label: `${factionAName} → ${factionBName} 対立度`, delta: `+${h1}` },
-          { label: `${factionBName} → ${factionAName} 対立度`, delta: `+${h2}` },
-          { label: `${factionAName} 勢い`, delta: `+${mA}` },
-          { label: `${factionBName} 勢い`, delta: `+${mB}` },
-          { label: 'ロッカー士気', delta: `${moralePen}` },
-          { label: '次興行', delta: '抗争メイン予約' },
+          { label: WM_I18N.t('{a} → {b} 対立度', { a: factionAName, b: factionBName }), delta: `+${h1}` },
+          { label: WM_I18N.t('{a} → {b} 対立度', { a: factionBName, b: factionAName }), delta: `+${h2}` },
+          { label: WM_I18N.t('{name} 勢い', { name: factionAName }), delta: `+${mA}` },
+          { label: WM_I18N.t('{name} 勢い', { name: factionBName }), delta: `+${mB}` },
+          { label: WM_I18N.t('ロッカー士気'), delta: `${moralePen}` },
+          { label: WM_I18N.t('次興行'), delta: WM_I18N.t('抗争メイン予約') },
         ],
       };
     }
@@ -1974,13 +1978,13 @@ Engine.factions = {
       s = { ...s, f02MediationWatches: filtered };
       return {
         state: s,
-        resultText: `両者を呼び出し、団体のために筋を通させた。火種は残ったが、空気はひとまず収まった。`,
+        resultText: WM_I18N.t('両者を呼び出し、団体のために筋を通させた。火種は残ったが、空気はひとまず収まった。'),
         impactSummary: [
-          { label: `${leaderAName} trust`, delta: `${t1}` },
-          { label: `${leaderBName} trust`, delta: `${t2}` },
-          { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: `+${h1}/+${h2}` },
-          { label: '両派閥 勢い', delta: '0 リセット' },
-          { label: '仲裁監視', delta: '12週' },
+          { label: WM_I18N.t('{name} trust', { name: leaderAName }), delta: `${t1}` },
+          { label: WM_I18N.t('{name} trust', { name: leaderBName }), delta: `${t2}` },
+          { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionAName, b: factionBName }), delta: `+${h1}/+${h2}` },
+          { label: WM_I18N.t('両派閥 勢い'), delta: WM_I18N.t('0 リセット') },
+          { label: WM_I18N.t('仲裁監視'), delta: WM_I18N.t('12週') },
         ],
       };
     }
@@ -1991,9 +1995,9 @@ Engine.factions = {
       s = this.applyHostilityChange(s, B.id, A.id, inherit);
     }
     const impactSummaryC = inherit > 0
-      ? [{ label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: `+${inherit}（継承）` }]
-      : [{ label: '介入', delta: 'なし' }];
-    return { state: s, resultText: `二つの派閥が睨み合う状況を、社長は静かに見届けた。`, impactSummary: impactSummaryC };
+      ? [{ label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionAName, b: factionBName }), delta: WM_I18N.t('+{n}（継承）', { n: inherit }) }]
+      : [{ label: WM_I18N.t('介入'), delta: WM_I18N.t('なし') }];
+    return { state: s, resultText: WM_I18N.t('二つの派閥が睨み合う状況を、社長は静かに見届けた。'), impactSummary: impactSummaryC };
   },
 
   // ── §9.3 F03 結果適用（branch 事前決定済み）──
@@ -2014,10 +2018,10 @@ Engine.factions = {
       s = this._dissolveFaction(s, factionId, 'F03_low_ratio');
       return {
         state: s,
-        resultText: `派閥「${faction.name}」は、${oldLeaderName}の喪失とともに求心力を失い、消滅した。`,
+        resultText: WM_I18N.t('派閥「{name}」は、{leader}の喪失とともに求心力を失い、消滅した。', { name: faction.name, leader: oldLeaderName }),
         impactSummary: [
-          { label: `派閥「${faction.name}」`, delta: '消滅' },
-          { label: '対立関係', delta: 'すべて解除' },
+          { label: WM_I18N.t('派閥「{name}」', { name: faction.name }), delta: WM_I18N.t('消滅') },
+          { label: WM_I18N.t('対立関係'), delta: WM_I18N.t('すべて解除') },
         ],
       };
     }
@@ -2035,9 +2039,9 @@ Engine.factions = {
       s = this._dissolveFaction(s, factionId, 'F03_no_successor');
       return {
         state: s,
-        resultText: `派閥「${faction.name}」は後継を得られず消滅した。`,
+        resultText: WM_I18N.t('派閥「{name}」は後継を得られず消滅した。', { name: faction.name }),
         impactSummary: [
-          { label: `派閥「${faction.name}」`, delta: '後継なく消滅' },
+          { label: WM_I18N.t('派閥「{name}」', { name: faction.name }), delta: WM_I18N.t('後継なく消滅') },
         ],
       };
     }
@@ -2088,12 +2092,12 @@ Engine.factions = {
       s = this._applyBondDirected(s, successorId, payload.oldLeaderId, bondDelta);
       return {
         state: s,
-        resultText: `派閥は${successor.name}を新たな中心に据えて継承された。動揺はあるが、歯車は回り続ける。`,
+        resultText: WM_I18N.t('派閥は{name}を新たな中心に据えて継承された。動揺はあるが、歯車は回り続ける。', { name: successor.name }),
         impactSummary: [
-          { label: '新リーダー', delta: successor.name },
-          { label: 'メンバー trust', delta: `${d}` },
-          { label: `${successor.name} → ${oldLeaderName} bond`, delta: `+${bondDelta}` },
-          { label: '対立度', delta: '×0.7 減衰' },
+          { label: WM_I18N.t('新リーダー'), delta: successor.name },
+          { label: WM_I18N.t('メンバー trust'), delta: `${d}` },
+          { label: WM_I18N.t('{a} → {b} bond', { a: successor.name, b: oldLeaderName }), delta: `+${bondDelta}` },
+          { label: WM_I18N.t('対立度'), delta: WM_I18N.t('×0.7 減衰') },
         ],
       };
     }
@@ -2111,15 +2115,15 @@ Engine.factions = {
     const rival = (s.factions || []).find(f => f.id !== factionId && this._isHostile(f));
     if (rival) s = this.applyMomentumChange(s, rival.id, bump);
     const turmoilImpact = [
-      { label: '新リーダー', delta: `${successor.name}（動揺）` },
-      { label: 'メンバー trust', delta: `${d}` },
-      { label: 'メンバー間 bond', delta: `${bondDelta}` },
-      { label: `${successor.name} → ${oldLeaderName} bond`, delta: `+${idol}` },
+      { label: WM_I18N.t('新リーダー'), delta: WM_I18N.t('{name}（動揺）', { name: successor.name }) },
+      { label: WM_I18N.t('メンバー trust'), delta: `${d}` },
+      { label: WM_I18N.t('メンバー間 bond'), delta: `${bondDelta}` },
+      { label: WM_I18N.t('{a} → {b} bond', { a: successor.name, b: oldLeaderName }), delta: `+${idol}` },
     ];
-    if (rival) turmoilImpact.push({ label: `対立派閥 ${rival.name} 勢い`, delta: `+${bump}` });
+    if (rival) turmoilImpact.push({ label: WM_I18N.t('対立派閥 {name} 勢い', { name: rival.name }), delta: `+${bump}` });
     return {
       state: s,
-      resultText: `${successor.name}は後を継いだが、派閥内の動揺は深く、一度大きく揺らいだ。`,
+      resultText: WM_I18N.t('{name}は後を継いだが、派閥内の動揺は深く、一度大きく揺らいだ。', { name: successor.name }),
       impactSummary: turmoilImpact,
     };
   },
@@ -2452,11 +2456,11 @@ Engine.factions = {
 
     return {
       state: s,
-      resultText: `「${factionAName}」と「${factionBName}」の抗争は、もはや決着の気配すら見せない。終わらない戦いが、団体の空気を重くしていく。`,
+      resultText: WM_I18N.t('「{a}」と「{b}」の抗争は、もはや決着の気配すら見せない。終わらない戦いが、団体の空気を重くしていく。', { a: factionAName, b: factionBName }),
       impactSummary: [
-        { label: '両派閥メンバー mentalCoeff', delta: '-0.02（下限0.85）' },
-        { label: '抗争継続', delta: `${payload.weeksContinued || 52}週` },
-        { label: '長期 streak', delta: 'リセット' },
+        { label: WM_I18N.t('両派閥メンバー mentalCoeff'), delta: WM_I18N.t('-0.02（下限0.85）') },
+        { label: WM_I18N.t('抗争継続'), delta: WM_I18N.t('{n}週', { n: payload.weeksContinued || 52 }) },
+        { label: WM_I18N.t('長期 streak'), delta: WM_I18N.t('リセット') },
       ],
     };
   },
@@ -2539,10 +2543,10 @@ Engine.factions = {
 
     return {
       state: s,
-      resultText: `${factionAName}と${factionBName}の火種は、ついにリングで燃え上がる。`,
+      resultText: WM_I18N.t('{a}と{b}の火種は、ついにリングで燃え上がる。', { a: factionAName, b: factionBName }),
       impactSummary: [
-        { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: '+12（両方向）' },
-        { label: '抗争メイン', delta: '実現' },
+        { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionAName, b: factionBName }), delta: WM_I18N.t('+12（両方向）') },
+        { label: WM_I18N.t('抗争メイン'), delta: WM_I18N.t('実現') },
       ],
     };
   },
@@ -2646,13 +2650,13 @@ Engine.factions = {
 
     return {
       state: s,
-      resultText: `${factionAName}と${factionBName}の対立は、社長の仲裁によって沈静化した。まだ完全な和解ではないが、互いに矛を収める段階に入った。`,
+      resultText: WM_I18N.t('{a}と{b}の対立は、社長の仲裁によって沈静化した。まだ完全な和解ではないが、互いに矛を収める段階に入った。', { a: factionAName, b: factionBName }),
       impactSummary: [
-        { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: '-40（両方向）' },
-        { label: '両派閥 勢い', delta: '0 リセット' },
-        { label: '抗争状態', delta: '解除' },
+        { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionAName, b: factionBName }), delta: WM_I18N.t('-40（両方向）') },
+        { label: WM_I18N.t('両派閥 勢い'), delta: WM_I18N.t('0 リセット') },
+        { label: WM_I18N.t('抗争状態'), delta: WM_I18N.t('解除') },
         ...(leaderAId != null && leaderBId != null
-          ? [{ label: `${payload.leaderAName || '?'} ⇄ ${payload.leaderBName || '?'} bond`, delta: '+3' }]
+          ? [{ label: WM_I18N.t('{a} ⇄ {b} bond', { a: payload.leaderAName || '?', b: payload.leaderBName || '?' }), delta: '+3' }]
           : []),
       ],
     };
@@ -2870,14 +2874,14 @@ Engine.factions = {
     s = this._markCommonEventTrigger(s, factionId, 'COMMON_4');
 
     const impactSummary = [
-      { label: `${factionName} メンバー間 bond`, delta: `+${bondDelta}` },
-      { label: `${factionName} condition`, delta: `+${condDelta}` },
+      { label: WM_I18N.t('{name} メンバー間 bond', { name: factionName }), delta: `+${bondDelta}` },
+      { label: WM_I18N.t('{name} condition', { name: factionName }), delta: `+${condDelta}` },
     ];
     if (moraleDelta !== 0) {
       const sign = moraleDelta > 0 ? '+' : '';
-      impactSummary.push({ label: 'ロッカー士気', delta: `${sign}${moraleDelta}` });
+      impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: `${sign}${moraleDelta}` });
     }
-    const resultText = `${factionName}は数日まとまって過ごし、絆と体調が整った。`;
+    const resultText = WM_I18N.t('{name}は数日まとまって過ごし、絆と体調が整った。', { name: factionName });
     return { state: s, resultText, impactSummary };
   },
 
@@ -2886,9 +2890,9 @@ Engine.factions = {
   // 見出し(headline)と地の文(narration)は話者がいないので分岐しない。
   getCommon4Line(archetypeId, rng, leader) {
     const table = (typeof COMMON4_LINES !== 'undefined' ? COMMON4_LINES : null);
-    if (!table) return { headline: '派閥合宿', narration: '', leaderQuote: '' };
+    if (!table) return { headline: WM_I18N.t('派閥合宿'), narration: '', leaderQuote: '' };
     const arr = table[archetypeId] || table._any;
-    if (!arr || !arr.length) return { headline: '派閥合宿', narration: '', leaderQuote: '' };
+    if (!arr || !arr.length) return { headline: WM_I18N.t('派閥合宿'), narration: '', leaderQuote: '' };
     const idx = rng ? Math.floor(Engine.rng.float(rng) * arr.length) : 0;
     const entry = arr[idx];
     const q = entry.leaderQuote;
@@ -2999,15 +3003,15 @@ Engine.factions = {
           createdAbsWeek: this._absWeek(state),
         },
       };
-      resultText = `${factionName}内の対決を組む方針を固めた。次の興行のカード編成で、どこに置くかは社長次第だ。`;
-      impactSummary.push({ label: `${factionName} 内部対立`, delta: '興行予約' });
+      resultText = WM_I18N.t('{name}内の対決を組む方針を固めた。次の興行のカード編成で、どこに置くかは社長次第だ。', { name: factionName });
+      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionName }), delta: WM_I18N.t('興行予約') });
       return { state: s, booked: true, resultText, impactSummary, winnerId: null, loserId: null, winnerName: '', loserName: '' };
     } else if (choiceId === 'B') {
-      resultText = `${factionName}内の対決は別カードに振り替えた。火種はそのまま残った。`;
-      impactSummary.push({ label: `${factionName} 内部対立`, delta: '継続' });
+      resultText = WM_I18N.t('{name}内の対決は別カードに振り替えた。火種はそのまま残った。', { name: factionName });
+      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionName }), delta: WM_I18N.t('継続') });
     } else {
-      resultText = `${factionName}の内紛は自然に任せた。火種は燻ったまま。`;
-      impactSummary.push({ label: `${factionName} 内部対立`, delta: '燻り続ける' });
+      resultText = WM_I18N.t('{name}の内紛は自然に任せた。火種は燻ったまま。', { name: factionName });
+      impactSummary.push({ label: WM_I18N.t('{name} 内部対立', { name: factionName }), delta: WM_I18N.t('燻り続ける') });
     }
 
     s = this._markCommonEventTrigger(s, factionId, 'COMMON_1');
@@ -3030,9 +3034,9 @@ Engine.factions = {
     const fighterA = roster.find(c => c && sameId(c.id, fighterAId));
     const fighterB = roster.find(c => c && sameId(c.id, fighterBId));
     const currentFaction = factions.find(f => f && sameId(f.id, factionId));
-    const fighterAName = (fighterA && fighterA.name) || bookedFighterAName || '選手A';
-    const fighterBName = (fighterB && fighterB.name) || bookedFighterBName || '選手B';
-    const factionName = (currentFaction && currentFaction.name) || bookedFactionName || '派閥';
+    const fighterAName = (fighterA && fighterA.name) || bookedFighterAName || WM_I18N.t('選手A');
+    const fighterBName = (fighterB && fighterB.name) || bookedFighterBName || WM_I18N.t('選手B');
+    const factionName = (currentFaction && currentFaction.name) || bookedFactionName || WM_I18N.t('派閥');
     let s = state;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
     const winnerName = sameId(winnerId, fighterAId) ? fighterAName : fighterBName;
@@ -3063,10 +3067,10 @@ Engine.factions = {
     s = this._adjustFighterPop(s, winnerId, winPop);
 
     const impactSummary = [
-      { label: `${winnerName} trust`, delta: `+${winTrust}` },
-      { label: `${loserName} trust`, delta: `${loseTrust}` },
-      { label: `2名間 rivalry`, delta: `${relDelta}` },
-      { label: `${winnerName} 人気`, delta: `+${winPop}` },
+      { label: WM_I18N.t('{name} trust', { name: winnerName }), delta: `+${winTrust}` },
+      { label: WM_I18N.t('{name} trust', { name: loserName }), delta: `${loseTrust}` },
+      { label: WM_I18N.t('2名間 rivalry'), delta: `${relDelta}` },
+      { label: WM_I18N.t('{name} 人気', { name: winnerName }), delta: `+${winPop}` },
     ];
 
     const facId = factionId || this._findFactionIdByLeader(s, leaderId);
@@ -3103,36 +3107,36 @@ Engine.factions = {
       s = this._applyRivalryDirected(s, winnerId, leaderId, winnerToLeaderRiv);
 
       impactSummary.push(
-        { label: `${loserName}（リーダー）trust`, delta: `${leaderTrustExtra}` },
-        { label: `${loserName} 人気`, delta: `${leaderPopHit}` },
-        { label: `派閥 勢い`, delta: `${momentumHit}` },
-        { label: `メンバー → リーダー 因縁`, delta: `+${memberRivalryHit}` },
-        { label: `${winnerName} 追加人気`, delta: `+${winnerExtraPop}` },
-        { label: `${winnerName} → ${loserName} 因縁`, delta: `+${winnerToLeaderRiv}` },
+        { label: WM_I18N.t('{name}（リーダー）trust', { name: loserName }), delta: `${leaderTrustExtra}` },
+        { label: WM_I18N.t('{name} 人気', { name: loserName }), delta: `${leaderPopHit}` },
+        { label: WM_I18N.t('派閥 勢い'), delta: `${momentumHit}` },
+        { label: WM_I18N.t('メンバー → リーダー 因縁'), delta: `+${memberRivalryHit}` },
+        { label: WM_I18N.t('{name} 追加人気', { name: winnerName }), delta: `+${winnerExtraPop}` },
+        { label: WM_I18N.t('{a} → {b} 因縁', { a: winnerName, b: loserName }), delta: `+${winnerToLeaderRiv}` },
       );
 
       // リーダー交代の伏線フラグ（v0.2 で交代イベントに連結予定）
       s = this._flagFactionUpset(s, facId, winnerId, leaderId);
 
       const archFlavor = ({
-        AUTHORITY: '権威の柱が音を立てて崩れた',
-        MERIT:     '実力が序列を書き換えた',
-        HEEL:      '弱肉強食の掟通り、新たな牙が立った',
-        COMBAT:    '強い者が前に出た。それだけのことだ',
-        BOND:      '仲間の絆に小さな亀裂が走った',
-        FACE:      '切磋琢磨の果てに、序列が動いた',
-      })[archetypeId] || `${factionName}の序列が揺らいだ`;
-      resultText = `下克上 ―― ${winnerName}が${factionName}リーダー${loserName}を下した。${archFlavor}。`;
+        AUTHORITY: WM_I18N.t('権威の柱が音を立てて崩れた'),
+        MERIT:     WM_I18N.t('実力が序列を書き換えた'),
+        HEEL:      WM_I18N.t('弱肉強食の掟通り、新たな牙が立った'),
+        COMBAT:    WM_I18N.t('強い者が前に出た。それだけのことだ'),
+        BOND:      WM_I18N.t('仲間の絆に小さな亀裂が走った'),
+        FACE:      WM_I18N.t('切磋琢磨の果てに、序列が動いた'),
+      })[archetypeId] || WM_I18N.t('{name}の序列が揺らいだ', { name: factionName });
+      resultText = WM_I18N.t('下克上 ―― {winner}が{faction}リーダー{loser}を下した。{flavor}。', { winner: winnerName, faction: factionName, loser: loserName, flavor: archFlavor });
       upsetTag = 'leader_lost';
     } else if (isLeaderWin) {
       // ── リーダー順当勝ち ─────────────────────────────
       const momentumGain = ri(2, 5);
       s = this._adjustFactionMomentum(s, facId, momentumGain);
-      impactSummary.push({ label: `派閥 勢い`, delta: `+${momentumGain}` });
-      resultText = `${winnerName}が${loserName}を下し、リーダーの威信は保たれた。${factionName}内の火種は試合で清算された。`;
+      impactSummary.push({ label: WM_I18N.t('派閥 勢い'), delta: `+${momentumGain}` });
+      resultText = WM_I18N.t('{winner}が{loser}を下し、リーダーの威信は保たれた。{faction}内の火種は試合で清算された。', { winner: winnerName, loser: loserName, faction: factionName });
     } else {
       // ── 非リーダー同士 ───────────────────────────────
-      resultText = `${winnerName}が${loserName}を下した。${factionName}内の火種は試合で清算された。`;
+      resultText = WM_I18N.t('{winner}が{loser}を下した。{faction}内の火種は試合で清算された。', { winner: winnerName, loser: loserName, faction: factionName });
     }
 
     // 派閥内ポイント加算（spec: faction-internal-rank-spec-v0.2 §3.1）
@@ -3390,17 +3394,17 @@ Engine.factions = {
         case 'AUTHORITY':
           s = this.applyMomentumChange(s, factionId, 4);
           s = this._applyLockerRoomMorale(s, -2);
-          impactSummary.push({ label: `${factionName} 勢い`, delta: '+4' });
-          impactSummary.push({ label: 'ロッカー士気', delta: '-2' });
-          resultText = `記事は${leaderName}の威圧的発言が前面に。注目は集まったが、外との緊張も増した。`;
+          impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+4' });
+          impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: '-2' });
+          resultText = WM_I18N.t('記事は{name}の威圧的発言が前面に。注目は集まったが、外との緊張も増した。', { name: leaderName });
           break;
         case 'BOND': {
           const inc = ri(8, 12);
           s = { ...s, funds: (s.funds || 0) + inc };
           s = this.applyMomentumChange(s, factionId, 3);
-          impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
-          impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
-          resultText = `${factionName}の家族的な空気が誌面に出た。柔らかな反響と、ささやかな収入。`;
+          impactSummary.push({ label: WM_I18N.t('メディア収入'), delta: `¥${inc}万` });
+          impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+3' });
+          resultText = WM_I18N.t('{name}の家族的な空気が誌面に出た。柔らかな反響と、ささやかな収入。', { name: factionName });
           break;
         }
         case 'MERIT':
@@ -3410,51 +3414,51 @@ Engine.factions = {
             const youngIds = (s.roster || []).filter(c => memberIds.includes(c.id) && (c.age || 25) <= 22).map(c => c.id);
             if (youngIds.length) s = this._applyTrustToMembers(s, youngIds, -2);
           }
-          impactSummary.push({ label: `${factionName} 勢い`, delta: '+4' });
-          impactSummary.push({ label: '若手 trust', delta: '-2' });
-          resultText = `${leaderName}が選別主義を堂々と語った。賛否両論、燃える誌面となった。`;
+          impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+4' });
+          impactSummary.push({ label: WM_I18N.t('若手 trust'), delta: '-2' });
+          resultText = WM_I18N.t('{name}が選別主義を堂々と語った。賛否両論、燃える誌面となった。', { name: leaderName });
           break;
         case 'HEEL':
           s = this.applyMomentumChange(s, factionId, 7);
           // orgPop 微減リスク（一時のみ表現として -1）
           s = { ...s, orgPop: Engine.util.clamp((s.orgPop || 0) - 1, 0, 100) };
-          impactSummary.push({ label: `${factionName} 勢い`, delta: '+7' });
-          impactSummary.push({ label: `${state.orgName || '団体'} 知名度`, delta: '-1（炎上）' });
-          resultText = `挑発的発言で記事は炎上。${factionName}の勢いは跳ねたが、団体イメージは少し陰った。`;
+          impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+7' });
+          impactSummary.push({ label: WM_I18N.t('{name} 知名度', { name: state.orgName || WM_I18N.t('団体') }), delta: WM_I18N.t('-1（炎上）') });
+          resultText = WM_I18N.t('挑発的発言で記事は炎上。{name}の勢いは跳ねたが、団体イメージは少し陰った。', { name: factionName });
           break;
         case 'FACE': {
           const inc = ri(12, 18);
           s = { ...s, funds: (s.funds || 0) + inc };
           s = this.applyMomentumChange(s, factionId, 4);
-          impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
-          impactSummary.push({ label: `${factionName} 勢い`, delta: '+4' });
-          resultText = `${leaderName}の模範的対応がファン誌面を飾った。好感度と収入の両取り。`;
+          impactSummary.push({ label: WM_I18N.t('メディア収入'), delta: `¥${inc}万` });
+          impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+4' });
+          resultText = WM_I18N.t('{name}の模範的対応がファン誌面を飾った。好感度と収入の両取り。', { name: leaderName });
           break;
         }
         case 'COMBAT': {
           // F02 発火確率+ は既存システムに無いので、リーダーの対外 rivalry を煽る簡易表現
           s = this.applyMomentumChange(s, factionId, 3);
-          impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
-          impactSummary.push({ label: '対外 rivalry', delta: '上昇' });
-          resultText = `${leaderName}は誌面で次の標的を名指しした。火種は派閥外へと撒かれた。`;
+          impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+3' });
+          impactSummary.push({ label: WM_I18N.t('対外 rivalry'), delta: WM_I18N.t('上昇') });
+          resultText = WM_I18N.t('{name}は誌面で次の標的を名指しした。火種は派閥外へと撒かれた。', { name: leaderName });
           break;
         }
         default:
           s = this.applyMomentumChange(s, factionId, 2);
-          impactSummary.push({ label: `${factionName} 勢い`, delta: '+2' });
-          resultText = `取材は無難に終わった。`;
+          impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+2' });
+          resultText = WM_I18N.t('取材は無難に終わった。');
       }
     } else if (choiceId === 'B') {
       const inc = ri(5, 10);
       s = { ...s, funds: (s.funds || 0) + inc };
       s = this.applyMomentumChange(s, factionId, 2);
-      impactSummary.push({ label: 'メディア収入', delta: `¥${inc}万` });
-      impactSummary.push({ label: `${factionName} 勢い`, delta: '+2' });
-      resultText = `コーチ同席で無難な記事に収まった。色は薄いが、ささやかな実りはあった。`;
+      impactSummary.push({ label: WM_I18N.t('メディア収入'), delta: `¥${inc}万` });
+      impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+2' });
+      resultText = WM_I18N.t('コーチ同席で無難な記事に収まった。色は薄いが、ささやかな実りはあった。');
     } else {
       s = this.applyMomentumChange(s, factionId, -2);
-      impactSummary.push({ label: `${factionName} 勢い`, delta: '-2' });
-      resultText = `取材は断った。${factionName}は表に出ず、しばらく沈む。`;
+      impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '-2' });
+      resultText = WM_I18N.t('取材は断った。{name}は表に出ず、しばらく沈む。', { name: factionName });
     }
 
     s = this._markCommonEventTrigger(s, factionId, 'COMMON_5');
@@ -3564,7 +3568,7 @@ Engine.factions = {
     const table = (typeof COMMON7_LINES !== 'undefined' ? COMMON7_LINES.planType : null) || {};
     const k1 = `${archA}_${archB}`;
     const k2 = `${archB}_${archA}`;
-    return table[k1] || table[k2] || table._any || '合同企画';
+    return table[k1] || table[k2] || table._any || WM_I18N.t('合同企画');
   },
 
   applyCommon7Choice(state, payload, choiceId, rng) {
@@ -3588,27 +3592,27 @@ Engine.factions = {
         const allIds = [...(fA.memberIds || []), ...(fB.memberIds || [])];
         s = this._applyBondBetweenMembers(s, allIds, bondDelta);
       }
-      impactSummary.push({ label: `${factionAName} 勢い`, delta: `+${momA}` });
-      impactSummary.push({ label: `${factionBName} 勢い`, delta: `+${momB}` });
-      impactSummary.push({ label: '両派閥 メンバー間 bond', delta: `+${bondDelta}` });
-      resultText = `${planType}が組まれた。${factionAName}と${factionBName}は手を組んで観客を沸かせた。`;
+      impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionAName }), delta: `+${momA}` });
+      impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionBName }), delta: `+${momB}` });
+      impactSummary.push({ label: WM_I18N.t('両派閥 メンバー間 bond'), delta: `+${bondDelta}` });
+      resultText = WM_I18N.t('{plan}が組まれた。{a}と{b}は手を組んで観客を沸かせた。', { plan: planType, a: factionAName, b: factionBName });
     } else if (choiceId === 'B') {
-      resultText = `${factionAName}と${factionBName}は適度な距離を保った。関係は穏やかなまま。`;
-      impactSummary.push({ label: '両派閥 関係', delta: '維持' });
+      resultText = WM_I18N.t('{a}と{b}は適度な距離を保った。関係は穏やかなまま。', { a: factionAName, b: factionBName });
+      impactSummary.push({ label: WM_I18N.t('両派閥 関係'), delta: WM_I18N.t('維持') });
     } else {
       // C: 観察 50/50
       const success = Engine.rng.float(rng) < 0.5;
       if (success) {
         s = this.applyMomentumChange(s, factionAId, 3);
         s = this.applyMomentumChange(s, factionBId, 3);
-        impactSummary.push({ label: `${factionAName} 勢い`, delta: '+3' });
-        impactSummary.push({ label: `${factionBName} 勢い`, delta: '+3' });
-        outcome = '両派閥の自発的な交流が実った';
-        resultText = `現場任せにした結果、${outcome}。`;
+        impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionAName }), delta: '+3' });
+        impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionBName }), delta: '+3' });
+        outcome = WM_I18N.t('両派閥の自発的な交流が実った');
+        resultText = WM_I18N.t('現場任せにした結果、{outcome}。', { outcome });
       } else {
-        outcome = '何も起きずに流れた';
-        resultText = `静観した結果、${outcome}。`;
-        impactSummary.push({ label: '両派閥 関係', delta: '変化なし' });
+        outcome = WM_I18N.t('何も起きずに流れた');
+        resultText = WM_I18N.t('静観した結果、{outcome}。', { outcome });
+        impactSummary.push({ label: WM_I18N.t('両派閥 関係'), delta: WM_I18N.t('変化なし') });
       }
     }
 
@@ -3855,15 +3859,15 @@ Engine.factions = {
       wmDiag(`[WM Faction] F04 defection: ${targetName} ${fromFactionName} → ${toFactionName}`);
       return {
         state: s,
-        resultText: `${targetName}は${toFactionName}へ移っていった。${fromFactionName}の空気は凍りついている。`,
+        resultText: WM_I18N.t('{target}は{to}へ移っていった。{from}の空気は凍りついている。', { target: targetName, to: toFactionName, from: fromFactionName }),
         impactSummary: [
-          { label: '転籍', delta: `${targetName}：${fromFactionName} → ${toFactionName}` },
-          { label: `${fromFactionName} メンバー trust`, delta: `${trustDelta}` },
-          { label: `${fromFactionName} 勢い`, delta: `${fromBump}` },
-          { label: `${toFactionName} 勢い`, delta: `+${toBump}` },
-          { label: `${fromFactionName} → ${toFactionName} 対立度`, delta: `+${hostBump}` },
-          { label: `${targetName} → 旧リーダー 因縁`, delta: '+' },
-          { label: '残留メンバー → 対象 絆', delta: '−' },
+          { label: WM_I18N.t('転籍'), delta: WM_I18N.t('{target}：{from} → {to}', { target: targetName, from: fromFactionName, to: toFactionName }) },
+          { label: WM_I18N.t('{name} メンバー trust', { name: fromFactionName }), delta: `${trustDelta}` },
+          { label: WM_I18N.t('{name} 勢い', { name: fromFactionName }), delta: `${fromBump}` },
+          { label: WM_I18N.t('{name} 勢い', { name: toFactionName }), delta: `+${toBump}` },
+          { label: WM_I18N.t('{a} → {b} 対立度', { a: fromFactionName, b: toFactionName }), delta: `+${hostBump}` },
+          { label: WM_I18N.t('{name} → 旧リーダー 因縁', { name: targetName }), delta: '+' },
+          { label: WM_I18N.t('残留メンバー → 対象 絆'), delta: '−' },
         ],
       };
     }
@@ -3877,11 +3881,11 @@ Engine.factions = {
       }
       return {
         state: s,
-        resultText: `${targetName}との面談で、迷いは一旦収まった。`,
+        resultText: WM_I18N.t('{name}との面談で、迷いは一旦収まった。', { name: targetName }),
         impactSummary: [
-          { label: `${targetName} trust`, delta: '+5' },
-          { label: `${targetName} → 旧リーダー 絆`, delta: '微増' },
-          { label: '寝返り判定', delta: '12週 CD' },
+          { label: WM_I18N.t('{name} trust', { name: targetName }), delta: '+5' },
+          { label: WM_I18N.t('{name} → 旧リーダー 絆', { name: targetName }), delta: WM_I18N.t('微増') },
+          { label: WM_I18N.t('寝返り判定'), delta: WM_I18N.t('12週 CD') },
         ],
       };
     }
@@ -3910,13 +3914,13 @@ Engine.factions = {
       factions: (s.factions || []).map(f => f.id === fromFactionId ? { ...f, tensionTag: true } : f),
     };
     const impactSummaryC = [
-      { label: `${targetName} trust`, delta: `${tgtTrust}` },
+      { label: WM_I18N.t('{name} trust', { name: targetName }), delta: `${tgtTrust}` },
     ];
-    if (rivBump > 0) impactSummaryC.push({ label: `${targetName} → リーダー rivalry`, delta: `+${rivBump}` });
-    impactSummaryC.push({ label: `${fromFactionName}`, delta: '内紛フラグ点灯' });
+    if (rivBump > 0) impactSummaryC.push({ label: WM_I18N.t('{name} → リーダー rivalry', { name: targetName }), delta: `+${rivBump}` });
+    impactSummaryC.push({ label: fromFactionName, delta: WM_I18N.t('内紛フラグ点灯') });
     return {
       state: s,
-      resultText: `${targetName}の動きはリーダーの知るところとなった。${fromFactionName}の内側に、新たな火種が燻る。`,
+      resultText: WM_I18N.t('{name}の動きはリーダーの知るところとなった。{faction}の内側に、新たな火種が燻る。', { name: targetName, faction: fromFactionName }),
       impactSummary: impactSummaryC,
     };
   },
@@ -3968,20 +3972,20 @@ Engine.factions = {
       }
       return {
         state: s,
-        resultText: `見守るうち、${factionName}は自然に割れた。${ringleaderName}が旗を掲げる。`,
+        resultText: WM_I18N.t('見守るうち、{name}は自然に割れた。{ringleader}が旗を掲げる。', { name: factionName, ringleader: ringleaderName }),
         impactSummary: [
-          { label: '分裂', delta: `${factionName} → ${ringleader?.surname || ringleaderName}派` },
-          { label: '離脱メンバー', delta: `${dissidentIds.length}名` },
-          { label: '離脱 ⇄ 残留 絆', delta: `${dBondGrp}` },
-          { label: `${ringleaderName} → 旧リーダー 因縁`, delta: '+' },
+          { label: WM_I18N.t('分裂'), delta: WM_I18N.t('{name} → {ringleader}派', { name: factionName, ringleader: ringleader?.surname || ringleaderName }) },
+          { label: WM_I18N.t('離脱メンバー'), delta: WM_I18N.t('{n}名', { n: dissidentIds.length }) },
+          { label: WM_I18N.t('離脱 ⇄ 残留 絆'), delta: `${dBondGrp}` },
+          { label: WM_I18N.t('{name} → 旧リーダー 因縁', { name: ringleaderName }), delta: '+' },
         ],
       };
     }
     return {
       state: s,
-      resultText: `${factionName}の亀裂は、とりあえず破裂には至らなかった。`,
+      resultText: WM_I18N.t('{name}の亀裂は、とりあえず破裂には至らなかった。', { name: factionName }),
       impactSummary: [
-        { label: `${factionName}`, delta: '分裂回避（破裂に至らず）' },
+        { label: factionName, delta: WM_I18N.t('分裂回避（破裂に至らず）') },
       ],
     };
   },
@@ -4022,21 +4026,21 @@ Engine.factions = {
       if (payloadLeaderB) s = this._applyTrustToMembers(s, [payloadLeaderB], tB);
       return {
         state: s,
-        resultText: `強ばっていた視線が、静かにほどけた。${factionAName}と${factionBName}は、距離を取り戻し始めている。`,
+        resultText: WM_I18N.t('強ばっていた視線が、静かにほどけた。{a}と{b}は、距離を取り戻し始めている。', { a: factionAName, b: factionBName }),
         impactSummary: [
-          { label: `${factionAName} ⇄ ${factionBName} 対立度`, delta: `${d}（両方向）` },
-          { label: '派閥間 bond', delta: bd > 0 ? `+${bd}` : '—' },
-          { label: `${factionAName} リーダー trust`, delta: payloadLeaderA ? `+${tA}` : '—' },
-          { label: `${factionBName} リーダー trust`, delta: payloadLeaderB ? `+${tB}` : '—' },
+          { label: WM_I18N.t('{a} ⇄ {b} 対立度', { a: factionAName, b: factionBName }), delta: WM_I18N.t('{d}（両方向）', { d }) },
+          { label: WM_I18N.t('派閥間 bond'), delta: bd > 0 ? `+${bd}` : '—' },
+          { label: WM_I18N.t('{name} リーダー trust', { name: factionAName }), delta: payloadLeaderA ? `+${tA}` : '—' },
+          { label: WM_I18N.t('{name} リーダー trust', { name: factionBName }), delta: payloadLeaderB ? `+${tB}` : '—' },
         ],
       };
     }
     // 'B' 何もしない（介入なし・自然減衰は外部 tick に任せる）
     return {
       state: s,
-      resultText: `社長は手を出さなかった。和解の兆しは、時間に委ねられた。`,
+      resultText: WM_I18N.t('社長は手を出さなかった。和解の兆しは、時間に委ねられた。'),
       impactSummary: [
-        { label: '介入', delta: 'なし（時間に委ねる）' },
+        { label: WM_I18N.t('介入'), delta: WM_I18N.t('なし（時間に委ねる）') },
       ],
     };
   },
@@ -4107,25 +4111,25 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, memberIds(), d);
         const showsTotal = cfg.f07DemandMainShows || 6;
         s = { ...s, _pendingF07Directive: { factionId, type: 'DEMAND_MAIN', remainingShows: showsTotal, totalShows: showsTotal } };
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
-        impactSummary.push({ label: 'メインカード推薦期間', delta: `${showsTotal}興行` });
-        resultText = `${leaderName}の声を受け止め、向こう${showsTotal}興行のメインカードに${factionName}を推す方針を伝えた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: `+${d}` });
+        impactSummary.push({ label: WM_I18N.t('メインカード推薦期間'), delta: WM_I18N.t('{n}興行', { n: showsTotal }) });
+        resultText = WM_I18N.t('{leader}の声を受け止め、向こう{n}興行のメインカードに{faction}を推す方針を伝えた。', { leader: leaderName, n: showsTotal, faction: factionName });
       } else if (choiceId === 'B') {
         // 黙認: リーダー trust -3〜-5、非メンバー trust +2
         const d = -ri(3, 5);
         s = this._applyTrustToMembers(s, [leaderId], d);
         s = this._applyTrustToMembers(s, nonMemberIds(), 2);
-        impactSummary.push({ label: `${leaderName} trust`, delta: `${d}` });
-        impactSummary.push({ label: '派閥外 trust', delta: '+2' });
-        resultText = `${leaderName}の要求は受け流した。${factionName}の中に、薄い不満が漂う。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: `${d}` });
+        impactSummary.push({ label: WM_I18N.t('派閥外 trust'), delta: '+2' });
+        resultText = WM_I18N.t('{leader}の要求は受け流した。{faction}の中に、薄い不満が漂う。', { leader: leaderName, faction: factionName });
       } else {
         // C 別ルートで応える: 個別ケア
         s = this._applyTrustToMembers(s, [leaderId], -1);
         s = this._applyTrustToMembers(s, memberIdsExLeader(), 2);
         s = advanceRebuke(s);
-        impactSummary.push({ label: `${leaderName} trust`, delta: '-1' });
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+2' });
-        resultText = `${leaderName}の要求そのものには応じず、${factionName}のメンバー一人一人に目を配った。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '-1' });
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: '+2' });
+        resultText = WM_I18N.t('{leader}の要求そのものには応じず、{faction}のメンバー一人一人に目を配った。', { leader: leaderName, faction: factionName });
       }
     } else if (itype === 'DEMAND_MONEY') {
       if (choiceId === 'A') {
@@ -4155,20 +4159,20 @@ Engine.factions = {
         s = { ...s, factions: s.factions.map(f => f.id === factionId
           ? { ...f, _f07DemandMoneyQuietUntil: this._absWeek(s) + cfg.f07DemandMoneyCooldown }
           : f) };
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
-        impactSummary.push({ label: '給与改定 (+10%)', delta: `週合計 +${totalRaise}万` });
-        resultText = `${leaderName}と給与改定を約束した。${factionName}のメンバーへ+10%、来週から実支給に反映される。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: `+${d}` });
+        impactSummary.push({ label: WM_I18N.t('給与改定 (+10%)'), delta: WM_I18N.t('週合計 +{n}万', { n: totalRaise }) });
+        resultText = WM_I18N.t('{leader}と給与改定を約束した。{faction}のメンバーへ+10%、来週から実支給に反映される。', { leader: leaderName, faction: factionName });
       } else if (choiceId === 'B') {
         const d = -ri(3, 4);
         s = this._applyTrustToMembers(s, [leaderId], d);
-        impactSummary.push({ label: `${leaderName} trust`, delta: `${d}` });
-        resultText = `${leaderName}の待遇相談は受け流した。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: `${d}` });
+        resultText = WM_I18N.t('{name}の待遇相談は受け流した。', { name: leaderName });
       } else {
         s = this._applyTrustToMembers(s, [leaderId], -1);
         s = this._applyTrustToMembers(s, memberIdsExLeader(), 1);
         s = advanceRebuke(s);
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+1' });
-        resultText = `給与の話には触れず、${factionName}のメンバーへの個別ケアで応えた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: '+1' });
+        resultText = WM_I18N.t('給与の話には触れず、{faction}のメンバーへの個別ケアで応えた。', { faction: factionName });
       }
     } else if (itype === 'DEMAND_ABSTRACT') {
       // 旧 v2.1 と同等。AUTHORITY 限定で dictatorTag 付与
@@ -4179,20 +4183,20 @@ Engine.factions = {
         s = this._applyLockerRoomMorale(s, -ri(3, 5));
         if (faction.archetypeId === 'AUTHORITY') {
           s = { ...s, factions: s.factions.map(f => f.id === factionId ? { ...f, dictatorTag: true } : f) };
-          impactSummary.push({ label: `${factionName}`, delta: 'dictatorTag 付与' });
+          impactSummary.push({ label: factionName, delta: WM_I18N.t('dictatorTag 付与') });
         }
         s = this._applyAxisBetweenGroups(s, nonMemberIds(), [leaderId], 'rivalry', ri(3, 5), 4);
-        impactSummary.push({ label: `${leaderName} trust`, delta: '+5' });
-        impactSummary.push({ label: '派閥外 trust', delta: `${dn}` });
-        impactSummary.push({ label: `派閥外 → ${leaderName} 因縁`, delta: '+微増' });
-        resultText = `${leaderName}の権威を認めた。${factionName}の外にいる者たちは、一歩引いて見ている。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '+5' });
+        impactSummary.push({ label: WM_I18N.t('派閥外 trust'), delta: `${dn}` });
+        impactSummary.push({ label: WM_I18N.t('派閥外 → {name} 因縁', { name: leaderName }), delta: WM_I18N.t('+微増') });
+        resultText = WM_I18N.t('{leader}の権威を認めた。{faction}の外にいる者たちは、一歩引いて見ている。', { leader: leaderName, faction: factionName });
       } else if (choiceId === 'B') {
         const dl = -ri(8, 12);
         s = this._applyTrustToMembers(s, [leaderId], dl);
         s = this._applyTrustToMembers(s, nonMemberIds(), ri(2, 3));
         s = advanceRebuke(s);
-        impactSummary.push({ label: `${leaderName} trust`, delta: `${dl}` });
-        resultText = `${leaderName}に正面から釘を刺した。一瞬の沈黙、それから硬い返事。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: `${dl}` });
+        resultText = WM_I18N.t('{name}に正面から釘を刺した。一瞬の沈黙、それから硬い返事。', { name: leaderName });
       } else {
         // C 別幹部
         const altExec = memberIdsExLeader()
@@ -4209,33 +4213,33 @@ Engine.factions = {
           s = this._applyRivalryDirected(s, leaderId, altExec.id, ri(5, 8));
           s = this._applyRivalryDirected(s, altExec.id, leaderId, ri(2, 4));
         }
-        impactSummary.push({ label: `${leaderName} trust`, delta: '−' });
-        if (altExec) impactSummary.push({ label: `${altExec.name} trust`, delta: '+' });
-        if (altExec) impactSummary.push({ label: `${leaderName} ⇄ ${altExec.name} 因縁`, delta: '+' });
-        resultText = `${leaderName}ではなく別の幹部を重用した。${factionName}の中に、新たな対立軸がくすぶっている。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '−' });
+        if (altExec) impactSummary.push({ label: WM_I18N.t('{name} trust', { name: altExec.name }), delta: '+' });
+        if (altExec) impactSummary.push({ label: WM_I18N.t('{a} ⇄ {b} 因縁', { a: leaderName, b: altExec.name }), delta: '+' });
+        resultText = WM_I18N.t('{leader}ではなく別の幹部を重用した。{faction}の中に、新たな対立軸がくすぶっている。', { leader: leaderName, faction: factionName });
       }
     } else if (itype === 'DEMAND_RECOGNITION') {
       if (choiceId === 'A') {
         const d = ri(3, 5);
         s = this._applyTrustToMembers(s, memberIds(), d);
         s = this._applyLockerRoomMorale(s, ri(1, 2));
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: `+${d}` });
-        impactSummary.push({ label: 'ロッカー士気', delta: '+1〜2' });
-        resultText = `${factionName}の貢献を、興行の場で言葉にして認めた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: `+${d}` });
+        impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: WM_I18N.t('+1〜2') });
+        resultText = WM_I18N.t('{name}の貢献を、興行の場で言葉にして認めた。', { name: factionName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], -ri(2, 4));
-        impactSummary.push({ label: `${leaderName} trust`, delta: '−' });
-        resultText = `${leaderName}の評価要求は受け流した。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '−' });
+        resultText = WM_I18N.t('{name}の評価要求は受け流した。', { name: leaderName });
       } else {
         s = advanceRebuke(s);
         s = this._applyTrustToMembers(s, memberIdsExLeader(), 1);
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+1' });
-        resultText = `表立った評価ではなく、個別の声かけで応えた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: '+1' });
+        resultText = WM_I18N.t('表立った評価ではなく、個別の声かけで応えた。');
       }
     }
     // ─── 観察型 ───────────────────────────────────────
     else if (itype === 'OBSERVE_RIVAL_HEAT') {
-      const tName = (incidentPayload && incidentPayload.targetName) || '派閥外の選手';
+      const tName = (incidentPayload && incidentPayload.targetName) || WM_I18N.t('派閥外の選手');
       const tId = incidentPayload && incidentPayload.targetId;
       if (choiceId === 'A') {
         s = this._applyTrustToMembers(s, [leaderId], -3);
@@ -4244,11 +4248,11 @@ Engine.factions = {
           const dRiv = -ri(3, 5);
           s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
           s = this._applyRivalryDirected(s, leaderId, tId, ri(2, 3));
-          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `${dRiv}` });
+          impactSummary.push({ label: WM_I18N.t('{a} → {b} 因縁', { a: tName, b: leaderName }), delta: `${dRiv}` });
         }
-        impactSummary.push({ label: `${leaderName} trust`, delta: '-3' });
-        impactSummary.push({ label: `${tName} trust`, delta: '+5' });
-        resultText = `${leaderName}に直接話をつけた。${tName}は救われた表情を見せた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '-3' });
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: tName }), delta: '+5' });
+        resultText = WM_I18N.t('{leader}に直接話をつけた。{target}は救われた表情を見せた。', { leader: leaderName, target: tName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         if (tId) s = this._applyTrustToMembers(s, [tId], -5);
@@ -4257,11 +4261,11 @@ Engine.factions = {
           const dRiv = ri(4, 6);
           s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
           s = this._applyRivalryDirected(s, leaderId, tId, ri(2, 4));
-          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `+${dRiv}` });
+          impactSummary.push({ label: WM_I18N.t('{a} → {b} 因縁', { a: tName, b: leaderName }), delta: `+${dRiv}` });
         }
-        impactSummary.push({ label: `${tName} trust`, delta: '-5' });
-        impactSummary.push({ label: 'ロッカー士気', delta: '-3' });
-        resultText = `黙認した。${tName}は言葉を呑み込んだ。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: tName }), delta: '-5' });
+        impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: '-3' });
+        resultText = WM_I18N.t('黙認した。{target}は言葉を呑み込んだ。', { target: tName });
       } else {
         s = this._applyTrustToMembers(s, [leaderId], -1);
         if (tId) s = this._applyTrustToMembers(s, [tId], 3);
@@ -4269,30 +4273,30 @@ Engine.factions = {
         if (tId) {
           const dRiv = -ri(2, 3);
           s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
-          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `${dRiv}` });
+          impactSummary.push({ label: WM_I18N.t('{a} → {b} 因縁', { a: tName, b: leaderName }), delta: `${dRiv}` });
         }
-        impactSummary.push({ label: `${tName} trust`, delta: '+3' });
-        resultText = `${leaderName}本人ではなく、${tName}の側に静かに声をかけた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: tName }), delta: '+3' });
+        resultText = WM_I18N.t('{leader}本人ではなく、{target}の側に静かに声をかけた。', { leader: leaderName, target: tName });
       }
     } else if (itype === 'OBSERVE_ABSENCE') {
       if (choiceId === 'A') {
         s = this._applyTrustToMembers(s, [leaderId], -5);
         s = this._applyTrustToMembers(s, memberIdsExLeader(), -2);
         s = this._applyLockerRoomMorale(s, 3);
-        impactSummary.push({ label: `${leaderName} trust`, delta: '-5' });
-        impactSummary.push({ label: 'ロッカー士気', delta: '+3' });
-        resultText = `${leaderName}に練習出席を求めた。${factionName}内には緊張が走った。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '-5' });
+        impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: '+3' });
+        resultText = WM_I18N.t('{leader}に練習出席を求めた。{faction}内には緊張が走った。', { leader: leaderName, faction: factionName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 3);
         s = this._applyLockerRoomMorale(s, -4);
-        impactSummary.push({ label: 'ロッカー士気', delta: '-4' });
-        resultText = `黙認した。${factionName}の自由は守られたが、道場の空気は淀んだ。`;
+        impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: '-4' });
+        resultText = WM_I18N.t('黙認した。{faction}の自由は守られたが、道場の空気は淀んだ。', { faction: factionName });
       } else {
         s = this._applyTrustToMembers(s, [leaderId], -2);
         s = this._applyTrustToMembers(s, nonMemberIds().slice(0, 4), 1);
         s = advanceRebuke(s);
-        impactSummary.push({ label: 'コーチ経由ケア', delta: '実施' });
-        resultText = `コーチを介して${leaderName}の状態を確かめ、派閥外への目配りも忘れなかった。`;
+        impactSummary.push({ label: WM_I18N.t('コーチ経由ケア'), delta: WM_I18N.t('実施') });
+        resultText = WM_I18N.t('コーチを介して{leader}の状態を確かめ、派閥外への目配りも忘れなかった。', { leader: leaderName });
       }
     } else if (itype === 'OBSERVE_INTERNAL_RANK') {
       const rankTargets = (incidentPayload && incidentPayload.targetIds) || memberIdsExLeader().slice(0, 2);
@@ -4300,22 +4304,22 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, [leaderId], -2);
         s = this._applyTrustToMembers(s, rankTargets, 3);
         for (const tid of rankTargets) s = this._applyBondDirected(s, tid, leaderId, ri(1, 2));
-        impactSummary.push({ label: '中位メンバー trust', delta: '+3' });
-        impactSummary.push({ label: '中位 → リーダー 絆', delta: '微増' });
-        resultText = `${factionName}の格付け争いに介入した。`;
+        impactSummary.push({ label: WM_I18N.t('中位メンバー trust'), delta: '+3' });
+        impactSummary.push({ label: WM_I18N.t('中位 → リーダー 絆'), delta: WM_I18N.t('微増') });
+        resultText = WM_I18N.t('{name}の格付け争いに介入した。', { name: factionName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 1);
         s = this._applyLockerRoomMorale(s, -2);
         for (const tid of rankTargets) s = this._applyRivalryDirected(s, tid, leaderId, ri(2, 4));
         if (rankTargets.length >= 2) s = this._applyRivalryBetweenMembers(s, rankTargets, ri(2, 3));
-        impactSummary.push({ label: 'ロッカー士気', delta: '-2' });
-        impactSummary.push({ label: '中位 → リーダー 因縁', delta: '微増' });
-        resultText = `${factionName}内の格付け争いはそのまま続いている。`;
+        impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: '-2' });
+        impactSummary.push({ label: WM_I18N.t('中位 → リーダー 因縁'), delta: WM_I18N.t('微増') });
+        resultText = WM_I18N.t('{name}内の格付け争いはそのまま続いている。', { name: factionName });
       } else {
         s = advanceRebuke(s);
         for (const tid of rankTargets) s = this._applyBondDirected(s, tid, leaderId, ri(1, 2));
-        impactSummary.push({ label: `${factionName} 結束`, delta: '微増' });
-        resultText = `表立った介入はせず、個別に話を聞いた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} 結束', { name: factionName }), delta: WM_I18N.t('微増') });
+        resultText = WM_I18N.t('表立った介入はせず、個別に話を聞いた。');
       }
     } else if (itype === 'OBSERVE_FAN_PRESSURE') {
       if (choiceId === 'A') {
@@ -4325,24 +4329,24 @@ Engine.factions = {
           ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 5, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
-        impactSummary.push({ label: `${leaderName} condition`, delta: '+5' });
-        resultText = `${leaderName}を一度休ませる判断をした。`;
+        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: leaderName }), delta: '+5' });
+        resultText = WM_I18N.t('{name}を一度休ませる判断をした。', { name: leaderName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         const newRoster = (s.roster || []).map(c => c.id === leaderId
           ? { ...c, condition: Engine.util.clamp((c.condition || 50) - 3, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
-        impactSummary.push({ label: `${leaderName} condition`, delta: '-3' });
-        resultText = `${leaderName}に任せた。プレッシャーは肩にのしかかったまま。`;
+        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: leaderName }), delta: '-3' });
+        resultText = WM_I18N.t('{name}に任せた。プレッシャーは肩にのしかかったまま。', { name: leaderName });
       } else {
         const newRoster = (s.roster || []).map(c => c.id === leaderId
           ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 3, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
         s = advanceRebuke(s);
-        impactSummary.push({ label: `${leaderName} condition`, delta: '+3' });
-        resultText = `直接の指示ではなく、コーチ経由で${leaderName}を支えた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: leaderName }), delta: '+3' });
+        resultText = WM_I18N.t('直接の指示ではなく、コーチ経由で{name}を支えた。', { name: leaderName });
       }
     } else if (itype === 'OBSERVE_TRAINING_HARD') {
       const targets = (incidentPayload && incidentPayload.targetIds) || memberIdsExLeader();
@@ -4354,29 +4358,29 @@ Engine.factions = {
         s = { ...s, roster: newRoster };
         s = this.applyMomentumChange(s, factionId, -2);
         for (const tid of targets) s = this._applyBondDirected(s, tid, leaderId, ri(1, 2));
-        impactSummary.push({ label: `${factionName} condition`, delta: '+3' });
-        impactSummary.push({ label: `${factionName} 勢い`, delta: '-2' });
-        impactSummary.push({ label: 'メンバー → リーダー 絆', delta: '微増' });
-        resultText = `${leaderName}の追い込みを止めた。${factionName}は一息ついた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: factionName }), delta: '+3' });
+        impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '-2' });
+        impactSummary.push({ label: WM_I18N.t('メンバー → リーダー 絆'), delta: WM_I18N.t('微増') });
+        resultText = WM_I18N.t('{leader}の追い込みを止めた。{faction}は一息ついた。', { leader: leaderName, faction: factionName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         s = this.applyMomentumChange(s, factionId, 3);
         for (const tid of targets) s = this._applyRivalryDirected(s, tid, leaderId, ri(2, 3));
-        impactSummary.push({ label: `${factionName} 勢い`, delta: '+3' });
-        impactSummary.push({ label: '怪我リスク', delta: '上昇' });
-        impactSummary.push({ label: 'メンバー → リーダー 因縁', delta: '微増' });
-        resultText = `${leaderName}の追い込み練習を黙認した。`;
+        impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '+3' });
+        impactSummary.push({ label: WM_I18N.t('怪我リスク'), delta: WM_I18N.t('上昇') });
+        impactSummary.push({ label: WM_I18N.t('メンバー → リーダー 因縁'), delta: WM_I18N.t('微増') });
+        resultText = WM_I18N.t('{leader}の追い込み練習を黙認した。', { leader: leaderName });
       } else {
         s = this._applyTrustToMembers(s, [leaderId], -1);
         s = advanceRebuke(s);
         for (const tid of targets) s = this._applyBondDirected(s, tid, leaderId, 1);
-        impactSummary.push({ label: 'コーチ経由調整', delta: '実施' });
-        resultText = `${leaderName}に直接は触れず、コーチを介して練習量を整えた。`;
+        impactSummary.push({ label: WM_I18N.t('コーチ経由調整'), delta: WM_I18N.t('実施') });
+        resultText = WM_I18N.t('{leader}に直接は触れず、コーチを介して練習量を整えた。', { leader: leaderName });
       }
     }
     // ─── インシデント型（2 択）─────────────────────────
     else if (itype === 'INCIDENT_BOUNDARY') {
-      const tName = (incidentPayload && incidentPayload.targetName) || '派閥外の選手';
+      const tName = (incidentPayload && incidentPayload.targetName) || WM_I18N.t('派閥外の選手');
       const tId = incidentPayload && incidentPayload.targetId;
       if (choiceId === 'A') {
         s = this._applyTrustToMembers(s, [leaderId], -2);
@@ -4386,10 +4390,10 @@ Engine.factions = {
           const dRiv = -ri(2, 4);
           s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
           s = this._applyRivalryDirected(s, leaderId, tId, ri(1, 3));
-          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `${dRiv}` });
+          impactSummary.push({ label: WM_I18N.t('{a} → {b} 因縁', { a: tName, b: leaderName }), delta: `${dRiv}` });
         }
-        impactSummary.push({ label: `${tName} trust`, delta: '+3' });
-        resultText = `${leaderName}に静かに注意した。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: tName }), delta: '+3' });
+        resultText = WM_I18N.t('{name}に静かに注意した。', { name: leaderName });
       } else {
         s = this._applyTrustToMembers(s, [leaderId], 1);
         s = this._applyTrustToMembers(s, memberIds(), 2);
@@ -4398,13 +4402,13 @@ Engine.factions = {
           const dRiv = ri(3, 5);
           s = this._applyRivalryDirected(s, tId, leaderId, dRiv);
           for (const mid of memberIds()) s = this._applyRivalryDirected(s, tId, mid, ri(1, 3));
-          impactSummary.push({ label: `${tName} → ${leaderName} 因縁`, delta: `+${dRiv}` });
+          impactSummary.push({ label: WM_I18N.t('{a} → {b} 因縁', { a: tName, b: leaderName }), delta: `+${dRiv}` });
         }
         s = this._applyBondBetweenMembers(s, memberIds(), ri(1, 2));
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+2' });
-        impactSummary.push({ label: `${tName} trust`, delta: '-3' });
-        impactSummary.push({ label: `${factionName} メンバー間 絆`, delta: '微増' });
-        resultText = `流した。${factionName}の壁はそのまま残っている。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: '+2' });
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: tName }), delta: '-3' });
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー間 絆', { name: factionName }), delta: WM_I18N.t('微増') });
+        resultText = WM_I18N.t('流した。{name}の壁はそのまま残っている。', { name: factionName });
       }
     } else if (itype === 'INCIDENT_BONDING') {
       if (choiceId === 'A') {
@@ -4413,36 +4417,36 @@ Engine.factions = {
         s = this._applyTrustToMembers(s, nonMemberIds(), 2);
         s = this._applyBondBetweenMembers(s, memberIds(), -ri(1, 2));
         s = this._applyAxisBetweenGroups(s, memberIds(), nonMemberIds(), 'bond', 1, 4);
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '-1' });
-        impactSummary.push({ label: '派閥外 trust', delta: '+2' });
-        impactSummary.push({ label: `${factionName} 内 / 外 絆`, delta: '内-/外+' });
-        resultText = `${factionName}内の固まりを軽くたしなめた。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: '-1' });
+        impactSummary.push({ label: WM_I18N.t('派閥外 trust'), delta: '+2' });
+        impactSummary.push({ label: WM_I18N.t('{name} 内 / 外 絆', { name: factionName }), delta: WM_I18N.t('内-/外+') });
+        resultText = WM_I18N.t('{name}内の固まりを軽くたしなめた。', { name: factionName });
       } else {
         s = this._applyTrustToMembers(s, [leaderId], 2);
         s = this._applyTrustToMembers(s, memberIds(), 3);
         s = this._applyTrustToMembers(s, nonMemberIds(), -2);
         s = this._applyBondBetweenMembers(s, memberIds(), ri(2, 3));
         s = this._applyAxisBetweenGroups(s, memberIds(), nonMemberIds(), 'bond', -ri(1, 2), 4);
-        impactSummary.push({ label: `${factionName} メンバー trust`, delta: '+3' });
-        impactSummary.push({ label: '派閥外 trust', delta: '-2' });
-        impactSummary.push({ label: `${factionName} メンバー間 絆`, delta: '+微増' });
-        resultText = `${factionName}の結束を見守った。輪の外には少し距離が残った。`;
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: '+3' });
+        impactSummary.push({ label: WM_I18N.t('派閥外 trust'), delta: '-2' });
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー間 絆', { name: factionName }), delta: WM_I18N.t('+微増') });
+        resultText = WM_I18N.t('{name}の結束を見守った。輪の外には少し距離が残った。', { name: factionName });
       }
     } else if (itype === 'INCIDENT_HEEL_PROVOKE') {
       if (choiceId === 'A') {
         s = this._applyTrustToMembers(s, [leaderId], -3);
         s = advanceRebuke(s);
-        impactSummary.push({ label: `${leaderName} trust`, delta: '-3' });
-        impactSummary.push({ label: '次回興行集客', delta: '一時微減' });
-        resultText = `${leaderName}の挑発行為に注意した。`;
+        impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '-3' });
+        impactSummary.push({ label: WM_I18N.t('次回興行集客'), delta: WM_I18N.t('一時微減') });
+        resultText = WM_I18N.t('{name}の挑発行為に注意した。', { name: leaderName });
       } else {
         s = this._applyTrustToMembers(s, [leaderId], 1);
-        impactSummary.push({ label: '次回興行集客', delta: '一時+' });
-        resultText = `${leaderName}の挑発を黙って眺めた。客席はざわつきながらも食いついている。`;
+        impactSummary.push({ label: WM_I18N.t('次回興行集客'), delta: WM_I18N.t('一時+') });
+        resultText = WM_I18N.t('{name}の挑発を黙って眺めた。客席はざわつきながらも食いついている。', { name: leaderName });
       }
     } else {
       // 未対応 incidentType フォールバック
-      resultText = `${leaderName}との一件は、社長の判断で収まった。`;
+      resultText = WM_I18N.t('{name}との一件は、社長の判断で収まった。', { name: leaderName });
     }
 
     return { state: s, resultText, impactSummary };
@@ -4472,10 +4476,10 @@ Engine.factions = {
       wmDiag(`[WM Faction] F08 directive set: ${factionAName} vs ${factionBName}`);
       return {
         state: s,
-        resultText: `${factionAName}と${factionBName}、両リーダーの直接対決を次興行のメインに据えると決めた。`,
+        resultText: WM_I18N.t('{a}と{b}、両リーダーの直接対決を次興行のメインに据えると決めた。', { a: factionAName, b: factionBName }),
         impactSummary: [
-          { label: '次興行メイン', delta: `${factionAName} リーダー vs ${factionBName} リーダー` },
-          { label: 'F08 CD', delta: '発動' },
+          { label: WM_I18N.t('次興行メイン'), delta: WM_I18N.t('{a} リーダー vs {b} リーダー', { a: factionAName, b: factionBName }) },
+          { label: WM_I18N.t('F08 CD'), delta: WM_I18N.t('発動') },
         ],
       };
     }
@@ -4486,9 +4490,9 @@ Engine.factions = {
     // 'C' 煽らず、組まず — CD を立てずに次週以降も再判定
     return {
       state: s,
-      resultText: `社長は、この熱に直接触れなかった。煽りもせず、組みもせず。火はしばらく燻り続ける。`,
+      resultText: WM_I18N.t('社長は、この熱に直接触れなかった。煽りもせず、組みもせず。火はしばらく燻り続ける。'),
       impactSummary: [
-        { label: '介入', delta: 'なし（再判定継続）' },
+        { label: WM_I18N.t('介入'), delta: WM_I18N.t('なし（再判定継続）') },
       ],
     };
   },
@@ -4751,7 +4755,7 @@ Engine.factions = {
       hostilityBand: band,
       lineA: lineA,
       lineB: lineB,
-      narration: `${facA.name}と${facB.name}――その夜、両派閥のリーダーが直接拳を交える。`,
+      narration: WM_I18N.t('{a}と{b}――その夜、両派閥のリーダーが直接拳を交える。', { a: facA.name, b: facB.name }),
     };
   },
 
@@ -4779,7 +4783,7 @@ Engine.factions = {
       leader:     { id: leader.id,     name: leader.name,     ovr: Engine.util.ov(leader) },
       lineChallenger: lineC,
       lineLeader: lineL,
-      narration: `${f.name}――派閥内の力学が今夜、リング上で決着する。`,
+      narration: WM_I18N.t('{name}――派閥内の力学が今夜、リング上で決着する。', { name: f.name }),
     };
   },
 
@@ -4807,13 +4811,13 @@ Engine.factions = {
     const loserLine  = tableL ? this._getF08LineByBand(tableL, loser, hpBand, rngL) : '';
     let narrationOpen, narrationClose;
     if (leaderWon) {
-      narrationOpen  = `${f.name}のリーダーは座を守った。`;
-      narrationClose = '権威の確認――今夜の挑戦は、力で押し戻された。';
+      narrationOpen  = WM_I18N.t('{name}のリーダーは座を守った。', { name: f.name });
+      narrationClose = WM_I18N.t('権威の確認――今夜の挑戦は、力で押し戻された。');
     } else {
       const oldName = `${oldLeader.surname || oldLeader.name}派`;
       const newName = `${newLeader.surname || newLeader.name}派`;
-      narrationOpen  = `決着。新たなリーダーが立った。`;
-      narrationClose = `${oldName} ―― ${newName}。看板が、今夜書き換わった。`;
+      narrationOpen  = WM_I18N.t('決着。新たなリーダーが立った。');
+      narrationClose = WM_I18N.t('{old} ―― {new}。看板が、今夜書き換わった。', { old: oldName, new: newName });
     }
     return {
       faction: { id: f.id, name: f.name, archetypeId: f.archetypeId },
@@ -4868,11 +4872,11 @@ Engine.factions = {
     const lMomentum = (facL.momentum != null) ? facL.momentum : 0;
     let narrationClose;
     if (lMomentum <= -40) {
-      narrationClose = `${facL.name}は深い傷を負い、夜の闇に消えていった。再起できるかは、誰にも分からない。`;
+      narrationClose = WM_I18N.t('{name}は深い傷を負い、夜の闇に消えていった。再起できるかは、誰にも分からない。', { name: facL.name });
     } else if (lMomentum <= -10) {
-      narrationClose = `${facL.name}の威信は揺らぎ、メンバーの足並みは乱れ始めている。`;
+      narrationClose = WM_I18N.t('{name}の威信は揺らぎ、メンバーの足並みは乱れ始めている。', { name: facL.name });
     } else {
-      narrationClose = `${facL.name}は今夜の屈辱を抱えたまま、リングを去った。火種は、まだ消えない。`;
+      narrationClose = WM_I18N.t('{name}は今夜の屈辱を抱えたまま、リングを去った。火種は、まだ消えない。', { name: facL.name });
     }
 
     return {
@@ -4880,7 +4884,7 @@ Engine.factions = {
       loser:  { id: loser.id,  name: loser.name,  factionName: facL.name, factionId: facL.id, hpBand },
       winnerLine: winnerLine,
       loserLine:  loserLine,
-      narrationOpen: `決着。${facW.name}が${facL.name}を下した――しかし、戦いは終わらない。`,
+      narrationOpen: WM_I18N.t('決着。{winner}が{loser}を下した――しかし、戦いは終わらない。', { winner: facW.name, loser: facL.name }),
       narrationClose: narrationClose,
     };
   },
@@ -5049,7 +5053,7 @@ Engine.factions = {
           type: 'factionCoup',
           characterId: challengerId,
           data: {
-            org: s.orgName || 'プレイヤー団体',
+            org: s.orgName || WM_I18N.t('プレイヤー団体'),
             factionName: f.name,
             newFactionName: newName,
             challengerName: successor ? successor.name : '?',

@@ -9965,41 +9965,41 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <div class="top-bar-date" id="dispDate">1年目 🌸春 第1週</div>
     </div>
     <div class="top-bar-info">
-      <div class="info-item"><span class="info-label">資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
-      <div class="info-item"><span class="info-label">人気</span><span class="info-val" id="dispPop">10</span><span id="dispSubsidy" class="subsidy-badge"></span></div>
+      <div class="info-item"><span class="info-label" data-i18n>資金</span><span class="info-val positive" id="dispFunds">5,000万</span></div>
+      <div class="info-item"><span class="info-label" data-i18n>人気</span><span class="info-val" id="dispPop">10</span><span id="dispSubsidy" class="subsidy-badge"></span></div>
       <!-- care-rework2 P1-4: 決裁枠を常設表示（社長室に入るまで残量が分からなかった） -->
-      <div class="info-item" id="dispDpItem"><span class="info-label">決裁</span><span class="info-val" id="dispDp">⚡6/6</span></div>
+      <div class="info-item" id="dispDpItem"><span class="info-label" data-i18n>決裁</span><span class="info-val" id="dispDp">⚡6/6</span></div>
       <div class="info-item"><span class="info-label">Heat</span><span class="info-val" id="dispHeat">➖ Neutral</span></div>
-      <div class="info-item"><span class="info-label">順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
-      <div class="info-item"><span class="info-label">王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
+      <div class="info-item"><span class="info-label" data-i18n>順位</span><span class="info-val" id="dispRank" style="color:var(--gold)">4位</span></div>
+      <div class="info-item"><span class="info-label" data-i18n>王座</span><span class="info-val" id="dispChamp" style="color:var(--gold)">🏆 空位</span></div>
     </div>
     <div class="top-bar-audio">
-      <button id="muteBtn" onclick="Audio.toggleMute();document.getElementById('muteBtn').textContent=Audio.muted?'🔇':'🔊'" title="サウンド ON/OFF">🔊</button>
-      <button id="bgmMuteBtn" onclick="Audio.toggleBgmMute();document.getElementById('bgmMuteBtn').textContent=Audio.bgmMuted?'🎵❌':'🎵'" title="BGMのみ ON/OFF（効果音・ジングルは残る）">🎵</button>
+      <button id="muteBtn" onclick="Audio.toggleMute();document.getElementById('muteBtn').textContent=Audio.muted?'🔇':'🔊'" data-i18n-attr="title" title="サウンド ON/OFF">🔊</button>
+      <button id="bgmMuteBtn" onclick="Audio.toggleBgmMute();document.getElementById('bgmMuteBtn').textContent=Audio.bgmMuted?'🎵❌':'🎵'" data-i18n-attr="title" title="BGMのみ ON/OFF（効果音・ジングルは残る）">🎵</button>
     </div>
   </div>
 
   <!-- Crisis Warning Bar (bankruptcy-redesign v1.1) -->
   <div id="crisisBar" class="crisis-bar">
     <span class="crisis-icon">⚠️</span>
-    <span class="crisis-title">資金危機</span>
+    <span class="crisis-title" data-i18n>資金危機</span>
     <span class="crisis-weeks" id="crisisWeeksLabel">残り4週</span>
-    <span style="font-size:11px;opacity:0.85;letter-spacing:0.5px">立て直すか、解散か</span>
+    <span style="font-size:11px;opacity:0.85;letter-spacing:0.5px" data-i18n>立て直すか、解散か</span>
   </div>
 
   <!-- Navigation -->
   <div class="nav-bar">
-    <button class="nav-btn active" onclick="showScreen('week',event)">📅 今週</button>
-    <button class="nav-btn" onclick="showScreen('show',event)">🎤 興行準備</button>
-    <button class="nav-btn" onclick="showScreen('roster',event)">👥 団体</button>
+    <button class="nav-btn active" onclick="showScreen('week',event)" data-i18n>📅 今週</button>
+    <button class="nav-btn" onclick="showScreen('show',event)" data-i18n>🎤 興行準備</button>
+    <button class="nav-btn" onclick="showScreen('roster',event)" data-i18n>👥 団体</button>
     <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室<span id="shachoshitsuBadge" class="nav-badge-dot is-office" style="display:none"></span></button>
-    <button class="nav-btn" onclick="showScreen('ranking',event)">🏆 ランキング</button>
-    <button class="nav-btn" onclick="showScreen('database',event)">📊 データベース</button>
+    <button class="nav-btn" onclick="showScreen('ranking',event)" data-i18n>🏆 ランキング</button>
+    <button class="nav-btn" onclick="showScreen('database',event)" data-i18n>📊 データベース</button>
     <button class="nav-btn" onclick="showScreen('newspaper',event)">📰 新聞<span id="newspaperBadge" class="nav-badge-dot" style="display:none"></span></button>
-    <button class="nav-btn" onclick="showScreen('finance',event)">🏢 経営</button>
-    <button class="nav-btn" onclick="showScreen('log',event)">📋 ログ</button>
-    <button class="nav-btn" onclick="showScreen('save',event)">💾 セーブ</button>
-    <button class="nav-btn" onclick="showScreen('help',event)">❓ ヘルプ</button>
+    <button class="nav-btn" onclick="showScreen('finance',event)" data-i18n>🏢 経営</button>
+    <button class="nav-btn" onclick="showScreen('log',event)" data-i18n>📋 ログ</button>
+    <button class="nav-btn" onclick="showScreen('save',event)" data-i18n>💾 セーブ</button>
+    <button class="nav-btn" onclick="showScreen('help',event)" data-i18n>❓ ヘルプ</button>
   </div>
 
   <!-- SCREEN: This Week -->
@@ -10039,7 +10039,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div id="rosterDojoHeader"></div>
     <div class="panel">
       <div class="panel-title">🎓 所属スタッフ (<span id="staffCount">0</span>/<span id="staffMax">3</span>)
-        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('coach',event)">スタッフ募集 →</button>
+        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('coach',event)" data-i18n>スタッフ募集 →</button>
       </div>
       <div id="rosterStaffSection"></div>
     </div>
@@ -10074,7 +10074,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <!-- SCREEN: Show Prep -->
   <div class="screen dark-black" id="screen-show">
     <div class="panel">
-      <div class="panel-title">興行準備</div>
+      <div class="panel-title" data-i18n>興行準備</div>
       <div id="showPrepContent"></div>
     </div>
   </div>
@@ -10082,7 +10082,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <!-- SCREEN: Finance / Management -->
   <div class="screen" id="screen-finance">
     <div class="panel">
-      <div class="panel-title">経営</div>
+      <div class="panel-title" data-i18n>経営</div>
       <div id="financeContent"></div>
     </div>
   </div>
@@ -10090,7 +10090,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <!-- SCREEN: Log -->
   <div class="screen" id="screen-log">
     <div class="panel">
-      <div class="panel-title">ゲームログ</div>
+      <div class="panel-title" data-i18n>ゲームログ</div>
       <div id="logContent" style="max-height:600px;overflow-y:auto"></div>
     </div>
   </div>
@@ -10099,7 +10099,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="screen cream-screen" id="screen-coach">
     <div class="panel">
       <div class="panel-title">🎓 スタッフ募集
-        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('roster',event)">← 団体に戻る</button>
+        <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('roster',event)" data-i18n>← 団体に戻る</button>
       </div>
       <div id="coachContent"></div>
     </div>
@@ -10109,14 +10109,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <!-- SCREEN: Save/Load (v0.6) -->
   <div class="screen" id="screen-save">
     <div class="panel">
-      <div class="panel-title">💾 セーブ / ロード</div>
+      <div class="panel-title" data-i18n>💾 セーブ / ロード</div>
       <div id="saveContent"></div>
     </div>
   </div>
   <!-- SCREEN: Help / Tutorial (v2.0 C-4) -->
   <div class="screen" id="screen-help">
     <div class="panel">
-      <div class="panel-title">❓ 遊び方ガイド</div>
+      <div class="panel-title" data-i18n>❓ 遊び方ガイド</div>
       <div class="help-content">
 
         <div class="help-section">
@@ -10124,7 +10124,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <span class="help-icon">🎯</span> ゲームの目的 <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>あなたは新興の女子プロレス団体のオーナーです。</p>
+            <p data-i18n>あなたは新興の女子プロレス団体のオーナーです。</p>
             <p>選手をスカウト・育成し、興行を開催して資金と人気を集め、<strong style="color:var(--gold)">団体ランキング1位</strong>を目指しましょう。業界にはライバルの3団体（S級・A級・B級）がひしめいています。</p>
             <p style="color:var(--text-sub);font-size:12px">⚠️ 資金がマイナスに落ちると<strong>資金危機</strong>に突入します。4週以内に黒字へ戻せなければ<strong style="color:var(--red)">倒産（ゲームオーバー）</strong>。赤字が深く沈みすぎれば、猶予を待たず経営は破綻します。</p>
           </div>
@@ -10162,7 +10162,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <p><strong style="color:var(--gold)">⚡追込練習：</strong></p>
             <p>⚡ボタンで設定。成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも背負います。<strong>最大2週連続、体調50以上</strong>が条件です。</p>
             <p><strong style="color:var(--gold)">成長のかたち：</strong></p>
-            <p>選手は毎週の練習と試合経験で育ちます。伸び方は年齢・特性・コーチで大きく変わります。</p>
+            <p data-i18n>選手は毎週の練習と試合経験で育ちます。伸び方は年齢・特性・コーチで大きく変わります。</p>
             <p>・<strong>早熟</strong> — 若い時期に急成長、以降は鈍化</p>
             <p>・<strong>晩成</strong> — スロースタート、20代後半で本領発揮</p>
             <p>・<strong>努力家</strong> — 安定して伸びる</p>
@@ -10170,7 +10170,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <p><strong style="color:var(--gold)">コーチ：</strong></p>
             <p>「スタッフ」からコーチを雇用できます。指導力の高いコーチは成長速度を引き上げ、選手と得意スタイルが合えばさらに伸びます。コーチ枠は最初1つ——<strong>資金を投資して最大4枠まで拡張</strong>できます。団体タブの選手カードからアサインを管理しましょう。</p>
             <p><strong style="color:var(--gold)">外部コーチ招聘：</strong></p>
-            <p>社長室の「外部コーチ招聘状」で、団体の外から名伯楽を短期間だけ招けます。候補の顔ぶれは四半期ごとに入れ替わります。</p>
+            <p data-i18n>社長室の「外部コーチ招聘状」で、団体の外から名伯楽を短期間だけ招けます。候補の顔ぶれは四半期ごとに入れ替わります。</p>
           </div>
         </div>
 
@@ -10179,17 +10179,17 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <span class="help-icon">🎤</span> 興行の組み方 <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>偶数週に対戦カードと会場を決めて興行を開催します。</p>
+            <p data-i18n>偶数週に対戦カードと会場を決めて興行を開催します。</p>
             <p><strong style="color:var(--gold)">試合評価：</strong></p>
-            <p>試合の面白さを表す指標で、団体の評判と収入に直結します。</p>
-            <p>・実力の近い者同士は良い試合になりやすい</p>
+            <p data-i18n>試合の面白さを表す指標で、団体の評判と収入に直結します。</p>
+            <p data-i18n>・実力の近い者同士は良い試合になりやすい</p>
             <p>・<strong>因縁の相手</strong>との一戦は大きく跳ねる</p>
-            <p>・タイトルマッチはそれ自体が興行の看板になる</p>
+            <p data-i18n>・タイトルマッチはそれ自体が興行の看板になる</p>
             <p>・<strong>メインイベント</strong>の出来が、興行全体の印象を決めます</p>
             <p><strong style="color:var(--gold)">おまかせ編成：</strong></p>
-            <p>🔥おすすめ（因縁・鮮度・話題性）／💪OVR順／🎤集客力順 の3ボタンで自動編成もできます。</p>
+            <p data-i18n>🔥おすすめ（因縁・鮮度・話題性）／💪OVR順／🎤集客力順 の3ボタンで自動編成もできます。</p>
             <p><strong style="color:var(--gold)">会場：</strong></p>
-            <p>公民館（150人）からドーム（22,500人）まで10段階。大きい会場ほどコストが上がり、試合枠が増えます。</p>
+            <p data-i18n>公民館（150人）からドーム（22,500人）まで10段階。大きい会場ほどコストが上がり、試合枠が増えます。</p>
             <p>集客力は<strong>団体人気</strong>で決まります。超満員（🔥）なら収入も会場の熱も跳ね上がり、ガラガラ（😰）だと収入が沈んで評判も落ちます。興行準備画面の<strong>リスク指標（🟢安全/🟡注意/🔴危険）</strong>を目安に選びましょう。</p>
           </div>
         </div>
@@ -10200,16 +10200,16 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           </button>
           <div class="help-body">
             <p><strong style="color:var(--gold)">団体王座：</strong></p>
-            <p>興行の実績・団体人気・所属人数が一定に達すると、王座を設立できます。まずは「初代王者決定戦」を組みましょう。</p>
+            <p data-i18n>興行の実績・団体人気・所属人数が一定に達すると、王座を設立できます。まずは「初代王者決定戦」を組みましょう。</p>
             <p>・挑戦資格を持つのは団体の<strong>実力上位陣</strong>だけ</p>
             <p>・タイトルマッチを組めるのは<strong>12週に1回</strong></p>
-            <p>・レンタル選手は出場できません</p>
+            <p data-i18n>・レンタル選手は出場できません</p>
             <p><strong style="color:var(--gold)">ジュニアトーナメント：</strong></p>
             <p>毎年<strong>25週目</strong>、20歳以下の若手による業界横断の一日トーナメント。優勝は若手にとって最初の勲章です。</p>
             <p><strong style="color:var(--gold)">PPV GRAND FINAL：</strong></p>
             <p>団体人気が30に達すると出場資格を獲得。<strong>43週目にエントリー、48週目</strong>に業界全体の大興行が開かれます。ランキング上位ほど出場枠が多く、頂点で待つのは「頂上決戦」——業界の看板を懸けたメインイベントです。</p>
             <p><strong style="color:var(--gold)">対抗戦：</strong></p>
-            <p>ライバル団体から挑戦状が届くことがあります。3本勝負または5本勝負の団体戦。勝てば人気と業界での立場が上がり、負ければ痛手を負います。選手が「あの団体とやらせてほしい」と直訴してくることもあります。</p>
+            <p data-i18n>ライバル団体から挑戦状が届くことがあります。3本勝負または5本勝負の団体戦。勝てば人気と業界での立場が上がり、負ければ痛手を負います。選手が「あの団体とやらせてほしい」と直訴してくることもあります。</p>
           </div>
         </div>
 
@@ -10219,13 +10219,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           </button>
           <div class="help-body">
             <p><strong style="color:var(--gold)">信頼：</strong></p>
-            <p>選手一人ひとりが、社長への信頼を胸の内に持っています。数値では見えません——表情や様子、コーチの報告から察してください。出場機会とケアで育ち、冷遇と放置で冷えます。冷え切った心は、不満・造反・移籍の火種になります。</p>
+            <p data-i18n>選手一人ひとりが、社長への信頼を胸の内に持っています。数値では見えません——表情や様子、コーチの報告から察してください。出場機会とケアで育ち、冷遇と放置で冷えます。冷え切った心は、不満・造反・移籍の火種になります。</p>
             <p><strong style="color:var(--gold)">ロッカールームの空気：</strong></p>
-            <p>団体全体の空気は、成長やイベントの起きやすさに響きます。勝ちが続けば和み、連敗と空席が続けば荒みます。「人望」のある選手は、いるだけで空気を少し明るくします。</p>
+            <p data-i18n>団体全体の空気は、成長やイベントの起きやすさに響きます。勝ちが続けば和み、連敗と空席が続けば荒みます。「人望」のある選手は、いるだけで空気を少し明るくします。</p>
             <p><strong style="color:var(--gold)">スランプ・モチベ喪失：</strong></p>
-            <p>選手は時に沈みます。放置は禁物——休ませる、声をかける、環境を変える。手の打ち方は一つではありません。</p>
+            <p data-i18n>選手は時に沈みます。放置は禁物——休ませる、声をかける、環境を変える。手の打ち方は一つではありません。</p>
             <p><strong style="color:var(--gold)">選択イベント：</strong></p>
-            <p>タイトル挑戦の直訴、休養申請、不満の爆発……社長の判断を求める出来事が起きます。選択肢に添えられた一言が、結果の手がかりです。</p>
+            <p data-i18n>タイトル挑戦の直訴、休養申請、不満の爆発……社長の判断を求める出来事が起きます。選択肢に添えられた一言が、結果の手がかりです。</p>
           </div>
         </div>
 
@@ -10256,11 +10256,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           <div class="help-body">
             <p>選手同士の関係は<strong>絆</strong>と<strong>因縁</strong>、2つの軸で動きます。想いは一方通行のこともあります——彼女は慕っていても、相手はそうでもない、ということも。</p>
             <p><strong style="color:var(--gold)">絆：</strong></p>
-            <p>タッグや日々の交わりの中で育ちます。深い絆は成長を後押しし、土壇場の踏ん張りに効きます。</p>
+            <p data-i18n>タッグや日々の交わりの中で育ちます。深い絆は成長を後押しし、土壇場の踏ん張りに効きます。</p>
             <p><strong style="color:var(--gold)">因縁：</strong></p>
             <p>何度も拳を交えた相手、遺恨を残した相手。<strong>因縁の一戦は観客を沸かせ、試合を大きく熱くします</strong>。育てた因縁は団体の財産です。</p>
             <p><strong style="color:var(--gold)">こじれたとき：</strong></p>
-            <p>関係が険悪に沈むと、ロッカーが荒れ、タッグが壊れ、最悪の場合は造反や離脱に至ります。修復の道も残されています——社長室に修復の書類が並ぶことがあります。</p>
+            <p data-i18n>関係が険悪に沈むと、ロッカーが荒れ、タッグが壊れ、最悪の場合は造反や離脱に至ります。修復の道も残されています——社長室に修復の書類が並ぶことがあります。</p>
             <p>データベースの<strong>相関図</strong>で、団体内の人間模様を一望できます。</p>
           </div>
         </div>
@@ -10271,9 +10271,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           </button>
           <div class="help-body">
             <p>団体が育ってくると、選手たちが旗を掲げ、<strong>派閥</strong>が生まれます。</p>
-            <p>派閥にはリーダーの気風が宿ります——権威で束ねる者、結束を誇る者、実力だけを信じる者……。気風によって、起きる事件も変わります。</p>
+            <p data-i18n>派閥にはリーダーの気風が宿ります——権威で束ねる者、結束を誇る者、実力だけを信じる者……。気風によって、起きる事件も変わります。</p>
             <p>派閥同士の火種は<strong>抗争ポイント</strong>として積み上がり、限界を超えると<strong>全面対抗戦</strong>に発展します。</p>
-            <p>合宿、取材、同門対決、下剋上——派閥がらみの報せには、社長の判断を求めるものもあります。静観するか、油を注ぐか、水を差すか。</p>
+            <p data-i18n>合宿、取材、同門対決、下剋上——派閥がらみの報せには、社長の判断を求めるものもあります。静観するか、油を注ぐか、水を差すか。</p>
             <p><strong>派閥タブ</strong>で、それぞれの勢力と火種を確認できます。</p>
           </div>
         </div>
@@ -10287,13 +10287,13 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <p>スカウトタブに、契約金を払えば即入団のFA選手が並びます。市場は<strong>4週ごとに入れ替わり</strong>（2名去り、2名参入）。ドラフトで指名が掛からなかった若い世代が中心です。</p>
             <p><strong style="color:var(--gold)">レンタル移籍：</strong></p>
             <p>FAやライバル団体の選手を<strong>1〜4シーズン</strong>の期間限定で借りられます。</p>
-            <p>・費用は前払い一括</p>
-            <p>・同時レンタルは2〜3枠（ロスター規模による）</p>
-            <p>・相手団体の看板上位3名は借りられません</p>
+            <p data-i18n>・費用は前払い一括</p>
+            <p data-i18n>・同時レンタルは2〜3枠（ロスター規模による）</p>
+            <p data-i18n>・相手団体の看板上位3名は借りられません</p>
             <p>・レンタル選手は<strong>タイトルマッチに出場不可</strong>。契約が切れれば帰っていきます</p>
             <p><strong style="color:var(--gold)">引き抜き交渉：</strong></p>
             <p>ライバル団体の選手詳細から<strong>「🤝 選手を引き抜く」</strong>。予算プラン3種から選んで<strong>4週間</strong>の交渉に入ります。同時に進められるのは1件、失敗すれば費用の半分は戻りません。格上の看板選手ほど、財布だけでは落ちません。</p>
-            <p>※逆もあります。上位団体があなたの選手に引き抜きオファーを出してくることも。日頃の信頼が防波堤になります。</p>
+            <p data-i18n>※逆もあります。上位団体があなたの選手に引き抜きオファーを出してくることも。日頃の信頼が防波堤になります。</p>
             <p><strong style="color:var(--gold)">オフシーズンの補強：</strong></p>
             <p>契約更新（去就に迷う選手との1対1交渉）→ <strong>ドラフト</strong>（新人候補を巡ってライバル団体とセリ合い。各団体の関心と交渉のヒートを読みながら入札します）→ 移籍ウィンドウ、の順で進みます。</p>
           </div>
@@ -10306,7 +10306,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           <div class="help-body">
             <p>選手の体には、リングで受けたダメージが静かに刻まれていきます。<strong>全盛期 → ⚠ 衰え → ⬇ 衰退期 → ⬇⬇ 限界</strong>——蓄積が峠を越えるとステータスは下り坂に入り、引退が視野に入ります。</p>
             <p><strong style="color:var(--gold)">何が体を削るのか：</strong></p>
-            <p>20代半ばにさしかかる頃から、リングに上がり続けた分だけ毎年少しずつ蓄積します。そこに上乗せされるのが——</p>
+            <p data-i18n>20代半ばにさしかかる頃から、リングに上がり続けた分だけ毎年少しずつ蓄積します。そこに上乗せされるのが——</p>
             <p>・<strong>試合の詰め込み</strong> — 年間の試合数が多い選手ほど体は削れます</p>
             <p>・<strong>怪我</strong> — 一度の負傷は治っても、確実に体に残ります</p>
             <p>・<strong>⚡追込の使いすぎ</strong> — 若いうちは何も起きません。重ねた無理は表に出ないまま溜まり、峠にさしかかった年に一度に返ってきます</p>
@@ -10322,11 +10322,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           </button>
           <div class="help-body">
             <p><strong style="color:var(--gold)">選手人気：</strong></p>
-            <p>良い試合、戴冠、メディア露出で上がります。高くなるほど上がりにくく、逆に連敗・スキャンダル・怪我での長期欠場は人気を削ります。</p>
+            <p data-i18n>良い試合、戴冠、メディア露出で上がります。高くなるほど上がりにくく、逆に連敗・スキャンダル・怪我での長期欠場は人気を削ります。</p>
             <p><strong style="color:var(--gold)">団体人気：</strong></p>
-            <p>集客もスポンサーも放映料も、すべての土台です。こちらも高いほど上がりにくく、シーズン末には順位に応じた自然減があります——頂の維持にも努力が要ります。</p>
+            <p data-i18n>集客もスポンサーも放映料も、すべての土台です。こちらも高いほど上がりにくく、シーズン末には順位に応じた自然減があります——頂の維持にも努力が要ります。</p>
             <p><strong style="color:var(--gold)">収支：</strong></p>
-            <p>収入の柱はチケット・グッズ・スポンサー・放映料。支出の柱は給与です。選手が育って格が上がれば、給与も上がります。赤字が続けば資金危機に（→ ゲームの目的）。</p>
+            <p data-i18n>収入の柱はチケット・グッズ・スポンサー・放映料。支出の柱は給与です。選手が育って格が上がれば、給与も上がります。赤字が続けば資金危機に（→ ゲームの目的）。</p>
           </div>
         </div>
 
@@ -10335,14 +10335,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
             <span class="help-icon">📰</span> 読みもの <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>この団体の歩みは、いくつもの紙面に記録されていきます。</p>
+            <p data-i18n>この団体の歩みは、いくつもの紙面に記録されていきます。</p>
             <p>・<strong>📰 新聞</strong> — 毎週発行。興行の結果、業界の動き、記者のコラム</p>
             <p>・<strong>📜 団体年代記</strong> — 数シーズンごとに「章」が編まれ、時代の主役が刻まれます。旗揚げ世代の物語は「序章」として永久保存</p>
             <p>・<strong>⚔ 因縁列伝</strong> — 宿命のライバル関係を特集する紙面</p>
             <p>・<strong>👤 選手経歴</strong> — 選手詳細から見られる、一人ひとりの年表</p>
             <p>・<strong>📜 記録</strong> — 殿堂入りした名選手たちの記憶と、歴代の栄冠</p>
             <p>・<strong>📅 シーズン総括</strong> — 年度末の総決算（ANNUAL RECORD）</p>
-            <p>攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。</p>
+            <p data-i18n>攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。</p>
           </div>
         </div>
 
@@ -10352,21 +10352,21 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           </button>
           <div class="help-body">
             <p><strong style="color:var(--gold)">1. ドラフトで軸を作る</strong></p>
-            <p>バランスより、エース候補を1人。団体の顔が育てば興行が回り始めます。</p>
+            <p data-i18n>バランスより、エース候補を1人。団体の顔が育てば興行が回り始めます。</p>
             <p><strong style="color:var(--gold)">2. 公民館から</strong></p>
-            <p>満員を確実に取り、黒字を積む。背伸びは資金危機への近道です。</p>
+            <p data-i18n>満員を確実に取り、黒字を積む。背伸びは資金危機への近道です。</p>
             <p><strong style="color:var(--gold)">3. メインを大切に</strong></p>
-            <p>エース候補をメインに据えて高い試合評価を。同じ相手と当て続ければ、因縁も育ちます。</p>
+            <p data-i18n>エース候補をメインに据えて高い試合評価を。同じ相手と当て続ければ、因縁も育ちます。</p>
             <p><strong style="color:var(--gold)">4. 体調管理</strong></p>
-            <p>怪我は長期離脱＋人気低下のダブルパンチ。⚡追込は使いどころを選んで。</p>
+            <p data-i18n>怪我は長期離脱＋人気低下のダブルパンチ。⚡追込は使いどころを選んで。</p>
             <p><strong style="color:var(--gold)">5. コーチは早めに</strong></p>
-            <p>エース候補にアサインすれば、成長がまるで違います。</p>
+            <p data-i18n>エース候補にアサインすれば、成長がまるで違います。</p>
             <p><strong style="color:var(--gold)">6. 王座を建てる</strong></p>
-            <p>条件が揃ったら初代王者決定戦を。ベルトは団体の格を一段上げます。</p>
+            <p data-i18n>条件が揃ったら初代王者決定戦を。ベルトは団体の格を一段上げます。</p>
             <p><strong style="color:var(--gold)">7. 会場は一段ずつ</strong></p>
-            <p>リスク指標🟢を目安に。焦って大箱に出ると空席が団体を蝕みます。</p>
+            <p data-i18n>リスク指標🟢を目安に。焦って大箱に出ると空席が団体を蝕みます。</p>
             <p><strong style="color:var(--gold)">8. 信頼は資産</strong></p>
-            <p>選手の気持ちの動きを見逃さないこと。冷えてからでは高くつきます。</p>
+            <p data-i18n>選手の気持ちの動きを見逃さないこと。冷えてからでは高くつきます。</p>
           </div>
         </div>
 
@@ -10386,7 +10386,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   </div>
   <div class="title-content">
     <div class="title-logo">WRESTLE<br>MANAGER</div>
-    <div class="title-sub">女子プロレス団体経営シミュレーション</div>
+    <div class="title-sub" data-i18n>女子プロレス団体経営シミュレーション</div>
     <div class="title-buttons">
       <button class="title-btn primary" onclick="App.titleNewGame()">NEW GAME</button>
       <button class="title-btn" id="titleContinueBtn" onclick="App.titleContinue()" style="display:none">CONTINUE</button>
@@ -10402,7 +10402,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <a href="https://www.patreon.com/takoyakichan" target="_blank" rel="noopener">Patreon</a>
       <a href="https://takoyaki.fanbox.cc/" target="_blank" rel="noopener">FANBOX</a>
     </div>
-    <div class="title-feedback" onclick="window.open(FEEDBACK_FORM_URL,'_blank')">📝 ご意見・バグ報告</div>
+    <div class="title-feedback" onclick="window.open(FEEDBACK_FORM_URL,'_blank')" data-i18n>📝 ご意見・バグ報告</div>
   </div>
 </div>
 
@@ -10412,21 +10412,21 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="fighter-file-topbar">
       <div>
         <div class="fighter-file-kicker">Personnel Files — All Wrestlers</div>
-        <h2 class="fighter-file-title" id="fighterFileTitle">選手ファイル</h2>
+        <h2 class="fighter-file-title" id="fighterFileTitle" data-i18n>選手ファイル</h2>
       </div>
-      <button type="button" class="fighter-file-close" onclick="App.closeFighterFile()" title="タイトルへ戻る（ESC可）" aria-label="選手ファイルを閉じる">✕</button>
+      <button type="button" class="fighter-file-close" onclick="App.closeFighterFile()" data-i18n-attr="title,aria-label" title="タイトルへ戻る（ESC可）" aria-label="選手ファイルを閉じる">✕</button>
     </div>
     <div class="fighter-file-body">
       <div class="fighter-file-notice">
-        <span class="fighter-file-stamp">機密指定</span>
+        <span class="fighter-file-stamp" data-i18n>機密指定</span>
         <div>
-          <div class="fighter-file-notice-main">潜在能力値は、本ファイルには記載されない。</div>
+          <div class="fighter-file-notice-main" data-i18n>潜在能力値は、本ファイルには記載されない。</div>
           <div class="fighter-file-notice-sub">各選手の潜在能力は機密事項。さらに同じ選手であっても、その数値はプレイごとに変化する。<br>※ 記載の能力値は各選手の能力基準値。</div>
         </div>
       </div>
       <div class="fighter-file-filters">
-        <select id="fighterFileStyle" onchange="App.filterFighterFileStyle(this.value)" aria-label="スタイルで絞り込む">
-          <option value="">全スタイル</option>
+        <select id="fighterFileStyle" onchange="App.filterFighterFileStyle(this.value)" data-i18n-attr="aria-label" aria-label="スタイルで絞り込む">
+          <option value="" data-i18n>全スタイル</option>
           <option value="Grappler">Grappler</option>
           <option value="Striker">Striker</option>
           <option value="Submission">Submission</option>
@@ -10434,7 +10434,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
           <option value="Allround">Allround</option>
           <option value="Brawler">Brawler</option>
         </select>
-        <input id="fighterFileSearch" type="search" placeholder="名前で検索" oninput="App.filterFighterFileName(this.value)" aria-label="名前で検索">
+        <input id="fighterFileSearch" type="search" placeholder="名前で検索" oninput="App.filterFighterFileName(this.value)" data-i18n-attr="placeholder,aria-label" aria-label="名前で検索">
         <span class="fighter-file-count" id="fighterFileCount"></span>
       </div>
       <div class="fighter-file-table-wrap">
@@ -10447,7 +10447,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   </div>
 </div>
 
-<div class="fighter-file-detail-overlay" id="fighterFileDetailOverlay" role="dialog" aria-modal="true" aria-label="選手詳細" onclick="if(event.target===this)App.closeFighterFileDetail()">
+<div class="fighter-file-detail-overlay" id="fighterFileDetailOverlay" role="dialog" aria-modal="true" data-i18n-attr="aria-label" aria-label="選手詳細" onclick="if(event.target===this)App.closeFighterFileDetail()">
   <div class="fighter-file-detail" id="fighterFileDetail"></div>
 </div>
 
@@ -10464,18 +10464,18 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="org-setup-input-wrap">
       <div class="org-setup-label">PROMOTION NAME</div>
       <input class="org-setup-input" id="orgSetupNameInput" type="text" maxlength="20"
-        placeholder="団体名を入力" value="" onkeydown="if(event.key==='Enter')App.confirmOrgSetup()">
-      <div class="org-setup-hint">※ あとから変更できます</div>
+        placeholder="団体名を入力" value="" onkeydown="if(event.key==='Enter')App.confirmOrgSetup()" data-i18n-attr="placeholder">
+      <div class="org-setup-hint" data-i18n>※ あとから変更できます</div>
     </div>
     <div class="org-setup-input-wrap" style="margin-top:16px">
       <div class="org-setup-label">PROMOTION ICON</div>
       <div id="orgIconGrid" style="display:grid;grid-template-columns:repeat(5,64px);gap:8px;justify-content:center;margin:12px 0"></div>
     </div>
-    <button class="title-btn primary" onclick="App.confirmOrgSetup()" style="font-size:20px;padding:12px 48px">
+    <button class="title-btn primary" onclick="App.confirmOrgSetup()" style="font-size:20px;padding:12px 48px" data-i18n>
       旗揚げする
     </button>
     <div style="margin-top:16px">
-      <button class="title-btn" onclick="App.backToTitle()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(200,190,170,0.15);color:var(--text-sub)">
+      <button class="title-btn" onclick="App.backToTitle()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(200,190,170,0.15);color:var(--text-sub)" data-i18n>
         ← 戻る
       </button>
     </div>
@@ -10487,32 +10487,32 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="org-setup-bg"></div>
   <div class="org-setup-content">
     <div class="org-setup-icon">⚔️</div>
-    <div class="org-setup-title">難易度を選択</div>
+    <div class="org-setup-title" data-i18n>難易度を選択</div>
     <div class="org-setup-desc">
       プレイスタイルを選んでください。<br>
-      <span style="color:var(--text-sub);font-size:13px">開始後は変更できません</span>
+      <span style="color:var(--text-sub);font-size:13px" data-i18n>開始後は変更できません</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin:24px 0;width:100%;max-width:380px">
       <label class="difficulty-option" id="diffOptHard" onclick="App.selectDifficulty('hard')">
         <div class="difficulty-option-radio" id="diffRadioHard">◉</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--text)">通常モード</div>
-          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">補助金なし — すべて自力で稼ぐ</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)" data-i18n>通常モード</div>
+          <div style="font-size:13px;color:var(--text-sub);margin-top:3px" data-i18n>補助金なし — すべて自力で稼ぐ</div>
         </div>
       </label>
       <label class="difficulty-option" id="diffOptNormal" onclick="App.selectDifficulty('normal')">
         <div class="difficulty-option-radio" id="diffRadioNormal">○</div>
         <div style="flex:1">
-          <div style="font-size:16px;font-weight:700;color:var(--text)">補助金モード</div>
-          <div style="font-size:13px;color:var(--text-sub);margin-top:3px">団体人気40まで補助金支給</div>
+          <div style="font-size:16px;font-weight:700;color:var(--text)" data-i18n>補助金モード</div>
+          <div style="font-size:13px;color:var(--text-sub);margin-top:3px" data-i18n>団体人気40まで補助金支給</div>
         </div>
       </label>
     </div>
-    <button class="title-btn primary" onclick="App.confirmDifficulty()" style="font-size:20px;padding:12px 48px">
+    <button class="title-btn primary" onclick="App.confirmDifficulty()" style="font-size:20px;padding:12px 48px" data-i18n>
       ゲーム開始
     </button>
     <div style="margin-top:16px">
-      <button class="title-btn" onclick="App.backFromDifficulty()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(200,190,170,0.15);color:var(--text-sub)">
+      <button class="title-btn" onclick="App.backFromDifficulty()" style="font-size:14px;padding:8px 32px;min-width:auto;border-color:rgba(200,190,170,0.15);color:var(--text-sub)" data-i18n>
         ← 戻る
       </button>
     </div>
@@ -10528,7 +10528,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </div>
 
 <!-- 4団体勝ち残り対抗戦 専用Stage -->
-<div class="agw-overlay" id="autumnWarOverlay" role="dialog" aria-modal="true" aria-label="4団体勝ち残り対抗戦">
+<div class="agw-overlay" id="autumnWarOverlay" role="dialog" aria-modal="true" data-i18n-attr="aria-label" aria-label="4団体勝ち残り対抗戦">
   <div class="agw-screen" id="autumnWarScreen" tabindex="-1"></div>
 </div>
 
@@ -10540,7 +10540,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
      iframeより手前に出ればよいため10000のまま(グローバルな5階層と競合しない、意図的に据え置き) -->
 <div id="battleOverlay" style="display:none;position:fixed;inset:0;z-index:500;background:#000">
   <iframe id="battleIframe" src="battle-engine.html" style="width:100%;height:100%;border:none"></iframe>
-  <button id="battleEscapeBtn" onclick="App.escapeBattle()" style="position:fixed;top:10px;right:10px;z-index:10000;background:rgba(200,190,170,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 0.3s">✕ 試合中断</button>
+  <button id="battleEscapeBtn" onclick="App.escapeBattle()" style="position:fixed;top:10px;right:10px;z-index:10000;background:rgba(200,190,170,0.15);color:#fff;border:1px solid rgba(255,255,255,0.3);border-radius:6px;padding:6px 14px;font-size:12px;cursor:pointer;opacity:0;pointer-events:none;transition:opacity 0.3s" data-i18n>✕ 試合中断</button>
 </div>
 
 <!-- Confirm Dialog (v0.6) -->
@@ -10576,14 +10576,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div id="aw-ceremony">
     <div id="aw-ceremony-header">
       <div class="aw-header-season" id="aw-header-award-name"></div>
-      <div class="aw-header-title">年間表彰式</div>
+      <div class="aw-header-title" data-i18n>年間表彰式</div>
       <div class="aw-header-divider"></div>
       <div class="aw-header-section" id="aw-header-section"></div>
     </div>
     <div id="aw-slide-wrap"></div>
     <div id="aw-nav-area">
       <div class="aw-slide-dots" id="aw-slide-dots"></div>
-      <button class="aw-btn-next" id="aw-btn-next">次へ　→</button>
+      <button class="aw-btn-next" id="aw-btn-next" data-i18n>次へ　→</button>
     </div>
   </div>
   <div id="hof-coach-fg"></div>
@@ -10644,14 +10644,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <div class="credits-box">
     <div class="credits-title">CREDITS</div>
     <div class="credits-section">
-      <div class="credits-heading">ゲームデザイン・開発</div>
+      <div class="credits-heading" data-i18n>ゲームデザイン・開発</div>
       <div style="font-size:13px;color:var(--text)">たこやき</div>
     </div>
     <div class="credits-section" id="creditsMusicSection">
-      <div class="credits-heading">使用楽曲</div>
+      <div class="credits-heading" data-i18n>使用楽曲</div>
       <div id="creditsMusicList"></div>
     </div>
-    <button class="credits-close" onclick="App.closeCredits()">閉じる</button>
+    <button class="credits-close" onclick="App.closeCredits()" data-i18n>閉じる</button>
   </div>
 </div>
 
