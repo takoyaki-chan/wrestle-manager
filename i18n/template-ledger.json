@@ -11,7 +11,7 @@
   },
   {
     "key": "3対3団体戦は {score}。仕掛けた{requesterName}も、迎え撃った{ourOrg}も、リング上で言葉を交わすことなく分かれた。",
-    "en": "",
+    "en": "{score} in the 3-on-3. {requesterName}, who started it, and {ourOrg}, who met it, walked away without a word to each other.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -21,7 +21,7 @@
   },
   {
     "key": "3対3団体戦は {score}。直訴した{requesterName}も、受けて立った{opponentName}も、リング上で言葉を交わすことなく分かれた。",
-    "en": "",
+    "en": "{score} in the 3-on-3. {requesterName}, who asked for it, and {opponentName}, who took it, walked away without a word to each other.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -31,7 +31,7 @@
   },
   {
     "key": "4団体勝ち残り対抗戦、組み合わせ決定",
-    "en": "",
+    "en": "Autumn Gauntlet War brackets set",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -41,7 +41,7 @@
   },
   {
     "key": "4年に一度の「天頂戦」、今季第48週に開催",
-    "en": "",
+    "en": "Tenchosen, once every 4 years, runs in week 48",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -51,7 +51,7 @@
   },
   {
     "key": "A・B各ブロック1位がぶつかった決勝で、{championOrg}の{champ1}・{champ2}組が{runnerUpOrg}の{runner1}・{runner2}組を破り、第{season}回春のタッグリーグの優勝チームとなった。",
-    "en": "",
+    "en": "In the final between the winners of Blocks A and B, {champ1} and {champ2} of {championOrg} beat {runner1} and {runner2} of {runnerUpOrg} to become the champion team of Spring Tag League No. {season}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -91,7 +91,7 @@
   },
   {
     "key": "{a1}（{a1org}）が{a2}（{a2org}）を、{b1}（{b1org}）が{b2}（{b2org}）を下し、それぞれ決勝へ進んだ。試合評価は{mqA}点と{mqB}点。",
-    "en": "",
+    "en": "{a1} ({a1org}) beat {a2} ({a2org}), and {b1} ({b1org}) beat {b2} ({b2org}); both go through to the final. Ratings: {mqA} and {mqB}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -101,7 +101,7 @@
   },
   {
     "key": "{age}歳前後の有望株が、ほぼ同時期に頭角を現した。{orgName}の{name}と{orgName2}の{name2}。育成関係者の見立てでは、どちらも一団体の看板を背負える器だという。育成の現場では、同世代に競う相手がいる選手ほど伸びると言われる。この二人が並んだこと自体が、今後十年の業界地図に関わってくる。",
-    "en": "",
+    "en": "Two prospects around {age} came through at almost the same time. {name} of {orgName} and {name2} of {orgName2}. The people who develop wrestlers say both are built to carry a promotion's banner. In the training rooms they will tell you a wrestler grows most when there is someone her own age to measure against. That these two arrived together is itself something that touches the next ten years of the business.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -111,7 +111,7 @@
   },
   {
     "key": "{body}",
-    "en": "",
+    "en": "{body}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -121,7 +121,7 @@
   },
   {
     "key": "{carrier}と{enemy}の関係に変化",
-    "en": "",
+    "en": "Something changes between {carrier} and {enemy}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -131,7 +131,7 @@
   },
   {
     "key": "{challengerName}、{toOrg}に殴り込み——ベルト奪還へ",
-    "en": "",
+    "en": "{challengerName} goes into {toOrg} after the belt",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -141,7 +141,7 @@
   },
   {
     "key": "{challengerName}の奪還挑戦は失敗——{toOrg}が王座を死守",
-    "en": "",
+    "en": "{challengerName} falls short — {toOrg} hold on",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -151,7 +151,7 @@
   },
   {
     "key": "{championName}、全国女子プロレス最強王者決定戦「天頂戦」優勝",
-    "en": "",
+    "en": "{championName} wins Tenchosen",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -161,7 +161,7 @@
   },
   {
     "key": "{championOrg}、4団体勝ち残り対抗戦を制覇",
-    "en": "",
+    "en": "{championOrg} wins Autumn Gauntlet War",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -171,7 +171,7 @@
   },
   {
     "key": "{championOrg}『{champ1}&{champ2}』組、春のタッグリーグ制覇",
-    "en": "",
+    "en": "Spring Tag League: {champ1} & {champ2}, {championOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -181,7 +181,7 @@
   },
   {
     "key": "{count}名がどの団体からも指名されず",
-    "en": "",
+    "en": "{count} go undrafted by any promotion",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -191,7 +191,7 @@
   },
   {
     "key": "{count}回防衛の{name}、長期政権へ",
-    "en": "",
+    "en": "Defense number {count} for {name} — a reign taking hold",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -201,7 +201,7 @@
   },
   {
     "key": "{count}連勝。数字だけを見れば順調だが、当たった相手の顔ぶれを並べれば内容は違って見える。連勝が続くほど、次に組まれる相手の格は上がっていく。",
-    "en": "",
+    "en": "{count} in a row. On the number alone it is going well; line up the opponents she actually met and it reads differently. The longer a streak runs, the higher the class of the next one booked against her.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -231,7 +231,7 @@
   },
   {
     "key": "{factionAName}と{factionBName}——{org}の中の二つの派閥が、ついに表立って衝突した。リング外でのやり取りも険悪さを増し、団体としての結束は試されている。これから組まれる試合は、ただの試合では済まなくなる。",
-    "en": "",
+    "en": "{factionAName} and {factionBName} — the two factions inside {org} have finally collided in the open. What passes between them outside the ring keeps getting uglier, and the promotion's unity is being tested. The matches booked from here will not be only matches.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -241,7 +241,7 @@
   },
   {
     "key": "{fromOrg}から{toOrg}へ――{name}の電撃移籍が決まった。チャンスを掴みに行く決断に、新たなファンの期待が集まる。",
-    "en": "",
+    "en": "From {fromOrg} to {toOrg} — {name}'s move came together fast. A decision made to go and take a chance, and a new set of fans has hopes riding on it.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -251,7 +251,7 @@
   },
   {
     "key": "{fromOrg}との契約交渉がまとまらず、{name}は{toOrg}への移籍を決断した。円満とは言い難い幕切れだけに、残された仲間との関係にも微妙な空気が漂う。",
-    "en": "",
+    "en": "Contract talks with {fromOrg} went nowhere, and {name} decided on a move to {toOrg}. It was not a clean ending, and the air between her and the ones she left behind has changed.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -261,7 +261,7 @@
   },
   {
     "key": "{fromOrg}との契約交渉が決裂し、{name}が{toOrg}へ去った。王座は返上、空位に。ベルトを置いて去るというその幕引きに、複雑な思いを抱くファンも少なくない。",
-    "en": "",
+    "en": "Contract talks with {fromOrg} broke down and {name} left for {toOrg}. The title was surrendered and the belt is vacant. Plenty of fans are not sure how to feel about an ending where she walks out and leaves it on the table.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -271,7 +271,7 @@
   },
   {
     "key": "{fromOrg}の{challengerName}が、{toOrg}に持ち去られた団体王座への奪還挑戦状を叩きつけた。あのベルトが生まれたのは自分たちのリングだ——その主張に、会見場の空気が張り詰めた。次の興行で運命の一戦が組まれる。",
-    "en": "",
+    "en": "{challengerName} of {fromOrg} has thrown down a challenge to reclaim the promotion title carried off to {toOrg}. That belt was made in our ring — the claim pulled the air in the press room tight. The match that decides it goes on the next show.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -281,7 +281,7 @@
   },
   {
     "key": "{fromOrg}の{challengerName}が、{toOrg}に持ち去られていた団体王座を取り戻した。ベルトは本来の場所に戻った。裏切られた団体の意地が、リングの上で結実した瞬間だ。",
-    "en": "",
+    "en": "{challengerName} of {fromOrg} has taken back the promotion title that had been carried off to {toOrg}. The belt is where it belongs again. What a betrayed promotion refused to accept came out in the ring, in that moment.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -291,7 +291,7 @@
   },
   {
     "key": "{fromOrg}の{challengerName}が仕掛けた奪還戦は、{toOrg}側の防衛に終わった。またしてもベルトには届かなかった——それでも、リングを降りる挑戦者の背中にファンから声援が飛んだ。物語はまだ終わらない。",
-    "en": "",
+    "en": "The reclaim match {challengerName} of {fromOrg} set up ended in a successful defense for {toOrg}. The belt stayed out of reach again. Even so, the fans sent their voices after the challenger's back as she left the ring. The story is not finished.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -301,7 +301,7 @@
   },
   {
     "key": "{fromOrg}の{name}が{toOrg}への移籍を決断した。実力者の加入で{toOrg}の選手層は厚くなる一方、{fromOrg}は戦力の再編を迫られる。",
-    "en": "",
+    "en": "{name} of {fromOrg} has decided to move to {toOrg}. The arrival of a wrestler of that ability gives {toOrg} more depth, while {fromOrg} is forced into a rebuild.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -311,7 +311,7 @@
   },
   {
     "key": "{fromOrg}のタイトルを保持したまま、{name}が{toOrg}へ移籍した。王座戦線への影響は大きく、両団体の対応が待たれる。",
-    "en": "",
+    "en": "{name} moved to {toOrg} still holding the {fromOrg} title. The effect on the title picture is large, and both promotions have a decision to make.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -321,7 +321,7 @@
   },
   {
     "key": "{fromOrg}の屋台骨を支えた{name}が{toOrg}への移籍を決断。看板選手の喪失に、団体の前途には暗雲が垂れ込める。残された選手たちは奮起できるか。",
-    "en": "",
+    "en": "{name}, who carried {fromOrg}, has decided to move to {toOrg}. The promotion has lost the wrestler it was built on, and the road ahead is not clear. Whether the ones left behind rise to it is the next question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -331,7 +331,7 @@
   },
   {
     "key": "{fromOrg}の王座を保持する{name}が、{toOrg}への移籍を決めた。王者の所属変更を受け、ベルトを今後どう扱うかが焦点となる。",
-    "en": "",
+    "en": "{name}, who holds the {fromOrg} title, has decided to move to {toOrg}. With the champion changing promotions, what happens to the belt is now the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -341,7 +341,7 @@
   },
   {
     "key": "{fromOrg}を出た{name}が{toOrg}と契約。条件面での折り合いがつかなかったとされる。新天地での活躍に注目が集まる。",
-    "en": "",
+    "en": "{name} left {fromOrg} and signed with {toOrg}. The terms are said to be where it came apart. What she does in the new place is worth watching.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -351,7 +351,7 @@
   },
   {
     "key": "{fromOrg}を離れた{name}が、因縁のある{toOrg}へ移籍した。今後の対抗戦で古巣と顔を合わせれば、大きな注目を集めることになりそうだ。",
-    "en": "",
+    "en": "{name} has left {fromOrg} for {toOrg}, the promotion her old one has history with. If she meets her old side in a coming interpromotional match, that is the one everybody will watch.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -361,7 +361,7 @@
   },
   {
     "key": "{how}から間もない{name}。新しい環境で迎える最初の数戦は、連携や試合運びを確かめる時間でもある。今の段階で評価を決めるのはまだ早い。",
-    "en": "",
+    "en": "{name}, not long past it: {how}. The first few matches in a new setting are also time to check how she works with people and how she paces a match. It is early to be settling on a verdict.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -371,7 +371,7 @@
   },
   {
     "key": "{how}した{name}、その後の日々",
-    "en": "",
+    "en": "{name} since then: {how}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -381,7 +381,7 @@
   },
   {
     "key": "{leaderAName}と{leaderBName}、リング上で白黒——{org}が仕掛けた頂上対決",
-    "en": "",
+    "en": "{leaderAName} vs {leaderBName} at {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -391,7 +391,7 @@
   },
   {
     "key": "{leaderName}が旗を掲げた——{org}内の新たな勢力図",
-    "en": "",
+    "en": "{leaderName} raises a flag — {org} redrawn",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -401,7 +401,7 @@
   },
   {
     "key": "{leaderName}を欠いた「{factionName}」が、旗を一旦降ろすことを決めた。解散ではない、あくまで休止——残った者たちはそれぞれの戦いに戻る。頭の帰りを待つ集団が再び旗を掲げる日は、来るのだろうか。",
-    "en": "",
+    "en": "{factionName}, without {leaderName}, has decided to lower its flag for now. Not a disbanding, a pause. The ones who remain go back to their own fights. Whether a group waiting for its head to return ever raises that flag again is another matter.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -451,7 +451,7 @@
   },
   {
     "key": "{mq}点――タッグにはタッグの歴史がある",
-    "en": "",
+    "en": "{mq} — tag wrestling has a history of its own",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -461,7 +461,7 @@
   },
   {
     "key": "{mq}点――過去最高の試合評価が生まれた夜",
-    "en": "",
+    "en": "{mq} — the night the best rating on record was made",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -471,7 +471,7 @@
   },
   {
     "key": "{nameA1}＆{nameA2}組が挙げた一勝の評価は{mq}点。旧記録の{prevRecord}点を上回り、タッグ戦の歴代最高が更新された。舞台は{stage}。単騎の攻防では出ない数字だ。二組四人が同時に噛み合い、誰か一人の見せ場では終わらない完成度がそのまま点に出た。敗れた{nameB1}＆{nameB2}組の連係が高かったことも、この記録が生まれた一因である。｜特筆すべきは、この二人が本来は単独でも団体の中心を張れる格の選手だという点だ。{nameA1}も{nameA2}も一人で試合を成立させる力を持つ。その二人が個を競わせず、相手に譲る呼吸まで備えてコンビを優先した。強さの足し算を噛み合わせで別物に変えたところに、この記録の値打ちがある。手放しでは褒めない本紙も、この一点は評価する。",
-    "en": "",
+    "en": "The win by {nameA1} and {nameA2} was rated {mq}. That passes the old mark of {prevRecord} and sets a new all-time best for tag matches. The setting: {stage}. It is not a number one-on-one exchanges produce. Two teams, four wrestlers, meshing at once, and a completeness that never came down to any single wrestler's spotlight went straight into the rating. That the beaten pair, {nameB1} and {nameB2}, worked well together is part of why the record exists at all.｜What deserves noting is that these two are the class of wrestler who could each anchor a promotion alone. {nameA1} and {nameA2} both have the power to hold a match up by themselves. They did not compete over who stood out; they carried the timing to give ground to each other and put the team first. Turning an addition of two strengths into something else through the meshing is where the value of this record sits. This paper does not hand out praise freely. On this one point it agrees.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -481,7 +481,7 @@
   },
   {
     "key": "{nameA} vs {nameB}——別れた者同士、運命の初対決",
-    "en": "",
+    "en": "{nameA} vs {nameB} — first since they parted",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -491,7 +491,7 @@
   },
   {
     "key": "{nameA}と{nameB}の関係修復に成功——{org}が動いた",
-    "en": "",
+    "en": "{nameA}, {nameB} patched, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -501,7 +501,7 @@
   },
   {
     "key": "{names}。どこにも呼ばれなかった選手たちが、市場に残った。",
-    "en": "",
+    "en": "{names}. Called by nobody, they are still on the market.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -511,7 +511,7 @@
   },
   {
     "key": "{names}。来季の顔ぶれが動く。",
-    "en": "",
+    "en": "{names}. The faces change for next season.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -521,7 +521,7 @@
   },
   {
     "key": "{names}が指名を受けられなかった。拾う団体が出るかどうか。",
-    "en": "",
+    "en": "Undrafted: {names}. Whether a promotion picks them up now is the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -531,7 +531,7 @@
   },
   {
     "key": "{names}が新たに名を連ねた。",
-    "en": "",
+    "en": "New on the list: {names}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -541,7 +541,7 @@
   },
   {
     "key": "{name}、{count}度目の防衛に成功",
-    "en": "",
+    "en": "{name} makes defense number {count}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -551,7 +551,7 @@
   },
   {
     "key": "{name}、{count}連敗。浮上の糸口を探る",
-    "en": "",
+    "en": "{name} at {count} straight losses, looking for a way up",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -561,7 +561,7 @@
   },
   {
     "key": "{name}、{fromOrg}から{toOrg}へ",
-    "en": "",
+    "en": "{name} leaves {fromOrg} — {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -571,7 +571,7 @@
   },
   {
     "key": "{name}、{seasons}シーズンで現役に区切り",
-    "en": "",
+    "en": "{name} retires — {seasons}-season career",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -581,7 +581,7 @@
   },
   {
     "key": "{name}、{toOrg}での再起――{weeksSinceFired}週ぶりに{ourOrg}と相見えた",
-    "en": "",
+    "en": "{toOrg} {name} vs {ourOrg}: {weeksSinceFired}-week gap",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -591,7 +591,7 @@
   },
   {
     "key": "{name}、{weeksSinceFired}週越しの意趣返し――{ourOrg}に食らいついた",
-    "en": "",
+    "en": "{weeksSinceFired}-week score settled — {name} at {ourOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -601,7 +601,7 @@
   },
   {
     "key": "{name}、リングを去る",
-    "en": "",
+    "en": "{name} leaves the ring",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -611,7 +611,7 @@
   },
   {
     "key": "{name}、不調から抜け出せず",
-    "en": "",
+    "en": "{name} cannot get out of the slump",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -621,7 +621,7 @@
   },
   {
     "key": "{name}、古巣への一矢――解雇{weeksSinceFired}週で迎えた邂逅",
-    "en": "",
+    "en": "{name} strikes back at her old side — {weeksSinceFired}-week wait",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -631,7 +631,7 @@
   },
   {
     "key": "{name}、引退。{org}の一時代が終わる",
-    "en": "",
+    "en": "{name} retires, and an era at {org} ends",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -641,7 +641,7 @@
   },
   {
     "key": "{name}、格上との一戦で動きに変化",
-    "en": "",
+    "en": "{name} moves differently against a better opponent",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -651,7 +651,7 @@
   },
   {
     "key": "{name}、殿堂入り。記録に残るキャリア",
-    "en": "",
+    "en": "{name} into the Hall of Fame — a career on record",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -661,7 +661,7 @@
   },
   {
     "key": "{name}が{count}回防衛——王座戦線の中心に",
-    "en": "",
+    "en": "{name} at defense {count} — center of the title race",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -671,7 +671,7 @@
   },
   {
     "key": "{name}が{count}連勝、視線を集める",
-    "en": "",
+    "en": "{name} at {count} in a row, drawing eyes",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -681,7 +681,7 @@
   },
   {
     "key": "{name}が{detail}。成長を結果へつなげられるか、今後のカードが試金石になる。",
-    "en": "",
+    "en": "{name}: {detail}. Whether the growth turns into results is what the coming cards will test.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -691,7 +691,7 @@
   },
   {
     "key": "{name}が{fromOrg}を離れ、{toOrg}に加わることが決まった。対戦相手の顔ぶれが変わる以上、これまでの戦い方がそのまま通じるとは限らない。",
-    "en": "",
+    "en": "{name} is confirmed to be leaving {fromOrg} and joining {toOrg}. When the faces across the ring change, there is no guarantee the way she has fought until now still works.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -701,7 +701,7 @@
   },
   {
     "key": "{name}が{how}して数週が過ぎた。環境が変われば、練習相手も控室の並びも変わる。数字に出るまでには時間がかかるが、変化はまず立ち居振る舞いに出るものだ。",
-    "en": "",
+    "en": "{name}, a few weeks on: {how}. Change the setting and the training partners change, and so does where she stands in the locker room. It takes time to reach the numbers. It reaches the way she carries herself first.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -711,7 +711,7 @@
   },
   {
     "key": "{name}が{name2}を下した一戦の評価は{mq}点。旧記録の{prevRecord}点を上回り、業界の歴代最高が更新された。舞台は{stage}。派手な決着ではなかったが、攻防の密度がそのまま数字に出た。狙って出せる記録ではない。この日、それがひとつ塗り替わった。",
-    "en": "",
+    "en": "The match in which {name} beat {name2} was rated {mq}. That passes the old mark of {prevRecord} and sets a new all-time best for the business. The setting: {stage}. The finish was not a loud one, but the density of the exchanges came straight out in the number. This is not a record anyone produces on purpose. On this day one of them was rewritten anyway.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -721,7 +721,7 @@
   },
   {
     "key": "{name}が{prevChamp}を下し、新チャンピオンの座に就いた。前王者の雪辱戦も含め、{org}の王座戦線は新たな局面を迎える。",
-    "en": "",
+    "en": "{name} beat {prevChamp} and took the champion's seat. With a rematch for the former champion among the possibilities, the {org} title picture enters a new phase.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -731,7 +731,7 @@
   },
   {
     "key": "{name}が{toOrg}に加入——{fromOrg}から移籍",
-    "en": "",
+    "en": "{name} joins {toOrg}, ex-{fromOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -741,7 +741,7 @@
   },
   {
     "key": "{name}が{toOrg}の選手として{ourOrg}に挑む日が来た。試合前、控室で長く動かなかったという。リング上で何が解放されるのか、注視せざるを得ない一戦となった。",
-    "en": "",
+    "en": "The day came for {name} to face {ourOrg} in {toOrg} colors. Before the match, they say she sat still in the locker room a long time. What gets let out in that ring bears watching.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -751,7 +751,7 @@
   },
   {
     "key": "{name}が{toOrg}へ――ベルトは置いて去った",
-    "en": "",
+    "en": "{name} to {toOrg} — belt left behind",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -761,7 +761,7 @@
   },
   {
     "key": "{name}が{toOrg}へ――契約交渉決裂",
-    "en": "",
+    "en": "{name} to {toOrg} — talks break down",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -771,7 +771,7 @@
   },
   {
     "key": "{name}が{what}を果たしてから数週が過ぎた。大きな実績を一度きりで終わらせず、次の勝利へつなげられるか。今後の対戦カードと試合内容に注目したい。",
-    "en": "",
+    "en": "A few weeks have passed since {name} did it: {what}. Whether a big result stays a one-off or turns into the next win is the question. The cards ahead, and what she does inside them, are worth watching.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -781,7 +781,7 @@
   },
   {
     "key": "{name}がリングに上がった。{age}歳。デビュー戦は{result}に終わった。数字上の勝敗より、スカウト筋がこの新人に付けていた評価のほうが業界を騒がせている。関係者の間では「ここ数年で一番の素材」との声が入団前から流れていた。実物を見た記者席のざわめきが、その評判を裏づけた。",
-    "en": "",
+    "en": "{name} stepped into the ring. Age {age}. The debut ended one way: {result}. What has the business talking is less the result than the grade the scouts had already put on her. Word going around before she signed was that this is the best material in several years. The noise from the press seats, once they had seen her, backed that up.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -791,7 +791,7 @@
   },
   {
     "key": "{name}が引退——現役生活に区切り",
-    "en": "",
+    "en": "{name} retires — a line under the career",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -801,7 +801,7 @@
   },
   {
     "key": "{name}が成長の跡——試合内容に変化",
-    "en": "",
+    "en": "{name} growing — ring work looks different",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -811,7 +811,7 @@
   },
   {
     "key": "{name}が殿堂入り——実績を振り返る",
-    "en": "",
+    "en": "{name} enters the Hall of Fame — the record",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -821,7 +821,7 @@
   },
   {
     "key": "{name}が移籍。{toOrg}の戦力強化なるか",
-    "en": "",
+    "en": "{name} moves — {toOrg} looking stronger",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -831,7 +831,7 @@
   },
   {
     "key": "{name}が長期離脱へ——全治{weeks}週",
-    "en": "",
+    "en": "{name} out long term — {weeks} weeks",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -841,7 +841,7 @@
   },
   {
     "key": "{name}と{name2}――{age}歳、次の十年を占う二人が出揃った",
-    "en": "",
+    "en": "{name} and {name2}, {age} — the next ten years",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -851,7 +851,7 @@
   },
   {
     "key": "{name}に気力の低下——立て直しが急務",
-    "en": "",
+    "en": "{name} losing her drive — repair needed soon",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -861,7 +861,7 @@
   },
   {
     "key": "{name}に転機——{org}の新たな戦力へ",
-    "en": "",
+    "en": "A turn for {name} — {org} gains a card",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -871,7 +871,7 @@
   },
   {
     "key": "{name}の{count}連勝は、まだ続いている",
-    "en": "",
+    "en": "{name} still on {count} in a row",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -881,7 +881,7 @@
   },
   {
     "key": "{name}の{how}から数週——新天地での歩み",
-    "en": "",
+    "en": "{name} a few weeks after: {how}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -891,7 +891,7 @@
   },
   {
     "key": "{name}の{stat}、何が変わったのか",
-    "en": "",
+    "en": "What changed in {name}: {stat}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -901,7 +901,7 @@
   },
   {
     "key": "{name}の{stat}が伸びた。この手の変化は、伸びた直後よりも、次に格上と当たったときにはっきり出る。伸びをそのまま勝ち星に変えられるかどうかは、これからのカード次第だ。",
-    "en": "",
+    "en": "{name} grew in one place: {stat}. A change like this shows less in the week it happens than in the next match against somebody above her. Whether the growth turns straight into wins depends on the cards to come.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -911,7 +911,7 @@
   },
   {
     "key": "{name}の{toOrg}移籍が決まった。{fromOrg}で培った経験を新天地でどう生かすか。新しい顔ぶれの中で担う役割に注目が集まる。",
-    "en": "",
+    "en": "{name}'s move to {toOrg} is confirmed. How she uses what she built at {fromOrg} in the new place is the question. What role she takes among a new set of faces is worth watching.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -921,7 +921,7 @@
   },
   {
     "key": "{name}の{what}、その後",
-    "en": "",
+    "en": "{name} since: {what}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -931,7 +931,7 @@
   },
   {
     "key": "{name}の不調、{org}の戦いにも影響",
-    "en": "",
+    "en": "{name}'s slump reaches how {org} fights",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -941,7 +941,7 @@
   },
   {
     "key": "{name}の功績を称え、殿堂入り",
-    "en": "",
+    "en": "{name} honored with a Hall of Fame place",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -951,7 +951,7 @@
   },
   {
     "key": "{name}の状態を懸念、{org}は支えられるか",
-    "en": "",
+    "en": "Concern over {name} — can {org} hold her",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -961,7 +961,7 @@
   },
   {
     "key": "{name}の移籍が決まる——{fromOrg}を離れ{toOrg}へ",
-    "en": "",
+    "en": "{name} moves: {fromOrg} to {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -971,7 +971,7 @@
   },
   {
     "key": "{name}の連勝が{count}まで伸びた。勝ち星を重ねるほど、対戦相手の警戒も強くなる。そのなかで自分の形を貫けるかが、次の焦点だ。",
-    "en": "",
+    "en": "{name} has taken the streak to {count}. The more wins she stacks, the more carefully opponents come at her. Holding her own shape through that is the next thing.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -981,7 +981,7 @@
   },
   {
     "key": "{name}の連敗が{count}に",
-    "en": "",
+    "en": "{name}'s losing run reaches {count}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -991,7 +991,7 @@
   },
   {
     "key": "{name}は思うように気持ちを高められずにいる。次の一戦が、前を向くきっかけになるかもしれない。",
-    "en": "",
+    "en": "{name} cannot lift herself the way she wants to. The next match may be what turns her forward again.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1001,7 +1001,7 @@
   },
   {
     "key": "{name}は苦しい時期を迎えている。次の一戦で内容を変えられるかが、復調への重要な一歩になる。",
-    "en": "",
+    "en": "{name} is in a hard stretch. Whether she can change the work in the next match is the important first step back.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1011,7 +1011,7 @@
   },
   {
     "key": "{name}デビュー。場内のざわめきが評判を裏づけた",
-    "en": "",
+    "en": "{name} debuts — the building backs the word on her",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1021,7 +1021,7 @@
   },
   {
     "key": "{name}（{orgName}・{age}歳）が引退を表明した。{careerLine}デビューから{seasons}シーズン。積み重ねた試合と記録を残し、現役生活に区切りをつける。",
-    "en": "",
+    "en": "{name} ({orgName}, age {age}) has announced her retirement. Seasons from her debut: {seasons}. She leaves behind the matches and the records she stacked up, and draws a line under her time as an active wrestler. {careerLine}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1031,7 +1031,7 @@
   },
   {
     "key": "{name}（{orgName}）が{count}連敗を喫した。対戦相手との力関係だけで片づけられる状況ではない。戦い方を立て直し、流れを変える一勝をつかめるか。",
-    "en": "",
+    "en": "{name} ({orgName}) has lost {count} in a row. This is not something the strength of her opponents alone explains. Whether she rebuilds the way she fights and takes the win that turns it is the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1041,7 +1041,7 @@
   },
   {
     "key": "{name}（{orgName}）が白星を{count}に伸ばした。{recordLine}この期間に当たった相手の顔ぶれが、連勝の重さをそのまま示している。",
-    "en": "",
+    "en": "{name} ({orgName}) has taken her win column to {count}. Line up the opponents she met over that stretch and the weight of the streak shows itself. {recordLine}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1051,7 +1051,7 @@
   },
   {
     "key": "{name}（{orgName}）の{injuryType}は全治{weeks}週。復帰の目処が立つまで、上位カードの組み替えは避けられない。",
-    "en": "",
+    "en": "The injury to {name} ({orgName}) — {injuryType} — carries an estimate of {weeks} weeks. Until a return date is in sight, rebuilding the top of the card cannot be avoided.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1061,7 +1061,7 @@
   },
   {
     "key": "{newLeaderName}、「{factionName}」を継承——{org}の火は消えず",
-    "en": "",
+    "en": "{newLeaderName} inherits {factionName}, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1071,7 +1071,7 @@
   },
   {
     "key": "{oldLeaderName}が去った「{factionName}」で、{newLeaderName}が新たに旗を預かることになった。慕われた前任者の穴は小さくない。それでも残った者たちは、この人の下でやっていくと決めたようだ。看板の重さを知るのは、これからだ。",
-    "en": "",
+    "en": "With {oldLeaderName} gone from {factionName}, {newLeaderName} takes charge of the flag. The hole a well-liked predecessor leaves is not a small one. The ones who stayed appear to have decided they will do this under her. What the name weighs, she finds out from here.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1081,7 +1081,7 @@
   },
   {
     "key": "{opponentName}陣に屈す。{requesterName}の果たし状は{score}で散る",
-    "en": "",
+    "en": "{requesterName} falls to {opponentName} — {score}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1091,7 +1091,7 @@
   },
   {
     "key": "{opponentOrg}から仕掛けられた挑戦試合で{ourOrg}は {score} の星を落とした。受けて立った{ourOrg}陣営は、リングを去る背中に何かを語らせなかった。",
-    "en": "",
+    "en": "{opponentOrg} brought the challenge and {ourOrg} dropped it {score}. The side that answered the call left the ring saying nothing at all.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1101,7 +1101,7 @@
   },
   {
     "key": "{opponentOrg}の{requesterName}が{ourOrg}に挑んで組まれた団体戦は {score}。決着がつかないまま、両陣営はリングを降りた。",
-    "en": "",
+    "en": "{requesterName} of {opponentOrg} challenged {ourOrg}, and the 3-on-3 ended {score}. Both sides left the ring with the matter open.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1111,7 +1111,7 @@
   },
   {
     "key": "{opponentOrg}の{requesterName}が{ourOrg}に直訴して実現した3対3団体戦。{ourOrg}は古巣に挑んできた{requesterName}陣を {score} で退け、リング上の決着を貫いた。",
-    "en": "",
+    "en": "{requesterName} of {opponentOrg} asked {ourOrg} for a 3-on-3 and got it. {ourOrg} sent the challenger's side home {score} and settled it in the ring.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1121,7 +1121,7 @@
   },
   {
     "key": "{opponentOrg}の{requesterName}が{ourOrg}を名指しして組まれた団体戦は {score} で{ourOrg}が勝利。「呼ばれた以上、応える」――{ourOrg}陣営の意地が勝った形だ。",
-    "en": "",
+    "en": "{requesterName} of {opponentOrg} named {ourOrg}, and the match she got went {score} to {ourOrg}. Called out, they answered. That is what won it.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1131,7 +1131,7 @@
   },
   {
     "key": "{opponentOrg}の{requesterName}を退ける――{ourOrg} {score} で迎撃成功",
-    "en": "",
+    "en": "{ourOrg} {score} {opponentOrg}: {requesterName} held",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1141,7 +1141,7 @@
   },
   {
     "key": "{opponentOrg}の{requesterName}陣に屈す――{ourOrg} {score}",
-    "en": "",
+    "en": "{ourOrg} {score} {opponentOrg}: {requesterName} wins",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1151,7 +1151,7 @@
   },
   {
     "key": "{orgName}、{name}が退く",
-    "en": "",
+    "en": "{orgName} — {name} steps away",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1161,7 +1161,7 @@
   },
   {
     "key": "{orgName}が対抗戦通算{wins}勝の節目を突破した。他団体にとって脅威となるその強さは、ロッカールームの結束の賜物だろう。",
-    "en": "",
+    "en": "{orgName} has passed interpromotional win number {wins}. The strength that makes them a threat to other promotions comes out of how tightly that locker room holds together.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1171,7 +1171,7 @@
   },
   {
     "key": "{orgName}が対抗戦通算{wins}勝目を記録。他団体との激闘を重ね、団体の威信を着実に積み上げている。選手たちの士気も大いに高まっているようだ。",
-    "en": "",
+    "en": "{orgName} recorded interpromotional win number {wins}. Hard match after hard match against other promotions, and the standing of the promotion keeps building. The spirit in that locker room has lifted a long way with it.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1181,7 +1181,7 @@
   },
   {
     "key": "{orgName}に痛手、{name}が{weeks}週の離脱",
-    "en": "",
+    "en": "Blow to {orgName} — {name} out {weeks} weeks",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1191,7 +1191,7 @@
   },
   {
     "key": "{orgName}に逸材――{age}歳{name}、デビュー戦を終える",
-    "en": "",
+    "en": "A standout at {orgName} — {name}, {age}, debuts",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1201,7 +1201,7 @@
   },
   {
     "key": "{orgName}の{name}、{count}連勝",
-    "en": "",
+    "en": "{orgName}'s {name} wins {count} in a row",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1211,7 +1211,7 @@
   },
   {
     "key": "{orgName}の{name}、{count}連敗",
-    "en": "",
+    "en": "{orgName}'s {name} loses {count} in a row",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1221,7 +1221,7 @@
   },
   {
     "key": "{orgName}の{name}、{injuryType}で全治{weeks}週",
-    "en": "",
+    "en": "{orgName} {name}: {injuryType}, {weeks} weeks",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1231,7 +1231,7 @@
   },
   {
     "key": "{orgName}の{name}が{age}歳でリングデビュー。デビュー戦そのものは{result}だったが、この日集まった関係者の関心は勝敗の先にあった。育成畑の人間が「化ける」と口を揃える新人は、そう頻繁には出てこない。誇張を嫌う本紙としても、この素材は本物の部類だと書いておく。",
-    "en": "",
+    "en": "{name} of {orgName} made her ring debut at {age}. The debut itself went one way: {result}. The interest of the people who came out that day was somewhere past the result. A rookie the development people all say will turn into a different wrestler does not come along often. This paper has no use for overstatement, and this paper will put it in print: the material here is the genuine kind.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1241,7 +1241,7 @@
   },
   {
     "key": "{orgName}の{name}が{count}連勝。{recordLine}カードを組む側からすれば、次に誰を当てるかが難しくなってきた。",
-    "en": "",
+    "en": "{orgName}'s {name} is {count} in a row. For the people booking the shows, who to put across from her next is getting harder. {recordLine}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1251,7 +1251,7 @@
   },
   {
     "key": "{orgName}の{name}が{count}連勝に到達した。{recordLine}この勢いがどこまで続くかに注目が集まる。",
-    "en": "",
+    "en": "{orgName}'s {name} has reached {count} in a row. How far the run carries is what people are watching. {recordLine}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1261,7 +1261,7 @@
   },
   {
     "key": "{orgName}の{name}が{count}連敗を喫した。苦しい試合が続くなか、戦い方をどう立て直すか。流れを変える一勝が待たれる。",
-    "en": "",
+    "en": "{orgName}'s {name} has lost {count} in a row. Through a run of hard matches, the question is how she rebuilds the way she fights. The one win that turns it is what everyone is waiting on.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1271,7 +1271,7 @@
   },
   {
     "key": "{orgName}の{name}が{injuryType}と診断された。全治{weeks}週の見込みで、この間はカードから外れる。復帰後にどこまで戻せるかが次の焦点になる。",
-    "en": "",
+    "en": "{orgName}'s {name} has been diagnosed: {injuryType}. The estimate is {weeks} weeks, and she is off the cards until then. How much she gets back after the return is the next thing.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1281,7 +1281,7 @@
   },
   {
     "key": "{orgName}の{name}が{injuryType}を負い、全治{weeks}週と発表された。離脱期間は団体の編成に直接響く。穴をどう埋めるかは、そのまま今季の残りを左右する。",
-    "en": "",
+    "en": "{orgName}'s {name} was hurt — {injuryType} — and the estimate announced was {weeks} weeks. Time out hits the booking directly. How the hole gets filled decides the rest of the season.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1291,7 +1291,7 @@
   },
   {
     "key": "{orgName}の{name}が現役引退",
-    "en": "",
+    "en": "{orgName}'s {name} retires",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1301,7 +1301,7 @@
   },
   {
     "key": "{orgName}の{name}が現役生活に幕を下ろす。{age}歳、通算{seasons}シーズン。{careerLine}団体にとっては、戦力の話であると同時に、並びの意味が変わる出来事でもある。",
-    "en": "",
+    "en": "{orgName}'s {name} brings her active career to a close. Age {age}; seasons in all: {seasons}. For the promotion this is a question of strength on the roster and, at the same time, an event that changes what the order of names means. {careerLine}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1311,7 +1311,7 @@
   },
   {
     "key": "{orgName}の{name}と{orgName2}の{name2}が、ほぼ同年代で頭角を現した。二人が直接ぶつかったわけではない。それでも、これだけの素材が同じ時期に揃うのは珍しく、業界関係者は早くも先の対戦を口にしている。競う相手の存在が両者をどこまで押し上げるか。答えが出るのは数年先だ。",
-    "en": "",
+    "en": "{name} of {orgName} and {name2} of {orgName2} came through at close to the same age. The two have not met in the ring. Even so, material of this quality arriving at once is rare, and people in the business are already talking about a future match. How far having a rival pushes each of them is a question that answers itself in a few years.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1321,7 +1321,7 @@
   },
   {
     "key": "{orgName}の{name}は{opponentName}との一戦で、それまでと異なる動きを見せた。試合は{result}に終わったが、攻防の組み立てと反応には明らかな変化があり、この試合が成長の転機として記録された。次戦以降も、その変化が続くか注目される。",
-    "en": "",
+    "en": "{name} of {orgName} moved in a way she had not before in her match with {opponentName}. The match ended one way: {result}. But there was a plain change in how she built the exchanges and how she reacted, and the match goes on the record as a turning point in her growth. Whether the change holds from the next match onward is what people will watch.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1331,7 +1331,7 @@
   },
   {
     "key": "{orgName}の{name}は、これで{count}試合連続の黒星となった。内容を見直しながら、まずは長いトンネルを抜ける一勝を目指したい。",
-    "en": "",
+    "en": "That makes {count} straight matches in the loss column for {orgName}'s {name}. While she goes back over the work, the first job is the one win that ends a long tunnel.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1341,7 +1341,7 @@
   },
   {
     "key": "{orgName}の{name}（{age}歳）が現役を退く。{seasons}シーズンにわたってリングに立ち続けた。{careerLine}空いた場所を誰が埋めるかは、これからの話になる。",
-    "en": "",
+    "en": "{orgName}'s {name}, age {age}, is stepping away from active competition. Seasons in the ring: {seasons}. Who fills the space she leaves is a matter for later. {careerLine}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1351,7 +1351,7 @@
   },
   {
     "key": "{orgName}の{stage}で組まれたタッグ戦が、試合評価{mq}点を記録した。これまでのタッグ戦の最高は{prevRecord}点。シングルの歴代最高とは別に積み上げられてきた数字が、この夜また一つ塗り替わった。{nameA1}と{nameA2}が{nameB1}＆{nameB2}組を下したが、点数を跳ね上げたのは四人の噛み合いだ。息の合った連係も、それを崩そうとする相手の意地も、すべてが同じリングで回っていた。｜{nameA1}と{nameA2}がこの日までに費やした時間が、そのまま数字の裏付けになっている。組んだ当初のぎこちなさを知る者ほど、その連携の成熟に驚くだろう。率先して前に出る{nameA1}、崩れた流れを立て直す{nameA2}。単独でもトップを背負える二人が我を張らずに合わせた結果の連係の精度という一点は、辛口を通す本紙も認めざるを得ない。",
-    "en": "",
+    "en": "A tag match at {orgName} ({stage}) was rated {mq}. The best a tag match had reached until now: {prevRecord}. That figure, built up separately from the all-time singles best, was rewritten again on this night. {nameA1} and {nameA2} beat {nameB1} and {nameB2}, but what drove the rating up was how all four meshed. The teamwork that ran clean, and the refusal of the other side to let it run clean, were all turning inside the same ring.｜The hours {nameA1} and {nameA2} have put in up to this day are what stands behind the number. Anyone who remembers how awkward they were when they first teamed will be the most surprised at how the pairing has matured. {nameA1} goes forward first; {nameA2} rebuilds the flow when it breaks. Two wrestlers who could each carry a top spot alone, fitting to each other without insisting on themselves — the precision that comes out of that is the one point this paper, which stays hard on people, has to concede.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1361,7 +1361,7 @@
   },
   {
     "key": "{orgName}の{stage}で行われた一戦が、試合評価{mq}点を記録した。これまでの業界最高は{prevRecord}点。数字の上で、{name}と{name2}の攻防が過去のすべてを上回ったことになる。勝者は{name}。ただ、この点数は勝った側だけのものではない。敗れた{name2}がいなければ、この数字は出ていない。",
-    "en": "",
+    "en": "A match at {orgName} ({stage}) was rated {mq}. The best on record in the business until now: {prevRecord}. On the numbers, what {name} and {name2} did passed everything before it. {name} won. The rating does not belong to the winner alone. Without {name2} on the other side, the number does not happen.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1371,7 +1371,7 @@
   },
   {
     "key": "{orgName}の{titleName}王者{name}が重傷、{weeks}週の長期欠場へ",
-    "en": "",
+    "en": "{orgName}: {name} out {weeks} weeks, {titleName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1381,7 +1381,7 @@
   },
   {
     "key": "{orgName}の{titleName}王者{name}が重傷を負った。欠場は{weeks}週規模とみられ、防衛ロードは白紙に戻る。ランキング上位団体のトップが長期で不在になるのは、ここ数シーズンでも例がない。空いた頂点を誰が埋めるのか、それとも帰りを待つのか。団体は難しい判断を抱えることになった。",
-    "en": "",
+    "en": "{name}, the champion at {orgName} — the belt: {titleName} — took a serious injury. The absence looks like it runs to {weeks} weeks, and the defense schedule goes back to a blank sheet. The top wrestler at a highly ranked promotion being away this long has no precedent in the last few seasons. Who fills the empty peak, or whether they wait for her return, is a hard call the promotion now carries.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1391,7 +1391,7 @@
   },
   {
     "key": "{orgName}のメインで{name}と{name2}が繰り広げた攻防が、試合評価{mq}点を叩き出した。これまでの最高は{prevRecord}点。差はわずかだが、記録は記録だ。勝ったのは{name}。この数字は当分、業界が試合を測るときの基準として残る。",
-    "en": "",
+    "en": "What {name} and {name2} did in the {orgName} main event came out rated {mq}. The best until now: {prevRecord}. The gap is small; a record is a record. {name} won it. That number stays as the yardstick the business measures matches against for some time yet.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1401,7 +1401,7 @@
   },
   {
     "key": "{orgName}のリングで{nameA1}＆{nameA2}組と{nameB1}＆{nameB2}組がぶつかった一戦が、試合評価{mq}点を叩き出した。タッグ戦のこれまでの最高は{prevRecord}点。シングルの記録とは物差しが違い、四人が織る攻防の密度で測られる数字だ。勝ったのは{nameA1}の組。連係の速さと、その連係を断とうとする力がせめぎ合い、噛み合いの濃さがそのまま記録になった。｜二人を支えているのは、役割を割り切る潔さと、それを裏打ちする互いへの信頼である。組を動かして局面を作る{nameA1}、その背中を信じて過不足なく応える{nameA2}。誰が主役かを争わない関係は、攻防が激しさを増しても崩れなかった。信頼は数字に表れにくいが、この夜ばかりは点になった。冷静を旨とする本紙も、その積み上げは軽く見られない。",
-    "en": "",
+    "en": "The match between {nameA1} and {nameA2} and the team of {nameB1} and {nameB2}, fought in the {orgName} ring, came out rated {mq}. The best a tag match had reached until now: {prevRecord}. It is measured on a different yardstick from the singles record, on the density four wrestlers weave between them. The team of {nameA1} won. The speed of the teamwork and the force trying to cut that teamwork apart pushed against each other, and the thickness of the meshing became the record itself.｜What holds the two of them up is a clean acceptance of roles and the trust underneath it. {nameA1} moves the team and makes the situation; {nameA2} trusts that back and answers it exactly, no more and no less. A relationship that does not argue over who is the lead did not break down as the exchanges got harder. Trust is hard to see in a number. On this night it became one. This paper keeps a cool head, and even so, what these two built cannot be taken lightly.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1411,7 +1411,7 @@
   },
   {
     "key": "{orgName}の新人{name}がデビューした。結果は{result}。荒削りな部分は目についたが、体の使い方に{age}歳とは思えない下地がある。複数のスカウトが入団前から動いていたという情報もあり、獲得競争の裏側込みで注目されていた一人だ。今後の伸び方を、業界が黙って見ている段階に入った。",
-    "en": "",
+    "en": "A rookie at {orgName}, {name}, made her debut. The result: {result}. The rough edges were easy to spot, but there is groundwork in how she uses her body that does not read as {age}. More than one scout was said to be moving on her before she signed, and the competition behind the signing was part of why she was watched. How she grows from here is something the business is now watching in silence.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1421,7 +1421,7 @@
   },
   {
     "key": "{orgName}の看板を背負う{name}が試合で重傷を負い、{weeks}週の欠場が避けられない情勢となった。{titleName}をどう扱うかは団体の判断待ちだが、いずれにせよ王座は当面動かせない。強い王者がいる前提で組まれていた対戦の流れが、根元から止まった。影響の広さは、これから表に出てくる。",
-    "en": "",
+    "en": "{name}, who carries the banner at {orgName}, took a serious injury in a match, and an absence of {weeks} weeks now looks unavoidable. What happens to the belt — {titleName} — waits on the promotion, but either way the title cannot move for a while. A run of matches booked on the assumption of a strong champion has stopped at the root. How wide the effect runs will show itself from here.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1431,7 +1431,7 @@
   },
   {
     "key": "{orgName}の誇り――対抗戦通算{milestone}の偉業",
-    "en": "",
+    "en": "Pride of {orgName} — interpromotional: {milestone}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1441,7 +1441,7 @@
   },
   {
     "key": "{org}、{nameA}と{nameB}の溝を埋める——再び同じリングへ",
-    "en": "",
+    "en": "{org}: {nameA} and {nameB} again",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1451,7 +1451,7 @@
   },
   {
     "key": "{org}、二つの派閥が真正面から対立——抗争の幕が開く",
-    "en": "",
+    "en": "Two factions square off at {org} — feud under way",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1461,7 +1461,7 @@
   },
   {
     "key": "{org}、新人{count}名を獲得",
-    "en": "",
+    "en": "{org} come away with {count} in the draft",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1471,7 +1471,7 @@
   },
   {
     "key": "{org}、新人{count}名を確保",
-    "en": "",
+    "en": "Rookie haul of {count} for {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1481,7 +1481,7 @@
   },
   {
     "key": "{org}「{factionName}」が活動休止——{leaderName}の長期離脱が痛手",
-    "en": "",
+    "en": "{factionName} on hold: {leaderName}, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1491,7 +1491,7 @@
   },
   {
     "key": "{org}「{factionName}」に新リーダー——{newLeaderName}が看板を継ぐ",
-    "en": "",
+    "en": "{newLeaderName} takes {factionName} at {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1501,7 +1501,7 @@
   },
   {
     "key": "{org}が{count}名を指名",
-    "en": "",
+    "en": "{org} names {count} in the draft",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1511,7 +1511,7 @@
   },
   {
     "key": "{org}が{count}名を指名、新体制へ",
-    "en": "",
+    "en": "{org} name {count} in the draft, a new shape ahead",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1521,7 +1521,7 @@
   },
   {
     "key": "{org}では、関係が冷え込んだ選手同士が{count}組に増えている。対立を放置すれば、試合の連携や興行全体の雰囲気にも影響が出かねない。",
-    "en": "",
+    "en": "At {org} the number of wrestler pairs who have gone cold on each other has risen to {count}. Leave the trouble alone and it can reach how they work together in matches, and the feel of the whole show.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1531,7 +1531,7 @@
   },
   {
     "key": "{org}で組まれた派閥対抗戦は、{score}で「{winFaction}」に軍配が上がった。率いた{winLeader}の株は上がり、敗れた「{loseFaction}」の{loseLeader}は言葉少なにリングを降りた。序列はリングの上で決まる——その原則が、また一つ証明された。",
-    "en": "",
+    "en": "The faction war booked at {org} went {score} to {winFaction}. {winLeader}, who led them, is worth more today; {loseLeader} of the beaten {loseFaction} left the ring with little to say. The order is decided in the ring. That principle got one more proof.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1541,7 +1541,7 @@
   },
   {
     "key": "{org}に広がる不和——{carrier}が{enemy}と距離",
-    "en": "",
+    "en": "{carrier} away from {enemy}, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1551,7 +1551,7 @@
   },
   {
     "key": "{org}に新王者——{name}がベルトを獲得",
-    "en": "",
+    "en": "New champion at {org}: {name}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1561,7 +1561,7 @@
   },
   {
     "key": "{org}に派閥誕生——{leaderName}を中心に旗揚げ",
-    "en": "",
+    "en": "Faction forms at {org} around {leaderName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1571,7 +1571,7 @@
   },
   {
     "key": "{org}の{carrier}は、親しい{friend}と対立する{enemy}への態度を変えつつある。二人の問題だったはずの対立が、周囲にも影響を及ぼし始めた。",
-    "en": "",
+    "en": "{carrier} of {org} is changing how she treats {enemy}, who is at odds with her close friend {friend}. What should have been a problem between two people has begun to reach the people around them.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1581,7 +1581,7 @@
   },
   {
     "key": "{org}の{leaderName}を中心とした集団が、団体内で独自の旗を掲げた。「派閥」という言葉が好まれるかどうかは別として、控室の力学は確実に変わる。これからの興行の組み方にも影響が出るだろう。",
-    "en": "",
+    "en": "A group around {leaderName} of {org} has raised its own flag inside the promotion. Whether anyone likes the word \"faction\" is beside the point; the balance in the locker room has changed for certain. It will show in how the shows get booked from here.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1591,7 +1591,7 @@
   },
   {
     "key": "{org}の{name}、再起のきっかけを求めて",
-    "en": "",
+    "en": "{org}'s {name} looking for a way back",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1601,7 +1601,7 @@
   },
   {
     "key": "{org}の{name}、復調への道を探る",
-    "en": "",
+    "en": "{org}'s {name} looking for the road back",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1611,7 +1611,7 @@
   },
   {
     "key": "{org}の{name}が{count}回目のタイトル防衛を果たした。王者として結果を積み重ね、次の挑戦者を待つ。",
-    "en": "",
+    "en": "{org}'s {name} made defense number {count}. The results keep stacking up for the champion, and the next challenger is who she waits for.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1621,7 +1621,7 @@
   },
   {
     "key": "{org}の{name}が{detail}。これまでの積み重ねが試合内容に表れ、戦い方の幅を広げている。",
-    "en": "",
+    "en": "{org}'s {name}: {detail}. The work she put in is showing in the ring, and her range of answers is wider than it was.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1631,7 +1631,7 @@
   },
   {
     "key": "{org}の{name}がまた一つ防衛を重ねた。王者としての実績は確かなものになりつつあり、次戦でもその安定した戦いが問われる。",
-    "en": "",
+    "en": "{org}'s {name} added one more defense. The record she is building as champion is becoming a solid thing, and the next match asks her for the same steady work.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1651,7 +1651,7 @@
   },
   {
     "key": "{org}の{name}が引退を決断した。{detail}。現役生活で積み重ねた試合と記録は、これからも団体史に残る。",
-    "en": "",
+    "en": "{org}'s {name} has decided to retire: {detail}. The matches and the records she stacked up as an active wrestler stay in the promotion's history from here on.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1661,7 +1661,7 @@
   },
   {
     "key": "{org}の{name}が現役を退いた。{detail}。これまでの実績と、団体に残したものを振り返りたい。",
-    "en": "",
+    "en": "{org}'s {name} has stepped away from active competition: {detail}. This is a moment to look back at the record, and at what she leaves the promotion.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1681,7 +1681,7 @@
   },
   {
     "key": "{org}の{name}が確かな成長を見せた。{detail}。一度の好内容で終わらせず、次戦でも同じ強みを発揮できるか。",
-    "en": "",
+    "en": "{org}'s {name} showed real growth: {detail}. One good performance settles nothing. Whether the same strength turns up next time out is the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1751,7 +1751,7 @@
   },
   {
     "key": "{org}の{name}が防衛回数を{count}に伸ばした。挑戦者が変わってもベルトを守り続ける王者を、次に誰が止めるのか。",
-    "en": "",
+    "en": "{org}'s {name} has taken her defense count to {count}. The challengers change and the belt does not. Who stops her is the open question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1761,7 +1761,7 @@
   },
   {
     "key": "{org}の{name}に気力の低下が見られる。結果だけを求めず、本人が戦う目的を取り戻せるよう支える必要がある。",
-    "en": "",
+    "en": "A drop in drive can be seen in {org}'s {name}. Instead of asking only for results, the promotion needs to support her in finding her reason to fight again.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1771,7 +1771,7 @@
   },
   {
     "key": "{org}の{name}の調子が上がらない。今は結果を急ぐより、自分の戦いを取り戻すことが先決になりそうだ。",
-    "en": "",
+    "en": "{org}'s {name} cannot get her form up. Rather than rushing the results right now, getting her own fight back looks like the first job.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1781,7 +1781,7 @@
   },
   {
     "key": "{org}の{name}は、試合への意欲を保てない状態が続いている。心身を整え、もう一度リングに向き合える環境を作れるか。",
-    "en": "",
+    "en": "{org}'s {name} has not been able to hold on to her appetite for matches, and it has gone on for some time. Whether a setting can be built where she is right in body and mind and can face the ring again is the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1791,7 +1791,7 @@
   },
   {
     "key": "{org}の{name}は本来の力を発揮できない試合が続いている。内容を立て直し、浮上のきっかけをつかめるか。",
-    "en": "",
+    "en": "{org}'s {name} has gone through a run of matches where her real strength has not come out. Whether she rebuilds the work and finds something to lift her is the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1861,7 +1861,7 @@
   },
   {
     "key": "{org}の「{factionName}」がまとまって汗を流したと聞く。派手なニュースではない。だが、同じ釜の飯がリングの連携に出ることを、この業界の人間は皆知っている。",
-    "en": "",
+    "en": "Word is that {factionName} of {org} put the work in together. Not a loud piece of news. But everyone in this business knows that eating out of the same pot shows up later in how a group works in the ring.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1871,7 +1871,7 @@
   },
   {
     "key": "{org}の「{factionName}」で、序列の頂点が入れ替わった。{challengerName}が{oldLeaderName}をリングで下し、派閥は「{newFactionName}」として看板を掛け替える。実力で頭を獲る——プロレスの派閥における、最も古くて最も正しい代替わりだ。",
-    "en": "",
+    "en": "The top of the order changed hands in {factionName} of {org}. {challengerName} beat {oldLeaderName} in the ring, and the faction changes its sign to {newFactionName}. Take the head on ability. In a wrestling faction that is the oldest way to change leaders, and still the right one.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1881,7 +1881,7 @@
   },
   {
     "key": "{org}の「{factionName}」に取材が入った。カメラの前で語る{leaderName}の言葉は、良くも悪くも団体の外へ届く。派閥が団体の顔になる——それを歓迎するかどうかは、社長の胸三寸だ。",
-    "en": "",
+    "en": "A crew came in to cover {factionName} at {org}. What {leaderName} says in front of a camera travels outside the promotion, for better or worse. A faction becomes the face of a promotion. Whether that is welcome is entirely the GM's call.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1891,7 +1891,7 @@
   },
   {
     "key": "{org}の「{factionName}」内でくすぶっていた火種を、社長は隠さず試合にした。{nameA}と{nameB}、同じ旗の下の二人が正面からぶつかる。仲間割れと見るか、健全な競争と見るか。いずれにせよ、同門戦は嘘がつけない。",
-    "en": "",
+    "en": "The GM took what had been smoldering inside {factionName} at {org} and put it on a card instead of hiding it. {nameA} and {nameB}, two under the same flag, go straight at each other. Call it a falling-out or call it honest competition. Either way, a stablemate match cannot lie.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1901,7 +1901,7 @@
   },
   {
     "key": "{org}のタイトルマッチで{name}が{prevChamp}を破り、新王者となった。王座を手にした{name}が、ここからどんな防衛戦を築くかに注目が集まる。",
-    "en": "",
+    "en": "{name} beat {prevChamp} in the {org} title match and is the new champion. What kind of defenses {name} builds from here, now that the belt is hers, is what people will watch.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1911,7 +1911,7 @@
   },
   {
     "key": "{org}のロッカールームで、{count}組の選手同士が険悪な関係にある。リング外の対立が試合へ持ち込まれれば、団体全体の編成にも影響が及びかねない。",
-    "en": "",
+    "en": "In the {org} locker room, the count of pairings on bad terms stands at {count}. If trouble from outside the ring gets carried into the matches, it can reach the booking of the whole promotion.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1921,7 +1921,7 @@
   },
   {
     "key": "{org}の中で「{factionAName}」と「{factionBName}」の対立が表面化した。控室の空気は割れ、興行のメインカードの組み方一つでも気を使う事態に。「リングで決着をつけるしかない」——両派から漏れる声は冷たく、重い。",
-    "en": "",
+    "en": "The trouble between {factionAName} and {factionBName} has come out into the open at {org}. The locker room has split, and even booking a main event now takes care. \"There is no settling it anywhere but the ring.\" The voices coming out of both sides are cold, and heavy.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1931,7 +1931,7 @@
   },
   {
     "key": "{org}の控室で、関係が悪化した選手同士が増えている。険悪な組み合わせは{count}組。団体は試合への影響が広がる前に、関係の修復へ動けるか。",
-    "en": "",
+    "en": "The number of wrestlers on bad terms with each other is rising in the {org} locker room. Pairings gone sour: {count}. Whether the promotion moves to repair them before it reaches the matches is the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1941,7 +1941,7 @@
   },
   {
     "key": "{org}の派閥「{factionName}」が消滅——{leaderName}の喪失で求心力失う",
-    "en": "",
+    "en": "{factionName} folds: {leaderName}, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1951,7 +1951,7 @@
   },
   {
     "key": "{org}の派閥地図が塗り替わった。{targetName}が「{fromFaction}」を離れ、抗争相手である「{toFaction}」の門を叩いたのだ。残された側の心中は穏やかではあるまい。裏切りと呼ぶか、決断と呼ぶか——それを決めるのは、これからの試合だ。",
-    "en": "",
+    "en": "The faction map at {org} has been redrawn. {targetName} left {fromFaction} and knocked on the door of {toFaction}, the group they were feuding with. The side she left will not be taking it calmly. Betrayal or decision — the matches from here decide which word it gets.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1961,7 +1961,7 @@
   },
   {
     "key": "{org}の派閥抗争が、ついに両リーダーの一騎打ちという形で決着の場を得た。次期興行のメインに据えられるこの一戦、負けた側の派閥が失うものは星ひとつでは済まない。控室の全員にとって、この試合だけは他人事ではない。",
-    "en": "",
+    "en": "The faction feud at {org} has finally found its settling place: the two leaders, one against one. The match goes in the main event of the next show, and what the losing faction gives up will be more than a single result. For everyone in that locker room, this is not somebody else's match.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1971,7 +1971,7 @@
   },
   {
     "key": "{org}の派閥抗争が沈静化——「{factionAName}」と「{factionBName}」に停戦の空気",
-    "en": "",
+    "en": "{org} cools: {factionAName}, {factionBName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1981,7 +1981,7 @@
   },
   {
     "key": "{org}の王座が動く——{name}が新王者に",
-    "en": "",
+    "en": "{org} title changes hands — {name}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -1991,7 +1991,7 @@
   },
   {
     "key": "{org}の興行が壊滅的な集客に終わった。団体の看板に傷がつく事態に、社長の手腕が問われる局面だ。",
-    "en": "",
+    "en": "The {org} show ended with a draw that can only be called ruinous. The name on the banner takes the damage, and this is the point where the GM's ability gets tested.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2001,7 +2001,7 @@
   },
   {
     "key": "{org}の興行で空席が目立った。観客席の3割も埋まらない惨状に、関係者の間に危機感が広がっている。ファンの心を取り戻せるか、正念場だ。",
-    "en": "",
+    "en": "Empty seats were the story at the {org} show. Under 30 percent of the house filled, and the alarm has spread through everyone attached to the promotion. This is where they find out whether the fans can be won back.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2011,7 +2011,7 @@
   },
   {
     "key": "{org}の興行に閑古鳥。集客力の低下が深刻に",
-    "en": "",
+    "en": "Nobody at the {org} show — the draw keeps falling",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2021,7 +2021,7 @@
   },
   {
     "key": "{org}の関係修復は不発——{nameA}と{nameB}の溝は埋まらず",
-    "en": "",
+    "en": "No repair: {nameA}, {nameB}, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2031,7 +2031,7 @@
   },
   {
     "key": "{org}を支えた{name}がリングを去った。{detail}。その不在を、団体がどう埋めていくかが次の課題となる。",
-    "en": "",
+    "en": "{name}, who held {org} up, has left the ring: {detail}. How the promotion fills the absence is the next problem.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2041,7 +2041,7 @@
   },
   {
     "key": "{org}ロッカールームに不穏——険悪ペア{count}組、内部に亀裂",
-    "en": "",
+    "en": "{org} locker room unsettled — bad pairings: {count}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2051,7 +2051,7 @@
   },
   {
     "key": "{org}内で派閥抗争勃発——「{factionAName}」vs「{factionBName}」",
-    "en": "",
+    "en": "{org}: {factionAName} vs {factionBName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2061,7 +2061,7 @@
   },
   {
     "key": "{org}内で続いていた派閥抗争に、リング上で一つの答えが出た。{winFaction}が{loseFaction}を下し、控室の力学はしばらくこの形で固まる見込みだ。敗れた側の{loseLeader}がこのあとどう動くかが次の焦点になる。",
-    "en": "",
+    "en": "The faction feud running inside {org} got an answer in the ring. {winFaction} beat {loseFaction}, and the balance in the locker room should hold this shape for a while. What {loseLeader} does next, on the losing side, is the thing to watch now.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2071,7 +2071,7 @@
   },
   {
     "key": "{org}内に{leaderName}を中心とした集まりが形を成した。慕う者たちが集い、「ここで戦いたい」と表明し始めた格好だ。一枚岩だった団体が、初めて色分けされた瞬間でもある。",
-    "en": "",
+    "en": "A gathering around {leaderName} has taken shape inside {org}. The ones who look up to her came together and began saying out loud that this is where they want to fight. It is also the first time the promotion, solid until now, has been divided into colors.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2081,7 +2081,7 @@
   },
   {
     "key": "{org}内に存在した「{factionName}」が、リーダー{leaderName}の不在を埋めきれず消滅した。残されたメンバーたちは新たな居場所を探すことになる。派閥が消えても、その間に積み重ねた感情はそう簡単には消えない。",
-    "en": "",
+    "en": "{factionName}, which existed inside {org}, could not cover the absence of its leader {leaderName} and has folded. The members left behind will look for somewhere else to belong. The faction is gone; the feelings built up inside it do not go that easily.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2091,7 +2091,7 @@
   },
   {
     "key": "{org}内の「{factionName}」から、{ringleaderName}を中心とした一派が離脱した。控室には新たな勢力線が引かれ、興行の組み方はさらに難しくなる。一つだった旗が、いま二つに割れた瞬間だ。",
-    "en": "",
+    "en": "A group around {ringleaderName} has broken away from {factionName} inside {org}. A new line has been drawn across the locker room, and booking the shows gets harder from here. One flag has just become two.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2101,7 +2101,7 @@
   },
   {
     "key": "{org}内紛の予兆——険悪な選手同士が同じ控室に",
-    "en": "",
+    "en": "Infighting brewing at {org} — enemies in one room",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2111,7 +2111,7 @@
   },
   {
     "key": "{org}派閥分裂——「{factionName}」から{ringleaderName}が離脱",
-    "en": "",
+    "en": "{ringleaderName} splits {factionName} at {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2121,7 +2121,7 @@
   },
   {
     "key": "{org}派閥抗争に決着——「{winFaction}」が「{loseFaction}」を下す",
-    "en": "",
+    "en": "{org}: {winFaction} over {loseFaction}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2131,7 +2131,7 @@
   },
   {
     "key": "{ourOrg} {score} {opponentOrg}――{requesterName}の意地が呼んだ越境戦",
-    "en": "",
+    "en": "{ourOrg} {score} {opponentOrg}: {requesterName} asked",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2141,7 +2141,7 @@
   },
   {
     "key": "{ourOrg} {score} {opponentOrg}――{requesterName}の挑戦は決着持ち越し",
-    "en": "",
+    "en": "{ourOrg} {score} {opponentOrg}, {requesterName} waits",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2151,7 +2151,7 @@
   },
   {
     "key": "{ourOrg} {score} {opponentOrg}――{requesterName}の越境挑戦は決着持ち越し",
-    "en": "",
+    "en": "{ourOrg} {score} {opponentOrg}, {requesterName} holds",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2161,7 +2161,7 @@
   },
   {
     "key": "{ourOrg}に切られた{name}が、{toOrg}の旗を背負って戻ってきた。あの日リングを降りた後の{weeksSinceFired}週が、この一戦に集約される。",
-    "en": "",
+    "en": "Cut by {ourOrg}, {name} came back carrying the {toOrg} flag. Weeks since she walked off that ring: {weeksSinceFired}. All of it comes down to this one match.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2171,7 +2171,7 @@
   },
   {
     "key": "{ourOrg}を解雇された{name}が、{toOrg}の選手として古巣に対峙した。リング上での目つきには、あの日とは違う何かが宿っていた。",
-    "en": "",
+    "en": "{name}, released by {ourOrg}, stood across from her old promotion in {toOrg} colors. There was something behind her eyes in that ring that had not been there on the day she left.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2181,7 +2181,7 @@
   },
   {
     "key": "{ourOrg}を追われた{name}が、{toOrg}のリングで因縁の相手と対峙した。{weeksSinceFired}週分の言葉を、拳に変えて叩きつける一戦になった。",
-    "en": "",
+    "en": "{name}, driven out of {ourOrg}, faced the side she has history with from the {toOrg} ring. The words of those weeks — {weeksSinceFired} of them — came out as fists.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2191,7 +2191,7 @@
   },
   {
     "key": "{prevChamp}の防衛を止めた{name}が、{org}の新王者となった。新たな王者を軸に、次の挑戦者争いも動き出す。",
-    "en": "",
+    "en": "{name} stopped {prevChamp}'s defense and is the new {org} champion. With a new champion at the center, the fight to be next challenger starts moving too.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2201,7 +2201,7 @@
   },
   {
     "key": "{requesterName}、古巣に星を返す。{ourOrg} {score} {opponentOrg}",
-    "en": "",
+    "en": "{requesterName}: {ourOrg} {score} {opponentOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2211,7 +2211,7 @@
   },
   {
     "key": "{requesterName}が{opponentName}に挑むかたちで実現した3対3。{ourOrg}が {score} で星を取り、終わったあと{requesterName}は控室で長く息を吐いていたという。",
-    "en": "",
+    "en": "{requesterName} went at {opponentName}, and that is how the 3-on-3 came about. {ourOrg} took it {score}, and afterward she sat in the locker room breathing out for a long time.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2221,7 +2221,7 @@
   },
   {
     "key": "{requesterName}が向こうの団体から仕掛けてきた挑戦試合。{ourOrg}は3対3で {score} の星を取り、相手にリングを譲らなかった。",
-    "en": "",
+    "en": "{requesterName} brought the challenge over from her promotion. {ourOrg} took the 3-on-3 {score} and gave up no ground.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2231,7 +2231,7 @@
   },
   {
     "key": "{requesterName}が直接願い出て組まれた{opponentOrg}との3対3団体戦は、{score}で{ourOrg}が敗れた。自分から呼んだ試合を取れなかった{requesterName}は、控室を最後まで動かなかった。",
-    "en": "",
+    "en": "{requesterName} asked for the 3-on-3 against {opponentOrg} herself, and {ourOrg} lost it {score}. She never moved from the locker room after the match she had called for.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2241,7 +2241,7 @@
   },
   {
     "key": "{requesterName}が直訴して実現した{opponentOrg}との3対3団体戦。{ourOrg}は{opponentName}陣を {score} で下し、リング上で握手を交わすことなく解散した。",
-    "en": "",
+    "en": "{requesterName} asked for the 3-on-3 against {opponentOrg} and got it. {ourOrg} beat {opponentName}'s side {score} and broke up without a handshake in the ring.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2251,7 +2251,7 @@
   },
   {
     "key": "{requesterName}が直訴して実現した{opponentOrg}との団体戦は {score}。決着がつかないまま、両陣営はリングを降りた。",
-    "en": "",
+    "en": "The 3-on-3 against {opponentOrg} that {requesterName} asked for ended {score}. Both sides left the ring with the matter open.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2261,7 +2261,7 @@
   },
   {
     "key": "{requesterName}が頭を下げて呼んだ越境戦で、{ourOrg}は {score} で星を落とした。呼んだ側が、一番重いものを持ち帰った。次にこの相手と当たる時、何かが変わっているか。",
-    "en": "",
+    "en": "{requesterName} put her head down to get the crossover match, and {ourOrg} lost it {score}. The one who asked carried the heaviest thing home. Whether anything is different the next time these two meet is the question.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2271,7 +2271,7 @@
   },
   {
     "key": "{requesterName}の挑戦を受けた{ourOrg}は {score} で敗れた。「呼んできた側に取られた」――この結果が向こうのリングでどう扱われるか、注視せざるを得ない。",
-    "en": "",
+    "en": "{ourOrg} took {requesterName}'s challenge and lost {score}. The side that came asking took the win. How that gets used on the other promotion's ring bears watching.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2281,7 +2281,7 @@
   },
   {
     "key": "{requesterName}の発信で実現したカードだったが、{opponentOrg}の地力が一枚上だった。{score}という数字以上に、リング外の表情に重さが残った試合だった。",
-    "en": "",
+    "en": "{requesterName} made the card happen, but {opponentOrg} were the stronger side. The weight of it sat in the faces outside the ring more than in the {score}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2291,7 +2291,7 @@
   },
   {
     "key": "{requesterName}の直訴が実った！{ourOrg}が{opponentOrg}を {score} で下す",
-    "en": "",
+    "en": "{requesterName} asks, {ourOrg} {score} {opponentOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2301,7 +2301,7 @@
   },
   {
     "key": "{requesterName}の越境挑戦、{ourOrg}に阻まれる――{score}",
-    "en": "",
+    "en": "{requesterName} crosses over, {ourOrg} holds — {score}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2311,7 +2311,7 @@
   },
   {
     "key": "{requesterName}の越境直訴で組まれた3対3団体戦は {score} で{ourOrg}の敗北。古巣に持ち帰る形となった{requesterName}は、控室で長く目を閉じていたという。",
-    "en": "",
+    "en": "{requesterName} crossed over to ask for the 3-on-3, and {ourOrg} lost it {score}. She carried the result back to her old promotion, and in the locker room she kept her eyes shut a long time.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2321,7 +2321,7 @@
   },
   {
     "key": "{round}で組まれた{winner}（{winnerOrg}）と{loser}（{loserOrg}）の一戦が、大会最高の{mq}点を記録した。{closing}",
-    "en": "",
+    "en": "Round: {round}. The match between {winner} ({winnerOrg}) and {loser} ({loserOrg}) was rated {mq}, the highest of the tournament. {closing}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2331,7 +2331,7 @@
   },
   {
     "key": "{round}の{winner}（{winnerOrg}）対{loser}（{loserOrg}）が、全15試合を通して最も高い評価を集めた。{closing}",
-    "en": "",
+    "en": "Round: {round}. {winner} ({winnerOrg}) against {loser} ({loserOrg}) drew the highest rating of all 15 matches. {closing}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2451,7 +2451,7 @@
   },
   {
     "key": "{targetName}が寝返った——「{fromFaction}」から「{toFaction}」へ電撃移籍",
-    "en": "",
+    "en": "{targetName}: {fromFaction} to {toFaction}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2461,7 +2461,7 @@
   },
   {
     "key": "{toOrg}が{fromOrg}の{name}を引き抜きに成功。即戦力としてチームを底上げする見込み。「この移籍は大きい」と業界紙が一様に報じた。",
-    "en": "",
+    "en": "{toOrg} succeeded in poaching {name} from {fromOrg}. She is expected to lift the roster straight away, and the trade papers all reported it the same way: this move is a large one.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2471,7 +2471,7 @@
   },
   {
     "key": "{toOrg}が{fromOrg}の{name}を迎え入れた。加入によって対戦カードの幅は広がりそうだ。一方の{fromOrg}には、抜けた戦力をどう補うかという課題が残る。",
-    "en": "",
+    "en": "{toOrg} have taken in {name} of {fromOrg}. The range of matches they can book should widen. {fromOrg}, for their part, are left with the problem of covering what walked out.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2481,7 +2481,7 @@
   },
   {
     "key": "{toOrg}が{name}を獲得",
-    "en": "",
+    "en": "{toOrg} sign {name}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2491,7 +2491,7 @@
   },
   {
     "key": "{toOrg}が{name}を獲得！ 補強の目玉に",
-    "en": "",
+    "en": "{toOrg} land {name}! The big signing",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2501,7 +2501,7 @@
   },
   {
     "key": "{toOrg}に居場所を得た{name}にとって、{ourOrg}との対戦は特別な意味を持つ。{weeksSinceFired}週前に切られたあの夜、リングの上で何かが動き出した。",
-    "en": "",
+    "en": "For {name}, who found a place at {toOrg}, a match against {ourOrg} carries its own meaning. Something started moving in that ring on the night she was cut. Weeks since: {weeksSinceFired}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2511,7 +2511,7 @@
   },
   {
     "key": "{toOrg}に持ち去られていたベルトが、{fromOrg}の{challengerName}の手元に帰ってきた。会見場には涙ぐむ関係者の姿もあった。失われたものを取り戻す——その重みを、彼女は背負ってリングに上がった。",
-    "en": "",
+    "en": "The belt that had been carried off to {toOrg} is back in the hands of {challengerName} of {fromOrg}. There were people from the promotion in the press room with wet eyes. Getting back something that was lost. She carried that weight up the steps.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2521,7 +2521,7 @@
   },
   {
     "key": "{total}名が指名を受けた今年のドラフト。名前が挙がったのは{names}。同じ評価で入っても、リングに上がる回数が違えば一年後の姿は変わる。",
-    "en": "",
+    "en": "{total} were picked in this year's draft. The names called: {names}. Two wrestlers can come in on the same grade, and if one gets more matches than the other, they will not look the same in a year.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2601,7 +2601,7 @@
   },
   {
     "key": "{what}から数週——{name}の現在地",
-    "en": "",
+    "en": "Where {name} stands a few weeks on: {what}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -2611,7 +2611,7 @@
   },
   {
     "key": "{what}を果たした{name}は、その後もリングの中心で戦い続けている。実績にふさわしい内容を積み重ねられるか。ここ数戦の結果が、今後の立ち位置を左右しそうだ。",
-    "en": "",
+    "en": "{name}, who did it — {what} — has gone on fighting at the center of the ring. Whether the work matches the record is the question. The last few results look likely to decide where she stands from here.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3511,7 +3511,7 @@
   },
   {
     "key": "「{factionAName}」と「{factionBName}」が合同企画——{org}に珍しい共闘",
-    "en": "",
+    "en": "{factionAName} + {factionBName} join at {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3521,7 +3521,7 @@
   },
   {
     "key": "「{factionAName}」と「{factionBName}」の対立は、言葉ではもう埋まらない段階に来ていた。社長はそれを承知で、両者をメインに置く。派閥の頭同士が直接ぶつかる——これ以上の決着方法を、プロレスは持っていない。",
-    "en": "",
+    "en": "The trouble between {factionAName} and {factionBName} had reached the point where words would not close it. The GM knew that, and put the two of them in the main event. The heads of two factions going straight at each other. Wrestling has no better way of settling anything.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3531,7 +3531,7 @@
   },
   {
     "key": "「{factionName}」が合宿へ——{org}の結束固め",
-    "en": "",
+    "en": "{factionName} head to camp — {org} tightens up",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3541,7 +3541,7 @@
   },
   {
     "key": "「{factionName}」で政変——{challengerName}がリーダーの座を奪取",
-    "en": "",
+    "en": "{challengerName} takes the lead of {factionName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3551,7 +3551,7 @@
   },
   {
     "key": "「{factionName}」にメディアの照明——{leaderName}が特集取材に応じる",
-    "en": "",
+    "en": "Cameras on {factionName} — {leaderName} talks",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3561,7 +3561,7 @@
   },
   {
     "key": "「{fromFaction}」の一員だった{targetName}が、対立する「{toFaction}」へ身を移した。{org}の控室に走った緊張は、当分解けそうにない。かつての仲間と敵として向き合う日は、そう遠くないはずだ。",
-    "en": "",
+    "en": "{targetName}, who belonged to {fromFaction}, has moved across to {toFaction} on the other side of the feud. The tension that ran through the {org} locker room is not going to ease for a while. The day she faces her old group as an opponent will not be far off.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3571,7 +3571,7 @@
   },
   {
     "key": "「{winFaction}」が対抗戦を制圧——{loseLeader}の派閥に重い星",
-    "en": "",
+    "en": "{winFaction} take the war — {loseLeader} beaten",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3581,7 +3581,7 @@
   },
   {
     "key": "「天頂戦」最高評価は{mq}点 — {winner} vs {loser}",
-    "en": "",
+    "en": "Tenchosen top rating {mq} — {winner} vs {loser}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3591,7 +3591,7 @@
   },
   {
     "key": "「天頂戦」決着、{championName}が16人制トーナメントを制す",
-    "en": "",
+    "en": "Tenchosen decided — {championName} takes the bracket",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3601,7 +3601,7 @@
   },
   {
     "key": "「天頂戦」準決勝 — 決勝への椅子は二つ",
-    "en": "",
+    "en": "Tenchosen semifinals — two seats in the final",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3611,7 +3611,7 @@
   },
   {
     "key": "「天頂戦」特別招待発表 — {invites}が名乗り",
-    "en": "",
+    "en": "Tenchosen invitations: {invites}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3621,7 +3621,7 @@
   },
   {
     "key": "あの解雇から{weeksSinceFired}週――{name}、古巣に挑む",
-    "en": "",
+    "en": "{weeksSinceFired}-week gap — {name} faces her old promotion",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3631,7 +3631,7 @@
   },
   {
     "key": "エース流出――{name}が{toOrg}へ",
-    "en": "",
+    "en": "Ace walks out — {name} to {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3651,7 +3651,7 @@
   },
   {
     "key": "タイトル獲得{titles}回、防衛{defenses}回。{name}が積み重ねた実績が評価され、殿堂入りを果たした。",
-    "en": "",
+    "en": "Titles won: {titles}. Defenses: {defenses}. The record {name} built has been recognized, and she enters the Hall of Fame.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3661,7 +3661,7 @@
   },
   {
     "key": "タイトル獲得{titles}回、防衛{defenses}回を記録した{name}が殿堂入りした。長年の実績が、あらためて評価された形だ。",
-    "en": "",
+    "en": "{name} has entered the Hall of Fame. Titles won: {titles}. Defenses: {defenses}. Years of work have been weighed again and found to hold.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3671,7 +3671,7 @@
   },
   {
     "key": "タッグの歴代最高評価、{mq}点に更新",
-    "en": "",
+    "en": "All-time best tag rating now {mq}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3681,7 +3681,7 @@
   },
   {
     "key": "タッグ戦の歴代最高評価を更新――{nameA1}＆{nameA2}組、{mq}点",
-    "en": "",
+    "en": "New tag record — {nameA1} and {nameA2}, {mq}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3691,7 +3691,7 @@
   },
   {
     "key": "ドラフト総括——注目は{headName}",
-    "en": "",
+    "en": "Draft wrap — {headName} the one to watch",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3711,7 +3711,7 @@
   },
   {
     "key": "リーダー不在となっていた{org}の「{factionName}」が、{newLeaderName}を新たな中心に据えて再出発する。{oldLeaderName}の色が濃かった集団だけに、率い方はおのずと変わるだろう。頭が替われば、控室の力学は必ず動く。",
-    "en": "",
+    "en": "{factionName} of {org}, which had been without a leader, starts again with {newLeaderName} at its center. The group carried a lot of {oldLeaderName}'s color, so the way it gets led will change of itself. Change the head and the balance in the locker room always moves.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3741,7 +3741,7 @@
   },
   {
     "key": "一段上がった{name}——{stat}の伸び",
-    "en": "",
+    "en": "{name} a step up — where she grew: {stat}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3751,7 +3751,7 @@
   },
   {
     "key": "上位団体に激震。{titleName}王者{name}、長期離脱が決定的",
-    "en": "",
+    "en": "Jolt at the top — {name} out, {titleName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3761,7 +3761,7 @@
   },
   {
     "key": "下剋上——{challengerName}が「{factionName}」の頭を獲った",
-    "en": "",
+    "en": "Coup — {challengerName} takes the head of {factionName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3771,7 +3771,7 @@
   },
   {
     "key": "今季のドラフトで{total}名の新人が各団体に加わった。記者の目を引いたのは{names}。見立てはあくまで入り口の評価であり、ここから伸びるかどうかは一年の使われ方で決まる。",
-    "en": "",
+    "en": "This season's draft put {total} rookies into promotions around the business. The ones who caught this writer's eye: {names}. A grade at the door is only a grade at the door. Whether any of them grows from here is decided by how they are used over a year.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3781,7 +3781,7 @@
   },
   {
     "key": "今季は4年に一度の開催年。全国女子プロレス最強王者決定戦「天頂戦」は第48週に行われ、全団体から選ばれた16名がシングルエリミネーション方式で優勝を争う。{championWatch}{preview}",
-    "en": "",
+    "en": "This is the year it comes round, once every four years. Tenchosen, which decides the strongest champion in the country's women's pro wrestling, runs in week 48, with 16 wrestlers chosen from every promotion fighting it out in single elimination. {championWatch}{preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3791,7 +3791,7 @@
   },
   {
     "key": "今年のドラフト、{total}名が新たにリングへ",
-    "en": "",
+    "en": "{total} new names reach the ring in this year's draft",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3801,7 +3801,7 @@
   },
   {
     "key": "今年のドラフト、全指名が成立",
-    "en": "",
+    "en": "Every pick lands in this year's draft",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3811,7 +3811,7 @@
   },
   {
     "key": "今年のドラフトは{total}名。{names}が注目を集めた。どの団体がどう育てるかは、来季の勢力図にそのまま出る。",
-    "en": "",
+    "en": "{total} in this year's draft. The attention went to: {names}. Which promotion develops them, and how, shows up directly in next season's standings.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3821,7 +3821,7 @@
   },
   {
     "key": "会場に響くのは選手の声ばかり――{org}の興行が大幅な集客割れとなった。「このままでは…」と関係者も頭を抱えている。",
-    "en": "",
+    "en": "The only voices carrying in the building were the wrestlers' own. The {org} show came in well under its draw. \"If this goes on...\" is as far as anyone at the promotion would finish the sentence.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3831,7 +3831,7 @@
   },
   {
     "key": "伸びを見せる{name}、次戦にも注目",
-    "en": "",
+    "en": "{name} on the rise, next match worth watching",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3841,7 +3841,7 @@
   },
   {
     "key": "元同僚、リングで再会——{nameA}と{nameB}、離脱後初の対戦",
-    "en": "",
+    "en": "Former teammates — {nameA} vs {nameB}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3851,7 +3851,7 @@
   },
   {
     "key": "先の興行で{name}は{stat}の成長を示した。一度の変化で評価が決まるわけではないが、試合の組み立てに新しい選択肢が増えたのは確かだ。次戦でその成長をどう生かすかが見どころになる。",
-    "en": "",
+    "en": "At the last show {name} showed growth in one area: {stat}. One change does not settle an evaluation, but she plainly has a new option in how she builds a match. What she does with it next time out is the thing to watch.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3861,7 +3861,7 @@
   },
   {
     "key": "全国女子プロレス最強王者決定戦「天頂戦」、開催年を迎える",
-    "en": "",
+    "en": "Tenchosen year arrives — the national decider",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3871,7 +3871,7 @@
   },
   {
     "key": "全国女子プロレス最強王者決定戦「天頂戦」は第48週に全15試合を実施。決勝で{runnerUpName}（{runnerUpOrg}）に勝利した{championName}（{championOrg}）が優勝者となった。決勝の試合評価は{mq}点。",
-    "en": "",
+    "en": "Tenchosen, the decider for the strongest champion in the country's women's pro wrestling, ran all 15 matches in week 48. {championName} ({championOrg}) beat {runnerUpName} ({runnerUpOrg}) in the final and took the tournament. The final was rated {mq}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3881,7 +3881,7 @@
   },
   {
     "key": "全国女子プロレス最強王者決定戦「天頂戦」は第48週に開幕する。特別招待に選ばれたのは{invites}。残る団体枠を巡る競争も本格化した。{championWatch}{preview}",
-    "en": "",
+    "en": "Tenchosen, the decider for the strongest champion in the country's women's pro wrestling, opens in week 48. The special invitations went to: {invites}. The competition for the remaining promotion slots is now in earnest. {championWatch}{preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3901,7 +3901,7 @@
   },
   {
     "key": "別団体・別カラー――{name}が{ourOrg}と再会した夜",
-    "en": "",
+    "en": "New colors — {name} meets {ourOrg} again",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3911,7 +3911,7 @@
   },
   {
     "key": "同じ控室で過ごした日々があった{nameA}と{nameB}が、団体を別にしてから初めてリングで向き合った。視線の交わし方一つにも、過ごした時間の重みが滲む。観客はその空気を、確かに受け取っていた。",
-    "en": "",
+    "en": "{nameA} and {nameB}, who once shared a locker room, faced each other in the ring for the first time since their promotions parted. The weight of the time they spent showed in nothing more than the way their eyes met. The crowd took that in, and took it in clearly.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3921,7 +3921,7 @@
   },
   {
     "key": "同学年といっていい二人の有望株が、そろってリングに立つ時代が来た。{orgName}の{name}、{orgName2}の{name2}。ともに早くからスカウト筋の評価が高く、実戦でも下地の違いを見せている。まだ何も成し遂げてはいない。ただ、同じ年頃に競える相手がいる巡り合わせは、そう多くない。",
-    "en": "",
+    "en": "Two prospects near enough the same year are on the ring together now. {name} of {orgName}, {name2} of {orgName2}. Scouts rated both highly early, and in real matches the difference in their groundwork shows. Neither has achieved anything yet. But drawing a rival of your own age is not a thing that happens often.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3931,7 +3931,7 @@
   },
   {
     "key": "同年代の逸材が二人――{name}と{name2}、同じ時代に立つ",
-    "en": "",
+    "en": "Two standouts of an age — {name} and {name2}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3941,7 +3941,7 @@
   },
   {
     "key": "同門対決実現——「{factionName}」の{nameA}と{nameB}がリングで激突",
-    "en": "",
+    "en": "{factionName}: {nameA} vs {nameB}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3951,7 +3951,7 @@
   },
   {
     "key": "因縁の相手へ――{name}、{toOrg}に移籍",
-    "en": "",
+    "en": "Into the grudge — {name} joins {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3961,7 +3961,7 @@
   },
   {
     "key": "団体を代表する実力者{name}が{fromOrg}を離れ、{toOrg}へ移籍した。両団体の戦力構成は大きく変わり、{fromOrg}では次の中心選手が問われる。",
-    "en": "",
+    "en": "{name}, one of the wrestlers who defined the promotion, has left {fromOrg} for {toOrg}. The shape of both rosters changes, and {fromOrg} now has to answer who its next center is.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3971,7 +3971,7 @@
   },
   {
     "key": "団体王座を保持していた{name}が{toOrg}へ移籍し、ベルトは空位となった。{fromOrg}は新王者決定に向けて動くことになる。",
-    "en": "",
+    "en": "{name}, who held the promotion title, has moved to {toOrg}, and the belt is vacant. {fromOrg} will now move to decide a new champion.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3981,7 +3981,7 @@
   },
   {
     "key": "大会ベストバウト — {winner} vs {loser}",
-    "en": "",
+    "en": "Best bout: {winner} vs {loser}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -3991,7 +3991,7 @@
   },
   {
     "key": "天頂戦へ視線集まる — 特別招待は{invites}",
-    "en": "",
+    "en": "Eyes on Tenchosen — invited: {invites}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4001,7 +4001,7 @@
   },
   {
     "key": "好敵手の予感――{age}歳の{name}と{name2}が同時代に",
-    "en": "",
+    "en": "Rivals in the making — {name}, {name2}, {age}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4011,7 +4011,7 @@
   },
   {
     "key": "対抗戦通算{wins}勝。{orgName}が団体の歴史に新たな金字塔を刻んだ。選手たちは「みんなで勝ち取った記録」と胸を張る。",
-    "en": "",
+    "en": "Interpromotional win number {wins}. {orgName} has cut a new landmark into its own history. \"We took this record together,\" the wrestlers say, and they say it with their chests out.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4021,7 +4021,7 @@
   },
   {
     "key": "幾度も激戦を繰り広げてきた{toOrg}に、{fromOrg}の{name}が加入した。両団体の関係を含め、次の対抗戦へ新たな因縁を持ち込む移籍となる。",
-    "en": "",
+    "en": "{name} of {fromOrg} has joined {toOrg}, a promotion her old side has fought hard against many times. The move carries a fresh grudge into the next interpromotional card, and into the relationship between the two promotions.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4031,7 +4031,7 @@
   },
   {
     "key": "抗争に終止符——{winFaction}の勝利で{org}に静寂が戻る",
-    "en": "",
+    "en": "Feud over — {winFaction} win, {org} quiet",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4041,7 +4041,7 @@
   },
   {
     "key": "指名漏れ{count}名、フリー市場へ",
-    "en": "",
+    "en": "{count} go unpicked, into the free market",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4051,7 +4051,7 @@
   },
   {
     "key": "指名漏れは出なかった。候補は残らず、それぞれの団体へ散った。",
-    "en": "",
+    "en": "Nobody went unpicked. Not one candidate was left over; they all went out to promotions.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4061,7 +4061,7 @@
   },
   {
     "key": "挑戦状！{challengerName}が{toOrg}に王座奪還を要求",
-    "en": "",
+    "en": "A challenge! {challengerName} vs {toOrg} for the belt",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4091,7 +4091,7 @@
   },
   {
     "key": "数々の試合で存在感を示した{name}が殿堂入りを果たした。その歩みは、団体の歴史にも確かな足跡を残している。",
-    "en": "",
+    "en": "{name}, who made herself felt across a great many matches, enters the Hall of Fame. What she walked has left a clear mark in the history of her promotion.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4101,7 +4101,7 @@
   },
   {
     "key": "数年に一人の素材か――{name}、{age}歳で初陣",
-    "en": "",
+    "en": "Once-in-years material — {name}, {age}, first match",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4111,7 +4111,7 @@
   },
   {
     "key": "新人{total}名が出そろう",
-    "en": "",
+    "en": "Rookie class of {total} complete",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4121,7 +4121,7 @@
   },
   {
     "key": "春のタッグリーグ 出場{teamCount}チームが決定",
-    "en": "",
+    "en": "Spring Tag League field set: {teamCount}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4131,7 +4131,7 @@
   },
   {
     "key": "春のタッグリーグ、{championOrg}が頂点に",
-    "en": "",
+    "en": "Spring Tag League — {championOrg} on top",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4141,7 +4141,7 @@
   },
   {
     "key": "春のタッグリーグ開幕迫る、2ブロックの陣容決まる",
-    "en": "",
+    "en": "Spring Tag League close — both blocks set",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4151,7 +4151,7 @@
   },
   {
     "key": "普段は別の旗を掲げる二つの派閥が、手を組んで企画を打った。{org}の控室に流れる空気は悪くない。対立だけが派閥の使い道ではない、ということだろう。",
-    "en": "",
+    "en": "Two factions that usually fly different flags put a project together. The air in the {org} locker room is not bad at all. Feuding, it turns out, is not the only use a faction has.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4161,7 +4161,7 @@
   },
   {
     "key": "果たし状、跳ね返す。{ourOrg}が{requesterName}陣を {score} で下す",
-    "en": "",
+    "en": "Challenge repelled, {ourOrg} {score} over {requesterName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4171,7 +4171,7 @@
   },
   {
     "key": "果たし状成就――{requesterName}主導の挑戦試合、{ourOrg}が制す",
-    "en": "",
+    "en": "{requesterName} calls it, {ourOrg} take it",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4191,7 +4191,7 @@
   },
   {
     "key": "業界上位の一角に痛手。{titleName}を保持する{name}が試合中に負傷し、復帰まで{weeks}週前後を要する見込みとなった。王座の扱いは団体の判断に委ねられ、挑戦戦線は宙に浮く。上位団体の看板が一枚欠けることの影響は、その団体だけにとどまらない。",
-    "en": "",
+    "en": "A blow to one of the top corners of the business. {name}, who holds the belt — {titleName} — was hurt during a match, and the return is expected to take around {weeks} weeks. What happens to the title is left to the promotion, and the challenger picture is left hanging. When a top promotion loses one of its banner names, the effect does not stay inside that promotion.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4211,7 +4211,7 @@
   },
   {
     "key": "業界最高評価を更新――{name}対{name2}、{mq}点",
-    "en": "",
+    "en": "Best on record — {name} vs {name2}, {mq}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4221,7 +4221,7 @@
   },
   {
     "key": "止まらない{name}——{count}連勝",
-    "en": "",
+    "en": "No stopping {name} — {count} in a row",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4231,7 +4231,7 @@
   },
   {
     "key": "止まらない{name}——{count}連勝の中身",
-    "en": "",
+    "en": "No stopping {name} — what the {count} is made of",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4241,7 +4241,7 @@
   },
   {
     "key": "止まらない{orgName}！ 対抗戦{milestone}突破",
-    "en": "",
+    "en": "No stopping {orgName}! Interpromotional: {milestone}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4251,7 +4251,7 @@
   },
   {
     "key": "歴代最高評価、{mq}点に更新――{name}が刻んだ数字",
-    "en": "",
+    "en": "All-time best rating now {mq} — {name}'s number",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4281,7 +4281,7 @@
   },
   {
     "key": "決着戦でも、話し合いでも消えなかった火がある。「{factionAName}」と「{factionBName}」の対立は、もはや{org}の風土の一部と化した。ファンはこの緊張を目当てに会場へ足を運ぶ。憎悪も、長く続けば名物になる。",
-    "en": "",
+    "en": "Some fires go out neither in a decider nor at a table. The feud between {factionAName} and {factionBName} has become part of the weather at {org}. Fans buy tickets for that tension now. Hate, if it runs long enough, becomes part of the attraction.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4291,7 +4291,7 @@
   },
   {
     "key": "派閥の意地を賭けた対抗戦は{score}。「{winFaction}」が地力の差を示す結果となった。勝った側の宴と、負けた側の沈黙。{org}の控室は今週、二つの温度に分かれている。",
-    "en": "",
+    "en": "The war fought over faction pride ended {score}. {winFaction} showed the gap in basic strength. A celebration on one side, silence on the other. The {org} locker room this week runs at two temperatures.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4301,7 +4301,7 @@
   },
   {
     "key": "派閥対抗戦決着——「{winFaction}」が「{loseFaction}」を制す",
-    "en": "",
+    "en": "Faction war settled — {winFaction} over {loseFaction}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4311,7 +4311,7 @@
   },
   {
     "key": "準決勝で分かれた明暗 — 「天頂戦」",
-    "en": "",
+    "en": "Tenchosen semifinals — the night divided",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4321,7 +4321,7 @@
   },
   {
     "key": "準決勝は{a1}（{a1org}）対{a2}（{a2org}）、{b1}（{b1org}）対{b2}（{b2org}）の2試合。勝ち上がったのは{a1}と{b1}だった。試合評価は{mqA}点と{mqB}点。",
-    "en": "",
+    "en": "The semifinals were two matches: {a1} ({a1org}) against {a2} ({a2org}), and {b1} ({b1org}) against {b2} ({b2org}). Through went {a1} and {b1}. Ratings: {mqA} and {mqB}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4331,7 +4331,7 @@
   },
   {
     "key": "燃え上がった対立が、静かに温度を下げた。「{factionAName}」と「{factionBName}」の間に流れていた険悪な空気は、ここ数週で目に見えて薄まったという。決着がついたわけではない。ただ、いまは矛を交える理由がない——それだけのことだ。",
-    "en": "",
+    "en": "A feud that had caught fire quietly lost temperature. The bad air between {factionAName} and {factionBName} has thinned visibly over the past few weeks, by every account. Nothing was settled. There is simply no reason to cross weapons right now. That is all it is.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4341,7 +4341,7 @@
   },
   {
     "key": "王座のベルトを抱えて{toOrg}へ移った元同僚に対し、{fromOrg}の{challengerName}が奪還を宣言した。裏切りへの答えはリングの上で——次の興行のメインで決着がつく。",
-    "en": "",
+    "en": "A former teammate carried the belt with her when she moved to {toOrg}, and {challengerName} of {fromOrg} has declared she is taking it back. The answer to a betrayal gets given in the ring. It settles in the main event of the next show.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4351,7 +4351,7 @@
   },
   {
     "key": "王座交代——{name}が{org}の頂点へ",
-    "en": "",
+    "en": "Title changes hands — {name} tops {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4361,7 +4361,7 @@
   },
   {
     "key": "王座保持者{name}、{toOrg}入り",
-    "en": "",
+    "en": "Title holder {name} joins {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4371,7 +4371,7 @@
   },
   {
     "key": "王座奪還！{challengerName}が{toOrg}からベルトを取り戻した",
-    "en": "",
+    "en": "Title reclaimed! {challengerName} beats {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4381,7 +4381,7 @@
   },
   {
     "key": "王座返上——{name}、{toOrg}へ移籍",
-    "en": "",
+    "en": "Title surrendered — {name} to {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4391,7 +4391,7 @@
   },
   {
     "key": "王者{name}が{toOrg}へ移籍——ベルトの扱いに注目",
-    "en": "",
+    "en": "Champion {name} to {toOrg} — belt open",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4401,7 +4401,7 @@
   },
   {
     "key": "王者離脱――{name}が{weeks}週欠場、{titleName}戦線に空白",
-    "en": "",
+    "en": "{name} out {weeks} weeks — {titleName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4411,7 +4411,7 @@
   },
   {
     "key": "直訴した側に星――{ourOrg}、{requesterName}陣に {score} で敗北",
-    "en": "",
+    "en": "Challenger wins — {requesterName} {score} {ourOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4421,7 +4421,7 @@
   },
   {
     "key": "直訴の3対3、{score}で決着つかず。{requesterName}と{opponentName}は再び沈黙",
-    "en": "",
+    "en": "{requesterName} vs {opponentName} ends {score} — nothing settled",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4431,7 +4431,7 @@
   },
   {
     "key": "直訴の3対3、{score}で決着つかず。{requesterName}と{ourOrg}は再び沈黙",
-    "en": "",
+    "en": "{requesterName} vs {ourOrg}: {score}, nothing settled",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4441,7 +4441,7 @@
   },
   {
     "key": "直訴の代償――{ourOrg}、{opponentOrg}に {score} で敗北",
-    "en": "",
+    "en": "Price of asking — {ourOrg} {score} {opponentOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4451,7 +4451,7 @@
   },
   {
     "key": "直訴及ばず――{requesterName}の挑戦試合、{ourOrg} {score} {opponentOrg}",
-    "en": "",
+    "en": "{requesterName} short: {ourOrg} {score} {opponentOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4461,7 +4461,7 @@
   },
   {
     "key": "看板選手の離脱――{name}、{toOrg}入り",
-    "en": "",
+    "en": "Marquee name gone — {name} to {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4521,7 +4521,7 @@
   },
   {
     "key": "社長が{nameA}と{nameB}の間に入ったが、二人の間に流れる溝は思ったより深かった。顔を合わせて話せる段階にすら、まだ達していない——会談は短く終わった。社長の手が届かない関係もある。",
-    "en": "",
+    "en": "The GM stepped in between {nameA} and {nameB}, but the gap running between the two was deeper than expected. They have not even reached the stage of talking face to face. The meeting was short. Some relationships are out of the GM's reach.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4531,7 +4531,7 @@
   },
   {
     "key": "社長の仲介で{nameA}と{nameB}が膝を突き合わせて話した。溜め込んでいた言葉を、ようやく互いに吐き出せたようだ。絆が戻ったかどうかは外からはわからない。だが、控室の空気が変わったことは確かだ。",
-    "en": "",
+    "en": "With the GM in the middle, {nameA} and {nameB} sat down knee to knee and talked. It seems they finally got out the words they had been holding. Whether the bond is back is not something anyone outside can see. That the air in the locker room has changed is certain.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4541,7 +4541,7 @@
   },
   {
     "key": "禁断の移籍――{name}が{toOrg}入り",
-    "en": "",
+    "en": "Crossing the line — {name} joins {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4551,7 +4551,7 @@
   },
   {
     "key": "秋の団体決戦へ、4つの陣営が出揃う",
-    "en": "",
+    "en": "Four promotions set for Autumn Gauntlet War",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4561,7 +4561,7 @@
   },
   {
     "key": "秋の総力戦決着——{championOrg}が最後まで立つ",
-    "en": "",
+    "en": "Autumn Gauntlet War settled — {championOrg} last standing",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4571,7 +4571,7 @@
   },
   {
     "key": "移籍決定――{name}が{toOrg}入り",
-    "en": "",
+    "en": "Move confirmed — {name} joins {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4581,7 +4581,7 @@
   },
   {
     "key": "積み上げた序列を賭けた一戦は、挑む側に軍配が上がった。{org}の「{factionName}」は{challengerName}を新たな頭に頂き、「{newFactionName}」と名を改める。敗れた{oldLeaderName}がこの屈辱をどう飲み込むか——控室の目は、既にそちらへ向いている。",
-    "en": "",
+    "en": "The match that put a built-up order on the line went to the side doing the challenging. {factionName} of {org} takes {challengerName} as its new head and renames itself {newFactionName}. How {oldLeaderName} swallows this is the next thing, and the locker room is already looking her way.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4591,7 +4591,7 @@
   },
   {
     "key": "第48週開催の「天頂戦」へ、特別招待として{invites}が選ばれた。各団体の出場枠も動き出し、16人の顔ぶれが見え始めている。{championWatch}{preview}",
-    "en": "",
+    "en": "For Tenchosen in week 48, the special invitations went to: {invites}. The promotion slots are moving too, and the field of 16 is starting to take shape. {championWatch}{preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4601,7 +4601,7 @@
   },
   {
     "key": "第{season}シーズンの第48週に「天頂戦」が開催される。特別招待2名と団体枠14名の計16名が出場し、1回戦から決勝まで15試合を行う。{championWatch}{preview}",
-    "en": "",
+    "en": "Tenchosen runs in week 48 of season {season}. Two special invitations and 14 promotion slots make up a field of 16, and 15 matches are run from the first round to the final. {championWatch}{preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4611,7 +4611,7 @@
   },
   {
     "key": "第{season}シーズン第48週の「天頂戦」は、{championName}（{championOrg}）が決勝で{runnerUpName}（{runnerUpOrg}）を下して優勝した。決勝の試合評価は{mq}点。",
-    "en": "",
+    "en": "Tenchosen, in week 48 of season {season}, went to {championName} ({championOrg}), who beat {runnerUpName} ({runnerUpOrg}) in the final. The final was rated {mq}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4621,7 +4621,7 @@
   },
   {
     "key": "第{season}回4団体勝ち残り対抗戦。準決勝は{semi1}、{semi2}。決勝は{finalResult}となり、{championOrg}が頂点に立った。大会MVPは{mvpName}（{mvpOrg}）、通算{mvpWins}人抜き。{gauntletNote}{tieBreakNote}",
-    "en": "",
+    "en": "Autumn Gauntlet War No. {season}. Semifinals: {semi1}, {semi2}. Final: {finalResult}. {championOrg} finished on top. Tournament MVP: {mvpName} ({mvpOrg}), with a run of {mvpWins}. {gauntletNote}{tieBreakNote}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4631,7 +4631,7 @@
   },
   {
     "key": "第{season}回4団体勝ち残り対抗戦の出場団体は{seed1}・{seed2}・{seed3}・{seed4}。第36週、団体ランキング1位対4位、2位対3位の準決勝から、勝者同士の決勝までを一日で戦い抜く。{preview}",
-    "en": "",
+    "en": "The promotions in Autumn Gauntlet War No. {season} are {seed1}, {seed2}, {seed3}, and {seed4}. In week 36 the semifinals put first in the promotion rankings against fourth and second against third, and the two winners meet in the final. All of it inside one day. {preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4641,7 +4641,7 @@
   },
   {
     "key": "第{season}回4団体勝ち残り対抗戦は{championOrg}が優勝。{runnerUpOrg}との決勝を制した。準決勝結果は{semi1}、{semi2}、決勝は{finalResult}。最多{mvpWins}勝を挙げた{mvpName}（{mvpOrg}）が大会MVPに選ばれた。{gauntletNote}{tieBreakNote}",
-    "en": "",
+    "en": "{championOrg} won Autumn Gauntlet War No. {season}, taking the final against {runnerUpOrg}. Semifinals: {semi1}, {semi2}. Final: {finalResult}. Nobody beat more opponents on the day than {mvpName} ({mvpOrg}), whose run reached {mvpWins}, and the tournament MVP went to her. {gauntletNote}{tieBreakNote}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4651,7 +4651,7 @@
   },
   {
     "key": "第{season}回4団体勝ち残り対抗戦は第36週に開催される。準決勝は第1シード{seed1}対第4シード{seed4}、第2シード{seed2}対第3シード{seed3}。各団体3名が先鋒・中堅・大将の順に立ち、最後の一人になるまでリングを譲らない。{preview}",
-    "en": "",
+    "en": "Autumn Gauntlet War No. {season} runs in week 36. The semifinals are top seed {seed1} against fourth seed {seed4}, and second seed {seed2} against third seed {seed3}. Each promotion sends three, in the order lead-off, middle, captain, and nobody gives up the ring until one is left standing. {preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4661,7 +4661,7 @@
   },
   {
     "key": "第{season}回春のタッグリーグの出場枠が決まった。団体ランキング順の配分は{entrySummary}。各代表タッグは編成期間を経て、第12週にA・Bブロックの総当たりへ挑む。{preview}",
-    "en": "",
+    "en": "The entry slots for Spring Tag League No. {season} are settled. The allocation by promotion ranking: {entrySummary}. Each promotion's team takes a period to form up, then goes into the round-robin of Blocks A and B in week 12. {preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4671,7 +4671,7 @@
   },
   {
     "key": "第{season}回春のタッグリーグはA・B両ブロックの総当たりを経て決勝へ進み、{championOrg}の{champ1}・{champ2}組が優勝。{runnerUpOrg}の{runner1}・{runner2}組を下した。",
-    "en": "",
+    "en": "Spring Tag League No. {season} came through the Block A and Block B round-robins to the final, where {champ1} and {champ2} of {championOrg} won it. They beat {runner1} and {runner2} of {runnerUpOrg}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4681,7 +4681,7 @@
   },
   {
     "key": "第{season}回春のタッグリーグは{entrySummary}から計{teamCount}チームが出場する。第12週、A・B各ブロックの総当たりと、ブロック1位同士の優勝決定戦を一日で行う。{preview}",
-    "en": "",
+    "en": "Spring Tag League No. {season} takes {teamCount} teams in all, drawn as follows: {entrySummary}. In week 12 the round-robins of Blocks A and B, and the final between the two block winners, are all run in one day. {preview}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4691,7 +4691,7 @@
   },
   {
     "key": "終わらない抗争——{org}の「{factionAName}」と「{factionBName}」、対立は年を越す",
-    "en": "",
+    "en": "No end: {factionAName} vs {factionBName}, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4701,7 +4701,7 @@
   },
   {
     "key": "荒れる{org}の控室——険悪{count}組、空気が冷えきっている",
-    "en": "",
+    "en": "{org} locker room cold — bad pairings: {count}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4711,7 +4711,7 @@
   },
   {
     "key": "衝撃の鞍替え——{targetName}、「{toFaction}」入り",
-    "en": "",
+    "en": "A switch nobody saw — {targetName} joins {toFaction}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4721,7 +4721,7 @@
   },
   {
     "key": "袂を分かった元同僚同士の最初の一戦は、いつも特別なものになる。{nameA}と{nameB}——かつて同じ旗の下にいた二人が、今夜は別の色で対峙した。試合内容以上に、その表情を覚えておきたい。",
-    "en": "",
+    "en": "The first match between former teammates who went their separate ways is always its own thing. {nameA} and {nameB} — two who were once under the same flag stood in different colors tonight. It is the faces, more than the match, that this writer wants to remember.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4731,7 +4731,7 @@
   },
   {
     "key": "親しい{friend}と{enemy}の対立をきっかけに、{carrier}も{enemy}と距離を置き始めた。個人間の不和が周囲へ広がり、控室の関係を複雑にしている。",
-    "en": "",
+    "en": "{friend}, who is close to her, fell out with {enemy}, and from there {carrier} has begun keeping her distance from {enemy} too. Trouble between two people has spread outward and made the locker room more complicated.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4741,7 +4741,7 @@
   },
   {
     "key": "解雇{weeksSinceFired}週目の挑戦――{name}、{ourOrg}に何を持ち込むか",
-    "en": "",
+    "en": "{weeksSinceFired}-week wait — {name} at {ourOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4751,7 +4751,7 @@
   },
   {
     "key": "解雇から{weeksSinceFired}週、{toOrg}でのキャリアを歩み始めた{name}と{ourOrg}が再びリングで交わった。決着の形は人によって違うが、この夜の意味だけは誰もが理解していた。",
-    "en": "",
+    "en": "Weeks since the release: {weeksSinceFired}. {name}, who has started a career at {toOrg}, crossed with {ourOrg} in the ring again. What counts as closure differs from person to person. What this night meant, everyone understood.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4761,7 +4761,7 @@
   },
   {
     "key": "解雇から{weeksSinceFired}週、{toOrg}に拾われた{name}が初めて{ourOrg}とリングで交差した。捨てられた側の意地を見せる場が、ようやく巡ってきた。",
-    "en": "",
+    "en": "Weeks since the release: {weeksSinceFired}. {name}, picked up by {toOrg}, crossed with {ourOrg} in a ring for the first time. The place to show what the discarded side is made of finally came around.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4771,7 +4771,7 @@
   },
   {
     "key": "解雇された夜を忘れない――{name}、{ourOrg}との一戦に懸けたもの",
-    "en": "",
+    "en": "Night not forgotten — {name} vs {ourOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4781,7 +4781,7 @@
   },
   {
     "key": "赤信号！ {org}の興行、空席だらけの衝撃",
-    "en": "",
+    "en": "Warning lights at {org} — played to empty seats",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4791,7 +4791,7 @@
   },
   {
     "key": "選手自らの直訴から始まった越境カード。蓋を開けてみれば{ourOrg}が {score} で押し切り、{requesterName}はこれで一区切りつくとだけ短く語った。",
-    "en": "",
+    "en": "{ourOrg} pushed the crossover card through {score} — a card that started with a wrestler asking for it herself. {requesterName} said only that this closes something.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4801,7 +4801,7 @@
   },
   {
     "key": "金字塔！{orgName}、対抗戦通算{milestone}達成",
-    "en": "",
+    "en": "A landmark for {orgName}! Interpromotional: {milestone}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4811,7 +4811,7 @@
   },
   {
     "key": "長く続いた{org}内の対立は、{winFaction}と{loseFaction}の決着戦で一旦の幕引きとなった。完全な和解ではないが、これ以上の消耗を避けるという意味では、双方にとっての落とし所だったのかもしれない。",
-    "en": "",
+    "en": "The long feud inside {org} came to a stop, for now, in the decider between {winFaction} and {loseFaction}. It is not a full reconciliation. As a way of keeping both sides from wearing each other down further, it may have been where they were always going to land.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4821,7 +4821,7 @@
   },
   {
     "key": "長く続いた対立に、両派が区切りをつけた。社長の仲介で場が持たれ、「{factionAName}」と「{factionBName}」は矛を収めることで一致したという。控室の空気は目に見えて軽くなった。もっとも、一度割れた線がそう簡単に消えないことも、皆知っている。",
-    "en": "",
+    "en": "Both sides have drawn a line under a long feud. The GM set up the meeting, and {factionAName} and {factionBName} agreed to put their weapons down. The locker room is visibly lighter. Everyone also knows that a line, once drawn through a group, does not rub out that easily.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4831,7 +4831,7 @@
   },
   {
     "key": "長く険悪だった{nameA}と{nameB}の間に、社長が間に入って話し合いの場が持たれた。完全な和解とまではいかないが、控室で挨拶が交わされる程度には空気が変わったという。{org}にとっては小さな、しかし意味のある一歩だ。",
-    "en": "",
+    "en": "{nameA} and {nameB} had been on bad terms a long time, and the GM stepped in to put a talk together. It is not a full reconciliation, but by every account the air has changed enough that they now greet each other in the locker room. For {org} it is a small step, and a real one.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4841,7 +4841,7 @@
   },
   {
     "key": "閑古鳥…{org}の興行がガラガラ。団体人気に打撃",
-    "en": "",
+    "en": "Empty seats at {org} — a hit to the name",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4851,7 +4851,7 @@
   },
   {
     "key": "雪解け——{org}の「{factionAName}」と「{factionBName}」が和解",
-    "en": "",
+    "en": "Thaw: {factionAName}, {factionBName}, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4861,7 +4861,7 @@
   },
   {
     "key": "雪辱——{challengerName}、奪われた王座を取り戻す",
-    "en": "",
+    "en": "Settled — {challengerName} takes back the stolen title",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -4871,7 +4871,7 @@
   },
   {
     "key": "頂上直接対決へ——「{factionAName}」{leaderAName} vs 「{factionBName}」{leaderBName}",
-    "en": "",
+    "en": "{factionAName} {leaderAName} vs {factionBName} {leaderBName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
