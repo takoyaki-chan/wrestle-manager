@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 P3b(UI英訳)実質完走 — 非固有名詞2,995キー訳出+ENモード実機確認+applyDom修正（2026-09-02・Fable指揮/Opus主筆×4バッチ）
+
+Stage Bゴー当日にP3bの翻訳本体を完走。台帳3,120キー中**2,995キー(96%)を英訳**し、残りは固有名詞89(ドラフト裁定待ち)+構造スキップ36(原文再テンプレ化の統合タスクとして台帳化)のみ。
+
+- **パイプライン**: i18n/ui-ledger.json(台帳の正)→Opus翻訳バッチ(800キー×4)→機械検査(プレースホルダ完全性/日本語残り/重複/英綴り/HTMLタグ数一致)→lang-en.js自動生成→ja-golden+ratchet+npm test+walkthrough。全バッチ全green
+- **訳語体系が確立**(各バッチのworklogに蓄積・計100語超): 因縁=grudge/知名度=renown/レンタル=loan/中堅=Mid-card/下剋上=Coup/逸材=Standout等。Fable裁定1件=因縁タグ「熱」Heat→**Fire**(プロレス用語のheatは敵意の含意でfated_admirationに不適)
+- **ENモード実機確認**: タイトル画面・旗揚げ画面が英語表示されること+JAモード無傷をブラウザで確認。その際**実バグ1件発見・修正(71ee5fd)**: data-i18nの実行時キーがHTMLインデント・CRLF入りで台帳キーと不一致→fail-open。applyDomをtrim辞書引き(ja時は原文厳密復元)へ、抽出器・台帳キーもtrim統一
+- 裁定持ち込み(未決): 通貨「万」の表記(現状¥{v}0k/×10k暫定→P6で数値フォーマッタ¥30M式にするか)/ネイティブスポットチェックは未実施(フォロワーさんへのEN版提供手段と併せて要段取り)
+- 残: 固有名詞89キー(docs/en-proper-nouns-draft-v0.1.mdの裁定4問+要読み確認49件待ち)/構造スキップ36キーの原文再テンプレ化(統合タスク)/P4(新聞テンプレ英語執筆)へ
+
 ## 🌐 Stage B P3b 翻訳バッチ4（最終）— 非固有名詞行の英訳を完走（2026-09-02・Opus主筆 worktree agent-a2e69cc5f87566fb8）
 
 バッチ1〜3に続く最終弾。開始前にworktreeブランチをmain先端(1add8c5)へfast-forward。台帳 `i18n/ui-ledger.json` の **hasProperNoun=false かつ en が空の残り全部**(669行から登録済みスキップ35行=22+5+8 を除いた **634行**)を対象に `en` 列を充填 → `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成。**これで非固有名詞行が完走した**。
