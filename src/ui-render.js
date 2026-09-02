@@ -2018,7 +2018,7 @@ function _renderRosterDojoHeader() {
   // コーチ特性（バナー外に残す）
   if (hired.length > 0) {
     const abilityParts = hired.flatMap(c => c.abilities || []);
-    html += `<div class="train-tendency" style="margin-bottom:8px">→ コーチ能力: <strong>${abilityParts.join('、')}</strong></div>`;
+    html += `<div class="train-tendency" style="margin-bottom:8px">→ ${WM_I18N.t('コーチ能力:')} <strong>${abilityParts.join('、')}</strong></div>`;
   }
   el.innerHTML = html;
 
@@ -2069,14 +2069,14 @@ function _renderRosterDetailPanel(c, hired) {
   const isChamp = G.titles?.world?.championId === c.id;
   const isUnifiedChamp = G.unifiedTitle?.championId === c.id;
   const statusBadges = [];
-  if (c.hotStreak) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(200,120,0,0.12);color:#a06000;border:1px solid rgba(200,120,0,0.3)">🔥 絶好調</span>');
-  if (c.slump) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(52,73,94,0.15);color:#5a6670;border:1px solid rgba(127,140,141,0.3)">📉 スランプ</span>');
-  if (c.motivationLoss) statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(44,62,80,0.15);color:#6a7880;border:1px solid rgba(149,165,166,0.3)">😞 モチベ喪失</span>');
-  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${injuryLabelShort(c.injury.type)} ${c.injury.weeksLeft}週</span>`);
+  if (c.hotStreak) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(200,120,0,0.12);color:#a06000;border:1px solid rgba(200,120,0,0.3)">🔥 ${WM_I18N.t('絶好調')}</span>`);
+  if (c.slump) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(52,73,94,0.15);color:#5a6670;border:1px solid rgba(127,140,141,0.3)">📉 ${WM_I18N.t('スランプ')}</span>`);
+  if (c.motivationLoss) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(44,62,80,0.15);color:#6a7880;border:1px solid rgba(149,165,166,0.3)">😞 ${WM_I18N.t('モチベ喪失')}</span>`);
+  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${injuryLabelShort(c.injury.type)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`);
   const decline = Engine.retirement.getDeclinePresentation(c);
-  if (decline.stage === 'terminal') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">⬇⬇ 限界</span>');
-  else if (decline.stage === 'major') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,100,20,0.12);color:#a06000;border:1px solid rgba(180,100,20,0.3)">⬇ 衰退期</span>');
-  else if (decline.stage === 'early') statusBadges.push('<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(160,130,20,0.12);color:#806010;border:1px solid rgba(160,130,20,0.3)">⚠ 衰え</span>');
+  if (decline.stage === 'terminal') statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">⬇⬇ ${WM_I18N.t('限界')}</span>`);
+  else if (decline.stage === 'major') statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,100,20,0.12);color:#a06000;border:1px solid rgba(180,100,20,0.3)">⬇ ${WM_I18N.t('衰退期')}</span>`);
+  else if (decline.stage === 'early') statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(160,130,20,0.12);color:#806010;border:1px solid rgba(160,130,20,0.3)">⚠ ${WM_I18N.t('衰え')}</span>`);
 
   let leftCol = `<div class="rd-portrait">`;
   if (fullUrl) {
@@ -2095,15 +2095,15 @@ function _renderRosterDetailPanel(c, hired) {
   leftCol += `<div class="rd-portrait-overlay"></div>
     <div class="rd-portrait-info">
       <div class="rd-portrait-name">${escHtml(c.name)}</div>
-      <div class="rd-portrait-sub">${c.h || '?'}cm ｜ ${c.age || '?'}歳 ｜ ${tenure}年目</div>
+      <div class="rd-portrait-sub">${WM_I18N.t('{h}cm ｜ {age}歳 ｜ {tenure}年目', { h: c.h || '?', age: c.age || '?', tenure })}</div>
       <div class="rd-portrait-badges">
         <span class="badge badge-${c.style}" style="font-size:10px">${c.style}</span>
         <span class="badge badge-${roleCls}" style="font-size:10px">${c.role}</span>
       </div>
       <div class="rd-portrait-record">
         <span style="color:#1a7a3a">${c.wins||0}○</span> <span style="color:#b03030">${c.losses||0}×</span>
-        ${isChamp ? '<span style="margin-left:8px;color:#7a6530">👑王者</span>' : ''}
-        ${isUnifiedChamp ? '<span style="margin-left:8px;color:var(--unified-deep)">🌐全国統一王者</span>' : ''}
+        ${isChamp ? `<span style="margin-left:8px;color:#7a6530">👑${WM_I18N.t('王者')}</span>` : ''}
+        ${isUnifiedChamp ? `<span style="margin-left:8px;color:var(--unified-deep)">🌐${WM_I18N.t('全国統一王者')}</span>` : ''}
       </div>
       ${statusBadges.length > 0 ? `<div class="rd-portrait-status">${statusBadges.join('')}</div>` : ''}
     </div>
@@ -2114,7 +2114,7 @@ function _renderRosterDetailPanel(c, hired) {
   const peakOVR = Number((c.careerRecord || {}).peakOVR) || 0;
   const peakOVRSeason = (c.careerRecord || {}).peakOVRSeason;
   const peakHtml = ov(c) < peakOVR
-    ? `<span style="font-size:12px;color:var(--cream-text-dim)">ピーク <b style="color:var(--cream-text-sub)">${peakOVR}</b><span style="font-size:11px">(S${peakOVRSeason || '?'})</span></span>`
+    ? `<span style="font-size:12px;color:var(--cream-text-dim)">${WM_I18N.t('ピーク')} <b style="color:var(--cream-text-sub)">${peakOVR}</b><span style="font-size:11px">(S${peakOVRSeason || '?'})</span></span>`
     : '';
   let tab1 = `<div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
     <span style="font-family:'Bebas Neue',sans-serif;font-size:40px;color:#5c4a1e;line-height:1">${ov(c)}</span>
@@ -2129,14 +2129,14 @@ function _renderRosterDetailPanel(c, hired) {
     const sg = Math.round((c.seasonGrowth?.[s] || 0));
     const atCap = current >= cap;
     const roomLabel = atCap ? '<span style="color:#7a6530">MAX</span>'
-      : pct >= 85 ? '<span style="color:#a03030">残僅か</span>'
-      : pct >= 60 ? '<span style="color:#a07010">成長中</span>'
-      : '<span style="color:#1a8a4a">伸びしろ大</span>';
+      : pct >= 85 ? `<span style="color:#a03030">${WM_I18N.t('残僅か')}</span>`
+      : pct >= 60 ? `<span style="color:#a07010">${WM_I18N.t('成長中')}</span>`
+      : `<span style="color:#1a8a4a">${WM_I18N.t('伸びしろ大')}</span>`;
     const col = STAT_COLORS[s];
     // 消耗で失われた天井を、バーの右端から食い込ませる(2026-07-27 Keisuke)
     const dv = (typeof statDecayView === 'function') ? statDecayView(c, s, 150) : { lostPts: 0 };
     const lostBar = dv.lostPts > 0
-      ? `<div class="rd-stat-bar-lost" title="消耗で失われた伸びしろ ${dv.lostPts}" style="width:${dv.lostPct}%;right:${dv.lostFromRightPct}%"></div>`
+      ? `<div class="rd-stat-bar-lost" title="${WM_I18N.t('消耗で失われた伸びしろ {n}', { n: dv.lostPts })}" style="width:${dv.lostPct}%;right:${dv.lostFromRightPct}%"></div>`
       : '';
     const lostTag = dv.lostPts > 0 ? `<span class="rd-stat-lost">▼${dv.lostPts}</span>` : '';
     tab1 += `<div class="rd-stat-row">
@@ -2147,39 +2147,39 @@ function _renderRosterDetailPanel(c, hired) {
       <span class="rd-stat-room">${roomLabel}</span>
     </div>`;
   });
-  tab1 += `<div class="rd-note">MNは試合経験で成長します</div>`;
+  tab1 += `<div class="rd-note">${WM_I18N.t('MNは試合経験で成長します')}</div>`;
   tab1 += `<div style="margin-top:8px;display:flex;gap:16px;font-size:11px;color:#4a4638">
-    <div>人気 <b style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</b></div>
-    <div>体調 <b style="${_scale6Style(_condColor(Math.round(c.condition)))}">${Math.round(c.condition)}</b></div>
-    <div>給与 <b style="color:#1e1c16">${getSalary(c)}万</b>/週</div>
+    <div>${WM_I18N.t('人気')} <b style="${_scale6Style(_popColor(Engine.util.dispPop(c.popularity)))}">${Engine.util.dispPop(c.popularity)}</b></div>
+    <div>${WM_I18N.t('体調')} <b style="${_scale6Style(_condColor(Math.round(c.condition)))}">${Math.round(c.condition)}</b></div>
+    <div>${WM_I18N.t('給与')} <b style="color:#1e1c16">${WM_I18N.t('{v}万', { v: getSalary(c) })}</b>${WM_I18N.t('/週')}</div>
   </div>`;
 
   // === Tab 2: 成長経過 ===
   const log = (c.growthLog || []).slice().reverse();
-  let tab2 = `<div style="font-size:12px;color:#7a6530;font-weight:700;margin-bottom:6px">📈 シーズン${G.season} 成長ログ</div>`;
+  let tab2 = `<div style="font-size:12px;color:#7a6530;font-weight:700;margin-bottom:6px">📈 ${WM_I18N.t('シーズン{s} 成長ログ', { s: G.season })}</div>`;
   tab2 += '<div class="rd-growth-scroll">';
   let prevSeason = G.season;
   log.forEach(entry => {
     if (entry.season !== prevSeason) {
       tab2 += `<div class="rd-growth-week" style="border-top:1px solid rgba(122,101,48,0.35);padding-top:8px;margin-top:4px">
-        <span class="rd-growth-label" style="color:#7a6530 !important">${entry.season}年目 末</span>
-        <span class="rd-growth-event" style="color:#7a7466">— シーズン${entry.season}終了 —</span>
+        <span class="rd-growth-label" style="color:#7a6530 !important">${WM_I18N.t('{s}年目 末', { s: entry.season })}</span>
+        <span class="rd-growth-event" style="color:#7a7466">${WM_I18N.t('— シーズン{s}終了 —', { s: entry.season })}</span>
       </div>`;
       prevSeason = entry.season;
     }
     let eventText = '';
     if (entry.type === 'match') {
       const resColor = entry.result === 'win' ? '#5c4a1e' : entry.result === 'lose' ? '#b03030' : '#7a7466';
-      const resLabel = entry.result === 'win' ? '勝利' : entry.result === 'lose' ? '敗北' : '引分';
+      const resLabel = entry.result === 'win' ? WM_I18N.t('勝利') : entry.result === 'lose' ? WM_I18N.t('敗北') : WM_I18N.t('引分');
       eventText = `🏆 ${entry.detail} — <b style="color:${resColor}">${resLabel}</b>`;
     } else if (entry.type === 'practice') {
-      eventText = `練習（${entry.detail}）`;
+      eventText = WM_I18N.t('練習（{detail}）', { detail: entry.detail });
       if (entry.eventTag) eventText += ` <span style="color:#1a8a4a">${entry.eventTag}</span>`;
     } else if (entry.type === 'rest') {
       eventText = entry.detail;
     } else if (entry.type === 'injury') {
       // detail は内部キー('中傷'等)のことがある。表示は必ず injuryLabel を通す
-      eventText = `🏥 療養（${injuryLabel(entry.detail) || entry.detail}）`;
+      eventText = `🏥 ${WM_I18N.t('療養（{detail}）', { detail: injuryLabel(entry.detail) || entry.detail })}`;
     } else if (entry.type === 'milestone') {
       eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${entry.detail}</span>`;
     } else {
@@ -2197,7 +2197,7 @@ function _renderRosterDetailPanel(c, hired) {
     </div>`;
   });
   if (log.length === 0) {
-    tab2 += '<div style="font-size:11px;color:#7a7466;padding:12px 0;text-align:center">まだ記録がありません</div>';
+    tab2 += `<div style="font-size:11px;color:#7a7466;padding:12px 0;text-align:center">${WM_I18N.t('まだ記録がありません')}</div>`;
   }
   tab2 += '</div>';
   // Season summary
@@ -2205,7 +2205,7 @@ function _renderRosterDetailPanel(c, hired) {
   const summaryParts = stats.map(s => { const v = Math.round((sg[s]||0)*10)/10; return v > 0 ? `<span style="color:${STAT_COLORS[s]};font-weight:700">${STAT_LABELS[s]} +${v}</span>` : ''; }).filter(Boolean);
   if (summaryParts.length > 0) {
     tab2 += `<div style="margin-top:10px;padding-top:8px;border-top:1px solid rgba(0,0,0,0.06);font-size:11px;display:flex;gap:10px;flex-wrap:wrap">
-      <span style="color:#4a4638">今シーズン累計:</span>${summaryParts.join('')}
+      <span style="color:#4a4638">${WM_I18N.t('今シーズン累計:')}</span>${summaryParts.join('')}
     </div>`;
   }
 
@@ -2215,14 +2215,14 @@ function _renderRosterDetailPanel(c, hired) {
   // 招聘中(_inviteBuff)は §3.5「二重指導なし」のためドロップダウンを出さない
   // (ここにガードが無いと招聘中の選手に雇用コーチを重ねて割り当てられてしまう)
   if (c._inviteBuff) {
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" style="color:#7a6530;font-style:italic">招聘中: ${coach ? coach.name : '外部コーチ'}（残${c._inviteBuff.weeksLeft}週・終了後は元の担当に自動復帰）</span></div>`;
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('担当コーチ')}</span><span class="rd-meta-val" style="color:#7a6530;font-style:italic">${WM_I18N.t('招聘中: {name}（残{w}週・終了後は元の担当に自動復帰）', { name: coach ? coach.name : WM_I18N.t('外部コーチ'), w: c._inviteBuff.weeksLeft })}</span></div>`;
     // care-rework2 P3-2: 頼んだ重点は期間中ずっと見えるようにする(何を頼んだか忘れさせない)
     const _focus = c._inviteBuff.focusStat;
     if (_focus && typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[_focus]) {
-      tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">重点</span><span class="rd-meta-val">${STAT_LABELS_JP[_focus]}を重点に指導中</span></div>`;
+      tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('重点')}</span><span class="rd-meta-val">${WM_I18N.t('{stat}を重点に指導中', { stat: STAT_LABELS_JP[_focus] })}</span></div>`;
     }
   } else if (hired.length > 0) {
-    let opts = `<option value="0"${!coach?' selected':''}>--- なし ---</option>`;
+    let opts = `<option value="0"${!coach?' selected':''}>${WM_I18N.t('--- なし ---')}</option>`;
     hired.forEach(h => {
       const aCount = getCoachAssignees(h.id).length;
       const isCurrent = coach && coach.id === h.id;
@@ -2230,34 +2230,34 @@ function _renderRosterDetailPanel(c, hired) {
       const effShort = `${h.grade}級 ×${h.gMult||1.0}`;
       const sm = getCoachStyleMatch(h, c);
       const matchTag = sm.icon ? ` ${sm.icon}${sm.label}` : '';
-      opts += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?' [満]':''}</option>`;
+      opts += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${h.name} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?` [${WM_I18N.t('満')}]`:''}</option>`;
     });
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val"><select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px 6px"${isInjured?' disabled':''}>${opts}</select></span></div>`;
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('担当コーチ')}</span><span class="rd-meta-val"><select onchange="changeCoachAssign(${c.id}, Number(this.value))" style="font-size:11px;padding:3px 6px"${isInjured?' disabled':''}>${opts}</select></span></div>`;
   } else {
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">担当コーチ</span><span class="rd-meta-val" style="color:#7a7466">未雇用</span></div>`;
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('担当コーチ')}</span><span class="rd-meta-val" style="color:#7a7466">${WM_I18N.t('未雇用')}</span></div>`;
   }
   // Coach effect
   if (coach) {
     const mult = coach.gMult || 1.0;
     const sm = getCoachStyleMatch(coach, c);
-    const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : '<span style="color:#7a7466">不一致</span>';
+    const matchHtml = sm.icon ? `<span class="coach-match-badge ${sm.cls}">${sm.icon}${sm.label}+${sm.bonus}</span>` : `<span style="color:#7a7466">${WM_I18N.t('不一致')}</span>`;
     const abilitiesText = (coach.abilities||[]).join('・');
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">コーチ効果</span><span class="rd-meta-val" style="font-size:12px">成長×${mult} <span class="badge badge-${coach.style}" style="font-size:9px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${abilitiesText}</span></div>`;
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('コーチ効果')}</span><span class="rd-meta-val" style="font-size:12px">${WM_I18N.t('成長×{mult}', { mult })} <span class="badge badge-${coach.style}" style="font-size:9px;padding:1px 5px">${coach.style}</span> ${matchHtml} ${abilitiesText}</span></div>`;
   }
   // Growth tendency
   const tendency = getGrowthTendency(c.id);
   if (tendency && !isInjured) {
     const arrowsHtml = tendency.arrows.map(a => `<span class="train-growth-arrow ${a.cls}">${a.arrow}</span>${a.label.replace(/[A-Z]+/,'')}`).join(' ');
-    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">成長傾向</span><span class="rd-meta-val">${tendency.arrows.map(a => `<span class="train-growth-arrow ${a.cls}">${a.arrow}</span>${STAT_LABELS[a.stat] || a.label}`).join(' ')}</span></div>`;
+    tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('成長傾向')}</span><span class="rd-meta-val">${tendency.arrows.map(a => `<span class="train-growth-arrow ${a.cls}">${a.arrow}</span>${STAT_LABELS[a.stat] || a.label}`).join(' ')}</span></div>`;
   }
   // Development rate
   const potPct = getPotentialPct(c);
   const potLabel = getPotentialLabel(c);
-  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">開発率</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div></div><span style="font-size:12px;color:${potLabel.color};font-weight:700">${potLabel.label}</span></div></span></div>`;
+  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('開発率')}</span><span class="rd-meta-val"><div style="display:flex;align-items:center;gap:6px"><div style="width:100px;height:6px;background:rgba(0,0,0,0.08);border-radius:3px;overflow:hidden"><div style="width:${potPct}%;height:100%;background:${potLabel.color};border-radius:3px"></div></div><span style="font-size:12px;color:${potLabel.color};font-weight:700">${potLabel.label}</span></div></span></div>`;
   // Physical decline
-  const stageLabel = {none:'良好',early:'わずかに衰えの兆候',major:'衰退期',terminal:'限界'};
+  const stageLabel = {none:WM_I18N.t('良好'),early:WM_I18N.t('わずかに衰えの兆候'),major:WM_I18N.t('衰退期'),terminal:WM_I18N.t('限界')};
   const stageColor = {none:'#1a8a4a',early:'#a07010',major:'#a06000',terminal:'#a03030'};
-  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">フィジカル</span><span class="rd-meta-val"><span style="font-size:12px;color:${stageColor[decline.stage]||'#1a8a4a'}">${stageLabel[decline.stage]||'良好'}</span></span></div>`;
+  tab3 += `<div class="rd-meta-row"><span class="rd-meta-label">${WM_I18N.t('フィジカル')}</span><span class="rd-meta-val"><span style="font-size:12px;color:${stageColor[decline.stage]||'#1a8a4a'}">${stageLabel[decline.stage]||WM_I18N.t('良好')}</span></span></div>`;
   tab3 += '</div>';
 
   // === Assemble ===
@@ -2266,9 +2266,9 @@ function _renderRosterDetailPanel(c, hired) {
     ${leftCol}
     <div class="rd-info">
       <div class="rd-tabs">
-        <div class="rd-tab${tabIdx===0?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},0)">能力</div>
-        <div class="rd-tab${tabIdx===1?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},1)">成長経過</div>
-        <div class="rd-tab${tabIdx===2?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},2)">育成</div>
+        <div class="rd-tab${tabIdx===0?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},0)">${WM_I18N.t('能力')}</div>
+        <div class="rd-tab${tabIdx===1?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},1)">${WM_I18N.t('成長経過')}</div>
+        <div class="rd-tab${tabIdx===2?' active':''}" onclick="event.stopPropagation();switchRosterDetailTab(${c.id},2)">${WM_I18N.t('育成')}</div>
       </div>
       <div class="rd-tab-content${tabIdx===0?' active':''}">${tab1}</div>
       <div class="rd-tab-content${tabIdx===1?' active':''}">${tab2}</div>
@@ -2337,16 +2337,16 @@ function renderRoster() {
           assignedChars.forEach(ch => {
             const sm = getCoachStyleMatch(c, ch);
             const matchIcon = sm.icon ? `<span style="font-weight:700;color:${sm.cls==='specialist'?'#1a8a4a':'#a07010'}">${sm.icon}</span>` : '';
-            staffHtml += `<span class="coach-match-chip" style="background:rgba(122,101,48,0.06);border:1px solid rgba(122,101,48,0.15);border-radius:4px;padding:3px 6px;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#4a4638">${portraitImg(ch.id, 24, '', false)} ${ch.name.substring(0,4)}${matchIcon}<span onclick="event.stopPropagation();changeCoachAssign(${ch.id},0)" style="cursor:pointer;color:#a03030;font-size:9px;margin-left:2px" title="担当解除">✕</span></span>`;
+            staffHtml += `<span class="coach-match-chip" style="background:rgba(122,101,48,0.06);border:1px solid rgba(122,101,48,0.15);border-radius:4px;padding:3px 6px;display:inline-flex;align-items:center;gap:3px;font-size:11px;color:#4a4638">${portraitImg(ch.id, 24, '', false)} ${ch.name.substring(0,4)}${matchIcon}<span onclick="event.stopPropagation();changeCoachAssign(${ch.id},0)" style="cursor:pointer;color:#a03030;font-size:9px;margin-left:2px" title="${WM_I18N.t('担当解除')}">✕</span></span>`;
           });
         } else {
-          staffHtml += `<span style="font-size:12px;color:#7a7466;font-style:italic">担当なし</span>`;
+          staffHtml += `<span style="font-size:12px;color:#7a7466;font-style:italic">${WM_I18N.t('担当なし')}</span>`;
         }
         // ＋ボタン: 未割当の選手をこのコーチに追加
         const unassignedFighters = G.roster.filter(f => !f.isRental && !f.injury && !getCharCoach(f.id));
         const canAddMore = assigned.length < COACH_MAX_ASSIGN;
         if (canAddMore && unassignedFighters.length > 0) {
-          let addOpts = '<option value="">＋ 追加</option>';
+          let addOpts = `<option value="">${WM_I18N.t('＋ 追加')}</option>`;
           unassignedFighters.forEach(f => {
             const fSm = getCoachStyleMatch(c, f);
             addOpts += `<option value="${f.id}">${f.name} ${fSm.icon||''}</option>`;
@@ -2360,7 +2360,7 @@ function renderRoster() {
       });
       staffHtml += '</div>';
     } else {
-      staffHtml += `<div style="text-align:center;padding:16px;color:#7a7466;font-size:12px">コーチ未雇用 — <span style="color:#7a6530;cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">スタッフ募集</span>から雇用できます</div>`;
+      staffHtml += `<div style="text-align:center;padding:16px;color:#7a7466;font-size:12px">${WM_I18N.t('コーチ未雇用 — {link}から雇用できます', { link: `<span style="color:#7a6530;cursor:pointer;text-decoration:underline" onclick="showScreen('coach')">${WM_I18N.t('スタッフ募集')}</span>` })}</div>`;
     }
     staffEl.innerHTML = staffHtml;
   }
@@ -2372,12 +2372,12 @@ function renderRoster() {
   const hired = getHiredCoaches();
   const sortBtns = [
     {key:'ovr', label:'OVR'},
-    {key:'name', label:'名前'},
-    {key:'cond', label:'体調'},
-    {key:'pop', label:'人気'},
-    {key:'schedule', label:'育成'},
+    {key:'name', label:WM_I18N.t('名前')},
+    {key:'cond', label:WM_I18N.t('体調')},
+    {key:'pop', label:WM_I18N.t('人気')},
+    {key:'schedule', label:WM_I18N.t('育成')},
   ].map(s => `<button class="rd-sort-btn${_rosterSortKey===s.key?' active':''}" onclick="setRosterSort('${s.key}')">${s.label}</button>`).join('');
-  let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:#7a7466">並び順:</span>${sortBtns}</div>`;
+  let html = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px"><span style="font-size:11px;color:#7a7466">${WM_I18N.t('並び順:')}</span>${sortBtns}</div>`;
   html += '<div style="display:flex;flex-direction:column;gap:4px">';
   const _schedOrder = {intensive:0, practice:1, balance:2, promo:3, rest:4};
   const _sortFn = (a,b) => {
@@ -2400,43 +2400,43 @@ function renderRoster() {
   const rosterCap = G.rosterCap || 8;
   const isFull = ownFighters.length >= rosterCap;
   html = `<div class="rd-cap-bar">
-    <span style="font-size:13px;color:#4a4638">所属選手</span>
-    <span style="font-size:15px;font-weight:700;color:#1e1c16">${ownFighters.length}/${rosterCap}名</span>
-    ${isFull ? '<span style="font-size:12px;color:#7a7466">（上限）</span>' : ''}
+    <span style="font-size:13px;color:#4a4638">${WM_I18N.t('所属選手')}</span>
+    <span style="font-size:15px;font-weight:700;color:#1e1c16">${WM_I18N.t('{a}/{b}名', { a: ownFighters.length, b: rosterCap })}</span>
+    ${isFull ? `<span style="font-size:12px;color:#7a7466">${WM_I18N.t('（上限）')}</span>` : ''}
   </div>` + html;
   sorted.forEach(c => {
     const roleCls = c.role === 'Babyface' ? 'bf' : c.role === 'Heel' ? 'heel' : 'neutral';
     const condPct = Math.round(c.condition);
     const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
-    const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
+    const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">${WM_I18N.t('🏥{w}週', { w: c.injury.weeksLeft })}</span>` : '';
     const champBadge = G.titles.world.championId === c.id ? '<span style="color:var(--gold);font-size:12px"> 👑</span>' : '';
-    const unifiedBadge = G.unifiedTitle?.championId === c.id ? '<span style="color:var(--unified);font-size:11px;font-weight:700"> 🌐統一王者</span>' : '';
+    const unifiedBadge = G.unifiedTitle?.championId === c.id ? `<span style="color:var(--unified);font-size:11px;font-weight:700"> 🌐${WM_I18N.t('統一王者')}</span>` : '';
     const rentalBadge = c.isRental ? '<span style="color:#f39c12;font-size:12px"> 🤝</span>' : '';
     // v1.3-1: wear状態ラベル (§3)
     const wearBadge = (() => {
       const decline = Engine.retirement.getDeclinePresentation(c);
-      if (decline.stage === 'terminal') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⬇⬇ 限界</span>';
-      if (decline.stage === 'major') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.3)">⬇ 衰退期</span>';
-      if (decline.stage === 'early') return '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(241,196,15,0.12);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)">⚠ 衰え</span>';
+      if (decline.stage === 'terminal') return `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(231,76,60,0.12);color:#e74c3c;border:1px solid rgba(231,76,60,0.3)">⬇⬇ ${WM_I18N.t('限界')}</span>`;
+      if (decline.stage === 'major') return `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.12);color:#e67e22;border:1px solid rgba(230,126,34,0.3)">⬇ ${WM_I18N.t('衰退期')}</span>`;
+      if (decline.stage === 'early') return `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(241,196,15,0.12);color:#f1c40f;border:1px solid rgba(241,196,15,0.3)">⚠ ${WM_I18N.t('衰え')}</span>`;
       return '';
     })();
     // v1.3-2: §7.2 growthPenalty中の選手に🩹アイコン表示
     const growthPenaltyBadge = (!c.injury && c.growthPenalty)
-      ? '<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(108,92,231,0.12);color:#a29bfe;border:1px solid rgba(108,92,231,0.3)">🩹成長低下</span>'
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(108,92,231,0.12);color:#a29bfe;border:1px solid rgba(108,92,231,0.3)">🩹${WM_I18N.t('成長低下')}</span>`
       : '';
     // v1.8: 成長イベントバッジ
     const hotStreakBadge = c.hotStreak
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,165,0,0.15);color:#ff9500;border:1px solid rgba(255,165,0,0.4)">🔥絶好調</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(255,165,0,0.15);color:#ff9500;border:1px solid rgba(255,165,0,0.4)">🔥${WM_I18N.t('絶好調')}</span>`
       : '';
     const slumpBadge = c.slump
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(52,73,94,0.15);color:#7f8c8d;border:1px solid rgba(127,140,141,0.3)">📉スランプ</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(52,73,94,0.15);color:#7f8c8d;border:1px solid rgba(127,140,141,0.3)">📉${WM_I18N.t('スランプ')}</span>`
       : '';
     const motivLossBadge = c.motivationLoss
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(44,62,80,0.15);color:#95a5a6;border:1px solid rgba(149,165,166,0.3)">😞モチベ喪失</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(44,62,80,0.15);color:#95a5a6;border:1px solid rgba(149,165,166,0.3)">😞${WM_I18N.t('モチベ喪失')}</span>`
       : '';
     // 所属への気持ちが冷えている選手は、行動としてだけ示す。内部値は表示しない。
     const lowTrustBadge = (!c.isRental && (c.trust != null ? c.trust : 50) < 40)
-      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.45);cursor:help" ${_tipAttr('最近は社長室を避けがちだという噂がある')}>💭よそよそしい</span>`
+      ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(230,126,34,0.15);color:#e67e22;border:1px solid rgba(230,126,34,0.45);cursor:help" ${_tipAttr(WM_I18N.t('最近は社長室を避けがちだという噂がある'))}>💭${WM_I18N.t('よそよそしい')}</span>`
       : '';
     const statG = (key) => {
       const g = Math.round(c.seasonGrowth ? (c.seasonGrowth[key] || 0) : 0);
@@ -2450,19 +2450,19 @@ function renderRoster() {
       // 通常のコーチ選択プルダウンではなく招聘状況を表示する(操作不可)。
       // 「コーチ: 招聘中」だけだと設定欄が消えたように見えるため、誰が・あと何週かを明示する
       const invCoach = getCharCoach(c.id);
-      const invName = invCoach ? invCoach.name.split(' ')[0] : '外部コーチ';
-      coachInlineHtml = `<span style="font-size:10px;color:#7a6530;font-style:italic">招聘中: ${invName}（残${c._inviteBuff.weeksLeft}週）</span>`;
+      const invName = invCoach ? invCoach.name.split(' ')[0] : WM_I18N.t('外部コーチ');
+      coachInlineHtml = `<span style="font-size:10px;color:#7a6530;font-style:italic">${WM_I18N.t('招聘中: {name}（残{w}週）', { name: invName, w: c._inviteBuff.weeksLeft })}</span>`;
     } else if (!c.isRental && hired.length > 0) {
       const sm = coachOfChar ? getCoachStyleMatch(coachOfChar, c) : null;
       const smCls = sm ? sm.cls : '';
-      let miniOpts = `<option value="0"${!coachOfChar?' selected':''}>コーチ: なし</option>`;
+      let miniOpts = `<option value="0"${!coachOfChar?' selected':''}>${WM_I18N.t('コーチ: なし')}</option>`;
       hired.forEach(h => {
         const aC = getCoachAssignees(h.id).length;
         const isCur = coachOfChar && coachOfChar.id === h.id;
         const isFull = aC >= COACH_MAX_ASSIGN && !isCur;
         const hSm = getCoachStyleMatch(h, c);
         const mTag = hSm.icon || '';
-        miniOpts += `<option value="${h.id}"${isCur?' selected':''}${isFull?' disabled':''}>${h.name.split(' ')[0]}${mTag} (${aC}/${COACH_MAX_ASSIGN})${isFull?' 満':''}</option>`;
+        miniOpts += `<option value="${h.id}"${isCur?' selected':''}${isFull?' disabled':''}>${h.name.split(' ')[0]}${mTag} (${aC}/${COACH_MAX_ASSIGN})${isFull?` ${WM_I18N.t('満')}`:''}</option>`;
       });
       coachInlineHtml = `<select class="rd-coach-select" onclick="event.stopPropagation()" onchange="event.stopPropagation();changeCoachAssign(${c.id}, Number(this.value))"${c.injury?' disabled':''}>${miniOpts}</select>`;
     }
@@ -2474,14 +2474,14 @@ function renderRoster() {
         <div style="flex:1;min-width:0">
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
             <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${c.name}</span>${champBadge ? '<span style="color:#7a6530;font-size:12px">👑⭐</span>' : ''}${unifiedBadge}
-            <span style="font-size:11px;color:#7a6530;font-weight:600">${c.age}歳</span>
+            <span style="font-size:11px;color:#7a6530;font-weight:600">${WM_I18N.t('{age}歳', { age: c.age })}</span>
             <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
             <span class="badge badge-${roleCls}" style="font-size:10px;padding:1px 5px">${c.role}</span>
             ${coachInlineHtml}
             ${c._trainerBuff ? `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3)">🏋️${c._trainerBuff.weeksLeft}w</span>` : ''}
             ${c._inviteBuff ? (() => {
               const invCoach = (typeof ALL_COACHES !== 'undefined') ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null;
-              return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`${invCoach ? invCoach.name + 'コーチ招聘中' : 'コーチ招聘中'} — 練習効果アップ(残${c._inviteBuff.weeksLeft}週)`)}>🏋️${c._inviteBuff.weeksLeft}w</span>`;
+              return `<span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(invCoach ? WM_I18N.t('{name}コーチ招聘中 — 練習効果アップ(残{w}週)', { name: invCoach.name, w: c._inviteBuff.weeksLeft }) : WM_I18N.t('コーチ招聘中 — 練習効果アップ(残{w}週)', { w: c._inviteBuff.weeksLeft }))}>🏋️${c._inviteBuff.weeksLeft}w</span>`;
             })() : ''}
             ${injuryBadge}${wearBadge}${growthPenaltyBadge}${hotStreakBadge}${slumpBadge}${motivLossBadge}${lowTrustBadge}${renderQuietTrustSignal(c)}${renderTrainingFatigueSignal(c)}
           </div>
@@ -2497,8 +2497,8 @@ function renderRoster() {
           </div>
         </div>
         <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
-          <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></div>
-          <div style="margin-top:2px;color:#7a7466">💰${getSalary(c)}万</div>
+          <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">${WM_I18N.t('体調')}<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></div>
+          <div style="margin-top:2px;color:#7a7466">${WM_I18N.t('💰{v}万', { v: getSalary(c) })}</div>
         </div>
       </div>
       ${_renderRosterDetailPanel(c, hired)}
@@ -2508,15 +2508,15 @@ function renderRoster() {
   // ── Rental fighters separated section ──
   if (rentalFighters.length > 0) {
     const maxSlots = RENTAL_CONFIG.getMaxConcurrent(ownFighters.length);
-    html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#a06000">🤝 レンタル枠（${rentalFighters.length}/${maxSlots}）</div>`;
+    html += `<div class="panel-title" style="font-size:14px;margin-top:16px;color:#a06000">🤝 ${WM_I18N.t('レンタル枠（{a}/{b}）', { a: rentalFighters.length, b: maxSlots })}</div>`;
     html += '<div style="display:flex;flex-direction:column;gap:4px">';
     rentalFighters.forEach(c => {
       const condPct = Math.round(c.condition);
       const condCls = condPct > 66 ? '#2ecc71' : condPct > 33 ? '#f39c12' : '#e74c3c';
-      const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">🏥${c.injury.weeksLeft}週</span>` : '';
+      const injuryBadge = c.injury ? `<span style="font-size:10px;padding:1px 5px;border-radius:3px;background:rgba(214,48,49,0.15);color:#f08b9e;border:1px solid rgba(214,48,49,0.3)">${WM_I18N.t('🏥{w}週', { w: c.injury.weeksLeft })}</span>` : '';
       const contract = (G.rentals || []).find(r => r.fighterId === c.id);
       const srcLabel = contract ? (contract.fromSource === 'rival'
-        ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || '他団体')
+        ? (Engine.rival.getOrgInfo(G.aiOrgs, contract.fromOrgId)?.name || WM_I18N.t('他団体'))
         : 'FA') : '?';
       html += `<div style="background:#ede8dc;border:1px solid rgba(180,120,30,0.3);border-radius:8px${c.injury ? ';opacity:0.75' : ''}">
         <div style="display:flex;align-items:center;gap:10px;padding:8px 10px;cursor:pointer" onclick="showFighterPopup(${c.id},'roster')">
@@ -2524,7 +2524,7 @@ function renderRoster() {
           <div style="flex:1;min-width:0">
             <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">
               <span class="rd-name" onclick="event.stopPropagation();showFighterPopup(${c.id},'roster',true)">${c.name}</span><span style="color:#a06000;font-size:12px"> 🤝</span>
-              <span style="font-size:11px;color:#7a6530;font-weight:600">${c.age}歳</span>
+              <span style="font-size:11px;color:#7a6530;font-weight:600">${WM_I18N.t('{age}歳', { age: c.age })}</span>
               <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>
               ${injuryBadge}${renderTrainingFatigueSignal(c)}
             </div>
@@ -2540,8 +2540,8 @@ function renderRoster() {
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;font-size:11px;color:#4a4638">
-            <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">体調<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></div>
-            <div style="margin-top:2px;color:#a06000">${srcLabel}・残${contract ? contract.weeksLeft : '?'}週</div>
+            <div style="display:flex;align-items:center;gap:3px;justify-content:flex-end">${WM_I18N.t('体調')}<div class="cond-bar"><div class="cond-fill" style="width:${condPct}%;background:${condCls}"></div></div><b style="color:#1e1c16">${condPct}</b></div>
+            <div style="margin-top:2px;color:#a06000">${WM_I18N.t('{src}・残{w}週', { src: srcLabel, w: contract ? contract.weeksLeft : '?' })}</div>
           </div>
         </div>
       </div>`;

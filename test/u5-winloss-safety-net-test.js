@@ -1301,6 +1301,14 @@ console.log('  [skip] fighter popup overall record / last-5 (embedded in showFig
     `const _rosterDetailOpenIds = new Set();
      let _rosterDetailTab = {};
      const STAT_TIPS = {};
+     // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+     // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+     const WM_I18N = { t(text, params) {
+       if (typeof text !== 'string' || !params) return text;
+       let out = text;
+       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+       return out;
+     } };
      ${uiFn('escHtml')}
      function ov(c) { return Engine.util.ov(c); }
      function _tipAttr() { return ''; }
