@@ -1,5 +1,38 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Stage A P3a バッチ4b-1 — ui-common.jsのt()移行(前半)（2026-09-02・Sonnet worktree agent-a3829b2ada4e59fea）
+
+設計書 [i18n-stage-a-p3a-design-v0.1.md](docs/i18n-stage-a-p3a-design-v0.1.md)「バッチ4」に基づき、ui-common.js(20,701行)の**ファイル先頭〜5474行目(`renderMatchPreview` 完了、関数境界)**を対象にUIクロームを`WM_I18N.t()`経由へ移行。ui-render.js(4a-1〜4a-3で完走済み)に続くバッチ4bの1本目。**残り15,227行(約74%)は未着手** — 続きは4b-2が5475行目(`_pendingMatchDialogues`/`renderShowResult`直前)から引き継ぐ。
+
+### 対象と方針
+- 対抗戦(war)モーダル群(挑戦状/代表選出/試合プレビュー/最終結果)・交渉/契約セレモニー・コーチ情報・関係性フラグモーダル(M-1〜M-24)・イベントポップアップ(選手要望/C3)・引退/引退勧告/因縁決着ポップアップ・移動演出(showTravelScene)・年末表彰式(showAwardsCeremony 全体)・選手詳細ポップアップ(showFighterPopup、全3タブ+獲得ボタン)・通常興行プレビュー(renderMatchPreview)のボタン・見出し・進行ラベル・システムメッセージ・alert/showToast文言を機械的にt()化
+- 補間入りは`{name}`形式のプレースホルダ+paramsで実装(既存ui-render.jsバッチの慣例に合わせ、`{n}防衛`のような数値埋め込みテンプレも積極的にラップ——バックログにある「数値直付けの単位語は非ラップ」は**タグを跨いで裸の単位語だけが残るパターン**(`<strong>${n}</strong>回`)に限定される先例と再確認して適用)
+- モジュールロード定数`FLAG_MODAL_META`(関係性フラグの見出しテーブル)はP3a規約により宣言側を据え置き、**参照側3箇所**(`_flagBuildPopupOpts`/`_flagBuildM12`/`_flagBuildM13`の`meta.title`読み出し)で`WM_I18N.t(meta.title)`評価に変更(setLang切替への追従を参照時評価で担保)
+
+### スキップ判断のまとめ
+1. **記者文**(`_mdlAReporterStrip`に渡す`line`引数)— 指示書で明示除外のStage B領分。呼び出し箇所すべてで据え置き
+2. **セリフ本文** — `getWarChallengeDialogue`/`getWarPostDialogue`/`getJoinGreeting`/`getDraftQuote`/`getSigningQuote`/`getRentalQuote`/`pickQuote`/`getTraitQuote`等キャラ台詞生成関数のフォールバック文言、AWARD_LINES由来の受賞スピーチ(`_awSpeech`)、コーチの引退勧告セリフ(`advice.text`)
+3. **data.js/Engine由来のデータ駆動文字列**(二重包み禁止) — `BIG_NEWS_LEAD_LINES`等のニュース文言プール、`CHAR_PROFILES`選手紹介文、`COACH_ABILITY_CATALOG`/`COACH_FLAVOR_DEFS`の説明文、`Engine.negotiate.getRateLabel`/`Engine.title.getRivalryLevel`等Engineが返す表示ラベル、`summary.titleSummary`(career.buildSummary出力)
+4. **数値直付けの単位語** — `${n}週`のような裸の単純合成、`<strong>${n}</strong>回`のタグ跨ぎ直付け(worklog 4a-2先例に統一)、「N勝M敗」「N度戴冠・通算N度防衛」の複合パターン(backlog記載の明示例と一致)
+5. **ロジックキー** — `action = '療養'`等の内部状態値(表示ラベルではなく比較・CSSクラス兼用のキー)、`reason.includes('引退')`判定、`b.textContent.includes('興行準備')`のナビボタン一致判定(index.html側のラベルが未移行のため触れない)
+6. **固有名詞・データ値** — `orgName`/`fighter.name`等
+
+### 検証
+- `node --check src/ui-common.js` — 都度成功
+- `node test/ja-golden.js` — 完全一致(hash `6b3d05c8...` 不変、全編集を通して崩れなし)。作業中に1箇所、全角括弧を半角で書いてしまうミスをこのチェックで即検出→修正(コミット前に解消)
+- `node test/i18n-ratchet.js` — 直書きJA文字列は減少のみ(28378→28294、増加なし)
+- `npm test` — 260/260 PASS。**10本をt()化後の形に追従修正**:
+  - ソースパターン照合系6本(`awards-ceremony-progression-lock-test.js`/`bitter-prematch-test.js`/`progression-labels-test.js`/`rivalry-resolution-match-guard-test.js`/`unified-title-p4-test.js`/`war-entry-selection-test.js`/`year-end-event-awards-test.js`)— リテラル一致の期待値を`WM_I18N.t('...')`形へ更新
+  - `new Function`サンドボックス系3本(`u3-group-a-safety-net-test.js`/`u3-group-b-safety-net-test.js`/`u5-winloss-safety-net-test.js`)— t()呼び出しを追加した関数を抽出実行するテストで`WM_I18N is not defined`が発生。同ファイル内の既存セクション(`renderShachoshitsuReleaseInterview`用)が確立していた`WM_I18N_STUB`(ja素通し+プレースホルダ置換のみの最小スタブ)パターンを他セクションへ横展開
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・季末S2W1まで到達。年末表彰式の`#aw-btn-next`連打を含め実UIで正常進行を確認)
+
+### 数値
+- `WM_I18N.t()`呼び出し: ui-common.js 0→379箇所(本バッチ分、対象範囲は先頭〜5474行目)
+
+### 残課題
+- **バッチ4b-2**: ui-common.js 5475行目(`renderShowResult`直前)〜末尾(20,701行目)を引き継ぐ
+- 実機確認: 対抗戦・交渉/契約・コーチ情報・選手詳細ポップアップ(3タブ)・年末表彰式・興行プレビューを一通り開き、レイアウト崩れ・文言欠落が無いか確認いただけると安心(JA出力は不変のはずだが、t()呼び出しの参照ミスが無いかの最終目視)
+
 ## Stage A P3a バッチ4a-3 — ui-render.jsのt()移行 最終区画（2026-09-02・Sonnet worktree agent-aca5587ade32303a8）
 
 4a-2の続行点(10312行目)からui-render.js末尾(15503行目、ファイル完了)までを対象に、年代記(`openChronicleForFighter`〜`_renderDbChronicle`)・派閥(`_renderDbFactions`ほか)・相関図(`_renderDbRelmapMobile`/`_renderDbRelmap`ほか)のUIクロームを`WM_I18N.t()`経由へ移行。**ui-render.js は本バッチで全区画完了**（4a-1/4a-2/4a-3の3本で前半〜後半を通し完走）。
