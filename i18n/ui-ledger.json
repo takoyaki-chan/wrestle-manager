@@ -1,37 +1,6 @@
 [
   {
-    "key": "← 戻る",
-    "en": "\r\n        ← Back\r\n      ",
-    "files": [
-      "index.html",
-      "ui-render.js"
-    ],
-    "count": 3,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "ゲーム開始",
-    "en": "\r\n      Start Game\r\n    ",
-    "files": [
-      "index.html"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "旗揚げする",
-    "en": "\r\n      Found the Promotion\r\n    ",
-    "files": [
-      "index.html"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "(成功率80%)",
+    "key": " (成功率80%)",
     "en": " (80% success rate)",
     "files": [
       "ui-render.js"
@@ -41,7 +10,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "(確定成功)",
+    "key": " (確定成功)",
     "en": " (guaranteed success)",
     "files": [
       "ui-render.js"
@@ -51,7 +20,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "(評価 {n})",
+    "key": " (評価 {n})",
     "en": " (rating {n})",
     "files": [
       "ui-common.js"
@@ -61,7 +30,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "/ {n}週離脱",
+    "key": " / {n}週離脱",
     "en": " / out {n} weeks",
     "files": [
       "ui-render.js"
@@ -71,7 +40,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "/ ライバル {n}件",
+    "key": " / ライバル {n}件",
     "en": " / {n} rivals",
     "files": [
       "ui-render.js"
@@ -81,7 +50,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "/ 接戦+{n}",
+    "key": " / 接戦+{n}",
     "en": " / close match +{n}",
     "files": [
       "ui-common.js"
@@ -91,7 +60,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "/ 目標3,000万",
+    "key": " / 目標3,000万",
     "en": " / target ¥30,000k",
     "files": [
       "ui-render.js"
@@ -101,7 +70,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "─ 継続中",
+    "key": " ─ 継続中",
     "en": " ─ ongoing",
     "files": [
       "ui-render.js"
@@ -666,6 +635,56 @@
   {
     "key": "<b>{n}</b>度防衛",
     "en": "<b>{n}</b> defenses",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<em>{feud}</em>は決着がつかないまま、<em>{time}</em>を食いつぶし続けている。",
+    "en": "<em>{feud}</em> drags on unresolved, consuming <em>{time}</em>.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<span class=\"marker\">{leader}</span>を中心として、",
+    "en": "With <span class=\"marker\">{leader}</span> at the center, ",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<span class=\"marker\">{ringleader}</span>はリーダー\r\n            <span class=\"marker\">{leader}</span>の方針に\r\n            <span class=\"marker hostile\">{discontent}</span>ようだ。",
+    "en": "<span class=\"marker\">{ringleader}</span> seems <span class=\"marker hostile\">{discontent}</span> with leader <span class=\"marker\">{leader}</span>'s direction.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<span class=\"marker\">{target}</span>は<span class=\"marker\">{faction}</span>と既に話をつけているようです。",
+    "en": "It looks like <span class=\"marker\">{target}</span> has already come to an understanding with <span class=\"marker\">{faction}</span>.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<span class=\"sr-num\">{n}</span><span class=\"sr-suf\">位</span>",
+    "en": "<span class=\"sr-suf\">#</span><span class=\"sr-num\">{n}</span>",
     "files": [
       "ui-render.js"
     ],
@@ -1654,7 +1673,17 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 2,
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{block}ブロック ",
+    "en": "Block {block}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -3443,6 +3472,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}から",
+    "en": "From {org}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}が獲得！",
     "en": "{org} takes it!",
     "files": [
@@ -3727,6 +3766,16 @@
     "en": "Year {season}: {pop}",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{self}<span class=\"awaybar-sep\">が</span>{opp}のリングへ乗り込む",
+    "en": "{self}<span class=\"awaybar-sep\"> storms into </span>{opp}'s ring",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4454,6 +4503,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "← 戻る",
+    "en": "\r\n        ← Back\r\n      ",
+    "files": [
+      "index.html",
+      "ui-render.js"
+    ],
+    "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "← 第{n}章と SEASON {start}–{end} で重なる",
     "en": "← Overlaps Chapter {n} across SEASON {start}–{end}",
     "files": [
@@ -4534,7 +4594,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "⏳ いつでも使用可能（温存OK）",
+    "key": "⏳ いつでも使用可能（温存OK）\n",
     "en": "⏳ Usable at any time (fine to hold on to it)\n",
     "files": [
       "app.js"
@@ -6229,16 +6289,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "いる。",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "おかえり",
     "en": "Welcome back",
     "files": [
@@ -6320,28 +6370,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "から",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "からの申し入れです。",
     "en": " has come to you with a request.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "が",
-    "en": "",
     "files": [
       "ui-common.js"
     ],
@@ -6392,16 +6422,6 @@
   {
     "key": "ここまで燃え広がった対立は、もう言葉では止まらない。火が弱まれば、仲裁の余地も生まれる",
     "en": "A conflict burning this wide will not be stopped with words. If the fire dies down, there will be room to mediate",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "ここ数週間で",
-    "en": "",
     "files": [
       "ui-common.js"
     ],
@@ -7031,16 +7051,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "します。",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "すぐ進む",
     "en": "Skip Ahead",
     "files": [
@@ -7161,13 +7171,13 @@
     "hasProperNoun": false
   },
   {
-    "key": "ただ、それぞれの派閥は、抗争が続くことの",
-    "en": "",
+    "key": "ただ、それぞれの派閥は、抗争が続くことの<em>{futility}</em>を知り、<em>{standDown}</em>を選んだ。",
+    "en": "Still, each faction has come to see the <em>{futility}</em> in letting the feud drag on, and has chosen <em>{standDown}</em> instead.",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -7177,16 +7187,6 @@
       "ui-render.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "と",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -7208,26 +7208,6 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "という、はっきりとした形に決着した。",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "と既に話をつけているようです。",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -7343,26 +7323,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "にまで燃え広がった。",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "のリングへ乗り込む",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "の指導について",
     "en": " — about her coaching",
     "files": [
@@ -7393,58 +7353,8 @@
     "hasProperNoun": false
   },
   {
-    "key": "の方針に",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "の間にあった棘は、",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "の集まりになりそうです。",
     "en": "kind of circle.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "は",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "はリーダー",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "は決着がつかないまま、",
-    "en": "",
     "files": [
       "ui-common.js"
     ],
@@ -7563,16 +7473,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "まで来ている。",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "まとめてスキップ",
     "en": "Skip All",
     "files": [
@@ -7606,16 +7506,6 @@
   {
     "key": "やめる",
     "en": "Cancel",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "ようだ。",
-    "en": "",
     "files": [
       "ui-common.js"
     ],
@@ -7676,46 +7566,6 @@
   {
     "key": "わだかまりを残した",
     "en": "Something was left unsettled",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "を中心として、",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "を知り、",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "を選んだ。",
-    "en": "",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "を食いつぶし続けている。",
-    "en": "",
     "files": [
       "ui-common.js"
     ],
@@ -8325,6 +8175,16 @@
   {
     "key": "ゲームログ",
     "en": "Game Log",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ゲーム開始",
+    "en": "\r\n      Start Game\r\n    ",
     "files": [
       "index.html"
     ],
@@ -9051,7 +8911,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "セーブに失敗しました:",
+    "key": "セーブに失敗しました: ",
     "en": "Save failed: ",
     "files": [
       "app.js"
@@ -10457,7 +10317,17 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 3,
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ライバル心 ",
+    "en": "Rivalry",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -10804,7 +10674,7 @@
   },
   {
     "key": "ロスター定員を超過",
-    "en": "Roster over capacity",
+    "en": "over the roster cap",
     "files": [
       "ui-common.js"
     ],
@@ -10843,13 +10713,13 @@
     "hasProperNoun": false
   },
   {
-    "key": "ロッカールームに満ちていた争いの空気は、",
-    "en": "",
+    "key": "ロッカールームに満ちていた争いの空気は、<br>\r\n        <em>{winner}</em>と<em>{loser}</em>という、はっきりとした形に決着した。",
+    "en": "The tension that filled the locker room has settled into a clear shape:<br>\n an <em>{winner}</em> and a <em>{loser}</em>.",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -11278,7 +11148,7 @@
   },
   {
     "key": "不満を抱えている",
-    "en": "",
+    "en": "unhappy",
     "files": [
       "ui-common.js"
     ],
@@ -11761,13 +11631,13 @@
     "hasProperNoun": false
   },
   {
-    "key": "二人の対立は、",
-    "en": "",
+    "key": "二人の対立は、<span class=\"marker hostile\">{stage}</span>まで来ている。",
+    "en": "The conflict between the two has reached <span class=\"marker hostile\">{stage}</span>.",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -12939,16 +12809,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "位",
-    "en": "",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "低下（離脱リスク）",
     "en": "Falling (risk of departure)",
     "files": [
@@ -13889,7 +13749,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "再試行失敗:",
+    "key": "再試行失敗: ",
     "en": "Retry failed: ",
     "files": [
       "ui-common.js"
@@ -15419,7 +15279,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "団体の名声が業界に轟いた！",
+    "key": "団体の名声が業界に轟いた！\n",
     "en": "Your promotion's name has rung out across the business!\n",
     "files": [
       "app.js"
@@ -16970,13 +16830,13 @@
     "hasProperNoun": false
   },
   {
-    "key": "対立が始まって以来、両派閥のリーダー",
-    "en": "",
+    "key": "対立が始まって以来、両派閥のリーダー<span class=\"marker\">{a}</span>と<span class=\"marker\">{b}</span>の間にあった棘は、\r\n            ここ数週間で<span class=\"marker peace\">{softened}</span>いる。",
+    "en": "Ever since the conflict began, the friction between faction leaders <span class=\"marker\">{a}</span> and <span class=\"marker\">{b}</span> has <span class=\"marker peace\">{softened}</span> these past few weeks.",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -17735,7 +17595,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "強み:",
+    "key": "強み: ",
     "en": "Strengths: ",
     "files": [
       "ui-render.js"
@@ -18382,7 +18242,7 @@
   },
   {
     "key": "抗争",
-    "en": "",
+    "en": "Feud",
     "files": [
       "ui-common.js"
     ],
@@ -19465,17 +19325,17 @@
     "hasProperNoun": false
   },
   {
-    "key": "新契約を結ぶと、",
-    "en": "",
+    "key": "新契約を結ぶと、<span class=\"marker\">{cap}</span>します。",
+    "en": "Sign this contract, and you'll go <span class=\"marker\">{cap}</span>.",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
-    "key": "新年号",
+    "key": "新年号 ",
     "en": "Season Opener ",
     "files": [
       "ui-render.js"
@@ -19519,6 +19379,16 @@
     "en": "The banner is folded, waiting for its owner to come back",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "旗揚げする",
+    "en": "\r\n      Found the Promotion\r\n    ",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -19586,7 +19456,7 @@
   },
   {
     "key": "明らかに和らいで",
-    "en": "",
+    "en": "visibly eased",
     "files": [
       "ui-common.js"
     ],
@@ -20371,13 +20241,13 @@
     "hasProperNoun": false
   },
   {
-    "key": "案",
-    "en": "",
+    "key": "案 {n}",
+    "en": "Plan {n}",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -21283,13 +21153,13 @@
     "hasProperNoun": false
   },
   {
-    "key": "水面下でくすぶっていた火種は、",
-    "en": "",
+    "key": "水面下でくすぶっていた火種は、<em>{fight}</em>にまで燃え広がった。",
+    "en": "The spark that had been smoldering beneath the surface has grown into <em>{fight}</em>.",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -22410,7 +22280,7 @@
   },
   {
     "key": "無益",
-    "en": "",
+    "en": "futility",
     "files": [
       "ui-common.js"
     ],
@@ -23397,7 +23267,7 @@
   },
   {
     "key": "矛を収めること",
-    "en": "",
+    "en": "to lay down its arms",
     "files": [
       "ui-common.js"
     ],
@@ -26434,7 +26304,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "課題:",
+    "key": "課題: ",
     "en": "Needs work: ",
     "files": [
       "ui-render.js"
@@ -27303,7 +27173,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "逸材クラスの選手たちが、あなたの団体に注目しています。",
+    "key": "逸材クラスの選手たちが、あなたの団体に注目しています。\n\n",
     "en": "Standout-class wrestlers are taking notice of your promotion.\n\n",
     "files": [
       "app.js"
@@ -28838,8 +28708,18 @@
     "hasProperNoun": true
   },
   {
-    "key": "🌸 総合ベストタッグ（第{n}回",
-    "en": "",
+    "key": "🌸 総合ベストタッグ（第{n}回・{partner}と）",
+    "en": "🌸 Best Tag Team Overall (No. {n}, with {partner})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🌸 総合ベストタッグ（第{n}回）",
+    "en": "🌸 Best Tag Team Overall (No. {n})",
     "files": [
       "ui-common.js"
     ],
@@ -29469,7 +29349,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "💎 FA市場で逸材ランクの選手1名と特別に交渉可能",
+    "key": "💎 FA市場で逸材ランクの選手1名と特別に交渉可能\n",
     "en": "💎 Special talks with one standout-rank wrestler on the FA market\n",
     "files": [
       "app.js"

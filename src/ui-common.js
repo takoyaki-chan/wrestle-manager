@@ -1502,7 +1502,7 @@ function showRosterOverflowSigningModal(pending) {
 
   const stageBody = `
     <div class="mdl-a-observation centered" style="font-size:14px;line-height:1.9;max-width:460px">
-      ${WM_I18N.t('新契約を結ぶと、')}<span class="marker">${WM_I18N.t('ロスター定員を超過')}</span>${WM_I18N.t('します。')}<br>
+      ${WM_I18N.t('新契約を結ぶと、<span class="marker">{cap}</span>します。', { cap: WM_I18N.t('ロスター定員を超過') })}<br>
       ${WM_I18N.t('既存選手の１名と契約を解除する必要があります。')}
     </div>
     ${fighterBlock}
@@ -4008,7 +4008,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
             ${c.role ? `<span class="badge badge-${c.role==='Babyface'?'bf':c.role==='Heel'?'heel':'neutral'}" style="font-size:13px;padding:3px 10px">${c.role}</span>` : ''}
             ${isChamp ? `<span style="font-size:14px;color:var(--gold);font-weight:700">${WM_I18N.t('👑 王者')}</span>` : ''}
             ${isUnifiedChamp ? `<span style="font-size:14px;color:var(--unified);font-weight:700">${WM_I18N.t('🌐 全国統一王者')}</span>` : ''}
-            ${_isBestTagTeam ? `<span style="font-size:13px;color:#ff6f9c;font-weight:700">${WM_I18N.t('🌸 総合ベストタッグ（第{n}回', { n: _bestTagSeason })}${_bestTagPartnerName ? '・' + _bestTagPartnerName + WM_I18N.t('と') : ''}）</span>` : ''}
+            ${_isBestTagTeam ? `<span style="font-size:13px;color:#ff6f9c;font-weight:700">${_bestTagPartnerName ? WM_I18N.t('🌸 総合ベストタッグ（第{n}回・{partner}と）', { n: _bestTagSeason, partner: _bestTagPartnerName }) : WM_I18N.t('🌸 総合ベストタッグ（第{n}回）', { n: _bestTagSeason })}</span>` : ''}
             ${c.lastRun ? `<span style="font-size:13px;color:var(--gold);font-weight:700;background:rgba(212,168,67,0.15);padding:2px 8px;border-radius:4px;border:1px solid rgba(212,168,67,0.4)">${WM_I18N.t('🌅 ラストラン')}</span>` : ''}
             ${c.isRental ? (() => { const ct = (G.rentals || []).find(r => r.fighterId === c.id); return `<span style="font-size:13px;color:#f39c12">${WM_I18N.t('🤝 レンタル（残{n}週）', { n: ct ? ct.weeksLeft : '?' })}</span>`; })() : ''}
             ${(() => {
@@ -5188,7 +5188,10 @@ function renderMatchPreview() {
     ? `<div class="hdr-emblem">${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 58) : ''}</div>`
     : '';
   const awayBarHtml = isAway
-    ? `<div class="awaybar">${typeof orgIconHtml === 'function' ? orgIconHtml('player', 20) : ''}${escHtml(awaySelfOrgName)}<span class="awaybar-sep">${WM_I18N.t('が')}</span>${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 20) : ''}${escHtml(awayOpponentOrgName)}${WM_I18N.t('のリングへ乗り込む')}</div>`
+    ? `<div class="awaybar">${WM_I18N.t('{self}<span class="awaybar-sep">が</span>{opp}のリングへ乗り込む', {
+        self: `${typeof orgIconHtml === 'function' ? orgIconHtml('player', 20) : ''}${escHtml(awaySelfOrgName)}`,
+        opp: `${typeof orgIconHtml === 'function' ? orgIconHtml(awayOpponentOrgId, 20) : ''}${escHtml(awayOpponentOrgName)}`,
+      })}</div>`
     : '';
   // 試合行の選手名下に出す所属団体ラベル（自陣=緑ドット／敵地=赤茶ドット）
   // 他団体が絡む試合でだけ所属を出す(mockup-baseline-v0.1 §5)。
@@ -7837,7 +7840,7 @@ function _executeRental(fighterId, fromSource, fromOrgId, seasons) {
     if (fighter) {
       const quote = getRentalQuote(fighter);
       const srcLabel = fromSource === 'rival'
-        ? (RIVAL_ORGS.find(o => o.id === fromOrgId)?.name || '') + WM_I18N.t('から')
+        ? WM_I18N.t('{org}から', { org: RIVAL_ORGS.find(o => o.id === fromOrgId)?.name || '' })
         : WM_I18N.t('フリーエージェントとして');
       showEventPopup({ type:'fighter', id:fighter.id, name:fighter.name, tone:'positive',
         speech: quote, detail:`${srcLabel}${WM_I18N.t('レンタル加入！')}（${seasons}期 / ${seasons * 12}週）` });
@@ -8634,7 +8637,7 @@ function showBonusProposalModal(fighterId, state) {
     const afford = p.amount <= funds;
     const selCls = (afford && i === defaultIdx) ? ' is-selected' : '';
     return `<div class="mdl-a-decision-card${selCls}" data-idx="${i}" style="text-align:center${afford ? '' : ';opacity:0.45;pointer-events:none'}">
-      <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:6px">${WM_I18N.t('案')} ${kanji[i]}</div>
+      <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:6px">${WM_I18N.t('案 {n}', { n: kanji[i] })}</div>
       <div class="mdl-a-decision-label" style="font-size:19px;margin-bottom:8px">${p.amount.toLocaleString()}<span style="font-size:12px">万</span></div>
       <div style="font-size:11px;line-height:1.6;min-height:3.2em;${isWarned ? 'color:var(--accent-negative)' : 'color:var(--cream-text-sub)'}">${memo}</div>
       ${afford ? '' : `<div style="font-size:10px;color:var(--accent-negative);margin-top:6px">${WM_I18N.t('資金不足')}</div>`}
@@ -9961,7 +9964,7 @@ function showFactionF01Modal(payload, state, onChoice) {
           <div class="fevt-subject-org">${leaderMeta}</div>
           <div class="fevt-subject-divider"></div>
           <div class="fevt-observation-note">
-            <span class="marker">${String(leaderSurname)}</span>${WM_I18N.t('を中心として、')}${String(followerText)}<br>
+            ${WM_I18N.t('<span class="marker">{leader}</span>を中心として、', { leader: String(leaderSurname) })}${String(followerText)}<br>
             ${WM_I18N.t(archMeta.flavorText)}<br>
             <span style="color:var(--cream-text-sub);font-size:13px">${WM_I18N.t('これは')} <strong>${WM_I18N.t(archMeta.archLabel)}</strong> ${WM_I18N.t('の集まりになりそうです。')}</span>
           </div>
@@ -10499,7 +10502,7 @@ function showFactionF04Modal(payload, state, onChoice) {
 
           <div class="fevt-subject-divider" style="margin-top:14px"></div>
           <div class="fevt-observation-note" style="text-align:center">
-            <span class="marker">${String(targetSurname)}</span>${WM_I18N.t('は')}<span class="marker">${String(toFactionName)}</span>${WM_I18N.t('と既に話をつけているようです。')}<br>
+            ${WM_I18N.t('<span class="marker">{target}</span>は<span class="marker">{faction}</span>と既に話をつけているようです。', { target: String(targetSurname), faction: String(toFactionName) })}<br>
             ${WM_I18N.t('練習後の合流、食事、移動——動きはもう表に出始めています。')}<br>
             <span style="color:var(--cream-text-sub);font-size:13px">${WM_I18N.t('報告として、お耳に入れておきます。')}</span>
           </div>
@@ -10568,9 +10571,9 @@ function showFactionF05Modal(payload, state, onChoice) {
           })}
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-observation-note">
-            ${WM_I18N.t('練習後のロッカーでの会話が減った。')}<span class="marker">${String(ringleaderSurname)}</span>${WM_I18N.t('はリーダー')}
-            <span class="marker">${String(leaderSurname)}</span>${WM_I18N.t('の方針に')}
-            <span class="marker hostile">${WM_I18N.t('不満を抱えている')}</span>${WM_I18N.t('ようだ。')}<br>
+            ${WM_I18N.t('練習後のロッカーでの会話が減った。')}${WM_I18N.t(`<span class="marker">{ringleader}</span>はリーダー
+            <span class="marker">{leader}</span>の方針に
+            <span class="marker hostile">{discontent}</span>ようだ。`, { ringleader: String(ringleaderSurname), leader: String(leaderSurname), discontent: WM_I18N.t('不満を抱えている') })}<br>
             ${WM_I18N.t('まだ表には出ていないが、このまま放っておけば派閥が割れるかもしれない。')}
           </div>
         </div>
@@ -10667,8 +10670,8 @@ function showFactionF06Modal(payload, state, onChoice) {
           <div class="fevt-subject-org" style="margin-top:6px">${WM_I18N.t('かつての因縁')} ・ ${hostLabel}</div>
           <div class="fevt-subject-divider" style="margin-top:12px"></div>
           <div class="fevt-observation-note">
-            ${WM_I18N.t('対立が始まって以来、両派閥のリーダー')}<span class="marker">${String(leaderASurname)}</span>${WM_I18N.t('と')}<span class="marker">${String(leaderBSurname)}</span>${WM_I18N.t('の間にあった棘は、')}
-            ${WM_I18N.t('ここ数週間で')}<span class="marker peace">${WM_I18N.t('明らかに和らいで')}</span>${WM_I18N.t('いる。')}<br>
+            ${WM_I18N.t(`対立が始まって以来、両派閥のリーダー<span class="marker">{a}</span>と<span class="marker">{b}</span>の間にあった棘は、
+            ここ数週間で<span class="marker peace">{softened}</span>いる。`, { a: String(leaderASurname), b: String(leaderBSurname), softened: WM_I18N.t('明らかに和らいで') })}<br>
             ${WM_I18N.t('メンバー間でも私的な交流が戻り始めた。社長の一押しがあれば、抗争は完全に終結する。')}
           </div>
         </div>
@@ -10983,7 +10986,7 @@ function showFactionF08Modal(payload, state, onChoice) {
           </div>
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-observation-note">
-            ${WM_I18N.t('二人の対立は、')}<span class="marker hostile">${WM_I18N.t('{label}の段階', { label: hostilityLabel })}</span>${WM_I18N.t('まで来ている。')}
+            ${WM_I18N.t('二人の対立は、<span class="marker hostile">{stage}</span>まで来ている。', { stage: WM_I18N.t('{label}の段階', { label: hostilityLabel }) })}
             ${WM_I18N.t('ロッカールームの緊張は限界に近く、メンバー全員が次の興行のカード編成を待っている。')}<br>
             ${WM_I18N.t('この熱を、どこに着火させるかは社長の手の中にある。')}
           </div>
@@ -11708,7 +11711,7 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
         <div class="fevt-ign-card-name">${WM_I18N.t('両派リーダー ・ 一騎打ち')}</div>
       </div>
       <div class="fevt-ign-verdict">
-        ${WM_I18N.t('水面下でくすぶっていた火種は、')}<em>${WM_I18N.t('リング上での戦い')}</em>${WM_I18N.t('にまで燃え広がった。')}<br>
+        ${WM_I18N.t('水面下でくすぶっていた火種は、<em>{fight}</em>にまで燃え広がった。', { fight: WM_I18N.t('リング上での戦い') })}<br>
         ${WM_I18N.t('来週の興行、メインは——この一戦。観客も、この対決に期待を膨らませている。')}
       </div>
       <div class="fevt-ign-facts">
@@ -11765,7 +11768,7 @@ function showFactionF02PeaceModal(payload, state, onContinue) {
       </div>
       <div class="fevt-peace-verdict">
         ${WM_I18N.t('決着はつかなかった。')}<br>
-        ${WM_I18N.t('ただ、それぞれの派閥は、抗争が続くことの')}<em>${WM_I18N.t('無益')}</em>${WM_I18N.t('を知り、')}<em>${WM_I18N.t('矛を収めること')}</em>${WM_I18N.t('を選んだ。')}
+        ${WM_I18N.t('ただ、それぞれの派閥は、抗争が続くことの<em>{futility}</em>を知り、<em>{standDown}</em>を選んだ。', { futility: WM_I18N.t('無益'), standDown: WM_I18N.t('矛を収めること') })}
       </div>
       <div class="fevt-peace-ledger">
         <div class="fevt-peace-ledger-col">
@@ -11822,8 +11825,8 @@ function showFactionF02ResolutionModal(payload, state, onContinue) {
         </div>
       </div>
       <div class="fevt-res-verdict">
-        ${WM_I18N.t('ロッカールームに満ちていた争いの空気は、')}<br>
-        <em>${WM_I18N.t('勝者')}</em>${WM_I18N.t('と')}<em>${WM_I18N.t('敗者')}</em>${WM_I18N.t('という、はっきりとした形に決着した。')}
+        ${WM_I18N.t(`ロッカールームに満ちていた争いの空気は、<br>
+        <em>{winner}</em>と<em>{loser}</em>という、はっきりとした形に決着した。`, { winner: WM_I18N.t('勝者'), loser: WM_I18N.t('敗者') })}
       </div>
       <div class="fevt-res-ledger">
         <div class="fevt-res-ledger-col win">
@@ -11895,7 +11898,7 @@ function showFactionF02EndlessModal(payload, state, onContinue) {
       </div>
       <div class="fevt-endless-verdict">
         ${WM_I18N.t('どちらも屈しない。どちらも勝てない。')}<br>
-        <em>${WM_I18N.t('抗争')}</em>${WM_I18N.t('は決着がつかないまま、')}<em>${WM_I18N.t('団体と所属選手の時間')}</em>${WM_I18N.t('を食いつぶし続けている。')}<br>
+        ${WM_I18N.t('<em>{feud}</em>は決着がつかないまま、<em>{time}</em>を食いつぶし続けている。', { feud: WM_I18N.t('抗争'), time: WM_I18N.t('団体と所属選手の時間') })}<br>
         <span style="color:#807860;font-size:13px">${WM_I18N.t('——ロッカールームの若手が、先輩たちの顔色を窺うようになった。')}</span>
       </div>
       <div class="fevt-endless-erosion">

@@ -1,5 +1,85 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P3b-5 — 構造スキップ36キーの原文再テンプレ化+新規英訳（2026-09-02・Sonnet worktree agent-a05c6d938cfe7a4e0）
+
+P3b翻訳バッチ1〜4が「原文側の構造問題で英訳不能」としてスキップ登録した計36キー(正しくは固有名詞1件「天 頂 戦」を除く**35キー**)を、`docs/i18n-stage-a-p3a-design-v0.1.md`「統合タスク」どおり1本のタスクで解消した。開始前にworktreeブランチをmain先端(a627c78、P3b実質完走+applyDom修正)へfast-forward済み。
+
+### 方針
+断片t()呼び出しを、呼び出し元で**完全文テンプレート+`{name}`プレースホルダのWM_I18N.t() 1呼び出し**へ統合(specs/i18n-runtime-spec-v1.0.md §2-3)。マーカー/`<em>`で囲まれた**独立して意味を持つ語**(勝者・敗者・抗争・無益 等)は入れ子t()として残し、プレースホルダ経由で外側テンプレへ差し込む。純粋な助詞・述語断片(を中心として、/はリーダー/ようだ。等)は外側テンプレの文字列へ直接畳み込み、キー自体を消した。
+
+### 修正箇所(旧断片→新テンプレの対応、全16箇所・ui-common.js 15+ui-render.js 1)
+| 箇所 | 旧断片キー | 新テンプレキー |
+|---|---|---|
+| ui-common.js:1505 ロスター超過 | 「新契約を結ぶと、」+marker+「します。」 | `新契約を結ぶと、<span class="marker">{cap}</span>します。` |
+| ui-common.js:4011 ベストタッグ(パートナーあり) | 「🌸 総合ベストタッグ（第{n}回」+「と」 | `🌸 総合ベストタッグ（第{n}回・{partner}と）` |
+| ui-common.js:4011 ベストタッグ(パートナーなし) | 同上(条件分岐) | `🌸 総合ベストタッグ（第{n}回）` |
+| ui-common.js:5191 遠征バー | 「が」+「のリングへ乗り込む」 | `{self}<span class="awaybar-sep">が</span>{opp}のリングへ乗り込む` |
+| ui-common.js:7840(旧7843) レンタル供給元 | 「から」 | `{org}から` |
+| ui-common.js:9964(旧9967) 派閥誕生 | 「を中心として、」 | `<span class="marker">{leader}</span>を中心として、` |
+| ui-common.js:10502 引き抜き察知 | 「は」+「と既に話をつけているようです。」 | `<span class="marker">{target}</span>は<span class="marker">{faction}</span>と既に話をつけているようです。` |
+| ui-common.js:10571-73 派閥内不満 | 「はリーダー」+「の方針に」+「ようだ。」 | `<span class="marker">{ringleader}</span>はリーダー\n<span class="marker">{leader}</span>の方針に\n<span class="marker hostile">{discontent}</span>ようだ。`(バックティック複数行、原文の改行・インデントを厳密保持) |
+| ui-common.js:10670-71 和解の兆し | 「対立が始まって以来、両派閥のリーダー」+「と」+「の間にあった棘は、」+「ここ数週間で」+「いる。」 | `対立が始まって以来、両派閥のリーダー<span class="marker">{a}</span>と<span class="marker">{b}</span>の間にあった棘は、\nここ数週間で<span class="marker peace">{softened}</span>いる。`(同上) |
+| ui-common.js:10986 敵対段階 | 「二人の対立は、」+「まで来ている。」 | `二人の対立は、<span class="marker hostile">{stage}</span>まで来ている。` |
+| ui-common.js:11711 点火 | 「水面下でくすぶっていた火種は、」+「にまで燃え広がった。」 | `水面下でくすぶっていた火種は、<em>{fight}</em>にまで燃え広がった。` |
+| ui-common.js:11768 停戦 | 「ただ、それぞれの派閥は、抗争が続くことの」+「を知り、」+「を選んだ。」 | `ただ、それぞれの派閥は、抗争が続くことの<em>{futility}</em>を知り、<em>{standDown}</em>を選んだ。` |
+| ui-common.js:11825-26 決着 | 「ロッカールームに満ちていた争いの空気は、」+「と」+「という、はっきりとした形に決着した。」 | `ロッカールームに満ちていた争いの空気は、<br>\n<em>{winner}</em>と<em>{loser}</em>という、はっきりとした形に決着した。`(同上) |
+| ui-common.js:11898 終わらない抗争 | 「は決着がつかないまま、」+「を食いつぶし続けている。」 | `<em>{feud}</em>は決着がつかないまま、<em>{time}</em>を食いつぶし続けている。` |
+| ui-common.js:8637(旧8637) 交渉プラン案番号 | 「案」+外部の生kanji配列 | `案 {n}`(漢数字'一'〜'四'をプレースホルダ値として渡す。序数の言語差はStage B宿題として残る=EN側は現状「Plan 一」のように漢数字が残る) |
+| ui-render.js:598 シーズン順位 | span2本(sr-num/sr-suf)+「位」 | `<span class="sr-num">{n}</span><span class="sr-suf">位</span>`(span構造は維持。EN訳は`<span class="sr-suf">#</span><span class="sr-num">{n}</span>`と並び替えて#{n}表記に) |
+
+上記のうち以下5キーは**マーカー/em内の独立語として残し**、ブロックされていた翻訳を今回解放した:「不満を抱えている」→unhappy/「明らかに和らいで」→visibly eased/「無益」→futility/「矛を収めること」→to lay down its arms/「抗争」→Feud(用語集の既存訳「the feud is over for good」に合わせ小文字feud系統だが、本テンプレでは文頭のため大文字Feudを採用)。また入れ子で使う「ロスター定員を超過」は新テンプレへ文法的に自然に繋がるよう既存訳"Roster over capacity"→"over the roster cap"に修正(count=1で他箇所への影響なし)。
+
+### 台帳の増減
+- `node test/i18n-extract-ui.js` 再抽出前にバックアップ退避 → 再抽出(**総キー3,120→3,108**。旧断片キー**30個が消滅**、新テンプレキー**16個が追加**。残りの差分は下記「副産物」の無関係なstale解消分)
+- マージは①旧台帳とキー完全一致でen復元、②完全一致しない行は空白/CRLF正規化した上でのフォールバック照合(19件・下記「副産物」参照。old台帳の翻訳ありキー全件が新台帳のどこかに対応することをunaccounted=0で機械確認=翻訳消失ゼロ)
+- その上で**新規16キー+解放5キー(不満を抱えている/明らかに和らいで/無益/矛を収めること/抗争)+既存1キー修正(ロスター定員を超過)=22件を新規/更新英訳**
+- 最終: 台帳総キー**3,108**(3,120から-12)、翻訳あり**3,018**(2,998から+20)
+- **hasProperNoun=false の未訳はゼロになった**(残るのは固有名詞89キー+「天 頂 戦」1キーのみ=D-B5待ちで本タスク対象外)
+
+### 副産物の発見: 台帳のstale化(pre-existing・本タスク外)
+再抽出で本タスクと無関係な17件の差分(先頭・末尾の空白/改行の有無。例: `"強み:"`↔`"強み: "`、`"{block}ブロック"`↔`"{block}ブロック "`)が出た。調査の結果、**チェックイン済みi18n/ui-ledger.jsonが実ソースと既にズレていた**(いつからかは不明・本セッション開始前から。該当箇所はいずれも今回未編集のファイル/関数)。ただし既存訳文は実ソースに整合する形で書かれていたものが多い(例: `"強み:"`のen値が`"Strengths: "`と末尾スペース付き=翻訳者が当時の実ソースを見て訳していた形跡)。マージ処理で**空白/CRLF正規化した上でのフォールバック照合**を行い、対応する訳文が一意に見つかった19キーは安全に復元した(既存の翻訳消失ゼロをold台帳との突き合わせで機械確認済み)。実害はなかったが、**台帳が定期的にsrcとズレる構造的リスク**がある点は次にi18n-extract-uiを回す人向けの申し送りとして記録しておく。
+
+### 検証(全項目実施)
+- **JA出力の1バイト不変**: ja-golden.jsは`ui-common.js`/`ui-render.js`を読み込まない(Engine層専用スナップショット)ため、今回の16箇所は元々ノーカバレッジ。代わりに旧コード式・新コード式を同一サンプル値で評価し文字列完全一致を検証する使い捨てスクリプトを書いて**全16箇所1バイト一致を確認**(全16 OK)
+- `node test/ja-golden.js` — 完全一致(hash `6b3d05c8...`不変、上記の理由により無影響だが回帰なしを確認)
+- `node test/i18n-build-dict.js` — green(プレースホルダ完全性/重複キー/日本語残り検査で違反0)。総キー3,108・訳文あり3,018
+- `node --check src/ui-common.js` / `node --check src/ui-render.js` / `node --check src/lang-en.js` — いずれも成功
+- `node test/i18n-ratchet.js` — 増加なし(files=31 totalJaStrings=28075)
+- `npm test` — **260/260 PASS**
+- `npm run test:ui:walkthrough` — **PASS**(328操作・**issues 0**・季末season=2 week=1到達・duration 189.3s・recovered-by-retry 0・digest `1052faa82eaf7991`=直近バッチと同一)
+- **ENモード実動作確認**: vmサンドボックスで`src/i18n.js`+`src/lang-en.js`を実ロードし`setLang('en')`後、新設16キー(サンプルパラメータ付き)を`t()`で評価。**全16件が辞書ヒットしfail-openゼロ**(HTML構造・プレースホルダとも意図通りに展開されることを確認)
+
+### 対訳一覧(新規/更新22件)
+| JA | EN |
+|---|---|
+| 新契約を結ぶと、\<span class="marker"\>{cap}\</span\>します。 | Sign this contract, and you'll go \<span class="marker"\>{cap}\</span\>. |
+| 🌸 総合ベストタッグ（第{n}回・{partner}と） | 🌸 Best Tag Team Overall (No. {n}, with {partner}) |
+| 🌸 総合ベストタッグ（第{n}回） | 🌸 Best Tag Team Overall (No. {n}) |
+| {self}\<span class="awaybar-sep"\>が\</span\>{opp}のリングへ乗り込む | {self}\<span class="awaybar-sep"\> storms into \</span\>{opp}'s ring |
+| {org}から | From {org} |
+| \<span class="marker"\>{leader}\</span\>を中心として、 | With \<span class="marker"\>{leader}\</span\> at the center, |
+| \<span class="marker"\>{target}\</span\>は\<span class="marker"\>{faction}\</span\>と既に話をつけているようです。 | It looks like \<span class="marker"\>{target}\</span\> has already come to an understanding with \<span class="marker"\>{faction}\</span\>. |
+| （派閥内不満・複数行） | \<span class="marker"\>{ringleader}\</span\> seems \<span class="marker hostile"\>{discontent}\</span\> with leader \<span class="marker"\>{leader}\</span\>'s direction. |
+| （和解の兆し・複数行） | Ever since the conflict began, the friction between faction leaders \<span class="marker"\>{a}\</span\> and \<span class="marker"\>{b}\</span\> has \<span class="marker peace"\>{softened}\</span\> these past few weeks. |
+| 二人の対立は、\<span class="marker hostile"\>{stage}\</span\>まで来ている。 | The conflict between the two has reached \<span class="marker hostile"\>{stage}\</span\>. |
+| 水面下でくすぶっていた火種は、\<em\>{fight}\</em\>にまで燃え広がった。 | The spark that had been smoldering beneath the surface has grown into \<em\>{fight}\</em\>. |
+| ただ、それぞれの派閥は、抗争が続くことの\<em\>{futility}\</em\>を知り、\<em\>{standDown}\</em\>を選んだ。 | Still, each faction has come to see the \<em\>{futility}\</em\> in letting the feud drag on, and has chosen \<em\>{standDown}\</em\> instead. |
+| （決着・複数行） | The tension that filled the locker room has settled into a clear shape:\<br\> an \<em\>{winner}\</em\> and a \<em\>{loser}\</em\>. |
+| \<em\>{feud}\</em\>は決着がつかないまま、\<em\>{time}\</em\>を食いつぶし続けている。 | \<em\>{feud}\</em\> drags on unresolved, consuming \<em\>{time}\</em\>. |
+| 案 {n} | Plan {n}(既知の限界: {n}に漢数字がそのまま入るためEN表示は"Plan 一"等になる。数字の言語別整形は未実装=Stage B宿題として次項に記録) |
+| \<span class="sr-num"\>{n}\</span\>\<span class="sr-suf"\>位\</span\> | \<span class="sr-suf"\>#\</span\>\<span class="sr-num"\>{n}\</span\> |
+| 不満を抱えている | unhappy |
+| 明らかに和らいで | visibly eased |
+| 無益 | futility |
+| 矛を収めること | to lay down its arms |
+| 抗争 | Feud |
+| ロスター定員を超過(既存訳の修正) | over the roster cap(旧: Roster over capacity) |
+
+### 残る課題
+- **「案 {n}」の漢数字プレースホルダ問題**: 設計指示どおり漢数字('一'〜'四')をプレースホルダ値として渡す構造にしたが、呼び出し元の`kanji[i]`配列自体は言語非依存のJS定数のため、EN表示は現状"Plan 一"のように漢数字が残る。真に直すには数値表示のロケール対応機構(Stage B/P6の数値フォーマッタ検討と合流させるのが妥当)が別途必要
+- 固有名詞89キー+「天 頂 戦」1キーは引き続きD-B5待ち(Keisuke承認後に一括翻訳)
+- 台帳のstale化リスク(上記「副産物」参照)は今回は無害に復元できたが、今後も定期的な整合性チェックが望ましい
+
 ## 🌐 P3b(UI英訳)実質完走 — 非固有名詞2,995キー訳出+ENモード実機確認+applyDom修正（2026-09-02・Fable指揮/Opus主筆×4バッチ）
 
 Stage Bゴー当日にP3bの翻訳本体を完走。台帳3,120キー中**2,995キー(96%)を英訳**し、残りは固有名詞89(ドラフト裁定待ち)+構造スキップ36(原文再テンプレ化の統合タスクとして台帳化)のみ。
