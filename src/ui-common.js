@@ -12173,8 +12173,8 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   const leaderSide = isLeaderA ? 'a' : (isLeaderB ? 'b' : null);
   const aClick = fA ? `event.stopPropagation();showFighterPopup(${fA.id},'roster',true)` : '';
   const bClick = fB ? `event.stopPropagation();showFighterPopup(${fB.id},'roster',true)` : '';
-  const factionTagA = isLeaderA ? `${factionName} ・ リーダー` : factionName;
-  const factionTagB = isLeaderB ? `${factionName} ・ リーダー` : factionName;
+  const factionTagA = isLeaderA ? `${factionName} ・ ${WM_I18N.t('リーダー')}` : factionName;
+  const factionTagB = isLeaderB ? `${factionName} ・ ${WM_I18N.t('リーダー')}` : factionName;
   const rivalryNum = (payload.currentRivalry != null) ? payload.currentRivalry : 0;
 
   // task-79 A: リーダーが非当事者のときだけ、コーチ帯の下に専用のリーダー帯を出す。
@@ -12183,7 +12183,7 @@ function showFactionCommon1Modal(payload, state, onChoice) {
     ? `<div class="fc1-leader-strip">
         <div class="fc1-leader-bubble-slot"><div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(leaderLine)}」</span></div></div>
         <div class="fc1-leader-portrait" style="background-image:url('${_factionUpperUrl(leader.id)}')"></div>
-        <div class="fc1-leader-tag">${escHtml(factionName)} ・ リーダー</div>
+        <div class="fc1-leader-tag">${escHtml(factionName)} ・ ${WM_I18N.t('リーダー')}</div>
       </div>`
     : '';
 
@@ -12193,7 +12193,7 @@ function showFactionCommon1Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtCommon1Overlay">
       <div class="fevt-report-card">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">⚔ 派閥内対決の打診</div>
+          <div class="fevt-report-title">⚔ ${WM_I18N.t('派閥内対決の打診')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, escHtml(coachLine))}
@@ -12213,23 +12213,23 @@ function showFactionCommon1Modal(payload, state, onChoice) {
             extraHtml: `<div class="fc1m-stats">${renderStats('b')}</div>`,
           })}
         </div>
-        <div class="fc1m-rivalry">2名間の因縁 <strong>${rivalryNum}</strong> / 100 — 火種は熟している</div>
-        <div class="fevt-decision-prompt">この火種、社長としてどう扱いますか？</div>
+        <div class="fc1m-rivalry">${WM_I18N.t('2名間の因縁 <strong>{n}</strong> / 100 — 火種は熟している', { n: rivalryNum })}</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この火種、社長としてどう扱いますか？')}</div>
         <div class="fevt-decision-tray three">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">派閥内対決を組む</div>
-            <div class="fevt-decision-hint">次の興行で組む。枠はカード編成で決める／勝者は報われ、敗者はわだかまりを残す／因縁 <strong>-30〜-50</strong></div>
+            <div class="fevt-decision-label">${WM_I18N.t('派閥内対決を組む')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('次の興行で組む。枠はカード編成で決める／勝者は報われ、敗者はわだかまりを残す／因縁 <strong>-30〜-50</strong>')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">別カードに置換</div>
-            <div class="fevt-decision-hint">対決は組まない。火種は残ったまま継続</div>
+            <div class="fevt-decision-label">${WM_I18N.t('別カードに置換')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('対決は組まない。火種は残ったまま継続')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="C">
             <div class="fevt-decision-letter">C</div>
-            <div class="fevt-decision-label">静観する</div>
-            <div class="fevt-decision-hint">何もしない。彼女らの自然な決着に任せる</div>
+            <div class="fevt-decision-label">${WM_I18N.t('静観する')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('何もしない。彼女らの自然な決着に任せる')}</div>
           </div>
         </div>
       </div>
@@ -12272,7 +12272,7 @@ function showFactionCommon5Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtCommon5Overlay">
       <div class="fevt-report-card">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">📰 派閥代表メディア取材</div>
+          <div class="fevt-report-title">📰 ${WM_I18N.t('派閥代表メディア取材')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, coachLine)}
@@ -12280,24 +12280,24 @@ function showFactionCommon5Modal(payload, state, onChoice) {
           <div style="display:flex;justify-content:center;margin-bottom:8px">${portrait}</div>
           <div class="fevt-subject-name">${leaderName}（${factionName}）</div>
           <div class="fevt-subject-divider"></div>
-          <div style="color:#5d4a30;line-height:1.7;margin:8px 4px;font-size:14px">取材オファーが届いた。誰がどう答えるかで、誌面の色が変わる。</div>
+          <div style="color:#5d4a30;line-height:1.7;margin:8px 4px;font-size:14px">${WM_I18N.t('取材オファーが届いた。誰がどう答えるかで、誌面の色が変わる。')}</div>
         </div>
-        <div class="fevt-decision-prompt">取材、誰に委ねますか？</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('取材、誰に委ねますか？')}</div>
         <div class="fevt-decision-tray three">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">${leaderName}に任せる</div>
-            <div class="fevt-decision-hint">派閥色が強く出る。アーキタイプに応じてハイリスクハイリターン</div>
+            <div class="fevt-decision-label">${WM_I18N.t('{name}に任せる', { name: leaderName })}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('派閥色が強く出る。アーキタイプに応じてハイリスクハイリターン')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">コーチ同席で対応</div>
-            <div class="fevt-decision-hint">無難な記事に。勢い <strong>+2</strong>／メディア収入 <strong>¥5〜10万</strong></div>
+            <div class="fevt-decision-label">${WM_I18N.t('コーチ同席で対応')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('無難な記事に。勢い <strong>+2</strong>／メディア収入 <strong>¥5〜10万</strong>')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="C">
             <div class="fevt-decision-letter">C</div>
-            <div class="fevt-decision-label">取材を断る</div>
-            <div class="fevt-decision-hint">露出なし。勢い <strong>-2</strong>／メディア関係微低下</div>
+            <div class="fevt-decision-label">${WM_I18N.t('取材を断る')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('露出なし。勢い <strong>-2</strong>／メディア関係微低下')}</div>
           </div>
         </div>
       </div>
@@ -12328,7 +12328,7 @@ function showFactionCommon7Modal(payload, state, onChoice) {
   const lBName = lB ? lB.name : (payload.leaderBName || '???');
   const factionAName = String(payload.factionAName || WM_I18N.t('派閥A'));
   const factionBName = String(payload.factionBName || WM_I18N.t('派閥B'));
-  const planType = String(payload.planType || '合同企画');
+  const planType = String(payload.planType || WM_I18N.t('合同企画'));
   const archA = payload.archetypeAId || null;
   const archB = payload.archetypeBId || null;
 
@@ -12349,7 +12349,7 @@ function showFactionCommon7Modal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="fevtCommon7Overlay">
       <div class="fevt-report-card">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">🤝 派閥間合同企画</div>
+          <div class="fevt-report-title">🤝 ${WM_I18N.t('派閥間合同企画')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, coachLine)}
@@ -12372,22 +12372,22 @@ function showFactionCommon7Modal(payload, state, onChoice) {
           <div class="fevt-subject-org" style="margin-top:6px">${planType}</div>
           <div class="fevt-subject-divider" style="margin-top:12px"></div>
         </div>
-        <div class="fevt-decision-prompt">この合同企画、社長としてどう扱いますか？</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この合同企画、社長としてどう扱いますか？')}</div>
         <div class="fevt-decision-tray three">
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">合同企画を承認</div>
-            <div class="fevt-decision-hint">${planType}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 bond <strong>+1〜+3</strong></div>
+            <div class="fevt-decision-label">${WM_I18N.t('合同企画を承認')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 bond <strong>+1〜+3</strong>', { plan: planType })}</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">距離を保つ</div>
-            <div class="fevt-decision-hint">関係を維持。効果なし</div>
+            <div class="fevt-decision-label">${WM_I18N.t('距離を保つ')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('関係を維持。効果なし')}</div>
           </div>
           <div class="fevt-decision-card" data-choice="C">
             <div class="fevt-decision-letter">C</div>
-            <div class="fevt-decision-label">観察する</div>
-            <div class="fevt-decision-hint">現場任せ。50% で両派閥 勢い <strong>+3</strong>／50% で何も起きない</div>
+            <div class="fevt-decision-label">${WM_I18N.t('観察する')}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('現場任せ。50% で両派閥 勢い <strong>+3</strong>／50% で何も起きない')}</div>
           </div>
         </div>
       </div>
@@ -12473,14 +12473,14 @@ function showUnifiedTitleCoronation(payload, onDone) {
     <div class="unified-coronation-dust" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
     <div class="unified-coronation-content">
       <div class="unified-coronation-kicker">UNIFIED CHAMPION</div>
-      <div class="unified-coronation-title" id="unifiedCoronationTitle">頂 点</div>
-      <div class="unified-coronation-one">業界の頂点は、ただ一人</div>
+      <div class="unified-coronation-title" id="unifiedCoronationTitle">${WM_I18N.t('頂 点')}</div>
+      <div class="unified-coronation-one">${WM_I18N.t('業界の頂点は、ただ一人')}</div>
       <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
       ${imgUrl ? `<img class="unified-coronation-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(fighter.name || '')}">` : `<div class="unified-coronation-fallback">${escHtml((fighter.name || '?').charAt(0))}</div>`}
       <div class="unified-coronation-name">${escHtml(fighter.name || '???')}</div>
-      <div class="unified-coronation-org">${escHtml(cfg.orgName || '')} ・ 第${escHtml(cfg.edition || 1)}回 天頂戦覇者</div>
-      <div class="unified-beltband">${escHtml(cfg.beltLabel || '全国統一王者')}</div>
-      <button class="unified-coronation-next" type="button">次へ</button>
+      <div class="unified-coronation-org">${escHtml(cfg.orgName || '')} ・ ${WM_I18N.t('第{n}回 天頂戦覇者', { n: escHtml(cfg.edition || 1) })}</div>
+      <div class="unified-beltband">${escHtml(cfg.beltLabel || WM_I18N.t('全国統一王者'))}</div>
+      <button class="unified-coronation-next" type="button">${WM_I18N.t('次へ')}</button>
     </div>`;
   document.body.appendChild(layer);
   let resolved = false;
@@ -12513,18 +12513,18 @@ function showUnifiedTitleReturnCeremony(payload, state, onDone) {
   const imgUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
   const line = cfg.line || _pickUnifiedTitleLine('return', fighter, state, cfg.heldYears);
   const holderText = Number(cfg.holderCount) <= 1
-    ? `この${Number(cfg.cycleYears) || 4}年間、ベルトは一度も持ち主を変えなかった`
-    : `この${Number(cfg.cycleYears) || 4}年間、ベルトは${Number(cfg.holderCount)}人を渡った`;
+    ? WM_I18N.t('この{n}年間、ベルトは一度も持ち主を変えなかった', { n: Number(cfg.cycleYears) || 4 })
+    : WM_I18N.t('この{n}年間、ベルトは{m}人を渡った', { n: Number(cfg.cycleYears) || 4, m: Number(cfg.holderCount) });
   root.innerHTML = `<div class="fevt-overlay-office unified-return-overlay">
     <div class="unified-return-card" role="dialog" aria-modal="true" aria-labelledby="unifiedReturnTitle">
-      <div class="unified-return-label">WEEK ${escHtml(state?.week || '47')} ・ 天頂戦前夜</div>
-      <div class="unified-return-title" id="unifiedReturnTitle">返 還 式</div>
+      <div class="unified-return-label">WEEK ${escHtml(state?.week || '47')} ・ ${WM_I18N.t('天頂戦前夜')}</div>
+      <div class="unified-return-title" id="unifiedReturnTitle">${WM_I18N.t('返 還 式')}</div>
       <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
       ${imgUrl ? `<img class="unified-return-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(fighter.name || '')}">` : `<div class="unified-return-fallback">${escHtml((fighter.name || '?').charAt(0))}</div>`}
       <div class="unified-return-name">${escHtml(fighter.name || '???')} <span>${escHtml(cfg.orgName || '')}</span></div>
       <div class="unified-return-record">在位 <b>${escHtml(cfg.heldYears || 1)}年</b> ・ 防衛 <b>${escHtml(cfg.defenses || 0)}度</b><br>${escHtml(holderText)}</div>
-      <div class="unified-return-next">ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる</div>
-      <button class="unified-return-close" type="button">返還式を終える</button>
+      <div class="unified-return-next">${WM_I18N.t('ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる')}</div>
+      <button class="unified-return-close" type="button">${WM_I18N.t('返還式を終える')}</button>
     </div>
   </div>`;
   const overlay = root.querySelector('.unified-return-overlay');
@@ -12567,7 +12567,7 @@ function showHostileArrivalStage(opts) {
     return `<div class="inv-mem" data-member-id="${escHtml(String(member.id != null ? member.id : ''))}">${portrait}</div>`;
   }).join('');
   const namesHtml = members.map(member => `<div class="inv-name">
-    <b>${escHtml(member.name || '???')}</b><span>${escHtml(member.roleLabel || '挑戦者')}</span>
+    <b>${escHtml(member.name || '???')}</b><span>${escHtml(member.roleLabel || WM_I18N.t('挑戦者'))}</span>
   </div>`).join('');
   const orgBadgeHtml = cfg.orgBadge && typeof _u3bOrgBadgeHtml === 'function'
     ? _u3bOrgBadgeHtml({ ...cfg.orgBadge, isHome: false })
@@ -12583,7 +12583,7 @@ function showHostileArrivalStage(opts) {
   root.innerHTML = `
     <div class="fevt-overlay-office hostile-arrival-overlay${variantClass}">
       <div class="inv-screen" role="dialog" aria-modal="true" aria-labelledby="hostileArrivalTitle">
-        <div class="inv-title" id="hostileArrivalTitle">${escHtml(cfg.title || '果 た し 状')}</div>
+        <div class="inv-title" id="hostileArrivalTitle">${escHtml(cfg.title || WM_I18N.t('果 た し 状'))}</div>
         <div class="inv-divider"></div>
         <div class="inv-sub">${escHtml(cfg.subLabel || '')}</div>
         <div class="inv-speaker">${escHtml(cfg.speakerLabel || '')}</div>
@@ -12645,17 +12645,17 @@ function showUnifiedTitleChallengerArrival(payload, state, onDone) {
   const orgName = Engine.unifiedTitle._orgName(state, challenger.orgId);
   showHostileArrivalStage({
     variant: 'unifiedTitle',
-    title: '挑 戦 表 明',
+    title: WM_I18N.t('挑 戦 表 明'),
     subLabel: `UNIFIED TITLE ・ QUARTERLY CHALLENGE ・ WEEK ${state.week || '—'}`,
     speakerLabel: '',
     line: _pickUnifiedTitleLine('challengerArrival', challenger.fighter, state, champion.fighter.id),
-    members: [{ id: challenger.fighter.id, name: challenger.fighter.name, roleLabel: '挑戦者' }],
+    members: [{ id: challenger.fighter.id, name: challenger.fighter.name, roleLabel: WM_I18N.t('挑戦者') }],
     orgBadge: { orgId: challenger.orgId, orgName },
     facts: [
-      `迎え撃つのは王者 ${champion.fighter.name}。次の興行のメインイベントに固定されます。`,
-      '統一王座の挑戦は断れません（規定）。',
+      WM_I18N.t('迎え撃つのは王者 {name}。次の興行のメインイベントに固定されます。', { name: champion.fighter.name }),
+      WM_I18N.t('統一王座の挑戦は断れません（規定）。'),
     ],
-    choices: [{ letter: '🌐', label: '受けて立つ', hint: '次の興行で全国統一王座を防衛する', result: 'ACCEPT' }],
+    choices: [{ letter: '🌐', label: WM_I18N.t('受けて立つ'), hint: WM_I18N.t('次の興行で全国統一王座を防衛する'), result: 'ACCEPT' }],
     safetyTimeoutMs: 30000,
     onChoice: () => { if (typeof onDone === 'function') onDone(); },
   });
@@ -12678,10 +12678,10 @@ function showUnifiedTitleChallengeModal(payload, state, onChoice) {
   const choices = eligible.map(f => `<div class="unified-challenge-candidate">
     <div class="unified-challenge-face">${portraitImg(f.id, 52, '', 'roster')}</div>
     <div class="unified-challenge-candidate-info"><strong>${escHtml(f.name)}</strong><span>OVR <b>${Engine.util.ov(f)}</b></span></div>
-    <button class="unified-challenge-send" type="button" data-unified-fighter="${f.id}">遠征に送る</button>
+    <button class="unified-challenge-send" type="button" data-unified-fighter="${f.id}">${WM_I18N.t('遠征に送る')}</button>
   </div>`).join('');
   const html = `
-    ${_mdlAHeader('全国統一王座 挑戦権', `${_mdlASeasonLabel(state)} ・ PLAYER TURN`)}
+    ${_mdlAHeader(WM_I18N.t('全国統一王座 挑戦権'), `${_mdlASeasonLabel(state)} ・ PLAYER TURN`)}
     ${_mdlAReporterStrip(state, `${Engine.unifiedTitle._orgName(state, champion.orgId)}の王者${champion.fighter.name}へ挑む番が来ました`)}
     <div class="mdl-a-subject-stage unified-challenge-office">
       <div class="unified-challenge-champion">
@@ -12689,9 +12689,9 @@ function showUnifiedTitleChallengeModal(payload, state, onChoice) {
         <strong>${escHtml(champion.fighter.name)}</strong>
         ${orgBadge}
       </div>
-      <div class="unified-challenge-choice"><p>業界の挑戦順が自団体へ回ってきました。遠征させる選手を一人選んでください。</p>${choices}</div>
+      <div class="unified-challenge-choice"><p>${WM_I18N.t('業界の挑戦順が自団体へ回ってきました。遠征させる選手を一人選んでください。')}</p>${choices}</div>
     </div>
-    <div class="mdl-a-prompt"><button class="mdl-a-continue-btn" id="unifiedTitleSkipBtn" type="button">今回は見送る(次は約9か月後)</button></div>`;
+    <div class="mdl-a-prompt"><button class="mdl-a-continue-btn" id="unifiedTitleSkipBtn" type="button">${WM_I18N.t('今回は見送る(次は約9か月後)')}</button></div>`;
   let resolved = false;
   let safetyTimer = null;
   const finish = fighterId => {
@@ -12739,8 +12739,8 @@ function showChallengeRequestModal(payload, state, onChoice) {
     const displayMembers = listedMembers.length === 3
       ? [requesterMates[0], requester, requesterMates[1]].filter(Boolean)
       : listedMembers;
-    const roleById = new Map([[requester.id, '発起人 ・ 大将']]);
-    requesterMates.forEach((fighter, idx) => roleById.set(fighter.id, idx === 0 ? '中堅' : idx === 1 ? '先鋒' : '挑戦者'));
+    const roleById = new Map([[requester.id, WM_I18N.t('発起人 ・ 大将')]]);
+    requesterMates.forEach((fighter, idx) => roleById.set(fighter.id, idx === 0 ? WM_I18N.t('中堅') : idx === 1 ? WM_I18N.t('先鋒') : WM_I18N.t('挑戦者')));
     const arrivalPools = typeof EVENT_LINES_BY_KEY !== 'undefined'
       ? EVENT_LINES_BY_KEY.challengeArrival
       : (typeof CHALLENGE_ARRIVAL_LINES !== 'undefined' ? CHALLENGE_ARRIVAL_LINES : null);
@@ -12754,23 +12754,23 @@ function showChallengeRequestModal(payload, state, onChoice) {
       ? arrivalPool[Engine.rng.int(arrivalRng, 0, arrivalPool.length - 1)]
       : '三人で行きます。お宅の三人、隠さず出してください。';
     const requesterOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.requesterOrgId])
-      || requesterOrg.name || payload.requesterOrgId || '他団体';
+      || requesterOrg.name || payload.requesterOrgId || WM_I18N.t('他団体');
     showHostileArrivalStage({
-      title: '果 た し 状',
-      subLabel: `CHALLENGE ARRIVED ・ 3人制シングル3連戦 ・ WEEK ${state.week || '—'}`,
-      speakerLabel: `挑戦状の主 ・ ${requester.name}`,
+      title: WM_I18N.t('果 た し 状'),
+      subLabel: `CHALLENGE ARRIVED ・ ${WM_I18N.t('3人制シングル3連戦')} ・ WEEK ${state.week || '—'}`,
+      speakerLabel: `${WM_I18N.t('挑戦状の主')} ・ ${requester.name}`,
       line: arrivalLine,
       members: displayMembers.map(fighter => ({
-        id: fighter.id, name: fighter.name, roleLabel: roleById.get(fighter.id) || '挑戦者',
+        id: fighter.id, name: fighter.name, roleLabel: roleById.get(fighter.id) || WM_I18N.t('挑戦者'),
       })),
       orgBadge: { orgId: payload.requesterOrgId, orgName: requesterOrgName },
       facts: [
-        '次の自団体興行の上位3試合が、この団体戦になる',
-        '迎え撃つ3名は、興行準備のカードで決める',
+        WM_I18N.t('次の自団体興行の上位3試合が、この団体戦になる'),
+        WM_I18N.t('迎え撃つ3名は、興行準備のカードで決める'),
       ],
       choices: [
-        { letter: 'A', label: '受けて立つ', hint: '逃げも隠れもしない。次の興行で迎え撃つ', result: 'YES' },
-        { letter: 'B', label: 'お引き取り願う', hint: '断れば、あちらの因縁は消えずに残る', result: 'NO' },
+        { letter: 'A', label: WM_I18N.t('受けて立つ'), hint: WM_I18N.t('逃げも隠れもしない。次の興行で迎え撃つ'), result: 'YES' },
+        { letter: 'B', label: WM_I18N.t('お引き取り願う'), hint: WM_I18N.t('断れば、あちらの因縁は消えずに残る'), result: 'NO' },
       ],
       onChoice: choice => { if (onChoice) onChoice(choice && choice.result); },
     });
@@ -12786,19 +12786,19 @@ function showChallengeRequestModal(payload, state, onChoice) {
     opponent = roster.find(c => c.id === payload.otherId);
     if (!requester || !opponent) { if (onChoice) onChoice(null); return; }
     requesterOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.requesterOrgId])
-      || reqOrg.name || payload.requesterOrgId || '他団体';
-    opponentOrgName = state.orgName || 'プレイヤー団体';
+      || reqOrg.name || payload.requesterOrgId || WM_I18N.t('他団体');
+    opponentOrgName = state.orgName || WM_I18N.t('プレイヤー団体');
   } else {
     const otherOrg = aiOrgs[payload.otherOrgId];
     requester = roster.find(c => c.id === payload.selfId);
     opponent = otherOrg && otherOrg.roster ? otherOrg.roster.find(c => c.id === payload.otherId) : null;
     if (!requester || !opponent) { if (onChoice) onChoice(null); return; }
-    requesterOrgName = state.orgName || 'プレイヤー団体';
+    requesterOrgName = state.orgName || WM_I18N.t('プレイヤー団体');
     opponentOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.otherOrgId])
-      || (otherOrg && otherOrg.name) || payload.otherOrgId || '他団体';
+      || (otherOrg && otherOrg.name) || payload.otherOrgId || WM_I18N.t('他団体');
   }
 
-  const orgName = state.orgName || 'プレイヤー団体';
+  const orgName = state.orgName || WM_I18N.t('プレイヤー団体');
   const otherOrgName = isInverse ? requesterOrgName : opponentOrgName;
   const rivalry = payload.rivalry != null ? payload.rivalry : 0;
   const bond    = payload.bond != null ? payload.bond : 50;
@@ -12863,16 +12863,16 @@ function showChallengeRequestModal(payload, state, onChoice) {
   // orgIdはpayloadの実IDをそのまま使う(名前からの逆引きより確実)
   const requesterOrgId = isInverse ? payload.requesterOrgId : 'player';
   const opponentOrgId = isInverse ? 'player' : payload.otherOrgId;
-  const requesterRole = '団体戦の発起人';
-  const opponentRole = '第1試合の対戦相手';
-  const venueLabel = isInverse ? '自団体で迎撃' : '遠征興行';
+  const requesterRole = WM_I18N.t('団体戦の発起人');
+  const opponentRole = WM_I18N.t('第1試合の対戦相手');
+  const venueLabel = isInverse ? WM_I18N.t('自団体で迎撃') : WM_I18N.t('遠征興行');
   const venueDetail = isInverse
-    ? '次の自団体興行で、相手団体を迎え撃ちます'
-    : `${opponentOrgName}の会場へ乗り込みます`;
-  const formatLabel = '3人制・シングル3連戦';
+    ? WM_I18N.t('次の自団体興行で、相手団体を迎え撃ちます')
+    : WM_I18N.t('{org}の会場へ乗り込みます', { org: opponentOrgName });
+  const formatLabel = WM_I18N.t('3人制・シングル3連戦');
   const formatDetail = isInverse
-    ? '上位3試合で、相手団体の3名と1対1ずつ戦います'
-    : 'あなたの団体から3名が出場し、1対1を全3試合行います';
+    ? WM_I18N.t('上位3試合で、相手団体の3名と1対1ずつ戦います')
+    : WM_I18N.t('あなたの団体から3名が出場し、1対1を全3試合行います');
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。5項目比較(fc1m-stats)は
   // 数値行の後ろに追加する画面固有コンテンツとして温存する(構成順は変えず末尾に付く)。
@@ -12880,18 +12880,18 @@ function showChallengeRequestModal(payload, state, onChoice) {
     <div class="fevt-overlay-office" id="challengeRequestOverlay">
       <div class="fevt-report-card">
         <div class="fevt-report-header">
-          <div class="fevt-report-title">👥 団体戦挑戦の直訴</div>
+          <div class="fevt-report-title">👥 ${WM_I18N.t('団体戦挑戦の直訴')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
         ${_factionReporterStrip(state, escHtml(coachLine))}
-        <div class="crq-briefing" aria-label="挑戦試合の開催形式">
+        <div class="crq-briefing" aria-label="${WM_I18N.t('挑戦試合の開催形式')}">
           <div class="crq-briefing-item ${isInverse ? 'is-home' : 'is-away'}">
-            <div class="crq-briefing-kicker">開催地</div>
+            <div class="crq-briefing-kicker">${WM_I18N.t('開催地')}</div>
             <div class="crq-briefing-title">${isInverse ? '🏠' : '✈'} ${escHtml(venueLabel)}</div>
             <div class="crq-briefing-detail">${escHtml(venueDetail)}</div>
           </div>
           <div class="crq-briefing-item is-series">
-            <div class="crq-briefing-kicker">試合形式</div>
+            <div class="crq-briefing-kicker">${WM_I18N.t('試合形式')}</div>
             <div class="crq-briefing-title">👥 ${formatLabel}</div>
             <div class="crq-briefing-detail">${escHtml(formatDetail)}</div>
           </div>
@@ -12913,27 +12913,27 @@ function showChallengeRequestModal(payload, state, onChoice) {
             extraHtml: `<div class="fc1m-stats">${renderStats('b')}</div>`,
           })}
         </div>
-        <div class="crq-series-order">第1試合・先鋒対決 <span>全3試合のシリーズ戦です</span></div>
-        <div class="fc1m-rivalry">直近対戦 <strong>${h2hLabel}</strong> — ${escHtml(flavorLine)}</div>
+        <div class="crq-series-order">${WM_I18N.t('第1試合・先鋒対決')} <span>${WM_I18N.t('全3試合のシリーズ戦です')}</span></div>
+        <div class="fc1m-rivalry">${WM_I18N.t('直近対戦')} <strong>${h2hLabel}</strong> — ${escHtml(flavorLine)}</div>
         <div class="crq-party" data-away-party-picker>
           <div class="crq-party-head">
-            <div class="crq-party-title">🚌 同行する2名を選ぶ</div>
-            <div class="crq-party-count"><strong>${selectedAwayIds.length}</strong> / 2 選択中</div>
+            <div class="crq-party-title">🚌 ${WM_I18N.t('同行する2名を選ぶ')}</div>
+            <div class="crq-party-count"><strong>${selectedAwayIds.length}</strong> ${WM_I18N.t('/ 2 選択中')}</div>
           </div>
-          <div class="crq-party-row">${awayPartyHtml || '<div class="crq-party-empty">同行できる選手がいません</div>'}</div>
-          <div class="crq-party-note">発起人と選んだ2名が遠征します。負傷・休養・謹慎・レンタル中の選手は候補外です。</div>
+          <div class="crq-party-row">${awayPartyHtml || `<div class="crq-party-empty">${WM_I18N.t('同行できる選手がいません')}</div>`}</div>
+          <div class="crq-party-note">${WM_I18N.t('発起人と選んだ2名が遠征します。負傷・休養・謹慎・レンタル中の選手は候補外です。')}</div>
         </div>
-        <div class="fevt-decision-prompt">この団体戦挑戦、社長としてどう答えますか？</div>
+        <div class="fevt-decision-prompt">${WM_I18N.t('この団体戦挑戦、社長としてどう答えますか？')}</div>
         <div class="fevt-decision-tray two">
           <div class="fevt-decision-card${selectedAwayIds.length === 2 ? '' : ' label-disabled'}" data-choice="YES" aria-disabled="${selectedAwayIds.length === 2 ? 'false' : 'true'}">
             <div class="fevt-decision-letter">A</div>
-            <div class="fevt-decision-label">${isInverse ? '受けて立つ' : 'この舞台、組もう'}</div>
-            <div class="fevt-decision-hint">${isInverse ? `${escHtml(requesterOrgName)}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ` : `次の通常興行週、自団体興行より先に${escHtml(opponentOrgName)}へ3人で遠征する`}</div>
+            <div class="fevt-decision-label">${isInverse ? WM_I18N.t('受けて立つ') : WM_I18N.t('この舞台、組もう')}</div>
+            <div class="fevt-decision-hint">${isInverse ? WM_I18N.t('{org}の挑戦を受け、次の自団体興行の上位3試合で迎え撃つ', { org: escHtml(requesterOrgName) }) : WM_I18N.t('次の通常興行週、自団体興行より先に{org}へ3人で遠征する', { org: escHtml(opponentOrgName) })}</div>
           </div>
           <div class="fevt-decision-card" data-choice="NO">
             <div class="fevt-decision-letter">B</div>
-            <div class="fevt-decision-label">${isInverse ? 'お引き取り願う' : '今は時期じゃない'}</div>
-            <div class="fevt-decision-hint">${isInverse ? `${escHtml(requester.name)}の挑戦は保留。同じ相手からの再打診は当分先になる` : `${escHtml(requester.name)}の意気込みは保留。同じ相手への再打診は当分先になる`}</div>
+            <div class="fevt-decision-label">${isInverse ? WM_I18N.t('お引き取り願う') : WM_I18N.t('今は時期じゃない')}</div>
+            <div class="fevt-decision-hint">${isInverse ? WM_I18N.t('{name}の挑戦は保留。同じ相手からの再打診は当分先になる', { name: escHtml(requester.name) }) : WM_I18N.t('{name}の意気込みは保留。同じ相手への再打診は当分先になる', { name: escHtml(requester.name) })}</div>
           </div>
         </div>
       </div>
@@ -13057,8 +13057,8 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
   const attendance = Number.isFinite(attendanceValue) && attendanceValue >= 0
     ? Math.round(attendanceValue).toLocaleString()
     : '0';
-  const metaHtml = `${isDefense ? `TITLE DEFENSE · ${defenses}` : '新・団体王者'} ・ ${attendance} ATTENDED`;
-  const championName = escHtml(champion?.name || '新王者');
+  const metaHtml = `${isDefense ? `TITLE DEFENSE · ${defenses}` : WM_I18N.t('新・団体王者')} ・ ${attendance} ATTENDED`;
+  const championName = escHtml(champion?.name || WM_I18N.t('新王者'));
 
   const personHtml = (fighter, line, roleLabel, defeated) => {
     if (!fighter) return '';
@@ -13072,7 +13072,7 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
       : '';
     return `<article class="mdl-a-title-person${defeated ? ' defeated' : ''}">
       <div class="mdl-a-title-bubble"><span>${escHtml(line || '')}</span></div>
-      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${escHtml(fighter.name || '')}の詳細を開く">
+      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${WM_I18N.t('{name}の詳細を開く', { name: escHtml(fighter.name || '') })}">
         <span class="mdl-a-title-portrait-fallback">${escHtml((fighter.name || '?').charAt(0))}</span>
         ${portrait}
       </button>
@@ -13082,26 +13082,26 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
   };
 
   const narrationHtml = [
-    '団体王座戦の幕が下りた。',
+    WM_I18N.t('団体王座戦の幕が下りた。'),
     isDefense
-      ? `${championName}は、王者としてベルトを守り抜いた。`
-      : `${championName}が、頂点のベルトを手にした。`,
+      ? WM_I18N.t('{name}は、王者としてベルトを守り抜いた。', { name: championName })
+      : WM_I18N.t('{name}が、頂点のベルトを手にした。', { name: championName }),
     isDefense
-      ? `${defenses}度目の防衛成功。王座は、なおその手にある。`
-      : '新たな王者の時代が、ここから始まる。',
+      ? WM_I18N.t('{n}度目の防衛成功。王座は、なおその手にある。', { n: defenses })
+      : WM_I18N.t('新たな王者の時代が、ここから始まる。'),
   ].map(line => `<span>${line}</span>`).join('');
   const pairClass = opponent ? '' : ' single';
   const html = `
-    ${_mdlAHeader(isDefense ? '防 衛' : '戴 冠', metaHtml)}
+    ${_mdlAHeader(isDefense ? WM_I18N.t('防 衛') : WM_I18N.t('戴 冠'), metaHtml)}
     <div class="mdl-a-title-result">
       <div class="mdl-a-title-narration">${narrationHtml}</div>
       <div class="mdl-a-title-pair${pairClass}">
-        ${personHtml(champion, champLine, isDefense ? '団体王者 · 防衛成功' : '新・団体王者', false)}
-        ${personHtml(opponent, opponentLine || '次は、この景色を取り戻す。', isDefense ? '挑戦者' : '前・団体王者', true)}
+        ${personHtml(champion, champLine, isDefense ? WM_I18N.t('団体王者 · 防衛成功') : WM_I18N.t('新・団体王者'), false)}
+        ${personHtml(opponent, opponentLine || '次は、この景色を取り戻す。', isDefense ? WM_I18N.t('挑戦者') : WM_I18N.t('前・団体王者'), true)}
       </div>
     </div>
     <div class="mdl-a-prompt mdl-a-title-actions">
-      <button class="mdl-a-continue-btn" id="mdlATitleMilestoneClose">式典を終える</button>
+      <button class="mdl-a-continue-btn" id="mdlATitleMilestoneClose">${WM_I18N.t('式典を終える')}</button>
     </div>
   `;
   if (!_mdlAOpen(html, { topAligned: true })) { done(); return; }
@@ -13183,11 +13183,11 @@ function showTitleMatchCeremony(outcome, onDone) {
 function showTitleDefenseResultModal(champion, champLine, defenses, done) {
   if (typeof _mdlAOpen !== 'function') { done(); return; }
   const metaParts = [];
-  if (defenses > 0) metaParts.push(`${defenses}度目の防衛`);
+  if (defenses > 0) metaParts.push(WM_I18N.t('{n}度目の防衛', { n: defenses }));
   metaParts.push(typeof _mdlASeasonLabel === 'function' ? _mdlASeasonLabel(G) : '');
   const metaHtml = metaParts.filter(Boolean).join(' ・ ');
 
-  const narrationText = `${escHtml(champion.name || '')}が王座防衛に成功した。`;
+  const narrationText = WM_I18N.t('{name}が王座防衛に成功した。', { name: escHtml(champion.name || '') });
   const narrationHtml = `<div class="mdl-a-observation centered" style="text-align:left;padding-top:6px">${narrationText}</div>`;
 
   const subjectHtml = _mdlASubjectStage(champion, narrationHtml, {
@@ -13196,10 +13196,10 @@ function showTitleDefenseResultModal(champion, champLine, defenses, done) {
   });
 
   const html = `
-    ${_mdlAHeader('🛡 王座防衛', metaHtml)}
+    ${_mdlAHeader(`🛡 ${WM_I18N.t('王座防衛')}`, metaHtml)}
     ${subjectHtml}
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" id="mdlATitleDefenseClose">閉じる</button>
+      <button class="mdl-a-continue-btn" id="mdlATitleDefenseClose">${WM_I18N.t('閉じる')}</button>
     </div>
   `;
   if (!_mdlAOpen(html, { narrow: true })) { done(); return; }
@@ -13257,7 +13257,7 @@ function showSpecialEventIntro(eventKey, state, onDone, opts) {
       ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
       ${_mdlASubjectStage(speaker.fighter, '', { small: true, speech: line })}
       <div class="mdl-a-prompt" style="padding-bottom:24px">
-        <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">${escHtml(cfg.nextLabel || '— 続 け る —')}</button>
+        <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">${escHtml(cfg.nextLabel || WM_I18N.t('— 続 け る —'))}</button>
       </div>`;
     if (!_mdlAOpen(html)) { done(); return; }
     const btn = document.getElementById('mdlASpecialIntroNext2');
@@ -13279,7 +13279,7 @@ function showSpecialEventIntro(eventKey, state, onDone, opts) {
     ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
     ${coachSubject}
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext1">— 続 け る —</button>
+      <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext1">${WM_I18N.t('— 続 け る —')}</button>
     </div>`;
   if (!_mdlAOpen(html)) { done(); return; }
   const btn = document.getElementById('mdlASpecialIntroNext1');
@@ -13293,21 +13293,21 @@ function showSpecialEventTravel(eventKey, state, party, onDone) {
   const cfg = (typeof SPECIAL_EVENT_INTRO !== 'undefined') ? SPECIAL_EVENT_INTRO[eventKey] : null;
   if (!cfg || typeof showTravelScene !== 'function') { done(); return; }
   const venueName = (typeof VENUES !== 'undefined' && VENUES[cfg.venueIndex])
-    ? VENUES[cfg.venueIndex].name : '会場';
+    ? VENUES[cfg.venueIndex].name : WM_I18N.t('会場');
   const members = (Array.isArray(party) ? party : []).filter(Boolean)
     .map(f => ({ id: f.id, name: f.name }));
-  const countLabel = ['', '一人', '二人', '三人', '四人'][members.length] || `${members.length}人`;
+  const countLabel = ['', WM_I18N.t('一人'), WM_I18N.t('二人'), WM_I18N.t('三人'), WM_I18N.t('四人')][members.length] || `${members.length}人`;
   showTravelScene({
-    heading: '— 会 場 入 り —',
+    heading: WM_I18N.t('— 会 場 入 り —'),
     from: {
-      label: state.orgName || 'プレイヤー団体',
+      label: state.orgName || WM_I18N.t('プレイヤー団体'),
       emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''),
       accent: 'var(--c-positive)',
     },
     to: { label: venueName, accent: 'var(--gold)' },
     party: members,
     lines: [
-      `${countLabel}を乗せたバスが、${venueName}へ向かっています。`,
+      WM_I18N.t('{count}を乗せたバスが、{venue}へ向かっています。', { count: countLabel, venue: venueName }),
       cfg.travelLine || '',
     ].filter(Boolean),
     vehicleIcon: '🚌',
@@ -13325,32 +13325,32 @@ function showChallengeSendoffModal(fighter, line, state, card, onDone) {
     if (!fighter || !line) { if (onDone) onDone(); return; }
     const team = card && Array.isArray(card.teamA) ? card.teamA.slice(0, 3) : [fighter];
     const opponentOrgId = card && (card.opponentOrgId || card.otherOrgId);
-    const opponentOrgName = card && (card.opponentOrgName || card.otherOrgName) || '相手団体';
+    const opponentOrgName = card && (card.opponentOrgName || card.otherOrgName) || WM_I18N.t('相手団体');
     const orgBadgeHtml = typeof _u3bOrgBadgeHtml === 'function'
       ? _u3bOrgBadgeHtml({ orgId: opponentOrgId, orgName: opponentOrgName, isHome: false })
       : `<strong>${escHtml(opponentOrgName)}</strong>`;
     const teamHtml = team.map((member, idx) => `<div class="crq-sendoff-member${member.id === fighter.id ? ' initiator' : ''}">
       <img src="${escHtml(_factionUpperUrl(member.id))}" alt="">
       <span>${escHtml(member.name || '')}</span>
-      <small>${idx === 0 ? '発起人' : `同行者 ${idx}`}</small>
+      <small>${idx === 0 ? WM_I18N.t('発起人') : WM_I18N.t('同行者 {n}', { n: idx })}</small>
     </div>`).join('');
     const root = _factionEnsureOverlayRoot();
     root.innerHTML = `
       <div class="fevt-overlay-office" id="challengeSendoffOverlay">
         <div class="fevt-report-card crq-sendoff-card" role="dialog" aria-modal="true" aria-labelledby="challengeSendoffTitle">
           <div class="fevt-report-header">
-            <div class="fevt-report-title" id="challengeSendoffTitle">📜 直訴への返事</div>
+            <div class="fevt-report-title" id="challengeSendoffTitle">📜 ${WM_I18N.t('直訴への返事')}</div>
             <div class="fevt-report-meta">${_mdlASeasonLabel(state)}</div>
           </div>
           <div class="crq-sendoff-body">
-            <div class="crq-sendoff-destination"><span>行き先</span>${orgBadgeHtml}</div>
+            <div class="crq-sendoff-destination"><span>${WM_I18N.t('行き先')}</span>${orgBadgeHtml}</div>
             <div class="crq-sendoff-speaker">
               <div class="inv-bubble">${escHtml(line)}</div>
               <img src="${escHtml(_factionUpperUrl(fighter.id))}" alt="">
               <strong>${escHtml(fighter.name || '')}</strong>
             </div>
-            <div class="crq-sendoff-team" aria-label="遠征する3名">${teamHtml}</div>
-            <button class="mdl-a-continue-btn crq-sendoff-close" type="button">— 送 り 出 す —</button>
+            <div class="crq-sendoff-team" aria-label="${WM_I18N.t('遠征する3名')}">${teamHtml}</div>
+            <button class="mdl-a-continue-btn crq-sendoff-close" type="button">${WM_I18N.t('— 送 り 出 す —')}</button>
           </div>
         </div>
       </div>
@@ -13422,8 +13422,8 @@ function _challengeRequestResultReaction(card, result, state, playerWon, playerL
     const selfLine = Engine.challengeRequest.pickLine(selfSideFighter, scene, selfRng, selfOrgName);
     if (selfLine) {
       const selfLabel = playerWon
-        ? (isInverse ? '挑戦を退けた代表' : '挑戦を実らせた代表')
-        : (isInverse ? '受けて、敗れた代表' : '挑んで、敗れた代表');
+        ? (isInverse ? WM_I18N.t('挑戦を退けた代表') : WM_I18N.t('挑戦を実らせた代表'))
+        : (isInverse ? WM_I18N.t('受けて、敗れた代表') : WM_I18N.t('挑んで、敗れた代表'));
       return { fighter: selfSideFighter, line: selfLine, label: selfLabel, defeated: !playerWon };
     }
   }
@@ -13439,10 +13439,10 @@ function _challengeRequestOpponentReaction(card, result, state, playerWon, playe
   const fighter = isInverse ? (card.teamA && card.teamA[0]) : (card.teamB && card.teamB[0]);
   const outcome = playerWon ? 'lose' : (playerLost ? 'win' : 'draw');
   const label = outcome === 'lose'
-    ? (isInverse ? '挑み、敗れた代表' : '受けて、敗れた代表')
+    ? (isInverse ? WM_I18N.t('挑み、敗れた代表') : WM_I18N.t('受けて、敗れた代表'))
     : outcome === 'win'
-    ? (isInverse ? '挑戦を実らせた代表' : '受けて、勝った代表')
-    : (isInverse ? '挑んだ代表・決着つかず' : '受けた代表・決着つかず');
+    ? (isInverse ? WM_I18N.t('挑戦を実らせた代表') : WM_I18N.t('受けて、勝った代表'))
+    : (isInverse ? WM_I18N.t('挑んだ代表・決着つかず') : WM_I18N.t('受けた代表・決着つかず'));
 
   const arch = (fighter && fighter.archetype) || 'standard';
   const personality = (fighter && fighter.personality) || 'normal';
@@ -13525,10 +13525,10 @@ function _challengeRequestResultPool(scene, fighter, linesTable) {
 }
 
 function _challengeRequestSideOrgName(card, state, side) {
-  const ourOrg = (state && state.orgName) || 'プレイヤー団体';
+  const ourOrg = (state && state.orgName) || WM_I18N.t('プレイヤー団体');
   if (side === (card && card.isInverse ? 'B' : 'A')) return ourOrg;
-  if (card && card.isInverse) return card.requesterOrgName || card.otherOrgName || card.opponentOrgName || '相手団体';
-  return (card && (card.otherOrgName || card.opponentOrgName)) || '相手団体';
+  if (card && card.isInverse) return card.requesterOrgName || card.otherOrgName || card.opponentOrgName || WM_I18N.t('相手団体');
+  return (card && (card.otherOrgName || card.opponentOrgName)) || WM_I18N.t('相手団体');
 }
 
 /** 決着シリーズの2拍分を決定する。ローカル派生RNGだけを使い、state/card/resultを変更しない。 */
@@ -13560,9 +13560,9 @@ function _challengeRequestBuildResultSequence(card, result, state) {
     );
   }
   const winnerRole = winner.side === 'A'
-    ? '挑んで、団体を勝たせた代表'
-    : '受けて立ち、団体を勝たせた代表';
-  const loserRole = `${loser.side === 'A' ? '挑んだ代表' : '受けて立った代表'} ・ 本人の試合: ${loser.ownWon ? '○ 勝利' : '× 敗北'} / 団体: 敗北`;
+    ? WM_I18N.t('挑んで、団体を勝たせた代表')
+    : WM_I18N.t('受けて立ち、団体を勝たせた代表');
+  const loserRole = `${loser.side === 'A' ? WM_I18N.t('挑んだ代表') : WM_I18N.t('受けて立った代表')} ・ ${WM_I18N.t('本人の試合')}: ${loser.ownWon ? WM_I18N.t('○ 勝利') : WM_I18N.t('× 敗北')} / ${WM_I18N.t('団体')}: ${WM_I18N.t('敗北')}`;
   return {
     winner: { ...winner, line: winnerLine, role: winnerRole, orgName: _challengeRequestSideOrgName(card, state, winner.side) },
     loser: { ...loser, line: loserLine, role: loserRole, scene: loserScene, orgName: _challengeRequestSideOrgName(card, state, loser.side) },
@@ -13580,14 +13580,14 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
 
   const isInverse = !!card.isInverse;
   const playerWon = isInverse ? result.teamWin === 'B' : result.teamWin === 'A';
-  const titleText = playerWon ? (isInverse ? '挑戦、退ける。' : '果たし状、成就。')
-    : (isInverse ? '挑戦、許す。' : '果たし状、敗れる。');
+  const titleText = playerWon ? (isInverse ? WM_I18N.t('挑戦、退ける。') : WM_I18N.t('果たし状、成就。'))
+    : (isInverse ? WM_I18N.t('挑戦、許す。') : WM_I18N.t('果たし状、敗れる。'));
   const playerScore = isInverse ? result.winsB : result.winsA;
   const aiScore = isInverse ? result.winsA : result.winsB;
-  const ourOrg = state.orgName || 'プレイヤー団体';
+  const ourOrg = state.orgName || WM_I18N.t('プレイヤー団体');
   const otherOrgName = isInverse
-    ? (card.requesterOrgName || card.otherOrgName || '相手団体')
-    : (card.otherOrgName || card.opponentOrgName || '相手団体');
+    ? (card.requesterOrgName || card.otherOrgName || WM_I18N.t('相手団体'))
+    : (card.otherOrgName || card.opponentOrgName || WM_I18N.t('相手団体'));
   const root = _factionEnsureOverlayRoot();
   const WAIT_TIMEOUT_MS = 12000;
   let waitTimer = null;
@@ -13650,14 +13650,14 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
       const delta = match.relationshipDelta && fighter && match.relationshipDelta[fighter.id];
       if (!delta) return '';
       const signed = value => `${value >= 0 ? '+' : ''}${Math.round(value * 10) / 10}`;
-      return `<small class="crrm-rel">因縁 ${signed(delta.rivalry)} / 相手との関係 ${signed(delta.bond)}</small>`;
+      return `<small class="crrm-rel">${WM_I18N.t('因縁 {a} / 相手との関係 {b}', { a: signed(delta.rivalry), b: signed(delta.bond) })}</small>`;
     };
     return `<div class="crrm-row">
-      <div class="crrm-row-num">第${index + 1}試合</div>
+      <div class="crrm-row-num">${WM_I18N.t('第{n}試合', { n: index + 1 })}</div>
       <div class="crrm-row-side crrm-row-a">${mark(leftSide)} <span class="crrm-name">${escHtml(leftFighter.name)}${relText(leftFighter)}</span></div>
       <div class="crrm-row-vs">vs</div>
       <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(rightFighter.name)}${relText(rightFighter)}</span> ${mark(rightSide)}</div>
-      <div class="crrm-row-mq">評価 ${Math.round(match.mq || 0)}</div>
+      <div class="crrm-row-mq">${WM_I18N.t('評価 {n}', { n: Math.round(match.mq || 0) })}</div>
       <div class="crrm-row-fin">${match.finMove ? escHtml(match.finMove) : ''}</div>
     </div>`;
   }).join('');
@@ -13693,9 +13693,9 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
   const renderBeatTwo = () => {
     try {
       root.innerHTML = `${sharedStyle}<div class="fevt-overlay-office crrm-stage-overlay" id="challengeRequestResultOverlay"><div class="crrm-stage-card is-beat-two">
-        <div class="crrm-sequence-kicker">— そ の 夜 —</div>
+        <div class="crrm-sequence-kicker">${WM_I18N.t('— そ の 夜 —')}</div>
         ${upperScene(sequence.loser, 'is-m', sequence.loser.ownWon ? 'is-own-win' : 'is-own-loss')}
-        <button class="crrm-sequence-next crrm-sequence-close" type="button">— 閉 じ る —</button>
+        <button class="crrm-sequence-next crrm-sequence-close" type="button">${WM_I18N.t('— 閉 じ る —')}</button>
       </div></div>`;
       activate('.crrm-sequence-close', finish);
     } catch (error) {
@@ -13709,10 +13709,10 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
       <div class="crrm-sequence-kicker">AWAY CHALLENGE ・ RESULT</div>
       <div class="crrm-sequence-title">${titleText}</div>
       <div class="crrm-sequence-score"><span>${escHtml(ourOrg)}</span><b>${playerScore} — ${aiScore}</b><span>${escHtml(otherOrgName)}</span></div>
-      <div><span class="crrm-sequence-verdict">団体として${playerWon ? '勝利' : '敗北'}</span></div>
+      <div><span class="crrm-sequence-verdict">${WM_I18N.t('団体として')}${playerWon ? WM_I18N.t('勝利') : WM_I18N.t('敗北')}</span></div>
       ${upperScene(sequence.winner, 'is-xl', result.teamWin === (isInverse ? 'B' : 'A') ? 'is-player-winner' : 'is-foe-winner')}
       <div class="crrm-rows">${matchRows}</div>
-      <button class="crrm-sequence-next crrm-sequence-forward" type="button">次へ</button>
+      <button class="crrm-sequence-next crrm-sequence-forward" type="button">${WM_I18N.t('次へ')}</button>
     </div></div>`;
     activate('.crrm-sequence-forward', renderBeatTwo);
   } catch (error) {
@@ -13750,16 +13750,16 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
   // プレイヤー視点の勝敗: forward は teamA(player) / inverse は teamB(player)
   const playerWon = isInverse ? teamWin === 'B' : teamWin === 'A';
   const playerLost = isInverse ? teamWin === 'A' : teamWin === 'B';
-  const titleText = playerWon ? (isInverse ? '挑戦、退ける。' : '果たし状、成就。')
-    : playerLost ? (isInverse ? '挑戦、許す。' : '果たし状、敗れる。')
-    : '挑戦、決着つかず。';
+  const titleText = playerWon ? (isInverse ? WM_I18N.t('挑戦、退ける。') : WM_I18N.t('果たし状、成就。'))
+    : playerLost ? (isInverse ? WM_I18N.t('挑戦、許す。') : WM_I18N.t('果たし状、敗れる。'))
+    : WM_I18N.t('挑戦、決着つかず。');
   const tone = playerWon ? 'positive' : (playerLost ? 'negative' : 'neutral');
 
   // 生の値(reqName/oppName/ourOrg/otherOrgName)は_awOrgEmblem()の団体名完全一致検索にも使うため
   // 変更しない。表示にはescHtml済みの*Safe変数を使う(U5: スコア帯・コーチ行・試合行のescHtml抜けを解消)。
   const reqName = card.teamA[0].name;
   const oppName = card.teamB[0].name;
-  const ourOrg = state.orgName || 'プレイヤー団体';
+  const ourOrg = state.orgName || WM_I18N.t('プレイヤー団体');
   const otherOrgName = isInverse ? (card.requesterOrgName || card.otherOrgName) : card.otherOrgName;
   const reqNameSafe = escHtml(reqName);
   const oppNameSafe = escHtml(oppName);
@@ -13803,7 +13803,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
     const winSide = m.winner === 'left' ? 'A' : (m.winner === 'right' ? 'B' : 'draw');
     const winLabelA = winSide === 'A' ? '<span class="crrm-win">○</span>' : (winSide === 'B' ? '<span class="crrm-loss">×</span>' : '');
     const winLabelB = winSide === 'B' ? '<span class="crrm-win">○</span>' : (winSide === 'A' ? '<span class="crrm-loss">×</span>' : '');
-    const numLabel = ['第1試合', '第2試合', '第3試合'][i] || `第${i+1}試合`;
+    const numLabel = [WM_I18N.t('第1試合'), WM_I18N.t('第2試合'), WM_I18N.t('第3試合')][i] || WM_I18N.t('第{n}試合', { n: i + 1 });
     const finLabel = m.finMove ? `<span class="crrm-fin">${m.finMove}</span>` : '';
     // inverse: 行表示も player を左に揃える（fighterB が player 側）
     const leftFighter = isInverse ? m.fighterB : m.fighterA;
@@ -13814,7 +13814,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       const delta = m.relationshipDelta && m.relationshipDelta[fighter.id];
       if (!delta) return '';
       const signed = value => `${value >= 0 ? '+' : ''}${Math.round(value * 10) / 10}`;
-      return `<small class="crrm-rel">因縁 ${signed(delta.rivalry)} / 相手との関係 ${signed(delta.bond)}</small>`;
+      return `<small class="crrm-rel">${WM_I18N.t('因縁 {a} / 相手との関係 {b}', { a: signed(delta.rivalry), b: signed(delta.bond) })}</small>`;
     };
     return `
       <div class="crrm-row">
@@ -13822,7 +13822,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
         <div class="crrm-row-side crrm-row-a">${leftLabel} <span class="crrm-name">${escHtml(leftFighter.name)}${relText(leftFighter)}</span></div>
         <div class="crrm-row-vs">vs</div>
         <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(rightFighter.name)}${relText(rightFighter)}</span> ${rightLabel}</div>
-        <div class="crrm-row-mq">評価 ${Math.round(m.mq || 0)}</div>
+        <div class="crrm-row-mq">${WM_I18N.t('評価 {n}', { n: Math.round(m.mq || 0) })}</div>
         <div class="crrm-row-fin">${finLabel}</div>
       </div>`;
   }).join('');
@@ -13904,17 +13904,17 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
       <div class="fevt-report-card crrm-card">
         <div class="fevt-report-header">
           <div class="fevt-report-title crrm-tone-${tone === 'positive' ? 'pos' : tone === 'negative' ? 'neg' : 'neu'}">📜 ${titleText}</div>
-          <div class="fevt-report-meta">${_factionSeasonLabel(state)} · 挑戦試合（${ourOrgSafe} vs ${otherOrgNameSafe}）</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} · ${WM_I18N.t('挑戦試合')}（${ourOrgSafe} vs ${otherOrgNameSafe}）</div>
         </div>
         ${reactionHtml}
         <div class="crrm-score-banner">
-          <div class="crrm-score-org"><div class="crrm-score-org-name">${_awOrgEmblem(ourOrg, true, 20)}<span>${ourOrgSafe}</span></div><small>${isInverse ? `迎撃: ${oppNameSafe}陣` : `${reqNameSafe}陣`}</small></div>
+          <div class="crrm-score-org"><div class="crrm-score-org-name">${_awOrgEmblem(ourOrg, true, 20)}<span>${ourOrgSafe}</span></div><small>${isInverse ? WM_I18N.t('迎撃: {name}陣', { name: oppNameSafe }) : WM_I18N.t('{name}陣', { name: reqNameSafe })}</small></div>
           <div class="crrm-score-num ${playerWon ? 'win' : (playerLost ? 'lose' : '')}">${playerScore} — ${aiScore}</div>
-          <div class="crrm-score-org"><div class="crrm-score-org-name">${_awOrgEmblem(otherOrgName, false, 20)}<span>${otherOrgNameSafe}</span></div><small>${isInverse ? `打診: ${reqNameSafe}陣` : `${oppNameSafe}陣`}</small></div>
+          <div class="crrm-score-org"><div class="crrm-score-org-name">${_awOrgEmblem(otherOrgName, false, 20)}<span>${otherOrgNameSafe}</span></div><small>${isInverse ? WM_I18N.t('打診: {name}陣', { name: reqNameSafe }) : WM_I18N.t('{name}陣', { name: oppNameSafe })}</small></div>
         </div>
         <div class="crrm-rows">${matchRows}</div>
         <div class="crrm-close-tray">
-          <button class="crrm-close-btn" id="crrmCloseBtn">閉じる</button>
+          <button class="crrm-close-btn" id="crrmCloseBtn">${WM_I18N.t('閉じる')}</button>
         </div>
       </div>
     </div>
@@ -14016,7 +14016,7 @@ function showLargeEventModal(event, state, step, onChoice) {
   switch (event.type) {
     case 'B1': html = _buildB1Modal(event, state, roster); break;
     case 'B4': html = _buildB4Modal(event, state, roster); break;
-    default: html = '<div class="care-title">不明なイベント</div><button class="btn" data-choice="0">閉じる</button>';
+    default: html = `<div class="care-title">${WM_I18N.t('不明なイベント')}</div><button class="btn" data-choice="0">${WM_I18N.t('閉じる')}</button>`;
   }
 
   box.innerHTML = html;
@@ -14046,10 +14046,10 @@ function showLargeEventModal(event, state, step, onChoice) {
 // ── B1: 練習中の怪我 ──────────────────────────────────────────────────────
 function _buildB1Modal(event, state, roster) {
   const fighter = roster.find(f => f.id === event.fighter);
-  const severityLabel = event.severity === 'moderate' ? '（重め）' : '（軽め）';
+  const severityLabel = event.severity === 'moderate' ? WM_I18N.t('（重め）') : WM_I18N.t('（軽め）');
   const funds = state.funds || 0;
 
-  let html = `<div class="care-title" style="border-bottom:1px solid #e67e22;padding-bottom:10px;margin-bottom:12px">⚠️ 練習中のアクシデント${severityLabel}</div>`;
+  let html = `<div class="care-title" style="border-bottom:1px solid #e67e22;padding-bottom:10px;margin-bottom:12px">⚠️ ${WM_I18N.t('練習中のアクシデント')}${severityLabel}</div>`;
 
   if (event.detail) {
     html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:12px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
@@ -14073,15 +14073,15 @@ function _buildB1Modal(event, state, roster) {
   const canAfford = funds >= 200;
   html += `<button class="btn" data-choice="0" ${canAfford ? '' : 'disabled'}
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between${canAfford ? '' : ';opacity:0.4;cursor:default'}">
-    <span>特別治療（-200万）</span><span style="font-size:11px;color:var(--text-dim)">回復期間半減・手厚い対応が伝わる</span>
+    <span>${WM_I18N.t('特別治療（-200万）')}</span><span style="font-size:11px;color:var(--text-dim)">${WM_I18N.t('回復期間半減・手厚い対応が伝わる')}</span>
   </button>`;
   html += `<button class="btn" data-choice="1"
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>通常の治療</span><span style="font-size:11px;color:var(--text-dim)">標準回復</span>
+    <span>${WM_I18N.t('通常の治療')}</span><span style="font-size:11px;color:var(--text-dim)">${WM_I18N.t('標準回復')}</span>
   </button>`;
   html += `<button class="btn" data-choice="2"
     style="text-align:left;padding:10px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:space-between">
-    <span>無理させる</span><span style="font-size:11px;color:var(--text-dim)">期待に応えようとする、40%で悪化リスク</span>
+    <span>${WM_I18N.t('無理させる')}</span><span style="font-size:11px;color:var(--text-dim)">${WM_I18N.t('期待に応えようとする、40%で悪化リスク')}</span>
   </button>`;
   html += '</div>';
   return html;
@@ -14104,7 +14104,7 @@ function _buildB2Step1(event, state, roster) {
 
   return `
     <div class="mdl-a-header danger">
-      <div class="mdl-a-header-title">💥 選 手 間 の 深 刻 な 対 立</div>
+      <div class="mdl-a-header-title">💥 ${WM_I18N.t('選 手 間 の 深 刻 な 対 立')}</div>
       <div class="mdl-a-header-meta">INTERNAL CONFLICT ・ ${weekMeta}</div>
     </div>
     ${_mdlAReporterStrip(state, reporterLine)}
@@ -14130,23 +14130,23 @@ function _buildB2Step1(event, state, roster) {
         <div class="mdl-a-duo-org">OVR ${o2}</div>
       </div>
     </div>
-    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
-    <div class="mdl-a-prompt" style="padding-top:20px">社長として、どう対処しますか？</div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
+    <div class="mdl-a-prompt" style="padding-top:20px">${WM_I18N.t('社長として、どう対処しますか？')}</div>
     <div class="mdl-a-decision-tray">
       <div class="mdl-a-decision-card" data-choice="0">
         <div class="mdl-a-decision-letter">A</div>
-        <div class="mdl-a-decision-label">話し合いで解決</div>
-        <div class="mdl-a-decision-hint positive">両者とも話を聞く姿勢を取り戻す ／ 士気回復</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('話し合いで解決')}</div>
+        <div class="mdl-a-decision-hint positive">${WM_I18N.t('両者とも話を聞く姿勢を取り戻す ／ 士気回復')}</div>
       </div>
       <div class="mdl-a-decision-card danger-accent" data-choice="1">
         <div class="mdl-a-decision-letter">B</div>
-        <div class="mdl-a-decision-label">試合で決着させる</div>
-        <div class="mdl-a-decision-hint">勝者↑↑ ／ 敗者↓</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('試合で決着させる')}</div>
+        <div class="mdl-a-decision-hint">${WM_I18N.t('勝者↑↑ ／ 敗者↓')}</div>
       </div>
       <div class="mdl-a-decision-card" data-choice="2">
         <div class="mdl-a-decision-letter">C</div>
-        <div class="mdl-a-decision-label">放置する</div>
-        <div class="mdl-a-decision-hint negative">両者とも社長への不満を募らせる ／ 士気低下</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('放置する')}</div>
+        <div class="mdl-a-decision-hint negative">${WM_I18N.t('両者とも社長への不満を募らせる ／ 士気低下')}</div>
       </div>
     </div>`;
 }
@@ -14166,7 +14166,7 @@ function _buildB2Step2(event, state, roster) {
 
   return `
     <div class="mdl-a-header">
-      <div class="mdl-a-header-title">🤝 ど う 立 ち 会 い ま す か</div>
+      <div class="mdl-a-header-title">🤝 ${WM_I18N.t('ど う 立 ち 会 い ま す か')}</div>
       <div class="mdl-a-header-meta">INTERVENTION ・ ${_mdlASeasonLabel(state)}</div>
     </div>
     ${_mdlAReporterStrip(state, '試合で決着をつけさせることにしました。社長の立ち位置を決めてください')}
@@ -14185,22 +14185,22 @@ function _buildB2Step2(event, state, roster) {
         </div>
       </div>
     </div>
-    <div class="mdl-a-prompt">どう介入しますか？</div>
+    <div class="mdl-a-prompt">${WM_I18N.t('どう介入しますか？')}</div>
     <div class="mdl-a-decision-tray">
       <div class="mdl-a-decision-card" data-choice="2">
         <div class="mdl-a-decision-letter">A</div>
-        <div class="mdl-a-decision-label">介入しない</div>
-        <div class="mdl-a-decision-hint">純粋な実力勝負</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('介入しない')}</div>
+        <div class="mdl-a-decision-hint">${WM_I18N.t('純粋な実力勝負')}</div>
       </div>
       <div class="mdl-a-decision-card" data-choice="0">
         <div class="mdl-a-decision-letter">B</div>
-        <div class="mdl-a-decision-label">${n1}を後押し</div>
-        <div class="mdl-a-decision-hint">${n1}は後押しを喜ぶ ／ ${n2}はえこひいきと感じる</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('{name}を後押し', { name: n1 })}</div>
+        <div class="mdl-a-decision-hint">${WM_I18N.t('{a}は後押しを喜ぶ ／ {b}はえこひいきと感じる', { a: n1, b: n2 })}</div>
       </div>
       <div class="mdl-a-decision-card" data-choice="1">
         <div class="mdl-a-decision-letter">C</div>
-        <div class="mdl-a-decision-label">${n2}を後押し</div>
-        <div class="mdl-a-decision-hint">${n2}は後押しを喜ぶ ／ ${n1}はえこひいきと感じる</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('{name}を後押し', { name: n2 })}</div>
+        <div class="mdl-a-decision-hint">${WM_I18N.t('{a}は後押しを喜ぶ ／ {b}はえこひいきと感じる', { a: n2, b: n1 })}</div>
       </div>
     </div>`;
 }
@@ -14208,7 +14208,7 @@ function _buildB2Step2(event, state, roster) {
 // ── B2 Step 3: 勝者コマ (frame 3a) ────────────────────────────────────────
 function _buildB2Step3(event, state, roster) {
   const result = event.matchResult;
-  if (!result) return '<div class="mdl-a-header"><div class="mdl-a-header-title">試合結果</div></div><div class="mdl-a-prompt"><button class="mdl-a-continue-btn" data-choice="0">閉じる</button></div>';
+  if (!result) return `<div class="mdl-a-header"><div class="mdl-a-header-title">${WM_I18N.t('試合結果')}</div></div><div class="mdl-a-prompt"><button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('閉じる')}</button></div>`;
 
   const f1 = roster.find(f => f.id === event.fighter1);
   const f2 = roster.find(f => f.id === event.fighter2);
@@ -14220,7 +14220,7 @@ function _buildB2Step3(event, state, roster) {
   const upperUrl = displayF ? getUpperUrl(displayF.id) : '';
   const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a2520';
 
-  const verdictJp  = isDraw ? '決着つかず' : '勝 利';
+  const verdictJp  = isDraw ? WM_I18N.t('決着つかず') : WM_I18N.t('勝 利');
   const verdictEn  = isDraw ? 'NO CONTEST' : 'VICTORY';
   const verdictCls = isDraw ? 'draw' : 'victory';
   const speechCls  = isDraw ? '' : 'gold';
@@ -14234,19 +14234,19 @@ function _buildB2Step3(event, state, roster) {
   const n1 = f1 ? f1.name : (event.name1 || '?');
   const n2 = f2 ? f2.name : (event.name2 || '?');
   const resultRow = isDraw
-    ? `<div class="mdl-a-result-row"><span>結果</span><strong>決着つかず</strong></div>`
-    : `<div class="mdl-a-result-row"><span>${winnerF ? escHtml(winnerF.name) : ''}</span><strong>社長の判断に満足</strong></div>
-       <div class="mdl-a-result-row"><span>${loserF ? escHtml(loserF.name) : ''}</span><strong>わだかまりを残した</strong></div>
-       <div class="mdl-a-result-row"><span>両者の士気</span><strong>一旦リセット</strong></div>`;
+    ? `<div class="mdl-a-result-row"><span>${WM_I18N.t('結果')}</span><strong>${WM_I18N.t('決着つかず')}</strong></div>`
+    : `<div class="mdl-a-result-row"><span>${winnerF ? escHtml(winnerF.name) : ''}</span><strong>${WM_I18N.t('社長の判断に満足')}</strong></div>
+       <div class="mdl-a-result-row"><span>${loserF ? escHtml(loserF.name) : ''}</span><strong>${WM_I18N.t('わだかまりを残した')}</strong></div>
+       <div class="mdl-a-result-row"><span>${WM_I18N.t('両者の士気')}</span><strong>${WM_I18N.t('一旦リセット')}</strong></div>`;
 
   const closePart = isDraw
-    ? `<div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-choice="0">— 了 解 —</button></div>`
-    : `<div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
-       <div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-mdla-next>— 次 へ —</button></div>`;
+    ? `<div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('— 了 解 —')}</button></div>`
+    : `<div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
+       <div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-mdla-next>${WM_I18N.t('— 次 へ —')}</button></div>`;
 
   return `
     <div class="mdl-a-header">
-      <div class="mdl-a-header-title">${isDraw ? '🤝 対立の結果' : '✨ 対 立 の 決 着'}</div>
+      <div class="mdl-a-header-title">${isDraw ? `🤝 ${WM_I18N.t('対立の結果')}` : `✨ ${WM_I18N.t('対 立 の 決 着')}`}</div>
       <div class="mdl-a-header-meta">${isDraw ? 'NO CONTEST' : 'RESOLVED ・ 1 / 2'}</div>
     </div>
     ${_mdlAReporterStrip(state, '決着がつきました')}
@@ -14285,7 +14285,7 @@ function _buildB2Step3b(event, state, roster) {
 
   return `
     <div class="mdl-a-header">
-      <div class="mdl-a-header-title">😔 敗 者 の 声</div>
+      <div class="mdl-a-header-title">😔 ${WM_I18N.t('敗 者 の 声')}</div>
       <div class="mdl-a-header-meta">AFTERMATH ・ 2 / 2</div>
     </div>
     ${_mdlAReporterStrip(state, `${loserName}は納得していないようです…`)}
@@ -14296,14 +14296,14 @@ function _buildB2Step3b(event, state, roster) {
         portraitClass: 'mdl-a-subject-portrait defeat',
         portraitStyle,
       })}
-      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">DEFEATED ・ 敗 者</div></div>
+      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">DEFEATED ・ ${WM_I18N.t('敗 者')}</div></div>
       <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${loserName}</div>
       <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${loserF ? `AGE ${loserF.age || '—'} ・ OVR ${Engine.util.ov(loserF)}` : ''}</div>
       <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
-        胸の内に、<span class="marker danger">新たな火種</span>がくすぶり始めた。
+        ${WM_I18N.t('胸の内に、<span class="marker danger">新たな火種</span>がくすぶり始めた。')}
       </div>
     </div>
-    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
     <div class="mdl-a-prompt" style="padding-bottom:24px">
       <button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('— 見 届 け る —')}</button>
     </div>`;
@@ -14312,14 +14312,14 @@ function _buildB2Step3b(event, state, roster) {
 // ── B3 Step 1: 挑戦状オファー ──────────────────────────────────────────────
 function _buildB3Step1(event, state) {
   const challenger = event.challenger || {};
-  const orgName = event.orgName || '他団体';
+  const orgName = event.orgName || WM_I18N.t('他団体');
   const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
   const upperUrl = challenger.id ? getUpperUrl(challenger.id) : '';
   const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a1a14';
 
   return `
     <div class="mdl-a-header danger">
-      <div class="mdl-a-header-title">⚔ シングル挑戦の直訴</div>
+      <div class="mdl-a-header-title">⚔ ${WM_I18N.t('シングル挑戦の直訴')}</div>
       <div class="mdl-a-header-meta">CHALLENGE LETTER ・ ${_mdlASeasonLabel(state)}</div>
     </div>
     ${_mdlAReporterStrip(state, `興行会場に${orgName}の関係者が来ています`)}
@@ -14334,20 +14334,20 @@ function _buildB3Step1(event, state) {
       <div class="mdl-a-subject-org danger">${orgName}</div>
       <div class="mdl-a-subject-ovr danger"><span class="label">OVR</span>${cOvr}</div>
       <div class="mdl-a-subject-divider"></div>
-      <div class="mdl-a-observation">リングで語り合おう、と<span class="marker danger">挑戦状</span>を突きつけてきた。</div>
+      <div class="mdl-a-observation">${WM_I18N.t('リングで語り合おう、と<span class="marker danger">挑戦状</span>を突きつけてきた。')}</div>
     </div>
-    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
-    <div class="mdl-a-prompt">この挑戦状、どうしますか？</div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
+    <div class="mdl-a-prompt">${WM_I18N.t('この挑戦状、どうしますか？')}</div>
     <div class="mdl-a-decision-tray two">
       <div class="mdl-a-decision-card danger-accent" data-choice="0">
-        <div class="mdl-a-decision-letter">受けて立つ</div>
-        <div class="mdl-a-decision-label">代表選手を選んで対戦</div>
-        <div class="mdl-a-decision-hint">次の画面で代表を選択</div>
+        <div class="mdl-a-decision-letter">${WM_I18N.t('受けて立つ')}</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('代表選手を選んで対戦')}</div>
+        <div class="mdl-a-decision-hint">${WM_I18N.t('次の画面で代表を選択')}</div>
       </div>
       <div class="mdl-a-decision-card" data-choice="1">
-        <div class="mdl-a-decision-letter">断る</div>
-        <div class="mdl-a-decision-label">今回は辞退する</div>
-        <div class="mdl-a-decision-hint">ペナルティなし</div>
+        <div class="mdl-a-decision-letter">${WM_I18N.t('断る')}</div>
+        <div class="mdl-a-decision-label">${WM_I18N.t('今回は辞退する')}</div>
+        <div class="mdl-a-decision-hint">${WM_I18N.t('ペナルティなし')}</div>
       </div>
     </div>`;
 }
@@ -14356,7 +14356,7 @@ function _buildB3Step1(event, state) {
 function _buildB3Step2(event, state, roster) {
   const available = roster.filter(f => !f.injury && !f.isRental);
   const challenger = event.challenger || {};
-  const orgName = event.orgName || '他団体';
+  const orgName = event.orgName || WM_I18N.t('他団体');
   const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
   const cUpperUrl = challenger.id ? getUpperUrl(challenger.id) : '';
   const cStyle = cUpperUrl ? `background-image:url('${cUpperUrl}')` : 'background:#2a1a14';
@@ -14375,7 +14375,7 @@ function _buildB3Step2(event, state, roster) {
 
   return `
     <div class="mdl-a-header danger">
-      <div class="mdl-a-header-title">🥊 代表選手を選んでください</div>
+      <div class="mdl-a-header-title">🥊 ${WM_I18N.t('代表選手を選んでください')}</div>
       <div class="mdl-a-header-meta">SELECT YOUR CHAMPION</div>
     </div>
     ${_mdlAReporterStrip(state, 'どの選手を送り出しますか？')}
@@ -14383,49 +14383,49 @@ function _buildB3Step2(event, state, roster) {
       <div class="mdl-a-opponent-bar">
         <div class="mdl-a-opponent-upper" style="${cStyle}"></div>
         <div class="mdl-a-opponent-text">
-          <div class="mdl-a-opponent-label">OPPONENT ・ 対戦相手</div>
+          <div class="mdl-a-opponent-label">OPPONENT ・ ${WM_I18N.t('対戦相手')}</div>
           <div class="mdl-a-opponent-name">${challenger.name || '???'}</div>
           <div class="mdl-a-opponent-meta">${orgName}${challenger.style ? ' ・ ' + challenger.style : ''}</div>
         </div>
         <div class="mdl-a-opponent-ovr">${cOvr}</div>
       </div>
-      <div class="mdl-a-candidate-title">— CANDIDATES ・ 自団体の代表候補 —</div>
+      <div class="mdl-a-candidate-title">— CANDIDATES ・ ${WM_I18N.t('自団体の代表候補')} —</div>
       <div class="mdl-a-candidate-grid">${candidateCards}</div>
     </div>
-    <div class="mdl-a-prompt" style="padding-bottom:24px">クリックで代表を決定します</div>`;
+    <div class="mdl-a-prompt" style="padding-bottom:24px">${WM_I18N.t('クリックで代表を決定します')}</div>`;
 }
 
 // ── B3 Step 3: 結果コマ (frame 3a) ────────────────────────────────────────
 function _buildB3Step3(event, state, roster) {
   const result = event.matchResult;
-  if (!result) return '<div class="mdl-a-header"><div class="mdl-a-header-title">挑戦状 結果</div></div><div class="mdl-a-prompt"><button class="mdl-a-continue-btn" data-choice="0">閉じる</button></div>';
+  if (!result) return `<div class="mdl-a-header"><div class="mdl-a-header-title">${WM_I18N.t('挑戦状 結果')}</div></div><div class="mdl-a-prompt"><button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('閉じる')}</button></div>`;
 
   const challenger = event.challenger || {};
-  const orgName = event.orgName || '他団体';
+  const orgName = event.orgName || WM_I18N.t('他団体');
   const playerFighter = roster.find(f => f.id === event.selectedFighterId);
-  const pName = playerFighter ? playerFighter.name : '代表選手';
+  const pName = playerFighter ? playerFighter.name : WM_I18N.t('代表選手');
   const won  = result.winner === 'left';
   const lost = result.winner === 'right';
   const isDraw = !won && !lost;
 
   const upperUrl = playerFighter ? getUpperUrl(playerFighter.id) : '';
   const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a2520';
-  const verdictJp  = won ? '勝 利' : lost ? '敗 北' : '決着つかず';
+  const verdictJp  = won ? WM_I18N.t('勝 利') : lost ? WM_I18N.t('敗 北') : WM_I18N.t('決着つかず');
   const verdictEn  = won ? 'VICTORY' : lost ? 'DEFEAT' : 'NO CONTEST';
   const verdictCls = won ? 'victory' : lost ? 'defeat' : 'draw';
   const speechCls  = won ? 'gold' : lost ? 'danger' : '';
   const pLine      = isDraw ? '互角の戦いを見せた。' : won ? 'この試合は、譲れなかった' : '…';
 
   const resultRows = `
-    <div class="mdl-a-result-row"><span>対戦相手</span><strong>${escHtml(challenger.name || '???')}（${escHtml(orgName)}）</strong></div>
-    <div class="mdl-a-result-row"><span>試合評価</span><span class="gold">${result.mq ? '★' + result.mq : '?'}</span></div>`;
+    <div class="mdl-a-result-row"><span>${WM_I18N.t('対戦相手')}</span><strong>${escHtml(challenger.name || '???')}（${escHtml(orgName)}）</strong></div>
+    <div class="mdl-a-result-row"><span>${WM_I18N.t('試合評価')}</span><span class="gold">${result.mq ? '★' + result.mq : '?'}</span></div>`;
 
   const closePart = isDraw
-    ? `<div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-choice="0">— 了 解 —</button></div>`
-    : `<div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
-       <div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-mdla-next>— 次 へ —</button></div>`;
+    ? `<div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('— 了 解 —')}</button></div>`
+    : `<div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
+       <div class="mdl-a-prompt" style="padding-bottom:24px"><button class="mdl-a-continue-btn" data-mdla-next>${WM_I18N.t('— 次 へ —')}</button></div>`;
 
-  const headerTitle = won ? '🏆 挑 戦 状 ・ 結 果' : lost ? '😞 挑 戦 状 ・ 結 果' : '🤼 決着つかず';
+  const headerTitle = won ? `🏆 ${WM_I18N.t('挑 戦 状 ・ 結 果')}` : lost ? `😞 ${WM_I18N.t('挑 戦 状 ・ 結 果')}` : `🤼 ${WM_I18N.t('決着つかず')}`;
   const headerMeta  = isDraw ? 'NO CONTEST' : 'RESULT ・ 1 / 2';
 
   return `
@@ -14505,7 +14505,7 @@ function _buildB3Step3b(event, state, roster) {
         ${observationText}
       </div>
     </div>
-    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
     <div class="mdl-a-prompt" style="padding-bottom:24px">
       <button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('— 見 届 け る —')}</button>
     </div>`;
@@ -14538,13 +14538,13 @@ function _buildB3Step3b(event, state, roster) {
   }
 
   const speechVariant = won ? 'resentment' : 'danger';
-  const headerTitle = won ? '相手の反応' : '相手の勝利宣言';
+  const headerTitle = won ? WM_I18N.t('相手の反応') : WM_I18N.t('相手の勝利宣言');
   const reporterLine = won
     ? `${orgName}勢は苛立ちを隠せない表情です`
     : `${orgName}勢は勝利を確信しています`;
   const observationText = won
-    ? `${orgName}との<span class="marker danger">遺恨</span>は、まだ終わっていない`
-    : `${orgName}の<span class="marker danger">挑発</span>に、どう応えるか——`;
+    ? WM_I18N.t('{org}との<span class="marker danger">遺恨</span>は、まだ終わっていない', { org: orgName })
+    : WM_I18N.t('{org}の<span class="marker danger">挑発</span>に、どう応えるか——', { org: orgName });
 
   return `
     <div class="mdl-a-header danger">
@@ -14560,16 +14560,16 @@ function _buildB3Step3b(event, state, roster) {
         portraitStyle,
         extraHtml: '<div class="mdl-a-portrait-vignette"></div>',
       })}
-      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED ・ 敗北者' : 'VICTOR ・ 勝者'}</div></div>
+      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? `DEFEATED ・ ${WM_I18N.t('敗北者')}` : `VICTOR ・ ${WM_I18N.t('勝者')}`}</div></div>
       <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
       <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
       <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
         ${observationText}
       </div>
     </div>
-    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ クリックで進む</div>
+    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
     <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" data-choice="0">続きを見る</button>
+      <button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('続きを見る')}</button>
     </div>`;
 }
 
@@ -14605,13 +14605,13 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
   }
 
   const speechVariant = won ? 'resentment' : 'danger';
-  const headerTitle = won ? '相手の反応' : '相手の勝利宣言';
+  const headerTitle = won ? WM_I18N.t('相手の反応') : WM_I18N.t('相手の勝利宣言');
   const reporterLine = won
     ? `${orgName}勢は苛立ちを隠せない表情です`
     : `${orgName}勢は勝利を確信しています`;
   const observationText = won
-    ? `${orgName}との<span class="marker danger">遺恨</span>は、まだ終わっていない`
-    : `${orgName}の<span class="marker danger">挑発</span>に、どう応えるか——`;
+    ? WM_I18N.t('{org}との<span class="marker danger">遺恨</span>は、まだ終わっていない', { org: orgName })
+    : WM_I18N.t('{org}の<span class="marker danger">挑発</span>に、どう応えるか——', { org: orgName });
 
   const overlay = document.createElement('div');
   overlay.className = 'war-victory-overlay war-ace-overlay';
@@ -14638,7 +14638,7 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
         </div>
       </div>
       <div style="text-align:center;margin-top:16px">
-        <button class="war-victory-close war-ace-close" type="button">閉じる</button>
+        <button class="war-victory-close war-ace-close" type="button">${WM_I18N.t('閉じる')}</button>
       </div>
     </div>
   `;
@@ -14665,7 +14665,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   const escHtmlSafe = (s) => (typeof escHtml === 'function') ? escHtml(s) : String(s).replace(/[&<>"]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
   const stateFactions = typeof G !== 'undefined' && Array.isArray(G.factions) ? G.factions : [];
   const currentFaction = stateFactions.find(f => f && payload.factionId != null && String(f.id) === String(payload.factionId));
-  const factionName = (currentFaction && currentFaction.name) || applyResult.factionName || payload.factionName || '派閥';
+  const factionName = (currentFaction && currentFaction.name) || applyResult.factionName || payload.factionName || WM_I18N.t('派閥');
   const archetypeId = payload.archetypeId || null;
   const won = matchResult.winner === 'left';
   const isDraw = matchResult.winner === 'draw';
@@ -14695,14 +14695,14 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
     // i18n Stage A P3a-3 D-G5: rivalryかどうかは日本語置換「後」のlabelを再比較せず、
     // 置換「前」のrawLabel(内部キー'rivalry'または既に日本語の'因縁')で先に確定させる。
     const isRivalryImpact = /\brivalry\b|因縁/.test(rawLabel);
-    const label = rawLabel.replace(/\btrust\b/g, '社長への反応').replace(/\brivalry\b/g, '因縁');
+    const label = rawLabel.replace(/\btrust\b/g, WM_I18N.t('社長への反応')).replace(/\brivalry\b/g, WM_I18N.t('因縁'));
     let cls = '';
     const deltaStr = item.delta != null ? String(item.delta) : '';
     if (deltaStr.startsWith('+')) cls = 'pos';
     else if (deltaStr.startsWith('-')) cls = isRivalryImpact ? 'resolved' : 'neg';
     const display = isOrgTrust
-      ? (deltaStr.startsWith('+') ? '納得した様子' : deltaStr.startsWith('-') || deltaStr.startsWith('−') ? '不満を残した様子' : '態度に変化')
-      : (isRivalryImpact && deltaStr.startsWith('-') ? `${deltaStr}(解消)` : deltaStr);
+      ? (deltaStr.startsWith('+') ? WM_I18N.t('納得した様子') : deltaStr.startsWith('-') || deltaStr.startsWith('−') ? WM_I18N.t('不満を残した様子') : WM_I18N.t('態度に変化'))
+      : (isRivalryImpact && deltaStr.startsWith('-') ? WM_I18N.t('{delta}(解消)', { delta: deltaStr }) : deltaStr);
     return `<div class="mdl-a-result-row"><span>${escHtmlSafe(label)}</span><strong class="${cls}">${escHtmlSafe(display)}</strong></div>`;
   }).join('');
 
@@ -14722,7 +14722,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
     const ovr = fighter === fA ? ovrA : ovrB;
     return `<article class="mdl-a-title-person${defeated ? ' defeated' : ''}">
       <div class="mdl-a-title-bubble"><span>${escHtmlSafe(line || '')}</span></div>
-      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${escHtmlSafe(fighter.name || '')}の詳細を開く">
+      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${WM_I18N.t('{name}の詳細を開く', { name: escHtmlSafe(fighter.name || '') })}">
         <span class="mdl-a-title-portrait-fallback">${escHtmlSafe((fighter.name || '?').charAt(0))}</span>
         ${portrait}
       </button>
@@ -14732,13 +14732,13 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   };
 
   const resultLine = isDraw
-    ? `${escHtmlSafe(fA.name)}と${escHtmlSafe(fB.name)}は決着つかず。`
-    : `${escHtmlSafe(winChar.name)}が${escHtmlSafe(finText)}で勝利。`;
+    ? WM_I18N.t('{a}と{b}は決着つかず。', { a: escHtmlSafe(fA.name), b: escHtmlSafe(fB.name) })
+    : WM_I18N.t('{name}が{fin}で勝利。', { name: escHtmlSafe(winChar.name), fin: escHtmlSafe(finText) });
   const narrationHtml = [
     resultLine,
-    escHtmlSafe(applyResult.resultText || `${factionName}内の序列を懸けた一戦に決着がついた。`),
+    escHtmlSafe(applyResult.resultText || WM_I18N.t('{faction}内の序列を懸けた一戦に決着がついた。', { faction: factionName })),
   ].map(line => `<span>${line}</span>`).join('');
-  const summaryRows = `<div class="mdl-a-result-row"><span>試合結果</span><strong>${escHtmlSafe(finText)} · ${Number(matchResult.turns) || 0} TURN · 評価 ${Number(matchResult.mq) || 0}</strong></div>${impactRows}`;
+  const summaryRows = `<div class="mdl-a-result-row"><span>${WM_I18N.t('試合結果')}</span><strong>${escHtmlSafe(finText)} · ${Number(matchResult.turns) || 0} TURN · ${WM_I18N.t('評価 {n}', { n: Number(matchResult.mq) || 0 })}</strong></div>${impactRows}`;
   const firstPerson = isDraw ? fA : winChar;
   const secondPerson = isDraw ? fB : loseChar;
   const firstLine = isDraw ? '' : winnerLine;
@@ -14746,7 +14746,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   const metaHtml = `COMMON-1 ・ ${_mdlASeasonLabel(typeof G !== 'undefined' ? G : {})} ・ ${escHtmlSafe(factionName)}`;
 
   const html = `
-    ${_mdlAHeader('⚔ 派閥内対決・決着', metaHtml, { urgent: !!applyResult.isUpset })}
+    ${_mdlAHeader(`⚔ ${WM_I18N.t('派閥内対決・決着')}`, metaHtml, { urgent: !!applyResult.isUpset })}
     <div class="mdl-a-title-result">
       <div class="mdl-a-title-narration">${narrationHtml}</div>
       <div class="mdl-a-title-pair">
@@ -14756,7 +14756,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
       <div class="mdl-a-result-summary">${summaryRows}</div>
     </div>
     <div class="mdl-a-prompt mdl-a-title-actions">
-      <button class="mdl-a-continue-btn" id="c1rCloseBtn">結果を確認する</button>
+      <button class="mdl-a-continue-btn" id="c1rCloseBtn">${WM_I18N.t('結果を確認する')}</button>
     </div>
   `;
   if (!_mdlAOpen(html, { wide: true, topAligned: true })) { if (onClose) onClose(); return; }
@@ -14774,7 +14774,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
 function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
-  const orgName = event.orgName || '他団体';
+  const orgName = event.orgName || WM_I18N.t('他団体');
   const orgCfg = RIVAL_ORGS.find(o => o.id === event.orgId) || { color: '#e74c3c', emoji: '' };
   const eColor = orgCfg.color;
   const won = matchResult.winner === 'left';
@@ -14811,13 +14811,13 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   if (draw) winnerLabel = 'NO CONTEST';
   else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
 
-  const playerOrgName = G.orgName || 'プレイヤー団体';
+  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
 
   let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
 
   html += `<div class="pb-banner">
     <div class="pb-live is-b3">⚔ CHALLENGE MATCH</div>
-    <div class="pb-banner-title is-b3">挑 戦 状 — 結 果</div>
+    <div class="pb-banner-title is-b3">${WM_I18N.t('挑 戦 状 — 結 果')}</div>
     <div class="pb-banner-sub">${escHtml(playerOrgName)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(orgCfg.emoji || '')} ${escHtml(orgName)}</div>
   </div>`;
 
@@ -14834,7 +14834,7 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
       <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
-      <div class="pb-score-lbl">評価</div>
+      <div class="pb-score-lbl">${WM_I18N.t('評価')}</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(matchResult.finType, matchResult.finMove))}</div>
@@ -14867,7 +14867,7 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
 
   // Footer
   html += `<div class="pb-footer">
-    <button type="button" class="pb-close-btn" onclick="App.closeB3Result()">${draw ? '了解' : '次へ'}</button>
+    <button type="button" class="pb-close-btn" onclick="App.closeB3Result()">${draw ? WM_I18N.t('了解') : WM_I18N.t('次へ')}</button>
   </div>`;
 
   html += `</div>`; // .pb-container
@@ -14891,14 +14891,14 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
 
   let html = `<div style="text-align:center;padding:8px 0 4px">
     <div style="font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:6px;color:#aaa">Conflict Resolution</div>
-    <div style="font-size:20px;font-weight:700;letter-spacing:4px;color:#e8e0d0">💥 決 着 の 試 合</div>
+    <div style="font-size:20px;font-weight:700;letter-spacing:4px;color:#e8e0d0">💥 ${WM_I18N.t('決 着 の 試 合')}</div>
   </div>`;
 
   // 介入バフ表示
   if (interventionChoice === 0) {
-    html += `<div style="text-align:center;font-size:12px;color:#2ecc71;margin:4px 0 8px">🤫 ${f1.name}を激励済み（OVR+5バフ）</div>`;
+    html += `<div style="text-align:center;font-size:12px;color:#2ecc71;margin:4px 0 8px">${WM_I18N.t('🤫 {name}を激励済み（OVR+5バフ）', { name: f1.name })}</div>`;
   } else if (interventionChoice === 1) {
-    html += `<div style="text-align:center;font-size:12px;color:#2ecc71;margin:4px 0 8px">🤫 ${f2.name}を激励済み（OVR+5バフ）</div>`;
+    html += `<div style="text-align:center;font-size:12px;color:#2ecc71;margin:4px 0 8px">${WM_I18N.t('🤫 {name}を激励済み（OVR+5バフ）', { name: f2.name })}</div>`;
   }
 
   // セリフ吹き出し
@@ -14954,8 +14954,8 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
 
   // ボタン
   html += `<div class="mc-act">
-    <button class="mc-bw" style="border:2px solid ${eColor};background:linear-gradient(135deg,rgba(155,89,182,0.15),rgba(231,76,60,0.03))" onclick="App.b2WatchMatch()">🎬 試合を観る</button>
-    <button class="mc-bs" onclick="App.b2SkipMatch()">≫ スキップ</button>
+    <button class="mc-bw" style="border:2px solid ${eColor};background:linear-gradient(135deg,rgba(155,89,182,0.15),rgba(231,76,60,0.03))" onclick="App.b2WatchMatch()">🎬 ${WM_I18N.t('試合を観る')}</button>
+    <button class="mc-bs" onclick="App.b2SkipMatch()">≫ ${WM_I18N.t('スキップ')}</button>
   </div>`;
 
   box.innerHTML = html;
@@ -14992,31 +14992,31 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
 
   // 介入ラベル
-  let interventionLabel = '放置（介入なし）';
-  if (interventionChoice === 0) interventionLabel = `🤫 ${f1.name}を激励`;
-  else if (interventionChoice === 1) interventionLabel = `🤫 ${f2.name}を激励`;
+  let interventionLabel = WM_I18N.t('放置（介入なし）');
+  if (interventionChoice === 0) interventionLabel = WM_I18N.t('🤫 {name}を激励', { name: f1.name });
+  else if (interventionChoice === 1) interventionLabel = WM_I18N.t('🤫 {name}を激励', { name: f2.name });
 
   // 関係性変動 (ビジュアル向け簡略表記)
   const intensePenalty = interventionChoice !== 2 && ((interventionChoice === 0 && !won1) || (interventionChoice === 1 && won1));
-  const relationText = draw ? '互いに認め合う' : (intensePenalty ? '深い亀裂' : '小さな揺らぎ');
+  const relationText = draw ? WM_I18N.t('互いに認め合う') : (intensePenalty ? WM_I18N.t('深い亀裂') : WM_I18N.t('小さな揺らぎ'));
 
   let html = `<div class="pb-container">`;
 
   html += `<div class="pb-banner">
     <div class="pb-live is-b2">💥 CONFLICT RESOLUTION</div>
-    <div class="pb-banner-title is-b2">決 着 の 試 合 — 結 果</div>
+    <div class="pb-banner-title is-b2">${WM_I18N.t('決 着 の 試 合 — 結 果')}</div>
     <div class="pb-banner-sub">${escHtml(f1.name)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(f2.name)}</div>
   </div>`;
 
   // 介入選択バナー
   if (interventionChoice === 0 || interventionChoice === 1) {
-    html += `<div class="pb-b2-intervention">${escHtml(interventionLabel)}（OVR+5バフ適用）</div>`;
+    html += `<div class="pb-b2-intervention">${escHtml(interventionLabel)}${WM_I18N.t('（OVR+5バフ適用）')}</div>`;
   }
 
   // Scoreboard 4: Intervention / Verdict / MQ / Bond/Rivalry 変動
   html += `<div class="pb-score-strip" style="grid-template-columns:1.3fr 1.2fr 1fr 1.2fr">
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="font-size:13px;color:var(--stage-text-main)">${interventionChoice === 2 ? '放置' : (interventionChoice === 0 ? `${escHtml(f1.name)}激励` : `${escHtml(f2.name)}激励`)}</div>
+      <div class="pb-score-val" style="font-size:13px;color:var(--stage-text-main)">${interventionChoice === 2 ? WM_I18N.t('放置') : (interventionChoice === 0 ? WM_I18N.t('{name}激励', { name: escHtml(f1.name) }) : WM_I18N.t('{name}激励', { name: escHtml(f2.name) }))}</div>
       <div class="pb-score-lbl">Intervention</div>
     </div>
     <div class="pb-score-cell">
@@ -15026,7 +15026,7 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
     <div class="pb-score-cell">
       <div class="pb-score-stars">${_pbStars(matchResult.mq || 0)}</div>
       <div class="pb-score-val" style="margin-top:3px">${matchResult.mq || 0}</div>
-      <div class="pb-score-lbl">評価</div>
+      <div class="pb-score-lbl">${WM_I18N.t('評価')}</div>
     </div>
     <div class="pb-score-cell">
       <div class="pb-score-val" style="font-size:13px;color:var(--c-rivalry)">${escHtml(relationText)}</div>
@@ -15036,7 +15036,7 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
 
   // 試合行
   html += `<div class="pb-matches">`;
-  html += `<div class="pb-divider is-main">💥 CONFLICT — 決着の試合</div>`;
+  html += `<div class="pb-divider is-main">💥 CONFLICT — ${WM_I18N.t('決着の試合')}</div>`;
   html += `<div class="pb-mrow is-main is-b2${hasDialogue ? ' has-dialogue' : ''}">`;
   html += _pbFighterBlock('left', f1, leftCls, f1.style || '—', f1Line);
   html += _pbResultColumn({
@@ -15053,19 +15053,19 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
 
   // 対立解決サマリー (質的表現、数値非表示 — CLAUDE.md 数値哲学)
   html += `<div class="pb-b2-resolution">
-    <div class="pb-b2-resolution-label">💭 対立解決</div>`;
+    <div class="pb-b2-resolution-label">💭 ${WM_I18N.t('対立解決')}</div>`;
   if (!draw) {
-    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(winChar.name)}</b>：社長の裁定に納得し、気持ちにも張りが戻った</span></div>`;
-    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(loseChar.name)}</b>：${intensePenalty ? '社長の裁定に強い不満とわだかまりを残した' : '少し不満そうだが、気持ちは立て直している'}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(winChar.name)}</b>${WM_I18N.t('：社長の裁定に納得し、気持ちにも張りが戻った')}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(loseChar.name)}</b>：${intensePenalty ? WM_I18N.t('社長の裁定に強い不満とわだかまりを残した') : WM_I18N.t('少し不満そうだが、気持ちは立て直している')}</span></div>`;
   } else {
-    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f1.name)}</b>：互いに力を認め合い、表情が和らいだ</span></div>`;
-    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f2.name)}</b>：互いに力を認め合い、表情が和らいだ</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f1.name)}</b>${WM_I18N.t('：互いに力を認め合い、表情が和らいだ')}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f2.name)}</b>${WM_I18N.t('：互いに力を認め合い、表情が和らいだ')}</span></div>`;
   }
   html += `</div>`;
 
   // Footer
   html += `<div class="pb-footer">
-    <button type="button" class="pb-close-btn" onclick="App.closeB2Result()">了解</button>
+    <button type="button" class="pb-close-btn" onclick="App.closeB2Result()">${WM_I18N.t('了解')}</button>
   </div>`;
 
   html += `</div>`; // .pb-container
@@ -15106,14 +15106,14 @@ function _buildB4Modal(event, state, roster) {
     available = roster.filter(f => !f.injury && !f.isRental);
   }
 
-  const outletName = event.outletName || 'メディア';
+  const outletName = event.outletName || WM_I18N.t('メディア');
 
   if (activityType && typeof TALENT_ACTIVITY_LABELS !== 'undefined') {
     // 新タレント活動モーダル
     const icon = TALENT_ACTIVITY_ICONS[activityType] || '🎤';
-    const label = TALENT_ACTIVITY_LABELS[activityType] || 'タレント活動';
+    const label = TALENT_ACTIVITY_LABELS[activityType] || WM_I18N.t('タレント活動');
 
-    let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">${icon} ${outletName}からの${label}オファー</div>`;
+    let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">${icon} ${WM_I18N.t('{outlet}からの{label}オファー', { outlet: outletName, label })}</div>`;
 
     if (event.detail) {
       html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
@@ -15121,15 +15121,15 @@ function _buildB4Modal(event, state, roster) {
 
     // 効果説明
     const effectDesc = {
-      cm: 'メディア収入がアップします',
-      gravure: 'グッズ収入がアップします',
-      variety: 'メディア収入がアップします',
-      brand: 'グッズ収入がアップします（2週間）',
-      fashion: '人気が即座にアップします',
-      fan: '選手が団体への愛着を深めます',
+      cm: WM_I18N.t('メディア収入がアップします'),
+      gravure: WM_I18N.t('グッズ収入がアップします'),
+      variety: WM_I18N.t('メディア収入がアップします'),
+      brand: WM_I18N.t('グッズ収入がアップします（2週間）'),
+      fashion: WM_I18N.t('人気が即座にアップします'),
+      fan: WM_I18N.t('選手が団体への愛着を深めます'),
     };
     html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:8px">
-      参加する選手を選んでください。${effectDesc[activityType] || ''}
+      ${WM_I18N.t('参加する選手を選んでください。')}${effectDesc[activityType] || ''}
     </div>`;
 
     // 推薦ヒント（相性○の選手を最大2名表示）
@@ -15142,7 +15142,7 @@ function _buildB4Modal(event, state, roster) {
 
     if (recommendations.length > 0) {
       html += `<div style="font-size:11px;color:#f1c40f;margin-bottom:10px;padding:6px 8px;background:rgba(241,196,15,0.08);border-radius:4px;border:1px solid rgba(241,196,15,0.2)">
-        💡 おすすめ：${recommendations.join('、')}
+        💡 ${WM_I18N.t('おすすめ')}：${recommendations.join('、')}
       </div>`;
     }
 
@@ -15152,14 +15152,14 @@ function _buildB4Modal(event, state, roster) {
       const pop = Math.round(f.popularity || 0);
       const face = portraitImg(f.id, 40);
       const mult = Engine.eventSystem.calcTalentMultiplier(f, activityType);
-      const compatTag = mult >= 1.4 ? '<span style="color:#f1c40f;font-size:9px"> ★適性◎</span>'
-        : mult <= 0.6 ? '<span style="color:#e74c3c;font-size:9px"> △苦手</span>' : '';
+      const compatTag = mult >= 1.4 ? `<span style="color:#f1c40f;font-size:9px"> ${WM_I18N.t('★適性◎')}</span>`
+        : mult <= 0.6 ? `<span style="color:#e74c3c;font-size:9px"> ${WM_I18N.t('△苦手')}</span>` : '';
       // 選択カード内の顔はクリック=選択。portraitImgに第4引数(clickable)を渡すと
       // stopPropagation+選手詳細が選択リスナーを飲み込み、顔を押しても選べなくなる
       html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
         ${face}
         <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}${compatTag}</div>
-        <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / 人気 ${pop}</div>
+        <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / ${WM_I18N.t('人気')} ${pop}</div>
       </div>`;
     });
     html += '</div>';
@@ -15167,17 +15167,17 @@ function _buildB4Modal(event, state, roster) {
   }
 
   // 既存spotlight表示
-  const subTypeLabels = { youngStar: '若手特集', ace: 'エース密着', veteran: 'ベテラン特集' };
-  const subLabel = subTypeLabels[subType] || '密着取材';
+  const subTypeLabels = { youngStar: WM_I18N.t('若手特集'), ace: WM_I18N.t('エース密着'), veteran: WM_I18N.t('ベテラン特集') };
+  const subLabel = subTypeLabels[subType] || WM_I18N.t('密着取材');
 
-  let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">📺 ${outletName}からの${subLabel}オファー</div>`;
+  let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">📺 ${WM_I18N.t('{outlet}からの{label}オファー', { outlet: outletName, label: subLabel })}</div>`;
 
   if (event.detail) {
     html += `<div style="font-size:13px;color:var(--text-sub);margin-bottom:10px;padding:10px;background:rgba(200,190,170,0.04);border-radius:6px">${event.detail}</div>`;
   }
 
   html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
-    推薦する選手を選んでください。取材期間中（3興行）にいい試合を見せれば、大きな注目が集まります。
+    ${WM_I18N.t('推薦する選手を選んでください。取材期間中（3興行）にいい試合を見せれば、大きな注目が集まります。')}
   </div>`;
 
   html += '<div class="large-evt-roster-grid">';
@@ -15188,7 +15188,7 @@ function _buildB4Modal(event, state, roster) {
     html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
       ${face}
       <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
-      <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / 人気 ${pop}</div>
+      <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / ${WM_I18N.t('人気')} ${pop}</div>
     </div>`;
   });
   html += '</div>';
@@ -15223,7 +15223,7 @@ function showNotifEventToast(event) {
   const _fighterById = id => (G.roster || []).find(f => String(f.id) === String(id));
   const _fighterName = (id, fallback) => {
     const fighter = _fighterById(id);
-    return fighter ? fighter.name : (fallback || '選手');
+    return fighter ? fighter.name : (fallback || WM_I18N.t('選手'));
   };
   const _upperUrl = id => (typeof getUpperUrl === 'function' ? getUpperUrl(id) : _fUrl(id));
   let portraitsHtml = '';
@@ -15317,15 +15317,15 @@ function _renderNextMatchDialogue() {
   box.className = `notif-modal-box verdict u3b-theme-dark ${d.isUpset ? 'tone-fate' : 'tone-confront'}`;
   box.innerHTML = `
     <div class="vd-head">
-      <div class="vd-title">${d.isUpset ? '番 狂 わ せ' : '因 縁 の 一 戦'}</div>
-      <div class="vd-sub">${escHtml(d.matchLabel || '')} ・ ${rb.emoji || '🔥'}${escHtml(rb.label || '因縁')}</div>
+      <div class="vd-title">${d.isUpset ? WM_I18N.t('番 狂 わ せ') : WM_I18N.t('因 縁 の 一 戦')}</div>
+      <div class="vd-sub">${escHtml(d.matchLabel || '')} ・ ${rb.emoji || '🔥'}${escHtml(rb.label || WM_I18N.t('因縁'))}</div>
     </div>
     <div class="vd-stage">
       ${_rivalryCol(d.winnerId, d.winnerName, d.winLine, true)}
       <div class="vd-vs">
         <div class="vd-vs-line"></div>
         <div class="vd-vs-icon">${d.isUpset ? '⚡' : '🔥'}</div>
-        <div class="vd-vs-label">${d.isUpset ? '下 剋 上' : '試 合 結 果'}</div>
+        <div class="vd-vs-label">${d.isUpset ? WM_I18N.t('下 剋 上') : WM_I18N.t('試 合 結 果')}</div>
         <div class="vd-vs-line"></div>
       </div>
       ${_rivalryCol(d.loserId, d.loserName, d.loseLine, false)}
@@ -15398,7 +15398,7 @@ function _renderGlimpseA(glimpse) {
 
   box.innerHTML = `
     <div class="glimpse-single-card">${_renderGlimpseCardHtml(glimpse)}</div>
-    <button class="notif-modal-btn" onclick="closeNotifModal()">見届ける</button>
+    <button class="notif-modal-btn" onclick="closeNotifModal()">${WM_I18N.t('見届ける')}</button>
   `;
   const card = box.querySelector('.gc-card');
   if (card) card.classList.add('in');
@@ -15416,7 +15416,7 @@ function _renderGlimpseB(glimpse) {
   box.className = 'notif-modal-box';
   box.innerHTML = `
     <div class="glimpse-single-card">${_renderGlimpseCardHtml(glimpse)}</div>
-    <button class="notif-modal-btn" onclick="closeNotifModal()">見届ける</button>
+    <button class="notif-modal-btn" onclick="closeNotifModal()">${WM_I18N.t('見届ける')}</button>
   `;
   const card = box.querySelector('.gc-card');
   if (card) card.classList.add('in');
@@ -15556,11 +15556,11 @@ function _renderGlimpseCascade(glimpses) {
 
   const cardsHtml = glimpses.map(_renderGlimpseCardHtml).join('');
   box.innerHTML = `
-    <button class="glimpse-cascade-skip" onclick="closeGlimpseCascade()">スキップ ›</button>
+    <button class="glimpse-cascade-skip" onclick="closeGlimpseCascade()">${WM_I18N.t('スキップ')} ›</button>
     <div class="glimpse-cascade-title">SHOW AFTERMATH</div>
-    <div class="glimpse-cascade-heading">興行のあとで…</div>
+    <div class="glimpse-cascade-heading">${WM_I18N.t('興行のあとで…')}</div>
     <div class="glimpse-cascade-cards" id="glimpseCascadeCards">${cardsHtml}</div>
-    <button class="glimpse-cascade-done" id="glimpseCascadeDone" onclick="closeGlimpseCascade()">見届ける</button>
+    <button class="glimpse-cascade-done" id="glimpseCascadeDone" onclick="closeGlimpseCascade()">${WM_I18N.t('見届ける')}</button>
   `;
   overlay.classList.add('active');
 
@@ -15639,30 +15639,30 @@ function showLeagueElevationCeremony(state, onDone) {
     <div class="le-noise"></div>
     <div class="le-flash" id="leFlash"></div>
     <div class="le-click-area disabled" id="leClickArea"></div>
-    <button type="button" class="le-click-hint" id="leClickHint" data-le-next><span class="blink">▼</span> クリックで次へ</button>
+    <button type="button" class="le-click-hint" id="leClickHint" data-le-next><span class="blink">▼</span> ${WM_I18N.t('クリックで次へ')}</button>
     <div class="le-content" id="leContent" data-slide="1">
       <div class="le-slide-impact">
         <div class="le-impact-icon">⚡</div>
-        <div class="le-impact-title">業界激震</div>
+        <div class="le-impact-title">${WM_I18N.t('業界激震')}</div>
         <div class="le-impact-line"></div>
-        <button class="le-btn" id="leNextBtn">次へ ▶</button>
+        <button class="le-btn" id="leNextBtn">${WM_I18N.t('次へ')} ▶</button>
       </div>
       <div class="le-slide-sequence">
         <div class="le-cutin-container">
           <div class="le-cutin from-left" id="leCutinS" style="--org-color:${sColor}">
             <div class="le-cutin-color"></div><div class="le-cutin-slash"></div>
             <div class="le-cutin-stand">${_buildTrioHtml(top3S)}</div>
-            <div class="le-cutin-label">${orgIconHtml('org_s', 36)}<div class="le-cutin-label-name">${sName}</div><div class="le-cutin-label-grade">S級</div></div>
+            <div class="le-cutin-label">${orgIconHtml('org_s', 36)}<div class="le-cutin-label-name">${sName}</div><div class="le-cutin-label-grade">${WM_I18N.t('S級')}</div></div>
           </div>
           <div class="le-cutin from-right" id="leCutinA" style="--org-color:${aColor}">
             <div class="le-cutin-color"></div><div class="le-cutin-slash"></div>
             <div class="le-cutin-stand">${_buildTrioHtml(top3A)}</div>
-            <div class="le-cutin-label">${orgIconHtml('org_a', 36)}<div class="le-cutin-label-name">${aName}</div><div class="le-cutin-label-grade">A級</div></div>
+            <div class="le-cutin-label">${orgIconHtml('org_a', 36)}<div class="le-cutin-label-name">${aName}</div><div class="le-cutin-label-grade">${WM_I18N.t('A級')}</div></div>
           </div>
           <div class="le-cutin from-left" id="leCutinB" style="--org-color:${bColor}">
             <div class="le-cutin-color"></div><div class="le-cutin-slash"></div>
             <div class="le-cutin-stand">${_buildTrioHtml(top3B)}</div>
-            <div class="le-cutin-label">${orgIconHtml('org_b', 36)}<div class="le-cutin-label-name">${bName}</div><div class="le-cutin-label-grade">B級</div></div>
+            <div class="le-cutin-label">${orgIconHtml('org_b', 36)}<div class="le-cutin-label-name">${bName}</div><div class="le-cutin-label-grade">${WM_I18N.t('B級')}</div></div>
           </div>
         </div>
         <div class="le-narration-area">
@@ -15674,7 +15674,7 @@ function showLeagueElevationCeremony(state, onDone) {
         </div>
         <div class="le-closing-block">
           <div class="le-closing-text" id="leClosingText">もはや安泰の時代は終わった。<br><em>真の群雄割拠が始まる——</em></div>
-          <button class="le-btn" id="leCloseBtn">続ける ▶</button>
+          <button class="le-btn" id="leCloseBtn">${WM_I18N.t('続ける')} ▶</button>
         </div>
       </div>
     </div>
@@ -15916,12 +15916,12 @@ function showEndingCeremony(data, onDone) {
 
   // スライド1: タイトル（業界制覇）
   slideInfo.push({
-    label: '業界制覇',
+    label: WM_I18N.t('業界制覇'),
     html: `<div class="award-card" style="text-align:center">
-      <div class="award-badge" style="justify-content:center"><span class="badge-jp">シーズン ${data.season}</span></div>
+      <div class="award-badge" style="justify-content:center"><span class="badge-jp">${WM_I18N.t('シーズン')} ${data.season}</span></div>
       <div style="font-size:48px;margin:16px 0">🏆</div>
       <div style="font-family:'Noto Serif JP',serif;font-size:22px;font-weight:900;letter-spacing:6px;color:var(--gold);
-        text-shadow:0 0 30px rgba(212,168,67,0.4);margin-bottom:12px">業 界 制 覇</div>
+        text-shadow:0 0 30px rgba(212,168,67,0.4);margin-bottom:12px">${WM_I18N.t('業 界 制 覇')}</div>
       <div style="font-size:14px;color:var(--text-sub);line-height:2.0;margin-top:8px">
         団体立ち上げから${data.season}年。<br>ついに「${data.orgName}」が業界の頂点に立った。
       </div>
@@ -15931,32 +15931,32 @@ function showEndingCeremony(data, onDone) {
   // スライド2: 道のりサマリー
   const peakPop = Math.round(data.peakOrgPop || 0);
   slideInfo.push({
-    label: '頂点への道のり',
+    label: WM_I18N.t('頂点への道のり'),
     html: `<div class="award-card">
-      <div class="award-badge"><span class="badge-icon">📜</span><span class="badge-jp">頂点への道のり</span></div>
+      <div class="award-badge"><span class="badge-icon">📜</span><span class="badge-jp">${WM_I18N.t('頂点への道のり')}</span></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
-          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">活動期間</span>
-          <span style="font-size:14px;font-weight:700;color:var(--text)">${data.season} シーズン</span>
+          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('活動期間')}</span>
+          <span style="font-size:14px;font-weight:700;color:var(--text)">${data.season} ${WM_I18N.t('シーズン')}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
-          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">最終レーティング</span>
+          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('最終レーティング')}</span>
           <span style="font-size:14px;font-weight:700;color:var(--gold-light)">${data.playerRating}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
-          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">最高団体人気</span>
+          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('最高団体人気')}</span>
           <span style="font-size:14px;font-weight:700;color:var(--text)">${peakPop}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
-          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">興行回数</span>
+          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('興行回数')}</span>
           <span style="font-size:14px;font-weight:700;color:var(--text)">${data.totalShows} 回</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
-          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">ベストマッチ</span>
-          <span style="font-size:14px;font-weight:700;color:var(--gold-light)">評価 ${data.bestMQ}</span>
+          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('ベストマッチ')}</span>
+          <span style="font-size:14px;font-weight:700;color:var(--gold-light)">${WM_I18N.t('評価 {n}', { n: data.bestMQ })}</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0">
-          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">殿堂入り</span>
+          <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('殿堂入り')}</span>
           <span style="font-size:14px;font-weight:700;color:var(--text)">${data.hallOfFameCount} 名</span>
         </div>
       </div>
@@ -15978,9 +15978,9 @@ function showEndingCeremony(data, onDone) {
       </div>`;
     }).join('');
     slideInfo.push({
-      label: '選手たちの声',
+      label: WM_I18N.t('選手たちの声'),
       html: `<div class="award-card" style="text-align:center">
-        <div class="award-badge" style="justify-content:center"><span class="badge-icon">🎤</span><span class="badge-jp">選手たちの声</span></div>
+        <div class="award-badge" style="justify-content:center"><span class="badge-icon">🎤</span><span class="badge-jp">${WM_I18N.t('選手たちの声')}</span></div>
         <div style="display:flex;justify-content:center;gap:16px;margin:16px 0 8px">${fHtml}</div>
       </div>`
     });
@@ -16003,9 +16003,9 @@ function showEndingCeremony(data, onDone) {
       </div>`;
     }).join('');
     slideInfo.push({
-      label: 'スタッフの声',
+      label: WM_I18N.t('スタッフの声'),
       html: `<div class="award-card" style="text-align:center">
-        <div class="award-badge" style="justify-content:center"><span class="badge-icon">🎓</span><span class="badge-jp">スタッフの声</span></div>
+        <div class="award-badge" style="justify-content:center"><span class="badge-icon">🎓</span><span class="badge-jp">${WM_I18N.t('スタッフの声')}</span></div>
         <div style="display:flex;justify-content:center;gap:20px;margin:16px 0 8px">${cHtml}</div>
       </div>`
     });
@@ -16053,10 +16053,10 @@ function showEndingCeremony(data, onDone) {
 
   // ファンファーレ
   fanfareEl.innerHTML = `
-    <div class="fanfare-line-1">シーズン ${data.season}</div>
-    <div class="fanfare-line-2">業界制覇</div>
+    <div class="fanfare-line-1">${WM_I18N.t('シーズン')} ${data.season}</div>
+    <div class="fanfare-line-2">${WM_I18N.t('業界制覇')}</div>
     <div class="fanfare-divider"></div>
-    <div class="fanfare-sub">🏆 頂点到達</div>`;
+    <div class="fanfare-sub">🏆 ${WM_I18N.t('頂点到達')}</div>`;
   fanfareEl.style.animation = 'none';
   requestAnimationFrame(() => { fanfareEl.style.animation = ''; });
 
@@ -16074,8 +16074,8 @@ function showEndingCeremony(data, onDone) {
     slides[current].style.animation = 'none';
     requestAnimationFrame(() => { slides[current].style.animation = ''; });
 
-    headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[current].label;
-    btnNext.textContent = current === TOTAL - 1 ? '続ける ▶' : '次へ　→';
+    headerLabel.textContent = WM_I18N.t('シーズン') + ' ' + data.season + ' — ' + slideInfo[current].label;
+    btnNext.textContent = current === TOTAL - 1 ? `${WM_I18N.t('続ける')} ▶` : `${WM_I18N.t('次へ')}　→`;
 
     setTimeout(() => _awPlaySE('normal'), 50);
   }
@@ -16107,10 +16107,10 @@ function showEndingCeremony(data, onDone) {
   btnNext.onclick = nextSlide;
 
   // 表示開始
-  headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[0].label;
+  headerLabel.textContent = WM_I18N.t('シーズン') + ' ' + data.season + ' — ' + slideInfo[0].label;
   btnNext.disabled = false;
   btnNext.classList.remove('disabled');
-  btnNext.textContent = '次へ　→';
+  btnNext.textContent = `${WM_I18N.t('次へ')}　→`;
   overlay.classList.add('active');
 
   setTimeout(() => _awPlayFanfare(), 1000);
@@ -16130,25 +16130,25 @@ function showGameOverScreen(summary) {
 
   box.innerHTML = `
     <div class="gameover-title">💀 GAME OVER</div>
-    <div class="gameover-subtitle">「${summary.orgName}」は資金難により活動停止を発表した。</div>
-    <div class="gameover-divider">─── 団体の足跡 ───</div>
+    <div class="gameover-subtitle">${WM_I18N.t('「{org}」は資金難により活動停止を発表した。', { org: summary.orgName })}</div>
+    <div class="gameover-divider">─── ${WM_I18N.t('団体の足跡')} ───</div>
     <div class="gameover-stats">
-      <div class="gameover-stat-row"><span>活動期間</span><span>${summary.season} シーズン</span></div>
-      <div class="gameover-stat-row"><span>最高ランク</span><span>${summary.bestRank} 位</span></div>
-      <div class="gameover-stat-row"><span>最高資金</span><span>${fmt(summary.peakFunds)} 万</span></div>
-      <div class="gameover-stat-row"><span>最高団体人気</span><span>${fmt(Math.round(summary.peakOrgPop))}</span></div>
-      <div class="gameover-stat-row"><span>興行回数</span><span>${summary.totalShows} 回</span></div>
-      <div class="gameover-stat-row"><span>ベストマッチ</span><span>${summary.bestMQMatch || '—'} (評価 ${summary.bestMQ})</span></div>
-      <div class="gameover-stat-row"><span>殿堂入り</span><span>${summary.hallOfFameCount} 名</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('活動期間')}</span><span>${summary.season} シーズン</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('最高ランク')}</span><span>${summary.bestRank} 位</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('最高資金')}</span><span>${fmt(summary.peakFunds)} 万</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('最高団体人気')}</span><span>${fmt(Math.round(summary.peakOrgPop))}</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('興行回数')}</span><span>${summary.totalShows} 回</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('ベストマッチ')}</span><span>${summary.bestMQMatch || '—'} (${WM_I18N.t('評価 {n}', { n: summary.bestMQ })})</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('殿堂入り')}</span><span>${summary.hallOfFameCount} 名</span></div>
     </div>
     <button class="gameover-btn" id="gameoverBtn1" onclick="
       document.getElementById('gameoverBtn1').style.display='none';
       document.getElementById('gameoverBtn2').style.display='block';
-    ">成績を噛み締めた</button>
+    ">${WM_I18N.t('成績を噛み締めた')}</button>
     <button class="gameover-btn secondary" id="gameoverBtn2" style="display:none" onclick="
       document.getElementById('gameoverOverlay').classList.remove('active');
       App.showTitleScreen();
-    ">タイトルに戻る</button>
+    ">${WM_I18N.t('タイトルに戻る')}</button>
   `;
   overlay.classList.add('active');
   // WM-H06「ゲームオーバー(団体解散)」。8秒 One Shot・ループなし(台帳の仕様どおり)。
@@ -16182,22 +16182,22 @@ function showGameOverCeremony(data, onDone) {
   }
 
   const reason = data.gameOverReason || 'timeout';
-  const reasonHeadline = reason === 'collapse' ? '【崩壊】'
-                       : reason === 'season_end' ? '【シーズン終了】'
-                       : '【活動停止】';
+  const reasonHeadline = reason === 'collapse' ? WM_I18N.t('【崩壊】')
+                       : reason === 'season_end' ? WM_I18N.t('【シーズン終了】')
+                       : WM_I18N.t('【活動停止】');
 
   const slideInfo = [];
 
   // スライド1: 解散告知 + 黒田コラム
   slideInfo.push({
-    label: '解散の告知',
+    label: WM_I18N.t('解散の告知'),
     html: `<div class="award-card" style="text-align:center;background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a;color:#cdb8b8">
-      <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-jp" style="color:#cca0a0">シーズン ${data.season}</span></div>
+      <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-jp" style="color:#cca0a0">${WM_I18N.t('シーズン')} ${data.season}</span></div>
       <div style="font-size:42px;margin:8px 0;filter:grayscale(0.5)">💀</div>
       <div style="font-family:'Noto Serif JP',serif;font-size:24px;font-weight:900;letter-spacing:8px;color:#d8a8a8;
-        text-shadow:0 0 24px rgba(170,30,30,0.3);margin-bottom:10px">解 散</div>
+        text-shadow:0 0 24px rgba(170,30,30,0.3);margin-bottom:10px">${WM_I18N.t('解 散')}</div>
       <div style="font-size:13px;color:#a89898;line-height:1.9;margin:8px 0 16px">
-        ${reasonHeadline}<br>「${data.orgName}」は活動停止を発表した。
+        ${reasonHeadline}<br>${WM_I18N.t('「{org}」は活動停止を発表した。', { org: data.orgName })}
       </div>
       <div style="border-top:1px solid #3a1818;margin:12px 0;padding-top:14px">
         <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#cc8888;text-transform:uppercase;margin-bottom:8px">黒田 沙智子 編集記事</div>
@@ -16208,36 +16208,36 @@ function showGameOverCeremony(data, onDone) {
 
   // スライド2: 数字が示す現実
   slideInfo.push({
-    label: '団体の足跡',
+    label: WM_I18N.t('団体の足跡'),
     html: `<div class="award-card" style="background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a;color:#cdb8b8">
-      <div class="award-badge" style="color:#aa6666"><span class="badge-icon">📜</span><span class="badge-jp" style="color:#cca0a0">${data.orgName}の足跡</span></div>
+      <div class="award-badge" style="color:#aa6666"><span class="badge-icon">📜</span><span class="badge-jp" style="color:#cca0a0">${WM_I18N.t('{org}の足跡', { org: data.orgName })}</span></div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
-          <span style="font-size:12px;color:#988080;letter-spacing:1px">活動期間</span>
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('活動期間')}</span>
           <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.season} シーズン</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
-          <span style="font-size:12px;color:#988080;letter-spacing:1px">最高ランク</span>
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('最高ランク')}</span>
           <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestRank} 位</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
-          <span style="font-size:12px;color:#988080;letter-spacing:1px">最高資金</span>
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('最高資金')}</span>
           <span style="font-size:14px;font-weight:700;color:#d8c8c8">${fmt(data.peakFunds)} 万</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
-          <span style="font-size:12px;color:#988080;letter-spacing:1px">最高団体人気</span>
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('最高団体人気')}</span>
           <span style="font-size:14px;font-weight:700;color:#d8c8c8">${fmt(Math.round(data.peakOrgPop || 0))}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
-          <span style="font-size:12px;color:#988080;letter-spacing:1px">興行回数</span>
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('興行回数')}</span>
           <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.totalShows} 回</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
-          <span style="font-size:12px;color:#988080;letter-spacing:1px">ベストマッチ</span>
-          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestMQMatch || '—'} (評価 ${data.bestMQ})</span>
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('ベストマッチ')}</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestMQMatch || '—'} (${WM_I18N.t('評価 {n}', { n: data.bestMQ })})</span>
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0">
-          <span style="font-size:12px;color:#988080;letter-spacing:1px">殿堂入り</span>
+          <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('殿堂入り')}</span>
           <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.hallOfFameCount} 名</span>
         </div>
       </div>
@@ -16260,9 +16260,9 @@ function showGameOverCeremony(data, onDone) {
       </div>`;
     }).join('');
     slideInfo.push({
-      label: '選手たちの声',
+      label: WM_I18N.t('選手たちの声'),
       html: `<div class="award-card" style="text-align:center;background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a">
-        <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-icon">🎤</span><span class="badge-jp" style="color:#cca0a0">選手たちの声</span></div>
+        <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-icon">🎤</span><span class="badge-jp" style="color:#cca0a0">${WM_I18N.t('選手たちの声')}</span></div>
         <div style="display:flex;justify-content:center;gap:16px;margin:16px 0 8px">${fHtml}</div>
       </div>`
     });
@@ -16285,9 +16285,9 @@ function showGameOverCeremony(data, onDone) {
       </div>`;
     }).join('');
     slideInfo.push({
-      label: 'スタッフの声',
+      label: WM_I18N.t('スタッフの声'),
       html: `<div class="award-card" style="text-align:center;background:linear-gradient(180deg,#1a0808 0%,#100404 100%);border:1px solid #4a1a1a">
-        <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-icon">🎓</span><span class="badge-jp" style="color:#cca0a0">スタッフの声</span></div>
+        <div class="award-badge" style="justify-content:center;color:#aa6666"><span class="badge-icon">🎓</span><span class="badge-jp" style="color:#cca0a0">${WM_I18N.t('スタッフの声')}</span></div>
         <div style="display:flex;justify-content:center;gap:20px;margin:16px 0 8px">${cHtml}</div>
       </div>`
     });
@@ -16339,10 +16339,10 @@ function showGameOverCeremony(data, onDone) {
 
   if (fanfareEl) {
     fanfareEl.innerHTML = `
-      <div class="fanfare-line-1" style="color:#c8a0a0">シーズン ${data.season}</div>
-      <div class="fanfare-line-2" style="color:#d8a0a0;text-shadow:0 0 20px rgba(170,30,30,0.4)">解散</div>
+      <div class="fanfare-line-1" style="color:#c8a0a0">${WM_I18N.t('シーズン')} ${data.season}</div>
+      <div class="fanfare-line-2" style="color:#d8a0a0;text-shadow:0 0 20px rgba(170,30,30,0.4)">${WM_I18N.t('解散')}</div>
       <div class="fanfare-divider"></div>
-      <div class="fanfare-sub" style="color:#aa6666">💀 活動停止</div>`;
+      <div class="fanfare-sub" style="color:#aa6666">💀 ${WM_I18N.t('活動停止')}</div>`;
     fanfareEl.style.animation = 'none';
     requestAnimationFrame(() => { fanfareEl.style.animation = ''; });
   }
@@ -16358,8 +16358,8 @@ function showGameOverCeremony(data, onDone) {
     slides[current].classList.add('active');
     slides[current].style.animation = 'none';
     requestAnimationFrame(() => { slides[current].style.animation = ''; });
-    headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[current].label;
-    btnNext.textContent = current === TOTAL - 1 ? 'タイトルへ ▶' : '次へ　→';
+    headerLabel.textContent = WM_I18N.t('シーズン') + ' ' + data.season + ' — ' + slideInfo[current].label;
+    btnNext.textContent = current === TOTAL - 1 ? `${WM_I18N.t('タイトルへ')} ▶` : `${WM_I18N.t('次へ')}　→`;
     setTimeout(() => { try { _awPlaySE && _awPlaySE('normal'); } catch(e) {} }, 50);
   }
 
@@ -16394,10 +16394,10 @@ function showGameOverCeremony(data, onDone) {
   window._awardsNext = nextSlide;
   btnNext.onclick = nextSlide;
 
-  headerLabel.textContent = 'シーズン ' + data.season + ' — ' + slideInfo[0].label;
+  headerLabel.textContent = WM_I18N.t('シーズン') + ' ' + data.season + ' — ' + slideInfo[0].label;
   btnNext.disabled = false;
   btnNext.classList.remove('disabled');
-  btnNext.textContent = '次へ　→';
+  btnNext.textContent = `${WM_I18N.t('次へ')}　→`;
   overlay.classList.add('active');
 }
 
