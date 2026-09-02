@@ -1,5 +1,16 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Stage A P3a — バッチ1・2・4a-1マージ+再接触イベント文字化け4文修復（2026-09-02・Fable指揮）
+
+バッチ3(下記エントリ)の前後で以下がmainに入った。**全バッチでJAゴールデン完全一致(hash 6b3d05c8…不変)**。
+
+- **バッチ1(c408e87)**: 決着タイプ表示をFINISH_TEXTテーブル抽出(MQスコア計算のロジック比較は無傷)+シーズン総括見出しseasonHeadlineLabel()辞書化(監査で分離ゼロだった唯一の族)
+- **バッチ2(e8bb93c)**: 断片連結7箇所を完全文テンプレ表へ展開(data.jsに10テーブル新設・変種列挙で1バイト一致、筆頭は頂上戦記事matchPart12変種)。fillTemplateVars共通ヘルパー新設
+- **バッチ4a-1(agent-a6a2b59d)**: ui-render.js前半2,934行のUIクロームをt()経由へ(454箇所)。walkthrough PASS(328操作・issues 0)。スキップ判断: オープニング独白=Stage B領分/療養・休暇=CSSクラス兼用で保留/DOJO_SHOUTS=セリフ層
+- **文字化け修復(0650377)**: 再接触イベント4文が3月(0f9bc6f)から`??`化けで出荷されていたのをバッチ3レビュー中に発掘。reunion/grudge/unfinishedはacd16a8の原文復元、**vendettaのみ履歴に原文が存在せずFable再作文**(「⚡ AとB——燻っていた因縁が宿怨に変わる。もう互いに退けない」※Keisuke文面レビュー待ち)。ラチェットが+4を正しく検知→基準更新(90f8a03)
+- 実機確認バックログに7項目追記(表示が変わるのは文字化け修復のみ)
+- **残**: バッチ4a-2(ui-render.js 2936行〜、実装中)→ ui-common/app/index.html/factionsのt()移行 → 休眠コンテンツ修復(年代記性格フレーバー6種)→ Stage A完了時にspecs反映
+
 ## 英語対応Stage A P3a バッチ3 — gameLog構造化+キーワードスニッフィング根絶（2026-09-02・Sonnet worktree agent-a02371f7ebe3c7f12）
 
 設計書 [i18n-stage-a-p3a-design-v0.1.md](docs/i18n-stage-a-p3a-design-v0.1.md) の「バッチ3」節(D-G1〜D-G5)を実装。対象は監査 [i18n-stage-a-p2-audit-v0.1.md](docs/i18n-stage-a-p2-audit-v0.1.md) 調査1-5(gameLog焼き込み)・調査2-8(表示ラベル逆引き6箇所)・調査2-9(キーワードスニッフィング最危険族)。**JA出力は1バイトも変えない**方針を機械的に検証(ja-golden完全一致)。
