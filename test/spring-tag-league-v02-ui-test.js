@@ -48,7 +48,7 @@ assert.match(app, /if \(p\.championQueued\) return;[\s\S]{0,120}p\.championQueue
 assert.match(app, /App\._stlChampionTimer = setTimeout\(/,
   'championship wait must be timeout-backed');
 
-assert.ok(render.includes('出場${teamCount}チーム決定'),
+assert.ok(render.includes('出場{n}チーム決定') && render.includes('{ n: teamCount }'),
   'week 10 banner must follow the allocated team count');
 assert.ok(render.includes('A/Bブロック各6試合+ブロック1位同士の優勝決定戦'),
   'reserved-week copy must describe the v0.2 structure');

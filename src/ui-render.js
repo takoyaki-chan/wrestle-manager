@@ -2577,20 +2577,20 @@ function _spOpenPicker(slotIdx, side) {
   // F08 ロック: 直接対決固定枠は選手差替え不可
   const slot = G.showCard && G.showCard[slotIdx];
   if (slot && slot._unifiedTitleLocked) {
-    if (typeof showToast === 'function') showToast('🌐 全国統一王座戦の対戦者は固定です', 3000);
+    if (typeof showToast === 'function') showToast(WM_I18N.t('🌐 全国統一王座戦の対戦者は固定です'), 3000);
     return;
   }
   if (slot && slot._crMatchLocked) {
-    if (typeof showToast === 'function') showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
+    if (typeof showToast === 'function') showToast(WM_I18N.t('⚔ 挑戦試合の上位3枠は固定です'), 3000);
     return;
   }
   if (slot && slot._f08Locked) {
-    if (typeof showToast === 'function') showToast('🔥 派閥の直接対決のため、この試合の選手は変更できません', 3000);
+    if (typeof showToast === 'function') showToast(WM_I18N.t('🔥 派閥の直接対決のため、この試合の選手は変更できません'), 3000);
     return;
   }
   // 派閥内序列戦 ロック
   if (slot && slot._internalChallengeLocked) {
-    if (typeof showToast === 'function') showToast('⚔ 派閥内序列戦は固定です', 3000);
+    if (typeof showToast === 'function') showToast(WM_I18N.t('⚔ 派閥内序列戦は固定です'), 3000);
     return;
   }
   // F09 ロック(最後の砦: ロックが立っていても両者揃っていない空き枠は必ず操作できる。
@@ -2598,7 +2598,7 @@ function _spOpenPicker(slotIdx, side) {
   if (slot && slot._f09Locked) {
     const bothFilled = slot.left > 0 && slot.right > 0;
     if (bothFilled) {
-      if (typeof showToast === 'function') showToast('⚔ F09 派閥対抗戦のため、この試合の選手は変更できません', 3000);
+      if (typeof showToast === 'function') showToast(WM_I18N.t('⚔ F09 派閥対抗戦のため、この試合の選手は変更できません'), 3000);
       return;
     }
     console.warn('[WM F09] _f09Locked slot has an empty side — allowing picker to open', {
@@ -2615,7 +2615,7 @@ function _spOpenPicker(slotIdx, side) {
 }
 function _spOpenTagPicker(slotIdx, tagTeam, tagPos) {
   if (G.showCard?.[slotIdx]?._crMatchLocked) {
-    if (typeof showToast === 'function') showToast('⚔ 挑戦試合の上位3枠は固定です', 3000);
+    if (typeof showToast === 'function') showToast(WM_I18N.t('⚔ 挑戦試合の上位3枠は固定です'), 3000);
     return;
   }
   if (_spActivePicker && _spActivePicker.slotIdx === slotIdx && _spActivePicker.tagTeam === tagTeam && _spActivePicker.tagPos === tagPos) {
@@ -2686,15 +2686,15 @@ function renderSpringTagLeagueWeekBanner() {
     const allocation = stl.format === 2
       ? Object.entries(stl.slotAllocation || {}).map(([orgId, count]) => {
         const team = (stl.teams || []).find(row => row.orgId === orgId);
-        return `${team?.orgName || orgId} ${count}枠`;
+        return WM_I18N.t('{name} {n}枠', { name: team?.orgName || orgId, n: count });
       }).join(' / ')
       : (stl.teams || []).map(t => t.orgName).filter(Boolean).join(' / ');
     const teamCount = (stl.teams || []).length;
     return `<div class="stl-week-banner">
       <div class="stl-week-banner-icon">🌸</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">春のタッグリーグ 出場${teamCount}チーム決定</div>
-        <div class="stl-week-banner-sub">${escHtml(allocation)}。編成期間は来週(第${Engine.springTagLeague.ENTRY_WEEK}週)です。</div>
+        <div class="stl-week-banner-title">${WM_I18N.t('春のタッグリーグ 出場{n}チーム決定', { n: teamCount })}</div>
+        <div class="stl-week-banner-sub">${WM_I18N.t('{alloc}。編成期間は来週(第{w}週)です。', { alloc: escHtml(allocation), w: Engine.springTagLeague.ENTRY_WEEK })}</div>
       </div>
     </div>`;
   }
@@ -2706,25 +2706,25 @@ function renderSpringTagLeagueWeekBanner() {
       const pairs = confirmedTeams.map(team => {
         const f1 = _stlFindFighterAnywhere(team.f1Id);
         const f2 = _stlFindFighterAnywhere(team.f2Id);
-        return `第${team.slot || 1}代表 ${f1 ? f1.name : '?'} & ${f2 ? f2.name : '?'}`;
+        return WM_I18N.t('第{slot}代表 {f1} & {f2}', { slot: team.slot || 1, f1: f1 ? f1.name : '?', f2: f2 ? f2.name : '?' });
       }).join(' / ');
       return `<div class="stl-week-banner is-done">
         <div class="stl-week-banner-icon">🌸</div>
         <div class="stl-week-banner-body">
-          <div class="stl-week-banner-title">春のタッグリーグ 全${myTeams.length}チーム編成済み</div>
+          <div class="stl-week-banner-title">${WM_I18N.t('春のタッグリーグ 全{n}チーム編成済み', { n: myTeams.length })}</div>
           <div class="stl-week-banner-sub">${escHtml(pairs)}</div>
-          <div class="stl-week-banner-sub">タップすると組み直せます。</div>
+          <div class="stl-week-banner-sub">${WM_I18N.t('タップすると組み直せます。')}</div>
         </div>
-        <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">組み直す</button>
+        <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">${WM_I18N.t('組み直す')}</button>
       </div>`;
     }
     return `<div class="stl-week-banner is-urgent">
       <div class="stl-week-banner-icon">🌸</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">春のタッグリーグ 出場チーム編成期間</div>
-        <div class="stl-week-banner-sub">${confirmedTeams.length}/${myTeams.length}チーム編成済み。未編成枠は締切時に、未選出選手のOVR上位からおまかせ編成されます。</div>
+        <div class="stl-week-banner-title">${WM_I18N.t('春のタッグリーグ 出場チーム編成期間')}</div>
+        <div class="stl-week-banner-sub">${WM_I18N.t('{a}/{b}チーム編成済み。未編成枠は締切時に、未選出選手のOVR上位からおまかせ編成されます。', { a: confirmedTeams.length, b: myTeams.length })}</div>
       </div>
-      <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">編成する</button>
+      <button class="btn btn-gold" onclick="App.stlOpenEntryModal()">${WM_I18N.t('編成する')}</button>
     </div>`;
   }
   return '';
@@ -2761,8 +2761,8 @@ function renderAutumnWarWeekBanner() {
     return `<div class="stl-week-banner agw-week-banner">
       <div class="stl-week-banner-icon">⚔️</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">4団体勝ち残り対抗戦 出場団体決定</div>
-        <div class="stl-week-banner-sub">${escHtml(names)}。第${Engine.autumnWar.EVENT_WEEK}週、大会導入の直後に代表3名と出場順を決定します。</div>
+        <div class="stl-week-banner-title">${WM_I18N.t('4団体勝ち残り対抗戦 出場団体決定')}</div>
+        <div class="stl-week-banner-sub">${WM_I18N.t('{names}。第{w}週、大会導入の直後に代表3名と出場順を決定します。', { names: escHtml(names), w: Engine.autumnWar.EVENT_WEEK })}</div>
       </div>
     </div>`;
   }
@@ -2771,8 +2771,8 @@ function renderAutumnWarWeekBanner() {
     return `<div class="stl-week-banner agw-week-banner is-done">
       <div class="stl-week-banner-icon">🏆</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">4団体勝ち残り対抗戦 決着</div>
-        <div class="stl-week-banner-sub">優勝 ${escHtml(championName)}。大会結果を記録しました。</div>
+        <div class="stl-week-banner-title">${WM_I18N.t('4団体勝ち残り対抗戦 決着')}</div>
+        <div class="stl-week-banner-sub">${WM_I18N.t('優勝 {name}。大会結果を記録しました。', { name: escHtml(championName) })}</div>
       </div>
     </div>`;
   }
@@ -2792,18 +2792,18 @@ function renderTenchosenWeekBanner() {
     return `<div class="stl-week-banner is-urgent tc-week-banner">
       <div class="stl-week-banner-icon">👑</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">天頂戦 エントリー受付中 — 4年に一度の全国女子プロレス最強王者決定戦</div>
-        <div class="stl-week-banner-sub">特別招待2名が発表されました。自団体の出場選手を選出してください。未選出のまま大会週(第${Engine.ppvTournament.SHOW_WEEK}週)を迎えた場合はおまかせ編成で出場します。</div>
+        <div class="stl-week-banner-title">${WM_I18N.t('天頂戦 エントリー受付中 — 4年に一度の全国女子プロレス最強王者決定戦')}</div>
+        <div class="stl-week-banner-sub">${WM_I18N.t('特別招待2名が発表されました。自団体の出場選手を選出してください。未選出のまま大会週(第{w}週)を迎えた場合はおまかせ編成で出場します。', { w: Engine.ppvTournament.SHOW_WEEK })}</div>
       </div>
-      <button class="btn btn-gold" onclick="App.tcOpenEntryModal()">エントリー</button>
+      <button class="btn btn-gold" onclick="App.tcOpenEntryModal()">${WM_I18N.t('エントリー')}</button>
     </div>`;
   }
   if (t.phase === 'ready' && G.week < Engine.ppvTournament.SHOW_WEEK) {
     return `<div class="stl-week-banner is-done tc-week-banner">
       <div class="stl-week-banner-icon">👑</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">天頂戦 出場選手 確定済み</div>
-        <div class="stl-week-banner-sub">第${Engine.ppvTournament.SHOW_WEEK}週に16名トーナメントが開催されます。</div>
+        <div class="stl-week-banner-title">${WM_I18N.t('天頂戦 出場選手 確定済み')}</div>
+        <div class="stl-week-banner-sub">${WM_I18N.t('第{w}週に16名トーナメントが開催されます。', { w: Engine.ppvTournament.SHOW_WEEK })}</div>
       </div>
     </div>`;
   }
@@ -2813,40 +2813,40 @@ function renderTenchosenWeekBanner() {
 function _stlBlockedShowPrepHtml() {
   return `<div class="stl-block-banner">
     <div class="stl-block-banner-icon">🌸</div>
-    <div class="stl-block-banner-title">今週は春のタッグリーグ開催週</div>
-    <div class="stl-block-banner-sub">第${Engine.springTagLeague.LEAGUE_WEEK}週は通常興行の代わりに春のタッグリーグ(A/Bブロック各6試合+ブロック1位同士の優勝決定戦)が開催されます。今週のカード編成はありません。</div>
+    <div class="stl-block-banner-title">${WM_I18N.t('今週は春のタッグリーグ開催週')}</div>
+    <div class="stl-block-banner-sub">${WM_I18N.t('第{w}週は通常興行の代わりに春のタッグリーグ(A/Bブロック各6試合+ブロック1位同士の優勝決定戦)が開催されます。今週のカード編成はありません。', { w: Engine.springTagLeague.LEAGUE_WEEK })}</div>
   </div>`;
 }
 
 function _jtBlockedShowPrepHtml() {
   return `<div class="stl-block-banner">
     <div class="stl-block-banner-icon">🏟️</div>
-    <div class="stl-block-banner-title">今週はジュニアトーナメント</div>
-    <div class="stl-block-banner-sub">第${Engine.juniorTournament.WEEK}週は通常興行の代わりに、U-20ジュニアトーナメントが開催されます。今週のカード編成はありません。</div>
+    <div class="stl-block-banner-title">${WM_I18N.t('今週はジュニアトーナメント')}</div>
+    <div class="stl-block-banner-sub">${WM_I18N.t('第{w}週は通常興行の代わりに、U-20ジュニアトーナメントが開催されます。今週のカード編成はありません。', { w: Engine.juniorTournament.WEEK })}</div>
   </div>`;
 }
 
 function _tcBlockedShowPrepHtml() {
   return `<div class="stl-block-banner">
     <div class="stl-block-banner-icon">👑</div>
-    <div class="stl-block-banner-title">今週は天頂戦</div>
-    <div class="stl-block-banner-sub">第${Engine.ppvTournament.SHOW_WEEK}週は通常興行の代わりに、4年に一度の天頂戦が開催されます。今週のカード編成はありません。</div>
+    <div class="stl-block-banner-title">${WM_I18N.t('今週は天頂戦')}</div>
+    <div class="stl-block-banner-sub">${WM_I18N.t('第{w}週は通常興行の代わりに、4年に一度の天頂戦が開催されます。今週のカード編成はありません。', { w: Engine.ppvTournament.SHOW_WEEK })}</div>
   </div>`;
 }
 
 function _agwBlockedShowPrepHtml() {
   return `<div class="stl-block-banner agw-block-banner">
     <div class="stl-block-banner-icon">⚔️</div>
-    <div class="stl-block-banner-title">今週は4団体勝ち残り対抗戦</div>
-    <div class="stl-block-banner-sub">第${Engine.autumnWar.EVENT_WEEK}週は通常興行の代わりに、各団体3名による勝ち残り戦が開催されます。週を処理すると大会画面へ進みます。</div>
+    <div class="stl-block-banner-title">${WM_I18N.t('今週は4団体勝ち残り対抗戦')}</div>
+    <div class="stl-block-banner-sub">${WM_I18N.t('第{w}週は通常興行の代わりに、各団体3名による勝ち残り戦が開催されます。週を処理すると大会画面へ進みます。', { w: Engine.autumnWar.EVENT_WEEK })}</div>
   </div>`;
 }
 
 function _ppvBlockedShowPrepHtml() {
   return `<div class="stl-block-banner">
     <div class="stl-block-banner-icon">🏆</div>
-    <div class="stl-block-banner-title">今週はPPV GRAND FINAL</div>
-    <div class="stl-block-banner-sub">第${PPV_SHOW_WEEK}週は通常興行の代わりに、冬の特別興行が開催されます。今週の通常カード編成はありません。</div>
+    <div class="stl-block-banner-title">${WM_I18N.t('今週はPPV GRAND FINAL')}</div>
+    <div class="stl-block-banner-sub">${WM_I18N.t('第{w}週は通常興行の代わりに、冬の特別興行が開催されます。今週の通常カード編成はありません。', { w: PPV_SHOW_WEEK })}</div>
   </div>`;
 }
 
@@ -2860,7 +2860,7 @@ function _seasonSpecialBlockedShowPrepHtml() {
       ? _tcBlockedShowPrepHtml()
       : _ppvBlockedShowPrepHtml();
   }
-  return '<div class="stl-block-banner"><div class="stl-block-banner-title">今週は季節の特別興行週</div><div class="stl-block-banner-sub">通常興行のカード編成はありません。</div></div>';
+  return `<div class="stl-block-banner"><div class="stl-block-banner-title">${WM_I18N.t('今週は季節の特別興行週')}</div><div class="stl-block-banner-sub">${WM_I18N.t('通常興行のカード編成はありません。')}</div></div>`;
 }
 
 /** カードの枠が埋まっているか。**confirmExecuteShow と renderShowPrep で共有する。**
@@ -2891,8 +2891,8 @@ function confirmExecuteShow() {
     } catch (_e) {}
     if (typeof showToast === 'function') {
       showToast((G.showCard || []).length === 0
-        ? '⚠ カードが読み込めていません。画面を作り直しました。もう一度お試しください'
-        : '⚠ 両方の選手が埋まっている試合が1つもありません', 4000);
+        ? WM_I18N.t('⚠ カードが読み込めていません。画面を作り直しました。もう一度お試しください')
+        : WM_I18N.t('⚠ 両方の選手が埋まっている試合が1つもありません'), 4000);
     }
     renderShowPrep();
     return;
@@ -2906,13 +2906,13 @@ function confirmExecuteShow() {
     ? `${nameOf(main.teamA.fighter1)}＆${nameOf(main.teamA.fighter2)} vs ${nameOf(main.teamB.fighter1)}＆${nameOf(main.teamB.fighter2)}`
     : `${nameOf(main.left)} vs ${nameOf(main.right)}`;
   const v = (typeof VENUES !== 'undefined') ? VENUES[G.showVenue] : null;
-  const venueText = v ? `${v.name}（キャパ ${v.cap.toLocaleString()}人 ／ 費用 ${v.cost}万）` : '';
+  const venueText = v ? WM_I18N.t('{name}（キャパ {cap}人 ／ 費用 {cost}万）', { name: v.name, cap: v.cap.toLocaleString(), cost: v.cost }) : '';
   const titleCount = valid.filter(m => m.isTitle).length;
   const msg = `${venueText ? `<div style="margin-bottom:8px">${escHtml(venueText)}</div>` : ''}`
-    + `<div style="margin-bottom:8px"><strong>全${valid.length}試合</strong>${titleCount ? ` ／ 王座戦 ${titleCount}` : ''}</div>`
-    + `<div style="margin-bottom:10px;color:var(--gold)">メインイベント<br>${escHtml(mainText)}</div>`
-    + `<div style="font-size:12px;color:var(--text-sub)">この編成で開催します。開催後はカードを変更できません。</div>`;
-  showConfirm(msg, '開催する', () => executeShow());
+    + `<div style="margin-bottom:8px"><strong>${WM_I18N.t('全{n}試合', { n: valid.length })}</strong>${titleCount ? ` ／ ${WM_I18N.t('王座戦 {n}', { n: titleCount })}` : ''}</div>`
+    + `<div style="margin-bottom:10px;color:var(--gold)">${WM_I18N.t('メインイベント')}<br>${escHtml(mainText)}</div>`
+    + `<div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('この編成で開催します。開催後はカードを変更できません。')}</div>`;
+  showConfirm(msg, WM_I18N.t('開催する'), () => executeShow());
 }
 
 function renderShowPrep() {
@@ -2929,7 +2929,7 @@ function renderShowPrep() {
 
   // v2.0: 興行準備は通常興行週の manage/showPrep フェーズのみ
   if (!Engine.util.isRegularShowWeek(G.week) || !['manage', 'showPrep'].includes(G.weekPhase)) {
-    el.innerHTML = '<p style="color:var(--text-sub)">興行週ではありません。</p>';
+    el.innerHTML = `<p style="color:var(--text-sub)">${WM_I18N.t('興行週ではありません。')}</p>`;
     return;
   }
 

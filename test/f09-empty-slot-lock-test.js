@@ -57,8 +57,16 @@ function buildOpenPicker(source) {
   // _spOpenPicker reads/writes the module-level `let _spActivePicker`.
   // Declare it in the wrapper's scope so the extracted function closes over
   // it, and expose get/set so the test can observe/seed it.
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
   const wrapperSrc = `
     let _spActivePicker = null;
+    const WM_I18N = { t(text, params) {
+      if (typeof text !== 'string' || !params) return text;
+      let out = text;
+      Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+      return out;
+    } };
     ${fnSrc}
     return {
       open: _spOpenPicker,

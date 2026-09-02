@@ -282,7 +282,9 @@ section('19e-0. 開催の確認関数が、外から呼んでも落ちない（v
   const end = uiRender.indexOf('\nfunction renderShowPrep');
   const body = uiRender.slice(at, end > at ? end : at + 2500);
   // 本体が参照する _xxx が、トップレベルか本体内で宣言されているか
-  const ids = [...new Set(body.match(/_[a-zA-Z][a-zA-Z0-9_]*/g) || [])];
+  // 語境界の手前チェック無しだと WM_I18N のような識別子の途中(_I18N)を
+  // 誤って単独の未宣言識別子として拾ってしまうため、識別子の先頭であることを確認する
+  const ids = [...new Set(body.match(/(?<![a-zA-Z0-9_])_[a-zA-Z][a-zA-Z0-9_]*/g) || [])];
   ids.forEach(n => {
     const top = new RegExp('^(function|const|let|var)\\s+' + n + '\\b', 'm').test(uiRender);
     // catch (_e) も宣言。ここを見ないと try/catch を書いただけで誤検出する
