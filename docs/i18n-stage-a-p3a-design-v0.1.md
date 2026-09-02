@@ -46,6 +46,8 @@
 - `_chronicleCompetitiveValueHtml`(ui-render.js)— 「N度防衛」「N勝M敗」のJA構造文字列を正規表現で再解析する逆方向パターン。構造見直しが必要(4a-3で発見・保留)
 - 数値直付けの単位語(`${n}回`「N勝M敗」等)— 英語の複数形問題と一体なので、Stage Bで単位テンプレ(`{n} wins`)として設計する。P3aでは非ラップで統一
 - 「療養/休暇」文字列のCSSクラス兼用(ui-render.js・4a-1で発見・保留)— 表示とクラス名の分離が必要
+- 表示兼ロジックキー2件(ui-common.js・4b-3で発見・保留)— `_agwRoleLabel`のロール名がroleRankのオブジェクトキー兼用/`_agwTeamViewState`の`label`が`=== '対戦中'`比較でCSSクラス切替に使用。中立キー分離が必要
+- 死コード2ブロック(ui-common.js・4b-3で発見)— `_buildB3Step3b`の遮蔽された初回宣言/Junior・Tenchosen結果画面の無条件return後の到達不能尾部。P3a外で掃除候補
 
 ## 対象外(P3aでやらない)
 
