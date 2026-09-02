@@ -1,5 +1,52 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 英語対応Stage A P3a バッチ3 — gameLog構造化+キーワードスニッフィング根絶（2026-09-02・Sonnet worktree agent-a02371f7ebe3c7f12）
+
+設計書 [i18n-stage-a-p3a-design-v0.1.md](docs/i18n-stage-a-p3a-design-v0.1.md) の「バッチ3」節(D-G1〜D-G5)を実装。対象は監査 [i18n-stage-a-p2-audit-v0.1.md](docs/i18n-stage-a-p2-audit-v0.1.md) 調査1-5(gameLog焼き込み)・調査2-8(表示ラベル逆引き6箇所)・調査2-9(キーワードスニッフィング最危険族)。**JA出力は1バイトも変えない**方針を機械的に検証(ja-golden完全一致)。
+
+### 1. GAMELOG_TEMPLATES新設(data.js) — D-G1/D-G2
+- `GAMELOG_TEMPLATES`: type(英数スネークキー)→完全文テンプレ。**66型**(単純文字列55+ネスト型11・nested型はvariantキーで多変種を保持: challenge_request_coach_summary 6変種/unified_title_result 2変種/pledge_outcome 3変種)
+- `gameLogEntryText(entry)`: 表示時整形ヘルパー。文字列→そのまま/`{text}`持ちobject(既存snapshot系)→text/`{type,data}`→GAMELOG_TEMPLATESから`fillTemplateVars`で整形/未登録type→空文字列(例外にせず安全側)。**D-G2の二刀流**を実装 — 旧文字列エントリの書き換え・マイグレーションは一切しない(静かに共存)
+- `gameLogEntryCategory(entry)` + `GAMELOG_TYPE_CATEGORY`(21型登録): D-G3のUI分類フィルタ用。**手作業でなく機械検算**——旧`.includes()`4カテゴリ判定を各テンプレの完全文に対して実行し一致結果をそのまま表で固定(単純な思い込みで`event`と決め打った初稿は複数箇所で誤っていたため、検算スクリプトで全差し替え)
+- `GAMELOG_OFFSEASON_REPORT_TYPES`(5型): ui-render.js:1014「オフシーズンレポート」パネル専用の別キーワード集合(シーズン/オフ/引退/獲得/移籍/衰退/成長)に対する同種の機械検算結果
+- module.exports に上記+`fillTemplateVars`を追加(require()経由のテストが表示整形結果を検算できるように)
+
+### 2. push全数の変換(D-G5・機械的一括) — 内訳
+既存の`events`配列を経由してmanagement.jsのEngine内部関数(`Engine.executeShow`・`Engine.rental.*`等)からgameLogへ素通しされる文字列(ja-goldenが直接スナップショットしている経路)は**対象外のまま**(D-G2で許容される旧来同等の文字列パススルー)。変換したのは「app.js/ui-common.js/management.js/relationships.jsが自ら組み立てた完成文リテラル」に限る:
+- **app.js: 44箇所**(型は重複込みで再利用含め38種)。うち19箇所は`_finalizeShowImpl`(興行結果処理本体)内のローカル`events`配列への直書き(乱入/王座奪還/観客熱/因縁決着/★評価/Heat変動/全国統一王座等) — audit記載の「app.js 50箇所超」の主要部
+- **ui-common.js: 14箇所**(型13種。ドラフト裏落札/流札/獲得の6パターン+挑戦状/対抗戦イベント+PPVエントリー確定)
+- **management.js: 2箇所**(起用の約束精算=3変種1型+新団体設立時の初期ログ8行=8型)
+- **relationships.js: 1箇所**(再接触イベント`applyRecontactEvents`・4変種4型)。**判明した既存バグ**: この関数の元テキストは既に文字化けして`?`埋めになっていた(2026-09-02発見・本バッチ以前からの既存不具合)。JA出力不変方針のため**壊れた見た目のまま**構造化。別途修復issueとして切り出す
+- `_challengeRequestCoachLogLine`(app.js)は6変種の断片連結関数だったため、戻り値を文字列から`{type,data}`へ変更(呼び出し側は`if (coachLine)`のまま動く)
+
+### 3. gameLog表示・フィルタの移行 — D-G3
+- ui-render.js `renderLog()`: `getLogText`を`gameLogEntryText`に差し替え。分類フィルタは「文字列エントリ=旧キーワード判定を維持／`{type,data}`エントリ=`gameLogEntryCategory`のtypeの族判定／snapshot系=従来通り『全て』のみ」の二刀流に書き換え
+- ui-render.js:1014(offWeek2+のオフシーズンレポートパネル): 同型の二刀流。新形式は`GAMELOG_OFFSEASON_REPORT_TYPES`で判定
+
+### 4. 財務ラベル+タグ戦実況のCSSクラス判定 — D-G4(表示文の部分一致判定を撤去)
+- **財務(選手給与タブ)**: management.jsの明細push元に`category:'salary'`を併記。ui-render.js側は新設`_isSalaryDetail(d)`で`category`優先・**未設定(旧financeHistoryの既存データ)はラベル正規化判定へフォールバック**して後方互換を確保
+- **タグ戦実況(最危険パターン)**: データフローを追跡した結果、`fr.logLines`(表示テキスト)の生成元は`Engine.tagMatch.simulateTagMatch`(match-engine.js、969〜1746行)専用で、シングル戦エンジンとは完全に別関数と判明。生成元に`pushLog(text, cls)`ラッパー(logと同じ添字のcls配列`logCls`を随伴)を新設し、**33箇所**の`log.push(`を機械的に`pushLog(`へ置換(Node script + 手動照合で1件ずつ検算、テキスト内容は不変)。フレームに`logLineClasses`を追加。tag-battle-main.jsの`_logLineHtml`は`fr.logLineClasses`があればそれを最優先、無い場合(旧フレーム)のみ従来のキーワード判定へフォールバック
+
+### 5. 表示ラベル逆引き6箇所 — D-G5
+- ui-common.js:4020(派閥ロールバッジ): アイコンをrole文字列の再比較でなく`isLeaderRole`/`isExecRole`の判定材料そのものから直接算出
+- factions.js: `getSolidarityKey`/`getMomentumKey`を新設(既存の`getSolidarityLabel`/`getMomentumLabel`と同じ閾値から中立キーを返す。挙動は1つも変えない——`getSolidarityKey`の「平穏」フォールバックが`'crumble'`になる旧`_dfcSolidarityKey`の癖まで再現)。ui-render.jsの逆引き関数`_dfcSolidarityKey`/`_dfcMomentumKey`は撤去し呼び出し側をEngine側の新関数へ
+- ui-render.js(相関図の険悪ラベル): `hostileLabel`生成箇所に中立キー`hostileTier`('hate'/'grudge')を併記、色/アイコン選択を`hostileLabel==='憎悪'`比較から`hostileTier==='hate'`へ
+- ui-common.js(派閥イベント結果の影響欄): `item.label`の日本語置換**後**ではなく置換**前**の`rawLabel`(内部キー'rivalry'または既存の'因縁')で`isRivalryImpact`を先に確定
+
+### 検証(全項目クリア)
+- **`node test/ja-golden.js` → 完全一致**(basis更新なし。gameLog/debugLogは元々ja-goldenの収集対象外——収集対象はnewspaper/ticker/formatFinish/showResult.events/retirement/debugLogのみで、これらは全てmanagement.jsのEngine内部関数出力かつ本バッチで不変。app.js/ui-common.js/ui-render.js/tag-battle-main.jsはそもそもja-goldenに読み込まれない設計のため無関係)
+- **`npm test` → 260/260 PASS**(既存259+新設1)。初回実行で5件FAIL(gameLogの生文字列を直接assertしていた既存テスト) — 全て`gameLogEntryText`/typeキー判定への更新で解消(詳細は下記)
+- **`node test/auto-sim.js 40 42` → ALL CLEAR**(0 violations / 台帳検査3種も違反0)
+- **`node test/i18n-ratchet.js` → `--update`で基準更新**(理由: data.js +69 / app.js -44 / ui-common.js -16 / ui-render.js -10 / management.js -8、**合計は-9で正味減少**。data.jsが唯一増加したのは「テンプレ置き場はdata.js」という設計方針どおりの意図的な移動であり、P3a-1/2でも同じ理由で基準更新済みの前例に倣った)
+- 新設 **`test/gamelog-compat-test.js`**(8セクション): GAMELOG_TEMPLATES全66型がプレースホルダ取りこぼし無く解決できるか/GAMELOG_TYPE_CATEGORY・GAMELOG_OFFSEASON_REPORT_TYPESの型がGAMELOG_TEMPLATESと整合するか/文字列・snapshot系・新形式・未登録type・null/undefinedが混在する配列を例外なく処理できるか/renderLog()同等フィルタの二刀流が実際に成立するか
+- 既存テスト5本を更新(gameLogの生文字列直接assertを新形式対応へ): away-challenge-result-sequence-test.js(コーチ要約を`gameLogEntryText`で検算)/confirm-sound-not-money-test.js(検索アンカーをtypeキーへ)/draft-never-skipped-test.js/legacy-summit-migration-test.js/pledge-tickweek-wiring-test.js(いずれもtype判定 or `gameLogEntryText`経由へ)
+- `node --check` 全触りファイル(data.js/app.js/ui-common.js/ui-render.js/management.js/relationships.js/match-engine.js/tag-battle-main.js/factions.js+更新テスト6本)クリア
+
+### 残課題
+- **relationships.js の再接触イベント文言が文字化けしている既存バグ**(本バッチ以前から)。修復は別issue。プレイヤーが引き抜き/レンタル成立時に稀に見る可能性があるログ1行(`?? XXX?YYY????...`)
+- specs/更新なし(P3a-1/2と同様、この一連の作業はdocs/管理下のStage A工程内部作業でありspecs/対象の確定仕様ではないため。P2監査ドキュメントに準拠)
+- 実機確認: 通常運用でのgameLogログ画面(📋タブ)の分類フィルタ4種(興行/財務/イベント/シーズン)表示、財務タブの給与内訳、相関図の険悪ラベル配色、派閥バッジのアイコン、タグ戦観戦のログハイライト色を一通り確認いただけると安心
+
 ## 英語対応Stage A起工 — P1(i18n基盤)実装マージ+P2監査完了+既存バグ1件修正（2026-09-01・Fable指揮/Sonnet実装）
 
 Keisukeの「進めてください」を受けStage A(翻訳可能化工事)に着手。P1とP2を並行で完走した。
