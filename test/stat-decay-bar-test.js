@@ -120,7 +120,9 @@ section('5. 自己最高値は毎週控えられる（年をまたがなくて�
   // tickWeek(毎週)から呼ばれていること。シーズン末処理からだけだと年をまたぐまで出ない
   const at = mgmt.indexOf('Engine.growth.trackStatPeaks(s)');
   assert.ok(at > 0, 'tickWeek から trackStatPeaks を呼んでいない');
-  const tickAt = mgmt.indexOf('tickWeek(state) {');
+  // i18n Stage B P4-2: tickWeek に opts({ lang, dict })引数を追加したためシグネチャの
+  // 文字列が変わった(呼び出し順の不変条件自体は変わっていない)。
+  const tickAt = mgmt.indexOf('tickWeek(state, opts) {');
   const tickEnd = mgmt.indexOf('\n  // ══', tickAt);
   assert.ok(tickAt > 0 && at > tickAt && at < tickEnd,
     'trackStatPeaks の呼び出しが tickWeek の外にある。年をまたぐまで表示が出なくなる');

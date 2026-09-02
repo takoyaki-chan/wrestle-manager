@@ -110,7 +110,11 @@ const FILE_CATEGORY = {
 // 本スキャナが数えているのは「t()を経由していない生の日本語リテラル本数」なので、
 // 辞書のキーを混ぜるとラチェット(test/i18n-ratchet.js)が翻訳を進めるたびに増加で落ちる。
 // 翻訳の進捗そのものは i18n/ui-ledger.json の en 列充填数で測るため、ここでは対象外にする。
-const EXCLUDED_FILES = new Set(['lang-en.js']);
+// lang-en-templates.js(Stage B P4-2)も同じ理由で対象外にする。
+// test/i18n-build-template-dict.js が i18n/template-ledger.json から生成するEN辞書テンプレ層で、
+// 中の日本語は同じく「翻訳キー(原文)」。P4-3以降の翻訳バッチでen列を埋めるたびに
+// ラチェットが誤検知しないよう、生成時点から除外しておく。
+const EXCLUDED_FILES = new Set(['lang-en.js', 'lang-en-templates.js']);
 
 function scanDir(srcDir) {
   const files = fs.readdirSync(srcDir).filter(f => /\.(js|html)$/.test(f) && !EXCLUDED_FILES.has(f));

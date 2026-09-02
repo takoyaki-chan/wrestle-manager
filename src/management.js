@@ -13536,7 +13536,10 @@ const Engine = {
   //  Input: state — NOT mutated
   //  Output: { state, events }
   // ══════════════════════════════════════════════════════════
-  tickWeek(state) {
+  // i18n Stage B P4-2(D-P4-2): 第2引数 opts は任意の { lang, dict }。新聞生成(Engine.newspaper.publish)
+  // へ素通しするだけで、tickWeek自身の他の処理には影響しない。省略時(既定undefined)は
+  // 従来どおりJA原文のまま(auto-sim/ja-golden含む既存呼び出し元は無改修で1バイトも変わらない)。
+  tickWeek(state, opts) {
     // 2026-08-31監査(死2の完全版): 資金NaNは週次パイプライン内の `|| 0` 系再計算で
     // **入口から出口までの間に無言で有限値へ洗浄される**(変異nan_fundsで実証 —
     // sanitizeFloats到達時には既に別の数値になっていた)。洗浄の機会が一度も無い
@@ -14259,7 +14262,7 @@ const Engine = {
     // Engine.advanceWeek のシーズン移行部)も同じ手順を使う — 二重管理を避けるため。
     if (!s.offSeason) {
       const newsRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE57));
-      s = Engine.newspaper.publish(s, newsRng);
+      s = Engine.newspaper.publish(s, newsRng, opts ? { opts } : undefined);
     }
 
     // 連勝の団体記録を更新(新聞P2 §2-3 強度補正の材料)。**新聞生成の後**に置く——
@@ -17571,7 +17574,9 @@ const Engine = {
 
   // advanceWeek: Returns { state, events }
   // B-2: Offseason 4-week system
-  advanceWeek(state) {
+  // i18n Stage B P4-2(D-P4-2): 第2引数 opts は任意の { lang, dict }。シーズン開幕新年号発行
+  // (Engine.newspaper.publish)へ素通しするだけ。省略時は従来どおりJA原文のまま不変。
+  advanceWeek(state, opts) {
     let s = { ...state };
     const events = [];
 
@@ -18214,7 +18219,7 @@ const Engine = {
         if (s.season > 1) {
           // 週次の号(0xEE57)とは別の乱数系列にする（アーキテクチャ原則4: 種を使い回さない）
           const newYearRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0x0A1A));
-          s = Engine.newspaper.publish(s, newYearRng, { isSeasonOpening: true, forcePlayerShowDataNull: true });
+          s = Engine.newspaper.publish(s, newYearRng, { isSeasonOpening: true, forcePlayerShowDataNull: true, opts });
         }
 
         return { state: { ...s, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] } }, events };
@@ -21972,7 +21977,10 @@ Engine.seasonReview = {
 Engine.news = {
 
   /** ティッカーニュース生成（毎週 manage画面に表示） */
-  generateTicker(rng, state) {
+  // i18n Stage B P4-2(D-P4-2): 第3引数 opts.dict は任意の「辞書参照関数」。省略時は
+  // 従来どおりJA原文のまま(既存呼び出し元は無改修で不変)。
+  generateTicker(rng, state, opts) {
+    const dict = (opts && typeof opts.dict === 'function') ? opts.dict : (s) => s;
     const items = [];
     const ov = Engine.util.ov;
     const orgName = id => Engine.awards ? Engine.awards._orgName(state, id) : id;
@@ -22109,7 +22117,7 @@ Engine.news = {
     const resolved = items.map(item => {
       const templates = NEWS_TICKER_TEMPLATES[item.cat];
       if (!templates || templates.length === 0) return null;
-      let text = Engine.rng.pick(rng, templates);
+      let text = dict(Engine.rng.pick(rng, templates));
       Object.keys(item.data).forEach(k => {
         text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), item.data[k]);
       });
@@ -26440,8 +26448,9 @@ Engine.sanitizeFloats = function(G) {
 // 統一王者が引き抜かれた季末だけ所属不一致がvalidateGameStateに捕まっていた
 // (numeric-overhaul P3のtrainCap変更で経路が変わり実測。バグ自体は従来から存在)
 const advanceWeekWithAIGrowthParity = Engine.advanceWeek;
-Engine.advanceWeek = function advanceWeekNormalized(state) {
-  const result = advanceWeekWithAIGrowthParity(state);
+// i18n Stage B P4-2: opts({ lang, dict })をそのまま素通しする(省略時は従来どおり不変)。
+Engine.advanceWeek = function advanceWeekNormalized(state, opts) {
+  const result = advanceWeekWithAIGrowthParity(state, opts);
   if (!result || !result.state) return result;
   let s = Engine.challengeRequest.dropStalePending(result.state);
   if (s.aiOrgs) s = { ...s, aiOrgs: Engine.rival.sanitizeAIOrgs(s.aiOrgs) };
@@ -30701,7 +30710,11 @@ Engine.industryNews = {
 
 // PPV頂上決戦の story (headline/body) を生成。
 // 新規生成（buildWeeklyNewspaper 内）と旧アーカイブのマイグレーションの両方から呼ぶ。
-function _buildPpvSummitStory(sr, season, week, P) {
+// i18n Stage B P4-2(D-P4-2): dict は任意の「辞書参照関数」。Engine純粋性のため
+// グローバルWM_I18Nは直接参照せず、呼び出し元(Engine.newspaper.generate)から糸通しされた
+// 関数を受け取る。省略時は従来どおりJA原文のまま(既存呼び出し元は無改修で不変)。
+function _buildPpvSummitStory(sr, season, week, P, dict) {
+  const T = (typeof dict === 'function') ? dict : (s) => s;
   const stamp = `第${season}年度・第${week}週 PPV GRAND FINAL メインイベント`;
 
   const winnerName = sr.winnerName || (sr.won ? sr.playerName : sr.aiName);
@@ -30743,7 +30756,7 @@ function _buildPpvSummitStory(sr, season, week, P) {
   } else {
     headlineKey = 'default';
   }
-  const headline = fillTemplateVars(PPV_SUMMIT_HEADLINE_TEMPLATES[headlineKey], {
+  const headline = fillTemplateVars(T(PPV_SUMMIT_HEADLINE_TEMPLATES[headlineKey]), {
     winner: winnerName,
     loser: loserName,
     rematchNum: hasHistory ? (ph.matches + 1) : '',
@@ -30781,7 +30794,7 @@ function _buildPpvSummitStory(sr, season, week, P) {
     'Late': '長期戦の末',
   })[sr.finishPhase] || '';
   const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && sr.finMove)
-    ? Engine.formatFinish(sr.finType, sr.finMove, false)
+    ? Engine.formatFinish(sr.finType, sr.finMove, false, dict)
     : (sr.finMove ? `${sr.finMove}` : (sr.finType || '激闘決着'));
   // i18n Stage A P3a-2: PPV_SUMMIT_MATCHPART_TEMPLATES(data.js)から完全文を選ぶ
   // (監査3-1・最優先)。ターン数有無×決着タイプ3種×フェーズラベル有無の全12通り。
@@ -30791,7 +30804,7 @@ function _buildPpvSummitStory(sr, season, week, P) {
   else if (sr.turns && !phaseLabel) turnsPhaseKey = 'turnsNoPhase';
   else if (!sr.turns && phaseLabel) turnsPhaseKey = 'noTurnsPhase';
   else turnsPhaseKey = 'noTurnsNoPhase';
-  let matchPart = fillTemplateVars(PPV_SUMMIT_MATCHPART_TEMPLATES[fightKey][turnsPhaseKey], {
+  let matchPart = fillTemplateVars(T(PPV_SUMMIT_MATCHPART_TEMPLATES[fightKey][turnsPhaseKey]), {
     turns: sr.turns,
     phase: phaseLabel,
     winner: winnerName,
@@ -30803,7 +30816,7 @@ function _buildPpvSummitStory(sr, season, week, P) {
   if (isCloseFight && sr.winnerHpFinal < 15) hpNoteKey = 'closeLowHp';
   else if (isOverwhelm) hpNoteKey = 'overwhelm';
   if (hpNoteKey) {
-    matchPart += fillTemplateVars(PPV_SUMMIT_HPNOTE_TEMPLATES[hpNoteKey], {
+    matchPart += fillTemplateVars(T(PPV_SUMMIT_HPNOTE_TEMPLATES[hpNoteKey]), {
       hp: Math.round(sr.winnerHpFinal),
       winner: winnerName,
     });
@@ -31762,7 +31775,13 @@ Engine.newspaper = {
   },
 
   /** 毎週の新聞を生成する。tickWeek末尾で呼ばれる */
-  generate(state, rng) {
+  // i18n Stage B P4-2(D-P4-2): 第3引数 opts.dict は任意の「辞書参照関数」(text => text)。
+  // Engine内でテンプレを充填してGへ焼く箇所のため、生成時点のlangで確定させる必要があり
+  // グローバルWM_I18Nは直接参照しない(Engineは WM_I18N を呼ばない — i18n-runtime-spec §2-1)。
+  // 呼び出し元(app.js側)がWM_I18N.tを渡す。省略時(既定 opts={})はJA原文のまま
+  // (auto-sim/ja-goldenを含む既存呼び出し元は無改修で1バイトも変わらない)。
+  generate(state, rng, opts) {
+    const dict = (opts && typeof opts.dict === 'function') ? opts.dict : (s) => s;
     const P = Engine.newspaper.PRIORITY;
     const stories = [];
     // task-77 §A-2: 同一号に同ティアの引退が複数出る場合、バリアントを順繰りに変える。
@@ -31785,8 +31804,8 @@ Engine.newspaper = {
       stories.push({
         type: 'playerTitleChange',
         priority: P.playerTitleChange,
-        headline: fill(t.headline),
-        body: composedBody || fill(t.body),
+        headline: fill(dict(t.headline)),
+        body: composedBody || fill(dict(t.body)),
         characterId: ev.characterId || null,
       });
     });
@@ -31798,8 +31817,8 @@ Engine.newspaper = {
       stories.push({
         type: 'leagueElevation',
         priority: P.leagueElevation,
-        headline: LEAGUE_ELEVATION_TEXT.headline,
-        body: fillTemplateVars(LEAGUE_ELEVATION_TEXT.body, { orgName: state.orgName || '団体' }),
+        headline: dict(LEAGUE_ELEVATION_TEXT.headline),
+        body: fillTemplateVars(dict(LEAGUE_ELEVATION_TEXT.body), { orgName: state.orgName || '団体' }),
         characterId: null,
       });
     }
@@ -31845,14 +31864,14 @@ Engine.newspaper = {
       // i18n Stage A P3a-2: CROSS_WAR_RESULT_TEXT(data.js・監査3-5「同法」)。
       // ベストバウト追記文は「。」境界の直後に続く独立文なので基部+追記の2段合成。
       const warVars = { opponent: wr.opponentName, playerWins: wr.playerWins, aiWins: wr.aiWins, result: resultLabel };
-      const bestMatchText = bestMatch ? fillTemplateVars(CROSS_WAR_RESULT_TEXT.bestMatchSuffix, {
+      const bestMatchText = bestMatch ? fillTemplateVars(dict(CROSS_WAR_RESULT_TEXT.bestMatchSuffix), {
         player: bestMatch.playerName, ai: bestMatch.aiName, mq: bestMatch.mq,
       }) : '';
       stories.push({
         type: 'crossWarResult',
         priority: P.crossWarResult,
-        headline: fillTemplateVars(CROSS_WAR_RESULT_TEXT.headline, warVars),
-        body: fillTemplateVars(CROSS_WAR_RESULT_TEXT.bodyBase, { ...warVars, stamp }) + bestMatchText,
+        headline: fillTemplateVars(dict(CROSS_WAR_RESULT_TEXT.headline), warVars),
+        body: fillTemplateVars(dict(CROSS_WAR_RESULT_TEXT.bodyBase), { ...warVars, stamp }) + bestMatchText,
         characterId: bestMatch ? (bestMatch.playerWon ? bestMatch.playerId : bestMatch.aiId) : null,
         warData: wr,
         situation: stamp,
@@ -31870,8 +31889,8 @@ Engine.newspaper = {
         stories.push({
           type: 'warMilestone',
           priority: P.warMilestone,
-          headline: rep(tpl.headline),
-          body: rep(tpl.body),
+          headline: rep(dict(tpl.headline)),
+          body: rep(dict(tpl.body)),
           characterId: null,
         });
       }
@@ -31880,7 +31899,7 @@ Engine.newspaper = {
     // === 頂上決戦結果 ===
     if (state._newsSummitResult) {
       const sr = state._newsSummitResult;
-      stories.push(_buildPpvSummitStory(sr, state.season, state.week, P));
+      stories.push(_buildPpvSummitStory(sr, state.season, state.week, P, dict));
     }
 
     // === PPVアンダーカード結果（業界ニュース欄向け、上位MQ最大3件）===
@@ -31888,7 +31907,7 @@ Engine.newspaper = {
       const stamp = `第${state.season}年度・第${state.week}週 PPV GRAND FINAL`;
       state._newsPpvUndercards.forEach(uc => {
         const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && uc.finMove)
-          ? Engine.formatFinish(uc.finType, uc.finMove, false)
+          ? Engine.formatFinish(uc.finType, uc.finMove, false, dict)
           : (uc.finMove || uc.finType || '激闘決着');
         const tone = uc.mq >= 80 ? '名勝負' : uc.mq >= 65 ? '好勝負' : uc.mq >= 50 ? '熱戦' : (uc.mq <= 30 ? '一方的な展開' : '見応えある一戦');
         // i18n Stage A P3a-2: PPV_UNDERCARD_HEADLINE_TEMPLATES/PPV_UNDERCARD_BODY_TEMPLATES
@@ -31899,7 +31918,7 @@ Engine.newspaper = {
         if (uc.isTitleMatch) headlineKey = 'title';
         else if (uc.mq >= 75) headlineKey = 'highMq';
         else headlineKey = uc.winnerOrgName ? 'elseWithOrg' : 'elseNoOrg';
-        const headline = fillTemplateVars(PPV_UNDERCARD_HEADLINE_TEMPLATES[headlineKey], {
+        const headline = fillTemplateVars(dict(PPV_UNDERCARD_HEADLINE_TEMPLATES[headlineKey]), {
           winnerOrg: uc.winnerOrgName,
           winner: uc.winnerName,
           loserOrg: uc.loserOrgName,
@@ -31910,7 +31929,7 @@ Engine.newspaper = {
         const bodyKey = (uc.turns ? 'turns' : 'noTurns') + '_'
           + (uc.winnerOrgName ? 'wOrg' : 'noOrg') + '_'
           + (uc.loserOrgName ? 'lOrg' : 'noOrg');
-        const body = fillTemplateVars(PPV_UNDERCARD_BODY_TEMPLATES[bodyKey], {
+        const body = fillTemplateVars(dict(PPV_UNDERCARD_BODY_TEMPLATES[bodyKey]), {
           stamp,
           turns: uc.turns,
           tone,
@@ -31998,12 +32017,12 @@ Engine.newspaper = {
             let headline, body;
             if (ev.injuryType === 'careerEnding') {
               const T = AI_INJURY_RETIREMENT_TEMPLATES.careerEnding;
-              headline = fillTemplateVars(T.headline, injVars);
-              body = fillTemplateVars(isAce ? T.bodyAce : T.bodyNotAce, injVars);
+              headline = fillTemplateVars(dict(T.headline), injVars);
+              body = fillTemplateVars(dict(isAce ? T.bodyAce : T.bodyNotAce), injVars);
             } else {
               const T = AI_INJURY_RETIREMENT_TEMPLATES.default;
-              headline = fillTemplateVars(T.headline, injVars);
-              body = fillTemplateVars(ev.titleReigns > 0 ? T.bodyHasReigns : T.bodyNoReigns, injVars);
+              headline = fillTemplateVars(dict(T.headline), injVars);
+              body = fillTemplateVars(dict(ev.titleReigns > 0 ? T.bodyHasReigns : T.bodyNoReigns), injVars);
             }
             stories.push({
               type: 'aiInjuryRetirement',
@@ -32039,8 +32058,8 @@ Engine.newspaper = {
                 : 'default';
               const T = AI_CONTRACT_DEPARTURE_TEMPLATES[depKey];
               const depVars = { org: ev.orgName, name: ev.fighterName, age: ev.age, destOrg: ev.destOrgName };
-              const headline = fillTemplateVars(T.headline, depVars);
-              const body = fillTemplateVars(T.body, depVars);
+              const headline = fillTemplateVars(dict(T.headline), depVars);
+              const body = fillTemplateVars(dict(T.body), depVars);
               stories.push({
                 type: 'aiContractDeparture',
                 priority: P.aiContractDeparture + (isAce ? 20 : 0),
@@ -32316,8 +32335,8 @@ Engine.newspaper = {
         stories.push({
           type: ev.type,
           priority,
-          headline: rep(tpl.headline),
-          body: rep(tpl.body),
+          headline: rep(dict(tpl.headline)),
+          body: rep(dict(tpl.body)),
           characterId: ev.characterId || null,
           // task-54: サブ記事の隊列写真は最大3人。元の人数を characterCount に残し、
           // 3人を超えたぶんは「+N」表示に使う(現状の呼び出し元はどれも2人までしか積まないため
@@ -32364,7 +32383,7 @@ Engine.newspaper = {
             .reduce((acc, k) => acc.split('{' + k + '}').join(fu.newsData[k]), String(t || ''));
           const st2 = {
             type: fu.type, priority: fu.priority,
-            headline: fill(pick.headline), body: fill(pick.body),
+            headline: fill(dict(pick.headline)), body: fill(dict(pick.body)),
             characterId: fu.characterId, newsData: fu.newsData,
           };
           const ctx2 = Engine.newspaper.buildValueContext(state);
@@ -32610,7 +32629,9 @@ Engine.newspaper = {
    *  extra.isSeasonOpening: 立てると発行号に isSeasonOpening:true を付与する
    *  extra.forcePlayerShowDataNull: 立てると playerShowData を必ず null にする
    *    (新年号の時点ではまだ今シーズンの興行が無いため、前シーズン末の
-   *     state.currentNewspaper が紛れ込んではいけない) */
+   *     state.currentNewspaper が紛れ込んではいけない)
+   *  extra.opts: i18n Stage B P4-2(D-P4-2)。{ lang, dict } — 呼び出し元(tickWeek/advanceWeek)から
+   *  素通しし、Engine.newspaper.generate へそのまま転送する(省略時はJA原文のまま不変)。 */
   publish(state, rng, extra) {
     let s = state;
     // バックナンバー蓄積（最大24週分）
@@ -32620,7 +32641,7 @@ Engine.newspaper = {
       if (archive.length > 24) archive.length = 24;
       s = { ...s, newspaperArchive: archive };
     }
-    let weeklyNewspaper = Engine.newspaper.generate(s, rng);
+    let weeklyNewspaper = Engine.newspaper.generate(s, rng, extra && extra.opts);
     // P4 §4: 後追い記事を載せた選手はクールダウンに入れる。
     // generate() は純粋関数のまま(状態を書かない)にしておきたいので、記録はここで行う
     {

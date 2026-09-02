@@ -1,5 +1,62 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P4-2 — テンプレ台帳の整備+EN配線（2026-09-02・Sonnet worktree agent-aa01d78ad060fd557）
+
+英語対応P4(ニュース/新聞/記録テンプレの英語化)の第2工程。設計は `docs/i18n-stage-b-p4-design-v0.1.md`(D-P4-1/D-P4-2)。**注意: `i18n/ui-ledger.json`と`src/lang-en.js`は別エージェント(P3b-6)が同時作業中のため一切触っていない**(本タスクの生成物は別ファイル)。開始前にworktreeブランチをmain先端(cfd4f61)へfast-forward済み。
+
+### 1. テンプレ抽出器 `test/i18n-extract-templates.js`(新規)
+data.jsの対象14テーブル(GAMELOG_TEMPLATES/FINISH_TEXT/PPV_SUMMIT_HEADLINE・MATCHPART・HPNOTE_TEMPLATES/PPV_UNDERCARD_HEADLINE・BODY_TEMPLATES/AI_INJURY_RETIREMENT_TEMPLATES/AI_CONTRACT_DEPARTURE_TEMPLATES/CROSS_WAR_RESULT_TEXT/LEAGUE_ELEVATION_TEXT/NEWSPAPER_SUB_TEMPLATES/NEWS_HEADLINE_TEMPLATES/NEWS_TICKER_TEMPLATES)から全JAテンプレ文字列を再帰的に抽出し `i18n/template-ledger.json` を生成する。スキーマは `i18n/ui-ledger.json` と同一(`{key, en, files, count, hasPlaceholder, hasProperNoun}`)で、`files`欄は「参照テーブル名」を記録する(指示書どおり)。テーブルの値は文字列/文字列配列/{headline,body}オブジェクト配列など形状が混在するため、専用パーサではなく値を再帰的に辿る汎用ウォーカーで対応した。対象外: `PPV_SUMMIT_VICTORY_LINES`(選手個人のセリフ=P5対象、汎用テンプレではないため)。data.jsの読み込みは`test/helpers/load-game.js`の`loadAsGlobal`(const→var変換+vm実行)を再利用し、data.js自体は一切変更していない(module.exports未登録の8テーブルも含めて読める)。
+- **総テンプレ数=550(ユニークキー、生値553から重複3件を統合)**。テーブル別内訳: GAMELOG_TEMPLATES 74 / FINISH_TEXT 6 / PPV_SUMMIT_HEADLINE_TEMPLATES 8 / PPV_SUMMIT_MATCHPART_TEMPLATES 12 / PPV_SUMMIT_HPNOTE_TEMPLATES 2 / PPV_UNDERCARD_HEADLINE_TEMPLATES 4 / PPV_UNDERCARD_BODY_TEMPLATES 8 / AI_INJURY_RETIREMENT_TEMPLATES 6 / AI_CONTRACT_DEPARTURE_TEMPLATES 8 / CROSS_WAR_RESULT_TEXT 3 / LEAGUE_ELEVATION_TEXT 2 / NEWSPAPER_SUB_TEMPLATES 3 / NEWS_HEADLINE_TEMPLATES 342 / NEWS_TICKER_TEMPLATES 75。hasProperNoun=38 hasPlaceholder=520
+
+### 2. 辞書生成 `test/i18n-build-template-dict.js`(新規)
+`i18n/template-ledger.json`のen非空行から`src/lang-en-templates.js`(`WM_I18N.addDict({...})`)を生成する。機械検査は`test/i18n-build-dict.js`(UI台帳側)のD-B4を踏襲(プレースホルダ完全性/重複キー/en内日本語残り)した上で、**黒田禁止語grep**(`docs/en-kuroda-style-draft-v0.1.md`§3-6の9パターンをJS正規表現へ移植)を追加した。ダミー違反データで4種の検査が正しくexit 1することを確認済み(検証後に台帳を復元し再生成)。現時点はP3b-5→P4-2の間に翻訳バッチが挟まっていないため`en`は全550行空欄=生成される辞書は空(`addDict({})`)。
+
+### 3. UI側整形点のt()配線(D-P4-2前段)
+`src/data.js`の`gameLogEntryText()`(ui-render.jsから表示時に呼ばれるUI整形点。旧: fillTemplateVars(resolved, ...)直書き)を、充填直前に`_gameLogT(resolved)`(WM_I18N.tのfail-openガード付きラッパー、data.jsはブラウザ以外からもrequireされるため存在チェックを入れた)を1回通す形に変更。ja時はt()が素通しなので表示は不変(gamelog-compat-test.js 8/8 PASS、ja-golden完全一致で確認)。
+
+### 4. Engine側のlang糸通し(D-P4-2本体)
+Engineは`WM_I18N`を直接呼ばない原則(`specs/i18n-runtime-spec-v1.0.md`§2-1)を守るため、**「引数で渡された辞書参照関数」**方式で糸通しした。全て**省略時は従来どおりJA原文のまま**(第4/第3/第2引数が任意・デフォルト値は恒等関数)。
+- `Engine.formatFinish(finType, finMove, isFinisher, dict)`(match-engine.js) — 第4引数追加。FINISH_TEXTの参照直後にdict()を通す
+- `_buildPpvSummitStory(sr, season, week, P, dict)`(management.js、頂上決戦記事) — 第5引数追加。PPV_SUMMIT_HEADLINE/MATCHPART/HPNOTE_TEMPLATESの参照+`Engine.formatFinish`呼び出しにdictを糸通し
+- `Engine.newspaper.generate(state, rng, opts)` — 第3引数`opts.dict`追加。関数内で直接参照するNEWS_HEADLINE_TEMPLATES(titleChange/warMilestone/汎用industryEventsループ/follow-up)・LEAGUE_ELEVATION_TEXT・CROSS_WAR_RESULT_TEXT・PPV_UNDERCARD_HEADLINE/BODY_TEMPLATES・AI_INJURY_RETIREMENT_TEMPLATES・AI_CONTRACT_DEPARTURE_TEMPLATESの全参照箇所にdict()を適用+`_buildPpvSummitStory`へdictを転送
+- `Engine.newspaper.publish(state, rng, extra)` — `extra.opts`を読んで`generate`へ転送(publish自体の引数個数は変えず、既存の`extra`オブジェクトへ`opts`フィールドを足す形にして呼び出し元の変更を最小化)
+- `Engine.news.generateTicker(rng, state, opts)` — 第3引数追加。NEWS_TICKER_TEMPLATES参照直後にdict()
+- `tickWeek(state, opts)` / `Engine.advanceWeek(state, opts)`(+AI成長パリティ正規化ラッパーadvanceWeekNormalizedも追随) — 第2引数追加。それぞれの内部の`Engine.newspaper.publish`呼び出しへ`{opts}`として転送するだけ(他の週次処理は一切変更なし)
+- 呼び出し元(app.js): `App._refreshTicker`(ティッカー再生成)・`App.finalizeJuniorTournament`(JT結果反映後の新聞再生成)・`Engine.tickWeek(G)`の全7呼び出し・`Engine.advanceWeek(G)`の全2呼び出しに`{ lang: WM_I18N.lang, dict: WM_I18N.t }`を追加(通常プレイはWM_I18N.lang==='ja'なので実質無変化)。プレビュー用tick(`prepareShowResultInlinePopups`内)は生成結果を保存しない使い捨て計算のため意図的に未配線のまま残した
+- `App._generateNewspaperTexts`(app.js、自団体新聞のサブヘッドライン。NEWSPAPER_SUB_TEMPLATES参照) — app.jsは(Engineと異なり)WM_I18Nを直接呼んでよいレイヤーのため、opts糸通しではなく`WM_I18N.t()`を直接1回通す形にした(生成時点のlangで確定=D-P4-2の要件を満たす)
+
+### 5. 成形済み値の棚卸し `i18n/preformatted-values-audit.md`(新規)
+design docの構造穴1(`{milestone}`等約20値)を1つずつ生成箇所(file:line)・生成式・テンプレ化難易度(LOW/MEDIUM/HIGH)で洗い出した。**修正はまだ行っていない(台帳化のみ)**。
+- LOW(9件・小テーブル追加で即解決): `{milestone}` `{recordLine}` `{closing}`(tenchosenBestBout) `{names}` `{round}` `{stage}` `{what}` `{how}` `{stat}`
+- MEDIUM(2件): `{entrySummary}` `{championWatch}`
+- HIGH(9件・断片連結/可変長リスト/別プール依存で構造見直しが要る): `{detail}`(イベント種別ごとに独立した生成式が散在)`{preview}``{semi1}``{semi2}``{finalResult}``{gauntletNote}``{tieBreakNote}`(いずれも秋の4団体対抗戦`matchSummary()`系に集約可能) `{closing}`(composeDraftPlayerResult側)`{body}`(draftPlayerResult。いずれも`DRAFT_PLAYER_RESULT_PARTS`という専用プール=task-77 §5-D確定文言、今回のtemplate-ledger対象外)
+- 生成箇所なし(死んだテンプレ変種の疑い・要Fable裁定): `{careerLine}`(NEWS_HEADLINE_TEMPLATES.retirementDeclareが持つが、`retirementDeclare`型はEngine.newspaper.generate内で専用パスへ早期returnするためこの汎用テンプレ自体に到達しない)
+
+### 6. 配布物への配線
+`src/index.html`に`<script src="lang-en-templates.js">`を`lang-en.js`直後へ追加(WM_I18N.addDictは既存辞書へのマージなので読み込み順は無関係)。`release/manifest.json`の`sourceFiles`へ`src/lang-en-templates.js`を追記。battle-engine.html/tag-battle.htmlは指示書の対象外(元々data.js非読み込みでGAMELOG/NEWS系テンプレを使わない)のため未配線。
+
+### 副産物: ラチェットの将来誤検知を予防
+`test/i18n-scan.js`の`EXCLUDED_FILES`に`lang-en-templates.js`を追加(`lang-en.js`と同じ理由 — P4-3の翻訳バッチでen列を埋めると、JSON.stringifyされたJAキーが「生の日本語リテラル」として誤カウントされ`i18n-ratchet.js`が誤検知するため。現状は辞書が空なので実測値への影響はゼロ、files=31のまま不変)。
+
+### 副産物: 既存テストの文字列一致ガードを追随修正(3件)
+Engineの関数シグネチャに`opts`引数を足したことで、ソースコードを正規表現/`indexOf`で直接スキャンする既存の回帰ガード3本が文字列不一致で落ちた(挙動としての不変条件=「tickWeekが共通手順publishを使っている」「advanceWeekがEngine.advanceWeekを呼んでいる」「trackStatPeaksがtickWeek内から呼ばれている」はいずれも変わっていない)。検索文字列を新シグネチャに合わせて更新した: `test/new-year-issue-test.js`(#6)、`test/draft-offseason-flow-guard-test.js`、`test/stat-decay-bar-test.js`(#5)。
+
+### 検証(全項目実施)
+- `node test/i18n-extract-templates.js` — 台帳生成、総テンプレ数550件(上記テーブル別内訳を参照)
+- `node test/ja-golden.js` — **完全一致**(hash `6b3d05c8...`不変、`--update`なし)
+- `node test/i18n-ratchet.js` — **増加なし**(files=31 totalJaStrings=28075、上記EXCLUDED_FILES追加後の値)
+- `npm test` — **260/260 PASS**(初回実行時は上記3件が文字列ガード不一致でFAIL→修正後に全green)
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・season=2 week=1到達・duration 189.3s・recovered-by-retry 0)
+- `node test/auto-sim.js 40 42` — **ALL CLEAR**(2,120週・violations 0・errors 0・game overs 0。management.js/match-engine.js/data.jsを編集したため受け入れ確認として実施)
+- lang糸通しの検証(使い捨てvmスクリプト): `Engine.formatFinish`/`Engine.news.generateTicker`/`Engine.newspaper.generate`の3関数それぞれにダミー辞書(`(s)=>'[EN]'+s`)を渡し、**返り値が`[EN]`接頭辞付きでja版と異なることを確認**(newspaper.generateはLEAGUE_ELEVATION_TEXT発火条件を満たすstateで検証。dictコール回数もそれぞれ1回以上を確認)。opts省略時は同一state・同一rngで2回生成した結果がJSON完全一致することも確認(既存呼び出し元への影響ゼロを裏付け)
+
+### 残課題
+- 成形済み値の実修正(棚卸しのみで未着手、LOW群9件から着手が現実的)
+- テンプレ550本の英訳バッチ(P4-3、Opus主筆想定)
+- `{careerLine}`の死んだテンプレ変種の扱い(削除 or 専用パスとの統合)はFable裁定待ち
+- Keisuke実機確認: dev panel(Ctrl+Shift+D)でlang='pseudo'に切り替え、ティッカー・自団体新聞が擬似ロケール表記(⟦⟧)にならず正常表示のままであること(=今回のt()/opts配線がja側に一切影響していないことの目視確認)
+
+---
 ## 🌐 Stage B P3b-6 — 固有名詞入りUIキー90件の英訳（P3b最終・台帳未訳0）（2026-09-02・Opus worktree agent-a35c296ee521c41da）
 
 固有名詞の裁定確定（2026-09-02 Keisuke・`docs/en-proper-nouns-draft-v0.1.md` 冒頭ブロック）を受け、D-B5で保留していた最後の90キーを英訳した。**これで `i18n/ui-ledger.json` の未訳は0件**、P3b（UI・システム文の英訳）は完走。開始前にworktreeブランチをmain先端（35fd58b、P3b-5マージ済み）へfast-forward済み。
