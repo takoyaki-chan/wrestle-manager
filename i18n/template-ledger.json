@@ -1,7 +1,7 @@
 [
   {
     "key": "  {icon} 第{matchNum}試合: {playerName} vs {aiName} → {winnerName}勝利 (試合評価{mq})",
-    "en": "",
+    "en": "  {icon} Match {matchNum}: {playerName} vs {aiName} → {winnerName} wins (rated {mq})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -61,7 +61,7 @@
   },
   {
     "key": "HP残り僅か{hp}での辛勝だった。",
-    "en": "",
+    "en": "{hp} HP left at the finish. A narrow win.",
     "files": [
       "PPV_SUMMIT_HPNOTE_TEMPLATES"
     ],
@@ -71,7 +71,7 @@
   },
   {
     "key": "PPV {tone} — {winnerOrg}{winner}が{loserOrg}{loser}を撃破（試合評価{mq}）",
-    "en": "",
+    "en": "PPV {tone} — {winnerOrg} {winner} beats {loserOrg} {loser} (rated {mq})",
     "files": [
       "PPV_UNDERCARD_HEADLINE_TEMPLATES"
     ],
@@ -81,7 +81,7 @@
   },
   {
     "key": "Transfer: {name} -> {destOrg}{ejectedSuffix}",
-    "en": "",
+    "en": "Transfer: {name} -> {destOrg}{ejectedSuffix}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -211,7 +211,7 @@
   },
   {
     "key": "{emoji} Heat変動: {oldLabel} → {newLabel}（集客倍率 ×{mult}）",
-    "en": "",
+    "en": "{emoji} Heat shift: {oldLabel} → {newLabel} (attendance ×{mult})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -221,7 +221,7 @@
   },
   {
     "key": "{emoji} {winnerName} vs {loserName} — {label}！ 両者人気+{popBonus} 団体人気{orgPopDelta}",
-    "en": "",
+    "en": "{emoji} {winnerName} vs {loserName} — {label}! Both +{popBonus} popularity, promotion popularity {orgPopDelta}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -411,7 +411,7 @@
   },
   {
     "key": "{move} → 3カウント",
-    "en": "",
+    "en": "{move} → 3-count",
     "files": [
       "FINISH_TEXT"
     ],
@@ -421,7 +421,7 @@
   },
   {
     "key": "{move} → ギブアップ",
-    "en": "",
+    "en": "{move} → submission",
     "files": [
       "FINISH_TEXT"
     ],
@@ -431,7 +431,7 @@
   },
   {
     "key": "{move} → レフェリーストップ",
-    "en": "",
+    "en": "{move} → referee stoppage",
     "files": [
       "FINISH_TEXT"
     ],
@@ -441,7 +441,7 @@
   },
   {
     "key": "{move} → 丸め込み",
-    "en": "",
+    "en": "{move} → roll-up",
     "files": [
       "FINISH_TEXT"
     ],
@@ -1641,7 +1641,7 @@
   },
   {
     "key": "{org}の{name}が契約満了——{destOrg}に移籍",
-    "en": "",
+    "en": "{org}'s {name} out of contract — moves to {destOrg}",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -1671,7 +1671,7 @@
   },
   {
     "key": "{org}の{name}が現役引退を決断",
-    "en": "",
+    "en": "{org}'s {name} decides to retire",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -1691,7 +1691,7 @@
   },
   {
     "key": "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。",
-    "en": "",
+    "en": "{org}'s {name} has decided to retire on accumulated damage, closing a {seasons}-season career.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1701,7 +1701,7 @@
   },
   {
     "key": "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。通算{reigns}度の戴冠を誇る。",
-    "en": "",
+    "en": "{org}'s {name} has decided to retire on accumulated damage, closing a {seasons}-season career. Title reigns over that span: {reigns}.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1711,7 +1711,7 @@
   },
   {
     "key": "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。エース級の突然の退場は団体に激震を走らせた。",
-    "en": "",
+    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career closed with no warning. Losing an ace this way leaves the promotion with a hole it never planned for.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1721,7 +1721,7 @@
   },
   {
     "key": "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。リング上での悲劇に関係者は言葉を失った。",
-    "en": "",
+    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career closed with no warning. Nobody around the promotion had anything to say about what they had just seen.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1731,7 +1731,7 @@
   },
   {
     "key": "{org}の{name}が退団、フリーエージェントに",
-    "en": "",
+    "en": "{org}'s {name} leaves the promotion, now a free agent",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -1741,7 +1741,7 @@
   },
   {
     "key": "{org}の{name}が退団、市場から姿を消す",
-    "en": "",
+    "en": "{org}'s {name} leaves the promotion and drops off the market",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -1801,7 +1801,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）、壊滅的な怪我で緊急引退——リング上で悲劇",
-    "en": "",
+    "en": "{org}'s {name}, {age}, forced to retire — career-ending injury in the ring",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1811,7 +1811,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）、度重なる怪我で引退——{seasons}シーズンの現役生活に幕",
-    "en": "",
+    "en": "{org}'s {name}, {age}, retires on repeated injuries — a {seasons}-season career ends",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -1821,7 +1821,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）が新天地を求めて{destOrg}に移籍。",
-    "en": "",
+    "en": "{org}'s {name}, age {age}, has moved to {destOrg} looking for a new start.",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -1831,7 +1831,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）が現役引退。リングに別れを告げた。",
-    "en": "",
+    "en": "{org}'s {name}, age {age}, has retired. She said her goodbye to the ring.",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -1841,7 +1841,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）が退団したが、フリーエージェント枠満杯のため市場名簿には載らなかった。",
-    "en": "",
+    "en": "{org}'s {name}, age {age}, has left the promotion, but with the free agent list full her name never reached the market register.",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -1851,7 +1851,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）が退団しフリーエージェントとなった。",
-    "en": "",
+    "en": "{org}'s {name}, age {age}, has left the promotion and is now a free agent.",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
     ],
@@ -2341,7 +2341,7 @@
   },
   {
     "key": "{showName}・{venue}。観客{attendance}人、{turns}ターンの攻防は決着を見ず。全{totalMatches}試合の平均試合評価{avgMQ}",
-    "en": "",
+    "en": "{showName}, {venue}. {attendance} in the building; a {turns}-turn main ended without a decision. {totalMatches} on the card, average rating {avgMQ}",
     "files": [
       "NEWSPAPER_SUB_TEMPLATES"
     ],
@@ -2351,7 +2351,7 @@
   },
   {
     "key": "{showName}・{venue}。観客{attendance}人。メイン試合評価{mq}、全{totalMatches}試合平均試合評価{avgMQ}",
-    "en": "",
+    "en": "{showName}, {venue}. {attendance} in the building. Main rated {mq}, {totalMatches} on the card at an average of {avgMQ}",
     "files": [
       "NEWSPAPER_SUB_TEMPLATES"
     ],
@@ -2361,7 +2361,7 @@
   },
   {
     "key": "{stamp}。{opponent}との対抗戦が行われ、{playerWins}勝{aiWins}敗で{result}。",
-    "en": "",
+    "en": "{stamp}. The interpromotional series against {opponent} finished {playerWins}-{aiWins}: {result}.",
     "files": [
       "CROSS_WAR_RESULT_TEXT"
     ],
@@ -2371,7 +2371,7 @@
   },
   {
     "key": "{stamp}。{tone}の末、{winner}が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. {winner} took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2381,7 +2381,7 @@
   },
   {
     "key": "{stamp}。{tone}の末、{winner}が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. {winner} took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2391,7 +2391,7 @@
   },
   {
     "key": "{stamp}。{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. {winner} ({winnerOrg}) took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2401,7 +2401,7 @@
   },
   {
     "key": "{stamp}。{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. {winner} ({winnerOrg}) took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2411,7 +2411,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. A {turns}-turn match, and {winner} took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2421,7 +2421,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. A {turns}-turn match, and {winner} took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2431,7 +2431,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. A {turns}-turn match, and {winner} ({winnerOrg}) took the 3-count off {loser}: {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2441,7 +2441,7 @@
   },
   {
     "key": "{stamp}。{turns}ターンに及ぶ{tone}の末、{winner}（{winnerOrg}）が{finish}で{loser}（{loserOrg}）から3カウントを奪取。試合評価{mq}の{tone}となった。",
-    "en": "",
+    "en": "{stamp}. A {turns}-turn match, and {winner} ({winnerOrg}) took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
     ],
@@ -2531,7 +2531,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ一方的な展開で、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A one-sided {turns}-turn match, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2541,7 +2541,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ一方的な展開で、{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A one-sided {turns}-turn match, and {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2551,7 +2551,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ攻防の末、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A {turns}-turn exchange, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2561,7 +2561,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ攻防の末、{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A {turns}-turn exchange, and {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2571,7 +2571,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ死闘の末、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A {turns}-turn war, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2581,7 +2581,7 @@
   },
   {
     "key": "{turns}ターンに及ぶ死闘の末、{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A {turns}-turn war, and {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -2591,7 +2591,7 @@
   },
   {
     "key": "{venue}大会、観客{attendance}人。全{totalMatches}試合平均試合評価{avgMQ}——好カード続出の{showName}",
-    "en": "",
+    "en": "{venue}, {attendance} in the building. {totalMatches} on the card at an average of {avgMQ} — a deep card at {showName}",
     "files": [
       "NEWSPAPER_SUB_TEMPLATES"
     ],
@@ -2621,7 +2621,7 @@
   },
   {
     "key": "{winnerOrg}の{winner}、PPVで{loserOrg}{loser}を下す",
-    "en": "",
+    "en": "{winnerOrg}'s {winner} beats {loserOrg} {loser} at the PPV",
     "files": [
       "PPV_UNDERCARD_HEADLINE_TEMPLATES"
     ],
@@ -2631,7 +2631,7 @@
   },
   {
     "key": "{winner}、PPVで{loserOrg}{loser}を下す",
-    "en": "",
+    "en": "{winner} beats {loserOrg} {loser} at the PPV",
     "files": [
       "PPV_UNDERCARD_HEADLINE_TEMPLATES"
     ],
@@ -2641,7 +2641,7 @@
   },
   {
     "key": "{winner}はHPを{hp}残しての圧勝。",
-    "en": "",
+    "en": "{winner} came through with {hp} HP still in hand.",
     "files": [
       "PPV_SUMMIT_HPNOTE_TEMPLATES"
     ],
@@ -2651,7 +2651,7 @@
   },
   {
     "key": "◆ {name1} vs {name2}の再戦を望むファンの声がSNSで増加中",
-    "en": "",
+    "en": "◆ Calls for {name1} vs {name2} again are building on social media",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2661,7 +2661,7 @@
   },
   {
     "key": "◆ {name1} vs {name2}の因縁が深まっている。次の直接対決に注目",
-    "en": "",
+    "en": "◆ The grudge between {name1} and {name2} keeps deepening. Their next meeting is worth watching",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2671,7 +2671,7 @@
   },
   {
     "key": "◆ {name1}が{name2}について意味深なコメント。火花が散る予感",
-    "en": "",
+    "en": "◆ {name1} says something pointed about {name2}. Sparks look close",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2681,7 +2681,7 @@
   },
   {
     "key": "◆ {name1}と{name2}——好敵手同士の再戦を望む声は根強い",
-    "en": "",
+    "en": "◆ {name1} and {name2} — the calls for these two to meet again have never gone away",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2691,7 +2691,7 @@
   },
   {
     "key": "◆ {name1}と{name2}、練習場ですれ違うと自然に笑顔になるという",
-    "en": "",
+    "en": "◆ {name1} and {name2} apparently break into a smile whenever they pass in the gym",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2701,7 +2701,7 @@
   },
   {
     "key": "◆ {name1}と{name2}のライバル関係にファンが熱視線を送っている",
-    "en": "",
+    "en": "◆ Fans are watching the rivalry between {name1} and {name2} closely",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2711,7 +2711,7 @@
   },
   {
     "key": "◆ {name1}と{name2}の名勝負が今も語り草になっている",
-    "en": "",
+    "en": "◆ People still talk about the classic {name1} and {name2} had",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2721,7 +2721,7 @@
   },
   {
     "key": "◆ {name1}と{name2}の物語は終わっても、ファンの記憶には鮮やかに残る",
-    "en": "",
+    "en": "◆ The story of {name1} and {name2} is over, but the fans have not let go of it",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2731,7 +2731,7 @@
   },
   {
     "key": "◆ {name1}と{name2}の間にただならぬ空気が漂っている",
-    "en": "",
+    "en": "◆ There is something in the air between {name1} and {name2}",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2741,7 +2741,7 @@
   },
   {
     "key": "◆ {name}がSNSで{name2}の試合について触れていた。ファンが反応",
-    "en": "",
+    "en": "◆ {name} mentioned {name2}'s match on social media. The fans noticed",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2751,7 +2751,7 @@
   },
   {
     "key": "◆ {name}が{count}連勝。充実した練習の成果が出ている",
-    "en": "",
+    "en": "◆ {name} has won {count} in a row. The work in the gym is showing",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2761,7 +2761,7 @@
   },
   {
     "key": "◆ {name}が{count}連勝中！ 絶好調の波に乗っている",
-    "en": "",
+    "en": "◆ {name} is {count} in a row and still climbing",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2771,7 +2771,7 @@
   },
   {
     "key": "◆ {name}が{count}連敗中。調子を取り戻すきっかけが欲しいところ",
-    "en": "",
+    "en": "◆ {name} has lost {count} in a row. She could use something to turn it on",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2781,7 +2781,7 @@
   },
   {
     "key": "◆ {name}が{org}を牽引中。対戦を望む声が各団体から上がっている",
-    "en": "",
+    "en": "◆ {name} is carrying {org}. Other promotions are asking for a match",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2791,7 +2791,7 @@
   },
   {
     "key": "◆ {name}が仕事帰りのトレーニング姿をSNSに投稿。ファンが反応",
-    "en": "",
+    "en": "◆ {name} posted herself training after work. The fans answered",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2801,7 +2801,7 @@
   },
   {
     "key": "◆ {name}が休日の過ごし方を公開。オフの素顔にファンがほっこり",
-    "en": "",
+    "en": "◆ {name} showed how she spends a day off. The fans liked seeing her out of gear",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2811,7 +2811,7 @@
   },
   {
     "key": "◆ {name}が地元のイベントでファンと交流。笑顔で写真撮影に応じていた",
-    "en": "",
+    "en": "◆ {name} met fans at a local event and stayed for every photo",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2821,7 +2821,7 @@
   },
   {
     "key": "◆ {name}が苦しい時期を過ごしている。{count}連敗でも腐らない姿勢にファンはエールを送る",
-    "en": "",
+    "en": "◆ {name} is in a hard stretch. {count} straight losses and she has not soured on it; the fans are behind her",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2831,7 +2831,7 @@
   },
   {
     "key": "◆ {name}にアクシデント。{org}は代役の検討を迫られる",
-    "en": "",
+    "en": "◆ {name} has had an accident. {org} now has to look at a replacement",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2841,7 +2841,7 @@
   },
   {
     "key": "◆ {name}に元気がない…{count}連敗にファンから心配の声",
-    "en": "",
+    "en": "◆ {name} does not look herself... {count} straight losses, and the fans are worried",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2851,7 +2851,7 @@
   },
   {
     "key": "◆ {name}のSNSに{name2}がコメント。ファンの間で話題に",
-    "en": "",
+    "en": "◆ {name2} left a comment on {name}'s post. The fans have run with it",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2861,7 +2861,7 @@
   },
   {
     "key": "◆ {name}の不調が続く。{count}連敗で表情にも陰りが",
-    "en": "",
+    "en": "◆ {name}'s slump goes on. {count} straight losses, and it shows on her face",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2871,7 +2871,7 @@
   },
   {
     "key": "◆ {name}の充実ぶりが話題に。{org}の大黒柱は健在",
-    "en": "",
+    "en": "◆ {name} is in good shape by every account. {org}'s pillar is still standing",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2881,7 +2881,7 @@
   },
   {
     "key": "◆ {name}の出場が危ぶまれる。{org}の今後のカード編成に影響も",
-    "en": "",
+    "en": "◆ {name} may not make the card. {org}'s booking could feel it",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2891,7 +2891,7 @@
   },
   {
     "key": "◆ {name}の安定感が際立つ。王者として{defenses}回の防衛を重ねた風格",
-    "en": "",
+    "en": "◆ {name} does not waver. Defense number {defenses} as champion, and she wears it well",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2901,7 +2901,7 @@
   },
   {
     "key": "◆ {name}の本業での活躍ぶりも話題に。「文武両道」とファンが称賛",
-    "en": "",
+    "en": "◆ {name} is doing just as well at her day job. The fans admire that she keeps both going",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2911,7 +2911,7 @@
   },
   {
     "key": "◆ {name}の次の防衛戦に注目が集まっている",
-    "en": "",
+    "en": "◆ {name}'s next title defense is the one to watch",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2921,7 +2921,7 @@
   },
   {
     "key": "◆ {name}の王座に虎視眈々と狙いを定める選手たち",
-    "en": "",
+    "en": "◆ Wrestlers are lining up with an eye on {name}'s title",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2931,7 +2931,7 @@
   },
   {
     "key": "◆ {name}の王座はもはや鉄壁。{defenses}度防衛の壁を越える者は現れるか",
-    "en": "",
+    "en": "◆ {name}'s title looks sealed. Is anyone getting past defense number {defenses}?",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2941,7 +2941,7 @@
   },
   {
     "key": "◆ {name}の連勝が{count}に到達。次の対戦相手は戦々恐々か",
-    "en": "",
+    "en": "◆ {name}'s streak has reached {count}. Whoever is next will not sleep well",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2951,7 +2951,7 @@
   },
   {
     "key": "◆ {name}の連敗が止まらない。周囲のサポートが鍵になりそう",
-    "en": "",
+    "en": "◆ {name} cannot stop the slide. What she gets from the people around her will decide it",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2961,7 +2961,7 @@
   },
   {
     "key": "◆ {name}の長期政権が続く。{defenses}度の防衛は伊達ではない",
-    "en": "",
+    "en": "◆ {name}'s long reign holds. Defense number {defenses} was not handed to her",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2971,7 +2971,7 @@
   },
   {
     "key": "◆ {org}、今週も安定した集客で興行を成功させた",
-    "en": "",
+    "en": "◆ {org} drew steadily again this week and ran a successful show",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2981,7 +2981,7 @@
   },
   {
     "key": "◆ {org}、地域密着型の興行でファン層を着実に広げている",
-    "en": "",
+    "en": "◆ {org} keeps widening its base with shows rooted in the local area",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -2991,7 +2991,7 @@
   },
   {
     "key": "◆ {org}、限られた予算の中で奮闘中。選手の頑張りが支え",
-    "en": "",
+    "en": "◆ {org} is fighting a tight budget. The wrestlers are what holds it up",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3001,7 +3001,7 @@
   },
   {
     "key": "◆ {org}が堅実な興行運営。観客の満足度も上々とのこと",
-    "en": "",
+    "en": "◆ {org} runs a solid show, and the crowds are said to be leaving happy",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3011,7 +3011,7 @@
   },
   {
     "key": "◆ {org}が新しいスポンサーを獲得。資金面に余裕が生まれそう",
-    "en": "",
+    "en": "◆ {org} has landed a new sponsor. The books should breathe a little",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3021,7 +3021,7 @@
   },
   {
     "key": "◆ {org}が経費削減に取り組んでいるとの噂。厳しい台所事情か",
-    "en": "",
+    "en": "◆ Word is {org} is cutting costs. The kitchen may be tighter than it looks",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3031,7 +3031,7 @@
   },
   {
     "key": "◆ {org}が練習施設を拡充。選手からも好評の声",
-    "en": "",
+    "en": "◆ {org} has expanded its training facility. The wrestlers say it shows",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3041,7 +3041,7 @@
   },
   {
     "key": "◆ {org}の{name}がトレーニング中に負傷か。詳細は未発表",
-    "en": "",
+    "en": "◆ {org}'s {name} may have been hurt in training. No details released",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3051,7 +3051,7 @@
   },
   {
     "key": "◆ {org}の{name}が好調を維持。エースとしての存在感を発揮",
-    "en": "",
+    "en": "◆ {org}'s {name} is holding her form and looking every bit the ace",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3061,7 +3061,7 @@
   },
   {
     "key": "◆ {org}の{name}が離脱。早期復帰を願う声がSNSに溢れている",
-    "en": "",
+    "en": "◆ {org}'s {name} is out. Social media is full of people hoping it is short",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3071,7 +3071,7 @@
   },
   {
     "key": "◆ {org}の{name}に注目が集まる。実力は業界屈指との評判",
-    "en": "",
+    "en": "◆ {org}'s {name} is the name to watch. They say she is among the best in the business",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3081,7 +3081,7 @@
   },
   {
     "key": "◆ {org}のグッズ売上が伸びている。人気選手のタオルが品薄に",
-    "en": "",
+    "en": "◆ Merch sales at {org} are up. Towels for the popular names are running short",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3091,7 +3091,7 @@
   },
   {
     "key": "◆ {org}の今週の興行は好評。会場には熱気が充満していた",
-    "en": "",
+    "en": "◆ {org}'s show went over well this week. The building stayed warm all night",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3101,7 +3101,7 @@
   },
   {
     "key": "◆ {org}の看板選手{name}、練習での仕上がりが抜群とのこと",
-    "en": "",
+    "en": "◆ {org}'s marquee name {name} is said to be in outstanding condition in training",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3111,7 +3111,7 @@
   },
   {
     "key": "◆ {org}の経営が好調。スポンサー契約も順調に増えている",
-    "en": "",
+    "en": "◆ {org} is running well. Sponsor deals keep coming in",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3121,7 +3121,7 @@
   },
   {
     "key": "◆ {org}の経営陣がテコ入れ策を検討中との報道",
-    "en": "",
+    "en": "◆ Reports say {org}'s front office is weighing a shake-up",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3131,7 +3131,7 @@
   },
   {
     "key": "◆ {org}の興行が盛況。地元ファンの支持は厚い",
-    "en": "",
+    "en": "◆ {org} drew a full house. The local support runs deep",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3141,7 +3141,7 @@
   },
   {
     "key": "◆ {org}の興行収入が安定。地域からの協賛も増加傾向",
-    "en": "",
+    "en": "◆ {org}'s gate is steady, and local sponsorship keeps rising",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3151,7 +3151,7 @@
   },
   {
     "key": "◆ {org}の観客動員が課題に。魅力的なカード作りで巻き返しを図る",
-    "en": "",
+    "en": "◆ Attendance is {org}'s problem. They mean to book their way back",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3161,7 +3161,7 @@
   },
   {
     "key": "◆ {org}の集客がやや伸び悩み。新たなファン開拓が課題か",
-    "en": "",
+    "en": "◆ {org}'s draw has flattened. Finding new fans looks like the job",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3171,7 +3171,7 @@
   },
   {
     "key": "◆ {org}・{name}の負傷情報。復帰時期は未定とのこと",
-    "en": "",
+    "en": "◆ Injury news on {org}'s {name}. No date set for a return",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3181,7 +3181,7 @@
   },
   {
     "key": "◆ 「{name1} vs {name2}をもう一度」——ファン投票で再戦希望が上位に",
-    "en": "",
+    "en": "◆ '{name1} vs {name2}, one more time' — the rematch sits near the top of the fan poll",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3191,7 +3191,7 @@
   },
   {
     "key": "◆ 「{name}時代」と呼ぶ声も。{defenses}回防衛の偉業は続く",
-    "en": "",
+    "en": "◆ Some are calling it the {name} era. Defense number {defenses}, and counting",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3201,7 +3201,7 @@
   },
   {
     "key": "◆ フリーで活動中の選手に複数団体がオファーを出しているとの噂",
-    "en": "",
+    "en": "◆ Word is several promotions have offers out to wrestlers working free",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3211,7 +3211,7 @@
   },
   {
     "key": "◆ レスリング保険の加入者数が前年比で増加。安全意識の高まりか",
-    "en": "",
+    "en": "◆ Wrestling insurance sign-ups are up year on year. Safety may be on more minds",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3221,7 +3221,7 @@
   },
   {
     "key": "◆ レスリング関連グッズの売上が堅調。推し選手のタオルが人気",
-    "en": "",
+    "en": "◆ Wrestling merch keeps selling. Towels for a favorite wrestler move best",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3231,7 +3231,7 @@
   },
   {
     "key": "◆ 人気選手の得意技を真似する人がジムで増えているとか",
-    "en": "",
+    "en": "◆ More people in the gyms are apparently copying the signature moves of the big names",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3241,7 +3241,7 @@
   },
   {
     "key": "◆ 今週末の大会に向けてSNSでの話題が盛り上がりを見せている",
-    "en": "",
+    "en": "◆ Talk about this weekend's card is picking up online",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3251,7 +3251,7 @@
   },
   {
     "key": "◆ 各団体のスカウトが活発化。フリーの実力者を巡る争奪戦の気配",
-    "en": "",
+    "en": "◆ Scouting has picked up across the promotions. A fight over the best free wrestlers looks likely",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3261,7 +3261,7 @@
   },
   {
     "key": "◆ 各団体の試合ハイライト動画の再生数が伸びている",
-    "en": "",
+    "en": "◆ Match highlight views are climbing across the promotions",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3271,7 +3271,7 @@
   },
   {
     "key": "◆ 地元のアマチュア大会で将来有望な選手が目撃されたとの情報",
-    "en": "",
+    "en": "◆ Word of a promising wrestler spotted at a local amateur event",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3281,7 +3281,7 @@
   },
   {
     "key": "◆ 地域のスポーツ施設でレスリング教室の申込が増加傾向",
-    "en": "",
+    "en": "◆ Sign-ups for wrestling classes at community sports centers keep rising",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3291,7 +3291,7 @@
   },
   {
     "key": "◆ 地域のレスリング教室出身者に注目が集まっている",
-    "en": "",
+    "en": "◆ Graduates of the community wrestling classes are worth keeping an eye on",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3301,7 +3301,7 @@
   },
   {
     "key": "◆ 快進撃の{name}、{count}連勝で勢いが止まらない",
-    "en": "",
+    "en": "◆ {name} is on a run: {count} in a row, and no sign of it slowing",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3311,7 +3311,7 @@
   },
   {
     "key": "◆ 止まらない{name}！ {count}連勝で注目度が急上昇",
-    "en": "",
+    "en": "◆ No stopping {name} — {count} in a row, and every eye on her",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3321,7 +3321,7 @@
   },
   {
     "key": "◆ 王者{name}、どんな挑戦者でも受けて立つ構え",
-    "en": "",
+    "en": "◆ Champion {name} says she will take on whoever comes",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3331,7 +3331,7 @@
   },
   {
     "key": "◆ 王者{name}、練習での仕上がりは万全とのこと",
-    "en": "",
+    "en": "◆ Champion {name} is said to be fully prepared in training",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3341,7 +3341,7 @@
   },
   {
     "key": "◆ 王者{name}に挑戦者候補が続々。次の防衛戦の相手は誰だ",
-    "en": "",
+    "en": "◆ Challengers keep putting their names in for champion {name}. Who gets the next defense?",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3351,7 +3351,7 @@
   },
   {
     "key": "◆ 異業種から転身した新人が話題に。ポテンシャルは未知数",
-    "en": "",
+    "en": "◆ People are talking about a rookie who came in from another line of work. Nobody knows her ceiling",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3361,7 +3361,7 @@
   },
   {
     "key": "◆ 絶対王者{name}、{defenses}回防衛の実績に業界も脱帽",
-    "en": "",
+    "en": "◆ {name} reigns unchallenged. Defense number {defenses}, and the business tips its hat",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3371,7 +3371,7 @@
   },
   {
     "key": "◆ 🏆 U-20の頂点に{name}（{orgName}）。鮮烈な勝利で全団体を沸かせた",
-    "en": "",
+    "en": "◆ 🏆 {name} of {orgName} takes the U-20. A vivid win that had every promotion on its feet",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3381,7 +3381,7 @@
   },
   {
     "key": "◆ 🏆 {name}がジュニアトーナメントを制覇。{orgName}の未来を担うエースの誕生だ",
-    "en": "",
+    "en": "◆ 🏆 {name} wins the Junior Tournament. {orgName} has its ace for the years ahead",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3391,7 +3391,7 @@
   },
   {
     "key": "◆ 🏆 ジュニアトーナメント優勝は{name}（{orgName}）！ 若き才能が頂点に立った",
-    "en": "",
+    "en": "◆ 🏆 The Junior Tournament goes to {name} of {orgName}. A young talent standing on top",
     "files": [
       "NEWS_TICKER_TEMPLATES"
     ],
@@ -3401,7 +3401,7 @@
   },
   {
     "key": "⚔ {opponentName}との対抗戦を辞退",
-    "en": "",
+    "en": "⚔ Declined the interpromotional match with {opponentName}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3411,7 +3411,7 @@
   },
   {
     "key": "⚔ 対抗戦 vs {opponent} — {playerWins}勝{aiWins}敗で{result}",
-    "en": "",
+    "en": "⚔ Interpromotional series vs {opponent} — {playerWins}-{aiWins}, {result}",
     "files": [
       "CROSS_WAR_RESULT_TEXT"
     ],
@@ -3421,7 +3421,7 @@
   },
   {
     "key": "⚖ ドラフト: {name} [{tierLabel}] → {orgName} ({cost}万 R{round})",
-    "en": "",
+    "en": "⚖ Draft: {name} [{tierLabel}] → {orgName} (¥{cost}0k, R{round})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3431,7 +3431,7 @@
   },
   {
     "key": "⚖ ドラフト流札: {name} [{tierLabel}]",
-    "en": "",
+    "en": "⚖ Draft: {name} [{tierLabel}] unclaimed",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3441,7 +3441,7 @@
   },
   {
     "key": "⚖ ドラフト流札: {name} [{tierLabel}]（団体枠上限）",
-    "en": "",
+    "en": "⚖ Draft: {name} [{tierLabel}] unclaimed (roster cap reached)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3451,7 +3451,7 @@
   },
   {
     "key": "⚖ ドラフト流札: {name} [{tierLabel}]（資金/枠不足）",
-    "en": "",
+    "en": "⚖ Draft: {name} [{tierLabel}] unclaimed (no funds or no slot)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3461,7 +3461,7 @@
   },
   {
     "key": "⚖ ドラフト獲得: {name} [{tierLabel}] 契約金{cost}万 (R{round})",
-    "en": "",
+    "en": "⚖ Drafted: {name} [{tierLabel}], signing fee ¥{cost}0k (R{round})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3471,7 +3471,7 @@
   },
   {
     "key": "⚠ ドラフト情報が不完全だったため、今年の指名は行われませんでした",
-    "en": "",
+    "en": "⚠ The draft data was incomplete, so no picks were made this year",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3481,7 +3481,7 @@
   },
   {
     "key": "⚡ {nameA}と{nameB}——燻っていた因縁が宿怨に変わる。もう互いに退けない",
-    "en": "",
+    "en": "⚡ {nameA} and {nameB} — a smoldering grudge has hardened into something neither will let go. Nobody backs off now",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3491,7 +3491,7 @@
   },
   {
     "key": "⛽ まずは赤字を耐え忍び、黒字経営を目指せ！【経営サバイバル】",
-    "en": "",
+    "en": "⛽ Ride out the red first and get the books into the black! [Business Survival]",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3501,7 +3501,7 @@
   },
   {
     "key": "❌ {name}を解雇",
-    "en": "",
+    "en": "❌ Released {name}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3641,7 +3641,7 @@
   },
   {
     "key": "セーブデータ自動修復: {changes}",
-    "en": "",
+    "en": "Save data auto-repaired: {changes}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -3701,7 +3701,7 @@
   },
   {
     "key": "ベストバウトは{player} vs {ai}（試合評価{mq}）。",
-    "en": "",
+    "en": "Best bout: {player} vs {ai}, rated {mq}.",
     "files": [
       "CROSS_WAR_RESULT_TEXT"
     ],
@@ -3721,7 +3721,7 @@
   },
   {
     "key": "一方的な展開で、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "One-sided throughout, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -3731,7 +3731,7 @@
   },
   {
     "key": "一方的な展開で、{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "One-sided throughout, and {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -3891,7 +3891,7 @@
   },
   {
     "key": "判定勝ち",
-    "en": "",
+    "en": "Win by decision",
     "files": [
       "FINISH_TEXT"
     ],
@@ -4071,7 +4071,7 @@
   },
   {
     "key": "攻防の末、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "After a long exchange, {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -4081,7 +4081,7 @@
   },
   {
     "key": "攻防の末、{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "After a long exchange, {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -4181,7 +4181,7 @@
   },
   {
     "key": "業界1位の座を奪取した「{orgName}」の快挙に触発され、ライバル団体が選手強化策とコーチ招聘に乗り出した。A級・B級団体が大型補強に動き、もはや安泰の時代は終わった。真の群雄割拠が始まる——。",
-    "en": "",
+    "en": "{orgName} taking the top spot in the business has moved everyone else. Rival promotions have opened their wallets on training programs and on coaching staff, and the Class A and Class B promotions are signing hard. The safe years are over. No promotion's position is settled now.",
     "files": [
       "LEAGUE_ELEVATION_TEXT"
     ],
@@ -4201,7 +4201,7 @@
   },
   {
     "key": "業界再編！ライバル団体が大幅強化",
-    "en": "",
+    "en": "The business realigns — rival promotions reinforce hard",
     "files": [
       "LEAGUE_ELEVATION_TEXT"
     ],
@@ -4261,7 +4261,7 @@
   },
   {
     "key": "死闘の末、{phase}に{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A war to the last, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -4271,7 +4271,7 @@
   },
   {
     "key": "死闘の末、{winner}が{finish}で{loser}を下した。",
-    "en": "",
+    "en": "A war to the last, and {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
     ],
@@ -4471,7 +4471,7 @@
   },
   {
     "key": "社長、挑戦試合 {playerScore} — {aiScore}。{otherOrgName}の{reqName}選手の越境挑戦、退けました。",
-    "en": "",
+    "en": "Boss, the challenge match went {playerScore} — {aiScore}. We turned back the crossover challenge from {otherOrgName}'s {reqName}.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4481,7 +4481,7 @@
   },
   {
     "key": "社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手が呼んだ舞台、しっかり制しました。",
-    "en": "",
+    "en": "Boss, the challenge match went {playerScore} — {aiScore}. {reqName} called for that stage, and we took it clean.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4491,7 +4491,7 @@
   },
   {
     "key": "社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手と{oppName}選手の決着は持ち越しです。",
-    "en": "",
+    "en": "Boss, the challenge match went {playerScore} — {aiScore}. {reqName} and {oppName} settled nothing; it carries over.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4501,7 +4501,7 @@
   },
   {
     "key": "社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手の直訴…結果が伴いませんでした。",
-    "en": "",
+    "en": "Boss, the challenge match went {playerScore} — {aiScore}. {reqName} asked for this one herself... the result did not follow.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4511,7 +4511,7 @@
   },
   {
     "key": "社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手陣に古巣として星を取られる結果になりました。",
-    "en": "",
+    "en": "Boss, the challenge match went {playerScore} — {aiScore}. {reqName} and her side took the win off their old home. Off us.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4881,7 +4881,7 @@
   },
   {
     "key": "🌐 {name}が全国統一王座を奪取！",
-    "en": "",
+    "en": "🌐 {name} takes the Unified National Championship!",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4891,7 +4891,7 @@
   },
   {
     "key": "🌐 {name}が全国統一王座を防衛！",
-    "en": "",
+    "en": "🌐 {name} defends the Unified National Championship!",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4901,7 +4901,7 @@
   },
   {
     "key": "🎉 {name}の引き抜き交渉成功！（-{cost}万）",
-    "en": "",
+    "en": "🎉 Poaching talks for {name} came off! (-¥{cost}0k)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4911,7 +4911,7 @@
   },
   {
     "key": "🎉 新団体設立！ 初期資金{funds}万でスタート。",
-    "en": "",
+    "en": "🎉 A new promotion is founded! Starting funds: ¥{funds}0k.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4921,7 +4921,7 @@
   },
   {
     "key": "🎓 {name}をコーチとして雇用（雇用費: {fee}万、決裁枠 -{dpCost}）",
-    "en": "",
+    "en": "🎓 Hired {name} as a coach (fee: ¥{fee}0k, approvals -{dpCost})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4931,7 +4931,7 @@
   },
   {
     "key": "🎓 コーチ枠を{slots}枠に拡張（投資: {cost}万）",
-    "en": "",
+    "en": "🎓 Coach slots expanded to {slots} (investment: ¥{cost}0k)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4941,7 +4941,7 @@
   },
   {
     "key": "🎫 逸材特別交渉枠を使用しました",
-    "en": "",
+    "en": "🎫 Used your special standout negotiation slot",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4951,7 +4951,7 @@
   },
   {
     "key": "🎯 目標: 業界1位の団体を超えてエンディングを目指せ！",
-    "en": "",
+    "en": "🎯 Goal: pass the number one promotion in the business and reach the ending!",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -4961,7 +4961,7 @@
   },
   {
     "key": "🏆 PPV — {winnerOrg}{winner}、{loserOrg}{loser}を下しタイトル戦制す",
-    "en": "",
+    "en": "🏆 PPV — {winnerOrg} {winner} beats {loserOrg} {loser} to take the title match",
     "files": [
       "PPV_UNDERCARD_HEADLINE_TEMPLATES"
     ],
@@ -4971,7 +4971,7 @@
   },
   {
     "key": "🏆 {player} vs {ai} — 接戦を制し{winner}が勝利",
-    "en": "",
+    "en": "🏆 {player} vs {ai} — {winner} edges a close one",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -4981,7 +4981,7 @@
   },
   {
     "key": "🏆 {player} vs {ai} — 歴史に刻まれる頂上決戦、{winner}に軍配",
-    "en": "",
+    "en": "🏆 {player} vs {ai} — a Summit Match for the record, and {winner} has it",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -4991,7 +4991,7 @@
   },
   {
     "key": "🏆 {player} vs {ai} 死闘の末 — {winner}が栄冠",
-    "en": "",
+    "en": "🏆 {player} vs {ai} goes to the last — {winner} crowned",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -5001,7 +5001,7 @@
   },
   {
     "key": "🏆 {winner}、{loser}を完封 — {winnerOrg}が頂点に立つ",
-    "en": "",
+    "en": "🏆 {winner} shuts out {loser} — {winnerOrg} on top",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -5011,7 +5011,7 @@
   },
   {
     "key": "🏆 {winner}、{loser}を完封 — 頂点に立つ",
-    "en": "",
+    "en": "🏆 {winner} shuts out {loser} — and stands on top",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -5021,7 +5021,7 @@
   },
   {
     "key": "🏆 因縁の頂上決戦 — {winner}、{rematchNum}度目の対戦で{loser}を下す",
-    "en": "",
+    "en": "🏆 A grudge at the summit — {winner} beats {loser} in meeting number {rematchNum}",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -5031,7 +5031,7 @@
   },
   {
     "key": "🏆 旧形式の単独頂上決戦はPPV GRAND FINALへ統合済みのため、予約を解除しました",
-    "en": "",
+    "en": "🏆 The old standalone Summit Match is now folded into the PPV GRAND FINAL, so the booking was cancelled",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5041,7 +5041,7 @@
   },
   {
     "key": "🏆 王座奪還！ {challengerName} が {orgName} から団体王座を取り戻した！",
-    "en": "",
+    "en": "🏆 The title is back! {challengerName} took the promotion title off {orgName}!",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5051,7 +5051,7 @@
   },
   {
     "key": "🏆 頂上決戦 {player} vs {ai} — {winner}が制す",
-    "en": "",
+    "en": "🏆 Summit Match {player} vs {ai} — {winner} takes it",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -5061,7 +5061,7 @@
   },
   {
     "key": "🏆 頂上決戦 — {ai}、{player}を下し頂点へ",
-    "en": "",
+    "en": "🏆 Summit Match — {ai} beats {player} and goes to the top",
     "files": [
       "PPV_SUMMIT_HEADLINE_TEMPLATES"
     ],
@@ -5071,7 +5071,7 @@
   },
   {
     "key": "🏟️ PPV GRAND FINAL「{ppvName}」エントリー完了！第{showWeek}週に開催",
-    "en": "",
+    "en": "🏟️ Entry confirmed for PPV GRAND FINAL {ppvName}! Running in week {showWeek}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5081,7 +5081,7 @@
   },
   {
     "key": "🏟️ {crowdLabel}（観客熱 {heatText}）",
-    "en": "",
+    "en": "🏟️ {crowdLabel} (venue heat {heatText})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5091,7 +5091,7 @@
   },
   {
     "key": "🏢 フリーエージェント{count}名がスカウト可能。",
-    "en": "",
+    "en": "🏢 Free agents available to scout: {count}.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5101,7 +5101,7 @@
   },
   {
     "key": "👑 {champName}が乱入者{intruderName}を退けた！ 団体人気+2、対戦pt+{intrusionPt}",
-    "en": "",
+    "en": "👑 {champName} turned back the intruder {intruderName}! Promotion popularity +2, H2H Pts +{intrusionPt}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5111,7 +5111,7 @@
   },
   {
     "key": "👑 {sName} (S級) / 💫 {aName} (A級) / 🌙 {bName} (B級)",
-    "en": "",
+    "en": "👑 {sName} (Class S) / 💫 {aName} (Class A) / 🌙 {bName} (Class B)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5121,7 +5121,7 @@
   },
   {
     "key": "💔 {challengerName} の奪還挑戦は失敗。{orgName} が団体王座を防衛した。",
-    "en": "",
+    "en": "💔 {challengerName}'s bid to reclaim the title failed. {orgName} held the promotion title.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5131,7 +5131,7 @@
   },
   {
     "key": "💰 残り資金: {funds}万",
-    "en": "",
+    "en": "💰 Funds remaining: ¥{funds}0k",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5141,7 +5141,7 @@
   },
   {
     "key": "💾 スロット{slot}にセーブしました",
-    "en": "",
+    "en": "💾 Saved to slot {slot}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5151,7 +5151,7 @@
   },
   {
     "key": "📂 スロット{slot}からロードしました",
-    "en": "",
+    "en": "📂 Loaded from slot {slot}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5161,7 +5161,7 @@
   },
   {
     "key": "📂 ファイルからデータを読み込みました",
-    "en": "",
+    "en": "📂 Loaded data from a file",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5171,7 +5171,7 @@
   },
   {
     "key": "📇 秘書に{wanted}を探すよう頼んだ",
-    "en": "",
+    "en": "📇 Asked your secretary to look for: {wanted}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5181,7 +5181,7 @@
   },
   {
     "key": "📉 団体人気{delta}",
-    "en": "",
+    "en": "📉 Promotion popularity {delta}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5191,7 +5191,7 @@
   },
   {
     "key": "📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (現在: {curOrgPop})",
-    "en": "",
+    "en": "📊 ★{stars} (average rating {avgMQ}) → promotion popularity {popDelta} (now {curOrgPop})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5201,7 +5201,7 @@
   },
   {
     "key": "📊 業界{rank}位からの挑戦が始まる。",
-    "en": "",
+    "en": "📊 The climb starts from number {rank} in the business.",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5211,7 +5211,7 @@
   },
   {
     "key": "📋 ドラフト完了！ {rosterCount}名の所属選手で船出。（契約金合計: {totalCost}万）",
-    "en": "",
+    "en": "📋 Draft complete! Setting out with a roster of {rosterCount}. (Signing fees total: ¥{totalCost}0k)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5221,7 +5221,7 @@
   },
   {
     "key": "📋 契約更新完了: 残留{stayCount}名 退団{departCount}名",
-    "en": "",
+    "en": "📋 Contract renewals done: {stayCount} staying, {departCount} leaving",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5231,7 +5231,7 @@
   },
   {
     "key": "📝 {name}と契約（契約金: {cost}万 [{tierLabel}]{scoutDiscSuffix}）",
-    "en": "",
+    "en": "📝 Signed {name} (signing fee: ¥{cost}0k [{tierLabel}]{scoutDiscSuffix})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5241,7 +5241,7 @@
   },
   {
     "key": "📝 {name}と契約（契約金: {cost}万）[{tierLabel}]{scoutDiscSuffix}",
-    "en": "",
+    "en": "📝 Signed {name} (signing fee: ¥{cost}0k) [{tierLabel}]{scoutDiscSuffix}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5251,7 +5251,7 @@
   },
   {
     "key": "📝 スカウト獲得 {name} [{tierLabel}] 契約金{cost}万",
-    "en": "",
+    "en": "📝 Scouted and signed {name} [{tierLabel}], signing fee ¥{cost}0k",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5261,7 +5261,7 @@
   },
   {
     "key": "📢 システム更新(v2.0): 選手の反応表現を更新しました",
-    "en": "",
+    "en": "📢 System update (v2.0): wrestler reactions have been reworked",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5271,7 +5271,7 @@
   },
   {
     "key": "📢 バランス調整(v1.5): 団体人気を{oldOrgPop}→{newOrgPop}に再調整しました（×0.7 リスケール）",
-    "en": "",
+    "en": "📢 Balance change (v1.5): promotion popularity rescaled from {oldOrgPop} to {newOrgPop} (×0.7)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5281,7 +5281,7 @@
   },
   {
     "key": "📤 {name}を解雇",
-    "en": "",
+    "en": "📤 Released {name}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5291,7 +5291,7 @@
   },
   {
     "key": "📰 {name} [{tierLabel}]、{orgName}と電撃契約",
-    "en": "",
+    "en": "📰 {name} [{tierLabel}] signs with {orgName} out of nowhere",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5301,7 +5301,7 @@
   },
   {
     "key": "📰 {name} [{tierLabel}]、指名漏れ",
-    "en": "",
+    "en": "📰 {name} [{tierLabel}] goes unpicked",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5311,7 +5311,7 @@
   },
   {
     "key": "📰 {orgName}、{name} [{tierLabel}]の獲得を発表",
-    "en": "",
+    "en": "📰 {orgName} announces the signing of {name} [{tierLabel}]",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5321,7 +5321,7 @@
   },
   {
     "key": "📰 業界紙報道: {name}、{orgName} と電撃契約。スカウト合戦の裏で進められていた極秘交渉が明らかに",
-    "en": "",
+    "en": "📰 From the trade press: {name} signs with {orgName} out of nowhere. Talks had been running in secret behind the scouting war",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5331,7 +5331,7 @@
   },
   {
     "key": "🔍 スカウト活動完了: {picksCount}名獲得",
-    "en": "",
+    "en": "🔍 Scouting done: {picksCount} signed",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5341,7 +5341,7 @@
   },
   {
     "key": "🔍 スカウト獲得: {name} [{tierLabel}] 契約金{cost}万",
-    "en": "",
+    "en": "🔍 Scouted: {name} [{tierLabel}], signing fee ¥{cost}0k",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5351,7 +5351,7 @@
   },
   {
     "key": "🔍 スカウト見送り: {name}",
-    "en": "",
+    "en": "🔍 Passed on scouting {name}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5361,7 +5361,7 @@
   },
   {
     "key": "🔍 競り負け: {name}は{orgName}へ",
-    "en": "",
+    "en": "🔍 Outbid: {name} goes to {orgName}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5371,7 +5371,7 @@
   },
   {
     "key": "🔍 競り負け: {name}はフリーエージェントへ",
-    "en": "",
+    "en": "🔍 Outbid: {name} goes to the free agent market",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5381,7 +5381,7 @@
   },
   {
     "key": "🔍 競り負け: {name}はフリーエージェントへ（重複のため登録省略）",
-    "en": "",
+    "en": "🔍 Outbid: {name} goes to the free agent market (duplicate entry skipped)",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5391,7 +5391,7 @@
   },
   {
     "key": "🔥 {nameA}と{nameB}——あの時の決着をつける時が来た",
-    "en": "",
+    "en": "🔥 {nameA} and {nameB} — the time has come to settle what they left open",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5401,7 +5401,7 @@
   },
   {
     "key": "🔥 {orgName}の挑戦状を無視",
-    "en": "",
+    "en": "🔥 Ignored the challenge letter from {orgName}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5411,7 +5411,7 @@
   },
   {
     "key": "🔥 挑戦状結果: {playerName} vs {aiName} → {outcome} (試合評価{mq}, 人気{popDeltaStr})",
-    "en": "",
+    "en": "🔥 Challenge letter result: {playerName} vs {aiName} → {outcome} (rated {mq}, popularity {popDeltaStr})",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5421,7 +5421,7 @@
   },
   {
     "key": "🔥 注目カード効果: 因縁カード編成で団体人気{delta}",
-    "en": "",
+    "en": "🔥 Marquee card bonus: booking the grudge moved promotion popularity {delta}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5431,7 +5431,7 @@
   },
   {
     "key": "😤 {nameA}と{nameB}——因縁の相手と同じ屋根の下。ロッカールームの空気が険悪に",
-    "en": "",
+    "en": "😤 {nameA} and {nameB} — a grudge under one roof. The locker room has gone cold",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5441,7 +5441,7 @@
   },
   {
     "key": "😱 {fromOrgName}の{intruderName}に王座を奪われた！ 王座は空位に… ヒート{penalty}、対戦pt-{intrusionPt}",
-    "en": "",
+    "en": "😱 {fromOrgName}'s {intruderName} has taken the title! The belt is vacant... Heat {penalty}, H2H Pts -{intrusionPt}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5451,7 +5451,7 @@
   },
   {
     "key": "🛠 年末表彰データを復旧しました",
-    "en": "",
+    "en": "🛠 Restored the year-end awards data",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5461,7 +5461,7 @@
   },
   {
     "key": "🤝 {nameA}と{nameB}が再会！ 旧友との再会でコンディション上昇",
-    "en": "",
+    "en": "🤝 {nameA} and {nameB} are together again! Seeing an old friend lifted both their condition",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5471,7 +5471,7 @@
   },
   {
     "key": "🤝 {name}との約束どおり、メインを任せた",
-    "en": "",
+    "en": "🤝 Kept your word to {name} and gave her the main event",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5481,7 +5481,7 @@
   },
   {
     "key": "🤝 {name}との約束を果たせなかった",
-    "en": "",
+    "en": "🤝 You could not keep your word to {name}",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
@@ -5491,7 +5491,7 @@
   },
   {
     "key": "🤝 {name}への起用の約束は、機会がないまま流れた",
-    "en": "",
+    "en": "🤝 The main event you promised {name} never came around",
     "files": [
       "GAMELOG_TEMPLATES"
     ],
