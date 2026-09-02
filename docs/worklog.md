@@ -1,5 +1,42 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Stage A P3a バッチ4b-3 — ui-common.jsのt()移行(最終区画・完走)（2026-09-02・Sonnet worktree agent-a1ef20148500b7753）
+
+4b-2の続行点(12065行目、`showFactionCommon4Modal`)からui-common.js(20,701行)の**末尾までを対象にUIクロームを`WM_I18N.t()`経由へ移行**。これで**ui-common.js全体(4b-1/4b-2/4b-3の3本)がt()移行完走**。開始前にworktreeブランチをmain先端(b722f12)へfast-forward済み。
+
+### 対象と方針
+- 派閥Common4/Common1/Common5/Common7モーダル・統一王座(戴冠式/返還式/挑戦表明/挑戦権モーダル)・果たし状/挑戦状打診モーダル(showChallengeRequestModal)とその結果シーケンス(2拍演出)・大型イベントB1〜B4(練習中の怪我/派閥内対決/B3元同僚/B4メディア密着)・試合後コメント/Glimpseカスケード・業界底上げ演出(showLeagueElevationCeremony)・エンディング/ゲームオーバー演出(5スライド×2)・体験版制限/終了メッセージ・契約更新交渉UI全5画面・ジュニアトーナメントのクライムラインブラケット〜最終結果画面・1試合結果ポップアップ共通部品(showEventMatchResultPopup/renderRegularMatchResultPopup)・春のタッグリーグ全画面(リーグ表/直近試合ストリップ/決勝プレビュー/優勝発表/編成モーダル)・秋の4団体対抗戦全画面(ライブボード/フォーカスカード/決勝布陣再編成/優勝発表/MVPシーン/初期編成)・天頂戦全画面(クライムライン/試合結果/優勝画面/決勝限定の関係性ドラマ演出/TV観戦モード/開催前ミニイベント/エントリーモーダル)のボタン・見出し・進行ラベル・システムメッセージ・chip/badgeラベルを機械的にt()化
+- 補間入りは4a/4bの慣例どおり`{name}`形式。「第{n}試合」「評価 {n}」「決着つかず」など既存バッチで確立した頻出パターンは同一表現を再利用し、新規に出た定型(「第{n}回大会」「{block}ブロック 第{n}試合」等)も同じ流儀で追加
+
+### 今バッチで新たに踏んだ判断
+1. **ロジックキーとして再利用される表示文字列は非ラップ**(重要な発見): `_agwRoleLabel`の返り値(`'先鋒'/'中堅'/'大将'/'代表'`)が`renderAutumnWarResult`内の`roleRank = { '先鋒': 0, '大将': 1, '中堅': 2 }`の**オブジェクトキー**として再比較されており、`_agwTeamViewState`の`label`(`'対戦中'`等)も`view.label === '対戦中'`で**CSSクラス切り替えの比較対象**になっていた。これらをt()化すると英語モードで比較が壊れる(表示は英語なのに内部比較はJA固定文字列のまま)ため、双方とも非ラップのまま維持。P3a-3のgameLogキーワードスニッフィング根絶と同種の穴で、Stage Bで型を分離しないと解決しない設計課題として記録
+2. **到達不能コード(dead code)は対象外**: `_buildB3Step3b`(mojibake修復のため同名で再宣言され初出側が完全に不到達)、`renderJuniorTournamentMatchResult`/`renderTenchosenMatchResult`内の`{ ... return; }`ブロック直後(ブロックが無条件returnするため後続コードは到達不能)を確認し、両方ともスキップ(コード自体の削除は本バッチのスコープ外)
+3. **全画面セレモニーのナレーション文はStage B領分として非ラップ**: `showLeagueElevationCeremony`の`leNarr0〜4`/`leClosingText`(業界震撼演出の物語文)、`showEndingCeremony`/`showGameOverCeremony`のエピローグ本文(「〜の物語は、ここで終わる」等)、`_tcDramaNarration`(天頂戦関係性ドラマの「ナレーション: 事実記述・固定文」と自己申告するコメント付き関数)を`_dfcChronicle`と同種のナレーション扱いでスキップ。同じ画面でもボタン・見出し・chip等のUIクロームは通常どおりラップ
+
+### スキップ判断のまとめ(既存分の踏襲)
+1. 記者文/ナレーション(`_factionReporterStrip`/`_mdlAReporterStrip`のline引数)、キャラ台詞生成関数のフォールバック(`getTraitQuote`/`getJuniorTournamentLine`/`pickDialogueLine`/`Engine.challengeRequest.pickLine`等)
+2. Engine由来のデータ駆動文字列・二重包み禁止(`event.dialogue`等のEngineフォールバックオブジェクト全体)
+3. 数値直付けの単位語(裸)・「N勝M敗」「N度戴冠・通算N度防衛」型の複合パターン(`在位 <b>{n}年</b> ・ 防衛 <b>{m}度</b>`等)
+4. ロジックキー(今バッチで判明した`_agwRoleLabel`/`_agwTeamViewState.label`を追加)
+
+### 検証
+- `node --check src/ui-common.js` — 都度成功
+- `node test/ja-golden.js` — 完全一致(hash `6b3d05c8...` 不変)
+- `node test/i18n-ratchet.js` — 直書きJA文字列は減少のみ(28226→28096、増加なし)
+- `npm test` — **260/260 PASS**。22本をt()化後の形に追従修正:
+  - `new Function`/`vm`サンドボックス20箇所(`away-challenge-result-sequence-test`/`ch1-challenge-flow-test`/`challenge-request-result-reaction-test`/`fullscreen-exit-zero-guard-test`/`tenchosen-final-dialogue-test`(vmコンテキスト)/`title-defense-scale-test`(vmコンテキスト)/`tournament-coach-wrapup-test`/`u1-match-result-unification-test`/`u3-group-a-safety-net-test`/`u5-winloss-safety-net-test`(4サンドボックス)/`unified-title-presentation-test`(3サンドボックス)/`match-next-label-test`(vmコンテキスト)) — 4b-1/4b-2確立の`WM_I18N_STUB`(ja素通し+プレースホルダ置換のみ)パターンを横展開
+  - ソースパターン/実行結果のリテラル一致テスト9本(`autumn-war-ui-flow-test`/`challenge-request-briefing-test`/`champion-announcement-unified-design-test`/`contract-retention-salary-test`/`internal-ui-labels-hidden-test`/`org-trust-visibility-guard-test`/`progression-labels-test`/`salary-decline-cards-test`/`spring-tag-league-v02-ui-test`/`spring-tag-league-watch-test`) — raw/`WM_I18N.t('...')`形の両対応、または探索文字列を役割ラベルより緩い部分一致へ更新
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・季末season=2 week=1まで到達)
+
+### 数値
+- `WM_I18N.t()`呼び出し: ui-common.js **966 → 1,894箇所**(本バッチで+928、対象範囲12065〜20701行目)
+- **ui-common.js(20,701行)は本バッチでt()移行完走**(4b-1: 0→379 / 4b-2: 379→966 / 4b-3: 966→1,894)
+
+### 残課題
+- **バッチ4のui-common.js区画は完了。残るバッチ4bはapp.js/index.html**(設計doc: docs/i18n-stage-a-p3a-design-v0.1.md §バッチ4)
+- 積み残し台帳(§バッチ4の積み残し台帳)に新規追加なし。今回発見したロジックキー混在(`_agwRoleLabel`/`_agwTeamViewState.label`)とdead code(`_buildB3Step3b`旧再宣言/JT・天頂戦の到達不能フォールバックブロック)は将来のリファクタ候補としてこのエントリに記録(別途チケット化はしていない)
+- 実機確認: 派閥Common4/1/5/7・統一王座4画面・果たし状/挑戦状打診とその結果シーケンス・大型イベントB1〜B4・業界底上げ演出・エンディング/ゲームオーバー5スライド・体験版制限/終了メッセージ・契約更新交渉5画面・ジュニアトーナメント全画面・春のタッグリーグ全画面・秋の4団体対抗戦全画面・天頂戦全画面(特に決勝限定の関係性ドラマ演出)を一通り開き、レイアウト崩れ・文言欠落が無いか確認いただけると安心(JA出力は不変のはずだが、t()呼び出しの参照ミスが無いかの最終目視)
+
 ## Stage A P3a バッチ4b-2 — ui-common.jsのt()移行(中盤)（2026-09-02・Sonnet worktree agent-a4e06ceb51f5c4e18）
 
 4b-1の続行点(5475行目、`_pendingMatchDialogues`/`renderShowResult`直前)からui-common.js(20,701行)の**12064行目（`showFactionCommon4Modal`直前、関数境界）**までを対象にUIクロームを`WM_I18N.t()`経由へ移行。**残り8,637行(約42%)は未着手** — 続きは4b-3が12065行目(`showFactionCommon4Modal`)から引き継ぐ。
