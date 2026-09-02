@@ -120,7 +120,7 @@ function makeEl(id) {
   const src = methodSource(appSrc, 'completeDraft', 'app.js');
   const build = new Function(
     'G', 'Engine', 'Audio', 'Storage', 'refreshAll', 'document', 'DRAFT_CONFIG', 'ALL_CHARS',
-    'getUpperUrl', 'requestAnimationFrame', 'setTimeout', 'alert',
+    'getUpperUrl', 'requestAnimationFrame', 'setTimeout', 'alert', 'WM_I18N',
     `var sessionRng; ${src} return { completeDraft };`
   );
 
@@ -154,6 +154,14 @@ function makeEl(id) {
       orgName: 'テスト団体', roster: [1, 2, 11, 12, 13].map(id => ({ id, name: `選手${id}` })),
     };
     const refreshAll = opts.refreshAll || (() => { calls.refreshAll++; });
+    // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+    // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+    const WM_I18N = { t(text, params) {
+      if (typeof text !== 'string' || !params) return text;
+      let out = text;
+      Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+      return out;
+    } };
     const built = build(
       GStub, EngineStub,
       { play() {}, bgm: { play() { calls.bgm++; } } },
@@ -161,7 +169,7 @@ function makeEl(id) {
       refreshAll, documentStub,
       { fixed: [1, 2] }, [],
       opts.getUpperUrl || (() => ''),
-      (fn) => fn(), timers.setTimeout, () => {}
+      (fn) => fn(), timers.setTimeout, () => {}, WM_I18N
     );
     const overlay = () => created.find(el => el.className === 'completion-overlay');
     return { built, calls, timers, created, overlay, keydowns };

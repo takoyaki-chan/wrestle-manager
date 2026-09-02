@@ -307,7 +307,7 @@ function section(name, fn) {
   const ceremArrivalBgmDecl = appSrc.match(/^const CEREMONY_ARRIVAL_BGM = \{[\s\S]*?^\};$/m);
   assert.ok(ceremArrivalBgmDecl, 'CEREMONY_ARRIVAL_BGM not found in app.js');
   const build = new Function(
-    'document', 'G', 'App', 'getUpperUrl', 'Audio',
+    'document', 'G', 'App', 'getUpperUrl', 'Audio', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
      ${uiFn('_u3bSideHtml')}
@@ -318,6 +318,14 @@ function section(name, fn) {
      ${appFn('showCeremonyEvent')}
      return { showCeremonyEvent };`
   );
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const wmI18nStub = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeEl() {
     return {
@@ -344,7 +352,7 @@ function section(name, fn) {
     const AppStub = opts.App || { resolveDomeLine: (fighter, key) => `LINE_${fighter.id}_${key}` };
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
     const AudioStub = opts.Audio || { fileBgm: { play() {}, fadeOut() {} }, bgm: { playForState() {} } };
-    const built = build(doc, GStub, AppStub, getUpperUrlStub, AudioStub);
+    const built = build(doc, GStub, AppStub, getUpperUrlStub, AudioStub, wmI18nStub);
     return { built, getAppended };
   }
 

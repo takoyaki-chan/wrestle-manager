@@ -67,7 +67,15 @@ const runReceiveJt = new Function(
   'App', 'Audio', 'document', 'clearTimeout', 'renderJuniorTournamentMatchResult', 'data',
   `${receiveJtBody}`
 );
-const runEnterJtFromWeek = new Function('App', 'Audio', 'Engine', 'Storage', 'showToast', 'G', 'options', `${enterJtFromWeekBody}`);
+const runEnterJtFromWeek = new Function('App', 'Audio', 'Engine', 'Storage', 'showToast', 'G', 'options', 'WM_I18N', `${enterJtFromWeekBody}`);
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+const wmI18nStub = { t(text, params) {
+  if (typeof text !== 'string' || !params) return text;
+  let out = text;
+  Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+  return out;
+} };
 const runResumeLoadedSpecialPhase = new Function('App', 'G', `${resumeLoadedSpecialPhaseBody}`);
 const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout', 'renderMatchPreview', `${escapeBattleBody}`);
 
@@ -405,7 +413,8 @@ const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout',
     Storage,
     (msg) => toastMessages.push(msg),
     { weekPhase: 'manage', week: 25 },
-    { processWeekOnCancel: true }
+    { processWeekOnCancel: true },
+    wmI18nStub
   );
 
   assert.strictEqual(handled, true);
@@ -438,7 +447,8 @@ const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout',
     Storage,
     () => calls.push('toast'),
     { weekPhase: 'manage', week: 25 },
-    {}
+    {},
+    wmI18nStub
   );
 
   assert.strictEqual(handled, false);

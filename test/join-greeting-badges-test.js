@@ -100,7 +100,7 @@ assert.ok(commonSource.includes('const quote = getSigningQuote(fighter);'), 'FA 
 assert.ok(commonSource.includes('const welcomeQuote = fighter ? getJoinGreeting(fighter)'), 'FA welcome uses the join greeting');
 assert.ok(commonSource.includes('function getRentalQuote(char)'), 'rental greeting remains present');
 assert.ok(appSource.includes('speech: getJoinGreeting(normalizedSigned)'), 'scout acquisition displays join greeting as character speech');
-assert.ok(appSource.includes('detail:`${cand.name}が加入しました！(スカウト獲得)`'), 'scout acquisition detail is preserved');
+assert.ok(appSource.includes("detail: WM_I18N.t('{name}が加入しました！(スカウト獲得)', { name: cand.name })"), 'scout acquisition detail is preserved');
 assert.ok(renderSource.includes("getJoinSourceBadge('fa')"), 'FA cards render source badge');
 assert.ok(renderSource.includes("getJoinSourceBadge('scout')"), 'scout cards render source badge');
 const badgeFunction = extractFunction(commonSource, 'getJoinSourceBadge');
