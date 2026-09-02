@@ -104,8 +104,16 @@ const FILE_CATEGORY = {
 // i18n-ratchet.js(test/i18n-ratchet.js)から流用するための計測本体。
 // CLI出力(console.log)を一切含まない純粋な集計関数にしてあるので、
 // このファイルを require() すれば計測ロジックを再実装せずに使い回せる。
+// 走査対象から外すファイル。
+// lang-en.js は test/i18n-build-dict.js が i18n/ui-ledger.json から生成するEN辞書で、
+// 中の日本語は「翻訳キー(原文)」であって移行すべき直書き文字列ではない。
+// 本スキャナが数えているのは「t()を経由していない生の日本語リテラル本数」なので、
+// 辞書のキーを混ぜるとラチェット(test/i18n-ratchet.js)が翻訳を進めるたびに増加で落ちる。
+// 翻訳の進捗そのものは i18n/ui-ledger.json の en 列充填数で測るため、ここでは対象外にする。
+const EXCLUDED_FILES = new Set(['lang-en.js']);
+
 function scanDir(srcDir) {
-  const files = fs.readdirSync(srcDir).filter(f => /\.(js|html)$/.test(f));
+  const files = fs.readdirSync(srcDir).filter(f => /\.(js|html)$/.test(f) && !EXCLUDED_FILES.has(f));
   const perFile = [];
   const categories = {};
   function addCat(cat, a) {

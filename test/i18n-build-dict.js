@@ -31,8 +31,15 @@ const LEDGER_PATH = path.join(ROOT, 'i18n', 'ui-ledger.json');
 const OUT_PATH = path.join(ROOT, 'src', 'lang-en.js');
 
 const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
-// test/i18n-scan.js の JA 判定と同じ文字レンジ(ひらがな/カタカナ/CJK統合漢字+拡張/半角カナ)。
-const JA_RE = /[぀-ヿ㐀-鿿豈-﫿ｦ-ﾟ一-鿿]/;
+// JA 判定(ひらがな/カタカナ/CJK統合漢字+拡張A/CJK互換漢字/半角カナ)をコードポイントで明示する。
+// test/i18n-scan.js は同じ意図のレンジを生文字で書いているが、「豈-﫿」の始点が
+// 互換漢字 U+F900 ではなく通常漢字 U+8C48 に潰れており、実効レンジが U+8C48〜U+FAFF まで
+// 広がってサロゲート(U+D800〜U+DFFF)を巻き込む。そのため 🏋 🔥 🤖 のような
+// BMP外の絵文字が「日本語が残っている」と誤検出される。D-B3 は絵文字を原文位置のまま
+// 残すことを要求しているので、EN辞書の検査ではこの誤検出を踏んではならない。
+// scan側は「生日本語文字列の本数が増えていないか」を見るラチェット用で基準値が
+// この計上を前提に焼かれているため、ここでは触らずこちらだけ正しいレンジにする。
+const JA_RE = /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF66-\uFF9F]/;
 
 function placeholderSet(str) {
   const set = new Set();
