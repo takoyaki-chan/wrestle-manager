@@ -24888,7 +24888,7 @@
   },
   {
     "key": "総合力 {n} 到達",
-    "en": "",
+    "en": "Overall {n} reached",
     "files": [
       "ui-common.js"
     ],
@@ -24898,7 +24898,7 @@
   },
   {
     "key": "総支出",
-    "en": "",
+    "en": "Total Spending",
     "files": [
       "ui-render.js"
     ],
@@ -24908,7 +24908,7 @@
   },
   {
     "key": "編成する",
-    "en": "",
+    "en": "Set the Lineup",
     "files": [
       "ui-render.js"
     ],
@@ -24918,7 +24918,7 @@
   },
   {
     "key": "編成内容を保存する",
-    "en": "",
+    "en": "Save This Card",
     "files": [
       "ui-common.js"
     ],
@@ -24928,7 +24928,7 @@
   },
   {
     "key": "編成済み",
-    "en": "",
+    "en": "Booked",
     "files": [
       "ui-common.js"
     ],
@@ -24938,7 +24938,7 @@
   },
   {
     "key": "編集記事 — {name}",
-    "en": "",
+    "en": "Editorial — {name}",
     "files": [
       "ui-render.js"
     ],
@@ -24948,7 +24948,7 @@
   },
   {
     "key": "緩",
-    "en": "",
+    "en": "Casual",
     "files": [
       "ui-render.js"
     ],
@@ -24958,7 +24958,7 @@
   },
   {
     "key": "緩やかな宿敵",
-    "en": "",
+    "en": "A casual nemesis",
     "files": [
       "ui-render.js"
     ],
@@ -24968,7 +24968,7 @@
   },
   {
     "key": "緩やかに上昇",
-    "en": "",
+    "en": "Rising slowly",
     "files": [
       "ui-common.js"
     ],
@@ -24978,7 +24978,7 @@
   },
   {
     "key": "練習",
-    "en": "",
+    "en": "Practice",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -24989,7 +24989,7 @@
   },
   {
     "key": "練習中のアクシデント",
-    "en": "",
+    "en": "An Accident in Practice",
     "files": [
       "ui-common.js"
     ],
@@ -24999,7 +24999,7 @@
   },
   {
     "key": "練習優先",
-    "en": "",
+    "en": "Practice First",
     "files": [
       "ui-render.js"
     ],
@@ -25009,7 +25009,7 @@
   },
   {
     "key": "練習後のロッカーでの会話が減った。",
-    "en": "",
+    "en": "There is less talk in the locker room after practice.",
     "files": [
       "ui-common.js"
     ],
@@ -25019,7 +25019,7 @@
   },
   {
     "key": "練習後の合流、食事、移動——動きはもう表に出始めています。",
-    "en": "",
+    "en": "Meeting up after practice, meals, travel — it is already showing on the surface.",
     "files": [
       "ui-common.js"
     ],
@@ -25029,7 +25029,7 @@
   },
   {
     "key": "練習（{detail}）",
-    "en": "",
+    "en": "Practice ({detail})",
     "files": [
       "ui-render.js"
     ],
@@ -25039,7 +25039,7 @@
   },
   {
     "key": "縮小",
-    "en": "",
+    "en": "Zoom out",
     "files": [
       "ui-render.js"
     ],
@@ -25049,7 +25049,7 @@
   },
   {
     "key": "肩記事",
-    "en": "",
+    "en": "Sidebar",
     "files": [
       "ui-render.js"
     ],
@@ -25059,7 +25059,7 @@
   },
   {
     "key": "育成",
-    "en": "",
+    "en": "Development",
     "files": [
       "ui-render.js"
     ],
@@ -25069,7 +25069,7 @@
   },
   {
     "key": "胸の内に、<span class=\"marker danger\">新たな火種</span>がくすぶり始めた。",
-    "en": "",
+    "en": "A <span class=\"marker danger\">new spark</span> has begun to smolder inside her.",
     "files": [
       "ui-common.js"
     ],
@@ -25079,7 +25079,7 @@
   },
   {
     "key": "能 力 急 上 昇",
-    "en": "",
+    "en": "A Sudden Leap",
     "files": [
       "ui-common.js"
     ],
@@ -25089,7 +25089,7 @@
   },
   {
     "key": "能力",
-    "en": "",
+    "en": "Ability",
     "files": [
       "ui-render.js"
     ],
@@ -25099,7 +25099,7 @@
   },
   {
     "key": "能力-3 / 連携不可 / 相手との関係-1",
-    "en": "",
+    "en": "Ability -3 / no teamwork / relationship -1",
     "files": [
       "ui-common.js"
     ],
@@ -25109,7 +25109,7 @@
   },
   {
     "key": "能力レーダーチャート",
-    "en": "",
+    "en": "Ability radar chart",
     "files": [
       "app.js"
     ],
@@ -25119,7 +25119,7 @@
   },
   {
     "key": "自",
-    "en": "",
+    "en": "OWN",
     "files": [
       "ui-render.js"
     ],
@@ -25129,7 +25129,7 @@
   },
   {
     "key": "自動",
-    "en": "",
+    "en": "Auto",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js"
@@ -25140,7 +25140,7 @@
   },
   {
     "key": "自動・交代中固定",
-    "en": "",
+    "en": "Auto · locked while tagging",
     "files": [
       "tag-battle-main.js"
     ],
@@ -25150,7 +25150,7 @@
   },
   {
     "key": "自動再生",
-    "en": "",
+    "en": "Autoplay",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js"
@@ -25161,7 +25161,7 @@
   },
   {
     "key": "自動更新",
-    "en": "",
+    "en": "Auto refresh",
     "files": [
       "ui-common.js"
     ],
@@ -25171,7 +25171,7 @@
   },
   {
     "key": "自動継続",
-    "en": "",
+    "en": "Auto continue",
     "files": [
       "ui-common.js"
     ],
@@ -25181,7 +25181,7 @@
   },
   {
     "key": "自団体",
-    "en": "",
+    "en": "Our promotion",
     "files": [
       "app.js",
       "ui-common.js",
@@ -25193,7 +25193,7 @@
   },
   {
     "key": "自団体 興行結果",
-    "en": "",
+    "en": "Our Show Results",
     "files": [
       "ui-render.js"
     ],
@@ -25203,7 +25203,7 @@
   },
   {
     "key": "自団体からの入賞者はいませんでした",
-    "en": "",
+    "en": "No one from our promotion placed",
     "files": [
       "ui-common.js"
     ],
@@ -25213,7 +25213,7 @@
   },
   {
     "key": "自団体で迎撃",
-    "en": "",
+    "en": "Defend at Home",
     "files": [
       "ui-common.js"
     ],
@@ -25223,7 +25223,7 @@
   },
   {
     "key": "自団体の代表候補",
-    "en": "",
+    "en": "Our Representative Candidates",
     "files": [
       "ui-common.js"
     ],
@@ -25233,7 +25233,7 @@
   },
   {
     "key": "自団体の獲得賞金",
-    "en": "",
+    "en": "Our Prize Money",
     "files": [
       "ui-common.js"
     ],
@@ -25243,7 +25243,7 @@
   },
   {
     "key": "自団体は入賞圏外でした（{rank}）",
-    "en": "",
+    "en": "Our promotion finished out of the places ({rank})",
     "files": [
       "ui-common.js"
     ],
@@ -25253,7 +25253,7 @@
   },
   {
     "key": "自団体は賞金圏外でした",
-    "en": "",
+    "en": "Our promotion finished out of the money",
     "files": [
       "ui-common.js"
     ],
@@ -25263,7 +25263,7 @@
   },
   {
     "key": "自団体興行 詳報",
-    "en": "",
+    "en": "Our Show — Full Report",
     "files": [
       "ui-render.js"
     ],
@@ -25273,7 +25273,7 @@
   },
   {
     "key": "自己最高OVR",
-    "en": "",
+    "en": "Career-high OVR",
     "files": [
       "ui-common.js"
     ],
@@ -25283,7 +25283,7 @@
   },
   {
     "key": "自然型",
-    "en": "",
+    "en": "Organic",
     "files": [
       "factions.js"
     ],
@@ -25293,7 +25293,7 @@
   },
   {
     "key": "興",
-    "en": "",
+    "en": "🎪",
     "files": [
       "ui-render.js"
     ],
@@ -25303,7 +25303,7 @@
   },
   {
     "key": "興味なし",
-    "en": "",
+    "en": "Not interested",
     "files": [
       "ui-render.js"
     ],
@@ -25313,7 +25313,7 @@
   },
   {
     "key": "興行",
-    "en": "",
+    "en": "Show",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -25324,7 +25324,7 @@
   },
   {
     "key": "興行{a}回 ｜ 最高評価{b}",
-    "en": "",
+    "en": "{a} shows | Best rating {b}",
     "files": [
       "ui-render.js"
     ],
@@ -25334,7 +25334,7 @@
   },
   {
     "key": "興行のあとで…",
-    "en": "",
+    "en": "After the show...",
     "files": [
       "ui-common.js"
     ],
@@ -25344,7 +25344,7 @@
   },
   {
     "key": "興行の実績・団体人気・所属人数が一定に達すると、王座を設立できます。まずは「初代王者決定戦」を組みましょう。",
-    "en": "",
+    "en": "Once your show record, promotion popularity and roster size all reach a certain level, you can establish a title. Start by booking the Inaugural Title Match.",
     "files": [
       "index.html"
     ],
@@ -25354,7 +25354,7 @@
   },
   {
     "key": "興行ダイジェスト",
-    "en": "",
+    "en": "Show Digest",
     "files": [
       "ui-render.js"
     ],
@@ -25364,7 +25364,7 @@
   },
   {
     "key": "興行予約",
-    "en": "",
+    "en": "Show booking",
     "files": [
       "factions.js"
     ],
@@ -25374,7 +25374,7 @@
   },
   {
     "key": "興行収入",
-    "en": "",
+    "en": "Show Revenue",
     "files": [
       "ui-render.js"
     ],
@@ -25384,7 +25384,7 @@
   },
   {
     "key": "興行回数",
-    "en": "",
+    "en": "Shows Run",
     "files": [
       "ui-common.js"
     ],
@@ -25394,7 +25394,7 @@
   },
   {
     "key": "興行数",
-    "en": "",
+    "en": "Shows",
     "files": [
       "ui-render.js"
     ],
@@ -25404,7 +25404,7 @@
   },
   {
     "key": "興行準備",
-    "en": "",
+    "en": "Show Prep",
     "files": [
       "index.html"
     ],
@@ -25414,7 +25414,7 @@
   },
   {
     "key": "興行準備に戻る →",
-    "en": "",
+    "en": "Back to Show Prep →",
     "files": [
       "ui-render.js"
     ],
@@ -25424,7 +25424,7 @@
   },
   {
     "key": "興行準備へ →",
-    "en": "",
+    "en": "To Show Prep →",
     "files": [
       "ui-render.js"
     ],
@@ -25434,7 +25434,7 @@
   },
   {
     "key": "興行結果の処理中にエラーが発生しました。",
-    "en": "",
+    "en": "Something went wrong while processing the show results.",
     "files": [
       "ui-common.js"
     ],
@@ -25444,7 +25444,7 @@
   },
   {
     "key": "興行週",
-    "en": "",
+    "en": "Show week",
     "files": [
       "ui-render.js"
     ],
@@ -25454,7 +25454,7 @@
   },
   {
     "key": "興行週ではありません。",
-    "en": "",
+    "en": "This is not a show week.",
     "files": [
       "ui-render.js"
     ],
@@ -25464,7 +25464,7 @@
   },
   {
     "key": "興行開催！（{n}試合）",
-    "en": "",
+    "en": "Show day! ({n} matches)",
     "files": [
       "ui-render.js"
     ],
@@ -25474,7 +25474,7 @@
   },
   {
     "key": "良い試合、戴冠、メディア露出で上がります。高くなるほど上がりにくく、逆に連敗・スキャンダル・怪我での長期欠場は人気を削ります。",
-    "en": "",
+    "en": "Good matches, title wins and media exposure raise it. The higher it climbs the harder it is to move, while losing streaks, scandals and long injury absences eat away at popularity.",
     "files": [
       "index.html"
     ],
@@ -25484,7 +25484,7 @@
   },
   {
     "key": "良好",
-    "en": "",
+    "en": "Good",
     "files": [
       "ui-render.js"
     ],
@@ -25494,7 +25494,7 @@
   },
   {
     "key": "若き才能{n}名が業界の門を叩く。",
-    "en": "",
+    "en": "{n} young talents come knocking at the industry's door.",
     "files": [
       "ui-render.js"
     ],
@@ -25504,7 +25504,7 @@
   },
   {
     "key": "若手 trust",
-    "en": "",
+    "en": "Rookie trust",
     "files": [
       "factions.js"
     ],
@@ -25514,7 +25514,7 @@
   },
   {
     "key": "若手ホープ",
-    "en": "",
+    "en": "Rising Hope",
     "files": [
       "ui-render.js"
     ],
@@ -25524,7 +25524,7 @@
   },
   {
     "key": "若手特集",
-    "en": "",
+    "en": "Rookie Feature",
     "files": [
       "ui-common.js"
     ],
@@ -25534,7 +25534,7 @@
   },
   {
     "key": "行き先",
-    "en": "",
+    "en": "Destination",
     "files": [
       "ui-common.js"
     ],
@@ -25544,7 +25544,7 @@
   },
   {
     "key": "表彰へ",
-    "en": "",
+    "en": "To the Awards",
     "files": [
       "ui-common.js"
     ],
@@ -25554,7 +25554,7 @@
   },
   {
     "key": "表示できる関係はまだありません。",
-    "en": "",
+    "en": "There are no relationships to show yet.",
     "files": [
       "ui-render.js"
     ],
@@ -25564,7 +25564,7 @@
   },
   {
     "key": "表示フィルタ",
-    "en": "",
+    "en": "Display Filter",
     "files": [
       "ui-render.js"
     ],
@@ -25574,7 +25574,7 @@
   },
   {
     "key": "表示強度",
-    "en": "",
+    "en": "Min. strength",
     "files": [
       "ui-render.js"
     ],
@@ -25584,7 +25584,7 @@
   },
   {
     "key": "表立った介入はせず、個別に話を聞いた。",
-    "en": "",
+    "en": "You did not step in openly, and heard them out one by one.",
     "files": [
       "factions.js"
     ],
@@ -25594,7 +25594,7 @@
   },
   {
     "key": "表立った評価ではなく、個別の声かけで応えた。",
-    "en": "",
+    "en": "Rather than praise in public, you answered with a quiet word to each of them.",
     "files": [
       "factions.js"
     ],
@@ -25604,7 +25604,7 @@
   },
   {
     "key": "衰え",
-    "en": "",
+    "en": "Fading",
     "files": [
       "ui-render.js"
     ],
@@ -25614,7 +25614,7 @@
   },
   {
     "key": "衰退",
-    "en": "",
+    "en": "Declining",
     "files": [
       "factions.js"
     ],
@@ -25624,7 +25624,7 @@
   },
   {
     "key": "衰退期",
-    "en": "",
+    "en": "Deep in decline",
     "files": [
       "ui-render.js"
     ],
@@ -25634,7 +25634,7 @@
   },
   {
     "key": "補助金あと{remaining}pt",
-    "en": "",
+    "en": "Grant: {remaining} pt left",
     "files": [
       "ui-render.js"
     ],
@@ -25644,7 +25644,7 @@
   },
   {
     "key": "補助金なし — すべて自力で稼ぐ",
-    "en": "",
+    "en": "No grant — you earn every yen yourself",
     "files": [
       "index.html"
     ],
@@ -25654,7 +25654,7 @@
   },
   {
     "key": "補助金モード",
-    "en": "",
+    "en": "Grant Mode",
     "files": [
       "index.html",
       "ui-render.js"
@@ -25665,7 +25665,7 @@
   },
   {
     "key": "補強提案:",
-    "en": "",
+    "en": "Where to strengthen:",
     "files": [
       "ui-render.js"
     ],
@@ -25675,7 +25675,7 @@
   },
   {
     "key": "製品版で解放されます",
-    "en": "",
+    "en": "Unlocked in the full version",
     "files": [
       "ui-render.js"
     ],
@@ -25685,7 +25685,7 @@
   },
   {
     "key": "製品版限定機能",
-    "en": "",
+    "en": "Full version only",
     "files": [
       "ui-common.js"
     ],
@@ -25695,7 +25695,7 @@
   },
   {
     "key": "複数団体が本気の獲得を狙う。",
-    "en": "",
+    "en": "Several promotions are serious about signing her.",
     "files": [
       "ui-render.js"
     ],
@@ -25705,7 +25705,7 @@
   },
   {
     "key": "要求",
-    "en": "",
+    "en": "Asking",
     "files": [
       "ui-common.js"
     ],
@@ -25715,7 +25715,7 @@
   },
   {
     "key": "見 守 る ✓",
-    "en": "",
+    "en": "Watch and Wait ✓",
     "files": [
       "ui-common.js"
     ],
@@ -25725,7 +25725,7 @@
   },
   {
     "key": "見 届 け る",
-    "en": "",
+    "en": "See It Through",
     "files": [
       "ui-common.js"
     ],
@@ -25735,7 +25735,7 @@
   },
   {
     "key": "見守る",
-    "en": "",
+    "en": "Watch and wait",
     "files": [
       "ui-common.js"
     ],
@@ -25745,7 +25745,7 @@
   },
   {
     "key": "見守るうち、{name}は自然に割れた。{ringleader}が旗を掲げる。",
-    "en": "",
+    "en": "While you watched, {name} split on its own. {ringleader} raises her flag.",
     "files": [
       "factions.js"
     ],
@@ -25755,7 +25755,7 @@
   },
   {
     "key": "見届ける",
-    "en": "",
+    "en": "See It Through",
     "files": [
       "ui-common.js"
     ],
@@ -25765,7 +25765,7 @@
   },
   {
     "key": "見届ける ✓",
-    "en": "",
+    "en": "See It Through ✓",
     "files": [
       "ui-common.js"
     ],
@@ -25775,7 +25775,7 @@
   },
   {
     "key": "見送り",
-    "en": "",
+    "en": "Pass",
     "files": [
       "ui-common.js"
     ],
@@ -25785,7 +25785,7 @@
   },
   {
     "key": "見送る",
-    "en": "",
+    "en": "Pass",
     "files": [
       "ui-render.js"
     ],
@@ -25795,7 +25795,7 @@
   },
   {
     "key": "見通し",
-    "en": "",
+    "en": "Outlook",
     "files": [
       "ui-common.js"
     ],
@@ -25805,7 +25805,7 @@
   },
   {
     "key": "親",
-    "en": "",
+    "en": "Bond",
     "files": [
       "ui-render.js"
     ],
@@ -25815,7 +25815,7 @@
   },
   {
     "key": "親密",
-    "en": "",
+    "en": "Bond",
     "files": [
       "ui-render.js"
     ],
@@ -25825,7 +25825,7 @@
   },
   {
     "key": "親密度",
-    "en": "",
+    "en": "Bond",
     "files": [
       "ui-render.js"
     ],
@@ -25835,7 +25835,7 @@
   },
   {
     "key": "親密度<strong>{bond}</strong> / ライバル度<strong>{rivalry}</strong>",
-    "en": "",
+    "en": "Bond <strong>{bond}</strong> / Rivalry <strong>{rivalry}</strong>",
     "files": [
       "ui-render.js"
     ],
@@ -25845,7 +25845,7 @@
   },
   {
     "key": "観客の熱気（固定層以外）",
-    "en": "",
+    "en": "Crowd heat (beyond the regulars)",
     "files": [
       "ui-common.js"
     ],
@@ -25855,7 +25855,7 @@
   },
   {
     "key": "観客満足度 {n}.0 / 5",
-    "en": "",
+    "en": "Crowd satisfaction {n}.0 / 5",
     "files": [
       "ui-render.js"
     ],
@@ -25865,7 +25865,7 @@
   },
   {
     "key": "観察する",
-    "en": "",
+    "en": "Observe",
     "files": [
       "ui-common.js"
     ],
@@ -25875,7 +25875,7 @@
   },
   {
     "key": "観察眼",
-    "en": "",
+    "en": "Insight",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -25886,7 +25886,7 @@
   },
   {
     "key": "観戦する",
-    "en": "",
+    "en": "Watch the Match",
     "files": [
       "ui-common.js"
     ],
@@ -25896,7 +25896,7 @@
   },
   {
     "key": "解 　 散",
-    "en": "",
+    "en": "DISBANDED",
     "files": [
       "ui-common.js"
     ],
@@ -25906,7 +25906,7 @@
   },
   {
     "key": "解 散",
-    "en": "",
+    "en": "DISBANDED",
     "files": [
       "ui-common.js"
     ],
@@ -25916,7 +25916,7 @@
   },
   {
     "key": "解 散 さ せ る",
-    "en": "",
+    "en": "Disband Them",
     "files": [
       "ui-common.js"
     ],
@@ -25926,7 +25926,7 @@
   },
   {
     "key": "解 散 し 、 以 後 認 め な い",
-    "en": "",
+    "en": "Disband Them and Allow No More",
     "files": [
       "ui-common.js"
     ],
@@ -25936,7 +25936,7 @@
   },
   {
     "key": "解 雇 す る 選 手",
-    "en": "",
+    "en": "Letting Go",
     "files": [
       "ui-common.js"
     ],
@@ -25946,7 +25946,7 @@
   },
   {
     "key": "解任",
-    "en": "",
+    "en": "Dismiss",
     "files": [
       "ui-render.js"
     ],
@@ -25956,7 +25956,7 @@
   },
   {
     "key": "解散",
-    "en": "",
+    "en": "Disband",
     "files": [
       "ui-common.js"
     ],
@@ -25966,7 +25966,7 @@
   },
   {
     "key": "解散させる派閥がありません",
-    "en": "",
+    "en": "There is no faction to disband",
     "files": [
       "app.js"
     ],
@@ -25976,7 +25976,7 @@
   },
   {
     "key": "解散の告知",
-    "en": "",
+    "en": "Disbandment Notice",
     "files": [
       "ui-common.js"
     ],
@@ -25986,7 +25986,7 @@
   },
   {
     "key": "解除",
-    "en": "",
+    "en": "Clear",
     "files": [
       "factions.js",
       "ui-render.js"
@@ -25997,7 +25997,7 @@
   },
   {
     "key": "解雇: {name}",
-    "en": "",
+    "en": "Released: {name}",
     "files": [
       "app.js"
     ],
@@ -26007,7 +26007,7 @@
   },
   {
     "key": "解雇: {name} / 契約金: {cost}万",
-    "en": "",
+    "en": "Released: {name} / Signing fee: ¥{cost}0k",
     "files": [
       "app.js"
     ],
@@ -26017,7 +26017,7 @@
   },
   {
     "key": "解雇: {name} / 移籍金: {cost}万",
-    "en": "",
+    "en": "Released: {name} / Transfer fee: ¥{cost}0k",
     "files": [
       "app.js"
     ],
@@ -26027,7 +26027,7 @@
   },
   {
     "key": "解雇して契約",
-    "en": "",
+    "en": "Release and Sign",
     "files": [
       "ui-common.js"
     ],
@@ -26037,7 +26037,7 @@
   },
   {
     "key": "解雇できる所属選手がいません。",
-    "en": "",
+    "en": "There is no one on the roster you can release.",
     "files": [
       "ui-common.js"
     ],
@@ -26047,7 +26047,7 @@
   },
   {
     "key": "解雇を実行する",
-    "en": "",
+    "en": "Release Her",
     "files": [
       "ui-render.js"
     ],
@@ -26057,7 +26057,7 @@
   },
   {
     "key": "言葉なき信頼、リング上の敬意",
-    "en": "",
+    "en": "Trust without words, respect in the ring",
     "files": [
       "ui-render.js"
     ],
@@ -26067,7 +26067,7 @@
   },
   {
     "key": "言葉なき戦い、静かな確執",
-    "en": "",
+    "en": "A battle without words, quiet friction",
     "files": [
       "ui-render.js"
     ],
@@ -26077,7 +26077,7 @@
   },
   {
     "key": "言葉より、試合で応えるタイプだ。",
-    "en": "",
+    "en": "She answers in the ring, not in words.",
     "files": [
       "ui-common.js"
     ],
@@ -26087,7 +26087,7 @@
   },
   {
     "key": "計",
-    "en": "",
+    "en": "Total ",
     "files": [
       "ui-common.js"
     ],
@@ -26097,7 +26097,7 @@
   },
   {
     "key": "記事にする価値のある因縁が、まだ業界には育っていない。<br>記者として、もう少し時間が要ると見ている。",
-    "en": "",
+    "en": "No grudge in this industry has grown into a story worth printing yet.<br>As a reporter, I think it needs a little more time.",
     "files": [
       "ui-render.js"
     ],
@@ -26107,7 +26107,7 @@
   },
   {
     "key": "記事は{name}の威圧的発言が前面に。注目は集まったが、外との緊張も増した。",
-    "en": "",
+    "en": "The piece led with {name}'s threats. It drew attention, and it raised the tension with the outside too.",
     "files": [
       "factions.js"
     ],
@@ -26117,7 +26117,7 @@
   },
   {
     "key": "記者の目",
-    "en": "",
+    "en": "The Reporter's Eye",
     "files": [
       "ui-render.js"
     ],
@@ -26127,7 +26127,7 @@
   },
   {
     "key": "記者の見立て",
-    "en": "",
+    "en": "The Reporter's Read",
     "files": [
       "ui-render.js"
     ],
@@ -26137,7 +26137,7 @@
   },
   {
     "key": "記録保持者",
-    "en": "",
+    "en": "Record Holder",
     "files": [
       "ui-render.js"
     ],
@@ -26147,7 +26147,7 @@
   },
   {
     "key": "記録更新!",
-    "en": "",
+    "en": "Record broken!",
     "files": [
       "ui-render.js"
     ],
@@ -26157,7 +26157,7 @@
   },
   {
     "key": "設立",
-    "en": "",
+    "en": "Founded",
     "files": [
       "ui-render.js"
     ],
@@ -26167,7 +26167,7 @@
   },
   {
     "key": "設立メンバー",
-    "en": "",
+    "en": "Founding Members",
     "files": [
       "ui-render.js"
     ],
@@ -26177,7 +26177,7 @@
   },
   {
     "key": "評価",
-    "en": "",
+    "en": "Rating",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js",
@@ -26190,7 +26190,7 @@
   },
   {
     "key": "評価 {n}",
-    "en": "",
+    "en": "Rating {n}",
     "files": [
       "ui-common.js"
     ],
@@ -26200,7 +26200,7 @@
   },
   {
     "key": "評価 — 総合順位の決定値",
-    "en": "",
+    "en": "Rating — the figure that decides the overall standings",
     "files": [
       "ui-render.js"
     ],
@@ -26210,7 +26210,7 @@
   },
   {
     "key": "評価+{n}",
-    "en": "",
+    "en": "Rating +{n}",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -26221,7 +26221,7 @@
   },
   {
     "key": "評価{mq}",
-    "en": "",
+    "en": "Rating {mq}",
     "files": [
       "ui-render.js"
     ],
@@ -26231,7 +26231,7 @@
   },
   {
     "key": "試 合 結 果",
-    "en": "",
+    "en": "MATCH RESULT",
     "files": [
       "ui-common.js"
     ],
@@ -26241,7 +26241,7 @@
   },
   {
     "key": "試合で決着させる",
-    "en": "",
+    "en": "Settle It in the Ring",
     "files": [
       "ui-common.js"
     ],
@@ -26251,7 +26251,7 @@
   },
   {
     "key": "試合の面白さを表す指標で、団体の評判と収入に直結します。",
-    "en": "",
+    "en": "A measure of how good the match was, tied directly to your promotion's reputation and income.",
     "files": [
       "index.html"
     ],
@@ -26261,7 +26261,7 @@
   },
   {
     "key": "試合へ →",
-    "en": "",
+    "en": "To the Match →",
     "files": [
       "ui-common.js"
     ],
@@ -26271,7 +26271,7 @@
   },
   {
     "key": "試合へ進む →",
-    "en": "",
+    "en": "Go to the Match →",
     "files": [
       "ui-common.js"
     ],
@@ -26281,7 +26281,7 @@
   },
   {
     "key": "試合を観る",
-    "en": "",
+    "en": "Watch the Match",
     "files": [
       "ui-common.js"
     ],
@@ -26291,7 +26291,7 @@
   },
   {
     "key": "試合カード編成へ進む",
-    "en": "",
+    "en": "Go to Card Booking",
     "files": [
       "ui-common.js"
     ],
@@ -26301,7 +26301,7 @@
   },
   {
     "key": "試合データの受信を待機中…",
-    "en": "",
+    "en": "Waiting for match data...",
     "files": [
       "battle-engine-main.js"
     ],
@@ -26311,7 +26311,7 @@
   },
   {
     "key": "試合形式",
-    "en": "",
+    "en": "Match Type",
     "files": [
       "ui-common.js"
     ],
@@ -26321,7 +26321,7 @@
   },
   {
     "key": "試合枠: {n}試合",
-    "en": "",
+    "en": "Match slots: {n}",
     "files": [
       "ui-render.js"
     ],
@@ -26331,7 +26331,7 @@
   },
   {
     "key": "試合終了",
-    "en": "",
+    "en": "Match Over",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js"
@@ -26342,7 +26342,7 @@
   },
   {
     "key": "試合結果",
-    "en": "",
+    "en": "Match Result",
     "files": [
       "ui-common.js"
     ],
@@ -26352,7 +26352,7 @@
   },
   {
     "key": "試合結果の確定に失敗しました。カードに不整合がある可能性があります。",
-    "en": "",
+    "en": "The match result could not be confirmed. There may be an inconsistency in the card.",
     "files": [
       "app.js"
     ],
@@ -26362,7 +26362,7 @@
   },
   {
     "key": "試合評価",
-    "en": "",
+    "en": "Match Rating",
     "files": [
       "ui-common.js"
     ],
@@ -26372,7 +26372,7 @@
   },
   {
     "key": "試合開始",
-    "en": "",
+    "en": "Match Start",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js",
@@ -26384,7 +26384,7 @@
   },
   {
     "key": "詰め込み注意",
-    "en": "",
+    "en": "Overbooked",
     "files": [
       "ui-common.js"
     ],
@@ -26394,7 +26394,7 @@
   },
   {
     "key": "話し合いで解決",
-    "en": "",
+    "en": "Settle It by Talking",
     "files": [
       "ui-common.js"
     ],
@@ -26404,7 +26404,7 @@
   },
   {
     "key": "該当する選手がいません",
-    "en": "",
+    "en": "No wrestlers match",
     "files": [
       "ui-render.js"
     ],
@@ -26414,7 +26414,7 @@
   },
   {
     "key": "該当選手",
-    "en": "",
+    "en": "Matching Wrestlers",
     "files": [
       "ui-common.js"
     ],
@@ -26424,7 +26424,7 @@
   },
   {
     "key": "詳細",
-    "en": "",
+    "en": "Details",
     "files": [
       "ui-render.js"
     ],
@@ -26434,7 +26434,7 @@
   },
   {
     "key": "詳細 ▶",
-    "en": "",
+    "en": "Details ▶",
     "files": [
       "ui-render.js"
     ],
@@ -26444,7 +26444,7 @@
   },
   {
     "key": "詳細を見る",
-    "en": "",
+    "en": "See details",
     "files": [
       "ui-render.js"
     ],
@@ -26454,7 +26454,7 @@
   },
   {
     "key": "認め合うがゆえに、退けない関係",
-    "en": "",
+    "en": "Too much respect between them to back down",
     "files": [
       "ui-render.js"
     ],
@@ -26464,7 +26464,7 @@
   },
   {
     "key": "課題: ",
-    "en": "",
+    "en": "Needs work: ",
     "files": [
       "ui-render.js"
     ],
@@ -26474,7 +26474,7 @@
   },
   {
     "key": "警戒・不和",
-    "en": "",
+    "en": "Wary · at odds",
     "files": [
       "ui-render.js"
     ],
@@ -26484,7 +26484,7 @@
   },
   {
     "key": "警戒・距離感",
-    "en": "",
+    "en": "Wary · keeping distance",
     "files": [
       "ui-render.js"
     ],
@@ -26494,7 +26494,7 @@
   },
   {
     "key": "負け越し中",
-    "en": "",
+    "en": "Losing record",
     "files": [
       "ui-common.js"
     ],
@@ -26504,7 +26504,7 @@
   },
   {
     "key": "負傷",
-    "en": "",
+    "en": "Injured",
     "files": [
       "ui-render.js"
     ],
@@ -26514,7 +26514,7 @@
   },
   {
     "key": "負傷者: {n}名",
-    "en": "",
+    "en": "Injured: {n}",
     "files": [
       "ui-render.js"
     ],
@@ -26524,7 +26524,7 @@
   },
   {
     "key": "負傷者情報",
-    "en": "",
+    "en": "Injury Report",
     "files": [
       "ui-render.js"
     ],
@@ -26534,7 +26534,7 @@
   },
   {
     "key": "財務",
-    "en": "",
+    "en": "Finance",
     "files": [
       "ui-render.js"
     ],
@@ -26544,7 +26544,7 @@
   },
   {
     "key": "貢献",
-    "en": "",
+    "en": "Contribution",
     "files": [
       "ui-common.js"
     ],
@@ -26554,7 +26554,7 @@
   },
   {
     "key": "費用",
-    "en": "",
+    "en": "Cost",
     "files": [
       "ui-common.js"
     ],
@@ -26564,7 +26564,7 @@
   },
   {
     "key": "資金",
-    "en": "",
+    "en": "Funds",
     "files": [
       "index.html",
       "ui-render.js"
@@ -26575,7 +26575,7 @@
   },
   {
     "key": "資金 (万)",
-    "en": "",
+    "en": "Funds (×10k)",
     "files": [
       "ui-render.js"
     ],
@@ -26585,7 +26585,7 @@
   },
   {
     "key": "資金 {funds}万",
-    "en": "",
+    "en": "Funds ¥{funds}0k",
     "files": [
       "ui-render.js"
     ],
@@ -26595,7 +26595,7 @@
   },
   {
     "key": "資金:",
-    "en": "",
+    "en": "Funds:",
     "files": [
       "ui-render.js"
     ],
@@ -26605,7 +26605,7 @@
   },
   {
     "key": "資金が不足しています",
-    "en": "",
+    "en": "You do not have enough funds",
     "files": [
       "app.js"
     ],
@@ -26615,7 +26615,7 @@
   },
   {
     "key": "資金が不足しています(必要: {n}万)",
-    "en": "",
+    "en": "You do not have enough funds (needs ¥{n}0k)",
     "files": [
       "app.js"
     ],
@@ -26625,7 +26625,7 @@
   },
   {
     "key": "資金が足りません",
-    "en": "",
+    "en": "Not enough funds",
     "files": [
       "app.js",
       "ui-common.js"
@@ -26636,7 +26636,7 @@
   },
   {
     "key": "資金が足りません！",
-    "en": "",
+    "en": "Not enough funds!",
     "files": [
       "app.js"
     ],
@@ -26646,7 +26646,7 @@
   },
   {
     "key": "資金が足りません（必要: {cost}万）",
-    "en": "",
+    "en": "Not enough funds (needs ¥{cost}0k)",
     "files": [
       "app.js"
     ],
@@ -26656,7 +26656,7 @@
   },
   {
     "key": "資金の推移 — 今季",
-    "en": "",
+    "en": "Funds Over Time — This Season",
     "files": [
       "ui-render.js"
     ],
@@ -26666,7 +26666,7 @@
   },
   {
     "key": "資金不足",
-    "en": "",
+    "en": "Not enough funds",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -26677,7 +26677,7 @@
   },
   {
     "key": "資金不足 — より安い候補を選んでください",
-    "en": "",
+    "en": "Not enough funds — pick a cheaper candidate",
     "files": [
       "ui-render.js"
     ],
@@ -26687,7 +26687,7 @@
   },
   {
     "key": "資金不足です。より安い候補を選んでください。",
-    "en": "",
+    "en": "You do not have enough funds. Pick a cheaper candidate.",
     "files": [
       "app.js"
     ],
@@ -26697,7 +26697,7 @@
   },
   {
     "key": "資金危機",
-    "en": "",
+    "en": "Cash Crisis",
     "files": [
       "index.html"
     ],
@@ -26707,7 +26707,7 @@
   },
   {
     "key": "資金状況",
-    "en": "",
+    "en": "Cash Position",
     "files": [
       "ui-render.js"
     ],
@@ -26717,7 +26717,7 @@
   },
   {
     "key": "赤コーナー",
-    "en": "",
+    "en": "Red Corner",
     "files": [
       "app.js",
       "tag-battle-main.js",
@@ -26729,7 +26729,7 @@
   },
   {
     "key": "赤字",
-    "en": "",
+    "en": "Deficit",
     "files": [
       "ui-render.js"
     ],
@@ -26739,7 +26739,7 @@
   },
   {
     "key": "赤字が縮小しています！ 人気を上げてスポンサー・放映権収入を増やし、損益分岐点を超えよう。",
-    "en": "",
+    "en": "The deficit is shrinking! Build popularity to grow sponsor and broadcast income, and push past break-even.",
     "files": [
       "ui-render.js"
     ],
@@ -26749,7 +26749,7 @@
   },
   {
     "key": "赤字地獄",
-    "en": "",
+    "en": "Deficit Hell",
     "files": [
       "ui-render.js"
     ],
@@ -26759,7 +26759,7 @@
   },
   {
     "key": "赤字地獄を乗り越え、ついに安定した黒字経営を達成しました！",
-    "en": "",
+    "en": "You have come through deficit hell and finally run a steady profit!",
     "files": [
       "app.js"
     ],
@@ -26769,7 +26769,7 @@
   },
   {
     "key": "起 案",
-    "en": "",
+    "en": "On the Desk",
     "files": [
       "ui-common.js"
     ],
@@ -26779,7 +26779,7 @@
   },
   {
     "key": "起用の約束",
-    "en": "",
+    "en": "Booking Promise",
     "files": [
       "app.js"
     ],
@@ -26789,7 +26789,7 @@
   },
   {
     "key": "超逸材",
-    "en": "",
+    "en": "Elite Prospect",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -26800,7 +26800,7 @@
   },
   {
     "key": "超逸材発見",
-    "en": "",
+    "en": "Elite Prospect Found",
     "files": [
       "ui-render.js"
     ],
@@ -26810,7 +26810,7 @@
   },
   {
     "key": "距離を保つ",
-    "en": "",
+    "en": "Keep Your Distance",
     "files": [
       "ui-common.js"
     ],
@@ -26820,7 +26820,7 @@
   },
   {
     "key": "身長 {h}cm",
-    "en": "",
+    "en": "Height {h}cm",
     "files": [
       "app.js"
     ],
@@ -26830,7 +26830,7 @@
   },
   {
     "key": "転籍",
-    "en": "",
+    "en": "Faction move",
     "files": [
       "factions.js"
     ],
@@ -26840,7 +26840,7 @@
   },
   {
     "key": "辞退",
-    "en": "",
+    "en": "DECLINED",
     "files": [
       "ui-common.js"
     ],
@@ -26850,7 +26850,7 @@
   },
   {
     "key": "辞退する →",
-    "en": "",
+    "en": "Decline →",
     "files": [
       "ui-render.js"
     ],
@@ -26860,7 +26860,7 @@
   },
   {
     "key": "迎えるのは、名指しされた{name}。ここから先は敵地です。",
-    "en": "",
+    "en": "Waiting for her is {name}, the one who was named. From here on it is enemy territory.",
     "files": [
       "app.js"
     ],
@@ -26870,7 +26870,7 @@
   },
   {
     "key": "迎え撃つ3名は、興行準備のカードで決める",
-    "en": "",
+    "en": "You pick the three who answer, in the card at show prep",
     "files": [
       "ui-common.js"
     ],
@@ -26880,7 +26880,7 @@
   },
   {
     "key": "迎え撃つのは王者 {name}。次の興行のメインイベントに固定されます。",
-    "en": "",
+    "en": "Champion {name} answers the call. It is locked into the main event of the next show.",
     "files": [
       "ui-common.js"
     ],
@@ -26890,7 +26890,7 @@
   },
   {
     "key": "迎撃: {name}陣",
-    "en": "",
+    "en": "Defending: {name}'s side",
     "files": [
       "ui-common.js"
     ],
@@ -26900,7 +26900,7 @@
   },
   {
     "key": "迎撃側",
-    "en": "",
+    "en": "Defending side",
     "files": [
       "ui-render.js"
     ],
@@ -26910,7 +26910,7 @@
   },
   {
     "key": "返 還 式",
-    "en": "",
+    "en": "THE RETURN",
     "files": [
       "ui-common.js"
     ],
@@ -26920,7 +26920,7 @@
   },
   {
     "key": "返上",
-    "en": "",
+    "en": "Relinquished",
     "files": [
       "ui-render.js"
     ],
@@ -26930,7 +26930,7 @@
   },
   {
     "key": "返還",
-    "en": "",
+    "en": "Returned",
     "files": [
       "ui-render.js"
     ],
@@ -26940,7 +26940,7 @@
   },
   {
     "key": "返還式を終える",
-    "en": "",
+    "en": "End the Ceremony",
     "files": [
       "ui-common.js"
     ],
@@ -26950,7 +26950,7 @@
   },
   {
     "key": "返金なし・選手の心に跡が残る",
-    "en": "",
+    "en": "No refund, and it leaves a mark on her",
     "files": [
       "ui-common.js"
     ],
@@ -26960,7 +26960,7 @@
   },
   {
     "key": "追加費用",
-    "en": "",
+    "en": "Extra Cost",
     "files": [
       "ui-common.js"
     ],
@@ -26970,7 +26970,7 @@
   },
   {
     "key": "追走中",
-    "en": "",
+    "en": "Chasing",
     "files": [
       "ui-render.js"
     ],
@@ -26980,7 +26980,7 @@
   },
   {
     "key": "退団",
-    "en": "",
+    "en": "Departure",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -26991,7 +26991,7 @@
   },
   {
     "key": "送り出す",
-    "en": "",
+    "en": "Let Her Go",
     "files": [
       "ui-common.js"
     ],
@@ -27001,7 +27001,7 @@
   },
   {
     "key": "逃げも隠れもしない。次の興行で迎え撃つ",
-    "en": "",
+    "en": "No running, no hiding. We answer on the next show",
     "files": [
       "ui-common.js"
     ],
@@ -27011,7 +27011,7 @@
   },
   {
     "key": "通常の入札倍率で金額を上げる",
-    "en": "",
+    "en": "Raise your bid at the normal multiplier",
     "files": [
       "ui-render.js"
     ],
@@ -27021,7 +27021,7 @@
   },
   {
     "key": "通常の治療",
-    "en": "",
+    "en": "Standard treatment",
     "files": [
       "ui-common.js"
     ],
@@ -27031,7 +27031,7 @@
   },
   {
     "key": "通常モード",
-    "en": "",
+    "en": "Normal Mode",
     "files": [
       "index.html"
     ],
@@ -27041,7 +27041,7 @@
   },
   {
     "key": "通常モード（補助金なし）",
-    "en": "",
+    "en": "Normal Mode (no grant)",
     "files": [
       "ui-render.js"
     ],
@@ -27051,7 +27051,7 @@
   },
   {
     "key": "通常契約金:",
-    "en": "",
+    "en": "Standard signing fee:",
     "files": [
       "ui-render.js"
     ],
@@ -27061,7 +27061,7 @@
   },
   {
     "key": "通常興行",
-    "en": "",
+    "en": "Regular Show",
     "files": [
       "ui-common.js"
     ],
@@ -27071,7 +27071,7 @@
   },
   {
     "key": "通常興行 ・ 試合結果",
-    "en": "",
+    "en": "Regular Show · Match Result",
     "files": [
       "ui-common.js"
     ],
@@ -27081,7 +27081,7 @@
   },
   {
     "key": "通常興行のカード編成はありません。",
-    "en": "",
+    "en": "There is no card booked for the regular show.",
     "files": [
       "ui-render.js"
     ],
@@ -27091,7 +27091,7 @@
   },
   {
     "key": "通常額勝率:",
-    "en": "",
+    "en": "Odds at the standard amount:",
     "files": [
       "ui-render.js"
     ],
@@ -27101,7 +27101,7 @@
   },
   {
     "key": "通算",
-    "en": "",
+    "en": "Career",
     "files": [
       "ui-common.js"
     ],
@@ -27111,7 +27111,7 @@
   },
   {
     "key": "通算<strong>{n}</strong>戦",
-    "en": "",
+    "en": "<strong>{n}</strong> career matches",
     "files": [
       "ui-render.js"
     ],
@@ -27121,7 +27121,7 @@
   },
   {
     "key": "通算{n}人抜き",
-    "en": "",
+    "en": "{n} opponents beaten",
     "files": [
       "ui-common.js"
     ],
@@ -27131,7 +27131,7 @@
   },
   {
     "key": "通算{n}戦",
-    "en": "",
+    "en": "{n} career matches",
     "files": [
       "ui-render.js"
     ],
@@ -27141,7 +27141,7 @@
   },
   {
     "key": "通算評価",
-    "en": "",
+    "en": "Career Rating",
     "files": [
       "ui-common.js"
     ],
@@ -27151,7 +27151,7 @@
   },
   {
     "key": "通算防衛",
-    "en": "",
+    "en": "Career Defenses",
     "files": [
       "ui-render.js"
     ],
@@ -27161,7 +27161,7 @@
   },
   {
     "key": "通算防衛 {n}回",
-    "en": "",
+    "en": "{n} career defenses",
     "files": [
       "ui-common.js"
     ],
@@ -27171,7 +27171,7 @@
   },
   {
     "key": "通算（団体間ガチンコのみ）",
-    "en": "",
+    "en": "Career (interpromotional only)",
     "files": [
       "ui-render.js"
     ],
@@ -27181,7 +27181,7 @@
   },
   {
     "key": "速報",
-    "en": "",
+    "en": "BREAKING",
     "files": [
       "ui-common.js"
     ],
@@ -27191,7 +27191,7 @@
   },
   {
     "key": "速度",
-    "en": "",
+    "en": "Speed",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js"
@@ -27202,7 +27202,7 @@
   },
   {
     "key": "連携",
-    "en": "",
+    "en": "Teamwork",
     "files": [
       "tag-battle-main.js"
     ],
@@ -27212,7 +27212,7 @@
   },
   {
     "key": "連携技",
-    "en": "",
+    "en": "Team Move",
     "files": [
       "tag-battle-main.js"
     ],
@@ -27222,7 +27222,7 @@
   },
   {
     "key": "連続上限",
-    "en": "",
+    "en": "Too many weeks in a row",
     "files": [
       "ui-render.js"
     ],
@@ -27232,7 +27232,7 @@
   },
   {
     "key": "連覇",
-    "en": "",
+    "en": "Back-to-Back",
     "files": [
       "app.js"
     ],
@@ -27242,7 +27242,7 @@
   },
   {
     "key": "週を処理",
-    "en": "",
+    "en": "Process the Week",
     "files": [
       "ui-render.js"
     ],
@@ -27252,7 +27252,7 @@
   },
   {
     "key": "週合計 +{n}万",
-    "en": "",
+    "en": "Week total +¥{n}0k",
     "files": [
       "factions.js"
     ],
@@ -27262,7 +27262,7 @@
   },
   {
     "key": "週間コスト内訳（推定）",
-    "en": "",
+    "en": "Weekly Cost Breakdown (estimated)",
     "files": [
       "ui-render.js"
     ],
@@ -27272,7 +27272,7 @@
   },
   {
     "key": "週間支出",
-    "en": "",
+    "en": "Weekly Spending",
     "files": [
       "ui-render.js"
     ],
@@ -27282,7 +27282,7 @@
   },
   {
     "key": "進出団体 未決定",
-    "en": "",
+    "en": "Advancing promotion: TBD",
     "files": [
       "ui-common.js"
     ],
@@ -27292,7 +27292,7 @@
   },
   {
     "key": "進行不具合が発生しました",
-    "en": "",
+    "en": "Something went wrong with the progression",
     "files": [
       "ui-render.js"
     ],
@@ -27302,7 +27302,7 @@
   },
   {
     "key": "進行中",
-    "en": "",
+    "en": "In progress",
     "files": [
       "ui-render.js"
     ],
@@ -27312,7 +27312,7 @@
   },
   {
     "key": "進行中の章",
-    "en": "",
+    "en": "Current Chapter",
     "files": [
       "ui-render.js"
     ],
@@ -27322,7 +27322,7 @@
   },
   {
     "key": "逸材",
-    "en": "",
+    "en": "Standout",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -27333,7 +27333,7 @@
   },
   {
     "key": "逸材クラスの選手たちが、あなたの団体に注目しています。\n\n",
-    "en": "",
+    "en": "Standout-class wrestlers are taking notice of your promotion.\n\n",
     "files": [
       "app.js"
     ],
@@ -27343,7 +27343,7 @@
   },
   {
     "key": "運命に導かれた敵対関係",
-    "en": "",
+    "en": "Enemies by fate",
     "files": [
       "ui-render.js"
     ],
@@ -27353,7 +27353,7 @@
   },
   {
     "key": "過去に接点あり",
-    "en": "",
+    "en": "They have crossed paths before",
     "files": [
       "ui-render.js"
     ],
@@ -27363,7 +27363,7 @@
   },
   {
     "key": "過去同団体<strong>あり</strong>",
-    "en": "",
+    "en": "Former stablemates: <strong>yes</strong>",
     "files": [
       "ui-render.js"
     ],
@@ -27373,7 +27373,7 @@
   },
   {
     "key": "過去対戦成績",
-    "en": "",
+    "en": "Head-to-Head Record",
     "files": [
       "ui-render.js"
     ],
@@ -27383,7 +27383,7 @@
   },
   {
     "key": "道場に新しいトレーニングスペースを増設した。",
-    "en": "",
+    "en": "A new training space has been added to the dojo.",
     "files": [
       "app.js"
     ],
@@ -27393,7 +27393,7 @@
   },
   {
     "key": "遠征する3名",
-    "en": "",
+    "en": "The three making the trip",
     "files": [
       "ui-common.js"
     ],
@@ -27403,7 +27403,7 @@
   },
   {
     "key": "遠征に送る",
-    "en": "",
+    "en": "Send Them on the Road",
     "files": [
       "ui-common.js"
     ],
@@ -27413,7 +27413,7 @@
   },
   {
     "key": "遠征興行",
-    "en": "",
+    "en": "Away Show",
     "files": [
       "ui-common.js"
     ],
@@ -27423,7 +27423,7 @@
   },
   {
     "key": "選 手 間 の 深 刻 な 対 立",
-    "en": "",
+    "en": "A Serious Rift Between Wrestlers",
     "files": [
       "ui-common.js"
     ],
@@ -27433,7 +27433,7 @@
   },
   {
     "key": "選出",
-    "en": "",
+    "en": "Pick",
     "files": [
       "ui-common.js"
     ],
@@ -27443,7 +27443,7 @@
   },
   {
     "key": "選手",
-    "en": "",
+    "en": "Wrestler",
     "files": [
       "app.js",
       "ui-common.js",
@@ -27455,7 +27455,7 @@
   },
   {
     "key": "選手A",
-    "en": "",
+    "en": "Wrestler A",
     "files": [
       "factions.js"
     ],
@@ -27465,7 +27465,7 @@
   },
   {
     "key": "選手B",
-    "en": "",
+    "en": "Wrestler B",
     "files": [
       "factions.js"
     ],
@@ -27475,7 +27475,7 @@
   },
   {
     "key": "選手がいません",
-    "en": "",
+    "en": "No wrestlers",
     "files": [
       "ui-render.js"
     ],
@@ -27485,7 +27485,7 @@
   },
   {
     "key": "選手が団体への愛着を深めます",
-    "en": "",
+    "en": "Wrestlers grow more attached to the promotion",
     "files": [
       "ui-common.js"
     ],
@@ -27495,7 +27495,7 @@
   },
   {
     "key": "選手が見つかりません",
-    "en": "",
+    "en": "Wrestler not found",
     "files": [
       "app.js"
     ],
@@ -27505,7 +27505,7 @@
   },
   {
     "key": "選手たちが再び群れを作ることを認める。畳んだ派閥は戻らない",
-    "en": "",
+    "en": "Allow the wrestlers to band together again. The faction you folded does not come back",
     "files": [
       "ui-common.js"
     ],
@@ -27515,7 +27515,7 @@
   },
   {
     "key": "選手たちの声",
-    "en": "",
+    "en": "Voices from the Roster",
     "files": [
       "ui-common.js"
     ],
@@ -27525,7 +27525,7 @@
   },
   {
     "key": "選手との契約枠が {cap} 名に拡大しました！",
-    "en": "",
+    "en": "Your contract slots have grown to {cap}!",
     "files": [
       "app.js"
     ],
@@ -27535,7 +27535,7 @@
   },
   {
     "key": "選手なし",
-    "en": "",
+    "en": "No wrestler",
     "files": [
       "ui-render.js"
     ],
@@ -27545,7 +27545,7 @@
   },
   {
     "key": "選手の気持ちの動きを見逃さないこと。冷えてからでは高くつきます。",
-    "en": "",
+    "en": "Do not miss the way their feelings move. Once they have gone cold, it costs you.",
     "files": [
       "index.html"
     ],
@@ -27555,7 +27555,7 @@
   },
   {
     "key": "選手の週間スケジュールを確認し、興行準備に進んでください。",
-    "en": "",
+    "en": "Check the weekly schedules, then go on to show prep.",
     "files": [
       "ui-render.js"
     ],
@@ -27565,7 +27565,7 @@
   },
   {
     "key": "選手の週間スケジュールを確認し、週を進めてください。",
-    "en": "",
+    "en": "Check the weekly schedules, then advance the week.",
     "files": [
       "ui-render.js"
     ],
@@ -27585,7 +27585,7 @@
   },
   {
     "key": "選手の週間スケジュールを確認し、週を進めてください（今週はジュニアトーナメント開催週）。",
-    "en": "",
+    "en": "Check the weekly schedules, then advance the week (the Junior Tournament runs this week).",
     "files": [
       "ui-render.js"
     ],
@@ -27605,7 +27605,7 @@
   },
   {
     "key": "選手の週間スケジュールを確認し、週を進めてください（今週は季節の特別興行週）。",
-    "en": "",
+    "en": "Check the weekly schedules, then advance the week (a seasonal special show runs this week).",
     "files": [
       "ui-render.js"
     ],
@@ -27625,7 +27625,7 @@
   },
   {
     "key": "選手は不満を残すが、指導は続く",
-    "en": "",
+    "en": "She is left unhappy, but the coaching goes on",
     "files": [
       "ui-common.js"
     ],
@@ -27635,7 +27635,7 @@
   },
   {
     "key": "選手は時に沈みます。放置は禁物——休ませる、声をかける、環境を変える。手の打ち方は一つではありません。",
-    "en": "",
+    "en": "Wrestlers sink sometimes. Do not let it ride — rest her, talk to her, change her surroundings. There is more than one way to handle it.",
     "files": [
       "index.html"
     ],
@@ -27645,7 +27645,7 @@
   },
   {
     "key": "選手は毎週の練習と試合経験で育ちます。伸び方は年齢・特性・コーチで大きく変わります。",
-    "en": "",
+    "en": "Wrestlers grow through weekly practice and match experience. How far they grow depends heavily on age, traits and coaching.",
     "files": [
       "index.html"
     ],
@@ -27655,7 +27655,7 @@
   },
   {
     "key": "選手ファイル",
-    "en": "",
+    "en": "Wrestler File",
     "files": [
       "index.html"
     ],
@@ -27665,7 +27665,7 @@
   },
   {
     "key": "選手ファイルを閉じる",
-    "en": "",
+    "en": "Close the wrestler file",
     "files": [
       "index.html"
     ],
@@ -27675,7 +27675,7 @@
   },
   {
     "key": "選手一人ひとりが、社長への信頼を胸の内に持っています。数値では見えません——表情や様子、コーチの報告から察してください。出場機会とケアで育ち、冷遇と放置で冷えます。冷え切った心は、不満・造反・移籍の火種になります。",
-    "en": "",
+    "en": "Every wrestler carries her own trust in you. There is no number for it — read it from her face, her manner, and your coaches' reports. Ring time and care build it; being overlooked and left alone lets it cool. A heart that has gone cold becomes the spark for discontent, revolt and a transfer out.",
     "files": [
       "index.html"
     ],
@@ -27685,7 +27685,7 @@
   },
   {
     "key": "選手別給与（現在）",
-    "en": "",
+    "en": "Salary by Wrestler (current)",
     "files": [
       "ui-render.js"
     ],
@@ -27695,7 +27695,7 @@
   },
   {
     "key": "選手名",
-    "en": "",
+    "en": "Name",
     "files": [
       "ui-render.js"
     ],
@@ -27705,7 +27705,7 @@
   },
   {
     "key": "選手給与合計",
-    "en": "",
+    "en": "Total Wrestler Salaries",
     "files": [
       "ui-render.js"
     ],
@@ -27715,7 +27715,7 @@
   },
   {
     "key": "選手詳細",
-    "en": "",
+    "en": "Wrestler Detail",
     "files": [
       "index.html",
       "ui-render.js"
@@ -27726,7 +27726,7 @@
   },
   {
     "key": "選手詳細を閉じる",
-    "en": "",
+    "en": "Close the wrestler detail",
     "files": [
       "app.js"
     ],
@@ -27736,7 +27736,7 @@
   },
   {
     "key": "選択",
-    "en": "",
+    "en": "Select",
     "files": [
       "ui-common.js"
     ],
@@ -27746,7 +27746,7 @@
   },
   {
     "key": "選択中",
-    "en": "",
+    "en": "Selected",
     "files": [
       "ui-render.js"
     ],
@@ -27756,7 +27756,7 @@
   },
   {
     "key": "選択中 {a}/{b}",
-    "en": "",
+    "en": "Selected {a}/{b}",
     "files": [
       "ui-common.js"
     ],
@@ -27766,7 +27766,7 @@
   },
   {
     "key": "選択中の選手に一括適用:",
-    "en": "",
+    "en": "Apply to all selected wrestlers:",
     "files": [
       "ui-render.js"
     ],
@@ -27776,7 +27776,7 @@
   },
   {
     "key": "選択後、次へ進んでください",
-    "en": "",
+    "en": "Make your selection, then continue",
     "files": [
       "ui-common.js"
     ],
@@ -27786,7 +27786,7 @@
   },
   {
     "key": "選択後、決裁ボタンを押してください",
-    "en": "",
+    "en": "Make your selection, then press Approve",
     "files": [
       "ui-common.js"
     ],
@@ -27796,7 +27796,7 @@
   },
   {
     "key": "選択解除",
-    "en": "",
+    "en": "Clear Selection",
     "files": [
       "ui-render.js"
     ],
@@ -27806,7 +27806,7 @@
   },
   {
     "key": "遺 恨 再 燃",
-    "en": "",
+    "en": "BAD BLOOD REIGNITED",
     "files": [
       "ui-common.js"
     ],
@@ -27816,7 +27816,7 @@
   },
   {
     "key": "重点",
-    "en": "",
+    "en": "Focus",
     "files": [
       "ui-render.js"
     ],
@@ -27826,7 +27826,7 @@
   },
   {
     "key": "重点を伝えると、その練習を選ぶ機会が増える。{stat}は{coach}コーチの専門なので、頼まなくても最初からそこに寄る。",
-    "en": "",
+    "en": "Naming a focus makes her pick that practice more often. {stat} is Coach {coach}'s specialty, so she leans that way from the start without being asked.",
     "files": [
       "ui-common.js"
     ],
@@ -27836,7 +27836,7 @@
   },
   {
     "key": "重点を伝えると、その練習を選ぶ機会が増える。伸ばす上限までは変わらない。",
-    "en": "",
+    "en": "Naming a focus makes her pick that practice more often. It does not change how far she can grow.",
     "files": [
       "ui-common.js"
     ],
@@ -27846,7 +27846,7 @@
   },
   {
     "key": "重点を頼む",
-    "en": "",
+    "en": "Ask for a Focus",
     "files": [
       "ui-common.js"
     ],
@@ -27856,7 +27856,7 @@
   },
   {
     "key": "金",
-    "en": "",
+    "en": "💰",
     "files": [
       "ui-render.js"
     ],
@@ -27866,7 +27866,7 @@
   },
   {
     "key": "長 期 離 脱（推 定 {n} 週 +）",
-    "en": "",
+    "en": "Out an Estimated {n}+ Weeks",
     "files": [
       "ui-common.js"
     ],
@@ -27876,7 +27876,7 @@
   },
   {
     "key": "長期 streak",
-    "en": "",
+    "en": "Long streak",
     "files": [
       "factions.js"
     ],
@@ -27886,7 +27886,7 @@
   },
   {
     "key": "長期化",
-    "en": "",
+    "en": "Dragging On",
     "files": [
       "ui-render.js"
     ],
@@ -27896,7 +27896,7 @@
   },
   {
     "key": "長期離脱(10週以上)の重傷にのみ発注できます",
-    "en": "",
+    "en": "Can only be ordered for severe injuries with a long absence (10 weeks or more)",
     "files": [
       "app.js"
     ],
@@ -27906,7 +27906,7 @@
   },
   {
     "key": "閉じる",
-    "en": "",
+    "en": "Close",
     "files": [
       "index.html",
       "ui-common.js",
@@ -27918,7 +27918,7 @@
   },
   {
     "key": "閉じる（ESC可）",
-    "en": "",
+    "en": "Close (or press ESC)",
     "files": [
       "app.js"
     ],
@@ -27928,7 +27928,7 @@
   },
   {
     "key": "閉じる（引き続き閲覧可能）",
-    "en": "",
+    "en": "Close (you can still browse)",
     "files": [
       "ui-common.js"
     ],
@@ -27938,7 +27938,7 @@
   },
   {
     "key": "開 　 戦",
-    "en": "",
+    "en": "OUTBREAK",
     "files": [
       "ui-common.js"
     ],
@@ -27948,7 +27948,7 @@
   },
   {
     "key": "開催する",
-    "en": "",
+    "en": "Hold the Show",
     "files": [
       "ui-render.js"
     ],
@@ -27958,7 +27958,7 @@
   },
   {
     "key": "開催前",
-    "en": "",
+    "en": "Not yet held",
     "files": [
       "ui-render.js"
     ],
@@ -27968,7 +27968,7 @@
   },
   {
     "key": "開催地",
-    "en": "",
+    "en": "Venue",
     "files": [
       "ui-common.js"
     ],
@@ -27978,7 +27978,7 @@
   },
   {
     "key": "開始HP",
-    "en": "",
+    "en": "Starting HP",
     "files": [
       "ui-common.js"
     ],
@@ -27988,7 +27988,7 @@
   },
   {
     "key": "開始後は変更できません",
-    "en": "",
+    "en": "Cannot be changed once you start",
     "files": [
       "index.html"
     ],
@@ -27998,7 +27998,7 @@
   },
   {
     "key": "開幕",
-    "en": "",
+    "en": "Opening",
     "files": [
       "ui-render.js"
     ],
@@ -28008,7 +28008,7 @@
   },
   {
     "key": "開幕前",
-    "en": "",
+    "en": "Before the opener",
     "files": [
       "ui-common.js"
     ],
@@ -28018,7 +28018,7 @@
   },
   {
     "key": "開戦",
-    "en": "",
+    "en": "Outbreak",
     "files": [
       "ui-render.js"
     ],
@@ -28028,7 +28028,7 @@
   },
   {
     "key": "開発率",
-    "en": "",
+    "en": "Development rate",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -28039,7 +28039,7 @@
   },
   {
     "key": "関係 {n}人",
-    "en": "",
+    "en": "{n} connected",
     "files": [
       "ui-render.js"
     ],
@@ -28049,7 +28049,7 @@
   },
   {
     "key": "関係 {n}件",
-    "en": "",
+    "en": "{n} connections",
     "files": [
       "ui-render.js"
     ],
@@ -28059,7 +28059,7 @@
   },
   {
     "key": "関係あり",
-    "en": "",
+    "en": "Has connections",
     "files": [
       "ui-render.js"
     ],
@@ -28069,7 +28069,7 @@
   },
   {
     "key": "関係ありのみ",
-    "en": "",
+    "en": "Connected only",
     "files": [
       "ui-render.js"
     ],
@@ -28079,7 +28079,7 @@
   },
   {
     "key": "関係が良ければ納得するが、そうでなければ不満が残る",
-    "en": "",
+    "en": "If they get on well she accepts it; if not, resentment stays",
     "files": [
       "ui-common.js"
     ],
@@ -28089,7 +28089,7 @@
   },
   {
     "key": "関係が険悪に沈むと、ロッカーが荒れ、タッグが壊れ、最悪の場合は造反や離脱に至ります。修復の道も残されています——社長室に修復の書類が並ぶことがあります。",
-    "en": "",
+    "en": "When a relationship sinks into open hostility, the locker room turns, tag teams break, and at worst it ends in revolt or a walkout. There is still a way back — papers to mend it can appear on your desk.",
     "files": [
       "index.html"
     ],
@@ -28099,7 +28099,7 @@
   },
   {
     "key": "関係を維持。効果なし",
-    "en": "",
+    "en": "The relationship holds. No effect",
     "files": [
       "ui-common.js"
     ],
@@ -28109,7 +28109,7 @@
   },
   {
     "key": "関節・絞め技",
-    "en": "",
+    "en": "Locks & Chokes",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js"
@@ -28120,7 +28120,7 @@
   },
   {
     "key": "関節技",
-    "en": "",
+    "en": "Submission",
     "files": [
       "ui-render.js"
     ],
@@ -28130,7 +28130,7 @@
   },
   {
     "key": "闘志 ({n})",
-    "en": "",
+    "en": "Fighting spirit ({n})",
     "files": [
       "battle-engine-main.js"
     ],
@@ -28140,7 +28140,7 @@
   },
   {
     "key": "防 衛",
-    "en": "",
+    "en": "DEFENDED",
     "files": [
       "ui-common.js"
     ],
@@ -28150,7 +28150,7 @@
   },
   {
     "key": "防衛",
-    "en": "",
+    "en": "Defense",
     "files": [
       "ui-render.js"
     ],
@@ -28160,7 +28160,7 @@
   },
   {
     "key": "防衛 {n}回",
-    "en": "",
+    "en": "{n} defenses",
     "files": [
       "ui-common.js"
     ],
@@ -28170,7 +28170,7 @@
   },
   {
     "key": "限界",
-    "en": "",
+    "en": "At the limit",
     "files": [
       "ui-render.js"
     ],
@@ -28180,7 +28180,7 @@
   },
   {
     "key": "陥落",
-    "en": "",
+    "en": "Dethroned",
     "files": [
       "ui-render.js"
     ],
@@ -28190,7 +28190,7 @@
   },
   {
     "key": "陰り",
-    "en": "",
+    "en": "Waning",
     "files": [
       "factions.js"
     ],
@@ -28200,7 +28200,7 @@
   },
   {
     "key": "陰りの見えた選手",
-    "en": "",
+    "en": "Wrestlers past their peak",
     "files": [
       "ui-render.js"
     ],
@@ -28210,7 +28210,7 @@
   },
   {
     "key": "険悪",
-    "en": "",
+    "en": "Hostile",
     "files": [
       "ui-common.js"
     ],
@@ -28220,7 +28220,7 @@
   },
   {
     "key": "隆盛",
-    "en": "",
+    "en": "Surging",
     "files": [
       "factions.js"
     ],
@@ -28230,7 +28230,7 @@
   },
   {
     "key": "集客 +12%、両リーダー間の因縁が一気に深まる（rivalry 大幅増）。負けた派閥は崩壊リスク",
-    "en": "",
+    "en": "Attendance +12%, and the grudge between the two leaders deepens sharply (rivalry way up). The losing faction risks falling apart",
     "files": [
       "ui-common.js"
     ],
@@ -28240,7 +28240,7 @@
   },
   {
     "key": "集客もスポンサーも放映料も、すべての土台です。こちらも高いほど上がりにくく、シーズン末には順位に応じた自然減があります——頂の維持にも努力が要ります。",
-    "en": "",
+    "en": "Attendance, sponsors, broadcast fees — it is the foundation for all of them. This too gets harder to raise the higher it goes, and at season's end it decays by your standing — staying on top takes work as well.",
     "files": [
       "index.html"
     ],
@@ -28250,7 +28250,7 @@
   },
   {
     "key": "集客力",
-    "en": "",
+    "en": "Draw",
     "files": [
       "ui-render.js"
     ],
@@ -28260,7 +28260,7 @@
   },
   {
     "key": "雇用 ({fee}万 / ⚡{dp})",
-    "en": "",
+    "en": "Hire (¥{fee}0k / ⚡{dp})",
     "files": [
       "ui-render.js"
     ],
@@ -28270,7 +28270,7 @@
   },
   {
     "key": "雇用中",
-    "en": "",
+    "en": "On staff",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -28281,7 +28281,7 @@
   },
   {
     "key": "雇用中: {n}/{max}名 ｜ スタッフ給与合計: {salary}万/週 ｜ {slotText}",
-    "en": "",
+    "en": "On staff: {n}/{max} | Total staff salaries: ¥{salary}0k/week | {slotText}",
     "files": [
       "ui-render.js"
     ],
@@ -28291,7 +28291,7 @@
   },
   {
     "key": "雇用中のコーチ",
-    "en": "",
+    "en": "Coaches on Staff",
     "files": [
       "ui-render.js"
     ],
@@ -28301,7 +28301,7 @@
   },
   {
     "key": "雇用可能なコーチ",
-    "en": "",
+    "en": "Coaches Available to Hire",
     "files": [
       "ui-render.js"
     ],
@@ -28311,7 +28311,7 @@
   },
   {
     "key": "雇用費",
-    "en": "",
+    "en": "Hiring Fee",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -28322,7 +28322,7 @@
   },
   {
     "key": "雇用費:",
-    "en": "",
+    "en": "Hiring fee:",
     "files": [
       "ui-render.js"
     ],
@@ -28332,7 +28332,7 @@
   },
   {
     "key": "離脱 ⇄ 残留 絆",
-    "en": "",
+    "en": "Leaver ⇄ Stayer bond",
     "files": [
       "factions.js"
     ],
@@ -28342,7 +28342,7 @@
   },
   {
     "key": "離脱メンバー",
-    "en": "",
+    "en": "Members Who Left",
     "files": [
       "factions.js"
     ],
@@ -28352,7 +28352,7 @@
   },
   {
     "key": "離脱リスク者",
-    "en": "",
+    "en": "At Risk of Leaving",
     "files": [
       "ui-common.js"
     ],
@@ -28362,7 +28362,7 @@
   },
   {
     "key": "離脱済み",
-    "en": "",
+    "en": "Already left",
     "files": [
       "ui-render.js"
     ],
@@ -28372,7 +28372,7 @@
   },
   {
     "key": "難易度を選択",
-    "en": "",
+    "en": "Choose Difficulty",
     "files": [
       "index.html"
     ],
@@ -28382,7 +28382,7 @@
   },
   {
     "key": "露出なし。勢い <strong>-2</strong>／メディア関係微低下",
-    "en": "",
+    "en": "No exposure. Momentum <strong>-2</strong> / media relations dip slightly",
     "files": [
       "ui-common.js"
     ],
@@ -28392,7 +28392,7 @@
   },
   {
     "key": "青コーナー",
-    "en": "",
+    "en": "Blue Corner",
     "files": [
       "app.js",
       "tag-battle-main.js",
@@ -28404,7 +28404,7 @@
   },
   {
     "key": "静 か な 侵 食",
-    "en": "",
+    "en": "A QUIET EROSION",
     "files": [
       "ui-common.js"
     ],
@@ -28414,7 +28414,7 @@
   },
   {
     "key": "静かな確執",
-    "en": "",
+    "en": "Quiet friction",
     "files": [
       "ui-render.js"
     ],
@@ -28424,7 +28424,7 @@
   },
   {
     "key": "静観した結果、{outcome}。",
-    "en": "",
+    "en": "You watched it play out, and {outcome}.",
     "files": [
       "factions.js"
     ],
@@ -28434,7 +28434,7 @@
   },
   {
     "key": "静観する",
-    "en": "",
+    "en": "Watch It Play Out",
     "files": [
       "ui-common.js"
     ],
@@ -28444,7 +28444,7 @@
   },
   {
     "key": "非興行週",
-    "en": "",
+    "en": "Non-show week",
     "files": [
       "ui-render.js"
     ],
@@ -28454,7 +28454,7 @@
   },
   {
     "key": "非興行週は練習、興行週はプロモを自動選択。迷ったらこれ。体調60未満で自動休養します",
-    "en": "",
+    "en": "Practice on non-show weeks, promo on show weeks, chosen automatically. Pick this when in doubt. She rests automatically below condition 60",
     "files": [
       "ui-render.js"
     ],
@@ -28464,7 +28464,7 @@
   },
   {
     "key": "頂 点",
-    "en": "",
+    "en": "THE SUMMIT",
     "files": [
       "ui-common.js"
     ],
@@ -28474,7 +28474,7 @@
   },
   {
     "key": "頂上決戦",
-    "en": "",
+    "en": "Summit Match",
     "files": [
       "ui-common.js"
     ],
@@ -28494,7 +28494,7 @@
   },
   {
     "key": "頂点への道のり",
-    "en": "",
+    "en": "The Road to the Top",
     "files": [
       "ui-common.js"
     ],
@@ -28504,7 +28504,7 @@
   },
   {
     "key": "頂点を分け合う二人の物語",
-    "en": "",
+    "en": "The story of two who share the summit",
     "files": [
       "ui-render.js"
     ],
@@ -28514,7 +28514,7 @@
   },
   {
     "key": "頂点到達",
-    "en": "",
+    "en": "Reached the Top",
     "files": [
       "ui-common.js"
     ],
@@ -28524,7 +28524,7 @@
   },
   {
     "key": "順位",
-    "en": "",
+    "en": "Rank",
     "files": [
       "index.html",
       "ui-render.js"
@@ -28535,7 +28535,7 @@
   },
   {
     "key": "頼む",
-    "en": "",
+    "en": "Ask",
     "files": [
       "ui-render.js"
     ],
@@ -28545,7 +28545,7 @@
   },
   {
     "key": "頼めるのは「どんな人を探すか」まで。誰が応じるかは決められない。",
-    "en": "",
+    "en": "All you can ask for is the kind of wrestler to look for. Who answers is not up to you.",
     "files": [
       "ui-render.js"
     ],
@@ -28555,7 +28555,7 @@
   },
   {
     "key": "顔ぶれの変化",
-    "en": "",
+    "en": "Changes in the Lineup",
     "files": [
       "ui-render.js"
     ],
@@ -28565,7 +28565,7 @@
   },
   {
     "key": "飛び技",
-    "en": "",
+    "en": "Aerial",
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js"
@@ -28576,7 +28576,7 @@
   },
   {
     "key": "骨肉の争い",
-    "en": "",
+    "en": "A bitter blood feud",
     "files": [
       "ui-render.js"
     ],
@@ -28586,7 +28586,7 @@
   },
   {
     "key": "高い順",
-    "en": "",
+    "en": "Highest first",
     "files": [
       "ui-render.js"
     ],
@@ -28596,7 +28596,7 @@
   },
   {
     "key": "黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）",
-    "en": "",
+    "en": "You're in the black! Keep it up for {n} weeks and you clear the goal! (funds now: ¥{funds}0k{goalNote})",
     "files": [
       "ui-render.js"
     ],
@@ -28606,7 +28606,7 @@
   },
   {
     "key": "黙認した。{faction}の自由は守られたが、道場の空気は淀んだ。",
-    "en": "",
+    "en": "You let it pass. {faction} kept its freedom, but the air in the dojo went stale.",
     "files": [
       "factions.js"
     ],
@@ -28616,7 +28616,7 @@
   },
   {
     "key": "黙認した。{target}は言葉を呑み込んだ。",
-    "en": "",
+    "en": "You let it pass. {target} swallowed what she wanted to say.",
     "files": [
       "factions.js"
     ],
@@ -28626,7 +28626,7 @@
   },
   {
     "key": "🅰 堅実",
-    "en": "",
+    "en": "🅰 Safe",
     "files": [
       "ui-common.js"
     ],
@@ -28636,7 +28636,7 @@
   },
   {
     "key": "🅱 勝負",
-    "en": "",
+    "en": "🅱 Gamble",
     "files": [
       "ui-common.js"
     ],
@@ -28646,7 +28646,7 @@
   },
   {
     "key": "🅲 本気",
-    "en": "",
+    "en": "🅲 All In",
     "files": [
       "ui-common.js"
     ],
@@ -28656,7 +28656,7 @@
   },
   {
     "key": "🆓 フリー",
-    "en": "",
+    "en": "🆓 Free Agent",
     "files": [
       "ui-common.js"
     ],
@@ -28666,7 +28666,7 @@
   },
   {
     "key": "🌅 ラストラン",
-    "en": "",
+    "en": "🌅 Last Run",
     "files": [
       "ui-common.js"
     ],
@@ -28676,7 +28676,7 @@
   },
   {
     "key": "🌅 ラストラン中",
-    "en": "",
+    "en": "🌅 On her last run",
     "files": [
       "ui-common.js"
     ],
@@ -28686,7 +28686,7 @@
   },
   {
     "key": "🌅 再起！",
-    "en": "",
+    "en": "🌅 Back on her feet!",
     "files": [
       "ui-common.js"
     ],
@@ -28696,7 +28696,7 @@
   },
   {
     "key": "🌅 引退を勧める",
-    "en": "",
+    "en": "🌅 Suggest Retirement",
     "files": [
       "ui-common.js"
     ],
@@ -28706,7 +28706,7 @@
   },
   {
     "key": "🌅 引退を勧める（クールダウン {n}週）",
-    "en": "",
+    "en": "🌅 Suggest Retirement (cooldown {n} weeks)",
     "files": [
       "ui-common.js"
     ],
@@ -28716,7 +28716,7 @@
   },
   {
     "key": "🌅ラストマッチ",
-    "en": "",
+    "en": "🌅Last Match",
     "files": [
       "ui-render.js"
     ],
@@ -28788,7 +28788,7 @@
   },
   {
     "key": "🌐 全国統一王者",
-    "en": "",
+    "en": "🌐 Unified National Champion",
     "files": [
       "ui-common.js"
     ],
@@ -28798,7 +28798,7 @@
   },
   {
     "key": "🌐 全国統一王者（{n}防衛）",
-    "en": "",
+    "en": "🌐 Unified National Champion ({n} defenses)",
     "files": [
       "ui-common.js"
     ],
@@ -28808,7 +28808,7 @@
   },
   {
     "key": "🌐 統一王者",
-    "en": "",
+    "en": "🌐 Unified Champion",
     "files": [
       "ui-render.js"
     ],
@@ -28818,7 +28818,7 @@
   },
   {
     "key": "🌟 深く刺さった",
-    "en": "",
+    "en": "🌟 It really landed",
     "files": [
       "ui-common.js"
     ],
@@ -28828,7 +28828,7 @@
   },
   {
     "key": "🌱 和解の兆し",
-    "en": "",
+    "en": "🌱 Signs of Reconciliation",
     "files": [
       "ui-common.js"
     ],
@@ -28838,7 +28838,7 @@
   },
   {
     "key": "🌱 練習場からの報告",
-    "en": "",
+    "en": "🌱 Report from the Practice Floor",
     "files": [
       "ui-common.js"
     ],
@@ -28878,7 +28878,7 @@
   },
   {
     "key": "🎉 交渉成功！",
-    "en": "",
+    "en": "🎉 Deal done!",
     "files": [
       "ui-common.js"
     ],
@@ -28888,7 +28888,7 @@
   },
   {
     "key": "🎊 経営安定化クリア",
-    "en": "",
+    "en": "🎊 Business Stability Cleared",
     "files": [
       "ui-render.js"
     ],
@@ -28898,7 +28898,7 @@
   },
   {
     "key": "🎊 逸材特別交渉枠を獲得！ 🎊",
-    "en": "",
+    "en": "🎊 You've earned a special standout negotiation slot! 🎊",
     "files": [
       "app.js"
     ],
@@ -28908,7 +28908,7 @@
   },
   {
     "key": "🎓 {coach}コーチより、{fighter}の指導状況",
-    "en": "",
+    "en": "🎓 From Coach {coach}: how {fighter} is coming along",
     "files": [
       "ui-common.js"
     ],
@@ -28918,7 +28918,7 @@
   },
   {
     "key": "🎓 {name}がコーチとして加入！（雇用費: {fee}万、決裁枠 -{dp}）",
-    "en": "",
+    "en": "🎓 {name} has joined as a coach! (hiring fee: ¥{fee}0k, approvals -{dp})",
     "files": [
       "app.js"
     ],
@@ -28928,7 +28928,7 @@
   },
   {
     "key": "🎓 コーチ枠が{n}枠に拡張されました！（投資: {cost}万）",
-    "en": "",
+    "en": "🎓 Your coach slots have grown to {n}! (investment: ¥{cost}0k)",
     "files": [
       "app.js"
     ],
@@ -28938,7 +28938,7 @@
   },
   {
     "key": "🎓 卒業レポート",
-    "en": "",
+    "en": "🎓 Graduation Report",
     "files": [
       "ui-common.js"
     ],
@@ -28948,7 +28948,7 @@
   },
   {
     "key": "🎓 後輩指導申し出",
-    "en": "",
+    "en": "🎓 Offer to Mentor a Junior",
     "files": [
       "ui-common.js"
     ],
@@ -28958,7 +28958,7 @@
   },
   {
     "key": "🎖️ 興行で「初代王者決定戦」を組んで、初代チャンピオンを決めましょう！",
-    "en": "",
+    "en": "🎖️ Book the Inaugural Title Match on a show and crown your first champion!",
     "files": [
       "app.js"
     ],
@@ -28968,7 +28968,7 @@
   },
   {
     "key": "🎤 ファンの声",
-    "en": "",
+    "en": "🎤 Voices from the Crowd",
     "files": [
       "ui-render.js"
     ],
@@ -28978,7 +28978,7 @@
   },
   {
     "key": "🎤 今週は興行週！",
-    "en": "",
+    "en": "🎤 It's show week!",
     "files": [
       "ui-render.js"
     ],
@@ -28988,7 +28988,7 @@
   },
   {
     "key": "🎤 次の興行: 第{w}週",
-    "en": "",
+    "en": "🎤 Next show: week {w}",
     "files": [
       "ui-render.js"
     ],
@@ -28998,7 +28998,7 @@
   },
   {
     "key": "🎤 興行準備",
-    "en": "",
+    "en": "🎤 Show Prep",
     "files": [
       "index.html"
     ],
@@ -29008,7 +29008,7 @@
   },
   {
     "key": "🎤 集客力順",
-    "en": "",
+    "en": "🎤 By Draw",
     "files": [
       "ui-render.js"
     ],
@@ -29018,7 +29018,7 @@
   },
   {
     "key": "🎫 特別枠",
-    "en": "",
+    "en": "🎫 Special Slot",
     "files": [
       "ui-render.js"
     ],
@@ -29028,7 +29028,7 @@
   },
   {
     "key": "🎫 逸材特別交渉枠を使用します（1回限り）",
-    "en": "",
+    "en": "🎫 Use your special standout negotiation slot (one use only)",
     "files": [
       "ui-common.js"
     ],
@@ -29038,7 +29038,7 @@
   },
   {
     "key": "🎬 体験版をプレイいただき<br>ありがとうございました！",
-    "en": "",
+    "en": "🎬 Thank you for playing<br>the demo!",
     "files": [
       "ui-common.js"
     ],
@@ -29048,7 +29048,7 @@
   },
   {
     "key": "🎬 試合を観る",
-    "en": "",
+    "en": "🎬 Watch the Match",
     "files": [
       "ui-common.js"
     ],
@@ -29058,7 +29058,7 @@
   },
   {
     "key": "🎭 ロッカールーム報告",
-    "en": "",
+    "en": "🎭 Locker Room Report",
     "files": [
       "ui-common.js"
     ],
@@ -29068,7 +29068,7 @@
   },
   {
     "key": "🎭 派閥",
-    "en": "",
+    "en": "🎭 Factions",
     "files": [
       "ui-render.js"
     ],
@@ -29078,7 +29078,7 @@
   },
   {
     "key": "🎲 通常額で勝負 ({n}万 / 勝率{rate}%)",
-    "en": "",
+    "en": "🎲 Bid the standard amount (¥{n}0k / {rate}% odds)",
     "files": [
       "ui-render.js"
     ],
@@ -29088,7 +29088,7 @@
   },
   {
     "key": "🏅 殿堂入り",
-    "en": "",
+    "en": "🏅 Hall of Fame",
     "files": [
       "ui-render.js"
     ],
@@ -29098,7 +29098,7 @@
   },
   {
     "key": "🏆 {names} 勝利",
-    "en": "",
+    "en": "🏆 {names} win",
     "files": [
       "ui-common.js"
     ],
@@ -29108,7 +29108,7 @@
   },
   {
     "key": "🏆 {name} 勝利",
-    "en": "",
+    "en": "🏆 {name} wins",
     "files": [
       "ui-common.js"
     ],
@@ -29118,7 +29118,7 @@
   },
   {
     "key": "🏆 {name}、業界の頂点へ",
-    "en": "",
+    "en": "🏆 {name} reaches the top of the industry",
     "files": [
       "ui-common.js"
     ],
@@ -29128,7 +29128,7 @@
   },
   {
     "key": "🏆 ジュニアトーナメント {round}",
-    "en": "",
+    "en": "🏆 Junior Tournament {round}",
     "files": [
       "app.js"
     ],
@@ -29138,7 +29138,7 @@
   },
   {
     "key": "🏆 タイトルマッチ",
-    "en": "",
+    "en": "🏆 Title Match",
     "files": [
       "ui-common.js"
     ],
@@ -29148,7 +29148,7 @@
   },
   {
     "key": "🏆 タイトル戦",
-    "en": "",
+    "en": "🏆 Title Match",
     "files": [
       "ui-common.js"
     ],
@@ -29158,7 +29158,7 @@
   },
   {
     "key": "🏆 ランキング",
-    "en": "",
+    "en": "🏆 Rankings",
     "files": [
       "index.html"
     ],
@@ -29168,7 +29168,7 @@
   },
   {
     "key": "🏆 初代王者決定戦",
-    "en": "",
+    "en": "🏆 Inaugural Title Match",
     "files": [
       "app.js"
     ],
@@ -29178,7 +29178,7 @@
   },
   {
     "key": "🏆 勝ち越し",
-    "en": "",
+    "en": "🏆 Winning Record",
     "files": [
       "ui-common.js"
     ],
@@ -29188,7 +29188,7 @@
   },
   {
     "key": "🏆 王座返上",
-    "en": "",
+    "en": "🏆 Title Relinquished",
     "files": [
       "ui-common.js"
     ],
@@ -29198,7 +29198,7 @@
   },
   {
     "key": "🏆 頂上決戦",
-    "en": "",
+    "en": "🏆 Summit Match",
     "files": [
       "app.js"
     ],
@@ -29208,7 +29208,7 @@
   },
   {
     "key": "🏆タイトル+{n}",
-    "en": "",
+    "en": "🏆Title +{n}",
     "files": [
       "ui-render.js"
     ],
@@ -29218,7 +29218,7 @@
   },
   {
     "key": "🏋️ 全コーチ",
-    "en": "",
+    "en": "🏋️ All Coaches",
     "files": [
       "ui-render.js"
     ],
@@ -29228,7 +29228,7 @@
   },
   {
     "key": "🏋️ 合宿 残り{n}週 — 団体にも馴染んできている",
-    "en": "",
+    "en": "🏋️ Camp, {n} weeks left — she is settling in with the promotion",
     "files": [
       "ui-common.js"
     ],
@@ -29238,7 +29238,7 @@
   },
   {
     "key": "🏖️休暇 あと{w}週",
-    "en": "",
+    "en": "🏖️Leave: {w}w left",
     "files": [
       "ui-render.js"
     ],
@@ -29288,7 +29288,7 @@
   },
   {
     "key": "🏠 所属中",
-    "en": "",
+    "en": "🏠 Under contract",
     "files": [
       "ui-common.js"
     ],
@@ -29298,7 +29298,7 @@
   },
   {
     "key": "🏢 ロスター枠が上限（{n}名）に達しています",
-    "en": "",
+    "en": "🏢 Your roster is at capacity ({n})",
     "files": [
       "ui-common.js"
     ],
@@ -29308,7 +29308,7 @@
   },
   {
     "key": "🏢 団体名:",
-    "en": "",
+    "en": "🏢 Promotion:",
     "files": [
       "ui-render.js"
     ],
@@ -29318,7 +29318,7 @@
   },
   {
     "key": "🏢 経営",
-    "en": "",
+    "en": "🏢 Business",
     "files": [
       "index.html"
     ],
@@ -29328,7 +29328,7 @@
   },
   {
     "key": "🏥 {cur}週 → {reduced}週に短縮（-{cost}万）",
-    "en": "",
+    "en": "🏥 {cur} weeks → {reduced} weeks (-¥{cost}0k)",
     "files": [
       "app.js"
     ],
@@ -29338,7 +29338,7 @@
   },
   {
     "key": "🏥 {label} — 全治{weeks}週間",
-    "en": "",
+    "en": "🏥 {label} — {weeks} weeks to heal",
     "files": [
       "app.js"
     ],
@@ -29348,7 +29348,7 @@
   },
   {
     "key": "🏥{w}週",
-    "en": "",
+    "en": "🏥{w}w",
     "files": [
       "ui-render.js"
     ],
@@ -29358,7 +29358,7 @@
   },
   {
     "key": "👁️ 来週は移籍ウィンドウです。動向を注視しましょう。",
-    "en": "",
+    "en": "👁️ The transfer window opens next week. Keep an eye on the movement.",
     "files": [
       "app.js"
     ],
@@ -29368,7 +29368,7 @@
   },
   {
     "key": "👑 {champ}が{org}の{name}を撃破！ 団体人気+2",
-    "en": "",
+    "en": "👑 {champ} beat {org}'s {name}! Promotion popularity +2",
     "files": [
       "app.js"
     ],
@@ -29398,7 +29398,7 @@
   },
   {
     "key": "👑 業界1位 ／ あなたの団体が頂点に立っています",
-    "en": "",
+    "en": "👑 1st in the industry / your promotion stands at the top",
     "files": [
       "ui-render.js"
     ],
@@ -29408,7 +29408,7 @@
   },
   {
     "key": "👑 王者",
-    "en": "",
+    "en": "👑 Champion",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -29419,7 +29419,7 @@
   },
   {
     "key": "👑 王者（{n}防衛）",
-    "en": "",
+    "en": "👑 Champion ({n} defenses)",
     "files": [
       "ui-common.js"
     ],
@@ -29429,7 +29429,7 @@
   },
   {
     "key": "👑 現王者",
-    "en": "",
+    "en": "👑 Current Champion",
     "files": [
       "ui-render.js"
     ],
@@ -29439,7 +29439,7 @@
   },
   {
     "key": "👤 全選手",
-    "en": "",
+    "en": "👤 All Wrestlers",
     "files": [
       "ui-render.js"
     ],
@@ -29449,7 +29449,7 @@
   },
   {
     "key": "👥 同世代",
-    "en": "",
+    "en": "👥 Same Generation",
     "files": [
       "ui-render.js"
     ],
@@ -29459,7 +29459,7 @@
   },
   {
     "key": "👥 団体",
-    "en": "",
+    "en": "👥 Promotions",
     "files": [
       "index.html"
     ],
@@ -29469,7 +29469,7 @@
   },
   {
     "key": "💀 勝敗は決した。しかし、遺恨は消えなかった",
-    "en": "",
+    "en": "💀 The match is settled. The bad blood is not",
     "files": [
       "ui-common.js"
     ],
@@ -29479,7 +29479,7 @@
   },
   {
     "key": "💀 消えなかったものが、また火を持った",
-    "en": "",
+    "en": "💀 What never went out has caught fire again",
     "files": [
       "ui-common.js"
     ],
@@ -29489,7 +29489,7 @@
   },
   {
     "key": "💀 負け越し",
-    "en": "",
+    "en": "💀 Losing Record",
     "files": [
       "ui-common.js"
     ],
@@ -29499,7 +29499,7 @@
   },
   {
     "key": "💎 FA市場で逸材ランクの選手1名と特別に交渉可能\n",
-    "en": "",
+    "en": "💎 Special talks with one standout-rank wrestler on the FA market\n",
     "files": [
       "app.js"
     ],
@@ -29509,7 +29509,7 @@
   },
   {
     "key": "💢 不満・退団示唆",
-    "en": "",
+    "en": "💢 Unhappy · hinting at leaving",
     "files": [
       "ui-common.js"
     ],
@@ -29519,7 +29519,7 @@
   },
   {
     "key": "💤 あまり響かなかった",
-    "en": "",
+    "en": "💤 It didn't land",
     "files": [
       "ui-common.js"
     ],
@@ -29529,7 +29529,7 @@
   },
   {
     "key": "💥 ブレークスルー！",
-    "en": "",
+    "en": "💥 Breakthrough!",
     "files": [
       "ui-common.js"
     ],
@@ -29539,7 +29539,7 @@
   },
   {
     "key": "💥 決着の試合",
-    "en": "",
+    "en": "💥 The Decider",
     "files": [
       "app.js"
     ],
@@ -29549,7 +29549,7 @@
   },
   {
     "key": "💪 OVR順",
-    "en": "",
+    "en": "💪 By OVR",
     "files": [
       "ui-render.js"
     ],
@@ -29559,7 +29559,7 @@
   },
   {
     "key": "💪 これからは成長フェーズです。更なる高みを目指しましょう！",
-    "en": "",
+    "en": "💪 You're into the growth phase now. Aim higher!",
     "files": [
       "app.js"
     ],
@@ -29569,7 +29569,7 @@
   },
   {
     "key": "💪 スランプ脱出！",
-    "en": "",
+    "en": "💪 Out of the slump!",
     "files": [
       "ui-common.js"
     ],
@@ -29579,7 +29579,7 @@
   },
   {
     "key": "💬 今週はもう声をかけた",
-    "en": "",
+    "en": "💬 You've already talked to her this week",
     "files": [
       "ui-common.js"
     ],
@@ -29589,7 +29589,7 @@
   },
   {
     "key": "💬 声をかけに行く",
-    "en": "",
+    "en": "💬 Go and Talk to Her",
     "files": [
       "ui-common.js"
     ],
@@ -29599,7 +29599,7 @@
   },
   {
     "key": "💬 選手からの申し入れ",
-    "en": "",
+    "en": "💬 A Request from a Wrestler",
     "files": [
       "ui-common.js"
     ],
@@ -29609,7 +29609,7 @@
   },
   {
     "key": "💭 最近よそよそしい",
-    "en": "",
+    "en": "💭 She's been distant lately",
     "files": [
       "ui-common.js"
     ],
@@ -29619,7 +29619,7 @@
   },
   {
     "key": "💰 上乗せ確定獲得 ({n}万)",
-    "en": "",
+    "en": "💰 Pay extra to lock her in (¥{n}0k)",
     "files": [
       "ui-render.js"
     ],
@@ -29629,7 +29629,7 @@
   },
   {
     "key": "💰 昇給要求",
-    "en": "",
+    "en": "💰 Raise Demand",
     "files": [
       "ui-common.js"
     ],
@@ -29639,7 +29639,7 @@
   },
   {
     "key": "💰 月間平均給与推移 ({n}ヶ月)",
-    "en": "",
+    "en": "💰 Average Monthly Salary ({n} months)",
     "files": [
       "ui-render.js"
     ],
@@ -29649,7 +29649,7 @@
   },
   {
     "key": "💰 給与",
-    "en": "",
+    "en": "💰 Salary",
     "files": [
       "ui-render.js"
     ],
@@ -29659,7 +29659,7 @@
   },
   {
     "key": "💰 費用 {order} {arrow}",
-    "en": "",
+    "en": "💰 Cost {order} {arrow}",
     "files": [
       "ui-render.js"
     ],
@@ -29669,7 +29669,7 @@
   },
   {
     "key": "💰 週間給与推移 ({n}週)",
-    "en": "",
+    "en": "💰 Weekly Salary ({n} weeks)",
     "files": [
       "ui-render.js"
     ],
@@ -29679,7 +29679,7 @@
   },
   {
     "key": "💰{v}万",
-    "en": "",
+    "en": "💰¥{v}0k",
     "files": [
       "ui-render.js"
     ],
@@ -29689,7 +29689,7 @@
   },
   {
     "key": "💴 営業試合依頼",
-    "en": "",
+    "en": "💴 Paid Show Request",
     "files": [
       "ui-common.js"
     ],
@@ -29699,7 +29699,7 @@
   },
   {
     "key": "💸 {name} → {org}へ移籍",
-    "en": "",
+    "en": "💸 Transfer: {name} → {org}",
     "files": [
       "ui-common.js"
     ],
@@ -29709,7 +29709,7 @@
   },
   {
     "key": "💸 資金不足",
-    "en": "",
+    "en": "💸 Not enough funds",
     "files": [
       "ui-common.js"
     ],
@@ -29719,7 +29719,7 @@
   },
   {
     "key": "💹 資金推移 (シーズン末値・{n}年分)",
-    "en": "",
+    "en": "💹 Funds Over Time (season-end, {n} years)",
     "files": [
       "ui-render.js"
     ],
@@ -29729,7 +29729,7 @@
   },
   {
     "key": "💹 資金推移 (今シーズン {n}ヶ月)",
-    "en": "",
+    "en": "💹 Funds Over Time (this season, {n} months)",
     "files": [
       "ui-render.js"
     ],
@@ -29739,7 +29739,7 @@
   },
   {
     "key": "💹 資金推移 (直近{n}週)",
-    "en": "",
+    "en": "💹 Funds Over Time (last {n} weeks)",
     "files": [
       "ui-render.js"
     ],
@@ -29749,7 +29749,7 @@
   },
   {
     "key": "💼 スポンサー提案",
-    "en": "",
+    "en": "💼 Sponsor Proposal",
     "files": [
       "ui-common.js"
     ],
@@ -29759,7 +29759,7 @@
   },
   {
     "key": "💾 セーブ",
-    "en": "",
+    "en": "💾 Save",
     "files": [
       "index.html"
     ],
@@ -29769,7 +29769,7 @@
   },
   {
     "key": "💾 セーブ / ロード",
-    "en": "",
+    "en": "💾 Save / Load",
     "files": [
       "index.html"
     ],
@@ -29779,7 +29779,7 @@
   },
   {
     "key": "💾 手動セーブスロット",
-    "en": "",
+    "en": "💾 Manual Save Slots",
     "files": [
       "ui-render.js"
     ],
@@ -29789,7 +29789,7 @@
   },
   {
     "key": "📅 今週",
-    "en": "",
+    "en": "📅 This Week",
     "files": [
       "index.html"
     ],
@@ -29799,7 +29799,7 @@
   },
   {
     "key": "📈 収入",
-    "en": "",
+    "en": "📈 Income",
     "files": [
       "ui-render.js"
     ],
@@ -29809,7 +29809,7 @@
   },
   {
     "key": "📈 月間平均収入推移 ({n}ヶ月)",
-    "en": "",
+    "en": "📈 Average Monthly Income ({n} months)",
     "files": [
       "ui-render.js"
     ],
@@ -29819,7 +29819,7 @@
   },
   {
     "key": "📈 総収入",
-    "en": "",
+    "en": "📈 Total Income",
     "files": [
       "ui-render.js"
     ],
@@ -29829,7 +29829,7 @@
   },
   {
     "key": "📈 週間収入推移 ({n}週)",
-    "en": "",
+    "en": "📈 Weekly Income ({n} weeks)",
     "files": [
       "ui-render.js"
     ],
@@ -29839,7 +29839,7 @@
   },
   {
     "key": "📉 {name}の人気がじわじわ下がっている…（離脱中）",
-    "en": "",
+    "en": "📉 {name}'s popularity is slipping away... (out of action)",
     "files": [
       "app.js"
     ],
@@ -29849,7 +29849,7 @@
   },
   {
     "key": "📉 スランプ…",
-    "en": "",
+    "en": "📉 Slump...",
     "files": [
       "ui-common.js"
     ],
@@ -29859,7 +29859,7 @@
   },
   {
     "key": "📉 スランプ中（{n}週目 / 回復確率{p}%）",
-    "en": "",
+    "en": "📉 In a slump (week {n} / {p}% chance to recover)",
     "files": [
       "ui-common.js"
     ],
@@ -29869,7 +29869,7 @@
   },
   {
     "key": "📉 契約査定",
-    "en": "",
+    "en": "📉 Contract Assessment",
     "files": [
       "ui-common.js"
     ],
@@ -29879,7 +29879,7 @@
   },
   {
     "key": "📉 支出",
-    "en": "",
+    "en": "📉 Spending",
     "files": [
       "ui-render.js"
     ],
@@ -29889,7 +29889,7 @@
   },
   {
     "key": "📉 月間平均支出推移 ({n}ヶ月)",
-    "en": "",
+    "en": "📉 Average Monthly Spending ({n} months)",
     "files": [
       "ui-render.js"
     ],
@@ -29899,7 +29899,7 @@
   },
   {
     "key": "📉 総支出",
-    "en": "",
+    "en": "📉 Total Spending",
     "files": [
       "ui-render.js"
     ],
@@ -29909,7 +29909,7 @@
   },
   {
     "key": "📉 週間支出推移 ({n}週)",
-    "en": "",
+    "en": "📉 Weekly Spending ({n} weeks)",
     "files": [
       "ui-render.js"
     ],
@@ -29919,7 +29919,7 @@
   },
   {
     "key": "📊 4面 MVPレース",
-    "en": "",
+    "en": "📊 Page 4 — MVP Race",
     "files": [
       "ui-render.js"
     ],
@@ -29929,7 +29929,7 @@
   },
   {
     "key": "📊 4面 ・ 年間MVPレース",
-    "en": "",
+    "en": "📊 Page 4 · Season MVP Race",
     "files": [
       "ui-render.js"
     ],
@@ -29939,7 +29939,7 @@
   },
   {
     "key": "📊 まだMVPレースのデータがない。週を進めると更新される。",
-    "en": "",
+    "en": "📊 No MVP race data yet. It updates as the weeks go by.",
     "files": [
       "ui-render.js"
     ],
@@ -29949,7 +29949,7 @@
   },
   {
     "key": "📊 データベース",
-    "en": "",
+    "en": "📊 Database",
     "files": [
       "index.html",
       "ui-render.js"
@@ -29960,7 +29960,7 @@
   },
   {
     "key": "📊 比較対象",
-    "en": "",
+    "en": "📊 Compare With",
     "files": [
       "ui-render.js"
     ],
@@ -29970,7 +29970,7 @@
   },
   {
     "key": "📊 総合",
-    "en": "",
+    "en": "📊 Summary",
     "files": [
       "ui-render.js"
     ],
@@ -29980,7 +29980,7 @@
   },
   {
     "key": "📊 能力",
-    "en": "",
+    "en": "📊 Ability",
     "files": [
       "ui-common.js"
     ],
@@ -29990,7 +29990,7 @@
   },
   {
     "key": "📋 シーズン{season} 契約更新",
-    "en": "",
+    "en": "📋 Season {season} Contract Renewals",
     "files": [
       "ui-render.js"
     ],
@@ -30000,7 +30000,7 @@
   },
   {
     "key": "📋 タイトル挑戦要求",
-    "en": "",
+    "en": "📋 Title Shot Demand",
     "files": [
       "ui-common.js"
     ],
@@ -30010,7 +30010,7 @@
   },
   {
     "key": "📋 タレント活動 {n}回",
-    "en": "",
+    "en": "📋 Media Appearances ×{n}",
     "files": [
       "ui-common.js"
     ],
@@ -30020,7 +30020,7 @@
   },
   {
     "key": "📋 ログ",
-    "en": "",
+    "en": "📋 Log",
     "files": [
       "index.html"
     ],
@@ -30030,7 +30030,7 @@
   },
   {
     "key": "📋 戦績・経歴",
-    "en": "",
+    "en": "📋 Record & History",
     "files": [
       "ui-common.js"
     ],
@@ -30040,7 +30040,7 @@
   },
   {
     "key": "📋 決裁",
-    "en": "",
+    "en": "📋 Approvals",
     "files": [
       "ui-render.js"
     ],
@@ -30050,7 +30050,7 @@
   },
   {
     "key": "📋 詳細",
-    "en": "",
+    "en": "📋 Details",
     "files": [
       "ui-render.js"
     ],
@@ -30060,7 +30060,7 @@
   },
   {
     "key": "📖 年代記",
-    "en": "",
+    "en": "📖 Chronicle",
     "files": [
       "ui-render.js"
     ],
@@ -30070,7 +30070,7 @@
   },
   {
     "key": "📖 年代記で見る",
-    "en": "",
+    "en": "📖 View in the Chronicle",
     "files": [
       "ui-render.js"
     ],
@@ -30080,7 +30080,7 @@
   },
   {
     "key": "📜 {name} が {org} へ挑戦状を叩きつけた！",
-    "en": "",
+    "en": "📜 {name} has thrown down a challenge letter to {org}!",
     "files": [
       "app.js"
     ],
@@ -30090,7 +30090,7 @@
   },
   {
     "key": "📜 対 抗 戦 ・ 挑 戦 状",
-    "en": "",
+    "en": "📜 INTERPROMOTIONAL · THE CHALLENGE LETTER",
     "files": [
       "ui-common.js"
     ],
@@ -30100,7 +30100,7 @@
   },
   {
     "key": "📜 歴代記録",
-    "en": "",
+    "en": "📜 All-Time Records",
     "files": [
       "ui-render.js"
     ],
@@ -30110,7 +30110,7 @@
   },
   {
     "key": "📜 記録",
-    "en": "",
+    "en": "📜 Records",
     "files": [
       "ui-render.js"
     ],
@@ -30120,7 +30120,7 @@
   },
   {
     "key": "📝 ご意見・バグ報告",
-    "en": "",
+    "en": "📝 Feedback & Bug Reports",
     "files": [
       "index.html"
     ],
@@ -30130,7 +30130,7 @@
   },
   {
     "key": "📝 契約金: {cost}万 [{tier}]",
-    "en": "",
+    "en": "📝 Signing fee: ¥{cost}0k [{tier}]",
     "files": [
       "app.js"
     ],
@@ -30140,7 +30140,7 @@
   },
   {
     "key": "📢 プロモ活動 {n}週",
-    "en": "",
+    "en": "📢 Promo work ×{n} weeks",
     "files": [
       "ui-common.js"
     ],
@@ -30150,7 +30150,7 @@
   },
   {
     "key": "📣 {name} からのメイン推薦{period}",
-    "en": "",
+    "en": "📣 Main event recommendation from {name}{period}",
     "files": [
       "ui-render.js"
     ],
@@ -30160,7 +30160,7 @@
   },
   {
     "key": "📣 {text}",
-    "en": "",
+    "en": "📣 {text}",
     "files": [
       "app.js"
     ],
@@ -30170,7 +30170,7 @@
   },
   {
     "key": "📣 オフシーズンで団体人気が -{decay} 減衰しました（現在: {pop}）",
-    "en": "",
+    "en": "📣 Promotion popularity decayed by {decay} over the off-season (now: {pop})",
     "files": [
       "app.js"
     ],
@@ -30180,7 +30180,7 @@
   },
   {
     "key": "📣 団体人気",
-    "en": "",
+    "en": "📣 Promotion Popularity",
     "files": [
       "ui-render.js"
     ],
@@ -30190,7 +30190,7 @@
   },
   {
     "key": "📣 近隣エリアの地域イベント実行委員会から営業試合の依頼が届きました。",
-    "en": "",
+    "en": "📣 The organizing committee for a local event nearby has asked for a paid show.",
     "files": [
       "ui-common.js"
     ],
@@ -30200,7 +30200,7 @@
   },
   {
     "key": "📣ファン期待",
-    "en": "",
+    "en": "📣Fan expectation",
     "files": [
       "ui-render.js"
     ],
@@ -30210,7 +30210,7 @@
   },
   {
     "key": "📣期待+{n}",
-    "en": "",
+    "en": "📣Expectation +{n}",
     "files": [
       "ui-render.js"
     ],
@@ -30220,7 +30220,7 @@
   },
   {
     "key": "📤 ファイルから読み込む",
-    "en": "",
+    "en": "📤 Load from a File",
     "files": [
       "ui-render.js"
     ],
@@ -30230,7 +30230,7 @@
   },
   {
     "key": "📥 大切なデータは必ず「書出」ボタンでファイルにバックアップしてください。",
-    "en": "",
+    "en": "📥 Always back up data that matters to a file with the Export button.",
     "files": [
       "ui-render.js"
     ],
@@ -30240,7 +30240,7 @@
   },
   {
     "key": "📥 書出",
-    "en": "",
+    "en": "📥 Export",
     "files": [
       "ui-render.js"
     ],
@@ -30250,7 +30250,7 @@
   },
   {
     "key": "📦 データ移行",
-    "en": "",
+    "en": "📦 Data Migration",
     "files": [
       "ui-render.js"
     ],
@@ -30260,7 +30260,7 @@
   },
   {
     "key": "📨 挑戦試合は次の通常興行へ",
-    "en": "",
+    "en": "📨 The challenge match goes on the next regular show",
     "files": [
       "ui-render.js"
     ],
@@ -30270,7 +30270,7 @@
   },
   {
     "key": "📨 挑戦試合を正式決定",
-    "en": "",
+    "en": "📨 Confirm the Challenge Match",
     "files": [
       "app.js"
     ],
@@ -30280,7 +30280,7 @@
   },
   {
     "key": "📩 延長打診",
-    "en": "",
+    "en": "📩 Offer an Extension",
     "files": [
       "ui-common.js"
     ],
@@ -30290,7 +30290,7 @@
   },
   {
     "key": "📰 1面 興行",
-    "en": "",
+    "en": "📰 Page 1 — Shows",
     "files": [
       "ui-render.js"
     ],
@@ -30300,7 +30300,7 @@
   },
   {
     "key": "📰 {name}のスキャンダルが週刊誌に掲載された！",
-    "en": "",
+    "en": "📰 {name}'s scandal has run in the weeklies!",
     "files": [
       "app.js"
     ],
@@ -30310,7 +30310,7 @@
   },
   {
     "key": "📰 まだ新聞は届いていない。週を進めると最新号が掲載される。",
-    "en": "",
+    "en": "📰 No paper yet. The latest issue arrives as the weeks go by.",
     "files": [
       "ui-render.js"
     ],
@@ -30320,7 +30320,7 @@
   },
   {
     "key": "📰 ドラフト速報",
-    "en": "",
+    "en": "📰 Draft Bulletin",
     "files": [
       "ui-render.js"
     ],
@@ -30330,7 +30330,7 @@
   },
   {
     "key": "📰 ドラフト速報が届いています",
-    "en": "",
+    "en": "📰 A draft bulletin has arrived",
     "files": [
       "ui-render.js"
     ],
@@ -30340,7 +30340,7 @@
   },
   {
     "key": "📰 好機：ライバルが不調",
-    "en": "",
+    "en": "📰 Opening: a rival is struggling",
     "files": [
       "ui-common.js"
     ],
@@ -30350,7 +30350,7 @@
   },
   {
     "key": "📱 SNS匂わせ",
-    "en": "",
+    "en": "📱 Hinting on Social",
     "files": [
       "ui-common.js"
     ],
@@ -30360,7 +30360,7 @@
   },
   {
     "key": "📺 PPV テレビ中継",
-    "en": "",
+    "en": "📺 PPV Broadcast",
     "files": [
       "ui-render.js"
     ],
@@ -30370,7 +30370,7 @@
   },
   {
     "key": "📺 {name}のメディア密着取材が終了した",
-    "en": "",
+    "en": "📺 {name}'s documentary feature has wrapped",
     "files": [
       "app.js"
     ],
@@ -30380,7 +30380,7 @@
   },
   {
     "key": "📺 {outlet}・{activity}",
-    "en": "",
+    "en": "📺 {outlet} · {activity}",
     "files": [
       "app.js"
     ],
@@ -30390,7 +30390,7 @@
   },
   {
     "key": "📺 メディア出演オファー",
-    "en": "",
+    "en": "📺 Media Appearance Offer",
     "files": [
       "ui-common.js"
     ],
@@ -30400,7 +30400,7 @@
   },
   {
     "key": "📺 取材中",
-    "en": "",
+    "en": "📺 Filming",
     "files": [
       "ui-common.js"
     ],
@@ -30410,7 +30410,7 @@
   },
   {
     "key": "🔄 ニューゲーム",
-    "en": "",
+    "en": "🔄 New Game",
     "files": [
       "ui-render.js"
     ],
@@ -30420,7 +30420,7 @@
   },
   {
     "key": "🔄 再試行",
-    "en": "",
+    "en": "🔄 Retry",
     "files": [
       "ui-common.js"
     ],
@@ -30430,7 +30430,7 @@
   },
   {
     "key": "🔄 移籍ウィンドウ",
-    "en": "",
+    "en": "🔄 Transfer Window",
     "files": [
       "ui-render.js"
     ],
@@ -30440,7 +30440,7 @@
   },
   {
     "key": "🔊 音量設定",
-    "en": "",
+    "en": "🔊 Volume",
     "files": [
       "ui-render.js"
     ],
@@ -30450,7 +30450,7 @@
   },
   {
     "key": "🔍 {eventLabel} — 候補 {n}名",
-    "en": "",
+    "en": "🔍 {eventLabel} — {n} candidates",
     "files": [
       "ui-render.js"
     ],
@@ -30460,7 +30460,7 @@
   },
   {
     "key": "🔍 スカウト",
-    "en": "",
+    "en": "🔍 Scouting",
     "files": [
       "ui-render.js"
     ],
@@ -30470,7 +30470,7 @@
   },
   {
     "key": "🔍 スカウト候補",
-    "en": "",
+    "en": "🔍 Scouting Candidates",
     "files": [
       "ui-common.js"
     ],
@@ -30480,7 +30480,7 @@
   },
   {
     "key": "🔍 スカウト情報",
-    "en": "",
+    "en": "🔍 Scouting Report",
     "files": [
       "ui-common.js"
     ],
@@ -30490,7 +30490,7 @@
   },
   {
     "key": "🔍 スカウト網割引{n}%",
-    "en": "",
+    "en": "🔍 Scouting network discount {n}%",
     "files": [
       "ui-common.js"
     ],
@@ -30500,7 +30500,7 @@
   },
   {
     "key": "🔍 割引{n}%",
-    "en": "",
+    "en": "🔍 {n}% off",
     "files": [
       "ui-common.js"
     ],
@@ -30510,7 +30510,7 @@
   },
   {
     "key": "🔍 名前検索...",
-    "en": "",
+    "en": "🔍 Search by name...",
     "files": [
       "ui-render.js"
     ],
@@ -30520,7 +30520,7 @@
   },
   {
     "key": "🔒 スロット {n}",
-    "en": "",
+    "en": "🔒 Slot {n}",
     "files": [
       "ui-render.js"
     ],
@@ -30530,7 +30530,7 @@
   },
   {
     "key": "🔒 今季使用済み",
-    "en": "",
+    "en": "🔒 Already used this season",
     "files": [
       "ui-render.js"
     ],
@@ -30540,7 +30540,7 @@
   },
   {
     "key": "🔒 忠誠度が高く交渉に応じない",
-    "en": "",
+    "en": "🔒 Too loyal to come to the table",
     "files": [
       "ui-common.js"
     ],
@@ -30550,7 +30550,7 @@
   },
   {
     "key": "🔒王座未設立",
-    "en": "",
+    "en": "🔒No title yet",
     "files": [
       "ui-render.js"
     ],
@@ -30560,7 +30560,7 @@
   },
   {
     "key": "🔗 相関図",
-    "en": "",
+    "en": "🔗 Relationship Map",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -30571,7 +30571,7 @@
   },
   {
     "key": "🔥 3面 因縁列伝",
-    "en": "",
+    "en": "🔥 Page 3 — Chronicle of Grudges",
     "files": [
       "ui-render.js"
     ],
@@ -30581,7 +30581,7 @@
   },
   {
     "key": "🔥 おすすめ",
-    "en": "",
+    "en": "🔥 Recommended",
     "files": [
       "ui-render.js"
     ],
@@ -30591,7 +30591,7 @@
   },
   {
     "key": "🔥 ライバル対決",
-    "en": "",
+    "en": "🔥 Rival Showdown",
     "files": [
       "ui-common.js"
     ],
@@ -30601,7 +30601,7 @@
   },
   {
     "key": "🔥 因縁対決",
-    "en": "",
+    "en": "🔥 Grudge Match",
     "files": [
       "ui-common.js"
     ],
@@ -30611,7 +30611,7 @@
   },
   {
     "key": "🔥 宿敵との一戦を制した",
-    "en": "",
+    "en": "🔥 She beat her nemesis",
     "files": [
       "ui-common.js"
     ],
@@ -30621,7 +30621,7 @@
   },
   {
     "key": "🔥 宿敵の決着",
-    "en": "",
+    "en": "🔥 The Nemesis Settled",
     "files": [
       "ui-common.js"
     ],
@@ -30631,7 +30631,7 @@
   },
   {
     "key": "🔥 対立ヒートアップ",
-    "en": "",
+    "en": "🔥 The Conflict Heats Up",
     "files": [
       "ui-common.js"
     ],
@@ -30641,7 +30641,7 @@
   },
   {
     "key": "🔥 派閥の直接対決のため、この試合の選手は変更できません",
-    "en": "",
+    "en": "🔥 This is a head-to-head between factions, so you cannot change the wrestlers",
     "files": [
       "ui-render.js"
     ],
@@ -30651,7 +30651,7 @@
   },
   {
     "key": "🔥 直接対決",
-    "en": "",
+    "en": "🔥 Head-to-Head",
     "files": [
       "ui-common.js"
     ],
@@ -30661,7 +30661,7 @@
   },
   {
     "key": "🔥 直接対決（固定）",
-    "en": "",
+    "en": "🔥 Head-to-head (locked)",
     "files": [
       "ui-render.js"
     ],
@@ -30671,7 +30671,7 @@
   },
   {
     "key": "🔥 絶好調突入！",
-    "en": "",
+    "en": "🔥 She is on fire!",
     "files": [
       "ui-common.js"
     ],
@@ -30681,7 +30681,7 @@
   },
   {
     "key": "🔥 絶好調（残り{n}週 / OVR+{m}）",
-    "en": "",
+    "en": "🔥 On fire ({n} weeks left / OVR +{m})",
     "files": [
       "ui-common.js"
     ],
@@ -30691,7 +30691,7 @@
   },
   {
     "key": "🔥 見返しモード（4週間 評価+2）発動！",
-    "en": "",
+    "en": "🔥 Out to prove them wrong (4 weeks, rating +2)!",
     "files": [
       "ui-common.js"
     ],
@@ -30701,7 +30701,7 @@
   },
   {
     "key": "🔥おすすめ（因縁・鮮度・話題性）／💪OVR順／🎤集客力順 の3ボタンで自動編成もできます。",
-    "en": "",
+    "en": "🔥Recommended (grudges, freshness, buzz) / 💪By OVR / 🎤By Draw — three buttons that book the card for you.",
     "files": [
       "index.html"
     ],
@@ -30711,7 +30711,7 @@
   },
   {
     "key": "🕯 ロッカールーム報告（移籍）",
-    "en": "",
+    "en": "🕯 Locker Room Report (transfer)",
     "files": [
       "ui-common.js"
     ],
@@ -30721,7 +30721,7 @@
   },
   {
     "key": "🗑 全クリア",
-    "en": "",
+    "en": "🗑 Clear All",
     "files": [
       "ui-render.js"
     ],
@@ -30731,7 +30731,7 @@
   },
   {
     "key": "😈善悪+{n}",
-    "en": "",
+    "en": "😈Alignment +{n}",
     "files": [
       "ui-render.js"
     ],
@@ -30741,7 +30741,7 @@
   },
   {
     "key": "😞 モチベーション喪失…",
-    "en": "",
+    "en": "😞 She has lost her drive...",
     "files": [
       "ui-common.js"
     ],
@@ -30751,7 +30751,7 @@
   },
   {
     "key": "😞 モチベ喪失（{n}週目）",
-    "en": "",
+    "en": "😞 Lost drive (week {n})",
     "files": [
       "ui-common.js"
     ],
@@ -30761,7 +30761,7 @@
   },
   {
     "key": "😞 交渉失敗…",
-    "en": "",
+    "en": "😞 The talks fell through...",
     "files": [
       "ui-common.js"
     ],
@@ -30771,7 +30771,7 @@
   },
   {
     "key": "😤 ロッカールームの愚痴",
-    "en": "",
+    "en": "😤 Grumbling in the Locker Room",
     "files": [
       "ui-common.js"
     ],
@@ -30781,7 +30781,7 @@
   },
   {
     "key": "😭 {name} 引き留め失敗",
-    "en": "",
+    "en": "😭 {name} could not be talked into staying",
     "files": [
       "ui-common.js"
     ],
@@ -30791,7 +30791,7 @@
   },
   {
     "key": "🚌 {org} 興行・遠征試合",
-    "en": "",
+    "en": "🚌 {org} show · away match",
     "files": [
       "ui-common.js"
     ],
@@ -30801,7 +30801,7 @@
   },
   {
     "key": "🚨 他団体からの引き抜き",
-    "en": "",
+    "en": "🚨 A Poaching Offer from Another Promotion",
     "files": [
       "ui-common.js"
     ],
@@ -30811,7 +30811,7 @@
   },
   {
     "key": "🚨 資金危機",
-    "en": "",
+    "en": "🚨 Cash Crisis",
     "files": [
       "app.js"
     ],
@@ -30821,7 +30821,7 @@
   },
   {
     "key": "🚪 {name}が荷物をまとめて団体を去った。誰も止められなかった。",
-    "en": "",
+    "en": "🚪 {name} packed her bags and left the promotion. No one could stop her.",
     "files": [
       "app.js"
     ],
@@ -30831,7 +30831,7 @@
   },
   {
     "key": "🚪 この選手を解雇する",
-    "en": "",
+    "en": "🚪 Release This Wrestler",
     "files": [
       "ui-common.js"
     ],
@@ -30841,7 +30841,7 @@
   },
   {
     "key": "🚪 移籍志願",
-    "en": "",
+    "en": "🚪 Asking for a Transfer",
     "files": [
       "ui-common.js"
     ],
@@ -30851,7 +30851,7 @@
   },
   {
     "key": "🚪 解雇の確認",
-    "en": "",
+    "en": "🚪 Confirm the Release",
     "files": [
       "ui-render.js"
     ],
@@ -30861,7 +30861,7 @@
   },
   {
     "key": "🚪 解雇面談",
-    "en": "",
+    "en": "🚪 Release Meeting",
     "files": [
       "ui-render.js"
     ],
@@ -30871,7 +30871,7 @@
   },
   {
     "key": "🚫 練習ボイコット",
-    "en": "",
+    "en": "🚫 Practice Boycott",
     "files": [
       "ui-common.js"
     ],
@@ -30881,7 +30881,7 @@
   },
   {
     "key": "🛌 休養願い",
-    "en": "",
+    "en": "🛌 Request for Rest",
     "files": [
       "ui-common.js"
     ],
@@ -30891,7 +30891,7 @@
   },
   {
     "key": "🛡️ {name} 引き留め成功",
-    "en": "",
+    "en": "🛡️ {name} was talked into staying",
     "files": [
       "ui-common.js"
     ],
@@ -30901,7 +30901,7 @@
   },
   {
     "key": "🛡️ エンブレム:",
-    "en": "",
+    "en": "🛡️ Emblem:",
     "files": [
       "ui-render.js"
     ],
@@ -30911,7 +30911,7 @@
   },
   {
     "key": "🤝 {name}と約束中",
-    "en": "",
+    "en": "🤝 Promised to {name}",
     "files": [
       "ui-common.js"
     ],
@@ -30921,7 +30921,7 @@
   },
   {
     "key": "🤝 {text}",
-    "en": "",
+    "en": "🤝 {text}",
     "files": [
       "app.js"
     ],
@@ -30931,7 +30931,7 @@
   },
   {
     "key": "🤝 しばらくは約束できない",
-    "en": "",
+    "en": "🤝 You can't promise anything for a while",
     "files": [
       "ui-common.js"
     ],
@@ -30941,7 +30941,7 @@
   },
   {
     "key": "🤝 ふたりは「好敵手」になった",
-    "en": "",
+    "en": "🤝 The two have become worthy rivals",
     "files": [
       "ui-common.js"
     ],
@@ -30951,7 +30951,7 @@
   },
   {
     "key": "🤝 タッグに変換",
-    "en": "",
+    "en": "🤝 Convert to a Tag Match",
     "files": [
       "ui-render.js"
     ],
@@ -30961,7 +30961,7 @@
   },
   {
     "key": "🤝 レンタル",
-    "en": "",
+    "en": "🤝 Loan",
     "files": [
       "ui-render.js"
     ],
@@ -30971,7 +30971,7 @@
   },
   {
     "key": "🤝 レンタル枠 ({a}/{b})",
-    "en": "",
+    "en": "🤝 Loan slots ({a}/{b})",
     "files": [
       "ui-render.js"
     ],
@@ -30981,7 +30981,7 @@
   },
   {
     "key": "🤝 レンタル確認",
-    "en": "",
+    "en": "🤝 Confirm the Loan",
     "files": [
       "ui-common.js"
     ],
@@ -30991,7 +30991,7 @@
   },
   {
     "key": "🤝 レンタル選手のため管理操作は制限されています",
-    "en": "",
+    "en": "🤝 She is on loan, so management options are limited",
     "files": [
       "ui-common.js"
     ],
@@ -31001,7 +31001,7 @@
   },
   {
     "key": "🤝 レンタル選手（{names}）は前払い契約のため給与なし",
-    "en": "",
+    "en": "🤝 Loaned wrestlers ({names}) are paid up front, so no salary",
     "files": [
       "ui-render.js"
     ],
@@ -31011,7 +31011,7 @@
   },
   {
     "key": "🤝 レンタル（残{n}週）",
-    "en": "",
+    "en": "🤝 On loan ({n} weeks left)",
     "files": [
       "ui-common.js"
     ],
@@ -31021,7 +31021,7 @@
   },
   {
     "key": "🤝 交渉中: {name}（残{w}週）",
-    "en": "",
+    "en": "🤝 In talks: {name} ({w} weeks left)",
     "files": [
       "ui-render.js"
     ],
@@ -31031,7 +31031,7 @@
   },
   {
     "key": "🤝 元同僚",
-    "en": "",
+    "en": "🤝 Former Stablemates",
     "files": [
       "ui-render.js"
     ],
@@ -31041,7 +31041,7 @@
   },
   {
     "key": "🤝 友好",
-    "en": "",
+    "en": "🤝 Friendly",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -31052,7 +31052,7 @@
   },
   {
     "key": "🤝 合同練習の誘い",
-    "en": "",
+    "en": "🤝 An Invitation to Train Together",
     "files": [
       "ui-common.js"
     ],
@@ -31062,7 +31062,7 @@
   },
   {
     "key": "🤝 契約",
-    "en": "",
+    "en": "🤝 Contract",
     "files": [
       "ui-render.js"
     ],
@@ -31072,7 +31072,7 @@
   },
   {
     "key": "🤝 引き抜き交渉",
-    "en": "",
+    "en": "🤝 Poaching Talks",
     "files": [
       "ui-common.js"
     ],
@@ -31082,7 +31082,7 @@
   },
   {
     "key": "🤝 引き留める（あと{n}回）",
-    "en": "",
+    "en": "🤝 Persuade Her to Stay ({n} left)",
     "files": [
       "ui-common.js"
     ],
@@ -31092,7 +31092,7 @@
   },
   {
     "key": "🤝 次の通常興行のメインを約束済み",
-    "en": "",
+    "en": "🤝 Promised the main event of the next regular show",
     "files": [
       "ui-common.js"
     ],
@@ -31102,7 +31102,7 @@
   },
   {
     "key": "🤝 決裁枠が足りない",
-    "en": "",
+    "en": "🤝 Not enough approvals",
     "files": [
       "ui-common.js"
     ],
@@ -31112,7 +31112,7 @@
   },
   {
     "key": "🤝 減俸申し出",
-    "en": "",
+    "en": "🤝 Offer of a Pay Cut",
     "files": [
       "ui-common.js"
     ],
@@ -31122,7 +31122,7 @@
   },
   {
     "key": "🤝 起用の約束",
-    "en": "",
+    "en": "🤝 Booking Promise",
     "files": [
       "ui-render.js"
     ],
@@ -31132,7 +31132,7 @@
   },
   {
     "key": "🤝 起用を約束する",
-    "en": "",
+    "en": "🤝 Promise Her the Booking",
     "files": [
       "ui-common.js"
     ],
@@ -31142,7 +31142,7 @@
   },
   {
     "key": "🤝 選手を引き抜く",
-    "en": "",
+    "en": "🤝 Poach a Wrestler",
     "files": [
       "ui-common.js"
     ],
@@ -31152,7 +31152,7 @@
   },
   {
     "key": "🤝レンタル不可",
-    "en": "",
+    "en": "🤝Not available on loan",
     "files": [
       "ui-render.js"
     ],
@@ -31162,7 +31162,7 @@
   },
   {
     "key": "🤝拮抗{sign}{n}",
-    "en": "",
+    "en": "🤝Even{sign}{n}",
     "files": [
       "ui-render.js"
     ],
@@ -31172,7 +31172,7 @@
   },
   {
     "key": "🤝残{w}週",
-    "en": "",
+    "en": "🤝{w}w left",
     "files": [
       "ui-render.js"
     ],
@@ -31182,7 +31182,7 @@
   },
   {
     "key": "🤝自律",
-    "en": "",
+    "en": "🤝On her own",
     "files": [
       "ui-render.js"
     ],
@@ -31192,7 +31192,7 @@
   },
   {
     "key": "🤫 {name}を激励",
-    "en": "",
+    "en": "🤫 Encourage {name}",
     "files": [
       "ui-common.js"
     ],
@@ -31202,7 +31202,7 @@
   },
   {
     "key": "🤫 {name}を激励済み（OVR+5バフ）",
-    "en": "",
+    "en": "🤫 {name} encouraged (OVR +5 buff)",
     "files": [
       "ui-common.js"
     ],
@@ -31212,7 +31212,7 @@
   },
   {
     "key": "（OVR+5バフ適用）",
-    "en": "",
+    "en": "(OVR +5 buff applied)",
     "files": [
       "ui-common.js"
     ],
@@ -31222,7 +31222,7 @@
   },
   {
     "key": "（S{season}: {prev} → 現在: {cur}）",
-    "en": "",
+    "en": "(S{season}: {prev} → now: {cur})",
     "files": [
       "ui-render.js"
     ],
@@ -31232,7 +31232,7 @@
   },
   {
     "key": "（{age}歳）",
-    "en": "",
+    "en": "(age {age})",
     "files": [
       "ui-render.js"
     ],
@@ -31242,7 +31242,7 @@
   },
   {
     "key": "（{n}件反映中 → 評価+5/試合）",
-    "en": "",
+    "en": "({n} in effect → rating +5 per match)",
     "files": [
       "ui-render.js"
     ],
@@ -31252,7 +31252,7 @@
   },
   {
     "key": "（{n}防衛）",
-    "en": "",
+    "en": "({n} defenses)",
     "files": [
       "ui-render.js"
     ],
@@ -31262,7 +31262,7 @@
   },
   {
     "key": "（{q}入替）",
-    "en": "",
+    "en": "({q} rotation)",
     "files": [
       "ui-render.js"
     ],
@@ -31272,7 +31272,7 @@
   },
   {
     "key": "（このコーチの専門）",
-    "en": "",
+    "en": "(this coach's specialty)",
     "files": [
       "ui-common.js"
     ],
@@ -31282,7 +31282,7 @@
   },
   {
     "key": "（ランク{r}位）",
-    "en": "",
+    "en": "(rank {r})",
     "files": [
       "ui-render.js"
     ],
@@ -31292,7 +31292,7 @@
   },
   {
     "key": "（上限）",
-    "en": "",
+    "en": "(cap)",
     "files": [
       "ui-render.js"
     ],
@@ -31302,7 +31302,7 @@
   },
   {
     "key": "（今季使用済み）",
-    "en": "",
+    "en": "(already used this season)",
     "files": [
       "ui-render.js"
     ],
@@ -31312,7 +31312,7 @@
   },
   {
     "key": "（前払い一括）",
-    "en": "",
+    "en": "(paid up front)",
     "files": [
       "ui-common.js"
     ],
@@ -31322,7 +31322,7 @@
   },
   {
     "key": "（四半期入替）",
-    "en": "",
+    "en": "(quarterly rotation)",
     "files": [
       "ui-render.js"
     ],
@@ -31332,7 +31332,7 @@
   },
   {
     "key": "（残り{n}週）",
-    "en": "",
+    "en": "({n} weeks left)",
     "files": [
       "ui-common.js"
     ],
@@ -31342,7 +31342,7 @@
   },
   {
     "key": "（給与変動: {n}名）",
-    "en": "",
+    "en": "(salary changes: {n})",
     "files": [
       "ui-common.js"
     ],
@@ -31352,7 +31352,7 @@
   },
   {
     "key": "（評価+{n}）",
-    "en": "",
+    "en": "(rating +{n})",
     "files": [
       "ui-common.js"
     ],
@@ -31362,7 +31362,7 @@
   },
   {
     "key": "（軽め）",
-    "en": "",
+    "en": "(light)",
     "files": [
       "ui-common.js"
     ],
@@ -31372,7 +31372,7 @@
   },
   {
     "key": "（重め）",
-    "en": "",
+    "en": "(heavy)",
     "files": [
       "ui-common.js"
     ],
@@ -31382,7 +31382,7 @@
   },
   {
     "key": "（集客×{mult}）",
-    "en": "",
+    "en": "(attendance ×{mult})",
     "files": [
       "ui-render.js"
     ],
@@ -31392,7 +31392,7 @@
   },
   {
     "key": "＋ 展開",
-    "en": "",
+    "en": "+ Expand",
     "files": [
       "ui-render.js"
     ],
@@ -31402,7 +31402,7 @@
   },
   {
     "key": "＋ 枠拡張 ({n}万)",
-    "en": "",
+    "en": "+ Add a Slot (¥{n}0k)",
     "files": [
       "ui-render.js"
     ],
@@ -31412,7 +31412,7 @@
   },
   {
     "key": "＋ 追加",
-    "en": "",
+    "en": "+ Add",
     "files": [
       "ui-render.js"
     ],
@@ -31422,7 +31422,7 @@
   },
   {
     "key": "：互いに力を認め合い、表情が和らいだ",
-    "en": "",
+    "en": ": they acknowledged each other's strength, and their faces softened",
     "files": [
       "ui-common.js"
     ],
@@ -31432,7 +31432,7 @@
   },
   {
     "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
-    "en": "",
+    "en": ": she accepted your ruling, and the spring came back into her step",
     "files": [
       "ui-common.js"
     ],
@@ -31442,7 +31442,7 @@
   },
   {
     "key": "｜ 抗争{n}勝",
-    "en": "",
+    "en": "| {n} feud wins",
     "files": [
       "ui-render.js"
     ],

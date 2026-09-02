@@ -1,5 +1,92 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P3b 翻訳バッチ4（最終）— 非固有名詞行の英訳を完走（2026-09-02・Opus主筆 worktree agent-a2e69cc5f87566fb8）
+
+バッチ1〜3に続く最終弾。開始前にworktreeブランチをmain先端(1add8c5)へfast-forward。台帳 `i18n/ui-ledger.json` の **hasProperNoun=false かつ en が空の残り全部**(669行から登録済みスキップ35行=22+5+8 を除いた **634行**)を対象に `en` 列を充填 → `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成。**これで非固有名詞行が完走した**。
+
+規範はバッチ1〜3と同じ(`docs/i18n-stage-b-p3b-design-v0.1.md` D-B3+用語集シード20語 / `docs/en-tone-bible-draft-v0.1.md` §0最重要則2・§1鉄則・§4-6)。**前任3バッチの新規訳語決定リスト64件を全面継承**。バッチ3が「次バッチで同じ語を使う」と予告した3群も予告どおり適用した(因縁タグ 緩=Casual / ログ絞り込みアイコン 興=🎪・金=💰 / 相関図メーター 親=Bond)。**因縁タグ「熱」は main で Heat→Fire に差し替え済み**(1add8c5)なので Heat は一切使っていない。
+
+### 成果
+- **充填 633行 / スキップ 1行**(台帳総キー3,123・訳文あり**2,998**(96.0%)・未訳125はfail-open)
+- **未訳125の内訳: 固有名詞入り89(D-B5・Keisuke承認待ち)+ 構造問題スキップ36(バッチ1の22+2の5+3の8+今回の1)**。つまり**訳せる非固有名詞行は残っていない**
+
+### スキップ1行(理由付き)
+| index | キー | 理由 |
+|---|---|---|
+| 2865 | 「🌸 総合ベストタッグ（第{n}回」 | **断片連結**。ui-common.js:4011 が `t('🌸 総合ベストタッグ（第{n}回') + '・' + partnerName + t('と') + '）'` と組み立てており、続きの「と」は**バッチ1が既にスキップ済み**のキー。頭だけ訳すと `Best Tag Team Overall (No. 3・パートナー名と）` と日英が混ざるため、fail-openで日本語のまま揃える方を選んだ。原文を `t('🌸 総合ベストタッグ（第{n}回・{partner}と）')` に直せば解決する |
+
+前バッチ同様、**count≥2で健全な呼び出しを持つキーは訳した**。今回は該当なし(残りは全て単独用途か postfix 安全)。
+
+### 新規訳語決定リスト(前任3バッチに無かった分・43件)
+| JA | EN | 補足 |
+|---|---|---|
+| 素質ラダー 逸材 / 超逸材 | Standout / Elite Prospect | 既訳の 素材=Raw・原石=Diamond in the rough・有望=Promising に上2段を接続。**超逸材は既訳の散文「cannot be used on elite prospects」に合わせた** |
+| 衰えの4段 良好/衰え/衰退期/限界 | Good / Fading / Deep in decline / At the limit | 既訳「わずかに衰えの兆候=A faint sign of decline」と単調になるよう並べた。**「限界」は熱量の strained 表示にも同じキーが使われるので両立する語を選定** |
+| 派閥 勢いの3段 隆盛/陰り/衰退 | Surging / Waning / Declining | factions.js の momentum ラベル |
+| 派閥アーキタイプ 自然型 | Organic | 兄弟の ヒール派閥=Heel faction / 正統派=Orthodox / 武闘派=Hard-Hitting に接続。内部名 `neutral` は出さない |
+| 自団体 | Our promotion | 社長視点なので your ではなく our。派生7キーすべて統一 |
+| 通常興行 ・ 興行準備 ・ 興行週 | Regular Show · Show Prep · Show week | D-B3の例示「Show Prep」を正とした |
+| 相関図の関係名5種 緩やかな宿敵/互角の宿敵(既訳)/骨肉の争い/静かな確執/運命に導かれた敵対関係 | A casual nemesis / (An evenly matched nemesis) / A bitter blood feud / Quiet friction / Enemies by fate | 既訳の "An evenly matched nemesis" に語族を合わせた |
+| 認め合うがゆえに、退けない関係 | Too much respect between them to back down | `fated_admiration`(タグ=Fire)の説明文 |
+| 決着まわり 返上/返還/陥落 | Relinquished / Returned / Dethroned | 王座の終わり方3種 |
+| 儀式バナー(字間空け) | THE SUMMIT / THE RETURN / DEFENDED / DISBANDED / OUTBREAK / MATCH RESULT / BAD BLOOD REIGNITED / A QUIET EROSION | 既訳の 戴 冠=CROWNED・下 剋 上=COUP・再 燃=REIGNITED と同じ全大文字。**字間空けは再現しない**(バッチ1方針) |
+| 英日対訳見出し 起 案 / 解 雇 す る 選 手 / 能 力 急 上 昇 | On the Desk / Letting Go / A Sudden Leap | `PROPOSALS ・ 起案`・`RELEASE ・ 解雇する選手`・`STAT SURGE ・ 能力急上昇` は素直に訳すと英語が二重になる。バッチ2の `CANDIDATES ・ 候補者`→The Shortlist と同じ手当て |
+| 1字ラベル 自 | OWN | 自団体を表す tier ピル。他団体は S/A/B/C なので大文字で揃えた |
+| 能力 / 育成 / 練習 | Ability / Development / Practice | 選手詳細タブと週アクションの訳し分け |
+| 観察眼 | Insight | コーチの選手を見抜く力。65px列に収まる語 |
+| 集客力 / 観客動員 | Draw / Attendance | 既訳「🎤集客力順=By Draw」に統一 |
+| 資金 / 赤字 / 黒字 / 資金危機 | Funds / Deficit / in the black / Cash Crisis | 既訳散文の "a cash crisis" に合わせた |
+| 勝ち越し / 負け越し | Winning Record / Losing Record | 既訳「勝ち越し中=Winning record」に接続 |
+| 引き抜き / レンタル / 移籍 | Poaching / Loan / Transfer | 既訳を踏襲(rentalにしない) |
+| 営業試合 | paid show | 「近隣エリアの…営業試合の依頼」の散文と一致させた |
+| 新聞の面 | Page {n} — {section} | 既訳「⚔ 2面 団体比較 = ⚔ Page 2 — Promotion Comparison」に合わせ、1面=Shows / 3面=Chronicle of Grudges / 4面=MVP Race |
+| 肩記事 | Sidebar | 新聞用語。np-v3-kicker の枠名 |
+| 編集記事 | Editorial | 黒田記者の署名記事枠 |
+| 速報(テロップ) | BREAKING | `_telop()` の見出し。TV慣行の大文字 |
+| 交渉プラン 🅰堅実/🅱勝負/🅲本気 | 🅰 Safe / 🅱 Gamble / 🅲 All In | バッチ2の Low Risk/Balanced/High Return とは別UI(planLabels) |
+| 初代王者決定戦 | Inaugural Title Match | 既訳「初代 全国統一王者=First Unified National Champion」と衝突しない語 |
+| 頂上決戦 | Summit Match | 大会のメインを指す語(count=7) |
+| 見送る/見守る/見届ける/静観する | Pass / Watch and wait / See It Through / Watch It Play Out | 社長の「介入しない」4種を訳し分けた |
+| 選択 / 選出 | Select / Pick | 汎用の選択と、代表を選び出す方を分けた |
+| 解除 / 解散 / 解任 / 解雇 | Clear / Disband / Dismiss / Release | 「解」で始まる4語の訳し分け |
+| 詰め込み注意 | Overbooked | カード枠の警告 |
+| 連続上限 | Too many weeks in a row | ⚡強化の連続週上限。既訳「体調不足=Condition too low」の対 |
+| 関節・絞め技 / 関節技 / 飛び技 | Locks & Chokes / Submission / Aerial | 既訳の 打撃=Striking・組技=Grappling・空中戦=High-Flying に接続 |
+| 連携 / 連携技 | Teamwork / Team Move | タッグ実況 |
+| 通算 | Career | 通算{n}戦=career matches / 通算防衛=Career Defenses |
+| 若手ホープ | Rising Hope | 年代記の役割タグ4種の3つ目(既訳: 実力副官=Backbone) |
+| 転籍 | Faction move | 移籍(団体間)=Transfer と訳し分ける |
+| 追走中 | Chasing | 既訳「王者保持=Title held」の対 |
+| 善悪 | Alignment | face/heel軸。内部語を出さない |
+| 拮抗 | Even | 集客内訳の parity ボーナス |
+| 見返しモード | Out to prove them wrong | 直訳(revenge mode)を避けた |
+| 課題: | Needs work: | 既訳「勝ち筋:=Path to victory:」「リスク:=Risk:」と同じ記者文体 |
+| 補強提案: | Where to strengthen: | 同上(黒田の論説3項目の3つ目) |
+| 表示強度 | Min. strength | 相関図の表示しきい値スライダー |
+| 開幕 | Opening | オフシーズン工程(Report/Draft/Transfers/Opening)の最終段 |
+| 📊 総合(財務タブ) | 📊 Summary | **既訳の「総合」=OVR(選手表のOVR列見出し)と衝突する同字異義**。財務画面のタブ(summary/income/expense/salary/orgpop)なので OVR ではなく Summary を当てた。生成物 lang-en.js を目視して発見・修正 |
+
+### 表記の整理
+バッチ1〜3の正規化を継承(`・`→ 箇条書きは `•` / 区切りは `·`、`｜`→`|`、`／`→`/`、`（）`→`()`、全角空白→半角)。米綴り統一。直線アポストロフィ `'`。絵文字・記号(⚡⚔→⇄★等)は原文の位置のまま。通貨も継承(`{v}万`→`¥{v}0k` / キー外に数字がある単独「万」→`×10k`)。
+
+**表記の追加判断1件**: 単独キー「計」は `${t('計')}¥${total}万` と**直後に金額が続く**ため、`"Total"` だと `Total¥120` と潰れる。**末尾に半角スペースを入れた `"Total "` を採用**した(唯一の意図的な末尾空白。適用スクリプトの警告に1件だけ出る)。
+
+### 検証(全項目実施)
+- `node test/i18n-build-dict.js` — 機械検査green(プレースホルダ完全性/重複キー/日本語残り)。`src/lang-en.js` 生成: 総キー3,123・訳文あり**2,998**・未訳125
+- `node --check src/lang-en.js` — 成功
+- `node test/ja-golden.js` — **完全一致**(lines=11233・hash `6b3d05c8daa3d93f62c7e2fcb3b21e7d6ffebc6dc1c4951919a229a2d4b8c1b3` 不変)
+- `node test/i18n-ratchet.js` — **増加なし**(files=31 totalJaStrings=28075)
+- `npm test` — **260/260 PASS**
+- `npm run test:ui:walkthrough` — **PASS**(328操作・**issues 0**・季末season=2 week=1到達・duration 188.4s・recovered-by-retry 0・digest 1052faa82eaf7991=バッチ3と同一)。※「📊 総合」修正の前後で2本走らせ、どちらもPASS・同digest
+- **ENモード実動作の抜き取り確認**: vm上で `src/i18n.js` + `src/lang-en.js` を実ロードし `setLang('en')` 後の `t()` を検証(使い捨てスクリプト)。**代表20キー**(短ラベル/ボタン/表ヘッダ/1字ピル/1字タグ Casual/1字アイコン 🎪・💰/1字メーター Bond/儀式バナー2種/英日対訳見出し/プレースホルダ1・2・4個/HTML `<strong>`・`<br>`/⚡絵文字入り/通貨2種/`\n`エスケープ入り)+ **fail-open 4件**(既存スキップ「位」「天 頂 戦」・今回のスキップ「🌸 総合ベストタッグ（第{n}回」・台帳に無い文字列がいずれも原文のまま返り、`WM_I18N._misses` に**4件**記録)+ **ja復帰2件** の**計27件すべてOK**
+- 適用スクリプト側でも機械検査を実施: 634行の被覆確認(633訳+1スキップ、過不足なし・重複なし)/プレースホルダ集合のja-en一致/en内の日本語残り/全角約物混入/英綴り(colour・centre等)混入/**HTMLタグ集合の一致**/記号・絵文字の個数一致(`¥`・`🎪`・`💰`と`・`→`·`変換のみ増加を許可、減少は違反)/`\n`エスケープ数の一致 — **違反0**。台帳のCRLF構造改行と末尾改行を保存して書き戻し、diffは**633行の置換のみ**(`633 insertions(+), 633 deletions(-)`)
+
+### 残課題
+- **hasProperNoun=false の未訳はゼロ。次工程は固有名詞89キー**(`docs/en-proper-nouns-draft-v0.1.md` のKeisuke承認が律速)
+- **構造問題スキップは通算36行**(バッチ1:22 / 2:5 / 3:8 / 4:1)。いずれも**原文側の再テンプレート化**が要る。**P3a積み残し台帳(`docs/i18n-stage-a-p3a-design-v0.1.md`)への追記はバッチ2・3と同様に本バッチの編集対象外としたため未実施** — 4バッチ分をまとめて起票する独立タスクが必要(断片連結の頭・marker本体・序数の「位」「案」・今回の「🌸 総合ベストタッグ」)
+- 通貨「万」の表記(`¥{v}0k` / `×10k` / 今回の `Total `)はP6の数値フォーマッタ裁定へ統合したい(バッチ1から継続)
+- 全2,998行のFableレビュー(D-B3適合・翻訳調検査)とネイティブスポットチェックは未実施
+
 ## 🌐 Stage B P3b 翻訳バッチ3 — UI文字列800キーの英訳（2026-09-02・Opus主筆 worktree agent-a3098fa9023629808）
 
 バッチ1・2に続く第3弾。開始前にworktreeブランチをmain先端(8a5b63d)へfast-forward。台帳 `i18n/ui-ledger.json` の **hasProperNoun=false かつ en が空の行のうち、登録済みスキップ27件(バッチ1の22+バッチ2の5)を除いた先頭800行**(台帳index 1650〜2470)を対象に `en` 列を充填 → `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成。
