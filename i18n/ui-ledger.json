@@ -61,7 +61,7 @@
   },
   {
     "key": " / 目標3,000万",
-    "en": " / target ¥30,000k",
+    "en": " / target ¥30M",
     "files": [
       "ui-render.js"
     ],
@@ -131,7 +131,7 @@
   },
   {
     "key": "+{v}万",
-    "en": "+¥{v}0k",
+    "en": "+¥{v:man}",
     "files": [
       "ui-render.js"
     ],
@@ -201,7 +201,7 @@
   },
   {
     "key": "-{v}万",
-    "en": "-¥{v}0k",
+    "en": "-¥{v:man}",
     "files": [
       "ui-render.js"
     ],
@@ -744,7 +744,7 @@
   },
   {
     "key": "<strong style=\"color:var(--gold)\">🏛️ 地域振興助成金</strong><br>\r\n現在の支給額: <strong style=\"color:#2ecc71\">+{subsidyAmt}万/週</strong>（自動）<br>\r\n<span style=\"color:#aaa\">人気があと<strong style=\"color:#fff\">{remaining}pt</strong>上がると打ち切り</span><br><br>\r\n<span style=\"color:#aaa;font-size:11px\">打ち切り後はスポンサー収入が<br>10万 → <strong style=\"color:#fff\">30万/週</strong>に増えます</span>",
-    "en": "<strong style=\"color:var(--gold)\">🏛️ Regional Development Grant</strong><br>\r\nCurrent payment: <strong style=\"color:#2ecc71\">+¥{subsidyAmt}0k/week</strong> (automatic)<br>\r\n<span style=\"color:#aaa\">Ends once popularity rises another <strong style=\"color:#fff\">{remaining}pt</strong></span><br><br>\r\n<span style=\"color:#aaa;font-size:11px\">After it ends, sponsor income rises from<br>¥100k to <strong style=\"color:#fff\">¥300k/week</strong></span>",
+    "en": "<strong style=\"color:var(--gold)\">🏛️ Regional Development Grant</strong><br>\r\nCurrent payment: <strong style=\"color:#2ecc71\">+¥{subsidyAmt:man}/week</strong> (automatic)<br>\r\n<span style=\"color:#aaa\">Ends once popularity rises another <strong style=\"color:#fff\">{remaining}pt</strong></span><br><br>\r\n<span style=\"color:#aaa;font-size:11px\">After it ends, sponsor income rises from<br>¥100k to <strong style=\"color:#fff\">¥300k/week</strong></span>",
     "files": [
       "ui-render.js"
     ],
@@ -1730,7 +1730,7 @@
   },
   {
     "key": "{cost}万×人数",
-    "en": "¥{cost}0k × head count",
+    "en": "¥{cost:man} × head count",
     "files": [
       "ui-render.js"
     ],
@@ -1770,7 +1770,7 @@
   },
   {
     "key": "{date} ｜ 資金{funds}万 ｜ {saved}",
-    "en": "{date} | Funds ¥{funds}0k | {saved}",
+    "en": "{date} | Funds ¥{funds:man} | {saved}",
     "files": [
       "ui-render.js"
     ],
@@ -1780,7 +1780,7 @@
   },
   {
     "key": "{date} ｜ 資金{funds}万 ｜ 人気{pop} ｜ 所属{n}名",
-    "en": "{date} | Funds ¥{funds}0k | Popularity {pop} | Roster {n}",
+    "en": "{date} | Funds ¥{funds:man} | Popularity {pop} | Roster {n}",
     "files": [
       "ui-render.js"
     ],
@@ -1820,7 +1820,7 @@
   },
   {
     "key": "{funds}万",
-    "en": "¥{funds}0k",
+    "en": "¥{funds:man}",
     "files": [
       "ui-render.js"
     ],
@@ -3160,7 +3160,7 @@
   },
   {
     "key": "{name}（キャパ {cap}人 ／ 費用 {cost}万）",
-    "en": "{name} (capacity {cap} / cost ¥{cost}0k)",
+    "en": "{name} (capacity {cap} / cost ¥{cost:man})",
     "files": [
       "ui-render.js"
     ],
@@ -3783,7 +3783,7 @@
   },
   {
     "key": "{sign}{v}万",
-    "en": "{sign}¥{v}0k",
+    "en": "{sign}¥{v:man}",
     "files": [
       "ui-render.js"
     ],
@@ -3893,7 +3893,7 @@
   },
   {
     "key": "{v}万",
-    "en": "¥{v}0k",
+    "en": "¥{v:man}",
     "files": [
       "ui-render.js"
     ],
@@ -4985,7 +4985,7 @@
   },
   {
     "key": "⚔ 他団体が注目 — 競合時: {n}万",
-    "en": "⚔ Rival promotions are watching — if contested: ¥{n}0k",
+    "en": "⚔ Rival promotions are watching — if contested: ¥{n:man}",
     "files": [
       "ui-common.js"
     ],
@@ -6220,7 +6220,7 @@
   },
   {
     "key": "あと少し！ 4週連続で黒字を出し、資金3,000万以上を維持すれば経営安定化クリア！",
-    "en": "Almost there! Turn a profit four weeks running and hold funds at ¥30,000k or more to clear the stability goal!",
+    "en": "Almost there! Turn a profit four weeks running and hold funds at ¥30M or more to clear the stability goal!",
     "files": [
       "ui-render.js"
     ],
@@ -8204,7 +8204,7 @@
   },
   {
     "key": "コスト: {cost}万",
-    "en": "Cost: ¥{cost}0k",
+    "en": "Cost: ¥{cost:man}",
     "files": [
       "ui-render.js"
     ],
@@ -10885,7 +10885,7 @@
   },
   {
     "key": "一時金{a}万 + 給与+{b}万/週",
-    "en": "Signing bonus ¥{a}0k + salary +¥{b}0k/week",
+    "en": "Signing bonus ¥{a:man} + salary +¥{b:man}/week",
     "files": [
       "ui-common.js"
     ],
@@ -13870,7 +13870,7 @@
   },
   {
     "key": "出場報酬: {v}万円",
-    "en": "Appearance fee: ¥{v}0k",
+    "en": "Appearance fee: ¥{v:man}",
     "files": [
       "ui-render.js"
     ],
@@ -14625,7 +14625,7 @@
   },
   {
     "key": "収入{a}万 / 支出{b}万",
-    "en": "Income ¥{a}0k / expenses ¥{b}0k",
+    "en": "Income ¥{a:man} / expenses ¥{b:man}",
     "files": [
       "ui-render.js"
     ],
@@ -16254,7 +16254,7 @@
   },
   {
     "key": "契約金: ¥{n}万",
-    "en": "Signing fee: ¥{n}0k",
+    "en": "Signing fee: ¥{n:man}",
     "files": [
       "ui-render.js"
     ],
@@ -17465,7 +17465,7 @@
   },
   {
     "key": "引き留め費: -{cost}万{note}",
-    "en": "Retention cost: -¥{cost}0k{note}",
+    "en": "Retention cost: -¥{cost:man}{note}",
     "files": [
       "ui-render.js"
     ],
@@ -17898,7 +17898,7 @@
   },
   {
     "key": "成功時　給与+{n}万/週",
-    "en": "If it works: salary +¥{n}0k/week",
+    "en": "If it works: salary +¥{n:man}/week",
     "files": [
       "ui-common.js"
     ],
@@ -19758,7 +19758,7 @@
   },
   {
     "key": "最終額: ¥{n}万 (R{round})",
-    "en": "Final: ¥{n}0k (R{round})",
+    "en": "Final: ¥{n:man} (R{round})",
     "files": [
       "ui-render.js"
     ],
@@ -20092,7 +20092,7 @@
   },
   {
     "key": "本人は強く報われたと感じる　給与+{n}万/週",
-    "en": "She feels genuinely rewarded — salary +¥{n}0k/week",
+    "en": "She feels genuinely rewarded — salary +¥{n:man}/week",
     "files": [
       "ui-common.js"
     ],
@@ -20485,7 +20485,7 @@
   },
   {
     "key": "次の枠拡張: {n}万",
-    "en": "Next slot expansion: ¥{n}0k",
+    "en": "Next slot expansion: ¥{n:man}",
     "files": [
       "ui-render.js"
     ],
@@ -22430,7 +22430,7 @@
   },
   {
     "key": "特別治療（-200万）",
-    "en": "Special treatment (-¥2,000k)",
+    "en": "Special treatment (-¥2M)",
     "files": [
       "ui-common.js"
     ],
@@ -23508,7 +23508,7 @@
   },
   {
     "key": "移籍金: +{fee}万",
-    "en": "Transfer fee: +¥{fee}0k",
+    "en": "Transfer fee: +¥{fee:man}",
     "files": [
       "ui-render.js"
     ],
@@ -24517,7 +24517,7 @@
   },
   {
     "key": "給与 {salary}万/週",
-    "en": "Salary ¥{salary}0k/week",
+    "en": "Salary ¥{salary:man}/week",
     "files": [
       "ui-render.js"
     ],
@@ -25848,7 +25848,7 @@
   },
   {
     "key": "解雇: {name} / 契約金: {cost}万",
-    "en": "Released: {name} / Signing fee: ¥{cost}0k",
+    "en": "Released: {name} / Signing fee: ¥{cost:man}",
     "files": [
       "app.js"
     ],
@@ -25858,7 +25858,7 @@
   },
   {
     "key": "解雇: {name} / 移籍金: {cost}万",
-    "en": "Released: {name} / Transfer fee: ¥{cost}0k",
+    "en": "Released: {name} / Transfer fee: ¥{cost:man}",
     "files": [
       "app.js"
     ],
@@ -26426,7 +26426,7 @@
   },
   {
     "key": "資金 {funds}万",
-    "en": "Funds ¥{funds}0k",
+    "en": "Funds ¥{funds:man}",
     "files": [
       "ui-render.js"
     ],
@@ -26456,7 +26456,7 @@
   },
   {
     "key": "資金が不足しています(必要: {n}万)",
-    "en": "You do not have enough funds (needs ¥{n}0k)",
+    "en": "You do not have enough funds (needs ¥{n:man})",
     "files": [
       "app.js"
     ],
@@ -26487,7 +26487,7 @@
   },
   {
     "key": "資金が足りません（必要: {cost}万）",
-    "en": "Not enough funds (needs ¥{cost}0k)",
+    "en": "Not enough funds (needs ¥{cost:man})",
     "files": [
       "app.js"
     ],
@@ -27093,7 +27093,7 @@
   },
   {
     "key": "週合計 +{n}万",
-    "en": "Week total +¥{n}0k",
+    "en": "Week total +¥{n:man}",
     "files": [
       "factions.js"
     ],
@@ -28101,7 +28101,7 @@
   },
   {
     "key": "雇用 ({fee}万 / ⚡{dp})",
-    "en": "Hire (¥{fee}0k / ⚡{dp})",
+    "en": "Hire (¥{fee:man} / ⚡{dp})",
     "files": [
       "ui-render.js"
     ],
@@ -28122,7 +28122,7 @@
   },
   {
     "key": "雇用中: {n}/{max}名 ｜ スタッフ給与合計: {salary}万/週 ｜ {slotText}",
-    "en": "On staff: {n}/{max} | Total staff salaries: ¥{salary}0k/week | {slotText}",
+    "en": "On staff: {n}/{max} | Total staff salaries: ¥{salary:man}/week | {slotText}",
     "files": [
       "ui-render.js"
     ],
@@ -28437,7 +28437,7 @@
   },
   {
     "key": "黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）",
-    "en": "You're in the black! Keep it up for {n} weeks and you clear the goal! (funds now: ¥{funds}0k{goalNote})",
+    "en": "You're in the black! Keep it up for {n} weeks and you clear the goal! (funds now: ¥{funds:man}{goalNote})",
     "files": [
       "ui-render.js"
     ],
@@ -28769,7 +28769,7 @@
   },
   {
     "key": "🎓 {name}がコーチとして加入！（雇用費: {fee}万、決裁枠 -{dp}）",
-    "en": "🎓 {name} has joined as a coach! (hiring fee: ¥{fee}0k, approvals -{dp})",
+    "en": "🎓 {name} has joined as a coach! (hiring fee: ¥{fee:man}, approvals -{dp})",
     "files": [
       "app.js"
     ],
@@ -28779,7 +28779,7 @@
   },
   {
     "key": "🎓 コーチ枠が{n}枠に拡張されました！（投資: {cost}万）",
-    "en": "🎓 Your coach slots have grown to {n}! (investment: ¥{cost}0k)",
+    "en": "🎓 Your coach slots have grown to {n}! (investment: ¥{cost:man})",
     "files": [
       "app.js"
     ],
@@ -28929,7 +28929,7 @@
   },
   {
     "key": "🎲 通常額で勝負 ({n}万 / 勝率{rate}%)",
-    "en": "🎲 Bid the standard amount (¥{n}0k / {rate}% odds)",
+    "en": "🎲 Bid the standard amount (¥{n:man} / {rate}% odds)",
     "files": [
       "ui-render.js"
     ],
@@ -29179,7 +29179,7 @@
   },
   {
     "key": "🏥 {cur}週 → {reduced}週に短縮（-{cost}万）",
-    "en": "🏥 {cur} weeks → {reduced} weeks (-¥{cost}0k)",
+    "en": "🏥 {cur} weeks → {reduced} weeks (-¥{cost:man})",
     "files": [
       "app.js"
     ],
@@ -29470,7 +29470,7 @@
   },
   {
     "key": "💰 上乗せ確定獲得 ({n}万)",
-    "en": "💰 Pay extra to lock her in (¥{n}0k)",
+    "en": "💰 Pay extra to lock her in (¥{n:man})",
     "files": [
       "ui-render.js"
     ],
@@ -29530,7 +29530,7 @@
   },
   {
     "key": "💰{v}万",
-    "en": "💰¥{v}0k",
+    "en": "💰¥{v:man}",
     "files": [
       "ui-render.js"
     ],
@@ -29981,7 +29981,7 @@
   },
   {
     "key": "📝 契約金: {cost}万 [{tier}]",
-    "en": "📝 Signing fee: ¥{cost}0k [{tier}]",
+    "en": "📝 Signing fee: ¥{cost:man} [{tier}]",
     "files": [
       "app.js"
     ],
@@ -31253,7 +31253,7 @@
   },
   {
     "key": "＋ 枠拡張 ({n}万)",
-    "en": "+ Add a Slot (¥{n}0k)",
+    "en": "+ Add a Slot (¥{n:man})",
     "files": [
       "ui-render.js"
     ],

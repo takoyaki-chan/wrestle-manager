@@ -15,7 +15,8 @@
 //
 //  ■ 機械検査(1件でも違反があれば exit 1・lang-en-templates.js は書き換えない)
 //    1. プレースホルダ完全性: en内の{name}集合がja(key)内の{name}集合と完全一致
-//       (test/i18n-build-dict.js D-B4-1と同じ)
+//       (test/i18n-build-dict.js D-B4-1と同じ。Stage B P6 D-P6-5のフィルタ記法
+//       `{name:filter}` にも対応し、比較は基底名で行う — `{cost:man}`と`{cost}`は同一視)
 //    2. 重複キー検出: 台帳内に同一keyが複数存在しないか
 //    3. en内の日本語残り検出: 翻訳し忘れ検出(絵文字はBMP外のため誤検出しないレンジを使う。
 //       test/i18n-build-dict.js のJA_RE修正コメント参照)
@@ -38,7 +39,9 @@ const ROOT = path.join(__dirname, '..');
 const LEDGER_PATH = path.join(ROOT, 'i18n', 'template-ledger.json');
 const OUT_PATH = path.join(ROOT, 'src', 'lang-en-templates.js');
 
-const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
+// Stage B P6 D-P6-5: `{name}` と `{name:filter}` の両方にマッチし、キャプチャグループ1に
+// 基底名(filter抜きの名前)を取る(test/i18n-build-dict.jsと同じ拡張)。
+const PLACEHOLDER_RE = /\{([A-Za-z_][A-Za-z0-9_]*)(?::[A-Za-z_][A-Za-z0-9_]*)?\}/g;
 // test/i18n-build-dict.js と同じ理由・同じレンジ(BMP外の絵文字を「日本語残り」と
 // 誤検出しないよう、サロゲート範囲を含む豈-﫿(U+8C48-U+FAFF)ではなく
 // 互換漢字の正しい始点U+F900からのレンジを使う)。
@@ -61,7 +64,7 @@ function placeholderSet(str) {
   const set = new Set();
   let m;
   PLACEHOLDER_RE.lastIndex = 0;
-  while ((m = PLACEHOLDER_RE.exec(str))) set.add(m[0]);
+  while ((m = PLACEHOLDER_RE.exec(str))) set.add(m[1]); // 基底名のみ集合に入れる(D-P6-5)
   return set;
 }
 

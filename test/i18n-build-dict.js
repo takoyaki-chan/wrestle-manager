@@ -10,6 +10,8 @@
 //
 //  ■ 機械検査(D-B4。1件でも違反があれば exit 1・lang-en.js は書き換えない)
 //    1. プレースホルダ完全性: en内の{name}集合がja(key)内の{name}集合と完全一致
+//       (Stage B P6 D-P6-5: `{name:filter}` はフィルタ記法。ja側は常に`{name}`のままで
+//       良い設計のため、比較は「基底名」で行う — `{cost:man}` と `{cost}` は同一視する)
 //    2. 重複キー検出: 台帳内に同一keyが複数存在しないか
 //    3. en内の日本語残り検出: 翻訳し忘れ(原文の日本語文字がそのまま残っている)を検出
 //
@@ -30,7 +32,9 @@ const ROOT = path.join(__dirname, '..');
 const LEDGER_PATH = path.join(ROOT, 'i18n', 'ui-ledger.json');
 const OUT_PATH = path.join(ROOT, 'src', 'lang-en.js');
 
-const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
+// Stage B P6 D-P6-5: `{name}` と `{name:filter}` の両方にマッチし、キャプチャグループ1に
+// 基底名(filter抜きの名前)を取る。プレースホルダ集合の比較は常にこの基底名で行う。
+const PLACEHOLDER_RE = /\{([A-Za-z_][A-Za-z0-9_]*)(?::[A-Za-z_][A-Za-z0-9_]*)?\}/g;
 // JA 判定(ひらがな/カタカナ/CJK統合漢字+拡張A/CJK互換漢字/半角カナ)をコードポイントで明示する。
 // test/i18n-scan.js は同じ意図のレンジを生文字で書いているが、「豈-﫿」の始点が
 // 互換漢字 U+F900 ではなく通常漢字 U+8C48 に潰れており、実効レンジが U+8C48〜U+FAFF まで
@@ -45,7 +49,7 @@ function placeholderSet(str) {
   const set = new Set();
   let m;
   PLACEHOLDER_RE.lastIndex = 0;
-  while ((m = PLACEHOLDER_RE.exec(str))) set.add(m[0]);
+  while ((m = PLACEHOLDER_RE.exec(str))) set.add(m[1]); // 基底名のみ集合に入れる(D-P6-5)
   return set;
 }
 
