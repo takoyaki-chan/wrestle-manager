@@ -89,7 +89,8 @@ section('3. チーム確定・エントリー確定は決定音で鳴る', () =>
 
 section('4. お金が出ていく場面で収入音を使っていない', () => {
   // コーチ枠拡張は「投資」。出ていく金なので支出(MG04)
-  const at = app.indexOf('コーチ枠を${result.coachSlots}枠に拡張');
+  // i18n Stage A P3a-3: 文言はGAMELOG_TEMPLATES(data.js)へ移設済み。app.js側はtypeキーで特定する。
+  const at = app.indexOf("type: 'coach_slot_expanded'");
   assert.ok(at > 0, 'コーチ枠拡張の箇所が見つからない');
   const chunk = app.slice(at, at + 300);
   assert.ok(/Audio\.play\('spend'\)/.test(chunk),

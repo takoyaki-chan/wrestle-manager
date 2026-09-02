@@ -7,7 +7,7 @@ const path = require('path');
 const rootDir = path.resolve(__dirname, '..');
 const uiSource = fs.readFileSync(path.join(rootDir, 'src', 'ui-common.js'), 'utf8').replace(/\r\n/g, '\n');
 const appSource = fs.readFileSync(path.join(rootDir, 'src', 'app.js'), 'utf8').replace(/\r\n/g, '\n');
-const { AWAY_CHALLENGE_RESULT_LINES } = require('../src/data.js');
+const { AWAY_CHALLENGE_RESULT_LINES, gameLogEntryText } = require('../src/data.js');
 
 function functionSource(source, name) {
   const start = source.indexOf(`function ${name}`);
@@ -246,13 +246,20 @@ assert.ok(modalSource.includes("result.teamWin !== 'draw'"), '決着だけ2拍�
 assert.ok(modalSource.includes('_showChallengeRequestResultSequence(card, result, state, onClose)'), '結果モーダル呼び出しを2拍へ配線する');
 assert.ok(!modalSource.includes('_factionReporterStrip(state, coachLine)'), 'コーチ要約を結果モーダルから撤去する');
 
+// i18n Stage A P3a-3: _challengeRequestCoachLogLineは{type,data}のgameLogエントリ(D-G1)を
+// 返すようになった。gameLogEntryText(data.js・GAMELOG_TEMPLATES経由)で表示時整形した
+// 文字列が、移設前と1バイトも変わっていないことを検算する。
 const coachLine = new Function(`${functionSource(appSource, '_challengeRequestCoachLogLine')}; return _challengeRequestCoachLogLine;`)();
+const directEntry = coachLine(state, card, decidedResult);
+assert.strictEqual(directEntry.type, 'challenge_request_coach_summary');
+assert.strictEqual(directEntry.data.variant, 'directWon');
 assert.strictEqual(
-  coachLine(state, card, decidedResult),
+  gameLogEntryText(directEntry),
   '社長、挑戦試合 2 — 1。A代表選手が呼んだ舞台、しっかり制しました。'
 );
-const inverseLog = coachLine(state, { ...card, isInverse: true, requesterOrgName: '敵団体' }, { ...decidedResult, teamWin: 'B', winsA: 1, winsB: 2 });
-assert.strictEqual(inverseLog, '社長、挑戦試合 2 — 1。敵団体のA代表選手の越境挑戦、退けました。');
-assert.ok(appSource.includes('gameLog: [...(s.gameLog || []), coachLine]'), 'コーチ要約をgameLogへ移す');
+const inverseEntry = coachLine(state, { ...card, isInverse: true, requesterOrgName: '敵団体' }, { ...decidedResult, teamWin: 'B', winsA: 1, winsB: 2 });
+assert.strictEqual(inverseEntry.data.variant, 'inverseWon');
+assert.strictEqual(gameLogEntryText(inverseEntry), '社長、挑戦試合 2 — 1。敵団体のA代表選手の越境挑戦、退けました。');
+assert.ok(appSource.includes('if (coachLine) s = { ...s, gameLog: [...(s.gameLog || []), coachLine] };'), 'コーチ要約をgameLogへ移す');
 
 console.log('away-challenge-result-sequence-test: ok');

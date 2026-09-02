@@ -86,6 +86,17 @@ Engine.factions = {
     return '衰退';
   },
 
+  // i18n Stage A P3a-3 D-G5: getMomentumLabelと同じ閾値から中立キーを返す。
+  // ui-render.jsの_dfcMomentumKeyは表示ラベルを再比較する逆引きだったため、
+  // 上流であるここに中立キーを併記し、逆引きを不要にする(表示ラベル自体は変更しない)。
+  getMomentumKey(momentum) {
+    if (momentum >= 60) return 'boom';
+    if (momentum >= 30) return 'rise';
+    if (momentum >= -29) return 'calm';
+    if (momentum >= -59) return 'dim';
+    return 'fade';
+  },
+
   getHostilityLabel(hostility) {
     if (hostility >= 80) return '血みどろ';
     if (hostility >= 60) return '泥沼';
@@ -104,6 +115,22 @@ Engine.factions = {
     if (avg >= 50) return '安定';
     if (avg >= 40) return '揺らぎ';
     return '崩壊寸前';
+  },
+
+  // i18n Stage A P3a-3 D-G5: getSolidarityLabelと同じ閾値から中立キーを返す。
+  // 旧ui-render.js(_dfcSolidarityKey)は表示ラベルを再比較して'strong'/'stable'/'wobble'/
+  // それ以外→'crumble'にフォールバックしていた(「平穏」もこの当たり判定に落ちて'crumble'
+  // 扱いになっていた)。ここでは挙動を1つも変えないため、そのフォールバックまで再現する。
+  getSolidarityKey(faction, state) {
+    if (!faction || !state) return 'crumble';
+    const leaderId = faction.leaderId;
+    const others = faction.memberIds.filter(id => id !== leaderId);
+    if (!others.length) return 'crumble';
+    const avg = this._avgBond(state, leaderId, others);
+    if (avg >= 70) return 'strong';
+    if (avg >= 50) return 'stable';
+    if (avg >= 40) return 'wobble';
+    return 'crumble';
   },
 
   // ── §2.1 忠誠型発生条件 ─────────────────────────────────────

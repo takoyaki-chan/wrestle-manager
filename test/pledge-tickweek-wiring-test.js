@@ -88,9 +88,12 @@ section('判定機会がないまま12週で失効し、trust は動かない(�
   assert.ok(Math.abs((f.trust != null ? f.trust : 50) - trustBefore) < 3,
     `失効で trust が大きく動いた(${trustBefore} → ${f.trust}) — 失効は無罰のはず`);
 
-  const log = (after.gameLog || []).join('\n');
+  // i18n Stage A P3a-3: gameLogは{type,data}形式(D-G1)。gameLogEntryText(data.js)で
+  // 表示時整形してから見る(D-G2の二刀流 — 旧文字列エントリもそのまま通る)。
+  const resolvedEntries = (after.gameLog || []).map(l => gameLogEntryText(l));
+  const log = resolvedEntries.join('\n');
   assert.ok(/約束/.test(log) && /流れた/.test(log), '失効のログ1行が残っていない');
-  console.log('        失効ログ: ' + (after.gameLog || []).filter(l => /約束/.test(l)).slice(-1)[0]);
+  console.log('        失効ログ: ' + resolvedEntries.filter(l => /約束/.test(l)).slice(-1)[0]);
 });
 
 section('_pendingPledgeResult は1週かぎりで、次の tickWeek で必ず消える', () => {

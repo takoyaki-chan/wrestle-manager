@@ -30697,6 +30697,187 @@ const CREDITS = {
   music: [],
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// i18n Stage A P3a-3: gameLog構造化(D-G1〜D-G5)。type(英数スネークキー)→完全文
+// テンプレ表。表示時は gameLogEntryText(entry) を通す(data.js末尾で定義)。
+// 値が文字列ならそのまま完全文テンプレ、値がオブジェクトなら {variant: 完全文} の
+// ネスト表(entry.data.variant で選ぶ)。プレースホルダは fillTemplateVars と同じ {name} 形式。
+// 旧文字列エントリ(このテーブル導入前に生成されたgameLog)はこのテーブルを経由せず
+// そのまま表示される(D-G2の二刀流)。Engineが直接returnするmsg/eventsの
+// 素通し文字列(例: Engine.title.validateChampionのmsg)もこのテーブルの対象外
+// (Engine側は既存のまま日本語文字列を返し続ける — 触らない)。
+// ─────────────────────────────────────────────────────────────────────────────
+const GAMELOG_TEMPLATES = {
+  // ── app.js: セーブ/ロード/マイグレーション ──
+  summit_migration_cleared: '🏆 旧形式の単独頂上決戦はPPV GRAND FINALへ統合済みのため、予約を解除しました',
+  balance_v15_org_pop_rescale: '📢 バランス調整(v1.5): 団体人気を{oldOrgPop}→{newOrgPop}に再調整しました（×0.7 リスケール）',
+  system_update_v20_reaction: '📢 システム更新(v2.0): 選手の反応表現を更新しました',
+  save_repair_applied: 'セーブデータ自動修復: {changes}',
+  save_slot: '💾 スロット{slot}にセーブしました',
+  load_slot: '📂 スロット{slot}からロードしました',
+  load_from_file: '📂 ファイルからデータを読み込みました',
+
+  // ── app.js: 契約/解雇/コーチ ──
+  fighter_signed: '📝 {name}と契約（契約金: {cost}万 [{tierLabel}]{scoutDiscSuffix}）',
+  fighter_signed_overflow: '📝 {name}と契約（契約金: {cost}万）[{tierLabel}]{scoutDiscSuffix}',
+  elite_ticket_used: '🎫 逸材特別交渉枠を使用しました',
+  fighter_released: '📤 {name}を解雇',
+  fighter_released_claimed: 'Transfer: {name} -> {destOrg}{ejectedSuffix}',
+  scout_signed: '📝 スカウト獲得 {name} [{tierLabel}] 契約金{cost}万',
+  poach_negotiate_success: '🎉 {name}の引き抜き交渉成功！（-{cost}万）',
+  scout_acquired: '🔍 スカウト獲得: {name} [{tierLabel}] 契約金{cost}万',
+  scout_lost_to_org: '🔍 競り負け: {name}は{orgName}へ',
+  scout_lost_to_fa: '🔍 競り負け: {name}はフリーエージェントへ',
+  scout_lost_to_fa_dup: '🔍 競り負け: {name}はフリーエージェントへ（重複のため登録省略）',
+  scout_skipped: '🔍 スカウト見送り: {name}',
+  scout_activity_complete: '🔍 スカウト活動完了: {picksCount}名獲得',
+  contract_renewal_complete: '📋 契約更新完了: 残留{stayCount}名 退団{departCount}名',
+  coach_hired: '🎓 {name}をコーチとして雇用（雇用費: {fee}万、決裁枠 -{dpCost}）',
+  coach_slot_expanded: '🎓 コーチ枠を{slots}枠に拡張（投資: {cost}万）',
+  coach_fired: '❌ {name}を解雇',
+
+  // ── app.js: 興行結果(_finalizeShowImpl) ──
+  intrusion_title_taken: '😱 {fromOrgName}の{intruderName}に王座を奪われた！ 王座は空位に… ヒート{penalty}、対戦pt-{intrusionPt}',
+  intrusion_champion_defended: '👑 {champName}が乱入者{intruderName}を退けた！ 団体人気+2、対戦pt+{intrusionPt}',
+  title_reclaim_success: '🏆 王座奪還！ {challengerName} が {orgName} から団体王座を取り戻した！',
+  title_reclaim_failure: '💔 {challengerName} の奪還挑戦は失敗。{orgName} が団体王座を防衛した。',
+  venue_heat_crowd: '🏟️ {crowdLabel}（観客熱 {heatText}）',
+  rivalry_resolution: '{emoji} {winnerName} vs {loserName} — {label}！ 両者人気+{popBonus} 団体人気{orgPopDelta}',
+  rivalry_card_org_pop_bonus: '🔥 注目カード効果: 因縁カード編成で団体人気{delta}',
+  show_rating_org_pop_update: '📊 ★{stars} (平均試合評価 {avgMQ}) → 団体人気{popDelta} (現在: {curOrgPop})',
+  heat_level_changed: '{emoji} Heat変動: {oldLabel} → {newLabel}（集客倍率 ×{mult}）',
+  unified_title_result: { taken: '🌐 {name}が全国統一王座を奪取！', defended: '🌐 {name}が全国統一王座を防衛！' },
+
+  // ── app.js: 挑戦試合コーチ要約(_challengeRequestCoachLogLine・監査3-5と同法の6変種) ──
+  challenge_request_coach_summary: {
+    inverseWon: '社長、挑戦試合 {playerScore} — {aiScore}。{otherOrgName}の{reqName}選手の越境挑戦、退けました。',
+    inverseLost: '社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手陣に古巣として星を取られる結果になりました。',
+    inverseDraw: '社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手と{oppName}選手の決着は持ち越しです。',
+    directWon: '社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手が呼んだ舞台、しっかり制しました。',
+    directLost: '社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手の直訴…結果が伴いませんでした。',
+    directDraw: '社長、挑戦試合 {playerScore} — {aiScore}。{reqName}選手と{oppName}選手の決着は持ち越しです。',
+  },
+
+  // ── app.js: その他 ──
+  draft_info_incomplete: '⚠ ドラフト情報が不完全だったため、今年の指名は行われませんでした',
+  awards_data_recovered: '🛠 年末表彰データを復旧しました',
+  choice_event_org_pop_delta: '📉 団体人気{delta}',
+  secretary_request_sent: '📇 秘書に{wanted}を探すよう頼んだ',
+  war_match_result_line: '  {icon} 第{matchNum}試合: {playerName} vs {aiName} → {winnerName}勝利 (試合評価{mq})',
+
+  // ── ui-common.js: ドラフト ──
+  draft_bg_ai_signed: '📰 {name} [{tierLabel}]、{orgName}と電撃契約',
+  draft_pick_missed: '📰 {name} [{tierLabel}]、指名漏れ',
+  draft_solo_ai_announced: '📰 {orgName}、{name} [{tierLabel}]の獲得を発表',
+  draft_empress_reinforce_news: '📰 業界紙報道: {name}、{orgName} と電撃契約。スカウト合戦の裏で進められていた極秘交渉が明らかに',
+  draft_player_acquired: '⚖ ドラフト獲得: {name} [{tierLabel}] 契約金{cost}万 (R{round})',
+  draft_flow_through_funds: '⚖ ドラフト流札: {name} [{tierLabel}]（資金/枠不足）',
+  draft_ai_acquired: '⚖ ドラフト: {name} [{tierLabel}] → {orgName} ({cost}万 R{round})',
+  draft_flow_through_org_cap: '⚖ ドラフト流札: {name} [{tierLabel}]（団体枠上限）',
+  draft_flow_through_generic: '⚖ ドラフト流札: {name} [{tierLabel}]',
+
+  // ── ui-common.js: 挑戦状/対抗戦イベント・PPV ──
+  challenge_event_result: '🔥 挑戦状結果: {playerName} vs {aiName} → {outcome} (試合評価{mq}, 人気{popDeltaStr})',
+  war_challenge_declined: '⚔ {opponentName}との対抗戦を辞退',
+  challenge_event_ignored: '🔥 {orgName}の挑戦状を無視',
+  ppv_entry_complete: '🏟️ PPV GRAND FINAL「{ppvName}」エントリー完了！第{showWeek}週に開催',
+
+  // ── management.js: 新団体設立時の初期ログ(Engine.state.newGame相当) ──
+  startup_org_founded: '🎉 新団体設立！ 初期資金{funds}万でスタート。',
+  startup_draft_complete: '📋 ドラフト完了！ {rosterCount}名の所属選手で船出。（契約金合計: {totalCost}万）',
+  startup_remaining_funds: '💰 残り資金: {funds}万',
+  startup_fa_available: '🏢 フリーエージェント{count}名がスカウト可能。',
+  startup_industry_rank: '📊 業界{rank}位からの挑戦が始まる。',
+  startup_rival_orgs: '👑 {sName} (S級) / 💫 {aName} (A級) / 🌙 {bName} (B級)',
+  startup_survival_goal: '⛽ まずは赤字を耐え忍び、黒字経営を目指せ！【経営サバイバル】',
+  startup_endgame_goal: '🎯 目標: 業界1位の団体を超えてエンディングを目指せ！',
+
+  // ── management.js: 社長室ケア「起用の約束」精算(settlePledge) ──
+  pledge_outcome: {
+    expired: '🤝 {name}への起用の約束は、機会がないまま流れた',
+    kept: '🤝 {name}との約束どおり、メインを任せた',
+    broken: '🤝 {name}との約束を果たせなかった',
+  },
+
+  // ── relationships.js: 再接触イベント(applyRecontactEvents)。
+  // 2026-09-02判明: 元テキストが文字化け(?埋め)で既に破損している既存バグ。
+  // 本バッチはJA出力を1バイトも変えない方針のため、破損した見た目のまま構造化する
+  // (修復は別issueとして切り出し済み — i18n対応とは無関係の既存不具合)。
+  recontact_reunion: '?? {nameA}?{nameB}???? ????????????????',
+  recontact_grudge: '?? {nameA}?{nameB}?????????????????????????????',
+  recontact_vendetta: '?? {nameA}?{nameB}?????????????????????????',
+  recontact_unfinished: '?? {nameA}?{nameB}????????????????',
+};
+
+/**
+ * gameLogエントリを表示文字列へ整形する(D-G2の二刀流)。
+ * - 文字列エントリ(旧形式・Engine素通しmsg/events含む): そのまま返す
+ * - {type, data}のオブジェクトエントリ: GAMELOG_TEMPLATESから完全文を引いてfillTemplateVars
+ * - type未登録 or 既存の{type:'snapshot', text}系(Engine.snapshot生成の垣間見え):
+ *   entry.text があればそれをそのまま返す(このオブジェクト形はP3a対象外・触らない)
+ */
+function gameLogEntryText(entry) {
+  if (typeof entry === 'string') return entry;
+  if (!entry || typeof entry !== 'object') return '';
+  if (typeof entry.text === 'string') return entry.text; // 既存snapshot系など
+  const tpl = entry.type ? GAMELOG_TEMPLATES[entry.type] : null;
+  if (tpl == null) return '';
+  const resolved = (typeof tpl === 'object') ? tpl[entry.data && entry.data.variant] : tpl;
+  if (typeof resolved !== 'string') return '';
+  return fillTemplateVars(resolved, entry.data || {});
+}
+
+// D-G3: gameLogのUI分類フィルタ用。typeの族→カテゴリキー配列('show'|'finance'|'event'|'season'の
+// 0〜複数個。ui-render.jsの旧.includes()キーワード判定を各テンプレの完全文に対して機械的に
+// 再実行して確定した — 挙動を変えないための検算表。1つのtypeが複数タブに出ることもある
+// (旧キーワード判定も同様に複数カテゴリへ同時マッチしていたため)。
+// 未登録typeは空配列扱い(= 「全て」タブにのみ表示。旧キーワード判定でもどのカテゴリにも
+// マッチしなかったtypeに限られる)。variant間でカテゴリが割れるnested型(unified_title_result等)は
+// 「族で判定」の簡略化として無登録のままにしている(旧: 一部variantのみ'show'に一致)。
+const GAMELOG_TYPE_CATEGORY = {
+  summit_migration_cleared: ['event'],
+  fighter_signed: ['finance'],
+  fighter_signed_overflow: ['finance'],
+  scout_signed: ['finance'],
+  poach_negotiate_success: ['finance', 'event'],
+  scout_acquired: ['finance'],
+  coach_hired: ['finance'],
+  coach_slot_expanded: ['finance'],
+  title_reclaim_failure: ['show', 'event'],
+  show_rating_org_pop_update: ['show'],
+  challenge_request_coach_summary: ['event'],
+  war_match_result_line: ['show'],
+  draft_player_acquired: ['finance'],
+  draft_ai_acquired: ['finance'],
+  challenge_event_result: ['show', 'event'],
+  war_challenge_declined: ['event'],
+  challenge_event_ignored: ['event'],
+  startup_org_founded: ['finance'],
+  startup_draft_complete: ['finance'],
+  startup_remaining_funds: ['finance'],
+  startup_industry_rank: ['event'],
+};
+
+/**
+ * gameLogエントリのUI分類カテゴリ配列を返す(D-G3)。文字列エントリ・snapshot系(entry.text持ち)・
+ * 未登録typeは空配列([])。呼び出し側は「新形式は配列のincludes判定のみ・キーワード判定は
+ * 文字列/snapshot系にのみ残す」(D-G3の方針どおり、object形はここにフォールバックしない)。
+ */
+function gameLogEntryCategory(entry) {
+  if (!entry || typeof entry !== 'object' || typeof entry.text === 'string') return [];
+  if (!entry.type) return [];
+  return GAMELOG_TYPE_CATEGORY[entry.type] || [];
+}
+
+// D-G3(ui-render.js:1014): オフシーズン週(offWeek 2+)の「オフシーズンレポート」パネル専用の
+// 分類。旧実装は表示文への.includes('オフシーズン'|'シーズン'|'引退'|'獲得'|'移籍'|'衰退'|'成長')で
+// 抽出+強調していた。GAMELOG_TEMPLATES全型を上記キーワードに対して機械的に再判定した結果、
+// 一致したのはこの5型のみ(かつ全て強調対象=旧ロジックの'引退'|'獲得'|'移籍'も同時に満たす)。
+const GAMELOG_OFFSEASON_REPORT_TYPES = new Set([
+  'scout_signed', 'scout_acquired', 'scout_activity_complete',
+  'draft_solo_ai_announced', 'draft_player_acquired',
+]);
+
 // Node.js モジュールエクスポート（ブラウザではスキップ）
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = {
@@ -30764,5 +30945,9 @@ if (typeof module !== 'undefined' && module.exports) {
     DRAFT_CONFIG, ORG_ASSIGN, generateDraftConfig, seededShuffle,
     SALARY_PARAMS, LOSING_STREAK_PENALTIES,
     GLIMPSE_A_THRESHOLDS, GLIMPSE_A_REARM_MARGIN, GLIMPSE_A_LINES, GLIMPSE_HOTSTREAK_END_LINES, GLIMPSE_B_LINES,
+    // i18n Stage A P3a-3: gameLog構造化(D-G1〜D-G5)。require()経由のテストが
+    // 表示時整形結果を検算できるようにエクスポートする。
+    GAMELOG_TEMPLATES, fillTemplateVars, gameLogEntryText, GAMELOG_TYPE_CATEGORY, gameLogEntryCategory,
+    GAMELOG_OFFSEASON_REPORT_TYPES,
   };
 }

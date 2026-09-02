@@ -1,25 +1,25 @@
 {
-  "generatedAt": "2026-09-01T23:51:25.805Z",
+  "generatedAt": "2026-09-02T00:33:41.586Z",
   "files": {
     "data.js": {
-      "jaCount": 16621,
-      "jaChars": 299451
+      "jaCount": 16690,
+      "jaChars": 300429
     },
     "kuroda-text.js": {
       "jaCount": 896,
       "jaChars": 31257
     },
     "management.js": {
-      "jaCount": 2322,
-      "jaChars": 25878
+      "jaCount": 2314,
+      "jaChars": 25705
     },
     "ui-common.js": {
-      "jaCount": 1674,
-      "jaChars": 16791
+      "jaCount": 1658,
+      "jaChars": 16638
     },
     "ui-render.js": {
-      "jaCount": 1554,
-      "jaChars": 16606
+      "jaCount": 1544,
+      "jaChars": 16583
     },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
@@ -37,13 +37,13 @@
       "jaCount": 449,
       "jaChars": 8241
     },
-    "app.js": {
-      "jaCount": 586,
-      "jaChars": 7493
-    },
     "tag-battle-lines.js": {
       "jaCount": 839,
       "jaChars": 7482
+    },
+    "app.js": {
+      "jaCount": 542,
+      "jaChars": 6826
     },
     "battle-engine-main.js": {
       "jaCount": 546,

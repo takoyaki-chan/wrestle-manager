@@ -2068,11 +2068,11 @@ Engine.relationships = {
           }
           return c;
         })};
-        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}???? ????????????????`);
+        log.push({ type: 'recontact_reunion', data: { nameA: getName(ev.charA), nameB: getName(ev.charB) }, s: s.season, w: s.week });
       } else if (ev.type === 'grudge') {
         // lockerRoomMorale -2?-5
         s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale || 50) + ev.effect.moralePenalty) };
-        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}?????????????????????????????`);
+        log.push({ type: 'recontact_grudge', data: { nameA: getName(ev.charA), nameB: getName(ev.charB) }, s: s.season, w: s.week });
       } else if (ev.type === 'vendetta') {
         s = { ...s, lockerRoomMorale: Math.max(0, (s.lockerRoomMorale || 50) + ev.effect.moralePenalty) };
         const keyAB = this._key(ev.charA, ev.charB);
@@ -2085,9 +2085,9 @@ Engine.relationships = {
         rBA.rivalry = this._clampAxisValue(rBA.rivalry + ev.effect.rivalryBonus, 'rivalry');
         rels[keyAB] = rAB;
         rels[keyBA] = rBA;
-        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}?????????????????????????`);
+        log.push({ type: 'recontact_vendetta', data: { nameA: getName(ev.charA), nameB: getName(ev.charB) }, s: s.season, w: s.week });
       } else if (ev.type === 'unfinished') {
-        log.push(`?? ${getName(ev.charA)}?${getName(ev.charB)}????????????????`);
+        log.push({ type: 'recontact_unfinished', data: { nameA: getName(ev.charA), nameB: getName(ev.charB) }, s: s.season, w: s.week });
       }
     }
     return { ...s, relationships: rels, gameLog: log };

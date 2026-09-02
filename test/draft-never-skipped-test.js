@@ -99,8 +99,12 @@ const base = {
   const r = runNet({ ...base, _draftInterests: null });
   assert.strictEqual(r.ret, false, '決着できないのに進行を止めている');
   assert.strictEqual(r.G.scoutCandidates, null, '候補を畳んでいない。毎週この判定に入り続ける');
-  assert.ok(r.G.gameLog.some(l => /ドラフト情報が不完全/.test(l)),
-    '何が起きたかログに残していない');
+  // i18n Stage A P3a-3: gameLogは{type,data}形式(D-G1)。文言はGAMELOG_TEMPLATES(data.js)へ
+  // 移設済みのため、typeキーで判定する(旧文字列エントリとの共存に備えて文字列側も見る)。
+  assert.ok(r.G.gameLog.some(l =>
+    (typeof l === 'string' && /ドラフト情報が不完全/.test(l)) ||
+    (l && typeof l === 'object' && l.type === 'draft_info_incomplete')
+  ), '何が起きたかログに残していない');
 }
 
 // ── 6. 週送りの入口2つが両方この保険を通ること ──

@@ -39,7 +39,10 @@ assert.notStrictEqual(migrated, legacy, '旧頂上決戦だけ新しいstateへ�
 assert.strictEqual(migrated.pendingEvent, null, '旧予約を解除する');
 assert.strictEqual(migrated.weekPhase, 'manage', '旧イベント画面から経営画面へ戻す');
 assert.deepStrictEqual(migrated.gameLog.slice(0, 1), ['before'], '既存ログを保持する');
-assert.ok(migrated.gameLog.at(-1).includes('PPV GRAND FINALへ統合済み'), '解除理由をログへ残す');
+// i18n Stage A P3a-3: gameLogは{type,data}形式(D-G1)。文言はGAMELOG_TEMPLATES
+// (data.js)の summit_migration_cleared へ移設済み(JA出力は不変)。
+const lastEntry = migrated.gameLog.at(-1);
+assert.ok(lastEntry && typeof lastEntry === 'object' && lastEntry.type === 'summit_migration_cleared', '解除理由をログへ残す');
 assert.strictEqual(legacy.pendingEvent.type, 'summit', '入力stateを破壊しない');
 
 assert.ok(app.includes('G = migrateLegacySummitPendingEvent(G);'), 'deserializeへ移行を配線する');

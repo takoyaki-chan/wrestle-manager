@@ -1011,14 +1011,23 @@ function renderWeekScreen() {
       // 表彰式待ち。総括の場所は空けておく(ここに何か描くと結局背面に見えてしまう)。
     } else {
       // offWeek 2以降(ドラフト/移籍/開幕準備週)は従来どおりgameLogフィルタ+ランキング要約を表示
-      const recentEvents = (G.gameLog || []).filter(e => typeof e === 'string' && (e.includes('オフシーズン') || e.includes('シーズン') || e.includes('引退') || e.includes('獲得') || e.includes('移籍') || e.includes('衰退') || e.includes('成長')));
+      // D-G3: 新形式({type,data})は typeの族(GAMELOG_OFFSEASON_REPORT_TYPES)で判定し、
+      // 旧文字列エントリ(及びsnapshot等の既存object形)に限りキーワード判定を残す。
+      const _offseasonKw = t => typeof t === 'string' && (t.includes('オフシーズン') || t.includes('シーズン') || t.includes('引退') || t.includes('獲得') || t.includes('移籍') || t.includes('衰退') || t.includes('成長'));
+      const _offseasonHighlightKw = t => typeof t === 'string' && (t.includes('引退') || t.includes('獲得') || t.includes('移籍'));
+      const recentEvents = (G.gameLog || []).filter(e => {
+        if (typeof e === 'string') return _offseasonKw(e);
+        if (e && typeof e === 'object' && e.type && !(typeof e.text === 'string')) return GAMELOG_OFFSEASON_REPORT_TYPES.has(e.type);
+        return false;
+      });
       const offEvents = recentEvents.slice(-15);
       if (offEvents.length > 0) {
         html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;max-height:300px;overflow-y:auto">';
         html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 オフシーズンレポート</h4>';
         offEvents.forEach(ev => {
-          const isHighlight = typeof ev === 'string' && (ev.includes('引退') || ev.includes('獲得') || ev.includes('移籍'));
-          html += `<div style="font-size:11px;padding:2px 0;color:${isHighlight ? 'var(--text-main)' : 'var(--text-sub)'}">${ev}</div>`;
+          const evText = gameLogEntryText(ev);
+          const isHighlight = typeof ev === 'string' ? _offseasonHighlightKw(ev) : (ev.type && GAMELOG_OFFSEASON_REPORT_TYPES.has(ev.type));
+          html += `<div style="font-size:11px;padding:2px 0;color:${isHighlight ? 'var(--text-main)' : 'var(--text-sub)'}">${evText}</div>`;
         });
         html += '</div>';
       }
@@ -3884,6 +3893,16 @@ function renderShowPrep() {
   _spAfterRender();
 }
 
+// i18n Stage A P3a-3 D-G4: 選手給与の判定。生成元(management.js processSettlement)が
+// category:'salary' を付けた新しい明細はそれで判定し、表示済みラベルの再比較を避ける。
+// category が無い明細(このフィールド導入より前に生成され financeHistory に残っている
+// 旧データ)だけ、従来どおりラベル正規化での判定にフォールバックする(静かに共存させる)。
+function _isSalaryDetail(d) {
+  if (d.category === 'salary') return true;
+  if (d.category) return false; // 他category明記済みなら別物
+  return _normalizeFinanceLabel(d.label) === '選手給与';
+}
+
 // 財務タブリデザイン: ラベル正規化ヘルパー
 function _normalizeFinanceLabel(label) {
   if (label.startsWith('チケット収入')) return 'チケット収入';
@@ -4228,7 +4247,7 @@ function renderFinance() {
 
   // ── 給与タブ ──
   else if (tab === 'salary') {
-    const salaryRaw = _weeklyFinanceValues(filtered, d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '選手給与');
+    const salaryRaw = _weeklyFinanceValues(filtered, d => d.type === 'expense' && _isSalaryDetail(d));
     // 給与は負数で記録されているが、上=高給のグラフにするため絶対値化
     const salaryAbs = salaryRaw.map(v => Math.abs(v));
     const isMonthlyS = period !== 'month';
@@ -4240,7 +4259,7 @@ function renderFinance() {
     // 期間中の給与支払い合計
     let salaryTotal = 0, salaryWeeks = 0;
     filtered.forEach(h => {
-      (h.details || []).filter(d => d.type === 'expense' && _normalizeFinanceLabel(d.label) === '選手給与').forEach(d => {
+      (h.details || []).filter(d => d.type === 'expense' && _isSalaryDetail(d)).forEach(d => {
         salaryTotal += d.val;
         salaryWeeks++;
       });
@@ -4340,14 +4359,20 @@ function renderLog() {
   });
   html += '</div>';
 
-  // ログエントリのテキスト取得ヘルパー（文字列 or オブジェクト両対応）
-  const getLogText = (entry) => typeof entry === 'string' ? entry : (entry && entry.text ? entry.text : '');
+  // ログエントリのテキスト取得ヘルパー（文字列 or オブジェクト両対応・D-G2の二刀流）
+  // i18n Stage A P3a-3: 新形式({type,data})はgameLogEntryText(data.js)で完全文へ整形する。
+  const getLogText = (entry) => gameLogEntryText(entry);
   const isSnapshot = (entry) => typeof entry === 'object' && entry && entry.type === 'snapshot';
-  const matchFilter = (entry, fn) => fn(getLogText(entry));
+  // D-G3: 分類フィルタは「文字列エントリ(旧形式)はキーワード判定を維持・新形式({type,data})は
+  // typeの族(gameLogEntryCategory)で判定」。snapshot系は従来どおり「全て」のみに表示する。
   const filtered = currentFilter === 'all' ? G.gameLog : G.gameLog.filter(entry => {
-    if (isSnapshot(entry)) return currentFilter === 'all'; // スナップショットは「全て」のみ
-    const fn = categories.find(c => c.key === currentFilter)?.match;
-    return fn ? matchFilter(entry, fn) : true;
+    if (typeof entry === 'string') {
+      const fn = categories.find(c => c.key === currentFilter)?.match;
+      return fn ? fn(entry) : true;
+    }
+    if (isSnapshot(entry)) return false; // スナップショットは「全て」のみ(ここはcurrentFilter!=='all'確定)
+    const cats = gameLogEntryCategory(entry);
+    return cats.includes(currentFilter);
   });
   const display = filtered.slice(-100).reverse();
   html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${filtered.length}件中 最新${Math.min(display.length, 100)}件</div>`;
@@ -12046,9 +12071,13 @@ function _relmapBuildLinks(allChars) {
     const _avgBond = (bondAB + bondBA) / 2;
     const _maxRiv = Math.max(rivAB, rivBA);
     let hostileLabel = null;
+    // i18n Stage A P3a-3 D-G5: hostileTierは表示ラベルと同じ条件分岐から独立して確定する
+    // 中立キー。下流(13600行台付近)はこれを見て色/アイコンを選び、hostileLabel文字列の
+    // 再比較(===  '憎悪' 等)はしない。
+    let hostileTier = null;
     if (_avgBond <= 30) {
-      if (_maxRiv >= 80) hostileLabel = '憎悪';
-      else if (_maxRiv >= 60) hostileLabel = '因縁';
+      if (_maxRiv >= 80) { hostileLabel = '憎悪'; hostileTier = 'hate'; }
+      else if (_maxRiv >= 60) { hostileLabel = '因縁'; hostileTier = 'grudge'; }
     }
 
     links.push({
@@ -12060,6 +12089,7 @@ function _relmapBuildLinks(allChars) {
       titleColor: hasTitle && rivalLvl ? rivalLvl.color : null,
       titleEmoji: hasTitle && rivalLvl ? rivalLvl.emoji : null,
       hostileLabel,
+      hostileTier,
     });
   });
 
@@ -12457,12 +12487,9 @@ function _dfcFlavorTag(flavor) {
   };
   return map[flavor] || '結束型';
 }
-function _dfcSolidarityKey(label) {
-  return label === '強固' ? 'strong' : label === '安定' ? 'stable' : label === '揺らぎ' ? 'wobble' : 'crumble';
-}
-function _dfcMomentumKey(label) {
-  return label === '隆盛' ? 'boom' : label === '上昇' ? 'rise' : label === '平常' ? 'calm' : label === '陰り' ? 'dim' : 'fade';
-}
+// i18n Stage A P3a-3 D-G5: 旧_dfcSolidarityKey/_dfcMomentumKeyは表示ラベルを再比較する
+// 逆引きだったため撤去。呼び出し側はEngine.factions.getSolidarityKey/getMomentumKey
+// (factions.js・表示ラベルと同じ閾値から中立キーを直接返す)を使う。
 function _dfcAvgOvr(faction, roster) {
   if (!faction || !faction.memberIds.length) return 0;
   const ovrs = faction.memberIds.map(id => {
@@ -12548,9 +12575,9 @@ function _dfcRenderCard(faction, state, opts = {}) {
   const rankFile = memberChars.slice(2);
   const flavor = _dfcFlavorTag(faction.flavor);
   const solidarity = Engine.factions.getSolidarityLabel(faction, state);
-  const solidarityKey = _dfcSolidarityKey(solidarity);
+  const solidarityKey = Engine.factions.getSolidarityKey(faction, state);
   const momentumLabel = Engine.factions.getMomentumLabel(faction.momentum || 0);
-  const momentumKey = _dfcMomentumKey(momentumLabel);
+  const momentumKey = Engine.factions.getMomentumKey(faction.momentum || 0);
   const avgOvr = _dfcAvgOvr(faction, roster);
   const created = _dfcSeasonLabel(faction.createdSeason, faction.createdWeek);
 
@@ -13596,10 +13623,10 @@ function _relmapRender(orgCenters) {
     // bond-rivalry plan 2026-04-29 1-C: 極端ペアの hostile ラベル（rivalTitle が無い時のみ）
     else if (l.hostileLabel && !dimmed) {
       const labelY = my - 17;
-      const fillColor = l.hostileLabel === '憎悪' ? '#ff7675' : '#e17055';
+      const fillColor = l.hostileTier === 'hate' ? '#ff7675' : '#e17055';
       lh += `<text x="${mx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="9.5" font-weight="900" fill="${fillColor}" paint-order="stroke" stroke="rgba(0,0,0,0.82)" stroke-width="2.4" opacity="${highlighted||vm==='focus'?0.95:0.7}">${l.hostileLabel}</text>`;
       // bond-rivalry plan P-7: 険悪可視化 — 人物系の険悪アイコン（数字は出さない）
-      const hostileIcon = l.hostileLabel === '憎悪' ? '😠' : '😤';
+      const hostileIcon = l.hostileTier === 'hate' ? '😠' : '😤';
       lh += `<text x="${mx.toFixed(1)}" y="${(my + 5).toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-size="12" opacity="${highlighted||vm==='focus'?0.92:0.6}">${hostileIcon}</text>`;
     }
     // One-sided icon

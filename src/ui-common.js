@@ -4015,9 +4015,12 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
               if (!G.factions || !Engine.factions) return '';
               const f = Engine.factions.getFactionByFighterId(G, c.id);
               if (!f) return '';
-              const role = f.leaderId === c.id ? 'リーダー'
-                : Engine.factions.isExecutive(G, c.id) ? '幹部' : 'メンバー';
-              const icon = role === 'リーダー' ? '👑' : role === '幹部' ? '⭐' : '🎭';
+              // i18n Stage A P3a-3 D-G5: 表示ラベル(role)の再比較でアイコンを選ばず、
+              // 同じ判定材料(isLeader/isExecutive)からroleとiconを独立に確定させる。
+              const isLeaderRole = f.leaderId === c.id;
+              const isExecRole = !isLeaderRole && Engine.factions.isExecutive(G, c.id);
+              const role = isLeaderRole ? 'リーダー' : isExecRole ? '幹部' : 'メンバー';
+              const icon = isLeaderRole ? '👑' : isExecRole ? '⭐' : '🎭';
               return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="派閥タブで詳細を見る">${icon} ${f.name}・${role}</span>`;
             })()}
           </div>
@@ -6049,20 +6052,20 @@ function startDraftNegotiation() {
           draftSummary.aiAcquired[wOrg].push(clean.name);
           if (!draftSummary.aiAcquiredIds) draftSummary.aiAcquiredIds = {};
           (draftSummary.aiAcquiredIds[wOrg] = draftSummary.aiAcquiredIds[wOrg] || []).push(clean.id);
-          log.push(`📰 ${clean.name} [${tierLabel}]、${ORG_NAMES[wOrg] || wOrg}と電撃契約`);
+          log.push({ type: 'draft_bg_ai_signed', data: { name: clean.name, tierLabel, orgName: ORG_NAMES[wOrg] || wOrg }, s: G.season, w: G.week });
         } else {
           // 流札 → dormantPoolに返却
           returnToPool.push(cand.id);
           draftSummary.flowThrough.push(clean.name);
           (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
-          log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
+          log.push({ type: 'draft_pick_missed', data: { name: clean.name, tierLabel }, s: G.season, w: G.week });
         }
       } else {
         // 流札 → dormantPoolに返却
         returnToPool.push(cand.id);
         draftSummary.flowThrough.push(clean.name);
         (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
-        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
+        log.push({ type: 'draft_pick_missed', data: { name: clean.name, tierLabel }, s: G.season, w: G.week });
       }
     } else if (!isSelected && aiParticipants.length === 1) {
       // → AI自動落札（バックグラウンド: idealRosterでキャップ）
@@ -6076,20 +6079,20 @@ function startDraftNegotiation() {
         draftSummary.aiAcquired[winner].push(clean.name);
         if (!draftSummary.aiAcquiredIds) draftSummary.aiAcquiredIds = {};
         (draftSummary.aiAcquiredIds[winner] = draftSummary.aiAcquiredIds[winner] || []).push(clean.id);
-        log.push(`📰 ${ORG_NAMES[winner] || winner}、${clean.name} [${tierLabel}]の獲得を発表`);
+        log.push({ type: 'draft_solo_ai_announced', data: { orgName: ORG_NAMES[winner] || winner, name: clean.name, tierLabel }, s: G.season, w: G.week });
       } else {
         // 流札 → dormantPoolに返却
         returnToPool.push(cand.id);
         draftSummary.flowThrough.push(clean.name);
         (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
-        log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
+        log.push({ type: 'draft_pick_missed', data: { name: clean.name, tierLabel }, s: G.season, w: G.week });
       }
     } else {
       // → 流札 → dormantPoolに返却
       returnToPool.push(cand.id);
       draftSummary.flowThrough.push(clean.name);
       (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
-      log.push(`📰 ${clean.name} [${tierLabel}]、指名漏れ`);
+      log.push({ type: 'draft_pick_missed', data: { name: clean.name, tierLabel }, s: G.season, w: G.week });
     }
   }
 
@@ -6330,7 +6333,7 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
         newDormant = newDormant.filter(e => e.id !== ev.dormantIdRemoved);
         empressNames.push(ev.template.name);
         const sOrgName = (RIVAL_ORGS.find(o=>o.id==='org_s')||{}).name||'S級団体';
-        log.push(`📰 業界紙報道: ${ev.template.name}、${sOrgName} と電撃契約。スカウト合戦の裏で進められていた極秘交渉が明らかに`);
+        log.push({ type: 'draft_empress_reinforce_news', data: { name: ev.template.name, orgName: sOrgName }, s: s.season, w: s.week });
         // §6.4 ドラマ演出: 通知ポップアップ
         if (typeof showPopup === 'function') {
           setTimeout(() => {
@@ -6736,7 +6739,7 @@ function draftNextCandidate() {
       newFunds -= ns.finalBid;
       acquired.push({ id: clean.id, finalBid: ns.finalBid, tier: clean.assessedTier });
       draftSummary.playerAcquired.push(clean.name);
-      log.push(`⚖ ドラフト獲得: ${clean.name} [${tierLabel}] 契約金${ns.finalBid}万 (R${ns.round})`);
+      log.push({ type: 'draft_player_acquired', data: { name: clean.name, tierLabel, cost: ns.finalBid, round: ns.round }, s: G.season, w: G.week });
 
       // 獲得時リアクション（顔写真付きポップアップ）
       try {
@@ -6755,7 +6758,7 @@ function draftNextCandidate() {
       }
     } else {
       returnToPool = true;
-      log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（資金/枠不足）`);
+      log.push({ type: 'draft_flow_through_funds', data: { name: clean.name, tierLabel }, s: G.season, w: G.week });
     }
   } else if (ns.winner && ns.winner !== 'player') {
     const orgData = newAiOrgs[ns.winner];
@@ -6777,18 +6780,18 @@ function draftNextCandidate() {
       if (!draftSummary.aiAcquiredIds) draftSummary.aiAcquiredIds = {};
       (draftSummary.aiAcquiredIds[ns.winner] = draftSummary.aiAcquiredIds[ns.winner] || []).push(clean.id);
       const orgInfo = RIVAL_ORGS.find(o => o.id === ns.winner);
-      log.push(`⚖ ドラフト: ${clean.name} [${tierLabel}] → ${orgInfo ? orgInfo.name : ns.winner} (${ns.finalBid}万 R${ns.round})`);
+      log.push({ type: 'draft_ai_acquired', data: { name: clean.name, tierLabel, orgName: orgInfo ? orgInfo.name : ns.winner, cost: ns.finalBid, round: ns.round }, s: G.season, w: G.week });
     } else {
       returnToPool = true;
       draftSummary.flowThrough.push(clean.name);
       (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
-      log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]（団体枠上限）`);
+      log.push({ type: 'draft_flow_through_org_cap', data: { name: clean.name, tierLabel }, s: G.season, w: G.week });
     }
   } else {
     returnToPool = true;
     draftSummary.flowThrough.push(clean.name);
     (draftSummary.flowThroughIds = draftSummary.flowThroughIds || []).push(clean.id);
-    log.push(`⚖ ドラフト流札: ${clean.name} [${tierLabel}]`);
+    log.push({ type: 'draft_flow_through_generic', data: { name: clean.name, tierLabel }, s: G.season, w: G.week });
   }
 
   // 流札候補をdormantPool末尾に返却（枯渇防止）
@@ -6931,7 +6934,7 @@ function executeEvent() {
     const won = result.winner === 'left'; // player is left
     eventWon = won;
     const popDelta = won ? 3 : -1;
-    events.push(`🔥 挑戦状結果: ${ev.playerFighter.name} vs ${ev.aiFighter.name} → ${won ? '勝利！' : '敗北…'} (試合評価${result.mq}, 人気${popDelta >= 0 ? '+' : ''}${popDelta})`);
+    events.push({ type: 'challenge_event_result', data: { playerName: ev.playerFighter.name, aiName: ev.aiFighter.name, outcome: won ? '勝利！' : '敗北…', mq: result.mq, popDeltaStr: `${popDelta >= 0 ? '+' : ''}${popDelta}` }, s: G.season, w: G.week });
     G = { ...G, orgPop: Math.max(0, Math.min(100, G.orgPop + popDelta)), pendingEvent: null,
           gameLog: [...G.gameLog, ...events] };
 
@@ -6952,8 +6955,8 @@ function skipEvent() {
   const ev = G.pendingEvent;
   const events = [];
   if (ev) {
-    if (ev.type === 'war') events.push(`⚔ ${ev.opponentName}との対抗戦を辞退`);
-    else if (ev.type === 'challenge') events.push(`🔥 ${ev.orgName}の挑戦状を無視`);
+    if (ev.type === 'war') events.push({ type: 'war_challenge_declined', data: { opponentName: ev.opponentName }, s: G.season, w: G.week });
+    else if (ev.type === 'challenge') events.push({ type: 'challenge_event_ignored', data: { orgName: ev.orgName }, s: G.season, w: G.week });
   }
   G = { ...G, pendingEvent: null, weekPhase: 'manage', lastShowResults: [], weeklyFinance: { income: 0, expense: 0, details: [] },
         gameLog: [...G.gameLog, ...events] };
@@ -7018,7 +7021,7 @@ function confirmPPVEntry() {
     _ppvAIEntries: undefined,
     lastShowResults: [],
     weeklyFinance: { income: 0, expense: 0, details: [] },
-    gameLog: [...G.gameLog, `🏟️ PPV GRAND FINAL「${ppvName}」エントリー完了！第${PPV_SHOW_WEEK}週に開催`],
+    gameLog: [...G.gameLog, { type: 'ppv_entry_complete', data: { ppvName, showWeek: PPV_SHOW_WEEK }, s: G.season, w: G.week }],
   };
   Storage.autoSave();
   showToast(`🏟️ エントリー完了！PPV GRAND FINAL は第${PPV_SHOW_WEEK}週に開催されます`, 7000);
@@ -14687,14 +14690,17 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   const impactRows = (applyResult.impactSummary || []).map(item => {
     const rawLabel = String(item.label || '');
     const isOrgTrust = /\btrust\b|信頼度/.test(rawLabel);
+    // i18n Stage A P3a-3 D-G5: rivalryかどうかは日本語置換「後」のlabelを再比較せず、
+    // 置換「前」のrawLabel(内部キー'rivalry'または既に日本語の'因縁')で先に確定させる。
+    const isRivalryImpact = /\brivalry\b|因縁/.test(rawLabel);
     const label = rawLabel.replace(/\btrust\b/g, '社長への反応').replace(/\brivalry\b/g, '因縁');
     let cls = '';
     const deltaStr = item.delta != null ? String(item.delta) : '';
     if (deltaStr.startsWith('+')) cls = 'pos';
-    else if (deltaStr.startsWith('-')) cls = label.includes('因縁') ? 'resolved' : 'neg';
+    else if (deltaStr.startsWith('-')) cls = isRivalryImpact ? 'resolved' : 'neg';
     const display = isOrgTrust
       ? (deltaStr.startsWith('+') ? '納得した様子' : deltaStr.startsWith('-') || deltaStr.startsWith('−') ? '不満を残した様子' : '態度に変化')
-      : (label.includes('因縁') && deltaStr.startsWith('-') ? `${deltaStr}(解消)` : deltaStr);
+      : (isRivalryImpact && deltaStr.startsWith('-') ? `${deltaStr}(解消)` : deltaStr);
     return `<div class="mdl-a-result-row"><span>${escHtmlSafe(label)}</span><strong class="${cls}">${escHtmlSafe(display)}</strong></div>`;
   }).join('');
 

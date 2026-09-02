@@ -13213,7 +13213,9 @@ const Engine = {
 
       const salary = Engine.economy.calcWeeklySalary(G.roster, G.titles);
       totalExpense += salary;
-      details.push({ label: '選手給与', val: -salary, type: 'expense' });
+      // i18n Stage A P3a-3 D-G4: category:'salary' を併記(表示側の給与タブ判定が
+      // ラベル文字列の再比較(_normalizeFinanceLabel(d.label)==='選手給与')に依存しないように)。
+      details.push({ label: '選手給与', val: -salary, type: 'expense', category: 'salary' });
 
       const fixed = Engine.economy.calcFixedCosts();
       totalExpense += fixed;
@@ -13648,11 +13650,9 @@ const Engine = {
       if (pledgeOutcome) {
         const pf = (pledgeOutcome.roster || []).find(f => f && f.id === pledgeOutcome.fighterId);
         const pName = pf ? pf.name : '';
-        const pledgeLog = pledgeOutcome.outcome === 'expired'
-          ? `🤝 ${pName}への起用の約束は、機会がないまま流れた`
-          : pledgeOutcome.outcome === 'kept'
-            ? `🤝 ${pName}との約束どおり、メインを任せた`
-            : `🤝 ${pName}との約束を果たせなかった`;
+        const pledgeVariant = pledgeOutcome.outcome === 'expired' ? 'expired'
+          : pledgeOutcome.outcome === 'kept' ? 'kept' : 'broken';
+        const pledgeLog = { type: 'pledge_outcome', data: { name: pName, variant: pledgeVariant }, s: s.season, w: s.week };
         s = { ...s,
           roster: pledgeOutcome.roster,
           pledge: undefined,
@@ -18768,14 +18768,14 @@ const Engine = {
         weekPhase: 'manage',
         draftComplete: true,
         gameLog: [
-          `🎉 新団体設立！ 初期資金${Math.round(state.funds || 0)}万でスタート。`,
-          `📋 ドラフト完了！ ${roster.length}名の所属選手で船出。（契約金合計: ${Math.round(totalCost)}万）`,
-          `💰 残り資金: ${Math.round(remainingFunds)}万`,
-          `🏢 フリーエージェント${freeAgents.length}名がスカウト可能。`,
-          `📊 業界${pRank}位からの挑戦が始まる。`,
-          `👑 ${RIVAL_ORGS.find(o=>o.id==='org_s')?.name||'S級'} (S級) / 💫 ${RIVAL_ORGS.find(o=>o.id==='org_a')?.name||'A級'} (A級) / 🌙 ${RIVAL_ORGS.find(o=>o.id==='org_b')?.name||'B級'} (B級)`,
-          '⛽ まずは赤字を耐え忍び、黒字経営を目指せ！【経営サバイバル】',
-          '🎯 目標: 業界1位の団体を超えてエンディングを目指せ！',
+          { type: 'startup_org_founded', data: { funds: Math.round(state.funds || 0) }, s: state.season, w: state.week },
+          { type: 'startup_draft_complete', data: { rosterCount: roster.length, totalCost: Math.round(totalCost) }, s: state.season, w: state.week },
+          { type: 'startup_remaining_funds', data: { funds: Math.round(remainingFunds) }, s: state.season, w: state.week },
+          { type: 'startup_fa_available', data: { count: freeAgents.length }, s: state.season, w: state.week },
+          { type: 'startup_industry_rank', data: { rank: pRank }, s: state.season, w: state.week },
+          { type: 'startup_rival_orgs', data: { sName: RIVAL_ORGS.find(o=>o.id==='org_s')?.name||'S級', aName: RIVAL_ORGS.find(o=>o.id==='org_a')?.name||'A級', bName: RIVAL_ORGS.find(o=>o.id==='org_b')?.name||'B級' }, s: state.season, w: state.week },
+          { type: 'startup_survival_goal', data: {}, s: state.season, w: state.week },
+          { type: 'startup_endgame_goal', data: {}, s: state.season, w: state.week },
         ]
       };
     }

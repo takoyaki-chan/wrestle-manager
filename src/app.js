@@ -79,7 +79,7 @@ function resolveActiveStageBgm(app) {
 
 function migrateLegacySummitPendingEvent(state) {
   if (!state || state.pendingEvent?.type !== 'summit') return state;
-  const note = '🏆 旧形式の単独頂上決戦はPPV GRAND FINALへ統合済みのため、予約を解除しました';
+  const note = { type: 'summit_migration_cleared', data: {}, s: state.season, w: state.week };
   return {
     ...state,
     pendingEvent: null,
@@ -100,10 +100,12 @@ function _sameSinglesPair(match, result) {
     && booked.every((id, index) => Number.isFinite(id) && id === fought[index]);
 }
 
-/** 挑戦試合のコーチ要約。モーダルには出さず、同じ文面を週次gameLogへ残す。 */
+/** 挑戦試合のコーチ要約。モーダルには出さず、同じ文面を週次gameLogへ残す。
+ *  i18n Stage A P3a-3: GAMELOG_TEMPLATES.challenge_request_coach_summary(6変種)へ
+ *  移設(監査3-5と同法)。戻り値は{type,data}のgameLogエントリ(D-G1)。 */
 function _challengeRequestCoachLogLine(state, card, result) {
   if (!state || !card || !result || !Array.isArray(card.teamA) || !Array.isArray(card.teamB)
-      || !card.teamA[0] || !card.teamB[0]) return '';
+      || !card.teamA[0] || !card.teamB[0]) return null;
   const isInverse = !!card.isInverse;
   const playerWon = isInverse ? result.teamWin === 'B' : result.teamWin === 'A';
   const playerLost = isInverse ? result.teamWin === 'A' : result.teamWin === 'B';
@@ -114,14 +116,14 @@ function _challengeRequestCoachLogLine(state, card, result) {
   const otherOrgName = isInverse
     ? (card.requesterOrgName || card.otherOrgName || '相手団体')
     : (card.otherOrgName || card.opponentOrgName || '相手団体');
+  const data = { playerScore, aiScore, reqName, oppName, otherOrgName };
+  let variant;
   if (isInverse) {
-    if (playerWon) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${otherOrgName}の${reqName}選手の越境挑戦、退けました。`;
-    if (playerLost) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手陣に古巣として星を取られる結果になりました。`;
-    return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手と${oppName}選手の決着は持ち越しです。`;
+    variant = playerWon ? 'inverseWon' : playerLost ? 'inverseLost' : 'inverseDraw';
+  } else {
+    variant = playerWon ? 'directWon' : playerLost ? 'directLost' : 'directDraw';
   }
-  if (playerWon) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手が呼んだ舞台、しっかり制しました。`;
-  if (playerLost) return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手の直訴…結果が伴いませんでした。`;
-  return `社長、挑戦試合 ${playerScore} — ${aiScore}。${reqName}選手と${oppName}選手の決着は持ち越しです。`;
+  return { type: 'challenge_request_coach_summary', data: { ...data, variant }, s: state.season, w: state.week };
 }
 
 /** 宿怨の試合前セリフ用。決着戦の勝者を優先し、旧セーブだけH2Hで補う。 */
@@ -2548,7 +2550,7 @@ const Storage = {
         if (oldOrgPop >= 20) {
           const newOrgPop = Math.round(oldOrgPop * 0.7);
           G = { ...G, orgPop: newOrgPop };
-          G = { ...G, gameLog: [...(G.gameLog || []), `📢 バランス調整(v1.5): 団体人気を${oldOrgPop}→${newOrgPop}に再調整しました（×0.7 リスケール）`] };
+          G = { ...G, gameLog: [...(G.gameLog || []), { type: 'balance_v15_org_pop_rescale', data: { oldOrgPop, newOrgPop }, s: G.season, w: G.week }] };
         }
         G = { ...G, _migrated_v1_5_rebalance: true };
       }
@@ -2577,7 +2579,7 @@ const Storage = {
           lockerRoomMorale: G.lockerRoomMorale != null ? G.lockerRoomMorale : 60,
           _migrated_trust: true,
         };
-        G = { ...G, gameLog: [...(G.gameLog || []), '📢 システム更新(v2.0): 選手の反応表現を更新しました'] };
+        G = { ...G, gameLog: [...(G.gameLog || []), { type: 'system_update_v20_reaction', data: {}, s: G.season, w: G.week }] };
       }
 
       if (!G._migrated_npc_traits) {
@@ -3664,9 +3666,10 @@ const Storage = {
         const repair = Engine.saveDoctor.repairOnLoad(G);
         if (repair.changed) {
           G = repair.state;
-          const note = `セーブデータ自動修復: ${repair.changes.join(', ')}`;
+          const changesJoined = repair.changes.join(', ');
+          const note = { type: 'save_repair_applied', data: { changes: changesJoined }, s: G.season, w: G.week };
           G = { ...G, gameLog: [...(G.gameLog || []), note] };
-          console.log(`[WM Load Repair] ${note}`);
+          console.log(`[WM Load Repair] セーブデータ自動修復: ${changesJoined}`);
         }
       }
 
@@ -3698,7 +3701,7 @@ const Storage = {
         if (oldRaw) existingName = Storage._parseRaw(oldRaw)._saveName;
       } catch (e) { /* 旧データ破損時は名前なし扱いで続行 */ }
       localStorage.setItem(SAVE_KEY + slot, Storage.serialize(G, existingName));
-      G = { ...G, gameLog: [...G.gameLog, `💾 スロット${slot}にセーブしました`] };
+      G = { ...G, gameLog: [...G.gameLog, { type: 'save_slot', data: { slot }, s: G.season, w: G.week }] };
       refreshAll();
       return true;
     } catch(e) { alert('セーブに失敗しました: ' + e.message); return false; }
@@ -3722,7 +3725,7 @@ const Storage = {
     const data = localStorage.getItem(SAVE_KEY + slot);
     if (!data) { alert('セーブデータがありません'); return false; }
     if (Storage.deserialize(data)) {
-      G = { ...G, gameLog: [...G.gameLog, `📂 スロット${slot}からロードしました`] };
+      G = { ...G, gameLog: [...G.gameLog, { type: 'load_slot', data: { slot }, s: G.season, w: G.week }] };
       // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
       if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
       refreshAll();
@@ -3825,7 +3828,7 @@ const Storage = {
         }
 
         if (Storage.deserialize(raw)) {
-          G = { ...G, gameLog: [...G.gameLog, '📂 ファイルからデータを読み込みました'] };
+          G = { ...G, gameLog: [...G.gameLog, { type: 'load_from_file', data: {}, s: G.season, w: G.week }] };
           // showPrep / showExec はセッション内でのみ意味を持つ過渡状態。ロード時は manage に戻す。
       if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
           refreshAll();
@@ -4949,7 +4952,7 @@ const App = {
     try {
       G = {
         ...G,
-        gameLog: [...(G.gameLog || []), `セーブデータ自動修復: ${repair.changes.join(', ')}`],
+        gameLog: [...(G.gameLog || []), { type: 'save_repair_applied', data: { changes: repair.changes.join(', ') }, s: G.season, w: G.week }],
       };
     } catch (_e) {}
     return true;
@@ -5348,11 +5351,11 @@ const App = {
     const newRoster = [...G.roster, c];
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
     const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
-    const log = [...G.gameLog, `📝 ${c.name}と契約（契約金: ${finalCost}万 [${tierCfg.label}]${scoutDisc > 0 ? ` / スカウト網割引${scoutDisc}%` : ''}）`];
+    const log = [...G.gameLog, { type: 'fighter_signed', data: { name: c.name, cost: finalCost, tierLabel: tierCfg.label, scoutDiscSuffix: scoutDisc > 0 ? ` / スカウト網割引${scoutDisc}%` : '' }, s: G.season, w: G.week }];
     if (titleMsg) log.push(titleMsg);
     // v1.9: 逸材特別交渉枠の消費
     const eliteTicketUpdate = usedEliteTicket ? { eliteTicket: false, eliteTicketUsed: true } : {};
-    if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
+    if (usedEliteTicket) log.push({ type: 'elite_ticket_used', data: {}, s: G.season, w: G.week });
     G = { ...G, funds: G.funds - finalCost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, ...eliteTicketUpdate };
     Audio.play('contract');
     const faSigningLine = getSigningLine(fighter, 'fa_signing');
@@ -5416,7 +5419,7 @@ const App = {
     const newShowCard = App._removeFighterFromShowCard(G.showCard, charId);
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
-    const log = [...G.gameLog, `📤 ${target.name}を解雇`];
+    const log = [...G.gameLog, { type: 'fighter_released', data: { name: target.name }, s: G.season, w: G.week }];
     if (titleMsg) log.push(titleMsg);
     const claimResult = Engine.rival.claimDepartedStar(
       Engine.rng.create(Engine.rng.derive(G.rngSeed, 0xD75A, G.season, G.week, charId)),
@@ -5425,7 +5428,7 @@ const App = {
       { fromOrgName: G.orgName || 'player', via: 'release_claim' }
     );
     if (claimResult.claimed) {
-      log.push(`Transfer: ${target.name} -> ${claimResult.orgName}${claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : ''}`);
+      log.push({ type: 'fighter_released_claimed', data: { name: target.name, destOrg: claimResult.orgName, ejectedSuffix: claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : '' }, s: G.season, w: G.week });
       G = { ...claimResult.state, gameLog: log };
     } else if (Engine.util.canAddToFA(G)) {
       const releasedFighter = Engine.orgTimeline.transfer(target, 'fa', G.season, G.week);
@@ -5525,9 +5528,9 @@ const App = {
       const newFA = G.freeAgents.filter((_, i) => i !== idx);
       const newRoster = [...G.roster, normalized];
       const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-      const log = [...G.gameLog, `📝 ${normalized.name}と契約（契約金: ${pending.cost}万）[${tierCfg.label}]${scoutDisc > 0 ? ` / スカウト割引 ${scoutDisc}%` : ''}`];
+      const log = [...G.gameLog, { type: 'fighter_signed_overflow', data: { name: normalized.name, cost: pending.cost, tierLabel: tierCfg.label, scoutDiscSuffix: scoutDisc > 0 ? ` / スカウト割引 ${scoutDisc}%` : '' }, s: G.season, w: G.week }];
       if (titleMsg) log.push(titleMsg);
-      if (usedEliteTicket) log.push('🎫 逸材特別交渉枠を使用しました');
+      if (usedEliteTicket) log.push({ type: 'elite_ticket_used', data: {}, s: G.season, w: G.week });
       G = { ...G, funds: G.funds - pending.cost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, eliteTicket: usedEliteTicket ? false : G.eliteTicket, eliteTicketUsed: usedEliteTicket ? true : G.eliteTicketUsed };
       signedFighter = normalized;
       detail = `解雇: ${released.name} / 契約金: ${pending.cost}万`;
@@ -5551,7 +5554,7 @@ const App = {
       if (!picks.includes(pending.fighterId)) picks.push(pending.fighterId);
       const newRoster = [...G.roster, normalizedSigned];
       const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-      const log = [...G.gameLog, `📝 スカウト獲得 ${normalizedSigned.name} [${tierCfg.label}] 契約金${pending.cost}万`];
+      const log = [...G.gameLog, { type: 'scout_signed', data: { name: normalizedSigned.name, tierLabel: tierCfg.label, cost: pending.cost }, s: G.season, w: G.week }];
       if (titleMsg) log.push(titleMsg);
       G = { ...G, roster: newRoster, scoutCandidates: candidates, scoutPicks: picks, funds: G.funds - pending.cost, titles, gameLog: log };
       signedFighter = normalizedSigned;
@@ -5568,7 +5571,7 @@ const App = {
       resetFighter = Engine.orgTimeline.transfer(resetFighter, 'player', G.season, G.week);
       resetFighter = Engine.career.addEvent(resetFighter, { type: 'transfer', season: G.season, week: G.week, fromOrg: fromOrgName, toOrg: 'player', via: 'negotiate' });
       const newAiOrgs = { ...G.aiOrgs, [fromOrgId]: { ...orgData, roster: orgData.roster.filter(f => f.id !== pending.fighterId) } };
-      G = { ...G, aiOrgs: newAiOrgs, roster: [...G.roster, resetFighter], funds: G.funds - pending.cost, transferLog: [...(G.transferLog || []), { season: G.season, week: G.week, type: 'negotiate', fighter: fighter.name, from: fromOrgName, cost: pending.cost }], gameLog: [...G.gameLog, `🎉 ${fighter.name}の引き抜き交渉成功！（-${pending.cost}万）`], negotiationResult: null };
+      G = { ...G, aiOrgs: newAiOrgs, roster: [...G.roster, resetFighter], funds: G.funds - pending.cost, transferLog: [...(G.transferLog || []), { season: G.season, week: G.week, type: 'negotiate', fighter: fighter.name, from: fromOrgName, cost: pending.cost }], gameLog: [...G.gameLog, { type: 'poach_negotiate_success', data: { name: fighter.name, cost: pending.cost }, s: G.season, w: G.week }], negotiationResult: null };
       App._pushNewsEvent({ type: 'poachSuccess', characterId: resetFighter.id,
         data: { name: resetFighter.name, toOrg: G.orgName || '\u3042\u306a\u305f\u306e\u56e3\u4f53', fromOrg: fromOrgName, ovr: Engine.util.ov(resetFighter), cost: pending.cost } });
       signedFighter = resetFighter;
@@ -5684,7 +5687,7 @@ const App = {
       newFunds -= result.cost;
       picks.push(candidateId);
       candidates = candidates.filter(c => c.id !== candidateId);
-      log.push(`🔍 スカウト獲得: ${cand.name} [${tierCfg.label}] 契約金${result.cost}万`);
+      log.push({ type: 'scout_acquired', data: { name: cand.name, tierLabel: tierCfg.label, cost: result.cost }, s: G.season, w: G.week });
       const signingContext = (choice === 'direct') ? 'direct'
         : (choice === 'pay' || choice === 'gamble') ? 'competition_won'
         : 'direct';
@@ -5710,16 +5713,16 @@ const App = {
           aiOrgs = { ...aiOrgs, [lostResult.orgId]: { ...orgData, roster: nextRoster } };
         }
         const orgInfo = RIVAL_ORGS.find(o => o.id === lostResult.orgId);
-        log.push(`🔍 競り負け: ${cand.name}は${orgInfo ? orgInfo.name : '他団体'}へ`);
+        log.push({ type: 'scout_lost_to_org', data: { name: cand.name, orgName: orgInfo ? orgInfo.name : '他団体' }, s: G.season, w: G.week });
       } else {
         // 最終重複チェック：同一defIdがFA・ロスターに既に存在しない場合のみ追加
         const alreadyExists = freeAgents.some(f => f.id === cleanFighter.id)
           || newRoster.some(f => f.id === cleanFighter.id);
         if (!alreadyExists) {
           freeAgents.push(normalizeFighterForRoster(cleanFighter));
-          log.push(`🔍 競り負け: ${cand.name}はフリーエージェントへ`);
+          log.push({ type: 'scout_lost_to_fa', data: { name: cand.name }, s: G.season, w: G.week });
         } else {
-          log.push(`🔍 競り負け: ${cand.name}はフリーエージェントへ（重複のため登録省略）`);
+          log.push({ type: 'scout_lost_to_fa_dup', data: { name: cand.name }, s: G.season, w: G.week });
         }
       }
       candidates = candidates.filter(c => c.id !== candidateId);
@@ -5728,7 +5731,7 @@ const App = {
         message:`${cand.name}の獲得に失敗…`, detail:'他団体との競合に敗れました' };
     } else if (result.result === 'skipped') {
       // v1.7: 見送り時はリストから削除しない（再検討可能にする）
-      log.push(`🔍 スカウト見送り: ${cand.name}`);
+      log.push({ type: 'scout_skipped', data: { name: cand.name }, s: G.season, w: G.week });
     }
 
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
@@ -5812,7 +5815,7 @@ const App = {
       return;
     }
     const picksCount = (G.scoutPicks || []).length;
-    const log = [...G.gameLog, `🔍 スカウト活動完了: ${picksCount}名獲得`];
+    const log = [...G.gameLog, { type: 'scout_activity_complete', data: { picksCount }, s: G.season, w: G.week }];
     // Clean up any remaining candidates
     let freeAgents = [...G.freeAgents];
     let dormantPool = [...(G.dormantPool || [])];
@@ -5976,7 +5979,7 @@ const App = {
             _contractNegotiationProgress: ___,
             ...clean
           } = G;
-          G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), `📋 契約更新完了: 残留${results.filter(r => r.type === 'stay').length}名 退団${results.filter(r => r.type === 'depart').length}名`] };
+          G = { ...clean, weekPhase: 'offseason', gameLog: [...(G.gameLog || []), { type: 'contract_renewal_complete', data: { stayCount: results.filter(r => r.type === 'stay').length, departCount: results.filter(r => r.type === 'depart').length }, s: G.season, w: G.week }] };
           try { Storage.autoSave(); } catch (_e) {}
           // 今週画面に戻ってから次週へ進める（社長室の交渉カードに留まらないように）
           showScreen('week');
@@ -6242,7 +6245,7 @@ const App = {
     const newShowCard = App._removeFighterFromShowCard(G.showCard, charId);
     const newCoachAssign = Engine.coach.unassignFromCoach(G, charId);
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster, showCard: newShowCard });
-    const log = [...G.gameLog, `📤 ${c.name}を解雇`];
+    const log = [...G.gameLog, { type: 'fighter_released', data: { name: c.name }, s: G.season, w: G.week }];
     if (titleMsg) log.push(titleMsg);
     // Phase E: 解雇 history を fighter に push
     let cWithRelease = Engine.career.addEvent(c, { type: 'release', season: G.season, week: G.week, fromOrg: G.orgName || 'プレイヤー団体' });
@@ -6255,7 +6258,7 @@ const App = {
       { fromOrgName: G.orgName || 'player', via: 'release_claim' }
     );
     if (claimResult.claimed) {
-      log.push(`Transfer: ${c.name} -> ${claimResult.orgName}${claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : ''}`);
+      log.push({ type: 'fighter_released_claimed', data: { name: c.name, destOrg: claimResult.orgName, ejectedSuffix: claimResult.ejected ? ` / out: ${claimResult.ejected.name}` : '' }, s: G.season, w: G.week });
       G = { ...claimResult.state, gameLog: log };
     } else if (Engine.util.canAddToFA(G)) {
       const releasedFighter = Engine.orgTimeline.transfer(cWithRelease, 'fa', G.season, G.week);
@@ -6413,7 +6416,7 @@ const App = {
       coaches: [...G.coaches, coachId],
       availableCoaches: G.availableCoaches.filter(id => id !== coachId),
       coachAssign: { ...G.coachAssign, [coachId]: [] },
-      gameLog: [...G.gameLog, `🎓 ${coach.name}をコーチとして雇用（雇用費: ${fee}万、決裁枠 -${dpCost}）`]
+      gameLog: [...G.gameLog, { type: 'coach_hired', data: { name: coach.name, fee, dpCost }, s: G.season, w: G.week }]
     };
     Audio.play('link');
     refreshAll();
@@ -6430,7 +6433,7 @@ const App = {
       ...G,
       coachSlots: result.coachSlots,
       funds: result.funds,
-      gameLog: [...G.gameLog, `🎓 コーチ枠を${result.coachSlots}枠に拡張（投資: ${result.cost}万）`]
+      gameLog: [...G.gameLog, { type: 'coach_slot_expanded', data: { slots: result.coachSlots, cost: result.cost }, s: G.season, w: G.week }]
     };
     // 出ていく金なので MG04 支出。ここだけ MG03 収入(coin)が残っていた(2026-07-27)
     Audio.play('spend');
@@ -6455,7 +6458,7 @@ const App = {
       ...G,
       coaches: G.coaches.filter(id => id !== coachId),
       coachAssign: newAssign,
-      gameLog: [...G.gameLog, `❌ ${coach?.name}を解雇`]
+      gameLog: [...G.gameLog, { type: 'coach_fired', data: { name: coach?.name }, s: G.season, w: G.week }]
     };
     Audio.play('unlink');
     refreshAll();
@@ -7809,14 +7812,14 @@ const App = {
         const bpIntrusion = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
         bpIntrusion.player = (bpIntrusion.player || 0) - BATTLE_POINT_CFG.intrusion;
         s = { ...s, battlePoints: bpIntrusion };
-        events.push(`😱 ${id.fromOrgName}の${id.intruder.name}に王座を奪われた！ 王座は空位に… ヒート${penalty}、対戦pt-${BATTLE_POINT_CFG.intrusion}`);
+        events.push({ type: 'intrusion_title_taken', data: { fromOrgName: id.fromOrgName, intruderName: id.intruder.name, penalty, intrusionPt: BATTLE_POINT_CFG.intrusion }, s: s.season, w: s.week });
       } else {
         // チャンピオン勝利 → 団体人気+2
         s = { ...s, orgPop: Math.min(100, (s.orgPop || 0) + 2) };
         const bpIntrusion = { ...(s.battlePoints || { player: 0, org_s: 0, org_a: 0, org_b: 0 }) };
         bpIntrusion.player = (bpIntrusion.player || 0) + BATTLE_POINT_CFG.intrusion;
         s = { ...s, battlePoints: bpIntrusion };
-        events.push(`👑 ${id.champName}が乱入者${id.intruder.name}を退けた！ 団体人気+2、対戦pt+${BATTLE_POINT_CFG.intrusion}`);
+        events.push({ type: 'intrusion_champion_defended', data: { champName: id.champName, intruderName: id.intruder.name, intrusionPt: BATTLE_POINT_CFG.intrusion }, s: s.season, w: s.week });
       }
       // §4.2: 乱入 rivalry +12〜+18（チャンピオン↔乱入者）
       if (s.relationships) {
@@ -7851,7 +7854,7 @@ const App = {
           roster = roster.map(c => c.id === rd.challengerId
             ? { ...c, popularity: Math.min(100, (c.popularity || 0) + Engine.popularity.applyDiminishing(5, c.popularity || 0)) }
             : c);
-          events.push(`🏆 王座奪還！ ${rd.challengerName} が ${rd.orgName} から団体王座を取り戻した！`);
+          events.push({ type: 'title_reclaim_success', data: { challengerName: rd.challengerName, orgName: rd.orgName }, s: s.season, w: s.week });
           titleMatchOutcomes.push({
             outcome: 'change', newChampId: rd.challengerId,
             prevChampId: rd.defenderId, challengerId: rd.challengerId,
@@ -7871,7 +7874,7 @@ const App = {
           // 挑戦失敗 → 12週CD
           const reclaimResult = Engine.title.resolveReclaimLoss(s, 'world');
           s = { ...s, reclaimChallenges: reclaimResult.reclaimChallenges };
-          events.push(`💔 ${rd.challengerName} の奪還挑戦は失敗。${rd.orgName} が団体王座を防衛した。`);
+          events.push({ type: 'title_reclaim_failure', data: { challengerName: rd.challengerName, orgName: rd.orgName }, s: s.season, w: s.week });
           // 業界ニュース: 奪還失敗
           s = Engine.industryNews.push(s, {
             type: 'reclaimFailure',
@@ -8034,7 +8037,7 @@ const App = {
     const venueHeatResult = Engine.economy.calcVenueHeat(s.showVenue, fp);
     if (venueHeatResult.crowdLabel) {
       const heatText = Math.round(venueHeatResult.total * 10) / 10;
-      events.push(`🏟️ ${venueHeatResult.crowdLabel}（観客熱 ${heatText >= 0 ? '+' : ''}${heatText}）`);
+      events.push({ type: 'venue_heat_crowd', data: { crowdLabel: venueHeatResult.crowdLabel, heatText: `${heatText >= 0 ? '+' : ''}${heatText}` }, s: s.season, w: s.week });
     }
 
     // UI and headless share the same context builder and finalizer.
@@ -8186,7 +8189,7 @@ const App = {
         s._rivalryResolvedThisWeek.push({ fighterId: m.left, fighter2Id: m.right });
         const emoji = resolution.emoji || '⚡';
         const label = resolution.label || (isFinalResolution ? '最終決着' : '宿敵戦勝利');
-        events.push(`${emoji} ${winnerName} vs ${loserName} — ${label}！ 両者人気+${resolution.popBonus} 団体人気+${Math.round(rivalOrgPopDelta * 10) / 10}`);
+        events.push({ type: 'rivalry_resolution', data: { emoji, winnerName, loserName, label, popBonus: resolution.popBonus, orgPopDelta: `+${Math.round(rivalOrgPopDelta * 10) / 10}` }, s: s.season, w: s.week });
       } else {
         // 決着不成立: 通常通り recordRivalry
         const rivalResult = Engine.title.recordRivalry({ ...s, rivalries, roster }, m.left, m.right, r.mq);
@@ -8247,15 +8250,15 @@ const App = {
         popDelta: Math.round((popResult.popDelta + bookedRivalryOrgPopBonus) * 10) / 10,
         orgPop: Engine.util.clamp((popResult.orgPop || 0) + bookedRivalryOrgPopBonus, 0, 100),
       };
-      events.push(`🔥 注目カード効果: 因縁カード編成で団体人気${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}`);
+      events.push({ type: 'rivalry_card_org_pop_bonus', data: { delta: `${bookedRivalryOrgPopBonus >= 0 ? '+' : ''}${Math.round(bookedRivalryOrgPopBonus * 10) / 10}` }, s: s.season, w: s.week });
     }
-    events.push(`📊 ★${appStars} (平均試合評価 ${avgMQ}) → 団体人気${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100} (現在: ${Engine.util.dispOrgPop(popResult.orgPop)})`);
+    events.push({ type: 'show_rating_org_pop_update', data: { stars: appStars, avgMQ, popDelta: `${popResult.popDelta >= 0 ? '+' : ''}${Math.round(popResult.popDelta * 100) / 100}`, curOrgPop: Engine.util.dispOrgPop(popResult.orgPop) }, s: s.season, w: s.week });
 
     // Heat — ★ベース
     const oldHeat = Engine.heat.getLevel(s);
     const newHeatScore = Engine.heat.calcUpdate(s, appStars);
     const newHeat = Engine.heat.getLevel({ ...s, heatScore: newHeatScore });
-    if (oldHeat.id !== newHeat.id) events.push(`${newHeat.emoji} Heat変動: ${oldHeat.label} → ${newHeat.label}（集客倍率 ×${newHeat.mult}）`);
+    if (oldHeat.id !== newHeat.id) events.push({ type: 'heat_level_changed', data: { emoji: newHeat.emoji, oldLabel: oldHeat.label, newLabel: newHeat.label, mult: newHeat.mult }, s: s.season, w: s.week });
 
     // Injuries — separate RNG per fighter to avoid correlation (タッグはスキップ — Phase 5対応)
     const injuryResults = [];
@@ -9064,9 +9067,11 @@ const App = {
           winnerId,
         });
         roster = s.roster;
-        events.push(winnerId === unified.challengerId
-          ? `🌐 ${unified.challenger.name}が全国統一王座を奪取！`
-          : `🌐 ${unified.champion.name}が全国統一王座を防衛！`);
+        events.push({
+          type: 'unified_title_result',
+          data: { variant: winnerId === unified.challengerId ? 'taken' : 'defended', name: winnerId === unified.challengerId ? unified.challenger.name : unified.champion.name },
+          s: s.season, w: s.week,
+        });
       }
       App._unifiedTitleShowData = null;
     }
@@ -12268,7 +12273,7 @@ const App = {
       // 関心マークが無いと誰がどこを狙うか決められない(旧セーブ等)。
       // 決着させられないので、候補を抱えたまま毎週ここへ来ないよう畳んでおく。
       G = { ...G, scoutCandidates: null, _draftSelections: null, _draftInterests: null,
-            gameLog: [...(G.gameLog || []), '⚠ ドラフト情報が不完全だったため、今年の指名は行われませんでした'] };
+            gameLog: [...(G.gameLog || []), { type: 'draft_info_incomplete', data: {}, s: G.season, w: G.week }] };
       return false;
     }
     G = { ...G, _draftSelections: [] };
@@ -12532,7 +12537,7 @@ const App = {
     try {
       const rng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, 0xA11D));
       const pendingAwards = Engine.awards.generate(rng, G);
-      G = { ...G, pendingAwards, gameLog: [...(G.gameLog || []), '🛠 年末表彰データを復旧しました'] };
+      G = { ...G, pendingAwards, gameLog: [...(G.gameLog || []), { type: 'awards_data_recovered', data: {}, s: G.season, w: G.week }] };
       Storage.autoSave();
       return true;
     } catch (e) {
@@ -13018,7 +13023,7 @@ const App = {
     });
     // orgPop変動があればログに記録（__orgPop:はdisplayEventsから除外されるため、ログにも残らなかった）
     if (orgPopDelta !== 0) {
-      displayEvents.push(`📉 団体人気${orgPopDelta >= 0 ? '+' : ''}${Math.round(orgPopDelta * 100) / 100}`);
+      displayEvents.push({ type: 'choice_event_org_pop_delta', data: { delta: `${orgPopDelta >= 0 ? '+' : ''}${Math.round(orgPopDelta * 100) / 100}` }, s: G.season, w: G.week });
     }
     G = { ...G,
       roster: result.roster,
@@ -14667,7 +14672,7 @@ const App = {
     if (result.error) { showToast('この依頼は出せませんでした'); return; }
     G = { ...G, coachRequest: result.coachRequest };
     const wanted = Engine.shachoshitsu.formatCoachRequest(result.coachRequest);
-    G = { ...G, gameLog: [...(G.gameLog || []), `📇 秘書に${wanted}を探すよう頼んだ`] };
+    G = { ...G, gameLog: [...(G.gameLog || []), { type: 'secretary_request_sent', data: { wanted }, s: G.season, w: G.week }] };
     showToast(`${wanted}を探すよう秘書に頼んだ。次の顔ぶれの入れ替わりで返事が来る`);
     Storage.autoSave();
     if (typeof renderShachoshitsu === 'function') renderShachoshitsu();
@@ -15312,7 +15317,7 @@ const App = {
     const events = [];
     wp.results.forEach((r, i) => {
       const icon = r.playerWon ? '🔵' : '🔴';
-      events.push(`  ${icon} 第${i+1}試合: ${r.playerFighter.name} vs ${r.aiFighter.name} → ${r.playerWon ? r.playerFighter.name : r.aiFighter.name}勝利 (試合評価${r.mq})`);
+      events.push({ type: 'war_match_result_line', data: { icon, matchNum: i + 1, playerName: r.playerFighter.name, aiName: r.aiFighter.name, winnerName: r.playerWon ? r.playerFighter.name : r.aiFighter.name, mq: r.mq }, s: G.season, w: G.week });
     });
     const outcome = Engine.event.applyWarOutcome(G, playerWins, aiWins, ev.opponentOrgId);
     const eventWon = playerWins > aiWins;
