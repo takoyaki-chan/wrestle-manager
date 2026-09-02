@@ -490,6 +490,8 @@ body{
      開き直す作りのため(app.js参照)、開いている最中に親のsetLang()へ追従する必要はない
      (次に開いたときの読み込み時点で最新のwm_langを反映すれば十分)。 -->
 <script src="i18n.js"></script>
+<!-- EN辞書(Stage B P3b)。test/i18n-build-dict.jsが生成。ja時はaddDictされても参照されないため無害 -->
+<script src="lang-en.js"></script>
 <script>
 // ─── Portrait helpers (依存: battle-engine-main.js が _getStandUrl 等でフォールバック呼び出し) ───
 const PORTRAIT={1:'abukuma_t',2:'tomioka_k',3:'sawade_m',4:'takatsu_k',5:'fukamachi_m',
