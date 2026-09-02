@@ -63,8 +63,8 @@ const TRAINING_FATIGUE_TOOLTIP = '追い込みを続けると体が重くなり�
 // 数値や内部状態を見せず、選手の様子として控えめに伝える表示専用のサイン。
 function renderTrainingFatigueSignal(fighter, placement) {
   if (getTrainingState(fighter) !== 'heavy') return '';
-  const label = placement === 'week' ? '今は休ませどき' : '体が重そうです';
-  return `<span class="training-fatigue-sign${placement === 'week' ? ' is-week' : ''}" title="${TRAINING_FATIGUE_TOOLTIP}" aria-label="${label}">😮‍💨</span>`;
+  const label = placement === 'week' ? WM_I18N.t('今は休ませどき') : WM_I18N.t('体が重そうです');
+  return `<span class="training-fatigue-sign${placement === 'week' ? ' is-week' : ''}" title="${WM_I18N.t(TRAINING_FATIGUE_TOOLTIP)}" aria-label="${label}">😮‍💨</span>`;
 }
 
 // ── care-rework2 P1-2: 信頼40〜55帯の低調サイン ────────────────────────────────
@@ -101,8 +101,8 @@ function isQuietSignLit(fighter) {
 
 function renderQuietTrustSignal(fighter) {
   if (!isQuietSignLit(fighter)) return '';
-  const line = QUIET_SIGN_LINES[Math.abs(fighter.id || 0) % QUIET_SIGN_LINES.length];
-  return `<span class="quiet-trust-sign" ${_tipAttr(line)} aria-label="様子が気になる">🌫</span>`;
+  const line = WM_I18N.t(QUIET_SIGN_LINES[Math.abs(fighter.id || 0) % QUIET_SIGN_LINES.length]);
+  return `<span class="quiet-trust-sign" ${_tipAttr(line)} aria-label="${WM_I18N.t('様子が気になる')}">🌫</span>`;
 }
 
 // v1.9: Roster sort state
@@ -131,7 +131,7 @@ function toggleSurvivalPanel(button) {
   if (!panel) return;
   panel.classList.toggle('is-collapsed', _survivalPanelCollapsed);
   button.setAttribute('aria-expanded', _survivalPanelCollapsed ? 'false' : 'true');
-  button.textContent = _survivalPanelCollapsed ? '＋ 展開' : '− 最小化';
+  button.textContent = _survivalPanelCollapsed ? WM_I18N.t('＋ 展開') : WM_I18N.t('− 最小化');
 }
 window.toggleSurvivalPanel = toggleSurvivalPanel;
 let _spActivePicker = null; // showprep v7 picker state: { slotIdx, side } | null
@@ -202,9 +202,9 @@ function batchIntensive(on) {
 // Coach-fighter style match helper
 function getCoachStyleMatch(coach, fighter) {
   if (!coach || !fighter) return { type: 'none', bonus: 0, label: '', icon: '', cls: 'none' };
-  if (coach.style === 'Allround') return { type: 'allround', bonus: 0.05, label: '万能', icon: '○', cls: 'allround' };
-  if (coach.style === fighter.style) return { type: 'specialist', bonus: 0.08, label: '一致', icon: '✦', cls: 'specialist' };
-  return { type: 'none', bonus: 0, label: '不一致', icon: '', cls: 'none' };
+  if (coach.style === 'Allround') return { type: 'allround', bonus: 0.05, label: WM_I18N.t('万能'), icon: '○', cls: 'allround' };
+  if (coach.style === fighter.style) return { type: 'specialist', bonus: 0.08, label: WM_I18N.t('一致'), icon: '✦', cls: 'specialist' };
+  return { type: 'none', bonus: 0, label: WM_I18N.t('不一致'), icon: '', cls: 'none' };
 }
 
 function refreshTopBar() {
@@ -245,7 +245,7 @@ function refreshTopBar() {
     if (showCrisis) {
       crisisBar.classList.add('active');
       const wkLabel = document.getElementById('crisisWeeksLabel');
-      if (wkLabel) wkLabel.textContent = `残り${Math.max(0, G.crisisWeeksRemaining || 0)}週`;
+      if (wkLabel) wkLabel.textContent = WM_I18N.t('残り{n}週', { n: Math.max(0, G.crisisWeeksRemaining || 0) });
     } else {
       crisisBar.classList.remove('active');
     }
@@ -256,13 +256,13 @@ function refreshTopBar() {
   const dateEl = document.getElementById('dispDate');
   if (dateEl) {
     if (G.offSeason) {
-      dateEl.textContent = `${G.season}年目 年度末 — オフシーズン ${G.offWeek || 0}/4`;
+      dateEl.textContent = WM_I18N.t('{season}年目 年度末 — オフシーズン {offWeek}/4', { season: G.season, offWeek: G.offWeek || 0 });
     } else {
       dateEl.textContent = Engine.util.formatDate(G.season, G.week);
     }
   }
   const fundsEl = document.getElementById('dispFunds');
-  fundsEl.textContent = `${Math.round(G.funds).toLocaleString()}万`;
+  fundsEl.textContent = WM_I18N.t('{funds}万', { funds: Math.round(G.funds).toLocaleString() });
   fundsEl.className = `info-val ${G.funds >= 0 ? 'positive' : 'negative'}`;
   const _dispPopEl = document.getElementById('dispPop');
   const _dispPopVal = Engine.util.dispOrgPop(G.orgPop);
@@ -275,11 +275,11 @@ function refreshTopBar() {
     if (popInt < 40 && G.difficultyMode !== 'hard') {
       const subsidyAmt = Engine.economy.getSubsidy(G.orgPop, G.difficultyMode);
       const remaining = 40 - popInt;
-      const tipHtml = `<strong style="color:var(--gold)">🏛️ 地域振興助成金</strong><br>
-現在の支給額: <strong style="color:#2ecc71">+${subsidyAmt}万/週</strong>（自動）<br>
-<span style="color:#aaa">人気があと<strong style="color:#fff">${remaining}pt</strong>上がると打ち切り</span><br><br>
-<span style="color:#aaa;font-size:11px">打ち切り後はスポンサー収入が<br>10万 → <strong style="color:#fff">30万/週</strong>に増えます</span>`;
-      subsidyEl.textContent = `補助金あと${remaining}pt`;
+      const tipHtml = WM_I18N.t(`<strong style="color:var(--gold)">🏛️ 地域振興助成金</strong><br>
+現在の支給額: <strong style="color:#2ecc71">+{subsidyAmt}万/週</strong>（自動）<br>
+<span style="color:#aaa">人気があと<strong style="color:#fff">{remaining}pt</strong>上がると打ち切り</span><br><br>
+<span style="color:#aaa;font-size:11px">打ち切り後はスポンサー収入が<br>10万 → <strong style="color:#fff">30万/週</strong>に増えます</span>`, { subsidyAmt, remaining });
+      subsidyEl.textContent = WM_I18N.t('補助金あと{remaining}pt', { remaining });
       subsidyEl.style.display = '';
       subsidyEl.style.cursor = 'pointer';
       subsidyEl.onmouseover = (e) => { e.stopPropagation(); showCustomTooltip(subsidyEl, tipHtml); };
@@ -296,11 +296,13 @@ function refreshTopBar() {
     const dpNow = G.decisionPoints != null ? G.decisionPoints : dpMax;
     dpEl.textContent = `⚡${dpNow}/${dpMax}`;
     dpEl.className = `info-val${dpNow >= dpMax ? ' dp-full' : (dpNow === 0 ? ' dp-empty' : '')}`;
-    const dpTip = `<strong style="color:var(--gold)">⚡ 決裁枠</strong><br>
+    const dpTip = (dpNow >= dpMax)
+      ? WM_I18N.t(`<strong style="color:var(--gold)">⚡ 決裁枠</strong><br>
 社長室の書類を決裁するのに使う。<br>
-<span style="color:var(--text-sub)"><strong style="color:var(--text-main)">4週ごとに2</strong>回復（上限${dpMax}）</span>${dpNow >= dpMax
-      ? '<br><br><span style="color:var(--text-sub);font-size:11px">いまは満タン。<strong style="color:var(--text-main)">次の回復は捨てられる</strong></span>'
-      : ''}`;
+<span style="color:var(--text-sub)"><strong style="color:var(--text-main)">4週ごとに2</strong>回復（上限{dpMax}）</span><br><br><span style="color:var(--text-sub);font-size:11px">いまは満タン。<strong style="color:var(--text-main)">次の回復は捨てられる</strong></span>`, { dpMax })
+      : WM_I18N.t(`<strong style="color:var(--gold)">⚡ 決裁枠</strong><br>
+社長室の書類を決裁するのに使う。<br>
+<span style="color:var(--text-sub)"><strong style="color:var(--text-main)">4週ごとに2</strong>回復（上限{dpMax}）</span>`, { dpMax });
     dpEl.style.cursor = 'help';
     dpEl.onmouseover = (e) => { e.stopPropagation(); showCustomTooltip(dpEl, dpTip); };
     dpEl.onmouseout = () => hideCustomTooltip();
@@ -320,7 +322,7 @@ function refreshTopBar() {
   }
   const champEl = document.getElementById('dispChamp');
   const champ = getWorldChampion();
-  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(champ.id, 28)}<span>🏆 ${fLink(champ, {source:'roster', bold:false, size:'15px'})} (${G.titles.world.defenses}防衛)</span></span>` : '<span style="color:var(--text-dim)">🏆 空位</span>';
+  champEl.innerHTML = champ ? `<span style="display:inline-flex;align-items:center;gap:6px">${portraitImg(champ.id, 28)}<span>🏆 ${fLink(champ, {source:'roster', bold:false, size:'15px'})} (${WM_I18N.t('{n}防衛', { n: G.titles.world.defenses })})</span></span>` : `<span style="color:var(--text-dim)">🏆 ${WM_I18N.t('空位')}</span>`;
 }
 
 // ╔══════════════════════════════════════════════════╗
@@ -346,7 +348,7 @@ function renderOpeningScreen() {
   }
   _openingFinishing = false;
 
-  const orgName = G.orgName || 'プレイヤー団体';
+  const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
   const fixed = Engine.draft.getFixedInfo();
   const name1 = fixed[0]?.name || '???';
   const name2 = fixed[1]?.name || '???';
@@ -577,7 +579,7 @@ function _renderSeasonReview(review, state) {
   // ── MASTHEAD ──
   h += `<div class="sr-masthead">
     <div class="sr-eyebrow">Season<span class="sr-dot"></span>Review</div>
-    <div class="sr-season-title">${state.season}年目 総括</div>
+    <div class="sr-season-title">${WM_I18N.t('{season}年目 総括', { season: state.season })}</div>
     <div class="sr-sub">Annual Record</div>
   </div>`;
 
@@ -587,14 +589,14 @@ function _renderSeasonReview(review, state) {
     const up = review.rank < review.prevRank;
     const down = review.rank > review.prevRank;
     const arrow = up ? '▲' : down ? '▼' : '=';
-    deltaHtml = `<span class="sr-delta${down ? ' sr-down' : ''}">${arrow} 前年 ${review.prevRank}位</span>`;
+    deltaHtml = `<span class="sr-delta${down ? ' sr-down' : ''}">${arrow} ${WM_I18N.t('前年 {rank}位', { rank: review.prevRank })}</span>`;
   }
   const heroImg = review.hero ? getStandUrl(review.hero.id, review.hero.ovr) : '';
   h += `<div class="sr-verdict">
     <div class="sr-verdict-l">
       <div class="sr-seal"><span class="sr-w">${WM_I18N.t(seasonHeadlineLabel(review.headline))}</span></div>
-      <div class="sr-rank-line"><span class="sr-num">${review.rank}</span><span class="sr-suf">位</span>${deltaHtml}</div>
-      <div class="sr-rank-cap">Final Standing — 最終順位</div>
+      <div class="sr-rank-line"><span class="sr-num">${review.rank}</span><span class="sr-suf">${WM_I18N.t('位')}</span>${deltaHtml}</div>
+      <div class="sr-rank-cap">${WM_I18N.t('Final Standing — 最終順位')}</div>
       <div class="sr-lead">${review.lead}</div>
     </div>
     <div class="sr-portrait">
@@ -607,7 +609,7 @@ function _renderSeasonReview(review, state) {
   // ── §I 今季を彩った記録 ──
   if (review.records && review.records.length > 0) {
     h += `<div class="sr-section">
-      <div class="sr-sec-head"><span class="sr-idx">I</span><span class="sr-t">今季を彩った記録</span><span class="sr-rule"></span></div>
+      <div class="sr-sec-head"><span class="sr-idx">I</span><span class="sr-t">${WM_I18N.t('今季を彩った記録')}</span><span class="sr-rule"></span></div>
       <div class="sr-strip">`;
     review.records.forEach(r => {
       h += `<div class="sr-card">
@@ -625,23 +627,23 @@ function _renderSeasonReview(review, state) {
 
   // ── §II 経営の一年 ──
   h += `<div class="sr-section">
-    <div class="sr-sec-head"><span class="sr-idx">II</span><span class="sr-t">経営の一年</span><span class="sr-rule"></span></div>
+    <div class="sr-sec-head"><span class="sr-idx">II</span><span class="sr-t">${WM_I18N.t('経営の一年')}</span><span class="sr-rule"></span></div>
     <div class="sr-chart-grid">`;
   if (review.popHistory && review.popHistory.length >= 2) {
     const vals = review.popHistory.map(p => p.orgPop);
     const cur = vals[vals.length - 1];
     const d = Math.round(cur - vals[vals.length - 2]);
     h += `<div class="sr-chart-card">
-      <div class="sr-chart-head"><span class="sr-chart-title">団体人気の歩み — 旗揚げから</span>
+      <div class="sr-chart-head"><span class="sr-chart-title">${WM_I18N.t('団体人気の歩み — 旗揚げから')}</span>
         <span class="sr-chart-now">${Math.round(cur)}${d !== 0 ? `<span class="sr-d${d < 0 ? ' sr-down' : ''}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>` : ''}</span></div>
       <div class="sr-chart">${_srChartSvg(vals)}</div>
-      <div class="sr-chart-x">${review.popHistory.map((p, i) => `<span>${(i === 0 || i === review.popHistory.length - 1) ? p.season + '年目' : p.season}</span>`).join('')}</div>
+      <div class="sr-chart-x">${review.popHistory.map((p, i) => `<span>${(i === 0 || i === review.popHistory.length - 1) ? WM_I18N.t('{n}年目', { n: p.season }) : p.season}</span>`).join('')}</div>
     </div>`;
   }
   if (review.fundsCurve && review.fundsCurve.length >= 2) {
     const cur = review.fundsCurve[review.fundsCurve.length - 1];
     h += `<div class="sr-chart-card">
-      <div class="sr-chart-head"><span class="sr-chart-title">資金の推移 — 今季</span>
+      <div class="sr-chart-head"><span class="sr-chart-title">${WM_I18N.t('資金の推移 — 今季')}</span>
         <span class="sr-chart-now" style="font-size:18px">${Math.round(cur).toLocaleString()}<span style="font-family:'Oswald';font-size:9px;color:var(--sr-ink-dim)">万</span></span></div>
       <div class="sr-chart">${_srChartSvg(review.fundsCurve)}</div>
       <div class="sr-chart-x">${_srFundsXLabels(review.fundsCurve.length)}</div>
@@ -651,10 +653,10 @@ function _renderSeasonReview(review, state) {
     const rev = review.finance.revenue, exp = review.finance.expense, net = review.finance.net;
     const maxV = Math.max(rev, exp, 1);
     h += `<div class="sr-chart-card sr-full">
-      <div class="sr-chart-head"><span class="sr-chart-title">今季の収支</span></div>
-      <div class="sr-pl-row"><span class="sr-pl-lbl">収入</span><div class="sr-pl-track"><div class="sr-pl-fill sr-rev" style="width:${Math.max(4, Math.round(rev / maxV * 100))}%">${rev.toLocaleString()}万</div></div></div>
-      <div class="sr-pl-row"><span class="sr-pl-lbl">支出</span><div class="sr-pl-track"><div class="sr-pl-fill sr-exp" style="width:${Math.max(4, Math.round(exp / maxV * 100))}%">${exp.toLocaleString()}万</div></div></div>
-      <div class="sr-pl-net">純益<b${net < 0 ? ' class="sr-negnet"' : ''}>${net >= 0 ? '+' : ''}${net.toLocaleString()}万</b></div>
+      <div class="sr-chart-head"><span class="sr-chart-title">${WM_I18N.t('今季の収支')}</span></div>
+      <div class="sr-pl-row"><span class="sr-pl-lbl">${WM_I18N.t('収入')}</span><div class="sr-pl-track"><div class="sr-pl-fill sr-rev" style="width:${Math.max(4, Math.round(rev / maxV * 100))}%">${WM_I18N.t('{v}万', { v: rev.toLocaleString() })}</div></div></div>
+      <div class="sr-pl-row"><span class="sr-pl-lbl">${WM_I18N.t('支出')}</span><div class="sr-pl-track"><div class="sr-pl-fill sr-exp" style="width:${Math.max(4, Math.round(exp / maxV * 100))}%">${WM_I18N.t('{v}万', { v: exp.toLocaleString() })}</div></div></div>
+      <div class="sr-pl-net">${WM_I18N.t('純益')}<b${net < 0 ? ' class="sr-negnet"' : ''}>${WM_I18N.t('{sign}{v}万', { sign: net >= 0 ? '+' : '', v: net.toLocaleString() })}</b></div>
     </div>`;
   }
   h += `</div></div>`;
@@ -665,32 +667,32 @@ function _renderSeasonReview(review, state) {
   const joins = ro.joins || [];
   if (departures.length > 0 || joins.length > 0 || ro.grew || ro.declined) {
     h += `<div class="sr-section">
-      <div class="sr-sec-head"><span class="sr-idx">III</span><span class="sr-t">顔ぶれの変化</span><span class="sr-rule"></span></div>
+      <div class="sr-sec-head"><span class="sr-idx">III</span><span class="sr-t">${WM_I18N.t('顔ぶれの変化')}</span><span class="sr-rule"></span></div>
       <div class="sr-roster-grid">`;
     if (departures.length > 0 || joins.length > 0) {
-      h += `<div><div class="sr-rc-h">出 入 り</div>`;
+      h += `<div><div class="sr-rc-h">${WM_I18N.t('出 入 り')}</div>`;
       departures.forEach(d => {
         h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(d.id)}" alt="" onerror="this.style.display='none'">
           <div><div class="sr-rc-nm">${d.name}</div><div class="sr-rc-sub">${d.age != null ? d.age : '?'} / ${d.note}</div></div>
-          <span class="sr-rc-tag sr-retire">引退</span></div>`;
+          <span class="sr-rc-tag sr-retire">${WM_I18N.t('引退')}</span></div>`;
       });
       joins.forEach(j => {
         h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(j.id)}" alt="" onerror="this.style.display='none'">
           <div><div class="sr-rc-nm">${j.name}</div><div class="sr-rc-sub">${j.age != null ? j.age : '?'} / ${j.note}</div></div>
-          <span class="sr-rc-tag sr-join">加入</span></div>`;
+          <span class="sr-rc-tag sr-join">${WM_I18N.t('加入')}</span></div>`;
       });
       h += `</div>`;
     }
     if (ro.grew || ro.declined) {
-      h += `<div><div class="sr-rc-h">成 長 と 陰 り</div>`;
+      h += `<div><div class="sr-rc-h">${WM_I18N.t('成 長 と 陰 り')}</div>`;
       if (ro.grew) {
         h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(ro.grew.id)}" alt="" onerror="this.style.display='none'">
-          <div><div class="sr-rc-nm">${ro.grew.name}</div><div class="sr-rc-sub">最も伸びた選手</div></div>
+          <div><div class="sr-rc-nm">${ro.grew.name}</div><div class="sr-rc-sub">${WM_I18N.t('最も伸びた選手')}</div></div>
           <span class="sr-rc-delta sr-up">+${Math.round(ro.grew.delta)}</span></div>`;
       }
       if (ro.declined) {
         h += `<div class="sr-rc-item"><img class="sr-rc-thumb" src="${getUpperUrl(ro.declined.id)}" alt="" onerror="this.style.display='none'">
-          <div><div class="sr-rc-nm">${ro.declined.name}</div><div class="sr-rc-sub">陰りの見えた選手</div></div>
+          <div><div class="sr-rc-nm">${ro.declined.name}</div><div class="sr-rc-sub">${WM_I18N.t('陰りの見えた選手')}</div></div>
           <span class="sr-rc-delta sr-down">${Math.round(ro.declined.delta)}</span></div>`;
       }
       h += `</div>`;
@@ -702,7 +704,7 @@ function _renderSeasonReview(review, state) {
   const rankingsArr = review.rankings || [];
   const maxRating = Math.max(...rankingsArr.map(r => r.rating), 1);
   h += `<div class="sr-section" style="margin-bottom:8px">
-    <div class="sr-sec-head"><span class="sr-idx">IV</span><span class="sr-t">団体ランキングと来季</span><span class="sr-rule"></span></div>
+    <div class="sr-sec-head"><span class="sr-idx">IV</span><span class="sr-t">${WM_I18N.t('団体ランキングと来季')}</span><span class="sr-rule"></span></div>
     <div class="sr-rank-bars">`;
   rankingsArr.forEach((r, i) => {
     const pct = Math.max(4, Math.round(r.rating / maxRating * 100));
@@ -734,12 +736,12 @@ function _renderWeekSeasonTrack(week, offSeason = false, offWeek = 0) {
     return `<span class="${classes}"></span>`;
   }).join('');
   const ariaLabel = offSeason
-    ? `年間48週完了、年度末オフシーズン${offWeek}/4`
-    : `${info.label} 第${info.weekInQuarter}週、年間第${info.week}週`;
+    ? WM_I18N.t('年間48週完了、年度末オフシーズン{offWeek}/4', { offWeek })
+    : WM_I18N.t('{label} 第{a}週、年間第{b}週', { label: info.label, a: info.weekInQuarter, b: info.week });
   return `<div class="week-season-card${offSeason ? ' is-offseason' : ''}">
     <div class="week-season-labels">${labels}</div>
     <div class="week-season-track" role="img" aria-label="${ariaLabel}">${cells}</div>
-    <div class="week-season-bridge">年度末ブリッジ ${offWeek}/4</div>
+    <div class="week-season-bridge">${WM_I18N.t('年度末ブリッジ {offWeek}/4', { offWeek })}</div>
   </div>`;
 }
 
@@ -764,10 +766,10 @@ function renderWeekScreen() {
     html = `<div class="stl-week-banner is-urgent" style="margin-top:12px">
       <div class="stl-week-banner-icon">🏟️</div>
       <div class="stl-week-banner-body">
-        <div class="stl-week-banner-title">U-20ジュニアトーナメント進行中</div>
-        <div class="stl-week-banner-sub">${bracketSize ? `${bracketSize}名トーナメント` : '大会'}の進行データを保持しています。大会画面に戻って進行を続けてください。</div>
+        <div class="stl-week-banner-title">${WM_I18N.t('U-20ジュニアトーナメント進行中')}</div>
+        <div class="stl-week-banner-sub">${bracketSize ? WM_I18N.t('{n}名トーナメントの進行データを保持しています。大会画面に戻って進行を続けてください。', { n: bracketSize }) : WM_I18N.t('大会の進行データを保持しています。大会画面に戻って進行を続けてください。')}</div>
       </div>
-      <button class="btn btn-gold" onclick="App.resumeJuniorTournament()">大会へ戻る</button>
+      <button class="btn btn-gold" onclick="App.resumeJuniorTournament()">${WM_I18N.t('大会へ戻る')}</button>
     </div>`;
     el.innerHTML = html;
     return;
@@ -791,9 +793,9 @@ function renderWeekScreen() {
       Brawler:    {color:'#e88a82',icon:'BRW',desc:'喧嘩殺法。パワーとスタミナでゴリ押す荒くれ者',cream:'tag-cream-brawler'}
     };
     const ROLE_META = {
-      Babyface: {color:'#8bc4f0',label:'ベビーフェイス',icon:'BF',cream:'tag-cream-bf'},
-      Heel:     {color:'#f08b9e',label:'ヒール',icon:'HL',cream:'tag-cream-heel'},
-      Neutral:  {color:'#b0b8c4',label:'ニュートラル',icon:'NT',cream:'tag-cream-neutral'}
+      Babyface: {color:'#8bc4f0',label:WM_I18N.t('ベビーフェイス'),icon:'BF',cream:'tag-cream-bf'},
+      Heel:     {color:'#f08b9e',label:WM_I18N.t('ヒール'),icon:'HL',cream:'tag-cream-heel'},
+      Neutral:  {color:'#b0b8c4',label:WM_I18N.t('ニュートラル'),icon:'NT',cream:'tag-cream-neutral'}
     };
 
     // ── Cream theme helpers ──
@@ -817,7 +819,7 @@ function renderWeekScreen() {
 
     function analyzeStrengths(c) {
       const stats = {pw:c.pw,sp:c.sp,te:c.te,st:c.st,mn:c.mn};
-      const labels = {pw:'パワー',sp:'スピード',te:'テクニック',st:'スタミナ',mn:'マインド'};
+      const labels = {pw:WM_I18N.t('パワー'),sp:WM_I18N.t('スピード'),te:WM_I18N.t('テクニック'),st:WM_I18N.t('スタミナ'),mn:WM_I18N.t('マインド')};
       const sorted = Object.entries(stats).sort((a,b) => b[1] - a[1]);
       const best = sorted.slice(0,2).filter(([,v]) => v >= 50);
       const worst = sorted.slice(-1).filter(([,v]) => v < 60);
@@ -830,7 +832,7 @@ function renderWeekScreen() {
     // §3.5: 現在の選択コストを事前計算
     const currentCost = Engine.draft.getSelectionCost(G.rngSeed || 42, picks);
     const remainingBudget = (G.funds || 0) - currentCost;
-    const orgName = G.orgName || 'プレイヤー団体';
+    const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
 
     // ── Draft paper wrapper ──
     html += `<div class="draft-paper">`;
@@ -842,12 +844,12 @@ function renderWeekScreen() {
     </div>`;
 
     // キャプション
-    html += `<div class="paper-caption">数字は推定値。本当の姿は、リングの上でしか分からない。</div>`;
+    html += `<div class="paper-caption">${WM_I18N.t('数字は推定値。本当の姿は、リングの上でしか分からない。')}</div>`;
 
     // 持ち越しナレーション
     html += `<div class="draft-narration">
       <p>さらに3名。<br>立ち上げメンバーを選びに行こう。</p>
-      <div class="small">候補6名の中から3名を選び、5名の所属選手でシーズンを開始する</div>
+      <div class="small">${WM_I18N.t('候補6名の中から3名を選び、5名の所属選手でシーズンを開始する')}</div>
     </div>`;
 
     html += `<div class="draft-body">`;
@@ -855,7 +857,7 @@ function renderWeekScreen() {
     // ── FIRST ROSTER — 設立メンバー ──
     html += `<div class="draft-sec-label">
       <span class="draft-sec-label-en">FIRST ROSTER</span>
-      <span class="draft-sec-label-jp">設立メンバー</span>
+      <span class="draft-sec-label-jp">${WM_I18N.t('設立メンバー')}</span>
       <span class="draft-sec-label-rule"></span>
     </div>`;
 
@@ -874,7 +876,7 @@ function renderWeekScreen() {
         <div class="draft-fc-info">
           <div class="draft-fc-name-row">
             <span class="draft-fc-name">${c.name}</span>
-            <span class="draft-fc-age">${c.age || 17}歳 / ${c.h}cm</span>
+            <span class="draft-fc-age">${WM_I18N.t('{age}歳 / {h}cm', { age: c.age || 17, h: c.h })}</span>
           </div>
           <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
             <span class="draft-fc-ovr-label">OVR</span>
@@ -886,10 +888,10 @@ function renderWeekScreen() {
           </div>
           ${makeCreamStatBars(c)}
           <div class="draft-analysis">
-            ${strengths.length ? '強み: ' + strengths.join(', ') : ''}
-            ${weaknesses.length ? (strengths.length ? ' / ' : '') + '課題: ' + weaknesses.join(', ') : ''}
+            ${strengths.length ? WM_I18N.t('強み: ') + strengths.join(', ') : ''}
+            ${weaknesses.length ? (strengths.length ? ' / ' : '') + WM_I18N.t('課題: ') + weaknesses.join(', ') : ''}
           </div>
-          <div class="draft-coach-quote">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
+          <div class="draft-coach-quote">${c.coachEval.emoji} ${WM_I18N.t('将来性: {text}', { text: c.coachEval.text })}</div>
         </div>
       </div>`;
     }
@@ -898,7 +900,7 @@ function renderWeekScreen() {
     // ── CANDIDATES — 候補選手 ──
     html += `<div class="draft-sec-label">
       <span class="draft-sec-label-en">CANDIDATES</span>
-      <span class="draft-sec-label-jp">候補選手（${picks.length}/${DRAFT_CONFIG.pickCount}名選択済）</span>
+      <span class="draft-sec-label-jp">${WM_I18N.t('候補選手（{a}/{b}名選択済）', { a: picks.length, b: DRAFT_CONFIG.pickCount })}</span>
       <span class="draft-sec-label-rule"></span>
     </div>`;
 
@@ -919,7 +921,7 @@ function renderWeekScreen() {
         <div class="draft-fc-info">
           <div class="draft-fc-name-row">
             <span class="draft-fc-name">${c.name}</span>
-            <span class="draft-fc-age">${c.age || 17}歳</span>
+            <span class="draft-fc-age">${WM_I18N.t('{age}歳', { age: c.age || 17 })}</span>
           </div>
           <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
             <span class="draft-fc-ovr-label">OVR</span>
@@ -931,12 +933,12 @@ function renderWeekScreen() {
           </div>
           ${makeCreamStatBars(c)}
           <div class="draft-analysis">
-            ${strengths.length ? '強み: ' + strengths.join(', ') : ''}
-            ${weaknesses.length ? (strengths.length ? ' / ' : '') + '課題: ' + weaknesses.join(', ') : ''}
+            ${strengths.length ? WM_I18N.t('強み: ') + strengths.join(', ') : ''}
+            ${weaknesses.length ? (strengths.length ? ' / ' : '') + WM_I18N.t('課題: ') + weaknesses.join(', ') : ''}
           </div>
-          <div class="draft-coach-quote">${c.coachEval.emoji} 将来性: ${c.coachEval.text}</div>
-          <div class="draft-contract-fee">契約金: <strong>${c.assessedValue || 0}</strong> 万
-            ${tooExpensive ? '<span style="color:#922b21;font-weight:700;margin-left:6px">資金不足</span>' : ''}</div>
+          <div class="draft-coach-quote">${c.coachEval.emoji} ${WM_I18N.t('将来性: {text}', { text: c.coachEval.text })}</div>
+          <div class="draft-contract-fee">${WM_I18N.t('契約金:')} <strong>${c.assessedValue || 0}</strong> ${WM_I18N.t('万')}
+            ${tooExpensive ? `<span style="color:#922b21;font-weight:700;margin-left:6px">${WM_I18N.t('資金不足')}</span>` : ''}</div>
         </div>
       </div>`;
     }
@@ -949,12 +951,12 @@ function renderWeekScreen() {
 
     html += `<div class="draft-confirm-area">
       <div class="budget-info">
-        契約金合計 <span class="num">${currentCost}</span> 万 ／ 残り資金 <span class="num">${remainingBudget}</span> 万
+        ${WM_I18N.t('契約金合計')} <span class="num">${currentCost}</span> ${WM_I18N.t('万 ／ 残り資金')} <span class="num">${remainingBudget}</span> ${WM_I18N.t('万')}
       </div>
       <button class="btn-draft-confirm" ${confirmReady ? 'onclick="App.completeDraft()"' : 'disabled'}>
-        ${!canConfirm ? `あと${DRAFT_CONFIG.pickCount - picks.length}名選んでください` :
-          !canAfford ? '資金不足 — より安い候補を選んでください' :
-          `この5名でシーズン開始`}
+        ${!canConfirm ? WM_I18N.t('あと{n}名選んでください', { n: DRAFT_CONFIG.pickCount - picks.length }) :
+          !canAfford ? WM_I18N.t('資金不足 — より安い候補を選んでください') :
+          WM_I18N.t('この5名でシーズン開始')}
       </button>
     </div>`;
 
@@ -969,8 +971,8 @@ function renderWeekScreen() {
   if (G.weekPhase === 'offseason') {
     const offW = G.offWeek || 0;
     document.getElementById('weekTitle').textContent = offW === 0
-      ? 'オフシーズン突入'
-      : `オフシーズン ${offW}/4`;
+      ? WM_I18N.t('オフシーズン突入')
+      : WM_I18N.t('オフシーズン {offW}/4', { offW });
 
     html += `<div class="week-overview-card">${_renderWeekSeasonTrack(48, true, offW)}</div>`;
 
@@ -980,7 +982,7 @@ function renderWeekScreen() {
         ${[1,2,3,4].map(i => `<div style="flex:1;height:6px;border-radius:3px;background:${i <= offW ? 'var(--gold)' : 'var(--bg-card)'};transition:background 0.3s"></div>`).join('')}
       </div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-dim)">
-        <span>レポート</span><span>ドラフト</span><span>移籍</span><span>開幕</span>
+        <span>${WM_I18N.t('レポート')}</span><span>${WM_I18N.t('ドラフト')}</span><span>${WM_I18N.t('移籍')}</span><span>${WM_I18N.t('開幕')}</span>
       </div>
     </div>`;
 
@@ -1023,7 +1025,7 @@ function renderWeekScreen() {
       const offEvents = recentEvents.slice(-15);
       if (offEvents.length > 0) {
         html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px;max-height:300px;overflow-y:auto">';
-        html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 オフシーズンレポート</h4>';
+        html += `<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">📋 ${WM_I18N.t('オフシーズンレポート')}</h4>`;
         offEvents.forEach(ev => {
           const evText = gameLogEntryText(ev);
           const isHighlight = typeof ev === 'string' ? _offseasonHighlightKw(ev) : (ev.type && GAMELOG_OFFSEASON_REPORT_TYPES.has(ev.type));
@@ -1034,21 +1036,21 @@ function renderWeekScreen() {
 
       if (G.rankings && G.rankings.length > 0) {
         html += '<div style="background:var(--bg-card);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:16px">';
-        html += '<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">🏆 現在のランキング</h4>';
+        html += `<h4 style="color:var(--gold);margin-bottom:8px;font-size:13px">🏆 ${WM_I18N.t('現在のランキング')}</h4>`;
         G.rankings.forEach((r, i) => {
           const isPlayer = r.orgId === 'player';
           html += `<div style="display:flex;justify-content:space-between;padding:3px 0;font-size:12px;${isPlayer ? 'color:var(--gold);font-weight:700' : 'color:var(--text-sub)'}">
-            <span>${i+1}位 ${r.name}</span><span>${Math.round(r.rating)}pt</span>
+            <span>${WM_I18N.t('{n}位', { n: i + 1 })} ${r.name}</span><span>${Math.round(r.rating)}pt</span>
           </div>`;
         });
         html += '</div>';
       }
     }
 
-    const nextLabels = ['シーズンレポートへ →', 'ドラフト会議へ →', '移籍ウィンドウへ →', '新シーズン開幕 →'];
-    const nextLabel = nextLabels[offW] || `オフシーズン第${offW + 1}週へ →`;
+    const nextLabels = [WM_I18N.t('シーズンレポートへ →'), WM_I18N.t('ドラフト会議へ →'), WM_I18N.t('移籍ウィンドウへ →'), WM_I18N.t('新シーズン開幕 →')];
+    const nextLabel = nextLabels[offW] || WM_I18N.t('オフシーズン第{n}週へ →', { n: offW + 1 });
     const nextLabelOverrides = {
-      1: '次へ →',
+      1: WM_I18N.t('次へ →'),
     };
     const btnClass = offW >= 3 ? 'btn-gold' : 'btn-blue';
     html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabelOverrides[offW] || nextLabel}</button></div>`;
@@ -1070,14 +1072,14 @@ function renderWeekScreen() {
   // isPPV は週番号だけを見るので、天頂戦の年でも Week48 で true になる。
   // その年の Week48 は PPV ではないため、表記から外す
   const ppv = isPPV(G.week) && !Engine.ppvTournament.isTournamentSeason(G.season);
-  const reservedEventLabel = G.week === Engine.springTagLeague.LEAGUE_WEEK ? '🌸 春のタッグリーグ'
-    : G.week === Engine.juniorTournament.WEEK ? '🏟️ ジュニアトーナメント'
-      : G.week === Engine.autumnWar.EVENT_WEEK ? '⚔️ 4団体勝ち残り対抗戦'
+  const reservedEventLabel = G.week === Engine.springTagLeague.LEAGUE_WEEK ? `🌸 ${WM_I18N.t('春のタッグリーグ')}`
+    : G.week === Engine.juniorTournament.WEEK ? `🏟️ ${WM_I18N.t('ジュニアトーナメント')}`
+      : G.week === Engine.autumnWar.EVENT_WEEK ? `⚔️ ${WM_I18N.t('4団体勝ち残り対抗戦')}`
         : G.week === Engine.ppvTournament.SHOW_WEEK
-          ? (Engine.ppvTournament.isTournamentSeason(G.season) ? '👑 天頂戦' : '🏆 PPV GRAND FINAL')
-          : '⭐ 季節の特別興行';
-  let typeLabel = stlBlocked ? '🌸 春のタッグリーグ' : agwBlocked ? '⚔️ 4団体勝ち残り対抗戦' : jtBlocked ? '🏟️ ジュニアトーナメント' : tcBlocked ? '👑 天頂戦' : specialEventBlocked ? reservedEventLabel : isShow ? (ppv ? '🏆 PPV' : '🎤 興行週') : '📋 非興行週';
-  document.getElementById('weekTitle').textContent = G.offSeason ? `オフシーズン ${G.offWeek}/4` : typeLabel;
+          ? (Engine.ppvTournament.isTournamentSeason(G.season) ? `👑 ${WM_I18N.t('天頂戦')}` : '🏆 PPV GRAND FINAL')
+          : `⭐ ${WM_I18N.t('季節の特別興行')}`;
+  let typeLabel = stlBlocked ? `🌸 ${WM_I18N.t('春のタッグリーグ')}` : agwBlocked ? `⚔️ ${WM_I18N.t('4団体勝ち残り対抗戦')}` : jtBlocked ? `🏟️ ${WM_I18N.t('ジュニアトーナメント')}` : tcBlocked ? `👑 ${WM_I18N.t('天頂戦')}` : specialEventBlocked ? reservedEventLabel : isShow ? (ppv ? '🏆 PPV' : `🎤 ${WM_I18N.t('興行週')}`) : `📋 ${WM_I18N.t('非興行週')}`;
+  document.getElementById('weekTitle').textContent = G.offSeason ? WM_I18N.t('オフシーズン {w}/4', { w: G.offWeek }) : typeLabel;
 
   html = '';
 
@@ -1100,16 +1102,16 @@ function renderWeekScreen() {
     // Upcoming events
     const upcomingItems = [];
     const nextShow = (() => { for (let w = G.week; w <= 48; w++) if (Engine.util.isRegularShowWeek(w)) return w; return null; })();
-    if (nextShow && nextShow > G.week) upcomingItems.push(`🎤 次の興行: 第${nextShow}週`);
-    else if (nextShow === G.week) upcomingItems.push('🎤 今週は興行週！');
-    if (specialEventBlocked) upcomingItems.push(`${reservedEventLabel} 開催週`);
+    if (nextShow && nextShow > G.week) upcomingItems.push(WM_I18N.t('🎤 次の興行: 第{w}週', { w: nextShow }));
+    else if (nextShow === G.week) upcomingItems.push(WM_I18N.t('🎤 今週は興行週！'));
+    if (specialEventBlocked) upcomingItems.push(WM_I18N.t('{label} 開催週', { label: reservedEventLabel }));
     else {
       const spW = (() => { for (let w = G.week + 1; w <= 48; w++) if (Engine.util.isSeasonSpecialEventWeek(w)) return w; return null; })();
-      if (spW) upcomingItems.push(`⭐ 次の季節特別興行: 第${spW}週`);
+      if (spW) upcomingItems.push(WM_I18N.t('⭐ 次の季節特別興行: 第{w}週', { w: spW }));
     }
     if (G.pendingNegotiation) {
       const remainW = G.pendingNegotiation.resolveWeek - G.week;
-      upcomingItems.push(`🤝 交渉中: ${G.pendingNegotiation.fighterName}（残${remainW}週）`);
+      upcomingItems.push(WM_I18N.t('🤝 交渉中: {name}（残{w}週）', { name: G.pendingNegotiation.fighterName, w: remainW }));
     }
 
     html += `<div class="week-overview-grid">
@@ -1118,12 +1120,12 @@ function renderWeekScreen() {
       <!-- Mini Ranking + Finance -->
       <div class="week-overview-card">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-          <span style="font-size:11px;color:var(--text-dim)">ランキング <strong style="color:${pRank===1?'var(--gold)':pRank===2?'#e74c3c':pRank===3?'#9b59b6':'#2ecc71'};font-size:14px">#${pRank}</strong></span>
-          <span style="font-size:11px;color:var(--text-dim)">資金 <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${Math.round(G.funds).toLocaleString()}万</strong></span>
+          <span style="font-size:11px;color:var(--text-dim)">${WM_I18N.t('ランキング')} <strong style="color:${pRank===1?'var(--gold)':pRank===2?'#e74c3c':pRank===3?'#9b59b6':'#2ecc71'};font-size:14px">#${pRank}</strong></span>
+          <span style="font-size:11px;color:var(--text-dim)">${WM_I18N.t('資金')} <strong style="color:${G.funds>=0?'#2ecc71':'#e74c3c'};font-size:13px">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</strong></span>
         </div>
         <div style="display:flex;justify-content:space-between;align-items:flex-end">
           <div style="font-size:12px;color:var(--text-dim)">
-            興行${stats.showCount||0}回 ｜ 最高評価${stats.bestMQ||0}${stats.eventsWon ? ` ｜ 抗争${stats.eventsWon}勝` : ''}
+            ${WM_I18N.t('興行{a}回 ｜ 最高評価{b}', { a: stats.showCount || 0, b: stats.bestMQ || 0 })}${stats.eventsWon ? ` ${WM_I18N.t('｜ 抗争{n}勝', { n: stats.eventsWon })}` : ''}
           </div>
           <svg width="${sparkW}" height="${sparkH}" style="opacity:0.6"><polyline points="${sparkPoints}" fill="none" stroke="${G.funds>=0?'#2ecc71':'#e74c3c'}" stroke-width="1.5"/></svg>
         </div>
@@ -1141,9 +1143,9 @@ function renderWeekScreen() {
       const netColor = mNet >= 0 ? '#2ecc71' : '#e74c3c';
       const weekInMonth = manageBuf.length + 1;
       html += `<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;padding:6px 12px;background:rgba(200,190,170,0.025);border:1px solid rgba(200,190,170,0.05);border-radius:5px;font-size:12px">
-        <span style="color:var(--text-dim);flex-shrink:0">月${weekInMonth}週目:</span>
-        <span style="color:${netColor};font-weight:700">${mNet >= 0 ? '+' : ''}${Math.round(mNet)}万</span>
-        <span style="color:var(--text-dim);font-size:11px">収入${Math.round(mIncome)}万 / 支出${Math.round(mExpense)}万</span>
+        <span style="color:var(--text-dim);flex-shrink:0">${WM_I18N.t('月{n}週目:', { n: weekInMonth })}</span>
+        <span style="color:${netColor};font-weight:700">${WM_I18N.t('{sign}{v}万', { sign: mNet >= 0 ? '+' : '', v: Math.round(mNet) })}</span>
+        <span style="color:var(--text-dim);font-size:11px">${WM_I18N.t('収入{a}万 / 支出{b}万', { a: Math.round(mIncome), b: Math.round(mExpense) })}</span>
       </div>`;
     }
 
@@ -1177,13 +1179,13 @@ function renderWeekScreen() {
       html += `<div class="survival-panel ${sPhase ? sPhase.cssClass : 'phase-red'}${isCritical ? ' critical' : ''}${_survivalPanelCollapsed ? ' is-collapsed' : ''}">`;
       html += `<div class="survival-header">
         <span class="survival-title" style="color:${sPhase?.color || '#e74c3c'}">
-          <span style="font-size:16px">⛽</span> 経営サバイバル
+          <span style="font-size:16px">⛽</span> ${WM_I18N.t('経営サバイバル')}
         </span>
         <span class="survival-header-actions">
           <span class="survival-phase-badge" style="background:${sPhase?.color || '#e74c3c'}22;color:${sPhase?.color || '#e74c3c'};border:1px solid ${sPhase?.color || '#e74c3c'}44">
-            ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字地獄'}
+            ${sPhase?.emoji || '🔴'} ${sPhase?.label || WM_I18N.t('赤字地獄')}
           </span>
-          <button class="survival-toggle" type="button" onclick="toggleSurvivalPanel(this)" aria-expanded="${_survivalPanelCollapsed ? 'false' : 'true'}">${_survivalPanelCollapsed ? '＋ 展開' : '− 最小化'}</button>
+          <button class="survival-toggle" type="button" onclick="toggleSurvivalPanel(this)" aria-expanded="${_survivalPanelCollapsed ? 'false' : 'true'}">${_survivalPanelCollapsed ? WM_I18N.t('＋ 展開') : WM_I18N.t('− 最小化')}</button>
         </span>
       </div>`;
 
@@ -1209,20 +1211,20 @@ function renderWeekScreen() {
       const netColor = sNet.weeklyNet >= 0 ? '#2ecc71' : '#e74c3c';
       const netSign = sNet.weeklyNet >= 0 ? '+' : '';
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${netColor}">${netSign}${Math.round(sNet.weeklyNet)}万</span>
-        <span class="survival-stat-label">推定週間収支</span>
+        <span class="survival-stat-val" style="color:${netColor}">${WM_I18N.t('{sign}{v}万', { sign: netSign, v: Math.round(sNet.weeklyNet) })}</span>
+        <span class="survival-stat-label">${WM_I18N.t('推定週間収支')}</span>
       </div>`;
       // Weeks until bankrupt
       if (sNet.weeklyNet < 0) {
         const urgency = sWeeks <= 10 ? '#e74c3c' : sWeeks <= 20 ? '#e67e22' : '#f1c40f';
         html += `<div class="survival-stat">
-          <span class="survival-stat-val" style="color:${urgency}">残り${sWeeks}週</span>
-          <span class="survival-stat-label">倒産までの猶予</span>
+          <span class="survival-stat-val" style="color:${urgency}">${WM_I18N.t('残り{n}週', { n: sWeeks })}</span>
+          <span class="survival-stat-label">${WM_I18N.t('倒産までの猶予')}</span>
         </div>`;
       } else {
         html += `<div class="survival-stat">
-          <span class="survival-stat-val" style="color:#2ecc71">安全</span>
-          <span class="survival-stat-label">資金状況</span>
+          <span class="survival-stat-val" style="color:#2ecc71">${WM_I18N.t('安全')}</span>
+          <span class="survival-stat-label">${WM_I18N.t('資金状況')}</span>
         </div>`;
       }
       // Rolling 4-week net (monthly profit indicator)
@@ -1230,37 +1232,37 @@ function renderWeekScreen() {
       const rollingSum = buf.reduce((a,b) => a+b, 0);
       const r4count = G.rollingNet4Count || 0;
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${rollingSum >= 0 ? '+' : ''}${Math.round(rollingSum)}万</span>
-        <span class="survival-stat-label">月次収支(4週)</span>
+        <span class="survival-stat-val" style="color:${rollingSum >= 0 ? '#2ecc71' : r4count > 0 ? '#f1c40f' : 'var(--text-dim)'}">${WM_I18N.t('{sign}{v}万', { sign: rollingSum >= 0 ? '+' : '', v: Math.round(rollingSum) })}</span>
+        <span class="survival-stat-label">${WM_I18N.t('月次収支(4週)')}</span>
       </div>`;
       // Weekly expense
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:#e74c3c">-${Math.round(sNet.totalExpense)}万</span>
-        <span class="survival-stat-label">週間支出</span>
+        <span class="survival-stat-val" style="color:#e74c3c">${WM_I18N.t('-{v}万', { v: Math.round(sNet.totalExpense) })}</span>
+        <span class="survival-stat-label">${WM_I18N.t('週間支出')}</span>
       </div>`;
       // Weekly base income
       html += `<div class="survival-stat">
-        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${sNet.totalBaseIncome > 0 ? '+' : ''}${Math.round(sNet.totalBaseIncome)}万</span>
-        <span class="survival-stat-label">固定収入</span>
+        <span class="survival-stat-val" style="color:${sNet.totalBaseIncome > 0 ? '#2ecc71' : 'var(--text-dim)'}">${WM_I18N.t('{sign}{v}万', { sign: sNet.totalBaseIncome > 0 ? '+' : '', v: Math.round(sNet.totalBaseIncome) })}</span>
+        <span class="survival-stat-label">${WM_I18N.t('固定収入')}</span>
       </div>`;
       html += '</div>'; // .survival-stats
 
       // Tip text
       if (sPhase && sPhase.id === 'red') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 <strong style="color:#f1c40f">目標:</strong> 倒産する前に黒字経営に持っていこう！ まずは興行を開催して人気を上げ、スポンサー収入（人気20〜）を獲得するのが第一歩。
+          💡 <strong style="color:#f1c40f">${WM_I18N.t('目標:')}</strong> ${WM_I18N.t('倒産する前に黒字経営に持っていこう！ まずは興行を開催して人気を上げ、スポンサー収入（人気20〜）を獲得するのが第一歩。')}
         </div>`;
       } else if (sPhase && sPhase.id === 'orange') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 赤字が縮小しています！ 人気を上げてスポンサー・放映権収入を増やし、損益分岐点を超えよう。
+          💡 ${WM_I18N.t('赤字が縮小しています！ 人気を上げてスポンサー・放映権収入を増やし、損益分岐点を超えよう。')}
         </div>`;
       } else if (sPhase && sPhase.id === 'yellow') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 あと少し！ 4週連続で黒字を出し、資金3,000万以上を維持すれば経営安定化クリア！
+          💡 ${WM_I18N.t('あと少し！ 4週連続で黒字を出し、資金3,000万以上を維持すれば経営安定化クリア！')}
         </div>`;
       } else if (sPhase && sPhase.id === 'green') {
         html += `<div style="margin-top:8px;font-size:12px;color:var(--text-dim);line-height:1.5;padding:6px 8px;background:rgba(0,0,0,0.2);border-radius:4px">
-          💡 黒字転換達成！ この調子で${4 - (G.survivalProfitStreak || 0)}週間黒字を維持すればクリア！（現在の資金: ${Math.round(G.funds).toLocaleString()}万${G.funds < 3000 ? ` / 目標3,000万` : ''}）
+          💡 ${WM_I18N.t('黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）', { n: 4 - (G.survivalProfitStreak || 0), funds: Math.round(G.funds).toLocaleString(), goalNote: G.funds < 3000 ? WM_I18N.t(' / 目標3,000万') : '' })}
         </div>`;
       }
 
@@ -1275,25 +1277,33 @@ function renderWeekScreen() {
     const injuredCount = G.roster.filter(c => c.injury).length;
     html += `<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;font-size:12px;color:var(--text-sub)">
       <span>Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（×${heat.mult}）</span></span>
-      ${injuredCount > 0 ? `<span style="color:#e17055">🏥 負傷者: ${injuredCount}名</span>` : ''}
-      ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 コーチ: ${G.coaches.length}名</span>` : ''}
+      ${injuredCount > 0 ? `<span style="color:#e17055">🏥 ${WM_I18N.t('負傷者: {n}名', { n: injuredCount })}</span>` : ''}
+      ${G.coaches.length > 0 ? `<span style="color:#2ecc71">🎓 ${WM_I18N.t('コーチ: {n}名', { n: G.coaches.length })}</span>` : ''}
     </div>`;
-    html += `<p style="margin-bottom:12px;color:var(--text-sub)">選手の週間スケジュールを確認し、${stlBlocked ? '週を進めてください（今週は春のタッグリーグ開催週）' : agwBlocked ? '週を進めてください（今週は4団体勝ち残り対抗戦）' : jtBlocked ? '週を進めてください（今週はジュニアトーナメント開催週）' : tcBlocked ? '週を進めてください（今週は天頂戦開催週）' : specialEventBlocked ? '週を進めてください（今週は季節の特別興行週）' : isShow ? '興行準備に進んでください' : '週を進めてください'}。</p>`;
+    html += `<p style="margin-bottom:12px;color:var(--text-sub)">${
+      stlBlocked ? WM_I18N.t('選手の週間スケジュールを確認し、週を進めてください（今週は春のタッグリーグ開催週）。')
+      : agwBlocked ? WM_I18N.t('選手の週間スケジュールを確認し、週を進めてください（今週は4団体勝ち残り対抗戦）。')
+      : jtBlocked ? WM_I18N.t('選手の週間スケジュールを確認し、週を進めてください（今週はジュニアトーナメント開催週）。')
+      : tcBlocked ? WM_I18N.t('選手の週間スケジュールを確認し、週を進めてください（今週は天頂戦開催週）。')
+      : specialEventBlocked ? WM_I18N.t('選手の週間スケジュールを確認し、週を進めてください（今週は季節の特別興行週）。')
+      : isShow ? WM_I18N.t('選手の週間スケジュールを確認し、興行準備に進んでください。')
+      : WM_I18N.t('選手の週間スケジュールを確認し、週を進めてください。')
+    }</p>`;
 
     // v1.0: Primary action buttons — top-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
     if (typeof App !== 'undefined' && App.canEnterJuniorTournamentThisWeek && App.canEnterJuniorTournamentThisWeek()) {
-      html += '<button class="btn btn-gold" onclick="App.enterJuniorTournamentFromWeek({ processWeekOnCancel: true })" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">JTへ進む</button>';
+      html += `<button class="btn btn-gold" onclick="App.enterJuniorTournamentFromWeek({ processWeekOnCancel: true })" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">${WM_I18N.t('JTへ進む')}</button>`;
     } else if (isShow) {
       // showPrep 中に「今週」タブへ戻ってきた場合は準備画面へ復帰する導線にする
       html += G.weekPhase === 'showPrep'
-        ? '<button class="btn btn-gold" onclick="resumeShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備に戻る →</button>'
-        : '<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 興行準備へ →</button>';
+        ? `<button class="btn btn-gold" onclick="resumeShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 ${WM_I18N.t('興行準備に戻る →')}</button>`
+        : `<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 ${WM_I18N.t('興行準備へ →')}</button>`;
     } else {
-      html += '<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ 週を処理</button>';
+      html += `<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ ${WM_I18N.t('週を処理')}</button>`;
     }
-    html += '<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに切り替えます。それ以外の方針は維持されます">🤖 おまかせ</button>';
-    html += _tipIcon('<strong style="color:var(--gold)">🤖 おまかせ</strong><br>体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに戻します。それ以外の方針は維持されます。');
+    html += `<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="${WM_I18N.t('体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに切り替えます。それ以外の方針は維持されます')}">🤖 ${WM_I18N.t('おまかせ')}</button>`;
+    html += _tipIcon(WM_I18N.t('<strong style="color:var(--gold)">🤖 おまかせ</strong><br>体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに戻します。それ以外の方針は維持されます。'));
     html += '</div>';
 
     // Roster schedule overview
@@ -1308,20 +1318,20 @@ function renderWeekScreen() {
         : condPct >= 70 ? 'cond-70'
         : condPct >= 50 ? 'cond-50'
         : 'cond-low';
-      const actionLabels = {practice:'練習',promo:'プロモ',rest:'休養',auto_rest:'🔄休養',balance:'バランス','療養':'療養',intensive:'⚡強化'};
+      const actionLabels = {practice:WM_I18N.t('練習'),promo:WM_I18N.t('プロモ'),rest:WM_I18N.t('休養'),auto_rest:`🔄${WM_I18N.t('休養')}`,balance:WM_I18N.t('バランス'),'療養':WM_I18N.t('療養'),intensive:`⚡${WM_I18N.t('強化')}`};
       const statusHtml = c.injury
-        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${injuryLabelShort(c.injury.type)} ${c.injury.weeksLeft}週</span>`
+        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${injuryLabelShort(c.injury.type)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`
         : c.forcedRest
-          ? '<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 休養中</span>'
-          : '<span style="font-size:12px;color:#2ecc71">健康</span>';
+          ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 ${WM_I18N.t('休養中')}</span>`
+          : `<span style="font-size:12px;color:#2ecc71">${WM_I18N.t('健康')}</span>`;
       const wkChampBadge = G.titles.world.championId === c.id ? ' <span style="color:var(--gold);font-size:12px">👑</span>' : '';
-      const wkUnifiedBadge = G.unifiedTitle?.championId === c.id ? ' <span style="color:var(--unified);font-size:11px;font-weight:700">🌐 統一王者</span>' : '';
+      const wkUnifiedBadge = G.unifiedTitle?.championId === c.id ? ` <span style="color:var(--unified);font-size:11px;font-weight:700">🌐 ${WM_I18N.t('統一王者')}</span>` : '';
 
       // レンタル選手は操作不可（自律行動）
       if (c.isRental) {
         const rentalContract = (G.rentals || []).find(r => r.fighterId === c.id);
         const rentalWL = rentalContract ? rentalContract.weeksLeft : '?';
-        const rentalAction = c.injury ? '療養' : c.condition < 60 ? '🔄休養' : '練習';
+        const rentalAction = c.injury ? WM_I18N.t('療養') : c.condition < 60 ? `🔄${WM_I18N.t('休養')}` : WM_I18N.t('練習');
         const tier = _wrOvrTier(ov(c));
         const popVal = Engine.util.dispPop(c.popularity);
         const popCol = _popColor(popVal).color;
@@ -1333,7 +1343,7 @@ function renderWeekScreen() {
               ${_imgOrInitial(faceUrl, c.id, 40, 'border-radius:8px;')}
               <span>
                 <span class="wr-name-link" onclick="showFighterPopup(${c.id},'roster')">${c.name}</span>${wkChampBadge}${wkUnifiedBadge}
-                <span style="font-size:10px;color:#f39c12;margin-left:4px">🤝残${rentalWL}週</span>
+                <span style="font-size:10px;color:#f39c12;margin-left:4px">${WM_I18N.t('🤝残{w}週', { w: rentalWL })}</span>
               </span>
             </div>
           </td>
@@ -1351,7 +1361,7 @@ function renderWeekScreen() {
               <span class="wr-cond-num">${condPct}</span>
             </div>
           </td>
-          <td><span style="font-size:12px;color:var(--text-dim);cursor:help" ${_tipAttr('レンタル選手は自律行動します。スケジュールの指定はできません。')}>🤝自律</span></td>
+          <td><span style="font-size:12px;color:var(--text-dim);cursor:help" ${_tipAttr(WM_I18N.t('レンタル選手は自律行動します。スケジュールの指定はできません。'))}>${WM_I18N.t('🤝自律')}</span></td>
           <td><span style="font-size:12px;color:var(--text-dim)">--</span></td>
           <td><span class="sched-tag practice">${rentalAction}</span></td>
           <td></td>
@@ -1371,9 +1381,9 @@ function renderWeekScreen() {
       } else if (!canManageWeek) {
         intBtnHtml = c.intensive ? '<span style="font-size:12px;color:#ffa500">⚡ON</span>' : '';
       } else {
-        const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? '連続上限' : c.condition < GROWTH_CONFIG.intensiveMinCond ? '体調不足' : '';
+        const warnTitle = c.intensiveWeeks >= GROWTH_CONFIG.intensiveMaxConsec ? WM_I18N.t('連続上限') : c.condition < GROWTH_CONFIG.intensiveMinCond ? WM_I18N.t('体調不足') : '';
         // growth-rebalance v1.0: 押す前に代償が分かるようにする。数値は出さない
-        const intTip = _tipAttr('⚡追い込み — 成長が大きく伸びます。そのぶん体調を削り、稀に怪我をします。重ねた無理は消えず、峠にさしかかった年にまとめて返ってきます。');
+        const intTip = _tipAttr(WM_I18N.t('⚡追い込み — 成長が大きく伸びます。そのぶん体調を削り、稀に怪我をします。重ねた無理は消えず、峠にさしかかった年にまとめて返ってきます。'));
         intBtnHtml = `<button class="btn-intensive${c.intensive?' active':''}" onclick="toggleIntensive(${c.id})" ${canInt || c.intensive ? intTip : `disabled title="${warnTitle}"`}>⚡</button>`;
       }
       // v1.0: Compute predicted action for initial display
@@ -1388,11 +1398,11 @@ function renderWeekScreen() {
         if (c.condition < 60) previewAction = 'auto_rest';
       }
       const previewLabel = actionLabels[previewAction] || previewAction;
-      const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`専属指導中 — 練習効果アップ(残${c._trainerBuff.weeksLeft}週)`)}>🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
+      const trainerBadge = c._trainerBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(WM_I18N.t('専属指導中 — 練習効果アップ(残{w}週)', { w: c._trainerBuff.weeksLeft }))}>🏋️${c._trainerBuff.weeksLeft}w</span>` : '';
       // care-rework v0.1 §3: 招聘中コーチのバッジ(コーチ名をツールチップに)
       const inviteCoach = c._inviteBuff ? (typeof ALL_COACHES !== 'undefined' ? ALL_COACHES.find(cc => cc.id === c._inviteBuff.coachId) : null) : null;
-      const inviteBadge = c._inviteBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(`${inviteCoach ? inviteCoach.name + 'コーチ招聘中' : 'コーチ招聘中'} — 練習効果アップ(残${c._inviteBuff.weeksLeft}週)`)}>🏋️${c._inviteBuff.weeksLeft}w</span>` : '';
-      const leaveBadge = isOnLeave ? ` <span style="font-size:10px;color:#3498db;background:rgba(52,152,219,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(52,152,219,0.3);cursor:help" ${_tipAttr('休暇中は興行に欠場します。体調が回復し、蓄積した衰えも少し癒えます。')}>🏖️休暇 あと${c.onLeave.weeksLeft}週</span>` : '';
+      const inviteBadge = c._inviteBuff ? ` <span style="font-size:10px;color:#2ecc71;background:rgba(46,204,113,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(46,204,113,0.3);cursor:help" ${_tipAttr(inviteCoach ? WM_I18N.t('{name}コーチ招聘中 — 練習効果アップ(残{w}週)', { name: inviteCoach.name, w: c._inviteBuff.weeksLeft }) : WM_I18N.t('コーチ招聘中 — 練習効果アップ(残{w}週)', { w: c._inviteBuff.weeksLeft }))}>🏋️${c._inviteBuff.weeksLeft}w</span>` : '';
+      const leaveBadge = isOnLeave ? ` <span style="font-size:10px;color:#3498db;background:rgba(52,152,219,0.12);padding:1px 5px;border-radius:3px;border:1px solid rgba(52,152,219,0.3);cursor:help" ${_tipAttr(WM_I18N.t('休暇中は興行に欠場します。体調が回復し、蓄積した衰えも少し癒えます。'))}>${WM_I18N.t('🏖️休暇 あと{w}週', { w: c.onLeave.weeksLeft })}</span>` : '';
       const tier = _wrOvrTier(ov(c));
       const popVal = Engine.util.dispPop(c.popularity);
       const popCol = _popColor(popVal).color;
@@ -1423,10 +1433,10 @@ function renderWeekScreen() {
         </td>
         <td>
           <select onchange="updateSchedulePreview(${c.id},this.value)" style="font-size:13px;padding:6px 10px;border-radius:6px;width:100%" ${schedDisabled}>
-            <option value="balance" ${c.schedule==='balance'?'selected':''} title="非興行週は練習、興行週はプロモを自動選択。迷ったらこれ。体調60未満で自動休養します">バランス</option>
-            <option value="practice" ${c.schedule==='practice'?'selected':''} title="毎週練習を行います。ステータス成長に集中したい時に。体調60未満で自動休養します">練習優先</option>
-            <option value="promo" ${c.schedule==='promo'?'selected':''} title="毎週プロモ活動を行います。人気を上げたい時に（上限70）。体調60未満で自動休養します">プロモ優先</option>
-            <option value="rest" ${c.schedule==='rest'?'selected':''} title="強制的に休養させます。体調管理よりも確実に休ませたい時に">休養重視</option>
+            <option value="balance" ${c.schedule==='balance'?'selected':''} title="${WM_I18N.t('非興行週は練習、興行週はプロモを自動選択。迷ったらこれ。体調60未満で自動休養します')}">${WM_I18N.t('バランス')}</option>
+            <option value="practice" ${c.schedule==='practice'?'selected':''} title="${WM_I18N.t('毎週練習を行います。ステータス成長に集中したい時に。体調60未満で自動休養します')}">${WM_I18N.t('練習優先')}</option>
+            <option value="promo" ${c.schedule==='promo'?'selected':''} title="${WM_I18N.t('毎週プロモ活動を行います。人気を上げたい時に（上限70）。体調60未満で自動休養します')}">${WM_I18N.t('プロモ優先')}</option>
+            <option value="rest" ${c.schedule==='rest'?'selected':''} title="${WM_I18N.t('強制的に休養させます。体調管理よりも確実に休ませたい時に')}">${WM_I18N.t('休養重視')}</option>
           </select>
         </td>
         <td style="text-align:center">${renderTrainingFatigueSignal(c, 'week')}${intBtnHtml}</td>
@@ -1436,14 +1446,14 @@ function renderWeekScreen() {
     };
     // 一括操作パネル
     html += `<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
-      <span style="font-size:12px;color:var(--text-dim)">選択中の選手に一括適用:</span>
-      <button class="btn" onclick="applyWeekPreset('practice')" style="font-size:11px;padding:4px 10px">練習優先</button>
-      <button class="btn" onclick="applyWeekPreset('promo')" style="font-size:11px;padding:4px 10px">プロモ優先</button>
-      <button class="btn" onclick="applyWeekPreset('balance')" style="font-size:11px;padding:4px 10px">バランス</button>
-      <button class="btn" onclick="applyWeekPreset('rest')" style="font-size:11px;padding:4px 10px">休養重視</button>
+      <span style="font-size:12px;color:var(--text-dim)">${WM_I18N.t('選択中の選手に一括適用:')}</span>
+      <button class="btn" onclick="applyWeekPreset('practice')" style="font-size:11px;padding:4px 10px">${WM_I18N.t('練習優先')}</button>
+      <button class="btn" onclick="applyWeekPreset('promo')" style="font-size:11px;padding:4px 10px">${WM_I18N.t('プロモ優先')}</button>
+      <button class="btn" onclick="applyWeekPreset('balance')" style="font-size:11px;padding:4px 10px">${WM_I18N.t('バランス')}</button>
+      <button class="btn" onclick="applyWeekPreset('rest')" style="font-size:11px;padding:4px 10px">${WM_I18N.t('休養重視')}</button>
       <span style="border-left:1px solid var(--text-dim);height:16px;margin:0 4px"></span>
-      <button class="btn" onclick="batchIntensive(true)" style="font-size:11px;padding:4px 10px">⚡全ON</button>
-      <button class="btn" onclick="batchIntensive(false)" style="font-size:11px;padding:4px 10px">⚡全OFF</button>
+      <button class="btn" onclick="batchIntensive(true)" style="font-size:11px;padding:4px 10px">⚡${WM_I18N.t('全ON')}</button>
+      <button class="btn" onclick="batchIntensive(false)" style="font-size:11px;padding:4px 10px">⚡${WM_I18N.t('全OFF')}</button>
     </div>`;
 
     // ソート適用
@@ -1456,27 +1466,27 @@ function renderWeekScreen() {
 
     html += `<table class="week-roster-table"><tr>
       <th style="width:30px"><input type="checkbox" id="weekCheckAll" onchange="toggleWeekCheckAll(this.checked)"></th>
-      <th onclick="setWeekSort('name')" style="width:210px;cursor:pointer">名前${_weekSortIndicator('name')}</th>
-      <th onclick="setWeekSort('ovr')" class="num" style="width:80px;cursor:pointer">総合${_weekSortIndicator('ovr')}</th>
-      <th onclick="setWeekSort('pop')" class="num" style="width:60px;cursor:pointer">人気${_weekSortIndicator('pop')}</th>
-      <th style="width:60px">状態</th>
-      <th onclick="setWeekSort('cond')" style="width:120px;cursor:pointer">体調${_weekSortIndicator('cond')}</th>
-      <th onclick="setWeekSort('schedule')" style="width:130px;cursor:pointer">スケジュール${_weekSortIndicator('schedule')} ${_tipIcon('<strong style="color:var(--gold)">育成方針</strong><br>・<strong>バランス</strong> — 興行週はプロモ、練習週は練習。迷ったらこれ<br>・<strong>練習優先</strong> — ステータス成長に集中<br>・<strong>プロモ優先</strong> — 人気を上げる(上限あり)<br>・<strong>休養重視</strong> — 確実に休ませる<br><br>どの方針でも、体調60未満になると自動で休養します。')}</th>
-      <th class="center" style="width:60px">⚡${_tipIcon('<strong style="color:var(--gold)">⚡追込練習</strong><br>成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも上がります。<br><br>体調50以上・最大2週連続まで。')}</th>
-      <th style="width:92px">今週の行動</th>
+      <th onclick="setWeekSort('name')" style="width:210px;cursor:pointer">${WM_I18N.t('名前')}${_weekSortIndicator('name')}</th>
+      <th onclick="setWeekSort('ovr')" class="num" style="width:80px;cursor:pointer">${WM_I18N.t('総合')}${_weekSortIndicator('ovr')}</th>
+      <th onclick="setWeekSort('pop')" class="num" style="width:60px;cursor:pointer">${WM_I18N.t('人気')}${_weekSortIndicator('pop')}</th>
+      <th style="width:60px">${WM_I18N.t('状態')}</th>
+      <th onclick="setWeekSort('cond')" style="width:120px;cursor:pointer">${WM_I18N.t('体調')}${_weekSortIndicator('cond')}</th>
+      <th onclick="setWeekSort('schedule')" style="width:130px;cursor:pointer">${WM_I18N.t('スケジュール')}${_weekSortIndicator('schedule')} ${_tipIcon(WM_I18N.t('<strong style="color:var(--gold)">育成方針</strong><br>・<strong>バランス</strong> — 興行週はプロモ、練習週は練習。迷ったらこれ<br>・<strong>練習優先</strong> — ステータス成長に集中<br>・<strong>プロモ優先</strong> — 人気を上げる(上限あり)<br>・<strong>休養重視</strong> — 確実に休ませる<br><br>どの方針でも、体調60未満になると自動で休養します。'))}</th>
+      <th class="center" style="width:60px">⚡${_tipIcon(WM_I18N.t('<strong style="color:var(--gold)">⚡追込練習</strong><br>成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも上がります。<br><br>体調50以上・最大2週連続まで。'))}</th>
+      <th style="width:92px">${WM_I18N.t('今週の行動')}</th>
       <th></th>
     </tr>`;
     sortedOwn.forEach(_renderWeekRow);
     if (_rentalRosterWk.length > 0) {
       const _rSlots = RENTAL_CONFIG.getMaxConcurrent(_ownRosterWk.length);
-      html += `<tr><td colspan="10" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">🤝 レンタル枠 (${_rentalRosterWk.length}/${_rSlots})</td></tr>`;
+      html += `<tr><td colspan="10" style="padding:6px 8px;background:rgba(243,156,18,0.07);border-top:1px solid rgba(243,156,18,0.3);border-bottom:1px solid rgba(243,156,18,0.3);color:#f39c12;font-size:12px;font-weight:600">${WM_I18N.t('🤝 レンタル枠 ({a}/{b})', { a: _rentalRosterWk.length, b: _rSlots })}</td></tr>`;
       _rentalRosterWk.forEach(_renderWeekRow);
     }
     html += '</table>';
   }
   else if (G.weekPhase === 'weekSummary') {
     // v2.0-C3: Brief weekly summary — non-month-end weeks stop here
-    const dateStr = G.offSeason ? `オフシーズン ${G.offWeek}/4` : Engine.util.formatDate(G.season, G.week);
+    const dateStr = G.offSeason ? WM_I18N.t('オフシーズン {w}/4', { w: G.offWeek }) : Engine.util.formatDate(G.season, G.week);
     document.getElementById('weekTitle').textContent = WM_I18N.t('完了');
     // 直近4週バッファを集計（_tryAutoAdvance で当週分が push 済み）
     const _wsCycleNum = Math.ceil(G.week / 4);
@@ -1488,20 +1498,20 @@ function renderWeekScreen() {
     const netColor = wsNet >= 0 ? 'var(--green)' : 'var(--red)';
     const wsWeeks = wsBuf.map(e => e.week).filter(Boolean);
     const wsRange = wsWeeks.length > 1
-      ? `第${Math.min(...wsWeeks)}週〜第${Math.max(...wsWeeks)}週`
-      : `第${wsWeeks[0] || G.week}週`;
+      ? WM_I18N.t('第{a}週〜第{b}週', { a: Math.min(...wsWeeks), b: Math.max(...wsWeeks) })
+      : WM_I18N.t('第{w}週', { w: wsWeeks[0] || G.week });
     html += `<div style="text-align:center;padding:24px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px">`;
-    html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:6px;font-weight:700">${dateStr} 完了</div>`;
-    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">${wsRange} 累計</div>`;
+    html += `<div style="font-size:16px;color:var(--text-main);margin-bottom:6px;font-weight:700">${WM_I18N.t('{date} 完了', { date: dateStr })}</div>`;
+    html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:12px">${WM_I18N.t('{range} 累計', { range: wsRange })}</div>`;
     html += `<div style="display:flex;justify-content:center;gap:18px;font-size:13px;margin-bottom:10px">
-      <span>収入 <span style="color:var(--green);font-weight:600">+${Math.round(wsIncome).toLocaleString()}万</span></span>
-      <span>支出 <span style="color:var(--red);font-weight:600">-${Math.round(wsExpense).toLocaleString()}万</span></span>
-      <span>収支 <span style="color:${netColor};font-weight:600">${wsNet>=0?'+':''}${Math.round(wsNet).toLocaleString()}万</span></span>
+      <span>${WM_I18N.t('収入')} <span style="color:var(--green);font-weight:600">${WM_I18N.t('+{v}万', { v: Math.round(wsIncome).toLocaleString() })}</span></span>
+      <span>${WM_I18N.t('支出')} <span style="color:var(--red);font-weight:600">${WM_I18N.t('-{v}万', { v: Math.round(wsExpense).toLocaleString() })}</span></span>
+      <span>${WM_I18N.t('収支')} <span style="color:${netColor};font-weight:600">${WM_I18N.t('{sign}{v}万', { sign: wsNet >= 0 ? '+' : '', v: Math.round(wsNet).toLocaleString() })}</span></span>
     </div>`;
-    html += `<div style="font-size:15px">残高: <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</strong></div>`;
+    html += `<div style="font-size:15px">${WM_I18N.t('残高:')} <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</strong></div>`;
     html += `</div>`;
     html += `<div class="btn-row" style="justify-content:center">
-      <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" onclick="App.advanceFromWeekSummary()">次の週へ →</button>
+      <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" onclick="App.advanceFromWeekSummary()">${WM_I18N.t('次の週へ →')}</button>
     </div>`;
   }
   else if (G.weekPhase === 'settled') {
@@ -1510,10 +1520,10 @@ function renderWeekScreen() {
     const _sMonthStart = (_sCycleNum - 1) * 4 + 1;
     const monthBuf = (G.financeHistory || []).filter(h => h.season === G.season && h.week >= _sMonthStart && h.week <= G.week);
     const weeksInMonth = monthBuf.length;
-    html += `<h3 style="color:var(--gold);margin-bottom:12px">📊 月次収支レポート</h3>`;
-    html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}（集客×${heat.mult}）</span></div>`;
+    html += `<h3 style="color:var(--gold);margin-bottom:12px">📊 ${WM_I18N.t('月次収支レポート')}</h3>`;
+    html += `<div style="margin-bottom:8px;font-size:12px">Heat: <span style="color:${heat.color};font-weight:700">${heat.emoji} ${heat.label}${WM_I18N.t('（集客×{mult}）', { mult: heat.mult })}</span></div>`;
     const settleChamp = getWorldChampion();
-    if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 団体王座: ${fLink(settleChamp, {source:'roster'})}（${G.titles.world.defenses}防衛）</div>`;
+    if (settleChamp) html += `<div style="margin-bottom:8px;font-size:12px">🏆 ${WM_I18N.t('団体王座:')} ${fLink(settleChamp, {source:'roster'})}${WM_I18N.t('（{n}防衛）', { n: G.titles.world.defenses })}</div>`;
 
     // 金銭バランス改善: カテゴリ別グルーピング月次決算
     let monthIncome = 0, monthExpense = 0;
@@ -1545,15 +1555,15 @@ function renderWeekScreen() {
     // 週範囲
     const weekNums = monthBuf.map(e => e.week).filter(Boolean);
     if (weekNums.length > 1) {
-      html += `<div style="margin-bottom:8px;font-size:11px;color:var(--text-dim)">第${Math.min(...weekNums)}週〜第${Math.max(...weekNums)}週</div>`;
+      html += `<div style="margin-bottom:8px;font-size:11px;color:var(--text-dim)">${WM_I18N.t('第{a}週〜第{b}週', { a: Math.min(...weekNums), b: Math.max(...weekNums) })}</div>`;
     }
 
     // ■ 興行収入
     const mTicketTotal = Object.values(mCats.ticket).reduce((s, i) => s + i.val, 0);
     if (mTicketTotal > 0) {
-      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:6px 0 4px">■ 興行収入</div>`;
+      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:6px 0 4px">■ ${WM_I18N.t('興行収入')}</div>`;
       Object.values(mCats.ticket).forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
       });
     }
 
@@ -1562,17 +1572,17 @@ function renderWeekScreen() {
     const mBrandTotal = brandKeys.reduce((s, k) => s + Object.values(mCats[k]).reduce((ss, i) => ss + i.val, 0), 0);
     const mOtherTotal = Object.values(mCats.other).reduce((s, i) => s + i.val, 0);
     if (mBrandTotal + mOtherTotal > 0) {
-      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:8px 0 4px">■ ブランド収入</div>`;
-      const catLabels = { goods: 'グッズ', media: 'メディア', promo: 'プロモ' };
+      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:8px 0 4px">■ ${WM_I18N.t('ブランド収入')}</div>`;
+      const catLabels = { goods: WM_I18N.t('グッズ'), media: WM_I18N.t('メディア'), promo: WM_I18N.t('プロモ') };
       brandKeys.forEach(catKey => {
         const items = Object.values(mCats[catKey]);
         const catTotal = items.reduce((s, i) => s + i.val, 0);
         if (catTotal <= 0) return;
-        html += `<div class="finance-row"><span class="f-label" style="font-weight:600">${catLabels[catKey]}収入</span><span class="f-val income">+${Math.round(catTotal).toLocaleString()}万</span></div>`;
+        html += `<div class="finance-row"><span class="f-label" style="font-weight:600">${WM_I18N.t('{cat}収入', { cat: catLabels[catKey] })}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(catTotal).toLocaleString() })}</span></div>`;
       });
       if (mOtherTotal > 0) {
         Object.values(mCats.other).forEach(d => {
-          html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+          html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
         });
       }
     }
@@ -1580,15 +1590,15 @@ function renderWeekScreen() {
     // ■ 支出
     const expenseItems = Object.values(mExpenses).sort((a, b) => a.val - b.val);
     if (expenseItems.length > 0) {
-      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:8px 0 4px">■ 支出</div>`;
+      html += `<div style="font-size:12px;font-weight:700;color:var(--gold);margin:8px 0 4px">■ ${WM_I18N.t('支出')}</div>`;
       expenseItems.forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ×${d.count}週` : ''}</span><span class="f-val expense">${Math.round(d.val).toLocaleString()}万</span></div>`;
+        html += `<div class="finance-row"><span class="f-label">${d.label}${d.count > 1 ? ` ${WM_I18N.t('×{n}週', { n: d.count })}` : ''}</span><span class="f-val expense">${WM_I18N.t('{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
       });
     }
 
     html += `<div style="border-top:2px solid var(--border);margin:8px 0"></div>`;
-    html += `<div class="finance-row finance-total"><span>月間収支</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${monthNet >= 0 ? '+' : ''}${Math.round(monthNet).toLocaleString()}万</span></div>`;
-    html += `<div style="margin-top:8px;font-size:13px">残高: <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</strong></div>`;
+    html += `<div class="finance-row finance-total"><span>${WM_I18N.t('月間収支')}</span><span class="f-val ${monthNet >= 0 ? 'income' : 'expense'}">${WM_I18N.t('{sign}{v}万', { sign: monthNet >= 0 ? '+' : '', v: Math.round(monthNet).toLocaleString() })}</span></div>`;
+    html += `<div style="margin-top:8px;font-size:13px">${WM_I18N.t('残高:')} <strong style="color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</strong></div>`;
 
     // v0.97: Survival gauge mini-status in settlement
     const f = G.weeklyFinance;
@@ -1599,20 +1609,20 @@ function renderWeekScreen() {
       const r4c = G.rollingNet4Count || 0;
       if (monthNet >= 0) {
         html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.2);font-size:11px;color:#2ecc71">
-          ⛽ 月間黒字！${rollingNet >= 0 ? ` 月次黒字${r4c}回達成` : ''}${r4c >= 1 ? ' 🔥' : ''}${r4c >= 2 && G.funds >= 3000 ? ' — クリア間近！' : ''}
+          ⛽ ${WM_I18N.t('月間黒字！')}${rollingNet >= 0 ? ` ${WM_I18N.t('月次黒字{n}回達成', { n: r4c })}` : ''}${r4c >= 1 ? ' 🔥' : ''}${r4c >= 2 && G.funds >= 3000 ? ` ${WM_I18N.t('— クリア間近！')}` : ''}
         </div>`;
       } else {
         const sWeeks = Survival.weeksUntilBankrupt(G);
         html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.2);font-size:11px;color:#e74c3c">
-          ⛽ ${sPhase?.emoji || '🔴'} ${sPhase?.label || '赤字'} — 倒産まで推定${sWeeks === Infinity ? '∞' : sWeeks}週
+          ⛽ ${sPhase?.emoji || '🔴'} ${sPhase?.label || WM_I18N.t('赤字')} ${WM_I18N.t('— 倒産まで推定{w}週', { w: sWeeks === Infinity ? '∞' : sWeeks })}
         </div>`;
       }
     }
 
     if (G.funds <= -1000) {
-      html += '<div style="margin-top:12px;padding:12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);border-radius:4px;text-align:center"><strong style="color:var(--red);font-size:18px">💀 GAME OVER — 倒産</strong></div>';
+      html += `<div style="margin-top:12px;padding:12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);border-radius:4px;text-align:center"><strong style="color:var(--red);font-size:18px">💀 GAME OVER — ${WM_I18N.t('倒産')}</strong></div>`;
     } else {
-      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" style="font-size:16px;padding:12px 28px;font-weight:700" onclick="advanceWeek()">次の月へ →</button></div>';
+      html += `<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" style="font-size:16px;padding:12px 28px;font-weight:700" onclick="advanceWeek()">${WM_I18N.t('次の月へ →')}</button></div>`;
     }
   }
   // ── C-4: TRANSFER WINDOW UI ──
@@ -1620,8 +1630,8 @@ function renderWeekScreen() {
     document.getElementById('weekTitle').textContent = WM_I18N.t('🔄 移籍ウィンドウ');
     const pending = G.pendingPoach || [];
     if (pending.length > 0) {
-      html += '<h3 style="color:#e17055;margin-bottom:12px">⚠️ 引き抜きオファー</h3>';
-      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">上位団体から選手への引き抜きオファーが届いています。各選手への対応を選択してください。</p>';
+      html += `<h3 style="color:#e17055;margin-bottom:12px">⚠️ ${WM_I18N.t('引き抜きオファー')}</h3>`;
+      html += `<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">${WM_I18N.t('上位団体から選手への引き抜きオファーが届いています。各選手への対応を選択してください。')}</p>`;
       pending.forEach(p => {
         const f = p.fighter;
         const retCost = Engine.transfer.calcRetentionCost(f);
@@ -1639,44 +1649,44 @@ function renderWeekScreen() {
               <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
                 <div>
                   <strong style="font-size:17px">${f.name}</strong>
-                  ${isChampion ? '<span style="color:var(--gold);font-size:12px;margin-left:6px">👑王者</span>' : ''}
-                  <span style="font-size:13px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / 人気 ${Engine.util.dispPop(f.popularity)}</span>
+                  ${isChampion ? `<span style="color:var(--gold);font-size:12px;margin-left:6px">👑${WM_I18N.t('王者')}</span>` : ''}
+                  <span style="font-size:13px;color:var(--text-dim);margin-left:8px">OVR ${Engine.util.ov(f)} / ${WM_I18N.t('人気')} ${Engine.util.dispPop(f.popularity)}</span>
                 </div>
-                <div style="font-size:13px;color:var(--text-sub)">← ${p.org.name} (${p.org.tier}級)</div>
+                <div style="font-size:13px;color:var(--text-sub)">← ${p.org.name} (${WM_I18N.t('{tier}級', { tier: p.org.tier })})</div>
               </div>
           <div style="display:flex;gap:10px;font-size:13px;margin-bottom:10px">
-            <span style="color:#2ecc71">💰 移籍金: +${p.fee}万</span>
-            <span style="color:#e17055">🛡️ 引き留め費: -${retCost}万${isChampion ? ' (確定成功)' : ' (成功率80%)'}</span>
+            <span style="color:#2ecc71">💰 ${WM_I18N.t('移籍金: +{fee}万', { fee: p.fee })}</span>
+            <span style="color:#e17055">🛡️ ${WM_I18N.t('引き留め費: -{cost}万{note}', { cost: retCost, note: isChampion ? WM_I18N.t(' (確定成功)') : WM_I18N.t(' (成功率80%)') })}</span>
           </div>
           <div class="btn-row" style="gap:8px">
-            <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach(${f.id},false)">🛡️ 引き留める</button>
-            <button class="btn" style="font-size:11px;padding:6px 12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);color:var(--red)" onclick="resolvePoach(${f.id},true)">💸 移籍を承認</button>
+            <button class="btn btn-blue" style="font-size:11px;padding:6px 12px" onclick="resolvePoach(${f.id},false)">🛡️ ${WM_I18N.t('引き留める')}</button>
+            <button class="btn" style="font-size:11px;padding:6px 12px;background:rgba(196,30,58,0.2);border:1px solid var(--red);color:var(--red)" onclick="resolvePoach(${f.id},true)">💸 ${WM_I18N.t('移籍を承認')}</button>
           </div>
             </div>
           </div>
         </div>`;
       });
     } else {
-      html += '<h3 style="color:var(--gold);margin-bottom:12px">移籍ウィンドウ完了</h3>';
-      html += '<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">全ての移籍オファーに対応しました。</p>';
-      html += '<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="finishTransferWindow()">次へ進む →</button></div>';
+      html += `<h3 style="color:var(--gold);margin-bottom:12px">${WM_I18N.t('移籍ウィンドウ完了')}</h3>`;
+      html += `<p style="font-size:12px;color:var(--text-sub);margin-bottom:12px">${WM_I18N.t('全ての移籍オファーに対応しました。')}</p>`;
+      html += `<div class="btn-row" style="margin-top:16px"><button class="btn btn-gold" onclick="finishTransferWindow()">${WM_I18N.t('次へ進む →')}</button></div>`;
     }
   }
   // ── EVENT DISPLAY (Phase D) ──
   else if (G.weekPhase === 'event') {
     const ev = G.pendingEvent;
     if (!ev) {
-      html += '<h3 style="color:var(--text-sub)">イベントデータなし</h3>';
-      html += '<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">スキップ →</button></div>';
+      html += `<h3 style="color:var(--text-sub)">${WM_I18N.t('イベントデータなし')}</h3>`;
+      html += `<div class="btn-row"><button class="btn btn-gold" onclick="skipEvent()">${WM_I18N.t('スキップ →')}</button></div>`;
     } else if (ev.type === 'war') {
       document.getElementById('weekTitle').textContent = WM_I18N.t('⚔ 対抗戦');
       html += `<div style="background:linear-gradient(135deg,rgba(196,30,58,0.15),rgba(231,76,60,0.1));border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:16px;margin-bottom:16px;text-align:center">
-        <h3 style="color:#e74c3c;margin-bottom:8px">⚔ 対抗戦の申し入れ</h3>
-        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${ev.opponentName}から挑戦状が届いています</p>
-        <p style="font-size:12px;color:var(--text-sub)">${ev.matchCount}試合の団体対決</p>
+        <h3 style="color:#e74c3c;margin-bottom:8px">⚔ ${WM_I18N.t('対抗戦の申し入れ')}</h3>
+        <p style="font-size:14px;color:var(--text-main);margin-bottom:4px">${WM_I18N.t('{name}から挑戦状が届いています', { name: ev.opponentName })}</p>
+        <p style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('{n}試合の団体対決', { n: ev.matchCount })}</p>
       </div>`;
       html += `<div class="btn-row" style="margin-top:16px;justify-content:center">
-        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="showWarChallenge()">⚔ 挑戦状を見る</button>
+        <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="showWarChallenge()">⚔ ${WM_I18N.t('挑戦状を見る')}</button>
       </div>`;
       // Auto-show the challenge popup on first render
       setTimeout(() => showWarChallenge(), 300);
@@ -1696,22 +1706,22 @@ function renderWeekScreen() {
 
     // ヘッダー
     html += `<div style="text-align:center;padding:20px 16px;background:linear-gradient(135deg,rgba(241,196,15,0.15),rgba(231,76,60,0.08));border:1px solid rgba(241,196,15,0.35);border-radius:10px;margin-bottom:16px">
-      <h2 style="color:var(--gold);margin:0 0 6px 0;font-size:20px">🏟️ PPV GRAND FINAL「${ppvName}」</h2>
-      <p style="font-size:14px;color:var(--text-main);margin:0 0 4px 0">出場枠: <strong>${maxSlots}名</strong>（ランク${pRank}位）</p>
-      <p style="font-size:12px;color:var(--text-dim);margin:0">出場報酬: ${PPV_REWARD[pRank] || 100}万円</p>
+      <h2 style="color:var(--gold);margin:0 0 6px 0;font-size:20px">${WM_I18N.t('🏟️ PPV GRAND FINAL「{name}」', { name: ppvName })}</h2>
+      <p style="font-size:14px;color:var(--text-main);margin:0 0 4px 0">${WM_I18N.t('出場枠:')} <strong>${maxSlots}名</strong>${WM_I18N.t('（ランク{r}位）', { r: pRank })}</p>
+      <p style="font-size:12px;color:var(--text-dim);margin:0">${WM_I18N.t('出場報酬: {v}万円', { v: PPV_REWARD[pRank] || 100 })}</p>
     </div>`;
 
     // チャンピオン自動エントリー
     if (champAutoEntry) {
       html += `<div style="padding:10px 14px;background:rgba(241,196,15,0.08);border:1px solid rgba(241,196,15,0.25);border-radius:6px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
         ${portraitImg(champ.id, 40, '', 'roster')}
-        <span style="font-size:13px;color:var(--text-main)">👑 <strong>${champ.name}</strong> — チャンピオンとして自動エントリー</span>
+        <span style="font-size:13px;color:var(--text-main)">👑 <strong>${champ.name}</strong> ${WM_I18N.t('— チャンピオンとして自動エントリー')}</span>
       </div>`;
     }
 
     // 残り枠の選択
     html += `<div style="margin-bottom:12px">
-      <h4 style="color:var(--text-main);margin:0 0 8px 0;font-size:14px">出場選手を選択（残り${remainingSlots - picks.length}枠）</h4>`;
+      <h4 style="color:var(--text-main);margin:0 0 8px 0;font-size:14px">${WM_I18N.t('出場選手を選択（残り{n}枠）', { n: remainingSlots - picks.length })}</h4>`;
 
     const eligible = (G.roster || []).filter(c => {
       if (champAutoEntry && c.id === champ.id) return false;
@@ -1731,48 +1741,48 @@ function renderWeekScreen() {
         ${portraitImg(c.id, 40)}
         <span style="flex:1;font-size:13px;color:var(--text-main)">${c.name}</span>
         <span style="font-size:11px;color:var(--text-sub)">OVR ${ovr}</span>
-        <span style="font-size:11px;color:var(--text-dim)">人気 ${Math.round(c.popularity || 0)}</span>
+        <span style="font-size:11px;color:var(--text-dim)">${WM_I18N.t('人気')} ${Math.round(c.popularity || 0)}</span>
       </div>`;
     });
     html += `</div>`;
 
     // 注意書き
     html += `<div style="font-size:11px;color:var(--text-dim);margin-bottom:16px;line-height:1.6">
-      ※ エントリー後の変更はできません<br>
-      ※ PPVまでに負傷した場合、自動的に代理選手が出場します<br>
-      ※ レンタル選手はエントリーできません
+      ${WM_I18N.t('※ エントリー後の変更はできません')}<br>
+      ${WM_I18N.t('※ PPVまでに負傷した場合、自動的に代理選手が出場します')}<br>
+      ${WM_I18N.t('※ レンタル選手はエントリーできません')}
     </div>`;
 
     // 確定ボタン
     const canConfirm = picks.length === remainingSlots;
     const btnStyle = canConfirm ? '' : 'opacity:0.4;pointer-events:none;';
     html += `<div class="btn-row" style="justify-content:center">
-      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px;${btnStyle}" onclick="confirmPPVEntry()">🏟️ エントリー確定（${picks.length}/${remainingSlots}名）</button>
+      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px;${btnStyle}" onclick="confirmPPVEntry()">🏟️ ${WM_I18N.t('エントリー確定（{a}/{b}名）', { a: picks.length, b: remainingSlots })}</button>
     </div>`;
   }
   // ── PPV SHOW DAY PHASE ──
   else if (G.weekPhase === 'ppvShow') {
     document.getElementById('weekTitle').textContent = WM_I18N.t('🏟️ PPV GRAND FINAL');
     html += `<div style="text-align:center;padding:24px">
-      <div style="color:var(--gold);font-size:18px;margin-bottom:16px">PPV GRAND FINAL「${G.ppvName || 'GRAND FINAL'}」開催日！</div>
-      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">🏟️ PPV カードを表示</button>
+      <div style="color:var(--gold);font-size:18px;margin-bottom:16px">${WM_I18N.t('PPV GRAND FINAL「{name}」開催日！', { name: G.ppvName || 'GRAND FINAL' })}</div>
+      <button class="btn btn-gold" style="padding:12px 32px;font-size:15px" onclick="App.initPPVShow()">🏟️ ${WM_I18N.t('PPV カードを表示')}</button>
     </div>`;
   }
   // ── PPV TV PHASE ──
   else if (G.weekPhase === 'ppvTV') {
     document.getElementById('weekTitle').textContent = WM_I18N.t('📺 PPV テレビ中継');
     html += `<div style="text-align:center;padding:24px">
-      <div style="color:var(--text-sub);font-size:16px;margin-bottom:16px">📺 PPV GRAND FINAL テレビ中継中…</div>
-      <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">📺 テレビ中継を見る</button>
+      <div style="color:var(--text-sub);font-size:16px;margin-bottom:16px">📺 ${WM_I18N.t('PPV GRAND FINAL テレビ中継中…')}</div>
+      <button class="btn btn-blue" style="padding:10px 24px;font-size:14px" onclick="App.initPPVTV()">📺 ${WM_I18N.t('テレビ中継を見る')}</button>
     </div>`;
   }
 
   // ── SCOUT EVENT PHASE (A1: 号外紙面型ドラフト開幕画面) ──
   else if (G.weekPhase === 'scoutEvent') {
-    const eventLabel = 'メインドラフト';
+    const eventLabel = WM_I18N.t('メインドラフト');
     const weekLabel = G.offSeason
-      ? `シーズン${G.season} オフ第${G.offWeek || 3}週`
-      : `シーズン${G.season} 第${G.week}週`;
+      ? WM_I18N.t('シーズン{s} オフ第{w}週', { s: G.season, w: G.offWeek || 3 })
+      : WM_I18N.t('シーズン{s} 第{w}週', { s: G.season, w: G.week });
     document.getElementById('weekTitle').textContent = `⚖ ${eventLabel}`;
 
     const candidates = G.scoutCandidates || [];
@@ -1806,33 +1816,33 @@ function renderWeekScreen() {
     const statCells = [{ num: totalCount, lbl: 'TOTAL' }];
     if (superElites.length > 0) statCells.push({ num: superElites.length, lbl: 'SUPER ELITE', hot: true });
     statCells.push({ num: elites.length, lbl: 'ELITE' });
-    statCells.push({ num: maxPicks, lbl: '獲得上限' });
-    statCells.push({ num: Math.round(G.funds).toLocaleString(), lbl: '資金 (万)' });
+    statCells.push({ num: maxPicks, lbl: WM_I18N.t('獲得上限') });
+    statCells.push({ num: Math.round(G.funds).toLocaleString(), lbl: WM_I18N.t('資金 (万)') });
 
     const statsHtml = statCells.map(s =>
       `<div class="a1-stat"><div class="a1-stat-num${s.hot ? ' hot' : ''}">${s.num}</div><div class="a1-stat-lbl">${s.lbl}</div></div>`
     ).join('');
 
     html += `<div class="a1-wrap">
-      ${superElites.length > 0 ? '<div class="a1-stamp">◆ 超逸材発見 ◆</div>' : '<div class="a1-stamp">◆ 号外 ◆</div>'}
+      ${superElites.length > 0 ? `<div class="a1-stamp">◆ ${WM_I18N.t('超逸材発見')} ◆</div>` : `<div class="a1-stamp">◆ ${WM_I18N.t('号外')} ◆</div>`}
       <div class="a1-title-bar">
         <div class="brand">週刊グラップル</div>
-        <div class="ed">第${editionNo}号 ・ ${weekLabel}</div>
+        <div class="ed">${WM_I18N.t('第{n}号 ・ {week}', { n: editionNo, week: weekLabel })}</div>
       </div>
       <div class="a1-hero">
-        <div class="a1-kicker">◆ ${superElites.length > 0 ? '緊急速報' : 'ドラフト速報'} ◆</div>
+        <div class="a1-kicker">◆ ${superElites.length > 0 ? WM_I18N.t('緊急速報') : WM_I18N.t('ドラフト速報')} ◆</div>
         <div class="a1-main-h">${heroHeadline}</div>
         <div class="a1-sub-h">${heroSub}</div>
         <div class="a1-lead">${leadBody}</div>
       </div>
       <div class="a1-silhouettes">
-        <div class="a1-sil-label">本日の候補者 ・ ${totalCount}名</div>
+        <div class="a1-sil-label">${WM_I18N.t('本日の候補者 ・ {n}名', { n: totalCount })}</div>
         <div class="a1-sil-row">${silHtml}</div>
       </div>
       <div class="a1-stats" style="grid-template-columns:repeat(${statCells.length},1fr);">${statsHtml}</div>
       <div class="a1-footer">
-        <button class="btn btn-gold a1-btn-go" onclick="showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">⚖ ドラフトへ</button>
-        <button class="btn btn-ghost" onclick="declineDraft()">辞退する →</button>
+        <button class="btn btn-gold a1-btn-go" onclick="showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">⚖ ${WM_I18N.t('ドラフトへ')}</button>
+        <button class="btn btn-ghost" onclick="declineDraft()">${WM_I18N.t('辞退する →')}</button>
       </div>
     </div>`;
   }
@@ -1842,11 +1852,11 @@ function renderWeekScreen() {
   if (!html) {
     console.warn('[WM] renderWeekScreen: unhandled weekPhase=', G.weekPhase, '— showing recovery UI');
     html += `<div style="text-align:center;padding:24px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:8px;margin-bottom:16px">
-      <div style="font-size:15px;color:var(--text-main);margin-bottom:8px;font-weight:700">⚠️ 進行不具合が発生しました</div>
-      <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px">想定外の状態(${G.weekPhase || '不明'})で停止しました。下のボタンで復旧できます。</div>
+      <div style="font-size:15px;color:var(--text-main);margin-bottom:8px;font-weight:700">⚠️ ${WM_I18N.t('進行不具合が発生しました')}</div>
+      <div style="font-size:12px;color:var(--text-sub);margin-bottom:14px">${WM_I18N.t('想定外の状態({phase})で停止しました。下のボタンで復旧できます。', { phase: G.weekPhase || WM_I18N.t('不明') })}</div>
       <button class="btn btn-gold" style="font-size:14px;padding:10px 24px"
         onclick="if(typeof App!=='undefined'&&App.recoverWeekPhase){App.recoverWeekPhase()}">
-        🔧 状態を復元して今週へ
+        🔧 ${WM_I18N.t('状態を復元して今週へ')}
       </button>
     </div>`;
   }
@@ -4168,7 +4178,7 @@ function renderFinance() {
       if (ticketTotal > 0) {
         html += `<div class="panel-title" style="margin-top:6px">■ 興行収入</div>`;
         Object.values(ticketCat.items).sort((a, b) => b.val - a.val).forEach(d => {
-          html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+          html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
         });
         html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
         html += `<div class="finance-row" style="font-weight:600"><span>小計</span><span class="f-val income">+${Math.round(ticketTotal).toLocaleString()}万</span></div>`;
@@ -4200,7 +4210,7 @@ function renderFinance() {
         // その他（助成金等）
         if (otherTotal > 0) {
           Object.values(catMap.other.items).sort((a, b) => b.val - a.val).forEach(d => {
-            html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+            html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
           });
         }
         html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
@@ -4491,7 +4501,7 @@ function renderRanking() {
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
-    const orgName = isPlayer ? (G.orgName || 'プレイヤー団体') : (org ? org.name : r.name);
+    const orgName = isPlayer ? (G.orgName || WM_I18N.t('プレイヤー団体')) : (org ? org.name : r.name);
     const tier = isPlayer ? '自' : (org ? org.tier : '');
     const rankClass = `is-rank-${r.rank}`;
     const playerClass = isPlayer ? ' is-player' : '';
@@ -4856,7 +4866,7 @@ function renderRanking() {
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
-    const orgName = isPlayer ? (G.orgName || 'プレイヤー団体') : (org ? org.name : r.name);
+    const orgName = isPlayer ? (G.orgName || WM_I18N.t('プレイヤー団体')) : (org ? org.name : r.name);
     const rankClass = `is-rank-${r.rank}`;
     const playerClass = isPlayer ? ' is-player' : '';
 
@@ -6651,7 +6661,7 @@ function renderSave() {
     <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">⚙️ 設定</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">🏢 団体名:</label>
-      <input id="settingsOrgName" type="text" value="${G.orgName || 'プレイヤー団体'}" maxlength="20"
+      <input id="settingsOrgName" type="text" value="${G.orgName || WM_I18N.t('プレイヤー団体')}" maxlength="20"
         style="flex:1;max-width:240px;background:rgba(200,190,170,0.08);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;font-weight:700"
         placeholder="団体名を入力">
       <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('save')}">変更</button>
@@ -7374,7 +7384,7 @@ function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
   if (pool.length === 0) return '';
   const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC715));
   const pick = Engine.rng.pick(rng, pool);
-  const orgName = G.orgName || 'プレイヤー団体';
+  const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
   const weeksRem = Math.max(0, G.crisisWeeksRemaining || 0);
   const headline = (pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
   const body = (pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
@@ -9580,7 +9590,7 @@ function _renderDbFighters() {
   // フィルタバー
   const orgOptions = [
     { id: '', label: '全て' },
-    { id: 'player', label: G.orgName || 'プレイヤー団体' },
+    { id: 'player', label: G.orgName || WM_I18N.t('プレイヤー団体') },
     ...RIVAL_ORGS.map(o => ({ id: o.id, label: `${o.name || o.id} (${o.tier})` })),
     { id: 'fa', label: 'FA' },
   ];
@@ -11976,7 +11986,7 @@ function _relmapGetAllChars() {
 }
 
 function _relmapGetOrgLabel(f) {
-  if (f._orgId === 'player') return G.orgName || 'プレイヤー団体';
+  if (f._orgId === 'player') return G.orgName || WM_I18N.t('プレイヤー団体');
   if (f._orgId === 'fa') return 'フリー';
   const org = RIVAL_ORGS.find(o => o.id === f._orgId);
   return org ? (G.rivalOrgNames?.[f._orgId] || org.name || f._orgId) : f._orgName || '?';
@@ -12382,7 +12392,7 @@ function _isPlayerSide(state, charId) {
 }
 
 function _findFighterOrgName(state, charId) {
-  if (_isPlayerSide(state, charId)) return state.orgName || 'プレイヤー団体';
+  if (_isPlayerSide(state, charId)) return state.orgName || WM_I18N.t('プレイヤー団体');
   const aiOrgs = state.aiOrgs || {};
   for (const orgId in aiOrgs) {
     const org = aiOrgs[orgId];
@@ -13919,7 +13929,7 @@ function _relmapDrawOrgZones(orgCenters) {
 }
 
 function _relmapGetOrgNameById(orgId) {
-  if (orgId === 'player') return G.orgName || 'プレイヤー団体';
+  if (orgId === 'player') return G.orgName || WM_I18N.t('プレイヤー団体');
   if (orgId === 'fa') return 'フリー';
   const org = RIVAL_ORGS.find(o => o.id === orgId);
   return org ? (G.rivalOrgNames?.[orgId] || org.name) : orgId;

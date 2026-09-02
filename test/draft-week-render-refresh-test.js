@@ -13,7 +13,7 @@ const scoutBranch = source.slice(
 assert.ok(scoutBranchStart >= 0, 'renderWeekScreen should contain the scoutEvent branch');
 assert.match(
   scoutBranch,
-  /const weekLabel = G\.offSeason[\s\S]*?オフ第\$\{G\.offWeek \|\| 3\}週[\s\S]*?第\$\{G\.week\}週/,
+  /const weekLabel = G\.offSeason[\s\S]*?オフ第\{w\}週'[\s\S]*?G\.offWeek \|\| 3[\s\S]*?第\{w\}週'[\s\S]*?G\.week/,
   'scoutEvent refresh should define the week label for offseason and regular drafts'
 );
 assert.ok(

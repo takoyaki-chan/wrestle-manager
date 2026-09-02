@@ -276,11 +276,12 @@ section('18. ⚡ボタンに代償を説明するツールチップが付いて�
 });
 
 section('19. ツールチップが数値を露出していない', () => {
-  const m = uiRender.match(/_tipAttr\('⚡追い込み[^']*'\)/);
+  const m = uiRender.match(/_tipAttr\(WM_I18N\.t\('(⚡追い込み[^']*)'\)\)/);
   assert.ok(m, 'ツールチップ本文が取れない');
-  assert.ok(!/[0-9０-９]/.test(m[0]), 'ツールチップに数字が出ている: ' + m[0]);
+  const tipText = m[1]; // WM_I18N.t()のラッパー自体(I18Nの1/8等)を数字誤検出しないよう本文だけ見る
+  assert.ok(!/[0-9０-９]/.test(tipText), 'ツールチップに数字が出ている: ' + tipText);
   ['wear', 'strainDebt', 'trainCap'].forEach(w =>
-    assert.ok(!m[0].includes(w), `内部語 ${w} が出ている`));
+    assert.ok(!tipText.includes(w), `内部語 ${w} が出ている`));
 });
 
 section('20. ヘルプ「峠と引退」が追込のツケを説明している', () => {

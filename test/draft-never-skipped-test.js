@@ -134,10 +134,10 @@ const base = {
 // ドラフトへ行かない年は**他団体も1人も獲得していなかった**。
 {
   const src = stripComments(render);
-  assert.ok(/onclick="declineDraft\(\)">辞退する/.test(src),
+  assert.ok(/onclick="declineDraft\(\)">(?:\$\{WM_I18N\.t\('|)辞退する/.test(src),
     '週画面の「辞退する」が declineDraft を通っていない。'
     + '直接 scoutEventFinish を呼ぶと他団体の指名ごと飛ぶ');
-  assert.ok(!/onclick="scoutFinish\(\)">辞退する/.test(src),
+  assert.ok(!/onclick="scoutFinish\(\)">(?:\$\{WM_I18N\.t\('|)辞退する/.test(src),
     '「辞退する」が scoutFinish を直接呼んでいる');
 }
 

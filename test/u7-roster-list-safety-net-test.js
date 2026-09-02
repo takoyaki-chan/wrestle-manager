@@ -154,7 +154,7 @@ function around(src, anchor, back = 600, fwd = 900) {
 }
 
 const MUST_OPEN = [
-  ['引き抜きオファー一覧', () => around(uiRender, '💰 移籍金:', 1800)],
+  ['引き抜きオファー一覧', () => around(uiRender, '移籍金: +{fee}万', 1800)],
   ['契約更改 結果サマリー', () => fnBody(uiCommon, 'function showContractResultModal')],
   ['春タッグ リーグ順位表', () => fnBody(uiCommon, 'function _stlFaceImg')],
   ['天頂戦 特別招待カード', () => around(uiCommon, 'tc-invite-up')],

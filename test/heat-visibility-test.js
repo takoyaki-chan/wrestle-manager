@@ -23,7 +23,18 @@ function extractFunction(source, name) {
 
 const tooltipMatch = renderSource.match(/const TRAINING_FATIGUE_TOOLTIP = ('[^']+');/);
 assert(tooltipMatch, 'ツールチップ定数が見つかりません');
-const context = vm.createContext({});
+// WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+// 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+const wmI18nStub = {
+  t(text, params) {
+    if (typeof text !== 'string') return text;
+    if (!params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  },
+};
+const context = vm.createContext({ WM_I18N: wmI18nStub });
 vm.runInContext([
   `const TRAINING_FATIGUE_TOOLTIP = ${tooltipMatch[1]};`,
   extractFunction(renderSource, 'getTrainingState'),
