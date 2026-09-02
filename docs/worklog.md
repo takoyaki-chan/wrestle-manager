@@ -1,5 +1,45 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Stage A P3a バッチ4c-1 — app.jsのt()移行(完走)（2026-09-02・Sonnet worktree agent-af48819bca67bea73）
+
+設計書 [i18n-stage-a-p3a-design-v0.1.md](docs/i18n-stage-a-p3a-design-v0.1.md)「バッチ4」に基づき、app.js(17,559行)の**先頭から末尾までを対象にUIクロームを`WM_I18N.t()`経由へ移行**。ui-render.js(4a完走)/ui-common.js(4b完走)に続くバッチ4の最終ファイル。指示書は「行けるところまで」を想定していたが、全文を通しで走査しても1セッションで完走できたため**app.jsはこれでt()移行完了**。開始前にworktreeブランチをmain先端(3ad3d58)へfast-forward済み。
+
+### 対象と方針
+- Audio/Storage(セーブ)/Survivalの通知・エラーダイアログ、ドラフト完了演出、FA・スカウト契約フロー全体、コーチ雇用/解雇/枠拡張、興行編成(showCard操作)、タイトル奪還挑戦状ダイアログ、全国統一王座の遠征・戴冠式、興行結果ポップアップ群(乱入/ファン期待/怪我/スポットライト終了)、週次通知トースト(突然退団/スキャンダル/移籍ウィンドウ予兆/信頼度発現)、逸材特別交渉枠、社長室決裁書類全種(声かけ/起用約束/特別治療/executeDecision全エラー分岐)、派閥イベントF01〜F09・COMMON系のcategory/factionName/sideLabel/reporterText、対抗戦/PPV/挑戦状(B3)/ジュニアトーナメント/天頂戦の観戦ヘッダー・ラウンドラベル、選手ファイル(列見出し・レーダーチャートaria-label・詳細モーダル)、契約枠拡大・団体王座設立の節目通知、クレジット画面のボタン・見出し・システムメッセージを機械的にt()化
+- 補間入りは既存バッチの慣例どおり`{name}`形式
+- 文字化け修復の名残で`\uXXXX`エスケープのまま残っていた数箇所(`checkSurvivalUpdate`の経営安定化達成ポップアップ、契約枠拡大通知、団体王座設立通知)は、t()化のついでに可読な生JA文字へ書き戻した(出力バイトは不変)
+
+### 今バッチで新たに踏んだ判断
+1. **モジュールロード時定数からの参照は参照側でt()評価**(既存バッチの型を踏襲): `_FIGHTER_FILE_COLUMNS`/`_FIGHTER_FILE_STATS`は宣言を据え置き、実際にHTMLへ差し込む`_fighterFileListHtml`側の`${column.label}`を`${WM_I18N.t(column.label)}`に変更。`SURVIVAL_MILESTONES`/`SURVIVAL_PHASES`は参照側(ui-render.js)が既完走の別ファイルのため本バッチでは直せず、積み残し台帳に追記
+2. **`matchLabel`/`category`/`factionName`/`sideLabel`/`reporterText`等、app.js側で構築してui-common.js/ui-render.jsの表示関数へ渡す「データだが実質は表示文字列」は発見しだいt()化**: `showFactionEventResult`/`_buildShowResultNewspaperData`等の呼び出し先側フォールバックがt()化済み(`opts.category || WM_I18N.t('結果')`等)なのに、渡す値自体が生JAだと結局表示に生JAが乗ることをui-common.js側のコードを追って確認し、渡す側であるapp.js側の値も一律t()化する方針に統一
+3. **gameLog/news `data:{}`フィールドとG永続化パスは非ラップを維持**(P3a-3/4a/4bの原則を継続確認): `_pushNewsEvent`/`_pushIndustryNews`の`data:{...}`、`Engine.career.addEvent`の`orgName`/`fromOrg`引数、`G._pendingMediaIncomes`/`G._pendingReclaim`等`G`へ直接代入されるフィールド、`growthLog`/`prologue.addHighlight`(年代記)は全て非ラップ。特に`checkPrologueHighlights`の`triggers[].text`はEngine.prologue.addHighlightでGへ書き込まれる年代記データと確認しスキップ
+4. **一度書いた後の全文再走査で見落とし4件を発見・追加修正**: `exChampName`のフォールバック(`元王者#`)、PPV代表交代ポップアップ(`自団体`/`が出場不能！`/`が緊急出場`)、B3挑戦試合正式決定ポップアップ(`📨 挑戦試合を正式決定`)、processWeekのエラー復旧トースト(`⚠️ 興行後の処理で問題が発生しました`)。独自スキャナで「WM_I18N.t(直前でない生JA文字列トークン」を全件抽出し、`showEventPopup`呼び出し28箇所・`showToast`/`alert`/`confirm`呼び出し全件を最終突合して発見
+
+### スキップ判断のまとめ(既存分の踏襲+新規)
+1. 記者文/ナレーション(`checkPrologueHighlights`の年代記ハイライト、F02_IGNITE等の`narration`フィールド、業界底上げ・エンディング演出の物語文)、`foundingGreetings`(旗揚げ挨拶セリフ5本)、`FAN_EXPECT_REACTIONS`等の抽選プール本体
+2. `_NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`(見出し/本文の完全文プール、計約100行)— 年代記・MVPレース文プールと同種の「良い構造・Stage B翻訳対象」と判断し据え置き(積み残し台帳に追記)
+3. MQ表記一掃マイグレーション(2954〜2986行目の正規表現置換配列)— 旧セーブの焼き込みJA文字列を書き換える一度きりの移行ツールで、翻訳対象ではない
+4. トレイト名(`遅咲き`/`早熟`/`晩成`/`適応力`等)・`applyDepartureTrustImpact`の`reason`引数 — ロジックキー/Engine内部判定に使われる文字列
+5. 英字のみの文字列(`🏆 TITLE MATCH`等、既存ui-common.jsの先例で英語部分は非ラップと確認済み)
+
+### 検証
+- `node --check src/app.js` — 都度成功
+- `node test/ja-golden.js` — 完全一致(hash `6b3d05c8...` 不変、app.jsは同テストの読み込み対象外のため影響なし)
+- `node test/i18n-ratchet.js` — 直書きJA文字列は**減少**(542→541、増加なし)。作業途中で一時+5の増加を検出したが、原因は「テンプレート literal内の`${}`に隠れて生スキャナが見落としていたJA文字列(例: `派閥`フォールバック×2)を独立したt()呼び出しへ展開したことによるカウント方式の副作用」と特定。最終的に他の統合で540台まで戻り、baseline更新は不要だった
+- `npm test` — **260/260 PASS**。6本をt()化後の形に追従修正:
+  - `WM_I18N is not defined`(`new Function`/`vm`サンドボックスにt()呼び出しを含む関数を渡している5本: `retain-fighter-test.js`/`fighter-file-guard-test.js`/`fullscreen-exit-zero-guard-test.js`/`junior-tournament-watch-fix-test.js`/`u3-group-a-safety-net-test.js`)— 既存バッチ確立の`WM_I18N_STUB`(ja素通し+プレースホルダ置換のみ)パターンを横展開
+  - ソースパターン照合1本(`join-greeting-badges-test.js`)— `detail:\`${cand.name}が加入しました！(スカウト獲得)\`` のリテラル一致を`detail: WM_I18N.t('{name}が加入しました！(スカウト獲得)', { name: cand.name })`形へ更新
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・季末season=2 week=1まで到達)
+
+### 数値
+- `WM_I18N.t()`呼び出し: app.js **0 → 314箇所**
+- **app.js(17,559行)は本バッチでt()移行完走**(4c-1の1本で完走)
+
+### 残課題
+- **Stage A P3aバッチ4(ui-render.js/ui-common.js/app.js/index.html)のうち、index.htmlのみ未着手**。index.htmlはHTML本体+インラインCSSが主でJSは起動処理程度のため、残量調査が次の作業
+- 積み残し台帳(§バッチ4の積み残し台帳)に5件追加: `SURVIVAL_MILESTONES`/`SURVIVAL_PHASES`のモジュールロード時定数(参照側ui-render.jsが対応不可)、`Survival.updateSurvival`内の死コード(未参照`events`配列)、`applyDepartureTrustImpact`の`reason`引数(Engine側ロジックキー整理待ち)、`_NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`プール、ui-common.js:10433の`_mdlAReporterStrip`フォールバック1箇所の取りこぼし
+- 実機確認: FA・スカウト契約フロー、コーチ雇用/枠拡張、タイトル奪還挑戦状、全国統一王座の遠征・戴冠式、社長室決裁書類全種(特にexecuteDecisionの全エラー分岐)、派閥イベントF01〜F09・COMMON系の結果バナー(category/factionName表示)、選手ファイル(一覧・詳細・レーダーチャート)、契約枠拡大・団体王座設立の節目ポップアップ、クレジット画面を一通り開き、レイアウト崩れ・文言欠落が無いか確認いただけると安心(JA出力は不変のはずだが、t()呼び出しの参照ミスが無いかの最終目視)
+
 ## Stage A P3a バッチ4b-3 — ui-common.jsのt()移行(最終区画・完走)（2026-09-02・Sonnet worktree agent-a1ef20148500b7753）
 
 4b-2の続行点(12065行目、`showFactionCommon4Modal`)からui-common.js(20,701行)の**末尾までを対象にUIクロームを`WM_I18N.t()`経由へ移行**。これで**ui-common.js全体(4b-1/4b-2/4b-3の3本)がt()移行完走**。開始前にworktreeブランチをmain先端(b722f12)へfast-forward済み。

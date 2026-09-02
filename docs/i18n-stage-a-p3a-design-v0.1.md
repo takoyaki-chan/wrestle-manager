@@ -48,6 +48,11 @@
 - 「療養/休暇」文字列のCSSクラス兼用(ui-render.js・4a-1で発見・保留)— 表示とクラス名の分離が必要
 - 表示兼ロジックキー2件(ui-common.js・4b-3で発見・保留)— `_agwRoleLabel`のロール名がroleRankのオブジェクトキー兼用/`_agwTeamViewState`の`label`が`=== '対戦中'`比較でCSSクラス切替に使用。中立キー分離が必要
 - 死コード2ブロック(ui-common.js・4b-3で発見)— `_buildB3Step3b`の遮蔽された初回宣言/Junior・Tenchosen結果画面の無条件return後の到達不能尾部。P3a外で掃除候補
+- `SURVIVAL_MILESTONES`/`SURVIVAL_PHASES`(app.js・4c-1で発見)— モジュールロード時定数。`label`/`desc`はui-render.js:1204で`${m.label}`と非ラップ参照されており表示に乗る(`SURVIVAL_PHASES.label`は逆にどこからも参照されない死フィールド、これは対象外のまま)。他バッチの`FLAG_MODAL_META`/`_F01_ARCHETYPE_META`と同型の「宣言据え置き・参照側でt()評価」対応が必要だが参照側がui-render.js(既完走ファイル)のため本バッチ単独では直せず保留
+- `Survival.updateSurvival`内`events.push('🎊 経営安定化達成！...')`(app.js・4c-1で発見)— 戻り値`events`を呼び出し側`checkSurvivalUpdate`が一切参照しない死コード。当該メッセージは別途エスケープ済みunicodeの`showEventPopup`側(同機能)でt()化済み。コード自体の削除はP3a外
+- `applyDepartureTrustImpact`の`reason`引数(management.js全11箇所+app.js1箇所)— 自由記述のJA文字列(`'引退'`/`'AI怪我引退'`/`'突然退団'`等)がEngine側関数へ渡る。表示/内部判定どちらの用途か不明で、Engine本体(management.js)が対象外の本バッチでは1箇所だけ直すと不整合になるため全数非ラップ据え置き。Engine側のロジックキー整理が必要
+- `_NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`(app.js・4c-1で発見)— 見出し/本文の完全文プールで`_generateNewspaperTexts`が抽選消費。バッチ2の`NEWSPAPER_SUB_TEMPLATES`と同種だが本体2プールは未着手のまま「対象外」の年代記・MVPレース文プールと同法(良い構造・Stage B翻訳対象)で据え置き
+- ui-common.js:10433 `_mdlAReporterStrip`呼び出しの`opts.reporterText || '派閥について、ひとつご報告があります'`フォールバック — 同関数の他フォールバック(`payload.factionName || WM_I18N.t('派閥')`等)はt()化済みだがこの1箇所だけ4bで素通りしていた模様(4c-1でapp.js側の`reporterText`呼び出し元は全てt()化済みと確認済み)。ui-common.js側の1行修正はP3a外(ファイル対象外)
 
 ## 対象外(P3aでやらない)
 
