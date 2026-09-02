@@ -1,5 +1,99 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P4-3b — NEWS_HEADLINE 341本の英訳（テンプレ台帳 未訳0・P4テンプレ完走）（2026-09-03・Opus worktree agent-a9c80acee90c26ae7）
+
+英語対応P4の第3工程・後半。`i18n/template-ledger.json` の **NEWS_HEADLINE_TEMPLATES 341本**（77イベント型 × headline/body）を全部訳し、**台帳550本の未訳が0になった**（P4のテンプレ層は完走）。物差しは `docs/en-kuroda-style-draft-v0.1.md`（§3 見出し規則を機械適用／§3-4 プレースホルダ安全則／§3-6 禁止語grep／§1-5 三層の声）+ `docs/en-proper-nouns-draft-v0.1.md`、用語は P3b用語集（ui-ledger）と P4-3a のティッカー75本を先例として継承した。**`i18n/ui-ledger.json` / `src/lang-en.js` / `src/i18n.js` は並行エージェントの領分なので一切触っていない**。開始前にworktreeブランチをmain先端（f199c38）へfast-forward済み。
+
+> 指示書は「342本」だが台帳の実数は341本。差1は `draftPlayerResult[0].body` と `[1].body` が同一文字列 `{body}` で、台帳がユニークキーに統合しているため（取りこぼしではない）。
+
+### 1. 埋めた本数
+**341/341（スキップ0）**。台帳総キー550・訳文あり550・**未訳(fail-open) 0**。
+イベント型77種の内訳（headline+body）: 天頂戦系5型／秋の4団体対抗戦2型／春タッグ2型／ドラフト5型／派閥18型／挑戦状・果たし状6型／移籍・引き抜き・契約決裂7型／王座4型／怪我・引退・不調7型／MQ記録2型／関係修復・伝播4型／後追い記事4型／その他（殿堂・逸材・開眼・空席・控室危機ほか）。
+
+### 2. 見出し規則の機械適用（§3-1〜3-3）
+全headlineに対して sentence case／冠詞省略／単純現在／be・助動詞省略／現在完了なし／末尾ピリオドなし／団体名に冠詞なし／1行1文 を通した。
+- **感嘆符**は §1-5 の無署名デスク族のうち **JA原文に「！」がある行だけ・1本1個**に限定（emptyVenue[2] は日本語「赤信号！」だが H7 の裁定どおり「！」を落として強い名詞句 `Warning lights at {org}` に載せ替え、poachSuccess[2]・warMilestone×3・reclaim系は「！」を1個保った）。「衝撃」「激震」は禁止語 shock/chaos に落とさず事実・強い名詞句へ差し替え（`Jolt at the top` など）
+- **鉤括弧「」**（`「{factionName}」`）は英語では引用符を付けず落とす（§3-3 規則19／P3b precedent `派閥「{name}」→Faction {name}`）
+- **`{mq}点`→数値のみ**（`rated {mq}` / `Best on record — …, {mq}`）。"{mq} points" は1本も無い
+- **`{name}対{name2}`は見出し vs／本文 against**、`——`は前後スペース付き em ダッシュ、話題:内容はコロン
+- 黒田の署名記事文体（`this paper`／`this writer`）は本文側にのみ置いた（hotProspectDebut[2]・mqTagRecord×3・draftRoundup[0]・firstMeetSinceDeparture[1]の計6本）。デスク見出しには一人称を入れていない
+
+### 3. プレースホルダ安全則（§3-4）— 2つの穴を全数潰した
+**(a) 「値に文法を決めさせない」＝成形済み値の退避（67行）**
+`i18n/preformatted-values-audit.md` の20種のうち本バッチに出る全種を、**コロン後・ダッシュ後・括弧内・文末**のいずれかへ隔離した（内訳: preview 8／names 7／detail 6／titleName 6／how 4・stage 4・what 4・result 4・stat 4・injuryType 4・invites 4・championWatch 4／careerLine 3・recordLine 3・milestone 3／round 2・closing 2・semi1 2・semi2 2・finalResult 2・gauntletNote 2・tieBreakNote 2・entrySummary 2／body 1）。
+- 空文字列になりうる断片（`{recordLine}` `{careerLine}` `{championWatch}` `{gauntletNote}` `{tieBreakNote}` `{preview}` `{closing}`）は**英文の末尾**へ回した。JAは文中に置いていたが、EN側で文中に置くと空のとき二重スペースが残るため
+- `{semi1}/{semi2}/{finalResult}/{entrySummary}/{names}/{round}/{stage}/{what}/{how}/{stat}/{result}/{detail}` は `Semifinals: {semi1}, {semi2}.` `Round: {round}.` `What changed in {name}: {stat}` のようにコロン後の独立タグへ
+
+**⚠ audit未収載の成形済み値を新たに3種発見**（P4-3aの11種とも別）:
+
+| プレースホルダ | JA値 | 生成箇所 | 退避のしかた | 難易度 |
+|---|---|---|---|---|
+| `{titleName}` | `${orgName}王座` | management.js:3721（topChampionInjury） | 見出し・本文とも**コロン後/ダッシュ後の独立タグ**（`{orgName}: {name} out {weeks} weeks, {titleName}`） | LOW（`王座`→`title` の連結を t() 化するだけ） |
+| `{injuryType}` | 軽傷/中程度の負傷/重傷/練習中の負傷 | data.js:3850 `injuryLabel()`（INJURY_LABEL 4エントリ） | コロン後・ダッシュ後（`{orgName} {name}: {injuryType}, {weeks} weeks`） | LOW（4エントリの固定辞書。既存の構造化テーブル） |
+| `{result}` | 白星/黒星（hotProspectDebut, management.js:3640）・勝利/敗戦（kaiganAwakening, 8511） | 三項演算子×2箇所 | `The debut ended one way: {result}.` のコロン後 | LOW（固定語4種。ただし**生成箇所が2つあり語彙も違う**） |
+
+- あわせて `{names}`（draftRoundup, ui-common.js:6501）は audit が「names.join('、')」と記録している composeDraftPlayerResult 版と**別物**で、こちらは `${name}（${TIER_LABEL[tier]}）` を join しており**ティア名（超逸材/逸材/…）まで日本語**。EN語は ui-ledger に既存（Elite Prospect/Standout/…）なので t() 1個で片付く
+
+**(b) 単複・冠詞が値で変わる形の禁止（§3-4 規則23〜25）**
+- 全341行を機械走査し、**`a`/`an` がプレースホルダの直前に来る形を0にした**。初稿では16行あり、`{seasons}` `{weeksSinceFired}` が 8/11/18 のとき `a 8-week` と誤るため全て書き換えた（見出しは冠詞ごと落として `{seasons}-season career`、本文は `Seasons from her debut: {seasons}.` のようにコロン形へ）。`in an {orgName} ring`（値が子音始まりだと誤る）も `in the {orgName} ring` に修正
+- 数値+複数形は**生成側の下限を確認して残した**もののみ: `{count}`（STREAK_MILESTONES=[5,10,15,20,25,30] なので≥5）／`{weeks}`（INJURY_NEWS_WEEKS=4 なので≥4）／`{total}`（draftRoundup は `picked.length>=2` ゲート）／`{teamCount}`（A/B 2ブロックなので≥2）。それ以外は `{count} in a row` `defense number {count}` `Titles won: {titles}.` のように**単複不変形**へ逃がした
+- ⚠ 残存: `{seasons}` 系の `a {seasons}-season career` は **P4-3a が入れた AI_INJURY_RETIREMENT_TEMPLATES 5行と PPV/NEWSPAPER_SUB の `a {turns}-turn` 9行に同じ穴が残っている**（計14行、本バッチの担当外）。次に触る人が一緒に直せるよう機械検査コマンドを置いておく: `node -e "require('./i18n/template-ledger.json').filter(r=>r.en&&/\b[Aa]n? \{/.test(r.en)).forEach(r=>console.log(r.en))"`
+
+### 4. 長さ予算（§3-5 ≤56目標／上限64半角）の実測
+プレースホルダを予算値（name 16／org・faction 18／injuryType・titleName 20／invites・names・entrySummary 34／数値 3／score 3）で展開して全headlineを実測した。
+- 初稿で **64超が53本** → **41本を詰めて 12本まで削減**。中央値は 50 前後
+- 残る12本は**構造的な下限**（大きなプレースホルダを3〜4個必須で持つ行）で、これ以上はプレースホルダを落とさない限り縮まらない:
+
+| 実測 | 行 | 下限の内訳 |
+|---|---|---|
+| 74 | `{factionAName} {leaderAName} vs {factionBName} {leaderBName}` | 18+16+18+16=68 が素の合計。区切り記号だけで74 |
+| 74 | `Spring Tag League: {champ1} & {champ2}, {championOrg}` | 16+16+18=50＋大会名19 |
+| 72 | `{orgName}: {name} out {weeks} weeks, {titleName}` | 18+16+3+20=57 |
+| 71 | `{toOrg} {name} vs {ourOrg}: {weeksSinceFired}-week gap` | 18+16+18+3=55 |
+| 68 | `No end: {factionAName} vs {factionBName}, {org}` / `{orgName} {name}: {injuryType}, {weeks} weeks` | 54 / 57 |
+| 66 | `{factionAName} + {factionBName} join at {org}` | 54 |
+| 65 ×5 | challengeRequest系4本（2団体名+選手名+スコアで55が素の合計）／`No repair: {nameA}, {nameB}, {org}` | 55 / 50 |
+
+→ **§3-5 の暫定値（上限64）は、団体名2つ＋選手名を必須で持つ族には物理的に届かない**。`.np-*` の実CSSに対する擬似ロケール実測（§4-4）のときに、この12行を上限見直しのサンプルとして使うのがよい。
+
+### 5. 検証（全項目実施）
+- `node test/i18n-build-template-dict.js` → **green**（プレースホルダ完全性／重複キー／en内の日本語残り／黒田禁止語grep9パターン、いずれも違反0）。「台帳総キー数=550 **訳文あり=550 未訳(fail-open)=0**」
+- `node --check src/lang-en-templates.js` → OK
+- `node test/ja-golden.js` → **基準と完全一致**（lines=11233, hash=`6b3d05c8…4b8c1b3` ＝ P4-3aから不変）。JA表示は1バイトも変わっていない
+- `node test/i18n-ratchet.js` → **増加なし**（files=31 totalJaStrings=28075）
+- `npm test` → **260/260 PASS / failed 0**
+- **lang='en' 実抜き取り（vmサンドボックス）**: `src/i18n.js`+`src/lang-en-templates.js` を `wm_lang='en'` で実ロードし、代表22本（見出し15＋成形済み値入り本文7）を実データ相当の値で整形。加えて**NEWS_HEADLINE 341キー全件を t() に通し、`WM_I18N._misses.size === 0`（fail-open 0件）**を機械確認。さらに全341行をASCII値だけで展開して **「英文そのものに日本語が残っている行 0」** を確認した（EN展開後に日本語が出る67行は、すべて上記§3-(a)の成形済み充填値が原因＝生成式を直せば消える）
+- 台帳の差分は **`"en"` フィールド341行のみ**（削除行は全て `"en": ""`）。CRLF+末尾改行の既存シリアライズ形式を維持
+
+### 6. 代表対訳15本
+
+| # | 族 | JA | EN |
+|---|---|---|---|
+| 1 | longInjury（見出し・成形済み値2種） | `{orgName}の{name}、{injuryType}で全治{weeks}週` | `{orgName} {name}: {injuryType}, {weeks} weeks` |
+| 2 | winStreakMilestone（H2の単複安全形） | `止まらない{name}——{count}連勝` | `No stopping {name} — {count} in a row` |
+| 3 | titleChange（H3のコピュラ省略） | `{org}の王座が動く——{name}が新王者に` | `{org} title changes hands — {name}` |
+| 4 | retirementDeclare（H4／冠詞ごと落として a/an 回避） | `{name}、{seasons}シーズンで現役に区切り` | `{name} retires — {seasons}-season career` |
+| 5 | emptyVenue（H7／「！」を強い名詞句へ載せ替え） | `赤信号！ {org}の興行、空席だらけの衝撃` | `Warning lights at {org} — played to empty seats` |
+| 6 | warMilestone（デスク族の「！」1個＋成形済み{milestone}） | `金字塔！{orgName}、対抗戦通算{milestone}達成` | `A landmark for {orgName}! Interpromotional: {milestone}` |
+| 7 | factionCoup（下剋上＝Coup／「」を落とす） | `下剋上——{challengerName}が「{factionName}」の頭を獲った` | `Coup — {challengerName} takes the head of {factionName}` |
+| 8 | challengeRequestWin（H9／抽象名詞「意地」を動詞に開く） | `{ourOrg} {score} {opponentOrg}――{requesterName}の意地が呼んだ越境戦` | `{ourOrg} {score} {opponentOrg}: {requesterName} asked` |
+| 9 | topChampionInjury（成形済み{titleName}を文末タグへ） | `{orgName}の{titleName}王者{name}が重傷、{weeks}週の長期欠場へ` | `{orgName}: {name} out {weeks} weeks, {titleName}` |
+| 10 | mqAllTimeRecord（H10／「点」を出さない） | `業界最高評価を更新――{name}対{name2}、{mq}点` | `Best on record — {name} vs {name2}, {mq}` |
+| 11 | tenchosenResult（固有名詞・音写） | `{championName}、全国女子プロレス最強王者決定戦「天頂戦」優勝` | `{championName} wins Tenchosen` |
+| 12 | autumnWarResult（固有名詞・意訳） | `秋の総力戦決着——{championOrg}が最後まで立つ` | `Autumn Gauntlet War settled — {championOrg} last standing` |
+| 13 | factionEndless（本文・皮肉の箴言はmaxim検査を通る） | `…ファンはこの緊張を目当てに会場へ足を運ぶ。憎悪も、長く続けば名物になる。` | `…Fans buy tickets for that tension now. Hate, if it runs long enough, becomes part of the attraction.` |
+| 14 | hotProspectDebut（本文・`本紙`＋成形済み{result}） | `…デビュー戦は{result}に終わった。…誇張を嫌う本紙としても、この素材は本物の部類だと書いておく。` | `…The debut ended one way: {result}. …This paper has no use for overstatement, and this paper will put it in print: the material here is the genuine kind.` |
+| 15 | winStreakMilestone（本文・空になりうる{recordLine}を文末へ退避） | `{orgName}の{name}が{count}連勝に到達した。{recordLine}この勢いがどこまで続くかに注目が集まる。` | `{orgName}'s {name} has reached {count} in a row. How far the run carries is what people are watching. {recordLine}` |
+
+### 7. 残タスク（申し送り）
+- **成形済み値の生成式修正**が P4 テンプレ層で唯一残る穴。LOW群から: `{titleName}`（王座名の連結）／`{injuryType}`（INJURY_LABEL 4エントリ）／`{result}`（4語・生成箇所2つ）／`{names}`（draftRoundup版・ティア名は ui-ledger に既訳あり）／P4-2 audit の LOW 9件／P4-3a の11件
+- **`a {seasons}-season` / `a {turns}-turn` の a/an 穴が既存14行に残存**（§3-(b) 参照。ワンライナー検査コマンドを併記した）
+- **通貨B方式（`{v:man}`）一括移行**（本バッチには通貨行なし。P4-3a の11行が対象のまま）
+- **§3-5 見出し長予算の見直し**（上記12行を擬似ロケール実測のサンプルに）
+- Keisuke実機確認: 言語設定=EN で **週刊新聞の業界ニュース欄**（見出し＋本文）／天頂戦・秋の4団体対抗戦・春タッグの告知＆結果記事／派閥ニュース／ドラフト総括。**現時点では成形済み値の箇所だけ日本語が混じって出る**（上表の場所。テンプレの穴ではなく生成式の穴）
+
+---
+
 ## 🌐 Stage B P4-3a — テンプレ英訳・第1弾（見出し以外の209本）（2026-09-02・Opus worktree agent-aacb040121d67e5d2）
 
 英語対応P4の第3工程・前半。`i18n/template-ledger.json`(P4-2で新設・全550本)のうち **NEWS_HEADLINE_TEMPLATES(341本)以外の全209本**のen列を書き下ろし翻訳した。物差しは `docs/en-kuroda-style-draft-v0.1.md`(三層主語/断片リズム/慨嘆4道具/見出し文法/プレースホルダ安全則/禁止語grep)+`docs/en-tone-bible-draft-v0.1.md`§0-§1+`docs/en-proper-nouns-draft-v0.1.md`、用語はP3b用語集(`i18n/ui-ledger.json`のen列)に合わせた。**`i18n/ui-ledger.json` / `src/lang-en.js` / `src/i18n.js` は別エージェント作業中のため一切触っていない**。開始前にworktreeブランチをmain先端(e4ceb77)へfast-forward済み。
