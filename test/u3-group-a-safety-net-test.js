@@ -109,13 +109,22 @@ function section(name, fn) {
   // 関数本体と一緒に依存先(escHtml/_u3bSideHtml/_u3bInitialFallback)もサンドボックスへ持ち込む
   // (test/u3-group-b-safety-net-test.js が確立した手法を踏襲)。
   const build = new Function(
-    'document', 'window', 'G', 'ALL_COACHES', 'AWARD_LINES', 'getCoachPortraitUrl',
+    'document', 'window', 'G', 'ALL_COACHES', 'AWARD_LINES', 'getCoachPortraitUrl', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
      ${uiFn('_u3bSideHtml')}
      ${uiFn('_awShowCoachFg')}
      return { _awShowCoachFg };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeCoachFgEl() {
     return {
@@ -138,7 +147,7 @@ function section(name, fn) {
     const AWARD_LINES_STUB = opts.AWARD_LINES || { hofCoach: { _default: ['よくやってくれた。感謝している。'] } };
     const getCoachPortraitUrlStub = opts.getCoachPortraitUrl || ((id) => `image/coach/${id}.webp`);
     const windowStub = opts.window || {};
-    const built = build(documentStub, windowStub, GStub, ALL_COACHES_STUB, AWARD_LINES_STUB, getCoachPortraitUrlStub);
+    const built = build(documentStub, windowStub, GStub, ALL_COACHES_STUB, AWARD_LINES_STUB, getCoachPortraitUrlStub, WM_I18N_STUB);
     return { built, coachFg };
   }
 
@@ -393,7 +402,7 @@ function section(name, fn) {
 // ===========================================================================
 (function warAceSuite() {
   const build = new Function(
-    'document', 'G', 'Audio', 'getUpperUrl', 'getWarPostDialogue',
+    'document', 'G', 'Audio', 'getUpperUrl', 'getWarPostDialogue', 'WM_I18N',
     `let _warPostCtx = null;
      ${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
@@ -405,6 +414,15 @@ function section(name, fn) {
        setCtx(ctx) { _warPostCtx = ctx; },
      };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeAceDom() {
     let created = null;
@@ -429,7 +447,7 @@ function section(name, fn) {
     const AudioStub = opts.Audio || { play() {} };
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
     const getWarPostDialogueStub = opts.getWarPostDialogue || ((fighter) => `DIALOGUE_${fighter.id}`);
-    const built = build(doc, GStub, AudioStub, getUpperUrlStub, getWarPostDialogueStub);
+    const built = build(doc, GStub, AudioStub, getUpperUrlStub, getWarPostDialogueStub, WM_I18N_STUB);
     return { built, getCreated };
   }
 
@@ -492,7 +510,7 @@ function section(name, fn) {
 // ===========================================================================
 (function warVictoryChainSuite() {
   const build = new Function(
-    'document', 'Audio', 'getPortraitUrl', '_getWarVictoryLine', 'ALL_CHARS',
+    'document', 'Audio', 'getPortraitUrl', '_getWarVictoryLine', 'ALL_CHARS', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_imgOrInitial')}
      ${uiFn('_u3bInitialFallback')}
@@ -500,6 +518,15 @@ function section(name, fn) {
      ${uiFn('_showWarVictoryChain')}
      return { _showWarVictoryChain };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeChainDom() {
     const created = [];
@@ -524,7 +551,7 @@ function section(name, fn) {
     const getPortraitUrlStub = opts.getPortraitUrl || ((id) => `image/face/${id}.png`);
     const lineStub = opts._getWarVictoryLine || ((fighter) => `LINE_${fighter.id}`);
     const ALL_CHARS_STUB = opts.ALL_CHARS || [{ id: 1, name: '風間サキ', style: 'Grappler' }];
-    const built = build(doc, AudioStub, getPortraitUrlStub, lineStub, ALL_CHARS_STUB);
+    const built = build(doc, AudioStub, getPortraitUrlStub, lineStub, ALL_CHARS_STUB, WM_I18N_STUB);
     return { built, getCreated };
   }
 
@@ -671,7 +698,7 @@ function section(name, fn) {
   // 旧 _mdlBSpeech(このソロ画面専用の頭上吹き出し実装)は _mdlBSoloStage 内部から削除されたため、
   // サンドボックスへの注入も削除(uiFn()はソースに存在しない関数を渡すとthrowする)
   const build = new Function(
-    'document', 'Engine', 'getUpperUrl', 'Audio', 'wmDiag',
+    'document', 'Engine', 'getUpperUrl', 'Audio', 'wmDiag', 'WM_I18N',
     // 2026-07-27: 引退は 判断(表彰式の前) / あいさつ(表彰式の後) の2段になった。
     // ここで検証しているのは**あいさつの段**(顔+セリフ+軌跡)なので既定はそちら。
     `let _retirementPopupPhase = 'farewell';
@@ -696,6 +723,15 @@ function section(name, fn) {
      };`
   );
 
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。他セクションと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
+
   function makeOverlay() {
     return {
       className: '', innerHTML: '', offsetWidth: 0,
@@ -716,7 +752,7 @@ function section(name, fn) {
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
     const AudioStub = opts.Audio || { play() {} };
     const wmDiagStub = opts.wmDiag || (() => {});
-    const built = build(documentStub, EngineStub, getUpperUrlStub, AudioStub, wmDiagStub);
+    const built = build(documentStub, EngineStub, getUpperUrlStub, AudioStub, wmDiagStub, WM_I18N_STUB);
     return { built, overlay };
   }
 

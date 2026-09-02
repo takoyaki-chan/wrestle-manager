@@ -45,7 +45,7 @@ assert.ok(
   'the standalone rookie slide must be removed (merged into the JT slide)'
 );
 assert.ok(
-  ui.includes("<span class=\"aw-tag\">新人王</span>"),
+  ui.includes("<span class=\"aw-tag\">${WM_I18N.t('新人王')}</span>"),
   'the JT slide must show the rookie-of-the-year title'
 );
 // 同一功績への二重加点（JT優勝 8pt + 新人賞 5pt）は廃止した。
@@ -68,7 +68,7 @@ assert.ok(
 
 // 表彰式は2部構成（今年の大会 → 個人表彰）。
 assert.ok(
-  ui.includes("const SEC_EVENT = '今年の大会'") && ui.includes("const SEC_AWARD = '個人表彰'"),
+  ui.includes("const SEC_EVENT = WM_I18N.t('今年の大会')") && ui.includes("const SEC_AWARD = WM_I18N.t('個人表彰')"),
   'the ceremony must be split into the two sections'
 );
 

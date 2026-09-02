@@ -9,7 +9,7 @@ const path = require('path');
 const source = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui-common.js'), 'utf8');
 
 assert.strictEqual(
-  (source.match(/<button class="war-victory-close(?: [^"]*)?"(?: type="button")?>次へ<\/button>/g) || []).length,
+  (source.match(/<button class="war-victory-close(?: [^"]*)?"(?: type="button")?>(?:次へ|\$\{WM_I18N\.t\('次へ'\)\})<\/button>/g) || []).length,
   5,
   'generic post-match dialogue buttons must use the 次へ label'
 );

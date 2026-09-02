@@ -69,7 +69,7 @@ assert.strictEqual(firstResolution.label, '宿敵戦勝利',
 const resolutionPopup = section(common, 'function _renderRivalryPopup()', '\nfunction closeRivalryPopup()');
 assert.ok(resolutionPopup.includes("const isFirstWin = o.resolutionType === 'first';"),
   '1回目の表示を最終決着と区別する分岐が無い');
-assert.ok(resolutionPopup.includes("'宿 敵 戦 勝 利'") && resolutionPopup.includes("vsLabel = isFirstWin ? '勝 利' : '決 着'"),
+assert.ok(resolutionPopup.includes("WM_I18N.t('宿 敵 戦 勝 利')") && resolutionPopup.includes("vsLabel = isFirstWin ? WM_I18N.t('勝 利') : WM_I18N.t('決 着')"),
   '1回目のポップアップを勝利として表示していない');
 const finalResolution = Engine.title.checkResolution(settledPair, 80, 60, 1);
 assert.ok(finalResolution && ['goodRival', 'bitter'].includes(finalResolution.resolved),

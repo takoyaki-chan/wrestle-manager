@@ -116,7 +116,7 @@ function makeState(matchCount) {
   assert.ok(confirm.includes('if (selected.length !== required)'));
   assert.ok(confirm.includes('App.initWarPreview(ev, card)'));
 
-  assert.ok(ui.includes('この${required}名で開戦する'));
+  assert.ok(ui.includes("WM_I18N.t('この{n}名で開戦する', { n: required })"));
   assert.ok(ui.includes("${canConfirm ? '' : 'disabled'}"));
   assert.ok(ui.includes('App.warAutoSelectEntry()'));
   assert.ok(css.includes('.war-entry-candidate.is-selected'));

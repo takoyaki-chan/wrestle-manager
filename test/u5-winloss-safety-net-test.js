@@ -703,7 +703,7 @@ function logGap(msg) {
 // ===========================================================================
 (function warFinalResultSuite() {
   const build = new Function(
-    'Engine', 'document', 'RIVAL_ORGS', 'G', 'getUpperUrl', 'getHeatLevel',
+    'Engine', 'document', 'RIVAL_ORGS', 'G', 'getUpperUrl', 'getHeatLevel', 'WM_I18N',
     `let _warVictoryWinners = [];
      let _warPostCtx = null;
      ${uiFn('escHtml')}
@@ -715,6 +715,15 @@ function logGap(msg) {
      ${uiFn('renderWarFinalResult')}
      return { renderWarFinalResult };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。u3系テストと同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeDom() {
     const box = { innerHTML: '' };
@@ -736,7 +745,7 @@ function logGap(msg) {
     const GStub = opts.G || { orgName: 'プレイヤー団体', aiOrgs: { org_a: { roster: [{ id: 99, name: 'エース' }] } } };
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
     const getHeatLevelStub = opts.getHeatLevel || (() => ({ id: 'warm', label: 'warm', emoji: '\u{1F525}' }));
-    const built = build(EngineStub, doc, RIVAL_ORGS_STUB, GStub, getUpperUrlStub, getHeatLevelStub);
+    const built = build(EngineStub, doc, RIVAL_ORGS_STUB, GStub, getUpperUrlStub, getHeatLevelStub, WM_I18N_STUB);
     return { built, box };
   }
 

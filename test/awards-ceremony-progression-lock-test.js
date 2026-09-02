@@ -89,7 +89,7 @@ assert.ok(ceremony.indexOf('btnNext.disabled = false;', activeAt) > activeAt,
   '式典を開くときに前回の式典が残した disabled を解除していない');
 assert.ok(ceremony.indexOf("btnNext.classList.remove('disabled')", activeAt) > activeAt,
   '式典を開くときに .disabled クラスを剥がしていない');
-assert.ok(/btnNext\.textContent = TOTAL === 1 \? '✕ 閉じる' : '次へ　→';/.test(ceremony.slice(activeAt)),
+assert.ok(/btnNext\.textContent = TOTAL === 1 \? WM_I18N\.t\('✕ 閉じる'\) : WM_I18N\.t\('次へ　→'\);/.test(ceremony.slice(activeAt)),
   '式典を開くときにボタン文言を初期スライド用に戻していない');
 
 const showScreen = uiFunction('showScreen');

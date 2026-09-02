@@ -208,7 +208,7 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
   const ui = read('src/ui-common.js');
   const ceremony = functionSource(ui, 'showAwardsCeremony');
   assert.ok(ui.includes('function _buildUnifiedChampionAward(d)'));
-  assert.ok(ui.includes('<div class="unified-beltband">全国統一王者</div>'));
+  assert.ok(ui.includes("<div class=\"unified-beltband\">${WM_I18N.t('全国統一王者')}</div>"));
   assert.ok(ceremony.includes('if (awards.unifiedChampion)'));
   assert.ok(/function finishCeremony\([^)]*\) \{\s*if \(finished\) return;/.test(ceremony));
   assert.ok(ceremony.includes("completionTimer = setTimeout(() => finishCeremony('timeout')"));

@@ -79,7 +79,7 @@ function section(name, fn) {
   const buildRivalry = new Function(
     'Engine', 'document', 'Audio', 'getUpperUrl', 'findFighter', 'ALL_CHARS', 'pickDialogueLine',
     'RIVALRY_CONFRONTATION_LINES', 'RIVALRY_CONFRONTATION_LINES_90', 'RIVALRY_CONFRONTATION_LINES_70',
-    'RIVALRY_RESOLUTION_LINES', 'GOODRIVAL_RESOLUTION_LINES', 'BITTER_RESOLUTION_LINES',
+    'RIVALRY_RESOLUTION_LINES', 'GOODRIVAL_RESOLUTION_LINES', 'BITTER_RESOLUTION_LINES', 'WM_I18N',
     `let _rivalryPopupQueue = [];
      let _rivalryPopupCallback = null;
      ${functionSource('escHtml')}
@@ -91,6 +91,15 @@ function section(name, fn) {
        render(queue, cb) { _rivalryPopupQueue = queue; _rivalryPopupCallback = cb || null; _renderRivalryPopup(); },
      };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照。u3-group-a-safety-net-test.js と同じスタブ)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -119,7 +128,7 @@ function section(name, fn) {
     const AudioStub = opts.Audio || { play() {} };
     const built = buildRivalry(
       EngineStub, documentStub, AudioStub, getUpperUrlStub, findFighterStub, ALL_CHARS_STUB, pickDialogueLineStub,
-      {}, {}, {}, {}, {}, {}
+      {}, {}, {}, {}, {}, {}, WM_I18N_STUB
     );
     return { built, box, overlay };
   }

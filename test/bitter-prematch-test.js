@@ -82,16 +82,16 @@ assert.strictEqual(sideFn(recorded, 1, 2), 'behind', '決着戦敗者は behind 
 assert.strictEqual(sideFn({ rivalries: {} }, 2, 1), 'ahead', '勝者IDがない旧セーブはH2Hでフォールバックする');
 
 for (const phrase of [
-  "title = '遺 恨 再 燃'",
+  "title = WM_I18N.t('遺 恨 再 燃')",
   "sub = 'GRUDGE REKINDLED'",
   "toneCls = 'tone-bitter'",
-  "vsLabel = '再 燃'",
-  '💀 消えなかったものが、また火を持った',
+  "vsLabel = WM_I18N.t('再 燃')",
+  "resultHtml = `<div class=\"vd-tag\">${WM_I18N.t('💀 消えなかったものが、また火を持った')}</div>`;",
 ]) assert.ok(ui.includes(phrase), `宿怨専用表示がない: ${phrase}`);
 
 for (const phrase of [
-  "title = rivalryVal >= 70 ? '因 縁 勃 発' : '宿 敵 対 決'",
-  "resultHtml = `<div class=\"vd-tag\">⚡ ふたりの間に火花が散った</div>`;",
+  "title = rivalryVal >= 70 ? WM_I18N.t('因 縁 勃 発') : WM_I18N.t('宿 敵 対 決')",
+  "resultHtml = `<div class=\"vd-tag\">${WM_I18N.t('⚡ ふたりの間に火花が散った')}</div>`;",
 ]) assert.ok(ui.includes(phrase), `通常の宣戦布告文言が変わっている: ${phrase}`);
 
 console.log('bitter-prematch-test: ok');
