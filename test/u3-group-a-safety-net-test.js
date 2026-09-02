@@ -584,7 +584,7 @@ function section(name, fn) {
   // faceout-audit v0.2: 解雇面談は素材系統違反(1:1 faceを2:3枠にcover)を解消し
   // getUpperUrl(upper素材)へ移行したため、サンドボックスにもgetUpperUrlを注入する
   const build = new Function(
-    'document', 'G', 'Engine', 'getUpperUrl', 'ALL_CHARS',
+    'document', 'G', 'Engine', 'getUpperUrl', 'ALL_CHARS', 'WM_I18N',
     `${dataFn('portraitImg')}
      ${uiFn('escHtml')}
      ${uiFn('_u3bInitialFallback')}
@@ -592,6 +592,15 @@ function section(name, fn) {
      ${uiRenderFn('renderShachoshitsuReleaseInterview')}
      return { renderShachoshitsuReleaseInterview };`
   );
+
+  // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
+  // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
+  const WM_I18N_STUB = { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -611,7 +620,7 @@ function section(name, fn) {
     };
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/upper_${id}.webp`);
     const ALL_CHARS_STUB = opts.ALL_CHARS || [{ id: 3, name: '結城ミナ', style: 'Striker' }];
-    const built = build(documentStub, GStub, EngineStub, getUpperUrlStub, ALL_CHARS_STUB);
+    const built = build(documentStub, GStub, EngineStub, getUpperUrlStub, ALL_CHARS_STUB, WM_I18N_STUB);
     return { built, el };
   }
 
