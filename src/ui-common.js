@@ -16522,18 +16522,18 @@ function showTrialLimitMessage(featureName) {
   const box = document.getElementById('confirmBox');
   if (!overlay || !box) {
     // TODO: DLsite公開後に「DLsite / BOOTH」に戻す
-    alert(`【${featureName}】は製品版で遊べます！\nBOOTH で製品版をチェックしてください。`);
+    alert(WM_I18N.t('【{feature}】は製品版で遊べます！\nBOOTH で製品版をチェックしてください。', { feature: featureName }));
     return true;
   }
   box.innerHTML = `
-    <div class="panel-title" style="color:var(--gold);margin-bottom:12px">🔒 製品版限定機能</div>
+    <div class="panel-title" style="color:var(--gold);margin-bottom:12px">🔒 ${WM_I18N.t('製品版限定機能')}</div>
     <p style="line-height:1.8;margin-bottom:20px">
-      【${featureName}】は製品版で解放されます！<br>
+      ${WM_I18N.t('【{feature}】は製品版で解放されます！', { feature: featureName })}<br>
       <!-- TODO: DLsite公開後に「DLsite / BOOTH」に戻す -->
-      BOOTH で製品版をチェックしてください。
+      ${WM_I18N.t('BOOTH で製品版をチェックしてください。')}
     </p>
     <button class="btn btn-gold" style="min-width:120px"
-      onclick="document.getElementById('confirmOverlay').classList.remove('active')">閉じる</button>`;
+      onclick="document.getElementById('confirmOverlay').classList.remove('active')">${WM_I18N.t('閉じる')}</button>`;
   overlay.classList.add('active');
   return true;
 }
@@ -16546,30 +16546,28 @@ function showTrialEndMessage() {
   box.innerHTML = `
     <div style="text-align:center;padding:20px 10px">
       <div style="font-size:22px;font-weight:800;color:var(--gold);margin-bottom:16px;letter-spacing:1px">
-        🎬 体験版をプレイいただき<br>ありがとうございました！
+        ${WM_I18N.t('🎬 体験版をプレイいただき<br>ありがとうございました！')}
       </div>
       <div style="line-height:2;margin-bottom:20px;font-size:14px;color:var(--text-main)">
-        あなたの団体の物語は<br>まだ始まったばかりです。<br><br>
-        製品版ではシーズン4以降を<br>無制限にプレイできます。<br>
-        <span style="color:var(--gold)">セーブデータはそのまま引き継げます。</span>
+        ${WM_I18N.t('あなたの団体の物語は<br>まだ始まったばかりです。<br><br>製品版ではシーズン4以降を<br>無制限にプレイできます。<br><span style="color:var(--gold)">セーブデータはそのまま引き継げます。</span>')}
       </div>
       <div style="display:flex;flex-direction:column;gap:10px;align-items:center">
         <a href="https://takoyakichan.booth.pm/" target="_blank" rel="noopener"
            class="btn btn-gold" style="min-width:200px;text-decoration:none;display:inline-block;text-align:center">
-          🛒 BOOTH で購入</a>
+          🛒 ${WM_I18N.t('BOOTH で購入')}</a>
         <!-- TODO: DLsite商品ページ公開後にボタンを追加する -->
         <button class="btn" style="min-width:200px;margin-top:8px;background:rgba(200,190,170,0.08);color:var(--text-sub)"
           onclick="document.getElementById('confirmOverlay').classList.remove('active')">
-          閉じる（引き続き閲覧可能）</button>
+          ${WM_I18N.t('閉じる（引き続き閲覧可能）')}</button>
       </div>
       <div style="border-top:1px solid rgba(200,190,170,0.12);margin:20px 0 16px;width:80%;margin-left:auto;margin-right:auto"></div>
       <div style="text-align:center">
         <div style="font-size:13px;color:var(--gold);letter-spacing:2px;margin-bottom:10px;font-weight:600">
-          ✦ この選手たちの作品をもっと見る ✦</div>
+          ${WM_I18N.t('✦ この選手たちの作品をもっと見る ✦')}</div>
         <a href="https://takoyaki.fanbox.cc/" target="_blank" rel="noopener"
            class="btn" style="min-width:200px;text-decoration:none;display:inline-block;text-align:center;
              background:rgba(200,190,170,0.08);color:var(--text-main);border:1px solid rgba(200,190,170,0.15)">
-          📖 無料作品を読む（FANBOX）</a>
+          📖 ${WM_I18N.t('無料作品を読む')}（FANBOX）</a>
       </div>
       <div style="border-top:1px solid rgba(200,190,170,0.12);margin:20px 0 16px;width:80%;margin-left:auto;margin-right:auto"></div>
       <div style="display:flex;gap:20px;justify-content:center;align-items:center">
@@ -16587,8 +16585,7 @@ function showTrialEndMessage() {
             border-radius:50%;background:rgba(200,190,170,0.1);font-size:13px">F</span>FANBOX</a>
       </div>
       <div style="margin-top:16px;font-size:11px;color:var(--text-dim);line-height:1.6">
-        ※ 閉じた後もロスター閲覧・関係性マップ等は確認できます。<br>
-        ※ 週送り（次シーズン進行）はできません。
+        ${WM_I18N.t('※ 閉じた後もロスター閲覧・関係性マップ等は確認できます。<br>※ 週送り（次シーズン進行）はできません。')}
       </div>
     </div>`;
   overlay.classList.add('active');
@@ -16641,10 +16638,10 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
 
   const facesHtml = negotiations.map(n => {
     const [badgeCls, badgeLabel] = n.attitude === 'sudden_departure'
-      ? ['neg-badge-sudden', '⚡ 突発退団']
+      ? ['neg-badge-sudden', WM_I18N.t('⚡ 突発退団')]
       : n.attitude === 'raise'
-        ? ['neg-badge-raise', '💰 昇給要求']
-        : ['neg-badge-transfer', '🚪 移籍志願'];
+        ? ['neg-badge-raise', WM_I18N.t('💰 昇給要求')]
+        : ['neg-badge-transfer', WM_I18N.t('🚪 移籍志願')];
     // 顔と名前から選手詳細を開ける(2026-07-27 Keisuke)
     return `<div class="neg-card-face-item">
       <div style="border-radius:10px;overflow:hidden">${portraitImg(n.fighterId, 64, '', 'roster')}</div>
@@ -16655,13 +16652,13 @@ function showContractSummaryModal(negotiations, autoCount, season, onStart) {
   }).join('');
 
   const deskHtml = `
-    <div class="neg-card-title">📋 シーズン${season} 契約更新</div>
+    <div class="neg-card-title">📋 ${WM_I18N.t('シーズン{n} 契約更新', { n: season })}</div>
     <div class="neg-stat-row">
-      自動更新: <strong>${autoCount}名</strong>　／　意見あり: <strong style="color:#c0392b">${negotiations.length}名</strong>
+      ${WM_I18N.t('自動更新')}: <strong>${autoCount}名</strong>　／　${WM_I18N.t('意見あり')}: <strong style="color:#c0392b">${negotiations.length}名</strong>
     </div>
     <div class="neg-card-faces">${facesHtml}</div>
     <button class="btn btn-gold" id="contractStartBtn" style="width:100%;padding:12px;font-size:14px;font-weight:700">
-      交渉を始める
+      ${WM_I18N.t('交渉を始める')}
     </button>`;
 
   renderShachoshitsuNegotiation('', deskHtml);
@@ -16683,11 +16680,11 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   const isDecline = neg.attitude === 'decline' || neg.attitude === 'decline_voluntary';
   const isVoluntaryDecline = neg.attitude === 'decline_voluntary';
   const [badgeCls, badgeLabel] = isTransfer
-    ? ['neg-badge-transfer', '🚪 移籍志願']
+    ? ['neg-badge-transfer', WM_I18N.t('🚪 移籍志願')]
     : isDecline
       ? [isVoluntaryDecline ? 'neg-badge-raise' : 'neg-badge-transfer',
-        isVoluntaryDecline ? '🤝 減俸申し出' : '📉 契約査定']
-      : ['neg-badge-raise', '💰 昇給要求'];
+        isVoluntaryDecline ? WM_I18N.t('🤝 減俸申し出') : WM_I18N.t('📉 契約査定')]
+      : ['neg-badge-raise', WM_I18N.t('💰 昇給要求')];
 
   // セリフ生成
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
@@ -16700,33 +16697,33 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   const retentionRaise = isTransfer && fighter
     ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state)
     : 0;
-  const retentionTerms = `一時金${neg.retentionBonus}万 + 給与+${retentionRaise}万/週`;
+  const retentionTerms = WM_I18N.t('一時金{a}万 + 給与+{b}万/週', { a: neg.retentionBonus, b: retentionRaise });
 
   // 選択肢の構築
   let choices;
   if (neg.attitude === 'raise') {
     choices = [
-      { label: '昇給を受ける', hint: `本人は強く報われたと感じる　給与+${neg.raiseAmount}万/週`, idx: 0 },
-      { label: '交渉する',     hint: `成功時　給与+${neg.counterOffer}万/週`, idx: 1 },
-      { label: '拒否する',     hint: '本人に強い不満が残るおそれ', idx: 2 },
+      { label: WM_I18N.t('昇給を受ける'), hint: WM_I18N.t('本人は強く報われたと感じる　給与+{n}万/週', { n: neg.raiseAmount }), idx: 0 },
+      { label: WM_I18N.t('交渉する'),     hint: WM_I18N.t('成功時　給与+{n}万/週', { n: neg.counterOffer }), idx: 1 },
+      { label: WM_I18N.t('拒否する'),     hint: WM_I18N.t('本人に強い不満が残るおそれ'), idx: 2 },
     ];
   } else if (isVoluntaryDecline) {
     choices = [
-      { label: '据え置く',   hint: '温情を示し、本人とロッカーの空気が明るくなる', idx: 0 },
-      { label: '受け入れる', hint: '申し出を尊重し、対等な関係を示す', idx: 1 },
+      { label: WM_I18N.t('据え置く'),   hint: WM_I18N.t('温情を示し、本人とロッカーの空気が明るくなる'), idx: 0 },
+      { label: WM_I18N.t('受け入れる'), hint: WM_I18N.t('申し出を尊重し、対等な関係を示す'), idx: 1 },
     ];
   } else if (isDecline) {
     choices = [
-      { label: '据え置く',       hint: '温情を示し、本人とロッカーの空気が明るくなる', idx: 0 },
-      { label: '査定どおり改定', hint: '関係が良ければ納得するが、そうでなければ不満が残る', idx: 1 },
-      { label: '厳しく改定',     hint: 'ボーナスも清算し、関係が大きく軋む ／ 移籍志願のおそれ', idx: 2 },
+      { label: WM_I18N.t('据え置く'),       hint: WM_I18N.t('温情を示し、本人とロッカーの空気が明るくなる'), idx: 0 },
+      { label: WM_I18N.t('査定どおり改定'), hint: WM_I18N.t('関係が良ければ納得するが、そうでなければ不満が残る'), idx: 1 },
+      { label: WM_I18N.t('厳しく改定'),     hint: WM_I18N.t('ボーナスも清算し、関係が大きく軋む ／ 移籍志願のおそれ'), idx: 2 },
     ];
   } else {
     choices = [
-      { label: '引き留める', hint: retentionTerms, idx: 0,
+      { label: WM_I18N.t('引き留める'), hint: retentionTerms, idx: 0,
         disabled: (state.funds || 0) < neg.retentionBonus },
-      { label: '理由を聞く', hint: '', idx: 1 },
-      { label: '送り出す',   hint: '退団', idx: 2 },
+      { label: WM_I18N.t('理由を聞く'), hint: '', idx: 1 },
+      { label: WM_I18N.t('送り出す'),   hint: WM_I18N.t('退団'), idx: 2 },
     ];
   }
 
@@ -16735,7 +16732,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   if (neg.attitude === 'raise') {
     const currentSalary = fighter ? Engine.util.getSalary(fighter, state.titles) : 0;
     infoHtml = `<div class="neg-card-info neg-card-info-raise" style="font-size:12px">
-      現在の週給: ${currentSalary}万 → 要求: ${currentSalary + neg.raiseAmount}万（+${neg.raiseAmount}万/週）
+      ${WM_I18N.t('現在の週給')}: ${currentSalary}万 → ${WM_I18N.t('要求')}: ${currentSalary + neg.raiseAmount}万（+${neg.raiseAmount}万/週）
     </div>`;
   } else if (isDecline) {
     const currentSalary = Number.isFinite(neg.currentSalary)
@@ -16746,11 +16743,11 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
       ? neg.assessedSalary
       : currentSalary - declineAmount;
     infoHtml = `<div class="neg-card-info ${isVoluntaryDecline ? 'neg-card-info-raise' : 'neg-card-info-transfer'}" style="font-size:12px">
-      現在の週給: ${currentSalary}万 → 査定: ${assessedSalary}万（−${declineAmount}万/週）
+      ${WM_I18N.t('現在の週給')}: ${currentSalary}万 → ${WM_I18N.t('査定')}: ${assessedSalary}万（−${declineAmount}万/週）
     </div>`;
   } else {
     infoHtml = `<div class="neg-card-info neg-card-info-transfer" style="font-size:12px">
-      引き留め条件: ${retentionTerms}
+      ${WM_I18N.t('引き留め条件')}: ${retentionTerms}
     </div>`;
   }
 
@@ -16762,7 +16759,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
 
   const deskHtml = `
     <div class="neg-card-title">
-      📋 契約交渉（${idx + 1}/${total}）
+      📋 ${WM_I18N.t('契約交渉（{a}/{b}）', { a: idx + 1, b: total })}
       <span class="neg-badge ${badgeCls}">${badgeLabel}</span>
     </div>
     ${infoHtml}
@@ -16801,7 +16798,7 @@ function showContractReactionModal(neg, reactionText, onDone) {
   const wallHtml = _negSpeakerHtml(neg, reactionText, 'neg-badge-raise', '');
   const deskHtml = `
     <button class="neg-btn" id="contractReactionOk" style="width:100%;justify-content:center;padding:12px;font-size:13px;font-weight:700">
-      次へ
+      ${WM_I18N.t('次へ')}
     </button>`;
 
   renderShachoshitsuNegotiation(wallHtml, deskHtml);
@@ -16821,18 +16818,18 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
   const canAfford = (state.funds || 0) >= neg.retentionBonus;
   const fighter = (state.roster || []).find(f => f.id === neg.fighterId);
   const retentionRaise = fighter ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state) : 0;
-  const retentionTerms = `一時金${neg.retentionBonus}万 + 給与+${retentionRaise}万/週`;
-  const wallHtml = _negSpeakerHtml(neg, listenText, 'neg-badge-transfer', '🚪 移籍志願');
+  const retentionTerms = WM_I18N.t('一時金{a}万 + 給与+{b}万/週', { a: neg.retentionBonus, b: retentionRaise });
+  const wallHtml = _negSpeakerHtml(neg, listenText, 'neg-badge-transfer', WM_I18N.t('🚪 移籍志願'));
 
   const deskHtml = `
-    <div class="neg-card-title">📋 ${neg.fighterName}の話を聞く</div>
+    <div class="neg-card-title">📋 ${WM_I18N.t('{name}の話を聞く', { name: neg.fighterName })}</div>
     <div class="neg-choices">
       <button class="neg-btn" data-sub="retain"${canAfford ? '' : ' disabled'}>
-        <span>引き留める</span>
+        <span>${WM_I18N.t('引き留める')}</span>
         <span class="neg-btn-hint">${retentionTerms}</span>
       </button>
       <button class="neg-btn" data-sub="release">
-        <span>送り出す</span>
+        <span>${WM_I18N.t('送り出す')}</span>
       </button>
     </div>`;
 
@@ -16860,14 +16857,14 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
 
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
   const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', neg.context);
-  const wallHtml = _negSpeakerHtml(neg, dialogue, 'neg-badge-sudden', '⚡ 突発退団');
+  const wallHtml = _negSpeakerHtml(neg, dialogue, 'neg-badge-sudden', WM_I18N.t('⚡ 突発退団'));
 
   const deskHtml = `
     <div class="neg-card-info neg-card-info-sudden" style="font-size:12px;text-align:center;margin-bottom:14px">
-      交渉の余地なし — ${neg.fighterName}は退団を決意しています
+      ${WM_I18N.t('交渉の余地なし — {name}は退団を決意しています', { name: neg.fighterName })}
     </div>
     <button class="neg-btn" id="contractSuddenOk" style="width:100%;justify-content:center;padding:12px;font-size:14px;font-weight:700;color:#8e44ad;border-color:rgba(142,68,173,0.5)">
-      ……わかった
+      ${WM_I18N.t('……わかった')}
     </button>`;
 
   renderShachoshitsuNegotiation(wallHtml, deskHtml);
@@ -16888,20 +16885,20 @@ function showContractResultModal(results, salaryChanges, onDone) {
   const departed = results.filter(r => r.type === 'depart');
   const changed  = Array.isArray(salaryChanges) ? salaryChanges : [];
 
-  let deskHtml = `<div class="neg-card-title">📋 契約更新 完了</div>`;
+  let deskHtml = `<div class="neg-card-title">📋 ${WM_I18N.t('契約更新 完了')}</div>`;
   deskHtml += `<div class="neg-stat-row">
-    残留: <strong style="color:#27ae60">${stayed.length}名</strong>`;
-  if (changed.length > 0) deskHtml += `（給与変動: ${changed.length}名）`;
-  deskHtml += `　　退団: <strong style="color:#c0392b">${departed.length}名</strong></div>`;
+    ${WM_I18N.t('残留')}: <strong style="color:#27ae60">${stayed.length}名</strong>`;
+  if (changed.length > 0) deskHtml += WM_I18N.t('（給与変動: {n}名）', { n: changed.length });
+  deskHtml += `　　${WM_I18N.t('退団')}: <strong style="color:#c0392b">${departed.length}名</strong></div>`;
 
   if (departed.length > 0) {
     deskHtml += '<div class="neg-result-section neg-result-depart">';
     departed.forEach(r => {
       let dest = '';
       if (r.departureInfo) {
-        if (r.departureInfo.type === 'retire')      dest = '→ 引退';
-        else if (r.departureInfo.type === 'rival')  dest = `→ ${r.departureInfo.orgName || 'ライバル団体'}`;
-        else                                         dest = '→ フリーエージェント';
+        if (r.departureInfo.type === 'retire')      dest = `→ ${WM_I18N.t('引退')}`;
+        else if (r.departureInfo.type === 'rival')  dest = `→ ${r.departureInfo.orgName || WM_I18N.t('ライバル団体')}`;
+        else                                         dest = `→ ${WM_I18N.t('フリーエージェント')}`;
       }
       deskHtml += `<div class="neg-result-row">
         ${portraitImg(r.fighterId, 40, '', 'contractResult')}
@@ -16920,8 +16917,8 @@ function showContractResultModal(results, salaryChanges, onDone) {
       const negotiatedText = r.negotiatedDelta > 0 ? `+${r.negotiatedDelta}` : `${r.negotiatedDelta}`;
       const baselineText = r.baselineDelta > 0 ? `+${r.baselineDelta}` : `${r.baselineDelta}`;
       const breakdown = [];
-      if (r.negotiatedDelta !== 0) breakdown.push(`交渉 ${negotiatedText}`);
-      if (r.baselineDelta !== 0) breakdown.push(`契約基準 ${baselineText}`);
+      if (r.negotiatedDelta !== 0) breakdown.push(`${WM_I18N.t('交渉')} ${negotiatedText}`);
+      if (r.baselineDelta !== 0) breakdown.push(`${WM_I18N.t('契約基準')} ${baselineText}`);
       deskHtml += `<div class="neg-result-row">
         ${portraitImg(r.fighterId, 40, '', 'contractResult')}
         <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
@@ -16939,7 +16936,7 @@ function showContractResultModal(results, salaryChanges, onDone) {
   }
 
   deskHtml += `<button class="btn btn-gold" id="contractResultOk" style="width:100%;padding:12px;font-size:14px;font-weight:700;margin-top:4px">
-    シーズン開幕へ
+    ${WM_I18N.t('シーズン開幕へ')}
   </button>`;
 
   renderShachoshitsuNegotiation('', deskHtml);
@@ -16962,9 +16959,9 @@ function _jtHeader() {
   return `<div class="jtc-header">
     <img class="jtc-header-emblem" src="../image/emblem-summer.png" alt="" onerror="this.style.display='none'">
     <div class="jtc-header-title">JUNIOR CUP</div>
-    <div class="jtc-header-sub">ジュニアトーナメント — U-20</div>
-    <div class="jtc-header-ed">第${season}回大会 / ${bs}名トーナメント</div>
-  </div><div class="jtc-double-rule"></div><div class="jtc-climb-note">▲ Climb to the top — 勝ち上がるほど上へ</div>`;
+    <div class="jtc-header-sub">${WM_I18N.t('ジュニアトーナメント')} — U-20</div>
+    <div class="jtc-header-ed">${WM_I18N.t('第{n}回大会 / {bs}名トーナメント', { n: season, bs })}</div>
+  </div><div class="jtc-double-rule"></div><div class="jtc-climb-note">▲ Climb to the top — ${WM_I18N.t('勝ち上がるほど上へ')}</div>`;
 }
 
 // ===== SUMMON (card-style full-screen) =====
@@ -16979,9 +16976,9 @@ function renderJuniorTournamentSummon() {
   const faceUrl = getPortraitUrl(p.id);
   const line = getJuniorTournamentLine('summon', p.personality || 'normal', p.archetype || 'standard');
 
-  let html = `<div class="jt-phase">召集通知</div>`;
+  let html = `<div class="jt-phase">${WM_I18N.t('召集通知')}</div>`;
   html += `<div class="jt-so" onclick="App.jtNextSummon()">`;
-  html += `<div class="jt-so-top"><div class="tg">NATIONAL U-20 召集通知</div><h2>第${season}回 ジュニアトーナメント</h2></div>`;
+  html += `<div class="jt-so-top"><div class="tg">NATIONAL U-20 ${WM_I18N.t('召集通知')}</div><h2>${WM_I18N.t('第{n}回 ジュニアトーナメント', { n: season })}</h2></div>`;
   html += `<div class="jt-so-card" key="${summonIndex}">`;
   html += `<div class="jt-so-card-img">${faceUrl ? `<img src="${faceUrl}" alt="${p.name}">` : ''}</div>`;
   html += `<div class="jt-so-card-body">`;
@@ -16994,7 +16991,7 @@ function renderJuniorTournamentSummon() {
   // dots
   html += `<div class="jt-so-dots">${myParticipants.map((_, j) =>
     `<div class="d ${j < summonIndex ? 'dn' : ''}${j === summonIndex ? ' on' : ''}"></div>`).join('')}</div>`;
-  html += `<div class="jt-so-hint">タップして次へ</div>`;
+  html += `<div class="jt-so-hint">${WM_I18N.t('タップして次へ')}</div>`;
   html += `</div>`;
 
   box.style.maxWidth = '100%';
@@ -17016,7 +17013,7 @@ function _showJTImpressionChain(list, idx, onDone) {
   // コメント画面は縦長の .u3b-upper を使う。正方形の顔アイコンを入れると
   // 背景ごと引き伸ばされて枠と噛み合わないため、他の試合画面と同じアッパー画像を使う。
   const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
-  const resultLabel = timing === 'champion' ? '優勝' : timing === 'postWin' ? '入賞' : '敗退';
+  const resultLabel = timing === 'champion' ? WM_I18N.t('優勝') : timing === 'postWin' ? WM_I18N.t('入賞') : WM_I18N.t('敗退');
   const resultColor = timing === 'champion' ? 'var(--gold)' : timing === 'postWin' ? 'var(--c-positive)' : 'var(--text-sub)';
   const computedOvr = (typeof Engine !== 'undefined' && Engine.util && typeof Engine.util.ov === 'function')
     ? Engine.util.ov(f) : NaN;
@@ -17040,7 +17037,7 @@ function _showJTImpressionChain(list, idx, onDone) {
         statLabel: 'OVR', statValue: ovr,
         bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
       })}
-      <button class="war-victory-close">次へ</button>
+      <button class="war-victory-close">${WM_I18N.t('次へ')}</button>
     </div>
   `;
   overlay.querySelector('.war-victory-close').addEventListener('click', () => {
@@ -17442,11 +17439,11 @@ function showCoachTournamentWrapup(payload, onDone) {
         ${_u3bSideHtml({
           name: payload.coachName, line: payload.line,
           imgUrl: payload.portraitUrl, fallback: payload.fallback,
-          role: 'コーチ', size: 'm',
+          role: WM_I18N.t('コーチ'), size: 'm',
           bubbleClass: 'war-victory-line tcw-bubble', portraitClass: 'war-victory-img',
           slotClass: 'tcw-bubble-slot',
         })}
-        <button class="war-victory-close" type="button">次へ</button>
+        <button class="war-victory-close" type="button">${WM_I18N.t('次へ')}</button>
       </div>
     `;
     const btn = overlay.querySelector('.war-victory-close');
@@ -17468,7 +17465,7 @@ function showCoachTournamentWrapup(payload, onDone) {
 // 事前に一括シミュレーション済みのため、ここでは「どこまで見せるか」を currentRound/currentMatch
 // のポインタで制御するのみ（数値の再計算はしない）。
 function _jtcRoundLabel(name) {
-  return name === 'final' ? '決勝' : name === 'semiFinal' ? '準決勝' : name === 'quarterFinal' ? '準々決勝' : '1回戦';
+  return name === 'final' ? WM_I18N.t('決勝') : name === 'semiFinal' ? WM_I18N.t('準決勝') : name === 'quarterFinal' ? WM_I18N.t('準々決勝') : WM_I18N.t('1回戦');
 }
 
 function _jtcSizeClass(matchCount) {
@@ -17496,7 +17493,7 @@ function _jtcFx(f, isWin, isLose) {
 /** 決着時間 / MQ チップ */
 function _jtcMinfo(match) {
   const t = typeof _npTurnsToTime === 'function' ? _npTurnsToTime(match.turns) : '';
-  return `<div class="jtc-minfo">${t ? `<span class="t">${t}</span><span class="jtc-minfo-dot">/</span>` : ''}<span class="mq">評価 ${match.mq}</span></div>`;
+  return `<div class="jtc-minfo">${t ? `<span class="t">${t}</span><span class="jtc-minfo-dot">/</span>` : ''}<span class="mq">${WM_I18N.t('評価 {n}', { n: match.mq })}</span></div>`;
 }
 
 /** 通常段(準々決勝/準決勝)の行。8名時は準々決勝(4試合)のみ縮小サイズになる */
@@ -17525,7 +17522,7 @@ function _jtcFinalRow(round, ri, cRd, cMi, isDone, riseClass) {
   const cur = ri === cRd && cMi === 0;
   const lWin = fin && match.winnerId === match.left.id;
   const rWin = fin && match.winnerId === match.right.id;
-  return `<div class="jtc-tier-label">決勝</div>
+  return `<div class="jtc-tier-label">${WM_I18N.t('決勝')}</div>
   <div class="jtc-final-row jtc-size-lg${cur ? ' is-current' : ''}${riseClass}">
     ${_jtcFx(match.left, lWin, fin && !lWin)}
     <div class="jtc-vs">VS</div>
@@ -17574,9 +17571,9 @@ function _jtcPeakBlock(jt, riseClass) {
   return `<div class="jtc-peak${riseClass}" onclick="App.jtGoToFinalResult()">
     <div class="jtc-up jtc-up-peak w">${img}</div>
     <div class="jtc-peak-name">${escHtml(champion.name)}</div>
-    <div class="jtc-peak-title">第${season}回大会ジュニアチャンピオン</div>
-    <div class="jtc-peak-cta">表彰へ ▶</div>
-    <div class="jtc-peak-auto-note">1.6秒で自動的に進みます(タップで即スキップ)</div>
+    <div class="jtc-peak-title">${WM_I18N.t('第{n}回大会ジュニアチャンピオン', { n: season })}</div>
+    <div class="jtc-peak-cta">${WM_I18N.t('表彰へ')} ▶</div>
+    <div class="jtc-peak-auto-note">${WM_I18N.t('1.6秒で自動的に進みます(タップで即スキップ)')}</div>
   </div>`;
 }
 
@@ -17633,7 +17630,7 @@ function renderJuniorTournamentBracket() {
   box.style.background = 'transparent';
   box.style.border = 'none';
 
-  let html = `<div class="jt-phase">対戦表</div>`;
+  let html = `<div class="jt-phase">${WM_I18N.t('対戦表')}</div>`;
   html += `<div class="jt-wrap" style="--jtc-color:var(--ev-summer);--jtc-color-rgb:var(--ev-summer-rgb)">${_jtHeader()}`;
   html += `<div class="jtc-climb">${_jtcClimbHtml(jt)}</div>`;
 
@@ -17641,7 +17638,7 @@ function renderJuniorTournamentBracket() {
   const curRound = result.rounds[currentRound];
   if (curRound && currentMatch < curRound.matches.length) {
     html += `<div style="text-align:center;margin-top:12px">
-      <button class="btn" style="padding:8px 24px;font-size:12px;opacity:0.6" onclick="App.jtSkipAll()">全試合スキップ →</button>
+      <button class="btn" style="padding:8px 24px;font-size:12px;opacity:0.6" onclick="App.jtSkipAll()">${WM_I18N.t('全試合スキップ')} →</button>
     </div>`;
   }
   html += `</div>`;
@@ -17815,8 +17812,8 @@ function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hp
   h += `</div>`;
   h += `<div class="jtc-fc-hp-row">${hpLeftBlock}<div class="jtc-fc-hp-mid">${hpMidLabel}</div>${hpRightBlock}</div>`;
   h += `<div class="jtc-fc-bt">`;
-  h += `<button class="btn btn-gold" style="padding:8px 22px;font-size:13px" onclick="${onWatch}">観戦する</button>`;
-  h += `<button class="btn" style="padding:8px 22px;font-size:13px" onclick="${onSkip}">${escHtml(skipLabel || 'スキップ')}</button>`;
+  h += `<button class="btn btn-gold" style="padding:8px 22px;font-size:13px" onclick="${onWatch}">${WM_I18N.t('観戦する')}</button>`;
+  h += `<button class="btn" style="padding:8px 22px;font-size:13px" onclick="${onSkip}">${escHtml(skipLabel || WM_I18N.t('スキップ'))}</button>`;
   h += `</div>`;
   h += `</div>`;
   return h;
@@ -17841,8 +17838,8 @@ function _jtRecoveredHpTarget(match, side, isFinal) {
 function _jtFocusCard(match, roundName, ri, mi) {
   const f1 = match.left, f2 = match.right;
   const isFinal = roundName === 'final';
-  const roundLabel = isFinal ? '🏆 決勝' : roundName === 'semiFinal' ? '準決勝' : roundName === 'quarterFinal' ? '準々決勝' : '1回戦';
-  const label = isFinal ? roundLabel : `${roundLabel} — 第${mi + 1}試合`;
+  const roundLabel = isFinal ? `🏆 ${WM_I18N.t('決勝')}` : roundName === 'semiFinal' ? WM_I18N.t('準決勝') : roundName === 'quarterFinal' ? WM_I18N.t('準々決勝') : WM_I18N.t('1回戦');
+  const label = isFinal ? roundLabel : `${roundLabel} — ${WM_I18N.t('第{n}試合', { n: mi + 1 })}`;
   const upperL = typeof getUpperUrl === 'function' ? getUpperUrl(f1.id) : '';
   const upperR = typeof getUpperUrl === 'function' ? getUpperUrl(f2.id) : '';
 
@@ -17871,7 +17868,7 @@ function _jtFocusCard(match, roundName, ri, mi) {
     extraHtml: bubbleHtml,
     hpLeftBlock: _jtcFcHpBlock('left', startL.final, startL.max, startL.pct),
     hpRightBlock: _jtcFcHpBlock('right', startR.final, startR.max, startR.pct),
-    hpMidLabel: '開始HP',
+    hpMidLabel: WM_I18N.t('開始HP'),
     onWatch: `App.jtWatchMatch(${ri},${mi})`,
     onSkip: `App.jtSkipMatch(${ri},${mi})`,
   });
@@ -18107,7 +18104,7 @@ function _emrTagFinishActors(opts, winnerSide) {
 }
 
 function _matchNextLabel(isLast) {
-  return isLast ? '結果へ →' : '次の試合へ →';
+  return isLast ? `${WM_I18N.t('結果へ')} →` : `${WM_I18N.t('次の試合へ')} →`;
 }
 
 function showEventMatchResultPopup(opts) {
@@ -18144,14 +18141,14 @@ function showEventMatchResultPopup(opts) {
   // 自団体だけの試合(通常興行の通常カード・PPV等)ではバッジそのものを省略する。
   const crossOrg = _emrCrossOrg(opts);
   const sides = isTag
-    ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'TEAM WIN'))}</div>${_emrTagFinishActors(opts, winnerSide)}<div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">評価 <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide, bubbleRight, crossOrg)}`
-    : `${_emrSingleSide(opts.left, 'left', winnerSide, opts.leftRole, opts.leftStatLabel, opts.leftStat, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">評価 <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrSingleSide(opts.right, 'right', winnerSide, opts.rightRole, opts.rightStatLabel, opts.rightStat, bubbleRight, crossOrg)}`;
+    ? `${_emrTeamSide(opts.teamLeft, 'left', winnerSide, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'TEAM WIN'))}</div>${_emrTagFinishActors(opts, winnerSide)}<div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">${WM_I18N.t('評価')} <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrTeamSide(opts.teamRight, 'right', winnerSide, bubbleRight, crossOrg)}`
+    : `${_emrSingleSide(opts.left, 'left', winnerSide, opts.leftRole, opts.leftStatLabel, opts.leftStat, bubbleLeft, crossOrg)}<div class="emr-center"><div class="emr-winner">${escHtml(opts.resultLabel || (winnerSide === 'draw' ? 'NO CONTEST' : 'WIN'))}</div><div class="emr-finish">${escHtml(opts.finish || '—')}</div><div class="emr-turn">${escHtml(opts.turnLabel || `${opts.turns || 0} TURN`)}</div><div class="emr-mq">${WM_I18N.t('評価')} <b>${escHtml(opts.mq != null ? opts.mq : '—')}</b></div></div>${_emrSingleSide(opts.right, 'right', winnerSide, opts.rightRole, opts.rightStatLabel, opts.rightStat, bubbleRight, crossOrg)}`;
   const chips = (opts.chips || []).filter(Boolean).map(chip => `<span class="emr-chip">${escHtml(chip)}</span>`).join('');
   const layer = document.createElement('div');
   layer.className = `emr-layer ${theme.cls}`.trim();
   layer.setAttribute('role', 'presentation');
-  layer.innerHTML = `<article class="emr-popup" role="dialog" aria-modal="true" aria-label="1試合結果">
-    <header class="emr-head"><div class="emr-emblem">${emblem}</div><div><div class="emr-kicker">${escHtml(opts.kicker || theme.kicker)}</div><div class="emr-title">${escHtml(opts.title || '試合結果')}</div><div class="emr-meta">${escHtml(opts.meta || '')}</div></div><div class="emr-progress">${escHtml(opts.progress || '')}<small>${escHtml(opts.progressLabel || 'MATCH')}</small></div></header>
+  layer.innerHTML = `<article class="emr-popup" role="dialog" aria-modal="true" aria-label="${WM_I18N.t('1試合結果')}">
+    <header class="emr-head"><div class="emr-emblem">${emblem}</div><div><div class="emr-kicker">${escHtml(opts.kicker || theme.kicker)}</div><div class="emr-title">${escHtml(opts.title || WM_I18N.t('試合結果'))}</div><div class="emr-meta">${escHtml(opts.meta || '')}</div></div><div class="emr-progress">${escHtml(opts.progress || '')}<small>${escHtml(opts.progressLabel || 'MATCH')}</small></div></header>
     <div class="emr-context">${contexts.map(([label, value]) => `<div class="emr-context-cell"><span>${escHtml(label)}</span><b>${escHtml(value)}</b></div>`).join('')}</div>
     <div class="emr-bout ${isTag ? 'is-tag' : ''}">${sides}</div>
     ${chips ? `<div class="emr-chips">${chips}</div>` : ''}
@@ -18176,21 +18173,21 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   const isUnified = !!(match._unifiedTitleMatch && unifiedBooking);
   const isChallenge = !!(challenge && (match.isCRMatch || match._crMatchLocked || match._awayChallengeMatch));
   const resultTitle = isUnified
-    ? '全国統一王座戦　試合結果'
+    ? WM_I18N.t('全国統一王座戦　試合結果')
     : sp.isAwayChallenge
-    ? `${challenge?.opponentOrgName || '相手団体'}興行　遠征試合結果`
-    : `第${G.totalShows + 1}回 定期興行　試合結果`;
+    ? WM_I18N.t('{org}興行　遠征試合結果', { org: challenge?.opponentOrgName || WM_I18N.t('相手団体') })
+    : WM_I18N.t('第{n}回 定期興行　試合結果', { n: G.totalShows + 1 });
   const unifiedOpponentOrgId = sp.isUnifiedAwayTitle
     ? unifiedBooking?.championOrgId : unifiedBooking?.challengerOrgId;
   const unifiedOpponentOrgName = isUnified
     ? Engine.unifiedTitle._orgName(G, unifiedOpponentOrgId) : '';
   const venueLabel = sp.isUnifiedAwayTitle
-    ? `${unifiedOpponentOrgName || '相手団体'} 興行`
-    : sp.isAwayChallenge ? `${challenge?.opponentOrgName || '相手団体'} 興行` : (venue?.name || '通常興行');
-  const leftOrg = isUnified ? (G.orgName || 'プレイヤー団体')
-    : isChallenge ? (challenge.requesterOrgName || challenge.requesterOrgId) : 'プレイヤー団体';
+    ? `${unifiedOpponentOrgName || WM_I18N.t('相手団体')} ${WM_I18N.t('興行')}`
+    : sp.isAwayChallenge ? `${challenge?.opponentOrgName || WM_I18N.t('相手団体')} ${WM_I18N.t('興行')}` : (venue?.name || WM_I18N.t('通常興行'));
+  const leftOrg = isUnified ? (G.orgName || WM_I18N.t('プレイヤー団体'))
+    : isChallenge ? (challenge.requesterOrgName || challenge.requesterOrgId) : WM_I18N.t('プレイヤー団体');
   const rightOrg = isUnified ? unifiedOpponentOrgName
-    : isChallenge ? (challenge.opponentOrgName || challenge.opponentOrgId) : 'プレイヤー団体';
+    : isChallenge ? (challenge.opponentOrgName || challenge.opponentOrgId) : WM_I18N.t('プレイヤー団体');
   const leftOrgId = isUnified ? 'player'
     : isChallenge ? (challenge.requesterOrgId || 'player') : 'player';
   const rightOrgId = isUnified ? unifiedOpponentOrgId
@@ -18204,11 +18201,11 @@ function renderRegularMatchResultPopup(idx, onContinue) {
     const winnerFighter = (winnerSide === 'right' ? membersB : membersA)[0];
     const boutNumber = total - idx;
     showEventMatchResultPopup({
-      theme: 'normal', title: resultTitle, meta: `YEAR ${G.season} ・ WEEK ${G.week} ・ 第${boutNumber}試合 / 全${total}試合`,
-      progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [['会場', venueLabel], ['試合形式', 'TAG MATCH'], ['試合評価', String(result.mq ?? '—')]],
+      theme: 'normal', title: resultTitle, meta: WM_I18N.t('YEAR {season} ・ WEEK {week} ・ 第{n}試合 / 全{total}試合', { season: G.season, week: G.week, n: boutNumber, total }),
+      progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [[WM_I18N.t('会場'), venueLabel], [WM_I18N.t('試合形式'), 'TAG MATCH'], [WM_I18N.t('試合評価'), String(result.mq ?? '—')]],
       isTag: true, teamLeft: { members: membersA, org: leftOrg, orgId: leftOrgId }, teamRight: { members: membersB, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter,
-      winAttribution: result.winAttribution, finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: ['通常興行', 'タッグマッチ'], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
-      footNote: '通常興行 ・ 試合結果', nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
+      winAttribution: result.winAttribution, finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: [WM_I18N.t('通常興行'), WM_I18N.t('タッグマッチ')], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
+      footNote: WM_I18N.t('通常興行 ・ 試合結果'), nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
     });
     return;
   }
@@ -20105,7 +20102,7 @@ function _tcFinalAftermathStep(steps, idx, onDone) {
         statLabel: 'OVR', statValue: ovr,
         bubbleClass: 'war-victory-line', portraitClass: 'war-victory-img',
       })}
-      <button class="war-victory-close">次へ</button>
+      <button class="war-victory-close">${WM_I18N.t('次へ')}</button>
     </div>`;
   // 1操作=1進行(docs/ui §5-D 鉄則2)。連打で2枚飛ばさない
   let advanced = false;
