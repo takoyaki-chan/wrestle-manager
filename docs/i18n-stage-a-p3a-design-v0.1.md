@@ -53,6 +53,9 @@
 - `applyDepartureTrustImpact`の`reason`引数(management.js全11箇所+app.js1箇所)— 自由記述のJA文字列(`'引退'`/`'AI怪我引退'`/`'突然退団'`等)がEngine側関数へ渡る。表示/内部判定どちらの用途か不明で、Engine本体(management.js)が対象外の本バッチでは1箇所だけ直すと不整合になるため全数非ラップ据え置き。Engine側のロジックキー整理が必要
 - `_NEWSPAPER_HEADLINES`/`_NEWSPAPER_ARTICLES`(app.js・4c-1で発見)— 見出し/本文の完全文プールで`_generateNewspaperTexts`が抽選消費。バッチ2の`NEWSPAPER_SUB_TEMPLATES`と同種だが本体2プールは未着手のまま「対象外」の年代記・MVPレース文プールと同法(良い構造・Stage B翻訳対象)で据え置き
 - ui-common.js:10433 `_mdlAReporterStrip`呼び出しの`opts.reporterText || '派閥について、ひとつご報告があります'`フォールバック — 同関数の他フォールバック(`payload.factionName || WM_I18N.t('派閥')`等)はt()化済みだがこの1箇所だけ4bで素通りしていた模様(4c-1でapp.js側の`reporterText`呼び出し元は全てt()化済みと確認済み)。ui-common.js側の1行修正はP3a外(ファイル対象外)
+- `Engine.factions.getHostilityLabel`(factions.js・4dで発見・保留)— 表示兼ロジックキー。ui-common.jsの`hostilityBands`配列(冷え込み/小競り合い/抗争/泥沼/血みどろ)がこの戻り値を`indexOf`で位置判定に使っており、`getMomentumLabel`/`getSolidarityLabel`のような`getXKey`相当の中立キーが未整備。t()化するとen/pseudoで`indexOf`が不一致になるため非ラップ据え置き。中立キー分離が必要
+- index.html ヘルプ画面(§遊び方ガイド)の長文パラグラフ約100件(4dで確認)— ほぼ全て`<strong>`タグで強調語を挟む混在構造。data-i18n はテキスト全体置換のため、`<strong>`だけ個別にt()化すると地の文とのバイリンガル混在になり逆に質が落ちる。バッチ2(頂上戦記事)と同様、分岐の組み合わせごとに完全な一文へ展開する構造対処(または`<strong>`をdata-i18n-html方式の別機構で扱う)が必要。純テキストの`<p>`(約38件)のみ4dでdata-i18n化済み
+- `<title>WRESTLE MANAGER — 女子プロレス団体経営シミュレーション</title>`(4dで確認)— ブランド名(英語, 固有名詞)とJA副題の複合文字列。ブラウザタブ用でアプリ内UIクロームの範囲外と判断し非対象のまま据え置き
 
 ## 対象外(P3aでやらない)
 

@@ -1,5 +1,43 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## Stage A P3a バッチ4d — index.html data-i18n化 + factions.js t()移行(バッチ4完走)（2026-09-02・Sonnet worktree agent-a7bd9a67da65defa4）
+
+バッチ4a(ui-render.js)〜4c(app.js)に続く最終ファイル。**index.html は静的HTMLテキストノードのためt()を直接通せない**という新規課題に対応する `WM_I18N.applyDom()` 機構を新設し、静的UI文言へ `data-i18n`/`data-i18n-attr` 属性を付与。あわせて factions.js(元は本バッチ設計書の対象外だったが今回追加指定)のプレイヤー可視文字列を `WM_I18N.t()` 化した。開始前にworktreeブランチをmain先端(d63f27d)へfast-forward済み。
+
+### 新規機構: `WM_I18N.applyDom()`(src/i18n.js)
+- `[data-i18n]` 要素: 初回のtextContentを `data-i18n-orig` 属性へ退避し、以後はその原文から `t(原文)` を再計算してtextContentへ書き戻す(2回目以降もdatasetの原文を参照するのでsetLang()での再適用に対応)
+- `[data-i18n-attr="attr1,attr2"]` 要素: 指定属性名(カンマ区切り)の原文を `data-i18n-attr-orig` 属性へJSONで退避し、同様にt()で書き戻す(title/placeholder/aria-label等)
+- DOMContentLoaded時とsetLang()時に自動でdocument全体へ適用(ja時はt()がno-opのため描画結果は原文のまま=1バイト不変)
+- **制約**: 子要素混在テキスト(インライン装飾・バッジspan等)への付与は不可(textContent置換で子要素が消えるため)。該当箇所は意図的にスキップ
+
+### index.html: data-i18n付与 84箇所 / data-i18n-attr付与 8箇所
+- トップバー情報ラベル(資金/人気/決裁/順位/王座)・クライシスバー・ナビゲーションバー(社長室/新聞を除く8ボタン)・各画面panel-title(興行準備/経営/ゲームログ/セーブ/ロード/遊び方ガイド等)・スタッフ募集/団体に戻るボタン・タイトル画面(サブタイトル/意見バグ報告)・選手ファイル(タイトル/機密指定/閉じるボタンtitle+aria-label/スタイル絞り込みselect+全スタイルoption/名前検索input placeholder+aria-label/詳細overlay aria-label)・団体旗揚げ画面(団体名placeholder/あとから変更できます/旗揚げする/戻る)・難易度選択画面(難易度を選択/開始後は変更できません/通常・補助金モード各見出しと説明/ゲーム開始/戻る)・4団体対抗戦overlay aria-label・試合中断ボタン・年間表彰式見出し/次へボタン・クレジット画面(見出し2種/閉じるボタン。開発者名「たこやき」は固有名詞として非対象)
+- ヘルプ画面(§遊び方ガイド)の純テキスト`<p>`約38件のみdata-i18n化。**`<strong>`タグで強調語を挟む混在段落(約100件)は構造変更なしでは安全にラップできないため意図的に全スキップ**(片方だけt()化すると地の文とバイリンガル混在になり質が落ちるため、`<strong>`個別タグ付けも見送り)。積み残し台帳に追記、Stage Bまたは別バッチでの完全文テンプレ化が必要
+- スキップ: 動的プレースホルダ(weekTitle/dispDate/crisisWeeksLabel/scoutEventTitle等、既にui-render.js側でt()化済みでJS側が即座に上書き)、mixed-content(社長室/新聞ナビボタンのバッジspan・団体ランキングh2のdotspan・所属スタッフ/所属選手/スカウトpanel-titleの動的カウンタspan・fighter-file-notice-subの`<br>`・org-setup-descの`<br>`)、英字のみ(Credits/NEW GAME/CONTINUE/LOAD GAME/Fighter File等、既存の意図的な英語表記)、固有名詞(たこやき)、`<title>`タグ(ブランド名+JA複合でアプリ内UIクロームの範囲外と判断)
+
+### src/factions.js: WM_I18N.t() 377箇所
+- resultText/impactSummary(label・delta)/narration/narrationOpen/narrationClose/headline等、F01〜F09・COMMON-1/4/5/7全イベントの結果表示文字列を`{name}`プレースホルダ形式でt()化(app.js/ui-common.jsの既存慣例と同じ変換パターン)
+- `getMomentumLabel`/`getSolidarityLabel`/`_archetypeLabel`(派閥ラベル小テーブル)もt()化。他ファイルの同名ラベルマップ(ui-render.js/ui-common.js)が既にt()化済みだった前例に倣った
+- **factions.jsは`Engine.factions`名前空間で「Pure logic layer」を自称するが、i18n-ratchetのFILE_CATEGORY分類では`management.js`等の「エンジン内文字列」ではなく`ui-common.js`/`app.js`と同じ「UI・システム」に区分されている**。この区分と、resultText等が`factionTimeline`(D-G1構造化済み・type+dataのみ保存)を経由しない一回限りの transient 表示値であることを確認した上で、app.js/ui-common.jsと同じt()化方針を採用した
+- スキップ: `getHostilityLabel`(表示兼ロジックキー、ui-common.jsの`hostilityBands.indexOf()`が戻り値を位置判定に使用しており中立キー未整備のため非ラップ据え置き・積み残し台帳に追記)、faction.name生成(`${leader.surname||leader.name}派`等、G永続化フィールドのため非対象)、trait名文字列比較(`ヒール適性`等、data.js定義のロジックキー)、wmDiag()デバッグログ(window.WM_DIAG制御下のconsole.warn、非プレイヤー可視)
+
+### 検証
+- `node --check src/i18n.js src/factions.js` — 成功
+- `node test/ja-golden.js` — 完全一致(hash `6b3d05c8...` 不変)
+- `node test/i18n-ratchet.js` — factions.jsのみ+1検出(366→367)。原因調査の結果、`\`${state.orgName || '団体'}\``のようにテンプレートリテラルの`${}`内に隠れていた生JA文字列(スキャナが`${}`内を空白へ潰すため不可視だった)を`WM_I18N.t('団体')`という独立呼び出しへ展開したことでスキャナに初めて可視化された副作用と特定(実質は改善)。`--update`でbaseline更新、以後は増加なしを確認
+- `npm test` — **260/260 PASS**。1本を追従修正: `fighter-file-guard-test.js`が`<div class="fighter-file-notice-main">`への正規表現完全一致でDOMを検出していたため、`data-i18n`属性追加後もマッチするよう`[^>]*`を許容する形へ緩和
+- WM_I18N未読み込みのvm/loadAsGlobalサンドボックスでfactions.jsを実行する16箇所(test/auto-sim.js・test/ja-golden.js・test/helpers/load-game.js(55ファイルが共有利用)・faction-flavor-test.js・faction-resolution-cleanup-test.js・faction-size-freeze-test.js・internal-challenge-regression-test.js・faction-f09-match-post-points-test.js・faction-timeline-init-test.js・autumn-war-live-engine-test.js・decay-longevity-test.js・departure-coach-assign-test.js・week-advance-single-step-test.js・salary-decline-cards-test.js・ppv-season-flow-test.js・salary-refix-test.js・test/ui-walkthrough/fixtures/headless-sim.js)に既存バッチ確立のWM_I18N_STUB(ja素通し+プレースホルダ置換のみ)を横展開。静的解析のみでfactions.jsを実行しない3本(faction-momentum-decay-test.js/faction-resolution-newspaper-names-test.js/dormant-code-cleanup-test.js)はスタブ不要と確認済み
+- `npm run test:ui:walkthrough` — **PASS**(328操作・issues 0・季末season=2 week=1まで到達。派閥イベント・派閥合宿等も実走破内で実行され例外なし)
+
+### 数値
+- `WM_I18N.t()`呼び出し: factions.js **0 → 377箇所**
+- index.html: `data-i18n` **84箇所** / `data-i18n-attr` **8箇所**
+- **Stage A P3a バッチ4(ui-render.js/ui-common.js/app.js/index.html)が本バッチで完走**。factions.jsは当初計画外だったが本バッチで追加完了
+
+### 残課題
+- 積み残し台帳(§バッチ4の積み残し台帳)に3件追加: `getHostilityLabel`の表示兼ロジックキー問題、index.htmlヘルプ画面の`<strong>`混在段落(約100件・完全文テンプレ化が必要)、`<title>`タグ(対象外判断)
+- 実機確認: トップバー/クライシスバー/ナビゲーション各ラベル、タイトル画面、選手ファイル一覧・検索・詳細、団体旗揚げ画面、難易度選択画面、4団体対抗戦・年間表彰式・クレジット画面の文言表示、派閥イベント(F01〜F09・COMMON系)の結果モーダル文言(resultText/impactSummary)を一通り確認いただけると安心(JA出力は不変のはずだが、t()呼び出しの参照ミスが無いかの最終目視)
+
 ## Stage A P3a バッチ4c-1 — app.jsのt()移行(完走)（2026-09-02・Sonnet worktree agent-af48819bca67bea73）
 
 設計書 [i18n-stage-a-p3a-design-v0.1.md](docs/i18n-stage-a-p3a-design-v0.1.md)「バッチ4」に基づき、app.js(17,559行)の**先頭から末尾までを対象にUIクロームを`WM_I18N.t()`経由へ移行**。ui-render.js(4a完走)/ui-common.js(4b完走)に続くバッチ4の最終ファイル。指示書は「行けるところまで」を想定していたが、全文を通しで走査しても1セッションで完走できたため**app.jsはこれでt()移行完了**。開始前にworktreeブランチをmain先端(3ad3d58)へfast-forward済み。
