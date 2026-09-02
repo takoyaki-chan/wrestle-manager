@@ -1,5 +1,78 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P3b 翻訳バッチ3 — UI文字列800キーの英訳（2026-09-02・Opus主筆 worktree agent-a3098fa9023629808）
+
+バッチ1・2に続く第3弾。開始前にworktreeブランチをmain先端(8a5b63d)へfast-forward。台帳 `i18n/ui-ledger.json` の **hasProperNoun=false かつ en が空の行のうち、登録済みスキップ27件(バッチ1の22+バッチ2の5)を除いた先頭800行**(台帳index 1650〜2470)を対象に `en` 列を充填 → `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成。
+
+規範はバッチ1・2と同じ(`docs/i18n-stage-b-p3b-design-v0.1.md` D-B3+用語集シード20語 / `docs/en-tone-bible-draft-v0.1.md` §0最重要則2・§1鉄則・§4-6)。**前任2バッチの新規訳語決定リスト40件を全面継承**(因縁=grudge / 宿敵=nemesis / 知名度=renown / レンタル=loan / 中堅(役職)=Mid-card / 副将=Deputy / 下剋上=Coup / 決裁=approvals(⚡) / 層の厚み=Depth / 看板スター=Marquee star / 原石=Diamond in the rough / 外部コーチ=Guest coach ほか)。**バッチ2が「次バッチで同じ語を使う」と予告した2群も予告どおり適用**した(因縁タグ 熱=Heat / 激=Bitter / 宿=Fated / 敬=Respect、ログ絞り込みアイコン 戦=⚔)。
+
+### 成果
+- **充填 792行 / スキップ 8行**(台帳総キー3,123・訳文あり**2,365**(75.7%)・未訳758はfail-open)
+- 固有名詞入り89行は引き続き手つかず(D-B5・Keisuke承認待ち)
+
+### スキップ8行(理由付き)
+いずれも**原文側の構造問題**で、訳を当てても文にならない/日本語が混じるもの。7件は既知の「断片連結」族、1件は「位」と同型の新種。
+
+| index | キー | 理由 |
+|---|---|---|
+| 1689 | 「対立が始まって以来、両派閥のリーダー」 | ui-common.js:10670 の断片連結の**頭**。続く「と」「の間にあった棘は、」「ここ数週間で」「いる。」はバッチ1が既にスキップ済み |
+| 1829 | 「抗争」 | **count=1で、唯一の呼び出しが断片連結文の中**(ui-common.js:11898 `<em>抗争</em>は決着がつかないまま、<em>団体と所属選手の時間</em>を食いつぶし続けている。`)。用語集の一級語(feud)が断片問題に人質に取られている例。原文修正後に "Feud" を入れる |
+| 1937 | 「新契約を結ぶと、」 | ui-common.js:1505 の断片連結の頭。末尾「します。」はバッチ1スキップ済み |
+| 1949 | 「明らかに和らいで」 | 上記1689と同じ文の marker 本体。周囲の断片が未訳のまま英語だけ差すと文が壊れる(バッチ2の「不満を抱えている」と同型) |
+| 2027 | 「案」 | **「位」と同じ序数の構造問題の新種**。ui-common.js:8637 が `${t('案')} ${kanji[i]}`(`kanji = ['一','二','三','四']` は**t()の外にハードコード**)なので、訳すと `Plan 一` になる。**原文側を `t('案 {n}')` に変えれば解決する** |
+| 2117 | 「水面下でくすぶっていた火種は、」 | ui-common.js:11711 の断片連結の頭。末尾「にまで燃え広がった。」はバッチ1スキップ済み |
+| 2228 | 「無益」 | ui-common.js:11768 の em marker。周囲3断片はバッチ1スキップ済み |
+| 2326 | 「矛を収めること」 | 同上(同じ文の2つ目の em marker) |
+
+一方、**count が2以上で他の健全な呼び出しがあるキーは訳した**(例: 「敗者」count=2 は断片文にも使われるが独立の役割ラベルでもあるため "Loser" を入れた。バッチ1が「勝者」を "Winner" と訳したのと同じ判断)。
+
+### 新規訳語決定リスト(前任2バッチに無かった分・24件)
+| JA | EN | 補足 |
+|---|---|---|
+| 因縁タグ 熱/激/宿/敬 | Heat / Bitter / Fated / Respect | バッチ2の予告どおり。**残る1種(緩=Casual)は次バッチ**。※「熱」は `fated_admiration`(cls=respect・認め合うがゆえに退けない関係)に付くラベルで、英語の "Heat" は敵意の含意が強い。予告継承を優先して Heat にしたが、**Fable裁定で "Fire" 等に差し替える余地あり**として記録する |
+| ログ絞り込み 戦 | ⚔ | バッチ2の予告どおり。**残る2種(興=🎪 / 金=💰)は次バッチ** |
+| 幹部 | Officer | リーダー/幹部/メンバー = Leader / Officer / Member |
+| 派閥アーキタイプ 権威型/結束型 | Authority / Unity | バッジなので短く。正統派/武闘派 = Orthodox / Hard-Hitting |
+| 決裁 / 決裁枠 | Approval / Approvals | 単複で書き分け(用語集の⚡approvalsは枠の側) |
+| 打撃/組技/空中戦 ・ 打撃技/投げ技 | Striking / Grappling / High-Flying ・ Strike / Throw | スタイル名と技カテゴリを訳し分け |
+| 控え / 控え層 | Apron / The Bench | タッグの場外待機(リング上=In the ring の対)と、選手層の「控え」を分けた |
+| 素材 / 有望 | Raw / Promising | 素質5段(超逸材>逸材>有望>原石>素材)の下2段。原石=Diamond in the rough は継承 |
+| ◎本命 / ○対抗 / △押さえ | Favorite / Contender / Long shot | ドラフト予想の競馬式3記号 |
+| 相関図しきい値5段 | Fine / Standard / Strong / Very Strong / Strongest | 単調増加になるよう並べ替え。軸端の「強力のみ」=Strong only |
+| 競 / 競争 | Rivalry | 相関図のライバル軸メーター。**対の「親密/親」=Bond は次バッチで同じ語を使う** |
+| 序 | PRO. | 年代記タイムラインのラベル。兄弟が `CH.{n}` なので同じ体裁に揃えた |
+| 満 / 残僅か | Full / Near cap | コーチ担当上限と成長余地 |
+| 案件 / 紹介枠 / 発掘 / 指名 | Pending / Introductions / Scouted / Requested | 社長室サマリと秘書経由の獲得経路 |
+| 粘り度 | Tenacity | ドラフト交渉の粘り |
+| 実況 | Commentary | 観戦モードの実況ラベル |
+| 準トップ / 短信 / 永久保存版 / 新年号 | Second Lead / In Brief / Collector's Edition / Season Opener | 新聞の枠名(号外=EXTRA は継承) |
+| 果たし状 | the duel | 挑戦状=challenge letter と訳し分ける2語目 |
+| 発起人 | Instigator | 遠征の言い出しっぺ(発起人・大将 = Instigator · Captain) |
+| 強化(⚡) | Intensive | 週アクション。追い込み=hard drilling と衝突させない |
+| 密着取材 | Documentary Feature | メディア取材=Press Interview / タレント活動=Media Appearances に続く3語目 |
+| 経営サバイバル / 業界制覇 | Business Survival / Industry Conquered | |
+| 敗北者 / 現役引退 | Beaten / The Last Bell | **`DEFEATED ・ 敗北者`・`現 役 引 退 ・ FAREWELL` の英日対訳見出し**。素直に訳すと `DEFEATED · Defeated` と重複して不具合に見えるため、バッチ2の `CANDIDATES ・ 候補者`→The Shortlist と同じ手当てで別語を当てた |
+| 第{n}回 / 第{n}代 | No. {n} | **「位」の序数問題の回避策**。1st/2nd/3rd を選べない位置では序数を使わず "No. {n}" で通す(`第{n}回大会`→Tournament No. {n} / `第{n}代 全国統一王者`→Unified National Champion No. {n})。数字がキー内にあるので破綻しない |
+
+### 表記の整理
+バッチ1・2の正規化を継承(`・`→ 箇条書きは `•` / 区切りは `·`、`／`→`/`、`（）`→`()`、`〜`→`–`、全角空白→半角)。米綴り統一。**アポストロフィは前任1,573行の実測に合わせて直線 `'` で統一**(曲線 `’` は0件だったため適用スクリプトで機械変換)。絵文字・記号(⚡⚔▶→¥等)は原文の位置のまま。通貨は継承(`{v}万`→`¥{v}0k` / リテラル `200万`→`¥2,000k` / 数字がキー外の単独「万」→`×10k`)。
+
+### 検証(全項目実施)
+- `node test/i18n-build-dict.js` — 機械検査green(プレースホルダ完全性/重複キー/日本語残り)。`src/lang-en.js` 生成: 総キー3,123・訳文あり2,365・未訳758
+- `node --check src/lang-en.js` — 成功
+- `node test/ja-golden.js` — **完全一致**(hash `6b3d05c8...` 不変)
+- `node test/i18n-ratchet.js` — **増加なし**(files=31 totalJaStrings=28075)
+- `npm test` — **260/260 PASS**
+- `npm run test:ui:walkthrough` — **PASS**(328操作・**issues 0**・季末season=2 week=1到達・duration 189s・recovered-by-retry 0・digest 1052faa82eaf7991)
+- **ENモード実動作の抜き取り確認**: vm上で `src/i18n.js` + `src/lang-en.js` を実ロードし `setLang('en')` 後の `t()` を検証(使い捨てスクリプト)。代表21キー(短ラベル/表ヘッダ/ボタン/儀式バナー2種/パネル見出し/1字タグ2種/1字アイコン/プレースホルダ1〜4個/HTML `<strong>`・`<br>`/⚡絵文字入り/通貨2種/`\n`エスケープ入り)+ **fail-open 4件**(今回スキップした「抗争」「案」「無益」と台帳に無い文字列がいずれも原文のまま返り `[i18n-miss]` を記録)+ **ja復帰2件** の**計27件すべてOK**
+- 適用スクリプト側でも機械検査を実施: 800行の被覆確認(792訳+8スキップ、過不足なし・重複なし)/プレースホルダ集合のja-en一致/en内の日本語残り(`・`含む)/全角約物混入/英綴り(colour・centre等)混入/記号・HTMLタグの個数一致(`¥`と`⚔`のみ**増加を許可**=通貨規則とアイコン規則の既定の例外、減少は違反) — **違反0**。台帳のCRLF構造改行を保存して書き戻し、diffは**792行の置換のみ**
+
+### 残課題
+- 次バッチは hasProperNoun=false の**残634行**(登録済みスキップ35行=22+5+8 を除く)。その次に固有名詞入り89行
+- スキップ8行のうち**7行は原文側の再テンプレート化**が要る。**P3a積み残し台帳(`docs/i18n-stage-a-p3a-design-v0.1.md`)への追記は本バッチの編集対象外としたため未実施** — バッチ2の 6e904be と同型の追記が別途必要(断片連結の頭3件+marker 3件+「案」の序数問題1件)
+- 「熱=Heat」は上記のとおり**要レビュー**(respect系タグに hostility の語を当てている)
+- 通貨「万」の表記はP6の数値フォーマッタ裁定へ統合したい(バッチ1・2から継続)
+
 ## 🌐 Stage B P3b 翻訳バッチ2 — UI文字列800キーの英訳（2026-09-02・Opus主筆 worktree agent-a4b9d80bfd6db73b3）
 
 バッチ1に続く第2弾。開始前にworktreeブランチをmain先端(a4b306b)へfast-forward。台帳 `i18n/ui-ledger.json` の **hasProperNoun=false かつ en が空の行のうち先頭から800行**を対象に `en` 列を充填 → `node test/i18n-build-dict.js` で `src/lang-en.js` を再生成。
