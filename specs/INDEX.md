@@ -8,6 +8,7 @@ specs/ = 確定仕様(現在の真実)。新規specを作成したら**必ずこ
 | battle-presentation-spec-v1.0.md | シングル戦Replay観戦の確定表示仕様（Pattern C v4、実況・技説明・カメラ・既存演出維持） |
 | character-data-spec-v1.7.md | キャラクターデータ定義(ステータス/特性/性格) |
 | coach-system-spec-v3.0.md | コーチ35名/枠/能力/観察レポート |
+| i18n-runtime-spec-v1.0.md | **i18n実行基盤(Stage A確定分)**: WM_I18N.t()/wm_lang/data-i18n/構造規約7条(Engine非依存・断片連結禁止・gameLog type形式等)/常設ガード(JAゴールデン・ラチェット・擬似ロケール) |
 | dialogue-tone-spec-v1.0.md | **セリフ口調の確定仕様**(archetype×personality二軸/アンカー制/全セル共通の鉄則10項/口調シート34枚を規範文書化) |
 | contract-negotiation-spec-v2.0.md | シーズン開幕の契約交渉イベント |
 | unified-title-spec-v1.0.md | **全国統一王座の確定仕様**(天頂戦優勝ベルト/四半期挑戦サイクル/殿堂・MVP・表彰・記録タブ/戴冠式ほか演出/オーロラトークン) |
