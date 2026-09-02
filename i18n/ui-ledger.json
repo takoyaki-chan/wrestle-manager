@@ -512,7 +512,7 @@
   },
   {
     "key": "4団体勝ち残り対抗戦",
-    "en": "",
+    "en": "Autumn Gauntlet War",
     "files": [
       "index.html",
       "ui-common.js",
@@ -524,7 +524,7 @@
   },
   {
     "key": "4団体勝ち残り対抗戦 優勝",
-    "en": "",
+    "en": "Autumn Gauntlet War — Winner",
     "files": [
       "ui-common.js"
     ],
@@ -534,7 +534,7 @@
   },
   {
     "key": "4団体勝ち残り対抗戦 出場団体決定",
-    "en": "",
+    "en": "Autumn Gauntlet War — Field Set",
     "files": [
       "ui-render.js"
     ],
@@ -544,7 +544,7 @@
   },
   {
     "key": "4団体勝ち残り対抗戦 決着",
-    "en": "",
+    "en": "Autumn Gauntlet War — Settled",
     "files": [
       "ui-render.js"
     ],
@@ -554,7 +554,7 @@
   },
   {
     "key": "4団体勝ち残り対抗戦優勝",
-    "en": "",
+    "en": "Autumn Gauntlet War Winner",
     "files": [
       "ui-common.js"
     ],
@@ -937,7 +937,7 @@
   },
   {
     "key": "GRAND FINAL を準備中…",
-    "en": "",
+    "en": "Preparing the GRAND FINAL…",
     "files": [
       "app.js"
     ],
@@ -1158,7 +1158,7 @@
   },
   {
     "key": "PPV GRAND FINAL テレビ中継中…",
-    "en": "",
+    "en": "PPV GRAND FINAL is on the air…",
     "files": [
       "ui-render.js"
     ],
@@ -1168,7 +1168,7 @@
   },
   {
     "key": "PPV GRAND FINAL 最終戦勝者",
-    "en": "",
+    "en": "PPV GRAND FINAL — Final Match Winner",
     "files": [
       "ui-common.js"
     ],
@@ -1178,7 +1178,7 @@
   },
   {
     "key": "PPV GRAND FINAL「{name}」開催日！",
-    "en": "",
+    "en": "PPV GRAND FINAL {name} — show day!",
     "files": [
       "ui-render.js"
     ],
@@ -1188,7 +1188,7 @@
   },
   {
     "key": "PPV GRAND FINAL優勝",
-    "en": "",
+    "en": "PPV GRAND FINAL Winner",
     "files": [
       "ui-render.js"
     ],
@@ -3443,7 +3443,7 @@
   },
   {
     "key": "{org} に持ち去られた団体王座を取り戻せ！",
-    "en": "",
+    "en": "Take back the promotion title {org} carried off!",
     "files": [
       "app.js"
     ],
@@ -4123,7 +4123,7 @@
   },
   {
     "key": "— 全国統一王座へ —",
-    "en": "",
+    "en": "— To the Unified National Championship —",
     "files": [
       "app.js"
     ],
@@ -5327,7 +5327,7 @@
   },
   {
     "key": "⚔️ 4団体勝ち残り対抗戦 {roundLabel}",
-    "en": "",
+    "en": "⚔️ Autumn Gauntlet War {roundLabel}",
     "files": [
       "app.js"
     ],
@@ -5467,7 +5467,7 @@
   },
   {
     "key": "⚠ 全国統一王座への遠征条件が整わないため、予約を解除しました",
-    "en": "",
+    "en": "⚠ The away trip for the Unified National Championship was cancelled — its conditions were not met",
     "files": [
       "app.js"
     ],
@@ -5477,7 +5477,7 @@
   },
   {
     "key": "⚠ 全国統一王座戦の出場条件が整わないため、予約を解除しました",
-    "en": "",
+    "en": "⚠ The Unified National Title Match was cancelled — its conditions were not met",
     "files": [
       "app.js",
       "ui-render.js"
@@ -5510,7 +5510,7 @@
   },
   {
     "key": "⚠ 挑戦資格が失われたため、全国統一王座戦を解除しました",
-    "en": "",
+    "en": "⚠ The challenge is no longer valid, so the Unified National Title Match was cancelled",
     "files": [
       "app.js"
     ],
@@ -9426,7 +9426,7 @@
   },
   {
     "key": "ドーム",
-    "en": "",
+    "en": "Dome",
     "files": [
       "ui-render.js"
     ],
@@ -9436,7 +9436,7 @@
   },
   {
     "key": "ドーム圏",
-    "en": "",
+    "en": "Dome range",
     "files": [
       "ui-render.js"
     ],
@@ -9446,7 +9446,7 @@
   },
   {
     "key": "ドーム圏まであと",
-    "en": "",
+    "en": "Short of Dome range by",
     "files": [
       "ui-render.js"
     ],
@@ -9456,7 +9456,7 @@
   },
   {
     "key": "ドーム挑戦圏 — 理想のカードで成功も",
-    "en": "",
+    "en": "In range for the Dome — the right card could pull it off",
     "files": [
       "ui-render.js"
     ],
@@ -9927,7 +9927,7 @@
   },
   {
     "key": "ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる",
-    "en": "",
+    "en": "The belt returns to the tournament, and next week's Tenchosen crowns a new champion",
     "files": [
       "ui-common.js"
     ],
@@ -10109,7 +10109,7 @@
   },
   {
     "key": "メジャー — ドームを意識し始めるレベル",
-    "en": "",
+    "en": "Major — the Dome starts to come into view",
     "files": [
       "ui-render.js"
     ],
@@ -12066,7 +12066,7 @@
   },
   {
     "key": "今シーズンは既にドーム興行を開催済みです。次シーズンに挑戦してください。",
-    "en": "",
+    "en": "You have already run a Dome show this season. Try again next season.",
     "files": [
       "ui-render.js"
     ],
@@ -12296,7 +12296,7 @@
   },
   {
     "key": "今週は4団体勝ち残り対抗戦",
-    "en": "",
+    "en": "The Autumn Gauntlet War is this week",
     "files": [
       "ui-render.js"
     ],
@@ -12306,7 +12306,7 @@
   },
   {
     "key": "今週はPPV GRAND FINAL",
-    "en": "",
+    "en": "The PPV GRAND FINAL is this week",
     "files": [
       "ui-render.js"
     ],
@@ -12346,7 +12346,7 @@
   },
   {
     "key": "今週は天頂戦",
-    "en": "",
+    "en": "Tenchosen is this week",
     "files": [
       "ui-render.js"
     ],
@@ -12377,7 +12377,7 @@
   },
   {
     "key": "今週は春のタッグリーグ開催週",
-    "en": "",
+    "en": "The Spring Tag League runs this week",
     "files": [
       "ui-render.js"
     ],
@@ -13547,7 +13547,7 @@
   },
   {
     "key": "全国統一王座",
-    "en": "",
+    "en": "Unified National Championship",
     "files": [
       "ui-common.js"
     ],
@@ -13557,7 +13557,7 @@
   },
   {
     "key": "全国統一王座 挑戦権",
-    "en": "",
+    "en": "Unified National Championship — Title Shot",
     "files": [
       "ui-common.js"
     ],
@@ -13567,7 +13567,7 @@
   },
   {
     "key": "全国統一王座への挑戦は届きませんでした",
-    "en": "",
+    "en": "The challenge for the Unified National Championship fell short",
     "files": [
       "app.js"
     ],
@@ -13577,7 +13577,7 @@
   },
   {
     "key": "全国統一王座戦",
-    "en": "",
+    "en": "Unified National Title Match",
     "files": [
       "ui-render.js"
     ],
@@ -13587,7 +13587,7 @@
   },
   {
     "key": "全国統一王座戦　試合結果",
-    "en": "",
+    "en": "Unified National Title Match — Result",
     "files": [
       "ui-common.js"
     ],
@@ -13597,7 +13597,7 @@
   },
   {
     "key": "全国統一王座戦のある興行では、団体王座戦は同時開催できません",
-    "en": "",
+    "en": "A show with a Unified National Title Match cannot also stage a promotion title match",
     "files": [
       "ui-common.js"
     ],
@@ -13607,7 +13607,7 @@
   },
   {
     "key": "全国統一王座戦をメインイベントに固定しています。残りの枠に通常カードを編成してください。",
-    "en": "",
+    "en": "The Unified National Title Match is locked into the main event. Book regular matches in the remaining slots.",
     "files": [
       "ui-render.js"
     ],
@@ -13699,7 +13699,7 @@
   },
   {
     "key": "公民館（150人）からドーム（22,500人）まで10段階。大きい会場ほどコストが上がり、試合枠が増えます。",
-    "en": "",
+    "en": "Ten steps, from the Community Center (150) up to the Dome (22,500). Bigger venues cost more and open up more match slots.",
     "files": [
       "index.html"
     ],
@@ -14292,7 +14292,7 @@
   },
   {
     "key": "勝ち残り対抗戦 優勝",
-    "en": "Survivor Interpromotional Match — Winner",
+    "en": "Autumn Gauntlet War — Winner",
     "files": [
       "ui-common.js"
     ],
@@ -15290,7 +15290,7 @@
   },
   {
     "key": "団体の実績が認められ、団体王座を設立できるようになりました！",
-    "en": "",
+    "en": "Your promotion's record now qualifies it to establish the Promotion Championship!",
     "files": [
       "app.js"
     ],
@@ -15421,7 +15421,7 @@
   },
   {
     "key": "団体人気{n}以上で PPV GRAND FINAL への出場資格を獲得できます",
-    "en": "",
+    "en": "Reach promotion popularity {n} to qualify for the PPV GRAND FINAL",
     "files": [
       "ui-common.js"
     ],
@@ -15612,7 +15612,7 @@
   },
   {
     "key": "団体王座 設立！",
-    "en": "",
+    "en": "Promotion Championship Established!",
     "files": [
       "app.js"
     ],
@@ -15622,7 +15622,7 @@
   },
   {
     "key": "団体王座:",
-    "en": "",
+    "en": "Promotion title:",
     "files": [
       "ui-render.js"
     ],
@@ -15632,7 +15632,7 @@
   },
   {
     "key": "団体王座はまだ設立されていません（興行3回・人気15・ロスター5人で設立）",
-    "en": "",
+    "en": "The promotion title has not been established yet (it needs 3 shows, popularity 15 and a roster of 5)",
     "files": [
       "ui-common.js"
     ],
@@ -15642,7 +15642,7 @@
   },
   {
     "key": "団体王座戦の幕が下りた。",
-    "en": "",
+    "en": "The curtain falls on the promotion title match.",
     "files": [
       "ui-common.js"
     ],
@@ -16032,7 +16032,7 @@
   },
   {
     "key": "天 頂 戦",
-    "en": "",
+    "en": "TENCHOSEN",
     "files": [
       "ui-common.js"
     ],
@@ -16042,7 +16042,7 @@
   },
   {
     "key": "天頂戦",
-    "en": "",
+    "en": "Tenchosen",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -16053,7 +16053,7 @@
   },
   {
     "key": "天頂戦 エントリー",
-    "en": "",
+    "en": "Tenchosen Entry",
     "files": [
       "ui-common.js"
     ],
@@ -16063,7 +16063,7 @@
   },
   {
     "key": "天頂戦 エントリー受付中 — 4年に一度の全国女子プロレス最強王者決定戦",
-    "en": "",
+    "en": "Tenchosen entries open — the Summit, held every four years to crown the strongest in women's wrestling",
     "files": [
       "ui-render.js"
     ],
@@ -16073,7 +16073,7 @@
   },
   {
     "key": "天頂戦 ・ {name} {result}",
-    "en": "",
+    "en": "Tenchosen · {name} {result}",
     "files": [
       "ui-common.js"
     ],
@@ -16083,7 +16083,7 @@
   },
   {
     "key": "天頂戦 出場選手 確定済み",
-    "en": "",
+    "en": "Tenchosen — Entries Confirmed",
     "files": [
       "ui-render.js"
     ],
@@ -16093,7 +16093,7 @@
   },
   {
     "key": "天頂戦 歴代優勝",
-    "en": "",
+    "en": "Tenchosen — All-Time Winners",
     "files": [
       "ui-render.js"
     ],
@@ -16103,7 +16103,7 @@
   },
   {
     "key": "天頂戦 覇者",
-    "en": "",
+    "en": "Tenchosen Champion",
     "files": [
       "ui-common.js"
     ],
@@ -16113,7 +16113,7 @@
   },
   {
     "key": "天頂戦優勝",
-    "en": "",
+    "en": "Tenchosen Winner",
     "files": [
       "ui-render.js"
     ],
@@ -16123,7 +16123,7 @@
   },
   {
     "key": "天頂戦前夜",
-    "en": "",
+    "en": "Tenchosen Eve",
     "files": [
       "ui-common.js"
     ],
@@ -18110,7 +18110,7 @@
   },
   {
     "key": "戴冠1 ／ 防衛1 ／ ジュニア優勝4 ／ 春タッグ優勝3 ／ PPV勝利5 ／ 対抗戦勝利1.5 ／ 天頂戦 優勝8・準優勝5・ベスト4 3",
-    "en": "",
+    "en": "Title won 1 / Defense 1 / Junior Tournament win 4 / Spring Tag League win 3 / PPV win 5 / Interpromotional win 1.5 / Tenchosen win 8 · runner-up 5 · semifinal 3",
     "files": [
       "ui-render.js"
     ],
@@ -18372,7 +18372,7 @@
   },
   {
     "key": "折れ線: 各シーズン末の団体人気 ／ 破線: ドーム圏(90)",
-    "en": "",
+    "en": "Line: promotion popularity at each season's end / Dashed: Dome range (90)",
     "files": [
       "ui-render.js"
     ],
@@ -19466,7 +19466,7 @@
   },
   {
     "key": "春のタッグリーグ",
-    "en": "",
+    "en": "Spring Tag League",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -19477,7 +19477,7 @@
   },
   {
     "key": "春のタッグリーグ — A/Bブロック総当たり戦",
-    "en": "",
+    "en": "Round robin across Blocks A and B",
     "files": [
       "ui-common.js"
     ],
@@ -19487,7 +19487,7 @@
   },
   {
     "key": "春のタッグリーグ 優勝",
-    "en": "",
+    "en": "Spring Tag League — Winners",
     "files": [
       "ui-common.js"
     ],
@@ -19497,7 +19497,7 @@
   },
   {
     "key": "春のタッグリーグ 全{n}チーム編成済み",
-    "en": "",
+    "en": "Spring Tag League — All {n} Teams Entered",
     "files": [
       "ui-render.js"
     ],
@@ -19507,7 +19507,7 @@
   },
   {
     "key": "春のタッグリーグ 出場{n}チーム決定",
-    "en": "",
+    "en": "Spring Tag League — {n} Team Slots Set",
     "files": [
       "ui-render.js"
     ],
@@ -19517,7 +19517,7 @@
   },
   {
     "key": "春のタッグリーグ 出場チーム編成",
-    "en": "",
+    "en": "Spring Tag League Team Entry",
     "files": [
       "ui-common.js"
     ],
@@ -19527,7 +19527,7 @@
   },
   {
     "key": "春のタッグリーグ 出場チーム編成期間",
-    "en": "",
+    "en": "Spring Tag League — Team Entry Week",
     "files": [
       "ui-render.js"
     ],
@@ -19537,7 +19537,7 @@
   },
   {
     "key": "春のタッグリーグ優勝",
-    "en": "",
+    "en": "Spring Tag League Winners",
     "files": [
       "ui-render.js"
     ],
@@ -19547,7 +19547,7 @@
   },
   {
     "key": "春のタッグリーグ優勝 / タッグ王者",
-    "en": "",
+    "en": "Spring Tag League Winners / Tag Champions",
     "files": [
       "ui-common.js"
     ],
@@ -19557,7 +19557,7 @@
   },
   {
     "key": "春のタッグリーグ優勝(第{n}回)",
-    "en": "",
+    "en": "Spring Tag League Winners (#{n})",
     "files": [
       "ui-render.js"
     ],
@@ -20525,7 +20525,7 @@
   },
   {
     "key": "次の興行で全国統一王座を防衛する",
-    "en": "",
+    "en": "Defend the Unified National Championship on your next show",
     "files": [
       "ui-common.js"
     ],
@@ -23407,7 +23407,7 @@
   },
   {
     "key": "秋の4団体勝ち残り対抗戦優勝",
-    "en": "",
+    "en": "Autumn Gauntlet War Winner",
     "files": [
       "ui-render.js"
     ],
@@ -23778,7 +23778,7 @@
   },
   {
     "key": "第{n}回 天頂戦 ・ 第{pos}試合 / 全{total}試合",
-    "en": "",
+    "en": "Tenchosen No. {n} · Match {pos} of {total}",
     "files": [
       "ui-common.js"
     ],
@@ -23788,7 +23788,7 @@
   },
   {
     "key": "第{n}回 天頂戦 覇者",
-    "en": "",
+    "en": "Tenchosen No. {n} Champion",
     "files": [
       "ui-common.js"
     ],
@@ -23798,7 +23798,7 @@
   },
   {
     "key": "第{n}回 天頂戦覇者",
-    "en": "",
+    "en": "Tenchosen No. {n} Champion",
     "files": [
       "ui-common.js"
     ],
@@ -23889,7 +23889,7 @@
   },
   {
     "key": "第{n}回大会 ・ 春のタッグリーグ",
-    "en": "",
+    "en": "Tournament No. {n} · Spring Tag League",
     "files": [
       "ui-common.js"
     ],
@@ -23939,7 +23939,7 @@
   },
   {
     "key": "第{n}回天頂戦",
-    "en": "",
+    "en": "Tenchosen No. {n}",
     "files": [
       "ui-common.js"
     ],
@@ -24081,7 +24081,7 @@
   },
   {
     "key": "第{w}週は通常興行の代わりに、4年に一度の天頂戦が開催されます。今週のカード編成はありません。",
-    "en": "",
+    "en": "In week {w} Tenchosen, held once every four years, replaces the regular show. There is no card to book this week.",
     "files": [
       "ui-render.js"
     ],
@@ -24121,7 +24121,7 @@
   },
   {
     "key": "第{w}週は通常興行の代わりに春のタッグリーグ(A/Bブロック各6試合+ブロック1位同士の優勝決定戦)が開催されます。今週のカード編成はありません。",
-    "en": "",
+    "en": "In week {w} the Spring Tag League replaces the regular show (six matches in each of Blocks A and B, then a final between the block winners). There is no card to book this week.",
     "files": [
       "ui-render.js"
     ],
@@ -27416,7 +27416,7 @@
   },
   {
     "key": "選手の週間スケジュールを確認し、週を進めてください（今週は4団体勝ち残り対抗戦）。",
-    "en": "",
+    "en": "Check the weekly schedules, then advance the week (the Autumn Gauntlet War runs this week).",
     "files": [
       "ui-render.js"
     ],
@@ -27436,7 +27436,7 @@
   },
   {
     "key": "選手の週間スケジュールを確認し、週を進めてください（今週は天頂戦開催週）。",
-    "en": "",
+    "en": "Check the weekly schedules, then advance the week (Tenchosen runs this week).",
     "files": [
       "ui-render.js"
     ],
@@ -27456,7 +27456,7 @@
   },
   {
     "key": "選手の週間スケジュールを確認し、週を進めてください（今週は春のタッグリーグ開催週）。",
-    "en": "",
+    "en": "Check the weekly schedules, then advance the week (the Spring Tag League runs this week).",
     "files": [
       "ui-render.js"
     ],
@@ -28325,7 +28325,7 @@
   },
   {
     "key": "頂点 — ドーム満員が狙える",
-    "en": "",
+    "en": "Peak — a sold-out Dome is within reach",
     "files": [
       "ui-render.js"
     ],
@@ -28567,7 +28567,7 @@
   },
   {
     "key": "🌐 全国統一王座",
-    "en": "",
+    "en": "🌐 Unified National Championship",
     "files": [
       "ui-render.js"
     ],
@@ -28577,7 +28577,7 @@
   },
   {
     "key": "🌐 全国統一王座を奪取しました！",
-    "en": "",
+    "en": "🌐 You have taken the Unified National Championship!",
     "files": [
       "app.js"
     ],
@@ -28587,7 +28587,7 @@
   },
   {
     "key": "🌐 全国統一王座戦",
-    "en": "",
+    "en": "🌐 Unified National Title Match",
     "files": [
       "app.js",
       "ui-render.js"
@@ -28598,7 +28598,7 @@
   },
   {
     "key": "🌐 全国統一王座戦の対戦者は固定です",
-    "en": "",
+    "en": "🌐 The wrestlers in the Unified National Title Match are locked",
     "files": [
       "app.js",
       "ui-render.js"
@@ -28609,7 +28609,7 @@
   },
   {
     "key": "🌐 全国統一王座戦の枠は固定です",
-    "en": "",
+    "en": "🌐 The Unified National Title Match slot is locked",
     "files": [
       "ui-common.js"
     ],
@@ -28619,7 +28619,7 @@
   },
   {
     "key": "🌐 全国統一王座戦（固定）",
-    "en": "",
+    "en": "🌐 Unified National Title Match (locked)",
     "files": [
       "ui-render.js"
     ],
@@ -28689,7 +28689,7 @@
   },
   {
     "key": "🌸 春のタッグリーグ {a}/{b}チームを編成しました",
-    "en": "",
+    "en": "🌸 Spring Tag League: {a}/{b} teams entered",
     "files": [
       "app.js"
     ],
@@ -28699,7 +28699,7 @@
   },
   {
     "key": "🌸 春のタッグリーグ {roundLabel}",
-    "en": "",
+    "en": "🌸 Spring Tag League {roundLabel}",
     "files": [
       "app.js"
     ],
@@ -29099,7 +29099,7 @@
   },
   {
     "key": "🏟️ PPV GRAND FINAL",
-    "en": "",
+    "en": "🏟️ PPV GRAND FINAL",
     "files": [
       "ui-render.js"
     ],
@@ -29109,7 +29109,7 @@
   },
   {
     "key": "🏟️ PPV GRAND FINAL「{name}」",
-    "en": "",
+    "en": "🏟️ PPV GRAND FINAL {name}",
     "files": [
       "ui-render.js"
     ],
@@ -29119,7 +29119,7 @@
   },
   {
     "key": "🏟️ エントリー完了！PPV GRAND FINAL は第{week}週に開催されます",
-    "en": "",
+    "en": "🏟️ Entry complete! The PPV GRAND FINAL takes place in week {week}",
     "files": [
       "ui-common.js"
     ],
@@ -29129,7 +29129,7 @@
   },
   {
     "key": "🏟️ ドーム圏内です！今シーズン{status}",
-    "en": "",
+    "en": "🏟️ You're in Dome range! {status}",
     "files": [
       "ui-render.js"
     ],
@@ -29229,7 +29229,7 @@
   },
   {
     "key": "👑 天頂戦 {round}",
-    "en": "",
+    "en": "👑 Tenchosen {round}",
     "files": [
       "app.js"
     ],
@@ -29239,7 +29239,7 @@
   },
   {
     "key": "👑 天頂戦 出場選手を確定しました",
-    "en": "",
+    "en": "👑 Tenchosen entries confirmed",
     "files": [
       "app.js"
     ],
