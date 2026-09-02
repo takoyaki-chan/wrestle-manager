@@ -114,6 +114,10 @@
     if (!doc) return;
 
     // [data-i18n]: textContent 全体を置換。子要素混在テキストへは付与しない運用前提。
+    // 辞書キーは trim して引く: HTMLソースのインデント改行が textContent に混入し、
+    // かつブラウザはCRLFをLFへ正規化するため、生のtextContentでは台帳キーと一致しない
+    // (P3bバッチ4後の実機確認で発覚——「旗揚げする」等がfail-openしていた)。
+    // ja時は退避した原文を厳密復元する(1バイト不変)。
     const textNodes = doc.querySelectorAll('[data-i18n]');
     for (let i = 0; i < textNodes.length; i++) {
       const el = textNodes[i];
@@ -122,7 +126,13 @@
         orig = el.textContent;
         el.setAttribute('data-i18n-orig', orig);
       }
-      el.textContent = t(orig);
+      if (currentLang === 'ja') {
+        el.textContent = orig;
+      } else {
+        const trimmed = orig.trim();
+        const out = t(trimmed);
+        el.textContent = (out === trimmed) ? orig : out;
+      }
     }
 
     // [data-i18n-attr="title,placeholder"]: 属性値をt()へ通す。複数属性はカンマ区切り。

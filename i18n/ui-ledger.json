@@ -1,16 +1,17 @@
 [
   {
-    "key": "\r\n        ← 戻る\r\n      ",
+    "key": "← 戻る",
     "en": "\r\n        ← Back\r\n      ",
     "files": [
-      "index.html"
+      "index.html",
+      "ui-render.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
-    "key": "\r\n      ゲーム開始\r\n    ",
+    "key": "ゲーム開始",
     "en": "\r\n      Start Game\r\n    ",
     "files": [
       "index.html"
@@ -20,7 +21,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "\r\n      旗揚げする\r\n    ",
+    "key": "旗揚げする",
     "en": "\r\n      Found the Promotion\r\n    ",
     "files": [
       "index.html"
@@ -30,7 +31,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " (成功率80%)",
+    "key": "(成功率80%)",
     "en": " (80% success rate)",
     "files": [
       "ui-render.js"
@@ -40,7 +41,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " (確定成功)",
+    "key": "(確定成功)",
     "en": " (guaranteed success)",
     "files": [
       "ui-render.js"
@@ -50,7 +51,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " (評価 {n})",
+    "key": "(評価 {n})",
     "en": " (rating {n})",
     "files": [
       "ui-common.js"
@@ -60,7 +61,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " / {n}週離脱",
+    "key": "/ {n}週離脱",
     "en": " / out {n} weeks",
     "files": [
       "ui-render.js"
@@ -70,7 +71,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " / ライバル {n}件",
+    "key": "/ ライバル {n}件",
     "en": " / {n} rivals",
     "files": [
       "ui-render.js"
@@ -80,7 +81,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " / 接戦+{n}",
+    "key": "/ 接戦+{n}",
     "en": " / close match +{n}",
     "files": [
       "ui-common.js"
@@ -90,7 +91,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " / 目標3,000万",
+    "key": "/ 目標3,000万",
     "en": " / target ¥30,000k",
     "files": [
       "ui-render.js"
@@ -100,7 +101,7 @@
     "hasProperNoun": false
   },
   {
-    "key": " ─ 継続中",
+    "key": "─ 継続中",
     "en": " ─ ongoing",
     "files": [
       "ui-render.js"
@@ -1653,17 +1654,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{block}ブロック ",
-    "en": "Block {block} ",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -4463,16 +4454,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "← 戻る",
-    "en": "← Back",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
     "key": "← 第{n}章と SEASON {start}–{end} で重なる",
     "en": "← Overlaps Chapter {n} across SEASON {start}–{end}",
     "files": [
@@ -4553,7 +4534,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "⏳ いつでも使用可能（温存OK）\n",
+    "key": "⏳ いつでも使用可能（温存OK）",
     "en": "⏳ Usable at any time (fine to hold on to it)\n",
     "files": [
       "app.js"
@@ -9070,7 +9051,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "セーブに失敗しました: ",
+    "key": "セーブに失敗しました:",
     "en": "Save failed: ",
     "files": [
       "app.js"
@@ -10476,17 +10457,7 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "ライバル心 ",
-    "en": "Rivalry ",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -13918,7 +13889,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "再試行失敗: ",
+    "key": "再試行失敗:",
     "en": "Retry failed: ",
     "files": [
       "ui-common.js"
@@ -15448,7 +15419,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "団体の名声が業界に轟いた！\n",
+    "key": "団体の名声が業界に轟いた！",
     "en": "Your promotion's name has rung out across the business!\n",
     "files": [
       "app.js"
@@ -17764,7 +17735,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "強み: ",
+    "key": "強み:",
     "en": "Strengths: ",
     "files": [
       "ui-render.js"
@@ -19504,7 +19475,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "新年号 ",
+    "key": "新年号",
     "en": "Season Opener ",
     "files": [
       "ui-render.js"
@@ -26463,7 +26434,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "課題: ",
+    "key": "課題:",
     "en": "Needs work: ",
     "files": [
       "ui-render.js"
@@ -27332,7 +27303,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "逸材クラスの選手たちが、あなたの団体に注目しています。\n\n",
+    "key": "逸材クラスの選手たちが、あなたの団体に注目しています。",
     "en": "Standout-class wrestlers are taking notice of your promotion.\n\n",
     "files": [
       "app.js"
@@ -29498,7 +29469,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "💎 FA市場で逸材ランクの選手1名と特別に交渉可能\n",
+    "key": "💎 FA市場で逸材ランクの選手1名と特別に交渉可能",
     "en": "💎 Special talks with one standout-rank wrestler on the FA market\n",
     "files": [
       "app.js"

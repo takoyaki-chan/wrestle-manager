@@ -254,8 +254,10 @@ function extractHtmlI18n(rawSrc, filename, warnings) {
         if (rawText.indexOf('<') >= 0) {
           warnings.push(`${filename}:${lineNo}: <${tagName} data-i18n> のtextContentに子要素混在の疑い(想定外構造、スキップ)`);
         } else {
-          const text = decodeHtmlEntities(rawText);
-          if (text.trim()) results.push({ text, line: lineNo, kind: 'text' });
+          // trimして登録する: 実行時(applyDom)はtextContent.trim()で辞書を引くため、
+          // ソースのインデント改行・CRLFを含む生テキストをキーにすると一致しない
+          const text = decodeHtmlEntities(rawText).trim();
+          if (text) results.push({ text, line: lineNo, kind: 'text' });
         }
       }
     }
