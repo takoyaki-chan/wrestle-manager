@@ -6287,7 +6287,7 @@ const App = {
     const heldByOrg = G.aiOrgs?.[eh.orgId];
     const heldByOrgName = heldByOrg?.name || eh.orgId;
     const exChamp = heldByOrg?.roster?.find(c => c.id === eh.fighterId);
-    const exChampName = exChamp?.name || `元王者#${eh.fighterId}`;
+    const exChampName = exChamp?.name || WM_I18N.t('元王者#{id}', { id: eh.fighterId });
 
     let dlg = document.getElementById('reclaimDialog');
     if (dlg) dlg.remove();
@@ -11134,7 +11134,7 @@ const App = {
                   weeklyFinance: { income: 0, expense: 0, details: [] } };
           }
           try { Storage.autoSave(); } catch (_e) {}
-          try { showToast('⚠️ 興行後の処理で問題が発生しました。状態を復元しました。', 6000); } catch (_e) {}
+          try { showToast(WM_I18N.t('⚠️ 興行後の処理で問題が発生しました。状態を復元しました。'), 6000); } catch (_e) {}
         }
       } catch (_recovErr) {
         console.error('closeShowResult recovery itself failed:', _recovErr);
@@ -14044,8 +14044,8 @@ const App = {
       showEventPopup({
         type: 'fighter', id: fighterId,
         name: playerFighter.name, tone: 'positive',
-        message: '📨 挑戦試合を正式決定',
-        detail: `${playerFighter.name} vs ${challenger.name} は、次の通常興行のメインイベントで行われます。`,
+        message: WM_I18N.t('📨 挑戦試合を正式決定'),
+        detail: WM_I18N.t('{a} vs {b} は、次の通常興行のメインイベントで行われます。', { a: playerFighter.name, b: challenger.name }),
       });
       renderWeekScreen();
     }
@@ -14096,7 +14096,7 @@ const App = {
         vsExHit: App._buildVsExHitLines(af, G.season, G.week, pf.orgId)
       },
       matchInfo: {
-        header: '⚔ 挑戦状',
+        header: WM_I18N.t('⚔ 挑戦状'),
         subHeader: `${pf.name} vs ${af.name}`,
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
@@ -14311,7 +14311,7 @@ const App = {
         vl: f2.voiceLines || f2.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[f2.id]) || ['…！']
       },
       matchInfo: {
-        header: '💥 決着の試合',
+        header: WM_I18N.t('💥 決着の試合'),
         subHeader: `${f1.name} vs ${f2.name}`,
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
@@ -15092,7 +15092,7 @@ const App = {
     const card = Engine.event.makeWarCard(G, ev.opponentOrgId, selected);
     if (card.length !== required) {
       Audio.play('error');
-      if (typeof showToast === 'function') showToast('代表選手の編成を確定できませんでした');
+      if (typeof showToast === 'function') showToast(WM_I18N.t('代表選手の編成を確定できませんでした'));
       renderWarEntrySelection();
       return;
     }
@@ -15186,7 +15186,7 @@ const App = {
         vsExHit: App._buildVsExHitLines(af, G.season, G.week, pf.orgId)
       },
       matchInfo: {
-        header: `⚔ 対抗戦 第${idx + 1}試合`,
+        header: WM_I18N.t('⚔ 対抗戦 第{n}試合', { n: idx + 1 }),
         subHeader: `${pf.name} vs ${af.name}`,
         matchNum: idx + 1,
         totalMatches: wp.card.length,
@@ -15546,8 +15546,8 @@ App.initPPVShow = function() {
     console.warn('[WM Debug] PPV card is empty — entries:', JSON.stringify(G.ppvEntries ? Object.fromEntries(Object.entries(G.ppvEntries).map(([k,v]) => [k, (v||[]).length])) : 'null'));
     showEventPopup({
       type: 'system', tone: 'negative',
-      message: 'カード編成不成立',
-      detail: '出場可能な選手が不足しており、対戦カードを組めませんでした',
+      message: WM_I18N.t('カード編成不成立'),
+      detail: WM_I18N.t('出場可能な選手が不足しており、対戦カードを組めませんでした'),
     });
     setTimeout(() => App.finalizePPV(), 1500);
     return;
@@ -15557,13 +15557,13 @@ App.initPPVShow = function() {
   if (ppvDay.substitutions.length > 0) {
     let popupChain = Promise.resolve();
     ppvDay.substitutions.forEach(sub => {
-      const orgName = sub.orgId === 'player' ? (G.orgName || '自団体') : (RIVAL_ORGS.find(o => o.id === sub.orgId)?.name || sub.orgId);
+      const orgName = sub.orgId === 'player' ? (G.orgName || WM_I18N.t('自団体')) : (RIVAL_ORGS.find(o => o.id === sub.orgId)?.name || sub.orgId);
       popupChain = popupChain.then(() => new Promise(resolve => {
         showEventPopup({
           type: 'fighter', id: sub.originalId, name: sub.original,
           tone: 'negative',
-          message: `${sub.original}が出場不能！`,
-          detail: `${orgName}の${sub.substitute}が緊急出場`,
+          message: WM_I18N.t('{name}が出場不能！', { name: sub.original }),
+          detail: WM_I18N.t('{org}の{name}が緊急出場', { org: orgName, name: sub.substitute }),
         });
         setTimeout(resolve, 1500);
       }));
@@ -15642,7 +15642,7 @@ App.ppvWatchMatch = function(idx) {
       vsExHit: App._buildVsExHitLines(match.right, G.season, G.week, match.left.orgId)
     },
     matchInfo: {
-      header: match.isSummit ? '🏆 頂上決戦' : `PPV 第${matchNum}試合`,
+      header: match.isSummit ? WM_I18N.t('🏆 頂上決戦') : WM_I18N.t('PPV 第{n}試合', { n: matchNum }),
       subHeader: `${match.left.name} vs ${match.right.name}`,
       matchNum,
       totalMatches: total,
@@ -16113,7 +16113,7 @@ App.initPPVTV = function() {
   const overlay = document.getElementById('showResultOverlay');
   const box = document.getElementById('showResultBox');
   if (overlay && box) {
-    box.innerHTML = '<div class="ptv-tv ptv-loading"><div class="ptv-screen"><div class="ptv-loading-label">WRESTLE TV<br><small>GRAND FINAL を準備中…</small></div></div></div>';
+    box.innerHTML = `<div class="ptv-tv ptv-loading"><div class="ptv-screen"><div class="ptv-loading-label">WRESTLE TV<br><small>${WM_I18N.t('GRAND FINAL を準備中…')}</small></div></div></div>`;
     overlay.classList.add('active');
   }
 
@@ -16179,10 +16179,10 @@ App._renderPPVTvFallback = function() {
   const box = document.getElementById('showResultBox');
   if (!overlay || !box) return;
   box.innerHTML = '<div class="ptv-tv"><div class="ptv-screen">'
-    + '<div class="ptv-chrome"><span class="ptv-ch">WRESTLE TV</span><span class="ptv-live is-off">放送終了</span></div>'
+    + `<div class="ptv-chrome"><span class="ptv-ch">WRESTLE TV</span><span class="ptv-live is-off">${WM_I18N.t('放送終了')}</span></div>`
     + '<div class="ptv-ending">'
-    + '<div class="ptv-end-msg">テレビの明かりを消す。<br><br>今年の年末も、画面の中は他所の景色だった。</div>'
-    + '<button type="button" class="ptv-btn" onclick="App.closePPVTV()">事務所へ戻る</button>'
+    + `<div class="ptv-end-msg">${WM_I18N.t('テレビの明かりを消す。')}<br><br>${WM_I18N.t('今年の年末も、画面の中は他所の景色だった。')}</div>`
+    + `<button type="button" class="ptv-btn" onclick="App.closePPVTV()">${WM_I18N.t('事務所へ戻る')}</button>`
     + '</div></div></div>';
   overlay.classList.add('active');
 };
@@ -16444,7 +16444,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     || Object.values(G.aiOrgs || {}).flatMap(o => o.roster || []).find(f => f.id === match.right.id)
     || match.right;
 
-  const roundLabel = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : round.name === 'quarterFinal' ? '準々決勝' : '1回戦';
+  const roundLabel = round.name === 'final' ? WM_I18N.t('決勝') : round.name === 'semiFinal' ? WM_I18N.t('準決勝') : round.name === 'quarterFinal' ? WM_I18N.t('準々決勝') : WM_I18N.t('1回戦');
   // Replay: 事前シミュ済みの match から frames+winner 等を result として組み立てる
   const jtResult = {
     winner: match.winner, mq: match.mq, turns: match.turns,
@@ -16465,7 +16465,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
       vl: rightF.voiceLines || rightF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[rightF.id]) || ['…！']
     },
     matchInfo: {
-      header: `🏆 ジュニアトーナメント ${roundLabel}`,
+      header: WM_I18N.t('🏆 ジュニアトーナメント {round}', { round: roundLabel }),
       subHeader: `${match.left.name} vs ${match.right.name}`,
       matchNum: matchIdx + 1,
       totalMatches: round.matches.length,
@@ -16906,7 +16906,7 @@ App.tcWatchMatch = function(roundIdx, matchIdx) {
 
   const leftF = App._jtLookupFighter(match.left.id) || match.left;
   const rightF = App._jtLookupFighter(match.right.id) || match.right;
-  const roundLabel = isFinal ? '決勝' : round.name === 'semiFinal' ? '準決勝' : round.name === 'quarterFinal' ? '準々決勝' : '1回戦';
+  const roundLabel = isFinal ? WM_I18N.t('決勝') : round.name === 'semiFinal' ? WM_I18N.t('準決勝') : round.name === 'quarterFinal' ? WM_I18N.t('準々決勝') : WM_I18N.t('1回戦');
 
   // Replay: 事前シミュ済みの match から frames+winner 等を組み立てる(結果は書き換えない)
   const tcResult = {
@@ -16928,7 +16928,7 @@ App.tcWatchMatch = function(roundIdx, matchIdx) {
       vl: rightF.voiceLines || rightF.vl || (typeof VICTORY_LINES !== 'undefined' && VICTORY_LINES[rightF.id]) || ['…！']
     },
     matchInfo: {
-      header: `👑 天頂戦 ${roundLabel}`,
+      header: WM_I18N.t('👑 天頂戦 {round}', { round: roundLabel }),
       subHeader: `${match.left.name} vs ${match.right.name}`,
       matchNum: matchIdx + 1,
       totalMatches: round.matches.length,
@@ -17164,14 +17164,14 @@ App.finalizeTenchosen = function() {
     // 「第N代」は政権の数。防衛戦での奪取(move)も1代と数える(記録タブ・実績リストと同じ定義)。
     const generation = (title?.history || []).filter(event =>
       ['creation', 'crown', 'repeat', 'move'].includes(event?.type)).length;
-    const repeatLabel = latestAward.type === 'repeat' ? ' ・ 連覇' : '';
+    const repeatLabel = latestAward.type === 'repeat' ? ' ・ ' + WM_I18N.t('連覇') : '';
     showUnifiedTitleCoronation({
       fighter: champion.fighter,
       orgName: Engine.unifiedTitle._orgName(G, champion.orgId),
       edition: latestAward.edition || tournament.edition || 1,
       beltLabel: generation === 1
-        ? '初代 全国統一王者'
-        : `第${generation}代 全国統一王者${repeatLabel}`,
+        ? WM_I18N.t('初代 全国統一王者')
+        : WM_I18N.t('第{n}代 全国統一王者', { n: generation }) + repeatLabel,
       state: G,
       safetyTimeoutMs: 30000,
     }, () => App.finalizeTenchosen());
@@ -17253,7 +17253,7 @@ App.tcConfirmEntries = function() {
   _mdlAClose();
   Audio.play('select');
   try { Storage.autoSave(); } catch(e) {}
-  if (typeof showToast === 'function') showToast('👑 天頂戦 出場選手を確定しました');
+  if (typeof showToast === 'function') showToast(WM_I18N.t('👑 天頂戦 出場選手を確定しました'));
   if (typeof renderWeekScreen === 'function') renderWeekScreen();
   if (typeof refreshAll === 'function') refreshAll();
 };
@@ -17368,7 +17368,7 @@ function _fighterFileRadarHtml(fighter) {
     const [x, y] = point(index, radius + 15);
     return `<text x="${x.toFixed(1)}" y="${(y + 3).toFixed(1)}" text-anchor="middle" font-family="var(--font-label)" font-size="8" letter-spacing="1" fill="var(--stat-${stat.key})">${stat.label}</text>`;
   }).join('');
-  return `<svg width="200" height="208" viewBox="0 0 200 208" role="img" aria-label="能力レーダーチャート">${grid}${axes}<polygon points="${dataPoints}" fill="var(--gold)" fill-opacity="0.25" stroke="var(--gold)" stroke-width="1.5"/>${labels}</svg>`;
+  return `<svg width="200" height="208" viewBox="0 0 200 208" role="img" aria-label="${WM_I18N.t('能力レーダーチャート')}">${grid}${axes}<polygon points="${dataPoints}" fill="var(--gold)" fill-opacity="0.25" stroke="var(--gold)" stroke-width="1.5"/>${labels}</svg>`;
 }
 
 function _fighterFileListHtml(catalog, state) {
@@ -17381,7 +17381,7 @@ function _fighterFileListHtml(catalog, state) {
     const active = state.key === column.key;
     const arrow = active ? (state.asc ? ' ▲' : ' ▼') : '';
     const width = column.width ? ` style="width:${column.width}px"` : '';
-    return `<th scope="col" class="${active ? 'sorted' : ''}"${width} onclick="App.sortFighterFile('${column.key}')">${column.label}${arrow}</th>`;
+    return `<th scope="col" class="${active ? 'sorted' : ''}"${width} onclick="App.sortFighterFile('${column.key}')">${WM_I18N.t(column.label)}${arrow}</th>`;
   }).join('')}</tr>`;
   const body = visible.map(fighter => {
     const stats = _FIGHTER_FILE_STATS.map(stat =>
@@ -17405,24 +17405,24 @@ function _fighterFileDetailHtml(fighter, traitDefs) {
     const def = traitDefs && traitDefs[trait];
     if (!def) return '';
     return `<div class="fighter-file-trait"><span class="fighter-file-trait-icon" style="--fighter-trait-color:${escHtml(def.color || 'var(--gold)')}">${escHtml(def.icon || trait.charAt(0))}</span><span class="fighter-file-trait-name">${escHtml(trait)}</span><span class="fighter-file-trait-desc">${escHtml(def.desc || '')}</span></div>`;
-  }).join('') : '<div class="fighter-file-trait-desc">固有特性なし</div>';
+  }).join('') : `<div class="fighter-file-trait-desc">${WM_I18N.t('固有特性なし')}</div>`;
   return `<div class="fighter-file-detail-head">
       <span class="fighter-file-kicker">Personnel File</span>
-      <button type="button" class="fighter-file-close" onclick="App.closeFighterFileDetail()" title="閉じる（ESC可）" aria-label="選手詳細を閉じる">✕</button>
+      <button type="button" class="fighter-file-close" onclick="App.closeFighterFileDetail()" title="${WM_I18N.t('閉じる（ESC可）')}" aria-label="${WM_I18N.t('選手詳細を閉じる')}">✕</button>
     </div>
     <div class="fighter-file-detail-main">
       <div class="fighter-file-upper">${_fighterFileUpperHtml(fighter)}</div>
       <div class="fighter-file-detail-info">
         <h3 class="fighter-file-detail-name">${escHtml(fighter.name)}</h3>
         <div class="fighter-file-detail-badges">${_fighterFileStyleBadge(fighter.style)}<span class="fighter-file-role-badge">${escHtml(fighter.role)}</span></div>
-        <div class="fighter-file-detail-meta">身長 ${fighter.h}cm</div>
-        <div class="fighter-file-detail-ovr"><strong style="${statTierStyle('ovr', fighter.ovr)}">${fighter.ovr}</strong><span>OVR — 基準値</span></div>
-        <div class="fighter-file-charts"><div class="fighter-file-radar">${_fighterFileRadarHtml(fighter)}</div><div class="fighter-file-bars">${bars}<div class="fighter-file-bar-note">枠の右端=100。枠を飛び越えた選手は規格外（はみ出しは圧縮表示）</div></div></div>
+        <div class="fighter-file-detail-meta">${WM_I18N.t('身長 {h}cm', { h: fighter.h })}</div>
+        <div class="fighter-file-detail-ovr"><strong style="${statTierStyle('ovr', fighter.ovr)}">${fighter.ovr}</strong><span>${WM_I18N.t('OVR — 基準値')}</span></div>
+        <div class="fighter-file-charts"><div class="fighter-file-radar">${_fighterFileRadarHtml(fighter)}</div><div class="fighter-file-bars">${bars}<div class="fighter-file-bar-note">${WM_I18N.t('枠の右端=100。枠を飛び越えた選手は規格外（はみ出しは圧縮表示）')}</div></div></div>
       </div>
     </div>
-    <div class="fighter-file-section"><div class="fighter-file-section-label">Traits — 特性</div>${traits}</div>
-    <div class="fighter-file-section"><div class="fighter-file-section-label">Profile — 紹介</div><div class="fighter-file-profile">${escHtml(fighter.profile)}</div></div>
-    <div class="fighter-file-footnote">※ 記載の能力値は各選手の能力基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。</div>`;
+    <div class="fighter-file-section"><div class="fighter-file-section-label">${WM_I18N.t('Traits — 特性')}</div>${traits}</div>
+    <div class="fighter-file-section"><div class="fighter-file-section-label">${WM_I18N.t('Profile — 紹介')}</div><div class="fighter-file-profile">${escHtml(fighter.profile)}</div></div>
+    <div class="fighter-file-footnote">${WM_I18N.t('※ 記載の能力値は各選手の能力基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。')}</div>`;
 }
 
 App.renderFighterFile = function() {
@@ -17433,7 +17433,7 @@ App.renderFighterFile = function() {
   const view = _fighterFileListHtml(_fighterFileCatalog(), _fighterFileState);
   head.innerHTML = view.head;
   body.innerHTML = view.body;
-  count.textContent = `全${_fighterFileCatalog().length}名 / 表示中: ${view.visibleCount}名`;
+  count.textContent = WM_I18N.t('全{total}名 / 表示中: {shown}名', { total: _fighterFileCatalog().length, shown: view.visibleCount });
   return true;
 };
 
@@ -17527,7 +17527,7 @@ App.previewEnding = function() {
   App.closeCredits();
   const data = (typeof G !== 'undefined' && G.season)
     ? Engine.ending.buildClearData(G)
-    : { season: 1, orgName: '団体', playerRating: 1000, peakOrgPop: 0, totalShows: 0, bestMQ: 0, hallOfFameCount: 0, top3Fighters: [], coaches: [] };
+    : { season: 1, orgName: WM_I18N.t('団体'), playerRating: 1000, peakOrgPop: 0, totalShows: 0, bestMQ: 0, hallOfFameCount: 0, top3Fighters: [], coaches: [] };
   setTimeout(() => showEndingCeremony(data, () => {}), 300);
 };
 
