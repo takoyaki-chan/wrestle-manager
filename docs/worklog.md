@@ -1,5 +1,79 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2f — セリフ英訳バッチ⑥(天頂戦決勝666行+引退409行)（2026-09-03・Opus主筆 worktree agent-a2c309131f619ec8b）
+
+量産翻訳の第6バッチ。**`tenchosen-final-lines.js:TENCHOSEN_FINAL_LINES` の全666行 + `data.js:RETIREMENT_LINES` の412行中409行 = 1,075行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2eの訳語判断。開始前にworktreeブランチをmain先端(a7408f9)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
+
+### 1. 対象範囲(1,075行)
+
+**天頂戦決勝 666行**(4年に一度・決勝でのみ引かれる。軸は `section → motif → archetype_personality`)
+
+| section | 内訳 | 計 |
+|---|---|---|
+| `pre`(決勝直前の1往復) | battered/grudge/revenge/settle/hold/rivalry/underdog/crown/worn 各34 + firstMeet 68(最終フォールバックのため全セル2本) | 374 |
+| `postWin`(勝者) | battered/grudge/upset 各34 + general 41 | 143 |
+| `postLose`(敗者) | battered/grudge/fall 各34 + general 47 | 149 |
+
+**引退 409行**(8カテゴリ × 7属性 × 最大7性格。414スロット/412ユニーク)
+
+| カテゴリ | 行数 | 状況 |
+|---|---|---|
+| `A1_champion` | 50 | 王座経験者のシーズン末引退 |
+| `A2_uncrowned` / `A3_heel` / `A4_veteran` | 52 / 52 / 52 | 無冠・ヒール・古参(ラストラン期限切れも流用) |
+| `B1_young` / `B2_prime` / `B3_older` | 52 / 52 / 52 | 怪我引退(〜20歳 / 〜25歳 / それ以上) |
+| `B4_champion_injury` | 52 | 王者のまま怪我引退 |
+
+- **既訳3行は据え置き**(`……まだ`/`…まだ`/`…まだだ` = B1/B2/B4 の cool×quiet。P5-2a/2bで他テーブルと共有済み)
+- **414スロット→412ユニークの重複2件**は同一原文が2セルに出るもので、**同一ENに揃えた**(`お泣きにならないで。みっともなくてよ` = A3_heel ojousama normal/bold、`体がね…もう言うことを聞かないの…` = B2_prime ojousama/seductive normal)。事前検査でJA→EN衝突として検出し統一
+- cell判定は抽出器が解決済みで、**台帳の `cell` と実効テーブルの (archetype, personality) の突き合わせは不一致0**。`cell=null` は9行のみで、いずれも正しいnull(他テーブルとの共有7 + 上記の2セル共有2)。**cell欄への追記は0件**
+- 属性内訳: standard 198 / polite 178 / seductive 171 / composed 172 / ojousama 133 / delinquent 117 / cool 100
+
+### 2. 翻訳の方針
+
+- **天頂戦は「格を上げて温度は上げない」**。ゲーム最高峰の舞台だが、最重要則1(温度を上げない)を優先し、原文にない絶叫・格言・大仰な比喩を足していない。格は**語彙の精度と文の据わり**で出し、感嘆符はboldと感情的帯の原文が持つぶんだけに留めた。`天頂戦`の大会名はファイル内0回の原文方針をそのまま踏襲(英語でも大会名を1度も書いていない)
+- **10モチーフごとに英語の芯を変えた** — battered=痛みを数えない即物性 / grudge=長さと静けさ / revenge=貸借の語彙(debt/tab/collect) / settle=even・levelの決着語 / hold=追う側と追われる側の視線 / rivalry=好悪を理由として認める / underdog=評価の書き換え / crown=期待の重さ / worn=残量の配分 / firstMeet=「知らない」の扱い方(learn/know/stranger を7属性で割り分け)
+- **postWin/postLose は §1-12(試合後の評は過去形)を厳守**。相手評・終わった試合への言及はすべて past tense(`She was strong` / `You were the one` / `That was a good opponent`)
+- **引退帯は悲壮度を原文準拠に固定**。A帯(自発引退)は納得と感謝、B帯(怪我引退)は理不尽。**B1_young/B2_prime だけが「受け入れられない」語彙を持ち**、B3_older は諦観、B4は「ベルトを返したくない」の一点に絞る、という原文の設計をそのまま英語に移した。**「引退であって死ではない」**(data.js:11881 の原文注記)に従い、命に関わる語彙(dying/the end of me/final breath)は**全帯ゼロ**
+- **§4-5 maxim化の禁止を最優先で検査**。引退セリフは箴言化しやすいため、締めの一文が格言に寄った稿は書き直した(例: `A4_veteran/cool_earnest` は「走り抜けた」を人生訓にせず `...I ran it all the way. Nothing false in that.` の事実記述に留めた)
+- **`ベルト` の訳し分け**: 選手が物理的に持つ・返す対象は **belt**(英語圏プロレスの現用語)、抽象的な称号は **title**。UI辞書(`lang-en.js`)がナレーション文脈で `title` を採っているのと矛盾しない
+- **属性=register**: ojousama=全133行で**短縮形ゼロ**(`I shall not claim to have no regrets.`) / cool=感嘆符ゼロ・3文以内(`...Cruel.` / `...That's enough.`) / delinquent=冠詞主語の省略+gonna/wanna / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **§4-6のネイティブ検品ルール適用**: 格上/格下=**better/worse**(`You lost to someone better` 型。傲慢を意図する大河内型の帯でのみ above/below 相当の見下し語を使用)/ 文末の「かも」=`... I think.`(`maybe` は文頭のみ)/ 応援=**support**(`postLose/general/standard_shy` の「応援してくれた人」= `everyone who supported me`)/ カジュアル帯の文頭I省略・gonna 可 / 1語大文字強調は使用機会なし(0件)
+- **均質化回避**: 引退帯は「同一モチーフ×7属性」が構造的に大量発生する(`悔いはない`系7、`ありがとう`系7、`十分やった`系7、`これからだったのに`系7、`まだ返したくない`系7、`いつか来ると分かってた`系7 ほか)。**全モチーフを属性ごとに別の英語へ割り分けた**。事前検査で検出した**完全重複30件・近似重複31件をすべて書き直し**、最終的に**バッチ内EN完全重複0・近似重複(トークンJaccard≥0.90)0**
+- **卑語**: hell/damn は**1,075行中11回**、すべて delinquent 確定セル。f/sワードは0
+- **長さ**: 全1,075行が110字上限内(**最大107字・中央値58字**)。プレースホルダは原文・訳文とも0個。♪は11行に存置(原文と同数)、♡を含む原文は0行
+
+### 3. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,075行を記入(**diffは `"en":` 行のみ・1,075挿入/1,075削除。他フィールドは1バイトも変えていない** — 書き込み前にJSON往復同一性(indent=2+CRLF+末尾改行)をアサートしてから記入し、書き込み後に `git diff` で `"en":` 以外の増減行が0であることを再確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。**ソース・配線は一切触っていない**
+
+### 4. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**6,054**(4,979→+1,075) / cell判定済み5,863 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ 直書き日本語の増加なし(files=31 / totalJaStrings=28089) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書3本)で両テーブル**全1,080スロットを t() に通して未訳0**。セル横断24本を目視 |
+| 品質スイープ(事前検査) | ✅ 網羅1,075/1,075・空訳0・日本語残り0・110字超0・PH不一致0・余分な空白0・`......`表記0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・"Fufu"音写0・"darling"0・バッチ内EN重複0・近似重複0 |
+| cell整合 | ✅ 台帳cellと実効テーブルの軸キーの**不一致0**(1,069件照合・null 9件はすべて正しいnull) |
+
+### 5. 表示経路の確認(両テーブルとも到達する)
+
+- **天頂戦666行は届く**。`_tcFinalLine`(ui-common.js:20086)が **プール選択直後の共通点で `WM_I18N.t(pool[i])`** を通す。`pre`/`postWin`/`postLose` の3経路すべてがこの1関数を通り、**プレースホルダを含む行がゼロ**なので P5-2d の `selectDialogue` 型のfail-open問題は起きない
+- **引退409行も届く**。`Engine.retirement.selectLine`(management.js:7355)は生の原文を返し、表示側の `_mdlBSoloStage`(ui-common.js:508)→ `_u3bSideHtml`(ui-common.js:245)で `WM_I18N.t(o.line)` を通す。こちらもプレースホルダ0
+
+### 6. 残課題
+
+1. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **引退B帯の悲壮度**が英語で強すぎ/弱すぎないか(特に `B1_young` の「受け入れられない」帯と `B4_champion_injury`) (b) **天頂戦 pre/firstMeet 68行**は同一モチーフの最大密集帯で、属性ごとの割り分けが英語として自然か (c) `postWin/grudge` の「勝ったのに静か」という原文の温度が英語で保てているか
+2. **`ベルト`=belt / `王座`=title の使い分け**は本バッチで初めて確定させた運用。P6の固有名詞辞書で追認が要る
+3. `RETIREMENT_LINES` の**同一原文2件が別セルに置かれている**(A3_heel ojousama normal/bold、B2_prime ojousama/seductive normal)。翻訳側は同一ENに揃えて処理したが、**原文側の書き分け漏れの可能性**があり、日本語として別セリフにすべきかは要裁定(本バッチでは原文を触っていない)
+
+---
+
 ## 🌐 Stage B P5-2e — セリフ英訳バッチ⑤(GLIMPSE_A 847行+自主残留34行)（2026-09-03・Opus主筆 worktree agent-ae7ccc70e634cc920）
 
 量産翻訳の第5バッチ。**`data.js:GLIMPSE_A_LINES` の全847行 + `data.js:VOLUNTARY_STAY_LINES` の全34行 = 881行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2dの訳語判断(特に2c/2dの対社長 Boss/President の書き分けと悲壮度較正を継承)。開始前にworktreeブランチをmain先端(7d121fd)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は実行していない**。
