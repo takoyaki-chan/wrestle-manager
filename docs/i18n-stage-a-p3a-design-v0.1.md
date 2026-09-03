@@ -56,7 +56,7 @@
 - app.js:13128の直書きフォールバック'…精一杯やります'が台帳外(現状不発・発火すればENでJAのまま)
 - RETIREMENT_LINESに同一JA文がセル違いで2組重複(P5-2fで発見・日本語側の書き分け漏れ疑い): 「お泣きにならないで。みっともなくてよ」=A3_heelお嬢様normal/bold両方、「体がね…もう言うことを聞かないの…」=B2_primeお嬢様/蠱惑normal両方。ENは1本に統一済み。日本語の書き分けはKeisuke裁定待ち
 - GLIMPSE_A_LINESの初期const宣言(~880行・data.js:25908)は直後の再代入で全上書きされる死コード(P5-2eで発見)。掃除候補(JA出力不変・goldenが番人)
-- VOLUNTARY_STAY 34行がENへ届かない(P5-2eで発見)— management.js:17916が`✨ ${name}:「${line}」`の生文字列でgameLogへpush。P3a-3の{type,data}化パターンで変換が必要(訳34行は先行して台帳に格納済み)
+- ~~VOLUNTARY_STAY 34行がENへ届かない~~ → **✅解決(70e6edd)**: pushをGAMELOG_TEMPLATES.voluntary_stay+advanceWeekのdict糸通し経由で組む形へ(ja不変・golden一致)。あわせてgameLogEntryTextをWM_I18N.t経由にし、EN時のログ内選手名ローマ字化が無配線で効くようになった
 - 死コード2ブロック(ui-common.js・4b-3で発見)— `_buildB3Step3b`の遮蔽された初回宣言/Junior・Tenchosen結果画面の無条件return後の到達不能尾部。P3a外で掃除候補
 - `SURVIVAL_MILESTONES`/`SURVIVAL_PHASES`(app.js・4c-1で発見)— モジュールロード時定数。`label`/`desc`はui-render.js:1204で`${m.label}`と非ラップ参照されており表示に乗る(`SURVIVAL_PHASES.label`は逆にどこからも参照されない死フィールド、これは対象外のまま)。他バッチの`FLAG_MODAL_META`/`_F01_ARCHETYPE_META`と同型の「宣言据え置き・参照側でt()評価」対応が必要だが参照側がui-render.js(既完走ファイル)のため本バッチ単独では直せず保留
 - `Survival.updateSurvival`内`events.push('🎊 経営安定化達成！...')`(app.js・4c-1で発見)— 戻り値`events`を呼び出し側`checkSurvivalUpdate`が一切参照しない死コード。当該メッセージは別途エスケープ済みunicodeの`showEventPopup`側(同機能)でt()化済み。コード自体の削除はP3a外
