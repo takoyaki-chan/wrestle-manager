@@ -114,7 +114,9 @@ const FILE_CATEGORY = {
 // test/i18n-build-template-dict.js が i18n/template-ledger.json から生成するEN辞書テンプレ層で、
 // 中の日本語は同じく「翻訳キー(原文)」。P4-3以降の翻訳バッチでen列を埋めるたびに
 // ラチェットが誤検知しないよう、生成時点から除外しておく。
-const EXCLUDED_FILES = new Set(['lang-en.js', 'lang-en-templates.js']);
+// lang-en-dialogue.js(P5-1)/lang-en-names.js(P6-1)も同じ自動生成辞書のため対象外
+// (含めるとラチェットが「直書き日本語の増加」と誤検出して機能停止する — P5-2cで発覚)。
+const EXCLUDED_FILES = new Set(['lang-en.js', 'lang-en-templates.js', 'lang-en-dialogue.js', 'lang-en-names.js']);
 
 function scanDir(srcDir) {
   const files = fs.readdirSync(srcDir).filter(f => /\.(js|html)$/.test(f) && !EXCLUDED_FILES.has(f));
