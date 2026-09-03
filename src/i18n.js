@@ -35,6 +35,17 @@
 //      data-i18n-attr-orig 属性へ JSON で退避し、同様に t() で書き戻す。
 //    - DOMContentLoaded時とsetLang()時に自動で document 全体へ適用する。
 //    - ja時はt()がno-opなので、applyDomを何度呼んでも描画結果は原文のまま(1バイト不変)。
+//  ■ 名前辞書 PN_EN(Stage B P6 D-P6-1〜D-P6-3、docs/i18n-stage-b-p6-design-v0.1.md):
+//    選手・コーチ名等はdata由来の「値」としてUIへ出るため、キー一致のt()では訳せない。
+//    - addNames(map): t()の辞書(dict)とは別領域の名前辞書へ { 原文: 訳文 } をマージする。
+//      生成元は test/i18n-build-names.js(src/lang-en-names.js を自動生成)。
+//    - pn(str): strが名前辞書に完全一致すればEN訳を返す。無ければ原文のまま(fail-open)。
+//      ja/pseudo時は素通し(常にstrをそのまま返す)。直接補間(`${c.name}`)の表示サイトを
+//      段階移行する際の入口(D-P6-3)。
+//    - t()のパラメータ値自動変換(D-P6-2): lang=enのとき、applyParamsで挿入する値が
+//      文字列かつ名前辞書に完全一致すれば変換してから埋め込む(manフィルタ等の通常の
+//      プレースホルダフィルタより前段で評価する)。ja/pseudo時は従来どおり無変換。
+//      これによりテンプレ経由の名前({name}/{winner}等)は配線ゼロで英語化される。
 // ══════════════════════════════════════════════════════════════════════════════
 (function (global) {
   'use strict';
@@ -45,6 +56,9 @@
 
   // 原文 → 訳文。P1時点では空(Stage Bで addDict() により英語辞書が登録される)。
   const dict = Object.create(null);
+  // 固有名詞(選手・コーチ・団体・大会・ベルト・会場等)の 原文 → 訳文。
+  // 通常のUI辞書(dict)とは別領域(Stage B P6 D-P6-1)。生成元: src/lang-en-names.js。
+  const names = Object.create(null);
   // このセッションで既にログ済みの未訳キー(D7: 同一キーは1回だけ)。
   const missSeen = new Set();
 
@@ -95,13 +109,20 @@
   // {key} または {key:filter} プレースホルダを params[key] で置換する。
   // params が無ければ何もしない。フィルタ指定が無ければ従来通り値をそのまま挿入する
   // (split/joinと同じくString化されるだけで、フィルタ関連の挙動は一切変わらない)。
-  function applyParams(str, params) {
+  // convertNames(D-P6-2): trueのとき、値が文字列かつ名前辞書(names)に完全一致すれば
+  // フィルタ適用より前に訳文へ差し替える。呼び出し元はt()のenブランチのみtrueを渡す
+  // (ja/pseudoは常にfalse相当=従来どおり無変換。ja側の1バイト不変を保つ)。
+  function applyParams(str, params, convertNames) {
     if (!params || typeof str !== 'string') return str;
     let out = str;
     Object.keys(params).forEach((key) => {
       const re = new RegExp('\\{' + escapeRegExp(key) + '(?::([A-Za-z_][A-Za-z0-9_]*))?\\}', 'g');
       out = out.replace(re, (_match, filterName) => {
-        const raw = params[key];
+        let raw = params[key];
+        if (convertNames && typeof raw === 'string'
+          && Object.prototype.hasOwnProperty.call(names, raw)) {
+          raw = names[raw];
+        }
         if (filterName && Object.prototype.hasOwnProperty.call(FILTERS, filterName)) {
           return String(FILTERS[filterName](raw));
         }
@@ -143,12 +164,13 @@
     }
 
     // en: 辞書引き。まだ翻訳が無い(Stage A時点は必ずこちら)場合は原文をfail-openで返す。
+    // D-P6-2: パラメータ値の名前自動変換(convertNames=true)はenのときだけ行う。
     const translated = Object.prototype.hasOwnProperty.call(dict, text) ? dict[text] : null;
     if (translated == null) {
       logMiss(text);
-      return applyParams(text, params);
+      return applyParams(text, params, true);
     }
-    return applyParams(translated, params);
+    return applyParams(translated, params, true);
   }
 
   // ── applyDom: 静的HTMLの [data-i18n] / [data-i18n-attr] 要素をt()へ通す ──
@@ -222,6 +244,23 @@
     Object.keys(map).forEach((key) => { dict[key] = map[key]; });
   }
 
+  // ── D-P6-1: 名前辞書(PN_EN)の登録入口 ──
+  // dict(通常UI辞書)とは別領域。{ 原文: 訳文 } のマップをマージする(複数回呼び出し可)。
+  // 生成元: test/i18n-build-names.js → src/lang-en-names.js。
+  function addNames(map) {
+    if (!map) return;
+    Object.keys(map).forEach((key) => { names[key] = map[key]; });
+  }
+
+  // ── D-P6-3: 直接補間サイト用ヘルパー ──
+  // strが名前辞書に完全一致すればEN訳を返す。一致しなければ原文のまま(fail-open)。
+  // ja/pseudo時は素通し(t()のpseudo分岐が辞書引きをしないのと同じ扱い。D-P6-2参照)。
+  function pn(str) {
+    if (typeof str !== 'string') return str;
+    if (currentLang !== 'en') return str;
+    return Object.prototype.hasOwnProperty.call(names, str) ? names[str] : str;
+  }
+
   // DOMContentLoaded時に自動適用。i18n.jsはbody内の他スクリプトより前に読み込まれる
   // (index.htmlのコメント参照)ため、それまでにパースされた静的要素は既にDOM上に
   // 存在している。念のためDOMContentLoadedでも再適用し、取りこぼしを防ぐ。
@@ -238,6 +277,8 @@
     setLang,
     t,
     addDict,
+    addNames,
+    pn,
     applyDom,
     // D7: 翻訳漏れログの記録先。テスト/デバッグから中身を読めるようSetのまま公開する。
     _misses: missSeen,

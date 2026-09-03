@@ -1,5 +1,62 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-1 — 名前辞書PN_ENと表示変換機構（2026-09-03・worktree agent-ae519a6c2390a8200）
+
+英語対応P6の第1工程。選手・コーチ名等はdata由来の**値**として画面に出るため、キー一致の`t()`では訳せない問題（docs/i18n-stage-b-p6-design-v0.1.md §1 D-P6-1〜D-P6-4）に対する実装。開始前にworktreeブランチをmain先端（3267430）へfast-forward済み。
+
+### 1. 名前辞書 PN_EN の生成
+
+`docs/en-proper-nouns-draft-v0.1.md`（2026-09-02 Keisuke裁定確定分）のMD表は「確定案」「要読み確認（第一案/対案の2択列）」で書式が混在し機械パースしにくいため、指示書の許可どおり中間台帳 **`i18n/names-ledger.json`** を正として新設した。`test/i18n-build-names.js` がこの台帳を `src/data.js`（ALL_CHARS/ALL_COACHES/VENUES/TITLES/RIVAL_ORG_NAME_POOL/SPECIAL_EVENT_INTRO、`require()`直読み）と**全数突合検証**した上で `src/lang-en-names.js`（`WM_I18N.addNames({...})`）を生成する。
+
+**辞書エントリ内訳（365キー、フルネーム+姓のみの両方を格納）**:
+| カテゴリ | 件数 | 暫定読み（要読み確認・第一案採用） |
+|---|---|---|
+| 選手 | 127名（フルネーム+姓=254キー） | 35名 |
+| コーチ | 35名（フルネーム+姓=70キー） | 14名 |
+| 団体（RIVAL_ORG_NAME_POOL） | 12件 | — |
+| 大会（SPECIAL_EVENT_INTRO、絵文字接頭辞は除いた本体） | 5件 | — |
+| ベルト（TITLES） | 2件 | — |
+| 会場（VENUES） | 10件 | — |
+| 学校地名（CHAR_PROFILES地の文、承認不要の付録扱い） | 13件 | — |
+| 媒体NPC（週刊グラップル/黒田幸子） | 2件 | — |
+
+姓・フルネームの重複キーやEN値の食い違いは0件（build スクリプトの機械検査で保証）。
+
+### 2. 姓衝突の扱い
+
+ID13 堂前ユキ（given name "ユキ"→Yuki）と ID108 結城玲奈（surname "結城"）が素直にローマ字化すると両方 "Yuki" になり英語表示で衝突する（ドラフト§2-3）。指示書どおり **ID108を "Rena Yuuki"（結城=Yuuki、uを重ねる）へ上書き**して回避した。台帳の重複検証はこの上書き後の値で行っており、姓のみキー "結城"→"Yuuki" / "堂前"→"Domae" は衝突しない。
+
+コーチID29（陳偉明、台湾出身）のみ中国語圏の慣行で語順を反転させず "Chen Wei-ming"（姓→名のまま）とし、姓のみ抽出も先頭トークン("Chen")を採用する例外処理をbuildスクリプトに実装した（他の126キャラ+34コーチは末尾トークン=姓の一般則）。
+
+### 3. src/i18n.js の拡張（D-P6-2/D-P6-3）
+
+- `addNames(map)`: `dict`（通常UI辞書）とは別領域の`names`マップへマージ
+- `pn(str)`: `str`が名前辞書に完全一致すればEN訳、無ければ原文のまま（fail-open）。`lang!=='en'`（ja/pseudo）は素通し——t()のpseudo分岐が辞書引き自体をしないのと対称にした
+- `applyParams(str, params, convertNames)`: 第3引数`convertNames`が真かつ値が文字列で名前辞書に完全一致すれば、フィルタ（`{name:man}`等）適用より前に訳文へ差し替える。`t()`は`en`ブランチのみ`convertNames=true`で呼ぶ（ja/pseudoブランチは従来どおり呼ばない＝1バイト不変）
+
+### 4. 配線
+
+`lang-en-names.js`を`lang-en.js`直後に読み込むよう `index.html`(10663行) / `battle-engine.html`(496行) / `tag-battle.html`(498行) に追加、`release/manifest.json`の`sourceFiles`にも追記した。
+
+### 5. 検証（全部green）
+
+- `node test/ja-golden.js` → **OK: 基準と完全一致**（lines=11233, ja表示1バイト不変）
+- `node --check` 全触りファイル（src/i18n.js / src/lang-en-names.js / test/i18n-build-names.js）→ 構文エラー0
+- `npm test` → **260 passed / 0 failed**
+- `npm run test:ui:walkthrough` → **PASS**（season1→2, actions=328, Issues=0, Recovered-by-retry=0）
+- manifest未記載チェック（package-release.ps1のロジックをNodeで再現） → 未記載ファイル0件
+- vm実行によるランタイム検証（本番と同じ`window===globalThis`前提で i18n.js→lang-en.js→lang-en-names.jsを実読み込み）:
+  - ja: `t('{winner}が勝利', {winner:'富岡加奈子'})` → `富岡加奈子が勝利`（不変）、`pn('富岡加奈子')` → 素通し
+  - en: 同テンプレ登録後 → `Kanako Tomioka wins`（パラメータ値の自動変換が機能）。未登録名は`謎の新人選手 wins`とfail-open
+  - en: `pn('結城玲奈')`→`Rena Yuuki` / `pn('結城')`→`Yuuki` / `pn('堂前ユキ')`→`Yuki Domae` / `pn('堂前')`→`Domae`（姓衝突回避を実機で確認）
+  - pseudo: `pn()`は素通し、`t()`は名前変換なしでpseudoラップのみ（t()の既存pseudo挙動と対称）
+
+### 6. 今回やっていないこと（次工程）
+
+- 表示サイトの `${c.name}` を `pn()` 経由へ置き換える一括移行（D-P6-3後半、指示書により今回は機構と辞書の敷設のみ）
+- `i18n/ui-ledger.json` / `i18n/dialogue-*` / `management.js` / `data.js` は並行エージェントの領分のため一切触っていない
+- 要読み確認49件（選手35+コーチ14）はKeisukeの訂正待ち。訂正が入ったら `i18n/names-ledger.json` の該当行（ja/en/jaSurname/enSurname）を書き換えて `node test/i18n-build-names.js` を再実行するだけで反映できる
+
 ## 🌐 Stage B P4-3b — NEWS_HEADLINE 341本の英訳（テンプレ台帳 未訳0・P4テンプレ完走）（2026-09-03・Opus worktree agent-a9c80acee90c26ae7）
 
 英語対応P4の第3工程・後半。`i18n/template-ledger.json` の **NEWS_HEADLINE_TEMPLATES 341本**（77イベント型 × headline/body）を全部訳し、**台帳550本の未訳が0になった**（P4のテンプレ層は完走）。物差しは `docs/en-kuroda-style-draft-v0.1.md`（§3 見出し規則を機械適用／§3-4 プレースホルダ安全則／§3-6 禁止語grep／§1-5 三層の声）+ `docs/en-proper-nouns-draft-v0.1.md`、用語は P3b用語集（ui-ledger）と P4-3a のティッカー75本を先例として継承した。**`i18n/ui-ledger.json` / `src/lang-en.js` / `src/i18n.js` は並行エージェントの領分なので一切触っていない**。開始前にworktreeブランチをmain先端（f199c38）へfast-forward済み。

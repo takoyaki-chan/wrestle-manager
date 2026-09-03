@@ -1,0 +1,1495 @@
+{
+  "_meta": {
+    "source": "docs/en-proper-nouns-draft-v0.1.md (2026-09-02 Keisuke裁定確定分)",
+    "generatedBy": "test/i18n-build-names.js の元となった中間台帳。手編集可(正はこのファイル)",
+    "note": "要読み確認49件(選手35+コーチ14)は暫定読み(第一案)を採用。confirmed:falseで印を付ける。訂正はこのファイルの該当行を書き換えて再生成するだけで反映できる。"
+  },
+  "characters": [
+    {
+      "id": 1,
+      "ja": "阿武隈塔子",
+      "jaSurname": "阿武隈",
+      "en": "Toko Abukuma",
+      "enSurname": "Abukuma",
+      "confirmed": true
+    },
+    {
+      "id": 2,
+      "ja": "富岡加奈子",
+      "jaSurname": "富岡",
+      "en": "Kanako Tomioka",
+      "enSurname": "Tomioka",
+      "confirmed": true
+    },
+    {
+      "id": 3,
+      "ja": "澤出みずき",
+      "jaSurname": "澤出",
+      "en": "Mizuki Sawade",
+      "enSurname": "Sawade",
+      "confirmed": false
+    },
+    {
+      "id": 4,
+      "ja": "高津小春",
+      "jaSurname": "高津",
+      "en": "Koharu Takatsu",
+      "enSurname": "Takatsu",
+      "confirmed": true
+    },
+    {
+      "id": 5,
+      "ja": "深町真琴",
+      "jaSurname": "深町",
+      "en": "Makoto Fukamachi",
+      "enSurname": "Fukamachi",
+      "confirmed": true
+    },
+    {
+      "id": 6,
+      "ja": "副沢たまき",
+      "jaSurname": "副沢",
+      "en": "Tamaki Fukuzawa",
+      "enSurname": "Fukuzawa",
+      "confirmed": false
+    },
+    {
+      "id": 7,
+      "ja": "高階まさみ",
+      "jaSurname": "高階",
+      "en": "Masami Takashina",
+      "enSurname": "Takashina",
+      "confirmed": true
+    },
+    {
+      "id": 8,
+      "ja": "林真尋",
+      "jaSurname": "林",
+      "en": "Mahiro Hayashi",
+      "enSurname": "Hayashi",
+      "confirmed": false
+    },
+    {
+      "id": 9,
+      "ja": "宇田川里奈",
+      "jaSurname": "宇田川",
+      "en": "Rina Udagawa",
+      "enSurname": "Udagawa",
+      "confirmed": true
+    },
+    {
+      "id": 11,
+      "ja": "橘玲美",
+      "jaSurname": "橘",
+      "en": "Remi Tachibana",
+      "enSurname": "Tachibana",
+      "confirmed": false
+    },
+    {
+      "id": 12,
+      "ja": "生駒エリカ",
+      "jaSurname": "生駒",
+      "en": "Erika Ikoma",
+      "enSurname": "Ikoma",
+      "confirmed": true
+    },
+    {
+      "id": 13,
+      "ja": "堂前ユキ",
+      "jaSurname": "堂前",
+      "en": "Yuki Domae",
+      "enSurname": "Domae",
+      "confirmed": true
+    },
+    {
+      "id": 14,
+      "ja": "黒江舞",
+      "jaSurname": "黒江",
+      "en": "Mai Kuroe",
+      "enSurname": "Kuroe",
+      "confirmed": true
+    },
+    {
+      "id": 15,
+      "ja": "楠木なぎさ",
+      "jaSurname": "楠木",
+      "en": "Nagisa Kusunoki",
+      "enSurname": "Kusunoki",
+      "confirmed": true
+    },
+    {
+      "id": 16,
+      "ja": "大河内紗代子",
+      "jaSurname": "大河内",
+      "en": "Sayoko Okochi",
+      "enSurname": "Okochi",
+      "confirmed": false
+    },
+    {
+      "id": 17,
+      "ja": "川野辺菜穂子",
+      "jaSurname": "川野辺",
+      "en": "Nahoko Kawanobe",
+      "enSurname": "Kawanobe",
+      "confirmed": true
+    },
+    {
+      "id": 18,
+      "ja": "出羽鷹子",
+      "jaSurname": "出羽",
+      "en": "Takako Dewa",
+      "enSurname": "Dewa",
+      "confirmed": true
+    },
+    {
+      "id": 19,
+      "ja": "四条あずさ",
+      "jaSurname": "四条",
+      "en": "Azusa Shijo",
+      "enSurname": "Shijo",
+      "confirmed": true
+    },
+    {
+      "id": 20,
+      "ja": "岸ゆみえ",
+      "jaSurname": "岸",
+      "en": "Yumie Kishi",
+      "enSurname": "Kishi",
+      "confirmed": true
+    },
+    {
+      "id": 21,
+      "ja": "木ノ内幸音",
+      "jaSurname": "木ノ内",
+      "en": "Yukine Kinouchi",
+      "enSurname": "Kinouchi",
+      "confirmed": false
+    },
+    {
+      "id": 22,
+      "ja": "美濃山まりな",
+      "jaSurname": "美濃山",
+      "en": "Marina Minoyama",
+      "enSurname": "Minoyama",
+      "confirmed": true
+    },
+    {
+      "id": 23,
+      "ja": "早見知子",
+      "jaSurname": "早見",
+      "en": "Tomoko Hayami",
+      "enSurname": "Hayami",
+      "confirmed": true
+    },
+    {
+      "id": 24,
+      "ja": "園部梨花",
+      "jaSurname": "園部",
+      "en": "Rika Sonobe",
+      "enSurname": "Sonobe",
+      "confirmed": true
+    },
+    {
+      "id": 25,
+      "ja": "石戸谷なつき",
+      "jaSurname": "石戸谷",
+      "en": "Natsuki Ishitoya",
+      "enSurname": "Ishitoya",
+      "confirmed": false
+    },
+    {
+      "id": 26,
+      "ja": "宮守なつめ",
+      "jaSurname": "宮守",
+      "en": "Natsume Miyamori",
+      "enSurname": "Miyamori",
+      "confirmed": true
+    },
+    {
+      "id": 27,
+      "ja": "八重樫舞",
+      "jaSurname": "八重樫",
+      "en": "Mai Yaegashi",
+      "enSurname": "Yaegashi",
+      "confirmed": true
+    },
+    {
+      "id": 28,
+      "ja": "岩屋みら",
+      "jaSurname": "岩屋",
+      "en": "Mira Iwaya",
+      "enSurname": "Iwaya",
+      "confirmed": true
+    },
+    {
+      "id": 29,
+      "ja": "相沢未来",
+      "jaSurname": "相沢",
+      "en": "Mirai Aizawa",
+      "enSurname": "Aizawa",
+      "confirmed": false
+    },
+    {
+      "id": 30,
+      "ja": "松川杏樹",
+      "jaSurname": "松川",
+      "en": "Anju Matsukawa",
+      "enSurname": "Matsukawa",
+      "confirmed": false
+    },
+    {
+      "id": 31,
+      "ja": "平松かなみ",
+      "jaSurname": "平松",
+      "en": "Kanami Hiramatsu",
+      "enSurname": "Hiramatsu",
+      "confirmed": true
+    },
+    {
+      "id": 32,
+      "ja": "双里明日香",
+      "jaSurname": "双里",
+      "en": "Asuka Futasato",
+      "enSurname": "Futasato",
+      "confirmed": false
+    },
+    {
+      "id": 33,
+      "ja": "梅ヶ丘みのり",
+      "jaSurname": "梅ヶ丘",
+      "en": "Minori Umegaoka",
+      "enSurname": "Umegaoka",
+      "confirmed": true
+    },
+    {
+      "id": 34,
+      "ja": "北畠吉乃",
+      "jaSurname": "北畠",
+      "en": "Yoshino Kitabatake",
+      "enSurname": "Kitabatake",
+      "confirmed": true
+    },
+    {
+      "id": 35,
+      "ja": "上野原弥生",
+      "jaSurname": "上野原",
+      "en": "Yayoi Uenohara",
+      "enSurname": "Uenohara",
+      "confirmed": true
+    },
+    {
+      "id": 36,
+      "ja": "真鍋綾乃",
+      "jaSurname": "真鍋",
+      "en": "Ayano Manabe",
+      "enSurname": "Manabe",
+      "confirmed": true
+    },
+    {
+      "id": 37,
+      "ja": "白銀麗子",
+      "jaSurname": "白銀",
+      "en": "Reiko Shirogane",
+      "enSurname": "Shirogane",
+      "confirmed": false
+    },
+    {
+      "id": 38,
+      "ja": "芝彩音",
+      "jaSurname": "芝",
+      "en": "Ayane Shiba",
+      "enSurname": "Shiba",
+      "confirmed": false
+    },
+    {
+      "id": 39,
+      "ja": "神谷沙奈絵",
+      "jaSurname": "神谷",
+      "en": "Sanae Kamiya",
+      "enSurname": "Kamiya",
+      "confirmed": true
+    },
+    {
+      "id": 40,
+      "ja": "高輪まみ",
+      "jaSurname": "高輪",
+      "en": "Mami Takanawa",
+      "enSurname": "Takanawa",
+      "confirmed": true
+    },
+    {
+      "id": 41,
+      "ja": "根岸亞里亞",
+      "jaSurname": "根岸",
+      "en": "Aria Negishi",
+      "enSurname": "Negishi",
+      "confirmed": true
+    },
+    {
+      "id": 42,
+      "ja": "本郷真理子",
+      "jaSurname": "本郷",
+      "en": "Mariko Hongo",
+      "enSurname": "Hongo",
+      "confirmed": true
+    },
+    {
+      "id": 43,
+      "ja": "金沢文",
+      "jaSurname": "金沢",
+      "en": "Aya Kanazawa",
+      "enSurname": "Kanazawa",
+      "confirmed": false
+    },
+    {
+      "id": 44,
+      "ja": "福浦理乃",
+      "jaSurname": "福浦",
+      "en": "Rino Fukuura",
+      "enSurname": "Fukuura",
+      "confirmed": true
+    },
+    {
+      "id": 45,
+      "ja": "高槻千歳",
+      "jaSurname": "高槻",
+      "en": "Chitose Takatsuki",
+      "enSurname": "Takatsuki",
+      "confirmed": true
+    },
+    {
+      "id": 46,
+      "ja": "井沢遥",
+      "jaSurname": "井沢",
+      "en": "Haruka Izawa",
+      "enSurname": "Izawa",
+      "confirmed": true
+    },
+    {
+      "id": 47,
+      "ja": "斎藤麻衣",
+      "jaSurname": "斎藤",
+      "en": "Mai Saito",
+      "enSurname": "Saito",
+      "confirmed": true
+    },
+    {
+      "id": 48,
+      "ja": "菊池璃子",
+      "jaSurname": "菊池",
+      "en": "Riko Kikuchi",
+      "enSurname": "Kikuchi",
+      "confirmed": true
+    },
+    {
+      "id": 49,
+      "ja": "高橋まゆみ",
+      "jaSurname": "高橋",
+      "en": "Mayumi Takahashi",
+      "enSurname": "Takahashi",
+      "confirmed": true
+    },
+    {
+      "id": 50,
+      "ja": "相田萌",
+      "jaSurname": "相田",
+      "en": "Moe Aida",
+      "enSurname": "Aida",
+      "confirmed": true
+    },
+    {
+      "id": 51,
+      "ja": "三橋ふみえ",
+      "jaSurname": "三橋",
+      "en": "Fumie Mitsuhashi",
+      "enSurname": "Mitsuhashi",
+      "confirmed": true
+    },
+    {
+      "id": 52,
+      "ja": "西川ちあき",
+      "jaSurname": "西川",
+      "en": "Chiaki Nishikawa",
+      "enSurname": "Nishikawa",
+      "confirmed": true
+    },
+    {
+      "id": 53,
+      "ja": "小森さなえ",
+      "jaSurname": "小森",
+      "en": "Sanae Komori",
+      "enSurname": "Komori",
+      "confirmed": true
+    },
+    {
+      "id": 54,
+      "ja": "阿部みのり",
+      "jaSurname": "阿部",
+      "en": "Minori Abe",
+      "enSurname": "Abe",
+      "confirmed": true
+    },
+    {
+      "id": 55,
+      "ja": "大久保桃子",
+      "jaSurname": "大久保",
+      "en": "Momoko Okubo",
+      "enSurname": "Okubo",
+      "confirmed": true
+    },
+    {
+      "id": 56,
+      "ja": "片桐ありさ",
+      "jaSurname": "片桐",
+      "en": "Arisa Katagiri",
+      "enSurname": "Katagiri",
+      "confirmed": true
+    },
+    {
+      "id": 57,
+      "ja": "浅見里緒菜",
+      "jaSurname": "浅見",
+      "en": "Riona Asami",
+      "enSurname": "Asami",
+      "confirmed": true
+    },
+    {
+      "id": 58,
+      "ja": "丹羽穂垂",
+      "jaSurname": "丹羽",
+      "en": "Hotaru Niwa",
+      "enSurname": "Niwa",
+      "confirmed": false
+    },
+    {
+      "id": 59,
+      "ja": "池辺マリ",
+      "jaSurname": "池辺",
+      "en": "Mari Ikebe",
+      "enSurname": "Ikebe",
+      "confirmed": false
+    },
+    {
+      "id": 60,
+      "ja": "馬入橋ほとり",
+      "jaSurname": "馬入橋",
+      "en": "Hotori Banyubashi",
+      "enSurname": "Banyubashi",
+      "confirmed": false
+    },
+    {
+      "id": 61,
+      "ja": "観音崎せりか",
+      "jaSurname": "観音崎",
+      "en": "Serika Kannonzaki",
+      "enSurname": "Kannonzaki",
+      "confirmed": true
+    },
+    {
+      "id": 62,
+      "ja": "宮ケ瀬千夏",
+      "jaSurname": "宮ケ瀬",
+      "en": "Chinatsu Miyagase",
+      "enSurname": "Miyagase",
+      "confirmed": true
+    },
+    {
+      "id": 63,
+      "ja": "伊勢原文奈",
+      "jaSurname": "伊勢原",
+      "en": "Fumina Isehara",
+      "enSurname": "Isehara",
+      "confirmed": false
+    },
+    {
+      "id": 64,
+      "ja": "湯本ほたる",
+      "jaSurname": "湯本",
+      "en": "Hotaru Yumoto",
+      "enSurname": "Yumoto",
+      "confirmed": true
+    },
+    {
+      "id": 65,
+      "ja": "倉見菜々",
+      "jaSurname": "倉見",
+      "en": "Nana Kurami",
+      "enSurname": "Kurami",
+      "confirmed": true
+    },
+    {
+      "id": 66,
+      "ja": "長谷川レオナ",
+      "jaSurname": "長谷川",
+      "en": "Reona Hasegawa",
+      "enSurname": "Hasegawa",
+      "confirmed": false
+    },
+    {
+      "id": 67,
+      "ja": "柳島みずほ",
+      "jaSurname": "柳島",
+      "en": "Mizuho Yanagishima",
+      "enSurname": "Yanagishima",
+      "confirmed": true
+    },
+    {
+      "id": 68,
+      "ja": "大庭愛菜",
+      "jaSurname": "大庭",
+      "en": "Mana Oba",
+      "enSurname": "Oba",
+      "confirmed": false
+    },
+    {
+      "id": 69,
+      "ja": "早川モナ",
+      "jaSurname": "早川",
+      "en": "Mona Hayakawa",
+      "enSurname": "Hayakawa",
+      "confirmed": true
+    },
+    {
+      "id": 70,
+      "ja": "浜竹美咲",
+      "jaSurname": "浜竹",
+      "en": "Misaki Hamatake",
+      "enSurname": "Hamatake",
+      "confirmed": false
+    },
+    {
+      "id": 71,
+      "ja": "東金沙織",
+      "jaSurname": "東金",
+      "en": "Saori Togane",
+      "enSurname": "Togane",
+      "confirmed": true
+    },
+    {
+      "id": 72,
+      "ja": "穴澤ほのか",
+      "jaSurname": "穴澤",
+      "en": "Honoka Anazawa",
+      "enSurname": "Anazawa",
+      "confirmed": true
+    },
+    {
+      "id": 73,
+      "ja": "大馬越よし子",
+      "jaSurname": "大馬越",
+      "en": "Yoshiko Omagoshi",
+      "enSurname": "Omagoshi",
+      "confirmed": false
+    },
+    {
+      "id": 74,
+      "ja": "富士見ヶ丘遥",
+      "jaSurname": "富士見ヶ丘",
+      "en": "Haruka Fujimigaoka",
+      "enSurname": "Fujimigaoka",
+      "confirmed": true
+    },
+    {
+      "id": 75,
+      "ja": "海老名栞",
+      "jaSurname": "海老名",
+      "en": "Shiori Ebina",
+      "enSurname": "Ebina",
+      "confirmed": true
+    },
+    {
+      "id": 76,
+      "ja": "栗林あかり",
+      "jaSurname": "栗林",
+      "en": "Akari Kuribayashi",
+      "enSurname": "Kuribayashi",
+      "confirmed": true
+    },
+    {
+      "id": 77,
+      "ja": "新見ゆり",
+      "jaSurname": "新見",
+      "en": "Yuri Niimi",
+      "enSurname": "Niimi",
+      "confirmed": false
+    },
+    {
+      "id": 78,
+      "ja": "椿山みさき",
+      "jaSurname": "椿山",
+      "en": "Misaki Tsubakiyama",
+      "enSurname": "Tsubakiyama",
+      "confirmed": true
+    },
+    {
+      "id": 79,
+      "ja": "久堂梨々花",
+      "jaSurname": "久堂",
+      "en": "Ririka Kudo",
+      "enSurname": "Kudo",
+      "confirmed": true
+    },
+    {
+      "id": 80,
+      "ja": "高島さや",
+      "jaSurname": "高島",
+      "en": "Saya Takashima",
+      "enSurname": "Takashima",
+      "confirmed": true
+    },
+    {
+      "id": 81,
+      "ja": "坂本莉衣奈",
+      "jaSurname": "坂本",
+      "en": "Riina Sakamoto",
+      "enSurname": "Sakamoto",
+      "confirmed": true
+    },
+    {
+      "id": 82,
+      "ja": "近藤ゆりか",
+      "jaSurname": "近藤",
+      "en": "Yurika Kondo",
+      "enSurname": "Kondo",
+      "confirmed": true
+    },
+    {
+      "id": 83,
+      "ja": "佐久間ひより",
+      "jaSurname": "佐久間",
+      "en": "Hiyori Sakuma",
+      "enSurname": "Sakuma",
+      "confirmed": true
+    },
+    {
+      "id": 84,
+      "ja": "南谷杏",
+      "jaSurname": "南谷",
+      "en": "An Minamitani",
+      "enSurname": "Minamitani",
+      "confirmed": false
+    },
+    {
+      "id": 85,
+      "ja": "鴨志田ルーシー",
+      "jaSurname": "鴨志田",
+      "en": "Lucy Kamoshida",
+      "enSurname": "Kamoshida",
+      "confirmed": true
+    },
+    {
+      "id": 86,
+      "ja": "芹沢亜里紗",
+      "jaSurname": "芹沢",
+      "en": "Arisa Serizawa",
+      "enSurname": "Serizawa",
+      "confirmed": true
+    },
+    {
+      "id": 87,
+      "ja": "レオナ・O・シュタインフェルト",
+      "jaSurname": "シュタインフェルト",
+      "en": "Leona O. Steinfeld",
+      "enSurname": "Steinfeld",
+      "confirmed": false
+    },
+    {
+      "id": 88,
+      "ja": "愛川明日香",
+      "jaSurname": "愛川",
+      "en": "Asuka Aikawa",
+      "enSurname": "Aikawa",
+      "confirmed": true
+    },
+    {
+      "id": 89,
+      "ja": "赤羽あんな",
+      "jaSurname": "赤羽",
+      "en": "Anna Akabane",
+      "enSurname": "Akabane",
+      "confirmed": true
+    },
+    {
+      "id": 90,
+      "ja": "玉手すみれ",
+      "jaSurname": "玉手",
+      "en": "Sumire Tamate",
+      "enSurname": "Tamate",
+      "confirmed": true
+    },
+    {
+      "id": 91,
+      "ja": "等々力あかね",
+      "jaSurname": "等々力",
+      "en": "Akane Todoroki",
+      "enSurname": "Todoroki",
+      "confirmed": true
+    },
+    {
+      "id": 92,
+      "ja": "飯島冴子",
+      "jaSurname": "飯島",
+      "en": "Saeko Iijima",
+      "enSurname": "Iijima",
+      "confirmed": true
+    },
+    {
+      "id": 93,
+      "ja": "松久保伊織",
+      "jaSurname": "松久保",
+      "en": "Iori Matsukubo",
+      "enSurname": "Matsukubo",
+      "confirmed": true
+    },
+    {
+      "id": 94,
+      "ja": "須藤美月",
+      "jaSurname": "須藤",
+      "en": "Mizuki Sudo",
+      "enSurname": "Sudo",
+      "confirmed": false
+    },
+    {
+      "id": 95,
+      "ja": "小西ゆきえ",
+      "jaSurname": "小西",
+      "en": "Yukie Konishi",
+      "enSurname": "Konishi",
+      "confirmed": true
+    },
+    {
+      "id": 96,
+      "ja": "松下真理亜",
+      "jaSurname": "松下",
+      "en": "Maria Matsushita",
+      "enSurname": "Matsushita",
+      "confirmed": true
+    },
+    {
+      "id": 97,
+      "ja": "岩崎みどり",
+      "jaSurname": "岩崎",
+      "en": "Midori Iwasaki",
+      "enSurname": "Iwasaki",
+      "confirmed": true
+    },
+    {
+      "id": 98,
+      "ja": "米山杏里",
+      "jaSurname": "米山",
+      "en": "Anri Yoneyama",
+      "enSurname": "Yoneyama",
+      "confirmed": true
+    },
+    {
+      "id": 99,
+      "ja": "三浦早紀",
+      "jaSurname": "三浦",
+      "en": "Saki Miura",
+      "enSurname": "Miura",
+      "confirmed": true
+    },
+    {
+      "id": 100,
+      "ja": "土岐山乃ノ佳",
+      "jaSurname": "土岐山",
+      "en": "Nonoka Tokiyama",
+      "enSurname": "Tokiyama",
+      "confirmed": false
+    },
+    {
+      "id": 101,
+      "ja": "沢登鮎",
+      "jaSurname": "沢登",
+      "en": "Ayu Sawanobori",
+      "enSurname": "Sawanobori",
+      "confirmed": true
+    },
+    {
+      "id": 102,
+      "ja": "大山たかみ",
+      "jaSurname": "大山",
+      "en": "Takami Oyama",
+      "enSurname": "Oyama",
+      "confirmed": true
+    },
+    {
+      "id": 103,
+      "ja": "財津琴美",
+      "jaSurname": "財津",
+      "en": "Kotomi Zaitsu",
+      "enSurname": "Zaitsu",
+      "confirmed": true
+    },
+    {
+      "id": 104,
+      "ja": "吉野萌子",
+      "jaSurname": "吉野",
+      "en": "Moeko Yoshino",
+      "enSurname": "Yoshino",
+      "confirmed": true
+    },
+    {
+      "id": 105,
+      "ja": "黒岩千晶",
+      "jaSurname": "黒岩",
+      "en": "Chiaki Kuroiwa",
+      "enSurname": "Kuroiwa",
+      "confirmed": true
+    },
+    {
+      "id": 106,
+      "ja": "赤沼紗稀",
+      "jaSurname": "赤沼",
+      "en": "Saki Akanuma",
+      "enSurname": "Akanuma",
+      "confirmed": true
+    },
+    {
+      "id": 107,
+      "ja": "松岡綾乃",
+      "jaSurname": "松岡",
+      "en": "Ayano Matsuoka",
+      "enSurname": "Matsuoka",
+      "confirmed": true
+    },
+    {
+      "id": 108,
+      "ja": "結城玲奈",
+      "jaSurname": "結城",
+      "en": "Rena Yuuki",
+      "enSurname": "Yuuki",
+      "confirmed": true
+    },
+    {
+      "id": 109,
+      "ja": "戸塚ゆかり",
+      "jaSurname": "戸塚",
+      "en": "Yukari Totsuka",
+      "enSurname": "Totsuka",
+      "confirmed": true
+    },
+    {
+      "id": 110,
+      "ja": "若林美佐子",
+      "jaSurname": "若林",
+      "en": "Misako Wakabayashi",
+      "enSurname": "Wakabayashi",
+      "confirmed": true
+    },
+    {
+      "id": 111,
+      "ja": "相模あずみ",
+      "jaSurname": "相模",
+      "en": "Azumi Sagami",
+      "enSurname": "Sagami",
+      "confirmed": true
+    },
+    {
+      "id": 112,
+      "ja": "朝比奈ひかり",
+      "jaSurname": "朝比奈",
+      "en": "Hikari Asahina",
+      "enSurname": "Asahina",
+      "confirmed": true
+    },
+    {
+      "id": 113,
+      "ja": "綿貫すず",
+      "jaSurname": "綿貫",
+      "en": "Suzu Watanuki",
+      "enSurname": "Watanuki",
+      "confirmed": true
+    },
+    {
+      "id": 114,
+      "ja": "木村レイカ",
+      "jaSurname": "木村",
+      "en": "Reika Kimura",
+      "enSurname": "Kimura",
+      "confirmed": true
+    },
+    {
+      "id": 115,
+      "ja": "豊田いすず",
+      "jaSurname": "豊田",
+      "en": "Isuzu Toyoda",
+      "enSurname": "Toyoda",
+      "confirmed": false
+    },
+    {
+      "id": 116,
+      "ja": "リナ・モーガン",
+      "jaSurname": "モーガン",
+      "en": "Rina Morgan",
+      "enSurname": "Morgan",
+      "confirmed": false
+    },
+    {
+      "id": 117,
+      "ja": "クラッシャー毒島",
+      "jaSurname": "毒島",
+      "en": "Crusher Busujima",
+      "enSurname": "Busujima",
+      "confirmed": false
+    },
+    {
+      "id": 118,
+      "ja": "割田久美",
+      "jaSurname": "割田",
+      "en": "Kumi Warita",
+      "enSurname": "Warita",
+      "confirmed": false
+    },
+    {
+      "id": 119,
+      "ja": "岩小路志摩子",
+      "jaSurname": "岩小路",
+      "en": "Shimako Iwakoji",
+      "enSurname": "Iwakoji",
+      "confirmed": false
+    },
+    {
+      "id": 120,
+      "ja": "蔵前静",
+      "jaSurname": "蔵前",
+      "en": "Shizuka Kuramae",
+      "enSurname": "Kuramae",
+      "confirmed": true
+    },
+    {
+      "id": 121,
+      "ja": "山本理香",
+      "jaSurname": "山本",
+      "en": "Rika Yamamoto",
+      "enSurname": "Yamamoto",
+      "confirmed": true
+    },
+    {
+      "id": 122,
+      "ja": "宮沢ひかる",
+      "jaSurname": "宮沢",
+      "en": "Hikaru Miyazawa",
+      "enSurname": "Miyazawa",
+      "confirmed": true
+    },
+    {
+      "id": 123,
+      "ja": "柳沼英子",
+      "jaSurname": "柳沼",
+      "en": "Eiko Yaginuma",
+      "enSurname": "Yaginuma",
+      "confirmed": true
+    },
+    {
+      "id": 124,
+      "ja": "清川 怜",
+      "jaSurname": "清川",
+      "en": "Rei Kiyokawa",
+      "enSurname": "Kiyokawa",
+      "confirmed": false
+    },
+    {
+      "id": 125,
+      "ja": "藤代絵麻",
+      "jaSurname": "藤代",
+      "en": "Ema Fujishiro",
+      "enSurname": "Fujishiro",
+      "confirmed": false
+    },
+    {
+      "id": 126,
+      "ja": "西園百合香",
+      "jaSurname": "西園",
+      "en": "Yurika Nishizono",
+      "enSurname": "Nishizono",
+      "confirmed": false
+    },
+    {
+      "id": 127,
+      "ja": "榊原菜摘",
+      "jaSurname": "榊原",
+      "en": "Natsumi Sakakibara",
+      "enSurname": "Sakakibara",
+      "confirmed": true
+    },
+    {
+      "id": 128,
+      "ja": "巳沼紗霧",
+      "jaSurname": "巳沼",
+      "en": "Sagiri Minuma",
+      "enSurname": "Minuma",
+      "confirmed": false
+    }
+  ],
+  "coaches": [
+    {
+      "id": 1,
+      "ja": "鬼塚 剛志",
+      "jaSurname": "鬼塚",
+      "en": "Takeshi Onizuka",
+      "enSurname": "Onizuka",
+      "confirmed": false
+    },
+    {
+      "id": 2,
+      "ja": "飛鳥 真琴",
+      "jaSurname": "飛鳥",
+      "en": "Makoto Asuka",
+      "enSurname": "Asuka",
+      "confirmed": true
+    },
+    {
+      "id": 3,
+      "ja": "鶴見 正嗣",
+      "jaSurname": "鶴見",
+      "en": "Masatsugu Tsurumi",
+      "enSurname": "Tsurumi",
+      "confirmed": false
+    },
+    {
+      "id": 4,
+      "ja": "岩田 拓海",
+      "jaSurname": "岩田",
+      "en": "Takumi Iwata",
+      "enSurname": "Iwata",
+      "confirmed": true
+    },
+    {
+      "id": 5,
+      "ja": "沢村 玲子",
+      "jaSurname": "沢村",
+      "en": "Reiko Sawamura",
+      "enSurname": "Sawamura",
+      "confirmed": true
+    },
+    {
+      "id": 6,
+      "ja": "朝日 義男",
+      "jaSurname": "朝日",
+      "en": "Yoshio Asahi",
+      "enSurname": "Asahi",
+      "confirmed": true
+    },
+    {
+      "id": 7,
+      "ja": "紅林 太一",
+      "jaSurname": "紅林",
+      "en": "Taichi Kurebayashi",
+      "enSurname": "Kurebayashi",
+      "confirmed": false
+    },
+    {
+      "id": 8,
+      "ja": "白川 沙耶",
+      "jaSurname": "白川",
+      "en": "Saya Shirakawa",
+      "enSurname": "Shirakawa",
+      "confirmed": true
+    },
+    {
+      "id": 9,
+      "ja": "大森 健吾",
+      "jaSurname": "大森",
+      "en": "Kengo Omori",
+      "enSurname": "Omori",
+      "confirmed": true
+    },
+    {
+      "id": 10,
+      "ja": "宮本 花菜",
+      "jaSurname": "宮本",
+      "en": "Kana Miyamoto",
+      "enSurname": "Miyamoto",
+      "confirmed": false
+    },
+    {
+      "id": 11,
+      "ja": "真壁 龍太",
+      "jaSurname": "真壁",
+      "en": "Ryuta Makabe",
+      "enSurname": "Makabe",
+      "confirmed": true
+    },
+    {
+      "id": 12,
+      "ja": "長谷川 美咲",
+      "jaSurname": "長谷川",
+      "en": "Misaki Hasegawa",
+      "enSurname": "Hasegawa",
+      "confirmed": true
+    },
+    {
+      "id": 13,
+      "ja": "黒田 修平",
+      "jaSurname": "黒田",
+      "en": "Shuhei Kuroda",
+      "enSurname": "Kuroda",
+      "confirmed": true
+    },
+    {
+      "id": 14,
+      "ja": "土屋 弘美",
+      "jaSurname": "土屋",
+      "en": "Hiromi Tsuchiya",
+      "enSurname": "Tsuchiya",
+      "confirmed": true
+    },
+    {
+      "id": 15,
+      "ja": "林 拓海",
+      "jaSurname": "林",
+      "en": "Takumi Hayashi",
+      "enSurname": "Hayashi",
+      "confirmed": true
+    },
+    {
+      "id": 16,
+      "ja": "森田 悠子",
+      "jaSurname": "森田",
+      "en": "Yuko Morita",
+      "enSurname": "Morita",
+      "confirmed": true
+    },
+    {
+      "id": 17,
+      "ja": "篠原 隆",
+      "jaSurname": "篠原",
+      "en": "Takashi Shinohara",
+      "enSurname": "Shinohara",
+      "confirmed": true
+    },
+    {
+      "id": 18,
+      "ja": "赤城 凛",
+      "jaSurname": "赤城",
+      "en": "Rin Akagi",
+      "enSurname": "Akagi",
+      "confirmed": true
+    },
+    {
+      "id": 19,
+      "ja": "西岡 学",
+      "jaSurname": "西岡",
+      "en": "Manabu Nishioka",
+      "enSurname": "Nishioka",
+      "confirmed": false
+    },
+    {
+      "id": 20,
+      "ja": "藤原 千春",
+      "jaSurname": "藤原",
+      "en": "Chiharu Fujiwara",
+      "enSurname": "Fujiwara",
+      "confirmed": true
+    },
+    {
+      "id": 21,
+      "ja": "熊谷 鉄也",
+      "jaSurname": "熊谷",
+      "en": "Tetsuya Kumagai",
+      "enSurname": "Kumagai",
+      "confirmed": false
+    },
+    {
+      "id": 22,
+      "ja": "安藤 美波",
+      "jaSurname": "安藤",
+      "en": "Minami Ando",
+      "enSurname": "Ando",
+      "confirmed": true
+    },
+    {
+      "id": 23,
+      "ja": "堀内 義孝",
+      "jaSurname": "堀内",
+      "en": "Yoshitaka Horiuchi",
+      "enSurname": "Horiuchi",
+      "confirmed": true
+    },
+    {
+      "id": 24,
+      "ja": "中村 紗弓",
+      "jaSurname": "中村",
+      "en": "Sayumi Nakamura",
+      "enSurname": "Nakamura",
+      "confirmed": false
+    },
+    {
+      "id": 25,
+      "ja": "宮沢 康弘",
+      "jaSurname": "宮沢",
+      "en": "Yasuhiro Miyazawa",
+      "enSurname": "Miyazawa",
+      "confirmed": true
+    },
+    {
+      "id": 26,
+      "ja": "カルロス 真理",
+      "jaSurname": "カルロス",
+      "en": "Mari Carlos",
+      "enSurname": "Carlos",
+      "confirmed": false
+    },
+    {
+      "id": 27,
+      "ja": "大河原 剛士",
+      "jaSurname": "大河原",
+      "en": "Takeshi Okawara",
+      "enSurname": "Okawara",
+      "confirmed": false
+    },
+    {
+      "id": 28,
+      "ja": "羽田 小百合",
+      "jaSurname": "羽田",
+      "en": "Sayuri Hata",
+      "enSurname": "Hata",
+      "confirmed": false
+    },
+    {
+      "id": 29,
+      "ja": "陳 偉明",
+      "jaSurname": "陳",
+      "en": "Chen Wei-ming",
+      "enSurname": "Chen",
+      "confirmed": false
+    },
+    {
+      "id": 30,
+      "ja": "冴島 楓",
+      "jaSurname": "冴島",
+      "en": "Kaede Saejima",
+      "enSurname": "Saejima",
+      "confirmed": true
+    },
+    {
+      "id": 31,
+      "ja": "神崎 鋼子",
+      "jaSurname": "神崎",
+      "en": "Koko Kanzaki",
+      "enSurname": "Kanzaki",
+      "confirmed": false
+    },
+    {
+      "id": 32,
+      "ja": "巌流 正道",
+      "jaSurname": "巌流",
+      "en": "Masamichi Ganryu",
+      "enSurname": "Ganryu",
+      "confirmed": false
+    },
+    {
+      "id": 33,
+      "ja": "葉月 レナ",
+      "jaSurname": "葉月",
+      "en": "Rena Hazuki",
+      "enSurname": "Hazuki",
+      "confirmed": true
+    },
+    {
+      "id": 34,
+      "ja": "御堂 清四郎",
+      "jaSurname": "御堂",
+      "en": "Seishiro Mido",
+      "enSurname": "Mido",
+      "confirmed": false
+    },
+    {
+      "id": 35,
+      "ja": "如月 薫",
+      "jaSurname": "如月",
+      "en": "Kaoru Kisaragi",
+      "enSurname": "Kisaragi",
+      "confirmed": true
+    }
+  ],
+  "orgs": [
+    {
+      "ja": "皇武館",
+      "en": "Kobukan"
+    },
+    {
+      "ja": "凰翔プロレス",
+      "en": "Soaring Phoenix Pro Wrestling"
+    },
+    {
+      "ja": "グランエンプレス",
+      "en": "Grand Empress"
+    },
+    {
+      "ja": "天頂プロレス",
+      "en": "Tencho Pro Wrestling"
+    },
+    {
+      "ja": "ノヴァインパクト",
+      "en": "Nova Impact"
+    },
+    {
+      "ja": "ブレイクスルー",
+      "en": "Breakthrough"
+    },
+    {
+      "ja": "インパルス",
+      "en": "Impulse"
+    },
+    {
+      "ja": "イグニッション",
+      "en": "Ignition"
+    },
+    {
+      "ja": "なでしこプロレス",
+      "en": "Nadeshiko Pro Wrestling"
+    },
+    {
+      "ja": "あさひ女子プロレス",
+      "en": "Asahi Joshi Pro Wrestling"
+    },
+    {
+      "ja": "春日野プロレス",
+      "en": "Kasugano Pro Wrestling"
+    },
+    {
+      "ja": "ふたば女子プロレス",
+      "en": "Futaba Joshi Pro Wrestling"
+    }
+  ],
+  "events": [
+    {
+      "ja": "春のタッグリーグ",
+      "en": "Spring Tag League"
+    },
+    {
+      "ja": "U-20 ジュニアトーナメント",
+      "en": "U-20 Junior Tournament"
+    },
+    {
+      "ja": "4団体勝ち残り対抗戦",
+      "en": "Autumn Gauntlet War"
+    },
+    {
+      "ja": "PPV GRAND FINAL",
+      "en": "PPV GRAND FINAL"
+    },
+    {
+      "ja": "天頂戦",
+      "en": "Tenchosen"
+    }
+  ],
+  "titles": [
+    {
+      "ja": "団体王座",
+      "en": "Promotion Championship"
+    },
+    {
+      "ja": "全国統一王座",
+      "en": "National Unified Championship"
+    }
+  ],
+  "venues": [
+    {
+      "ja": "公民館",
+      "en": "Community Center"
+    },
+    {
+      "ja": "小ホールA",
+      "en": "Small Hall A"
+    },
+    {
+      "ja": "小ホールB",
+      "en": "Small Hall B"
+    },
+    {
+      "ja": "市民会館",
+      "en": "Civic Hall"
+    },
+    {
+      "ja": "中ホールA",
+      "en": "Medium Hall A"
+    },
+    {
+      "ja": "中ホールB",
+      "en": "Medium Hall B"
+    },
+    {
+      "ja": "大ホール",
+      "en": "Large Hall"
+    },
+    {
+      "ja": "アリーナ",
+      "en": "Arena"
+    },
+    {
+      "ja": "大会場",
+      "en": "Grand Arena"
+    },
+    {
+      "ja": "ドーム",
+      "en": "Dome"
+    }
+  ],
+  "schools": [
+    {
+      "ja": "粕田市",
+      "en": "Kasuda City"
+    },
+    {
+      "ja": "粕田学園",
+      "en": "Kasuda Gakuen"
+    },
+    {
+      "ja": "粕田学園高校",
+      "en": "Kasuda Gakuen High School"
+    },
+    {
+      "ja": "哲玖国際高校",
+      "en": "Tekkyu International High School"
+    },
+    {
+      "ja": "摺出川女学院",
+      "en": "Suridegawa Girls' Academy"
+    },
+    {
+      "ja": "元砥石川高校",
+      "en": "(the former) Toishigawa High School"
+    },
+    {
+      "ja": "奥山川高校",
+      "en": "Okuyamagawa High School"
+    },
+    {
+      "ja": "岬浜女子高校",
+      "en": "Misakihama Girls' High School"
+    },
+    {
+      "ja": "姫宮女子学院",
+      "en": "Himemiya Girls' Academy"
+    },
+    {
+      "ja": "三津浜高校",
+      "en": "Mitsuhama High School"
+    },
+    {
+      "ja": "常川高校",
+      "en": "Tokikawa High School"
+    },
+    {
+      "ja": "灰汁洲商業高校",
+      "en": "Akusu Commercial High School"
+    },
+    {
+      "ja": "粕田台団地",
+      "en": "the Kasudadai housing complex"
+    }
+  ],
+  "npc": [
+    {
+      "ja": "週刊グラップル",
+      "en": "Weekly Grapple"
+    },
+    {
+      "ja": "黒田幸子",
+      "en": "Sachiko Kuroda"
+    }
+  ]
+}

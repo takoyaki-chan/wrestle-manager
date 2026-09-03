@@ -6,6 +6,7 @@
     "src/mobile.css",
     "src/i18n.js",
     "src/lang-en.js",
+    "src/lang-en-names.js",
     "src/lang-en-templates.js",
     "src/flight-recorder.js",
     "src/victory-lines.js",
