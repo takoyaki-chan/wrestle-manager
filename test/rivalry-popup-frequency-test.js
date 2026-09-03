@@ -46,6 +46,8 @@ function makeHarness(state) {
     const RIVALRY_MATCH_REACTION = { winnerLines: {}, loserLines: {} };
     const UPSET_RIVALRY_LINES = { winnerLines: {}, loserLines: {} };
     const pickDialogueLine = () => 'line';
+    // i18n Stage B P5-1: _buildRivalryMatchDialogue now calls WM_I18N.t() at the display point.
+    const WM_I18N = { t: (text) => text };
     const _sameSinglesPair = (match, result) => match.left === result.left.id && match.right === result.right.id;
     ${popupCode}
     return {

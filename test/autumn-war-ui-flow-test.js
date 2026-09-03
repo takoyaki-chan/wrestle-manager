@@ -248,6 +248,14 @@ function section(source, startMarker, endMarker) {
     },
     escHtml: value => String(value),
     getAutumnWarMatchLine: (_timing, personality) => `${personality}のセリフ`,
+    // i18n Stage B P5-1: _agwPreBoutDialogueHtml now calls WM_I18N.t() at the display point
+    // (translation not yet populated; ja-passthrough stub matches test/helpers/load-game.js).
+    WM_I18N: { t(text, params) {
+      if (typeof text !== 'string' || !params) return text;
+      let out = text;
+      Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+      return out;
+    } },
   };
   vm.runInNewContext(`${dialogueSource}\nthis.renderDialogue = _agwPreBoutDialogueHtml;`, sandbox);
 

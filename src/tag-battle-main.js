@@ -430,7 +430,7 @@ function _narrateFrame(fr){
     if (ev.type === 'doubleTeam') {
       // T1: 技カテゴリに応じて実況文を選択。フィニッシュにつながる場合は別プールから決め台詞。
       const isFinish = !!(fr.winner && fr.events.some(e => e.type === 'doubleTeam'));
-      return { text: pickDoubleTeamCommentary(ev.moveCat, isFinish), dramatic:true };
+      return { text: WM_I18N.t(pickDoubleTeamCommentary(ev.moveCat, isFinish)), dramatic:true };
     }
     if (ev.type === 'cutinSave') return { text:'パートナーが間一髪で救出！ これがタッグマッチ！', dramatic:true };
     if (ev.type === 'friendlyFire') return { text:'あーっと！ 味方に当たってしまった！ 痛恨のミス！', dramatic:true };
@@ -947,7 +947,7 @@ function animateEvent(ev, fr){
     flashGold();
     const teamKey = ev.team === 'A' ? S.pos.legalA : S.pos.legalB;
     const fighter = f(teamKey);
-    if (fighter) showCutin(fighter, ev.team === 'A' ? 'left' : 'right', pickHotTagLine(fighter), 'tag-hot');
+    if (fighter) showCutin(fighter, ev.team === 'A' ? 'left' : 'right', WM_I18N.t(pickHotTagLine(fighter)), 'tag-hot');
   } else if (ev.type === 'doubleTeam') {
     showBanner(WM_I18N.t('ダブルチーム！'), 'red');
     try { sfx.doubleTeamSE(); } catch(e){}
@@ -964,7 +964,7 @@ function animateEvent(ev, fr){
     if (saver) {
       const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
       _showRingHelperFor(side === 'left' ? 'a' : 'b', 1500);
-      showCutin(saver, side, pickCutinSaveLine(saver), 'tag-save');
+      showCutin(saver, side, WM_I18N.t(pickCutinSaveLine(saver)), 'tag-save');
     }
   } else if (ev.type === 'friendlyFire') {
     showBanner(WM_I18N.t('同士討ち！'), 'yellow');
@@ -984,7 +984,7 @@ function animateEvent(ev, fr){
     const betrayer = f(betrayerKey);
     if (betrayer) {
       const cutinSide = (betrayerKey === 'a1' || betrayerKey === 'a2') ? 'left' : 'right';
-      showCutin(betrayer, cutinSide, pickBetrayalLine(betrayer), 'damage-serif');
+      showCutin(betrayer, cutinSide, WM_I18N.t(pickBetrayalLine(betrayer)), 'damage-serif');
     }
   }
   // pinAttempt は applyFrame 側の _beginPinSequence でクリック駆動処理するため、ここでは何もしない
@@ -1087,7 +1087,8 @@ function _buildPinCtrl(pinEv, fr){
         }
         const side = (defKey === 'a1' || defKey === 'a2') ? 'left' : 'right';
         const cssCls = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
-        seq.push({ kind: 'damage', fighter: def, side, text: line.text, cssCls });
+        // i18n Stage B P5-1: 表示直前でt()を通す。
+        seq.push({ kind: 'damage', fighter: def, side, text: WM_I18N.t(line.text), cssCls });
       }
     }
   }
@@ -1158,7 +1159,7 @@ function _buildPinCtrl(pinEv, fr){
         const saver = saverKey ? f(saverKey) : null;
         if (saver) {
           const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
-          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver) });
+          seq.push({ kind: 'cutin', saver, side, line: WM_I18N.t(pickCutinSaveLine(saver)) });
         }
       }
     }
@@ -1180,7 +1181,7 @@ function _buildPinCtrl(pinEv, fr){
         const saver = saverKey ? f(saverKey) : null;
         if (saver) {
           const side = (saverKey === 'a1' || saverKey === 'a2') ? 'left' : 'right';
-          seq.push({ kind: 'cutin', saver, side, line: pickCutinSaveLine(saver) });
+          seq.push({ kind: 'cutin', saver, side, line: WM_I18N.t(pickCutinSaveLine(saver)) });
         }
       }
     }
@@ -1470,7 +1471,9 @@ function tryDamageLine(action, fr){
   }
   const side = (defKey === 'a1' || defKey === 'a2') ? 'left' : 'right';
   const cssCls = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
-  showCutin(def, side, line.text, cssCls);
+  // i18n Stage B P5-1: 表示直前でt()を通す(pickDamageLineはbattle-lines.jsのEngine純粋関数、
+  // def.vsExHitはVS_EX_EMPLOYER_LINES由来。どちらも生JA行)。
+  showCutin(def, side, WM_I18N.t(line.text), cssCls);
 }
 
 // ── カットイン ──
@@ -1596,8 +1599,11 @@ function showResult(fr){
   const vicLines = document.getElementById('vicLines');
   if (vicLines) {
     if (winFinisher && winPartner) {
-      const winLine = pickTagWinLine(winFinisher);
-      const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, finMove);
+      // i18n Stage B P5-1: 表示直前でt()を通す。pickTagWinCommentaryは戻り値内で
+      // {winner}/{partner}/{move}を置換済みのため、プレースホルダを含む原文は
+      // 辞書キーと一致せずfail-openする(tag-battle-lines.jsは対象外につき改修不可)。
+      const winLine = WM_I18N.t(pickTagWinLine(winFinisher));
+      const commentary = WM_I18N.t(pickTagWinCommentary(winFinisher.name, winPartner.name, finMove));
       // faceout-audit v0.2: 話者名は吹き出しの外(上のラベル)に出す(mockup-baseline §3。
       // 名前を吹き出し内に書かない)。実況は地の文のまま
       vicLines.innerHTML =

@@ -24,9 +24,9 @@ assert.ok(!singleSpeakerCard.includes('_getFaceUrl(loser)'), 'single-match quote
 assert.ok(!singleSpeakerCard.includes('escHtml(loser.name)'), 'single-match quote card must not show the loser name');
 
 const tag = readSource('tag-battle-main.js');
-const tagQuoteIdx = tag.indexOf('const winLine = pickTagWinLine');
+const tagQuoteIdx = tag.indexOf('const winLine = WM_I18N.t(pickTagWinLine');
 assert.ok(tagQuoteIdx >= 0, 'tag-match victory quote must be selected from the winning finisher');
-assert.ok(tag.includes('const winLine = pickTagWinLine(winFinisher);'), 'tag-match victory quote must not inject a partner full name');
+assert.ok(tag.includes('const winLine = WM_I18N.t(pickTagWinLine(winFinisher));'), 'tag-match victory quote must not inject a partner full name');
 
 // faceout-audit v0.2 (2026-08-12): 話者名は吹き出しの中ではなく上のラベル(.vic-speaker-label)に出す
 // (mockup-baseline §3「名前を吹き出し内に書かない」)。話者の帰属自体は維持する。

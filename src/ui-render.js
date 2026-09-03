@@ -1915,7 +1915,10 @@ function _renderRosterDojoHeader() {
     html += '<div class="dojo-scene-coach">';
     if (coachForBubble) {
       const speakerName = (report && report.coachName) ? report.coachName : coachForBubble.name;
-      let speechText = (report && report.reportText) ? report.reportText : atmo.text;
+      // i18n Stage B P5-1: report.reportText はapp.js/management.jsで選択されたCOACH_VOICE_REPORT_LINES
+      // の生JA行(選択ロジックには触れず、ここ=表示直前でt()を通す)。atmo.text はナレーション層
+      // (ATMOSPHERE_TEXTS、本セリフ台帳の対象外)のため素通し。
+      let speechText = (report && report.reportText) ? WM_I18N.t(report.reportText) : atmo.text;
       // コーチ報告の表示枠では、対象選手の今週の熱量を優先して伝える。
       // 既存の strain 報告も同じ枠を使うため、同じ週に2種類の警告を重ねない。
       const roster = G.roster || [];
@@ -1930,7 +1933,8 @@ function _renderRosterDojoHeader() {
         const heatRng = Engine.rng.create(Engine.rng.derive(
           G.rngSeed || 0, G.season || 1, G.week || 1, heatFighter.id || 0, 0x48454154
         ));
-        speechText = heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)]
+        // i18n Stage B P5-1: t()は{name}のreplaceより前(辞書キーはプレースホルダ入りの原文)。
+        speechText = WM_I18N.t(heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)])
           .replace('{name}', heatFighter.name || 'この子');
       }
       html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">「${speechText}」</div></div>
@@ -2005,7 +2009,10 @@ function _renderRosterDojoHeader() {
       restPicked.forEach(g => {
         const delay = Engine.rng.int(restRng, 0, 14); // 22s周期の中でバラけさせる
         html += `<div class="dojo-rest-fighter" title="${g.speakerName || ''}" onclick="showFighterPopup(${g.speakerId},'roster')">`;
-        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">「${g.dialogue || g.label || ''}」</div>`;
+        // i18n Stage B P5-1: g.dialogue はrelationships.jsのGLIMPSE_A/B_LINES選択(pickDialogueLine)
+        // で得た生JA行(relationships.jsは並行エージェントの領分のため選択ロジックには触れず、
+        // ここ=表示直前でt()を通す)。
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">「${WM_I18N.t(g.dialogue) || g.label || ''}」</div>`;
         html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
         html += '</div>';
       });

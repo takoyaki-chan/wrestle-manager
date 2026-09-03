@@ -62,7 +62,7 @@ assert.ok(html.includes('.wm-tag-ring-fighter.tag-highlight .wm-tag-full-figure{
 assert.ok(html.includes('.wm-tag-ring-fighter.tag-highlight-hot .wm-tag-full-figure{animation:wmFigureHotTagTouchAura'), 'hot-tag highlight must follow the incoming fighter silhouette');
 assert.ok(html.includes('.wm-tag-ring-fighter.tag-highlight-hot{animation:none}'), 'touch highlights must not animate the rectangular fighter panel');
 assert.ok(html.includes('.vic-win-line{position:relative;margin-bottom:8px;padding:11px 16px;border:1px solid rgba(122,101,48,.52);border-radius:10px;color:#211d15;background:rgba(250,246,236,.98)'), 'tag victory dialogue must use the standard white speech bubble with dark text');
-assert.ok(main.includes('const winLine = pickTagWinLine(winFinisher);'), 'winner dialogue must not receive a full partner name');
+assert.ok(main.includes('const winLine = WM_I18N.t(pickTagWinLine(winFinisher));'), 'winner dialogue must not receive a full partner name');
 assert.ok(!main.includes('const lossLine =') && !main.includes('<div class="vic-loss-line">'), 'tag result must not force a loser quote into the winner-focused screen');
 assert.ok(lines.includes('const TAG_MATCH_WIN_NAMELESS_LINES = {') && lines.includes('function pickTagWinLine(fighter) {'), 'tag winner dialogue must use a name-free line pool');
 assert.ok(mobile.includes('/* Tag battle presentation v2 */'), 'tag presentation must retain a phone layout');

@@ -238,7 +238,11 @@ function crossOrgEmblemHtml(fighter, opponent, size = 16) {
 function _u3bSideHtml(o) {
   o = o || {};
   const name = escHtml(o.name != null ? o.name : '?');
-  const line = (o.line != null && o.line !== '') ? escHtml(o.line) : '';
+  // i18n Stage B P5-1: セリフの共通吹き出しレンダラ(60箇所超の呼び出し元を持つ最終表示点)。
+  // o.line は data.js の各セリフテーブルから選択された生JA行(呼び出し元は個々にpickDialogueLine
+  // 等で選択するのみで翻訳しない)。ここで一括してt()を通す(escHtmlより前=辞書キーは
+  // HTMLエスケープ前の原文と一致させる必要があるため)。
+  const line = (o.line != null && o.line !== '') ? escHtml(WM_I18N.t(o.line)) : '';
   const bubbleCls = ['u3b-bubble', o.bubbleClass].filter(Boolean).join(' ');
   const bubbleInner = line ? `<div class="${bubbleCls}"><div class="u3b-bubble-text">${line}</div></div>` : '';
   const sizeKey = o.size || (o.isBig ? 'l' : 'm');
@@ -588,7 +592,8 @@ function _mdlASubjectStage(fighter, bodyHtml, opts) {
     const bg = upperUrl
       ? `background-image:url('${upperUrl}')`
       : (faceUrl ? `background-image:url('${faceUrl}')` : '');
-    const speech = opts && opts.speech ? String(opts.speech) : '';
+    // i18n Stage B P5-1: 表示直前でt()を通す(escHtmlより前)。
+    const speech = opts && opts.speech ? WM_I18N.t(String(opts.speech)) : '';
     portraitHtml = `<div class="mdl-a-subject-portrait-speechable u3b-theme-cream">
       <div class="u3b-bubble-slot mdl-a-subject-speech-slot">${speech
         ? `<div class="u3b-bubble mdl-a-subject-speech"><div class="u3b-bubble-text">${escHtml(speech)}</div></div>`
@@ -709,9 +714,9 @@ document.addEventListener('click', (e) => {
 // ── War Challenge Dialogue Generator (personality×archetype) ──
 function getWarChallengeDialogue(fighter, orgName) {
   if (typeof WAR_CHALLENGER_DIALOGUE !== 'undefined') {
-    return pickDialogueLine(WAR_CHALLENGER_DIALOGUE, fighter);
+    return WM_I18N.t(pickDialogueLine(WAR_CHALLENGER_DIALOGUE, fighter));
   }
-  return '…挑戦状を叩きつける';
+  return WM_I18N.t('…挑戦状を叩きつける');
 }
 
 // ── War Challenge Popup (F3: president delivers the challenge) ──
@@ -1037,8 +1042,8 @@ function renderWarMatchPreview() {
       html += rightBlock;
       html += `</div>`;
     } else if (isNext) {
-      const lineL = pickDialogueLine(PPV_OPPONENT_LINES, pf);
-      const lineR = pickDialogueLine(PPV_OPPONENT_LINES, af);
+      const lineL = WM_I18N.t(pickDialogueLine(PPV_OPPONENT_LINES, pf));
+      const lineR = WM_I18N.t(pickDialogueLine(PPV_OPPONENT_LINES, af));
       const hasDialogue = !!(lineL || lineR);
 
       // 通常の pb-fighter 枠のみ使用（サイドアクセント撤去）
@@ -1080,9 +1085,9 @@ function renderWarMatchPreview() {
 function getWarPostDialogue(fighter, orgName, eventWon, playerWins, aiWins) {
   if (typeof WAR_POST_DIALOGUE !== 'undefined') {
     const sub = eventWon ? WAR_POST_DIALOGUE.result_lose : WAR_POST_DIALOGUE.result_win;
-    return pickDialogueLine(sub, fighter);
+    return WM_I18N.t(pickDialogueLine(sub, fighter));
   }
-  return eventWon ? '…次はこうはいかない' : '…当然の結果だ';
+  return WM_I18N.t(eventWon ? '…次はこうはいかない' : '…当然の結果だ');
 }
 
 // ── War Final Result Overlay (with post-match dialogue) ──
@@ -1233,7 +1238,7 @@ function _getWarVictoryLine(fighter, state) {
       const firedAbs = ((fighter.grudge.issuedSeason || 1) - 1) * 20 + (fighter.grudge.issuedWeek || 1);
       if (nowAbs - firedAbs <= 24 && nowAbs - firedAbs >= 0 && Math.random() < 0.5) {
         const line = getVsExEmployerLine(fighter, 'win', opponentOrgId);
-        if (line) return line;
+        if (line) return WM_I18N.t(line);
       }
     }
   }
@@ -1241,7 +1246,7 @@ function _getWarVictoryLine(fighter, state) {
   // 第一分岐はアーキタイプ(2026-08-01 に軸を入れ替え)。探索順は getDialoguePool と同じ
   const a = fighter.archetype || 'standard';
   const lines = getDialoguePool(WAR_VICTORY_LINES, { personality: p, archetype: a });
-  return lines[Math.floor(Math.random() * lines.length)];
+  return WM_I18N.t(lines[Math.floor(Math.random() * lines.length)]);
 }
 
 function _showWarVictoryChain(list, idx, onDone) {
@@ -2553,8 +2558,8 @@ function _renderRivalryPopup() {
     const rightFighter = ALL_CHARS.find(c => c.id === o.rightId);
     let attackerPool, defenderPool;
     if (o.isBitter) {
-      const leftLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.leftSide || 'behind'], leftFighter);
-      const rightLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.rightSide || 'behind'], rightFighter);
+      const leftLine = WM_I18N.t(pickDialogueLine(BITTER_PREMATCH_LINES[o.leftSide || 'behind'], leftFighter));
+      const rightLine = WM_I18N.t(pickDialogueLine(BITTER_PREMATCH_LINES[o.rightSide || 'behind'], rightFighter));
       title = WM_I18N.t('遺 恨 再 燃');
       sub = 'GRUDGE REKINDLED';
       toneCls = 'tone-bitter';
@@ -2578,8 +2583,8 @@ function _renderRivalryPopup() {
       defenderPool = RIVALRY_CONFRONTATION_LINES.defender;
     }
     if (!o.isBitter) {
-      const leftLine = pickDialogueLine(attackerPool, leftFighter);
-      const rightLine = pickDialogueLine(defenderPool, rightFighter);
+      const leftLine = WM_I18N.t(pickDialogueLine(attackerPool, leftFighter));
+      const rightLine = WM_I18N.t(pickDialogueLine(defenderPool, rightFighter));
       title = rivalryVal >= 70 ? WM_I18N.t('因 縁 勃 発') : WM_I18N.t('宿 敵 対 決');
       sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
       toneCls = 'tone-confront';
@@ -2606,8 +2611,8 @@ function _renderRivalryPopup() {
       : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser);
     const winFighter = ALL_CHARS.find(c => c.id === o.winnerId);
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
-    const winLine = pickDialogueLine(winLineObj, winFighter);
-    const loseLine = pickDialogueLine(loseLineObj, loseFighter);
+    const winLine = WM_I18N.t(pickDialogueLine(winLineObj, winFighter));
+    const loseLine = WM_I18N.t(pickDialogueLine(loseLineObj, loseFighter));
     title = isBitter ? WM_I18N.t('決 着。し か し、宿 怨 は 消 え ず')
       : isGoodRival ? WM_I18N.t('好 敵 手 誕 生')
       : isFirstWin ? WM_I18N.t('宿 敵 戦 勝 利')
@@ -2698,7 +2703,7 @@ function _awardLine(key, fighterOrId) {
   const ch = fighterOrId && typeof fighterOrId === 'object'
     ? fighterOrId
     : (fighterOrId ? ALL_CHARS.find(c => c.id === fighterOrId) : null);
-  return pickDialogueLine(lineObj, ch);
+  return WM_I18N.t(pickDialogueLine(lineObj, ch));
 }
 
 function _styleJa(style) {
@@ -2759,7 +2764,8 @@ function _awOrgEmblem(orgName, isPlayerOrg, size) {
 function _awSpeech(line) {
   if (!line) return '';
   // 名前は顔出しブロックの画像下に置く。吹き出しにはセリフ本文だけを入れる。
-  return `<div class="speech-bubble"><div class="speech-text">「${line}」</div></div>`;
+  // i18n Stage B P5-1: 表示直前でt()を通す(AWARD_LINES等の共通表示点)。
+  return `<div class="speech-bubble"><div class="speech-text">「${WM_I18N.t(line)}」</div></div>`;
 }
 
 function _awSpeechSlot(line) {
@@ -3751,9 +3757,9 @@ function pickQuote(category) {
   // trait-keyed object の場合は _default にフォールバック
   if (pool && typeof pool === 'object' && !Array.isArray(pool)) {
     const arr = pool._default || ['...'];
-    return arr[Math.floor(Math.random() * arr.length)];
+    return WM_I18N.t(arr[Math.floor(Math.random() * arr.length)]);
   }
-  return pool[Math.floor(Math.random() * pool.length)];
+  return WM_I18N.t(pool[Math.floor(Math.random() * pool.length)]);
 }
 
 // E-8 Phase A/B: コーチの口調系統(voiceKey)別セリフ取得
@@ -3769,22 +3775,22 @@ function pickCoachVoiceQuote(category, coachId) {
   if (!table) return '...';
   const voiceKey = getCoachVoiceKey(coachId);
   const pool = table[voiceKey] || table.theorist;
-  return pool[Math.floor(Math.random() * pool.length)];
+  return WM_I18N.t(pool[Math.floor(Math.random() * pool.length)]);
 }
 
 // personality×archetype セリフ取得（タイトルマッチリアクション等）
 function getTraitQuote(category, char) {
   const pool = EVENT_LINES_BY_KEY[category];
   if (!pool) return '…';
-  if (Array.isArray(pool)) return pool[Math.floor(Math.random() * pool.length)];
-  return pickDialogueLine(pool, char);
+  if (Array.isArray(pool)) return WM_I18N.t(pool[Math.floor(Math.random() * pool.length)]);
+  return WM_I18N.t(pickDialogueLine(pool, char));
 }
 
 // v1.0: Get a draft-context quote for a specific character
 function getDraftQuote(char) {
   const pool = EVENT_DRAFT_INTEREST_LINES;
   if (!pool) return getTraitQuote('draftJoin', char);
-  return pickDialogueLine(pool, char);
+  return WM_I18N.t(pickDialogueLine(pool, char));
 }
 
 // v1.0c: Get FA signing quote (personality×archetype)
@@ -3792,9 +3798,9 @@ function getSigningQuote(char) {
   const pool = EVENT_FA_SIGNING_LINES;
   if (!pool) {
     const generic = EVENT_FA_SIGNING_GENERIC_LINES || ['よろしくお願いします！'];
-    return generic[Math.floor(Math.random() * generic.length)];
+    return WM_I18N.t(generic[Math.floor(Math.random() * generic.length)]);
   }
-  return pickDialogueLine(pool, char);
+  return WM_I18N.t(pickDialogueLine(pool, char));
 }
 
 function hasCareerHistory(char) {
@@ -3809,17 +3815,17 @@ function getJoinGreeting(char) {
   // 少量の「よろしく」系を混ぜ、加入経路ではなく本人のキャリアで主文脈を決める。
   if (Math.random() < 0.25 && EVENT_FA_WELCOME_LINES) {
     const welcome = pickDialogueLine(EVENT_FA_WELCOME_LINES, char);
-    if (welcome) return welcome;
+    if (welcome) return WM_I18N.t(welcome);
   }
   const isCareer = hasCareerHistory(char);
   const pool = isCareer ? FA_GREETING_LINES : SCOUT_GREETING_LINES;
   const generic = isCareer ? FA_GREETING_GENERIC_LINES : SCOUT_GREETING_GENERIC_LINES;
   const line = pool && pickDialogueLine(pool, char);
-  if (line) return line;
+  if (line) return WM_I18N.t(line);
   if (Array.isArray(generic) && generic.length > 0) {
-    return generic[Math.floor(Math.random() * generic.length)];
+    return WM_I18N.t(generic[Math.floor(Math.random() * generic.length)]);
   }
-  return 'よろしくお願いします！';
+  return WM_I18N.t('よろしくお願いします！');
 }
 
 function getJoinSourceBadge(source) {
@@ -3834,9 +3840,9 @@ function getRentalQuote(char) {
   const pool = EVENT_RENTAL_GREETING_LINES;
   if (!pool) {
     const generic = EVENT_RENTAL_GREETING_GENERIC_LINES || ['よろしくお願いします！'];
-    return generic[Math.floor(Math.random() * generic.length)];
+    return WM_I18N.t(generic[Math.floor(Math.random() * generic.length)]);
   }
-  return pickDialogueLine(pool, char);
+  return WM_I18N.t(pickDialogueLine(pool, char));
 }
 
 // ── Fighter Detail Popup ──
@@ -5533,8 +5539,8 @@ function _buildRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceM
   const upset = (typeof UPSET_RIVALRY_LINES !== 'undefined') ? UPSET_RIVALRY_LINES : null;
   const winPool = (isUpset && upset) ? upset.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
   const losePool = (isUpset && upset?.loserLines) ? upset.loserLines : RIVALRY_MATCH_REACTION.loserLines;
-  const winLine = pickDialogueLine(winPool, winChar);
-  const loseLine = pickDialogueLine(losePool, loseChar);
+  const winLine = WM_I18N.t(pickDialogueLine(winPool, winChar));
+  const loseLine = WM_I18N.t(pickDialogueLine(losePool, loseChar));
   if (!winLine && !loseLine) return;
   return {
     matchLabel, rivalryBonus: r.rivalryBonus, isUpset,
@@ -5827,7 +5833,8 @@ function _pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine) {
   // U1: 吹き出しの中身はセリフ本文のみ(話者名は画像下の.pb-fighter-nameが既に示している)
   let bubbleHtml = '';
   if (dialogueLine) {
-    bubbleHtml = `<div class="pb-dialogue"><span class="pb-dialogue-line">「${escHtml(dialogueLine)}」</span></div>`;
+    // i18n Stage B P5-1: 表示直前でt()を通す(Pattern-B試合結果画面の共通表示点)。
+    bubbleHtml = `<div class="pb-dialogue"><span class="pb-dialogue-line">「${escHtml(WM_I18N.t(dialogueLine))}」</span></div>`;
   }
   const ovrHtml = side === 'left'
     ? `<span class="val">${ovr}</span><span class="lbl">OVR</span>`
@@ -6889,7 +6896,7 @@ function resolvePoach(fighterId, accepted) {
   if (result.outcome && result.fighterSnapshot && typeof POACH_REACTION_DIALOGUES !== 'undefined') {
     const dlg = POACH_REACTION_DIALOGUES[result.outcome];
     if (dlg) {
-      const message = pickDialogueLine(dlg, result.fighterSnapshot);
+      const message = WM_I18N.t(pickDialogueLine(dlg, result.fighterSnapshot));
       const orgName = result.orgName || WM_I18N.t('他団体');
       const tone = result.outcome === 'defended' ? 'positive'
                 : result.outcome === 'accepted' ? 'gold'
@@ -7316,7 +7323,7 @@ function _ppvOpponentLines(match, result, winnerSide) {
   const loser = winnerSide === 'right' ? match.left : match.right;
   if (!winner || !loser) return none;
   const pick = (scene, speaker, other) => {
-    try { return pickPpvLine(scene, speaker, other, G) || ''; } catch (_e) { return ''; }
+    try { return WM_I18N.t(pickPpvLine(scene, speaker, other, G) || ''); } catch (_e) { return ''; }
   };
 
   if (match.isSummit) return { winnerLine: '', loserLine: pick('summitLose', loser, winner) };
@@ -7350,7 +7357,7 @@ function renderPPVMatchResultPopup(idx, onContinue) {
   const winner = winnerSide === 'right' ? match.right : match.left;
   let victoryLine = '';
   if (match.isSummit && winnerSide !== 'draw' && typeof PPV_SUMMIT_VICTORY_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
-    try { victoryLine = pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winner); } catch (_e) {}
+    try { victoryLine = WM_I18N.t(pickDialogueLine(PPV_SUMMIT_VICTORY_LINES, winner)); } catch (_e) {}
   }
   // 相手選手の言葉。自団体が負けた回は「勝った相手の言葉」が汎用の勝利セリフより強いので差し替える
   const oppLines = _ppvOpponentLines(match, result, winnerSide);
@@ -7373,7 +7380,7 @@ function renderPPVMatchResultPopup(idx, onContinue) {
 
 /** PPV試合前のキャラセリフ取得（personality×archetypeベースの汎用セリフ） */
 function _getPPVPreMatchLine(fighter) {
-  return pickDialogueLine(PPV_OPPONENT_LINES, fighter);
+  return WM_I18N.t(pickDialogueLine(PPV_OPPONENT_LINES, fighter));
 }
 
 function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
@@ -8093,7 +8100,7 @@ function _renderNextGrowthPopup() {
     const f = fighter;
     const statNames = { pw:WM_I18N.t('パワー'), sp:WM_I18N.t('スピード'), te:WM_I18N.t('テクニック'), st:WM_I18N.t('スタミナ'), mn:WM_I18N.t('メンタル') };
     title = WM_I18N.t('💥 ブレークスルー！');
-    message = f ? pickDialogueLine(BREAKTHROUGH_LINES, f) : WM_I18N.t('ブレークスルー！');
+    message = f ? WM_I18N.t(pickDialogueLine(BREAKTHROUGH_LINES, f)) : WM_I18N.t('ブレークスルー！');
     detail  = `${statNames[ev.stat] || ev.stat} <strong>+${parseFloat((+ev.gain).toFixed(1))}</strong>`;
     if (ev.hotStreak) detail += '　🔥 <em>' + WM_I18N.t('絶好調突入！') + '</em>';
     btnLabel = WM_I18N.t('素晴らしい');
@@ -8102,28 +8109,28 @@ function _renderNextGrowthPopup() {
   } else if (ev.type === 'slump_start') {
     const triggerLines = SLUMP_START_LINES[ev.trigger] || SLUMP_START_LINES['defeat'];
     title = WM_I18N.t('📉 スランプ…');
-    message = pickDialogueLine(triggerLines, fighter);
+    message = WM_I18N.t(pickDialogueLine(triggerLines, fighter));
     detail = WM_I18N.t('しばらく成長が止まるかもしれない');
     btnLabel = WM_I18N.t('見守る');
     tone = 'negative';
     Audio.play('error');
   } else if (ev.type === 'slump_end') {
     title = WM_I18N.t('💪 スランプ脱出！');
-    message = pickDialogueLine(SLUMP_END_LINES, fighter);
+    message = WM_I18N.t(pickDialogueLine(SLUMP_END_LINES, fighter));
     detail = WM_I18N.t('{n}週間のスランプを乗り越えた！', { n: ev.duration || '?' });
     btnLabel = WM_I18N.t('おかえり');
     tone = 'positive';
     Audio.play('event');
   } else if (ev.type === 'motivation_loss_start') {
     title = WM_I18N.t('😞 モチベーション喪失…');
-    message = pickDialogueLine(MOTIVATION_LOSS_LINES, fighter);
+    message = WM_I18N.t(pickDialogueLine(MOTIVATION_LOSS_LINES, fighter));
     detail = WM_I18N.t('成長が止まり、能力が低下していく');
     btnLabel = '……';
     tone = 'negative';
     Audio.play('error');
   } else if (ev.type === 'motivation_loss_end') {
     title = WM_I18N.t('🌅 再起！');
-    message = pickDialogueLine(MOTIVATION_RECOVERY_LINES, fighter);
+    message = WM_I18N.t(pickDialogueLine(MOTIVATION_RECOVERY_LINES, fighter));
     detail = WM_I18N.t('{n}週間の低迷から立ち直った！', { n: ev.duration || '?' });
     btnLabel = WM_I18N.t('待ってた');
     tone = 'positive';
@@ -8145,7 +8152,10 @@ function _renderNextGrowthPopup() {
       isGold = true;
     }
     title = `${icon} ${label}`;
-    message = ev.line || '';
+    // i18n Stage B P5-1: ev.line はapp.jsのマイルストーン通知生成(pendingMilestone処理)で
+    // pickDialogueLine()により選択された生JA行(app.jsは並行エージェントの領分のため
+    // 選択ロジック自体には触れず、ここ=表示直前でt()を通す)。
+    message = WM_I18N.t(ev.line || '');
     detail = '';
     btnLabel = isGold ? WM_I18N.t('素晴らしい') : WM_I18N.t('よくやった');
     tone = isGold ? 'milestone-gold' : 'milestone';
@@ -8164,8 +8174,10 @@ function _renderNextGrowthPopup() {
     }
   }
 
-  // ブレイクスルー兆し（試合中のモノローグ）
-  const hintHtml = ev.btHint ? `<div class="growth-event-hint">${ev.btHint}</div>` : '';
+  // ブレイクスルー兆し（試合中のモノローグ）。ev.btHint はapp.jsで
+  // pickDialogueLine(BT_HINT_LINES, ...) により選択された生JA行(選択ロジックは
+  // app.jsの領分のため触れず、ここ=表示直前でt()を通す)。
+  const hintHtml = ev.btHint ? `<div class="growth-event-hint">${WM_I18N.t(ev.btHint)}</div>` : '';
   // スナップショット追記（あれば）
   const snapHtml = ev.snapshotText ? `<div class="log-snapshot" style="margin-top:8px;font-size:11px">\u{1F4AD} ${ev.snapshotText}</div>` : '';
 
@@ -8193,7 +8205,7 @@ function _renderBreakthroughAsMdlA(ev) {
   const statNames = { pw:WM_I18N.t('パワー'), sp:WM_I18N.t('スピード'), te:WM_I18N.t('テクニック'), st:WM_I18N.t('スタミナ'), mn:WM_I18N.t('メンタル') };
   const statLabel = statNames[ev.stat] || ev.stat;
   const gain = parseFloat((+ev.gain).toFixed(1));
-  const line = fighter ? pickDialogueLine(BREAKTHROUGH_LINES, fighter) : WM_I18N.t('ブレークスルー！');
+  const line = fighter ? WM_I18N.t(pickDialogueLine(BREAKTHROUGH_LINES, fighter)) : WM_I18N.t('ブレークスルー！');
 
   const surgeHtml = `
     <div style="text-align:center;margin:10px 0 8px">
@@ -9107,7 +9119,7 @@ function showInviteMidtermPopup(payload, state, onDone) {
   const voiceKey = getCoachVoiceKey(coach.id);
   const line = (COACH_INVITE_LINES.midterm && COACH_INVITE_LINES.midterm[voiceKey]) || '';
   if (typeof showNotifEventToast !== 'function' || !document.getElementById('mdlDOverlay')) {
-    showToast(`${coach.name}${WM_I18N.t('コーチ')}: ${line}`);
+    showToast(`${coach.name}${WM_I18N.t('コーチ')}: ${WM_I18N.t(line)}`);
     if (onDone) onDone();
     return;
   }
@@ -9115,7 +9127,7 @@ function showInviteMidtermPopup(payload, state, onDone) {
     type: 'N_invite_midterm',
     fighter: coach.id,
     text: WM_I18N.t('🎓 {coach}コーチより、{fighter}の指導状況', { coach: coach.name, fighter: fighter.name }),
-    detail: line,
+    detail: WM_I18N.t(line),
   });
   // showNotifEventToast は OK ボタンで _drainPopupQueue するのみで onDone を呼ばないため、
   // ここでは即座に onDone してキュー管理は App._drainInviteEvents 側に委ねる。
@@ -9256,8 +9268,8 @@ function showInviteGraduationModal(payload, state, onDone) {
   // 化ける演出: ナレーション + コーチの一言(全voice共通)を先頭に追加、金色トークンで一段豪華に
   const awakeningHtml = payload.awakened
     ? `<div style="text-align:center;margin-bottom:16px;padding:14px;border:1px solid var(--cream-gold);border-radius:8px;background:rgba(212,168,67,0.08)">
-        <div style="font-family:'Shippori Mincho',serif;font-size:13px;color:var(--cream-gold-dark);line-height:1.8;font-style:italic">${INVITE_AWAKENING_LINES.narration}</div>
-        <div style="margin-top:8px;font-size:13px;color:var(--cream-text-main)">${coach.name}${WM_I18N.t('コーチ')}「${INVITE_AWAKENING_LINES.coachLine.replace(/^「|」$/g, '')}」</div>
+        <div style="font-family:'Shippori Mincho',serif;font-size:13px;color:var(--cream-gold-dark);line-height:1.8;font-style:italic">${WM_I18N.t(INVITE_AWAKENING_LINES.narration)}</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--cream-text-main)">${coach.name}${WM_I18N.t('コーチ')}「${WM_I18N.t(INVITE_AWAKENING_LINES.coachLine).replace(/^「|」$/g, '')}」</div>
         <div style="margin-top:6px;font-size:11px;color:var(--cream-gold-dark);letter-spacing:2px;font-family:var(--font-label)">${WM_I18N.t('— 才能の壁を、一枚だけ超えた —')}</div>
       </div>`
     : '';
@@ -9773,7 +9785,7 @@ function showChoiceEventResult(event, resultTexts, state, opts) {
   const reactionBlock = (reaction && reaction.line && reactionFighter)
     ? `<div class="mdl-a-observation centered" style="padding-top:6px">
         <span class="marker">${reactionFighter.name || ''}</span><br>
-        <span style="font-style:italic;color:var(--cream-text-main);line-height:1.8;display:inline-block;margin-top:8px">「${reaction.line}」</span>
+        <span style="font-style:italic;color:var(--cream-text-main);line-height:1.8;display:inline-block;margin-top:8px">「${WM_I18N.t(reaction.line)}」</span>
       </div>`
     : '';
 
@@ -9813,7 +9825,9 @@ function showChoiceEventResult(event, resultTexts, state, opts) {
 function _factionLine(table, fighter, seed) {
   if (typeof Engine !== 'undefined' && Engine.factions && typeof Engine.factions.getFactionLine === 'function') {
     const rng = Engine.rng.create(seed || 0xFA99);
-    return Engine.factions.getFactionLine(table, fighter || {}, rng);
+    // i18n Stage B P5-1: Engine.factions.getFactionLine はEngine純粋関数(WM_I18Nを呼ばない)。
+    // ここ(呼び出し元=ui-common.js)で表示直前のt()を通す。
+    return WM_I18N.t(Engine.factions.getFactionLine(table, fighter || {}, rng));
   }
   return '';
 }
@@ -10026,8 +10040,8 @@ function _factionF02RenderClash(payload, state, onChoice) {
   const bName = leaderB ? leaderB.name : '???';
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const bUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
-  const aLine = Engine.factions.getF02ClashLine(leaderA, 'attack') || '……';
-  const bLine = Engine.factions.getF02ClashLine(leaderB, 'defend') || '……';
+  const aLine = WM_I18N.t(Engine.factions.getF02ClashLine(leaderA, 'attack') || '……');
+  const bLine = WM_I18N.t(Engine.factions.getF02ClashLine(leaderB, 'defend') || '……');
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1 §2-4)。
   // 吹き出しは画像の上へ(旧実装は下段の別セクションにあり rule1 違反だった)。左右は派閥アイデンティティ
@@ -10834,12 +10848,12 @@ function showFactionF07Modal(payload, state, onChoice) {
   let coachLine = '';
   if (meta.source === 'leader') {
     leaderQuote = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
-      ? Engine.factions.getF07Line('leaderDemand', { incidentType, fighter: leader, vars })
+      ? WM_I18N.t(Engine.factions.getF07Line('leaderDemand', { incidentType, fighter: leader, vars }))
       : '';
-    if (!leaderQuote) leaderQuote = '社長、お願いがあります。';
+    if (!leaderQuote) leaderQuote = WM_I18N.t('社長、お願いがあります。');
   } else {
     coachLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
-      ? Engine.factions.getF07Line('coachReport', { incidentType, vars })
+      ? WM_I18N.t(Engine.factions.getF07Line('coachReport', { incidentType, vars }))
       : '';
     if (!coachLine) coachLine = `${leaderSurname}と${factionName}の動きについて報告があります。`;
   }
@@ -11617,7 +11631,7 @@ function _factionIgniteLine(table, fighter, state, salt) {
     salt
   );
   const rng = Engine.rng.create(seed);
-  return pool[Math.floor(Engine.rng.float(rng) * pool.length)] || pool[0];
+  return WM_I18N.t(pool[Math.floor(Engine.rng.float(rng) * pool.length)] || pool[0]);
 }
 
 // F02① 発火 — 社長が A 煽る を選んだ後、次週メインカード公式戦化の通知
@@ -11943,11 +11957,11 @@ function showFactionCommon3Modal(payload, state, onClose) {
   const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
 
   const newcomerLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon3Line)
-    ? Engine.factions.getCommon3Line('newcomer', { fighter: newcomer })
-    : 'よろしくお願いします。';
+    ? WM_I18N.t(Engine.factions.getCommon3Line('newcomer', { fighter: newcomer }))
+    : WM_I18N.t('よろしくお願いします。');
   const reactionLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon3Line)
-    ? Engine.factions.getCommon3Line('reaction', { archetypeId, newcomerFighter: newcomer })
-    : 'よろしく。';
+    ? WM_I18N.t(Engine.factions.getCommon3Line('reaction', { archetypeId, newcomerFighter: newcomer }))
+    : WM_I18N.t('よろしく。');
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1 §2-4)。
   // fc1m-bubble-wrap・fc1m-portraitは安全網テスト(test/u3-group-b-safety-net-test.js)互換のためco-classとして残す。
@@ -12037,7 +12051,7 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
           })}
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-narration" style="margin-top:10px;color:var(--text-muted);font-size:0.92em;line-height:1.55">
-            ${lines.narration || ''}
+            ${WM_I18N.t(lines.narration || '')}
           </div>
         </div>
         <div class="fevt-decision-tray" style="justify-content:center">
@@ -12082,6 +12096,10 @@ function showFactionCommon4Modal(payload, state, onClose) {
   const line = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getCommon4Line)
     ? Engine.factions.getCommon4Line(archetypeId, lineRng, leader)
     : { headline: '派閥合宿', narration: '揃って数日を過ごした。', leaderQuote: '' };
+  // i18n Stage B P5-1: 表示直前でt()を通す(COMMON4_LINESの共通表示点。leaderQuoteは
+  // _u3bSideHtml側で通るためここでは対象外)。
+  line.headline = WM_I18N.t(line.headline);
+  line.narration = WM_I18N.t(line.narration);
 
   // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は頭上の白い吹き出しへ移行(_u3bSideHtml)。
   const html = `
@@ -12144,12 +12162,14 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   const bName = fB ? fB.name : (payload.fighterBName || '???');
 
   const vars = { factionName, aName, bName };
+  // i18n Stage B P5-1: Engine.factions.getCommon1Line はEngine純粋関数(WM_I18Nを呼ばない)。
+  // ここ(呼び出し元)で表示直前のt()を通す。
   const coachLine = (Engine.factions.getCommon1Line)
-    ? Engine.factions.getCommon1Line('coachReport', { archetypeId, vars })
+    ? WM_I18N.t(Engine.factions.getCommon1Line('coachReport', { archetypeId, vars }))
     : `${factionName}内の${aName}と${bName}に火種があります。`;
   const leaderLine = (Engine.factions.getCommon1Line)
-    ? Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars, fighter: leader || fA })
-    : 'リングで決めたい。';
+    ? WM_I18N.t(Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars, fighter: leader || fA }))
+    : WM_I18N.t('リングで決めたい。');
 
   const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
   const ovrA = ovr(fA), ovrB = ovr(fB);
@@ -12457,7 +12477,7 @@ function _pickUnifiedTitleLine(sceneKey, fighter, state, extraSalt) {
     s.rngSeed || 0, s.season || 0, s.week || 0,
     sceneSalts[sceneKey] || 0x89CF, fighter?.id || 0, Number(extraSalt) || 0
   ));
-  return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+  return WM_I18N.t(pool[Engine.rng.int(rng, 0, pool.length - 1)]);
 }
 
 function showUnifiedTitleCoronation(payload, onDone) {
@@ -13124,7 +13144,8 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
  *  名前・所属・数値は呼び出し側の既存表示をそのまま画像下に置く。 */
 function _mdlAFlowPortraitHtml(opts) {
   const o = opts || {};
-  const line = o.line != null ? String(o.line) : '';
+  // i18n Stage B P5-1: 表示直前でt()を通す(RIVALRY_RESOLUTION_LINES等の共通表示点)。
+  const line = o.line != null ? WM_I18N.t(String(o.line)) : '';
   const bubble = line
     ? `<div class="u3b-bubble mdl-a-flow-bubble ${o.toneClass || ''}"><div class="u3b-bubble-text">${escHtml(line).replace(/\n/g, '<br>')}</div></div>`
     : '';
@@ -13224,7 +13245,7 @@ function _specialIntroFighterLine(eventKey, cfg, speaker, rng) {
     const line = getJuniorTournamentLine(
       'summon', fighter.personality || 'normal', fighter.archetype || 'standard', rng
     );
-    if (line) return line;
+    if (line) return WM_I18N.t(line);
   }
   const lines = cfg && cfg.fighter && cfg.fighter[speaker && speaker.kind];
   return (lines && lines.length) ? lines[Engine.rng.int(rng, 0, lines.length - 1)] : '';
@@ -13635,7 +13656,7 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
   const upperScene = (entry, sizeClass, resultClass) => {
     const url = _factionUpperUrl(entry.fighter.id);
     return `<div class="crrm-sequence-person ${sizeClass} ${resultClass}">
-      <div class="crrm-sequence-bubble-slot"><div class="crrm-sequence-bubble">「${escHtml(entry.line)}」</div></div>
+      <div class="crrm-sequence-bubble-slot"><div class="crrm-sequence-bubble">「${escHtml(WM_I18N.t(entry.line))}」</div></div>
       <div class="crrm-sequence-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((entry.fighter.name || '?').slice(0, 1))}</div>
       <div class="crrm-sequence-name">${escHtml(entry.fighter.name || '')}</div>
       <div class="crrm-sequence-role">${escHtml(entry.role)}</div>
@@ -13779,7 +13800,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
     const url = _factionUpperUrl(rx.fighter.id);
     const nm = escHtml(rx.fighter.name || '');
     return `<div class="crrm-reaction-scene${rx.defeated ? ' is-defeated' : ' is-victorious'}">
-        <div class="crrm-reaction-bubble-slot"><div class="crrm-reaction-bubble"><span class="crrm-reaction-line">「${escHtml(rx.line)}」</span></div></div>
+        <div class="crrm-reaction-bubble-slot"><div class="crrm-reaction-bubble"><span class="crrm-reaction-line">「${escHtml(WM_I18N.t(rx.line))}」</span></div></div>
         <div class="crrm-reaction-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((rx.fighter.name || '?').slice(0, 1))}</div>
         <div class="crrm-reaction-copy">
           <div class="crrm-reaction-name">${nm}</div>
@@ -14229,10 +14250,10 @@ function _buildB2Step3(event, state, roster) {
   const speechCls  = isDraw ? '' : 'gold';
 
   const winnerLine = isDraw
-    ? '互いの実力を認め合った。'
+    ? WM_I18N.t('互いの実力を認め合った。')
     : (typeof pickDialogueLine === 'function' && typeof RIVALRY_RESOLUTION_LINES !== 'undefined'
-        ? (pickDialogueLine(RIVALRY_RESOLUTION_LINES.winner, winnerF) || 'これで、はっきりさせた')
-        : 'これで、はっきりさせた');
+        ? WM_I18N.t(pickDialogueLine(RIVALRY_RESOLUTION_LINES.winner, winnerF) || 'これで、はっきりさせた')
+        : WM_I18N.t('これで、はっきりさせた'));
 
   const n1 = f1 ? f1.name : (event.name1 || '?');
   const n2 = f2 ? f2.name : (event.name2 || '?');
@@ -14283,8 +14304,8 @@ function _buildB2Step3b(event, state, roster) {
   const upperUrl = loserF ? getUpperUrl(loserF.id) : '';
   const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a2520';
   const loserLine = (typeof pickDialogueLine === 'function' && typeof RIVALRY_RESOLUTION_LINES !== 'undefined')
-    ? (pickDialogueLine(RIVALRY_RESOLUTION_LINES.loser, loserF) || '……覚えてなさいよ。次は絶対に、私が勝つ')
-    : '……覚えてなさいよ。次は絶対に、私が勝つ';
+    ? WM_I18N.t(pickDialogueLine(RIVALRY_RESOLUTION_LINES.loser, loserF) || '……覚えてなさいよ。次は絶対に、私が勝つ')
+    : WM_I18N.t('……覚えてなさいよ。次は絶対に、私が勝つ');
 
   return `
     <div class="mdl-a-header">
@@ -14471,12 +14492,12 @@ function _buildB3Step3b(event, state, roster) {
   let challengerLine;
   if (won) {
     challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
-      ? (pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
-      : '……この借り、必ず返してやる';
+      ? WM_I18N.t(pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
+      : WM_I18N.t('……この借り、必ず返してやる');
   } else {
     challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
-      ? (pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
-      : '……どうだ、これが実力の差だ';
+      ? WM_I18N.t(pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
+      : WM_I18N.t('……どうだ、これが実力の差だ');
   }
 
   const speechVariant = won ? 'resentment' : 'danger';
@@ -14532,12 +14553,12 @@ function _buildB3Step3b(event, state, roster) {
   let challengerLine;
   if (won) {
     challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
-      ? (pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
-      : '……この借り、必ず返してやる';
+      ? WM_I18N.t(pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
+      : WM_I18N.t('……この借り、必ず返してやる');
   } else {
     challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
-      ? (pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
-      : '……どうだ、これが実力の差だ';
+      ? WM_I18N.t(pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
+      : WM_I18N.t('……どうだ、これが実力の差だ');
   }
 
   const speechVariant = won ? 'resentment' : 'danger';
@@ -14599,12 +14620,12 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
   let challengerLine;
   if (won) {
     challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
-      ? (pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
-      : '……この借り、必ず返してやる';
+      ? WM_I18N.t(pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
+      : WM_I18N.t('……この借り、必ず返してやる');
   } else {
     challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
-      ? (pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
-      : '……どうだ、これが実力の差だ';
+      ? WM_I18N.t(pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
+      : WM_I18N.t('……どうだ、これが実力の差だ');
   }
 
   const speechVariant = won ? 'resentment' : 'danger';
@@ -14682,8 +14703,8 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   let winnerLine = '';
   let loserLine = '';
   if (!isDraw && winChar && loseChar && Engine.factions.getCommon1Line) {
-    winnerLine = Engine.factions.getCommon1Line('resultLeader', { archetypeId, choice: 'A', vars: winnerVars, fighter: winChar }) || '';
-    loserLine = Engine.factions.getCommon1Line('resultLoser', { archetypeId, choice: 'A', vars: winnerVars, fighter: loseChar }) || '';
+    winnerLine = WM_I18N.t(Engine.factions.getCommon1Line('resultLeader', { archetypeId, choice: 'A', vars: winnerVars, fighter: winChar }) || '');
+    loserLine = WM_I18N.t(Engine.factions.getCommon1Line('resultLoser', { archetypeId, choice: 'A', vars: winnerVars, fighter: loseChar }) || '');
   }
 
   const ovrA = Math.round(Engine.util.ov(fA)), ovrB = Math.round(Engine.util.ov(fB));
@@ -14791,13 +14812,13 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   // セリフ
   let winLine = '', loseLine = '';
   if (!draw) {
-    winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
+    winLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar));
     if (won) {
       // 自団体が勝ち → 挑戦者（敗者）に result_lose を使う
-      loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? pickDialogueLine(WAR_POST_DIALOGUE.result_lose, challenger) : '';
+      loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? WM_I18N.t(pickDialogueLine(WAR_POST_DIALOGUE.result_lose, challenger)) : '';
     } else {
       // 自団体が負け → 自団体選手（敗者）に loserLines を使う
-      loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
+      loseLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar));
     }
   }
   const playerLine = won ? winLine : loseLine;
@@ -14885,8 +14906,8 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
   const box = document.getElementById('showResultBox');
   const ovrL = Engine.util.ov(f1), ovrR = Engine.util.ov(f2);
   const standL = getStandUrl(f1.id, ovrL), standR = getStandUrl(f2.id, ovrR);
-  const lineL = pickDialogueLine(PPV_OPPONENT_LINES, f1);
-  const lineR = pickDialogueLine(PPV_OPPONENT_LINES, f2);
+  const lineL = WM_I18N.t(pickDialogueLine(PPV_OPPONENT_LINES, f1));
+  const lineR = WM_I18N.t(pickDialogueLine(PPV_OPPONENT_LINES, f2));
   const pColor = '#9b59b6'; // 紫
   const eColor = '#e74c3c'; // 赤
   const pLight = '#c39bd3';
@@ -14979,8 +15000,8 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
 
   let winLine = '', loseLine = '';
   if (!draw) {
-    winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
-    loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
+    winLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar));
+    loseLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar));
   }
   const f1Line = draw ? '' : (won1 ? winLine : loseLine);
   const f2Line = draw ? '' : (won1 ? loseLine : winLine);
@@ -15972,7 +15993,7 @@ function showEndingCeremony(data, onDone) {
     const fHtml = fighters.map(f => {
       const ovrRaw = typeof Engine !== 'undefined' && Engine.util ? Engine.util.ov(f) : NaN;
       const ovr = isNaN(ovrRaw) ? (f.ovr || '—') : ovrRaw;
-      const line = fighterLineObj ? pickDialogueLine(fighterLineObj, f) : '最高だ！';
+      const line = fighterLineObj ? WM_I18N.t(pickDialogueLine(fighterLineObj, f)) : WM_I18N.t('最高だ！');
       return `<div style="flex:1;text-align:center;min-width:0;max-width:160px">
         ${_awSpeechSlot(line)}
         <div style="display:flex;justify-content:center;margin-bottom:8px">${_endingPortrait(f.id, 100)}</div>
@@ -16977,7 +16998,7 @@ function renderJuniorTournamentSummon() {
   const p = myParticipants[summonIndex];
   const season = G.season;
   const faceUrl = getPortraitUrl(p.id);
-  const line = getJuniorTournamentLine('summon', p.personality || 'normal', p.archetype || 'standard');
+  const line = WM_I18N.t(getJuniorTournamentLine('summon', p.personality || 'normal', p.archetype || 'standard'));
 
   let html = `<div class="jt-phase">${WM_I18N.t('召集通知')}</div>`;
   html += `<div class="jt-so" onclick="App.jtNextSummon()">`;
@@ -17010,7 +17031,7 @@ function _showJTImpressionChain(list, idx, onDone) {
   if (idx >= list.length) { if (onDone) onDone(); return; }
   const f = list[idx];
   const timing = f._jtTiming || 'postLose';
-  const line = getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || 'standard');
+  const line = WM_I18N.t(getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || 'standard'));
   if (!line) { _showJTImpressionChain(list, idx + 1, onDone); return; }
 
   // コメント画面は縦長の .u3b-upper を使う。正方形の顔アイコンを入れると
@@ -17747,7 +17768,7 @@ function _rivalryPreMatchLines(leftId, rightId) {
     G.rngSeed || 0, G.season || 0, G.week || 0, Number(leftId) * 1000 + Number(rightId)));
   const pick = (obj, f) => {
     const pool = (typeof getDialoguePool === 'function') ? getDialoguePool(obj, f) : [];
-    return pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)] : '';
+    return pool.length ? WM_I18N.t(pool[Engine.rng.int(rng, 0, pool.length - 1)]) : '';
   };
   const leftLine = pick(attackerPool, l);
   const rightLine = pick(defenderPool, r);
@@ -17851,8 +17872,8 @@ function _jtFocusCard(match, roundName, ri, mi) {
     ? _rivalryBubblePairHtml(f1.id, f2.id, f1.name, f2.name) : '';
   // セリフ(JTのみ・天頂戦にはない)
   const timing = isFinal ? 'preFinal' : 'preMatch';
-  const lineL = getJuniorTournamentLine(timing, f1.personality || 'normal', f1.archetype || 'standard');
-  const lineR = getJuniorTournamentLine(timing, f2.personality || 'normal', f2.archetype || 'standard');
+  const lineL = WM_I18N.t(getJuniorTournamentLine(timing, f1.personality || 'normal', f1.archetype || 'standard'));
+  const lineR = WM_I18N.t(getJuniorTournamentLine(timing, f2.personality || 'normal', f2.archetype || 'standard'));
   if (!bubbleHtml && (lineL || lineR)) {
     bubbleHtml = `<div class="jt-bub-pair">`;
     bubbleHtml += `<div class="jt-bub-slot">${lineL ? `<div class="jt-bub">「${escHtml(lineL)}」</div>` : ''}</div>`;
@@ -17913,7 +17934,7 @@ function _emrOvr(fighter) {
 
 function _emrVictoryLine(fighter, preferred) {
   if (preferred) return String(preferred).replace(/^[「『]|[」』]$/g, '');
-  if (!fighter) return 'この勝利を、次につなげる。';
+  if (!fighter) return WM_I18N.t('この勝利を、次につなげる。');
   const own = fighter.voiceLines || fighter.vl;
   const byId = typeof VICTORY_LINES !== 'undefined' ? VICTORY_LINES[fighter.id] : null;
   // 優先順は **キャラ固有セリフが最上位**(その子だけの言葉を見せるのが本作の芯。
@@ -17926,9 +17947,9 @@ function _emrVictoryLine(fighter, preferred) {
   const pool = Array.isArray(own) && own.length ? own
     : (Array.isArray(byId) && byId.length ? byId
       : (Array.isArray(archetypePool) ? archetypePool : []));
-  if (!pool.length) return 'この勝利を、次につなげる。';
+  if (!pool.length) return WM_I18N.t('この勝利を、次につなげる。');
   const seed = `${fighter.id || ''}${G?.season || 0}${G?.week || 0}`.split('').reduce((n, ch) => n + ch.charCodeAt(0), 0);
-  return String(pool[seed % pool.length]).replace(/^[「『]|[」』]$/g, '');
+  return WM_I18N.t(String(pool[seed % pool.length])).replace(/^[「『]|[」』]$/g, '');
 }
 
 function _emrHp(hp) {
@@ -18131,7 +18152,10 @@ function showEventMatchResultPopup(opts) {
   // 顔出しイベント共通ルール(docs/ui/02-layouts.md 2-D-X)準拠: 吹き出しは画像の「上」の予約枠に入れ、
   // 中身はセリフ本文だけ(話者名・所属は書かない。話者は画像下の表示で示す)。発言が無い側は空枠のままにして
   // 左右の画像の高さを揃える(画像に被らないこと・左右の高さが揃うことは自動検証済み)。
-  const _emrBubbleHtml = (t) => `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(String(t).replace(/^[「『]|[」』]$/g, ''))}」</span></div>`;
+  // i18n Stage B P5-1: 表示直前でt()を通す(POST_MATCH_FLAVOR_LINES等の共通表示点。
+  // 呼び出し元によっては既にt()済みの値を渡すこともあるが、t()の二重適用は
+  // 辞書に無いキーとしてfail-openするだけで無害なので、ここでも一律に通す)。
+  const _emrBubbleHtml = (t) => `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(WM_I18N.t(String(t)).replace(/^[「『]|[」』]$/g, ''))}」</span></div>`;
   const bubbleHtml = showVictoryLine && line ? _emrBubbleHtml(line) : '';
   // task-75: 敗者側の予約枠も埋められるようにした。PPV で「負けた相手がこちらへ投げる言葉」を
   // 出すために使う。**渡されたときだけ**出す(既定は従来どおり空枠のまま。空枠は左右の画像の
@@ -18219,7 +18243,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   const boutNumber = total - idx;
   let victoryLine = '';
   if (winnerSide !== 'draw' && winner && typeof POST_MATCH_FLAVOR_LINES !== 'undefined' && typeof pickDialogueLine === 'function') {
-    try { victoryLine = pickDialogueLine(POST_MATCH_FLAVOR_LINES.winner, winner); } catch (_e) {}
+    try { victoryLine = WM_I18N.t(pickDialogueLine(POST_MATCH_FLAVOR_LINES.winner, winner)); } catch (_e) {}
   }
   let loserLine = '';
   let showVictoryLine = true;
@@ -18451,7 +18475,8 @@ function _chSubImg(fighter) {
 /** 吹き出しの予約枠。発言が無くても同じ高さの空枠を返し、左右/複数人の画像上端を揃える */
 function _chBubbleSlot(text, bubbleClass = '') {
   const modifier = bubbleClass ? ` ${escHtml(bubbleClass)}` : '';
-  return `<div class="ch-bubble-slot">${text ? `<div class="ch-bubble${modifier}">「${escHtml(text)}」</div>` : ''}</div>`;
+  // i18n Stage B P5-1: 表示直前でt()を通す(UNIFIED_TITLE_LINES等の年代記系共通表示点)。
+  return `<div class="ch-bubble-slot">${text ? `<div class="ch-bubble${modifier}">「${escHtml(WM_I18N.t(text))}」</div>` : ''}</div>`;
 }
 
 /** 団体エンブレム(実画像)。orgIdが取れないときだけ頭文字色丸へフォールバック(mockup-baseline-v0.1 §5) */
@@ -19340,8 +19365,8 @@ function _agwPreBoutDialogueHtml(match, next, left, right, displayOrgIds) {
   const rng = _agwDialogueRng('preBout', [match.round, match.orgA, match.orgB, next.index, left.id, right.id], _AGW_DIALOGUE_CHANCE.preBout);
   if (!rng || typeof getAutumnWarMatchLine !== 'function') return '';
   const timing = match.round === 'final' ? 'preFinal' : 'preMatch';
-  const leftLine = getAutumnWarMatchLine(timing, left.personality || 'normal', left.archetype || 'standard', rng);
-  const rightLine = getAutumnWarMatchLine(timing, right.personality || 'normal', right.archetype || 'standard', rng);
+  const leftLine = WM_I18N.t(getAutumnWarMatchLine(timing, left.personality || 'normal', left.archetype || 'standard', rng));
+  const rightLine = WM_I18N.t(getAutumnWarMatchLine(timing, right.personality || 'normal', right.archetype || 'standard', rng));
   if (!leftLine && !rightLine) return '';
   const dialogueByOrg = {
     [next.left.orgId]: { fighter: left, line: leftLine },
@@ -19362,12 +19387,12 @@ function _agwSurvivorLine(match, bout, winner) {
     const rng = _agwDialogueRng('teamVictory', [match.round, match.orgA, match.orgB, bout.index || match.bouts.length, winner.id], 1);
     const lineSet = typeof AUTUMN_WAR_MVP_LINES !== 'undefined' ? AUTUMN_WAR_MVP_LINES[context] : null;
     const pool = lineSet && typeof getDialoguePool === 'function' ? getDialoguePool(lineSet, winner) : [];
-    return pool.length ? pool[Engine.rng.int(rng, 0, pool.length - 1)] : '';
+    return pool.length ? WM_I18N.t(pool[Engine.rng.int(rng, 0, pool.length - 1)]) : '';
   }
   if (typeof getAutumnWarMatchLine !== 'function') return '';
   const rng = _agwDialogueRng('survivor', [match.round, match.orgA, match.orgB, bout.index || match.bouts.length, winner.id], _AGW_DIALOGUE_CHANCE.survivor);
   if (!rng) return '';
-  return getAutumnWarMatchLine('survivor', winner.personality || 'normal', winner.archetype || 'standard', rng);
+  return WM_I18N.t(getAutumnWarMatchLine('survivor', winner.personality || 'normal', winner.archetype || 'standard', rng));
 }
 
 function _agwChampionSpeech(result, championTeam) {
@@ -19388,9 +19413,10 @@ function _agwChampionSpeech(result, championTeam) {
     line = getJuniorTournamentLine('champion', fighter.personality || 'normal', fighter.archetype || 'standard', rng);
   }
   if (!line) line = 'この三人で、最後まで立てた。それが全部です';
+  // i18n Stage B P5-1: t()は{wins}/{org}のreplaceAllより前(辞書キーはプレースホルダ入りの原文)。
   return {
     fighter,
-    line: String(line)
+    line: WM_I18N.t(String(line))
       .replaceAll('{wins}', String(wins))
       .replaceAll('{org}', championTeam.orgName || WM_I18N.t('この団体')),
   };
@@ -19681,7 +19707,8 @@ function _agwMvpLine(fighter, result) {
   if (lineSet && typeof getDialoguePool === 'function') pool = getDialoguePool(lineSet, fighter);
   if (!pool.length) pool = ['……この三人で、最後まで立てた。それが全部です'];
   const seed = Math.abs(((G.season || 1) * 131 + (fighter?.id || 0) * 17 + wins * 7) | 0);
-  return String(pool[seed % pool.length]).replaceAll('{wins}', String(wins)).replaceAll('{org}', _agwTeam(result.mvpOrgId)?.orgName || WM_I18N.t('この団体'));
+  // i18n Stage B P5-1: t()は{wins}/{org}のreplaceAllより前(辞書キーはプレースホルダ入りの原文)。
+  return WM_I18N.t(String(pool[seed % pool.length])).replaceAll('{wins}', String(wins)).replaceAll('{org}', _agwTeam(result.mvpOrgId)?.orgName || WM_I18N.t('この団体'));
 }
 
 function renderAutumnWarMvpScene() {
@@ -20031,7 +20058,8 @@ function _tcFinalPick(cell, fighter, rng) {
   const pool = _tcFinalPool(cell, fighter);
   if (!pool.length) return '';
   const i = rng ? Engine.rng.int(rng, 0, pool.length - 1) : 0;
-  return pool[i] || '';
+  // i18n Stage B P5-1: 表示直前でt()を通す(TENCHOSEN_FINAL_LINESの共通選択点)。
+  return WM_I18N.t(pool[i] || '');
 }
 
 /** 同じ対戦なら何度描き直しても同じセリフになるよう、ペアと大会から種を作る */
@@ -20468,8 +20496,9 @@ function _tcDramaEmoBadge(evClass) {
 /** 関係性ドラマ: 出演者1名ぶんのカラム(頭上白吹き出し or 感情バッジ + 2:3矩形) */
 function _tcDramaActor(fighter, bubbleText, emoBadge, crimson) {
   const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(fighter.id) : '';
+  // i18n Stage B P5-1: 表示直前でt()を通す(TENCHOSEN_DRAMA_LINES等の関係性ドラマ共通表示点)。
   const top = bubbleText
-    ? `<div class="tcdr-bub${crimson ? ' crimson' : ''}">「${escHtml(bubbleText)}」</div>`
+    ? `<div class="tcdr-bub${crimson ? ' crimson' : ''}">「${escHtml(WM_I18N.t(bubbleText))}」</div>`
     : (emoBadge ? `<div class="tcdr-emo">${emoBadge}</div>` : '');
   return `<div class="tcdr-actor">
     ${top}
@@ -20610,7 +20639,7 @@ function renderTenchosenPreEvent() {
   const coachFaceUrl = coach && typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(coach.id) : '';
   const coachHtml = coach ? `
     <div class="tcpe-coach">
-      <div class="tcdr-bub"><div class="sp">${escHtml(coach.name)} ${WM_I18N.t('コーチ')}</div>「${escHtml(coach.line)}」</div>
+      <div class="tcdr-bub"><div class="sp">${escHtml(coach.name)} ${WM_I18N.t('コーチ')}</div>「${escHtml(WM_I18N.t(coach.line))}」</div>
       <div class="tc-cir w">${coachFaceUrl
         ? `<img src="${coachFaceUrl}" alt="" onerror="this.style.display='none'">`
         : `<span class="tcpe-coach-face">👩‍🏫</span>`}</div>
@@ -20620,7 +20649,7 @@ function renderTenchosenPreEvent() {
   const fightersHtml = (tp.fighters || []).map(f => {
     const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
     return `<div class="tcdr-actor">
-      <div class="tcdr-bub"><div class="sp">${escHtml(f.name)}</div>「${escHtml(f.line)}」</div>
+      <div class="tcdr-bub"><div class="sp">${escHtml(f.name)}</div>「${escHtml(WM_I18N.t(f.line))}」</div>
       <div class="tcdr-rc">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.opacity=0">` : ''}</div>
       <div class="tcdr-name">${escHtml(f.name)}</div>
     </div>`;
