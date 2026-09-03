@@ -1,5 +1,103 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2h — セリフ英訳バッチ⑧(関係フラグ450行+ケア反応446行)（2026-09-03・Opus主筆 worktree agent-aff1b2870a9de93bc）
+
+量産翻訳の第8バッチ。**`flag-dialogue.js:FLAG_DIALOGUE` の全450行 + `data.js:CARE_REACTION_DIALOGUES` の446行 = 896行**(うち既訳4行は据え置きのため**新規記入892行**)を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2gの訳語判断(特に2cで確立した対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2eの悲壮度較正を継承)。開始前にworktreeブランチをmain先端(e680032)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
+
+### 1. 対象範囲(896行)
+
+**関係フラグ 450行**(軸は `modalKey → archetype`。**性格軸を持たない7属性のみのテーブル**で、`FLAG_DIALOGUE._pickLine/_pickSubLine` がモーダル表示時に引く。456スロット/450ユニーク — 重複6件はすべて cool 帯の `{name2}……。`×6 と `よろしく。`×2)
+
+| キー | スロット | 状況 |
+|---|---|---|
+| `M-1` | 21 | 裏切り発火(残留者→離脱者) |
+| `M-2` / `M-3` / `M-4` / `M-5` | 21 / 21 / 21 / 21 | 憧れ 発火 / 達成(追い抜き) / 喪失(相手が引退) / 幻滅 |
+| `M-6` / `M-7` / `M-8` / `M-9` / `M-10` / `M-11` | 21 ×6 | 嫉妬 撃破 / 宙吊り / 風化1年 / 2年 / 3年 / 発火 |
+| `M-12` | 63 | 出戻りの日(`returner` 21 + `forgiven` 21 + `notForgiven` 21) |
+| `M-13` | 42 | 師弟確定(`master` 21 + `disciple` 21) |
+| `M-14` / `M-15` / `M-16` / `M-17` / `M-18` | 21 ×5 | ライバル同期 / 番狂わせの逆恨み / スランプの八つ当たり / 共闘ペアの裏切り / 価値観の決裂 |
+| `M-19`〜`M-23` | 3 ×5 | BF/Heel衝突 / 引き抜きの遺恨 / 引き留め失敗 / 引退の置き土産 / 突然離脱の波紋(**standardのみの簡易ブロック**) |
+
+**ケア反応 446行**(軸は `docId → archetype → personality`。`Engine.shachoshitsu.getReactionText` → `pickDialogueLine`。450スロット/446ユニーク)
+
+| docId | 行数 | 状況 |
+|---|---|---|
+| `bonus` / `bonus_repeat` / `bonus_insult` | 34 / 11 / 14 | ボーナス支給 / 同一選手への再支給 / **侮辱帯**(相場の半額以下・プライド高は0.8未満) |
+| `trainer` / `camp` | 30 / 33 | 外部コーチ招聘 / 合宿 |
+| `media` | 30 | メディア露出 |
+| `encourage` / `encourage_high_trust` | 31 / 29 | 声かけ / 高信頼帯の声かけ |
+| `refresh_leave` / `special_treatment` | 30 / 30 | 休暇辞令 / 特別治療(長期離脱) |
+| `party` | 33 | 慰労会 |
+| `relationship_repair_success` / `_fail` | 41 / 39 | 関係修復斡旋の成功 / 失敗 |
+| `faction_decree` / `_seal_quiet` / `_unseal` | 48 / 9 / 8 | 派閥解散命令(リーダー本人) / 先回りの禁止 / 禁止の解除 |
+
+- **既訳4行は据え置き**(`……` / `…………` = `"..."`、`……やる` = `"...I'll do it."`、`緊張するけど…精一杯やるわ` = `"It makes me nervous... but I'll give it all I have."`。いずれもP5-2a〜2gで他テーブルと共有済み)
+- 属性内訳: standard 244 / seductive 128 / composed 111 / polite 111 / ojousama 108 / delinquent 103 / cool 81 / null 10
+- 台帳の `cell` と実効テーブルの軸キーの突き合わせは**不一致0**(896件照合)。`cell=null` 12件はすべて他テーブルとの共有による正しいnullで、中立英語を当てた
+
+### 2. cellの誤りを1件修正(8行) — 抽出器のパストークン誤検出
+
+`faction_decree_seal_quiet` の8行に **`personality: "quiet"` が誤って付いていた**。原因は `detectCellFromPath`(`test/i18n-extract-dialogue.js`)が `_` を含むキーを分解して照合する仕様で、**docId名 `faction_decree_seal_quiet` の `quiet` を性格キーとして拾ってしまう**こと。このブロックの実効軸は `_default`(性格) → archetype なので**性格は無拘束が正しい**(`getDialoguePool` の第2ループで archetype 解決される)。台帳の該当8行から `personality` を落とし、`{archetype}` のみに直した。**機械検査は性格を使っていないためビルド上の実害はなかった**が、誤ったセル情報のまま残すとレビューと将来の性格別検査を誤らせるため修正した(保持マージにより抽出器の再実行でも消えない)。
+
+### 3. 翻訳の方針
+
+- **フラグは「関係の重みを事実で運ぶ」**。最重要則1(温度を上げない)を最優先し、原文にない絶叫・格言・大仰な比喩を足していない。24モーダルそれぞれで英語の芯を変えた — M-1=筋を通さなかったことへの怒り(悲しみに寄せない)/ M-2〜M-5=**憧れの4段階**(発火=目標の設定 / 達成=並び立つ / 喪失=届く前の別れ / 幻滅=自分が作った像だったと認める)/ M-6〜M-11=**嫉妬の6段階**で、風化3段(M-8/9/10)は「1年=薄れる」「2年=透明になる」「3年=手放す」と**英語の語彙そのものを段階化**した / M-12=帰還の受け入れ/拒絶を「歓迎の有無」でなく**距離の宣言**で書き分け / M-13=師弟の敬意 / M-15〜M-18=低Bondの決定的事件で、**罵倒に寄せず立場の主張**として書いた
+- **M-19〜M-23の15行は地の文寄りの観測文**(原文が三人称ナレーション形式)。原文の時制をそのまま移し、セリフ化して温度を足していない
+- **ケアは「書類の効き方に個性が出る」を声に乗せた**(care-rework2 の `DECISION_ARCHETYPE_MULT` / `DECISION_PERSONALITY_MULT` が設計の正)。**鷹揚(composed)=宴より稽古**(party 0.80 / trainer 1.15)に合わせ、composed の `party` は「悪くない」止まりの温度、`trainer`/`camp` は素直に前のめりにした。**丁寧(polite)=言葉と場が届き金銭は品に欠ける**(encourage 1.15 / party 1.10 / bonus 0.85)に合わせ、polite の `bonus` は礼が厚いぶん**受け取りにためらいが残る**形、`encourage` は最も素直に効く形にした。ほかも ojousama=金に動じない(0.70)ので礼は丁重だが短く / delinquent=金と酒は効く(1.30)ので `bonus`・`party` だけ明確にはしゃぐ / cool=全帯冷めている(bonus 0.70・party 0.60)ので最短 / seductive=メディア1.30 で `media` だけ声が乗る、と**書類ごとに温度差を付けた**
+- **`bonus_insult` 14行は原文の温度どおり**。侮辱帯は「感謝の失敗」ではなく**値付けへの抗議**なので、`So this is what I'm worth.` / `My worth does not stop at this figure.` / `I have been priced rather low, haven't I.` と**値段の語彙**で統一し、卑屈にも激昂にもしていない
+- **`relationship_repair` 80行は「完全和解にしない」という原文注記を厳守**。成功帯でも `Not what you'd call making up...` / `It is not a reconciliation.` / `Not like I want to play friends.` と**留保を必ず残した**。相手の名前は結果モーダルの地の文が背負う設計なので、**英語側も固有名詞ゼロで `she`/`her` に統一**した(§3-7)
+- **`faction_decree` 65行は「畳まれた側の不服」**。従うが納得はしない、という原文の二段を英語でも分けて書き(`I'll comply. I won't accept it.`)、破滅語彙・脅迫語彙は全帯ゼロにした
+- **社長の呼称(§6裁定4)**: 原文が `社長` を呼んでいる行は `faction_decree standard/_default` の1行のみで、そこだけ **`Boss`** を置いた(計1行)。他は原則どおり呼称を落としている。`President` は0行
+- **ト書き5行**(`（また、お金…か…）` / `（少し困った顔をしている）` / `（何も言わず、封筒を見つめている）` / `（小さく微笑んでいる）` / `（隅で小さく笑っている）`)は P5-2c で確立した堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**で統一した
+- **属性=register**: ojousama=全108行で**短縮形ゼロ**(検出されたアポストロフィは `teacher's`/`promotion's`/`person's` の所有格3件のみ) / cool=全81行で**感嘆符ゼロ・3文以内**(`...Weight off.` / `Transparent.` / `The undercard. Bitter.`) / delinquent=冠詞主語の省略+gonna / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **§4-6のネイティブ検品ルール適用**: 「今日の私」型0 / 「〜も」のtoo直訳0 / `maybe` は文頭のみ / 応援=support / `仕方ない` は既訳(`Nothing to be done.`/`No forcing it.`/`Well, that happens.`)と重ねず `there's nothing to argue` に振り替え / `ふふ` は `Mm`/`My...`/`Heheh` に機能置換(`Fufu` 音写0)
+- **均質化回避**: この帯は「同一モチーフ×7属性」が構造的に大量発生する(`ありがとうございます`系24、`頑張ります`系18、`おかえり`系6、`了解/わかりました`系11、`緊張しますが`系7、`早く戻ります`系14 ほか)。全モチーフを属性ごとに別の英語へ割り分け、事前検査で検出した**既訳との完全重複6件・近似重複2件をすべて書き直した**。最終的に**バッチ内EN完全重複0・近似重複(トークンJaccard≥0.90)0・既訳7,123行との完全重複0・近似重複0**(意図的な `……`/`…………`→`"..."` を除く)
+- **卑語**: hell/damn は**896行中3回**、すべて delinquent 確定セル(`I still haven't reached you, damn it.` / `Damn it... next time I flatten you.` / `The hell is this. That was our place, wasn't it.`)。f/sワードは0
+- **長さ**: 全896行が110字上限内(**最大98字・中央値52字**・EN/JA文字数比 2.25)。プレースホルダは原文・訳文とも完全一致(フラグ188行が `{name}`/`{name2}` を持ち、ケアは0個)。♪は3行に存置(原文と同数)、♡を含む原文は0行
+
+### 4. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列892行を記入 + cell欄8行を修正(**diffは `"en":` 行892本と `faction_decree_seal_quiet` 8行の `personality` 削除のみ・900挿入/908削除**。書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートしてから記入し、書き込み後に `git diff` で他フィールドの増減0を再確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。**ソース・配線は一切触っていない**
+
+### 5. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**8,015**(7,123→+892) / cell判定済み7,815 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ 直書き日本語の増加なし(files=31 / totalJaStrings=28089) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+flag-dialogue/data)で**全906スロットの直接t()が未訳0**。`_pickLine`/`_pickSubLine` を23モーダル×7属性×40シード=**7,280回**、`pickDialogueLine(CARE[docId])` を16書類×49セル×30回=**23,520回**引いて**未訳0・`[i18n-miss]` 0件**。セル横断20本を目視 |
+| 品質スイープ(事前検査) | ✅ 網羅896/896・空訳0・日本語残り0・110字超0・PH不一致0・余分な空白0・`....`表記0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+| cell整合 | ✅ 台帳cellと実効テーブルの軸キーの**不一致0**(896件照合・null 12件はすべて正しいnull) |
+
+### 6. 表示経路の確認 — **⚠フラグ450行のうち223行(50%)は現状ENでも日本語のまま出る**
+
+- **ケア446行は届く**。`app.js:14499/14618/14768/14783` が `getReactionText()` の戻り値を `showDecisionResultModal(displayData)` へ渡し、`_mdlASubjectStage(hero, stageBody, {speech: text})`(ui-common.js:9632)→ `_u3bSideHtml`(245行)で `WM_I18N.t()` を通す。**プレースホルダを含む行が0**なので fail-open は起きない(VM実測でも `[i18n-miss]` 0)
+- **フラグは2つの経路欠陥で半分が届かない**(実測で切り分けた内訳):
+
+| 経路 | 行数 | 状態 |
+|---|---|---|
+| speech + PHなし | **227** | ✅ 届く(`_u3bSideHtml` の `WM_I18N.t()` に乗る) |
+| speech + PHあり | **163** | ❌ **fail-open**。`_flagFormatLine`(ui-common.js:1987)が `{name}`/`{name2}` を**t()より前に置換**するため、完成文が辞書キーと一致しない(P5-2dの `selectDialogue` と同型) |
+| detailに埋め込み | **60** | ❌ **t()が経路上に無い**。M-12 `forgiven`/`notForgiven`(各21)と M-13 `disciple`(21)は `detail` のHTML文字列へ直接連結され(ui-common.js:2042/2075)、`_renderEventPopupAsC3` が `${o.detail}` を素通しでHTMLにする |
+
+  根治は **`_flagFormatLine` を廃して `WM_I18N.t(template, { name: ..., name2: ... })` に置き換える**こと(t()はD2でプレースホルダ置換を持つので1関数の置換で済み、D-P6-2により名前も名前辞書経由で英語化される)。detail側は連結前に同じ形でt()を通す。**ソースを触れない指示のため未修正** — 次タスクの候補として最優先で挙げる
+
+### 7. 残課題(このバッチで判明したものを含む)
+
+1. **上記§6のフラグ表示経路2件**(PH事前置換163行 + detail経路60行)。**訳文は投入済みなので、`_flagFormatLine` の1関数置換+detail 2箇所のt()追加だけで223行が一気に生きる**。P5-2dの `selectDialogue` と同じ dict-opts / t()-with-params パターン(`specs/i18n-runtime-spec-v1.0.md` §6)
+2. **`M-24`(ロッカールームの崩壊)にセリフが1行も無い**。`relationships.js:1164` が実際に `_enqueueModal(state, 'M-24', ...)` でモーダルを積み、`FLAG_MODAL_META`(ui-common.js:1961)にもタイトルがあるのに、`FLAG_DIALOGUE` に `M-24` ブロックが存在しない。`_pickLine` が `''` を返し **`speech: '…'` の空吹き出しで表示される**。日本語側の欠落なので翻訳の対象外だが、3行(standardのみでよい)書き足す価値がある。要裁定
+3. **抽出器 `detectCellFromPath` のパストークン誤検出**(§2)。`_` を含むキー名の分解照合が **docId名に紛れ込んだ性格語 (`..._seal_quiet` の `quiet`) を拾う**。今回は台帳側で潰したが、同型のキー名(`*_normal` / `*_bold` / `*_cool` 等)が今後追加されると同じことが起きる。**照合対象をテーブル軸のキーに限定するか、docId階層を除外する**のが根治
+4. **`CARE_REACTION_DIALOGUES` の重複原文4件**(`ありがとうございます！`=bonus/media、`頑張ります！`=trainer/camp、`カンパーイ！！ 今日は無礼講だ〜！`=party standard×easygoing/delinquent×bold、`……了解`=faction_decree/faction_decree_unseal)。翻訳側は同一ENで処理したが、**書類も属性も違うのに同じ原文が置かれている**のは日本語側の書き分け漏れの可能性がある(P5-2fのRETIREMENT_LINESと同型)。要裁定
+5. **`faction_decree_seal_quiet` / `faction_decree_unseal` の2ブロックだけ軸の入れ子が逆**(`_default`(性格) → archetype)。`getDialoguePool` の第2ループが拾うので実害はないが、他14書類と揃っていないため誤読を招く(§2のcell誤検出もこれが遠因)。揃えるかは要裁定
+6. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **M-8/9/10の風化3段**を `faded` → `transparent` → `let go` と語彙で段階化した判断が英語として読めるか (b) **`bonus_insult` 14行**が「値付けへの抗議」の温度に収まっているか(卑屈にも激昂にも寄っていないか) (c) **`relationship_repair` 80行**の留保表現(`Not what you'd call making up` 型)が、成功帯で冷たすぎないか
+
+---
+
 ## 🌐 Stage B P5-2g — セリフ英訳バッチ⑦(選択イベント601行+大型イベント468行)（2026-09-03・Opus主筆 worktree agent-ab10de7d9f87e2d98）
 
 量産翻訳の第7バッチ。**`data.js:CHOICE_EVENT_DIALOGUES` の全601行 + `data.js:LARGE_EVENT_DIALOGUES` の全468行 = 1,069行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2fの訳語判断(特に2cのF07で確立した対社長温度・Boss/Presidentの書き分け、2fのベルト=belt/王座=titleを継承)。開始前にworktreeブランチをmain先端(52de564)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。

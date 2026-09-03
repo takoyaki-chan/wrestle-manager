@@ -1831,7 +1831,7 @@
   },
   {
     "key": "{name2}! 同期からライバルかよ、燃えるじゃねぇか!",
-    "en": "",
+    "en": "{name2}! Same intake to rivals — that fires me up!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1844,7 +1844,7 @@
   },
   {
     "key": "{name2}! 鬱陶しい、消えてくれ!",
-    "en": "",
+    "en": "{name2}! You're crowding me, get lost!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1857,7 +1857,7 @@
   },
   {
     "key": "{name2}……。",
-    "en": "",
+    "en": "{name2}...",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1870,7 +1870,7 @@
   },
   {
     "key": "{name2}……あの試合は本物だった。私もあそこに立つ。",
-    "en": "",
+    "en": "{name2}... that match was the real thing. I'll stand where she stood.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1883,7 +1883,7 @@
   },
   {
     "key": "{name2}……いいものを見せてくれたわね。私も燃えてきたわ。",
-    "en": "",
+    "en": "{name2}... you showed me something good. Now I'm burning too.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1896,7 +1896,7 @@
   },
   {
     "key": "{name2}……いなくなるなんて、認められないわよ。",
-    "en": "",
+    "en": "{name2}... you being gone. I refuse to accept that.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1909,7 +1909,7 @@
   },
   {
     "key": "{name2}……ここで降りるのか。届く前に見送るのは堪える。",
-    "en": "",
+    "en": "{name2}... getting off here. Seeing her go before I reached her is hard.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1922,7 +1922,7 @@
   },
   {
     "key": "{name2}……すごい。",
-    "en": "",
+    "en": "{name2}... incredible.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1935,7 +1935,7 @@
   },
   {
     "key": "{name2}……ライバル。",
-    "en": "",
+    "en": "{name2}... rival.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1948,7 +1948,7 @@
   },
   {
     "key": "{name2}……勝った。",
-    "en": "",
+    "en": "{name2}... won.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1961,7 +1961,7 @@
   },
   {
     "key": "{name2}……勝手に憧れて、勝手に離れる。私の問題だ。",
-    "en": "",
+    "en": "{name2}... I looked up to you on my own, and I'm walking away on my own. My problem.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1974,7 +1974,7 @@
   },
   {
     "key": "{name2}……弟子に。",
-    "en": "",
+    "en": "{name2}... my student.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -1987,7 +1987,7 @@
   },
   {
     "key": "{name2}……次は。",
-    "en": "",
+    "en": "{name2}... next time.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2000,7 +2000,7 @@
   },
   {
     "key": "{name2}……眩しい。",
-    "en": "",
+    "en": "{name2}... too bright.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2013,7 +2013,7 @@
   },
   {
     "key": "{name2}……行くのか。",
-    "en": "",
+    "en": "{name2}... you're going.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2026,7 +2026,7 @@
   },
   {
     "key": "{name2}……追いついた。",
-    "en": "",
+    "en": "{name2}... caught up.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2039,7 +2039,7 @@
   },
   {
     "key": "{name2}……違ったか。",
-    "en": "",
+    "en": "{name2}... not what I thought.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2052,7 +2052,7 @@
   },
   {
     "key": "{name2}、あなたとは、二度と口を利きませんわ。",
-    "en": "",
+    "en": "{name2}, I shall never speak to you again.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2065,7 +2065,7 @@
   },
   {
     "key": "{name2}、いいわ。わたしの弟子になりなさい。甘えは許さないけど。",
-    "en": "",
+    "en": "All right, {name2}. Be my student. I won't let you lean on me, though.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2078,7 +2078,7 @@
   },
   {
     "key": "{name2}、いい気にならないでね。次は私の番よ。",
-    "en": "",
+    "en": "Don't get pleased with yourself, {name2}. The next one is mine.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2091,7 +2091,7 @@
   },
   {
     "key": "{name2}、おかえり。やっぱりここでしょ、あなたの居場所。",
-    "en": "",
+    "en": "{name2}, welcome back. This is where you belong, obviously.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2104,7 +2104,7 @@
   },
   {
     "key": "{name2}、おかえり。色々あったけど、もう過ぎた話だ。",
-    "en": "",
+    "en": "{name2}, welcome back. A lot went on, but that's over now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2117,7 +2117,7 @@
   },
   {
     "key": "{name2}、おめでとう。……うそ、ちょっと言えないかも。",
-    "en": "",
+    "en": "Congratulations, {name2}. ...No. I don't think I can say it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2130,7 +2130,7 @@
   },
   {
     "key": "{name2}、おめでとう。……一言だけだ。今は、それしか出てこない。",
-    "en": "",
+    "en": "Congratulations, {name2}. ...That's all. It's the only thing I have right now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2143,7 +2143,7 @@
   },
   {
     "key": "{name2}、おめでとう。……正直、複雑だ。",
-    "en": "",
+    "en": "Congratulations, {name2}. ...Honestly, it's complicated.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2156,7 +2156,7 @@
   },
   {
     "key": "{name2}、お前を弟子と認める。本気で来い。",
-    "en": "",
+    "en": "{name2}, I'm taking you on as my student. Come at me for real.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2169,7 +2169,7 @@
   },
   {
     "key": "{name2}、お前を弟子と認めるっす。甘えんなよ。",
-    "en": "",
+    "en": "{name2}, you're my student now. Don't get soft on me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2182,7 +2182,7 @@
   },
   {
     "key": "{name2}、このわたくしが、あなたごときに……許せませんの。",
-    "en": "",
+    "en": "{name2}, that I should lose to someone like you... I cannot forgive it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2195,7 +2195,7 @@
   },
   {
     "key": "{name2}、また持って行ったか。腹の底がざわついている。自分でも認めたくないが。",
-    "en": "",
+    "en": "{name2} took it again. My gut is churning, much as I hate to admit it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2208,7 +2208,7 @@
   },
   {
     "key": "{name2}、また派手にやってくれたわね。腹の底が、ちりちりするわ。",
-    "en": "",
+    "en": "{name2}, quite the show again. My insides are prickling.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2221,7 +2221,7 @@
   },
   {
     "key": "{name2}、もう無理よ、わたしたち。",
-    "en": "",
+    "en": "{name2}, we're finished. I can't do this anymore.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2234,7 +2234,7 @@
   },
   {
     "key": "{name2}、よろしくな。師匠と呼ばれるのは少しくすぐったいけど。",
-    "en": "",
+    "en": "{name2}, good to have you. Being called a teacher tickles a bit.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2247,7 +2247,7 @@
   },
   {
     "key": "{name2}、わたしたち、ここまで来ちゃったわね。",
-    "en": "",
+    "en": "{name2}, look how far the two of us have come.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2260,7 +2260,7 @@
   },
   {
     "key": "{name2}、ガッカリだわ。憧れた自分が馬鹿みてぇだ。",
-    "en": "",
+    "en": "{name2}, what a letdown. Makes me look stupid for looking up to you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2273,7 +2273,7 @@
   },
   {
     "key": "{name2}、テメーだけ華やかなとこ行きやがって。",
-    "en": "",
+    "en": "{name2}, off you go to the bright end all by yourself.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2286,7 +2286,7 @@
   },
   {
     "key": "{name2}、マジでカッコ良すぎだろ。あたしもあそこ目指すわ。",
-    "en": "",
+    "en": "{name2}, that was way too cool. I'm aiming for that spot.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2299,7 +2299,7 @@
   },
   {
     "key": "{name2}、二度と俺の前に立つな。",
-    "en": "",
+    "en": "{name2}, never stand in front of me again.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2312,7 +2312,7 @@
   },
   {
     "key": "{name2}、今日のことは事故だ。次は容赦しない。",
-    "en": "",
+    "en": "{name2}, today was an accident. Next time I show no mercy.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2325,7 +2325,7 @@
   },
   {
     "key": "{name2}、今日は近寄らないで。お願い。",
-    "en": "",
+    "en": "{name2}, don't come near me today. Please.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2338,7 +2338,7 @@
   },
   {
     "key": "{name2}、勝った。これでようやく、まっすぐ前を向ける。",
-    "en": "",
+    "en": "{name2}, I won. Now I can finally look straight ahead.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2351,7 +2351,7 @@
   },
   {
     "key": "{name2}、勝ったわ。気分、最高よ。",
-    "en": "",
+    "en": "{name2}, I won. I feel wonderful.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2364,7 +2364,7 @@
   },
   {
     "key": "{name2}、同じ日に来たお前と、ここまで来た。これからは並び立つ。",
-    "en": "",
+    "en": "{name2}, we came in on the same day and got this far. Now we stand level.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2377,7 +2377,7 @@
   },
   {
     "key": "{name2}、同期からライバルへ。いい関係に育ったな。",
-    "en": "",
+    "en": "{name2}, from same intake to rivals. That grew into a good thing.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2390,7 +2390,7 @@
   },
   {
     "key": "{name2}、引退? 決着つける前にいなくなるなんて、ずるいじゃない。",
-    "en": "",
+    "en": "Retiring, {name2}? Disappearing before we settle it is unfair.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2403,7 +2403,7 @@
   },
   {
     "key": "{name2}、引退か。決着は自分の中でつけるしかないな。",
-    "en": "",
+    "en": "{name2}, retiring. Looks like I settle this one inside my own head.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2416,7 +2416,7 @@
   },
   {
     "key": "{name2}、引退か。羨んだまま終わるのは、悔しい気もする。",
-    "en": "",
+    "en": "{name2}, retiring. Ending it still envying her leaves a bad taste.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2429,7 +2429,7 @@
   },
   {
     "key": "{name2}、引退かよ。あたし、まだ届いてねぇっつーのに。",
-    "en": "",
+    "en": "{name2}, retiring? I still haven't reached you, damn it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2442,7 +2442,7 @@
   },
   {
     "key": "{name2}、思ってたのと違ったわね。距離、置かせてもらうわ。",
-    "en": "",
+    "en": "{name2}, you weren't what I thought. I'll take some distance.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2455,7 +2455,7 @@
   },
   {
     "key": "{name2}、悪い。今は、お前のことすら鬱陶しい。一人にさせてくれ。",
-    "en": "",
+    "en": "{name2}, sorry. Right now even you feel like too much. Leave me alone.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2468,7 +2468,7 @@
   },
   {
     "key": "{name2}、悪いが今は話せない。優しさが、今は痛い。",
-    "en": "",
+    "en": "{name2}, sorry, I can't talk right now. Kindness hurts at the moment.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2481,7 +2481,7 @@
   },
   {
     "key": "{name2}、戻ったか。リングで会おう。それまで話す気はない。",
-    "en": "",
+    "en": "{name2}, you're back. See you in the ring. Nothing to say until then.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2494,7 +2494,7 @@
   },
   {
     "key": "{name2}、戻ったか。悪いけど、前と同じには戻れない。",
-    "en": "",
+    "en": "{name2}, you're back. Sorry, but we can't go back to how it was.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2507,7 +2507,7 @@
   },
   {
     "key": "{name2}、戻ったか。続きはリングで話そう。",
-    "en": "",
+    "en": "{name2}, you're back. We'll finish the talking in the ring.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2520,7 +2520,7 @@
   },
   {
     "key": "{name2}、戻ってきたのね。でも、前みたいには無理よ。",
-    "en": "",
+    "en": "So you're back, {name2}. It won't be like before, though.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2533,7 +2533,7 @@
   },
   {
     "key": "{name2}、追いついちゃった。これから、もっと面白くなるわよ。",
-    "en": "",
+    "en": "Caught you, {name2}. It gets a lot more interesting from here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2546,7 +2546,7 @@
   },
   {
     "key": "{name2}、隣に立てた。礼を言わせてくれ。",
-    "en": "",
+    "en": "{name2}, I'm standing beside you. Let me say thank you for that.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2559,7 +2559,7 @@
   },
   {
     "key": "{name2}、顔も見たくねぇっす。戻ってこないでほしかったわ。",
-    "en": "",
+    "en": "{name2}, don't want to see your face. Wish you'd stayed gone.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2572,7 +2572,7 @@
   },
   {
     "key": "{name2}ぁ! テメー調子こいてんじゃねぇぞ!",
-    "en": "",
+    "en": "{name2}! Don't you get cocky on me!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2585,7 +2585,7 @@
   },
   {
     "key": "{name2}がいなくなった現実が、静かに重くのしかかる。",
-    "en": "",
+    "en": "The fact of {name2} being gone settles quietly and heavily.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2598,7 +2598,7 @@
   },
   {
     "key": "{name2}が何も告げずに去ったことが、強いしこりになって残った。",
-    "en": "",
+    "en": "{name2} going without a word left a hard knot behind.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2611,7 +2611,7 @@
   },
   {
     "key": "{name2}が出ていった事実は、団体の空気を確実に冷やした。",
-    "en": "",
+    "en": "{name2} walking out cooled the air in this promotion, no question.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2624,7 +2624,7 @@
   },
   {
     "key": "{name2}が引退。背中を追っていた人がいなくなるのは、思った以上に重い。",
-    "en": "",
+    "en": "{name2} is retiring. Losing the person you were chasing is heavier than I thought.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2637,7 +2637,7 @@
   },
   {
     "key": "{name2}さん、これからよろしくお願いします。あなたを弟子として迎えます。",
-    "en": "",
+    "en": "{name2}, I'm glad to have you. I'm taking you on as my student.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2650,7 +2650,7 @@
   },
   {
     "key": "{name2}さん、わたくしの惨めな姿を、ご覧にならないでくださいまし。",
-    "en": "",
+    "en": "{name2}, please do not look at me while I am like this.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2663,7 +2663,7 @@
   },
   {
     "key": "{name2}さん、今日の試合は私の力不足でした。次は失礼のない試合を。",
-    "en": "",
+    "en": "{name2}, today's match was my own shortcoming. Next time I'll give you a proper one.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2676,7 +2676,7 @@
   },
   {
     "key": "{name2}さん、長くお話ししました。でも、今日で終わりにします。",
-    "en": "",
+    "en": "{name2}, we've talked for a long time. I'm ending it today.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2689,7 +2689,7 @@
   },
   {
     "key": "{name2}っ! テメーの顔見るたびにムカつくんだよ!",
-    "en": "",
+    "en": "{name2}! Every time I see your face I want to hit something!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2702,7 +2702,7 @@
   },
   {
     "key": "{name2}との溝は、そう簡単には埋まりそうにない。",
-    "en": "",
+    "en": "The gap with {name2} isn't closing any time soon.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2715,7 +2715,7 @@
   },
   {
     "key": "{name2}とは、どうしても噛み合わない。今週も火花が散った。",
-    "en": "",
+    "en": "{name2} and I just don't mesh. Sparks again this week.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2728,7 +2728,7 @@
   },
   {
     "key": "{name2}とは、もうダメだな。同じ団体にいるけど、それだけだ。",
-    "en": "",
+    "en": "{name2} and I are done. Same promotion, and that's the whole of it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2741,7 +2741,7 @@
   },
   {
     "key": "{name2}と向き合うたびに、空気が張りつめる。",
-    "en": "",
+    "en": "Every time I face {name2}, the air pulls tight.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2754,7 +2754,7 @@
   },
   {
     "key": "{name2}に勝った。長かった。本当に長かった。",
-    "en": "",
+    "en": "I beat {name2}. That took forever. It really did.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2767,7 +2767,7 @@
   },
   {
     "key": "{name2}に去られた悔しさは、簡単には消えそうにない。",
-    "en": "",
+    "en": "The sting of {name2} leaving isn't going away easily.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2780,7 +2780,7 @@
   },
   {
     "key": "{name2}に負けた。実感が湧かないな。",
-    "en": "",
+    "en": "I lost to {name2}. It hasn't sunk in.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2793,7 +2793,7 @@
   },
   {
     "key": "{name2}のこと、もう何とも思わないわ。寂しいくらい。",
-    "en": "",
+    "en": "{name2} means nothing to me now. Almost sad.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2806,7 +2806,7 @@
   },
   {
     "key": "{name2}の不在は、リングの外でも大きな穴を残した。",
-    "en": "",
+    "en": "{name2}'s absence left a wide hole outside the ring as well.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2819,7 +2819,7 @@
   },
   {
     "key": "{name2}の引退は、ただ見送るだけでは済まない喪失だった。",
-    "en": "",
+    "en": "{name2}'s retirement was a loss too big to simply see off.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2832,7 +2832,7 @@
   },
   {
     "key": "{name2}の移籍を受け入れるには、まだ時間がかかりそうだ。",
-    "en": "",
+    "en": "Accepting {name2}'s move is going to take a while yet.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2845,7 +2845,7 @@
   },
   {
     "key": "{name2}の突然の離脱に、まだ気持ちの整理がついていない。",
-    "en": "",
+    "en": "{name2} left suddenly, and I still haven't sorted out how I feel.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2858,7 +2858,7 @@
   },
   {
     "key": "{name2}の試合、本物だった。素直に追いかけたい。",
-    "en": "",
+    "en": "{name2}'s match was the real thing. I want to chase it, honestly.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2871,7 +2871,7 @@
   },
   {
     "key": "{name2}の離脱は、団体内に不信と動揺を広げた。",
-    "en": "",
+    "en": "{name2}'s departure spread mistrust and unease through the promotion.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2884,7 +2884,7 @@
   },
   {
     "key": "{name2}への嫉妬、一年経ってだいぶ風化してきた。",
-    "en": "",
+    "en": "A year on, the envy I had toward {name2} has worn down a lot.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2897,7 +2897,7 @@
   },
   {
     "key": "{name2}まで引き抜かれたのか。簡単に割り切れる話じゃない。",
-    "en": "",
+    "en": "They took {name2} as well. That isn't something I can just file away.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2910,7 +2910,7 @@
   },
   {
     "key": "{name2}も人間だった、ってことか。憧れるのはやめておく。",
-    "en": "",
+    "en": "So {name2} is human too. I'll stop looking up to her.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2923,7 +2923,7 @@
   },
   {
     "key": "{name2}を引き留めきれなかった。残された側のわだかまりは深い。",
-    "en": "",
+    "en": "We couldn't keep {name2} here. What's left behind sits deep.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2936,7 +2936,7 @@
   },
   {
     "key": "{name2}を止めたかった。その気持ちだけが、余計に胸に残る。",
-    "en": "",
+    "en": "I wanted to stop {name2}. That wish is the part that stays.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2949,7 +2949,7 @@
   },
   {
     "key": "{name2}を見ているとモヤモヤする。これが嫉妬か。",
-    "en": "",
+    "en": "Watching {name2} leaves me unsettled. So this is envy.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2962,7 +2962,7 @@
   },
   {
     "key": "{name2}を見ても、心が動かなくなった。",
-    "en": "",
+    "en": "I look at {name2} and nothing moves anymore.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2975,7 +2975,7 @@
   },
   {
     "key": "{name2}を追いかけてきて、ようやく隣に立てた気がする。",
-    "en": "",
+    "en": "I chased {name2} all this way, and I think I'm finally standing beside her.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -2988,7 +2988,7 @@
   },
   {
     "key": "{name2}先輩……。",
-    "en": "",
+    "en": "...{name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3001,7 +3001,7 @@
   },
   {
     "key": "{name2}先輩、ありがとうございます。これから本気でついていきます。",
-    "en": "",
+    "en": "{name2}, thank you. I'll be following you for real from now on.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3014,7 +3014,7 @@
   },
   {
     "key": "{name2}先輩、ありがとうございます。一生ついていきます。",
-    "en": "",
+    "en": "{name2}, thank you. I'll follow you for the rest of my life.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3027,7 +3027,7 @@
   },
   {
     "key": "{name2}先輩、おかえり、とは申し上げません。実力で示してください。",
-    "en": "",
+    "en": "{name2}, I won't say welcome back. Show me with your wrestling.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3040,7 +3040,7 @@
   },
   {
     "key": "{name2}先輩、おかえりなさい。また一緒にやりましょう。",
-    "en": "",
+    "en": "{name2}, welcome back. Let's do this together again.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3053,7 +3053,7 @@
   },
   {
     "key": "{name2}先輩、おめでとうございます。……心から、と言えたらよかった。",
-    "en": "",
+    "en": "Congratulations, {name2}. ...I wish I could have meant it fully.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3066,7 +3066,7 @@
   },
   {
     "key": "{name2}先輩、お疲れさまでした。何も返せないまま、お別れになります。",
-    "en": "",
+    "en": "{name2}, thank you for everything. I never got to give anything back.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3079,7 +3079,7 @@
   },
   {
     "key": "{name2}先輩、ごめんなさい。今は近くにいないでください。",
-    "en": "",
+    "en": "{name2}, I'm sorry. Please don't stay near me right now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3092,7 +3092,7 @@
   },
   {
     "key": "{name2}先輩、どうしてあなたばかり。私だって努力しているのに。",
-    "en": "",
+    "en": "{name2}, why is it always you? I'm working just as hard.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3105,7 +3105,7 @@
   },
   {
     "key": "{name2}先輩、また持ってかれたっすか。あたしのほうがムカついてんすよ。",
-    "en": "",
+    "en": "{name2} took it again? I'm the one who's furious here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3118,7 +3118,7 @@
   },
   {
     "key": "{name2}先輩、ようやく追いつきました。ありがとうございます。",
-    "en": "",
+    "en": "{name2}, I've finally caught up. Thank you for everything.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3131,7 +3131,7 @@
   },
   {
     "key": "{name2}先輩、マジ感謝っす! 一生ついてくっすよ!",
-    "en": "",
+    "en": "{name2}, huge thanks! You're stuck with me for life!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3144,7 +3144,7 @@
   },
   {
     "key": "{name2}先輩、今日からあなたを師匠と呼ばせてもらう。よろしく頼む。",
-    "en": "",
+    "en": "{name2}, from today I'll call you my teacher. I'm counting on you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3157,7 +3157,7 @@
   },
   {
     "key": "{name2}先輩、今日は私が勝ちました。これで前を向けます。",
-    "en": "",
+    "en": "{name2}, I won today. Now I can face forward.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3170,7 +3170,7 @@
   },
   {
     "key": "{name2}先輩、勝たせてもらったっすよ。これで肩の荷が下りるっす。",
-    "en": "",
+    "en": "{name2}, took the win off you. Load off my shoulders.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3183,7 +3183,7 @@
   },
   {
     "key": "{name2}先輩、勝手に憧れて、勝手に距離を置きます。すみません。",
-    "en": "",
+    "en": "{name2}, I looked up to you on my own, and now I'm stepping back on my own. I'm sorry.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3196,7 +3196,7 @@
   },
   {
     "key": "{name2}先輩、同期からライバルへ。私たち、いい関係に育ちましたね。",
-    "en": "",
+    "en": "{name2}, from classmates to rivals. We've grown into a good pairing, haven't we.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3209,7 +3209,7 @@
   },
   {
     "key": "{name2}先輩、嬉しいわ。これから本気でついていく。",
-    "en": "",
+    "en": "{name2}, I'm delighted. From here I'm following you all the way.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3222,7 +3222,7 @@
   },
   {
     "key": "{name2}先輩、引退かよ。決着つけねぇまま終わんなって。",
-    "en": "",
+    "en": "{name2}, retiring? Don't end it without settling up.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3235,7 +3235,7 @@
   },
   {
     "key": "{name2}先輩、引退ですか。私の中の宿題は、宿題のまま残りそうです。",
-    "en": "",
+    "en": "{name2}, retiring? My homework is going to stay homework, then.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3248,7 +3248,7 @@
   },
   {
     "key": "{name2}先輩、本当に素晴らしい試合でした。私も、いつか。",
-    "en": "",
+    "en": "{name2}, that was a wonderful match. Someday I want to do that too.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3261,7 +3261,7 @@
   },
   {
     "key": "{name2}先輩、追いついたっす。ここからは隣で行かせてもらうっすよ。",
-    "en": "",
+    "en": "{name2}, caught up. I'm walking next to you from now on.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3274,7 +3274,7 @@
   },
   {
     "key": "{name2}様……あのお試合、わたくしの目に焼き付きましたわ。",
-    "en": "",
+    "en": "{name2}... that match has been burned into my eyes.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3287,7 +3287,7 @@
   },
   {
     "key": "{name2}様……どうかお健やかに。あなた様の続きを、わたくしが背負いますわ。",
-    "en": "",
+    "en": "{name2}, be well. I shall carry the rest of your road myself.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3300,7 +3300,7 @@
   },
   {
     "key": "{name2}様……わたくしの目は、節穴でしたのね。",
-    "en": "",
+    "en": "{name2}... it seems my eyes were not worth much after all.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3313,7 +3313,7 @@
   },
   {
     "key": "{name2}様、おかえりなさいまし。お待ちしておりましたの。",
-    "en": "",
+    "en": "{name2}, welcome home. I have been waiting for you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3326,7 +3326,7 @@
   },
   {
     "key": "{name2}様、お引退とのこと。わたくしの胸の内は、置き場を失いましたわ。",
-    "en": "",
+    "en": "{name2} is retiring. What is inside my chest has nowhere left to go.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3339,7 +3339,7 @@
   },
   {
     "key": "{name2}様、ここまで参りましたわ。これからは、わたくしも肩を並べて。",
-    "en": "",
+    "en": "{name2}, I have come this far. From today I stand at your shoulder.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3352,7 +3352,7 @@
   },
   {
     "key": "{name2}様、なぜあなた様ばかり……わたくしの胸の中、煮えておりますの。",
-    "en": "",
+    "en": "{name2}, why is it always you... my chest is boiling over it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3365,7 +3365,7 @@
   },
   {
     "key": "{name2}様、勝たせていただきましたわ。これで胸のつかえも取れますの。",
-    "en": "",
+    "en": "{name2}, I was permitted the win. The weight in my chest is gone with it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3378,7 +3378,7 @@
   },
   {
     "key": "{name2}様、同じ日に入門したわたくしたちが、ここまで参りましたのね。",
-    "en": "",
+    "en": "{name2}, the two of us entered on the same day, and we have come this far.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3391,7 +3391,7 @@
   },
   {
     "key": "{name2}様、戻られたとのこと。けれども、わたくしは会釈以上のことは差し上げかねますわ。",
-    "en": "",
+    "en": "{name2}, I hear you have returned. A nod is all I am prepared to give you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3404,7 +3404,7 @@
   },
   {
     "key": "{name2}様、本日よりわたくしの師匠ですわ。光栄ですの。",
-    "en": "",
+    "en": "{name2}, from today you are my teacher. It is an honor.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3417,7 +3417,7 @@
   },
   {
     "key": "{name2}様、本日よりわたくしの弟子と認めますの。覚悟なさいましね。",
-    "en": "",
+    "en": "{name2}, from today I recognize you as my student. Do prepare yourself.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3430,7 +3430,7 @@
   },
   {
     "key": "{name2}様。おめでとうございます……心から、と言えればよろしかったのですが。",
-    "en": "",
+    "en": "Congratulations, {name2}... I do wish I could say it from the heart.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3476,7 +3476,7 @@
   },
   {
     "key": "{name}……あれだけ言葉を交わして、それでも行ったか。仕方ないとは言わせない。",
-    "en": "",
+    "en": "{name}... all those talks, and you still went. Don't tell me you had no choice.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3489,7 +3489,7 @@
   },
   {
     "key": "{name}……行ったか。",
-    "en": "",
+    "en": "{name}... so she went.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -3678,7 +3678,7 @@
   },
   {
     "key": "{name}、あなたが選んだ道ですのね。わたくしを置いて、よくも。",
-    "en": "",
+    "en": "{name}, so this is the road you chose. To leave me behind — how dare you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -4043,7 +4043,7 @@
   },
   {
     "key": "{name}、置いていくの? いいわ。次に向き合うときは、容赦しないから。",
-    "en": "",
+    "en": "Leaving me behind, {name}? Fine. Next time we face each other, I won't be gentle.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -4122,7 +4122,7 @@
   },
   {
     "key": "{name}ぁ、テメー筋通せって話だろ。次のリング、覚悟しとけよ。",
-    "en": "",
+    "en": "{name}, you could've done it straight, at least. Next ring, be ready.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -4135,7 +4135,7 @@
   },
   {
     "key": "{name}が抜けた。受け止めるしかないけど、釈然としない。",
-    "en": "",
+    "en": "{name} is gone. Nothing to do but take it, and it still doesn't sit right.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -4742,7 +4742,7 @@
   },
   {
     "key": "{name}先輩、あの言葉は本心だったのでしょうか。",
-    "en": "",
+    "en": "{name}, I keep wondering whether you meant any of what you said to us.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -7954,7 +7954,7 @@
   },
   {
     "key": "…………承知しました",
-    "en": "",
+    "en": "...Understood, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -8066,7 +8066,7 @@
   },
   {
     "key": "…………（何も言わず、封筒を見つめている）",
-    "en": "",
+    "en": "... (says nothing, looking at the envelope)",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -8388,7 +8388,7 @@
   },
   {
     "key": "………。",
-    "en": "",
+    "en": "...",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -8471,7 +8471,7 @@
   },
   {
     "key": "………ありがとう、ございます",
-    "en": "",
+    "en": "...Thank you. Really.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -11052,7 +11052,7 @@
   },
   {
     "key": "……あの、わたし……はい、わかりました",
-    "en": "",
+    "en": "...Um, I... yes, I understand.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -11290,7 +11290,7 @@
   },
   {
     "key": "……あの。皆には、わたしから……",
-    "en": "",
+    "en": "...Um. I'll be the one to tell them...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -12092,7 +12092,7 @@
   },
   {
     "key": "……ありがとうございます",
-    "en": "",
+    "en": "...Thank you very much.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -13403,7 +13403,7 @@
   },
   {
     "key": "……おめでとう。",
-    "en": "",
+    "en": "...Congratulations.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -13538,7 +13538,7 @@
   },
   {
     "key": "……お気持ちだけ、受け取っておきます",
-    "en": "",
+    "en": "...I'll accept the thought and leave the rest.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -13552,7 +13552,7 @@
   },
   {
     "key": "……お疲れさま。",
-    "en": "",
+    "en": "...Good work.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -13635,7 +13635,7 @@
   },
   {
     "key": "……お願い。",
-    "en": "",
+    "en": "...Please.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -13830,7 +13830,7 @@
   },
   {
     "key": "……こういうことは、時間をかけないと駄目なんですね。すみません",
-    "en": "",
+    "en": "...Some things need time, don't they. I'm sorry.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -15026,7 +15026,7 @@
   },
   {
     "key": "……これが、私の値段ですか",
-    "en": "",
+    "en": "...So this is what I'm worth.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -15389,7 +15389,7 @@
   },
   {
     "key": "……ごめん。",
-    "en": "",
+    "en": "...My fault.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -15638,7 +15638,7 @@
   },
   {
     "key": "……ごめんなさい。うまく、言えなくて",
-    "en": "",
+    "en": "...I'm sorry. I can't put it well.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -15844,7 +15844,7 @@
   },
   {
     "key": "……ざわつく。",
-    "en": "",
+    "en": "...Unsettled.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -16118,7 +16118,7 @@
   },
   {
     "key": "……ずっと、見てくれてたんですね",
-    "en": "",
+    "en": "...You were watching. All along.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -16423,7 +16423,7 @@
   },
   {
     "key": "……そう、ですか",
-    "en": "",
+    "en": "...I see. Is that so.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -16646,7 +16646,7 @@
   },
   {
     "key": "……そう。わかった",
-    "en": "",
+    "en": "...I see. Understood.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES",
       "data.js:JUNIOR_TOURNAMENT_LINES"
@@ -16658,7 +16658,7 @@
   },
   {
     "key": "……そう。好きにしていい、ということか",
-    "en": "",
+    "en": "...I see. So we're free to do as we like.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -16740,7 +16740,7 @@
   },
   {
     "key": "……そう。決めたのなら、それでいいよ",
-    "en": "",
+    "en": "...I see. If you've decided, then that's that.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -16836,7 +16836,7 @@
   },
   {
     "key": "……そうか",
-    "en": "",
+    "en": "...I see.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES",
       "data.js:WAR_DECLINE_DIALOGUE"
@@ -16958,7 +16958,7 @@
   },
   {
     "key": "……そうですか。元通り、ということですね",
-    "en": "",
+    "en": "...I see. Back to how it was, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -17587,7 +17587,7 @@
   },
   {
     "key": "……それでいい。",
-    "en": "",
+    "en": "...That works.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -17754,7 +17754,7 @@
   },
   {
     "key": "……ただいま。",
-    "en": "",
+    "en": "...I'm back.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -17860,7 +17860,7 @@
   },
   {
     "key": "……だめだった。……もう少し、時間がいる",
-    "en": "",
+    "en": "...It didn't work. ...We need a little more time.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -18655,7 +18655,7 @@
   },
   {
     "key": "……ついて、来い。",
-    "en": "",
+    "en": "...Follow me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -18806,7 +18806,7 @@
   },
   {
     "key": "……どこで間違えたのかは、自分で考えるよ",
-    "en": "",
+    "en": "...Where I went wrong is mine to work out.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -19066,7 +19066,7 @@
   },
   {
     "key": "……はぁ？ なんだよ、それ",
-    "en": "",
+    "en": "...Huh? What's that supposed to be.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -19317,7 +19317,7 @@
   },
   {
     "key": "……はい。わかりました",
-    "en": "",
+    "en": "...Yes. I hear you.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -19401,7 +19401,7 @@
   },
   {
     "key": "……はい。心得ておきます",
-    "en": "",
+    "en": "...Yes. I'll keep it in mind.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -19409,8 +19409,7 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "standard",
-      "personality": "quiet"
+      "archetype": "standard"
     }
   },
   {
@@ -19443,7 +19442,7 @@
   },
   {
     "key": "……はい。皆には、私から伝えます",
-    "en": "",
+    "en": "...Yes. I'll tell the others myself.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -19607,7 +19606,7 @@
   },
   {
     "key": "……ふぅん。ずいぶん急なお話ね",
-    "en": "",
+    "en": "...Hmm. Rather sudden, isn't it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -20180,7 +20179,7 @@
   },
   {
     "key": "……まあ、決まったなら仕方ないですね",
-    "en": "",
+    "en": "...Well, if it's decided, there's nothing to argue.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -21579,7 +21578,7 @@
   },
   {
     "key": "……もっと、うまくやれたはずでした",
-    "en": "",
+    "en": "...I should have handled it better than that.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -21982,7 +21981,7 @@
   },
   {
     "key": "……わかった",
-    "en": "",
+    "en": "...All right.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES",
       "data.js:JUNIOR_TOURNAMENT_LINES",
@@ -22131,7 +22130,7 @@
   },
   {
     "key": "……わかりました。社長がそう言うなら",
-    "en": "",
+    "en": "...Understood. If that's what you say, Boss.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -22729,7 +22728,7 @@
   },
   {
     "key": "……一度だけ、目を見て話した。それで充分",
-    "en": "",
+    "en": "...We talked once, eye to eye. That's enough.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -22794,7 +22793,7 @@
   },
   {
     "key": "……一言も。それだけ",
-    "en": "",
+    "en": "...Not one word. That's it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -23309,7 +23308,7 @@
   },
   {
     "key": "……了解",
-    "en": "",
+    "en": "...Got it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES",
       "data.js:JUNIOR_TOURNAMENT_LINES"
@@ -23321,7 +23320,7 @@
   },
   {
     "key": "……了解。そういう決まりなら、それで",
-    "en": "",
+    "en": "...Understood. If that's the rule, then fine.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -23329,8 +23328,7 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "composed",
-      "personality": "quiet"
+      "archetype": "composed"
     }
   },
   {
@@ -23419,7 +23417,7 @@
   },
   {
     "key": "……人の心はそう都合よく動きません。当然のことです",
-    "en": "",
+    "en": "...A person's heart does not move on command. That is only natural.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -24283,7 +24281,7 @@
   },
   {
     "key": "……借り、返す。",
-    "en": "",
+    "en": "...The debt. I pay it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -24450,7 +24448,7 @@
   },
   {
     "key": "……全力で、学びます",
-    "en": "",
+    "en": "...I'll learn. All of it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -24698,7 +24696,7 @@
   },
   {
     "key": "……分かった",
-    "en": "",
+    "en": "...Understood.",
     "files": [
       "data-faction-dialogue.js:FACTION_F08_PRE_MATCH_LINES_B",
       "data.js:CARE_REACTION_DIALOGUES"
@@ -25030,7 +25028,7 @@
   },
   {
     "key": "……別に",
-    "en": "",
+    "en": "...Whatever.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -26362,7 +26360,7 @@
   },
   {
     "key": "……勝手にしろ",
-    "en": "",
+    "en": "...Do as you like.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -26468,7 +26466,7 @@
   },
   {
     "key": "……参ったな。これは、こたえるよ",
-    "en": "",
+    "en": "...That's a blow. This one lands hard.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -27225,7 +27223,7 @@
   },
   {
     "key": "……完全に、消えた。",
-    "en": "",
+    "en": "...Gone. Completely.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -27710,7 +27708,7 @@
   },
   {
     "key": "……師匠。",
-    "en": "",
+    "en": "...Teacher.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -27778,7 +27776,7 @@
   },
   {
     "key": "……座ってはみたんですけど。何も出てきませんでした",
-    "en": "",
+    "en": "...We did sit down. Nothing came out of either of us.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -28141,7 +28139,7 @@
   },
   {
     "key": "……従う。納得はしない",
-    "en": "",
+    "en": "...I'll comply. I won't accept it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -29111,7 +29109,7 @@
   },
   {
     "key": "……承知いたしました。異は申しません",
-    "en": "",
+    "en": "...Understood. I shall raise no objection.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -30402,7 +30400,7 @@
   },
   {
     "key": "……楽しかったです（小さく微笑んでいる）",
-    "en": "",
+    "en": "...That was fun. (smiling faintly)",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -31284,7 +31282,7 @@
   },
   {
     "key": "……決着、なし。",
-    "en": "",
+    "en": "...No settling it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -31791,7 +31789,7 @@
   },
   {
     "key": "……理由くらい、聞きたかった",
-    "en": "",
+    "en": "...I would have liked a reason, at least.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -32110,7 +32108,7 @@
   },
   {
     "key": "……痛まない。",
-    "en": "",
+    "en": "...No ache.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -32187,7 +32185,7 @@
   },
   {
     "key": "……目標、変える。",
-    "en": "",
+    "en": "...Changing targets.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -32200,7 +32198,7 @@
   },
   {
     "key": "……目標、決まった。",
-    "en": "",
+    "en": "...Target set.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -32783,7 +32781,7 @@
   },
   {
     "key": "……私の頑張りは、これくらいなんですね",
-    "en": "",
+    "en": "...So this is what all my work adds up to.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -32992,7 +32990,7 @@
   },
   {
     "key": "……納得はしていない。それだけは言っておくよ",
-    "en": "",
+    "en": "...I don't accept it. I'll say that much, at least.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -33892,7 +33890,7 @@
   },
   {
     "key": "……色、薄い。",
-    "en": "",
+    "en": "...Faint color.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -34176,7 +34174,7 @@
   },
   {
     "key": "……解散、ですか。……はい",
-    "en": "",
+    "en": "...Disbanded, then. ...Yes.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -34259,7 +34257,7 @@
   },
   {
     "key": "……言葉は、もう。",
-    "en": "",
+    "en": "...No more words.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -34494,7 +34492,7 @@
   },
   {
     "key": "……話さない。",
-    "en": "",
+    "en": "...Not talking.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -34532,7 +34530,7 @@
   },
   {
     "key": "……話は、した。……これ以上は、まだ無理",
-    "en": "",
+    "en": "...We talked. ...Anything more is still too much.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -35974,7 +35972,7 @@
   },
   {
     "key": "……重荷、下ろせる。",
-    "en": "",
+    "en": "...Weight off.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -36298,7 +36296,7 @@
   },
   {
     "key": "……頑張ります",
-    "en": "",
+    "en": "...I'll put the work in.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -38526,7 +38524,7 @@
   },
   {
     "key": "…あの子にも言い分があった。それを聞かずにいたのは、こっちの落ち度だね",
-    "en": "",
+    "en": "...She had her side of it. Not hearing it was my failing.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -38778,7 +38776,7 @@
   },
   {
     "key": "…ありがたい",
-    "en": "",
+    "en": "...Appreciated.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -38806,7 +38804,7 @@
   },
   {
     "key": "…ありがたい。結果を出す",
-    "en": "",
+    "en": "...Grateful. I'll bring results.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -38848,7 +38846,7 @@
   },
   {
     "key": "…ありがたいね。全部吸収させてもらうよ",
-    "en": "",
+    "en": "...I'm grateful. I'll take all of it in.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -38862,7 +38860,7 @@
   },
   {
     "key": "…ありがたいね。次で応えるよ",
-    "en": "",
+    "en": "...Good of you. I'll answer for it next time out.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -39281,7 +39279,7 @@
   },
   {
     "key": "…ありがとう。もう少し、頑張ってみるわ",
-    "en": "",
+    "en": "...Thank you. I'll keep at it a while longer.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -39295,7 +39293,7 @@
   },
   {
     "key": "…ありがとう。もう少しやってみるよ",
-    "en": "",
+    "en": "...Thanks. I'll go a bit further.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -39309,7 +39307,7 @@
   },
   {
     "key": "…ありがとう。リング、待たせちゃ悪いね",
-    "en": "",
+    "en": "...Thanks. Bad manners to keep the ring waiting.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -39351,7 +39349,7 @@
   },
   {
     "key": "…ありがとう。大事に使うよ",
-    "en": "",
+    "en": "...Thanks. I'll use it carefully.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -39365,7 +39363,7 @@
   },
   {
     "key": "…ありがとう。少し休んでくるよ",
-    "en": "",
+    "en": "...Thanks. I'll go rest for a bit.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -39393,7 +39391,7 @@
   },
   {
     "key": "…ありがとう。結果で返すよ",
-    "en": "",
+    "en": "...Thanks. I'll give it back in results.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -40710,7 +40708,7 @@
   },
   {
     "key": "…ありがとうございます。もう少し、頑張ってみます",
-    "en": "",
+    "en": "...Thank you. I shall press on a little further.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -40900,7 +40898,7 @@
   },
   {
     "key": "…ありがとうございます。大切に使います",
-    "en": "",
+    "en": "...Thank you very much. I'll use it with care.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -40953,7 +40951,7 @@
   },
   {
     "key": "…ありがとうございます。少し休ませていただきます",
-    "en": "",
+    "en": "...Thank you very much. I'll take a short rest, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -41020,7 +41018,7 @@
   },
   {
     "key": "…ありがとうございます。早く、戻ります",
-    "en": "",
+    "en": "...Thank you. I'll be back. Soon.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42514,7 +42512,7 @@
   },
   {
     "key": "…いい時間だったね。悪くないよ",
-    "en": "",
+    "en": "...Nice evening. Not a bad way to spend one.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42584,7 +42582,7 @@
   },
   {
     "key": "…いい機会だ。結果を出す",
-    "en": "",
+    "en": "...Good opportunity. I'll produce.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42598,7 +42596,7 @@
   },
   {
     "key": "…いい機会だね。しっかり追い込むよ",
-    "en": "",
+    "en": "...Good chance, this one. I'll push myself properly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42612,7 +42610,7 @@
   },
   {
     "key": "…いい機会だね。任せて",
-    "en": "",
+    "en": "...Good chance, that. Leave it with me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42626,7 +42624,7 @@
   },
   {
     "key": "…いい機会だね。無駄にはしないよ",
-    "en": "",
+    "en": "...Good chance, this. I won't let it go to waste.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42834,7 +42832,7 @@
   },
   {
     "key": "…いい雰囲気だね。こういうのも大事だよ",
-    "en": "",
+    "en": "...Good mood in here. This sort of thing matters too.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42932,7 +42930,7 @@
   },
   {
     "key": "…いつもありがとうございます",
-    "en": "",
+    "en": "...Thank you, as always.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -42960,7 +42958,7 @@
   },
   {
     "key": "…いつも通りやればいいよ。大丈夫",
-    "en": "",
+    "en": "...I'll just do what I always do. It'll be fine.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -44016,7 +44014,7 @@
   },
   {
     "key": "…お疲れ様。こういう時間があるから、また頑張れるね",
-    "en": "",
+    "en": "...Good work, all. Nights like this are why we can go again.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -44030,7 +44028,7 @@
   },
   {
     "key": "…お茶が冷めただけ",
-    "en": "",
+    "en": "...All that happened was the tea got cold.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -44058,7 +44056,7 @@
   },
   {
     "key": "…お言葉、ありがとうございます",
-    "en": "",
+    "en": "...Thank you for those words.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -44184,7 +44182,7 @@
   },
   {
     "key": "…が、頑張ります",
-    "en": "",
+    "en": "...I-I'll manage.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -46205,7 +46203,7 @@
   },
   {
     "key": "…これで済ませるつもりかい。そうか",
-    "en": "",
+    "en": "...This is meant to settle it? I see.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -47457,7 +47455,7 @@
   },
   {
     "key": "…ご厚意に甘えます。必ず復帰してお返しいたします",
-    "en": "",
+    "en": "...I'll accept your kindness. I will return and repay it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -48498,7 +48496,7 @@
   },
   {
     "key": "…ずっと見てくれてたんだ。…ありがとう。応えるよ",
-    "en": "",
+    "en": "...You were watching the whole time. ...Thanks. I'll answer it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -48512,7 +48510,7 @@
   },
   {
     "key": "…ずっと見守ってくださったんですね。お応えします",
-    "en": "",
+    "en": "...You have been watching over me all along. I'll answer that.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -50023,7 +50021,7 @@
   },
   {
     "key": "…そこまでしてくれるんだ。早く戻って返すよ",
-    "en": "",
+    "en": "...You would go that far. I'll be back soon and pay it off.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -50275,7 +50273,7 @@
   },
   {
     "key": "…その言葉、ありがたいよ。もう少し踏ん張ってみる",
-    "en": "",
+    "en": "...That's good to hear. I'll hold on a while longer.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -50359,7 +50357,7 @@
   },
   {
     "key": "…そんなに気にかけてもらえるとは。ありがとうございます",
-    "en": "",
+    "en": "...I didn't expect that much concern. Thank you.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -50373,7 +50371,7 @@
   },
   {
     "key": "…そんなに気遣っていただいて。早く戻ります",
-    "en": "",
+    "en": "...To be looked after that carefully. I'll hurry back.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -50470,7 +50468,7 @@
   },
   {
     "key": "…だめだったね。無理に押しても、こじれるだけだと思うから…ごめんなさいね",
-    "en": "",
+    "en": "...It didn't work. Pushing harder would only tangle it more... I'm sorry.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -52413,7 +52411,7 @@
   },
   {
     "key": "…っ、こんなにしてもらって…っ、絶対早く戻ります…！",
-    "en": "",
+    "en": "...To have this much done for me...! I'm getting back fast, I swear...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -53936,7 +53934,7 @@
   },
   {
     "key": "…っ！ありがとうございます…！もう一回…もう一回頑張ります…！",
-    "en": "",
+    "en": "...! Thank you...! One more time... I'll go one more time...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -53950,7 +53948,7 @@
   },
   {
     "key": "…っ！ずっと見てくれてたんですね…！泣いちゃう…でも頑張る…！",
-    "en": "",
+    "en": "...! You've been watching me this whole time...! I'm going to cry... but I'll go...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -54382,7 +54380,7 @@
   },
   {
     "key": "…なるほど。やってみるよ",
-    "en": "",
+    "en": "...I see. I'll give it a try.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -56582,7 +56580,7 @@
   },
   {
     "key": "…まあ、たまには休むのも大事だよね。ありがとう",
-    "en": "",
+    "en": "...Well, resting now and then matters too. Thanks.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -56680,7 +56678,7 @@
   },
   {
     "key": "…まあ、席は立たなかったわ",
-    "en": "",
+    "en": "...Well. Neither of us walked out.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -56736,7 +56734,7 @@
   },
   {
     "key": "…また…？（少し困った顔をしている）",
-    "en": "",
+    "en": "...Again...? (looking a little troubled)",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -56806,7 +56804,7 @@
   },
   {
     "key": "…また金か。もういいよ",
-    "en": "",
+    "en": "...Money again. That's enough.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -56820,7 +56818,7 @@
   },
   {
     "key": "…また？",
-    "en": "",
+    "en": "...Again?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -57474,7 +57472,7 @@
   },
   {
     "key": "…まだ終わっていない。やる",
-    "en": "",
+    "en": "...Not over yet. I'll go.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -57516,7 +57514,7 @@
   },
   {
     "key": "…まだ終わってないよ。やるだけやる",
-    "en": "",
+    "en": "...It isn't over yet. I'll do what I can do.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -57794,7 +57792,7 @@
   },
   {
     "key": "…みんなでやれるのはいいね。じっくり行こう",
-    "en": "",
+    "en": "...Doing it all together is good. Let's go steadily.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -60896,7 +60894,7 @@
   },
   {
     "key": "…アンタに言われると、やんなきゃって思うんだよ",
-    "en": "",
+    "en": "...When you say it, I feel like I actually have to do it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -61147,7 +61145,7 @@
   },
   {
     "key": "…サンキュ。もうちょいやってみるわ",
-    "en": "",
+    "en": "...Thanks. I'll push a bit more.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -63491,7 +63489,7 @@
   },
   {
     "key": "…了解。しっかり吸収するよ",
-    "en": "",
+    "en": "...Understood. I'll get everything out of it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -63740,7 +63738,7 @@
   },
   {
     "key": "…人を変えられると思うほうが傲慢よ。今日のところは、諦めるわ",
-    "en": "",
+    "en": "...Thinking you can change a person is the arrogant part. I'll let today go.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -64908,7 +64906,7 @@
   },
   {
     "key": "…信じてくれるなら、応えないとね",
-    "en": "",
+    "en": "...If you believe in me, I ought to answer it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -64922,7 +64920,7 @@
   },
   {
     "key": "…信じてくれるなら、応える",
-    "en": "",
+    "en": "...You believe in me, I answer.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -65104,7 +65102,7 @@
   },
   {
     "key": "…充電してくる。戻ったら結果を出す",
-    "en": "",
+    "en": "...Recharging. Results when I return.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -65118,7 +65116,7 @@
   },
   {
     "key": "…充電してくるよ。戻ったらまた行こう",
-    "en": "",
+    "en": "...I'll recharge. We go again when I'm back.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -65705,7 +65703,7 @@
   },
   {
     "key": "…分かった。まだ諦めない",
-    "en": "",
+    "en": "...Fine. I'm not giving up yet.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -65719,7 +65717,7 @@
   },
   {
     "key": "…分かった。応える",
-    "en": "",
+    "en": "...Understood. I answer.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -67463,7 +67461,7 @@
   },
   {
     "key": "…合宿か。じっくりやろう",
-    "en": "",
+    "en": "...A camp. Let's take our time with it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -67560,7 +67558,7 @@
   },
   {
     "key": "…吸収する。見ていてくれ",
-    "en": "",
+    "en": "...I'll absorb it. Watch.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -67658,7 +67656,7 @@
   },
   {
     "key": "…喧嘩する理由、もう半分は忘れてたわ",
-    "en": "",
+    "en": "...Half the reason we were fighting, I'd already forgotten.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -67966,7 +67964,7 @@
   },
   {
     "key": "…声をかけてもらえて…嬉しかったです…頑張ります…",
-    "en": "",
+    "en": "...You came and talked to me... that made me happy... I'll keep going...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -68630,7 +68628,7 @@
   },
   {
     "key": "…少し、休みます。ありがとうございます",
-    "en": "",
+    "en": "...I'll rest a while. Thank you.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -69845,7 +69843,7 @@
   },
   {
     "key": "…急かす話じゃないよ。あの子にも、譲れないものがあるんだ",
-    "en": "",
+    "en": "...Not something to rush. She has things she won't give up either.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -70836,7 +70834,7 @@
   },
   {
     "key": "…悪くない時間だった",
-    "en": "",
+    "en": "...The evening wasn't bad.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -70962,7 +70960,7 @@
   },
   {
     "key": "…悪くなかった",
-    "en": "",
+    "en": "...It was all right.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -71270,7 +71268,7 @@
   },
   {
     "key": "…感謝する。少し休む",
-    "en": "",
+    "en": "...Grateful. I'll rest a while.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -71284,7 +71282,7 @@
   },
   {
     "key": "…感謝する。早く戻る",
-    "en": "",
+    "en": "...Grateful. Back quickly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -71326,7 +71324,7 @@
   },
   {
     "key": "…感謝する。結果で返す",
-    "en": "",
+    "en": "...Grateful. I pay it back in results.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -72508,7 +72506,7 @@
   },
   {
     "key": "…早く戻るよ。ありがとう",
-    "en": "",
+    "en": "...I'll be back quickly. Thanks.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -72760,7 +72758,7 @@
   },
   {
     "key": "…最後まで、どちらも黙ってたわ",
-    "en": "",
+    "en": "...Neither of us said a word the whole time.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -73472,7 +73470,7 @@
   },
   {
     "key": "…楽しいお時間でした。ありがとうございます",
-    "en": "",
+    "en": "...It was a lovely evening. Thank you very much.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -75260,7 +75258,7 @@
   },
   {
     "key": "…無駄にはしない。すぐ戻る",
-    "en": "",
+    "en": "...I won't waste it. Back soon.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -76648,7 +76646,7 @@
   },
   {
     "key": "…相手の言い分を聞く機会がなかっただけ。聞いてしまえば、案外つまらない話だったわ",
-    "en": "",
+    "en": "...I simply never had the chance to hear her side. Having heard it, it was dull enough.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -79675,7 +79673,7 @@
   },
   {
     "key": "…私のためにここまで…早く戻って、結果でお返しします",
-    "en": "",
+    "en": "...All this for me... I'll be back soon and repay it in results.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -80206,7 +80204,7 @@
   },
   {
     "key": "…精一杯、取り組みます",
-    "en": "",
+    "en": "...I'll apply myself as best I can.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -80235,7 +80233,7 @@
   },
   {
     "key": "…精一杯学ばせていただきます",
-    "en": "",
+    "en": "...I'll learn everything I possibly can.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -80665,7 +80663,7 @@
   },
   {
     "key": "…緊張しますが、精一杯頑張ります",
-    "en": "",
+    "en": "...I'm rather nervous, but I'll see it through properly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -81672,7 +81670,7 @@
   },
   {
     "key": "…見てくれてたんだ。…悪くないね",
-    "en": "",
+    "en": "...So you were watching. ...Not bad at all.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -83420,7 +83418,7 @@
   },
   {
     "key": "…追い込む",
-    "en": "",
+    "en": "...I'll push.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -84020,7 +84018,7 @@
   },
   {
     "key": "…鍛えさせてもらう。結果を出す",
-    "en": "",
+    "en": "...I'll take the training. Results follow.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -88014,7 +88012,7 @@
   },
   {
     "key": "あ…ありがとう、ございます…（また…？）",
-    "en": "",
+    "en": "Th-thank you... very much... (again...?)",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -88854,7 +88852,7 @@
   },
   {
     "key": "あ、あの…楽しかった、です…（隅で小さく笑っている）",
-    "en": "",
+    "en": "U-um... it was fun, really... (laughing quietly in the corner)",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -89092,7 +89090,7 @@
   },
   {
     "key": "あ、ありがとうございます…そう言っていただけると、頑張れます…",
-    "en": "",
+    "en": "Th-thank you... hearing you say that, I can keep going...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -89719,7 +89717,7 @@
   },
   {
     "key": "あいつだけは羨んじゃだめだろ。なのに、目で追っちまう。",
-    "en": "",
+    "en": "She's the one I'm not supposed to envy. And my eyes follow her anyway.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -90614,7 +90612,7 @@
   },
   {
     "key": "あっ…思ったより、ちゃんと話せたかも。…ずっと避けててごめんなさいね",
-    "en": "",
+    "en": "Oh... we talked better than I expected, I think. ...Sorry for avoiding you all this time.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -91035,7 +91033,7 @@
   },
   {
     "key": "あなたが信じているなら、応えてあげませんとね？",
-    "en": "",
+    "en": "If you believe in me, then I must answer it, must I not?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -91049,7 +91047,7 @@
   },
   {
     "key": "あなたが信じてくれるなら…絶対応えるわ",
-    "en": "",
+    "en": "If you believe in me... then I'll answer it, without fail.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -91063,7 +91061,7 @@
   },
   {
     "key": "あなたが優しいから、余計に苦しいんです。少し距離を。",
-    "en": "",
+    "en": "It's because you're kind that it hurts more. Give me a little space.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -91426,7 +91424,7 @@
   },
   {
     "key": "あなたに言われると、本当に力が出ます！",
-    "en": "",
+    "en": "When it comes from you, I really do get stronger!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -91440,7 +91438,7 @@
   },
   {
     "key": "あなたに言われると、本当に力が出ます！もっと頑張れます！",
-    "en": "",
+    "en": "Coming from you, it really gives me strength! I can go further!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -91454,7 +91452,7 @@
   },
   {
     "key": "あなたに認めてもらえた。私の人生、変わった気がします。",
-    "en": "",
+    "en": "You accepted me. I feel like my life just changed.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -91495,7 +91493,7 @@
   },
   {
     "key": "あなたに預けてもらえた以上、最強の弟子になるわよ。",
-    "en": "",
+    "en": "You took me on, so I'll be the strongest student you ever had.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -91689,7 +91687,7 @@
   },
   {
     "key": "あなたの優しさが、いまは一番こたえるの。",
-    "en": "",
+    "en": "Your kindness is the thing that lands hardest right now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -91842,7 +91840,7 @@
   },
   {
     "key": "あなたの背中、わたしが押すわ。さあ、ついてきて。",
-    "en": "",
+    "en": "I'll push you from behind. Now come along.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -91869,7 +91867,7 @@
   },
   {
     "key": "あなたの言葉だけで……っ……私、何でもできちゃいそうなの……ふふ……",
-    "en": "",
+    "en": "Just your words... mm... and I feel like I could do anything... heh...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -91883,7 +91881,7 @@
   },
   {
     "key": "あなたの試合は、私の中にずっと残ります。本当に、ありがとうございました。",
-    "en": "",
+    "en": "Your matches will stay with me forever. Thank you, truly.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -91896,7 +91894,7 @@
   },
   {
     "key": "あなたの顔を見るのも、声を聞くのも、限界。",
-    "en": "",
+    "en": "Your face, your voice — I'm at my limit with both.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -91923,7 +91921,7 @@
   },
   {
     "key": "あなたばっかりずるいじゃない。わたしも燃えてるのよ。",
-    "en": "",
+    "en": "It's always you, and that's not fair. I'm burning too, you know.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -92062,7 +92060,7 @@
   },
   {
     "key": "あなた抜きで先に進むしかないのね。",
-    "en": "",
+    "en": "Nothing to do now but go on without you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -92103,7 +92101,7 @@
   },
   {
     "key": "あなた様の背中、ようやくわたくしの隣にございますの。",
-    "en": "",
+    "en": "That back of yours is finally level with mine.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -92116,7 +92114,7 @@
   },
   {
     "key": "あなた様への憧れ、ここで仕舞わせていただきますわ。",
-    "en": "",
+    "en": "My admiration for you — I shall put it away here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -92605,7 +92603,7 @@
   },
   {
     "key": "あの…ちゃんと、謝れました。震えてましたけど…",
-    "en": "",
+    "en": "Um... I did apologize properly. I was shaking, but...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -92969,7 +92967,7 @@
   },
   {
     "key": "あの…休んでいいんですか…？ ありがとうございます…",
-    "en": "",
+    "en": "Um... am I allowed to rest...? Thank you very much...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -93011,7 +93009,7 @@
   },
   {
     "key": "あの…気持ちは嬉しいんですが…",
-    "en": "",
+    "en": "Um... I'm glad you thought of me, but...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -93766,7 +93764,7 @@
   },
   {
     "key": "あの人みたいな試合、わたしにもできるかしら。試したくなったの。",
-    "en": "",
+    "en": "A match like hers — I wonder if I have one in me. I want to find out.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -93972,7 +93970,7 @@
   },
   {
     "key": "あの団体で何を背負うつもりだ、{name}。次にリングで会うときは、こちらも遠慮しない。",
-    "en": "",
+    "en": "What are you carrying over there, {name}? Next time we meet in the ring, I won't hold back either.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94124,7 +94122,7 @@
   },
   {
     "key": "あの嫉妬、まだ完全には消えていない。だが、動けなくなるほどではない。",
-    "en": "",
+    "en": "That envy hasn't gone completely. Not enough to freeze me anymore, though.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94340,7 +94338,7 @@
   },
   {
     "key": "あの感情、ほとんど思い出せません。",
-    "en": "",
+    "en": "I can barely call that feeling back at all.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94729,7 +94727,7 @@
   },
   {
     "key": "あの方の背中、追いかけさせていただきますの。",
-    "en": "",
+    "en": "I shall follow after her, however far she is ahead.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94868,7 +94866,7 @@
   },
   {
     "key": "あの時の言葉、まだ胸に残っておりますの。",
-    "en": "",
+    "en": "What you said back then is still sitting in my chest.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94951,7 +94949,7 @@
   },
   {
     "key": "あの練習場が{name}抜きで回るようになる。当たり前のように。それが寂しい。",
-    "en": "",
+    "en": "The gym will run fine without {name}. Like it was always that way. That's the lonely part.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94964,7 +94962,7 @@
   },
   {
     "key": "あの背中、追う。",
-    "en": "",
+    "en": "That back. I'm following it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94977,7 +94975,7 @@
   },
   {
     "key": "あの背中、追わない。けど、忘れもしないわよ。",
-    "en": "",
+    "en": "I won't chase her. I won't forget, either.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -94990,7 +94988,7 @@
   },
   {
     "key": "あの背中が目標だった。だから今日は素直に嬉しい。",
-    "en": "",
+    "en": "That back was my goal. So today I'm just plain happy.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95003,7 +95001,7 @@
   },
   {
     "key": "あの背中を追っていた日々が、終わる。礼を言うべきか、恨むべきか。",
-    "en": "",
+    "en": "The days I spent chasing that back are over. I don't know whether to thank her or resent her.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95016,7 +95014,7 @@
   },
   {
     "key": "あの背中を追わせてください。それが今日からの私の目標です。",
-    "en": "",
+    "en": "Please let me follow you. That's what I'm aiming for, starting today.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95264,7 +95262,7 @@
   },
   {
     "key": "あの頃の{name2}は格好良かった。今のあなたは、知らない人だ。",
-    "en": "",
+    "en": "The {name2} back then was something. The one now is a stranger.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95291,7 +95289,7 @@
   },
   {
     "key": "あの頃のわたくしの必死さ、もはや遠い夢のよう。",
-    "en": "",
+    "en": "How desperate I was back then. It seems a distant dream.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95304,7 +95302,7 @@
   },
   {
     "key": "あの頃のわたくしの焦りが、嘘のようですわ。",
-    "en": "",
+    "en": "The impatience I carried back then seems like a lie now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95359,7 +95357,7 @@
   },
   {
     "key": "あの頃のモヤモヤ、もう色褪せてきました。",
-    "en": "",
+    "en": "That knot I had back then has lost its color already.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95400,7 +95398,7 @@
   },
   {
     "key": "あの頃の熱、もうだいぶ薄れたな。時間、おそろしいぜ。",
-    "en": "",
+    "en": "That heat's mostly gone. Time's scary stuff.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -95426,7 +95424,7 @@
   },
   {
     "key": "あはは……えっと、これは……うん……",
-    "en": "",
+    "en": "Ahaha... um, this is... yeah...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -95622,7 +95620,7 @@
   },
   {
     "key": "あはは…空気、重かったな〜。ま、また今度でいいよね？",
-    "en": "",
+    "en": "Ahaha... heavy in there~. Well, another time is fine, right?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -95997,7 +95995,7 @@
   },
   {
     "key": "あら……ずいぶん安く見られたものね",
-    "en": "",
+    "en": "Oh my... I have been priced rather low, haven't I.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -96259,7 +96257,7 @@
   },
   {
     "key": "あら、あんなに素直に頭を下げられたら…いじめ甲斐がなくなるじゃない",
-    "en": "",
+    "en": "Oh my. Bow that honestly and there's no fun left in tormenting her.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -97195,7 +97193,7 @@
   },
   {
     "key": "あら、嬉しい。ありがとう",
-    "en": "",
+    "en": "Oh my. How lovely. Thank you.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -97360,7 +97358,7 @@
   },
   {
     "key": "あら、残念。……せっかく、面白い顔が見られると思っていたのに",
-    "en": "",
+    "en": "Oh my, a shame. ...And I was hoping for an interesting face out of it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -97721,7 +97719,7 @@
   },
   {
     "key": "あら。お心変わりですの",
-    "en": "",
+    "en": "Oh. You have had a change of heart.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -97734,7 +97732,7 @@
   },
   {
     "key": "あら。ずいぶん用心深いのね",
-    "en": "",
+    "en": "Oh my. How very cautious of you.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -97742,13 +97740,12 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "seductive",
-      "personality": "quiet"
+      "archetype": "seductive"
     }
   },
   {
     "key": "あら。目障りだったのかしら",
-    "en": "",
+    "en": "Oh my. Were we an eyesore, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -97859,7 +97856,7 @@
   },
   {
     "key": "あらあら…お互い、お茶にも手をつけないままで。困ったこと",
-    "en": "",
+    "en": "My, my... neither of us touched the tea. How troublesome.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -97929,7 +97926,7 @@
   },
   {
     "key": "あらあら、お茶が冷めるまで話し込んでしまって。悪くない時間でしたわね",
-    "en": "",
+    "en": "My, my. We talked until the tea went cold. Not a poor way to spend an hour.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98418,7 +98415,7 @@
   },
   {
     "key": "あら嬉しい。何に使おうかしら",
-    "en": "",
+    "en": "Oh my, how nice. Now what shall I spend it on.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98432,7 +98429,7 @@
   },
   {
     "key": "あら残念。いい集まりだったのに",
-    "en": "",
+    "en": "Oh, what a shame. It was a good little circle.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98600,7 +98597,7 @@
   },
   {
     "key": "ありがとう…もう一度、頑張ってみるわ",
-    "en": "",
+    "en": "Thank you... I think I'll go around one more time.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98614,7 +98611,7 @@
   },
   {
     "key": "ありがとう…早く戻れるように頑張るわ",
-    "en": "",
+    "en": "Thank you... I'll do what it takes to get back quickly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98754,7 +98751,7 @@
   },
   {
     "key": "ありがとう。ちゃんと結果で返すわ",
-    "en": "",
+    "en": "Thank you. I'll return it properly, in results.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98768,7 +98765,7 @@
   },
   {
     "key": "ありがとう。リフレッシュしてくるわね",
-    "en": "",
+    "en": "Thank you. I'll go and freshen up, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98782,7 +98779,7 @@
   },
   {
     "key": "ありがとう。早く戻れるように頑張るわ",
-    "en": "",
+    "en": "Thank you. I'll work at getting back soon.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98936,7 +98933,7 @@
   },
   {
     "key": "ありがとうございます…",
-    "en": "",
+    "en": "Thank you...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98978,7 +98975,7 @@
   },
   {
     "key": "ありがとうございます…もう一度、頑張ってみますわ",
-    "en": "",
+    "en": "Thank you... I shall make one more attempt.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -98992,7 +98989,7 @@
   },
   {
     "key": "ありがとうございます…もう一度、頑張ってみます！",
-    "en": "",
+    "en": "Thank you... I'll try once more!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -99006,7 +99003,7 @@
   },
   {
     "key": "ありがとうございます…少し、休みます",
-    "en": "",
+    "en": "Thank you... I'll take a little rest.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -99524,7 +99521,7 @@
   },
   {
     "key": "ありがとうございます。リフレッシュして戻って参ります",
-    "en": "",
+    "en": "Thank you. I shall refresh myself and return.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -99689,7 +99686,7 @@
   },
   {
     "key": "ありがとうございます。必ず結果でお返しいたします",
-    "en": "",
+    "en": "Thank you very much. I will repay this with results, without fail.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -99801,7 +99798,7 @@
   },
   {
     "key": "ありがとうございます。結果でお応えしますわ",
-    "en": "",
+    "en": "Thank you. I shall see that the results justify it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -99815,7 +99812,7 @@
   },
   {
     "key": "ありがとうございます。結果でお返しするわ",
-    "en": "",
+    "en": "Thank you. I shall repay you with results.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -100204,7 +100201,7 @@
   },
   {
     "key": "ありがとうございます！",
-    "en": "",
+    "en": "Thank you so much!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -100260,7 +100257,7 @@
   },
   {
     "key": "ありがとうございます！次の試合、絶対頑張ります！",
-    "en": "",
+    "en": "Thank you! I'm going all out in the next match, I promise!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -100274,7 +100271,7 @@
   },
   {
     "key": "ありがとうございます！行ってきます！",
-    "en": "",
+    "en": "Thank you! I'm off, then!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -100511,7 +100508,7 @@
   },
   {
     "key": "あれだけ拗らせた感情も、こうして終わるのね。",
-    "en": "",
+    "en": "Even a feeling I twisted up that badly ends like this.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -100524,7 +100521,7 @@
   },
   {
     "key": "あれだけ燃えた相手が、今は風景の一部。",
-    "en": "",
+    "en": "The one who set me alight is part of the scenery now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -100537,7 +100534,7 @@
   },
   {
     "key": "あれだけ燃えてたのに、こうして冷めていくのね。",
-    "en": "",
+    "en": "I burned that hot, and this is how it cools. Isn't that something.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -100550,7 +100547,7 @@
   },
   {
     "key": "あれだけ目障りだった相手が、ただの選手にしか見えない。",
-    "en": "",
+    "en": "The one who used to be an eyesore is just another wrestler to me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -100577,7 +100574,7 @@
   },
   {
     "key": "あれは、ただ集まっていただけなのに",
-    "en": "",
+    "en": "We were only gathering together, that's all.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -100590,7 +100587,7 @@
   },
   {
     "key": "あれは徒党じゃない。私が呼んで、集まってくれた仲間です",
-    "en": "",
+    "en": "That wasn't a clique. I called them, and they came. They're my people.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -100604,7 +100601,7 @@
   },
   {
     "key": "あれほど共に歩んだのに……許しませんわ、{name}。",
-    "en": "",
+    "en": "After all the ground we walked together... I shall not forgive this, {name}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -100617,7 +100614,7 @@
   },
   {
     "key": "あれを見て動かないなら、選手として終わりだ。私も行く。",
-    "en": "",
+    "en": "If that doesn't move you, you're finished as a wrestler. I'm going after her.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -100991,7 +100988,7 @@
   },
   {
     "key": "あんなに気にしてた相手が、今では風景の一部だ。",
-    "en": "",
+    "en": "The one I couldn't stop watching is part of the scenery now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -101004,7 +101001,7 @@
   },
   {
     "key": "あんなに目障りだった相手が、今はただの先輩っす。",
-    "en": "",
+    "en": "The one who used to bug me is just another senior now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -101017,7 +101014,7 @@
   },
   {
     "key": "あんな景色を見せられたら、追いかけたくなるじゃない。",
-    "en": "",
+    "en": "Show a girl a view like that and of course she wants to chase it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -101030,7 +101027,7 @@
   },
   {
     "key": "あんな試合見せられたら、こっちもやるしかねぇだろ。",
-    "en": "",
+    "en": "You watch a match like that, you've got no choice but to go.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -101363,7 +101360,7 @@
   },
   {
     "key": "あー、空気重かった〜。まぁ、こういうのは無理にやるもんじゃないでしょ",
-    "en": "",
+    "en": "Ah, that room was heavy~. Well, this isn't the sort of thing you force.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -101405,7 +101402,7 @@
   },
   {
     "key": "あーあ。楽しかったんですけどね",
-    "en": "",
+    "en": "Aw. It was fun while it lasted, though.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -101685,7 +101682,7 @@
   },
   {
     "key": "いいぜ、向こうで好きにやれ。会ったらブッ潰すだけだ。",
-    "en": "",
+    "en": "Fine, do whatever over there. We meet, I flatten you. That's it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -101864,7 +101861,7 @@
   },
   {
     "key": "いいわ、畳みましょう。……でも、覚えておいて",
-    "en": "",
+    "en": "Fine, we'll fold it. ...But do remember this.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -102628,7 +102625,7 @@
   },
   {
     "key": "いい雰囲気。チームが強くなってる証拠だね",
-    "en": "",
+    "en": "Good atmosphere. Sign the team is getting stronger.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -102642,7 +102639,7 @@
   },
   {
     "key": "いい雰囲気ね。チームが成長してる証拠だわ",
-    "en": "",
+    "en": "Nice mood in the room. Proof the team is growing.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -102739,7 +102736,7 @@
   },
   {
     "key": "いえーい！カンパーイ！",
-    "en": "",
+    "en": "Yeah! Cheers!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -102906,7 +102903,7 @@
   },
   {
     "key": "いただきます…！",
-    "en": "",
+    "en": "I'll accept it, gladly... thank you!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -102962,7 +102959,7 @@
   },
   {
     "key": "いつか抜くっすからね。覚悟しといてください、{name2}先輩!",
-    "en": "",
+    "en": "I'm passing you one day. Be ready for it, {name2}!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -103017,7 +103014,7 @@
   },
   {
     "key": "いつも気にかけてくださって…あ、あの、本当に感謝しています…",
-    "en": "",
+    "en": "You always look out for me... um... I'm truly grateful...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -103789,7 +103786,7 @@
   },
   {
     "key": "いろいろあったけど、また一緒にやれたら嬉しいです。",
-    "en": "",
+    "en": "A lot happened, but I'd be glad to work with you all again.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -104694,7 +104691,7 @@
   },
   {
     "key": "うぇーい！飲むぞ〜！",
-    "en": "",
+    "en": "Woo! Let's drink~!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -104778,7 +104775,7 @@
   },
   {
     "key": "うおー！！合宿だ！楽しみ！",
-    "en": "",
+    "en": "Whoaa!! Camp! I can't wait!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -105765,7 +105762,7 @@
   },
   {
     "key": "うわ、専門医まで…！ 早く戻りますね〜！",
-    "en": "",
+    "en": "Whoa, an actual specialist...! I'll be back before you know it~!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -105793,7 +105790,7 @@
   },
   {
     "key": "うわあ…嬉しくて泣きそう…！",
-    "en": "",
+    "en": "Ahh... I'm so happy I might cry...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -105835,7 +105832,7 @@
   },
   {
     "key": "うわあ、緊張する…でも頑張ります！",
-    "en": "",
+    "en": "Wow, I'm nervous... but I'm going to give it everything!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -105863,7 +105860,7 @@
   },
   {
     "key": "うわー、これは追いかけるしかねぇっす、{name2}先輩。",
-    "en": "",
+    "en": "Whoa. Nothing to do but chase her now, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -105876,7 +105873,7 @@
   },
   {
     "key": "うわー、しんみりした！でも元気出た！やってやる！",
-    "en": "",
+    "en": "Whoa, that got heavy! But I feel better! Let's go!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -106100,7 +106097,7 @@
   },
   {
     "key": "うーん、空振りでした！ …あれ、こういうときって落ち込むものですか？",
-    "en": "",
+    "en": "Hmm, swung and missed! ...Wait, is this the part where I get sad?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -106184,7 +106181,7 @@
   },
   {
     "key": "え……これだけ、ですか……私って、その程度なんだ……",
-    "en": "",
+    "en": "Oh... this much, and that's it...? So that's all I am...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -106464,7 +106461,7 @@
   },
   {
     "key": "え…あの…ありがとう、ございます…！",
-    "en": "",
+    "en": "Oh... um... thank you, really...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -106562,7 +106559,7 @@
   },
   {
     "key": "え…でも練習が…でも、ありがとうございます！",
-    "en": "",
+    "en": "But... my training... no, thank you, really!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -106744,7 +106741,7 @@
   },
   {
     "key": "え…テレビ…？ き、緊張します…で、でも頑張ります…！",
-    "en": "",
+    "en": "Huh... TV...? I-I'm so nervous... b-but I'll try...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -106926,7 +106923,7 @@
   },
   {
     "key": "え…！ありがとうございます…！嬉しい…！",
-    "en": "",
+    "en": "Oh...! Thank you so much...! I'm so happy...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -107052,7 +107049,7 @@
   },
   {
     "key": "え、いいんですか？ ……はい、ありがとうございます",
-    "en": "",
+    "en": "Oh, really? ...Yes, thank you very much.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -107778,7 +107775,7 @@
   },
   {
     "key": "ええっ…！専属トレーナー…！頑張ります…！嬉しい…！",
-    "en": "",
+    "en": "Wha...! A trainer of my own...! I'll work hard...! I'm so glad...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108212,7 +108209,7 @@
   },
   {
     "key": "えっ、謝られた！ …こっちも悪かったし！ もう、この話終わり！",
-    "en": "",
+    "en": "Wait, she apologized! ...I was in the wrong too! Right, topic closed!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108226,7 +108223,7 @@
   },
   {
     "key": "えっと……つまり、徒党を組むなということですか？",
-    "en": "",
+    "en": "Um... so, we're not to form groups? Is that it?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108234,13 +108231,12 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "standard",
-      "personality": "quiet"
+      "archetype": "standard"
     }
   },
   {
     "key": "えっと…ありがと…？",
-    "en": "",
+    "en": "Um... thanks...?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108254,7 +108250,7 @@
   },
   {
     "key": "えっと…ありがとうございます",
-    "en": "",
+    "en": "Um... thank you.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108338,7 +108334,7 @@
   },
   {
     "key": "えへへ…見てくれてたんだ。もうちょっと頑張ろうかな！",
-    "en": "",
+    "en": "Heheh... so you were watching. Guess I'll push a bit more!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108450,7 +108446,7 @@
   },
   {
     "key": "えへへ、話してみたら普通にいい人でした！ …なんで揉めてたんだっけ？",
-    "en": "",
+    "en": "Heheh, turns out she's a perfectly nice person! ...What were we even fighting about?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108562,7 +108558,7 @@
   },
   {
     "key": "えー、意外と普通に喋れたし♪ 気にしすぎだったのかも",
-    "en": "",
+    "en": "Huh, we talked totally normally ♪ Maybe I was overthinking it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108590,7 +108586,7 @@
   },
   {
     "key": "えー、無理無理♪ あの顔を見た瞬間に帰りたくなったもの",
-    "en": "",
+    "en": "Ugh, not a chance ♪ One look at that face and I wanted to leave.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108604,7 +108600,7 @@
   },
   {
     "key": "えー、無理無理。あの目で見られたら何も言えないって",
-    "en": "",
+    "en": "Nope, no way. She looks at me like that and I can't say a thing.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108632,7 +108628,7 @@
   },
   {
     "key": "えー。せっかく楽しくやってたのに",
-    "en": "",
+    "en": "Aww. And we were having such a good time.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -108716,7 +108712,7 @@
   },
   {
     "key": "お、マジ？ ありがとな！",
-    "en": "",
+    "en": "Oh, seriously? Thanks!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -109233,7 +109229,7 @@
   },
   {
     "key": "おかえり、{name2}! 文句は次の試合でぶつけ合おうぜ!",
-    "en": "",
+    "en": "Welcome back, {name2}! Save the complaints for the next match!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -109246,7 +109242,7 @@
   },
   {
     "key": "おかえり、{name2}。色々あったが、もう過ぎた話だ。",
-    "en": "",
+    "en": "Welcome back, {name2}. Plenty happened, and it is all behind us now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -109259,7 +109255,7 @@
   },
   {
     "key": "おかえり、なんて軽くは言えないわ。残念だけど。",
-    "en": "",
+    "en": "I can't say welcome home that lightly. A shame.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -109272,7 +109268,7 @@
   },
   {
     "key": "おかえり。",
-    "en": "",
+    "en": "Welcome back.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -109299,7 +109295,7 @@
   },
   {
     "key": "おごってもらっちゃおうかな！",
-    "en": "",
+    "en": "Maybe I'll get you to buy me dinner on top of this!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -109593,7 +109589,7 @@
   },
   {
     "key": "おっしゃ、ガンガンやるぞ！",
-    "en": "",
+    "en": "Right, let's go hard!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -109635,7 +109631,7 @@
   },
   {
     "key": "おっしゃ！この金で栄養つけてもっと強くなるぜ！",
-    "en": "",
+    "en": "Yes! Eating well on this and coming back stronger!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -109649,7 +109645,7 @@
   },
   {
     "key": "おっしゃ！元気出た！やってやるわ！",
-    "en": "",
+    "en": "Yes! That picked me up! Let's go!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -109691,7 +109687,7 @@
   },
   {
     "key": "おつかれっす……つーかズリーぜ、{name2}先輩。",
-    "en": "",
+    "en": "Good work out there... nah, that's cheap, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110339,7 +110335,7 @@
   },
   {
     "key": "お互い、別の景色を見て参りましょう。",
-    "en": "",
+    "en": "Let us both go and look at different views from here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110352,7 +110348,7 @@
   },
   {
     "key": "お互いの道を、別々に歩きましょう。",
-    "en": "",
+    "en": "Let's walk our roads separately from here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110547,7 +110543,7 @@
   },
   {
     "key": "お休みを…？ あ、あの…ありがとうございます、ゆっくり休ませていただきます…",
-    "en": "",
+    "en": "Time off...? Um... thank you very much, I'll rest properly...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -110603,7 +110599,7 @@
   },
   {
     "key": "お元気で、とは申しません。次にお会いするときは、敵として。",
-    "en": "",
+    "en": "I won't wish you well. The next time we meet, it will be as opponents.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110686,7 +110682,7 @@
   },
   {
     "key": "お前が悪いんじゃない。わかってる。でも、今は無理だ。",
-    "en": "",
+    "en": "It isn't your fault. I know that. I just can't right now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110699,7 +110695,7 @@
   },
   {
     "key": "お前の優しさが一番ムカつくんだよ、今は!",
-    "en": "",
+    "en": "Right now your kindness is the thing I can't stand!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110712,7 +110708,7 @@
   },
   {
     "key": "お前の成長、見届けるよ。",
-    "en": "",
+    "en": "I'll see your growth through to the end.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110725,7 +110721,7 @@
   },
   {
     "key": "お前の歩みは、こちらの歩みでもある。よろしくな。",
-    "en": "",
+    "en": "Your road is my road now. Let's get to work.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -110765,7 +110761,7 @@
   },
   {
     "key": "お前を超える前に降りるのは、ずるいぞ、{name2}。",
-    "en": "",
+    "en": "Getting off before I could pass you is cheating, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -111194,7 +111190,7 @@
   },
   {
     "key": "お帰りなさい。それだけで、十分です。",
-    "en": "",
+    "en": "Welcome home. That alone is enough for me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -111346,7 +111342,7 @@
   },
   {
     "key": "お断りしますわ。わたくしの価値は、この程度ではありませんの",
-    "en": "",
+    "en": "I decline. My worth does not stop at this figure.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -111581,7 +111577,7 @@
   },
   {
     "key": "お疲れさま、{name2}。続きは、こちらで引き受ける。",
-    "en": "",
+    "en": "Good work, {name2}. I'll take the rest from here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -111607,7 +111603,7 @@
   },
   {
     "key": "お疲れさま。あなたの分まで、わたしが暴れるわ。",
-    "en": "",
+    "en": "Good work out there. I'll tear things up for the both of us.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -111673,7 +111669,7 @@
   },
   {
     "key": "お疲れさまでした。続きは、私たちで。",
-    "en": "",
+    "en": "Thank you for everything. We'll take the rest.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -111795,7 +111791,7 @@
   },
   {
     "key": "お疲れ様。また明日から頑張りましょうね",
-    "en": "",
+    "en": "Well done, all of you. Back to it tomorrow.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -111822,7 +111818,7 @@
   },
   {
     "key": "お疲れ様でした〜！",
-    "en": "",
+    "en": "Good work, everyone~!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -112030,7 +112026,7 @@
   },
   {
     "key": "お言葉、ありがとうございます。もう一度頑張ります",
-    "en": "",
+    "en": "Thank you for your words. I'll try once again.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -112263,7 +112259,7 @@
   },
   {
     "key": "お預かりしたからには、立派な選手に育て上げてみせますわ。",
-    "en": "",
+    "en": "Having taken charge of you, I shall raise you into a fine wrestler.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -112750,7 +112746,7 @@
   },
   {
     "key": "かしこまりました。皆に伝えます",
-    "en": "",
+    "en": "Certainly. I'll let everyone know.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -112777,7 +112773,7 @@
   },
   {
     "key": "が、合宿…ですか…緊張しますけど…頑張ります…！",
-    "en": "",
+    "en": "A-a camp...? It's nerve-racking... but I'll work at it...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -112791,7 +112787,7 @@
   },
   {
     "key": "が、合宿…！ が、頑張ります…！",
-    "en": "",
+    "en": "A-a camp...! I-I'll work hard...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -114417,7 +114413,7 @@
   },
   {
     "key": "こ、こんな特別扱い…わたしなんかに、もったいないです…",
-    "en": "",
+    "en": "S-such special treatment... it's too much for someone like me...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -114543,7 +114539,7 @@
   },
   {
     "key": "こ、怖かったです…でも、ちゃんと話せました。避け続けるのは、もう嫌だったので…",
-    "en": "",
+    "en": "I-it was frightening... but we talked properly. I didn't want to keep avoiding her...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -114655,7 +114651,7 @@
   },
   {
     "key": "こういう時間…最高だよ…！",
-    "en": "",
+    "en": "Nights like this... they're the best...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -114669,7 +114665,7 @@
   },
   {
     "key": "こういう時間、いいですね！",
-    "en": "",
+    "en": "Evenings like this are good, aren't they!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -114753,7 +114749,7 @@
   },
   {
     "key": "こうしてみんなで集まれるのが嬉しいです",
-    "en": "",
+    "en": "Getting everyone together like this makes me happy.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -114919,7 +114915,7 @@
   },
   {
     "key": "ここからが長いと思う。でも、始まっただけましだよ",
-    "en": "",
+    "en": "The long part starts here. Still, starting beats not starting.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -117119,7 +117115,7 @@
   },
   {
     "key": "ここまで来られたのは、あなたを目標にしていたからです。",
-    "en": "",
+    "en": "I got here because you were the person I was aiming at.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -117426,7 +117422,7 @@
   },
   {
     "key": "ここまで連れてきてくれた礼は、リングで返す。",
-    "en": "",
+    "en": "I'll pay you back in the ring for bringing me this far.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -117732,7 +117728,7 @@
   },
   {
     "key": "こっちは前座だ。同じリングって言葉が嘘くせぇぜ。",
-    "en": "",
+    "en": "I'm on the undercard. \"Same ring\" sounds like a lie from here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -119351,7 +119347,7 @@
   },
   {
     "key": "この合宿で一段上へ参りましょう",
-    "en": "",
+    "en": "Let us climb one step higher at this camp.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -120616,7 +120612,7 @@
   },
   {
     "key": "この嫉妬、どこへ片付けたものでしょう。",
-    "en": "",
+    "en": "This envy of mine. Where exactly am I meant to put it away?",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -121292,7 +121288,7 @@
   },
   {
     "key": "この機会、決して無駄にはしない",
-    "en": "",
+    "en": "This opportunity shall not go to waste.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -121474,7 +121470,7 @@
   },
   {
     "key": "この環境、無駄にしないわ。見ていてね",
-    "en": "",
+    "en": "I won't waste this setup. Watch me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -121502,7 +121498,7 @@
   },
   {
     "key": "この環境を無駄にしない！絶対に結果を出す！",
-    "en": "",
+    "en": "I won't waste this setup! I'm getting results!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -122425,7 +122421,7 @@
   },
   {
     "key": "この額で私が喜ぶと思ったんですか",
-    "en": "",
+    "en": "You thought this figure would make me happy?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -122509,7 +122505,7 @@
   },
   {
     "key": "これからは、ただの先輩後輩として。",
-    "en": "",
+    "en": "From now on, just a senior and a junior. Nothing more.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -122780,7 +122776,7 @@
   },
   {
     "key": "これでやっと、あなたを普通に見られそう。",
-    "en": "",
+    "en": "Now I think I can finally look at you like anyone else.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -122973,7 +122969,7 @@
   },
   {
     "key": "これで負けていられない！",
-    "en": "",
+    "en": "Now I really can't afford to lose!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123304,7 +123300,7 @@
   },
   {
     "key": "こんなところで止まってられない！次は絶対やるから！",
-    "en": "",
+    "en": "I'm not stopping here! Next time I get it done!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123346,7 +123342,7 @@
   },
   {
     "key": "こんなところで終わりませんわ！",
-    "en": "",
+    "en": "I do not end in a place like this!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123472,7 +123468,7 @@
   },
   {
     "key": "こんなに気にかけていただけるなんて…必ず復帰します",
-    "en": "",
+    "en": "To be looked after like this... I will make it back.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123486,7 +123482,7 @@
   },
   {
     "key": "こんなに気にかけてもらえるなんて…必ず期待に応えます",
-    "en": "",
+    "en": "Being cared for this much... I'll live up to it, no matter what.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123710,7 +123706,7 @@
   },
   {
     "key": "こんなんで終わるわけねぇだろ。次は本気だ。",
-    "en": "",
+    "en": "No way it ends like this. Next one I'm serious.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -123779,7 +123775,7 @@
   },
   {
     "key": "こんな機会をいただけて…全力でお応えいたします",
-    "en": "",
+    "en": "You've given me this chance... I will give everything back to you.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123793,7 +123789,7 @@
   },
   {
     "key": "こんな機会をいただけて…全力で応えます",
-    "en": "",
+    "en": "An opportunity like this... I'll make it count, all the way.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123807,7 +123803,7 @@
   },
   {
     "key": "こんな機会をいただけますなんて…全力でお応えしますわ",
-    "en": "",
+    "en": "To be granted such an opportunity... I shall repay it in full.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123821,7 +123817,7 @@
   },
   {
     "key": "こんな機会をもらえるなんて…全力で応えるわ",
-    "en": "",
+    "en": "To be handed something like this... I'll make it worth your while.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -123933,7 +123929,7 @@
   },
   {
     "key": "こんな試合ができる人がいるんですね。胸が、震えました。",
-    "en": "",
+    "en": "So people who can wrestle like that really exist. My chest was shaking.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -124016,7 +124012,7 @@
   },
   {
     "key": "ご、ごめんなさい……わたし、まだ、あの人の前に立てなくて……",
-    "en": "",
+    "en": "I-I'm sorry... I still can't stand in front of her...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -124184,7 +124180,7 @@
   },
   {
     "key": "ご、ごめんなさい…声が、出なくて…何も言えないまま終わっちゃって…",
-    "en": "",
+    "en": "I-I'm sorry... my voice wouldn't come... it ended with nothing said...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -124310,7 +124306,7 @@
   },
   {
     "key": "ごめんな、{name2}。少し時間をくれ。",
-    "en": "",
+    "en": "Sorry, {name2}. Give me a little time.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -124827,7 +124823,7 @@
   },
   {
     "key": "ご丁寧な治療を…ありがとうございます。一日でも早く戻ります",
-    "en": "",
+    "en": "Such thorough care... thank you. I'll be back a day sooner if I can.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -125216,7 +125212,7 @@
   },
   {
     "key": "ご迷惑をおかけしました。もう一度、ここで戦わせてください。",
-    "en": "",
+    "en": "I caused a lot of trouble. Please let me fight here one more time.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -125761,7 +125757,7 @@
   },
   {
     "key": "しっかり吸収させてもらうわね",
-    "en": "",
+    "en": "I'll take in everything I can, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -125775,7 +125771,7 @@
   },
   {
     "key": "しっかり吸収します！",
-    "en": "",
+    "en": "I'll soak up everything I can!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -125831,7 +125827,7 @@
   },
   {
     "key": "しっかり鍛えてきます！",
-    "en": "",
+    "en": "I'll train myself properly out there!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -125873,7 +125869,7 @@
   },
   {
     "key": "しゃあ！すぐ治して暴れに戻るぜ！",
-    "en": "",
+    "en": "Yes! Patch me up and I'm back to wrecking things!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -126083,7 +126079,7 @@
   },
   {
     "key": "すぐ戻ります。待っていなさいな。",
-    "en": "",
+    "en": "I shall be back shortly. Do wait for me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -126111,7 +126107,7 @@
   },
   {
     "key": "すぐ治します！次の試合は絶対ものにする！",
-    "en": "",
+    "en": "I'll heal fast! The next match is mine!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -126125,7 +126121,7 @@
   },
   {
     "key": "すこし休んでまいりますわ。ごめんあそばせ。",
-    "en": "",
+    "en": "I shall go and rest a little. Do excuse me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -126206,7 +126202,7 @@
   },
   {
     "key": "すまない。もう一度、ここで戦わせてくれ。",
-    "en": "",
+    "en": "I'm sorry. Let me fight here one more time.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -126233,7 +126229,7 @@
   },
   {
     "key": "すみません…ご迷惑をおかけして…必ず、戻ります…",
-    "en": "",
+    "en": "I'm sorry... for all the trouble... I'll come back, I promise...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -126596,7 +126592,7 @@
   },
   {
     "key": "ずっと…見てくれてたんですか…？ わ、私…頑張ります…！",
-    "en": "",
+    "en": "You've been... watching me...? I-I'll do my part...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -126974,7 +126970,7 @@
   },
   {
     "key": "ずっと羨ましかったあんたに勝った。マジで嬉しいわ。",
-    "en": "",
+    "en": "Beat the one I'd been envying all this time. Feels amazing.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -127001,7 +126997,7 @@
   },
   {
     "key": "ずっと胸につかえていたものが、ようやく取れた気がします。",
-    "en": "",
+    "en": "Something that had been stuck in my chest finally came loose.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -127014,7 +127010,7 @@
   },
   {
     "key": "ずっと見てくださったんですのね…お報いしますわ",
-    "en": "",
+    "en": "You have watched me all this time... I shall repay it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127028,7 +127024,7 @@
   },
   {
     "key": "ずっと見てくれてたのね…嬉しい。頑張るわ",
-    "en": "",
+    "en": "You were watching all along... I'm glad. I'll keep at it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127042,7 +127038,7 @@
   },
   {
     "key": "ずっと見てくれてたのね…絶対に報いるわ",
-    "en": "",
+    "en": "You've been watching all this time... I will repay that.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127056,7 +127052,7 @@
   },
   {
     "key": "ずっと見てくれてたんですね…絶対に報いてみせます",
-    "en": "",
+    "en": "You were watching all along... I'll pay that back, I swear it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127070,7 +127066,7 @@
   },
   {
     "key": "ずっと見てくれてたんですね…頑張ります！",
-    "en": "",
+    "en": "You've been watching all this time... I'll keep going!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127084,7 +127080,7 @@
   },
   {
     "key": "ずっと見守ってくださったんですね…必ずお報いいたします",
-    "en": "",
+    "en": "You've watched over me all this time... I will repay it, without fail.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127098,7 +127094,7 @@
   },
   {
     "key": "ずっと見守ってくださったんですのね…その気持ちに、お応えしなくては",
-    "en": "",
+    "en": "You have been watching over me all this while... I must answer that.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127139,7 +127135,7 @@
   },
   {
     "key": "ずっと避けてきたことでした。…間に立っていただいて、ありがとうございます",
-    "en": "",
+    "en": "I'd been avoiding it for a long time. ...Thank you for standing between us.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127153,7 +127149,7 @@
   },
   {
     "key": "ずりぃっす、マジで。あたしの嫉妬、宙ぶらりんじゃねぇっすか。",
-    "en": "",
+    "en": "That's cheap, seriously. My envy's just left hanging here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -127166,7 +127162,7 @@
   },
   {
     "key": "せ、専属の先生…！が、頑張ります…！",
-    "en": "",
+    "en": "A-a coach just for me...! I-I'll work hard...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127558,7 +127554,7 @@
   },
   {
     "key": "そういう話、別に出ていなかったですけど……",
-    "en": "",
+    "en": "Nobody had even brought that up, though...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127566,8 +127562,7 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "standard",
-      "personality": "quiet"
+      "archetype": "standard"
     }
   },
   {
@@ -127906,7 +127901,7 @@
   },
   {
     "key": "そこまで…してくれるの…っ、嬉しい……早く戻るわ……",
-    "en": "",
+    "en": "You would go that far for me...? I'm glad... I'll be back soon...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -127920,7 +127915,7 @@
   },
   {
     "key": "そこまでお気遣いを…必ずや復帰してお応えしますわ",
-    "en": "",
+    "en": "Such consideration... I shall return and answer it without fail.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -128273,7 +128268,7 @@
   },
   {
     "key": "その言葉、すごく嬉しかったです。頑張ります！",
-    "en": "",
+    "en": "Those words meant so much. I'm going to keep at it!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -128287,7 +128282,7 @@
   },
   {
     "key": "その言葉、嬉しかったです",
-    "en": "",
+    "en": "That meant a lot to hear.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -128761,7 +128756,7 @@
   },
   {
     "key": "ただいま、戻った。受け入れるかどうかは皆に任せる。",
-    "en": "",
+    "en": "I'm back. Whether you take me in is up to all of you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -128774,7 +128769,7 @@
   },
   {
     "key": "ただいま、戻ってきました。皆さん、改めてよろしくお願いします。",
-    "en": "",
+    "en": "I'm back. It's good to see everyone again.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -128787,7 +128782,7 @@
   },
   {
     "key": "ただいま。これから、またよろしく。",
-    "en": "",
+    "en": "I'm home. Good to be back with you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -128800,7 +128795,7 @@
   },
   {
     "key": "ただいま。冷たくしないでくれる? まだわたしの居場所、ここでしょ?",
-    "en": "",
+    "en": "I'm home. Don't be cold, will you? This is still my place, isn't it?",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -128813,7 +128808,7 @@
   },
   {
     "key": "ただいま戻ったっす。文句あるなら受けて立つっすよ。",
-    "en": "",
+    "en": "I'm back. Got a problem, I'll take it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -128826,7 +128821,7 @@
   },
   {
     "key": "ただいま戻りましたの。お騒がせいたしました皆様、申し訳ございません。",
-    "en": "",
+    "en": "I have returned. To everyone I troubled, I am sorry.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -129072,7 +129067,7 @@
   },
   {
     "key": "だめ！ 顔見たら腹立ってきた！ …ごめん、今日は無理！",
-    "en": "",
+    "en": "No! One look at her and I got angry again! ...Sorry, not today!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -129253,7 +129248,7 @@
   },
   {
     "key": "ちっ……好きにしろよ",
-    "en": "",
+    "en": "Tch... do whatever you want.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -129350,7 +129345,7 @@
   },
   {
     "key": "ちっ、こんなもんかよ。{name2}先輩、降りますわ。",
-    "en": "",
+    "en": "Tch, that's all she is. {name2}, I'm getting off here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -129363,7 +129358,7 @@
   },
   {
     "key": "ちっ、なんであいつばっかなんだよ。腹立つわ。",
-    "en": "",
+    "en": "Tch, why is it always her. Gets under my skin.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -130055,7 +130050,7 @@
   },
   {
     "key": "つるむなってこと？ 別にいいけどさ",
-    "en": "",
+    "en": "No hanging around in groups? Fine by me, whatever.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -130063,8 +130058,7 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "delinquent",
-      "personality": "quiet"
+      "archetype": "delinquent"
     }
   },
   {
@@ -130349,7 +130343,7 @@
   },
   {
     "key": "とりあえずは、距離を取らせてもらう。",
-    "en": "",
+    "en": "For the moment, I'm keeping some distance.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -130390,7 +130384,7 @@
   },
   {
     "key": "どうして……。皆に、なんてお伝えすれば",
-    "en": "",
+    "en": "Why... How am I supposed to tell everyone?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -130544,7 +130538,7 @@
   },
   {
     "key": "どうして…！ 私、何か間違えましたか…！",
-    "en": "",
+    "en": "Why...! Did I do something wrong...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -131160,7 +131154,7 @@
   },
   {
     "key": "なぜですの……。あの子たちに、何と言えばよいのです",
-    "en": "",
+    "en": "Why... What am I to tell those girls?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -131188,7 +131182,7 @@
   },
   {
     "key": "なめられたものね。受け取れない",
-    "en": "",
+    "en": "I've been taken lightly. I can't accept this.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -131244,7 +131238,7 @@
   },
   {
     "key": "なんか、あっさり済んじゃった。ずっと睨み合ってたの、なんだったんだろ〜",
-    "en": "",
+    "en": "That went easier than expected. All that glaring — what was it even for~",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -131448,7 +131442,7 @@
   },
   {
     "key": "なんだ、話してみりゃ普通じゃない。しょうもない意地張ってたな",
-    "en": "",
+    "en": "Huh, she's normal enough once you talk. I was being stubborn over nothing.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -131658,7 +131652,7 @@
   },
   {
     "key": "なんでだよ……！ 誰にも迷惑かけてねぇだろ！",
-    "en": "",
+    "en": "Why...! We weren't bothering anyone!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -133370,7 +133364,7 @@
   },
   {
     "key": "はー、結局戻ってきちまった。ヨロシクっす。",
-    "en": "",
+    "en": "Hah, ended up back here anyway. Good to see you all.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -133425,7 +133419,7 @@
   },
   {
     "key": "は？ ケチくさ。いらねーよ、こんなん",
-    "en": "",
+    "en": "Huh? That's cheap. Don't want it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -133453,7 +133447,7 @@
   },
   {
     "key": "は？ 仲直りなんてしてないわよ。……ちょっと、話しただけ",
-    "en": "",
+    "en": "Huh? We didn't make up or anything. ...We just talked a little.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -133777,7 +133771,7 @@
   },
   {
     "key": "ひとりにさせてくださいませ。お願いいたしますわ。",
-    "en": "",
+    "en": "Please leave me by myself. I am asking you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -134489,7 +134483,7 @@
   },
   {
     "key": "ふざけんな、なんで私から折れなきゃなんないのよ。……話は終わり",
-    "en": "",
+    "en": "Don't give me that. Why am I the one who has to bend? ...Conversation over.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -134503,7 +134497,7 @@
   },
   {
     "key": "ふざけんな。あそこは、私らの場所だっただろ",
-    "en": "",
+    "en": "The hell is this. That was our place, wasn't it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -134747,7 +134741,7 @@
   },
   {
     "key": "ふふ…あの程度の方と分かり合えというのは、些か酷ではなくて？",
-    "en": "",
+    "en": "My... asking me to understand someone of that caliber is rather cruel, is it not?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -134859,7 +134853,7 @@
   },
   {
     "key": "ふふ…一つ、片づいたわね",
-    "en": "",
+    "en": "Mm... one thing tidied away.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -134900,7 +134894,7 @@
   },
   {
     "key": "ふふ…変わらない。それだけのこと",
-    "en": "",
+    "en": "Mm... nothing changed. That is all.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -134914,7 +134908,7 @@
   },
   {
     "key": "ふふ…存外、殊勝な物言いをするのね。少しだけ見直したわ",
-    "en": "",
+    "en": "My... she speaks more humbly than I expected. My opinion of her has risen a little.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -135204,7 +135198,7 @@
   },
   {
     "key": "ふふ、こんなに大事にされたら、頑張らなきゃ",
-    "en": "",
+    "en": "Mm, treated this preciously, I had better make it worth something.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -135314,7 +135308,7 @@
   },
   {
     "key": "ふふ、みんないい顔してるわね",
-    "en": "",
+    "en": "Mm, everyone's wearing a good face tonight.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -135480,7 +135474,7 @@
   },
   {
     "key": "ふふ、元気出ちゃった。やってみるわ",
-    "en": "",
+    "en": "Mm, that cheered me up. I'll give it a go.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -135870,7 +135864,7 @@
   },
   {
     "key": "ふふ。気が変わったのね",
-    "en": "",
+    "en": "Mm. So you changed your mind.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -136608,7 +136602,7 @@
   },
   {
     "key": "へえ。急にどうしたんだよ",
-    "en": "",
+    "en": "Huh. What brought that on all of a sudden.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -136901,7 +136895,7 @@
   },
   {
     "key": "ぼ、ボーナスを…？ あ、ありがとうございます…大切に使わせていただきます…",
-    "en": "",
+    "en": "A-a bonus...? Th-thank you very much... I'll use it carefully...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -136985,7 +136979,7 @@
   },
   {
     "key": "ま、いつかこうなる気はしてた。従うよ",
-    "en": "",
+    "en": "Well, I had a feeling it would come to this. I'll comply.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -137081,7 +137075,7 @@
   },
   {
     "key": "ま、そういうこともあるさ。またどこかで",
-    "en": "",
+    "en": "Well, these things happen. See you somewhere down the line.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -137109,7 +137103,7 @@
   },
   {
     "key": "ま、また…？ そんな、毎回いただいては…申し訳ないです…",
-    "en": "",
+    "en": "A-again...? I can't keep accepting this every time... I feel awful...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -137262,7 +137256,7 @@
   },
   {
     "key": "ま、ヨロシクっす。{name2}が戻れば、それでいいわ。",
-    "en": "",
+    "en": "Well, good to see you. {name2} is back, that's enough for me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -137514,7 +137508,7 @@
   },
   {
     "key": "まぁ、これでご飯くらいは一緒に行けるかな〜。たぶん",
-    "en": "",
+    "en": "Well, maybe we can go get food together now~. Probably.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -137807,7 +137801,7 @@
   },
   {
     "key": "まあ…そこまでしてくださるなんて。早く戻りますわ",
-    "en": "",
+    "en": "My... that you would go so far. I shall return quickly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -137961,7 +137955,7 @@
   },
   {
     "key": "まあ、ありがとうございます。大切に使わせていただきます",
-    "en": "",
+    "en": "My. Thank you. I shall put it to careful use.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -138479,7 +138473,7 @@
   },
   {
     "key": "まあ。……わたくし、この程度に見られていましたのね",
-    "en": "",
+    "en": "My. ...So this is how highly I was regarded.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -138493,7 +138487,7 @@
   },
   {
     "key": "まあ。そのようなお達しが出るとは思いませんでした",
-    "en": "",
+    "en": "My. I did not expect such an edict to come down.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -138501,8 +138495,7 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "ojousama",
-      "personality": "quiet"
+      "archetype": "ojousama"
     }
   },
   {
@@ -138814,7 +138807,7 @@
   },
   {
     "key": "また……っ……ふふ、こんなに優しくされたら、応えないわけにはいかないわ……",
-    "en": "",
+    "en": "Again... mm... if you are this kind to me, I have no choice but to answer it...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -140564,7 +140557,7 @@
   },
   {
     "key": "まだ怖いです…でも、少しだけ話せて…ありがとうございました",
-    "en": "",
+    "en": "She still scares me... but we talked a little. Thank you for that.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -141653,7 +141646,7 @@
   },
   {
     "key": "まだ追いついていなかった私を、置いていくんですか。",
-    "en": "",
+    "en": "You're leaving me behind, and I never even reached you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -141666,7 +141659,7 @@
   },
   {
     "key": "まだ追いつけていなかったのに、置いていくんですね。",
-    "en": "",
+    "en": "I hadn't caught up yet, and off you go anyway.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -141852,7 +141845,7 @@
   },
   {
     "key": "みっちり鍛えていただきますわ！絶対に成長してみせますの",
-    "en": "",
+    "en": "Work me thoroughly, if you please! I shall grow, without question.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -141976,7 +141969,7 @@
   },
   {
     "key": "みんな、私を信じてついてきてくれたのに…",
-    "en": "",
+    "en": "They trusted me. They followed me here...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -142004,7 +141997,7 @@
   },
   {
     "key": "みんな〜！楽しい〜！大好き〜！",
-    "en": "",
+    "en": "Everyone~! This is so fun~! I love you all~!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -142045,7 +142038,7 @@
   },
   {
     "key": "みんなお疲れ様でした！明日からまた頑張ります！",
-    "en": "",
+    "en": "Good work, everyone! Back at it from tomorrow!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -142212,7 +142205,7 @@
   },
   {
     "key": "みんなで一緒に強くなれるなんて…最高です",
-    "en": "",
+    "en": "All of us getting stronger side by side... it's wonderful.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -142310,7 +142303,7 @@
   },
   {
     "key": "みんなで楽しく過ごせました！",
-    "en": "",
+    "en": "We all had a great time together!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -142841,7 +142834,7 @@
   },
   {
     "key": "もう{name2}を見ても、何も湧かない。これでいい。",
-    "en": "",
+    "en": "Nothing rises in me when I see {name2} now. That's how it should be.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -142854,7 +142847,7 @@
   },
   {
     "key": "もう{name2}見ても何も湧かねぇ。これで普通に戻れるな。",
-    "en": "",
+    "en": "Nothing comes up when I see {name2}. Back to normal.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -143198,7 +143191,7 @@
   },
   {
     "key": "もう、{name2}を見ても何も感じない。それでいい。",
-    "en": "",
+    "en": "I see {name2} and feel nothing now. And that's fine.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -143416,7 +143409,7 @@
   },
   {
     "key": "もう、見ない。",
-    "en": "",
+    "en": "Not looking anymore.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -143747,7 +143740,7 @@
   },
   {
     "key": "もう一年っすか。{name2}に焦ってた自分、ちょっと笑えるわ。",
-    "en": "",
+    "en": "Been a year already? Me panicking over {name2} is kind of funny now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -143760,7 +143753,7 @@
   },
   {
     "key": "もう一度、こちらの団体で戦わせてくださいませ。",
-    "en": "",
+    "en": "Please allow me to fight under this banner once more.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -143812,7 +143805,7 @@
   },
   {
     "key": "もう一度信じるかどうかは、これからのあなた次第です。",
-    "en": "",
+    "en": "Whether I trust you again depends on you from here on.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -143923,7 +143916,7 @@
   },
   {
     "key": "もう一軒行きましょうよ〜！",
-    "en": "",
+    "en": "Let's go one more place~!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -144021,7 +144014,7 @@
   },
   {
     "key": "もう同じ屋根の下、無理だ! 出てけ!",
-    "en": "",
+    "en": "Can't be under the same roof anymore! Get out!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -144062,7 +144055,7 @@
   },
   {
     "key": "もう少し、頑張ってみます",
-    "en": "",
+    "en": "I'll push a little further.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -144633,7 +144626,7 @@
   },
   {
     "key": "もう背中は追わない。その方が、お互いのためでしょ?",
-    "en": "",
+    "en": "I won't chase that back anymore. Better for both of us, don't you think?",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -144646,7 +144639,7 @@
   },
   {
     "key": "もう背中追っかけねぇ。隣で並んで殴り合うだけっす。",
-    "en": "",
+    "en": "Done chasing your back. Just standing next to you, swinging.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -144687,7 +144680,7 @@
   },
   {
     "key": "もう追えない相手になった。それだけのことだ。",
-    "en": "",
+    "en": "She's out of reach now. Nothing more to it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -144700,7 +144693,7 @@
   },
   {
     "key": "もう追えねぇ相手になっちまった。それだけだ。",
-    "en": "",
+    "en": "She's out of reach for good now. That's all there is to it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -145021,7 +145014,7 @@
   },
   {
     "key": "もっと広い舞台に出たかった。ありがとう！",
-    "en": "",
+    "en": "I've been wanting a bigger stage. Thank you!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -145844,7 +145837,7 @@
   },
   {
     "key": "やった！ありがとうございます！",
-    "en": "",
+    "en": "Yesss! Thank you!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -145858,7 +145851,7 @@
   },
   {
     "key": "やった！バカンスだ！でも戻ったら本気出します！",
-    "en": "",
+    "en": "Yesss! A holiday! But I'm serious again the moment I'm back!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -145872,7 +145865,7 @@
   },
   {
     "key": "やった！ラッキー！",
-    "en": "",
+    "en": "Nice! Lucky me!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -145886,7 +145879,7 @@
   },
   {
     "key": "やった！思い切り練習できる！",
-    "en": "",
+    "en": "Yes! I get to train as hard as I want!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -145970,7 +145963,7 @@
   },
   {
     "key": "やってやるぜ！帰る頃には別人だ！",
-    "en": "",
+    "en": "Let's do it! I'll be a different person coming home!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -146096,7 +146089,7 @@
   },
   {
     "key": "やっと、対等にケンカできるな、{name2}。",
-    "en": "",
+    "en": "Now we can finally fight on level ground, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -146459,7 +146452,7 @@
   },
   {
     "key": "やっぱり、まだ無理みたいです。…お手数をおかけしました",
-    "en": "",
+    "en": "It's still too soon, it seems. ...Sorry to have put you to the trouble.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -146629,7 +146622,7 @@
   },
   {
     "key": "やられたな。次までに立て直す。",
-    "en": "",
+    "en": "She got me. I'll rebuild before the next one.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -147089,7 +147082,7 @@
   },
   {
     "key": "ゆっくり休んで戻ってきます！",
-    "en": "",
+    "en": "I'll rest up properly and come back!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -147447,7 +147440,7 @@
   },
   {
     "key": "ようやく、自分の試合に集中できる。",
-    "en": "",
+    "en": "Now I can finally concentrate on my own matches.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -147720,7 +147713,7 @@
   },
   {
     "key": "よく戻った。これでまた、こちらの形が揃う。",
-    "en": "",
+    "en": "Good of you to come back. Our shape is complete again.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -147733,7 +147726,7 @@
   },
   {
     "key": "よく戻ってきたな、{name2}。歓迎するっすよ。",
-    "en": "",
+    "en": "Good to have you back, {name2}. Welcome home.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -147746,7 +147739,7 @@
   },
   {
     "key": "よく戻ってきたな。歓迎するよ。",
-    "en": "",
+    "en": "Good of you to come back. You're welcome here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -147951,7 +147944,7 @@
   },
   {
     "key": "よし！もっと強くなります！",
-    "en": "",
+    "en": "Right! I'm getting stronger!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -147965,7 +147958,7 @@
   },
   {
     "key": "よし！やってやる！",
-    "en": "",
+    "en": "Right! Let's do this!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -148286,7 +148279,7 @@
   },
   {
     "key": "より広い舞台へということね。当然ね。",
-    "en": "",
+    "en": "A wider stage, then. Naturally.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -148355,7 +148348,7 @@
   },
   {
     "key": "よろしく。",
-    "en": "",
+    "en": "Good to have you.",
     "files": [
       "data.js:COMMON3_LINES",
       "flag-dialogue.js:FLAG_DIALOGUE"
@@ -148620,7 +148613,7 @@
   },
   {
     "key": "よろしくお願いします！",
-    "en": "",
+    "en": "Looking forward to working with you!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES",
       "data.js:FIRST_MEET_LINES"
@@ -150643,7 +150636,7 @@
   },
   {
     "key": "わたくしの一存で始めたこと。畳むのも同じでしょう",
-    "en": "",
+    "en": "I began it on my own judgment. Folding it is the same, I suppose.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -150656,7 +150649,7 @@
   },
   {
     "key": "わたくしの不徳の致すところ、ということですわね",
-    "en": "",
+    "en": "It is a failing of my own character, then.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -150670,7 +150663,7 @@
   },
   {
     "key": "わたくしの世界から、消えなさい。",
-    "en": "",
+    "en": "Remove yourself from my world.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -150808,7 +150801,7 @@
   },
   {
     "key": "わたくしの帰還、歓迎されぬのは承知のうえですわ。",
-    "en": "",
+    "en": "I am well aware that my return will not be welcomed.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -150890,7 +150883,7 @@
   },
   {
     "key": "わたくしの背中、しかと追っていらっしゃい。",
-    "en": "",
+    "en": "Follow my back, and do not lose sight of it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -150931,7 +150924,7 @@
   },
   {
     "key": "わたくしの順番は、いつ参りますの?",
-    "en": "",
+    "en": "And when exactly does my turn arrive?",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -151641,7 +151634,7 @@
   },
   {
     "key": "アンタが信じてくれんなら、やってやるよ！",
-    "en": "",
+    "en": "You believe in me, then I'm doing it!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -151826,7 +151819,7 @@
   },
   {
     "key": "カンパーイ！！ 今日は無礼講だ〜！",
-    "en": "",
+    "en": "Cheers!! No rank at this table tonight~!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -151958,7 +151951,7 @@
   },
   {
     "key": "クソが……次会ったらブッ潰す。覚えとけ、{name2}!",
-    "en": "",
+    "en": "Damn it... next time I flatten you. Remember that, {name2}!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -152522,7 +152515,7 @@
   },
   {
     "key": "サンキュ。早く治してリング戻るわ",
-    "en": "",
+    "en": "Thanks. I'll heal up and get back in the ring.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -152550,7 +152543,7 @@
   },
   {
     "key": "サンキュ！ちょっと休んでくるわ",
-    "en": "",
+    "en": "Thanks! Gonna go rest a bit.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -153176,7 +153169,7 @@
   },
   {
     "key": "チッ…拳で片づく話じゃなかったってことね。今回だけよ、こっちが折れてやるのは",
-    "en": "",
+    "en": "Tch... so fists weren't going to settle it. This once, I'm the one bending.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -153922,7 +153915,7 @@
   },
   {
     "key": "テレビ…！？ うわあ…緊張するけど嬉しい…！頑張る…！",
-    "en": "",
+    "en": "TV...!? Wow... nervous, but so happy...! I'm doing this...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154143,7 +154136,7 @@
   },
   {
     "key": "テレビ！？ みんな見てるー？",
-    "en": "",
+    "en": "TV!? Everyone watching?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154171,7 +154164,7 @@
   },
   {
     "key": "テレビ！？ ファンのみんな見てる〜？",
-    "en": "",
+    "en": "TV!? Everybody out there watching~?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154199,7 +154192,7 @@
   },
   {
     "key": "テレビ？ みんなに見てもらえるのね。楽しみ",
-    "en": "",
+    "en": "TV? So everyone gets to see me. Lovely.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154213,7 +154206,7 @@
   },
   {
     "key": "テレビ？ やってやるよ！",
-    "en": "",
+    "en": "TV? Fine, I'll do it!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154249,7 +154242,7 @@
   },
   {
     "key": "トレーナーをつけてくれるの……っ……ふふ、本気で育ててくれるのね……",
-    "en": "",
+    "en": "You're giving me a trainer... mm... so you mean to raise me seriously...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154725,7 +154718,7 @@
   },
   {
     "key": "バカンスだー！戻ったら本気出すから！",
-    "en": "",
+    "en": "Holiday time! I'll be serious again after, promise!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154739,7 +154732,7 @@
   },
   {
     "key": "バカンスね。リフレッシュして戻るわ",
-    "en": "",
+    "en": "A holiday, then. I'll come back renewed.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -154946,7 +154939,7 @@
   },
   {
     "key": "パ、パーティー…人が多いところは少し苦手ですけど…頑張って参加します…",
-    "en": "",
+    "en": "A-a party... crowds aren't really my thing... but I'll come along...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -155002,7 +154995,7 @@
   },
   {
     "key": "パーティー……っ……ふふ、今夜は思いっきり楽しませてもらうわ……",
-    "en": "",
+    "en": "A party... mm... I intend to enjoy myself thoroughly tonight...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -156947,7 +156940,7 @@
   },
   {
     "key": "ボーナス……っ……気にかけてくれてたのね、嬉しい……ふふ、ありがとう……",
-    "en": "",
+    "en": "A bonus... mm... so you were thinking of me. I'm glad... thank you...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157058,7 +157051,7 @@
   },
   {
     "key": "マジか！すぐ治してくる！",
-    "en": "",
+    "en": "Seriously!? I'll get fixed up fast!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157253,7 +157246,7 @@
   },
   {
     "key": "マンツーマンなんて贅沢ね。楽しみだわ",
-    "en": "",
+    "en": "One on one. How indulgent. I'm looking forward to it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157267,7 +157260,7 @@
   },
   {
     "key": "マンツーマン！？ めちゃくちゃ贅沢じゃないですか！",
-    "en": "",
+    "en": "One on one!? That's incredibly fancy!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157281,7 +157274,7 @@
   },
   {
     "key": "マンツーマン！？ 超贅沢じゃん！",
-    "en": "",
+    "en": "One on one!? Super fancy!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157295,7 +157288,7 @@
   },
   {
     "key": "メ、メディア出演…ですか…き、緊張しますけど…や、やってみます…",
-    "en": "",
+    "en": "M-media work... is it...? I-it's frightening... b-but I'll give it a go...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157348,7 +157341,7 @@
   },
   {
     "key": "メディアに……っ……ふふ、私を世間に見せたいのね、いいわ……",
-    "en": "",
+    "en": "Media... mm... you want to show me off to the world. Fine by me...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157362,7 +157355,7 @@
   },
   {
     "key": "メディアのお仕事ですの？ 精一杯務めます",
-    "en": "",
+    "en": "Media work, is it? I shall carry it out properly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157418,7 +157411,7 @@
   },
   {
     "key": "メディア出演…？ 楽しみだわ",
-    "en": "",
+    "en": "A media appearance...? How fun.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157502,7 +157495,7 @@
   },
   {
     "key": "モヤモヤが、ぼんやりしてきた感じだ。",
-    "en": "",
+    "en": "The knot has gone blurry around the edges.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157515,7 +157508,7 @@
   },
   {
     "key": "モヤモヤしたまま終わるなんて、最低の置き土産ね。",
-    "en": "",
+    "en": "Leaving me with all of this unfinished. What a parting gift.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157528,7 +157521,7 @@
   },
   {
     "key": "モヤモヤしてた相手に勝つって、こんなに気持ちいいのね。",
-    "en": "",
+    "en": "So this is how good it feels to beat the one who was nagging at you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157541,7 +157534,7 @@
   },
   {
     "key": "ヨロシクな、{name2}。あたしの背中、ついてこい。",
-    "en": "",
+    "en": "Good to have you, {name2}. Stay on my back and keep up.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157582,7 +157575,7 @@
   },
   {
     "key": "ライバルとして、最後まで競らせてください。",
-    "en": "",
+    "en": "As your rival, please let me race you all the way to the end.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157623,7 +157616,7 @@
   },
   {
     "key": "ライバルに差をつけるチャンスだね！",
-    "en": "",
+    "en": "This is my chance to pull ahead of the rest!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157637,7 +157630,7 @@
   },
   {
     "key": "ライバル同士として、これからは堂々と火花を散らしましょうの。",
-    "en": "",
+    "en": "As rivals, let us throw sparks openly from here on.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157650,7 +157643,7 @@
   },
   {
     "key": "ライバル同期。悪くない響きだ、{name2}。",
-    "en": "",
+    "en": "Rivals from the same year. Has a decent ring to it, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157663,7 +157656,7 @@
   },
   {
     "key": "ライバル同期っす。マジ最高じゃん、{name2}!",
-    "en": "",
+    "en": "Rivals from the same year. That's the best, {name2}!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157676,7 +157669,7 @@
   },
   {
     "key": "ライバル同期って、悪くない響きじゃない?",
-    "en": "",
+    "en": "Rivals from the same intake. Doesn't sound bad at all, does it?",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -157885,7 +157878,7 @@
   },
   {
     "key": "リフレッシュして、もっと上を目指す！",
-    "en": "",
+    "en": "I'll come back fresh and aim higher!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157899,7 +157892,7 @@
   },
   {
     "key": "リフレッシュしてくるわ。戻ったらもっと輝くから",
-    "en": "",
+    "en": "I'll go refresh myself. I'll shine brighter when I'm back.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -157913,7 +157906,7 @@
   },
   {
     "key": "リフレッシュできました！",
-    "en": "",
+    "en": "I feel properly refreshed!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -158483,7 +158476,7 @@
   },
   {
     "key": "一からやり直します。今日のお礼は、リングで。",
-    "en": "",
+    "en": "I'll start over from the beginning. My thanks for today come in the ring.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -159617,7 +159610,7 @@
   },
   {
     "key": "一回で変わるなら、こじれてないよ。……気長にやるしかないね",
-    "en": "",
+    "en": "If one sitting fixed it, it wouldn't be tangled. ...Nothing for it but patience.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -159655,7 +159648,7 @@
   },
   {
     "key": "一年。",
-    "en": "",
+    "en": "One year.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -159668,7 +159661,7 @@
   },
   {
     "key": "一年か。{name2}への気持ちも、ずいぶん落ち着いたわね。",
-    "en": "",
+    "en": "A year, then. My feelings about {name2} have settled down nicely.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -159804,7 +159797,7 @@
   },
   {
     "key": "一年も経ちますと、{name2}様への気持ちも色褪せてまいりましたの。",
-    "en": "",
+    "en": "A year on, and my feeling toward {name2} has faded considerably.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -159856,7 +159849,7 @@
   },
   {
     "key": "一年前は、{name2}に火がついていた。今は別の景色を見ている。",
-    "en": "",
+    "en": "A year ago {name2} had me lit up. I'm looking at a different view now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -159880,7 +159873,7 @@
   },
   {
     "key": "一年経ちました。{name2}先輩への気持ち、少しずつ薄れています。",
-    "en": "",
+    "en": "A year has passed. What I felt about {name2} is thinning out, bit by bit.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -159893,7 +159886,7 @@
   },
   {
     "key": "一年経ったら、こんなもんっすね。",
-    "en": "",
+    "en": "A year in, and this is where it lands.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -160100,7 +160093,7 @@
   },
   {
     "key": "一度で全部は無理でした。それでも、話す場ができただけ違います",
-    "en": "",
+    "en": "One sitting couldn't fix all of it. But having somewhere to talk changes things.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -160114,7 +160107,7 @@
   },
   {
     "key": "一度の番狂わせで、終わったとは思うなよ、{name2}。",
-    "en": "",
+    "en": "Don't think one upset settles anything, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -160197,7 +160190,7 @@
   },
   {
     "key": "一度や二度の番狂わせで、私を計らないで。",
-    "en": "",
+    "en": "Don't measure me by one or two upsets.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -160210,7 +160203,7 @@
   },
   {
     "key": "一度傷ついた気持ちも、戻ってきてくれた今は溶けています。",
-    "en": "",
+    "en": "The hurt is melting now that she's actually standing here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -160907,7 +160900,7 @@
   },
   {
     "key": "一緒にここまで来たと思っていました。今日、その認識を改めました。",
-    "en": "",
+    "en": "I thought we'd come this far together. Today I corrected that.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -160934,7 +160927,7 @@
   },
   {
     "key": "一緒にやってきたお前と燃え上がれるとは思わなかったぜ!",
-    "en": "",
+    "en": "Never figured I'd catch fire against the one who came up with me!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -160975,7 +160968,7 @@
   },
   {
     "key": "一緒にやれるなら、それで十分だ。",
-    "en": "",
+    "en": "If we get to work together, that's plenty.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -161016,7 +161009,7 @@
   },
   {
     "key": "一緒に上を目指しましょう、{name2}さん。",
-    "en": "",
+    "en": "Let's aim for the top together, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -161029,7 +161022,7 @@
   },
   {
     "key": "一緒に強くなろう、{name2}。",
-    "en": "",
+    "en": "Let's get strong together, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -161955,7 +161948,7 @@
   },
   {
     "key": "三年、長かったわね。{name2}への気持ち、今日で完全にお別れよ。",
-    "en": "",
+    "en": "Three long years. Today I part with what I felt about {name2} for good.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -161968,7 +161961,7 @@
   },
   {
     "key": "三年。",
-    "en": "",
+    "en": "Three years.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -161981,7 +161974,7 @@
   },
   {
     "key": "三年。{name2}への嫉妬、ここで完全に手放す。",
-    "en": "",
+    "en": "Three years. I'm letting go of the envy toward {name2} completely.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -161994,7 +161987,7 @@
   },
   {
     "key": "三年か。{name2}への嫉妬、もう完全に過去だ。",
-    "en": "",
+    "en": "Three years. The envy toward {name2} is fully in the past.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -162007,7 +162000,7 @@
   },
   {
     "key": "三年がかりで、ようやく{name2}様を心から解き放ちましたの。",
-    "en": "",
+    "en": "It took three years, but I have released {name2} from my heart at last.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -162020,7 +162013,7 @@
   },
   {
     "key": "三年っすよ三年。やっと{name2}を引きずらずに済むっす。",
-    "en": "",
+    "en": "Three years, three. Finally done dragging {name2} around with me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -162033,7 +162026,7 @@
   },
   {
     "key": "三年経ちました。{name2}先輩への嫉妬、もうありません。区切りをつけます。",
-    "en": "",
+    "en": "Three years on, the envy toward {name2} is gone. I'm drawing a line under it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -162818,7 +162811,7 @@
   },
   {
     "key": "中で、片付ける。",
-    "en": "",
+    "en": "I'll deal with it inside.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163371,7 +163364,7 @@
   },
   {
     "key": "二年。",
-    "en": "",
+    "en": "Two years.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163384,7 +163377,7 @@
   },
   {
     "key": "二年。{name2}を見ても、もう心が動かない。",
-    "en": "",
+    "en": "Two years. I look at {name2} now and nothing moves.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163397,7 +163390,7 @@
   },
   {
     "key": "二年か。あの嫉妬、もうほとんど残ってない。",
-    "en": "",
+    "en": "Two years. Hardly any of that envy is left.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163410,7 +163403,7 @@
   },
   {
     "key": "二年っすか。{name2}に焦ってたとか、もう思い出せねぇ。",
-    "en": "",
+    "en": "Two years, huh. Can't even remember panicking over {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163423,7 +163416,7 @@
   },
   {
     "key": "二年も経つと、嫉妬も色気がなくなってくるわね。",
-    "en": "",
+    "en": "Two years in, and envy loses all its charm.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163436,7 +163429,7 @@
   },
   {
     "key": "二年も経てば、{name2}様への感情も雲散霧消ですわ。",
-    "en": "",
+    "en": "Two years on, and my feeling toward {name2} has scattered entirely.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163449,7 +163442,7 @@
   },
   {
     "key": "二年経ちました。{name2}先輩を、ただの一人の選手として見られます。",
-    "en": "",
+    "en": "Two years have passed. I can see {name2} as just one more wrestler now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -163712,7 +163705,7 @@
   },
   {
     "key": "今では、ただの一選手として拝見しておりますの。",
-    "en": "",
+    "en": "These days I watch her as one wrestler among many.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -164023,7 +164016,7 @@
   },
   {
     "key": "今は、見ないで。",
-    "en": "",
+    "en": "Don't look. Not now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -164036,7 +164029,7 @@
   },
   {
     "key": "今は、距離を置かせてください。",
-    "en": "",
+    "en": "For now, please let me keep my distance.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -164409,7 +164402,7 @@
   },
   {
     "key": "今日だけは、ひとりにさせてくれ、{name2}。",
-    "en": "",
+    "en": "Just for today, leave me alone, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -164464,7 +164457,7 @@
   },
   {
     "key": "今日という日、わたくしの心に灯がともりましたわ。",
-    "en": "",
+    "en": "Today, something was lit inside me. I do not intend to let it go out.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -164545,7 +164538,7 @@
   },
   {
     "key": "今日のことは、絶対に忘れませんわよ。",
-    "en": "",
+    "en": "I shall not forget today. Not ever.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -165073,7 +165066,7 @@
   },
   {
     "key": "今日は祝えそうにないわ。ごめんね、{name2}。",
-    "en": "",
+    "en": "I can't celebrate tonight. Sorry, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -165393,7 +165386,7 @@
   },
   {
     "key": "今日見せられたものは、忘れない。{name2}、追わせてもらう。",
-    "en": "",
+    "en": "What she showed me today isn't going anywhere. {name2}, I'm coming after you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -165849,7 +165842,7 @@
   },
   {
     "key": "仲直り、とまではいかないですけど…話くらいはできました",
-    "en": "",
+    "en": "Not what you'd call making up... but we did manage to talk.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -166571,7 +166564,7 @@
   },
   {
     "key": "休んでいいんですか…？ ありがとうございます…リフレッシュしてきます…！",
-    "en": "",
+    "en": "I can really rest...? Thank you so much... I'll come back new...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -166585,7 +166578,7 @@
   },
   {
     "key": "休暇……っ……気を遣ってくれたのね、ふふ、嬉しいわ……",
-    "en": "",
+    "en": "Time off... mm... so you were being thoughtful. How nice...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -168289,7 +168282,7 @@
   },
   {
     "key": "信じてくれるなら、絶対やるよ！",
-    "en": "",
+    "en": "If you believe in me, I'm absolutely doing it!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -168471,7 +168464,7 @@
   },
   {
     "key": "修復は、たぶん無理だ。それでいい。",
-    "en": "",
+    "en": "Repairing it probably isn't possible. And that's fine.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -168484,7 +168477,7 @@
   },
   {
     "key": "俺たちは、ここで分かれたな。次は同じ場所で会おう、{name2}。",
-    "en": "",
+    "en": "We split here, didn't we. Let's meet in the same place next time, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -168746,7 +168739,7 @@
   },
   {
     "key": "借り、利子つきで返すから。覚えておきなさい。",
-    "en": "",
+    "en": "I'll pay that back with interest. Remember it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -168871,7 +168864,7 @@
   },
   {
     "key": "優しくされるのが、今は耐えられませんの。",
-    "en": "",
+    "en": "Being treated kindly is more than I can bear right now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -169122,7 +169115,7 @@
   },
   {
     "key": "充電してくる！戻ったら全開だぜ！",
-    "en": "",
+    "en": "Going to recharge! Full throttle when I'm back!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -169136,7 +169129,7 @@
   },
   {
     "key": "充電して戻ってくる！",
-    "en": "",
+    "en": "Recharging, then coming right back!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -169688,7 +169681,7 @@
   },
   {
     "key": "全力で取り組ませていただきます。レベルアップしてみせます",
-    "en": "",
+    "en": "I'll give it everything I have. I will come out a level higher.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -169702,7 +169695,7 @@
   },
   {
     "key": "全力で取り組みます！",
-    "en": "",
+    "en": "I'll throw everything into this!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -171249,7 +171242,7 @@
   },
   {
     "key": "別々の道を行きましょ。それが大人ってものよ。",
-    "en": "",
+    "en": "Let's take separate roads. That's the grown-up thing.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -171276,7 +171269,7 @@
   },
   {
     "key": "別にもう追わねぇっす。次は対等にぶつかるだけだ。",
-    "en": "",
+    "en": "Not chasing anymore. Next time we just hit each other as equals.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -171289,7 +171282,7 @@
   },
   {
     "key": "別に仲良しごっこがしたいわけじゃない。ただ、無視し合うのも面倒でしょ？",
-    "en": "",
+    "en": "Not like I want to play friends. Ignoring each other's just a hassle, right?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -171467,7 +171460,7 @@
   },
   {
     "key": "前座、苦い。",
-    "en": "",
+    "en": "The undercard. Bitter.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -171480,7 +171473,7 @@
   },
   {
     "key": "前座と本戦。今日でその差を、はっきり見せつけられた。",
-    "en": "",
+    "en": "Undercard and main card. Today the gap was put right in front of me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -171493,7 +171486,7 @@
   },
   {
     "key": "前座のリングで、お前の背中を見上げる。屈辱だ。",
-    "en": "",
+    "en": "Looking up at your back from the undercard. That's humiliating.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -171630,7 +171623,7 @@
   },
   {
     "key": "力及ばず、でしたわ。……こういう場でこそ、逃げてはいけませんのに",
-    "en": "",
+    "en": "I fell short. ...And a table like that is exactly where one must not run.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -171798,7 +171791,7 @@
   },
   {
     "key": "励まし……っ……ふふ、その言葉だけで、力が湧いてくるの……",
-    "en": "",
+    "en": "Encouragement... mm... just those words and the strength comes back...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -171812,7 +171805,7 @@
   },
   {
     "key": "励みになります！",
-    "en": "",
+    "en": "That's real encouragement!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -173173,7 +173166,7 @@
   },
   {
     "key": "勝ち越せないまま終わるのも、人生だな。",
-    "en": "",
+    "en": "Never getting the better record, and that's that. That's life too.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -173186,7 +173179,7 @@
   },
   {
     "key": "勝ち越せぬまま、お見送りすることになるとは……。",
-    "en": "",
+    "en": "To see her off without ever having a winning record against her...",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -175936,7 +175929,7 @@
   },
   {
     "key": "勝利という形でしか手放せませんでしたの。お許しを。",
-    "en": "",
+    "en": "A victory was the only way I could let it go. Do forgive me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -175991,7 +175984,7 @@
   },
   {
     "key": "勝手な期待だった。降ろすしかない。",
-    "en": "",
+    "en": "It was my expectation, not hers. Time to put it down.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -176018,7 +176011,7 @@
   },
   {
     "key": "区切り。",
-    "en": "",
+    "en": "A line drawn.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -176883,7 +176876,7 @@
   },
   {
     "key": "受け入れていただけるかどうかは、これからの私次第だと思っています。",
-    "en": "",
+    "en": "Whether you accept me is going to come down to what I do from here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -176910,7 +176903,7 @@
   },
   {
     "key": "受け入れる前に、リングで示してくださいませ。",
-    "en": "",
+    "en": "Show me in the ring first. Then I shall consider accepting you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177466,7 +177459,7 @@
   },
   {
     "key": "合宿……っ……ふふ、みんなと一緒に過ごせるのね、楽しみ……",
-    "en": "",
+    "en": "A camp... mm... days with everyone all together. How lovely...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177480,7 +177473,7 @@
   },
   {
     "key": "合宿…！みんなで強くなれる…！最高だよ…！",
-    "en": "",
+    "en": "Camp...! Everyone getting stronger together...! I love this...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177494,7 +177487,7 @@
   },
   {
     "key": "合宿から帰る頃には一回り強くなってやる！",
-    "en": "",
+    "en": "By the time camp ends I'll be a size stronger!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177508,7 +177501,7 @@
   },
   {
     "key": "合宿だー！ 盛り上がっていくぞー！",
-    "en": "",
+    "en": "Camp time! Let's get loud out there!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177522,7 +177515,7 @@
   },
   {
     "key": "合宿ですの？ 精一杯取り組みますわ",
-    "en": "",
+    "en": "A training camp? I shall apply myself to it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177536,7 +177529,7 @@
   },
   {
     "key": "合宿ね。しっかり鍛えるわ",
-    "en": "",
+    "en": "A camp, then. I'll train properly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177550,7 +177543,7 @@
   },
   {
     "key": "合宿の間に絶対レベルアップしてみせます！",
-    "en": "",
+    "en": "I'm coming out of this camp a level higher, guaranteed!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177564,7 +177557,7 @@
   },
   {
     "key": "合宿楽しみ〜。みんなで頑張りましょ",
-    "en": "",
+    "en": "Camp sounds fun~. Let's all put the work in.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177578,7 +177571,7 @@
   },
   {
     "key": "合宿！ ガンガンやるぞ！",
-    "en": "",
+    "en": "Camp! Time to go hard!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177633,7 +177626,7 @@
   },
   {
     "key": "同じスタートだったはずなのに、もう同じ景色を見ていない。",
-    "en": "",
+    "en": "We started at the same place, and we don't see the same view now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177646,7 +177639,7 @@
   },
   {
     "key": "同じスタートだったはずなのに、もう同じ景色を見ていません。",
-    "en": "",
+    "en": "We started together, and we aren't seeing the same view anymore.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177672,7 +177665,7 @@
   },
   {
     "key": "同じリングに立つのも汚らわしいですわ。",
-    "en": "",
+    "en": "Standing on the same ring as you is unclean.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177685,7 +177678,7 @@
   },
   {
     "key": "同じ団体に、こんな距離がありますのね。",
-    "en": "",
+    "en": "There is this much distance inside a single promotion.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177698,7 +177691,7 @@
   },
   {
     "key": "同じ団体にいて、あんな顔をさせ続けてはいけませんでした。……お手数をおかけしました",
-    "en": "",
+    "en": "In the same promotion, I shouldn't have left her wearing that face. ...Sorry for the trouble.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -177712,7 +177705,7 @@
   },
   {
     "key": "同じ団体にいるのに、こんなに距離があるとは思わなかった。",
-    "en": "",
+    "en": "Same promotion, and I never thought the distance could be this wide.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177739,7 +177732,7 @@
   },
   {
     "key": "同じ場所にいたつもりだったのに。あなたは、もう違う場所ね。",
-    "en": "",
+    "en": "I thought we were standing in the same place. You're somewhere else now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177752,7 +177745,7 @@
   },
   {
     "key": "同じ場所にいたはずだ。なのに、見ている景色は違う。",
-    "en": "",
+    "en": "We were in the same place. And we're looking at different views.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177765,7 +177758,7 @@
   },
   {
     "key": "同じ場所におりましたのに、距離が開いてゆきますわ。",
-    "en": "",
+    "en": "We stood in the same place, and the gap keeps opening.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177778,7 +177771,7 @@
   },
   {
     "key": "同じ日に来たあなたが好敵手って、運命みたいでしょ。",
-    "en": "",
+    "en": "You came in the same day as me and now you're my match. Almost like fate.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177791,7 +177784,7 @@
   },
   {
     "key": "同じ景色、見えてる? あなたとは、ここから本気で競るわよ。",
-    "en": "",
+    "en": "Same view now? From here I'm racing you for real.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177804,7 +177797,7 @@
   },
   {
     "key": "同じ更衣室? 冗談じゃない。{name2}、消えろ。",
-    "en": "",
+    "en": "The same locker room? Absolutely not. {name2}, get out.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177817,7 +177810,7 @@
   },
   {
     "key": "同じ更衣室は使うな。それだけだ。",
-    "en": "",
+    "en": "Don't use the same locker room. That's all.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177922,7 +177915,7 @@
   },
   {
     "key": "同情はやめてくれ。お前の顔を見ると、惨めさが増すだけだ。",
-    "en": "",
+    "en": "Don't pity me. Seeing your face only makes me feel smaller.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -177977,7 +177970,7 @@
   },
   {
     "key": "同期じゃない。ライバルだ。覚悟してくれ、{name2}。",
-    "en": "",
+    "en": "Not classmates. Rivals. Get ready, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -178212,7 +178205,7 @@
   },
   {
     "key": "和解ではありません。……ただ、次に顔を合わせても、目を逸らさずに済むというだけ",
-    "en": "",
+    "en": "It is not a reconciliation. ...Only that I need not look away the next time we meet.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -179146,7 +179139,7 @@
   },
   {
     "key": "団体の看板として恥ずかしくないようにします",
-    "en": "",
+    "en": "I'll carry the promotion's name without embarrassing it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -179160,7 +179153,7 @@
   },
   {
     "key": "団体の看板として恥ずかしくない姿をお見せしますわ",
-    "en": "",
+    "en": "I shall present a figure worthy of this promotion's name.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -179964,7 +179957,7 @@
   },
   {
     "key": "夜は枕投げだ！…嘘です、練習します",
-    "en": "",
+    "en": "Pillow fight after lights out! ...Kidding. I'll train.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -181131,7 +181124,7 @@
   },
   {
     "key": "嬉しいです！大切に使います",
-    "en": "",
+    "en": "I'm so happy! I'll put it to good use.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -181159,7 +181152,7 @@
   },
   {
     "key": "嬉しいわ。実力で返させてもらうわね",
-    "en": "",
+    "en": "Lovely. I'll pay you back in the ring.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -181975,7 +181968,7 @@
   },
   {
     "key": "対等に向き合えるのは、ここからですね。",
-    "en": "",
+    "en": "Facing each other as equals starts here, doesn't it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -181988,7 +181981,7 @@
   },
   {
     "key": "専属の先生がつくんですか…！もっと上手くなれます！",
-    "en": "",
+    "en": "A coach just for me...! I can get so much better!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -182002,7 +181995,7 @@
   },
   {
     "key": "専属トレーナー…ですか…あ、あの、よろしくお願いいたします…",
-    "en": "",
+    "en": "A trainer of my own... is it? Um... I'll be in your care...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -182016,7 +182009,7 @@
   },
   {
     "key": "専門の先生まで…ありがとうございます。早く戻ります",
-    "en": "",
+    "en": "A specialist, even... thank you. I'll be back soon.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -182411,7 +182404,7 @@
   },
   {
     "key": "届かないまま終わるのは、悔しい。けれど、お疲れさまでした。",
-    "en": "",
+    "en": "Ending without reaching you stings. Still — thank you for everything.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -182781,7 +182774,7 @@
   },
   {
     "key": "師の背中、しかと追わせていただきますわ。",
-    "en": "",
+    "en": "I shall keep my teacher's back firmly in my sight.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -182794,7 +182787,7 @@
   },
   {
     "key": "師匠! いや、なんか恥ずかしいな。{name2}先輩、ヨロシク!",
-    "en": "",
+    "en": "Teacher! Nah, that's embarrassing. {name2}, good to have you!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -182807,7 +182800,7 @@
   },
   {
     "key": "師匠……ちょっと照れるけど、嬉しいです。",
-    "en": "",
+    "en": "Teacher... a bit embarrassing to say, but I'm happy.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -182820,7 +182813,7 @@
   },
   {
     "key": "師匠……まだ照れますが、これからよろしくお願いします。",
-    "en": "",
+    "en": "Teacher... it's still embarrassing to say. I'm in your care from now on.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -182833,7 +182826,7 @@
   },
   {
     "key": "師匠と呼ばれるのは少し照れますが、責任を持って指導します。",
-    "en": "",
+    "en": "Being called a teacher is a little embarrassing, but I'll take the job seriously.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -182846,7 +182839,7 @@
   },
   {
     "key": "師匠なんて呼ぶ日が来るとはね。覚悟して、抜くわよ。",
-    "en": "",
+    "en": "Never thought I'd call anyone teacher. Be ready — I'm passing you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -182859,7 +182852,7 @@
   },
   {
     "key": "席を用意していただいたのに、何も返せませんでした。……申し訳ないです",
-    "en": "",
+    "en": "You set the table for us and I gave nothing back. ...I apologize.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -182900,7 +182893,7 @@
   },
   {
     "key": "帰る頃には一回り強くなってるわよ",
-    "en": "",
+    "en": "Come home a whole grade stronger. Watch and see.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -183325,7 +183318,7 @@
   },
   {
     "key": "弟子として、恥じない戦いをする。{name2}先輩、見ていてくれ。",
-    "en": "",
+    "en": "I'll fight in a way that doesn't shame you. Watch me, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -183338,7 +183331,7 @@
   },
   {
     "key": "弟子として、決して恥はかかせませんわよ。",
-    "en": "",
+    "en": "As your student, I shall never bring shame upon you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -183351,7 +183344,7 @@
   },
   {
     "key": "弟子として、頑張ります。",
-    "en": "",
+    "en": "I'll work hard as your student.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -183364,7 +183357,7 @@
   },
   {
     "key": "弟子と呼ぶからにゃ、最強にしてやる。それだけだ。",
-    "en": "",
+    "en": "I call you my student, I make you the strongest. That's it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -183619,7 +183612,7 @@
   },
   {
     "key": "当時はあんなに焦ってたのに、不思議だな。",
-    "en": "",
+    "en": "I was so worked up back then. Strange, isn't it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -184244,7 +184237,7 @@
   },
   {
     "key": "待ってたわよ。次の試合、隣に並んでね。",
-    "en": "",
+    "en": "I was waiting. Line up next to me for the next show.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -184717,7 +184710,7 @@
   },
   {
     "key": "従います。ですが、間違っているとは思っていません",
-    "en": "",
+    "en": "I'll comply. But I don't believe we were in the wrong.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -185668,7 +185661,7 @@
   },
   {
     "key": "思い切り鍛えられるのね。楽しみだわ",
-    "en": "",
+    "en": "So I get to train without holding back. How nice.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -185724,7 +185717,7 @@
   },
   {
     "key": "思っていた人と違ったな。それだけのことだ。",
-    "en": "",
+    "en": "Not the person I thought she was. That's all it is.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -185737,7 +185730,7 @@
   },
   {
     "key": "思ってたより普通に喋れました。…それだけです、それだけ！",
-    "en": "",
+    "en": "We talked more normally than I expected. ...That's all it was. That's all!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -187577,7 +187570,7 @@
   },
   {
     "key": "悪いとは思ってたのよ。言う機会がなかっただけ",
-    "en": "",
+    "en": "I knew I was in the wrong. There was just never a chance to say it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -187798,7 +187791,7 @@
   },
   {
     "key": "意地を張り合う手間が減った。それだけ",
-    "en": "",
+    "en": "Less effort spent being stubborn at each other. That's all.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -187812,7 +187805,7 @@
   },
   {
     "key": "意地を張るのはお互い様だったよ。……まあ、これで貸し借りなしだ",
-    "en": "",
+    "en": "We were both being stubborn. ...Well, we're square now.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -187952,7 +187945,7 @@
   },
   {
     "key": "感謝します",
-    "en": "",
+    "en": "I'm grateful.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -188187,7 +188180,7 @@
   },
   {
     "key": "憧れって賞味期限あるのね。今日で終わり。",
-    "en": "",
+    "en": "So admiration has an expiry date. Today's the day.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -188324,7 +188317,7 @@
   },
   {
     "key": "戻った。",
-    "en": "",
+    "en": "Returned.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -188337,7 +188330,7 @@
   },
   {
     "key": "戻ってきたなら、細かいこと抜き。歓迎するわ。",
-    "en": "",
+    "en": "You're back, so no fine print. Welcome.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -188364,7 +188357,7 @@
   },
   {
     "key": "戻ってきちゃった。許してくれるかは、あなた次第ね。",
-    "en": "",
+    "en": "Look who came back. Whether you forgive me is up to you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -188377,7 +188370,7 @@
   },
   {
     "key": "戻ってきてくださって、嬉しゅうございますわ。",
-    "en": "",
+    "en": "I am glad, truly, that you have come back to us.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -188390,7 +188383,7 @@
   },
   {
     "key": "戻ってきました。お騒がせしてすみません。",
-    "en": "",
+    "en": "I'm back. Sorry for all the noise.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -188788,7 +188781,7 @@
   },
   {
     "key": "承知しました。皆にも伝えておきます",
-    "en": "",
+    "en": "Understood. I'll pass it on to the others.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -188796,8 +188789,7 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "polite",
-      "personality": "quiet"
+      "archetype": "polite"
     }
   },
   {
@@ -188925,7 +188917,7 @@
   },
   {
     "key": "抱えたまま終わる嫉妬もある。仕方ない。",
-    "en": "",
+    "en": "Some envy you just carry to the end. Nothing for it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -188938,7 +188930,7 @@
   },
   {
     "key": "抱え続ける必要のなかった重荷だ。下ろせ、ようやく下ろせる。",
-    "en": "",
+    "en": "A weight I never needed to carry. Put it down. I can finally put it down.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -189705,7 +189697,7 @@
   },
   {
     "key": "整えていただいた場を、無駄にしてしまいました。……次は、私から声をかけます",
-    "en": "",
+    "en": "You arranged everything and I wasted it. ...Next time I'll speak to her myself.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -190490,7 +190482,7 @@
   },
   {
     "key": "早く戻りたいの…待っていてね",
-    "en": "",
+    "en": "I want to be back soon... wait for me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -190504,7 +190496,7 @@
   },
   {
     "key": "早く戻る…！ こんなとこで止まってられない！",
-    "en": "",
+    "en": "I'm getting back fast...! No stopping here!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -190684,7 +190676,7 @@
   },
   {
     "key": "時間、容赦ねぇっすね。あたしの嫉妬も削り倒したわ。",
-    "en": "",
+    "en": "Time's brutal. Ground my envy right down with it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -190697,7 +190689,7 @@
   },
   {
     "key": "時間がいる。今は無理だ。",
-    "en": "",
+    "en": "It'll take time. Not right now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -190710,7 +190702,7 @@
   },
   {
     "key": "時間がここまで気持ちを削るとは、思いませんでした。",
-    "en": "",
+    "en": "I never thought time could shave a feeling down this far.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -190723,7 +190715,7 @@
   },
   {
     "key": "時間が解決した、ってこういうことか。",
-    "en": "",
+    "en": "Time solved it. So this is what that means.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -190736,7 +190728,7 @@
   },
   {
     "key": "時間って、女のつれない友達よね。",
-    "en": "",
+    "en": "Time is a cold friend to a woman, isn't it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -190749,7 +190741,7 @@
   },
   {
     "key": "時間という薬、思いのほか効きますのね。",
-    "en": "",
+    "en": "Time is a medicine. Rather more effective than I expected.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -190762,7 +190754,7 @@
   },
   {
     "key": "時間は嫉妬すら磨耗させる。覚えておこう。",
-    "en": "",
+    "en": "Time wears down even envy. Worth remembering.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -190775,7 +190767,7 @@
   },
   {
     "key": "時間は容赦ない。あの熱が懐かしいくらいだ。",
-    "en": "",
+    "en": "Time gives no quarter. I almost miss the heat of it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -192360,7 +192352,7 @@
   },
   {
     "key": "最高じゃん！限界まで追い込んでもらうぜ！",
-    "en": "",
+    "en": "That's the best! Have them run me into the ground!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -192654,7 +192646,7 @@
   },
   {
     "key": "最高の後押しね！限界まで追い込むよ！",
-    "en": "",
+    "en": "That's a great push! I'm going all the way to my limit!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -193337,7 +193329,7 @@
   },
   {
     "key": "期待には必ず応える！",
-    "en": "",
+    "en": "I'll live up to what you expect, guaranteed!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -194426,7 +194418,7 @@
   },
   {
     "key": "楽しいお時間でしたわ。それでは、ごきげんよう",
-    "en": "",
+    "en": "A pleasant evening. Now then, good night to you all.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -194440,7 +194432,7 @@
   },
   {
     "key": "楽しいけど…次の興行ではもっと結果を出す！",
-    "en": "",
+    "en": "Fun night... and I'm putting up more at the next show!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -194566,7 +194558,7 @@
   },
   {
     "key": "楽しかったわ。こういう時間もいいわね",
-    "en": "",
+    "en": "That was fun. Evenings like this have their charm.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -194678,7 +194670,7 @@
   },
   {
     "key": "楽しみです！全力で取り組みます！",
-    "en": "",
+    "en": "I can't wait! I'm going in with everything!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -194982,7 +194974,7 @@
   },
   {
     "key": "次にお会いするときは、覚悟なさいまし。",
-    "en": "",
+    "en": "When next we meet, do come prepared.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -195449,7 +195441,7 @@
   },
   {
     "key": "次は、あたしがそこに立つ。覚悟しとけよ、{name2}。",
-    "en": "",
+    "en": "Next time I'm standing up there. Be ready, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -195462,7 +195454,7 @@
   },
   {
     "key": "次は、敵だ。",
-    "en": "",
+    "en": "Next time, an enemy.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -195475,7 +195467,7 @@
   },
   {
     "key": "次は、普通の試合をする。",
-    "en": "",
+    "en": "Next time, a normal match.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -195488,7 +195480,7 @@
   },
   {
     "key": "次は、超える。",
-    "en": "",
+    "en": "Next, past you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -196068,7 +196060,7 @@
   },
   {
     "key": "止まってられるかよ！次は絶対やってやる！",
-    "en": "",
+    "en": "Like I can stop here! Next one is mine!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -196110,7 +196102,7 @@
   },
   {
     "key": "止まるつもりはないわ。見ていてね",
-    "en": "",
+    "en": "I have no intention of stopping. Watch me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -196233,7 +196225,7 @@
   },
   {
     "key": "止められなかったのは私の力不足だ。だが、置いていかれた怒りは別の話だ。",
-    "en": "",
+    "en": "Failing to stop you was on me. Being left behind is a separate anger, though.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -196575,7 +196567,7 @@
   },
   {
     "key": "歩み寄る理由がないもの。あちらが下がるまで、このままでいいわ",
-    "en": "",
+    "en": "I have no reason to step closer. Until she steps back, this suits me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -196600,7 +196592,7 @@
   },
   {
     "key": "残された私たちは、私たちで前を向きます。けれど、簡単には呑み込めません。",
-    "en": "",
+    "en": "Those of us left will face forward on our own. It just isn't easy to swallow.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -197380,7 +197372,7 @@
   },
   {
     "key": "比べたくありませんでした。でも、比べてしまう自分がいます。",
-    "en": "",
+    "en": "I didn't want to compare. But there's a part of me that does.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -197393,7 +197385,7 @@
   },
   {
     "key": "比べてしまう。",
-    "en": "",
+    "en": "I compare us.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -197406,7 +197398,7 @@
   },
   {
     "key": "比べてはならぬと存じております。けれど、比べてしまいますの。",
-    "en": "",
+    "en": "I know I must not compare. And still I compare.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -197446,7 +197438,7 @@
   },
   {
     "key": "気づけば、当時ほど焦っていない自分がいます。",
-    "en": "",
+    "en": "Somewhere along the way I stopped rushing the way I used to.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -197542,7 +197534,7 @@
   },
   {
     "key": "気まずいわよね。わたしもそう思ってるわ。",
-    "en": "",
+    "en": "Awkward, isn't it. I think so too.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -198713,7 +198705,7 @@
   },
   {
     "key": "油断した。それだけのことだ。借りはすぐ返す。",
-    "en": "",
+    "en": "I got careless. That's all it was. I'll settle the debt soon.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -198726,7 +198718,7 @@
   },
   {
     "key": "油断ではなく、実力差。それを認めるところから始めます。",
-    "en": "",
+    "en": "Not carelessness — a gap in ability. I'll start by admitting that.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -198948,7 +198940,7 @@
   },
   {
     "key": "泣くつもりなんてなかったのに……なんで、こんな……！",
-    "en": "",
+    "en": "I had no intention of crying... so why is this happening...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -198962,7 +198954,7 @@
   },
   {
     "key": "注目される場って好きよ。任せて",
-    "en": "",
+    "en": "I do like being looked at. Leave it to me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -198976,7 +198968,7 @@
   },
   {
     "key": "注目される場は大歓迎！存在感見せてあげる！",
-    "en": "",
+    "en": "Attention is always welcome! I'll show them I'm here!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -199004,7 +198996,7 @@
   },
   {
     "key": "注目されんの大歓迎！やってやるぜ！",
-    "en": "",
+    "en": "Bring on the attention! Let's do this!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -199121,7 +199113,7 @@
   },
   {
     "key": "消えかけ。",
-    "en": "",
+    "en": "Nearly gone.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -199789,7 +199781,7 @@
   },
   {
     "key": "無理。……別に、今のままでも困らない",
-    "en": "",
+    "en": "No. ...Things as they are don't trouble me.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -199803,7 +199795,7 @@
   },
   {
     "key": "無理だった…！ 顔見たら、もう…言葉が出てこなくて…！",
-    "en": "",
+    "en": "I couldn't do it...! One look at her face and the words just stopped...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -199817,7 +199809,7 @@
   },
   {
     "key": "無理なもんは無理。仲良くしろって言われて、はいそうですかってならないでしょ？",
-    "en": "",
+    "en": "No means no. Told to get along and just say yes? Doesn't work like that.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -199944,7 +199936,7 @@
   },
   {
     "key": "無駄だったわね。……別に、期待してなかったけど",
-    "en": "",
+    "en": "Waste of time. ...Not that I was expecting anything.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -200111,7 +200103,7 @@
   },
   {
     "key": "燃やす。",
-    "en": "",
+    "en": "Time to burn.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -200124,7 +200116,7 @@
   },
   {
     "key": "燻っていた気持ちは、今日で下ろす。次の試合からは別人として戦う。",
-    "en": "",
+    "en": "Whatever was smoldering, I put it down today. From the next match I'm a different wrestler.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -200447,7 +200439,7 @@
   },
   {
     "key": "理想と現実は別物。よくわかりましたの。",
-    "en": "",
+    "en": "The ideal and the real thing are separate. I understand that now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -200804,7 +200796,7 @@
   },
   {
     "key": "番狂わせ、される側になるとは。借りはすぐ返す。",
-    "en": "",
+    "en": "So I'm the one getting upset now. That debt won't sit long.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -201372,7 +201364,7 @@
   },
   {
     "key": "皆様、お疲れ様でした。明日からまた頑張りましょう",
-    "en": "",
+    "en": "Thank you all for your work today. We go again tomorrow.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -201386,7 +201378,7 @@
   },
   {
     "key": "皆様、お疲れ様ですわ。明日からまた頑張りましょうね",
-    "en": "",
+    "en": "You have all worked hard. Let us take it up again tomorrow.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -201511,7 +201503,7 @@
   },
   {
     "key": "皆様の頑張りを、誇りに思いますわ",
-    "en": "",
+    "en": "I am proud of the effort every one of you has made.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -201648,7 +201640,7 @@
   },
   {
     "key": "目標ができた。{name2}、見ててほしい。",
-    "en": "",
+    "en": "I've got something to aim at now. {name2}, watch me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -201675,7 +201667,7 @@
   },
   {
     "key": "目標にしてた背中、もう見えないのね。寂しいくらい。",
-    "en": "",
+    "en": "That back I was chasing isn't there anymore. Almost lonely.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -201702,7 +201694,7 @@
   },
   {
     "key": "目標は、別の場所に置く。あなたではない。",
-    "en": "",
+    "en": "I'm putting my goal somewhere else. Not on you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -201910,7 +201902,7 @@
   },
   {
     "key": "相手にも譲れない理由があるんです。……今日は、引き下がります",
-    "en": "",
+    "en": "She has her own reasons she can't yield. ...For today, I'll step back.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -202408,7 +202400,7 @@
   },
   {
     "key": "睨み合うのって疲れるのよね〜。休戦♪ …まぁ、期限つきだけど",
-    "en": "",
+    "en": "Glaring is tiring work~. Ceasefire ♪ ...With an expiry date, mind.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -207658,7 +207650,7 @@
   },
   {
     "key": "私が惨めなのを、あなたに見られたくないんです。",
-    "en": "",
+    "en": "I don't want you of all people seeing me like this.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -208128,7 +208120,7 @@
   },
   {
     "key": "私のやり方が、間違っていたということでしょうか",
-    "en": "",
+    "en": "Does that mean the way I did it was wrong?",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -208184,7 +208176,7 @@
   },
   {
     "key": "私の中で、ようやく終わりました。",
-    "en": "",
+    "en": "Inside me, it's finally over.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -208225,7 +208217,7 @@
   },
   {
     "key": "私の出番は、いつ来るんでしょうか。",
-    "en": "",
+    "en": "I wonder when my turn is coming.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -208593,7 +208585,7 @@
   },
   {
     "key": "私の至らなさです。申し訳ありませんでした",
-    "en": "",
+    "en": "It was my shortcoming. I'm very sorry.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -209914,7 +209906,7 @@
   },
   {
     "key": "簡単に手打ちになるくらいなら、とっくに終わってるよ。……無駄足にして悪いね",
-    "en": "",
+    "en": "If it settled that easily it would be over already. ...Sorry for the wasted trip.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -209956,7 +209948,7 @@
   },
   {
     "key": "精一杯、学ばせていただきます",
-    "en": "",
+    "en": "I shall learn all that I can from this.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -210174,7 +210166,7 @@
   },
   {
     "key": "納得はしていません。それでも、従います",
-    "en": "",
+    "en": "I don't accept it. I'll follow the order anyway.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -210188,7 +210180,7 @@
   },
   {
     "key": "納得はしておりません。そこだけは、申し上げておきます",
-    "en": "",
+    "en": "I do not accept it. That much I shall state plainly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -210861,7 +210853,7 @@
   },
   {
     "key": "結局ここに帰ってきたわ。それだけは、信じて。",
-    "en": "",
+    "en": "I ended up back here after all. Believe that much, at least.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -211733,7 +211725,7 @@
   },
   {
     "key": "緊張いたしますが…精一杯務めます",
-    "en": "",
+    "en": "It does make me nervous... but I will serve properly.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -211776,7 +211768,7 @@
   },
   {
     "key": "緊張するけど…頑張ります！",
-    "en": "",
+    "en": "Nervous, but I'm going for it!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -211902,7 +211894,7 @@
   },
   {
     "key": "練習が気になりますが…お気遣いありがとうございます",
-    "en": "",
+    "en": "The training is on my mind... but thank you for your kindness.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -211916,7 +211908,7 @@
   },
   {
     "key": "練習が気になるけど…ありがとう。休んでくるわ",
-    "en": "",
+    "en": "The training nags at me... but thank you. I'll go rest.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -212224,7 +212216,7 @@
   },
   {
     "key": "練習のことが気になりますけれど…お心遣い、ありがとうございますわ",
-    "en": "",
+    "en": "The training does weigh on me... but thank you for the consideration.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -212479,7 +212471,7 @@
   },
   {
     "key": "羨ましい、なんて言葉、使うつもりなかったのに。",
-    "en": "",
+    "en": "Envious. I had no intention of ever using that word.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -212492,7 +212484,7 @@
   },
   {
     "key": "羨ましい。素直に言えなかったから、こうなる。",
-    "en": "",
+    "en": "I envy her. I couldn't just say so, and this is where it goes.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -212505,7 +212497,7 @@
   },
   {
     "key": "羨ましい気持ち、自分の中で片付けます。",
-    "en": "",
+    "en": "The envy is mine to tidy up. I'll manage it on my own.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -212518,7 +212510,7 @@
   },
   {
     "key": "羨ましさは、勝った瞬間に消えた。不思議なものだな。",
-    "en": "",
+    "en": "The envy vanished the moment I won. Strange thing, that.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -212531,7 +212523,7 @@
   },
   {
     "key": "羨むのは性に合わない。だが、目を奪われている。",
-    "en": "",
+    "en": "Envy doesn't suit me. My eyes are stuck on her anyway.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -212544,7 +212536,7 @@
   },
   {
     "key": "羨んでた相手に勝つと、こうも違うものなんだな。",
-    "en": "",
+    "en": "Beating the one you envied changes things this much, apparently.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -212921,7 +212913,7 @@
   },
   {
     "key": "背中はまだ遠い。だが、目標が定まった。",
-    "en": "",
+    "en": "That back is still a long way off. But I know what I'm aiming at now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -212934,7 +212926,7 @@
   },
   {
     "key": "背中は見えなくなった。今度は並んで歩こう、{name2}。",
-    "en": "",
+    "en": "Your back isn't in front of me anymore. Let's walk side by side, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -213441,7 +213433,7 @@
   },
   {
     "key": "良い合宿にしましょう！",
-    "en": "",
+    "en": "Let's make it a good camp!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -213525,7 +213517,7 @@
   },
   {
     "key": "色々ございましたけれど、もう水に流しましてよ。",
-    "en": "",
+    "en": "There was a great deal, yes. I have let all of it go.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -213844,7 +213836,7 @@
   },
   {
     "key": "行きやがったか。あたしらに何の説明もなしによ。",
-    "en": "",
+    "en": "So she went. Didn't say one word to any of us.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -213857,7 +213849,7 @@
   },
   {
     "key": "行くな、と言うのも違う気がする。",
-    "en": "",
+    "en": "Telling her not to go feels wrong too.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -213870,7 +213862,7 @@
   },
   {
     "key": "行くなら行くで、こっちはこっちで前に進む。それだけだ。",
-    "en": "",
+    "en": "If she's going, she's going. We move forward on our side. That's all.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -213977,7 +213969,7 @@
   },
   {
     "key": "裏切ったって言葉、あなたによく似合うわね、{name}。",
-    "en": "",
+    "en": "Traitor. The word suits you rather well, {name}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -213990,7 +213982,7 @@
   },
   {
     "key": "裏切ったヤツを歓迎する義理はねぇ。実力で取り返せ。",
-    "en": "",
+    "en": "No welcome for someone who walked out. Take it back with your wrestling.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -214129,7 +214121,7 @@
   },
   {
     "key": "裏切り者には、それ相応のご挨拶を用意しておきますの。",
-    "en": "",
+    "en": "A traitor deserves a fitting greeting. I shall have one prepared.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -214142,7 +214134,7 @@
   },
   {
     "key": "裏切り者を歓迎する義理はない。実力で取り返してみせろ。",
-    "en": "",
+    "en": "I owe a traitor no welcome. Take it back with your wrestling.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -214471,7 +214463,7 @@
   },
   {
     "key": "見ていたのは私が作った像でした。本当のあなたは、違う。",
-    "en": "",
+    "en": "What I was watching was a picture I made. The real you is different.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -214540,7 +214532,7 @@
   },
   {
     "key": "見てくれてたのね。嬉しいわ。もう少し頑張ってみるわ",
-    "en": "",
+    "en": "So you were watching. That's lovely. I'll push a little more.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -214554,7 +214546,7 @@
   },
   {
     "key": "見てくれてたんだ？ じゃ、もうちょいやるか！",
-    "en": "",
+    "en": "You were watching? Right, guess I'll push some more!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -214568,7 +214560,7 @@
   },
   {
     "key": "見てくれよ、{name2}。あたし、ここまで来たぜ。",
-    "en": "",
+    "en": "Take a look, {name2}. I made it this far.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -214715,7 +214707,7 @@
   },
   {
     "key": "見ないでよ、こんなわたしを。",
-    "en": "",
+    "en": "Don't look at me. Not like this.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -214862,7 +214854,7 @@
   },
   {
     "key": "見届けたかった景色、わたくしが代わりに歩みますの。",
-    "en": "",
+    "en": "The view you wanted to see — I shall walk to it in your place.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -214939,7 +214931,7 @@
   },
   {
     "key": "視界に入らないで。",
-    "en": "",
+    "en": "Stay out of my sight.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -215158,7 +215150,7 @@
   },
   {
     "key": "言いたいことは全部言いました。ふぅ……これで、お互いすっきりしたかな",
-    "en": "",
+    "en": "I said everything I wanted to say. Phew... maybe we're both clearer now.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -215172,7 +215164,7 @@
   },
   {
     "key": "言いたいことは言いました。……届かなかっただけで、後悔はないです",
-    "en": "",
+    "en": "I said what I wanted to say. ...It didn't land, but I have no regrets.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -215458,7 +215450,7 @@
   },
   {
     "key": "言葉が通じていなかったんですね。気づくのが遅すぎました。",
-    "en": "",
+    "en": "The words never got through, did they. I noticed far too late.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -215551,7 +215543,7 @@
   },
   {
     "key": "言葉は、いらない。",
-    "en": "",
+    "en": "No words needed.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -215590,7 +215582,7 @@
   },
   {
     "key": "言葉を交わすたびに削れる関係って、こういうことか。",
-    "en": "",
+    "en": "So this is what it's like when every exchange wears you down.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -216056,7 +216048,7 @@
   },
   {
     "key": "話す価値もない。リングで会えば叩き潰すだけだ。",
-    "en": "",
+    "en": "Not worth talking to. We meet in the ring, I break you. Nothing else.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -216942,7 +216934,7 @@
   },
   {
     "key": "謝られたわ。……ふふ、忘れてあげるとは言ってないけれど",
-    "en": "",
+    "en": "She apologized. ...Mm, I never said I would forget it, though.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -216956,7 +216948,7 @@
   },
   {
     "key": "謝られちゃった…こっちも謝ってて…なんかもう、変な感じ…！",
-    "en": "",
+    "en": "She apologized... and then I did too... it feels so strange now...!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -216970,7 +216962,7 @@
   },
   {
     "key": "謝るつもりなんてないわ。……ええ、こっちだって忘れてないもの",
-    "en": "",
+    "en": "I have no intention of apologizing. ...No, I have not forgotten either.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -216984,7 +216976,7 @@
   },
   {
     "key": "謝る気なんてないから。あっちが先に頭を下げるなら、考える",
-    "en": "",
+    "en": "I'm not apologizing. If she bows first, I'll think about it.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -219999,7 +219991,7 @@
   },
   {
     "key": "距離を、置く。",
-    "en": "",
+    "en": "Keeping my distance.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220554,7 +220546,7 @@
   },
   {
     "key": "近寄んな、ぶっ飛ばすぞ!",
-    "en": "",
+    "en": "Don't come near me or I'll deck you!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220567,7 +220559,7 @@
   },
   {
     "key": "近寄んな、まだムカついてんだよ。",
-    "en": "",
+    "en": "Don't come near me, I'm still hot about it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220768,7 +220760,7 @@
   },
   {
     "key": "追いかける背中が消えるって、こんなに虚しいのね。",
-    "en": "",
+    "en": "So this is how empty it feels when the back you chase disappears.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220781,7 +220773,7 @@
   },
   {
     "key": "追いついた、というよりは、同じ場所に立てた。それで十分だ。",
-    "en": "",
+    "en": "Not so much caught up as standing in the same place. That's enough.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220794,7 +220786,7 @@
   },
   {
     "key": "追いついた、と申し上げてもよろしくて? {name2}様。",
-    "en": "",
+    "en": "Might I say that I have caught up with you, {name2}?",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220821,7 +220813,7 @@
   },
   {
     "key": "追いつくのが目標だった。だが、ここからは別の景色を見る。",
-    "en": "",
+    "en": "Catching up was the whole goal. From here I get to see something else.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220834,7 +220826,7 @@
   },
   {
     "key": "追いつく前にお別れだなんて……ずるうございますわ。",
-    "en": "",
+    "en": "Parting before I could catch you... that is unfair of you.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -220847,7 +220839,7 @@
   },
   {
     "key": "追いつく前に降りやがって。ここから先は、あたしの戦いだ。",
-    "en": "",
+    "en": "Getting off before I caught you. Rest of the road's mine, then.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -221494,7 +221486,7 @@
   },
   {
     "key": "透明。",
-    "en": "",
+    "en": "Transparent.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -222482,7 +222474,7 @@
   },
   {
     "key": "避けていても何も減りません。一度、話しておいてよかった",
-    "en": "",
+    "en": "Avoiding her never made anything smaller. I'm glad we talked once.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -222496,7 +222488,7 @@
   },
   {
     "key": "避け続けるのは、相手に対して失礼でしたわ。……向き合えてよかった",
-    "en": "",
+    "en": "To go on avoiding her was discourteous of me. ...I am glad we faced each other.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -222775,7 +222767,7 @@
   },
   {
     "key": "長かった。区切りをつけられて、よかった。",
-    "en": "",
+    "en": "Long road. Glad I could put a line under it.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -222788,7 +222780,7 @@
   },
   {
     "key": "長かったぜ、マジで。あの嫉妬、ここで完全終了だ。",
-    "en": "",
+    "en": "Took long enough, seriously. That envy ends right here.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -222955,7 +222947,7 @@
   },
   {
     "key": "長きにわたる嫉妬、本日をもって完全に幕引きですわ。",
-    "en": "",
+    "en": "A long envy, and as of today it is fully closed.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -222982,7 +222974,7 @@
   },
   {
     "key": "長く一緒にいたからこそ、こうしてぶつかれます。",
-    "en": "",
+    "en": "It's because we've been together so long that we can clash like this.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -222995,7 +222987,7 @@
   },
   {
     "key": "長く一緒にいたからこそ、こうしてぶつかれる。",
-    "en": "",
+    "en": "All those years side by side are exactly why this works.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -223008,7 +223000,7 @@
   },
   {
     "key": "長く抱えました。今は、感謝に近い気持ちです。",
-    "en": "",
+    "en": "I carried it a long time. What's left now is closer to gratitude.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -223021,7 +223013,7 @@
   },
   {
     "key": "長らくの嫉妬、本日をもって閉幕いたしますわ。",
-    "en": "",
+    "en": "My long envy closes its curtain as of today.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -223858,7 +223850,7 @@
   },
   {
     "key": "隣、貰う。",
-    "en": "",
+    "en": "The spot beside you. Mine.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -223871,7 +223863,7 @@
   },
   {
     "key": "隣から、敵に。",
-    "en": "",
+    "en": "From beside me, to across from me.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -223884,7 +223876,7 @@
   },
   {
     "key": "隣にいたお前が、いまは越えるべき相手だ。",
-    "en": "",
+    "en": "The one who stood beside me is the one I have to get past now.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -223897,7 +223889,7 @@
   },
   {
     "key": "隣にいた方が、最大の好敵手。何という巡り合わせでしょう。",
-    "en": "",
+    "en": "The one at my side is my greatest opponent. What a turn of luck.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -223966,7 +223958,7 @@
   },
   {
     "key": "隣を歩かせてください。それが、私からの恩返しです。",
-    "en": "",
+    "en": "Let me walk beside you. That's the only thanks I have to give.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -224818,7 +224810,7 @@
   },
   {
     "key": "預かったからには、最後まで面倒を見る。覚悟しておけ、{name2}。",
-    "en": "",
+    "en": "Having taken you on, I'll see it through to the end. Brace yourself, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -224844,7 +224836,7 @@
   },
   {
     "key": "預かるからには、最強にしてあげる。覚悟して、{name2}。",
-    "en": "",
+    "en": "If I'm taking you, I'll make you the strongest. Be ready, {name2}.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -224895,7 +224887,7 @@
   },
   {
     "key": "頑張ります！",
-    "en": "",
+    "en": "I'll work hard!",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -224923,7 +224915,7 @@
   },
   {
     "key": "頭は下げる。だが、リングでは下げない。それでいいか。",
-    "en": "",
+    "en": "I'll bow my head. Not in the ring, though. Is that acceptable?",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -224936,7 +224928,7 @@
   },
   {
     "key": "頭下げにきました。もういっぺん、ここで暴れさせてくれ。",
-    "en": "",
+    "en": "Came to bow my head. Let me tear it up here one more time.",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -225111,7 +225103,7 @@
   },
   {
     "key": "馴れ合うつもりはないわ。ただ、邪魔をされないだけで充分",
-    "en": "",
+    "en": "I have no intention of getting cozy. Not being obstructed is quite enough.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -225125,7 +225117,7 @@
   },
   {
     "key": "駄目だこりゃ。目も合わせやしないんだから、笑っちゃうよ",
-    "en": "",
+    "en": "Hopeless. She wouldn't even meet my eyes. Almost funny.",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
@@ -225261,7 +225253,7 @@
   },
   {
     "key": "黙ってろ! 何も言うな!",
-    "en": "",
+    "en": "Quiet! Don't say anything!",
     "files": [
       "flag-dialogue.js:FLAG_DIALOGUE"
     ],
@@ -226798,7 +226790,7 @@
   },
   {
     "key": "（また、お金…か…）",
-    "en": "",
+    "en": "(money again... huh)",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES"
     ],
