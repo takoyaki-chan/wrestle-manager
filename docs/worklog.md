@@ -1,5 +1,78 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2i — セリフ英訳バッチ⑨(挑戦要求リアクション408行+ジュニアトーナメント402行)（2026-09-04・Opus主筆 worktree agent-a00be017f5f7a55e4）
+
+量産翻訳の第9バッチ。**`data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS` の全408行 + `data.js:JUNIOR_TOURNAMENT_LINES` の402行中392行 = 800行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2hの訳語判断(2cの対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2fのベルト=belt/王座=title、2hの `ふふ`=Mm/My/Heheh 機能置換と `……っ……`=`... mm...`/`... ah...` を継承)。開始前にworktreeブランチをmain先端(ecae448)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
+
+### 1. 対象範囲(800行)
+
+**挑戦要求リアクション 408行**(軸は `archetype_personality` の複合キー34セル × 4状況 × 3本。`_challengeRequestOpponentReaction`(ui-common.js:13483)が **相手団体(AI側)代表の顔**を映すときに引く。`_accept`(名指しを受ける)/ `win` / `lose` / `draw` の4状況)
+
+| 状況 | 行数 | 場面 |
+|---|---|---|
+| `_accept` | 102 | 名指し(直訴・果たし状)を受けて立つ第一声 |
+| `win` / `lose` | 102 / 102 | 代表戦に勝った側 / 敗れた側 |
+| `draw` | 102 | 決着つかず(時間切れ) |
+
+**ジュニアトーナメント 402行**(軸は `timing → archetype → personality`。`getJuniorTournamentLine`(data.js:17286)。414スロット/402ユニーク — 重複12件は `……次`/`……全部、出す`/`……悪くなかった` 等の複数セル共有)
+
+| timing | スロット | 場面 |
+|---|---|---|
+| `summon` / `preMatch` | 61 / 61 | U-20召集の返事 / 試合前 |
+| `postMatchWin` / `preFinal` | 60 / 60 | 1回戦〜準決勝を勝ち上がった直後 / 決勝前 |
+| `champion` | 60 | 優勝スピーチ |
+| `postWin` / `postLose` | 56 / 56 | 大会を終えての総括(勝ち残り) / 敗退 |
+
+- **既訳10行は据え置き**(`……` = `"..."`、`……わかった`/`……そう。わかった`/`……了解`/`……やる`/`……まだ`/`……まだだ`/`……ありがとう`/`が、頑張ります…！`/`負けたか。…ま、次があるさ`。いずれもP5-2a〜2hで他テーブルと共有済み)
+- 属性内訳: standard 173 / seductive 128 / composed 111 / polite 100 / ojousama 96 / delinquent 92 / cool 88 / null 12
+- 台帳の `cell` と実効テーブルの軸キーの突き合わせは**不一致0**(810件照合)。`cell=null` 20件のうち12件が本バッチ対象で、**すべて「同一原文が複数archetypeに出る」正しいnull**(11件は他テーブルとの共有、`……全部、出す` 1件はJT内 standard.quiet と cool.quiet の共有)。中立英語を当てた。**cell欄への追記・修正は0件**
+
+### 2. 翻訳の方針
+
+- **挑戦要求は「名指しされた側」の声**。この帯の芯は §3-7(固有名詞を入れない)を守ったまま **「指名/名指し」を英語のプロレス語彙 call out / name / pick で運ぶ**こと。3語を帯ごとに割り分け、**丁寧・お嬢様=name(あらたまった指名)/ 標準・鷹揚=pick(選択)/ ヤンキー=call out(挑発)**を基調にした。`ご指名` の敬語成分は語彙でなく完全文+緩衝で出している
+- **`_accept` は「受けて立つ」の102通り**。同一モチーフ(`お受けします`系18・`逃げない`系9・`来い`系7)が構造的に重なる帯なので、accept を **I accept / I'll take it / I'll take you on / Come / Fine / Suits me / I'm in** の7系統に属性で割り、さらにセル内で語尾を変えた
+- **`draw` 102行は「決着つかず」の英語を12通りに割った**(`No decision` / `Undecided` / `Nothing settled` / `It never got settled` / `Nothing decided` / `Didn't get decided` / `Nothing got decided` / `No decision, then` ほか)。既存UI辞書の `決着つかず`=`No decision`(lang-en.js:2164)と揃えつつ、セリフ側は同語反復にならないよう分散させた
+- **`lose` は「潔さの度合い」で書き分けた**。原文の `認める` を **admit(お嬢様=I admit it plainly / I concede)・grant(鷹揚・蠱惑=I'll grant it)・own(標準・ヤンキー=I'll own it)** に分け、卑屈にも居直りにもしていない。`借りは返す`=`A debt. I'll repay it.`(cool)のように**世界の実態どおりの重さ**(§3-8)に留めた
+- **ジュニアは「登竜門の若さ」を出す**。ベテラン帯との差は語彙ではなく**視野の狭さと距離感**で作った — 大会の外を語らず(`次のステップ`=`the next step, not the last one` 程度)、`ここまで来た` の実感を素直に出し、**決勝・優勝の帯だけ声が上ずる**ようにした。属性の天井は崩していない(cool は優勝でも `...Champion. ...On to the next stage.`、お嬢様は `I am the champion...! Oh... the tears... they will not stop...!` と丁寧形のまま崩れる)
+- **`champion` 60行はジュニア専用ではない**。`ui-common.js:18999`(春タッグ優勝2名)・`19441`(秋4団体戦MVP のフォールバック)・`20472`(天頂戦優勝)が**同じ champion テーブルを流用している**ため、英語側も**「ジュニア」を一切書かない中立文**にしてある(`Junior Tournament` の語を入れたのは summon の polite.shy 1行だけで、これは原文が `ジュニアトーナメントに…？` と明示している行)
+- **ト書き11行**(`……（拳を握る）` / `……（静かに頷く）` / `……（トロフィーを静かに掲げる）` / `……（無言で去る）` ほか)は P5-2c で確立した堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**で統一した
+- **社長の呼称(§6裁定4)**: 両テーブルとも**話し相手が対戦相手・観客・仲間**であり、原文が `社長` を呼んでいる行はゼロ。**Boss / President とも0行**
+- **属性=register**: ojousama=全96行で**短縮形ゼロ** / cool=全88行で**感嘆符ゼロ・3文以内**(`...Undecided.` / `...This far.` / `...The result speaks.`) / delinquent=冠詞主語の省略+gonna相当のくだけ / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **§4-6のネイティブ検品ルール適用**: 「今日の私」型0 / 「〜も」のtoo直訳0 / `maybe` は文頭のみ / 応援=support / **`I'll do my best` / `It can't be helped` / `As expected of` の禁止定型は機械検査で0**(`仕方ありません`=`So be it.`、`しゃーねえな`=`Nothing for it.` に振り替え) / `ふふ`=`Mm`/`My`/`Heheh` に機能置換(`Fufu` 音写0)
+- **均質化回避**: この帯は「同一モチーフ×34セル」「同一timing×49セル」が構造的に大量発生する。事前検査で検出した**既訳との完全重複12件・近似重複(トークンJaccard≥0.90)4件・バッチ内近似重複1件をすべて書き直した**。最終的に**バッチ内EN完全重複0・近似重複0・既訳8,015行との完全重複0・近似重複0**(意図的な `………`→`"..."` 1件を除く。`……`/`…………`/`……………` を `"..."` に落とす P5-2b の方針に従った)
+- **卑語**: hell/damn は**800行中7回**、すべて delinquent 確定セル(`Just one more place to raise hell.` / `Hurts like hell. ...Won't go that way twice.` / `No decision? Like hell. We're finishing this.` / `Damn, came up short.` / `Damn it... I'm not losing the next one.` / `Damn~, that was the best...!` / `Damn it all...! I'm not going out like this...!`)。f/sワードは0
+- **長さ**: 全800行が110字上限内(**最大74字・中央値42字**・EN/JA文字数比 2.47)。プレースホルダは原文・訳文とも0個。♪は1行に存置(原文と同数)、♡を含む原文は0行
+
+### 3. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列800行を記入(**diffは `"en":` 行800本のみ・800挿入/800削除。他フィールドは1バイトも変えていない** — 書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートしてから記入し、書き込み後に `git diff` で `"en":` 以外の増減0を機械確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。**ソース・配線は一切触っていない**
+
+### 4. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**8,815**(8,015→+800) / cell判定済み8,603 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ 直書き日本語の増加なし(files=31 / totalJaStrings=28089) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+data/management/relationships)で**全822スロットの直接t()が未訳0**。さらに挑戦要求の実選択ロジック(49セル×4状況×30シード=**5,880回**)と `getJuniorTournamentLine`(7timing×49セル×30シード=**10,290回**)を引いて**未訳0・`[i18n-miss]` 0件**。セル横断20本を目視 |
+| 品質スイープ(事前検査) | ✅ 網羅800/800・空訳0・日本語残り0・110字超0・PH不一致0・余分な空白0・`....`表記0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+| cell整合 | ✅ 台帳cellと実効テーブルの軸キーの**不一致0**(810件照合・null 20件はすべて正しいnull) |
+
+### 5. 表示経路の確認(両テーブルとも到達する)
+
+- **挑戦要求408行は届く**。`_challengeRequestReactionScenesHtml`(ui-common.js:13824)が `WM_I18N.t(rx.line)` を通す。取次モーダル側の別経路(ui-common.js:9796)も同じく `WM_I18N.t(reaction.line)`。**プレースホルダを含む行が0**なので P5-2d の `selectDialogue` 型のfail-openは起きない
+- **ジュニア402行も届く**。summon=`_specialIntroFighterLine`(13266)と `ui-common.js:17029/17062/17903` が `WM_I18N.t()` を明示。postMatchWin=`showEventMatchResultPopup` 経由だが、`victoryLine` を**生JAのまま渡していても** `_emrBubbleHtml`(ui-common.js:18186)が表示直前に `WM_I18N.t(String(t))` を通す設計(二重t()はfail-openで無害、というコメント付き)。champion=`_chBubbleSlot`(18504)が t() を通す
+
+### 6. 残課題(このバッチで判明したものを含む)
+
+1. **`renderJuniorTournamentMatchResult`(ui-common.js:18305)の旧描画パスが到達不能**。関数冒頭の裸ブロック `{ … showEventMatchResultPopup({…}); return; }` が必ず return するため、**18345行以降(`showResultOverlay` を直接組み立てる `_pbFighterBlock` 版・約90行)は一度も実行されない**。翻訳の問題ではないが死コードなので棚卸し対象。**削除するかフラグで残すかは要裁定**(翻訳経路の確認中に発見。ソースは触っていない)
+2. **`champion` timing の流用が仕様として明文化されていない**。春タッグ優勝・秋4団体戦MVP・天頂戦優勝がジュニア用テーブルを共有しており(§2参照)、**ジュニア色の濃いセリフを足すと他3大会で浮く**。JAセリフを増補するときの制約として specs へ書き残す価値がある。要裁定
+3. **JA原文側の重複12件**(`……次`=standard.quiet/cool.bold/composed.quiet の postMatchWin、`……全部、出す`=standard.quiet/cool.quiet の preFinal、`……悪くなかった`=cool.normal postWin/composed.quiet postWin ほか)。翻訳側は同一ENで処理したが、**属性が違うのに同じ原文が置かれている**のは日本語側の書き分け漏れの可能性がある(P5-2f/2hと同型)。要裁定
+4. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **`draw` 102行の「決着つかず」12通り**が英語として自然に散っているか(`No decision` を軸に `Undecided` / `Nothing settled` を配分した判断) (b) **`_accept` 102行**が「受けて立つ」の温度に収まっているか(挑発に寄りすぎ/丁寧に寄りすぎの帯がないか) (c) **ジュニアの `champion` 60行**が、春タッグ・秋対抗戦・天頂戦で読んでも違和感のない中立文になっているか
 ## 🌐 セリフ抽出器 `detectCellFromPath` のdocId語尾誤検出を根治（2026-09-04・worktree agent-a7fb838143ee9e063）
 
 P5-2hで発見・台帳側で手修正(8行)されていた抽出器のバグを、根本のアルゴリズムから直した。`docs/i18n-stage-a-p3a-design-v0.1.md`の該当積み残し項目に✅根治を追記。

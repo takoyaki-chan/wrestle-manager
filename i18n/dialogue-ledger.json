@@ -7714,7 +7714,7 @@
   },
   {
     "key": "………",
-    "en": "",
+    "en": "...",
     "files": [
       "data.js:EVENT_RELEASE_LINES",
       "data.js:GLIMPSE_B_LINES",
@@ -7800,7 +7800,7 @@
   },
   {
     "key": "………………ありがとう",
-    "en": "",
+    "en": "...Thanks. For everything.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -7814,7 +7814,7 @@
   },
   {
     "key": "………………（悔しそうに拳を握る）",
-    "en": "",
+    "en": "... (clenching a fist in frustration)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -7828,7 +7828,7 @@
   },
   {
     "key": "………………（満足げに頷く）",
-    "en": "",
+    "en": "... (nods, satisfied)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -7884,7 +7884,7 @@
   },
   {
     "key": "…………ありがとう",
-    "en": "",
+    "en": "...My thanks.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -11716,7 +11716,7 @@
   },
   {
     "key": "……あら。やるじゃない、あなた。",
-    "en": "",
+    "en": "...Oh my. There's more to you than I thought.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -11855,7 +11855,7 @@
   },
   {
     "key": "……ありがとう。……本当に",
-    "en": "",
+    "en": "...Thank you. ...I mean it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -12285,7 +12285,7 @@
   },
   {
     "key": "……いい。",
-    "en": "",
+    "en": "...Fine.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12324,7 +12324,7 @@
   },
   {
     "key": "……いいだろう。その覚悟、正面から受け取る。",
-    "en": "",
+    "en": "...Very well. I'll take that resolve of yours head-on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12352,7 +12352,7 @@
   },
   {
     "key": "……いいだろう。来い。",
-    "en": "",
+    "en": "...Fine. Come.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12392,7 +12392,7 @@
   },
   {
     "key": "……いいよ。受けて立つ。",
-    "en": "",
+    "en": "...Sure. I'll take you on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12420,7 +12420,7 @@
   },
   {
     "key": "……いいよ。言葉はいらない。来なよ。",
-    "en": "",
+    "en": "...Fine. Skip the talking. Come on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12448,7 +12448,7 @@
   },
   {
     "key": "……いいわよ。",
-    "en": "",
+    "en": "...Fine by me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12476,7 +12476,7 @@
   },
   {
     "key": "……いい仕事するね。次は、こうはいかない。",
-    "en": "",
+    "en": "...Nice work out there. It goes differently next time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12517,7 +12517,7 @@
   },
   {
     "key": "……いい度胸してるね。乗ってあげる。",
-    "en": "",
+    "en": "...That takes nerve. I'll play along.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -12801,7 +12801,7 @@
   },
   {
     "key": "……うん、良かった",
-    "en": "",
+    "en": "...Mm. That was good.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -12829,7 +12829,7 @@
   },
   {
     "key": "……うん。……出る",
-    "en": "",
+    "en": "...Mm. ...I'll go.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -13454,7 +13454,7 @@
   },
   {
     "key": "……お互い、まだ何か残してるってことだ。",
-    "en": "",
+    "en": "...Means we've both still got something left over.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -13510,7 +13510,7 @@
   },
   {
     "key": "……お受けします。それだけです。",
-    "en": "",
+    "en": "...I accept. That's all.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -13593,7 +13593,7 @@
   },
   {
     "key": "……お預けね。",
-    "en": "",
+    "en": "...We'll have to wait, then.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -13704,7 +13704,7 @@
   },
   {
     "key": "……お黙りなさい。今日だけです。",
-    "en": "",
+    "en": "...Be quiet. Today only.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -13802,7 +13802,7 @@
   },
   {
     "key": "……くっ。次は、こうはいかない。",
-    "en": "",
+    "en": "...Nngh. There will be a different ending.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -14219,7 +14219,7 @@
   },
   {
     "key": "……ここまで。",
-    "en": "",
+    "en": "...This far.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -14233,7 +14233,7 @@
   },
   {
     "key": "……ここまで来た。……負けない",
-    "en": "",
+    "en": "...I came this far. ...I won't lose.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -14247,7 +14247,7 @@
   },
   {
     "key": "……ここまで来た。……負けるわけにはいかない",
-    "en": "",
+    "en": "...I came this far. ...Losing isn't an option.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -14289,7 +14289,7 @@
   },
   {
     "key": "……ここまで来た以上、負ける理由がない",
-    "en": "",
+    "en": "...Come this far, there's no reason to lose.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -15124,7 +15124,7 @@
   },
   {
     "key": "……これが結果？ ……信じられないわね",
-    "en": "",
+    "en": "...This is the result? ...I can hardly believe it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -15194,7 +15194,7 @@
   },
   {
     "key": "……これで分かった？ 次はないよ。",
-    "en": "",
+    "en": "...Understand now? There's no next one.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -15250,7 +15250,7 @@
   },
   {
     "key": "……こんな中途半端、いちばん腹が立つ。",
-    "en": "",
+    "en": "...Half-done like this — that's what makes me angriest.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -15652,7 +15652,7 @@
   },
   {
     "key": "……ごめんなさい。がっかり、させちゃったよね。",
-    "en": "",
+    "en": "...I'm sorry. I disappointed you, didn't I.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -15894,7 +15894,7 @@
   },
   {
     "key": "……すみません…",
-    "en": "",
+    "en": "...I'm sorry about that...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -16618,7 +16618,7 @@
   },
   {
     "key": "……そう。じゃあ、覚悟はできてるんだ。",
-    "en": "",
+    "en": "...I see. So you've already made your peace with it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -16848,7 +16848,7 @@
   },
   {
     "key": "……そうか。",
-    "en": "",
+    "en": "...Is that so.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -17069,7 +17069,7 @@
   },
   {
     "key": "……そう来たか。まあ、来なよ。",
-    "en": "",
+    "en": "...So that's the play. All right, come ahead.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -17237,7 +17237,7 @@
   },
   {
     "key": "……そこまでだ。",
-    "en": "",
+    "en": "...That's as far as you go.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -18122,7 +18122,7 @@
   },
   {
     "key": "……っ……そう。覚えておく。",
-    "en": "",
+    "en": "...Nn... I see. I'll remember that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -18318,7 +18318,7 @@
   },
   {
     "key": "……っ、なんで。認めたくないわ。",
-    "en": "",
+    "en": "...Nn, why. I don't want to accept this.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -18388,7 +18388,7 @@
   },
   {
     "key": "……っ。……行く",
-    "en": "",
+    "en": "...Nn. ...Going in.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -18416,7 +18416,7 @@
   },
   {
     "key": "……っ。…行く",
-    "en": "",
+    "en": "...Nn. ...I'm going.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -18430,7 +18430,7 @@
   },
   {
     "key": "……っ。勝った……",
-    "en": "",
+    "en": "...Nn. I won...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -18473,7 +18473,7 @@
   },
   {
     "key": "……っ。決勝……",
-    "en": "",
+    "en": "...Nn. The final...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -18487,7 +18487,7 @@
   },
   {
     "key": "……っ。（目が潤む）……勝った",
-    "en": "",
+    "en": "...Nn. (eyes welling) ...I won.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -18682,7 +18682,7 @@
   },
   {
     "key": "……つかなかった。決着は。",
-    "en": "",
+    "en": "...Didn't happen. The decision.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -18982,7 +18982,7 @@
   },
   {
     "key": "……ね？",
-    "en": "",
+    "en": "...See?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -19455,7 +19455,7 @@
   },
   {
     "key": "……はい。逃げません。",
-    "en": "",
+    "en": "...Yes. I won't run.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -19550,7 +19550,7 @@
   },
   {
     "key": "……ふ。まあまあ",
-    "en": "",
+    "en": "...Hn. Not bad.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -19619,7 +19619,7 @@
   },
   {
     "key": "……ふぅん。よく、私の名前を出せたね。",
-    "en": "",
+    "en": "...Hm. Bold of you to put my name out there.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -19829,7 +19829,7 @@
   },
   {
     "key": "……へえ。優勝か",
-    "en": "",
+    "en": "...Huh. Champion.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -19885,7 +19885,7 @@
   },
   {
     "key": "……ほら、言った通りだよ。",
-    "en": "",
+    "en": "...There. Just like I told you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -19941,7 +19941,7 @@
   },
   {
     "key": "……ま、いいか",
-    "en": "",
+    "en": "...Eh. Fine.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -19969,7 +19969,7 @@
   },
   {
     "key": "……ま、こんなものかな。悪くない相手だった。",
-    "en": "",
+    "en": "...About what I figured. You weren't a bad one to face.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -20025,7 +20025,7 @@
   },
   {
     "key": "……ま、やるか",
-    "en": "",
+    "en": "...Well. Let's do it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -20095,7 +20095,7 @@
   },
   {
     "key": "……ま、最後くらい本気で",
-    "en": "",
+    "en": "...Well. The last one deserves my full attention.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -20221,7 +20221,7 @@
   },
   {
     "key": "……また。",
-    "en": "",
+    "en": "...Again, then.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -20330,7 +20330,7 @@
   },
   {
     "key": "……まだ、早かったわね。",
-    "en": "",
+    "en": "...Too soon for you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -20523,7 +20523,7 @@
   },
   {
     "key": "……まだ、終わってない。",
-    "en": "",
+    "en": "...Still not over.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -20537,7 +20537,7 @@
   },
   {
     "key": "……まだ、終わらない。",
-    "en": "",
+    "en": "...This isn't finished.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -20663,7 +20663,7 @@
   },
   {
     "key": "……まだ上がある",
-    "en": "",
+    "en": "...There's higher ground.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -20789,7 +20789,7 @@
   },
   {
     "key": "……まだ足りない",
-    "en": "",
+    "en": "...Still short.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -20803,7 +20803,7 @@
   },
   {
     "key": "……まだ足りない。また名前を呼びなよ。",
-    "en": "",
+    "en": "...Still not enough. Say my name again sometime.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -20858,7 +20858,7 @@
   },
   {
     "key": "……まだ途中だ。必ず、続きをやろう。",
-    "en": "",
+    "en": "...We're still mid-way. Let's finish it, for certain.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -21053,7 +21053,7 @@
   },
   {
     "key": "……もう、名前は呼ばないほうがいい。",
-    "en": "",
+    "en": "...You'd be better off not saying my name again.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -21592,7 +21592,7 @@
   },
   {
     "key": "……もっと、頑張る…",
-    "en": "",
+    "en": "...I'll push myself more...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -21760,7 +21760,7 @@
   },
   {
     "key": "……やられたな。次は、こうはいかない。",
-    "en": "",
+    "en": "...You got me. It won't go like that again.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -21886,7 +21886,7 @@
   },
   {
     "key": "……よかった。……まだ続く",
-    "en": "",
+    "en": "...Good. ...It continues.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -22185,7 +22185,7 @@
   },
   {
     "key": "……わたしが…優勝……",
-    "en": "",
+    "en": "...Me... the champion...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -22700,7 +22700,7 @@
   },
   {
     "key": "……一勝。次",
-    "en": "",
+    "en": "...One win. Next.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -23016,7 +23016,7 @@
   },
   {
     "key": "……上手ね、あなた。",
-    "en": "",
+    "en": "...You're good at this.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -24156,7 +24156,7 @@
   },
   {
     "key": "……何も言わない。今は、何も。",
-    "en": "",
+    "en": "...I'm not saying anything. Not right now.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -24322,7 +24322,7 @@
   },
   {
     "key": "……借りだ。返す。",
-    "en": "",
+    "en": "...A debt. I'll repay it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -24364,7 +24364,7 @@
   },
   {
     "key": "……優勝。……次のステージへ",
-    "en": "",
+    "en": "...Champion. ...On to the next stage.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -24378,7 +24378,7 @@
   },
   {
     "key": "……優勝。…ありがとう",
-    "en": "",
+    "en": "...Champion. ...Thank you.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -24560,7 +24560,7 @@
   },
   {
     "key": "……全部、出す",
-    "en": "",
+    "en": "...I hold nothing back.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -24612,7 +24612,7 @@
   },
   {
     "key": "……出る",
-    "en": "",
+    "en": "...I'll be there.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -24626,7 +24626,7 @@
   },
   {
     "key": "……出る。それだけだ",
-    "en": "",
+    "en": "...I'm entering. That's all.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -24654,7 +24654,7 @@
   },
   {
     "key": "……出るよ",
-    "en": "",
+    "en": "...I'll enter.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -25202,7 +25202,7 @@
   },
   {
     "key": "……務めは果たした。あんたも、よくやったよ。",
-    "en": "",
+    "en": "...I did what I owed. You did well yourself.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -25445,7 +25445,7 @@
   },
   {
     "key": "……勝ちました。以上です。",
-    "en": "",
+    "en": "...I won. That is all.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -25514,7 +25514,7 @@
   },
   {
     "key": "……勝った",
-    "en": "",
+    "en": "...That's the win.",
     "files": [
       "data-faction-dialogue.js:FACTION_F08_POST_MATCH_WINNER_LINES",
       "data-faction-dialogue.js:FACTION_F09_ENDING_WIN_LINES",
@@ -25641,7 +25641,7 @@
   },
   {
     "key": "……勝った。……嬉しい",
-    "en": "",
+    "en": "...I won. ...I'm happy.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -25725,7 +25725,7 @@
   },
   {
     "key": "……勝った。それだけだ",
-    "en": "",
+    "en": "...I won it. Nothing more to it.",
     "files": [
       "data-faction-dialogue.js:FACTION_F08_POST_MATCH_WINNER_LINES",
       "data.js:JUNIOR_TOURNAMENT_LINES"
@@ -25752,7 +25752,7 @@
   },
   {
     "key": "……勝った。以上。",
-    "en": "",
+    "en": "...Won. Nothing to add.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -25794,7 +25794,7 @@
   },
   {
     "key": "……勝ったよ。重い一戦だった。",
-    "en": "",
+    "en": "...I won. That one was heavy.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -25906,7 +25906,7 @@
   },
   {
     "key": "……勝つだけだ",
-    "en": "",
+    "en": "...I just win.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -26030,7 +26030,7 @@
   },
   {
     "key": "……勝てた。……次も",
-    "en": "",
+    "en": "...I won. ...The next one too.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -26480,7 +26480,7 @@
   },
   {
     "key": "……参ったわ。",
-    "en": "",
+    "en": "...I'm beaten.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26535,7 +26535,7 @@
   },
   {
     "key": "……収穫はあった",
-    "en": "",
+    "en": "...There was something to take away.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -26589,7 +26589,7 @@
   },
   {
     "key": "……受けたからには勝ちたかった。この悔しさ、忘れない。",
-    "en": "",
+    "en": "...I accepted it, so I wanted the win. I won't forget how this feels.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26603,7 +26603,7 @@
   },
   {
     "key": "……受けておいて、この結果です。悔やみます。",
-    "en": "",
+    "en": "...I took it on, and this is the result. I will be sorry about it a while.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26674,7 +26674,7 @@
   },
   {
     "key": "……受ける。",
-    "en": "",
+    "en": "...I accept.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26688,7 +26688,7 @@
   },
   {
     "key": "……受ける。それだけ。",
-    "en": "",
+    "en": "...I'll take it. Nothing more.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26702,7 +26702,7 @@
   },
   {
     "key": "……受ける。呼ばれたら、応えるのが筋だ。",
-    "en": "",
+    "en": "...I accept. If you're called, you answer. That's how it works.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26716,7 +26716,7 @@
   },
   {
     "key": "……受ける。理由はいらない。",
-    "en": "",
+    "en": "...I accept. No reason needed.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26785,7 +26785,7 @@
   },
   {
     "key": "……名指しか。応える。",
-    "en": "",
+    "en": "...Named, then. I answer.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26950,7 +26950,7 @@
   },
   {
     "key": "……大きなことを申し上げた分、恥ずかしい限りです。",
-    "en": "",
+    "en": "...I talked big, so this is rather embarrassing.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -26964,7 +26964,7 @@
   },
   {
     "key": "……大丈夫。……やれる",
-    "en": "",
+    "en": "...It's fine. ...I can do this.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -27114,7 +27114,7 @@
   },
   {
     "key": "……嬉しかった",
-    "en": "",
+    "en": "...That made me happy.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -27250,7 +27250,7 @@
   },
   {
     "key": "……完敗だね。潔く認めるよ。",
-    "en": "",
+    "en": "...A clean loss. I'll own it without fuss.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -27529,7 +27529,7 @@
   },
   {
     "key": "……屈辱だ",
-    "en": "",
+    "en": "...Humiliating.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -27543,7 +27543,7 @@
   },
   {
     "key": "……届いていない。",
-    "en": "",
+    "en": "...It didn't reach.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -27846,7 +27846,7 @@
   },
   {
     "key": "……強い。",
-    "en": "",
+    "en": "...Strong.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -27942,7 +27942,7 @@
   },
   {
     "key": "……強かった。それだけだ。",
-    "en": "",
+    "en": "...Strong. That's all.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -27969,7 +27969,7 @@
   },
   {
     "key": "……強かったです。何も、できませんでした。",
-    "en": "",
+    "en": "...You were strong. I could not do a thing.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -27983,7 +27983,7 @@
   },
   {
     "key": "……当然。",
-    "en": "",
+    "en": "...Naturally.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -27997,7 +27997,7 @@
   },
   {
     "key": "……当然だ",
-    "en": "",
+    "en": "...Obviously.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:POST_MATCH_FLAVOR_LINES",
@@ -28027,7 +28027,7 @@
   },
   {
     "key": "……当然の結果",
-    "en": "",
+    "en": "...The expected result.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -28429,7 +28429,7 @@
   },
   {
     "key": "……悔しい",
-    "en": "",
+    "en": "...It stings.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:WAR_POST_DIALOGUE"
@@ -28455,7 +28455,7 @@
   },
   {
     "key": "……悔しい、とだけ。",
-    "en": "",
+    "en": "...Only this: it stings.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -28483,7 +28483,7 @@
   },
   {
     "key": "……悔しい。それだけ。",
-    "en": "",
+    "en": "...It's galling. That's it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -28679,7 +28679,7 @@
   },
   {
     "key": "……悪くない",
-    "en": "",
+    "en": "...Not bad at all.",
     "files": [
       "data.js:GLIMPSE_B_LINES",
       "data.js:JUNIOR_TOURNAMENT_LINES",
@@ -28706,7 +28706,7 @@
   },
   {
     "key": "……悪くなかった",
-    "en": "",
+    "en": "...Wasn't bad.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:WAR_POST_DIALOGUE"
@@ -28718,7 +28718,7 @@
   },
   {
     "key": "……悪くなかったよ。もう一度来るなら、受ける。",
-    "en": "",
+    "en": "...You weren't bad. Come again and I'll take it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -29315,7 +29315,7 @@
   },
   {
     "key": "……持っていかれたか。大きく出た分、堪えるね。",
-    "en": "",
+    "en": "...You took it, huh. I came in loud, so it lands harder.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -29736,7 +29736,7 @@
   },
   {
     "key": "……最後",
-    "en": "",
+    "en": "...The last.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -29750,7 +29750,7 @@
   },
   {
     "key": "……最後。…行くよ",
-    "en": "",
+    "en": "...The last one. ...Let's go.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -29764,7 +29764,7 @@
   },
   {
     "key": "……最後。獲る",
-    "en": "",
+    "en": "...Last one. I take it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -29864,7 +29864,7 @@
   },
   {
     "key": "……最後の一戦",
-    "en": "",
+    "en": "...The last one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -29878,7 +29878,7 @@
   },
   {
     "key": "……最後の一戦。……全部出す",
-    "en": "",
+    "en": "...The last match. ...Everything out.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -29906,7 +29906,7 @@
   },
   {
     "key": "……最後の一試合",
-    "en": "",
+    "en": "...One match left.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -30112,7 +30112,7 @@
   },
   {
     "key": "……来い。",
-    "en": "",
+    "en": "...Come.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -30386,7 +30386,7 @@
   },
   {
     "key": "……楽しかった",
-    "en": "",
+    "en": "...That was fun.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -30414,7 +30414,7 @@
   },
   {
     "key": "……次",
-    "en": "",
+    "en": "...Next one.",
     "files": [
       "data-faction-dialogue.js:FACTION_F09_MATCH_POST_WIN_LINES",
       "data.js:AUTUMN_WAR_MATCH_LINES",
@@ -30468,7 +30468,7 @@
   },
   {
     "key": "……次がある",
-    "en": "",
+    "en": "...There's a next.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -30493,7 +30493,7 @@
   },
   {
     "key": "……次だ。次は、必ず終わらせる。",
-    "en": "",
+    "en": "...Next time. I'll put an end to it then.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -30521,7 +30521,7 @@
   },
   {
     "key": "……次で決める。",
-    "en": "",
+    "en": "...The next one decides it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -30727,7 +30727,7 @@
   },
   {
     "key": "……次は、負けない",
-    "en": "",
+    "en": "...I won't lose the next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:WAR_POST_DIALOGUE"
@@ -30767,7 +30767,7 @@
   },
   {
     "key": "……次はない。",
-    "en": "",
+    "en": "...There is no next.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -30809,7 +30809,7 @@
   },
   {
     "key": "……次は負けない",
-    "en": "",
+    "en": "...Next time I don't lose.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:WAR_POST_DIALOGUE"
@@ -30835,7 +30835,7 @@
   },
   {
     "key": "……次も……同じように",
-    "en": "",
+    "en": "...The next... just the same.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -30849,7 +30849,7 @@
   },
   {
     "key": "……次も、こんな感じで",
-    "en": "",
+    "en": "...Next one, about the same.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -31184,7 +31184,7 @@
   },
   {
     "key": "……決まらなかったか。まあ、悪くない。",
-    "en": "",
+    "en": "...Nothing decided, then. Well, not so bad.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31212,7 +31212,7 @@
   },
   {
     "key": "……決まりませんでした。いつか、続きを。",
-    "en": "",
+    "en": "...Nothing was decided. Someday, the rest of it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31226,7 +31226,7 @@
   },
   {
     "key": "……決めきれなかったか。つまらないね。",
-    "en": "",
+    "en": "...Couldn't put it away. How dull.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31240,7 +31240,7 @@
   },
   {
     "key": "……決勝。全て出す",
-    "en": "",
+    "en": "...The final. Everything comes out.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -31254,7 +31254,7 @@
   },
   {
     "key": "……決勝か。……やるよ",
-    "en": "",
+    "en": "...The final. ...I'll do it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -31309,7 +31309,7 @@
   },
   {
     "key": "……決着つかず。",
-    "en": "",
+    "en": "...Undecided.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31323,7 +31323,7 @@
   },
   {
     "key": "……決着つかず。いつか、続きを。",
-    "en": "",
+    "en": "...No decision. Someday, the rest.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31337,7 +31337,7 @@
   },
   {
     "key": "……決着つかず。続きは、そのうちにね。",
-    "en": "",
+    "en": "...No decision. We'll get to the rest eventually.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31351,7 +31351,7 @@
   },
   {
     "key": "……決着は、つきませんでした。",
-    "en": "",
+    "en": "...It never got settled.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31379,7 +31379,7 @@
   },
   {
     "key": "……決着はつかず、か。",
-    "en": "",
+    "en": "...No decision, then.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31393,7 +31393,7 @@
   },
   {
     "key": "……決着をつけられなかった。それが心残りだ。",
-    "en": "",
+    "en": "...I couldn't bring it to a finish. That's what stays.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -31477,7 +31477,7 @@
   },
   {
     "key": "……潰す",
-    "en": "",
+    "en": "...I crush her.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -33143,7 +33143,7 @@
   },
   {
     "key": "……終わってない。まだ、全然。",
-    "en": "",
+    "en": "...Not finished. Not even close.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -33224,7 +33224,7 @@
   },
   {
     "key": "……終わりだ。",
-    "en": "",
+    "en": "...Finished.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -33294,7 +33294,7 @@
   },
   {
     "key": "……終わりません。まだ。",
-    "en": "",
+    "en": "...We have not finished. Not yet.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -33388,7 +33388,7 @@
   },
   {
     "key": "……結果で語る",
-    "en": "",
+    "en": "...The result speaks.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -33793,7 +33793,7 @@
   },
   {
     "key": "……胸が…熱い。……やる",
-    "en": "",
+    "en": "...My chest... it's hot. ...I'll do it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -33862,7 +33862,7 @@
   },
   {
     "key": "……良い大会だった",
-    "en": "",
+    "en": "...It was a good tournament.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -33876,7 +33876,7 @@
   },
   {
     "key": "……良い経験だった",
-    "en": "",
+    "en": "...Good experience.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -33945,7 +33945,7 @@
   },
   {
     "key": "……行く",
-    "en": "",
+    "en": "...I'm going.",
     "files": [
       "data-faction-dialogue.js:FACTION_F09_MATCH_PRE_LINES",
       "data.js:JUNIOR_TOURNAMENT_LINES"
@@ -33971,7 +33971,7 @@
   },
   {
     "key": "……行くよ",
-    "en": "",
+    "en": "...Heading out.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -34201,7 +34201,7 @@
   },
   {
     "key": "……言いたいことは、全部言えたよ。",
-    "en": "",
+    "en": "...I said everything I had to say out there.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35048,7 +35048,7 @@
   },
   {
     "key": "……負けた。何も言えない。",
-    "en": "",
+    "en": "...Lost. Nothing I can say.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35089,7 +35089,7 @@
   },
   {
     "key": "……負けた。認める。",
-    "en": "",
+    "en": "...I lost. I accept it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35159,7 +35159,7 @@
   },
   {
     "key": "……負けだ。",
-    "en": "",
+    "en": "...A loss.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35173,7 +35173,7 @@
   },
   {
     "key": "……負けだ。ちゃんと認めるよ。",
-    "en": "",
+    "en": "...It's a loss. I'll own it properly.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35201,7 +35201,7 @@
   },
   {
     "key": "……負けは、私のものだ。持って帰るよ。",
-    "en": "",
+    "en": "...The loss is mine. I'll carry it home.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35336,7 +35336,7 @@
   },
   {
     "key": "……負けました。何も言えません。",
-    "en": "",
+    "en": "...I lost. There's nothing I can say.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35515,7 +35515,7 @@
   },
   {
     "key": "……足りない。",
-    "en": "",
+    "en": "...Not enough.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35543,7 +35543,7 @@
   },
   {
     "key": "……足りないわ。",
-    "en": "",
+    "en": "...I'm left wanting.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35765,7 +35765,7 @@
   },
   {
     "key": "……逃げない",
-    "en": "",
+    "en": "...I don't run.",
     "files": [
       "data.js:FACTION_F02_LINES",
       "data.js:JUNIOR_TOURNAMENT_LINES"
@@ -35777,7 +35777,7 @@
   },
   {
     "key": "……逃げない。来て。",
-    "en": "",
+    "en": "...I won't run. Come.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -35903,7 +35903,7 @@
   },
   {
     "key": "……適当に…いや、ちゃんとやる",
-    "en": "",
+    "en": "...I'll wing it... no. I'll do it properly.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -36188,7 +36188,7 @@
   },
   {
     "key": "……集中する",
-    "en": "",
+    "en": "...Focusing.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -36310,7 +36310,7 @@
   },
   {
     "key": "……頑張れた…と思う",
-    "en": "",
+    "en": "...I managed... I think.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -36575,7 +36575,7 @@
   },
   {
     "key": "……（トロフィーを静かに掲げる）",
-    "en": "",
+    "en": "... (raises the trophy quietly)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -36729,7 +36729,7 @@
   },
   {
     "key": "……（少し笑顔を見せる）",
-    "en": "",
+    "en": "... (lets a small smile show)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -36757,7 +36757,7 @@
   },
   {
     "key": "……（拳を握る）",
-    "en": "",
+    "en": "... (makes a fist)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -36785,7 +36785,7 @@
   },
   {
     "key": "……（涙をこらえている）",
-    "en": "",
+    "en": "... (holding back tears)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -36855,7 +36855,7 @@
   },
   {
     "key": "……（無言で去る）",
-    "en": "",
+    "en": "... (walks off without a word)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -37136,7 +37136,7 @@
   },
   {
     "key": "……（静かに息を吐く）",
-    "en": "",
+    "en": "... (lets out a quiet breath)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -37150,7 +37150,7 @@
   },
   {
     "key": "……（静かに感動をかみしめる）",
-    "en": "",
+    "en": "... (quietly taking it in)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -37234,7 +37234,7 @@
   },
   {
     "key": "……（静かに頷く）",
-    "en": "",
+    "en": "... (nods quietly)",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:WAR_POST_DIALOGUE",
@@ -42443,7 +42443,7 @@
   },
   {
     "key": "…いい大会だった。…忘れないよ",
-    "en": "",
+    "en": "...Good tournament. ...I won't forget it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -42680,7 +42680,7 @@
   },
   {
     "key": "…いい目してた。また来なよ。",
-    "en": "",
+    "en": "...You had good eyes out there. Come again.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -42708,7 +42708,7 @@
   },
   {
     "key": "…いい経験になりました。…次に活かします",
-    "en": "",
+    "en": "...That was good experience. ...I'll put it to work.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -42944,7 +42944,7 @@
   },
   {
     "key": "…いつも通りやるよ",
-    "en": "",
+    "en": "...Same as always.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -43405,7 +43405,7 @@
   },
   {
     "key": "…うん。届かなかったね、今日は。",
-    "en": "",
+    "en": "...Mm. You didn't reach it today.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -43475,7 +43475,7 @@
   },
   {
     "key": "…え。……わかった",
-    "en": "",
+    "en": "...Oh. ...Understood.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -51431,7 +51431,7 @@
   },
   {
     "key": "…っ…優勝か。…ありがとう",
-    "en": "",
+    "en": "...Nn... so I won it. ...Thank you.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -51683,7 +51683,7 @@
   },
   {
     "key": "…っ…悔しい。…でも、次がある",
-    "en": "",
+    "en": "...Nn... that stings. ...But there's a next.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -54352,7 +54352,7 @@
   },
   {
     "key": "…なるほど。じゃあ、行こうか",
-    "en": "",
+    "en": "...I see. Then let's get going.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -55909,7 +55909,7 @@
   },
   {
     "key": "…ふぅん。いい舞台だね",
-    "en": "",
+    "en": "...Hmm. That's a good stage.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -56118,7 +56118,7 @@
   },
   {
     "key": "…ま、こんなもんかな。悪くなかったよ。",
-    "en": "",
+    "en": "...About that, I'd say. Not a bad one.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -56300,7 +56300,7 @@
   },
   {
     "key": "…ま、楽しんでいこうか",
-    "en": "",
+    "en": "...Well, let's have some fun with it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -57262,7 +57262,7 @@
   },
   {
     "key": "…まだ上がある。…次は獲る",
-    "en": "",
+    "en": "...There's more above. ...Next one I take.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -57486,7 +57486,7 @@
   },
   {
     "key": "…まだ終わってない。それでいい。",
-    "en": "",
+    "en": "...Not over yet. I'm fine with that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -57598,7 +57598,7 @@
   },
   {
     "key": "…まだ足りないか。…次までに詰めよう",
-    "en": "",
+    "en": "...Still short, then. ...I'll close the gap before the next.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -60334,7 +60334,7 @@
   },
   {
     "key": "…わかった。受けよう。",
-    "en": "",
+    "en": "...Got it. I'll take this.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -62669,7 +62669,7 @@
   },
   {
     "key": "…一つずつ。…やることは変わらない",
-    "en": "",
+    "en": "...One at a time. ...The job doesn't change.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -62683,7 +62683,7 @@
   },
   {
     "key": "…一つ勝ち。…次もこの調子で",
-    "en": "",
+    "en": "...One win. ...Keep the same shape for the next.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -62711,7 +62711,7 @@
   },
   {
     "key": "…一つ勝った。…まだ先がある",
-    "en": "",
+    "en": "...One in hand. ...There's more ahead.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -65004,7 +65004,7 @@
   },
   {
     "key": "…優勝。…まあ、当然かな",
-    "en": "",
+    "en": "...The title. ...Well, about what I expected.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -65018,7 +65018,7 @@
   },
   {
     "key": "…優勝か。…悪くないね。…次も行こう",
-    "en": "",
+    "en": "...Champion, huh. ...Not bad at all. ...On to the next.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -65032,7 +65032,7 @@
   },
   {
     "key": "…優勝できました。…みんなのおかげです",
-    "en": "",
+    "en": "...I won it. ...That's down to everyone around me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -65535,7 +65535,7 @@
   },
   {
     "key": "…出るよ。…やるだけだね",
-    "en": "",
+    "en": "...I'm in. ...Nothing to do but do it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -65997,7 +65997,7 @@
   },
   {
     "key": "…力不足でした。…次は必ず",
-    "en": "",
+    "en": "...I wasn't strong enough. ...Next time, for certain.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -66724,7 +66724,7 @@
   },
   {
     "key": "…勝つよ。…それだけ",
-    "en": "",
+    "en": "...I win. ...That's it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -66808,7 +66808,7 @@
   },
   {
     "key": "…勝てた。…次もやるだけ",
-    "en": "",
+    "en": "...Got the win. ...Just do it again next time.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -67544,7 +67544,7 @@
   },
   {
     "key": "…名指しだね。逃げないよ。",
-    "en": "",
+    "en": "...Named, am I. I'm not running.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -68516,7 +68516,7 @@
   },
   {
     "key": "…完敗。言い訳はしないよ。",
-    "en": "",
+    "en": "...Beaten clean. I'm not making excuses.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -69173,7 +69173,7 @@
   },
   {
     "key": "…強かった。それが答えだ。",
-    "en": "",
+    "en": "...You were strong. That's the answer.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -69228,7 +69228,7 @@
   },
   {
     "key": "…当然だね。…次も同じ",
-    "en": "",
+    "en": "...Of course. ...Next one's the same.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -70442,7 +70442,7 @@
   },
   {
     "key": "…悔しいね。…でも、次は違う",
-    "en": "",
+    "en": "...That stings. ...But the next one goes differently.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -70484,7 +70484,7 @@
   },
   {
     "key": "…悔しいわ。でも、私はここで終わらない",
-    "en": "",
+    "en": "...That stings. But I don't end here.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -71002,7 +71002,7 @@
   },
   {
     "key": "…悪くなかったね。…いい経験になった",
-    "en": "",
+    "en": "...Not bad at all. ...Good experience.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -71128,7 +71128,7 @@
   },
   {
     "key": "…想定の内。それだけ。",
-    "en": "",
+    "en": "...Within expectations. Nothing more.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -72674,7 +72674,7 @@
   },
   {
     "key": "…最後の一戦。…獲りにいくよ",
-    "en": "",
+    "en": "...Last match. ...I'm going to take it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -73400,7 +73400,7 @@
   },
   {
     "key": "…来なよ。ちゃんと立ってる。",
-    "en": "",
+    "en": "...Come ahead. I'll be on my feet.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -74477,7 +74477,7 @@
   },
   {
     "key": "…決まらなかったね。",
-    "en": "",
+    "en": "...Nothing got decided.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -74505,7 +74505,7 @@
   },
   {
     "key": "…決勝か。…ここまで来た以上、負けない",
-    "en": "",
+    "en": "...The final. ...After coming this far, I don't lose.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -74519,7 +74519,7 @@
   },
   {
     "key": "…決勝か。…全部出します",
-    "en": "",
+    "en": "...So it's the final. ...I'll leave nothing back.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -74533,7 +74533,7 @@
   },
   {
     "key": "…決勝か。…全部出し切るよ",
-    "en": "",
+    "en": "...The final, huh. ...I'm emptying the tank.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -74561,7 +74561,7 @@
   },
   {
     "key": "…決着つかずか。まあ、そういう日もある。",
-    "en": "",
+    "en": "...Undecided, huh. Days like that happen.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -79882,7 +79882,7 @@
   },
   {
     "key": "…私？ ま、いいよ。付き合う。",
-    "en": "",
+    "en": "...Me? Eh, fine. I'll go along with it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -80050,7 +80050,7 @@
   },
   {
     "key": "…立てない。参った。",
-    "en": "",
+    "en": "...Can't get up. I'm done.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -80621,7 +80621,7 @@
   },
   {
     "key": "…続きは、いつか。",
-    "en": "",
+    "en": "...The rest of it, someday.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -81376,7 +81376,7 @@
   },
   {
     "key": "…行くよ。…負けない",
-    "en": "",
+    "en": "...I'm going. ...I won't lose.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -82327,7 +82327,7 @@
   },
   {
     "key": "…認めるよ。今日は。",
-    "en": "",
+    "en": "...I'll grant it. Today.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -83794,7 +83794,7 @@
   },
   {
     "key": "…選ばれたか。…まあ、当然だろうね",
-    "en": "",
+    "en": "...So I'm picked. ...Well, that tracks.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -83808,7 +83808,7 @@
   },
   {
     "key": "…選ばれたか。…やるよ",
-    "en": "",
+    "en": "...Picked, huh. ...I'm doing it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -83906,7 +83906,7 @@
   },
   {
     "key": "…選んでもらえたなら、応えないとね",
-    "en": "",
+    "en": "...If they picked me, I should answer that.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -84466,7 +84466,7 @@
   },
   {
     "key": "…集中。…行こうか",
-    "en": "",
+    "en": "...Focus. ...Let's go.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -87984,7 +87984,7 @@
   },
   {
     "key": "あ……勝っちゃった。ごめんなさい。",
-    "en": "",
+    "en": "Ah... I won. I'm sorry.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -90556,7 +90556,7 @@
   },
   {
     "key": "あちゃー、負けちゃった。まあ次がんばろ",
-    "en": "",
+    "en": "Aw man, I lost. Well, next time.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -90721,7 +90721,7 @@
   },
   {
     "key": "あと一つ。全てを懸けるわ",
-    "en": "",
+    "en": "One more. I'm staking all of it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -90735,7 +90735,7 @@
   },
   {
     "key": "あと一つ。勝てば優勝。それだけ考える",
-    "en": "",
+    "en": "One more. Win it and it's mine. That's all I'm thinking about.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -90749,7 +90749,7 @@
   },
   {
     "key": "あと一つ。楽しんでいきましょう",
-    "en": "",
+    "en": "Just one more. Let's enjoy it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -90963,7 +90963,7 @@
   },
   {
     "key": "あなたが上だった。……認めるわ。",
-    "en": "",
+    "en": "You were above me. ...I'll grant that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -90977,7 +90977,7 @@
   },
   {
     "key": "あなたが上でした。全部、私の責任です。",
-    "en": "",
+    "en": "You were above me today. All of it is on me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -90991,7 +90991,7 @@
   },
   {
     "key": "あなたが上でした。潔く、認めます。",
-    "en": "",
+    "en": "You were the better one. I'll say so cleanly.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91005,7 +91005,7 @@
   },
   {
     "key": "あなたが上でした。素直に認めます。",
-    "en": "",
+    "en": "You were above me. I admit it plainly.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91019,7 +91019,7 @@
   },
   {
     "key": "あなたが上でした。言い訳はいたしません。",
-    "en": "",
+    "en": "You were the better one. I have no excuses to offer.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91186,7 +91186,7 @@
   },
   {
     "key": "あなたで最後ね。……覚悟はできているのかしら",
-    "en": "",
+    "en": "You are the last of them. ...I wonder whether you are ready.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -91645,7 +91645,7 @@
   },
   {
     "key": "あなたのほうが上手でした。お見事。",
-    "en": "",
+    "en": "You were the more skilled of us. Splendidly done.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91700,7 +91700,7 @@
   },
   {
     "key": "あなたの勝ち。……失礼する。",
-    "en": "",
+    "en": "Your win. ...I'm going.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91714,7 +91714,7 @@
   },
   {
     "key": "あなたの勝ち。おめでとう。",
-    "en": "",
+    "en": "Your win. Congratulations.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91728,7 +91728,7 @@
   },
   {
     "key": "あなたの勝ちです。……失礼します。",
-    "en": "",
+    "en": "The win is yours. ...Excuse me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91770,7 +91770,7 @@
   },
   {
     "key": "あなたの本気、確かに受け取ったわよ。",
-    "en": "",
+    "en": "You came at me in earnest. It reached me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91784,7 +91784,7 @@
   },
   {
     "key": "あなたの本気、確かに受け取りました。",
-    "en": "",
+    "en": "You brought all of yourself. I received it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91798,7 +91798,7 @@
   },
   {
     "key": "あなたの本気、確かに受け止めました。",
-    "en": "",
+    "en": "You came at me for real. I felt every bit of it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91853,7 +91853,7 @@
   },
   {
     "key": "あなたの覚悟に、礼を欠くことはしません。",
-    "en": "",
+    "en": "I will not be discourteous to the resolve you brought.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -91907,7 +91907,7 @@
   },
   {
     "key": "あなたは強かった。それは伝えておきます。",
-    "en": "",
+    "en": "You were strong. I want that said aloud.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -92155,7 +92155,7 @@
   },
   {
     "key": "あの……お受けします。自信は、ないですけど。",
-    "en": "",
+    "en": "Um... I will accept. I am not confident, but still.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -92169,7 +92169,7 @@
   },
   {
     "key": "あの……もう一度、やりますか。今度は、ちゃんと。",
-    "en": "",
+    "en": "Um... shall we do it again? Properly, this time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -92183,7 +92183,7 @@
   },
   {
     "key": "あの……もう一度、やる？ 今度は、ちゃんと。",
-    "en": "",
+    "en": "Um... one more time? I'd like to do it right.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -92211,7 +92211,7 @@
   },
   {
     "key": "あの……勝てちゃいました。すみません。",
-    "en": "",
+    "en": "Um... I actually won. I am sorry.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -96009,7 +96009,7 @@
   },
   {
     "key": "あら……今日はあなたの日ね。",
-    "en": "",
+    "en": "Oh my... today belongs to you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -96593,7 +96593,7 @@
   },
   {
     "key": "あら、まだ足りない顔してるわよ。",
-    "en": "",
+    "en": "Oh my — you're still wearing a hungry face.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -96649,7 +96649,7 @@
   },
   {
     "key": "あら、もう終わり？ 少し物足りません。",
-    "en": "",
+    "en": "My, over already? I am left a little unsatisfied.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -96663,7 +96663,7 @@
   },
   {
     "key": "あら、もう終わり？ 物足りないわね",
-    "en": "",
+    "en": "Oh my, over already? Hardly filling.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -96802,7 +96802,7 @@
   },
   {
     "key": "あら、わたくしですか。ええ、構いません。",
-    "en": "",
+    "en": "My — me, is it? Yes, I do not mind at all.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -96844,7 +96844,7 @@
   },
   {
     "key": "あら、わたくしも呼ばれましたの？ 面白そうですわね",
-    "en": "",
+    "en": "My, was I called as well? That does sound diverting.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -96983,7 +96983,7 @@
   },
   {
     "key": "あら、優勝しちゃったわ。当然だけどね",
-    "en": "",
+    "en": "Oh my, I've gone and won it. Only natural, of course.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97109,7 +97109,7 @@
   },
   {
     "key": "あら、勝っちゃった。ラッキー",
-    "en": "",
+    "en": "Oh, I went and won. Lucky.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97179,7 +97179,7 @@
   },
   {
     "key": "あら、可愛い相手ね。すぐ終わらせてあげるわ",
-    "en": "",
+    "en": "Oh my, what a sweet little opponent. I'll end it quickly for you.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97316,7 +97316,7 @@
   },
   {
     "key": "あら、指名してくれたの？ 嬉しいわ",
-    "en": "",
+    "en": "Oh? They named me? How pleasing.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97330,7 +97330,7 @@
   },
   {
     "key": "あら、断るの面倒だし。…受けるわ。",
-    "en": "",
+    "en": "Turning it down sounds like effort. ...I'll take it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -97344,7 +97344,7 @@
   },
   {
     "key": "あら、最後のお相手ね。たっぷり楽しませてあげるわ",
-    "en": "",
+    "en": "Oh my, my final partner. I'll take my time with you.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97386,7 +97386,7 @@
   },
   {
     "key": "あら、残念ね。でも次があるわ",
-    "en": "",
+    "en": "Oh my, a shame. There's a next time, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97428,7 +97428,7 @@
   },
   {
     "key": "あら、決勝まで来ちゃいましたわ。楽しみですわね",
-    "en": "",
+    "en": "My, I have arrived at the final. How delightful.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97512,7 +97512,7 @@
   },
   {
     "key": "あら、私ですか。いいですよ、やりましょう。",
-    "en": "",
+    "en": "Oh, me? Sure, let's do it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -97526,7 +97526,7 @@
   },
   {
     "key": "あら、私を選んだの？ 光栄だわ。",
-    "en": "",
+    "en": "Oh my. You chose me? How flattering.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -97772,7 +97772,7 @@
   },
   {
     "key": "あら〜、ラッキー。いい舞台じゃない",
-    "en": "",
+    "en": "Oh~, lucky me. That's a nice stage.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97912,7 +97912,7 @@
   },
   {
     "key": "あらあら、お声がかかってしまって。断る理由もありませんわね",
-    "en": "",
+    "en": "My, my, an invitation has arrived. There is no reason to decline it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -97995,7 +97995,7 @@
   },
   {
     "key": "あらあら、優勝しちゃったわ。素敵",
-    "en": "",
+    "en": "My, my, I've won the whole thing. How lovely.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -98009,7 +98009,7 @@
   },
   {
     "key": "あらあら、優勝ですって。うまくいくものですわね",
-    "en": "",
+    "en": "My, my, they say I have won it. Things do work out.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -98107,7 +98107,7 @@
   },
   {
     "key": "あらあら。……少しだけ、悔しいです。",
-    "en": "",
+    "en": "My, my. ...Just a little, that stings.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -98233,7 +98233,7 @@
   },
   {
     "key": "あらら、やられちゃった。ふふ。",
-    "en": "",
+    "en": "Oh dear, you got me. Heheh.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -98275,7 +98275,7 @@
   },
   {
     "key": "あらら、残念。でもまた来年があるわ",
-    "en": "",
+    "en": "Oh dear, a pity. There's always next year.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -100641,7 +100641,7 @@
   },
   {
     "key": "あんた、力入りすぎ。…だから届かない。",
-    "en": "",
+    "en": "You're gripping too tight. ...That's why it doesn't reach.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -100682,7 +100682,7 @@
   },
   {
     "key": "あんたが上だった。……それだけの話。",
-    "en": "",
+    "en": "You were the better one. ...That's all there is to it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -100696,7 +100696,7 @@
   },
   {
     "key": "あんたが上だった。……言い訳はしない。",
-    "en": "",
+    "en": "You were above me. ...No excuses from me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -100710,7 +100710,7 @@
   },
   {
     "key": "あんたが上だった。……認めるよ、今日は。",
-    "en": "",
+    "en": "You were better. ...I'll grant you today.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -100862,7 +100862,7 @@
   },
   {
     "key": "あんたの勝ち。文句なしだ。",
-    "en": "",
+    "en": "Your win. No complaints here.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -100932,7 +100932,7 @@
   },
   {
     "key": "あんた力入りすぎ。もっと抜けよ。",
-    "en": "",
+    "en": "You're way too tense. Loosen up a bit.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -100946,7 +100946,7 @@
   },
   {
     "key": "あんた強かったよ。でも今日はこっちだ。",
-    "en": "",
+    "en": "You were strong. Today's mine, though.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -101040,7 +101040,7 @@
   },
   {
     "key": "あんまり気張らないの。…疲れるわよ。",
-    "en": "",
+    "en": "Don't work yourself so hard. ...You'll wear out.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -101080,7 +101080,7 @@
   },
   {
     "key": "あァ？ まあいいけど。暴れる場所が増えるだけだ",
-    "en": "",
+    "en": "Haah? Whatever. Just one more place to raise hell.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -101122,7 +101122,7 @@
   },
   {
     "key": "あー…やられた。まいったな。",
-    "en": "",
+    "en": "Ahh... you got me. I'm beat.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -101262,7 +101262,7 @@
   },
   {
     "key": "あー、やられた。強ぇなあんた。",
-    "en": "",
+    "en": "Ahh, got me. You're strong, you are.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -101709,7 +101709,7 @@
   },
   {
     "key": "いいっすよ、受けて立つ。",
-    "en": "",
+    "en": "Yeah, all right. I'll take it on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -101723,7 +101723,7 @@
   },
   {
     "key": "いいですね。全部まとめて受け止めます。",
-    "en": "",
+    "en": "Nice. Bring all of it and I'll take it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -101765,7 +101765,7 @@
   },
   {
     "key": "いいよ、受ける！ そっちが名前を出したんだからね！",
-    "en": "",
+    "en": "Fine, I'll take it! You're the one who said my name!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -101847,7 +101847,7 @@
   },
   {
     "key": "いいわ、来なさい。喰ってあげる。",
-    "en": "",
+    "en": "Fine. Come here. I'll eat you alive.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -102263,7 +102263,7 @@
   },
   {
     "key": "いい感じ。次も楽しみましょう",
-    "en": "",
+    "en": "Feels right. Let's enjoy the next one as well.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102277,7 +102277,7 @@
   },
   {
     "key": "いい感じいい感じ〜",
-    "en": "",
+    "en": "Feeling good, feeling good~",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102291,7 +102291,7 @@
   },
   {
     "key": "いい感じよ……っ……ふふ……",
-    "en": "",
+    "en": "This feels right... mm...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102375,7 +102375,7 @@
   },
   {
     "key": "いい経験だったわ。もっと魅せられるようになりたいわね",
-    "en": "",
+    "en": "Good experience. I want to get better at holding an eye.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102389,7 +102389,7 @@
   },
   {
     "key": "いい経験になった。もっと強くなりたい",
-    "en": "",
+    "en": "That was good experience. I want to get stronger.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102403,7 +102403,7 @@
   },
   {
     "key": "いい経験になったわね",
-    "en": "",
+    "en": "That turned out to be good experience.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102430,7 +102430,7 @@
   },
   {
     "key": "いい舞台だったわ。でも、私はもっと上を目指す",
-    "en": "",
+    "en": "A fine stage. But I have my eyes further up.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102541,7 +102541,7 @@
   },
   {
     "key": "いい試合できたし、満足満足",
-    "en": "",
+    "en": "Got some good matches in. I'm satisfied.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102680,7 +102680,7 @@
   },
   {
     "key": "いえ〜い！ 優勝〜！ 最高じゃん！",
-    "en": "",
+    "en": "Yeaah! Champion~! This rules!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -102722,7 +102722,7 @@
   },
   {
     "key": "いえーい！ 楽勝楽勝〜",
-    "en": "",
+    "en": "Yeah! Easy, easy~",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -103380,7 +103380,7 @@
   },
   {
     "key": "いやー、ほんとに勝っちゃった。最高！",
-    "en": "",
+    "en": "Wow, I actually won the thing. This is the best!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -103548,7 +103548,7 @@
   },
   {
     "key": "いやー楽しかった！ またやりたいなあ",
-    "en": "",
+    "en": "Man, that was fun! I want to do it again.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -104107,7 +104107,7 @@
   },
   {
     "key": "う、嘘…？ わ、私でいいんですか…？",
-    "en": "",
+    "en": "N-no way...? A-are you sure it should be me...?",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -104705,7 +104705,7 @@
   },
   {
     "key": "うおおお…！ 全員ぶっ飛ばしてやるからな…！",
-    "en": "",
+    "en": "Whoaaa...! I'm knocking every one of them flat...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -104719,7 +104719,7 @@
   },
   {
     "key": "うおおおお！ やったぞおおお！ テッペンだあ！",
-    "en": "",
+    "en": "Whoaaaa! I did ittt! Top of the whole thing!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -105274,7 +105274,7 @@
   },
   {
     "key": "うっせーな、勝手に呼びやがって。……まあ出るけど",
-    "en": "",
+    "en": "Shut it. Calling me without asking. ...I'm going, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -105330,7 +105330,7 @@
   },
   {
     "key": "うっひょ〜決勝じゃん！ やるっきゃねえ！",
-    "en": "",
+    "en": "Whoa~ it's the final! Nothing for it but to go!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -105344,7 +105344,7 @@
   },
   {
     "key": "うっひょー！ 優勝！ 信じられない！",
-    "en": "",
+    "en": "Whoo! Champion! I can't believe it!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -105957,7 +105957,7 @@
   },
   {
     "key": "うん、あんたの勝ち。…強かったよ。",
-    "en": "",
+    "en": "Yeah, that's your win. ...You were good.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -106307,7 +106307,7 @@
   },
   {
     "key": "え……わたしで、いいんですか。",
-    "en": "",
+    "en": "Huh...? Me? Are you sure about that?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -107216,7 +107216,7 @@
   },
   {
     "key": "え、わたし……？ ……うん、逃げないよ。",
-    "en": "",
+    "en": "Huh, me...? ...Okay. I won't run.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -107230,7 +107230,7 @@
   },
   {
     "key": "え、わたしが…ジュニアトーナメントに…？ あ、あの、頑張ります…！",
-    "en": "",
+    "en": "Huh, me... in the Junior Tournament...? U-um, I won't let you down...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -107356,7 +107356,7 @@
   },
   {
     "key": "え、私が…？ …頑張らなきゃ",
-    "en": "",
+    "en": "Huh, me...? ...I'd better be ready, then.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -107370,7 +107370,7 @@
   },
   {
     "key": "え、私？ ふふ、いいわよー、遊びましょ。",
-    "en": "",
+    "en": "Hm, me? Heheh, sure — let's play.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -108838,7 +108838,7 @@
   },
   {
     "key": "お、私？ いいよ、やろうやろう。",
-    "en": "",
+    "en": "Oh, me? Yeah, let's go, let's go.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -108880,7 +108880,7 @@
   },
   {
     "key": "お、選ばれちゃった。ラッキー",
-    "en": "",
+    "en": "Oh, I got picked. Lucky me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -109145,7 +109145,7 @@
   },
   {
     "key": "おう、出てやるよ。覚悟しとけ",
-    "en": "",
+    "en": "Yeah, I'll enter. Brace yourselves.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -109575,7 +109575,7 @@
   },
   {
     "key": "おっし、一丁上がりだ。次もブチかます",
-    "en": "",
+    "en": "Right, one down. I'm smashing through the next one too.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -110293,7 +110293,7 @@
   },
   {
     "key": "お互い、まだ余ってるね。…楽しみだ。",
-    "en": "",
+    "en": "We've both got some left in the tank. ...Nice to know.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110307,7 +110307,7 @@
   },
   {
     "key": "お互い、まだ元気そうです。ふふ。",
-    "en": "",
+    "en": "We are both still rather full of life. Heheh.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110321,7 +110321,7 @@
   },
   {
     "key": "お互い、出し切ったわね。それは認める。",
-    "en": "",
+    "en": "Neither of us kept anything back. I'll give you that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110361,7 +110361,7 @@
   },
   {
     "key": "お互い元気だねえ。ちょっと疲れた。",
-    "en": "",
+    "en": "We've both got stamina, huh. I'm a bit wiped.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110375,7 +110375,7 @@
   },
   {
     "key": "お互い元気ですねえ。……少し、疲れました。",
-    "en": "",
+    "en": "We're both full of energy, aren't we. ...I'm a little worn out.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110431,7 +110431,7 @@
   },
   {
     "key": "お互い出し切りました。それだけは確かです。",
-    "en": "",
+    "en": "We both emptied ourselves out there. That much is certain.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110816,7 +110816,7 @@
   },
   {
     "key": "お受けして良かったです。いい試合でした。",
-    "en": "",
+    "en": "I am glad I took it. That was a good match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110830,7 +110830,7 @@
   },
   {
     "key": "お受けします。せっかく呼ばれましたし。",
-    "en": "",
+    "en": "I'll take it. You went to the trouble of calling for me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110858,7 +110858,7 @@
   },
   {
     "key": "お受けします。全力でお相手します。",
-    "en": "",
+    "en": "I accept. You will have my full strength.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110872,7 +110872,7 @@
   },
   {
     "key": "お受けします。半端な気持ちでは、向き合いません。",
-    "en": "",
+    "en": "I accept. I will not come at this with half a heart.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110886,7 +110886,7 @@
   },
   {
     "key": "お受けします。正面から、お相手いたします。",
-    "en": "",
+    "en": "I accept. I will meet you head-on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110900,7 +110900,7 @@
   },
   {
     "key": "お受けします。正面からお相手しましょう。",
-    "en": "",
+    "en": "I accept. Let us meet each other head-on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -110997,7 +110997,7 @@
   },
   {
     "key": "お声がけいただき感謝いたします。精一杯務めます",
-    "en": "",
+    "en": "Thank you for calling on me. I'll serve as best I can.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -111860,7 +111860,7 @@
   },
   {
     "key": "お相手がどなたであれ、全力を尽くします",
-    "en": "",
+    "en": "Whoever my opponent may be, I shall give my utmost.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -111999,7 +111999,7 @@
   },
   {
     "key": "お見事でした。……本当に、悔しい。",
-    "en": "",
+    "en": "That was splendid. ...Truly, it stings.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -112494,7 +112494,7 @@
   },
   {
     "key": "か、勝ち上がれました…信じられません…",
-    "en": "",
+    "en": "I-I made it through... I can't believe it...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -112536,7 +112536,7 @@
   },
   {
     "key": "か、勝てた…よかった…",
-    "en": "",
+    "en": "I-I won... thank goodness...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -112662,7 +112662,7 @@
   },
   {
     "key": "か、勝てました…次もがんばります…",
-    "en": "",
+    "en": "I-I won... I'll work hard in the next one too...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -112718,7 +112718,7 @@
   },
   {
     "key": "かかって来いよ。一発で沈めてやる",
-    "en": "",
+    "en": "Come at me. One shot and you're on the mat.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -112873,7 +112873,7 @@
   },
   {
     "key": "が、頑張れた…かな。もっと強くなりたい…",
-    "en": "",
+    "en": "I-I did all right... I think. I want to get stronger...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -112941,7 +112941,7 @@
   },
   {
     "key": "き、緊張します…でも、精一杯やります…",
-    "en": "",
+    "en": "I-I'm so nervous... but I'll put everything into it...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -113260,7 +113260,7 @@
   },
   {
     "key": "くそ、届かなかったか。次は分かんねぇぞ。",
-    "en": "",
+    "en": "Damn, came up short. Next one's anyone's.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -113288,7 +113288,7 @@
   },
   {
     "key": "くそおおお…！ 絶対に…次は…！",
-    "en": "",
+    "en": "Daaamn it...! Next time... I swear...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -113512,7 +113512,7 @@
   },
   {
     "key": "くそっ…次は絶対負けねえ",
-    "en": "",
+    "en": "Damn it... I'm not losing the next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -113734,7 +113734,7 @@
   },
   {
     "key": "くっ…悔しい…！ でも…絶対に次は…！",
-    "en": "",
+    "en": "Nngh... it hurts...! But... next time, for sure...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -113762,7 +113762,7 @@
   },
   {
     "key": "くっ…泣くかよ…こんなとこで…っ！ …最高だぜ…！",
-    "en": "",
+    "en": "Nngh... not crying... not here...! ...This is the best...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -113942,7 +113942,7 @@
   },
   {
     "key": "くっそ〜、最高だったぜ…！ また出てえ…！",
-    "en": "",
+    "en": "Damn~, that was the best...! I want back in...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -114137,7 +114137,7 @@
   },
   {
     "key": "け、決勝戦…ですか…し、信じられません…",
-    "en": "",
+    "en": "Th-the final... is it...? I-I can't believe it...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -114693,7 +114693,7 @@
   },
   {
     "key": "こういう終わり方は、私の趣味じゃない。",
-    "en": "",
+    "en": "This kind of ending isn't to my taste.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -114735,7 +114735,7 @@
   },
   {
     "key": "こうした結末など、わたくしには不本意です。",
-    "en": "",
+    "en": "An ending of this sort is not one I would have chosen.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -116794,7 +116794,7 @@
   },
   {
     "key": "ここまで来たからにゃ、テッペン獲るに決まってんだろ",
-    "en": "",
+    "en": "Made it this far, so obviously I'm taking the top spot.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -116864,7 +116864,7 @@
   },
   {
     "key": "ここまで来たんだ…泣くのは全部終わってから…！",
-    "en": "",
+    "en": "I made it this far... the crying waits until it's all over...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -116892,7 +116892,7 @@
   },
   {
     "key": "ここまで来たんだ。もう引けねえ",
-    "en": "",
+    "en": "I got this far. No backing off now.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -116976,7 +116976,7 @@
   },
   {
     "key": "ここまで来て負けるわけないでしょ。最後も私が獲る",
-    "en": "",
+    "en": "Come this far and lose? Not happening. The last one is mine too.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -117045,7 +117045,7 @@
   },
   {
     "key": "ここまで来ましたのだから。最後まで、私らしく",
-    "en": "",
+    "en": "I have come this far. To the end, then, in my own way.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -117226,7 +117226,7 @@
   },
   {
     "key": "ここまで来れたのが信じられない…でも、負けたくない",
-    "en": "",
+    "en": "I can't believe I got this far... but I don't want to lose.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -117881,7 +117881,7 @@
   },
   {
     "key": "このままでは、納得しておりません。",
-    "en": "",
+    "en": "As things stand, I am not satisfied.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -118654,7 +118654,7 @@
   },
   {
     "key": "この一戦に、全てをお捧げいたします",
-    "en": "",
+    "en": "I offer everything I have to this one match.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -119165,7 +119165,7 @@
   },
   {
     "key": "この優勝を、次のステップにする",
-    "en": "",
+    "en": "I'm making this win the next step, not the last one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -119179,7 +119179,7 @@
   },
   {
     "key": "この優勝を糧に、さらに上を目指します",
-    "en": "",
+    "en": "I shall take this win as nourishment and aim higher still.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -120528,7 +120528,7 @@
   },
   {
     "key": "この大会で、私の実力を知らしめましょうか",
-    "en": "",
+    "en": "Shall I let this tournament show everyone what I can do?",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121246,7 +121246,7 @@
   },
   {
     "key": "この景色……っ……ふふ、忘れないわ……",
-    "en": "",
+    "en": "This view... mm... I will not forget it...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121316,7 +121316,7 @@
   },
   {
     "key": "この気持ち…抑えきれない…！ 全力で行くから…！",
-    "en": "",
+    "en": "I can't hold this down...! I'm going in full force...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121330,7 +121330,7 @@
   },
   {
     "key": "この気持ちのまま…次も…！ 絶対負けない…！",
-    "en": "",
+    "en": "Carry this feeling into the next one...! I'm not losing...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121386,7 +121386,7 @@
   },
   {
     "key": "この熱い気持ち…忘れねえ…！",
-    "en": "",
+    "en": "This burning in my chest... I'm not forgetting it...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121400,7 +121400,7 @@
   },
   {
     "key": "この熱い気持ちのまま…ぶつかる…！",
-    "en": "",
+    "en": "I'm taking this heat straight into her...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121749,7 +121749,7 @@
   },
   {
     "key": "この程度で満足するわけないでしょ",
-    "en": "",
+    "en": "You think this much satisfies me?",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121791,7 +121791,7 @@
   },
   {
     "key": "この程度のことで驚いていては、私についてはこられなくてよ？",
-    "en": "",
+    "en": "If this much astonishes you, you will never keep pace with me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121805,7 +121805,7 @@
   },
   {
     "key": "この経験を糧に、さらに精進して参ります",
-    "en": "",
+    "en": "I'll take this and keep refining myself from here.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121819,7 +121819,7 @@
   },
   {
     "key": "この胸の高鳴り…全てリングにぶつけますわ…！",
-    "en": "",
+    "en": "This racing heart... I shall throw all of it into the ring...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121861,7 +121861,7 @@
   },
   {
     "key": "この舞台に立てることが…嬉しい。だから全部出し切ります",
-    "en": "",
+    "en": "Just standing here makes me glad. So I'm emptying myself out.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -121875,7 +121875,7 @@
   },
   {
     "key": "この舞台に立てることを誇りに思う",
-    "en": "",
+    "en": "Standing on a stage like this is something to be proud of.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -122435,7 +122435,7 @@
   },
   {
     "key": "この高鳴りを…お相手にぶつけますわ…！",
-    "en": "",
+    "en": "This surge... I shall aim every bit of it at my opponent...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -122545,7 +122545,7 @@
   },
   {
     "key": "これがわたくしの実力。誰もかれもわかったかしら？",
-    "en": "",
+    "en": "This is what I am capable of. Has everyone understood?",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -122762,7 +122762,7 @@
   },
   {
     "key": "これでは、答えたことにならない。",
-    "en": "",
+    "en": "This doesn't count as answering you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -122844,7 +122844,7 @@
   },
   {
     "key": "これで分かったでしょ! 二度と名前呼ばないで!",
-    "en": "",
+    "en": "Now you get it! Don't ever say my name again!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -122941,7 +122941,7 @@
   },
   {
     "key": "これで終わりにはできません。もう一度。",
-    "en": "",
+    "en": "I can't let it end here. Once more.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -123286,7 +123286,7 @@
   },
   {
     "key": "こんなとこで終わってたまるか…",
-    "en": "",
+    "en": "Like I'm ending it here...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -123566,7 +123566,7 @@
   },
   {
     "key": "こんなはずじゃ…！ 次は絶対に見返す！",
-    "en": "",
+    "en": "This isn't how it goes...! Next time I make them look again!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -123719,7 +123719,7 @@
   },
   {
     "key": "こんなん認めねえ…！",
-    "en": "",
+    "en": "I'm not accepting this...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -123901,7 +123901,7 @@
   },
   {
     "key": "こんな終わり方は、望んでおりませんでした。",
-    "en": "",
+    "en": "This was not the ending I was hoping for.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -124026,7 +124026,7 @@
   },
   {
     "key": "ご、ごめんなさい…。もっと頑張らないと…",
-    "en": "",
+    "en": "I-I'm sorry... I have to try harder...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -124333,7 +124333,7 @@
   },
   {
     "key": "ごめんなさい……。がっかり、させてしまいましたよね。",
-    "en": "",
+    "en": "I am sorry... I let you down, did I not.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -124989,7 +124989,7 @@
   },
   {
     "key": "ご指名、確かに受け取りました。全力でお相手します。",
-    "en": "",
+    "en": "You called me out, and I heard it. You will have everything I have.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -125003,7 +125003,7 @@
   },
   {
     "key": "ご指名をいただいた以上、引くわけにはまいりません。",
-    "en": "",
+    "en": "You named me, so stepping back is not an option.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -125337,7 +125337,7 @@
   },
   {
     "key": "さあ、最後の獲物ね。楽しませてもらうわ",
-    "en": "",
+    "en": "Now then, the last catch of the day. I'll enjoy this.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -125351,7 +125351,7 @@
   },
   {
     "key": "さあ、楽しい時間の始まりですわ",
-    "en": "",
+    "en": "Now then, the pleasant part begins.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -125687,7 +125687,7 @@
   },
   {
     "key": "さてと、楽しませてもらうわね",
-    "en": "",
+    "en": "Well then. I'll be entertained now.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -125897,7 +125897,7 @@
   },
   {
     "key": "しゃーねえな。次だ次",
-    "en": "",
+    "en": "Nothing for it. Next one, next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -126466,7 +126466,7 @@
   },
   {
     "key": "ずいぶん熱心だね。まあ、受けるよ。",
-    "en": "",
+    "en": "You're awfully worked up. Fine, I'm in.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -127847,7 +127847,7 @@
   },
   {
     "key": "そう来たか。分かった、やろうぜ。",
-    "en": "",
+    "en": "So that's how it is. Fine, let's go.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128227,7 +128227,7 @@
   },
   {
     "key": "その目、気に入らないわ。…来なさい。",
-    "en": "",
+    "en": "I don't care for that look in your eye. ...Come.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128254,7 +128254,7 @@
   },
   {
     "key": "その覚悟、無駄にはしません。必ず応えます。",
-    "en": "",
+    "en": "What you steeled yourself for won't go to waste. I'll answer it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128548,7 +128548,7 @@
   },
   {
     "key": "そんなに力まなくても、ちゃんと相手するって。",
-    "en": "",
+    "en": "You can relax, you know. I'll give you a real match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128562,7 +128562,7 @@
   },
   {
     "key": "そんなに構えなくていいですよ。ちゃんとお相手します。",
-    "en": "",
+    "en": "No need to brace yourself like that. I'll give you a proper match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128576,7 +128576,7 @@
   },
   {
     "key": "そんなに気を張らないで。ちゃんとお相手します。",
-    "en": "",
+    "en": "Do not hold yourself so tight. I will give you a proper match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128590,7 +128590,7 @@
   },
   {
     "key": "そんなに気合い入れなくていいよ。…受けるから。",
-    "en": "",
+    "en": "You don't have to psych yourself up like that. ...I'll take it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128617,7 +128617,7 @@
   },
   {
     "key": "そんなに私が欲しいの？ …来なさい。",
-    "en": "",
+    "en": "You want me that badly? ...Then come.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -128701,7 +128701,7 @@
   },
   {
     "key": "そんな睨むなって。受けるっての。",
-    "en": "",
+    "en": "Quit glaring at me. I said I'd take it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -129192,7 +129192,7 @@
   },
   {
     "key": "ちくしょう…！ こんなんで終わるかよ…！",
-    "en": "",
+    "en": "Damn it all...! I'm not going out like this...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -129234,7 +129234,7 @@
   },
   {
     "key": "ちっ……やるじゃねぇか、あんた。",
-    "en": "",
+    "en": "Tch... you're not bad at all, are you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -129371,7 +129371,7 @@
   },
   {
     "key": "ちっ、まだ足りねえ。次は全員ぶっ倒す",
-    "en": "",
+    "en": "Tch, still not enough. Next time I put all of them down.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -129845,7 +129845,7 @@
   },
   {
     "key": "っしゃあ…！ 燃えてきたぜ…！",
-    "en": "",
+    "en": "Yeah...! The fire's lit...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -129859,7 +129859,7 @@
   },
   {
     "key": "っしゃあああ！ まだまだいくぞおおお！",
-    "en": "",
+    "en": "Yesssss! I'm nowhere near doneeee!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -129887,7 +129887,7 @@
   },
   {
     "key": "っしゃあ！ やってやるぜ…！ 燃えてきた…！",
-    "en": "",
+    "en": "Alright! I'm doing this...! I'm burning up...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -130986,7 +130986,7 @@
   },
   {
     "key": "どんな相手でも、やることは変わりません",
-    "en": "",
+    "en": "Whoever it is, what I have to do doesn't change.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -131168,7 +131168,7 @@
   },
   {
     "key": "なによこれ。…全然すっきりしないわ。",
-    "en": "",
+    "en": "What is this. ...Nothing about it feels finished.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -131540,7 +131540,7 @@
   },
   {
     "key": "なんで……! こんなの、納得できるわけない!",
-    "en": "",
+    "en": "Why...! There's no way I can live with this!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -131778,7 +131778,7 @@
   },
   {
     "key": "ね、届かなかったでしょう？",
-    "en": "",
+    "en": "There, now. You didn't quite reach, did you?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -131792,7 +131792,7 @@
   },
   {
     "key": "ね、思ったより楽しかったわ。",
-    "en": "",
+    "en": "You know, that was more fun than I expected.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -132670,7 +132670,7 @@
   },
   {
     "key": "はぁ？ まだ全然終わってねぇだろ。",
-    "en": "",
+    "en": "Huh? This is nowhere near finished.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -132988,7 +132988,7 @@
   },
   {
     "key": "はい優勝。当然の結果ね",
-    "en": "",
+    "en": "And that's the title. Exactly as it should be.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -133168,7 +133168,7 @@
   },
   {
     "key": "はっ、当然の結果だぜ。誰にも負けねえ",
-    "en": "",
+    "en": "Ha. Obvious result. Nobody here beats me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -133182,7 +133182,7 @@
   },
   {
     "key": "はっ、楽勝だぜ。次も同じだ",
-    "en": "",
+    "en": "Ha. Easy work. Next one goes the same.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -133626,7 +133626,7 @@
   },
   {
     "key": "ひとつひとつ丁寧に…全力で参ります",
-    "en": "",
+    "en": "Carefully, one thing at a time... I'm going in with everything.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -133654,7 +133654,7 @@
   },
   {
     "key": "ひとつ勝ちました。でも油断は禁物ね",
-    "en": "",
+    "en": "One win taken. I must not let my guard down, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -133798,7 +133798,7 @@
   },
   {
     "key": "ひゃっほ〜！ やったぜ〜！",
-    "en": "",
+    "en": "Yahoo~! I did it~!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -133937,7 +133937,7 @@
   },
   {
     "key": "ふ、深呼吸…落ち着かないと…",
-    "en": "",
+    "en": "D-deep breath... I need to settle down...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -133979,7 +133979,7 @@
   },
   {
     "key": "ふぅ……出し切りました。これが今の実力です。",
-    "en": "",
+    "en": "Phew... I emptied the tank. That's where I stand right now.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -134357,7 +134357,7 @@
   },
   {
     "key": "ふざけてるの？ …いいわ、受けるわよ。",
-    "en": "",
+    "en": "Is this a joke? ...Fine. I'll take it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -134469,7 +134469,7 @@
   },
   {
     "key": "ふざけんな…！ 次は絶対ぶっ潰す！",
-    "en": "",
+    "en": "Are you kidding me...! Next time I flatten her!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -134620,7 +134620,7 @@
   },
   {
     "key": "ふふ……ざまあないわね。",
-    "en": "",
+    "en": "Mm... look at the state of you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135047,7 +135047,7 @@
   },
   {
     "key": "ふふ、いいわよ。受けて立つ。",
-    "en": "",
+    "en": "Mm, all right. I'll take you on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135088,7 +135088,7 @@
   },
   {
     "key": "ふふ、いい夢は見られた？",
-    "en": "",
+    "en": "Mm. Did you get a nice dream out of it?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135184,7 +135184,7 @@
   },
   {
     "key": "ふふ、これで終わりじゃないわよ",
-    "en": "",
+    "en": "Mm. Don't imagine this is where I stop.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -135281,7 +135281,7 @@
   },
   {
     "key": "ふふ、まずは一勝ね。次も魅せてあげるわ",
-    "en": "",
+    "en": "Mm, one win to start. I'll give them another show.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -135418,7 +135418,7 @@
   },
   {
     "key": "ふふ、予定通りよ。次の相手が楽しみ",
-    "en": "",
+    "en": "Mm, exactly to plan. I'm curious about the next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -135516,7 +135516,7 @@
   },
   {
     "key": "ふふ、勝っちゃった。ごめんね？",
-    "en": "",
+    "en": "Heheh, I went and won. Forgive me?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135544,7 +135544,7 @@
   },
   {
     "key": "ふふ、可愛かったわよ。その必死な顔。",
-    "en": "",
+    "en": "Mm, you were adorable. That desperate little face.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135599,7 +135599,7 @@
   },
   {
     "key": "ふふ、最高の気分。ご褒美ちょうだいね",
-    "en": "",
+    "en": "Mm, I feel wonderful. I'll be wanting a reward.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -135654,7 +135654,7 @@
   },
   {
     "key": "ふふ、痛いところを突かれたわね。",
-    "en": "",
+    "en": "Mm. You found the sore spot, didn't you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135808,7 +135808,7 @@
   },
   {
     "key": "ふふ。……おやすみ。",
-    "en": "",
+    "en": "Mm. ...Sleep well.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135822,7 +135822,7 @@
   },
   {
     "key": "ふふ。……また、今度。",
-    "en": "",
+    "en": "Mm. ...Another time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135836,7 +135836,7 @@
   },
   {
     "key": "ふふ。……悔しい。",
-    "en": "",
+    "en": "Mm. ...How galling.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -135850,7 +135850,7 @@
   },
   {
     "key": "ふふ。……来なさい。",
-    "en": "",
+    "en": "Mm. ...Come here.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -136100,7 +136100,7 @@
   },
   {
     "key": "ふん、やっと正当な評価をしてくれたわけね",
-    "en": "",
+    "en": "Hmph. So somebody finally rated me properly.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -136170,7 +136170,7 @@
   },
   {
     "key": "ふん。この程度じゃ止まらないわよ",
-    "en": "",
+    "en": "Hmph. This much won't stop me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -136267,7 +136267,7 @@
   },
   {
     "key": "ふーん。まあ、いいか",
-    "en": "",
+    "en": "Hmm. Sure, why not.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -136365,7 +136365,7 @@
   },
   {
     "key": "ぶっ潰す。それだけだ",
-    "en": "",
+    "en": "Flatten her. That's it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -136393,7 +136393,7 @@
   },
   {
     "key": "ぶっ飛ばす…絶対ぶっ飛ばしてやる…！",
-    "en": "",
+    "en": "I'm sending her flying... I swear I'm sending her flying...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -136560,7 +136560,7 @@
   },
   {
     "key": "へえ、名指しか。…断る理由もないかな。",
-    "en": "",
+    "en": "Huh, named outright. ...Can't think of a reason to say no.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -136588,7 +136588,7 @@
   },
   {
     "key": "へえ、私に噛みつくの？ …いい度胸ね。",
-    "en": "",
+    "en": "Oh? You're baring teeth at me? ...That's some nerve.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -136643,7 +136643,7 @@
   },
   {
     "key": "へー、いいじゃん。楽しそう",
-    "en": "",
+    "en": "Huh, nice. Sounds fun.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -136811,7 +136811,7 @@
   },
   {
     "key": "ほら、言った通り。届かなかったでしょ。",
-    "en": "",
+    "en": "There — as promised. You never reached me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -136839,7 +136839,7 @@
   },
   {
     "key": "ほら、言った通りでしょう。",
-    "en": "",
+    "en": "See? Exactly like I said.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -136853,7 +136853,7 @@
   },
   {
     "key": "ほらな。届かねぇって言ったろ。",
-    "en": "",
+    "en": "See? Told you it wouldn't reach.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -136867,7 +136867,7 @@
   },
   {
     "key": "ほら見なさい！ 私を選んだのが間違い！",
-    "en": "",
+    "en": "See that! Picking me was your mistake!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -137019,7 +137019,7 @@
   },
   {
     "key": "ま、こういう日もあるわよね",
-    "en": "",
+    "en": "Well. Days turn out this way sometimes.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -137061,7 +137061,7 @@
   },
   {
     "key": "ま、しょうがないっしょ。次は勝つよ",
-    "en": "",
+    "en": "Eh, that's how it went. I'll win the next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -137311,7 +137311,7 @@
   },
   {
     "key": "ま、呼ばれたら行くわよ。そういうものでしょ？",
-    "en": "",
+    "en": "Well, if I'm called I go. That's how it works, isn't it?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -137325,7 +137325,7 @@
   },
   {
     "key": "ま、暴れる場所があるなら出るっしょ",
-    "en": "",
+    "en": "Eh, if there's somewhere to run wild, I'm going.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -137382,7 +137382,7 @@
   },
   {
     "key": "ま、負けてしまいました…ごめんなさい…",
-    "en": "",
+    "en": "I-I lost... I'm sorry...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -137913,7 +137913,7 @@
   },
   {
     "key": "まあ…！ わたくし、選ばれましたの…？ 嬉しいですわ…！",
-    "en": "",
+    "en": "Oh...! I have been chosen...? I am so glad...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -138053,7 +138053,7 @@
   },
   {
     "key": "まあ、こういう日もあるわよね。",
-    "en": "",
+    "en": "Well, there are days like this.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -138319,7 +138319,7 @@
   },
   {
     "key": "まあ、悪い試合じゃなかったっす。",
-    "en": "",
+    "en": "Eh, wasn't a bad match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -138347,7 +138347,7 @@
   },
   {
     "key": "まあ、指名されて逃げる趣味はねぇよ。",
-    "en": "",
+    "en": "Someone names me, running isn't my style.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -138528,7 +138528,7 @@
   },
   {
     "key": "まあまあやれたな。次はもっと暴れてやるぜ",
-    "en": "",
+    "en": "Did all right, I guess. Next time I tear it up more.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -138542,7 +138542,7 @@
   },
   {
     "key": "まあまあ良かったんじゃね？",
-    "en": "",
+    "en": "Pretty decent, wasn't it?",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -138682,7 +138682,7 @@
   },
   {
     "key": "まいったまいった。降参だよ。",
-    "en": "",
+    "en": "All right, all right. I give.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -138847,7 +138847,7 @@
   },
   {
     "key": "またお相手願います。今度こそ決めたい。",
-    "en": "",
+    "en": "Do face me again. Next time I intend to settle it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -139133,7 +139133,7 @@
   },
   {
     "key": "まだ…終わりじゃないんだ…頑張る",
-    "en": "",
+    "en": "It's... not over yet... I'll keep going.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -139147,7 +139147,7 @@
   },
   {
     "key": "まだ…続けられるんですね…",
-    "en": "",
+    "en": "I get to... keep going, don't I...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -139459,7 +139459,7 @@
   },
   {
     "key": "まだまだこんなものじゃないわよ",
-    "en": "",
+    "en": "This is nowhere near all of me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -139736,7 +139736,7 @@
   },
   {
     "key": "まだまだ楽しめそうですわね",
-    "en": "",
+    "en": "It seems there is a good deal more to enjoy.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -139750,7 +139750,7 @@
   },
   {
     "key": "まだまだ止まんねえぞ",
-    "en": "",
+    "en": "I'm nowhere near stopping.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -140030,7 +140030,7 @@
   },
   {
     "key": "まだやんの？ 私はもういいよ。",
-    "en": "",
+    "en": "We're still going? I'm good, thanks.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -140196,7 +140196,7 @@
   },
   {
     "key": "まだ上がいるってのがムカつくぜ",
-    "en": "",
+    "en": "Knowing there's someone above me is what burns.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -141019,7 +141019,7 @@
   },
   {
     "key": "まだ終わっていません。必ず、続きを。",
-    "en": "",
+    "en": "This is not finished. There will be a second half, I promise you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -141033,7 +141033,7 @@
   },
   {
     "key": "まだ終わっていません。次で片をつけます。",
-    "en": "",
+    "en": "This is not over. I shall settle it next time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -141089,7 +141089,7 @@
   },
   {
     "key": "まだ終わってないわ。約束する。",
-    "en": "",
+    "en": "This isn't over. I'm promising you that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -141242,7 +141242,7 @@
   },
   {
     "key": "まだ終わりませんわ…この熱い気持ち、止まりませんの…！",
-    "en": "",
+    "en": "It is not over yet... this heat inside me will not stop...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -141465,7 +141465,7 @@
   },
   {
     "key": "まだ足りない。もう一度、名前を呼んでください。",
-    "en": "",
+    "en": "Not enough yet. Put my name out there again.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -141493,7 +141493,7 @@
   },
   {
     "key": "まだ足りないわ。…ぜんぜん、足りない。",
-    "en": "",
+    "en": "Not enough. ...Nowhere near enough.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -141521,7 +141521,7 @@
   },
   {
     "key": "まだ足りないわね。もっと上に行くわ",
-    "en": "",
+    "en": "Not enough yet. I'm going higher.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -141632,7 +141632,7 @@
   },
   {
     "key": "まだ足りませんね。またご指名ください。",
-    "en": "",
+    "en": "That wasn't sufficient. Do name me again.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -142359,7 +142359,7 @@
   },
   {
     "key": "みんなと戦えて…嬉しかった…",
-    "en": "",
+    "en": "Getting to fight all of them... made me happy...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -142806,7 +142806,7 @@
   },
   {
     "key": "めんどくせ……ま、断る理由もねぇか。",
-    "en": "",
+    "en": "What a pain... eh, no reason to turn it down.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -143149,7 +143149,7 @@
   },
   {
     "key": "もう…涙が止まらない…！ ありがとう…みんな…！",
-    "en": "",
+    "en": "I can't... stop crying...! Thank you... all of you...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -143231,7 +143231,7 @@
   },
   {
     "key": "もう、しつこいんだから。ふふ。",
-    "en": "",
+    "en": "Honestly, you don't give up. Heheh.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -143712,7 +143712,7 @@
   },
   {
     "key": "もう一回! いますぐもう一回やろうよ!",
-    "en": "",
+    "en": "Again! Let's go again, right now!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -143726,7 +143726,7 @@
   },
   {
     "key": "もう一回来い。何度でも潰してやる。",
-    "en": "",
+    "en": "Come again. I'll flatten you as many times as you like.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -143860,7 +143860,7 @@
   },
   {
     "key": "もう一度来る？ …今度は容赦しない。",
-    "en": "",
+    "en": "Coming back for another? ...I won't be gentle twice.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -144293,7 +144293,7 @@
   },
   {
     "key": "もう止まれねえ…！ 全力でぶつかってやる…！",
-    "en": "",
+    "en": "There's no stopping now...! I'm throwing all of me at her...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -144846,7 +144846,7 @@
   },
   {
     "key": "もっと…強くならないと…",
-    "en": "",
+    "en": "I have to... get stronger...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -144916,7 +144916,7 @@
   },
   {
     "key": "もっと上を目指すわ……っ……ふふ……",
-    "en": "",
+    "en": "Higher still, then... mm...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -144944,7 +144944,7 @@
   },
   {
     "key": "もっと吠えてみせなさいよ。ほら。",
-    "en": "",
+    "en": "Bark a little more for me. Go on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -145445,7 +145445,7 @@
   },
   {
     "key": "やった…！ 選ばれた…！ 絶対頑張る…！",
-    "en": "",
+    "en": "Yes...! They picked me...! I'm giving this everything...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -146368,7 +146368,7 @@
   },
   {
     "key": "やっぱり……わたしじゃ、だめでしたね。",
-    "en": "",
+    "en": "I knew it... I was not the one who could do it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -146396,7 +146396,7 @@
   },
   {
     "key": "やっぱり…わたしなんか…。でも…諦めない…",
-    "en": "",
+    "en": "I knew it... someone like me... But... I'm not giving up...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -146466,7 +146466,7 @@
   },
   {
     "key": "やっぱり、わたしじゃ……だめだったね。",
-    "en": "",
+    "en": "I knew it, I wasn't... I wasn't enough.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -146649,7 +146649,7 @@
   },
   {
     "key": "やられたなあ。……次はもうちょっと粘る。",
-    "en": "",
+    "en": "Well, you got me there. ...Next time I dig in.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -146677,7 +146677,7 @@
   },
   {
     "key": "やられました。……次は、もう少し粘りますね。",
-    "en": "",
+    "en": "You got me. ...I'll hang on a bit longer next time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -146817,7 +146817,7 @@
   },
   {
     "key": "やりましたわ。この調子で行きますわよ",
-    "en": "",
+    "en": "I did it. I shall keep going exactly like this.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -146831,7 +146831,7 @@
   },
   {
     "key": "やりましたわ〜！ ご褒美が楽しみですわね",
-    "en": "",
+    "en": "I did it~! Now, I wonder what my reward will be.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -147068,7 +147068,7 @@
   },
   {
     "key": "ゆ、優勝…ですか…？ ほ、本当に…？ あ、ありがとうございます…！",
-    "en": "",
+    "en": "Ch-champion...? Me...? R-really...? Th-thank you so much...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -148055,7 +148055,7 @@
   },
   {
     "key": "よっし、勝った！ 次もこの調子で",
-    "en": "",
+    "en": "Yes, got it! Keep rolling like this.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -148293,7 +148293,7 @@
   },
   {
     "key": "よろしい。お受けします。覚悟はおありで？",
-    "en": "",
+    "en": "Very well. I accept. Have you prepared yourself?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -148916,7 +148916,7 @@
   },
   {
     "key": "よーし、いっちょやりますか",
-    "en": "",
+    "en": "All right, let's get to it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -148944,7 +148944,7 @@
   },
   {
     "key": "よーし、パパッとやっちまうか",
-    "en": "",
+    "en": "Right, let's knock this out quick.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -149252,7 +149252,7 @@
   },
   {
     "key": "わ、わたしが優勝…？ 夢じゃないよね…",
-    "en": "",
+    "en": "M-me, the champion...? This isn't a dream, is it...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -149630,7 +149630,7 @@
   },
   {
     "key": "わかった。……半端な向き合い方はしない。",
-    "en": "",
+    "en": "Understood. ...I won't face this halfway.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -149699,7 +149699,7 @@
   },
   {
     "key": "わかった。言葉はいらない。",
-    "en": "",
+    "en": "Got it. No need for words.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -149979,7 +149979,7 @@
   },
   {
     "key": "わかりました。全力でいきます。",
-    "en": "",
+    "en": "Understood. I'm going in at full strength.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -150063,7 +150063,7 @@
   },
   {
     "key": "わかりました。言葉は、要りません。",
-    "en": "",
+    "en": "Understood. Words aren't needed.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -150189,7 +150189,7 @@
   },
   {
     "key": "わたくし…やりましたわ…！ 最高に幸せですわ…！",
-    "en": "",
+    "en": "I... I actually did it...! I have never been happier...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -150539,7 +150539,7 @@
   },
   {
     "key": "わたくしともあろうものが…屈辱ですわ",
-    "en": "",
+    "en": "That this should happen to me of all people... it is humiliating.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -150553,7 +150553,7 @@
   },
   {
     "key": "わたくしなら、この程度当然よ",
-    "en": "",
+    "en": "For someone like me, this much is a matter of course.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -150718,7 +150718,7 @@
   },
   {
     "key": "わたくしの力不足です。言い訳はしません。",
-    "en": "",
+    "en": "I lacked the strength. I will offer no excuse.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -150732,7 +150732,7 @@
   },
   {
     "key": "わたくしの勝ちです。異論はないでしょう。",
-    "en": "",
+    "en": "The win is mine. I doubt anyone will argue.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -150896,7 +150896,7 @@
   },
   {
     "key": "わたくしの試合を、ご覧に入れます",
-    "en": "",
+    "en": "I shall show you a match of my own making.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -150910,7 +150910,7 @@
   },
   {
     "key": "わたくしの負けです。潔く認めます。",
-    "en": "",
+    "en": "The loss is mine. I admit it without complaint.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -150937,7 +150937,7 @@
   },
   {
     "key": "わたくしはまだ納得していません。必ずまた。",
-    "en": "",
+    "en": "I am not satisfied yet. There will be another, without fail.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -151035,7 +151035,7 @@
   },
   {
     "key": "わたくしを名指しなさったのですね。承知しました。",
-    "en": "",
+    "en": "So you have named me directly. Very well.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -151146,7 +151146,7 @@
   },
   {
     "key": "わたくしを選ぶとは、見る目はあるようです。",
-    "en": "",
+    "en": "To choose me — you appear to have some eye for quality.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -151174,7 +151174,7 @@
   },
   {
     "key": "わたしが勝ったんだよね……。まだ、信じられない。",
-    "en": "",
+    "en": "I'm the one who won, right...? I still can't believe it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -151272,7 +151272,7 @@
   },
   {
     "key": "わたしを選んで、後悔してませんか……。",
-    "en": "",
+    "en": "You picked me. You are not regretting that, are you...?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -151620,7 +151620,7 @@
   },
   {
     "key": "アンタが上だった。認めるわよ、今日は。",
-    "en": "",
+    "en": "You were better. I'll admit it — today.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -151690,7 +151690,7 @@
   },
   {
     "key": "イキがるのはここまでだ。分かったか。",
-    "en": "",
+    "en": "That's as far as the swagger gets you. Understood?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -152582,7 +152582,7 @@
   },
   {
     "key": "ジュニア大会に……っ……ふふ、私を選んでくれたのね、嬉しい……",
-    "en": "",
+    "en": "The junior tournament... mm... they chose me. That does please me...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -153831,7 +153831,7 @@
   },
   {
     "key": "テッペン獲ったぜ！ でもまだ上がある",
-    "en": "",
+    "en": "Took the top spot! There's still higher, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -154298,7 +154298,7 @@
   },
   {
     "key": "ドキドキが止まらない…！ でも…負けたくない…！",
-    "en": "",
+    "en": "My heart won't slow down...! But... I don't want to lose...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -154606,7 +154606,7 @@
   },
   {
     "key": "ノリノリだぜ！ 次も行くぞ〜",
-    "en": "",
+    "en": "I'm on a roll! On to the next~",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -157037,7 +157037,7 @@
   },
   {
     "key": "マジかー、負けたわ。ま、次があるし",
-    "en": "",
+    "en": "Seriously? I lost. Eh, there's a next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -157232,7 +157232,7 @@
   },
   {
     "key": "マジ？ ウケる。まあ出てやるよ",
-    "en": "",
+    "en": "Seriously? That's funny. Fine, I'll show up.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -157920,7 +157920,7 @@
   },
   {
     "key": "リベンジするわ……っ……ふふ、必ず……",
-    "en": "",
+    "en": "I'll take it back... mm... without fail...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -157948,7 +157948,7 @@
   },
   {
     "key": "リラックス、リラックス。……でも本気よ",
-    "en": "",
+    "en": "Relax, relax. ...I mean it, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -158609,7 +158609,7 @@
   },
   {
     "key": "一つクリア。次に集中する",
-    "en": "",
+    "en": "One down. Focus on the next.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -159526,7 +159526,7 @@
   },
   {
     "key": "一勝、できました…",
-    "en": "",
+    "en": "I got one win...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -160339,7 +160339,7 @@
   },
   {
     "key": "一戦一戦、大切に。次もよろしくお願いいたします",
-    "en": "",
+    "en": "Each match handled with care. I hope you'll watch the next one too.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -160353,7 +160353,7 @@
   },
   {
     "key": "一戦一戦を大切に…全力で行きます",
-    "en": "",
+    "en": "One match at a time, handled properly... I'm going all out.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -160409,7 +160409,7 @@
   },
   {
     "key": "一歩ずつ…次も全力で",
-    "en": "",
+    "en": "Step by step... I keep going in at full strength.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -162257,7 +162257,7 @@
   },
   {
     "key": "上等じゃん。名指しとかいい度胸してんな。",
-    "en": "",
+    "en": "Fine by me. Calling me out — that's some nerve.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -162644,7 +162644,7 @@
   },
   {
     "key": "不甲斐ない結果でした。もっと精進いたします",
-    "en": "",
+    "en": "A poor showing on my part. I shall apply myself further.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -162824,7 +162824,7 @@
   },
   {
     "key": "中途半端は嫌いなの。…わかるでしょ？",
-    "en": "",
+    "en": "I hate things left half-done. ...You understand, don't you?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -164775,7 +164775,7 @@
   },
   {
     "key": "今日はあなたの日でしたね。お見事です。",
-    "en": "",
+    "en": "Today was your day, wasn't it. Nicely done.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -165079,7 +165079,7 @@
   },
   {
     "key": "今日は私が上でしたね。お強かったですよ。",
-    "en": "",
+    "en": "Today the edge was mine. You were strong, though.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -165093,7 +165093,7 @@
   },
   {
     "key": "今日は私が上でしたね。強かったですよ。",
-    "en": "",
+    "en": "I came out on top today. You were tough, though.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -168352,7 +168352,7 @@
   },
   {
     "key": "信じられない…。でも…嬉しい…！",
-    "en": "",
+    "en": "I can't believe it... But... I'm so happy...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168891,7 +168891,7 @@
   },
   {
     "key": "優勝……っ……ふふ、私、頂点に立ったのね……！",
-    "en": "",
+    "en": "Champion... mm... I am standing at the very top...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168905,7 +168905,7 @@
   },
   {
     "key": "優勝…させていただきました。皆様のおかげです…！",
-    "en": "",
+    "en": "I was allowed to win it... All of you made that possible...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168919,7 +168919,7 @@
   },
   {
     "key": "優勝…っ！ うそ…本当に…？ 嬉しい…！",
-    "en": "",
+    "en": "Champion...! No way... really...? I'm so happy...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168933,7 +168933,7 @@
   },
   {
     "key": "優勝…できた…。ありがとうございます…！",
-    "en": "",
+    "en": "I won it... I really did... Thank you so much...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168947,7 +168947,7 @@
   },
   {
     "key": "優勝…悪くねえな。もっと強くなってやる",
-    "en": "",
+    "en": "Champion... not bad. I'm getting stronger than this.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168961,7 +168961,7 @@
   },
   {
     "key": "優勝。…最高の気分ね",
-    "en": "",
+    "en": "The title. ...Nothing feels better than this.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168975,7 +168975,7 @@
   },
   {
     "key": "優勝。嬉しい。でも、これで終わりじゃない",
-    "en": "",
+    "en": "Champion. I'm happy. But this isn't the end.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -168989,7 +168989,7 @@
   },
   {
     "key": "優勝。応援してくださった皆様のおかげです",
-    "en": "",
+    "en": "The title. It belongs to everyone who supported me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -169003,7 +169003,7 @@
   },
   {
     "key": "優勝しちゃったね。…ふぅん、悪くない",
-    "en": "",
+    "en": "Went and won the whole thing. ...Hm. Not bad.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -169017,7 +169017,7 @@
   },
   {
     "key": "優勝ですわ…！ ああ…涙が…止まりませんわ…！",
-    "en": "",
+    "en": "I am the champion...! Oh... the tears... they will not stop...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -169031,7 +169031,7 @@
   },
   {
     "key": "優勝はわたくしのもの。当然の結果ですわね",
-    "en": "",
+    "en": "The title is mine. A perfectly natural conclusion.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -169045,7 +169045,7 @@
   },
   {
     "key": "優勝は私のもの。決まっていることよ",
-    "en": "",
+    "en": "The title is mine. That was decided some time ago.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -169432,7 +169432,7 @@
   },
   {
     "key": "全てを懸けますわ…！ 負けませんの…！",
-    "en": "",
+    "en": "I stake everything on this...! I shall not lose...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -170095,7 +170095,7 @@
   },
   {
     "key": "全員まとめてかかって来いってんだ",
-    "en": "",
+    "en": "All of you, come at me at once. That's the idea.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -170632,7 +170632,7 @@
   },
   {
     "key": "出場が決まったわ。見ていてね",
-    "en": "",
+    "en": "My entry is set. Watch me, won't you.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -170758,7 +170758,7 @@
   },
   {
     "key": "分かった？ 二度と私を選ばないで。",
-    "en": "",
+    "en": "Got it now? Never pick me again.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -171595,7 +171595,7 @@
   },
   {
     "key": "力不足で申し訳ございません…。もっと精進します",
-    "en": "",
+    "en": "I'm sorry I wasn't strong enough... I'll refine myself further.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -171609,7 +171609,7 @@
   },
   {
     "key": "力不足を痛感した。もっと強くならないと",
-    "en": "",
+    "en": "I felt exactly how short I am. I need to get stronger.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -172082,7 +172082,7 @@
   },
   {
     "key": "勝たせていただきました…。次も全力で臨みます",
-    "en": "",
+    "en": "I was allowed the win today... I'll face the next one with everything.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -172180,7 +172180,7 @@
   },
   {
     "key": "勝たせていただきました。またいつでも、どうぞ。",
-    "en": "",
+    "en": "The win came to me today. Come find me again whenever you like.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172222,7 +172222,7 @@
   },
   {
     "key": "勝たせていただきました。良い試合でした。",
-    "en": "",
+    "en": "The victory came to me. It was a good match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172319,7 +172319,7 @@
   },
   {
     "key": "勝ち。それだけ伝えておく。",
-    "en": "",
+    "en": "A win. That's all I'm telling you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172355,7 +172355,7 @@
   },
   {
     "key": "勝ちです。……あなたは、強かった。",
-    "en": "",
+    "en": "The win is mine. ...You were strong.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172489,7 +172489,7 @@
   },
   {
     "key": "勝ちました。……あの目は、忘れません。",
-    "en": "",
+    "en": "I won. ...I won't forget the look in your eyes.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172584,7 +172584,7 @@
   },
   {
     "key": "勝ちました。……次、いつでもどうぞ。",
-    "en": "",
+    "en": "I won. ...The next one, any time you like.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172609,7 +172609,7 @@
   },
   {
     "key": "勝ちました。……重い一戦でした。",
-    "en": "",
+    "en": "I won. ...That one carried weight.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172665,7 +172665,7 @@
   },
   {
     "key": "勝ちました。あなたの覚悟には、応えられたはずです。",
-    "en": "",
+    "en": "I won. I hope I answered what you brought me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172690,7 +172690,7 @@
   },
   {
     "key": "勝ちました。いい相手でしたよ、あなた。",
-    "en": "",
+    "en": "I won. You were a good one to face.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172718,7 +172718,7 @@
   },
   {
     "key": "勝ちました。この結果に驚きはありません。",
-    "en": "",
+    "en": "I won. There is nothing surprising in that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172746,7 +172746,7 @@
   },
   {
     "key": "勝ちました。手は一切抜いていません。",
-    "en": "",
+    "en": "I won. Not one thing was held back.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172857,7 +172857,7 @@
   },
   {
     "key": "勝ちましたわ…！ この感動…次もきっと…！",
-    "en": "",
+    "en": "I won...! What a rush... and there is more of it coming...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -172927,7 +172927,7 @@
   },
   {
     "key": "勝ちよりも、良い試合だったことが嬉しいですの。",
-    "en": "",
+    "en": "More than the win, I am glad it was a good match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -172941,7 +172941,7 @@
   },
   {
     "key": "勝ち上がったわ……っ……ふふ、ここまで来られたの……",
-    "en": "",
+    "en": "I climbed through... mm... look how far that took me...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -173206,7 +173206,7 @@
   },
   {
     "key": "勝った……! ざまあみろって、言っていい?",
-    "en": "",
+    "en": "I won...! Am I allowed to say serves you right?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -173248,7 +173248,7 @@
   },
   {
     "key": "勝った……っ……ふふ、まだまだ行けるわ……",
-    "en": "",
+    "en": "I won... mm... there is plenty left in me...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -173416,7 +173416,7 @@
   },
   {
     "key": "勝った…！ 嬉しい…！ でもまだ泣かない…！",
-    "en": "",
+    "en": "I won...! I'm so happy...! But I'm not crying yet...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -173514,7 +173514,7 @@
   },
   {
     "key": "勝った。でも気を抜かない",
-    "en": "",
+    "en": "I won. Not easing off, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -173751,7 +173751,7 @@
   },
   {
     "key": "勝ったね。…この調子で行こうか",
-    "en": "",
+    "en": "Won that one. ...Let's keep this going.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -173819,7 +173819,7 @@
   },
   {
     "key": "勝ったよ。……いい試合だった、とだけ。",
-    "en": "",
+    "en": "I won. ...Good match, and that's all I'll say.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -174055,7 +174055,7 @@
   },
   {
     "key": "勝ったわ。でも、楽じゃなかった。",
-    "en": "",
+    "en": "I won. It wasn't easy, though.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -174181,7 +174181,7 @@
   },
   {
     "key": "勝ったんですよね、わたし……。実感がなくて。",
-    "en": "",
+    "en": "I won, did I not... It has not reached me yet.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -174320,7 +174320,7 @@
   },
   {
     "key": "勝っちった。まあ、そういう日もあるって。",
-    "en": "",
+    "en": "Went and won. Eh, some days land like that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -174404,7 +174404,7 @@
   },
   {
     "key": "勝っちゃった。……そんな顔しないでよ。",
-    "en": "",
+    "en": "Well, I won. ...Don't make that face.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -174501,7 +174501,7 @@
   },
   {
     "key": "勝っちゃったね。…気にしなくていいよ。",
-    "en": "",
+    "en": "I ended up winning. ...Don't dwell on it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -174641,7 +174641,7 @@
   },
   {
     "key": "勝ってしまいました。ごめんなさいね。",
-    "en": "",
+    "en": "I seem to have won. Do forgive me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -174836,7 +174836,7 @@
   },
   {
     "key": "勝つのは私。それ以外ありえないでしょう？",
-    "en": "",
+    "en": "I am the one who wins. What else could there be?",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -174850,7 +174850,7 @@
   },
   {
     "key": "勝つのは私。最初から決まってることよ",
-    "en": "",
+    "en": "I'm the one winning. That was settled before we started.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -175060,7 +175060,7 @@
   },
   {
     "key": "勝てた…！ でもまだ終わりじゃない",
-    "en": "",
+    "en": "I won...! But it isn't over yet.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -175199,7 +175199,7 @@
   },
   {
     "key": "勝てたわ。……でもまだ先がある",
-    "en": "",
+    "en": "I took it. ...There's still road ahead, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -175227,7 +175227,7 @@
   },
   {
     "key": "勝てちゃいました。……気を落とさないでくださいね。",
-    "en": "",
+    "en": "I ended up winning. ...Please don't let it get you down.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -175269,7 +175269,7 @@
   },
   {
     "key": "勝ててないし、負けてもいない。それだけです。",
-    "en": "",
+    "en": "I didn't win and I didn't lose. That's the whole of it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176133,7 +176133,7 @@
   },
   {
     "key": "危なげなく、勝たせていただきました。",
-    "en": "",
+    "en": "The win came without a moment of danger.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176217,7 +176217,7 @@
   },
   {
     "key": "参ったわ。…悔しいけど、綺麗に負けた。",
-    "en": "",
+    "en": "I'm beaten. ...It stings, but it was a clean one.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176259,7 +176259,7 @@
   },
   {
     "key": "及びませんでした。悔しく思います。",
-    "en": "",
+    "en": "I did not measure up. It galls me.",
     "files": [
       "data.js:CHALLENGE_LINES",
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
@@ -176274,7 +176274,7 @@
   },
   {
     "key": "収穫の多い大会でしたわ。次はもっと上を目指します",
-    "en": "",
+    "en": "A tournament with a rich harvest. Next time I aim higher.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -176528,7 +176528,7 @@
   },
   {
     "key": "受けた以上、負けられませんでした。",
-    "en": "",
+    "en": "I said yes, so losing was off the table.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176542,7 +176542,7 @@
   },
   {
     "key": "受けた以上、負けるわけにはいかなかった。",
-    "en": "",
+    "en": "Once I'd accepted, there was no losing this.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176556,7 +176556,7 @@
   },
   {
     "key": "受けた以上、負けるわけにはいきませんでした。",
-    "en": "",
+    "en": "Once I had taken it on, losing was not something I could do.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176570,7 +176570,7 @@
   },
   {
     "key": "受けておいて、この結果です。……情けない。",
-    "en": "",
+    "en": "I took it on and this is what came of it. ...Pathetic.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176598,7 +176598,7 @@
   },
   {
     "key": "受けてよかったです。楽しかったですよ。",
-    "en": "",
+    "en": "Taking that on was worth it. I had a good time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176612,7 +176612,7 @@
   },
   {
     "key": "受けてよかったな。楽しかったよ。",
-    "en": "",
+    "en": "Glad I said yes. That was fun.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176626,7 +176626,7 @@
   },
   {
     "key": "受けて正解だったな。それだけだ。",
-    "en": "",
+    "en": "Taking it was the right move. That's all.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176640,7 +176640,7 @@
   },
   {
     "key": "受けて正解だったね。……また来るといい。",
-    "en": "",
+    "en": "Saying yes was the right call. ...Come around again.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176654,7 +176654,7 @@
   },
   {
     "key": "受けて正解でした。いい試合だった。",
-    "en": "",
+    "en": "Taking it was the right choice. That was a good match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176695,7 +176695,7 @@
   },
   {
     "key": "受けて立ちます。正面から来てください。",
-    "en": "",
+    "en": "I'll take you on. Come straight at me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -176916,7 +176916,7 @@
   },
   {
     "key": "受け止めました。……もう一度、いかがですか。",
-    "en": "",
+    "en": "I took all of it. ...Care to go again?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -177983,7 +177983,7 @@
   },
   {
     "key": "名前を呼ばれたなら、応えないとね。",
-    "en": "",
+    "en": "If someone calls my name, I ought to answer it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -178011,7 +178011,7 @@
   },
   {
     "key": "名指し、されるとは思わなくて……。でも、逃げません。",
-    "en": "",
+    "en": "I never thought anyone would name me... But I will not run.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -178039,7 +178039,7 @@
   },
   {
     "key": "名指しされて、引くわけにはいきません。",
-    "en": "",
+    "en": "Someone names me, I can't exactly back off.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -178053,7 +178053,7 @@
   },
   {
     "key": "名指しされるなんて、思ってなかった。……でも、受ける。",
-    "en": "",
+    "en": "I never expected to be named. ...But I'll take it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -178067,7 +178067,7 @@
   },
   {
     "key": "名指しの意味、違えずに応えます。",
-    "en": "",
+    "en": "You named me for a reason. I will answer it exactly.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -180111,7 +180111,7 @@
   },
   {
     "key": "夢みたい、です…",
-    "en": "",
+    "en": "It's like a dream...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -180125,7 +180125,7 @@
   },
   {
     "key": "夢みたいで…まだ、信じられません…",
-    "en": "",
+    "en": "It feels like a dream... I still can't believe it...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -180236,7 +180236,7 @@
   },
   {
     "key": "大会を通して、自分の成長を感じられた",
-    "en": "",
+    "en": "Across the whole tournament, I could feel myself growing.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -181399,7 +181399,7 @@
   },
   {
     "key": "完敗。……この借りは返します。",
-    "en": "",
+    "en": "Beaten flat. ...I'll pay this one back.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -181523,7 +181523,7 @@
   },
   {
     "key": "完敗です。悔しさは持ち帰ります。",
-    "en": "",
+    "en": "A complete defeat. I will carry the frustration home.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -181537,7 +181537,7 @@
   },
   {
     "key": "完敗です。次は、違う結果をお見せします。",
-    "en": "",
+    "en": "Beaten outright. Next time I will show you a different ending.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -181631,7 +181631,7 @@
   },
   {
     "key": "宙ぶらりんのままです。……気持ちが収まりません。",
-    "en": "",
+    "en": "It's left hanging. ...I can't put this feeling down.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -181645,7 +181645,7 @@
   },
   {
     "key": "実りある大会でした",
-    "en": "",
+    "en": "A fruitful tournament.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -183220,7 +183220,7 @@
   },
   {
     "key": "引く気なんて、最初からなかったので。",
-    "en": "",
+    "en": "Backing off was never on my mind.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -183450,7 +183450,7 @@
   },
   {
     "key": "強かった……。何も、できなかった。",
-    "en": "",
+    "en": "So strong... I couldn't do anything.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -183639,7 +183639,7 @@
   },
   {
     "key": "当然。呼ばれなかったら怒ってたわ",
-    "en": "",
+    "en": "Obviously. I'd have been furious if they had skipped me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -183863,7 +183863,7 @@
   },
   {
     "key": "当然の結果ね",
-    "en": "",
+    "en": "The natural outcome.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -183891,7 +183891,7 @@
   },
   {
     "key": "当然の結果ね。次は優勝よ",
-    "en": "",
+    "en": "About what I expected. Next time I take the whole thing.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -183919,7 +183919,7 @@
   },
   {
     "key": "当然の結果よ。次も同じ",
-    "en": "",
+    "en": "The obvious result. Same again next time.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -184305,7 +184305,7 @@
   },
   {
     "key": "待ってましたよ、そういうの。受けます。",
-    "en": "",
+    "en": "I've been waiting for one of these. I'm in.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -184375,7 +184375,7 @@
   },
   {
     "key": "後悔しても知らないわよ？ ふふ。",
-    "en": "",
+    "en": "Don't come crying to me after. Mm.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -185689,7 +185689,7 @@
   },
   {
     "key": "思ったより、あっさりでしたね。ふふ。",
-    "en": "",
+    "en": "That went more smoothly than I expected. Hehe.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186263,7 +186263,7 @@
   },
   {
     "key": "悔いのない大会でした。支えてくれた皆さんに感謝です",
-    "en": "",
+    "en": "A tournament with no regrets in it. I'm grateful to everyone behind me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -186305,7 +186305,7 @@
   },
   {
     "key": "悔しい……ことにしておくわ。",
-    "en": "",
+    "en": "I'm devastated... let's say that, anyway.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186347,7 +186347,7 @@
   },
   {
     "key": "悔しい……！ 悔しいのよ、私は。",
-    "en": "",
+    "en": "It hurts...! It hurts, all right?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186375,7 +186375,7 @@
   },
   {
     "key": "悔しい……！ 認めない、絶対に認めないから！",
-    "en": "",
+    "en": "It hurts...! I won't accept it, not ever!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186403,7 +186403,7 @@
   },
   {
     "key": "悔しい…。でも、次に繋げる",
-    "en": "",
+    "en": "That stings... But I'll carry it into the next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -186417,7 +186417,7 @@
   },
   {
     "key": "悔しい…。もっと練習しなくては…",
-    "en": "",
+    "en": "It galls me... I must put in more work...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -186445,7 +186445,7 @@
   },
   {
     "key": "悔しい…けど、この悔しさを忘れない",
-    "en": "",
+    "en": "It hurts... but I'm keeping hold of the hurt.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -186753,7 +186753,7 @@
   },
   {
     "key": "悔しい。……でも、受けたことに後悔はないです。",
-    "en": "",
+    "en": "That stings. ...But I don't regret saying yes.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186780,7 +186780,7 @@
   },
   {
     "key": "悔しい。この屈辱は忘れません。",
-    "en": "",
+    "en": "Vexing. I shall not forget this humiliation.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186794,7 +186794,7 @@
   },
   {
     "key": "悔しい。この気持ち、忘れないでおく。",
-    "en": "",
+    "en": "This stings. I'll keep hold of the feeling.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186836,7 +186836,7 @@
   },
   {
     "key": "悔しい。認めるわ、今日だけね。",
-    "en": "",
+    "en": "Galling. I'll grant it — today only.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -186850,7 +186850,7 @@
   },
   {
     "key": "悔しいけど…いい経験だったわ",
-    "en": "",
+    "en": "It stings, but... it was worth having.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -187074,7 +187074,7 @@
   },
   {
     "key": "悔しいです。……ですが、受けたことに悔いはありません。",
-    "en": "",
+    "en": "It stings. ...But I do not regret taking it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -187388,7 +187388,7 @@
   },
   {
     "key": "悔しゅうございます…。必ず強くなります",
-    "en": "",
+    "en": "It grieves me... I will become stronger, without fail.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -187472,7 +187472,7 @@
   },
   {
     "key": "悪ぃな。譲れねぇもんがあってさ。",
-    "en": "",
+    "en": "My bad. There's stuff I can't hand over.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -187486,7 +187486,7 @@
   },
   {
     "key": "悪ぃ悪ぃ。今日はこっちの気分だった。",
-    "en": "",
+    "en": "My bad, my bad. Today just felt like mine.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -187654,7 +187654,7 @@
   },
   {
     "key": "悪くなかったわよ。…でも、まだ早い。",
-    "en": "",
+    "en": "You weren't bad at all. ...Just early.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -187668,7 +187668,7 @@
   },
   {
     "key": "悪くねえ結果だ",
-    "en": "",
+    "en": "Not a bad result.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -188234,7 +188234,7 @@
   },
   {
     "key": "戦えてよかった…！ もっともっと強くなる…！",
-    "en": "",
+    "en": "I'm glad I got to fight...! I'm going to get so much stronger...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -188544,7 +188544,7 @@
   },
   {
     "key": "手は抜いてない。…だから、胸を張って。",
-    "en": "",
+    "en": "I didn't hold back. ...So keep your head up.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -188753,7 +188753,7 @@
   },
   {
     "key": "承知しました。あなたの気持ち、受け取ります。",
-    "en": "",
+    "en": "Understood. I will take what you are feeling and answer it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -189093,7 +189093,7 @@
   },
   {
     "key": "持っていかれました。……大口叩いた分、痛い。",
-    "en": "",
+    "en": "You took it. ...I talked big, so this one stings extra.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -189107,7 +189107,7 @@
   },
   {
     "key": "持っていかれましたね。……次はございません。",
-    "en": "",
+    "en": "You took it from me. ...There won't be a second time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -189486,7 +189486,7 @@
   },
   {
     "key": "支えてくれたみんなのおかげです…！",
-    "en": "",
+    "en": "This is thanks to everyone who held me up...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -191111,7 +191111,7 @@
   },
   {
     "key": "最後だし、全力で暴れるぜ！",
-    "en": "",
+    "en": "It's the last one, so I'm running wild!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -191479,7 +191479,7 @@
   },
   {
     "key": "最後の一戦！ 思いっきりやりますわよ",
-    "en": "",
+    "en": "The last match! I shall throw myself into it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -191493,7 +191493,7 @@
   },
   {
     "key": "最後の一戦！ 楽しむよ〜",
-    "en": "",
+    "en": "Last match of the run! I'm enjoying this~",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -191562,7 +191562,7 @@
   },
   {
     "key": "最後の相手か。ぶっ壊してやるよ",
-    "en": "",
+    "en": "Last one standing, huh. I'll break her.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -192632,7 +192632,7 @@
   },
   {
     "key": "最高の大会だった…！ この経験、絶対忘れない…！",
-    "en": "",
+    "en": "Best tournament there's ever been...! I'm never forgetting this...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -192982,7 +192982,7 @@
   },
   {
     "key": "最高の舞台ね……っ……ふふ、震えてるの……",
-    "en": "",
+    "en": "The finest stage there is... mm... I am trembling...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -193192,7 +193192,7 @@
   },
   {
     "key": "望むところ。よく言ってくれました。",
-    "en": "",
+    "en": "Suits me. Good of you to say it out loud.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -193220,7 +193220,7 @@
   },
   {
     "key": "望むところです。逃げも隠れもいたしません。",
-    "en": "",
+    "en": "That suits me perfectly. I won't run and I won't hide.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -193871,7 +193871,7 @@
   },
   {
     "key": "本気なのね。…なら、私も本気で返す。",
-    "en": "",
+    "en": "You mean it. ...Then I'll mean it right back.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -193955,7 +193955,7 @@
   },
   {
     "key": "来いよ。全部まとめて叩き返してやる。",
-    "en": "",
+    "en": "Come on. Whatever you bring, I'm sending all of it back.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -194053,7 +194053,7 @@
   },
   {
     "key": "来なよ。……受けて立つから。",
-    "en": "",
+    "en": "Come on, then. ...I'll be standing right here.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -194220,7 +194220,7 @@
   },
   {
     "key": "格の違いを教えてあげる",
-    "en": "",
+    "en": "I shall teach her the difference in class.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -194393,7 +194393,7 @@
   },
   {
     "key": "案外あっさりだったね。次はもっと粘って。",
-    "en": "",
+    "en": "That went easier than I thought. Hang in longer next time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -194446,7 +194446,7 @@
   },
   {
     "key": "楽しい大会だったわ〜",
-    "en": "",
+    "en": "What a fun tournament that was~",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -194488,7 +194488,7 @@
   },
   {
     "key": "楽しい試合でした。ありがとう。",
-    "en": "",
+    "en": "That was an enjoyable match. Thank you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -194502,7 +194502,7 @@
   },
   {
     "key": "楽しかったぜ〜。またやりてえな",
-    "en": "",
+    "en": "That was a blast~. Want to do it again.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -194544,7 +194544,7 @@
   },
   {
     "key": "楽しかったね。…また出たいな",
-    "en": "",
+    "en": "That was fun. ...I'd like another go.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -194656,7 +194656,7 @@
   },
   {
     "key": "楽しみだわ……っ……ふふ、燃えてきたの……",
-    "en": "",
+    "en": "I can hardly wait... mm... something in me is catching fire...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -194712,7 +194712,7 @@
   },
   {
     "key": "楽しんでいこう♪もちろん勝つつもりでね",
-    "en": "",
+    "en": "Let's enjoy this ♪ Planning to win, obviously.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -194726,7 +194726,7 @@
   },
   {
     "key": "楽しんでくるわね……っ……ふふ……",
-    "en": "",
+    "en": "I'll go and enjoy myself... mm...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -195274,7 +195274,7 @@
   },
   {
     "key": "次の相手…楽しみね",
-    "en": "",
+    "en": "The next one... this should be enjoyable.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -195687,7 +195687,7 @@
   },
   {
     "key": "次は必ず勝つわ",
-    "en": "",
+    "en": "The next one is mine, without fail.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -195896,7 +195896,7 @@
   },
   {
     "key": "次もこの調子で参ります",
-    "en": "",
+    "en": "I shall carry this form into the next one.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -196116,7 +196116,7 @@
   },
   {
     "key": "止まんねえ…この勢い、止まんねえぞ…！",
-    "en": "",
+    "en": "Can't stop... this momentum, it won't stop...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -196238,7 +196238,7 @@
   },
   {
     "key": "止められるもんなら止めてみろ",
-    "en": "",
+    "en": "Stop me if you think you can.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -197644,7 +197644,7 @@
   },
   {
     "key": "気楽にいこうぜ。でも手は抜かねえけど",
-    "en": "",
+    "en": "Let's keep it loose. Not slacking off, though.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -197672,7 +197672,7 @@
   },
   {
     "key": "気楽に参りましょう。でも負けませんわよ",
-    "en": "",
+    "en": "Let us go in lightly. I shall not lose, however.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -197700,7 +197700,7 @@
   },
   {
     "key": "決まらないなんて、じれったいわね。",
-    "en": "",
+    "en": "Nothing decided. How maddening.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197714,7 +197714,7 @@
   },
   {
     "key": "決まらなかったか。すっきりしねぇな。",
-    "en": "",
+    "en": "Didn't get decided, huh. Leaves a bad taste.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197728,7 +197728,7 @@
   },
   {
     "key": "決まらなかったですね。続きは、またいつか。",
-    "en": "",
+    "en": "It didn't get decided. The rest of it, another day.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197742,7 +197742,7 @@
   },
   {
     "key": "決まらなかったね。…また今度でいいよ。",
-    "en": "",
+    "en": "It didn't get decided. ...Another time is fine by me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197756,7 +197756,7 @@
   },
   {
     "key": "決まらなかったね。まあ、またそのうち。",
-    "en": "",
+    "en": "Didn't get decided. Ah well, one of these days.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197770,7 +197770,7 @@
   },
   {
     "key": "決まらなかったわね。お茶でも飲む？",
-    "en": "",
+    "en": "Nothing decided. Shall we get some tea?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197784,7 +197784,7 @@
   },
   {
     "key": "決まらねぇとか、一番むかつくんだよ。",
-    "en": "",
+    "en": "Nothing decided is the part that burns me most.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197812,7 +197812,7 @@
   },
   {
     "key": "決まりませんでしたね。まあ、またそのうちに。",
-    "en": "",
+    "en": "Nothing was decided, was it. Some other time, then.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197826,7 +197826,7 @@
   },
   {
     "key": "決まりませんでしたね。またの機会に。",
-    "en": "",
+    "en": "Nothing was decided. Another occasion, then.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197840,7 +197840,7 @@
   },
   {
     "key": "決まんなかったな。腹減った。",
-    "en": "",
+    "en": "Never got decided. I'm hungry.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197854,7 +197854,7 @@
   },
   {
     "key": "決めきれず、申し訳ないです。……次は必ず。",
-    "en": "",
+    "en": "I could not put it away. I am sorry. ...Next time, for certain.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197868,7 +197868,7 @@
   },
   {
     "key": "決めきれなかった。……つまらない終わり方だ。",
-    "en": "",
+    "en": "Couldn't finish it. ...What a dull way to end.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197882,7 +197882,7 @@
   },
   {
     "key": "決めきれませんでした。……不本意です。",
-    "en": "",
+    "en": "I couldn't finish it. ...That isn't what I wanted.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197896,7 +197896,7 @@
   },
   {
     "key": "決めさせてくれないの？ 生意気ね。",
-    "en": "",
+    "en": "You won't let me finish it? How impudent.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197910,7 +197910,7 @@
   },
   {
     "key": "決めさせないとは、生意気なこと。",
-    "en": "",
+    "en": "To deny me the finish. What impertinence.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197924,7 +197924,7 @@
   },
   {
     "key": "決めさせなさいよ！ …ああ、もう。",
-    "en": "",
+    "en": "Let me finish it! ...Ugh, honestly.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -197980,7 +197980,7 @@
   },
   {
     "key": "決勝…。最後の舞台、最高に魅せてあげるわ",
-    "en": "",
+    "en": "The final... Last stage of the night. I'll make it worth watching.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -197994,7 +197994,7 @@
   },
   {
     "key": "決勝…夢みたいです。でも、勝ちたい…！",
-    "en": "",
+    "en": "The final... it feels like a dream. But I want to win...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198008,7 +198008,7 @@
   },
   {
     "key": "決勝…！ 信じられない…でも…勝ちたい…！",
-    "en": "",
+    "en": "The final...! I can't believe it... but... I want this...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198022,7 +198022,7 @@
   },
   {
     "key": "決勝。全てを出し切ります",
-    "en": "",
+    "en": "The final. I shall leave nothing inside me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198036,7 +198036,7 @@
   },
   {
     "key": "決勝。全てを懸ける",
-    "en": "",
+    "en": "The final. Everything goes on the line.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198050,7 +198050,7 @@
   },
   {
     "key": "決勝か。…ま、ここまで来たらやるだけだね",
-    "en": "",
+    "en": "The final, then. ...Well, this far in, you just do it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198064,7 +198064,7 @@
   },
   {
     "key": "決勝かあ。最高の舞台じゃない",
-    "en": "",
+    "en": "The final, hm. What a lovely place to be.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198078,7 +198078,7 @@
   },
   {
     "key": "決勝かー。ま、ここまで来たらやるしかないっしょ",
-    "en": "",
+    "en": "The final, huh. Well, this far in, might as well.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198092,7 +198092,7 @@
   },
   {
     "key": "決勝だ…！ ここまで来たんだ…！ 絶対テッペン獲る…！",
-    "en": "",
+    "en": "The final...! I made it here...! I'm taking the top...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198106,7 +198106,7 @@
   },
   {
     "key": "決勝だぜ。最後もぶっ潰してやる",
-    "en": "",
+    "en": "It's the final. I'm flattening the last one too.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198120,7 +198120,7 @@
   },
   {
     "key": "決勝ですわ…！ この胸の高鳴り…最高ですわ…！",
-    "en": "",
+    "en": "The final...! My heart is pounding... it is glorious...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198134,7 +198134,7 @@
   },
   {
     "key": "決勝の舞台…身に余る光栄です。全力でお応えいたします",
-    "en": "",
+    "en": "A place in the final... it is far above me. I'll answer with everything.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198148,7 +198148,7 @@
   },
   {
     "key": "決勝は当然の舞台。このまま優勝もいただきましょう",
-    "en": "",
+    "en": "The final was always where I belonged. I shall take the title as well.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198162,7 +198162,7 @@
   },
   {
     "key": "決勝戦……っ……ふふ、ここまで来たのね……",
-    "en": "",
+    "en": "The final... mm... I really did come this far...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -198176,7 +198176,7 @@
   },
   {
     "key": "決着、つかなかったですね……。少し、ほっとしてます。",
-    "en": "",
+    "en": "Nothing got settled, did it... I am a little relieved, honestly.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198190,7 +198190,7 @@
   },
   {
     "key": "決着、つかなかったね……。ちょっと、ほっとしてる。",
-    "en": "",
+    "en": "It didn't get decided... Part of me is glad about that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198218,7 +198218,7 @@
   },
   {
     "key": "決着がつかないというのは、いちばん困りますね。",
-    "en": "",
+    "en": "Not being able to settle it is the hardest one to hold.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198232,7 +198232,7 @@
   },
   {
     "key": "決着がつかないのが、いちばん心残りです。",
-    "en": "",
+    "en": "Nothing settled — that is the part that stays with me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198271,7 +198271,7 @@
   },
   {
     "key": "決着つかず? そんなの求めてません。",
-    "en": "",
+    "en": "No decision? That isn't what I asked for.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198285,7 +198285,7 @@
   },
   {
     "key": "決着つかず……。よかったのか、どうなのか。",
-    "en": "",
+    "en": "No decision... Was that good? I really don't know.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198299,7 +198299,7 @@
   },
   {
     "key": "決着つかず……。よかったのか、悪かったのか。",
-    "en": "",
+    "en": "Nothing settled... I cannot tell if that is good or bad.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198313,7 +198313,7 @@
   },
   {
     "key": "決着つかず、か。すっきりしませんね。",
-    "en": "",
+    "en": "No decision, huh. That doesn't sit right.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198327,7 +198327,7 @@
   },
   {
     "key": "決着つかず、ですか。……心残りです。",
-    "en": "",
+    "en": "No decision, is it. ...Something of it stays with me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198341,7 +198341,7 @@
   },
   {
     "key": "決着つかず、ですか。心残りです。",
-    "en": "",
+    "en": "Undecided, then. That is a regret.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198355,7 +198355,7 @@
   },
   {
     "key": "決着つかずか。ちょうどいいんじゃね？",
-    "en": "",
+    "en": "No decision, huh. Works out fine, doesn't it?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198369,7 +198369,7 @@
   },
   {
     "key": "決着つかずかぁ。…ま、いいんじゃない？",
-    "en": "",
+    "en": "No decision, hm. ...That's fine, isn't it?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198383,7 +198383,7 @@
   },
   {
     "key": "決着つかずだって。ちょうどいいんじゃない？",
-    "en": "",
+    "en": "Undecided, apparently. Feels about right, doesn't it?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198397,7 +198397,7 @@
   },
   {
     "key": "決着つかずって、一番モヤるやつだ。",
-    "en": "",
+    "en": "No decision — that's the one that itches worst.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198411,7 +198411,7 @@
   },
   {
     "key": "決着つかずって何!? 中途半端すぎるでしょ!",
-    "en": "",
+    "en": "No decision? What is that!? Way too half-finished!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198425,7 +198425,7 @@
   },
   {
     "key": "決着つかずですか。それも悪くありません。",
-    "en": "",
+    "en": "Undecided, is it. That is not so bad either.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198439,7 +198439,7 @@
   },
   {
     "key": "決着つかずですって。ちょうどいいじゃないですか。",
-    "en": "",
+    "en": "No decision, they're telling me. That suits me fine.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198453,7 +198453,7 @@
   },
   {
     "key": "決着つかずですね。続きは、またの機会に。",
-    "en": "",
+    "en": "Undecided, then. We can finish it another time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198467,7 +198467,7 @@
   },
   {
     "key": "決着つかず？ 冗談。続きやるぞ。",
-    "en": "",
+    "en": "No decision? Like hell. We're finishing this.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198481,7 +198481,7 @@
   },
   {
     "key": "決着つかず？ 私は納得してないわよ。",
-    "en": "",
+    "en": "No decision? I haven't agreed to that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198607,7 +198607,7 @@
   },
   {
     "key": "決着はつけたかった。……正直にね。",
-    "en": "",
+    "en": "I wanted a finish. ...Honestly, I did.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198635,7 +198635,7 @@
   },
   {
     "key": "決着をつけられなかった。……それが一番悔しい。",
-    "en": "",
+    "en": "I couldn't bring it to a decision. ...That's the part that hurts most.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -198649,7 +198649,7 @@
   },
   {
     "key": "決着をつけられませんでした。心残りです。",
-    "en": "",
+    "en": "I was unable to settle it. The regret is mine to keep.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -199024,7 +199024,7 @@
   },
   {
     "key": "注目を集められるなら、いいわね",
-    "en": "",
+    "en": "If it draws eyes to me, I'm in.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -199922,7 +199922,7 @@
   },
   {
     "key": "無謀ですけれど……嫌いではありません。",
-    "en": "",
+    "en": "Reckless of you... though I do not dislike it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -200573,7 +200573,7 @@
   },
   {
     "key": "申し上げた通りです。最初から最後まで、全力で押し切りました。",
-    "en": "",
+    "en": "Just as I said. Start to finish, I pushed through at full strength.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -200755,7 +200755,7 @@
   },
   {
     "key": "申し訳ないです…。もっと頑張ります…",
-    "en": "",
+    "en": "I'm sorry... I'll work harder...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -201117,7 +201117,7 @@
   },
   {
     "key": "痛いわね。…でも、次はこうはいかない。",
-    "en": "",
+    "en": "That hurts. ...It won't run this way next time.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -201131,7 +201131,7 @@
   },
   {
     "key": "痛ぇな。…けど次はこうはいかねぇ。",
-    "en": "",
+    "en": "Hurts like hell. ...Won't go that way twice.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -201448,7 +201448,7 @@
   },
   {
     "key": "皆様のおかげで戦い抜けました。感謝いたします",
-    "en": "",
+    "en": "I made it through because of all of you. Thank you.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -201587,7 +201587,7 @@
   },
   {
     "key": "目の前の相手を叩き潰す。それだけよ",
-    "en": "",
+    "en": "Crush whoever is in front of me. That's the whole plan.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -201749,7 +201749,7 @@
   },
   {
     "key": "相手がどうとかじゃない。自分の試合をする",
-    "en": "",
+    "en": "It's not about who's across from me. I wrestle my match.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -201888,7 +201888,7 @@
   },
   {
     "key": "相手とか関係ねえ。全力で行くだけだ",
-    "en": "",
+    "en": "Doesn't matter who. I just go in full.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -207371,7 +207371,7 @@
   },
   {
     "key": "私がこの程度で喜ぶとでも？…次こそ頂点を取りますわ",
-    "en": "",
+    "en": "Did you imagine this much would please me? ...Next time, the summit.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -207413,7 +207413,7 @@
   },
   {
     "key": "私が一番。それが証明されたわね",
-    "en": "",
+    "en": "I am the best of them. That has been proven now.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -207815,7 +207815,7 @@
   },
   {
     "key": "私で、いいのね。……受けるわ。",
-    "en": "",
+    "en": "So it's me you want. ...I accept.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -207843,7 +207843,7 @@
   },
   {
     "key": "私でいいの？ いいよ、やろっか。",
-    "en": "",
+    "en": "Me, really? Sure, let's do this.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -207994,7 +207994,7 @@
   },
   {
     "key": "私に勝てるつもり？ 甘いわね",
-    "en": "",
+    "en": "You think you can beat me? How naive.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -208230,7 +208230,7 @@
   },
   {
     "key": "私の力が及びませんでした。お見事です。",
-    "en": "",
+    "en": "I fell short of you. Well done.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -208255,7 +208255,7 @@
   },
   {
     "key": "私の力不足です。……この負けは、忘れません。",
-    "en": "",
+    "en": "I was not strong enough. ...I will not forget this loss.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -208269,7 +208269,7 @@
   },
   {
     "key": "私の力不足よ。言い訳はしないわ。",
-    "en": "",
+    "en": "I didn't have enough. No excuses.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -208599,7 +208599,7 @@
   },
   {
     "key": "私の舞台が増えるのね。楽しみ",
-    "en": "",
+    "en": "One more stage for me, then. I can hardly wait.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -208613,7 +208613,7 @@
   },
   {
     "key": "私の選出は、当然ね",
-    "en": "",
+    "en": "My selection was a foregone conclusion.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -208627,7 +208627,7 @@
   },
   {
     "key": "私の魅力、見せつけてあげる",
-    "en": "",
+    "en": "I'll make sure they see exactly what I am.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -208846,7 +208846,7 @@
   },
   {
     "key": "私を呼んだわね？ …後悔させてあげる。",
-    "en": "",
+    "en": "You called for me? ...I'll make you sorry you did.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209067,7 +209067,7 @@
   },
   {
     "key": "私を選んだのが、間違いだったね。",
-    "en": "",
+    "en": "Picking me — that was the mistake.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209081,7 +209081,7 @@
   },
   {
     "key": "私を選んだのなら、その責任は果たします。",
-    "en": "",
+    "en": "If I am the one you picked, then I will answer for that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209095,7 +209095,7 @@
   },
   {
     "key": "私を選んだんだ。……せいぜい、悔やまないように。",
-    "en": "",
+    "en": "You picked me. ...Try not to regret it too much.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209109,7 +209109,7 @@
   },
   {
     "key": "私を選んだんだ。……絶対、後悔させてやる。",
-    "en": "",
+    "en": "You picked me. ...I'm going to make you regret that.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209123,7 +209123,7 @@
   },
   {
     "key": "私を選んだ以上、真正面から受けます。",
-    "en": "",
+    "en": "You chose me, so I'll take it dead-on.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209137,7 +209137,7 @@
   },
   {
     "key": "私を選んだ時点で、勝負ありだろ。",
-    "en": "",
+    "en": "You picked me. That's the match right there.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209151,7 +209151,7 @@
   },
   {
     "key": "私を選んだ理由、リングで聞くわ。",
-    "en": "",
+    "en": "Your reason for choosing me — I'll hear it in the ring.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209851,7 +209851,7 @@
   },
   {
     "key": "笑いなさいよ。……今だけは、許すわ。",
-    "en": "",
+    "en": "Laugh, then. ...Just for tonight, I'll allow it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -209934,7 +209934,7 @@
   },
   {
     "key": "精一杯、やらせていただきます…！",
-    "en": "",
+    "en": "I'll give this everything I have...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -209976,7 +209976,7 @@
   },
   {
     "key": "精一杯の試合を、お見せいたします",
-    "en": "",
+    "en": "I'll show you the best match I have in me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -210001,7 +210001,7 @@
   },
   {
     "key": "精一杯やれました…！ この経験を活かしたい",
-    "en": "",
+    "en": "I gave it everything...! I want to put this to use.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -210221,7 +210221,7 @@
   },
   {
     "key": "素敵な舞台ね。魅せてあげるわ",
-    "en": "",
+    "en": "What a lovely stage. I'll give them something to look at.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -210515,7 +210515,7 @@
   },
   {
     "key": "終わってない! こんなので終わらせない!",
-    "en": "",
+    "en": "It's not over! I'm not letting it end like this!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -210570,7 +210570,7 @@
   },
   {
     "key": "終わり。……強かった、あなた。",
-    "en": "",
+    "en": "Done. ...You were tough.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -210640,7 +210640,7 @@
   },
   {
     "key": "終わりました。……お相手、感謝します。",
-    "en": "",
+    "en": "It's over. ...Thank you for the match.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -211025,7 +211025,7 @@
   },
   {
     "key": "結構です。そのお気持ち、全部受け止めます。",
-    "en": "",
+    "en": "Very well. Whatever you're bringing, I'll take every bit.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -211697,7 +211697,7 @@
   },
   {
     "key": "続きは、また今度。ね？",
-    "en": "",
+    "en": "The rest another time. Yes?",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -211739,7 +211739,7 @@
   },
   {
     "key": "緊張する…でも、逃げない",
-    "en": "",
+    "en": "I'm nervous... but I'm not running.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -213119,7 +213119,7 @@
   },
   {
     "key": "自信、ないんだけど……。それでも、いいなら。",
-    "en": "",
+    "en": "I'm not confident, honestly... If that's still okay with you.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -213475,7 +213475,7 @@
   },
   {
     "key": "良い経験をさせていただきました。精進して参ります",
-    "en": "",
+    "en": "I was given a valuable experience. I'll keep working at it.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -215314,7 +215314,7 @@
   },
   {
     "key": "言ったでしょ？ 私が最強だって",
-    "en": "",
+    "en": "I told you, didn't I? Nobody here is stronger.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -215341,7 +215341,7 @@
   },
   {
     "key": "言ったよね？ もう引っ込みつかないよ、お互い！",
-    "en": "",
+    "en": "You said it, didn't you? Neither of us can back out now!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -215355,7 +215355,7 @@
   },
   {
     "key": "言ったろ？ テッペンは私のもんだってな",
-    "en": "",
+    "en": "Told you, didn't I? The top belongs to me.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -215952,7 +215952,7 @@
   },
   {
     "key": "試合前……っ……ふふ、心臓がドキドキしてるの……",
-    "en": "",
+    "en": "Before the bell... mm... my heart is going rather fast...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -216256,7 +216256,7 @@
   },
   {
     "key": "認めない。次は絶対に勝つ",
-    "en": "",
+    "en": "I don't accept this. Next time I win.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -216312,7 +216312,7 @@
   },
   {
     "key": "認めます。ただし、今日だけの話です。",
-    "en": "",
+    "en": "I concede. It is a matter of today alone, however.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -217101,7 +217101,7 @@
   },
   {
     "key": "負けた……。悔しい、悔しいよ……!",
-    "en": "",
+    "en": "I lost... It hurts, it hurts so much...!",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -217157,7 +217157,7 @@
   },
   {
     "key": "負けた…。でも…この悔しさが…力になる…！",
-    "en": "",
+    "en": "I lost... But... this feeling... it turns into strength...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -217703,7 +217703,7 @@
   },
   {
     "key": "負けたわ……っ……悔しい……でも、いい経験だった……",
-    "en": "",
+    "en": "I lost... ah... it stings... but it was worth having...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -217815,7 +217815,7 @@
   },
   {
     "key": "負けたわ。…ま、しゃーない。",
-    "en": "",
+    "en": "Lost that. ...Eh, that happens.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -218049,7 +218049,7 @@
   },
   {
     "key": "負けだよ。悔しくて仕方ねぇけどな。",
-    "en": "",
+    "en": "It's a loss. Eats at me something awful, though.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -218175,7 +218175,7 @@
   },
   {
     "key": "負けちゃいました。まあ、そういう日ですね。",
-    "en": "",
+    "en": "I've gone and lost. Well — it happens, doesn't it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -218273,7 +218273,7 @@
   },
   {
     "key": "負けちゃった。まあ、そういう日もあるよ。",
-    "en": "",
+    "en": "Lost it. Eh, some days go that way.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -218481,7 +218481,7 @@
   },
   {
     "key": "負けてしまいましたね。仕方ありません。",
-    "en": "",
+    "en": "I have lost, it seems. So be it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -218733,7 +218733,7 @@
   },
   {
     "key": "負けました。……この悔しさは、抱えていきます。",
-    "en": "",
+    "en": "I lost. ...I'll carry this one with me.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -218954,7 +218954,7 @@
   },
   {
     "key": "負けました。あなたのほうが上だった。",
-    "en": "",
+    "en": "I lost. You had more than I did.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -219066,7 +219066,7 @@
   },
   {
     "key": "負けました。次はこうはいきませんから。",
-    "en": "",
+    "en": "I lost. It won't go this way twice.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -220046,7 +220046,7 @@
   },
   {
     "key": "身に余る光栄です。一生懸命頑張ります",
-    "en": "",
+    "en": "This is a greater honor than I deserve. I'll work as hard as I can.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -220060,7 +220060,7 @@
   },
   {
     "key": "身の程は分かりました？ …ふふ。",
-    "en": "",
+    "en": "Do you know your place now? ...My.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -220116,7 +220116,7 @@
   },
   {
     "key": "身体が…震えてますわ…でも、退きませんわよ…！",
-    "en": "",
+    "en": "My body is... trembling... but I shall not step back...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -221237,7 +221237,7 @@
   },
   {
     "key": "逃げないわ。ちゃんと受け止めてあげる。",
-    "en": "",
+    "en": "I won't run. I'll take it properly, all of it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -221293,7 +221293,7 @@
   },
   {
     "key": "逃げません。全部、受け止めます。",
-    "en": "",
+    "en": "I won't run. Every bit of it, I'll take.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -221430,7 +221430,7 @@
   },
   {
     "key": "逃げる理由がありません。お受けします。",
-    "en": "",
+    "en": "There is no reason for me to run. I accept.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -222071,7 +222071,7 @@
   },
   {
     "key": "選ばれたからには…絶対に恥ずかしくない試合を",
-    "en": "",
+    "en": "They chose me... so nothing that would embarrass anyone.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -222085,7 +222085,7 @@
   },
   {
     "key": "選ばれたからには、全力で戦う",
-    "en": "",
+    "en": "If they picked me, then I fight with everything I have.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -222099,7 +222099,7 @@
   },
   {
     "key": "選ばれたからには、出し惜しみなしで！　全力で応えますよ。",
-    "en": "",
+    "en": "If I'm the pick, then nothing gets held back! I'll answer with all of it.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -222113,7 +222113,7 @@
   },
   {
     "key": "選ばれた以上、やることは一つ",
-    "en": "",
+    "en": "Chosen, so there's only one thing to do.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -222127,7 +222127,7 @@
   },
   {
     "key": "選ばれた以上、出場いたしますわ",
-    "en": "",
+    "en": "Since I have been chosen, I shall compete.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -222155,7 +222155,7 @@
   },
   {
     "key": "選んでいただいて…あ、ありがとうございます…",
-    "en": "",
+    "en": "Choosing me... th-thank you so much...",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -222267,7 +222267,7 @@
   },
   {
     "key": "選んでくれたのに……こんな結果で、よかったのかな。",
-    "en": "",
+    "en": "You picked me, and... I wonder if this was the result you wanted.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
@@ -222421,7 +222421,7 @@
   },
   {
     "key": "選出されましたわ。しっかりやりますわよ",
-    "en": "",
+    "en": "I have been selected. I shall do this properly.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -222502,7 +222502,7 @@
   },
   {
     "key": "邪魔するヤツは全員ぶっ倒す",
-    "en": "",
+    "en": "Anyone in my way goes down. All of them.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -223971,7 +223971,7 @@
   },
   {
     "key": "集中。一つずつ勝っていく",
-    "en": "",
+    "en": "Focus. One win at a time.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -224095,7 +224095,7 @@
   },
   {
     "key": "震えてるのは…きっと、嬉しいからだと思う",
-    "en": "",
+    "en": "I'm shaking, and... I think it's because I'm happy.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
     ],
@@ -224275,7 +224275,7 @@
   },
   {
     "key": "面白そうですね。お受けしましょう。",
-    "en": "",
+    "en": "That sounds diverting. Let us accept.",
     "files": [
       "data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS"
     ],
