@@ -71,14 +71,14 @@
 
 | JA(高津小春・標準×強気) | EN |
 |---|---|
-| は？私が勝つのは当たり前よ？ | Huh? Was there ever any doubt I'd win? |
-| 自信を無くす必要はないわよ。アンタは格上に負けたんだから | Don't beat yourself up. You lost to someone better — that's all. |
+| は？私が勝つのは当たり前よ？ | Huh? Of course I won, was there any doubt? |
+| 自信を無くす必要はないわよ。アンタは格上に負けたんだから | Hey, don't beat yourself up. You lost to someone better, that's it. |
 | はぁ…はぁ…勝ったぁ | Haah... haah... I won. |
 
 | JA(宇田川里奈・標準×お気楽) | EN |
 |---|---|
-| やった～♡ 今日のカワイイ私、完全勝利じゃん♪ | Yesss ♡ Cute and undefeated today — obviously ♪ |
-| いい女は、リングでも手を抜かないの♡ | A hot girl never slacks off — not even in the ring ♡ |
+| やった～♡ 今日のカワイイ私、完全勝利じゃん♪ | Ya~y ♡ Another day, another perfect win for cute li'l me ♪ |
+| いい女は、リングでも手を抜かないの♡ | A hot girl like me never slacks off — not even in the ring ♡ |
 
 ### 2-2. お嬢様(ojousama)
 
