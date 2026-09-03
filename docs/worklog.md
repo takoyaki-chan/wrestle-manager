@@ -1,5 +1,65 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2e — セリフ英訳バッチ⑤(GLIMPSE_A 847行+自主残留34行)（2026-09-03・Opus主筆 worktree agent-ae7ccc70e634cc920）
+
+量産翻訳の第5バッチ。**`data.js:GLIMPSE_A_LINES` の全847行 + `data.js:VOLUNTARY_STAY_LINES` の全34行 = 881行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2dの訳語判断(特に2c/2dの対社長 Boss/President の書き分けと悲壮度較正を継承)。開始前にworktreeブランチをmain先端(7d121fd)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は実行していない**。
+
+### 1. 対象範囲(881行)
+
+GLIMPSE_A の実効軸は **`thresholdId → personality → archetype`**(data.js:25908 の `const` 宣言にある `_default` 入りブロックは 26787行以降の `GLIMPSE_A_LINES.<id> = {...}` 再代入で**丸ごと上書きされる死コード**。実効テーブルだけを数えると847ユニーク/848スロットで、台帳847行と1:1で一致した)。
+
+| 閾値(トーン) | 行数 | 内容 |
+|---|---|---|
+| `bond_60_up`(positive) / `bond_80_up`(gold) | 59 / 78 | 打ち解け・深い絆 |
+| `bond_59_down` / `bond_39_down`(negative) | 86 / 61 | 距離ができた・不和の兆し |
+| `rivalry_30_up` / `50_up`(dramatic) / `70_up`(gold) | 81 / 83 / 85 | 因縁の始まり・宿敵・宿命 |
+| `rivalry_29_down`(calm) | 87 | 因縁の終息 |
+| `trust_below_35`(warning) / `below_20`(danger) / `above_75`(positive) | 66 / 80 / 85 | 社長室を避ける・退団の噂・団体への愛着 |
+| **GLIMPSE_A 計** | **847** | 1行(`超えることが、今の一番の目標だ`)が2セルに重複出現 |
+| `VOLUNTARY_STAY_LINES` | 34 | 契約更改の自主残留(trust 75+・7属性×最大7性格) |
+
+cell判定は抽出器がほぼ全解決済み(standard 145 / seductive 127 / ojousama 124 / cool 120 / polite 119 / delinquent 118 / composed 92)。**cell=null は2行のみ**で、いずれも「同一原文が複数セルに出る」正しいnull — `……終わりだ`(bond_39_down cool×quiet と `BITTER_RESOLUTION_LINES` の共有)と `超えることが、今の一番の目標だ`(rivalry_30_up earnest の standard/delinquent 共有)。中立英語を当てた(P5-2a〜2dの方針継承)。**cell欄への追記は不要だった(0件)**。台帳の `cell` と実効テーブルの (archetype, personality) の突き合わせも**不一致0**で確認済み。
+
+### 2. 翻訳の方針
+
+- **この帯は「日常の低温」が主役**。GLIMPSE_A は試合でも交渉でもなく、道場や移動先で漏れた**独り言の断片**。§3-6(身体・抽象メタファー禁止)を最優先し、原文の「胸がきゅってなる」「胸が熱くなる」「胸が締めつけられる」型は**身体の直訳を全部落として生活英語の具体へ**振り替えた(`it gets to me` / `Thinking about it lights me up` / `it takes hold of me` / `She gets under my skin`)。逆に英語として自然に立つ比喩(`the wind died down` / `a wall went up` / `she's my light` / `this wall`)はそのまま活かした
+- **11閾値ごとに英語の「温度」を変えた**。bond_60/80=あたたかいが騒がない / bond_59/39=**責めずに気づく**書き方(不和は罵倒でなく観察) / rivalry_30/50/70=段階的に語彙を上げ、70(gold)だけ `destiny` / `for life` を解禁 / rivalry_29_down=**熱が引いたあとの静けさ**(過去形+`a little lonely`) / trust帯=社長・団体への評価なので **§3-8 悲壮度較正**を厳守し、trust_below_20 でも破滅語彙(ruined / my life is over / destitute)はゼロ、`leave the promotion` / `I'm walking` の温度に留めた
+- **卑屈語彙は全帯ゼロ**。trust_below_35/20 は「自分の価値が見られていない」という**主張**であって自己否定ではない
+- **社長の呼称(§6裁定4)**: この帯はほぼ全行が独り言なので**呼称を持つ行は極小**。`President` 3行(polite/ojousama 帯の直接問いかけ+自主残留2行)・`Boss` 1行(標準×真面目の自主残留)のみで、それ以外は呼称を落とした
+- **属性=register**: ojousama=全124行+自主残留4行で**短縮形ゼロ**(`I shall remain here, if you will have me.`) / cool=感嘆符ゼロ・3文以内(`...Far.` / `A rival by fate. ...Nothing better.`) / delinquent=冠詞主語の省略+gonna/wanna(`Ring's`型) / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **ト書き10行**(`（静かに荷を纏めはじめている）`型 — trust_below_20 quiet の7行+自主残留3行)は P5-2c で確立した堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**で統一(`... (quietly beginning to gather her things)`)。荷造り7行は7属性すべてで別の動詞句にしてある
+- **均質化回避**: この帯は「同一モチーフ×7属性」が構造的に大量発生する(例:`……遠くなった`系14行、`ここにいたい`系14行、`もう、何も感じない`系7行、`風が止んだ`系7行)。**全モチーフを属性ごとに別の英語へ割り分けた**。機械検査で**バッチ内EN完全重複0(881/881ユニーク)・既訳4,098行との完全重複0(大小無視でも0)**、さらにトークンJaccard 0.90以上の**近似重複もバッチ内0・既訳との比較でも0**
+- **卑語**: hell/damn は**881行中2回**のみ(`Why the hell...!`=delinquent×emotional、`Like hell I'm leaving.`=delinquent×bold の自主残留)。どちらも delinquent 確定セルで、f/sワードは0
+- **§4-6の翻訳調検査**: "It can't be helped"/"As expected of"/"I'll do my best"/「today's me」型/「〜も」のtoo直訳/ALL CAPS/英国綴り(favour/colour/realise/apologise/honour/practise/defence/behaviour/grey)/"darling"/"Fufu"音写 いずれも**0件**。`仕方ない` は `Nothing to be done.` / `No forcing it.` / `Well, that happens.` に割り分け、`ふふ/うふふ` は `Mm~` / `My, my.` / `Heh` に機能置換。`ご期待に添えるよう、精一杯頑張らせていただきます` は禁止句 "I'll do my best" を避けて `I mean to be worth the faith you have put in me.` とした
+- **長さ**: 全881行が110字上限内(**最大84字・中央値47字**)。プレースホルダは原文・訳文とも0個で完全一致。♪は自主残留1行(蠱惑×お気楽)に存置、♡を含む原文は0行
+
+### 3. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列881行を記入(**diffは `"en":` 行のみ・881行の増減。他フィールドは1バイトも変えていない**。書き込み前にJSON往復同一性(CRLF込み)を検証してから記入する方式)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。ソース・配線は**一切触っていない**(management.js/ui-common.js は並行エージェントの作業対象)
+
+### 4. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**4,979** / cell判定済み4,794 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ 直書き日本語の増加なし(files=31 / totalJaStrings=28089) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+data/management/relationships)で**台帳881キーの直接t()は全ヒット・ミス0**。`pickDialogueLine(GLIMPSE_A_LINES[th], f)` を11閾値×49セルで6,468回引いて**未訳0・到達セル539**、`Engine.contract.getVoluntaryStayLine()` を49セル×10回=490回引いて**未訳0**。セル横断20本+自主残留7本を目視 |
+| 品質スイープ(事前検査) | ✅ 網羅881/881・空訳0・日本語残り0・110字超0・PH不一致0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・余分な空白0 |
+
+### 5. 残課題(このバッチで判明したものを含む)
+
+1. **VOLUNTARY_STAY 34行は辞書が引かれない**(P5-2cの `resultTarget` と同型)。`management.js:17916` が `events.push(\`✨ ${vs.fighterName}:「${vs.line}」\`)` と**生文字列でgameLogへ積む**ため、`gameLogEntryText()`(data.js:30878)の `if (typeof entry === 'string') return entry;` で素通しになり、**ENでも日本語のまま出る**。根治は他のログと同じ `{type, data}` 形式へ移すこと(`GAMELOG_TEMPLATES` に1エントリ追加+`data.line` を `_gameLogT()` 相当で翻訳)。訳文は移行済みの日を想定して揃えてある
+2. **GLIMPSE_A 847行は届く**。`_renderGlimpseCardHtml`(ui-common.js:15544)が `g.dialogue` を `_u3bSideHtml({..., line})` に渡し、その内部(ui-common.js:245)で `WM_I18N.t()` を通す。道場の休憩バブル(`ui-render.js:2015`)も `WM_I18N.t(g.dialogue)` を明示的に呼んでいる。**プレースホルダを含む行がゼロ**なので、P5-2dの `selectDialogue` のようなfail-open問題は起きない
+3. **`GLIMPSE_A_LINES` の死コード**: data.js:25908〜26785 の `const GLIMPSE_A_LINES = {...}`(`_default` 入り・約880行)は、直後の `GLIMPSE_A_LINES.<id> = {...}` 再代入で全11閾値とも上書きされ、**1行も実行時に読まれない**。抽出器も実効テーブルだけを見ているので翻訳側の実害はないが、**data.js に約880行の死んだセリフが残っている**のは棚卸し対象(削除は別タスク・要裁定)
+4. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に (a) trust_below_20 の「裏切られた」帯の温度が英語で強すぎないか (b) ト書き8種の動詞句 (c) `the wind died down` 型の残した比喩が英語として自然か を見てもらいたい
+
+---
+
 ## 🌐 Stage B P5-2d — セリフ英訳バッチ④(契約更改1,061行)（2026-09-03・Opus主筆 worktree agent-a290dd6b68f120ea4）
 
 量産翻訳の第4バッチ。**`data.js:CONTRACT_NEGOTIATION_LINES` 由来の全1,061行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a/2b/2cの訳語判断(特に2cの対社長・Boss/Presidentの書き分けを継承)。開始前にworktreeブランチをmain先端(b18a4f0)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は実行していない**(基盤修正でen/cell保全マージが入り安全にはなったが、検証の変数を増やさないため)。

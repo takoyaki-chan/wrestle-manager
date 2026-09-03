@@ -8122,7 +8122,7 @@
   },
   {
     "key": "…………（契約書にペンを走らせた）",
-    "en": "",
+    "en": "... (runs her pen across the contract)",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -10236,7 +10236,7 @@
   },
   {
     "key": "………（静かにうなずいている）",
-    "en": "",
+    "en": "... (nodding quietly)",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -10666,7 +10666,7 @@
   },
   {
     "key": "……あいつが、あたしの光だ",
-    "en": "",
+    "en": "...She's the light I go by.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -10680,7 +10680,7 @@
   },
   {
     "key": "……あいつがいる限り、リングに立ち続ける",
-    "en": "",
+    "en": "...Long as she's out there, I keep lacing up.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11345,7 +11345,7 @@
   },
   {
     "key": "……あの人がいる限り、リングに立ち続けるわ",
-    "en": "",
+    "en": "...As long as she's in it, so am I.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11428,7 +11428,7 @@
   },
   {
     "key": "……あの方がある限り、わたくしは立ち続けます",
-    "en": "",
+    "en": "...While she stands, I shall stand as well.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11442,7 +11442,7 @@
   },
   {
     "key": "……あの方がいる限り、リングに立ち続けます",
-    "en": "",
+    "en": "...For as long as she's here, I'll keep stepping through the ropes.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11498,7 +11498,7 @@
   },
   {
     "key": "……あの熱が消えてく。これでいいのかよ…",
-    "en": "",
+    "en": "...The fire's going out. Is that supposed to be fine...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11512,7 +11512,7 @@
   },
   {
     "key": "……あの熱が消えてゆきます。これでよいのでしょうか…",
-    "en": "",
+    "en": "...The heat is going out of it. Is this how it should be...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11526,7 +11526,7 @@
   },
   {
     "key": "……あの熱さが消えていきます。これでいいんでしょうか…",
-    "en": "",
+    "en": "...The heat is fading. Is that how it should be...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11540,7 +11540,7 @@
   },
   {
     "key": "……あの熱さが消えていく。これでいいのかな…",
-    "en": "",
+    "en": "...That heat is draining away. Is that okay...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11554,7 +11554,7 @@
   },
   {
     "key": "……あの熱さが消えていくわ。これでいいのかしら…",
-    "en": "",
+    "en": "...That heat is leaving me. Is that all right, I wonder...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -11590,7 +11590,7 @@
   },
   {
     "key": "……あの相手がいる限り、立ち続ける",
-    "en": "",
+    "en": "...While she's there, I stay standing.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -12600,7 +12600,7 @@
   },
   {
     "key": "……いつのまにか、傍らに姿がありません",
-    "en": "",
+    "en": "...At some point she ceased to be at my side.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -13389,7 +13389,7 @@
   },
   {
     "key": "……おそばにいてくださるなら、他には何も",
-    "en": "",
+    "en": "...So long as she remains near, I require nothing else.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -13900,7 +13900,7 @@
   },
   {
     "key": "……ここで。…うん",
-    "en": "",
+    "en": "...Here. ...Yeah.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -14023,7 +14023,7 @@
   },
   {
     "key": "……ここにいたい",
-    "en": "",
+    "en": "...I want to stay.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14037,7 +14037,7 @@
   },
   {
     "key": "……ここにいたい。いつまでも",
-    "en": "",
+    "en": "...I wish to stay. For as long as I may.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14051,7 +14051,7 @@
   },
   {
     "key": "……ここにいたい。ずっと",
-    "en": "",
+    "en": "...I want to stay. As long as I can.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14065,7 +14065,7 @@
   },
   {
     "key": "……ここにいたいです。ずっと",
-    "en": "",
+    "en": "...I'd like to stay here. For a long time.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14079,7 +14079,7 @@
   },
   {
     "key": "……ここにいたいの。ずっと",
-    "en": "",
+    "en": "...I'd like to stay. Always.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14093,7 +14093,7 @@
   },
   {
     "key": "……ここにいていいのか、わかんなくなってきた",
-    "en": "",
+    "en": "...Not sure I belong here anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14107,7 +14107,7 @@
   },
   {
     "key": "……ここにいていいのか、分からなくなってきた",
-    "en": "",
+    "en": "...I don't know if I should still be here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14121,7 +14121,7 @@
   },
   {
     "key": "……ここにいていいのか、分からなくなってきたわ",
-    "en": "",
+    "en": "...I've stopped being sure this is where I should be.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14135,7 +14135,7 @@
   },
   {
     "key": "……ここにいていいのか、分からなくなってきました",
-    "en": "",
+    "en": "...I'm no longer sure whether I should be here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14149,7 +14149,7 @@
   },
   {
     "key": "……ここにいてぇ。ずっとな",
-    "en": "",
+    "en": "...Wanna stay here. For good.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14191,7 +14191,7 @@
   },
   {
     "key": "……ここに身を置いてよいのか、分からなくなりました",
-    "en": "",
+    "en": "...I am no longer certain I ought to remain here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14428,7 +14428,7 @@
   },
   {
     "key": "……この人だけは、信じられる",
-    "en": "",
+    "en": "...She's the one person I trust.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14538,7 +14538,7 @@
   },
   {
     "key": "……この場所に、未来はあるのか",
-    "en": "",
+    "en": "...Is there a future in this place?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14552,7 +14552,7 @@
   },
   {
     "key": "……この場所は、守る",
-    "en": "",
+    "en": "...This place, I protect.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14566,7 +14566,7 @@
   },
   {
     "key": "……この場所を、守りたい",
-    "en": "",
+    "en": "...I want to look after this place.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14580,7 +14580,7 @@
   },
   {
     "key": "……この場所を、守りたいわ",
-    "en": "",
+    "en": "...I want to keep this place safe.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14594,7 +14594,7 @@
   },
   {
     "key": "……この場所を、守りたいんです",
-    "en": "",
+    "en": "...I want to protect this place.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14608,7 +14608,7 @@
   },
   {
     "key": "……この場所を、守りたく思います",
-    "en": "",
+    "en": "...I would like to keep this place safe.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14622,7 +14622,7 @@
   },
   {
     "key": "……この場所を守る",
-    "en": "",
+    "en": "...I'll keep this place.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14817,7 +14817,7 @@
   },
   {
     "key": "……この相手がいる限り、リングに立ち続ける",
-    "en": "",
+    "en": "...As long as she's out there, I keep going.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -14928,7 +14928,7 @@
   },
   {
     "key": "……この距離が、静かで心地いい",
-    "en": "",
+    "en": "...This distance. Quiet. It suits me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17419,7 +17419,7 @@
   },
   {
     "key": "……そのことばかり、頭を占めていて",
-    "en": "",
+    "en": "...It occupies my thoughts to the exclusion of all else.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17433,7 +17433,7 @@
   },
   {
     "key": "……そのことばかり考えている",
-    "en": "",
+    "en": "...I can't get it out of my head.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17447,7 +17447,7 @@
   },
   {
     "key": "……そのことばかり考えているわ",
-    "en": "",
+    "en": "...It's all I turn over anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17461,7 +17461,7 @@
   },
   {
     "key": "……そのことばかり考えてしまうんです",
-    "en": "",
+    "en": "...It's the only thing I seem to think about.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17531,7 +17531,7 @@
   },
   {
     "key": "……そばにいてくれるだけで、十分だ",
-    "en": "",
+    "en": "...Her being near is enough on its own.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17545,7 +17545,7 @@
   },
   {
     "key": "……そばにいてくれるなら、それだけでいいわ",
-    "en": "",
+    "en": "...If she stays close, I need nothing more.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17559,7 +17559,7 @@
   },
   {
     "key": "……そばにいてくれれば、それでいい",
-    "en": "",
+    "en": "...If she's beside me, that's enough.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -17698,7 +17698,7 @@
   },
   {
     "key": "……そればっか考えちまう",
-    "en": "",
+    "en": "...That's all I end up thinking about.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -20956,7 +20956,7 @@
   },
   {
     "key": "……もう、これきりです",
-    "en": "",
+    "en": "...This is the last of it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -20998,7 +20998,7 @@
   },
   {
     "key": "……もう、何も感じない",
-    "en": "",
+    "en": "...I don't feel anything.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21012,7 +21012,7 @@
   },
   {
     "key": "……もう、何も感じないわ",
-    "en": "",
+    "en": "...I don't feel anything anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21026,7 +21026,7 @@
   },
   {
     "key": "……もう、何も感じねぇ",
-    "en": "",
+    "en": "...Don't feel a thing now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21040,7 +21040,7 @@
   },
   {
     "key": "……もう、何も感じません",
-    "en": "",
+    "en": "...I feel nothing at all now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21068,7 +21068,7 @@
   },
   {
     "key": "……もう、心が動きません",
-    "en": "",
+    "en": "...Nothing in me stirs anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21082,7 +21082,7 @@
   },
   {
     "key": "……もう、思い返しません",
-    "en": "",
+    "en": "...I no longer look back on it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21146,7 +21146,7 @@
   },
   {
     "key": "……もう、済んだこと",
-    "en": "",
+    "en": "...It is finished business.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21174,7 +21174,7 @@
   },
   {
     "key": "……もう、終わりだ",
-    "en": "",
+    "en": "...That's the end of that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21188,7 +21188,7 @@
   },
   {
     "key": "……もう、終わりだな",
-    "en": "",
+    "en": "...Guess that's that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21202,7 +21202,7 @@
   },
   {
     "key": "……もう、終わりです",
-    "en": "",
+    "en": "...It's finished.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21216,7 +21216,7 @@
   },
   {
     "key": "……もう、終わりね",
-    "en": "",
+    "en": "...We're finished, then.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21230,7 +21230,7 @@
   },
   {
     "key": "……もう、考えない",
-    "en": "",
+    "en": "...I've stopped thinking about it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21244,7 +21244,7 @@
   },
   {
     "key": "……もう、考えないわ",
-    "en": "",
+    "en": "...I don't dwell on it anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21258,7 +21258,7 @@
   },
   {
     "key": "……もう、考えねぇ",
-    "en": "",
+    "en": "...Don't think about it now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21272,7 +21272,7 @@
   },
   {
     "key": "……もう、考えません",
-    "en": "",
+    "en": "...I don't think about her now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21342,7 +21342,7 @@
   },
   {
     "key": "……もう、隣にいない",
-    "en": "",
+    "en": "...Not beside me anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21509,7 +21509,7 @@
   },
   {
     "key": "……もう終わったこと",
-    "en": "",
+    "en": "...Over and done.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21523,7 +21523,7 @@
   },
   {
     "key": "……もう終わったことです",
-    "en": "",
+    "en": "...That's all behind me now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21537,7 +21537,7 @@
   },
   {
     "key": "……もう終わったことよ",
-    "en": "",
+    "en": "...That chapter's closed.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -21551,7 +21551,7 @@
   },
   {
     "key": "……もう考えない",
-    "en": "",
+    "en": "...I don't think about it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -22144,7 +22144,7 @@
   },
   {
     "key": "……わたくしの灯り。それだけは確かです",
-    "en": "",
+    "en": "...She is my lamp. Of that much I am certain.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -24104,7 +24104,7 @@
   },
   {
     "key": "……何も、残っていない",
-    "en": "",
+    "en": "...Nothing left.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -26980,7 +26980,7 @@
   },
   {
     "key": "……太陽のような存在です",
-    "en": "",
+    "en": "...She is like the sun to me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -27517,7 +27517,7 @@
   },
   {
     "key": "……居心地がいい。…静かでいい",
-    "en": "",
+    "en": "...Comfortable. ...Quiet suits us.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -28694,7 +28694,7 @@
   },
   {
     "key": "……悪くない距離感だ",
-    "en": "",
+    "en": "...Not a bad distance.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -29964,7 +29964,7 @@
   },
   {
     "key": "……最近、隣にいると落ち着く",
-    "en": "",
+    "en": "...Lately it's calm, standing next to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -30962,7 +30962,7 @@
   },
   {
     "key": "……残ります。ここで、続けさせてください",
-    "en": "",
+    "en": "...I'm staying. Please let me keep going here.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -30990,7 +30990,7 @@
   },
   {
     "key": "……残るわ。ここが、いい",
-    "en": "",
+    "en": "...I'm staying. This suits me.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -31074,7 +31074,7 @@
   },
   {
     "key": "……気づいたら、隣にいねぇ",
-    "en": "",
+    "en": "...Turned around and she wasn't there.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31102,7 +31102,7 @@
   },
   {
     "key": "……気づけば、隣にいない",
-    "en": "",
+    "en": "...Somewhere along the way, she stopped being there.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31116,7 +31116,7 @@
   },
   {
     "key": "……気づけば、隣にいないの",
-    "en": "",
+    "en": "...And one day she just wasn't there.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31130,7 +31130,7 @@
   },
   {
     "key": "……気づけば、隣にいらっしゃらないんです",
-    "en": "",
+    "en": "...Before I noticed it, she was no longer beside me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31144,7 +31144,7 @@
   },
   {
     "key": "……気にかかります。どうしても",
-    "en": "",
+    "en": "...She weighs on me. I cannot help it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31158,7 +31158,7 @@
   },
   {
     "key": "……気になる。ただ、それだけだが",
-    "en": "",
+    "en": "...She's on my mind. Nothing more than that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31569,7 +31569,7 @@
   },
   {
     "key": "……熱が消えていく",
-    "en": "",
+    "en": "...The heat is going.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31583,7 +31583,7 @@
   },
   {
     "key": "……燃えています。自分の中の何かが",
-    "en": "",
+    "en": "...Something inside me is alight.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31597,7 +31597,7 @@
   },
   {
     "key": "……燃えている。自分の中の何かが",
-    "en": "",
+    "en": "...Something in me is burning.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31611,7 +31611,7 @@
   },
   {
     "key": "……燃えているわ。私の中の何かが",
-    "en": "",
+    "en": "...Something in me has caught fire.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -31625,7 +31625,7 @@
   },
   {
     "key": "……燃えてる。あたしん中の何かが",
-    "en": "",
+    "en": "...Something's burning in me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -32727,7 +32727,7 @@
   },
   {
     "key": "……私の光。それだけなの",
-    "en": "",
+    "en": "...She's my light. That's the whole of it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -32741,7 +32741,7 @@
   },
   {
     "key": "……私の光だ",
-    "en": "",
+    "en": "...She's my light.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -32824,7 +32824,7 @@
   },
   {
     "key": "……穏やかな時間を過ごせます",
-    "en": "",
+    "en": "...The time passes gently with her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -33117,7 +33117,7 @@
   },
   {
     "key": "……終わったことだ",
-    "en": "",
+    "en": "...Done with.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -33214,7 +33214,7 @@
   },
   {
     "key": "……終わりだ",
-    "en": "",
+    "en": "...It's over.",
     "files": [
       "data.js:BITTER_RESOLUTION_LINES",
       "data.js:GLIMPSE_A_LINES"
@@ -33460,7 +33460,7 @@
   },
   {
     "key": "……考えちまう。どうしてもな",
-    "en": "",
+    "en": "...Keep thinking about her. Can't help it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -33474,7 +33474,7 @@
   },
   {
     "key": "……考えてしまう。どうしても",
-    "en": "",
+    "en": "...I think about her. I can't stop.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -33488,7 +33488,7 @@
   },
   {
     "key": "……考えてしまうの。どうしても",
-    "en": "",
+    "en": "...I keep coming back to her. I can't help it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -33502,7 +33502,7 @@
   },
   {
     "key": "……考えてしまうんです。どうしても",
-    "en": "",
+    "en": "...I keep thinking about her. I can't seem to stop.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -33809,7 +33809,7 @@
   },
   {
     "key": "……胸の裡で、何かが灯りました",
-    "en": "",
+    "en": "...Something has been lit in me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34272,7 +34272,7 @@
   },
   {
     "key": "……言葉はいらない。リングで話す",
-    "en": "",
+    "en": "...No words. We talk in the ring.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34286,7 +34286,7 @@
   },
   {
     "key": "……言葉はいらない。リングの上で語り合おう",
-    "en": "",
+    "en": "...Words won't do it. We settle it in the ring.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34300,7 +34300,7 @@
   },
   {
     "key": "……言葉はいらないの。リングの上で語り合いましょう",
-    "en": "",
+    "en": "...No need for words. Let the ring do our talking.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34314,7 +34314,7 @@
   },
   {
     "key": "……言葉はいらねぇ。リングで語り合おうぜ",
-    "en": "",
+    "en": "...No need for talk. We say it in the ring.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34328,7 +34328,7 @@
   },
   {
     "key": "……言葉はいりません。リングの上で語り合いましょう",
-    "en": "",
+    "en": "...We don't need words. We can say it in the ring.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34342,7 +34342,7 @@
   },
   {
     "key": "……言葉は不要。リングの上でこそ語れるもの",
-    "en": "",
+    "en": "...Words are unnecessary. What we have is said in the ring.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34546,7 +34546,7 @@
   },
   {
     "key": "……認めたかねぇけど、意識してる",
-    "en": "",
+    "en": "...Hate to say it, but she's in my head.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34560,7 +34560,7 @@
   },
   {
     "key": "……認めたくありませんが、意識しています",
-    "en": "",
+    "en": "...I don't like admitting it, but I'm aware of her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34574,7 +34574,7 @@
   },
   {
     "key": "……認めたくないけど、意識してる",
-    "en": "",
+    "en": "...I don't want to admit it, but I'm watching her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34588,7 +34588,7 @@
   },
   {
     "key": "……認めたくないけど、意識してるの",
-    "en": "",
+    "en": "...I'd rather not say it, but she has my attention.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -34602,7 +34602,7 @@
   },
   {
     "key": "……認めたくはありませんが、意識しております",
-    "en": "",
+    "en": "...I would rather not admit it, but she is on my mind.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -35461,7 +35461,7 @@
   },
   {
     "key": "……超えなければ、先へ進めない",
-    "en": "",
+    "en": "...Until I pass her, there's no forward.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -35627,7 +35627,7 @@
   },
   {
     "key": "……距離が、遠のきました",
-    "en": "",
+    "en": "...The distance has widened.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -35835,7 +35835,7 @@
   },
   {
     "key": "……遠い",
-    "en": "",
+    "en": "...Far.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -35849,7 +35849,7 @@
   },
   {
     "key": "……遠くなった",
-    "en": "",
+    "en": "...She got distant.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -35863,7 +35863,7 @@
   },
   {
     "key": "……遠くなったな",
-    "en": "",
+    "en": "...Drifted off, huh.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -35877,7 +35877,7 @@
   },
   {
     "key": "……遠くなったわ",
-    "en": "",
+    "en": "...She's grown distant.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -35891,7 +35891,7 @@
   },
   {
     "key": "……遠くなってしまいました",
-    "en": "",
+    "en": "...She has drifted away from me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36162,7 +36162,7 @@
   },
   {
     "key": "……隣にいてくれりゃ、それでいい",
-    "en": "",
+    "en": "...Long as she's beside me, that'll do.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36368,7 +36368,7 @@
   },
   {
     "key": "……風が凪いだ。そのような心地です",
-    "en": "",
+    "en": "...The wind has gone still. That is how it feels.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36382,7 +36382,7 @@
   },
   {
     "key": "……風が止みました。そんな感覚です",
-    "en": "",
+    "en": "...The wind has dropped. That's how it feels to me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36396,7 +36396,7 @@
   },
   {
     "key": "……風が止んだ",
-    "en": "",
+    "en": "...The wind dropped.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36410,7 +36410,7 @@
   },
   {
     "key": "……風が止んだ。そんな感じだ",
-    "en": "",
+    "en": "...Wind died down. That's about it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36424,7 +36424,7 @@
   },
   {
     "key": "……風が止んだ。そんな感じなの",
-    "en": "",
+    "en": "...The wind went quiet. That's the feel of it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36438,7 +36438,7 @@
   },
   {
     "key": "……風が止んだ。そんな感覚だ",
-    "en": "",
+    "en": "...Like the wind stopped. That's the feeling.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36549,7 +36549,7 @@
   },
   {
     "key": "……（そっと荷物をまとめ始めている）",
-    "en": "",
+    "en": "... (softly starting to pack)",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36913,7 +36913,7 @@
   },
   {
     "key": "……（無言で荷物をまとめている）",
-    "en": "",
+    "en": "... (packing up in silence)",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36955,7 +36955,7 @@
   },
   {
     "key": "……（荷物をまとめている）",
-    "en": "",
+    "en": "... (gathering her things)",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -36969,7 +36969,7 @@
   },
   {
     "key": "……（荷物をまとめ始めている）",
-    "en": "",
+    "en": "... (starting to pack her things)",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -37222,7 +37222,7 @@
   },
   {
     "key": "……（静かに荷を纏めはじめている）",
-    "en": "",
+    "en": "... (quietly beginning to gather her things)",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -37308,7 +37308,7 @@
   },
   {
     "key": "……（黙って荷物を詰め始めてる）",
-    "en": "",
+    "en": "... (packing her bags without a word)",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38204,7 +38204,7 @@
   },
   {
     "key": "…あの人がいなかったら…私は、もう…",
-    "en": "",
+    "en": "...Without her... I would already be...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38218,7 +38218,7 @@
   },
   {
     "key": "…あの人がいなかったら、今の私はいない。…それだけは分かる",
-    "en": "",
+    "en": "...Without her I wouldn't be standing here. ...I know that much.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38232,7 +38232,7 @@
   },
   {
     "key": "…あの人がいなかったら、私はとうに折れてた。…そう思う",
-    "en": "",
+    "en": "...Without her I'd have broken by now. ...I do think that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38246,7 +38246,7 @@
   },
   {
     "key": "…あの人がいなければ…今の私はいない…",
-    "en": "",
+    "en": "...Without her... I wouldn't be here...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38274,7 +38274,7 @@
   },
   {
     "key": "…あの人がいる限り、リングに立ち続けるよ",
-    "en": "",
+    "en": "...While she's still going, so am I.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38288,7 +38288,7 @@
   },
   {
     "key": "…あの人が走ってるのを見ると、私も動きたくなる",
-    "en": "",
+    "en": "...Watching her run makes me want to get moving myself.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38428,7 +38428,7 @@
   },
   {
     "key": "…あの人にだけは…負けたくない…",
-    "en": "",
+    "en": "...Her. ...Anyone but her...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38442,7 +38442,7 @@
   },
   {
     "key": "…あの人にだけは負けたくない。…今はそれだけ",
-    "en": "",
+    "en": "...Not to her. ...That's the whole of it right now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38512,7 +38512,7 @@
   },
   {
     "key": "…あの出会いがなければ、今の私はいない",
-    "en": "",
+    "en": "...If we had never met, I wouldn't be here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38554,7 +38554,7 @@
   },
   {
     "key": "…あの張りつめた感じ…もう、ない…",
-    "en": "",
+    "en": "...That tightness... it's gone now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -38568,7 +38568,7 @@
   },
   {
     "key": "…あの張りつめた感じは、もうないみたいだね",
-    "en": "",
+    "en": "...That strung-up feeling seems to have gone.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -41927,7 +41927,7 @@
   },
   {
     "key": "…あれ、なんか距離感変わった？",
-    "en": "",
+    "en": "...Hm. Did the distance shift on me?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -41955,7 +41955,7 @@
   },
   {
     "key": "…あれ、素っ気ないな",
-    "en": "",
+    "en": "...Huh. She's short with me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -42417,7 +42417,7 @@
   },
   {
     "key": "…いい刺激をもらってる。ありがたいね",
-    "en": "",
+    "en": "...She keeps me honest. I appreciate that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -42431,7 +42431,7 @@
   },
   {
     "key": "…いい勝負になりそう。燃えるな",
-    "en": "",
+    "en": "...Should be a good one. Gets me going.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -42696,7 +42696,7 @@
   },
   {
     "key": "…いい相手だね。…負けたくないな",
-    "en": "",
+    "en": "...Good opponent. ...I'd rather not lose, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -43267,7 +43267,7 @@
   },
   {
     "key": "…うるさいけど…嫌いじゃない",
-    "en": "",
+    "en": "...Noisy one... but I don't mind her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44420,7 +44420,7 @@
   },
   {
     "key": "…ここが好きだから。…それだけだよ",
-    "en": "",
+    "en": "...Because I like it here. ...That's the whole reason.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -44462,7 +44462,7 @@
   },
   {
     "key": "…ここが最高の場所だ。…もっと強くしてみせる",
-    "en": "",
+    "en": "...This is the best place going. ...I'll make it better than it is.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44476,7 +44476,7 @@
   },
   {
     "key": "…ここが自分の居場所だね。…悪くない",
-    "en": "",
+    "en": "...This is where I belong, isn't it. ...Not bad at all.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44532,7 +44532,7 @@
   },
   {
     "key": "…ここで出会えた仲間は宝だ。裏切らない",
-    "en": "",
+    "en": "...The people I found here are treasure. I won't betray that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44588,7 +44588,7 @@
   },
   {
     "key": "…ここで本当にやれるのかな",
-    "en": "",
+    "en": "...Can I actually do this here, I wonder.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44698,7 +44698,7 @@
   },
   {
     "key": "…ここで頑張れることに感謝してる",
-    "en": "",
+    "en": "...I'm grateful I get to put in the work here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44726,7 +44726,7 @@
   },
   {
     "key": "…ここにあたしの居場所なんて…あんのかな……",
-    "en": "",
+    "en": "...Is there even a spot for me here... I dunno...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44740,7 +44740,7 @@
   },
   {
     "key": "…ここにいたいね。ずっと",
-    "en": "",
+    "en": "...I'd like to stay on. Indefinitely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44796,7 +44796,7 @@
   },
   {
     "key": "…ここにいていいのか。…分からなくなってきたね",
-    "en": "",
+    "en": "...Whether I belong here. ...I've stopped knowing, honestly.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44810,7 +44810,7 @@
   },
   {
     "key": "…ここにいていいんだと…やっと、思えた…",
-    "en": "",
+    "en": "...That I belong here... I can finally think it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44824,7 +44824,7 @@
   },
   {
     "key": "…ここにいていいんだと、最近やっと思えるようになった",
-    "en": "",
+    "en": "...I've only lately been able to believe I belong here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44894,7 +44894,7 @@
   },
   {
     "key": "…ここにいる意味を、考え直す時期か",
-    "en": "",
+    "en": "...Might be time to rethink what I'm doing here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44908,7 +44908,7 @@
   },
   {
     "key": "…ここにいる理由が、見つからなくなった",
-    "en": "",
+    "en": "...I've run out of reasons to be here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44922,7 +44922,7 @@
   },
   {
     "key": "…ここにわたしの居場所なんて…あるんでしょうか……",
-    "en": "",
+    "en": "...Do I even have a place here... do you think...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -44936,7 +44936,7 @@
   },
   {
     "key": "…ここに来てよかった。…心からそう思う",
-    "en": "",
+    "en": "...Coming here was right. ...I feel that all the way down.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45006,7 +45006,7 @@
   },
   {
     "key": "…ここに私の居場所なんて…あるのかしら……",
-    "en": "",
+    "en": "...Is there anywhere here that's mine... I wonder...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45020,7 +45020,7 @@
   },
   {
     "key": "…ここに私の居場所なんて…あるのかな……",
-    "en": "",
+    "en": "...Is there really a spot for me here... I don't know...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45048,7 +45048,7 @@
   },
   {
     "key": "…ここは最高だ。みんなとやるのは楽しい",
-    "en": "",
+    "en": "...This place is the best. Working with everyone is good.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45577,7 +45577,7 @@
   },
   {
     "key": "…この人が自分を高めてくれる。…感謝、でも負けない",
-    "en": "",
+    "en": "...She makes me better. ...Grateful — still not losing.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45591,7 +45591,7 @@
   },
   {
     "key": "…この人のそばだと、少し自分でいられる。…不思議だね",
-    "en": "",
+    "en": "...Near her I can be a little more myself. ...Strange, that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45605,7 +45605,7 @@
   },
   {
     "key": "…この人のためなら、何でも",
-    "en": "",
+    "en": "...For her, anything.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45743,7 +45743,7 @@
   },
   {
     "key": "…この場所は、守りたい",
-    "en": "",
+    "en": "...This place is worth protecting.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45757,7 +45757,7 @@
   },
   {
     "key": "…この壁を越えないと先がない。…やるよ",
-    "en": "",
+    "en": "...No road ahead until this wall's behind me. ...So I'll do it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45869,7 +45869,7 @@
   },
   {
     "key": "…この扱いは、ちょっとどうかと思うけど",
-    "en": "",
+    "en": "...I do have some thoughts about this treatment, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -45911,7 +45911,7 @@
   },
   {
     "key": "…この方針には、不安がある",
-    "en": "",
+    "en": "...This direction concerns me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -46037,7 +46037,7 @@
   },
   {
     "key": "…この試合が一番楽しい。ずっと続けばいい",
-    "en": "",
+    "en": "...These are the ones I like. Let them keep coming.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -46065,7 +46065,7 @@
   },
   {
     "key": "…この距離感。…直す方法を考えないとね",
-    "en": "",
+    "en": "...This distance. ...I should work out how to fix it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -46079,7 +46079,7 @@
   },
   {
     "key": "…この関係は…もう戻らないかもね",
-    "en": "",
+    "en": "...This one might not come back. ...Probably won't.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -46093,7 +46093,7 @@
   },
   {
     "key": "…この関係は、戻せない",
-    "en": "",
+    "en": "...This one can't be put back.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -46233,7 +46233,7 @@
   },
   {
     "key": "…これ以上は無理だ",
-    "en": "",
+    "en": "...This is as far as it goes.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -47818,7 +47818,7 @@
   },
   {
     "key": "…さすがに、これは笑えない",
-    "en": "",
+    "en": "...No. This one doesn't get a laugh.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -47846,7 +47846,7 @@
   },
   {
     "key": "…さすがに笑えない",
-    "en": "",
+    "en": "...Can't laugh at this.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -48358,7 +48358,7 @@
   },
   {
     "key": "…すみません。もう限界かもしれません",
-    "en": "",
+    "en": "...I'm sorry. I think I've reached my limit.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -48414,7 +48414,7 @@
   },
   {
     "key": "…ずっとやり合っていたいね。…最高の相手だ",
-    "en": "",
+    "en": "...I'd trade with her forever. ...Best opponent I've had.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -50219,7 +50219,7 @@
   },
   {
     "key": "…そのことばかり考えてる",
-    "en": "",
+    "en": "...It's about all I think about now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -50609,7 +50609,7 @@
   },
   {
     "key": "…ちょっと合わないかも",
-    "en": "",
+    "en": "...Might not fit, us two.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -50803,7 +50803,7 @@
   },
   {
     "key": "…っ…ここにいてよかった。…みんな、ありがとう",
-    "en": "",
+    "en": "...Ah... I'm glad I stayed. ...Thank you, all of you.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -50845,7 +50845,7 @@
   },
   {
     "key": "…っ…この人がいなければ今の私はいない",
-    "en": "",
+    "en": "...Ah... Without her I wouldn't be standing here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -50971,7 +50971,7 @@
   },
   {
     "key": "…っ…まあ、仕方ないか",
-    "en": "",
+    "en": "...Ah... Well. Nothing to be done.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -51111,7 +51111,7 @@
   },
   {
     "key": "…っ…もう、いい",
-    "en": "",
+    "en": "...Ah... Enough.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -51125,7 +51125,7 @@
   },
   {
     "key": "…っ…もう、いいかな",
-    "en": "",
+    "en": "...Ah... I think I'm done.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -51447,7 +51447,7 @@
   },
   {
     "key": "…っ…出会えてよかった。…本当に",
-    "en": "",
+    "en": "...Ah... I'm glad we met. ...Genuinely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -51531,7 +51531,7 @@
   },
   {
     "key": "…っ…大丈夫、かな",
-    "en": "",
+    "en": "...Ah... It's fine. ...Probably.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -51545,7 +51545,7 @@
   },
   {
     "key": "…っ…大事な存在だ。…うん",
-    "en": "",
+    "en": "...Ah... she matters to me. ...Yeah.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -51937,7 +51937,7 @@
   },
   {
     "key": "…っ…熱くなる",
-    "en": "",
+    "en": "...Nn... it's building.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -52021,7 +52021,7 @@
   },
   {
     "key": "…っ…終わったか。…少し寂しいな",
-    "en": "",
+    "en": "...Ah... So it's done. ...A bit lonely, that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -52133,7 +52133,7 @@
   },
   {
     "key": "…っ…負けるわけにはいかない",
-    "en": "",
+    "en": "...Ah... Losing to her isn't an option.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -52147,7 +52147,7 @@
   },
   {
     "key": "…っ…超える。…必ず",
-    "en": "",
+    "en": "...Ah... I'll pass her. ...I will.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -54021,7 +54021,7 @@
   },
   {
     "key": "…どうして、話してくれない",
-    "en": "",
+    "en": "...Why won't she talk to me?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -54035,7 +54035,7 @@
   },
   {
     "key": "…どうしても考えてしまうね",
-    "en": "",
+    "en": "...She stays on my mind, doesn't she.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -54119,7 +54119,7 @@
   },
   {
     "key": "…どこで間違えた",
-    "en": "",
+    "en": "...Where did it go wrong?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -54203,7 +54203,7 @@
   },
   {
     "key": "…なかなかやるね。認めてあげてもいいかな",
-    "en": "",
+    "en": "...She's got something. I suppose I'll admit that much.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -55981,7 +55981,7 @@
   },
   {
     "key": "…ふざけるな。価値が分からないなら、もういい",
-    "en": "",
+    "en": "...Enough. If my worth is lost on you, forget it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -56246,7 +56246,7 @@
   },
   {
     "key": "…ま、居心地いいからね。ここにいるよ",
-    "en": "",
+    "en": "...Well, it's comfortable here. I'm staying.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -57752,7 +57752,7 @@
   },
   {
     "key": "…みんなが好きだ。…この団体に全部捧げる",
-    "en": "",
+    "en": "...I like them all. ...I give this promotion everything.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58045,7 +58045,7 @@
   },
   {
     "key": "…もう…同じ部屋にいるだけで…しんどい…",
-    "en": "",
+    "en": "...Just being in the same room as her... it's rough now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58059,7 +58059,7 @@
   },
   {
     "key": "…もう…同じ部屋にいるだけで…息が詰まって…",
-    "en": "",
+    "en": "...Even sharing a room with her... I can hardly breathe...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58073,7 +58073,7 @@
   },
   {
     "key": "…もう…同じ部屋にいるだけで…苦しい…",
-    "en": "",
+    "en": "...Even just being in the same room... it hurts now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58087,7 +58087,7 @@
   },
   {
     "key": "…もう…同じ部屋にいるだけで…苦しいの…",
-    "en": "",
+    "en": "...Just sharing a room with her now... it aches...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58101,7 +58101,7 @@
   },
   {
     "key": "…もう…同じ部屋にいるだけで…苦しいんです…",
-    "en": "",
+    "en": "...Being in the same room as her now... it's hard to bear...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58115,7 +58115,7 @@
   },
   {
     "key": "…もう…無理…ここにいちゃいけない気がする……",
-    "en": "",
+    "en": "...I'm done... I just can't... something says I don't belong here...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58129,7 +58129,7 @@
   },
   {
     "key": "…もう…無理…ここにいちゃいけない気がするの……",
-    "en": "",
+    "en": "...I can't do this... I have the feeling I've overstayed...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58143,7 +58143,7 @@
   },
   {
     "key": "…もう…無理…ここにいちゃいけねぇ気がする……",
-    "en": "",
+    "en": "...I'm through... can't do it... feels like I don't belong here...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58157,7 +58157,7 @@
   },
   {
     "key": "…もう…無理だ…ここには、いられない……",
-    "en": "",
+    "en": "...No more... I can't... Can't stay...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58185,7 +58185,7 @@
   },
   {
     "key": "…もう…無理です…ここにいてはいけない気がして……",
-    "en": "",
+    "en": "...I cannot... not any longer... I feel I ought not to remain...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58199,7 +58199,7 @@
   },
   {
     "key": "…もう…無理です…ここにいてはいけない気がするんです……",
-    "en": "",
+    "en": "...I can't... not anymore... I feel like I shouldn't be here...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58325,7 +58325,7 @@
   },
   {
     "key": "…もう、何も感じないな",
-    "en": "",
+    "en": "...Nothing reaches me now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58339,7 +58339,7 @@
   },
   {
     "key": "…もう、信じられない",
-    "en": "",
+    "en": "...I can't trust it anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58493,7 +58493,7 @@
   },
   {
     "key": "…もうダメかもしれない",
-    "en": "",
+    "en": "...I think it might be past saving.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58563,7 +58563,7 @@
   },
   {
     "key": "…もう一度、歩み寄る",
-    "en": "",
+    "en": "...I'll close it again.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58619,7 +58619,7 @@
   },
   {
     "key": "…もう付き合いきれないかな。…覚えておいて",
-    "en": "",
+    "en": "...I don't think I can keep at this. ...Remember I said so.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58826,7 +58826,7 @@
   },
   {
     "key": "…もう無理かな。…ここにいちゃいけない気がする",
-    "en": "",
+    "en": "...I don't think I can keep this up. ...Feels wrong to still be here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58924,7 +58924,7 @@
   },
   {
     "key": "…もう終わったことだね",
-    "en": "",
+    "en": "...That's behind us now, isn't it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -58966,7 +58966,7 @@
   },
   {
     "key": "…もう終わり。…それだけ",
-    "en": "",
+    "en": "...Done. ...Nothing more to it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -59008,7 +59008,7 @@
   },
   {
     "key": "…もう考えない",
-    "en": "",
+    "en": "...It's off my mind.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -59022,7 +59022,7 @@
   },
   {
     "key": "…もう興味ねーよ",
-    "en": "",
+    "en": "...Not interested anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -60798,7 +60798,7 @@
   },
   {
     "key": "…わたくしの居場所など…ここにあるのでしょうか……",
-    "en": "",
+    "en": "...Have I a place here at all... I wonder...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -63005,7 +63005,7 @@
   },
   {
     "key": "…一段落か。少し寂しい",
-    "en": "",
+    "en": "...Wrapped up, then. A little lonely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -63019,7 +63019,7 @@
   },
   {
     "key": "…一段落かぁ。…まあ、そういうもんだね",
-    "en": "",
+    "en": "...All wrapped up. ...Well, that's how these go.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -63074,7 +63074,7 @@
   },
   {
     "key": "…一緒にいると楽でいいね",
-    "en": "",
+    "en": "...Easy company. That's worth something.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -63116,7 +63116,7 @@
   },
   {
     "key": "…一緒に上を目指せる。…いい関係だ",
-    "en": "",
+    "en": "...We can climb together. ...That's a good thing to have.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -63338,7 +63338,7 @@
   },
   {
     "key": "…不安だ。…忘れられてないか",
-    "en": "",
+    "en": "...Uneasy. ...Have they forgotten me?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -64060,7 +64060,7 @@
   },
   {
     "key": "…他の団体のことを、考え始めてしまっている",
-    "en": "",
+    "en": "...I've started looking at other promotions.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -64962,7 +64962,7 @@
   },
   {
     "key": "…倒すべき相手だ",
-    "en": "",
+    "en": "...She's the one to beat.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -65298,7 +65298,7 @@
   },
   {
     "key": "…全力を尽くしてきたつもりだ。…でも、もう",
-    "en": "",
+    "en": "...I gave this all I had, I thought. ...But now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -65368,7 +65368,7 @@
   },
   {
     "key": "…全部、嘘だったのか",
-    "en": "",
+    "en": "...Was all of it a lie?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -65549,7 +65549,7 @@
   },
   {
     "key": "…出会えてよかった。…本当に",
-    "en": "",
+    "en": "...Glad I met her. ...Really.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -65927,7 +65927,7 @@
   },
   {
     "key": "…前と態度が違う。…私のせいだろうね",
-    "en": "",
+    "en": "...She treats me differently now. ...That'll be my doing.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -65941,7 +65941,7 @@
   },
   {
     "key": "…前と違う…私のせい…かな…",
-    "en": "",
+    "en": "...Different than before... My fault... probably...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -67433,7 +67433,7 @@
   },
   {
     "key": "…合わないなぁ。…まあ、そういうこともある",
-    "en": "",
+    "en": "...We don't mesh. ...Well, that happens.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -67447,7 +67447,7 @@
   },
   {
     "key": "…合わないね。…仕方ない",
-    "en": "",
+    "en": "...We don't match up. ...No forcing it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -67489,7 +67489,7 @@
   },
   {
     "key": "…同じ場所にいるだけで…苦しい…",
-    "en": "",
+    "en": "...Same room as her... and it hurts...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -67516,7 +67516,7 @@
   },
   {
     "key": "…同じ部屋にいるだけで苦しい。…もう、無理かな",
-    "en": "",
+    "en": "...Same room, and it hurts. ...I don't think I can keep this up.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -67880,7 +67880,7 @@
   },
   {
     "key": "…執着は、消えたか",
-    "en": "",
+    "en": "...The hold is gone.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -67908,7 +67908,7 @@
   },
   {
     "key": "…壁作ってない？ …まあ、いいけど",
-    "en": "",
+    "en": "...Shutting me out, are you? ...Fine, whatever it is.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -68075,7 +68075,7 @@
   },
   {
     "key": "…大丈夫、だよな。…少し不安だ",
-    "en": "",
+    "en": "...It's fine. ...A little uneasy, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -68209,7 +68209,7 @@
   },
   {
     "key": "…大事な存在。…それだけで十分",
-    "en": "",
+    "en": "...She matters. ...That's enough to say.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -68432,7 +68432,7 @@
   },
   {
     "key": "…学ぶことは多かった。…前に進もう",
-    "en": "",
+    "en": "...I took a lot from that. ...Time to move on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -68740,7 +68740,7 @@
   },
   {
     "key": "…少し不安を感じ始めてる。…気のせいだといいけど",
-    "en": "",
+    "en": "...I've started to feel uneasy. ...I hope it's just me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -68852,7 +68852,7 @@
   },
   {
     "key": "…少し距離が開いたかな",
-    "en": "",
+    "en": "...Bit of space between us now, isn't there.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -68894,7 +68894,7 @@
   },
   {
     "key": "…居心地いいね。…最高だ",
-    "en": "",
+    "en": "...Comfortable place. ...Can't ask for better.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -69773,7 +69773,7 @@
   },
   {
     "key": "…怖い。…でも、逃げない…",
-    "en": "",
+    "en": "...Scared. ...But I'm not running...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -69787,7 +69787,7 @@
   },
   {
     "key": "…怖い。でも逃げたら、もっと悔やむだろうね",
-    "en": "",
+    "en": "...I'm scared. But I'd regret running a good deal more.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -70946,7 +70946,7 @@
   },
   {
     "key": "…悪くない距離感だね。一緒にいて楽だ",
-    "en": "",
+    "en": "...Not a bad distance to keep. She's easy company.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -71142,7 +71142,7 @@
   },
   {
     "key": "…意識している。ライバルとして",
-    "en": "",
+    "en": "...She's on my mind. As a rival.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -72812,7 +72812,7 @@
   },
   {
     "key": "…最近、この人とだけは普通に話せる。…かもしれない",
-    "en": "",
+    "en": "...Lately she's the one person I can just talk to. ...Maybe.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -72868,7 +72868,7 @@
   },
   {
     "key": "…最近、モヤモヤする",
-    "en": "",
+    "en": "...Something's been sitting wrong lately.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -72896,7 +72896,7 @@
   },
   {
     "key": "…最近、前ほど…気にならない…",
-    "en": "",
+    "en": "...Lately she matters... less...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -72910,7 +72910,7 @@
   },
   {
     "key": "…最近、前ほど気にならないな",
-    "en": "",
+    "en": "...She doesn't get to me like she used to.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -72924,7 +72924,7 @@
   },
   {
     "key": "…最近ちょっとモヤモヤするなぁ",
-    "en": "",
+    "en": "...Something's been gnawing at me lately.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -72938,7 +72938,7 @@
   },
   {
     "key": "…最近やたら気になる。負けたくない",
-    "en": "",
+    "en": "...She's been on my mind a lot. I don't want to lose to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -72994,7 +72994,7 @@
   },
   {
     "key": "…最高の敵だね。…超える。それだけ",
-    "en": "",
+    "en": "...Finest enemy I've had. ...I'll pass her. That's all.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -73022,7 +73022,7 @@
   },
   {
     "key": "…最高の相棒だね。…二人なら怖いものはない",
-    "en": "",
+    "en": "...Best partner I could ask for. ...Nothing frightens me with her there.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -73036,7 +73036,7 @@
   },
   {
     "key": "…最高の相棒だよ。ずっとこの距離がいいね",
-    "en": "",
+    "en": "...Best partner around. I'd keep this exact distance.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -73218,7 +73218,7 @@
   },
   {
     "key": "…本気でやれる相手。…楽しみだね",
-    "en": "",
+    "en": "...Someone I can go all out on. ...I'm looking forward to it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -73232,7 +73232,7 @@
   },
   {
     "key": "…本気でやれる相手は、そういない",
-    "en": "",
+    "en": "...Few worth going all out against.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -73358,7 +73358,7 @@
   },
   {
     "key": "…来てよかった。…本当に…",
-    "en": "",
+    "en": "...Glad I came. ...Really...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -73428,7 +73428,7 @@
   },
   {
     "key": "…来年もよろしく。やれることをやるだけだよ",
-    "en": "",
+    "en": "...Another year, then. I'll just do what I can do.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -74337,7 +74337,7 @@
   },
   {
     "key": "…気づけば、隣にいない。…そういうものか",
-    "en": "",
+    "en": "...She's not beside me anymore. ...That's how it goes, I suppose.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -74351,7 +74351,7 @@
   },
   {
     "key": "…気になって仕方ない…",
-    "en": "",
+    "en": "...I can't stop thinking about her...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -74365,7 +74365,7 @@
   },
   {
     "key": "…気になるね。…負けたくない",
-    "en": "",
+    "en": "...She's got my attention. ...I don't want to lose to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -75174,7 +75174,7 @@
   },
   {
     "key": "…無理なものは無理。…それだけ",
-    "en": "",
+    "en": "...Some things won't work. ...That's the whole of it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -75300,7 +75300,7 @@
   },
   {
     "key": "…燃えてる。…自分の中の何かが",
-    "en": "",
+    "en": "...Something's lit. ...Somewhere in me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -75579,7 +75579,7 @@
   },
   {
     "key": "…生涯の勝負だ。…望むところ",
-    "en": "",
+    "en": "...A lifetime's fight. ...I wouldn't have it otherwise.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -76534,7 +76534,7 @@
   },
   {
     "key": "…目を合わせるのが…怖い…",
-    "en": "",
+    "en": "...Meeting her eyes... frightens me...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -76548,7 +76548,7 @@
   },
   {
     "key": "…目を合わせるのが怖い。…何かしたかな、私",
-    "en": "",
+    "en": "...I'm afraid to look at her. ...Did I do something, I wonder.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -76590,7 +76590,7 @@
   },
   {
     "key": "…相容れない",
-    "en": "",
+    "en": "...We don't fit.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -79742,7 +79742,7 @@
   },
   {
     "key": "…私の居場所、ここにあるのかな。…分からないね",
-    "en": "",
+    "en": "...Is my place here, I wonder. ...I honestly don't know.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -79756,7 +79756,7 @@
   },
   {
     "key": "…私の居場所は…ここに…あるのか……",
-    "en": "",
+    "en": "...My place. ...Is it here... anywhere...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80022,7 +80022,7 @@
   },
   {
     "key": "…空気、変わった？",
-    "en": "",
+    "en": "...Something shift?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80092,7 +80092,7 @@
   },
   {
     "key": "…笑ってる場合じゃないな、これ",
-    "en": "",
+    "en": "...This isn't the time for jokes.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80303,7 +80303,7 @@
   },
   {
     "key": "…終わった。…次に行くよ",
-    "en": "",
+    "en": "...Finished. ...On to the next one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80359,7 +80359,7 @@
   },
   {
     "key": "…終わったのか。…少し寂しい",
-    "en": "",
+    "en": "...It's over, then. ...A little lonely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80415,7 +80415,7 @@
   },
   {
     "key": "…終わりはない。永遠に戦う",
-    "en": "",
+    "en": "...No end to it. We go on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80873,7 +80873,7 @@
   },
   {
     "key": "…考えると、気合が入る",
-    "en": "",
+    "en": "...Thinking about it sharpens me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80887,7 +80887,7 @@
   },
   {
     "key": "…考えると、熱くなる",
-    "en": "",
+    "en": "...Thinking about it heats me up.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80901,7 +80901,7 @@
   },
   {
     "key": "…考えると、胸が痛む…負けたくない…",
-    "en": "",
+    "en": "...Thinking of her stings... I don't want to lose...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80915,7 +80915,7 @@
   },
   {
     "key": "…考えると胸が温かくなるんです…！",
-    "en": "",
+    "en": "...Thinking about her — it just makes my day...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80929,7 +80929,7 @@
   },
   {
     "key": "…考えると胸が締めつけられる。…負けたくないな",
-    "en": "",
+    "en": "...She gets under my skin. ...I don't want to lose to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -80943,7 +80943,7 @@
   },
   {
     "key": "…考えると苦しい。…もう無理だ",
-    "en": "",
+    "en": "...It hurts to think about. ...I'm done.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -81208,7 +81208,7 @@
   },
   {
     "key": "…自分の居場所が、ここにあるのか",
-    "en": "",
+    "en": "...Is my place here at all?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -81404,7 +81404,7 @@
   },
   {
     "key": "…行く理由がないね。ここで続けるよ",
-    "en": "",
+    "en": "...No reason to leave. I'll keep going here.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -81530,7 +81530,7 @@
   },
   {
     "key": "…見かけると…体が動く…",
-    "en": "",
+    "en": "...I catch sight of her... and I'm already moving...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -82047,7 +82047,7 @@
   },
   {
     "key": "…言葉はいらない。…リングで話そうか",
-    "en": "",
+    "en": "...No words needed. ...We'll talk it out in the ring.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -82159,7 +82159,7 @@
   },
   {
     "key": "…認めたくないけど、意識してるね",
-    "en": "",
+    "en": "...Don't much like admitting it, but she's in my head.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -82676,7 +82676,7 @@
   },
   {
     "key": "…負けたくないなぁ",
-    "en": "",
+    "en": "...Don't want to lose that one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -82914,7 +82914,7 @@
   },
   {
     "key": "…負けない。絶対に",
-    "en": "",
+    "en": "...I won't lose. Not to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -83040,7 +83040,7 @@
   },
   {
     "key": "…負けるわけにはいかない。…絶対に",
-    "en": "",
+    "en": "...I can't afford to lose this one. ...Not this one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -83082,7 +83082,7 @@
   },
   {
     "key": "…超える。必ず",
-    "en": "",
+    "en": "...I'll pass her. Without fail.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -83096,7 +83096,7 @@
   },
   {
     "key": "…超えるべき相手が見えた。…やるしかない",
-    "en": "",
+    "en": "...Now I can see who I have to pass. ...Nothing for it but the work.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -83544,7 +83544,7 @@
   },
   {
     "key": "…逃げたい。…でも、逃げない…",
-    "en": "",
+    "en": "...I want to run. ...I won't...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -83558,7 +83558,7 @@
   },
   {
     "key": "…逃げたい。でも、あの人からだけは逃げられないな",
-    "en": "",
+    "en": "...I'd like to run. But not from her — that one I can't.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -83726,7 +83726,7 @@
   },
   {
     "key": "…運命みたいなものだね。…この人とは",
-    "en": "",
+    "en": "...It's something like fate, isn't it. ...With her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -83766,7 +83766,7 @@
   },
   {
     "key": "…遠くなったね",
-    "en": "",
+    "en": "...We've drifted, haven't we.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -84438,7 +84438,7 @@
   },
   {
     "key": "…隣にいてくれるだけでいい。…それで、なんとかなる",
-    "en": "",
+    "en": "...She just has to be there. ...That's enough to get me through.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -84452,7 +84452,7 @@
   },
   {
     "key": "…隣にいるだけで…違うんです…",
-    "en": "",
+    "en": "...Just her standing there... it changes things...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -84522,7 +84522,7 @@
   },
   {
     "key": "…離れていく。…嫌だ",
-    "en": "",
+    "en": "...She's going. ...I hate it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -84550,7 +84550,7 @@
   },
   {
     "key": "…面白い相手だね。…超えてみせるよ",
-    "en": "",
+    "en": "...Interesting one. ...I'll get past her, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -84773,7 +84773,7 @@
   },
   {
     "key": "…風が止んだ。…そんな感じだね",
-    "en": "",
+    "en": "...Wind's gone still. ...Something like that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -84954,7 +84954,7 @@
   },
   {
     "key": "…（荷物をまとめている）",
-    "en": "",
+    "en": "... (putting her things together)",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -88866,7 +88866,7 @@
   },
   {
     "key": "あ、あの…残らせていただけますか…ここが、好きで…",
-    "en": "",
+    "en": "Um, could I... could I stay on...? I've come to love it here...",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -88880,7 +88880,7 @@
   },
   {
     "key": "あ、あの…残らせてください…ここが、好きなので…",
-    "en": "",
+    "en": "Um, I... please let me stay... I like it here, so...",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -89104,7 +89104,7 @@
   },
   {
     "key": "あ、うん…悪いやつじゃない…と思う",
-    "en": "",
+    "en": "Uh, yeah... she's not a bad sort... I guess...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -89634,7 +89634,7 @@
   },
   {
     "key": "あいつがいなかったら…あたし、とっくに潰れてた…と思う",
-    "en": "",
+    "en": "If she weren't around... I'd have folded ages ago... probably.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -89648,7 +89648,7 @@
   },
   {
     "key": "あいつがいなかったら…今のあたしはいねぇ。それだけは…わかる",
-    "en": "",
+    "en": "If she weren't around... I wouldn't be me. That much... I know...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -89662,7 +89662,7 @@
   },
   {
     "key": "あいつがいるからあたしは高まる。これが宿命ってやつか",
-    "en": "",
+    "en": "She makes me better. Guess that's what destiny means.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -89842,7 +89842,7 @@
   },
   {
     "key": "あいつにだけは…絶対に負けたくねぇ…今はそれだけ…",
-    "en": "",
+    "en": "Her, of all people... I can't lose to her... that's the only thing...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -89884,7 +89884,7 @@
   },
   {
     "key": "あいつのこと考えると…胸がきゅってなる…負けたくねぇ…",
-    "en": "",
+    "en": "When I think about her... it gets to me... I don't wanna lose...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -89912,7 +89912,7 @@
   },
   {
     "key": "あいつの態度が…前と違う…あたしのせい…だよな…",
-    "en": "",
+    "en": "She's acting different... than before... That's on me... isn't it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -90290,7 +90290,7 @@
   },
   {
     "key": "あたしの居場所がここにあんのか…考えちまう",
-    "en": "",
+    "en": "Whether my place is here... I end up chewing on it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93400,7 +93400,7 @@
   },
   {
     "key": "あの人がいたから強くなれたの。感謝してる…でも負けないわ",
-    "en": "",
+    "en": "She's the reason I got strong. I'm grateful... and I'm still winning.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93414,7 +93414,7 @@
   },
   {
     "key": "あの人がいなかったら…今の私はいないの。それだけは…わかる…",
-    "en": "",
+    "en": "If she hadn't come along... I wouldn't be this. That much... I do know...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93428,7 +93428,7 @@
   },
   {
     "key": "あの人がいなかったら…私、とっくに壊れてたの…",
-    "en": "",
+    "en": "If she weren't here... I'd have come apart long ago...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93442,7 +93442,7 @@
   },
   {
     "key": "あの人が隣にいるだけで…なんでも頑張れる気がするんです…",
-    "en": "",
+    "en": "With her right there... I feel like I can handle anything...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93638,7 +93638,7 @@
   },
   {
     "key": "あの人にだけは…絶対に負けたくない…今はそれだけ…",
-    "en": "",
+    "en": "Not her... I can't lose to her... that's all that's in my head...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93652,7 +93652,7 @@
   },
   {
     "key": "あの人にだけは…絶対に負けたくないの…今はそれだけ…",
-    "en": "",
+    "en": "Her, above anyone... I can't lose to her... that's all there is...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93666,7 +93666,7 @@
   },
   {
     "key": "あの人のこと…考えると胸がきゅってなる…負けたくない…",
-    "en": "",
+    "en": "Just thinking about her... does something to me... I don't want to lose...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93680,7 +93680,7 @@
   },
   {
     "key": "あの人のこと考えると…胸がきゅってなるの…負けたくない…",
-    "en": "",
+    "en": "When she crosses my mind... something tightens... I don't want to lose...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93736,7 +93736,7 @@
   },
   {
     "key": "あの人の態度が…前と違う…私のせい…だよね…",
-    "en": "",
+    "en": "She acts different around me now... That's on me... right...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93750,7 +93750,7 @@
   },
   {
     "key": "あの人の態度が…前と違う…私のせい…よね…",
-    "en": "",
+    "en": "The way she is with me... it's changed... That's on me... isn't it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93830,7 +93830,7 @@
   },
   {
     "key": "あの出会いがなけりゃ今のあたしはいねぇ…！",
-    "en": "",
+    "en": "If we'd never met, I wouldn't be standing here...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93844,7 +93844,7 @@
   },
   {
     "key": "あの出会いがなければ今のわたくしはありません…！",
-    "en": "",
+    "en": "Had we never met, I would not be standing here...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93858,7 +93858,7 @@
   },
   {
     "key": "あの出会いがなければ今の私はありませんでした…！",
-    "en": "",
+    "en": "If I hadn't met her, I wouldn't be here at all...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93872,7 +93872,7 @@
   },
   {
     "key": "あの出会いがなければ今の私はいなかった…！",
-    "en": "",
+    "en": "Without that meeting, I would not be what I am...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93886,7 +93886,7 @@
   },
   {
     "key": "あの因縁から学んだことは多い。次の目標を探さねば",
-    "en": "",
+    "en": "I learned a great deal from that feud. I must find my next aim.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93900,7 +93900,7 @@
   },
   {
     "key": "あの因縁から学んだことは多い。次の目標を見つけなきゃ",
-    "en": "",
+    "en": "I got a lot out of that one. Now I need a new goal.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93914,7 +93914,7 @@
   },
   {
     "key": "あの因縁から学んだことは多い。次の目標見つけねぇとな",
-    "en": "",
+    "en": "Learned plenty from that one. Gotta find the next target.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93928,7 +93928,7 @@
   },
   {
     "key": "あの因縁から学んだことは多いです。次の目標を見つけなければ",
-    "en": "",
+    "en": "I learned so much from that rivalry. Now I need a new goal.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93942,7 +93942,7 @@
   },
   {
     "key": "あの因縁から学んだことは多いの。次の目標を見つけなきゃ",
-    "en": "",
+    "en": "That feud taught me a great deal. Now for a new target.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -93956,7 +93956,7 @@
   },
   {
     "key": "あの因縁も…もう終わったのかな",
-    "en": "",
+    "en": "That whole thing between us... maybe it's run out.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94296,7 +94296,7 @@
   },
   {
     "key": "あの存在がわたくしを高めてくれる。これが宿命というものかしら",
-    "en": "",
+    "en": "She raises me higher. Is this what they call destiny?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94310,7 +94310,7 @@
   },
   {
     "key": "あの存在が私を高めてくれる。これが宿命というものかしら",
-    "en": "",
+    "en": "She lifts me higher. Is that what destiny is?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94421,7 +94421,7 @@
   },
   {
     "key": "あの方がいたから強くなれました。感謝しています…でも負けません",
-    "en": "",
+    "en": "I got strong because of her. I'm grateful for it... but I won't lose.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94435,7 +94435,7 @@
   },
   {
     "key": "あの方がいたから強くなれました。感謝を…けれど負けません",
-    "en": "",
+    "en": "She made me strong. My thanks to her... but I do not intend to lose.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94449,7 +94449,7 @@
   },
   {
     "key": "あの方がいなければ…わたくし、とうに折れていました…",
-    "en": "",
+    "en": "Were she not here... I would have broken long ago...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94463,7 +94463,7 @@
   },
   {
     "key": "あの方がいなければ…わたし、とっくに駄目になっていたと思います…",
-    "en": "",
+    "en": "Without her... I think I would have fallen apart a long time ago...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94477,7 +94477,7 @@
   },
   {
     "key": "あの方がいなければ…今のわたくしはいません。それだけは…",
-    "en": "",
+    "en": "Were she not here... I would not be who I am. That much I know...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94491,7 +94491,7 @@
   },
   {
     "key": "あの方がいなければ…今のわたしはいません。それだけは…わかるんです…",
-    "en": "",
+    "en": "If not for her... I wouldn't be who I am. I do understand that much...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94630,7 +94630,7 @@
   },
   {
     "key": "あの方にだけは…絶対に負けたくありません…今はそれだけです…",
-    "en": "",
+    "en": "Not to her... I can't lose to her... that's all I can think about...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94644,7 +94644,7 @@
   },
   {
     "key": "あの方にだけは…絶対に負けたくない…今はそれだけ…",
-    "en": "",
+    "en": "To her, of all people... I cannot lose... that is all I have room for...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94658,7 +94658,7 @@
   },
   {
     "key": "あの方のことを考えると…胸が締めつけられて…負けたくないんです…",
-    "en": "",
+    "en": "When I think about her... it takes hold of me... I don't want to lose...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94672,7 +94672,7 @@
   },
   {
     "key": "あの方のためなら何だって…！ 必ずお守りします…！",
-    "en": "",
+    "en": "For her, anything at all...! I shall keep her safe...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94686,7 +94686,7 @@
   },
   {
     "key": "あの方の態度が…前と違うんです…わたしのせい…ですよね…",
-    "en": "",
+    "en": "She's different with me now... It's my fault... isn't it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94700,7 +94700,7 @@
   },
   {
     "key": "あの方の様子が…以前と違う…わたくしのせい…ですよね…",
-    "en": "",
+    "en": "She is not as she was... It is my doing... is it not...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94740,7 +94740,7 @@
   },
   {
     "key": "あの方を思うと…胸が締めつけられて…負けたくない…",
-    "en": "",
+    "en": "When I think of her... it grips me... I do not wish to lose...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -94754,7 +94754,7 @@
   },
   {
     "key": "あの方を超えることが、今の一番の目標です",
-    "en": "",
+    "en": "To surpass her is my foremost goal at present.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95315,7 +95315,7 @@
   },
   {
     "key": "あの頃のピリピリした感じ…もうないかな…",
-    "en": "",
+    "en": "That on-edge feeling from back then... it's gone, I think...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95329,7 +95329,7 @@
   },
   {
     "key": "あの頃のピリピリした感じ…もうないのかな…",
-    "en": "",
+    "en": "That prickle I used to get... I wonder if it's gone...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95343,7 +95343,7 @@
   },
   {
     "key": "あの頃のピリピリした感じ…もうねぇかな…",
-    "en": "",
+    "en": "That edgy feeling from back then... think it's gone...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95370,7 +95370,7 @@
   },
   {
     "key": "あの頃の張りつめた感じ…もうないような…",
-    "en": "",
+    "en": "That taut feeling from before... it seems to have gone...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95384,7 +95384,7 @@
   },
   {
     "key": "あの頃の張りつめた感じ…もうないんでしょうか…",
-    "en": "",
+    "en": "That strung-tight feeling from before... has it gone, I wonder...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95466,7 +95466,7 @@
   },
   {
     "key": "あはは…って笑ってる場合じゃないよね、これ",
-    "en": "",
+    "en": "Ahaha — okay, no, this isn't funny.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95480,7 +95480,7 @@
   },
   {
     "key": "あはは…って笑ってる場合じゃねぇよな、これ",
-    "en": "",
+    "en": "Ahaha — nah, this isn't a laughing matter.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95508,7 +95508,7 @@
   },
   {
     "key": "あはは…なんて笑っている場合じゃないですよね、これ",
-    "en": "",
+    "en": "Ahaha — no, this isn't something to laugh about, is it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95802,7 +95802,7 @@
   },
   {
     "key": "あはは、一緒にいると時間忘れちゃう",
-    "en": "",
+    "en": "Ahaha, I lose track of time when we're together.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95858,7 +95858,7 @@
   },
   {
     "key": "あはは、負けたくないです〜",
-    "en": "",
+    "en": "Ahaha, I don't want to lose that one~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -95872,7 +95872,7 @@
   },
   {
     "key": "あはは、負けたくないなぁ",
-    "en": "",
+    "en": "Ahaha, I'd really hate to lose to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -96969,7 +96969,7 @@
   },
   {
     "key": "あら、他に行く場所なんてないわ。ここが好きなの",
-    "en": "",
+    "en": "Oh my. There's nowhere else I'd go. I like it here.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -97664,7 +97664,7 @@
   },
   {
     "key": "あら、近ごろ少し素っ気ないような",
-    "en": "",
+    "en": "My, she has been rather curt of late~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -97801,7 +97801,7 @@
   },
   {
     "key": "あら〜、最近ちょっと素っ気ないわね",
-    "en": "",
+    "en": "Oh my~ she's been a touch cool with me lately.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -100453,7 +100453,7 @@
   },
   {
     "key": "あれ〜、最近ちょい素っ気なくね？",
-    "en": "",
+    "en": "Huh~ she's been kinda short with me lately, no?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -100467,7 +100467,7 @@
   },
   {
     "key": "あれ〜、最近ちょっと素っ気ないなぁ",
-    "en": "",
+    "en": "Huh~ she's been kind of cold lately.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -100481,7 +100481,7 @@
   },
   {
     "key": "あれ〜、最近ちょっと素っ気ないような…",
-    "en": "",
+    "en": "Hm~ she's been a little distant lately, hasn't she...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -102016,7 +102016,7 @@
   },
   {
     "key": "いいバランスだ。やりやすい",
-    "en": "",
+    "en": "Good balance. Easy to work with.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -102086,7 +102086,7 @@
   },
   {
     "key": "いい勝負になりそうだね〜。燃えてきた",
-    "en": "",
+    "en": "Should be a good scrap~ I'm getting into it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -102100,7 +102100,7 @@
   },
   {
     "key": "いい勝負になりそうですね〜。燃えてきました",
-    "en": "",
+    "en": "This ought to be a good match~ I'm getting fired up.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -102114,7 +102114,7 @@
   },
   {
     "key": "いい勝負になりそうね〜。燃えてきちゃった",
-    "en": "",
+    "en": "This should be a good one~ I'm warming to it already.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -102362,7 +102362,7 @@
   },
   {
     "key": "いい空気ね。背中を預けられそう",
-    "en": "",
+    "en": "Good air between us. I could trust her at my back.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -103507,7 +103507,7 @@
   },
   {
     "key": "いやー当然残るでしょ！ここ楽しいもん！",
-    "en": "",
+    "en": "Uh, obviously I'm staying! This place is fun!",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -104164,7 +104164,7 @@
   },
   {
     "key": "う〜ん…少々、合いませんかしら…",
-    "en": "",
+    "en": "Hmm... we do not quite suit, do we...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104178,7 +104178,7 @@
   },
   {
     "key": "う〜ん…近ごろ少し胸がすっきりしません…",
-    "en": "",
+    "en": "Hmm... something has not sat right with me of late...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104192,7 +104192,7 @@
   },
   {
     "key": "う〜ん、ちょい合わねぇかもな…",
-    "en": "",
+    "en": "Mmm, maybe we're just not a match...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104206,7 +104206,7 @@
   },
   {
     "key": "う〜ん、ちょっと合わないかもしれません…",
-    "en": "",
+    "en": "Hmm~ perhaps we're not the best fit...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104220,7 +104220,7 @@
   },
   {
     "key": "う〜ん、ちょっと合わないかもなぁ…",
-    "en": "",
+    "en": "Hmm~ maybe we just don't mesh...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104234,7 +104234,7 @@
   },
   {
     "key": "う〜ん、ちょっと合わないかもねぇ…",
-    "en": "",
+    "en": "Mm~ maybe we're not much of a match after all...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104262,7 +104262,7 @@
   },
   {
     "key": "う〜ん、最近ちっとモヤモヤすんだよなぁ…",
-    "en": "",
+    "en": "Mmm, something's been bugging me lately...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104276,7 +104276,7 @@
   },
   {
     "key": "う〜ん、最近ちょっとモヤモヤします…",
-    "en": "",
+    "en": "Hmm~ something's been unsettling me lately...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104290,7 +104290,7 @@
   },
   {
     "key": "う〜ん、最近ちょっとモヤモヤするなぁ…",
-    "en": "",
+    "en": "Hmm~ something's been off with me lately...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -104304,7 +104304,7 @@
   },
   {
     "key": "う〜ん、最近ちょっとモヤモヤするのよね…",
-    "en": "",
+    "en": "Mmm~ something's been nagging at me lately...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -105401,7 +105401,7 @@
   },
   {
     "key": "うふふ…と笑っている場合ではありませんね、これは",
-    "en": "",
+    "en": "This is hardly the moment for laughter, is it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -105499,7 +105499,7 @@
   },
   {
     "key": "うふふ、思い浮かべるだけで力が入ります",
-    "en": "",
+    "en": "How it stirs one, merely to picture it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -105540,7 +105540,7 @@
   },
   {
     "key": "うふふ、負けたくありませんね",
-    "en": "",
+    "en": "My, my. I would hate to lose that one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -108994,7 +108994,7 @@
   },
   {
     "key": "おい、最近態度おかしくね？ ムカつくな",
-    "en": "",
+    "en": "Hey, what's with the attitude lately? Getting on my nerves.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -109283,7 +109283,7 @@
   },
   {
     "key": "おかげで練習にも身が入ります。感謝しています",
-    "en": "",
+    "en": "My training has real focus because of her. I'm grateful.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -109381,7 +109381,7 @@
   },
   {
     "key": "おそばですと…少し安心できますの…",
-    "en": "",
+    "en": "At her side... I do feel a little safer...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -109395,7 +109395,7 @@
   },
   {
     "key": "おそばにいると……不思議と落ち着きますわ",
-    "en": "",
+    "en": "Beside her... I find myself strangely at ease.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -112734,7 +112734,7 @@
   },
   {
     "key": "かけがえのない方ですわ。何物にも代えられません",
-    "en": "",
+    "en": "She is irreplaceable. Nothing in the world could stand in her place.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -113792,7 +113792,7 @@
   },
   {
     "key": "くっ…考えるだけで熱くなる…！",
-    "en": "",
+    "en": "Nngh... just thinking about it lights me up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -113806,7 +113806,7 @@
   },
   {
     "key": "くっ…考えると熱くなります…！",
-    "en": "",
+    "en": "Ah... thinking about it fires me up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -113820,7 +113820,7 @@
   },
   {
     "key": "くっ…考えると熱くなる…！",
-    "en": "",
+    "en": "Ugh... thinking about it gets me going...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -113834,7 +113834,7 @@
   },
   {
     "key": "くっ…考えると熱くなるの…！",
-    "en": "",
+    "en": "Ah... just thinking about it stirs me up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -114583,7 +114583,7 @@
   },
   {
     "key": "こいつのことはよ…大事にしてやりてぇんだ…！",
-    "en": "",
+    "en": "This one... I wanna look out for her, y'know...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -114597,7 +114597,7 @@
   },
   {
     "key": "こいつのためなら何だってやる…！ 絶対守る…！",
-    "en": "",
+    "en": "For her I'd do anything...! Nobody touches her...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -114847,7 +114847,7 @@
   },
   {
     "key": "ここ、ちゃんとしてんのかよ…不安になるぜ",
-    "en": "",
+    "en": "Is this place even run right... starting to worry me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115208,7 +115208,7 @@
   },
   {
     "key": "ここが…自分の場所だ",
-    "en": "",
+    "en": "This is... my place.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115278,7 +115278,7 @@
   },
   {
     "key": "ここがわたくしの居場所ですわ。誇りに思います",
-    "en": "",
+    "en": "This is where I belong. I am proud of it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115376,7 +115376,7 @@
   },
   {
     "key": "ここが最高の場所。私がもっと強くしてみせる",
-    "en": "",
+    "en": "Best place around. I'm going to make it stronger.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115390,7 +115390,7 @@
   },
   {
     "key": "ここが最高の場所。私がもっと強くしてみせるわ",
-    "en": "",
+    "en": "This is the best place there is. I'll make it stronger still.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115404,7 +115404,7 @@
   },
   {
     "key": "ここが最高の場所だ。…もっと強くする",
-    "en": "",
+    "en": "Best place there is. ...I'll make it stronger.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115418,7 +115418,7 @@
   },
   {
     "key": "ここが最高の場所です。私がもっと強くしてみせます",
-    "en": "",
+    "en": "This is the finest place there is. I'll make it stronger.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115554,7 +115554,7 @@
   },
   {
     "key": "ここでなら…私らしくいられるわ",
-    "en": "",
+    "en": "Here, at least... I get to be myself.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115610,7 +115610,7 @@
   },
   {
     "key": "ここでプロレスができる幸せを噛みしめています",
-    "en": "",
+    "en": "I'm holding onto how lucky I am to wrestle here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115624,7 +115624,7 @@
   },
   {
     "key": "ここでプロレスができる幸せを噛みしめております",
-    "en": "",
+    "en": "I am savoring the good fortune of getting to wrestle here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115638,7 +115638,7 @@
   },
   {
     "key": "ここでプロレスができる幸せを噛みしめてるの",
-    "en": "",
+    "en": "Getting to wrestle here is a happiness I hold onto.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115652,7 +115652,7 @@
   },
   {
     "key": "ここでプロレスできる幸せ、噛みしめてるよ",
-    "en": "",
+    "en": "Getting to wrestle here — I don't take that for granted.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115750,7 +115750,7 @@
   },
   {
     "key": "ここで出会えた仲間は宝…決して裏切りません…！",
-    "en": "",
+    "en": "The friends I found here are treasure... I shall never betray them...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115764,7 +115764,7 @@
   },
   {
     "key": "ここで出会えた仲間は宝物…絶対に裏切らない…！",
-    "en": "",
+    "en": "The people I met here are everything... I'd never let them down...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115778,7 +115778,7 @@
   },
   {
     "key": "ここで出会えた仲間は宝物だ…絶対に裏切らねぇ…！",
-    "en": "",
+    "en": "The crew I found here is gold... I'm never turning on them...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115792,7 +115792,7 @@
   },
   {
     "key": "ここで出会えた仲間は宝物です…絶対に裏切りません…！",
-    "en": "",
+    "en": "The friends I made here are a treasure... I will never betray them...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115806,7 +115806,7 @@
   },
   {
     "key": "ここで出会えた仲間は宝物なの…絶対に裏切らないわ…！",
-    "en": "",
+    "en": "The friends I found here are precious to me... I'd never betray them...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -115929,7 +115929,7 @@
   },
   {
     "key": "ここで戦えることが幸せなんです…（涙）",
-    "en": "",
+    "en": "Getting to fight here makes me happy... (tears)",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -115943,7 +115943,7 @@
   },
   {
     "key": "ここで戦える幸せを、噛みしめている",
-    "en": "",
+    "en": "I don't take getting to fight here lightly.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116338,7 +116338,7 @@
   },
   {
     "key": "ここにいていいのか…考え直す時期かもしれない",
-    "en": "",
+    "en": "Whether I stay... maybe it's time I gave that some thought.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116352,7 +116352,7 @@
   },
   {
     "key": "ここにいていいのか…考え直す時期かもしれません",
-    "en": "",
+    "en": "Whether I should stay... perhaps it's time I thought that over.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116366,7 +116366,7 @@
   },
   {
     "key": "ここにいていいのか…考え直す時期かもね",
-    "en": "",
+    "en": "Whether I belong here... might be worth reconsidering.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116380,7 +116380,7 @@
   },
   {
     "key": "ここにいていいんだ…って…最近やっと思えるようになったの…",
-    "en": "",
+    "en": "That I'm meant to be here... I've only just come around to it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116394,7 +116394,7 @@
   },
   {
     "key": "ここにいていいんだ…って…最近やっと思えるようになりました…",
-    "en": "",
+    "en": "That I belong here... I've finally started to feel it lately...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116408,7 +116408,7 @@
   },
   {
     "key": "ここにいていいんだって…最近やっと思えるようになった…",
-    "en": "",
+    "en": "That I'm allowed to be here... I've only just started believing it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116422,7 +116422,7 @@
   },
   {
     "key": "ここにいてもいいんだと…最近ようやく思えるようになったんです…",
-    "en": "",
+    "en": "That it's all right for me to be here... I've only recently been able to think so...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116436,7 +116436,7 @@
   },
   {
     "key": "ここにいてよいのだと…近ごろやっと思えるようになりました…",
-    "en": "",
+    "en": "That I am permitted to be here... I have only lately come to believe it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116450,7 +116450,7 @@
   },
   {
     "key": "ここにいる意味…本当にあるのかしら",
-    "en": "",
+    "en": "Is there any point in me being here, really?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116464,7 +116464,7 @@
   },
   {
     "key": "ここにいる理由が…もうない",
-    "en": "",
+    "en": "The reason to stay... it's gone.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116478,7 +116478,7 @@
   },
   {
     "key": "ここにはもう何も残ってないわ",
-    "en": "",
+    "en": "There's nothing left for me here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116506,7 +116506,7 @@
   },
   {
     "key": "ここに来れて…よかった…本気でそう思う…",
-    "en": "",
+    "en": "Coming here... was the right thing... I mean that...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116587,7 +116587,7 @@
   },
   {
     "key": "ここは最高だ。私がてっぺんまで連れてってやるよ",
-    "en": "",
+    "en": "This place is the best. I'm dragging it to the top myself.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116601,7 +116601,7 @@
   },
   {
     "key": "ここは私の場所だ。誰にも渡さねぇ",
-    "en": "",
+    "en": "This place is mine. Nobody's taking it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -116615,7 +116615,7 @@
   },
   {
     "key": "ここは素晴らしい〜。皆さんとやるのが楽しくて",
-    "en": "",
+    "en": "This place is wonderful~ Working with everyone is such a pleasure.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -117451,7 +117451,7 @@
   },
   {
     "key": "ここ最高〜！ みんなとやるの楽しいよ！",
-    "en": "",
+    "en": "This place is great~! Everyone's fun to work with!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -117465,7 +117465,7 @@
   },
   {
     "key": "ここ最高〜！ みんなとやるの楽しいわ！",
-    "en": "",
+    "en": "This place is the best~! Everyone here is fun to work with!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -117479,7 +117479,7 @@
   },
   {
     "key": "ここ最高〜！ みんなとやんの楽しいわ！",
-    "en": "",
+    "en": "This place rules~! Running with everyone is a blast!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -117493,7 +117493,7 @@
   },
   {
     "key": "ここ最高です〜！ みんなとやるの楽しいです！",
-    "en": "",
+    "en": "This place is wonderful~! It's so much fun working with everyone!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -117520,7 +117520,7 @@
   },
   {
     "key": "こちらに残らせていただきますわ。精進を続けさせてくださいませ",
-    "en": "",
+    "en": "I shall remain, with your leave. Please permit me to continue my training.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -117534,7 +117534,7 @@
   },
   {
     "key": "こちらに残りますわ。頂点は、わたくしのものなのだから。",
-    "en": "",
+    "en": "I shall stay. The summit is mine to take, after all.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -118037,7 +118037,7 @@
   },
   {
     "key": "このような扱いを受ける覚えはございませんわ",
-    "en": "",
+    "en": "I do not recall doing anything to deserve this treatment.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -118739,7 +118739,7 @@
   },
   {
     "key": "この人がいなかったら…今の私はいない。それだけは…わかる",
-    "en": "",
+    "en": "If she hadn't been here... I wouldn't be me. That much I'm sure of...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -118753,7 +118753,7 @@
   },
   {
     "key": "この人がいなかったら…私、とっくにダメになってたと思う…",
-    "en": "",
+    "en": "If she hadn't been here... I think I'd have given up by now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -118767,7 +118767,7 @@
   },
   {
     "key": "この人がいるから、ここにいる意味がある",
-    "en": "",
+    "en": "She's the reason being here means anything.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -118781,7 +118781,7 @@
   },
   {
     "key": "この人がいるから強くなれた。感謝してる…でも負けない",
-    "en": "",
+    "en": "She's why I got strong. I'm thankful... and I'm not losing.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -118837,7 +118837,7 @@
   },
   {
     "key": "この人のそばだと…少しだけ自分でいられる気がする…",
-    "en": "",
+    "en": "Around her... I feel like I can be a bit more myself...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -118851,7 +118851,7 @@
   },
   {
     "key": "この人のためなら何でもできる…！ 絶対に守る…！",
-    "en": "",
+    "en": "I'd do anything for her...! I'm not letting anyone hurt her...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -118865,7 +118865,7 @@
   },
   {
     "key": "この人のためなら何でもできるの…！ 絶対に守るわ…！",
-    "en": "",
+    "en": "There's nothing I wouldn't do for her...! I'll keep her safe...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119209,7 +119209,7 @@
   },
   {
     "key": "この出会いがなければ今の私はなかった…！",
-    "en": "",
+    "en": "Meeting her made me who I am...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119223,7 +119223,7 @@
   },
   {
     "key": "この切磋琢磨こそが、私の原動力です",
-    "en": "",
+    "en": "Pushing each other like this is what drives me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119307,7 +119307,7 @@
   },
   {
     "key": "この勝負が全てだ。他はどうでもいい",
-    "en": "",
+    "en": "This fight's the whole thing. Nothing else matters.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119434,7 +119434,7 @@
   },
   {
     "key": "この因縁に終わりなど…！ 生涯戦い続けます…！",
-    "en": "",
+    "en": "There is no end to this...! I shall fight her all my life...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119448,7 +119448,7 @@
   },
   {
     "key": "この因縁に終わりなどありません…！ 永遠に戦い続けます…！",
-    "en": "",
+    "en": "There's no end to this one...! I'll fight her forever...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119462,7 +119462,7 @@
   },
   {
     "key": "この因縁に終わりなんかねぇ…！ 永遠にやり合ってやる…！",
-    "en": "",
+    "en": "This doesn't end...! We go at it forever...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119476,7 +119476,7 @@
   },
   {
     "key": "この因縁に終わりなんてない…！ 永遠に戦い続ける…！",
-    "en": "",
+    "en": "This never ends...! I'll keep fighting her forever...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119490,7 +119490,7 @@
   },
   {
     "key": "この因縁に終わりなんてないわ…！ 永遠に戦い続けるの…！",
-    "en": "",
+    "en": "This has no ending...! We keep at it forever...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119504,7 +119504,7 @@
   },
   {
     "key": "この団体、すげぇ居心地いいんだわ〜",
-    "en": "",
+    "en": "This promotion's crazy comfortable, seriously~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119518,7 +119518,7 @@
   },
   {
     "key": "この団体、すっごく居心地いいのよね〜",
-    "en": "",
+    "en": "This promotion is terribly comfortable, you know~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119532,7 +119532,7 @@
   },
   {
     "key": "この団体、すっごく居心地いいんだよね〜",
-    "en": "",
+    "en": "This promotion is honestly so comfortable~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119546,7 +119546,7 @@
   },
   {
     "key": "この団体、すっごく居心地いいんですよね〜",
-    "en": "",
+    "en": "This promotion is just so easy to be in~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119560,7 +119560,7 @@
   },
   {
     "key": "この団体、とても居心地がよいのです〜",
-    "en": "",
+    "en": "This promotion suits me remarkably well~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119588,7 +119588,7 @@
   },
   {
     "key": "この団体、居心地がいい",
-    "en": "",
+    "en": "This promotion suits me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119616,7 +119616,7 @@
   },
   {
     "key": "この団体で…本当にやっていけるのかな",
-    "en": "",
+    "en": "Can I really make it work here...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119900,7 +119900,7 @@
   },
   {
     "key": "この団体に報いられるよう、これからも力を尽くします",
-    "en": "",
+    "en": "I shall continue to give my strength, so as to repay this promotion.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119914,7 +119914,7 @@
   },
   {
     "key": "この団体に来てよかった。ここが自分の居場所だ",
-    "en": "",
+    "en": "Coming to this promotion was the right call. This is where I belong.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119928,7 +119928,7 @@
   },
   {
     "key": "この団体に来られて…よかった…心からそう思います…",
-    "en": "",
+    "en": "Coming to this promotion... was a blessing... I do think so, truly...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119942,7 +119942,7 @@
   },
   {
     "key": "この団体に来られて…よかった…心からそう思うわ…",
-    "en": "",
+    "en": "Coming to this promotion... it was right... I feel that deeply...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119956,7 +119956,7 @@
   },
   {
     "key": "この団体に来られて…本当によかったです…心からそう思います…",
-    "en": "",
+    "en": "I'm so glad I came to this promotion... I mean that with all my heart...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119970,7 +119970,7 @@
   },
   {
     "key": "この団体に来れて…よかった…心からそう思います…",
-    "en": "",
+    "en": "I'm glad I came to this promotion... I really am...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119984,7 +119984,7 @@
   },
   {
     "key": "この団体に貢献する。…全力で",
-    "en": "",
+    "en": "I contribute to this promotion. ...Fully.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -119998,7 +119998,7 @@
   },
   {
     "key": "この団体に貢献できるよう、これからも全力で努めるわ",
-    "en": "",
+    "en": "I'll keep working at it, so I can give this promotion something back.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120012,7 +120012,7 @@
   },
   {
     "key": "この団体に貢献できるよう、これからも全力で努力します",
-    "en": "",
+    "en": "I'll keep working hard so I can do right by this promotion.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120026,7 +120026,7 @@
   },
   {
     "key": "この団体に返せるよう、これからも全力でやる",
-    "en": "",
+    "en": "I'll keep going full tilt so I can pay this promotion back.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120124,7 +120124,7 @@
   },
   {
     "key": "この団体の一員でいられて…本当に幸せです",
-    "en": "",
+    "en": "Being part of this promotion... it truly makes me happy.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120152,7 +120152,7 @@
   },
   {
     "key": "この団体の方針に…ちっと不安があんだよ",
-    "en": "",
+    "en": "The way this promotion's headed... it worries me some.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120166,7 +120166,7 @@
   },
   {
     "key": "この団体の方針に…少し不安を感じています",
-    "en": "",
+    "en": "I'm getting a little uneasy about where this promotion is going.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120180,7 +120180,7 @@
   },
   {
     "key": "この団体の方針に…少し不安を感じてるの",
-    "en": "",
+    "en": "The way this promotion is run... it worries me a little.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120194,7 +120194,7 @@
   },
   {
     "key": "この団体の方針に…少し不安を覚えます",
-    "en": "",
+    "en": "The direction of this promotion... gives me some disquiet.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120208,7 +120208,7 @@
   },
   {
     "key": "この団体の看板、わたくしが背負って差し上げますわ",
-    "en": "",
+    "en": "I shall carry this promotion's banner myself.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120222,7 +120222,7 @@
   },
   {
     "key": "この団体の運営方針に…疑問を感じますわ",
-    "en": "",
+    "en": "I have begun to question how this promotion is run.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120236,7 +120236,7 @@
   },
   {
     "key": "この団体を背負っていく覚悟はできています",
-    "en": "",
+    "en": "I'm prepared to carry this promotion.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120250,7 +120250,7 @@
   },
   {
     "key": "この団体を背負っていく覚悟はできてるの",
-    "en": "",
+    "en": "I'm ready to carry this promotion on my back.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120264,7 +120264,7 @@
   },
   {
     "key": "この団体を背負っていく覚悟はできてるよ",
-    "en": "",
+    "en": "I'm ready to shoulder this promotion.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120376,7 +120376,7 @@
   },
   {
     "key": "この壁を超えない限り、自分の成長はない",
-    "en": "",
+    "en": "I don't grow another inch until I get over this wall.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120390,7 +120390,7 @@
   },
   {
     "key": "この壁を越えない限り、私に先はないわ",
-    "en": "",
+    "en": "There's no going forward for me until this wall comes down.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120404,7 +120404,7 @@
   },
   {
     "key": "この壁を越えなければ、先はない",
-    "en": "",
+    "en": "No road past this wall until I clear it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120418,7 +120418,7 @@
   },
   {
     "key": "この壁を越えぬ限り、わたくしに先はありません",
-    "en": "",
+    "en": "Until I clear this wall, there is no road ahead for me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120432,7 +120432,7 @@
   },
   {
     "key": "この壁越えねぇ限り、あたしに先はねぇ",
-    "en": "",
+    "en": "Don't clear this wall, there's no road forward for me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120652,7 +120652,7 @@
   },
   {
     "key": "この存在が…引っかかる",
-    "en": "",
+    "en": "Something about her... catches.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120666,7 +120666,7 @@
   },
   {
     "key": "この存在がなかったら、今の自分はいない",
-    "en": "",
+    "en": "Without her, I wouldn't be who I am.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120680,7 +120680,7 @@
   },
   {
     "key": "この存在が私を高める。…宿命か",
-    "en": "",
+    "en": "She raises me. ...Destiny, then.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120694,7 +120694,7 @@
   },
   {
     "key": "この存在が自分を高めてくれる。これが宿命というものか",
-    "en": "",
+    "en": "She makes me better than I was. Maybe that's what destiny means.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120876,7 +120876,7 @@
   },
   {
     "key": "この戦いが…私のプロレス人生そのものです",
-    "en": "",
+    "en": "This fight... it's my whole career in one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120890,7 +120890,7 @@
   },
   {
     "key": "この戦いに終わりはない。…望むところね",
-    "en": "",
+    "en": "This fight has no end. ...Which suits me perfectly.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120904,7 +120904,7 @@
   },
   {
     "key": "この戦いは一生続く。望むところよ",
-    "en": "",
+    "en": "This one runs for life. Bring it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120918,7 +120918,7 @@
   },
   {
     "key": "この戦いは生涯続きます。望むところ",
-    "en": "",
+    "en": "This will go on the whole of our lives. I would have it no other way.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120932,7 +120932,7 @@
   },
   {
     "key": "この戦いは生涯続くでしょう。望むところです",
-    "en": "",
+    "en": "I expect this will last a lifetime. I'd have it that way.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120946,7 +120946,7 @@
   },
   {
     "key": "この扱い、許すつもりはないの。忘れないことね",
-    "en": "",
+    "en": "I have no intention of forgiving this. Do keep that in mind.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120960,7 +120960,7 @@
   },
   {
     "key": "この扱いは何かしら。私の実力、わかってるの？",
-    "en": "",
+    "en": "What am I to make of this treatment? Does anyone know what I'm worth?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120974,7 +120974,7 @@
   },
   {
     "key": "この扱いは何だ。…実力を見ていない",
-    "en": "",
+    "en": "What kind of treatment is this? ...Nobody is looking at what I can do.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -120988,7 +120988,7 @@
   },
   {
     "key": "この扱いは何でしょう。私の実力、ご存じないんですか",
-    "en": "",
+    "en": "What is this, exactly? Does the President not know what I can do?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121002,7 +121002,7 @@
   },
   {
     "key": "この扱いは何？ 私の実力、わかってるの",
-    "en": "",
+    "en": "What is this treatment? Does anybody here know what I can do?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121016,7 +121016,7 @@
   },
   {
     "key": "この扱いは許さない。…覚えておけ",
-    "en": "",
+    "en": "I won't forgive this. ...Remember that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121030,7 +121030,7 @@
   },
   {
     "key": "この扱いは許せない。覚えておいて",
-    "en": "",
+    "en": "I'm not letting this go. Remember it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121044,7 +121044,7 @@
   },
   {
     "key": "この扱いは許せません。しかと覚えておくことです",
-    "en": "",
+    "en": "This treatment is unforgivable. See that you remember it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121058,7 +121058,7 @@
   },
   {
     "key": "この扱いは許せません。覚えておいてください",
-    "en": "",
+    "en": "I can't forgive this treatment. Please remember that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121142,7 +121142,7 @@
   },
   {
     "key": "この方のためなら何でもできます…！ 必ずお守りします…！",
-    "en": "",
+    "en": "There is nothing I would not do for her...! I will protect her...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121486,7 +121486,7 @@
   },
   {
     "key": "この環境に…疑問を感じ始めている",
-    "en": "",
+    "en": "This setup... I'm starting to have doubts.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121933,7 +121933,7 @@
   },
   {
     "key": "この試合が一番楽しい。ずっとこのままであればよいのに",
-    "en": "",
+    "en": "These matches are the ones I enjoy most. I do wish they would never end.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121947,7 +121947,7 @@
   },
   {
     "key": "この試合が一番楽しい。ずっとこの関係が続けばいいのに",
-    "en": "",
+    "en": "These matches are the best. I hope this never ends.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121961,7 +121961,7 @@
   },
   {
     "key": "この試合が一番楽しいの。ずっとこの関係が続けばいいのに",
-    "en": "",
+    "en": "Hers are the matches I enjoy most. I'd keep this going forever.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121975,7 +121975,7 @@
   },
   {
     "key": "この試合が一番楽しいんだわ。ずっと続けばいいのにな",
-    "en": "",
+    "en": "These are the matches I love. Wish they'd just keep coming.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -121989,7 +121989,7 @@
   },
   {
     "key": "この試合が一番楽しいんです。ずっとこの関係が続けばいいのに",
-    "en": "",
+    "en": "Matches with her are my favorite. I wish this would just carry on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122171,7 +122171,7 @@
   },
   {
     "key": "この距離…あたしの何が悪かったんだろうな",
-    "en": "",
+    "en": "This gap... What'd I do wrong, I wonder.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122185,7 +122185,7 @@
   },
   {
     "key": "この距離…わたくしの何がいけなかったのでしょう",
-    "en": "",
+    "en": "This distance... What was it in me that went wrong?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122199,7 +122199,7 @@
   },
   {
     "key": "この距離…私の何がいけなかったのかしら",
-    "en": "",
+    "en": "This distance... What was it I got wrong, I wonder?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122213,7 +122213,7 @@
   },
   {
     "key": "この距離…自分の何がいけなかったんだろう",
-    "en": "",
+    "en": "This gap... What did I do wrong, I wonder?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122227,7 +122227,7 @@
   },
   {
     "key": "この距離。…私の何が悪かった",
-    "en": "",
+    "en": "This distance. ...What did I get wrong?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122269,7 +122269,7 @@
   },
   {
     "key": "この関係…修復できる自信がありません…",
-    "en": "",
+    "en": "This relationship... I don't trust myself to repair it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122283,7 +122283,7 @@
   },
   {
     "key": "この関係…修復できる自信がない…",
-    "en": "",
+    "en": "This one... I don't think I can fix it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122297,7 +122297,7 @@
   },
   {
     "key": "この関係…直せる気がしねぇ…",
-    "en": "",
+    "en": "This mess... don't think I can fix it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122311,7 +122311,7 @@
   },
   {
     "key": "この関係…直せる自信がないの…",
-    "en": "",
+    "en": "This... I'm not sure I can put it right...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -122325,7 +122325,7 @@
   },
   {
     "key": "この関係…繕える自信がありません…",
-    "en": "",
+    "en": "This rift... I have no confidence that I can mend it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -123134,7 +123134,7 @@
   },
   {
     "key": "これ以上は望めません。それだけのこと",
-    "en": "",
+    "en": "Nothing further can be expected. That is simply the fact of it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -123148,7 +123148,7 @@
   },
   {
     "key": "これ以上は無理ね。それだけ",
-    "en": "",
+    "en": "That's my limit. Simple as that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -123162,7 +123162,7 @@
   },
   {
     "key": "これ以上は無理ね。それだけよ",
-    "en": "",
+    "en": "This is the end of it. Nothing more to say.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -123176,7 +123176,7 @@
   },
   {
     "key": "これ以上は難しいです。それだけのことです",
-    "en": "",
+    "en": "I don't think we can go further than this. That's all it is.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -123260,7 +123260,7 @@
   },
   {
     "key": "こんなとこ、もういられるか。出て行ってやる",
-    "en": "",
+    "en": "Can't stay in a place like this. I'm walking.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -125103,7 +125103,7 @@
   },
   {
     "key": "ご期待に添えるよう、精一杯頑張らせていただきます",
-    "en": "",
+    "en": "I mean to be worth the faith you have put in me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -125367,7 +125367,7 @@
   },
   {
     "key": "さすがにこれは…笑えないかも",
-    "en": "",
+    "en": "Yeah... I don't think I can laugh this off.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -125381,7 +125381,7 @@
   },
   {
     "key": "さすがにこれは…笑えないですね",
-    "en": "",
+    "en": "This one... I really can't laugh at.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -125395,7 +125395,7 @@
   },
   {
     "key": "さすがにこれは…笑えないわね",
-    "en": "",
+    "en": "Even I can't find this amusing.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -125409,7 +125409,7 @@
   },
   {
     "key": "さすがにこれは…笑えねぇかも",
-    "en": "",
+    "en": "Yeah, this one... can't laugh this off.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -125423,7 +125423,7 @@
   },
   {
     "key": "さすがにこれは…笑えません",
-    "en": "",
+    "en": "Even I cannot laugh at this one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -126329,7 +126329,7 @@
   },
   {
     "key": "すみません…少し不安になってきました…",
-    "en": "",
+    "en": "I'm sorry... I've started to feel a little uneasy...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -128327,7 +128327,7 @@
   },
   {
     "key": "そばにいると…なんだか…落ち着く…",
-    "en": "",
+    "en": "Next to her... somehow... I settle...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130081,7 +130081,7 @@
   },
   {
     "key": "つるんでると楽しいんだわ、まじで",
-    "en": "",
+    "en": "Hanging with her's a good time, for real.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130472,7 +130472,7 @@
   },
   {
     "key": "どうして…以前のように言葉をくれないの…",
-    "en": "",
+    "en": "Why... will she not give me her words anymore...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130486,7 +130486,7 @@
   },
   {
     "key": "どうして…以前のように話してくださらないの…",
-    "en": "",
+    "en": "Why... will she not speak to me as she used to...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130500,7 +130500,7 @@
   },
   {
     "key": "どうして…以前のように話してくださらないんですか…",
-    "en": "",
+    "en": "Why... won't she speak with me the way she used to...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130514,7 +130514,7 @@
   },
   {
     "key": "どうして…前みたいに話してくれないの…",
-    "en": "",
+    "en": "Why... doesn't she talk to me like before...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130556,7 +130556,7 @@
   },
   {
     "key": "どうしても…意識してしまう",
-    "en": "",
+    "en": "I can't help... keeping tabs on her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130640,7 +130640,7 @@
   },
   {
     "key": "どうしても許せない。必ず私が勝つわ",
-    "en": "",
+    "en": "I can't let it stand. I'm the one who wins this.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130654,7 +130654,7 @@
   },
   {
     "key": "どうしても負けたくないんです…この気持ちは…",
-    "en": "",
+    "en": "I really don't want to lose to her... I don't know what this feeling is...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130752,7 +130752,7 @@
   },
   {
     "key": "どこで違えてしまったのでしょう…",
-    "en": "",
+    "en": "Where did we go astray, I wonder...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130766,7 +130766,7 @@
   },
   {
     "key": "どこで間違えたのかしら…",
-    "en": "",
+    "en": "Where did I misstep, I wonder...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130780,7 +130780,7 @@
   },
   {
     "key": "どこで間違えたんだろう…",
-    "en": "",
+    "en": "Where did it start going wrong...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130794,7 +130794,7 @@
   },
   {
     "key": "どこで間違えたんだろうな…",
-    "en": "",
+    "en": "Where'd it go wrong, I wonder...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130808,7 +130808,7 @@
   },
   {
     "key": "どこで間違えてしまったんでしょう…",
-    "en": "",
+    "en": "Where do you suppose I went wrong...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -130822,7 +130822,7 @@
   },
   {
     "key": "どこにも行かねーよ。ここが一番おもしれーからな",
-    "en": "",
+    "en": "I'm not going anywhere. This is the most fun I've had.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -131088,7 +131088,7 @@
   },
   {
     "key": "なかなかの逸材ね。ふふ、楽しみ",
-    "en": "",
+    "en": "Quite the find, that one. Mm... I'll enjoy this.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -131102,7 +131102,7 @@
   },
   {
     "key": "なかなかやるじゃない。認めてあげてもいいかな",
-    "en": "",
+    "en": "Not bad at all. I might just give her that much.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -131130,7 +131130,7 @@
   },
   {
     "key": "なかなか面白い人ね。もっと近くで見ていたい",
-    "en": "",
+    "en": "She's interesting. I'd like a closer look at her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -131144,7 +131144,7 @@
   },
   {
     "key": "なくてはならない方です。心からそう思います",
-    "en": "",
+    "en": "I could not do without her. I mean that sincerely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -131200,7 +131200,7 @@
   },
   {
     "key": "なめんじゃねぇぞ。私をもっと使え",
-    "en": "",
+    "en": "Don't take me lightly. Book me more.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -131284,7 +131284,7 @@
   },
   {
     "key": "なんかいい感じ〜。楽でいいわ",
-    "en": "",
+    "en": "...Feels good, somehow. Easy.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -131376,7 +131376,7 @@
   },
   {
     "key": "なんか壁作ってない？ 気に入らないな",
-    "en": "",
+    "en": "Is she shutting me out or something? Not a fan.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -131614,7 +131614,7 @@
   },
   {
     "key": "なんで…前みたいに話してくれねぇんだよ…",
-    "en": "",
+    "en": "Why... won't she talk to me like she used to...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -133284,7 +133284,7 @@
   },
   {
     "key": "はて…空気が微かに変わりましたかしら",
-    "en": "",
+    "en": "Hm... has the air between us shifted a little?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -134375,7 +134375,7 @@
   },
   {
     "key": "ふざけないで。私の価値がわからないなら、もう付き合いきれない",
-    "en": "",
+    "en": "Don't mess with me. If nobody sees my worth, I'm out.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -134389,7 +134389,7 @@
   },
   {
     "key": "ふざけないで。私の価値がわからないなら、もう付き合いきれないわ",
-    "en": "",
+    "en": "Don't play with me. If you can't see my worth, I'm done with you.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -134403,7 +134403,7 @@
   },
   {
     "key": "ふざけないでいただきたい。価値が分からぬなら、もう付き合いきれません",
-    "en": "",
+    "en": "Do not make sport of me. If my worth is lost on you, I am finished here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -134417,7 +134417,7 @@
   },
   {
     "key": "ふざけないでください。私の価値がわからないなら、もう付き合いきれません",
-    "en": "",
+    "en": "Please don't make light of me. If my worth means nothing here, I'm done.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -134787,7 +134787,7 @@
   },
   {
     "key": "ふふ…なんて笑ってる場合じゃないわ、これ",
-    "en": "",
+    "en": "Mm — no, this is past laughing at.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -135700,7 +135700,7 @@
   },
   {
     "key": "ふふ、考えるだけで自然と気合が入っちゃう",
-    "en": "",
+    "en": "Mm~ the mere thought of it puts an edge in me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -135714,7 +135714,7 @@
   },
   {
     "key": "ふふ、考えると自然と気合が入ります",
-    "en": "",
+    "en": "Hehe, just thinking about it gets me focused.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -135728,7 +135728,7 @@
   },
   {
     "key": "ふふ、考えると自然と気合入るわ",
-    "en": "",
+    "en": "Heh, thinking about it just gets me going.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -135756,7 +135756,7 @@
   },
   {
     "key": "ふふ、負けたくないわ〜",
-    "en": "",
+    "en": "Mm~ I'd hate to lose to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -136633,7 +136633,7 @@
   },
   {
     "key": "へへ、考えると自然に気合入るんだわ",
-    "en": "",
+    "en": "Heh. Just thinking about it gets me fired up.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137442,7 +137442,7 @@
   },
   {
     "key": "まぁ…悪くないやつだよ",
-    "en": "",
+    "en": "Eh... she's all right, that one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137554,7 +137554,7 @@
   },
   {
     "key": "まぁ、因縁とて永遠ではありませんもの〜",
-    "en": "",
+    "en": "Well, no feud lasts forever, does it~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137624,7 +137624,7 @@
   },
   {
     "key": "まぁ因縁も永遠じゃありませんよね〜",
-    "en": "",
+    "en": "Well, no rivalry keeps going forever~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137638,7 +137638,7 @@
   },
   {
     "key": "まぁ因縁も永遠じゃないものね〜",
-    "en": "",
+    "en": "Well, nothing burns forever~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137652,7 +137652,7 @@
   },
   {
     "key": "まぁ因縁も永遠じゃないよね〜",
-    "en": "",
+    "en": "Well, feuds don't last forever~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137666,7 +137666,7 @@
   },
   {
     "key": "まぁ因縁も永遠じゃねぇよな〜",
-    "en": "",
+    "en": "Eh, no grudge runs forever~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137680,7 +137680,7 @@
   },
   {
     "key": "まぁ大丈夫…だよな？ ちょい不安だけど",
-    "en": "",
+    "en": "It's fine... right? Bit worried, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137694,7 +137694,7 @@
   },
   {
     "key": "まぁ大丈夫…だよね？ ちょっと不安だけど",
-    "en": "",
+    "en": "It's fine... right? I'm a little worried, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137708,7 +137708,7 @@
   },
   {
     "key": "まぁ大丈夫…ですよね？ ちょっと不安ですけど",
-    "en": "",
+    "en": "It's all right... isn't it? I am a bit anxious, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137722,7 +137722,7 @@
   },
   {
     "key": "まぁ大丈夫…ですよね？ 少し不安ですけれど",
-    "en": "",
+    "en": "It will be fine... will it not? I am a little uneasy all the same.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137736,7 +137736,7 @@
   },
   {
     "key": "まぁ大丈夫…よね？ ちょっと不安だけど",
-    "en": "",
+    "en": "It'll be fine... won't it? A touch worrying, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -137791,7 +137791,7 @@
   },
   {
     "key": "まあ…ここが一番しっくりくるかな",
-    "en": "",
+    "en": "Well... this is the place that fits best, I'd say.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -138866,7 +138866,7 @@
   },
   {
     "key": "またとない相方。この巡り合わせに感謝を",
-    "en": "",
+    "en": "A partner beyond replacing. I am thankful for the chance of it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -142322,7 +142322,7 @@
   },
   {
     "key": "みんなと一緒にもっと上を目指したい",
-    "en": "",
+    "en": "I want to climb higher with everyone here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -142531,7 +142531,7 @@
   },
   {
     "key": "みんなのこと…大好き…！ この団体のために全力を尽くす…！",
-    "en": "",
+    "en": "I love them all...! I'm giving this promotion everything I've got...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -142545,7 +142545,7 @@
   },
   {
     "key": "みんなのこと…大好きだ…！ この団体のために全力でやる…！",
-    "en": "",
+    "en": "I love these people...! I'm giving this promotion everything...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -142559,7 +142559,7 @@
   },
   {
     "key": "みんなのこと…大好きです…！ この団体のために全力を尽くします…！",
-    "en": "",
+    "en": "I love everyone here...! I'll do everything I can for this promotion...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -142573,7 +142573,7 @@
   },
   {
     "key": "みんなのこと…大好きよ…！ この団体のために全力を尽くすわ…！",
-    "en": "",
+    "en": "I love them all...! I'll give this promotion everything I have...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143070,7 +143070,7 @@
   },
   {
     "key": "もう…信じられない…！ どうして…！",
-    "en": "",
+    "en": "No — I can't believe it...! Why...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143084,7 +143084,7 @@
   },
   {
     "key": "もう…信じられないわ…！ どうして…！",
-    "en": "",
+    "en": "I don't believe it...! Why would you...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143098,7 +143098,7 @@
   },
   {
     "key": "もう…信じられねぇ…！ なんでだよ…！",
-    "en": "",
+    "en": "I can't believe this...! Why the hell...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143112,7 +143112,7 @@
   },
   {
     "key": "もう…信じられません…！ どうして…！",
-    "en": "",
+    "en": "This is beyond belief...! How could you...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143126,7 +143126,7 @@
   },
   {
     "key": "もう…信じられません…！ どうしてですか…！",
-    "en": "",
+    "en": "I can't take this in...! Why would you do that...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143140,7 +143140,7 @@
   },
   {
     "key": "もう…合わないみたいね",
-    "en": "",
+    "en": "We just... don't fit anymore, do we.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143468,7 +143468,7 @@
   },
   {
     "key": "もういいかしら。次を探さなきゃ",
-    "en": "",
+    "en": "I think I'm done with her. Time to find the next one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143538,7 +143538,7 @@
   },
   {
     "key": "もういっぺん分かり合えるように、やるしかねぇ",
-    "en": "",
+    "en": "Only thing to do is get back on the same page with her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143771,7 +143771,7 @@
   },
   {
     "key": "もう一度、分かり合えるように努力しなきゃ",
-    "en": "",
+    "en": "I need to try again — really try to understand her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143823,7 +143823,7 @@
   },
   {
     "key": "もう一度分かり合えるよう、努めなければ",
-    "en": "",
+    "en": "I must make the effort to understand her again.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143837,7 +143837,7 @@
   },
   {
     "key": "もう一度分かり合えるよう、努力しないとね",
-    "en": "",
+    "en": "I'll have to work at understanding her again.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143963,7 +143963,7 @@
   },
   {
     "key": "もう以前のようには…すみません",
-    "en": "",
+    "en": "It won't be like before... I'm sorry.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143977,7 +143977,7 @@
   },
   {
     "key": "もう以前のようには戻れませんわ",
-    "en": "",
+    "en": "We shall not return to what we were.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -143991,7 +143991,7 @@
   },
   {
     "key": "もう仲間とかそういう言葉じゃ足りない。大事な存在。",
-    "en": "",
+    "en": "\"Teammate\" doesn't cover it anymore. She matters to me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -144753,7 +144753,7 @@
   },
   {
     "key": "もう運命みたいなものだと思ってる",
-    "en": "",
+    "en": "At this point I think of it as fate.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -144767,7 +144767,7 @@
   },
   {
     "key": "もう過去のことですわ",
-    "en": "",
+    "en": "That is behind us now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -144781,7 +144781,7 @@
   },
   {
     "key": "もう限界かもしれない。ここにいる理由が見つからない",
-    "en": "",
+    "en": "I might be at my limit. I can't find a reason to stay.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -146890,7 +146890,7 @@
   },
   {
     "key": "やり合うの、ワクワクすんだよな",
-    "en": "",
+    "en": "Going at it with her? That's the fun part.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -147596,7 +147596,7 @@
   },
   {
     "key": "ようやく手応えのある相手が現れました",
-    "en": "",
+    "en": "At last, someone who gives me something to push against.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -147638,7 +147638,7 @@
   },
   {
     "key": "ようやく面白い相手が出てきた",
-    "en": "",
+    "en": "Finally, someone worth the trouble.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -150220,7 +150220,7 @@
   },
   {
     "key": "わたくし、こちらに残らせていただきますわ。ここが一番輝ける場所ですもの",
-    "en": "",
+    "en": "I shall remain here, if you will have me. This is where I shine brightest.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -150234,7 +150234,7 @@
   },
   {
     "key": "わたくし、こちらに残りますわ！ここ、とっても楽しいんですもの！",
-    "en": "",
+    "en": "I shall remain here! It is far too enjoyable to leave!",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -150388,7 +150388,7 @@
   },
   {
     "key": "わたくしたち、最強のペアですわ",
-    "en": "",
+    "en": "We are the strongest pair in the building.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -150679,7 +150679,7 @@
   },
   {
     "key": "わたくしの価値をご理解いただけていませんわね",
-    "en": "",
+    "en": "My value does not appear to be understood here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -150763,7 +150763,7 @@
   },
   {
     "key": "わたくしの宿命ですわ…それ以外に言葉がない",
-    "en": "",
+    "en": "She is my destiny... I have no other word for it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -150777,7 +150777,7 @@
   },
   {
     "key": "わたくしの居場所がここにあるのか…考えてしまいます",
-    "en": "",
+    "en": "Whether my place is truly here... I find myself thinking on it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -151345,7 +151345,7 @@
   },
   {
     "key": "ん〜、なんだか少し空気が変わりましたかね〜",
-    "en": "",
+    "en": "Mmm~ the mood between us has shifted a bit, I think~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -151359,7 +151359,7 @@
   },
   {
     "key": "ん〜、なんとなく空気が変わった感じ？",
-    "en": "",
+    "en": "Mm~ something's changed in the air, hasn't it?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -151373,7 +151373,7 @@
   },
   {
     "key": "ん〜なんだろ、微妙に空気変わった？",
-    "en": "",
+    "en": "Mm, what is it... did something change between us?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -151456,7 +151456,7 @@
   },
   {
     "key": "んー、なんか空気変わった気ぃすんだけど",
-    "en": "",
+    "en": "Mm, feels like something shifted between us.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -152945,7 +152945,7 @@
   },
   {
     "key": "ダチだ。何があっても守ってやる",
-    "en": "",
+    "en": "She's family. Whatever happens, I've got her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -154595,7 +154595,7 @@
   },
   {
     "key": "ノリが合うんだよね〜。一緒にいると楽しいわ",
-    "en": "",
+    "en": "We're on the same wavelength~ She's fun to be around.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -156093,7 +156093,7 @@
   },
   {
     "key": "フン、気に入ったぜ",
-    "en": "",
+    "en": "Heh. She's grown on me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -157591,7 +157591,7 @@
   },
   {
     "key": "ライバルとして意識してる自分がいるんだよな",
-    "en": "",
+    "en": "Guess I've started counting her as a rival.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -157605,7 +157605,7 @@
   },
   {
     "key": "ライバルとして意識し始めている自分がいる",
-    "en": "",
+    "en": "I've started thinking of her as a rival, I guess.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160440,7 +160440,7 @@
   },
   {
     "key": "一生の仲間だぜ。間違いない",
-    "en": "",
+    "en": "Friends for life, that one. No question.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160595,7 +160595,7 @@
   },
   {
     "key": "一緒だと…ドキドキするけど…安心もする…",
-    "en": "",
+    "en": "With her... I get flustered... but I feel safe, too...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160609,7 +160609,7 @@
   },
   {
     "key": "一緒だと、何もかも上手くいく気がするんです",
-    "en": "",
+    "en": "When we're together, everything seems to go right.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160637,7 +160637,7 @@
   },
   {
     "key": "一緒だと全部うまくいく。楽だ",
-    "en": "",
+    "en": "Everything works with her. Easy.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160665,7 +160665,7 @@
   },
   {
     "key": "一緒なら、どこまでも戦える",
-    "en": "",
+    "en": "With her, I can fight as far as it goes.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160749,7 +160749,7 @@
   },
   {
     "key": "一緒にいて飽きないわ〜",
-    "en": "",
+    "en": "She never bores me~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160763,7 +160763,7 @@
   },
   {
     "key": "一緒にいると……なんだか温かいの",
-    "en": "",
+    "en": "Being near her... it's warm, somehow.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160777,7 +160777,7 @@
   },
   {
     "key": "一緒にいると…少しだけ自分に自信が持てるんです…",
-    "en": "",
+    "en": "When she's there... I can believe in myself a little more...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160791,7 +160791,7 @@
   },
   {
     "key": "一緒にいると、なんでも上手くいっちゃうの",
-    "en": "",
+    "en": "With her, things just seem to fall into place.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160805,7 +160805,7 @@
   },
   {
     "key": "一緒にいると、何もかも上手く回る気がして",
-    "en": "",
+    "en": "With her, everything seems to turn over smoothly~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160819,7 +160819,7 @@
   },
   {
     "key": "一緒にいると元気が出る…！ 大好き…！",
-    "en": "",
+    "en": "She picks me right up...! I love her...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160833,7 +160833,7 @@
   },
   {
     "key": "一緒にいると全部うまくいく気がするんだよね",
-    "en": "",
+    "en": "Everything just seems to work out when we're together.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160875,7 +160875,7 @@
   },
   {
     "key": "一緒にいると肩の力が抜けるっつーか",
-    "en": "",
+    "en": "Something about her takes the edge off, I guess.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160889,7 +160889,7 @@
   },
   {
     "key": "一緒にいると自然体でいられます。ありがたいです",
-    "en": "",
+    "en": "I can just be myself around her. I'm grateful for that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160916,7 +160916,7 @@
   },
   {
     "key": "一緒にてっぺん獲りてぇ。二人なら行けるだろ",
-    "en": "",
+    "en": "Wanna take the top with her. Two of us can get there.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -160943,7 +160943,7 @@
   },
   {
     "key": "一緒にやってると気合入るんだよな。いい練習相手だ",
-    "en": "",
+    "en": "Working out with her fires me up. Good partner to have.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -161079,7 +161079,7 @@
   },
   {
     "key": "一緒に練習してて楽しいんです。もっと強くなれる気がして",
-    "en": "",
+    "en": "Training with her is fun. I feel like I can get stronger.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -161093,7 +161093,7 @@
   },
   {
     "key": "一緒に頂点まで行きたいの。二人ならきっと届くわ",
-    "en": "",
+    "en": "I want to reach the top with her. I think the two of us can.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -161107,7 +161107,7 @@
   },
   {
     "key": "一緒に頂点を目指したい。二人ならきっと行ける",
-    "en": "",
+    "en": "I want to go for the top with her. I believe we can make it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -161200,7 +161200,7 @@
   },
   {
     "key": "一緒のトレーニング、刺激があっていいわ",
-    "en": "",
+    "en": "Training together has a certain edge to it. I like that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -161228,7 +161228,7 @@
   },
   {
     "key": "一緒の時間が…とても大切なんです…！",
-    "en": "",
+    "en": "The time we spend... it means so much to me...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -162494,7 +162494,7 @@
   },
   {
     "key": "不安…こんなんでいいの…？ 私のこと忘れてない…？",
-    "en": "",
+    "en": "I'm worried... Is this really fine...? Nobody's forgotten me, right...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -162508,7 +162508,7 @@
   },
   {
     "key": "不安だ…こんなんでいいのかよ…？ あたしのこと忘れてねぇか…？",
-    "en": "",
+    "en": "I'm on edge... Is this really okay...? Did they forget about me...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -162522,7 +162522,7 @@
   },
   {
     "key": "不安です…これでいいんですか…？ 私のこと、忘れていませんか…？",
-    "en": "",
+    "en": "I'm anxious... Is this all right...? You haven't forgotten me, have you...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -162536,7 +162536,7 @@
   },
   {
     "key": "不安です…これでよいの…？ わたくしのこと、お忘れでは…？",
-    "en": "",
+    "en": "I am uneasy... Is this as it should be...? Have I been forgotten...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -162550,7 +162550,7 @@
   },
   {
     "key": "不安なの…これでいいのかしら…？ 私、忘れられてない…？",
-    "en": "",
+    "en": "I'm unsettled... Is this how it should be...? Am I still on anyone's mind...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -162591,7 +162591,7 @@
   },
   {
     "key": "不思議と気が合う。一緒にいて楽なのよね",
-    "en": "",
+    "en": "We click, somehow. She's easy to be around.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -162605,7 +162605,7 @@
   },
   {
     "key": "不思議と波長が合いますの。心地よい距離感ですわ",
-    "en": "",
+    "en": "We are curiously well matched. A most comfortable distance.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -163306,7 +163306,7 @@
   },
   {
     "key": "二人なら、どんな困難も乗り越えられます",
-    "en": "",
+    "en": "Together, I believe we can get through anything.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -163320,7 +163320,7 @@
   },
   {
     "key": "二人なら怖いものなんてない",
-    "en": "",
+    "en": "The two of us? Nothing scares me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -165666,7 +165666,7 @@
   },
   {
     "key": "他の所に行く理由もないし……ここで頂点を目指すよ！",
-    "en": "",
+    "en": "No reason to go anywhere else... I'm going for the top right here!",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -165817,7 +165817,7 @@
   },
   {
     "key": "以前はもっとお話ししていたのに。…どうしてでしょう",
-    "en": "",
+    "en": "We used to talk so much more. ...I wonder why that stopped.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -165831,7 +165831,7 @@
   },
   {
     "key": "以前はもっと言葉を交わしていたはず。…何なのかしら",
-    "en": "",
+    "en": "We used to exchange far more words than this. ...What is this about?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -167543,7 +167543,7 @@
   },
   {
     "key": "何としてでも超えてみせますわ",
-    "en": "",
+    "en": "By whatever means, I shall surpass her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168173,7 +168173,7 @@
   },
   {
     "key": "信じておりましたのに…もうここでは踏ん張れません",
-    "en": "",
+    "en": "I did believe in this place... I can no longer hold my ground here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168327,7 +168327,7 @@
   },
   {
     "key": "信じてたのに…もうここじゃ頑張れねぇかもしんねぇ",
-    "en": "",
+    "en": "I believed in this place... don't think I can push here anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168341,7 +168341,7 @@
   },
   {
     "key": "信じてたのに…もうここでは頑張れないかもしれないわ",
-    "en": "",
+    "en": "I did trust this place... I'm not sure I can keep going here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168397,7 +168397,7 @@
   },
   {
     "key": "信用できる。それだけだ",
-    "en": "",
+    "en": "She can be trusted. That's all.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168411,7 +168411,7 @@
   },
   {
     "key": "信頼していた。…もう、ここでは無理だ",
-    "en": "",
+    "en": "I trusted this place. ...I can't do it here anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168425,7 +168425,7 @@
   },
   {
     "key": "信頼してたのに…もうここでは頑張れないかもしれない",
-    "en": "",
+    "en": "I trusted them... I don't think I can keep at it here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168453,7 +168453,7 @@
   },
   {
     "key": "信頼関係が築けそうです。心強いですね",
-    "en": "",
+    "en": "I think we could build real trust. That's reassuring.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -168700,7 +168700,7 @@
   },
   {
     "key": "倒すまで、止まれない",
-    "en": "",
+    "en": "I don't stop until she's down.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -169628,7 +169628,7 @@
   },
   {
     "key": "全力でやってきたつもりだ。でも、もう…",
-    "en": "",
+    "en": "Gave it everything I had, far as I know. But now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -169908,7 +169908,7 @@
   },
   {
     "key": "全力は尽くした。…でも、もう",
-    "en": "",
+    "en": "I gave what I had. ...But now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -169922,7 +169922,7 @@
   },
   {
     "key": "全力を出せる相手。最高の敵ね",
-    "en": "",
+    "en": "Someone worth everything I have. Best enemy I could ask for.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -169936,7 +169936,7 @@
   },
   {
     "key": "全力を出せる相手。最高の敵ね、ふふ",
-    "en": "",
+    "en": "Someone I can go all out on. What a lovely enemy... mm.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -169950,7 +169950,7 @@
   },
   {
     "key": "全力を出せる相手です。最高の敵ですね",
-    "en": "",
+    "en": "Someone I can give everything to. The finest sort of enemy.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -169992,7 +169992,7 @@
   },
   {
     "key": "全力を尽くしてきたつもりです。けれど、もう…",
-    "en": "",
+    "en": "I believe I gave everything I had. And yet, now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170006,7 +170006,7 @@
   },
   {
     "key": "全力を尽くしてきたつもりよ。でも、もう…",
-    "en": "",
+    "en": "I gave it everything, as far as I'm concerned. But now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170336,7 +170336,7 @@
   },
   {
     "key": "共に歩めること、何よりの幸せです",
-    "en": "",
+    "en": "Being able to walk this road with her is my greatest happiness.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170350,7 +170350,7 @@
   },
   {
     "key": "共に頂を目指したい。二人ならきっと届きます",
-    "en": "",
+    "en": "I wish to climb to the top with her. Together we shall reach it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170364,7 +170364,7 @@
   },
   {
     "key": "共に頂点へ。二人なら行ける",
-    "en": "",
+    "en": "To the top together. We can get there.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170593,7 +170593,7 @@
   },
   {
     "key": "出会えてよかった…本当に…！",
-    "en": "",
+    "en": "I'm glad I met her... I really am...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170607,7 +170607,7 @@
   },
   {
     "key": "出会えてよかった…！ 本気でそう思う…！",
-    "en": "",
+    "en": "Glad I met her...! I mean that, straight up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170621,7 +170621,7 @@
   },
   {
     "key": "出会えて本当によかったです…！ 心から…！",
-    "en": "",
+    "en": "I'm so glad we met...! From the bottom of my heart...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -170928,7 +170928,7 @@
   },
   {
     "key": "切磋琢磨できること、光栄ですわ",
-    "en": "",
+    "en": "To sharpen ourselves against each other is an honor.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -171374,7 +171374,7 @@
   },
   {
     "key": "前はもっと話してくれたのに。…どうしたのかしら",
-    "en": "",
+    "en": "She used to talk to me far more than this. ...What changed?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -171388,7 +171388,7 @@
   },
   {
     "key": "前はもっと話してたのに。…何なの",
-    "en": "",
+    "en": "We used to talk way more than this. ...What's her deal?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -171402,7 +171402,7 @@
   },
   {
     "key": "前ほど意識しなくなったかもしれない",
-    "en": "",
+    "en": "I don't watch her the way I used to.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -174797,7 +174797,7 @@
   },
   {
     "key": "勝つために、もっと努力しなければなりません",
-    "en": "",
+    "en": "If I want to beat her, I'll have to work a good deal harder.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -177107,7 +177107,7 @@
   },
   {
     "key": "合いません。どうしても",
-    "en": "",
+    "en": "We do not suit. Not in any way.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -177121,7 +177121,7 @@
   },
   {
     "key": "合いません。どうしても合わないんです",
-    "en": "",
+    "en": "We don't get on. However hard I try, we just don't.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -177387,7 +177387,7 @@
   },
   {
     "key": "合わない。それだけだ",
-    "en": "",
+    "en": "We don't fit. That's all.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -177401,7 +177401,7 @@
   },
   {
     "key": "合わない。どうしても合わない",
-    "en": "",
+    "en": "We don't click. We're never going to.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -177415,7 +177415,7 @@
   },
   {
     "key": "合わないわ。どうしても合わないの",
-    "en": "",
+    "en": "We don't fit. However I try it, we don't.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178000,7 +178000,7 @@
   },
   {
     "key": "名前を聞くだけで、拳に力がこもる",
-    "en": "",
+    "en": "I hear her name and my hands close up.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178236,7 +178236,7 @@
   },
   {
     "key": "唯一の、本当の仲間だ",
-    "en": "",
+    "en": "The one real friend I have.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178792,7 +178792,7 @@
   },
   {
     "key": "因縁…終わっちまったんだな…ちっと寂しい…",
-    "en": "",
+    "en": "So that's it, then... little lonely, huh...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178806,7 +178806,7 @@
   },
   {
     "key": "因縁…終わっちゃったのね…少し寂しい…",
-    "en": "",
+    "en": "So it's finished between us... a shame, really...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178820,7 +178820,7 @@
   },
   {
     "key": "因縁…終わっちゃったんだ…少し寂しい…",
-    "en": "",
+    "en": "So that's the end of it... kind of lonely...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178834,7 +178834,7 @@
   },
   {
     "key": "因縁…終わってしまったのですね…少し寂しい…",
-    "en": "",
+    "en": "So it is over between us... I find it a little lonely...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178848,7 +178848,7 @@
   },
   {
     "key": "因縁…終わってしまったんですね…少し寂しいです…",
-    "en": "",
+    "en": "It's over between us, then... I feel a little lonely about it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -178876,7 +178876,7 @@
   },
   {
     "key": "因縁も永遠じゃない。…そういうものだ",
-    "en": "",
+    "en": "No feud lasts. ...That's how it goes.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -179536,7 +179536,7 @@
   },
   {
     "key": "壁を作ってない？ 気に入らないわ",
-    "en": "",
+    "en": "Putting up a wall, are we? I don't care for it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -179550,7 +179550,7 @@
   },
   {
     "key": "壁を作られている気がします。少し面白くありません",
-    "en": "",
+    "en": "It feels like she's put a wall up. I can't say I like it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -179564,7 +179564,7 @@
   },
   {
     "key": "壁を作られている気がします。愉快ではありませんね",
-    "en": "",
+    "en": "I believe a wall has been put up against me. It is not agreeable.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -180295,7 +180295,7 @@
   },
   {
     "key": "大切に思っておりますの…！",
-    "en": "",
+    "en": "I do hold her dear...! Truly...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -180337,7 +180337,7 @@
   },
   {
     "key": "大変申し訳ありませんが…退団を検討させていただきます",
-    "en": "",
+    "en": "I'm very sorry to say it... but I'd like to consider leaving the promotion.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -180585,7 +180585,7 @@
   },
   {
     "key": "好敵手として意識している自分がおります",
-    "en": "",
+    "en": "I find that I have come to regard her as a worthy rival.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -180599,7 +180599,7 @@
   },
   {
     "key": "好敵手として意識し始めてるみたい",
-    "en": "",
+    "en": "It seems I've begun to think of her as a rival.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -181225,7 +181225,7 @@
   },
   {
     "key": "存在が刺激になる。いい関係だ",
-    "en": "",
+    "en": "She sharpens me. Good arrangement.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -181239,7 +181239,7 @@
   },
   {
     "key": "学びは多かった。…次を探す",
-    "en": "",
+    "en": "I learned a lot. ...Now I find the next.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -182261,7 +182261,7 @@
   },
   {
     "key": "少し壁ができたようで…気のせいだといいんですが",
-    "en": "",
+    "en": "It's as if a wall went up... I hope it's just me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -182331,7 +182331,7 @@
   },
   {
     "key": "少し距離ができたように感じますわ",
-    "en": "",
+    "en": "A certain distance has opened between us, I believe.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -182633,7 +182633,7 @@
   },
   {
     "key": "巡り合えたこと、心から幸せなの…！",
-    "en": "",
+    "en": "Finding her made me happy in a way I can't say...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -182647,7 +182647,7 @@
   },
   {
     "key": "巡り合えて本当によかった…！ 心から…！",
-    "en": "",
+    "en": "I am so glad we found each other...! Truly, with all my heart...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -184937,7 +184937,7 @@
   },
   {
     "key": "必ず…あの方を超えてみせます…！",
-    "en": "",
+    "en": "I will surpass her...! Without fail...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -185482,7 +185482,7 @@
   },
   {
     "key": "怖い…けど、逃げたらもっと後悔する…だから…",
-    "en": "",
+    "en": "I'm scared... but running would be worse... so I'm staying...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -185496,7 +185496,7 @@
   },
   {
     "key": "怖い…けれど、逃げればもっと悔いる…ですから…",
-    "en": "",
+    "en": "I am afraid... but running would grieve me more... and so...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -185524,7 +185524,7 @@
   },
   {
     "key": "怖い…でも、背を向けたらもっと悔やむもの…だから…",
-    "en": "",
+    "en": "I'm frightened... but turning away would sting longer... so...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -185538,7 +185538,7 @@
   },
   {
     "key": "怖いです…けれど、逃げたらもっと後悔します…だから…",
-    "en": "",
+    "en": "I'm scared... but I'd regret running far more... so I won't...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -185580,7 +185580,7 @@
   },
   {
     "key": "怖ぇ…けど、逃げたらもっと後悔する…だから…",
-    "en": "",
+    "en": "Scares me... but backing out'd hurt worse... so...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -185678,7 +185678,7 @@
   },
   {
     "key": "思い浮かべるだけで、胸が熱くなります…！",
-    "en": "",
+    "en": "Merely picturing her sets me alight...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -185985,7 +185985,7 @@
   },
   {
     "key": "恐縮ですが…少し運営に対して不安があります…",
-    "en": "",
+    "en": "I'm sorry to say it... but I have some worries about the front office...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -187934,7 +187934,7 @@
   },
   {
     "key": "感謝している。…でも次は勝つ",
-    "en": "",
+    "en": "I'm grateful. ...I take the next one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -188251,7 +188251,7 @@
   },
   {
     "key": "戦えることに感謝してる。でも次は絶対に勝つ",
-    "en": "",
+    "en": "I'm glad I get to face her. But the next one, I take.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -188265,7 +188265,7 @@
   },
   {
     "key": "戦えることに感謝してる。でも次は絶対に勝つわ",
-    "en": "",
+    "en": "I'm thankful I get to meet her. The next one is mine, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -188279,7 +188279,7 @@
   },
   {
     "key": "戦えることに感謝してる。でも次は絶対勝つ",
-    "en": "",
+    "en": "I'm grateful I get to face her. Next one's mine, though.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -188293,7 +188293,7 @@
   },
   {
     "key": "戦えることに感謝を。けれど次は必ず勝ちます",
-    "en": "",
+    "en": "I am grateful for the chance to face her. Next time, however, I win.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -188658,7 +188658,7 @@
   },
   {
     "key": "打ち破ることが、わたくしの使命ですわ",
-    "en": "",
+    "en": "To break her is the task set before me.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -188672,7 +188672,7 @@
   },
   {
     "key": "打ち負かすこと、楽しみにしておりますわ",
-    "en": "",
+    "en": "I look forward a great deal to defeating her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -189559,7 +189559,7 @@
   },
   {
     "key": "放っておけないの…もう",
-    "en": "",
+    "en": "I can't just leave her be... honestly.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -190652,7 +190652,7 @@
   },
   {
     "key": "時代は終わりだ。もう眼中にねぇ",
-    "en": "",
+    "en": "Her time's up. She's not on my radar.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -190919,7 +190919,7 @@
   },
   {
     "key": "最大の壁。だからこそ、越えなきゃいけない",
-    "en": "",
+    "en": "The biggest one yet. That's exactly why I have to get over it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -190933,7 +190933,7 @@
   },
   {
     "key": "最大の壁。だからこそ、越えなきゃいけないの",
-    "en": "",
+    "en": "The biggest wall I've faced. Which is why it has to come down.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -190947,7 +190947,7 @@
   },
   {
     "key": "最大の壁。だからこそ、越えねばならないのです",
-    "en": "",
+    "en": "The tallest wall I have met. Which is precisely why it must be cleared.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -190961,7 +190961,7 @@
   },
   {
     "key": "最大の壁だ。…だから越える",
-    "en": "",
+    "en": "The tallest wall. ...So I clear it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -190975,7 +190975,7 @@
   },
   {
     "key": "最大の壁だ。だからこそ、越えなきゃならねぇ",
-    "en": "",
+    "en": "Biggest wall I've hit. Which is exactly why I've gotta clear it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -191908,7 +191908,7 @@
   },
   {
     "key": "最近…あいつのこと、前ほど気にならなくなった…かも",
-    "en": "",
+    "en": "Lately... she doesn't get to me like she did... maybe...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -191922,7 +191922,7 @@
   },
   {
     "key": "最近…あの人のこと、前ほど気にならなくなった…かも",
-    "en": "",
+    "en": "Lately... she's not in my head like before... I think...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -191936,7 +191936,7 @@
   },
   {
     "key": "最近…あの人のこと、前ほど気にならなくなった…かも…",
-    "en": "",
+    "en": "Lately... she doesn't hold me the way she used to... perhaps...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -191950,7 +191950,7 @@
   },
   {
     "key": "最近…あの方のこと、前ほど気にならなくなった…かもしれません…",
-    "en": "",
+    "en": "Lately... I don't think about her as much... maybe...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -191964,7 +191964,7 @@
   },
   {
     "key": "最近…この人とだけは…普通に話せるようになってきた…かも",
-    "en": "",
+    "en": "Lately... with her, at least... I've started talking normally... I think...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192020,7 +192020,7 @@
   },
   {
     "key": "最近…目ぇ合わせんのが怖い…あたし、なんかやったかな…",
-    "en": "",
+    "en": "Lately... I can't even look at her... Did I screw something up...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192034,7 +192034,7 @@
   },
   {
     "key": "最近…目を合わせるのが怖い…私、何かしちゃったのかな…",
-    "en": "",
+    "en": "Lately... it scares me to look at her... Did I do something wrong...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192048,7 +192048,7 @@
   },
   {
     "key": "最近…目を合わせるのが怖いの…私、何かしちゃったのかな…",
-    "en": "",
+    "en": "Lately... I'm scared to look at her... Did I do something to her...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192062,7 +192062,7 @@
   },
   {
     "key": "最近…目を合わせるのが怖くて…わたし、何かしてしまったんでしょうか…",
-    "en": "",
+    "en": "Lately... I'm afraid to meet her eyes... Have I done something to upset her...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192076,7 +192076,7 @@
   },
   {
     "key": "最近、一緒にいるとなんだか居心地がいい気がする",
-    "en": "",
+    "en": "Lately it just feels easy, being around her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192146,7 +192146,7 @@
   },
   {
     "key": "最近、目が合わなくなった気がする",
-    "en": "",
+    "en": "We don't really catch each other's eye anymore.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192216,7 +192216,7 @@
   },
   {
     "key": "最近どこか冷たいわ…気のせいかしら",
-    "en": "",
+    "en": "There's a chill in her lately... or am I imagining it?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192258,7 +192258,7 @@
   },
   {
     "key": "最近よそよそしくねぇか…",
-    "en": "",
+    "en": "She's been kinda cold lately, hasn't she...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192496,7 +192496,7 @@
   },
   {
     "key": "最高のコンビね。誰にも負けない",
-    "en": "",
+    "en": "Best pairing there is. Nobody beats us.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192510,7 +192510,7 @@
   },
   {
     "key": "最高のコンビネーションよ、私たち",
-    "en": "",
+    "en": "We make a lovely combination, the two of us.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192552,7 +192552,7 @@
   },
   {
     "key": "最高のパートナー。この出会いに感謝してます",
-    "en": "",
+    "en": "The best partner. I'm thankful we found each other.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192748,7 +192748,7 @@
   },
   {
     "key": "最高の相方。ずっとこのままでいたいものです",
-    "en": "",
+    "en": "The finest of partners. I should like it to stay this way.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192762,7 +192762,7 @@
   },
   {
     "key": "最高の相方だ。出会えたことに感謝してる",
-    "en": "",
+    "en": "Best partner going. I'm grateful we crossed paths.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192776,7 +192776,7 @@
   },
   {
     "key": "最高の相棒。…ずっとこのままでいい",
-    "en": "",
+    "en": "Best partner. ...This can stay as it is.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192790,7 +192790,7 @@
   },
   {
     "key": "最高の相棒だ。…感謝してる",
-    "en": "",
+    "en": "The best partner. ...I'm grateful.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192804,7 +192804,7 @@
   },
   {
     "key": "最高の相棒だよ〜。ずっと一緒にいたいな",
-    "en": "",
+    "en": "She's the best~ I want it to stay this way forever.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192818,7 +192818,7 @@
   },
   {
     "key": "最高の相棒です〜。ずっと一緒にいたいですね",
-    "en": "",
+    "en": "She's the best partner~ I'd love to stay like this.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192846,7 +192846,7 @@
   },
   {
     "key": "最高の相棒ね。この出会いに感謝してる",
-    "en": "",
+    "en": "What a partner. I'm thankful for how we met.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -192860,7 +192860,7 @@
   },
   {
     "key": "最高の相棒よ〜。ずっと一緒にいたいわ",
-    "en": "",
+    "en": "Best partner I could want~ I'd keep her forever.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -193791,7 +193791,7 @@
   },
   {
     "key": "本気でやり合いたい相手って、そうはいないよ",
-    "en": "",
+    "en": "You don't meet many you actually want to go all out on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -193805,7 +193805,7 @@
   },
   {
     "key": "本気でやり合いたい相手など、そういません",
-    "en": "",
+    "en": "There are precious few one truly wishes to go all out against.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -193819,7 +193819,7 @@
   },
   {
     "key": "本気でやり合いたい相手なんて、そういませんよ〜",
-    "en": "",
+    "en": "You don't find many worth going all out against~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -193833,7 +193833,7 @@
   },
   {
     "key": "本気でやり合いたい相手なんて、そうはいないわ",
-    "en": "",
+    "en": "There are so few worth giving everything to.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -193847,7 +193847,7 @@
   },
   {
     "key": "本気でやり合いてぇ相手なんて、そうはいねぇよ",
-    "en": "",
+    "en": "Not many out there I actually wanna go all out on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -194127,7 +194127,7 @@
   },
   {
     "key": "来年もどうぞよろしくお願いいたします。精進してまいります",
-    "en": "",
+    "en": "I hope you'll have me another year, President. I'll keep working at it.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -194141,7 +194141,7 @@
   },
   {
     "key": "来年も精一杯頑張ります。よろしくお願いします",
-    "en": "",
+    "en": "I'll give next year everything I have. Please keep me on, Boss.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -194618,7 +194618,7 @@
   },
   {
     "key": "楽しくお過ごしできますの〜",
-    "en": "",
+    "en": "We do pass the time so pleasantly~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -196651,7 +196651,7 @@
   },
   {
     "key": "残らせていただきます。ここが、私の居場所ですから",
-    "en": "",
+    "en": "I'd like to stay on, if I may. This is where I belong.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196693,7 +196693,7 @@
   },
   {
     "key": "残らせていただきますね！ここ、すごく楽しいんです！",
-    "en": "",
+    "en": "I'll be staying on! It's so much fun here!",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196777,7 +196777,7 @@
   },
   {
     "key": "残ります。ここが自分の居場所ですから",
-    "en": "",
+    "en": "I'm staying. This is where I belong, after all.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196791,7 +196791,7 @@
   },
   {
     "key": "残ります。ここで頂点を目指させていただきますから",
-    "en": "",
+    "en": "I'm staying. I intend to go for the top right here, President.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196875,7 +196875,7 @@
   },
   {
     "key": "残るぜ！ここの雰囲気、気に入ってるからな！",
-    "en": "",
+    "en": "I'm staying! I like how this place feels!",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196917,7 +196917,7 @@
   },
   {
     "key": "残るわ…っ…ここが、私の…大切な場所だから…",
-    "en": "",
+    "en": "I'm staying... ah... because this place is... precious to me...",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196931,7 +196931,7 @@
   },
   {
     "key": "残るわ。ここで、もっと強くなりたいの",
-    "en": "",
+    "en": "I'll stay. I want to get stronger here.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196945,7 +196945,7 @@
   },
   {
     "key": "残るわ。ここで一番になるって決めたの",
-    "en": "",
+    "en": "I'm staying. I've decided to be number one here.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -196973,7 +196973,7 @@
   },
   {
     "key": "残るわよ〜。ここ、結構気に入ってるの♪",
-    "en": "",
+    "en": "I'm staying~ I'm rather fond of this place ♪",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -197469,7 +197469,7 @@
   },
   {
     "key": "気になるわ…潰しがいがありそうね",
-    "en": "",
+    "en": "She interests me... She'd be worth breaking.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -197496,7 +197496,7 @@
   },
   {
     "key": "気に入ったわ。なかなか味のある人ね",
-    "en": "",
+    "en": "I like her. There's a flavor to that one.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -197662,7 +197662,7 @@
   },
   {
     "key": "気楽にお付き合いできて嬉しいです〜",
-    "en": "",
+    "en": "It's nice, being able to keep it easy with her~",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -198527,7 +198527,7 @@
   },
   {
     "key": "決着はついた。次に進む",
-    "en": "",
+    "en": "That's settled. Next.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -198541,7 +198541,7 @@
   },
   {
     "key": "決着はついた。次へ行く",
-    "en": "",
+    "en": "Settled. Moving on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -198555,7 +198555,7 @@
   },
   {
     "key": "決着はついたわ。次に進むの",
-    "en": "",
+    "en": "It's been settled. On to the next.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -198583,7 +198583,7 @@
   },
   {
     "key": "決着はつきました。次に進みます",
-    "en": "",
+    "en": "It's been settled. I'm moving forward.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -198597,7 +198597,7 @@
   },
   {
     "key": "決着はつきました。次へ参ります",
-    "en": "",
+    "en": "The matter is settled. I move on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -198681,7 +198681,7 @@
   },
   {
     "key": "決着をつけるまで、死んでも死にきれない",
-    "en": "",
+    "en": "I can't be done until this is settled.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -199981,7 +199981,7 @@
   },
   {
     "key": "熱い間柄も一区切り。少し寂しいものです",
-    "en": "",
+    "en": "A heated acquaintance, now closed. It is a little lonely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -199995,7 +199995,7 @@
   },
   {
     "key": "熱い関係も一段落かぁ。ちっと寂しいな",
-    "en": "",
+    "en": "Guess the hot streak's over. Bit lonely, that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -200009,7 +200009,7 @@
   },
   {
     "key": "熱い関係も一段落かぁ。ちょっと寂しいね",
-    "en": "",
+    "en": "Guess that run's finished. Kind of lonely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -200023,7 +200023,7 @@
   },
   {
     "key": "熱い関係も一段落ですね。ちょっと寂しいです",
-    "en": "",
+    "en": "That's the heat gone out of it. It's a bit lonely.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -200037,7 +200037,7 @@
   },
   {
     "key": "熱い関係も一段落ね。ちょっと寂しいわ",
-    "en": "",
+    "en": "The heat's died down. A little lonely, that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -200175,7 +200175,7 @@
   },
   {
     "key": "特別な存在。他の誰とも違うの",
-    "en": "",
+    "en": "She's special. Not like anyone else.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -200535,7 +200535,7 @@
   },
   {
     "key": "生涯の敵だ。最後まで殴り合ってやる",
-    "en": "",
+    "en": "Enemy for life. We're swinging at each other till the end.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -200549,7 +200549,7 @@
   },
   {
     "key": "生涯をかけた勝負になる",
-    "en": "",
+    "en": "This one takes a lifetime.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -201326,7 +201326,7 @@
   },
   {
     "key": "皆さんのこと…大好きです…！ この団体のために全てを…！",
-    "en": "",
+    "en": "I adore everyone here...! I shall give all of myself to this promotion...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -201630,7 +201630,7 @@
   },
   {
     "key": "目を合わせるのが怖くて…わたくし、何かしてしまったのでしょうか…",
-    "en": "",
+    "en": "I cannot bring myself to look at her... Have I given some offense...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -201711,7 +201711,7 @@
   },
   {
     "key": "目障りなんだよ…ぶっ潰してやる",
-    "en": "",
+    "en": "She's in my eyeline... I'm gonna flatten her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -202102,7 +202102,7 @@
   },
   {
     "key": "相棒だ。文句あるか",
-    "en": "",
+    "en": "She's my partner. Got a problem with that?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -208207,7 +208207,7 @@
   },
   {
     "key": "私の全て…最高の獲物よ",
-    "en": "",
+    "en": "She's everything to me... the finest quarry there is.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -208974,7 +208974,7 @@
   },
   {
     "key": "私を舐めてんなら出てってやるよ。後悔するなよ",
-    "en": "",
+    "en": "Keep taking me lightly and I walk. Don't come crying after.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -209292,7 +209292,7 @@
   },
   {
     "key": "稽古する姿を見かけると…わたくしも駆け出したくなって…",
-    "en": "",
+    "en": "When I catch her at practice... I want to run out and train as well...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -209632,7 +209632,7 @@
   },
   {
     "key": "空気が変わった。…面倒だな",
-    "en": "",
+    "en": "The air changed. ...Tiresome.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211281,7 +211281,7 @@
   },
   {
     "key": "絶対に…超えてみせます…！！",
-    "en": "",
+    "en": "I'm going to get past her...!! Without fail...!!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211295,7 +211295,7 @@
   },
   {
     "key": "絶対に…超えてみせる…！！",
-    "en": "",
+    "en": "I'm getting over her...!! No matter what...!!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211309,7 +211309,7 @@
   },
   {
     "key": "絶対に…超えてみせるわ…！！",
-    "en": "",
+    "en": "I will pass her...!! I swear it...!!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211323,7 +211323,7 @@
   },
   {
     "key": "絶対に…超えてやる…！！",
-    "en": "",
+    "en": "I'm getting past her...!! Count on it...!!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211351,7 +211351,7 @@
   },
   {
     "key": "絶対に負けない…！ 絶対に…！",
-    "en": "",
+    "en": "There's no way I'm losing...! No way...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211365,7 +211365,7 @@
   },
   {
     "key": "絶対に負けないわ…！ 絶対に…！",
-    "en": "",
+    "en": "I will not lose to her...! Absolutely not...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211379,7 +211379,7 @@
   },
   {
     "key": "絶対に負けねぇ…！ 絶対にだ…！",
-    "en": "",
+    "en": "I'm not losing to her...! Not a chance...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211393,7 +211393,7 @@
   },
   {
     "key": "絶対に負けません…！ 絶対に…！",
-    "en": "",
+    "en": "I won't lose...! Not to her, not ever...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211407,7 +211407,7 @@
   },
   {
     "key": "絶対に負けられない。絶対に",
-    "en": "",
+    "en": "I can't lose to her. I won't.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211421,7 +211421,7 @@
   },
   {
     "key": "絶対に負けるわけにはいきません",
-    "en": "",
+    "en": "There is no version of this where I lose to her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211435,7 +211435,7 @@
   },
   {
     "key": "絶対ぶっ倒す。覚悟しろ",
-    "en": "",
+    "en": "I'm putting her down. She'd better be ready.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -211954,7 +211954,7 @@
   },
   {
     "key": "練習しているのを見かけると…わたしも走り出したくなります…",
-    "en": "",
+    "en": "When I see her practicing... I want to go and run too...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212066,7 +212066,7 @@
   },
   {
     "key": "練習してるのを見かけると…私も走り出したくなっちゃう…",
-    "en": "",
+    "en": "When I see her working... I want to be out there too...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212080,7 +212080,7 @@
   },
   {
     "key": "練習してるのを見かけると…自分も走り出したくなる…",
-    "en": "",
+    "en": "When I catch her training... I want to get out there too...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212094,7 +212094,7 @@
   },
   {
     "key": "練習してんの見ると…あたしも走り出したくなる…",
-    "en": "",
+    "en": "See her training and... I wanna get moving too...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212623,7 +212623,7 @@
   },
   {
     "key": "考えるだけで胸が熱くなるの…！",
-    "en": "",
+    "en": "Just the thought of it stirs me up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212637,7 +212637,7 @@
   },
   {
     "key": "考えるだけで胸が痛みます…もう無理…",
-    "en": "",
+    "en": "It pains me even to think of her... I cannot do this...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212651,7 +212651,7 @@
   },
   {
     "key": "考えるだけで血が熱くなる…！",
-    "en": "",
+    "en": "Just thinking about it gets my blood up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212665,7 +212665,7 @@
   },
   {
     "key": "考えるとしんどい…もう無理だ…",
-    "en": "",
+    "en": "Thinking about her wears me out... I'm done...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212679,7 +212679,7 @@
   },
   {
     "key": "考えると胸が熱くなる…！",
-    "en": "",
+    "en": "Thinking about it lights me up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212693,7 +212693,7 @@
   },
   {
     "key": "考えると胸が熱くなるんです…！",
-    "en": "",
+    "en": "Thinking about it fires me right up...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212707,7 +212707,7 @@
   },
   {
     "key": "考えると苦しい…もう無理…",
-    "en": "",
+    "en": "It hurts to think about... I can't take it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212721,7 +212721,7 @@
   },
   {
     "key": "考えると苦しいの…もう無理…",
-    "en": "",
+    "en": "It hurts to dwell on her... I can't anymore...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212735,7 +212735,7 @@
   },
   {
     "key": "考えると苦しくて…もう無理です…",
-    "en": "",
+    "en": "It hurts to think about it... I can't do this anymore...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212943,7 +212943,7 @@
   },
   {
     "key": "背中を見てると、自分も頑張ろうって思える",
-    "en": "",
+    "en": "Watching her work makes me want to put in the work too.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -212957,7 +212957,7 @@
   },
   {
     "key": "背負う覚悟はできている",
-    "en": "",
+    "en": "I'm ready to carry it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213041,7 +213041,7 @@
   },
   {
     "key": "胸の裡が…どうしようもなく熱くなります…！",
-    "en": "",
+    "en": "Something in me burns and will not be quieted...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213232,7 +213232,7 @@
   },
   {
     "key": "自分のこと、ちゃんと見てくれてるのかな…",
-    "en": "",
+    "en": "Does anyone here actually see what I'm doing...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213274,7 +213274,7 @@
   },
   {
     "key": "自分の全力を尽くしてきたつもりです。でも、もう…",
-    "en": "",
+    "en": "I've given everything I had. But now...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213288,7 +213288,7 @@
   },
   {
     "key": "自分の居場所がここにあるのか…考えてしまう",
-    "en": "",
+    "en": "I keep asking myself whether I belong here.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213302,7 +213302,7 @@
   },
   {
     "key": "自分の居場所がここにあるのか…考えてしまうわ",
-    "en": "",
+    "en": "Whether this is where I belong... I keep turning it over.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213423,7 +213423,7 @@
   },
   {
     "key": "良い勝負になりそうです〜。少し燃えてきました",
-    "en": "",
+    "en": "This should make a fine contest~ I am rather warmed up already.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213493,7 +213493,7 @@
   },
   {
     "key": "良き仲間になれそうですわ。認めてあげます",
-    "en": "",
+    "en": "She may yet make a fine ally. I shall grant her that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213770,7 +213770,7 @@
   },
   {
     "key": "虫が好かねぇんだよ",
-    "en": "",
+    "en": "Something about her just rubs me wrong.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -213879,7 +213879,7 @@
   },
   {
     "key": "行くわけねーだろ。ここで一番になるまで帰らねぇよ",
-    "en": "",
+    "en": "Like hell I'm leaving. I'm not done till I'm number one here.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
@@ -213999,7 +213999,7 @@
   },
   {
     "key": "裏切られた…全て…偽りだったのですか…？",
-    "en": "",
+    "en": "I have been betrayed... Was all of it false...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -214013,7 +214013,7 @@
   },
   {
     "key": "裏切られた…全部…嘘だったの…？",
-    "en": "",
+    "en": "I was let down... Was the whole thing a lie...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -214027,7 +214027,7 @@
   },
   {
     "key": "裏切られた…全部…嘘だったのかよ…？",
-    "en": "",
+    "en": "Sold out... Was every bit of it a lie...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -214041,7 +214041,7 @@
   },
   {
     "key": "裏切られたのね…全部…偽りだったの…？",
-    "en": "",
+    "en": "So I was betrayed... every bit of it, a pretense...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -214055,7 +214055,7 @@
   },
   {
     "key": "裏切られました…全部…嘘だったんですか…？",
-    "en": "",
+    "en": "I was betrayed... Was none of it true...?",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -214896,7 +214896,7 @@
   },
   {
     "key": "見込みあるよ。面倒見てやるか",
-    "en": "",
+    "en": "Kid's got potential. Guess I'll look after her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -216148,7 +216148,7 @@
   },
   {
     "key": "認めたくないが…最高の敵だ",
-    "en": "",
+    "en": "I hate to admit it... but she's the best enemy I have.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -217401,7 +217401,7 @@
   },
   {
     "key": "負けたくありませんわ…こんな気持ちは初めて",
-    "en": "",
+    "en": "I do not wish to lose to her... I have never felt this before.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219140,7 +219140,7 @@
   },
   {
     "key": "負けるわけには参りません…！ 決して…！",
-    "en": "",
+    "en": "I cannot allow myself to lose...! Not to her...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219471,7 +219471,7 @@
   },
   {
     "key": "超える。それが今の目標だ",
-    "en": "",
+    "en": "Get past her. That's the goal now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219485,7 +219485,7 @@
   },
   {
     "key": "超える。それが今の私の全て",
-    "en": "",
+    "en": "Beat her. That's all I've got room for.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219499,7 +219499,7 @@
   },
   {
     "key": "超える。それが今の私の全てよ",
-    "en": "",
+    "en": "Passing her. That's the whole of me right now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219527,7 +219527,7 @@
   },
   {
     "key": "超えること。それが今の私の全てです",
-    "en": "",
+    "en": "Getting past her. That's everything to me at the moment.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219541,7 +219541,7 @@
   },
   {
     "key": "超えることが、今の一番の目標だ",
-    "en": "",
+    "en": "Getting past her is my main goal right now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219552,7 +219552,7 @@
   },
   {
     "key": "超えることが、今の一番の目標なの",
-    "en": "",
+    "en": "Getting over her is what I want most right now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219566,7 +219566,7 @@
   },
   {
     "key": "超えることが、私の覚悟です",
-    "en": "",
+    "en": "Getting past her is what I've resolved to do.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -219981,7 +219981,7 @@
   },
   {
     "key": "距離…少し開いたかも",
-    "en": "",
+    "en": "There's a gap now. A small one, maybe.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -220008,7 +220008,7 @@
   },
   {
     "key": "距離感が…変わった",
-    "en": "",
+    "en": "The distance... changed.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -220523,7 +220523,7 @@
   },
   {
     "key": "近ごろ…あの方のこと、以前ほど気にならなくなった…かも…",
-    "en": "",
+    "en": "Of late... she does not occupy me as she did... perhaps...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221171,7 +221171,7 @@
   },
   {
     "key": "逃げたい…でも…あの人からだけは逃げちゃダメ…",
-    "en": "",
+    "en": "I want to slip away... but not from her... never from her...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221185,7 +221185,7 @@
   },
   {
     "key": "逃げたい…でも…あの方からだけは逃げてはいけない…",
-    "en": "",
+    "en": "I want to run... but from her... I mustn't...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221199,7 +221199,7 @@
   },
   {
     "key": "逃げたい…でも…この人からだけは逃げちゃダメ…",
-    "en": "",
+    "en": "I want to run... but not from her... not from her...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221227,7 +221227,7 @@
   },
   {
     "key": "逃げてぇ…でも…あいつからだけは逃げちゃダメだ…",
-    "en": "",
+    "en": "I wanna run... but... her, I can't run from...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221448,7 +221448,7 @@
   },
   {
     "key": "逃げ出したい…けれど…あの方からだけは、背を向けられない…",
-    "en": "",
+    "en": "I want to flee... and yet... from her alone I cannot turn away...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221517,7 +221517,7 @@
   },
   {
     "key": "這いつくばらせてやる…！",
-    "en": "",
+    "en": "I'll have her crawling...!",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221924,7 +221924,7 @@
   },
   {
     "key": "運命のライバル。…最高だ",
-    "en": "",
+    "en": "A rival by fate. ...Nothing better.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221938,7 +221938,7 @@
   },
   {
     "key": "運命のライバルだね〜。最高だよ",
-    "en": "",
+    "en": "She's my destined rival~ It's the best.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221952,7 +221952,7 @@
   },
   {
     "key": "運命のライバルってやつだろ。最高だぜ",
-    "en": "",
+    "en": "That's a destined-rival thing right there. Doesn't get better.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221966,7 +221966,7 @@
   },
   {
     "key": "運命のライバルですね〜。最高です",
-    "en": "",
+    "en": "A rival meant for me~ It's wonderful.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221980,7 +221980,7 @@
   },
   {
     "key": "運命のライバルね〜。最高だわ",
-    "en": "",
+    "en": "A rival by fate~ How delicious.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -221994,7 +221994,7 @@
   },
   {
     "key": "運命の好敵手…そう呼びたくなります",
-    "en": "",
+    "en": "A rival written in the stars... I am tempted to call her that.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223244,7 +223244,7 @@
   },
   {
     "key": "関わりも変わりました。前へ進みましょう",
-    "en": "",
+    "en": "What lies between us has changed. Let us move forward.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223258,7 +223258,7 @@
   },
   {
     "key": "関係が変わった。…前に進む",
-    "en": "",
+    "en": "Things changed. ...I move on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223272,7 +223272,7 @@
   },
   {
     "key": "関係も、穏やかになってきました",
-    "en": "",
+    "en": "Things between us have settled down.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223286,7 +223286,7 @@
   },
   {
     "key": "関係も変わった。前に進もう",
-    "en": "",
+    "en": "Things between us changed. Time to look ahead.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223300,7 +223300,7 @@
   },
   {
     "key": "関係も変わったな。前に進むか",
-    "en": "",
+    "en": "Things changed between us. Time to move on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223314,7 +223314,7 @@
   },
   {
     "key": "関係も変わったわね。前に進みましょう",
-    "en": "",
+    "en": "What we had has changed. Let's move on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223328,7 +223328,7 @@
   },
   {
     "key": "関係も変わりました。前に進みましょう",
-    "en": "",
+    "en": "Our relationship has changed. It's time to move forward.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223342,7 +223342,7 @@
   },
   {
     "key": "関係を修復したいです…何とかしなければ",
-    "en": "",
+    "en": "I want to mend this... I have to do something about it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223906,7 +223906,7 @@
   },
   {
     "key": "隣にいてくださるだけで…なんでも越えられる気がして…",
-    "en": "",
+    "en": "With her simply at my side... I feel I could get past anything...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223920,7 +223920,7 @@
   },
   {
     "key": "隣にいてくださるだけで…なんでも頑張れる気がするんです…",
-    "en": "",
+    "en": "With her beside me... I feel like I can keep going, whatever comes...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223934,7 +223934,7 @@
   },
   {
     "key": "隣にいてくれるだけで…なんだって頑張れちゃう…",
-    "en": "",
+    "en": "Just having her close... and I can push through anything...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -223948,7 +223948,7 @@
   },
   {
     "key": "隣にいるだけで…なんでもやれる気がすんだよ…",
-    "en": "",
+    "en": "Just having her next to me... makes me feel like I can do anything...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224003,7 +224003,7 @@
   },
   {
     "key": "離れていく…嫌だ…こんなの…",
-    "en": "",
+    "en": "She's drifting off... I hate this... all of it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224017,7 +224017,7 @@
   },
   {
     "key": "離れていく…嫌よ…こんなの…",
-    "en": "",
+    "en": "Drifting away from me... No... not like this...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224031,7 +224031,7 @@
   },
   {
     "key": "離れていってしまう…嫌です…こんなのは…",
-    "en": "",
+    "en": "She's going away... I don't want this... I really don't...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224045,7 +224045,7 @@
   },
   {
     "key": "離れてく…嫌だ…こんなの…",
-    "en": "",
+    "en": "She's pulling away... I hate it... I hate this...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224072,7 +224072,7 @@
   },
   {
     "key": "離れてゆく…嫌です…こんなのは…",
-    "en": "",
+    "en": "She is slipping away... I hate this... I hate it...",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224167,7 +224167,7 @@
   },
   {
     "key": "面ぁ見ると血が騒ぐんだよ",
-    "en": "",
+    "en": "One look at her face and I'm itching for it.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224209,7 +224209,7 @@
   },
   {
     "key": "面白いじゃない。超えてみせるわ",
-    "en": "",
+    "en": "Now that's interesting. I'll go right over her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -224223,7 +224223,7 @@
   },
   {
     "key": "面白い方です。必ず超えてみせます",
-    "en": "",
+    "en": "What an interesting person. I'm going to get past her.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -225029,7 +225029,7 @@
   },
   {
     "key": "顔を合わせるだけで気まずい",
-    "en": "",
+    "en": "Just running into her is awkward now.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -225043,7 +225043,7 @@
   },
   {
     "key": "顔見るとイラつくんだよ",
-    "en": "",
+    "en": "Seeing her face just sets me off.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
     ],
@@ -227214,7 +227214,7 @@
   },
   {
     "key": "（静かにうなずいている）……ここにいる",
-    "en": "",
+    "en": "(a quiet nod) ...I stay.",
     "files": [
       "data.js:VOLUNTARY_STAY_LINES"
     ],
