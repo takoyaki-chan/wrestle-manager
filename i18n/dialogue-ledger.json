@@ -1226,7 +1226,7 @@
   },
   {
     "key": "{move}で決着！ {winner}&{partner}のコンビが頂点に立った！",
-    "en": "",
+    "en": "{move} ends it! {winner} and {partner} stand at the top!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_COMMENTARY_WIN_LINES"
     ],
@@ -4990,7 +4990,7 @@
   },
   {
     "key": "{partner}…あ、ありがとな…！ あたし、頑張れた…！",
-    "en": "",
+    "en": "{partner}... th-thanks...! I made it through...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5004,7 +5004,7 @@
   },
   {
     "key": "{partner}…あたしの力不足だ。お前を勝たせてやれなかった…",
-    "en": "",
+    "en": "{partner}... I wasn't good enough. Couldn't get you that win...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5018,7 +5018,7 @@
   },
   {
     "key": "{partner}…あなたを信じてよかった。この勝ちは二人のものよ。",
-    "en": "",
+    "en": "{partner}... trusting you was the right call. This win is ours, both of ours.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5032,7 +5032,7 @@
   },
   {
     "key": "{partner}…ありがとう。二人でつかんだ勝ち、悪くないでしょ？",
-    "en": "",
+    "en": "Thank you, {partner}. A win the two of us took — not bad, was it?",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5046,7 +5046,7 @@
   },
   {
     "key": "{partner}…う、嬉しい…二人で、勝てて…わ…",
-    "en": "",
+    "en": "{partner}... I-I'm so glad... we won, together...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5060,7 +5060,7 @@
   },
   {
     "key": "{partner}…ご、ごめん…私のせいで…",
-    "en": "",
+    "en": "{partner}... I-I'm sorry... this was my fault...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5074,7 +5074,7 @@
   },
   {
     "key": "{partner}…ご、ごめんね…わたしのせいで…",
-    "en": "",
+    "en": "{partner}... I-I'm sorry... this is on me...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5088,7 +5088,7 @@
   },
   {
     "key": "{partner}…ごめん。私が決めきれてたら…",
-    "en": "",
+    "en": "{partner}... I'm sorry. If I'd just finished it...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5102,7 +5102,7 @@
   },
   {
     "key": "{partner}…ごめんなさい。私が決めきれてたら…",
-    "en": "",
+    "en": "{partner}... forgive me. Had I finished her off...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5116,7 +5116,7 @@
   },
   {
     "key": "{partner}…ほ、本当に…ありがとう…！",
-    "en": "",
+    "en": "{partner}... th-thank you... really...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5130,7 +5130,7 @@
   },
   {
     "key": "{partner}…わ、悪い…あたしのせいで…",
-    "en": "",
+    "en": "{partner}... m-my bad... this was on me...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5144,7 +5144,7 @@
   },
   {
     "key": "{partner}…悪い。私が決めてりゃな…",
-    "en": "",
+    "en": "{partner}... my bad. If I'd put her away...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5158,7 +5158,7 @@
   },
   {
     "key": "{partner}…私の力不足だ。あなたを勝たせてあげられなかった…",
-    "en": "",
+    "en": "{partner}... I wasn't strong enough. I couldn't get you the win...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5172,7 +5172,7 @@
   },
   {
     "key": "{partner}…私の力不足よ。あなたを勝たせられなかった…",
-    "en": "",
+    "en": "{partner}... I fell short. I couldn't hand you the win...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5186,7 +5186,7 @@
   },
   {
     "key": "{partner}、あなたが繋いでくれたから…最後まで折れずにいられたの。",
-    "en": "",
+    "en": "You held the line for me, {partner}... that's why I never broke.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5200,7 +5200,7 @@
   },
   {
     "key": "{partner}、あなたを信じてよかった。この勝ち、二人のものだよ。",
-    "en": "",
+    "en": "{partner}, I was right to trust you. This win belongs to both of us.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5214,7 +5214,7 @@
   },
   {
     "key": "{partner}、ありがとう。二人だから勝てたよ。",
-    "en": "",
+    "en": "Thank you, {partner}. We won because there were two of us.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5228,7 +5228,7 @@
   },
   {
     "key": "{partner}、ありがとな！ 二人だから勝てたんだ！",
-    "en": "",
+    "en": "Thanks, {partner}! Took the both of us to pull that off!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5242,7 +5242,7 @@
   },
   {
     "key": "{partner}、お前を信じてよかった。この勝ちは二人のもんだ。",
-    "en": "",
+    "en": "{partner}, trusting you was right. This win belongs to us both.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5256,7 +5256,7 @@
   },
   {
     "key": "{partner}、悔しいな。次は絶対、勝とうぜ。",
-    "en": "",
+    "en": "This one stings, {partner}. Next time we take it, no excuses.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5270,7 +5270,7 @@
   },
   {
     "key": "{partner}、悔しいね。次は絶対、勝とう。",
-    "en": "",
+    "en": "That stings, {partner}. Next time we take it. No question.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5284,7 +5284,7 @@
   },
   {
     "key": "{partner}〜お疲れさま♪ 息ぴったりだったでしょ？",
-    "en": "",
+    "en": "{partner}~ well done ♪ We were right in time with each other, no?",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5298,7 +5298,7 @@
   },
   {
     "key": "{partner}〜お疲れさま！ 私たち、息ぴったりだったね〜",
-    "en": "",
+    "en": "{partner}~ nice work! We were so in step out there~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5312,7 +5312,7 @@
   },
   {
     "key": "{partner}〜お疲れさん！ 私ら息ぴったりだったろ？",
-    "en": "",
+    "en": "{partner}~ good work! We were right in sync, yeah?",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5326,7 +5326,7 @@
   },
   {
     "key": "{partner}〜ごめんね…私、決められちゃった…",
-    "en": "",
+    "en": "{partner}~ I'm sorry... she got me in the end...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5337,7 +5337,7 @@
   },
   {
     "key": "{partner}〜わりぃ…私、決められちった…",
-    "en": "",
+    "en": "{partner}~ sorry... she got me at the end there...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5351,7 +5351,7 @@
   },
   {
     "key": "{partner}が繋いでくれたから…あたし、最後まで踏ん張れた。",
-    "en": "",
+    "en": "You kept it going for me, {partner}... that's why I held on to the end.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5365,7 +5365,7 @@
   },
   {
     "key": "{partner}が繋いでくれたから…最後まで諦めずに済んだ。",
-    "en": "",
+    "en": "You kept it alive for me, {partner}... that's why I never had to quit.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5379,7 +5379,7 @@
   },
   {
     "key": "{partner}さん…あ、ありがとうございますわ…！",
-    "en": "",
+    "en": "{partner}... th-thank you ever so much...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5393,7 +5393,7 @@
   },
   {
     "key": "{partner}さん…ご、ごめんなさい…わたしのせいで…",
-    "en": "",
+    "en": "{partner}... I-I'm sorry... it was my fault...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5407,7 +5407,7 @@
   },
   {
     "key": "{partner}さん…ご、ごめんなさいまし…わたくしのせいで…",
-    "en": "",
+    "en": "{partner}... f-forgive me... it was my doing...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5421,7 +5421,7 @@
   },
   {
     "key": "{partner}さん…ごめんなさい、決められてしまいましたわ…",
-    "en": "",
+    "en": "{partner}... I am sorry, she put me away in the end...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5435,7 +5435,7 @@
   },
   {
     "key": "{partner}さん…ごめんなさい、私、決められちゃいました…",
-    "en": "",
+    "en": "{partner}... I'm sorry, she finished me off...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5449,7 +5449,7 @@
   },
   {
     "key": "{partner}さん…ごめんなさい。私が決めきれていれば…",
-    "en": "",
+    "en": "{partner}... I'm sorry. If only I had put her away...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5463,7 +5463,7 @@
   },
   {
     "key": "{partner}さん…ごめんなさいまし。わたくしが決めきれていれば…",
-    "en": "",
+    "en": "{partner}... do forgive me. Had I only finished her...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5477,7 +5477,7 @@
   },
   {
     "key": "{partner}さん…ほ、本当に…ありがとうございました…！",
-    "en": "",
+    "en": "{partner}... th-thank you so much... really...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5491,7 +5491,7 @@
   },
   {
     "key": "{partner}さん、ありがとうございました。二人で掴んだ勝ちです。",
-    "en": "",
+    "en": "Thank you so much, {partner}. The two of us earned this one.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5505,7 +5505,7 @@
   },
   {
     "key": "{partner}さん、ありがとうございますわ。二人で掴んだ勝利ですのね。",
-    "en": "",
+    "en": "Thank you, {partner}. A victory the two of us took together.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5519,7 +5519,7 @@
   },
   {
     "key": "{partner}さん、お疲れさまです♪ 息ぴったりでしたね〜",
-    "en": "",
+    "en": "Nice work, {partner} ♪ We were right in step, weren't we~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5533,7 +5533,7 @@
   },
   {
     "key": "{partner}さん、お疲れさまですわ♪ 息ぴったりでしたわね〜",
-    "en": "",
+    "en": "Well done, {partner} ♪ We were perfectly in step, were we not~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5547,7 +5547,7 @@
   },
   {
     "key": "{partner}さん、次こそは必ず勝ちましょうね。",
-    "en": "",
+    "en": "{partner}, next time we shall win without fail.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5561,7 +5561,7 @@
   },
   {
     "key": "{partner}さん、次は必ず勝ちましょう。",
-    "en": "",
+    "en": "{partner}, next time we win. Let's make sure of it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5575,7 +5575,7 @@
   },
   {
     "key": "{partner}さん、申し訳ありませんでした…私の力不足です。",
-    "en": "",
+    "en": "{partner}, I am so sorry... I simply wasn't strong enough.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5589,7 +5589,7 @@
   },
   {
     "key": "{partner}さん、申し訳ございませんでした…わたくしの力不足ですわ。",
-    "en": "",
+    "en": "{partner}, my sincerest apologies... I was not strong enough.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5603,7 +5603,7 @@
   },
   {
     "key": "{partner}さん、私のミスです。ですが…次は絶対に返します。",
-    "en": "",
+    "en": "{partner}, that was my mistake. But... next time we take it back.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5617,7 +5617,7 @@
   },
   {
     "key": "{partner}さんが繋いでくださったからこそ、掴めた勝利ですの。",
-    "en": "",
+    "en": "It is only because you held on for me, {partner}, that this victory came at all.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5631,7 +5631,7 @@
   },
   {
     "key": "{partner}さんが繋いでくれたバトン…無駄にせずに済みました。",
-    "en": "",
+    "en": "The baton you handed me, {partner}... I didn't waste it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5645,7 +5645,7 @@
   },
   {
     "key": "{partner}さんっ…ごめんなさいっ…わたくしのせいでっ…！",
-    "en": "",
+    "en": "{partner}...! I am so sorry... it was all my fault...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5659,7 +5659,7 @@
   },
   {
     "key": "{partner}さんっ…ごめんなさいっ…私のせいでっ…！",
-    "en": "",
+    "en": "{partner}...! I'm sorry... it was all my fault...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5673,7 +5673,7 @@
   },
   {
     "key": "{partner}さんっ…！ ありがとうございます…二人で、勝てました…！",
-    "en": "",
+    "en": "{partner}...! Thank you... we won, the two of us...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5687,7 +5687,7 @@
   },
   {
     "key": "{partner}さんっ…！ やりましたわ…二人で、勝ったのですわ…！",
-    "en": "",
+    "en": "{partner}...! We have done it... the two of us have won...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5701,7 +5701,7 @@
   },
   {
     "key": "{partner}さんのおかげです。本当に、ありがとうございました。",
-    "en": "",
+    "en": "This is all thanks to you, {partner}. Truly, thank you.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5715,18 +5715,20 @@
   },
   {
     "key": "{partner}さんを信じておりまして、本当によかったですわ。",
-    "en": "",
+    "en": "I am so very glad that I placed my faith in you, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
     "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "ojousama"
+    }
   },
   {
     "key": "{partner}さんを信じてよかったです…ちゃんと、勝てました！",
-    "en": "",
+    "en": "I was right to believe in you, {partner}... and we really did win!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5740,7 +5742,7 @@
   },
   {
     "key": "{partner}さんを勝たせてあげられなくて…本当にすみません…！",
-    "en": "",
+    "en": "I couldn't give you the win, {partner}... I'm truly sorry...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5754,7 +5756,7 @@
   },
   {
     "key": "{partner}さんを勝たせてさしあげられず…本当にごめんなさい…！",
-    "en": "",
+    "en": "I could not deliver the win to you, {partner}... I am truly sorry...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5768,7 +5770,7 @@
   },
   {
     "key": "{partner}っ…ごめんっ…ごめんねっ…！",
-    "en": "",
+    "en": "{partner}...! I'm sorry... forgive me...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5782,7 +5784,7 @@
   },
   {
     "key": "{partner}っ…ごめんっ…私のせいでっ…！",
-    "en": "",
+    "en": "{partner}...! Sorry... this was my doing...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5796,7 +5798,7 @@
   },
   {
     "key": "{partner}っ…わりぃっ…あたしのせいでっ…！",
-    "en": "",
+    "en": "{partner}...! Sorry... this is all on me...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -5810,7 +5812,7 @@
   },
   {
     "key": "{partner}っ…！ ありがとう…二人で、勝ったよ…！",
-    "en": "",
+    "en": "{partner}...! Thank you... we won — the two of us...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5824,7 +5826,7 @@
   },
   {
     "key": "{partner}っ…！ やったぜ…二人で、勝ったんだ…！",
-    "en": "",
+    "en": "{partner}...! We did it... the two of us took it...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5838,7 +5840,7 @@
   },
   {
     "key": "{partner}っ…！ やったわ…二人で、勝ったのよ…！",
-    "en": "",
+    "en": "{partner}...! We did it... the two of us won...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -5852,7 +5854,7 @@
   },
   {
     "key": "{partner}となら…だ、大丈夫って…信じてた、の…",
-    "en": "",
+    "en": "With {partner}... I-I knew it would be all right... I believed that...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6247,7 +6249,7 @@
   },
   {
     "key": "{winner}と{partner}の信頼が生んだ一撃！ 歴史に残る名勝負だ！",
-    "en": "",
+    "en": "One blow born of the trust between {winner} and {partner}! A classic for the books!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_COMMENTARY_WIN_LINES"
     ],
@@ -6258,7 +6260,7 @@
   },
   {
     "key": "{winner}組、見事なコンビネーションで勝利を掴んだ！",
-    "en": "",
+    "en": "Team {winner} seizes the win with brilliant combination work!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_COMMENTARY_WIN_LINES"
     ],
@@ -6353,7 +6355,7 @@
   },
   {
     "key": "…{partner}、あ、ありがとう…二人で、勝てたね…",
-    "en": "",
+    "en": "...{partner}, th-thank you... we won, the two of us...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6367,7 +6369,7 @@
   },
   {
     "key": "…{partner}、ありがとう。",
-    "en": "",
+    "en": "...Thank you, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6378,7 +6380,7 @@
   },
   {
     "key": "…{partner}、ありがとう。二人だから、だね。",
-    "en": "",
+    "en": "...Thank you, {partner}. Because it was the two of us.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6392,7 +6394,7 @@
   },
   {
     "key": "…{partner}、ありがとう。二人だから、勝てたね。",
-    "en": "",
+    "en": "...Thanks, {partner}. It took both of us to win that one.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6406,7 +6408,7 @@
   },
   {
     "key": "…{partner}、ありがとう。二人で、勝った。",
-    "en": "",
+    "en": "...Thank you, {partner}. The two of us. We won.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6420,7 +6422,7 @@
   },
   {
     "key": "…{partner}、お疲れ。息、ぴったりだった。",
-    "en": "",
+    "en": "...Good work, {partner}. We were in step.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6434,7 +6436,7 @@
   },
   {
     "key": "…{partner}、お疲れさま。息、ぴったりだったね〜",
-    "en": "",
+    "en": "...Good work, {partner}. We were right in step there~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6448,7 +6450,7 @@
   },
   {
     "key": "…{partner}、ご、ごめん…私のせいで…",
-    "en": "",
+    "en": "...{partner}, I-I'm sorry... it was me...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6462,7 +6464,7 @@
   },
   {
     "key": "…{partner}、ごめん。",
-    "en": "",
+    "en": "...Sorry, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6473,7 +6475,7 @@
   },
   {
     "key": "…{partner}、ごめん。あたしの、力不足。",
-    "en": "",
+    "en": "...Sorry, {partner}. Not strong enough.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6487,7 +6489,7 @@
   },
   {
     "key": "…{partner}、ごめん。決めきれ、なかった。",
-    "en": "",
+    "en": "...Sorry, {partner}. Couldn't finish it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6501,7 +6503,7 @@
   },
   {
     "key": "…{partner}、ごめん。決めきれなかったね。",
-    "en": "",
+    "en": "...Sorry, {partner}. I couldn't close it out.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6515,7 +6517,7 @@
   },
   {
     "key": "…{partner}、ごめん。決められ、ちゃった。",
-    "en": "",
+    "en": "...Sorry, {partner}. She got me.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6529,7 +6531,7 @@
   },
   {
     "key": "…{partner}、ごめん。私の力不足だ。",
-    "en": "",
+    "en": "...Sorry, {partner}. I came up short.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6543,7 +6545,7 @@
   },
   {
     "key": "…{partner}、ごめんなさい。",
-    "en": "",
+    "en": "...Forgive me, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6557,7 +6559,7 @@
   },
   {
     "key": "…{partner}、ごめんね。決められちゃった…",
-    "en": "",
+    "en": "...Sorry, {partner}. She put me away...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6571,7 +6573,7 @@
   },
   {
     "key": "…{partner}、信じてよかったよ。この勝ちは、二人のものだね。",
-    "en": "",
+    "en": "...Glad I trusted you, {partner}. This win belongs to the both of us.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6585,7 +6587,7 @@
   },
   {
     "key": "…{partner}、恩に着る。",
-    "en": "",
+    "en": "...I owe you, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6599,7 +6601,7 @@
   },
   {
     "key": "…{partner}、悪い。",
-    "en": "",
+    "en": "...My bad, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6613,7 +6615,7 @@
   },
   {
     "key": "…{partner}、悪い。私が弱かった。…それだけだ。",
-    "en": "",
+    "en": "...{partner}, I'm sorry. I was the weaker one. ...That's all it was.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6627,7 +6629,7 @@
   },
   {
     "key": "…{partner}、次は。勝つ。",
-    "en": "",
+    "en": "...{partner}. Next time. We win.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6641,7 +6643,7 @@
   },
   {
     "key": "…{partner}。二人で、勝ったよ。…約束、守れたね。",
-    "en": "",
+    "en": "...{partner}. The two of us won. ...We kept our promise.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6655,7 +6657,7 @@
   },
   {
     "key": "…{partner}。信じて、よかった。この勝ちは、二人の。",
-    "en": "",
+    "en": "...{partner}. Right to trust you. This win is ours.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6669,7 +6671,7 @@
   },
   {
     "key": "…{partner}が繋いだ。だから、勝てた。",
-    "en": "",
+    "en": "...{partner} held on. That's why we won.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6683,7 +6685,7 @@
   },
   {
     "key": "…{partner}が繋いでくれたから、最後まで立てた。ありがとう。",
-    "en": "",
+    "en": "...You kept it alive, {partner}, so I stayed on my feet. Thank you.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6697,7 +6699,7 @@
   },
   {
     "key": "…{partner}さん、ありがとうございました。",
-    "en": "",
+    "en": "...Thank you, {partner}. Truly.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6711,7 +6713,7 @@
   },
   {
     "key": "…{partner}さん、ごめんなさい。",
-    "en": "",
+    "en": "...I am sorry, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -6722,7 +6724,7 @@
   },
   {
     "key": "…{partner}さん、感謝いたしますわ。",
-    "en": "",
+    "en": "...My thanks to you, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6736,7 +6738,7 @@
   },
   {
     "key": "…{partner}さんと、だからですの。",
-    "en": "",
+    "en": "...It was with {partner}. That is the whole of it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6750,7 +6752,7 @@
   },
   {
     "key": "…{partner}さんと、だから勝てました。",
-    "en": "",
+    "en": "...It was with {partner}. That's why we won.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6764,7 +6766,7 @@
   },
   {
     "key": "…{partner}と、だから…ね。",
-    "en": "",
+    "en": "...Because it was {partner}. That's all.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6778,7 +6780,7 @@
   },
   {
     "key": "…{partner}と、だから勝てた。",
-    "en": "",
+    "en": "...With {partner}. That's the only reason we won.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6789,7 +6791,7 @@
   },
   {
     "key": "…{partner}と、だから勝てた。それだけだよ。",
-    "en": "",
+    "en": "...We won because it was with {partner}. That's all it is.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6803,7 +6805,7 @@
   },
   {
     "key": "…{partner}となら、勝てる。",
-    "en": "",
+    "en": "...With {partner}, I win.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6817,7 +6819,7 @@
   },
   {
     "key": "…{partner}となら勝てる気がしてた。…当たったよ。",
-    "en": "",
+    "en": "...I had a feeling we'd win with {partner}. ...Turns out I was right.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -6942,7 +6944,7 @@
   },
   {
     "key": "……",
-    "en": "",
+    "en": "...",
     "files": [
       "data-faction-dialogue.js:INTERNAL_CHALLENGE_POST_LOSER_LINES",
       "data.js:CARE_REACTION_DIALOGUES",
@@ -7587,7 +7589,7 @@
   },
   {
     "key": "……{partner}、ありがとう。",
-    "en": "",
+    "en": "...Thanks, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -7601,7 +7603,7 @@
   },
   {
     "key": "……{partner}、ごめん。",
-    "en": "",
+    "en": "...{partner}. Sorry.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -7615,7 +7617,7 @@
   },
   {
     "key": "……{partner}と、だから。",
-    "en": "",
+    "en": "...Because of {partner}. That's it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -7629,7 +7631,7 @@
   },
   {
     "key": "……{partner}に、勝ち星を渡せなかった。……次",
-    "en": "",
+    "en": "...Couldn't hand {partner} a win. ...Next time.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -7757,7 +7759,7 @@
   },
   {
     "key": "…………",
-    "en": "",
+    "en": "...",
     "files": [
       "data.js:CARE_REACTION_DIALOGUES",
       "data.js:NOTIF_DIALOGUES",
@@ -7924,7 +7926,7 @@
   },
   {
     "key": "…………動けない",
-    "en": "",
+    "en": "...Can't move at all.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -7938,7 +7940,7 @@
   },
   {
     "key": "…………届かない",
-    "en": "",
+    "en": "...Can't reach it.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -12570,7 +12572,7 @@
   },
   {
     "key": "……いく",
-    "en": "",
+    "en": "...Going.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -13744,7 +13746,7 @@
   },
   {
     "key": "……くそ",
-    "en": "",
+    "en": "...Damn.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -13758,7 +13760,7 @@
   },
   {
     "key": "……くそっ",
-    "en": "",
+    "en": "...Damn it.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -15346,7 +15348,7 @@
   },
   {
     "key": "……ごめん",
-    "en": "",
+    "en": "...I'm sorry.",
     "files": [
       "data-faction-dialogue.js:FACTION_F09_MATCH_POST_LOSE_LINES",
       "data-faction-dialogue.js:INTERNAL_CHALLENGE_POST_LOSER_LINES",
@@ -15414,7 +15416,7 @@
   },
   {
     "key": "……ごめんあそばせ",
-    "en": "",
+    "en": "...Do forgive me.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -15428,7 +15430,7 @@
   },
   {
     "key": "……ごめんなさい",
-    "en": "",
+    "en": "...I'm so sorry.",
     "files": [
       "data-faction-dialogue.js:FACTION_F09_MATCH_POST_LOSE_LINES",
       "tag-battle-lines.js:BETRAYAL_LINES"
@@ -15734,7 +15736,7 @@
   },
   {
     "key": "……ごめんね",
-    "en": "",
+    "en": "...Sorry about that.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -15787,7 +15789,7 @@
   },
   {
     "key": "……させない",
-    "en": "",
+    "en": "...Not letting you.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -16270,7 +16272,7 @@
   },
   {
     "key": "……せーの",
-    "en": "",
+    "en": "...And now.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -22212,7 +22214,7 @@
   },
   {
     "key": "……わりぃ",
-    "en": "",
+    "en": "...My bad.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -23403,7 +23405,7 @@
   },
   {
     "key": "……交代",
-    "en": "",
+    "en": "...Tag.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -23767,7 +23769,7 @@
   },
   {
     "key": "……代わる",
-    "en": "",
+    "en": "...I take over.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -23837,7 +23839,7 @@
   },
   {
     "key": "……任せろ",
-    "en": "",
+    "en": "...Leave it.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -25111,7 +25113,7 @@
   },
   {
     "key": "……動けない",
-    "en": "",
+    "en": "...I can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -25122,7 +25124,7 @@
   },
   {
     "key": "……動けない、わ",
-    "en": "",
+    "en": "...I can't move, no.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -25136,18 +25138,20 @@
   },
   {
     "key": "……動けないよ",
-    "en": "",
+    "en": "...I just can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "composed"
+    }
   },
   {
     "key": "……動けないわ",
-    "en": "",
+    "en": "...I'm stuck here.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -25161,36 +25165,42 @@
   },
   {
     "key": "……動けねえ",
-    "en": "",
+    "en": "...Can't get up.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "delinquent"
+    }
   },
   {
     "key": "……動けません",
-    "en": "",
+    "en": "...I can't move a step.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "polite"
+    }
   },
   {
     "key": "……動けませんわ",
-    "en": "",
+    "en": "...I cannot move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "ojousama"
+    }
   },
   {
     "key": "……務めは果たした。あんたも、よくやったよ。",
@@ -26722,7 +26732,7 @@
   },
   {
     "key": "……合わせる",
-    "en": "",
+    "en": "...I'll match.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -27148,7 +27158,7 @@
   },
   {
     "key": "……守れなかった",
-    "en": "",
+    "en": "...I couldn't protect her.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27159,7 +27169,7 @@
   },
   {
     "key": "……守れなかった、な",
-    "en": "",
+    "en": "...Couldn't keep her safe, huh.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27173,7 +27183,7 @@
   },
   {
     "key": "……守れなかった、わね",
-    "en": "",
+    "en": "...I couldn't keep her safe, could I.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27187,7 +27197,7 @@
   },
   {
     "key": "……守れませんでした",
-    "en": "",
+    "en": "...I failed to protect her.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27201,7 +27211,7 @@
   },
   {
     "key": "……守れませんでしたわ",
-    "en": "",
+    "en": "...I could not protect her.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27549,7 +27559,7 @@
   },
   {
     "key": "……届かない",
-    "en": "",
+    "en": "...I can't reach.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27560,7 +27570,7 @@
   },
   {
     "key": "……届かないか",
-    "en": "",
+    "en": "...Can't reach, then.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27616,7 +27626,7 @@
   },
   {
     "key": "……届かねえ",
-    "en": "",
+    "en": "...Can't reach.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27630,7 +27640,7 @@
   },
   {
     "key": "……届きません",
-    "en": "",
+    "en": "...I can't reach her.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -27658,7 +27668,7 @@
   },
   {
     "key": "……届きませんわ",
-    "en": "",
+    "en": "...I cannot reach her.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -31905,7 +31915,7 @@
   },
   {
     "key": "……申し訳、ございませんわ",
-    "en": "",
+    "en": "...My deepest apologies.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -31933,7 +31943,7 @@
   },
   {
     "key": "……申し訳ありません",
-    "en": "",
+    "en": "...I am truly sorry.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -36005,7 +36015,7 @@
   },
   {
     "key": "……間に合いません",
-    "en": "",
+    "en": "...I cannot reach her in time.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -36019,7 +36029,7 @@
   },
   {
     "key": "……間に合いませんわ",
-    "en": "",
+    "en": "...I shall not reach her in time.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -36033,18 +36043,20 @@
   },
   {
     "key": "……間に合わない",
-    "en": "",
+    "en": "...I won't make it.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "standard"
+    }
   },
   {
     "key": "……間に合わない…わ",
-    "en": "",
+    "en": "...I won't make it in time.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -36058,7 +36070,7 @@
   },
   {
     "key": "……間に合わない、か",
-    "en": "",
+    "en": "...Not going to make it, then.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -36072,7 +36084,7 @@
   },
   {
     "key": "……間に合わねえ",
-    "en": "",
+    "en": "...I'm not gonna make it.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -36453,7 +36465,7 @@
   },
   {
     "key": "……駄目",
-    "en": "",
+    "en": "...No.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -37492,7 +37504,7 @@
   },
   {
     "key": "…あ、動けない",
-    "en": "",
+    "en": "...Ah. Can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -37506,7 +37518,7 @@
   },
   {
     "key": "…あ、合わせて",
-    "en": "",
+    "en": "...M-Match me.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -37520,7 +37532,7 @@
   },
   {
     "key": "…あ、合わせるね…",
-    "en": "",
+    "en": "...I-I'll match you, okay...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -37534,7 +37546,7 @@
   },
   {
     "key": "…あ〜あ、負けちゃった。まあ、次があるよ、{partner}。",
-    "en": "",
+    "en": "...Ahh, we lost it. Well, there's always the next one, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -37744,7 +37756,7 @@
   },
   {
     "key": "…あたしのミスだ、{partner}。次は、返す。",
-    "en": "",
+    "en": "...My mistake, {partner}. Next time, I take it back.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -37758,7 +37770,7 @@
   },
   {
     "key": "…あたしの番",
-    "en": "",
+    "en": "...My turn.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -37800,7 +37812,7 @@
   },
   {
     "key": "…あとは、私が",
-    "en": "",
+    "en": "...The rest. Mine.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -41883,7 +41895,7 @@
   },
   {
     "key": "…ありゃ、動けないや",
-    "en": "",
+    "en": "...Ah, well. Can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -42162,7 +42174,7 @@
   },
   {
     "key": "…い、いっしょに",
-    "en": "",
+    "en": "...T-Together.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -42176,7 +42188,7 @@
   },
   {
     "key": "…い、いっしょに、いこ…",
-    "en": "",
+    "en": "...T-Together... let's go...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -42204,7 +42216,7 @@
   },
   {
     "key": "…い、行く",
-    "en": "",
+    "en": "...G-Going in.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -42218,7 +42230,7 @@
   },
   {
     "key": "…い、行ってくるね…",
-    "en": "",
+    "en": "...I-I'm heading in, then...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -42832,7 +42844,7 @@
   },
   {
     "key": "…いきましょう",
-    "en": "",
+    "en": "...Let's go, then.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -42846,7 +42858,7 @@
   },
   {
     "key": "…いく、二人で",
-    "en": "",
+    "en": "...Going. Both of us.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -42860,7 +42872,7 @@
   },
   {
     "key": "…いくぜ",
-    "en": "",
+    "en": "...Going in.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -42874,7 +42886,7 @@
   },
   {
     "key": "…いくわ",
-    "en": "",
+    "en": "...Here we go.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -42888,7 +42900,7 @@
   },
   {
     "key": "…いこう",
-    "en": "",
+    "en": "...Let's go.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -42902,7 +42914,7 @@
   },
   {
     "key": "…いこうか",
-    "en": "",
+    "en": "...Shall we go?",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -43140,7 +43152,7 @@
   },
   {
     "key": "…う、動けない",
-    "en": "",
+    "en": "...C-Can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -43154,7 +43166,7 @@
   },
   {
     "key": "…う、動けないよ…",
-    "en": "",
+    "en": "...I-I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -43182,7 +43194,7 @@
   },
   {
     "key": "…うぅ、遠いなあ",
-    "en": "",
+    "en": "...Ugh, that's a long way off.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -43806,7 +43818,7 @@
   },
   {
     "key": "…お任せを",
-    "en": "",
+    "en": "...The rest is mine.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -43904,7 +43916,7 @@
   },
   {
     "key": "…お疲れ、いく",
-    "en": "",
+    "en": "...Good work. Going.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -43918,7 +43930,7 @@
   },
   {
     "key": "…お疲れ、任せて",
-    "en": "",
+    "en": "...Good work. My turn.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -43932,7 +43944,7 @@
   },
   {
     "key": "…お疲れ。二人で、勝てた。",
-    "en": "",
+    "en": "...Good work. We won. Together.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -43945,7 +43957,7 @@
   },
   {
     "key": "…お疲れさま…あとは私が…",
-    "en": "",
+    "en": "...Good work... it's on me now...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -43959,7 +43971,7 @@
   },
   {
     "key": "…お疲れさま、あとは任せて",
-    "en": "",
+    "en": "...Good work. I'll take the rest.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -43973,7 +43985,7 @@
   },
   {
     "key": "…お疲れさま、いくね",
-    "en": "",
+    "en": "...Good work. I'm going.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -43987,7 +43999,7 @@
   },
   {
     "key": "…お疲れさま。二人でつかんだ勝利だね。",
-    "en": "",
+    "en": "...Good work. That's a win the two of us earned.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -44182,7 +44194,7 @@
   },
   {
     "key": "…が、頑張る、よ…",
-    "en": "",
+    "en": "...I'll... give it what I've got, okay...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -44236,7 +44248,7 @@
   },
   {
     "key": "…くっ、間に合わないか",
-    "en": "",
+    "en": "...Ngh. Not going to make it.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -44250,7 +44262,7 @@
   },
   {
     "key": "…こ、ここから",
-    "en": "",
+    "en": "...F-From here.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -44264,7 +44276,7 @@
   },
   {
     "key": "…こ、交代…だね…",
-    "en": "",
+    "en": "...S-So, that's the tag...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -44292,7 +44304,7 @@
   },
   {
     "key": "…ここから、背負う",
-    "en": "",
+    "en": "...From here, I carry it.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -44306,7 +44318,7 @@
   },
   {
     "key": "…ここから、行く",
-    "en": "",
+    "en": "...From here. I go.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -44320,7 +44332,7 @@
   },
   {
     "key": "…ここからは私が背負うよ",
-    "en": "",
+    "en": "...I'll shoulder it from here.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -44334,7 +44346,7 @@
   },
   {
     "key": "…ここからは私が行くよ",
-    "en": "",
+    "en": "...I'll take it from here.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -44348,7 +44360,7 @@
   },
   {
     "key": "…ここからは私の番かな♪",
-    "en": "",
+    "en": "...My turn from here, I'd say ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -45256,7 +45268,7 @@
   },
   {
     "key": "…ここまで繋いでくれたのにな。{partner}、すまない。",
-    "en": "",
+    "en": "...And you carried it all the way here. {partner}, my apologies.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -45396,7 +45408,7 @@
   },
   {
     "key": "…このまま終わらない。{partner}、倍返しだ。",
-    "en": "",
+    "en": "...This doesn't end here. {partner}. Double, next time.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -45424,7 +45436,7 @@
   },
   {
     "key": "…このまま終わる気はない。{partner}、次は返すから。",
-    "en": "",
+    "en": "...I've no intention of ending here. {partner}, next time we take it back.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -46580,7 +46592,7 @@
   },
   {
     "key": "…ごめん",
-    "en": "",
+    "en": "...Sorry.",
     "files": [
       "data.js:EVENT_INJURY_LINES",
       "tag-battle-lines.js:BETRAYAL_LINES"
@@ -46592,7 +46604,7 @@
   },
   {
     "key": "…ごめん…",
-    "en": "",
+    "en": "...I'm sorry...",
     "files": [
       "data.js:POACH_REACTION_DIALOGUES",
       "tag-battle-lines.js:BETRAYAL_LINES"
@@ -46632,7 +46644,7 @@
   },
   {
     "key": "…ごめん、ごめんね…",
-    "en": "",
+    "en": "...Sorry. I'm sorry...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -46646,7 +46658,7 @@
   },
   {
     "key": "…ごめん、っ",
-    "en": "",
+    "en": "...Sorry. Kh.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -46825,7 +46837,7 @@
   },
   {
     "key": "…ごめんなさい…",
-    "en": "",
+    "en": "...Forgive me...",
     "files": [
       "data.js:POACH_REACTION_DIALOGUES",
       "tag-battle-lines.js:BETRAYAL_LINES"
@@ -47290,7 +47302,7 @@
   },
   {
     "key": "…ごめんね…",
-    "en": "",
+    "en": "...I'm sorry, really...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -47774,7 +47786,7 @@
   },
   {
     "key": "…さ、させない",
-    "en": "",
+    "en": "...N-No. You don't.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47788,7 +47800,7 @@
   },
   {
     "key": "…さ、させないよ…",
-    "en": "",
+    "en": "...I-I won't let you, okay...",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47844,7 +47856,7 @@
   },
   {
     "key": "…させない",
-    "en": "",
+    "en": "...Not letting that happen.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47855,18 +47867,20 @@
   },
   {
     "key": "…させないよ",
-    "en": "",
+    "en": "...I'm not letting that happen.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "composed"
+    }
   },
   {
     "key": "…させないよ、そう簡単には",
-    "en": "",
+    "en": "...Not that easily, you don't.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47880,7 +47894,7 @@
   },
   {
     "key": "…させないよ〜",
-    "en": "",
+    "en": "...Nope, not letting you~",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47894,7 +47908,7 @@
   },
   {
     "key": "…させないわ",
-    "en": "",
+    "en": "...No, you won't.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47908,7 +47922,7 @@
   },
   {
     "key": "…させねえ",
-    "en": "",
+    "en": "...Not happening.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47922,7 +47936,7 @@
   },
   {
     "key": "…させません",
-    "en": "",
+    "en": "...I won't allow it.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47936,7 +47950,7 @@
   },
   {
     "key": "…させませんわ",
-    "en": "",
+    "en": "...I shall not allow it.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -47950,7 +47964,7 @@
   },
   {
     "key": "…させるか",
-    "en": "",
+    "en": "...As if.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -48578,7 +48592,7 @@
   },
   {
     "key": "…せーの",
-    "en": "",
+    "en": "...Ready, now.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -48589,7 +48603,7 @@
   },
   {
     "key": "…せーの…ね",
-    "en": "",
+    "en": "...Ready... now, yes?",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -48603,7 +48617,7 @@
   },
   {
     "key": "…せーの、かな",
-    "en": "",
+    "en": "...And... now, I guess.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -48617,7 +48631,7 @@
   },
   {
     "key": "…せーの、だ",
-    "en": "",
+    "en": "...Ready. Now.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -48631,7 +48645,7 @@
   },
   {
     "key": "…せーの、だね",
-    "en": "",
+    "en": "...Ready, then. Now.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -48645,7 +48659,7 @@
   },
   {
     "key": "…せーの、です",
-    "en": "",
+    "en": "...On my count.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -48659,7 +48673,7 @@
   },
   {
     "key": "…せーの、ですわ",
-    "en": "",
+    "en": "...On the count.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -49879,7 +49893,7 @@
   },
   {
     "key": "…そうはいかない",
-    "en": "",
+    "en": "...Doesn't go that way.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -49893,7 +49907,7 @@
   },
   {
     "key": "…そうはいかないかな",
-    "en": "",
+    "en": "...Afraid it doesn't work that way.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -49907,7 +49921,7 @@
   },
   {
     "key": "…そうはさせないよ",
-    "en": "",
+    "en": "...That's not going to happen.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -50369,7 +50383,7 @@
   },
   {
     "key": "…そんなの、駄目だから…",
-    "en": "",
+    "en": "...No. I'm not having that...",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -50424,7 +50438,7 @@
   },
   {
     "key": "…だ、ダメ",
-    "en": "",
+    "en": "...N-No.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -50438,7 +50452,7 @@
   },
   {
     "key": "…だ、ダメ、だよ…",
-    "en": "",
+    "en": "...N-No, you can't...",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -52199,7 +52213,7 @@
   },
   {
     "key": "…っ、{partner}…ありがとう…",
-    "en": "",
+    "en": "...Kh. {partner}... thank you...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -52213,7 +52227,7 @@
   },
   {
     "key": "…っ、{partner}…ごめん…私の、せいで…",
-    "en": "",
+    "en": "...Kh. {partner}... sorry... my fault...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -52227,7 +52241,7 @@
   },
   {
     "key": "…っ、{partner}…ごめん。",
-    "en": "",
+    "en": "...Kh. {partner}... sorry.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -52241,7 +52255,7 @@
   },
   {
     "key": "…っ、{partner}…勝った。二人で。",
-    "en": "",
+    "en": "...Kh. {partner}... we won. Together.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -52507,7 +52521,7 @@
   },
   {
     "key": "…っ、させない",
-    "en": "",
+    "en": "...Kh. You don't.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -52773,7 +52787,7 @@
   },
   {
     "key": "…っ、二人で",
-    "en": "",
+    "en": "...Kh. Both of us.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -52787,7 +52801,7 @@
   },
   {
     "key": "…っ、交代",
-    "en": "",
+    "en": "...Kh. Tagging.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -52801,7 +52815,7 @@
   },
   {
     "key": "…っ、動けない",
-    "en": "",
+    "en": "...Kh. Can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -52885,7 +52899,7 @@
   },
   {
     "key": "…っ、絶対勝つ",
-    "en": "",
+    "en": "...Kh. We win. No question.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -52927,7 +52941,7 @@
   },
   {
     "key": "…っ、間に合いませんわ",
-    "en": "",
+    "en": "...Nngh. I cannot reach her.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -53942,7 +53956,7 @@
   },
   {
     "key": "…つ、次は…{partner}を、勝たせる…",
-    "en": "",
+    "en": "...N-Next time... {partner} gets the win...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -53956,7 +53970,7 @@
   },
   {
     "key": "…つ、次は、ちゃんと…{partner}を勝たせるよ…",
-    "en": "",
+    "en": "...N-Next time, properly... I'll get {partner} that win...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -54195,7 +54209,7 @@
   },
   {
     "key": "…なりませんわ",
-    "en": "",
+    "en": "...That will not do.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -55374,7 +55388,7 @@
   },
   {
     "key": "…はい、カット",
-    "en": "",
+    "en": "...There. Broken up.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -55388,7 +55402,7 @@
   },
   {
     "key": "…はい、交代",
-    "en": "",
+    "en": "...Right. Tag.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -55651,7 +55665,7 @@
   },
   {
     "key": "…はーい、交代〜",
-    "en": "",
+    "en": "...Sure, sure. Tagging in~",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -55679,7 +55693,7 @@
   },
   {
     "key": "…ふ、二人で",
-    "en": "",
+    "en": "...B-Both of us.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -55693,7 +55707,7 @@
   },
   {
     "key": "…ふ、二人で、ね…",
-    "en": "",
+    "en": "...B-Both of us, right...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -56140,7 +56154,7 @@
   },
   {
     "key": "…ま、まだ",
-    "en": "",
+    "en": "...N-Not yet.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -56154,7 +56168,7 @@
   },
   {
     "key": "…ま、まだ、だよ…",
-    "en": "",
+    "en": "...N-Not over yet, okay...",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -56812,7 +56826,7 @@
   },
   {
     "key": "…まだ",
-    "en": "",
+    "en": "...No. Not yet.",
     "files": [
       "data.js:RETIREMENT_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
@@ -56893,7 +56907,7 @@
   },
   {
     "key": "…まだ、だよ",
-    "en": "",
+    "en": "...Not over yet.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -56907,7 +56921,7 @@
   },
   {
     "key": "…まだ、だよ…！",
-    "en": "",
+    "en": "...We're not done yet...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -56935,7 +56949,7 @@
   },
   {
     "key": "…まだ、よ",
-    "en": "",
+    "en": "...Not quite yet.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -57033,7 +57047,7 @@
   },
   {
     "key": "…まだだ",
-    "en": "",
+    "en": "...It's not over.",
     "files": [
       "data.js:RETAIN_LINES",
       "data.js:RETIREMENT_LINES",
@@ -57047,7 +57061,7 @@
   },
   {
     "key": "…まだだよ",
-    "en": "",
+    "en": "...Not yet, it isn't.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -57061,7 +57075,7 @@
   },
   {
     "key": "…まだです",
-    "en": "",
+    "en": "...Not just yet.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -57075,7 +57089,7 @@
   },
   {
     "key": "…まだですわ",
-    "en": "",
+    "en": "...Not yet, it is not.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -57089,18 +57103,20 @@
   },
   {
     "key": "…まだまだ",
-    "en": "",
+    "en": "...Far from over.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "cool"
+    }
   },
   {
     "key": "…まだまだ、かな",
-    "en": "",
+    "en": "...Still plenty left, I'd say.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -57114,7 +57130,7 @@
   },
   {
     "key": "…まだまだ、だよ",
-    "en": "",
+    "en": "...We've got plenty left.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -57548,7 +57564,7 @@
   },
   {
     "key": "…まだ諦めてないよ",
-    "en": "",
+    "en": "...Nobody's given up yet.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -59180,7 +59196,7 @@
   },
   {
     "key": "…やったな、{partner}。二人なら、負けない。",
-    "en": "",
+    "en": "...We did it, {partner}. Two of us. We don't lose.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -59194,7 +59210,7 @@
   },
   {
     "key": "…やったね、{partner}。二人なら、負ける気がしないよ。",
-    "en": "",
+    "en": "...Nicely done, {partner}. With the two of us, I don't see us losing.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -59613,7 +59629,7 @@
   },
   {
     "key": "…ようやく、だ",
-    "en": "",
+    "en": "...Finally.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -59669,7 +59685,7 @@
   },
   {
     "key": "…ようやく回ってきた、かな",
-    "en": "",
+    "en": "...Finally came around to me, I guess.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -59711,7 +59727,7 @@
   },
   {
     "key": "…よく守った",
-    "en": "",
+    "en": "...You held.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -59725,7 +59741,7 @@
   },
   {
     "key": "…よく耐えたね、交代だよ",
-    "en": "",
+    "en": "...You held on well. Come on out.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -60102,7 +60118,7 @@
   },
   {
     "key": "…わ、私、頑張れた…{partner}と…",
-    "en": "",
+    "en": "...I-I got through it... with {partner}...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -60116,7 +60132,7 @@
   },
   {
     "key": "…わ、私、頑張れたよ…{partner}のおかげ…",
-    "en": "",
+    "en": "...I-I held up out there... thanks to {partner}...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -60788,7 +60804,7 @@
   },
   {
     "key": "…わりぃ…",
-    "en": "",
+    "en": "...Sorry, I...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -60886,7 +60902,7 @@
   },
   {
     "key": "…カット",
-    "en": "",
+    "en": "...Broken up.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -61263,7 +61279,7 @@
   },
   {
     "key": "…タイミング",
-    "en": "",
+    "en": "...Timing.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -61277,7 +61293,7 @@
   },
   {
     "key": "…タイミング、合わせて",
-    "en": "",
+    "en": "...The timing — match it.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63023,18 +63039,20 @@
   },
   {
     "key": "…一緒に",
-    "en": "",
+    "en": "...Together.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "cool"
+    }
   },
   {
     "key": "…一緒にいくよ",
-    "en": "",
+    "en": "...We'll go together.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63076,7 +63094,7 @@
   },
   {
     "key": "…一緒にやろ〜",
-    "en": "",
+    "en": "...Let's do it together~",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63505,7 +63523,7 @@
   },
   {
     "key": "…二人で、決める",
-    "en": "",
+    "en": "...Two of us. We end it.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63519,7 +63537,7 @@
   },
   {
     "key": "…二人で、決めるよ…！",
-    "en": "",
+    "en": "...The two of us — we end it...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63533,7 +63551,7 @@
   },
   {
     "key": "…二人でいこうか",
-    "en": "",
+    "en": "...Shall we go, the two of us?",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63547,7 +63565,7 @@
   },
   {
     "key": "…二人で決めようね",
-    "en": "",
+    "en": "...Let's settle it together, okay?",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63561,7 +63579,7 @@
   },
   {
     "key": "…二人で決める",
-    "en": "",
+    "en": "...We end it together.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63575,7 +63593,7 @@
   },
   {
     "key": "…二人で決めるよ",
-    "en": "",
+    "en": "...We're ending it together.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -63617,7 +63635,7 @@
   },
   {
     "key": "…交代",
-    "en": "",
+    "en": "...Switching.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -63628,7 +63646,7 @@
   },
   {
     "key": "…交代、だね",
-    "en": "",
+    "en": "...That's the tag, then.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -63642,7 +63660,7 @@
   },
   {
     "key": "…交代、だよ",
-    "en": "",
+    "en": "...It's a tag.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -63656,7 +63674,7 @@
   },
   {
     "key": "…交代、よ",
-    "en": "",
+    "en": "...Switching, then.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -63670,7 +63688,7 @@
   },
   {
     "key": "…交代します",
-    "en": "",
+    "en": "...I'm switching in.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -63684,7 +63702,7 @@
   },
   {
     "key": "…交代だ",
-    "en": "",
+    "en": "...Switching in.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -63698,7 +63716,7 @@
   },
   {
     "key": "…交代ですわ",
-    "en": "",
+    "en": "...I am taking over.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -64173,7 +64191,7 @@
   },
   {
     "key": "…任せて",
-    "en": "",
+    "en": "...Leave it to me.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -64184,7 +64202,7 @@
   },
   {
     "key": "…任せて、いい",
-    "en": "",
+    "en": "...You can leave it.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -64195,7 +64213,7 @@
   },
   {
     "key": "…任せて、いいよ",
-    "en": "",
+    "en": "...You can leave it to me.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -64209,7 +64227,7 @@
   },
   {
     "key": "…任せて、絶対に…",
-    "en": "",
+    "en": "...Leave it to me... whatever it takes...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -64223,7 +64241,7 @@
   },
   {
     "key": "…任せてください",
-    "en": "",
+    "en": "...Please leave it to me.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -64237,7 +64255,7 @@
   },
   {
     "key": "…任せときな",
-    "en": "",
+    "en": "...Sit tight.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -64251,7 +64269,7 @@
   },
   {
     "key": "…任せろ、絶対",
-    "en": "",
+    "en": "...Leave it. Absolutely.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -66167,7 +66185,7 @@
   },
   {
     "key": "…動けない",
-    "en": "",
+    "en": "...Can't move.",
     "files": [
       "data.js:SLUMP_START_LINES",
       "tag-battle-lines.js:BETRAYAL_LINES"
@@ -66193,7 +66211,7 @@
   },
   {
     "key": "…動けないよ…",
-    "en": "",
+    "en": "...I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -66334,7 +66352,7 @@
   },
   {
     "key": "…勝った。{partner}と組むの、好き。",
-    "en": "",
+    "en": "...We won. I like teaming with {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -66614,7 +66632,7 @@
   },
   {
     "key": "…勝っちゃった。{partner}と組むの、やっぱいいな〜",
-    "en": "",
+    "en": "...And we won. Teaming with {partner} really does suit me~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -67117,7 +67135,7 @@
   },
   {
     "key": "…参りましたわ",
-    "en": "",
+    "en": "...I have arrived.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -67131,7 +67149,7 @@
   },
   {
     "key": "…参りますわ",
-    "en": "",
+    "en": "...I am going.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67243,18 +67261,20 @@
   },
   {
     "key": "…合わせて",
-    "en": "",
+    "en": "...Match me.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "cool"
+    }
   },
   {
     "key": "…合わせて…っ",
-    "en": "",
+    "en": "...Match me... now...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67268,7 +67288,7 @@
   },
   {
     "key": "…合わせて、いくよ",
-    "en": "",
+    "en": "...Match me, and we go.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67282,7 +67302,7 @@
   },
   {
     "key": "…合わせて、いこうか",
-    "en": "",
+    "en": "...Match me, and off we go.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67296,7 +67316,7 @@
   },
   {
     "key": "…合わせて、ね♪",
-    "en": "",
+    "en": "...Match me, all right ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67310,7 +67330,7 @@
   },
   {
     "key": "…合わせて、よ",
-    "en": "",
+    "en": "...Match me, then.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67324,7 +67344,7 @@
   },
   {
     "key": "…合わせます",
-    "en": "",
+    "en": "...I'll follow your lead.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67338,7 +67358,7 @@
   },
   {
     "key": "…合わせますわ",
-    "en": "",
+    "en": "...I shall match you.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67352,7 +67372,7 @@
   },
   {
     "key": "…合わせる",
-    "en": "",
+    "en": "...Matching you.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67366,7 +67386,7 @@
   },
   {
     "key": "…合わせるよ",
-    "en": "",
+    "en": "...I'll match you.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67380,7 +67400,7 @@
   },
   {
     "key": "…合わせろ",
-    "en": "",
+    "en": "...On me.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -67642,7 +67662,7 @@
   },
   {
     "key": "…嘘、動けないよ…っ",
-    "en": "",
+    "en": "...No... I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -68880,7 +68900,7 @@
   },
   {
     "key": "…届かないな",
-    "en": "",
+    "en": "...Not going to reach, is it.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -68894,7 +68914,7 @@
   },
   {
     "key": "…届かなかった",
-    "en": "",
+    "en": "...Didn't reach.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -69326,7 +69346,7 @@
   },
   {
     "key": "…待ってた",
-    "en": "",
+    "en": "...Been waiting.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -69340,7 +69360,7 @@
   },
   {
     "key": "…待ってたよ",
-    "en": "",
+    "en": "...I was waiting for this.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -69983,7 +70003,7 @@
   },
   {
     "key": "…息、ぴったりだったね。",
-    "en": "",
+    "en": "...We were in step.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -69996,7 +70016,7 @@
   },
   {
     "key": "…息、ぴったりだったよ。",
-    "en": "",
+    "en": "...We were right in step, you know.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -70009,7 +70029,7 @@
   },
   {
     "key": "…息、合わせようね",
-    "en": "",
+    "en": "...Let's get the timing right.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -70023,7 +70043,7 @@
   },
   {
     "key": "…息を、合わせろ",
-    "en": "",
+    "en": "...Time it. With me.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -70205,7 +70225,7 @@
   },
   {
     "key": "…悔しい。{partner}にも…ね。",
-    "en": "",
+    "en": "...That stings. For {partner} as well.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -70219,7 +70239,7 @@
   },
   {
     "key": "…悔しい。{partner}にも、申し訳ない。",
-    "en": "",
+    "en": "...That hurts. And I owe {partner} an apology.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -70233,7 +70253,7 @@
   },
   {
     "key": "…悔しい。{partner}にも、詫びる。",
-    "en": "",
+    "en": "...That stings. Sorry to {partner}, too.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -70331,7 +70351,7 @@
   },
   {
     "key": "…悔しいけど、{partner}。次までに、詰めようか。",
-    "en": "",
+    "en": "...It stings, {partner}. Let's close the gap before the next one.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -70387,7 +70407,7 @@
   },
   {
     "key": "…悔しいな。{partner}にも、悪い。",
-    "en": "",
+    "en": "...Frustrating. And unfair to {partner}, too.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -72744,7 +72764,7 @@
   },
   {
     "key": "…最後まで一緒にいてくれて、ありがとう。",
-    "en": "",
+    "en": "...You stayed to the end. Thank you.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -72757,7 +72777,7 @@
   },
   {
     "key": "…最後まで一緒に戦えて、よかった。",
-    "en": "",
+    "en": "...Glad we got to fight it out together to the end.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -73232,7 +73252,7 @@
   },
   {
     "key": "…来た、私が",
-    "en": "",
+    "en": "...There it is. My turn.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -73246,7 +73266,7 @@
   },
   {
     "key": "…来たぜ",
-    "en": "",
+    "en": "...I'm in.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -73260,7 +73280,7 @@
   },
   {
     "key": "…来たよ",
-    "en": "",
+    "en": "...I'm here.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -73274,7 +73294,7 @@
   },
   {
     "key": "…来たわ",
-    "en": "",
+    "en": "...And here I am.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -73386,7 +73406,7 @@
   },
   {
     "key": "…来ました",
-    "en": "",
+    "en": "...I have come in.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -73637,7 +73657,7 @@
   },
   {
     "key": "…次は、こうはいかない。{partner}、もう一回だけ付き合って。",
-    "en": "",
+    "en": "...It won't go this way again. {partner}, give me one more shot with you.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -73665,7 +73685,7 @@
   },
   {
     "key": "…次は、勝つ。絶対。{partner}…っ。",
-    "en": "",
+    "en": "...Next time we win. Absolutely. {partner}...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -74701,7 +74721,7 @@
   },
   {
     "key": "…渡さない",
-    "en": "",
+    "en": "...She stays.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -74715,7 +74735,7 @@
   },
   {
     "key": "…渡さない、から",
-    "en": "",
+    "en": "...She's not going anywhere.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -75577,7 +75597,7 @@
   },
   {
     "key": "…申し訳、ありませんでした。{partner}さん。",
-    "en": "",
+    "en": "...My apologies. Truly, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -76198,7 +76218,7 @@
   },
   {
     "key": "…申し訳ありませんわ。{partner}さん。",
-    "en": "",
+    "en": "...My apologies, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -79659,7 +79679,7 @@
   },
   {
     "key": "…私のミスだ、{partner}。でも、次はこうはいかないよ。",
-    "en": "",
+    "en": "...That was my mistake, {partner}. It won't go this way twice, though.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -79687,7 +79707,7 @@
   },
   {
     "key": "…私の出番",
-    "en": "",
+    "en": "...I'm up.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -79742,7 +79762,7 @@
   },
   {
     "key": "…私の番だね",
-    "en": "",
+    "en": "...My turn, then.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -80219,7 +80239,7 @@
   },
   {
     "key": "…約束、守った。{partner}…っ。",
-    "en": "",
+    "en": "...Kept the promise. {partner}...",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -80509,7 +80529,7 @@
   },
   {
     "key": "…絶対、させないよ…！",
-    "en": "",
+    "en": "...I'm not letting this happen... not ever...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -80523,7 +80543,7 @@
   },
   {
     "key": "…絶対、決める",
-    "en": "",
+    "en": "...We end it. Absolutely.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -80537,7 +80557,7 @@
   },
   {
     "key": "…絶対、渡さない",
-    "en": "",
+    "en": "...She stays. No matter what.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -80551,7 +80571,7 @@
   },
   {
     "key": "…絶対、渡さないから",
-    "en": "",
+    "en": "...I'm not handing her over. Ever.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -80565,7 +80585,7 @@
   },
   {
     "key": "…絶対に、勝つよ…！",
-    "en": "",
+    "en": "...I'm going to win this one... count on it...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -80579,7 +80599,7 @@
   },
   {
     "key": "…絶対決める、から…",
-    "en": "",
+    "en": "...We're finishing this, I promise...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -80789,7 +80809,7 @@
   },
   {
     "key": "…繋いでくれたのに。{partner}、すまない。",
-    "en": "",
+    "en": "...You held it for me. {partner}, I'm sorry.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -81516,7 +81536,7 @@
   },
   {
     "key": "…見たか。{partner}と、あたしのタッグだ。",
-    "en": "",
+    "en": "...You saw. {partner} and me. That's the team.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -81530,7 +81550,7 @@
   },
   {
     "key": "…見た？ {partner}と組めば、こんなもんさ。",
-    "en": "",
+    "en": "...See that? Pair me with {partner} and this is what you get.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -82005,7 +82025,7 @@
   },
   {
     "key": "…言葉はいらない。{partner}、ありがとう。…それだけだ。",
-    "en": "",
+    "en": "...No need for words. Thank you, {partner}. ...That's all.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -82424,7 +82444,7 @@
   },
   {
     "key": "…諦めてない",
-    "en": "",
+    "en": "...Not giving up.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -82801,7 +82821,7 @@
   },
   {
     "key": "…負けちゃった。{partner}、次は。",
-    "en": "",
+    "en": "...We lost. {partner}. Next time.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -83460,7 +83480,7 @@
   },
   {
     "key": "…逃がさない、そっち頼むね",
-    "en": "",
+    "en": "...She's not getting away. Take that side, would you?",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -83474,7 +83494,7 @@
   },
   {
     "key": "…逃がさない、頼む",
-    "en": "",
+    "en": "...She's not getting out. Cover it.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -83726,7 +83746,7 @@
   },
   {
     "key": "…遠い",
-    "en": "",
+    "en": "...Too far.",
     "files": [
       "data.js:SLUMP_START_LINES",
       "tag-battle-lines.js:BETRAYAL_LINES"
@@ -84158,18 +84178,20 @@
   },
   {
     "key": "…間に合わない",
-    "en": "",
+    "en": "...Not in time.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 4,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "cool"
+    }
   },
   {
     "key": "…間に合わない…っ",
-    "en": "",
+    "en": "...I'm not making it...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -84183,7 +84205,7 @@
   },
   {
     "key": "…間に合わない、か…",
-    "en": "",
+    "en": "...I-I won't make it, will I...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -84197,7 +84219,7 @@
   },
   {
     "key": "…間に合わないか…",
-    "en": "",
+    "en": "...Not going to make it, huh...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -84757,7 +84779,7 @@
   },
   {
     "key": "…駄目",
-    "en": "",
+    "en": "...No good.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -84771,7 +84793,7 @@
   },
   {
     "key": "…駄目だ",
-    "en": "",
+    "en": "...Nope.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -84785,7 +84807,7 @@
   },
   {
     "key": "…駄目だ、絶対",
-    "en": "",
+    "en": "...No. Absolutely not.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -84799,7 +84821,7 @@
   },
   {
     "key": "…駄目だよ",
-    "en": "",
+    "en": "...That's a no.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -84813,7 +84835,7 @@
   },
   {
     "key": "…駄目です",
-    "en": "",
+    "en": "...No, that won't do.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -84827,7 +84849,7 @@
   },
   {
     "key": "…駄目よ",
-    "en": "",
+    "en": "...No. Not that.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -89228,7 +89250,7 @@
   },
   {
     "key": "あ、合わせて…ね…?",
-    "en": "",
+    "en": "M-Match me... would you...?",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -89242,7 +89264,7 @@
   },
   {
     "key": "あ、合わせてくださいまし…！",
-    "en": "",
+    "en": "P-Please match me...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -89256,7 +89278,7 @@
   },
   {
     "key": "あ、合わせます…！",
-    "en": "",
+    "en": "I-I'll match you...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -89270,7 +89292,7 @@
   },
   {
     "key": "あ、合わせますっ…！",
-    "en": "",
+    "en": "I-I'll match you, okay...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -89284,7 +89306,7 @@
   },
   {
     "key": "あ、合わせろし…！",
-    "en": "",
+    "en": "S-Stay with me...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -90344,7 +90366,7 @@
   },
   {
     "key": "あちゃ…動けねえ…",
-    "en": "",
+    "en": "Ah, man... can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -90358,7 +90380,7 @@
   },
   {
     "key": "あちゃ…動けません…",
-    "en": "",
+    "en": "Oh no... I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -90386,7 +90408,7 @@
   },
   {
     "key": "あちゃ〜負けたか…でも{partner}、次は頑張るぜ。",
-    "en": "",
+    "en": "Aw~ we dropped it... but next time I'm coming harder, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -90400,7 +90422,7 @@
   },
   {
     "key": "あちゃ〜負けちゃいましたね…次は頑張ります、{partner}さん。",
-    "en": "",
+    "en": "Aw~ we lost that one... I'll be sharper next time, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -90414,7 +90436,7 @@
   },
   {
     "key": "あちゃ〜負けちゃった…でも{partner}、次は頑張るね。",
-    "en": "",
+    "en": "Aw man~ we lost... but I'll be better next time, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -96171,7 +96193,7 @@
   },
   {
     "key": "あら…動けないわ…",
-    "en": "",
+    "en": "Oh dear... I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -97841,7 +97863,7 @@
   },
   {
     "key": "あらあら…動けませんわ…",
-    "en": "",
+    "en": "Oh my, oh my... I cannot move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -98344,7 +98366,7 @@
   },
   {
     "key": "あらら、負けてしまいましたわ…でも次は頑張りますの、{partner}さん。",
-    "en": "",
+    "en": "Oh dear, we have lost... but I shall be better next time, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -100284,7 +100306,7 @@
   },
   {
     "key": "ありゃ…動けない…",
-    "en": "",
+    "en": "Whoops... I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -101359,7 +101381,7 @@
   },
   {
     "key": "あーあ、負けちゃった…でも{partner}、次はやるわよ。",
-    "en": "",
+    "en": "Ah well, we lost... but next time, {partner}, we take it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -101443,7 +101465,7 @@
   },
   {
     "key": "い、いっしょに…よ…",
-    "en": "",
+    "en": "T-Together... okay...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -101457,7 +101479,7 @@
   },
   {
     "key": "い、いっしょに…！",
-    "en": "",
+    "en": "T-Together...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -101471,7 +101493,7 @@
   },
   {
     "key": "い、いっしょにっ…！",
-    "en": "",
+    "en": "T-Together, please...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -101485,7 +101507,7 @@
   },
   {
     "key": "い、いっしょにやるぞ…",
-    "en": "",
+    "en": "T-Together, okay...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -101499,7 +101521,7 @@
   },
   {
     "key": "い、いっしょに参りますわ…！",
-    "en": "",
+    "en": "T-Together, then...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -101583,7 +101605,7 @@
   },
   {
     "key": "い、行ってきます…！",
-    "en": "",
+    "en": "H-Here I go...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -101597,7 +101619,7 @@
   },
   {
     "key": "い、行ってきますっ…！",
-    "en": "",
+    "en": "H-Here I go, then...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -101611,7 +101633,7 @@
   },
   {
     "key": "い、行ってくる…ぜ…",
-    "en": "",
+    "en": "I-I'm going in... yeah...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -101625,7 +101647,7 @@
   },
   {
     "key": "い、行ってくる…わ…",
-    "en": "",
+    "en": "I-I'm going in... now...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -101639,7 +101661,7 @@
   },
   {
     "key": "い、行ってまいりますわ…！",
-    "en": "",
+    "en": "I-I am going in...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -102721,7 +102743,7 @@
   },
   {
     "key": "いきますよ、二人で！",
-    "en": "",
+    "en": "Here we go, both of us!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -102735,7 +102757,7 @@
   },
   {
     "key": "いくぞ、二人で！",
-    "en": "",
+    "en": "Let's go, both of us!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -102763,7 +102785,7 @@
   },
   {
     "key": "いくよ、二人で！",
-    "en": "",
+    "en": "Here we go — together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -104008,7 +104030,7 @@
   },
   {
     "key": "う、動けない…",
-    "en": "",
+    "en": "I-I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104022,7 +104044,7 @@
   },
   {
     "key": "う、動けない…の…",
-    "en": "",
+    "en": "I-I can't move... no...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104036,7 +104058,7 @@
   },
   {
     "key": "う、動けねえ…",
-    "en": "",
+    "en": "C-Can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104050,7 +104072,7 @@
   },
   {
     "key": "う、動けません…",
-    "en": "",
+    "en": "I-I can't get up...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104064,7 +104086,7 @@
   },
   {
     "key": "う、動けませんわ…",
-    "en": "",
+    "en": "I-I cannot move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104357,7 +104379,7 @@
   },
   {
     "key": "うぅ…遠い…",
-    "en": "",
+    "en": "Uugh... so far...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104371,7 +104393,7 @@
   },
   {
     "key": "うぅ…遠い…わ",
-    "en": "",
+    "en": "Mm... too far away...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104385,7 +104407,7 @@
   },
   {
     "key": "うぅ…遠いです…",
-    "en": "",
+    "en": "Ohh... it's too far...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104399,7 +104421,7 @@
   },
   {
     "key": "うぅ…遠いですわ…",
-    "en": "",
+    "en": "Ohh... it is much too far...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -104413,7 +104435,7 @@
   },
   {
     "key": "うぅ…遠えな…",
-    "en": "",
+    "en": "Ugh... way too far...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -109737,7 +109759,7 @@
   },
   {
     "key": "おやりになりましたわね{partner}さん！ 二人揃えば負けませんわ！",
-    "en": "",
+    "en": "You were magnificent, {partner}! The two of us together do not lose!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -110459,7 +110481,7 @@
   },
   {
     "key": "お任せくださいっ！",
-    "en": "",
+    "en": "Please leave this to me!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -110473,7 +110495,7 @@
   },
   {
     "key": "お任せなさいませ！",
-    "en": "",
+    "en": "Do leave this to me!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -110487,7 +110509,7 @@
   },
   {
     "key": "お任せを…絶対に…！",
-    "en": "",
+    "en": "Leave it to me... I will not fail...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -110899,7 +110921,7 @@
   },
   {
     "key": "お合わせあそばせ♪",
-    "en": "",
+    "en": "Kindly keep in step ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -110913,7 +110935,7 @@
   },
   {
     "key": "お合わせなさい！",
-    "en": "",
+    "en": "Do keep pace with me!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -111230,7 +111252,7 @@
   },
   {
     "key": "お待ちかねですわ！",
-    "en": "",
+    "en": "At last — my moment!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111437,7 +111459,7 @@
   },
   {
     "key": "お疲れ…あとはあたしが…！",
-    "en": "",
+    "en": "Good work... I'll take it from here...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111451,7 +111473,7 @@
   },
   {
     "key": "お疲れ…ここからは私が…！",
-    "en": "",
+    "en": "You did enough... it's me from here...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111465,7 +111487,7 @@
   },
   {
     "key": "お疲れさま…あとはわたくしが…！",
-    "en": "",
+    "en": "You have done enough... the rest is mine...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111479,7 +111501,7 @@
   },
   {
     "key": "お疲れさま…あとは任せて",
-    "en": "",
+    "en": "You did well... leave the rest with me.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111493,7 +111515,7 @@
   },
   {
     "key": "お疲れさま…あとは任せて♪",
-    "en": "",
+    "en": "You did well... I'll take the rest ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111507,7 +111529,7 @@
   },
   {
     "key": "お疲れさま…あとは私が…！",
-    "en": "",
+    "en": "Rest now... I'll finish it...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111521,7 +111543,7 @@
   },
   {
     "key": "お疲れさま♪ 参りますわ",
-    "en": "",
+    "en": "Well done ♪ I am going in",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111535,7 +111557,7 @@
   },
   {
     "key": "お疲れさま♪ 私いくね",
-    "en": "",
+    "en": "Nice work ♪ I'll go in now",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111588,7 +111610,7 @@
   },
   {
     "key": "お疲れさま。二人で勝てて、うれしいわ。",
-    "en": "",
+    "en": "Well done. Winning it together makes me quite happy.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -111601,7 +111623,7 @@
   },
   {
     "key": "お疲れさまっ…あとは私が…！",
-    "en": "",
+    "en": "You did so much... the rest is mine...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111615,7 +111637,7 @@
   },
   {
     "key": "お疲れさまでした。二人でつかんだ勝利ですね。",
-    "en": "",
+    "en": "Wonderful work. This is a victory the two of us took together.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -111654,7 +111676,7 @@
   },
   {
     "key": "お疲れさまです♪ いきますね",
-    "en": "",
+    "en": "You did great ♪ Here I go",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111668,7 +111690,7 @@
   },
   {
     "key": "お疲れさまですわ、お任せを！",
-    "en": "",
+    "en": "You have done splendidly. Leave the rest to me!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111682,7 +111704,7 @@
   },
   {
     "key": "お疲れさまですわ。二人でつかんだ勝利ですの。",
-    "en": "",
+    "en": "You have done splendidly. This victory is one we took together.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -111695,7 +111717,7 @@
   },
   {
     "key": "お疲れさま！　二人でつかんだ勝利だよ！",
-    "en": "",
+    "en": "Great work out there! We took this one together!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -111708,7 +111730,7 @@
   },
   {
     "key": "お疲れさん♪ 私いくぜ",
-    "en": "",
+    "en": "Good work ♪ I'm going in",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111722,7 +111744,7 @@
   },
   {
     "key": "お疲れさん、あとは任せろ！",
-    "en": "",
+    "en": "Good work. Rest — I'll handle it!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111736,7 +111758,7 @@
   },
   {
     "key": "お疲れさん！　あたしらの勝ちだ！",
-    "en": "",
+    "en": "Good work! That one's ours!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -111749,7 +111771,7 @@
   },
   {
     "key": "お疲れ様、あとは任せて！",
-    "en": "",
+    "en": "Nice work — I've got the rest!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -111804,7 +111826,7 @@
   },
   {
     "key": "お疲れ様です、任せてくださいっ！",
-    "en": "",
+    "en": "You did wonderfully — please, let me take it!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -112773,7 +112795,7 @@
   },
   {
     "key": "が、頑張ります…！",
-    "en": "",
+    "en": "I-I'll give it everything...!",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:PPV_OPPONENT_LINES",
@@ -112789,7 +112811,7 @@
   },
   {
     "key": "が、頑張りますっ…！",
-    "en": "",
+    "en": "I-I'll give it everything I have...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -112803,7 +112825,7 @@
   },
   {
     "key": "が、頑張りますわ…！",
-    "en": "",
+    "en": "I-I shall give my utmost...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -112817,7 +112839,7 @@
   },
   {
     "key": "が、頑張る…から…",
-    "en": "",
+    "en": "I'll... give it what I have... okay...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -112831,7 +112853,7 @@
   },
   {
     "key": "が、頑張るし…！",
-    "en": "",
+    "en": "I-I'll give it all I got...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -113134,7 +113156,7 @@
   },
   {
     "key": "くぅっ…間に合いません",
-    "en": "",
+    "en": "Ngh... I can't reach her.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -113288,7 +113310,7 @@
   },
   {
     "key": "くそっ…{partner}、ごめん。私のミスよ。次は絶対に取る。",
-    "en": "",
+    "en": "Tch... {partner}, sorry. That one's on me. Next time we take it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -113512,7 +113534,7 @@
   },
   {
     "key": "くそっ…私のミスだ、{partner}。次は絶対、返してやる。",
-    "en": "",
+    "en": "Damn it... that was on me, {partner}. Next time we take it back.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -113832,7 +113854,7 @@
   },
   {
     "key": "くっ…間に合わないわ",
-    "en": "",
+    "en": "Ngh... too late for that.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -114413,7 +114435,7 @@
   },
   {
     "key": "こ、交代…します…",
-    "en": "",
+    "en": "T-Tagging... in... now...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114427,7 +114449,7 @@
   },
   {
     "key": "こ、交代…だ…",
-    "en": "",
+    "en": "T-Tag... okay...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114441,7 +114463,7 @@
   },
   {
     "key": "こ、交代…ですわ…",
-    "en": "",
+    "en": "T-Taking over... now...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114455,7 +114477,7 @@
   },
   {
     "key": "こ、交代…ね…?",
-    "en": "",
+    "en": "S-Switching... is that all right...?",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114469,7 +114491,7 @@
   },
   {
     "key": "こ、交代します…っ",
-    "en": "",
+    "en": "I-I'm coming in... please...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114915,7 +114937,7 @@
   },
   {
     "key": "ここからはあたしが背負うぜ！",
-    "en": "",
+    "en": "The rest is mine to carry!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114929,7 +114951,7 @@
   },
   {
     "key": "ここからはわたくしが引き継ぎますわ！",
-    "en": "",
+    "en": "I shall carry this the rest of the way!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114943,7 +114965,7 @@
   },
   {
     "key": "ここからはわたくしが！",
-    "en": "",
+    "en": "From here, it is my turn!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114957,7 +114979,7 @@
   },
   {
     "key": "ここからはわたくしの出番ですわ♪",
-    "en": "",
+    "en": "From here, the stage is mine ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114971,7 +114993,7 @@
   },
   {
     "key": "ここからは私が引き継ぎます！",
-    "en": "",
+    "en": "I'll take over from here!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114985,7 +115007,7 @@
   },
   {
     "key": "ここからは私が背負うわ",
-    "en": "",
+    "en": "I'll carry it from here.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -114999,7 +115021,7 @@
   },
   {
     "key": "ここからは私が背負う！",
-    "en": "",
+    "en": "The rest is on my shoulders!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -115013,7 +115035,7 @@
   },
   {
     "key": "ここからは私が行きます！",
-    "en": "",
+    "en": "From here, it's my turn to go!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -115027,7 +115049,7 @@
   },
   {
     "key": "ここからは私が行く！",
-    "en": "",
+    "en": "I'm taking it from here!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -115038,7 +115060,7 @@
   },
   {
     "key": "ここからは私の出番♪",
-    "en": "",
+    "en": "My turn to shine ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -115052,7 +115074,7 @@
   },
   {
     "key": "ここからは私の出番だ♪",
-    "en": "",
+    "en": "This part's mine ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -115066,7 +115088,7 @@
   },
   {
     "key": "ここからは私の出番です♪",
-    "en": "",
+    "en": "This part is all mine ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -115080,7 +115102,7 @@
   },
   {
     "key": "ここからは私の時間よ♪",
-    "en": "",
+    "en": "From here, this is my time ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -115094,7 +115116,7 @@
   },
   {
     "key": "ここからは私の番ね",
-    "en": "",
+    "en": "From here it's my turn.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -117310,7 +117332,7 @@
   },
   {
     "key": "ここまで繋いでくれたのに…{partner}、ごめん。",
-    "en": "",
+    "en": "You carried it all that way... and I let it go. Sorry, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -117324,7 +117346,7 @@
   },
   {
     "key": "ここまで繋いでくれたのに…ごめんなさい、{partner}。",
-    "en": "",
+    "en": "You brought it all this way... and I'm sorry, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -117338,7 +117360,7 @@
   },
   {
     "key": "ここまで繋いでくれたのに…悪い、{partner}。",
-    "en": "",
+    "en": "You held it together that whole time... my bad, {partner}.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -117839,7 +117861,7 @@
   },
   {
     "key": "このままじゃ終わらせない。{partner}、次は倍返しよ。",
-    "en": "",
+    "en": "I won't let it end here. {partner}, next time we return it twofold.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -117923,7 +117945,7 @@
   },
   {
     "key": "このままでは終われません。{partner}さん、次は倍返しです！",
-    "en": "",
+    "en": "We can't end it here. {partner}, next time we pay it back twice over!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -117937,7 +117959,7 @@
   },
   {
     "key": "このままでは終われませんわ。{partner}さん、次は倍返しですわ！",
-    "en": "",
+    "en": "We cannot end it in this fashion. {partner}, next time we return it twofold!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -117979,7 +118001,7 @@
   },
   {
     "key": "このまま終われるかよ…{partner}、次は倍返しだ！",
-    "en": "",
+    "en": "Like I'm ending it here... {partner}, next time it's double!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -122572,7 +122594,7 @@
   },
   {
     "key": "これがタッグの強さだ！ {winner}組、見事な勝利！",
-    "en": "",
+    "en": "This is the strength of a tag team! A superb win for team {winner}!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_COMMENTARY_WIN_LINES"
     ],
@@ -122968,7 +122990,7 @@
   },
   {
     "key": "これは決まった！ タッグの絆が生んだ一撃！",
-    "en": "",
+    "en": "That's it! A blow born out of the bond between partners!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_FINISH_COMMENTARY_LINES"
     ],
@@ -124236,7 +124258,7 @@
   },
   {
     "key": "ごめん…ごめんっ…！",
-    "en": "",
+    "en": "I'm sorry... I'm so sorry...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -124250,7 +124272,7 @@
   },
   {
     "key": "ごめん…ごめんねっ…！",
-    "en": "",
+    "en": "Sorry... I'm so sorry...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -124571,7 +124593,7 @@
   },
   {
     "key": "ごめんなさいっ…ごめんっ…！",
-    "en": "",
+    "en": "I'm sorry... I'm so sorry, truly...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -124585,7 +124607,7 @@
   },
   {
     "key": "ごめんなさいっ…！",
-    "en": "",
+    "en": "I am so sorry...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -124767,7 +124789,7 @@
   },
   {
     "key": "ご一緒にですわ〜♪",
-    "en": "",
+    "en": "Together, then ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -124781,7 +124803,7 @@
   },
   {
     "key": "ご一緒に参りますわ！",
-    "en": "",
+    "en": "I shall go together with you!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -125142,7 +125164,7 @@
   },
   {
     "key": "ご覧になって？ {partner}さんとわたくしのタッグですのよ！",
-    "en": "",
+    "en": "Did you see? That is {partner} and myself as a team!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -125239,7 +125261,7 @@
   },
   {
     "key": "さ、させない…わ…!",
-    "en": "",
+    "en": "I-I won't allow it... no...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125253,7 +125275,7 @@
   },
   {
     "key": "さ、させない…！",
-    "en": "",
+    "en": "N-No you don't...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125267,7 +125289,7 @@
   },
   {
     "key": "さ、させねえ…！",
-    "en": "",
+    "en": "N-Not letting you...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125281,7 +125303,7 @@
   },
   {
     "key": "さ、させませんっ…！",
-    "en": "",
+    "en": "I-I won't let you...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125295,7 +125317,7 @@
   },
   {
     "key": "さ、させませんわ…！",
-    "en": "",
+    "en": "I-I shall not permit it...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125449,7 +125471,7 @@
   },
   {
     "key": "させないよ〜！",
-    "en": "",
+    "en": "Nope, not happening~!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125463,7 +125485,7 @@
   },
   {
     "key": "させないわ",
-    "en": "",
+    "en": "I don't think so.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125477,7 +125499,7 @@
   },
   {
     "key": "させないわよ〜♪",
-    "en": "",
+    "en": "Not a chance~ ♪",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125491,7 +125513,7 @@
   },
   {
     "key": "させない！",
-    "en": "",
+    "en": "You're not doing that!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125505,7 +125527,7 @@
   },
   {
     "key": "させねえよ〜！",
-    "en": "",
+    "en": "Nuh-uh, not happening~!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125519,7 +125541,7 @@
   },
   {
     "key": "させねえ！",
-    "en": "",
+    "en": "Not on my watch!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125533,7 +125555,7 @@
   },
   {
     "key": "させませんっ！",
-    "en": "",
+    "en": "I won't allow that!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125547,7 +125569,7 @@
   },
   {
     "key": "させませんよ〜！",
-    "en": "",
+    "en": "Nope, I won't allow it~!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125561,7 +125583,7 @@
   },
   {
     "key": "させませんわよ〜♪",
-    "en": "",
+    "en": "I think not ♪",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -125575,7 +125597,7 @@
   },
   {
     "key": "させませんわ！",
-    "en": "",
+    "en": "I shall not permit it!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127288,7 +127310,7 @@
   },
   {
     "key": "せーの…よ♪",
-    "en": "",
+    "en": "Ready... now ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -127302,7 +127324,7 @@
   },
   {
     "key": "せーの、ですわ♪",
-    "en": "",
+    "en": "And... now ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -127316,7 +127338,7 @@
   },
   {
     "key": "せーのっ♪",
-    "en": "",
+    "en": "Ready — now ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -127330,7 +127352,7 @@
   },
   {
     "key": "せーのっ、だ！",
-    "en": "",
+    "en": "Ready — now!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -127344,7 +127366,7 @@
   },
   {
     "key": "せーのっ、です♪",
-    "en": "",
+    "en": "Ready and — now ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -127358,7 +127380,7 @@
   },
   {
     "key": "ぜ、全部…{partner}のおかげ、だ…！",
-    "en": "",
+    "en": "A-All of it... that was {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -127582,7 +127604,7 @@
   },
   {
     "key": "そうはいかないわ",
-    "en": "",
+    "en": "It doesn't go that way.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127596,7 +127618,7 @@
   },
   {
     "key": "そうはいかない！",
-    "en": "",
+    "en": "That's not how this goes!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127610,7 +127632,7 @@
   },
   {
     "key": "そうはいかねえ！",
-    "en": "",
+    "en": "Doesn't work like that!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127624,7 +127646,7 @@
   },
   {
     "key": "そうはいきませんっ！",
-    "en": "",
+    "en": "It doesn't work that way!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127638,7 +127660,7 @@
   },
   {
     "key": "そうはいきませんわ！",
-    "en": "",
+    "en": "It does not work in that fashion!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127652,7 +127674,7 @@
   },
   {
     "key": "そうはさせないわ",
-    "en": "",
+    "en": "That will not be happening.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127666,7 +127688,7 @@
   },
   {
     "key": "そうはさせないわよ",
-    "en": "",
+    "en": "You won't be doing that.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127680,7 +127702,7 @@
   },
   {
     "key": "そうはさせない！",
-    "en": "",
+    "en": "I won't let you!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127694,7 +127716,7 @@
   },
   {
     "key": "そうはさせねえ！",
-    "en": "",
+    "en": "Like hell you will!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127708,7 +127730,7 @@
   },
   {
     "key": "そうはさせませんっ！",
-    "en": "",
+    "en": "I will not let that happen!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127722,7 +127744,7 @@
   },
   {
     "key": "そうはさせませんよ！",
-    "en": "",
+    "en": "That won't be happening!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127736,7 +127758,7 @@
   },
   {
     "key": "そうはさせませんわよ！",
-    "en": "",
+    "en": "You shall do no such thing!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127750,7 +127772,7 @@
   },
   {
     "key": "そうはさせませんわ！",
-    "en": "",
+    "en": "That shall not happen!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127764,7 +127786,7 @@
   },
   {
     "key": "そうはさせるかよ！",
-    "en": "",
+    "en": "As if!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -127778,7 +127800,7 @@
   },
   {
     "key": "そうはさせるか！",
-    "en": "",
+    "en": "As if I'd let you!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128604,7 +128626,7 @@
   },
   {
     "key": "そんなの…させるかっ…！",
-    "en": "",
+    "en": "Not a chance... not that...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128618,7 +128640,7 @@
   },
   {
     "key": "そんなの…許さないわっ…！",
-    "en": "",
+    "en": "That... I will not forgive...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128632,7 +128654,7 @@
   },
   {
     "key": "そんなの…許しませんわっ…！",
-    "en": "",
+    "en": "Such a thing... I shall not forgive...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128646,7 +128668,7 @@
   },
   {
     "key": "そんなの…駄目っ…！",
-    "en": "",
+    "en": "No... I won't have it...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128660,7 +128682,7 @@
   },
   {
     "key": "そんなの駄目ですっ…！",
-    "en": "",
+    "en": "No — I can't allow that...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128886,7 +128908,7 @@
   },
   {
     "key": "だ、ダメ…なの…!",
-    "en": "",
+    "en": "N-No... you can't...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128900,7 +128922,7 @@
   },
   {
     "key": "だ、ダメ…！",
-    "en": "",
+    "en": "N-No...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128914,7 +128936,7 @@
   },
   {
     "key": "だ、ダメだ…！",
-    "en": "",
+    "en": "N-No way...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128928,7 +128950,7 @@
   },
   {
     "key": "だ、ダメですっ…！",
-    "en": "",
+    "en": "N-No, please...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -128942,7 +128964,7 @@
   },
   {
     "key": "だ、ダメですわ…！",
-    "en": "",
+    "en": "N-No, you must not...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -129290,7 +129312,7 @@
   },
   {
     "key": "ちっ…間に合わない",
-    "en": "",
+    "en": "Tch... I won't get there.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -129304,7 +129326,7 @@
   },
   {
     "key": "ちっ…間に合わねえ",
-    "en": "",
+    "en": "Tch... not gonna reach.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -129914,7 +129936,7 @@
   },
   {
     "key": "つ、次は…必ず…{partner}さんを勝たせますわ…！",
-    "en": "",
+    "en": "N-Next time... I shall win it for you, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -129928,7 +129950,7 @@
   },
   {
     "key": "つ、次は…絶対…{partner}さんを勝たせます…！",
-    "en": "",
+    "en": "N-Next time... I'll get you that win, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -129942,7 +129964,7 @@
   },
   {
     "key": "つ、次は…絶対…{partner}を、勝たせるわ…！",
-    "en": "",
+    "en": "N-Next time... I'll win it for {partner}... I will...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -129956,7 +129978,7 @@
   },
   {
     "key": "つ、次は…絶対…{partner}を勝たせる…！",
-    "en": "",
+    "en": "N-Next time... I'm getting {partner} that win...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -129970,7 +129992,7 @@
   },
   {
     "key": "つ、次は…絶対、{partner}を勝たせる…！",
-    "en": "",
+    "en": "N-Next time... I'll get {partner} that win...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -131710,7 +131732,7 @@
   },
   {
     "key": "に、二人で…お願いします…！",
-    "en": "",
+    "en": "B-Both of us... please...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -131724,7 +131746,7 @@
   },
   {
     "key": "に、二人で…！",
-    "en": "",
+    "en": "B-Both of us...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -132561,7 +132583,7 @@
   },
   {
     "key": "はぁい、カット♪",
-    "en": "",
+    "en": "Mm-hm — broken up ♪",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -132575,7 +132597,7 @@
   },
   {
     "key": "はぁい、カットですわ♪",
-    "en": "",
+    "en": "There — cut short ♪",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -132589,7 +132611,7 @@
   },
   {
     "key": "はぁい、交代ですわ〜♪",
-    "en": "",
+    "en": "Yes, yes, changing places ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -132603,7 +132625,7 @@
   },
   {
     "key": "はぁい、交代ね♪",
-    "en": "",
+    "en": "Mm-hm, switching ♪",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -132783,7 +132805,7 @@
   },
   {
     "key": "はい、カットです！",
-    "en": "",
+    "en": "And that's broken up!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -132797,7 +132819,7 @@
   },
   {
     "key": "はい、カット！",
-    "en": "",
+    "en": "There — save made!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -132934,7 +132956,7 @@
   },
   {
     "key": "はいはい、交代な〜！",
-    "en": "",
+    "en": "Yeah yeah, tagging in~!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -133351,7 +133373,7 @@
   },
   {
     "key": "はーい、交代〜！",
-    "en": "",
+    "en": "Okaaay, swapping in~!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -133365,7 +133387,7 @@
   },
   {
     "key": "はーい、交代しますね〜！",
-    "en": "",
+    "en": "Okaaay, I'm tagging in~!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -133869,7 +133891,7 @@
   },
   {
     "key": "ふ、二人で…いこ…",
-    "en": "",
+    "en": "B-Both of us... let's go...",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -133883,7 +133905,7 @@
   },
   {
     "key": "ふ、二人で…だ…！",
-    "en": "",
+    "en": "B-Both of us... yeah...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -133897,7 +133919,7 @@
   },
   {
     "key": "ふ、二人で…ですわ…！",
-    "en": "",
+    "en": "B-Both of us... yes...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -134993,7 +135015,7 @@
   },
   {
     "key": "ふふ、{partner}となら負ける気がしないわ。",
-    "en": "",
+    "en": "Mm. With {partner} beside me, losing never crosses my mind.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -136687,7 +136709,7 @@
   },
   {
     "key": "ほい、カットだ！",
-    "en": "",
+    "en": "Yoink — broken up!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -137105,7 +137127,7 @@
   },
   {
     "key": "ま、まだ…です…！",
-    "en": "",
+    "en": "N-Not yet... please...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -137119,7 +137141,7 @@
   },
   {
     "key": "ま、まだ…よ…!",
-    "en": "",
+    "en": "N-Not yet... okay...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -137147,7 +137169,7 @@
   },
   {
     "key": "ま、まだだ…！",
-    "en": "",
+    "en": "N-Not yet...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -137161,7 +137183,7 @@
   },
   {
     "key": "ま、まだですっ…！",
-    "en": "",
+    "en": "I-It isn't over yet...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -137175,7 +137197,7 @@
   },
   {
     "key": "ま、まだですわ…！",
-    "en": "",
+    "en": "N-Not over yet...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139241,7 +139263,7 @@
   },
   {
     "key": "まだだっ…！",
-    "en": "",
+    "en": "It's not over...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139255,7 +139277,7 @@
   },
   {
     "key": "まだだ！",
-    "en": "",
+    "en": "Not yet!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139266,7 +139288,7 @@
   },
   {
     "key": "まだっ…！",
-    "en": "",
+    "en": "Not now — not yet...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139294,7 +139316,7 @@
   },
   {
     "key": "まだですっ…！",
-    "en": "",
+    "en": "It isn't over yet...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139308,7 +139330,7 @@
   },
   {
     "key": "まだですっ！",
-    "en": "",
+    "en": "Not yet, it isn't!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139322,7 +139344,7 @@
   },
   {
     "key": "まだですわっ…！",
-    "en": "",
+    "en": "It is not finished...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139336,7 +139358,7 @@
   },
   {
     "key": "まだですわ！",
-    "en": "",
+    "en": "It is not over yet!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139378,7 +139400,7 @@
   },
   {
     "key": "まだまだ…よ♪",
-    "en": "",
+    "en": "Still plenty left... ♪",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139392,7 +139414,7 @@
   },
   {
     "key": "まだまだ〜！",
-    "en": "",
+    "en": "Nooot yet~!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139448,7 +139470,7 @@
   },
   {
     "key": "まだまだだ〜！",
-    "en": "",
+    "en": "Loooads left~!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139462,7 +139484,7 @@
   },
   {
     "key": "まだまだだ！",
-    "en": "",
+    "en": "Still got plenty!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139504,7 +139526,7 @@
   },
   {
     "key": "まだまだですっ！",
-    "en": "",
+    "en": "We're far from done!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139518,7 +139540,7 @@
   },
   {
     "key": "まだまだですよ〜！",
-    "en": "",
+    "en": "We're not done yeeet!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139546,7 +139568,7 @@
   },
   {
     "key": "まだまだですわ〜！",
-    "en": "",
+    "en": "There is plenty left in us!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139560,7 +139582,7 @@
   },
   {
     "key": "まだまだですわ！",
-    "en": "",
+    "en": "We are nowhere near finished!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139574,7 +139596,7 @@
   },
   {
     "key": "まだまだよ",
-    "en": "",
+    "en": "Nowhere near finished.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -139809,7 +139831,7 @@
   },
   {
     "key": "まだまだ！",
-    "en": "",
+    "en": "Not even close!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -140019,7 +140041,7 @@
   },
   {
     "key": "まだよ",
-    "en": "",
+    "en": "Oh, not yet.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -140061,7 +140083,7 @@
   },
   {
     "key": "まだよっ…！",
-    "en": "",
+    "en": "Not finished... not yet...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -141357,7 +141379,7 @@
   },
   {
     "key": "まだ諦めていませんっ！",
-    "en": "",
+    "en": "We haven't given up yet!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -141371,7 +141393,7 @@
   },
   {
     "key": "まだ諦めておりませんわ！",
-    "en": "",
+    "en": "We have not given up yet!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -141385,7 +141407,7 @@
   },
   {
     "key": "まだ諦めてないの",
-    "en": "",
+    "en": "We haven't given up, you know.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -141412,7 +141434,7 @@
   },
   {
     "key": "まだ諦めてない！",
-    "en": "",
+    "en": "Nobody's giving up yet!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -141426,7 +141448,7 @@
   },
   {
     "key": "まだ諦めてねえ！",
-    "en": "",
+    "en": "We're not done yet!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -145348,7 +145370,7 @@
   },
   {
     "key": "やった…{partner}となら勝てるって、信じてた！",
-    "en": "",
+    "en": "We did it... I knew we could win together, {partner}!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -145586,7 +145608,7 @@
   },
   {
     "key": "やったぜ{partner}！ 私ら、いいコンビだろ？",
-    "en": "",
+    "en": "We got 'em, {partner}! We make a pretty good pair, huh?",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -145656,7 +145678,7 @@
   },
   {
     "key": "やったな{partner}！ 二人揃えば、負ける気がしないよ！",
-    "en": "",
+    "en": "We did it, {partner}! With the two of us out there, losing isn't on the table!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -145670,7 +145692,7 @@
   },
   {
     "key": "やったな{partner}！ 私らが組みゃ、負ける気がしねえ！",
-    "en": "",
+    "en": "We did it, {partner}! Us two together, losing's not happening!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -145698,7 +145720,7 @@
   },
   {
     "key": "やったわね{partner}。二人揃えば、負ける気なんてしないわ。",
-    "en": "",
+    "en": "We did it, {partner}. With the two of us, losing is not a thought I have.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -146748,7 +146770,7 @@
   },
   {
     "key": "やりましたね{partner}さん！ 二人揃えば負けません！",
-    "en": "",
+    "en": "We did it, {partner}! Together, we don't lose!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -147496,7 +147518,7 @@
   },
   {
     "key": "ようやく回ってきたな！",
-    "en": "",
+    "en": "About time it came around!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147510,7 +147532,7 @@
   },
   {
     "key": "ようやく回ってきたわね",
-    "en": "",
+    "en": "So it comes to me at last.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147524,7 +147546,7 @@
   },
   {
     "key": "ようやく回ってきましたね！",
-    "en": "",
+    "en": "It finally came around to me!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147538,7 +147560,7 @@
   },
   {
     "key": "ようやく回ってきやがった！",
-    "en": "",
+    "en": "About time this came my way!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147552,7 +147574,7 @@
   },
   {
     "key": "ようやく回ってまいりましたわ！",
-    "en": "",
+    "en": "It has come around to me at last!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147658,7 +147680,7 @@
   },
   {
     "key": "よく守った、交代だ！",
-    "en": "",
+    "en": "You held the line. Tag me in!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147672,7 +147694,7 @@
   },
   {
     "key": "よく守ったな、交代だ！",
-    "en": "",
+    "en": "You held 'em off. Tag out!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147777,7 +147799,7 @@
   },
   {
     "key": "よく耐えたわね…交代よ",
-    "en": "",
+    "en": "You held out beautifully... my turn.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147791,7 +147813,7 @@
   },
   {
     "key": "よく耐えました、交代ですわ！",
-    "en": "",
+    "en": "You endured beautifully. I am coming in!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -147805,7 +147827,7 @@
   },
   {
     "key": "よく耐えました、交代です！",
-    "en": "",
+    "en": "You held on so well. I'm coming in!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -149183,7 +149205,7 @@
   },
   {
     "key": "わ、わたし…頑張れました…{partner}さんのおかげです…！",
-    "en": "",
+    "en": "I-I made it through... all because of you, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -149393,7 +149415,7 @@
   },
   {
     "key": "わ、私…頑張れた…{partner}のおかげ…！",
-    "en": "",
+    "en": "I-I got through it... it's because of {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -149407,7 +149429,7 @@
   },
   {
     "key": "わ、私…頑張れましたわ…{partner}さんのおかげで…！",
-    "en": "",
+    "en": "I-I managed it... thanks entirely to {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -150595,7 +150617,7 @@
   },
   {
     "key": "わたくしのミスですわ、{partner}さん。ですが次は必ず返しますの。",
-    "en": "",
+    "en": "The error was mine, {partner}. Next time, however, I shall repay it.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -150828,7 +150850,7 @@
   },
   {
     "key": "わたくしの番ですわ！",
-    "en": "",
+    "en": "It is my turn now!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -151259,7 +151281,7 @@
   },
   {
     "key": "わりぃ…わりぃっ…！",
-    "en": "",
+    "en": "My bad... I'm so sorry...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -152342,7 +152364,7 @@
   },
   {
     "key": "コンビの拳とキックが次々に突き刺さる！",
-    "en": "",
+    "en": "Fists and kicks from the pair, landing one after another!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_STRIKE_COMMENTARY_LINES"
     ],
@@ -152353,7 +152375,7 @@
   },
   {
     "key": "コンビの飛び技が連続で突き刺さる！",
-    "en": "",
+    "en": "The pair's flying attacks keep hitting the mark!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_AERIAL_COMMENTARY_LINES"
     ],
@@ -152544,7 +152566,7 @@
   },
   {
     "key": "シンクロ空中技が炸裂！ これは止められない！",
-    "en": "",
+    "en": "Synchronized aerials explode! Nothing is stopping this!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_AERIAL_COMMENTARY_LINES"
     ],
@@ -152678,7 +152700,7 @@
   },
   {
     "key": "セットアップから一気に極めた！ 逃げ場がない！",
-    "en": "",
+    "en": "Set up and cinched in all at once! No escape!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_SUB_COMMENTARY_LINES"
     ],
@@ -152787,7 +152809,7 @@
   },
   {
     "key": "タイミング、合わせて",
-    "en": "",
+    "en": "The timing. Match it.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -152801,7 +152823,7 @@
   },
   {
     "key": "タイミングを合わせますわ！",
-    "en": "",
+    "en": "I shall match the timing!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -152815,7 +152837,7 @@
   },
   {
     "key": "タイミング合わせてください！",
-    "en": "",
+    "en": "Please match the timing!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -152829,7 +152851,7 @@
   },
   {
     "key": "タイミング合わせて！",
-    "en": "",
+    "en": "Match my timing!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -152843,7 +152865,7 @@
   },
   {
     "key": "タイミング合わせろ！",
-    "en": "",
+    "en": "Time it with me!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -152868,7 +152890,7 @@
   },
   {
     "key": "タッグの醍醐味を見せつけた！ {winner}組、堂々の勝利！",
-    "en": "",
+    "en": "Everything that makes tag wrestling great! A commanding win for team {winner}!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_COMMENTARY_WIN_LINES"
     ],
@@ -152904,7 +152926,7 @@
   },
   {
     "key": "タワー式のダイビング技！ 会場が沸いている！",
-    "en": "",
+    "en": "A stacked, tower-style dive! The crowd is up on its feet!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_AERIAL_COMMENTARY_LINES"
     ],
@@ -152943,7 +152965,7 @@
   },
   {
     "key": "ダブルパワーで投げ切った！ まるで振り子のようだ！",
-    "en": "",
+    "en": "Two sets of arms carry it through! Swung like a pendulum!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_THROW_COMMENTARY_LINES"
     ],
@@ -152954,7 +152976,7 @@
   },
   {
     "key": "ダブルロック！ 二人分の力で関節を締め上げる！",
-    "en": "",
+    "en": "Double lock! Two women's strength wrenching that joint!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_SUB_COMMENTARY_LINES"
     ],
@@ -152965,7 +152987,7 @@
   },
   {
     "key": "ダブル打撃の嵐！ 相手は防ぎきれない！",
-    "en": "",
+    "en": "A storm of double strikes! She cannot block them all!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_STRIKE_COMMENTARY_LINES"
     ],
@@ -155674,7 +155696,7 @@
   },
   {
     "key": "フィニッシュだ！ 二人の信頼が織りなす必殺技！",
-    "en": "",
+    "en": "That's the finish! A finisher built on trust between the two!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_FINISH_COMMENTARY_LINES"
     ],
@@ -159082,7 +159104,7 @@
   },
   {
     "key": "一人が踏み台、もう一人が飛ぶ！ タッグでしか出来ない技！",
-    "en": "",
+    "en": "One a launching pad, the other in flight! Only a tag team can do this!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_AERIAL_COMMENTARY_LINES"
     ],
@@ -160649,7 +160671,7 @@
   },
   {
     "key": "一緒に…いくわよ",
-    "en": "",
+    "en": "Together... going now.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -160663,7 +160685,7 @@
   },
   {
     "key": "一緒に…！",
-    "en": "",
+    "en": "Together...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -160677,7 +160699,7 @@
   },
   {
     "key": "一緒にいきましょ♪",
-    "en": "",
+    "en": "Let's go together ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -160691,7 +160713,7 @@
   },
   {
     "key": "一緒にいきますっ！",
-    "en": "",
+    "en": "Going in together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -160705,7 +160727,7 @@
   },
   {
     "key": "一緒にいくぞ！",
-    "en": "",
+    "en": "We go together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -160927,7 +160949,7 @@
   },
   {
     "key": "一緒にやりましょ〜！",
-    "en": "",
+    "en": "Let's do this togetherrr!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -160954,7 +160976,7 @@
   },
   {
     "key": "一緒にやろ〜！",
-    "en": "",
+    "en": "Let's do it togetherrr!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -160968,7 +160990,7 @@
   },
   {
     "key": "一緒にやろうぜ〜！",
-    "en": "",
+    "en": "Come on, let's do it togetherrr!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -161008,7 +161030,7 @@
   },
   {
     "key": "一緒に戦うの、やっぱり楽しいわね。",
-    "en": "",
+    "en": "Fighting side by side really is a pleasure.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -162142,7 +162164,7 @@
   },
   {
     "key": "上下から襲いかかる関節技！ これは危険だ！",
-    "en": "",
+    "en": "Joint locks coming from above and below! This is dangerous!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_SUB_COMMENTARY_LINES"
     ],
@@ -162964,7 +162986,7 @@
   },
   {
     "key": "二人がかりの極め技！ もう動けない！",
-    "en": "",
+    "en": "A submission applied by both! She can't move an inch!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_SUB_COMMENTARY_LINES"
     ],
@@ -162975,7 +162997,7 @@
   },
   {
     "key": "二人がかりの豪快な投げ技！ 会場が揺れる！",
-    "en": "",
+    "en": "A huge throw from both of them at once! The building shakes!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_THROW_COMMENTARY_LINES"
     ],
@@ -163000,7 +163022,7 @@
   },
   {
     "key": "二人で…決めますわっ…！",
-    "en": "",
+    "en": "The two of us... shall end this...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163014,7 +163036,7 @@
   },
   {
     "key": "二人で…決めるわよっ…！",
-    "en": "",
+    "en": "Together... we end this...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163028,7 +163050,7 @@
   },
   {
     "key": "二人で、いきましょ",
-    "en": "",
+    "en": "Shall we? Together.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163042,7 +163064,7 @@
   },
   {
     "key": "二人でっ…いきますっ！",
-    "en": "",
+    "en": "Both of us — going...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163056,7 +163078,7 @@
   },
   {
     "key": "二人でっ…いくぞ！",
-    "en": "",
+    "en": "Both of us — go...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163070,7 +163092,7 @@
   },
   {
     "key": "二人でっ…！",
-    "en": "",
+    "en": "The two of us — now...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163084,7 +163106,7 @@
   },
   {
     "key": "二人でやり切ったな！",
-    "en": "",
+    "en": "We saw it all the way through!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -163111,7 +163133,7 @@
   },
   {
     "key": "二人で参りますわ！",
-    "en": "",
+    "en": "The two of us shall go!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163125,7 +163147,7 @@
   },
   {
     "key": "二人で極めにいった！ これは返せない！",
-    "en": "",
+    "en": "Both of them going for the finish hold! There's no reversing this!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_SUB_COMMENTARY_LINES"
     ],
@@ -163136,7 +163158,7 @@
   },
   {
     "key": "二人で決めましょう！",
-    "en": "",
+    "en": "Let's put her away together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163150,7 +163172,7 @@
   },
   {
     "key": "二人で決めますっ！",
-    "en": "",
+    "en": "The two of us will end this!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163164,7 +163186,7 @@
   },
   {
     "key": "二人で決めますわよ！",
-    "en": "",
+    "en": "The two of us shall end it!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163178,7 +163200,7 @@
   },
   {
     "key": "二人で決めますわ！",
-    "en": "",
+    "en": "We shall settle this together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163192,7 +163214,7 @@
   },
   {
     "key": "二人で決めよう！",
-    "en": "",
+    "en": "Let's end it together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163206,7 +163228,7 @@
   },
   {
     "key": "二人で決めるぜ！",
-    "en": "",
+    "en": "We put her down together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163220,7 +163242,7 @@
   },
   {
     "key": "二人で決めるぞ！",
-    "en": "",
+    "en": "Both of us — we end it!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163234,7 +163256,7 @@
   },
   {
     "key": "二人で決めるわ",
-    "en": "",
+    "en": "We end this together.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163248,7 +163270,7 @@
   },
   {
     "key": "二人で決めるわよ",
-    "en": "",
+    "en": "We are ending this, the two of us.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163262,7 +163284,7 @@
   },
   {
     "key": "二人で決める！",
-    "en": "",
+    "en": "We finish this together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -163304,7 +163326,7 @@
   },
   {
     "key": "二人の呼吸が合った一瞬の投げ！ 決まった！",
-    "en": "",
+    "en": "Timed to the split second by both of them! And it lands!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_THROW_COMMENTARY_LINES"
     ],
@@ -163315,7 +163337,7 @@
   },
   {
     "key": "二人の絆が勝敗を分けた！ {winner}組の勝利！",
-    "en": "",
+    "en": "The bond between them decided it! Victory for team {winner}!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_COMMENTARY_WIN_LINES"
     ],
@@ -163326,7 +163348,7 @@
   },
   {
     "key": "二人の連打が止まらない！ これがタッグの醍醐味！",
-    "en": "",
+    "en": "The double barrage just keeps coming! This is what tag wrestling is for!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_STRIKE_COMMENTARY_LINES"
     ],
@@ -163526,7 +163548,7 @@
   },
   {
     "key": "交代いたしますわ！",
-    "en": "",
+    "en": "I shall take over!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -163540,7 +163562,7 @@
   },
   {
     "key": "交代しますっ！",
-    "en": "",
+    "en": "I'm making the tag!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -163554,7 +163576,7 @@
   },
   {
     "key": "交代だよ！",
-    "en": "",
+    "en": "Tagging in!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -163568,7 +163590,7 @@
   },
   {
     "key": "交代だ！",
-    "en": "",
+    "en": "I'm in!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -163582,7 +163604,7 @@
   },
   {
     "key": "交代よ",
-    "en": "",
+    "en": "Time to switch.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -166400,7 +166422,7 @@
   },
   {
     "key": "任せて…いいわよ",
-    "en": "",
+    "en": "You can leave this to me.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -166414,7 +166436,7 @@
   },
   {
     "key": "任せて…絶対に…！",
-    "en": "",
+    "en": "Leave it to me... I mean it...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -166428,7 +166450,7 @@
   },
   {
     "key": "任せて…絶対に、よ…！",
-    "en": "",
+    "en": "Leave it to me... absolutely...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -166442,7 +166464,7 @@
   },
   {
     "key": "任せてくださいっ…絶対に…！",
-    "en": "",
+    "en": "Please leave it to me... I won't fail...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -166470,7 +166492,7 @@
   },
   {
     "key": "任せて！",
-    "en": "",
+    "en": "Leave it to me!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -166484,7 +166506,7 @@
   },
   {
     "key": "任せときな！",
-    "en": "",
+    "en": "Sit tight — I've got this!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -166498,7 +166520,7 @@
   },
   {
     "key": "任せろ…絶対だ…！",
-    "en": "",
+    "en": "Leave it... I've got it, swear...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -171542,7 +171564,7 @@
   },
   {
     "key": "力を合わせられたからこその勝利です。",
-    "en": "",
+    "en": "We won because we pulled in the same direction.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -171930,7 +171952,7 @@
   },
   {
     "key": "動けない…の",
-    "en": "",
+    "en": "I can't move...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -171944,7 +171966,7 @@
   },
   {
     "key": "動けない…！",
-    "en": "",
+    "en": "I can't move...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -171958,7 +171980,7 @@
   },
   {
     "key": "動けねえ…！",
-    "en": "",
+    "en": "Can't move...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -171972,7 +171994,7 @@
   },
   {
     "key": "動けません…！",
-    "en": "",
+    "en": "I cannot move...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -171986,7 +172008,7 @@
   },
   {
     "key": "動けませんの…！",
-    "en": "",
+    "en": "I cannot move at all...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -174307,7 +174329,7 @@
   },
   {
     "key": "勝っちゃいました♪ {partner}さんと組めて、楽しかったです〜",
-    "en": "",
+    "en": "We won ♪ Teaming up with {partner} was such fun~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -174349,7 +174371,7 @@
   },
   {
     "key": "勝っちゃった♪ やっぱり{partner}と組むと、楽しいわ〜",
-    "en": "",
+    "en": "And we won ♪ Teaming with {partner} really is a pleasure~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -174363,7 +174385,7 @@
   },
   {
     "key": "勝っちゃった。{partner}と組むの、やっぱ楽しい〜",
-    "en": "",
+    "en": "And we won. Teaming with {partner} really is the best~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -174460,7 +174482,7 @@
   },
   {
     "key": "勝っちゃったぜ♪ {partner}と組むの、やっぱ楽しいわ〜",
-    "en": "",
+    "en": "And we took it ♪ Teaming with {partner} is a blast~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -174642,7 +174664,7 @@
   },
   {
     "key": "勝ってしまいましたわ♪ {partner}さんと組むの、楽しいですの〜",
-    "en": "",
+    "en": "We have gone and won ♪ Teaming with {partner} is such a delight~",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -176903,7 +176925,7 @@
   },
   {
     "key": "受け渡し式の投げ技！ 相手は空中で何も出来ない！",
-    "en": "",
+    "en": "Handed off from one to the other! She's helpless in mid-air!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_THROW_COMMENTARY_LINES"
     ],
@@ -177105,7 +177127,7 @@
   },
   {
     "key": "合わせて…いくわよ",
-    "en": "",
+    "en": "Match me... here we go.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177119,7 +177141,7 @@
   },
   {
     "key": "合わせて…っ！",
-    "en": "",
+    "en": "Match me...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177133,7 +177155,7 @@
   },
   {
     "key": "合わせて…ね♪",
-    "en": "",
+    "en": "Match me... won't you ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177147,7 +177169,7 @@
   },
   {
     "key": "合わせて、行くぞ！",
-    "en": "",
+    "en": "With me — go!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177161,7 +177183,7 @@
   },
   {
     "key": "合わせてください、いきますよ！",
-    "en": "",
+    "en": "Match me, please — going!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177175,7 +177197,7 @@
   },
   {
     "key": "合わせてくださいっ！",
-    "en": "",
+    "en": "Please match me!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177189,7 +177211,7 @@
   },
   {
     "key": "合わせてくださいね♪",
-    "en": "",
+    "en": "Stay with me, okay ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177203,7 +177225,7 @@
   },
   {
     "key": "合わせてくださいまし！",
-    "en": "",
+    "en": "Do match me, if you please!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177217,7 +177239,7 @@
   },
   {
     "key": "合わせて合わせて♪",
-    "en": "",
+    "en": "With me, with me ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177231,7 +177253,7 @@
   },
   {
     "key": "合わせて！",
-    "en": "",
+    "en": "With me!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177245,7 +177267,7 @@
   },
   {
     "key": "合わせなさい",
-    "en": "",
+    "en": "Follow my lead.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177259,7 +177281,7 @@
   },
   {
     "key": "合わせなさいっ…！",
-    "en": "",
+    "en": "Match me... now...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177273,7 +177295,7 @@
   },
   {
     "key": "合わせますっ…！",
-    "en": "",
+    "en": "Matching you...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177287,7 +177309,7 @@
   },
   {
     "key": "合わせるよ…っ！",
-    "en": "",
+    "en": "I'm matching you...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177301,7 +177323,7 @@
   },
   {
     "key": "合わせろ、相棒！",
-    "en": "",
+    "en": "On me, partner!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177315,7 +177337,7 @@
   },
   {
     "key": "合わせろっ…！",
-    "en": "",
+    "en": "Stay with me...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177329,7 +177351,7 @@
   },
   {
     "key": "合わせろ合わせろ♪",
-    "en": "",
+    "en": "On me, on me ♪",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -177343,7 +177365,7 @@
   },
   {
     "key": "合わせろ！",
-    "en": "",
+    "en": "On me!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -178304,7 +178326,7 @@
   },
   {
     "key": "嘘…動けないっ",
-    "en": "",
+    "en": "No way... I can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -178318,7 +178340,7 @@
   },
   {
     "key": "嘘…動けないっ…！",
-    "en": "",
+    "en": "No... I can't move...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -178332,7 +178354,7 @@
   },
   {
     "key": "嘘…動けませんっ",
-    "en": "",
+    "en": "No... I can't move at all.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -178346,7 +178368,7 @@
   },
   {
     "key": "嘘…動けませんわっ",
-    "en": "",
+    "en": "It cannot be... I cannot move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -178430,7 +178452,7 @@
   },
   {
     "key": "嘘だろ…動けねえっ",
-    "en": "",
+    "en": "You're kidding... I can't move.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -181579,7 +181601,7 @@
   },
   {
     "key": "完璧なダブルチームで決着！ 二人の強さが証明された！",
-    "en": "",
+    "en": "A flawless double team ends it! Both of them have proved their strength!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_FINISH_COMMENTARY_LINES"
     ],
@@ -182390,7 +182412,7 @@
   },
   {
     "key": "届かなかった…",
-    "en": "",
+    "en": "Couldn't reach her...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -182401,7 +182423,7 @@
   },
   {
     "key": "届かなかった…よ",
-    "en": "",
+    "en": "Didn't get there in time...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -182415,7 +182437,7 @@
   },
   {
     "key": "届かなかった…わね",
-    "en": "",
+    "en": "Didn't quite reach, did I.",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -182509,7 +182531,7 @@
   },
   {
     "key": "届きませんでした…",
-    "en": "",
+    "en": "I couldn't reach her...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -182578,7 +182600,7 @@
   },
   {
     "key": "届きませんでしたわ…",
-    "en": "",
+    "en": "I could not reach her...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -182645,7 +182667,7 @@
   },
   {
     "key": "左右から浴びせる打撃！ 二人の攻撃が完全にシンクロしている！",
-    "en": "",
+    "en": "Blows raining in from left and right! Both of them in complete sync!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_STRIKE_COMMENTARY_LINES"
     ],
@@ -184140,7 +184162,7 @@
   },
   {
     "key": "待ちくたびれたわ",
-    "en": "",
+    "en": "I was getting bored waiting.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -184154,7 +184176,7 @@
   },
   {
     "key": "待っていましたっ！",
-    "en": "",
+    "en": "I have been waiting for this!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -184182,7 +184204,7 @@
   },
   {
     "key": "待ってたぜ！",
-    "en": "",
+    "en": "Yeah — been waiting on this!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -184292,7 +184314,7 @@
   },
   {
     "key": "待ってました！",
-    "en": "",
+    "en": "Been waiting for this!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -186037,7 +186059,7 @@
   },
   {
     "key": "息の合ったタッグワークが勝負を決めた！ {winner}&{partner}、完勝！",
-    "en": "",
+    "en": "Tag work in perfect step decides it! {winner} & {partner}, a complete victory!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_COMMENTARY_WIN_LINES"
     ],
@@ -186048,7 +186070,7 @@
   },
   {
     "key": "息の合ったダブルスロー！ これぞタッグの真骨頂！",
-    "en": "",
+    "en": "A perfectly timed double throw! Tag wrestling at its very best!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_THROW_COMMENTARY_LINES"
     ],
@@ -186059,7 +186081,7 @@
   },
   {
     "key": "息の合った一撃で仕留めた！ これがタッグの勝利！",
-    "en": "",
+    "en": "Put away by one perfectly timed blow! That is how a tag team wins!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_FINISH_COMMENTARY_LINES"
     ],
@@ -186070,7 +186092,7 @@
   },
   {
     "key": "息の合った見事な勝利でしたわね。",
-    "en": "",
+    "en": "A splendid win, and beautifully in step.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -186083,7 +186105,7 @@
   },
   {
     "key": "息ぴったりだったでしょ？",
-    "en": "",
+    "en": "We were rather well matched, weren't we?",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -186096,7 +186118,7 @@
   },
   {
     "key": "息を合わせて…ね",
-    "en": "",
+    "en": "Time it with me... yes?",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -186110,7 +186132,7 @@
   },
   {
     "key": "息を合わせましょう！",
-    "en": "",
+    "en": "Let's time it together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -186124,7 +186146,7 @@
   },
   {
     "key": "息を合わせますわよ！",
-    "en": "",
+    "en": "Let us move as one!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -186138,7 +186160,7 @@
   },
   {
     "key": "息を合わせよう！",
-    "en": "",
+    "en": "Same timing!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -186152,7 +186174,7 @@
   },
   {
     "key": "息合わせな！",
-    "en": "",
+    "en": "Get in sync!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -187297,7 +187319,7 @@
   },
   {
     "key": "悔しいわね、{partner}。次は絶対、勝つわよ。",
-    "en": "",
+    "en": "Galling, isn't it, {partner}. Next time it's ours.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -189287,7 +189309,7 @@
   },
   {
     "key": "挟み撃ちの打撃コンビネーション！ 逃げ場がない！",
-    "en": "",
+    "en": "Caught between them, strikes from both sides! Nowhere to go!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_STRIKE_COMMENTARY_LINES"
     ],
@@ -191648,7 +191670,7 @@
   },
   {
     "key": "最後までご一緒くださって、感謝いたしますわ。",
-    "en": "",
+    "en": "Thank you for remaining at my side to the very last.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -191661,7 +191683,7 @@
   },
   {
     "key": "最後までついてきてくれて、ありがとな！",
-    "en": "",
+    "en": "Thanks for sticking with me to the end!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -191674,7 +191696,7 @@
   },
   {
     "key": "最後まで一緒に戦ってくださって、ありがとうございました。",
-    "en": "",
+    "en": "Thank you for fighting alongside me right to the end.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -191687,7 +191709,7 @@
   },
   {
     "key": "最後まで一緒に戦ってくれて、ありがとう！",
-    "en": "",
+    "en": "Thank you for standing with me to the very end!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -195675,7 +195697,7 @@
   },
   {
     "key": "次は絶対…勝ちますからっ…！ {partner}さん…！",
-    "en": "",
+    "en": "Next time we win... I promise...! {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -195689,7 +195711,7 @@
   },
   {
     "key": "次は絶対…絶対勝つからっ…！ {partner}…！",
-    "en": "",
+    "en": "Next time... we're winning, I swear it...! {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -195703,7 +195725,7 @@
   },
   {
     "key": "次は絶対、勝ちますわっ…！ {partner}さん…！",
-    "en": "",
+    "en": "Next time we shall win... without fail...! {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -195717,7 +195739,7 @@
   },
   {
     "key": "次は絶対、勝つからっ…！ な、{partner}…！",
-    "en": "",
+    "en": "Next time we win... swear it...! Right, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -195731,7 +195753,7 @@
   },
   {
     "key": "次は絶対、勝つわっ…！ {partner}…！",
-    "en": "",
+    "en": "Next time we win... we will...! {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -199183,7 +199205,7 @@
   },
   {
     "key": "渡さない…わ",
-    "en": "",
+    "en": "She stays with me.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -199197,7 +199219,7 @@
   },
   {
     "key": "渡さないよ！",
-    "en": "",
+    "en": "You're not having her!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -199224,7 +199246,7 @@
   },
   {
     "key": "渡さねえよ！",
-    "en": "",
+    "en": "You're not taking her!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -199238,7 +199260,7 @@
   },
   {
     "key": "渡しませんっ！",
-    "en": "",
+    "en": "She's not going with you!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -199252,7 +199274,7 @@
   },
   {
     "key": "渡しませんわ！",
-    "en": "",
+    "en": "She is not yours!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -207693,7 +207715,7 @@
   },
   {
     "key": "私たち、息ぴったりだったね！",
-    "en": "",
+    "en": "We were right in step the whole way!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_NAMELESS_LINES"
     ],
@@ -208136,7 +208158,7 @@
   },
   {
     "key": "私のミスよ、{partner}…悪いわね。でも次は絶対、返すわ。",
-    "en": "",
+    "en": "My mistake, {partner}... my apologies. Next time I take it back.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -208478,7 +208500,7 @@
   },
   {
     "key": "私の番だ！",
-    "en": "",
+    "en": "My turn!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -208489,7 +208511,7 @@
   },
   {
     "key": "私の番ですっ！",
-    "en": "",
+    "en": "It's my turn now!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -208503,7 +208525,7 @@
   },
   {
     "key": "私の番よ",
-    "en": "",
+    "en": "My turn.",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -209524,7 +209546,7 @@
   },
   {
     "key": "空中から二重の衝撃！ 圧巻のダブルフライ！",
-    "en": "",
+    "en": "A double impact out of the air! What a stunning aerial pair!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_AERIAL_COMMENTARY_LINES"
     ],
@@ -209535,7 +209557,7 @@
   },
   {
     "key": "空中戦の完璧な連携！ 二人のタイミングは完全一致！",
-    "en": "",
+    "en": "Flawless teamwork in the air! Their timing is identical!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_AERIAL_COMMENTARY_LINES"
     ],
@@ -210031,7 +210053,7 @@
   },
   {
     "key": "約束…守れたわね、{partner}…っ！",
-    "en": "",
+    "en": "The promise... we kept it, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -210058,7 +210080,7 @@
   },
   {
     "key": "約束、守れましたわね…{partner}さん…っ！",
-    "en": "",
+    "en": "We kept our promise, did we not... {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -211083,7 +211105,7 @@
   },
   {
     "key": "絶対…勝ちますっ…！",
-    "en": "",
+    "en": "I will win this... I promise...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -211097,7 +211119,7 @@
   },
   {
     "key": "絶対…勝ちますわ…！",
-    "en": "",
+    "en": "I shall win... without fail...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -211111,7 +211133,7 @@
   },
   {
     "key": "絶対…勝つ…！",
-    "en": "",
+    "en": "We're winning this... we have to...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -211125,7 +211147,7 @@
   },
   {
     "key": "絶対…勝つわ…！",
-    "en": "",
+    "en": "This one's ours... I'll make sure of it...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -211167,7 +211189,7 @@
   },
   {
     "key": "絶対させないっ…！",
-    "en": "",
+    "en": "I'm not letting you — never...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211181,7 +211203,7 @@
   },
   {
     "key": "絶対させないわっ…！",
-    "en": "",
+    "en": "I will never let you...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211195,7 +211217,7 @@
   },
   {
     "key": "絶対させねえっ…！",
-    "en": "",
+    "en": "You're not doing this... no way...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211209,7 +211231,7 @@
   },
   {
     "key": "絶対させませんっ…！",
-    "en": "",
+    "en": "I will not let this happen...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211223,7 +211245,7 @@
   },
   {
     "key": "絶対させませんわっ…！",
-    "en": "",
+    "en": "I shall never permit this...!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211433,7 +211455,7 @@
   },
   {
     "key": "絶対勝つ…！",
-    "en": "",
+    "en": "I'm winning this... no matter what...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
@@ -211447,7 +211469,7 @@
   },
   {
     "key": "絶対勝つって、約束したもんね…{partner}…っ！",
-    "en": "",
+    "en": "We promised each other we'd win... didn't we, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -211461,7 +211483,7 @@
   },
   {
     "key": "絶対勝つって約束…守れましたね、{partner}さん…っ！",
-    "en": "",
+    "en": "That promise to win... we kept it, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -211475,7 +211497,7 @@
   },
   {
     "key": "絶対勝つって言ったろ…！ な、{partner}…っ！",
-    "en": "",
+    "en": "Told you we'd win...! Right, {partner}...!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -211517,7 +211539,7 @@
   },
   {
     "key": "絶対決めますっ…！",
-    "en": "",
+    "en": "We're finishing this...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -211531,7 +211553,7 @@
   },
   {
     "key": "絶対決めますわ…っ！",
-    "en": "",
+    "en": "We shall finish her... without fail...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -211545,7 +211567,7 @@
   },
   {
     "key": "絶対決めるぜ…っ！",
-    "en": "",
+    "en": "We're ending this... for real...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -211559,7 +211581,7 @@
   },
   {
     "key": "絶対決めるっ…！",
-    "en": "",
+    "en": "We're ending it...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -211573,7 +211595,7 @@
   },
   {
     "key": "絶対決めるわ…っ！",
-    "en": "",
+    "en": "We are finishing her... now...!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -211587,7 +211609,7 @@
   },
   {
     "key": "絶対渡さないわ",
-    "en": "",
+    "en": "I am not letting her go.",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211601,7 +211623,7 @@
   },
   {
     "key": "絶対渡さない！",
-    "en": "",
+    "en": "She's not yours to take!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211615,7 +211637,7 @@
   },
   {
     "key": "絶対渡さねえ！",
-    "en": "",
+    "en": "No way you're getting her!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211629,7 +211651,7 @@
   },
   {
     "key": "絶対渡しませんっ！",
-    "en": "",
+    "en": "You will not get her from me!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -211643,7 +211665,7 @@
   },
   {
     "key": "絶対渡しませんわ！",
-    "en": "",
+    "en": "I shall never hand her over!",
     "files": [
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
@@ -214297,7 +214319,7 @@
   },
   {
     "key": "見たか、これが{partner}と私のタッグの力だ！",
-    "en": "",
+    "en": "See that? That's what {partner} and I are together!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -214311,7 +214333,7 @@
   },
   {
     "key": "見たかよ！ {partner}と私のタッグ、最強だぜ！",
-    "en": "",
+    "en": "You see that? {partner} and me — nobody beats this team!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -214353,7 +214375,7 @@
   },
   {
     "key": "見た？ これが{partner}と私のタッグよ。",
-    "en": "",
+    "en": "Did you watch? That is what {partner} and I are.",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -214694,7 +214716,7 @@
   },
   {
     "key": "見ましたか、これが{partner}さんと私のタッグです！",
-    "en": "",
+    "en": "Did you see that? That is {partner} and me as a team!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_WIN_LINES"
     ],
@@ -217565,7 +217587,7 @@
   },
   {
     "key": "負けたままでいられるか…{partner}、次は倍返しだ！",
-    "en": "",
+    "en": "I'm not leaving it like this... {partner}, next time we pay it back double!",
     "files": [
       "tag-battle-lines.js:TAG_MATCH_LOSS_LINES"
     ],
@@ -220974,7 +220996,7 @@
   },
   {
     "key": "逃がさない、そっち頼む！",
-    "en": "",
+    "en": "She's not getting away — cover that side!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -221002,7 +221024,7 @@
   },
   {
     "key": "逃がさないわ、そっちは任せたわ",
-    "en": "",
+    "en": "She isn't slipping away. That side is yours.",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -221043,7 +221065,7 @@
   },
   {
     "key": "逃がさねえ、そっち頼むぜ！",
-    "en": "",
+    "en": "No way out for her — take that side!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -221071,7 +221093,7 @@
   },
   {
     "key": "逃がしません、そちら頼みますっ！",
-    "en": "",
+    "en": "She's not escaping — take that side!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -221113,7 +221135,7 @@
   },
   {
     "key": "逃がしませんわ、そちらお任せを！",
-    "en": "",
+    "en": "She shall not escape. That side is yours!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
     ],
@@ -221585,7 +221607,7 @@
   },
   {
     "key": "連係の投げ技が完璧に決まった！",
-    "en": "",
+    "en": "The combination throw lands flawlessly!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_THROW_COMMENTARY_LINES"
     ],
@@ -221596,7 +221618,7 @@
   },
   {
     "key": "連係の果ての必殺技！ 相手は立てない！",
-    "en": "",
+    "en": "The finisher at the end of the combination! She cannot get up!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_FINISH_COMMENTARY_LINES"
     ],
@@ -221621,7 +221643,7 @@
   },
   {
     "key": "連係の関節技！ 相手は苦悶の表情を浮かべる！",
-    "en": "",
+    "en": "A combination submission! Agony written on her face!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_SUB_COMMENTARY_LINES"
     ],
@@ -221772,7 +221794,7 @@
   },
   {
     "key": "連携の打撃ラッシュ！ 息がぴったり合っている！",
-    "en": "",
+    "en": "A combination striking rush! Perfectly in step, these two!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_STRIKE_COMMENTARY_LINES"
     ],
@@ -223011,18 +223033,20 @@
   },
   {
     "key": "間に合いません…！",
-    "en": "",
+    "en": "I can't reach her in time...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "polite"
+    }
   },
   {
     "key": "間に合いませんっ…！",
-    "en": "",
+    "en": "I'm not reaching her...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -223036,7 +223060,7 @@
   },
   {
     "key": "間に合いませんの…！",
-    "en": "",
+    "en": "I-I cannot get there...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -223050,7 +223074,7 @@
   },
   {
     "key": "間に合いませんわ…！",
-    "en": "",
+    "en": "I cannot reach her in time...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -223064,7 +223088,7 @@
   },
   {
     "key": "間に合いませんわっ…！",
-    "en": "",
+    "en": "I am not going to reach her...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -223078,7 +223102,7 @@
   },
   {
     "key": "間に合わない…っ",
-    "en": "",
+    "en": "I-I can't make it...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -223092,7 +223116,7 @@
   },
   {
     "key": "間に合わない…わ",
-    "en": "",
+    "en": "I can't make it...",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -223106,18 +223130,20 @@
   },
   {
     "key": "間に合わない…！",
-    "en": "",
+    "en": "I'm not going to make it...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "standard"
+    }
   },
   {
     "key": "間に合わないっ…！",
-    "en": "",
+    "en": "I can't make it...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
@@ -223128,18 +223154,20 @@
   },
   {
     "key": "間に合わねえ…！",
-    "en": "",
+    "en": "I'm not gonna reach her...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "delinquent"
+    }
   },
   {
     "key": "間に合わねえっ…！",
-    "en": "",
+    "en": "I can't get there...!",
     "files": [
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],

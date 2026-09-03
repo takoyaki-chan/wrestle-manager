@@ -1,5 +1,71 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2b — セリフ英訳バッチ②(タッグ系784行)（2026-09-03・Opus主筆 worktree agent-a0c21cc7ec9fe0691）
+
+P5-2aに続く量産翻訳の第2バッチ。**`tag-battle-lines.js` 由来の全13テーブル784行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+P5-2aの訳語判断。開始前にworktreeブランチをmain先端(d1c56b3)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は一度も実行していない**(P5-2aが書いた380件のcellを守るため)。
+
+### 1. 対象範囲(784行・テーブル別)
+
+| テーブル | 行数 | 性質 |
+|---|---|---|
+| `DOUBLE_TEAM_LINES` | 142 | 連携技の掛け声(合わせて/せーの/二人で決める) |
+| `HOT_TAG_LINES` | 142 | ホットタグの交代宣言(任せて/交代/ここからは私が) |
+| `CUTIN_SAVE_LINES` | 139 | 救出カットイン(させない/まだだ/渡さない/カット) |
+| `BETRAYAL_LINES` | 114 | 見殺し(動けない/間に合わない/届かない/守れなかった) |
+| `TAG_MATCH_WIN_LINES` | 95 | 勝者→パートナー(`{partner}`) |
+| `TAG_MATCH_LOSS_LINES` | 95 | 敗者→パートナー(`{partner}`) |
+| `TAG_MATCH_WIN_NAMELESS_LINES` | 21 | 名前なし勝利セリフ(アーキタイプ軸のみ) |
+| `TAG_MATCH_COMMENTARY_WIN_LINES` | 7 | 実況の締め(`{winner}{partner}{move}`) |
+| `DOUBLE_TEAM_*_COMMENTARY_LINES` 5種 | 29 | ダブルチーム実況(打撃/投げ/関節/空中/フィニッシュ) |
+| **計** | **784** | うち4行(`……まだ`/`…くっ`/`くそっ…！`/`くっ…！`)はP5-2aで既訳のため据え置き、**新規記入は780行** |
+
+キーは原文文字列なので、共有行(`……`/`…ごめん`/`…動けない`/`…遠い`/`…まだ`/`…まだだ`等16行)は BETRAYAL_LINES と同時に `CARE_REACTION_DIALOGUES` `GAMEOVER_LINES` `SLUMP_START_LINES` `RETIREMENT_LINES` `POACH_REACTION_DIALOGUES` 等へも訳が乗る。
+
+### 2. cellの源泉導出(14行) — 台帳 `cell` 欄を追記
+
+tag-battle-lines.js にキャラID軸のテーブルは無い(全テーブルが archetype×personality 軸)ため、P5-2aのALL_CHARS解決は不要だった。代わりに **抽出器が「同一原文が複数セルに出る」でnullにした86行のうち、tag内でのみ使われ archetype が一意に決まる14行**をソースから導出して `cell` に書いた(`……動けねえ`=delinquent、`…まだまだ`/`…一緒に`/`…合わせて`/`…間に合わない`=cool、`……動けませんわ`=ojousama 等)。
+
+- 効果: cool帯の感嘆符禁止・3文超禁止、ojousama帯の短縮形禁止が**この14行にも効くようになった**。tag 784行中 **cell判定済み712行**。
+- 残る72行のcell不明は (a)実況プール(軸が無い・36行) (b)複数アーキタイプ共有の短句(21行) (c)他ファイルとの共有行(15行) で、**null が正しい**。これらは中立英語を当てた(P5-2aの方針継承)。
+- `……` `…………` のような無音行も cell 不明のため中立扱い。
+
+### 3. 翻訳の方針
+
+- **テーブルごとに英語の「場」を変えた**。連携・救出はリング上の叫び(短い断片・命令形・"On me!" "Break it up!" 系)、見殺しは声が落ちる独白(過去形と "..." 主体)、実況は**生中継の呼吸**(現在形・冠詞省略可・P4の黒田英文体ともティッカーとも別)、勝敗リアクションは試合後なので**過去形**(バイブル§1-12)。
+- **属性=register**: ojousama=全行無短縮形(`I shall take over!` / `We have not given up yet!`) / cool=断片・感嘆符ゼロ(`...Tag.` `...Far from over.`) / delinquent=主語冠詞の省略+gonna(`Sit tight — I've got this!`) / polite=完全文+緩衝 / composed=後置though・急がない / seductive=低温+余韻 / standard=特徴を足さない。
+- **P5-2aとの均質化回避**: 同じ日本語モチーフでも英語を重ねないよう、頻出短句を帯ごとに別形に割った。例=「交代」7通り(Tagging in / making the tag / Time to switch / I'm in / I shall take over / ...Tag / That's the tag)、「させない」7通り(You're not doing that / I won't allow that / I don't think so / Not on my watch / I shall not permit it / ...Not letting that happen / ...I'm not letting that happen)、「まだ」も既訳(`……まだ`="...Not yet.")と重ならない形を選んだ。機械検査で**バッチ内重複0・P5-2a既訳との重複0**(意図的な `……`/`…………`→`"..."` を除く)。
+- **卑語**: hell/damn は delinquent帯のみ**784行中4回**(0.5%)。f/sワードは全帯ゼロ。
+- **§4-6の翻訳調検査**: "It can't be helped"/"As expected of"/"I'll do my best"/「today's me」型/ALL CAPS/英国綴り/"darling"/"Fufu"音写 いずれも0件。「頑張ります」系は "I'll do my best" を避けて "I'll give it everything" 等に振った。
+- **長さ**: 全784行が110字上限内(最大83字・中央値26字)。**♪♡**: 原文に含む行すべてで存置(欠落0)。プレースホルダ完全一致(不一致0)。
+
+### 4. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列780行を記入 + tag由来14行のcell欄を記入
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。ソース・配線は**一切触っていない**
+
+### 5. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**1,875** / cell判定済み1,796 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| VMでEN抜き取り | ✅ セル横断24本を目視 + **全13テーブル829スロットの全数スイープで未訳0** |
+| 品質スイープ(翻訳調/英国綴り/ALL CAPS/重複EN/余分な空白/♪♡欠落/プレースホルダ) | ✅ 全項目0件 |
+
+### 6. 残課題(このバッチで判明したものを含む)
+
+1. **`{partner}` 事前置換で辞書が効かない行が102行ある**(P5-1 §4「既知の限界」の実測値)。`pickTagLossLine`(TAG_MATCH_LOSS_LINES 95行)と `pickTagWinCommentary`(TAG_MATCH_COMMENTARY_WIN_LINES 7行)は tag-battle-lines.js 内で `{partner}` を置換してから返すため、表示直前の `WM_I18N.t()` がキーと一致せずfail-openでJAのまま出る。**根治には specs/i18n-runtime-spec-v1.0.md §6 の「dict optsパラメータ」をこの2関数へ適用する**(tag-battle-lines.js が触れる工程で)。
+2. **`TAG_MATCH_WIN_LINES`(95行)と `TAG_MATCH_LOSS_LINES`(95行)は現行の表示経路から未参照**。リポジトリ全体をgrepしたところ、勝者側は `pickTagWinLine` → `TAG_MATCH_WIN_NAMELESS_LINES` に置き換わっており(`test/tag-battle-presentation-ui-test.js` が「名前なしプールを使うこと」を検査している)、`pickTagLossLine` は定義されているだけで呼び出し元が無い。**訳は入れたが画面には出ない**。仕様上の意図(名前入りタッグセリフを復活させるのか、死んだプールとして削除するのか)は Keisuke 裁定待ち。
+3. **実際に画面へ出るのは 784行中 582行**(HOT_TAG 142+DOUBLE_TEAM 142+CUTIN_SAVE 139+BETRAYAL 114+NAMELESS 21+ダブルチーム実況 29 — いずれもプレースホルダ無しで `tag-battle-main.js` が t() 経由で表示)。上の1・2で 202行が保留。
+4. **抽出器のキャラID軸セル解決は未実装のまま**(P5-2aの⚠を引き継ぎ)。`i18n-extract-dialogue.js` を回すと P5-2a の380件 + 本バッチの14件、計394件のcellが消えてビルドが赤くなる。
+5. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に実況英語(`Yoink — broken up!` `Nuh-uh, not happening~!` 等のくだけた帯)は語感の当たりを見てもらいたい。
+6. `……`(2字)・`…………`(5字)・`……………`(7字・P5-2a既訳)はいずれも `"..."` に落とした。バイブル§1-8「`……` を `......` にしない」に従うと英語側で無音の長短を書き分ける手段が無いため。長短を残す方針にするなら要裁定。
+
+---
+
 ## 🌐 Stage B P5-2a — セリフ英訳バッチ①(勝敗・試合系1,095行)（2026-09-03・Opus主筆 worktree agent-a035be86f025b9bf2）
 
 P5-1で作った台帳(16,544行)に対する最初の量産翻訳バッチ。**勝敗・試合系の1,095行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)と `docs/en-anchor-samples-draft-v0.1.md`(34セル102本)。開始前にworktreeブランチをmain先端(4f7ae7d)へfast-forward済み。
