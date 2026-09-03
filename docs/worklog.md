@@ -1,5 +1,76 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2a — セリフ英訳バッチ①(勝敗・試合系1,095行)（2026-09-03・Opus主筆 worktree agent-a035be86f025b9bf2）
+
+P5-1で作った台帳(16,544行)に対する最初の量産翻訳バッチ。**勝敗・試合系の1,095行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)と `docs/en-anchor-samples-draft-v0.1.md`(34セル102本)。開始前にworktreeブランチをmain先端(4f7ae7d)へfast-forward済み。
+
+### 1. 対象範囲(1,095行)と境界
+
+指示の「合計900行超ならvictory-lines全量を優先し、残りは綺麗な境界で止める」に従い、**ファイル単位の綺麗な境界**で切った。
+
+| ソース | 行数 | 備考 |
+|---|---|---|
+| `victory-lines.js` 全3テーブル | 758 | VICTORY_LINES 381 / VS_EX_EMPLOYER_LINES 194 / SCOUT_SIGNING_LINES 183 |
+| `battle-lines.js` 全2テーブル | 148 | DAMAGE_SERIF_LINES 125 / DAMAGE_VOICE_LINES 23 |
+| `data.js:RIVALRY_MATCH_REACTION` | 134 | |
+| `ppv-lines.js:PPV_LINES` | 56 | |
+| (重複キー控除) | -1 | |
+| **計** | **1,095** | |
+
+- **`tag-battle-lines.js`(784行)は丸ごと次バッチへ送った**。1,875行を一度に訳すと1行あたりの吟味が落ちるため、ファイル境界で止めるのが「綺麗な境界」と判断。タッグ系は9テーブルが相互に絡む(DOUBLE_TEAM/HOT_TAG/CUTIN_SAVE/BETRAYAL/実況)ので、まとめて1バッチで訳したほうが声の一貫性も出る。
+- 台帳キーは原文文字列なので、**このバッチのキーが他テーブル(JUNIOR_TOURNAMENT_LINES / RETIREMENT_LINES / POST_MATCH_FLAVOR_LINES / CUTIN_SAVE_LINES / EVENT_DRAFT_* / FIRST_MEET_LINES 等)と共有されている行も同時に訳出済み**になる。
+
+### 2. アンカー転記(102行)
+
+台帳に実在するアンカー見本102本は**一字も変えず転記**した(A/B判定済み・Keisuke承認済みのため)。VMでの実抜き取りで**102行すべてが承認稿とバイト一致**を確認済み(spotcheck: `anchor rows present in dict: 102, mismatches: 0`)。
+うち3行はアンカー稿の見出しに `(赤沼)` 等の話者注記が付いていたため、注記を剥がしたキーで台帳と突合した(cool×ノーマルの3行)。
+
+### 3. victory-lines のセル解決(380行) — 台帳 `cell` 欄を埋めた
+
+VICTORY_LINESは**キャラID軸**のため、P5-1の抽出器(パスセグメントからarchetype/personalityを読む方式)ではcellが取れず全行`cell:null`だった。指示どおり **charId → ALL_CHARS → archetype×personality** を引いて訳したうえで、**その導出結果を台帳の`cell`欄にも書いた(380行)**。
+
+- 対象は `files` が `victory-lines.js:VICTORY_LINES` の1件のみ、かつ全charIdのセルが一致する行に限定(曖昧・競合0件)。
+- 効果: `test/i18n-build-dialogue-dict.js` のセル別検査(ojousama無短縮形/cool感嘆符・3文超禁止/hell・damn)が**この380行にも効くようになった**。今バッチの訳文あり1,095行中 **cell判定済み1,084行**(未判定は共有ボイス等11行のみ)。
+- **⚠フォローアップ必須**: 抽出器は毎回`cell`を再計算して上書きするため、`node test/i18n-extract-dialogue.js` を回すとこの380件のcellはnullに戻る。**その瞬間に生駒エリカのアンカー行("The hell? …" ヤンキー帯で承認済み)がhell/damn検査に引っかかりビルドが赤くなる**(fail-loudなので気付ける)。根治は抽出器に**キャラID軸のセル解決(VICTORY_LINES → ALL_CHARS)を実装**すること。P5-2b以降で先に入れるのが望ましい。
+- 併せて発見: `test/i18n-build-dialogue-dict.js` のヘッダコメントは「cell不明の行は『全帯』検査のみ通す」と書いているが、hell/damn検査の実装は `if (!cell || cell.archetype !== 'delinquent')` で**cell不明も違反にしている**(コメントと実装の不一致)。上のcell解決を入れれば実害は消えるが、検査側を直すのも選択肢。
+
+### 4. 翻訳の方針(トーンバイブル適用)
+
+- **属性=英語registerで作る**: ojousama=全行無短縮形+格調語彙 / cool=断片・一語文・感嘆符ゼロ / delinquent=冠詞主語の省略+修辞疑問 / polite=完全文+緩衝表現 / composed=急がない英語+後置though / seductive=低温(Oh my / Mm)+味わう動詞 / standard=特徴を足さない。
+- **卑語**: hell/damn はヤンキー帯のみ・**128行中6回**(4.7%)に抑えた。f/sワードは全帯ゼロ。
+- **声の重複回避**: 同じ日本語表現でも別セルなら英語を変えた(アンカー見本§8と同じ判断)。例=「なめんな」5帯で5通り / 「勝った」を帯ごとに書き分け / 「この程度」「まだ立てる」等の頻出短句も帯ごとに別形。
+- **ボイス(悲鳴)は英語の慣用形へ**: 「ぐはっ」=Guh— /「がっ」=Gah— /「きゃあっ」=Aaah— /「あぁんっ」=Aahn... /「ふ…っ」=Hf... /「…っ！」(cool)=...Kh.(cool帯は感嘆符禁止のためJAの「！」を音の質で代替)。
+- **§4-6の翻訳調検査**: "It can't be helped"/"As expected of"/「today's me」型/ALL CAPS/英国綴り/"darling"/"Fufu"音写 いずれも0件。`"I'll do my best"` が1件出たので書き直した(→ "I'll make that worth it~")。
+- **長さ**: 全1,095行が110字上限内(最大92字・中央値52字・EN/JA文字数比 平均2.49)。
+- **♪♡**: 原文に含む64行すべてで存置(欠落0)。
+
+### 5. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,095行を記入 + victory-lines由来380行のcell欄を記入
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他のソースは**一切触っていない**(セリフ選択ロジック・表示側の配線はP5-1のまま)
+
+### 6. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり1,095 / cell判定済み1,084 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| VMでEN抜き取り | ✅ セル横断22本+アンカー3本=26本すべて英訳。アンカー102行バイト一致・mismatch 0 |
+| 品質スイープ(翻訳調/英国綴り/ALL CAPS/余分な空白/♪♡欠落) | ✅ 全項目0件 |
+
+### 7. 残課題
+
+1. **抽出器のキャラID軸セル解決**(上記§3の⚠)。これを入れるまで `i18n-extract-dialogue.js` の再実行はビルドを赤くする
+2. **`tag-battle-lines.js` 784行が未訳**(P5-2bの主対象)
+3. **固有名詞の仮置き2件**: 「柔の白銀」= `Shirogane the Supple`(アンカーの「剛の芝」= Shiba the Strong と対にした造語)、「ギャル3人衆」= `the gyaru trio`。`docs/en-proper-nouns-draft-v0.1.md` 未登録のため要裁定。既登録分(高階まさみ=Masami Takashina / 白銀麗子=Reiko Shirogane / 伊勢原文奈=Fumina Isehara / 元砥石川=Toishigawa / 常川高校=Tokikawa / 姫宮=Himemiya / 早川モナ=Mona / 井沢=Izawa / 丹羽=Niwa)は辞書どおり使用済み
+4. **セル不明のまま訳した11行**(共有短句・共有ボイス): 「……まだ」「……まだだ」「…くっ」「あっ…！」「うぅっ…！」「くそっ…！」「くっ…！」「……よろしく」「…よろしく」「……次だ」「……まだ、立てる。」。複数帯・複数テーブルで再利用されるためcellがnullで確定しており、**どの帯に出ても違和感のない中立英語**を当てた(「くそっ…！」は共有行のためhell/damnを避け "Tch...!")
+5. **ネイティブ検品**は未実施(トーンバイブル§5-2の第三層)
+
+---
+
 ## 🌐 Stage B P5-1 — セリフ台帳基盤+吹き出し表示点のt()配線（2026-09-03・Opus worktree agent-a8f7a9a2d31dbac2f）
 
 英語対応P5の第1工程。セリフ層(キャラクターが喋る言葉)の翻訳パイプライン基盤を、既存2パイプライン(UI文字列=P3b/テンプレ=P4)と同じ「キー=日本語原文」方式で新設した。設計は `docs/i18n-stage-b-p5-design-v0.1.md`。開始前にworktreeブランチをmain先端(3267430)へfast-forward済み。
