@@ -436,3 +436,10 @@
 **P6 固有名詞辞書(実装は別工程)。**
 
 承認された表は `i18n/proper-nouns.json`(仮)に落とし、`src/lang-en.js` の生成時に取り込む。P3b の台帳で `hasProperNoun` が立っているキーは、この辞書が確定するまで翻訳を保留する(D-B5)。技名ドラフトはその次の工程で別途起票する。
+
+## 追加起案(P5-2aで発生・Fable仮批准、Keisuke確認は随時)
+
+| JA | EN案 | 備考 |
+|---|---|---|
+| 柔の白銀(白銀麗子の異名) | Shirogane the Supple | 「剛の芝」= Shiba the Strong と対の造語 |
+| ギャル3人衆 | the gyaru trio | gyaruは英語圏プロレス/サブカル文脈で通用 |
