@@ -5288,7 +5288,7 @@ function _renderInviteMarketPanel() {
   if (G.offSeason) {
     requestHtml = `<button class="imp-req-btn" disabled>${WM_I18N.t('オフシーズンは頼めない')}</button>`;
   } else if (alreadyAsked && pending) {
-    const wanted = Engine.shachoshitsu.formatCoachRequest(pending);
+    const wanted = Engine.shachoshitsu.formatCoachRequest(pending, WM_I18N.t);
     requestHtml = `<span class="imp-req-state">${WM_I18N.t('秘書に{wanted}を探すよう頼んである。返事は次の入れ替わりで。', { wanted })}</span>
       <button class="imp-req-btn" disabled>${WM_I18N.t('今期は依頼済み')}</button>`;
   } else {

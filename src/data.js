@@ -30884,6 +30884,11 @@ function gameLogEntryText(entry) {
   if (entry.type === 'venue_heat_crowd' && data && data.crowdLabel) {
     data = { ...data, crowdLabel: _gameLogT(data.crowdLabel) };
   }
+  // i18n P4-4残(2026-09-03): tierLabelも同型の成形済み値(Engine.scout.TIERSのJAラベルが
+  // fighter_signed/scout_signed/draft_bg_ai_signed等のdataに焼かれている)。表示時に翻訳する
+  if (data && typeof data.tierLabel === 'string') {
+    data = { ...data, tierLabel: _gameLogT(data.tierLabel) };
+  }
   return fillTemplateVars(_gameLogT(resolved), data || {});
 }
 
