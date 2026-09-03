@@ -52,8 +52,26 @@
 //    一致するキー(単独一致、または "archetype_personality" 形式の複合キーの構成要素)を
 //    ベストエフォートで拾う。同一原文が複数セルに再利用され判定が割れる場合はcellをnullにする
 //    (誤ったセル文脈を翻訳者に提示するより、判定不能として明示する方が安全なため)。
-//    VICTORY_LINES 等キャラID軸のテーブルはcell=null(archetype/personality軸を持たない
-//    個人セリフのため。P5設計 D-P5-1 のスコープ通り台帳には含めるが軸情報は無い)。
+//
+//  ■ ID軸テーブルのセル解決(P5基盤修正で追加)
+//    VICTORY_LINES のようにキャラID(ALL_CHARSのid)をキーとするテーブルはarchetype/
+//    personalityの語彙キーを持たないため、上記のキーワード一致だけではcellが取れない。
+//    そこで、ある祖先オブジェクトのキー集合が**すべて**ALL_CHARSの実在idと一致し、かつ
+//    キー数が閾値(ID_AXIS_MIN_KEYS=5件)以上のとき、そのオブジェクトを「ID軸ノード」と
+//    みなし、配下の各キー(=charId)をALL_CHARSで引いてarchetype/personalityへ解決する
+//    (キーワード一致で何も取れなかった場合のみのフォールバック)。閾値とall-match条件は
+//    偶然の数値衝突を避けるための安全策 — 実データ調査の結果、この条件に一致するのは
+//    victory-lines.js:VICTORY_LINES(127キー全一致)のみで、CONTRACT_NEGOTIATION_LINES.tenure
+//    のような小さい部分一致(4キー中1つがたまたま有効idと衝突)は弾かれることを確認済み
+//    (2026-09-03実データ検証)。
+//
+//  ■ 台帳の保持マージ(P5基盤修正で追加)
+//    既存の i18n/dialogue-ledger.json が存在する場合、そのen列(非空)とcell列(非null)は
+//    再生成時に上書きしない(翻訳バッチ・ネイティブ検品で手作業投入された内容を機械抽出の
+//    再実行で消さないため — ID軸セル解決が無かった旧世代の抽出器が生成した台帳に対し、
+//    翻訳エージェントがcell欄を手動で導出・補完していた実績があった)。既存en/cellが無い
+//    (=新規行、またはen/cellが元々空)行にのみ、今回の抽出結果(新規解決したcell含む)を書く。
+//    ソースから消えたJA原文の既存行は当然ながら出力に含まれない(通常の再生成と同じ)。
 //
 //  ■ 使い方
 //    node test/i18n-extract-dialogue.js       i18n/dialogue-ledger.json を(再)生成
@@ -128,6 +146,27 @@ function hasProperNoun(text, properNouns) {
   return false;
 }
 
+// ── ID軸(キャラID)セル解決用マップ: charId(文字列) -> {archetype, personality} ──
+function buildCharIdCellMap() {
+  const data = require(path.join(SRC_DIR, 'data.js'));
+  const map = new Map();
+  (data.ALL_CHARS || []).forEach((c) => {
+    if (!c || c.id === undefined || c.id === null) return;
+    if (!c.archetype && !c.personality) return;
+    const cell = {};
+    if (c.archetype) cell.archetype = c.archetype;
+    if (c.personality) cell.personality = c.personality;
+    map.set(String(c.id), cell);
+  });
+  return map;
+}
+// 「祖先オブジェクトの全キーがALL_CHARSの実在idと一致」を要求する閾値。小さすぎると
+// 無関係な数値キー(週数・年数等)がたまたまid集合と衝突して誤判定するため、
+// 実データ調査(2026-09-03)で確認した唯一の真陽性(VICTORY_LINES=127キー)に十分な
+// 安全マージンを持たせつつ、他の偶然一致(最大でも4キー中1個の部分一致どまりだった)
+// を弾ける値として5に設定。
+const ID_AXIS_MIN_KEYS = 5;
+
 function hasPlaceholder(text) {
   PLACEHOLDER_RE.lastIndex = 0;
   return PLACEHOLDER_RE.test(text);
@@ -139,7 +178,7 @@ const PERSONALITIES = ['normal', 'bold', 'quiet', 'shy', 'easygoing', 'earnest',
 const ARCHETYPE_SET = new Set(ARCHETYPES);
 const PERSONALITY_SET = new Set(PERSONALITIES);
 
-function detectCellFromPath(pathSegments) {
+function detectCellFromPath(pathSegments, idAxisSegments, charIdCellMap) {
   let archetype = null;
   let personality = null;
   pathSegments.forEach((seg) => {
@@ -159,6 +198,16 @@ function detectCellFromPath(pathSegments) {
       if (p) personality = p;
     }
   });
+  // ID軸フォールバック: archetype/personalityの語彙一致で何も取れなかった場合のみ、
+  // ID軸ノード配下で見つかったcharIdをALL_CHARSで引く(VICTORY_LINES等)。
+  if (!archetype && !personality && idAxisSegments && idAxisSegments.length && charIdCellMap) {
+    const charId = idAxisSegments[idAxisSegments.length - 1];
+    const charCell = charIdCellMap.get(charId);
+    if (charCell) {
+      archetype = charCell.archetype || null;
+      personality = charCell.personality || null;
+    }
+  }
   if (!archetype && !personality) return null;
   const cell = {};
   if (archetype) cell.archetype = archetype;
@@ -172,14 +221,25 @@ function cellKey(cell) {
 }
 
 // ── 値の再帰ウォーカー: 文字列の葉を全て拾いつつ、祖先オブジェクトキー列(配列
-//    インデックスは含めない)を渡す。 ──────────────────────────────────────
-function walkStrings(value, pathSegments, onString) {
+//    インデックスは含めない)と、ID軸ノード配下で確認できたcharId列を渡す。
+//    idAxisSegments は「祖先オブジェクトの全キーがcharIdCellMapの実在idと一致し、
+//    かつキー数がID_AXIS_MIN_KEYS以上」の条件を満たしたノードでのみ積まれる
+//    (偶然の数値衝突を弾くための厳格な条件。detectCellFromPath側のコメント参照)。
+// ──────────────────────────────────────────────────────────────────────
+function walkStrings(value, pathSegments, idAxisSegments, charIdCellMap, onString) {
   if (typeof value === 'string') {
-    onString(value, pathSegments);
+    onString(value, pathSegments, idAxisSegments);
   } else if (Array.isArray(value)) {
-    value.forEach((v) => walkStrings(v, pathSegments, onString));
+    value.forEach((v) => walkStrings(v, pathSegments, idAxisSegments, charIdCellMap, onString));
   } else if (value && typeof value === 'object') {
-    Object.keys(value).forEach((k) => walkStrings(value[k], pathSegments.concat([k]), onString));
+    const keys = Object.keys(value);
+    const isIdAxisNode = charIdCellMap
+      && keys.length >= ID_AXIS_MIN_KEYS
+      && keys.every((k) => charIdCellMap.has(k));
+    keys.forEach((k) => {
+      const nextIdAxis = isIdAxisNode ? idAxisSegments.concat([k]) : idAxisSegments;
+      walkStrings(value[k], pathSegments.concat([k]), nextIdAxis, charIdCellMap, onString);
+    });
   }
 }
 
@@ -193,19 +253,36 @@ function listTopLevelNames(filePath) {
   return names;
 }
 
+// ── 既存台帳の読み込み(マージ用。無ければ空マップ) ─────────────────────────
+function loadExistingLedger() {
+  if (!fs.existsSync(OUT_PATH)) return new Map();
+  try {
+    const raw = JSON.parse(fs.readFileSync(OUT_PATH, 'utf8'));
+    if (!Array.isArray(raw)) return new Map();
+    const map = new Map();
+    raw.forEach((e) => { if (e && typeof e.key === 'string') map.set(e.key, e); });
+    return map;
+  } catch (err) {
+    console.error(`[i18n-extract-dialogue] 警告: 既存台帳の読み込みに失敗しました(新規生成として扱います): ${err.message}`);
+    return new Map();
+  }
+}
+
 function main() {
   DIALOGUE_FILES.forEach((f) => loadAsGlobal(f));
 
   const properNouns = buildProperNounList();
+  const charIdCellMap = buildCharIdCellMap();
+  const existingLedger = loadExistingLedger();
   const ledgerMap = new Map(); // key(JA原文) -> entry
   const perTableStats = [];
   const skippedCandidates = []; // LINES/DIALOGUE(S)命名に一致しなかった隣接テーブル(参考記録)
   let dialogueTableCount = 0;
 
-  function record(text, fileName, tableName, pathSegments) {
+  function record(text, fileName, tableName, pathSegments, idAxisSegments) {
     if (typeof text !== 'string' || !text) return;
     let entry = ledgerMap.get(text);
-    const cell = detectCellFromPath(pathSegments);
+    const cell = detectCellFromPath(pathSegments, idAxisSegments, charIdCellMap);
     if (!entry) {
       entry = {
         key: text,
@@ -235,7 +312,7 @@ function main() {
         const v = global[name];
         if (v !== undefined) {
           const strs = [];
-          walkStrings(v, [], (s) => strs.push(s));
+          walkStrings(v, [], [], null, (s) => strs.push(s));
           const JA_RE = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/;
           const jaCount = strs.filter((s) => JA_RE.test(s)).length;
           if (jaCount > 0) skippedCandidates.push({ file: fileName, table: name, jaStringCount: jaCount });
@@ -250,25 +327,42 @@ function main() {
       }
       dialogueTableCount++;
       let extracted = 0;
-      walkStrings(table, [], (text, pathSegments) => {
-        record(text, fileName, name, pathSegments);
+      walkStrings(table, [], [], charIdCellMap, (text, pathSegments, idAxisSegments) => {
+        record(text, fileName, name, pathSegments, idAxisSegments);
         extracted++;
       });
       perTableStats.push({ file: fileName, table: name, extracted });
     });
   });
 
+  // ── 既存台帳とのマージ: en非空・cell非nullは上書きしない ─────────────────
+  let preservedEnCount = 0;
+  let preservedCellCount = 0;
+  let newlyResolvedCellCount = 0;
+
   const ledger = Array.from(ledgerMap.values())
     .map((e) => {
       const cellResolved = (e._cellObj && e._cellObj !== 'CONFLICT') ? e._cellObj : null;
+      const existing = existingLedger.get(e.key);
+      const existingEn = existing && typeof existing.en === 'string' ? existing.en : '';
+      const en = existingEn.trim() ? existingEn : e.en;
+      if (existingEn.trim()) preservedEnCount++;
+      let cell;
+      if (existing && existing.cell) {
+        cell = existing.cell;
+        preservedCellCount++;
+      } else {
+        cell = cellResolved;
+        if (cellResolved) newlyResolvedCellCount++;
+      }
       return {
         key: e.key,
-        en: e.en,
+        en,
         files: Array.from(e.filesSet).sort(),
         count: e.count,
         hasPlaceholder: e.hasPlaceholder,
         hasProperNoun: e.hasProperNoun,
-        cell: cellResolved,
+        cell,
       };
     })
     .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
@@ -286,6 +380,7 @@ function main() {
   console.log(`[i18n-extract-dialogue] 台帳を生成しました: ${path.relative(ROOT, OUT_PATH)}`);
   console.log(`[i18n-extract-dialogue] 対象テーブル数=${dialogueTableCount} 総行数(ユニークキー)=${total} (生抽出総数=${rawTotal})`);
   console.log(`[i18n-extract-dialogue] hasProperNoun=${properCount} hasPlaceholder=${placeholderCount} cell判定済み=${cellResolvedCount} (${total ? Math.round(cellResolvedCount / total * 1000) / 10 : 0}%)`);
+  console.log(`[i18n-extract-dialogue] マージ: 既存台帳${existingLedger.size}件 / en保持=${preservedEnCount} / cell保持=${preservedCellCount} / cell新規解決=${newlyResolvedCellCount}`);
   console.log('[i18n-extract-dialogue] ファイル別テーブル数:');
   const byFile = {};
   perTableStats.forEach((s) => { byFile[s.file] = (byFile[s.file] || 0) + 1; });

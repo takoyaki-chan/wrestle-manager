@@ -1599,11 +1599,12 @@ function showResult(fr){
   const vicLines = document.getElementById('vicLines');
   if (vicLines) {
     if (winFinisher && winPartner) {
-      // i18n Stage B P5-1: 表示直前でt()を通す。pickTagWinCommentaryは戻り値内で
-      // {winner}/{partner}/{move}を置換済みのため、プレースホルダを含む原文は
-      // 辞書キーと一致せずfail-openする(tag-battle-lines.jsは対象外につき改修不可)。
+      // i18n Stage B P5基盤修正: pickTagWinCommentaryはdict-opts化済み(§6パターン)。
+      // {winner}/{partner}/{move}で置換される**前**のテンプレートへdictを通すため、
+      // WM_I18N.tを第4引数として渡す(呼び出し後にt()で包み直さない — 包み直すと
+      // 置換済みの完成文が辞書キー(未置換の原文)と一致せずfail-openしてしまう)。
       const winLine = WM_I18N.t(pickTagWinLine(winFinisher));
-      const commentary = WM_I18N.t(pickTagWinCommentary(winFinisher.name, winPartner.name, finMove));
+      const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, finMove, WM_I18N.t);
       // faceout-audit v0.2: 話者名は吹き出しの外(上のラベル)に出す(mockup-baseline §3。
       // 名前を吹き出し内に書かない)。実況は地の文のまま
       vicLines.innerHTML =

@@ -13778,11 +13778,13 @@ const App = {
           leaderName: payload.leaderName || (leader ? leader.name : ''),
           targetName: target ? target.name : (payload.incidentPayload && payload.incidentPayload.targetName) || '',
         };
+        // i18n Stage B P5基盤修正: getF07Lineはdict-opts化済み(§9)。WM_I18N.tを渡し、
+        // プレースホルダ置換前のテンプレを翻訳させる(戻り値をt()で包み直さない)。
         const charLine = (Engine.factions.getF07Line)
-          ? Engine.factions.getF07Line('resultLeader', { incidentType: payload.incidentType, choice: choiceId, fighter: leader, vars })
+          ? Engine.factions.getF07Line('resultLeader', { incidentType: payload.incidentType, choice: choiceId, fighter: leader, vars }, WM_I18N.t)
           : '';
         const targetLine = (Engine.factions.getF07Line)
-          ? Engine.factions.getF07Line('resultTarget', { incidentType: payload.incidentType, choice: choiceId, vars })
+          ? Engine.factions.getF07Line('resultTarget', { incidentType: payload.incidentType, choice: choiceId, vars }, WM_I18N.t)
           : '';
         const fullResultText = targetLine ? `${result.resultText}\n${targetLine}` : result.resultText;
         showFactionEventResult({

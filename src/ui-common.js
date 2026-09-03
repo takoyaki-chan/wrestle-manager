@@ -10848,16 +10848,19 @@ function showFactionF07Modal(payload, state, onChoice) {
   const vars = { factionName, leaderName, leaderSurname, targetName };
 
   // セリフ取得
+  // i18n Stage B P5基盤修正: getF07Lineはdict-opts化済み(§9)。プレースホルダ置換**前**の
+  // テンプレへdictを通すため、WM_I18N.tを第3引数として渡す(戻り値を後からt()で包み直すと
+  // 置換済みの完成文が辞書キーと一致せずfail-openする)。
   let leaderQuote = '';
   let coachLine = '';
   if (meta.source === 'leader') {
     leaderQuote = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
-      ? WM_I18N.t(Engine.factions.getF07Line('leaderDemand', { incidentType, fighter: leader, vars }))
+      ? Engine.factions.getF07Line('leaderDemand', { incidentType, fighter: leader, vars }, WM_I18N.t)
       : '';
     if (!leaderQuote) leaderQuote = WM_I18N.t('社長、お願いがあります。');
   } else {
     coachLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
-      ? WM_I18N.t(Engine.factions.getF07Line('coachReport', { incidentType, vars }))
+      ? Engine.factions.getF07Line('coachReport', { incidentType, vars }, WM_I18N.t)
       : '';
     if (!coachLine) coachLine = `${leaderSurname}と${factionName}の動きについて報告があります。`;
   }
@@ -12027,8 +12030,11 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
   const reasonKey = payload.reasonKey || '';
   const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
 
+  // i18n Stage B P5基盤修正: getTransitionLineはdict-opts化済み(§9)。第4引数にWM_I18N.tを
+  // 渡し、プレースホルダ置換前のテンプレを翻訳させる(戻り値は既に訳文なので、下の
+  // narration表示・_u3bSideHtml渡しではt()を二重に通さない)。
   const lines = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getTransitionLine)
-    ? Engine.factions.getTransitionLine(reasonKey, leader, { leader: leaderName, org: factionName })
+    ? Engine.factions.getTransitionLine(reasonKey, leader, { leader: leaderName, org: factionName }, WM_I18N.t)
     : { leaderLine: '', narration: '' };
 
   const ARCHETYPE_LABEL = {
@@ -12055,7 +12061,7 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
           })}
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-narration" style="margin-top:10px;color:var(--text-muted);font-size:0.92em;line-height:1.55">
-            ${WM_I18N.t(lines.narration || '')}
+            ${lines.narration || ''}
           </div>
         </div>
         <div class="fevt-decision-tray" style="justify-content:center">
@@ -12166,13 +12172,14 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   const bName = fB ? fB.name : (payload.fighterBName || '???');
 
   const vars = { factionName, aName, bName };
-  // i18n Stage B P5-1: Engine.factions.getCommon1Line はEngine純粋関数(WM_I18Nを呼ばない)。
-  // ここ(呼び出し元)で表示直前のt()を通す。
+  // i18n Stage B P5基盤修正: getCommon1Lineはdict-opts化済み(§9)。プレースホルダ置換**前**の
+  // テンプレへdictを通すため、WM_I18N.tを第3引数として渡す(戻り値をt()で包み直さない —
+  // 包み直すと置換済みの完成文が辞書キーと一致せずfail-openする)。
   const coachLine = (Engine.factions.getCommon1Line)
-    ? WM_I18N.t(Engine.factions.getCommon1Line('coachReport', { archetypeId, vars }))
+    ? Engine.factions.getCommon1Line('coachReport', { archetypeId, vars }, WM_I18N.t)
     : `${factionName}内の${aName}と${bName}に火種があります。`;
   const leaderLine = (Engine.factions.getCommon1Line)
-    ? WM_I18N.t(Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars, fighter: leader || fA }))
+    ? Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars, fighter: leader || fA }, WM_I18N.t)
     : WM_I18N.t('リングで決めたい。');
 
   const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
@@ -12291,8 +12298,11 @@ function showFactionCommon5Modal(payload, state, onChoice) {
     : `<div class="fevt-subject-portrait-wrap" style="width:96px;height:120px"></div>`;
 
   const vars = { factionName, leaderName };
+  // i18n Stage B P5基盤修正: getCommon5Lineはdict-opts化済み(§9)。WM_I18N.tを渡し、
+  // プレースホルダ置換前のテンプレを翻訳させる(下流の_factionReporterStrip→
+  // _u3bSideHtmlが訳文をそのままt()に通しても、既に英語のためfail-openで無害)。
   const coachLine = (Engine.factions.getCommon5Line)
-    ? Engine.factions.getCommon5Line('coachReport', { archetypeId, vars })
+    ? Engine.factions.getCommon5Line('coachReport', { archetypeId, vars }, WM_I18N.t)
     : `${factionName}に取材依頼が来ています。`;
 
   const html = `
@@ -12360,14 +12370,17 @@ function showFactionCommon7Modal(payload, state, onChoice) {
   const archB = payload.archetypeBId || null;
 
   const vars = { factionAName, factionBName, planType };
+  // i18n Stage B P5基盤修正: getCommon7Lineはdict-opts化済み(§9)。WM_I18N.tを渡し、
+  // プレースホルダ置換前のテンプレを翻訳させる(下流の_u3bSideHtml/_factionReporterStripが
+  // 訳文をそのままt()に通しても、既に英語のためfail-openで無害)。
   const coachLine = (Engine.factions.getCommon7Line)
-    ? Engine.factions.getCommon7Line('coachReport', { vars })
+    ? Engine.factions.getCommon7Line('coachReport', { vars }, WM_I18N.t)
     : `${factionAName}と${factionBName}、合同企画の打診が出ています。`;
   const aQuote = (Engine.factions.getCommon7Line)
-    ? Engine.factions.getCommon7Line('leaderAQuote', { archetypeId: archA, vars, fighter: lA })
+    ? Engine.factions.getCommon7Line('leaderAQuote', { archetypeId: archA, vars, fighter: lA }, WM_I18N.t)
     : '「組んでみるか」';
   const bQuote = (Engine.factions.getCommon7Line)
-    ? Engine.factions.getCommon7Line('leaderBQuote', { archetypeId: archB, vars, fighter: lB })
+    ? Engine.factions.getCommon7Line('leaderBQuote', { archetypeId: archB, vars, fighter: lB }, WM_I18N.t)
     : '「乗った」';
 
   // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は各リーダー側の頭上吹き出しへ移行。
@@ -14703,12 +14716,14 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   const isLeader = (fighter) => !!fighter && sameFighterId(payload.leaderId, fighter.id);
 
   // セリフは既存 COMMON1_LINES.resultLeader / resultLoser をそのまま使う。
+  // i18n Stage B P5基盤修正: getCommon1Lineはdict-opts化済み(§9)。WM_I18N.tを渡し、
+  // プレースホルダ置換前のテンプレを翻訳させる(戻り値をt()で包み直さない)。
   const winnerVars = { factionName, aName: fA.name, bName: fB.name };
   let winnerLine = '';
   let loserLine = '';
   if (!isDraw && winChar && loseChar && Engine.factions.getCommon1Line) {
-    winnerLine = WM_I18N.t(Engine.factions.getCommon1Line('resultLeader', { archetypeId, choice: 'A', vars: winnerVars, fighter: winChar }) || '');
-    loserLine = WM_I18N.t(Engine.factions.getCommon1Line('resultLoser', { archetypeId, choice: 'A', vars: winnerVars, fighter: loseChar }) || '');
+    winnerLine = Engine.factions.getCommon1Line('resultLeader', { archetypeId, choice: 'A', vars: winnerVars, fighter: winChar }, WM_I18N.t) || '';
+    loserLine = Engine.factions.getCommon1Line('resultLoser', { archetypeId, choice: 'A', vars: winnerVars, fighter: loseChar }, WM_I18N.t) || '';
   }
 
   const ovrA = Math.round(Engine.util.ov(fA)), ovrB = Math.round(Engine.util.ov(fB));

@@ -1688,7 +1688,8 @@ const FACTION_CONFIG = {
 // 軸: 口調アーキタイプ（archetype）— composed/ojousama/polite/seductive/delinquent/cool/normal
 //   personality では分けない。性格で分けると同じ archetype のキャラの口調が崩壊するため
 //   （お嬢様キャラがタメ口で権威放棄宣言、など）、リーダー archetype に揃える。
-// 引き方: Engine.factions.getTransitionLine(reasonKey, leader, vars)
+// 引き方: Engine.factions.getTransitionLine(reasonKey, leader, vars, dict)
+//   dict省略可(i18n Stage B P5基盤修正のdict-opts。表示直前はWM_I18N.tを渡す)
 //   reasonKey:
 //     'AUTHORITY_TO_BOND_REBUKE' | 'AUTHORITY_TO_MERIT_LEADER' |
 //     'AUTHORITY_TO_BOND_LEADER' | 'COMBAT_TO_BOND_DEFEAT' |
@@ -2017,7 +2018,8 @@ const FACTION_F02_LINES = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // F07 v0.4 派閥動向セリフテーブル
-// 引き方: Engine.factions.getF07Line({ category, incidentType, choice, personality })
+// 引き方: Engine.factions.getF07Line(category, ctx, dict) ※ctx={ incidentType, choice, fighter, vars }
+//   dict省略可(i18n Stage B P5基盤修正のdict-opts。表示直前はWM_I18N.tを渡す)
 //   personality: bold / introverted / carefree / earnest / emotional / shy
 //                （getPersonalityType の戻り値）
 //   - leaderDemand: 入口モーダル本文のリーダー直接セリフ（要求型のみ）
@@ -3110,7 +3112,8 @@ const COMMON3_LINES = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Common-1 派閥内試合提案 セリフテーブル（spec §3）
-// 引き方: Engine.factions.getCommon1Line(category, ctx)
+// 引き方: Engine.factions.getCommon1Line(category, ctx, dict)
+//   dict省略可(i18n Stage B P5基盤修正のdict-opts。表示直前はWM_I18N.tを渡す)
 //   category: 'coachReport' | 'leaderDemand' | 'resultLeader' | 'resultLoser'
 //   ctx: { archetypeId?, fighter?, choice?, vars? }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3259,7 +3262,8 @@ const COMMON1_LINES = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Common-5 派閥代表メディア取材 セリフテーブル（spec §6）
-// 引き方: Engine.factions.getCommon5Line(category, ctx)
+// 引き方: Engine.factions.getCommon5Line(category, ctx, dict)
+//   dict省略可(i18n Stage B P5基盤修正のdict-opts。表示直前はWM_I18N.tを渡す)
 //   category: 'coachReport' | 'leaderQuote' | 'headline' | 'resultLeader'
 //   ctx: { archetypeId?, choice?, fighter? }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -3352,7 +3356,8 @@ const COMMON5_LINES = {
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Common-7 派閥間合同企画 セリフテーブル（spec §7）
-// 引き方: Engine.factions.getCommon7Line(category, ctx)
+// 引き方: Engine.factions.getCommon7Line(category, ctx, dict)
+//   dict省略可(i18n Stage B P5基盤修正のdict-opts。表示直前はWM_I18N.tを渡す)
 //   category: 'coachReport' | 'leaderAQuote' | 'leaderBQuote' | 'planType' | 'resultLeader'
 // ─────────────────────────────────────────────────────────────────────────────
 const COMMON7_LINES = {

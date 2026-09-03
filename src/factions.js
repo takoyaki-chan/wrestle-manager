@@ -3298,16 +3298,24 @@ Engine.factions = {
     return { ...state, factions };
   },
 
-  getCommon1Line(category, ctx) {
+  // i18n Stage B P5基盤修正: 第3引数 dict は任意の「辞書参照関数」(text => text の形)。
+  // specs/i18n-runtime-spec-v1.0.md §6のdict-optsパターンをEngine非依存の本関数へ適用。
+  // 選ばれたテンプレ(プレースホルダを含む生JA)を subst() の置換より前にdictへ通す
+  // (置換後の完成文は辞書キー(未置換の原文)と一致しなくなるため)。dict省略時は
+  // 恒等関数と同じ=JA原文のまま(既存呼び出しは無改修でJA不変)。
+  getCommon1Line(category, ctx, dict) {
     const table = (typeof COMMON1_LINES !== 'undefined' ? COMMON1_LINES : null);
     if (!table || !category) return '';
+    const T = (typeof dict === 'function') ? dict : (s) => s;
     const arch = ctx && ctx.archetypeId;
     const subst = (s) => {
-      if (!s || !ctx || !ctx.vars) return s || '';
-      let out = String(s);
-      Object.keys(ctx.vars).forEach(k => {
-        out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
-      });
+      if (!s) return '';
+      let out = String(T(s));
+      if (ctx && ctx.vars) {
+        Object.keys(ctx.vars).forEach(k => {
+          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+        });
+      }
       return out;
     };
     const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[0] : '';
@@ -3465,16 +3473,20 @@ Engine.factions = {
     return { state: s, resultText, impactSummary };
   },
 
-  getCommon5Line(category, ctx) {
+  // i18n Stage B P5基盤修正: getCommon1Line と同じdict-optsパターン(第3引数dict)。
+  getCommon5Line(category, ctx, dict) {
     const table = (typeof COMMON5_LINES !== 'undefined' ? COMMON5_LINES : null);
     if (!table || !category) return '';
+    const T = (typeof dict === 'function') ? dict : (s) => s;
     const arch = ctx && ctx.archetypeId;
     const subst = (s) => {
-      if (!s || !ctx || !ctx.vars) return s || '';
-      let out = String(s);
-      Object.keys(ctx.vars).forEach(k => {
-        out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
-      });
+      if (!s) return '';
+      let out = String(T(s));
+      if (ctx && ctx.vars) {
+        Object.keys(ctx.vars).forEach(k => {
+          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+        });
+      }
       return out;
     };
     const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[0] : '';
@@ -3635,16 +3647,20 @@ Engine.factions = {
     return { state: s, resultText, impactSummary, outcome };
   },
 
-  getCommon7Line(category, ctx) {
+  // i18n Stage B P5基盤修正: getCommon1Line と同じdict-optsパターン(第3引数dict)。
+  getCommon7Line(category, ctx, dict) {
     const table = (typeof COMMON7_LINES !== 'undefined' ? COMMON7_LINES : null);
     if (!table || !category) return '';
+    const T = (typeof dict === 'function') ? dict : (s) => s;
     const arch = ctx && ctx.archetypeId;
     const subst = (s) => {
-      if (!s || !ctx || !ctx.vars) return s || '';
-      let out = String(s);
-      Object.keys(ctx.vars).forEach(k => {
-        out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
-      });
+      if (!s) return '';
+      let out = String(T(s));
+      if (ctx && ctx.vars) {
+        Object.keys(ctx.vars).forEach(k => {
+          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+        });
+      }
       return out;
     };
     const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[0] : '';
@@ -5692,7 +5708,8 @@ Engine.factions = {
   //            'FACE_TO_HEEL_DRIFT' | 'HEEL_TO_FACE_DRIFT'
   // 軸: リーダーの口調アーキタイプ（archetype）。personality では分けない
   // （同じ archetype のキャラの口調が崩壊するため）。
-  getTransitionLine(reasonKey, leader, vars) {
+  // i18n Stage B P5基盤修正: 第4引数 dict は getCommon1Line と同じdict-optsパターン。
+  getTransitionLine(reasonKey, leader, vars, dict) {
     const table = (typeof FACTION_TRANSITION_LINES !== 'undefined' ? FACTION_TRANSITION_LINES : null);
     if (!table || !reasonKey) return { leaderLine: '', narration: '' };
     const block = table[reasonKey];
@@ -5700,12 +5717,15 @@ Engine.factions = {
     const archetype = (leader && leader.archetype) || 'standard';
     const entry = block[archetype] || block.standard;
     if (!entry) return { leaderLine: '', narration: '' };
+    const T = (typeof dict === 'function') ? dict : (s) => s;
     const subst = (s) => {
-      if (!s || !vars) return s || '';
-      let out = String(s);
-      Object.keys(vars).forEach(k => {
-        out = out.split(`{${k}}`).join(vars[k] != null ? String(vars[k]) : '');
-      });
+      if (!s) return '';
+      let out = String(T(s));
+      if (vars) {
+        Object.keys(vars).forEach(k => {
+          out = out.split(`{${k}}`).join(vars[k] != null ? String(vars[k]) : '');
+        });
+      }
       return out;
     };
     return { leaderLine: subst(entry.leaderLine), narration: subst(entry.narration) };
@@ -5737,20 +5757,24 @@ Engine.factions = {
   // category: 'leaderDemand' | 'coachReport' | 'resultLeader' | 'resultTarget'
   // ctx: { incidentType, choice?, fighter?, vars? }
   // F07_LINES は data.js 定義。引けなければ空文字を返す（呼び出し側でフォールバック）。
-  getF07Line(category, ctx) {
+  // i18n Stage B P5基盤修正: 第3引数 dict は getCommon1Line と同じdict-optsパターン。
+  getF07Line(category, ctx, dict) {
     const table = (typeof F07_LINES !== 'undefined' ? F07_LINES : null);
     if (!table || !category) return '';
     const itype = ctx && ctx.incidentType;
     if (!itype) return '';
     const fighter = ctx && ctx.fighter;
     const personality = fighter ? Engine.contract.getPersonalityType(fighter) : 'quiet';
+    const T = (typeof dict === 'function') ? dict : (s) => s;
     const subst = (s) => {
-      if (!s || !ctx || !ctx.vars) return s || '';
-      let out = String(s);
-      Object.keys(ctx.vars).forEach(k => {
-        const v = ctx.vars[k] != null ? String(ctx.vars[k]) : '';
-        out = out.split(`{${k}}`).join(v);
-      });
+      if (!s) return '';
+      let out = String(T(s));
+      if (ctx && ctx.vars) {
+        Object.keys(ctx.vars).forEach(k => {
+          const v = ctx.vars[k] != null ? String(ctx.vars[k]) : '';
+          out = out.split(`{${k}}`).join(v);
+        });
+      }
       return out;
     };
     const pickArr = (arr) => (Array.isArray(arr) && arr.length) ? arr[Math.floor(Math.random() * arr.length)] : '';

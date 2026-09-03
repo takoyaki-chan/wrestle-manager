@@ -751,8 +751,13 @@ const TAG_MATCH_COMMENTARY_WIN_LINES = [
 ];
 
 // T2: 試合完了セリフ picker。{partner} / {winner} / {move} を埋め込む。
-function _tplTagLine(str, vars) {
-  return String(str).replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? vars[k] : m));
+// i18n Stage B P5基盤修正: 第3引数 dict は任意の「辞書参照関数」(text => text の形)。
+// specs/i18n-runtime-spec-v1.0.md §6のdict-optsパターンに合わせ、プレースホルダ置換の
+// **前**に辞書を通す(置換後の文字列は辞書キー(未置換の原文)と一致しなくなるため)。
+// dict省略時は恒等関数と同じ=JA原文のまま(既存呼び出しは無改修でJA不変)。
+function _tplTagLine(str, vars, dict) {
+  const T = (typeof dict === 'function') ? dict : (s) => s;
+  return String(T(str)).replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? vars[k] : m));
 }
 // [archetype][personality] 二軸テーブルからフォールバック連鎖で配列を取り出す。
 // **第一分岐はアーキタイプ**(口調)、第二分岐が性格。性格を先に引くと
@@ -780,15 +785,15 @@ function pickTagWinLine(fighter) {
   const arr = TAG_MATCH_WIN_NAMELESS_LINES[archetype] || TAG_MATCH_WIN_NAMELESS_LINES.standard;
   return arr[Math.floor(Math.random() * arr.length)];
 }
-function pickTagLossLine(fighter, partnerName) {
+function pickTagLossLine(fighter, partnerName, dict) {
   const arr = _tagLineArrFor(TAG_MATCH_LOSS_LINES, fighter);
   const line = arr[Math.floor(Math.random() * arr.length)];
-  return _tplTagLine(line, { partner: partnerName || 'パートナー' });
+  return _tplTagLine(line, { partner: partnerName || 'パートナー' }, dict);
 }
-function pickTagWinCommentary(winnerName, partnerName, moveName) {
+function pickTagWinCommentary(winnerName, partnerName, moveName, dict) {
   const arr = TAG_MATCH_COMMENTARY_WIN_LINES;
   const line = arr[Math.floor(Math.random() * arr.length)];
-  return _tplTagLine(line, { winner: winnerName || '勝者', partner: partnerName || 'パートナー', move: moveName || '決め技' });
+  return _tplTagLine(line, { winner: winnerName || '勝者', partner: partnerName || 'パートナー', move: moveName || '決め技' }, dict);
 }
 
 function pickHotTagLine(fighter) {

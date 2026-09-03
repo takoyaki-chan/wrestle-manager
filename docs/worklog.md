@@ -1,5 +1,61 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5基盤修正 — 抽出器のID軸セル解決+台帳保持マージ+dict-opts化7関数（2026-09-03・worktree agent-ac1d079422e4437ef）
+
+P5-2a/P5-2bの完了報告(worklog上記2件)が指摘していた3つの既知欠陥を1タスクで根治した。開始前にworktreeブランチをmain先端(9c9d56a、P5-2b完了時点)へfast-forward済み。**`i18n/dialogue-ledger.json`・`src/lang-en-dialogue.js`は指示どおり一切書き換えていない**(検証はscratchpad上のコピーで実施)。
+
+### 1. 抽出器のID軸セル解決 — `test/i18n-extract-dialogue.js`
+
+- **問題**: `VICTORY_LINES`(victory-lines.js)はキャラID(ALL_CHARSのid)をキーとするテーブルで、archetype/personalityの語彙キーを持たないため、旧抽出器はcellを一切解決できずnull固定だった。P5-2a/P5-2bの翻訳エージェントはこれを手作業でALL_CHARSから逆引きし、台帳に計394件のcellを書き足していた(P5-2a 380件+P5-2b 14件)。抽出器を再実行するとこの手作業分が空の`null`で丸ごと上書きされ、`i18n-build-dialogue-dict.js`のhell/damn検査(cell不明行も対象の厳格運用)に引っかかってビルドが赤くなる状態だった。
+- **実装**: `walkStrings`の再帰中、ある祖先オブジェクトの**全キー**がALL_CHARSの実在idと一致し、かつキー数が閾値`ID_AXIS_MIN_KEYS=5`以上のとき、そのノードを「ID軸ノード」と判定し、配下の各キー(charId)をALL_CHARSで引いてarchetype/personalityへ解決する(`detectCellFromPath`の語彙一致が空振りしたときのみのフォールバック)。閾値と全一致条件は偶然の数値衝突を避けるための安全策 — 実データを走査した結果、この条件を満たすのは`victory-lines.js:VICTORY_LINES`(127キー全一致)のみで、`CONTRACT_NEGOTIATION_LINES.tenure`(4キー中1つがたまたま有効idと衝突)のような部分一致は正しく弾かれることを確認した。
+- **併せて実装**: 既存`i18n/dialogue-ledger.json`が存在する場合、その`en`(非空)と`cell`(非null)は再生成時に**上書きしない**保持マージ動作を追加(`loadExistingLedger()`)。新規行・元々空だった行にのみ今回の抽出結果(新規解決したcell含む)を書く。
+
+### 2. build-dialogue-dictのコメント修正 — `test/i18n-build-dialogue-dict.js`
+
+- ヘッダコメントが「cell不明は全帯検査のみ通す」と書いていたが、実装(`if (!cell || cell.archetype !== 'delinquent')`)はcell不明行もhell/damn禁止の対象にする**厳格運用**だった。指示どおり実装(厳格)を正としてコメントを修正し、なぜ厳格側に倒しているか(cell不明=delinquent確定ではない以上、禁止側が安全)を明記した。
+
+### 3. dict-opts化 — factions.js 5関数 + tag-battle-lines.js 2関数
+
+specs/i18n-runtime-spec-v1.0.md §9「既知の限界」に挙がっていた7関数(`{name}`等のプレースホルダを内部で置換してから返すため、戻り値をt()で包んでも辞書キーと一致せずfail-openしていた)を、§6と同じdict-optsパターンで根治した。
+
+- **factions.js**: `getCommon1Line(category, ctx, dict)` / `getCommon5Line(category, ctx, dict)` / `getCommon7Line(category, ctx, dict)` / `getF07Line(category, ctx, dict)` / `getTransitionLine(reasonKey, leader, vars, dict)` — いずれも第3〜4引数`dict`を追加し、`subst()`内で`.split().join()`による置換の**前**に`T(s)`(`dict`未指定時は恒等関数)を通す形へ変更。
+- **tag-battle-lines.js**: `_tplTagLine(str, vars, dict)`が置換前に`T(str)`を通すよう変更し、`pickTagLossLine(fighter, partnerName, dict)` / `pickTagWinCommentary(winnerName, partnerName, moveName, dict)`へdictを伝播。
+- **呼び出し元配線**(WM_I18N.tを第3〜4引数として渡し、戻り値を改めてWM_I18N.t()で包み直さない — 包み直すと置換済みの完成文が辞書キー(未置換の原文)と一致せずfail-openするため):
+  - `src/ui-common.js`: F07Line(leaderQuote/coachLine)、getTransitionLine(+narration表示の二重t()解消)、getCommon1Line(coachLine/leaderLine、winnerLine/loserLine)、getCommon5Line(coachLine)、getCommon7Line(coachLine/aQuote/bQuote) — 計10箇所
+  - `src/app.js`: getF07Line(charLine/targetLine、F07結果表示) — 2箇所
+  - `src/tag-battle-main.js`: pickTagWinCommentary(勝利実況コメンタリー) — 1箇所
+  - `src/data.js`: 各テーブル冒頭の「引き方」コメント5箇所を新シグネチャに追随
+- **既知の副作用(許容)**: `_u3bSideHtml`/`_mdlASubjectStage`など「渡された文字列へ最終表示点でt()を1回通す」共通レンダラに、既にdict適用済み(=既に英語)の文字列を渡す箇所が一部残る(例: getTransitionLineのleaderLine)。この二重t()呼び出しは対象が既に英語のためfail-open(未知キーミスログ)で無害 — 既存コード(common1のcoachLine等)にも同型の二重適用パターンが元々あり、本パターンを踏襲した。
+
+### 4. 検証(scratchpad上、i18n/dialogue-ledger.json本体は不変)
+
+| 検査 | 結果 |
+|---|---|
+| 抽出器マージ検証(現行台帳をscratchpadへコピーしfsをフックして再実行) | en消失0/en変化0/cell消失0/cell変化0/キー増減0(baseline 16,544件と完全一致) |
+| 抽出器フレッシュ生成検証(既存台帳無しを模擬) | VICTORY_LINES 381/381行が新規にcell解決(生駒エリカ id12→delinquent/easygoing 等、ALL_CHARSと一致確認) |
+| 実ファイルの不変性確認 | `git status --short i18n/ src/lang-en-dialogue.js`変化なし・`certutil -hashfile i18n/dialogue-ledger.json MD5`が作業前後で同一(5e3a9a1d…) |
+| `node --check` (app.js/data.js/factions.js/tag-battle-lines.js/tag-battle-main.js/ui-common.js/test/i18n-extract-dialogue.js/test/i18n-build-dialogue-dict.js) | 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `npm run test:ui:walkthrough` | ✅ PASS(actions=328, issues=0, recovered-by-retry=0, duration=190.85s) |
+
+### 5. 触ったファイル
+
+- `test/i18n-extract-dialogue.js` — ID軸セル解決+既存台帳保持マージ+ヘッダコメント更新
+- `test/i18n-build-dialogue-dict.js` — ヘッダコメント修正(実装=厳格を正とする)
+- `src/factions.js` — 5関数dict-opts化
+- `src/tag-battle-lines.js` — `_tplTagLine`+2関数dict-opts化
+- `src/tag-battle-main.js` / `src/ui-common.js` / `src/app.js` — 呼び出し元配線(dict渡し+二重t()解消)
+- `src/data.js` — 「引き方」コメント5箇所更新
+- `specs/i18n-runtime-spec-v1.0.md` — §6先例リストに7関数追記、§9のcell解決記述更新、§9既知の限界を解消済みに更新
+
+### 6. 残課題
+
+- `TAG_MATCH_WIN_LINES`/`TAG_MATCH_LOSS_LINES`(P5-2b指摘)は本タスクの範囲外(dict-opts化はしたが、表示経路が無い問題は未解決のままKeisuke裁定待ち)
+- P5量産翻訳の続き(P5-2c以降)は別タスク
+
+---
+
 ## 🌐 Stage B P5-2b — セリフ英訳バッチ②(タッグ系784行)（2026-09-03・Opus主筆 worktree agent-a0c21cc7ec9fe0691）
 
 P5-2aに続く量産翻訳の第2バッチ。**`tag-battle-lines.js` 由来の全13テーブル784行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+P5-2aの訳語判断。開始前にworktreeブランチをmain先端(d1c56b3)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は一度も実行していない**(P5-2aが書いた380件のcellを守るため)。
