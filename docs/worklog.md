@@ -1,5 +1,75 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-1 — セリフ台帳基盤+吹き出し表示点のt()配線（2026-09-03・Opus worktree agent-a8f7a9a2d31dbac2f）
+
+英語対応P5の第1工程。セリフ層(キャラクターが喋る言葉)の翻訳パイプライン基盤を、既存2パイプライン(UI文字列=P3b/テンプレ=P4)と同じ「キー=日本語原文」方式で新設した。設計は `docs/i18n-stage-b-p5-design-v0.1.md`。開始前にworktreeブランチをmain先端(3267430)へfast-forward済み。
+
+### 1. 抽出器 `test/i18n-extract-dialogue.js`
+
+- 対象: `src/data.js` + セリフ専用ファイル8本(`victory-lines.js` `battle-lines.js` `coach-lines.js` `data-faction-dialogue.js` `flag-dialogue.js` `ppv-lines.js` `tag-battle-lines.js` `tenchosen-final-lines.js`)。`kuroda-text.js`(黒田記事・P4系)と`dev-event-catalog.js`(開発パネル専用)は対象外。
+- 「セリフ格納テーブル」の判定は**命名規約の機械検出**: 各ファイルのトップレベル`const`宣言名を`_`で分割し、セグメントに`LINES`/`DIALOGUE`/`DIALOGUES`を含むものを自動対象化(全288トップレベルテーブルを目視分類した結果、この命名規則とセリフ/非セリフの実態が完全一致することを確認した上で採用。将来の新規セリフテーブルにも無改修で追随する)。手動の例外は3件のみ(EXTRA_INCLUDE: `CHALLENGE_REQUEST_OPPONENT_REACTIONS`/`RIVALRY_MATCH_REACTION`、EXTRA_EXCLUDE: `EVENT_LINES_BY_KEY`=既存テーブルの再エクスポート集約表)。
+- 結果: **対象142テーブル・総行数(ユニークキー)16,544・生抽出総数17,277**。命名規約に一致しない日本語含有テーブル81件(ファン・観客の声/ナレーション/UIラベル/固有名詞リスト等)は意図的に対象外とし、参考リストとしてログ出力する。
+- **セル情報**(D-P5-1): 各文字列の祖先オブジェクトキー列をarchetype 7種/personality 7種の語彙と照合し、ベストエフォートで`cell`欄に記録。**cell判定済み15,199件(91.9%)**。同一原文が複数セルで再利用され判定が割れる場合は安全側でnullにする。
+- 生成物 `i18n/dialogue-ledger.json`(配布対象外・manifest未登録、既存2台帳と同じ扱い)。
+
+### 2. 辞書生成器 `test/i18n-build-dialogue-dict.js`
+
+- 台帳の`en`列が非空の行のみ機械検査した上で`src/lang-en-dialogue.js`(`WM_I18N.addDict()`)を生成。**現時点ではen列が全行空のため空辞書**(翻訳バッチは次工程)。
+- 全帯共通検査(既存2パイプラインのD-B4を踏襲): プレースホルダ完全性(`{name:filter}`基底名比較込み)/重複キー/en内の日本語残り(絵文字誤検出しない正しいレンジ)/**吹き出し長110字上限(新規)**。
+- **D-P5-3 セル別機械検査(新規)**: ojousama帯=短縮形禁止(実在する英語短縮形の固定リストでgrep。所有格'sの誤検出を避ける — `\bhell\w*\b`が"Hello"を誤爆した実装時バグを固定リスト化で解消)/cool帯=感嘆符禁止+3文超禁止(「...」は文区切りに数えない専用センテンスカウンタ)/delinquent帯以外=hell・damn禁止/全帯=f・sワード禁止。
+- 合成データによるスモークテストで8種の違反すべてが検出されること、正常系2件が誤検出されないことを確認済み(検証用スクリプトのみ、リポジトリには残していない)。
+
+### 3. 配線
+
+- `src/lang-en-dialogue.js`を`index.html`(lang-en-templates.jsの直後)/`battle-engine.html`/`tag-battle.html`(いずれもlang-en.jsの直後)へ追加。
+- `release/manifest.json`の`sourceFiles`に`src/lang-en-dialogue.js`を追記。
+
+### 4. 吹き出し表示点のt()配線(最大の作業量)
+
+**方針**: セリフ選択ロジック(乱数選択・アーキタイプ/性格のフォールバック連鎖)には一切触れず、選択された生JA文字列を`WM_I18N.t()`に1回通してから下流(プレースホルダ置換・HTML挿入)へ渡す。プレースホルダを含む行は**t()を`.replace()`/`.replaceAll()`より前に置く**(辞書キーは生の`{name}`テンプレートと一致させる必要があるため)。
+
+- **高レバレッジな共通表示関数への集約**: `_u3bSideHtml`(60箇所超の呼び出し元を持つ最大の吹き出しレンダラ)/`_factionReporterStrip`/`_mdlASubjectStage`/`_pbFighterBlock`/`_awSpeech`・`_awSpeechSlot`/`_mdlAFlowPortraitHtml`/`_chBubbleSlot`/`_tcDramaActor`/`_emrBubbleHtml`/`_tcFinalPick`/`_factionLine`/`_factionIgniteLine`/`_rivalryPreMatchLines`内の`pick`クロージャ、など。これらに1箇所ずつt()を仕込むことで、個別サイトを1つずつ直すより遥かに広い範囲を1回のレビューで担保した。
+- **個別サイト**: `ui-common.js`に約90箇所(`pickDialogueLine`/`getDialoguePool`呼び出し直後・`Engine.factions.get*`呼び出し直後・`getJuniorTournamentLine`/`getAutumnWarMatchLine`呼び出し直後など)、`ui-render.js`に2箇所(道場コーチ吹き出しの`HEAT_STATE_COACH_LINES`選択/`report.reportText`、休憩選手吹き出しの`weekLogFeed`由来`g.dialogue`)、`battle-engine-main.js`に5箇所(ダメージセリフ×2/カットイン×2/勝利セリフのタイプライター表示)、`tag-battle-main.js`に9箇所(ホットタグ/カットインセーブ/裏切り/ダメージセリフ×2/タッグ実況/タッグ勝利セリフ・実況)。
+- **data.js/factions.js/victory-lines.js/battle-lines.js/tag-battle-lines.js/ppv-lines.js側のセリフ選択関数は一切変更していない**(Engine純粋関数はWM_I18Nを呼ばない原則を維持。呼び出し元=ui-common.js/battle系だけで完結)。
+- **既知の限界**: `Engine.factions.getCommon1Line`/`getCommon5Line`/`getCommon7Line`/`getF07Line`/`getTransitionLine`(factions.js)、`pickTagWinCommentary`/`pickTagLossLine`(tag-battle-lines.js)は**選択直後に内部で`{name}`プレースホルダを置換してから返す**実装になっている。これらの戻り値をt()で包んでも、プレースホルダを含む行は置換済みの文字列が辞書キーと一致せずfail-openする(プレースホルダを含まない行は正しく効く)。factions.js/tag-battle-lines.jsは本タスクの触ってよい範囲外のため、根治にはP4テンプレ層と同じ「`dict`optsパラメータをEngine関数に足す」設計(specs/i18n-runtime-spec-v1.0.md §6)の適用が要る。**フォローアップ課題として記録**(P5-2以降で対応候補)。
+- **app.js側の表示点**: `BT_HINT_LINES`(ev.btHint)/`MILESTONE_LINES`(ev.line)は選択がapp.js側だが、表示点自体がui-common.jsの`renderGrowthEventPopup`にあったため、そこでt()を通した(app.js自体は無改修)。
+- **本台帳の抽出対象外だが発見した追加のセリフ格納箇所**(参考記録。将来のledger拡張候補): `ui-render.js`の`QUIET_SIGN_LINES`(3行、既にt()配線済みだった)、`battle-engine-main.js`の`CUTIN_LINES`(約190行、archetype×personality。表示点にt()だけ先行配線した=辞書が空の間はfail-openで無害)。
+
+### 5. 既存テスト10本の修正(WM_I18Nスタブ欠落)
+
+`npm test`で新規に10件failした。原因は全件「テストが`ui-common.js`/`battle-engine-main.js`/`tag-battle-main.js`の関数を`vm`/`new Function`で単離実行しており、新しく参照するようになった`WM_I18N`グローバルが実行コンテキストに存在しない」。既存の`test/helpers/load-game.js`と同じパススルースタブ(`{t(text, params){...}}`)を各テストのsandbox/contextに追加し、2本は「関数ソースの完全一致」を検査する文字列アサーションを新しいソース文字列(`WM_I18N.t(...)`込み)に合わせて更新した。
+- `test/autumn-war-ui-flow-test.js`(sandboxにWM_I18N追加)
+- `test/champion-announcement-unified-design-test.js`(global.WM_I18Nスタブ追加)
+- `test/heat-lines-test.js`(文字列アサーションを`speechText = WM_I18N.t(heatPool`に更新)
+- `test/join-greeting-badges-test.js`(context/fallbackContext双方にWM_I18N追加)
+- `test/rivalry-popup-frequency-test.js`(new Function内のローカルconstにWM_I18N追加)
+- `test/tag-battle-presentation-ui-test.js`(文字列アサーションを`const winLine = WM_I18N.t(pickTagWinLine...)`に更新)
+- `test/u3-group-a-safety-net-test.js`(global.WM_I18Nスタブ追加)
+- `test/unified-title-presentation-test.js`(new Functionの引数にWM_I18N追加)
+- `test/victory-line-archetype-coverage-test.js`(lineContextにWM_I18N追加)
+- `test/victory-overlay-speaker-test.js`(文字列アサーションを新ソースに更新)
+
+### 6. 検証(全項目実施・green)
+
+- `node test/ja-golden.js` → 完全一致(基準と同一ハッシュ)。※ja-goldenはEngine層のみを回すため、今回の変更(UI/battle層)はそもそも対象外だが回帰なしを確認。
+- `node test/i18n-build-dialogue-dict.js` → green(空辞書でも動作。台帳16,544件・訳文あり0・cell判定済み0)。
+- `node --check` を全触りファイル(`ui-common.js`/`ui-render.js`/`battle-engine-main.js`/`tag-battle-main.js`/`lang-en-dialogue.js`/両新規testスクリプト)に実施 → 全OK。
+- `npm test`(`node test/run-all.js`) → **260/260 green**(10件のfailはテスト側スタブ不足が原因と特定し全修正)。
+- `npm run test:ui:walkthrough` → **PASS、issues 0**(1シーズン走破・328アクション・194.8秒)。
+- `release/manifest.json`のJS/CSS一覧とsrc/実ファイルの突合 → 未記載0件(package-release.ps1の警告条件を再現して確認)。
+
+### 7. 台帳統計サマリ
+
+- 総行数(ユニークキー): **16,544**(生抽出17,277、命名規約対象142テーブル)
+- ファイル別テーブル数: data.js 92 / victory-lines.js 3 / battle-lines.js 2 / coach-lines.js 11 / data-faction-dialogue.js 18 / flag-dialogue.js 1 / ppv-lines.js 1 / tag-battle-lines.js 13 / tenchosen-final-lines.js 1
+- hasPlaceholder: 1,038件(6.3%) / hasProperNoun: 61件 / cell判定済み: 15,199件(91.9%)
+- 訳文(en)は本タスクでは未着手(0/16,544)。次工程(Opus主筆バッチ翻訳、D-P5-4のバッチ順)へ。
+
+### 残課題
+
+- Engine側の一部関数(factions.js/tag-battle-lines.jsの計7関数)がプレースホルダを事前置換する設計のため、該当行はt()が効かない(§4の「既知の限界」参照)。P5-2以降でdict optsパラメータ化するか、実害を計測して優先度判断する。
+- `CUTIN_LINES`(battle-engine-main.js内、約190行)は本台帳の抽出対象外。表示点にt()は先行配線済みなので、将来ledgerに追加すれば無改修で翻訳が乗る。
+- Keisuke実機確認: ja表示が完全に元通りであること(pseudo/en切替は次のバッチで辞書が埋まってから)。
 ## 🌐 Stage B P4-4 — 成形済み値(preformatted values)の生成元EN対応（2026-09-03・worktree agent-a0d897322691294a3）
 
 英語対応P4の第4工程。`i18n/preformatted-values-audit.md`の台帳(元20種+P4-3aの11種)のうち

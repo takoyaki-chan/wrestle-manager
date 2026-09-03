@@ -68,6 +68,8 @@ const context = {
   FA_GREETING_GENERIC_LINES: data.FA_GREETING_GENERIC_LINES,
   EVENT_FA_WELCOME_LINES: data.EVENT_FA_WELCOME_LINES,
   pickDialogueLine: data.pickDialogueLine,
+  // i18n Stage B P5-1: getJoinGreeting now calls WM_I18N.t() at the display point.
+  WM_I18N: { t(text) { return text; } },
 };
 vm.runInNewContext(`${extractFunction(commonSource, 'hasCareerHistory')}\n${extractFunction(commonSource, 'getJoinGreeting')}\nthis.hasCareerHistory = hasCareerHistory; this.getJoinGreeting = getJoinGreeting;`, context);
 
@@ -91,6 +93,8 @@ const fallbackContext = {
   FA_GREETING_GENERIC_LINES: ['FA generic'],
   EVENT_FA_WELCOME_LINES: undefined,
   pickDialogueLine: () => undefined,
+  // i18n Stage B P5-1: getJoinGreeting now calls WM_I18N.t() at the display point.
+  WM_I18N: { t(text) { return text; } },
 };
 vm.runInNewContext(`${extractFunction(commonSource, 'hasCareerHistory')}\n${extractFunction(commonSource, 'getJoinGreeting')}\nthis.getJoinGreeting = getJoinGreeting;`, fallbackContext);
 assert.strictEqual(fallbackContext.getJoinGreeting(prospect), 'scout generic', 'missing scout pool falls back without undefined');

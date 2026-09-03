@@ -859,6 +859,10 @@ function section(name, fn) {
 //    (_showChampionWorryBubble)
 // ===========================================================================
 (function championWorrySuite() {
+  // i18n Stage B P5-1: _u3bSideHtml now calls WM_I18N.t() at the display point.
+  // new Function() bodies resolve free identifiers against the real global object,
+  // so a temporary global.WM_I18N stub (matching test/helpers/load-game.js) makes it visible.
+  global.WM_I18N = global.WM_I18N || { t(text) { return text; } };
   const build = new Function(
     'document', 'getPortraitUrl', 'ALL_CHARS', 'G',
     `${dataFn('portraitImg')}

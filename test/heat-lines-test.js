@@ -58,7 +58,7 @@ assert.ok(!commonSource.includes('pickDialogueLine(HEAT_STATE_SELF_LINES[state],
   '未接続の選手本人向け熱量セリフを選手詳細へ戻さない');
 assert.ok(renderSource.includes('HEAT_STATE_COACH_LINES[heatState]'), '道場コーチ吹き出しが状態別プールを引く');
 assert.ok(renderSource.includes("heavyFighters[0] || reportFighter"), 'heavy の選手をコーチ観察の優先対象にする');
-assert.ok(renderSource.includes('speechText = heatPool'),
-  '同じコーチ報告枠を差し替え、strain 系との同週重複を防ぐ');
+assert.ok(renderSource.includes('speechText = WM_I18N.t(heatPool'),
+  '同じコーチ報告枠を差し替え、strain 系との同週重複を防ぐ(i18n Stage B P5-1: 表示直前にWM_I18N.t()を通す配線を含む)');
 
 console.log('heat-lines-test: PASS');

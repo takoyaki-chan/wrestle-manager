@@ -1017,7 +1017,9 @@ function tryDamageLine(action, fr){
   }
   const domSide = defSide === 'left' ? 'L' : 'R';
   const cssCls  = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
-  showCutin(def, domSide, line.text, cssCls);
+  // i18n Stage B P5-1: 表示直前でt()を通す(pickDamageLineはbattle-lines.jsのEngine純粋関数、
+  // def.vsExHitはVS_EX_EMPLOYER_LINES由来。どちらも生JA行)。
+  showCutin(def, domSide, WM_I18N.t(line.text), cssCls);
   setTimeout(() => { if (S.pendingCutin) dismissCutin(); }, 1500);
 }
 
@@ -1092,7 +1094,9 @@ function _tryPhaseIntroCutin(phaseName){
   const archetype   = isLeftLeading ? (mi.leftArchetype  || 'standard') : (mi.rightArchetype  || 'standard');
   const lines = _getCutinLines(lineType, personality, archetype);
   if (!lines || !lines.length) return false;
-  const text = pk(lines);
+  // i18n Stage B P5-1: CUTIN_LINES はこのファイル内に直書きされたセリフ表(本台帳の
+  // 抽出対象外だが、表示直前でt()を通しておけば将来ledger化されたときに無改修で乗る)。
+  const text = WM_I18N.t(pk(lines));
   S._pendingPhaseIntro = true;
   showCutin(charData, domSide, text, 'default');
   // 冗長化: 次へボタンからも dismiss できるよう一時的にハンドラを差し替える
@@ -1121,7 +1125,8 @@ function tryRivalryCutin(lineType, side){
   const archetype   = side === 'L' ? (mi.leftArchetype  || 'standard') : (mi.rightArchetype  || 'standard');
   const lines = _getCutinLines(lineType, personality, archetype);
   if (!lines || !lines.length) return;
-  showCutin(charData, side, pk(lines), 'default');
+  // i18n Stage B P5-1: 表示直前でt()を通す(CUTIN_LINES、本台帳の抽出対象外だが将来のため配線)。
+  showCutin(charData, side, WM_I18N.t(pk(lines)), 'default');
 }
 
 // ─── フィニッシュクリックボックス ──────────────────────────────────────────
@@ -1199,7 +1204,9 @@ function _buildPinCtrl(fr){
         }
         const domSide = defSide === 'left' ? 'L' : 'R';
         const cssCls  = line.type === 'serif' ? 'damage-serif' : 'damage-voice';
-        seq.push({ kind: 'damage', fighter: def, side: domSide, text: line.text, cssCls });
+        // i18n Stage B P5-1: 表示直前でt()を通す(このseqアイテムはpin-sequence再生時に
+        // そのままtext表示されるだけで、以後のtext自体の加工はない)。
+        seq.push({ kind: 'damage', fighter: def, side: domSide, text: WM_I18N.t(line.text), cssCls });
       }
     }
   }
@@ -1525,7 +1532,9 @@ function showResult(fr){
       <button class="btn-end" id="eBtn">CLOSE</button>
     </div>`;
   } else {
-    const vLine = winner && winner.vl && winner.vl.length ? pk(winner.vl) : '';
+    // i18n Stage B P5-1: t()は表示直前(タイプライター開始前)に1回だけ通す(1文字ずつではない)。
+    // winner.vl は VICTORY_LINES 由来の生JA行配列(app.js側で選手データに付与)。
+    const vLine = winner && winner.vl && winner.vl.length ? WM_I18N.t(pk(winner.vl)) : '';
     // The victory quote is the winner speaking, so the identity card below must match that speaker.
     victoryOv.innerHTML = `<div class="victory-box" id="rBox">
       <div class="vic-speech-slot"><div class="vic-speech" id="rQuote"><div class="vic-speech-text" id="rSpeech"></div></div></div>

@@ -31,6 +31,8 @@ const lineContext = {
   VICTORY_LINES: victoryContext.__victoryLines,
   POST_MATCH_FLAVOR_LINES: data.POST_MATCH_FLAVOR_LINES,
   getDialoguePool: data.getDialoguePool,
+  // i18n Stage B P5-1: _emrVictoryLine now calls WM_I18N.t() at the display point.
+  WM_I18N: { t(text) { return text; } },
 };
 vm.runInNewContext(`${extractFunction(commonSource, '_emrVictoryLine')}\nthis.pickVictoryLine = _emrVictoryLine;`, lineContext);
 

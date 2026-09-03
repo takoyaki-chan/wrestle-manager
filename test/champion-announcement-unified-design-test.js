@@ -128,6 +128,10 @@ assert.ok(agwFn.includes('class="ch-trio-speech"'), '最多勝コメントを隊
 assert.ok(agwFn.includes('最多勝コメント'), '独立した吹き出しの話者理由を明示する');
 assert.ok(!agwFn.includes('class="ch-lineup-bubs"'), '見えない空欄を含む3人分の吹き出し行を残さない');
 // _chBubbleSlot は他の統一優勝画面でも使うため、空枠の基本動作は維持する。
+// i18n Stage B P5-1: _chBubbleSlot now calls WM_I18N.t() at the display point.
+// new Function() bodies resolve free identifiers against the real global object,
+// so a temporary global.WM_I18N stub (matching test/helpers/load-game.js) makes it visible.
+global.WM_I18N = global.WM_I18N || { t(text) { return text; } };
 const bubbleSlot = new Function(
   'escHtml',
   `${functionSource(ui, '_chBubbleSlot')}; return _chBubbleSlot;`
