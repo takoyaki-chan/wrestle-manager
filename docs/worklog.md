@@ -1,5 +1,67 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2c — セリフ英訳バッチ③(F07派閥動向1,162行)（2026-09-03・Opus主筆 worktree agent-a0411f2235192b910）
+
+量産翻訳の第3バッチ。**`data.js:F07_LINES` 由来の全1,162行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a/2bの訳語判断。開始前にworktreeブランチをmain先端(9c9d56a)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は一度も実行していない**(P5-2a/2bが書いた394件のcellを守るため)。
+
+### 1. 対象範囲(1,162行・カテゴリ別)
+
+F07は `category → incidentType → (choice) → archetype → personality` の軸。全1,162行が F07_LINES 専属(他テーブルとの共有行ゼロ)。
+
+| カテゴリ | ユニーク行 | スロット | 性質 |
+|---|---|---|---|
+| `leaderDemand` | 168 | 168 | リーダーの社長への直接進言(4要求型 × 7属性 × 6性格) |
+| `coachReport` | 24 | 24 | コーチの報告ナレーション(8インシデント型・軸なし・全行プレースホルダ) |
+| `resultLeader` | 953 | 1,386 | 社長の選択(A/B/C)へのリーダー反応(12型 × 選択 × 7属性 × 6性格) |
+| `resultTarget` | 17 | 17 | 対象選手の三人称ナレーション(軸なし・15行がプレースホルダ) |
+| **計** | **1,162** | **1,595** | |
+
+### 2. cellの源泉導出(4行) — 台帳 `cell` 欄を追記
+
+抽出器が「同一原文が複数セルに出る」でnullにした107行のうち、**F07内で archetype が一意に決まる4行**をソースから導出して `cell` に書いた(`…ありがとうございますわ。`/`…ありがとうございますわ。…ですが、少し、考えますわ。`=ojousama、`…っす、ありがとうございます。`/`…っす。わかりました。`=delinquent)。抽出器の慣行(`if (personality) cell.personality = personality`)に合わせ **personalityキーを持たない `{archetype}` 形**で記入した。効果: ojousama帯の短縮形禁止検査がこの2行にも効く。
+
+残る103行のcell不明は (a)コーチ報告24 (b)対象選手ナレーション17 (c)複数属性で共有される短句62 で、**null が正しい**。これらは中立英語を当てた(P5-2a/2bの方針継承)。
+
+### 3. 翻訳の方針
+
+- **F07は「対話の温度」が主役の帯**。カテゴリごとに英語の「場」を変えた。進言=社長への依頼(完全文+緩衝、要求ではなく打診)/結果反応=試合後ではなく**その場の応答**(現在形基調)/コーチ報告=同僚の実務報告(懸念を事実で運ぶ)/対象選手ナレーション=**過去形の地の文**、社長は "you"(lang-en.js の既存訳「You let it pass.」に合わせた)。
+- **鉄則§3-4(対社長)**: 全帯で緩衝表現+完全文を基調にし、bold帯だけ断定・命令形を解禁("Boss — put us in the main event next show.")。**卑屈語彙(「私なんか」型)は全帯ゼロ**。減俸・待遇の帯も破滅語彙を使わず、**pay review の温度**に留めた(§3-8 悲壮度較正)。
+- **社長の呼称(§6裁定4)**: 原則 "Boss"(221行)。**丁寧・お嬢様帯は "President"(47行)か呼称を落とす**運用にした。JAが 社長 を文頭に置く行でも英語のリズムが崩れる箇所では呼称を落としている。
+- **属性=register**: ojousama=全174行で短縮形ゼロ(`I shall attend from tomorrow~.`) / cool=断片・感嘆符ゼロ・3文以内(`...Noted. Easing off.`) / delinquent=「っす」体を**ぶっきらぼうだが従う**英語へ(`...Right, sorry. My call went too far.`) / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない。
+- **ト書き37行**(OBSERVE_RIVAL_HEAT choice B の「（黙ったまま、視線をそらした）」型)は、アンカー承認済みの堂前ユキ形式(`... (silently clenches her fist)`)に合わせ **括弧内・小文字始まり・現在形・終止符なし**で統一した。
+- **P5-2a/2bとの均質化回避**: F07は「ありがとうございます」系が全体の約4割を占めるため、帯ごと・語尾ごとに英語を割り分けた(`Thank you.` / `...I thank you.` / `You have my thanks.` / `Thanks, Boss.` / `...Right, thanks.` / `Appreciated.` / `I'll take that, thank you.` ほか)。同様に「そういう形ですか」8通り、「承知しました」7通り、「気をつけます」6通り。機械検査で**バッチ内EN重複0・既訳1,875行との重複0**。
+- **卑語**: hell/damn は**1,162行中0回**(F07は社長対話帯で、原文に荒い語がない)。f/sワードも0。
+- **§4-6の翻訳調検査**: "It can't be helped"/"As expected of"/"I'll do my best"/「today's me」型/ALL CAPS/英国綴り(favour/colour/realise/apologise)/"darling"/"Fufu"音写 いずれも0件。「ふふ」は seductive で `mm` に機能置換した。
+- **長さ**: 全1,162行が110字上限内(最大105字・中央値48字・EN/JA文字数比 1.99)。プレースホルダ完全一致(不一致0)。♪♡を含む原文は0行。
+
+### 4. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,162行を記入 + F07由来4行のcell欄を記入
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。ソース・配線は**一切触っていない**
+
+### 5. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**3,037** / cell判定済み2,855 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書+factions.js)で `getF07Line()`→`t()` を通し、**全1,595スロットのスイープで未訳0**。セル横断20本を目視 |
+| 品質スイープ(翻訳調/英国綴り/ALL CAPS/重複EN/余分な空白/プレースホルダ/セル別検査) | ✅ 全項目0件 |
+
+### 6. 残課題(このバッチで判明したものを含む)
+
+1. **`coachReport` 24行は辞書が引かれない**(P5-1の既知の限界と同型)。`Engine.factions.getF07Line()` は `subst()` で `{leaderName}`/`{factionName}`/`{targetName}` を**返す前に置換**するため、`ui-common.js:10860` の `WM_I18N.t()` がキーと一致せずfail-openでJAのまま出る。VM実測でも `[i18n-miss]` が出た。根治は `specs/i18n-runtime-spec-v1.0.md` §6の「dict optsパラメータ」を getF07Line 側へ適用すること(=t()に生キーとvarsを渡す形にする)。
+2. **`resultTarget` 17行は表示経路に `t()` が無い**。`app.js:13784` が `getF07Line('resultTarget', ...)` の戻り値を `resultText` に連結し、`showFactionEventResult` の `narrationHtml` が `String(opts.resultText)` を素通しでHTML化している(`ui-common.js:10394`)。**17行すべてがEN設定でも日本語のまま**。1と合わせ **1,162行中41行が画面に出ない**。
+3. **`resultLeader` 953行は届く**。`app.js:13781` は `t()` を通していないが、`showFactionEventResult` → `_mdlASubjectStage(..., {speech: charLine})` が内部で `WM_I18N.t()` を呼ぶ(`ui-common.js:596`)ため訳が乗る。ただし**リーダーがrosterに見つからないフォールバック経路**(`charlineHtml`・escHtmlのみ)ではJAに落ちる。
+4. **抽出器のキャラID軸セル解決は未実装のまま**(P5-2a/2bの⚠を引き継ぎ)。`i18n-extract-dialogue.js` を回すと P5-2a 380件 + P5-2b 14件 + 本バッチ4件、計398件のcellが消える。
+5. **`test/i18n-ratchet.js` がP5-1以降ずっと赤い**(本バッチ以前から)。`test/i18n-scan.js` の `EXCLUDED_FILES` が `lang-en.js` / `lang-en-templates.js` しか除外しておらず、**同じく自動生成の `lang-en-dialogue.js`(1,872→3,034) と `lang-en-names.js`(364) が「直書き日本語の増加」として計上される**。`npm test`(run-all.js)には含まれていないため260greenは保たれているが、ラチェットは事実上機能停止している。除外リストに2ファイルを足すのが正しい修正。
+6. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に「っす」体の英語(`...Right, sorry. My call went too far.`)と、ト書き37行の現在形・括弧内書式は語感の当たりを見てもらいたい。
+
+---
+
 ## 🌐 Stage B P5-2b — セリフ英訳バッチ②(タッグ系784行)（2026-09-03・Opus主筆 worktree agent-a0c21cc7ec9fe0691）
 
 P5-2aに続く量産翻訳の第2バッチ。**`tag-battle-lines.js` 由来の全13テーブル784行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+P5-2aの訳語判断。開始前にworktreeブランチをmain先端(d1c56b3)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は一度も実行していない**(P5-2aが書いた380件のcellを守るため)。
