@@ -27318,17 +27318,24 @@ Engine.contract = {
   },
 
   // ── セリフ選択 ───────────────────────────────────────────────────────────
-  selectDialogue(rng, fighter, phase, context) {
+  // i18n Stage B: 第5引数 dict は任意の「辞書参照関数」(text => text の形。
+  // specs/i18n-runtime-spec-v1.0.md §6のdict-optsパターン)。ホスト文はプレースホルダ
+  // ({tenure}{record}{rivalry}{tenure_farewell}{wins}{losses}{n}{rivalName})を
+  // 置換する**前**にdictへ通す(断片側は _toneFragment が同じdictを断片ごとに通す)。
+  // dict省略時は恒等関数=JA原文のまま(既存呼び出しは無改修でJA不変)。
+  selectDialogue(rng, fighter, phase, context, dict) {
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return '';
     const pool = CONTRACT_NEGOTIATION_LINES[phase];
     if (!pool) return '';
     const lines = getDialoguePool(pool, fighter);
-    let text = lines[Engine.rng.int(rng, 0, lines.length - 1)];
+    const T = (typeof dict === 'function') ? dict : (s) => s;
+    const raw = lines[Engine.rng.int(rng, 0, lines.length - 1)];
+    let text = raw ? String(T(raw)) : '';
     // コンテキスト差し込み
-    text = Engine.contract._insertTenure(text, context, fighter);
-    text = Engine.contract._insertRecord(text, context, fighter);
-    text = Engine.contract._insertRivalry(text, context, fighter);
-    text = Engine.contract._insertTenureFarewell(text, context, fighter);
+    text = Engine.contract._insertTenure(text, context, fighter, dict);
+    text = Engine.contract._insertRecord(text, context, fighter, dict);
+    text = Engine.contract._insertRivalry(text, context, fighter, dict);
+    text = Engine.contract._insertTenureFarewell(text, context, fighter, dict);
     text = text.replace(/\{wins\}/g, String(context.wins || 0));
     text = text.replace(/\{losses\}/g, String(context.losses || 0));
     text = text.replace(/\{n\}/g, String(context.tenureSeasons || 1));
@@ -27345,18 +27352,23 @@ Engine.contract = {
 
   // 差し込み断片も選手本人の発言なので、口調(archetype)で引き分ける。
   // 断片だけ口調が揃っていないと「お嬢様がヤンキー語を挟む」状態になる(2026-08-01)。
-  _toneFragment(block, fighter) {
+  // i18n Stage B: 第3引数 dict は selectDialogue と同じdict-optsパターン。選ばれた断片
+  // (プレースホルダ {n}/{rivalName} を含みうる)を、呼び出し元(_insertTenure等)が行う
+  // 置換より前にdictへ通す。dict省略時は恒等関数=JA原文のまま。
+  _toneFragment(block, fighter, dict) {
     if (block == null) return '';
-    if (typeof block === 'string') return block;
+    const T = (typeof dict === 'function') ? dict : (s) => s;
+    if (typeof block === 'string') return block ? String(T(block)) : '';
     const a = (fighter && fighter.archetype) || 'standard';
-    return block[a] || block.standard || '';
+    const frag = block[a] || block.standard || '';
+    return frag ? String(T(frag)) : '';
   },
 
-  _insertTenure(text, ctx, fighter) {
+  _insertTenure(text, ctx, fighter, dict) {
     if (!text.includes('{tenure}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure\}/g, '');
     const t = CONTRACT_NEGOTIATION_LINES.tenure;
-    const pick = (b) => Engine.contract._toneFragment(b, fighter);
+    const pick = (b) => Engine.contract._toneFragment(b, fighter, dict);
     const n = ctx.tenureSeasons || 1;
     let insert = '';
     if (ctx.isFounder && t.founder) insert = pick(t.founder);
@@ -27366,29 +27378,29 @@ Engine.contract = {
     return text.replace(/\{tenure\}/g, insert);
   },
 
-  _insertRecord(text, ctx, fighter) {
+  _insertRecord(text, ctx, fighter, dict) {
     if (!text.includes('{record}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{record\}/g, '');
     const r = CONTRACT_NEGOTIATION_LINES.record;
-    const insert = Engine.contract._toneFragment(r[ctx.record] || r.developing || r.good, fighter);
+    const insert = Engine.contract._toneFragment(r[ctx.record] || r.developing || r.good, fighter, dict);
     return text.replace(/\{record\}/g, insert);
   },
 
-  _insertRivalry(text, ctx, fighter) {
+  _insertRivalry(text, ctx, fighter, dict) {
     if (!text.includes('{rivalry}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{rivalry\}/g, '');
     const r = CONTRACT_NEGOTIATION_LINES.rivalry;
     const insert = ctx.rivalName
-      ? Engine.contract._toneFragment(r.has_rival, fighter).replace(/\{rivalName\}/g, ctx.rivalName)
-      : Engine.contract._toneFragment(r.no_rival, fighter);
+      ? Engine.contract._toneFragment(r.has_rival, fighter, dict).replace(/\{rivalName\}/g, ctx.rivalName)
+      : Engine.contract._toneFragment(r.no_rival, fighter, dict);
     return text.replace(/\{rivalry\}/g, insert);
   },
 
-  _insertTenureFarewell(text, ctx, fighter) {
+  _insertTenureFarewell(text, ctx, fighter, dict) {
     if (!text.includes('{tenure_farewell}')) return text;
     if (typeof CONTRACT_NEGOTIATION_LINES === 'undefined') return text.replace(/\{tenure_farewell\}/g, '');
     const t = CONTRACT_NEGOTIATION_LINES.tenure_farewell;
-    const pick = (b) => Engine.contract._toneFragment(b, fighter);
+    const pick = (b) => Engine.contract._toneFragment(b, fighter, dict);
     const n = ctx.tenureSeasons || 1;
     let insert = '';
     if (ctx.isFounder && t.founder) insert = pick(t.founder);
@@ -27400,7 +27412,10 @@ Engine.contract = {
   // ── 交渉解決（v2.0 §6）──────────────────────────────────────────────────
   // choiceIdx: 0=A(受ける/引留), 1=B(交渉/理由を聞く), 2=C(拒否/送り出す)
   // subChoice: 'retain'|'release' (Bの理由を聞く後のサブ選択, 移籍志願のみ)
-  resolveNegotiation(rng, state, neg, choiceIdx, subChoice) {
+  // i18n Stage B: 第6引数 dict は selectDialogue と同じdict-optsパターン。内部で
+  // 生成する reactionDialogue へそのまま転送する(resolveNegotiation自身はEngine純粋関数の
+  // まま — WM_I18Nを直接参照しない。呼び出し元がWM_I18N.tを渡す)。dict省略時はJA不変。
+  resolveNegotiation(rng, state, neg, choiceIdx, subChoice, dict) {
     let s = { ...state };
 
     // §6.3: 突発退団 — 選択肢なし、即退団
@@ -27415,7 +27430,7 @@ Engine.contract = {
       let moraleDelta = ctx.isFounder ? -8 : (seasons >= 4 ? -5 : -3);
       if (s.roster.some(c => c.id !== f.id && Traits.has(c, '人望'))) moraleDelta = Math.ceil(moraleDelta / 2);
       s = { ...s, lockerRoomMorale: Engine.util.clamp((s.lockerRoomMorale || 50) + moraleDelta, 0, 100) };
-      const reactionDialogue = Engine.contract.selectDialogue(rng, neg, 'sudden_departure', ctx);
+      const reactionDialogue = Engine.contract.selectDialogue(rng, neg, 'sudden_departure', ctx, dict);
       return {
         state: s,
         result: {
@@ -27602,7 +27617,7 @@ Engine.contract = {
       s = { ...s, lockerRoomMorale: newMorale };
     }
 
-    const reactionDialogue = Engine.contract.selectDialogue(rng, neg, reactionPhase, ctx);
+    const reactionDialogue = Engine.contract.selectDialogue(rng, neg, reactionPhase, ctx, dict);
 
     return {
       state: s,

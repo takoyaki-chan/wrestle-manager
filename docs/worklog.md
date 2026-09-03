@@ -1,5 +1,55 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2d残課題 — Engine.contract.selectDialogueをdict-opts化(交渉PH入り270行の表示到達)（2026-09-03・worktree agent-aa5a5899f2e4ac834）
+
+P5-2d(worklog上記1件下)が残していた既知の限界を根治した。`Engine.contract.selectDialogue`(management.js)は選ばれたテンプレの`{tenure}{record}{rivalry}{tenure_farewell}{wins}{losses}{n}{rivalName}`を**返す前に置換**するため、表示側の外側`WM_I18N.t()`が完成文と辞書キー(未置換の原文)の不一致でfail-openし、PH入り270行がENでもJAのままだった。P5基盤修正(worklog上記2件下、c0dd19e)でfactions.js/tag-battle-lines.jsの7関数に適用したのと同じdict-optsパターン(specs/i18n-runtime-spec-v1.0.md §6)を適用した。開始前にworktreeブランチをmain先端(7d121fd)へfast-forward済み。
+
+### 1. dict-opts化した関数(management.js)
+
+- `Engine.contract.selectDialogue(rng, fighter, phase, context, dict)` — 第5引数`dict`追加。プールから選んだホスト文を、`_insertTenure/_insertRecord/_insertRivalry/_insertTenureFarewell`による断片差し込みより**前**にdictへ通す。
+- `Engine.contract._toneFragment(block, fighter, dict)` — 差し込み断片(tenure/record/rivalry/tenure_farewell、計76行)の共通選択ヘルパー。選んだ断片(`{n}`/`{rivalName}`を含みうる)を、呼び出し元が行う置換より**前**にdictへ通す。4つの`_insertXxx`はいずれも`dict`を素通しするだけで済んだ(断片の翻訳は全て`_toneFragment`に集約されているため)。
+- `Engine.contract.resolveNegotiation(rng, state, neg, choiceIdx, subChoice, dict)` — 第6引数`dict`追加。内部2箇所(sudden_departure分岐/通常分岐)の`selectDialogue`呼び出しへ`dict`をそのまま転送する。resolveNegotiation自身はEngine純粋関数のままでWM_I18Nを直接参照しない(架構原則1「Engineは WM_I18N を呼ばない」を維持)。
+- dict省略時はいずれも恒等関数(JA原文のまま)。既存呼び出し(auto-sim/ja-golden/dev-tools.js)は無改修でJA不変。
+
+### 2. 呼び出し元の全数(grepで洗い出し・全数配線)
+
+`Engine.contract.selectDialogue`直呼び出し4箇所:
+- `management.js:27418`(resolveNegotiation内、sudden_departure分岐) → `resolveNegotiation`の`dict`引数をそのまま転送
+- `management.js:27605`(resolveNegotiation内、通常分岐) → 同上
+- `ui-common.js:16739`(showContractNegotiationModal、開幕セリフ) → `WM_I18N.t`を配線
+- `ui-common.js:16902`(showContractSuddenDepartureModal、突発退団) → `WM_I18N.t`を配線
+
+`Engine.contract.resolveNegotiation`呼び出し4箇所(上記2つのselectDialogueへdictを流す経路。表示に使うreactionDialogueを持つ3箇所はWM_I18N.tを配線、discardする1箇所は据え置き):
+- `app.js:5997`(突発退団の確定コールバック) → `WM_I18N.t`を配線(reactionDialogueはこの経路では未使用だが、将来の表示追加に備え一貫させた)
+- `app.js:6069`(_resolveContractChoice、通常解決) → `WM_I18N.t`を配線。showContractReactionModal/showContractListenModalへ渡るreactionDialogueが対象
+- `app.js:6077`(_resolveContractChoice、理由を聞く後のサブ選択解決) → `WM_I18N.t`を配線
+- `dev-tools.js:222`(交渉一括スキップの開発ツール) → **未配線のまま据え置き**。`.state`のみ使い`reactionDialogue`を捨てるため表示に影響しない(dict省略=JA不変のデフォルト動作に委ねた)
+
+表示側(`_negSpeakerHtml`→`_u3bSideHtml`)は元々内部で`WM_I18N.t(o.line)`を呼ぶ共通レンダラのため、`dialogue`/`reactionDialogue`をそのまま渡す既存コードは変更不要(渡す文字列が既に英訳済みになった場合の二重t()はfail-openで無害。P5基盤修正と同型)。
+
+### 3. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check` (management.js/ui-common.js/app.js) | 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/auto-sim.js 40 42` | ✅ ALL CLEAR(violations 0, errors 0, game overs 0。台帳検査3種も違反0) |
+| `npm run test:ui:walkthrough` | ✅ PASS(actions=328, issues=0, recovered-by-retry=0, duration=190.75s)。契約交渉フロー(`#contractStartBtn`〜`#contractResultOk`)を実際に通過 |
+| scratchpad vm検証(実i18n.js+生成辞書3本+management.js) | ✅ 同一rngシードで新旧を前後比較。**PH入り(旧=JA固着fail-open→新=完全英訳)行を12件確認**(要求10件達成)。raise_open/transfer_open/transfer_listen/decline_voluntary_open/transfer_releaseの5フェーズ×複数archetypeで再現。代表例: JA「社長、はっきり言わせてもらいます。もう5年になるんですね……。この給料はナメてます。自分なりに結果は出してきたつもりです。正当な評価をしてほしい。それだけです。」→EN「Boss, I'll be blunt. It's been 5 years already... This salary is an insult. I believe I've produced results in my own way. Pay me what I'm worth. That's all.」 |
+
+### 4. 触ったファイル
+
+- `src/management.js` — selectDialogue/_toneFragment/_insertTenure/_insertRecord/_insertRivalry/_insertTenureFarewell/resolveNegotiationのdict-opts化
+- `src/ui-common.js` — selectDialogue直呼び出し2箇所にWM_I18N.tを配線
+- `src/app.js` — resolveNegotiation呼び出し3箇所にWM_I18N.tを配線
+- `i18n/dialogue-ledger.json`・`src/lang-en-dialogue.js`は**指示どおり無改修**(既存の翻訳データをそのまま使うだけの配線修正のため)
+
+### 5. 残課題
+
+- `VOLUNTARY_STAY_LINES`(34行・未訳)は指示どおり対象外(次の翻訳バッチの領分)
+- `dev-tools.js:222`の交渉一括スキップは`dict`未配線のまま(表示に使われないため実害なし。将来この経路の戻り値を表示に使う変更が入る場合は配線を追加すること)
+
 ## 🌐 Stage B P5-2d — セリフ英訳バッチ④(契約更改1,061行)（2026-09-03・Opus主筆 worktree agent-a290dd6b68f120ea4）
 
 量産翻訳の第4バッチ。**`data.js:CONTRACT_NEGOTIATION_LINES` 由来の全1,061行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a/2b/2cの訳語判断(特に2cの対社長・Boss/Presidentの書き分けを継承)。開始前にworktreeブランチをmain先端(b18a4f0)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は実行していない**(基盤修正でen/cell保全マージが入り安全にはなったが、検証の変数を増やさないため)。

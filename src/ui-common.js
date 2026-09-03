@@ -16736,7 +16736,10 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
     : isDecline
       ? (isVoluntaryDecline ? 'decline_voluntary_open' : 'decline_open')
       : 'raise_open';
-  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, neg.context);
+  // i18n Stage B: selectDialogueはdict-opts化済み(specs/i18n-runtime-spec-v1.0.md §6)。
+  // プレースホルダ置換前のテンプレを翻訳させるためWM_I18N.tを渡す(戻り値は_negSpeakerHtml
+  // →_u3bSideHtmlへそのまま渡り、_u3bSideHtml内部のt()は既に訳文のためfail-openで無害)。
+  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, neg.context, WM_I18N.t);
   const retentionRaise = isTransfer && fighter
     ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state)
     : 0;
@@ -16899,7 +16902,9 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
   if (!el) { if (onDone) onDone(); return; }
 
   const dialogueRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xC0E7, neg.fighterId, 1));
-  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', neg.context);
+  // i18n Stage B: selectDialogueはdict-opts化済み(§6)。WM_I18N.tを渡し、プレースホルダ
+  // 置換前のテンプレを翻訳させる(戻り値をt()で包み直さない)。
+  const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', neg.context, WM_I18N.t);
   const wallHtml = _negSpeakerHtml(neg, dialogue, 'neg-badge-sudden', WM_I18N.t('⚡ 突発退団'));
 
   const deskHtml = `
