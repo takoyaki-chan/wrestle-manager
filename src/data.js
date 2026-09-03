@@ -3847,9 +3847,13 @@ const INJURY_LABEL = {
   '重傷': '重傷',
   '練習負傷': '練習中の負傷',
 };
-function injuryLabel(type) {
+// i18n Stage B P4-4: 第2引数dictは任意の「辞書参照関数」(text => text)。
+// Engineから呼ぶ場合は呼び出し元(newspaper.generate等)から糸通しされたdictを渡す。
+// UI層から呼ぶ場合はWM_I18N.tを直接渡してよい。省略時はJA原文のまま(既存呼び出し元は無改修で不変)。
+function injuryLabel(type, dict) {
   if (!type) return '';
-  return INJURY_LABEL[type] || String(type);
+  const label = INJURY_LABEL[type] || String(type);
+  return (typeof dict === 'function') ? dict(label) : label;
 }
 // badge など幅の狭い場所用の短い呼び名（「中程度の負傷」が入らない枠で使う）
 const INJURY_LABEL_SHORT = {
@@ -30873,7 +30877,14 @@ function gameLogEntryText(entry) {
   if (tpl == null) return '';
   const resolved = (typeof tpl === 'object') ? tpl[entry.data && entry.data.variant] : tpl;
   if (typeof resolved !== 'string') return '';
-  return fillTemplateVars(_gameLogT(resolved), entry.data || {});
+  // i18n Stage B P4-4: venue_heat_crowdのcrowdLabelはFILL_PRESSURE_BANDS(management.js)の
+  // JA固定文字列がそのまま値として渡ってくる「成形済み値」の生成元。テンプレ本文だけ
+  // _gameLogT()を通しても、この値自体は素通りなので日本語のまま残ってしまう。
+  let data = entry.data;
+  if (entry.type === 'venue_heat_crowd' && data && data.crowdLabel) {
+    data = { ...data, crowdLabel: _gameLogT(data.crowdLabel) };
+  }
+  return fillTemplateVars(_gameLogT(resolved), data || {});
 }
 
 // D-G3: gameLogのUI分類フィルタ用。typeの族→カテゴリキー配列('show'|'finance'|'event'|'season'の

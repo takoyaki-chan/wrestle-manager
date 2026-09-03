@@ -40,6 +40,26 @@
     "hasProperNoun": false
   },
   {
+    "key": " / スカウト割引 {pct}%",
+    "en": " / Scout discount {pct}%",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": " / スカウト網割引{pct}%",
+    "en": " / Scout network discount {pct}%",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": " / ライバル {n}件",
     "en": " / {n} rivals",
     "files": [
@@ -1151,6 +1171,16 @@
     "en": "Auto booking sorts by OVR and puts your strongest wrestler last, as captain.",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV GRAND FINAL",
+    "en": "PPV GRAND FINAL",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -3432,6 +3462,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{orgName}王座",
+    "en": "{orgName} Championship",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org} が獲得",
     "en": "{org} takes it",
     "files": [
@@ -3936,6 +3976,16 @@
     "en": "{winner} beat {loser}. The spark inside {faction} was settled in the ring.",
     "files": [
       "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{wins}勝",
+    "en": "{wins} wins",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9354,6 +9404,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "デビュー",
+    "en": "Debut",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "データの読み込みに失敗しました。ファイルが破損している可能性があります。",
     "en": "Failed to load the data. The file may be corrupted.",
     "files": [
@@ -10854,6 +10914,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "一方的な展開",
+    "en": "One-Sided Bout",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "一旦リセット",
     "en": "Reset for now",
     "files": [
@@ -11432,6 +11502,26 @@
     "en": "Set as Center",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "中盤",
+    "en": "the middle",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "中程度の負傷",
+    "en": "Moderate injury",
+    "files": [
+      "data.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12511,6 +12601,16 @@
     "en": "The other promotions' picks go ahead as they are.",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "他団体の興行",
+    "en": "Another Promotion's Show",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14099,6 +14199,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "前回覇者の{name}にも、4年越しの連覇を期待する声がある。",
+    "en": "There is talk that {name}, the previous champion, could win it again after four years.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前回覇者の{name}も出場圏内に入り、連覇への期待が高まる。",
+    "en": "{name}, the previous champion, has also made the field, and hopes for a repeat are rising.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "前年 {rank}位",
     "en": "#{rank} last year",
     "files": [
@@ -14321,6 +14441,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "勝ち越し",
+    "en": "Win",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "勝ち越しボーナス +15PT",
     "en": "Winning-record bonus +15PT",
     "files": [
@@ -14364,6 +14494,16 @@
   {
     "key": "勝利団体",
     "en": "Winning promotion",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "勝利！",
+    "en": "Win!",
     "files": [
       "ui-common.js"
     ],
@@ -15055,6 +15195,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "名勝負",
+    "en": "Instant Classic",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "周囲の数名が自然と集まっているようです。",
     "en": "A few of the others seem to be drifting together.",
     "files": [
@@ -15655,6 +15805,26 @@
     "en": "Promotion champion · successful defense",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体記録に王手をかけた。",
+    "en": "Closed in on the promotion record.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体記録を塗り替えた。",
+    "en": "Rewrote the promotion record.",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16304,6 +16474,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "好勝負",
+    "en": "Strong Bout",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "好敵手 — 絆・因縁 ともに上昇(相互)",
     "en": "Worthy rivals — bond and grudge both rise (mutual)",
     "files": [
@@ -16482,6 +16662,16 @@
     "en": "ATTENDANCE",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "客席が沸き返る超満員",
+    "en": "Sold out, crowd roaring",
+    "files": [
+      "data.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17367,6 +17557,16 @@
     "en": "Ranking Match · Defended",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "序盤",
+    "en": "the opening",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18391,6 +18591,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "押し寄せる大盛況",
+    "en": "Crowd surging in, big turnout",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "担当: {n}/{max}名",
     "en": "Assigned: {n}/{max}",
     "files": [
@@ -19125,6 +19335,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "敗北…",
+    "en": "Loss...",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "敗北はランクにも影響します。",
     "en": "A loss affects her rank as well.",
     "files": [
@@ -19139,6 +19359,16 @@
     "en": "Beaten",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "敗戦",
+    "en": "Loss",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20851,6 +21081,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "歴代に残る一戦",
+    "en": "an all-time classic",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "歴代優勝",
     "en": "All-Time Winners",
     "files": [
@@ -21268,6 +21508,16 @@
     "en": "Advances to the final",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決勝より前に、この大会の頂は一度現れていた。",
+    "en": "This tournament's peak had already come once, before the final was even fought.",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -22369,6 +22619,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "熱戦",
+    "en": "Hot Battle",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "燻り続ける",
     "en": "Still smoldering",
     "files": [
@@ -23053,6 +23313,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "白星",
+    "en": "Win",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "目標:",
     "en": "Goal:",
     "files": [
@@ -23416,6 +23686,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "秋の勝ち残り対抗戦",
+    "en": "Autumn Gauntlet War",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "秋の総力戦、決着",
     "en": "The Autumn War Is Settled",
     "files": [
@@ -23541,6 +23821,16 @@
     "en": "Vacant",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "空席が目立つ客入り",
+    "en": "Noticeably empty seats",
+    "files": [
+      "data.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -24040,6 +24330,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "第{season}年度・第{week}週",
+    "en": "Year {season}, Week {week}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "第{slot}代表 {f1} & {f2}",
     "en": "Team {slot}: {f1} & {f2}",
     "files": [
@@ -24325,6 +24625,16 @@
     "en": "How It Ended",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "終盤",
+    "en": "the closing stretch",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -24833,6 +25143,16 @@
     "en": "An Accident in Practice",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習中の負傷",
+    "en": "Training injury",
+    "files": [
+      "data.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -25611,6 +25931,16 @@
       "ui-common.js"
     ],
     "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "見応えある一戦",
+    "en": "Solid Bout",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -26680,6 +27010,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "軽傷",
+    "en": "Minor injury",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "辞退",
     "en": "DECLINED",
     "files": [
@@ -27656,6 +27996,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "重傷",
+    "en": "Severe injury",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "重点",
     "en": "Focus",
     "files": [
@@ -27730,6 +28080,16 @@
     "en": "Dragging On",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "長期戦の末",
+    "en": "a long grind",
+    "files": [
+      "management.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -27875,6 +28235,16 @@
       "ui-render.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "閑古鳥の会場",
+    "en": "Near-empty house",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -28354,6 +28724,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "頂点を決める一番が、そのまま大会の白眉となった。",
+    "en": "The match that crowned the champion was also the best of the tournament.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "頂点到達",
     "en": "Reached the Top",
     "files": [
@@ -28443,6 +28823,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "黒星",
+    "en": "Loss",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {

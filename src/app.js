@@ -5351,7 +5351,7 @@ const App = {
     const newRoster = [...G.roster, c];
     const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
     const scoutDisc = Engine.scout.getScoutDiscount(G.orgPop || 0);
-    const log = [...G.gameLog, { type: 'fighter_signed', data: { name: c.name, cost: finalCost, tierLabel: tierCfg.label, scoutDiscSuffix: scoutDisc > 0 ? ` / スカウト網割引${scoutDisc}%` : '' }, s: G.season, w: G.week }];
+    const log = [...G.gameLog, { type: 'fighter_signed', data: { name: c.name, cost: finalCost, tierLabel: WM_I18N.t(tierCfg.label), scoutDiscSuffix: scoutDisc > 0 ? WM_I18N.t(' / スカウト網割引{pct}%', { pct: scoutDisc }) : '' }, s: G.season, w: G.week }];
     if (titleMsg) log.push(titleMsg);
     // v1.9: 逸材特別交渉枠の消費
     const eliteTicketUpdate = usedEliteTicket ? { eliteTicket: false, eliteTicketUsed: true } : {};
@@ -5528,7 +5528,7 @@ const App = {
       const newFA = G.freeAgents.filter((_, i) => i !== idx);
       const newRoster = [...G.roster, normalized];
       const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-      const log = [...G.gameLog, { type: 'fighter_signed_overflow', data: { name: normalized.name, cost: pending.cost, tierLabel: tierCfg.label, scoutDiscSuffix: scoutDisc > 0 ? ` / スカウト割引 ${scoutDisc}%` : '' }, s: G.season, w: G.week }];
+      const log = [...G.gameLog, { type: 'fighter_signed_overflow', data: { name: normalized.name, cost: pending.cost, tierLabel: WM_I18N.t(tierCfg.label), scoutDiscSuffix: scoutDisc > 0 ? WM_I18N.t(' / スカウト割引 {pct}%', { pct: scoutDisc }) : '' }, s: G.season, w: G.week }];
       if (titleMsg) log.push(titleMsg);
       if (usedEliteTicket) log.push({ type: 'elite_ticket_used', data: {}, s: G.season, w: G.week });
       G = { ...G, funds: G.funds - pending.cost, freeAgents: newFA, roster: newRoster, titles, gameLog: log, eliteTicket: usedEliteTicket ? false : G.eliteTicket, eliteTicketUsed: usedEliteTicket ? true : G.eliteTicketUsed };
@@ -5554,7 +5554,7 @@ const App = {
       if (!picks.includes(pending.fighterId)) picks.push(pending.fighterId);
       const newRoster = [...G.roster, normalizedSigned];
       const { titles, msg: titleMsg } = Engine.title.validateChampion({ ...G, roster: newRoster });
-      const log = [...G.gameLog, { type: 'scout_signed', data: { name: normalizedSigned.name, tierLabel: tierCfg.label, cost: pending.cost }, s: G.season, w: G.week }];
+      const log = [...G.gameLog, { type: 'scout_signed', data: { name: normalizedSigned.name, tierLabel: WM_I18N.t(tierCfg.label), cost: pending.cost }, s: G.season, w: G.week }];
       if (titleMsg) log.push(titleMsg);
       G = { ...G, roster: newRoster, scoutCandidates: candidates, scoutPicks: picks, funds: G.funds - pending.cost, titles, gameLog: log };
       signedFighter = normalizedSigned;
@@ -5687,7 +5687,7 @@ const App = {
       newFunds -= result.cost;
       picks.push(candidateId);
       candidates = candidates.filter(c => c.id !== candidateId);
-      log.push({ type: 'scout_acquired', data: { name: cand.name, tierLabel: tierCfg.label, cost: result.cost }, s: G.season, w: G.week });
+      log.push({ type: 'scout_acquired', data: { name: cand.name, tierLabel: WM_I18N.t(tierCfg.label), cost: result.cost }, s: G.season, w: G.week });
       const signingContext = (choice === 'direct') ? 'direct'
         : (choice === 'pay' || choice === 'gamble') ? 'competition_won'
         : 'direct';
@@ -14676,7 +14676,7 @@ const App = {
     if (result.error === 'already_requested') { showToast(WM_I18N.t('今期はもう秘書に頼んでいます')); return; }
     if (result.error) { showToast(WM_I18N.t('この依頼は出せませんでした')); return; }
     G = { ...G, coachRequest: result.coachRequest };
-    const wanted = Engine.shachoshitsu.formatCoachRequest(result.coachRequest);
+    const wanted = Engine.shachoshitsu.formatCoachRequest(result.coachRequest, WM_I18N.t);
     G = { ...G, gameLog: [...(G.gameLog || []), { type: 'secretary_request_sent', data: { wanted }, s: G.season, w: G.week }] };
     showToast(WM_I18N.t('{wanted}を探すよう秘書に頼んだ。次の顔ぶれの入れ替わりで返事が来る', { wanted }));
     Storage.autoSave();
