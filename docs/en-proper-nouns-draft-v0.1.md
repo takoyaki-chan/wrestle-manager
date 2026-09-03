@@ -443,3 +443,7 @@
 |---|---|---|
 | 柔の白銀(白銀麗子の異名) | Shirogane the Supple | 「剛の芝」= Shiba the Strong と対の造語 |
 | ギャル3人衆 | the gyaru trio | gyaruは英語圏プロレス/サブカル文脈で通用 |
+
+## 用語規約追記(P5-2f・Fable批准)
+
+- セリフ中の**ベルト=belt**(物として持つ・返す文脈)/**王座=title**(地位・抽象)。地の文・ナレーションはtitle基調(既存lang-en.jsと整合)
