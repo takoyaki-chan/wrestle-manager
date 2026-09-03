@@ -1,5 +1,64 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 セリフ抽出器 `detectCellFromPath` のdocId語尾誤検出を根治（2026-09-04・worktree agent-a7fb838143ee9e063）
+
+P5-2hで発見・台帳側で手修正(8行)されていた抽出器のバグを、根本のアルゴリズムから直した。`docs/i18n-stage-a-p3a-design-v0.1.md`の該当積み残し項目に✅根治を追記。
+
+### 1. 機序
+
+`test/i18n-extract-dialogue.js` の `detectCellFromPath` は、各文字列の祖先オブジェクトキー列を根から末端まで辿り、**キー単体を無条件に**archetype/personality語彙へ照合していた。キーが `_` を含む場合は分解して全パーツを走査し、いずれかのパーツが語彙に一致すれば拾う仕様だったため、`CARE_REACTION_DIALOGUES.faction_decree_seal_quiet`(docId名。`faction`/`decree`/`seal`/`quiet`の4トークン複合語)の語尾 `quiet` を**personality: "quiet"** として誤って拾ってしまっていた。このブロックの実効軸は `_default`(性格側は無拘束)→archetype(`standard`/`composed`/`ojousama`/…)で、性格は本来nullが正しい。誤検出は8行(P5-2hで台帳側を手修正済み)。
+
+### 2. 修正内容
+
+軸判定を「単一キーの部分一致」から「**兄弟キー集合が丸ごとarchetype/personality語彙に一致するノードだけを軸とみなす**」方式へ再設計した。
+
+- `classifyAxisKey(key)` — キー単体を (a) archetype 7種いずれかに完全一致 / (b) personality 7種いずれかに完全一致 / (c) `_` でちょうど2トークンに分解でき、片方がarchetype・もう片方がpersonalityに完全一致(`archetype_personality`形式、または`bold_delinquent`のような逆順の実例もある)、のいずれかに分類する。4トークン以上に分解されるdocId名はどの条件にも一致せずnullになる(根治の要)
+- `walkStrings` の各ノードで、`_default` を除く直下キーが**1つ残らず** `classifyAxisKey` で非null分類できる場合に限り、そのノードを「軸として実際に分岐しているノード」とみなし、各キーの分類結果を軸(archetype/personality)へ反映して子へ渡す。1つでも分類できない兄弟キー(docId等)が混じっていたら、そのノードのキーはどれも軸に反映しない(docId階層を軸判定から丸ごと除外)
+- `_default` はキー集合の分類にもcontributionにも参加しない(選ばれても軸は変化しない=無拘束のまま保たれる)
+- ID軸(charId)フォールバックは `resolveCell` として温存(ロジック不変)。ID軸ノードはvocab軸ノードと排他扱い(charId集合がarchetype/personality語彙と衝突することは実データ上ない安全策として明示)
+
+### 3. 検証(scratchpad)
+
+**実データ全数調査**(`test/i18n-extract-dialogue.js` の関数を抜き出し、DIALOGUE_FILES全142テーブルの全ノードを機械分類): 兄弟キー集合が「archetype」「personality」「compound」「other」のいずれか単一種別にきれいに分かれ、`other`(docId等)が実軸キーと混在するノードは**0件**。複合種別が混在するのは `FACTION_F05_DISSIDENT_LINES.standard`(`bold_delinquent: []` という空配列の予約キーがpersonality帯に同居する1ノードのみ・値が空なので実害なし)だけであることを確認した。
+
+**scratchpadでの2段階diff検証**(台帳本体・src配下は一切変更していない):
+
+1. **実運用相当の確認**(現行台帳16,544件を控えとして保存 → 修正後の抽出器を実リポジトリに対して実行 → 差分ゼロを確認 → `git checkout` で台帳を原状復帰): `マージ: 既存台帳16544件 / en保持=8015 / cell保持=15599 / cell新規解決=0`。**現行台帳との差分はcell/en共に0件**(保持マージが既存の正しいcell/enを全て守るため、本番相当の再実行では非破壊)。実行後 `git diff i18n/dialogue-ledger.json` が0行であることを確認して復元
+2. **アルゴリズムの効果を純粋分離する追加検証**: 現行台帳の保持マージは既存の(手修正済み)cellをそのまま守ってしまうため単体では「直った証拠」にならない。そこで、修正前ロジック(`detectCellFromPath`)と修正後ロジック(`classifyAxisKey`+`resolveCell`)を**どちらも「既存台帳なし」の完全フレッシュ実行**(scratchpad出力・現リポジトリのsrc/を読み込み)にして直接diffした。結果: **cell差分は台帳16,544キー中ちょうど8件**、いずれも `data.js:CARE_REACTION_DIALOGUES`(`faction_decree_seal_quiet`)で、全件が `personality: "quiet"` の消失(`{archetype:X,personality:quiet}` → `{archetype:X}`)のみ。**P5-2hで手修正した8行と完全一致**、他に一切の意図しない変化なし(en欠損チェックも0)
+
+差分8件(すべて `data.js:CARE_REACTION_DIALOGUES`、修正前→修正後で `personality:quiet` が消えて `{archetype}` のみに):
+
+| archetype | JA原文 |
+|---|---|
+| standard | ……はい。心得ておきます |
+| standard | えっと……つまり、徒党を組むなということですか？ |
+| standard | そういう話、別に出ていなかったですけど…… |
+| composed | ……了解。そういう決まりなら、それで |
+| seductive | あら。ずいぶん用心深いのね |
+| delinquent | つるむなってこと？ 別にいいけどさ |
+| ojousama | まあ。そのようなお達しが出るとは思いませんでした |
+| polite | 承知しました。皆にも伝えておきます |
+
+(なお `faction_decree_seal_quiet.cool`「……わかった」は他テーブルとの同一原文共有でCONFLICT→null化しており、修正前後どちらでも null のまま=差分に出ない。設計どおりの正しい挙動)
+
+### 4. 触ったファイル
+
+- `test/i18n-extract-dialogue.js` — `detectCellFromPath`(旧)を `classifyAxisKey`+`resolveCell` へ再設計。`walkStrings` を pathSegments 蓄積方式から軸(archetype/personality)蓄積方式へ変更。呼び出し元(`record`・メインループ・skippedCandidates計算)のシグネチャを追随
+- `docs/i18n-stage-a-p3a-design-v0.1.md` — 該当積み残し項目に✅根治を追記
+- **`i18n/dialogue-ledger.json` / `src/lang-en-dialogue.js` / src配下は一切触っていない**(指示どおり並行翻訳エージェントの領分を侵さず)。本体への反映(修正後抽出器での実再抽出)は次回のFable判断で行う
+
+### 5. 検証結果まとめ
+
+| 検査 | 結果 |
+|---|---|
+| `node --check test/i18n-extract-dialogue.js` | ✅ OK |
+| `npm test` | ✅ 260 passed / 0 failed |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| scratchpad: 実台帳との差分(保持マージあり・実運用相当) | ✅ cell差分0・en差分0(実行後`git checkout`で台帳原状復帰・`git diff`0行を確認) |
+| scratchpad: フレッシュ実行での新旧ロジック純粋比較 | ✅ 差分ちょうど8件、全件P5-2h手修正済みの行と一致、他に意図しない変化0件 |
+
+---
+
 ## 🌐 Stage B P5-2h — セリフ英訳バッチ⑧(関係フラグ450行+ケア反応446行)（2026-09-03・Opus主筆 worktree agent-aff1b2870a9de93bc）
 
 量産翻訳の第8バッチ。**`flag-dialogue.js:FLAG_DIALOGUE` の全450行 + `data.js:CARE_REACTION_DIALOGUES` の446行 = 896行**(うち既訳4行は据え置きのため**新規記入892行**)を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2gの訳語判断(特に2cで確立した対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2eの悲壮度較正を継承)。開始前にworktreeブランチをmain先端(e680032)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
