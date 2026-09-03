@@ -1985,10 +1985,14 @@ function _flagPickArchetype(fighter) {
 }
 
 function _flagFormatLine(template, fighter, fighter2) {
-  let s = String(template || '');
-  if (fighter) s = s.replace(/\{name\}/g, fighter.name || '');
-  if (fighter2) s = s.replace(/\{name2\}/g, fighter2.name || '');
-  return s;
+  // i18n P5-2h残(2026-09-03): 置換前のテンプレでt()を引く(置換後ではEN辞書キーと不一致になり
+  // PH入り163行がfail-openしていた=selectDialogueと同型)。t()のparams経由なら名前辞書(PN_EN)の
+  // 自動変換も効く。ja時はapplyParamsの置換のみで従来と同一文字列。
+  const tpl = String(template || '');
+  const params = {};
+  if (fighter) params.name = fighter.name || '';
+  if (fighter2) params.name2 = fighter2.name || '';
+  return WM_I18N.t(tpl, params);
 }
 
 function _flagBuildPopupOpts(modal) {
