@@ -1,5 +1,73 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2d — セリフ英訳バッチ④(契約更改1,061行)（2026-09-03・Opus主筆 worktree agent-a290dd6b68f120ea4）
+
+量産翻訳の第4バッチ。**`data.js:CONTRACT_NEGOTIATION_LINES` 由来の全1,061行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a/2b/2cの訳語判断(特に2cの対社長・Boss/Presidentの書き分けを継承)。開始前にworktreeブランチをmain先端(b18a4f0)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は実行していない**(基盤修正でen/cell保全マージが入り安全にはなったが、検証の変数を増やさないため)。
+
+### 1. 対象範囲(1,061行・カテゴリ別)
+
+軸は `phase → archetype → personality`(差し込み断片のみ `group → archetype`)。全1,061行が CONTRACT_NEGOTIATION_LINES 専属(他テーブルとの共有行ゼロ)。
+
+| 群 | フェーズ | 行数 | うちPH入り |
+|---|---|---|---|
+| 昇給 | raise_open / raise_accept / raise_negotiate_accept / raise_negotiate_refuse / raise_refuse | 266 | 62 |
+| 移籍 | transfer_open / retain_success / retain_fail / release / listen | 272 | 168 |
+| 査定減 | decline_open / decline_voluntary_open / hold / accept / strict / voluntary_hold / voluntary_accept | 343 | 12 |
+| 突発退団 | sudden_departure | 104 | 0 |
+| 差し込み断片 | tenure 28 / record 27 / rivalry 7 / tenure_farewell 14 | 76 | 28 |
+| **計** | | **1,061** | **270** |
+
+セル判定は抽出器が既にほぼ全解決済み(archetype: standard 163 / cool 153 / delinquent 152 / ojousama 151 / polite 148 / seductive 147 / composed 146、null は1行のみ)。**null 1行**は `自分なりに結果は出してきたつもりです。` で、record.good の standard と polite が同一原文を共有するため判定不能が正しい。中立英語を当てた(P5-2a〜2cの方針継承)。**cell欄への追記は不要だった**(このバッチでは0件)。
+
+### 2. 差し込み断片の合成規則(このバッチ固有の設計)
+
+`{tenure}{record}{rivalry}{tenure_farewell}` は「文の途中に別の断片を差し込む」形式で、日本語は空白を持たないため素直な直訳では英語の語間が壊れる。以下の規則を立てて全訳した:
+
+- **断片EN = 先頭に半角スペース1つ + 完全な文**(末尾スペースなし)。空断片(`rivalry.no_rival` / `tenure_farewell.short`)は空のまま
+- **ホストEN = プレースホルダの直前にスペースを置かない / 直後に本文が続くならスペース1つ**
+- この対で「断片が空でも非空でも、隣接していても、行頭・行末にあっても」語間が常に正しくなる
+- 加えて **cool/composed 帯の断片からは行頭の `...` を落とした**(ホスト側の `...` と連続して `... ...` になるため)。ホスト側で `{ph}` 直後に `...` が来ていた5行も同様に整理した
+
+`test/` には入れていないが、scratchpad で **ホスト×7属性×tenure4群×record4群×rivalry有無×tenure_farewell3群 = 162,624通り**を機械合成し、二重空白/空白欠落/前後空白/未置換PH/二重省略記号がいずれも**0件**であることを確認した。
+
+### 3. 翻訳の方針
+
+- **この帯は「金額・条件・去就」の話**。§3-8 悲壮度較正が最重要で、**減俸は年次査定の温度**(`Assessment is pricing the facts.` / `A win is a win` 型の実務語彙)、**移籍は所属の変更**であって人生の破滅にしない。破滅語彙(ruined / destitute / my life is over)は全帯ゼロ
+- **卑屈語彙は全帯ゼロ**。JA側に「あたしなんか」「わたくしなど」型が数行あるが、`someone like me` / `one such as me` 程度に留め、自己卑下の増幅はしない
+- **社長の呼称(§6裁定4)**: Boss 157行 / President 59行。**丁寧・お嬢様帯は President、それ以外は Boss**、リズムが崩れる行は呼称を落とす(JAで 社長 を含むのは223行)
+- **属性=register**: ojousama=全151行で短縮形ゼロ(`I shall remain a while longer.`) / cool=断片・感嘆符ゼロ・3文以内(`...Right. ...By the numbers, then.`) / delinquent=「っす」体を**ぶっきらぼうだが従う**英語へ(`...Yeah... got it... ...Sorry for the weird ask...`) / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **フェーズごとの温度差**を英語で作り分けた。raise_negotiate_refuse(交渉決裂)=諦め+記憶の宣言 / raise_refuse(門前払い)=我慢の限界の予告 / decline_strict(ボーナス清算)=恨みではなく**冷えた記録**(`...I'll remember today, though.`) / decline_voluntary_*(自発的減俸)=**尊厳のある申し出**として書き、憐れみを拒む側に立たせた
+- **均質化回避**: 「ありがとうございます」系・「分かりました」系・「もう決めた」系が全体の約3割を占めるため、帯ごと・フェーズごとに英語を割り分けた。機械検査で**バッチ内EN完全重複0(1,061/1,061ユニーク)・既訳3,037行との完全重複0**、さらにトークン重複率0.85以上の**近似重複も0**(既訳との0.90以上も0)
+- **卑語**: hell/damn は**1,061行中0回**(社長対話帯で原文に荒い語がない)。f/sワードも0
+- **§4-6の翻訳調検査**: "It can't be helped"/"As expected of"/"I'll do my best"/「today's me」型/「〜も」のtoo直訳/ALL CAPS/英国綴り(favour/colour/realise/apologise/honour/practise/defence)/"darling"/"Fufu"音写 いずれも0件。「ふふ」は seductive で `Mm` に機能置換
+- **長さ**: 全1,061行が110字上限内(最大106字・中央値67字・EN/JA文字数比 1.96)。プレースホルダ完全一致(不一致0)。♪♡は原文21行に対し存置(♪17行・♡7行、両方を持つ行が3行)
+
+### 4. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,061行を記入(**diffは `"en":` 行のみ・1,061行の増減。他フィールドは1バイトも変えていない**)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。ソース・配線は**一切触っていない**
+
+### 5. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**4,098** / cell判定済み3,915 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+management.js)で**台帳1,061キーの直接t()は全ヒット・ミス0**。`selectDialogue()→t()` の全フェーズ×49セル走査で english 2,064 / JA fail-open 582(=PH入り行、§6-1)。セル横断20本を目視 |
+| 断片合成検査(scratchpad) | ✅ 162,624通りで空白・省略記号の欠陥0 |
+| 品質スイープ(翻訳調/英国綴り/ALL CAPS/完全重複/近似重複/余分な空白/PH一致/セル別検査) | ✅ 全項目0件 |
+
+### 6. 残課題
+
+1. **PH入り270行はENでもJAのまま**(P5-1の既知の限界と同型)。`Engine.contract.selectDialogue()`(management.js:27321)は `_insertTenure/_insertRecord/_insertRivalry/_insertTenureFarewell` と `{wins}{losses}{n}{rivalName}` の置換を**返す前に**済ませるため、`_u3bSideHtml`(ui-common.js:245)の `WM_I18N.t()` がキーと一致せずfail-openする。**PHを含まない791行は正しく届く**。根治は P5基盤修正で factions.js / tag-battle-lines.js に適用したのと同じ **dict-optsパラメータ化**(`specs/i18n-runtime-spec-v1.0.md` §6)を `selectDialogue` へ適用すること。断片側の英訳と合成規則は既にその日を想定して書いてある(§2)
+2. **`getVoluntaryStayLine`(VOLUNTARY_STAY_LINES)は本バッチの対象外**。同じ契約更改画面に出るが別テーブルのため、P5-2e以降で拾う
+3. `test/i18n-ratchet.js` の停止は **main の b18a4f0 で修復済み**(自動生成2ファイルを走査除外に追加)。本バッチでは再発していない
+
+---
+
 ## 🌐 Stage B P5-2c — セリフ英訳バッチ③(F07派閥動向1,162行)（2026-09-03・Opus主筆 worktree agent-a0411f2235192b910）
 
 量産翻訳の第3バッチ。**`data.js:F07_LINES` 由来の全1,162行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a/2bの訳語判断。開始前にworktreeブランチをmain先端(9c9d56a)へfast-forward済み。**指示どおり `node test/i18n-extract-dialogue.js` は一度も実行していない**(P5-2a/2bが書いた394件のcellを守るため)。
