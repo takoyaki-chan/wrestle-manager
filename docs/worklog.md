@@ -1,5 +1,93 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2g — セリフ英訳バッチ⑦(選択イベント601行+大型イベント468行)（2026-09-03・Opus主筆 worktree agent-ab10de7d9f87e2d98）
+
+量産翻訳の第7バッチ。**`data.js:CHOICE_EVENT_DIALOGUES` の全601行 + `data.js:LARGE_EVENT_DIALOGUES` の全468行 = 1,069行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2fの訳語判断(特に2cのF07で確立した対社長温度・Boss/Presidentの書き分け、2fのベルト=belt/王座=titleを継承)。開始前にworktreeブランチをmain先端(52de564)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
+
+### 1. 対象範囲(1,069行)
+
+**選択イベント 601行**(軸は `eventKey → archetype → personality`。`Engine.eventSystem.getChoiceDialogue` がイベント発火時に引く**選手からの申し入れの第一声**。社長の選択への反応ではない — それは別テーブル `CHOICE_EVENT_RESULT_DIALOGUES` 19行で本バッチ対象外)
+
+| キー | スロット | 状況 |
+|---|---|---|
+| `S1` / `S2` | 51 / 45 | タイトル挑戦の直訴 / 因縁相手との対戦要求 |
+| `S3` / `S5` / `S6` | 47 / 45 / 47 | 休養願い(condition≤40) / 特訓志願(trust70+) / 後輩指導の申し出 |
+| `S4_direct` / `S4_silent` | 48 / 44 | 不満・退団示唆(trust<25)。直言型と沈黙型(**ト書き主体**) |
+| `E1` / `E4` / `E6` | 59 / 12 / 48 | メディア出演オファー / スカウト情報 / 他団体からの引き抜き |
+| `S_boycott` / `S_grumble` / `S_sns` | 71 / 43 / 43 | 練習ボイコット(trust<38) / ロッカーの愚痴(**ト書き主体**) / SNS匂わせ(**ト書き主体**) |
+
+**大型イベント 468行**(軸は同じ。`getLargeEventDialogue` / B2のみ `getLargeEventDialogue2` が2人目を引く)
+
+| キー | スロット | 状況 |
+|---|---|---|
+| `B1` | 44 | 練習中の怪我 |
+| `B2_fighter1` / `B2_fighter2` | 47 / 47 | 選手間の深刻な対立。訴える側と、訴えられた側の言い分 |
+| `B4` | 47 | メディア密着取材 |
+| `B4_cm` / `B4_gravure` / `B4_variety` | 47 / 47 / 47 | タレント活動: CM出演 / グラビア撮影 / バラエティ出演 |
+| `B4_brand` / `B4_fashion` / `B4_fan` | 47 / 48 / 48 | ブランドコラボ / ファッションショー / ファンイベント |
+
+- スロット計1,072に対しユニーク1,069(**同一原文が2スロットに出る重複3件** — `…ベルトが欲しい。組んでくれ`=S1 cool bold/easygoing、`もっと強くなりたいの。特訓させてもらえる？`=S5 seductive bold/earnest、`…精一杯、頑張らせていただきます`=B4/B4_cm polite quiet)
+- **他テーブルとの共有6行**(`……すみません`/`……やる`/`…やります`/`…やる。見ていてくれ`/`…精一杯、頑張らせていただきます`/`緊張するけど…精一杯やるわ`)は、共有先(INTERNAL_CHALLENGE・CARE_REACTION・DOME_FIRSTSHOW・EVENT_FA_SIGNING/WELCOME・JUNIOR_TOURNAMENT・FACTION_F02)でも通る**中立英語**を当てた
+- 属性内訳: standard 190 / composed 172 / delinquent 167 / cool 165 / ojousama 140 / seductive 137 / polite 96 / null 2
+- 台帳の `cell` と実効テーブルの (archetype, personality) の突き合わせは**不一致0**(1,069件照合)
+
+### 2. cellの源泉導出(2行) — 台帳 `cell` 欄を追記
+
+抽出器が `cell=null` にした4行のうち、**同一原文が同じ archetype の2性格に出るだけで archetype は一意に決まる2行**をソースから導出して `cell` に書いた。P5-2b/2cの慣行に合わせ **personalityキーを持たない `{archetype}` 形**で記入:
+
+- `…ベルトが欲しい。組んでくれ` = `{archetype: "cool"}`(S1 cool bold/easygoing) — これで cool帯の感嘆符禁止・3文超禁止がこの行にも効く
+- `もっと強くなりたいの。特訓させてもらえる？` = `{archetype: "seductive"}`(S5 seductive bold/earnest)
+
+残る `cell=null` 2行(`……すみません`/`……やる`)は**他テーブルとの共有で archetype が割れる正しいnull**なので触っていない。
+
+### 3. 翻訳の方針
+
+- **選択イベントは「社長室で切り出す第一声」**。§3-4(対社長)を全帯で守り、完全文+緩衝表現を基調に、bold帯だけ断定・命令形を解禁した(`Hand over that belt! Book it, right now!`)。**卑屈語彙(「私なんか」型)は増幅しない** — `私なんかが` は `Someone like me` 程度に留め、自己否定にしていない
+- **12イベントごとに英語の「用件」を変えた**。S1=要求の直截さ / S2=相手を名指さずに指す(§3-7に従い原文どおり `her` `that one` で通し固有名詞ゼロ) / S3=**体調の申告**であって悲劇にしない / S5=向上心 / S6=継承の申し出 / E1=露出への欲 / E6=**去就の報告**(破滅語彙ゼロ・`leave` `an offer came in` の温度) / S4=不満の直言 / S_boycott=**「出してもらえない」への抗議**(拗ねではなく主張) / S_grumble・S_sns=本人の言葉ではなく**周囲が観測している状態**
+- **大型イベントは「ドラマの山場でも温度を上げない」**。最重要則1を優先し、原文にない絶叫・格言・大仰な比喩を足していない。B1(練習中の怪我)は**謝罪と復帰の意志**の2点に絞り、選手生命に関わる語彙(career-ending / finished as a wrestler)は**全帯ゼロ**。B2(選手間の対立)は**罵倒でなく申し立て**として書き、fighter1=限界の宣言 / fighter2=非の所在の押し返し、と立場で語彙を割った。B4系(取材・タレント活動)は**仕事のオファーへの反応**で、6活動それぞれの実務語彙(commercial / photo shoot / variety show / brand tie-in / runway / fan event)を芯にした
+- **ト書き137行**(S4_silent 42・S_grumble 36・S_sns 36・B2_fighter2 10・S_boycott 7・E6 4・S4_direct 2)は P5-2c で確立した堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**で統一(`... (hands clenched tight on her knees)`)。S_grumble/S_snsは原文が**引用符つきの三人称ナレーション**なので、括弧内に直接話法を入れる形にした(`(saying it out loud: "Why do we have to be treated like this?")`)
+- **社長の呼称(§6裁定4)**: この帯は**申し入れの相手が目の前にいる**ため二人称は自然に出るが、原文が `社長` を呼んでいる行はゼロなので**呼称を持つ行は0行**にした(Boss/President とも0)。P5-2c/2dの契約・派閥帯とは原文の性質が違う
+- **属性=register**: ojousama=全140行で**短縮形ゼロ**(`I shall go and collect it.` / `Are you truly certain it should be me...`) / cool=感嘆符ゼロ・3文以内(`...Book me against her.` / `...Nothing extra. I walk. That is all.`) / delinquent=冠詞主語の省略+gonna/wanna+「っす」体を**ぶっきらぼうだが従う**英語へ(`...Mm. Yeah, I'll do it.`) / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **§4-6のネイティブ検品ルール適用**: 「今日の私」型0 / 「〜も」のtoo直訳0(「プロレスもファッションも」= `Wrestling and fashion, both belong to me.`) / 文末の「かも」= `... I think.`型(`maybe`は文頭のみ) / 応援=support / カジュアル帯の文頭I省略・gonna可 / 1語大文字強調は使用機会なし(0件)
+- **均質化回避**: この帯は「同一モチーフ×7属性」が構造的に大量発生する(`もう限界かも`系6、`このままでいいのか`系7、`少し、不満がある`系6、`私なんかでいいんですか`系7×6活動、`緊張しますが頑張ります`系7×6活動、`○○に出るの！？`系7×6活動 ほか)。**全モチーフを属性ごとに別の英語へ割り分けた**。事前検査で検出した**完全重複2件・近似重複9件をすべて書き直し**、最終的に**バッチ内EN完全重複0・近似重複(トークンJaccard≥0.90)0・既訳6,054行との完全重複0・近似重複0**
+- **卑語**: hell/damn は**1,069行中4回**、すべて delinquent 確定セル(`Why the hell do we get treated like this?` / `Damn... my body's done.` / `Damn it... I can't be stuck here!` / `Damn it... sorry...!`)。standard帯の `くそっ` は `Ugh...` に落として検査を通した。f/sワードは0
+- **長さ**: 全1,069行が110字上限内(**最大87字・中央値51字**)。プレースホルダは原文・訳文とも0個。♪は12行・♡は11行に存置(いずれも原文と同数)
+
+### 4. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,069行を記入 + cell欄2行(**diffは `"en":` 行1,069本と `"cell": null`→`{archetype}` の2件のみ・1,075挿入/1,071削除。他フィールドは1バイトも変えていない** — 書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートしてから記入し、書き込み後に `git diff` で他フィールドの増減0を再確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- `docs/game-system-roadmap.md` — 英語対応の1行を更新(**ついでに直下にあった同項目の古い重複行1本を削除**。P5-2eの時点の内容がそのまま残っていた)
+- 他は worklog のみ。**ソース・配線は一切触っていない**
+
+### 5. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**7,123**(6,054→+1,069) / cell判定済み6,930 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ 直書き日本語の増加なし(files=31 / totalJaStrings=28089) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+data/management/relationships/factions)で**全1,072スロットの直接t()が未訳0**。さらに `getChoiceDialogue` を12型×49セル×60シード=**35,280回**、`getLargeEventDialogue`/`2` を9ケース×49セル×60シード=**26,460回**引いて**未訳0・`[i18n-miss]` 0件**。セル横断24本を目視 |
+| 品質スイープ(事前検査) | ✅ 網羅1,069/1,069・空訳0・日本語残り0・110字超0・PH不一致0・余分な空白0・`....`表記0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+| cell整合 | ✅ 台帳cellと実効テーブルの軸キーの**不一致0**(1,069件照合・null 2件はすべて正しいnull) |
+
+### 6. 表示経路の確認(両テーブルとも到達する)
+
+- **選択イベント601行は届く**。`showChoiceEventModal`(ui-common.js:9717)が `_mdlASubjectStage(fighter, stageBody, { speech: event.dialogue })` を通し、その内部(ui-common.js:596)で `WM_I18N.t()` を呼ぶ
+- **大型イベント468行も届く**。B1=`_buildB1Modal`(ui-common.js:14106)→`_u3bSideHtml`(245行のt()) / B2=`_buildB2Step1`(14155/14165)→`_mdlAFlowPortraitHtml`(13165行のt()) / B4=`app.js:13130`→`showEventPopup({speech})`→`_mdlASubjectStage`(596行のt())
+- **プレースホルダを含む行が両テーブルとも0**なので、P5-2dの `selectDialogue` 型のfail-open問題は起きない
+
+### 7. 残課題(このバッチで判明したものを含む)
+
+1. **`app.js:13128` のB4セリフ・フォールバックが直書きJAで辞書に無い**。`if (!dialogue) dialogue = '…精一杯やります';` の文字列は dialogue/ui/template のどの台帳にも入っておらず、発火すればENでもJAのまま出る。実際にはB4の全セルにセリフがあるので**現状は不発**だが、根治は (a) この文字列をUI台帳に登録するか (b) フォールバックを既存キーへ寄せるか。**ソースを触れない指示のため未修正**
+2. **JA原文側に「状況に噛み合っていない汎用フィラー行」が30本ある**(要裁定)。`seductive×emotional` 22本が `……っ……` の同型で、うち8本(S3/S4_direct/S5/S6/E1/E6/B2_fighter1/B2_fighter2)は**社長の問いかけへの返事**の形をしていて、選手が自分から切り出す第一声としては噛み合わない(例: S6=後輩指導の申し出なのに `決めたわ……っ……ふふ、これが私の答えよ……`、S5=特訓志願なのに `少し考えさせて……っ……`)。`polite×shy` も同型で8本(S3/S5/S6/E1/E6/B1/B2_fighter1/B2_fighter2。例: B1=練習中の怪我なのに `あ、あの…これから、頑張りたいことがあります…`、B2=対立の訴えなのに `お、お話を聞かせていただけますか…？`)。**翻訳は原文に忠実に当てた**(意味を補って直す判断は翻訳者の領分を超えるため)が、日本語として書き直す価値がある
+3. **`S2` / `S6` / `E4` は生成経路が無い**。`generateChoiceEvent`(management.js:24693)はこの3型を返さず(返すのは S4/S_boycott/S_grumble/S_sns/S3/E6/S1/S5/E1/E5 のみ)、`buildChoices` にも分岐が無い(`default` の「了解」1択に落ちる)。UI側には typeLabel も取次セリフも用意されている(ui-common.js:9665/9669/9673)のに、**セリフ104行(S2 45・S6 47・E4 12)が現状のゲームでは1行も出ない死蔵**。復活させるか削除するかは要裁定(P5-2bのTAG_MATCH_WIN/LOSSと同型の課題)
+4. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **ト書き124行**、とりわけ S_grumble/S_sns の「括弧内に直接話法を入れる」書式が英語として読めるか (b) **B2の対立2枚**が英語で罵倒に寄っていないか(fighter1が被害者ぶりすぎ/fighter2が居直りすぎになっていないか) (c) **B4_gravure 47行**をすべて `photo shoot` 系の実務語彙で処理した判断(`gravure` を音写で残す案もありうる)
+
+---
+
 ## 🌐 Stage B P5-2f — セリフ英訳バッチ⑥(天頂戦決勝666行+引退409行)（2026-09-03・Opus主筆 worktree agent-a2c309131f619ec8b）
 
 量産翻訳の第6バッチ。**`tenchosen-final-lines.js:TENCHOSEN_FINAL_LINES` の全666行 + `data.js:RETIREMENT_LINES` の412行中409行 = 1,075行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2eの訳語判断。開始前にworktreeブランチをmain先端(a7408f9)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
