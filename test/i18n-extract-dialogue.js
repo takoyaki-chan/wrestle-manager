@@ -49,9 +49,29 @@
 //    各文字列の祖先オブジェクトキー列(配列インデックスは除く)を根から末端まで辿り、
 //    archetype 7種(standard/ojousama/cool/delinquent/polite/composed/seductive)・
 //    personality 7種(normal/bold/quiet/shy/easygoing/earnest/emotional)のいずれかに
-//    一致するキー(単独一致、または "archetype_personality" 形式の複合キーの構成要素)を
-//    ベストエフォートで拾う。同一原文が複数セルに再利用され判定が割れる場合はcellをnullにする
-//    (誤ったセル文脈を翻訳者に提示するより、判定不能として明示する方が安全なため)。
+//    一致するキーをベストエフォートで拾う。同一原文が複数セルに再利用され判定が割れる場合は
+//    cellをnullにする(誤ったセル文脈を翻訳者に提示するより、判定不能として明示する方が安全)。
+//
+//    【軸判定は「兄弟キー集合」で確定する(2026-09-04 根治)】
+//    あるオブジェクトノードの直下キー(`_default` を除く)を1つずつ classifyAxisKey() で
+//    判定し(a) archetype語彙7種のいずれかに完全一致 / (b) personality語彙7種のいずれかに
+//    完全一致 / (c) "_" で分割してちょうど2トークンになり、片方がarchetype・もう片方が
+//    personalityに完全一致(`archetype_personality` 形式、または `bold_delinquent` のような
+//    逆順の実例もある)、のいずれかに全キーが一致する場合に限り、そのノードを「軸として
+//    実際に分岐しているノード」とみなし、各キー(`_default` を除く)の判定結果をcellへ
+//    反映する。**1つでも上記(a)〜(c)に当てはまらない兄弟キー(docId等)が混じっていたら、
+//    そのノードはどのキーもcellに反映しない**(単一キーを取り出して`_`分解し部分一致を
+//    拾う旧実装は、`faction_decree_seal_quiet` のようなdocId名の語尾 `quiet` を性格キーと
+//    誤検出していた=P5-2hで発見・台帳側で手修正 済み。実データ全数調査
+//    (2026-09-04・全288トップレベルテーブルの全ノードを機械分類)で、この兄弟キー集合
+//    条件が「archetype」「personality」「compound」「other」のいずれか単一種別にきれいに
+//    分かれ、`other`(docId等)が実軸キーと混在するノードは0件、複合種別が混在するのは
+//    `FACTION_F05_DISSIDENT_LINES.standard`(`bold_delinquent: []` という空配列の予約キーが
+//    personality帯に同居する1ノードのみ・値が空なので実害なし)だけであることを確認済み。
+//    `_default` は「そのノードのキー集合が軸かどうか」の判定・分岐選択のどちらからも除外し
+//    (=軸性の判定材料にしない、選ばれても contribution なし=性格/アーキタイプ無拘束のまま)、
+//    実効軸が `_default` → 別軸のブロック(例: faction_decree_seal_quiet の
+//    `_default → archetype`)では、`_default` に対応する軸は正しくnull(無拘束)のまま残る。
 //
 //  ■ ID軸テーブルのセル解決(P5基盤修正で追加)
 //    VICTORY_LINES のようにキャラID(ALL_CHARSのid)をキーとするテーブルはarchetype/
@@ -178,28 +198,34 @@ const PERSONALITIES = ['normal', 'bold', 'quiet', 'shy', 'easygoing', 'earnest',
 const ARCHETYPE_SET = new Set(ARCHETYPES);
 const PERSONALITY_SET = new Set(PERSONALITIES);
 
-function detectCellFromPath(pathSegments, idAxisSegments, charIdCellMap) {
-  let archetype = null;
-  let personality = null;
-  pathSegments.forEach((seg) => {
-    if (ARCHETYPE_SET.has(seg)) { archetype = seg; return; }
-    if (PERSONALITY_SET.has(seg)) { personality = seg; return; }
-    if (seg.indexOf('_') >= 0) {
-      // 複合キー("ojousama_bold"/"bold_delinquent"等、archetype_personality形式または
-      // その例外的な逆順)の構成要素を個別に照合する。
-      const parts = seg.split('_');
-      let a = null;
-      let p = null;
-      parts.forEach((part) => {
-        if (ARCHETYPE_SET.has(part)) a = part;
-        else if (PERSONALITY_SET.has(part)) p = part;
-      });
-      if (a) archetype = a;
-      if (p) personality = p;
+// キー単体を「archetype/personality語彙」に照合する。一致すれば { archetype? , personality? }
+// を返し、一致しなければ null(=このキー単体では軸を名乗れない)。
+//   (a) archetype 7種のいずれかに完全一致
+//   (b) personality 7種のいずれかに完全一致
+//   (c) "_" でちょうど2トークンに割れ、片方がarchetype・もう片方がpersonalityに完全一致
+//       ("archetype_personality" 形式、または "bold_delinquent" のような逆順の実例もある)
+// docId名(`faction_decree_seal_quiet` 等、3〜4トークン以上に割れる複合語)はどの条件にも
+// 一致しないため null になる — これが根治の要(旧実装は "_" を含むキーなら何トークンでも
+// 分解して部分一致を拾っており、docId語尾の性格語を誤って拾っていた)。
+function classifyAxisKey(key) {
+  if (ARCHETYPE_SET.has(key)) return { archetype: key };
+  if (PERSONALITY_SET.has(key)) return { personality: key };
+  if (key.indexOf('_') >= 0) {
+    const parts = key.split('_').filter(Boolean);
+    if (parts.length === 2) {
+      const [p0, p1] = parts;
+      if (ARCHETYPE_SET.has(p0) && PERSONALITY_SET.has(p1)) return { archetype: p0, personality: p1 };
+      if (PERSONALITY_SET.has(p0) && ARCHETYPE_SET.has(p1)) return { archetype: p1, personality: p0 };
     }
-  });
-  // ID軸フォールバック: archetype/personalityの語彙一致で何も取れなかった場合のみ、
-  // ID軸ノード配下で見つかったcharIdをALL_CHARSで引く(VICTORY_LINES等)。
+  }
+  return null;
+}
+
+// ID軸(charId)フォールバック込みでcellを確定する。vocab軸(archetype/personality語彙一致)で
+// 何も取れなかった場合のみ、ID軸ノード配下で見つかったcharIdをALL_CHARSで引く(VICTORY_LINES等)。
+function resolveCell(axis, idAxisSegments, charIdCellMap) {
+  let archetype = (axis && axis.archetype) || null;
+  let personality = (axis && axis.personality) || null;
   if (!archetype && !personality && idAxisSegments && idAxisSegments.length && charIdCellMap) {
     const charId = idAxisSegments[idAxisSegments.length - 1];
     const charCell = charIdCellMap.get(charId);
@@ -220,25 +246,49 @@ function cellKey(cell) {
   return `${cell.archetype || ''}|${cell.personality || ''}`;
 }
 
-// ── 値の再帰ウォーカー: 文字列の葉を全て拾いつつ、祖先オブジェクトキー列(配列
-//    インデックスは含めない)と、ID軸ノード配下で確認できたcharId列を渡す。
+// ── 値の再帰ウォーカー: 文字列の葉を全て拾いつつ、ここまでの経路で確定した軸
+//    (archetype/personality。まだ何も確定していなければ両方null)と、ID軸ノード配下で
+//    確認できたcharId列を渡す。
+//
+//    軸ノード判定(2026-09-04 根治): あるオブジェクトノードの直下キー(`_default` を除く)
+//    が「1つ残らず」classifyAxisKey() で非nullに分類できる場合に限り、そのノードを
+//    「軸として実際に分岐しているノード」とみなし、各キー(`_default` を除く)の分類結果を
+//    軸へ反映して子へ渡す。1つでも分類できない兄弟キー(docId等)が混じっていたら、
+//    そのノードのキーはどれも軸に反映しない(=docId階層を軸判定から除外する)。
+//    `_default` はキー集合の分類にもcontributionにも参加しない(選ばれても軸は変化しない
+//    =その軸は無拘束のまま)。
+//
 //    idAxisSegments は「祖先オブジェクトの全キーがcharIdCellMapの実在idと一致し、
 //    かつキー数がID_AXIS_MIN_KEYS以上」の条件を満たしたノードでのみ積まれる
-//    (偶然の数値衝突を弾くための厳格な条件。detectCellFromPath側のコメント参照)。
+//    (偶然の数値衝突を弾くための厳格な条件。ID_AXIS_MIN_KEYS宣言側のコメント参照)。
+//    ID軸ノードはvocab軸ノードと排他(charId集合がarchetype/personality語彙と衝突する
+//    ことは実データ上ない安全策)。
 // ──────────────────────────────────────────────────────────────────────
-function walkStrings(value, pathSegments, idAxisSegments, charIdCellMap, onString) {
+function walkStrings(value, axis, idAxisSegments, charIdCellMap, onString) {
   if (typeof value === 'string') {
-    onString(value, pathSegments, idAxisSegments);
+    onString(value, axis, idAxisSegments);
   } else if (Array.isArray(value)) {
-    value.forEach((v) => walkStrings(v, pathSegments, idAxisSegments, charIdCellMap, onString));
+    value.forEach((v) => walkStrings(v, axis, idAxisSegments, charIdCellMap, onString));
   } else if (value && typeof value === 'object') {
     const keys = Object.keys(value);
     const isIdAxisNode = charIdCellMap
       && keys.length >= ID_AXIS_MIN_KEYS
       && keys.every((k) => charIdCellMap.has(k));
+    const nonDefaultKeys = keys.filter((k) => k !== '_default');
+    const isVocabAxisNode = !isIdAxisNode
+      && nonDefaultKeys.length > 0
+      && nonDefaultKeys.every((k) => classifyAxisKey(k) !== null);
     keys.forEach((k) => {
+      let nextAxis = axis;
+      if (isVocabAxisNode && k !== '_default') {
+        const c = classifyAxisKey(k);
+        nextAxis = {
+          archetype: c.archetype || axis.archetype,
+          personality: c.personality || axis.personality,
+        };
+      }
       const nextIdAxis = isIdAxisNode ? idAxisSegments.concat([k]) : idAxisSegments;
-      walkStrings(value[k], pathSegments.concat([k]), nextIdAxis, charIdCellMap, onString);
+      walkStrings(value[k], nextAxis, nextIdAxis, charIdCellMap, onString);
     });
   }
 }
@@ -279,10 +329,10 @@ function main() {
   const skippedCandidates = []; // LINES/DIALOGUE(S)命名に一致しなかった隣接テーブル(参考記録)
   let dialogueTableCount = 0;
 
-  function record(text, fileName, tableName, pathSegments, idAxisSegments) {
+  function record(text, fileName, tableName, axis, idAxisSegments) {
     if (typeof text !== 'string' || !text) return;
     let entry = ledgerMap.get(text);
-    const cell = detectCellFromPath(pathSegments, idAxisSegments, charIdCellMap);
+    const cell = resolveCell(axis, idAxisSegments, charIdCellMap);
     if (!entry) {
       entry = {
         key: text,
@@ -312,7 +362,7 @@ function main() {
         const v = global[name];
         if (v !== undefined) {
           const strs = [];
-          walkStrings(v, [], [], null, (s) => strs.push(s));
+          walkStrings(v, { archetype: null, personality: null }, [], null, (s) => strs.push(s));
           const JA_RE = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/;
           const jaCount = strs.filter((s) => JA_RE.test(s)).length;
           if (jaCount > 0) skippedCandidates.push({ file: fileName, table: name, jaStringCount: jaCount });
@@ -327,8 +377,8 @@ function main() {
       }
       dialogueTableCount++;
       let extracted = 0;
-      walkStrings(table, [], [], charIdCellMap, (text, pathSegments, idAxisSegments) => {
-        record(text, fileName, name, pathSegments, idAxisSegments);
+      walkStrings(table, { archetype: null, personality: null }, [], charIdCellMap, (text, axis, idAxisSegments) => {
+        record(text, fileName, name, axis, idAxisSegments);
         extracted++;
       });
       perTableStats.push({ file: fileName, table: name, extracted });
