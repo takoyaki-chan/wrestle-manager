@@ -30851,6 +30851,9 @@ const GAMELOG_TEMPLATES = {
   // (修復は別issueとして切り出し済み — i18n対応とは無関係の既存不具合)。
   // 2026-09-01 文字化け修復: reunion/grudge/unfinishedはacd16a8の原文を復元。
   // vendettaのみ履歴に綺麗な原文が存在せず(0f9bc6fで化けたまま導入)、同スタイルで再作文
+  // 自発的残留の通知(management.js advanceWeek offWeek2)。events経由の文字列ログだが、
+  // 組み立てをこのテンプレに寄せてEN時はdict(WM_I18N.t)で訳せるようにした(2026-09-03)
+  voluntary_stay: '✨ {name}:「{line}」',
   recontact_reunion: '🤝 {nameA}と{nameB}が再会！ 旧友との再会でコンディション上昇',
   recontact_grudge: '😤 {nameA}と{nameB}——因縁の相手と同じ屋根の下。ロッカールームの空気が険悪に',
   recontact_vendetta: '⚡ {nameA}と{nameB}——燻っていた因縁が宿怨に変わる。もう互いに退けない',
@@ -30894,7 +30897,13 @@ function gameLogEntryText(entry) {
   if (data && typeof data.tierLabel === 'string') {
     data = { ...data, tierLabel: _gameLogT(data.tierLabel) };
   }
-  return fillTemplateVars(_gameLogT(resolved), data || {});
+  // i18n P6-1連携(2026-09-03): ブラウザではWM_I18N.t(tpl, params)で整形する。applyParamsは
+  // fillTemplateVarsと同一契約(同じ正規表現・String(raw)・同じフィルタ)なのでja出力は不変、
+  // EN時はパラメータ値の名前辞書変換(選手名のローマ字化)が無配線で効く。WM_I18N不在(Node単体)は従来経路
+  if (typeof WM_I18N !== 'undefined' && WM_I18N && typeof WM_I18N.t === 'function') {
+    return WM_I18N.t(resolved, data || {});
+  }
+  return fillTemplateVars(resolved, data || {});
 }
 
 // D-G3: gameLogのUI分類フィルタ用。typeの族→カテゴリキー配列('show'|'finance'|'event'|'season'の

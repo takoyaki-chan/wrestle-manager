@@ -5498,5 +5498,15 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "✨ {name}:「{line}」",
+    "en": "✨ {name}: \"{line}\"",
+    "files": [
+      "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   }
 ]

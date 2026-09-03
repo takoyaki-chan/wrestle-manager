@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー550件、訳文あり550件)
+//  生成元: i18n/template-ledger.json (総キー551件、訳文あり551件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -566,7 +566,8 @@
     "🤝 {nameA}と{nameB}が再会！ 旧友との再会でコンディション上昇": "🤝 {nameA} and {nameB} are together again! Seeing an old friend lifted both their condition",
     "🤝 {name}との約束どおり、メインを任せた": "🤝 Kept your word to {name} and gave her the main event",
     "🤝 {name}との約束を果たせなかった": "🤝 You could not keep your word to {name}",
-    "🤝 {name}への起用の約束は、機会がないまま流れた": "🤝 The main event you promised {name} never came around"
+    "🤝 {name}への起用の約束は、機会がないまま流れた": "🤝 The main event you promised {name} never came around",
+    "✨ {name}:「{line}」": "✨ {name}: \"{line}\""
   }
   );
 })();

@@ -17913,7 +17913,12 @@ const Engine = {
           // §13.5: P-自発的残留の通知
           if (negResult.voluntaryStays && negResult.voluntaryStays.length > 0) {
             negResult.voluntaryStays.forEach(vs => {
-              events.push(`✨ ${vs.fighterName}:「${vs.line}」`);
+              // i18n(2026-09-03): テンプレ+dict経由で組む。dict未提供(ja/auto-sim)は従来と同一文字列。
+              // EN時はdict=WM_I18N.tがテンプレ訳・セリフ訳・名前辞書変換を一括で行う
+              const _vsDict = (typeof opts !== 'undefined' && opts && typeof opts.dict === 'function') ? opts.dict : null;
+              const _vsTpl = GAMELOG_TEMPLATES.voluntary_stay;
+              const _vsParams = { name: vs.fighterName, line: _vsDict ? _vsDict(vs.line) : vs.line };
+              events.push(_vsDict ? _vsDict(_vsTpl, _vsParams) : fillTemplateVars(_vsTpl, _vsParams));
             });
           }
           if (negResult.negotiations.length > 0) {
