@@ -58,3 +58,137 @@ HIGH群のうち `{semi1}`/`{semi2}`/`{finalResult}`/`{tieBreakNote}` は同じ 
 
 **即効の2件**: `{tierLabel}`と`{wanted}`は英訳がui-ledgerに既存 — 生成元にt()を1個ずつ足すだけで解決。
 確認済みで対処不要: `{oldLabel}`/`{newLabel}`(HEAT_LEVELSは既に英語)/`{ejectedSuffix}`/符号付き数値文字列。
+
+## P4-3bで発見された追加の成形済み値4種(2026-09-02、NEWS見出し英訳作業中に発見)
+
+| # | プレースホルダ | 生成箇所(file:line) | 生成式(要約) | 難易度 | 備考 |
+|---|---|---|---|---|---|
+| 20 | `{titleName}` | src/management.js `Engine.mq.checkTopChampionInjury()` | `` titleName: `${orgName}王座` `` | LOW | `{orgName}王座`という1個のプレースホルダ付き文字列に還元できる。ENは`{orgName} Championship` |
+| 21 | `{injuryType}` | src/data.js:3850 `injuryLabel()`(呼び出し元は`scanRosterNews`のlongInjury分岐など多数) | `INJURY_LABEL[type] \|\| String(type)` の4エントリ固定辞書 | LOW | `injuryLabel()`自体は既存のnamed lookupヘルパー。第2引数dictを足すだけで済む |
+| 22 | `{result}` | src/management.js `Engine.mq._resolveBignewsDebut()`(白星/黒星、hotProspectDebut) / `Engine.kaigan.industryEvent()`(勝利/敗戦、kaiganAwakening) | 2箇所とも`勝敗フラグ ? 'A' : 'B'`の2値三項演算子(語彙は箇所ごとに別) | LOW | 生成元2箇所。どちらも既に`won`相当の真偽値をローカルに持っている |
+| 23 | `{names}`(draftRoundup版) | src/ui-common.js:6502(`_queueDraftIndustryNews`) | `` top.map(p => `${p.name}（${TIER_LABEL[p.tier]}）`).join('、') `` | LOW | 項目12/13の`{names}`(composeDraftPlayerResult側)とは無関係の別ホール。tierが日本語で混入。ui-common.js内(UI層)なのでWM_I18N.t()を直接呼べる |
+
+## P4-4実装ログ(2026-09-03)
+
+上記のLOW全件+MEDIUM2件を実装した。HIGH群(#4 detail / #6 preview / #8 semi1・semi2 / #9 finalResult /
+#10 gauntletNote / #11 tieBreakNote / #12b closing(draftPlayerResult) / #19 body(draftPlayerResult))は
+台帳どおり保留。`{careerLine}`(#3)は死んだテンプレ変種の疑いのままFable裁定待ちで保留。
+
+### 実装した項目と方式
+
+**Engine層(management.js/data.js)は既存の`opts.dict`/`opts.lang`糸通し(i18n-runtime-spec §6)に
+沿って`dict`引数を足す方式**。**UI層(app.js/ui-common.js)はWM_I18N.t()を直接呼ぶ方式**
+(runtime-spec §2構造規約1どおり、Engineは引き続きWM_I18Nを直接参照しない)。
+
+- **#1 `{milestone}`**: `dict('{wins}勝')`+fillTemplateVars化(generate()内、dict直接利用)
+- **#2 `{recordLine}`**: push時点(scanRosterNews)では従来どおりJAを焼くが、render時点
+  (generate()内の業界ニュース汎用パス)で`data.recordState`('broken'/'match')から
+  dict経由で改めて組み立て直す方式に変更(下記「アーキテクチャ」参照)
+- **#5 `{entrySummary}`**: JA「Name N枠」/EN「Name: N slot(s)」で区切り文字・単複処理まで
+  異なるため、advanceWeek内で`opts.lang`による構造分岐(dict()の単純な語彙差し替えでは
+  対応しきれないMEDIUM項目として、audit記載どおりの設計判断)
+  ※ 単複語尾(`slot`/`slots`)は実装したが、"3 slots"のような基数詞側の言語規則(a/anや
+  可算/不可算)までは踏み込んでいない(既存の{v:man}通貨フィルタと同様、最低限の単複のみ)
+- **#7 `{championWatch}`**: `buildTenchosenAnnouncementData`/`buildTenchosenFieldData`に
+  dict引数を追加、`fillTemplateVars(dict('前回覇者の{name}に...'), {name})`化
+- **#12a `{closing}`(tenchosenBestBout)**: #14と同じrender時点再構築方式(下記参照)
+- **#13 `{names}`(composeDraftPlayerResult側)**: **実装保留**。当初LOW判定だったが、
+  この関数の出力(`body`)全体が`DRAFT_PLAYER_RESULT_PARTS`という未翻訳の凍結専用プール
+  (#12b/#19と同一ホール)に依存しており、`{names}`の区切り文字だけ直しても本文全体が
+  日本語のまま残るため実質的な効果が無い。#12b/#19とまとめて「専用プール翻訳インフラ整備」
+  という1つの作業に先送りする(台帳の元々の記述どおり)
+- **#14 `{round}`**: render時点再構築方式(下記参照)
+- **#15 `{stage}`**: `Engine.mq.STAGE_LABELS`は既存のnamed lookupのまま、
+  `_pushRecordNews`のpush dataに`stageKey`(生キー)を追加し、render時点で
+  `Engine.mq.STAGE_LABELS[stageKey]`をdict経由で引き直す
+- **#16〜18 `{what}`/`{how}`/`{stat}`**: `buildFollowUp(state, dict)`に統一、
+  generate()内の呼び出し元からdictを渡す
+- **#20 `{titleName}`**: render時点再構築方式(下記参照)
+- **#21 `{injuryType}`**: `injuryLabel(type, dict)`に第2引数を追加(既定省略時はJA原文のまま、
+  11箇所ある既存呼び出し元は無改修で不変)。longInjuryのpushで`injuryTypeRaw`(生キー)を
+  追加し、render時点で`injuryLabel(injuryTypeRaw, dict)`を呼び直す
+- **#22 `{result}`**: hotProspectDebut/kaiganAwakeningのpush dataに`won`(真偽値)を追加し、
+  render時点でdict経由の値へ組み立て直す
+- **#23 `{names}`(draftRoundup版)**: ui-common.js内でWM_I18N.lang分岐(JA:「name（tier）」
+  読点区切り/EN:「name (tier)」カンマ区切り、全角/半角括弧も言語で揃える)
+
+### アーキテクチャ: industryNewsキューの「render時点再構築」パターン
+
+`{titleName}`(#20)/`{injuryType}`(#21)/`{recordLine}`(#2)/`{round}`+`{closing}`(#14/#12a)/
+`{result}`(#22)/`{stage}`(#15、mqAllTimeRecord・mqTagRecord)は、いずれも
+`Engine.industryNews.push()`で**発生した週にキューへ積まれ、掲載枠(一面1+サブ数本)の
+空きが出るまで最大数週間キューに滞留してから紙面化される**という共通の構造を持つ
+(2026-07-27の持ち越し実装以降)。push側の関数(`checkTopChampionInjury`/`scanRosterNews`/
+`Engine.ppvTournament.apply`/`Engine.mq._resolveBignewsDebut`/`Engine.kaigan.industryEvent`/
+`_pushRecordNews`)は`opts`/`dict`を持たない深いtickWeek内から呼ばれるため、
+そこでJA/EN確定の値を焼くとpush時点のlangに固定されてしまう(将来プレイヤー向け言語切替が
+入ったとき、切替前に積まれたキューが古い言語のまま紙面に出る不整合の芽になる)。
+
+このため、push側では**加工前の生キー**(`orgName`・`injuryTypeRaw`・`recordState`・
+`roundKey`・`won`・`stageKey`)を`data`に追加で持たせ、実際に紙面へ載る瞬間
+(`Engine.newspaper.generate()`内、dictが揃っている場所)で新設の
+`_wmResolvePreformattedIndustryData(ev, dict)`が生キーから改めて言語別の値を組み立て直す。
+生キーが無い(=このコミットより前に積まれた旧セーブのキュー)場合は、pushされた時点の
+値をそのまま使う(fail-open、後方互換。1〜数週間で消化されるキューなので実害は限定的)。
+
+### `formatCoachRequest`(`{wanted}`即効2件のうち)の実装範囲
+
+`Engine.shachoshitsu.formatCoachRequest(req, dict)`にdict引数を追加し、
+`{g}級のコーチ`/`{label}に強いコーチ`(いずれもui-ledgerに既存訳あり)へfillTemplateVars化した。
+**呼び出し元3箇所のうち app.js:14679 のみ`WM_I18N.t`を渡すよう修正した**。
+management.js:13607(旧文字列`events.push()`、i18n-runtime-spec構造規約4の「旧文字列エントリは
+無変換で共存」の対象)と ui-render.js:5284 は今回のタスク範囲外(前者は仕様上グランドファーザー、
+後者は本タスクの「触ってよいファイル」リストにui-render.jsが含まれないため未修正)。
+ui-render.js側の秘書パネル表示は、EN切替後もこの1箇所だけJAのまま残る**既知の残課題**。
+
+### `{tierLabel}`実装範囲
+
+`Engine.scout.getTierConfig(...).label`の値をgameLogの`data.tierLabel`として積む6箇所のうち、
+app.js側4箇所(fighter_signed/fighter_signed_overflow/scout_signed/scout_acquired)を
+`WM_I18N.t(tierCfg.label)`化した。ui-common.js側2箇所(draft_player_acquired等、
+composeDraftPlayerResult系のgameLog)は今回未着手(「ui-common.js:6501等」の指示範囲は
+draftRoundupの`{names}`を指しており、この6箇所は含めていない)。
+
+### `{label}`(1961)/`{changes}`(saveDoctor)は「確認済み・対処不要」に変更
+
+P4-3aでは要調査のまま11種の一部として残っていたが、本セッションで生成元を確認した結果:
+- `{label}`(management.js:1961・1974付近、rivalry resolution): 消費先(14716/16894付近)が
+  いずれも`events.push(`...`)`の**旧文字列イベント**であり、i18n-runtime-spec構造規約4の
+  「旧文字列エントリは無変換で共存」の対象。新形式`{type,data}`のgameLog/紙面テンプレへは
+  一切到達しないため、対処不要と判断した
+- `{changes}`(saveDoctor、`repair.changes`): 値はJAではなく`weekPhase_invalid:xxx`
+  `showCard_stale_refs_removed`のような**開発者向け診断用スネークケーストークン**(既に英語)。
+  出力テンプレ`セーブデータ自動修復: {changes}`(GAMELOG_TEMPLATES)自体は翻訳済みだが、
+  値そのものに翻訳すべき日本語が存在しないため対処不要と判断した
+
+これで元々の11種は「実装7件(phase/tone/stamp/result/crowdLabel/tierLabel(部分)/outcome/
+wanted(部分))+対処不要2件(label/changes)」に整理された(tierLabel/wantedの「部分」は
+上記の未対応箇所を参照)。
+
+### 辞書追加
+
+`i18n/ui-ledger.json`へ39行追加(値語彙・stampテンプレ・closing/championWatch文・
+crowdLabel・PPV GRAND FINALの恒等エントリなど)。`node test/i18n-build-dict.js`で
+`src/lang-en.js`を再生成し、機械検査(プレースホルダ完全性・重複キー・en内日本語残り)通過。
+
+### 検証結果
+
+- `node test/ja-golden.js`: 完全一致(基準未更新)
+- `node test/i18n-build-dict.js` / `node test/i18n-build-template-dict.js`: green
+- `node --check` (data.js/management.js/app.js/ui-common.js): 全OK
+- `npm test`: 260/260 PASS
+- `node test/auto-sim.js 40 42`: ALL CLEAR(violations 0)
+- `npm run test:ui:walkthrough`: PASS(issues 0)
+- `node test/i18n-ratchet.js`: management.jsで+14件検出 → `--update`で基準更新
+  (内訳: 新設した`_wmResolvePreformattedIndustryData`/`_wmNewsStamp`/`formatCoachRequest`の
+  辞書キー用ラベル表と、既存のstamp用テンプレートリテラルをdict()呼び出し向けに分割したことに
+  よる増加。いずれも出力へ直接漏れる生JAではなく、dict()の引数として使われる翻訳キー材料)
+- ENスモーク(vm・固定シード・lang=en+dict): `Engine.newspaper.generate()`単体呼び出しで
+  topChampionInjury/longInjury/winStreakMilestone×2/tenchosenBestBout×2/hotProspectDebut×2/
+  fatedRivals/kaiganAwakening/mqAllTimeRecord/mqTagRecord/warMilestoneの13ケースを生成、
+  **日本語残数0**(`[WM] [i18n-miss]`ログも0件)。`buildFollowUp`/`formatCoachRequest`/
+  `buildTenchosenAnnouncementData`/`buildTenchosenFieldData`/`gameLogEntryText`
+  (venue_heat_crowd/challenge_event_result/fighter_signed/secretary_request_sent)も個別に
+  同条件で検証し、いずれも日本語残数0。HIGH保留分(`{detail}`/`{preview}`/`matchSummary`系/
+  `DRAFT_PLAYER_RESULT_PARTS`系)は元よりスコープ外のため、これらのテンプレ自体を含む号は
+  スモーク対象から除外している(そこは既知の残存日本語)

@@ -1,5 +1,114 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P4-4 — 成形済み値(preformatted values)の生成元EN対応（2026-09-03・worktree agent-a0d897322691294a3）
+
+英語対応P4の第4工程。`i18n/preformatted-values-audit.md`の台帳(元20種+P4-3aの11種)のうち
+**LOW全件+MEDIUM2件を実装**、P4-3bで新発見の4種（`{titleName}` `{injuryType}` `{result}`×2箇所
+`{names}`draftRoundup版）も台帳へ追記した上で実装した。HIGH群(`{detail}` `{preview}`
+`{semi1}` `{semi2}` `{finalResult}` `{gauntletNote}` `{tieBreakNote}` `{closing}`(12b)
+`{body}`(draftPlayerResult))は台帳どおり保留・理由を台帳に明記。`{careerLine}`は死んだテンプレ
+変種の疑いのままFable裁定待ちで保留。開始前にworktreeブランチをmain先端(3267430)へ
+fast-forward済み。
+
+### 実装件数(値別、計19件+対処不要2件)
+
+**render時点再構築パターン**(下記アーキテクチャ参照、6件): `{titleName}` `{injuryType}`
+`{recordLine}` `{round}`+`{closing}`(tenchosenBestBout) `{result}`(hotProspectDebut/
+kaiganAwakening、生成元2箇所) `{stage}`(mqAllTimeRecord/mqTagRecord)。
+
+**generate()内でdictを直接使うだけの箇所**(3件): `{milestone}` `{result}`(crossWarResult側の
+勝ち越し/決着つかず/敗北) `{tone}`(PPVアンダーカード) 、加えて`_buildPpvSummitStory`内の
+`{phase}`(序盤/中盤/終盤/長期戦の末、P4-3a発見分)。`{stamp}`(第N年度・第M週)は7箇所すべてを
+共通ヘルパー`_wmNewsStamp(dict, season, week, suffixJa)`経由に統一(完全文テンプレ化+dict経由)。
+
+**関数へdict引数を追加**(3件): `buildFollowUp(state, dict)`で`{what}` `{how}` `{stat}`、
+`buildTenchosenAnnouncementData/FieldData(state, dict)`で`{championWatch}`、
+`Engine.shachoshitsu.formatCoachRequest(req, dict)`で`{wanted}`(ただし呼び出し元3箇所中
+app.js:14679のみ修正。management.js:13607は旧文字列events.push対象・ui-render.js:5284は
+本タスクの触ってよいファイル範囲外のため未修正 — **既知の残課題**)。
+
+**UI層(app.js/ui-common.js)でWM_I18N.t()直呼び**(4件): `{entrySummary}`(lang分岐で単複・
+区切り記号まで組み替え) `{outcome}`(challenge_event_result) `{crowdLabel}`
+(gameLogEntryText、venue_heat_crowd) `{tierLabel}`(app.js側4箇所のみ。ui-common.js側
+draft_player_acquired等6箇所は未着手 — **既知の残課題**) `{scoutDiscSuffix}`(2箇所)
+`{names}`(draftRoundup版、ui-common.js:6502)。
+
+**保留(1件)**: `{names}`(composeDraftPlayerResult版、item#13)。台帳ではLOW判定だったが、
+この関数の出力(`body`)全体が`DRAFT_PLAYER_RESULT_PARTS`という未翻訳の凍結専用プール
+(#12b/#19と同一ホール、task-77 §5-D確定文言)に依存しており、`{names}`の区切り文字だけ
+直しても本文全体が日本語のまま残るため実質効果なし。#12b/#19とまとめて
+「専用プール翻訳インフラ整備」という1つの作業に先送り。
+
+**対処不要と確認(2件)**: `{label}`(rivalry resolution、1961/1974付近) — 消費先が
+旧文字列events.pushのみで新形式gameLog/紙面テンプレに到達しない。`{changes}`(saveDoctor) —
+値は`weekPhase_invalid:xxx`のような開発者向け診断トークンで元々英語、翻訳の必要なし。
+
+### アーキテクチャ: industryNewsキューの「render時点再構築」パターン
+
+`Engine.industryNews.push()`で発生週にキューへ積まれた業界ニュースイベントは、掲載枠の空きが
+出るまで最大数週間キューに滞留してから紙面化される(2026-07-27の持ち越し実装以降)。push側の
+関数(`checkTopChampionInjury`/`scanRosterNews`/`Engine.ppvTournament.apply`/
+`Engine.mq._resolveBignewsDebut`/`Engine.kaigan.industryEvent`/`_pushRecordNews`)は
+`opts`/`dict`を持たない深いtickWeek内から呼ばれるため、そこでJA/EN確定の値を焼くとpush時点の
+langに固定されてしまう。そこでpush側では**加工前の生キー**(`orgName`・`injuryTypeRaw`・
+`recordState`・`roundKey`・`won`・`stageKey`)を`data`に追加で持たせ、実際に紙面へ載る瞬間
+(`Engine.newspaper.generate()`内)で新設の`_wmResolvePreformattedIndustryData(ev, dict)`が
+生キーから改めて言語別の値を組み立て直す。生キーが無い(旧セーブのキュー)場合はpush時点の値を
+そのまま使う(fail-open、後方互換)。
+
+### 辞書追加
+
+`i18n/ui-ledger.json`へ39行追加(値語彙・stampテンプレ・closing/championWatch文・crowdLabel・
+PPV GRAND FINALの恒等エントリなど)。`node test/i18n-build-dict.js`で`src/lang-en.js`を
+再生成し機械検査(プレースホルダ完全性・重複キー・en内日本語残り)通過。
+
+### 触ったファイル
+- `src/data.js`: `injuryLabel(type, dict)`第2引数追加/`gameLogEntryText()`のcrowdLabel特別処理
+- `src/management.js`: `_wmNewsStamp`/`_wmResolvePreformattedIndustryData`新設、
+  `generate()`内複数箇所、`checkTopChampionInjury`(変更なし・orgName既存利用)、
+  `scanRosterNews`(injuryTypeRaw追加)、`Engine.ppvTournament.apply`(roundKey追加)、
+  `Engine.mq._resolveBignewsDebut`/`Engine.kaigan.industryEvent`(won追加)、
+  `_pushRecordNews`(stageKey追加)、`buildFollowUp`/`buildTenchosenAnnouncementData`/
+  `buildTenchosenFieldData`/`formatCoachRequest`(dict引数追加)、`advanceWeek`
+  (dict/lang抽出+entrySummary lang分岐)
+- `src/app.js`: fighter_signed/fighter_signed_overflow/scout_signed/scout_acquiredの
+  tierLabel/scoutDiscSuffix、formatCoachRequest呼び出し
+- `src/ui-common.js`: challenge_event_resultのoutcome、draftRoundupのnames(tier)
+- `i18n/ui-ledger.json`: 39行追加(生成)
+- `src/lang-en.js`: 再生成(`node test/i18n-build-dict.js`)
+- `i18n/preformatted-values-audit.md`: P4-3b発見分の台帳追記+P4-4実装ログ追加
+
+### 検証結果
+- `node test/ja-golden.js`: 完全一致(基準未更新、11,233行1バイト不変)
+- `node test/i18n-build-dict.js` / `node test/i18n-build-template-dict.js`: green
+  (台帳3,147キー/550キー、いずれも訳文あり100%・未訳0)
+- `node --check` (data.js/management.js/app.js/ui-common.js): 全OK
+- `npm test`: **260/260 PASS**
+- `node test/auto-sim.js 40 42`: **ALL CLEAR**(violations 0、台帳検査3種も違反0)
+- `npm run test:ui:walkthrough`: **PASS**(issues 0、season1season2、328アクション)
+- `node test/i18n-ratchet.js`: management.jsで+14件検出 → 内容確認のうえ`--update`で基準更新
+  (新設した辞書キー用ラベル表と、既存stampテンプレートリテラルの分割による増加。すべてdict()の
+  引数として使われる翻訳キー材料であり、出力へ直接漏れる生JAではないことを確認済み)
+- ENスモーク(vm・固定シード・lang=en+dict、`Engine.newspaper.generate()`単体呼び出し):
+  topChampionInjury/longInjury/winStreakMilestone×2/tenchosenBestBout×2/hotProspectDebut×2/
+  fatedRivals/kaiganAwakening/mqAllTimeRecord/mqTagRecordの13ケースを生成、
+  **日本語残数0**(`[WM] [i18n-miss]`ログも0件)。`buildFollowUp`/`formatCoachRequest`/
+  `buildTenchosenAnnouncementData`/`buildTenchosenFieldData`/`gameLogEntryText`
+  (venue_heat_crowd/challenge_event_result/fighter_signed/secretary_request_sent)も個別に
+  同条件で検証し、いずれも日本語残数0
+
+### 残課題
+- `{wanted}`: ui-render.js:5284(秘書パネル表示)が未修正のため、EN切替後もこの1箇所だけ
+  JAのまま残る(本タスクの「触ってよいファイル」にui-render.jsが含まれないため)
+- `{tierLabel}`: ui-common.js側6箇所(draft_player_acquired等、composeDraftPlayerResult系
+  gameLog)が未着手
+- `{names}`(composeDraftPlayerResult版)/`{closing}`(12b)/`{body}`: DRAFT_PLAYER_RESULT_PARTS
+  専用プール自体の翻訳インフラ整備が別途必要
+- HIGH群9件(`{detail}` `{preview}` `{semi1}` `{semi2}` `{finalResult}` `{gauntletNote}`
+  `{tieBreakNote}`)は構造見直しが要るため未着手
+- `{careerLine}`: 死んだテンプレ変種の疑い、Fable裁定待ち
+- Keisuke実機確認(EN言語切替でのニュース紙面表示)は未実施(docs/実機確認バックログ.md へ集約推奨)
+
 ## 🌐 Stage B P4-3b — NEWS_HEADLINE 341本の英訳（テンプレ台帳 未訳0・P4テンプレ完走）（2026-09-03・Opus worktree agent-a9c80acee90c26ae7）
 
 英語対応P4の第3工程・後半。`i18n/template-ledger.json` の **NEWS_HEADLINE_TEMPLATES 341本**（77イベント型 × headline/body）を全部訳し、**台帳550本の未訳が0になった**（P4のテンプレ層は完走）。物差しは `docs/en-kuroda-style-draft-v0.1.md`（§3 見出し規則を機械適用／§3-4 プレースホルダ安全則／§3-6 禁止語grep／§1-5 三層の声）+ `docs/en-proper-nouns-draft-v0.1.md`、用語は P3b用語集（ui-ledger）と P4-3a のティッカー75本を先例として継承した。**`i18n/ui-ledger.json` / `src/lang-en.js` / `src/i18n.js` は並行エージェントの領分なので一切触っていない**。開始前にworktreeブランチをmain先端（f199c38）へfast-forward済み。

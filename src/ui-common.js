@@ -6499,7 +6499,11 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
           characterIds: top.map(p => p.id),
           data: {
             total: picked.length,
-            names: top.map(p => `${p.name}（${TIER_LABEL[p.tier] || '素材'}）`).join('、'),
+            // i18n Stage B P4-4(P4-3b発見分): tierが日本語のまま値に混入していた。
+            // 全角括弧+読点はJA書式なので、EN側は半角括弧+カンマ区切りへ形も合わせる。
+            names: (WM_I18N.lang === 'en')
+              ? top.map(p => `${p.name} (${WM_I18N.t(TIER_LABEL[p.tier] || '素材')})`).join(', ')
+              : top.map(p => `${p.name}（${TIER_LABEL[p.tier] || '素材'}）`).join('、'),
             headName: top[0].name,
           },
         });
@@ -6937,7 +6941,7 @@ function executeEvent() {
     const won = result.winner === 'left'; // player is left
     eventWon = won;
     const popDelta = won ? 3 : -1;
-    events.push({ type: 'challenge_event_result', data: { playerName: ev.playerFighter.name, aiName: ev.aiFighter.name, outcome: won ? '勝利！' : '敗北…', mq: result.mq, popDeltaStr: `${popDelta >= 0 ? '+' : ''}${popDelta}` }, s: G.season, w: G.week });
+    events.push({ type: 'challenge_event_result', data: { playerName: ev.playerFighter.name, aiName: ev.aiFighter.name, outcome: WM_I18N.t(won ? '勝利！' : '敗北…'), mq: result.mq, popDeltaStr: `${popDelta >= 0 ? '+' : ''}${popDelta}` }, s: G.season, w: G.week });
     G = { ...G, orgPop: Math.max(0, Math.min(100, G.orgPop + popDelta)), pendingEvent: null,
           gameLog: [...G.gameLog, ...events] };
 
