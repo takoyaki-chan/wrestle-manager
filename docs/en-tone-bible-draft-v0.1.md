@@ -207,6 +207,14 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
      言い換え: 状態叙述へ分解("Cute and undefeated today")(2026-09-01 ネイティブ指摘・バイブル旧見本で実発生)
    - **「〜も」のtoo直訳型**: "I fight today, too" — 「今日も戦う」の「も」をtooで運ぶと英語では
      別の意味(他の人に加えて私も)に化ける。言い換え: "so I keep fighting" 等の継続表現(2026-09-01 ネイティブ指摘・A/B#20で実発生)
+   - **ネイティブ検品第1弾(2026-09-03・標準ブロック21行)からの追加ルール**:
+     - "undefeated"は複数試合の含意——1試合の完全勝利には使わない。**完全勝利=perfect**(格ゲー英語の定着慣行: "a perfect win")
+     - 文末の「…かも」= "... I think."(**"maybe"は文頭専用**。"... maybe."と文末に置かない)。Think=かも/Guess=かな の対応
+     - **格上・格下=better/worse**。文字通りの上下語(above/below)は傲慢の含意——傲慢を意図する帯(大河内等)でのみ使う
+     - 応援=**support**(cheer forより自然)
+     - カジュアル帯は文頭のI省略可("Guess I made...")・gonna可(delinquent専用ではなくemotional/easygoingのくだけた行でも)
+     - 単語強調は**1語の大文字化まで可**("with THIS leg strength")。ALL CAPS発話の禁止はそのまま
+     - 「私みたいな〜」の明示("A hot girl like me")が英語では自然になる場合がある(日本語の暗黙の自己言及の補完)
    - はしゃぎの反復・伸ばし表記: "I did iiit!" / "I did it! I really did it!" — 勢いは感嘆符と
      文の短さが背負う。**素直な一回**("I did it!")が正(2026-09-01 Keisuke判定 A/B#17)
 

@@ -27,15 +27,15 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| ……私の脚力ならまだまだ勝てる！ | ...I've got the legs for it. Plenty more wins to come! | 新規 |
-| 今日はスピードが活かせたかなっ♪ | I think I really got my speed going today ♪ | 新規 |
+| ……私の脚力ならまだまだ勝てる！ | ...Plenty more wins to come with THIS leg strength! | 新規 |
+| 今日はスピードが活かせたかなっ♪ | Guess I made real good use of my speed today ♪ | 新規 |
 | よしっ、練習通り！ | Alright! Just like in practice! | A/B収束(#1) |
 
 ### 1-2. 標準×強気 — 高津小春(Koharu Takatsu)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| は？私が勝つのは当たり前よ？ | Huh? Was there ever any doubt I'd win? | A/B判定済(anchors9 #1・採用稿) |
+| は？私が勝つのは当たり前よ？ | Huh? Of course I won, was there any doubt? | A/B判定済(anchors9 #1・採用稿) |
 | 自信を無くす必要はないわよ。アンタは格上に負けたんだから | Don't beat yourself up. You lost to someone better — that's all. | A/B判定済(anchors9 #2・採用稿) |
 | はぁ…はぁ…勝ったぁ | Haah... haah... I won. | A/B判定済(anchors9 #3・採用稿) |
 
@@ -43,33 +43,33 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| やった～♡ 今日のカワイイ私、完全勝利じゃん♪ | Yesss ♡ Cute and undefeated today — obviously ♪ | バイブル見本(§2-1・ネイティブ指摘「today's me」型を修正済みの確定文) |
-| いい女は、リングでも手を抜かないの♡ | A hot girl never slacks off — not even in the ring ♡ | A/B判定済(anchors9 #4・採用稿) |
-| え、調子いい日だっただけ？ …まぁいいけど♪ | Huh? Just having a good day, you're saying? ...Eh, fine by me ♪ | 新規 |
+| やった～♡ 今日のカワイイ私、完全勝利じゃん♪ | Ya~y ♡ Another day, another perfect win for cute li'l me ♪ | バイブル見本(§2-1・ネイティブ指摘「today's me」型を修正済みの確定文) |
+| いい女は、リングでも手を抜かないの♡ | A hot girl like me never slacks off — not even in the ring ♡ | A/B判定済(anchors9 #4・採用稿) |
+| え、調子いい日だっただけ？ …まぁいいけど♪ | Eh? I'm just having a good day? ...Well, whatever ♪ | 新規 |
 
 ### 1-4. 標準×内気 — 朝比奈ひかり(Hikari Asahina)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
 | あ……勝てた。あの、見ててくれましたか？ | Oh... I won. Um... were you watching? | A/B収束(#2) |
-| ちょっと震えてましたけど、最後は思い切りやれました | I was shaking a little, but... at the end I really went for it. | 新規 |
-| ありがとうございます……！また応援してください | Thank you so much...! Please keep cheering for me. | 新規 |
+| ちょっと震えてましたけど、最後は思い切りやれました | I was shaking a little, but at the end I really went for it. | 新規 |
+| ありがとうございます……！また応援してください | Thank you so much...! Please keep supporting me. | 新規 |
 
 ### 1-5. 標準×寡黙 — 早見知子(Tomoko Hayami)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
 | …勝ったの、私が？ へぇ、やるじゃん。 | ...I won? Me? Huh. Not bad. | A/B収束(#3・「私が？」を落とさない側を採用) |
-| 勝つためなら何でもやるわ。 | I'll do whatever it takes to win. | 新規 |
-| 空手かじっといてよかった…かも。 | Good thing I picked up a little karate... maybe. | 新規 |
+| 勝つためなら何でもやるわ。 | I'll do anything to win. | 新規 |
+| 空手かじっといてよかった…かも。 | Good thing I picked up a little karate... I think. | 新規 |
 
 ### 1-6. 標準×感情的 — 吉野萌子(Moeko Yoshino)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
 | 勝った…勝ったよ！ …うそ、嬉しい…！ | I won... I won! ...No way, I'm so happy...! | A/B収束(#4・原文に反復があるので反復は保持=§3 emotional) |
-| 空中技が決まったときは、本当に気持ちいいんだっ♪ | When an aerial move lands clean, it feels so good ♪ | 新規 |
-| ダメだ、泣きそう…本当に嬉しい！ | Oh no, I'm going to cry... I'm just so happy! | 新規 |
+| 空中技が決まったときは、本当に気持ちいいんだっ♪ | It feels so good when an aerial move lands clean ♪ | 新規 |
+| ダメだ、泣きそう…本当に嬉しい！ | Oh no, I'm gonna cry... I'm just so happy! | 新規 |
 
 ### 1-7. 標準×真面目 — 井沢遥(Haruka Izawa)
 
@@ -77,7 +77,7 @@
 |---|---|---|
 | はっ…はっ…ふぅ。やっぱり最後まであきらめないのが大事なのよね | Hah... phew. It really does come down to never giving up, right to the end. | A/B収束(#5・英語として自然な側を採用=最重要則2) |
 | いくつになっても強くなれるって、私もやっと分かってきたわ。 | You really can keep getting stronger at any age. I'm finally starting to see that. | 新規 |
-| 応援ありがとう。次の試合も全力を尽くしますね。 | Thank you for the support. Next match, I'll give everything I have again. | 新規(「次の試合**も**」を too で運ばない=§4-6) |
+| 応援ありがとう。次の試合も全力を尽くしますね。 | Thank you for the support. I'll continue to give it my all in the next match. | 新規(「次の試合**も**」を too で運ばない=§4-6) |
 
 ---
 
