@@ -109,8 +109,11 @@ function section(name, fn) {
 // 2. _u3bOrgBadgeHtml — U3統一の団体バッジ(既に準拠済みの手本。回帰確認)
 // ===========================================================================
 (function u3bOrgBadgeSuite() {
+  // i18n P7-6: _u3bOrgBadgeHtml は表示直前に WM_I18N.pn() を通すようになった
+  // (団体名がEN画面で生JAのまま露出していた穴の修正)。実行時と同じくpass-through
+  // スタブ(ja/pseudo相当)を注入する(既存のunified-title-presentation-test.js等と同じ流儀)。
   const build = new Function(
-    'Engine', 'G',
+    'Engine', 'G', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_u3bOrgBadgeHtml')}
      return { _u3bOrgBadgeHtml };`
@@ -123,7 +126,8 @@ function section(name, fn) {
         getOrgIconPath: (state, orgId) => (orgId === 'org_a' ? 'image/org/org-a-0.png' : ''),
       },
     };
-    return build(EngineStub, opts.G || {});
+    const WM_I18N = opts.WM_I18N || { t: (text) => text, pn: (str) => str };
+    return build(EngineStub, opts.G || {}, WM_I18N);
   }
 
   section('u3b-org-badge: home badge carries the home class and the real player emblem (unvariant 2, 3)', () => {

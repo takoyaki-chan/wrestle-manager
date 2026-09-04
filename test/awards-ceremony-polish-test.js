@@ -101,7 +101,9 @@ section('A5. 3人以上(is-many)でも同じ仕組みのまま破綻しない', 
 section('B1. タイトル王者カードに団体名のテキストが入っている(エンブレムは残す)', () => {
   const body = fn('_buildChampionsAward');
   assert.ok(body.includes('champ-orgname'), '団体名のテキスト要素が無い');
-  assert.ok(body.includes('${c.orgName}'), '団体名の値を出力していない');
+  // i18n P7-6: 生JAのc.orgNameを直書きしていた穴を修正し、WM_I18N.pn(c.orgName)で
+  // 表示直前にpn()を通すようになった(EN画面で団体名が生JAのまま露出していた)
+  assert.ok(body.includes('${WM_I18N.pn(c.orgName)}'), '団体名の値を出力していない');
   assert.ok(body.includes('_awOrgEmblem('), 'エンブレム画像を消してしまっている');
 });
 

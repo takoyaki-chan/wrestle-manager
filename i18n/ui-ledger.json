@@ -110,6 +110,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "(riv {riv} / {n}戦)",
+    "en": "(riv {riv} / {n} matches)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "({n}週)",
     "en": "({n} weeks)",
     "files": [
@@ -155,7 +165,17 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 6,
+    "count": 12,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "+{v}万/週",
+    "en": "+¥{v:man}/week",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -223,9 +243,20 @@
     "key": "-{v}万",
     "en": "-¥{v:man}",
     "files": [
+      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 2,
+    "count": 5,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "-{v}万/週",
+    "en": "-¥{v:man}/week",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 3,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -409,6 +440,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "1年目 🌸春 第1週",
+    "en": "Year 1 🌸Spring Week 1",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "1試合結果",
     "en": "Match Result",
     "files": [
@@ -437,6 +478,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "2ヶ月連続月次黒字",
+    "en": "Two straight months in the black",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
   },
   {
     "key": "2人目",
@@ -476,6 +529,36 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "2番手以下でOVR{ovr}以上は{a}だけ。軸が倒れれば一気に崩れる。",
+    "en": "Below the second string, only {a} clears OVR {ovr}. If that pillar falls, everything collapses at once.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "2番手以下にOVR{ovr}以上が{n}人。誰が欠けても興行の格が落ちない。",
+    "en": "{n} more wrestlers clear OVR {ovr} below the second string. The show's prestige holds even if any one of them is out.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "2番手以下のOVR{ovr}以上は{n}人。層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。",
+    "en": "{n} wrestlers clear OVR {ovr} below the second string. The depth is taking shape, but one last push from the bench is what separates them from the top.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -575,9 +658,10 @@
     "key": "4位",
     "en": "4th",
     "files": [
+      "index.html",
       "ui-common.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -745,6 +829,16 @@
     "source": [
       "DECISION_DOCS.trainer.effectSummary"
     ]
+  },
+  {
+    "key": "5,000万",
+    "en": "¥50M",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "<b>{n}</b>シーズン",
@@ -1426,6 +1520,16 @@
     ]
   },
   {
+    "key": "OVRの壁を越えた選手はまだいない。上と戦うには、地力の底上げからだ。",
+    "en": "No one has broken through the OVR wall yet. Competing with the top starts with building up raw strength.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "OVR上位同士をマッチング",
     "en": "Matches the highest OVR against each other",
     "files": [
@@ -1818,6 +1922,16 @@
     ]
   },
   {
+    "key": "Week 1 — 非興行週",
+    "en": "Week 1 — Non-show week",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "YEAR {season} ・ WEEK {week} ・ 第{n}試合 / 全{total}試合",
     "en": "YEAR {season} · WEEK {week} · Match {n} of {total}",
     "files": [
@@ -1887,9 +2001,10 @@
     "key": "{age}歳",
     "en": "Age {age}",
     "files": [
+      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 9,
+    "count": 11,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -2202,12 +2317,52 @@
     "hasProperNoun": false
   },
   {
+    "key": "{a}の後ろが続かない。",
+    "en": "Nothing follows behind {a}.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{a}は後押しを喜ぶ ／ {b}はえこひいきと感じる",
     "en": "{a} welcomes the push / {b} reads it as favoritism",
     "files": [
       "ui-common.js"
     ],
     "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}・{b}が主力の軸。",
+    "en": "{a} and {b} are the core of the lineup.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}・{b}ら{band}台が主力の軸。",
+    "en": "{a}, {b}, and others in the {band}s are the core of the lineup.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}・{b}ら{band}台の主力が続く。",
+    "en": "{a}, {b}, and others in the {band}s keep the lineup deep.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -2267,6 +2422,16 @@
     "en": "Choose the {corner} wrestler",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{cost}万×{n}人",
+    "en": "¥{cost:man} × {n}",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2355,6 +2520,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{defenses}度防衛",
+    "en": "{defenses} defenses",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "{delta}(解消)",
@@ -2752,6 +2927,36 @@
   {
     "key": "{level}入り",
     "en": "Inducted into {level}",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{losses}敗",
+    "en": "{losses} losses",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{min}分",
+    "en": "{min}m",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{min}分{sec}秒",
+    "en": "{min}m {sec}s",
     "files": [
       "ui-render.js"
     ],
@@ -3495,9 +3700,10 @@
     "key": "{name}との契約が成立した",
     "en": "The contract with {name} is signed",
     "files": [
-      "app.js"
+      "app.js",
+      "ui-common.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -4312,6 +4518,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{n}人が欠場中で、選手層は見た目より薄い。",
+    "en": "{n} wrestlers are out, so the roster is thinner than it looks.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{n}人切り",
     "en": "{n} Turned Away",
     "files": [
@@ -4349,9 +4565,10 @@
     "en": "{n} wrestlers",
     "files": [
       "factions.js",
+      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 9,
+    "count": 15,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -4458,6 +4675,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{n}試合",
+    "en": "{n} matches",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{n}試合の団体対決",
     "en": "A {n}-match promotion showdown",
     "files": [
@@ -4521,6 +4748,16 @@
     "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
   },
   {
+    "key": "{n}週間",
+    "en": "{n} weeks",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{n}週間、興行を欠場して休養に入る",
     "en": "Takes {n} weeks away from shows to rest",
     "files": [
@@ -4567,6 +4804,16 @@
     "en": "{old} — {new}. Tonight the marquee was rewritten.",
     "files": [
       "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{old}→{new}万/週",
+    "en": "¥{old:man} → ¥{new:man}/week",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4818,9 +5065,10 @@
     "key": "{org}（{n}名）",
     "en": "{org} ({n})",
     "files": [
+      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -5067,7 +5315,17 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 7,
+    "count": 9,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{sign}{v}万/週",
+    "en": "{sign}¥{v:man}/week",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -5131,9 +5389,10 @@
     "key": "{surname}派",
     "en": "{surname} Group",
     "files": [
+      "factions.js",
       "ui-common.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -5230,12 +5489,53 @@
     "hasProperNoun": false
   },
   {
+    "key": "{venue}×{scale}規模",
+    "en": "{venue} (×{scale})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{venue}・大会総収入",
+    "en": "{venue} · Total Event Revenue",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{v}万",
     "en": "¥{v:man}",
     "files": [
+      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 7,
+    "count": 46,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{v}万/週",
+    "en": "¥{v:man}/week",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 5,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{v}万円",
+    "en": "¥{v:man}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -5295,20 +5595,30 @@
     "key": "{wins}勝",
     "en": "{wins} wins",
     "files": [
-      "management.js"
+      "ui-common.js"
+    ],
+    "count": 6,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{wins}度戴冠・通算{defenses}度防衛",
+    "en": "{wins}-time champion, {defenses} defenses total",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true
+    "hasProperNoun": false
   },
   {
     "key": "{w}勝{l}敗",
     "en": "{w}-{l}",
     "files": [
+      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 5,
+    "count": 7,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -5365,6 +5675,27 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "¥ {v}万",
+    "en": "¥ {v:man}",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 3,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "¥{v}万",
+    "en": "¥{v:man}",
+    "files": [
+      "ui-common.js",
+      "ui-render.js"
+    ],
+    "count": 20,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "× 敗北",
@@ -9240,6 +9571,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "これまでの社長との関係次第で引き止め成功",
+    "en": "Success depends on your relationship with her so far.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "ごめんなさいね、あの子は無理。生理的に",
     "en": "Sorry, but that one I can't do. Something in me refuses.",
     "files": [
@@ -9953,6 +10296,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "まだ早い",
+    "en": "Not yet",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "まだ殿堂入りした選手はいません",
@@ -11002,7 +11357,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 9,
+    "count": 10,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -11868,6 +12223,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "スポンサー獲得",
+    "en": "Landed a sponsor",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "スランプ",
     "en": "Slump",
     "files": [
@@ -12363,10 +12730,9 @@
     "key": "タレント活動",
     "en": "Media Appearances",
     "files": [
-      "app.js",
       "ui-common.js"
     ],
-    "count": 2,
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -12471,6 +12837,18 @@
     "source": [
       "TRAIT_DEFS.リーダー気質.desc"
     ]
+  },
+  {
+    "key": "チームの誰かの人気が少し上がる",
+    "en": "Someone else on the team gains a little popularity.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "テクニシャン",
@@ -13168,6 +13546,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ブランド ¥{brandAmount}万（通常興行基礎{brandBase}・結果ボーナス +{bonusRate}%／{bonusAmount}）",
+    "en": "Brand ¥{brandAmount:man} (regular-show base {brandBase} · result bonus +{bonusRate}% / {bonusAmount})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "ブランドコラボ",
     "en": "Brand Collab",
     "files": [
@@ -13510,6 +13898,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "ボーナスで釣る（-50万）",
+    "en": "Dangle a bonus (-¥500k)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "ボーナスも清算し、関係が大きく軋む ／ 移籍志願のおそれ",
@@ -13899,6 +14299,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "メディア対応する（-30万）",
+    "en": "Handle the media (-¥300k)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "メディア露出手配書",
@@ -14654,6 +15066,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "レンタルの{a}が戦列を支える。頼もしくもあり、借り物の厚みでもある。",
+    "en": "The rental wrestler {a} holds the line — reassuring, but borrowed depth all the same.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "レンタル交渉は不成立でした",
     "en": "The loan talks fell through",
     "files": [
@@ -14796,6 +15218,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "ロッカーの空気がさらに悪化する",
+    "en": "The locker room mood worsens further.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "ロッカールーム",
@@ -15140,7 +15574,7 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -16096,6 +16530,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "主力と呼べる顔ぶれ自体が足りていない。補強か育成か、決断の時が近い。",
+    "en": "There aren't even enough wrestlers to call a core lineup. Reinforce or develop — the decision is close.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "主力対決",
     "en": "Core clash",
     "files": [
@@ -16128,6 +16572,16 @@
   {
     "key": "主力層: 4〜8番手(最大20点)／控え層: 9〜12番手(最大10点)。<br>満点の基準は業界の主力水準に連動し、業界全体が強くなるほど厳しくなります。<br>怪我人・レンタルは含みません。",
     "en": "Core tier: 4th–8th (max 20 points) / reserves: 9th–12th (max 10 points).<br>Full marks are pegged to the industry's core standard, so the stronger the business gets, the harsher it becomes.<br>Injured and loaned wrestlers are not counted.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力層は若い。数字はまだ並だが、来季この陣容の景色は変わっているかもしれない。",
+    "en": "The core lineup is young. The numbers are still ordinary, but this group's picture could look different next season.",
     "files": [
       "ui-render.js"
     ],
@@ -16717,6 +17171,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "人気20到達でスポンサー収入が発生",
+    "en": "Sponsor income begins once popularity reaches 20",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "人気rawGain ×1.2",
     "en": "Popularity raw gain ×1.2",
     "files": [
@@ -16738,6 +17204,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "人気が上がり、本人も機会を喜ぶが、体調を消耗する",
+    "en": "Popularity rises and she's glad for the opportunity, but it wears down her condition.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "人気が即座にアップします",
@@ -16930,6 +17408,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "今季加入",
+    "en": "Joined this season",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "シーズンレビュー「顔ぶれの変化」の加入選手ノート(Engine.seasonReview._line経由)。management.jsは走査対象外につきP7-6で手追加"
   },
   {
     "key": "今季防衛 {n}回",
@@ -17592,6 +18082,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "休ませる",
+    "en": "Let her rest",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "休んだ週数のぶんだけ蓄積した消耗が癒え、体調も戻る。本人にも気遣いが伝わる",
     "en": "Accumulated wear heals in proportion to the weeks off, and her condition recovers too. She feels the consideration behind it.",
     "files": [
@@ -18064,6 +18566,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "個別に声をかける",
+    "en": "Talk to her one-on-one",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "個別の声かけで応える",
     "en": "Answer with a word to each",
     "files": [
@@ -18309,6 +18823,17 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true
+  },
+  {
+    "key": "元{org}王者",
+    "en": "Former {org} champion",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18330,6 +18855,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "充実期",
+    "en": "In Full Bloom",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.util.getPotentialLabel の開発段階ラベル。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsでWM_I18N.t(potLabel.label)"
   },
   {
     "key": "先取で決着",
@@ -18369,6 +18906,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "入賞賞金 ¥{v}万",
+    "en": "Prize money ¥{v:man}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18512,6 +19059,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "全体ミーティングを開く",
+    "en": "Hold a team meeting",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "全候補の確認が完了しました",
@@ -18841,6 +19400,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "共同興行分配原資 ¥{gate}万 ＋ 各団体の通常型ブランド収入 計¥{brand}万",
+    "en": "Shared gate pool ¥{gate:man} + combined regular brand revenue ¥{brand:man}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "内-/外+",
     "en": "in-/out+",
     "files": [
@@ -18998,6 +19567,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "出す",
+    "en": "Send her out",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "出場{n}回",
     "en": "{n} appearances",
     "files": [
@@ -19029,6 +19610,18 @@
     "source": [
       "SPECIAL_EVENT_INTRO.juniorTournament.travelLine"
     ]
+  },
+  {
+    "key": "出場を約束する",
+    "en": "Promise her a spot",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "出場可能な選手が不足しており、対戦カードを組めませんでした",
@@ -19163,6 +19756,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "初の月次黒字",
+    "en": "First monthly profit",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "初代 全国統一王者",
     "en": "First Unified National Champion",
     "files": [
@@ -19187,6 +19792,16 @@
     "en": "Match to crown the first champion",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "初対戦",
+    "en": "First meeting",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -19225,6 +19840,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "初興行収入",
+    "en": "First show revenue",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "初顔合わせ",
     "en": "First meeting",
     "files": [
@@ -19248,6 +19875,18 @@
     "note": "_F07_INCIDENT_META choice.label"
   },
   {
+    "key": "別の選手を推薦",
+    "en": "Recommend someone else",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "別カードに置換",
     "en": "Replace with another match",
     "files": [
@@ -19256,6 +19895,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "別メニューを提案",
+    "en": "Suggest a different menu",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "別ルートで応える",
@@ -19489,6 +20140,30 @@
     "source": [
       "TRAIT_DEFS.努力家.$key"
     ]
+  },
+  {
+    "key": "励ましの言葉",
+    "en": "Words of encouragement",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "励ます",
+    "en": "Encourage her",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "効果",
@@ -19863,6 +20538,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "却下する",
+    "en": "Reject it",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "原石",
     "en": "Diamond in the rough",
     "files": [
@@ -20162,6 +20849,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "受ける（+150万）",
+    "en": "Accept (+¥1.5M)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "受け付けない。理屈じゃない",
     "en": "I cannot take her. Nothing to do with logic.",
     "files": [
@@ -20201,7 +20900,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -20799,12 +21498,16 @@
     "key": "因縁",
     "en": "Grudge",
     "files": [
+      "data.js",
       "ui-common.js",
       "ui-render.js"
     ],
-    "count": 3,
+    "count": 4,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "source": [
+      "RIVALRY_THRESHOLDS[0:tier1].label"
+    ]
   },
   {
     "key": "因縁 {a} / 相手との関係 {b}",
@@ -21004,6 +21707,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体の知名度がさらに損なわれる",
+    "en": "The promotion's reputation is damaged further.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "団体の知名度が少し上がった",
     "en": "The organization's profile rose a little",
     "files": [
@@ -21034,6 +21749,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "団体の知名度への傷が消える",
+    "en": "The damage to the promotion's reputation disappears.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "団体の足跡",
@@ -22344,6 +23071,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "契約金を積む（-{v}万）",
+    "en": "Offer a signing bonus (-¥{v:man})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "E6選択肢イベント(引き抜き)の動的コスト選択肢。management.jsは走査対象外につきP7-6で手追加。UI側はc.labelTpl経由でt()する"
+  },
+  {
     "key": "契約金合計",
     "en": "Total signing fees",
     "files": [
@@ -22575,6 +23314,18 @@
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
   },
   {
+    "key": "安定経営が見えてきた",
+    "en": "Stable management is coming into view",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "完了",
     "en": "Done",
     "files": [
@@ -22608,6 +23359,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "完成形",
+    "en": "Fully Grown",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.util.getPotentialLabel の開発段階ラベル。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsでWM_I18N.t(potLabel.label)"
   },
   {
     "key": "定期興行",
@@ -22841,11 +23604,13 @@
     "files": [
       "data.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "kept": true,
-    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+    "source": [
+      "RIVALRY_THRESHOLDS[2:tier3].label",
+      "RIVALRY_THRESHOLDS[3:tier3].label"
+    ]
   },
   {
     "key": "宿命のカード",
@@ -22911,8 +23676,9 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "kept": true,
-    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+    "source": [
+      "RIVALRY_THRESHOLDS[1:tier2].label"
+    ]
   },
   {
     "key": "宿敵として意識",
@@ -23557,6 +24323,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "少し表情は和らぐが、焼け石に水かもしれない",
+    "en": "Her expression softens a little, but it may be a drop in the bucket.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "少なくとも1試合を組んでください",
@@ -24300,6 +25078,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "強化練習に設定。本人は意欲を汲んでもらえたと感じる",
+    "en": "Set to intensive training. She feels her motivation was recognized.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "強固",
     "en": "Rock solid",
     "files": [
@@ -24383,6 +25173,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "待遇改善（-{v}万）",
+    "en": "Better terms (-¥{v:man})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "S4選択肢イベント(不満対応)の動的コスト選択肢。management.jsは走査対象外につきP7-6で手追加。UI側はc.labelTpl経由でt()する(ui-common.js _renderChoiceEventModal系)"
   },
   {
     "key": "待遇相談",
@@ -24938,6 +25740,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "成長期",
+    "en": "Growing",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.util.getPotentialLabel の開発段階ラベル。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsでWM_I18N.t(potLabel.label)"
   },
   {
     "key": "成長経過",
@@ -26036,6 +26850,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "控えを含めても駒が余るほどで、連戦でも戦列が細らない。",
+    "en": "There's depth to spare even counting the bench — the lineup won't thin out through a tough stretch.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "控え層",
     "en": "The Bench",
     "files": [
@@ -26197,6 +27021,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "放っておく",
+    "en": "Leave her be",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "放出する",
+    "en": "Release her",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "放置",
@@ -27330,6 +28178,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "月次黒字定着＋資金確保！サバイバルクリア",
+    "en": "Monthly profit locked in, funds secured! Survival cleared",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "月間収支",
     "en": "Monthly Balance",
     "files": [
@@ -27452,6 +28312,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "未開花",
+    "en": "Unbloomed",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.util.getPotentialLabel の開発段階ラベル。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsでWM_I18N.t(potLabel.label)"
+  },
+  {
     "key": "未雇用",
     "en": "Not hired",
     "files": [
@@ -27462,6 +28334,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "本人に不満が残り、怪我の危険も増す",
+    "en": "Leaves her dissatisfied, and injury risk increases.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "本人に強い不満が残るおそれ",
     "en": "She may be deeply unhappy",
     "files": [
@@ -27470,6 +28354,78 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "本人の強い反発を招き、チームの士気も下がる",
+    "en": "Provokes strong backlash from her, and team morale drops too.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人の強い反発を招く",
+    "en": "Provokes strong backlash from her.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人の態度は大きく軟化するが、今週の成長は止まる",
+    "en": "Her attitude softens considerably, but growth stops this week.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人の態度は大きく軟化する（ただし効果には限度がある）",
+    "en": "Her attitude softens considerably (though the effect has its limits).",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人の態度は軟化する（ただし今週は成長が止まる）",
+    "en": "Her attitude softens (but growth stalls this week).",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人の態度は軟化する（団体の知名度は損なわれたまま）",
+    "en": "Her attitude softens (the promotion's reputation stays damaged).",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "本人の様子",
@@ -27507,6 +28463,18 @@
     ]
   },
   {
+    "key": "本人の表情とロッカーの空気が少し和らぐ",
+    "en": "Her expression and the locker room mood both ease a little.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "本人の試合",
     "en": "Her own match",
     "files": [
@@ -27517,6 +28485,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "本人はさらに心を閉ざし、体調も落ちる",
+    "en": "She closes off further, and her condition drops too.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人は不満を残す（約束として記憶）",
+    "en": "She's left dissatisfied (remembered as a promise).",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人は少し話を聞く姿勢になる（ロッカーの空気はそのまま）",
+    "en": "She becomes a little more willing to listen (the locker room mood stays the same).",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "本人は強く報われたと感じる　給与+{n}万/週",
     "en": "Feels rewarded — pay +¥{n:man}/wk",
     "files": [
@@ -27525,6 +28529,42 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "本人は期待に応えてもらえたと感じる。次興行でタイトルマッチ調整を検討",
+    "en": "She feels her expectations were met. Consider arranging a title match for the next show.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人は気遣いを感じ、回復も早まる",
+    "en": "She feels cared for, and recovery speeds up.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "本人は話を聞いてもらえたと感じる",
+    "en": "She feels heard.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "本命",
@@ -27557,6 +28597,36 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "本日、{week}。各団体のフロントが動き出す。今年の目玉は{age}歳の超逸材・{name}。複数の団体がすでに獲得に本腰を入れているとの情報があり、業界関係者の注目が集まっている。{maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。",
+    "en": "Today, {week}. Front offices across the promotions are stirring into motion. This year's headliner is {name}, a {age}-year-old elite prospect. Word is that several promotions are already moving in earnest to sign her, and industry eyes are converging. Can you land {maxPicks} new wrestlers to strengthen your roster — the choice that decides your promotion's future starts now.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "本日、{week}。各団体のフロントが動き出す。業界関係者の視線が集まっている。{maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。",
+    "en": "Today, {week}. Front offices across the promotions are stirring into motion. Industry eyes are watching closely. Can you land {maxPicks} new wrestlers to strengthen your roster — the choice that decides your promotion's future starts now.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "本日、{week}。各団体のフロントが動き出す。注目の逸材{eliteCount}名を中心に、業界関係者の視線が集まっている。{maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。",
+    "en": "Today, {week}. Front offices across the promotions are stirring into motion. With {eliteCount} standout prospects at the center of attention, industry eyes are watching closely. Can you land {maxPicks} new wrestlers to strengthen your roster — the choice that decides your promotion's future starts now.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "本日の候補者 ・ {n}名",
@@ -27656,7 +28726,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "査定どおり改定",
@@ -28468,6 +29539,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "次興行で出さないと、本人の強い反発を招く",
+    "en": "If she isn't booked for the next show, expect strong backlash from her.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "次興行メイン",
@@ -30573,6 +31656,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "無理強いだと受け取られるおそれ",
+    "en": "Risk of it coming across as forced.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "無益",
     "en": "futility",
     "files": [
@@ -30581,6 +31676,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "無視する",
+    "en": "Ignore it",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "無限抗争",
@@ -31197,10 +32304,9 @@
     "key": "王者",
     "en": "Champion",
     "files": [
-      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 8,
+    "count": 7,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -31339,6 +32445,27 @@
     ],
     "count": 2,
     "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true
+  },
+  {
+    "key": "現在の週給: {cur}万 → 査定: {ask}万（−{delta}万/週）",
+    "en": "Current weekly pay: ¥{cur:man} → Assessment: ¥{ask:man} (−¥{delta:man}/week)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "現在の週給: {cur}万 → 要求: {ask}万（+{delta}万/週）",
+    "en": "Current weekly pay: ¥{cur:man} → Asking: ¥{ask:man} (+¥{delta:man}/week)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -31701,6 +32828,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "直接話す",
+    "en": "Talk to her directly",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "直訴への返事",
     "en": "Answer to Her Appeal",
     "files": [
@@ -31729,6 +32868,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "直近4週の合計収支がプラスになった",
+    "en": "The last 4 weeks combined balance turned positive",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
   },
   {
     "key": "直近で獲った実績の蓄積が、評価ptの押し上げ役になっている",
@@ -32379,6 +33530,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "移籍金回収して退団",
+    "en": "Collect a transfer fee; she leaves.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "移籍願望が出やすいが、信頼が低いと成長する",
     "en": "Prone to wanting a transfer, but grows when trust is low",
     "files": [
@@ -32431,6 +33594,18 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "kept": true
+  },
+  {
+    "key": "突っぱねる",
+    "en": "Turn her down",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "突出した怪物はいないが、主力候補が広く並ぶ",
@@ -32753,7 +33928,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 3,
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -33367,6 +34542,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "経営安定化",
+    "en": "Management stabilized",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "経営安定化達成！",
     "en": "The books are stable!",
     "files": [
@@ -33752,6 +34939,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "締め",
+    "en": "Close",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "編成する",
     "en": "Set the Lineup",
     "files": [
@@ -34105,9 +35302,10 @@
     "key": "自",
     "en": "OWN",
     "files": [
+      "ui-common.js",
       "ui-render.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -34216,6 +35414,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "自団体の大会収入",
+    "en": "Your Promotion's Event Revenue",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "自団体の獲得賞金",
     "en": "Our Prize Money",
     "files": [
@@ -34317,6 +35525,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "興行でチケット・グッズ収入を得た",
+    "en": "Earned ticket and merch revenue from a show",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "SURVIVAL_MILESTONES(label/desc)。app.jsのSURVIVAL_MILESTONESはDATA_TABLES走査対象外(data.js以外はvm読込リスクのため)。P7-6で手追加、表示はui-render.jsでWM_I18N.t(m.label)/WM_I18N.t(m.desc)"
+  },
+  {
     "key": "興行のあとで…",
     "en": "After the show...",
     "files": [
@@ -34359,6 +35579,16 @@
   {
     "key": "興行会場に{org}の関係者が来ています",
     "en": "A representative from {org} has arrived at the venue.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "興行分配 ¥{gateAmount}万（均等{gateEqual}・延べ出場{appearances}人 {gateAppearances}）",
+    "en": "Gate share ¥{gateAmount:man} (equal split {gateEqual} · {appearances} total appearances {gateAppearances})",
     "files": [
       "ui-common.js"
     ],
@@ -34743,7 +35973,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "要求自体には応じず、メンバーへの個別ケアで返す。<br>注意累積 +1。",
@@ -35342,6 +36573,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "許可する",
+    "en": "Approve it",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "評価",
     "en": "Rating",
     "files": [
@@ -35655,6 +36898,18 @@
     "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
   },
   {
+    "key": "話を聞く",
+    "en": "Hear her out",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "話題の中心",
     "en": "The Center of the Conversation",
     "files": [
@@ -35749,6 +37004,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "説得する",
+    "en": "Persuade her",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "課題: ",
@@ -36016,6 +37283,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "資金+50、選手が退団",
+    "en": "Funds +50, she leaves.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "資金:",
     "en": "Funds:",
     "files": [
@@ -36044,6 +37323,18 @@
     "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "資金が増えるが、全選手の体調を大きく消耗する",
+    "en": "Funds increase, but it heavily wears down every wrestler's condition.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
   },
   {
     "key": "資金が足りません",
@@ -36632,6 +37923,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "通常練習を指示",
+    "en": "Assign regular training",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
     "key": "通常興行",
     "en": "Regular Show",
     "files": [
@@ -36905,6 +38208,16 @@
   {
     "key": "週を処理",
     "en": "Process the Week",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "週刊グラップル",
+    "en": "Weekly Grapple",
     "files": [
       "ui-render.js"
     ],
@@ -38020,7 +39333,7 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -38054,6 +39367,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "開花中",
+    "en": "Blossoming",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.util.getPotentialLabel の開発段階ラベル。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsでWM_I18N.t(potLabel.label)"
   },
   {
     "key": "閑古鳥の会場",
@@ -39723,6 +41048,16 @@
     "en": "🏆 Title Relinquished",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🏆 空位",
+    "en": "🏆 Vacant",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,

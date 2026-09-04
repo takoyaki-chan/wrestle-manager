@@ -7,6 +7,20 @@ Engine.factions = {
   // ── ヘルパー ────────────────────────────────────────────────
   _hostKey(fromId, toId) { return `${fromId}>${toId}`; },
 
+  // i18n P7-6: 派閥名(「{surname}派」)はpayload/state中は生JAのまま(D-P6-4)で、
+  // このモジュール内の resultText/impactSummary 生成では factionName をそのまま
+  // t()の{name}パラメータへ渡していた。D-P6-2の自動名前変換は`names`辞書の完全一致
+  // でしか効かず、「XX派」という複合文字列はキーに無いため常に生JAで露出していた
+  // (ui-common.jsの_factionDisplayNameと同じ根治法をここにも用意する)。
+  // 「派」で終わらない名前(フォールバック文言等)はそのまま返す(ja/未知の形はt()/pn()
+  // がいずれも素通しなので1バイト不変)。
+  _factionDisplayName(name) {
+    if (typeof name !== 'string' || !name) return name;
+    const m = /^(.+)派$/.exec(name);
+    if (!m) return name;
+    return WM_I18N.t('{surname}派', { surname: WM_I18N.pn(m[1]) });
+  },
+
   // 敵対度は週次で 0.3 ずつ動くため、二進浮動小数の誤差を state に蓄積させない。
   // 保存精度を小数1桁に固定し、旧セーブや外部入力の非有限値もここで無害化する。
   _normalizeHostility(value) {
@@ -3316,8 +3330,11 @@ Engine.factions = {
       if (!s) return '';
       let out = String(T(s));
       if (ctx && ctx.vars) {
+        // i18n P7-6: このsplit/join置換はWM_I18N.applyParamsのD-P6-2自動名前変換を
+        // 経由しない生の値差し込みのため、選手・派閥名がEN画面でも常に生JAで露出していた
+        // (screen-week u3b-bubble-text等)。pn()はja/pseudoでは素通しなので1バイト不変。
         Object.keys(ctx.vars).forEach(k => {
-          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? WM_I18N.pn(String(ctx.vars[k])) : '');
         });
       }
       return out;
@@ -3487,8 +3504,11 @@ Engine.factions = {
       if (!s) return '';
       let out = String(T(s));
       if (ctx && ctx.vars) {
+        // i18n P7-6: このsplit/join置換はWM_I18N.applyParamsのD-P6-2自動名前変換を
+        // 経由しない生の値差し込みのため、選手・派閥名がEN画面でも常に生JAで露出していた
+        // (screen-week u3b-bubble-text等)。pn()はja/pseudoでは素通しなので1バイト不変。
         Object.keys(ctx.vars).forEach(k => {
-          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? WM_I18N.pn(String(ctx.vars[k])) : '');
         });
       }
       return out;
@@ -3664,8 +3684,11 @@ Engine.factions = {
       if (!s) return '';
       let out = String(T(s));
       if (ctx && ctx.vars) {
+        // i18n P7-6: このsplit/join置換はWM_I18N.applyParamsのD-P6-2自動名前変換を
+        // 経由しない生の値差し込みのため、選手・派閥名がEN画面でも常に生JAで露出していた
+        // (screen-week u3b-bubble-text等)。pn()はja/pseudoでは素通しなので1バイト不変。
         Object.keys(ctx.vars).forEach(k => {
-          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? String(ctx.vars[k]) : '');
+          out = out.split(`{${k}}`).join(ctx.vars[k] != null ? WM_I18N.pn(String(ctx.vars[k])) : '');
         });
       }
       return out;
@@ -4246,9 +4269,9 @@ Engine.factions = {
         const d = ri(3, 5);
         s = this._applyTrustToMembers(s, memberIds(), d);
         s = this._applyLockerRoomMorale(s, ri(1, 2));
-        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: `+${d}` });
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: this._factionDisplayName(factionName) }), delta: `+${d}` });
         impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: WM_I18N.t('+1〜2') });
-        resultText = WM_I18N.t('{name}の貢献を、興行の場で言葉にして認めた。', { name: factionName });
+        resultText = WM_I18N.t('{name}の貢献を、興行の場で言葉にして認めた。', { name: this._factionDisplayName(factionName) });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], -ri(2, 4));
         impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '−' });
@@ -5729,8 +5752,9 @@ Engine.factions = {
       if (!s) return '';
       let out = String(T(s));
       if (vars) {
+        // i18n P7-6: getCommon1Line等と同型の穴(split/joinがpn()を経由しない生JA差し込み)
         Object.keys(vars).forEach(k => {
-          out = out.split(`{${k}}`).join(vars[k] != null ? String(vars[k]) : '');
+          out = out.split(`{${k}}`).join(vars[k] != null ? WM_I18N.pn(String(vars[k])) : '');
         });
       }
       return out;
@@ -5777,8 +5801,9 @@ Engine.factions = {
       if (!s) return '';
       let out = String(T(s));
       if (ctx && ctx.vars) {
+        // i18n P7-6: getCommon1Line等と同型の穴(split/joinがpn()を経由しない生JA差し込み)
         Object.keys(ctx.vars).forEach(k => {
-          const v = ctx.vars[k] != null ? String(ctx.vars[k]) : '';
+          const v = ctx.vars[k] != null ? WM_I18N.pn(String(ctx.vars[k])) : '';
           out = out.split(`{${k}}`).join(v);
         });
       }

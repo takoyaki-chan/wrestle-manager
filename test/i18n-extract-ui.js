@@ -116,6 +116,14 @@ const DATA_TABLES = [
     },
   },
   {
+    name: 'RIVALRY_THRESHOLDS',
+    // consumer: ui-common.js(選手ポップアップ「試合情報」の因縁バッジ。Engine.title.getRivalryBand経由)
+    // i18n P7-6: 表示点(lvl.label)でt()を通していなかった穴の修正で新規追加
+    extract(table, onEntry) {
+      table.forEach((th, i) => { if (th.label) onEntry(th.label, `RIVALRY_THRESHOLDS[${i}:tier${th.tier}].label`); });
+    },
+  },
+  {
     name: 'SPECIAL_EVENT_INTRO',
     // UI部分のみ(選手/コーチのセリフは既にdialogue-ledger)。P6-13でkept:true手動追加済み。
     extract(table, onEntry) {

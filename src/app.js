@@ -13198,7 +13198,7 @@ const App = {
           }
           if (!dialogue) dialogue = '…精一杯やります';
           const activityLabel = (typeof TALENT_ACTIVITY_LABELS !== 'undefined' && event.activityType)
-            ? (TALENT_ACTIVITY_LABELS[event.activityType] || WM_I18N.t('タレント活動'))
+            ? WM_I18N.t(TALENT_ACTIVITY_LABELS[event.activityType] || 'タレント活動')
             : WM_I18N.t('密着取材');
           // closeAndChoice 直後の overlay クローズ完了を確実にしてから表示
           setTimeout(() => showEventPopup({
@@ -14330,7 +14330,7 @@ const App = {
       Math.min(matchResult.mq, 100) * MEDIA_CONFIG.eventPerMQ * b3VenueMult * 1.0);
     if (b3MediaRev > 0) {
       const b3MediaIncomes = G._pendingMediaIncomes ? [...G._pendingMediaIncomes] : [];
-      b3MediaIncomes.push({ amount: b3MediaRev, label: `挑戦状 vs ${event.orgName}` });
+      b3MediaIncomes.push({ amount: b3MediaRev, label: `挑戦状 vs ${WM_I18N.pn(event.orgName)}` });
       G = { ...G, _pendingMediaIncomes: b3MediaIncomes };
     }
 
@@ -15541,7 +15541,7 @@ const App = {
       }
     });
     if (warMediaTotal + jtMediaTotal > 0) {
-      if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `対抗戦 vs ${ev.opponentName}` });
+      if (warMediaTotal > 0) warMediaIncomes.push({ amount: warMediaTotal, label: `対抗戦 vs ${WM_I18N.pn(ev.opponentName)}` });
       if (jtMediaTotal > 0) warMediaIncomes.push({ amount: jtMediaTotal, label: '対抗戦出演料' });
       G = { ...G, _pendingMediaIncomes: warMediaIncomes };
     }

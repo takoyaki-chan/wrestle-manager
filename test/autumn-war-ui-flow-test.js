@@ -227,12 +227,16 @@ function section(source, startMarker, endMarker) {
   assert.ok(!resultView.includes('class="ch-lineup-bubs"'), 'single championship speech must not leave three phantom bubble columns');
   assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');
   assert.ok(resultView.includes('大会総収入'), 'result view must show the event revenue basis');
-  assert.ok(resultView.includes('興行分配 ¥${playerShare.gateAmount}万'), 'player payout must separate gate revenue');
-  assert.ok(resultView.includes('延べ出場${playerShare.appearances}人'), 'gate payout must expose the appearance component');
-  assert.ok(resultView.includes('ブランド ¥${playerShare.brandAmount}万'), 'player payout must separate brand revenue');
-  assert.ok(resultView.includes('通常興行基礎${playerShare.brandBase}'), 'brand payout must expose the ordinary-show baseline');
-  assert.ok(resultView.includes('結果ボーナス +${Math.round(playerShare.brandBonusRate * 100)}%'), 'brand payout must expose the tournament-result percentage bonus');
-  assert.ok(resultView.includes('${playerShare.brandBonusAmount}'), 'brand payout must expose the bonus amount');
+  // i18n P7-6: 直書きテンプレ文字列をWM_I18N.t()呼び出しへ配線し直した(EN画面で
+  // 生JAのまま露出していた穴の修正)。ソース文字列一致は「金額テンプレのキー文字列」
+  // +「実データ(playerShare.*)が正しいparamsとして渡っているか」の2点を見る形に更新する。
+  assert.ok(resultView.includes('興行分配 ¥{gateAmount}万（均等{gateEqual}・延べ出場{appearances}人 {gateAppearances}）'), 'player payout must separate gate revenue');
+  assert.ok(resultView.includes('gateAmount: playerShare.gateAmount'), 'gate payout template must be fed the real gate amount');
+  assert.ok(resultView.includes('appearances: playerShare.appearances'), 'gate payout must expose the appearance component');
+  assert.ok(resultView.includes('ブランド ¥{brandAmount}万（通常興行基礎{brandBase}・結果ボーナス +{bonusRate}%／{bonusAmount}）'), 'player payout must separate brand revenue');
+  assert.ok(resultView.includes('brandBase: playerShare.brandBase'), 'brand payout must expose the ordinary-show baseline');
+  assert.ok(resultView.includes('bonusRate: Math.round(playerShare.brandBonusRate * 100)'), 'brand payout must expose the tournament-result percentage bonus');
+  assert.ok(resultView.includes('bonusAmount: playerShare.brandBonusAmount'), 'brand payout must expose the bonus amount');
   assert.ok(html.includes('.ch-bubble-slot'), 'U2 unified champion bubble slot CSS must exist');
   assert.ok(html.includes('.ch-trio-speech .ch-bubble.is-autumn-speech{display:block;-webkit-line-clamp:unset;overflow:visible}'), 'autumn champion speech must grow instead of being line-clamped');
   assert.ok(html.includes('.agw-result-finance'));
