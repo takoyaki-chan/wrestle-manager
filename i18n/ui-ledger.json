@@ -5851,7 +5851,7 @@
   },
   {
     "key": "……もう、いいかな。あの人とぶつかり続ける理由も、正直、思い出せないし。",
-    "en": "",
+    "en": "...I think I'm done. Honestly, I can't even remember why I kept clashing with her.",
     "files": [
       "ui-common.js"
     ],
@@ -5861,7 +5861,7 @@
   },
   {
     "key": "……もう、ついていけない。",
-    "en": "",
+    "en": "...I can't keep up with this anymore.",
     "files": [
       "ui-common.js"
     ],
@@ -5871,7 +5871,7 @@
   },
   {
     "key": "……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。",
-    "en": "",
+    "en": "...Talking won't settle this anymore. With her, the only answer is in the ring.",
     "files": [
       "ui-common.js"
     ],
@@ -8252,7 +8252,7 @@
   },
   {
     "key": "いいでしょう。逃げも隠れもしない。来週、メインで、決着をつけましょう。",
-    "en": "",
+    "en": "Very well. I won't run and I won't hide. Next week, in the main event, we settle it.",
     "files": [
       "ui-common.js"
     ],

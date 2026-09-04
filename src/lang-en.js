@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4022件、訳文あり4018件)
+//  生成元: i18n/ui-ledger.json (総キー4022件、訳文あり4022件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -577,6 +577,9 @@
     "……いなければ、今の自分はいない。だからこそ、倒す": "...Without her, I would not be this. That is exactly why I beat her.",
     "……この借り、必ず返してやる": "...I will pay this back. Count on it.",
     "……どうだ、これが実力の差だ": "...See that? That's the gap between us.",
+    "……もう、いいかな。あの人とぶつかり続ける理由も、正直、思い出せないし。": "...I think I'm done. Honestly, I can't even remember why I kept clashing with her.",
+    "……もう、ついていけない。": "...I can't keep up with this anymore.",
+    "……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。": "...Talking won't settle this anymore. With her, the only answer is in the ring.",
     "……わかった": "...All right",
     "……別に気にしてねーし。してねーけど、目に入んだよ": "...Not like I care. I don't, but she keeps ending up in my line of sight.",
     "……同じ場にいるだけで、耐えがたいのです": "...Simply being in the same place as her is more than I can bear.",
@@ -807,6 +810,7 @@
     "あー、いたな。それで?": "Ah, right, her. And?",
     "あー、いたな。別にどうでもいいけど": "Ah, right, her. Don't really care either way.",
     "いいえ": "No",
+    "いいでしょう。逃げも隠れもしない。来週、メインで、決着をつけましょう。": "Very well. I won't run and I won't hide. Next week, in the main event, we settle it.",
     "いたわね、そういえば。……それだけ": "Oh, right, she's around. ...That's all.",
     "いぶし銀": "Burnished Silver",
     "いろんな選手をぶつけてみよう。化学反応はどこで起きるか分からない。": "Throw all kinds of wrestlers together. You never know where the chemistry will click.",
