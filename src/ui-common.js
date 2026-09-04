@@ -647,7 +647,7 @@ function _mdlASubjectStage(fighter, bodyHtml, opts) {
       <div class="mdl-a-subject-portrait-wrap" style="width:${size.w}px;height:${size.h}px;${bg}"></div>
     </div>`;
   }
-  const name = (opts && opts.name !== undefined) ? opts.name : (fighter ? (fighter.name || '') : '');
+  const name = (opts && opts.name !== undefined) ? opts.name : (fighter ? (WM_I18N.pn(fighter.name) || '') : '');
   const meta = (opts && opts.meta !== undefined) ? opts.meta : (fighter
     ? `AGE ${fighter.age || '—'} ・ OVR ${(typeof Engine !== 'undefined' && Engine.util) ? Engine.util.ov(fighter) : ''} ・ ${String(fighter.style || '').toUpperCase() || 'FIGHTER'}`
     : '');
@@ -1013,7 +1013,7 @@ function renderWarMatchPreview() {
   const nextLabel = nextMatch ? `${WM_I18N.pn(nextMatch.playerFighter.name)} vs ${WM_I18N.pn(nextMatch.aiFighter.name)}` : '—';
 
   const tierLabel = orgCfg.tier === 'S' ? WM_I18N.t('Sランク王者') : orgCfg.tier === 'A' ? WM_I18N.t('Aランク挑戦者') : WM_I18N.t('Bランク');
-  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
+  const playerOrgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
 
   let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
 
@@ -1087,7 +1087,7 @@ function renderWarMatchPreview() {
       html += _pbResultColumn({
         winnerLabel,
         winnerIsDraw: false,
-        finishText: Engine.formatFinish(result.finType, result.finMove),
+        finishText: Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t),
         turns: result.turns || 0,
         mq: result.mq
       });
@@ -1177,7 +1177,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
   else { verdictLabel = WM_I18N.t('💀 負け越し'); verdictColor = 'var(--c-negative)'; }
 
   const tierLabel = orgCfg.tier === 'S' ? WM_I18N.t('Sランク王者') : orgCfg.tier === 'A' ? WM_I18N.t('Aランク挑戦者') : WM_I18N.t('Bランク');
-  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
+  const playerOrgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
 
   let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
 
@@ -1249,7 +1249,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     html += _pbResultColumn({
       winnerLabel,
       winnerIsDraw: false,
-      finishText: Engine.formatFinish(r.finType, r.finMove),
+      finishText: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
       turns: r.turns || 0,
       mq: r.mq
     });
@@ -1346,7 +1346,7 @@ function _showWarEnemyAceStatement(onDone) {
   const ctx = _warPostCtx;
   if (!ctx || !ctx.enemyAce) { if (onDone) onDone(); return; }
   const { ev, orgCfg, eventWon, playerWins, aiWins, enemyAce } = ctx;
-  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
+  const playerOrgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
   const dialogue = getWarPostDialogue(enemyAce, playerOrgName, eventWon, playerWins, aiWins);
   const upperUrl = getUpperUrl(enemyAce.id);
   const eColor = orgCfg.color || '#e74c3c';
@@ -2426,7 +2426,7 @@ function _renderRetirementPopup() {
     </div>`;
 
   const notes = [
-    isInjury && r.injuryType ? `🏥 ${injuryLabel(r.injuryType)}` : '',
+    isInjury && r.injuryType ? `🏥 ${injuryLabel(r.injuryType, WM_I18N.t)}` : '',
     r.wasChampion ? WM_I18N.t('🏆 王座返上') : ''
   ].filter(Boolean).join('　');
   const noteHtml = notes ? `<div style="text-align:center;color:rgba(200,180,150,0.85);font-size:13px;margin-bottom:10px">${notes}</div>` : '';
@@ -4321,7 +4321,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       // Injury
       if (c.injury) {
         html += `<div style="padding:6px 10px;background:rgba(214,48,49,0.1);border:1px solid rgba(214,48,49,0.3);border-radius:4px;font-size:11px;color:#f08b9e;margin-bottom:8px">
-          🏥 ${injuryLabel(c.injury.type)} — ${WM_I18N.t('残り{n}週', { n: c.injury.weeksLeft })}
+          🏥 ${injuryLabel(c.injury.type, WM_I18N.t)} — ${WM_I18N.t('残り{n}週', { n: c.injury.weeksLeft })}
         </div>`;
       }
 
@@ -4438,7 +4438,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
       // ── Build career display from milestones ──
       const milestones = Engine.milestone.get(G, c.id);
-      const pOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
+      const pOrgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
       const winRateFmt = totalMatches > 0 ? (wins / totalMatches).toFixed(3).slice(1) : '.000';
 
       // ── Compact Record Row（NPC記録統一: 全選手に戦績表示）──
@@ -5380,7 +5380,7 @@ function renderMatchPreview() {
         else if (result.winner === 'teamB') wNames = `${WM_I18N.pn(tB1.name)} & ${WM_I18N.pn(tB2.name)}`;
         html += `<div class="smc-result">
           <span class="winner-tag">${WM_I18N.t('🏆 {names} 勝利', { names: wNames })}</span>
-          <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
+          <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t) : ''} / ${result.turns}ターン</span>
           <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">${WM_I18N.t('評価')} ${result.mq}</span>
         </div>`;
       } else if (isNext) {
@@ -5414,7 +5414,7 @@ function renderMatchPreview() {
     const rivalLvl = getRivalryLevel(charL.id, charR.id);
     const relParts = [];
     if (rivalLvl) {
-      relParts.push(`<span style="color:${rivalLvl.color};font-weight:700">${rivalLvl.emoji}${rivalLvl.label}${WM_I18N.t('（評価+{n}）', { n: rivalLvl.mqBonus })}</span>`);
+      relParts.push(`<span style="color:${rivalLvl.color};font-weight:700">${rivalLvl.emoji}${WM_I18N.t(rivalLvl.label)}${WM_I18N.t('（評価+{n}）', { n: rivalLvl.mqBonus })}</span>`);
     } else if (rivMax > 10) {
       relParts.push(`<span style="color:#e67e22">${WM_I18N.t('⚡ 因縁')} ${Math.round(rivMax)}</span>`);
     }
@@ -5458,7 +5458,7 @@ function renderMatchPreview() {
         </div>`;
       };
       const awayRelParts = [];
-      if (rivalLvl) awayRelParts.push(`<span class="smc-away-chip is-fate">${rivalLvl.emoji}${escHtml(rivalLvl.label)} ${WM_I18N.t('評価+{n}', { n: rivalLvl.mqBonus })}</span>`);
+      if (rivalLvl) awayRelParts.push(`<span class="smc-away-chip is-fate">${rivalLvl.emoji}${escHtml(WM_I18N.t(rivalLvl.label))} ${WM_I18N.t('評価+{n}', { n: rivalLvl.mqBonus })}</span>`);
       else if (rivMax > 10) awayRelParts.push(`<span class="smc-away-chip is-fate">${WM_I18N.t('⚡ 因縁')} ${Math.round(rivMax)}</span>`);
       awayRelParts.push(`<span class="smc-away-chip">${WM_I18N.t('🤝 友好')} ${bondAvg}</span>`);
       html += `<div class="smc-away-arena">
@@ -5517,7 +5517,7 @@ function renderMatchPreview() {
       const wName = result.winner === 'draw' ? WM_I18N.t('決着つかず') : result.winner === 'left' ? charL.name : charR.name;
       html += `<div class="smc-result">
         <span class="winner-tag">${WM_I18N.t('🏆 {name} 勝利', { name: wName })}</span>
-        <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
+        <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t) : ''} / ${result.turns}ターン</span>
         <span class="mq" style="${_scale6Style(_mqColor(result.mq))}">${WM_I18N.t('評価')} ${result.mq}</span>
       </div>`;
     } else if (isNext) {
@@ -5680,7 +5680,7 @@ function renderShowResult(results, injuryResults) {
   const week = G.week || 1;
   const monthIdx = Math.floor((week - 1) / 4) + 1;
   const weekInMonth = ((week - 1) % 4) + 1;
-  const monthLabel = `${monthIdx}月 第${weekInMonth}週`;
+  const monthLabel = WM_I18N.t('{monthIdx}月 第{weekInMonth}週', { monthIdx, weekInMonth });
   const summaryTheme = _pbShowSummaryTheme(week);
 
   // Banner
@@ -5708,7 +5708,7 @@ function renderShowResult(results, injuryResults) {
   const injuryCount = injuryResults.length;
   html += `<div class="pb-attend-hero">
     <div class="pb-attend-hero-label">${WM_I18N.t('客　入　り')}</div>
-    <div class="pb-attend-hero-rating ${attendCls}">${escHtml(occEntry.label)}</div>
+    <div class="pb-attend-hero-rating ${attendCls}">${escHtml(WM_I18N.t(occEntry.label))}</div>
     <div class="pb-attend-hero-num">
       <span class="pb-attend-hero-val">${attendance.toLocaleString()}</span>
       <span class="pb-attend-hero-sep">/</span>
@@ -5771,10 +5771,10 @@ function renderShowResult(results, injuryResults) {
     if (sourceMatch?.isCRMatch) tags.push(`<span class="pb-tag is-rivalry">${WM_I18N.t('⚔ 挑戦試合')}</span>`);
     if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">${WM_I18N.t('🏆 タイトルマッチ')}</span>`);
     if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">${r.rivalryResolutionType === 'first' ? WM_I18N.t('⚔ 宿敵戦勝利') : WM_I18N.t('⚡ 決着！')}</span>`);
-    else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || WM_I18N.t('因縁'))}</span>`);
+    else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(WM_I18N.t(r.rivalryBonus.label || '因縁'))}</span>`);
     if (r.freshnessBonus) {
-      if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(r.freshnessLabel || WM_I18N.t('初顔合わせ'))}</span>`);
-      else tags.push(`<span class="pb-tag is-stale">😐 ${escHtml(r.freshnessLabel || WM_I18N.t('フレッシュ度低'))}</span>`);
+      if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(WM_I18N.t(r.freshnessLabel || '初顔合わせ'))}</span>`);
+      else tags.push(`<span class="pb-tag is-stale">😐 ${escHtml(WM_I18N.t(r.freshnessLabel || 'フレッシュ度低'))}</span>`);
     }
     if (spotlightInMatch) tags.push(`<span class="pb-tag is-spotlight">${WM_I18N.t('📺 取材中')}</span>`);
 
@@ -5800,7 +5800,7 @@ function renderShowResult(results, injuryResults) {
       html += _pbResultColumn({
         winnerLabel,
         winnerIsDraw: isDraw,
-        finishText: Engine.formatFinish(r.finType, r.finMove),
+        finishText: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
         turns: r.turns,
         mq: r.mq
       });
@@ -5849,7 +5849,7 @@ function renderShowResult(results, injuryResults) {
     html += _pbResultColumn({
       winnerLabel,
       winnerIsDraw: isDraw,
-      finishText: Engine.formatFinish(r.finType, r.finMove),
+      finishText: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
       turns: r.turns,
       mq: r.mq
     });
@@ -5984,7 +5984,7 @@ function _pbHpMini(hpL, hpR, opts = {}) {
 }
 
 function _pbInjuryBlock(injuries) {
-  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type))}</span> <span class="name">${escHtml(WM_I18N.pn(ir.name))}</span> ${WM_I18N.t('全治 {n}週間', { n: ir.injury.weeksLeft })}</span>`).join('');
+  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type, WM_I18N.t))}</span> <span class="name">${escHtml(WM_I18N.pn(ir.name))}</span> ${WM_I18N.t('全治 {n}週間', { n: ir.injury.weeksLeft })}</span>`).join('');
   return `<div class="pb-injury">
     <span class="pb-injury-label">🏥 Injury</span>
     ${items}
@@ -6510,7 +6510,7 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
   for (const st of draftNewsPage.stories) {
     if (st.type === 'draftPlayerResult') {
       const ports = st.portraits || [];
-      const org = state.orgName || WM_I18N.t('プレイヤー団体');
+      const org = WM_I18N.pn(state.orgName || 'プレイヤー団体');
       // task-77 §B: リード+注目選手(1〜2名)+締めの組み立て式。見立てティア(assessedTier)は
       // 社長にも記者にも見えている評価なので使ってよい(draftRoundup と同じ流儀)。
       // 内部数値(pot/trainCap/OVR)は使わない
@@ -6813,7 +6813,7 @@ function draftNextCandidate() {
       let signed = normFighter(clean);
       signed.orgJoinWeek = Engine.util.absWeek(G.season, G.week);
       signed = Engine.orgTimeline.transfer(signed, 'player', G.season, G.week);
-      signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: G.orgName || WM_I18N.t('プレイヤー団体'), via: 'scout' });
+      signed = Engine.career.addEvent(signed, { type: 'debut', season: G.season, week: G.week, orgId: 'player', orgName: WM_I18N.pn(G.orgName || 'プレイヤー団体'), via: 'scout' });
       // MQ再設計P5 §5.1/§5.4: 大物ルーキー/期待のライバル 判定フラグ
       { const reg = Engine.mq.registerBignewsHire(G, signed); G = reg.state; signed = reg.fighter; }
       // draft-value-rebalance: ドラフト指名ボーナス（trust + bond）
@@ -7282,7 +7282,7 @@ function renderPPVMatchPreview() {
       // 終了済み: コンパクト行
       const wName = result.winner === 'draw' ? WM_I18N.t('決着つかず') : result.winner === 'left' ? match.left.name : match.right.name;
       const loser = result.winner === 'left' ? match.right.name : result.winner === 'right' ? match.left.name : '';
-      const fin = (result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : '';
+      const fin = (result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t) : '';
       const mqCls = result.mq >= 75 ? 'h' : 'm';
       html += `<div class="ppvprog-md">
         <div class="ppvprog-mdn">${typeLabel}</div>
@@ -7469,7 +7469,7 @@ function renderPPVMatchResultPopup(idx, onContinue) {
     context: [[WM_I18N.t('カード'), match.isSummit ? WM_I18N.t('頂上決戦') : WM_I18N.t('第{n}試合', { n: idx + 1 })], [WM_I18N.t('大会最高評価'), String(bestMq)], [WM_I18N.t('次戦'), next >= 0 ? WM_I18N.t('第{n}試合', { n: next + 1 }) : WM_I18N.t('大会結果')]],
     left: { ...match.left, org: match.left._ppvOrgName || '', orgId: match.left._ppvOrgId }, right: { ...match.right, org: match.right._ppvOrgName || '', orgId: match.right._ppvOrgId }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'NO CONTEST' : match.isSummit ? 'SUMMIT WIN' : 'VICTORY',
-    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, victoryLine,
+    finish: Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t), turns: result.turns || 0, mq: result.mq, victoryLine,
     loserLine: oppLines.loserLine,
     chips: [match.isSummit ? 'PPV MAIN EVENT' : `PPV ${WM_I18N.t('第{n}試合', { n: idx + 1 })}`, result.mq === bestMq ? WM_I18N.t('大会ベストバウト') : '', match.isRivalry ? WM_I18N.t('因縁対決') : ''],
     hpLeft: result.hpLeft, hpRight: result.hpRight, hpLabel: 'FINAL HP', footNote: winnerSide === 'draw' ? `PPV ・ ${WM_I18N.t('決着つかず')}` : `PPV ・ ${winner?.name || ''} ${WM_I18N.t('勝利')}`,
@@ -7560,10 +7560,10 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     const tags = [];
     if (r.isTitleMatch) tags.push(`<span class="pb-tag is-title">${WM_I18N.t('🏆 タイトルマッチ')}</span>`);
     if (r.rivalryResolved) tags.push(`<span class="pb-tag is-rivalry">${r.rivalryResolutionType === 'first' ? WM_I18N.t('⚔ 宿敵戦勝利') : WM_I18N.t('⚡ 決着！')}</span>`);
-    else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(r.rivalryBonus.label || WM_I18N.t('因縁'))}</span>`);
+    else if (r.rivalryBonus) tags.push(`<span class="pb-tag is-rivalry">⚔ ${escHtml(WM_I18N.t(r.rivalryBonus.label || '因縁'))}</span>`);
     if (r.freshnessBonus) {
-      if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(r.freshnessLabel || WM_I18N.t('初顔合わせ'))}</span>`);
-      else tags.push(`<span class="pb-tag is-stale">😐 ${escHtml(r.freshnessLabel || WM_I18N.t('フレッシュ度低'))}</span>`);
+      if (r.freshnessBonus > 0) tags.push(`<span class="pb-tag is-first">✨ ${escHtml(WM_I18N.t(r.freshnessLabel || '初顔合わせ'))}</span>`);
+      else tags.push(`<span class="pb-tag is-stale">😐 ${escHtml(WM_I18N.t(r.freshnessLabel || 'フレッシュ度低'))}</span>`);
     }
 
     // Meta: org name for PPV
@@ -7586,7 +7586,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     html += _pbResultColumn({
       winnerLabel,
       winnerIsDraw: isDraw,
-      finishText: Engine.formatFinish(r.finType, r.finMove),
+      finishText: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
       turns: r.turns,
       mq: r.mq
     });
@@ -7753,7 +7753,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         <div class="ptv-flash-band">
           <div class="ptv-flash-kicker">RESULT — ${WM_I18N.t('第{n}試合', { n: pos + 1 })}</div>
           ${resultBlock}
-          <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove))}</b>`} ／ ${WM_I18N.t('評価')} <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
+          <div class="ptv-flash-detail">${r.turns || 0}ターン ${isDraw ? '' : `<b>${escHtml(Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t))}</b>`} ／ ${WM_I18N.t('評価')} <b>${r.mq}</b> ${_pbStars(r.mq)}</div>
         </div>
         <div class="ptv-commentary"><div class="ptv-who">${WM_I18N.t('実況')}</div>${_quoteLine(_liveLine(r))}</div>
         <div class="ptv-dots">${dots}</div>
@@ -8629,7 +8629,7 @@ function showDecisionTargetModal(docId, state) {
 
   const actualCost = Engine.shachoshitsu.calcCost(doc, state);
   // bonus / refresh_leave は動的コスト(costLabel で表示、実額は次のステップで確定)
-  const costText = doc.costLabel ? doc.costLabel : (actualCost === 0 ? WM_I18N.t('無料') : `${actualCost}万`);
+  const costText = doc.costLabel ? WM_I18N.t(doc.costLabel) : (actualCost === 0 ? WM_I18N.t('無料') : `${actualCost}万`);
 
   const candidateCards = candidates.map((f, i) => {
     const lastName = WM_I18N.pn(f.name).split(/\s/).pop();
@@ -8670,7 +8670,7 @@ function showDecisionTargetModal(docId, state) {
   }).join('');
 
   const stageBody = `
-    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:12px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.6;margin-bottom:12px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText ? WM_I18N.t(doc.detailText) : ''}</div>
     <div style="display:flex;justify-content:center;gap:18px;align-items:baseline;font-size:13px;color:var(--cream-text-main);margin-bottom:14px">
       <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">COST</span><strong style="color:var(--cream-gold-dark)">${costText}</strong></span>
       <span style="color:rgba(122,101,48,0.3)">|</span>
@@ -8683,7 +8683,7 @@ function showDecisionTargetModal(docId, state) {
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '対象となる選手を選んでください')}
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('選択後、決裁ボタンを押してください')}</div>
@@ -8754,7 +8754,7 @@ function showBonusProposalModal(fighterId, state) {
     return `<div class="mdl-a-decision-card${selCls}" data-idx="${i}" style="text-align:center${afford ? '' : ';opacity:0.45;pointer-events:none'}">
       <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:6px">${WM_I18N.t('案 {n}', { n: kanji[i] })}</div>
       <div class="mdl-a-decision-label" style="font-size:19px;margin-bottom:8px">${p.amount.toLocaleString()}<span style="font-size:12px">万</span></div>
-      <div style="font-size:11px;line-height:1.6;min-height:3.2em;${isWarned ? 'color:var(--accent-negative)' : 'color:var(--cream-text-sub)'}">${memo}</div>
+      <div style="font-size:11px;line-height:1.6;min-height:3.2em;${isWarned ? 'color:var(--accent-negative)' : 'color:var(--cream-text-sub)'}">${WM_I18N.t(memo)}</div>
       ${afford ? '' : `<div style="font-size:10px;color:var(--accent-negative);margin-top:6px">${WM_I18N.t('資金不足')}</div>`}
     </div>`;
   }).join('');
@@ -8768,7 +8768,7 @@ function showBonusProposalModal(fighterId, state) {
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '支給額を選んでください')}
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('選択後、決裁ボタンを押してください')}</div>
@@ -8851,7 +8851,7 @@ function showFactionDecreeModal(docId, state) {
     : '';
 
   const stageBody = `
-    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText ? WM_I18N.t(doc.detailText) : ''}</div>
     <div style="display:flex;justify-content:center;gap:18px;align-items:baseline;font-size:13px;color:var(--cream-text-main);margin-bottom:16px">
       <span><span style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-right:6px">COST</span><strong style="color:var(--cream-gold-dark)">${WM_I18N.t('無料')}</strong></span>
       <span style="color:rgba(122,101,48,0.3)">|</span>
@@ -8865,7 +8865,7 @@ function showFactionDecreeModal(docId, state) {
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '処置を選んでください')}
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('選択後、決裁ボタンを押してください')}</div>
@@ -8942,7 +8942,7 @@ function showLeaveWeeksModal(fighterId, state) {
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '休暇の週数を選んでください')}
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('選択後、決裁ボタンを押してください')}</div>
@@ -9039,7 +9039,7 @@ function showInviteCoachModal(state) {
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '招聘するコーチを選んでください')}
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('選択後、次へ進んでください')}</div>
@@ -9161,7 +9161,7 @@ function showInviteTargetModal(coachId, state) {
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '対象となる選手を選んでください')}
     <div class="mdl-a-subject-stage">${stageBody}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('選択後、決裁ボタンを押してください')}</div>
@@ -9418,7 +9418,7 @@ function showDecisionConfirmModal(docId, state) {
   const remainingColor = remainingFunds < 200 ? 'var(--accent-negative)' : 'var(--cream-gold-dark)';
 
   const summaryHtml = `
-    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText ? WM_I18N.t(doc.detailText) : ''}</div>
     <div style="max-width:460px;margin:0 auto;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:12px 16px;font-size:13px">
       <div style="display:flex;justify-content:space-between;padding:4px 0">
         <span style="color:var(--cream-text-sub)">${WM_I18N.t('対象')}</span>
@@ -9434,13 +9434,13 @@ function showDecisionConfirmModal(docId, state) {
       </div>
       <div style="padding:8px 0 2px;border-top:1px dashed rgba(100,85,50,0.2);margin-top:6px">
         <div style="color:var(--cream-text-sub);font-size:11px;margin-bottom:4px">${WM_I18N.t('効果')}</div>
-        <div style="color:var(--cream-text-main);line-height:1.6">${doc.effectSummary || ''}</div>
+        <div style="color:var(--cream-text-main);line-height:1.6">${doc.effectSummary ? WM_I18N.t(doc.effectSummary) : ''}</div>
       </div>
     </div>
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `TEAM DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `TEAM DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '団体全体に対して発令します。内容をご確認ください')}
     <div class="mdl-a-subject-stage">${summaryHtml}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('この内容で決裁しますか？')}</div>
@@ -9559,7 +9559,7 @@ function showDecisionPairModal(docId, state) {
   };
 
   const summaryHtml = `
-    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText || ''}</div>
+    <div style="font-size:13px;color:var(--cream-text-sub);line-height:1.7;margin-bottom:14px;text-align:center;max-width:520px;margin-left:auto;margin-right:auto">${doc.detailText ? WM_I18N.t(doc.detailText) : ''}</div>
     <div style="max-width:560px;margin:0 auto 14px">
       <div style="font-size:12px;color:var(--cream-text-sub);margin-bottom:8px">${WM_I18N.t('対象ペアを選択してください')}</div>
       <div id="mdlAPairList" style="max-height:240px;overflow-y:auto">${_renderPairList()}</div>
@@ -9568,7 +9568,7 @@ function showDecisionPairModal(docId, state) {
   `;
 
   const html = `
-    ${_mdlAHeader(`${doc.icon} ${doc.label}`, `PAIR DECISION ・ ${_mdlASeasonLabel(state)}`)}
+    ${_mdlAHeader(`${doc.icon} ${WM_I18N.t(doc.label)}`, `PAIR DECISION ・ ${_mdlASeasonLabel(state)}`)}
     ${_mdlAReporterStrip(state, '関係修復を試みるペアを選んでください')}
     <div class="mdl-a-subject-stage">${summaryHtml}</div>
     <div class="mdl-a-prompt" style="padding-top:14px">${WM_I18N.t('このペアに対して斡旋を行いますか？')}</div>
@@ -12973,18 +12973,18 @@ function showChallengeRequestModal(payload, state, onChoice) {
     if (!requester || !opponent) { if (onChoice) onChoice(null); return; }
     requesterOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.requesterOrgId])
       || reqOrg.name || payload.requesterOrgId || WM_I18N.t('他団体');
-    opponentOrgName = state.orgName || WM_I18N.t('プレイヤー団体');
+    opponentOrgName = WM_I18N.pn(state.orgName || 'プレイヤー団体');
   } else {
     const otherOrg = aiOrgs[payload.otherOrgId];
     requester = roster.find(c => c.id === payload.selfId);
     opponent = otherOrg && otherOrg.roster ? otherOrg.roster.find(c => c.id === payload.otherId) : null;
     if (!requester || !opponent) { if (onChoice) onChoice(null); return; }
-    requesterOrgName = state.orgName || WM_I18N.t('プレイヤー団体');
+    requesterOrgName = WM_I18N.pn(state.orgName || 'プレイヤー団体');
     opponentOrgName = (state.rivalOrgNames && state.rivalOrgNames[payload.otherOrgId])
       || (otherOrg && otherOrg.name) || payload.otherOrgId || WM_I18N.t('他団体');
   }
 
-  const orgName = state.orgName || WM_I18N.t('プレイヤー団体');
+  const orgName = WM_I18N.pn(state.orgName || 'プレイヤー団体');
   const otherOrgName = isInverse ? requesterOrgName : opponentOrgName;
   const rivalry = payload.rivalry != null ? payload.rivalry : 0;
   const bond    = payload.bond != null ? payload.bond : 50;
@@ -13450,10 +13450,10 @@ function showSpecialEventIntro(eventKey, state, onDone, opts) {
       || pickLine(cfg.fighter.popular);
     if (!line) { done(); return; }
     const html = `
-      ${_mdlAHeader(cfg.title, _mdlASeasonLabel(state))}
+      ${_mdlAHeader(WM_I18N.t(cfg.title), _mdlASeasonLabel(state))}
       ${_mdlASubjectStage(speaker.fighter, '', { small: true, speech: line })}
       <div class="mdl-a-prompt" style="padding-bottom:24px">
-        <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">${escHtml(cfg.nextLabel || WM_I18N.t('— 続 け る —'))}</button>
+        <button class="mdl-a-continue-btn" id="mdlASpecialIntroNext2">${escHtml(cfg.nextLabel ? WM_I18N.t(cfg.nextLabel) : WM_I18N.t('— 続 け る —'))}</button>
       </div>`;
     if (!_mdlAOpen(html)) { done(); return; }
     const btn = document.getElementById('mdlASpecialIntroNext2');
@@ -13496,7 +13496,7 @@ function showSpecialEventTravel(eventKey, state, party, onDone) {
   showTravelScene({
     heading: WM_I18N.t('— 会 場 入 り —'),
     from: {
-      label: state.orgName || WM_I18N.t('プレイヤー団体'),
+      label: WM_I18N.pn(state.orgName || 'プレイヤー団体'),
       emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''),
       accent: 'var(--c-positive)',
     },
@@ -13504,7 +13504,7 @@ function showSpecialEventTravel(eventKey, state, party, onDone) {
     party: members,
     lines: [
       WM_I18N.t('{count}を乗せたバスが、{venue}へ向かっています。', { count: countLabel, venue: venueName }),
-      cfg.travelLine || '',
+      cfg.travelLine ? WM_I18N.t(cfg.travelLine) : '',
     ].filter(Boolean),
     vehicleIcon: '🚌',
     durationMs: 5200,
@@ -13780,7 +13780,7 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
     : (isInverse ? WM_I18N.t('挑戦、許す。') : WM_I18N.t('果たし状、敗れる。'));
   const playerScore = isInverse ? result.winsB : result.winsA;
   const aiScore = isInverse ? result.winsA : result.winsB;
-  const ourOrg = state.orgName || WM_I18N.t('プレイヤー団体');
+  const ourOrg = WM_I18N.pn(state.orgName || 'プレイヤー団体');
   const otherOrgName = isInverse
     ? (card.requesterOrgName || card.otherOrgName || WM_I18N.t('相手団体'))
     : (card.otherOrgName || card.opponentOrgName || WM_I18N.t('相手団体'));
@@ -13955,7 +13955,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
   // 変更しない。表示にはescHtml済みの*Safe変数を使う(U5: スコア帯・コーチ行・試合行のescHtml抜けを解消)。
   const reqName = card.teamA[0].name;
   const oppName = card.teamB[0].name;
-  const ourOrg = state.orgName || WM_I18N.t('プレイヤー団体');
+  const ourOrg = WM_I18N.pn(state.orgName || 'プレイヤー団体');
   const otherOrgName = isInverse ? (card.requesterOrgName || card.otherOrgName) : card.otherOrgName;
   const reqNameSafe = escHtml(reqName);
   const oppNameSafe = escHtml(oppName);
@@ -14828,7 +14828,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
 
   const ovrA = Math.round(Engine.util.ov(fA)), ovrB = Math.round(Engine.util.ov(fB));
   const finText = (typeof Engine.formatFinish === 'function')
-    ? Engine.formatFinish(matchResult.finType, matchResult.finMove)
+    ? Engine.formatFinish(matchResult.finType, matchResult.finMove, undefined, WM_I18N.t)
     : `${matchResult.finMove || ''} → ${matchResult.finType || ''}`;
 
   // 影響はキャラクターの台詞ではないため、吹き出しに入れずA型の結果欄へ置く。
@@ -14956,7 +14956,7 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   if (draw) winnerLabel = 'NO CONTEST';
   else winnerLabel = `🏆 ${escHtml(WM_I18N.pn(winChar.name))} WIN`;
 
-  const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
+  const playerOrgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
 
   let html = `<div class="pb-container" style="--pb-enemy-color:${eColor}">`;
 
@@ -14982,7 +14982,7 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
       <div class="pb-score-lbl">${WM_I18N.t('評価')}</div>
     </div>
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(matchResult.finType, matchResult.finMove))}</div>
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(matchResult.finType, matchResult.finMove, undefined, WM_I18N.t))}</div>
       <div class="pb-score-lbl">Finish</div>
     </div>
   </div>`;
@@ -15001,7 +15001,7 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   html += _pbResultColumn({
     winnerLabel,
     winnerIsDraw: draw,
-    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove),
+    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove, undefined, WM_I18N.t),
     turns: matchResult.turns || 0,
     mq: matchResult.mq || 0
   });
@@ -15189,7 +15189,7 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   html += _pbResultColumn({
     winnerLabel,
     winnerIsDraw: draw,
-    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove),
+    finishText: Engine.formatFinish(matchResult.finType, matchResult.finMove, undefined, WM_I18N.t),
     turns: matchResult.turns || 0,
     mq: matchResult.mq || 0
   });
@@ -15253,12 +15253,12 @@ function _buildB4Modal(event, state, roster) {
     available = roster.filter(f => !f.injury && !f.isRental);
   }
 
-  const outletName = event.outletName || WM_I18N.t('メディア');
+  const outletName = WM_I18N.pn(event.outletName || 'メディア');
 
   if (activityType && typeof TALENT_ACTIVITY_LABELS !== 'undefined') {
     // 新タレント活動モーダル
     const icon = TALENT_ACTIVITY_ICONS[activityType] || '🎤';
-    const label = TALENT_ACTIVITY_LABELS[activityType] || WM_I18N.t('タレント活動');
+    const label = WM_I18N.t(TALENT_ACTIVITY_LABELS[activityType] || 'タレント活動');
 
     let html = `<div class="care-title" style="border-bottom:1px solid #3498db;padding-bottom:10px;margin-bottom:12px">${icon} ${WM_I18N.t('{outlet}からの{label}オファー', { outlet: outletName, label })}</div>`;
 
@@ -15285,7 +15285,7 @@ function _buildB4Modal(event, state, roster) {
       .filter(x => x.mult >= 1.4)
       .sort((a, b) => (b.f.popularity || 1) - (a.f.popularity || 1))
       .slice(0, 2)
-      .map(x => x.f.name);
+      .map(x => WM_I18N.pn(x.f.name));
 
     if (recommendations.length > 0) {
       html += `<div style="font-size:11px;color:#f1c40f;margin-bottom:10px;padding:6px 8px;background:rgba(241,196,15,0.08);border-radius:4px;border:1px solid rgba(241,196,15,0.2)">
@@ -15465,7 +15465,7 @@ function _renderNextMatchDialogue() {
   box.innerHTML = `
     <div class="vd-head">
       <div class="vd-title">${d.isUpset ? WM_I18N.t('番 狂 わ せ') : WM_I18N.t('因 縁 の 一 戦')}</div>
-      <div class="vd-sub">${escHtml(d.matchLabel || '')} ・ ${rb.emoji || '🔥'}${escHtml(rb.label || WM_I18N.t('因縁'))}</div>
+      <div class="vd-sub">${escHtml(d.matchLabel || '')} ・ ${rb.emoji || '🔥'}${escHtml(WM_I18N.t(rb.label || '因縁'))}</div>
     </div>
     <div class="vd-stage">
       ${_rivalryCol(d.winnerId, d.winnerName, d.winLine, true)}
@@ -17144,7 +17144,7 @@ function renderJuniorTournamentSummon() {
   html += `<div class="jt-so-card-img">${faceUrl ? `<img src="${faceUrl}" alt="${WM_I18N.pn(p.name)}">` : ''}</div>`;
   html += `<div class="jt-so-card-body">`;
   html += `<div class="jt-so-nm">${WM_I18N.pn(p.name)}</div>`;
-  html += `<div class="jt-so-inf">${p._orgName || ''} ・ OVR ${p.ovr}</div>`;
+  html += `<div class="jt-so-inf">${WM_I18N.pn(p._orgName || '')} ・ OVR ${p.ovr}</div>`;
   if (line) {
     html += `<div class="jt-so-bub"><div class="sp">${WM_I18N.pn(p.name)}</div>${_quoteLine(line)}</div>`;
   }
@@ -18151,7 +18151,7 @@ function _emrOrgBadgeHtml(orgId, orgName, side) {
         : (typeof Engine.util.getOrgIconPath === 'function' ? Engine.util.getOrgIconPath(G, orgId) : ''))
     : '';
   const emblem = path ? `<img src="${path}" alt="" loading="lazy">` : escHtml(_emrOrgInitial(orgName));
-  return `<div class="emr-org-badge ${sideCls}"><span class="emr-org-emblem">${emblem}</span><span class="emr-org-name">${escHtml(orgName)}</span></div>`;
+  return `<div class="emr-org-badge ${sideCls}"><span class="emr-org-emblem">${emblem}</span><span class="emr-org-name">${escHtml(WM_I18N.pn(orgName))}</span></div>`;
 }
 
 /** opts.profileContext を渡すと画像と名前が選手プロフィールへの導線になる。
@@ -18372,7 +18372,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
   const venueLabel = sp.isUnifiedAwayTitle
     ? `${unifiedOpponentOrgName || WM_I18N.t('相手団体')} ${WM_I18N.t('興行')}`
     : sp.isAwayChallenge ? `${challenge?.opponentOrgName || WM_I18N.t('相手団体')} ${WM_I18N.t('興行')}` : (venue?.name || WM_I18N.t('通常興行'));
-  const leftOrg = isUnified ? (G.orgName || WM_I18N.t('プレイヤー団体'))
+  const leftOrg = isUnified ? (WM_I18N.pn(G.orgName || 'プレイヤー団体'))
     : isChallenge ? (challenge.requesterOrgName || challenge.requesterOrgId) : WM_I18N.t('プレイヤー団体');
   const rightOrg = isUnified ? unifiedOpponentOrgName
     : isChallenge ? (challenge.opponentOrgName || challenge.opponentOrgId) : WM_I18N.t('プレイヤー団体');
@@ -18392,7 +18392,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
       theme: 'normal', title: resultTitle, meta: WM_I18N.t('YEAR {season} ・ WEEK {week} ・ 第{n}試合 / 全{total}試合', { season: G.season, week: G.week, n: boutNumber, total }),
       progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [[WM_I18N.t('会場'), venueLabel], [WM_I18N.t('試合形式'), 'TAG MATCH'], [WM_I18N.t('試合評価'), String(result.mq ?? '—')]],
       isTag: true, teamLeft: { members: membersA, org: leftOrg, orgId: leftOrgId }, teamRight: { members: membersB, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter,
-      winAttribution: result.winAttribution, finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq, chips: [WM_I18N.t('通常興行'), WM_I18N.t('タッグマッチ')], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
+      winAttribution: result.winAttribution, finish: Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t), turns: result.turns || 0, mq: result.mq, chips: [WM_I18N.t('通常興行'), WM_I18N.t('タッグマッチ')], hpLeft: _emrTeamHp(result, idsA), hpRight: _emrTeamHp(result, idsB),
       footNote: WM_I18N.t('通常興行 ・ 試合結果'), nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
     });
     return;
@@ -18428,7 +18428,7 @@ function renderRegularMatchResultPopup(idx, onContinue) {
     progress: `${boutNumber} / ${total}`, progressLabel: 'MATCH', context: [[WM_I18N.t('会場'), venueLabel], [WM_I18N.t('試合形式'), isUnified ? 'UNIFIED TITLE' : isChallenge ? 'CHALLENGE MATCH' : match.isTitle ? 'TITLE MATCH' : 'SINGLE MATCH'], [WM_I18N.t('試合評価'), String(result.mq ?? '—')]],
     left: { ...left, org: leftOrg, orgId: leftOrgId }, right: { ...right, org: rightOrg, orgId: rightOrgId }, winnerSide, winnerFighter: winner,
     leftRole: winnerSide === 'left' ? 'Winner' : 'Challenger', rightRole: winnerSide === 'right' ? 'Winner' : 'Challenger', resultLabel: winnerSide === 'draw' ? 'NO CONTEST' : match.isTitle ? 'TITLE WIN' : 'WIN',
-    finish: Engine.formatFinish(result.finType, result.finMove), turns: result.turns || 0, mq: result.mq,
+    finish: Engine.formatFinish(result.finType, result.finMove, undefined, WM_I18N.t), turns: result.turns || 0, mq: result.mq,
     victoryLine, loserLine, showVictoryLine,
     chips: [isUnified ? WM_I18N.t('全国統一王座') : isChallenge ? WM_I18N.t('挑戦試合') : match.isTitle ? WM_I18N.t('タイトルマッチ') : WM_I18N.t('通常興行'), WM_I18N.t('評価 {n}', { n: result.mq })], hpLeft: result.hpLeft, hpRight: result.hpRight,
     footNote: (isUnified || isChallenge) ? `${leftOrg} vs ${rightOrg}` : WM_I18N.t('通常興行 ・ 試合結果'), nextLabel: _matchNextLabel(idx >= total - 1), onContinue,
@@ -18466,7 +18466,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
       context: [['Round', roundLabel], [WM_I18N.t('勝ち上がり'), isFinal ? WM_I18N.t('優勝') : WM_I18N.t('次戦進出')], [WM_I18N.t('次戦'), isFinal ? WM_I18N.t('優勝発表') : (ri + 1 === rounds.length - 1 ? WM_I18N.t('決勝') : WM_I18N.t('次ラウンド'))]],
       left: { ...left, org: match.left._orgName || '', orgId: match.left._orgId }, right: { ...right, org: match.right._orgName || '', orgId: match.right._orgId }, winnerSide: leftWins ? 'left' : 'right', winnerFighter: winner,
       leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
-      finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq, victoryLine: winLine,
+      finish: Engine.formatFinish(match.finType, match.finMove, undefined, WM_I18N.t), turns: match.turns || 0, mq: match.mq, victoryLine: winLine,
       chips: [isFinal ? WM_I18N.t('ジュニア王者') : WM_I18N.t('次戦進出'), `${roundLabel}`, WM_I18N.t('評価 {n}', { n: match.mq })], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : WM_I18N.t('回復後HP'),
       footNote: WM_I18N.t('夏季ジュニア ・ {name} {result}', { name: winner.name, result: isFinal ? WM_I18N.t('優勝') : WM_I18N.t('勝ち上がり') }), nextLabel: _matchNextLabel(isFinal),
       onContinue: () => App.jtAdvanceAfterResult(ri, mi),
@@ -18534,7 +18534,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
       <div class="pb-score-lbl">評価</div>
     </div>
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove))}</div>
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove, undefined, WM_I18N.t))}</div>
       <div class="pb-score-lbl">Finish</div>
     </div>
   </div>`;
@@ -18547,7 +18547,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
   html += _pbResultColumn({
     winnerLabel,
     winnerIsDraw: false,
-    finishText: Engine.formatFinish(match.finType, match.finMove),
+    finishText: Engine.formatFinish(match.finType, match.finMove, undefined, WM_I18N.t),
     turns: match.turns || 0,
     mq: match.mq
   });
@@ -18948,9 +18948,9 @@ function _stlFinalPreviewHtml(finalM) {
     <div class="stl-final-label">FINAL</div>
     <div class="stl-final-sub">${WM_I18N.t('優勝決定戦')}</div>
     <div class="stl-final-faceoff">
-      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('A1位')}</span><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? WM_I18N.pn(fA1.name) : '?')} &amp; ${escHtml(fA2 ? WM_I18N.pn(fA2.name) : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('A1位')}</span><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? WM_I18N.pn(fA1.name) : '?')} &amp; ${escHtml(fA2 ? WM_I18N.pn(fA2.name) : '?')}</span><span class="org">${teamA ? escHtml(WM_I18N.pn(teamA.orgName)) : ''}</span></div>
       <div class="stl-final-vs">VS</div>
-      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('B1位')}</span><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? WM_I18N.pn(fB1.name) : '?')} &amp; ${escHtml(fB2 ? WM_I18N.pn(fB2.name) : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('B1位')}</span><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? WM_I18N.pn(fB1.name) : '?')} &amp; ${escHtml(fB2 ? WM_I18N.pn(fB2.name) : '?')}</span><span class="org">${teamB ? escHtml(WM_I18N.pn(teamB.orgName)) : ''}</span></div>
     </div>
   </div>`;
 }
@@ -18964,9 +18964,9 @@ function _stlUpcomingMatchHtml(m, matchNumber) {
     <div class="stl-match-preview-label">NEXT MATCH</div>
     <div class="stl-match-preview-round">${m.block ? WM_I18N.t('{block}ブロック 第{n}試合', { block: m.block, n: m.blockRound }) : WM_I18N.t('リーグ 第{n}試合', { n: matchNumber })} ${WM_I18N.t('/ 全体{n}試合目', { n: matchNumber })}</div>
     <div class="stl-final-faceoff">
-      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? WM_I18N.pn(fA1.name) : '?')} &amp; ${escHtml(fA2 ? WM_I18N.pn(fA2.name) : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? WM_I18N.pn(fA1.name) : '?')} &amp; ${escHtml(fA2 ? WM_I18N.pn(fA2.name) : '?')}</span><span class="org">${teamA ? escHtml(WM_I18N.pn(teamA.orgName)) : ''}</span></div>
       <div class="stl-final-vs">VS</div>
-      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? WM_I18N.pn(fB1.name) : '?')} &amp; ${escHtml(fB2 ? WM_I18N.pn(fB2.name) : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? WM_I18N.pn(fB1.name) : '?')} &amp; ${escHtml(fB2 ? WM_I18N.pn(fB2.name) : '?')}</span><span class="org">${teamB ? escHtml(WM_I18N.pn(teamB.orgName)) : ''}</span></div>
     </div>
   </div>`;
 }
@@ -18986,7 +18986,7 @@ function renderSpringTagLeagueMatchResultPopup(match, isFinal, onContinue) {
     progress: isFinal ? 'FINAL' : `${match.round} / ${(G.springTagLeague?.matches || []).length}`, progressLabel: isFinal ? 'CHAMPIONSHIP' : 'LEAGUE',
     context: [[WM_I18N.t('勝者勝点'), match.isDraw ? '+1' : '+3'], [WM_I18N.t('接戦ボーナス'), closeBonus ? '+1' : '—'], [WM_I18N.t('勝利団体'), _stlOrgTeam(winnerOrg)?.orgName || WM_I18N.t('決着つかず')]],
     isTag: true, teamLeft: { members: membersA, org: teamA?.orgName || '', orgId: match.orgA }, teamRight: { members: membersB, org: teamB?.orgName || '', orgId: match.orgB }, winnerSide, winnerFighter,
-    resultLabel: decidedFinalDraw ? 'TIEBREAK CHAMPION' : match.isDraw ? 'NO CONTEST' : isFinal ? 'CHAMPION' : 'TEAM WIN', winAttribution: match.winAttribution, finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
+    resultLabel: decidedFinalDraw ? 'TIEBREAK CHAMPION' : match.isDraw ? 'NO CONTEST' : isFinal ? 'CHAMPION' : 'TEAM WIN', winAttribution: match.winAttribution, finish: Engine.formatFinish(match.finType, match.finMove, undefined, WM_I18N.t), turns: match.turns || 0, mq: match.mq,
     chips: [decidedFinalDraw ? WM_I18N.t('引分裁定: {decision}', { decision: match.tieBreakDecision || WM_I18N.t('大会規定') }) : match.isDraw ? WM_I18N.t('勝点 +1') : WM_I18N.t('リーグ勝点 +3'), closeBonus ? WM_I18N.t('接戦ボーナス +1') : '', isFinal ? WM_I18N.t('春の王者') : WM_I18N.t('{block}ブロック', { block: match.block || '' })],
     hpLeft: match.conditionAfter?.[match.teamAId || match.orgA] ?? match.conditionAfter?.[match.orgA],
     hpRight: match.conditionAfter?.[match.teamBId || match.orgB] ?? match.conditionAfter?.[match.orgB],
@@ -19050,7 +19050,7 @@ function renderSpringTagLeagueBoard() {
         <td><div class="stl-league-pair">
           <span class="stl-league-faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
           <span>
-            <span class="stl-league-org">${isMine ? WM_I18N.t('★ 自団体 第{n}代表', { n: team.slot || 1 }) : `${escHtml(team.orgName)} ${WM_I18N.t('第{n}代表', { n: team.slot || 1 })}`}</span>
+            <span class="stl-league-org">${isMine ? WM_I18N.t('★ 自団体 第{n}代表', { n: team.slot || 1 }) : `${escHtml(WM_I18N.pn(team.orgName))} ${WM_I18N.t('第{n}代表', { n: team.slot || 1 })}`}</span>
             <span class="stl-league-team-name">${escHtml(f1 ? WM_I18N.pn(f1.name) : '?')} &amp; ${escHtml(f2 ? WM_I18N.pn(f2.name) : '?')}</span>
             ${idx > 0 ? `<span class="stl-league-condition">${_stlWearBarHtml(cond)}</span>` : ''}
           </span>
@@ -19715,7 +19715,7 @@ function renderAutumnWarBoutResultPopup(match, bout, onContinue) {
     leftRole: `${winnerSide === 'left' ? 'Survivor' : 'Eliminated'} ・ ${_agwRoleLabel(_agwOrderFor(match, displayOrgIds.left), left.id)}`,
     rightRole: `${winnerSide === 'right' ? 'Survivor' : 'Eliminated'} ・ ${_agwRoleLabel(_agwOrderFor(match, displayOrgIds.right), right.id)}`,
     leftStatLabel: 'COND', leftStat: Math.round(bout.conditionAfter?.[left.id] || 0), rightStatLabel: 'COND', rightStat: Math.round(bout.conditionAfter?.[right.id] || 0),
-    resultLabel: bout.draw ? 'NO CONTEST' : 'SURVIVE', finish: Engine.formatFinish(bout.finType, bout.finMove), turns: bout.turns || 0, mq: bout.mq,
+    resultLabel: bout.draw ? 'NO CONTEST' : 'SURVIVE', finish: Engine.formatFinish(bout.finType, bout.finMove, undefined, WM_I18N.t), turns: bout.turns || 0, mq: bout.mq,
     chips: [WM_I18N.t('団体スコア {a}–{b}', { a: score[displayOrgIds.left] || 0, b: score[displayOrgIds.right] || 0 }), match.winnerOrg ? WM_I18N.t('団体戦決着') : WM_I18N.t('勝ち残り'), roundLabel], hpLeft: bout.conditionAfter?.[left.id], hpRight: bout.conditionAfter?.[right.id], hpLabel: 'CONDITION',
     footNote: WM_I18N.t('秋団体戦 ・ {result}', { result: bout.draw ? WM_I18N.t('決着つかず') : WM_I18N.t('{name} 生存', { name: winner.name }) }), nextLabel: _matchNextLabel(false), onContinue,
   });
@@ -20009,7 +20009,7 @@ function _tcCircleFx(f, isWin, isLose, withOrg) {
   const img = upperUrl
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((WM_I18N.pn(f.name) || '?')[0])}</span>`;
-  const org = withOrg ? `<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span>` : '';
+  const org = withOrg ? `<span class="org">${escHtml(WM_I18N.pn(f._orgName || ''))}${_tcOwnPill(f.orgId)}</span>` : '';
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)"`;
   // P6-11: ブラケットセルは52〜76px幅の固定枠(1行)。姓のみ表示(jtc-fnと同じ理由)
   return `<div class="tc-fx${isLose ? ' is-lose' : ''}"${open}>
@@ -20029,7 +20029,7 @@ function _tcRectFx(f, isWin, isLose) {
   // P6-11: 104〜132px幅の固定枠(1行、white-space:nowrap+ellipsis)。姓のみ表示(jtc-fnと同じ理由)
   return `<div class="tc-rc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
-    <div class="tc-fn">${escHtml(WM_I18N.pnSurname(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
+    <div class="tc-fn">${escHtml(WM_I18N.pnSurname(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(WM_I18N.pn(f._orgName || ''))}${_tcOwnPill(f.orgId)}</span></div>
   </div>`;
 }
 
@@ -20497,7 +20497,7 @@ function renderTenchosenMatchResult(ri, mi) {
       context: [['Round', roundLabel], [WM_I18N.t('次戦'), isFinal ? WM_I18N.t('優勝発表') : WM_I18N.t('勝ち上がり')], [WM_I18N.t('4年周期'), WM_I18N.t('第{n}回大会', { n: _tcEditionNo() })]],
       left, right, winnerSide: leftWins ? 'left' : 'right', winnerFighter: winner,
       leftRole: leftWins ? 'Finalist' : 'Eliminated', rightRole: leftWins ? 'Eliminated' : 'Finalist', resultLabel: isFinal ? 'CHAMPION' : 'ADVANCE',
-      finish: Engine.formatFinish(match.finType, match.finMove), turns: match.turns || 0, mq: match.mq,
+      finish: Engine.formatFinish(match.finType, match.finMove, undefined, WM_I18N.t), turns: match.turns || 0, mq: match.mq,
       chips: [WM_I18N.t('第{n}回天頂戦', { n: _tcEditionNo() }), isFinal ? WM_I18N.t('最強王者') : WM_I18N.t('次戦進出'), WM_I18N.t('評価 {n}', { n: match.mq })], hpLeft: recover('left'), hpRight: recover('right'), hpLabel: isFinal ? 'FINAL HP' : WM_I18N.t('回復後HP'),
       footNote: WM_I18N.t('天頂戦 ・ {name} {result}', { name: winner.name, result: isFinal ? WM_I18N.t('優勝') : WM_I18N.t('勝ち上がり') }), nextLabel: _matchNextLabel(isFinal),
       onContinue: () => App.tcAdvanceAfterResult(ri, mi),
@@ -20555,7 +20555,7 @@ function renderTenchosenMatchResult(ri, mi) {
       <div class="pb-score-lbl">評価</div>
     </div>
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove))}</div>
+      <div class="pb-score-val" style="font-size:14px;color:var(--stage-text-main)">${escHtml(Engine.formatFinish(match.finType, match.finMove, undefined, WM_I18N.t))}</div>
       <div class="pb-score-lbl">Finish</div>
     </div>
   </div>`;
@@ -20567,7 +20567,7 @@ function renderTenchosenMatchResult(ri, mi) {
   html += _pbResultColumn({
     winnerLabel: `🏆 ${escHtml(WM_I18N.pn(winner.name))} WIN`,
     winnerIsDraw: false,
-    finishText: Engine.formatFinish(match.finType, match.finMove),
+    finishText: Engine.formatFinish(match.finType, match.finMove, undefined, WM_I18N.t),
     turns: match.turns || 0,
     mq: match.mq
   });
@@ -20674,7 +20674,7 @@ function _tcDramaActor(fighter, bubbleText, emoBadge, crimson) {
   return `<div class="tcdr-actor">
     ${top}
     <div class="tcdr-rc">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.opacity=0">` : ''}</div>
-    <div class="tcdr-name">${escHtml(WM_I18N.pn(fighter.name))}<span class="org">${escHtml(fighter._orgName || '')}${_tcOwnPill(fighter.orgId)}</span></div>
+    <div class="tcdr-name">${escHtml(WM_I18N.pn(fighter.name))}<span class="org">${escHtml(WM_I18N.pn(fighter._orgName || ''))}${_tcOwnPill(fighter.orgId)}</span></div>
   </div>`;
 }
 

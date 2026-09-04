@@ -227,7 +227,7 @@ function makeEl(id) {
 (function openingSuite() {
   const build = new Function(
     'G', 'Engine', 'Audio', 'document', 'getUpperUrl', 'refreshAll',
-    'requestAnimationFrame', 'setTimeout', 'clearTimeout',
+    'requestAnimationFrame', 'setTimeout', 'clearTimeout', 'WM_I18N',
     `let _openingAct = 0;
      let _openingOverlay = null;
      let _openingTransitioning = false;
@@ -261,12 +261,20 @@ function makeEl(id) {
     };
     const calls = { refreshAll: 0 };
     const GStub = { orgName: 'テスト団体', weekPhase: 'opening' };
+    // i18n Stage B P6-13: renderOpeningScreenがWM_I18N.pn()(プレイヤー団体名)を呼ぶよう
+    // 配線されたため、他のbuild()ブロックと同じくWM_I18N素通しスタブを渡す(ja相当)
+    const WM_I18N_STUB = { t(text, params) {
+      if (typeof text !== 'string' || !params) return text;
+      let out = text;
+      Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+      return out;
+    }, pn(str) { return str; } };
     const built = build(
       GStub,
       { draft: { getFixedInfo: () => [{ id: 1, name: 'A' }, { id: 2, name: 'B' }] } },
       { bgm: { playForState() {} } },
       documentStub, () => '', () => { calls.refreshAll++; },
-      (fn) => fn(), timers.setTimeout, timers.clearTimeout
+      (fn) => fn(), timers.setTimeout, timers.clearTimeout, WM_I18N_STUB
     );
     const overlay = () => created.find(el => el.className === 'opening-overlay');
     const skip = () => created.find(el => el.className === 'opening-skip');

@@ -5,12 +5,16 @@ const vm = require('vm');
 
 const root = path.resolve(__dirname, '..');
 const read = (...parts) => fs.readFileSync(path.join(root, ...parts), 'utf8');
+// i18n Stage B P6-13: Engine.util.formatDate()がdict省略時のフォールバック充填に
+// data.js:fillTemplateVars()(_wmFillWithDict経由)へ依存するようになったため、
+// 実行環境と同じくdata.jsも一緒に読み込む(management.js単体では動かないのは既存の実行順序どおり)
+const data = read('src', 'data.js');
 const management = read('src', 'management.js');
 const render = read('src', 'ui-render.js');
 const html = read('src', 'index.html');
 
 const sandbox = {};
-vm.runInNewContext(`${management}\nthis.__engine = Engine;`, sandbox);
+vm.runInNewContext(`${data}\n${management}\nthis.__engine = Engine;`, sandbox);
 const util = sandbox.__engine.util;
 
 assert.strictEqual(util.formatDate(1, 1), '1年目 🌸春 第1週');

@@ -3867,9 +3867,12 @@ const INJURY_LABEL_SHORT = {
   '重傷': '重傷',
   '練習負傷': '練習負傷',
 };
-function injuryLabelShort(type) {
+// i18n Stage B P6-13: injuryLabel(dict)と対称のdict引数(第2引数)を追加。省略時はJA原文のまま
+// (既存呼び出し元は無改修で不変)
+function injuryLabelShort(type, dict) {
   if (!type) return '';
-  return INJURY_LABEL_SHORT[type] || String(type);
+  const label = INJURY_LABEL_SHORT[type] || String(type);
+  return (typeof dict === 'function') ? dict(label) : label;
 }
 
 // i18n Stage A P3a: シーズン総括見出し(金銘板)の表示ラベル。

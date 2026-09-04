@@ -261,6 +261,30 @@ P6-9(`docs/i18n-en-layout-overflow-report-v0.1.md`)が計測したEN溢れ87〜8
 2. **✅棚卸し完了(P6-14)** — **`RETIREMENT_TEMPLATES`の穴はP6-10で解消済み**(§6の対象テーブル一覧に追加)。同型が他に無いかの機械列挙をP6-14で実施し、`*_TEMPLATES`族3件+近縁1件を検出した(§13-2)
 3. **相関図の選手名pn()ロングテール**: P6-10でモバイル版の5箇所を配線したが、デスクトップ版(`rm-compare-*`等)や派閥オーバーレイには未通過の`${c.name}`が残る(D-P6-3の残≈634件の一部)
 
+## 13. ENモードのJA露出全数棚卸し(Stage B P6-13、2026-09-04追加)
+
+i18n-miss=0のままJA exposure(informational計測)が画面別で高止まりしていた(合計308)ことの原因究明。**「t()に一度も渡っていない」構造的な配線穴**を6系統発見・解消した。詳細は`docs/worklog.md`冒頭のP6-13エントリ、ここでは今後のバッチが再発を避けるための規約・チェックリストとして要点のみ記す。
+
+### 13-1. 棚卸しツール: `scanJaExposureDetail()`
+
+`test/ui-walkthrough/detectors.js`に、既存の`jaExposureByScreen`(画面ごとの最大値のみ)を補う一覧モードを追加。要素ごとの`{screen, selector, text先頭60字}`を`(screen,selector,text)`で重複排除して`jaExposureRecords`へ蓄積する(`scanOverflow`と同じ設計)。`run.js`の`--ja-exposure-log <file>`で全量をJSONダンプできる。ja側の行動選択・digestには一切影響しない(`scanOverflow`同様、副作用のない情報収集のみ)。**新しいEN露出調査をするときはこれを使う**(個々の要素のtext/selectorが無いと「どのテーブル/どの表示点か」を特定できず、jaExposureByScreenの数字だけでは対策が立てられない)。
+
+### 13-2. 発見した配線穴の型カタログ(次バッチで同型を探すときのチェックリスト)
+
+1. **`X.field || WM_I18N.t(fallback)`死コード**: `X.field`がEngineから常に非空文字列で返る設計だと、右辺のt()に永久に到達しない。`WM_I18N.t(X.field || fallback)`(または名前なら`pn()`)に直すのが正しい形。P6-13で9型・のべ40箇所以上発見(§2-4参照)。**新しくこのパターンを書かないこと** — フォールバック値は「Xが空文字/nullのときだけ」使われる設計を意識する
+2. **Engine関数のdict引数が「存在するのに」呼び出し元が渡していない**: `Engine.formatFinish`(P4-5でdict引数実装済み)が24箇所中21箇所で未指定、`injuryLabel`/`injuryLabelShort`(P4-4でdict引数実装済み)が9箇所で未指定だった。**dict-opts化された関数を新しい呼び出し元から呼ぶときは、既存の類似呼び出しをコピペせず必ずdict引数の有無を確認すること**
+3. **3抽出パイプラインいずれにも無い「5件目・6件目の構造的欠落」**: DECISION_DOCS(data.js、社長室書類67文字列)がui-ledger/template-ledger/dialogue-ledgerいずれの走査にも入っていなかった(§10-2の4件+P6-10の1件に続く事例)。判定基準は「`escHtml(X)`や`${X}`で直接出力しているのにXの生成元をgrepしても`WM_I18N.t(`/`WM_I18N.pn(`が1件も無い」こと
+4. **`_pickSeed(pool, seed)`のプールが1本しかない**: `seed % 1`は常に0を返すため、同じ状況に複数エンティティが同時に陥ると必ず同一文になる(JA側のバグ、§2-6参照)。新しいプールを作るときは**最低2〜3本**を用意する
+5. **PH先埋め込み(specs §9-10-1と同型)**: `.replace(/\{x\}/g, value)`をt()より先に呼ぶと完成文が辞書キー(未置換の原文)と一致せずfail-openする。今回`pickText()`(NOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS、94件超)と`CAMP_FLAVOR_TEXTS`で発見。**新しいテキストプール選択関数を書くときは、選択直後・PH充填前にdictへ通す(`_wmFillWithDict`を使う)のを既定形にすること**
+6. **`WM_I18N.pn()`と`WM_I18N.t()`の取り違え**: `_renderWeekSeasonTrack`の季節名(春/夏/秋/冬)表示が`pn()`(名前辞書)を呼んでいたが、季節名は一般語彙でありt()(UI辞書)が正しい。pn()はfail-open(未登録なら原文のまま)なので、間違えて呼んでも例外にはならず**サイレントに訳が出ないだけ**という点で気づきにくい
+
+### 13-3. 未着手(次バッチ検討事項)
+
+1. **NOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS本体の英訳(94件超)**: `pickText()`のdict-opts化(P6-13)で配線は完了。翻訳バッチの規模はP5-2xの1バッチ相当
+2. **Autumn War(`agw-*`)団体名ロングテール**: `X?.orgName || WM_I18N.t(fallback)`型が約15箇所未修正。D-P6-3の選手名ロングテール(≈634件)と同型の団体名版
+3. **`Engine.fanExpect.generate()`(ファン期待カード理由文、7〜8テンプレ)**: 名前直接埋め込み+`.replace('期待の声', ...)`という2段階の文字列加工のため単純なdict-opts化では済まない
+4. **キャラクター特性(Traits)バッジ・道場シーン(dojo-scene-atmosphere/shout)**: 固定語彙(特性は約20〜30種)の新規登録が必要。roster画面の残存の主因
+5. **社長室招聘市場パネルのコーチ格付け表記**(Class A/職人気質等)
 ## 13. Stage B P6-14 — 殿堂入り語り文のEN化+`*_TEMPLATES`全数突合+不定冠詞の機械検査(2026-09-04追加)
 
 ### 13-1. 「連結後の完成文が永続する」族は**表示点で再生成する**

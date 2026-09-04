@@ -160,12 +160,15 @@ function section(name, fn) {
 // ===========================================================================
 (function emrOrgBadgeSuite() {
   const build = new Function(
-    'Engine', 'G',
+    'Engine', 'G', 'WM_I18N',
     `${uiFn('escHtml')}
      ${uiFn('_emrOrgInitial')}
      ${uiFn('_emrOrgBadgeHtml')}
      return { _emrOrgBadgeHtml };`
   );
+  // i18n Stage B P6-13: _emrOrgBadgeHtmlがWM_I18N.pn()(団体名の英語化)を呼ぶよう配線された
+  // ため、素通しスタブを渡す(ja相当。pn()はfail-openなので未知の文字列はそのまま返す)
+  const WM_I18N_STUB = { pn(str) { return str; } };
   function makeBundle(opts) {
     opts = opts || {};
     const EngineStub = opts.Engine || {
@@ -174,7 +177,7 @@ function section(name, fn) {
         getOrgIconPath: (state, orgId) => (orgId === 'org_a' ? 'image/org/org-a-0.png' : ''),
       },
     };
-    return build(EngineStub, opts.G || {});
+    return build(EngineStub, opts.G || {}, WM_I18N_STUB);
   }
 
   section('emr-org-badge: left(home)/right(away) sides are distinguishable via class (unvariant 3)', () => {

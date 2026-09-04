@@ -149,7 +149,15 @@ loadRankingRenderer();
 (function testRankingCopyFallbacksAndDepthInjury() {
   const boardRoster = [fighter(1, 90, { name: '看板花子', surname: '看板' }), fighter(2, 74, { name: '次郎美咲', surname: '次郎' }), fighter(3, 70, { name: '三枝凛', surname: '三枝' }), fighter(4, 66, { name: '四谷葵', surname: '四谷' })];
   const boardHtml = renderRankingForTest(rankingState(boardRoster, { championId: null, defenses: 0 }));
-  assert.ok(boardHtml.includes('この団体の顔は間違いなく彼女だ'), '王者不在では看板系の文へフォールバックする');
+  // i18n Stage B P6-13: 王座未確立時に複数団体が同時にこの分岐へ落ちて同文になっていた
+  // (`_pickSeed`の1本プールが常に同じ添字を返す)ため、3本のバリエーションへ増補した。
+  // どの1本が選ばれても分岐が正しいことだけを検査する(文言の一致は見ない)
+  const boardFallbackVariants = [
+    'この団体の顔は間違いなく彼女だ',
+    'ロスターの頂点に立つ。空位の王座を狙う最有力候補だ',
+    '数字が語る実力は団体随一。戴冠は時間の問題と見る向きも多い',
+  ];
+  assert.ok(boardFallbackVariants.some(text => boardHtml.includes(text)), '王者不在では看板系の文へフォールバックする');
 
   const injuredRoster = [
     fighter(1, 90, { name: '王者花子', surname: '王者' }),

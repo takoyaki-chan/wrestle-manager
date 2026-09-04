@@ -1674,7 +1674,7 @@ function showCeremonyEvent(evt, speakers, onContinue) {
         <div class="cerem-trio${speakerCountClass}">${speakerHtml}</div>
       </div>
       <div class="cerem-phase-zone bottom">
-        <button class="cerem-continue-btn">${evt.continueLabel || WM_I18N.t('続ける')}</button>
+        <button class="cerem-continue-btn">${evt.continueLabel ? WM_I18N.t(evt.continueLabel) : WM_I18N.t('続ける')}</button>
       </div>
     </div>
     <div class="cerem-hint">${WM_I18N.t('▼ クリックで進む')}</div>
@@ -4996,7 +4996,7 @@ const App = {
     const contBtn = document.getElementById('titleContinueBtn');
     if (autoInfo) {
       contBtn.style.display = '';
-      contBtn.textContent = `CONTINUE — ${Engine.util.formatDate(autoInfo.season, autoInfo.week)}`;
+      contBtn.textContent = `CONTINUE — ${Engine.util.formatDate(autoInfo.season, autoInfo.week, WM_I18N.t)}`;
     } else {
       contBtn.style.display = 'none';
     }
@@ -5220,7 +5220,7 @@ const App = {
     sessionRng = Engine.rng.create(G.rngSeed);
 
     // ── 完了演出: 5名横並び集合写真 ──
-    const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
+    const orgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
     // 並び順: 固定メンバー左 → 選択3名 → 固定メンバー右
     const fixedIds = DRAFT_CONFIG.fixed;
     const teamOrder = [fixedIds[0], ...picks, fixedIds[1]];
@@ -10321,7 +10321,7 @@ const App = {
     if (typeof showTravelScene !== 'function') { start(); return; }
     showTravelScene({
       heading: WM_I18N.t('— 全国統一王座へ —'),
-      from: { label: G.orgName || WM_I18N.t('プレイヤー団体'), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
+      from: { label: WM_I18N.pn(G.orgName || 'プレイヤー団体'), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml('player', 22) : ''), accent: 'var(--c-positive)' },
       to: { label: Engine.unifiedTitle._orgName(G, champion.orgId), emblemHtml: (typeof orgIconHtml === 'function' ? orgIconHtml(champion.orgId, 22) : ''), accent: 'var(--unified)' },
       party: [{ id: challenger.fighter.id, name: challenger.fighter.name }],
       lines: [WM_I18N.t('{name}が、全国統一王者の待つ敵地へ向かっています。', { name: challenger.fighter.name }), WM_I18N.t('業界の頂点を懸けた一戦です。')],
@@ -10500,7 +10500,7 @@ const App = {
     const partyFighters = (ownIds || []).map(id => (G.roster || []).find(f => f.id === id)).filter(Boolean);
     const destOrgId = ownIsRequester ? booking.opponentOrgId : booking.requesterOrgId;
     const destOrgName = (ownIsRequester ? booking.opponentOrgName : booking.requesterOrgName) || destOrgId || WM_I18N.t('相手団体');
-    const selfOrgName = (ownIsRequester ? booking.requesterOrgName : booking.opponentOrgName) || G.orgName || WM_I18N.t('プレイヤー団体');
+    const selfOrgName = (ownIsRequester ? booking.requesterOrgName : booking.opponentOrgName) || WM_I18N.pn(G.orgName || 'プレイヤー団体');
     // 名指しされた相手本人の現在の名前（受理から数週経ち、入れ替わっている可能性を考慮して再取得）
     const namedOpponentId = ownIsRequester ? booking.opponentId : booking.requesterId;
     const destRoster = destOrgId === 'player' ? (G.roster || []) : ((G.aiOrgs && G.aiOrgs[destOrgId] && G.aiOrgs[destOrgId].roster) || []);
@@ -10912,7 +10912,7 @@ const App = {
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
           // P6-5配線修正: getTraitQuoteは内部でt()済み(_renderEventPopupAsC3側の二重t()回避)
           speech: getTraitQuote('injury', ch), speechTranslated: true,
-          detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(ir.injury.type), weeks: ir.injury.weeksLeft }),
+          detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(ir.injury.type, WM_I18N.t), weeks: ir.injury.weeksLeft }),
         });
       }, i * 100);
     });
@@ -11722,7 +11722,7 @@ const App = {
     newInjuries.forEach((c, i) => {
       // P6-5配線修正: getTraitQuoteは内部でt()済み(_renderEventPopupAsC3側の二重t()回避)
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
-        speech: getTraitQuote('injury', c), speechTranslated: true, detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(c.injury.type), weeks: c.injury.weeksLeft }) }), i * 100);
+        speech: getTraitQuote('injury', c), speechTranslated: true, detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(c.injury.type, WM_I18N.t), weeks: c.injury.weeksLeft }) }), i * 100);
     });
     // v1.2-9: Flavor event popups (雑誌取材・TV出演)
     const flavorEvents = G._flavorEvents || [];
@@ -14526,7 +14526,7 @@ const App = {
     if ((G.week - lastUsed) < 1) { showToast(WM_I18N.t('今週はもう声をかけた')); return; }
 
     // Engine.shachoshitsu.execute を再利用(決裁枠0の書類なので dp 消費なし)
-    const result = Engine.shachoshitsu.execute('encourage', fighterId, G);
+    const result = Engine.shachoshitsu.execute('encourage', fighterId, G, { dict: WM_I18N.t });
     if (!result || result.error) {
       const msg = {
         doc_not_found: WM_I18N.t('この行動は現在利用できません'),
@@ -14567,7 +14567,7 @@ const App = {
       cost: result.cost || 0,
       remainingFunds: result.funds,
       icon: doc?.icon || '💬',
-      label: doc?.label || WM_I18N.t('声かけ'),
+      label: doc?.label ? WM_I18N.t(doc.label) : WM_I18N.t('声かけ'),
       docId: 'encourage',
       // Phase 8: 不確実性トーンマーカー (encourage も個人書類)
       reactionTone: result.reactionTone || null,
@@ -14603,7 +14603,7 @@ const App = {
       return;
     }
 
-    const result = Engine.shachoshitsu.execute('pledge', fighterId, G);
+    const result = Engine.shachoshitsu.execute('pledge', fighterId, G, { dict: WM_I18N.t });
     if (!result || result.error) {
       const msg = {
         doc_not_found: WM_I18N.t('この行動は現在利用できません'),
@@ -14641,7 +14641,7 @@ const App = {
       cost: 0,
       remainingFunds: G.funds,
       icon: doc?.icon || '🤝',
-      label: doc?.label || WM_I18N.t('起用の約束'),
+      label: doc?.label ? WM_I18N.t(doc.label) : WM_I18N.t('起用の約束'),
       docId: 'pledge',
       reactionTone: null,
     };
@@ -14656,7 +14656,7 @@ const App = {
   // care-rework2 P2-C: 机経路と同じく決裁枠⚡1 + 資金500万を消費する。
   // 対象は長期離脱(総週数10週以上)のみ。残り離脱期間を4〜5割短縮。
   executeSpecialTreatment(fighterId) {
-    const result = Engine.shachoshitsu.executeSpecialTreatment(fighterId, G);
+    const result = Engine.shachoshitsu.executeSpecialTreatment(fighterId, G, { dict: WM_I18N.t });
     if (!result) { showToast(WM_I18N.t('特別治療に失敗しました')); return; }
     if (result.error === 'decision_points_insufficient') { showToast(WM_I18N.t('決裁枠が不足しています(必要: ⚡{n})', { n: result.dpCost || 1 })); return; }
     if (result.error === 'funds_insufficient') { showToast(WM_I18N.t('資金が不足しています(必要: {n}万)', { n: result.cost || 500 })); return; }
@@ -14687,7 +14687,7 @@ const App = {
         cost: result.cost || 0,
         remainingFunds: result.funds,
         icon: doc?.icon || '🏥',
-        label: doc?.label || WM_I18N.t('特別治療指示書'),
+        label: doc?.label ? WM_I18N.t(doc.label) : WM_I18N.t('特別治療指示書'),
         docId: 'special_treatment',
       };
       showDecisionResultModal(displayData);
@@ -14760,7 +14760,7 @@ const App = {
   // 返り値: { ok: true, displayData } | { ok: false, error? }
   // options: bonus → { presetIndex: 0..3 } / refresh_leave → { weeks: 1..4 }(care-rework v0.1)
   executeDecision(docId, fighterId, options) {
-    const result = Engine.shachoshitsu.execute(docId, fighterId, G, options);
+    const result = Engine.shachoshitsu.execute(docId, fighterId, G, { ...options, dict: WM_I18N.t });
     if (!result) { showToast(WM_I18N.t('書類が見つかりません')); return { ok: false }; }
     if (result.error === 'doc_not_found') { showToast(WM_I18N.t('書類が見つかりません')); return { ok: false }; }
     if (result.error === 'decision_points_insufficient') { showToast(WM_I18N.t('決裁枠が不足しています')); return { ok: false }; }
@@ -14833,7 +14833,7 @@ const App = {
         displayData = {
           fighter, text, changes: result.changes || [],
           cost: result.cost || 0, remainingFunds: result.funds,
-          icon: doc?.icon || '', label: doc?.label || '', docId,
+          icon: doc?.icon || '', label: doc?.label ? WM_I18N.t(doc.label) : '', docId,
           // Phase 8: 不確実性トーンマーカー (個人書類のみ)
           reactionTone: result.reactionTone || null,
         };
@@ -14850,16 +14850,18 @@ const App = {
       if (docId === 'camp' && typeof CAMP_FLAVOR_TEXTS !== 'undefined' && participants.length >= 2) {
         const tmpl = CAMP_FLAVOR_TEXTS[Math.floor(Math.random() * CAMP_FLAVOR_TEXTS.length)];
         const shuffled = [...participants].sort(() => Math.random() - 0.5);
-        campFlavor = tmpl
-          .replace('{name1}', shuffled[0].name)
-          .replace('{name2}', shuffled[1] ? shuffled[1].name : shuffled[0].name);
+        // i18n Stage B P6-13: PH先埋め込み型の穴(specs §9-10-1と同型)。t()は置換前に通す
+        campFlavor = WM_I18N.t(tmpl, {
+          name1: shuffled[0].name,
+          name2: shuffled[1] ? shuffled[1].name : shuffled[0].name,
+        });
       }
       displayData = {
         fighter: null, isTeam: true,
         fighters: participants, repFighter, text, campFlavor,
         changes: result.changes || [],
         cost: result.cost || 0, remainingFunds: result.funds,
-        icon: doc?.icon || '', label: doc?.label || '', docId,
+        icon: doc?.icon || '', label: doc?.label ? WM_I18N.t(doc.label) : '', docId,
       };
     }
 

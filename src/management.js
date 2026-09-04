@@ -604,9 +604,15 @@ const Engine = {
     getMonth(w) { return this.getSeasonInfo(w).month; },
     getWeekInMonth(w) { return this.getSeasonInfo(w).weekInMonth; },
     getWeekInQuarter(w) { return this.getSeasonInfo(w).weekInQuarter; },
-    formatDate(s, w) {
+    // i18n Stage B P6-13: 週表示バナー(#dispDate等)の唯一の生成元。全画面で毎週見える
+    // 最頻出テキストだったにもかかわらずEngineは無条件でJA原文を返しており、UI層のどの
+    // 呼び出し元もt()を通していなかった(=EN画面でも常にJAのまま)。dict-opts化(§6規約)で
+    // 呼び出し元がWM_I18N.tを渡す形にする。dict省略時(auto-sim/ja-golden等)は
+    // _wmFillWithDictの恒等フォールバックでJA充填のみ行い、既存呼び出し元は無改修で不変
+    formatDate(s, w, dict) {
       const season = this.getSeasonInfo(w);
-      return `${s}年目 ${season.label} 第${season.weekInQuarter}週`;
+      const seasonName = _wmFillWithDict(dict, season.name);
+      return _wmFillWithDict(dict, '{s}年目 {emoji}{name} 第{n}週', { s, emoji: season.emoji, name: seasonName, n: season.weekInQuarter });
     },
     // v1.5s25: 内部小数化 — 表示用ヘルパー（popularity/orgPopは内部小数、表示は整数）
     dispPop(v) { return Math.round(v || 0); },
@@ -1253,7 +1259,10 @@ const Engine = {
     },
 
     // ── A系: drawPower内訳（ツールチップ用） ──
-    calcDrawPowerBreakdown(fighter, G) {
+    // i18n Stage B P6-13: ラベル(✨華/👑王者等)はUI層(ui-render.js sp-draw-detail)のツールチップ
+    // 専用で、Engineの計算そのものには使わない表示専用フィールド。dict-opts化(§6規約)。
+    // 第3引数dict省略時はJA原文のまま(既存呼び出し元は無改修で不変)
+    calcDrawPowerBreakdown(fighter, G, dict) {
       const cfg = DRAW_POWER_CONFIG;
       const pop = fighter.popularity || 0;
       const ovr = Engine.util.ov(fighter);
@@ -1263,22 +1272,22 @@ const Engine = {
       const ovrDraw = Math.round(popDraw * ovrBonus + ovrBase);
       let traitDraw = 0;
       const traits = [];
-      if (Traits.has(fighter, '華'))    { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: '✨華', value: v }); }
-      if (Traits.has(fighter, 'ファンサ')) { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: '🤝ファンサ', value: v }); }
+      if (Traits.has(fighter, '華'))    { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: _wmFillWithDict(dict, '✨華'), value: v }); }
+      if (Traits.has(fighter, 'ファンサ')) { const v = Math.round(cfg.traitFlat + popDraw * cfg.traitMult); traitDraw += v; traits.push({ label: _wmFillWithDict(dict, '🤝ファンサ'), value: v }); }
       const details = [];
-      if (G.titles?.world?.championId === fighter.id) details.push({ label: '👑王者', value: cfg.champBonus });
-      if (fighter.breakthroughWeeksLeft > 0) details.push({ label: '🔥BT', value: cfg.btBonus });
-      if ((fighter.wins - fighter.losses) >= 5 && fighter.losingStreak === 0) details.push({ label: '📈連勝', value: cfg.winStreakBonus });
-      if (fighter.slump) details.push({ label: '📉スランプ', value: cfg.slumpPenalty });
-      if (fighter.promoStack > 0) details.push({ label: '📢プロモ', value: fighter.promoStack * SHOW_DRAW_CONFIG.promoStackPerMatch });
+      if (G.titles?.world?.championId === fighter.id) details.push({ label: _wmFillWithDict(dict, '👑王者'), value: cfg.champBonus });
+      if (fighter.breakthroughWeeksLeft > 0) details.push({ label: _wmFillWithDict(dict, '🔥BT'), value: cfg.btBonus });
+      if ((fighter.wins - fighter.losses) >= 5 && fighter.losingStreak === 0) details.push({ label: _wmFillWithDict(dict, '📈連勝'), value: cfg.winStreakBonus });
+      if (fighter.slump) details.push({ label: _wmFillWithDict(dict, '📉スランプ'), value: cfg.slumpPenalty });
+      if (fighter.promoStack > 0) details.push({ label: _wmFillWithDict(dict, '📢プロモ'), value: fighter.promoStack * SHOW_DRAW_CONFIG.promoStackPerMatch });
       const total = Engine.attendanceV2.calcDrawPower(fighter, G);
       return { total: Math.round(total), popDraw, ovrDraw, traitDraw, traits, details, name: fighter.name };
     },
 
     // ── B系: matchAppeal内訳（ツールチップ用） ──
-    calcMatchAppealBreakdown(fighterA, fighterB, context, G) {
-      const drawA = Engine.attendanceV2.calcDrawPowerBreakdown(fighterA, G);
-      const drawB = Engine.attendanceV2.calcDrawPowerBreakdown(fighterB, G);
+    calcMatchAppealBreakdown(fighterA, fighterB, context, G, dict) {
+      const drawA = Engine.attendanceV2.calcDrawPowerBreakdown(fighterA, G, dict);
+      const drawB = Engine.attendanceV2.calcDrawPowerBreakdown(fighterB, G, dict);
       const cfg = MATCH_APPEAL_CONFIG;
       const ovrDiff = Math.abs(Engine.util.ov(fighterA) - Engine.util.ov(fighterB));
       let parityBonus = cfg.parityPenalty;
@@ -12647,7 +12656,10 @@ const Engine = {
   },
   season: {
     // Returns { roster, freeAgents, heatScore, events } — does NOT mutate G
-    processManage(rng, G) {
+    // i18n Stage B P6-13: 週次イベント生成(pendingLargeEvent/pendingNotifEvent)のtext/detail
+    // をpickText()経由でdict適用するための糸通し。第3引数dict省略時はJA原文のまま
+    // (既存呼び出し元は無改修で不変)
+    processManage(rng, G, dict) {
       const events = [];
       // v1.8: 怪我復帰スランプトリガー用に事前スナップショット取得
       const preInjuryRoster = G.roster;
@@ -13123,7 +13135,7 @@ const Engine = {
             const vars = { name: rawEvent.name || '', name1: rawEvent.name1 || '', name2: rawEvent.name2 || '',
                            orgName: rawEvent.orgName || '', outletName: rawEvent.outletName || '',
                            subType: rawEvent.subType || '', activityType: rawEvent.activityType || '' };
-            const textData = Engine.eventSystem.pickText(evtRng, textKey, vars);
+            const textData = Engine.eventSystem.pickText(evtRng, textKey, vars, dict);
             pendingLargeEvent = { ...rawEvent, ...textData, dialogue, dialogue2 };
           } else if (evtPrefix === 'S' || evtPrefix === 'E') {
             // 選択型: セリフ付きで格納 — 効果はユーザーの選択後に適用
@@ -13137,7 +13149,7 @@ const Engine = {
             const textKey = rawEvent.type === 'N5'
               ? (rawEvent.band === 'low' ? 'N5_low' : 'N5_warning')
               : rawEvent.type;
-            const textData = Engine.eventSystem.pickText(evtRng, textKey, { name: rawEvent.name, name2: rawEvent.name2, coach: rawEvent.coachName });
+            const textData = Engine.eventSystem.pickText(evtRng, textKey, { name: rawEvent.name, name2: rawEvent.name2, coach: rawEvent.coachName }, dict);
             const dialogue = Engine.eventSystem.getNotifDialogue(evtRng, applied.event, roster);
             pendingNotifEvent = { ...applied.event, ...textData, dialogue };
           }
@@ -13259,7 +13271,11 @@ const Engine = {
     },
 
     // Returns { funds, weeklyFinance, roster, summary, occHeatDelta } — does NOT mutate G
-    processSettlement(G) {
+    // i18n Stage B P6-13: 財務内訳(weeklyFinance.details[].label)の唯一の生成元。
+    // 表示側(ui-render.js finance-row)がt()を一度も通しておらず、EN画面でも全項目JAのまま
+    // だった配線穴。dict-opts化(§6規約)。第2引数dict省略時はJA充填のみ(既存呼び出し元は
+    // 無改修で不変=auto-sim/ja-golden等)
+    processSettlement(G, dict) {
       const details = [];
       let totalIncome = 0, totalExpense = 0;
       let occHeatDelta = 0;
@@ -13269,16 +13285,16 @@ const Engine = {
       totalExpense += salary;
       // i18n Stage A P3a-3 D-G4: category:'salary' を併記(表示側の給与タブ判定が
       // ラベル文字列の再比較(_normalizeFinanceLabel(d.label)==='選手給与')に依存しないように)。
-      details.push({ label: '選手給与', val: -salary, type: 'expense', category: 'salary' });
+      details.push({ label: _wmFillWithDict(dict, '選手給与'), val: -salary, type: 'expense', category: 'salary' });
 
       const fixed = Engine.economy.calcFixedCosts();
       totalExpense += fixed;
-      details.push({ label: '固定費（施設+事務）', val: -fixed, type: 'expense' });
+      details.push({ label: _wmFillWithDict(dict, '固定費（施設+事務）'), val: -fixed, type: 'expense' });
 
       const coachSalary = Engine.coach.getSalaryTotal(G);
       if (coachSalary > 0) {
         totalExpense += coachSalary;
-        details.push({ label: `コーチ給与（${G.coaches.length}名）`, val: -coachSalary, type: 'expense' });
+        details.push({ label: _wmFillWithDict(dict, 'コーチ給与（{n}名）', { n: G.coaches.length }), val: -coachSalary, type: 'expense' });
       }
 
       // プロモ改修 v1.0: プロモイベント収入（選手ごと別枠）
@@ -13286,13 +13302,13 @@ const Engine = {
       promoIncomes.forEach(pi => {
         totalIncome += pi.income;
         const popTag = pi.popGain > 0 ? ` 人気+${Math.round(pi.popGain * 10) / 10}` : '';
-        details.push({ label: `プロモ収入（${pi.name} ${pi.eventName}${popTag}）`, val: pi.income, type: 'income', category: 'promo' });
+        details.push({ label: _wmFillWithDict(dict, 'プロモ収入（{name} {eventName}{popTag}）', { name: pi.name, eventName: pi.eventName, popTag }), val: pi.income, type: 'income', category: 'promo' });
       });
 
       // 金銭バランス改善: 週次グッズ収入（全選手・毎週）
       const weeklyGoods = Engine.economy.calcWeeklyGoodsRev(G.roster);
       totalIncome += weeklyGoods;
-      if (weeklyGoods > 0) details.push({ label: 'グッズ収入（週次）', val: weeklyGoods, type: 'income', category: 'goods' });
+      if (weeklyGoods > 0) details.push({ label: _wmFillWithDict(dict, 'グッズ収入（週次）'), val: weeklyGoods, type: 'income', category: 'goods' });
 
       // 金銭バランス改善: プロモ連動グッズ
       const promoGoods = G._pendingPromoGoods || [];
@@ -13300,13 +13316,13 @@ const Engine = {
       promoGoods.forEach(pg => { promoGoodsTotal += pg.amount; });
       if (promoGoodsTotal > 0) {
         totalIncome += promoGoodsTotal;
-        details.push({ label: 'グッズ収入（プロモ連動）', val: promoGoodsTotal, type: 'income', category: 'goods' });
+        details.push({ label: _wmFillWithDict(dict, 'グッズ収入（プロモ連動）'), val: promoGoodsTotal, type: 'income', category: 'goods' });
       }
 
       // 金銭バランス改善: 週次メディア収入（毎週発生）
       const weeklyMedia = Engine.economy.calcWeeklyMediaRev(G.orgPop);
       totalIncome += weeklyMedia;
-      if (weeklyMedia > 0) details.push({ label: 'メディア収入（週次）', val: weeklyMedia, type: 'income', category: 'media' });
+      if (weeklyMedia > 0) details.push({ label: _wmFillWithDict(dict, 'メディア収入（週次）'), val: weeklyMedia, type: 'income', category: 'media' });
 
       // 金銭バランス改善: プロモ連動メディア
       const _mediaRevAccum = new Map(); // メディア功労賞: 個人別メディア収入累計
@@ -13321,14 +13337,14 @@ const Engine = {
       });
       if (promoMediaTotal > 0) {
         totalIncome += promoMediaTotal;
-        details.push({ label: 'メディア収入（プロモ連動）', val: promoMediaTotal, type: 'income', category: 'media' });
+        details.push({ label: _wmFillWithDict(dict, 'メディア収入（プロモ連動）'), val: promoMediaTotal, type: 'income', category: 'media' });
       }
 
       // 金銭バランス改善: PPV/JT/対抗戦メディア収入（前週イベントからの繰越）
       const pendingMedia = G._pendingMediaIncomes || [];
       pendingMedia.forEach(pm => {
         totalIncome += pm.amount;
-        details.push({ label: `メディア収入（${pm.label}）`, val: pm.amount, type: 'income', category: 'media' });
+        details.push({ label: _wmFillWithDict(dict, 'メディア収入（{label}）', { label: pm.label }), val: pm.amount, type: 'income', category: 'media' });
       });
 
       // B4タレント活動: 週次収入バフ（cm/variety→メディア、gravure/brand→グッズ）
@@ -13351,17 +13367,17 @@ const Engine = {
       talentGoodsRev = Math.round(talentGoodsRev);
       if (talentMediaRev > 0) {
         totalIncome += talentMediaRev;
-        details.push({ label: 'メディア収入（タレント活動）', val: talentMediaRev, type: 'income', category: 'media' });
+        details.push({ label: _wmFillWithDict(dict, 'メディア収入（タレント活動）'), val: talentMediaRev, type: 'income', category: 'media' });
       }
       if (talentGoodsRev > 0) {
         totalIncome += talentGoodsRev;
-        details.push({ label: 'グッズ収入（タレント活動）', val: talentGoodsRev, type: 'income', category: 'goods' });
+        details.push({ label: _wmFillWithDict(dict, 'グッズ収入（タレント活動）'), val: talentGoodsRev, type: 'income', category: 'goods' });
       }
 
       // v1.7: 育成補助金（orgPop 40未満の団体に支給、通常モードは対象外）
       const subsidy = G.difficultyMode === 'hard' ? 0 : Engine.economy.getSubsidy(G.orgPop);
       totalIncome += subsidy;
-      if (subsidy > 0) details.push({ label: '🏛️ 地域振興助成金', val: subsidy, type: 'income', category: 'other' });
+      if (subsidy > 0) details.push({ label: _wmFillWithDict(dict, '🏛️ 地域振興助成金'), val: subsidy, type: 'income', category: 'other' });
 
       // メディア功労賞: 個人別収入累計をrosterに反映
       let roster = G.roster.map(c => {
@@ -13434,21 +13450,21 @@ const Engine = {
         totalExpense += rev.venueCost;
 
         const occPct = Math.round(rev.occupancyRate * 100);
-        details.push({ label: `チケット収入（${attendance}人 / ${VENUES[G.showVenue].cap}席 ${occPct}% ${rev.occLabel}）`, val: rev.ticketRev, type: 'income', category: 'ticket' });
-        details.push({ label: `会場費（${VENUES[G.showVenue].name}）`, val: -rev.venueCost, type: 'expense' });
+        details.push({ label: _wmFillWithDict(dict, 'チケット収入（{attendance}人 / {cap}席 {occPct}% {occLabel}）', { attendance, cap: VENUES[G.showVenue].cap, occPct, occLabel: _wmFillWithDict(dict, rev.occLabel) }), val: rev.ticketRev, type: 'income', category: 'ticket' });
+        details.push({ label: _wmFillWithDict(dict, '会場費（{venue}）', { venue: (typeof dict === 'function' ? dict(VENUES[G.showVenue].name) : VENUES[G.showVenue].name) }), val: -rev.venueCost, type: 'expense' });
 
         // 金銭バランス改善: 興行グッズブースト（出場選手のみ）
         const showGoods = Engine.economy.calcShowGoodsBoost(roster, G.lastShowResults, attendance, VENUES[G.showVenue].cap);
         if (showGoods > 0) {
           totalIncome += showGoods;
-          details.push({ label: 'グッズ収入（興行ブースト）', val: showGoods, type: 'income', category: 'goods' });
+          details.push({ label: _wmFillWithDict(dict, 'グッズ収入（興行ブースト）'), val: showGoods, type: 'income', category: 'goods' });
         }
 
         // 集客v2: 興行放映メディア収入（★ベース）
         const showMedia = Engine.economy.calcShowMediaRev(settleStars, G.showVenue, G.orgPop);
         if (showMedia > 0) {
           totalIncome += showMedia;
-          details.push({ label: 'メディア収入（興行放映）', val: showMedia, type: 'income', category: 'media' });
+          details.push({ label: _wmFillWithDict(dict, 'メディア収入（興行放映）'), val: showMedia, type: 'income', category: 'media' });
         }
 
         // 集客v2: ファン期待カード実現メディア（★ベース）
@@ -13467,7 +13483,7 @@ const Engine = {
           });
           if (fanExpectMedia > 0) {
             totalIncome += fanExpectMedia;
-            details.push({ label: 'メディア収入（期待カード）', val: fanExpectMedia, type: 'income', category: 'media' });
+            details.push({ label: _wmFillWithDict(dict, 'メディア収入（期待カード）'), val: fanExpectMedia, type: 'income', category: 'media' });
           }
         }
 
@@ -13489,7 +13505,7 @@ const Engine = {
           });
           if (rivalryMedia > 0) {
             totalIncome += rivalryMedia;
-            details.push({ label: 'メディア収入（ライバル抗争）', val: rivalryMedia, type: 'income', category: 'media' });
+            details.push({ label: _wmFillWithDict(dict, 'メディア収入（ライバル抗争）'), val: rivalryMedia, type: 'income', category: 'media' });
           }
         }
         occHeatDelta = rev.occHeatDelta;
@@ -13629,7 +13645,7 @@ const Engine = {
       state = { ...state, currentNewspaper: null };
     }
     const rng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, state.week));
-    const manage = Engine.season.processManage(rng, state);
+    const manage = Engine.season.processManage(rng, state, (opts && typeof opts.dict === 'function') ? opts.dict : null);
     let s = {
       ...state,
       roster: manage.roster,
@@ -13688,7 +13704,7 @@ const Engine = {
     if (manage._pendingInviteEvents) {
       s = { ...s, _pendingInviteEvents: [...(s._pendingInviteEvents || []), ...manage._pendingInviteEvents] };
     }
-    const settle = Engine.season.processSettlement(s);
+    const settle = Engine.season.processSettlement(s, (opts && typeof opts.dict === 'function') ? opts.dict : null);
     s = { ...s, roster: settle.roster, funds: settle.funds, weeklyFinance: settle.weeklyFinance, weekPhase: 'settled' };
 
     // ── care-rework2 P2-G: 起用約束の判定(興行の精算が終わった直後) ──────────
@@ -23800,6 +23816,10 @@ Engine.shachoshitsu = {
     let _decisionWeekUsed = state._decisionWeekUsed ? { ...state._decisionWeekUsed } : {};
     const events = [];
     const changes = [];
+    // i18n Stage B P6-13: 決裁結果の変化サマリ(changes配列)はUI表示専用(gameLogへ積むevents
+    // とは別物)。options.dict(呼び出し元がWM_I18N.tを渡す)経由でPH充填前にdictへ通す。
+    // 未指定時は _wmFillWithDict の恒等フォールバックでJA充填のみ行う(既存呼び出し元は無改修で不変)。
+    const dict = (options && typeof options.dict === 'function') ? options.dict : ((s) => s);
     let reactionKey = docId;
     let reactionFighterId = fighterId;
     let orgPopDelta = 0;
@@ -23903,7 +23923,7 @@ Engine.shachoshitsu = {
           reactionKey = 'bonus_insult';
           if ((f.trust != null ? f.trust : 50) >= _trustBeforeBonus) {
             // 信頼が動かなかった侮辱(非プライド枠): 標準の信頼度行が出ないため専用の反応行を出す
-            changes.push({ label: '反応', emoji: '💢', text: '金額を見た瞬間、彼女の表情が曇った' });
+            changes.push({ label: _wmFillWithDict(dict, '反応'), emoji: '💢', text: _wmFillWithDict(dict, '金額を見た瞬間、彼女の表情が曇った') });
           }
         } else if ((f._bonusRepeat || 0) >= 3) {
           reactionKey = 'bonus_repeat';
@@ -24021,7 +24041,7 @@ Engine.shachoshitsu = {
         const { reduced } = Engine.shachoshitsu.rollTreatmentReduction(cur, healRng);
         f = { ...f, injury: { ...f.injury, weeksLeft: reduced } };
         events.push(`🏥 ${f.name}に特別治療を実施(${cur}週→${reduced}週)`);
-        changes.push({ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` });
+        changes.push({ label: _wmFillWithDict(dict, '離脱期間'), emoji: '🏥', text: _wmFillWithDict(dict, '{cur}週 → {reduced}週に短縮', { cur, reduced }) });
       } else if (docId === 'media') {
         // Phase 8: orgPopDelta は固定、trust のみ不確実性
         // care-rework2 P2-D: trust基礎 5.36→2.0(全書類中最大の信頼書類だった状態を解消)。
@@ -24059,27 +24079,31 @@ Engine.shachoshitsu = {
         } else {
           trustText = '今後4週にわたって、じわじわと育っていく';
         }
-        changes.push({ label: '本人の様子', emoji: '💭', text: trustText });
+        changes.push({ label: _wmFillWithDict(dict, '本人の様子'), emoji: '💭', text: _wmFillWithDict(dict, trustText) });
         // care-rework v0.1 §3.3: 相性は完全には明かさない(良/悪の兆候だけ滲ませる)
         const ib = f._inviteBuff || {};
         const growthPct = Math.round(((ib.mult || 1) - 1) * 100);
         let compatHint = '指導の噛み合わせは、しばらく見てみないと分からない';
         if (ib.compat === 'good') compatHint = '初日から、手ごたえのある空気が伝わってくる';
         else if (ib.compat === 'bad') compatHint = 'どこか噛み合わなさそうな、硬い空気が漂う';
-        changes.push({ label: '成長速度', emoji: '📈', text: `4週間 +${growthPct}%${ib.diminished ? '(詰め込み気味で伸びは控えめ)' : ''}` });
-        changes.push({ label: '指導の空気', emoji: '🎓', text: compatHint });
+        const growthText = ib.diminished
+          ? _wmFillWithDict(dict, '4週間 +{pct}%(詰め込み気味で伸びは控えめ)', { pct: growthPct })
+          : _wmFillWithDict(dict, '4週間 +{pct}%', { pct: growthPct });
+        changes.push({ label: _wmFillWithDict(dict, '成長速度'), emoji: '📈', text: growthText });
+        changes.push({ label: _wmFillWithDict(dict, '指導の空気'), emoji: '🎓', text: _wmFillWithDict(dict, compatHint) });
         // care-rework2 P3-2: 重点ステを頼んだ場合だけ、何を伝えたかを一行残す。
         // 専門家(同ステのステ特化持ち)が相手なら、頼むまでもなくそちらが上回る。
         if (ib.focusStat && typeof STAT_LABELS_JP !== 'undefined') {
           const fLabel = STAT_LABELS_JP[ib.focusStat] || '';
+          const fLabelText = fLabel ? _wmFillWithDict(dict, fLabel) : '';
           const invCoach = ALL_COACHES.find(c => c.id === ib.coachId);
           const specStat = Engine.coach.getCoachStatSpec(invCoach);
-          changes.push({
-            label: '重点の指定', emoji: '🎯',
-            text: specStat === ib.focusStat
-              ? `${fLabel}は頼むまでもなく、${invCoach ? invCoach.name : 'この'}コーチが元から専門にしている領域だ`
-              : `${fLabel}を重点に据えて練習を組んでもらう`,
-          });
+          const focusText = specStat === ib.focusStat
+            ? (invCoach
+              ? _wmFillWithDict(dict, '{stat}は頼むまでもなく、{coach}コーチが元から専門にしている領域だ', { stat: fLabelText, coach: invCoach.name })
+              : _wmFillWithDict(dict, '{stat}は頼むまでもなく、このコーチが元から専門にしている領域だ', { stat: fLabelText }))
+            : _wmFillWithDict(dict, '{stat}を重点に据えて練習を組んでもらう', { stat: fLabelText });
+          changes.push({ label: _wmFillWithDict(dict, '重点の指定'), emoji: '🎯', text: focusText });
         }
       } else if (docId !== 'special_treatment' && _after.trust !== _before.trust) {
         // 内部値は見せず、選手の反応として伝える。
@@ -24091,30 +24115,30 @@ Engine.shachoshitsu = {
             : trustDelta <= -5
               ? '社長への強い不満を隠そうとしない'
               : 'どこか距離を置くような態度が見える';
-        changes.push({ label: '本人の様子', emoji: '💭', text: reactionText });
+        changes.push({ label: _wmFillWithDict(dict, '本人の様子'), emoji: '💭', text: _wmFillWithDict(dict, reactionText) });
       }
       if (_after.condition !== _before.condition) {
-        changes.push({ label: '状態', emoji: '💪', before: Math.round(_before.condition), after: Math.round(_after.condition) });
+        changes.push({ label: _wmFillWithDict(dict, '状態'), emoji: '💪', before: Math.round(_before.condition), after: Math.round(_after.condition) });
       }
       if (docId === 'media') {
-        changes.push({ label: '団体露出', emoji: '📺', text: '団体の知名度が少し上がった' });
-        changes.push({ label: '選手人気', emoji: '⭐', before: Math.round(_before.popularity), after: Math.round(f.popularity) });
+        changes.push({ label: _wmFillWithDict(dict, '団体露出'), emoji: '📺', text: _wmFillWithDict(dict, '団体の知名度が少し上がった') });
+        changes.push({ label: _wmFillWithDict(dict, '選手人気'), emoji: '⭐', before: Math.round(_before.popularity), after: Math.round(f.popularity) });
       }
       if (docId === 'encourage') {
         // slump/motivLoss 中なら「スランプ回復」、そうでない(trust 低下のみ)なら「気持ちの揺らぎ」
         if (f.slump || f.motivationLoss) {
-          changes.push({ label: 'スランプ回復', emoji: '💪', text: 'ほんの少し、気持ちが楽になったようだ' });
+          changes.push({ label: _wmFillWithDict(dict, 'スランプ回復'), emoji: '💪', text: _wmFillWithDict(dict, 'ほんの少し、気持ちが楽になったようだ') });
         } else {
-          changes.push({ label: '気持ちの揺らぎ', emoji: '💭', text: '話を聞いてもらえたことで、少しだけ救われたようだ' });
+          changes.push({ label: _wmFillWithDict(dict, '気持ちの揺らぎ'), emoji: '💭', text: _wmFillWithDict(dict, '話を聞いてもらえたことで、少しだけ救われたようだ') });
         }
       }
       if (docId === 'refresh_leave') {
         const lvWeeks = (f.onLeave && f.onLeave.totalWeeks) || 1;
-        changes.push({ label: '休暇', emoji: '🏖️', text: `${lvWeeks}週間、興行を欠場して休養に入る` });
-        changes.push({ label: '体調', emoji: '🌿', text: '休んでいる間、少しずつ調子を取り戻していく' });
+        changes.push({ label: _wmFillWithDict(dict, '休暇'), emoji: '🏖️', text: _wmFillWithDict(dict, '{n}週間、興行を欠場して休養に入る', { n: lvWeeks }) });
+        changes.push({ label: _wmFillWithDict(dict, '体調'), emoji: '🌿', text: _wmFillWithDict(dict, '休んでいる間、少しずつ調子を取り戻していく') });
         // care-rework2 P2-A: 消耗の回復は毎週効くので、1週の休暇でも必ず出す
-        changes.push({ label: '消耗', emoji: '🕊️', text: `${lvWeeks}週ぶんの休みが、積み重なった消耗を癒やしていく` });
-        if (f.slump || f.motivationLoss) changes.push({ label: 'スランプ回復', emoji: '💪', text: '現場を離れることで、回復が大きく進みそうだ' });
+        changes.push({ label: _wmFillWithDict(dict, '消耗'), emoji: '🕊️', text: _wmFillWithDict(dict, '{n}週ぶんの休みが、積み重なった消耗を癒やしていく', { n: lvWeeks }) });
+        if (f.slump || f.motivationLoss) changes.push({ label: _wmFillWithDict(dict, 'スランプ回復'), emoji: '💪', text: _wmFillWithDict(dict, '現場を離れることで、回復が大きく進みそうだ') });
       }
     }
 
@@ -24142,9 +24166,9 @@ Engine.shachoshitsu = {
         lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + (doc.effect.morale || 6), 0, 100);
         // care-rework2 P2-B: 余韻。翌週から3週にわたって +1 ずつ効く(tickWeek で消化)。
         partyAfterglowWeeks = (doc.effect.afterglowWeeks != null) ? doc.effect.afterglowWeeks : 3;
-        changes.push({ label: 'ロッカーの様子', emoji: '🏠', text: '選手同士の会話が増え、社長への空気も柔らかくなった' });
-        changes.push({ label: 'ロッカールーム', emoji: '🏠', before: Math.round(_beforeMorale), after: Math.round(lockerRoomMorale) });
-        changes.push({ label: '宴のあと', emoji: '🍻', text: 'この空気は、しばらく道場に残りそうだ' });
+        changes.push({ label: _wmFillWithDict(dict, 'ロッカーの様子'), emoji: '🏠', text: _wmFillWithDict(dict, '選手同士の会話が増え、社長への空気も柔らかくなった') });
+        changes.push({ label: _wmFillWithDict(dict, 'ロッカールーム'), emoji: '🏠', before: Math.round(_beforeMorale), after: Math.round(lockerRoomMorale) });
+        changes.push({ label: _wmFillWithDict(dict, '宴のあと'), emoji: '🍻', text: _wmFillWithDict(dict, 'この空気は、しばらく道場に残りそうだ') });
         events.push(`🍻 慰労会を開催(チームの雰囲気が良くなった)`);
         reactionFighterId = null;
       } else if (docId === 'camp') {
@@ -24158,8 +24182,8 @@ Engine.shachoshitsu = {
           const queued = queueTrust(f, doc.effect.trust || 1.84, 'camp', gb.weeks, mult);
           return { ...queued, _trainerBuff: { weeksLeft: gb.weeks, mult: gb.mult } };
         });
-        changes.push({ label: '合宿中の空気', emoji: '🏕️', text: `今後${gb.weeks}週、団体全体に一体感が育っていきそうだ` });
-        changes.push({ label: '全員の成長速度', emoji: '📈', text: `${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%` });
+        changes.push({ label: _wmFillWithDict(dict, '合宿中の空気'), emoji: '🏕️', text: _wmFillWithDict(dict, '今後{weeks}週、団体全体に一体感が育っていきそうだ', { weeks: gb.weeks }) });
+        changes.push({ label: _wmFillWithDict(dict, '全員の成長速度'), emoji: '📈', text: _wmFillWithDict(dict, '{weeks}週間 +{pct}%', { weeks: gb.weeks, pct: Math.round((gb.mult - 1) * 100) }) });
         events.push(`🏕️ 合宿を実施(全員の成長バフ ${gb.weeks}週間 +${Math.round((gb.mult - 1) * 100)}%)`);
         reactionFighterId = null;
       } else {
@@ -24204,7 +24228,7 @@ Engine.shachoshitsu = {
         rels[keyBA] = { ...curBA, bond: Engine.util.clamp((curBA.bond != null ? curBA.bond : 50) + delta, 0, 100) };
         pairRepairResult = { success: true, delta, idA, idB, nameA: fA.name, nameB: fB.name, relationships: rels };
         events.push(`🤝 ${fA.name}と${fB.name}の関係修復斡旋に成功（双方向 bond +${delta}）`);
-        changes.push({ label: '関係修復', emoji: '🤝', text: `${fA.name}と${fB.name}の bond +${delta}（双方向）` });
+        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '🤝', text: _wmFillWithDict(dict, '{nameA}と{nameB}の bond +{delta}（双方向）', { nameA: fA.name, nameB: fB.name, delta }) });
         // 因縁列伝 v1.1: 修復タイムスタンプを h2h に刻む（context narrative のため）
         const h2hKey = `${Math.min(idA, idB)}>${Math.max(idA, idB)}`;
         const curH2h = (state.h2h || {})[h2hKey];
@@ -24223,7 +24247,7 @@ Engine.shachoshitsu = {
       } else {
         pairRepairResult = { success: false, idA, idB, nameA: fA.name, nameB: fB.name };
         events.push(`💧 ${fA.name}と${fB.name}の関係修復斡旋は不発に終わった`);
-        changes.push({ label: '関係修復', emoji: '💧', text: `${fA.name}と${fB.name}の溝は埋まらなかった` });
+        changes.push({ label: _wmFillWithDict(dict, '関係修復'), emoji: '💧', text: _wmFillWithDict(dict, '{nameA}と{nameB}の溝は埋まらなかった', { nameA: fA.name, nameB: fB.name }) });
         // 業界ニュース: 関係修復失敗
         if (Engine.industryNews) {
           state = Engine.industryNews.push(state, {
@@ -24263,7 +24287,7 @@ Engine.shachoshitsu = {
         factionState = un.state;
         roster = factionState.roster;
         events.push('⚖️ 派閥の結成禁止を解いた');
-        changes.push({ label: '派閥', emoji: '⚖️', text: '選手たちが群れを作ることを再び認めた' });
+        changes.push({ label: _wmFillWithDict(dict, '派閥'), emoji: '⚖️', text: _wmFillWithDict(dict, '選手たちが群れを作ることを再び認めた') });
         factionDecreeResult = { mode, dissolved: [] };
         reactionKey = 'faction_decree_unseal';
         reactionFighterId = pickBystander();
@@ -24282,16 +24306,19 @@ Engine.shachoshitsu = {
           const activeCount = Math.max(1, roster.filter(f => !f.isRental).length);
           const share = Math.min(1, dissolvedMembers / activeCount);
           lockerRoomMorale = Engine.util.clamp(lockerRoomMorale - (2 + 5 * share), 0, 100);
-          changes.push({ label: 'ロッカーの空気', emoji: '🌫️', text: '解散を見ていた選手たちにも重く残った' });
+          changes.push({ label: _wmFillWithDict(dict, 'ロッカーの空気'), emoji: '🌫️', text: _wmFillWithDict(dict, '解散を見ていた選手たちにも重く残った') });
         }
+        // 注: namesは派閥名(「{姓}派」形式)の連結。姓のみ辞書(pnSurname)はdict()の
+        // 汎用パラメータ変換(pn()の完全一致のみ)経由では変換できないため、このリストは
+        // Engine内では未翻訳のまま渡す(長尾課題。相関図の派閥名ロングテールと同型)。
         const names = dec.dissolved.map(d => d.name).join('・');
         if (dec.dissolved.length > 0) {
           events.push(`⚖️ 社長命令により ${names} を解散させた`);
-          changes.push({ label: '派閥解散', emoji: '⚖️', text: `${names}（${dec.dissolved.length}組）が畳まれた` });
+          changes.push({ label: _wmFillWithDict(dict, '派閥解散'), emoji: '⚖️', text: _wmFillWithDict(dict, '{names}（{count}組）が畳まれた', { names, count: dec.dissolved.length }) });
         }
         if (seal) {
           events.push('⚖️ 以後、派閥の結成を認めないと通達した');
-          changes.push({ label: '派閥', emoji: '🚫', text: '今後、新たな派閥は生まれない' });
+          changes.push({ label: _wmFillWithDict(dict, '派閥'), emoji: '🚫', text: _wmFillWithDict(dict, '今後、新たな派閥は生まれない') });
         }
         factionDecreeResult = { mode, dissolved: dec.dissolved };
 
@@ -24547,7 +24574,8 @@ Engine.shachoshitsu = {
   // care-rework2 P2-C: 机経路との不整合を解消。決裁枠⚡1 と 500万を消費し、
   // 対象・短縮量も机経路と完全に同一(長期離脱=総週数10以上のみ)。
   // 返り値: { roster, funds, decisionPoints, events, changes, cost } | { error: 'xxx' }
-  executeSpecialTreatment(fighterId, state) {
+  executeSpecialTreatment(fighterId, state, options) {
+    const dict = (options && typeof options.dict === 'function') ? options.dict : ((s) => s);
     const doc = Engine.shachoshitsu.getDoc('special_treatment');
     const cost = (doc && doc.cost != null) ? doc.cost : 500;
     const dpCost = (doc && doc.decisionCost != null) ? doc.decisionCost : 1;
@@ -24573,7 +24601,7 @@ Engine.shachoshitsu = {
     roster[idx] = f;
 
     const events = [`🏥 ${f.name}の特別治療(回復期間 ${cur}週→${reduced}週)`];
-    const changes = [{ label: '離脱期間', emoji: '🏥', text: `${cur}週 → ${reduced}週に短縮` }];
+    const changes = [{ label: _wmFillWithDict(dict, '離脱期間'), emoji: '🏥', text: _wmFillWithDict(dict, '{cur}週 → {reduced}週に短縮', { cur, reduced }) }];
     return {
       roster,
       funds: (state.funds || 0) - cost,
@@ -25207,7 +25235,12 @@ Engine.eventSystem = {
 
   // ── テキスト選択ヘルパー ────────────────────────────────────────────────
   // 返り値: { text, detail } オブジェクト（旧string形式との互換性あり）
-  pickText(rng, key, vars) {
+  // i18n Stage B P6-13: NOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS(通知・大型イベントのフレーバー
+  // 文プール)の唯一の生成元。従来はPH(`{outletName}`等)を素朴な.replace()で埋めてから返して
+  // おり、表示側がt()を通しても完成文が辞書キー(未置換の原文)と一致せずfail-openする構造的な
+  // 「PH先埋め込み」の穴だった(§9-10-1と同型)。第4引数dict省略時はJA充填のみ(既存呼び出し元は
+  // 無改修で不変)。**このテーブル自体の英訳は本バッチのスコープ外**(94件超の別バッチ対象)
+  pickText(rng, key, vars, dict) {
     let pool = typeof NOTIF_EVENT_TEXTS !== 'undefined' ? (NOTIF_EVENT_TEXTS[key] || []) : [];
     // B型イベントテキストもチェック
     if (pool.length === 0 && typeof LARGE_EVENT_TEXTS !== 'undefined') {
@@ -25223,9 +25256,17 @@ Engine.eventSystem = {
     }
     if (pool.length === 0) return { text: key, detail: '' };
     const tmpl = Engine.rng.pick(rng, pool);
-    const sub = s => s ? s.replace(/\{name\}/g, vars.name || '').replace(/\{name1\}/g, vars.name1 || '')
-      .replace(/\{name2\}/g, vars.name2 || '').replace(/\{orgName\}/g, vars.orgName || '')
-      .replace(/\{outletName\}/g, vars.outletName || '').replace(/\{coach\}/g, vars.coach || '') : '';
+    // i18n Stage B P6-13: PH置換前にdictへ通す(§9-10-1「PH先埋め込み」型の穴を回避)。
+    // 未指定のvarsキーも空文字で埋めてfillTemplateVarsに渡す(旧.replace()チェーンと同じ
+    // 「未設定は空文字」挙動を維持する)
+    const sub = s => {
+      if (!s) return '';
+      const filled = {
+        name: vars.name || '', name1: vars.name1 || '', name2: vars.name2 || '',
+        orgName: vars.orgName || '', outletName: vars.outletName || '', coach: vars.coach || '',
+      };
+      return _wmFillWithDict(dict, s, filled);
+    };
     if (typeof tmpl === 'string') return { text: sub(tmpl), detail: '' };
     return { text: sub(tmpl.text), detail: sub(tmpl.detail || '') };
   },
