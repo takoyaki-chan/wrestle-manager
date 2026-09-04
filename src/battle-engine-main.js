@@ -500,7 +500,7 @@ function _hudHtml(fr){
       <div class="wm-hud-side">
         <div class="wm-hud-face"><img src="${_getFaceUrl(S.L)}" onerror="this.style.display='none'"></div>
         <div class="wm-hud-meta">
-          <div class="wm-hud-name" onclick="openBp('L')">${escHtml(S.L ? S.L.name : '')}</div>
+          <div class="wm-hud-name" onclick="openBp('L')">${escHtml(S.L ? WM_I18N.pn(S.L.name) : '')}</div>
         </div>
       </div>
       <div class="wm-hud-center">
@@ -510,7 +510,7 @@ function _hudHtml(fr){
       <div class="wm-hud-side" style="flex-direction:row-reverse">
         <div class="wm-hud-face"><img src="${_getFaceUrl(S.R)}" onerror="this.style.display='none'"></div>
         <div class="wm-hud-meta right">
-          <div class="wm-hud-name" onclick="openBp('R')">${escHtml(S.R ? S.R.name : '')}</div>
+          <div class="wm-hud-name" onclick="openBp('R')">${escHtml(S.R ? WM_I18N.pn(S.R.name) : '')}</div>
         </div>
       </div>
     </div>
@@ -519,13 +519,13 @@ function _hudHtml(fr){
       <div class="wm-mom-r" id="momR" style="width:${100-momLv}%"></div>
     </div>
     <div class="wm-hp-row">
-      <span class="wm-hp-name" id="hudHpNameL">${escHtml(S.L ? S.L.name : '')}</span>
+      <span class="wm-hp-name" id="hudHpNameL">${escHtml(S.L ? WM_I18N.pn(S.L.name) : '')}</span>
       <span class="wm-hp-pct ${hpCls(hpL.ratio)}" id="hudHpPctL">${hpL.pct}%</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill ${hpCls(hpL.ratio)} rev" id="hudHpFillL" style="width:${hpL.pct}%"></div></div>
       <span class="wm-hp-label">HP</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill ${hpCls(hpR.ratio)}" id="hudHpFillR" style="width:${hpR.pct}%"></div></div>
       <span class="wm-hp-pct ${hpCls(hpR.ratio)}" id="hudHpPctR">${hpR.pct}%</span>
-      <span class="wm-hp-name right" id="hudHpNameR">${escHtml(S.R ? S.R.name : '')}</span>
+      <span class="wm-hp-name right" id="hudHpNameR">${escHtml(S.R ? WM_I18N.pn(S.R.name) : '')}</span>
     </div>
   </div>`;
 }
@@ -535,7 +535,7 @@ function _matchBadgeHtml(){
   const rec = mi.h2hRecord || null;
   if (!S._isBigMatch && !(rec && rec.matches > 0) && !(mi.rivalryTier > 0)) return '';
   const recordText = rec && rec.matches > 0
-    ? `${rec.matches} MATCHES  ${S.L ? escHtml(S.L.name) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(S.R.name) : 'RIGHT'}${rec.bestMQ ? `  ${WM_I18N.t('最高評価')} ${rec.bestMQ}` : ''}`
+    ? `${rec.matches} MATCHES  ${S.L ? escHtml(WM_I18N.pn(S.L.name)) : 'LEFT'} ${rec.leftWins || 0}-${rec.rightWins || 0} ${S.R ? escHtml(WM_I18N.pn(S.R.name)) : 'RIGHT'}${rec.bestMQ ? `  ${WM_I18N.t('最高評価')} ${rec.bestMQ}` : ''}`
     : 'FIRST MEETING';
   const title = S._isBigMatch ? 'BIG MATCH' : 'RIVALRY MATCH';
   return `<div class="wm-match-badge">
@@ -575,13 +575,13 @@ function _panelHtml(ch, side){
   return `<div class="fighter-panel wm-ring-fighter ${isL?'left':'right'}" id="panel-${side}">
     <div class="battle-speech-slot"><div class="speech-bubble" id="sp-${side}"></div></div>
     <div class="portrait-area" id="port-${side}">
-      <img class="wm-full-figure" src="${_getFullUrl(ch)}" alt="${escHtml(ch.name)}" id="img-${side}"
+      <img class="wm-full-figure" src="${_getFullUrl(ch)}" alt="${escHtml(WM_I18N.pn(ch.name))}" id="img-${side}"
         onerror="this.style.display='none'">
       <div class="monitor-frame"></div>
       <div class="dmg-number" id="dmg-${side}"></div>
       <div class="danger-glow" id="dangerGlow-${side}"><div class="danger-glow-inner"></div></div>
     </div>
-    <button class="wm-ring-nameplate" onclick="openBp('${side}')">${escHtml(ch.name)}</button>
+    <button class="wm-ring-nameplate" onclick="openBp('${side}')">${escHtml(WM_I18N.pn(ch.name))}</button>
   </div>`;
 }
 
@@ -604,7 +604,7 @@ function _statCardHtml(ch, side){
   return `<article class="wm-stat-card ${isL?'left':'right'}">
     ${isL ? `<img class="wm-stat-upper" src="${_getUpperUrl(ch)}" alt="" onerror="this.style.display='none'">` : ''}
     <div class="wm-stat-core">
-      <div class="wm-stat-head"><button onclick="openBp('${side}')">${escHtml(ch.name)}</button><strong>OVR ${_calcOvr(ch)}</strong></div>
+      <div class="wm-stat-head"><button onclick="openBp('${side}')">${escHtml(WM_I18N.pn(ch.name))}</button><strong>OVR ${_calcOvr(ch)}</strong></div>
       <div class="wm-stat-meta"><span class="f-role-tag ${rc}">${escHtml(ch.role || 'Neutral')}</span> · ${escHtml(ch.style || '')}</div>
       <div class="ability-bars">${rows}</div>
       <div class="grit-indicator${ch.gritTurns>0?' active':''}" id="grit-${side}">⚡ ${WM_I18N.t('闘志 ({n})', {n: ch.gritTurns})}</div>
@@ -1232,9 +1232,9 @@ function _buildPinCtrl(fr){
     const objChar  = atkSide === 'left' ? S.R : S.L;
     const subjSide = atkSide === 'left' ? 'L' : 'R';
     const objSide  = subjSide === 'L' ? 'R' : 'L';
-    const statusText = subjChar ? `${subjChar.name}が押さえ込んでいる！` : '押さえ込んでいる！';
+    const statusText = subjChar ? `${WM_I18N.pn(subjChar.name)}が押さえ込んでいる！` : '押さえ込んでいる！';
     if (subjChar && objChar) {
-      seq.push({ kind: 'introBig', text: `${subjChar.name}が${objChar.name}を丸め込んだ！`, dramatic: true, rollupHighlight: { subjSide, objSide } });
+      seq.push({ kind: 'introBig', text: `${WM_I18N.pn(subjChar.name)}が${WM_I18N.pn(objChar.name)}を丸め込んだ！`, dramatic: true, rollupHighlight: { subjSide, objSide } });
     }
     seq.push({ kind: 'count', text: 'ワン！', cls: '', rollupStatus: statusText });
     seq.push({ kind: 'count', text: 'ツー！', cls: 'two', rollupStatus: statusText });
@@ -1254,11 +1254,11 @@ function _buildPinCtrl(fr){
     const atkChar = atkSide === 'left' ? S.L : S.R;
     const defChar = atkSide === 'left' ? S.R : S.L;
     const moveName = fr.action ? (fr.action.move || '') : '';
-    if (atkChar && defChar) seq.push({ kind: 'introBig', text: `${atkChar.name}が${defChar.name}に${moveName}をがっちりロック！`, dramatic: true });
+    if (atkChar && defChar) seq.push({ kind: 'introBig', text: `${WM_I18N.pn(atkChar.name)}が${WM_I18N.pn(defChar.name)}に${moveName}をがっちりロック！`, dramatic: true });
     const isWin = fr.winner != null;
     if (isWin) {
       seq.push({ kind: 'finishClick', label: '…！？' });
-      if (defChar) seq.push({ kind: 'count', text: `${defChar.name}がタップ！！`, cls: 'tap' });
+      if (defChar) seq.push({ kind: 'count', text: `${WM_I18N.pn(defChar.name)}がタップ！！`, cls: 'tap' });
     } else {
       seq.push({ kind: 'finishClick', label: '…！？' });
       seq.push({ kind: 'count', text: 'ロープ！ ロープブレイクーーっ！！', cls: 'escape' });
@@ -1277,7 +1277,7 @@ function _buildPinCtrl(fr){
     const defChar = atkSide === 'left' ? S.R : S.L;
     seq.push({ kind: 'introBig', text: pk(SUB_INTRO), dramatic: true });
     seq.push({ kind: 'finishClick', label: '…！？' });
-    seq.push({ kind: 'count', text: defChar ? `${defChar.name}が振りほどいた！！` : '振りほどいた！！', cls: 'escape' });
+    seq.push({ kind: 'count', text: defChar ? `${WM_I18N.pn(defChar.name)}が振りほどいた！！` : '振りほどいた！！', cls: 'escape' });
     return { seq, idx: -1, fr };
   }
 
@@ -1538,15 +1538,15 @@ function showResult(fr){
     // The victory quote is the winner speaking, so the identity card below must match that speaker.
     victoryOv.innerHTML = `<div class="victory-box" id="rBox">
       <div class="vic-speech-slot"><div class="vic-speech" id="rQuote"><div class="vic-speech-text" id="rSpeech"></div></div></div>
-      <img id="rImg" class="winner-portrait" src="${_getUpperUrl(winner)}" alt="${escHtml(winner.name)}" onerror="this.style.display='none'">
+      <img id="rImg" class="winner-portrait" src="${_getUpperUrl(winner)}" alt="${escHtml(WM_I18N.pn(winner.name))}" onerror="this.style.display='none'">
       <div class="winner-label">W I N N E R</div>
-      <div class="winner-name" id="rWinner">${escHtml(winner.name)}</div>
+      <div class="winner-name" id="rWinner">${escHtml(WM_I18N.pn(winner.name))}</div>
       <div class="vic-finish" id="rType">${escHtml(finLabel)}</div>
       <div class="vic-bottom" id="rBottom">
         <div class="vic-loser">
-          <img class="vic-loser-face" src="${_getFaceUrl(winner)}" alt="${escHtml(winner.name)}" onerror="this.style.display='none'">
+          <img class="vic-loser-face" src="${_getFaceUrl(winner)}" alt="${escHtml(WM_I18N.pn(winner.name))}" onerror="this.style.display='none'">
           <div>
-            <div class="vic-loser-name">${escHtml(winner.name)}</div>
+            <div class="vic-loser-name">${escHtml(WM_I18N.pn(winner.name))}</div>
             <div class="vic-loser-tag">WINNER</div>
           </div>
         </div>
@@ -1652,7 +1652,7 @@ function openBp(side){
     <button class="bp-close" onclick="closeBp()">✕</button>
     <div class="bp-img"><img src="${_getFullUrl(ch)}" style="${mirrorStyle}" onerror="this.style.display='none'"></div>
     <div class="bp-info">
-      <div class="bp-header"><span class="bp-name">${escHtml(ch.name)}</span><span class="bp-role ${(ch.role||'neutral').toLowerCase()}">${ch.role||''}</span></div>
+      <div class="bp-header"><span class="bp-name">${escHtml(WM_I18N.pn(ch.name))}</span><span class="bp-role ${(ch.role||'neutral').toLowerCase()}">${ch.role||''}</span></div>
       <div class="bp-basics"><span class="bp-style">${escHtml(ch.style||'')}</span><div class="bp-meta">${age?`<span>${age}</span>`:''}<span>${ch.h||''}cm</span></div></div>
       <div class="bp-ovr"><span class="bp-ovr-label">OVR</span><span class="bp-ovr-val">${ovr}</span></div>
       <div class="bp-stats">${stats.map(s=>`<div class="bp-stat-row"><span class="bp-stat-name">${s.l}</span><div class="bp-stat-track"><div class="bp-stat-fill ${s.k}" style="width:${s.v}%"></div></div><span class="bp-stat-val">${s.v}</span></div>`).join('')}</div>
@@ -1712,21 +1712,21 @@ function _narrateFrame(fr){
 
   if (action.kind === 'miss') {
     return {
-      text: `${atk.name}の${action.move || ''}は空を切る！ ${def.name}が間合いを外した。`,
+      text: `${WM_I18N.pn(atk.name)}の${action.move || ''}は空を切る！ ${WM_I18N.pn(def.name)}が間合いを外した。`,
       dramatic: false,
     };
   }
   if (action.kind === 'counter') {
     return {
-      text: `${atk.name}が待っていた！ ${def.name}の攻めを読み、${action.counterMove || action.move || ''}で切り返す！`,
+      text: `${WM_I18N.pn(atk.name)}が待っていた！ ${WM_I18N.pn(def.name)}の攻めを読み、${action.counterMove || action.move || ''}で切り返す！`,
       dramatic: true,
     };
   }
 
   return {
     text: action.isCrit
-      ? `${atk.name}の${action.move || ''}が深く入った！ ${def.name}を大きく揺らす！`
-      : `${atk.name}が${action.move || ''}！ ${def.name}の体勢を崩していく。`,
+      ? `${WM_I18N.pn(atk.name)}の${action.move || ''}が深く入った！ ${WM_I18N.pn(def.name)}を大きく揺らす！`
+      : `${WM_I18N.pn(atk.name)}が${action.move || ''}！ ${WM_I18N.pn(def.name)}の体勢を崩していく。`,
     dramatic: !!action.isCrit,
   };
 }
