@@ -258,7 +258,7 @@ function refreshTopBar() {
     if (G.offSeason) {
       dateEl.textContent = WM_I18N.t('{season}年目 年度末 — オフシーズン {offWeek}/4', { season: G.season, offWeek: G.offWeek || 0 });
     } else {
-      dateEl.textContent = Engine.util.formatDate(G.season, G.week);
+      dateEl.textContent = Engine.util.formatDate(G.season, G.week, WM_I18N.t);
     }
   }
   const fundsEl = document.getElementById('dispFunds');
@@ -318,7 +318,7 @@ function refreshTopBar() {
   const rankEl = document.getElementById('dispRank');
   if (rankEl) {
     const rColor = pRank === 1 ? 'var(--gold)' : pRank === 2 ? '#e74c3c' : pRank === 3 ? '#9b59b6' : '#2ecc71';
-    rankEl.innerHTML = `<span style="color:${rColor}">${pRank}位/${rankings.length}</span>`;
+    rankEl.innerHTML = `<span style="color:${rColor}">${WM_I18N.t('{rank}位/{total}', { rank: pRank, total: rankings.length })}</span>`;
   }
   const champEl = document.getElementById('dispChamp');
   const champ = getWorldChampion();
@@ -348,7 +348,7 @@ function renderOpeningScreen() {
   }
   _openingFinishing = false;
 
-  const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
+  const orgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
   const fixed = Engine.draft.getFixedInfo();
   const name1 = fixed[0]?.name || '???';
   const name2 = fixed[1]?.name || '???';
@@ -723,7 +723,7 @@ function _renderWeekSeasonTrack(week, offSeason = false, offWeek = 0) {
   const filledThrough = offSeason ? Engine.util.WEEKS_PER_SEASON : info.week;
   const labels = Engine.util.SEASON_DEFINITIONS.map(season => `
     <div class="week-season-quarter${!offSeason && season.quarter === info.quarter ? ' is-active' : ''}">
-      <strong>${season.emoji}${WM_I18N.pn(season.name)}</strong>
+      <strong>${season.emoji}${WM_I18N.t(season.name)}</strong>
       <span>${season.months.join('·')}</span>
     </div>`).join('');
   const cells = Array.from({ length: Engine.util.WEEKS_PER_SEASON }, (_, index) => {
@@ -737,7 +737,7 @@ function _renderWeekSeasonTrack(week, offSeason = false, offWeek = 0) {
   }).join('');
   const ariaLabel = offSeason
     ? WM_I18N.t('年間48週完了、年度末オフシーズン{offWeek}/4', { offWeek })
-    : WM_I18N.t('{label} 第{a}週、年間第{b}週', { label: info.label, a: info.weekInQuarter, b: info.week });
+    : WM_I18N.t('{label} 第{a}週、年間第{b}週', { label: `${info.emoji}${WM_I18N.t(info.name)}`, a: info.weekInQuarter, b: info.week });
   return `<div class="week-season-card${offSeason ? ' is-offseason' : ''}">
     <div class="week-season-labels">${labels}</div>
     <div class="week-season-track" role="img" aria-label="${ariaLabel}">${cells}</div>
@@ -832,7 +832,7 @@ function renderWeekScreen() {
     // §3.5: 現在の選択コストを事前計算
     const currentCost = Engine.draft.getSelectionCost(G.rngSeed || 42, picks);
     const remainingBudget = (G.funds || 0) - currentCost;
-    const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
+    const orgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
 
     // ── Draft paper wrapper ──
     html += `<div class="draft-paper">`;
@@ -1186,7 +1186,7 @@ function renderWeekScreen() {
         </span>
         <span class="survival-header-actions">
           <span class="survival-phase-badge" style="background:${sPhase?.color || '#e74c3c'}22;color:${sPhase?.color || '#e74c3c'};border:1px solid ${sPhase?.color || '#e74c3c'}44">
-            ${sPhase?.emoji || '🔴'} ${sPhase?.label || WM_I18N.t('赤字地獄')}
+            ${sPhase?.emoji || '🔴'} ${sPhase?.label ? WM_I18N.t(sPhase.label) : WM_I18N.t('赤字地獄')}
           </span>
           <button class="survival-toggle" type="button" onclick="toggleSurvivalPanel(this)" aria-expanded="${_survivalPanelCollapsed ? 'false' : 'true'}">${_survivalPanelCollapsed ? WM_I18N.t('＋ 展開') : WM_I18N.t('− 最小化')}</button>
         </span>
@@ -1323,7 +1323,7 @@ function renderWeekScreen() {
         : 'cond-low';
       const actionLabels = {practice:WM_I18N.t('練習'),promo:WM_I18N.t('プロモ'),rest:WM_I18N.t('休養'),auto_rest:`🔄${WM_I18N.t('休養')}`,balance:WM_I18N.t('バランス'),'療養':WM_I18N.t('療養'),intensive:`⚡${WM_I18N.t('強化')}`};
       const statusHtml = c.injury
-        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${injuryLabelShort(c.injury.type)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`
+        ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(214,48,49,0.15);color:${c.injury.color};border:1px solid ${c.injury.color}40">${injuryLabelShort(c.injury.type, WM_I18N.t)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`
         : c.forcedRest
           ? `<span style="font-size:12px;padding:2px 7px;border-radius:3px;background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4)">🛌 ${WM_I18N.t('休養中')}</span>`
           : `<span style="font-size:12px;color:#2ecc71">${WM_I18N.t('健康')}</span>`;
@@ -1489,7 +1489,7 @@ function renderWeekScreen() {
   }
   else if (G.weekPhase === 'weekSummary') {
     // v2.0-C3: Brief weekly summary — non-month-end weeks stop here
-    const dateStr = G.offSeason ? WM_I18N.t('オフシーズン {w}/4', { w: G.offWeek }) : Engine.util.formatDate(G.season, G.week);
+    const dateStr = G.offSeason ? WM_I18N.t('オフシーズン {w}/4', { w: G.offWeek }) : Engine.util.formatDate(G.season, G.week, WM_I18N.t);
     document.getElementById('weekTitle').textContent = WM_I18N.t('完了');
     // 直近4週バッファを集計（_tryAutoAdvance で当週分が push 済み）
     const _wsCycleNum = Math.ceil(G.week / 4);
@@ -1617,7 +1617,7 @@ function renderWeekScreen() {
       } else {
         const sWeeks = Survival.weeksUntilBankrupt(G);
         html += `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.2);font-size:11px;color:#e74c3c">
-          ⛽ ${sPhase?.emoji || '🔴'} ${sPhase?.label || WM_I18N.t('赤字')} ${WM_I18N.t('— 倒産まで推定{w}週', { w: sWeeks === Infinity ? '∞' : sWeeks })}
+          ⛽ ${sPhase?.emoji || '🔴'} ${sPhase?.label ? WM_I18N.t(sPhase.label) : WM_I18N.t('赤字')} ${WM_I18N.t('— 倒産まで推定{w}週', { w: sWeeks === Infinity ? '∞' : sWeeks })}
         </div>`;
       }
     }
@@ -1799,11 +1799,11 @@ function renderWeekScreen() {
       ? [...superElites].sort((a, b) => (b.assessedValue || 0) - (a.assessedValue || 0))[0]
       : null;
     const heroHeadline = topSE
-      ? `<span class="red">超逸材</span>・${WM_I18N.pn(topSE.name)}、<br>ついに業界の門を叩く`
-      : `<span class="red">運命</span>の<span class="red">ドラフト</span>、<br>ついに開幕`;
+      ? WM_I18N.t('<span class="red">超逸材</span>・{name}、<br>ついに業界の門を叩く', { name: WM_I18N.pn(topSE.name) })
+      : WM_I18N.t('<span class="red">運命</span>の<span class="red">ドラフト</span>、<br>ついに開幕');
     const heroSub = topSE
-      ? `${G.season}年目 ${eventLabel} — ${topSE.age}歳の才能を筆頭に全${totalCount}名`
-      : `${G.season}年目 ${eventLabel} — 全${totalCount}名、業界の門を叩く`;
+      ? WM_I18N.t('{season}年目 {eventLabel} — {age}歳の才能を筆頭に全{count}名', { season: G.season, eventLabel, age: topSE.age, count: totalCount })
+      : WM_I18N.t('{season}年目 {eventLabel} — 全{count}名、業界の門を叩く', { season: G.season, eventLabel, count: totalCount });
 
     const silCount = Math.min(8, totalCount);
     const featCount = Math.min(3, superElites.length + elites.length);
@@ -2088,7 +2088,7 @@ function _renderRosterDetailPanel(c, hired) {
   if (c.hotStreak) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(200,120,0,0.12);color:#a06000;border:1px solid rgba(200,120,0,0.3)">🔥 ${WM_I18N.t('絶好調')}</span>`);
   if (c.slump) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(52,73,94,0.15);color:#5a6670;border:1px solid rgba(127,140,141,0.3)">📉 ${WM_I18N.t('スランプ')}</span>`);
   if (c.motivationLoss) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(44,62,80,0.15);color:#6a7880;border:1px solid rgba(149,165,166,0.3)">😞 ${WM_I18N.t('モチベ喪失')}</span>`);
-  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${injuryLabelShort(c.injury.type)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`);
+  if (c.injury) statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">🏥 ${injuryLabelShort(c.injury.type, WM_I18N.t)} ${WM_I18N.t('{w}週', { w: c.injury.weeksLeft })}</span>`);
   const decline = Engine.retirement.getDeclinePresentation(c);
   if (decline.stage === 'terminal') statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,40,40,0.12);color:#a03030;border:1px solid rgba(180,40,40,0.3)">⬇⬇ ${WM_I18N.t('限界')}</span>`);
   else if (decline.stage === 'major') statusBadges.push(`<span style="font-size:10px;padding:2px 6px;border-radius:3px;background:rgba(180,100,20,0.12);color:#a06000;border:1px solid rgba(180,100,20,0.3)">⬇ ${WM_I18N.t('衰退期')}</span>`);
@@ -2195,7 +2195,7 @@ function _renderRosterDetailPanel(c, hired) {
       eventText = entry.detail;
     } else if (entry.type === 'injury') {
       // detail は内部キー('中傷'等)のことがある。表示は必ず injuryLabel を通す
-      eventText = `🏥 ${WM_I18N.t('療養（{detail}）', { detail: injuryLabel(entry.detail) || entry.detail })}`;
+      eventText = `🏥 ${WM_I18N.t('療養（{detail}）', { detail: injuryLabel(entry.detail, WM_I18N.t) || entry.detail })}`;
     } else if (entry.type === 'milestone') {
       eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${entry.detail}</span>`;
     } else {
@@ -2978,7 +2978,7 @@ function renderShowPrep() {
     if (topTwo.length >= 2) {
       const [a, b] = topTwo;
       html += `<div style="background:linear-gradient(135deg,#0d2a3a,#1a3f5a);border:1px solid #6fa8c8;border-radius:8px;padding:12px 16px;margin-bottom:14px">
-        <div style="font-size:14px;font-weight:700;color:#bfe0ff;letter-spacing:1px;margin-bottom:6px">👑 団体王座 空位中</div>
+        <div style="font-size:14px;font-weight:700;color:#bfe0ff;letter-spacing:1px;margin-bottom:6px">${WM_I18N.t('👑 団体王座 空位中')}</div>
         <div style="font-size:12px;color:#dfeefc;line-height:1.6">
           王座決定戦の有力候補: <strong>${WM_I18N.pn(a.name)}</strong>（OVR ${Engine.util.ov(a)}） × <strong>${WM_I18N.pn(b.name)}</strong>（OVR ${Engine.util.ov(b)}）<br>
           メインイベントの 🏆 を有効化すると王座決定戦になります（勝者が新王者）。
@@ -3555,7 +3555,7 @@ function renderShowPrep() {
   ];
   const _spPredIdx = ATTENDANCE_PREDICTION.findIndex(p => prediction.estOccRate >= p.min);
   const _spPred = _spPredIdx >= 0 ? _spPredMeta[_spPredIdx] : _spPredMeta[_spPredMeta.length - 1];
-  const _spMoodText = prediction.text.replace(/^[\S]+\s*/, '');
+  const _spMoodText = WM_I18N.t(prediction.text).replace(/^[\S]+\s*/, '');
   const _spDots = Array(5).fill(0).map((_, di) =>
     `<div class="sp-mood-dot" style="${di < _spPred.dots ? 'background:' + prediction.color : ''}"></div>`
   ).join('');
@@ -3818,12 +3818,12 @@ function renderShowPrep() {
     if (slot._unifiedTitleMatch) {
       tagParts.push(`<span class="sp-match-tag sp-tag-title" style="background:color-mix(in srgb,var(--unified-deep) 28%,transparent);border-color:color-mix(in srgb,var(--unified) 60%,transparent);color:var(--unified-hi)">${WM_I18N.t('🌐 全国統一王座戦（固定）')}</span>`);
     }
-    if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${rivalLvl.label} ${WM_I18N.t('評価+{n}', { n: rivalLvl.mqBonus })}</span>`);
+    if (rivalLvl) tagParts.push(`<span class="sp-match-tag sp-tag-rivalry">${rivalLvl.emoji}${WM_I18N.t(rivalLvl.label)} ${WM_I18N.t('評価+{n}', { n: rivalLvl.mqBonus })}</span>`);
     if (freshnessPreview && freshnessPreview.label) {
       const isFresh = freshnessPreview.bonus > 0;
       // MQ再設計P3c(§1.3/G): 鮮度は集客(appeal)側の係数に移管済み。MQ表記はやめて動員への効きを示す。
       const freshMult = Engine.freshness.attendanceMult(freshnessPreview.bonus);
-      tagParts.push(`<span class="sp-match-tag ${isFresh ? 'sp-tag-fresh' : 'sp-tag-stale'}">${isFresh ? '✨' : '😐'}${freshnessPreview.label} ${WM_I18N.t('動員×{mult}', { mult: freshMult.toFixed(2) })}</span>`);
+      tagParts.push(`<span class="sp-match-tag ${isFresh ? 'sp-tag-fresh' : 'sp-tag-stale'}">${isFresh ? '✨' : '😐'}${WM_I18N.t(freshnessPreview.label)} ${WM_I18N.t('動員×{mult}', { mult: freshMult.toFixed(2) })}</span>`);
     }
     if (isFanExpect) tagParts.push(`<span class="sp-match-tag sp-tag-fanexpect">${WM_I18N.t('📣ファン期待')}</span>`);
     if (isLastRunMatch) tagParts.push(`<span class="sp-match-tag sp-tag-lastrun">${WM_I18N.t('🌅ラストマッチ')}</span>`);
@@ -3841,7 +3841,7 @@ function renderShowPrep() {
         isChallengeRequest: !!(slot._crMatchLocked || slot.isCRMatch),
         pendingClashBonus: slotPendingClash, isFirstMeet: slotFr.isFirstMeet, freshnessCount: slotFr.countInWindow,
         freshnessRawBonus: slotFr.bonus };
-      try { slotBD = Engine.attendanceV2.calcMatchAppealBreakdown(fl, fr, ctx, G); } catch(e) {}
+      try { slotBD = Engine.attendanceV2.calcMatchAppealBreakdown(fl, fr, ctx, G, WM_I18N.t); } catch(e) {}
     }
 
     // ピッカーコンテンツ
@@ -4367,7 +4367,7 @@ function renderLog() {
     : '';
   let html = `<div style="margin-bottom:10px;font-size:11px;color:var(--text-dim)">
     <span style="color:${modeColor};border:1px solid ${modeColor}44;border-radius:3px;padding:1px 6px;font-weight:700">${modeLabel}</span>${survivalBadge}
-    <span style="margin-left:6px">${G.orgName} — ${Engine.util.formatDate(G.season, G.week)}</span>
+    <span style="margin-left:6px">${WM_I18N.pn(G.orgName || 'プレイヤー団体')} — ${Engine.util.formatDate(G.season, G.week, WM_I18N.t)}</span>
   </div>`;
   // v0.95: Enhanced log with filter
   const categories = [
@@ -4431,7 +4431,7 @@ function renderRanking() {
       <div class="popup-mast-title">INDUSTRY STANDINGS</div>
       <div class="popup-mast-meta">
         <div class="issue">${WM_I18N.t('第{season} シーズン・全4団体', { season: G.season || 1 })}</div>
-        <div class="date">${Engine.util.formatDate(G.season || 1, G.week || 1)}</div>
+        <div class="date">${Engine.util.formatDate(G.season || 1, G.week || 1, WM_I18N.t)}</div>
       </div>
     </div>`;
   }
@@ -4520,7 +4520,7 @@ function renderRanking() {
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
-    const orgName = isPlayer ? (G.orgName || WM_I18N.t('プレイヤー団体')) : (org ? org.name : r.name);
+    const orgName = isPlayer ? (WM_I18N.pn(G.orgName || 'プレイヤー団体')) : (org ? WM_I18N.pn(org.name) : WM_I18N.pn(r.name));
     const tier = isPlayer ? WM_I18N.t('自') : (org ? org.tier : '');
     const rankClass = `is-rank-${r.rank}`;
     const playerClass = isPlayer ? ' is-player' : '';
@@ -4637,36 +4637,38 @@ function renderRanking() {
   };
 
   // 団体の周辺コンテキスト (実績アイテム、過去年間王者歴、battlePT動向 など) を語に変換
+  // i18n Stage B P6-13: 各文はプールから選んだ直後にWM_I18N.tへ通す(断片連結ではなく
+  // 文ごとに独立した完成文テンプレのため、選択→t()→join の順で1文ずつ翻訳する)
   const _orgContextSentences = (r, seed) => {
     const out = [];
     // 直近の年間王者歴
     const sh = G.seasonHistory || [];
     const recentAnnual = sh.slice(-3).filter(h => h.annualChampion && h.annualChampion.orgId === r.orgId);
     if (recentAnnual.length >= 2) {
-      out.push(_pickSeed(['ここ数シーズンで複数回の年間王者となり、業界を支配する空気を作っている', '直近の年間王者を立て続けに獲り、トップとしての色がはっきりしてきた'], seed));
+      out.push(WM_I18N.t(_pickSeed(['ここ数シーズンで複数回の年間王者となり、業界を支配する空気を作っている', '直近の年間王者を立て続けに獲り、トップとしての色がはっきりしてきた'], seed)));
     } else if (recentAnnual.length === 1) {
       const yr = recentAnnual[0].season;
-      out.push(_pickSeed([`${yr}年目の年間王者の余韻がまだ団体に残っている`, `${yr}年目に頂点を獲った記憶が、今のチームの基準になっている`], seed));
+      out.push(WM_I18N.t(_pickSeed(['{yr}年目の年間王者の余韻がまだ団体に残っている', '{yr}年目に頂点を獲った記憶が、今のチームの基準になっている'], seed), { yr }));
     }
     // 実績ポイントの厚み
     const items = r.achievementItems || [];
     if (items.length >= 4) {
-      out.push(_pickSeed(['シーズンの勲章を多数抱え、勢いのある団体としての印象が定着している', '直近で獲った実績の蓄積が、評価ptの押し上げ役になっている'], seed >> 2));
+      out.push(WM_I18N.t(_pickSeed(['シーズンの勲章を多数抱え、勢いのある団体としての印象が定着している', '直近で獲った実績の蓄積が、評価ptの押し上げ役になっている'], seed >> 2)));
     } else if (items.length === 0 && (r.legacyScore || 0) <= 5) {
-      out.push(_pickSeed(['際立った勲章を持たず、評価の積み上げに苦労している', 'シーズン実績で稼げず、地力勝負を強いられている'], seed >> 2));
+      out.push(WM_I18N.t(_pickSeed(['際立った勲章を持たず、評価の積み上げに苦労している', 'シーズン実績で稼げず、地力勝負を強いられている'], seed >> 2)));
     }
     // 対戦PT動向
     if (r.battlePt >= 20) {
-      out.push(_pickSeed(['他団体との直接対決で星を稼いでおり、対戦pt面でも優位に立つ', '対抗戦やサミットでの勝ち越しが続き、業界内の貯金を作っている'], seed >> 4));
+      out.push(WM_I18N.t(_pickSeed(['他団体との直接対決で星を稼いでおり、対戦pt面でも優位に立つ', '対抗戦やサミットでの勝ち越しが続き、業界内の貯金を作っている'], seed >> 4)));
     } else if (r.battlePt <= -15) {
-      out.push(_pickSeed(['他団体相手の星勘定で大きくマイナスを背負っている', '対抗戦での連敗が続き、対戦ptが重しになっている'], seed >> 4));
+      out.push(WM_I18N.t(_pickSeed(['他団体相手の星勘定で大きくマイナスを背負っている', '対抗戦での連敗が続き、対戦ptが重しになっている'], seed >> 4)));
     }
     return out;
   };
 
   const _buildLeadSentences = ({ tags, featured, champion, gapTop, gapAbove, seed, r }) => {
     const has = (t) => tags.has(t);
-    const aceName = featured ? featured.name : '看板選手';
+    const aceName = featured ? WM_I18N.pn(featured.name) : WM_I18N.t('看板選手');
     // 文1: ポジション×トレンド×勢い
     let s1Pool = [];
     if (has('top')) {
@@ -4676,7 +4678,7 @@ function renderRanking() {
     } else if (has('chasing') || has('closeToTop')) {
       if (has('rising') || has('hot')) s1Pool = ['首位の喉元に手をかけている', '逆転劇の主役になりかけている団体', '頂点が射程に入ってきた'];
       else if (has('sliding')) s1Pool = ['二番手の座すら危うくなってきた', '追走しながらも足が止まりかけている'];
-      else s1Pool = ['首位を追い続ける挑戦者の位置', `首位の背中を捉えきれずにいる`, '万年二番手の汚名を返上したい'];
+      else s1Pool = ['首位を追い続ける挑戦者の位置', '首位の背中を捉えきれずにいる', '万年二番手の汚名を返上したい'];
     } else if (has('midpack')) {
       if (has('rising') || has('hot')) s1Pool = ['中盤から這い上がってきた団体', '台頭の気配を漂わせ始めた', '中位の枠を破ろうと牙を研ぐ'];
       else if (has('sliding') || has('cooling')) s1Pool = ['中位で足踏みが続いている', 'かつての勢いがやや陰りつつある', '中盤に沈みかけている'];
@@ -4687,18 +4689,22 @@ function renderRanking() {
     }
     // 文2: 王者×人気
     let s2Pool = [];
+    let s2Params;
     if (has('vacant')) {
-      if (has('popHigh')) s2Pool = [`王座は空位のまま、${aceName}の看板で人気を保っている`, `頂点の椅子は空席。それでも${aceName}を中心に客足は途絶えない`];
-      else s2Pool = [`王座は不在で、${aceName}が看板を一人で背負う`, `タイトルを欠いたまま、${aceName}頼みで戦線をつなぐ`, `王座戦線から距離を置き、${aceName}を軸に再起を図る`];
+      s2Params = { name: aceName };
+      if (has('popHigh')) s2Pool = ['王座は空位のまま、{name}の看板で人気を保っている', '頂点の椅子は空席。それでも{name}を中心に客足は途絶えない'];
+      else s2Pool = ['王座は不在で、{name}が看板を一人で背負う', 'タイトルを欠いたまま、{name}頼みで戦線をつなぐ', '王座戦線から距離を置き、{name}を軸に再起を図る'];
     } else if (has('longReign')) {
-      const cn = champion.name;
-      if (has('popHigh')) s2Pool = [`${cn}の長期政権が団体を支え、客の目もそこに集まる`, `${cn}が幾度も防衛を重ね、団体の顔そのものになっている`];
-      else s2Pool = [`${cn}の防衛記録だけが、いまの団体の数少ない誇り`, `${cn}が長く王座を握り、新陳代謝の遅さも同時に露わになっている`];
+      s2Params = { name: WM_I18N.pn(champion.name) };
+      if (has('popHigh')) s2Pool = ['{name}の長期政権が団体を支え、客の目もそこに集まる', '{name}が幾度も防衛を重ね、団体の顔そのものになっている'];
+      else s2Pool = ['{name}の防衛記録だけが、いまの団体の数少ない誇り', '{name}が長く王座を握り、新陳代謝の遅さも同時に露わになっている'];
     } else if (has('freshChamp')) {
-      s2Pool = [`戴冠したばかりの${WM_I18N.pn(champion.name)}が、まだ手探りで王座を温めている`, `新王者${WM_I18N.pn(champion.name)}の真価がこれから試される段階`, `${WM_I18N.pn(champion.name)}が王座を獲ったばかりで、団体全体が新章に入った`];
+      s2Params = { name: WM_I18N.pn(champion.name) };
+      s2Pool = ['戴冠したばかりの{name}が、まだ手探りで王座を温めている', '新王者{name}の真価がこれから試される段階', '{name}が王座を獲ったばかりで、団体全体が新章に入った'];
     } else {
-      if (has('popHigh')) s2Pool = [`${WM_I18N.pn(champion.name)}が王座を構え、人気と実力の両輪が噛み合っている`, `${WM_I18N.pn(champion.name)}を中心線に置き、団体としての形が見えている`];
-      else s2Pool = [`${WM_I18N.pn(champion.name)}が王座を保持してはいるが、団体全体に火がついた感じはまだ薄い`, `${WM_I18N.pn(champion.name)}の王座が、いまの団体をかろうじて束ねている`];
+      s2Params = { name: WM_I18N.pn(champion.name) };
+      if (has('popHigh')) s2Pool = ['{name}が王座を構え、人気と実力の両輪が噛み合っている', '{name}を中心線に置き、団体としての形が見えている'];
+      else s2Pool = ['{name}が王座を保持してはいるが、団体全体に火がついた感じはまだ薄い', '{name}の王座が、いまの団体をかろうじて束ねている'];
     }
     // 文3: 戦力層
     let s3Pool = [];
@@ -4706,7 +4712,11 @@ function renderRanking() {
     else if (has('layerSolid')) s3Pool = ['看板を軸に主力の輪郭がはっきりしている', '上位陣の顔ぶれで勝負できる骨格は整っている', '看板級の周りに準主力が並ぶ手堅い構成'];
     else if (has('layerMid')) s3Pool = ['突出した怪物はいないが、主力候補が広く並ぶ', '頭抜けた選手はいないものの、層は意外と広い', '横並びの主力で何とか試合数をこなしている'];
     else s3Pool = ['まだ発展途上で、伸びしろの賭け', '主力という呼び名に届く選手が乏しい', '育成の途上で、来季以降の積み上げを待つ段階'];
-    const baseLead = [_pickSeed(s1Pool, seed), _pickSeed(s2Pool, seed >> 3), _pickSeed(s3Pool, seed >> 6)].filter(Boolean).join('。') + '。';
+    const baseLead = [
+      WM_I18N.t(_pickSeed(s1Pool, seed)),
+      WM_I18N.t(_pickSeed(s2Pool, seed >> 3), s2Params),
+      WM_I18N.t(_pickSeed(s3Pool, seed >> 6)),
+    ].filter(Boolean).join('。') + '。';
     // 周辺コンテキスト (年間王者歴/実績/対戦PT) を最大1-2文足す
     const ctx = r ? _orgContextSentences(r, seed >> 9) : [];
     if (ctx.length === 0) return baseLead;
@@ -4755,36 +4765,43 @@ function renderRanking() {
   };
 
   // エース欄は個人だけを語る。数値は必ず featured / titles の実データから差し込む。
+  // i18n Stage B P6-13: 各分岐は「{ph}入りテンプレをpickしてからWM_I18N.tへparams付きで通す」
+  // 形に統一(表示直前でPH充填前にt()を通す既定パターン)。escHtml(aceCopy)は表示側で不変
   const _buildAceCopy = ({ featured, defenses, isChampion, isBoard, nextOvr, seed }) => {
-    if (!featured) return '看板を担う選手がまだ定まっていない。';
+    if (!featured) return WM_I18N.t('看板を担う選手がまだ定まっていない。');
     const ovr = Engine.util.ov(featured);
     const age = Number(featured.age) || 0;
     const defenseCount = Math.max(0, Number(defenses) || 0);
     const outlier = ovr - (Number(nextOvr) || 0) >= 8;
-    if (isChampion && age > 0 && age <= 22) return _pickSeed([
-      `${age}歳の若き王者。${defenseCount}度の防衛は、まだ通過点に見える。`
-    ], seed);
-    if (isChampion && defenseCount >= 3) return _pickSeed([
-      `${defenseCount}度の防衛を重ねる王者。完成された試合運びは衰えを知らず、挑戦者に世代交代を許さない。`,
-      `ベルトと共に${defenseCount}度の夜を守り抜いた。彼女の王座は、もう団体の格そのものだ。`
-    ], seed);
-    if (isChampion && isBoard) return _pickSeed([
+    if (isChampion && age > 0 && age <= 22) return WM_I18N.t(_pickSeed([
+      '{age}歳の若き王者。{defenseCount}度の防衛は、まだ通過点に見える。'
+    ], seed), { age, defenseCount });
+    if (isChampion && defenseCount >= 3) return WM_I18N.t(_pickSeed([
+      '{defenseCount}度の防衛を重ねる王者。完成された試合運びは衰えを知らず、挑戦者に世代交代を許さない。',
+      'ベルトと共に{defenseCount}度の夜を守り抜いた。彼女の王座は、もう団体の格そのものだ。'
+    ], seed), { defenseCount });
+    if (isChampion && isBoard) return WM_I18N.t(_pickSeed([
       '王座も看板も一人で背負う。彼女が立っている限り、この団体の興行は格を失わない。'
-    ], seed);
-    if (isChampion && defenseCount <= 1) return _pickSeed([
+    ], seed));
+    if (isChampion && defenseCount <= 1) return WM_I18N.t(_pickSeed([
       '戴冠したばかりの新王者。王座の重みをまだ測りかねている。'
-    ], seed);
-    if (isChampion) return `王座を${defenseCount}度防衛し、王者としての輪郭を固めつつある。`;
-    if (isBoard && age >= 30) return _pickSeed([
-      `${age}歳、なお看板。衰えの影を経験で塗り替えながら先頭に立ち続ける。`
-    ], seed);
-    if (isBoard) return _pickSeed([
-      '王座はないが、この団体の顔は間違いなく彼女だ。大一番の勝負強さが看板を支えている。'
-    ], seed);
-    if (outlier) return _pickSeed([
+    ], seed));
+    if (isChampion) return WM_I18N.t('王座を{defenseCount}度防衛し、王者としての輪郭を固めつつある。', { defenseCount });
+    if (isBoard && age >= 30) return WM_I18N.t(_pickSeed([
+      '{age}歳、なお看板。衰えの影を経験で塗り替えながら先頭に立ち続ける。',
+      '{age}歳。若手の突き上げをものともせず、いまだロスターの中心にいる。'
+    ], seed), { age });
+    if (isBoard) return WM_I18N.t(_pickSeed([
+      // 2026-09-04 P6-13: 王座未確立(ゲーム開始直後など)は複数団体が同時にこの分岐へ
+      // 落ちるため、1本しかないと団体プロフィールが横並びで同文になる。3本に増補
+      '王座はないが、この団体の顔は間違いなく彼女だ。大一番の勝負強さが看板を支えている。',
+      'まだベルトには届いていないが、実力でロスターの頂点に立つ。空位の王座を狙う最有力候補だ。',
+      '王座こそ空位のままだが、数字が語る実力は団体随一。戴冠は時間の問題と見る向きも多い。'
+    ], seed));
+    if (outlier) return WM_I18N.t(_pickSeed([
       'ベルトはまだ巻いていない。それでも実力が頭ひとつ抜けていることは、誰の目にも明らかだ。'
-    ], seed);
-    return '王座はないが、実力で団体の中心に立とうとしている。';
+    ], seed));
+    return WM_I18N.t('王座はないが、実力で団体の中心に立とうとしている。');
   };
 
   // ── 実績ツールチップ: アイテム時系列一覧 (org-ranking-spec-v2.0) ──
@@ -4885,7 +4902,7 @@ function renderRanking() {
   rankings.forEach(r => {
     const isPlayer = r.orgId === 'player';
     const org = RIVAL_ORGS.find(o => o.id === r.orgId);
-    const orgName = isPlayer ? (G.orgName || WM_I18N.t('プレイヤー団体')) : (org ? org.name : r.name);
+    const orgName = isPlayer ? (WM_I18N.pn(G.orgName || 'プレイヤー団体')) : (org ? WM_I18N.pn(org.name) : WM_I18N.pn(r.name));
     const rankClass = `is-rank-${r.rank}`;
     const playerClass = isPlayer ? ' is-player' : '';
 
@@ -5050,7 +5067,7 @@ function renderRanking() {
 // cost > 0              → "50万"
 function _formatShachoshitsuDocCost(doc) {
   if (doc.unitCost) return WM_I18N.t('{cost}万×人数', { cost: doc.unitCost });
-  if (doc.costLabel) return doc.costLabel;  // 動的コスト書類(ボーナス/休暇/招聘)は「—」でなく説明を出す
+  if (doc.costLabel) return WM_I18N.t(doc.costLabel);  // 動的コスト書類(ボーナス/休暇/招聘)は「—」でなく説明を出す
   if (doc.cost == null) return '—';
   if (doc.cost === 0) return WM_I18N.t('無料');
   return `${doc.cost}万`;
@@ -5111,7 +5128,7 @@ function renderShachoshitsu() {
 
 // ── Phase C: タブ別 HUD 右側 ───────────────────────────────────────────────
 function _renderShachoshitsuHudForTab(tab) {
-  const dateStr = Engine.util.formatDate(G.season, G.week);
+  const dateStr = Engine.util.formatDate(G.season, G.week, WM_I18N.t);
   const fundsStr = Math.round(G.funds).toLocaleString();
   let rightHtml = '';
   if (tab === 'decision') {
@@ -5217,10 +5234,10 @@ function _renderShachoshitsuDecisionDesk() {
       const rot = docRotation(doc.id, G.week);
       html += `
         <div class="shachoshitsu-doc${approvedCls}" data-doc-id="${doc.id}" data-category="${doc.category}" data-col="${gridCol}" style="--doc-rotate:${rot}deg"${clickAttr}${titleAttr}>
-          <div class="shachoshitsu-doc-tag">${doc.categoryLabel}</div>
+          <div class="shachoshitsu-doc-tag">${WM_I18N.t(doc.categoryLabel)}</div>
           <div class="shachoshitsu-doc-icon">${doc.icon}</div>
-          <div class="shachoshitsu-doc-title">${doc.label}</div>
-          <div class="shachoshitsu-doc-body">${doc.body}</div>
+          <div class="shachoshitsu-doc-title">${WM_I18N.t(doc.label)}</div>
+          <div class="shachoshitsu-doc-body">${WM_I18N.t(doc.body)}</div>
           <div class="shachoshitsu-doc-cost">
             <span class="doc-cost-money">${costDisplay}</span>
             <span class="doc-cost-sep">/</span>
@@ -5229,15 +5246,15 @@ function _renderShachoshitsuDecisionDesk() {
           <div class="shachoshitsu-doc-tooltip">
             <div class="tooltip-section">
               <div class="tooltip-label">${WM_I18N.t('詳細')}</div>
-              <div class="tooltip-text">${doc.detailText}</div>
+              <div class="tooltip-text">${WM_I18N.t(doc.detailText)}</div>
             </div>
             <div class="tooltip-section">
               <div class="tooltip-label">${WM_I18N.t('効果')}</div>
-              <div class="tooltip-text">${doc.effectSummary}</div>
+              <div class="tooltip-text">${WM_I18N.t(doc.effectSummary)}</div>
             </div>
             <div class="tooltip-section">
               <div class="tooltip-label">${WM_I18N.t('使いどころ')}</div>
-              <div class="tooltip-text">${doc.recommendation}</div>
+              <div class="tooltip-text">${WM_I18N.t(doc.recommendation)}</div>
             </div>
           </div>
         </div>
@@ -5557,7 +5574,7 @@ function renderShachoshitsuNegotiation(wallInnerHtml, deskInnerHtml) {
 
   const season = G.season || 1;
   const fundsStr = Math.round(G.funds).toLocaleString();
-  const dateStr = Engine.util.formatDate(G.season, G.week);
+  const dateStr = Engine.util.formatDate(G.season, G.week, WM_I18N.t);
   // 通常の社長室壁は横長背景(1920:400)だが、契約交渉の話者ブロックは
   // 吹き出し + 上半身194px + 名前/役割までで300px以上ある。話者がいる時だけ
   // 長い台詞も省略せず収まる高さを確保し、上側をHUDの裏へはみ出させない。
@@ -5593,7 +5610,7 @@ function renderShachoshitsuReleaseInterview(fighter, dialogue) {
 
   const seasonId = Engine.util.getSeasonInfo(G.offSeason ? 48 : G.week).id;
   const fundsStr = Math.round(G.funds).toLocaleString();
-  const dateStr = Engine.util.formatDate(G.season, G.week);
+  const dateStr = Engine.util.formatDate(G.season, G.week, WM_I18N.t);
 
   // U3グループA統一(2026-07-26): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行(mockup-baseline-v0.1)。
   // Office/Dark Panel(社長室の壁前、暗色の吹き出し)のため theme=dark。解雇という重い一対一の
@@ -6586,7 +6603,7 @@ function renderSave() {
       html += `<div class="save-slot has-data">
         <div>
           <div class="save-slot-title">${WM_I18N.t('オートセーブ')}</div>
-          <div class="save-slot-meta">${WM_I18N.t('{date} ｜ 資金{funds}万 ｜ {saved}', { date: Engine.util.formatDate(autoInfo.season, autoInfo.week), funds: Math.round(autoInfo.funds).toLocaleString(), saved: new Date(autoInfo.date).toLocaleString('ja-JP') })}</div>
+          <div class="save-slot-meta">${WM_I18N.t('{date} ｜ 資金{funds}万 ｜ {saved}', { date: Engine.util.formatDate(autoInfo.season, autoInfo.week, WM_I18N.t), funds: Math.round(autoInfo.funds).toLocaleString(), saved: new Date(autoInfo.date).toLocaleString('ja-JP') })}</div>
         </div>
         <div class="btn-row">
           <button class="btn btn-blue btn-sm" onclick="showConfirm('${WM_I18N.t('オートセーブからロードしますか？\\n現在の進行は失われます。')}','${WM_I18N.t('ロード')}',()=>{loadAutoSave();refreshAll()})">${WM_I18N.t('ロード')}</button>
@@ -6611,7 +6628,7 @@ function renderSave() {
       html += `<div class="save-slot has-data">
         <div>
           <div class="save-slot-title">${slotTitle}</div>
-          <div class="save-slot-meta">${WM_I18N.t('{date} ｜ 資金{funds}万 ｜ 人気{pop} ｜ 所属{n}名', { date: Engine.util.formatDate(info.season, info.week), funds: Math.round(info.funds).toLocaleString(), pop: Engine.util.dispOrgPop(info.orgPop), n: info.rosterSize })}</div>
+          <div class="save-slot-meta">${WM_I18N.t('{date} ｜ 資金{funds}万 ｜ 人気{pop} ｜ 所属{n}名', { date: Engine.util.formatDate(info.season, info.week, WM_I18N.t), funds: Math.round(info.funds).toLocaleString(), pop: Engine.util.dispOrgPop(info.orgPop), n: info.rosterSize })}</div>
           <div class="save-slot-meta">${new Date(info.date).toLocaleString('ja-JP')} ｜ v${info.version}</div>
         </div>
         <div class="btn-row">
@@ -6680,7 +6697,7 @@ function renderSave() {
     <div style="font-size:12px;font-weight:700;color:var(--text-sub);margin-bottom:8px">${WM_I18N.t('⚙️ 設定')}</div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
       <label style="color:var(--text-sub);font-size:12px;white-space:nowrap">${WM_I18N.t('🏢 団体名:')}</label>
-      <input id="settingsOrgName" type="text" value="${G.orgName || WM_I18N.t('プレイヤー団体')}" maxlength="20"
+      <input id="settingsOrgName" type="text" value="${WM_I18N.pn(G.orgName || 'プレイヤー団体')}" maxlength="20"
         style="flex:1;max-width:240px;background:rgba(200,190,170,0.08);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--text);font-size:13px;font-weight:700"
         placeholder="${WM_I18N.t('団体名を入力')}">
       <button class="btn btn-gold btn-sm" onclick="const v=document.getElementById('settingsOrgName').value.trim();if(v){G={...G,orgName:v};refreshAll();Audio.play('save')}">${WM_I18N.t('変更')}</button>
@@ -7405,7 +7422,7 @@ function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
   if (pool.length === 0) return '';
   const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC715));
   const pick = Engine.rng.pick(rng, pool);
-  const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
+  const orgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
   const weeksRem = Math.max(0, G.crisisWeeksRemaining || 0);
   // i18n Stage B P4-5(D-P4-2): 充填前にt()を1回通す(既存の{orgName}/{weeksRemaining}
   // 置換はそのまま。KURODA_CRISIS は元から{name}プレースホルダ形式の文字列なので
@@ -8287,7 +8304,7 @@ function _renderNewspaperInjuries(d) {
   if (!injuries.length) return '';
   const rows = injuries.map(ir => {
     const weeks = ir.weeksLeft != null ? WM_I18N.t(' / {n}週離脱', { n: ir.weeksLeft }) : '';
-    return `<div class="news-injury-row" style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(137,41,41,0.16);"><strong>${WM_I18N.pn(ir.name)}</strong><span>${injuryLabel(ir.type) || WM_I18N.t('負傷')}${weeks}</span></div>`;
+    return `<div class="news-injury-row" style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px solid rgba(137,41,41,0.16);"><strong>${WM_I18N.pn(ir.name)}</strong><span>${injuryLabel(ir.type, WM_I18N.t) || WM_I18N.t('負傷')}${weeks}</span></div>`;
   }).join('');
   return `<div class="news-injury-report" style="margin-top:10px;padding:8px 10px;border:1px solid rgba(137,41,41,0.22);background:rgba(137,41,41,0.06);border-radius:8px;color:#4a241d;"><div class="news-sec-label">${WM_I18N.t('負傷者情報')}</div>${rows}</div>`;
 }
@@ -9628,7 +9645,7 @@ function _renderDbFighters() {
   // フィルタバー
   const orgOptions = [
     { id: '', label: WM_I18N.t('全て') },
-    { id: 'player', label: G.orgName || WM_I18N.t('プレイヤー団体') },
+    { id: 'player', label: WM_I18N.pn(G.orgName || 'プレイヤー団体') },
     ...RIVAL_ORGS.map(o => ({ id: o.id, label: `${o.name || o.id} (${o.tier})` })),
     { id: 'fa', label: 'FA' },
   ];
@@ -12031,7 +12048,7 @@ function _relmapGetAllChars() {
 }
 
 function _relmapGetOrgLabel(f) {
-  if (f._orgId === 'player') return G.orgName || WM_I18N.t('プレイヤー団体');
+  if (f._orgId === 'player') return WM_I18N.pn(G.orgName || 'プレイヤー団体');
   if (f._orgId === 'fa') return WM_I18N.t('フリー');
   const org = RIVAL_ORGS.find(o => o.id === f._orgId);
   return org ? (G.rivalOrgNames?.[f._orgId] || org.name || f._orgId) : f._orgName || '?';
@@ -12437,7 +12454,7 @@ function _isPlayerSide(state, charId) {
 }
 
 function _findFighterOrgName(state, charId) {
-  if (_isPlayerSide(state, charId)) return state.orgName || WM_I18N.t('プレイヤー団体');
+  if (_isPlayerSide(state, charId)) return WM_I18N.pn(state.orgName || 'プレイヤー団体');
   const aiOrgs = state.aiOrgs || {};
   for (const orgId in aiOrgs) {
     const org = aiOrgs[orgId];
@@ -13022,7 +13039,7 @@ function _relmapMobileIsStrong(link) {
 }
 
 function _relmapMobileRelationLabel(link, values) {
-  if (link.rivalTitle) return `${link.titleEmoji || '🔥'} ${link.rivalTitle}`;
+  if (link.rivalTitle) return `${link.titleEmoji || '🔥'} ${WM_I18N.t(link.rivalTitle)}`;
   if (link.hostileLabel) return `⚡ ${link.hostileLabel}`;
   const maxRiv = Math.max(values.rivOut, values.rivIn);
   const avgBond = (values.bondOut + values.bondIn) / 2;
@@ -13670,7 +13687,7 @@ function _relmapRender(orgCenters) {
     // Rivalry title badge
     if (l.rivalTitle && !dimmed) {
       const labelY = my - 17;
-      const label = `${l.titleEmoji || ''} ${l.rivalTitle}`;
+      const label = `${l.titleEmoji || ''} ${WM_I18N.t(l.rivalTitle)}`;
       lh += `<text x="${mx.toFixed(1)}" y="${labelY.toFixed(1)}" text-anchor="middle" dominant-baseline="central" font-family="Noto Sans JP,sans-serif" font-size="10" font-weight="900" fill="#ffd36a" paint-order="stroke" stroke="rgba(0,0,0,0.82)" stroke-width="2.4" opacity="${highlighted||vm==='focus'?0.98:0.78}">${_escapeHtml(label)}</text>`;
     }
     // bond-rivalry plan 2026-04-29 1-C: 極端ペアの hostile ラベル（rivalTitle が無い時のみ）
@@ -13973,7 +13990,7 @@ function _relmapDrawOrgZones(orgCenters) {
 }
 
 function _relmapGetOrgNameById(orgId) {
-  if (orgId === 'player') return G.orgName || WM_I18N.t('プレイヤー団体');
+  if (orgId === 'player') return WM_I18N.pn(G.orgName || 'プレイヤー団体');
   if (orgId === 'fa') return WM_I18N.t('フリー');
   const org = RIVAL_ORGS.find(o => o.id === orgId);
   return org ? (G.rivalOrgNames?.[orgId] || org.name) : orgId;
@@ -15309,7 +15326,7 @@ function _relmapShowDetailForNode(nodeId) {
   const rfc = _rivalryColor(rf).color, rrc = _rivalryColor(rr).color;
 
   let tb = '';
-  if (top.rivalTitle) tb = `<span class="rm-detail-rivalry-badge" style="background:${top.titleColor}22;color:${top.titleColor};border:1px solid ${top.titleColor}44">${top.titleEmoji} ${top.rivalTitle}</span>`;
+  if (top.rivalTitle) tb = `<span class="rm-detail-rivalry-badge" style="background:${top.titleColor}22;color:${top.titleColor};border:1px solid ${top.titleColor}44">${top.titleEmoji} ${WM_I18N.t(top.rivalTitle)}</span>`;
 
   panel.innerHTML = `<div class="rm-detail-faces"><div class="rm-detail-face" style="border-color:${n.color}" onclick="showFighterPopup(${n.id})">${_relmapFaceHtml(n.id, 42)}</div><span class="rm-detail-arr">\u21C4</span><div class="rm-detail-face" style="border-color:${other.color}" onclick="showFighterPopup(${other.id})">${_relmapFaceHtml(other.id, 42)}</div></div>
     <div class="rm-detail-info"><div class="rm-detail-names"><span style="cursor:pointer" onclick="showFighterPopup(${n.id})">${WM_I18N.pn(n.name)}</span><span style="color:var(--text-dim);font-size:11px">\u21C4</span><span style="cursor:pointer" onclick="showFighterPopup(${other.id})">${WM_I18N.pn(other.name)}</span>${tb}</div>
@@ -15362,7 +15379,7 @@ function _relmapShowComparePopup() {
 
   // ライバル称号バナー（あれば）
   if (rel && rel.rivalTitle) {
-    h += `<div style="text-align:center;padding:6px 0 2px;font-size:13px;font-weight:700;color:${rel.titleColor}">${rel.titleEmoji} ${rel.rivalTitle}</div>`;
+    h += `<div style="text-align:center;padding:6px 0 2px;font-size:13px;font-weight:700;color:${rel.titleColor}">${rel.titleEmoji} ${WM_I18N.t(rel.rivalTitle)}</div>`;
   }
 
   // ヘッダー: アイコン+名前+OVR+感情メーターを各キャラの下に配置

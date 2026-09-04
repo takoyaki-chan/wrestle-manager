@@ -174,6 +174,12 @@ class WalkthroughDetectors {
     // ユニーク要素(screen|kind|selector|text で重複排除)のフラットな一覧。上位N件抽出に使う
     this.overflowRecords = [];
     this._seenOverflowKeys = new Set();
+    // P6-13: JA露出要素の一覧モード(screen/selector/text)。scanTextのraw-value/internal-token
+    // 検査(D3_TEXT・失敗条件)とは完全に独立した情報集計で、jaの行動選択・digestには
+    // 一切影響させない(scanOverflowと同じ設計 — jaExposureByScreenの最大値集計とは別に、
+    // 個々の要素を突き合わせて分類できるようテキスト付きで保持する)
+    this.jaExposureRecords = [];
+    this._seenJaExposureKeys = new Set();
   }
 
   attach(page) {
@@ -411,6 +417,62 @@ class WalkthroughDetectors {
       bucket.total += 1;
       bucket.byKind[item.kind] = (bucket.byKind[item.kind] || 0) + 1;
       this.overflowByScreen.set(screen, bucket);
+    }
+  }
+
+  // P6-13: scanOverflowと同じ設計の情報集計。可視リーフ要素のうち日本語文字を含むものを
+  // (screen, selector, text先頭60字)で列挙する。scanText/snapshotが使うjaExposureCount
+  // (画面ごとの最大値のみ)と異なり、個々の要素を後段の分類作業(名前/直書きラベル/整形値等)
+  // へ渡せる形で保持する。呼び出しはscanOverflowと同じ3箇所(ja/en/pseudo問わず動くが、
+  // 出力するのはrun.js側でlang!=='ja'のときだけ)
+  async scanJaExposureDetail(page) {
+    const result = await page.evaluate((japanesePatternSource) => {
+      const visible = element => {
+        if (!(element instanceof Element)) return false;
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0
+          && rect.width > 0 && rect.height > 0;
+      };
+      const shortSelector = element => {
+        if (element.id) return `#${element.id}`;
+        const classes = (typeof element.className === 'string' ? element.className : '')
+          .trim().split(/\s+/).filter(Boolean).slice(0, 2).join('.');
+        return classes ? `${element.tagName.toLowerCase()}.${classes}` : element.tagName.toLowerCase();
+      };
+      const textOf = element => (element.textContent || '').replace(/\s+/g, ' ').trim();
+
+      const titleScreen = document.getElementById('titleScreen');
+      const activeScreenEl = (titleScreen && visible(titleScreen))
+        ? titleScreen
+        : Array.from(document.querySelectorAll('.screen')).find(visible);
+      const overlayEl = Array.from(document.querySelectorAll('[id*="Overlay"], .overlay, [class*="overlay"], .emr-layer'))
+        .find(visible);
+      const screen = activeScreenEl?.id || (overlayEl ? `overlay:${overlayEl.id || overlayEl.className}` : 'unknown');
+
+      const pattern = new RegExp(japanesePatternSource);
+      const leafElements = Array.from(document.querySelectorAll('body *'))
+        .filter(element => visible(element) && element.children.length === 0);
+      const found = [];
+      for (const element of leafElements) {
+        const text = textOf(element);
+        if (!text || !pattern.test(text)) continue;
+        found.push({ selector: shortSelector(element), text: text.slice(0, 60) });
+      }
+      return { found, screen };
+    }, JAPANESE_CHAR_PATTERN.source);
+    this._recordJaExposureDetail(result.screen, result.found);
+    return result.found;
+  }
+
+  // (screen, selector, text) で重複排除しつつフラットな一覧へ積む(_recordOverflowと同じ思想)
+  _recordJaExposureDetail(screen, found) {
+    if (!found || found.length === 0) return;
+    for (const item of found) {
+      const key = `${screen}|${item.selector}|${item.text}`;
+      if (this._seenJaExposureKeys.has(key)) continue;
+      this._seenJaExposureKeys.add(key);
+      this.jaExposureRecords.push({ ...item, screen });
     }
   }
 

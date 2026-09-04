@@ -285,7 +285,10 @@ section('19. 2枚目のボタンは大会ごとに、次に起きることを書
   // PPV や天頂戦には選定が無い。全部「代表を選ぶ」にすると嘘になる
   assert.strictEqual((tableSrc.match(/nextLabel: '/g) || []).length, EVENTS.length,
     '全大会が nextLabel を持っていない');
-  assert.ok(/cfg\.nextLabel \|\|/.test(introSrc), 'ボタン文言を直書きしている');
+  // i18n Stage B P6-13: cfg.nextLabelを直接使うのではなくWM_I18N.t()経由(dict未訳時は
+  // フォールバック)に変わったため、`cfg.nextLabel ||` から `cfg.nextLabel ?` 三項へ形が変わった。
+  // 「各大会のnextLabelを実際に参照している」という元の検査意図は変わらない
+  assert.ok(/cfg\.nextLabel \?/.test(introSrc), 'ボタン文言を直書きしている');
   // 選定が無い大会が「選ぶ」と言っていないこと
   ['tenchosen', 'ppvGrandFinal'].forEach(k => {
     const at = tableSrc.indexOf(`\n  ${k}: {`);

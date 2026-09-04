@@ -367,6 +367,7 @@ async function runNavTour({ page, detectors, actionLog, navTourVisited, seed, st
     process.stdout.write(`  nav-tour(${tourKey}): ${stop.label} -> ${stop.screen}\n`);
     await detectors.scanText(page);
     await detectors.scanOverflow(page); // P6-9: 情報集計のみ(失敗条件にしない)
+    await detectors.scanJaExposureDetail(page); // P6-13: 情報集計のみ(失敗条件にしない)
     if (detectors.issues.length > 0) return;
   }
   // 帰還。失敗しても主ループの脱出口(「今週」への帰還)が拾う
@@ -438,6 +439,7 @@ async function runWalk(options) {
 
     await detectors.scanText(page);
     await detectors.scanOverflow(page); // P6-9: 情報集計のみ(失敗条件にしない)
+    await detectors.scanJaExposureDetail(page); // P6-13: 情報集計のみ(失敗条件にしない)
     const watchdogIssue = detectors.checkWatchdog(before);
     const immediateIssue = detectors.issues[0] || watchdogIssue;
     if (immediateIssue) {
@@ -589,6 +591,7 @@ async function runWalk(options) {
 
     await detectors.scanText(page);
     await detectors.scanOverflow(page); // P6-9: 情報集計のみ(失敗条件にしない)
+    await detectors.scanJaExposureDetail(page); // P6-13: 情報集計のみ(失敗条件にしない)
     const issue = detectors.issues[0];
     if (issue) {
       const directory = await writeFailureArtifacts({

@@ -5076,7 +5076,7 @@ Engine.factions = {
           type: 'factionCoup',
           characterId: challengerId,
           data: {
-            org: s.orgName || WM_I18N.t('プレイヤー団体'),
+            org: WM_I18N.pn(s.orgName || 'プレイヤー団体'),
             factionName: f.name,
             newFactionName: newName,
             challengerName: successor ? successor.name : '?',

@@ -19,6 +19,7 @@ function parseArgs(argv) {
   const options = {
     actionLog: null,
     fixture: DEFAULT_FIXTURE,
+    jaExposureLog: null,
     // P6-2: --lang(またはenv WM_LANG)。既定は'ja'で、従来どおりwm_langへ何も書かない
     // 既存挙動・digestと完全に揃える(setupPageは'ja'でも明示的に書くが、readStoredLang()の
     // 既定値と同じなので結果は不変)
@@ -46,6 +47,8 @@ function parseArgs(argv) {
     else if (arg === '--max-steps') { options.maxSteps = Number(argv[++index]); options.maxStepsExplicit = true; }
     else if (arg === '--timeout-ms') options.timeoutMs = Number(argv[++index]);
     else if (arg === '--action-log') options.actionLog = path.resolve(argv[++index]);
+    // P6-13: JA露出要素の全一覧(screen/selector/text)をJSONへ書き出す(情報集計・失敗条件にしない)
+    else if (arg === '--ja-exposure-log') options.jaExposureLog = path.resolve(argv[++index]);
     else if (arg === '--lang') options.lang = argv[++index];
     else if (arg === '--help' || arg === '-h') options.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
@@ -82,6 +85,7 @@ function usage() {
     '  --max-steps <n>      deterministic action ceiling (default: 1200 / scenario walk.maxSteps)',
     '  --timeout-ms <n>     whole-run timeout (default: 900000)',
     '  --action-log <file>  write the deterministic operation log',
+    '  --ja-exposure-log <file>  write the full JA-exposure inventory (screen/selector/text) as JSON',
     `  --lang <${VALID_LANGS.join('|')}>  UI language via localStorage wm_lang (default: ja, or env WM_LANG)`,
   ].join('\n');
 }
@@ -245,6 +249,10 @@ async function main() {
       fs.mkdirSync(path.dirname(options.actionLog), { recursive: true });
       fs.writeFileSync(options.actionLog, `${JSON.stringify(result.actionLog, null, 2)}\n`, 'utf8');
     }
+    if (options.jaExposureLog) {
+      fs.mkdirSync(path.dirname(options.jaExposureLog), { recursive: true });
+      fs.writeFileSync(options.jaExposureLog, `${JSON.stringify(detectors.jaExposureRecords, null, 2)}\n`, 'utf8');
+    }
 
     let ignitionFailures = [];
     if (scenario) {
@@ -323,6 +331,11 @@ async function main() {
       console.log(`JA exposure by screen (informational, not a failure condition): ${exposureEntries.length
         ? exposureEntries.map(([screen, count]) => `${screen}=${count}`).join(', ')
         : 'none'}`);
+      // P6-13: 一覧モード(要素ごとのscreen/selector/text)のサマリ。全量はoptions.jaExposureLog
+      // (--ja-exposure-log)で見る想定なので、標準出力には件数のみ出す
+      const exposureRecords = detectors.jaExposureRecords || [];
+      console.log(`JA exposure detail records (informational): ${exposureRecords.length} unique elements${
+        options.jaExposureLog ? ` (written to ${options.jaExposureLog})` : ' (pass --ja-exposure-log <file> to dump)'}`);
     }
     // P6-9: レイアウト溢れの情報集計(失敗条件にはしない)。i18n-miss/JA exposureと違い
     // lang問わず常に出力する — ja側でも走らせて「ENで新規に溢れたのか元から溢れていたのか」の

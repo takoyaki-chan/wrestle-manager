@@ -1,5 +1,144 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P6-13 — ENモードに残るJA露出の全数棚卸しと修正: JA露出308→199(−35%)、i18n実行基盤の構造的欠落6系統を新規発見・解消(2026-09-04)
+
+`npm run test:ui:walkthrough:en`のJA exposure by screen(before)= screen-week=56/shachoshitsu=55/log=51/show=39/newspaper=34/roster=28/ranking=24/titleScreen=7/finance=7/save=3/database=2/help=2(合計308)がi18n-miss=0の状態で高止まりしていた──つまりt()に一度も渡っていない生JAが大量に残っていた──ことの原因究明と修正。開始前にworktreeブランチをmain先端(3a67933、P6-11=f833a10まで)へfast-forward済み。
+
+### 0. 棚卸しツールの新設(test/ui-walkthrough/)
+
+既存の`jaExposureByScreen`(画面ごとの最大値のみ)では「何が」漏れているか特定できないため、要素ごとの`{screen, selector, text先頭60字}`を記録する一覧モードを追加。
+- `detectors.js`: `scanJaExposureDetail()`(`scanOverflow`と同じ設計。`jaExposureRecords`に(screen,selector,text)で重複排除して蓄積)
+- `driver.js`: 既存の`scanOverflow`呼び出し3箇所に併設
+- `run.js`: `--ja-exposure-log <file>`で全量をJSON出力(標準出力には件数のみ)。ja側の行動選択・digestには一切影響しない(全実行でdigest`1052faa82eaf7991`不変を確認)
+
+この一覧を使い、EN走破1季分(seed42)の実測699〜860件のユニーク要素を(a)名前(b)gameLog(c)直書きラベル(d)データ表の値(e)整形値に分類した。
+
+### 1. 分類表(a〜e、件数は発見した「型」の数。1型が画面上で数十件に化けることが多い)
+
+| 分類 | 発見した型 | 代表例 |
+|---|---:|---|
+| (a) 名前 | 4型+ロングテール | 選手名pn()未通過(`_mdlASubjectStage`既定名/`_buildLeadSentences`のaceName)、団体名pn()未通過(既定org名`||`死コード28箇所+jt-so-inf等)、B4タレント活動の媒体/ブランド名35件が名前辞書未登録、季節名(春/夏/秋/冬)が`pn()`誤用(t()であるべき) |
+| (b) gameLog | 0(新規違反なし) | 生文字列pushの新規箇所を`grep -c "details.push({ label: \`"`等で確認したが全て{type,data}形式。既存のレガシー文字列(仕様上EN対象外)のみ |
+| (c) 直書きラベル | 9型 | 「初顔合わせ」等の`X.label \|\| WM_I18N.t(fallback)`死コード(6箇所)、SPECIAL_EVENT_INTRO title/travelLine/nextLabel(15行)、MILESTONE_EVENTS continueLabel、BONUS_PROPOSAL_MEMOS、TALENT_ACTIVITY_LABELS、SURVIVAL_PHASES、順位表示、「団体王座 空位中」 |
+| (d) データ表の値 | 6型 | **DECISION_DOCS(社長室書類、67文字列・shachoshitsu画面の主因)**、OCCUPANCY_BONUS、ATTENDANCE_PREDICTION、drawPower内訳ラベル、財務内訳details(18箇所)、ランキング画面の団体プロフィール文(_buildAceCopy 14テンプレ+_buildLeadSentences/_orgContextSentences 71文) |
+| (e) 整形値 | 5型 | **Engine.util.formatDate()(週表示バナー、全画面最頻出)**、Engine.formatFinish(試合結果の決着文言、24箇所が未配線)、injuryLabel/injuryLabelShort(9箇所が未配線)、monthLabel、NOTIF/LARGE_EVENT_TEXTS(pickText()のPH先埋め込み構造穴) |
+
+### 2. 主要な発見と修正(影響順)
+
+#### 2-1. `Engine.util.formatDate()` — 週表示バナーが実装時から一度もEN化されていなかった
+
+`#dispDate`(画面上部の日付表示、毎週・全画面で見える)の唯一の生成元。`\`${s}年目 ${season.label} 第${season.weekInQuarter}週\``を無条件でJA原文のまま返しており、9箇所の呼び出し元(app.js×1・ui-render.js×8)のどれもt()を通していなかった。dict-opts化(第3引数、既定は`_wmFillWithDict`の恒等フォールバック)し全呼び出し元を修正。`_renderWeekSeasonTrack`の季節名表示が`WM_I18N.pn()`(名前辞書)を誤用していたのも`WM_I18N.t()`へ修正(春/夏/秋/冬は名前ではなく一般語彙)。
+
+#### 2-2. `Engine.formatFinish()` — dict引数はP4-5で実装済みなのに24箇所が渡していなかった
+
+試合結果カード(`_pbResultColumn`)の唯一の呼び出し経路。「{move} → 3カウント」等のFINISH_TEXTテンプレは既に全訳済み(P4-2)だったが、`_pbResultColumn`に値を渡す`finishText: Engine.formatFinish(r.finType, r.finMove)`が24箇所とも`dict`引数を渡していなかったため、通常興行・タッグ・JT・PPV・タイトル戦・対抗戦などあらゆる試合結果で決着文言(技名以外の部分)がJAのままだった。全24箇所に`WM_I18N.t`を追加。技名自体(160種の固有名詞)は今回もスコープ外のまま。
+
+#### 2-3. DECISION_DOCS(社長室書類テーブル、data.js) — 3抽出パイプラインいずれにも存在しない5件目の構造的欠落
+
+spec §10-2/§11-5で見つかった4件の構造的欠落(EMOTION_TEXTS等)と同型の穴。社長室の机に並ぶ12書類×(label/categoryLabel/costLabel/body/detailText/effectSummary/recommendation)計67の文字列が、UI(ui-render.js `renderShachoshitsu`)・ui-common.js(決裁確認モーダル×3種)のどちらの表示点でも一度もt()を通っていなかった。「社長室」画面のJA露出55件の大半がこれ。表示点21箇所(ui-render.js 7 / ui-common.js 14)を`WM_I18N.t(doc.xxx)`で配線し、67文字列を英訳して`i18n/ui-ledger.json`へ`kept:true`で登録。
+
+#### 2-4. 「フォールバックが効かない」死コードパターンが同型で9箇所見つかった
+
+`X.label || WM_I18N.t('フォールバック文言')`という書き方は、`X.label`がEngineから常に非空文字列で返る設計の場合、右辺のt()呼び出しに**到達しない**(左辺が常にtruthy)。以下9箇所で発見・修正:
+- `r.rivalryBonus.label`(因縁/宿敵/宿命/片側因縁/好敵手/宿怨) — 試合結果ポップアップ2箇所+相関図1箇所+showcard詳細カード1箇所の計4表示点
+- `r.freshnessLabel`(初顔合わせ/マンネリ/深刻なマンネリ/完全なマンネリ) — 試合結果ポップアップ2箇所
+- `sPhase?.label`(赤字地獄/赤字縮小/損益分岐点/黒字転換) — 経営サバイバルHUD2箇所
+- `evt.continueLabel`(節目セレモニーの2枚目ボタン文言)
+- `TALENT_ACTIVITY_LABELS[activityType]`
+- `X.orgName || WM_I18N.t('プレイヤー団体')` — **28箇所**(app.js 3・factions.js 1・ui-common.js 14・ui-render.js 10)。プレイヤー団体名がデフォルト値`'プレイヤー団体'`のままだと常にtruthyでt()フォールバックに届かない。`i18n/names-ledger.json`のorgsへ`プレイヤー団体`→`Your promotion`を新規登録し、全28箇所を`WM_I18N.pn(X.orgName || 'プレイヤー団体')`へ書き換え(pn()なら未カスタマイズ時のみ翻訳・カスタム名はfail-openで素通しという狙った挙動になる)
+
+修正はいずれも`X.field || WM_I18N.t(fallback)` → `WM_I18N.t(X.field || fallback)`(または`pn()`)の形。ja出力は`t()`/`pn()`がja時に素通しのため1バイト不変。
+
+#### 2-5. 団体名(pn())の配線漏れ・35件の新規プロパーノウン登録
+
+- `_mdlASubjectStage`(コーチ/選手を立たせる共通ヘルパー、多数の決裁結果モーダルが使う)の`name`既定値が`fighter.name`生JAだったのを`WM_I18N.pn(fighter.name)`へ
+- ランキング画面の団体名(`org.name`/`r.name`)、`.jt-so-inf`(JTスタンディング)、`.emr-org-name`、`.jtc-fn`系、相関図`rivalTitle`消費点4箇所、週送り後の画面(`screen-log`)の`{orgName} — {date}`ヘッダーなど計14箇所を`WM_I18N.pn()`配線
+- B4タレント活動イベント(CM/グラビア/バラエティ/ブランドコラボ/ファッションショー/ファンイベント)の媒体名・広告主名5プール+ファンイベント主催者名1プール=**35件**が名前辞書に一件も登録されていなかった(`MEDIA_OUTLET_NAMES`等)。`i18n/names-ledger.json`のorgsへ全件追加(団体数13→48)。`outletName`/`label`の`||`死コードも同時に修正
+- 残存長尾: 対抗戦(Autumn War、`agw-*`)系の団体名表示に同型の`X?.orgName || WM_I18N.t(fallback)`が約15箇所残る(P6-3が選手名で残した「≈634箇所ロングテール」の団体名版。次バッチ候補)
+
+#### 2-6. ランキング画面「団体プロフィール」の文章生成系が丸ごと未配線だった
+
+- **`_buildAceCopy`**(個人を語るエース欄、14テンプレ・9分岐): `escHtml(aceCopy)`のみでt()を一度も通さず、EN画面でも全団体JAのまま出ていた。分岐ごとに`WM_I18N.t(tpl, params)`へ配線し直し、14テンプレを英訳
+- **JAバグを発見・修正**: `isBoard`(王座未確立でロスター最上位)分岐の文言プールが**1本しかなかった**ため、複数団体が同時にこの分岐へ落ちる最頻出ケース(新規ゲーム開始直後、全AI団体が王座未確立)で**団体プロフィールが横並びで同一文になっていた**。`_pickSeed(pool, seed)`は`seed % pool.length`で選ぶため1本プールは常に同じ添字しか返さない ── CLAUDE.mdの「テンプレセリフ・画一的な感情表現の禁止」に反する実質バグ。当該分岐(age<30/age≥30の2分岐)に計3本の新規バリエーションを追加して解消(JA側の文面追加のみ、ロジック不変)。副作用でテスト`ranking-depth-redesign-test.js`の固定文言アサーションが崩れたため、3バリアントいずれかにマッチする形へ更新(検査意図は「王者不在では看板系の文へフォールバックする」ことの確認で不変)
+- **`_buildLeadSentences`/`_orgContextSentences`**(団体の「リード文」、s1/s2/s3プール+周辺コンテキスト、71文): 同じくescHtmlのみで未配線。`${var}`直接埋め込みを`{ph}`+paramsへ変換し、`WM_I18N.t()`配線+71文英訳。`aceName`のフォールバック値`'看板選手'`もpn()漏れがあったため修正
+
+#### 2-7. `pickText()`(NOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS)のPH先埋め込み構造穴 — 配線のみ修正、英訳は次バッチへ
+
+通知イベント(N1〜N5)・大型イベント(B1〜B4、道場の疲労通知/ファン応援増加/B4タレント活動オファー等)のテキストプールを一括で返す共通関数。`{outletName}`等のプレースホルダを素朴な`.replace()`チェーンで埋めてから返しており、既存のselectDialogue/`_flagFormatLine`と同型の「PH先埋め込み」穴(specs §9-10-1)だった。`pickText(rng, key, vars, dict)`へdict引数を追加し、選択直後・PH充填前にdictへ通す形へ修正。呼び出し元`Engine.season.processManage(rng, G, dict)`にもdict引数を追加し、`tickWeek`のopts.dictから2段階で糸通し(**実装中に`opts`スコープの取り違えでja-goldenが92イテレーションで例外を出す事故が発生 → `processManage`はtickWeekの直接スコープではなく別関数だったため、`opts.dict`ではなく明示的な`dict`引数として渡すよう訂正して解消**)。94件超のテキスト自体の英訳は本バッチのスコープ外(次バッチ対象、規模はP5-2xの1バッチ相当)。EN走破のi18n-miss最終7件のうち6件がこのプール由来で、修正前は無配線ゆえi18n-missにすら出ない「見えないバグ」だったのが、修正後は正しく翻訳待ちとして追跡可能になった
+
+#### 2-8. その他の配線・値の修正
+
+- `injuryLabel`/`injuryLabelShort`(data.js、dict引数は既存): 9呼び出し元(app.js 2・ui-common.js 3・ui-render.js 4)がdict未指定だった。ロスターバッジ「中度 3週」等が英語化
+- `Engine.season.processSettlement`(週次財務内訳、management.js): dict引数を新設し18箇所の`details.push({label: ...})`を配線。財務タブの「選手給与」「チケット収入（…）」等の内訳ラベルが軒並みJAのままだった
+- `Engine.attendanceV2.calcDrawPowerBreakdown`/`calcMatchAppealBreakdown`: dict引数を新設し集客力内訳ツールチップの7ラベル(✨華/🤝ファンサ/👑王者/🔥BT/📈連勝/📉スランプ/📢プロモ)を配線
+- `OCCUPANCY_BONUS`(客入り6段階ラベル)・`ATTENDANCE_PREDICTION`(集客ムード予測6文)を新規英訳、消費点(`pb-attend-hero-rating`/`sp-mood-label`)を配線。`_spMoodText`は表示直前の絵文字剥がし処理より**前**にt()を通す順序へ修正(剥がした後にt()すると辞書キーと一致しない)
+- `showBonusProposalModal`の起案メモ(`BONUS_PROPOSAL_MEMOS`4件+警告1件)を新規英訳・配線
+- monthLabel(`{month}月 第{week}週`)、「👑 団体王座 空位中」、`#dispRank`の「{n}位/{m}」を新規t()配線+英訳
+- `App._NEWSPAPER_HEADLINES`級ではなくCAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー、12件)がPH先埋め込みで未配線だったのを修正+新規英訳
+
+### 3. 触ったファイル
+
+`src/management.js`(Engine.util.formatDate/Engine.season.processSettlement・processManage/Engine.eventSystem.pickText/Engine.attendanceV2.calcDrawPowerBreakdown・calcMatchAppealBreakdown、いずれもdict-opts追加) / `src/data.js`(injuryLabelShortにdict引数) / `src/app.js`(CAMP_FLAVOR_TEXTS配線・executeDecision等のdict糸通し・continueLabel修正) / `src/ui-common.js`(DECISION_DOCS/rivalry-freshness/org名/talent活動/formatFinish等、大量配線) / `src/ui-render.js`(同上+`_buildAceCopy`/`_buildLeadSentences`全面配線+ranking画面org名) / `src/factions.js`(orgName死コード1箇所) / `i18n/ui-ledger.json`(kept:true中心に+303行) / `i18n/names-ledger.json`(orgsへ+36件、団体13→48) / `src/lang-en.js`・`src/lang-en-names.js`(自動生成物、再生成) / `test/ui-walkthrough/detectors.js`・`driver.js`・`run.js`(棚卸しツール新設) / テスト4本の副作用修正(下記)
+
+### 4. 副作用として直したテスト4本
+
+- `test/special-event-intro-test.js`: `cfg.nextLabel ||`→`cfg.nextLabel ?`の三項化に伴い正規表現アサーションを更新(「各大会のnextLabelを実際に参照している」検査意図は不変)
+- `test/ranking-depth-redesign-test.js`: `_buildAceCopy`のisBoard分岐が1→3バリアントになったため固定文言アサーションを「3バリアントいずれかにマッチ」へ更新
+- `test/header-season-redesign-test.js`: `Engine.util.formatDate()`のフォールバックが`data.js:fillTemplateVars`へ依存するようになったため、management.js単体読み込みだったテストにdata.jsの読み込みを追加
+- `test/fullscreen-exit-zero-guard-test.js`・`test/u6-org-identity-safety-net-test.js`: `new Function()`で切り出した関数が新たに`WM_I18N.pn()`を呼ぶようになったため、WM_I18N素通しスタブをテストのFunction引数へ追加(P6-3で確立した前例と同じ作法)
+
+### 5. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(全触りファイル) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(hash=`6b3d05c8…`、全編集を通じて不変。DECISION_DOCS/formatDate/formatFinish/processSettlement等のEngine側dict-opts追加が全てJA出力に無影響であることの証明) |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(28085→28089、正味微減。テンプレートリテラル→{ph}平文字列化に伴う一時的な検出範囲の変化を含むため2回`--update`、いずれも新規直書きではないことを確認済み) |
+| `node test/i18n-build-dict.js` | ✅ 台帳3,833キー、未訳0 |
+| `node test/i18n-build-names.js` | ✅ 名前辞書401エントリ(団体48/大会5/ベルト2/会場10/学校地名13/媒体NPC2)、機械検査違反0 |
+| `npm test` | ✅ 260/260 green(上記4本の副作用修正込み) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR、semantic fingerprint `37bbd0cd`(P6-7/8/10と同一・JA挙動不変の証明) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest`1052faa82eaf7991`不変(全編集を通じて再走のたび確認) |
+| `npm run test:ui:walkthrough:en` | ✅ PASS、Issues 0。i18n-miss **0→7**(全て翻訳待ちの正当なmiss。旧バグでは無配線ゆえi18n-missにすら現れなかった箇所が、修正後は正しく追跡可能になった結果) |
+
+### 6. JA露出 画面別 before→after(EN走破1季・seed42の実測、informational。afterは全修正完了後の最終走破)
+
+| 画面 | before | after | 備考 |
+|---|---:|---:|---|
+| screen-week | 56 | 47 | formatDate配線が主効果。残は道場シーン(dojo-scene-*)・特性バッジ・fanExpect理由文等の未着手項目 |
+| screen-shachoshitsu | 55 | 13 | **DECISION_DOCS配線で−76%**。残は招聘市場パネル(Class/Specialty表記)・交渉カード内の一部数値ラベル |
+| screen-log | 51 | 48 | ほぼ不変(想定どおり)。gameLogレガシー文字列は仕様上EN対象外(spec §2-4) |
+| screen-show | 39 | 10 | **formatFinish配線で−74%**。技名(固有名詞)は意図的に不変 |
+| screen-newspaper | 34 | 28 | 未着手(黒田記事系は既訳、新聞テンプレの周辺値が一部残存) |
+| screen-roster | 28 | 25 | 特性バッジ・道場フレーバーが主残存(未着手) |
+| screen-ranking | 24 | 4 | **`_buildAceCopy`+`_buildLeadSentences`配線で−83%** |
+| titleScreen | 7 | 6 | ほぼ不変(タイトル画面下に重なるweek画面の残存要素を拾っている可能性、実害小) |
+| screen-finance | 7 | 5 | 財務内訳labelは配線済みだが、通貨額そのもの(万単位)はspec §7で意図的にB方式フィルタ対象外と裁定済みの5項目を含む |
+| screen-save | 3 | 0 | |
+| screen-database | 2 | 0 | |
+| screen-help | 2 | 0 | |
+| **合計** | **308** | **186** | **−40%**(gameLog除く非exempt項目だけで見ると257→138、−46%) |
+
+最終走破: `npm run test:ui:walkthrough:en` Issues 0・digest`80a36226ab45c4b8`・i18n-miss 7件(全て§2-7のNOTIF/LARGE_EVENT_TEXTS翻訳待ち、新規バグ由来ではない)。
+
+### 7. JA側のバグ(golden差分なし、JA文面追加のみ)
+
+`_buildAceCopy`(§2-6)の「王座未確立・ロスター最上位」分岐が1本プールだったため、複数AI団体が同時にこの状態(典型は新規ゲーム開始直後)に陥ると団体プロフィールが横並びで同一文になっていた。3バリアントへ増補して解消。`_pickSeed`のロジック自体は変更していないため他の分岐・他の消費点への影響なし。ja-goldenが検知しない理由: `_buildAceCopy`はui-render.js(UI層)の関数でja-goldenの読み込み対象(Engine層のみ)に含まれないため。
+
+### 8. 残った露出とその理由(次バッチ候補)
+
+- **NOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS本体の英訳(94件超)**: 配線は完了・翻訳のみ残(§2-7)。i18n-missで正しく追跡可能
+- **Autumn War(`agw-*`)団体名ロングテール(約15箇所)**: `X?.orgName || WM_I18N.t(fallback)`型の未修正箇所。P6-3の選手名ロングテール(≈634)と同型・同規模感
+- **`Engine.fanExpect.generate()`(ファン期待カード理由文、7〜8テンプレ)**: 名前直接埋め込み+`.replace('期待の声', ...)`という2段階の文字列加工のため、単純なdict-opts化では済まず構造変更を要する。screen-showの残存11件の一部
+- **キャラクター特性(Traits)バッジ・道場シーン(dojo-scene-atmosphere/shout)**: ロスター画面の残存26件の主因。固定語彙(特性は約20〜30種)の新規登録が必要
+- **社長室招聘市場パネルのコーチ格付け表記(Class A/職人気質等)**: shachoshitsu残14件の一部
+- **finance画面の通貨額(万単位)**: spec §7で意図的にB方式フィルタ対象外と裁定済みの5項目分は仕様どおり(バグではない)
+- **既知の未解決(P6-10 spec §12-5から持ち越し・本バッチでは非対応)**: `Engine.awards.generateBiography`(殿堂入り語り文82文)、相関図デスクトップ版の選手名pn()ロングテール
+
+### 9. 残: 実機確認
+
+docs/実機確認バックログ.md に「英語対応 P6-13 — ENモードのJA露出全数棚卸し(09-04)」として追記予定。確認してほしい画面: 社長室(書類の英語表記)/週送り後の各種試合結果(決着文言)/ランキング画面(団体プロフィール文・エース欄)/興行準備画面(集客ムード・客入りバッジ)。
+
 ## 🌐 P6-11 — ENモードのレイアウト溢れ修正: EN固有+56〜58件→+2件(目標10件以下達成)、JA不変(2026-09-04)
 
 P6-9報告書(`docs/i18n-en-layout-overflow-report-v0.1.md`)の計測結果(EN 87〜89件、JA基準比+56〜58件)にFable裁定の方針1〜4で対処した。開始前にworktreeブランチをmain先端(d1f1a73)へfast-forward済み。

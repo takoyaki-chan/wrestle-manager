@@ -36200,5 +36200,3639 @@
     "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "ボーナス支給願",
+    "en": "Bonus Request",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "休暇辞令",
+    "en": "Leave Order",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "慰労会開催届",
+    "en": "Team Party Order",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "外部コーチ招聘状",
+    "en": "Guest Coach Invitation",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "合宿実施手配書",
+    "en": "Training Camp Order",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア露出手配書",
+    "en": "Media Push Order",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "関係修復斡旋書",
+    "en": "Reconciliation Order",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "派閥解散命令",
+    "en": "Faction Dissolution Decree",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "コーチ雇用決裁書",
+    "en": "Coach Hiring Decision",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手ケア",
+    "en": "Player Care",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "広報",
+    "en": "Publicity",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "人事",
+    "en": "Personnel",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "起案額による",
+    "en": "Depends on the proposal",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "週給×週数+50万",
+    "en": "Weekly salary × weeks + ¥500k",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "コーチの格による",
+    "en": "Depends on the coach's standing",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "対象選手に特別手当を支給し、組織貢献への感謝を示す",
+    "en": "Award a bonus to a fighter, showing gratitude for what she's given the organization",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "気にかけている選手に社長自ら声をかけに行く",
+    "en": "The president goes in person to talk to a fighter she's worried about",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "次の通常興行のメインで使うと本人に約束する",
+    "en": "Promise her, in person, that she'll headline the next regular show",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "長期離脱中の選手に専門医を手配し、復帰を早める",
+    "en": "Arrange a specialist for a fighter on long-term leave to speed up her return",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "心身の疲弊を察し、一定期間の休養を与える",
+    "en": "Sense her exhaustion, in body and mind, and grant her a stretch of rest",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "団体の雰囲気を立て直すべく、慰労の宴席を設ける",
+    "en": "Hold a celebration to rebuild the organization's mood",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "今期の候補から外部コーチを選び、一人の選手に短期集中で指導を受けさせる",
+    "en": "Pick a guest coach from this season's candidates and put one fighter through a short, intensive stretch under her",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "全選手を集中的に強化するため、合宿を実施する",
+    "en": "Run a training camp to strengthen every fighter at once",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "対象選手を広告塔とし、団体の知名度向上を図る",
+    "en": "Put a fighter forward as the face of a push to raise the organization's profile",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "長期的な険悪関係にあるペアの間に立ち、関係改善を図る",
+    "en": "Step between a pair locked in a long-running feud and work to mend it",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "団体内の派閥を社長命令で解散させ、以後の結成を認めるかどうかを決める",
+    "en": "Order the dissolution of a faction within the organization, and decide whether new ones will be allowed to form afterward",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "新たなスタッフを招聘し、団体の指導体制を強化する",
+    "en": "Bring on new staff to strengthen the organization's coaching lineup",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "起案された支給額の中から、いくら積むかを社長が決める。額面が彼女の格に見合ってこそ、誠意は伝わる。安すぎる額は、かえって心を離れさせることもある。",
+    "en": "The president picks how much to pay from a set of proposed amounts. Sincerity only lands when the figure matches her standing — an amount that's too low can push her further away instead.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "決裁枠も資金も使わない、社長自らの自発的な行動。スランプ中・モチベ喪失中・最近様子が気になる選手に足を運んで声をかける。",
+    "en": "No decision points or funds spent — just the president's own initiative. Go talk to a fighter who's in a slump, has lost motivation, or has simply seemed off lately.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "言葉ではなく試合で応えるタイプの選手に、次の通常興行のメインイベントで使うと約束する。カード編成は縛られない — 約束を守るも破るも社長の判断。",
+    "en": "For a fighter who answers in the ring rather than in words, promise the main event slot of the next regular show. Card-building stays unbound — keeping the promise or breaking it is the president's call.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "長い離脱を強いられた選手に、専門医による集中ケアを正式に発注する。残る離脱期間を大きく削り取る、復帰前倒しの切り札。削れる幅は治療の経過しだい。",
+    "en": "Formally commission intensive care from a specialist for a fighter forced into a long absence. The trump card for pulling her return forward, cutting deep into the time she has left out. How much it shaves off depends on how the treatment goes.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "1〜4週間の休暇を正式な辞令として発行する。休暇中の試合には欠場するが、そのぶん心身は着実に回復していく。休ませた週の数だけ、積み重なった消耗が確かに癒えていく。",
+    "en": "Issue a formal order for 1 to 4 weeks of leave. She'll miss shows while she's away, but her body and mind steadily recover in exchange. Every week of rest chips away, for certain, at the wear she's built up.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "全選手を集めた慰労の宴席。個別の数値を動かすより、ロッカールームの空気そのものを立て直すのが主目的。宴の効果は一晩では消えず、しばらく道場に残る。",
+    "en": "A celebration gathering every fighter together. The point isn't to move any one number — it's to rebuild the air of the locker room itself. The glow doesn't fade in one night; it lingers around the dojo for a while.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "今期市場に出ている外部コーチの中から一人を選び、期間限定で招聘する。指導タイプと選手の相性、得意スタイルの一致が効果を左右する。招聘中は雇用コーチの指導から外れ、そのコーチに専念する。",
+    "en": "Choose one guest coach from this season's open market and bring her in for a limited stretch. How well the coaching type suits the fighter, and whether their styles align, decides how much it takes. While the invitation runs, the fighter steps out from her regular coach's guidance to focus on this one alone.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手全員を合宿地へ送り込み、短期集中で基礎を鍛え直す。ひとり40万×人数ぶんの費用と決裁枠3を消費する重量級書類。",
+    "en": "Send the whole roster to a training camp for a short, intensive rebuild of the fundamentals. A heavyweight paper — it costs ¥400k per fighter plus 3 decision points.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "対象選手をメディア露出の広告塔として起用。団体の知名度を押し上げ、彼女の名も世に広がっていく外向きの施策。ただし、脚光は当たった者だけのものではない。",
+    "en": "Cast the fighter as the face of a media push. An outward-facing move that raises the organization's profile and spreads her name along with it. But the spotlight doesn't only belong to the one standing in it.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "勝負の世界では険悪な関係も時に武器になる。だが限度を超えると組織全体を蝕む。社長が間に立ち、最悪の事態を避ける。成功率は約70%。失敗しても関係はそのまま。",
+    "en": "In this business, a bad relationship can sometimes be a weapon. But past a certain point, it eats away at the whole organization. The president steps in to head off the worst outcome. Success runs around 70%; a failed attempt just leaves things as they were.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手たちが自然に作った群れを、上から畳む。畳まれた側は当然おもしろくない。とくに束ねていた本人には深く残る。勢いに乗っていた派閥ほど、その傷は深い。",
+    "en": "Fold up, from above, a circle the fighters formed on their own. Naturally, the ones on the receiving end aren't happy about it — and it cuts especially deep for whoever was holding it together. The more momentum a faction had, the deeper the wound.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "新たなコーチを招聘し、指導体制を強化する。机には並ばず、コーチ画面から実行する特殊書類。",
+    "en": "Hire a new coach to strengthen the coaching lineup. A special paper that never appears on the desk — it's run from the coach screen instead.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "支給額しだいで本人の受け止め方が変わる。相場を大きく超える額は深く響く",
+    "en": "How she takes it depends on the amount. Going well beyond the going rate lands deep.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "本人の表情が少し和らぐ(スランプ・モチベ喪失なら回復促進も)",
+    "en": "Her expression softens a little (and it speeds recovery if she's in a slump or has lost motivation)",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "メインで起用すれば強く応える。果たせなければ、しこりが残る",
+    "en": "Book her in the main event and she answers it hard. Fail to deliver, and it leaves a mark.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "対象選手の残り離脱期間が4割から半分ほど縮まる",
+    "en": "Cuts the fighter's remaining time out by roughly 40 to 50 percent",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "休んだ週数のぶんだけ蓄積した消耗が癒え、体調も戻る。本人にも気遣いが伝わる",
+    "en": "Accumulated wear heals in proportion to the weeks off, and her condition recovers too. She feels the consideration behind it.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手同士の会話が増え、ロッカールームと社長への空気が柔らかくなる。和んだ空気はその後数週間ゆるやかに続く",
+    "en": "Fighters talk more with each other, and the mood toward both the locker room and the president softens. The warmth lingers gently for a few weeks after.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "4週間のあいだ対象選手の練習効果が上がる。コーチの格・相性・特殊能力しだいで伸び方が変わる",
+    "en": "Boosts the fighter's training results for 4 weeks. How much she grows depends on the coach's standing, compatibility, and any special ability.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "2週間のあいだ全員の練習効果が上がり、団体全体に一体感が育つ",
+    "en": "Boosts everyone's training results for 2 weeks, and a sense of unity grows across the whole organization.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手人気と団体人気が上がる。本人も起用を前向きに受け止める",
+    "en": "Raises both her popularity and the organization’s. She takes the push well, too.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "成功時、双方向 bond +5〜+10。失敗時は据え置き。",
+    "en": "On success, bond +5 to +10 in both directions. On failure, nothing changes.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "選択した内容によって、解散のみ／解散して以後禁止／禁止の解除 が実行される",
+    "en": "Depending on what you choose: dissolve only, dissolve and forbid new ones, or lift an existing ban.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "コーチを1名新しく迎える(決裁枠を2消費)",
+    "en": "Brings on one new coach (costs 2 decision points)",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "団体への気持ちが陰りはじめた選手に、早めに手を打つと効果的。同じ選手への再支給は相場が吊り上がる点に注意。",
+    "en": "Most effective when used early, on a fighter whose feelings for the organization are starting to dim. Repeat bonuses to the same fighter push the going rate higher each time.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "気になる選手のポップアップから直接実行する。机には並ばない。",
+    "en": "Run it directly from a fighter's popup when something about her catches your eye. It never appears as a paper on the desk.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "強気な選手のポップアップから実行する。机には並ばない。",
+    "en": "Run it from a bold fighter's popup. It never appears as a paper on the desk.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "長期離脱(10週以上)の重傷を負った選手にだけ発注できる。数週間で治る怪我は、専門医を呼ぶまでもなく自然に癒える。",
+    "en": "Can only be ordered for a fighter with a serious injury keeping her out 10 weeks or more. An injury that heals in a few weeks doesn't need a specialist — it mends on its own.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手生命そのものを延ばせる唯一の手。長く働いてほしい主力ほど、思い切って休ませる価値がある。ただし癒やせる量には一年あたりの限りがあり、休暇中の欠場と引き換えになる点は覚悟すること。",
+    "en": "The one move that can extend a fighter's career itself. The more you want a mainstay to keep working long-term, the more it's worth taking the leap and resting her. Just know the healing has a yearly ceiling, and it always comes at the cost of missed shows.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "ロッカールームの空気に陰りが見えてきたときに。一度開けば効果はしばらく尾を引くので、間を置いて打つほうが無駄がない。",
+    "en": "Use it when the locker room's mood starts to dim. Since the effect trails on for a while after one party, spacing them out wastes less.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "今期の市場に出た顔ぶれを見て、伸ばしたい選手に合いそうな一人を選ぶ。同時に招聘できるのは1件のみ、同じ選手を続けて詰め込みすぎると効果が鈍る点に注意。",
+    "en": "Look over this season’s lineup and pick whoever suits the fighter you want to grow. Only one invitation can run at a time, and packing the same fighter with them back to back dulls the effect.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "資金に余裕があり、オフシーズン前後に全体を底上げしたいとき。年1〜2回が現実的な使用頻度。",
+    "en": "Use it when funds allow and you want to lift the whole roster, typically around the off-season. Once or twice a year is realistic.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "団体人気がある程度育ってから解禁される書類。選手の人気を直接押し上げたいときに。ひとりだけを売り出し続けると、周囲の目が冷たくなる点には留意すること。",
+    "en": "This paper only unlocks once the organization's popularity has grown some. Use it when you want to push one fighter's popularity directly — just note that pushing the same fighter over and over cools the room around her.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "W-1(憎い敵ゾーン)が累計4回以上発火したペアに対して使用できる。慢性化する前に手を打てば、亀裂が修復可能になることもある。",
+    "en": "Available for any pair whose W-1 (Hated Rival zone) has fired 4 or more times total. Act before it turns chronic, and the rift can still be mended.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "派閥の揉め事を団体から切り離したいときに。まだ派閥が生まれていないうちに禁止しておけば、誰の信頼も損なわずに済む。",
+    "en": "Use it when you want faction trouble cut off from the organization entirely. Ban them before any faction has even formed, and no one's trust takes a hit.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "コーチ枠に空きがあり、新規雇用を検討している週に。机に書類として表示されない点に注意。",
+    "en": "Use it in a week when a coaching slot is open and you're considering a new hire. Note that it never shows up as a paper on the desk.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "DECISION_DOCS(data.js、社長室書類)。表示点はui-render.js renderShachoshitsu / ui-common.js showDecision*Modal系。management.jsはui-ledgerのJS_FILES一覧に含まれずEngine側もWM_I18Nを直接呼べないため、表示側でWM_I18N.t(doc.xxx)を通す形で配線(P6-13)。走査対象外につき手追加"
+  },
+  {
+    "key": "マンネリ",
+    "en": "Stale",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "深刻なマンネリ",
+    "en": "Badly Stale",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "完全なマンネリ",
+    "en": "Fully Stale",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "宿敵",
+    "en": "Nemesis",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "宿命",
+    "en": "Fated Rivals",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "片側因縁",
+    "en": "One-Sided Grudge",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "好敵手",
+    "en": "Worthy Rival",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "宿怨",
+    "en": "Bitter Rivals",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "宿敵戦勝利",
+    "en": "Nemesis Win",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.freshness.calc/Engine.title.getRivalryBand等(management.js)が返すラベル定数。表示点(ui-common.js renderShowPrep系)で `r.xxxLabel || WM_I18N.t(fallback)` という常に真になるフォールバックのためt()が一度も通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "試 合 に 向 か う",
+    "en": "Head to the Match",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:MILESTONE_EVENTS.continueLabel(全画面セレモニー演出の2枚目ボタン)。app.js表示点の`evt.continueLabel || WM_I18N.t(fallback)`が常に真で通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "控 室 へ 戻 る",
+    "en": "Return to the Locker Room",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:MILESTONE_EVENTS.continueLabel(全画面セレモニー演出の2枚目ボタン)。app.js表示点の`evt.continueLabel || WM_I18N.t(fallback)`が常に真で通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "赤字縮小",
+    "en": "Narrowing the Gap",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "app.js:SURVIVAL_PHASES.label(経営サバイバルHUDの収支フェーズ名)。ui-render.js表示点の`sPhase?.label || WM_I18N.t(fallback)`が常に真で通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "損益分岐点",
+    "en": "Break-Even",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "app.js:SURVIVAL_PHASES.label(経営サバイバルHUDの収支フェーズ名)。ui-render.js表示点の`sPhase?.label || WM_I18N.t(fallback)`が常に真で通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "黒字転換",
+    "en": "In the Black",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "app.js:SURVIVAL_PHASES.label(経営サバイバルHUDの収支フェーズ名)。ui-render.js表示点の`sPhase?.label || WM_I18N.t(fallback)`が常に真で通らなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "反応",
+    "en": "Reaction",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "離脱期間",
+    "en": "Time Out",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "成長速度",
+    "en": "Growth Rate",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "指導の空気",
+    "en": "Coaching Chemistry",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "重点の指定",
+    "en": "Focus Assignment",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "団体露出",
+    "en": "Org Exposure",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "選手人気",
+    "en": "Popularity",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "スランプ回復",
+    "en": "Slump Recovery",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "気持ちの揺らぎ",
+    "en": "Wavering Feelings",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "休暇",
+    "en": "Leave",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "消耗",
+    "en": "Wear",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "ロッカーの様子",
+    "en": "Locker Room Mood",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "ロッカールーム",
+    "en": "Locker Room",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "宴のあと",
+    "en": "After the Party",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "合宿中の空気",
+    "en": "Camp Atmosphere",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "全員の成長速度",
+    "en": "Team Growth Rate",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "関係修復",
+    "en": "Reconciliation",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "ロッカーの空気",
+    "en": "Locker Room Air",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "派閥解散",
+    "en": "Faction Dissolved",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].label(決裁結果モーダルの変化サマリ見出し)。P6-13でexecute()にoptions.dict糸通しを追加し表示側WM_I18N.tを渡す形で配線。走査対象外につき手追加"
+  },
+  {
+    "key": "金額を見た瞬間、彼女の表情が曇った",
+    "en": "The moment she saw the number, her expression clouded over",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{cur}週 → {reduced}週に短縮",
+    "en": "{cur} weeks → cut to {reduced} weeks",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "今後4週にわたって、予想以上に深く響いていきそうだ",
+    "en": "Over the next 4 weeks, it looks like this will land deeper than expected",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "今後4週にわたって、わずかに効いていくだけかもしれない",
+    "en": "Over the next 4 weeks, it might only take mild effect",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "今後4週にわたって、じわじわと育っていく",
+    "en": "Over the next 4 weeks, it will build gradually",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "4週間 +{pct}%(詰め込み気味で伸びは控えめ)",
+    "en": "4 weeks, +{pct}% (packed in too tight — the gains are modest)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "4週間 +{pct}%",
+    "en": "4 weeks, +{pct}%",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "指導の噛み合わせは、しばらく見てみないと分からない",
+    "en": "Whether the coaching style fits her won't be clear for a while",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "初日から、手ごたえのある空気が伝わってくる",
+    "en": "From day one, there's a sense that this is really landing",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "どこか噛み合わなさそうな、硬い空気が漂う",
+    "en": "Something feels off — a stiff air hangs between them",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{stat}は頼むまでもなく、{coach}コーチが元から専門にしている領域だ",
+    "en": "No need to even ask for {stat} — it's already {coach}'s specialty",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{stat}は頼むまでもなく、このコーチが元から専門にしている領域だ",
+    "en": "No need to even ask for {stat} — it's already this coach's specialty",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{stat}を重点に据えて練習を組んでもらう",
+    "en": "Asked her to build training around {stat}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "社長の対応に、はっきりと報われた表情を見せた",
+    "en": "Her expression clearly showed she felt rewarded by the president's response",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "表情が少し和らいだようだ",
+    "en": "Her expression seems to have softened a little",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "社長への強い不満を隠そうとしない",
+    "en": "She's not hiding her strong displeasure with the president",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "どこか距離を置くような態度が見える",
+    "en": "There’s a distance in her manner now",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "団体の知名度が少し上がった",
+    "en": "The organization's profile rose a little",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "ほんの少し、気持ちが楽になったようだ",
+    "en": "Her heart seems just a little lighter",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "話を聞いてもらえたことで、少しだけ救われたようだ",
+    "en": "Being heard seems to have brought her a small measure of relief",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{n}週間、興行を欠場して休養に入る",
+    "en": "Takes {n} weeks away from shows to rest",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "休んでいる間、少しずつ調子を取り戻していく",
+    "en": "Her form comes back gradually while she rests",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{n}週ぶんの休みが、積み重なった消耗を癒やしていく",
+    "en": "{n} weeks of rest heals the wear she's built up",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "現場を離れることで、回復が大きく進みそうだ",
+    "en": "Stepping away from the ring looks set to speed her recovery considerably",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手同士の会話が増え、社長への空気も柔らかくなった",
+    "en": "Fighters are talking more with each other, and the mood toward the president has softened",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "この空気は、しばらく道場に残りそうだ",
+    "en": "This mood looks set to linger around the dojo for a while",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "今後{weeks}週、団体全体に一体感が育っていきそうだ",
+    "en": "Over the next {weeks} weeks, a sense of unity looks set to grow across the whole organization",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{weeks}週間 +{pct}%",
+    "en": "{weeks} weeks, +{pct}%",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{nameA}と{nameB}の bond +{delta}（双方向）",
+    "en": "{nameA} and {nameB}, bond +{delta} (both directions)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{nameA}と{nameB}の溝は埋まらなかった",
+    "en": "The rift between {nameA} and {nameB} wasn't closed",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手たちが群れを作ることを再び認めた",
+    "en": "Fighters are once again allowed to form circles of their own",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "解散を見ていた選手たちにも重く残った",
+    "en": "It left a heavy mark on the fighters who watched the dissolution too",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{names}（{count}組）が畳まれた",
+    "en": "{names} ({count} group(s)) folded",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "今後、新たな派閥は生まれない",
+    "en": "No new factions will form from here on",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name1}と{name2}が朝から激しいスパーリングを繰り広げている…！",
+    "en": "{name1} and {name2} are already going at it hard in a morning sparring session...!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "夜の自主練で{name1}が黙々とスクワットをしている…",
+    "en": "Late at night, {name1} is grinding out squats on her own, in silence...",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "{name1}が{name2}に技の受け身を教えている場面が見られた",
+    "en": "Spotted {name1} teaching {name2} how to take a fall",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "合宿の食事は{name1}が率先して準備していた",
+    "en": "{name1} took the lead on preparing the camp's meals",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "{name1}と{name2}が夕食後のランニングで競い合っている",
+    "en": "{name1} and {name2} are racing each other on an after-dinner run",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "早朝の海辺で{name1}が一人、基礎練習に励んでいた",
+    "en": "{name1} was out alone on the beach at dawn, grinding through the basics",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "{name1}が新技の研究に没頭している姿が印象的だった",
+    "en": "{name1}, lost in the study of a new move, made a strong impression",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "消灯後も{name1}と{name2}がリングで語り合っていた",
+    "en": "Even after lights-out, {name1} and {name2} were still talking things over in the ring",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "{name1}が合宿の記念写真を撮ろうとみんなを集めていた",
+    "en": "{name1} rounded everyone up for a camp photo",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "全員で浜辺を走るメニューに{name1}が一番乗りでゴールした",
+    "en": "In the whole-team beach run, {name1} crossed the line first",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "{name1}のムードメーカーぶりで合宿の雰囲気がぐっと明るくなった",
+    "en": "{name1}'s knack for lifting the mood brightened the whole camp",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "練習後の大浴場で{name1}と{name2}が今後の抱負を語り合っていた",
+    "en": "In the bathhouse after practice, {name1} and {name2} talked over their goals for the future",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:CAMP_FLAVOR_TEXTS(合宿決裁結果のフレーバー1行)。app.js表示点がPH置換前提のtmpl.replace()でt()を一度も通していなかった配線穴(§9-10-1と同型)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "無難な線です。ただ、響くかどうかは相手次第かと。",
+    "en": "A safe figure. Whether it lands, though, is up to her.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:BONUS_PROPOSAL_MEMOS/BONUS_PROPOSAL_MEMO_WARNING(ボーナス起案カードのメモ文)。ui-common.js showBonusProposalModalの表示点がt()を一度も通していなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "彼女の格に見合った額かと存じます。",
+    "en": "An amount befitting her standing, I'd say.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:BONUS_PROPOSAL_MEMOS/BONUS_PROPOSAL_MEMO_WARNING(ボーナス起案カードのメモ文)。ui-common.js showBonusProposalModalの表示点がt()を一度も通していなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "相場を超えています。誠意は伝わるはずです。",
+    "en": "Above the going rate. The sincerity should come through.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:BONUS_PROPOSAL_MEMOS/BONUS_PROPOSAL_MEMO_WARNING(ボーナス起案カードのメモ文)。ui-common.js showBonusProposalModalの表示点がt()を一度も通していなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "……思い切りましたな。ここまで出す団体は他にありません。",
+    "en": "...Bold move. No other organization pays out this much.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:BONUS_PROPOSAL_MEMOS/BONUS_PROPOSAL_MEMO_WARNING(ボーナス起案カードのメモ文)。ui-common.js showBonusProposalModalの表示点がt()を一度も通していなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "この額は……お気を悪くされるかもしれません。",
+    "en": "This amount... might rub her the wrong way.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:BONUS_PROPOSAL_MEMOS/BONUS_PROPOSAL_MEMO_WARNING(ボーナス起案カードのメモ文)。ui-common.js showBonusProposalModalの表示点がt()を一度も通していなかった配線穴をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "⚔️ 4団体勝ち残り対抗戦",
+    "en": "⚔️ Four-Org Gauntlet War",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "4団体の代表が、同じ日に同じリングへ集まります。",
+    "en": "Representatives from all four organizations gather in the same ring, on the same day.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "— 代 表 を 選 ぶ —",
+    "en": "— Choose a Representative —",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "🌸 春のタッグリーグ",
+    "en": "🌸 Spring Tag League",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "A・Bブロックの総当たりを勝ち抜いた1位同士が、その日の決勝でぶつかります。",
+    "en": "The top finishers of the Block A and Block B round-robins collide in that day's final.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "— チ ー ム を 組 む —",
+    "en": "— Form a Team —",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "🏟️ U-20 ジュニアトーナメント",
+    "en": "🏟️ U-20 Junior Tournament",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "出場は20歳まで。この大会に出られる回数は、決まっています。",
+    "en": "Entry is open only up to age 20. There's a hard limit on how many times a fighter can enter this tournament.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "— 出 場 者 を 呼 ぶ —",
+    "en": "— Call the Entrants —",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "👑 天頂戦",
+    "en": "👑 Tenchosen",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "4年に一度の大会です。次に開かれるのは、4年後になります。",
+    "en": "A tournament held once every four years. The next one won't come around again for another four.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "— 会 場 へ 向 か う —",
+    "en": "— Head to the Venue —",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "🏆 PPV GRAND FINAL",
+    "en": "🏆 PPV GRAND FINAL",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "各団体の代表が出そろいます。今年のリングは、今日で最後です。",
+    "en": "Representatives from every organization are all present. This year's ring closes today.",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:SPECIAL_EVENT_INTRO.title/travelLine/nextLabel(特別興行導入のUI層文字列。選手/コーチのセリフは既にdialogue-ledger側で対応済み)。ui-common.js showSpecialEventIntro/showSpecialEventTravelの表示点がt()を一度も通していなかった配線穴(spec §9-10-2で「あえて拾わない」とされていたUI層15行の一部)をP6-13で修正。走査対象外につき手追加"
+  },
+  {
+    "key": "看板を担う選手がまだ定まっていない。",
+    "en": "No one has stepped up as the marquee face yet.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{age}歳の若き王者。{defenseCount}度の防衛は、まだ通過点に見える。",
+    "en": "A young champion at {age}. {defenseCount} defenses look like just a waypoint.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{defenseCount}度の防衛を重ねる王者。完成された試合運びは衰えを知らず、挑戦者に世代交代を許さない。",
+    "en": "A champion with {defenseCount} defenses under her belt. Her polished ring work shows no sign of decline, and she won't hand the torch to the next generation.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "ベルトと共に{defenseCount}度の夜を守り抜いた。彼女の王座は、もう団体の格そのものだ。",
+    "en": "She's defended the belt through {defenseCount} nights. Her reign has become the organization's standing itself.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座も看板も一人で背負う。彼女が立っている限り、この団体の興行は格を失わない。",
+    "en": "She carries both the title and the marquee alone. As long as she's standing, this organization's shows never lose their weight.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "戴冠したばかりの新王者。王座の重みをまだ測りかねている。",
+    "en": "A newly crowned champion. She's still measuring the weight of the title.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座を{defenseCount}度防衛し、王者としての輪郭を固めつつある。",
+    "en": "She's defended the title {defenseCount} times, and the shape of a champion is starting to take hold.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{age}歳、なお看板。衰えの影を経験で塗り替えながら先頭に立ち続ける。",
+    "en": "Age {age}, still the marquee. She keeps leading from the front, rewriting any hint of decline with experience.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{age}歳。若手の突き上げをものともせず、いまだロスターの中心にいる。",
+    "en": "Age {age}. Undaunted by the young talent pushing up from below, she remains at the center of the roster.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座はないが、この団体の顔は間違いなく彼女だ。大一番の勝負強さが看板を支えている。",
+    "en": "No title yet, but she's undeniably the face of this organization. Her clutch performance in the big matches carries the marquee.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "まだベルトには届いていないが、実力でロスターの頂点に立つ。空位の王座を狙う最有力候補だ。",
+    "en": "Hasn't reached the belt yet, but she stands at the top of the roster on pure ability — the clear front-runner for the vacant title.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座こそ空位のままだが、数字が語る実力は団体随一。戴冠は時間の問題と見る向きも多い。",
+    "en": "The title remains vacant, but the numbers say she's the best in the organization. Plenty see her coronation as just a matter of time.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "ベルトはまだ巻いていない。それでも実力が頭ひとつ抜けていることは、誰の目にも明らかだ。",
+    "en": "She hasn't worn the belt yet. Even so, it's plain to anyone watching that her ability stands a full head above the rest.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座はないが、実力で団体の中心に立とうとしている。",
+    "en": "No title, but she's fighting to stand at the organization's center on ability alone.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "春",
+    "en": "Spring",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.util.SEASON_DEFINITIONS(春/夏/秋/冬)。週表示バナー(#dispDate等/週トラック)の唯一の生成元Engine.util.formatDate()と_renderWeekSeasonTrack()がP6-13でdict-opts化されるまで、全画面で毎週見える最頻出テキストが未配線だった(WM_I18N.pn()への誤用も含む)。走査対象外につき手追加"
+  },
+  {
+    "key": "夏",
+    "en": "Summer",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.util.SEASON_DEFINITIONS(春/夏/秋/冬)。週表示バナー(#dispDate等/週トラック)の唯一の生成元Engine.util.formatDate()と_renderWeekSeasonTrack()がP6-13でdict-opts化されるまで、全画面で毎週見える最頻出テキストが未配線だった(WM_I18N.pn()への誤用も含む)。走査対象外につき手追加"
+  },
+  {
+    "key": "秋",
+    "en": "Autumn",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.util.SEASON_DEFINITIONS(春/夏/秋/冬)。週表示バナー(#dispDate等/週トラック)の唯一の生成元Engine.util.formatDate()と_renderWeekSeasonTrack()がP6-13でdict-opts化されるまで、全画面で毎週見える最頻出テキストが未配線だった(WM_I18N.pn()への誤用も含む)。走査対象外につき手追加"
+  },
+  {
+    "key": "冬",
+    "en": "Winter",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.util.SEASON_DEFINITIONS(春/夏/秋/冬)。週表示バナー(#dispDate等/週トラック)の唯一の生成元Engine.util.formatDate()と_renderWeekSeasonTrack()がP6-13でdict-opts化されるまで、全画面で毎週見える最頻出テキストが未配線だった(WM_I18N.pn()への誤用も含む)。走査対象外につき手追加"
+  },
+  {
+    "key": "{s}年目 {emoji}{name} 第{n}週",
+    "en": "Year {s} {emoji}{name} Week {n}",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.util.formatDate()。P6-13でdict-opts化(§6規約)。走査対象外につき手追加"
+  },
+  {
+    "key": "中度",
+    "en": "Moderate",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:INJURY_LABEL_SHORT(狭い枠用の短い負傷ラベル)。ui-render.js:injuryLabelShort()の消費点(ロスターバッジ)がP6-13でdict引数を配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "練習負傷",
+    "en": "Training injury",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:INJURY_LABEL_SHORT(狭い枠用の短い負傷ラベル)。ui-render.js:injuryLabelShort()の消費点(ロスターバッジ)がP6-13でdict引数を配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "看板選手",
+    "en": "the marquee fighter",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences() aceNameのフォールバック値(featured不在時)。走査対象外につき手追加"
+  },
+  {
+    "key": "首位の座が揺らぎ始めている",
+    "en": "The top spot is starting to wobble",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "頂点に立ちながらも背中が見え始めた",
+    "en": "Still on top, but she can feel someone closing in from behind",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座防衛戦のような立ち位置に追われている",
+    "en": "Standing where every week feels like defending a title",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "業界の頂点を独走する勢い",
+    "en": "Running away with the top of the industry",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "首位として後続を突き放しにかかる時期",
+    "en": "First place, and pulling further ahead of the pack",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "今がまさに全盛期と呼べる団体",
+    "en": "An organization at its absolute peak right now",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "業界の頂点に座り続けている",
+    "en": "Still sitting at the top of the industry",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "首位の重みを引き受ける立場",
+    "en": "Carrying the weight that comes with first place",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王者団体としての風格を備える",
+    "en": "Carries itself with the bearing of a champion organization",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "首位の喉元に手をかけている",
+    "en": "Reaching for the leader's throat",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "逆転劇の主役になりかけている団体",
+    "en": "Shaping up to be the lead in its own comeback story",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "頂点が射程に入ってきた",
+    "en": "The top spot has come within range",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "二番手の座すら危うくなってきた",
+    "en": "Even the runner-up spot is starting to slip",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "追走しながらも足が止まりかけている",
+    "en": "Still chasing, but the legs are starting to give out",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "首位を追い続ける挑戦者の位置",
+    "en": "The challenger, still chasing first place",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "首位の背中を捉えきれずにいる",
+    "en": "Never quite close enough to catch the leader's back",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "万年二番手の汚名を返上したい",
+    "en": "Looking to shake the perpetual-runner-up label",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "中盤から這い上がってきた団体",
+    "en": "Climbing its way up from the middle of the pack",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "台頭の気配を漂わせ始めた",
+    "en": "Starting to give off the first signs of a rise",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "中位の枠を破ろうと牙を研ぐ",
+    "en": "Sharpening its teeth to break out of the middle tier",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "中位で足踏みが続いている",
+    "en": "Stuck treading water in the middle tier",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "かつての勢いがやや陰りつつある",
+    "en": "The old momentum is starting to dim a little",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "中盤に沈みかけている",
+    "en": "Sinking back toward the middle of the pack",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "中位に腰を落ち着けている",
+    "en": "Settled comfortably into the middle tier",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "上にも下にも振れる中堅",
+    "en": "A mid-tier organization that could swing either way",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "安定の中位という評価が定着している",
+    "en": "Has settled into a reputation as a steady mid-tier organization",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "最下層から這い上がろうともがいている",
+    "en": "Fighting to climb up out of the bottom tier",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "下位ながら反転の兆しを見せる",
+    "en": "Down near the bottom, but showing the first signs of a turnaround",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "業界の最下層に沈んでいる",
+    "en": "Sunk to the bottom of the industry",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "再建が急務の窮状",
+    "en": "In a state that calls for a rebuild, urgently",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "下位に甘んじている苦しい時期",
+    "en": "Stuck in a rough stretch near the bottom",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座は空位のまま、{name}の看板で人気を保っている",
+    "en": "The title stays vacant, but {name} keeps the popularity up as the org's face",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "頂点の椅子は空席。それでも{name}を中心に客足は途絶えない",
+    "en": "The top chair sits empty. Even so, the crowds keep coming, with {name} at the center",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座は不在で、{name}が看板を一人で背負う",
+    "en": "With no champion, {name} carries the marquee alone",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "タイトルを欠いたまま、{name}頼みで戦線をつなぐ",
+    "en": "Still without a title, holding the line on {name} alone",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "王座戦線から距離を置き、{name}を軸に再起を図る",
+    "en": "Keeping its distance from the title picture, rebuilding around {name}",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}の長期政権が団体を支え、客の目もそこに集まる",
+    "en": "{name}'s long reign props up the organization, and the crowd's eyes go right there",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}が幾度も防衛を重ね、団体の顔そのものになっている",
+    "en": "{name} has defended the title so many times she has become the face of the organization itself",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}の防衛記録だけが、いまの団体の数少ない誇り",
+    "en": "{name}'s defense record is nearly the only thing this org can point to with pride right now",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}が長く王座を握り、新陳代謝の遅さも同時に露わになっている",
+    "en": "{name} has held the title so long it has also exposed how slow the roster is to turn over",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "戴冠したばかりの{name}が、まだ手探りで王座を温めている",
+    "en": "The newly crowned {name} is still feeling her way through holding the title",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "新王者{name}の真価がこれから試される段階",
+    "en": "The new champion {name} is about to have her worth tested",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}が王座を獲ったばかりで、団体全体が新章に入った",
+    "en": "{name} just took the title, and the whole organization has stepped into a new chapter",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}が王座を構え、人気と実力の両輪が噛み合っている",
+    "en": "{name} holds the title, and popularity and ability are pulling together",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}を中心線に置き、団体としての形が見えている",
+    "en": "With {name} as its center line, the organization is starting to take shape",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}が王座を保持してはいるが、団体全体に火がついた感じはまだ薄い",
+    "en": "{name} holds the title, but the organization as a whole hasn't quite caught fire yet",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{name}の王座が、いまの団体をかろうじて束ねている",
+    "en": "{name}'s title reign is barely enough to hold this organization together",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "上位だけで興行を成立させられる分厚さがある",
+    "en": "Deep enough at the top to carry a whole show on its own",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "エース級が複数並び、対戦カードに困らない",
+    "en": "Multiple ace-level fighters on the roster — never short of a card",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "主力陣の格だけで他団体を上回っている",
+    "en": "Outclasses other organizations on the strength of its core alone",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "看板を軸に主力の輪郭がはっきりしている",
+    "en": "The core lineup has a clear shape around its marquee name",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "上位陣の顔ぶれで勝負できる骨格は整っている",
+    "en": "The frame is in place to compete on the strength of its top tier",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "看板級の周りに準主力が並ぶ手堅い構成",
+    "en": "A solid build, with near-core talent lined up around the marquee name",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "突出した怪物はいないが、主力候補が広く並ぶ",
+    "en": "No standout monster, but plenty of candidates for the core lineup",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "頭抜けた選手はいないものの、層は意外と広い",
+    "en": "No one head and shoulders above the rest, but the depth runs surprisingly wide",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "横並びの主力で何とか試合数をこなしている",
+    "en": "Getting through its match count on an even spread of core talent",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "まだ発展途上で、伸びしろの賭け",
+    "en": "Still developing — a bet on the upside",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "主力という呼び名に届く選手が乏しい",
+    "en": "Short on fighters who actually earn the label 'core'",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "育成の途上で、来季以降の積み上げを待つ段階",
+    "en": "Mid-development, waiting on next season and beyond to build up",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "ここ数シーズンで複数回の年間王者となり、業界を支配する空気を作っている",
+    "en": "Multiple annual championships these last few seasons have built an air of dominance over the industry",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "直近の年間王者を立て続けに獲り、トップとしての色がはっきりしてきた",
+    "en": "Back-to-back annual championships have made its identity as a top org unmistakable",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{yr}年目の年間王者の余韻がまだ団体に残っている",
+    "en": "The afterglow of the Year {yr} annual championship still lingers around the organization",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{yr}年目に頂点を獲った記憶が、今のチームの基準になっている",
+    "en": "The memory of taking the top spot in Year {yr} has become this team's benchmark",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "シーズンの勲章を多数抱え、勢いのある団体としての印象が定着している",
+    "en": "A haul of season honors has cemented its image as an organization with momentum",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "直近で獲った実績の蓄積が、評価ptの押し上げ役になっている",
+    "en": "A recent stack of accolades has been pushing its rating points upward",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "際立った勲章を持たず、評価の積み上げに苦労している",
+    "en": "No standout honors to speak of, and struggling to build up its rating",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "シーズン実績で稼げず、地力勝負を強いられている",
+    "en": "Can't cash in on season results, and is left fighting on raw ability alone",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "他団体との直接対決で星を稼いでおり、対戦pt面でも優位に立つ",
+    "en": "Racking up wins in head-to-head matchups with other organizations, and holding the edge in battle points too",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "対抗戦やサミットでの勝ち越しが続き、業界内の貯金を作っている",
+    "en": "A winning streak in cross-org wars and summits keeps building up credit across the industry",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "他団体相手の星勘定で大きくマイナスを背負っている",
+    "en": "Carrying a deep deficit in the win column against other organizations",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "対抗戦での連敗が続き、対戦ptが重しになっている",
+    "en": "A losing streak in cross-org wars has turned battle points into dead weight",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "<span class=\"red\">超逸材</span>・{name}、<br>ついに業界の門を叩く",
+    "en": "<span class=\"red\">Super Elite</span> {name},<br>finally knocking on the industry's door",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:screen-week scoutEventフェーズ(ドラフト開幕画面)のheroHeadline/heroSub。動的組み立てのためliteral t()走査から漏れる。走査対象外につき手追加"
+  },
+  {
+    "key": "<span class=\"red\">運命</span>の<span class=\"red\">ドラフト</span>、<br>ついに開幕",
+    "en": "The <span class=\"red\">fated</span> <span class=\"red\">draft</span>,<br>finally begins",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:screen-week scoutEventフェーズ(ドラフト開幕画面)のheroHeadline/heroSub。動的組み立てのためliteral t()走査から漏れる。走査対象外につき手追加"
+  },
+  {
+    "key": "{season}年目 {eventLabel} — {age}歳の才能を筆頭に全{count}名",
+    "en": "Year {season} {eventLabel} — {count} total, led by an {age}-year-old talent",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:screen-week scoutEventフェーズ(ドラフト開幕画面)のheroHeadline/heroSub。動的組み立てのためliteral t()走査から漏れる。走査対象外につき手追加"
+  },
+  {
+    "key": "{season}年目 {eventLabel} — 全{count}名、業界の門を叩く",
+    "en": "Year {season} {eventLabel} — {count} total, knocking on the industry's door",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:screen-week scoutEventフェーズ(ドラフト開幕画面)のheroHeadline/heroSub。動的組み立てのためliteral t()走査から漏れる。走査対象外につき手追加"
+  },
+  {
+    "key": "選手給与",
+    "en": "Fighter Salaries",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "固定費（施設+事務）",
+    "en": "Fixed Costs (Facility + Admin)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "プロモ収入（{name} {eventName}{popTag}）",
+    "en": "Promo Income ({name} {eventName}{popTag})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "グッズ収入（週次）",
+    "en": "Merch Revenue (Weekly)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "グッズ収入（プロモ連動）",
+    "en": "Merch Revenue (Promo Tie-in)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア収入（週次）",
+    "en": "Media Revenue (Weekly)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア収入（プロモ連動）",
+    "en": "Media Revenue (Promo Tie-in)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア収入（{label}）",
+    "en": "Media Revenue ({label})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア収入（タレント活動）",
+    "en": "Media Revenue (Talent Work)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "グッズ収入（タレント活動）",
+    "en": "Merch Revenue (Talent Work)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "🏛️ 地域振興助成金",
+    "en": "🏛️ Regional Development Subsidy",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "チケット収入（{attendance}人 / {cap}席 {occPct}% {occLabel}）",
+    "en": "Ticket Revenue ({attendance} / {cap} seats, {occPct}%, {occLabel})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "会場費（{venue}）",
+    "en": "Venue Cost ({venue})",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "グッズ収入（興行ブースト）",
+    "en": "Merch Revenue (Show Boost)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア収入（興行放映）",
+    "en": "Media Revenue (Show Broadcast)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア収入（期待カード）",
+    "en": "Media Revenue (Anticipated Card)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "メディア収入（ライバル抗争）",
+    "en": "Media Revenue (Rivalry Feud)",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "🔥 超満員！",
+    "en": "🔥 Sold Out!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:OCCUPANCY_BONUS(客入り帯ラベル)。ui-common.js(pb-attend-hero-rating badge)/management.js(financeの{occLabel}param)の両消費点がP6-13でt()配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "✨ 大入り！",
+    "en": "✨ Packed House!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:OCCUPANCY_BONUS(客入り帯ラベル)。ui-common.js(pb-attend-hero-rating badge)/management.js(financeの{occLabel}param)の両消費点がP6-13でt()配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "👍 盛況",
+    "en": "👍 Good Turnout",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:OCCUPANCY_BONUS(客入り帯ラベル)。ui-common.js(pb-attend-hero-rating badge)/management.js(financeの{occLabel}param)の両消費点がP6-13でt()配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "➖ まずまず",
+    "en": "➖ Middling",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:OCCUPANCY_BONUS(客入り帯ラベル)。ui-common.js(pb-attend-hero-rating badge)/management.js(financeの{occLabel}param)の両消費点がP6-13でt()配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "😟 空席目立つ",
+    "en": "😟 Empty Seats Showing",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:OCCUPANCY_BONUS(客入り帯ラベル)。ui-common.js(pb-attend-hero-rating badge)/management.js(financeの{occLabel}param)の両消費点がP6-13でt()配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "😰 ガラガラ",
+    "en": "😰 Nearly Empty",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:OCCUPANCY_BONUS(客入り帯ラベル)。ui-common.js(pb-attend-hero-rating badge)/management.js(financeの{occLabel}param)の両消費点がP6-13でt()配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "{monthIdx}月 第{weekInMonth}週",
+    "en": "Month {monthIdx}, Week {weekInMonth}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-common.js:showCard結果パネルのmonthLabel(未配線でt()を一度も通していなかった配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "✨華",
+    "en": "✨Flair",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.attendanceV2.calcDrawPowerBreakdown()(集客力内訳ツールチップの短縮ラベル)。表示点(ui-render.js sp-draw-detail)がt()を一度も通していなかった配線穴をP6-13でdict-opts化して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "🤝ファンサ",
+    "en": "🤝Fan Service",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.attendanceV2.calcDrawPowerBreakdown()(集客力内訳ツールチップの短縮ラベル)。表示点(ui-render.js sp-draw-detail)がt()を一度も通していなかった配線穴をP6-13でdict-opts化して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "👑王者",
+    "en": "👑Champ",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.attendanceV2.calcDrawPowerBreakdown()(集客力内訳ツールチップの短縮ラベル)。表示点(ui-render.js sp-draw-detail)がt()を一度も通していなかった配線穴をP6-13でdict-opts化して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "🔥BT",
+    "en": "🔥BT",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.attendanceV2.calcDrawPowerBreakdown()(集客力内訳ツールチップの短縮ラベル)。表示点(ui-render.js sp-draw-detail)がt()を一度も通していなかった配線穴をP6-13でdict-opts化して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "📈連勝",
+    "en": "📈Streak",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.attendanceV2.calcDrawPowerBreakdown()(集客力内訳ツールチップの短縮ラベル)。表示点(ui-render.js sp-draw-detail)がt()を一度も通していなかった配線穴をP6-13でdict-opts化して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "📉スランプ",
+    "en": "📉Slump",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.attendanceV2.calcDrawPowerBreakdown()(集客力内訳ツールチップの短縮ラベル)。表示点(ui-render.js sp-draw-detail)がt()を一度も通していなかった配線穴をP6-13でdict-opts化して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "📢プロモ",
+    "en": "📢Promo",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "management.js:Engine.attendanceV2.calcDrawPowerBreakdown()(集客力内訳ツールチップの短縮ラベル)。表示点(ui-render.js sp-draw-detail)がt()を一度も通していなかった配線穴をP6-13でdict-opts化して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "🔥🔥 チケットが飛ぶように売れている！",
+    "en": "🔥🔥 Tickets are flying off the shelf!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:ATTENDANCE_PREDICTION(興行準備画面の集客予測ムード文)。ui-render.jsの表示点が先頭の絵文字トークンを正規表現で剥がした後の文字列を表示していたため、t()を通す位置を先頭剥がしより前に修正(P6-13)。走査対象外につき手追加(先頭の絵文字+空白の形は維持=剥がし処理の前提を崩さない)"
+  },
+  {
+    "key": "🔥 今週は盛り上がりそうだ",
+    "en": "🔥 This week looks set to be a hit",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:ATTENDANCE_PREDICTION(興行準備画面の集客予測ムード文)。ui-render.jsの表示点が先頭の絵文字トークンを正規表現で剥がした後の文字列を表示していたため、t()を通す位置を先頭剥がしより前に修正(P6-13)。走査対象外につき手追加(先頭の絵文字+空白の形は維持=剥がし処理の前提を崩さない)"
+  },
+  {
+    "key": "😊 なかなかの手応えだ",
+    "en": "😊 A solid response so far",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:ATTENDANCE_PREDICTION(興行準備画面の集客予測ムード文)。ui-render.jsの表示点が先頭の絵文字トークンを正規表現で剥がした後の文字列を表示していたため、t()を通す位置を先頭剥がしより前に修正(P6-13)。走査対象外につき手追加(先頭の絵文字+空白の形は維持=剥がし処理の前提を崩さない)"
+  },
+  {
+    "key": "🤔 まずまずといったところか",
+    "en": "🤔 Middling, if we're honest",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:ATTENDANCE_PREDICTION(興行準備画面の集客予測ムード文)。ui-render.jsの表示点が先頭の絵文字トークンを正規表現で剥がした後の文字列を表示していたため、t()を通す位置を先頭剥がしより前に修正(P6-13)。走査対象外につき手追加(先頭の絵文字+空白の形は維持=剥がし処理の前提を崩さない)"
+  },
+  {
+    "key": "😟 少し客足が心配だ",
+    "en": "😟 A little worried about the turnout",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:ATTENDANCE_PREDICTION(興行準備画面の集客予測ムード文)。ui-render.jsの表示点が先頭の絵文字トークンを正規表現で剥がした後の文字列を表示していたため、t()を通す位置を先頭剥がしより前に修正(P6-13)。走査対象外につき手追加(先頭の絵文字+空白の形は維持=剥がし処理の前提を崩さない)"
+  },
+  {
+    "key": "😰 かなり厳しい集客になりそうだ",
+    "en": "😰 Attendance looks set to be rough",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:ATTENDANCE_PREDICTION(興行準備画面の集客予測ムード文)。ui-render.jsの表示点が先頭の絵文字トークンを正規表現で剥がした後の文字列を表示していたため、t()を通す位置を先頭剥がしより前に修正(P6-13)。走査対象外につき手追加(先頭の絵文字+空白の形は維持=剥がし処理の前提を崩さない)"
+  },
+  {
+    "key": "👑 団体王座 空位中",
+    "en": "👑 Promotion Title Vacant",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "CM出演",
+    "en": "CM Appearance",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:TALENT_ACTIVITY_LABELS(タレント活動の種別ラベル)。ui-common.js表示点のlabel = X || WM_I18N.t(fallback)が常に真で通らなかった配線穴をP6-13で修正(WM_I18N.t(X || fallback)へ)。走査対象外につき手追加"
+  },
+  {
+    "key": "グラビア撮影",
+    "en": "Gravure Shoot",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:TALENT_ACTIVITY_LABELS(タレント活動の種別ラベル)。ui-common.js表示点のlabel = X || WM_I18N.t(fallback)が常に真で通らなかった配線穴をP6-13で修正(WM_I18N.t(X || fallback)へ)。走査対象外につき手追加"
+  },
+  {
+    "key": "バラエティ出演",
+    "en": "Variety Show Appearance",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:TALENT_ACTIVITY_LABELS(タレント活動の種別ラベル)。ui-common.js表示点のlabel = X || WM_I18N.t(fallback)が常に真で通らなかった配線穴をP6-13で修正(WM_I18N.t(X || fallback)へ)。走査対象外につき手追加"
+  },
+  {
+    "key": "ブランドコラボ",
+    "en": "Brand Collab",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:TALENT_ACTIVITY_LABELS(タレント活動の種別ラベル)。ui-common.js表示点のlabel = X || WM_I18N.t(fallback)が常に真で通らなかった配線穴をP6-13で修正(WM_I18N.t(X || fallback)へ)。走査対象外につき手追加"
+  },
+  {
+    "key": "ファッションショー",
+    "en": "Fashion Show",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:TALENT_ACTIVITY_LABELS(タレント活動の種別ラベル)。ui-common.js表示点のlabel = X || WM_I18N.t(fallback)が常に真で通らなかった配線穴をP6-13で修正(WM_I18N.t(X || fallback)へ)。走査対象外につき手追加"
+  },
+  {
+    "key": "ファンイベント",
+    "en": "Fan Event",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "data.js:TALENT_ACTIVITY_LABELS(タレント活動の種別ラベル)。ui-common.js表示点のlabel = X || WM_I18N.t(fallback)が常に真で通らなかった配線穴をP6-13で修正(WM_I18N.t(X || fallback)へ)。走査対象外につき手追加"
+  },
+  {
+    "key": "{rank}位/{total}",
+    "en": "#{rank}/{total}",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "ui-render.js:トップHUD自団体順位表示(#dispRank)。直書きJA(位/)で毎週見える最頻出要素だった配線穴をP6-13で修正。走査対象外につき手追加"
   }
 ]
