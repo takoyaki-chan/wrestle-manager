@@ -13322,7 +13322,10 @@ const App = {
           if (arr && arr.length > 0) {
             const lineRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, payload.selfId, 0xC4A2));
             const line = arr[Engine.rng.int(lineRng, 0, arr.length - 1)];
-            noLine = `${reqName}: 「${line}」`;
+            // i18n P6-8: CHALLENGE_REQUEST_NO_LINESの生JAをt()に一度も通さず、reqNameも
+            // pn()を経由せずに直接連結していた(同型の配線穴)。_quoteLineで吹き出し同様に
+            // 「」を言語別化する。
+            noLine = `${WM_I18N.pn(reqName)}: ${_quoteLine(WM_I18N.t(line))}`;
           }
         }
         showToast(noLine);

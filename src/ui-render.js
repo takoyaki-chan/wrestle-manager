@@ -1946,7 +1946,7 @@ function _renderRosterDojoHeader() {
         speechText = WM_I18N.t(heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)])
           .replace('{name}', heatFighter.name || 'この子');
       }
-      html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">「${speechText}」</div></div>
+      html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">${_quoteLine(speechText)}</div></div>
         <div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
           ${coachPortraitImg(coachForBubble, 48)}
         </div>
@@ -2021,7 +2021,7 @@ function _renderRosterDojoHeader() {
         // i18n Stage B P5-1: g.dialogue はrelationships.jsのGLIMPSE_A/B_LINES選択(pickDialogueLine)
         // で得た生JA行(relationships.jsは並行エージェントの領分のため選択ロジックには触れず、
         // ここ=表示直前でt()を通す)。
-        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">「${WM_I18N.t(g.dialogue) || g.label || ''}」</div>`;
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">${_quoteLine(WM_I18N.t(g.dialogue) || g.label || '')}</div>`;
         html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
         html += '</div>';
       });
@@ -7591,7 +7591,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
       if (txt) {
         html += `<div class="np-kuroda" style="margin-bottom:14px">
           <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-          <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
+          <div><div class="np-kuroda-text">${_quoteVal(txt)}</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
         </div>`;
       }
     }
@@ -7641,7 +7641,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
     if (txt) {
       html += `<div class="np-kuroda">
         <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-        <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
+        <div><div class="np-kuroda-text">${_quoteVal(txt)}</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
       </div>`;
     }
   } else {
@@ -7784,7 +7784,7 @@ function _npV3KurodaColumn(wp, seasonNum, weekNum) {
       return `<div class="np-v3-kuroda">
         <div class="np-v3-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
         <div>
-          <div class="np-v3-kuroda-text">「${txt}」</div>
+          <div class="np-v3-kuroda-text">${_quoteVal(txt)}</div>
           <div class="np-v3-kuroda-byline">${NP_KURODA_BYLINE.editorial}</div>
         </div>
       </div>`;
@@ -8266,7 +8266,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     html += `<div class="np-rating">
       <div class="np-rating-stars">${starHtml}</div>
       <div class="np-rating-headline">${WM_I18N.t('観客満足度 {n}.0 / 5', { n: stars })}</div>
-      ${comment ? `<div class="np-rating-comment">「${comment}」</div>` : ''}
+      ${comment ? `<div class="np-rating-comment">${_quoteVal(comment)}</div>` : ''}
     </div>`;
   }
 
@@ -8384,7 +8384,7 @@ function _npRenderDigest(d, seasonNum, weekNum) {
       <td class="np-digest-mq ${mqClass}">${m.mq}</td>
     </tr>`;
     if (comment) {
-      rows += `<tr><td></td><td></td><td colspan="2" class="np-digest-comment">「${comment}」</td></tr>`;
+      rows += `<tr><td></td><td></td><td colspan="2" class="np-digest-comment">${_quoteVal(comment)}</td></tr>`;
     }
   });
 
@@ -8467,7 +8467,7 @@ function _npRenderPage2() {
   html += `<div class="np-headline-section">
     <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
     <div>
-      <div class="np-headline-quote">「${headlineQuote}」</div>
+      <div class="np-headline-quote">${_quoteVal(headlineQuote)}</div>
       <div class="np-headline-byline">${NP_KURODA_BYLINE.editorial}</div>
     </div>
     <div class="np-headline-grade">
@@ -8592,7 +8592,7 @@ function _npRenderPage2() {
       </div>
       <div class="np-war-comment">
         <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-        <div>「${warComment}」<div class="np-kuroda-byline">${NP_KURODA_BYLINE.warRecord}</div></div>
+        <div>${_quoteVal(warComment)}<div class="np-kuroda-byline">${NP_KURODA_BYLINE.warRecord}</div></div>
       </div>
     </div>`;
   }
@@ -8815,7 +8815,7 @@ function _npRenderPage2() {
         <div class="np-fan-list">`;
       fans.forEach(f => {
         html += `<div class="np-fan-comment">
-          <div class="np-fan-text">「${f.txt}」</div>
+          <div class="np-fan-text">${_quoteVal(f.txt)}</div>
           <div class="np-fan-handle">${f.handle}</div>
         </div>`;
       });
@@ -9117,7 +9117,7 @@ function _npRenderPage3() {
         <div class="np-relation-card-names">${_npClickName(r.charA.name, r.idA)} × ${_npClickName(r.charB.name, r.idB)}</div>
         <div class="np-relation-org-line">${_npOrgEmblem(G, aOrgKeyR, 16)}<span>${aOrgNameR}</span><span class="vs">vs</span>${_npOrgEmblem(G, bOrgKeyR, 16)}<span>${bOrgNameR}</span></div>
         <div class="np-relation-card-text">${summary || WM_I18N.t('{a}と{b}。{n}戦のぶつかり合い。', { a: r.charA.name, b: r.charB.name, n: r.h2h.matches || 0 })}</div>
-        <div class="np-relation-tag-desc">「${td.label}」: ${td.desc}</div>
+        <div class="np-relation-tag-desc">${_quoteVal(td.label)}: ${td.desc}</div>
         <div class="np-relation-stats">
           <span>${WM_I18N.t('通算<strong>{n}</strong>戦', { n: r.h2h.matches || 0 })}</span>
           <span>${WM_I18N.t('{wa}勝-{wb}勝', { wa: wAR, wb: wBR })}</span>

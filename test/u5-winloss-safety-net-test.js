@@ -1259,7 +1259,7 @@ function logGap(msg) {
 
   // --- 9c. _npRenderPage2: 通算戦績が紙面テキストに正しく反映される(実行ベース, 不変条件2, 3, 4) ---
   const buildPage2 = new Function(
-    'G', 'Engine', 'RIVAL_ORGS', 'WM_I18N',
+    'G', 'Engine', 'RIVAL_ORGS', 'WM_I18N', '_quoteVal',
     `let _dbCompareTarget = null;
      const NP_KURODA_BYLINE = { news: 'x', rating: 'x', editorial: 'x', rivalry: 'x', warRecord: 'x' };
      ${uiFn('escHtml')}
@@ -1313,7 +1313,8 @@ function logGap(msg) {
       roster: [{ id: 1, name: '選手1' }],
       aiOrgs: { org_a: { roster: [{ id: 101, name: '敵1', pw: 60, sp: 60, te: 60, st: 60, mn: 60, popularity: 50, age: 25 }] } },
     };
-    const built = buildPage2(GStub, EngineStub, RIVAL_ORGS_STUB, WM_I18N_STUB_PAGE2);
+    const built = buildPage2(GStub, EngineStub, RIVAL_ORGS_STUB, WM_I18N_STUB_PAGE2,
+      value => `「${value == null ? '' : value}」`);
     return { built, G: GStub };
   }
 

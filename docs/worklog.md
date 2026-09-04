@@ -1,5 +1,99 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-8 — ⑮起票の残り3件(実は1件既解決)+全ファイル横断の「」ハードコード14箇所+季総括カードのテンプレ化+残i18n-miss16件の分類（2026-09-04・worktree agent-a8e99e0cf236a3565）
+
+指示書は⑮(P5-2o)§8-4/§8-5が起票した3件(`_awSpeech`のGAMEOVER/ENDING「」・季総括カードのtag/meta生JA・残i18n-miss)+EN走破の残i18n-miss16件の実コールサイト追跡。開始前にworktreeブランチをmain先端(c37225d、バッチ⑮=c37225d・P6-7=d6cbb9eまで)へfast-forward済み。i18n/dialogue-ledger.json・src/lang-en-dialogue.js・i18n/template-ledger.json・test/i18n-extract-dialogue.js・src/kuroda-text.jsは指示どおり不触(並行バッチ⑯の領分)。
+
+### 1. `_awSpeech`の「」ハードコードはP6-7で既に解決済みだった
+
+⑮が起票した最優先項目「`GAMEOVER_LINES`58行+`ENDING_LINES`52行が`_awSpeech`の「」ハードコードで英語モードでも`「English line」`のまま」は、実際にはP6-7(⑮の直後のバッチ)が`_awSpeech`を`_quoteLine`へ移行済みで(P6-7 worklog §1「吹き出し29箇所」の内訳に`_awSpeech`(award系)を含む)、コード読解で確認したところGAMEOVER/ENDING経由の呼び出し(`_awSpeechSlot(line)`、translated引数なし=生JAを渡す経路)は`_awSpeech`内部の`WM_I18N.t()`→`_quoteLine()`で既に正しく言語別化されていた。⑮の起票はP6-7着手前の状態を見て書かれたもので、時系列上already-fixedだった(⑮→P6-7→本バッチの順で作業が進んだため)。
+
+### 2. 同型「」ハードコード14箇所の全ファイル横断解消
+
+`grep -n '「\${' src/*.js`で全数確認したところ、P6-7がスコープを`ui-common.js`の35箇所に限定していたため、他のファイルに同型の未処理が14箇所残っていた。吹き出し(セリフ)系は`_quoteLine`相当、地の文の引用系は`_quoteVal`相当で言語別化した(いずれも既存キー`「{line}」`を再利用・新規ui-ledgerキー追加なし)。
+
+- **`src/battle-anim.js`**: 観戦iframe(battle-engine.html/tag-battle.html)はメイン画面とは別インスタンスのWM_I18Nを持つため、ui-common.jsの`_quoteLine`を直接は呼べない。同じロジックをIIFE外のグローバル関数として複製し(battle-anim.js自身のカットインテキスト+後読みのtag-battle-main.js/battle-engine-main.jsの両方から使える位置に配置)、`BattleAnim.renderCutin`のカットインテキストへ適用
+- **`src/tag-battle-main.js`**: タッグ勝利画面`vic-win-line`(`WM_I18N.t(pickTagWinLine(...))`で既に翻訳済みの`winLine`を「」でハードコード包装していた)を、上記battle-anim.js側の`_quoteLine`で置き換え
+- **`src/app.js`**: `CHALLENGE_REQUEST_NO_LINES`(直訴を見送ったときのアーキタイプ別ティッカーセリフ)が選択した`line`を**t()に一度も通さず**、`reqName`も`pn()`を経由せずに直接文字列連結していた(t()を経由しないためEN走破のi18n-missにも出ない「サイレントな配線穴」——本バッチの`「${`全数確認で初めて発見)。`` `${WM_I18N.pn(reqName)}: ${_quoteLine(WM_I18N.t(line))}` ``へ修正
+- **`src/ui-render.js`**: 吹き出し系2箇所(道場ヘッダーのコーチ報告バブル`dojo-scene-bubble`・休憩中選手の`dojo-rest-bubble`)を`_quoteLine`へ、黒田記事の引用系9箇所(`np-kuroda-text`×2・`np-v3-kuroda-text`・`np-rating-comment`・`np-digest-comment`・`np-headline-quote`・`np-war-record`のkurodaコメント・`np-fan-text`・因縁カードの`np-relation-tag-desc`)を`_quoteVal`へ(いずれも表示直前で`kurodaText(...,WM_I18N.t)`または`WM_I18N.t()`により既に翻訳済みの値を、装飾の「」だけがハードコードで包んでいた)
+- **`src/management.js`**: `_buildPpvSummitStory`の勝者/敗者の言葉(winnerLine/loserLine、PPV頂上決戦の新聞記事本文)。`T(sr.winnerLine)`(dict-opts経由で既に翻訳済み)を「」でハードコード包装していた。Engineコードは`WM_I18N`を直接呼べない制約があり、`T('「{line}」', {line})`の2引数呼び出しに頼ると`dict`未指定時のフォールバック`T=(s)=>s`(1引数のみ扱う)で`{line}`が置換されず壊れるため、`T('「{line}」').replace('{line}', T(line))`という「テンプレ自体をT()に通してから手動で差し込む」形の局所ヘルパー`_quoted`を新設して安全に対応した
+
+### 3. シーズン総括カード(§I 今季を彩った記録)の`tag`/`meta`テンプレ化
+
+`Engine.seasonReview.build`の4種の記録カード(王座/JT優勝・新人王/メディア功労/春タッグ優勝)が組む`tag`/`meta`が実行時のJS文字列連結による生JAで、英語モードの季総括画面(年1回・オフシーズンで必ず見る画面)に日本語のまま出ていた(⑮ §8-5で発見済みの残課題)。`build()`内の既存`_line(line, vars)`(dict-opts、P5-2oでnarr向けに導入済み)を`tag`/`meta`にも適用した。
+
+| 旧(JS連結) | 新テンプレ | 訳文 |
+|---|---|---|
+| `'王者'` | `_line('王者')` | Champion(既存キー) |
+| `` `団体王座 / V${defenses}` `` | `_line('団体王座 / V{n}', {n})` | Promotion Title / Defense #{n}(新規) |
+| `'JT優勝・新人王'` | `_line('JT優勝・新人王')` | JT winner · Rookie of the Year(既存キー) |
+| 年齢分岐+OVR | `_line('{age}歳 / OVR {ovr}', ...)` / `_line('OVR {ovr}', ...)` | Age {age} / OVR {ovr} / OVR {ovr}(新規2件) |
+| `'メディア功労'` | `_line('メディア功労')` | Media Award(新規) |
+| `` `${m.age}歳` `` | `_line('{age}歳', {age})` | Age {age}(既存キー) |
+| `'春タッグ優勝'` | `_line('春タッグ優勝')` | Spring Tag League Winners(既存キー) |
+| `` `${f2.name}と組んで` `` | `_line('{name}と組んで', {name})` | with {name}(新規。{name}はt()のconvertNamesで自動pn()化) |
+
+新規5キーはmanagement.jsが`test/i18n-extract-ui.js`のJS_FILES一覧に含まれない(Engineは`_line`経由でWM_I18N.tを間接的に呼ぶため、リテラル引数の静的抽出では原理的に拾えない)ため、`i18n/ui-ledger.json`へ`kept:true`+`note`で手追加した。ja側は`_line`が`dict`未指定時に旧来の`_fillLine`へフォールバックするため1バイト不変。
+
+VMで実ランタイム(i18n.js+生成辞書4本+data/management/match-engine/relationships)を読み込み、`Engine.seasonReview.build(G, WM_I18N.t)`をEN固定で実行して直接検証: `tag="Champion" meta="Promotion Title / Defense #3"` / `tag="JT winner · Rookie of the Year" meta="Age 19 / OVR 62"`(age=nullでは`"OVR 62"`) / `tag="Media Award" meta="Age 24"` / `tag="Spring Tag League Winners" meta="with Yoshino Kitabatake"`(パートナー名が自動pn()変換)——`[WM][i18n-miss]`0件を確認。同じVMでdict省略(ja-golden相当)呼び出しも実行し、tag/meta含め全出力が旧コード相当の日本語と一致することを確認した。
+
+**副作用: ラチェット+1(management.js)**。旧コードの`meta`一部リテラル(例: `` `${j.age != null ? `${j.age}歳 / ` : ''}OVR ${j.ovr}` ``)はテンプレートリテラルの`${}`補間の中に**さらにネストしたテンプレートリテラル**として書かれており、`test/i18n-scan.js`の走査器が入れ子を深さカウントで読み飛ばす(=JA文字列として検出しない)構造だった。テンプレ化後は同じ日本語が独立したトップレベルの文字列リテラルとして現れるため、ラチェットの計測に正しく載るようになった(検出漏れの解消であって新規の直書きではない)。`node test/i18n-ratchet.js --update`で基準を28083→28084に更新(management.js: 2325→2326)。
+
+### 4. 残i18n-miss 16件の実コールサイト追跡
+
+fast-forward後の`npm run test:ui:walkthrough:en`(seed42)でi18n-miss 16件(指示書記載どおり)を確認し、全件の出典テーブル・翻訳状態をコードとi18n/dialogue-ledger.jsonの直接照合で特定した(全16件が単発t()の正しい配線で、二重適用の兆候が無かったためスタックトレース手法は不要だった)。
+
+| 分類 | 件数 | 内訳 |
+|---|---|---|
+| (A) 未訳セリフ=バッチ⑯の対象・対象外 | 15件 | `FAN_EXPECT_REACTIONS`7件・`SPECIAL_EVENT_INTRO`2件・`PPV_OPPONENT_LINES`4件・`BREAKTHROUGH_LINES`1件・`MOTIVATION_LOSS_LINES`1件。いずれも台帳に`en:""`で存在(構造的な穴ではない)、配線も単発t()で正しい |
+| (B) 配線穴=修正 | 0件 | 該当なし |
+| (C) 動的キー=ui-ledgerへkept行+英訳 | 1件(+関連2件) | `ui-render.js:_getKurodaNewsComment`のインラインフォールバック配列(specs §10-2で既知の構造穴)。実際にヒットしたのは1行(`業界の動きは速い。目を離す暇はない`)だが、同一配列内の残り2行も合わせてui-ledgerへ`kept:true`で追加・英訳した |
+
+「Bは全部潰す」は該当ゼロ(既に0件)。
+
+### 5. 過程で見つけた新規発見4件(未着手・次バッチ検討事項)
+
+いずれもEngine関数がdict/opts自体を持たない、または生成内容がG(セーブ)へ永続化されるコンテンツで、「」の言語別化だけでは直せない(周囲の文が生JAのまま残るため引用符だけ直しても実益が無い)。指示書のスコープ外と判断し実装は見送った(詳細はspecs/i18n-runtime-spec-v1.0.md §11-5)。
+
+1. **`Engine.flavor`のMAGAZINE_HEADLINES/TV_HEADLINES(management.js、計12テンプレ)**: 雑誌取材・TV出演の見出しが関数プールで、`Engine.flavor.check`がdict/optsを持たず直接文字列化。表示点(`showEventPopup`)もt()を通さない。プレイヤーに毎週見える可能性のあるポップアップだがEngine層の関数シグネチャ変更を要する中規模タスク
+2. **gameLog文字列エントリ内の「」(management.js `advanceWeek`、6箇所)**: アーキテクチャ規約(specs §2-4「旧文字列エントリは無変換で共存」)が定めるgameLogのレガシー文字列形式そのもの。仕様上EN化対象外と判断し見送り
+3. **`Engine.awards.generateEpithet`(殿堂入り選手の異名)**: `hofEntry.epithet`として生成時にG(殿堂入りエントリ)へ永続化される生JA。ui-render.js/management.jsの両方で「」ハードコードごしに消費されるが中身が100%生JAのため引用符だけ直しても意味が無い
+4. **`EMOTION_TEXTS`(ui-render.js `getEmotionText`が参照するローカル定数)**: 相関図モバイル版の関係性一人称セリフ表(12カテゴリ×7属性≈84行)。§5/§6/§9いずれの抽出パイプラインからも見えない4件目の構造的欠落(specs §10-2の3件と同型)。セリフ量・性質から見てバッチ⑯の領分と判断
+
+### 6. 触ったファイル
+
+- `src/battle-anim.js` — `_quoteLine`ヘルパー新設+カットインテキストへ適用
+- `src/tag-battle-main.js` — `_quoteLine`(battle-anim.js側)を`vic-win-line`へ適用
+- `src/app.js` — `CHALLENGE_REQUEST_NO_LINES`のt()/pn()配線穴を修正
+- `src/ui-render.js` — 吹き出し2箇所を`_quoteLine`、黒田記事系9箇所を`_quoteVal`
+- `src/management.js` — `_buildPpvSummitStory`に`_quoted`ヘルパー新設+winner/loserLine適用、`Engine.seasonReview.build`のtag/metaをテンプレ化(4カード×2フィールド)
+- `i18n/ui-ledger.json` — 新規8キー(季総括カード用5件+kurodaフォールバック3件)を`kept:true`+noteで追加。再抽出(`node test/i18n-extract-ui.js`)を実行し保全マージで既存3313キーのen値は0件変更(構造チェックで機械確認)、台帳の並び順が再ソートで大きく動いたため`git diff`の行数は見た目より大きい(内容差分は追加8件のみ)
+- `src/lang-en.js` — 上記から再生成(自動生成物)
+- `test/fixtures/i18n-ratchet-baseline.json` — `--update`(management.js 2325→2326、テンプレ化に伴う入れ子リテラル検出漏れの解消)
+- `test/u5-winloss-safety-net-test.js` / `test/newspaper-front-v3-test.js` — 新規`_quoteVal`呼び出しを参照する`new Function()`/`vm`サンドボックスへjaスタブを追加(2ファイル)
+- `specs/i18n-runtime-spec-v1.0.md` — §11(本バッチの全内容)を追記
+
+### 7. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(battle-anim/tag-battle-main/app/ui-render/management/lang-en) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…、`--update`不使用) |
+| `node test/i18n-build-dict.js` | ✅ 台帳総キー数=3,321 訳文あり=3,321 未訳(fail-open)=0 |
+| `node test/i18n-ratchet.js`(`--update`後) | ✅ OK(files=31 totalJaStrings=28084。management.js +1の内訳は上記§3) |
+| `npm test` | ✅ 260/260 green(u5-winloss-safety-net-test.js/newspaper-front-v3-test.jsの`_quoteVal`スタブ追加込み) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(violations 0・errors 0・台帳検査3種違反0・Semantic fingerprint=37bbd0cd、P6-7時点と同一。management.js改修のため実行) |
+| VMでEN抜き取り(seasonReview.build/`_buildPpvSummitStory`) | ✅ 上記§3参照。`[WM][i18n-miss]`0件・ja出力は旧コード相当と一致 |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest=`1052faa82eaf7991`(**指示どおり不変を確認**) |
+| `npm run test:ui:walkthrough:en`(EN、seed42・1季) | ✅ PASS、Issues=0、season=2 week=1まで完走(1季完走維持)。**i18n-miss=16→15**(§4分類どおり: `_getKurodaNewsComment`フォールバック行が消え、残りはすべてFAN_EXPECT_REACTIONS/SPECIAL_EVENT_INTRO/PPV_OPPONENT_LINES/BREAKTHROUGH_LINES/MOTIVATION_LOSS_LINES(A・⑯対象)。ランダム性でPPV_OPPONENT_LINESの引きが1行入れ替わっているが同一テーブル・同一分類で新規の配線穴ではない) |
+
+### 残課題・新たな発見(次バッチへ)
+
+1. **新規発見4件は次バッチの検討事項**(§5参照、詳細はspecs §11-5)。特にMAGAZINE_HEADLINES/TV_HEADLINESは毎週プレイヤーに見える可能性のあるポップアップで実害あり
+2. `EMOTION_TEXTS`(ui-render.js)は§10-2の3件と同型の「3パイプラインいずれからも見えないテーブル」の4件目。次に抽出器へ触れるバッチでまとめて検討すること
+
+---
+
 ## 🌐 Stage B P5-2o — セリフ英訳バッチ⑮(起用約束63+戴冠62+シーズン回顧61+レンタル加入61+王座陥落61+防衛60+対抗戦申込60+ドラフト関心59+挑戦失敗59+FA歓迎58+スカウト58+対抗戦辞退58+COMMON5 58+ゲームオーバー58+FA契約56+コーチ総括判定56+FA加入57+遺恨試合前56+COMMON3 54+エンディング52+コーチ招聘40+加入挨拶GENERIC 15 = 1,222行)（2026-09-04・Opus主筆 worktree agent-a72deb5fd37f41871）
 
 量産翻訳の第15バッチ。**26テーブルの未訳1,222行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則+③5則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2nの訳語判断(2fのベルト=belt/王座=title、2cの対社長温度Boss/President、seductiveの`ふふ`=Mm・ojousamaは`Hehe`、⑬の「」を落とす方針、⑫§4のコーチ8系統voiceを継承)。開始前にworktreeブランチをmain先端(cf541e2)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2k〜2nと同じ運用)。

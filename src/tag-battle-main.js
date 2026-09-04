@@ -1609,7 +1609,7 @@ function showResult(fr){
       // 名前を吹き出し内に書かない)。実況は地の文のまま
       vicLines.innerHTML =
         `<div class="vic-speaker-label">${escHtml(WM_I18N.pn(winFinisher.name))}</div>` +
-        `<div class="vic-win-line">「${escHtml(winLine)}」</div>` +
+        `<div class="vic-win-line">${_quoteLine(escHtml(winLine))}</div>` +
         `<div class="vic-commentary">${escHtml(commentary)}</div>`;
     } else {
       vicLines.innerHTML = '';

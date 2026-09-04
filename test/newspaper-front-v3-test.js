@@ -371,6 +371,10 @@ function makeRenderCtx() {
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
     }, pn(str) { return str; } },
+    // i18n P6-8: _npKurodaBandLine/_npV3KurodaColumn等が引用符の言語別化に
+    // ui-common.js の _quoteVal(WM_I18N.t('「{line}」', {line})) を使うようになった。
+    // ja契約と同じ挙動のスタブで足りる(src/ui-common.js の _quoteVal参照)。
+    _quoteVal: value => `「${value == null ? '' : value}」`,
   };
   vm.createContext(ctx);
   // i18n Stage B P4-5: _npCrisisColumnHtml/_npKurodaCommentText 等が

@@ -21878,8 +21878,8 @@ Engine.seasonReview = {
         const champKey = defenses === 0 ? 'champ_v0' : defenses <= 2 ? 'champ_low' : defenses <= 4 ? 'champ_mid' : 'champ_high';
         const champNarr = _lines ? _line(_pickLine(_lines.records[champKey], _nseed + 11)) : '';
         champRecord = {
-          tag: '王者', id: champ.id, name: champ.name,
-          meta: `団体王座 / V${defenses}`,
+          tag: _line('王者'), id: champ.id, name: champ.name,
+          meta: _line('団体王座 / V{n}', { n: defenses }),
           narr: champNarr || `王座を${defenses}度守った。`,
         };
       }
@@ -21893,16 +21893,16 @@ Engine.seasonReview = {
     if (awards && awards.jtChampion && awards.jtChampion.isPlayerOrg) {
       const j = awards.jtChampion;
       records.push({
-        tag: 'JT優勝・新人王', id: j.id, name: j.name,
-        meta: `${j.age != null ? `${j.age}歳 / ` : ''}OVR ${j.ovr}`,
+        tag: _line('JT優勝・新人王'), id: j.id, name: j.name,
+        meta: j.age != null ? _line('{age}歳 / OVR {ovr}', { age: j.age, ovr: j.ovr }) : _line('OVR {ovr}', { ovr: j.ovr }),
         narr: (_lines && _line(_pickLine(_lines.records.jt, _nseed + 21))) || 'ジュニアトーナメントを制した。',
       });
     }
     if (awards && awards.mediaAward && awards.mediaAward.isPlayerOrg) {
       const m = awards.mediaAward;
       records.push({
-        tag: 'メディア功労', id: m.id, name: m.name,
-        meta: `${m.age != null ? m.age : '?'}歳`,
+        tag: _line('メディア功労'), id: m.id, name: m.name,
+        meta: _line('{age}歳', { age: m.age != null ? m.age : '?' }),
         narr: (_lines && _line(_pickLine(_lines.records.media, _nseed + 31))) || 'リング外での発信が団体を支えた。',
       });
     }
@@ -21920,8 +21920,8 @@ Engine.seasonReview = {
       if (f1) {
         springTagPlayerWon = true;
         records.push({
-          tag: '春タッグ優勝', id: f1.id, name: f1.name,
-          meta: f2 ? `${f2.name}と組んで` : '',
+          tag: _line('春タッグ優勝'), id: f1.id, name: f1.name,
+          meta: f2 ? _line('{name}と組んで', { name: f2.name }) : '',
           narr: (_lines && _line(_pickLine(_lines.records.springTag, _nseed + 41))) || '春のタッグリーグを制した。',
         });
       }
@@ -30869,6 +30869,11 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
 // 関数を受け取る。省略時は従来どおりJA原文のまま(既存呼び出し元は無改修で不変)。
 function _buildPpvSummitStory(sr, season, week, P, dict) {
   const T = (typeof dict === 'function') ? dict : (s) => s;
+  // i18n P6-8: 記事中に引用する選手の言葉を囲む「」の言語別化(ui-common.js _quoteValと
+  // 同じ考え方)。T('「{line}』', {line}) の2引数呼び出しに頼ると dict 未指定時(T=恒等関数、
+  // 1引数のみ扱う)で {line} が置換されず壊れるため、テンプレ自体をT()に通してから
+  // 手動で {line} を差し込む(dict省略時=ja-golden等は従来どおり1バイト不変)。
+  const _quoted = (line) => T('「{line}」').replace('{line}', T(line));
   const stamp = `${_wmNewsStamp(T, season, week, 'PPV GRAND FINAL')} ${T('メインイベント')}`;
 
   const winnerName = sr.winnerName || (sr.won ? sr.playerName : sr.aiName);
@@ -30994,12 +30999,12 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
   // §8の「render時点再構築」と同じくpush側は加工しない)。この関数は他の箇所でTを通しているのに
   // ここだけ素通しで、ENでも常にJAのまま出ていた(同型の配線穴)。
   if (sr.winnerLine) {
-    bodyParts.push(`「${T(sr.winnerLine)}」——${winnerName}は静かにその栄誉を噛み締めた。`);
+    bodyParts.push(`${_quoted(sr.winnerLine)}——${winnerName}は静かにその栄誉を噛み締めた。`);
   }
   // task-75: 敗者の言葉。app.js が summitLose から引いて渡していたが、
   // 紙面が読んでいなかったため一度も出ていなかった(2026-08-01 修正)
   if (sr.loserLine) {
-    bodyParts.push(`引き上げる${loserName}は「${T(sr.loserLine)}」と言葉を残した。`);
+    bodyParts.push(`引き上げる${loserName}は${_quoted(sr.loserLine)}と言葉を残した。`);
   }
 
   return {

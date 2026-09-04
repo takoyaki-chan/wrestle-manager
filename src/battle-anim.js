@@ -18,6 +18,18 @@
 //   - getUpperUrl(fighter) (各 iframe 内で定義される肖像解決)
 //   - escHtml(s) (各 iframe 内のHTMLエスケープ、無ければそのまま使う)
 
+// i18n P6-8: 吹き出し/カットインの「」はレンダラ側の固定装飾(ui-common.js _quoteLineと
+// 同じ考え方)。観戦iframe(battle-engine.html/tag-battle.html)はメイン画面とは別インスタンスの
+// WM_I18Nを持つ(別Documentのため)ので、ui-common.jsの_quoteLineを直接は呼べず同じロジックを
+// ここに複製する。battle-anim.js自身とtag-battle-main.js/battle-engine-main.js(後読み込み)の
+// 両方から使う想定でIIFE外のグローバル関数にする。引数は表示直前でt()/escHtml等を
+// 済ませた完成文字列を渡すこと(このヘルパー自身は翻訳しない・装飾のみ)。
+// ja/pseudo/WM_I18N不在: 「text」(従来と1バイト同一) / en: text(装飾なし)。
+function _quoteLine(text) {
+  const s = (text === null || text === undefined) ? '' : String(text);
+  return (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en') ? s : `「${s}」`;
+}
+
 const BattleAnim = (function(){
   function _esc(s){
     if (s == null) return '';
@@ -43,7 +55,7 @@ const BattleAnim = (function(){
       (upperUrl ? `<img class="cutin-portrait" src="${upperUrl}" alt="" onerror="this.style.display='none'">` : '') +
       `<div class="cutin-info">` +
         `<div class="cutin-name">${_esc(name)}</div>` +
-        `<div class="cutin-text">「${_esc(text)}」</div>` +
+        `<div class="cutin-text">${_quoteLine(_esc(text))}</div>` +
         `<div class="cutin-dismiss">CLICK TO CLOSE</div>` +
       `</div></div>`;
     overlay.classList.add('show');
