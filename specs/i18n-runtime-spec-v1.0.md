@@ -349,9 +349,65 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 - **`fill()`の「値がnullならPHを残す」挙動に注意**。`composeUnifiedTitleArticle`の旧`fill`は`data[name] != null`でなければ`{name}`をそのまま残していたが、`fillTemplateVars`は**paramsに積んだキーを無条件に置換する**(nullを積むと`"null"`が出る)。**非nullのキーだけをparamsへ積む**こと
 - **可変長の畳み込みは初期値なしの`reduce`で**。初期値`''`を与えるとENで先頭に空白が1つ入る
 
-### 14-5. P6-15で新たに見つかった同型(未着手)
+### 14-5. P6-15で新たに見つかった同型(**✅P6-16で1〜4を全解決**、2026-09-04。詳細は§15)
 
-1. **`_buildPpvSummitStory`(management.js)** — PPV頂上決戦の紙面本文。**dict糸通しは済んでいる**のに、(a)`bodyParts.join('')`に連結様式テンプレが無くENでは文が空白なしで直結する、(b)本文の大半(舞台説明文・試合経過文・試合評価文4変種・通算戦績2文・勝者/敗者コメントの地の文2文)が**生JAのJSテンプレートリテラルで`T()`を通っていない**。P6-8が`_quoted`だけを直したため「一部だけ英語になる」状態で残っている。**次バッチの筆頭候補**
-2. **`Engine.chronicle`の年代記叙述4関数**(management.js:5201/5253/6391/6641) — dictを一切持たない断片連結。`QUOTE_TEMPLATES_DUAL`はEngineオブジェクトのプロパティで抽出器から見えない(§10-2型)。加えて`_buildPeerNarrative`等は分岐ごとの実行文プールで、§6 pool③(`Engine.mvpRace`の叙述family)と同じ性格
-3. **`Engine.autumnWar`の結果ニュース**(management.js:30729/30730) — `_orgName`+勝敗数の生JA組み立てを`industryNews.push`のdataへ焼く。§8の「生キー+render時点再構築」が要る型
-4. **composerがnullを返したときの直書きJAフォールバック2箇所** — `management.js`のAIチャンピオン交代(`${ev.orgName}の王座が動いた。…`)と`ui-common.js`のドラフト自団体1面(`${names}。新シーズンの陣容がひとつ厚くなった。`)。どちらもdictを通らないので、本体が英語になった今はフォールバックだけJAで出る
+1. **✅解決(P6-16)** — **`_buildPpvSummitStory`(management.js)** — PPV頂上決戦の紙面本文。**dict糸通しは済んでいる**のに、(a)`bodyParts.join('')`に連結様式テンプレが無くENでは文が空白なしで直結する、(b)本文の大半(舞台説明文・試合経過文・試合評価文4変種・通算戦績2文・勝者/敗者コメントの地の文2文)が**生JAのJSテンプレートリテラルで`T()`を通っていない**。P6-8が`_quoted`だけを直したため「一部だけ英語になる」状態で残っていた
+2. **✅解決(P6-16)** — **`Engine.chronicle`の年代記叙述4関数** — dictを一切持たない断片連結。`QUOTE_TEMPLATES_DUAL`はEngineオブジェクトのプロパティで抽出器から見えない(§10-2型)。加えて`_buildPeerNarrative`等は分岐ごとの実行文プールで、§6 pool③(`Engine.mvpRace`の叙述family)と同じ性格
+3. **✅解決(P6-16)** — **`Engine.autumnWar`の結果ニュース** — `_orgName`+勝敗数の生JA組み立てを`industryNews.push`のdataへ焼く。§8の「生キー+render時点再構築」が要る型
+4. **✅解決(P6-16)** — **composerがnullを返したときの直書きJAフォールバック2箇所** — `management.js`のAIチャンピオン交代(`${ev.orgName}の王座が動いた。…`)と`ui-common.js`のドラフト自団体1面(`${names}。新シーズンの陣容がひとつ厚くなった。`)。どちらもdictを通らないので、本体が英語になった今はフォールバックだけJAで出ていた
+
+## 15. Stage B P6-16 — §14-5の同型4件の配線と英訳(2026-09-04追加)
+
+訳出**195キー**(template-ledger 1,749→**1,944**・未訳0 / ui-ledger 3,530→**3,536**・未訳0)。ラチェット総数28,085不変(移設は差引ゼロ)。
+
+### 15-1. 「連結後の完成文が永続し、かつ表示点で再生成もできない」族は**追加フィールド**で解く
+
+年代記の叙述文(`_buildAceNarrative`/`_buildPeerNarrative`)は`G.chronicle.chaptersCache.chapters[].aces[]/peers[].narrative`へ**完成文が永続**する。§13-1(殿堂入り語り文)の「表示点で再生成して保存値と1バイト照合」は、**キャッシュ側のace/peerが`careerRecord`を持たない縮約オブジェクト**であるため使えない(再生成しても保存値と一致せず、常にフォールバックへ落ちる)。
+
+そこで §14-3(PPV煽りの`hypeTpl`/`hypeVars`)と同じ**追加フィールド方式**を採る。**同型(完成文がGへ焼かれ、かつ素材がキャッシュに残っていない族)には今後これを使う。**
+
+- `narrative` … 従来どおり**JAの完成文**。`buildChapters`は**dictを渡さない**ので**セーブに書く既存値は不変**(D-P6-4)
+- **`narrativeParts`** … 新規フィールド。`{ t, v }`(単文) / `{ t, v, items:[パーツ], sep }`(列挙を内側に持つ文)の配列。`sep`は`'listComma'`(読点)/`'listDot'`(中黒)
+- 描画は`Engine.chronicle.narrativeText(parts, dict)`(+内部の`_narrativePartText`)。`_build*NarrativeParts()`が素材だけを返し、`_build*Narrative()`はそれを描画する薄いラッパ
+- 表示点は`ui-render.js`の**`_chronicleNarrative(entry)`1関数に集約**(ace単独/二枚看板/同期の3箇所)。`narrativeParts`が無い旧セーブは**保存値をそのまま出す**(fail-open)。**保存値を`t()`に通さないこと** — 完成文は辞書キーと一致せずi18n-missを汚染する
+- **auto-simのsemantic fingerprintは追加フィールドの分だけ動く**。指紋のreplacerで新フィールドを除外して再計測し、HEADと一致することを実測で確かめること(P6-16では 82823ea9 → 除外して 37bbd0cd = HEAD実測値)
+
+記者の目(`buildAceQuote`/`buildDualAceQuote`)は**表示時に生成**され保存されないので、第4引数`dict`を足すだけでよい(呼び出し元はui-render.jsの2箇所)。
+
+### 15-2. ENの空白規約 — 差し込み句(clause)の訳文は**先頭に半角スペース**を持つ
+
+記者の目テンプレは`{topRivalClause}`のような**条件次第で空文字になる差し込み句**を持つ。JAは直結なのでテンプレ側にもクラウス側にも空白が要らないが、ENは文間に空白が要る。テンプレ側に空白を置くと**空のときだけ二重スペース・末尾スペース**になる。
+
+- **ENのクラウス訳文の側に先頭スペースを持たせる**(JA訳文は持たない)。テンプレは`…した。{topRivalClause}{topVenueClause}`のまま
+- 節の先頭にクラウスが来る型では先頭スペースが残るので、**`Engine.chronicle._joinQuoteSections`が節ごとに`trim()`してから連結**する。JAは空白を含まないので trim は no-op(1バイト不変)
+- 同法を`PPV_SUMMIT_STORY_TEMPLATES.orgParen`(`（{org}）`→` ({org})`)と`AUTUMN_WAR_NEWS_PARTS`の`（同時全滅…）`にも適用した
+
+### 15-3. **同じキーを2つの台帳へ載せない**(§9)ための実装作法
+
+`王座` `団体` `決勝` `準決勝` `該当選手` は **ui-ledger に既訳がある**。data.js のテンプレ表へ入れると template-ledger と ui-ledger で同じキーが二重登録され、どちらの訳が出るかがスクリプト読み込み順に依存する。**JA原文は management.js 側に1本だけ置き、`_wmDictLabel`で引く。**
+
+- `Engine.chronicle._orgLabel(state, dict)` / `_beltLabel(orgName, dict)` — `_buildQuoteContext`と叙述2関数で共用
+- `_AW_ROUND_JA` / `_AW_MVP_FALLBACK_JA` — management.js のトップレベル定数
+
+**`_wmTitleName(dict, orgName)`(management.js、新設)**: 保存値の`○○王座`は「団体名+様式」のJA成形済み値(§6の構造穴)で、テンプレだけ訳しても本文にJAが残る。`/^(.+)王座$/`で団体名を取り出し、既存キー`{orgName}王座`(→`{orgName} Championship`)へ**params経由で**通すので団体名は名前辞書(pn)で英語化される。ui-common.js の`_factionDisplayName`が「○○派」に対してやっているのと同法(§10)。`_wmResolvePreformattedIndustryData`の`topChampionInjury`も同ヘルパーへ寄せ、JA literal を1箇所に保っている。
+
+### 15-4. 記事テンプレ末尾の「2つの任意の注記が直結する」枠
+
+`NEWS_HEADLINE_TEMPLATES.autumnWarResult`の本文末尾は`{gauntletNote}{tieBreakNote}`の直結で、ENでは2文が空白なしでくっつく。**2本を`join`テンプレで畳んで1つの値にまとめ、もう一方を空にする**のが最小の解(JAでは`join='{a}{b}'`なので連結結果は1バイト不変)。片方が空のときに空白が余らないよう、**畳み込み前に`filter(Boolean)`**すること。
+
+### 15-5. JA同一性の証明(4,388,545通り・不一致0)
+
+§13-1の作法①(凍結コピーとの全数突合)を全族へ適用。HEADの6関数をソースから機械抽出し、`Object.create(Engine.chronicle)`のプロトタイプ経由で未変更ヘルパを共有させて新旧を突合する。
+
+- `_buildPpvSummitStory` **4,199,040通り** / 年代記5関数 **188,800通り** / 秋対抗戦+`joinNameList`+フォールバック **705通り** — いずれも不一致0
+- 移設した3表(V2/V1/DUAL)は`JSON.stringify`で凍結コピーと**完全一致**を別途確認
+- **叙述テンプレ83本すべてが実際に選択されたことを網羅計測**する。実seedでは`Engine.rng.derive`の戻り値が偶数に偏るらしく**長さ4のプールの奇数添字に到達しない**ため、`derive`を固定値へ差し替える強制パスを足して全プール全添字を新旧同条件で踏ませた
+- dict省略経路と「ja素通しdict」経路の**両方**を同時に比較する
+
+### 15-6. P6-16で新たに見つかった穴(未着手)
+
+1. **`ui-ledger`の抽出器が main に対して4行ぶん古い**。`test/i18n-extract-ui.js`を再実行すると`ui-common.js`の`WM_I18N.t()`literal 4件(派閥離脱系セリフ)が新規行として増え、うち`……もう、ついていけない。`は**dialogue-ledgerに既訳がある**(=ui-ledgerへ載せると二重登録)。P6-16は台帳をHEADへ戻し、必要な1行だけ手挿入した。**次にextract-uiへ触るバッチで、この4件をどちらの台帳の領分にするか決めること**
+2. **`Engine.chronicle.AXIS_LABELS`の`喧嘩`が ui-ledger で "Quarrel"**。スタイル軸のラベルとしては`Brawling`が正しい。`{styleJa}`/`{spiritAxis}`の枠に入るため年代記のEN本文に出る
+3. **`該当選手`の既訳 "Matching Wrestlers" が文脈違い**。秋対抗戦MVPが解決できないときの人名スロットのフォールバックで、`ui-common.js:19902`の同じ場面と同一キーなのに検索フィルタ語として訳されている
+4. **`Engine.chronicle._generateTitle`/`_generateSubtitle`/`_generateClosing`/`_buildHighlights`は未着手**。年代記画面の章タイトル・サブタイトル・締め・ハイライト行はまだ生JA(§13-2 B表と同じ層)
+5. **`Engine.chronicle._getSurname`の`名無し`フォールバック**は他のchronicleコードからも共用されるためdict化していない(実質到達不能)

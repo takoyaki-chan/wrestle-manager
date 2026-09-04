@@ -6534,8 +6534,13 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
         // 切り詰めはここでしない。紙面に何人まで載せるかは Engine.newspaper.generate が
         // 決め、載り切らなかった人数は「+N」で示す(task-54)。
         characterIds: ports.map(p => p.id).filter(id => Number.isInteger(id) && id > 0),
+        // i18n P6-16: composed が null のときのフォールバックだけがJAで残っていた(specs §14-5-4)。
+        // 本文は NEWS_FALLBACK_TEMPLATES(data.js)、名前の列挙は Engine.newspaper.joinNameList
+        // (区切り文字だけでなく名前辞書 pn の変換も効く)。
         extraData: composed ? { body: composed.body }
-          : { body: `${ports.map(p => p.name).join('、')}。新シーズンの陣容がひとつ厚くなった。` },
+          : { body: WM_I18N.t(NEWS_FALLBACK_TEMPLATES.draftPlayerResultBody, {
+            names: Engine.newspaper.joinNameList(ports.map(p => p.name), WM_I18N.t),
+          }) },
       });
     } else if (st.type === 'draftAiResult') {
       // 見出しから団体名を復元せず、本文(氏名の羅列)と見出しの団体名部分を分けて渡す

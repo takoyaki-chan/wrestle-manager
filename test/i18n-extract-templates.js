@@ -118,6 +118,19 @@ const TARGET_TABLES = [
   'DRAFT_PLAYER_RESULT_PARTS',
   'PPV_HYPE_TEMPLATES',
   'ARTICLE_COMPOSE_TEMPLATES',
+  // P6-16で追加。specs §14-5 が起票した同型4件の移設先。
+  //   PPV_SUMMIT_STORY_TEMPLATES 13行 — 頂上決戦記事の地の文(P3a-2が3表だけ移設して残した分)
+  //   NEWS_FALLBACK_TEMPLATES     3行 — composerがnullのときの直書きJAフォールバック
+  //   AUTUMN_WAR_NEWS_PARTS      10行 — 秋対抗戦ニュースの生キー→文(specs §8)
+  //   CHRONICLE_*                    — 年代記の記者の目/叙述文(Engineプロパティ+関数内直書きの移設)
+  'PPV_SUMMIT_STORY_TEMPLATES',
+  'NEWS_FALLBACK_TEMPLATES',
+  'AUTUMN_WAR_NEWS_PARTS',
+  'CHRONICLE_QUOTE_CLAUSES',
+  'CHRONICLE_QUOTE_TEMPLATES_V2',
+  'CHRONICLE_QUOTE_TEMPLATES_V1',
+  'CHRONICLE_QUOTE_TEMPLATES_DUAL',
+  'CHRONICLE_NARRATIVE_TEMPLATES',
 ];
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の

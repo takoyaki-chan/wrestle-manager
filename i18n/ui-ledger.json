@@ -4348,6 +4348,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{surname}はこの世代の主役だった。",
+    "en": "{surname} was the face of this generation.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{surname}派",
     "en": "{surname} Group",
     "files": [
@@ -23869,6 +23879,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "次の流派",
+    "en": "the next school",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.chronicle 記者の目/叙述文の既定ラベル(management.js の _wmDictLabel 経由・P6-16)"
+  },
+  {
     "key": "次の画面で代表を選択",
     "en": "Pick your representatives on the next screen",
     "files": [
@@ -24103,6 +24125,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "次世代の主役",
+    "en": "the next generation's lead",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.chronicle 記者の目/叙述文の既定ラベル(management.js の _wmDictLabel 経由・P6-16)"
   },
   {
     "key": "次回",
@@ -26374,6 +26408,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "独自",
+    "en": "Freestyle",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.chronicle 記者の目/叙述文の既定ラベル(management.js の _wmDictLabel 経由・P6-16)"
+  },
+  {
     "key": "独裁化",
     "en": "Dictatorship",
     "files": [
@@ -27657,6 +27703,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "端境期",
+    "en": "a lean spell",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.chronicle 記者の目/叙述文の既定ラベル(management.js の _wmDictLabel 経由・P6-16)"
   },
   {
     "key": "競",
@@ -33311,6 +33369,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "黄金期",
+    "en": "a golden age",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "Engine.chronicle 記者の目/叙述文の既定ラベル(management.js の _wmDictLabel 経由・P6-16)"
   },
   {
     "key": "黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）",

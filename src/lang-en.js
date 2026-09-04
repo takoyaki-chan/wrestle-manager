@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー3530件、訳文あり3530件)
+//  生成元: i18n/ui-ledger.json (総キー3536件、訳文あり3536件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -444,6 +444,7 @@
     "{sign}{v}万": "{sign}¥{v:man}",
     "{src}・残{w}週": "{src} · {w} weeks left",
     "{stat}を重点に指導中": "Focusing her coaching on {stat}",
+    "{surname}はこの世代の主役だった。": "{surname} was the face of this generation.",
     "{surname}派": "{surname} Group",
     "{s}年目 末": "End of Year {s}",
     "{target}は{to}へ移っていった。{from}の空気は凍りついている。": "{target} moved over to {to}. The air in {from} has frozen.",
@@ -2342,6 +2343,7 @@
     "次の攻防 ▶": "Next Exchange ▶",
     "次の月へ →": "Next Month →",
     "次の枠拡張: {n}万": "Next slot expansion: ¥{n:man}",
+    "次の流派": "the next school",
     "次の画面で代表を選択": "Pick your representatives on the next screen",
     "次の自団体興行で、相手団体を迎え撃ちます": "You will meet them at your own next show",
     "次の自団体興行の上位3試合が、この団体戦になる": "The top three matches of your next show become this team match",
@@ -2365,6 +2367,7 @@
     "次オフで反映する": "Reflect it next off-season",
     "次オフ契約交渉で +10% 反映予定（Phase D 実装）。<br>派閥メンバーは前向きな回答と受け止める。": "A +10% bump is slated for next off-season negotiations (Phase D).<br>The faction takes it as a positive answer.",
     "次ラウンド": "Next Round",
+    "次世代の主役": "the next generation's lead",
     "次回": "Next Time",
     "次回<br>S{season}": "Next<br>S{season}",
     "次回興行のメイン提案で、{factionName}メンバーを優先候補にする。<br>派閥内では期待に応えたと受け止められそうだ。": "Next show's main event proposal will favor {factionName} members.<br>The faction will likely feel their expectations were met.",
@@ -2582,6 +2585,7 @@
     "特集": "Feature",
     "状態": "Status",
     "状態を復元して今週へ": "Restore and Return to This Week",
+    "独自": "Freestyle",
     "独裁化": "Dictatorship",
     "獲得": "Acquired",
     "獲得:": "Acquired:",
@@ -2707,6 +2711,7 @@
     "空席が目立つ客入り": "Noticeably empty seats",
     "立て直すか、解散か": "Turn it around, or fold",
     "章末": "Chapter End",
+    "端境期": "a lean spell",
     "競": "Rivalry",
     "競い合えることが、自分の力になっています": "Having someone to compete with is what makes me stronger, I think.",
     "競争": "Rivalry",
@@ -3256,6 +3261,7 @@
     "骨肉の争い": "A bitter blood feud",
     "高い順": "Highest first",
     "黄金のカード": "The Golden Card",
+    "黄金期": "a golden age",
     "黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）": "You're in the black! Keep it up for {n} weeks and you clear the goal! (funds now: ¥{funds:man}{goalNote})",
     "黒星": "Loss",
     "黙認した。{faction}の自由は守られたが、道場の空気は淀んだ。": "You let it pass. {faction} kept its freedom, but the air in the dojo went stale.",

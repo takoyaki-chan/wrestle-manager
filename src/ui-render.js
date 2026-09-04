@@ -11623,7 +11623,7 @@ function _renderDbChronicle() {
               <div class="chron-dual-meta-val">${a.titleReigns || 0}<span class="small">戴冠</span></div>
             </div>
           </div>
-          ${a.narrative ? `<div class="chron-ace-narrative">${a.narrative}</div>` : ''}
+          ${_chronicleNarrative(a) ? `<div class="chron-ace-narrative">${_chronicleNarrative(a)}</div>` : ''}
         </div>
       </div>`;
     };
@@ -11633,7 +11633,7 @@ function _renderDbChronicle() {
       ${buildDualCard(aces[1])}
     </div>`;
     // 統合「記者の目」: 二枚看板の quote が個別だと内容が酷似するため 1 つにまとめる
-    html += `<div class="chron-ace-quote chron-dual-shared-quote">${Engine.chronicle.buildDualAceQuote(aces, current, G)}</div>`;
+    html += `<div class="chron-ace-quote chron-dual-shared-quote">${Engine.chronicle.buildDualAceQuote(aces, current, G, WM_I18N.t)}</div>`;
   } else {
     // ── 単独エースレイアウト（従来ベース） ──────────────────
     const a = aces[0];
@@ -11671,7 +11671,7 @@ function _renderDbChronicle() {
           </div>
         </div>
         <div class="chron-ace-quote">${_chronicleAceQuote(a, current)}</div>
-        ${a.narrative ? `<div class="chron-ace-narrative">${a.narrative}</div>` : ''}
+        ${_chronicleNarrative(a) ? `<div class="chron-ace-narrative">${_chronicleNarrative(a)}</div>` : ''}
       </div>
     </div>`;
   }
@@ -11784,7 +11784,7 @@ function _renderDbChronicle() {
           ${roleTag}
           <div class="chron-gen-name">${pNameHtml}</div>
           <div class="chron-gen-meta">${metaParts.join(' ・ ')}</div>
-          ${p.narrative ? `<div class="chron-gen-narrative">${p.narrative}</div>` : ''}
+          ${_chronicleNarrative(p) ? `<div class="chron-gen-narrative">${_chronicleNarrative(p)}</div>` : ''}
         </div>
         <div class="chron-gen-ovr">
           <span class="chron-gen-ovr-val">${p.peakOVR || 0}</span>
@@ -11852,12 +11852,26 @@ function _chronicleCompetitiveValueHtml(text) {
   return text;
 }
 
-/** 記者コメント (Engine.chronicle.buildAceQuote のシム) */
+/** 記者コメント (Engine.chronicle.buildAceQuote のシム)
+ *  i18n P6-16: 記者の目は**表示時に生成**される(セーブに残らない)ので、dict-opts へ
+ *  WM_I18N.t を渡すだけでよい。戻り値を改めて t() で包み直さないこと(二重適用) */
 function _chronicleAceQuote(ace, chapter) {
   if (Engine.chronicle && typeof Engine.chronicle.buildAceQuote === 'function') {
-    return Engine.chronicle.buildAceQuote(ace, chapter, G);
+    return Engine.chronicle.buildAceQuote(ace, chapter, G, WM_I18N.t);
   }
-  return `${Engine.chronicle._getSurname(ace.name)}はこの世代の主役だった。`;
+  return WM_I18N.t('{surname}はこの世代の主役だった。', { surname: Engine.chronicle._getSurname(ace.name) });
+}
+
+/** 年代記の叙述文。P6-16 の追加フィールド `narrativeParts` があれば現在の言語で組み直し、
+ *  無ければ(旧セーブ)保存済みのJA完成文をそのまま出す(fail-open。specs §13-1 手順4と同じ流儀)。
+ *  **保存値を t() に通さないこと** — 完成文は辞書キーと一致せず i18n-miss を汚染する。 */
+function _chronicleNarrative(entry) {
+  if (!entry) return '';
+  if (Array.isArray(entry.narrativeParts) && entry.narrativeParts.length
+      && Engine.chronicle && typeof Engine.chronicle.narrativeText === 'function') {
+    return Engine.chronicle.narrativeText(entry.narrativeParts, WM_I18N.t) || '';
+  }
+  return entry.narrative || '';
 }
 
 // ── 団体比較 ──────────────────────────────────────────────
