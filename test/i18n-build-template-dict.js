@@ -25,6 +25,8 @@
 //       このリストは黒田幸子(週刊グラップル記者)の署名記事(kuroda-text.js)向けに
 //       書かれたものだが、指示書で「en-kuroda-style-draft-v0.1.mdの禁止語リストを読み込んで
 //       検査」と明示されているため、テンプレ全体(新聞記事文言全般)に対して適用する。
+//    5. プレースホルダ直前の不定冠詞(P6-14): 同 §3-4 規則25。`a {bestMQ}` は充填値が
+//       88 のとき "an" が正しくなる。ハイフン限定用法(`a {n}-year …`)のみ許可。
 //
 //  ■ 使い方
 //    node test/i18n-build-template-dict.js       src/lang-en-templates.js を(再)生成
@@ -46,6 +48,10 @@ const PLACEHOLDER_RE = /\{([A-Za-z_][A-Za-z0-9_]*)(?::[A-Za-z_][A-Za-z0-9_]*)?\}
 // 誤検出しないよう、サロゲート範囲を含む豈-﫿(U+8C48-U+FAFF)ではなく
 // 互換漢字の正しい始点U+F900からのレンジを使う)。
 const JA_RE = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/;
+
+// P6-14: プレースホルダ直前の不定冠詞(docs/en-kuroda-style-draft-v0.1.md §3-4 規則25)。
+// 定義は test/i18n-build-dict.js と同一(台帳ごとに独立実行するため各スクリプトが持つ)。
+const ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i;
 
 // ── 黒田禁止語grep(docs/en-kuroda-style-draft-v0.1.md §3-6を機械可読な形に移植) ──
 const KURODA_FORBIDDEN = [
@@ -135,6 +141,15 @@ function main() {
         violations.push(`禁止語[${label}]: ${JSON.stringify(entry.key)} → ${JSON.stringify(en)}`);
       }
     });
+
+    // 5. プレースホルダ直前の不定冠詞(§3-4 規則25)
+    const artHit = ARTICLE_BEFORE_PLACEHOLDER_RE.exec(en);
+    if (artHit) {
+      violations.push(
+        `PH直前の不定冠詞(規則25): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} `
+        + `(検出="${artHit[0]}"。a/anが充填値で変わる。ハイフン限定用法 \`a {n}-…\` へ逃がすか冠詞を落とす)`
+      );
+    }
 
     if (Object.prototype.hasOwnProperty.call(dict, entry.key)) {
       return;

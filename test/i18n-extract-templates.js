@@ -100,6 +100,11 @@ const TARGET_TABLES = [
   // 対象一覧から漏れていた(EMOTION_TEXTSと同型の「見えないテーブル」)。消費点は
   // Engine.newspaper._fillRetirementTemplate(P6-10でdict-opts化済み)。
   'RETIREMENT_TEMPLATES',
+  // P6-14で追加。殿堂入り選手の語り文プール(導入6分岐×3 + 核心19分岐×2〜3 +
+  // 余韻3系統 + 連結様式 join = 85本)。P6-10までは Engine.awards.generateBiography()
+  // の関数本体に直書きされた配列リテラルで、§10-2 の「関数の中の配列は抽出器から
+  // 永久に見えない」型だった。消費点は generateBiography(entry, dict)(P6-14でdict-opts化)。
+  'HOF_BIOGRAPHY_TEMPLATES',
 ];
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の

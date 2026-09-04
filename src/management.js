@@ -21327,8 +21327,28 @@ Engine.awards = {
     return (typeof dict === 'function') ? dict(raw) : raw;
   },
 
-  /** C-0b: 経歴に基づく語り文の自動生成 */
-  generateBiography(entry) {
+  /** C-0b: 経歴に基づく語り文の自動生成
+   *
+   *  i18n Stage B P6-14: 第2引数 dict(= WM_I18N.t 相当 `(text, params) => text`)を受ける
+   *  dict-opts 版。文プールは data.js の `HOF_BIOGRAPHY_TEMPLATES` へ移設した
+   *  (specs/i18n-runtime-spec-v1.0.md §10-2「関数の中に直書きした配列は抽出器から
+   *  永久に見えない」規約)。**各文をプレースホルダ置換の前にdictへ通してから連結する**
+   *  — 連結後の完成文は辞書キーと一致しないため、後から引いてもfail-openするだけになる。
+   *  連結様式そのものも `join` テンプレ経由なので、ENでは文と文の間に半角スペースが入る。
+   *  dict省略時はJAテンプレのPH充填のみ = P6-14以前と1バイト同一。
+   *
+   *  戻り値は `entry.biography` としてG(殿堂入りエントリ)へ**永続する**。永続させるのは
+   *  常に**dict無し(JA)の戻り値**(D-P6-4「セーブに書く値は変えない」)。表示点は保存値を
+   *  そのまま出さず、保存されている素材から dict 付きで再生成する
+   *  (ui-render.js `showHofDetail`。JAでの再生成結果が保存値と一致することを確認してから
+   *  ENへ切り替え、不一致なら保存値を優先する = 旧セーブ・テンプレ変更へのfail-open)。
+   *
+   *  @param {Object} entry 殿堂入りエントリ(_buildHofEntry の戻り値相当)
+   *  @param {Function} [dict] (text, params) => text。省略時はJAのままPH充填のみ
+   */
+  generateBiography(entry, dict) {
+    const TBL = (typeof HOF_BIOGRAPHY_TEMPLATES !== 'undefined') ? HOF_BIOGRAPHY_TEMPLATES : null;
+    if (!TBL) return '';
     const orgName = entry.orgName || '団体';
     const epithet = entry.epithet || Engine.awards.generateEpithet(entry, null, null);
     const seasons = (entry.activeSeasonsEnd || 1) - (entry.activeSeasonsStart || 1) + 1;
@@ -21351,189 +21371,68 @@ Engine.awards = {
 
     // IDとシーズン数で安定選出（ロード後も同じ文が出る）
     const pick = (arr) => arr[Math.abs((entry.id || 0) * 31 + seasons) % arr.length];
-    // プレースホルダ一括置換
-    const fill = (s) => s
-      .replace(/{orgName}/g,      orgName)
-      .replace(/{epithet}/g,      epithet)
-      .replace(/{seasons}/g,      String(seasons))
-      .replace(/{defenses}/g,     String(defenses))
-      .replace(/{titleWins}/g,    String(titleWins))
-      .replace(/{mvpCount}/g,     String(mvpCount))
-      .replace(/{bestMatchCount}/g, String(bestMatchCount))
-      .replace(/{warWins}/g,      String(warWins))
-      .replace(/{maxSingleReign}/g, String(maxSingleReign));
+    // プレースホルダ一括置換の引数(P6-14以前の fill() と同一の9項目・同一の値)
+    const vars = {
+      orgName, epithet,
+      seasons:          String(seasons),
+      defenses:         String(defenses),
+      titleWins:        String(titleWins),
+      mvpCount:         String(mvpCount),
+      bestMatchCount:   String(bestMatchCount),
+      warWins:          String(warWins),
+      maxSingleReign:   String(maxSingleReign),
+    };
+    // **PH置換前にdictを通す**(_wmFillWithDict の契約。置換後の完成文は辞書キーと
+    // 一致しないため、順序を逆にすると必ずfail-openする)
+    const T = (tpl) => _wmFillWithDict(dict, tpl, vars);
 
     // ── 導入文 ──
+    const I = TBL.intro;
     let intro;
-    if (retiredAsChamp && maxSingleReign >= 10) {
-      intro = pick([
-        '誰も彼女から王座を奪えなかった。{orgName}の歴史がそれを証明している。',
-        'チャンピオンのまま退いた女がいた。{orgName}は今もその名を讃える。',
-        '{orgName}のリングに、{epithet}として永遠に刻まれた名がある。',
-      ]);
-    } else if (maxSingleReign >= 10) {
-      intro = pick([
-        '{maxSingleReign}度の防衛——その数字だけで語り継がれる女がいた。',
-        '挑戦者たちが来るたび、彼女は応えた。{maxSingleReign}度、続けて。',
-        '長い王座の旅だった。{orgName}のファンはその旅に何度も息を飲んだ。',
-      ]);
-    } else if (seasons >= 10) {
-      intro = pick([
-        '{orgName}の{seasons}シーズンを生きた女がいた。',
-        'デビューから{seasons}シーズン——その足跡を辿ると、{orgName}の歴史が浮かび上がる。',
-        '時代を何度もまたいだ{epithet}の物語。',
-      ]);
-    } else if (titleWins >= 3) {
-      intro = pick([
-        '一度ではなかった。彼女は{titleWins}度、頂点に返り咲いた。',
-        '倒れるたびに立ち上がり、{titleWins}度の戴冠を刻んだ女がいた。',
-        '{epithet}——その名は復活の物語とともにある。',
-      ]);
-    } else if (seasons <= 4) {
-      intro = pick([
-        '短いキャリアだったが、その輝きは今も色褪せない。',
-        '流星のように駆け抜けた{seasons}シーズン。',
-        '長くはなかった。だが、{orgName}のファンは忘れない。',
-      ]);
-    } else {
-      intro = pick([
-        '{orgName}に{seasons}シーズンの足跡を残した{epithet}。',
-        '{epithet}の名は、{orgName}の歴史の一ページに刻まれた。',
-        'ひとつの時代を、この女は確かに生きた。',
-      ]);
-    }
+    if (retiredAsChamp && maxSingleReign >= 10) intro = pick(I.champUnbeaten);
+    else if (maxSingleReign >= 10)              intro = pick(I.longReign);
+    else if (seasons >= 10)                     intro = pick(I.longCareer);
+    else if (titleWins >= 3)                    intro = pick(I.multiTitle);
+    else if (seasons <= 4)                      intro = pick(I.shortCareer);
+    else                                        intro = pick(I.default);
 
     // ── 核心文 ──
+    const C = TBL.core;
     let core;
-    if (defenses >= 20) {
-      core = pick([
-        '通算{defenses}度の防衛——この数字は{orgName}の最高記録として残り続ける。',
-        '{defenses}人の挑戦者を退け続けた女王の治世は、誰の想像をも超えた。',
-      ]);
-    } else if (jtWins >= 1 && titleWins >= 1 && ppvWins >= 1) {
-      core = pick([
-        'ジュニア、PPV、本戦タイトル——あらゆる栄冠を手にした唯一の女だった。',
-        '完全制覇。その二文字が彼女のキャリアをすべて語っている。',
-      ]);
-    } else if (mvpCount >= 3) {
-      core = pick([
-        '{mvpCount}度のMVP受賞は、時代そのものだった証だ。',
-        '三度の年間最優秀——ひとつの時代に、これほど輝き続けた選手はいなかった。',
-      ]);
-    } else if (maxConsecutiveJT >= 3) {
-      core = pick([
-        'ジュニアトーナメント三連覇。その壁を越えた挑戦者は、ついに現れなかった。',
-        '三年連続でトーナメントを制した——それは強さではなく、支配だった。',
-      ]);
-    } else if (maxConsecutivePPV >= 2) {
-      core = pick([
-        '大舞台での連覇——彼女は最も大切な瞬間に、最も強かった。',
-        'PPV連覇の記憶は、{orgName}の伝説として語り継がれる。',
-      ]);
-    } else if (defenses >= 10) {
-      core = pick([
-        '{defenses}度の防衛を積み重ねた王座は、彼女の代名詞となった。',
-        '挑戦者が途絶えることはなかった。それでも彼女は守り続けた。',
-      ]);
-    } else if (bestMatchCount >= 3) {
-      core = pick([
-        '{bestMatchCount}度のベストバウト——試合を芸術に変える才能があった。',
-        '観客が息を飲んだ試合が何度あっただろう。記録がその数を教えてくれる。',
-      ]);
-    } else if (warWins >= 5) {
-      core = pick([
-        '対抗戦{warWins}勝——団体の旗を背負うとき、彼女は別人になった。',
-        '団体間抗争の勝ち星が{warWins}。その数字が彼女の本当の値打ちを示す。',
-      ]);
-    } else if (mvpCount >= 2) {
-      core = pick([
-        '二度の年間最優秀。その年の顔が、二度もこの女だった。',
-        '{mvpCount}度のMVP——一回では終わらなかった。',
-      ]);
-    } else if (titleWins >= 1 && defenses >= 5) {
-      core = pick([
-        '{titleWins}度の戴冠と{defenses}度の防衛が、彼女の実力を雄弁に物語る。',
-        '王座を守ることの難しさを、彼女は体で知っていた。',
-        'チャンピオンとして迎えた防衛戦が{defenses}度——そのたびに彼女は答えを出した。',
-      ]);
-    } else if (mvpCount >= 1) {
-      core = pick([
-        'あの年のMVPは彼女以外に考えられなかった、と誰もが言う。',
-        '年間最優秀選手に選ばれたとき、彼女はただ静かに頷いた。',
-      ]);
-    } else if (jtWins >= 1) {
-      core = pick([
-        'ジュニアトーナメントを制したその日、彼女の名前が{orgName}に刻まれた。',
-        '登竜門を越えた女——その先に何が待つか、誰もが楽しみにしていた。',
-      ]);
-    } else if (ppvWins >= 1) {
-      core = pick([
-        '年末の大舞台を制した夜、彼女は本物だと証明した。',
-        '一番大事な試合で勝てる——それが彼女の最大の強みだった。',
-      ]);
-    } else if (bestMatchCount >= 1) {
-      core = pick([
-        'ベストバウトに選ばれたあの試合——あれだけで十分だ、と言う人もいる。',
-        '一試合が、すべてを語ることがある。彼女の場合がそうだった。',
-      ]);
-    } else if (careerBestMQ >= 80) {
-      core = pick([
-        '生涯最高の試合——そのスコアは今もファンの記憶に焼き付いている。',
-        '数字が嘘をつかないとすれば、彼女は確かに一度、頂点に手が届いた。',
-      ]);
-    } else if (titleWins >= 1) {
-      core = pick([
-        '王座に就いた日の記憶は、{orgName}のファンの中に今も生きている。',
-        '{titleWins}度の戴冠——タイトルを獲ることの難しさを知る者には、その重さがわかる。',
-      ]);
-    } else if (warWins >= 3) {
-      core = pick([
-        '対抗戦に呼ばれると、彼女は必ず応えた。{warWins}勝がその証だ。',
-        '団体間抗争の舞台で輝く女がいた。旗を背負うことを、恐れなかった。',
-      ]);
-    } else if (hasRookie) {
-      core = pick([
-        'デビューした年に新人王を獲ったとき、この女の未来が見えた気がした。',
-        '新人王——その称号が、長いキャリアの最初の一文字だった。',
-      ]);
-    } else {
-      core = pick([
-        'タイトルには届かなかった。それでも{orgName}のリングに欠かせない女だった。',
-        '王座がなくても、彼女がいるカードには力があった。',
-        'スポットライトが当たらない日も、彼女はリングに立ち続けた。',
-      ]);
-    }
+    if (defenses >= 20)                                    core = pick(C.defenses20);
+    else if (jtWins >= 1 && titleWins >= 1 && ppvWins >= 1) core = pick(C.grandSlam);
+    else if (mvpCount >= 3)                                core = pick(C.mvp3);
+    else if (maxConsecutiveJT >= 3)                        core = pick(C.juniorThreepeat);
+    else if (maxConsecutivePPV >= 2)                       core = pick(C.ppvBackToBack);
+    else if (defenses >= 10)                               core = pick(C.defenses10);
+    else if (bestMatchCount >= 3)                          core = pick(C.bestMatch3);
+    else if (warWins >= 5)                                 core = pick(C.war5);
+    else if (mvpCount >= 2)                                core = pick(C.mvp2);
+    else if (titleWins >= 1 && defenses >= 5)              core = pick(C.titleAndDefenses);
+    else if (mvpCount >= 1)                                core = pick(C.mvp1);
+    else if (jtWins >= 1)                                  core = pick(C.juniorWin);
+    else if (ppvWins >= 1)                                 core = pick(C.ppvWin);
+    else if (bestMatchCount >= 1)                          core = pick(C.bestMatch1);
+    else if (careerBestMQ >= 80)                           core = pick(C.highMQ);
+    else if (titleWins >= 1)                               core = pick(C.titleWin);
+    else if (warWins >= 3)                                 core = pick(C.war3);
+    else if (hasRookie)                                    core = pick(C.rookie);
+    else                                                   core = pick(C.default);
 
     // ── 余韻文 ──
     let closing;
     if (trust >= 80) {
-      const trustPool = {
-        Grappler:   '組み技の重みと人柄の温かさ——{orgName}のファンが愛したのは、そのどちらでもあった。',
-        Striker:    '打撃の鋭さとは裏腹に、彼女はファンに愛され続けた。',
-        Submission: '関節技の冷徹さとは別に、観客の心を掴む何かが彼女にはあった。',
-        Aerial:     '空を舞う姿と、リングを降りたときの笑顔——どちらも本物だった。',
-        Allround:   'どんな試合でも手を抜かなかった。だからファンは彼女を信じた。',
-        Brawler:    '荒々しいファイトと、それに似合わない人望——{orgName}のファンは知っていた。',
-      };
-      closing = trustPool[style] || trustPool.Allround;
+      closing = TBL.closingTrust[style] || TBL.closingTrust.Allround;
     } else if (mediaCount >= 1) {
-      closing = pick([
-        'リングの外でも、彼女の存在感は揺るがなかった。',
-        'メディアの場でも、彼女は{orgName}の顔だった。',
-      ]);
+      closing = pick(TBL.closingMedia);
     } else {
-      const stylePool = {
-        Grappler:   ['その重厚なグラップリングが、挑戦者たちを次々と沈めた。', '組み合い、制する——それが彼女のすべてだった。', 'グラップラーとしての矜持を、最後まで貫いた。'],
-        Striker:    ['鋭い打撃で幾多の名勝負を生み出した闘士だった。', '打撃の一瞬に、彼女はすべてを込めた。', 'ストライカーとして、彼女はリングに嘘をつかなかった。'],
-        Submission: ['極めの技術は芸術の域に達し、対戦相手に恐れられた。', '相手が声を出す前に、勝負はもう終わっていた。', 'サブミッションの冷徹さが、彼女の強さの核心だった。'],
-        Aerial:     ['誰にも捉えられないスピードで、観客を魅了し続けた。', '飛び続けた。それが彼女の答えだった。', '空中に描いた軌跡は、{orgName}の宝だ。'],
-        Allround:   ['あらゆる局面に対応する万能さが、長きにわたる活躍を支えた。', 'どんな相手にも、どんな状況にも、対応できた。', 'オールラウンダーとして、彼女に死角はなかった。'],
-        Brawler:    ['荒々しくも力強いファイトで、会場を沸かせ続けた。', '荒削りでいい——観客が熱くなるなら、それでいい。そんな女だった。', 'ブロウラーの本能が、彼女のキャリアを彩った。'],
-      };
-      closing = pick(stylePool[style] || stylePool.Allround);
+      closing = pick(TBL.closingStyle[style] || TBL.closingStyle.Allround);
     }
 
-    return fill(`${intro}${core}${closing}`);
+    // 連結様式もテンプレ経由(JA=区切り無しで直結 / EN=半角スペース区切り)
+    return _wmFillWithDict(dict, TBL.join, {
+      intro: T(intro), core: T(core), closing: T(closing),
+    });
   },
 
   /** v2.0 HOF拡張: 共通HOFエントリ構築（プレイヤー/NPC両対応）
@@ -21603,6 +21502,8 @@ Engine.awards = {
       state.rngSeed, fighter.id, 0xEF17
     ));
     entry.epithet = Engine.awards.generateEpithet(recPost, fighter, epithetRng);
+    // i18n P6-14: **dictを渡さない**(=JAのまま永続化する)。表示点は保存値をそのまま
+    // 出さず、この entry に残っている素材から dict 付きで再生成する(D-P6-4)。
     entry.biography = Engine.awards.generateBiography(entry);
     return entry;
   },

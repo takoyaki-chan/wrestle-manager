@@ -1,5 +1,73 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-14 — 殿堂入り語り文のEN化(dict-opts+表示時再生成)+`*_TEMPLATES`全数突合+不定冠詞の機械検査（2026-09-04・worktree agent-ac324efc0ee382fc0）
+
+指示書はspecs/i18n-runtime-spec-v1.0.md §12-5がP6-10で起票した3件のうち、1(`generateBiography`)と2(`*_TEMPLATES`の全数突合)。開始前にworktreeブランチをmain先端(631d1bd、P6-10まで)へfast-forward済み。`src/index.html`のCSS・`ui-render.js`の名前ラベル・`i18n.js`の`pnSurname`は並行エージェントの領分のため不触。
+
+**訳出85行**(すべてtemplate-ledger。語り文84 + 連結様式1)。**台帳3本とも未訳0を維持**(ui 3,530 / template 1,614 / dialogue 16,674)。
+
+### 1. 殿堂入りの語り文(`Engine.awards.generateBiography`、85本)
+
+異名(P6-10)と同じ「永続JA」族だが、**3文を連結し終えた完成文が`entry.biography`としてG(殿堂入りエントリ)へ永続する**ため、表示点で辞書を1回引く手が使えない(辞書キーは分解前の各文で、完成文とは一致しない)。永続値は変えないまま、**表示点で保存されている素材から作り直す**方式で解決した。
+
+- **文プールを`data.js`のトップレベル`HOF_BIOGRAPHY_TEMPLATES`へ移設**。P6-10までは`generateBiography()`の**関数本体に直書きされた配列リテラル**で、§10-2が禁じた「関数の中の配列はどの抽出器からも永久に見えない」型そのものだった。`test/i18n-extract-templates.js`の`TARGET_TABLES`へ追加(files欄=`HOF_BIOGRAPHY_TEMPLATES`)
+- **配列の並び順・要素数は不変**。`pick()`が`(entry.id * 31 + seasons) % arr.length`で添字を引くため、並びが変わると保存済みの語り文と一致しなくなる
+- `generateBiography(entry, dict)`をdict-opts化。各文を**PH置換前に**`_wmFillWithDict(dict, tpl, vars)`(P6-10新設)へ通してから連結する。`vars`は旧`fill()`と同一の9項目・同一の値
+- **連結様式もテンプレ**(`join: '{intro}{core}{closing}'` → EN `'{intro} {core} {closing}'`)。JAは区切り無しで直結、ENは文間に半角スペースが入る。3文×84通りの直積を1本の完全文テンプレにはできないため、連結の様式そのものを1キーにするのが唯一の解だった
+- **`_buildHofEntry`は今までどおりdictを渡さない**(=保存されるのは常にJA。D-P6-4「セーブに書く値は変えない」)
+- **表示点(`ui-render.js: showHofDetail`、grepで消費点は1箇所のみと確認)**: `h.biography`をそのまま出さず、① dict無し(JA)で再生成 → ② 保存値と1バイト一致するかを確かめる(=素材が揃っていてテンプレも保存当時と同一である証拠) → ③ 一致したときだけ`WM_I18N.t`+英訳済み異名(`_epithetLabel`)で作り直した文を出す → ④ 一致しない(旧セーブで素材が欠けている/テンプレが変わった)なら保存値を優先、というfail-open付きの自己検証型。JAモードでは③の結果が①と同一(t()はja素通し+PH置換のみ、`_epithetLabel`もja素通し)なので**日本語版の表示は1バイト不変**
+
+**JA同一性の検証(2段構え)**:
+
+1. **旧実装との全数突合**: 着手前の`generateBiography`を凍結コピーとして切り出し、全分岐(導入6 × 核心19 × 余韻3系統)を代表値・境界値の直積で**606,256通り**回して新旧を突合 → **不一致0**。dict=ja素通しスタブを渡した経路も同時に比較して同値を確認
+2. **実データでの往復検証(VM)**: `node test/auto-sim.js 40 42`に`_buildHofEntry`のフックを挿して**実際に生成された殿堂エントリ38件**を収集し、本物の`src/i18n.js`+生成済み辞書を読み込んで表示点と同じ手順を再現 → JA再生成==保存値 **38/38一致**、JA表示文==保存値 **38/38一致**、EN表示は**日本語残り0件・i18n-miss 0件**。素材が無い旧セーブ形のエントリは保存値がそのまま出ることも確認
+
+**英訳の方針**: `docs/en-kuroda-style-draft-v0.1.md`の紙面本文(黒田署名ではない無署名デスクの声)。数値PHは規則23/24/25に従い、`{titleWins}度の戴冠`→`The title column reads {titleWins}`(既訳の引退記事と同じ device を踏襲)、`{seasons}シーズン`→`a {seasons}-season career`(ハイフン限定用法)のように**単複・冠詞が充填値で変わらない形**へ逃がした。用語は既訳に揃えた(ジュニアトーナメント=Junior Tournament / 対抗戦=interpromotional / 年間最優秀選手=Wrestler of the Year / 新人王=Rookie of the Year / 団体王座=promotion title / 試合評価=rated)。
+
+### 2. `*_TEMPLATES`族の全数突合(§12-5-2の宿題)
+
+data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`を全件列挙して実値を評価**し、3台帳(ui/template/dialogue)の収録キー+固有名詞辞書(`src/lang-en-names.js` 365キー)と突き合わせた。「兄弟表は対象なのに本表だけ漏れている」型は**3件**見つかった。
+
+| 表 | 未収録 | 消費点 | 状態 |
+|---|---|---|---|
+| `UNIFIED_TITLE_TEMPLATES` | 96 | `Engine.newspaper.composeUnifiedTitleArticle(type, data, seed)`(management.js:31360) | **dict引数なし**。lead+profile+reign+closingの4断片を`join('')`で連結 |
+| `CHAMPION_CHANGE_TEMPLATES` | 26 | `composeChampionChangeBody(ev, seed)`(management.js:31326) | **dict引数なし**。同じ4断片連結 |
+| `PPV_HYPE_TEMPLATES` | 10 | `Engine.ppv.generateHype(match)` → `match.hype`(Gへ永続) | **dict引数なし**。かつ選出が`Math.random()`なので**表示時再生成が使えない**(語り文の手が効かない唯一の族) |
+| `DRAFT_PLAYER_RESULT_PARTS` | 14 | `composeDraftPlayerResult(org, fighters, seed)`(ui-common.js:6528から呼ぶ) | **dict引数なし**。lead+featured+closingの断片連結 |
+
+**この4件は台帳へ載せるだけでは無意味**なので本バッチでは着手しなかった(指示書の「規模が大きければ次バッチへ」に該当)。消費点がdictを一切持たないため、辞書に訳文を入れても引かれない。必要なのは①composerのdict-opts化 ②断片連結の`join`テンプレ化(語り文と同型) ③146行の英訳、の3点セット。`composeUnifiedTitleArticle`/`composeChampionChangeBody`は呼び出し元が`Engine.newspaper.generate()`(ローカル`dict`あり)なので配線自体は素直。`PPV_HYPE_TEMPLATES`だけは`match.hype`に完成文を焼く設計を`hypeTpl`+`hypeVars`の併記へ変える必要がある(P6-10の`headlineJa`と同じ追加フィールド方式)。
+
+**それ以外の未収録表(54表・約1,445行)**も同時に洗い出した。内訳は「Engine/UIが直に読む地の文・ラベルのプール」で、`*_TEMPLATES`族とは別の性格を持つ:
+
+- **大物**: `SNAPSHOT_TEXTS` 276 / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / `ATMOSPHERE_TEXTS` 33
+- **中小**: `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `COACH_ABILITY_CATALOG` 13 / `SPECIAL_EVENT_INTRO`のUI部分 13 / `PROMO_EVENT_NAMES` 12 / `CAMP_FLAVOR_TEXTS` 12 / `COACH_FLAVOR_DEFS` 11 / `GLIMPSE_A_THRESHOLDS` 11 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8 ほかラベル表20数個(各1〜6行)
+
+EN走破が出す「JA exposure by screen」(screen-week=56 / screen-shachoshitsu=55 / screen-log=51 / screen-show=39 / screen-newspaper=33 …)の主因はこの層。i18n-missには出ない(消費点がt()を通っていないため、辞書を引く機会そのものが無い)ので、**残作業量は`i18n-miss 0`では測れない**——この突合表が現時点の唯一の物差しになる。
+
+### 3. プレースホルダ直前の不定冠詞の機械検査(規則25)
+
+`test/i18n-build-dict.js` / `i18n-build-template-dict.js` / `i18n-build-dialogue-dict.js` の3本に`ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i`の検査を追加した(違反でexit 1・辞書は生成しない)。`a {n}` は充填値が8/11/18のとき"an"が正しくなり、`a {name}` は名前の頭音で割れる。**ハイフン付きの限定用法(`a {n}-match history` = 規則24の逃がし方)だけは常に"a"で正しいので許可**する — `}`の直後がハイフンかどうかで機械的に区別する。
+
+既存台帳の違反は**6件**あり、すべて書き直した:
+
+| 台帳 | 検出 | 修正 |
+|---|---|---|
+| ui | `A {label} offer from {outlet}` | `{label} offer from {outlet}`(冠詞を落として見出し語法へ。`{label}`は`TALENT_ACTIVITY_LABELS`の値でCM出演/グラビア撮影/…と頭音が割れる) |
+| template ×4 | `a {bestMQ}`(因縁ナラティブ4本) | `a match rated {bestMQ}`(§1-7の固定対訳「試合評価 → rated {mq}」へ寄せた。`{bestMQ}`は数値なので "an 88" が正しくなる) |
+| template ×1 | `Watching a {playerName} match …`(FAN_OPINIONS) | `Watching {playerName}'s matches …`(規則26の所有格へ逃がす) |
+
+検査が実際にexit 1で落ちること(=生成を止めること)を、`join`行へ意図的に`a {intro}`を入れて往復確認済み。
+
+### 4. 検証
+
+`node --check` 全触りファイルOK。`node test/ja-golden.js` 基準と**完全一致**(hash=`6b3d05c8…`、`--update`不使用)。3つのbuild-dict green・**未訳0**(ui 3,530 / template 1,614 / dialogue 16,674)。`npm test` **260/260 green**。`node test/auto-sim.js 20 42` **ALL CLEAR**(semantic fingerprint `37bbd0cd` = P6-10と同一)。`npm run test:ui:walkthrough` **PASS**(ja digest `1052faa82eaf7991` **不変**)。`npm run test:ui:walkthrough:en` **PASS**(i18n-miss **0** 維持)。`node test/i18n-ratchet.js` は data.js +84 / management.js −84 の**差引ゼロの移設**なので`--update`で基準更新(総数は不変)。
+
+### 5. 新たな発見
+
+1. **`PPV_HYPE_TEMPLATES`は「表示時再生成」が効かない唯一の永続族**。`Engine.ppv.generateHype`が`Math.random()`で1本引き、完成文を`match.hype`へ焼く。語り文のような決定的関数ではないため、再生成すると別の文が出る。EN化するには`hypeTpl`+`hypeVars`を併記する形(P6-10の`headlineJa`と同じ追加フィールド方式)しかない
+2. **`i18n-miss 0`は「英語化が終わった」の指標ではない**。missは「t()を通ったが辞書に無い」ときにしか出ないので、**そもそもt()を通っていない層(上記54表)は永久にmissに出ない**。EN走破の「JA exposure by screen」と本バッチの突合表を併読するのが正しい進捗の測り方
+3. **`{epithet}`の英訳を語り文へ差し込む経路が必要だった**。`generateBiography`は`entry.epithet`をそのまま`{epithet}`へ埋めるため、表示点でentryを浅くコピーして`epithet`だけ`_epithetLabel()`の戻り値へ差し替えている。JA同一性チェックは差し替え**前**の生JAで行う(差し替え後で比較すると、ENモードでは必ず不一致になって保存値フォールバックへ落ちてしまう)
+
 ## 🌐 Stage B P6-10 — P6-8発見の未配線3系統(雑誌/TV見出し・殿堂入り異名・相関図EMOTION_TEXTS)の配線と英訳+同型2件（2026-09-04・worktree agent-a0fa7464c9b010362）
 
 指示書はspecs/i18n-runtime-spec-v1.0.md §11-5がP6-8で起票した「3抽出パイプラインいずれからも見えない/Engineがdictを持たない」3系統の配線と英訳。開始前にworktreeブランチをmain先端(a349aaf、P6-8=75e1209まで)へfast-forward済み。`i18n/dialogue-ledger.json` / `src/lang-en-dialogue.js` / `test/i18n-extract-dialogue.js` / `src/kuroda-text.js` は指示どおり不触(並行バッチ⑯の領分)。
