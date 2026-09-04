@@ -60,6 +60,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "40年見てきた中で、{name}クラスの選手にどう対処するかで団体の格が問われる",
+    "en": "Forty years on this beat, and how a promotion handles a wrestler of {name}'s class is what its standing gets judged on.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "40年見てきた中で、こういうカードでベテランが負けると、それは時代の節目になる",
     "en": "Forty years on this beat, and when the veteran loses a card like this one, it marks a turn in the era.",
     "files": [
@@ -220,6 +230,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "40年見てきた中で、人気{pop}は実力に先行することがある。{name}が伸びれば手がつけられなくなる",
+    "en": "Forty years on this beat, and a popularity of {pop} can run ahead of ability. If {name} grows into it, nobody will be able to handle her.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "40年見てきた中で、優勢期に手を抜いて転落した団体は数えきれない。{playerName}がそうならない保証はどこにもない",
     "en": "Forty years on this beat, and I have lost count of the promotions that eased off while ahead and fell. Nothing guarantees {playerName} will not be one of them.",
     "files": [
@@ -297,6 +317,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "40年見てきた中で、総合力{ovr}と人気{pop}を両立する選手は一握りだ。{name}はその一握りに入っている",
+    "en": "Forty years on this beat, and the wrestlers who hold an Overall of {ovr} together with a popularity of {pop} are a handful. {name} is in that handful.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -1640,6 +1670,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{matches}度の対戦、それでも互いの存在は確かに意識し合っている。本紙としては、本格対決の機が熟すのを待つばかりである。",
+    "en": "A record of {matches} between them, and each is plainly conscious of the other. This paper can only wait for the moment the real meeting is ready.",
+    "files": [
+      "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{matches}度の対戦、一度の握手もない",
     "en": "A {matches}-match record, and not one handshake",
     "files": [
@@ -1870,6 +1910,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}——総合力{ovr}、人気{pop}。こちらのエースと真正面からぶつかれる数少ない相手だ",
+    "en": "{name} — an Overall of {ovr}, a popularity of {pop}. One of the few who can meet your ace head-on.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}、{age}歳。人気{pop}という数字が、すでに観客の評価を物語っている",
     "en": "{name}, age {age}. A popularity figure of {pop} already tells you how the crowd has graded her.",
     "files": [
@@ -1960,6 +2010,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}、人気{pop}。中堅以上の実力に加えてこの集客力。厄介な存在だ",
+    "en": "{name}, popularity {pop}. Ability above the middle of the card, and a draw on top of it. An awkward one to deal with.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}、古巣への一矢――解雇{weeksSinceFired}週で迎えた邂逅",
     "en": "{name} strikes back at her old side — {weeksSinceFired}-week wait",
     "files": [
@@ -2002,6 +2062,16 @@
   {
     "key": "{name}、総合力+{ovrGain}。成長曲線が急すぎて、来季にはエース級になっていてもおかしくない",
     "en": "{name}, Overall up {ovrGain}. The curve is steep enough that ace class next season would surprise nobody.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}、総合力{ovr}で人気{pop}。実力と人気のバランスが良く、どのカードにも組み込める",
+    "en": "{name}, an Overall of {ovr} on a popularity of {pop}. The balance between ability and name is good, and she fits anywhere on a card.",
     "files": [
       "KURODA_SPOTLIGHT"
     ],
@@ -2340,10 +2410,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}の人気{pop}は侮れない。今のうちに成長を止めたいところだが",
+    "en": "A popularity of {pop} is not to be dismissed with {name}. Stopping her growth while it is still possible would be the thing to do.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の人気{pop}は数字以上の意味を持つ。集客力こそが団体を支える",
+    "en": "A popularity of {pop} means more for {name} than the figure itself. Drawing power is what holds a promotion up.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の人気{pop}は脅威だ。実力もそれなりにある。舐めてかかると痛い目を見る",
+    "en": "A popularity of {pop} makes {name} a threat. The ability is there too. Take her lightly and it costs you.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}の功績を称え、殿堂入り",
     "en": "{name} honored with a Hall of Fame place",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の数字は中堅以上を保証している。{orgName}の柱として機能しているのは間違いない",
+    "en": "The numbers guarantee {name} a place above the middle of the card. She works as a pillar of {orgName}, and there is no doubt about that.",
+    "files": [
+      "KURODA_SPOTLIGHT"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2412,6 +2522,36 @@
   {
     "key": "{name}は{age}歳。試合経験を重ねるごとに化けていくタイプで、今期の伸び方は警戒に値する",
     "en": "{name} is {age}. She turns into a different wrestler with every match she adds, and the way she has grown this season deserves caution.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}は人気{pop}。まだ実力は追いついていないが、集客面では無視できない",
+    "en": "{name}, popularity {pop}. The ability has not caught up yet. On the draw, she cannot be ignored.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}は人気{pop}。総合力はまだ発展途上だが、ファンを呼べるのは才能の証だ",
+    "en": "{name}, popularity {pop}. The Overall is still on its way up. Being able to bring fans in is a talent of its own.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}は人気{pop}が先行している。実力が追いついた時が本当の脅威になる",
+    "en": "With {name}, popularity {pop} has gone out ahead. The real threat arrives when the ability catches up.",
     "files": [
       "KURODA_SPOTLIGHT"
     ],
@@ -2900,6 +3040,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{orgName}の人気看板であり実力のエース。{name}はどちらの意味でも団体の顔だ",
+    "en": "The name on the banner at {orgName}, and the ace on ability as well. {name} is the face of the promotion in both senses.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{orgName}の人気看板は{name}。総合力は発展途上だが、カリスマ性は数字に出ている",
+    "en": "The name that draws at {orgName} is {name}. The Overall is still on its way up; the charisma is showing in the numbers.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{orgName}の新人{name}がデビューした。結果は{result}。荒削りな部分は目についたが、体の使い方に{age}歳とは思えない下地がある。複数のスカウトが入団前から動いていたという情報もあり、獲得競争の裏側込みで注目されていた一人だ。今後の伸び方を、業界が黙って見ている段階に入った。",
     "en": "A rookie at {orgName}, {name}, made her debut. The result: {result}. The rough edges were easy to spot, but there is groundwork in how she uses her body that does not read as {age}. More than one scout was said to be moving on her before she signed, and the competition behind the signing was part of why she was watched. How she grows from here is something the business is now watching in silence.",
     "files": [
@@ -2912,6 +3072,16 @@
   {
     "key": "{orgName}の未来を背負うのは{name}かもしれない。現時点ではまだ脅威未満だが、その日は遠くない",
     "en": "The future of {orgName} may end up resting on {name}. She is short of a threat today. That day is not far off.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{orgName}の看板、{name}。総合力{ovr}に人気{pop}——実力と集客力を兼ね備えた正真正銘のエースだ",
+    "en": "{name} carries the banner at {orgName}. An Overall of {ovr} on a popularity of {pop} — an ace in the full sense, ability and draw both.",
     "files": [
       "KURODA_SPOTLIGHT"
     ],
@@ -2934,6 +3104,16 @@
     "en": "Pride of {orgName} — interpromotional: {milestone}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{orgName}の集客の要は{name}。総合力{ovr}と伸びしろもある。要注意だ",
+    "en": "The draw at {orgName} turns on {name}. An Overall of {ovr}, and room left to grow. Worth watching closely.",
+    "files": [
+      "KURODA_SPOTLIGHT"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4754,6 +4934,66 @@
     "en": "{stamp}. {turns} turns, and {winner} ({winnerOrg}) took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{streakAbs}回連続で負けている。同じやり方で同じ相手に勝てると思っているのだろうか",
+    "en": "Beaten {streakAbs} times in a row. Do they still believe the same method beats the same opponent?",
+    "files": [
+      "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{streakAbs}連敗。そろそろ「次こそは」以外の言葉が聞きたいものだが",
+    "en": "{streakAbs} losses in a row. I would like to hear something other than \"next time for sure\" by about now.",
+    "files": [
+      "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{streakAbs}連敗。もう対策とか分析とかではなく、根本的に何かを変えないと",
+    "en": "{streakAbs} losses in a row. This has gone past countermeasures and analysis. Something at the root has to change.",
+    "files": [
+      "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{streakAbs}連敗。勝てない相手に何度挑んでも結果は同じだ。アプローチを変えるべきだろう",
+    "en": "{streakAbs} losses in a row. Throw yourself at an opponent you cannot beat as often as you like; the result comes out the same. The approach is what needs changing.",
+    "files": [
+      "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{streakAbs}連敗中。もう驚かなくなってきたのが一番怖いところだ",
+    "en": "{streakAbs} losses in a row as things stand. The frightening part is that it has stopped being a surprise.",
+    "files": [
+      "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{streakAbs}連敗中。本紙としては、もう「相性」では片付けられない数字だと書いておく",
+    "en": "{streakAbs} losses in a row. This paper will put it on record: that is no longer a number the word matchup covers.",
+    "files": [
+      "KURODA_WAR_RECORD"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9660,6 +9900,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "対策なしで{name}に当たれば、興行ごと持っていかれる。総合力{ovr}に人気{pop}は反則だ",
+    "en": "Draw {name} without a plan and she takes the whole show with her. An Overall of {ovr} on a popularity of {pop} is not fair on anyone.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "将来の脅威——{name}。まだ荒削りだが、このまま育てば{orgName}の次期エースだろう",
     "en": "A threat in waiting — {name}. Rough still, and on this path she is the next ace at {orgName}.",
     "files": [
@@ -10440,6 +10690,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "数字は嘘をつかない。{name}の総合力{ovr}・人気{pop}はトップクラスの証だ",
+    "en": "The numbers do not lie. An Overall of {ovr} and a popularity of {pop} put {name} in the top class.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "数字は嘘をつかない。{name}は今のうちに対策を打つべき若手だ。来季には手遅れかもしれない",
     "en": "The numbers do not lie. {name} is the young one to plan against now. Next season may be too late.",
     "files": [
@@ -10484,6 +10744,16 @@
     "en": "The numbers do not lie. Being {selfWins}-{selfLosses} up runs straight into confidence in the ring.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "数字は嘘をつかない。{streakAbs}連敗は実力差の証明だ。認めることから始めるべきだろう",
+    "en": "The numbers do not lie. {streakAbs} losses in a row is proof of a gap in ability. Admitting that is where this starts.",
+    "files": [
+      "KURODA_WAR_RECORD"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -10880,6 +11150,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "未対戦、それでも互いの存在は確かに意識し合っている。本紙としては、本格対決の機が熟すのを待つばかりである。",
+    "en": "They have never met, and each is plainly conscious of the other. This paper can only wait for the moment the real meeting is ready.",
+    "files": [
+      "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "未来のエース候補同士。ここでの経験が3年後に効いてくる",
     "en": "Two candidates to be aces one day. What they take out of this shows up three years from now.",
     "files": [
@@ -10902,6 +11182,16 @@
   {
     "key": "本紙としては、{name}の成長は今季最大の発見の一つだと書いておく。総合力+{ovrGain}は偶然では出せない数字だ",
     "en": "This paper will put it on record: the growth of {name} is one of the season's largest finds. Overall up {ovrGain} is not a number that comes out by accident.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "本紙としては、{name}は{orgName}そのものを背負う存在だと書いておく。総合力{ovr}、人気{pop}——この組み合わせは反則だ",
+    "en": "This paper will put it on record: {name} carries {orgName} itself. An Overall of {ovr}, a popularity of {pop} — that combination is not fair on the rest of them.",
     "files": [
       "KURODA_SPOTLIGHT"
     ],
@@ -11147,6 +11437,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "本紙は{name}を要警戒人物リストに入れておく。総合力{ovr}に人気{pop}は十分に脅威だ",
+    "en": "This paper puts {name} on the list of names to watch. An Overall of {ovr} on a popularity of {pop} is threat enough.",
+    "files": [
+      "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -12184,6 +12484,16 @@
     "en": "{name} out {weeks} weeks — {titleName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "現在{streakAbs}連敗中。そろそろ真剣に原因を考えたほうがいい",
+    "en": "{streakAbs} losses in a row as things stand. It is about time somebody looked seriously at why.",
+    "files": [
+      "KURODA_WAR_RECORD"
     ],
     "count": 1,
     "hasPlaceholder": true,

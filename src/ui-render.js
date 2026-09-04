@@ -8552,6 +8552,10 @@ function _npRenderPage2() {
             wins: warStats.wins,
             losses: warStats.losses,
             streak: signedStreak,
+            // i18n P4-7: loseStreak プールは連敗数を Math.abs(d.streak) で出していたが、
+            // 計算式入りの補間はテンプレ正規化できず EN で JA 文のまま出ていた。
+            // 絶対値をここで先に作り、プール側は素の {streakAbs} を読むだけにする。
+            streakAbs: Math.abs(signedStreak),
           }, WM_I18N.t);
         } catch(e) {}
       }
@@ -8741,9 +8745,15 @@ function _npRenderPage2() {
         else if (ageNum <= 32) poolKey = 'midCareer';
         else poolKey = 'veteran';
       }
+      // i18n P4-7: 旧 star プールは1エントリ内で総合力90/75の三項分岐を持っており、
+      // テンプレ正規化できず EN で JA 文のまま出ていた。帯ごとの独立プールへ分割済みで、
+      // ここでは帯キーの解決だけを行う(境界値の定義は kurodaSpotlightStarKey 側)。
+      if (poolKey === 'star' && typeof kurodaSpotlightStarKey === 'function') {
+        poolKey = kurodaSpotlightStarKey(fOvr);
+      }
       let comment = '';
       if (typeof KURODA_SPOTLIGHT !== 'undefined') {
-        const pool = (KURODA_SPOTLIGHT[poolKey]) || (KURODA_SPOTLIGHT.star) || [];
+        const pool = (KURODA_SPOTLIGHT[poolKey]) || (KURODA_SPOTLIGHT.starSolid) || [];
         if (pool.length > 0) {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, f.id, 0xC3A1));
           const fn = Engine.rng.pick(rng, pool);
