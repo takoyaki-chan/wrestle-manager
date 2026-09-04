@@ -823,6 +823,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "@分析派",
+    "en": "@analyst",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "@熱狂派",
+    "en": "@diehard",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "@辛口派",
+    "en": "@critic",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "A1位",
     "en": "A Block winner",
     "files": [
@@ -1097,6 +1127,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "OVR を強く意識した、自負心の高い者同士の集まりに見えます。",
+    "en": "A group of proud wrestlers with one eye on each other's OVR.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "OVR<strong>{ovr}</strong>",
     "en": "OVR <strong>{ovr}</strong>",
     "files": [
@@ -1184,7 +1226,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "PPV GRAND FINAL テレビ中継中…",
@@ -1612,6 +1655,16 @@
     "en": "You decided to put {a} and {b}, the two leaders, in the main event of the next show.",
     "files": [
       "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}と{b}。{n}度のぶつかり合いが、二人の関係を形づくってきた。",
+    "en": "{a} and {b}. A {n}-match history has shaped what these two are to each other.",
+    "files": [
+      "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2129,16 +2182,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "{name} condition",
-    "en": "{name} condition",
-    "files": [
-      "factions.js"
-    ],
-    "count": 5,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
     "key": "{name} trust",
     "en": "{name} trust",
     "files": [
@@ -2289,22 +2332,12 @@
     "hasProperNoun": false
   },
   {
-    "key": "{name} メンバー間 bond",
-    "en": "{name} member-to-member bond",
-    "files": [
-      "factions.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
     "key": "{name} メンバー間 絆",
     "en": "{name} member-to-member bond",
     "files": [
       "factions.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -2335,6 +2368,16 @@
       "factions.js"
     ],
     "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name} 体調",
+    "en": "{name} condition",
+    "files": [
+      "factions.js"
+    ],
+    "count": 5,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -3469,7 +3512,8 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "{org} が獲得",
@@ -3702,10 +3746,20 @@
     "hasProperNoun": false
   },
   {
-    "key": "{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 bond <strong>+1〜+3</strong>",
-    "en": "{plan} will be booked. Both factions' momentum <strong>+5 to +8</strong>/member-to-member bond <strong>+1 to +3</strong>",
+    "key": "{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 絆 <strong>+1〜+3</strong>",
+    "en": "{plan} will be booked. Both factions' momentum <strong>+5 to +8</strong> / member-to-member bond <strong>+1 to +3</strong>",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{playerName}が対戦成績で先行している。{rivalName}としては反撃の機会を作りたいところだ。",
+    "en": "{playerName} leads the series. {rivalName} will be looking for a chance to hit back.",
+    "files": [
+      "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3724,6 +3778,26 @@
   {
     "key": "{rank}位 {name} {pts}",
     "en": "#{rank} {name} {pts}",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rivalName}が対戦成績で優位。{playerName}としては流れを変える一戦が必要になる。",
+    "en": "{rivalName} holds the edge in the series. {playerName} needs a win that changes the run of things.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rivalName}の看板。総合力{ovr}は当面の脅威。",
+    "en": "{rivalName}'s marquee name. An Overall of {ovr} is a threat for the foreseeable future.",
     "files": [
       "ui-render.js"
     ],
@@ -3989,7 +4063,8 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "{w}勝{l}敗",
@@ -4393,8 +4468,48 @@
     "hasProperNoun": false
   },
   {
+    "key": "……この借り、必ず返してやる",
+    "en": "...I will pay this back. Count on it.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……どうだ、これが実力の差だ",
+    "en": "...See that? That's the gap between us.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "……わかった",
     "en": "...All right",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……覚えてなさいよ。次は絶対に、私が勝つ",
+    "en": "...Remember this. Next time, I win.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…挑戦状を叩きつける",
+    "en": "...Throw down a challenge",
     "files": [
       "ui-common.js"
     ],
@@ -6621,6 +6736,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "この勝利を、次につなげる。",
+    "en": "I'll carry this win into the next one.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "この合同企画、社長としてどう扱いますか？",
     "en": "How do you handle this joint project?",
     "files": [
@@ -7075,6 +7200,16 @@
     "en": "Save often. Export your saves often too.",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "これで、はっきりさせた",
+    "en": "That settles it.",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7586,6 +7721,36 @@
   {
     "key": "よろしいですか？",
     "en": "Are you sure?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "よろしく。",
+    "en": "Good to be here.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "よろしくお願いします。",
+    "en": "I look forward to working with you.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "よろしくお願いします！",
+    "en": "Looking forward to working with you!",
     "files": [
       "ui-common.js"
     ],
@@ -9343,6 +9508,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "チームとして後押しする",
+    "en": "Back them as a team",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "テクニシャン",
     "en": "Technician",
     "files": [
@@ -9411,7 +9588,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "データの読み込みに失敗しました。ファイルが破損している可能性があります。",
@@ -9657,6 +9835,30 @@
     "count": 4,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "ヒール派閥として承認。絆 +3〜+4、次回興行の集客が一時的に上がる。",
+    "en": "Approve as a heel faction. Bond +3 to +4, and a one-time bump in attendance at the next show.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
+    "key": "ヒール派閥として承認する",
+    "en": "Approve as a heel faction",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
   },
   {
     "key": "ピーク",
@@ -10281,7 +10483,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "メンバー間 bond",
+    "key": "メンバー間 絆",
     "en": "Member-to-member bond",
     "files": [
       "factions.js"
@@ -10473,6 +10675,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "リングで決めたい。",
+    "en": "I want to settle it in the ring.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "リングで語り合おう、と<span class=\"marker danger\">挑戦状</span>を突きつけてきた。",
     "en": "She has thrust a <span class=\"marker danger\">challenge letter</span> at you: let's settle it in the ring.",
     "files": [
@@ -10571,6 +10783,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "リーダーへの一方向の追従が強く、トップダウンの色が濃いようです。",
+    "en": "The members defer to the leader more than to each other. It looks strongly top-down.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
   },
   {
     "key": "リーダー喪失",
@@ -10921,7 +11145,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "一旦リセット",
@@ -11073,6 +11298,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "上下というより、横の絆で繋がった集まりのようです。",
+    "en": "Less a hierarchy than a circle of friends, bound sideways rather than top-down.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
   },
   {
     "key": "上位3試合で、相手団体の3名と1対1ずつ戦います",
@@ -11277,7 +11514,7 @@
     "hasProperNoun": false
   },
   {
-    "key": "両派閥 メンバー間 bond",
+    "key": "両派閥 メンバー間 絆",
     "en": "Both factions' member-to-member bond",
     "files": [
       "factions.js"
@@ -11468,6 +11705,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "中堅として団体を支える一人。注視すべき存在だ。",
+    "en": "A mid-card regular holding up the promotion. One to keep an eye on.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "中堅上位 — じわじわ登り続けよう",
     "en": "Upper mid-tier — keep climbing, step by step",
     "files": [
@@ -11515,7 +11762,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "中程度の負傷",
@@ -11525,7 +11773,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "中立",
@@ -11571,6 +11820,16 @@
   {
     "key": "主力",
     "en": "Core",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力として団体を支える。試合の質で平均値を引き上げる。",
+    "en": "A main-roster pillar. Her match quality lifts the promotion's average.",
     "files": [
       "ui-render.js"
     ],
@@ -11753,6 +12012,16 @@
   {
     "key": "互いに認め合う",
     "en": "They acknowledge each other",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "互いの実力を認め合った。",
+    "en": "They came away with respect for each other.",
     "files": [
       "ui-common.js"
     ],
@@ -12614,7 +12883,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "他枠で選出済み",
@@ -14206,7 +14476,8 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "前回覇者の{name}も出場圏内に入り、連覇への期待が高まる。",
@@ -14216,7 +14487,8 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "前年 {rank}位",
@@ -14448,7 +14720,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "勝ち越しボーナス +15PT",
@@ -14509,7 +14782,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "勝点 +1",
@@ -14742,6 +15016,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "反主流派の色が濃く、観客を挑発する姿勢が共通しているようです。",
+    "en": "Anti-establishment through and through, and they all like baiting the crowd.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
   },
   {
     "key": "反撃のタッチ！",
@@ -15202,7 +15488,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "周囲の数名が自然と集まっているようです。",
@@ -15818,7 +16105,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "団体記録を塗り替えた。",
@@ -15828,7 +16116,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "団体評価↓ ／ 関係悪化",
@@ -16481,7 +16770,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "好敵手 — 絆・因縁 ともに上昇(相互)",
@@ -16597,6 +16887,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "実力主義として承認。敬意ベースで絆 +2〜+3、士気 -1〜-2。",
+    "en": "Approve as a meritocratic faction. Respect-based bond +2 to +3, morale -1 to -2.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
+    "key": "実力主義のチームとして認める",
+    "en": "Recognize them as a merit-based team",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "実力副官",
     "en": "Backbone",
     "files": [
@@ -16675,7 +16989,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "宣 　 戦",
@@ -17570,7 +17885,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "序章",
@@ -18598,7 +18914,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "担当: {n}/{max}名",
@@ -19243,6 +19560,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "攻めの姿勢を共有する集まりで、メインを取りに行く色が濃いようです。",
+    "en": "They share an aggressive streak and clearly intend to take the main event.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。",
     "en": "This is not a strategy guide. But the stars of this game are the women, not the numbers. Read it back now and then.",
     "files": [
@@ -19342,7 +19671,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "敗北はランクにも影響します。",
@@ -19372,7 +19702,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "敗者",
@@ -20047,6 +20378,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "最高だ！",
+    "en": "Nothing beats this!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "最高ランク",
     "en": "Best Rank",
     "files": [
@@ -20663,6 +21004,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "権威型として承認。求心力と引き換えにロッカー士気が下がる。",
+    "en": "Approve as an authoritarian faction. Cohesion goes up; locker room morale goes down.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "機密指定",
     "en": "Classified",
     "files": [
@@ -21036,6 +21389,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "正式なチームとして認める",
+    "en": "Recognize them as an official team",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "正確な数値",
     "en": "Exact numbers",
     "files": [
@@ -21059,6 +21424,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "正統派として承認。絆 +3〜+4、次回興行の集客が一時的に上がり、メディア露出収益も入る。",
+    "en": "Approve as a babyface faction. Bond +3 to +4, a one-time bump in attendance at the next show, plus media exposure revenue.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
+    "key": "正統派として承認する",
+    "en": "Approve as a babyface faction",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "武闘派",
     "en": "Hard-Hitting",
     "files": [
@@ -21069,6 +21458,30 @@
     "count": 4,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "武闘派として承認。リーダーの勢い +5、派閥外との因縁が生まれやすくなる。",
+    "en": "Approve as a fighting faction. Leader's momentum +5; grudges with outsiders form more easily.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
+    "key": "武闘派として承認する",
+    "en": "Approve as a fighting faction",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
   },
   {
     "key": "歳",
@@ -21088,7 +21501,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "歴代優勝",
@@ -21521,7 +21935,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "決勝評価",
@@ -22626,7 +23041,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "燻り続ける",
@@ -23041,6 +23457,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "王道・ベビーフェイスの旗印で、団体の顔を担う気概が見えます。",
+    "en": "Babyfaces flying the traditional banner, ready to be the face of the promotion.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
     "key": "現 役 引 退 ・ FAREWELL",
     "en": "The Last Bell · FAREWELL",
     "files": [
@@ -23320,7 +23748,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "目標:",
@@ -23576,6 +24005,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "社長、お願いがあります。",
+    "en": "Boss, I have a request.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "社長として、どう対処しますか？",
     "en": "How will you handle this?",
     "files": [
@@ -23693,7 +24132,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "秋の総力戦、決着",
@@ -23834,7 +24274,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "立て直すか、解散か",
@@ -24337,7 +24778,8 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "第{slot}代表 {f1} & {f2}",
@@ -24638,7 +25080,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "組み直す",
@@ -24761,6 +25204,18 @@
     "count": 7,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "結束型として承認。メンバー間の絆 +5〜+8、ロッカー士気 +1〜+2。",
+    "en": "Approve as a bond-first faction. Member-to-member bond +5 to +8, locker room morale +1 to +2.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
   },
   {
     "key": "結果",
@@ -25156,7 +25611,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "練習優先",
@@ -25942,7 +26398,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "見送り",
@@ -27017,7 +27474,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "辞退",
@@ -27313,6 +27771,36 @@
   {
     "key": "通算{n}戦",
     "en": "{n} career matches",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "通算{total}戦で互角。次戦が大きな分岐点になりそうだ。",
+    "en": "Dead even across a {total}-match series. The next one looks like the turning point.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "通算{wa}勝{wb}敗。数字は嘘をつかない。",
+    "en": "{wa}-{wb} all told. The numbers do not lie.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "通算{wa}勝{wb}敗。本紙はこの関係を、業界を象徴する一組として注視している。",
+    "en": "{wa}-{wb} all told. This paper regards these two as one of the defining pairs in the business.",
     "files": [
       "ui-render.js"
     ],
@@ -28003,7 +28491,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "重点",
@@ -28093,7 +28582,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "長期離脱(10週以上)の重傷にのみ発注できます",
@@ -28246,7 +28736,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "関係 {n}人",
@@ -28731,7 +29222,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "頂点到達",
@@ -28833,7 +29325,8 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "黙認した。{faction}の自由は守られたが、道場の空気は淀んだ。",
@@ -28850,6 +29343,246 @@
     "en": "You let it pass. {target} swallowed what she wanted to say.",
     "files": [
       "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（OVR+5バフ適用）",
+    "en": "(OVR +5 buff applied)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（S{season}: {prev} → 現在: {cur}）",
+    "en": "(S{season}: {prev} → now: {cur})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{age}歳）",
+    "en": "(age {age})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}件反映中 → 評価+5/試合）",
+    "en": "({n} in effect → rating +5 per match)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}防衛）",
+    "en": "({n} defenses)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{q}入替）",
+    "en": "({q} rotation)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（このコーチの専門）",
+    "en": "(this coach's specialty)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（ランク{r}位）",
+    "en": "(rank {r})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（上限）",
+    "en": "(cap)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（今季使用済み）",
+    "en": "(already used this season)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（前払い一括）",
+    "en": "(paid up front)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（四半期入替）",
+    "en": "(quarterly rotation)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（残り{n}週）",
+    "en": "({n} weeks left)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（給与変動: {n}名）",
+    "en": "(salary changes: {n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（評価+{n}）",
+    "en": "(rating +{n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（軽め）",
+    "en": "(light)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（重め）",
+    "en": "(heavy)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（集客×{mult}）",
+    "en": "(attendance ×{mult})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 展開",
+    "en": "+ Expand",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 枠拡張 ({n}万)",
+    "en": "+ Add a Slot (¥{n:man})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 追加",
+    "en": "+ Add",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：互いに力を認め合い、表情が和らいだ",
+    "en": ": they acknowledged each other's strength, and their faces softened",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
+    "en": ": she accepted your ruling, and the spring came back into her step",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "｜ 抗争{n}勝",
+    "en": "| {n} feud wins",
+    "files": [
+      "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -31448,246 +32181,6 @@
       "ui-common.js"
     ],
     "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（OVR+5バフ適用）",
-    "en": "(OVR +5 buff applied)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（S{season}: {prev} → 現在: {cur}）",
-    "en": "(S{season}: {prev} → now: {cur})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{age}歳）",
-    "en": "(age {age})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}件反映中 → 評価+5/試合）",
-    "en": "({n} in effect → rating +5 per match)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}防衛）",
-    "en": "({n} defenses)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{q}入替）",
-    "en": "({q} rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（このコーチの専門）",
-    "en": "(this coach's specialty)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（ランク{r}位）",
-    "en": "(rank {r})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（上限）",
-    "en": "(cap)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（今季使用済み）",
-    "en": "(already used this season)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（前払い一括）",
-    "en": "(paid up front)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（四半期入替）",
-    "en": "(quarterly rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（残り{n}週）",
-    "en": "({n} weeks left)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（給与変動: {n}名）",
-    "en": "(salary changes: {n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（評価+{n}）",
-    "en": "(rating +{n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（軽め）",
-    "en": "(light)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（重め）",
-    "en": "(heavy)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（集客×{mult}）",
-    "en": "(attendance ×{mult})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 展開",
-    "en": "+ Expand",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 枠拡張 ({n}万)",
-    "en": "+ Add a Slot (¥{n:man})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 追加",
-    "en": "+ Add",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：互いに力を認め合い、表情が和らいだ",
-    "en": ": they acknowledged each other's strength, and their faces softened",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
-    "en": ": she accepted your ruling, and the spring came back into her step",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "｜ 抗争{n}勝",
-    "en": "| {n} feud wins",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   }

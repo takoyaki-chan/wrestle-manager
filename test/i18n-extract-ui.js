@@ -325,19 +325,52 @@ function main() {
     perFileStats.push({ file: filename, extracted: items.length });
   });
 
-  const ledger = Array.from(ledgerMap.values())
-    .map((e) => ({
-      key: e.key,
-      en: e.en,
-      files: Array.from(e.filesSet).sort(),
-      count: e.count,
-      hasPlaceholder: e.hasPlaceholder,
-      hasProperNoun: e.hasProperNoun,
-    }))
+  // ── 保全マージ(2026-09-04) ──
+  // 再実行で既存台帳の en を消さない。走査で見つからなかった既存行は「動的キー」
+  // (t() に変数で渡される値: 負傷ラベル・勝敗語・成形済み値・データ表の文字列など)
+  // として kept:true を付けて残す。本当に廃止したキーは台帳から手で削る。
+  const prevMap = new Map();
+  if (fs.existsSync(OUT_PATH)) {
+    try {
+      const prev = JSON.parse(fs.readFileSync(OUT_PATH, 'utf8'));
+      if (Array.isArray(prev)) prev.forEach((r) => { if (r && typeof r.key === 'string') prevMap.set(r.key, r); });
+    } catch (e) {
+      warnings.push(`既存台帳の読み込みに失敗(保全マージなしで続行): ${e.message}`);
+    }
+  }
+  let carriedEn = 0;
+  let newKeys = 0;
+  const scanned = Array.from(ledgerMap.values())
+    .map((e) => {
+      const prev = prevMap.get(e.key);
+      if (prev) { if (prev.en) carriedEn++; } else { newKeys++; }
+      const row = {
+        key: e.key,
+        en: prev && typeof prev.en === 'string' ? prev.en : e.en,
+        files: Array.from(e.filesSet).sort(),
+        count: e.count,
+        hasPlaceholder: e.hasPlaceholder,
+        hasProperNoun: e.hasProperNoun,
+      };
+      if (prev && prev.note) row.note = prev.note;
+      return row;
+    });
+  const scannedKeys = new Set(scanned.map((r) => r.key));
+  const kept = [];
+  prevMap.forEach((r, key) => {
+    if (scannedKeys.has(key)) return;
+    kept.push({ ...r, kept: true });
+  });
+  const ledger = scanned.concat(kept)
     .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0));
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(ledger, null, 2) + '\n', 'utf8');
+  console.log(`[i18n-extract-ui] 保全マージ: 既存台帳=${prevMap.size} en引き継ぎ=${carriedEn} 新規キー=${newKeys} 走査外で保持(kept)=${kept.length}`);
+  if (newKeys) {
+    console.log('[i18n-extract-ui] 新規キー(en空):');
+    scanned.filter((r) => !prevMap.has(r.key)).forEach((r) => console.log(`  + ${r.key}`));
+  }
 
   // ── レポート ──
   const total = ledger.length;

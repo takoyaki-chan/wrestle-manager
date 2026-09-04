@@ -274,13 +274,20 @@ async function waitForTimedUi(page, milliseconds) {
   // resume中は内部時計が実時間で進み続けるため、時刻の読み取りとpauseAtの間に
   // 内部時計が読んだ値を追い越すと "Cannot fast-forward to the past" になる。
   // 少し先の時刻で止めて競合を吸収する(失敗したら読み直してさらに先で止める)
-  const currentTime = await page.evaluate(() => Date.now());
-  try {
-    await page.clock.pauseAt(currentTime + 1500);
-  } catch (_error) {
-    const retryTime = await page.evaluate(() => Date.now());
-    await page.clock.pauseAt(retryTime + 5000);
+  // 2026-09-04: 高負荷時(並列ゲート実行中)は+5000でも追い越されて落ちた実例(EN走破 action95)。
+  // 余裕を段階的に広げて最大4回まで粘る。成功する回が1回目なら従来と同じ停止時刻になる。
+  const margins = [1500, 5000, 20000, 90000];
+  let lastError = null;
+  for (const margin of margins) {
+    const now = await page.evaluate(() => Date.now());
+    try {
+      await page.clock.pauseAt(now + margin);
+      return;
+    } catch (error) {
+      lastError = error;
+    }
   }
+  throw lastError;
 }
 
 async function clickCandidate(candidate, page) {

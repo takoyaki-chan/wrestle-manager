@@ -1,5 +1,33 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-4 — 派閥画面の内部語彙露出(condition/bond/…Tag)をJA原文から修正 + UI抽出器に保全マージ(2026-09-04・Fable)
+
+### 発端
+P6-2bのEN走破(seed42)がweek30で`D3_TEXT`検出。派閥観察イベント(OBSERVE_FAN_PRESSURE/OBSERVE_TRAINING_HARD)の影響欄ラベルが`WM_I18N.t('{name} condition')`で、**JA原文そのものが内部語彙**だった(JA/EN両方で生英語露出)。同型を全数列挙したところ、`bond`も同じ欄で露出(同じ関数内で「メンバー → リーダー 絆」と「メンバー間 bond」が混在)、派閥承認画面F01のヒント6本に`（authoritativeTag）`等の内部タグ名と`bond/momentum/rivalry`が直書きされていた(メモリ feedback_player_text_no_internal_tokens の対象)。
+
+### 修正(JA文言差し替え・意図的なJA変更)
+- `src/factions.js` 9箇所: `{name} condition`→`{name} 体調`(5) / `メンバー間 bond`→`メンバー間 絆`(2) / `{name} メンバー間 bond`→`{name} メンバー間 絆` / `両派閥 メンバー間 bond`→`両派閥 メンバー間 絆`
+- `src/ui-common.js` 7箇所: 合同企画ヒントの`メンバー間 bond`→`メンバー間 絆` / `_F01_ARCHETYPE_META`のaHint 6本からタグ名を除去し `bond`→`絆`・`momentum`→`勢い`・`rivalry`→`因縁`(例: 「武闘派として承認（combatTag）。リーダー momentum +5、派閥外 rivalry が生まれやすくなる。」→「武闘派として承認。リーダーの勢い +5、派閥外との因縁が生まれやすくなる。」)
+- 影響欄の後処理(`_renderCommon1MatchResult`の`trust`/`rivalry`置換)は温存。ja-goldenは完全一致(これらの欄はgolden対象外)
+
+### 抽出器の破壊性を発見 → 保全マージ実装
+`node test/i18n-extract-ui.js` を再実行したところ**既存台帳3,147行のenを全消去**した(復元済み)。P3a当時は一度きりの生成を想定していたため保全機構がなく、以後の台帳更新はすべて手編集で行われていた。対処:
+- 抽出器に保全マージを追加: 既存台帳のenをキーで引き継ぐ / 走査で見つからない既存行は`kept:true`を付けて残す(廃止は手で削る) / 新規キーを一覧表示
+- kept 42行の正体 = P4-4で手追加した**動的キー**(負傷ラベル・勝敗語・序盤/中盤/終盤・観客帯・成形済み値など、t()に変数で渡る値)。抽出器が見ないだけで全て現役
+- 保全後の再実行結果: 既存3,147 / en引き継ぎ3,105 / 新規29 / kept42。冪等
+
+### 台帳更新(3,147→3,189行・全訳)
+- 新規29キー(各エージェントがt()で包んだが台帳未反映だった行: 因縁列伝のH2Hテンプレ・ライバル団体寸評・ファンの声ハンドル@分析派/@熱狂派/@辛口派・因縁決着/挑戦状のフォールバックセリフ等)をFable筆で英訳
+- `_F01_ARCHETYPE_META`(派閥承認画面)のflavorText/aLabel/aHint 18行を**kept行として手追加**(t()に変数で渡るため走査外。archLabel 6本は既存キー)。P6-2bのi18n-miss一覧にあった「実力主義として承認する」「反主流派の色が濃く…」はこれで解消
+- 廃止5キー(旧condition/bond系)+旧aHint 6本を削除
+- 訳語: 総合力=Overall / 派閥承認=Approve as a … faction / 権威型=Authoritarian / 結束型=Bond-first / 実力主義=Meritocratic / 正統派=Babyface / 武闘派=Fighters
+
+### 走破ハーネス
+EN走破がaction95で`clock.pauseAt: Cannot fast-forward to the past`(並列ゲート実行の高負荷下で+5000msの再試行も追い越された)。`waitForTimedUi`の再試行を+1500/+5000/+20000/+90000の4段に拡張(1回目成功時は従来と同じ停止時刻=ja digest不変)。
+
+### 検証
+node --check 全触りファイル OK / `node test/i18n-build-dict.js` 3,189/3,189 未訳0 / ja-golden 完全一致(`6b3d05c8…`) / npm test 260/260 / walkthrough(ja) PASS Issues 0 / walkthrough(en) 本エントリ末尾のマージ後に再走(結果は次エントリ)
+
 ## 🌐 Stage B P6-2b — 走破ドライバの行動選択を言語非依存化・ENで1季完走を試みる（2026-09-04・Sonnet worktree agent-ada69375f676af416）
 
 P6-2で`--lang en`対応は入ったが、**week6でD2_FREEZE**（`App.skipAllMatches()`のクリックが`<iframe id="battleIframe">`に5秒間ブロックされる）が決定論的に発生していた。原因は`test/ui-walkthrough/driver.js`の`actionScore`（行動優先度付け）が日本語文言の正規表現に依存しており、ENでは多くのボタンが一致せず一般スコア（primary/inOverlayフォールバック 5000）に落ちて、ja走破とは異なる手順・タイミングを踏んでいたこと。**src/・i18n/・lang-en-\*.jsは一切触っていない**（`test/ui-walkthrough/*.js`と関連調査のみ）。開始前にworktreeブランチをmain先端(`12b7526`)へfast-forward済み。

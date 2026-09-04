@@ -9894,37 +9894,37 @@ const _F01_ARCHETYPE_META = {
   authoritarian: {
     flavorText: 'リーダーへの一方向の追従が強く、トップダウンの色が濃いようです。',
     aLabel: '正式なチームとして認める',
-    aHint: '権威型として承認（authoritativeTag）。求心力と引き換えにロッカー士気が下がる。',
+    aHint: '権威型として承認。求心力と引き換えにロッカー士気が下がる。',
     archLabel: '権威型',
   },
   bond_first: {
     flavorText: '上下というより、横の絆で繋がった集まりのようです。',
     aLabel: 'チームとして後押しする',
-    aHint: '結束型として承認（bondTag）。メンバー間 bond +5〜+8、ロッカー士気 +1〜+2。',
+    aHint: '結束型として承認。メンバー間の絆 +5〜+8、ロッカー士気 +1〜+2。',
     archLabel: '結束型',
   },
   meritocratic: {
     flavorText: 'OVR を強く意識した、自負心の高い者同士の集まりに見えます。',
     aLabel: '実力主義のチームとして認める',
-    aHint: '実力主義として承認（meritTag）。bond +2〜+3（敬意ベース）、士気 -1〜-2。',
+    aHint: '実力主義として承認。敬意ベースで絆 +2〜+3、士気 -1〜-2。',
     archLabel: '実力主義',
   },
   heel: {
     flavorText: '反主流派の色が濃く、観客を挑発する姿勢が共通しているようです。',
     aLabel: 'ヒール派閥として承認する',
-    aHint: 'ヒール派閥として承認（heelTag）。bond +3〜+4、次回興行集客一時+。',
+    aHint: 'ヒール派閥として承認。絆 +3〜+4、次回興行の集客が一時的に上がる。',
     archLabel: 'ヒール派閥',
   },
   face: {
     flavorText: '王道・ベビーフェイスの旗印で、団体の顔を担う気概が見えます。',
     aLabel: '正統派として承認する',
-    aHint: '正統派として承認（faceTag）。bond +3〜+4、次回興行集客一時+ + メディア露出収益。',
+    aHint: '正統派として承認。絆 +3〜+4、次回興行の集客が一時的に上がり、メディア露出収益も入る。',
     archLabel: '正統派',
   },
   combat: {
     flavorText: '攻めの姿勢を共有する集まりで、メインを取りに行く色が濃いようです。',
     aLabel: '武闘派として承認する',
-    aHint: '武闘派として承認（combatTag）。リーダー momentum +5、派閥外 rivalry が生まれやすくなる。',
+    aHint: '武闘派として承認。リーダーの勢い +5、派閥外との因縁が生まれやすくなる。',
     archLabel: '武闘派',
   },
 };
@@ -12421,7 +12421,7 @@ function showFactionCommon7Modal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="A">
             <div class="fevt-decision-letter">A</div>
             <div class="fevt-decision-label">${WM_I18N.t('合同企画を承認')}</div>
-            <div class="fevt-decision-hint">${WM_I18N.t('{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 bond <strong>+1〜+3</strong>', { plan: planType })}</div>
+            <div class="fevt-decision-hint">${WM_I18N.t('{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 絆 <strong>+1〜+3</strong>', { plan: planType })}</div>
           </div>
           <div class="fevt-decision-card" data-choice="B">
             <div class="fevt-decision-letter">B</div>

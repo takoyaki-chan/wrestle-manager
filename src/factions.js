@@ -1803,7 +1803,7 @@ Engine.factions = {
       ];
       if (moraleEffect.bondDelta !== 0) {
         const sign = moraleEffect.bondDelta > 0 ? '+' : '';
-        impactSummary.push({ label: WM_I18N.t('メンバー間 bond'), delta: `${sign}${moraleEffect.bondDelta}` });
+        impactSummary.push({ label: WM_I18N.t('メンバー間 絆'), delta: `${sign}${moraleEffect.bondDelta}` });
       }
       if (moraleEffect.moraleDelta !== 0) {
         const sign = moraleEffect.moraleDelta > 0 ? '+' : '';
@@ -2117,7 +2117,7 @@ Engine.factions = {
     const turmoilImpact = [
       { label: WM_I18N.t('新リーダー'), delta: WM_I18N.t('{name}（動揺）', { name: successor.name }) },
       { label: WM_I18N.t('メンバー trust'), delta: `${d}` },
-      { label: WM_I18N.t('メンバー間 bond'), delta: `${bondDelta}` },
+      { label: WM_I18N.t('メンバー間 絆'), delta: `${bondDelta}` },
       { label: WM_I18N.t('{a} → {b} bond', { a: successor.name, b: oldLeaderName }), delta: `+${idol}` },
     ];
     if (rival) turmoilImpact.push({ label: WM_I18N.t('対立派閥 {name} 勢い', { name: rival.name }), delta: `+${bump}` });
@@ -2874,8 +2874,8 @@ Engine.factions = {
     s = this._markCommonEventTrigger(s, factionId, 'COMMON_4');
 
     const impactSummary = [
-      { label: WM_I18N.t('{name} メンバー間 bond', { name: factionName }), delta: `+${bondDelta}` },
-      { label: WM_I18N.t('{name} condition', { name: factionName }), delta: `+${condDelta}` },
+      { label: WM_I18N.t('{name} メンバー間 絆', { name: factionName }), delta: `+${bondDelta}` },
+      { label: WM_I18N.t('{name} 体調',{ name: factionName }), delta: `+${condDelta}` },
     ];
     if (moraleDelta !== 0) {
       const sign = moraleDelta > 0 ? '+' : '';
@@ -3606,7 +3606,7 @@ Engine.factions = {
       }
       impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionAName }), delta: `+${momA}` });
       impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionBName }), delta: `+${momB}` });
-      impactSummary.push({ label: WM_I18N.t('両派閥 メンバー間 bond'), delta: `+${bondDelta}` });
+      impactSummary.push({ label: WM_I18N.t('両派閥 メンバー間 絆'), delta: `+${bondDelta}` });
       resultText = WM_I18N.t('{plan}が組まれた。{a}と{b}は手を組んで観客を沸かせた。', { plan: planType, a: factionAName, b: factionBName });
     } else if (choiceId === 'B') {
       resultText = WM_I18N.t('{a}と{b}は適度な距離を保った。関係は穏やかなまま。', { a: factionAName, b: factionBName });
@@ -4345,7 +4345,7 @@ Engine.factions = {
           ? { ...c, condition: Engine.util.clamp((c.condition || 50) + 5, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
-        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: leaderName }), delta: '+5' });
+        impactSummary.push({ label: WM_I18N.t('{name} 体調',{ name: leaderName }), delta: '+5' });
         resultText = WM_I18N.t('{name}を一度休ませる判断をした。', { name: leaderName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], 2);
@@ -4353,7 +4353,7 @@ Engine.factions = {
           ? { ...c, condition: Engine.util.clamp((c.condition || 50) - 3, 0, 100) }
           : c);
         s = { ...s, roster: newRoster };
-        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: leaderName }), delta: '-3' });
+        impactSummary.push({ label: WM_I18N.t('{name} 体調',{ name: leaderName }), delta: '-3' });
         resultText = WM_I18N.t('{name}に任せた。プレッシャーは肩にのしかかったまま。', { name: leaderName });
       } else {
         const newRoster = (s.roster || []).map(c => c.id === leaderId
@@ -4361,7 +4361,7 @@ Engine.factions = {
           : c);
         s = { ...s, roster: newRoster };
         s = advanceRebuke(s);
-        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: leaderName }), delta: '+3' });
+        impactSummary.push({ label: WM_I18N.t('{name} 体調',{ name: leaderName }), delta: '+3' });
         resultText = WM_I18N.t('直接の指示ではなく、コーチ経由で{name}を支えた。', { name: leaderName });
       }
     } else if (itype === 'OBSERVE_TRAINING_HARD') {
@@ -4374,7 +4374,7 @@ Engine.factions = {
         s = { ...s, roster: newRoster };
         s = this.applyMomentumChange(s, factionId, -2);
         for (const tid of targets) s = this._applyBondDirected(s, tid, leaderId, ri(1, 2));
-        impactSummary.push({ label: WM_I18N.t('{name} condition', { name: factionName }), delta: '+3' });
+        impactSummary.push({ label: WM_I18N.t('{name} 体調',{ name: factionName }), delta: '+3' });
         impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionName }), delta: '-2' });
         impactSummary.push({ label: WM_I18N.t('メンバー → リーダー 絆'), delta: WM_I18N.t('微増') });
         resultText = WM_I18N.t('{leader}の追い込みを止めた。{faction}は一息ついた。', { leader: leaderName, faction: factionName });
