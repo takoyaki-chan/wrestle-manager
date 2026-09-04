@@ -1,5 +1,15 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-7a — 新聞/ロスター画面のJA露出残りの分類v0.1（調査のみ・2026-09-04・worktree agent-ab867a7463268a0a2）
+
+開始前にworktreeをmain先端(4197ead、P6-16まで)へfast-forward済み。`test:ui:walkthrough --lang en --ja-exposure-log`をseed42/seed7の2本回し、screen-newspaper(実測28件)とscreen-roster(実測25件+seed7新出2件)の全要素を1件ずつ生成箇所まで追跡。
+
+**新聞6原因**: ①マストヘッド「週刊グラップル」直書き(ui-render.js:7057) ②NP_KURODA_BYLINE(黒田幸子署名)直書き(同7234-7241) ③`Engine.newspaper.buildFollowUp`の名前が消費側`fill()`の手動split/joinでpn()自動変換をバイパス(management.js:32011-32022/32662-32677) ④MVP小窓`_npV3MvpBox`の生fighterName(ui-render.js:7788,7791) ⑤決着技名finishLabelが未英訳(P7-5裁定待ち・app.js `_NEWSPAPER_ARTICLES`ほか、28件中8件を占める最大クラスタ) ⑥決着時間/ターン数の書式が未ローカライズ(`_npTurnsToTime`固定"○分○秒"+「決着時間 」「ターン」直書き、ui-render.js:7226-7233/8256-8258/8365-8369)。
+
+**ロスター4原因**: ①道場の気合掛け声DOJO_SHOUTS全26種が未英訳・方針判断要(ui-render.js:2044-2051) ②特性traitsが顔ポップアップ(ui-common.js:4122-4125、TRAIT_DEFS訳語は既存)と違いt()を通らず生結合(ui-render.js:2130、配線漏れのみ) ③「📈 今シーズン成長」見出し直書き(同2307) ④「人気+」成長ラベル直書き(同2315)。
+
+P7-4/P6-17との重複0件。P7-7b提案=8原因(finishLabelとDOJO_SHOUTSを除く全部)を1バッチで配線修正可、新規翻訳コンテンツはごく少量。finishLabelはP7-5裁定待ち、DOJO_SHOUTSは訳す/演出で残すかの方針判断が先のため別枠。副次発見: `App._generateNewspaperTexts`の記事バリアント抽選がMath.random()で乱数シード原則から逸脱(範囲外・未修正)。詳細は `docs/i18n-en-exposure-newspaper-roster-v0.1.md`。src/i18n/test-ui-walkthroughは無変更。
+
 ## 🌐 Stage B P7-4 — プロフィール文3表（CHAR_PROFILES 127＋コーチ123＋連結様式1＝251キー）を台帳化・配線・英訳（2026-09-04・worktree agent-a2e882557b9d80cdc）
 
 指示書は docs/i18n-stage-b-p7-design-v0.1.md §3 の P7-4（分類B「プロフィール文」）。開始前に worktree を main 先端（a9d6f50＝P7-2まで）へ fast-forward 済み。ラベル表と ui-ledger の走査モード（P7-1）／NOTIF・LARGE_EVENT・WEEKLY_STORY_TICKER（P7-3）／management.js の newspaper・chronicle・autumnWar（P6-16）は並行エージェントの領分のため不触。`test/i18n-extract-templates.js` の `TARGET_TABLES` へは**末尾に「P7-4」コメント付きで自分の3表だけ**を追記し、既存行は並べ替えていない（P7-3と同じリストを触るため衝突面を最小化）。
