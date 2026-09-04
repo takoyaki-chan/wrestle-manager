@@ -1,5 +1,96 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P4-5 — 黒田記事プール+自団体新聞プールの台帳化と配線（2026-09-04・Fable worktree agent-aedb319404f36e414）
+
+P4テンプレ層(data.js14テーブル)は完了済みだったが、**kuroda-text.js(黒田記者の記事プール群)とapp.jsの自団体新聞プール**が台帳未収録だった穴を埋めた。開始前にworktreeブランチをmain先端(8d331bd)へfast-forward済み。
+
+### 1. 何が難しかったか — 関数値プールの構造差
+
+data.jsの14テーブルは全て「`{name}`プレースホルダ文字列 + fillTemplateVars」方式だが、kuroda-text.js/app.jsのプールの大半は **`d => \`...${d.x}...\`` というJSテンプレートリテラルで補間まで済ませる関数**を値に持つ。既存の抽出器(`walkStrings`)は文字列/配列/オブジェクトしか辿らず関数は無視するため、そのままでは台帳に一切載らない。かつ辞書キー(=補間前のJA原文)を素直に取り出せない構造。
+
+対処: `src/kuroda-text.js` に **`kurodaTemplateOf(fn)`** を追加し、関数ソース(`fn.toString()`)を軽量パースして `${d.prop}` / `${d.a.b}` / `${d.a.b()}`(引数なしメソッド呼び出しのみ)を `{propName}` へ機械的に正規化(`kurodaParamName`がcamelCase化)。三項分岐で本体全体が構成される関数・入れ子テンプレートリテラル・`Math.abs()`等の計算式を含む関数は正規化不能(null)として**保留**扱いにし、消費点では従来通り`entry(d)`を直接呼ぶ(fail-open。ENでもJAのまま=適用前と挙動が完全に同一)。0引数関数(補間なしの固定文)は`fn()`の戻り値をそのままJA原文として扱う。唯一の消費入口 **`kurodaText(entry, d, dict)`** をあわせて実装(`dict`=`WM_I18N.t`。dictがtrue-yで正規化できればプレースホルダ値を`kurodaEvalPath`で解決して`dict(template, params)`、できなければ`entry(d)`直呼び)。この3関数はkuroda-text.js側に1本化し、抽出器(Node/loadAsGlobal)・実行時(ブラウザ、index.htmlの読み込み順でkuroda-text.jsはapp.js/ui-render.jsより先)の両方から同じ実装を再利用する(ロジックの二重実装を回避)。
+
+アルゴリズムの正しさは実データパターン(`d.winner.name`/`d.attendance.toLocaleString()`/`Math.abs(d.streak)`/入れ子テンプレート/三項分岐/0引数)7種で単体検証し、ja-mode相当のdict(identity+params)で`entry(d)`直呼びと**完全一致**することを確認してから実装に入れた。
+
+### 2. 抽出器拡張(`test/i18n-extract-templates.js`)
+
+- 対象に **kuroda-text.js 13プール**(`KURODA_HEADLINES/KURODA_EDITORIAL/KURODA_WAR_RECORD/KURODA_MATCHUP_FLAVOR/FAN_OPINIONS/NEWSPAPER_DIGEST_COMMENTS/KURODA_SHOW_RATING/KURODA_PREVIEW/KURODA_SPOTLIGHT/KURODA_NEWS_COMMENT/KURODA_RELATION_NARRATIVE/KURODA_CRISIS/KURODA_GAMEOVER`)を追加。`FAN_HANDLES`はJAを含まない識別子文字列のため対象外
+  - `NEWSPAPER_DIGEST_COMMENTS`/`FAN_OPINIONS`は指示書上「data.jsにあれば」だったが、grep確認の結果**実体はどちらもkuroda-text.jsのみに存在**(data.js側に同名テーブルなし)
+- 対象に **app.js の `App._NEWSPAPER_HEADLINES`/`App._NEWSPAPER_ARTICLES`** を追加。Appオブジェクトのプロパティでトップレベルconstではないため`loadAsGlobal`では取れない。app.js全体を評価するとDOM依存の副作用を抱えるリスクがあるため、**波かっこ深さカウントでソーステキストから対象プロパティのオブジェクトリテラル範囲だけを切り出し、`eval()`で単独評価**する方式にした(app.js本体は一切実行しない。対象2プロパティの中身は`${...}`補間以外に生の`{`/`}`を含まないことを実データで確認済み)
+- `walkStrings`に**関数値の分岐**を追加(`kurodaTemplateOf`で正規化できた文字列だけ台帳へ、できなければ「保留」カウントのみ)
+- **台帳の保持マージを新規実装**(dialogue抽出器と同じ作法): 既存`en`列(非空)は再生成時に上書きしない。実行前に既存551行(全てen非空)をバックアップして検証 → 再生成後に**en保持=551件・欠損0**を確認。2回連続実行で出力が完全に同一(idempotent)であることも確認済み
+
+実行結果: 総テンプレ数(ユニークキー) **551→1,459**(新規908行)。テーブル別抽出件数(生値、重複統合前)は KURODA_HEADLINES 94 / KURODA_EDITORIAL 63 / KURODA_WAR_RECORD 55 / KURODA_MATCHUP_FLAVOR 120 / FAN_OPINIONS 148 / NEWSPAPER_DIGEST_COMMENTS 61 / KURODA_SHOW_RATING 36 / KURODA_PREVIEW 17 / KURODA_SPOTLIGHT 39 / KURODA_NEWS_COMMENT 30 / KURODA_RELATION_NARRATIVE 187 / KURODA_CRISIS 10 / KURODA_GAMEOVER 6 / app.js:_NEWSPAPER_HEADLINES 25 / app.js:_NEWSPAPER_ARTICLES 17。
+
+**保留(正規化不能な関数、台帳未収録)= 16件**(`docs/i18n-p4-5-kuroda-holdout-audit.md`に自動出力): KURODA_WAR_RECORD 8件(`loseStreak`の`Math.abs(d.streak)`)・KURODA_SPOTLIGHT 7件(`star`プール全7本、`d.ovr>=90?...:...`の三項分岐)・KURODA_RELATION_NARRATIVE 1件(`destined_rival.bodies[0]`の入れ子テンプレートリテラル)。いずれも消費点でfail-open(`entry(d)`直呼び、ENでもJAのまま)。
+
+### 3. 配線(消費点)
+
+全て**UI層(ui-render.js/app.js)**にあり、Engineは一切関与しない(kuroda-text.js/app.jsの新聞プールはEngineから参照されない)。
+
+**① UI層で整形→表示直前にt()(充填前)**:
+- `_npCrisisColumnHtml`(KURODA_CRISIS): 既存の`{orgName}`/`{weeksRemaining}`置換の前に`WM_I18N.t()`を通す(このテーブルは元から`{name}`プレースホルダ文字列のみ)
+- `_npKurodaBandLine`(KURODA_HEADLINES/KURODA_EDITORIAL)・`_npMatchupFlavorText`の`render`(KURODA_MATCHUP_FLAVOR、文字列/関数混在)・`_npKurodaCommentText`(KURODA_NEWS_COMMENT)・KURODA_SHOW_RATING・NEWSPAPER_DIGEST_COMMENTS・KURODA_WAR_RECORD・KURODA_SPOTLIGHT・FAN_OPINIONS・KURODA_RELATION_NARRATIVE(見出し1箇所+本文2箇所)の計11箇所で`fn(d)`直呼びを`kurodaText(fn, d, WM_I18N.t)`へ置換
+- ui-render.js内の重複していた黒田寸評ロジック2箇所(一面トップ/業界ニュースまとめ)を、既に配線済みの`_npKurodaCommentText`呼び出しへ統合(ロジック重複解消のついで)
+- `App._generateNewspaperTexts`(app.js、自団体新聞の見出し/本文/低MQ追記)の3箇所を`kurodaText(pick(...), d, WM_I18N.t)`へ
+
+**② Engine内で整形しGへ焼く→dict糸通し(先例に倣う)**:
+- `Engine.ending.buildGameOverData(state, dict)`(management.js)に末尾任意引数`dict`を追加(先例`Engine.formatFinish`と同型。省略時=恒等関数でJA不変)。`KURODA_GAMEOVER`の`kurodaColumn`を`dict()`経由に。呼び出し元app.js(解散セレモニー表示直前)が`WM_I18N.t`を渡す
+
+**③ 関数内実行文プールは今回テーブル化せず**:
+- `Engine.mvpRace.generateKurodaComment`(management.js)はKURODA_HEADLINES等と同型の`d=>`関数配列だが、**メソッド本体直書き**であり、かつ兄弟の`generateNarrative`/`generateTagline`/`generatePageHeadline`/`generatePageLead`(同じ戻り値オブジェクトの他フィールドを埋める同種プール)がP4-5対象外のまま残るため、`kurodaComment`だけ配線すると同一スナップショット内でJA/EN混在になる。今回は見送り、Engine.mvpRaceの叙述生成family全体をまとめて次回対応する対象としてspecsに記録
+
+### 4. 直書きフォールバックの発見(4件) — テーブル外にJAテンプレが直埋めされていた
+
+黒田系プールの配線中に、プールが空振りしたときの**地の文直書きフォールバック**を4箇所発見。テーブルではなくui-render.js自身のコードに埋め込まれているため抽出器では拾えないが、表示され得るJA文字列なので同時に`WM_I18N.t()`で配線した:
+- KURODA_WAR_RECORD空振り時の3分岐フォールバック(`{playerName}が対戦成績で先行している。...`等)
+- KURODA_SPOTLIGHT空振り時の3分岐フォールバック(`{rivalName}の看板。総合力{ovr}は当面の脅威。`等)
+- KURODA_RELATION_NARRATIVE空振り時の2種フォールバック(`{a}と{b}。{n}度のぶつかり合いが...`等)
+- ファンの声セクションのハンドルラベル3種(`@熱狂派`/`@辛口派`/`@分析派`)
+
+これら4箇所の新規リテラル文字列はUI文字列辞書(`i18n/ui-ledger.json`、test/i18n-extract-ui.js)の管轄で、本タスクでは再抽出していない。次にUI台帳を再生成するタイミングで拾われる想定。
+
+### 5. 成形済み値の発見・修正(1件) — `finishLabel`
+
+`App._buildShowResultNewspaperData`(app.js)が組み立てる`d.finishLabel`は`Engine.formatFinish(finType, finMove)`の戻り値(dictなし=常にJA)で、新聞テンプレへそのまま焼かれていた。テンプレ側をいくらt()配線しても`{finishLabel}`の中身だけJA原文が混入する「成形済み値の構造穴」(§8と同型)。app.js側3箇所の呼び出しを`Engine.formatFinish(finType, finMove, undefined, WM_I18N.t)`に直して解消(§6に既にあった`dict`引数を渡すだけ。Engine側は無改修)。`i18n/preformatted-values-audit.md`は今回は更新せず、specs §6にP4-5の発見として記録した(監査ドキュメント本体の追記は次回のまとめ更新時に回す)。
+
+### 6. KURODA_PREVIEWは死蔵テーブル
+
+`KURODA_PREVIEW`(次回展望テンプレ、17行)はsrc/*.jsのどこからも参照されていない(消費点なし)。docs/archiveの旧計画では配線予定だった形跡があるが未実装のまま。台帳へは抽出したが配線は行っていない(specsに記録)。
+
+### 7. 触ったファイル
+
+- `src/kuroda-text.js` — `kurodaParamName`/`kurodaTemplateOf`/`kurodaEvalPath`/`kurodaText`の4関数を追加(データテーブル本体は無変更)
+- `test/i18n-extract-templates.js` — kuroda-text.js13プール+app.js2プールの抽出・関数値正規化・保持マージ・保留一覧出力を追加
+- `test/newspaper-front-v3-test.js` — VMサンドボックスに`src/kuroda-text.js`の読み込みを追加(実際の読み込み順に合わせる。既存の`_getKurodaNewsComment`モックはそのまま)。**この修正がないとH1テスト(黒田コラム)が`kurodaText is not defined`のfail-openで空文字になり落ちた**(修正後ALL PASS)
+- `src/ui-render.js` — 11箇所の消費点配線 + 直書きフォールバック4箇所のt()配線
+- `src/app.js` — `_generateNewspaperTexts`3箇所の配線 + `finishLabel`のdict糸通し3箇所 + `buildGameOverData`呼び出しへの`WM_I18N.t`追加
+- `src/management.js` — `Engine.ending.buildGameOverData`にdict引数を追加
+- `i18n/template-ledger.json` — 551→1,459行(自動生成、既存en保持)
+- `src/lang-en-templates.js` — 再生成(自動生成、訳文あり551/未訳908。全機械検査green)
+- `docs/i18n-p4-5-kuroda-holdout-audit.md` — 新規(保留16件の一覧、抽出器が自動生成)
+- `specs/i18n-runtime-spec-v1.0.md` §6 — P4-5の対象テーブル・関数値正規化パターン・buildGameOverData先例・finishLabel構造穴・pool③保留理由を追記
+- `specs/INDEX.md` — i18n-runtime-spec-v1.0.mdの索引行にP4-5概要を追記
+
+### 8. 検証
+
+- `node test/i18n-extract-templates.js` — 既存551行のen欠損0(保持マージ検証済み)・2回連続実行で出力完全一致(idempotent)
+- `node test/i18n-build-template-dict.js` — 機械検査全green(プレースホルダ完全性・重複キー・日本語残り・黒田禁止語grepいずれも0件、対象は訳文ありの551行のみ)
+- `node test/ja-golden.js` — **完全一致**(基準どおり、hash変化なし。ja-golden.jsはui-render.js/app.js/kuroda-text.jsを読み込まないため今回の変更は対象外だが、回帰していないことを確認)
+- `npm test` — **260/260 PASS**(1回目の実行で`newspaper-front-v3-test.js`のH1が1件落ち、原因はテストのVMサンドボックスが`kurodaText`未定義のままだったこと。テスト側にkuroda-text.js読み込みを追加して修正、再実行でALL PASS)
+- `npm run test:ui:walkthrough` — **PASS**(2回実行、season 1丸ごと・328アクション。Issues: 0。2回目実行(finishLabel dict化後)でdigest=`1052faa82eaf7991`が1回目と完全一致 = JA出力への実害なしを実機相当の経路で確認)
+- EN-mode単体スモークテスト — `kurodaText`を全11プール866パターンに対しen-mode(空dict=fail-open)で直接呼び、例外0・非文字列戻り値0を確認(スクラッチスクリプト、コミット対象外)
+
+### 9. 残課題
+
+- 保留16件(pool内の三項分岐・入れ子テンプレート・計算式混入)は将来テーブル化するなら手動でのテンプレ分割(例: KURODA_SPOTLIGHT.starをovr帯ごとに3配列へ再構成)が必要
+- Engine.mvpRaceの叙述生成family(generateKurodaComment含む5関数)は次回まとめて対応
+- KURODA_PREVIEWの実配線(死蔵テーブルの活用)は別issue
+- 発見した直書きフォールバック4箇所の新規UI文字列は、次のUI台帳(i18n/ui-ledger.json)再生成時に拾われる想定
+- 台帳1,459行のうち908行(kuroda-text.js/app.js新規分)は未訳(fail-open)。次の翻訳バッチで`en`列を埋める
+
+---
+
 ## 🌐 Stage B P5-2h — セリフ英訳バッチ⑧(関係フラグ450行+ケア反応446行)（2026-09-03・Opus主筆 worktree agent-aff1b2870a9de93bc）
 
 量産翻訳の第8バッチ。**`flag-dialogue.js:FLAG_DIALOGUE` の全450行 + `data.js:CARE_REACTION_DIALOGUES` の446行 = 896行**(うち既訳4行は据え置きのため**新規記入892行**)を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2gの訳語判断(特に2cで確立した対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2eの悲壮度較正を継承)。開始前にworktreeブランチをmain先端(e680032)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。

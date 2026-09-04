@@ -1489,3 +1489,104 @@ const KURODA_GAMEOVER = {
     },
   ],
 };
+
+// ═══════════════════════════════════════════════════════════
+//  i18n配線ユーティリティ (Stage B P4-5)
+//  設計: docs/i18n-stage-b-p4-design-v0.1.md D-P4-2、
+//        specs/i18n-runtime-spec-v1.0.md §6(テンプレ辞書パイプライン)
+//
+//  このファイルのプール(KURODA_HEADLINES等)の大半は `d => \`...${d.x}...\`` という
+//  「JS テンプレートリテラルで補間まで済ませる関数」を値に持つ。既存の 14 テンプレ表
+//  (GAMELOG_TEMPLATES 等)が採用する「{name} プレースホルダの文字列 + fillTemplateVars」
+//  とは形が異なり、素直には WM_I18N.t() の辞書キー(=補間前のJA原文)を取り出せない。
+//
+//  そこで、関数のソース(fn.toString())を軽量パースし、`${d.prop}` /
+//  `${d.a.b}` / `${d.a.b()}`(引数なしメソッド呼び出しのみ)を `{propName}` 形式の
+//  プレースホルダへ機械的に正規化する。正規化できない式
+//  (三項演算子で分岐する関数本体全体・入れ子テンプレートリテラル・Math.abs() 等の
+//  計算式)を含む関数は null を返し、呼び出し側は entry(d) を直接呼ぶ
+//  (fail-open。P4-5適用前と完全に同じ挙動 = ja出力1バイト不変。既存の未訳t()ミスと
+//  同じ扱いで、当面はENでもJA文がそのまま出るだけ)。
+//
+//  app.js の _NEWSPAPER_HEADLINES/_NEWSPAPER_ARTICLES(このファイルより後に読み込まれる)
+//  や test/i18n-extract-templates.js(loadAsGlobalでこのファイルを評価する)からも
+//  同じ実装を再利用する — 抽出時(台帳生成)と実行時(表示)でロジックが1本化される。
+// ═══════════════════════════════════════════════════════════
+
+// "winner.name" -> "winnerName" / "attendance.toLocaleString()" -> "attendanceToLocaleString"
+function kurodaParamName(path) {
+  return path.replace(/\(\)$/, '').split('.')
+    .map((seg, i) => (i === 0 ? seg : seg.charAt(0).toUpperCase() + seg.slice(1)))
+    .join('');
+}
+
+// 関数(または文字列)値を { template, paths } へ正規化する。正規化不能なら null。
+// template: JA原文を{propName}プレースホルダへ置き換えたもの(=WM_I18N.t()の辞書キー)。
+// paths: プレースホルダの元パス一覧("winner.name"等。kurodaEvalPathで評価する)。
+function kurodaTemplateOf(fn) {
+  if (typeof fn !== 'function') return null;
+  if (fn.length === 0) {
+    // 0引数 = 補間なしの固定文。呼べば原文(=テンプレそのもの)がそのまま得られる。
+    try {
+      const v = fn();
+      return (typeof v === 'string') ? { template: v, paths: [] } : null;
+    } catch (_e) { return null; }
+  }
+  let src;
+  try { src = fn.toString(); } catch (_e) { return null; }
+  // アロー関数の本体全体が単一のバッククォート文字列であるものだけを対象にする
+  // (三項演算子で分岐する関数本体・{ return ... } ブロック本体は非対応=複雑式扱い)。
+  const m = src.match(/^[^=]*=>\s*`([\s\S]*)`\s*$/);
+  if (!m) return null;
+  const body = m[1];
+  if (body.indexOf('`') >= 0) return null; // 入れ子テンプレートリテラルは対象外
+
+  const PATH_RE = /\$\{\s*d((?:\.[A-Za-z_$][\w$]*)+)(\(\))?\s*\}/g;
+  const paths = [];
+  const template = body.replace(PATH_RE, (_whole, dotted, call) => {
+    const path = dotted.slice(1) + (call || '');
+    paths.push(path);
+    return '{' + kurodaParamName(path) + '}';
+  });
+  if (template.indexOf('${') >= 0) return null; // 残った補間(Math.abs()等の計算式)は対象外
+  return { template, paths };
+}
+
+// "winner.name" / "attendance.toLocaleString()" のようなパスを d から解決する。
+function kurodaEvalPath(d, path) {
+  const callMatch = path.match(/^(.*)\(\)$/);
+  if (callMatch) {
+    const basePath = callMatch[1];
+    const dot = basePath.lastIndexOf('.');
+    const ownerPath = dot >= 0 ? basePath.slice(0, dot) : '';
+    const methodName = dot >= 0 ? basePath.slice(dot + 1) : basePath;
+    const owner = ownerPath ? kurodaEvalPath(d, ownerPath) : d;
+    return (owner != null && typeof owner[methodName] === 'function') ? owner[methodName]() : undefined;
+  }
+  const segs = path.split('.');
+  let cur = d;
+  for (let i = 0; i < segs.length; i++) {
+    if (cur == null) return undefined;
+    cur = cur[segs[i]];
+  }
+  return cur;
+}
+
+// 黒田/新聞プールの唯一の消費入口。entry(プール要素=関数 or 文字列)を dict
+// (=WM_I18N.t 相当。(text, params)を受け取り、ja/pseudoは素通し+{name}置換のみ、
+// enは辞書引き)経由で訳出する。dict省略時、または正規化できない複雑式のときは
+// 従来どおり entry(d) を直接呼ぶ(fail-open)。
+function kurodaText(entry, d, dict) {
+  if (typeof entry === 'string') {
+    return dict ? dict(entry) : entry;
+  }
+  if (typeof entry !== 'function') return '';
+  const callDirect = () => { try { return entry(d) || ''; } catch (_e) { return ''; } };
+  if (!dict) return callDirect();
+  const tpl = kurodaTemplateOf(entry);
+  if (!tpl) return callDirect();
+  if (tpl.paths.length === 0) return dict(tpl.template);
+  const params = {};
+  tpl.paths.forEach((path) => { params[kurodaParamName(path)] = kurodaEvalPath(d, path); });
+  return dict(tpl.template, params);
+}
