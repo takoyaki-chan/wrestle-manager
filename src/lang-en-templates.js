@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー551件、訳文あり551件)
+//  生成元: i18n/template-ledger.json (総キー1459件、訳文あり551件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -367,6 +367,7 @@
     "⚠ ドラフト情報が不完全だったため、今年の指名は行われませんでした": "⚠ The draft data was incomplete, so no picks were made this year",
     "⚡ {nameA}と{nameB}——燻っていた因縁が宿怨に変わる。もう互いに退けない": "⚡ {nameA} and {nameB} — a smoldering grudge has hardened into something neither will let go. Nobody backs off now",
     "⛽ まずは赤字を耐え忍び、黒字経営を目指せ！【経営サバイバル】": "⛽ Ride out the red first and get the books into the black! [Business Survival]",
+    "✨ {name}:「{line}」": "✨ {name}: \"{line}\"",
     "❌ {name}を解雇": "❌ Released {name}",
     "「{factionAName}」と「{factionBName}」が合同企画——{org}に珍しい共闘": "{factionAName} + {factionBName} join at {org}",
     "「{factionAName}」と「{factionBName}」の対立は、言葉ではもう埋まらない段階に来ていた。社長はそれを承知で、両者をメインに置く。派閥の頭同士が直接ぶつかる——これ以上の決着方法を、プロレスは持っていない。": "The trouble between {factionAName} and {factionBName} had reached the point where words would not close it. The GM knew that, and put the two of them in the main event. The heads of two factions going straight at each other. Wrestling has no better way of settling anything.",
@@ -566,8 +567,7 @@
     "🤝 {nameA}と{nameB}が再会！ 旧友との再会でコンディション上昇": "🤝 {nameA} and {nameB} are together again! Seeing an old friend lifted both their condition",
     "🤝 {name}との約束どおり、メインを任せた": "🤝 Kept your word to {name} and gave her the main event",
     "🤝 {name}との約束を果たせなかった": "🤝 You could not keep your word to {name}",
-    "🤝 {name}への起用の約束は、機会がないまま流れた": "🤝 The main event you promised {name} never came around",
-    "✨ {name}:「{line}」": "✨ {name}: \"{line}\""
+    "🤝 {name}への起用の約束は、機会がないまま流れた": "🤝 The main event you promised {name} never came around"
   }
   );
 })();

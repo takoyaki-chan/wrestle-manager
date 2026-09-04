@@ -373,6 +373,11 @@ function makeRenderCtx() {
     } },
   };
   vm.createContext(ctx);
+  // i18n Stage B P4-5: _npCrisisColumnHtml/_npKurodaCommentText 等が
+  // src/kuroda-text.js の kurodaText()/kurodaTemplateOf() へ依存するようになったため、
+  // 実際の読み込み順(index.htmlはkuroda-text.jsをui-render.jsより先に読む)に合わせて
+  // ここでも先に丸ごと読み込む(純データ+副作用の無い純関数のみのファイルなので安全)。
+  vm.runInContext(read('src/kuroda-text.js'), ctx);
   vm.runInContext([
     '_npPhotoBg', '_npSubPhotoHtml', '_npFindFighterOrgKey', '_npSpringTagStoryIds', '_npTopTagPhotoHtml',
     '_npCrisisColumnHtml', '_npKurodaCommentText',

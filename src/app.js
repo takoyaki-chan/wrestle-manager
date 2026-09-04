@@ -9810,7 +9810,10 @@ const App = {
     const HL = App._NEWSPAPER_HEADLINES;
     const AR = App._NEWSPAPER_ARTICLES;
 
-    const headline = pick(HL[cat] || HL.normal)(d);
+    // i18n Stage B P4-5(D-P4-2): 見出し/本文は自団体新聞としてGに焼かれるため、
+    // 生成時点のWM_I18N.tを直接通す(kurodaText経由。src/kuroda-text.jsのヘルパーを
+    // app.js側からも再利用 — kuroda-text.jsはindex.htmlでapp.jsより先に読み込まれる)。
+    const headline = kurodaText(pick(HL[cat] || HL.normal), d, WM_I18N.t);
 
     // サブヘッドライン：常にカードと数値情報
     // i18n Stage A P3a-2: NEWSPAPER_SUB_TEMPLATES(data.js・監査3-3)。3分岐→3テンプレ。
@@ -9834,11 +9837,11 @@ const App = {
     let articleCat = cat;
     if (d.isGoodRival && !d.isDraw && cat !== 'superMQ') articleCat = 'goodRival';
     const articlePool = AR[articleCat] || AR.normal;
-    let article = pick(articlePool)(d);
+    let article = kurodaText(pick(articlePool), d, WM_I18N.t);
 
     // 低MQ追記
     if (d.isLowMQ && cat !== 'draw') {
-      article = pick(AR.lowMQ)(d);
+      article = kurodaText(pick(AR.lowMQ), d, WM_I18N.t);
     }
 
     return { headline, subheadline, article };
@@ -9877,7 +9880,10 @@ const App = {
         loserName,
         mq: r.mq || 0,
         turns: r.turns || 0,
-        finishLabel: Engine.formatFinish(r.finType, r.finMove),
+        // i18n Stage B P4-5で発見: finishLabelがJA原文のまま新聞テンプレへ焼かれていた
+        // (成形済み値の構造穴。specs/i18n-runtime-spec-v1.0.md §6 Engine.formatFinishの
+        // dict糸通し先例に倣い、app.js側からWM_I18N.tを渡す)。
+        finishLabel: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
         isDraw: isMatchDraw,
         isUpset: false,
         isDominant: !isMatchDraw && (r.turns || 99) <= 6,
@@ -9916,7 +9922,8 @@ const App = {
     const avgMQ = Math.round(results.reduce((sum, r) => sum + (r.mq || 0), 0) / results.length);
     const attendance = G.lastShowAttendance || 0;
     const showName = isPPV(G.week) ? 'PPV GRAND FINAL' : (isSpecialShow(G.week) ? WM_I18N.t('特別興行') : WM_I18N.t('第{n}回 定期興行', { n: G.totalShows }));
-    const finishLabel = Engine.formatFinish(main.finType, main.finMove);
+    // i18n Stage B P4-5で発見: 同上(finishLabelの成形済み値をWM_I18N.t経由に)
+    const finishLabel = Engine.formatFinish(main.finType, main.finMove, undefined, WM_I18N.t);
     const turns = main.turns || 0;
     const mq = main.mq || avgMQ;
     const hpL = main.hpLeft || { final: 0, max: 100 };
@@ -10009,7 +10016,10 @@ const App = {
         loserName: matchLoser?.name || null,
         mq: r.mq || 0,
         turns: r.turns || 0,
-        finishLabel: Engine.formatFinish(r.finType, r.finMove),
+        // i18n Stage B P4-5で発見: finishLabelがJA原文のまま新聞テンプレへ焼かれていた
+        // (成形済み値の構造穴。specs/i18n-runtime-spec-v1.0.md §6 Engine.formatFinishの
+        // dict糸通し先例に倣い、app.js側からWM_I18N.tを渡す)。
+        finishLabel: Engine.formatFinish(r.finType, r.finMove, undefined, WM_I18N.t),
         isDraw: isMatchDraw,
         isUpset: !isMatchDraw && matchWinner && (
           (matchWinner.id === r.left.id && ovrL < ovrR - 8) ||
@@ -11647,7 +11657,8 @@ const App = {
     App.preloadNewspaperImages(G.weeklyNewspaper);
     // bankruptcy-redesign v1.1: ゲームオーバー判定（autoSave せず解散セレモニーへ）
     if (G.weekPhase === 'gameover') {
-      const data = Engine.ending.buildGameOverData(G);
+      // i18n Stage B P4-5: kurodaColumn(KURODA_GAMEOVER)を生成時点のWM_I18N.tで確定させる
+      const data = Engine.ending.buildGameOverData(G, WM_I18N.t);
       showGameOverCeremony(data, () => { try { App.showTitleScreen(); } catch(e) {} });
       return;
     }

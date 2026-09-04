@@ -7395,8 +7395,11 @@ function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
   const pick = Engine.rng.pick(rng, pool);
   const orgName = G.orgName || WM_I18N.t('プレイヤー団体');
   const weeksRem = Math.max(0, G.crisisWeeksRemaining || 0);
-  const headline = (pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
-  const body = (pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
+  // i18n Stage B P4-5(D-P4-2): 充填前にt()を1回通す(既存の{orgName}/{weeksRemaining}
+  // 置換はそのまま。KURODA_CRISIS は元から{name}プレースホルダ形式の文字列なので
+  // 関数値ではなくWM_I18N.t()を直接通すだけでよい)。
+  const headline = WM_I18N.t(pick.headline || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
+  const body = WM_I18N.t(pick.body || '').replace(/\{orgName\}/g, orgName).replace(/\{weeksRemaining\}/g, String(weeksRem));
   return `<section class="np-kuroda-crisis" style="background:linear-gradient(180deg,#1a0808 0%,#2a0f0f 100%);border-left:4px solid #aa2020;border-radius:4px;padding:14px 18px;margin-bottom:16px;color:#f4d8d8;box-shadow:0 0 12px rgba(170,30,30,0.25) inset">
     <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">${WM_I18N.t('編集記事 — {name}', { name: '黒田幸子' })}</div>
     <h3 style="margin:0 0 8px 0;font-size:18px;color:#ffd6d6;font-weight:700">${headline}</h3>
@@ -7426,7 +7429,9 @@ function _npKurodaBandLine(poolName, d, salt) {
   const rng = Engine.rng.create(Engine.rng.derive(
     G.season || 1, G.week || 1, _hashStr(String(_dbCompareTarget || '')), salt));
   const fn = Engine.rng.pick(rng, list);
-  try { return typeof fn === 'function' ? (fn(d) || '') : String(fn || ''); } catch (e) { return ''; }
+  // i18n Stage B P4-5: kurodaText(kuroda-text.js)経由でt()を通す。正規化できない
+  // 関数はfail-openで従来通りfn(d)を直接呼ぶ(挙動は完全に不変)。
+  try { return kurodaText(fn, d, WM_I18N.t) || ''; } catch (e) { return ''; }
 }
 function _hashStr(s) {
   let h = 0;
@@ -7498,9 +7503,10 @@ function _npMatchupFlavorText(m, d, seasonNum, weekNum) {
     aOrg: d.playerName, bOrg: d.rivalName, role: m.role,
   };
   // 中身は**文字列と関数が混在**しているので両方受ける
+  // i18n Stage B P4-5: kurodaText経由でt()を通す(文字列/関数どちらも対応、
+  // 正規化できない関数はfail-openでv(ctx)を直接呼ぶので挙動は不変)。
   const render = (v) => {
-    if (typeof v === 'function') { try { return v(ctx) || ''; } catch (e) { return ''; } }
-    return typeof v === 'string' ? v : '';
+    try { return kurodaText(v, ctx, WM_I18N.t) || ''; } catch (e) { return ''; }
   };
   const pickFrom = (cat, key, salt) => {
     const pool = (KURODA_MATCHUP_FLAVOR[cat] || {})[key];
@@ -7522,7 +7528,9 @@ function _npKurodaCommentText(type, headline, seasonNum, weekNum, salt) {
   if (!pool || pool.length === 0) return '';
   const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, salt));
   const fn = Engine.rng.pick(rng, pool);
-  try { return fn({ headline: headline || '', orgName: '' }) || ''; } catch (e) { return ''; }
+  // i18n Stage B P4-5: KURODA_NEWS_COMMENTは0引数関数(補間なしの固定文)のみなので
+  // kurodaTemplateOfが確実に解決できる。
+  try { return kurodaText(fn, { headline: headline || '', orgName: '' }, WM_I18N.t) || ''; } catch (e) { return ''; }
 }
 
 // ── 一面(旧レイアウト) ───────────────────────────────
@@ -7566,20 +7574,16 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
     </article>`;
 
     // 一面が他団体ニュースのとき黒田寸評
+    // i18n Stage B P4-5: 既に i18n配線済みの _npKurodaCommentText へ寄せる(同じsalt=0xC0DAで
+    // 従来の抽選結果と完全に一致。文字列組み立て+t()通しのロジック重複を解消)。
     const isPlayerStory = ts.type === 'playerShowTitle' || ts.type === 'playerShowNormal';
     if (!isPlayerStory) {
-      const pool = (typeof _getKurodaNewsComment === 'function') ? _getKurodaNewsComment(ts.type) : [];
-      if (pool.length > 0) {
-        const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC0DA));
-        const fn = Engine.rng.pick(rng, pool);
-        let txt = '';
-        try { txt = fn({ headline: ts.headline, orgName: '' }); } catch(e) {}
-        if (txt) {
-          html += `<div class="np-kuroda" style="margin-bottom:14px">
-            <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-            <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
-          </div>`;
-        }
+      const txt = _npKurodaCommentText(ts.type, ts.headline, seasonNum, weekNum, 0xC0DA);
+      if (txt) {
+        html += `<div class="np-kuroda" style="margin-bottom:14px">
+          <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+          <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
+        </div>`;
       }
     }
   }
@@ -7622,19 +7626,14 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
     });
     html += `</div>`;
     // 他団体ニュースまとめの黒田寸評(1個)
+    // i18n Stage B P4-5: 上と同様 _npKurodaCommentText へ寄せる(salt=0xC0DCは従来通り)。
     const ss = wp.subStories[0];
-    const pool = (typeof _getKurodaNewsComment === 'function') ? _getKurodaNewsComment(ss.type) : [];
-    if (pool.length > 0) {
-      const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC0DC));
-      const fn = Engine.rng.pick(rng, pool);
-      let txt = '';
-      try { txt = fn({ headline: ss.headline, orgName: '' }); } catch(e) {}
-      if (txt) {
-        html += `<div class="np-kuroda">
-          <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-          <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
-        </div>`;
-      }
+    const txt = _npKurodaCommentText(ss.type, ss.headline, seasonNum, weekNum, 0xC0DC);
+    if (txt) {
+      html += `<div class="np-kuroda">
+        <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
+        <div><div class="np-kuroda-text">「${txt}」</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
+      </div>`;
     }
   } else {
     html += `<div class="np-empty-substory">${WM_I18N.t('今週は業界動向の特筆事項なし。<br>業界全体が静かに次の展開を待っている。')}</div>`;
@@ -8253,7 +8252,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     if (pool && pool.length) {
       const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, 0xC5A1));
       const fn = Engine.rng.pick(rng, pool);
-      try { comment = fn({ playerName: G.orgName || WM_I18N.t('我が団体'), avgMQ: d.avgMQ || d.mq || 0 }); } catch(e) {}
+      try { comment = kurodaText(fn, { playerName: G.orgName || WM_I18N.t('我が団体'), avgMQ: d.avgMQ || d.mq || 0 }, WM_I18N.t); } catch(e) {}
     }
     html += `<div class="np-rating">
       <div class="np-rating-stars">${starHtml}</div>
@@ -8327,7 +8326,7 @@ function _npRenderDigest(d, seasonNum, weekNum) {
       if (pool && pool.length) {
         const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, idx, 0xD1C0));
         const fn = Engine.rng.pick(rng, pool);
-        try { comment = fn({ winnerName: wName, loserName: lName, mq: m.mq, turns: m.turns }); } catch(e) {}
+        try { comment = kurodaText(fn, { winnerName: wName, loserName: lName, mq: m.mq, turns: m.turns }, WM_I18N.t); } catch(e) {}
       }
     }
 
@@ -8547,20 +8546,22 @@ function _npRenderPage2() {
           ? (warStats.streakKind === 'win' ? warStats.streak : -warStats.streak)
           : 0;
         try {
-          warComment = fn({
+          warComment = kurodaText(fn, {
             playerName: d.playerName,
             rivalName: d.rivalName,
             wins: warStats.wins,
             losses: warStats.losses,
             streak: signedStreak,
-          });
+          }, WM_I18N.t);
         } catch(e) {}
       }
     }
     if (!warComment) {
-      warComment = warStats.diff > 1 ? `${d.playerName}が対戦成績で先行している。${d.rivalName}としては反撃の機会を作りたいところだ。`
-        : warStats.diff < -1 ? `${d.rivalName}が対戦成績で優位。${d.playerName}としては流れを変える一戦が必要になる。`
-        : `通算${warStats.total}戦で互角。次戦が大きな分岐点になりそうだ。`;
+      // i18n Stage B P4-5で発見: KURODA_WAR_RECORDが空振りしたときの直書きフォールバック
+      // (テーブル外・地の文にJAテンプレを直接埋め込んでいた)。t()で配線する。
+      warComment = warStats.diff > 1 ? WM_I18N.t('{playerName}が対戦成績で先行している。{rivalName}としては反撃の機会を作りたいところだ。', { playerName: d.playerName, rivalName: d.rivalName })
+        : warStats.diff < -1 ? WM_I18N.t('{rivalName}が対戦成績で優位。{playerName}としては流れを変える一戦が必要になる。', { playerName: d.playerName, rivalName: d.rivalName })
+        : WM_I18N.t('通算{total}戦で互角。次戦が大きな分岐点になりそうだ。', { total: warStats.total });
     }
     html += `<div class="np-war-record">
       <div class="np-sec-gold">${WM_I18N.t('過去対戦成績')}</div>
@@ -8746,13 +8747,14 @@ function _npRenderPage2() {
         if (pool.length > 0) {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, f.id, 0xC3A1));
           const fn = Engine.rng.pick(rng, pool);
-          try { comment = fn({ name: escHtml(f.name), ovr: fOvr, pop: fPop, orgName: d.rivalName, age: fAge }); } catch(e) {}
+          try { comment = kurodaText(fn, { name: escHtml(f.name), ovr: fOvr, pop: fPop, orgName: d.rivalName, age: fAge }, WM_I18N.t); } catch(e) {}
         }
       }
       if (!comment) {
-        comment = i === 0 ? `${d.rivalName}の看板。総合力${fOvr}は当面の脅威。`
-          : i === 1 ? `主力として団体を支える。試合の質で平均値を引き上げる。`
-          : `中堅として団体を支える一人。注視すべき存在だ。`;
+        // i18n Stage B P4-5で発見: KURODA_SPOTLIGHTが空振りしたときの直書きフォールバック。t()で配線する。
+        comment = i === 0 ? WM_I18N.t('{rivalName}の看板。総合力{ovr}は当面の脅威。', { rivalName: d.rivalName, ovr: fOvr })
+          : i === 1 ? WM_I18N.t('主力として団体を支える。試合の質で平均値を引き上げる。')
+          : WM_I18N.t('中堅として団体を支える一人。注視すべき存在だ。');
       }
       html += `<div class="np-spotlight">
         <div class="np-spotlight-head">
@@ -8773,9 +8775,9 @@ function _npRenderPage2() {
   if (typeof FAN_OPINIONS !== 'undefined') {
     const tier = d.totalDiff > 40 ? 'dominant' : d.totalDiff > 10 ? 'ahead' : d.totalDiff > -25 ? 'even' : d.totalDiff > -60 ? 'behind' : 'devastating';
     const tones = [
-      { key: 'hopeful', handle: '@熱狂派' },
-      { key: 'hardcore', handle: '@辛口派' },
-      { key: 'neutral', handle: '@分析派' },
+      { key: 'hopeful', handle: WM_I18N.t('@熱狂派') },
+      { key: 'hardcore', handle: WM_I18N.t('@辛口派') },
+      { key: 'neutral', handle: WM_I18N.t('@分析派') },
     ];
     const fans = [];
     tones.forEach((t, i) => {
@@ -8784,7 +8786,7 @@ function _npRenderPage2() {
         const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, i, 0xC4A1));
         const fn = Engine.rng.pick(rng, pool);
         let txt = '';
-        try { txt = fn({ playerName: d.playerName, rivalName: d.rivalName }); } catch(e) {}
+        try { txt = kurodaText(fn, { playerName: d.playerName, rivalName: d.rivalName }, WM_I18N.t); } catch(e) {}
         if (txt) fans.push({ tone: t.key, txt, handle: t.handle });
       }
     });
@@ -8862,7 +8864,7 @@ function _npRenderPage3() {
       const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, featured.idA, featured.idB, 0xC1B1));
       _npRivalryPairIndex = Engine.rng.int(rng, 0, 999);
       const fn = pool[_npRivalryPairIndex % pool.length];
-      try { dynHeadline = fn({ charA: featured.charA.name, charB: featured.charB.name, matches: _hd_h2h.matches || 0, bestMQ: _hd_h2h.bestMQ || 0, years: yearsApprox }); } catch(e) {}
+      try { dynHeadline = kurodaText(fn, { charA: featured.charA.name, charB: featured.charB.name, matches: _hd_h2h.matches || 0, bestMQ: _hd_h2h.bestMQ || 0, years: yearsApprox }, WM_I18N.t); } catch(e) {}
     }
   }
   html += `<div class="np-rivalry-headline">
@@ -8911,7 +8913,7 @@ function _npRenderPage3() {
       const paired = pool[_npRivalryPairIndex % pool.length];
       if (paired) {
         try {
-          const t = paired({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: _bestMQVal, years: yearsApprox, charA: aName, charB: bName });
+          const t = kurodaText(paired, { aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: _bestMQVal, years: yearsApprox, charA: aName, charB: bName }, WM_I18N.t);
           if (t) narrativeParas.push(t);
         } catch (e) {}
       }
@@ -8924,17 +8926,18 @@ function _npRenderPage3() {
         if (used.has(fn)) return;
         used.add(fn);
         try {
-          const t = fn({ aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: _bestMQVal, years: yearsApprox, charA: aName, charB: bName });
+          const t = kurodaText(fn, { aName, bName, aOrg, bOrg, matches, wA, wB, bestMQ: _bestMQVal, years: yearsApprox, charA: aName, charB: bName }, WM_I18N.t);
           if (t) narrativeParas.push(t);
         } catch(e) {}
       });
     }
   }
   if (narrativeParas.length === 0) {
-    narrativeParas.push(`${aName}と${bName}。${matches}度のぶつかり合いが、二人の関係を形づくってきた。`);
-    narrativeParas.push(`通算${wA}勝${wB}敗。本紙はこの関係を、業界を象徴する一組として注視している。`);
+    // i18n Stage B P4-5で発見: KURODA_RELATION_NARRATIVEが空振りしたときの直書きフォールバック。t()で配線する。
+    narrativeParas.push(WM_I18N.t('{a}と{b}。{n}度のぶつかり合いが、二人の関係を形づくってきた。', { a: aName, b: bName, n: matches }));
+    narrativeParas.push(WM_I18N.t('通算{wa}勝{wb}敗。本紙はこの関係を、業界を象徴する一組として注視している。', { wa: wA, wb: wB }));
   } else if (narrativeParas.length === 1) {
-    narrativeParas.push(`通算${wA}勝${wB}敗。数字は嘘をつかない。`);
+    narrativeParas.push(WM_I18N.t('通算{wa}勝{wb}敗。数字は嘘をつかない。', { wa: wA, wb: wB }));
   }
 
   // 事実段落: h2h データを最大限盛り込む
@@ -9074,7 +9077,7 @@ function _npRenderPage3() {
           const rng = Engine.rng.create(Engine.rng.derive(seasonNum, weekNum, r.idA, r.idB, 0xC1B2));
           const fn = Engine.rng.pick(rng, pool);
           const yrs = _npH2HYearsApprox(r.h2h, G);
-          try { summary = fn({ aName: r.charA.name, bName: r.charB.name, charA: r.charA.name, charB: r.charB.name, aOrg: _findFighterOrgName(G, r.idA), bOrg: _findFighterOrgName(G, r.idB), matches: r.h2h.matches || 0, bestMQ: r.h2h.bestMQ || 0, years: yrs, wA: r.h2h.winsA || 0, wB: r.h2h.winsB || 0 }); } catch(e) {}
+          try { summary = kurodaText(fn, { aName: r.charA.name, bName: r.charB.name, charA: r.charA.name, charB: r.charB.name, aOrg: _findFighterOrgName(G, r.idA), bOrg: _findFighterOrgName(G, r.idB), matches: r.h2h.matches || 0, bestMQ: r.h2h.bestMQ || 0, years: yrs, wA: r.h2h.winsA || 0, wB: r.h2h.winsB || 0 }, WM_I18N.t); } catch(e) {}
         }
       }
       const aOrgKeyR = _npFindFighterOrgKey(G, r.idA);

@@ -19290,8 +19290,16 @@ Engine.ending = {
     };
   },
 
-  /** bankruptcy-redesign v1.1: 解散セレモニー(5スライド)用データ（純粋関数） */
-  buildGameOverData(state) {
+  /**
+   * bankruptcy-redesign v1.1: 解散セレモニー(5スライド)用データ（純粋関数）。
+   * i18n Stage B P4-5(specs/i18n-runtime-spec-v1.0.md §6): kurodaColumn(KURODA_GAMEOVER)は
+   * 呼び出しのたびに現在言語で確定させたい(render時点再構築)ため、末尾の任意引数dictを
+   * 受け取る(先例: Engine.formatFinish(finType, finMove, isFinisher, dict)と同型)。
+   * Engine自身はWM_I18Nを直接参照しない — 呼び出し元(app.js)がWM_I18N.tを渡す。
+   * dict省略時(auto-sim等の既存呼び出し)は恒等関数=JA原文のまま(1バイト不変)。
+   */
+  buildGameOverData(state, dict) {
+    const T = (typeof dict === 'function') ? dict : (s) => s;
     const summary = Engine.ending.buildGameOverSummary(state);
     const sortedRoster = [...(state.roster || [])]
       .filter(f => f && !f.isRental)
@@ -19313,7 +19321,7 @@ Engine.ending = {
       ? kurodaPool[Math.floor(Math.random() * kurodaPool.length)]
       : { body: '' };
     const orgName = state.orgName || '団体';
-    const kurodaColumn = (kurodaPick.body || '')
+    const kurodaColumn = T(kurodaPick.body || '')
       .replace(/\{orgName\}/g, orgName);
 
     return {
