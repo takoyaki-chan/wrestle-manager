@@ -1603,12 +1603,14 @@ function _ceremAudioClose() {
 // onContinue: 続けるボタンクリック時のコールバック
 function showCeremonyEvent(evt, speakers, onContinue) {
   // タイトルサブ動的生成
-  let titleSub = evt.titleSub;
+  // i18n Stage B P7-1: titleSub自体は英語決め打ちの装飾サブタイトル(常に英語表示の意匠)だが、
+  // t()を通しておくことでmiss検出の対象になり、将来JAへ差し替えられても自動で追随する。
+  let titleSub = WM_I18N.t(evt.titleSub);
   if (evt.visualVariant === 'arrival') {
-    titleSub = evt.titleSub + ' ・ WEEK ' + G.week;
+    titleSub = titleSub + ' ・ WEEK ' + G.week;
   } else if (evt.visualVariant === 'triumph') {
     const att = (G.lastShowAttendance || 0).toLocaleString();
-    titleSub = evt.titleSub + ' ・ ' + att + ' ATTENDED';
+    titleSub = titleSub + ' ・ ' + att + ' ATTENDED';
   }
 
   const overlay = document.createElement('div');
@@ -1624,7 +1626,7 @@ function showCeremonyEvent(evt, speakers, onContinue) {
   // Phase 1 HTML
   const narLines = (evt.narration || []).map((line, i) => {
     const gapClass = narrationGaps.includes(i) ? ' gap' : '';
-    return `<span class="cerem-nar-line${gapClass}" data-nar-idx="${i}">${line}</span>`;
+    return `<span class="cerem-nar-line${gapClass}" data-nar-idx="${i}">${WM_I18N.t(line)}</span>`;
   }).join('');
 
   // Phase 2: speakers
@@ -1657,7 +1659,7 @@ function showCeremonyEvent(evt, speakers, onContinue) {
     <div class="cerem-phase active" data-phase="1">
       <div class="cerem-phase-zone top">
         <div class="cerem-title-band">
-          <div class="cerem-title-main ${evt.visualVariant || ''}">${evt.titleMain}</div>
+          <div class="cerem-title-main ${evt.visualVariant || ''}">${WM_I18N.t(evt.titleMain)}</div>
           <div class="cerem-title-divider"></div>
           <div class="cerem-title-sub">${titleSub}</div>
         </div>
@@ -12967,7 +12969,13 @@ const App = {
         const n1 = c1?.name || '???';
         const n2 = c2?.name || '???';
         displayEvt = { ...evt,
-          narration: `${n1}と${n2}——\nリング上で何度も火花を散らしたふたりの間に、\n特別な空気が漂い始めている。\nこの因縁、どう活かしていくか——`,
+          // i18n Stage B P7-1: MILESTONE_EVENTSの表(DATA_TABLES)にはこの文が乗らない
+          // (first_rivalryのnarrationはbaseがnullで、ここで選手名を埋めて動的生成するため)。
+          // narrationはPH入りの原文のまま(訳語はこのままの辞書キー)に保ち、埋め込む選手名は
+          // narrationVarsへ分離する — showMilestoneEvent側でt(narration, narrationVars)として
+          // 「訳してから埋める」の順序を守る(先に埋めるとPH入り原文と一致せずfail-openする)。
+          narration: '{n1}と{n2}——\nリング上で何度も火花を散らしたふたりの間に、\n特別な空気が漂い始めている。\nこの因縁、どう活かしていくか——',
+          narrationVars: { n1, n2 },
           choices: evt.choices.map((ch, i) => {
             if (i === 1 && ch.effect.type === 'next_match_mq') {
               return { ...ch, effect: { ...ch.effect, pair: [id1, id2] } };
@@ -17497,7 +17505,7 @@ function _fighterFileDetailHtml(fighter, traitDefs) {
   const traits = fighter.traits.length ? fighter.traits.map(trait => {
     const def = traitDefs && traitDefs[trait];
     if (!def) return '';
-    return `<div class="fighter-file-trait"><span class="fighter-file-trait-icon" style="--fighter-trait-color:${escHtml(def.color || 'var(--gold)')}">${escHtml(def.icon || trait.charAt(0))}</span><span class="fighter-file-trait-name">${escHtml(trait)}</span><span class="fighter-file-trait-desc">${escHtml(def.desc || '')}</span></div>`;
+    return `<div class="fighter-file-trait"><span class="fighter-file-trait-icon" style="--fighter-trait-color:${escHtml(def.color || 'var(--gold)')}">${escHtml(def.icon || trait.charAt(0))}</span><span class="fighter-file-trait-name">${escHtml(WM_I18N.t(trait))}</span><span class="fighter-file-trait-desc">${escHtml(WM_I18N.t(def.desc || ''))}</span></div>`;
   }).join('') : `<div class="fighter-file-trait-desc">${WM_I18N.t('固有特性なし')}</div>`;
   return `<div class="fighter-file-detail-head">
       <span class="fighter-file-kicker">Personnel File</span>

@@ -222,18 +222,18 @@ P6-9(`docs/i18n-en-layout-overflow-report-v0.1.md`)が計測したEN溢れ87〜8
 - **検出器側の是正**: `test/ui-walkthrough/detectors.js`の`wrap-height`グルーピングが`[class*="tab"]`で「タブの中身のパネル」(`.rd-tab-content`)まで拾ってしまう疑陽性を、`-content`/`-panel`で終わるクラスを除外する形で解消(P6-9報告書§6の申し送りに対応)
 - **テストスタブの機械追加**: `pnSurname`新設に伴い、`pn(str){return str;}`という前方互換スタブを持つtest/配下47ファイル67箇所へ`pnSurname(str){return str;}`を同様に機械追加した(P6-3が確立した前例と同じ作法)
 - **結果**: EN溢れ87〜89件→**34件**(直近実走)、JA溢れは30〜31件→**32件**(walkthrough digest `1052faa82eaf7991`不変)。EN固有の増分は+56〜58件→**+2件**(目標10件以下を達成)。詳細はdocs/i18n-en-layout-overflow-report-v0.1.md §9
-## 12. Stage B P6-10 — 未配線3系統(雑誌/TV見出し・殿堂入り異名・EMOTION_TEXTS)の配線と英訳(2026-09-04追加)
+## 17. Stage B P6-10 — 未配線3系統(雑誌/TV見出し・殿堂入り異名・EMOTION_TEXTS)の配線と英訳(2026-09-04追加)
 
 §11-5が起票した4件のうち3件(1・3・4)を実装・英訳した。訳出合計251行(template-ledger 36 / ui-ledger 215)。
 
-### 12-1. `Engine.flavor` のフレーバー見出し(dict-opts + gameLogはJA固定)
+### 17-1. `Engine.flavor` のフレーバー見出し(dict-opts + gameLogはJA固定)
 
 - **関数プール → `{name}` プレースホルダ文字列**へ移行(JA出力1バイト不変)。**配列の並び順を変えないこと** — `Engine.rng.int(rng, 0, len-1)`が引く添字が変わるとJA出力が変わる
 - `Engine.flavor.check(state, rng, opts)`。`_headline(tpl, params, opts)`が**PH置換前に**`dict(tpl, params)`を通し、`_fillHeadline(tpl, params)`がJA充填のみを行う。`opts.dict`未指定(auto-sim / ja-golden / app.js:10166の`previewTick`)のフォールバックは「翻訳しないが**充填はする**」形にすること — 単純な`(s)=>s`だと`{name}`が生で残る(§6 `generateTicker`と同じ落とし穴)
 - **gameLogへは生JA(`ev.headlineJa`)を積む**。`tickWeek`の`events.push(\`${headline}（${fighterName} 人気+${popGain}）\`)`はレガシー文字列エントリ(§2-4)で周囲の装飾がJAのため、見出しだけENにすると1行の中で言語が混ざる。`check()`が`headline`(dict適用済み・ポップアップ表示用)と`headlineJa`(JA充填のみ・gameLog用)の**両方**を返し、tickWeekは`ev.headlineJa || ev.headline`で読む(旧セーブ互換)。**セーブに書く値は不変**
 - 台帳: `test/i18n-extract-templates.js`の`MANAGEMENT_FLAVOR_PROPS` + `extractArrayLiteralProp()`(§6参照)
 
-### 12-2. 殿堂入り異名は「永続値はJA・表示点で引く」
+### 17-2. 殿堂入り異名は「永続値はJA・表示点で引く」
 
 - 生成側(`generateEpithet`)は**無改修**。`hofEntry.epithet`はG(殿堂入りエントリ)へ生JAで永続する(D-P6-4)
 - **`Engine.awards.epithetText(epithet, dict)`**(management.js、純粋関数)が表示用変換の唯一の入口。`_EPITHET_TEMPLATES`で唯一プレースホルダを持つ`{n}人切り`は`_resolvePlaceholders`が生成時点で数値を埋めるため、保存値`"23人切り"`から`/^(\d+)人切り$/`で数値を読み戻し、テンプレのキー`{n}人切り`で辞書を引き直す。未知の値はfail-open
@@ -241,7 +241,7 @@ P6-9(`docs/i18n-en-layout-overflow-report-v0.1.md`)が計測したEN溢れ87〜8
 - **表示箇所は2箇所のみ**(2026-09-04 grep全数確認): `ui-render.js:showHofDetail`(殿堂詳細モーダル。`── 「{epithet}」──`をui-ledgerキー化)と`management.js:composeHallOfFameRetirement`(新聞特別号)。殿堂リストのカード・選手詳細・年代記に異名は出ていない。`generateBiography({...h, epithet})`へは**生JAのepithetを渡したまま**(語り文自体が未英訳のため。§12-5)
 - 台帳: `i18n/ui-ledger.json`へ`kept:true`+`note`で111行(`新人王`は既訳を再利用)
 
-### 12-3. `composeHallOfFameRetirement` のdict-opts化 + `_wmFillWithDict`
+### 17-3. `composeHallOfFameRetirement` のdict-opts化 + `_wmFillWithDict`
 
 - `composeHallOfFameRetirement(d, hofEntry, dict)`。呼び出し元は`Engine.newspaper.generate()`内の2箇所のみで、いずれもgenerateのローカル`dict`を渡す
 - 実績の列挙(`achievement.join('、')`)は**分岐ごとの完全文テンプレ4本**へ分解した(構造規約3「断片連結禁止」。JA出力は連結時と同一)
@@ -249,14 +249,14 @@ P6-9(`docs/i18n-en-layout-overflow-report-v0.1.md`)が計測したEN溢れ87〜8
 - `newsData.epithet`は**保存値として生JAのまま**返す
 - **新設ヘルパー`_wmFillWithDict(dict, tpl, params)`**(management.js、`_wmNewsStamp`の直前): テンプレを**PH置換前に**dictへ通してから`fillTemplateVars`で残PHを埋める冪等な二段構え。`WM_I18N.t`(2引数・名前辞書変換つき)でも、Engine内フォールバック`(s)=>s`(1引数)でも壊れない。P6-8が`_buildPpvSummitStory`にローカルで書いた`_quoted`と同じ問題への恒久版で、**Engine内でテンプレ+paramsを扱う新規コードはこれを使う**
 
-### 12-4. `EMOTION_TEXTS` は消費入口1点でt()
+### 17-4. `EMOTION_TEXTS` は消費入口1点でt()
 
 - 配線は**唯一の消費入口`getEmotionText()`(ui-render.js)で1回だけ**。呼び出し元3箇所(モバイル相関図カード / 比較ビューA→B / B→A)は無改修 — **呼び出し側で改めてt()に包み直さないこと**(二重t()がi18n-missを汚染する。§9「二重t()適用は無害ではなかった」)
 - モバイルカードの`「${emotion}」`は`_quoteLine()`へ(ENでは引用符を落とす。§10)
 - 台帳は`i18n/ui-ledger.json`へ`kept:true`+`note`で91行。**dialogue-ledger側の抽出器・台帳は使っていない**(P6-10時点でバッチ⑯が並行作業中だったため)。将来テーブルを整理するなら、セリフの性質からは`test/i18n-extract-dialogue.js`の`EXTRA_INCLUDE`へ移すのが本筋
 - 英訳は`docs/en-tone-bible-draft-v0.1.md` §2の**属性レシピ準拠**。EMOTION_TEXTSは13カテゴリ×7属性の軸を持つのでstandard一律にはしていない
 
-### 12-5. P6-10で新たに見つかった穴
+### 17-5. P6-10で新たに見つかった穴
 
 1. **✅解決(P6-14)** — **`Engine.awards.generateBiography`(殿堂入り選手の語り文、management.js)**: 導入文6分岐×3 + 核心文19分岐×2〜3 + 余韻文(trust/media/style別)= **84文**を連結した1本の文字列を`entry.biography`としてG(殿堂入りエントリ)へ**永続化**する。異名と同じ「永続JA」族だが、**連結後の完成文が保存される**ため異名のような「表示点で辞書を1回引く」形が使えない(辞書キーは分解前の各文であり、完成文と一致しない)。→ 文プールをdata.jsのトップレベル表へ移設+`generateBiography(entry, dict)`のdict-opts化+**表示点での再生成**で解決(§13-1)
 2. **✅棚卸し完了(P6-14)** — **`RETIREMENT_TEMPLATES`の穴はP6-10で解消済み**(§6の対象テーブル一覧に追加)。同型が他に無いかの機械列挙をP6-14で実施し、`*_TEMPLATES`族3件+近縁1件を検出した(§13-2)
@@ -286,9 +286,9 @@ i18n-miss=0のままJA exposure(informational計測)が画面別で高止まり�
 3. **`Engine.fanExpect.generate()`(ファン期待カード理由文、7〜8テンプレ)**: 名前直接埋め込み+`.replace('期待の声', ...)`という2段階の文字列加工のため単純なdict-opts化では済まない
 4. **キャラクター特性(Traits)バッジ・道場シーン(dojo-scene-atmosphere/shout)**: 固定語彙(特性は約20〜30種)の新規登録が必要。roster画面の残存の主因
 5. **社長室招聘市場パネルのコーチ格付け表記**(Class A/職人気質等)
-## 13. Stage B P6-14 — 殿堂入り語り文のEN化+`*_TEMPLATES`全数突合+不定冠詞の機械検査(2026-09-04追加)
+## 18. Stage B P6-14 — 殿堂入り語り文のEN化+`*_TEMPLATES`全数突合+不定冠詞の機械検査(2026-09-04追加)
 
-### 13-1. 「連結後の完成文が永続する」族は**表示点で再生成する**
+### 18-1. 「連結後の完成文が永続する」族は**表示点で再生成する**
 
 異名(§12-2)は「永続値はJAのまま・表示点で辞書を1回引く」で足りたが、語り文は3文を連結し終えた完成文が保存されるため同じ手が使えない。P6-14で確立した型は次のとおりで、**同型(完成文がGへ焼かれる紙面/記録テキスト)には今後これを使う**。
 
@@ -306,7 +306,7 @@ i18n-miss=0のままJA exposure(informational計測)が画面別で高止まり�
   - **同一性チェックは異名を差し替える前の生JAで行う**。差し替え後で比較するとENモードでは必ず不一致になり、常に保存値フォールバックへ落ちてしまう
 - **JA同一性の証明の作法**: ①着手前の実装を凍結コピーとして切り出し、全分岐を代表値・境界値の直積で回して新旧突合(P6-14では606,256通り・不一致0) ②`auto-sim`に`_buildHofEntry`のフックを挿して**実際に生成された殿堂エントリ**を収集し、本物の`src/i18n.js`+生成済み辞書で表示点の手順を再現(P6-14では38件・JA再生成==保存値 38/38、EN日本語残り0・i18n-miss 0)
 
-### 13-2. `*_TEMPLATES`全数突合の結果(§12-5-2の宿題)
+### 18-2. `*_TEMPLATES`全数突合の結果(§12-5-2の宿題)
 
 data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`を全件列挙して実値を評価**し、3台帳の収録キー+固有名詞辞書(`src/lang-en-names.js`)と突き合わせた。
 
@@ -323,14 +323,17 @@ data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`
 
 **B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行(→ P7-2で7表367行を解決、残**37表・約1,053行**)**
 
+Engine/UIが直に読む地の文・ラベルのプール。大物は`SNAPSHOT_TEXTS` 276 / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / ~~`DECISION_DOCS` 63~~✅ / ~~`TRAIT_DEFS` 50~~✅ / ~~`MILESTONE_EVENTS` 49~~✅ / `ATMOSPHERE_TEXTS` 33、以下中小の表が続く。
 Engine/UIが直に読む地の文・ラベルのプール。大物は`SNAPSHOT_TEXTS` 276 / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 **✅P7-3** / `LARGE_EVENT_TEXTS` 86 **✅P7-3** / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 **✅P7-3(台帳のみ・表示はJA固定。§15-2)** / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / `ATMOSPHERE_TEXTS` 33、以下中小の表が続く。
 Engine/UIが直に読む地の文・ラベルのプール。大物は~~`SNAPSHOT_TEXTS` 276~~(**✅P7-2**) / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / ~~`ATMOSPHERE_TEXTS` 33~~(**✅P7-2**)、以下中小の表が続く。
 
 **✅P7-2(2026-09-04)で解決した7表**: `SNAPSHOT_TEXTS` 282 / `ATMOSPHERE_TEXTS` 33 / `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `CAMP_FLAVOR_TEXTS` 12 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8(詳細は§15)。
 
-**⚠ `i18n-miss 0` は「英語化が終わった」の指標ではない。** missは「t()を通ったが辞書に無い」ときにしか出ないので、**そもそもt()を通っていないこの層は永久にmissへ出ない**。進捗はEN走破の「JA exposure by screen」(P6-14時点: screen-week=56 / screen-shachoshitsu=55 / screen-log=51 / screen-show=39 / screen-newspaper=33 …)と本突合表を併読して測る。
+**✅P7-1で「C. ラベル・短い定義の表」分類を全解決(2026-09-04、詳細は§15)**: `TRAIT_DEFS`(50) / `MILESTONE_EVENTS`(49) / `COACH_ABILITY_CATALOG`(13) / `SPECIAL_EVENT_INTRO`のUI部分(13、P6-13のkept:true手追加から走査対象へ昇格) / `PROMO_EVENT_NAMES`(12) / `GLIMPSE_A_THRESHOLDS`(11) / `DECISION_DOCS`(63、同じくP6-13から昇格) / `COACHING_TYPE_LABELS`(5) / `COACH_STYLE_MAP`(6、既訳5+新規1) / `STAT_TIPS`(5) / `QUARTER_LABELS`(4) / `SCANDAL_CONFIG.messages`(3、消費点は§2-4のgameLogレガシー文字列のみで実質対象外だが台帳は完備) / `LOSING_STREAK_PENALTIES.msg`(3、同upper)。残る大物6表(SNAPSHOT_TEXTS/CHAR_PROFILES/ALL_COACHES flavor/NOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS/STYLE_TAG_MOVES/WEEKLY_STORY_TICKER/ATMOSPHERE_TEXTS等)はP7-2〜P7-5が担当。
 
-### 13-3. プレースホルダ直前の不定冠詞の機械検査(黒田英文体 §3-4 規則25)
+**⚠ `i18n-miss 0` は「英語化が終わった」の指標ではない。** missは「t()を通ったが辞書に無い」ときにしか出ないので、**そもそもt()を通っていないこの層は永久にmissへ出ない**。進捗はEN走破の「JA exposure by screen」(P6-14時点: screen-week=56 / screen-shachoshitsu=55 / screen-log=51 / screen-show=39 / screen-newspaper=33 … / P7-1後: screen-log=48 / screen-week=29 / screen-newspaper=29 / screen-roster=25 / screen-shachoshitsu=13 / screen-show=7 / titleScreen=6 / screen-finance=5 / screen-ranking=4、合計186→166)と本突合表を併読して測る。
+
+### 18-3. プレースホルダ直前の不定冠詞の機械検査(黒田英文体 §3-4 規則25)
 
 `test/i18n-build-dict.js` / `i18n-build-template-dict.js` / `i18n-build-dialogue-dict.js` の3本が同一定義の
 `ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i` を持ち、違反があれば**exit 1・辞書を生成しない**。
@@ -384,7 +387,52 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 3. **`Engine.autumnWar`の結果ニュース**(management.js:30729/30730) — `_orgName`+勝敗数の生JA組み立てを`industryNews.push`のdataへ焼く。§8の「生キー+render時点再構築」が要る型
 4. **composerがnullを返したときの直書きJAフォールバック2箇所** — `management.js`のAIチャンピオン交代(`${ev.orgName}の王座が動いた。…`)と`ui-common.js`のドラフト自団体1面(`${names}。新シーズンの陣容がひとつ厚くなった。`)。どちらもdictを通らないので、本体が英語になった今はフォールバックだけJAで出る
 
-## 15. Stage B P7-3 — 地の文プール後半3表(253行)の台帳化・英訳(2026-09-04追加)
+## 15. Stage B P7-1 — データ表の値層「C. ラベル・短い定義の表」を`DATA_TABLES`モードで台帳化・配線・英訳(2026-09-04追加)
+
+設計はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」13表と、P6-13が積み残した4件(秋対抗戦の団体名ロングテール/fanExpect理由テンプレ/特性バッジ/招聘市場パネルのラベル)を解決した。
+
+### 15-1. `test/i18n-extract-ui.js` に `DATA_TABLES` モードを新設
+
+既存の`test/i18n-extract-templates.js`の汎用再帰ウォーカー(`walkStrings`、値を無差別に拾う)とは別に、**表ごとに専用の抽出器を書く**方式にした。理由: このC分類の表は「オブジェクトのキー自体がラベル」(`TRAIT_DEFS`/`COACH_ABILITY_CATALOG`)・「特定フィールドだけが訳出対象で他は英語enum/数値」(`MILESTONE_EVENTS`/`GLIMPSE_A_THRESHOLDS`/`DECISION_DOCS`)・「値がそのまま訳出対象」(`PROMO_EVENT_NAMES`/`COACHING_TYPE_LABELS`/`COACH_STYLE_MAP`/`STAT_TIPS`/`QUARTER_LABELS`)の3系統が混在し、汎用ウォーカーでは`color`(hex)・`grade`(単一英字)・`cat`(enum)等の非翻訳フィールドまで拾って台帳を汚してしまうため。
+
+- `DATA_TABLES`配列の各エントリは`{ name, extract(table, onEntry) }`。`onEntry(text, tablePath)`で`source:'TABLE.path'`(例: `TRAIT_DEFS.華.desc`、キー自体を拾うときは`TRAIT_DEFS.華.$key`)付きの行を記録する
+- 表アクセスは`require()`ではなく`test/helpers/load-game.js`の`loadAsGlobal('data.js')`(vm経由)。`DECISION_DOCS`/`COACHING_TYPE_LABELS`はdata.jsの`module.exports`に載っていない(exportされているのはゲーム内で他ファイルから直接参照される表のみ)ため、requireでは見えない
+- 保全マージ(既存en非破壊)は既存のロジックをそのまま使う。**`SPECIAL_EVENT_INTRO`/`DECISION_DOCS`はP6-13が「走査対象外につき手追加」の`kept:true`で登録していたが、DATA_TABLESが両表を対象に加えたことで次回抽出時に自動的に`kept`が外れ`source`が付く**(設計§1-Cの「kept扱いではなく走査対象として再現可能に」を達成)。この移行時、両表に付いていた「走査対象外につき手追加」のnoteは事実と異なるため、`source`が付いた行に限り引き継がない機械判定を追加した
+
+### 15-2. 対象13表・訳出内訳
+
+| 表 | 行数 | 内訳 |
+|---|---:|---|
+| `TRAIT_DEFS` | 50 | キー25(既存の`en:`フィールドをそのまま採用) + desc25(新規) |
+| `MILESTONE_EVENTS` | 51 | title/titleMain/titleSub/narration(文字列 or 配列)/continueLabel/choices[].{label,result,effectLabel} |
+| `COACH_ABILITY_CATALOG` | 26 | キー13(新規) + desc13(新規) |
+| `SPECIAL_EVENT_INTRO` | 15 | title/travelLine/nextLabel(P6-13で訳出済み・今回は走査対象への昇格のみ) |
+| `DECISION_DOCS` | 75 | label/categoryLabel/costLabel/body/detailText/effectSummary/recommendation(P6-13で大半訳出済み。今回`relationship_repair.recommendation`と`encourage.effectSummary`の全角括弧版2件が新規) |
+| `PROMO_EVENT_NAMES` | 12 | low/mid/highの3プール×4件 |
+| `GLIMPSE_A_THRESHOLDS` | 11 | `.label`のみ |
+| `COACHING_TYPE_LABELS` | 5 | 全件新規(非export) |
+| `COACH_STYLE_MAP` | 6 | 5件は既存訳(選手スタイル表示と共用)、`ブローラー`のみ新規 |
+| `STAT_TIPS` | 5 | 全件新規 |
+| `QUARTER_LABELS` | 4 | 全件新規 |
+| `SCANDAL_CONFIG.messages` | 3 | 全件新規(§15-4参照。実消費点は現状gameLog専用) |
+| `LOSING_STREAK_PENALTIES.msg` | 3 | 全件新規(同上) |
+
+新規訳出170行(台帳の新規キー174件のうち4件はP7-1と無関係の既存drift)。加えて配線中に発見した「表に無いがdata.js外(management.js/app.js/ui-common.js)の関数内リテラル」8+1+6=15件を`kept:true`で手追加(§15-3)。
+
+### 15-3. DATA_TABLESの走査対象外だが配線した3件
+
+1. **`Engine.fanExpect.generate(state, dict)`(management.js)** — ファン期待カード理由文。旧実装は`` `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声` ``のようにJS template literalで選手名を先に埋め込んでいたため、辞書キー(埋め込み前の原文)と一致せず翻訳不能だった(P6-13 §8で「単純なdict-opts化では済まない」と指摘)。`addCandidate(f1, f2, tpl, priority)`のシグネチャを`reason`(完成文)から`tpl`(`{left}`/`{right}`プレースホルダ入りテンプレ)へ変更し、freshness降格時の`.replace('期待の声', ...)`もテンプレ段階(埋め込み前)で行うよう移した。表示点(`ui-render.js`)は`Engine.fanExpect.generate(G, WM_I18N.t)`とdictを渡す。テンプレ7本+freshness降格の差し替え変種1本、計8件を`i18n/ui-ledger.json`へ手追加
+2. **`app.js` の`first_rivalry`マイルストーンの動的ナレーション** — `MILESTONE_EVENTS`表の`narration`はbase値が`null`(選手名を後から埋め込むため)。旧実装は選手名埋め込み後の完成文をそのまま`narration`へ入れていたため、`showMilestoneEvent`(ui-common.js)が単純に`WM_I18N.t(evt.narration)`しても翻訳できなかった。`narration`をPH入りの原文のまま保ち、埋め込み値を新設`narrationVars`フィールドへ分離、`showMilestoneEvent`側で`WM_I18N.t(evt.narration, evt.narrationVars)`(訳してから埋める)を行うよう修正。1件を手追加
+3. **秋対抗戦(Autumn War、`ui-common.js`)の団体名ロングテール(P6-13 §8の積み残し)** — `_agwTeam(id)?.orgName || ''`型の未`pn()`箇所を全数(約18箇所)`WM_I18N.pn()`配線。共有ヘルパー`_chTeamlineHtml`/`_chOrgBadgeHtml`/`_chOrgEmblemInner`/`_chSubCardHtml`(春季タッグ/JT等でも使われる団体名表示部品)は関数内で`pn()`を1回適用する形にして呼び出し側の重複配線を避けた。同じ画面で見つかった副次的な未配線(`_agwTeamViewState`の状態ラベル`敗退/決勝進出/出番待ち/優勝/対戦中`、`_agwRoleLabel`の役割ラベル`先鋒/中堅/大将/代表`)も合わせて配線・6件を手追加
+
+### 15-4. 発見: gameLogレガシー文字列専用の表は配線不要(§2-4の適用確認)
+
+`SCANDAL_CONFIG.messages`(スキャンダル発生時の見出し)と`LOSING_STREAK_PENALTIES.msg`(連敗ペナルティ通知)は、消費点`Engine.popularity.checkScandal`/`checkLosingStreak`の戻り値`.msg`を全呼び出し元で追跡した結果、**唯一の表示経路が`events.push(...)`→`tickWeek`の戻り値`events`→`G.gameLog`への直接concat**(§2規約4「旧文字列エントリは無変換で共存」)であることを確認した。実際にプレイヤーへ通知される内容(`app.js`の`showNotifEventToast`)は`scandal.msg`を使わず別の固定テンプレ(`📰 {name}のスキャンダルが週刊誌に掲載された！`、既訳済み)を組み立てており、`scandal.msg`自体はgameLog行にしか現れない。したがって**この2表はDATA_TABLESで台帳化・英訳したが、コード側の配線(t()呼び出し)は行っていない**(spec §2-4の仕様どおり、gameLogは意図的にJA固定)。将来gameLogが`{type,data}`形式へ移行する際に訳文を再利用できるよう、台帳には残す。
+
+### 15-5. 検証
+
+`node --check`全触りファイルOK。`node test/ja-golden.js`**完全一致**(hash `6b3d05c8…`、全編集を通じて不変)。`node test/i18n-build-dict.js`台帳4,022キー・未訳4件(すべてP7-1と無関係の既存drift、ui-common.js内のセリフ的文字列でsourceタグなし)。`npm test` **260/260 green**(`stat-notation-backport-test.js`が抽出評価するvmサンドボックスに`WM_I18N`スタブが無く1件red化→スタブ追加で解消、既存47ファイルへの機械追加と同型の対応)。`node test/auto-sim.js 20 42` **ALL CLEAR**、semantic fingerprint `37bbd0cd`(P6-7/8/10/13と同一)。`npm run test:ui:walkthrough` **PASS**、ja digest **`1052faa82eaf7991`不変**。`npm run test:ui:walkthrough:en` **PASS**、i18n-miss **7件で不変**(全てNOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS由来、P7-3の担当領域で本バッチでは意図的に不触)。JA exposure合計は**186→166**(−11%)。`node test/i18n-ratchet.js`増加なし(28,089不変)。
+## 19. Stage B P7-3 — 地の文プール後半3表(253行)の台帳化・英訳(2026-09-04追加)
 
 `docs/i18n-stage-b-p7-design-v0.1.md` §1分類A(地の文プール)の後半3表を `test/i18n-extract-templates.js` の
 `TARGET_TABLES` へ追加し、全253行を英訳した。template-ledger は 1,749 → **2,002キー・未訳0**。
@@ -395,14 +443,14 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 | `LARGE_EVENT_TEXTS` | 86 | 同上(`B4_{activityType}` サブプールを含む) | ✅同上 |
 | `WEEKLY_STORY_TICKER` | 65 | `Engine.relationships.processWeeklyStoryEvents()` → gameLogのレガシー文字列 | ⚠台帳のみ(§15-2) |
 
-### 15-1. 「配線済み・辞書だけ無い」表はEN走破の `i18n-miss` にそのまま出る
+### 19-1. 「配線済み・辞書だけ無い」表はEN走破の `i18n-miss` にそのまま出る
 
 P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARGE の2表は**t()を通るのに辞書に無い**状態
 = §13-2 Bの中で唯一 `i18n-miss` として可視化される族になっていた。着手前のEN走破の miss 7件のうち6件がこの2表。
 **§13-2 Bの表でも、消費点がdict化された瞬間からmissに出る**ので、missが0でないときは「未配線」ではなく
 「配線済み・未訳」の可能性を先に疑うこと。
 
-### 15-2. `WEEKLY_STORY_TICKER` は gameLog専用プール — 表示はJA固定(§2-4/§12-1)
+### 19-2. `WEEKLY_STORY_TICKER` は gameLog専用プール — 表示はJA固定(§2-4/§12-1)
 
 名前に反して**ティッカーには一切出ない**(`Engine.news.generateTicker` が読むのは `NEWS_TICKER_TEMPLATES`)。
 実際の消費点は `processWeeklyStoryEvents()` が `events.push('[trust-warning] …')` の形で積む
@@ -418,14 +466,14 @@ P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARG
   `temperatureDiff` / `crossAsymmetry` / `highRivalryAwareness` / `goodRivalTicker` / `bitterRivalTicker`)は
   **参照0の死蔵**(2026-09-04 全数grep)
 
-### 15-3. 会場名は「本文辞書」ではなく「名前辞書」の住人
+### 19-3. 会場名は「本文辞書」ではなく「名前辞書」の住人
 
 `management.js` の会場費行が `dict(VENUES[...].name)` と**本文辞書**を引いており、会場名は
 `lang-en-names.js`(pn/名前辞書)側にしか無いため必ず外れて `[i18n-miss] 中ホールB` になっていた
 (EN走破の miss 7件の残り1件)。**値をそのままパラメータで渡す**のが正解 — `t()` のenブランチが持つ
 パラメータ値の名前自動変換(D-P6-2 `convertNames`)が引き当てる。`dict` で先に訳そうとしないこと。
 
-### 15-4. P7-3で新たに見つかった同型(未着手)
+### 19-4. P7-3で新たに見つかった同型(未着手)
 
 1. **`processWeeklyStoryEvents` の直書きJA 6本** — `[grievance]`4本(給料/後輩の待遇/タイトル挑戦/出場機会)と
    `[hostile-pairs]`1本+ペア名の連結様式。`WEEKLY_STORY_TICKER` と**同じ関数の中で同じgameLogへ積まれる**のに、

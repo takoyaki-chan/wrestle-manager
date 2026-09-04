@@ -33,6 +33,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { loadAsGlobal } = require('./helpers/load-game.js');
 
 const ROOT = path.join(__dirname, '..');
 const SRC_DIR = path.join(ROOT, 'src');
@@ -44,6 +45,147 @@ const JS_FILES = [
   'factions.js', 'battle-engine-main.js', 'tag-battle-main.js',
 ];
 const HTML_FILES = ['index.html', 'battle-engine.html', 'tag-battle.html'];
+
+// ── DATA_TABLES モード (Stage B P7-1) ──────────────────────────────────────
+// src/data.js のトップレベル表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・
+// 技名(P7-5)を除いた「ラベル・短い定義の表」(docs/i18n-stage-b-p7-design-v0.1.md §1-C)。
+// 表の形がバラバラ(オブジェクトのキー自体がラベルの表/配列の特定フィールドだけが
+// 訳出対象の表/混在)なので、test/i18n-extract-templates.js の汎用再帰ウォーカーとは
+// 別に、表ごとに「どのパスを拾うか」を明示する専用抽出器を書く(設計指示の
+// 「明示リストの表(パス付き)」)。DECISION_DOCS/SPECIAL_EVENT_INTROはP6-13で
+// kept:true の手動追加として既に台帳化・英訳済みだったものを、ここに載せることで
+// 「kept扱いではなく走査対象として再現可能」(設計§1-C)にする(訳文はキー一致で
+// 引き継がれるので再翻訳は発生しない)。
+// data.js はトップレベル const の一部しか module.exports していない
+// (例: DECISION_DOCS・COACHING_TYPE_LABELS は非export)ため、require() ではなく
+// test/i18n-extract-templates.js と同じ loadAsGlobal(vm経由)で読み込む。
+function extractByFields(value, fieldSet, onEntry, pathPrefix) {
+  if (Array.isArray(value)) {
+    value.forEach((v, i) => extractByFields(v, fieldSet, onEntry, `${pathPrefix}[${i}]`));
+  } else if (value && typeof value === 'object') {
+    Object.keys(value).forEach((k) => {
+      const v = value[k];
+      const p = `${pathPrefix}.${k}`;
+      if (fieldSet.has(k)) {
+        if (typeof v === 'string' && v) onEntry(v, p);
+        else if (Array.isArray(v)) v.forEach((s, i) => { if (typeof s === 'string' && s) onEntry(s, `${p}[${i}]`); });
+      }
+      // 同じフィールド名が入れ子(例: MILESTONE_EVENTS[].choices[].label)にも
+      // 出現しうるため、フィールド一致の有無に関わらず必ず再帰する。
+      extractByFields(v, fieldSet, onEntry, p);
+    });
+  }
+}
+
+const DATA_TABLES = [
+  {
+    name: 'TRAIT_DEFS',
+    // オブジェクトのキー自体(例: '華')が特性バッジの表示ラベル、descがツールチップ本文。
+    // consumer: ui-common.js(選手ポップアップ特性バッジ×2)/app.js(選手ファイルTraits節)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((key) => {
+        onEntry(key, `TRAIT_DEFS.${key}.$key`);
+        if (table[key] && table[key].desc) onEntry(table[key].desc, `TRAIT_DEFS.${key}.desc`);
+      });
+    },
+  },
+  {
+    name: 'COACH_ABILITY_CATALOG',
+    // TRAIT_DEFSと同型: キー自体がコーチ特殊能力バッジのラベル。
+    // consumer: ui-render.js(renderCoach)/ui-common.js(コーチツールチップ・招聘市場カード)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((key) => {
+        onEntry(key, `COACH_ABILITY_CATALOG.${key}.$key`);
+        if (table[key] && table[key].desc) onEntry(table[key].desc, `COACH_ABILITY_CATALOG.${key}.desc`);
+      });
+    },
+  },
+  {
+    name: 'MILESTONE_EVENTS',
+    // consumer: app.js(節目セレモニー演出。title/narration/選択肢)
+    extract(table, onEntry) {
+      const fields = new Set(['title', 'titleMain', 'titleSub', 'narration', 'continueLabel', 'label', 'result', 'effectLabel']);
+      extractByFields(table, fields, onEntry, 'MILESTONE_EVENTS');
+    },
+  },
+  {
+    name: 'GLIMPSE_A_THRESHOLDS',
+    // consumer: ui-render.js(道場「休憩中の選手」吹き出しのdialogueフォールバック)
+    extract(table, onEntry) {
+      table.forEach((th, i) => { if (th.label) onEntry(th.label, `GLIMPSE_A_THRESHOLDS[${i}:${th.id}].label`); });
+    },
+  },
+  {
+    name: 'SPECIAL_EVENT_INTRO',
+    // UI部分のみ(選手/コーチのセリフは既にdialogue-ledger)。P6-13でkept:true手動追加済み。
+    extract(table, onEntry) {
+      Object.keys(table).forEach((key) => {
+        const ev = table[key];
+        ['title', 'travelLine', 'nextLabel'].forEach((f) => { if (ev && ev[f]) onEntry(ev[f], `SPECIAL_EVENT_INTRO.${key}.${f}`); });
+      });
+    },
+  },
+  {
+    name: 'DECISION_DOCS',
+    // 社長室の机に並ぶ決裁書類。P6-13でkept:true手動追加済み(表示点21箇所は配線済み)。
+    extract(table, onEntry) {
+      const fields = ['label', 'categoryLabel', 'costLabel', 'body', 'detailText', 'effectSummary', 'recommendation'];
+      Object.keys(table).forEach((key) => {
+        fields.forEach((f) => {
+          const v = table[key] && table[key][f];
+          if (typeof v === 'string' && v) onEntry(v, `DECISION_DOCS.${key}.${f}`);
+        });
+      });
+    },
+  },
+  {
+    name: 'PROMO_EVENT_NAMES',
+    // consumer: management.js(Engine.season.processManage、プロモイベント名の抽選)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((tier) => (table[tier] || []).forEach((s, i) => { if (s) onEntry(s, `PROMO_EVENT_NAMES.${tier}[${i}]`); }));
+    },
+  },
+  {
+    name: 'COACHING_TYPE_LABELS',
+    // consumer: ui-render.js/ui-common.js(招聘市場パネルの職種ラベル)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((key) => { if (table[key]) onEntry(table[key], `COACHING_TYPE_LABELS.${key}`); });
+    },
+  },
+  {
+    name: 'COACH_STYLE_MAP',
+    // consumer: ui-render.js/ui-common.js/management.js(コーチ得意スタイル表示)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((key) => { if (table[key]) onEntry(table[key], `COACH_STYLE_MAP.${key}`); });
+    },
+  },
+  {
+    name: 'STAT_TIPS',
+    // consumer: ui-render.js(能力値バーのツールチップ)/ui-common.js(選手ポップアップ)
+    extract(table, onEntry) {
+      Object.keys(table).forEach((key) => { if (table[key]) onEntry(table[key], `STAT_TIPS.${key}`); });
+    },
+  },
+  {
+    name: 'QUARTER_LABELS',
+    extract(table, onEntry) {
+      Object.keys(table).forEach((key) => { if (table[key]) onEntry(table[key], `QUARTER_LABELS.${key}`); });
+    },
+  },
+  {
+    name: 'SCANDAL_CONFIG',
+    // messages以外(baseChance等)は数値設定のため対象外。
+    extract(table, onEntry) {
+      (table.messages || []).forEach((s, i) => { if (s) onEntry(s, `SCANDAL_CONFIG.messages[${i}]`); });
+    },
+  },
+  {
+    name: 'LOSING_STREAK_PENALTIES',
+    extract(table, onEntry) {
+      table.forEach((row, i) => { if (row.msg) onEntry(row.msg, `LOSING_STREAK_PENALTIES[${i}].msg`); });
+    },
+  },
+];
 
 const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
 
@@ -287,21 +429,38 @@ function main() {
   const properNouns = buildProperNounList();
   const ledgerMap = new Map(); // key -> { key, en, filesSet, count, hasPlaceholder, hasProperNoun }
 
-  function record(text, filename) {
-    if (typeof text !== 'string' || !text) return;
+  function getOrCreateEntry(text) {
     let entry = ledgerMap.get(text);
     if (!entry) {
       entry = {
         key: text,
         en: '',
         filesSet: new Set(),
+        sourceSet: new Set(),
         count: 0,
         hasPlaceholder: hasPlaceholder(text),
         hasProperNoun: hasProperNoun(text, properNouns),
       };
       ledgerMap.set(text, entry);
     }
+    return entry;
+  }
+
+  function record(text, filename) {
+    if (typeof text !== 'string' || !text) return;
+    const entry = getOrCreateEntry(text);
     entry.filesSet.add(filename);
+    entry.count++;
+  }
+
+  // DATA_TABLES モード(Stage B P7-1): data.js の表から拾った値。files には
+  // ソースファイル名('data.js')を、source にはテーブル内の正確なパスを記録する
+  // (design: docs/i18n-stage-b-p7-design-v0.1.md §1-C「明示リストの表(パス付き)」)。
+  function recordTable(text, tableName, tablePath) {
+    if (typeof text !== 'string' || !text) return;
+    const entry = getOrCreateEntry(text);
+    entry.filesSet.add('data.js');
+    entry.sourceSet.add(tablePath);
     entry.count++;
   }
 
@@ -323,6 +482,23 @@ function main() {
     const items = extractHtmlI18n(src, filename, warnings);
     items.forEach((it) => record(it.text, filename));
     perFileStats.push({ file: filename, extracted: items.length });
+  });
+
+  // ── DATA_TABLES モード(Stage B P7-1) ──
+  // data.js を vm 経由でグローバルへ読み込む(module.exports されていない表
+  // (DECISION_DOCS/COACHING_TYPE_LABELS等)にも require() を使わずアクセスするため)。
+  const perTableStats = [];
+  loadAsGlobal('data.js');
+  DATA_TABLES.forEach(({ name, extract }) => {
+    const table = global[name];
+    if (table == null) {
+      warnings.push(`DATA_TABLES: テーブル "${name}" が見つかりません(スキップ)`);
+      perTableStats.push({ table: name, extracted: 0, missing: true });
+      return;
+    }
+    let extracted = 0;
+    extract(table, (text, tablePath) => { recordTable(text, name, tablePath); extracted++; });
+    perTableStats.push({ table: name, extracted });
   });
 
   // ── 保全マージ(2026-09-04) ──
@@ -352,7 +528,12 @@ function main() {
         hasPlaceholder: e.hasPlaceholder,
         hasProperNoun: e.hasProperNoun,
       };
-      if (prev && prev.note) row.note = prev.note;
+      if (e.sourceSet.size > 0) row.source = Array.from(e.sourceSet).sort();
+      // P6-13が DECISION_DOCS/SPECIAL_EVENT_INTRO を「走査対象外につき手追加」の
+      // kept:true で登録した際のnoteは、DATA_TABLESモードで走査対象になった今は
+      // 事実と異なるため引き継がない(P7-1でsourceが付いた行に限り読み替え)。
+      const staleKeptNote = row.source && prev && prev.note && /走査対象外/.test(prev.note);
+      if (prev && prev.note && !staleKeptNote) row.note = prev.note;
       return row;
     });
   const scannedKeys = new Set(scanned.map((r) => r.key));
@@ -381,6 +562,8 @@ function main() {
   console.log(`[i18n-extract-ui] 総キー数=${total} hasProperNoun=${properCount} hasPlaceholder=${placeholderCount}`);
   console.log('[i18n-extract-ui] ファイル別抽出件数(呼び出し/要素の総数。キーの重複統合前):');
   perFileStats.forEach((s) => console.log(`  ${s.file.padEnd(24)} ${String(s.extracted).padStart(6)}`));
+  console.log('[i18n-extract-ui] DATA_TABLES別抽出件数(Stage B P7-1):');
+  perTableStats.forEach((s) => console.log(`  ${s.table.padEnd(24)} ${String(s.extracted).padStart(6)}${s.missing ? '  (テーブル未検出)' : ''}`));
   console.log(`[i18n-extract-ui] 固有名詞リスト件数=${properNouns.length}`);
 
   if (warnings.length) {
