@@ -12154,12 +12154,14 @@ function showFactionCommon3Modal(payload, state, onClose) {
         <div class="fevt-subject-stage">
           <div class="fc1m-compare u3b-theme-cream">
             ${_u3bSideHtml({
-              name: newcomerName, line: newcomerLine, imgUrl: newcomerUrl, role: WM_I18N.t('新加入'),
+              // i18n P6-18: 上で既に t() 済みなので lineTranslated を立てる。立てないと
+              // _u3bSideHtml が二重に t() を掛け、EN訳文を辞書キーとして引いて [i18n-miss] になる(§10-1)
+              name: newcomerName, line: newcomerLine, lineTranslated: true, imgUrl: newcomerUrl, role: WM_I18N.t('新加入'),
               bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
             })}
             <div class="fc1m-vs">→</div>
             ${_u3bSideHtml({
-              name: leaderName, line: reactionLine, imgUrl: leaderUrl, role: `${factionName} ・ ${WM_I18N.t('リーダー')}`,
+              name: leaderName, line: reactionLine, lineTranslated: true, imgUrl: leaderUrl, role: `${factionName} ・ ${WM_I18N.t('リーダー')}`,
               bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
             })}
           </div>

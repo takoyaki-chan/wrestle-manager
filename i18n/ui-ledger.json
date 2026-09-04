@@ -9742,6 +9742,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "つばぜり合い",
+    "en": "Contention",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "P6-18: 年代記の競争記録タイルの mode ラベル(_CHRONICLE_MODE_LABEL_JA)。t()には変数で渡るので抽出器からは見えない。陥落は既存行を共用"
+  },
+  {
     "key": "と{faction}の動きについて、社長室での相談です。",
     "en": " and what {faction} is up to — a matter for the office.",
     "files": [
@@ -15829,6 +15841,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "下剋上",
+    "en": "Overthrow",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "P6-18: 年代記の競争記録タイルの mode ラベル(_CHRONICLE_MODE_LABEL_JA)。t()には変数で渡るので抽出器からは見えない。陥落は既存行を共用"
+  },
+  {
     "key": "不一致",
     "en": "No match",
     "files": [
@@ -21047,6 +21071,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "君臨",
+    "en": "Reign",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "P6-18: 年代記の競争記録タイルの mode ラベル(_CHRONICLE_MODE_LABEL_JA)。t()には変数で渡るので抽出器からは見えない。陥落は既存行を共用"
   },
   {
     "key": "周囲の数名が自然と集まっているようです。",
@@ -29179,6 +29215,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "殴り込み",
+    "en": "Raid",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "P6-18: 年代記の競争記録タイルの mode ラベル(_CHRONICLE_MODE_LABEL_JA)。t()には変数で渡るので抽出器からは見えない。陥落は既存行を共用"
   },
   {
     "key": "殿",
@@ -38719,6 +38767,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "防衛戦",
+    "en": "Defenses",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "P6-18: 年代記の競争記録タイルの mode ラベル(_CHRONICLE_MODE_LABEL_JA)。t()には変数で渡るので抽出器からは見えない。陥落は既存行を共用"
   },
   {
     "key": "防衛街道の果てに",

@@ -6,11 +6,17 @@
 // 各シナリオの形:
 //   fixture.seed      — headless進行のシード(fixtureファイル名にも入る)
 //   fixture.until(G)  — この条件の週の頭で進行を止めてfixture化する
+//   fixture.maxWeeks  — headless進行の上限週(既定600=約11季。十数季かかるシナリオ用)
 //   fixture.engineer(G) — 停止後の状態加工(省略可)。正規セーブとして成立する形だけを作る
 //   fixture.assert(G) — fixtureとして成立している前提の検査。失敗文字列の配列を返す
 //   walk              — 実UI走破の設定。seasonsは既定終了条件(開始季+seasonsの第1週)で使う
 //   until(snapshot)   — 既定終了条件を差し替える場合のみ(snapshotはdetectors.summarizeSnapshotの形)
 //   ignition[]        — 点火マーカー。required:trueが1つでも未観測ならIGNITION_MISFIRE
+//   tour              — 走破後の画面ツアー(P6-18)。`{ steps:[{label,selector,expectScreen?,probe?,required?}],
+//                       jaExposureScreens?:[画面id] }`。ランダム走がナビタブを踏まない設計のため
+//                       到達できない「自由閲覧画面の奥」を決定論クリック列で開く。
+//                       jaExposureScreens は **ENモードのときだけ** その画面のJA露出0を失敗条件にする
+//   tourAssert(probes, lang) — tourの各stopのprobe結果を検査。失敗文字列の配列を返す(=不発検出)
 //   finalProbe        — 走破終了後にページで1回evaluateする式(文字列)。Gの事後状態検証用
 //   finalAssert(probe) — finalProbeの結果を検査。失敗文字列の配列を返す
 
@@ -149,7 +155,173 @@ function _makeFactionIgniteBoost(fixture) {
   };
 }
 
+// ── R12(P6-18): 年代記/序章の画面ツアー ──
+// `.chron-wrap` の中身を1停車点ぶんまとめて読み出す probe。
+//   - present … 年代記ブロックが描画されているか(不発検出の主判定)
+//   - 各枠のテキスト … 章題/副題/ハイライト/章末/カード。空なら不発
+//   - jaLeaves … 可視リーフ要素のうち日本語文字を含むもの(ENモードのゼロゲート)
+// 走査範囲を `.chron-wrap` に絞ってあるので、同じ画面の他パネル(サブタブバー等)は数えない。
+const CHRONICLE_PROBE = `(() => {
+  const wrap = document.querySelector('.chron-wrap');
+  if (!wrap) return { present: false };
+  const norm = el => (el.textContent || '').replace(/\\s+/g, ' ').trim();
+  const q = sel => Array.from(wrap.querySelectorAll(sel)).map(norm).filter(Boolean);
+  const jaPattern = /[\\u3040-\\u30FF\\u3400-\\u9FFF\\uF900-\\uFAFF]/;
+  const visible = el => {
+    const style = getComputedStyle(el);
+    const rect = el.getBoundingClientRect();
+    return style.display !== 'none' && style.visibility !== 'hidden'
+      && Number(style.opacity) !== 0 && rect.width > 0 && rect.height > 0;
+  };
+  const jaLeaves = Array.from(wrap.querySelectorAll('*'))
+    .filter(el => el.children.length === 0 && visible(el) && jaPattern.test(el.textContent || ''))
+    .map(el => ({
+      selector: el.id ? ('#' + el.id) : (el.tagName.toLowerCase() + '.' + String(el.className || '').trim().split(/\\s+/).slice(0, 2).join('.')),
+      text: norm(el).slice(0, 60),
+    }));
+  return {
+    present: true,
+    eyebrow: q('.chron-eyebrow')[0] || '',
+    title: q('.chron-title')[0] || '',
+    period: q('.chron-period')[0] || '',
+    subheadOrg: q('.chron-subhead-org')[0] || '',
+    reporterQuote: q('.chron-prologue-quote')[0] || '',
+    highlights: q('.chron-highlight-text'),
+    closing: q('.chron-closing-line')[0] || '',
+    aceQuotes: q('.chron-ace-quote'),
+    narratives: q('.chron-ace-narrative').concat(q('.chron-gen-narrative')),
+    aceMeta: q('.chron-ace-meta-val').concat(q('.chron-dual-meta-val')),
+    eraStatKeys: q('.chron-era-stat-key'),
+    eraStatVals: q('.chron-era-stat-val'),
+    genMeta: q('.chron-gen-meta'),
+    rivalRecords: q('.chron-rival-record'),
+    prologueCards: q('.chron-prologue-name'),
+    navLabels: q('.chron-nav-btn'),
+    jaLeaves,
+  };
+})()`;
+
+// 章タブ(タイムラインの tick / ラベル)は `setDbChronicleIdx(n)` の onclick で一意に取れる。
+// 章数はセーブ依存なので、3章目までを必須・以降を任意にする(fixture.assert が3章以上を保証する)
+const chronicleStop = (index, required) => ({
+  label: index === 0 ? '序章' : `第${index}章`,
+  selector: `[onclick="setDbChronicleIdx(${index})"]`,
+  expectScreen: 'screen-database',
+  probe: CHRONICLE_PROBE,
+  ...(required === false ? { required: false } : {}),
+});
+
 module.exports = {
+  chronicle: {
+    description: '年代記/序章の点火: 十数季進めたセーブ(序章=進行中+確定章6本)から、実UIでデータベース→年代記タブ→序章/各章/再構築を巡回し、章題・副題・ハイライト・章末・エース/同期カード・外敵・通算タイルの表示を検査する(ENでは日本語残り0をゲートにする)',
+    fixture: {
+      seed: 42,
+      // 章の確定には十数季かかる(エースが引退して数年経つまで status は in_progress)。
+      // 既定の maxWeeks=600(約11季)では届かないので上限を引き上げる
+      maxWeeks: 1400,
+      until: G => G.season === 18 && G.week === 3 && !G.offSeason,
+      // 実UIも読み込み時にマイグレーション経由で章を作り直す(app.js の
+      // _migrated_chronicle_status_v2 / _prime_v3)。ここで作るのは fixture.assert が
+      // 「3章以上ある」ことを生成時点で確かめるため
+      engineer: G => Engine.chronicle.buildChapters(G, { forceRebuild: true }),
+      assert: G => {
+        const fails = [];
+        const chapters = (((G.chronicle || {}).chaptersCache || {}).chapters || []);
+        const confirmed = chapters.filter(c => c.status === 'confirmed');
+        if (confirmed.length < 3) fails.push(`確定章が${confirmed.length}本しかない(3本以上必要)。停止シーズンを後ろへ/別シードで生成し直すこと`);
+        if (!G.prologue || !Array.isArray(G.prologue.founderIds) || G.prologue.founderIds.length === 0) {
+          fails.push('序章(G.prologue)が作られていない');
+        }
+        if (G.prologue && G.prologue.status === 'empty') fails.push('序章の status が empty(年代記画面に出ない)');
+        return fails;
+      },
+    },
+    // 走破は「序章ハイライトの発火(App.checkPrologueHighlights は実UI側にしか無い)」と
+    // 週次の正常進行を確かめるための数週ぶんだけ。画面ツアーが本題なので手数は絞る
+    walk: { seasons: 1, maxSteps: 60 },
+    until: s => !!(s.state && !s.state.offSeason && s.state.season === 18 && s.state.week >= 6),
+    // 画面ツアーの observe が同じマーカー列を通るので、年代記画面(データベース)へ
+    // 実際に到達したことは通常の点火マーカーとして出す。中身の不発検出は tourAssert
+    ignition: [
+      { name: 'chronicle-screen', required: true, match: s => s.activeScreen === 'screen-database' },
+    ],
+    tour: {
+      jaExposureScreens: ['screen-database'],
+      steps: [
+        { label: 'データベース', selector: `.nav-btn[onclick^="showScreen('database'"]`, expectScreen: 'screen-database' },
+        { label: '年代記タブ', selector: '.db-subtab-btn[onclick="setDbSubTab(6)"]', expectScreen: 'screen-database', probe: CHRONICLE_PROBE },
+        chronicleStop(0),
+        chronicleStop(1),
+        chronicleStop(2),
+        chronicleStop(3),
+        chronicleStop(4, false),
+        chronicleStop(5, false),
+        chronicleStop(6, false),
+        // 再構築ボタン(年代記を作り直して再描画する唯一の導線)
+        { label: '年代記を再構築', selector: '.chron-rebuild-btn', expectScreen: 'screen-database', probe: CHRONICLE_PROBE },
+      ],
+    },
+    tourAssert: (probes, lang) => {
+      const fails = [];
+      const stops = Object.entries(probes);
+      if (stops.length === 0) return ['画面ツアーのprobeが1つも取れていない'];
+      let sawPrologue = false;
+      let sawChapter = false;
+      let sawHighlight = false;
+      let sawClosing = false;
+      let sawAceCard = false;
+      let sawEraStats = false;
+      for (const [label, p] of stops) {
+        if (!p || p.probeError) { fails.push(`${label}: probe失敗 ${p && p.probeError}`); continue; }
+        if (!p.present) { fails.push(`${label}: .chron-wrap が描画されていない(不発)`); continue; }
+        if (!p.title) fails.push(`${label}: 章題(.chron-title)が空`);
+        if (!p.period) fails.push(`${label}: 期間(.chron-period)が空`);
+        if (!p.subheadOrg) fails.push(`${label}: 団体名(.chron-subhead-org)が空`);
+        if (p.reporterQuote) sawPrologue = true;
+        if (p.aceQuotes && p.aceQuotes.length > 0) { sawChapter = true; sawAceCard = true; }
+        if (p.highlights && p.highlights.length > 0) sawHighlight = true;
+        if (p.closing) sawClosing = true;
+        if (p.eraStatVals && p.eraStatVals.length > 0) sawEraStats = true;
+        if (lang === 'en' && p.jaLeaves && p.jaLeaves.length > 0) {
+          const head = p.jaLeaves.slice(0, 8).map(x => `${x.selector}:"${x.text}"`).join(' / ');
+          fails.push(`${label}: ENなのに年代記の中に日本語が${p.jaLeaves.length}件残っている — ${head}`);
+        }
+      }
+      if (!sawPrologue) fails.push('序章の「記者の見立て」を一度も観測していない(序章ブロックが出ていない)');
+      if (!sawChapter) fails.push('確定章のエース欄(記者の目)を一度も観測していない');
+      if (!sawHighlight) fails.push('ハイライト行を一度も観測していない');
+      if (!sawClosing) fails.push('章末を一度も観測していない');
+      if (!sawAceCard) fails.push('エースカードを一度も観測していない');
+      if (!sawEraStats) fails.push('通算タイル(この時代の通算)を一度も観測していない');
+      return fails;
+    },
+    finalProbe: `(() => {
+      const chapters = (((typeof G !== 'undefined' && G.chronicle) || {}).chaptersCache || {}).chapters || [];
+      const prologue = (typeof G !== 'undefined' && G.prologue) || null;
+      return {
+        chapters: chapters.length,
+        confirmed: chapters.filter(c => c.status === 'confirmed').length,
+        titleParts: chapters.filter(c => Array.isArray(c.titleParts) && c.titleParts.length).length,
+        competitiveValue: chapters.filter(c => c.eraStats && c.eraStats.competitiveRecord && c.eraStats.competitiveRecord.value).length,
+        prologueStatus: prologue ? prologue.status : null,
+        prologueHighlights: prologue ? (prologue.highlights || []).length : 0,
+        prologueParted: prologue ? (prologue.highlights || []).filter(h => Array.isArray(h.textParts) && h.textParts.length).length : 0,
+      };
+    })()`,
+    finalAssert: probe => {
+      const fails = [];
+      if (!probe) return ['finalProbeが取れていない'];
+      if (probe.confirmed < 3) fails.push(`確定章が${probe.confirmed}本(3本以上を期待)`);
+      if (probe.titleParts !== probe.chapters) fails.push(`titleParts を持たない章がある (${probe.titleParts}/${probe.chapters})`);
+      if (probe.competitiveValue !== probe.chapters) fails.push(`competitiveRecord.value を持たない章がある (${probe.competitiveValue}/${probe.chapters})`);
+      if (probe.prologueHighlights < 2) fails.push(`序章ハイライトが${probe.prologueHighlights}件(実UIの発火が起きていない)`);
+      if (probe.prologueParted !== probe.prologueHighlights) {
+        fails.push(`textParts を持たない序章ハイライトがある (${probe.prologueParted}/${probe.prologueHighlights})`);
+      }
+      return fails;
+    },
+  },
+
   tenchosen: {
     description: '天頂戦の通年点火: S4W41開始→W42ミニイベント→W43エントリー→W48開催(15試合)→優勝演出→初代統一王座戴冠→季末→S5W1',
     fixture: {

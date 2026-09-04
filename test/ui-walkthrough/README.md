@@ -57,6 +57,8 @@ EN訳文はJA比で文字幅が中央値2.4倍という実測(吹き出し以外
 ```powershell
 npm run test:ui:ignite -- --scenario tenchosen
 npm run test:ui:ignite -- --scenario gameover
+npm run test:ui:ignite -- --scenario chronicle
+npm run test:ui:ignite -- --scenario chronicle --lang en   # ENモードでも点火できる
 npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直す
 ```
 
@@ -67,6 +69,17 @@ npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直�
 - シナリオ定義は `scenarios.js`。fixture は初回実行時に `fixtures/generated/`(Git管理外)へ自動生成されます(headless進行+`Engine.validateGameState` ゲート)
 - 各シナリオは**点火マーカー**(対象オーバーレイ/画面の観測)を必須宣言し、未観測なら検出0件でも `IGNITION_MISFIRE` で失敗します(不発検出)
 - 実行後に観測した全オーバーレイ・画面IDを表示します。新シナリオのマーカー選定はこの一覧から行ってください
+
+### 画面ツアー(`tour`・2026-09-04 P6-18で追加)
+
+`chronicle` のように**レア画面が自由閲覧画面の奥にある**(データベース→年代記タブ→各章)シナリオは、ランダム走がナビタブを踏まない設計のため走破では永久に到達できません。シナリオが `tour` を宣言すると、走破の後に**決定論的なクリック列**でその画面を開き、各停車点で D1/D3 走査・レイアウト/JA露出集計・点火マーカー観測・`probe` 収集を行います。
+
+- `tour.steps[]` = `{ label, selector, expectScreen?, probe?, required? }`。`required:false` の停車点(章数がセーブ依存の「第5章」等)は不在ならスキップします。クリックが遮蔽されたときは**走破と同じスコアラーで安全な前進コントロールを1つ押してから再挑戦**します(最大6回)
+- `tourAssert(probes, lang)` が停車点ごとの `probe` 結果を検査し、失敗文字列を返します(= 中身の不発検出)。「章題が空」「.chron-wrap が描画されていない」等はここで落とします
+- `tour.jaExposureScreens` に画面idを並べると、**ENモードのときだけ**その画面のJA露出0が**失敗条件**になります(他画面の `JA exposure by screen` は従来どおり情報集計のまま)
+- `fixture.maxWeeks` で headless 進行の上限週(既定600=約11季)を引き上げられます。年代記は章の確定に十数季かかるため `chronicle` は 1400 を指定しています(fixture生成に約2分)
+
+`chronicle` シナリオは **S18・序章=進行中・確定章3本**のセーブから、序章(記者の見立て/ハイライト/書きかけの章末)・各章(章題/副題/エース/同期/外敵/通算タイル/章末)・「年代記を再構築」ボタンを一巡します。**年代記まわりのコード(`Engine.chronicle` / `Engine.prologue` / `_renderPrologueBlock` / `_renderDbChronicle`)を触ったら JA と `--lang en` の2本**を回してください。
 
 検出器だけを既知バグ入りサンドボックスで確認するには次を実行します。
 

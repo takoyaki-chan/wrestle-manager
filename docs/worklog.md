@@ -1,5 +1,109 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-18 — 序章のテンプレ化+年代記カード単位語の構造化+年代記igniteシナリオ（2026-09-04・worktree agent-aedd279caf2555073）
+
+指示書は specs/i18n-runtime-spec-v1.0.md §21-6(P6-17の発見1〜3)。開始前にworktreeブランチをmain先端(2fd7108、P6-17マージまで)へfast-forward済み。
+
+**訳出29キー**(template-ledger 2,923→**2,952**・未訳0 / ui-ledger 4,027→**4,032**・未訳0 / dialogue-ledger 16,674 は不触)。
+
+### 1. 3件それぞれの配線方式
+
+| 件 | 対象 | 配線 |
+|---|---|---|
+| ① | 序章 `Engine.prologue` / `_renderPrologueBlock` | 文面プールを **`PROLOGUE_TEMPLATES`**(data.js)へ移設。**ハイライト12種は追加フィールド `textParts`**(§15-1)、**確定時の章末は表示点で `t()` 1回**(充填値を持たない素のプール文字列=辞書キーそのもの)、**章題/記者の見立て/書きかけの章末はUIの静的文**として同じ表に置き `WM_I18N.t(PROLOGUE_TEMPLATES.…)` で引く |
+| ② | 年代記カードの単位語 + `_chronicleCompetitiveValueHtml` | 単位語を **`CHRONICLE_UNIT_TEXTS`**(data.js)の`<span class="small">`込みテンプレへ。競争記録は `_buildCompetitiveRecord` に**追加フィールド `value`**(種別+数値)を持たせ、**保存済み完成文を正規表現で読み直す逆方向パターンを廃止**(旧セーブだけ従来パーサへ fail-open) |
+| ③ | `test:ui:ignite -- --scenario chronicle` 新設 | ignite モードへ**画面ツアー(`tour`)**を新設。走破の後に決定論クリック列でデータベース→年代記タブ→序章/各章/再構築を巡回し、`probe` で中身の不発を検出。**ENでは `screen-database` のJA露出0を失敗条件にする** |
+
+### 2. 序章は年代記と「同じ層・同じ3通り」だった
+
+`G.prologue` は `Engine.chronicle` とは別レイヤーだが、抱えている構造(完成文が `G` へ永続する)は同じ。P6-17 §21-1 の表がそのまま使えた。
+
+- `addHighlight` は `textParts` を受け取ったとき **`text` を必ず `Engine.chronicle.narrativeText(parts)`(dict省略=JA)から作る**。発火側(`App.checkPrologueHighlights`)は完成文を組まず素材だけを渡すので、「保存値とパーツが食い違う」経路が構造的に生じない
+- 団体名が取れないときの `団体`、初代王者が引けないときの `初代王者` にだけ `L` マーカーを付ける(実在の団体名・選手名は素の値のまま渡し `t()` のパラメータ値自動変換に任せる・§21-2)
+- **記者の見立ての2文は別々の `t()` のまま2行に分けた**。1キーに畳むとJAの改行(=HTMLの空白1つ)が消えて表示が1バイト変わる
+- **UIの静的文もあえて `PROLOGUE_TEMPLATES` に入れた**。`t()` の引数が非リテラルになるので extract-ui からは見えず、ui-ledger との二重登録が起きない(§15-3)。序章の文面が1つの表に集まるのも利点
+- `Engine.prologue.firstChampionId` の旧セーブ復元パス(`text.startsWith(\`${name}が初代王者に\`)` という完成文の前方一致)は `text` がJAのまま不変なので壊れない
+
+### 3. 単位語のENは「枠のキーが単位を名乗るか」で決まる
+
+- **`<span class="small">` はテンプレ側に置く**。単位語の位置・有無が言語で変わるため(ハイライト行の `<strong>` と同じ理屈)
+- **キーが単位を名乗る枠(`ERA RUN` / `TITLES`)はENでは数値だけ**にした。JAの `期`/`戴冠` は英語キーとの重複表示を避けるためのもので、ENでは冗語になる。キーが単位を名乗らない枠は値の側に単位を持たせる: `{n}<span class="small">def.</span>` / `{w}<span class="small">W</span>{l}<span class="small">L</span>` / `reigns: {n}` / `{wins}-{losses}`。いずれも**充填値で単複・冠詞が変わらない形**(規則23/24)
+- **JAが0の側を省く外敵の成績は分岐ごとの完全文4本**にした(構造規約3)。勝敗が付かない枠は全て引き分けなので EN は `{total} drawn`
+- **キー衝突の裁き(§15-3)を2件**: `{wins}勝` は ui-ledger に既訳("{wins} wins"=対抗戦マイルストーンのラベル)がありENで採りたい形(`{wins}-0`)と違うので、外敵の4本は**枠(`<div class="chron-rival-record">`)ごとテンプレに入れてキーを分けた**。逆に `{n}名` は既訳 "{n} wrestlers" と意味が同じなので**テンプレ表へ入れず ui-ledger の既存キーを共用**(表示点に `WM_I18N.t('{n}名', …)` を直書き)。mode ラベルは `陥落` だけ ui-ledger に既訳("Dethroned")があるため、JA原文を management.js の `_CHRONICLE_MODE_LABEL_JA` に1本だけ置き(`_AW_ROUND_JA` と同じ流儀)、残る5つを ui-ledger へ `kept:true` で手追加した
+
+### 4. 逆方向の正規表現をやめた
+
+`_chronicleCompetitiveValueHtml` は保存済みの `valueText` を `/^(\d+)度防衛(.*)$/` で**読み直して**装飾していた。JA文字列の形に依存するのでENでは成立しない。`_buildCompetitiveRecord` に構造化値 `value`(`{kind, defenses|wins,losses}`)を併記し、表示点はそこから整形する。`valueText`(セーブに書く既存値)は1バイトも変えていない。`value` を持たない旧セーブだけ従来のパーサへ fail-open する。
+
+### 5. 画面ツアー — 走破が構造的に踏めない画面のための口
+
+年代記画面は「データベースタブ→年代記サブタブ→各章」という自由閲覧画面の奥にあり、走破ハーネスは**ナビタブをランダム走のスコアラーから外す設計**なので永久に到達できない(P6-17 §21-6-3 の起票)。
+
+- `scenarios.js` の `tour.steps[]` = `{label, selector, expectScreen?, probe?, required?}` を走破の**後**に決定論クリックで巡回(`driver.js` `runScreenTour`)。各停車点で D1/D3走査・レイアウト/JA露出集計・点火マーカー観測・`probe` 収集
+- **クリックが遮蔽されたら走破と同じスコアラーで安全な前進コントロールを1つ押してから再挑戦**(最大6回)。初回実走で「週送り直後のポップアップ列でナビが押せない」を実際に踏んだ
+- `tourAssert(probes, lang)` が中身の不発を検出(章題が空/`.chron-wrap` 未描画/…)。**`tour.jaExposureScreens` はENモードのときだけ失敗条件**になる
+- `fixture.maxWeeks` を宣言できるようにした(既定600週=約11季では章が確定しない)。`chronicle` は 1400 で S18 まで進める(fixture生成 約2分)
+
+### 6. 「シナリオが踏める分岐」と「テンプレの全分岐」は別物
+
+`chronicle` fixture(seed42/S18)は自然生成なので、このセーブでは**王座戴冠も対外戦も0**で、`度防衛`/`王座失陥`/外敵の成績/同期カードの戴冠回数の枝には到達しない。点火シナリオは「実UIで描画が壊れない・EN表示に日本語が残らない」ゲートと割り切り、**テンプレ網羅は別途VM検品で測った**(§21-5 と同じ分担)。
+
+### 7. JA同一性の証明 — 72,483通り・不一致0
+
+P6-17 §21-5 の作法①(凍結コピーとの全数突合)を4系統へ適用。HEAD(2fd7108)の `_buildCompetitiveRecord` / `Engine.prologue`(create/addHighlight/confirm) / `App.checkPrologueHighlights` の triggers / `_chronicleCompetitiveValueHtml` をソースから機械抽出して突合した。
+
+| 対象 | 突合 | 不一致 |
+|---|---|---:|
+| `_buildCompetitiveRecord`(8mode × def7 × w4 × l4 × lost3、label/valueText/mode/追加フィールド名) | 8,064ケース×4項目 | 0 |
+| `Engine.prologue.create` / `confirm`(org名6種、保存されるtext/closing/キー集合) | 6ケース×4項目 | 0 |
+| `App.checkPrologueHighlights` の全トリガ文(totalShows3 × titleEstablished2 × champ3 × mq5 × pop4 × cleared2 × 引退名4 の直積) | 2,880状態・全トリガ | 0 |
+| `_chronicleCompetitiveValueHtml`(新経路 と 旧セーブfail-open経路の両方) | 1,680ケース×2経路 | 0 |
+| 単位語テンプレ・中黒連結(数値グリッド × 全キー) | 全12テンプレ | 0 |
+
+- **わざと壊して検知できることを2回確認した**(`peerReigns` の単位語を1字変える → 5件検出 / `mq50` の文面を1語変える → 2,304件検出)
+- **auto-simのsemantic fingerprintは `afda03f8` → `f5c3ee76` に動くが、これは追加フィールドの分だけ**。指紋のreplacerで `textParts` と `competitiveRecord.value` を除外して**HEADと新実装の両方を再計測**したところ**どちらも `3c207147`**。**セーブに書く既存値は1バイトも変わっていない**
+
+### 8. 英訳
+
+`docs/en-kuroda-style-draft-v0.1.md` の**無署名デスク/年代記の記録voice**(序章も紙面本文と同じ声)。平叙の事実文・感嘆符ゼロ・格言化なし。
+
+**序章17本**:
+- 章題 `旗揚げ — 最初の5人と、最初の会場` → Founding — The First Five, and the First Hall
+- 記者の見立て `この章の主役が誰になるかは、まだ確定していない。` → Who this chapter belongs to is not settled yet. / `旗揚げの5人がそれぞれの形でこの団体を背負っている。` → The founding five each carry the promotion in their own way.
+- 書きかけの章末 `この世代の物語は、まだ始まったばかりだ。` → The story of this generation has only just started.
+- 確定の章末 `最後の旗揚げメンバーが去り、団体は次の世代へと託された。` → The last of the founding members has gone, and the promotion passes to the next generation.
+- ハイライト: `{org}旗揚げ。最初の5人が揃い、最初の物語が始まった。` → {org} is founded. The first five are in place, and the first story begins. / `旗揚げ戦。最初の興行が開かれ、団体は始動した。` → The inaugural show. The first card was run, and the promotion was under way. / `団体王座の設立が認定された。` → The Promotion Championship was sanctioned.(`団体王座`=Promotion Championship は既訳踏襲) / `{name}が初代王者に。最初の頂が決まった。` → {name} became the first champion. The first summit was settled. / `試合評価50到達。観客の目つきが変わり始めた。` → Match rating 50 reached. The look in the seats began to change. / `試合評価70到達。名勝負と呼ぶに値する試合が出た。` → Match rating 70 reached. A match worth calling a classic came out of it. / `試合評価80到達。この章の選手が業界の壁を叩いた瞬間。` → Match rating 80 reached. The moment the wrestlers of this chapter struck the wall of the business. / `団体人気25到達。スポンサー筋に動きが出始めた。` → Promotion popularity 25 reached. Sponsors began to move. / `団体人気50到達。大会場での興行が現実的に。` → Promotion popularity 50 reached. Shows in the big halls became realistic. / `経営安定化達成。月次黒字が定着し、団体存続の目処が立った。` → Business stabilized. The monthly books settled into the black, and the promotion's survival came into view. / `旗揚げメンバー {name} が引退。` → Founding member {name} retired. / `最後の旗揚げメンバーが引退。序章は閉じられた。` → The last founding member retired. The prologue is closed.
+
+**単位語12本**: `{n}期`/`{n}戴冠` → `{n}`(キーが ERA RUN / TITLES と単位を名乗る枠) / `{n}度戴冠` → reigns: {n} / `{n}度防衛` → {n} def. / `{n}度防衛・王座失陥` → {n} def. · title lost / `{w}勝{l}敗` → {w}W {l}L / 外敵の成績 → {wins}-{losses} / {wins}-0 / 0-{losses} / {total} drawn / `{a} ・ {b}` → {a} · {b} / 章の重なり区切りの中黒 → 中点
+
+**mode ラベル5本(ui-ledger)**: 君臨→Reign / 防衛戦→Defenses / つばぜり合い→Contention / 殴り込み→Raid / 下剋上→Overthrow(`陥落` は既訳 Dethroned を共用)
+
+### 9. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(data/management/app/ui-render/ui-common/lang-en/lang-en-templates/ハーネス4本) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233・hash=`6b3d05c8…`、`--update`不使用) |
+| `node test/i18n-build-template-dict.js` | ✅ **2,952/2,952 未訳0**(PH完全性/重複キー/日本語残り/黒田禁止語/PH直前の不定冠詞すべて違反0) |
+| `node test/i18n-build-dict.js` | ✅ **4,032/4,032 未訳0** |
+| `npm test` | ✅ **260/260 green** |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(台帳検査3種も違反0)。指紋は§7のとおり追加フィールドのみで説明できる |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest **`1052faa82eaf7991` 不変**、Issues 0 |
+| `npm run test:ui:walkthrough:en` | (下記) |
+| **`npm run test:ui:ignite -- --scenario chronicle`** | ✅ **PASS**(40操作64秒・序章+3章+再構築を巡回・Issues 0・marker HIT) |
+| **`… --scenario chronicle --lang en`** | ✅ **PASS**(**screen-database のJA露出 0**・Issues 0) |
+| `node test/i18n-ratchet.js` | 移設のため `--update`。総数 28,107 → **28,110(+3)** |
+| VM検品(EN) | ✅ **113件描画 / 日本語残り0 / i18n-miss 0 / テンプレ網羅35/35** |
+
+**ラチェット+3の内訳**: data.js +29(新2表) / management.js −4 / ui-render.js −12 / app.js −10。増分は**外敵の成績を断片連結から分岐ごとの完全文へ割った分(3→4)**と、**旧セーブ用の逆方向パーサを ui-render に残したまま新テンプレを data.js に置いた分**。JA文字列が新規に直書きされた箇所は無い(移設元3ファイルはすべて減っている)。
+
+### 10. 新たな発見
+
+1. **`_u3bSideHtml` の二重t()が派閥COMMON3(加入挨拶)にも残っていた**(§10-1と同型)。新設のENシナリオが12件の `[i18n-miss]` として拾った。`ui-common.js` の加入モーダルが `WM_I18N.t(getCommon3Line(...))` で訳した文字列を `lineTranslated` 無しで `_u3bSideHtml` へ渡していたため、EN訳文が辞書キーとして引かれていた。**本バッチで `lineTranslated: true` を付けて根治**(JAは t() が素通しなので二重適用でも表示不変)。**この型は「呼び出し元が先に訳す共通レンダラ」全部に潜む** — `_u3bSideHtml` の全呼び出し元を一度洗い直すこと
+2. **`{n}名`→"{n} wrestlers" / `{wins}勝`→"{wins} wins" は規則23違反**(充填値が1のとき "1 wrestlers")。どちらもP6-18以前からある ui-ledger の行。規則を機械検査に載せるなら最初に落ちる行
+3. **`Engine.chronicle._getSurname` が姓を取れず氏名を返している**。章タイトルが「木村レイカ世代」のようにフルネーム+世代になる(章キャッシュの ace/peer は `surname` を持たない縮約オブジェクトのため)。JAの既存挙動なので不触だが、ENでは "The Reika Kimura Generation" と長く、二枚看板だと "The Chiaki Kuroiwa–Reika Kimura Generation" になって h2 の折り返しリスクがある
+4. **序章のロスターカードに `Neutral` が生で出る**。`ROLE_JP` は `Tweener` をキーにしているが実データの `role` は `Neutral` で、フォールバックの生値が表示されている(JA画面でも「関節技 / Neutral」と出る)。JA側の表示バグ
+
 ## 🌐 Stage B P7-5 — 技名242件を名前辞書化し表示時翻訳(formatFinish/カットイン/得意技/新聞/記録)、合体スラムの表外フォールバックを移設（2026-09-04・worktree agent-ac3d08ad41701c824）
 
 裁定の正は `docs/en-move-names-draft-v0.1.md`(2026-09-04 Keisuke確定: 設問①〜⑤すべて推奨案・★38件も推奨EN採用)。開始前にworktreeブランチをmain先端(e30eb51、技名裁定の記録コミットまで)へfast-forward済み。

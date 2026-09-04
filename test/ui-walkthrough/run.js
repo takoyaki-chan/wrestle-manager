@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 const { chromium } = require('playwright');
 const { WalkthroughDetectors, stableHash, writeFailureArtifacts } = require('./detectors');
-const { runWalk } = require('./driver');
+const { runScreenTour, runWalk } = require('./driver');
 const scenarios = require('./scenarios');
 const { startStaticServer } = require('./server');
 
@@ -256,6 +256,28 @@ async function main() {
 
     let ignitionFailures = [];
     if (scenario) {
+      // P6-18: 画面ツアー(自由閲覧画面の奥にあるレア画面)。走破の後に決定論クリック列で開く
+      if (scenario.tour) {
+        const tour = await runScreenTour({
+          actionLog: result.actionLog,
+          detectors,
+          observe,
+          page,
+          seed: effectiveSeed,
+          step: result.actionLog.length,
+          steps: scenario.tour.steps || [],
+        });
+        ignitionFailures.push(...tour.failures);
+        if (scenario.tourAssert) ignitionFailures.push(...scenario.tourAssert(tour.probes, options.lang));
+        // ENモードのJA露出ゼロゲート(この画面だけは情報集計ではなく失敗条件にする)
+        const gateScreens = scenario.tour.jaExposureScreens || [];
+        if (options.lang === 'en' && gateScreens.length > 0) {
+          const leaked = (detectors.jaExposureRecords || []).filter(r => gateScreens.includes(r.screen));
+          console.log(`Screen-tour JA exposure (${gateScreens.join(', ')}): ${leaked.length}`);
+          for (const record of leaked.slice(0, 30)) console.log(`  ${record.selector} | "${record.text}"`);
+          if (leaked.length > 0) ignitionFailures.push(`画面ツアーのEN表示に日本語が残っている: ${leaked.length}件`);
+        }
+      }
       for (const marker of scenario.ignition || []) {
         const hit = markerHits.has(marker.name);
         console.log(`Marker ${hit ? 'HIT ' : 'MISS'}: ${marker.name}${marker.required === false ? ' (optional)' : ''}`);
