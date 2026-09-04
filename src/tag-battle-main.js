@@ -117,6 +117,17 @@ const TAG_MOVE_PRESENTATION = {
   tag:        { label: WM_I18N.t('連携技'), guide: 'パートナーと呼吸を合わせ、二人の動きを一つの攻撃へつなげる。' },
 };
 
+// i18n Stage B P7-5: 技名の**表示専用**変換。_movePresentation の解説文選択と
+// battle-sfx.js の効果音判定は日本語の技名を正規表現で見ているので、_actionMoveName
+// の戻り値そのものを英訳してはいけない(docs/en-move-names-draft-v0.1.md §7-2)。
+// 狭い枠(技名パネル・矢印ラベル・ビッグムーブ)は短縮形、地の文はフルEN名。
+function _mvDisp(name){
+  return (typeof WM_I18N !== 'undefined' && WM_I18N.mvShort) ? WM_I18N.mvShort(name) : name;
+}
+function _mvFull(name){
+  return (typeof WM_I18N !== 'undefined' && WM_I18N.mv) ? WM_I18N.mv(name) : name;
+}
+
 function _actionMoveName(action){
   if (!action) return '---';
   return action.kind === 'counter'
@@ -408,7 +419,7 @@ function _moveDisplayHtml(fr){
   const meta = _movePresentation(action, fr);
   return `<div class="move-display wm-tag-move-detail" id="moveDisplay">
     <div class="move-label" id="moveCatLabel">${escHtml(meta.label)}</div>
-    <div class="move-name" id="moveName">${escHtml(WM_I18N.pn(meta.name))}</div>
+    <div class="move-name" id="moveName">${escHtml(_mvDisp(meta.name))}</div>
     <div class="wm-move-guide" id="moveGuide">${escHtml(meta.guide)}</div>
     <div class="move-damage wm-move-result" id="moveDmg">${escHtml(_moveResultText(action))}</div>
   </div>`;
@@ -445,11 +456,11 @@ function _narrateFrame(fr){
   if (!a) return { text: (fr.logLines||[]).join(' '), dramatic:false };
   const atk = byId(a.attackerId);
   const def = byId(a.defenderId);
-  if (!atk || !def) return { text: escHtml(a.move||''), dramatic:false };
-  if (a.kind === 'miss') return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(a.move)} → かわされた！`, dramatic:false };
-  if (a.kind === 'counter') return { text: `${escHtml(WM_I18N.pn(atk.name))}がカウンター！ ${escHtml(a.move)} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic:true };
+  if (!atk || !def) return { text: escHtml(_mvFull(a.move)||''), dramatic:false };
+  if (a.kind === 'miss') return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(_mvFull(a.move))} → かわされた！`, dramatic:false };
+  if (a.kind === 'counter') return { text: `${escHtml(WM_I18N.pn(atk.name))}がカウンター！ ${escHtml(_mvFull(a.move))} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic:true };
   const drama = a.isCrit;
-  return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(a.move)} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic: drama };
+  return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(_mvFull(a.move))} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic: drama };
 }
 
 function _controlsHtml(){
@@ -857,11 +868,11 @@ function _spawnAttackArrow(action){
     const origAtkSide = origAtkKey && (origAtkKey === 'a1' || origAtkKey === 'a2') ? 'a' : 'b';
     const stage1Dir = origAtkSide === 'a' ? 'ltr' : 'rtl';
     const stage2Dir = stage1Dir === 'ltr' ? 'rtl' : 'ltr';
-    _renderArrow(layer, stage1Dir, action.origMove || '攻撃', false, false);
-    setTimeout(() => _renderArrow(layer, stage2Dir, 'カウンター！ ' + (action.move || ''), true, false), 1000);
+    _renderArrow(layer, stage1Dir, _mvDisp(action.origMove) || '攻撃', false, false);
+    setTimeout(() => _renderArrow(layer, stage2Dir, 'カウンター！ ' + (_mvDisp(action.move) || ''), true, false), 1000);
   } else {
     const dir = atkSide === 'a' ? 'ltr' : 'rtl';
-    _renderArrow(layer, dir, action.move || '攻撃', false, isMiss);
+    _renderArrow(layer, dir, _mvDisp(action.move) || '攻撃', false, isMiss);
   }
 }
 
@@ -925,7 +936,8 @@ function _showDmgPop(side, val, isCrit, isCounter){
 function _showBigMoveSplash(moveName){
   const el = document.getElementById('bigmoveSplash');
   if (!el) return;
-  el.textContent = '— ' + moveName + ' —';
+  // P7-5: 大きな1行枠。短縮形がある技はそちらを使う
+  el.textContent = '— ' + _mvDisp(moveName) + ' —';
   el.className = 'bigmove-splash show';
   setTimeout(() => el.classList.add('fade'), 1200);
   setTimeout(() => { el.className = 'bigmove-splash'; el.textContent = ''; }, 1600);
@@ -1097,7 +1109,7 @@ function _buildPinCtrl(pinEv, fr){
   const defKey2 = fr.action ? keyById(fr.action.defenderId) : null;
   const atkChar = atkKey2 ? f(atkKey2) : null;
   const defChar = defKey2 ? f(defKey2) : null;
-  const moveName = (fr.action && fr.action.move) || '';
+  const moveName = _mvFull((fr.action && fr.action.move) || '');
   // シングル battle-engine.html の showFinishClickBtn ラベルに完全準拠
   // 結末ネタバレ防止: 全 attemptType で結末を示唆しない汎用文に統一
   const FINISH_LABELS = { 'fall': '…！？', 'pin': '…！？', 'gu': '…！？', 'rollup': '…！？', 'tko': '…！？' };
@@ -1586,7 +1598,8 @@ function showResult(fr){
   // Finish type
   const vicType = document.getElementById('vicType');
   const segments = (result.segments || []).length;
-  vicType.textContent = `${finType}${finMove ? ' — ' + finMove : ''}${finishPhase ? ' / ' + finishPhase : ''} / ${result.turns} Turns`;
+  // P7-5: 技名だけ名前辞書経由で英語化する(finType/finishPhase の地の文は別バッチの担当)
+  vicType.textContent = `${finType}${finMove ? ' — ' + _mvFull(finMove) : ''}${finishPhase ? ' / ' + finishPhase : ''} / ${result.turns} Turns`;
 
   // 決着画面は勝者中心。決め手となった選手のコメントと実況だけを表示する。
   // pinnedBy = 決め技を打った勝者
@@ -1604,7 +1617,9 @@ function showResult(fr){
       // WM_I18N.tを第4引数として渡す(呼び出し後にt()で包み直さない — 包み直すと
       // 置換済みの完成文が辞書キー(未置換の原文)と一致せずfail-openしてしまう)。
       const winLine = WM_I18N.t(pickTagWinLine(winFinisher));
-      const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, finMove, WM_I18N.t);
+      // P7-5: _tplTagLine は dict をテンプレにだけ通して {move} の**値**は素通しするので、
+      // 技名は渡す前に名前辞書で引いておく
+      const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, _mvFull(finMove), WM_I18N.t);
       // faceout-audit v0.2: 話者名は吹き出しの外(上のラベル)に出す(mockup-baseline §3。
       // 名前を吹き出し内に書かない)。実況は地の文のまま
       vicLines.innerHTML =

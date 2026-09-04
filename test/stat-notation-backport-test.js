@@ -57,7 +57,7 @@ const sharedContext = {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  }, pn(str) { return str; }, pnSurname(str) { return str; } },
+  }, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } },
 };
 vm.runInNewContext(`${statBlock}\n${statDecaySource}\n${detailBarsSource}\nthis.api = {
   statTierStyle, barDispOver, statOverBarHtml, detailBars: _fighterPopupStatBarsHtml,
@@ -93,7 +93,7 @@ const dbContext = {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  }, pn(str) { return str; }, pnSurname(str) { return str; } },
+  }, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } },
 };
 vm.runInNewContext(`${statBlock}
 ${extractFunction(uiRender, '_statCell')}

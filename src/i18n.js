@@ -46,6 +46,18 @@
 //      文字列かつ名前辞書に完全一致すれば変換してから埋め込む(manフィルタ等の通常の
 //      プレースホルダフィルタより前段で評価する)。ja/pseudo時は従来どおり無変換。
 //      これによりテンプレ経由の名前({name}/{winner}等)は配線ゼロで英語化される。
+//  ■ 技名辞書 MOVES_EN (Stage B P7-5、docs/en-move-names-draft-v0.1.md §7):
+//    技名(242件)も選手名と同じ「data由来の値」なので、キー一致のt()では訳せない。
+//    ただし名前辞書(names)とは**別領域**にする — 技名の日本語文字列は効果音判定
+//    (battle-sfx.js)・解説文選択(_movePresentation)・セーブ値(finMove)の安定キーとして
+//    生き続けるため、pn()の守備範囲(人名・団体名)と混ぜない方が事故を追いやすい。
+//    - addMoves(map) / addMoveShorts(map): 登録入口。生成元は names と同じ
+//      test/i18n-build-names.js(i18n/names-ledger.json の moves 節 → src/lang-en-names.js)。
+//    - mv(str): 技名辞書に完全一致すればEN訳。無ければ原文(fail-open)。ja/pseudoは素通し。
+//    - mvShort(str): カットイン等の狭い枠向け短縮形(19件)。短縮形が無ければ mv(str) へ
+//      fail-open するので、呼び出し側は枠の狭さだけを見て選べばよい。
+//    - t()のパラメータ値自動変換(D-P6-2)も技名辞書を見る。names→moves の順で引くので、
+//      `{move}` のようなPHは配線ゼロで英語化される(Engine.formatFinish がこれに乗る)。
 //  ■ 姓のみ辞書 pnSurname (Stage B P6-11、docs/i18n-en-layout-overflow-report-v0.1.md):
 //    チップ・1行の表・ランキング行(.flink/.jtc-fn/.nm-tag等の固定幅1行枠)はフルネーム
 //    だと英語で折り返し・はみ出しが起きる。pn()と同じ「フルネームJA」を入力に取り、
@@ -73,6 +85,12 @@
   // 生成元: src/lang-en-names.js(test/i18n-build-names.jsがnames-ledger.jsonの
   // ja(フルネーム)→enSurnameを突合して生成)。
   const surnames = Object.create(null);
+  // P7-5: 技名(JA) → 技名(EN)。names(pn)とは別領域。
+  // 日本語の技名は効果音判定・解説文選択・セーブ値(finMove)の安定キーとして残るので、
+  // 「表示の直前に1回だけ引く」用途に閉じる(specs §2-2/§13-1)。
+  const moves = Object.create(null);
+  // P7-5: 技名(JA) → 短縮EN(19件)。観戦カットイン等の最狭枠(実測EN約27字)向け。
+  const moveShorts = Object.create(null);
   // このセッションで既にログ済みの未訳キー(D7: 同一キーは1回だけ)。
   const missSeen = new Set();
 
@@ -151,6 +169,8 @@
   // convertNames(D-P6-2): trueのとき、値が文字列かつ名前辞書(names)に完全一致すれば
   // フィルタ適用より前に訳文へ差し替える。呼び出し元はt()のenブランチのみtrueを渡す
   // (ja/pseudoは常にfalse相当=従来どおり無変換。ja側の1バイト不変を保つ)。
+  // P7-5: names に無ければ技名辞書(moves)も見る。これで `{move}` 等のPHが配線ゼロで
+  // 英語化される(Engine.formatFinish の決着文がこの経路に乗る)。
   function applyParams(str, params, convertNames) {
     if (!params || typeof str !== 'string') return str;
     let out = str;
@@ -158,9 +178,12 @@
       const re = new RegExp('\\{' + escapeRegExp(key) + '(?::([A-Za-z_][A-Za-z0-9_]*))?\\}', 'g');
       out = out.replace(re, (_match, filterName) => {
         let raw = params[key];
-        if (convertNames && typeof raw === 'string'
-          && Object.prototype.hasOwnProperty.call(names, raw)) {
-          raw = names[raw];
+        if (convertNames && typeof raw === 'string') {
+          if (Object.prototype.hasOwnProperty.call(names, raw)) {
+            raw = names[raw];
+          } else if (Object.prototype.hasOwnProperty.call(moves, raw)) {
+            raw = moves[raw];
+          }
         }
         if (filterName && Object.prototype.hasOwnProperty.call(FILTERS, filterName)) {
           return String(FILTERS[filterName](raw));
@@ -312,6 +335,20 @@
     Object.keys(map).forEach((key) => { surnames[key] = map[key]; });
   }
 
+  // ── P7-5: 技名辞書の登録入口 ──
+  // names/surnamesとは別領域。{ 技名JA: 技名EN } のマップをマージする(複数回呼び出し可)。
+  // 生成元: test/i18n-build-names.js → src/lang-en-names.js。
+  function addMoves(map) {
+    if (!map) return;
+    Object.keys(map).forEach((key) => { moves[key] = map[key]; });
+  }
+
+  // ── P7-5: 技名の短縮形辞書の登録入口({ 技名JA: 短縮EN }) ──
+  function addMoveShorts(map) {
+    if (!map) return;
+    Object.keys(map).forEach((key) => { moveShorts[key] = map[key]; });
+  }
+
   // ── D-P6-3: 直接補間サイト用ヘルパー ──
   // strが名前辞書に完全一致すればEN訳を返す。一致しなければ原文のまま(fail-open)。
   // ja/pseudo時は素通し(t()のpseudo分岐が辞書引きをしないのと同じ扱い。D-P6-2参照)。
@@ -330,6 +367,27 @@
     if (currentLang !== 'en') return str;
     if (Object.prototype.hasOwnProperty.call(surnames, str)) return surnames[str];
     return pn(str);
+  }
+
+  // ── P7-5: 技名の表示ヘルパー(pn()と同じ契約) ──
+  // strが技名辞書に完全一致すればEN訳を返す。無ければ原文のまま(fail-open)。
+  // ja/pseudo時は素通し。**表示の直前でだけ呼ぶこと** — 戻り値をEngineへ渡したり
+  // セーブ値(finMove)へ書き戻したりすると、効果音判定・解説文選択が全部フォールバック
+  // に落ちる(docs/en-move-names-draft-v0.1.md §7-2)。
+  function mv(str) {
+    if (typeof str !== 'string') return str;
+    if (currentLang !== 'en') return str;
+    return Object.prototype.hasOwnProperty.call(moves, str) ? moves[str] : str;
+  }
+
+  // ── P7-5: 狭い枠(観戦カットイン等)向けの短縮形 ──
+  // 短縮形が登録されていなければ mv(str)(フルEN名、それも無ければ原文)へfail-open。
+  // ja/pseudo時は素通し(mv()と対称)。
+  function mvShort(str) {
+    if (typeof str !== 'string') return str;
+    if (currentLang !== 'en') return str;
+    if (Object.prototype.hasOwnProperty.call(moveShorts, str)) return moveShorts[str];
+    return mv(str);
   }
 
   // DOMContentLoaded時に自動適用。i18n.jsはbody内の他スクリプトより前に読み込まれる
@@ -353,8 +411,12 @@
     addDict,
     addNames,
     addSurnames,
+    addMoves,
+    addMoveShorts,
     pn,
     pnSurname,
+    mv,
+    mvShort,
     applyDom,
     // D7: 翻訳漏れログの記録先。テスト/デバッグから中身を読めるようSetのまま公開する。
     _misses: missSeen,

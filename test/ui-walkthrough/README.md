@@ -100,3 +100,19 @@ node test/ui-walkthrough/fixtures/generate-fixture.js 42
 - D5: 90秒以上、シーズン／週／オフ週が変化しない大域停止
 
 FAIL/FREEZE ごとに `artifacts/<timestamp>-<type>/` へ screenshot、操作列、読取り専用の状態要約、console 全文、再現コマンドを保存します。このディレクトリは Git 管理外です。サーバと Chromium は成功・失敗・タイムアウトのいずれでも `finally` で終了します。
+
+## 観戦画面の技名i18nチェック(手動・P7-5)
+
+```powershell
+node test/ui-walkthrough/spectator-move-i18n-check.js
+```
+
+`run-all.js` は `*-test.js` しか拾わないので**自動実行には入りません**。観戦画面(`battle-engine.html` / `tag-battle.html`)のコード、技名辞書(`i18n/names-ledger.json` の `moves` 節)、`battle-sfx.js` の効果音判定、`_movePresentation` の解説文分岐のいずれかを触ったら手で1本回してください。
+
+node側で実試合を1本シミュして iframe へ `START_MATCH` を投げ、**JA と EN の両方で走らせて突き合わせます**。
+
+- 全フレームの `[_actionMoveName | _movePresentation().guide | guessCategory() | moveCat]` 列が JA/EN 完全一致 = **英語名が判定層へ漏れていない**(技名の日本語は効果音・解説文・セーブ値の安定キーなので、ここが崩れると効果音が全部フォールバックに落ちる)
+- `sfx.hit*` の呼び出し列も JA/EN 完全一致 = 効果音が従来どおり鳴る
+- EN側の技名パネル・ビッグムーブ演出に日本語が1文字も無い / JA側は日本語のまま
+
+スクリーンショットと `result.json` は `artifacts/p7-5-spectator/` に出ます(Git管理外)。設計背景は `specs/i18n-runtime-spec-v1.0.md` §23。

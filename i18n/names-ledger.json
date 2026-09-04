@@ -2,7 +2,9 @@
   "_meta": {
     "source": "docs/en-proper-nouns-draft-v0.1.md (2026-09-02 Keisuke裁定確定分)",
     "generatedBy": "test/i18n-build-names.js の元となった中間台帳。手編集可(正はこのファイル)",
-    "note": "要読み確認49件(選手35+コーチ14)は暫定読み(第一案)を採用。confirmed:falseで印を付ける。訂正はこのファイルの該当行を書き換えて再生成するだけで反映できる。"
+    "note": "要読み確認49件(選手35+コーチ14)は暫定読み(第一案)を採用。confirmed:falseで印を付ける。訂正はこのファイルの該当行を書き換えて再生成するだけで反映できる。",
+    "movesSource": "docs/en-move-names-draft-v0.1.md (2026-09-04 Keisuke裁定確定: 設問①〜⑤すべて推奨案・★38件も推奨EN採用)",
+    "movesNote": "moves節(242件)= commonMoves 76 + styleMoves 83 + STYLE_TAG_MOVES 82(ユニーク) + getTagMove既定値 合体スラム 1。shortは観戦カットイン等の最狭枠(実測EN約27字)向け短縮形19件。技名の日本語は効果音判定・解説文選択・セーブ値(finMove)の安定キーなので絶対に変えない — 英語は表示時だけ引く(WM_I18N.mv/mvShort)。"
   },
   "characters": [
     {
@@ -1634,6 +1636,1237 @@
     {
       "ja": "黒田幸子",
       "en": "Sachiko Kuroda"
+    }
+  ],
+  "moves": [
+    {
+      "ja": "ストンピング",
+      "en": "Stomping",
+      "confirmed": true
+    },
+    {
+      "ja": "ボディパンチ",
+      "en": "Body Punch",
+      "confirmed": true
+    },
+    {
+      "ja": "バックエルボー",
+      "en": "Back Elbow",
+      "confirmed": true
+    },
+    {
+      "ja": "ナックルパンチ",
+      "en": "Knuckle Punch",
+      "confirmed": true
+    },
+    {
+      "ja": "逆水平チョップ",
+      "en": "Knife Edge Chop",
+      "confirmed": true
+    },
+    {
+      "ja": "エルボー・スタンプ",
+      "en": "Elbow Strike",
+      "confirmed": true
+    },
+    {
+      "ja": "マシンガン・チョップ",
+      "en": "Machine Gun Chops",
+      "confirmed": true
+    },
+    {
+      "ja": "ニーキック",
+      "en": "Knee Strike",
+      "confirmed": true
+    },
+    {
+      "ja": "ヘッドバット",
+      "en": "Headbutt",
+      "confirmed": true
+    },
+    {
+      "ja": "ビッグブーツ",
+      "en": "Big Boot",
+      "confirmed": true
+    },
+    {
+      "ja": "低空ドロップキック",
+      "en": "Low Dropkick",
+      "confirmed": true
+    },
+    {
+      "ja": "サッカーボールキック",
+      "en": "Soccer Ball Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "ドロップキック",
+      "en": "Dropkick",
+      "confirmed": true
+    },
+    {
+      "ja": "ジャンピング・エルボー",
+      "en": "Jumping Elbow",
+      "confirmed": true
+    },
+    {
+      "ja": "ローリング・エルボー",
+      "en": "Rolling Elbow",
+      "confirmed": true
+    },
+    {
+      "ja": "延髄斬り",
+      "en": "Enzuigiri",
+      "confirmed": true
+    },
+    {
+      "ja": "ミサイルキック",
+      "en": "Missile Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "ラリアット",
+      "en": "Lariat",
+      "confirmed": true
+    },
+    {
+      "ja": "スーパーキック",
+      "en": "Superkick",
+      "confirmed": true
+    },
+    {
+      "ja": "クローズライン",
+      "en": "Clothesline",
+      "confirmed": true
+    },
+    {
+      "ja": "ロックアップからの押し込み",
+      "en": "Lockup Shove",
+      "confirmed": true
+    },
+    {
+      "ja": "ショルダータックル",
+      "en": "Shoulder Block",
+      "confirmed": true
+    },
+    {
+      "ja": "ヒップトス",
+      "en": "Hip Toss",
+      "confirmed": true
+    },
+    {
+      "ja": "アームドラッグ",
+      "en": "Arm Drag",
+      "confirmed": true
+    },
+    {
+      "ja": "ヘッドロック・テイクダウン",
+      "en": "Headlock Takedown",
+      "confirmed": true
+    },
+    {
+      "ja": "ファイヤーマンズキャリー",
+      "en": "Fireman's Carry",
+      "confirmed": true
+    },
+    {
+      "ja": "ボディスラム",
+      "en": "Body Slam",
+      "confirmed": true
+    },
+    {
+      "ja": "ジャーマン・スープレックス",
+      "en": "German Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "スナップ・スープレックス",
+      "en": "Snap Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ブレーンバスター",
+      "en": "Vertical Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "サイド・スープレックス",
+      "en": "Side Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ネックブリーカー",
+      "en": "Neckbreaker",
+      "confirmed": true
+    },
+    {
+      "ja": "スウィンギング・ネックブリーカー",
+      "en": "Swinging Neckbreaker",
+      "confirmed": true
+    },
+    {
+      "ja": "バックブリーカー",
+      "en": "Backbreaker",
+      "confirmed": true
+    },
+    {
+      "ja": "サモアン・ドロップ",
+      "en": "Samoan Drop",
+      "confirmed": true
+    },
+    {
+      "ja": "ベリー・トゥ・ベリー",
+      "en": "Belly-to-Belly Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "タイガー・ドライバー",
+      "en": "Tiger Driver",
+      "confirmed": true
+    },
+    {
+      "ja": "スパインバスター",
+      "en": "Spinebuster",
+      "confirmed": true
+    },
+    {
+      "ja": "DDT",
+      "en": "DDT",
+      "confirmed": true
+    },
+    {
+      "ja": "チンロック",
+      "en": "Chinlock",
+      "confirmed": true
+    },
+    {
+      "ja": "ネックロック",
+      "en": "Neck Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "ヘッドロック",
+      "en": "Headlock",
+      "confirmed": true
+    },
+    {
+      "ja": "リストロック",
+      "en": "Wristlock",
+      "confirmed": true
+    },
+    {
+      "ja": "ハンマーロック",
+      "en": "Hammerlock",
+      "confirmed": true
+    },
+    {
+      "ja": "アームリンガー",
+      "en": "Arm Wringer",
+      "confirmed": true
+    },
+    {
+      "ja": "スリーパー・ホールド",
+      "en": "Sleeper Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "フルネルソン",
+      "en": "Full Nelson",
+      "confirmed": true
+    },
+    {
+      "ja": "コブラツイスト",
+      "en": "Abdominal Stretch",
+      "confirmed": true
+    },
+    {
+      "ja": "ベアハッグ",
+      "en": "Bear Hug",
+      "confirmed": true
+    },
+    {
+      "ja": "キャメルクラッチ",
+      "en": "Camel Clutch",
+      "confirmed": true
+    },
+    {
+      "ja": "インディアン・デスロック",
+      "en": "Deathlock",
+      "confirmed": true
+    },
+    {
+      "ja": "ボストンクラブ",
+      "en": "Boston Crab",
+      "confirmed": true
+    },
+    {
+      "ja": "アキレス腱固め",
+      "en": "Achilles Tendon Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "フライング・クロスボディ",
+      "en": "Flying Crossbody",
+      "confirmed": true
+    },
+    {
+      "ja": "ダイビング・ボディ・プレス",
+      "en": "Diving Splash",
+      "confirmed": true
+    },
+    {
+      "ja": "セントーン",
+      "en": "Senton",
+      "confirmed": true
+    },
+    {
+      "ja": "トペ・スイシーダ",
+      "en": "Tope Suicida",
+      "confirmed": true
+    },
+    {
+      "ja": "プランチャ・スイシーダ",
+      "en": "Plancha Suicida",
+      "confirmed": true
+    },
+    {
+      "ja": "ダイビング・エルボー",
+      "en": "Diving Elbow Drop",
+      "confirmed": true
+    },
+    {
+      "ja": "ダイビング・ヘッドバット",
+      "en": "Diving Headbutt",
+      "confirmed": true
+    },
+    {
+      "ja": "ミサイルキック（飛）",
+      "en": "Missile Dropkick",
+      "confirmed": true
+    },
+    {
+      "ja": "エルボードロップ",
+      "en": "Elbow Drop",
+      "confirmed": true
+    },
+    {
+      "ja": "ニードロップ",
+      "en": "Knee Drop",
+      "confirmed": true
+    },
+    {
+      "ja": "レッグドロップ",
+      "en": "Leg Drop",
+      "confirmed": true
+    },
+    {
+      "ja": "スライディングキック",
+      "en": "Sliding Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "ストンピング連打",
+      "en": "Stomp Flurry",
+      "confirmed": true
+    },
+    {
+      "ja": "ヘアプル・スラム",
+      "en": "Hair-Pull Slam",
+      "confirmed": true
+    },
+    {
+      "ja": "フェイスウォッシュ",
+      "en": "Face Wash",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブルニードロップ",
+      "en": "Double Knee Drop",
+      "confirmed": true
+    },
+    {
+      "ja": "スクールボーイ",
+      "en": "Schoolboy",
+      "confirmed": true
+    },
+    {
+      "ja": "首固め",
+      "en": "Inside Cradle",
+      "confirmed": true
+    },
+    {
+      "ja": "スモール・パッケージ",
+      "en": "Small Package",
+      "confirmed": true
+    },
+    {
+      "ja": "ラ・マヒストラル",
+      "en": "La Magistral",
+      "confirmed": true
+    },
+    {
+      "ja": "ウラカン・ラナ",
+      "en": "Huracanrana",
+      "confirmed": true
+    },
+    {
+      "ja": "回転エビ固め",
+      "en": "O'Connor Roll",
+      "confirmed": true
+    },
+    {
+      "ja": "ヨーロピアン・クラッチ",
+      "en": "European Clutch",
+      "confirmed": true
+    },
+    {
+      "ja": "パワーボム",
+      "en": "Powerbomb",
+      "confirmed": true
+    },
+    {
+      "ja": "シットアウト・パワーボム",
+      "en": "Sit-Out Powerbomb",
+      "confirmed": true
+    },
+    {
+      "ja": "パワースラム",
+      "en": "Powerslam",
+      "confirmed": true
+    },
+    {
+      "ja": "チョークスラム",
+      "en": "Chokeslam",
+      "confirmed": true
+    },
+    {
+      "ja": "デスバレーボム",
+      "en": "Death Valley Bomb",
+      "confirmed": true
+    },
+    {
+      "ja": "バックドロップ",
+      "en": "Backdrop",
+      "confirmed": true
+    },
+    {
+      "ja": "ラストライド",
+      "en": "Last Ride",
+      "confirmed": true
+    },
+    {
+      "ja": "垂直落下式ブレーンバスター",
+      "en": "Brainbuster",
+      "confirmed": true
+    },
+    {
+      "ja": "力強いラリアット",
+      "en": "Power Lariat",
+      "confirmed": true
+    },
+    {
+      "ja": "頭突き",
+      "en": "Charging Headbutt",
+      "confirmed": true
+    },
+    {
+      "ja": "カナディアン・バックブリーカー",
+      "en": "Canadian Backbreaker",
+      "confirmed": true
+    },
+    {
+      "ja": "アルゼンチン・バックブリーカー",
+      "en": "Argentine Backbreaker",
+      "confirmed": true
+    },
+    {
+      "ja": "フランケンシュタイナー",
+      "en": "Frankensteiner",
+      "confirmed": true
+    },
+    {
+      "ja": "トルネードDDT",
+      "en": "Tornado DDT",
+      "confirmed": true
+    },
+    {
+      "ja": "シャイニング・ウィザード",
+      "en": "Shining Wizard",
+      "confirmed": true
+    },
+    {
+      "ja": "ムーンサルト・プレス",
+      "en": "Moonsault Press",
+      "confirmed": true
+    },
+    {
+      "ja": "シューティング・スター・プレス",
+      "en": "Shooting Star Press",
+      "confirmed": true
+    },
+    {
+      "ja": "450スプラッシュ",
+      "en": "450 Splash",
+      "confirmed": true
+    },
+    {
+      "ja": "フロッグ・スプラッシュ",
+      "en": "Frog Splash",
+      "confirmed": true
+    },
+    {
+      "ja": "スワントン・ボム",
+      "en": "Swanton Bomb",
+      "confirmed": true
+    },
+    {
+      "ja": "トペ・コンヒーロ",
+      "en": "Tope con Hilo",
+      "confirmed": true
+    },
+    {
+      "ja": "ダイビング・セントーン",
+      "en": "Diving Senton",
+      "confirmed": true
+    },
+    {
+      "ja": "ドラゴン・スクリュー",
+      "en": "Dragon Screw",
+      "confirmed": true
+    },
+    {
+      "ja": "アームバー",
+      "en": "Armbar",
+      "confirmed": true
+    },
+    {
+      "ja": "フィギュア4レッグロック",
+      "en": "Figure-Four Leglock",
+      "confirmed": true
+    },
+    {
+      "ja": "シャープシューター",
+      "en": "Sharpshooter",
+      "confirmed": true
+    },
+    {
+      "ja": "STF",
+      "en": "STF",
+      "confirmed": true
+    },
+    {
+      "ja": "三角絞め",
+      "en": "Triangle Choke",
+      "confirmed": true
+    },
+    {
+      "ja": "クロスフェイス",
+      "en": "Crossface",
+      "confirmed": true
+    },
+    {
+      "ja": "卍固め",
+      "en": "Octopus Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "ドラゴンスリーパー",
+      "en": "Dragon Sleeper",
+      "confirmed": true
+    },
+    {
+      "ja": "キムラロック",
+      "en": "Kimura Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "タイガー・スープレックス",
+      "en": "Tiger Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ドラゴン・スープレックス",
+      "en": "Dragon Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "フィッシャーマン・スープレックス",
+      "en": "Fisherman Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ファルコンアロー",
+      "en": "Falcon Arrow",
+      "confirmed": true
+    },
+    {
+      "ja": "みちのくドライバーII",
+      "en": "Michinoku Driver II",
+      "confirmed": true
+    },
+    {
+      "ja": "エクスプローダー",
+      "en": "Exploder Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ノーザンライツ・スープレックス",
+      "en": "Northern Lights Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブルアーム・スープレックス",
+      "en": "Double Arm Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "リアネイキッドチョーク",
+      "en": "Rear Naked Choke",
+      "confirmed": true
+    },
+    {
+      "ja": "テキサス・クローバーホールド",
+      "en": "Texas Cloverleaf",
+      "confirmed": true
+    },
+    {
+      "ja": "アンクル・ロック",
+      "en": "Ankle Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "フェニックス・スプラッシュ",
+      "en": "Phoenix Splash",
+      "confirmed": true
+    },
+    {
+      "ja": "ダイビング・ボディ・プレス（大）",
+      "en": "Top-Rope Splash",
+      "confirmed": true
+    },
+    {
+      "ja": "スピアー",
+      "en": "Spear",
+      "confirmed": true
+    },
+    {
+      "ja": "インプラントDDT",
+      "en": "Implant DDT",
+      "confirmed": true
+    },
+    {
+      "ja": "シャイニング・ウィザード（打）",
+      "en": "Running Shining Wizard",
+      "confirmed": true
+    },
+    {
+      "ja": "ジャンピングニー",
+      "en": "Jumping Knee",
+      "confirmed": true
+    },
+    {
+      "ja": "ハイキック",
+      "en": "High Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "バズソーキック",
+      "en": "Buzzsaw Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "PK",
+      "en": "PK",
+      "confirmed": true
+    },
+    {
+      "ja": "ランニングエルボー",
+      "en": "Running Elbow",
+      "confirmed": true
+    },
+    {
+      "ja": "スピニングバックフィスト",
+      "en": "Spinning Backfist",
+      "confirmed": true
+    },
+    {
+      "ja": "ケンカキック",
+      "en": "Street-Fight Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "エルボー連打",
+      "en": "Elbow Flurry",
+      "confirmed": true
+    },
+    {
+      "ja": "コーナーラッシュ",
+      "en": "Corner Rush",
+      "confirmed": true
+    },
+    {
+      "ja": "パイルドライバー",
+      "en": "Piledriver",
+      "confirmed": true
+    },
+    {
+      "ja": "ツームストン・パイルドライバー",
+      "en": "Tombstone Piledriver",
+      "confirmed": true
+    },
+    {
+      "ja": "ギロチンチョーク",
+      "en": "Guillotine Choke",
+      "confirmed": true
+    },
+    {
+      "ja": "肩固め",
+      "en": "Arm Triangle Choke",
+      "confirmed": true
+    },
+    {
+      "ja": "ヒール・ホールド",
+      "en": "Heel Hook",
+      "confirmed": true
+    },
+    {
+      "ja": "ロメロ・スペシャル",
+      "en": "Romero Special",
+      "confirmed": true
+    },
+    {
+      "ja": "テキサス・クローバーホールド（専）",
+      "en": "Deep Texas Cloverleaf",
+      "confirmed": true
+    },
+    {
+      "ja": "リアネイキッドチョーク（専）",
+      "en": "Deep Rear Naked Choke",
+      "confirmed": true
+    },
+    {
+      "ja": "アンクル・ロック（専）",
+      "en": "Grapevined Ankle Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "クロスフェイス（専）",
+      "en": "Deep Crossface",
+      "confirmed": true
+    },
+    {
+      "ja": "卍固め（専）",
+      "en": "Deep Octopus Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "フィギュア4レッグロック（専）",
+      "en": "Deep Figure-Four Leglock",
+      "short": "Deep Figure-Four",
+      "confirmed": true
+    },
+    {
+      "ja": "バックドロップ（専）",
+      "en": "Backdrop Driver",
+      "confirmed": true
+    },
+    {
+      "ja": "ドラゴン・スクリュー（専）",
+      "en": "Dragon Screw Legwhip",
+      "confirmed": true
+    },
+    {
+      "ja": "エルボースマッシュ",
+      "en": "Elbow Smash",
+      "confirmed": true
+    },
+    {
+      "ja": "バックハンドブロー",
+      "en": "Backhand Strike",
+      "confirmed": true
+    },
+    {
+      "ja": "ヘッドバット連打",
+      "en": "Headbutt Flurry",
+      "confirmed": true
+    },
+    {
+      "ja": "コーナーラッシュ（喧）",
+      "en": "Corner Assault",
+      "confirmed": true
+    },
+    {
+      "ja": "パイルドライバー（喧）",
+      "en": "Spike Piledriver",
+      "confirmed": true
+    },
+    {
+      "ja": "ツームストン・パイルドライバー（喧）",
+      "en": "Spike Tombstone",
+      "confirmed": true
+    },
+    {
+      "ja": "チョークスラム（喧）",
+      "en": "Chokebomb",
+      "confirmed": true
+    },
+    {
+      "ja": "サイドウォークスラム",
+      "en": "Sidewalk Slam",
+      "confirmed": true
+    },
+    {
+      "ja": "ランニングパワースラム",
+      "en": "Running Powerslam",
+      "confirmed": true
+    },
+    {
+      "ja": "ネックハンギングツリー",
+      "en": "Neck Hanging Tree",
+      "confirmed": true
+    },
+    {
+      "ja": "フェイスウォッシュ連打",
+      "en": "Face Wash Flurry",
+      "confirmed": true
+    },
+    {
+      "ja": "ストンピング乱打",
+      "en": "Stomp Barrage",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・ムーンサルト",
+      "en": "Double Moonsault",
+      "confirmed": true
+    },
+    {
+      "ja": "シンクロ・シューティングスタープレス",
+      "en": "Tandem Shooting Star Press",
+      "short": "Tandem SSP",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・フロッグスプラッシュ",
+      "en": "Double Frog Splash",
+      "confirmed": true
+    },
+    {
+      "ja": "コネクティング・ドロップキック",
+      "en": "Connecting Dropkicks",
+      "confirmed": true
+    },
+    {
+      "ja": "アシスト式ダイビングアタック",
+      "en": "Assisted Diving Attack",
+      "confirmed": true
+    },
+    {
+      "ja": "踏み台式ムーンサルト",
+      "en": "Step-Up Moonsault",
+      "confirmed": true
+    },
+    {
+      "ja": "肩車式ハイフライ",
+      "en": "Shoulder-Perch Dive",
+      "confirmed": true
+    },
+    {
+      "ja": "放り投げからのダイブ",
+      "en": "Launched Dive",
+      "confirmed": true
+    },
+    {
+      "ja": "パワーボム式ラナ",
+      "en": "Powerbomb Rana",
+      "confirmed": true
+    },
+    {
+      "ja": "タワー・スプラッシュ",
+      "en": "Tower Splash",
+      "confirmed": true
+    },
+    {
+      "ja": "空中戦からの投げ連携",
+      "en": "Aerial-to-Throw Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "ドロップキック→ジャーマン連携",
+      "en": "Dropkick into German Suplex",
+      "short": "Dropkick into German",
+      "confirmed": true
+    },
+    {
+      "ja": "宙返りからのスープレックス受け渡し",
+      "en": "Flipping Suplex Handoff",
+      "confirmed": true
+    },
+    {
+      "ja": "キック＆飛びつきコンビネーション",
+      "en": "Kick and Leap Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "スラッピング・ダブルドロップキック",
+      "en": "High-Five Double Dropkick",
+      "short": "High-Five Dropkicks",
+      "confirmed": true
+    },
+    {
+      "ja": "シューズ → エアキック連打",
+      "en": "Boot into Air-Kick Flurry",
+      "short": "Air-Kick Flurry",
+      "confirmed": true
+    },
+    {
+      "ja": "空中からの合体関節技",
+      "en": "Aerial Combination Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "ダイビング・アームバー",
+      "en": "Diving Armbar",
+      "confirmed": true
+    },
+    {
+      "ja": "ロープ空中技からの腕ひしぎ",
+      "en": "Rope-Dive Armbar",
+      "confirmed": true
+    },
+    {
+      "ja": "アサルト式レッグロック",
+      "en": "Assault Leglock",
+      "confirmed": true
+    },
+    {
+      "ja": "技巧派トップロープ連係",
+      "en": "Technical Top-Rope Combo",
+      "short": "Top-Rope Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "コンビネーション・スラム",
+      "en": "Combination Slam",
+      "confirmed": true
+    },
+    {
+      "ja": "ハモリ式ドロップキック",
+      "en": "Unison Dropkicks",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・ブレーンバスター",
+      "en": "Double Vertical Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "連携サンドイッチ・ボディアタック",
+      "en": "Sandwich Body Attack",
+      "confirmed": true
+    },
+    {
+      "ja": "パワー連携スラム",
+      "en": "Power Combo Slam",
+      "confirmed": true
+    },
+    {
+      "ja": "アシスト式スピアー",
+      "en": "Assisted Spear",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・ショルダータックル",
+      "en": "Double Shoulder Block",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・スープレックス",
+      "en": "Double Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ホイップ連携からのバックドロップ",
+      "en": "Whip into Backdrop",
+      "confirmed": true
+    },
+    {
+      "ja": "リフト＆ジャーマン連係",
+      "en": "Lift & German Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "打投コンビネーション",
+      "en": "Strike-Throw Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "ホイップ → ランニングキック",
+      "en": "Whip into Running Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・エルボースマッシュ",
+      "en": "Double Elbow Smash",
+      "confirmed": true
+    },
+    {
+      "ja": "崩し＆極め連携",
+      "en": "Takedown into Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "ホイップ → スリーパーキャッチ",
+      "en": "Whip into Sleeper Catch",
+      "confirmed": true
+    },
+    {
+      "ja": "腕固めセットアップ・ラッシュ",
+      "en": "Armlock Setup Rush",
+      "confirmed": true
+    },
+    {
+      "ja": "テクニカル・ロック連携",
+      "en": "Technical Lock Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "関節セットアップ → フィニッシュロック",
+      "en": "Setup into Finishing Hold",
+      "short": "Setup into Finisher",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・パワースラム",
+      "en": "Double Powerslam",
+      "confirmed": true
+    },
+    {
+      "ja": "タワー・オブ・ドゥーム",
+      "en": "Tower of Doom",
+      "confirmed": true
+    },
+    {
+      "ja": "サンドイッチ・スピア",
+      "en": "Sandwich Spear",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・ラリアット",
+      "en": "Double Lariat",
+      "confirmed": true
+    },
+    {
+      "ja": "重量級ダブルパワーボム",
+      "en": "Heavy Double Powerbomb",
+      "short": "Heavy Dbl Powerbomb",
+      "confirmed": true
+    },
+    {
+      "ja": "ゴリ押し → バックドロップ",
+      "en": "Bulldoze into Backdrop",
+      "confirmed": true
+    },
+    {
+      "ja": "サンドイッチ・チョークスラム",
+      "en": "Sandwich Chokeslam",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル打撃コンビネーション",
+      "en": "Double Strike Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "ラリアット → 追撃キック",
+      "en": "Lariat into Follow-Up Kick",
+      "short": "Lariat into Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "ショルダータックル→延髄斬り",
+      "en": "Shoulder Block into Enzuigiri",
+      "short": "Block into Enzuigiri",
+      "confirmed": true
+    },
+    {
+      "ja": "叩き潰してからの関節技",
+      "en": "Slam into Submission",
+      "confirmed": true
+    },
+    {
+      "ja": "パワーボム → グラウンドロック",
+      "en": "Powerbomb into Ground Lock",
+      "short": "Powerbomb into Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "ラッシュ → アキレス腱固め",
+      "en": "Rush into Achilles Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "タックル → テクニカル・ロック",
+      "en": "Tackle into Technical Lock",
+      "short": "Tackle into Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "重量級アシスト → 関節締め",
+      "en": "Heavy-Assisted Submission",
+      "short": "Heavy Assist Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・チョークスラム",
+      "en": "Double Chokeslam",
+      "confirmed": true
+    },
+    {
+      "ja": "シンクロ・ジャーマン",
+      "en": "Tandem German Suplex",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル・パワーボム",
+      "en": "Double Powerbomb",
+      "confirmed": true
+    },
+    {
+      "ja": "四の字スラム連携",
+      "en": "Figure-Four Slam Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "投げからの追撃打撃",
+      "en": "Throw into Follow-Up Strike",
+      "short": "Throw into Strike",
+      "confirmed": true
+    },
+    {
+      "ja": "スープレックス → ランニングキック",
+      "en": "Suplex into Running Kick",
+      "short": "Suplex into Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "ホイップ → エルボースマッシュ連係",
+      "en": "Whip into Elbow Smash",
+      "confirmed": true
+    },
+    {
+      "ja": "投げからの関節極め",
+      "en": "Throw into Submission",
+      "confirmed": true
+    },
+    {
+      "ja": "バックドロップ → アームロック",
+      "en": "Backdrop into Armlock",
+      "confirmed": true
+    },
+    {
+      "ja": "パワーボム → クロスフェイス",
+      "en": "Powerbomb into Crossface",
+      "confirmed": true
+    },
+    {
+      "ja": "スープレックス → フィギュアフォー",
+      "en": "Suplex into Figure-Four",
+      "confirmed": true
+    },
+    {
+      "ja": "ジャーマン → キムラロック連携",
+      "en": "German into Kimura Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル打撃ラッシュ",
+      "en": "Double Strike Rush",
+      "confirmed": true
+    },
+    {
+      "ja": "シンクロ・ハイキック",
+      "en": "Tandem High Kick",
+      "confirmed": true
+    },
+    {
+      "ja": "スラッピング・ダブルエルボー",
+      "en": "High-Five Double Elbow",
+      "confirmed": true
+    },
+    {
+      "ja": "サンドイッチ・ニークラッシャー",
+      "en": "Sandwich Knee Crusher",
+      "confirmed": true
+    },
+    {
+      "ja": "打撃で崩して関節技",
+      "en": "Strikes into Submission",
+      "confirmed": true
+    },
+    {
+      "ja": "キック → スリーパー連係",
+      "en": "Kick into Sleeper Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "ミドルキック → アキレス腱固め",
+      "en": "Middle Kick into Achilles Hold",
+      "short": "Kick into Achilles Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "シュート・キック → テクニカルロック",
+      "en": "Shoot Kick into Technical Lock",
+      "short": "Shoot Kick into Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "打撃コンビ → フィニッシュホールド",
+      "en": "Strike Combo into Finishing Hold",
+      "short": "Strike Combo into Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "ダブル関節技",
+      "en": "Double Submission",
+      "confirmed": true
+    },
+    {
+      "ja": "シンクロ・アームバー",
+      "en": "Tandem Armbar",
+      "confirmed": true
+    },
+    {
+      "ja": "上下同時極め",
+      "en": "Simultaneous Double Hold",
+      "short": "Double-Ended Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "アーム＆レッグロック連係",
+      "en": "Arm & Leg Lock Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "テクニカル・ダブルホールド",
+      "en": "Technical Double Hold",
+      "confirmed": true
+    },
+    {
+      "ja": "テクニカル・シンクロ・ロック",
+      "en": "Technical Tandem Lock",
+      "confirmed": true
+    },
+    {
+      "ja": "緻密な連係グラウンド",
+      "en": "Precision Ground Combo",
+      "confirmed": true
+    },
+    {
+      "ja": "合体スラム",
+      "en": "Team Slam",
+      "confirmed": true
     }
   ]
 }
