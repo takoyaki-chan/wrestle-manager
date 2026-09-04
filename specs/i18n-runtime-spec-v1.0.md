@@ -322,7 +322,7 @@ data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`
 
 **B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行**
 
-Engine/UIが直に読む地の文・ラベルのプール。大物は`SNAPSHOT_TEXTS` 276 / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / `ATMOSPHERE_TEXTS` 33、以下中小の表が続く。
+Engine/UIが直に読む地の文・ラベルのプール。大物は`SNAPSHOT_TEXTS` 276 / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 **✅P7-3** / `LARGE_EVENT_TEXTS` 86 **✅P7-3** / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 **✅P7-3(台帳のみ・表示はJA固定。§15-2)** / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / `ATMOSPHERE_TEXTS` 33、以下中小の表が続く。
 
 **⚠ `i18n-miss 0` は「英語化が終わった」の指標ではない。** missは「t()を通ったが辞書に無い」ときにしか出ないので、**そもそもt()を通っていないこの層は永久にmissへ出ない**。進捗はEN走破の「JA exposure by screen」(P6-14時点: screen-week=56 / screen-shachoshitsu=55 / screen-log=51 / screen-show=39 / screen-newspaper=33 …)と本突合表を併読して測る。
 
@@ -379,3 +379,52 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 2. **`Engine.chronicle`の年代記叙述4関数**(management.js:5201/5253/6391/6641) — dictを一切持たない断片連結。`QUOTE_TEMPLATES_DUAL`はEngineオブジェクトのプロパティで抽出器から見えない(§10-2型)。加えて`_buildPeerNarrative`等は分岐ごとの実行文プールで、§6 pool③(`Engine.mvpRace`の叙述family)と同じ性格
 3. **`Engine.autumnWar`の結果ニュース**(management.js:30729/30730) — `_orgName`+勝敗数の生JA組み立てを`industryNews.push`のdataへ焼く。§8の「生キー+render時点再構築」が要る型
 4. **composerがnullを返したときの直書きJAフォールバック2箇所** — `management.js`のAIチャンピオン交代(`${ev.orgName}の王座が動いた。…`)と`ui-common.js`のドラフト自団体1面(`${names}。新シーズンの陣容がひとつ厚くなった。`)。どちらもdictを通らないので、本体が英語になった今はフォールバックだけJAで出る
+
+## 15. Stage B P7-3 — 地の文プール後半3表(253行)の台帳化・英訳(2026-09-04追加)
+
+`docs/i18n-stage-b-p7-design-v0.1.md` §1分類A(地の文プール)の後半3表を `test/i18n-extract-templates.js` の
+`TARGET_TABLES` へ追加し、全253行を英訳した。template-ledger は 1,749 → **2,002キー・未訳0**。
+
+| 表 | 行 | 消費点 | 配線 |
+|---|---:|---|---|
+| `NOTIF_EVENT_TEXTS` | 102 | `Engine.eventSystem.pickText(rng, key, vars, dict)` | ✅**P6-13で配線済み**。本バッチは英訳のみ |
+| `LARGE_EVENT_TEXTS` | 86 | 同上(`B4_{activityType}` サブプールを含む) | ✅同上 |
+| `WEEKLY_STORY_TICKER` | 65 | `Engine.relationships.processWeeklyStoryEvents()` → gameLogのレガシー文字列 | ⚠台帳のみ(§15-2) |
+
+### 15-1. 「配線済み・辞書だけ無い」表はEN走破の `i18n-miss` にそのまま出る
+
+P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARGE の2表は**t()を通るのに辞書に無い**状態
+= §13-2 Bの中で唯一 `i18n-miss` として可視化される族になっていた。着手前のEN走破の miss 7件のうち6件がこの2表。
+**§13-2 Bの表でも、消費点がdict化された瞬間からmissに出る**ので、missが0でないときは「未配線」ではなく
+「配線済み・未訳」の可能性を先に疑うこと。
+
+### 15-2. `WEEKLY_STORY_TICKER` は gameLog専用プール — 表示はJA固定(§2-4/§12-1)
+
+名前に反して**ティッカーには一切出ない**(`Engine.news.generateTicker` が読むのは `NEWS_TICKER_TEMPLATES`)。
+実際の消費点は `processWeeklyStoryEvents()` が `events.push('[trust-warning] …')` の形で積む
+**gameLogのレガシー文字列エントリ**(`renderLog` が `gameLogEntryText()` 経由で無変換に素通しする族)1点のみ。
+
+- 文字列エントリをEN化するには `{type, data}` オブジェクトエントリへ移行するしかなく、それは
+  **セーブに書く値の変更**にあたる(§2-4「旧文字列エントリは無変換で共存」/ D-P6-4)。§11-2で
+  「gameLog全体の再設計を要する別工程」として既に見送りが確定している族と同一
+- したがって本バッチは**台帳化と英訳のみ**を行い、消費点は無改修とした。§13-2 Bの突合表を閉じることと、
+  gameLog再設計時に訳が揃っている状態を作ることが目的
+- **13キー中、実際に読まれているのは `clash`(5) / `trustWarning`(4) / `awakening`(27) の36行だけ**。
+  残り10キー29行(`bestFriends` / `hostileEnemy` / `goodRivalZone` / `unrequitedBond` / `onesidedHostility` /
+  `temperatureDiff` / `crossAsymmetry` / `highRivalryAwareness` / `goodRivalTicker` / `bitterRivalTicker`)は
+  **参照0の死蔵**(2026-09-04 全数grep)
+
+### 15-3. 会場名は「本文辞書」ではなく「名前辞書」の住人
+
+`management.js` の会場費行が `dict(VENUES[...].name)` と**本文辞書**を引いており、会場名は
+`lang-en-names.js`(pn/名前辞書)側にしか無いため必ず外れて `[i18n-miss] 中ホールB` になっていた
+(EN走破の miss 7件の残り1件)。**値をそのままパラメータで渡す**のが正解 — `t()` のenブランチが持つ
+パラメータ値の名前自動変換(D-P6-2 `convertNames`)が引き当てる。`dict` で先に訳そうとしないこと。
+
+### 15-4. P7-3で新たに見つかった同型(未着手)
+
+1. **`processWeeklyStoryEvents` の直書きJA 6本** — `[grievance]`4本(給料/後輩の待遇/タイトル挑戦/出場機会)と
+   `[hostile-pairs]`1本+ペア名の連結様式。`WEEKLY_STORY_TICKER` と**同じ関数の中で同じgameLogへ積まれる**のに、
+   どの表にも入っていない実行文直書き(§10-2型)。gameLog再設計と同時に処理するのが自然
+2. **EN走破の `screen-log` のJA露出48件は、ほぼ全部がこのgameLogレガシー文字列族**。§13-2の完了指標
+   「各画面1桁」を screen-log に適用するには gameLog の `{type,data}` 全面移行が前提になる
