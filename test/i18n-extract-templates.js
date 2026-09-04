@@ -135,6 +135,15 @@ const TARGET_TABLES = [
   'CAMP_FLAVOR_TEXTS',
   'PRE_WINDOW_TEXTS',
   'TEAM_SPIRIT_TEXTS',
+  // P7-4で追加(§13-2の突合表B「B. プロフィール文」3表)。人物紹介の地の文で、
+  // 消費点がt()もdictも持たなかったためENでもJAのまま出ていた層。
+  //   CHAR_PROFILES     127 — 選手紹介文(選手ポップアップ/選手ファイル/観戦画面の選手パネル)
+  //   ALL_COACHES       112 — コーチの desc/profile/origin/gender/flavor(下記フィルタ。
+  //                           name は名前辞書、abilities は COACH_ABILITY_CATALOG(P7-1のui台帳)の領分)
+  //   COACH_FLAVOR_DEFS  11 — フレーバー能力の効果説明文(キー名はALL_COACHES.flavor側で拾われる)
+  'CHAR_PROFILES',
+  'ALL_COACHES',
+  'COACH_FLAVOR_DEFS',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ
@@ -144,6 +153,23 @@ const TARGET_TABLES = [
 // (表示側も `${atmo.emoji} ${t(atmo.text)}` と分けて出す)。
 const TABLE_PATH_FILTER = {
   ATMOSPHERE_TEXTS: (pathKeys) => pathKeys[pathKeys.length - 1] !== 'emoji',
+  // P7-4: `ALL_COACHES` はオブジェクト配列で、訳出対象は人物紹介の地の文と
+  // プロフィール欄のラベル値だけ。P6-10の `extractArrayLiteralProp`(ソース文字列から
+  // `prop: [ ... ]` を切り出す)と同じ「配列のプロパティだけを台帳へ載せる」目的だが、
+  // `ALL_COACHES` はトップレベル`const`でそのまま評価済みの値が取れるため、
+  // ソースの切り出しではなくパスフィルタで同じことをする(配列インデックスは
+  // pathKeys に含まれないので、要素の直下キー名がそのまま最後の要素になる)。
+  //   ○ desc/profile … 紹介文・プロフィール文(本バッチの主題)
+  //   ○ origin/gender … プロフィール欄の値(`{origin}出身` `{gender}性` で差し込まれる)
+  //   ○ flavor        … フレーバー能力名。COACH_FLAVOR_DEFS のキーと同一文字列で、
+  //                      キーは走査対象にならない(walkStringsは値だけを拾う)ため
+  //                      ここで拾わないと能力名が台帳に載らない
+  //   ✕ name          … 人名。固有名詞辞書(src/lang-en-names.js)の領分
+  //   ✕ abilities     … 特殊能力名。`COACH_ABILITY_CATALOG` と同一文字列で、
+  //                      そちらはP7-1のui台帳(DATA_TABLESモード)の領分
+  //   ✕ その他(grade/style/coachingType/observation/emoji) … 日本語を含まない識別子
+  ALL_COACHES: (pathKeys) => ['desc', 'profile', 'origin', 'gender', 'flavor']
+    .indexOf(pathKeys[pathKeys.length - 1]) >= 0,
 };
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の

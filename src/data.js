@@ -18345,12 +18345,17 @@ const NEWSPAPER_SUB_TEMPLATES = {
 //                    SNAPSHOT_TEXTS は「文面変更禁止」の但し書きこそ無いが、`_selectType`が
 //                    `SNAPSHOT_TEXTS[source]`でソースIDを引くだけの表なので、i18n配線用の
 //                    文字列を表の中へ混ぜず本表へ集約する(P6-15と同じ判断)
+//   coachProfileMeta: (P7-4で追加)コーチツールチップのプロフィール欄メタ行。従来は
+//                    `${c.age}歳 ｜ ${c.gender}性 ｜ ${c.origin}出身` の直書き連結で、
+//                    3つの接尾辞(歳/性/出身)がt()を一度も通らなかった。値(男/女・都道府県)は
+//                    ALL_COACHES側から台帳へ載るので、ここには**様式だけ**を置く
 const ARTICLE_COMPOSE_TEMPLATES = {
   join: '{a}{b}',
   champChangeJoin: '{lead}{profile}{reign}{closing}',
   nameList: '{a}、{b}',
   prevChampFallback: '前王者',
   snapshotVoice: '{name}　{line}',
+  coachProfileMeta: '{age}歳 ｜ {gender}性 ｜ {origin}出身',
 };
 
 // task-77 §5-D: ドラフト自団体1面(リード+注目選手1〜2名+締め)。確定版・一字一句変更不可。

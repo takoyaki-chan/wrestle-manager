@@ -9812,7 +9812,7 @@ function _renderDbCoaches() {
       <td class="num" style="font-weight:700;color:${gc}">×${c.gMult||1.0}</td>
       <td class="num" style="color:${gc}">${c.observation}</td>
       <td><span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span></td>
-      <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).join('・')}${c.flavor ? ` <span style="color:var(--text-dim)">[${c.flavor}]</span>` : ''}</td>
+      <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).join('・')}${c.flavor ? ` <span style="color:var(--text-dim)">[${WM_I18N.t(c.flavor)}]</span>` : ''}</td>
       <td class="num" style="font-size:12px">${c.salary}万</td>
       <td class="num" style="font-size:12px">${c.hireFee}万</td>
       <td>${isHired ? `<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">${WM_I18N.t('雇用中')}</span>` : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>

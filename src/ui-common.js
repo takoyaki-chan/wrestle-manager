@@ -1871,6 +1871,15 @@ function confirmSigning(charId) {
   });
 }
 
+// i18n Stage B P7-4: フレーバー能力の効果説明文(COACH_FLAVOR_DEFS)を辞書へ通す。
+// 定義が引けないとき t('') を呼ぶと EN で空文字の i18n-miss を量産するため、
+// 非空のときだけ辞書を引く(fail-open で JA 原文が出るのは t() の既定挙動)。
+function _coachFlavorDesc(flavorKey) {
+  const def = (typeof COACH_FLAVOR_DEFS !== 'undefined' && COACH_FLAVOR_DEFS[flavorKey]) || null;
+  const desc = def && def.desc;
+  return desc ? WM_I18N.t(desc) : '';
+}
+
 // ── Coach Tooltip (profile popup) ──
 function showCoachTooltip(coachId) {
   const c = ALL_COACHES.find(co => co.id === coachId);
@@ -1935,7 +1944,7 @@ function showCoachTooltip(coachId) {
     <div style="font-size:13px;color:var(--text);line-height:1.6">${(c.abilities||[]).map(a => {
       const cat = COACH_ABILITY_CATALOG[a];
       return cat ? `<div><strong>${a}</strong> <span style="font-size:11px;color:var(--text-sub)">(${cat.grade}級)</span> — ${cat.desc}</div>` : `<div>${a}</div>`;
-    }).join('')}${c.flavor ? `<div style="margin-top:4px;color:var(--text-sub);font-size:12px">🌿 ${c.flavor}: ${(COACH_FLAVOR_DEFS[c.flavor]||{}).desc||''}</div>` : ''}</div>
+    }).join('')}${c.flavor ? `<div style="margin-top:4px;color:var(--text-sub);font-size:12px">🌿 ${WM_I18N.t(c.flavor)}: ${_coachFlavorDesc(c.flavor)}</div>` : ''}</div>
   </div>`;
 
   // Cost
@@ -1967,18 +1976,24 @@ function showCoachTooltip(coachId) {
   }
 
   // Profile
+  // i18n Stage B P7-4: 紹介文(profile/desc)は表示点で1回だけ t() を通す。メタ行の
+  // 「歳/性/出身」は直書き連結だったので ARTICLE_COMPOSE_TEMPLATES.coachProfileMeta の
+  // 1テンプレへ畳み、値(男/女・出身地)は差し込む前に辞書を引き直す(§14-2 _wmDictLabel と同趣旨。
+  // テンプレだけ訳しても値が生JAだと本文にJAが残る)。ALL_COACHES 35名は age/gender/origin を
+  // 全員持つため、JAでの出力は畳み込み前と同一。
   if (c.profile) {
+    const metaTpl = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined' && ARTICLE_COMPOSE_TEMPLATES.coachProfileMeta) || '';
     html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(200,190,170,0.08);padding-top:12px">
       <div class="coach-tooltip-label">${WM_I18N.t('プロフィール')}</div>
       <div style="font-size:11px;color:var(--text-sub);margin-bottom:6px">
-        ${c.age ? c.age + '歳' : ''} ${c.gender ? '｜ ' + c.gender + '性' : ''} ${c.origin ? '｜ ' + c.origin + '出身' : ''}
+        ${metaTpl ? WM_I18N.t(metaTpl, { age: c.age || '', gender: c.gender ? WM_I18N.t(c.gender) : '', origin: c.origin ? WM_I18N.t(c.origin) : '' }) : ''}
       </div>
-      <div style="font-size:12px;color:var(--text);line-height:1.7">${c.profile}</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.7">${WM_I18N.t(c.profile)}</div>
     </div>`;
   } else if (c.desc) {
     html += `<div class="coach-tooltip-section" style="border-top:1px solid rgba(200,190,170,0.08);padding-top:12px">
       <div class="coach-tooltip-label">${WM_I18N.t('紹介')}</div>
-      <div style="font-size:12px;color:var(--text);line-height:1.7">${c.desc}</div>
+      <div style="font-size:12px;color:var(--text);line-height:1.7">${WM_I18N.t(c.desc)}</div>
     </div>`;
   }
 
@@ -4435,10 +4450,12 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
       }
 
       // Profile text
+      // i18n Stage B P7-4: 選手紹介文は表示点で1回だけ t() を通す(CHAR_PROFILES は
+      // テンプレ台帳。§13-2 B「B. プロフィール文」)。
       const profileText = CHAR_PROFILES[c.id];
       if (profileText) {
         html += `<div class="fighter-popup-section" style="font-size:13px;color:var(--text-sub);line-height:1.7;padding:10px 12px;background:rgba(200,190,170,0.03);border-radius:6px;border-left:3px solid ${sm.color}44;margin-top:4px">
-          📝 ${profileText}
+          📝 ${WM_I18N.t(profileText)}
         </div>`;
       }
     }

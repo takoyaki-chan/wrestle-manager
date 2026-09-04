@@ -20,6 +20,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "181cmの長身を誇り上野原と並ぶ「岬浜のツインタワー」。格闘技仕込みの実践的テクで次期主将候補。上野原との二枚看板として岬浜の最前線を支えるパワーグラップラー。冷静な試合運びと堅実な防御力で安定した試合ができる信頼度の高い選手。",
+    "en": "At 181cm she stands with Uenohara as the other Misakihama Twin Tower. Her technique comes out of combat sports and it is practical; she is next in line for the captaincy. A power grappler who holds Misakihama's front line alongside Uenohara. She works a match calmly and defends soundly, and she can be relied on for a steady bout.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "1年前よりは確実に良くなってる…はず…多分…",
     "en": "Definitely better than a year ago... probably... I think...",
     "files": [
@@ -28,6 +38,16 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "1年時からレギュラーの才能の塊。特にグラウンド技術に優れる岬浜の副将。梅ヶ丘を深く信頼している。早熟型の天才肌で、技術面では上級生すら凌ぐセンスの持ち主。型破りな閃きで試合を動かす反面、安定感に欠ける一面もあるが、その潜在能力は計り知れない。",
+    "en": "A concentration of talent, a regular since her first year, and Misakihama's vice-captain; her groundwork in particular is excellent. She trusts Umegaoka completely. An early-blooming natural whose feel for technique already outstrips the students above her. She can move a match with an idea out of nowhere and she is not always steady, and there is no telling how far this goes.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "3か月に一度の頂上決戦が、ついにベルトを動かした。新しい全国統一王者は{winner}（{winnerOrg}）である。",
@@ -530,6 +550,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "JOC帯同のスポーツ医学博士。コンディション管理の最高権威。",
+    "en": "A doctor of sports medicine who has traveled with the Olympic squad. The leading authority on condition management.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "MMAで「閃光」の異名を取ったスピードファイター。現役時代の実戦経験を基に、スピードを活かした攻防の極意を叩き込む。妥協を許さないストイックな指導だが、選手からの信頼は厚い。「速さは才能じゃない、執念だ」と説く。",
+    "en": "A speed fighter who went by Flash in MMA. She drills the core of speed-based offense and defense out of what she learned in her own fights. She allows no compromises, and her wrestlers trust her anyway. Speed is not talent, she says. It is persistence.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "MMAの実戦経験から関節技やグラウンドテクニックに精通。「試合で使えない技術は教えない」がモットーの実戦派。感情を表に出さないクールな指導スタイルだが、試合前のアドバイスは的確で頼りになる。",
+    "en": "His MMA experience left him fluent in submissions and ground technique. His rule is that he will not teach anything a wrestler cannot use in a match. His style gives away nothing, but his advice before a match is exact and worth having.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "PPV {tone} — {winnerOrg}{winner}が{loserOrg}{loser}を撃破（試合評価{mq}）",
     "en": "PPV {tone} — {winnerOrg} {winner} beats {loserOrg} {loser} (rated {mq})",
     "files": [
@@ -580,10 +630,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "breakthrough確率 ×1.15",
+    "en": "Breakthrough chance ×1.15",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "cond回復 +1/週",
+    "en": "Condition recovery +1/week",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "cond消費+2/週、成長 ×1.05",
+    "en": "Condition drain +2/week, growth ×1.05",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "{a1}（{a1org}）が{a2}（{a2org}）を、{b1}（{b1org}）が{b2}（{b2org}）を下し、それぞれ決勝へ進んだ。試合評価は{mqA}点と{mqB}点。",
     "en": "{a1} ({a1org}) beat {a2} ({a2org}), and {b1} ({b1org}) beat {b2} ({b2org}); both go through to the final. Ratings: {mqA} and {mqB}.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳 ｜ {gender}性 ｜ {origin}出身",
+    "en": "Age {age} | {gender} | From {origin}",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9754,6 +9844,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "「鉄の母」と呼ばれる伝説的指導者。何人もの日本代表選手を輩出した最高峰。",
+    "en": "The coach they call the Iron Mother, and a name that carries weight anywhere. A career at the very top, with a long line of national-team athletes behind her.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "【本紙独占】{orgName} 資金底なし",
     "en": "Exclusive: no bottom to the {orgName} shortfall",
     "files": [
@@ -10054,10 +10154,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "おしゃれに目覚めた自称カワイイ系女子。練習より美容にストイックだが、調子が良い時は相手を完封することも。試合では意外にもスピードを活かした巧みな立ち回りを見せることがあり、侮ると痛い目に遭う。",
+    "en": "Newly awake to fashion, and self-declared cute. She is stricter about her looks than about practice, but on a good day she can shut an opponent out completely. In a match she can be unexpectedly clever with her speed, and taking her lightly hurts.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "おっとりした育ちの良いお嬢様妻。井沢に師事しプロレスの基本から学び、着実に実力をつけている成長株。努力家で、師匠である井沢の教えを素直に吸収している。確実に成長を続けており、メンタルの強さは団地内でも屈指。",
+    "en": "A gentle, well-raised wife. She took Izawa as a teacher and learned wrestling from the ground up, and she is coming along steadily. She works, and she takes in what Izawa tells her without argument. The growth is real, and mentally she is among the strongest in the complex.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "おっとり系お嬢様。穏やかな雰囲気とは裏腹に、グラウンド技術には確かなものがある。ムードメーカー気質でチームの雰囲気を和らげる。",
+    "en": "A gentle young lady of good family. Against everything her manner suggests, her groundwork is genuinely good. She lifts a room and softens the mood of a locker room.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "お互い一発の重さには欠ける分、試合運びが全てだ。地味だが奥が深いカード",
     "en": "Neither of them carries a heavy single blow, so how they run the match is all of it. Understated, and deeper than it looks.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "お嬢様高校に通う育ちの良い優等生。丁寧で品のある立ち居振る舞いだが、努力を惜しまない芯の強さを持つ。",
+    "en": "A well-raised honor student at a school for daughters of good families. Her manners are careful and refined, and there is a core under them that will not spare the effort.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10072,6 +10212,26 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "かつては天才美少女ピアニストとして名を馳せた。夢破れた後も秘めた思いは消えず、望みをかなえるために地下プロレスに身を投じる。繊細な指先から繰り出すのは今やピアノではなく、容赦ないパワーグラップリング。華やかな容姿の瞳の奥には、挫折を乗り越えた者だけが持つ覚悟が宿っている。",
+    "en": "She made her name as a prodigy pianist. The dream came apart and what she wanted did not go away, so she went into underground wrestling to get it. What those fine-boned fingers produce now is not piano but power grappling with nothing held back. Behind the striking face there is the resolve that only people who have come through a collapse carry.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "かつては期待の有望株だったが松久保との差に自信を失い道を踏み外した。闇試合で鬱屈をぶつける。ヒール性を帯びたサブミッション技術は松久保にも劣らない。挫折を経験した者特有の危うさと闘志が入り混じり、予測不能な爆発力を見せることがある。",
+    "en": "She was a prospect people watched, until the gap between her and Matsukubo took her confidence and she went off the path. She takes what is bottled up into unsanctioned matches. Her submission work has turned heel and it is no worse than Matsukubo's. The instability that comes with having failed sits mixed with the fight in her, and it can go off without warning.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "かつて同じ控室で過ごした二人が、別々の旗を背負って同じリングに立つ夜——{charA}と{charB}にとって、それは単なる初対戦以上の意味を持つ。{matches}度の交わりが、別の色を帯びて再開される。本紙はこの一戦を、業界の節目として書き残しておきたい。",
@@ -10102,6 +10262,16 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "かつて団地の実力者として尊敬を集めたが、高槻の策略で地位と友人を失い孤立。それでも折れずに５年の雌伏の後に高槻を破り地位を回復した。相手の良さを引き出しながら戦う誠実なスタイルは多くの支持を集めている。",
+    "en": "She was once respected as one of the complex's strongest, until Takatsuki's scheming cost her both her standing and her friends and left her alone. She did not break; after five quiet years she beat Takatsuki and took her place back. She fights honestly, drawing the best out of whoever is across from her, and a lot of people are behind her for it.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "がんばっているのは認める。しかし、勝利に届かなければそこに価値は生まれない。",
@@ -10544,6 +10714,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "その色香で大勢の青少年を悩ませる美人養護教諭。サブミッション技術は確かだがスタミナに難あり。冷静に相手の急所を見極める関節技は安定しているが、スタミナ不足は深刻で長期戦に持ち込まれると一気に失速する弱点を抱える。",
+    "en": "The school nurse, and a source of considerable distraction for the boys. Her submission work is sound; stamina is the problem. She picks out the vulnerable spot calmly and her joint work is reliable, but the stamina shortfall is serious, and a long match drops her off a cliff.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "その試合に、彼女は勝った。",
     "en": "She won that match.",
     "files": [
@@ -10588,6 +10768,16 @@
     "en": "Where does anyone even start. This writer would like to be told.",
     "files": [
       "KURODA_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "どこにでもいる平凡なOL。運動は苦手だが、職場の人間関係の中で否応なくリングに立たされる。",
+    "en": "An ordinary office worker, the kind you see anywhere. She is no good at sport, and the politics of the office keep putting her in the ring whether she likes it or not.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10904,6 +11094,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ふわっとした雰囲気の天然アイドル系女子高生。マイペースな性格とムードメーカー気質で周囲を和ませる癒し系エアリアルファイター。",
+    "en": "A soft-edged high schooler with the look of an idol and no guile at all. She goes at her own pace and lifts the room, and there is something restful about her aerial work.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ほぼ互角の数字だ。差をつける一手を、どちらが先に打つのだろうか。",
     "en": "The numbers are nearly level. Which of them plays the move that opens a gap first?",
     "files": [
@@ -11082,6 +11282,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "やさしげな雰囲気で目立たない印象だが、確かな力を秘める隠れた実力者。家庭の事情で転校して粕田学園を離れた。どんな相手にも柔軟に対応できる器用さが最大の武器で、試合展開を読む力にも優れる。",
+    "en": "A gentle presence, easy to overlook, and stronger than she looks. Family circumstances moved her to another school and away from Kasuda Gakuen. Her main weapon is an adaptability that copes with any opponent, and she reads the shape of a match well.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -11285,6 +11495,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "オリンピックの舞台で日本のトップアスリートを支え続けてきたスポーツ医学の最高権威。身体のコンディショニングに関して、この人の右に出る者は日本にいないと言われる。科学的根拠に基づく緻密なプログラムで選手の潜在能力を限界まで引き出す。冷静な外見の奥に、選手への深い情熱を秘めている。",
+    "en": "The leading authority in sports medicine, and for years the support behind Japan's top athletes at the Olympic Games. On the conditioning of a body, it is said that nobody in the country stands above her. Her programs are precise and evidence-based, and they take a wrestler's potential to its limit. Under the composure there is deep feeling for the people she works with.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "オーストリアからの留学生。体操競技の強化選手で、金髪碧眼の美少女が地下リングに舞い降りた。体操仕込みの華麗な空中殺法とスピードは観客を魅了し、その華やかな存在感で一躍人気者に。グラウンド技術には課題を残すが、身体能力の高さで十分カバーしている。",
+    "en": "An exchange student from Austria on a gymnastics development squad: blonde, blue-eyed, and suddenly on an underground card. The aerial work gymnastics gave her, and the speed, take hold of a crowd, and her presence made her popular almost overnight. Her groundwork still needs work; her athleticism covers for it well enough.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "オールラウンダーとして、彼女に死角はなかった。",
     "en": "As an all-rounder she left nothing uncovered.",
     "files": [
@@ -11315,10 +11545,80 @@
     "hasProperNoun": false
   },
   {
+    "key": "キックボクシングで磨いたフットワークと反射神経を武器にするスピード系コーチ。「考える前に動け」がモットーで、実戦形式の練習を好む。やや性急なところはあるが、選手と一緒に汗を流す情熱的な指導で慕われている。",
+    "en": "A speed coach whose tools are the footwork and reflexes kickboxing gave him. His rule is to move before you think, and he prefers live drills to theory. He can be hasty, but he sweats alongside his wrestlers, and they like him for it.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "キャリアの差は明確。ただ、若さの爆発力は計算外のことを起こす",
     "en": "The gap in career is plain. Youth has a burst in it that no calculation accounts for, though.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "キレのある打撃コンビネーションに定評がある寡黙な2年生。次期キャプテンと目される実力者。試合中は冷静沈着だが、一度スイッチが入ると容赦のないスピードで相手を追い込む。次世代の姫宮を牽引する逸材。",
+    "en": "A quiet second-year known for sharp striking combinations, and the one everyone expects to captain the club next. She is composed through a match, and once something switches she closes an opponent down at a speed that gives nothing back. The one who will lead the next Himemiya.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ギャル3人衆のリーダー格。クラスカーストのトップに君臨し、ルックスにも身体能力にも自信ありの実力者。華やかなルックスと高いプライドで注目を集める。より大きな舞台での活躍を虎視眈々と狙っている。",
+    "en": "The one the gyaru trio follows. She sits at the top of her class's order and is confident in both her looks and her body. The looks and the pride keep eyes on her. She is watching for a bigger stage, and waiting.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ギャル3人衆の一人。長いものに巻かれるタイプで、バックがいる時だけ強気になる世渡り上手。",
+    "en": "One of the gyaru trio. She goes along with whoever is winning, and she is only bold when somebody is standing behind her. She gets by.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ギャル3人衆の一角。恋する乙女として伊勢原文奈を警戒していた。パワーと威圧感を武器にしたラフファイトが持ち味で、体格を活かした圧力は相当。恋愛モードの時は甘いが、リングに上がると獰猛な戦闘本能を剥き出しにする。",
+    "en": "One of the gyaru trio. In love, and watching Fumina Isehara warily because of it. Her strengths are power and intimidation in a rough fight, and the pressure she puts on with her frame is considerable. Soft when her mind is on romance; in the ring the fighting instinct comes out bare.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "クラスの優等生委員長。ギャルグループとの軋轢で立場を失ったが、芯の強さは失っていない。真面目で正義感が強い。能力は平均的だが、最後まで諦めない姿勢は周囲の尊敬を集めている。",
+    "en": "The class president, and the honor student. Friction with the gyaru group cost her her standing; it did not cost her her core. Serious, with a strong sense of what is right. Her ability is average, and the way she refuses to give up to the last has earned her respect.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "クールな美貌が売りのグラビアアイドル。ファンサービスに長けた華やかな存在感で、スピードを活かした打撃戦を展開する。",
+    "en": "A magazine model who sells a cool kind of beauty. She works a crowd well and carries a bright presence, and she fights a striking match built on speed.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -11335,10 +11635,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "グレコローマンで鍛え上げた圧倒的なパワーと、若手を一人前に育てる手腕を兼ね備えた実力派コーチ。基礎体力の徹底と実戦練習を組み合わせた指導で、新人のパワーを短期間で開花させる。「強くなりたいなら、まず自分に負けるな」が口癖。",
+    "en": "A capable coach who pairs the raw power Greco-Roman built in him with a real hand for finishing young wrestlers. He combines thorough base conditioning with live practice and brings a newcomer's power out in a short time. If you want to get strong, he says, start by not losing to yourself.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "サブミッションの冷徹さが、彼女の強さの核心だった。",
     "en": "The cold of her submission game was the center of what made her strong.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ショートトラックスピードスケートでオリンピック銀メダルを獲得した元スプリンター。氷上で培った爆発的な加速力と接触を恐れない勝負度胸を武器に、引退後は女子プロレスに転身して一時代を築いた異色の経歴を持つ。二つの世界で頂点を知る彼女だからこそ、選手の中に眠るスピードの才能を誰よりも的確に見抜き、引き出すことができる。「速さの本質は、一歩目に全てを懸ける覚悟」と語るカリスマ。",
+    "en": "A former sprinter who took an Olympic silver in short-track speed skating. Carrying the explosive acceleration the ice gave her and a nerve that never flinched from contact, she moved into women's pro wrestling after retiring and defined an era there. Having stood at the top of two worlds, she reads sleeping speed in a wrestler more accurately than anyone and knows how to bring it out. Speed comes down to being willing to stake everything on the first step: that is her line, and people follow it.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -11485,6 +11805,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "スタミナとフィジカル強化のプロ。コンディション管理にも定評がある。",
+    "en": "A professional at stamina and physical work. His condition management is well regarded too.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "スター対決！{name1}と{name2}、夢のカードが実現！",
     "en": "Star against star! {name1} and {name2} — the dream match is booked!",
     "files": [
@@ -11565,10 +11895,60 @@
     "hasProperNoun": false
   },
   {
+    "key": "スピード強化の専門家。試合で使えるスピードを徹底的に叩き込む。",
+    "en": "A specialist in speed work. She drills the kind of speed that holds up in a match.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "スポットライトが当たらない日も、彼女はリングに立ち続けた。",
     "en": "On the nights the light was somewhere else, she went out and worked anyway.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スポーツジムのインストラクター。鍛え上げた体力と指導経験から来る引き出し上手な試合運びが武器のオールラウンダー。",
+    "en": "An instructor at a gym. An all-rounder whose weapons are hard-earned conditioning and, from years of coaching, a real ability to draw an opponent out.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スポーツリハビリの専門家として、選手の故障予防と回復を支える。派手さはないが、コンディション管理において堅実な仕事をする。「壊れてからでは遅い」が口癖で、日々の体調チェックを欠かさない。",
+    "en": "A specialist in sports rehabilitation who handles injury prevention and recovery. There is nothing flashy about the work, but her condition management is dependable. She likes to say that once a body breaks it is already too late, and she never skips the daily checks.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スランプ突入確率 ×0.85",
+    "en": "Slump onset chance ×0.85",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スランプ脱出確率 ×1.3",
+    "en": "Slump recovery chance ×1.3",
+    "files": [
+      "COACH_FLAVOR_DEFS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -11685,6 +12065,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "ダンスで培った身体操作と表現力の知見をプロレスに応用する異色のコーチ。ベテラン選手の動きのキレを維持し、年齢を感じさせないしなやかさを引き出す。「身体は楽器。手入れを怠れば音は鈍る」という哲学でスピードを守り続ける。",
+    "en": "An unusual coach who applies what dance taught her about body control and expression to pro wrestling. She keeps a veteran's movement sharp and draws out a suppleness that hides the years. The body is an instrument, she says: neglect the upkeep and the tone goes dull. She guards speed on that principle.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "チアリーダー部部長で校内の人気者。米山への嫉妬心からプロレスマッチを仕掛けた。ファンサービスに長けた華やかさの裏にライバル意識の強い性格を持つ。実力は相当なもの。",
+    "en": "Captain of the cheerleading squad and popular throughout the school. Jealousy of Yoneyama is what made her arrange the match. Behind the flair and the crowd work there is a strong competitive streak. The ability is considerable.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "チケット代を払ったファンに土下座してほしいレベルだ。筆者は本気で言っている",
     "en": "Somebody should be on their knees apologizing to every fan who paid for a ticket. This writer means that literally.",
     "files": [
@@ -11725,6 +12125,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ツンデレ女子大生。負けず嫌いで、大切な人のためなら全力で戦う情熱家。スピードのある打撃が武器のストライカーで、感情をエネルギーに変えて戦うタイプ。大切な人を守るためにリングに立つ姿は応援したくなる魅力を放っている。",
+    "en": "A university student who is prickly on the surface and soft underneath. She hates losing, and for someone who matters to her she will fight all out. A striker whose weapon is fast striking, and she turns feeling into energy. There is something about her standing in a ring to protect someone that makes people want her to win.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "テクニシャン同士の読み合い。地味に見えるかもしれないが、分かる人には堪らないカードだ",
     "en": "Two technicians reading each other. It may look understated; for the ones who see it, there is nothing better.",
     "files": [
@@ -11739,6 +12149,16 @@
     "en": "Technician against technician. This paper will put it on record that this card tests the eye of the person watching.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "テクニックの匠。選手の潜在能力を引き出す観察眼が鋭い。",
+    "en": "A craftsman of technique. He has a sharp eye for the potential in a wrestler.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -11812,6 +12232,36 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ハニートラップでオヤジ狩りをしていたギャル。手段を選ばないダーティなブロウラー。",
+    "en": "A gyaru who used to lure older men and rob them. A dirty brawler with no scruples about method.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "バイオメカニクス研究者。科学的分析で選手の技術を最適化する。",
+    "en": "A biomechanics researcher. He optimizes technique through scientific analysis.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "バスケ部所属の長身ファイター。運動部の仲間たちとも交流がある。打撃に光るものはあるが技術面に課題を残す。174cmの長身から繰り出すリーチの長い打撃は脅威だが、グラウンドに持ち込まれると苦戦する傾向がある。",
+    "en": "A tall fighter from the basketball team, well connected among the school's athletes. Her striking shows something; her technique still needs work. The reach she gets from 174cm makes her strikes a genuine threat, but she tends to struggle once a match goes to the mat.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -11905,6 +12355,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "パワー系トレーニングの知識と中高年の体作りの経験を併せ持つベテランコーチ。年齢を重ねた選手の身体を理解し、無理のない方法でパワーを維持させることに長けている。「あんたはまだまだやれる」と選手を鼓舞する頼れる姉御。",
+    "en": "A veteran coach who pairs knowledge of power training with experience conditioning older bodies. She understands what the years do to a wrestler and is good at holding power in place without forcing anything. She tells them they have plenty left, and they believe her.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "パワー育成の鬼。若手選手を力強く鍛え上げる。",
+    "en": "A hard taskmaster on power work. He builds young wrestlers up the hard way.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ファンが一番見たがっているのは{leftName}と{rightName}の対戦だ。組まない理由がないだろう",
     "en": "What the fans want most is {leftName} against {rightName}. No reason left not to book it.",
     "files": [
@@ -11985,10 +12455,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "ブラジリアン柔術の国際大会で優勝経験を持つ技巧派。一つの技を何百回と反復させるドリル式指導で、選手のテクニックを確実に底上げする。口数は少ないが、マット上での手本は雄弁。「身体が覚えるまで、何度でも」が指導哲学。",
+    "en": "A technician with an international Brazilian jiu-jitsu title behind her. Her drill-based coaching has wrestlers repeat a single hold hundreds of times, and it lifts their technique without fail. She says little; the demonstration on the mat says it for her. However many times it takes, she says, until the body remembers.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ブラジル",
+    "en": "Brazil",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ブロウラーの本能が、彼女のキャリアを彩った。",
     "en": "A brawler's instinct ran through the whole of her career.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "プロレスをするには不似合いな華奢でひ弱な少女。明日をも知れぬ日々に怯えながらも懸命に生きている。全ステータスが最低クラスだが、ムードメーカーとして場を明るくするファンサービス精神は誰にも負けない。彼女がリングに立つ姿は、強さとは何かを問いかける。",
+    "en": "A slight, frail girl, entirely unsuited to wrestling. She is frightened of what tomorrow holds and she keeps going anyway. Every one of her numbers is in the bottom class, and nobody beats her at lifting a room or giving a crowd something. When she stands in a ring, it raises the question of what strength actually means.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12135,6 +12635,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "マリンスポーツを趣味にしている大学生。好きを仕事にする決断に踏み切れず悩み中。マイペースなエアリアルファイター。",
+    "en": "A university student whose hobby is water sports. She cannot quite decide whether to make what she loves her work, and it is on her mind. An aerial fighter who goes at her own pace.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ミスコン2位の野心家。明るく快活な美人の本性は利己的で、他人を蹴落とすことにも抵抗がない。ファンの前では笑顔を振りまくが、ライバルには容赦のない心理戦を仕掛ける。",
+    "en": "Runner-up in the pageant, and ambitious. The bright, lively beauty is selfish underneath and has no trouble pulling someone else down. All smiles in front of the fans, and merciless in the mind games she plays on a rival.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ミスコングランプリの文学部生。お淑やかな印象だが性格はわりと強気。仏検1級の才媛。知性と品格を感じさせる立ち居振る舞いの中に、試合では意外な負けん気を覗かせる。",
+    "en": "A literature student who won her university's beauty pageant. She reads as demure and she is fairly forward. She holds the top grade in the French proficiency exam. There is intelligence and refinement in how she carries herself, and in a match an unexpected refusal to lose shows through.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ミスコン優勝のテニスサークル所属。華やかなルックスで大学生活を謳歌する早熟型オールラウンダー。テニスで鍛えたフットワークとファンサービス精神で試合を盛り上げる。",
+    "en": "She won her university's pageant, and she plays tennis in a club. An early-blooming all-rounder making the most of student life on her looks. The footwork tennis gave her and a feel for the crowd carry her matches.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ミステリアスな雰囲気の金髪ギャル。寡黙だがリングに上がると負けず嫌いの闘志を見せるスピード型ストライカー。",
+    "en": "A blonde gyaru with something unreadable about her. She says little, and in the ring the refusal to lose comes out. A speed-type striker.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "メインを食った。この試合が一番面白かったという声も多いはず",
     "en": "It ate the main event. Plenty of people will say it was the best thing on the card",
     "files": [
@@ -12152,6 +12702,56 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "メンタル強化の専門家。ベテラン選手の長期安定稼働を支える。",
+    "en": "A specialist in mental strength. She keeps veterans working steadily over the long haul.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "モチベ喪失回復momentum +0.2/週",
+    "en": "Recovery momentum from lost drive +0.2/week",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "モデルと兼業のレースクイーン。華やかなルックスの裏に堅実な実力を秘める。ファンサービス精神旺盛で華やかな試合を心がけるが、実力も確か。安定感のあるオールラウンドスタイルで、どんな相手とも一定以上の試合ができる信頼度の高い選手。",
+    "en": "A race queen who also models. Behind the striking looks there is dependable ability. She gives the crowd plenty and tries to make a match look good, and the ability is genuine. A steady all-round style: whoever she is in with, the match will be worth something.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ヨガと栄養学による地味だが堅実なコンディション管理。",
+    "en": "Quiet, dependable condition management built on yoga and nutrition.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ヨガと栄養学の知識を組み合わせた独自のコンディショニング指導が持ち味。目立つ成果はすぐには出ないが、長期的に選手の体質を改善する堅実な手腕がある。物静かで存在感は薄いが、選手の小さな変化も見逃さない。",
+    "en": "Her conditioning work combines yoga with nutrition into a method of her own. Nothing shows quickly, but over a long stretch she reliably changes how a wrestler's body holds up. She is quiet and easy to overlook, and she misses none of the small changes.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -12179,6 +12779,16 @@
     "en": "Away from the ring, she took up just as much room.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リングの目",
+    "en": "Eye for the Ring",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12239,6 +12849,36 @@
     "en": "If they don't build the next generation while they're ahead, this flips in 2-3 years",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "レスリングで鍛えた実戦感覚と圧倒的なフィジカルを持つスパルタコーチ。練習は厳しいが、選手が壁を乗り越えた瞬間に見せる笑顔は本物。「甘やかして強くなった人間はいない」が信条。不器用だが、選手の成長を誰よりも喜ぶ。",
+    "en": "A hard-line coach with the fight sense and the physical base that amateur wrestling built in her. Her sessions are brutal, and the smile she shows the moment a wrestler gets past a wall is genuine. She holds that nobody ever got strong by being coddled. She is clumsy with people, and nobody is happier when a wrestler grows.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "レスリング指導の世界で長年培った観察眼は、選手の隠れた才能を見逃さない。派手な指導はしないが、一人ひとりの特性に合わせた技術指導で着実に選手を伸ばす。「答えは選手の中にある。それを引き出すのが俺の仕事だ」と語る。",
+    "en": "Long years in wrestling coaching gave him an eye that misses no hidden gift. Nothing about his coaching is showy; he fits the technical work to each wrestler and moves them forward steadily. The answer is already inside the wrestler, he says, and drawing it out is his job.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "レフェリーとして数千試合をリングの中から見てきた試合眼の持ち主。選手の長所を見抜き、それを活かす試合運びを提案するのが得意。自らリングに上がることはないが、技術アドバイスの正確さは折り紙付き。控えめだが、言葉に重みがある。",
+    "en": "He has watched several thousand matches from inside the ring as a referee, and it shows in how he reads one. He is good at finding what a wrestler does well and proposing a way to build a match around it. He never works a match himself, but the accuracy of his technical advice is beyond question. He keeps himself small, and his words carry.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12395,6 +13035,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "万能型の指導者。若手の総合力底上げが得意。",
+    "en": "An all-round instructor. He is good at raising a young wrestler's overall level.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "三年連続でトーナメントを制した——それは強さではなく、支配だった。",
     "en": "She took the tournament three years running — that is not strength, it is control.",
     "files": [
@@ -12409,6 +13059,46 @@
     "en": "Three Wrestler of the Year awards — no one else stayed that far in front for a whole era.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "三津浜の1年生レギュラー。腕力が売りだがまだまだ技術不足。伸びしろに期待がかかる発展途上の新人。",
+    "en": "A first-year regular at Mitsuhama. Arm strength is what she sells; the technique is not there yet. A newcomer still forming, with room to grow.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "三津浜の3年生。路上格闘の実戦経験も豊富で、ルール無用の喧嘩ファイトは得意中の得意。豪快なパワーグラップリングと場外乱闘を厭わないラフスタイルが持ち味。一見粗暴だが試合の組み立てには独自の勘所を持ち、ダーティな駆け引きにも長けている。",
+    "en": "A third-year at Mitsuhama with plenty of street fighting behind her; a brawl with no rules is exactly where she is best. Big power grappling and a rough style that is happy to take things outside the ring. She looks crude, and she has a feel of her own for how a match is built, and she is good at the dirty exchanges.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "三津浜随一の怪力を誇る2年生。頭の回転は鈍いがパワーは圧倒的。気の向くまま暴れる問題児。181cmの巨体から繰り出すパワームーブは圧巻で、掴まれたら最後逃れるのは至難の業。試合運びは大雑把だが、その破壊力だけで勝ちを拾えるほどの怪力は唯一無二。",
+    "en": "The strongest at Mitsuhama, a second-year. Slow of thought and overwhelming in power. A problem, and she rampages whenever the mood takes her. The power moves that come off 181cm are something to see, and once she has hold of you there is very little to be done. She works a match roughly, and the strength alone is enough to steal wins with. Nobody else has it.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "三津浜高校プロレス部のリーダー格。サブミッション技術は相当なもので、自由奔放な発想から繰り出す変則的な攻めは対策が難しい。ヒール寄りのスタイルだが本人は深く考えておらず、ただ好きに戦いたいだけの享楽主義者。",
+    "en": "The one the Mitsuhama High School wrestling club follows. Her submission work is genuinely good, and the unorthodox offense that comes out of her free-running imagination is hard to prepare for. The style reads as heel; she has not thought about it that hard. She just wants to fight the way she likes.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12565,6 +13255,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "中堅法律事務所勤務の弁護士。論理的で感情に流されない性格。実年齢より落ち着いた佇まいの晩成型オールラウンダー。",
+    "en": "A lawyer at a mid-sized firm. Logical, and not carried away by feeling. A late-blooming all-rounder who carries herself with more composure than her age suggests.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "中学から急成長し特待生で岬浜に入学した大型1年生。「岬浜のツインタワー」の一角を担う将来の逸材。179cmの恵まれた体格を活かしたパワーグラップリングが武器で、頑丈さも折り紙付き。まだ粗削りだが成長の余地は大きく、名門校の未来を担う存在として期待される。",
+    "en": "A big first-year who grew fast in middle school and came to Misakihama on a scholarship. One half of the Misakihama Twin Towers, and a prospect. Her weapon is power grappling off a 179cm frame, and she is certifiably hard to hurt. Rough still, with plenty of room left, and the school is counting on her for its future.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "中盤の試合としては及第点",
     "en": "A pass for a mid-card match",
     "files": [
@@ -12579,6 +13289,16 @@
     "en": "The right content to hold the middle of the show",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "中途入社3年目の総務部員。事務職のキャリアは長く優秀だが、社内の人間関係にストレスを溜めている。ストレスの捌け口として始めたプロレスで意外な才能が開花。圧倒的なパワーとタフネスでリングを支配するグラップラーであり、侮れない実力者。",
+    "en": "Three years into a mid-career hire, in general affairs. She has a long and capable record in administrative work, and the politics of the office wear on her. She took up wrestling to let it out and an unexpected talent opened up. A grappler who controls a ring on power and durability, and not to be taken lightly.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12789,6 +13509,46 @@
     "en": "An even head-to-head. Tonight is effectively the final.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "京都",
+    "en": "Kyoto",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "人当たりの良さで患者にも同僚にも人気のナース。仕事中は優しいが、外に出ればけっこう毒舌。看護師としての観察眼はリングでも遺憾なく発揮され、名勝負製造機として好試合を生み出してきた。バランスの取れた高い総合力とファンサービス精神で幅広い支持を集める。",
+    "en": "A nurse whose easy manner makes her popular with patients and colleagues alike. Kind on the ward, and fairly sharp-tongued off it. The eye she has as a nurse works just as well in the ring, and she has turned out a long line of good matches. A high, balanced all-round game and a real instinct for the crowd have won her broad support.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "人望を集める生徒会長。三浦からの嫉妬を買い文化祭プロレスに出場。リーダーシップと技術が光る。引き出し上手な試合センスと生来の人望で周囲を味方につける。",
+    "en": "A student council president people believe in. Miura's jealousy put her on the school festival card. Her leadership and her technique both show. She has a sense for drawing an opponent out, and the goodwill she attracts naturally puts people on her side.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "人気ファッション誌の専属モデル。ハーフの容姿を活かして活躍中。強気な性格と負けん気でリングでも存在感を放つグラップラー。",
+    "en": "A contracted model for a popular fashion magazine, working on her mixed-heritage looks. A grappler whose forwardness and refusal to lose give her presence in a ring too.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13035,6 +13795,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "伝統派空手の八段師範で、技の精度と美しさを極限まで追求する職人気質。寡黙だが、一言一言に含蓄がある。「技は千回の反復から生まれる」と繰り返し教えている。",
+    "en": "An eighth-dan master of traditional karate, a craftsman who chases precision and beauty in technique to the limit. He says little, and what he does say carries weight. He tells his students over and over that a technique is born from a thousand repetitions.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "伸びを見せる{name}、次戦にも注目",
     "en": "{name} on the rise, next match worth watching",
     "files": [
@@ -13049,6 +13819,16 @@
     "en": "A show with a stall in it. Running half-finished cards like this one much longer is dangerous.",
     "files": [
       "KURODA_SHOW_RATING"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "体操競技で培った身体能力と空間認識力を持つ若きコーチ。新人の素質を見抜く直感に優れ、荒削りな原石を見つけ出すのが得意。指導経験はまだ浅いが、選手と同じ目線で成長を後押しする姿勢が持ち味。",
+    "en": "A young coach with the athleticism and spatial sense that gymnastics gave her. Her instinct for what a newcomer has in her is unusually good, and she is quick to find a rough stone worth cutting. Her coaching experience is still short, but she pushes wrestlers forward from beside them rather than above them.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13125,6 +13905,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "優しげな淑女の仮面の下に利己的なサイコパスの本性を隠す。体格・パワー・実力すべて備えた危険な美女。ファンサービスで人気を集める裏で、相手を精神的に追い詰める巧みな心理戦を展開する。自らの保身や欲のためには手段を選ばない。",
+    "en": "Under the mask of a gentle lady there is something selfish and cold. Size, power and ability all together, and dangerous with it. She is popular for how she plays to a crowd, and behind that she works a skilled psychological game that wears an opponent down. Where her own safety or her own wants are concerned, nothing is off the table.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "優勝即戴冠——この王座の規定が、天頂戦を業界最大の舞台へ押し上げている。挑む側だった選手が、今夜から迎え撃つ側になる。",
     "en": "Win the tournament, wear the belt — that rule is what has pushed Tenchosen up into the biggest stage in the business. The one who came in challenging is the one being challenged from tonight.",
     "files": [
@@ -13175,6 +13965,206 @@
     "hasProperNoun": false
   },
   {
+    "key": "元MMA選手。実戦で使えるテクニックだけを叩き込む。",
+    "en": "A former MMA fighter. He drills only what works in a real fight.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元アマチュアボディビル入賞者。筋肉づくりの知識は確かだが、プロレス指導の経験はまだ浅い。地道なフィジカルトレーニングで選手の土台をコツコツ作り上げる。口下手だが、黙々と付き合ってくれる信頼感がある。",
+    "en": "He placed in amateur bodybuilding. His knowledge of building muscle is solid, though his experience coaching pro wrestling is still thin. He builds a wrestler's base through plain, patient physical work. He is bad with words, but he stays with you, and that counts for something.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元ウエイトリフティング選手。ベテランのパワー維持に長けた姉御肌。",
+    "en": "A former weightlifter, and the big-sister type. She is good at keeping a veteran's power intact.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元キックボクサー。実戦形式でスピードと反射神経を鍛える。",
+    "en": "A former kickboxer. He trains speed and reflexes through live drills.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元グレコローマン全日本王者。若手のパワーを短期間で開花させる。",
+    "en": "A former All-Japan Greco-Roman champion. He brings out a young wrestler's power in a short time.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元ショートトラックスピードスケート五輪銀メダリスト。女子プロレスでも一時代を築いた異色の経歴を持つ。",
+    "en": "An Olympic silver medalist in short-track speed skating who went on to define an era in women's pro wrestling.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元スポーツ整形外科医。医学的知見でベテラン選手の寿命を延ばす。",
+    "en": "A former sports orthopedist. He uses medical knowledge to extend a veteran's career.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元スポーツ紙記者。業界全体に張り巡らされた情報網を持つ。",
+    "en": "A former sports-paper reporter. His information network runs through the whole business.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元トライアスロン選手。高地トレーニングや心肺機能の強化プログラムに精通。科学的アプローチで選手の持久力を最大限まで引き出す。温厚で計画的な性格。",
+    "en": "A former triathlete, well versed in altitude training and cardiovascular programs. His scientific approach takes a wrestler's endurance to its limit. Even-tempered and methodical.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元ブラジリアン柔術黒帯。反復ドリルで関節技と寝技の技術を叩き込む。",
+    "en": "A Brazilian jiu-jitsu black belt. She drills submissions and groundwork by repetition.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元プロダンサー。ベテランの動きのキレとしなやかさを維持させる。",
+    "en": "A former professional dancer. She keeps a veteran's movement sharp and supple.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元プロレスラーで、現役時代は「器用貧乏」と呼ばれながらも15年のキャリアを全うした苦労人。全てのポジションを経験した豊富な知識で、若手の総合力底上げを得意とする。面倒見が良い。",
+    "en": "A former pro wrestler who was called a jack of all trades in his active days and still saw out a fifteen-year career. Having worked every position, he is good at raising a young wrestler's overall level. He looks after people.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元プロレス実況アナウンサーで試合構成を熟知するセコンドマン。リング外から「次の展開」を的確に指示し、試合のドラマ性を引き上げる。話術に長け、社交的な性格。",
+    "en": "A former play-by-play announcer who knows match structure inside out, now working the corner. From outside the ropes he calls the next beat exactly right and lifts the drama of a match. A gifted talker, and sociable with it.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元ボディビルダーのトレーナー。地道にフィジカルの土台を作る。",
+    "en": "A former bodybuilder turned trainer. He builds the physical base one step at a time.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元メンタルトレーナー。ベテラン選手の心を支え闘志を再点火する。",
+    "en": "A former mental trainer. She steadies veterans and relights their fighting spirit.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元ラグビー日本代表フィジカルコーチ。恵まれた体格に加え、瞬発力トレーニングを武器とする異色のコンディショニング指導者。ラグビー仕込みの爆発的なダッシュとタックルドリルで選手のスピードを底上げする。「デカいだけじゃ意味がない、速く動けるデカさを作れ」が信条。",
+    "en": "Former strength coach for the national rugby team. Large himself, and unusual among conditioning coaches in building everything around explosive power. Rugby-bred sprint and tackle drills raise a wrestler's speed from the floor up. Size on its own means nothing, he says. Build size that moves.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元ラグビー日本代表フィジカルコーチ。瞬発力トレーニングを武器とする異色のコンディショニング指導者。",
+    "en": "Former strength coach for the national rugby team. An unusual conditioning specialist whose main tool is explosive-power work.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元レスリングナショナルコーチ。選手の隠れた才能を見逃さない名伯楽。",
+    "en": "A former national wrestling coach, and a finder of talent. Nothing hidden in a wrestler gets past him.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元レフェリー歴30年。リングの中から培った試合眼の持ち主。",
+    "en": "Thirty years as a referee. He reads a match from inside the ring.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元体操選手の若手コーチ。新人の素質を見抜く直感が鋭い。",
+    "en": "A young coach out of gymnastics. Her instinct for spotting raw ability is sharp.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "元同僚、いま完全に別の旗の下",
     "en": "Former colleagues, now entirely under different flags",
     "files": [
@@ -13205,6 +14195,116 @@
     "hasProperNoun": false
   },
   {
+    "key": "元哲玖四天王の一人。悪辣な外道ファイトとまとわりつくサブミッションで恐れられる哲玖の毒蛇。リーダーシップも兼ね備えた危険な実力者。",
+    "en": "One of the old Tekkyu Four. Feared for a vicious, rule-breaking style and submissions that cling: the viper of Tekkyu. Dangerous, and she can lead.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元哲玖四天王の一人で女子大生地下レスラー。パワーとスピードを兼ね備えるが、スタミナに不安を抱える。全盛期の爆発力は市内でも屈指だったが、怪我がちな体質が最大の弱点。",
+    "en": "One of the old Tekkyu Four, now a university student working the underground circuit. She has power and speed together; stamina is the worry. At her peak few in the city could match her burst, and a body that picks up injuries is her great weakness.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元大相撲力士のパワー系最高峰。実戦で通用する力を最短で身につけさせる。",
+    "en": "A former sumo wrestler and the peak of power coaching. He builds usable strength by the shortest route.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元女子MMA王者「閃光」。スピードを活かした実戦指導の達人。",
+    "en": "A former women's MMA champion who fought as Flash. A master of speed-based practical coaching.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元女子レスリング選手。スパルタ式でフィジカルを鍛え上げる。",
+    "en": "A former amateur wrestler. She builds physical strength the hard way.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元新体操日本代表。基礎の美しさから強い選手を育てる万能型。",
+    "en": "A former national rhythmic gymnast. An all-rounder who builds strength out of clean fundamentals.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元柔道全日本代表。引退後は独自のパワートレーニング理論を確立し、多くの格闘家を育て上げた。「力なき技は無力」が口癖。厳しいが、弟子想いの熱血指導者。",
+    "en": "A former All-Japan judo representative. After retiring he built a theory of power training of his own and raised a long line of fighters. His standing line is that technique without strength is nothing. Hard on his students, and devoted to them.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元砥石川高校出身。身体能力に物を言わせるパワー＆スピードタイプ。タフネスにも定評がある。鉄人と呼ぶにふさわしい頑健な肉体で怪我知らずのタフさが最大の武器。技術面の課題を克服できれば、トップ選手の仲間入りも夢ではないポテンシャルを秘める。",
+    "en": "Out of the former Toishigawa High School. A power-and-speed type who leans on raw athleticism, and known for durability. Her body is hard enough to earn the name Iron Woman, and staying free of injury is her biggest asset. Clear the technical gap and the top of the card is not a fantasy.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元社内マドンナの美人受付嬢。大久保の登場で地位を脅かされた。策略で周囲を動かし、自分は安全な場所から指揮を執るタイプ。サブミッション技術はなかなかのもので、それにプラスしてリング外での政治力を武器に暗躍する。",
+    "en": "The receptionist who used to be the office favorite, until Okubo arrived and put that in doubt. She moves other people by scheming and directs from somewhere safe. Her submission work is decent, and she adds to it the political leverage she has outside the ring.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "元芸能事務所マネージャーで、SNSマーケティングとメディア露出戦略のプロ。選手の魅力を引き出すブランディングが得意。行動力があり、常に新しいプロモーション企画を提案する。",
+    "en": "A former talent-agency manager and a professional in social media marketing and press strategy. She is good at branding that brings out what makes a wrestler appealing. She moves fast and always has a new promotional idea ready.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "元陸上短距離選手で、100m走の元ジュニア日本記録保持者。スポーツ科学を専攻し、反応速度と瞬発力の最適化に特化した独自メソッドを持つ。明るく前向きな性格で選手からの信頼が厚い。",
+    "en": "A former sprinter who once held the national junior record over 100 meters. She studied sports science and developed her own method for optimizing reaction time and explosive power. Bright and forward-looking, and well trusted by her wrestlers.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "先の興行で{name}は{stat}の成長を示した。一度の変化で評価が決まるわけではないが、試合の組み立てに新しい選択肢が増えたのは確かだ。次戦でその成長をどう生かすかが見どころになる。",
     "en": "At the last show {name} showed growth in one area: {stat}. One change does not settle an evaluation, but she plainly has a new option in how she builds a match. What she does with it next time out is the thing to watch.",
     "files": [
@@ -13212,6 +14312,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "先輩の沢登鮎を慕って粕田学園高校に入学した努力家の2年生。まだ能力は発展途上だが、ひたむきな姿勢でコツコツと実力をつけている。",
+    "en": "A hard-working second-year who entered Kasuda Gakuen High School to follow Ayu Sawanobori, a year above her. Her ability is still developing, and she is building it piece by piece, single-mindedly.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "入居2年目ながら高い実力を示す若手の実力者。鋭い打撃を得意とする早熟型。若さに似合わぬ冷静な試合運びと確かな打撃技術で、短期間でトップクラスの実力を身につけた。早熟型ゆえに伸びしろが懸念されるが、現時点の実力は侮れない。",
+    "en": "Two years in the complex and already showing real ability. An early bloomer whose strength is sharp striking. She works a match with a composure beyond her years and her striking is sound, and it took her very little time to reach the top group. Blooming early raises questions about how much further she goes; what she has now is not to be taken lightly.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -13375,6 +14495,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "兵庫",
+    "en": "Hyogo",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "円熟の戦い。若さはないが、巧さと意地のぶつかり合いは見応えがある",
     "en": "A match of ripened wrestlers. No youth in it, and the meeting of craft and pride is worth watching.",
     "files": [
@@ -13389,6 +14519,36 @@
     "en": "NEVER CROWNED",
     "files": [
       "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "冷静な分析",
+    "en": "Cool Analysis",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "冷静沈着な戦術眼で相手を観察して戦うデータ至上主義者。身体能力には不安があるが技術で補う。相手の癖を瞬時に見抜く観察眼は試合を重ねるごとに磨かれている。努力を積み重ねる姿勢は衰えず、長期的な成長が期待される知性派。",
+    "en": "A believer in data who fights by watching, with a cool tactical eye. Her athletic ability is a worry; her technique covers for it. The eye that catches an opponent's habits in an instant sharpens with every match she works. She keeps putting the work in, and there is long-term growth to expect here.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "初めての恋人に浮かれる素直で明るい女子高生。技術面はまだ発展途上だが、パワーとスピードのバランスが良い。",
+    "en": "A cheerful, straightforward high schooler, giddy over her first boyfriend. The technique is still developing; power and speed are nicely balanced.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13545,6 +14705,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "剣道仕込みの闘志で格上にも決して引かない負けず嫌い。技術は粗削りだがメンタルの強さは粕田随一。試合終盤に底力を発揮するタイプで、何度打ちのめされても立ち上がる不屈の精神は観客の心を掴む。将来の技術向上次第では大化けする可能性を秘めた逸材。",
+    "en": "Kendo gave her a fighting spirit that will not back down from anyone better than her. Her technique is rough, but nobody in Kasuda is mentally stronger. She finds her reserves late in a match, and the way she gets up however many times she is put down takes hold of a crowd. If the technique comes, she could turn into something else entirely.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "力で押せば崩れる、いなされれば消耗する。パワー側のジレンマが見どころだ",
     "en": "Push with strength and it comes apart; get turned aside and it drains you. The dilemma on the power side is the thing to watch.",
     "files": [
@@ -13589,6 +14759,16 @@
     "en": "A straight test of strength. Forty years on this beat, and a match like this one needs no tricks in it.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "動作解析",
+    "en": "Motion Analysis",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13645,6 +14825,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "北海道",
+    "en": "Hokkaido",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "医師としての深い身体知識を持つ異色のコーチ。ベテラン選手特有の身体の悩みを医学的見地から理解し、適切な調整法を提案する。「選手の寿命を一年でも延ばす」ことに情熱を注ぐ。慎重な性格で、無理は絶対にさせない。",
+    "en": "An unusual coach who brings a physician's depth of knowledge about the body. He understands the complaints particular to veterans from a medical standpoint and proposes the right adjustments. What he cares about is adding even one more year to a wrestler's career. He is cautious, and he will not let anyone work through pain.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "千葉",
+    "en": "Chiba",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "危機脱出の兆しは見えない。週ごとに数字は悪化し、選手たちの動揺も伝え聞こえる。本紙は引き続き、この団体の終焉を見届ける。",
     "en": "There is no sign of a way out. The numbers worsen week by week, and word of the unease among the wrestlers reaches us. This paper will go on watching this promotion to its end.",
     "files": [
@@ -13669,6 +14879,16 @@
     "en": "The grade here has to be a harsh one. It came in a long way under what was expected.",
     "files": [
       "KURODA_SHOW_RATING"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "厳しめのお嬢様高校の出身。大学では大人の女に見られがちで、本人も内心喜んでいる。コツコツ努力するオールラウンダー。",
+    "en": "Out of a strict school for daughters of good families. At university people take her for older than she is, and privately she is pleased about it. An all-rounder who puts the work in steadily.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13745,6 +14965,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "口数は極めて少ない打撃戦の申し子。一撃必殺を理想とする戦闘狂。鍛え抜かれた拳足から繰り出される打撃はスピードとパワーを兼ね備え、試合が始まれば相手を容赦なく打ち抜く。寡黙ゆえに何を考えているか掴みにくく、対戦相手に不気味な圧を与える。",
+    "en": "A natural at the striking exchange who barely speaks. What she wants is one blow that ends it. Her fists and legs are conditioned, and the strikes that come off them carry both speed and weight; once the bell goes she cuts through an opponent without mercy. Because she says nothing, nobody can tell what she is thinking, and that alone puts an unpleasant pressure on the other corner.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "古参ファンの私、号泣してる。ここまで来たんだね…",
     "en": "Longtime fan here, full-on crying. Look how far they came...",
     "files": [
@@ -13779,6 +15009,16 @@
     "en": "Nothing to fault, nothing to praise. It worked as a bridge to the next one",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "台湾",
+    "en": "Taiwan",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13883,6 +15123,86 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "名前がちょっとキラキラな大学4年生。アパレルに就職内定済み。同じサークルの後輩に彼氏持ち。グラップリングを軸にタフネスで粘る試合スタイル。就活も恋愛も順調で、プロレスはあくまで趣味の延長だが潜在能力は侮れない。",
+    "en": "A fourth-year student with a slightly showy name. She already has a job lined up in fashion, and a boyfriend a year below her in the same club. Her style is grappling with the durability to stay in a match. Work and love are both going well and wrestling is a hobby extended a little further, and the potential is not to be dismissed.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名古屋",
+    "en": "Nagoya",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名家・大河内家の令嬢にして摺出川女学院を支配する女帝。高いカリスマ性と冷酷さで学園に君臨する。全国から実力者を編入させる権力と資金力を持ち、自らも卓越した身体能力で頂点に立つ。その支配欲と野心は留まるところを知らず、粕田市全体の覇権をも狙う。",
+    "en": "Daughter of the distinguished Okochi family and empress of Suridegawa Girls' Academy. She rules the school on charisma and cold nerve. She has the authority and the money to transfer talent in from across the country, and the athletic ability to stand at the top herself. Her appetite for control has no visible limit, and Kasuda City as a whole is in her sights.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "名門・姫宮女子の主将。「柔の白銀」「姫宮の白雪姫」と呼ばれる容姿端麗な人気レスラー。バランスの取れた高い総合力と、どんな窮地でも折れない不屈の精神力が最大の武器。優雅で華麗な試合スタイルは多くのファンを魅了し、全国的にも知名度の高いトップレスラー。",
+    "en": "Captain of Himemiya Girls' Academy. A beautiful and popular wrestler known as Shirogane the Supple and the Snow White of Himemiya. Her weapons are a high, balanced all-round game and a spirit that does not break however bad the position gets. Her style is graceful and it draws crowds; she is a top wrestler known well beyond the city.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "名門・岬浜女子の主将。おしとやかな容貌ながら努力で掴んだ実力で全国制覇を目指す。抜きん出た才能はないが、あらゆる面でハイレベルにまとまった総合力の高さが武器。チームを率いるリーダーシップにも優れ、部員たちから深い敬意を集めている。",
+    "en": "Captain of Misakihama Girls' High School, a school with a name. She looks demure, and everything she has she worked for; the target is a national title. There is no outstanding gift here, only a high level across the board, and that is the weapon. She leads well, and the club holds her in deep respect.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名門校プロレス部のエース。容姿端麗・成績優秀・面倒見良しの三拍子がそろう。1年次から頭角を現し、チームメイトからの信頼も厚い人格者。グラップリングを軸にしたバランスの良いスタイルだが、突出した武器がないのが課題。",
+    "en": "The ace of the wrestling club at a school with a name. Good-looking, top of her year, and good to people: all three at once. She stood out from her first year, and her teammates trust her. Her style is balanced and built on grappling; the problem is that nothing about it stands out.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "哲玖高校一のパワーを誇る重戦車。生駒と橘を慕う忠義者だが、身内以外には非常に冷淡で攻撃的。178cmの長身と圧倒的なパワーで相手を力任せにねじ伏せる。",
+    "en": "The heaviest artillery at Tekkyu, and the strongest there. Loyal to Ikoma and Tachibana, and cold and aggressive with everyone outside that circle. At 178cm she simply overpowers people.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "器用さが光る万能型マイペース娘。やる気を出した時の対応力は目を見張るものがあるが、普段はのんびりペース。中学時代は生駒のクラスメート。なにやら因縁がある様子。",
+    "en": "An all-rounder whose dexterity stands out, and who works at her own pace. When she decides to try, her adaptability is remarkable; the rest of the time she takes it easy. She was in Ikoma's class in middle school. Something seems to have happened between them.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "因縁の{leftName} vs {rightName}。この構図を活かさないGMはいないだろう",
@@ -14105,6 +15425,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "団地内プロレスのヒエラルキーのトップに座る支配者。井沢を執拗に攻撃し、恐怖政治で団地を支配する策略家。卓越した知性と狡猾さで相手の弱みを見抜き、心理戦で追い詰めてからリングでとどめを刺す。策略だけでなく正面からの戦いでも強い恐るべき敵。",
+    "en": "She sits at the top of the housing complex's wrestling order and rules it. She goes after Izawa relentlessly and holds the complex by fear. Sharp and cunning, she finds the weak point, corners an opponent psychologically, and finishes the job in the ring. The scheming is not all of it; she is strong head-on too, and that makes her dangerous.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "圧倒的だ。{rivalName}がどう足掻いても、今季中にこの差は埋まらないだろう。——正直、ここまでやるとは思っていなかった。取材者として不明を恥じる。ほんの少しだけだが。",
     "en": "It is not close. Whatever {rivalName} does, this gap does not close inside the season. ...Honestly, I did not expect this much. As a reporter I am ashamed of the misread. A very little.",
     "files": [
@@ -14165,6 +15495,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "地下プロレスで卑怯ファイトに目覚めた小心者の優等生。リングに上がるとS性が豹変する二面性の持ち主。普段はおとなしく控えめな生徒だが、リングに上がると目つきが変わりサディスティックな関節技を執拗に仕掛ける。その変貌ぶりは見る者をゾッとさせるが妙な人気がある。",
+    "en": "A timid honor student who found a taste for dirty work on the underground circuit. She has two sides, and the cruel one comes out the moment she steps through the ropes. Ordinarily she is quiet and reserved; in the ring her eyes change and she works sadistic joint holds without letting up. The change unsettles people, and it has made her oddly popular.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "地下プロレスで暗躍するヒール。悪徳レフェリーと結託し、新人選手に不公平な試合を強いる卑劣なサブミッション使い。",
+    "en": "A heel who works in the shadows of the underground circuit. She has an arrangement with a crooked referee and forces unfair matches on newcomers. A mean submission wrestler.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "地下リングで挑戦者をことごとく地獄に沈めてきた処刑人。184cmの巨体から繰り出す破壊的なブロウラーファイトと威圧感で相手を震え上がらせる。",
+    "en": "An executioner who has put every challenger on the underground circuit through hell. The destructive brawling that comes off 184cm, and the presence behind it, leave opponents shaking.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "均衡状態。見方を変えれば、ここから先は純粋にGMの差が出るということだ。戦力が互角なら、勝敗を分けるのは戦略と育成。{leadAxisLabel}を伸ばすか、{chaseAxisLabel}を補強するか。どちらを選んでもリスクはある。",
     "en": "A balance. Turn it around and it means that from here the difference is purely the GM. With the rosters level, what separates them is strategy and development. Grow {leadAxisLabel}, or sign into {chaseAxisLabel}. Either choice carries a risk.",
     "files": [
@@ -14172,6 +15532,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "埼玉",
+    "en": "Saitama",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -14189,6 +15559,16 @@
     "en": "Voices are going back and forth",
     "files": [
       "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "夏祭の奉納試合に出場した女性。威圧感のある体格と頑丈さを武器にするパワーグラップラー。179cmの体格から繰り出す豪快なグラップリングは力強さに溢れ、接近戦では無類の強さを誇る。",
+    "en": "She appeared in the dedication match at the summer festival. A power grappler whose weapons are an intimidating frame and durability. The grappling that comes off 179cm is full of force, and up close there is nothing like her.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14225,6 +15605,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "大久保の人気に嫉妬する女性社員。先輩の浅見に利用され大久保に試合を挑んだ直情型ブロウラー。パワーで押すスタイルは荒削りだが、直情的な性格ゆえの爆発力は侮れない。",
+    "en": "An employee jealous of how well Okubo is liked. Asami, her senior, used her, and she challenged Okubo to a match. A blunt brawler. The power-first style is rough, and the burst that comes with being that direct is not to be taken lightly.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "大会ベストバウト — {winner} vs {loser}",
     "en": "Best bout: {winner} vs {loser}",
     "files": [
@@ -14233,6 +15623,86 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "大手不動産の事務職OL。営業職の男たちに囲まれたストレスを地下プロレスで発散している。",
+    "en": "Administrative staff at a large real estate firm. Surrounded by the men in sales, she works the pressure off on the underground circuit.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大河内が全国から呼び寄せた編入組の一角。市内屈指の体格とパワーは阿武隈にも引けを取らない。184cmの長身から繰り出す豪快なパワー殺法が武器。試合中に相手のスタイルに合わせた戦術変更もこなせる器用さを併せ持つ。",
+    "en": "One of the transfers Okochi brought in from around the country. In size and power she gives nothing away to Abukuma. Her weapon is the heavy power offense that comes off 184cm, and she is dexterous enough to change tactics mid-match to suit the opponent.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "大河内の取り巻き。パワーはありそうだが頭は悪そう。鈍重なブロウラー。",
+    "en": "One of Okochi's hangers-on. Strong-looking, and not bright. A slow, heavy brawler.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "大河内の取り巻き。昔空手をかじっていたらしいが、全体的な能力は低い。",
+    "en": "One of Okochi's hangers-on. She apparently did a little karate once. Her ability across the board is low.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "大河内の取り巻きのリーダー気取り。実力は伴わないが、数の力で威張り散らす小物。",
+    "en": "She acts as leader of Okochi's hangers-on. The ability does not follow, and she throws her weight around only because there are others behind her.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "大河内直属親衛隊。巨体で相手を押しつぶすラフファイトが持ち味の重量級ブロウラー。その体格を活かしたパワフルな攻撃は、単純だが破壊力は抜群。",
+    "en": "One of Okochi's personal guard. A heavyweight brawler who flattens opponents with her size and a rough style. The attacks that come off that frame are simple, and they do enormous damage.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "大河内軍団のメンバーで力自慢の高身長。179cmの体格を活かしたパワフルな打撃で相手を圧倒する。",
+    "en": "A member of Okochi's camp, tall and proud of her strength. She overwhelms opponents with powerful striking off a 179cm frame.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "大河内軍団の実力者の中では珍しい一般入学組。心情的にも大河内に心酔する忠実な信奉者。万能型のオールラウンダーで目立った弱点はないが、決定打に欠ける部分がある。大河内への忠誠心は本物で、命じられれば捨て駒も厭わない覚悟を持つ。",
+    "en": "Unusually for the strong ones in Okochi's camp, she came in through ordinary admission. She is a true believer, devoted to Okochi. A complete all-rounder with no obvious weakness, though she lacks a finishing blow. Her loyalty is real: told to spend herself, she would.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "大物引退。業界全体にとっても痛手だ。こういう選手は簡単には現れない",
@@ -14275,6 +15745,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "大阪",
+    "en": "Osaka",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "天頂戦へ視線集まる — 特別招待は{invites}",
     "en": "Eyes on Tenchosen — invited: {invites}",
     "files": [
@@ -14283,6 +15763,36 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": true
+  },
+  {
+    "key": "奈良",
+    "en": "Nara",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "奥山川プロレス部の副キャプテン。友人を元気づけるため始めた部活で競技の楽しさに目覚めた。関節技を中心とした技巧派で、晩成型として将来の成長が最も期待される選手の一人。控えめな性格だが、いざ試合になると粘り強さを発揮する。",
+    "en": "Vice-captain of the Okuyamagawa wrestling club. She joined to cheer a friend up and found she enjoyed the sport. A technician built around joint holds, and a late bloomer with as much growth ahead of her as anyone in the club. Reserved out of the ring; stubborn once a match starts.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "奥山川高校に転校してきた174cmの大型選手。ムードメーカー気質で、チームの全国大会出場の夢を後押しする。恵まれた体格を活かしたグラップリングが武器で、型破りな発想で相手を翻弄することもある。陽気な性格でチームの雰囲気を明るくする欠かせない存在。",
+    "en": "A 174cm transfer into Okuyamagawa High School. She lifts the room, and she is pushing the team's dream of reaching nationals. Her weapon is grappling built on that frame, and she can throw an opponent off with an idea nobody saw coming. Cheerful, and the club would not be the same without her.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "奪ったベルトを守れるのか。およそ3か月後の最初の防衛戦で、今度はこの選手が試される番だ。",
@@ -14325,6 +15835,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "女",
+    "en": "Female",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 17,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "女子バレーボール日本代表監督として五輪に4度帯同し、「鉄の母」と呼ばれた伝説的指導者。彼女の元から巣立った日本代表選手は両手では数えきれない。新人の原石を見抜く眼力と、才能を最大限に引き出す指導力は他の追随を許さない。近年は女子プロレス界にもその手腕を発揮し、格闘技未経験の選手を一流のレスラーへ育て上げる実績を次々と打ち立てている。厳しさの奥に深い愛情を秘めた、スポーツ指導界の生きる伝説。",
+    "en": "A coach of great standing who went to four Olympic Games at the head of the women's national volleyball team and was known there as the Iron Mother. The national-team players who came up under her run well past two hands' worth. Nobody matches her eye for a rough newcomer or her hand at taking talent to its limit. In recent years she has turned that hand to women's pro wrestling, building wrestlers with no combat background into first-rate ones, one after another. Behind the severity there is deep affection. She is a living legend of the coaching world.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "好敵手の予感――{age}歳の{name}と{name2}が同時代に",
     "en": "Rivals in the making — {name}, {name2}, {age}",
     "files": [
@@ -14353,6 +15883,16 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "姫宮の副主将にして「剛の芝」の異名を持つ二枚看板の一角。お嬢様揃いの中でも一番のお嬢様。品の良い立ち居振る舞いからは想像できない圧倒的なパワーと組み技で相手をねじ伏せる。白銀とは対照的な剛のスタイルで、互いを補い合う姫宮の屋台骨。",
+    "en": "Vice-captain of Himemiya and, as Shiba the Mighty, the other half of its marquee pair. In a school full of well-bred daughters she is the most well-bred of all. Nothing in her manners prepares an opponent for the power and the grappling that puts them down. Where Shirogane is supple she is hard, and between them they hold Himemiya up.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "安泰に見えるけど、主力のピーク過ぎが重なる2年後が怖い。今から手を打つべき",
@@ -14435,6 +15975,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "宮城",
+    "en": "Miyagi",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "宿命の対決——{winnerName}が{rivalLabel}を制す",
     "en": "Fated meeting — {winnerName} settles {rivalLabel}",
     "files": [
@@ -14443,6 +15993,16 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "富岡家の専属メイドにして忠実な護衛。関節技のセンスに光るものがあり、お嬢様を支えながら地道に力をつけている。お嬢様を守るためなら自らの身を盾にすることも厭わない献身的な性格。",
+    "en": "The Tomioka family's private maid, and a loyal bodyguard. She has a real feel for submissions, and she is building strength quietly while supporting her mistress. She would put her own body between that mistress and harm without a second thought.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "対戦成績で上回っている。相手は苦手意識を持っているはずだ",
@@ -14555,6 +16115,66 @@
     "hasProperNoun": false
   },
   {
+    "key": "小学生時代は注目のサブミッション使いだったが伸び悩んだ過去を持つ。奥山川で情熱を取り戻した1年生。かつての天才少女が挫折を乗り越えて再起を図る姿は、チームメイトにも良い刺激を与えている。負けず嫌いの性格が闘争心に火をつけた時、その技術は確かな輝きを見せる。",
+    "en": "A submission talent people watched in elementary school, then a long stall. A first-year who found the fire again at Okuyamagawa. Watching the former prodigy work her way back from that has done her teammates good. When her refusal to lose catches light, the technique shows clearly.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "小柄だがタフネスとスタミナで後半も攻め手を緩めない有望株。1年生からレギュラーを掴んだ努力家。149cmと最小クラスの体格だが、粘りで大型選手にも食らいつく姿は観客の応援を集める。地道な努力を積み重ねるタイプで、着実に実力を伸ばしている。",
+    "en": "Small, and durable enough that her offense does not slow in the second half. A hard worker who took a regular spot as a first-year. At 149cm she is about as small as they come, and the way she hangs on against bigger wrestlers pulls the crowd onto her side. She puts the work in day after day, and it is showing.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "小柄ながら体格に似合わぬパワーと不屈の闘志で相手をねじ伏せる。153cmの小さな体に宿る闘志は誰よりも激しく、タフネスと根性で大型選手にも真っ向から立ち向かう。チームメイトからの信頼も厚く、頼もしいリーダー格。",
+    "en": "Small, and stronger than her frame has any right to be; she grinds opponents down on power and refusal. There is more fight in her 153cm than in anyone around her, and she goes straight at bigger wrestlers on toughness and nerve. Her teammates trust her, and she leads.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "山形",
+    "en": "Yamagata",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "山梨",
+    "en": "Yamanashi",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "岩手",
+    "en": "Iwate",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "崖際から戻った。本紙は危機の終息を確認したが、再発の可能性まで否定するつもりはない。経営とは、そういうものだ。",
     "en": "Back from the edge. This paper confirms the crisis has ended, and will not go so far as to rule out a return of it. Running a promotion is like that.",
     "files": [
@@ -14645,6 +16265,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "常川高校プロレス部のキャプテン。安定した実力を持つバランス型ファイター。170cmの恵まれた体格を活かしたバランスの良い試合運びで安定した成績を残している。",
+    "en": "Captain of the Tokikawa High School wrestling club. A balanced fighter with steady ability. She works a well-balanced match off a useful 170cm frame, and the results stay consistent.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "年の割に落ち着きがないズボラ妻。でも夫婦仲は円満。パワーはあるがテクニックが追いつかない。",
+    "en": "A slapdash wife, and restless for her age. Her marriage is happy, at least. The power is there; the technique has not caught up.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "年末の大舞台を制した夜、彼女は本物だと証明した。",
     "en": "The night she won the year-end show, she proved she was the real thing.",
     "files": [
@@ -14685,6 +16325,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "幼少期は病弱だったが、不屈の精神でリハビリを乗り越えパワーレスラーへと変貌した鉄腕令嬢。メイドの高階とともに鍛錬を重ね、市内有数のパワーファイターに成長した。",
+    "en": "A sickly child who came through rehabilitation on will alone and turned herself into a power wrestler: the iron-armed daughter of the house. Training alongside Takashina, her family's maid, she has grown into one of the strongest wrestlers in the city.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "幾度も激戦を繰り広げてきた{toOrg}に、{fromOrg}の{name}が加入した。両団体の関係を含め、次の対抗戦へ新たな因縁を持ち込む移籍となる。",
     "en": "{name} of {fromOrg} has joined {toOrg}, a promotion her old side has fought hard against many times. The move carries a fresh grudge into the next interpromotional card, and into the relationship between the two promotions.",
     "files": [
@@ -14692,6 +16342,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "広島",
+    "en": "Hiroshima",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "廃校寸前の元砥石川高校出身。バランス重視の堅実なファイトで確かな実力を見せる。母校の廃校を経験した苦い思い出をバネに、早くから自立心を鍛えてきた。安定感のある試合運びと粘り強さで、どんな相手にも一定以上の戦いができる信頼のおける選手。",
+    "en": "Out of the former Toishigawa High School, which closed. She fights a balanced, dependable match and the ability is real. Losing her school left a bitter memory she used, and she learned to stand on her own early. Steady in how she works a match, and stubborn with it: whoever she faces, she gives a decent account.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -14855,6 +16525,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "強敵との対戦が多く敗戦続きの印象だが、大河内を破った実績を持つ名勝負製造機。ピアノの腕前はプロ級。どんな相手とも噛み合う天性の試合センスを持ち、彼女の試合は常に見応えがある。繊細な感性と華やかな存在感で、勝敗に関わらずファンの心を掴む稀有な存在。",
+    "en": "She draws hard opponents, so the record reads like a losing one, but she has beaten Okochi and she turns out classics. Her piano is at professional level. She has a natural sense for matches that lets her work with anyone, and her bouts are always worth watching. Fine instincts and a bright presence: she holds a crowd whether she wins or loses, and few can do that.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "後輩思いの良い先輩。面倒見がよいので頼られがちな性格。相手の良さを引き出すグラップリングが持ち味の堅実派。",
+    "en": "A good senior, mindful of the younger ones. She looks after people, so people lean on her. A dependable wrestler whose grappling brings out the best in an opponent.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "復帰戦に近い状態。無理をさせない判断もGMには求められる",
     "en": "Close to a return match. Deciding not to push her is also something asked of a GM.",
     "files": [
@@ -14869,6 +16559,16 @@
     "en": "This may be heavy for a card straight off a return. Better to build up to it in stages.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "心の観察",
+    "en": "Reading People",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14915,6 +16615,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "快活そうな褐色ギャル。明るく元気な性格で、頑丈さを武器にしたタフなストライカー。",
+    "en": "A tanned gyaru who looks as lively as she is. Bright and energetic, and a tough striker whose weapon is how much she can take.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "怪我明け。ブランクの影響がどこまで出るか読めない",
     "en": "Just back from injury. How far the layoff shows is not readable.",
     "files": [
@@ -14929,6 +16639,16 @@
     "en": "Just back from injury. Not pushing her is part of the GM's job.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "怪我期間 -1週（最低2週）",
+    "en": "Injury duration -1 week (minimum 2)",
+    "files": [
+      "COACH_FLAVOR_DEFS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14969,6 +16689,16 @@
     "en": "So close. Ending on so close is what this promotion does",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "愛知",
+    "en": "Aichi",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15162,6 +16892,36 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "抜きん出た体格とパワーで粕田市内最強と謳われた伝説のレスラー。面倒見が良く人望も厚い。パワーボムと強烈なラリアットを武器に圧倒的な存在感で対戦相手を飲み込む。",
+    "en": "A legend, called the strongest in Kasuda City on the back of her size and her power. She looks after people, and people think well of her. Working from the powerbomb and a heavy lariat, she takes an opponent over by sheer presence.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "担当選手trust低下 ×0.95",
+    "en": "Trust decay for assigned wrestlers ×0.95",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "担当選手間bond変動 +10%",
+    "en": "Bond swing between assigned wrestlers +10%",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -15439,6 +17199,16 @@
     "en": "Numerically it's a narrow margin. Times like this, the GM's calls decide it",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "数多くのプロアスリートのメンタルケアを手掛けてきたベテラン。長年戦い続けた選手の心の疲労を読み取り、再び闘志を灯す手助けをする。「身体が動かないのは、心が止まっているから」が持論。穏やかな語り口で選手に寄り添う。",
+    "en": "A veteran who has handled the mental side for a great many professional athletes. She reads the fatigue in a wrestler who has been fighting for years and helps light the fight back up. Her position is that a body stops moving because the mind stopped first. She stays beside her wrestlers, and she says it quietly.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15775,6 +17545,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "新人・佐久間の教育担当。情に厚い性格で、後輩のために片桐に立ち向かった。バランスの取れた堅実なスタイルが持ち味。負けず嫌いの性格と面倒見の良さで、社内の若手からは姉貴分として慕われている。",
+    "en": "She trains the new hire, Sakuma. Warm-hearted, and she went at Katagiri on her junior's behalf. Her style is balanced and dependable. She hates losing and she looks after people, and the younger staff treat her as an older sister.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "新人王——その称号が、長いキャリアの最初の一文字だった。",
     "en": "Rookie of the Year — that title was the first letter of a long career.",
     "files": [
@@ -15792,6 +17572,46 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "新体操の美しさと厳しさの中で培われた万能型の指導力を持つ。新人の基礎作りからメンタル面まで幅広くカバーし、バランスの取れた選手を育成する。「基礎が美しい選手は、必ず強くなる」を信じて疑わない情熱的な指導者。",
+    "en": "Rhythmic gymnastics, with its beauty and its severity, gave her an all-round hand as a coach. She covers everything from a newcomer's fundamentals to the mental side, and turns out well-balanced wrestlers. A wrestler with beautiful fundamentals will get strong, she says, and she has never doubted it.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "新卒1年目の新人OL。まだまだ仕事は覚束ないが、やる気と負けん気だけは溢れている。経験不足を気持ちの強さで補い、先輩たちに食らいつく姿は応援したくなる魅力がある。丹羽の指導のもと着実に成長しており、将来性に期待がかかる。",
+    "en": "First year out of university, and still unsure of the job. What she does not lack is drive and a refusal to lose. She covers for inexperience with sheer will, and the way she hangs on to her seniors makes people want her to do well. She is growing steadily under Niwa, and there is a future here.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "新卒3年目の若手OL。おじさん人気による手厚いサポートで営業成績も好調で、ちょっと調子に乗っている元気印。プロレスではスピードを活かした軽快なファイトスタイルが持ち味で、ムードメーカー気質も相まって試合会場を盛り上げる。スタミナとメンタルの高さで粘り強い試合運びを見せる。",
+    "en": "Three years out of university, and the energetic one in the office. The older men like her and help her, her sales figures are good, and it has gone a little to her head. In the ring her style is light and built on speed, and between that and the way she lifts a room the building responds to her. Good stamina and a strong head keep her in a match.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "新潟",
+    "en": "Niigata",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -15819,6 +17639,26 @@
     "en": "A new champion. The question is whether she can pull the promotion along now that she has the belt.",
     "files": [
       "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "日本とブラジルの格闘技コミュニティに太いパイプを持つ国際派コーチ。海外の有望選手の情報にも精通し、他団体との交渉でも力を発揮する。指導力は発展途上だが、人脈と情報収集力はB格随一。「人を繋ぐことが、私の一番の技術」と語る。",
+    "en": "An international coach with deep ties in the combat sports communities of both Japan and Brazil. She knows the promising names overseas and is effective in negotiations with other promotions. Her coaching is still developing, but no B-grade coach matches her contacts or her information. Connecting people, she says, is the best technique she has.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "日系ブラジル人の元エージェント。国内外の格闘技界に太いパイプを持つ。",
+    "en": "A Japanese-Brazilian former agent. She has deep ties in combat sports at home and abroad.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16129,6 +17969,16 @@
     "en": "The show that was expected. No large complaint, and nothing that stood out either.",
     "files": [
       "KURODA_SHOW_RATING"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "未亡人のクリーニング店主。パワフルな組み技が武器の姐御肌。面倒見の良い人柄で周囲から頼りにされる存在。パワフルなグラップリングに加え、引き出し上手な試合運びで若手の成長を手助けすることも多い。",
+    "en": "A widow who runs a dry cleaner's. The big-sister type, and her weapon is powerful grappling. She looks after people, and people lean on her. Besides the grappling, she is good at drawing the other wrestler out, and she often helps younger ones grow that way.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16465,6 +18315,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "東京",
+    "en": "Tokyo",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 4,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "東商店街のケーキ屋の看板娘。幼馴染をめぐるライバルとの因縁を抱えるスピードファイター。持ち前の快活さと高い身体能力を活かしたスピードスタイルが武器。ファンサービスにも熱心で、商店街の顔として地元での人気は抜群。",
+    "en": "The face of the cake shop in the east shopping street. A speed fighter carrying a feud with a rival over a childhood friend. Her weapon is a speed style built on natural liveliness and real athleticism. She works hard for the crowd, and as the shopping street's public face she is enormously popular locally.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "東洋医学の叡智とスポーツ科学を融合させたコンディショニングの達人。選手の心身の状態を総合的に診て、最適な調整を施す。「気の流れが整えば、身体は自ずと応える」という哲学に基づく独自のアプローチは、多くの選手から絶大な信頼を得ている。",
+    "en": "A master of conditioning who has fused East Asian medicine with sports science. He reads a wrestler's physical and mental state as one and adjusts accordingly. His approach rests on the idea that when the flow of ki is in order the body answers on its own, and a great many wrestlers trust it completely.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "東洋医学の専門家。心身を総合的に診て最適なコンディションに導く。",
+    "en": "A specialist in East Asian medicine. He reads body and mind together and tunes the condition to match.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "果たし状、跳ね返す。{ourOrg}が{requesterName}陣を {score} で下す",
     "en": "Challenge repelled, {ourOrg} {score} over {requesterName}",
     "files": [
@@ -16482,6 +18372,56 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "某化粧品会社の企画部を率いる才女。地下プロレスでストレスを発散する連戦連勝のダーティファイター。ファンサービスの裏に隠された本性はかなりのダーティファイターで、反則すれすれの駆け引きを楽しむ。",
+    "en": "She heads the planning department at a cosmetics company, and she is good at it. On the underground circuit she works the stress off and keeps winning, dirty. Behind what she gives the crowd is a genuinely dirty fighter who enjoys the exchanges that stop just short of a foul.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "柔道でオリンピック金メダルを獲得し「技の神」と称される生ける伝説。世界柔道殿堂入りを果たし、引退後は国際柔道連盟テクニカルアドバイザーとして世界各国の選手を指導。選手の動きを一目見ただけでその強みと弱点を見抜く観察眼は、業界で最も畏怖される能力。多くを語らないが、そのひと言が選手の人生を変えると言われる。",
+    "en": "An Olympic judo gold medalist, called the God of Technique, and a living legend. He is in the judo hall of fame, and after retiring he coached athletes around the world as a technical adviser to the international federation. One look at a wrestler's movement and he has the strengths and the weaknesses; it is the most feared eye in the business. He does not say much, and a single sentence from him is said to change a career.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "柔道五輪金メダリスト「技の神」。業界随一の観察眼を持つ生ける伝説。",
+    "en": "An Olympic judo gold medalist called the God of Technique. A living legend with the best eye in the business.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "栄養管理",
+    "en": "Nutrition Plan",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "根性練習",
+    "en": "Grind Sessions",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -16685,6 +18625,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "業界人脈が豊富。スカウト候補に追加選手を引き込む。",
+    "en": "Well connected in the business. She brings extra names onto the scouting list.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "業界全体の活性化のためにも、敢えて{rivalName}を引き上げる仕掛けが要る",
     "en": "For the health of the whole business somebody needs to engineer a lift for {rivalName}",
     "files": [
@@ -16743,6 +18693,26 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "横浜",
+    "en": "Yokohama",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "橘玲美に憧れてヒールを目指す天然娘。声が大きくてうるさい。技術は拙いがタフネスは侮れない。ヒールを名乗るわりには素の明るさが抑えられず、観客を楽しませるムードメーカー的存在。華のある振る舞いで独自のファン層を獲得しつつある。",
+    "en": "An airhead who wants to be a heel because she admires Remi Tachibana. Loud, and hard to ignore. Her technique is poor; her toughness is not. For someone calling herself a heel she cannot keep her natural brightness down, and she ends up entertaining the crowd instead. There is flair in how she carries herself, and a following of her own is forming.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "次のタイトルマッチ。{championName} vs {challengerName}が実現すれば、相当な好カードになる",
@@ -17045,6 +19015,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "気の調整",
+    "en": "Energy Balancing",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "水と油、リングでも楽屋でも",
     "en": "Oil and water, in the ring and backstage",
     "files": [
@@ -17149,6 +19129,16 @@
     "en": "Anyone else smell a time-limit draw and a nothing match coming?",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "沖縄",
+    "en": "Okinawa",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17315,6 +19305,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "海外から参戦した実力者。高い身体能力とリーダーシップを兼ね備えたオールラウンダー。華のある試合で観客を魅了する。",
+    "en": "A capable wrestler who came in from overseas. An all-rounder with high athleticism and leadership together. Her matches have flair, and crowds respond to them.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "消灯の時間を過ぎても人が残っている",
     "en": "People are still here past lights-out",
     "files": [
@@ -17405,10 +19405,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "灰汁洲商業高校出身。181cmの大型グラップラー。体格を活かしたパワフルな戦いを得意とし、頑丈さにも定評がある。",
+    "en": "Out of Akusu Commercial High School. A big grappler at 181cm. She is at her best in a forceful match built on that frame, and she is known for being hard to hurt.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "灰汁洲商業高校出身。瞬発力を活かした打撃戦を得意とするスピード型ストライカー。クールな雰囲気を纏う。",
+    "en": "Out of Akusu Commercial High School. A speed-type striker at her best in an exchange built on explosive quickness. There is a coolness about her.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "無双状態。つまんないくらい強いわ",
     "en": "Untouchable. Strong to the point of being boring",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "無名校・奥山川を県大会決勝まで導いたプロレス部主将。膝のケガを乗り越えた不屈のキャプテン。逆境に立たされるほど力を発揮するタイプで、チームメイトからの信頼は絶大。",
+    "en": "The wrestling club captain who took unheralded Okuyamagawa to a prefectural final. She came back from a knee injury and did not bend. The worse the position, the more she produces, and her teammates trust her completely.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17429,6 +19459,16 @@
     "en": "A match kept safely together",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "熊本",
+    "en": "Kumamoto",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17489,6 +19529,16 @@
     "en": "Nothing especially to see, and it was run soundly",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "特殊な血筋で一時的に女性化した元男子。恵まれた体格とパワー、そして精神的な強さでリングを制する。男性時代の身体能力の残滓と女性化後に身につけたしなやかさを併せ持つ異色のグラップラー。鉄人と呼ぶにふさわしいタフネスで、長期戦にも耐えうるスタミナの持ち主。",
+    "en": "Formerly male, turned female for a time by a peculiar family bloodline. She takes control of a ring on size, power and mental strength. An unusual grappler who carries what is left of her earlier athleticism together with the suppleness she has acquired since. Tough enough to earn the name Iron Woman, with the stamina to survive a long match.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17825,6 +19875,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "現代社会には不似合いな古風な大和撫子。本当に現代人かと疑うほどの古風さだが、努力家の一面とスピードのある打撃で侮れない実力を持つ。",
+    "en": "An old-fashioned Japanese ideal, out of place in the present day. She is old-fashioned enough that one wonders whether she belongs to this century at all, and she works hard, and her fast striking makes her a real opponent.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "現在{streakAbs}連敗中。そろそろ真剣に原因を考えたほうがいい",
     "en": "{streakAbs} losses in a row as things stand. It is about time somebody looked seriously at why.",
     "files": [
@@ -17845,10 +19905,80 @@
     "hasProperNoun": false
   },
   {
+    "key": "現役女子大生レースクイーン。チアリーディング部仕込みの身体能力でスピーディーな試合を展開する。持ち前の華やかさと俊敏さを活かしたスピードスタイルで観客を魅了する。負けず嫌いの性格で、華麗な見た目とは裏腹に根性のある粘り強い試合を見せる。",
+    "en": "A university student working as a race queen. Cheerleading gave her the athleticism, and her matches move fast. Her speed style plays on the flair and the quickness she already had, and crowds enjoy it. She hates losing, and against everything the look suggests she works a gritty, stubborn match.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "理学療法",
+    "en": "Physical Therapy",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "理学療法士。選手の故障予防とリカバリーに特化。",
+    "en": "A physical therapist. She specializes in injury prevention and recovery.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "生涯最高の試合——そのスコアは今もファンの記憶に焼き付いている。",
     "en": "Her career-best match — the rating on it is still fixed in the memory of everyone who saw it.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "田舎暮らしから抜け出したいと願い続けて都会に出てきた。引き出し上手な試合センスと純朴さから来る独自の魅力で、ファン層を獲得している。格上相手にも決して引かない粘り強さが持ち味。",
+    "en": "She wanted out of the countryside for years, and eventually came to the city. She has a sense for drawing an opponent out, and a plainness that is appealing in its own way, and a following has grown from it. She does not back off from anyone better than her.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "男",
+    "en": "Male",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 18,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "男性陣を味方につけレフェリーすら誘惑する魔性の女。相手の幸せな顔が苦痛で歪むのを見るのが趣味。サブミッション技術は確かで、反則すれすれの駆け引きで相手を翻弄する試合巧者。",
+    "en": "She has the men on her side and has even worked on the referee. Her hobby is watching a happy face twist in pain. Her submission work is sound, and she outmaneuvers opponents in the space just short of a foul.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "癒しのオーラ",
+    "en": "Calming Presence",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18045,6 +20175,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "石川",
+    "en": "Ishikawa",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "社長、挑戦試合 {playerScore} — {aiScore}。{otherOrgName}の{reqName}選手の越境挑戦、退けました。",
     "en": "Boss, the challenge match went {playerScore} — {aiScore}. We turned back the crossover challenge from {otherOrgName}'s {reqName}.",
     "files": [
@@ -18115,6 +20255,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "社長秘書としてスカウトされた才媛。美貌と実力で瞬く間に社内マドンナの座を獲得した。不屈の精神と鉄人のスタミナを兼ね備え、どんな劣勢からも逆転を狙える粘り強さが最大の武器。正統派のオールラウンドスタイルで正面から堂々と戦う姿勢が支持を集めている。",
+    "en": "A capable woman recruited as secretary to the company president. Between her looks and her ability she became the office favorite almost immediately. She has an unbending spirit and iron stamina, and her main weapon is the stubbornness that keeps a comeback available from any position. An orthodox all-round style, fought squarely from the front, and people like her for it.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "神奈川",
+    "en": "Kanagawa",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "禁断の移籍――{name}が{toOrg}入り",
     "en": "Crossing the line — {name} joins {toOrg}",
     "files": [
@@ -18122,6 +20282,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "福岡",
+    "en": "Fukuoka",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -18385,6 +20555,46 @@
     "hasProperNoun": true
   },
   {
+    "key": "粕田台団地に入居してきたちょっときつめの奥さん。前の住まいでは町内会プロレスの実力者。外には厳しく家では陽気。負けず嫌いの性格と適応力の高さで新しい環境にもすぐに溶け込んだ。打撃を軸にした攻撃的なスタイルで、闘志を前面に押し出す熱い試合を見せる。",
+    "en": "A rather severe housewife who moved into the Kasudadai housing complex. Where she lived before, she was one of the strong ones in the neighborhood association's wrestling. Hard on the world and cheerful at home. She hates losing and adapts fast, and she settled into the new place quickly. Her style is aggressive and built on strikes, and she puts her fight out in front where everyone can see it.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "粕田学園の生徒。まだ発展途上だが、軽やかな身のこなしを活かしたエアリアルスタイルの片鱗を見せる。",
+    "en": "A student at Kasuda Gakuen. Still developing, and there are glimpses of an aerial style built on how lightly she moves.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "粕田学園の生徒。真面目で丁寧な性格の努力家。バランスの良いオールラウンドスタイルで着実に実力を伸ばしている。",
+    "en": "A student at Kasuda Gakuen. Serious, careful, and a hard worker. A well-balanced all-round style, and the ability is coming along steadily.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "粕田学園高校3年生。相手の隙を突く一瞬のサブミッションが得意技。冷静な観察眼で相手の弱点を見抜く知性派。",
+    "en": "A third-year at Kasuda Gakuen High School. Her specialty is the sudden submission that takes an opening. She watches coolly and finds the weakness.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "素早さと巧さの勝負。どちらも一発の重さには欠けるので、試合運びが全てだ",
     "en": "Quickness against craft. Neither of them carries a heavy single blow, so how the match is run is all of it.",
     "files": [
@@ -18399,6 +20609,16 @@
     "en": "A fine show. More than one match on it belongs in the year-end best bout conversation.",
     "files": [
       "KURODA_SHOW_RATING"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "素朴な雰囲気だが恋にも積極的な体育会系女子大生。運動神経抜群で体格に見合わぬパワーも秘める。努力家で負けず嫌いの性格は練習にもリングにも表れ、鍛え抜かれた頑丈な体と高い身体能力でパワフルな試合を展開する。技術面の課題克服が今後の鍵。",
+    "en": "Plain-seeming, and not at all shy about romance; a university student out of the athletics culture. Her coordination is excellent and she has more power than her frame suggests. The work she puts in and her refusal to lose show up in practice and in the ring alike, and a hard, conditioned body and real athleticism make her matches forceful. Closing the technical gap is what comes next.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18605,6 +20825,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "繁華街の怪しげなプロレスクラブのキャスト。昼は普通のOL、夜はリングに上がるテクニシャン。二重生活の中で培ったサブミッション技術は確かなもの。地味だが堅実な試合運びで、知る人ぞ知る実力者。",
+    "en": "One of the cast at a disreputable wrestling club downtown. An ordinary office worker by day, a technician in a ring by night. The submission work she built across that double life is sound. She works a plain, dependable match, and the people who know, know.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "美人で仕事もできる経理課のお姉さん。社内プロレスで高い勝率を誇り、粘着質ないたぶりを好むサディスト。サブミッション技術を駆使して相手をじわじわと追い詰める試合運びが得意。",
+    "en": "The good-looking, competent one from accounting. She wins a lot in the office matches, and she is a sadist who likes to work an opponent over slowly. Her strength is closing someone down by degrees with submissions.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "群馬",
+    "en": "Gunma",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "翌週、16名のトーナメントが新しい持ち主を決める。返還した王者自身も、その16名に名を連ねる——奪い返す資格は、誰よりも持っている。",
     "en": "Next week a 16-woman bracket decides the new owner. The champion who handed it back is in that field herself — nobody has more right to take it back.",
     "files": [
@@ -18625,6 +20875,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "老舗ベーカリーレストランのアルバイト。同僚との口論が絶えないライバル体質。パワフルな打撃が武器のストライカー。",
+    "en": "A part-timer at a long-established bakery restaurant. She and a colleague argue constantly; she needs a rival. A striker whose weapon is powerful striking.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "老舗ベーカリーレストランの看板アルバイト。混雑するランチタイムでも冷静にフロアを回す現場の司令塔。負けず嫌いのライバル体質。",
+    "en": "The star part-timer at a long-established bakery restaurant. She runs the floor calmly through the lunch rush and directs everyone in it. She hates losing, and she needs a rival.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "育成方針そのものを見直すべきフェーズ。場当たりじゃ無理",
     "en": "This is the phase where you rethink the development plan itself. Patching won't do it",
     "files": [
@@ -18639,6 +20909,16 @@
     "en": "Getting to support them with your head up — didn't know it felt this good",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "臨床心理士の資格を持つスポーツ心理学者。試合前のプレッシャー管理、集中力維持、モチベーション管理を得意とする。穏やかな物腰だが、核心を突く洞察力を持つ。",
+    "en": "A sports psychologist with a clinical license. She works on pre-match pressure, holding concentration, and managing drive. Gentle in manner, with insight that goes straight to the point.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18699,6 +20979,16 @@
     "en": "It was a body she had driven hard since she was young. Her footing gave out and she went down in a heap. The bill arrives long after you have stopped waiting for it. Today was the day.",
     "files": [
       "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若くして大人びた色気を持った女子高生。冷静な観察眼で相手の隙を見抜く知性派。引き出しの多い堅実なオールラウンダー。",
+    "en": "A high schooler with an adult air about her already. She watches coolly and finds the opening. A dependable all-rounder with plenty of answers available.",
+    "files": [
+      "CHAR_PROFILES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18825,6 +21115,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "落ち着いた雰囲気の若手レースクイーン。若手レーサーとの秘密の恋を胸に秘める。ファンサービス精神旺盛で華やかな試合を見せるが、ガラスの身体という弱点を抱え、怪我のリスクは常に付きまとう。",
+    "en": "A young race queen with a settled air about her, carrying a secret involving a young driver. She gives a crowd plenty and her matches look good, and she has a body made of glass. The injury risk never leaves her.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "衝撃の鞍替え——{targetName}、「{toFaction}」入り",
     "en": "A switch nobody saw — {targetName} joins {toFaction}",
     "files": [
@@ -18885,6 +21185,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "西商店街の和菓子屋の一人娘。憧れの男子をめぐり赤羽と険悪。コツコツと実力を積み上げるタイプで、長期戦で真価を発揮する。粘り強いグラップリングで相手を消耗させる持久戦型のスタイルが持ち味。",
+    "en": "The only daughter of the sweet shop in the west shopping street. She and Akabane are on bad terms over a boy they both like. She builds her ability a piece at a time, and she is at her best over distance. Her style is attrition: stubborn grappling that wears an opponent down.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "要注意——{name}の成長速度は異常だ。次の対抗戦で当たるなら覚悟すべきだろう",
     "en": "A warning — the rate {name} is growing at is not normal. Anyone drawing her in the next interpromotional match should be ready.",
     "files": [
@@ -18923,6 +21233,16 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "見た目も言動も若々しい甘え上手。かつての井沢の友人だが、高槻グループに鞍替えした世渡り上手。",
+    "en": "Young in looks and in manner, and good at leaning on people. She was a friend of Izawa's once; she switched to Takatsuki's group, and she knows how to get by.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "見ててくれる人なんていなくても関係ない!わたしは強くなる!",
@@ -19029,6 +21349,16 @@
     "en": "It put the crowd on its feet. No complaint anywhere",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "角界で鍛え上げた圧倒的なパワー理論と、格闘技指導で磨いた実戦メソッドを持つ最高峰のパワー系コーチ。その指導を受けた選手は例外なくパワーで試合を支配するようになると言われる。威圧的な風貌だが、弟子思いの人情家。「力とは、覚悟の結晶だ」と説く。",
+    "en": "The foremost power coach in the country, carrying a theory of strength built in sumo and a practical method sharpened in combat sports. It is said that no wrestler comes out of his hands without learning to control a match by force. He looks intimidating; he is warm about his students. Strength, he says, is resolve made solid.",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -19175,6 +21505,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "試合後怪我確率 ×0.90",
+    "en": "Post-match injury chance ×0.90",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合構成の達人。担当選手の試合評価を引き上げる。",
+    "en": "A master of match structure. He raises the match ratings of the wrestlers he handles.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "試合評価{mq}——今シーズンのベストバウト候補が生まれた。{leftName}と{rightName}は{turns}ターンにわたって技術と闘志をぶつけ合い、{venueName}の{attendanceToLocaleString}人を熱狂の渦に巻き込んだ。{winnerName}が{finishLabel}で勝利を収めたが、勝敗を超えた価値がこの試合にはあった。",
     "en": "Rated {mq} — a candidate for best bout of the season has arrived. {leftName} and {rightName} put technique and fight against each other for {turns} turns and swept the {attendanceToLocaleString} at {venueName} up with them. {winnerName} took it by {finishLabel}; what this match was worth ran past the result.",
     "files": [
@@ -19182,6 +21532,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "話術",
+    "en": "Way with Words",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -19412,6 +21772,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "身体の動きを科学的に分析するスペシャリスト。映像分析やデータを駆使して選手の技術を最適化する。プロレスの現場経験は少ないが、理論に基づいた的確な改善提案で信頼を得つつある。話し始めると止まらないマニアックな一面も。",
+    "en": "A specialist in the scientific analysis of movement. He uses video and data to optimize a wrestler's technique. He has little experience on the floor of a promotion, but his theory-backed suggestions are earning trust. Get him started on a subject and he does not stop.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -19845,6 +22215,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "重傷→中傷格下げ確率+15%",
+    "en": "Severe injury downgraded to moderate +15%",
+    "files": [
+      "COACH_FLAVOR_DEFS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "金字塔！{orgName}、対抗戦通算{milestone}達成",
     "en": "A landmark for {orgName}! Interpromotional: {milestone}",
     "files": [
@@ -19912,6 +22292,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "長年の取材活動で築いた人脈は業界随一。あらゆる団体の内情や有望選手の情報が集まってくる。コーチとしての指導力はまだまだだが、スカウト情報の質と速さでは右に出る者がいない。おしゃべり好きで団体のムードメーカー。",
+    "en": "Years of reporting left him with the best contact book in the business. Word about any promotion's internal state, or about a promising wrestler, finds its way to him. His coaching is another matter, but nobody beats him on the quality and the speed of his scouting information. He likes to talk, and he keeps the room in good spirits.",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "長野",
+    "en": "Nagano",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -20035,6 +22435,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "陸上部の快足女子。ストイックに鍛え上げた脚力から繰り出すスピードと蹴り技で相手を翻弄する実力者。短距離走で鍛えた爆発的な加速力はリングでも遺憾なく発揮される。飛び技・蹴り技の切れ味は一級品。",
+    "en": "The fast one from the track team. She has trained her legs relentlessly, and the speed and the kicks that come out of them keep opponents guessing. The explosive acceleration she built as a sprinter carries straight into the ring. Her aerial work and her kicks are first-class.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "陽のオーラ全開のグラビアアイドル。明るい笑顔と健康的なプロポーションで現場の空気を変えるムードメーカー。華のあるエアリアルファイト。",
+    "en": "A magazine model with sunlight coming off her. A bright smile and a healthy figure change the air of a room. Her aerial work has flair.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "隠れた名勝負。メインに引けを取らない内容だった",
     "en": "A great match nobody was looking for. It gave nothing away to the main",
     "files": [
@@ -20135,6 +22555,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "静岡",
+    "en": "Shizuoka",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "静謐な競争、それでも目が離せない",
     "en": "A still competition, and impossible to look away from",
     "files": [
@@ -20205,6 +22635,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "頑健指導",
+    "en": "Toughening",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "頑張ってるのは分かるんだけど、結果が出ないとなあ",
     "en": "I can see they're working. It's the results that aren't coming",
     "files": [
@@ -20245,10 +22685,80 @@
     "hasProperNoun": false
   },
   {
+    "key": "飲みニケーション",
+    "en": "Drinks After Practice",
+    "files": [
+      "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "高品質な試合が他団体で生まれている。うかうかしていられない",
     "en": "High-quality matches are coming out of the other promotions. No time to stand still.",
     "files": [
       "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "高校の美人女教師。穏やかな物腰だが、グラップリングの実力は確か。引き出し上手な試合運びで相手の良さも引き出す教育者気質。",
+    "en": "A good-looking high school teacher. Gentle in manner, and her grappling is genuinely sound. She works a match that draws the best out of the other wrestler; she is a teacher in that too.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "高校時代はクラスのマドンナだった美人看護師。多額の借金を背負い地下格闘の世界に身を投じた。追い詰められた環境で培った精神的タフさと引き出しの多さが最大の武器。独特の雰囲気をまとい、周囲を引きつけるカリスマ性を持つ。",
+    "en": "A beautiful nurse who was the favorite of her class in high school. Heavy debt put her into the underground fight world. Her weapons are the mental toughness she built with her back to the wall and the range of answers she has. There is an atmosphere about her, and it draws people in.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "高校生としては大人びた印象の女子高生。嗜虐的な一面を持ち、関節技と絞め技で相手を追い詰めるスタイルを好む危険な実力者。看護科で学んだ知識をプロレスに持ち込んだ独自のサブミッション技術は市内トップクラスで、一度捕まれば脱出は至難の業。",
+    "en": "A high schooler who reads far older than she is. There is a cruel streak in her, and she likes to close an opponent down with joint locks and chokes. She brought what she learned in the nursing course into wrestling, and the submission game she built out of it is among the best in the city. Once she has hold of you, getting out is close to impossible.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "高槻の取り巻き。かつては井沢の友人だった。",
+    "en": "One of Takatsuki's circle. She used to be a friend of Izawa's.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "高槻一派のひとり。以前は井沢遥とも交友があったが、団地内の力関係が変わると高槻派に鞍替えした世渡り上手。",
+    "en": "One of Takatsuki's faction. She was friendly with Haruka Izawa once; when the balance of power in the complex shifted she moved across, and she knows how to get by.",
+    "files": [
+      "CHAR_PROFILES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "鹿児島",
+    "en": "Kagoshima",
+    "files": [
+      "ALL_COACHES"
     ],
     "count": 1,
     "hasPlaceholder": false,
