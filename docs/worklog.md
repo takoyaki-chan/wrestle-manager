@@ -1,5 +1,72 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-2b — 走破ドライバの行動選択を言語非依存化・ENで1季完走を試みる（2026-09-04・Sonnet worktree agent-ada69375f676af416）
+
+P6-2で`--lang en`対応は入ったが、**week6でD2_FREEZE**（`App.skipAllMatches()`のクリックが`<iframe id="battleIframe">`に5秒間ブロックされる）が決定論的に発生していた。原因は`test/ui-walkthrough/driver.js`の`actionScore`（行動優先度付け）が日本語文言の正規表現に依存しており、ENでは多くのボタンが一致せず一般スコア（primary/inOverlayフォールバック 5000）に落ちて、ja走破とは異なる手順・タイミングを踏んでいたこと。**src/・i18n/・lang-en-\*.jsは一切触っていない**（`test/ui-walkthrough/*.js`と関連調査のみ）。開始前にworktreeブランチをmain先端(`12b7526`)へfast-forward済み。
+
+### 1. 行動選択の言語非依存化（`test/ui-walkthrough/driver.js`）
+
+方針: **既存のJA一致条件は一切削らず、onclick属性/id/data-\*属性ベースの条件、または`src/lang-en.js`実測のEN訳文言をOR条件として追加する**（同じ判定になるシグナルの追加であり、判定の意味は変えない）。これによりja側はどの行でも「同じボタン・同じスコア」が選ばれ続け、digest不変が理屈の上でも保証される。
+
+各グループの対応（P6-2の`navButtonLocator`と同じ発想）:
+
+| 対象 | 旧: JA文言のみ | 新: 追加した言語非依存シグナル |
+|---|---|---|
+| DESTRUCTIVE_TEXT（安全ガード） | 削除/消去/ニューゲーム/ロード/セーブ/… | `Delete`/`Load`を追加（`New Game`/`Save`は既存の大文字小文字非依存パターンで既にカバー） |
+| 全試合スキップ（score 9800、**freezeの直接原因**） | 残り全試合をスキップ/まとめてスキップ/… | onclick: `App.(warSkipAll\|skipAllMatches\|ppvSkipAll\|jtSkipAll\|awSkipTeamMatch\|tcSkipAll)()` |
+| 個別試合スキップ（score 8500） | スキップ | onclick: `App.(skipMatch\|ppvSkipMatch\|warSkipMatch\|jtSkipMatch\|tcSkipMatch)(` |
+| 興行開催確認（score 9600） | 興行開催 | onclick: `confirmExecuteShow()` |
+| 出場エントリー確定（score 9500） | この布陣で/このメンバーで/開戦/… | onclick: `App.(warConfirmEntry\|awConfirmFinalOrder\|awConfirmEntry)()` |
+| おまかせ選出/編成（score 9400） | おまかせ選出/おまかせ編成/🔥おすすめ/^おまかせ$ | onclick: `App.(warAutoSelectEntry\|awAutoFinalOrder\|awAutoEntry\|tcSuggestPicks)()` / `autoFillCardByAppeal()`。**`App.autoManage()`（週ダッシュボードの常設「🤖 おまかせ」ボタン、進行と無関係）は意図的に除外** — 一度含めてja再走したところ、毎手同じボタンを押し続けてD5_WATCHDOG化した（後述§4） |
+| 契約更改の受諾（score 9300） | 昇給を受ける/引き留める/… | EN訳文言: `Accept the Raise`/`Persuade Her to Stay`（3択がdata-choiceを共有し個別ボタンをonclickで特定できないため） |
+| ドラフト辞退/見送り（score 9250） | 辞退する/見送る/見送り | onclick: `declineDraft()` / `draftSoloConfirm(false)` / `scoutResolve([^)]*,'skip')` |
+| 興行準備へ（score 9200） | 興行準備へ/興行準備に戻る | onclick: `startShowPrep()` / `resumeShowPrep()` |
+| 週処理・オフシーズン進行（score 9100） | 週を処理/次の週へ/シーズンレポートへ/… | onclick: `doProcessWeek()` / `App.advanceFromWeekSummary()`。シーズンレポート/ドラフト会議/移籍ウィンドウ/新シーズン開幕の4種は`advanceWeek()`をオフW1の「次へ」（別tier）とも共有するためEN訳文言（矢印込み完全一致）で個別特定 |
+| 結果へ/JTへ/ドラフトへ（score 9000） | オフシーズンへ/結果へ/JTへ進む/ドラフトへ | onclick: `App.closePPVResult()` / `closeShowResult()` / `App.enterJuniorTournamentFromWeek(` / `showScreen('scoutEvent'`、id: `c1rCloseBtn` |
+| 汎用次へ/閉じる（score 8900・完全一致） | 次へ/続ける/閉じる/完了/確定/OK | EN訳文言: `Next`/`Continue`/`Close`/`Done`/`Confirmed`（大文字小文字非依存） |
+| 契約突発退団の相槌（score 8850） | わかった/承知した/了解した | id: `contractSuddenOk`（唯一の実体） |
+| 結果を見る（score 8800） | 結果を見る/結果発表/進行 | EN訳文言: `See the Result` |
+| 承認（score 8600） | 承認/受けて立つ/決定 | EN訳文言: `Approve` |
+
+**変更しなかったもの**: `現状維持`/`契約を続ける`/`出場決定`/`参戦する`/`決着へ`/`表彰式へ`/`大会へ進む`/`指名を行いません`/`今年は指名しない`/`選択肢A/B`パターンは、grep実測で**現行コードのどのボタン文言にも一致しない死んだ代替パターン**と確認できたため（narrative文中の一致か、そもそも未使用）、無変更のまま残した（消すと将来の復活パターンを見落とすリスクがあるため触らない）。
+
+### 2. ja digest不変の確認
+
+`npm run test:ui:walkthrough`（引数なし・ja既定）を**2回**実行し、いずれも `Actions: 328 digest=1052faa82eaf7991`・PASS（P6-2時点のベースラインと完全一致）。1回目はグループ追加の途中（後述§4のautoManageミス込み）、2回目は§4修正後・最終状態。
+
+### 3. EN実走の結果（seed42・1季、`npm run test:ui:walkthrough:en`）
+
+- **week6のD2_FREEZE（P6-2で報告されたもの）は再現しなくなった** — 全試合スキップがonclickで最優先になり、`App.watchMatch`（観戦iframeを開く）と競合しなくなったため。これは**ドライバ経路の問題であり本物のUIバグではなかった**と結論できる（原因を特定・修正できたため、ja側での再現実験は不要と判断）
+- EN実走は**week1→week30まで進行**（旧week6フリーズから大幅前進）。week30で停止した原因はドライバの問題ではなく、`src/factions.js`の`applyIncidentChoice`（`OBSERVE_FAN_PRESSURE`/`OBSERVE_TRAINING_HARD`分岐、4348/4356/4364/4377行）が`impactSummary`のラベルに`WM_I18N.t('{name} condition', {...})`という**JA原文キー自体が英単語"condition"を含む**既存バグを持っていること。同ファイルは`trust`/`rivalry`という同種の内部語彙も使っており、`src/ui-common.js:14745`（`_renderCommon1MatchResult`）でその2語だけ`.replace(/\btrust\b/g, ...)`のように後処理してJA表示に変換しているが、**`condition`は同じ後処理の対象に含まれておらず**素通しで露出する。この結果、`test/ui-walkthrough/detectors.js`の`INTERNAL_TOKEN_PATTERN`（`condition`を含む内部トークン検出）がD3_TEXTとして検出した。**JA/EN両方に存在する既存の表示バグであり、本タスクの範囲外（src/を触らない縛り）のため未修正**。ja側の1季走破（seed42）ではこの特定の派閥インシデントが発生する手順を踏まなかったため、これまで顕在化していなかったと見られる
+- 副次的に、seed違い（seed7）で試走したところ、**`/CONTINUE/i`という既存ルール（score最高位10000）が「つづき」→EN訳"Continued"（新聞記事の続きへスクロールするだけの`npScrollToShowDetail()`、状態を一切変えない無進行リンク）と大文字小文字非依存で衝突し、最優先候補になってD2_FREEZEを起こす**ことを発見・修正した。ハードコード演出文言の"CONTINUE"（`id="fevtF03Continue"`等、WM_I18N.t()を通らず常に大文字固定）は元々大文字のみのため、`/CONTINUE/i`から`/CONTINUE/`（大文字小文字を区別）に変更しても既存の一致対象は変わらない。ja側で影響がないことをdigest再確認済み（§2）
+- **i18n-miss: 113 occurrences / 113 unique keys**（week30到達時点まで）。上位は社長室ツールチップ・関係性フレーバー文・大型イベント記事テンプレ・キャラのケア反応セリフ等。**中には既にJA原文自体が英語のセリフ（例: "Yesss, thanks, Boss! I'll make it a fun one."）が20件前後混じっており**、これは翻訳漏れではなく該当キャラのキャラクター性（外国人ギミック等）でJA側が最初から英語という既存仕様の可能性が高い（本タスクでは深掘りしていない、次バッチの棚卸し対象）
+- **JA exposure by screen**: `screen-show=80`（最多）/ `screen-roster=65` / `screen-shachoshitsu=59` / `screen-week=55` / `screen-log=50` / `screen-newspaper=43` / `screen-ranking=30` / `screen-finance=8` / `titleScreen=6` / `screen-save=4` / `screen-database=3` / `screen-help=3`
+
+### 4. 実装中に踏んだ罠（ja digestを壊しかけた2件）
+
+1. **`App.autoManage()`をおまかせ系グループに含めてしまい、ja digestが破壊された**（`03a6e882113a7f49`に変化・D5_WATCHDOG化）。原因はこのボタンが週ダッシュボードの「体調に応じて方針を一括調整」常設ユーティリティ（`🤖 おまかせ`、進行とは無関係）であり、本来のグループが対象とする「入場/編成おまかせ」とは別物だったこと。onclick名だけでグループ分けせず、**該当ボタンの実際のJA文言が元のグループ正規表現に一致するか個別に確認する**必要がある教訓（driver.jsコメントに記録）
+2. **`/CONTINUE/i`（大文字小文字非依存）が翻訳後文言"Continued"と衝突**（§3参照）。既存ルールでも、EN訳文言が新たに増えることで衝突が起きうるため、`i`フラグの要否は個別に再検証する必要がある
+
+### 5. 検証結果
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`（driver.js/detectors.js/run.js） | ✅ OK |
+| `npm test` | ✅ 260 passed / 0 failed |
+| `npm run test:ui:walkthrough`（ja、既定） | ✅ **PASS**。Actions: 328 digest=`1052faa82eaf7991`（P6-2ベースラインと完全一致・2回確認） |
+| `npm run test:ui:walkthrough:en`（seed42・1季） | ❌ **FAIL**（1季完走は未達）。week6フリーズは解消・week30まで進行後、`src/factions.js`の既存"condition"バグでD3_TEXT検出 |
+
+### 6. 触ったファイル
+
+- `test/ui-walkthrough/driver.js` — `actionScore`の全グループにonclick/id/EN訳文言ベースの言語非依存条件を追加、`/CONTINUE/i`→`/CONTINUE/`（大文字小文字区別）、`DESTRUCTIVE_TEXT`にDelete/Loadを追加
+- `docs/game-system-roadmap.md` — 英語対応行にP6-2bの1文を追記
+- `docs/worklog.md` — 本エントリ
+
+### 7. 残課題
+
+- `src/factions.js`のOBSERVE_FAN_PRESSURE/OBSERVE_TRAINING_HARD内`{name} condition`ラベル（4348/4356/4364/4377行）が内部語彙のまま露出する既存バグ。`trust`/`rivalry`と同じ後処理（`src/ui-common.js:14745`）に`condition`を加えるのが素直な修正（JA/EN共通の表示品質バグ、本タスク範囲外のため要フォローアップ）
+- i18n-miss 113件（内、既にJA側が英語のセリフが混在）は次の翻訳/棚卸しバッチの実測材料に
+- EN 1季完走は上記factions.jsバグ次第。同バグ修正後に再走すれば week30 の壁を越えられる可能性が高い（ドライバ側は現時点で驚くほど遠くまで到達している）
 ## 🌐 Stage B P4-6 — 黒田記者の記事プール+自団体新聞プール908行の英訳（2026-09-04・主筆Opus / worktree agent-afc722cfb87f17226）
 
 P4-5で台帳化された未訳908行(kuroda-text.js 13プール + app.js の自団体新聞2プール)を全量英訳した。開始前にworktreeブランチをmain先端(24a7e47)へfast-forward済み。**テンプレ台帳 `i18n/template-ledger.json` は 1,459/1,459 が訳出済み(未訳0)になった。**

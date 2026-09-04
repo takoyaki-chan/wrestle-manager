@@ -3,7 +3,11 @@
 const { stableHash, writeFailureArtifacts } = require('./detectors');
 
 const CLICKABLE_SELECTOR = 'button, [role="button"], [onclick], [data-choice], [data-mdl-choice], [data-war-choice], .large-evt-fighter-pick, .travel-overlay.active';
-const DESTRUCTIVE_TEXT = /(?:削除|消去|ニューゲーム|NEW GAME|ロード|LOAD GAME|セーブ|SAVE|タイトルへ戻る|記録を消す)/i;
+// P6-2b: 削除/ロードは元々JA語彙(削除・ロード・セーブ)+一部EN語彙(NEW GAME・LOAD GAME・SAVE、
+// 表記ゆれの実測に合わせた既存の保険)混在だった。Delete/Loadを追加してEN単独文言(削除→"Delete"・
+// ロード→"Load"、i18n/ui-ledger.json実測)でもガードが効くようにする(セーブ画面のロード/削除/
+// ニューゲームボタンはナビ巡回が開くだけでクリックしないため実害は無いが、安全側の追加)。
+const DESTRUCTIVE_TEXT = /(?:削除|消去|ニューゲーム|NEW GAME|ロード|LOAD GAME|セーブ|SAVE|タイトルへ戻る|記録を消す|Delete|Load)/i;
 // ナビ実物は「📅 今週」のように絵文字+空白つき(src/index.html の .nav-bar)。
 // 2026-08-31監査: 旧版は絵文字なし完全一致でナビ実物に一つもマッチしない死にガードだった
 // (全ナビラベルがスコア表フォールスルーの -Infinity で偶然押されていなかっただけ)。
@@ -62,33 +66,77 @@ function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+// P6-2b: 各判定はJA文言の正規表現を主とし、EN対応は「同じ判定になるシグナルを追加する」
+// 形で行う(既存のJA一致条件は一切削らない・スコア値も変えない)。追加するシグナルは
+// 優先して onclick 属性(App.xxx()等、表示言語に関わらず同じDOM構造)・要素id・
+// data-*属性を使う(navButtonLocatorと同じ発想)。onclick側が1関数=1ボタンで
+// 一意に特定できない箇所(同じハンドラを複数の文言が共有する等)だけ、
+// src/lang-en.js に実在するEN訳文言(i18n/ui-ledger.json由来)をJAと併記するテキスト
+// 正規表現で補う。EN文言の追加はja側の一致条件を変えないので、jaのスコア・選択候補・
+// digestは不変(EN文言はja表示では絶対に出現しないため新規マッチが起きない)。
+// 各グループの根拠は P6-2b の worklog エントリ(docs/worklog.md 先頭)に一覧化してある。
 function actionScore(candidate, state) {
   const text = candidate.searchText || candidate.text;
   if (!text || DESTRUCTIVE_TEXT.test(text) || isNavigationControl(candidate)) return -Infinity;
+  const onclick = candidate.onclick || '';
 
-  if (/CONTINUE/i.test(text)) return 10000;
+  // 大文字固定の"CONTINUE"はUI上ハードコードの英語演出文言(WM_I18N.t()を通らず両言語で
+  // 常に同一表記。例: id="fevtF03Continue">CONTINUE</button>、"TAP TO CONTINUE"、
+  // "▼ CLICK TO CONTINUE")。以前はcase-insensitiveで「CONTINUE」を含む文字列全般を
+  // 拾っていたが、Stage BのEN訳が「つづき」→"Continued"(新聞のページ内スクロールリンク、
+  // 状態は一切変えないnpScrollToShowDetail())も生むため、大文字小文字を区別しないと
+  // ENモードでこの無進行リンクが最優先(score 10000)に化けてD2_FREEZEを起こす
+  // (2026-09-04 P6-2b seed7実測)。大文字小文字を区別する厳格一致にすれば、
+  // ハードコード演出文言だけを引き続き拾い、翻訳後文言との衝突を避けられる
+  if (/CONTINUE/.test(text)) return 10000;
   if (candidate.id === 'travelSceneOverlay') return 9975;
   // 全画面タップ面(天頂戦優勝発表 .tcwn-wrap 等)。文章量が多くても「タップして進む」導線
   if (candidate.fullSurface && candidate.inOverlay) return 9960;
-  if (/(?:confirmPPVEntry|tcConfirmEntries)/.test(candidate.onclick)) return 9500;
-  if (/(?:togglePPVPick|tcTogglePick)/.test(candidate.onclick)) return 9450;
+  if (/(?:confirmPPVEntry|tcConfirmEntries)/.test(onclick)) return 9500;
+  if (/(?:togglePPVPick|tcTogglePick)/.test(onclick)) return 9450;
+  // ✕記号は言語に依らず同じグリフのまま(閉じるのariaLabelはEN化されても記号一致で拾える)
   if (candidate.inOverlay && (/閉じる/.test(candidate.ariaLabel) || /^✕$/.test(candidate.text))) return 9950;
-  if (/残り全試合をスキップ|全試合スキップ|まとめてスキップ|スキップで確定/.test(text)) return 9800;
+  // 全試合スキップ系(残り全試合をスキップ/まとめてスキップ/スキップで確定 等)。
+  // P6-2実走(2026-09-04)でEN未対応だったためD2_FREEZEの直接原因になった箇所
+  // (App.watchMatch側が一般スコアへフォールバックし観戦iframeを開いてしまった)。
+  // ハンドラは6種とも1関数=1ボタンで一意なのでonclickだけで確定できる
+  if (/App\.(?:warSkipAll|skipAllMatches|ppvSkipAll|jtSkipAll|awSkipTeamMatch|tcSkipAll)\(\)/.test(onclick)
+    || /残り全試合をスキップ|全試合スキップ|まとめてスキップ|スキップで確定/.test(text)) return 9800;
   if (/^▷?\s*SKIP$|^>>\s*skip$/i.test(text)) return 9700;
-  if (/興行開催/.test(text)) return state?.showCardValid > 0 ? 9600 : -Infinity;
-  if (/この布陣で|このメンバーで|出場決定|エントリー確定|参戦する|開戦/.test(text)) return 9500;
-  if (/おまかせ選出|おまかせ編成|🔥\s*おすすめ|^おまかせ$/.test(text)) return 9400;
-  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留/.test(text)) return 9300;
-  if (/指名を行いません|今年は指名しない|辞退する|見送る|見送り/.test(text)) return 9250;
-  if (/興行準備へ|興行準備に戻る/.test(text)) return 9200;
-  if (/週を処理|次の週へ|シーズンレポートへ|ドラフト会議へ|移籍ウィンドウへ|新シーズン開幕/.test(text)) return 9100;
-  if (/オフシーズンへ|結果へ|結果を確認|決着へ|表彰式へ|大会へ進む|JTへ進む|ドラフトへ/.test(text)) return 9000;
-  if (/^(?:次へ|続ける|進む|閉じる|完了|終了|確定|OK)(?:\s*[→▶›])?$/.test(text)) return 8900;
-  // 相槌型の確認ボタン(契約更改の突発退団「……わかった」等)
-  if (/わかった|承知した|了解した/.test(text)) return 8850;
-  if (/次へ|続ける|閉じる|完了|終了|結果を見る|結果発表|進行/.test(text)) return 8800;
-  if (/承認|受けて立つ|参加する|開始|開催|決定/.test(text)) return 8600;
-  if (/スキップ/.test(text)) return 8500;
+  if (/confirmExecuteShow\(\)/.test(onclick) || /興行開催/.test(text)) return state?.showCardValid > 0 ? 9600 : -Infinity;
+  if (/App\.(?:warConfirmEntry|awConfirmFinalOrder|awConfirmEntry)\(\)/.test(onclick)
+    || /この布陣で|このメンバーで|出場決定|エントリー確定|参戦する|開戦/.test(text)) return 9500;
+  // App.autoManage()は週ダッシュボードの「体調に応じて方針を一括調整」ボタン(🤖 おまかせ、
+  // 進行とは無関係の常設ユーティリティ)で、このtierが対象とする「入場/編成のおまかせ」とは別物。
+  // 含めるとApp.autoManageを毎手繰り返し押し続けて進行が止まる(2026-09-04 ja実測でD5_WATCHDOG化、
+  // 一度追加してから除外し直した教訓)。onclick側は入場/編成系の5関数だけに絞る
+  if (/App\.(?:warAutoSelectEntry|awAutoFinalOrder|awAutoEntry|tcSuggestPicks)\(\)|autoFillCardByAppeal\(\)/.test(onclick)
+    || /おまかせ選出|おまかせ編成|🔥\s*おすすめ|^おまかせ$/.test(text)) return 9400;
+  // 昇給を受ける/引き留める(受諾側の選択肢)。dataChoice(idx)は選択肢が3択とも共通で
+  // 個別ボタンを一意に特定できないため、ここはEN訳文言(src/lang-en.js実測)を併記する
+  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留|Accept the Raise|Persuade Her to Stay/.test(text)) return 9300;
+  if (/declineDraft\(\)|draftSoloConfirm\(false\)|scoutResolve\([^)]*,\s*'skip'\)/.test(onclick)
+    || /指名を行いません|今年は指名しない|辞退する|見送る|見送り/.test(text)) return 9250;
+  if (/(?:^|;)(?:startShowPrep|resumeShowPrep)\(\)/.test(onclick) || /興行準備へ|興行準備に戻る/.test(text)) return 9200;
+  // 週を処理/次の週へは1関数=1ボタンでonclick確定可。オフシーズン進行4種は
+  // advanceWeek() を「次へ」(オフW1、別tierの汎用文言)とも共有するため、
+  // ハンドラ一致ではなくEN訳文言(矢印込みの完全一致キー)で個別に特定する
+  if (/doProcessWeek\(\)|App\.advanceFromWeekSummary\(\)/.test(onclick)
+    || /週を処理|次の週へ|シーズンレポートへ|ドラフト会議へ|移籍ウィンドウへ|新シーズン開幕/.test(text)
+    || /Process the Week|Next Week →|To the Season Report →|To the Draft →|To the Transfer Window →|Start the New Season →/.test(text)) return 9100;
+  if (/App\.closePPVResult\(\)|closeShowResult\(\)|App\.enterJuniorTournamentFromWeek\(|showScreen\('scoutEvent'/.test(onclick)
+    || candidate.id === 'c1rCloseBtn'
+    || /オフシーズンへ|結果へ|結果を確認|決着へ|表彰式へ|大会へ進む|JTへ進む|ドラフトへ/.test(text)
+    || /To the Off-season →|To the Result|See the Result →|Go to the JT|⚖ To the Draft/.test(text)) return 9000;
+  if (/^(?:次へ|続ける|進む|閉じる|完了|終了|確定|OK|Next|Continue|Close|Done|Confirmed)(?:\s*[→▶›])?$/i.test(text)) return 8900;
+  // 相槌型の確認ボタン(契約更改の突発退団「……わかった」等)。id="contractSuddenOk"のみが
+  // このボタンの実体なので、id一致をJA/EN共通の一次判定にする
+  if (candidate.id === 'contractSuddenOk' || /わかった|承知した|了解した/.test(text)) return 8850;
+  if (/次へ|続ける|閉じる|完了|終了|結果を見る|結果発表|進行|See the Result/.test(text)) return 8800;
+  if (/承認|受けて立つ|参加する|開始|開催|決定|Approve/.test(text)) return 8600;
+  // 個別試合スキップ(App.skipMatch等)。全試合スキップと同じ理由でEN文言がフォールバックし
+  // やすい箇所(観戦iframeを開くApp.watchMatchとタイの一般スコアに落ちるのを防ぐ)
+  if (/App\.(?:skipMatch|ppvSkipMatch|warSkipMatch|jtSkipMatch|tcSkipMatch)\(/.test(onclick) || /スキップ/.test(text)) return 8500;
   if (/^(?:A|accept|yes)$/i.test(candidate.dataChoice)) return 8400;
   if (candidate.dataChoice) return 8300;
   if (candidate.dataFighterId) return 8250;
