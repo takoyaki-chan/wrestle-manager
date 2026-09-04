@@ -1266,17 +1266,83 @@ P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELAT
 
 ### 32-6. P7-8で新たに見つかった穴(未着手)
 
-- **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
+- **✅解決(P7-14、2026-09-04)** — **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
   条件分岐ごとの断片を `[first, second, third].join('')` で連結する型で、t()を一度も通らない。P7-6(ランキング画面)の領分として記録のみ
+  → **文そのものはP6-13(`_buildLeadSentences`)とP7-6(`_buildDepthNoteV2`)で既にt()を通っており、残っていたのは「連結の様式」だった**(§32)
+- **団体比較号の `d.opportunity` / `actionDescs` 等(management.js:26300付近)** — Engine内の関数に直書きされた紹介文プール(§10-2型)。
+  `_npRenderOrgCompare` の紙面に出るが、テーブル化+dict糸通しが要る別枠
+
+---
+
+## 33. Stage B P7-14 — ランキング画面の選手層寸評「連結の様式」のテンプレ化(2026-09-04追加)
+
+### 33-1. 何が残っていたか(P7-8 発見1の実体)
+
+P7-8の「未着手」欄には `_buildDepthNoteV2` / `_buildLeadSentences` が **「t()を一度も通らない生JA組み立て」** として
+記録されていたが、実コードを追うと**文そのものは既にt()を通っていた**:
+
+| 関数 | 文プールのt()配線 | 残っていた穴 |
+|---|---|---|
+| `_buildLeadSentences`(ui-render.js) | P6-13で配線済み(pick→t()→params) | **連結様式** `join('。') + '。'` |
+| `_orgContextSentences`(同上) | P6-13で配線済み | 同上(呼び出し元で連結) |
+| `_buildDepthNoteV2`(同上) | P7-6で配線済み(PH入りt()+`pnSurname`) | **連結様式** `join('')` |
+
+つまり P7-8 の分類は「断片がJA」ではなく **「断片は訳せているが、断片をつなぐ句読点作法がJA固定」** が正しい。
+EN画面での実害は次の2つだった:
+
+1. リード文が `Running away with the top of the industry。The title stays vacant…。` — **全角の「。」がEN紙面に出る**
+2. 選手層寸評が `Nothing follows behind Tomioka.Below the second string…` — **文間の半角スペースが無く詰まる**
+
+### 33-2. 直し方(構造規約3「断片連結禁止」の既定形)
+
+断片を連結する族は **連結の様式そのものを1キーのテンプレにする**(P6-14 `HOF_BIOGRAPHY_TEMPLATES.join` /
+P6-15 `ARTICLE_COMPOSE_TEMPLATES.join` / P6-16 章クラウスと同型)。本件は
+**「句点を持たない文断片」を並べる**新しい型だったので、`ARTICLE_COMPOSE_TEMPLATES` へ2キーを追加した。
+
+| キー | JA | EN | 用途 |
+|---|---|---|---|
+| `sentenceJoin` | `{a}。{b}` | `{a}. {b}` | 句点を持たない文断片の畳み込み(可変本数) |
+| `sentenceEnd` | `{s}。` | `{s}.` | 畳み込んだ本文の末尾に句点を打つ |
+| `join`(既存) | `{a}{b}` | `{a} {b}` | **句点を持つ**完成文どうしの連結 |
+
+消費点(`ui-render.js` `renderRanking`)には `_joinSentences`(句点なし断片用)と `_concatParts`(完成文用)の
+2ヘルパーを置き、`_JOINT` が取れないときは従来の直書き連結へfail-openする。
+
+- `_buildLeadSentences`: リード3文 → `_joinSentences` / 周辺コンテキスト1〜2文 → `_joinSentences` /
+  両者の結合 → `_concatParts`
+- `_buildDepthNoteV2`: 各文が句点まで持つ完成文なので `_concatParts` のみ
+
+なお、文プール側の訳文は**この様式を前提に書かれている**(リード/コンテキストのEN 82本はいずれも
+末尾に句読点を持たない節、選手層寸評のEN 13本はいずれも末尾に `.` を持つ完成文)。
+プールに文を足すときはこの規約を守ること。
+
+### 33-3. JA 1バイト不変の担保
+
+`sentenceJoin`/`sentenceEnd`/`join` のJA値はいずれも従来の直書き連結と同じ字面なので、JA出力は不変。
+凍結コピー(変更前HEAD)と新実装を**全分岐の直積**で突合して確認した(不一致0):
+
+- `_buildLeadSentences`: 順位5 × トレンド8 × 王座4 × 人気3 × 戦力層4 × `r`変種27(年間王者歴3×実績3×レガシー2×対戦PT3) × seed24 = **2,488,320件**
+- `_buildDepthNoteV2`: ロースター規模9 × OVR基準6 × 傾斜4 × 欠場3 × 若手3 × レンタル2 × readyOvr5 = **19,440件**(相異なるJA出力417種)
+
+### 33-4. 同画面の残り(P7-14で確認)
+
+`renderRanking`(ui-render.js:4426〜5071)の `_build*`/`_org*` 系を機械列挙した結果、**生JAの断片連結は残っていない**。
+ただし**呼び出し元のない死蔵ヘルパー**が4つある(出力に出ないためEN露出ではない):
+
+- `_aceFlavorByPersona` — archetype 7分岐 × personality 5分岐の**生JA文プール約30本**。定義のみで参照0
+- `_isContestedBelt` / `_titleWinCount` / `_hasTrait` — ロジックのみ(セリフなし)。参照0
+
+`_aceFlavorByPersona` は「書いてあるのに出ていない」型なので、**配線して活かすか削るか**をKeisukeの判断で決める
+(配線する場合は文プールの台帳化が同時に要る)。P7-14では出力を変えないため無改修。
 - **✅解決(P7-11)** — **団体比較号の `d.opportunity` / `actionDescs` 等(management.js:26300付近)** — Engine内の関数に直書きされた紹介文プール(§10-2型)。
   `_npRenderPage2` の紙面に出るが、テーブル化+dict糸通しが要る別枠 → §30
 
-## 30. Stage B P7-11 — 団体比較号(新聞2面)のEngine内直書き紹介文プールのテーブル化・英訳(2026-09-04追加)
+## 34. Stage B P7-11 — 団体比較号(新聞2面)のEngine内直書き紹介文プールのテーブル化・英訳(2026-09-04追加)
 
 訳出**101キー**(template-ledger 2,958→**3,057**・未訳0 / ui-ledger 4,069→**4,071**・未訳0 / dialogue-ledger 16,674 は不触)。
 ラチェット総数 28,108→**28,102**(data.js +95 / management.js -101 = 移設と重複解消の差引)。
 
-### 30-1. 「Gへ焼かず、表示のたびにEngineを呼び直す」族は **dict引数** だけで解ける
+### 34-1. 「Gへ焼かず、表示のたびにEngineを呼び直す」族は **dict引数** だけで解ける
 
 `Engine.database.getOrgCompareAnalysis(state, orgId)` は消費点が `ui-render.js:_npRenderPage2` の**1箇所だけ**で、
 戻り値はGへ一切保存されない(§22-1のプロフィール文と同じ族)。したがって §15-1 の追加フィールドも §18-1 の表示点再生成も要らず、
@@ -1288,7 +1354,7 @@ P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELAT
   `T = (tpl, params) => _wmFillWithDict(dict, tpl, params)`(本文) / `L = (ja) => _wmDictLabel(dict, ja)`(値としての1語ラベル)
 - `dict` 省略時(auto-sim / ja-golden / 既存テスト / u5安全網)は `_wmFillWithDict` が PH置換だけを行うので**JA出力1バイト不変**
 
-### 30-2. 軸ラベルは「表へ入れず management.js に1本だけ置く」— §15-3 の実運用2例目
+### 34-2. 軸ラベルは「表へ入れず management.js に1本だけ置く」— §15-3 の実運用2例目
 
 `AXIS_META` の4ラベルのうち `TOP5実力` `団体人気` は **ui-ledger に既訳がある**。テンプレ表へ入れると
 template-ledger と ui-ledger で同じキーが二重登録になる(§15-3)。そこで:
@@ -1300,7 +1366,7 @@ template-ledger と ui-ledger で同じキーが二重登録になる(§15-3)。
 - 同型の1語ラベル: `playerSubtitle` の `プレイヤー団体`(ui-ledger/名前辞書の双方に既訳あり)、`matchups[].role`(`エース`/`主力`/`中堅`)。
   role は Engine が返す成形済みJA値なので、**UI側の2つの表示点**(`_npMatchupFlavorText` の `{role}` param と `.np-matchup-vs .role`)で `WM_I18N.t()` を通す
 
-### 30-3. 「JAは全角14字で切る」ような**文字数勘定はlang分岐が要る**
+### 34-3. 「JAは全角14字で切る」ような**文字数勘定はlang分岐が要る**
 
 GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを出していた。全角前提の目分量なので、
 英語に当てると単語の途中で切れる(`Outclassed on every`)。§25-5(`決着時間`/`ターン数`の書式)と同じ型。
@@ -1308,7 +1374,7 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
 - `_npGradeDescShort(desc)`(ui-render.js): **ja/pseudoは従来どおり14字で切り(1バイト不変)、enは切らない**
 - EN訳文は台帳側でこの枠に収まる短さ(≦32半角)に揃える。**JAの切り詰めをEN訳文の長さ制約へ翻訳するのが正**
 
-### 30-4. 断片連結の畳み込みと、接続詞の空白規約(§15-2の裏返し)
+### 34-4. 断片連結の畳み込みと、接続詞の空白規約(§15-2の裏返し)
 
 `summaryText` は「軸の断片2本 + 接続詞」を1文へ連結する型。連結様式を `ORG_COMPARE_SUMMARY_TEMPLATES` の3キー
 (`base` / `noPositive` / `noNegative`)へ出し、断片・接続詞・軸ラベルは**先に確定させてから params で差し込む**(§29-3と同じ作法)。
@@ -1317,7 +1383,7 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
   ここは前に付くので **EN訳文の側が末尾に半角スペース**を持つ(`'一方で'` → `'Against that, '`)。JA訳文は持たない
 - 軸の5段断片は**末尾に句点を持たない**(テンプレ側の `。` / `.` が付ける)
 
-### 30-5. `HP判定` が紙面に素で出ていた(P7-9の発見・**意図的なJA修正**)
+### 34-5. `HP判定` が紙面に素で出ていた(P7-9の発見・**意図的なJA修正**)
 
 `_buildPpvSummitStory`(頂上決戦の紙面本文)と PPVアンダーカードの2箇所が
 `Engine.formatFinish` を **`finMove` があるときだけ**通し、無いときは `finType` を素で出していた。
@@ -1329,7 +1395,7 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
 - `finMove` があるとき / `finType` が表に無いとき / 決着情報が無いときの出力は**すべて従来と同一**(旧実装との突合で確認)
 - ja-golden の基準は**動かない**(固定シード20季の corpus に `HP判定` 決着の紙面が1件も無く、ハッシュ不変)
 
-### 30-6. 検証
+### 34-6. 検証
 
 - **JA同一性**: 凍結コピー(68a17d06)の `getOrgCompareAnalysis` をVMで復元し、
   4軸×9段の差分グリッド(6,561)+団体4種×ロスター/勢い/名前の変種19×縮小グリッド(81)+素のスコア計算12
@@ -1339,7 +1405,7 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
 - ja-golden 完全一致 / npm test 260 PASS / auto-sim 20季 seed42 ALL CLEAR /
   走破 ja PASS(328手・digest `1052faa82eaf7991` 不変)/ EN走破 PASS・i18n-miss 0 維持
 
-### 30-7. 横展開の棚卸し — `Engine.newspaper` にはまだ **83行**の生JAが残る(本バッチ範囲外)
+### 34-7. 横展開の棚卸し — `Engine.newspaper` にはまだ **83行**の生JAが残る(本バッチ範囲外)
 
 `Engine.newspaper = { … }`(management.js:31167〜33094)の全行を機械列挙し、
 `T(` / `dict` / `_wmNewsStamp` / `injuryLabel` / `fillTemplateVars` のいずれも通らない生JA行を数えた(コメント行・gameLog系は除外)。

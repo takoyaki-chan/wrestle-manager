@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3057件、訳文あり3057件)
+//  生成元: i18n/template-ledger.json (総キー3059件、訳文あり3059件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -183,6 +183,7 @@
     "{a}<span class=\"chron-overlap-sep\">・</span>{b}": "{a}<span class=\"chron-overlap-sep\">·</span>{b}",
     "{a}{b}": "{a} {b}",
     "{a}、{b}": "{a}, {b}",
+    "{a}。{b}": "{a}. {b}",
     "{a}と{b}": "{a} and {b}",
     "{a}・{b}": "{a}, {b}",
     "{belt}は{name}に明け渡した": "the {belt} handed over to {name}",
@@ -944,6 +945,7 @@
     "{surname}を中心に、{org}は{spiritAxis}の色を強めた章だった。": "With {surname} at the center, this was the chapter {org} deepened the color of {spiritAxis}.",
     "{surname}を見るために客が会場に押し寄せた。それがこの世代の正体だった。": "People came through the doors to see {surname}. That was what this generation actually was.",
     "{surname}世代": "The {surname} Generation",
+    "{s}。": "{s}.",
     "{targetName}が寝返った——「{fromFaction}」から「{toFaction}」へ電撃移籍": "{targetName}: {fromFaction} to {toFaction}",
     "{titleReigns}度の戴冠、{defenses}度の防衛——{surname}は挑戦者を退け続けた。{warClause}": "Title reigns {titleReigns}, defenses {defenses} — {surname} kept turning challengers away.{warClause}",
     "{titleReigns}度の戴冠と{defenses}度の防衛。{surname}が立っていることが、団体の安定そのものだった。": "A {titleReigns}-reign career, a {defenses}-defense run. {surname} standing there was the promotion's stability itself.",

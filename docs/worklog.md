@@ -1,5 +1,112 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-14 — ランキング画面の選手層寸評「連結の様式」のテンプレ化(2026-09-04)
+
+P7-8が「未着手」として残した発見1(`_buildDepthNoteV2` / `_buildLeadSentences` が断片連結の生JA)を潰した。開始前にworktreeをmain先端(`3021d166`)へfast-forward。
+
+### 1. 起票内容と実体のズレ — 「生JA」ではなく「連結の様式」だった
+
+指示書と`specs/i18n-runtime-spec-v1.0.md §31-6`は両関数を **「t()を一度も通らない生JA組み立て」** と記録していたが、実コードを追うと**文プールそのものは既に配線済み**だった:
+
+| 関数 | 文のt()配線 | 実際に残っていた穴 |
+|---|---|---|
+| `_buildLeadSentences`(ui-render.js:4679) | **P6-13で配線済み**(pick→t()→params) | 連結様式 `join('。') + '。'` |
+| `_orgContextSentences`(同:4652) | **P6-13で配線済み** | 同上(呼び出し元で連結) |
+| `_buildDepthNoteV2`(同:4865) | **P7-6で配線済み**(PH入りt()+`pnSurname`) | 連結様式 `join('')` |
+
+`build-dict`が未訳0を報告していたのはこのため——**断片は全部訳されていたのに、断片をつなぐ句読点作法だけがJA固定**だった。EN画面での実害を機械検査(文プール82本のEN訳の末尾句読点を全数走査)で特定した:
+
+1. **リード文に全角の「。」が出る** — `Running away with the top of the industry。The title stays vacant…。`
+   (プール82本のEN訳は全て末尾句読点なしの節として書かれており、`join('。')`がそのまま全角句点を挿す)
+2. **選手層寸評の文間にスペースが無い** — `Nothing follows behind Tomioka.Below the second string, only Tomioka…`
+   (こちらのEN訳13本は全て末尾に`.`を持つ完成文で、`join('')`が直結する)
+
+「未訳0でも壊れている」型なので、`i18n-miss`にもラチェットにも出ない。**EN出力を実際に組み立てて目で見るまで検出できなかった**。
+
+### 2. 配線方式 — 区切りそのものを1キーのテンプレへ(構造規約3の既定形)
+
+P6-14(`HOF_BIOGRAPHY_TEMPLATES.join`)・P6-15(`ARTICLE_COMPOSE_TEMPLATES.join`)・P6-16(章クラウス)と同じ流儀。ただし本件は**「句点を持たない文断片を並べる」**という既存キーで賄えない型だったので、`ARTICLE_COMPOSE_TEMPLATES`(data.js)へ2キーを追加した:
+
+| キー | JA | EN | 用途 |
+|---|---|---|---|
+| `sentenceJoin` | `{a}。{b}` | `{a}. {b}` | 句点を持たない文断片の畳み込み(可変本数) |
+| `sentenceEnd` | `{s}。` | `{s}.` | 畳み込んだ本文の末尾に句点を打つ |
+| `join`(既存・再利用) | `{a}{b}` | `{a} {b}` | **句点を持つ**完成文どうしの連結 |
+
+消費点(`renderRanking`)には2ヘルパーを新設:
+
+- `_joinSentences(parts)` — 句点なし断片を`sentenceJoin`で畳み込み、`sentenceEnd`で締める
+- `_concatParts(parts)` — 完成文どうしを`join`で畳み込む
+
+いずれも`ARTICLE_COMPOSE_TEMPLATES`が取れないときは従来の直書き連結へfail-open。呼び分けは:
+
+- `_buildLeadSentences`: リード3文→`_joinSentences` / 周辺コンテキスト1〜2文→`_joinSentences` / 両者の結合→`_concatParts`
+- `_buildDepthNoteV2`: 各文が句点まで持つ完成文なので`_concatParts`のみ
+
+台帳は**`i18n/template-ledger.json`**(2,958→**2,960**、未訳0)。`ARTICLE_COMPOSE_TEMPLATES`の既存6キーが全てここに載っているため、同じ表を2台帳に割らない判断。`ui-ledger`との重複キーが無いことも機械確認済み(P7-12の領分を侵さない)。
+
+### 3. 対訳全文(追加2件)
+
+| JA | EN |
+|---|---|
+| `{a}。{b}` | `{a}. {b}` |
+| `{s}。` | `{s}.` |
+
+無署名の紙面/紹介文の声なので、区切りは装飾を足さずピリオド+半角スペースのみ。数値PHの前に冠詞は置かず、`{n}名`型の単複問題も発生しない(様式キーのみで名詞を持たない)。
+
+### 4. JA 1バイト不変の担保 — 凍結コピーとの全分岐直積突合
+
+`sentenceJoin`/`sentenceEnd`/`join`のJA値はいずれも従来の直書き連結と同じ字面。`git show HEAD:src/ui-render.js`から**変更前の関数を凍結コピーとして切り出し**、新実装と同じ入力で突き合わせた(ハーネスが新ヘルパーの抽出に失敗するとJA一致が無意味になるため、`_joinSentences`/`_concatParts`が新側にあり旧側に無いことをアサートで担保):
+
+| 関数 | 分岐の直積 | 件数 | 不一致 |
+|---|---|---:|---:|
+| `_buildLeadSentences` | 順位5 × トレンド8 × 王座4 × 人気3 × 戦力層4 × `r`変種27(年間王者歴3×実績3×レガシー2×対戦PT3) × seed24 | **2,488,320** | **0** |
+| `_buildDepthNoteV2` | ロースター規模9 × OVR基準6 × OVR傾斜4 × 欠場3 × 若手3 × レンタル2 × readyOvr5 | **19,440** | **0** |
+
+合計 **2,507,760通りで不一致0**(`_buildDepthNoteV2`の相異なるJA出力は417種)。`renderRanking`はDOM生成なので`ja-golden`の採取対象外——このVM突合が唯一のJA同一性の証拠になる。
+
+### 5. 同画面の追加調査 — 生JA連結の残は0、ただし死蔵ヘルパー4件
+
+`renderRanking`(ui-render.js:4426〜5071)の`_build*`/`_org*`系を機械列挙した。**生JAの断片連結は残っていない**。`scoreLine`の`[...].join(' / ') + WM_I18N.t('台多数')`は数値列+t()済み接尾辞(EN訳が先頭スペース持ち)で、JA/EN両方とも正しく出るため無改修。
+
+ただし**呼び出し元がゼロの死蔵ヘルパーが4件**見つかった(出力に出ないためEN露出ではない):
+
+| ヘルパー | 中身 | 参照 |
+|---|---|---:|
+| `_aceFlavorByPersona`(:4737) | archetype 7分岐 × personality 5分岐の**生JA文プール約30本** | **0** |
+| `_isContestedBelt`(:4762) | 王座の奪い合い検出ロジック(セリフなし) | **0** |
+| `_titleWinCount`(:4771) | 戴冠回数カウント(セリフなし) | **0** |
+| `_hasTrait`(:4597) | 特性判定(セリフなし) | **0** |
+
+`_aceFlavorByPersona`は「書いてあるのに出ていない」型。**配線して活かすか削るかはKeisukeの判断**(活かす場合は文プールの台帳化+英訳が同時に要る)。P7-14では出力を変えないため無改修とし、spec §32-4に記録した。
+
+### 6. 検証結果
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(data.js / ui-render.js / lang-en.js / lang-en-templates.js) | ✅ 全OK(+ template-ledger.json のJSON妥当性) |
+| `node test/ja-golden.js`(`--update`不使用) | ✅ 完全一致(lines=11233, hash=`6b3d05c8…`不変) |
+| `node test/i18n-build-dict.js` | ✅ 4,253キー・**未訳0** |
+| `node test/i18n-build-template-dict.js` | ✅ 2,960キー(+2)・**未訳0** |
+| `npm test` | ✅ **260/260 green** |
+| `node test/i18n-ratchet.js`(`--update`不使用) | ✅ 増加なし(files=31 totalJaStrings=28,053) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・digest`1052faa82eaf7991`**完全一致**・Issues 0・Recovered-by-retry 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・**i18n-miss 0**・Issues 0・**JA露出by screenに`screen-ranking`は出ず(0維持)** |
+| VM全分岐突合(JA同一性) | ✅ **2,507,760通り / 不一致0** |
+| EN目視(3団体分 + 選手層寸評7型) | ✅ 全角句点の消失・文間スペース・姓のみ表示(`Tomioka, Sawade, and others in the 80s…`)を確認 |
+
+EN実出力の例:
+
+- リード: `Running away with the top of the industry. Kanako Tomioka has defended the title so many times she has become the face of the organization itself. Deep enough at the top to carry a whole show on its own. The afterglow of the Year 1 annual championship still lingers around the organization.`
+- 寸評: `Nothing follows behind Tomioka. Below the second string, only Tomioka clears OVR 70. If that pillar falls, everything collapses at once. 2 wrestlers are out, so the roster is thinner than it looks.`
+
+### 7. 確認してほしいこと(実機)
+
+- **ランキング画面 → 03 団体プロフィール**: 4団体それぞれのリード文(団体名の下の段落)と選手層寸評(顔ぶれの下の1行)が、**JAで従来どおりの文面**になっているか
+- **同画面をENで開いて**: リード文に全角の「。」が混ざっていないか / 寸評の文と文の間に半角スペースが入っているか
+- シーズンをまたいでも同一団体の講評が固定されるか(`_seedBase`はシーズン単位のため、シーズンが変わると文面も変わるのが仕様)
+
+---
 ## 🌐 Stage B P7-11 — 団体比較号のEngine内直書き紹介文をテンプレ化・英訳（+新聞composerの直書き残りの棚卸し）（2026-09-04・worktree agent-a02876bf84c6321e3）
 
 指示書は specs/i18n-runtime-spec-v1.0.md §29-6（P7-8の範囲外発見2件目）。開始前にworktreeブランチをmain先端（68a17d06、P7-8マージまで）へfast-forward済み。

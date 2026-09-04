@@ -18441,6 +18441,14 @@ const NEWSPAPER_SHOW_FALLBACK_TEMPLATES = {
 //                    `${c.age}歳 ｜ ${c.gender}性 ｜ ${c.origin}出身` の直書き連結で、
 //                    3つの接尾辞(歳/性/出身)がt()を一度も通らなかった。値(男/女・都道府県)は
 //                    ALL_COACHES側から台帳へ載るので、ここには**様式だけ**を置く
+//   sentenceJoin / sentenceEnd:
+//                    (P7-14で追加)「句点を持たない文断片」を並べて1本の講評にする様式。
+//                    ランキング画面の団体リード文(_buildLeadSentences)は文プールの各要素が
+//                    句点を持たず、消費点が `join('。') + '。'` と**JAの句読点を直書き**して
+//                    いた(ENでも全角の「。」が出る)。JAは句点で直結、ENは ". " で継いで
+//                    末尾に "." を打つ、という差を吸収するので**区切りそのものを2キーに**する。
+//                    可変本数(リード3本 / 周辺コンテキスト1〜2本)なので join と同じく
+//                    2スロットの畳み込みで使い、最後に sentenceEnd で締める
 const ARTICLE_COMPOSE_TEMPLATES = {
   join: '{a}{b}',
   champChangeJoin: '{lead}{profile}{reign}{closing}',
@@ -18448,6 +18456,8 @@ const ARTICLE_COMPOSE_TEMPLATES = {
   prevChampFallback: '前王者',
   snapshotVoice: '{name}　{line}',
   coachProfileMeta: '{age}歳 ｜ {gender}性 ｜ {origin}出身',
+  sentenceJoin: '{a}。{b}',
+  sentenceEnd: '{s}。',
 };
 
 // ══════════════════════════════════════════════════════════════════════════════

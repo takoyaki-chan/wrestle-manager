@@ -1674,6 +1674,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{a}。{b}",
+    "en": "{a}. {b}",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{a}と{b}",
     "en": "{a} and {b}",
     "files": [
@@ -9284,6 +9294,16 @@
     "en": "The {surname} Generation",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{s}。",
+    "en": "{s}.",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
