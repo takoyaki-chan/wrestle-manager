@@ -4596,6 +4596,27 @@ function renderRanking() {
   const _pickSeed = (arr, seed) => arr.length ? arr[seed % arr.length] : '';
   const _hasTrait = (f, t) => Array.isArray(f?.traits) && f.traits.includes(t);
 
+  // i18n Stage B P7-14: 団体プロフィールの講評は「文断片を並べて1本にする」族。
+  // 断片そのものは P6-13/P7-6 で t() を通すようになったが、**連結の様式**が
+  // `join('。') + '。'` / `join('')` とJAの句読点作法を直書きしたままで、EN画面には
+  // 全角の「。」や "A.B." のような詰まった文が出ていた。構造規約3に従い、区切りは
+  // ARTICLE_COMPOSE_TEMPLATES の様式キーへ委ねる(JA=句点直結 / EN=". " と半角スペース)。
+  const _JOINT = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
+  /** 句点を「持つ」文をそのまま連ねる(JA=区切り無し / EN=半角スペース) */
+  const _concatParts = (parts) => {
+    const list = (parts || []).filter(Boolean);
+    if (!list.length) return '';
+    if (!_JOINT || !_JOINT.join) return list.join('');
+    return list.reduce((a, b) => WM_I18N.t(_JOINT.join, { a, b }));
+  };
+  /** 句点を「持たない」文断片を並べて1本の講評にし、末尾に句点を打つ */
+  const _joinSentences = (parts) => {
+    const list = (parts || []).filter(Boolean);
+    if (!_JOINT || !_JOINT.sentenceJoin || !_JOINT.sentenceEnd) return list.join('。') + '。';
+    const body = list.length ? list.reduce((a, b) => WM_I18N.t(_JOINT.sentenceJoin, { a, b })) : '';
+    return WM_I18N.t(_JOINT.sentenceEnd, { s: body });
+  };
+
   const _collectOrgTags = ({ r, sortedAll, featured, champion, defenses, orgPop, isPlayer, rank1Entry, rankAbove }) => {
     const tags = new Set();
     // 順位
@@ -4722,16 +4743,17 @@ function renderRanking() {
     else if (has('layerSolid')) s3Pool = ['看板を軸に主力の輪郭がはっきりしている', '上位陣の顔ぶれで勝負できる骨格は整っている', '看板級の周りに準主力が並ぶ手堅い構成'];
     else if (has('layerMid')) s3Pool = ['突出した怪物はいないが、主力候補が広く並ぶ', '頭抜けた選手はいないものの、層は意外と広い', '横並びの主力で何とか試合数をこなしている'];
     else s3Pool = ['まだ発展途上で、伸びしろの賭け', '主力という呼び名に届く選手が乏しい', '育成の途上で、来季以降の積み上げを待つ段階'];
-    const baseLead = [
+    // P7-14: 文プールの各要素は句点を持たないので、連結様式は _joinSentences に委ねる
+    const baseLead = _joinSentences([
       WM_I18N.t(_pickSeed(s1Pool, seed)),
       WM_I18N.t(_pickSeed(s2Pool, seed >> 3), s2Params),
       WM_I18N.t(_pickSeed(s3Pool, seed >> 6)),
-    ].filter(Boolean).join('。') + '。';
+    ]);
     // 周辺コンテキスト (年間王者歴/実績/対戦PT) を最大1-2文足す
     const ctx = r ? _orgContextSentences(r, seed >> 9) : [];
     if (ctx.length === 0) return baseLead;
-    const pickedCtx = ctx.slice(0, 2).join('。') + '。';
-    return baseLead + pickedCtx;
+    const pickedCtx = _joinSentences(ctx.slice(0, 2));
+    return _concatParts([baseLead, pickedCtx]);
   };
 
   const _aceFlavorByPersona = (f, seed) => {
@@ -4910,7 +4932,8 @@ function renderRanking() {
     else if (ready >= 6) third = WM_I18N.t('控えを含めても駒が余るほどで、連戦でも戦列が細らない。');
     else if (youngCore >= 2) third = WM_I18N.t('主力層は若い。数字はまだ並だが、来季この陣容の景色は変わっているかもしれない。');
 
-    return [first, second, third].filter(Boolean).join('');
+    // P7-14: 各文は句点まで含んだ完成文なので、区切りは _concatParts(JA=無 / EN=半角スペース)
+    return _concatParts([first, second, third]);
   };
   html += `<section class="section bg-deep"><div class="section-marker"><div class="text"><div class="kicker">${WM_I18N.t('03 — 団体詳細')}</div><div class="title">${WM_I18N.t('団体プロフィール')}</div></div></div><div class="rp-profiles">`;
 

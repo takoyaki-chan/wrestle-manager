@@ -1184,7 +1184,71 @@ P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELAT
 
 ### 31-6. P7-8で新たに見つかった穴(未着手)
 
-- **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
+- **✅解決(P7-14、2026-09-04)** — **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
   条件分岐ごとの断片を `[first, second, third].join('')` で連結する型で、t()を一度も通らない。P7-6(ランキング画面)の領分として記録のみ
+  → **文そのものはP6-13(`_buildLeadSentences`)とP7-6(`_buildDepthNoteV2`)で既にt()を通っており、残っていたのは「連結の様式」だった**(§32)
 - **団体比較号の `d.opportunity` / `actionDescs` 等(management.js:26300付近)** — Engine内の関数に直書きされた紹介文プール(§10-2型)。
   `_npRenderOrgCompare` の紙面に出るが、テーブル化+dict糸通しが要る別枠
+
+---
+
+## 32. Stage B P7-14 — ランキング画面の選手層寸評「連結の様式」のテンプレ化(2026-09-04追加)
+
+### 32-1. 何が残っていたか(P7-8 発見1の実体)
+
+P7-8の「未着手」欄には `_buildDepthNoteV2` / `_buildLeadSentences` が **「t()を一度も通らない生JA組み立て」** として
+記録されていたが、実コードを追うと**文そのものは既にt()を通っていた**:
+
+| 関数 | 文プールのt()配線 | 残っていた穴 |
+|---|---|---|
+| `_buildLeadSentences`(ui-render.js) | P6-13で配線済み(pick→t()→params) | **連結様式** `join('。') + '。'` |
+| `_orgContextSentences`(同上) | P6-13で配線済み | 同上(呼び出し元で連結) |
+| `_buildDepthNoteV2`(同上) | P7-6で配線済み(PH入りt()+`pnSurname`) | **連結様式** `join('')` |
+
+つまり P7-8 の分類は「断片がJA」ではなく **「断片は訳せているが、断片をつなぐ句読点作法がJA固定」** が正しい。
+EN画面での実害は次の2つだった:
+
+1. リード文が `Running away with the top of the industry。The title stays vacant…。` — **全角の「。」がEN紙面に出る**
+2. 選手層寸評が `Nothing follows behind Tomioka.Below the second string…` — **文間の半角スペースが無く詰まる**
+
+### 32-2. 直し方(構造規約3「断片連結禁止」の既定形)
+
+断片を連結する族は **連結の様式そのものを1キーのテンプレにする**(P6-14 `HOF_BIOGRAPHY_TEMPLATES.join` /
+P6-15 `ARTICLE_COMPOSE_TEMPLATES.join` / P6-16 章クラウスと同型)。本件は
+**「句点を持たない文断片」を並べる**新しい型だったので、`ARTICLE_COMPOSE_TEMPLATES` へ2キーを追加した。
+
+| キー | JA | EN | 用途 |
+|---|---|---|---|
+| `sentenceJoin` | `{a}。{b}` | `{a}. {b}` | 句点を持たない文断片の畳み込み(可変本数) |
+| `sentenceEnd` | `{s}。` | `{s}.` | 畳み込んだ本文の末尾に句点を打つ |
+| `join`(既存) | `{a}{b}` | `{a} {b}` | **句点を持つ**完成文どうしの連結 |
+
+消費点(`ui-render.js` `renderRanking`)には `_joinSentences`(句点なし断片用)と `_concatParts`(完成文用)の
+2ヘルパーを置き、`_JOINT` が取れないときは従来の直書き連結へfail-openする。
+
+- `_buildLeadSentences`: リード3文 → `_joinSentences` / 周辺コンテキスト1〜2文 → `_joinSentences` /
+  両者の結合 → `_concatParts`
+- `_buildDepthNoteV2`: 各文が句点まで持つ完成文なので `_concatParts` のみ
+
+なお、文プール側の訳文は**この様式を前提に書かれている**(リード/コンテキストのEN 82本はいずれも
+末尾に句読点を持たない節、選手層寸評のEN 13本はいずれも末尾に `.` を持つ完成文)。
+プールに文を足すときはこの規約を守ること。
+
+### 32-3. JA 1バイト不変の担保
+
+`sentenceJoin`/`sentenceEnd`/`join` のJA値はいずれも従来の直書き連結と同じ字面なので、JA出力は不変。
+凍結コピー(変更前HEAD)と新実装を**全分岐の直積**で突合して確認した(不一致0):
+
+- `_buildLeadSentences`: 順位5 × トレンド8 × 王座4 × 人気3 × 戦力層4 × `r`変種27(年間王者歴3×実績3×レガシー2×対戦PT3) × seed24 = **2,488,320件**
+- `_buildDepthNoteV2`: ロースター規模9 × OVR基準6 × 傾斜4 × 欠場3 × 若手3 × レンタル2 × readyOvr5 = **19,440件**(相異なるJA出力417種)
+
+### 32-4. 同画面の残り(P7-14で確認)
+
+`renderRanking`(ui-render.js:4426〜5071)の `_build*`/`_org*` 系を機械列挙した結果、**生JAの断片連結は残っていない**。
+ただし**呼び出し元のない死蔵ヘルパー**が4つある(出力に出ないためEN露出ではない):
+
+- `_aceFlavorByPersona` — archetype 7分岐 × personality 5分岐の**生JA文プール約30本**。定義のみで参照0
+- `_isContestedBelt` / `_titleWinCount` / `_hasTrait` — ロジックのみ(セリフなし)。参照0
+
+`_aceFlavorByPersona` は「書いてあるのに出ていない」型なので、**配線して活かすか削るか**をKeisukeの判断で決める
+(配線する場合は文プールの台帳化が同時に要る)。P7-14では出力を変えないため無改修。
