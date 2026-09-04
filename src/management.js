@@ -26158,8 +26158,19 @@ Engine.database = {
   /**
    * 団体比較分析データ一括取得
    * UI用に全セクション（スコア/タグ/グレード/サマリー/マッチアップ/提案）を返す
+   *
+   * i18n Stage B P7-11: 文面プールは data.js の `ORG_COMPARE_*` へ移設済み
+   * （§10-2「関数の中のリテラルはどの抽出器からも見えない」型の解消）。
+   * 第3引数 `dict` は §6 のlang糸通し規約（Engineは WM_I18N を直接呼ばない）。
+   * 呼び出し元は ui-render.js `_npRenderPage2` の1箇所で `WM_I18N.t` を渡す。
+   * 戻り値はGへ焼かず表示のたびに作り直されるので、追加フィールドは要らない（§22-1）。
+   * dict省略時（auto-sim/ja-golden/既存テスト）はテンプレのPH置換だけを行う＝JA1バイト不変。
    */
-  getOrgCompareAnalysis(state, orgId) {
+  getOrgCompareAnalysis(state, orgId, dict) {
+    // テンプレ本文は「PH置換前に」辞書を引く（_wmFillWithDict）。値として引き直す
+    // 1語ラベル（軸ラベル等）は _wmDictLabel（§14-2）。どちらもdict省略時はfail-open。
+    const T = (tpl, params) => _wmFillWithDict(dict, tpl, params);
+    const L = (jaLabel) => _wmDictLabel(dict, jaLabel);
     const playerScores = Engine.database.getOrgCompareScores(state, 'player');
     const rivalScores = Engine.database.getOrgCompareScores(state, orgId);
     const targetOrg = RIVAL_ORGS.find(o => o.id === orgId);
@@ -26167,7 +26178,7 @@ Engine.database = {
     const targetColor = targetOrg ? targetOrg.color : '#888';
     const targetName = rivalNameMap[orgId] || (targetOrg ? (targetOrg.name || targetOrg.id) : orgId);
     const playerName = state.orgName || 'プレイヤー団体';
-    const targetDesc = targetOrg?.desc || '比較対象団体';
+    const targetDesc = targetOrg?.desc || ORG_COMPARE_ORG_TEMPLATES.rivalDescFallback;
 
     const pRoster = state.roster || [];
     const rRoster = state.aiOrgs?.[orgId]?.roster || [];
@@ -26190,64 +26201,50 @@ Engine.database = {
       const ovrs = roster.map(f => Engine.util.ov(f)).sort((a, b) => b - a);
       const top1 = ovrs[0] || 0;
       const top5Avg = ovrs.slice(0, 5).reduce((s, v) => s + v, 0) / Math.min(5, ovrs.length);
+      const TAG = ORG_COMPARE_TAG_TEMPLATES;
       // エース依存度
-      if (top1 - top5Avg > 8) tags.push('エース依存度 高い');
-      else tags.push('エース依存度 低め');
+      if (top1 - top5Avg > 8) tags.push(T(TAG.aceDependHigh));
+      else tags.push(T(TAG.aceDependLow));
       // 若手比率
       const currentSeason = state.season || 1;
       const youngCount = roster.filter(f => (currentSeason - (f.debutSeason || 1)) <= 2).length;
       const youthPct = Math.round(youngCount / roster.length * 100);
-      tags.push(`若手比率 ${youthPct}%`);
+      tags.push(T(TAG.youthRatio, { pct: youthPct }));
       // 勢い（プレイヤー: momentum、AI: orgPop vs tier default）
       if (isPlayer) {
         const m = state.attendanceMomentum || 0;
-        tags.push(m > 0.03 ? '勢い 上昇中' : m < -0.03 ? '勢い 下降気味' : '勢い 安定');
+        tags.push(T(m > 0.03 ? TAG.momentumUp : m < -0.03 ? TAG.momentumDown : TAG.momentumFlat));
       } else {
         const tierDefault = targetOrg ? (targetOrg.tier === 'S' ? 75 : targetOrg.tier === 'A' ? 55 : 35) : 40;
-        tags.push(orgPop > tierDefault + 5 ? '勢い 上昇中' : orgPop < tierDefault - 5 ? '勢い 下降気味' : '勢い 安定');
+        tags.push(T(orgPop > tierDefault + 5 ? TAG.momentumUp : orgPop < tierDefault - 5 ? TAG.momentumDown : TAG.momentumFlat));
       }
       return tags;
     }
 
     // --- グレード ---
     const totalDiff = KEYS.reduce((s, k) => s + diffs[k], 0);
+    const GD = ORG_COMPARE_GRADE_DESCS;
     let grade, gradeDesc, band;
-    if (totalDiff <= -60) { grade = 'D'; gradeDesc = '全面劣勢。正面から勝てる要素がない。'; band = 'devastating'; }
-    else if (totalDiff <= -25) { grade = 'C'; gradeDesc = '複数項目で後手。課題が多い。'; band = 'behind'; }
-    else if (totalDiff <= 10) { grade = 'B'; gradeDesc = '互角。戦略次第で勝てる。'; band = 'even'; }
-    else if (totalDiff <= 40) { grade = 'B+'; gradeDesc = '優勢。リードを活かし切れるか。'; band = 'ahead'; }
-    else { grade = 'A'; gradeDesc = '圧倒的優位。死角なし。'; band = 'dominant'; }
+    if (totalDiff <= -60) { grade = 'D'; band = 'devastating'; }
+    else if (totalDiff <= -25) { grade = 'C'; band = 'behind'; }
+    else if (totalDiff <= 10) { grade = 'B'; band = 'even'; }
+    else if (totalDiff <= 40) { grade = 'B+'; band = 'ahead'; }
+    else { grade = 'A'; band = 'dominant'; }
+    gradeDesc = T(GD[band]);
 
     // --- サマリーテキスト ---
     // 各軸の文面は**差の大きさで段を変える**。以前は ±10 の1段しきい値しか無く、
     // +12 でも +80 でも同じ一文が出ていた（2026-08-01 Keisuke 指摘「ちゃんと差異をつけて
     // 比較してほしい」）。圧倒しているならそう書き、歯が立たないならそう書く。
+    // i18n P7-11: 5段の文面は data.js の `ORG_COMPARE_AXIS_TEXTS` が正（関数内直書きから移設）。
+    // ラベルだけはここに残す —『TOP5実力』『団体人気』は ui-ledger に既訳があり、
+    // テンプレ表へ入れると同じキーが2台帳へ載る（§15-3）。差し込む直前に L() で値として引く。
     const AXIS_META = [
-      { key: 'ace', label: 'TOP5実力',
-        leadBig: '主力の実力で完全に上回っており、エース対決は組めば取れる',
-        lead: '主力戦力で上回っており、正面対決でも十分戦える',
-        trail: '主力の実力差があり、エース級の強化が課題',
-        trailBig: '主力の実力差が大きく、エース対決は正面から当たれば落とす',
-        even: '主力の実力は互角' },
-      { key: 'depth', label: '選手層',
-        leadBig: '選手層が厚く、どの並びで組んでも穴が出ない',
-        lead: '選手層の厚さで優勢。年間を通した安定感がある',
-        trail: '選手層で劣勢。中堅の底上げか補強が必要',
-        trailBig: '選手層が薄く、カードを埋めるだけで手一杯になる',
-        even: '選手層は互角' },
-      { key: 'popularity', label: '団体人気',
-        leadBig: '団体人気で大きく引き離しており、興行の規模そのものが違う',
-        lead: '団体人気で優勢。興行の集客力を武器にできる',
-        trail: '団体人気で後れを取っている。興行の質で巻き返したい',
-        trailBig: '団体人気の差が大きく、同じ規模の会場では勝負にならない',
-        even: '団体人気は互角' },
-      { key: 'starPower', label: 'TOP5人気',
-        leadBig: 'スター性で突き抜けており、看板を並べるだけで客が動く',
-        lead: 'スター性で優位。ビッグマッチの期待値が高い',
-        trail: 'スター性で差がつき、看板選手の育成が急務',
-        trailBig: 'スター性の差が大きく、看板対決を組んでも数字が出ない',
-        even: 'スター性は互角' },
-    ];
+      { key: 'ace', label: 'TOP5実力' },
+      { key: 'depth', label: '選手層' },
+      { key: 'popularity', label: '団体人気' },
+      { key: 'starPower', label: 'TOP5人気' },
+    ].map(ax => ({ ...ax, ...ORG_COMPARE_AXIS_TEXTS[ax.key] }));
     // これ以上開いたら「優勢/劣勢」ではなく「圧倒/完敗」の語で書く。
     // 35 では緩すぎた（2026-08-01 Keisuke 指摘「22以上の差があるのに何を言っているんだ」）。
     // OVR も人気も 0〜100 の物差しで、20 開けば同じ土俵の話ではなくなる。
@@ -26269,87 +26266,40 @@ Engine.database = {
     const topAxes = sorted.slice(0, 2);
     const frags = topAxes.map(fragOf);
     const fragDiffs = topAxes.map(ax => diffs[ax.key]);
+    // i18n P7-11: 断片の連結様式は data.js の ORG_COMPARE_SUMMARY_TEMPLATES（構造規約3）。
+    // 断片・接続詞・軸ラベルは**先に確定**させてからテンプレへ差し込む（充填済みなので
+    // 後段の置換で壊れない。§29-3 と同じ作法）。
+    const S = ORG_COMPARE_SUMMARY_TEMPLATES;
     const secondConnector = fragDiffs[0] >= 10 && fragDiffs[1] <= -10
-      ? '一方で'
+      ? S.connectorContrast
       : fragDiffs[0] <= -10 && fragDiffs[1] >= 10
-        ? 'ただ'
+        ? S.connectorConcession
         : fragDiffs[0] <= -10 && fragDiffs[1] <= -10
-          ? '同時に'
-          : 'また、';
-    let summaryText = `${targetName}との比較では、${frags[0]}。${secondConnector}${frags[1]}。`;
+          ? S.connectorBoth
+          : S.connectorPlain;
+    let summaryText = T(S.base, {
+      rival: targetName, first: T(frags[0]), connector: T(secondConnector), second: T(frags[1]),
+    });
     if (positiveAxes.length === 0 && negativeAxes.length > 0) {
-      summaryText = `${targetName}との比較では、明確な優位はまだ少ない。特に${fragOf(negativeAxes[0])}が、${evenAxes[0].label}は構成次第で十分対抗できる。`;
+      summaryText = T(S.noPositive, {
+        rival: targetName, worst: T(fragOf(negativeAxes[0])), evenLabel: L(evenAxes[0].label),
+      });
     } else if (negativeAxes.length === 0 && positiveAxes.length > 0) {
-      summaryText = `${targetName}との比較では、${fragOf(positiveAxes[0])}。大きな弱点は少なく、${evenAxes[0].label}も含めて優位を維持できている。`;
+      summaryText = T(S.noNegative, {
+        rival: targetName, best: T(fragOf(positiveAxes[0])), evenLabel: L(evenAxes[0].label),
+      });
     }
 
-    // 勝ち筋・注意点・補強提案
-    const opportunityTexts = {
-      ace: '主力の実力差を活かし、エース対決で存在感を示したい。',
-      depth: '選手層の厚さを活かし、複数カードの質で興行全体を底上げできる。',
-      popularity: '団体人気を活かした集客力で、興行規模の面で優位に立てる。',
-      starPower: 'スター選手の人気を武器に、看板カードで勝負を仕掛けたい。',
-    };
-    const riskTexts = {
-      ace: '主力の実力差が大きく、エース対決では不利な構図。',
-      depth: '選手層の薄さが露呈しやすく、年間を通すと不安定。',
-      popularity: '団体人気の差が集客に直結するため、興行規模で劣る。',
-      starPower: 'スター性の差が大きく、看板対決では分が悪い。',
-    };
-    // 最大の弱点が AXIS_BIG 以上開いているとき用。上の文は「不利」「分が悪い」で
-    // 止まっており、-50 級の差でも同じ言葉が出ていた
-    const riskBigTexts = {
-      ace: '主力の実力差が隔絶しており、エース対決は組むだけ損になる。',
-      depth: '選手層が桁違いに薄く、カードを埋めるだけで年間を消耗する。',
-      popularity: '団体人気が桁違いで、同じ会場規模に並べても客が付かない。',
-      starPower: 'スター性の差が桁違いで、看板対決を組んでも数字にならない。',
-    };
-    const scoutTexts = {
-      ace: '即戦力のエース候補を優先的にスカウトしたい。',
-      depth: '中堅層の補強が急務。FA市場の中堅選手に注目。',
-      popularity: '興行の質を上げて団体人気の底上げが最優先。',
-      starPower: '人気のあるサブエース候補を獲得し、TOP5人気を底上げしたい。',
-    };
-    // 全軸で負けているときの「せめてどこから」。**差の大きさで3段に割る**。
-    // 以前は1段しかなく、GRADE D「全面劣勢。正面から勝てる要素がない」の直下に
-    // 「主力の差はまだ小さい」「団体人気はまだ追いつける圏内」が出ていた
-    // （2026-08-01 Keisuke 指摘。-25 / -22 でこの文面だった）。
-    // **紙面の中で言っていることが食い違うのが一番まずい。**
-    const pivotTexts = {
-      // near: いちばん傷の浅い軸が僅差（<10）。ここだけ従来の楽観でよい
-      near: {
-        ace: '主力の差はまだ小さい。エース候補の育成が進めば、看板カードで勝負できる。',
-        depth: '選手層の差は限定的。中堅の底上げ次第で年間の安定感は十分作れる。',
-        popularity: '団体人気はまだ追いつける圏内。興行の質と結果で巻き返しを狙いたい。',
-        starPower: 'スター性の差は詰められる余地がある。看板候補のプッシュを急ぎたい。',
-      },
-      // mid: 10〜AXIS_BIG。「勝てる」とは書かない。ここが一番マシ、という事実だけ
-      mid: {
-        ace: '全項目で後れているが、傷が浅いのは主力。詰めるならここからしかない。',
-        depth: '全項目で後れているが、傷が浅いのは選手層。頭数と中堅の底上げが起点になる。',
-        popularity: '全項目で後れているが、傷が浅いのは団体人気。興行の質を積んで削るしかない。',
-        starPower: '全項目で後れているが、傷が浅いのはスター性。看板候補を1人立てるところから。',
-      },
-      // far: AXIS_BIG 以上。**楽観を書かない**。いちばんマシな軸ですら勝負にならない
-      far: {
-        ace: '全項目で後れており、最も差の小さい主力ですら正面から当たれば落とす。年単位の立て直しになる。',
-        depth: '全項目で後れており、最も差の小さい選手層でも見劣りする。まず頭数を揃える段階にある。',
-        popularity: '全項目で後れており、最も差の小さい団体人気でも興行の規模が違う。同じ土俵に立つところからだ。',
-        starPower: '全項目で後れており、最も差の小さいスター性でも看板の格が違う。当面は正面衝突を避けたい。',
-      },
-    };
-    const guardTexts = {
-      ace: '大きな弱点はないが、主力のコンディション次第で一気に差が縮まりやすい。',
-      depth: '大きな弱点はないが、層の消耗が続くと優位が崩れやすい。',
-      popularity: '大きな弱点はないが、集客が鈍ると優位を保ちにくい。',
-      starPower: '大きな弱点はないが、看板選手への依存が進むと勢いを失いやすい。',
-    };
-    const sustainTexts = {
-      ace: '大きな穴はない。次は主力の優位を長期的に維持できる育成計画を進めたい。',
-      depth: '大きな穴はない。次は中堅層の育成で年間を通した安定感をさらに高めたい。',
-      popularity: '大きな穴はない。次は興行演出と結果で団体人気の優位を固めたい。',
-      starPower: '大きな穴はない。次は次世代の人気選手を育て、看板層を厚くしたい。',
-    };
+    // 勝ち筋・注意点・補強提案。
+    // i18n P7-11: 文面は data.js の `ORG_COMPARE_EDITORIAL_TEXTS` が正（関数内直書きから移設）。
+    //   risk/riskBig … 最大の弱点が AXIS_BIG 以上開いているときは riskBig。従来は「不利」
+    //                  「分が悪い」で止まっており、-50 級の差でも同じ言葉が出ていた
+    //   pivot        … 全軸で負けているときの「せめてどこから」。**差の大きさで3段に割る**。
+    //                  以前は1段しかなく、GRADE D「全面劣勢。正面から勝てる要素がない」の直下に
+    //                  「主力の差はまだ小さい」「団体人気はまだ追いつける圏内」が出ていた
+    //                  （2026-08-01 Keisuke 指摘。-25 / -22 でこの文面だった）。
+    //                  **紙面の中で言っていることが食い違うのが一番まずい。**
+    const ED = ORG_COMPARE_EDITORIAL_TEXTS;
 
     // --- TOP3マッチアップ ---
     const ROLES = ['エース', '主力', '中堅'];
@@ -26369,20 +26319,17 @@ Engine.database = {
     }
 
     // --- アクション提案 ---
+    // i18n P7-11: 文面は data.js の `ORG_COMPARE_ACTION_TEXTS`。**現在の紙面には消費点が無い**
+    // （_npRenderPage2 は d.actions を読んでいない）が、防御的に残る返却フィールドとして
+    // 他の枠と同じくdictを通しておく（§22-6「訳したのに出ない行」）。
+    const AC = ORG_COMPARE_ACTION_TEXTS;
     const actions = [];
     // 1. 最大弱点
-    const actionTitles = { ace: '主力戦力の強化', depth: '選手層の拡充', popularity: '団体人気の向上', starPower: 'スター性の向上' };
-    const actionDescs = {
-      ace: '上位選手のOVRを引き上げるため、エース候補の育成や即戦力の補強を検討。',
-      depth: '中堅以下の底上げやロスター拡充で、年間を通した安定感を確保。',
-      popularity: '興行の質とカード編成で団体人気を向上させ、集客力を強化。',
-      starPower: '人気のある選手の獲得や、既存選手のメディア露出で人気を向上。',
-    };
     if (negativeAxes.length > 0) {
       const worstKey = chaseAxis.key;
-      actions.push({ title: '補強優先度 1', badge: actionTitles[worstKey], badgeClass: 'warn', text: actionDescs[worstKey] });
+      actions.push({ title: T(AC.slotTitles.reinforce), badge: T(AC.reinforceTitles[worstKey]), badgeClass: 'warn', text: T(AC.reinforceDescs[worstKey]) });
     } else {
-      actions.push({ title: '優位維持プラン', badge: 'Keep Edge', badgeClass: 'good', text: sustainTexts[leadAxis.key] });
+      actions.push({ title: T(AC.slotTitles.keepEdge), badge: 'Keep Edge', badgeClass: 'good', text: T(ED.sustain[leadAxis.key]) });
     }
 
     // 2. 若手比較
@@ -26391,27 +26338,29 @@ Engine.database = {
     const pYouthPct = pRoster.length > 0 ? pYouth / pRoster.length : 0;
     const rYouthPct = rRoster.length > 0 ? rYouth / rRoster.length : 0;
     if (pYouthPct > rYouthPct + 0.05) {
-      actions.push({ title: '育成テーマ', badge: 'Youth', badgeClass: 'good', text: '若手比率で優位。中長期で主力昇格を狙い、選手層の強みを維持したい。' });
+      actions.push({ title: T(AC.slotTitles.youth), badge: 'Youth', badgeClass: 'good', text: T(AC.youth.ahead) });
     } else if (pYouthPct < rYouthPct - 0.05) {
-      actions.push({ title: '育成テーマ', badge: 'Youth', badgeClass: 'bad', text: '若手比率で劣勢。将来を見据えたスカウトや若手登用の検討が必要。' });
+      actions.push({ title: T(AC.slotTitles.youth), badge: 'Youth', badgeClass: 'bad', text: T(AC.youth.behind) });
     } else {
-      actions.push({ title: '育成テーマ', badge: 'Youth', badgeClass: 'good', text: '若手比率は互角。現有戦力の育成を継続しつつ、将来の柱を育てたい。' });
+      actions.push({ title: T(AC.slotTitles.youth), badge: 'Youth', badgeClass: 'good', text: T(AC.youth.even) });
     }
 
     // 3. エースギャップ
     const aceDiff = diffs.ace;
     if (aceDiff < -10) {
-      actions.push({ title: '危険シグナル', badge: 'Ace Gap', badgeClass: 'bad', text: 'エース対決を前面に出すと力負けしやすい。複数カード構成が安全。' });
+      actions.push({ title: T(AC.slotTitles.aceGapBad), badge: 'Ace Gap', badgeClass: 'bad', text: T(AC.aceGap.behind) });
     } else if (aceDiff > 10) {
-      actions.push({ title: '戦略的優位', badge: 'Ace Power', badgeClass: 'good', text: 'エース対決で優勢。看板カードを前面に押し出す興行編成が有効。' });
+      actions.push({ title: T(AC.slotTitles.aceGapGood), badge: 'Ace Power', badgeClass: 'good', text: T(AC.aceGap.ahead) });
     } else {
-      actions.push({ title: '戦略ポイント', badge: 'Balance', badgeClass: 'warn', text: 'エース級は互角。カード構成やストーリー性で差をつけたい。' });
+      actions.push({ title: T(AC.slotTitles.aceGapEven), badge: 'Balance', badgeClass: 'warn', text: T(AC.aceGap.even) });
     }
 
     return {
       playerName, rivalName: targetName, rivalTier: targetOrg?.tier || '?',
-      playerSubtitle: 'プレイヤー団体',
-      rivalSubtitle: `Tier ${targetOrg?.tier || '?'} / ${targetDesc}`,
+      // 『プレイヤー団体』は ui-ledger / 名前辞書のどちらにも既訳がある1語ラベルなので、
+      // テンプレ表へは入れず値として引き直す（§15-3）。
+      playerSubtitle: L('プレイヤー団体'),
+      rivalSubtitle: T(ORG_COMPARE_ORG_TEMPLATES.rivalSubtitle, { tier: targetOrg?.tier || '?', desc: L(targetDesc) }),
       rivalColor: targetColor, rivalEmoji: targetOrg?.emoji || '',
       playerScores, rivalScores, diffs,
       playerRosterCount: pRoster.length, rivalRosterCount: rRoster.length,
@@ -26424,18 +26373,20 @@ Engine.database = {
       // 黒田の語調帯。KURODA_HEADLINES / KURODA_EDITORIAL のキーと1対1で対応する
       // (devastating / behind / even / ahead / dominant)
       band,
-      leadAxisLabel: leadAxis.label, chaseAxisLabel: chaseAxis.label,
+      // KURODA_HEADLINES / KURODA_EDITORIAL が `{leadAxisLabel}` `{chaseAxisLabel}` として
+      // 差し込む（=テンプレだけ訳しても値がJAで残る §14-2 の構造穴）ので値として引き直す。
+      leadAxisLabel: L(leadAxis.label), chaseAxisLabel: L(chaseAxis.label),
       summaryText,
       // 全軸で負けているときは、いちばん傷の浅い軸の**実際の差**で語調を割る。
       // 「勝てる要素がない」と言った直後に「まだ追いつける」と書かない
-      opportunity: positiveAxes.length > 0
-        ? opportunityTexts[leadAxis.key]
-        : pivotTexts[Math.abs(diffs[leadAxis.key]) >= AXIS_BIG ? 'far'
-          : Math.abs(diffs[leadAxis.key]) >= 10 ? 'mid' : 'near'][leadAxis.key],
-      risk: negativeAxes.length > 0
-        ? (diffs[chaseAxis.key] <= -AXIS_BIG ? riskBigTexts : riskTexts)[chaseAxis.key]
-        : guardTexts[chaseAxis.key],
-      scout: negativeAxes.length > 0 ? scoutTexts[chaseAxis.key] : sustainTexts[chaseAxis.key],
+      opportunity: T(positiveAxes.length > 0
+        ? ED.opportunity[leadAxis.key]
+        : ED.pivot[Math.abs(diffs[leadAxis.key]) >= AXIS_BIG ? 'far'
+          : Math.abs(diffs[leadAxis.key]) >= 10 ? 'mid' : 'near'][leadAxis.key]),
+      risk: T(negativeAxes.length > 0
+        ? (diffs[chaseAxis.key] <= -AXIS_BIG ? ED.riskBig : ED.risk)[chaseAxis.key]
+        : ED.guard[chaseAxis.key]),
+      scout: T(negativeAxes.length > 0 ? ED.scout[chaseAxis.key] : ED.sustain[chaseAxis.key]),
       matchups,
       actions,
     };
@@ -31092,9 +31043,15 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
     'Climax': '終盤',
     'Late': '長期戦の末',
   })[sr.finishPhase] || '');
-  const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && sr.finMove)
+  // i18n Stage B P7-11(P7-9の発見): 従来は `sr.finMove` があるときだけ formatFinish を通し、
+  // 無いときは `sr.finType` を素で出していた。この else 分岐は死コードではなく、
+  // **時間切れ決着(finType:'HP判定' / finMove なし)** で必ず到達し、ロジックキー『HP判定』が
+  // そのまま紙面に出ていた。formatFinish は finType が 'HP判定' のとき FINISH_TEXT を引いて
+  // 『判定勝ち』を返すので、finMove の有無ではなく**決着情報の有無**で分岐させる。
+  // (JAの表示語が『HP判定』→『判定勝ち』に変わる意図的な修正。ENは formatFinish 経由で既訳へ乗る)
+  const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && (sr.finMove || sr.finType))
     ? Engine.formatFinish(sr.finType, sr.finMove, false, dict)
-    : (sr.finMove ? `${sr.finMove}` : (sr.finType || _wmDictLabel(dict, S.finishFallback)));
+    : (sr.finMove ? `${sr.finMove}` : _wmDictLabel(dict, S.finishFallback));
   // i18n Stage A P3a-2: PPV_SUMMIT_MATCHPART_TEMPLATES(data.js)から完全文を選ぶ
   // (監査3-1・最優先)。ターン数有無×決着タイプ3種×フェーズラベル有無の全12通り。
   const fightKey = isCloseFight ? 'close' : (isOverwhelm ? 'overwhelm' : 'attrition');
@@ -32302,9 +32259,11 @@ Engine.newspaper = {
     if (state._newsPpvUndercards && state._newsPpvUndercards.length > 0) {
       const stamp = _wmNewsStamp(dict, state.season, state.week, 'PPV GRAND FINAL');
       state._newsPpvUndercards.forEach(uc => {
-        const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && uc.finMove)
+        // i18n Stage B P7-11: _buildPpvSummitStory と同型(上のコメント参照)。時間切れ決着の
+        // アンダーカードで『HP判定』が素で出ていたので、決着情報があれば formatFinish を通す。
+        const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && (uc.finMove || uc.finType))
           ? Engine.formatFinish(uc.finType, uc.finMove, false, dict)
-          : (uc.finMove || uc.finType || '激闘決着');
+          : (uc.finMove || _wmDictLabel(dict, FINISH_TEXT_FALLBACK));
         const tone = dict(uc.mq >= 80 ? '名勝負' : uc.mq >= 65 ? '好勝負' : uc.mq >= 50 ? '熱戦' : (uc.mq <= 30 ? '一方的な展開' : '見応えある一戦'));
         // i18n Stage A P3a-2: PPV_UNDERCARD_HEADLINE_TEMPLATES/PPV_UNDERCARD_BODY_TEMPLATES
         // (data.js・監査3-2)。所属の有無は元コードの分岐に合わせてテンプレを分ける

@@ -1221,6 +1221,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "Tier {tier} / {desc}",
+    "en": "Tier {tier} / {desc}",
+    "files": [
+      "ORG_COMPARE_ORG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "Transfer: {name} -> {destOrg}{ejectedSuffix}",
     "en": "Transfer: {name} -> {destOrg}{ejectedSuffix}",
     "files": [
@@ -8074,6 +8084,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "{rival}との比較では、{best}。大きな弱点は少なく、{evenLabel}も含めて優位を維持できている。",
+    "en": "Set against {rival}, {best}. There are few real weak spots, and the edge holds on {evenLabel} as well.",
+    "files": [
+      "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival}との比較では、{first}。{connector}{second}。",
+    "en": "Set against {rival}, {first}. {connector}{second}.",
+    "files": [
+      "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival}との比較では、明確な優位はまだ少ない。特に{worst}が、{evenLabel}は構成次第で十分対抗できる。",
+    "en": "Set against {rival}, clear advantages are still few — {worst}. On {evenLabel}, though, the right booking can still make a contest of it.",
+    "files": [
+      "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{rival}との激闘は世代の語り草となった。",
     "en": " The wars with {rival} became the story the generation tells.",
     "files": [
@@ -14160,6 +14200,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ただ",
+    "en": "That said, ",
+    "files": [
+      "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "どこかよそよそしい空気がある",
     "en": "There is a distance in the air",
     "files": [
@@ -14580,6 +14630,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "また、",
+    "en": "Also, ",
+    "files": [
+      "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "まだ{age}歳。{styleJa}としての形は途中で、その途中のまま頂点に届いたことになる。",
     "en": "Only age {age}. Her {styleJa} form is halfway done, and halfway done is what reached the top.",
     "files": [
@@ -14901,6 +14961,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "エース依存度 低め",
+    "en": "Ace reliance: low",
+    "files": [
+      "ORG_COMPARE_TAG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "エース依存度 高い",
+    "en": "Ace reliance: high",
+    "files": [
+      "ORG_COMPARE_TAG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "エース対決で優勢。看板カードを前面に押し出す興行編成が有効。",
+    "en": "Ahead in the ace match. Building the show around the marquee card works.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "エース対決を前面に出すと力負けしやすい。複数カード構成が安全。",
+    "en": "Front the ace match and it tends to be lost on raw strength. A card built on several matches is safer.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "エース流出――{name}が{toOrg}へ",
     "en": "Ace walks out — {name} to {toOrg}",
     "files": [
@@ -14915,6 +15015,16 @@
     "en": "An ace retiring — a loss the other promotions cannot ignore either.",
     "files": [
       "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "エース級は互角。カード構成やストーリー性で差をつけたい。",
+    "en": "The ace tier is level. The difference has to come from the card order and the story.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15288,6 +15398,106 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性で優位。ビッグマッチの期待値が高い",
+    "en": "star power holds the edge, and the big matches carry expectation",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性で差がつき、看板選手の育成が急務",
+    "en": "star power falls short, and building a marquee name is urgent",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性で突き抜けており、看板を並べるだけで客が動く",
+    "en": "star power stands clear, and naming the marquee is enough to move tickets",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性の向上",
+    "en": "Raise star power",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性の差が大きく、看板対決では分が悪い。",
+    "en": "The gap in star power is wide, and the marquee match is the wrong ground to fight on.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性の差が大きく、看板対決を組んでも数字が出ない",
+    "en": "the gap in star power is wide, and a marquee match will not draw the numbers",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性の差が桁違いで、看板対決を組んでも数字にならない。",
+    "en": "Star power is on another scale, and a marquee match here will not turn into numbers.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性の差は詰められる余地がある。看板候補のプッシュを急ぎたい。",
+    "en": "There is room to close the gap in star power. Push a marquee candidate, and push soon.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター性は互角",
+    "en": "star power is level",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター選手の人気を武器に、看板カードで勝負を仕掛けたい。",
+    "en": "Put the popular names to work and take the fight to the marquee match.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -16591,6 +16801,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "一方で",
+    "en": "Against that, ",
+    "files": [
+      "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "一方的な展開。{winnerName}が圧倒した",
     "en": "One-sided throughout. {winnerName} had all of it",
     "files": [
@@ -16801,6 +17021,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "上位選手のOVRを引き上げるため、エース候補の育成や即戦力の補強を検討。",
+    "en": "To lift Overall at the top of the roster, weigh developing an ace candidate against signing someone ready now.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "下剋上——{challengerName}が「{factionName}」の頭を獲った",
     "en": "Coup — {challengerName} takes the head of {factionName}",
     "files": [
@@ -16931,6 +17161,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "中堅以下の底上げやロスター拡充で、年間を通した安定感を確保。",
+    "en": "Raise the mid-card and below, or widen the roster, to secure stability across the season.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "中堅層の補強が急務。FA市場の中堅選手に注目。",
+    "en": "The mid-card needs signing now. Watch the free agent market for mid-card names.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "中堅法律事務所勤務の弁護士。論理的で感情に流されない性格。実年齢より落ち着いた佇まいの晩成型オールラウンダー。",
     "en": "A lawyer at a mid-sized firm. Logical, and not carried away by feeling. A late-blooming all-rounder who carries herself with more composure than her age suggests.",
     "files": [
@@ -17018,6 +17268,106 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の実力で完全に上回っており、エース対決は組めば取れる",
+    "en": "the top of the roster is stronger across the board, and an ace match is there to be taken",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の実力は互角",
+    "en": "the top of the roster is level",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の実力差があり、エース級の強化が課題",
+    "en": "the top of the roster gives way, and building an ace is the work ahead",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の実力差が大きく、エース対決では不利な構図。",
+    "en": "The gap at the top is wide, and the ace match sets up badly.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の実力差が大きく、エース対決は正面から当たれば落とす",
+    "en": "the gap at the top is wide, and an ace match taken head on will be lost",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の実力差が隔絶しており、エース対決は組むだけ損になる。",
+    "en": "The gap at the top is beyond bridging; booking the ace match only costs.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の実力差を活かし、エース対決で存在感を示したい。",
+    "en": "Use the edge at the top of the roster and let the ace match carry the show.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力の差はまだ小さい。エース候補の育成が進めば、看板カードで勝負できる。",
+    "en": "The gap at the top is still small. Bring an ace candidate along and the marquee match becomes a contest.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力戦力で上回っており、正面対決でも十分戦える",
+    "en": "the top of the roster holds the edge, enough to meet them head on",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "主力戦力の強化",
+    "en": "Strengthen the top of the roster",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -17138,6 +17488,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "互角。戦略次第で勝てる。",
+    "en": "Even. Booking decides it.",
+    "files": [
+      "ORG_COMPARE_GRADE_DESCS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -17288,6 +17648,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "人気のあるサブエース候補を獲得し、TOP5人気を底上げしたい。",
+    "en": "Sign a popular second-in-line and lift the top five in popularity.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "人気のある選手の獲得や、既存選手のメディア露出で人気を向上。",
+    "en": "Raise popularity by signing popular wrestlers, or by putting the current ones in front of the media.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -17801,6 +18181,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "優位維持プラン",
+    "en": "Hold the edge",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "優勝即戴冠——この王座の規定が、天頂戦を業界最大の舞台へ押し上げている。挑む側だった選手が、今夜から迎え撃つ側になる。",
     "en": "Win the tournament, wear the belt — that rule is what has pushed Tenchosen up into the biggest stage in the business. The one who came in challenging is the one being challenged from tonight.",
     "files": [
@@ -17825,6 +18215,16 @@
     "en": "Ahead — a fine word. The nuisance is that it only ever works paired with the word complacency.",
     "files": [
       "KURODA_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "優勢。リードを活かし切れるか。",
+    "en": "Ahead. Can the lead hold?",
+    "files": [
+      "ORG_COMPARE_GRADE_DESCS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18381,6 +18781,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "全面劣勢。正面から勝てる要素がない。",
+    "en": "Behind everywhere. No opening.",
+    "files": [
+      "ORG_COMPARE_GRADE_DESCS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "全面的に劣勢。この一言で済ませたいが、せっかくなのでもう少し丁寧に絶望を解説する。{chaseAxisLabel}が壊滅的で、補強しようにも土台がない。{leadAxisLabel}も平凡。長期戦略で巻き返すしかないが、その「長期」を耐えるファンがいるかどうかが問題だ。",
     "en": "Behind on every front. I would like to leave it at that one sentence, but since we are here, let me explain the hopelessness a little more carefully. {chaseAxisLabel} is in ruins and there is no base to sign onto. {leadAxisLabel} is ordinary. Only a long plan brings this back, and whether there are fans who will sit through the long part is the question.",
     "files": [
@@ -18405,6 +18815,86 @@
     "en": "On top in every column. At this point the only worry left is that it gets dull.",
     "files": [
       "KURODA_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れているが、傷が浅いのはスター性。看板候補を1人立てるところから。",
+    "en": "Behind on every count, but the shallowest wound is star power. It begins with getting one marquee candidate standing.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れているが、傷が浅いのは主力。詰めるならここからしかない。",
+    "en": "Behind on every count, but the shallowest wound is at the top of the roster. If anything is to be closed, it starts there.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れているが、傷が浅いのは団体人気。興行の質を積んで削るしかない。",
+    "en": "Behind on every count, but the shallowest wound is popularity. Stack up good shows and cut into it that way.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れているが、傷が浅いのは選手層。頭数と中堅の底上げが起点になる。",
+    "en": "Behind on every count, but the shallowest wound is roster depth. Numbers first, then a raised mid-card.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れており、最も差の小さいスター性でも看板の格が違う。当面は正面衝突を避けたい。",
+    "en": "Behind on every count, and even the narrowest gap, star power, is a difference in standing. Head-on collisions are best avoided for now.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れており、最も差の小さい主力ですら正面から当たれば落とす。年単位の立て直しになる。",
+    "en": "Behind on every count, and even the narrowest gap — the top of the roster — is lost when met head on. This is a rebuild measured in years.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れており、最も差の小さい団体人気でも興行の規模が違う。同じ土俵に立つところからだ。",
+    "en": "Behind on every count, and even the narrowest gap, popularity, means shows of a different size. It starts with getting onto the same ground.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全項目で後れており、最も差の小さい選手層でも見劣りする。まず頭数を揃える段階にある。",
+    "en": "Behind on every count, and even the narrowest gap, roster depth, comes up short. The stage now is simply getting the numbers together.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18772,6 +19262,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "勢い 上昇中",
+    "en": "Momentum: rising",
+    "files": [
+      "ORG_COMPARE_TAG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "勢い 下降気味",
+    "en": "Momentum: slipping",
+    "files": [
+      "ORG_COMPARE_TAG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "勢い 安定",
+    "en": "Momentum: steady",
+    "files": [
+      "ORG_COMPARE_TAG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "北海道",
     "en": "Hokkaido",
     "files": [
@@ -18806,6 +19326,26 @@
     "en": "There is no sign of a way out. The numbers worsen week by week, and word of the unease among the wrestlers reaches us. This paper will go on watching this promotion to its end.",
     "files": [
       "KURODA_CRISIS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "危険シグナル",
+    "en": "Warning sign",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "即戦力のエース候補を優先的にスカウトしたい。",
+    "en": "Scout an ace candidate who can go straight in, ahead of everything else.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -19082,6 +19622,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "同時に",
+    "en": "At the same time, ",
+    "files": [
+      "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "同門対決実現——「{factionName}」の{nameA}と{nameB}がリングで激突",
     "en": "{factionName}: {nameA} vs {nameB}",
     "files": [
@@ -19352,6 +19902,106 @@
     "hasProperNoun": true
   },
   {
+    "key": "団体人気が桁違いで、同じ会場規模に並べても客が付かない。",
+    "en": "Popularity is on another scale; put the two in the same size of hall and the seats stay empty.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気で優勢。興行の集客力を武器にできる",
+    "en": "popularity is ahead, and the draw at the gate can be used as a weapon",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気で大きく引き離しており、興行の規模そのものが違う",
+    "en": "popularity is far ahead, and the shows are simply run at a different size",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気で後れを取っている。興行の質で巻き返したい",
+    "en": "popularity trails, and the ground has to be won back on the quality of the shows",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気の向上",
+    "en": "Raise promotion popularity",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気の差が大きく、同じ規模の会場では勝負にならない",
+    "en": "the gap in popularity is wide, and the same size of venue is no contest",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気の差が集客に直結するため、興行規模で劣る。",
+    "en": "The gap in popularity feeds straight into the gate, and the shows run smaller for it.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気はまだ追いつける圏内。興行の質と結果で巻き返しを狙いたい。",
+    "en": "Popularity is still inside catching distance. Win it back with the quality of the shows and the results.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気は互角",
+    "en": "popularity is level",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気を活かした集客力で、興行規模の面で優位に立てる。",
+    "en": "Popularity draws, and that draw is what puts these shows a size above.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "団体内のロッカールームが冷えきったいま、{charA}と{charB}の冷淡な関係も、その不協和音の一部として機能している。{matches}度の対戦が、控室の空気にじわじわ染み出している——記者として、これは座視できない状態である。",
     "en": "With the locker room inside the promotion gone cold, the flat relationship between {charA} and {charB} works as one part of that discord. A {matches}-match record is seeping into the air backstage. As a reporter, this is not a state of things to sit and watch.",
     "files": [
@@ -19482,6 +20132,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "圧倒的優位。死角なし。",
+    "en": "Commanding lead. No soft spot.",
+    "files": [
+      "ORG_COMPARE_GRADE_DESCS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "圧巻の連覇である。返還と再戴冠のあいだにあったのは、16名トーナメントの4試合だけ。{name}（{org}）は、その全部に勝った。",
     "en": "A repeat, and a commanding one. Between handing the belt back and putting it on again there were four matches in a 16-woman bracket. {name} of {org} won all four.",
     "files": [
@@ -19572,6 +20232,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "堅実経営の小規模団体",
+    "en": "A small promotion run on solid finances",
+    "files": [
+      "RIVAL_ORGS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "壁にぶつかった世代",
     "en": "The Generation That Hit the Wall",
     "files": [
@@ -19632,10 +20302,90 @@
     "hasProperNoun": false
   },
   {
+    "key": "大きな弱点はないが、主力のコンディション次第で一気に差が縮まりやすい。",
+    "en": "There is no large weak spot, but the condition of the top names can close the gap fast.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大きな弱点はないが、層の消耗が続くと優位が崩れやすい。",
+    "en": "There is no large weak spot, but keep wearing the roster down and the edge gives way.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大きな弱点はないが、看板選手への依存が進むと勢いを失いやすい。",
+    "en": "There is no large weak spot, but leaning further on the marquee names costs momentum.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大きな弱点はないが、集客が鈍ると優位を保ちにくい。",
+    "en": "There is no large weak spot, but let the gate slow and the edge is hard to hold.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "大きな波乱なし。予想通りの展開だった",
     "en": "No real turn in it. It went the way it was expected to",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大きな穴はない。次は中堅層の育成で年間を通した安定感をさらに高めたい。",
+    "en": "There are no real holes. The next job is developing the mid-card so a season runs steadier still.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大きな穴はない。次は主力の優位を長期的に維持できる育成計画を進めたい。",
+    "en": "There are no real holes. The next job is a development plan that keeps the edge at the top over the long run.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大きな穴はない。次は次世代の人気選手を育て、看板層を厚くしたい。",
+    "en": "There are no real holes. The next job is raising the next generation of popular names and thickening the marquee.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大きな穴はない。次は興行演出と結果で団体人気の優位を固めたい。",
+    "en": "There are no real holes. The next job is locking in the popularity edge with presentation and results.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20916,6 +21666,26 @@
     "en": "The gap between comrades, closed by the GM",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "戦略ポイント",
+    "en": "Strategic note",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "戦略的優位",
+    "en": "Strategic edge",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -22952,6 +23722,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "業界の頂点に君臨する絶対王者",
+    "en": "Undisputed rulers at the top of the business",
+    "files": [
+      "RIVAL_ORGS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "業界の頂点のベルトが、行き場を失った。王者{name}が所属を失い、全国統一王座は規定により返上された。",
     "en": "The belt at the top of the business has nowhere to go. Champion {name} has lost her promotion, and the Unified National Championship was surrendered under the rules.",
     "files": [
@@ -23409,6 +24189,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "比較対象団体",
+    "en": "Promotion under comparison",
+    "files": [
+      "ORG_COMPARE_ORG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -25625,6 +26415,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "育成テーマ",
+    "en": "Development theme",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "育成方針そのものを見直すべきフェーズ。場当たりじゃ無理",
     "en": "This is the phase where you rethink the development plan itself. Patching won't do it",
     "files": [
@@ -25669,6 +26469,26 @@
     "en": "A match that killed the pace of the show outright",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "興行の質とカード編成で団体人気を向上させ、集客力を強化。",
+    "en": "Raise promotion popularity through show quality and card order, and strengthen the draw.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "興行の質を上げて団体人気の底上げが最優先。",
+    "en": "Raise the quality of the shows first; popularity follows from there.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -25775,10 +26595,60 @@
     "hasProperNoun": false
   },
   {
+    "key": "若手主体の攻撃的な挑戦者",
+    "en": "Young, aggressive challengers",
+    "files": [
+      "RIVAL_ORGS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "若手同士の激突。将来のエース候補がぶつかる",
     "en": "Young against young. Two possible future aces meeting.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若手比率 {pct}%",
+    "en": "Youth {pct}%",
+    "files": [
+      "ORG_COMPARE_TAG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若手比率で優位。中長期で主力昇格を狙い、選手層の強みを維持したい。",
+    "en": "Ahead on the share of young wrestlers. Move them up over the medium term and keep the depth advantage.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若手比率で劣勢。将来を見据えたスカウトや若手登用の検討が必要。",
+    "en": "Behind on the share of young wrestlers. Scouting with the future in mind, and using them, both need weighing.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若手比率は互角。現有戦力の育成を継続しつつ、将来の柱を育てたい。",
+    "en": "Level on the share of young wrestlers. Keep developing the current roster while raising the pillars of the future.",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -25945,10 +26815,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "補強優先度 1",
+    "en": "Signing priority 1",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "複数の項目で後れを取っている。巻き返しには相当な覚悟が要る",
     "en": "Behind in several columns. Coming back from that takes a real commitment.",
     "files": [
       "KURODA_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "複数項目で後手。課題が多い。",
+    "en": "Behind on several counts.",
+    "files": [
+      "ORG_COMPARE_GRADE_DESCS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -27107,10 +27997,110 @@
     "hasProperNoun": false
   },
   {
+    "key": "選手層が厚く、どの並びで組んでも穴が出ない",
+    "en": "the roster runs deep enough that no card order leaves a hole",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層が桁違いに薄く、カードを埋めるだけで年間を消耗する。",
+    "en": "The roster is thin on another order, and simply filling cards burns the year.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層が薄く、カードを埋めるだけで手一杯になる",
+    "en": "the roster is thin enough that filling out a card takes all of it",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層で劣勢。中堅の底上げか補強が必要",
+    "en": "the roster runs thin, and the mid-card needs raising or signing",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層の厚さで優勢。年間を通した安定感がある",
+    "en": "the depth of the roster is the edge, and it holds steady across a season",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層の厚さを活かし、複数カードの質で興行全体を底上げできる。",
+    "en": "Lean on the depth of the roster: several strong matches can lift the whole show.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "選手層の差がわずかにある。ここをどう埋めるかがポイント",
     "en": "There's a slight gap in roster depth. How they fill that is the point",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層の差は限定的。中堅の底上げ次第で年間の安定感は十分作れる。",
+    "en": "The gap in depth is limited. Raise the mid-card and a season of stability is well within reach.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層の拡充",
+    "en": "Widen the roster",
+    "files": [
+      "ORG_COMPARE_ACTION_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層の薄さが露呈しやすく、年間を通すと不安定。",
+    "en": "A thin roster shows quickly, and over a full season it turns unsteady.",
+    "files": [
+      "ORG_COMPARE_EDITORIAL_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手層は互角",
+    "en": "the rosters run equally deep",
+    "files": [
+      "ORG_COMPARE_AXIS_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,

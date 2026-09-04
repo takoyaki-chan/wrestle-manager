@@ -1919,6 +1919,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "TOP5人気",
+    "en": "Top 5 popularity",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "団体比較号(新聞2面)の軸ラベル。Engine.database.getOrgCompareAnalysis が summaryText の {evenLabel} と leadAxisLabel/chaseAxisLabel(KURODA_HEADLINES/EDITORIAL の 差し込み語)へ _wmDictLabel 経由で値として渡す。同じキーを template-ledger へ入れると 二重登録になるため(§15-3)、既訳のある TOP5実力/団体人気 と揃えてこちらへ手追加。management.js は走査対象外"
+  },
+  {
     "key": "TOP5実力",
     "en": "Top 5 Strength",
     "files": [
@@ -39990,6 +40002,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "選手層",
+    "en": "Roster depth",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "団体比較号(新聞2面)の軸ラベル。Engine.database.getOrgCompareAnalysis が summaryText の {evenLabel} と leadAxisLabel/chaseAxisLabel(KURODA_HEADLINES/EDITORIAL の 差し込み語)へ _wmDictLabel 経由で値として渡す。同じキーを template-ledger へ入れると 二重登録になるため(§15-3)、既訳のある TOP5実力/団体人気 と揃えてこちらへ手追加。management.js は走査対象外"
   },
   {
     "key": "選手生命そのものを延ばせる唯一の手。長く働いてほしい主力ほど、思い切って休ませる価値がある。ただし癒やせる量には一年あたりの限りがあり、休暇中の欠場と引き換えになる点は覚悟すること。",

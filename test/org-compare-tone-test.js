@@ -29,6 +29,10 @@ const read = f => fs.readFileSync(path.join(root, f), 'utf8').replace(/\r\n/g, '
 const mgmt = read('src/management.js');
 const render = read('src/ui-render.js');
 const kuroda = read('src/kuroda-text.js');
+// i18n Stage B P7-11: 4軸5段の文面は data.js の `ORG_COMPARE_AXIS_TEXTS` へ移設された
+// (関数内直書きは i18n の抽出器から見えない = §10-2型)。B1/B2 が守るのは「段があること」
+// なので、読み先だけを移設先へ付け替える。AXIS_META が表を参照していること自体も検査する。
+const data = read('src/data.js');
 
 let failed = 0;
 function section(name, fn) {
@@ -86,14 +90,19 @@ section('A4. 同じ一文をページ内で二度出さない', () => {
 // ─────────────────────────────────────────────────────────────
 
 section('B1. 各軸に「圧倒」「完敗」の段がある(±10 の1段しきい値ではない)', () => {
-  const meta = mgmt.match(/const AXIS_META = \[[\s\S]*?\n {4}\];/);
-  assert.ok(meta, 'AXIS_META が読めない');
+  const table = data.match(/const ORG_COMPARE_AXIS_TEXTS = \{[\s\S]*?\n\};/);
+  assert.ok(table, 'ORG_COMPARE_AXIS_TEXTS(data.js)が読めない');
   ['ace', 'depth', 'popularity', 'starPower'].forEach(k => {
-    const axis = meta[0].split(new RegExp(`key: '${k}'`))[1].split(/\n {6}\{ key:/)[0];
-    assert.ok(/leadBig:/.test(axis), `${k} に leadBig(圧倒)が無い`);
-    assert.ok(/trailBig:/.test(axis), `${k} に trailBig(完敗)が無い`);
+    const axis = table[0].split(new RegExp(`\\n  ${k}: \\{`))[1];
+    assert.ok(axis, `ORG_COMPARE_AXIS_TEXTS.${k} が無い`);
+    const seg = axis.split(/\n {2}\w+: \{/)[0];
+    assert.ok(/leadBig:/.test(seg), `${k} に leadBig(圧倒)が無い`);
+    assert.ok(/trailBig:/.test(seg), `${k} に trailBig(完敗)が無い`);
   });
   assert.ok(/AXIS_BIG = \d+/.test(mgmt), '大差のしきい値が定義されていない');
+  // 文面を関数内へ書き戻すと i18n の抽出器から見えなくなる(§10-2)。表参照であることを固定する
+  assert.ok(/const AXIS_META = \[[\s\S]*?ORG_COMPARE_AXIS_TEXTS\[ax\.key\]/.test(mgmt),
+    'AXIS_META が ORG_COMPARE_AXIS_TEXTS を参照していない(文面が関数内へ戻っている疑い)');
 });
 
 section('B2. 少し勝っている状態と圧倒している状態で文が変わる', () => {
@@ -101,13 +110,11 @@ section('B2. 少し勝っている状態と圧倒している状態で文が変�
   const bigMatch = mgmt.match(/const AXIS_BIG = (\d+)/);
   const BIG = Number(bigMatch[1]);
   assert.ok(BIG > 10, `大差のしきい値(${BIG})が優勢のしきい値(10)と同じかそれ以下`);
-  const meta = mgmt.match(/const AXIS_META = \[[\s\S]*?\n {4}\];/)[0];
-  const axis = meta.split(/key: 'ace'/)[1].split(/\n {6}\{ key:/)[0];
-  const grab = key => (axis.match(new RegExp(`${key}: '([^']+)'`)) || [])[1];
-  const [leadBig, lead, trail, trailBig, even] =
-    ['leadBig', 'lead', 'trail', 'trailBig', 'even'].map(grab);
-  const all = [leadBig, lead, trail, trailBig, even];
-  all.forEach((s, i) => assert.ok(s, `${['leadBig','lead','trail','trailBig','even'][i]} が空`));
+  // 評価済みの表(data.js は loadGame でグローバルへ載っている)をそのまま読む
+  const axis = ORG_COMPARE_AXIS_TEXTS.ace;
+  const names = ['leadBig', 'lead', 'trail', 'trailBig', 'even'];
+  const all = names.map(k => axis[k]);
+  all.forEach((s, i) => assert.ok(s, `${names[i]} が空`));
   assert.strictEqual(new Set(all).size, 5, `5段の文面に重複がある: ${all.join(' / ')}`);
 });
 

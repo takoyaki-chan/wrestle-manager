@@ -1,5 +1,290 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-11 — 団体比較号のEngine内直書き紹介文をテンプレ化・英訳（+新聞composerの直書き残りの棚卸し）（2026-09-04・worktree agent-a02876bf84c6321e3）
+
+指示書は specs/i18n-runtime-spec-v1.0.md §29-6（P7-8の範囲外発見2件目）。開始前にworktreeブランチをmain先端（68a17d06、P7-8マージまで）へfast-forward済み。
+
+**訳出101キー**（template-ledger 2,958→**3,057**・未訳0 / ui-ledger 4,069→**4,071**・未訳0 / dialogue-ledger 16,674 は不触）。
+ラチェット総数 28,108→**28,102**（data.js +95 / management.js −101 = 移設と重複解消の差引。`--update` 済み）。
+
+### 1. 配線方式 — 「Gへ焼かず表示のたびに呼び直す」族は dict 引数だけで解ける
+
+`Engine.database.getOrgCompareAnalysis(state, orgId)` は消費点が `ui-render.js:_npRenderPage2` の**1箇所だけ**で、戻り値はGへ一切保存されない。
+したがって追加フィールド（§15-1）も表示点再生成（§18-1）も要らず、**第3引数 `dict` を足してPH置換前に引く**だけでよい（§6のlang糸通し）。
+Engine側で新しく書いたヘルパーは**ゼロ** — 既存の `_wmFillWithDict`（本文）/ `_wmDictLabel`（値としての1語ラベル）を `T` / `L` として束ねただけ。
+
+| # | 対象 | 移設先（data.js トップレベル） | 行数 | 配線 |
+|---|---|---|---|---|
+| ① | GRADE脇の短評 | `ORG_COMPARE_GRADE_DESCS`（キー=語調帯） | 5 | `T(GD[band])` |
+| ② | 4軸×5段の断片 | `ORG_COMPARE_AXIS_TEXTS` | 20 | `AXIS_META` が `...ORG_COMPARE_AXIS_TEXTS[ax.key]` で合成。段の選択（`fragOf`）は従来どおり management.js |
+| ③ | summaryText の連結様式+接続詞 | `ORG_COMPARE_SUMMARY_TEMPLATES` | 7 | 断片・接続詞・軸ラベルを**先に確定**させてから `T(tpl, params)`（§29-3の作法） |
+| ④ | 記者コラム 勝ち筋/リスク/補強提案 | `ORG_COMPARE_EDITORIAL_TEXTS`（opportunity/risk/riskBig/scout/pivot{near,mid,far}/guard/sustain） | 36 | 返却直前に `T(…)` |
+| ⑤ | 団体カードのタグ3種 | `ORG_COMPARE_TAG_TEMPLATES` | 6 | `T(TAG.youthRatio, { pct })` ほか |
+| ⑥ | アクション提案（`d.actions`） | `ORG_COMPARE_ACTION_TEXTS` | 20 | `T(…)`。**現在の紙面に消費点が無い**（§22-6「訳したのに出ない行」）が、表の全行を台帳へ載せる方を優先 |
+| ⑦ | 団体カードの副題様式 | `ORG_COMPARE_ORG_TEMPLATES` | 2 | `T('Tier {tier} / {desc}', { tier, desc: L(targetDesc) })` |
+| ⑧ | 比較対象団体の一行紹介 | `RIVAL_ORGS`（既存表・`desc` のみパスフィルタで台帳化） | 3 | ⑦の `{desc}` に入る |
+
+`test/i18n-extract-templates.js` の `TARGET_TABLES` に⑧を含む8件を「// P7-11」コメント付きで追記。
+`RIVAL_ORGS` はオブジェクト配列で id/tier/color/emoji/name（空文字）を持つので、`TABLE_PATH_FILTER` に `desc` だけを拾うフィルタを足した（`ALL_COACHES` と同じ作法）。
+
+### 2. 軸ラベルは表へ入れない — §15-3 の二重登録回避の実運用2例目
+
+`AXIS_META` の4ラベルのうち **`TOP5実力`（"Top 5 Strength"）と `団体人気`（"Promotion popularity"）は ui-ledger に既訳がある**。
+テンプレ表へ入れると同じキーが2台帳に載り、どちらの訳が出るかがスクリプト読み込み順に依存する。
+
+- **JA原文は management.js の `AXIS_META` に1本だけ置き**、差し込む直前に `L()`（`_wmDictLabel`）で値として引き直す
+- 引き直す先は3箇所: `summaryText` の `{evenLabel}` と、**`leadAxisLabel` / `chaseAxisLabel`**。
+  後者は `KURODA_HEADLINES` / `KURODA_EDITORIAL` の158本が `${d.leadAxisLabel}` として本文へ差し込んでおり、
+  **テンプレだけ訳しても値がJAで残る**（§14-2の構造穴）。この2フィールドは紙面に直接は出ないので見落としやすい
+- ui-ledger に無かった `選手層`→**Roster depth** / `TOP5人気`→**Top 5 popularity** の2件だけ `kept:true`+note で手追加
+- 同型の1語ラベル: `playerSubtitle` の `プレイヤー団体`（既訳あり→`L()`）、`matchups[].role`（`エース`/`主力`/`中堅`）。
+  role は **UI側の2つの表示点**（`_npMatchupFlavorText` の `{role}` param と `.np-matchup-vs .role`）で `WM_I18N.t()` を通した
+
+### 3. 「JAは全角14字で切る」ような文字数勘定はlang分岐が要る
+
+GRADE脇の短評（`.np-headline-grade .desc`、92px枠・9px）は `d.gradeDesc.slice(0, 14)` で先頭14字だけを出していた。
+全角前提の目分量なので、英語に当てると単語の途中で切れる（`Outclassed on every`）。§25-5（`決着時間`/`ターン数`）と同じ型。
+`_npGradeDescShort(desc)`（ui-render.js）を新設し、**ja/pseudoは従来どおり14字で切り（1バイト不変）、enは切らない**。
+EN訳文は台帳側でこの枠に収まる短さ（≦32半角）に揃えた（`Behind everywhere. No opening.` / `Even. Booking decides it.` 等）。
+
+### 4. 接続詞の空白規約は §15-2 の**裏返し**
+
+`summaryText` の base テンプレは `{first}。{connector}{second}。`。接続詞は後続文と**直結**する。
+§15-2 のクラウス（文の後ろに付く）はEN訳文が**先頭**スペースを持つ規約だったが、ここは前に付くので **EN訳文が末尾に半角スペース**を持つ。
+
+| JA | EN |
+|---|---|
+| `一方で`（1文目が優勢・2文目が劣勢） | `Against that, ` |
+| `ただ`（1文目が劣勢・2文目が優勢） | `That said, ` |
+| `同時に`（両方とも劣勢） | `At the same time, ` |
+| `また、`（それ以外） | `Also, ` |
+
+軸の5段断片は**末尾に句点を持たない**（テンプレ側の `。`／`.` が付ける）。
+
+### 5. 追加依頼: `HP判定` が紙面に素で出ていた（P7-9の発見・**意図的なJA修正**）
+
+`_buildPpvSummitStory`（頂上決戦の紙面本文）と PPVアンダーカードの2箇所が、`Engine.formatFinish` を
+**`finMove` があるときだけ**通し、無いときは `finType` を素で出していた。この else 分岐は死コードではなく、
+**時間切れ決着**（`finType:'HP判定'` / `finMove` なし）で必ず到達し、ロジックキー `HP判定` がそのまま**日本語の紙面**に出ていた。
+
+- 分岐条件を `finMove` の有無から**決着情報の有無**（`finMove || finType`）へ変更。`formatFinish` は `finType==='HP判定'` のとき
+  `FINISH_TEXT` を引いて `判定勝ち` を返すので、ENも同じ dict 経由で `Win by decision` の既訳に乗る
+- アンダーカード側の `'激闘決着'` 直書きも `FINISH_TEXT_FALLBACK`（同値の定数）＋`_wmDictLabel` へ寄せた（JA1バイト不変・EN既訳 "a hard-fought finish" に乗る）
+- **旧実装との突合**: `HP判定`/`finMove無し` の2ケースのみ `HP判定` → `判定勝ち` に変化。
+  技名あり・未知の `finType`・決着情報なし の4ケースは**すべて従来と同一**
+- **ja-golden の基準は動かなかった（差分0行・`--update` 不要）**。固定シード20季の corpus に `HP判定` 決着の紙面記事が1件も無く（baseline内 `HP判定` 出現0）、ハッシュ `6b3d05c8…` が不変
+
+### 6. 対訳全文（101キー）
+
+**GRADE脇の短評（`ORG_COMPARE_GRADE_DESCS`・5）**
+
+| JA | EN |
+|---|---|
+| 全面劣勢。正面から勝てる要素がない。 | Behind everywhere. No opening. |
+| 複数項目で後手。課題が多い。 | Behind on several counts. |
+| 互角。戦略次第で勝てる。 | Even. Booking decides it. |
+| 優勢。リードを活かし切れるか。 | Ahead. Can the lead hold? |
+| 圧倒的優位。死角なし。 | Commanding lead. No soft spot. |
+
+**4軸×5段の断片（`ORG_COMPARE_AXIS_TEXTS`・20）**
+
+| JA | EN |
+|---|---|
+| 主力の実力で完全に上回っており、エース対決は組めば取れる | the top of the roster is stronger across the board, and an ace match is there to be taken |
+| 主力戦力で上回っており、正面対決でも十分戦える | the top of the roster holds the edge, enough to meet them head on |
+| 主力の実力差があり、エース級の強化が課題 | the top of the roster gives way, and building an ace is the work ahead |
+| 主力の実力差が大きく、エース対決は正面から当たれば落とす | the gap at the top is wide, and an ace match taken head on will be lost |
+| 主力の実力は互角 | the top of the roster is level |
+| 選手層が厚く、どの並びで組んでも穴が出ない | the roster runs deep enough that no card order leaves a hole |
+| 選手層の厚さで優勢。年間を通した安定感がある | the depth of the roster is the edge, and it holds steady across a season |
+| 選手層で劣勢。中堅の底上げか補強が必要 | the roster runs thin, and the mid-card needs raising or signing |
+| 選手層が薄く、カードを埋めるだけで手一杯になる | the roster is thin enough that filling out a card takes all of it |
+| 選手層は互角 | the rosters run equally deep |
+| 団体人気で大きく引き離しており、興行の規模そのものが違う | popularity is far ahead, and the shows are simply run at a different size |
+| 団体人気で優勢。興行の集客力を武器にできる | popularity is ahead, and the draw at the gate can be used as a weapon |
+| 団体人気で後れを取っている。興行の質で巻き返したい | popularity trails, and the ground has to be won back on the quality of the shows |
+| 団体人気の差が大きく、同じ規模の会場では勝負にならない | the gap in popularity is wide, and the same size of venue is no contest |
+| 団体人気は互角 | popularity is level |
+| スター性で突き抜けており、看板を並べるだけで客が動く | star power stands clear, and naming the marquee is enough to move tickets |
+| スター性で優位。ビッグマッチの期待値が高い | star power holds the edge, and the big matches carry expectation |
+| スター性で差がつき、看板選手の育成が急務 | star power falls short, and building a marquee name is urgent |
+| スター性の差が大きく、看板対決を組んでも数字が出ない | the gap in star power is wide, and a marquee match will not draw the numbers |
+| スター性は互角 | star power is level |
+
+**連結様式と接続詞（`ORG_COMPARE_SUMMARY_TEMPLATES`・7）**
+
+| JA | EN |
+|---|---|
+| {rival}との比較では、{first}。{connector}{second}。 | Set against {rival}, {first}. {connector}{second}. |
+| {rival}との比較では、明確な優位はまだ少ない。特に{worst}が、{evenLabel}は構成次第で十分対抗できる。 | Set against {rival}, clear advantages are still few — {worst}. On {evenLabel}, though, the right booking can still make a contest of it. |
+| {rival}との比較では、{best}。大きな弱点は少なく、{evenLabel}も含めて優位を維持できている。 | Set against {rival}, {best}. There are few real weak spots, and the edge holds on {evenLabel} as well. |
+| 一方で | `Against that, `（末尾スペース） |
+| ただ | `That said, `（末尾スペース） |
+| 同時に | `At the same time, `（末尾スペース） |
+| また、 | `Also, `（末尾スペース） |
+
+**記者コラム 勝ち筋（`ORG_COMPARE_EDITORIAL_TEXTS.opportunity`・4）**
+
+| JA | EN |
+|---|---|
+| 主力の実力差を活かし、エース対決で存在感を示したい。 | Use the edge at the top of the roster and let the ace match carry the show. |
+| 選手層の厚さを活かし、複数カードの質で興行全体を底上げできる。 | Lean on the depth of the roster: several strong matches can lift the whole show. |
+| 団体人気を活かした集客力で、興行規模の面で優位に立てる。 | Popularity draws, and that draw is what puts these shows a size above. |
+| スター選手の人気を武器に、看板カードで勝負を仕掛けたい。 | Put the popular names to work and take the fight to the marquee match. |
+
+**リスク（`.risk` / `.riskBig`・8）**
+
+| JA | EN |
+|---|---|
+| 主力の実力差が大きく、エース対決では不利な構図。 | The gap at the top is wide, and the ace match sets up badly. |
+| 選手層の薄さが露呈しやすく、年間を通すと不安定。 | A thin roster shows quickly, and over a full season it turns unsteady. |
+| 団体人気の差が集客に直結するため、興行規模で劣る。 | The gap in popularity feeds straight into the gate, and the shows run smaller for it. |
+| スター性の差が大きく、看板対決では分が悪い。 | The gap in star power is wide, and the marquee match is the wrong ground to fight on. |
+| 主力の実力差が隔絶しており、エース対決は組むだけ損になる。 | The gap at the top is beyond bridging; booking the ace match only costs. |
+| 選手層が桁違いに薄く、カードを埋めるだけで年間を消耗する。 | The roster is thin on another order, and simply filling cards burns the year. |
+| 団体人気が桁違いで、同じ会場規模に並べても客が付かない。 | Popularity is on another scale; put the two in the same size of hall and the seats stay empty. |
+| スター性の差が桁違いで、看板対決を組んでも数字にならない。 | Star power is on another scale, and a marquee match here will not turn into numbers. |
+
+**補強提案（`.scout`・4）**
+
+| JA | EN |
+|---|---|
+| 即戦力のエース候補を優先的にスカウトしたい。 | Scout an ace candidate who can go straight in, ahead of everything else. |
+| 中堅層の補強が急務。FA市場の中堅選手に注目。 | The mid-card needs signing now. Watch the free agent market for mid-card names. |
+| 興行の質を上げて団体人気の底上げが最優先。 | Raise the quality of the shows first; popularity follows from there. |
+| 人気のあるサブエース候補を獲得し、TOP5人気を底上げしたい。 | Sign a popular second-in-line and lift the top five in popularity. |
+
+**全軸劣勢時の「せめてどこから」（`.pivot` near/mid/far・12）**
+
+| JA | EN |
+|---|---|
+| 主力の差はまだ小さい。エース候補の育成が進めば、看板カードで勝負できる。 | The gap at the top is still small. Bring an ace candidate along and the marquee match becomes a contest. |
+| 選手層の差は限定的。中堅の底上げ次第で年間の安定感は十分作れる。 | The gap in depth is limited. Raise the mid-card and a season of stability is well within reach. |
+| 団体人気はまだ追いつける圏内。興行の質と結果で巻き返しを狙いたい。 | Popularity is still inside catching distance. Win it back with the quality of the shows and the results. |
+| スター性の差は詰められる余地がある。看板候補のプッシュを急ぎたい。 | There is room to close the gap in star power. Push a marquee candidate, and push soon. |
+| 全項目で後れているが、傷が浅いのは主力。詰めるならここからしかない。 | Behind on every count, but the shallowest wound is at the top of the roster. If anything is to be closed, it starts there. |
+| 全項目で後れているが、傷が浅いのは選手層。頭数と中堅の底上げが起点になる。 | Behind on every count, but the shallowest wound is roster depth. Numbers first, then a raised mid-card. |
+| 全項目で後れているが、傷が浅いのは団体人気。興行の質を積んで削るしかない。 | Behind on every count, but the shallowest wound is popularity. Stack up good shows and cut into it that way. |
+| 全項目で後れているが、傷が浅いのはスター性。看板候補を1人立てるところから。 | Behind on every count, but the shallowest wound is star power. It begins with getting one marquee candidate standing. |
+| 全項目で後れており、最も差の小さい主力ですら正面から当たれば落とす。年単位の立て直しになる。 | Behind on every count, and even the narrowest gap — the top of the roster — is lost when met head on. This is a rebuild measured in years. |
+| 全項目で後れており、最も差の小さい選手層でも見劣りする。まず頭数を揃える段階にある。 | Behind on every count, and even the narrowest gap, roster depth, comes up short. The stage now is simply getting the numbers together. |
+| 全項目で後れており、最も差の小さい団体人気でも興行の規模が違う。同じ土俵に立つところからだ。 | Behind on every count, and even the narrowest gap, popularity, means shows of a different size. It starts with getting onto the same ground. |
+| 全項目で後れており、最も差の小さいスター性でも看板の格が違う。当面は正面衝突を避けたい。 | Behind on every count, and even the narrowest gap, star power, is a difference in standing. Head-on collisions are best avoided for now. |
+
+**全軸優勢時の注意点・維持プラン（`.guard` / `.sustain`・8）**
+
+| JA | EN |
+|---|---|
+| 大きな弱点はないが、主力のコンディション次第で一気に差が縮まりやすい。 | There is no large weak spot, but the condition of the top names can close the gap fast. |
+| 大きな弱点はないが、層の消耗が続くと優位が崩れやすい。 | There is no large weak spot, but keep wearing the roster down and the edge gives way. |
+| 大きな弱点はないが、集客が鈍ると優位を保ちにくい。 | There is no large weak spot, but let the gate slow and the edge is hard to hold. |
+| 大きな弱点はないが、看板選手への依存が進むと勢いを失いやすい。 | There is no large weak spot, but leaning further on the marquee names costs momentum. |
+| 大きな穴はない。次は主力の優位を長期的に維持できる育成計画を進めたい。 | There are no real holes. The next job is a development plan that keeps the edge at the top over the long run. |
+| 大きな穴はない。次は中堅層の育成で年間を通した安定感をさらに高めたい。 | There are no real holes. The next job is developing the mid-card so a season runs steadier still. |
+| 大きな穴はない。次は興行演出と結果で団体人気の優位を固めたい。 | There are no real holes. The next job is locking in the popularity edge with presentation and results. |
+| 大きな穴はない。次は次世代の人気選手を育て、看板層を厚くしたい。 | There are no real holes. The next job is raising the next generation of popular names and thickening the marquee. |
+
+**団体カードのタグ（`ORG_COMPARE_TAG_TEMPLATES`・6）**
+
+| JA | EN |
+|---|---|
+| エース依存度 高い | Ace reliance: high |
+| エース依存度 低め | Ace reliance: low |
+| 若手比率 {pct}% | Youth {pct}% |
+| 勢い 上昇中 | Momentum: rising |
+| 勢い 下降気味 | Momentum: slipping |
+| 勢い 安定 | Momentum: steady |
+
+**アクション提案（`ORG_COMPARE_ACTION_TEXTS`・20。※現在の紙面には出ない）**
+
+| JA | EN |
+|---|---|
+| 補強優先度 1 | Signing priority 1 |
+| 優位維持プラン | Hold the edge |
+| 育成テーマ | Development theme |
+| 危険シグナル | Warning sign |
+| 戦略的優位 | Strategic edge |
+| 戦略ポイント | Strategic note |
+| 主力戦力の強化 | Strengthen the top of the roster |
+| 選手層の拡充 | Widen the roster |
+| 団体人気の向上 | Raise promotion popularity |
+| スター性の向上 | Raise star power |
+| 上位選手のOVRを引き上げるため、エース候補の育成や即戦力の補強を検討。 | To lift Overall at the top of the roster, weigh developing an ace candidate against signing someone ready now. |
+| 中堅以下の底上げやロスター拡充で、年間を通した安定感を確保。 | Raise the mid-card and below, or widen the roster, to secure stability across the season. |
+| 興行の質とカード編成で団体人気を向上させ、集客力を強化。 | Raise promotion popularity through show quality and card order, and strengthen the draw. |
+| 人気のある選手の獲得や、既存選手のメディア露出で人気を向上。 | Raise popularity by signing popular wrestlers, or by putting the current ones in front of the media. |
+| 若手比率で優位。中長期で主力昇格を狙い、選手層の強みを維持したい。 | Ahead on the share of young wrestlers. Move them up over the medium term and keep the depth advantage. |
+| 若手比率で劣勢。将来を見据えたスカウトや若手登用の検討が必要。 | Behind on the share of young wrestlers. Scouting with the future in mind, and using them, both need weighing. |
+| 若手比率は互角。現有戦力の育成を継続しつつ、将来の柱を育てたい。 | Level on the share of young wrestlers. Keep developing the current roster while raising the pillars of the future. |
+| エース対決を前面に出すと力負けしやすい。複数カード構成が安全。 | Front the ace match and it tends to be lost on raw strength. A card built on several matches is safer. |
+| エース対決で優勢。看板カードを前面に押し出す興行編成が有効。 | Ahead in the ace match. Building the show around the marquee card works. |
+| エース級は互角。カード構成やストーリー性で差をつけたい。 | The ace tier is level. The difference has to come from the card order and the story. |
+
+**団体カードの副題と一行紹介（`ORG_COMPARE_ORG_TEMPLATES` 2 + `RIVAL_ORGS.desc` 3）**
+
+| JA | EN |
+|---|---|
+| Tier {tier} / {desc} | Tier {tier} / {desc} |
+| 比較対象団体 | Promotion under comparison |
+| 業界の頂点に君臨する絶対王者 | Undisputed rulers at the top of the business |
+| 若手主体の攻撃的な挑戦者 | Young, aggressive challengers |
+| 堅実経営の小規模団体 | A small promotion run on solid finances |
+
+**軸ラベル（ui-ledger へ `kept:true` で手追加・2）**
+
+| JA | EN |
+|---|---|
+| 選手層 | Roster depth |
+| TOP5人気 | Top 5 popularity |
+
+### 7. 横展開の棚卸し — `Engine.newspaper` にはまだ 83行 の生JAが残る（本バッチ範囲外・報告のみ）
+
+`Engine.newspaper = { … }`（management.js:31167〜33094、1,928行）を機械列挙し、
+`T(` / `dict` / `_wmNewsStamp` / `injuryLabel` / `fillTemplateVars` のいずれも通らない生JA行を数えた（コメント行は除外）。
+
+| 関数 | 行数 | 中身 |
+|---|---|---|
+| `generate` | **61** | ジュニアトーナメント結果／全試合詳報／ベストバウト／出場選手決定＋黒田の展望、AI団体の引退・大量退団・殿堂入り・定期興行・ブレイクスルー・確執3分岐・練習中負傷・密着取材2種、対抗戦2分岐、挑戦状3分岐 の headline/body |
+| `eventContenders` | 10 | 注目選手の選出理由（`現王者`／`MVPレース{n}位`／`{label}の優勝経験`／`{n}連勝中`）と `・` 連結 |
+| `scanRosterNews` | 4 | `プレイヤー団体`フォールバック×2、`団体記録を塗り替えた。`／`団体記録に王手をかけた。` |
+| `eventPreviewParagraph` | 3 | `本紙が挙げる注目は{…}。` の断片連結 |
+| `STYLE_JA` | 2 | スタイル名6種（値としてテンプレへ差し込まれる） |
+| `composeHallOfFameRetirement` / `buildTenchosenFieldData` / `intensityBonus` | 3 | `所属団体`／`選考通過者` フォールバックと、正規表現内の `怪我`（訳出対象外） |
+| **計** | **83** | |
+
+指示の上限（≦40行で同時修正）を大きく超えるため**報告のみ**。次バッチの筆頭候補は `generate` の61行。
+大半は「AI団体の業界ニュース」= §8 の生キー＋render時点再構築が既に効いている枠の**隣**にある直書きなので、
+`NEWS_HEADLINE_TEMPLATES` へ寄せるのが素直な形になる。
+
+### 8. 検証
+
+- **JA同一性（48,786比較・不一致0）**: 凍結コピー（68a17d06）の `getOrgCompareAnalysis` をVMで復元し、
+  4軸×9段の差分グリッド（6,561）＋団体4種×ロスター/勢い/団体名の変種19×縮小グリッド（81）＋素のスコア計算12
+  = **24,393通り**を、`dict`省略経路と ja素通しdict 経路の**両方**で `JSON.stringify` 突合
+- **`HP判定` 修正の突合**: 凍結コピーの `_buildPpvSummitStory` と6ケースで比較 → 変化は `HP判定`/`finMove無し` の2ケースのみ（`HP判定`→`判定勝ち`）
+- **EN全分岐スキャン**: 同じ6,561通りを EN 辞書ロード済みの実 `WM_I18N` で回し、返却15フィールド＋タグ＋アクションに
+  **日本語0文字**・**i18n-miss 0件**を機械確認。加えて GRADE A/B/D の3本を目視
+- `node --check` data.js / management.js / ui-render.js / i18n-extract-templates.js / org-compare-tone-test.js / u5-winloss-safety-net-test.js
+- `node test/ja-golden.js` **完全一致**（hash `6b3d05c8…` 不変・`--update` なし）
+- `node test/i18n-build-template-dict.js` 3,057/3,057・`node test/i18n-build-dict.js` 4,071/4,071（いずれも未訳0・PH完全性/黒田禁止語/不定冠詞検査すべて通過）
+- `node test/i18n-ratchet.js --update`（data.js +95 / management.js −101 / 総数 −6。理由＝関数内直書きの表移設＋`gradeDesc`重複解消＋`'激闘決着'`の定数化）
+- `npm test` **260 PASS / 0 FAIL**（`org-compare-tone-test` B1/B2 の読み先を `ORG_COMPARE_AXIS_TEXTS` へ付け替え＋「AXIS_META が表を参照していること」の検査を追加、`u5-winloss-safety-net-test` の page2 サンドボックスに `_npGradeDescShort` を追加）
+- `node test/auto-sim.js 20 42` **ALL CLEAR**（semantic fingerprint f5c3ee76・台帳検査3種すべて違反0）
+- `npm run test:ui:walkthrough` **PASS**（328手・digest `1052faa82eaf7991` 不変）
+- `npm run test:ui:walkthrough:en` **PASS**（418手・digest `1373a572876ad98a`・Issues 0・**i18n-miss 0 維持**）。
+  4回走らせて3回PASS・1回FAIL（424手）。§29-5 に記録済みのPlaywrightタイミング揺れで、
+  再走2回とも同一digestでPASSした（FAIL回も i18n-miss は0）
+
+### 9. 確認してほしいところ（実機・EN）
+
+1. **新聞2面「団体比較」**（開幕号／47週以降／対抗戦・4団体戦・天頂戦の前後の週に出る）— GRADE脇の短評が枠に収まるか、
+   団体カードのタグ3種（`Ace reliance: low` 等）が折り返さないか、記者コラムの「勝ち筋／リスク／補強提案」3行が読める英語か
+2. 同2面の**主力対決リスト**の役割ラベル（`Ace` / `Core` / `Mid-card`）と、寸評の `{role}` が英語になっているか
+3. 同2面の**比較対象セレクタと団体カードの団体名**が英語（`Kobukan` 等）で出るか
+4. **JAモードの新聞2面**が従来どおりであること（GRADE脇の短評が14字で切れている見た目も含めて）
+5. **JAモードの頂上決戦記事**で、時間切れ決着（フルタイム）の週に本文が「〜が**判定勝ち**で〜を下した」になっているか（従来は「HP判定で」）
+
+---
 ## 🌐 Stage B P7-12 — ui∩(template|dialogue)重複キー22件の一本化+一致検査新設、観戦ビッグムーブ`.long`判定の言語別化（2026-09-04・worktree agent-a302959a8e6585ac1）
 
 P7-9(87a6600)が「新たな発見」として起票した5件のうち**3(ui∩(template|dialogue)重複キー22件)・5(`_spawnBigIntro`の`.long`判定16文字固定)**を解決した。1(`management.js`の`HP判定`ロジックキー露出。JA出力を変える=golden採り直しが要るためKeisuke裁定待ち・スコープ外)・2(タッグの`↔ タッチ`実況行、{type,data}化待ち)は今回のスコープ外として据え置き(2は記録のみ・変更なし。詳細はspecs §31)。開始前にworktreeブランチをmain先端(86e4a540、P7-9マージまで)へfast-forward済み。

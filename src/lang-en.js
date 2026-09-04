@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4241件、訳文あり4241件)
+//  生成元: i18n/ui-ledger.json (総キー4243件、訳文あり4243件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -197,6 +197,7 @@
     "TKO": "TKO",
     "TKO！！": "TKO!!",
     "TOP3平均OVRが100で100点 (上限100)": "An average OVR of 100 across your top 3 scores 100 (capped at 100)",
+    "TOP5人気": "Top 5 popularity",
     "TOP5実力": "Top 5 Strength",
     "TOP5平均人気が80で100点 (上限100)": "An average popularity of 80 across your top 5 scores 100 (capped at 100)",
     "TV番組出演": "TV appearance",
@@ -3784,6 +3785,7 @@
     "選手同士の会話が増え、ロッカールームと社長への空気が柔らかくなる。和んだ空気はその後数週間ゆるやかに続く": "Fighters talk more with each other, and the mood toward both the locker room and the president softens. The warmth lingers gently for a few weeks after.",
     "選手同士の会話が増え、社長への空気も柔らかくなった": "Fighters are talking more with each other, and the mood toward the president has softened",
     "選手名": "Name",
+    "選手層": "Roster depth",
     "選手生命そのものを延ばせる唯一の手。長く働いてほしい主力ほど、思い切って休ませる価値がある。ただし癒やせる量には一年あたりの限りがあり、休暇中の欠場と引き換えになる点は覚悟すること。": "The one move that can extend a fighter's career itself. The more you want a mainstay to keep working long-term, the more it's worth taking the leap and resting her. Just know the healing has a yearly ceiling, and it always comes at the cost of missed shows.",
     "選手給与": "Fighter Salaries",
     "選手給与合計": "Total Wrestler Salaries",
