@@ -296,17 +296,21 @@ const KURODA_WAR_RECORD = {
     d => `40年見てきた中で、連勝中ほど次の一敗が痛い。${d.streak}連勝は誇りつつ、警戒も怠るべきではない`,
   ],
 
+  // i18n P4-7: 本プールは連敗数を `Math.abs(d.streak)` で出していたため
+  // kurodaTemplateOf が正規化できず(計算式は非対応)、EN でも JA 文のまま出ていた。
+  // 計算を消費点(ui-render.js の warComment)へ寄せ、ここは素の {streakAbs} を読むだけに
+  // する。d.streakAbs は常に Math.abs(d.streak) と同値なので JA 出力は不変。
   loseStreak: [
-    d => `現在${Math.abs(d.streak)}連敗中。そろそろ真剣に原因を考えたほうがいい`,
-    d => `${Math.abs(d.streak)}連敗。勝てない相手に何度挑んでも結果は同じだ。アプローチを変えるべきだろう`,
+    d => `現在${d.streakAbs}連敗中。そろそろ真剣に原因を考えたほうがいい`,
+    d => `${d.streakAbs}連敗。勝てない相手に何度挑んでも結果は同じだ。アプローチを変えるべきだろう`,
     d => `連敗が止まらない。ファンの期待はとっくに冷めている`,
-    d => `${Math.abs(d.streak)}連敗中。もう驚かなくなってきたのが一番怖いところだ`,
-    d => `${Math.abs(d.streak)}連敗。そろそろ「次こそは」以外の言葉が聞きたいものだが`,
-    d => `${Math.abs(d.streak)}回連続で負けている。同じやり方で同じ相手に勝てると思っているのだろうか`,
+    d => `${d.streakAbs}連敗中。もう驚かなくなってきたのが一番怖いところだ`,
+    d => `${d.streakAbs}連敗。そろそろ「次こそは」以外の言葉が聞きたいものだが`,
+    d => `${d.streakAbs}回連続で負けている。同じやり方で同じ相手に勝てると思っているのだろうか`,
     d => `連敗記録更新中だ。不名誉な記録だけは順調に伸びている`,
-    d => `${Math.abs(d.streak)}連敗。もう対策とか分析とかではなく、根本的に何かを変えないと`,
-    d => `${Math.abs(d.streak)}連敗中。本紙としては、もう「相性」では片付けられない数字だと書いておく`,
-    d => `数字は嘘をつかない。${Math.abs(d.streak)}連敗は実力差の証明だ。認めることから始めるべきだろう`,
+    d => `${d.streakAbs}連敗。もう対策とか分析とかではなく、根本的に何かを変えないと`,
+    d => `${d.streakAbs}連敗中。本紙としては、もう「相性」では片付けられない数字だと書いておく`,
+    d => `数字は嘘をつかない。${d.streakAbs}連敗は実力差の証明だ。認めることから始めるべきだろう`,
     d => `40年見てきた中で、連敗を断つには劇薬が要ることが多い。${d.playerName}にその覚悟があるか、問われている`,
   ],
 };
@@ -908,42 +912,44 @@ const KURODA_SPOTLIGHT = {
     d => `数字は嘘をつかない。${d.name}の総合力+${d.ovrGain}という伸びは、この団体の育成方針が機能している証拠でもある`,
   ],
 
-  star: [
-    d => d.ovr >= 90
-      ? `${d.orgName}の看板、${d.name}。総合力${d.ovr}に人気${d.pop}——実力と集客力を兼ね備えた正真正銘のエースだ`
-      : d.ovr >= 75
-      ? `${d.name}、人気${d.pop}。中堅以上の実力に加えてこの集客力。厄介な存在だ`
-      : `${d.name}は人気${d.pop}。総合力はまだ発展途上だが、ファンを呼べるのは才能の証だ`,
-    d => d.ovr >= 90
-      ? `${d.name}——総合力${d.ovr}、人気${d.pop}。こちらのエースと真正面からぶつかれる数少ない相手だ`
-      : d.ovr >= 75
-      ? `${d.name}、総合力${d.ovr}で人気${d.pop}。実力と人気のバランスが良く、どのカードにも組み込める`
-      : `${d.name}は人気${d.pop}。まだ実力は追いついていないが、集客面では無視できない`,
-    d => d.ovr >= 90
-      ? `対策なしで${d.name}に当たれば、興行ごと持っていかれる。総合力${d.ovr}に人気${d.pop}は反則だ`
-      : d.ovr >= 75
-      ? `${d.name}の人気${d.pop}は脅威だ。実力もそれなりにある。舐めてかかると痛い目を見る`
-      : `${d.name}の人気${d.pop}は侮れない。今のうちに成長を止めたいところだが`,
-    d => d.ovr >= 90
-      ? `${d.orgName}の人気看板であり実力のエース。${d.name}はどちらの意味でも団体の顔だ`
-      : d.ovr >= 75
-      ? `${d.orgName}の集客の要は${d.name}。総合力${d.ovr}と伸びしろもある。要注意だ`
-      : `${d.orgName}の人気看板は${d.name}。総合力は発展途上だが、カリスマ性は数字に出ている`,
-    d => d.ovr >= 90
-      ? `本紙としては、${d.name}は${d.orgName}そのものを背負う存在だと書いておく。総合力${d.ovr}、人気${d.pop}——この組み合わせは反則だ`
-      : d.ovr >= 75
-      ? `本紙は${d.name}を要警戒人物リストに入れておく。総合力${d.ovr}に人気${d.pop}は十分に脅威だ`
-      : `${d.name}は人気${d.pop}が先行している。実力が追いついた時が本当の脅威になる`,
-    d => d.ovr >= 90
-      ? `40年見てきた中で、総合力${d.ovr}と人気${d.pop}を両立する選手は一握りだ。${d.name}はその一握りに入っている`
-      : d.ovr >= 75
-      ? `40年見てきた中で、${d.name}クラスの選手にどう対処するかで団体の格が問われる`
-      : `40年見てきた中で、人気${d.pop}は実力に先行することがある。${d.name}が伸びれば手がつけられなくなる`,
-    d => d.ovr >= 90
-      ? `数字は嘘をつかない。${d.name}の総合力${d.ovr}・人気${d.pop}はトップクラスの証だ`
-      : d.ovr >= 75
-      ? `${d.name}の数字は中堅以上を保証している。${d.orgName}の柱として機能しているのは間違いない`
-      : `${d.name}の人気${d.pop}は数字以上の意味を持つ。集客力こそが団体を支える`,
+  // i18n P4-7: 旧 star プールは1エントリの中で総合力90/75の三項分岐を抱えており、
+  // kurodaTemplateOf が正規化できず(分岐する関数本体は非対応)、EN でも JA 文のまま
+  // 出ていた。帯ごとに独立プール(starAce / starSolid / starPopular)へ分割し、
+  // 帯の選択は kurodaSpotlightStarKey() に寄せた。3プールとも本数・並び順は旧 star と
+  // 同一なので、消費点が引く乱数インデックスは分割前と一致する = JA 出力は不変。
+  // 帯の境界値(90 / 75)は kurodaSpotlightStarKey() が唯一の定義箇所。
+
+  // 総合力90以上: 実力・集客ともトップクラス
+  starAce: [
+    d => `${d.orgName}の看板、${d.name}。総合力${d.ovr}に人気${d.pop}——実力と集客力を兼ね備えた正真正銘のエースだ`,
+    d => `${d.name}——総合力${d.ovr}、人気${d.pop}。こちらのエースと真正面からぶつかれる数少ない相手だ`,
+    d => `対策なしで${d.name}に当たれば、興行ごと持っていかれる。総合力${d.ovr}に人気${d.pop}は反則だ`,
+    d => `${d.orgName}の人気看板であり実力のエース。${d.name}はどちらの意味でも団体の顔だ`,
+    d => `本紙としては、${d.name}は${d.orgName}そのものを背負う存在だと書いておく。総合力${d.ovr}、人気${d.pop}——この組み合わせは反則だ`,
+    d => `40年見てきた中で、総合力${d.ovr}と人気${d.pop}を両立する選手は一握りだ。${d.name}はその一握りに入っている`,
+    d => `数字は嘘をつかない。${d.name}の総合力${d.ovr}・人気${d.pop}はトップクラスの証だ`,
+  ],
+
+  // 総合力75〜89: 中堅以上の実力に集客力が乗っている層
+  starSolid: [
+    d => `${d.name}、人気${d.pop}。中堅以上の実力に加えてこの集客力。厄介な存在だ`,
+    d => `${d.name}、総合力${d.ovr}で人気${d.pop}。実力と人気のバランスが良く、どのカードにも組み込める`,
+    d => `${d.name}の人気${d.pop}は脅威だ。実力もそれなりにある。舐めてかかると痛い目を見る`,
+    d => `${d.orgName}の集客の要は${d.name}。総合力${d.ovr}と伸びしろもある。要注意だ`,
+    d => `本紙は${d.name}を要警戒人物リストに入れておく。総合力${d.ovr}に人気${d.pop}は十分に脅威だ`,
+    d => `40年見てきた中で、${d.name}クラスの選手にどう対処するかで団体の格が問われる`,
+    d => `${d.name}の数字は中堅以上を保証している。${d.orgName}の柱として機能しているのは間違いない`,
+  ],
+
+  // 総合力75未満: 実力より人気が先行している層
+  starPopular: [
+    d => `${d.name}は人気${d.pop}。総合力はまだ発展途上だが、ファンを呼べるのは才能の証だ`,
+    d => `${d.name}は人気${d.pop}。まだ実力は追いついていないが、集客面では無視できない`,
+    d => `${d.name}の人気${d.pop}は侮れない。今のうちに成長を止めたいところだが`,
+    d => `${d.orgName}の人気看板は${d.name}。総合力は発展途上だが、カリスマ性は数字に出ている`,
+    d => `${d.name}は人気${d.pop}が先行している。実力が追いついた時が本当の脅威になる`,
+    d => `40年見てきた中で、人気${d.pop}は実力に先行することがある。${d.name}が伸びれば手がつけられなくなる`,
+    d => `${d.name}の人気${d.pop}は数字以上の意味を持つ。集客力こそが団体を支える`,
   ],
 
   youngThreat: [
@@ -1258,7 +1264,14 @@ const KURODA_RELATION_NARRATIVE = {
       d => `本紙が見守る、もう一つの宿命`,
     ],
     bodies: [
-      d => `${d.matches > 0 ? `${d.matches}度の対戦` : '未対戦'}、それでも互いの存在は確かに意識し合っている。本紙としては、本格対決の機が熟すのを待つばかりである。`,
+      // i18n P4-7: 冒頭が入れ子テンプレートリテラルの三項分岐(対戦済み/未対戦)で、
+      // kurodaTemplateOf が正規化できず EN でも JA 文のまま出ていた。分岐を
+      // kurodaVariants でデータ側へ出し、各枝を単一テンプレ(=正規化可能)に保つ。
+      // 配列の要素数は 5 のまま(消費点が pool.length で pick/ペア選択している)。
+      kurodaVariants([
+        { when: d => d.matches > 0, text: d => `${d.matches}度の対戦、それでも互いの存在は確かに意識し合っている。本紙としては、本格対決の機が熟すのを待つばかりである。` },
+        { text: d => `未対戦、それでも互いの存在は確かに意識し合っている。本紙としては、本格対決の機が熟すのを待つばかりである。` },
+      ]),
       d => `${d.charA}と${d.charB}——二人が同じリングに立つ夜は、業界の節目になる。数字がそう告げている。`,
       d => `通算${d.matches}戦。両者のキャリアの重要な局面で、必ずと言っていいほど名前が交差する。偶然と呼ぶには出来すぎている、と本紙は書いておく。`,
       d => `${d.bestMQ}点という最高評価。これは単なる数字ではなく、二人の関係が業界の中でどれほどの位置を占めているかの指標である。次戦への期待は、当然のように高まる。`,
@@ -1513,6 +1526,45 @@ const KURODA_GAMEOVER = {
 //  同じ実装を再利用する — 抽出時(台帳生成)と実行時(表示)でロジックが1本化される。
 // ═══════════════════════════════════════════════════════════
 
+// ── 条件分岐エントリの分解 (P4-7) ─────────────────────────────────────────────
+// プール要素の本体に三項演算子を書くと kurodaTemplateOf が正規化できず(=辞書キーが
+// 取れず)、EN でも JA 文のまま出てしまう(fail-open)。分岐は関数本体ではなく
+// variants 配列としてデータ側に出し、各枝は「単一テンプレートリテラルを返す関数」
+// = 正規化可能な形に保つ。
+//   - 返り値は従来どおり呼び出し可能: entry(d) は分岐前と同じ文字列を返す
+//   - entry.pickVariant(d) で枝を解決できる(kurodaText と抽出器が使う)
+//   - entry.variants で全枝を列挙できる(抽出器が台帳へ全枝を載せる)
+//   - toString() は全枝のソースを連結して返す。ui-render.js の _filterPraiseByMQ が
+//     プール要素の fn.toString() を正規表現で見て本文を選別しているため、ラッパ自身の
+//     ソースではなく枝の本文が見えている必要がある。
+// when を持たない枝は無条件(= else 相当)。上から順に最初に真になった枝を使う。
+function kurodaVariants(variants) {
+  const list = Array.isArray(variants) ? variants : [];
+  const pick = (d) => {
+    for (let i = 0; i < list.length; i++) {
+      const v = list[i];
+      if (!v || typeof v.text !== 'function') continue;
+      if (typeof v.when !== 'function') return v.text;
+      let ok = false;
+      try { ok = !!v.when(d); } catch (_e) { ok = false; }
+      if (ok) return v.text;
+    }
+    return null;
+  };
+  const entry = (d) => { const branch = pick(d); return branch ? branch(d) : ''; };
+  entry.variants = list;
+  entry.pickVariant = pick;
+  entry.toString = () => list.map((v) => String(v && v.text)).join('\n');
+  return entry;
+}
+
+// KURODA_SPOTLIGHT の star 系プール(P4-7で総合力帯ごとに3分割)の帯キーを解決する。
+// 帯の境界値はここだけに置く(消費点に数値を散らさない)。
+function kurodaSpotlightStarKey(ovr) {
+  const v = Number(ovr) || 0;
+  return (v >= 90) ? 'starAce' : (v >= 75) ? 'starSolid' : 'starPopular';
+}
+
 // "winner.name" -> "winnerName" / "attendance.toLocaleString()" -> "attendanceToLocaleString"
 function kurodaParamName(path) {
   return path.replace(/\(\)$/, '').split('.')
@@ -1525,6 +1577,9 @@ function kurodaParamName(path) {
 // paths: プレースホルダの元パス一覧("winner.name"等。kurodaEvalPathで評価する)。
 function kurodaTemplateOf(fn) {
   if (typeof fn !== 'function') return null;
+  // 分岐ラッパ(kurodaVariants)は単体では1つのテンプレに畳めない。枝へ分解して扱うのは
+  // kurodaText と抽出器の役目なので、ここでは正規化不能として返す。
+  if (Array.isArray(fn.variants)) return null;
   if (fn.length === 0) {
     // 0引数 = 補間なしの固定文。呼べば原文(=テンプレそのもの)がそのまま得られる。
     try {
@@ -1581,6 +1636,11 @@ function kurodaText(entry, d, dict) {
     return dict ? dict(entry) : entry;
   }
   if (typeof entry !== 'function') return '';
+  // P4-7: 分岐ラッパはまず条件で枝を決め、その枝を通常のプール要素として訳出する。
+  if (typeof entry.pickVariant === 'function') {
+    const branch = entry.pickVariant(d);
+    return branch ? kurodaText(branch, d, dict) : '';
+  }
   const callDirect = () => { try { return entry(d) || ''; } catch (_e) { return ''; } };
   if (!dict) return callDirect();
   const tpl = kurodaTemplateOf(entry);

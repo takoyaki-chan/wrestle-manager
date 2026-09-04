@@ -1,5 +1,66 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P4-7 — 黒田holdout16件を分岐なしエントリへ分割し英訳（2026-09-04・worktree agent-a4a3652b710c7e035）
+
+P4-5の`kurodaTemplateOf()`が正規化できずfail-open(=ENでもJA文のまま)になっていた**16エントリ**を、分岐のない複数エントリへ分割して台帳に載せ、英訳した。開始前にworktreeブランチをmain先端(771cf37)へfast-forward済み。**テンプレ台帳は1,459→1,490行、未訳0を維持。テンプレ層のfail-openは0件になった**(`docs/i18n-p4-5-kuroda-holdout-audit.md`が「合計0件」を出力)。
+
+一番効くのは**KURODA_SPOTLIGHTの`star`サブプール7本**で、これはライバル団体の注目選手欄(データベース比較タブ)に出るため、ENモードで日本語が出続けていた最も目立つ箇所だった。
+
+### 1. 設計方針 — 「分岐を関数本体からデータ側へ出す」
+
+3群とも共通の考え方で解いた。`kurodaTemplateOf()`は「アロー関数の本体全体が単一のテンプレートリテラル」だけを正規化できる仕様なので、**関数本体に条件を書かない形へ持っていけば自動的に台帳に載る**。抽出器のパーサを賢くする(=三項演算子を解釈させる)方向は取らなかった。表示時と抽出時で同じ`kurodaTemplateOf`を使う一本化(P4-5の設計)を崩さずに済むため。
+
+### 2. 件別の解消内容
+
+| # | 対象 | 件数 | 保留の理由 | 解消方法 |
+|---|---|---|---|---|
+| A | `KURODA_WAR_RECORD.loseStreak` | 8 | 連敗数を`${Math.abs(d.streak)}`で出していた(計算式入り補間は正規化不能) | 絶対値の計算を**消費点**(ui-render.js:8549の`warComment`)へ移し、`d`に`streakAbs: Math.abs(signedStreak)`を追加。プール側は素の`${d.streakAbs}`を読むだけにした。`winStreak`は`d.streak`(正値)のままで無改変 |
+| B | `KURODA_SPOTLIGHT.star` | 7 | 全7本が`d.ovr>=90 ? … : d.ovr>=75 ? … : …`の三項分岐 | 総合力帯ごとに独立プール **`starAce`(≥90) / `starSolid`(75〜89) / `starPopular`(<75)** へ分割(各7本、並び順は旧`star`と同一)。帯の解決は`kurodaSpotlightStarKey(ovr)`に集約し、境界値90/75の定義箇所を1つにした。消費点(ui-render.js:8746付近)は`poolKey==='star'`のときだけ帯キーへ差し替える |
+| C | `KURODA_RELATION_NARRATIVE.destined_rival.bodies[0]` | 1 | 入れ子テンプレートリテラルの三項分岐(`${d.matches > 0 ? \`${d.matches}度の対戦\` : '未対戦'}`) | **`kurodaVariants([{when,text},…])`** を新設し、分岐をデータ側の配列へ出した。各枝は単一テンプレの関数=正規化可能 |
+
+### 3. `kurodaVariants` の設計(kuroda-text.js)
+
+条件分岐を持つプール要素の汎用ラッパ。既存の消費経路を一切壊さないよう3つの性質を持たせた。
+
+- **呼び出し可能**: `entry(d)`が分岐前と同じ文字列を返す(dict省略時のfail-open経路がそのまま動く)
+- **`entry.pickVariant(d)` / `entry.variants`**: `kurodaText()`は枝を解決してから通常のプール要素として訳出し、抽出器`walkStrings()`は全枝を台帳へ載せる
+- **`toString()`のオーバーライド**: 全枝のソースを連結して返す。ui-render.jsの`_filterPraiseByMQ`(8900行)と`np-relations`の同型フィルタ(9073行)が**プール要素の`fn.toString()`を`/最高評価|bestMQ/`で正規表現検査して本文を選別している**ため、ラッパ自身のソースではなく枝の本文が見えていないと選別結果が変わる。今回の対象[0]はどちらの枝も該当語を含まないため実挙動は不変だが、将来の分岐エントリで壊れないようにここで担保した
+
+`kurodaTemplateOf()`には`if (Array.isArray(fn.variants)) return null;`のガードを追加(ラッパは単体で1テンプレに畳めない。枝への分解は`kurodaText`と抽出器の役目)。
+
+### 4. JA同一性の検証方法と結果
+
+**分割前のHEADで152本の出力をスナップショットし、分割後に同じ条件で再計算して突合した**(`streak`帯5種×loseStreak全11本、`winStreak`巻き込み確認3種×10本、`ovr`帯6種×star全7本、`matches`4種×destined_rival全5本+`_filterPraiseByMQ`のフィルタマスク)。
+
+- **152/152が1バイト一致**。フィルタマスク(`00010`)も一致 = MQ低時に除外される本文の集合が変わっていない
+- 乱数の同一性は**配列長を変えないこと**で担保した。starは3プールとも7本(`Engine.rng.pick`が引く添字が分割前と同じ)、`destined_rival.bodies`は5本のまま(`_npRivalryPairIndex % pool.length`とpickの両方が長さ依存)
+- `node test/ja-golden.js`: **完全一致**(lines=11233, hash=6b3d05c8…)
+
+### 5. 英訳31行
+
+分割で台帳に新規計上されたのは **31行**(A:8 + B:21 + C:2)。P4-6の文体・訳語をそのまま継承した。
+
+- **連敗の定型**: `連勝` の既訳が `{streak} in a row` なので、`連敗` は **`{streakAbs} losses in a row`** で族を作った(`現在〜中` は `as things stand` を後置)
+- **用語継承**: 総合力=`Overall`(冠詞付きで`an Overall of {ovr}`) / 人気=`popularity` / 看板=`banner`・`carries the banner` / 集客=`draw` / 相性=`matchup` / 団体=`promotion`
+- **決まり文句の固定訳**: `数字は嘘をつかない`→`The numbers do not lie.`(直後に必ず事実を置く) / `40年見てきた中で`→`Forty years on this beat, and …` / `本紙としては〜と書いておく`→`This paper will put it on record: …`
+- **`{ovr}`/`{pop}`に`points`を付けない**(禁止語grep`[0-9]+\s*points`に該当し、試合中の得点に読まれるため)
+- **maxim回避**: `集客力こそが団体を支える`は業界内部の観察として`Drawing power is what holds a promotion up.`とし、直前の文に名前と数字を残した
+
+### 6. 検証
+
+- `node test/i18n-extract-templates.js`: 台帳 1,459→**1,490行**、**en保持=1,459(既存訳の消失0)**、**保留0件**
+- `node test/i18n-build-template-dict.js`: green(**訳文あり1,490 / 未訳0**)。黒田禁止語grep9パターン・プレースホルダ完全性・en内日本語残りを全通過
+- `node test/ja-golden.js`: **完全一致**(--update不使用)
+- `npm test`: **260/260 PASS**
+- `npm run test:ui:walkthrough`: PASS(issues 0)
+- **ENスモーク(vm・実dict1,490キー・`kurodaText`経由)89本・日本語残0**: loseStreak全11本×streak4帯、star3プール×ovr6帯(境界値97/90/89/75/74/30で帯の切り替わりも確認)、destined_rivalの分岐ラッパ両枝×matches3種。**同じ89本をja側dictでも流し、分割前の出力と差分0**
+- `node --check`: src/kuroda-text.js / src/ui-render.js / test/i18n-extract-templates.js / src/lang-en-templates.js すべてOK
+
+### 7. 抽出器の変更点
+
+- `walkStrings()`: 関数値が`.variants`を持つときは枝へ分解して全枝を拾う(3行)
+- **保留0件時にドキュメントを削除しない**ように変更した。旧実装は`fs.unlinkSync`でファイルごと消す設計だったが、`docs/game-system-roadmap.md`・`specs/i18n-runtime-spec-v1.0.md`・worklogの3箇所から参照されており、消すとリンクが宙に浮く。「合計0件 + P4-7で全件解消済みの内訳表」を書き出す形にした(内容は引き続き自動生成)
+
 ## 🌐 Stage B P4-6 — 黒田記者の記事プール+自団体新聞プール908行の英訳（2026-09-04・主筆Opus / worktree agent-afc722cfb87f17226）
 
 P4-5で台帳化された未訳908行(kuroda-text.js 13プール + app.js の自団体新聞2プール)を全量英訳した。開始前にworktreeブランチをmain先端(24a7e47)へfast-forward済み。**テンプレ台帳 `i18n/template-ledger.json` は 1,459/1,459 が訳出済み(未訳0)になった。**
