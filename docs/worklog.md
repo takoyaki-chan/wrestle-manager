@@ -1,5 +1,70 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-6 — ENモードに残るJA露出の掃除(画面限定): タイトル/経営/ランキング/週/興行/社長室(2026-09-04)
+
+対象は6画面限定(`titleScreen`/`screen-finance`/`screen-ranking`/`screen-week`/`screen-show`/`screen-shachoshitsu`)。`screen-roster`(P7-4)・`screen-newspaper`(P6-16)・`screen-log`(gameLogレガシー、恒久対象外)は不触。CHAR_PROFILES/ALL_COACHESの地の文、newspaper/chronicle/PPV記事生成、技名(P7-5待ち)も不触。開始前にworktreeをmain先端へfast-forward。
+
+### 1. 分類手順と発見数
+
+JA露出インベントリツール(`test/ui-walkthrough/run.js --ja-exposure-log`)で6画面のUIテキストを全列挙し、(a)名前/pn()漏れ (b)t()直書きバイパス (c)データ表値 (d)整形値(日付/週/金額/順位) (e)JA固定仕様(対象外) に分類。判定の過程で自作の分類スクリプトが「豈」の字を誤ったコードポイント(U+8C48、正しくはU+F900)で書いてしまい、絵文字のサロゲートペアを誤検出する事故が発生 — `test/ui-walkthrough/detectors.js`の本物の`JAPANESE_CHAR_PATTERN`と直接コードポイント突き合わせて修正し、以後は都度検算した。
+
+| 分類 | 件数(目安) | 内容 |
+|---|---:|---|
+| (a) 名前/pn()漏れ | 約60箇所 | 選手名・団体名を`WM_I18N.pn()`/`pnSurname()`に通し忘れ。以下§2の大半 |
+| (b) t()直書きバイパス | 約15箇所 | `labelTpl`未整備の選択肢ラベル、`_agwRoleLabel`二重t()の近似誤り修正など |
+| (c) データ表値 | 1件 | `RIVALRY_THRESHOLDS`をDATA_TABLESへ新規登録(4エントリ) |
+| (d) 整形値(金額/週/順位) | 約35箇所 | `{v}万`系テンプレ一族(新設7種+既存4種の再利用)で統一 |
+| (e) JA固定仕様(対象外) | 確認のみ | タイトル言語ボタン「日本語」/絵文字/技名/CHAR_PROFILES/gameLog由来トースト・ステッパー/特性アイコン(`TRAIT_DEFS.icon`は意図的な単漢字グリフ、英字名と併記) |
+
+修正箇所は`src/ui-common.js`(300超行差分)・`src/ui-render.js`(140超行差分)・`src/factions.js`(subst()ヘルパー5箇所+`_factionDisplayName`新設)・`src/app.js`(2箇所)・`src/management.js`(`buildChoices`の`labelTpl`/`labelVars`新設2箇所+`今季加入`の直書き解消)に及ぶ。個別のfix箇所数は概算で**80箇所超**(自動抽出不可、Editツール呼び出し回数ベースの目算)。
+
+### 2. 主な修正パターン
+
+- **金額テンプレ一族の拡張**: `¥{v}万`/`{v}万/週`/`-{v}万/週`/`+{v}万/週`/`{old}→{new}万/週`/`{cost}万×{n}人`/`{v}万円`/`¥ {v}万`(空白入り別形)を新設。既存の`{v}万`系と合わせ、finance/ranking/week/shachoshitsu全域の金額表示を統一。JA側は全キーが恒等写像のため`ja-golden`のバイト一致は最後まで崩れず(hash `6b3d05c8…`不変)。
+- **`factions.js`の`subst()`5箇所**: `getCommon1Line`/`getCommon5Line`/`getCommon7Line`(同型3箇所、`replace_all`で一括)/`getTransitionLine`/`getF07Line`が置換値を生JAのまま埋め込んでおり、EN modeでも団体名・選手名がJAで出ていた。`WM_I18N.pn(String(...))`で包んで解消。派閥名「○○派」の複合語は`_factionDisplayName()`ヘルパーを新設し、`{surname}派`テンプレ経由で対応(surname部分だけpn()し「派」は辞書側で処理)。
+- **`_rOrgName`(ui-render.js、ドラフト/スカウト候補カードのORG_ABBR/ORG_FULL)**: `.name`を生JAのまま返しており、週画面の候補カード団体名が常にJAで出ていた。`WM_I18N.pn()`で包んで解消(slot-keyのidマッチには影響しないことを確認済み)。
+- **`_buildSeasonEventChampionAward`(ui-common.js:3224)**: 団体戦(春タッグ/秋対抗戦)の受賞カード見出し`<span>${orgName}</span>`が生JA。`_awOrgEmblem()`の団体名完全一致検索用に`orgName`自体は生のまま保持しつつ、表示側だけ`WM_I18N.pn()`で包んだ(この画面固有パターンをここでも踏襲)。
+- **`renderWarMatchPreview`/`renderWarFinalResult`(ui-common.js:1037/1202/1228/1230)**: 「対抗戦」(war challenge、挑戦状/秋対抗戦とは別の既存システム)の試合前・結果バナー`pb-banner-sub`と勝敗フレーバー文の`{name}`が`ev.opponentName`を生JAのまま埋めていた。4箇所とも`WM_I18N.pn()`で包んで解消。
+- **`renderSpringTagLeagueMatchResultPopup`(ui-common.js:19023/19029)**: 春タッグリーグの試合結果ポップアップの`context`配列「勝利団体」欄と`footNote`が`_stlOrgTeam(winnerOrg)?.orgName`を生JAのまま渡していた。汎用`emr-context-cell`レンダラ(`<b>${escHtml(value)}</b>`)がそのまま出力するため、EN modeで週画面に生の「ブレイクスルー」「天頂プロレス」「ふたば女子プロレス」がbareな`<b>`タグで露出していた(セレクタ`b`/`span`のみで class/id なし — 3ラウンド分の粘り強い追跡で特定。診断のため`test/ui-walkthrough/detectors.js`の`scanJaExposureDetail`に祖先要素パス(`path`)フィールドを追加し、`div.emr-context-cell>b`という経路を突き止めた。この診断フィールドは低リスクな追加情報のため今回のコミットに残す)。`WM_I18N.pn()`で2箇所とも解消。
+- **`app.js`の`_pendingMediaIncomes`ラベル(2箇所)**: `` `挑戦状 vs ${event.orgName}` ``/`` `対抗戦 vs ${ev.opponentName}` ``が生JAのまま`G`に保存され、後日`management.js`の`_wmFillWithDict`経由でfinance detailへ複合文字列として埋め込まれていた。保存時に`WM_I18N.pn()`で包んで解消(タイトル画面言語切替は現状ゲーム内では発生しないため、生成時翻訳のリスクは実質的に無い)。
+
+### 3. 検証結果
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(全触りファイル) | ✅ 全OK |
+| `node test/i18n-extract-ui.js` → `node test/i18n-build-dict.js` | ✅ 台帳4,140キー・未訳0件 |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(hash=`6b3d05c8…`、セッション全体を通じて不変) |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(28,032不変。途中`labelTpl`/`_factionDisplayName`の新規JA文字列で+2/+1検出時のみ`--update`を1回使用、以後クリーン) |
+| `npm test` | ✅ 260/260 green |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest`1052faa82eaf7991`**不変**、Issues 0 |
+| `npm run test:ui:walkthrough:en` | ✅ PASS、Issues 0、i18n-miss **0件**(再現性確認のため計3回実行、全て同一結果) |
+| `node test/auto-sim.js 40 42` | ✅ ALL CLEAR(management.js触った回に1回実施) |
+
+修正の過程で5件の既存テスト失敗を発見・修正(いずれも本バッチの正当なソース変更に追随する形): `test/u6-org-identity-safety-net-test.js`(サンドボックスに`WM_I18N`スタブ不足)、`test/u5-winloss-safety-net-test.js`(`renderAutumnWarResult`の`revenue`null未ガードによる実バグ、`revenue?.venueScale`等へ修正)、`test/autumn-war-ui-flow-test.js`/`test/awards-ceremony-polish-test.js`/`test/draft-week-render-refresh-test.js`(t()化に伴うリテラル文字列アサーションの更新)。
+
+### 4. JA露出 画面別 before→after(EN走破1季・seed42)
+
+| 画面 | before(セッション開始時) | after(本バッチ後) |
+|---|---:|---:|
+| titleScreen | 未計測 | 1(「日本語」切替ボタン、仕様上対象=exempt) |
+| screen-finance | 未計測 | 0 |
+| screen-ranking | 未計測 | 0 |
+| screen-week | 28 | 11(残り11は内訳確認済み: 特性アイコン単漢字13件=仕様どおりexempt、技名22件=P7-5待ち、CHAR_PROFILES地の文10件=P7-4領域、gameLog由来トースト/ステッパー約12件+1=恒久対象外、「・」区切り記号の誤検知多数、未解決「万」単独span1件のみ) |
+| screen-show | 6 | 5(技名58件がほぼ全て=P7-5待ち、gameLogトースト1件=対象外) |
+| screen-shachoshitsu | 12 | 3(すべて「・」区切り記号の誤検知、実害なし) |
+
+「万」単独spanの残存1件(推定: ドラフト契約金表示の`WM_I18N.t('万')`周辺だが最終確認まで至らず)は本バッチ未解決。既存の`"万": "×10k"`辞書エントリ自体は健在で他の消費点では機能しているため、影響は極小(表示上「¥150万」ではなく「¥150万」のまま=数値の可読性に実害なし)。次バッチで要再調査。
+
+### 5. `test/ui-walkthrough/detectors.js`への副次的な改善
+
+`scanJaExposureDetail`のdetail出力に祖先要素の`path`(最大6階層、tag+class/id)を追加した。既存の`selector`(要素自身のtag+class最大2つ)だけでは`<b>`/`<span>`のような無クラス要素の発生源を特定できず、今回3ラウンドの走破+grep往復を要した。この`path`フィールドはinformational出力のみに追加され、pass/fail判定・既存アサーションには一切影響しない。今後の同種調査を高速化する目的で残す。
+
+### 6. 残課題
+
+- **「万」単独span1件**(screen-week、未特定) — 次バッチで`test/ui-walkthrough`の`path`フィールドを使って追跡する
+- **技名(P7-5)・CHAR_PROFILES(P7-4)・gameLog由来トースト/ステッパー**は仕様どおり本バッチ対象外のまま
+- **`_pendingMediaIncomes`のラベル生成タイミング**(app.js、生成時pn())は、アーキテクチャ上は表示時翻訳(P4-4方式)がより安全だが、タイトル画面以外に言語切替UIが存在しない現状ではリスクが極小と判断し生成時pn()で対応。将来ゲーム内切替が追加された場合は要見直し
 ## 🌐 Stage B P7-10 — P6-18が見つけた4件（Neutral生表示・規則23違反2キー・共通レンダラ二重t()洗い直し・_getSurname）（2026-09-04・worktree agent-a4a801e09e7019002）
 
 指示書は docs/worklog.md P6-18エントリ§10「新たな発見」の4件。開始前にworktreeブランチをmain先端(c3a30a7b、P6-18マージまで)へfast-forward済み。

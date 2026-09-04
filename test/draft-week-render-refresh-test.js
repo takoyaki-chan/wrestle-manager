@@ -16,8 +16,11 @@ assert.match(
   /const weekLabel = G\.offSeason[\s\S]*?オフ第\{w\}週'[\s\S]*?G\.offWeek \|\| 3[\s\S]*?第\{w\}週'[\s\S]*?G\.week/,
   'scoutEvent refresh should define the week label for offseason and regular drafts'
 );
+// i18n P7-6: leadBody は直書きテンプレ文字列から WM_I18N.t(..., { week: weekLabel, ... }) 呼び出しへ
+// 配線し直した(EN画面で生JAのまま露出していた穴の修正)。weekLabelは`${weekLabel}`という
+// テンプレ埋め込みではなく `week: weekLabel` というt()パラメータとして使われるようになった。
 assert.ok(
-  scoutBranch.indexOf('const weekLabel') < scoutBranch.indexOf('${weekLabel}'),
+  scoutBranch.indexOf('const weekLabel') < scoutBranch.indexOf('week: weekLabel'),
   'weekLabel must be initialized before the draft newspaper markup uses it'
 );
 

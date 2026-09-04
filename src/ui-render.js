@@ -558,10 +558,10 @@ function _srChartSvg(values) {
 /** 資金推移チャートのX軸ラベル(開幕→締め、間は空白で等間隔に見せる) */
 function _srFundsXLabels(n) {
   if (n <= 1) return '';
-  const mid = ['春', '夏', '秋'];
+  const mid = ['春', '夏', '秋'].map(s => WM_I18N.t(s));
   const labels = new Array(n).fill('');
-  labels[0] = '開幕';
-  labels[n - 1] = '締め';
+  labels[0] = WM_I18N.t('開幕');
+  labels[n - 1] = WM_I18N.t('締め');
   // 中間点にざっくり季節ラベルを均等配置(演出上の目安。厳密な週対応ではない)
   for (let i = 1; i < mid.length + 1 && i < n - 1; i++) {
     const idx = Math.round((i * (n - 1)) / (mid.length + 1));
@@ -1196,7 +1196,7 @@ function renderWeekScreen() {
       html += '<div class="survival-body">';
       html += `<div class="survival-gauge-track">
         <div class="survival-gauge-fill ${gaugeColor}" style="width:${sFuel}%">
-          <span class="survival-gauge-label">${Math.round(G.funds).toLocaleString()}万</span>
+          <span class="survival-gauge-label">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</span>
         </div>
       </div>`;
 
@@ -1204,7 +1204,7 @@ function renderWeekScreen() {
       html += '<div class="survival-gauge-markers">';
       sMilestones.forEach(m => {
         const cls = m.done ? 'cleared' : (m === sMilestones.find(x => !x.done) ? 'active' : '');
-        html += `<span class="survival-gauge-marker ${cls}" style="cursor:help" ${_tipAttr(m.desc)}>${m.done ? '✅' : '⬜'} ${m.label}</span>`;
+        html += `<span class="survival-gauge-marker ${cls}" style="cursor:help" ${_tipAttr(WM_I18N.t(m.desc))}>${m.done ? '✅' : '⬜'} ${WM_I18N.t(m.label)}</span>`;
       });
       html += '</div>';
 
@@ -1710,7 +1710,7 @@ function renderWeekScreen() {
     // ヘッダー
     html += `<div style="text-align:center;padding:20px 16px;background:linear-gradient(135deg,rgba(241,196,15,0.15),rgba(231,76,60,0.08));border:1px solid rgba(241,196,15,0.35);border-radius:10px;margin-bottom:16px">
       <h2 style="color:var(--gold);margin:0 0 6px 0;font-size:20px">${WM_I18N.t('🏟️ PPV GRAND FINAL「{name}」', { name: ppvName })}</h2>
-      <p style="font-size:14px;color:var(--text-main);margin:0 0 4px 0">${WM_I18N.t('出場枠:')} <strong>${maxSlots}名</strong>${WM_I18N.t('（ランク{r}位）', { r: pRank })}</p>
+      <p style="font-size:14px;color:var(--text-main);margin:0 0 4px 0">${WM_I18N.t('出場枠:')} <strong>${WM_I18N.t('{n}名', { n: maxSlots })}</strong>${WM_I18N.t('（ランク{r}位）', { r: pRank })}</p>
       <p style="font-size:12px;color:var(--text-dim);margin:0">${WM_I18N.t('出場報酬: {v}万円', { v: PPV_REWARD[pRank] || 100 })}</p>
     </div>`;
 
@@ -1813,8 +1813,10 @@ function renderWeekScreen() {
     }
 
     const leadBody = topSE
-      ? `本日、${weekLabel}。各団体のフロントが動き出す。今年の目玉は${topSE.age}歳の超逸材・${WM_I18N.pn(topSE.name)}。複数の団体がすでに獲得に本腰を入れているとの情報があり、業界関係者の注目が集まっている。${maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。`
-      : `本日、${weekLabel}。各団体のフロントが動き出す。${elites.length > 0 ? `注目の逸材${elites.length}名を中心に、` : ''}業界関係者の視線が集まっている。${maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。`;
+      ? WM_I18N.t('本日、{week}。各団体のフロントが動き出す。今年の目玉は{age}歳の超逸材・{name}。複数の団体がすでに獲得に本腰を入れているとの情報があり、業界関係者の注目が集まっている。{maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。', { week: weekLabel, age: topSE.age, name: WM_I18N.pn(topSE.name), maxPicks })
+      : elites.length > 0
+        ? WM_I18N.t('本日、{week}。各団体のフロントが動き出す。注目の逸材{eliteCount}名を中心に、業界関係者の視線が集まっている。{maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。', { week: weekLabel, eliteCount: elites.length, maxPicks })
+        : WM_I18N.t('本日、{week}。各団体のフロントが動き出す。業界関係者の視線が集まっている。{maxPicks}名の新戦力を掴み取れるか — あなたの団体の未来を決める選択が、今始まる。', { week: weekLabel, maxPicks });
 
     const statCells = [{ num: totalCount, lbl: 'TOTAL' }];
     if (superElites.length > 0) statCells.push({ num: superElites.length, lbl: 'SUPER ELITE', hot: true });
@@ -1829,7 +1831,7 @@ function renderWeekScreen() {
     html += `<div class="a1-wrap">
       ${superElites.length > 0 ? `<div class="a1-stamp">◆ ${WM_I18N.t('超逸材発見')} ◆</div>` : `<div class="a1-stamp">◆ ${WM_I18N.t('号外')} ◆</div>`}
       <div class="a1-title-bar">
-        <div class="brand">週刊グラップル</div>
+        <div class="brand">${WM_I18N.t('週刊グラップル')}</div>
         <div class="ed">${WM_I18N.t('第{n}号 ・ {week}', { n: editionNo, week: weekLabel })}</div>
       </div>
       <div class="a1-hero">
@@ -2777,7 +2779,7 @@ function renderAutumnWarWeekBanner() {
   const aw = G.autumnWar;
   if (!aw || aw.cancelled || aw.announcedSeason !== G.season) return '';
   if (G.week === Engine.autumnWar.ANNOUNCE_WEEK) {
-    const names = (aw.teams || []).map(t => t.orgName).filter(Boolean).join(' / ');
+    const names = (aw.teams || []).map(t => WM_I18N.pn(t.orgName)).filter(Boolean).join(' / ');
     return `<div class="stl-week-banner agw-week-banner">
       <div class="stl-week-banner-icon">⚔️</div>
       <div class="stl-week-banner-body">
@@ -3582,7 +3584,7 @@ function renderShowPrep() {
           ? `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--gold)">🏆</div><div class="sp-metric-label">${WM_I18N.t('王座戦 解禁中')}</div></div>`
           : `<div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-dim);font-size:18px">${WM_I18N.t('⏳{n}週', { n: titleCd.weeksLeft })}</div><div class="sp-metric-label">${WM_I18N.t('王座戦 解禁まで')}</div></div>`)}
       <div class="sp-metric"><div class="sp-metric-val" style="color:var(--text-sub)">${v.cap.toLocaleString()}</div><div class="sp-metric-label">${WM_I18N.t('会場席数')}</div></div>
-      <div class="sp-metric"><div class="sp-metric-val" style="color:#e17055">-${v.cost}万</div><div class="sp-metric-label">${WM_I18N.t('会場費')}</div></div>
+      <div class="sp-metric"><div class="sp-metric-val" style="color:#e17055">${WM_I18N.t('-{v}万', { v: v.cost })}</div><div class="sp-metric-label">${WM_I18N.t('会場費')}</div></div>
     </div>
   </div>`;
 
@@ -3996,7 +3998,7 @@ function _financeChart(values, options = {}) {
   svg += `<polyline points="${points}" fill="none" stroke="${lineColor}" stroke-width="2"/>`;
   const lastX = leftPad + plotW, lastY = toY(lastVal);
   svg += `<circle cx="${lastX}" cy="${lastY}" r="3" fill="${lineColor}"/>`;
-  svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${Math.round(lastVal).toLocaleString()}万</text>`;
+  svg += `<text x="${lastX}" y="${lastY-8}" text-anchor="end" fill="${lineColor}" font-size="11" font-weight="700">${WM_I18N.t('{v}万', { v: Math.round(lastVal).toLocaleString() })}</text>`;
   svg += '</svg>';
   return `<div style="margin-bottom:16px;padding:10px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">${label ? `<div style="font-size:12px;color:var(--text-dim);margin-bottom:6px">${label}</div>` : ''}${svg}</div>`;
 }
@@ -4117,7 +4119,7 @@ function renderFinance() {
 
   // ── 総合タブ ──
   if (tab === 'summary') {
-    html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${Math.round(G.funds).toLocaleString()}万</div>`;
+    html += `<div style="font-size:24px;font-weight:900;margin-bottom:12px;color:${G.funds >= 0 ? 'var(--green)' : 'var(--red)'}">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</div>`;
 
     // 資金推移チャート — 期間フィルタに追従する
     // fundsHistory は今シーズンの週次スナップショット（シーズン開幕でリセット）のため、
@@ -4143,19 +4145,19 @@ function renderFinance() {
       const totalNet = totalIncome - totalExpense;
       const periodLabel = period === 'month' ? WM_I18N.t('今月') : period === 'year' ? WM_I18N.t('今シーズン') : WM_I18N.t('全期間');
       html += `<div class="panel-title">${WM_I18N.t('期間サマリ — {period}', { period: periodLabel })} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${WM_I18N.t('({n}週)', { n: filtered.length })}</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('📈 総収入')}</span><span class="f-val income">+${Math.round(totalIncome).toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('📉 総支出')}</span><span class="f-val expense">-${Math.round(totalExpense).toLocaleString()}万</span></div>`;
-      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('純利益')}</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${totalNet >= 0 ? '+' : ''}${Math.round(totalNet).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('📈 総収入')}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(totalIncome).toLocaleString() })}</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('📉 総支出')}</span><span class="f-val expense">${WM_I18N.t('-{v}万', { v: Math.round(totalExpense).toLocaleString() })}</span></div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('純利益')}</span><span class="f-val ${totalNet >= 0 ? 'income' : 'expense'}">${WM_I18N.t('{sign}{v}万', { sign: totalNet >= 0 ? '+' : '-', v: Math.abs(Math.round(totalNet)).toLocaleString() })}</span></div>`;
     } else {
       html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">${WM_I18N.t('この期間の記録はまだありません')}</div>`;
       // 推定週間コスト（初回表示用）
       html += `<div class="panel-title" style="margin-top:12px">${WM_I18N.t('週間コスト内訳（推定）')}</div>`;
-      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('選手給与合計')}</span><span class="f-val expense">-${calcWeeklySalary()}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('事務運営費')}</span><span class="f-val expense">-${FIXED_COSTS.admin}万/週</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('選手給与合計')}</span><span class="f-val expense">${WM_I18N.t('-{v}万/週', { v: calcWeeklySalary() })}</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('事務運営費')}</span><span class="f-val expense">${WM_I18N.t('-{v}万/週', { v: FIXED_COSTS.admin })}</span></div>`;
       const coachTotal = getCoachSalaryTotal();
-      if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('コーチ給与（{n}名）', { n: G.coaches.length })}</span><span class="f-val expense">-${coachTotal}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('グッズ収入')}</span><span class="f-val income">+${Engine.economy.calcWeeklyGoodsRev(G.roster)}万/週</span></div>`;
-      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('メディア収入')}</span><span class="f-val income">+${Engine.economy.calcWeeklyMediaRev(G.orgPop)}万/週</span></div>`;
+      if (coachTotal > 0) html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('コーチ給与（{n}名）', { n: G.coaches.length })}</span><span class="f-val expense">${WM_I18N.t('-{v}万/週', { v: coachTotal })}</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('グッズ収入')}</span><span class="f-val income">${WM_I18N.t('+{v}万/週', { v: Engine.economy.calcWeeklyGoodsRev(G.roster) })}</span></div>`;
+      html += `<div class="finance-row"><span class="f-label">${WM_I18N.t('メディア収入')}</span><span class="f-val income">${WM_I18N.t('+{v}万/週', { v: Engine.economy.calcWeeklyMediaRev(G.orgPop) })}</span></div>`;
     }
   }
 
@@ -4203,7 +4205,7 @@ function renderFinance() {
           html += `<div class="finance-row"><span class="f-label">${d.label}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
         });
         html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
-        html += `<div class="finance-row" style="font-weight:600"><span>${WM_I18N.t('小計')}</span><span class="f-val income">+${Math.round(ticketTotal).toLocaleString()}万</span></div>`;
+        html += `<div class="finance-row" style="font-weight:600"><span>${WM_I18N.t('小計')}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(ticketTotal).toLocaleString() })}</span></div>`;
       }
 
       // ブランド収入セクション
@@ -4221,11 +4223,11 @@ function renderFinance() {
           // 折りたたみ可能なカテゴリヘッダ
           html += `<div class="finance-row" style="cursor:pointer" onclick="var el=document.getElementById('${detailId}');el.style.display=el.style.display==='none'?'block':'none'">`;
           html += `<span class="f-label" style="font-weight:600">▼ ${cat.label}</span>`;
-          html += `<span class="f-val income">+${Math.round(catTotal).toLocaleString()}万</span></div>`;
+          html += `<span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(catTotal).toLocaleString() })}</span></div>`;
           html += `<div id="${detailId}" style="display:none;padding-left:16px">`;
           subs.forEach(d => {
             const subLabel = d.label.replace(/^(グッズ収入|メディア収入|プロモ収入)/, '').replace(/^（/, '').replace(/）$/, '') || d.label;
-            html += `<div class="finance-row"><span class="f-label" style="font-size:11px;color:var(--text-dim)">└ ${subLabel}</span><span style="font-size:11px" class="f-val income">+${Math.round(d.val).toLocaleString()}万</span></div>`;
+            html += `<div class="finance-row"><span class="f-label" style="font-size:11px;color:var(--text-dim)">└ ${subLabel}</span><span style="font-size:11px" class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(d.val).toLocaleString() })}</span></div>`;
           });
           html += `</div>`;
         });
@@ -4236,11 +4238,11 @@ function renderFinance() {
           });
         }
         html += `<div style="border-top:1px solid var(--border);margin:4px 0"></div>`;
-        html += `<div class="finance-row" style="font-weight:600"><span>${WM_I18N.t('小計')}</span><span class="f-val income">+${Math.round(brandTotal + otherTotal).toLocaleString()}万</span></div>`;
+        html += `<div class="finance-row" style="font-weight:600"><span>${WM_I18N.t('小計')}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(brandTotal + otherTotal).toLocaleString() })}</span></div>`;
       }
 
       html += `<div style="border-top:2px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('総収入')}</span><span class="f-val income">+${Math.round(grandTotal).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('総収入')}</span><span class="f-val income">${WM_I18N.t('+{v}万', { v: Math.round(grandTotal).toLocaleString() })}</span></div>`;
     } else {
       html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">${WM_I18N.t('この期間の収入記録はありません')}</div>`;
     }
@@ -4268,10 +4270,10 @@ function renderFinance() {
     const total = sorted.reduce((s, i) => s + i.val, 0);
     if (sorted.length > 0) {
       sorted.forEach(d => {
-        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val expense">${Math.round(d.val).toLocaleString()}万</span></span></div>`;
+        html += `<div class="finance-row"><span class="f-label">${d.label}</span><span style="display:flex;align-items:center;gap:6px"><span style="font-size:10px;color:var(--text-dim)">×${d.count}</span><span class="f-val expense">${WM_I18N.t('{v}万', { v: Math.round(d.val).toLocaleString() })}</span></span></div>`;
       });
       html += `<div style="border-top:1px solid var(--border);margin:8px 0"></div>`;
-      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('総支出')}</span><span class="f-val expense">${Math.round(total).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('総支出')}</span><span class="f-val expense">${WM_I18N.t('{v}万', { v: Math.round(total).toLocaleString() })}</span></div>`;
     } else {
       html += `<div style="font-size:12px;color:var(--text-dim);padding:8px 0">${WM_I18N.t('この期間の支出記録はありません')}</div>`;
     }
@@ -4299,7 +4301,7 @@ function renderFinance() {
     if (salaryWeeks > 0) {
       const periodLabel = period === 'month' ? WM_I18N.t('今月') : period === 'year' ? WM_I18N.t('今シーズン') : WM_I18N.t('全期間');
       html += `<div class="panel-title">${WM_I18N.t('{period}の給与支払い', { period: periodLabel })}</div>`;
-      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('給与支払い合計')} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${WM_I18N.t('({n}週)', { n: salaryWeeks })}</span></span><span class="f-val expense">${Math.round(salaryTotal).toLocaleString()}万</span></div>`;
+      html += `<div class="finance-row finance-total"><span>${WM_I18N.t('給与支払い合計')} <span style="font-size:11px;color:var(--text-dim);font-weight:400">${WM_I18N.t('({n}週)', { n: salaryWeeks })}</span></span><span class="f-val expense">${WM_I18N.t('{v}万', { v: Math.round(salaryTotal).toLocaleString() })}</span></div>`;
       html += `<div style="margin-bottom:14px"></div>`;
     }
     // 選手別給与（現在のスナップショット）
@@ -4308,7 +4310,7 @@ function renderFinance() {
     html += `<div class="panel-title">${WM_I18N.t('選手別給与（現在）')}</div>`;
     html += `<table class="data-table"><tr><th>${WM_I18N.t('名前')}</th><th>${WM_I18N.t('総合')}</th><th>${WM_I18N.t('給与')}</th></tr>`;
     [...ownFightersForSalary].sort((a, b) => getSalary(b) - getSalary(a)).forEach(c => {
-      html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${getSalary(c)}万</td></tr>`;
+      html += `<tr><td>${fLink(c, {source:'roster', size:'12px'})}</td><td class="num">${ov(c)}</td><td class="num">${WM_I18N.t('{v}万', { v: getSalary(c) })}</td></tr>`;
     });
     html += '</table>';
     if (rentalFightersForSalary.length > 0) {
@@ -4863,6 +4865,11 @@ function renderRanking() {
   const _buildDepthNoteV2 = ({ sortedAll, featured, rentalRoster = [], readyOvr = 70 }) => {
     const support = sortedAll.filter(f => !featured || f.id !== featured.id);
     const nameOf = (f) => (f && (f.surname || f.name)) || '';
+    // i18n P7-6: この講評は生JAの直書き連結で、EN画面でもフルセンテンスがJAのまま
+    // 露出していた(screen-ranking div.rp-depth-note)。名前はJAでは従来どおり
+    // f.surname(短縮表記データ)を使い、ENだけpnSurname(フルネームJA→姓のみEN辞書)へ
+    // 委ねる(f.surnameをそのままpn()に通しても辞書キー=フルネームと一致せず無効なため)。
+    const nameForDisplay = (f) => (f && WM_I18N.lang === 'en' && f.name) ? WM_I18N.pnSurname(f.name) : nameOf(f);
     const ovOf = (f) => Engine.util.ov(f);
     // 「実戦級」の基準は業界水準連動(Engine.ranking.getDepthBenchmark)。文中に実数で出すので
     // 顔リストのOVR表示とそのまま突き合わせられる。
@@ -4870,38 +4877,38 @@ function renderRanking() {
     const ready = support.filter(f => ovOf(f) >= READY_OVR).length;
     const injured = support.filter(f => f.injury || f.forcedRest).length;
     const rental = (rentalRoster || []).find(f => f && f.isRental) || null;
-    const name2 = nameOf(support[0]);
-    const name3 = nameOf(support[1]);
+    const name2 = nameForDisplay(support[0]);
+    const name3 = nameForDisplay(support[1]);
     const bandSource = support.slice(0, 2);
     const bandOvr = bandSource.length ? Math.min(...bandSource.map(ovOf)) : 0;
     const band = bandOvr > 0 ? `${Math.floor(bandOvr / 10) * 10}` : '';
     const youngCore = support.filter(f => (Number(f.age) || Infinity) <= 22).length;
 
     if (sortedAll.length < 4 || support.length < 2) {
-      return '主力と呼べる顔ぶれ自体が足りていない。補強か育成か、決断の時が近い。';
+      return WM_I18N.t('主力と呼べる顔ぶれ自体が足りていない。補強か育成か、決断の時が近い。');
     }
 
     let first;
     let second;
     if (ready >= 4) {
-      first = `${name2}・${name3}ら${band}台の主力が続く。`;
-      second = `2番手以下にOVR${READY_OVR}以上が${ready}人。誰が欠けても興行の格が落ちない。`;
+      first = WM_I18N.t('{a}・{b}ら{band}台の主力が続く。', { a: name2, b: name3, band });
+      second = WM_I18N.t('2番手以下にOVR{ovr}以上が{n}人。誰が欠けても興行の格が落ちない。', { ovr: READY_OVR, n: ready });
     } else if (ready === 1) {
-      first = `${name2}の後ろが続かない。`;
-      second = `2番手以下でOVR${READY_OVR}以上は${name2}だけ。軸が倒れれば一気に崩れる。`;
+      first = WM_I18N.t('{a}の後ろが続かない。', { a: name2 });
+      second = WM_I18N.t('2番手以下でOVR{ovr}以上は{a}だけ。軸が倒れれば一気に崩れる。', { ovr: READY_OVR, a: name2 });
     } else if (ready === 0) {
-      first = `${name2}・${name3}ら${band}台が主力の軸。`;
-      second = 'OVRの壁を越えた選手はまだいない。上と戦うには、地力の底上げからだ。';
+      first = WM_I18N.t('{a}・{b}ら{band}台が主力の軸。', { a: name2, b: name3, band });
+      second = WM_I18N.t('OVRの壁を越えた選手はまだいない。上と戦うには、地力の底上げからだ。');
     } else {
-      first = `${name2}・${name3}が主力の軸。`;
-      second = `2番手以下のOVR${READY_OVR}以上は${ready}人。層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。`;
+      first = WM_I18N.t('{a}・{b}が主力の軸。', { a: name2, b: name3 });
+      second = WM_I18N.t('2番手以下のOVR{ovr}以上は{n}人。層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。', { ovr: READY_OVR, n: ready });
     }
 
     let third = '';
-    if (injured > 0) third = `${injured}人が欠場中で、選手層は見た目より薄い。`;
-    else if (rental) third = `レンタルの${nameOf(rental)}が戦列を支える。頼もしくもあり、借り物の厚みでもある。`;
-    else if (ready >= 6) third = '控えを含めても駒が余るほどで、連戦でも戦列が細らない。';
-    else if (youngCore >= 2) third = '主力層は若い。数字はまだ並だが、来季この陣容の景色は変わっているかもしれない。';
+    if (injured > 0) third = WM_I18N.t('{n}人が欠場中で、選手層は見た目より薄い。', { n: injured });
+    else if (rental) third = WM_I18N.t('レンタルの{a}が戦列を支える。頼もしくもあり、借り物の厚みでもある。', { a: nameForDisplay(rental) });
+    else if (ready >= 6) third = WM_I18N.t('控えを含めても駒が余るほどで、連戦でも戦列が細らない。');
+    else if (youngCore >= 2) third = WM_I18N.t('主力層は若い。数字はまだ並だが、来季この陣容の景色は変わっているかもしれない。');
 
     return [first, second, third].filter(Boolean).join('');
   };
@@ -5052,8 +5059,8 @@ function renderRanking() {
         <td class="h-rank-${h.rank}">${WM_I18N.t('{n}位', { n: h.rank })}</td>
         <td>${h.showCount || 0}</td>
         <td>${h.bestMQ || 0}</td>
-        <td class="${profitClass}">${profit >= 0 ? '+' : ''}${Math.round(profit).toLocaleString()}万</td>
-        <td>${Math.round(h.funds || 0).toLocaleString()}万</td>
+        <td class="${profitClass}">${WM_I18N.t('{sign}{v}万', { sign: profit >= 0 ? '+' : '', v: Math.round(profit).toLocaleString() })}</td>
+        <td>${WM_I18N.t('{v}万', { v: Math.round(h.funds || 0).toLocaleString() })}</td>
         <td>${h.rosterSize || '-'}</td>
       </tr>`;
     });
@@ -5078,7 +5085,7 @@ function _formatShachoshitsuDocCost(doc) {
   if (doc.costLabel) return WM_I18N.t(doc.costLabel);  // 動的コスト書類(ボーナス/休暇/招聘)は「—」でなく説明を出す
   if (doc.cost == null) return '—';
   if (doc.cost === 0) return WM_I18N.t('無料');
-  return `${doc.cost}万`;
+  return WM_I18N.t('{v}万', { v: doc.cost });
 }
 
 function renderShachoshitsu() {
@@ -5459,7 +5466,7 @@ function _renderShachoshitsuScoutDesk() {
           }).join('')}
         </div>
         <div class="shachoshitsu-resume-cost">
-          ${WM_I18N.t('契約金')} <b class="signing">${signingCost.toLocaleString()}万</b><br>
+          ${WM_I18N.t('契約金')} <b class="signing">${WM_I18N.t('{v}万', { v: signingCost.toLocaleString() })}</b><br>
           <span class="salary">${WM_I18N.t('給与 {salary}万/週', { salary })}</span>
         </div>
         <div class="shachoshitsu-resume-btns">
@@ -5540,7 +5547,7 @@ function _renderShachoshitsuRentalDesk() {
           <div class="shachoshitsu-rental-mini-ovr" style="color:${_ovrColor(Engine.util.ov(f)).color}">${Engine.util.ov(f)}<span>OVR</span></div>
         </div>
         <div class="shachoshitsu-rental-mini-fee">
-          <b><span id="rentalFee_${f.id}">${feeFor1}</span>万</b>${WM_I18N.t('/期')}
+          <b><span id="rentalFee_${f.id}">${feeFor1}</span>${WM_I18N.t('万')}</b>${WM_I18N.t('/期')}
           <select id="${selectId}" onchange="updateRentalFee(${f.id})">
             ${seasonOpts}
           </select>
@@ -5690,7 +5697,7 @@ function _renderDraftCandidateList(candidates, context) {
   const STYLE_JP = { Grappler: WM_I18N.t('グラップラー'), Striker: WM_I18N.t('ストライカー'), Submission: WM_I18N.t('サブミッション'), Aerial: WM_I18N.t('エアリアル'), Allround: WM_I18N.t('オールラウンド'), Brawler: WM_I18N.t('ブロウラー') };
   const ROLE_JP = { Babyface: WM_I18N.t('ベビーフェイス'), Heel: WM_I18N.t('ヒール'), Neutral: WM_I18N.t('中立') };
   const MARK_DISPLAY = { honmei: { text: '◎', cls: 'mark-bullseye' }, taikou: { text: '○', cls: 'mark-contender' }, osae: { text: '△', cls: 'mark-outside' } };
-  const _rOrgName = (id) => (RIVAL_ORGS.find(o => o.id === id) || {}).name || id;
+  const _rOrgName = (id) => WM_I18N.pn((RIVAL_ORGS.find(o => o.id === id) || {}).name || id);
   const ORG_ABBR = { org_s: _rOrgName('org_s').slice(0,3).toUpperCase(), org_a: _rOrgName('org_a').slice(0,3).toUpperCase(), org_b: _rOrgName('org_b').slice(0,3).toUpperCase() };
   const ORG_FULL = { org_s: _rOrgName('org_s'), org_a: _rOrgName('org_a'), org_b: _rOrgName('org_b') };
 
@@ -5805,7 +5812,7 @@ function _renderDraftCandidateList(candidates, context) {
             <div style="font-size:11px;color:#3a2e1c;line-height:1.6;">
               <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
               ${WM_I18N.t('{age}歳・{style}', { age: c.age, style: STYLE_JP[c.style] || c.style })}${c.role ? '・<strong>' + (ROLE_JP[c.role] || c.role) + '</strong>' : ''}<br>
-              ${WM_I18N.t('推定契約金')} <strong>¥${baseCost.toLocaleString()}万</strong>
+              ${WM_I18N.t('推定契約金')} <strong>${WM_I18N.t('¥{v}万', { v: baseCost.toLocaleString() })}</strong>
             </div>
           </div>
         </div>
@@ -5847,7 +5854,7 @@ function _renderDraftCandidateList(candidates, context) {
           <div style="font-size:10px;line-height:1.5;color:#3a2e1c;margin-bottom:4px;">
             <span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;margin-right:5px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span>
             ${WM_I18N.t('{age}歳・{style}', { age: c.age, style: STYLE_JP[c.style] || c.style })}${c.role ? '・' + (ROLE_JP[c.role] || c.role) : ''}<br>
-            ${WM_I18N.t('推定契約金')} <strong style="color:#1f1710;">¥${baseCost.toLocaleString()}万</strong>
+            ${WM_I18N.t('推定契約金')} <strong style="color:#1f1710;">${WM_I18N.t('¥{v}万', { v: baseCost.toLocaleString() })}</strong>
           </div>
           <div style="display:flex;gap:12px;padding-top:4px;border-top:1px dotted rgba(95,69,35,0.18);">
             ${['org_s','org_a','org_b'].map(oid => `<div style="display:flex;align-items:center;gap:3px;font-size:9px;color:#7a5b32;letter-spacing:0.5px;font-weight:700;">
@@ -5889,7 +5896,7 @@ function _renderDraftCandidateList(candidates, context) {
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);"><span style="font-size:12px;font-weight:900;color:#1f1710;">${WM_I18N.pn(c.name)}</span><div style="font-size:9px;color:#7a5b32;">${STYLE_JP[c.style] || c.style}</div></td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#1f1710;font-size:13px;">${c.age}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);"><span class="tier-tag ${tierClass}" style="display:inline-block;font-size:11px;font-weight:900;padding:1px 7px;border:1px solid currentColor;border-radius:3px;letter-spacing:0.5px;">${tier}</span></td>
-        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">¥${baseCost.toLocaleString()}万</td>
+        <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;color:#3a2e1c;">${WM_I18N.t('¥{v}万', { v: baseCost.toLocaleString() })}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_s', false)}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_a', false)}</td>
         <td style="padding:6px 8px;border-bottom:1px solid rgba(95,69,35,0.12);text-align:center;">${_markHtml(c.id, 'org_b', false)}</td>
@@ -5904,7 +5911,7 @@ function _renderDraftCandidateList(candidates, context) {
     <div style="display:flex;gap:24px;">
       <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">${WM_I18N.t('獲得上限')}<br><strong style="display:block;font-size:22px;color:#1f1710;letter-spacing:1px;margin-top:1px;font-weight:400;">${WM_I18N.t('{n}名', { n: maxPicks })}</strong></div>
       <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">${WM_I18N.t('選択中')}<br><strong style="display:block;font-size:22px;color:${selections.length >= maxPicks ? '#c22020' : '#9a7020'};letter-spacing:1px;margin-top:1px;font-weight:400;">${selections.length} / ${WM_I18N.t('{n}名', { n: maxPicks })}</strong></div>
-      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">${WM_I18N.t('残資金')}<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">¥ ${Math.round(funds).toLocaleString()}万</strong></div>
+      <div style="font-size:9px;letter-spacing:1.5px;color:#7a5b32;font-weight:700;">${WM_I18N.t('残資金')}<br><strong style="display:block;font-size:22px;color:#9a7020;letter-spacing:1px;margin-top:1px;font-weight:400;">${WM_I18N.t('¥ {v}万', { v: Math.round(funds).toLocaleString() })}</strong></div>
     </div>
     ${selections.length > 0
       ? `<button onclick="startDraftNegotiation()" style="font-size:13px;letter-spacing:3px;padding:12px 28px;background:linear-gradient(90deg,#8b1a1a,#c22020);color:#fff;border:none;border-radius:4px;cursor:pointer;font-weight:700;">${WM_I18N.t('交渉開始（{n}名）→', { n: selections.length })}</button>`
@@ -5988,7 +5995,7 @@ function _renderDraftNegotiation() {
   html += `<div class="dn-status">
     <div class="dn-status-block"><div class="dn-status-label">${WM_I18N.t('獲得')}</div><div class="dn-status-val">${acquired.length} / ${maxPicks}</div></div>
     <div class="dn-status-block"><div class="dn-status-label">${WM_I18N.t('候補')}</div><div class="dn-status-val">${String(candIdx + 1).padStart(2,'0')} / ${totalCands}</div></div>
-    <div class="dn-status-block"><div class="dn-status-label">${WM_I18N.t('残資金')}</div><div class="dn-status-val dn-gold">¥ ${Math.round(G.funds).toLocaleString()}万</div></div>
+    <div class="dn-status-block"><div class="dn-status-label">${WM_I18N.t('残資金')}</div><div class="dn-status-val dn-gold">${WM_I18N.t('¥ {v}万', { v: Math.round(G.funds).toLocaleString() })}</div></div>
   </div>`;
 
   // ── Stage ──
@@ -6004,8 +6011,8 @@ function _renderDraftNegotiation() {
     ${miniStatsHtml}
     <div class="dn-bid-display">
       <div class="dn-bid-label">CURRENT BID</div>
-      <div class="dn-bid-amount">¥ ${ns.currentBid.toLocaleString()}万</div>
-      <div class="dn-bid-base">${WM_I18N.t('推定相場')} <strong>¥${baseCost.toLocaleString()}万</strong> · ${bidRatio}×</div>
+      <div class="dn-bid-amount">${WM_I18N.t('¥ {v}万', { v: ns.currentBid.toLocaleString() })}</div>
+      <div class="dn-bid-base">${WM_I18N.t('推定相場')} <strong>${WM_I18N.t('¥{v}万', { v: baseCost.toLocaleString() })}</strong> · ${bidRatio}×</div>
     </div>
   </div>`;
 
@@ -6047,7 +6054,7 @@ function _renderDraftNegotiation() {
         ${!isParticipating ? `<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">${WM_I18N.t('不参加')}</span>`
         : isDropped ? `<span class="dn-card-mark dn-mark-none">—</span><span class="dn-card-bid dn-bid-passed">PASSED</span>`
         : `<span class="dn-card-mark ${mark ? mark.cls : ''}">${mark ? mark.text : '—'}</span>
-           <span class="dn-card-bid${isLeader ? ' dn-bid-lead' : ''}">¥${ns.currentBid.toLocaleString()}万</span>`}
+           <span class="dn-card-bid${isLeader ? ' dn-bid-lead' : ''}">${WM_I18N.t('¥{v}万', { v: ns.currentBid.toLocaleString() })}</span>`}
       </div>
       <div class="dn-card-heat-section">
         <div class="dn-card-heat-title">${WM_I18N.t('粘り度')}</div>
@@ -6067,7 +6074,7 @@ function _renderDraftNegotiation() {
     <div class="dn-card-tier">PLAYER</div>
     <div class="dn-card-bid-row">
       ${playerDropped ? '<span class="dn-card-bid dn-bid-passed">PASSED</span>'
-      : `<span class="dn-card-bid">¥${ns.currentBid.toLocaleString()}万</span>`}
+      : `<span class="dn-card-bid">${WM_I18N.t('¥{v}万', { v: ns.currentBid.toLocaleString() })}</span>`}
     </div>
     <div class="dn-card-heat-section">
       <div class="dn-card-heat-label" style="color:rgba(232,230,224,0.3);margin-top:6px;">${playerDropped ? WM_I18N.t('離脱済み') : WM_I18N.t('— あなたの判断 —')}</div>
@@ -6127,12 +6134,12 @@ function _renderDraftNegotiation() {
     html += `<div class="dn-actions">
       <button class="dn-action-btn dn-action-aggressive" onclick="draftPlayerAction('aggressive')" title="${WM_I18N.t('相手が降りやすくなる。ただし一部の相手には逆効果の場合も')}">
         <div class="dn-action-label">${WM_I18N.t('強気で押す')}</div>
-        <div class="dn-action-detail">→ <strong>¥${aggressiveBid.toLocaleString()}万</strong></div>
+        <div class="dn-action-detail">→ <strong>${WM_I18N.t('¥{v}万', { v: aggressiveBid.toLocaleString() })}</strong></div>
         <div class="dn-action-hint">${WM_I18N.t('相手の心を揺さぶる')}</div>
       </button>
       <button class="dn-action-btn dn-action-standard" onclick="draftPlayerAction('standard')" title="${WM_I18N.t('通常の入札倍率で金額を上げる')}">
         <div class="dn-action-label">${WM_I18N.t('標準で粘る')}</div>
-        <div class="dn-action-detail">→ <strong>¥${standardBid.toLocaleString()}万</strong></div>
+        <div class="dn-action-detail">→ <strong>${WM_I18N.t('¥{v}万', { v: standardBid.toLocaleString() })}</strong></div>
         <div class="dn-action-hint">${WM_I18N.t('粘り強く交渉を続ける')}</div>
       </button>
       <button class="dn-action-btn dn-action-withdraw" onclick="draftPlayerAction('drop')" title="${WM_I18N.t('この選手の交渉から離脱する')}">
@@ -6408,7 +6415,7 @@ function renderScoutEvent() {
   };
 
   let html = `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding:10px 14px;background:var(--bg-card);border:1px solid var(--border);border-radius:6px">
-    <span style="font-size:14px;color:var(--text-sub)">${WM_I18N.t('資金:')} <strong style="color:var(--gold)">${Math.round(G.funds).toLocaleString()}万</strong></span>
+    <span style="font-size:14px;color:var(--text-sub)">${WM_I18N.t('資金:')} <strong style="color:var(--gold)">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">${WM_I18N.t('獲得:')} <strong style="color:#2ecc71">${WM_I18N.t('{n} / {max}名', { n: picks.length, max: maxPicks })}</strong></span>
     <span style="font-size:14px;color:var(--text-sub)">${WM_I18N.t('団体人気:')} <strong style="${_scale6Style(_orgPopColor(Engine.util.dispOrgPop(orgPop)))}">${Engine.util.dispOrgPop(orgPop)}</strong></span>
 
@@ -6472,10 +6479,10 @@ function renderScoutCompetitionModal(cand, baseCost, discount) {
   box.className = 'mdl-d-box';
   box.innerHTML = `
     <div class="mdl-d-title urgent">${WM_I18N.t('⚔ 他団体との競合発生！')}</div>
-    <div class="mdl-d-speaker">${WM_I18N.pn(cand.name)} ・ ${tierCfg.label} / ${cand.style} / ${WM_I18N.t('{age}歳', { age: cand.age })}</div>
+    <div class="mdl-d-speaker">${WM_I18N.pn(cand.name)} ・ ${WM_I18N.t(tierCfg.label)} / ${cand.style} / ${WM_I18N.t('{age}歳', { age: cand.age })}</div>
     <div class="mdl-d-detail">
-      ${WM_I18N.t('通常契約金:')} <strong>${baseCost}万</strong> &nbsp;|&nbsp;
-      ${WM_I18N.t('競合上乗せ (×{mult}):', { mult: cand._compMultiplier })} <strong style="color:#ff9080">${compCost}万</strong> &nbsp;|&nbsp;
+      ${WM_I18N.t('通常契約金:')} <strong>${WM_I18N.t('{v}万', { v: baseCost })}</strong> &nbsp;|&nbsp;
+      ${WM_I18N.t('競合上乗せ (×{mult}):', { mult: cand._compMultiplier })} <strong style="color:#ff9080">${WM_I18N.t('{v}万', { v: compCost })}</strong> &nbsp;|&nbsp;
       ${WM_I18N.t('通常額勝率:')} <strong style="color:var(--gold)">${winRate}%</strong>
     </div>
     <div class="mdl-d-actions" style="flex-direction:column;gap:8px">

@@ -21924,7 +21924,7 @@ Engine.seasonReview = {
     const joinThreshold = processed ? 1 : 0; // applySeasonEnd実行後はcareerSeasonsが+1されている
     const joins = (G.roster || [])
       .filter(f => !f.isRental && (f.careerSeasons || 0) === joinThreshold)
-      .map(f => ({ id: f.id, name: f.name, age: f.age != null ? f.age : null, note: '今季加入' }));
+      .map(f => ({ id: f.id, name: f.name, age: f.age != null ? f.age : null, note: _line('今季加入') }));
       // TODO: Phase2 加入経路(ドラフト/移籍/スカウト)の判定精緻化
 
     let grew = null, declined = null;
@@ -24880,7 +24880,10 @@ Engine.eventSystem = {
         const costMult = s4Count >= 1 ? 1.5 : 1.0;
         const s4Cost = Math.round(weeklySalary * 12 * costMult * 0.5);  // 市場価値50% (2回目は75%)
         const s4Choices = [
-          { label: `待遇改善（-${s4Cost}万）`, hint: funds >= s4Cost ? '本人の態度は大きく軟化する（ただし効果には限度がある）' : '資金不足', idx: 0, disabled: funds < s4Cost },
+          // i18n P7-6: 表示直前でt()を通す都合上、金額が焼き込まれたlabelは辞書キーとして
+          // 変動してしまい常に未訳(fail-open)になる。labelTpl/labelVarsを添えておき、
+          // UI側(ui-common.js _mdlA系レンダラ)はlabelTplがあればそちらをt()+params通しで使う
+          { label: `待遇改善（-${s4Cost}万）`, labelTpl: '待遇改善（-{v}万）', labelVars: { v: s4Cost }, hint: funds >= s4Cost ? '本人の態度は大きく軟化する（ただし効果には限度がある）' : '資金不足', idx: 0, disabled: funds < s4Cost },
           { label: '出場を約束する',     hint: '次興行で出さないと、本人の強い反発を招く', idx: 1 },
           { label: '励ましの言葉',       hint: '少し表情は和らぐが、焼け石に水かもしれない', idx: 3 },
           { label: '突っぱねる',         hint: '本人の強い反発を招き、チームの士気も下がる', idx: 2 },
@@ -24908,7 +24911,7 @@ Engine.eventSystem = {
         const e6Salary = f6 ? Engine.util.getSalary(f6, state.titles) : 100;
         const e6Cost = Math.round(e6Salary * 12);
         return [
-          { label: `契約金を積む（-${e6Cost}万）`, hint: funds >= e6Cost ? '引き止め確定、キャップ発動' : '資金不足', idx: 0, disabled: funds < e6Cost },
+          { label: `契約金を積む（-${e6Cost}万）`, labelTpl: '契約金を積む（-{v}万）', labelVars: { v: e6Cost }, hint: funds >= e6Cost ? '引き止め確定、キャップ発動' : '資金不足', idx: 0, disabled: funds < e6Cost },
           { label: '説得する',              hint: 'これまでの社長との関係次第で引き止め成功', idx: 1 },
           { label: '放出する',              hint: '資金+50、選手が退団',                                         idx: 2 },
         ];

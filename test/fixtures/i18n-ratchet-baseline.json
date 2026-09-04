@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T13:35:27.254Z",
+  "generatedAt": "2026-09-04T13:44:44.598Z",
   "files": {
     "data.js": {
       "jaCount": 17143,
@@ -10,8 +10,8 @@
       "jaChars": 31355
     },
     "management.js": {
-      "jaCount": 1963,
-      "jaChars": 19015
+      "jaCount": 1965,
+      "jaChars": 19027
     },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
@@ -26,12 +26,12 @@
       "jaChars": 9816
     },
     "ui-common.js": {
-      "jaCount": 1365,
-      "jaChars": 9614
+      "jaCount": 1338,
+      "jaChars": 9463
     },
     "ui-render.js": {
-      "jaCount": 1033,
-      "jaChars": 8964
+      "jaCount": 1000,
+      "jaChars": 8986
     },
     "flag-dialogue.js": {
       "jaCount": 449,
@@ -58,8 +58,8 @@
       "jaChars": 4297
     },
     "factions.js": {
-      "jaCount": 372,
-      "jaChars": 2951
+      "jaCount": 373,
+      "jaChars": 2952
     },
     "dev-event-catalog.js": {
       "jaCount": 187,

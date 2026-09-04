@@ -457,7 +457,10 @@ class WalkthroughDetectors {
       for (const element of leafElements) {
         const text = textOf(element);
         if (!text || !pattern.test(text)) continue;
-        found.push({ selector: shortSelector(element), text: text.slice(0, 60) });
+        let path = '';
+        let cur = element;
+        for (let i = 0; i < 6 && cur; i++) { path = shortSelector(cur) + (path ? '>' + path : ''); cur = cur.parentElement; }
+        found.push({ selector: shortSelector(element), text: text.slice(0, 60), path });
       }
       return { found, screen };
     }, JAPANESE_CHAR_PATTERN.source);
