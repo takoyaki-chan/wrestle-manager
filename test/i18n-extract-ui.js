@@ -338,6 +338,31 @@ function hasProperNoun(text, properNouns) {
   return false;
 }
 
+// ── 他台帳(template-ledger/dialogue-ledger)が所有するキーの読み込み(P7-12) ─────
+// specs §9/§15-3: 同じキーを2つの台帳へ載せない。ただしui側の実コードが独立して
+// WM_I18N.t('…')を呼んでいる場合(=このスクリプトが**今回のスキャンで**見つけた行)は
+// 本物の二重出現なので除外しない — 除外の対象は「今回のスキャンでは見つからず、
+// 前回台帳の kept:true だけで生き残っていた行」に限る(=データ表由来の動的キーを
+// 手作業でui-ledgerへも複製しただけの行。P7-9で見つかった合宿フレーバー等)。
+// 所有判定は台帳のkeyそのもの(=source/kept区分で選別された「今回未発見」集合)を
+// 突き合わせるだけで足りるため、他台帳側に専用のマーカーは追加しない。
+function loadOtherLedgerOwnedKeys(warnings) {
+  const set = new Set();
+  ['template-ledger.json', 'dialogue-ledger.json'].forEach((filename) => {
+    const p = path.join(OUT_DIR, filename);
+    if (!fs.existsSync(p)) return;
+    try {
+      const rows = JSON.parse(fs.readFileSync(p, 'utf8'));
+      if (Array.isArray(rows)) {
+        rows.forEach((r) => { if (r && typeof r.key === 'string' && r.en) set.add(r.key); });
+      }
+    } catch (e) {
+      warnings.push(`他台帳(${filename})の読み込みに失敗(所有チェックなしで続行): ${e.message}`);
+    }
+  });
+  return set;
+}
+
 function hasPlaceholder(text) {
   PLACEHOLDER_RE.lastIndex = 0;
   return PLACEHOLDER_RE.test(text);
@@ -690,9 +715,12 @@ function main() {
       return row;
     });
   const scannedKeys = new Set(scanned.map((r) => r.key));
+  const otherLedgerOwnedKeys = loadOtherLedgerOwnedKeys(warnings);
   const kept = [];
+  const droppedForOwnership = [];
   prevMap.forEach((r, key) => {
-    if (scannedKeys.has(key)) return;
+    if (scannedKeys.has(key)) return; // 今回のスキャンで実際に見つかった行は無条件で残す(本物の二重出現)
+    if (otherLedgerOwnedKeys.has(key)) { droppedForOwnership.push(key); return; } // template/dialogue台帳が所有 → ui側の複製は削る
     kept.push({ ...r, kept: true });
   });
   const ledger = scanned.concat(kept)
@@ -700,7 +728,11 @@ function main() {
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
   fs.writeFileSync(OUT_PATH, JSON.stringify(ledger, null, 2) + '\n', 'utf8');
-  console.log(`[i18n-extract-ui] 保全マージ: 既存台帳=${prevMap.size} en引き継ぎ=${carriedEn} 新規キー=${newKeys} 走査外で保持(kept)=${kept.length}`);
+  console.log(`[i18n-extract-ui] 保全マージ: 既存台帳=${prevMap.size} en引き継ぎ=${carriedEn} 新規キー=${newKeys} 走査外で保持(kept)=${kept.length} 他台帳所有で除外=${droppedForOwnership.length}`);
+  if (droppedForOwnership.length) {
+    console.log('[i18n-extract-ui] 他台帳(template/dialogue-ledger)が所有するため除外(P7-12):');
+    droppedForOwnership.forEach((k) => console.log(`  - ${k}`));
+  }
   if (newKeys) {
     console.log('[i18n-extract-ui] 新規キー(en空):');
     scanned.filter((r) => !prevMap.has(r.key)).forEach((r) => console.log(`  + ${r.key}`));

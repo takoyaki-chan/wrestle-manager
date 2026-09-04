@@ -1,5 +1,49 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-12 — ui∩(template|dialogue)重複キー22件の一本化+一致検査新設、観戦ビッグムーブ`.long`判定の言語別化（2026-09-04・worktree agent-a302959a8e6585ac1）
+
+P7-9(87a6600)が「新たな発見」として起票した5件のうち**3(ui∩(template|dialogue)重複キー22件)・5(`_spawnBigIntro`の`.long`判定16文字固定)**を解決した。1(`management.js`の`HP判定`ロジックキー露出。JA出力を変える=golden採り直しが要るためKeisuke裁定待ち・スコープ外)・2(タッグの`↔ タッチ`実況行、{type,data}化待ち)は今回のスコープ外として据え置き(2は記録のみ・変更なし。詳細はspecs §31)。開始前にworktreeブランチをmain先端(86e4a540、P7-9マージまで)へfast-forward済み。
+
+### 1. 重複キー22件の裁き — 所有台帳を1つに決める
+
+`ui-ledger.json`(4,135キー)を`template-ledger.json`(2,958)・`dialogue-ledger.json`(16,674)と全キー突合すると、ui∩template 16件・ui∩dialogue 6件=22件が重複していた。1件ずつコード上の実出現箇所を`grep`で追跡し、2種類に分類した。
+
+- **(a) 所有権の取り違え(12件、すべて`data.js:CAMP_FLAVOR_TEXTS`=合宿決裁結果のフレーバー)**: P6-13で`app.js`の消費点(`WM_I18N.t(tmpl, {name1,name2})`、`tmpl`は動的キー)が配線穴として修正された際、静的抽出できない動的キー向けに`kept:true`でui-ledgerへも手作業複製されたが、その後P7-1でtemplate-ledger側がDATA_TABLESモードでCAMP_FLAVOR_TEXTSを正式に走査対象化したため、ui-ledger側の複製が死んだ重複として残っていた。12キー全件が`src/`内でdata.js以外に出現しない(=ui側の独立コードは存在しない)ことを確認した上で、template-ledgerへ一本化してui-ledgerから削除
+- **(c) 本物の二重出現(10件)**: UI側コード(`ui-common.js`のEngine関数の防御的フォールバック値、`ui-render.js`の相関図バッジ/年代記見出し、`factions.js`/`app.js`のイベントラベル)が独立して`WM_I18N.t('…')`を呼んでおり、たまたまデータ表側(`data-faction-dialogue.js`/`data.js`のセリフ・イベントテーブル、`kuroda-text.js`の新聞語り)の文言と一致しているだけの行。両台帳に残し、訳文を統一した(4件は食い違っていたため揃え、6件は最初から一致していた)。統一した4件: `……もう、ついていけない。`→`"...I can't follow anymore."`(dialogue側=quiet帯の抑えた諦観トーンを採用)/`……わかった`→`"...All right."`/`よろしく。`→`"Good to have you."`(reaction文脈=既存メンバー側の一言と確認)/`合同企画`→`"Joint Project"`(Title Case、姉妹ラベル`派閥合同企画`="Joint Faction Project"等と表記統一)。詳細な裁き表はspecs §31-1
+
+### 2. `test/i18n-extract-ui.js`: 他台帳所有キーの自動除外(復活防止)
+
+(a)を手作業で削るだけでは再発するため、`loadOtherLedgerOwnedKeys()`を新設。抽出→保全マージの最終段で「**今回のスキャンでは見つからず**(=前回台帳の`kept:true`だけで生き残っていた行)、かつ**template-ledger.json/dialogue-ledger.jsonのいずれかが非空`en`で同じキーを持っている**」行を`kept`集合から除外する。判定は台帳の`kept`/`source`区分そのもの(=「今回のスキャンで実際に見つかったか」)を使い、他台帳側に専用マーカーは追加していない。**今回のスキャンで見つかった行((c)のような本物の二重出現)は無条件で残る**ので誤って消えない。実行結果: ui-ledgerが4,135→**4,123**(−12件)。再実行しても除外0件(=動的キーは静的スキャンで二度と見つからないため復活しない)ことを確認した。
+
+### 3. `test/i18n-ledger-consistency-test.js`(新設・`npm test`組み込み)
+
+3台帳(ui-ledger/template-ledger/dialogue-ledger)を読み込み、`en`が非空の同一キーが2台帳以上に存在する行を全て集めて、訳文が食い違っていれば`exit 1`にする回帰ガード。`i18n-build-dict.js`系(build-dict/build-template-dict/build-dialogue-dict)は`test/*-test.js`命名規則の`npm test`自動discoverに乗らないため、`-test.js`サフィックス付きの独立ファイルとして新設した(指示書が代替案として明示していた名前)。未訳(`en`が空)の行は対象外。実行結果: 2台帳以上に存在するキーは**15件**((c)10件 + 既存のtemplate∩dialogue重複5件——`……`/`……さよなら、ね`/`…っ…勝った。…みんなのおかげだ`/`…っ…次は、こうはいかない`/`…当然の結果だ`。ui-ledgerと無関係でP7-12のスコープ外だが、汎用の3台帳横断チェックのため副次的に検出された)。**全15件が訳文一致**、違反0。
+
+### 4. 観戦ビッグムーブ`_spawnBigIntro`の`.long`判定を言語別化
+
+シングル/タッグ両観戦iframe(`battle-engine-main.js`/`tag-battle-main.js`)の`_spawnBigIntro(text)`は、決着直前の大きな導入テキストへ文字数`>=16`で`.long`クラス(フォント一段小さく)を付けていたが、JA前提の決め打ちのためEN文がほぼ全て`.long`扱いになり「短文=大きく見せる」演出意図がENで崩れていた。
+
+`PIN_INTRO_TEXTS`(fall/pin/tko各3種)+`SUB_ATTEMPT_INTRO_TEXTS`(3種)=計12件の英訳を全数採取して実測: JA文字数13〜26字(閾値16でlong10件・通常2件)、対応するEN文字数28〜61字。EN閾値を**37字**にすると、この12件が1件も食い違わずJAと同じlong/通常の分かれ方になることを確認した(指示書が概算として示した閾値38=16×2.4だと境界上の2件がJAとEN で食い違ったため不採用)。JA側は閾値16を1文字も変えていない。
+
+```js
+const BIG_INTRO_LONG_THRESHOLD_EN = 37;
+function _spawnBigIntro(text){
+  const isEn = (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en');
+  const long = String(text).length >= (isEn ? BIG_INTRO_LONG_THRESHOLD_EN : 16);
+  ...
+}
+```
+
+`battle-anim.js`には`.long`判定ロジックは存在しない(確認のみ)。
+
+### 5. `test/ui-walkthrough/spectator-move-i18n-check.js`の拡張
+
+`.big-intro`要素ごとの`classList.contains('long')`を`rec.bigIntroLong`として記録(実試合の発生順)し、加えて`_spawnBigIntro`を合成文字列(閾値-1字/閾値ちょうど)で直接2回呼び出す決定的境界テストを追加した(`MutationObserver`は一時`disconnect()`して実試合側の記録を汚さないようにし、検査後は生成した2要素を`el.remove()`で片付けてから`observe()`を再開)。受け入れ基準に`JA: .long閾値16の境界が正しい`・`EN: .long閾値37の境界が正しい`を追加(single/tag×JA/EN=計4箇所)。実試合はランダム選択なので短文/長文どちらも1回の実行で確実に踏めるとは限らないため、演出の正しさの証明はこの決定的テストが担う。
+
+### 6. 検証
+
+`node --check`(battle-engine-main.js/tag-battle-main.js/test/i18n-extract-ui.js/test/i18n-ledger-consistency-test.js/test/ui-walkthrough/spectator-move-i18n-check.js)全OK。`node test/ja-golden.js` **完全一致**(hash`6b3d05c8…`不変)。`node test/i18n-build-dict.js`/`-template-dict`/`-dialogue-dict`/`-names`いずれも**未訳0**(ui 4,135→**4,123**、template 2,958・dialogue 16,674は不変)。`node test/i18n-ledger-consistency-test.js` **green**(15件、訳文食い違い0)。`npm test` **261/261 green**(既存260本+新設1本)。`node test/i18n-ratchet.js` **増加なし**(28,109不変)。`npm run test:ui:walkthrough`(JA) **PASS**、Actions 328・digest **`1052faa82eaf7991`不変**、Issues 0。`npm run test:ui:walkthrough:en`(EN) **PASS**(Actions 419、digest`ae3f036b2efc97c5`)、Issues 0、i18n-miss **0**。※1回目の実行だけ`[WM] awards chain callback lost — ceremony pending, resumes on next interaction`(`app.js`の年間表彰式コールバックチェーン、AIアラート待ちの時限保険が発火した既知のタイミング依存ログ)によるD1_CONSOLE 1件が出たが、直後に2回連続で再実行すると2回とも新規アーティファクト0件・Issues 0でクリーンに通過した。この警告は年間表彰式の進行コード(app.js)由来で本バッチが触った範囲(i18n台帳/`_spawnBigIntro`/spectator-move-i18n-check.js)と無関係であり、既知の非決定フレーク(実時間待ちを伴うPlaywright走破で時々起きる)と判断した。`node test/ui-walkthrough/spectator-move-i18n-check.js` **ALL CHECKS PASS**(single 20項目/tag 20項目。新設の`.long`境界検査4項目含む・全項目JA/EN一致で`[false,true]`)。
+
 ## 🌐 Stage B P7-9 — 観戦iframeにテンプレ辞書を読み込み、実況/矢印/guide/タッグ文の地の文を台帳化・英訳、_tplTagLineのPH値を辞書経由へ（2026-09-04・worktree agent-a1a5b12ffbb9a9b90）
 
 P7-5(a978f8a)が起票した発見6件のうち **1(テンプレ辞書未読込)・2(地の文まるごと未配線)・5(`_tplTagLine`のPH値素通し)** を解決した。開始前にworktreeブランチをmain先端(bcbdc8a、P7-5マージまで)へfast-forward済み。

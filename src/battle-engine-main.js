@@ -1443,9 +1443,18 @@ function _spawnPinCount(text, cls){
   } catch(e){}
 }
 
+// P7-12: .long判定の閾値は言語別。JAは元の16字を1文字も変えない。
+// ENは実測(PIN_INTRO_TEXTS/SUB_ATTEMPT_INTRO_TEXTS全12件の英訳、下記コメント)で
+// JAの長短判定(閾値16)と一致する境界を求め、37字とした。
+//   JA長: 20 22 13 20 17 14 26 17 21 19 17 18 字
+//   EN長: 46 46 28 37 48 36 61 39 50 43 37 49 字
+//   → JAで16字未満(13/14字)の2件だけがEN37字未満(28/36字)に対応する。
+//   よって「EN長>=37字」で判定すると同じ12件がJAと1件も食い違わずlong/通常に分かれる。
+const BIG_INTRO_LONG_THRESHOLD_EN = 37;
 function _spawnBigIntro(text){
   const el  = document.createElement('div');
-  const long = String(text).length >= 16;
+  const isEn = (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en');
+  const long = String(text).length >= (isEn ? BIG_INTRO_LONG_THRESHOLD_EN : 16);
   el.className = 'big-intro' + (long ? ' long' : '');
   el.textContent = text;
   document.body.appendChild(el);
