@@ -200,7 +200,8 @@ async function main() {
     const setup = await setupPage(browser, server, fixtureText, effectiveSeed, options.lang);
     context = setup.context;
     const page = setup.page;
-    const detectors = new WalkthroughDetectors();
+    // P6-5: D3_TEXTの内部トークン検査を言語別にするためlangを渡す(ja既定は従来どおり)
+    const detectors = new WalkthroughDetectors({ lang: options.lang });
     detectors.attach(page);
     const reproductionCommand = scenario
       ? `node test/ui-walkthrough/run.js --mode ignite --scenario ${options.scenario} --seed ${effectiveSeed}`
@@ -311,8 +312,10 @@ async function main() {
       const missTotal = missEntries.reduce((sum, [, count]) => sum + count, 0);
       console.log(`i18n-miss: ${missTotal} occurrences / ${missEntries.length} unique keys`);
       if (missEntries.length > 0) {
-        console.log('i18n-miss top10:');
-        for (const [key, count] of missEntries.slice(0, 10)) {
+        // P6-5: 棚卸しのため全量を出力する(以前はtop10のみ)。ja分岐(options.lang==='ja')には
+        // 触れないためja digest/出力は不変
+        console.log(`i18n-miss all ${missEntries.length}:`);
+        for (const [key, count] of missEntries) {
           console.log(`  ${count}x ${key}`);
         }
       }

@@ -114,26 +114,31 @@ function actionScore(candidate, state) {
     || /おまかせ選出|おまかせ編成|🔥\s*おすすめ|^おまかせ$/.test(text)) return 9400;
   // 昇給を受ける/引き留める(受諾側の選択肢)。dataChoice(idx)は選択肢が3択とも共通で
   // 個別ボタンを一意に特定できないため、ここはEN訳文言(src/lang-en.js実測)を併記する
-  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留|Accept the Raise|Persuade Her to Stay/.test(text)) return 9300;
+  // P6-5: EN文言側はcase-insensitive一致にする(下のTo the Season Report →と同じ理由)
+  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留|Accept the Raise|Persuade Her to Stay/i.test(text)) return 9300;
   if (/declineDraft\(\)|draftSoloConfirm\(false\)|scoutResolve\([^)]*,\s*'skip'\)/.test(onclick)
     || /指名を行いません|今年は指名しない|辞退する|見送る|見送り/.test(text)) return 9250;
   if (/(?:^|;)(?:startShowPrep|resumeShowPrep)\(\)/.test(onclick) || /興行準備へ|興行準備に戻る/.test(text)) return 9200;
   // 週を処理/次の週へは1関数=1ボタンでonclick確定可。オフシーズン進行4種は
   // advanceWeek() を「次へ」(オフW1、別tierの汎用文言)とも共有するため、
   // ハンドラ一致ではなくEN訳文言(矢印込みの完全一致キー)で個別に特定する
+  // P6-5: ボタンのCSS text-transform:uppercase により candidate.text(innerText経由)が
+  // 全て大文字化して届く実測(EN走破 seed42 week49「TO THE SEASON REPORT →」でD2_FREEZE、
+  // レンダリング後は大文字だがtextContent自体は"To the Season Report →"のTitle Case)。
+  // EN訳文言側は一律case-insensitiveにする(JA側の一致条件・スコアは変えない)
   if (/doProcessWeek\(\)|App\.advanceFromWeekSummary\(\)/.test(onclick)
     || /週を処理|次の週へ|シーズンレポートへ|ドラフト会議へ|移籍ウィンドウへ|新シーズン開幕/.test(text)
-    || /Process the Week|Next Week →|To the Season Report →|To the Draft →|To the Transfer Window →|Start the New Season →/.test(text)) return 9100;
+    || /Process the Week|Next Week →|To the Season Report →|To the Draft →|To the Transfer Window →|Start the New Season →/i.test(text)) return 9100;
   if (/App\.closePPVResult\(\)|closeShowResult\(\)|App\.enterJuniorTournamentFromWeek\(|showScreen\('scoutEvent'/.test(onclick)
     || candidate.id === 'c1rCloseBtn'
     || /オフシーズンへ|結果へ|結果を確認|決着へ|表彰式へ|大会へ進む|JTへ進む|ドラフトへ/.test(text)
-    || /To the Off-season →|To the Result|See the Result →|Go to the JT|⚖ To the Draft/.test(text)) return 9000;
+    || /To the Off-season →|To the Result|See the Result →|Go to the JT|⚖ To the Draft/i.test(text)) return 9000;
   if (/^(?:次へ|続ける|進む|閉じる|完了|終了|確定|OK|Next|Continue|Close|Done|Confirmed)(?:\s*[→▶›])?$/i.test(text)) return 8900;
   // 相槌型の確認ボタン(契約更改の突発退団「……わかった」等)。id="contractSuddenOk"のみが
   // このボタンの実体なので、id一致をJA/EN共通の一次判定にする
   if (candidate.id === 'contractSuddenOk' || /わかった|承知した|了解した/.test(text)) return 8850;
-  if (/次へ|続ける|閉じる|完了|終了|結果を見る|結果発表|進行|See the Result/.test(text)) return 8800;
-  if (/承認|受けて立つ|参加する|開始|開催|決定|Approve/.test(text)) return 8600;
+  if (/次へ|続ける|閉じる|完了|終了|結果を見る|結果発表|進行|See the Result/i.test(text)) return 8800;
+  if (/承認|受けて立つ|参加する|開始|開催|決定|Approve/i.test(text)) return 8600;
   // 個別試合スキップ(App.skipMatch等)。全試合スキップと同じ理由でEN文言がフォールバックし
   // やすい箇所(観戦iframeを開くApp.watchMatchとタイの一般スコアに落ちるのを防ぐ)
   if (/App\.(?:skipMatch|ppvSkipMatch|warSkipMatch|jtSkipMatch|tcSkipMatch)\(/.test(onclick) || /スキップ/.test(text)) return 8500;

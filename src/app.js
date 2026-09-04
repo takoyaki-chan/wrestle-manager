@@ -6275,8 +6275,10 @@ const App = {
     }
     closeFighterPopup();
     refreshAll();
+    // P6-5配線修正: getTraitQuoteは内部でt()済みを返すため、_renderEventPopupAsC3側の
+    // 二重t()を避けるspeechTranslatedを立てる
     showEventPopup({ type:'fighter', id:cId, name:cName, tone:'negative',
-      speech: getTraitQuote('release', c), detail: WM_I18N.t('{name}が団体を去りました', { name: cName }) });
+      speech: getTraitQuote('release', c), speechTranslated: true, detail: WM_I18N.t('{name}が団体を去りました', { name: cName }) });
   },
 
   // ── タイトル奪還挑戦状（Phase 4） ─────────────────────────────────────
@@ -10876,7 +10878,8 @@ const App = {
       setTimeout(() => {
         showEventPopup({
           type: 'fighter', id: ch.id, name: ch.name, tone: 'negative',
-          speech: getTraitQuote('injury', ch),
+          // P6-5配線修正: getTraitQuoteは内部でt()済み(_renderEventPopupAsC3側の二重t()回避)
+          speech: getTraitQuote('injury', ch), speechTranslated: true,
           detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(ir.injury.type), weeks: ir.injury.weeksLeft }),
         });
       }, i * 100);
@@ -11685,8 +11688,9 @@ const App = {
     // v0.96: Detect new injuries and show popups
     const newInjuries = G.roster.filter(c => c.injury && !oldRoster.find(o => o.id === c.id)?.injured);
     newInjuries.forEach((c, i) => {
+      // P6-5配線修正: getTraitQuoteは内部でt()済み(_renderEventPopupAsC3側の二重t()回避)
       setTimeout(() => showEventPopup({ type:'fighter', id:c.id, name:c.name, tone:'negative',
-        speech: getTraitQuote('injury', c), detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(c.injury.type), weeks: c.injury.weeksLeft }) }), i * 100);
+        speech: getTraitQuote('injury', c), speechTranslated: true, detail: WM_I18N.t('🏥 {label} — 全治{weeks}週間', { label: injuryLabel(c.injury.type), weeks: c.injury.weeksLeft }) }), i * 100);
     });
     // v1.2-9: Flavor event popups (雑誌取材・TV出演)
     const flavorEvents = G._flavorEvents || [];
@@ -13060,7 +13064,15 @@ const App = {
         // orgTimeline記録
         const tracked = Engine.orgTimeline.transfer(departed, 'fa', G.season, G.week);
         // 退団bond/rivalry影響
-        Engine.relationships.applyDepartureTrustImpact(G, departed.id, 'release', {});
+        // P6-5で発見(EN走破 seed42 week34): Engine.relationships には無い関数を誤って呼んでおり
+        // 「Engine.relationships.applyDepartureTrustImpact is not a function」で例外落ちしていた
+        // (i18nとは無関係の既存バグ・他10箇所は全てEngine.trust.applyDepartureTrustImpactで正しく
+        // 呼んでいる)。引数もroster/relationships単体ではなくG丸ごとを渡していて型が合っておらず、
+        // 戻り値(更新後roster)も受け取っていなかったため退団時のbond/rivalry反映も効いていなかった
+        G = {
+          ...G,
+          roster: Engine.trust.applyDepartureTrustImpact(G.roster, departed.id, G.relationships, { name: departed.name, reason: '退団' }),
+        };
         if (Engine.util.canAddToFA(G)) {
           G = { ...G, freeAgents: [...(G.freeAgents || []), tracked] };
         } else {
@@ -13790,10 +13802,13 @@ const App = {
         const target = payload.incidentPayload && payload.incidentPayload.targetId
           ? (G.roster || []).find(c => c.id === payload.incidentPayload.targetId)
           : null;
+        // P6-5配線修正: {leaderName}/{targetName}はテンプレへ生名で埋め込まれるため、
+        // ENでは選手名も訳語に変換されなければ英文中にJP名が漏れる(getF07Lineは
+        // 訳→変数置換の順で、置換値そのものは変換しない=呼び出し側の責任)
         const vars = {
           factionName: payload.factionName || '',
-          leaderName: payload.leaderName || (leader ? leader.name : ''),
-          targetName: target ? target.name : (payload.incidentPayload && payload.incidentPayload.targetName) || '',
+          leaderName: WM_I18N.pn(payload.leaderName || (leader ? leader.name : '')),
+          targetName: WM_I18N.pn(target ? target.name : (payload.incidentPayload && payload.incidentPayload.targetName) || ''),
         };
         // i18n Stage B P5基盤修正: getF07Lineはdict-opts化済み(§9)。WM_I18N.tを渡し、
         // プレースホルダ置換前のテンプレを翻訳させる(戻り値をt()で包み直さない)。
@@ -13811,6 +13826,9 @@ const App = {
           charId: payload.leaderId,
           charName: leader ? leader.name : payload.leaderName,
           charLine,
+          // P6-5配線修正: charLineはgetF07Line(dict-opts)で既に訳し済みのため、
+          // showFactionEventResult側の_mdlASubjectStageで二重にt()しないよう明示する
+          charLineTranslated: true,
           impactSummary: result.impactSummary || [],
           weekLabel: `S${G.season} W${G.week}`,
         }, finalizeAudio);

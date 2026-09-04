@@ -242,7 +242,14 @@ function _u3bSideHtml(o) {
   // o.line は data.js の各セリフテーブルから選択された生JA行(呼び出し元は個々にpickDialogueLine
   // 等で選択するのみで翻訳しない)。ここで一括してt()を通す(escHtmlより前=辞書キーは
   // HTMLエスケープ前の原文と一致させる必要があるため)。
-  const line = (o.line != null && o.line !== '') ? escHtml(WM_I18N.t(o.line)) : '';
+  // P6-5配線修正: {name}等の変数をテンプレへ埋め込むdict-opts系(getF07Line等)は
+  // 翻訳→変数置換の順が必須のため、呼び出し元が既にt()済みの完成文を渡すことがある。
+  // その場合は o.lineTranslated:true を付けて二重t()(=完成文が辞書キーと一致せず
+  // i18n-missへ誤検出される)を避ける。既定false=従来どおり生JAを受け取る大多数の
+  // 呼び出し元には影響しない
+  const line = (o.line != null && o.line !== '')
+    ? escHtml(o.lineTranslated ? o.line : WM_I18N.t(o.line))
+    : '';
   const bubbleCls = ['u3b-bubble', o.bubbleClass].filter(Boolean).join(' ');
   const bubbleInner = line ? `<div class="${bubbleCls}"><div class="u3b-bubble-text">${line}</div></div>` : '';
   const sizeKey = o.size || (o.isBig ? 'l' : 'm');
@@ -435,7 +442,9 @@ function _mdlAHeader(title, meta, opts) {
 }
 
 /** A型 reporter-strip(コーチ or 古参選手の取次) */
-function _mdlAReporterStrip(state, line) {
+// P6-5配線修正: lineTranslated=trueのとき呼び出し元が既にt()済み(選手名などをテンプレへ
+// 埋め込む都合で翻訳→変数置換の順が必須なケース)として二重t()を避ける。既定false=従来どおり
+function _mdlAReporterStrip(state, line, lineTranslated) {
   let url = '', name = 'BLACKWELL', role = 'COACH';
   if (typeof _factionPickReporter === 'function') {
     const pick = _factionPickReporter(state);
@@ -451,7 +460,7 @@ function _mdlAReporterStrip(state, line) {
     }
   }
   return `<div class="mdl-a-reporter-strip u3b-theme-dark">${_u3bSideHtml({
-    name, role, line: String(line || ''), size: 'chip', imgUrl: url,
+    name, role, line: String(line || ''), lineTranslated: !!lineTranslated, size: 'chip', imgUrl: url,
     extraSideClass: 'mdl-a-reporter-person',
   })}</div>`;
 }
@@ -593,7 +602,12 @@ function _mdlASubjectStage(fighter, bodyHtml, opts) {
       ? `background-image:url('${upperUrl}')`
       : (faceUrl ? `background-image:url('${faceUrl}')` : '');
     // i18n Stage B P5-1: 表示直前でt()を通す(escHtmlより前)。
-    const speech = opts && opts.speech ? WM_I18N.t(String(opts.speech)) : '';
+    // P6-5配線修正: opts.speechTranslated:trueのときは呼び出し元が既にt()済み
+    // (F07のgetF07Line等、{name}埋め込みのため翻訳→変数置換の順が必須なdict-opts系)。
+    // 二重t()は完成文が辞書キーと一致せずi18n-missへ誤検出されるだけなので避ける
+    const speech = opts && opts.speech
+      ? (opts.speechTranslated ? String(opts.speech) : WM_I18N.t(String(opts.speech)))
+      : '';
     portraitHtml = `<div class="mdl-a-subject-portrait-speechable u3b-theme-cream">
       <div class="u3b-bubble-slot mdl-a-subject-speech-slot">${speech
         ? `<div class="u3b-bubble mdl-a-subject-speech"><div class="u3b-bubble-text">${escHtml(speech)}</div></div>`
@@ -747,7 +761,8 @@ function showWarChallenge() {
       <div class="mdl-a-header-title">${WM_I18N.t('📜 対 抗 戦 ・ 挑 戦 状')}</div>
       <div class="mdl-a-header-meta">${seasonMeta}</div>
     </div>
-    ${_mdlAReporterStrip(G, `${ev.opponentName}から正式な対抗戦の申し入れが届きました`)}
+    ${/* P6-5配線修正: 旧実装は${ev.opponentName}を先に埋め込んでからt()していたため未訳のまま出ていた */ ''}
+    ${_mdlAReporterStrip(G, WM_I18N.t('{org}から正式な対抗戦の申し入れが届きました', { org: ev.opponentName }), true)}
     <div class="mdl-a-subject-stage danger" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: dialogue,
@@ -831,7 +846,8 @@ function _warEntrySelectionHtml() {
       <div class="mdl-a-header-title">${WM_I18N.t('⚔ 対 抗 戦 ・ 代 表 選 出')}</div>
       <div class="mdl-a-header-meta">${required} VS ${required} ・ ${escHtml(_mdlASeasonLabel(G))}</div>
     </div>
-    ${_mdlAReporterStrip(G, `${required}名の代表を選んでください。団体の威信を懸けた総力戦です`)}
+    ${/* P6-5配線修正: 旧実装は${required}を先に埋め込んでからt()していたため未訳のまま出ていた */ ''}
+    ${_mdlAReporterStrip(G, WM_I18N.t('{n}名の代表を選んでください。団体の威信を懸けた総力戦です', { n: required }), true)}
     <div class="mdl-a-candidate-stage war-entry-stage">
       <div class="mdl-a-opponent-bar">
         <div class="mdl-a-opponent-upper" style="${enemyStyle}"></div>
@@ -1042,8 +1058,9 @@ function renderWarMatchPreview() {
       html += rightBlock;
       html += `</div>`;
     } else if (isNext) {
-      const lineL = WM_I18N.t(pickDialogueLine(PPV_OPPONENT_LINES, pf));
-      const lineR = WM_I18N.t(pickDialogueLine(PPV_OPPONENT_LINES, af));
+      // P6-5配線修正: _pbFighterBlockが表示直前にt()を通す規約のため生JAのまま渡す
+      const lineL = pickDialogueLine(PPV_OPPONENT_LINES, pf);
+      const lineR = pickDialogueLine(PPV_OPPONENT_LINES, af);
       const hasDialogue = !!(lineL || lineR);
 
       // 通常の pb-fighter 枠のみ使用（サイドアクセント撤去）
@@ -2179,9 +2196,11 @@ function _renderEventPopupAsC3() {
   const o = _eventPopupQueue[0];
 
   let characterHtml = '';
+  // P6-5配線修正: o.speechTranslated(getTraitQuote()等、呼び出し元が既にt()済みの
+  // speechを渡すときだけtrue)を_u3bSideHtmlへ転送し、二重t()を避ける
   if (o.type === 'fighter' && o.id) {
     characterHtml = `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
-      name: o.name || '', line: o.speech || '', reserveBubble: !!o.speech, size: 'm',
+      name: o.name || '', line: o.speech || '', lineTranslated: !!o.speechTranslated, reserveBubble: !!o.speech, size: 'm',
       imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(o.id) : '',
       onClick: `showFighterPopup(${Number(o.id)},'roster',true)`,
     })}</div>`;
@@ -2190,7 +2209,7 @@ function _renderEventPopupAsC3() {
       ? getCoachUpperUrl(o.id)
       : (typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(o.id) : '');
     characterHtml = `<div class="event-popup-character u3b-theme-dark">${_u3bSideHtml({
-      name: o.name || '', line: o.speech || '', reserveBubble: !!o.speech,
+      name: o.name || '', line: o.speech || '', lineTranslated: !!o.speechTranslated, reserveBubble: !!o.speech,
       role: WM_I18N.t('コーチ'), size: 'm', imgUrl: coachUrl,
     })}</div>`;
   }
@@ -2561,9 +2580,11 @@ function _renderRivalryPopup() {
     const leftFighter = ALL_CHARS.find(c => c.id === o.leftId);
     const rightFighter = ALL_CHARS.find(c => c.id === o.rightId);
     let attackerPool, defenderPool;
+    // P6-5配線修正: leftLine/rightLine/winLine/loseLineは_rivalryCol→_u3bSideHtmlで
+    // 表示直前にt()を通される規約(生JAを渡す)。ここで先に訳すと二重適用になる
     if (o.isBitter) {
-      const leftLine = WM_I18N.t(pickDialogueLine(BITTER_PREMATCH_LINES[o.leftSide || 'behind'], leftFighter));
-      const rightLine = WM_I18N.t(pickDialogueLine(BITTER_PREMATCH_LINES[o.rightSide || 'behind'], rightFighter));
+      const leftLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.leftSide || 'behind'], leftFighter);
+      const rightLine = pickDialogueLine(BITTER_PREMATCH_LINES[o.rightSide || 'behind'], rightFighter);
       title = WM_I18N.t('遺 恨 再 燃');
       sub = 'GRUDGE REKINDLED';
       toneCls = 'tone-bitter';
@@ -2587,8 +2608,8 @@ function _renderRivalryPopup() {
       defenderPool = RIVALRY_CONFRONTATION_LINES.defender;
     }
     if (!o.isBitter) {
-      const leftLine = WM_I18N.t(pickDialogueLine(attackerPool, leftFighter));
-      const rightLine = WM_I18N.t(pickDialogueLine(defenderPool, rightFighter));
+      const leftLine = pickDialogueLine(attackerPool, leftFighter);
+      const rightLine = pickDialogueLine(defenderPool, rightFighter);
       title = rivalryVal >= 70 ? WM_I18N.t('因 縁 勃 発') : WM_I18N.t('宿 敵 対 決');
       sub = rivalryVal >= 70 ? 'RIVALRY DECLARED ・ FATED' : 'RIVALRY DECLARED';
       toneCls = 'tone-confront';
@@ -2615,8 +2636,8 @@ function _renderRivalryPopup() {
       : (o.isFate ? RIVALRY_RESOLUTION_LINES.fateLoser : RIVALRY_RESOLUTION_LINES.loser);
     const winFighter = ALL_CHARS.find(c => c.id === o.winnerId);
     const loseFighter = ALL_CHARS.find(c => c.id === o.loserId);
-    const winLine = WM_I18N.t(pickDialogueLine(winLineObj, winFighter));
-    const loseLine = WM_I18N.t(pickDialogueLine(loseLineObj, loseFighter));
+    const winLine = pickDialogueLine(winLineObj, winFighter);
+    const loseLine = pickDialogueLine(loseLineObj, loseFighter);
     title = isBitter ? WM_I18N.t('決 着。し か し、宿 怨 は 消 え ず')
       : isGoodRival ? WM_I18N.t('好 敵 手 誕 生')
       : isFirstWin ? WM_I18N.t('宿 敵 戦 勝 利')
@@ -5543,8 +5564,12 @@ function _buildRivalryMatchDialogue(r, leftIsWinner, isDraw, matchLabel, sourceM
   const upset = (typeof UPSET_RIVALRY_LINES !== 'undefined') ? UPSET_RIVALRY_LINES : null;
   const winPool = (isUpset && upset) ? upset.winnerLines : RIVALRY_MATCH_REACTION.winnerLines;
   const losePool = (isUpset && upset?.loserLines) ? upset.loserLines : RIVALRY_MATCH_REACTION.loserLines;
-  const winLine = WM_I18N.t(pickDialogueLine(winPool, winChar));
-  const loseLine = WM_I18N.t(pickDialogueLine(losePool, loseChar));
+  // P6-5配線修正: winLine/loseLineは_pbFighterBlock(renderShowResult経由)と
+  // _rivalryCol→_u3bSideHtml(showPostMatchDialogues経由)の両方で表示直前にt()を通される
+  // (どちらも「呼び出し元は生JAのみ渡す」規約の共通表示点)。ここで先にt()すると
+  // 訳済み英文がその表示点で再度辞書引きされ、i18n-missへ誤検出されていた
+  const winLine = pickDialogueLine(winPool, winChar);
+  const loseLine = pickDialogueLine(losePool, loseChar);
   if (!winLine && !loseLine) return;
   return {
     matchLabel, rivalryBonus: r.rivalryBonus, isUpset,
@@ -6904,7 +6929,9 @@ function resolvePoach(fighterId, accepted) {
   if (result.outcome && result.fighterSnapshot && typeof POACH_REACTION_DIALOGUES !== 'undefined') {
     const dlg = POACH_REACTION_DIALOGUES[result.outcome];
     if (dlg) {
-      const message = WM_I18N.t(pickDialogueLine(dlg, result.fighterSnapshot));
+      // P6-5配線修正: messageは_renderEventPopupAsC3→_u3bSideHtmlで表示直前にt()を
+      // 通される規約のため生JAのまま渡す(単一消費先なのでここで先訳する必要が無い)
+      const message = pickDialogueLine(dlg, result.fighterSnapshot);
       const orgName = result.orgName || WM_I18N.t('他団体');
       const tone = result.outcome === 'defended' ? 'positive'
                 : result.outcome === 'accepted' ? 'gold'
@@ -9662,25 +9689,28 @@ function showDecisionResultModal(displayData) {
 // 選手顔アイコン＋セリフ＋2〜3択のモーダルダイアログ
 // ─────────────────────────────────────────────────────────────────────────────
 // コーチ取次セリフ — イベント種別ごとに何が問われているのかを伝える
+// P6-5配線修正: 旧実装は${nm}で選手名を先に埋め込んでから_u3bSideHtml側のt()に渡していた
+// ため、完成文が辞書キー(プレースホルダ入りの原文)と一致せずENで常に未訳のまま出ていた
+// (フラグセリフ/selectDialogueと同型の配線穴)。t()をプレースホルダ置換の前に通す
 function _choiceEventReporterLine(event, fighter, isUrgent) {
-  const nm = fighter ? (fighter.name || '選手') : '';
+  const nm = WM_I18N.pn(fighter ? (fighter.name || '選手') : '');
   switch (event.type) {
-    case 'S1': return `${nm}選手から、タイトル挑戦を希望する申し出が来ています`;
-    case 'S2': return `${nm}選手が、因縁の相手との対戦を希望しています`;
-    case 'S3': return `${nm}選手から休養願いが出ています。コンディションの問題かもしれません`;
-    case 'S4': return `${nm}選手から待遇への強い不満が…退団も口にしています。早急なご判断を`;
-    case 'S5': return `${nm}選手が特訓を志願しています。ご判断を`;
-    case 'S6': return `${nm}選手が、後輩の指導役を申し出ています`;
-    case 'E1': return `${nm}選手にメディアから出演オファーが届いています。出すか、断るか、別の選手を推薦するか——ご判断を`;
-    case 'E2': return `スポンサーから提案が届いています。受けるかどうかご判断ください`;
-    case 'E3': return `他団体から合同練習の誘いが来ています`;
-    case 'E4': return `スカウトからの情報が入りました。動くかどうかご判断を`;
-    case 'E5': return `近隣の地域イベント実行委員会から、営業試合の依頼が届いています`;
-    case 'E6': return `${nm}選手に他団体から引き抜きオファーが入りました。早急なご判断を`;
-    case 'S_boycott': return `${nm}選手が練習をボイコットしています。対応をお願いします`;
-    case 'S_grumble': return `${nm}選手の不満がロッカーで広がっています`;
-    case 'S_sns': return `${nm}選手のSNS投稿が話題に…早めの対応をご検討ください`;
-    default: return isUrgent ? '社長、判断をお願いします' : '社長、ひとつ判断をお願いしたい件があります';
+    case 'S1': return WM_I18N.t('{name}選手から、タイトル挑戦を希望する申し出が来ています', { name: nm });
+    case 'S2': return WM_I18N.t('{name}選手が、因縁の相手との対戦を希望しています', { name: nm });
+    case 'S3': return WM_I18N.t('{name}選手から休養願いが出ています。コンディションの問題かもしれません', { name: nm });
+    case 'S4': return WM_I18N.t('{name}選手から待遇への強い不満が…退団も口にしています。早急なご判断を', { name: nm });
+    case 'S5': return WM_I18N.t('{name}選手が特訓を志願しています。ご判断を', { name: nm });
+    case 'S6': return WM_I18N.t('{name}選手が、後輩の指導役を申し出ています', { name: nm });
+    case 'E1': return WM_I18N.t('{name}選手にメディアから出演オファーが届いています。出すか、断るか、別の選手を推薦するか——ご判断を', { name: nm });
+    case 'E2': return WM_I18N.t('スポンサーから提案が届いています。受けるかどうかご判断ください');
+    case 'E3': return WM_I18N.t('他団体から合同練習の誘いが来ています');
+    case 'E4': return WM_I18N.t('スカウトからの情報が入りました。動くかどうかご判断を');
+    case 'E5': return WM_I18N.t('近隣の地域イベント実行委員会から、営業試合の依頼が届いています');
+    case 'E6': return WM_I18N.t('{name}選手に他団体から引き抜きオファーが入りました。早急なご判断を', { name: nm });
+    case 'S_boycott': return WM_I18N.t('{name}選手が練習をボイコットしています。対応をお願いします', { name: nm });
+    case 'S_grumble': return WM_I18N.t('{name}選手の不満がロッカーで広がっています', { name: nm });
+    case 'S_sns': return WM_I18N.t('{name}選手のSNS投稿が話題に…早めの対応をご検討ください', { name: nm });
+    default: return isUrgent ? WM_I18N.t('社長、判断をお願いします') : WM_I18N.t('社長、ひとつ判断をお願いしたい件があります');
   }
 }
 
@@ -9736,7 +9766,8 @@ function showChoiceEventModal(event, state, onChoice) {
 
   const html = `
     ${_mdlAHeader(title, _mdlASeasonLabel(state), { urgent: isUrgent })}
-    ${_mdlAReporterStrip(state, reporterLine)}
+    ${/* P6-5配線修正: reporterLineは_choiceEventReporterLineで既にt()済み */ ''}
+    ${_mdlAReporterStrip(state, reporterLine, true)}
     ${subjectHtml}
     <div class="mdl-a-prompt">${WM_I18N.t('どう対応しますか？')}</div>
     <div class="${trayCls}">${trayCards}</div>
@@ -9858,7 +9889,10 @@ function _factionPickReporter(state) {
   }
   return null;
 }
-function _factionReporterStrip(state, line) {
+// P6-5配線修正: lineTranslated=trueのとき、既にt()済みの文(F07のgetF07Line coachReport等、
+// {name}をテンプレへ埋め込む都合で呼び出し元が先に翻訳したもの)として二重t()を避ける。
+// 既定false=大多数の呼び出し元(生JAの固定文言)はこれまでどおり_u3bSideHtml側で翻訳する
+function _factionReporterStrip(state, line, lineTranslated) {
   const pick = _factionPickReporter(state);
   let url = '', name = '', role = '';
   if (pick && pick.kind === 'coach') {
@@ -9872,7 +9906,7 @@ function _factionReporterStrip(state, line) {
     role = WM_I18N.t('古参選手');
   }
   return `<div class="fevt-reporter-strip u3b-theme-dark">${_u3bSideHtml({
-    name, role, line: String(line || ''), size: 'chip', imgUrl: url,
+    name, role, line: String(line || ''), lineTranslated: !!lineTranslated, size: 'chip', imgUrl: url,
     extraSideClass: 'fevt-reporter-person',
   })}</div>`;
 }
@@ -10410,7 +10444,9 @@ function showFactionEventResult(arg, onClose) {
   // ヒーロー描画: charId があれば選手, なければ派閥章プレースホルダ
   let subjectHtml = '';
   if (heroFighter) {
-    subjectHtml = _mdlASubjectStage(heroFighter, stageBody, { small: true, speech: opts.charLine || '' });
+    // P6-5配線修正: opts.charLineTranslated(F07のgetF07Line経由など呼び出し元が既にt()済みの
+    // ときだけtrue)をそのまま_mdlASubjectStageへ渡し、二重t()を避ける
+    subjectHtml = _mdlASubjectStage(heroFighter, stageBody, { small: true, speech: opts.charLine || '', speechTranslated: !!opts.charLineTranslated });
   } else if (factionPair.length === 2) {
     const factionSideHtml = (entry) => {
       const leader = entry.leaderId != null ? roster.find(c => c.id === entry.leaderId) : null;
@@ -10890,9 +10926,14 @@ function showFactionF07Modal(payload, state, onChoice) {
   </div>`;
 
   // observation-note(社長視点ナレーション。キャラのセリフは肖像頭上の吹き出しへ)
+  // P6-5配線修正: 旧実装は${leaderSurname}/${factionName}を先に埋め込んでからreporterStrip側の
+  // t()に渡していたため、完成文が辞書キーと一致せずENで常に未訳のまま出ていた
+  // (coachLine=getF07Lineは既にdict-optsで訳し済み・フォールバックは{name}をt()経由で埋める)。
+  // どちらの分岐も呼び出し側で訳し済みになったのでtranslatedは常にtrue
+  const reporterTextTranslated = true;
   const reporterText = meta.source === 'leader'
-    ? `${leaderSurname || 'リーダー'}さんが社長室に向かいました。`
-    : (coachLine || `${factionName}の動向について報告があります。`);
+    ? WM_I18N.t('{name}さんが社長室に向かいました。', { name: leaderSurname || WM_I18N.t('リーダー') })
+    : (coachLine || WM_I18N.t('{faction}の動向について報告があります。', { faction: factionName }));
 
   const observationNote = meta.source === 'leader'
     ? `<div class="fevt-observation-note"><span class="marker">${String(leaderSurname)}</span>${WM_I18N.t('と{faction}の動きについて、社長室での相談です。', { faction: factionName })}</div>`
@@ -10913,7 +10954,7 @@ function showFactionF07Modal(payload, state, onChoice) {
           <div class="fevt-report-title">${meta.titleEmoji} ${WM_I18N.t(meta.titleText)}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, reporterText)}
+        ${_factionReporterStrip(state, reporterText, reporterTextTranslated)}
         <div class="fevt-subject-stage">
           <div class="fevt-subject-trio">
             ${leftFol}
@@ -13238,9 +13279,12 @@ function showTitleDefenseResultModal(champion, champLine, defenses, done) {
   const narrationText = WM_I18N.t('{name}が王座防衛に成功した。', { name: escHtml(WM_I18N.pn(champion.name) || '') });
   const narrationHtml = `<div class="mdl-a-observation centered" style="text-align:left;padding-top:6px">${narrationText}</div>`;
 
+  // P6-5配線修正: champLineは常にgetTraitQuote()経由(showTitleMatchCeremonyで生成)で
+  // 既にt()済みのため、二重t()を避けるフラグを立てる
   const subjectHtml = _mdlASubjectStage(champion, narrationHtml, {
     small: true,
     speech: champLine || '',
+    speechTranslated: true,
   });
 
   const html = `
@@ -13269,7 +13313,9 @@ function _specialIntroFighterLine(eventKey, cfg, speaker, rng) {
     const line = getJuniorTournamentLine(
       'summon', fighter.personality || 'normal', fighter.archetype || 'standard', rng
     );
-    if (line) return WM_I18N.t(line);
+    // P6-5配線修正: 戻り値は showFighterScene → _mdlASubjectStage で表示直前にt()を
+    // 通される規約(単一消費先)のため、ここでは生JAのまま返す
+    if (line) return line;
   }
   const lines = cfg && cfg.fighter && cfg.fighter[speaker && speaker.kind];
   return (lines && lines.length) ? lines[Engine.rng.int(rng, 0, lines.length - 1)] : '';
@@ -14587,9 +14633,12 @@ function _buildB3Step3b(event, state, roster) {
 
   const speechVariant = won ? 'resentment' : 'danger';
   const headerTitle = won ? WM_I18N.t('相手の反応') : WM_I18N.t('相手の勝利宣言');
+  // P6-5配線修正: 旧実装は${orgName}を先に埋め込んでから_mdlAReporterStrip側のt()に渡していた
+  // ため、完成文が辞書キーと一致せずENで常に未訳のまま出ていた(隣のobservationTextは
+  // 既にt()+paramsで正しく配線済みだったのに、こちらだけ取りこぼされていた)
   const reporterLine = won
-    ? `${orgName}勢は苛立ちを隠せない表情です`
-    : `${orgName}勢は勝利を確信しています`;
+    ? WM_I18N.t('{org}勢は苛立ちを隠せない表情です', { org: orgName })
+    : WM_I18N.t('{org}勢は勝利を確信しています', { org: orgName });
   const observationText = won
     ? WM_I18N.t('{org}との<span class="marker danger">遺恨</span>は、まだ終わっていない', { org: orgName })
     : WM_I18N.t('{org}の<span class="marker danger">挑発</span>に、どう応えるか——', { org: orgName });
@@ -14599,7 +14648,7 @@ function _buildB3Step3b(event, state, roster) {
       <div class="mdl-a-header-title">${headerTitle}</div>
       <div class="mdl-a-header-meta">OPPONENT AFTERMATH ・ 2 / 2</div>
     </div>
-    ${_mdlAReporterStrip(state, reporterLine)}
+    ${_mdlAReporterStrip(state, reporterLine, true)}
     <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: challengerLine,
@@ -14654,9 +14703,10 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
 
   const speechVariant = won ? 'resentment' : 'danger';
   const headerTitle = won ? WM_I18N.t('相手の反応') : WM_I18N.t('相手の勝利宣言');
+  // P6-5配線修正: 同型の穴(先に${orgName}を埋め込んでから表示側でt()していた)を修正
   const reporterLine = won
-    ? `${orgName}勢は苛立ちを隠せない表情です`
-    : `${orgName}勢は勝利を確信しています`;
+    ? WM_I18N.t('{org}勢は苛立ちを隠せない表情です', { org: orgName })
+    : WM_I18N.t('{org}勢は勝利を確信しています', { org: orgName });
   const observationText = won
     ? WM_I18N.t('{org}との<span class="marker danger">遺恨</span>は、まだ終わっていない', { org: orgName })
     : WM_I18N.t('{org}の<span class="marker danger">挑発</span>に、どう応えるか——', { org: orgName });
@@ -14669,7 +14719,7 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
         <div class="mdl-a-header-title">${headerTitle}</div>
         <div class="mdl-a-header-meta">OPPONENT AFTERMATH</div>
       </div>
-      ${_mdlAReporterStrip(G, reporterLine)}
+      ${_mdlAReporterStrip(G, reporterLine, true)}
       <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
         ${_mdlAFlowPortraitHtml({
           line: challengerLine,
@@ -14836,15 +14886,17 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   const rightCls = draw ? 'is-draw' : (won ? 'is-loser' : 'is-winner');
 
   // セリフ
+  // P6-5配線修正: playerLine/challengerLineは_pbFighterBlockで表示直前にt()を通される
+  // (呼び出し元は生JAを渡す規約)。ここでt()すると訳済み英文が再度辞書引きされる
   let winLine = '', loseLine = '';
   if (!draw) {
-    winLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar));
+    winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
     if (won) {
       // 自団体が勝ち → 挑戦者（敗者）に result_lose を使う
-      loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? WM_I18N.t(pickDialogueLine(WAR_POST_DIALOGUE.result_lose, challenger)) : '';
+      loseLine = typeof WAR_POST_DIALOGUE !== 'undefined' ? pickDialogueLine(WAR_POST_DIALOGUE.result_lose, challenger) : '';
     } else {
       // 自団体が負け → 自団体選手（敗者）に loserLines を使う
-      loseLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar));
+      loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
     }
   }
   const playerLine = won ? winLine : loseLine;
@@ -15024,10 +15076,12 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   const leftCls = draw ? 'is-draw' : (won1 ? 'is-winner' : 'is-loser');
   const rightCls = draw ? 'is-draw' : (won1 ? 'is-loser' : 'is-winner');
 
+  // P6-5配線修正: f1Line/f2Lineは_pbFighterBlockで表示直前にt()を通される規約のため、
+  // ここでは生JAのまま渡す(旧: 先にt()して二重適用でi18n-missへ誤検出していた)
   let winLine = '', loseLine = '';
   if (!draw) {
-    winLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar));
-    loseLine = WM_I18N.t(pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar));
+    winLine = pickDialogueLine(RIVALRY_MATCH_REACTION.winnerLines, winChar);
+    loseLine = pickDialogueLine(RIVALRY_MATCH_REACTION.loserLines, loseChar);
   }
   const f1Line = draw ? '' : (won1 ? winLine : loseLine);
   const f2Line = draw ? '' : (won1 ? loseLine : winLine);
@@ -17062,7 +17116,8 @@ function _showJTImpressionChain(list, idx, onDone) {
   if (idx >= list.length) { if (onDone) onDone(); return; }
   const f = list[idx];
   const timing = f._jtTiming || 'postLose';
-  const line = WM_I18N.t(getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || 'standard'));
+  // P6-5配線修正: lineは_u3bSideHtmlで表示直前にt()を通される規約のため生JAのまま
+  const line = getJuniorTournamentLine(timing, f.personality || 'normal', f.archetype || 'standard');
   if (!line) { _showJTImpressionChain(list, idx + 1, onDone); return; }
 
   // コメント画面は縦長の .u3b-upper を使う。正方形の顔アイコンを入れると
@@ -18183,10 +18238,13 @@ function showEventMatchResultPopup(opts) {
   // 顔出しイベント共通ルール(docs/ui/02-layouts.md 2-D-X)準拠: 吹き出しは画像の「上」の予約枠に入れ、
   // 中身はセリフ本文だけ(話者名・所属は書かない。話者は画像下の表示で示す)。発言が無い側は空枠のままにして
   // 左右の画像の高さを揃える(画像に被らないこと・左右の高さが揃うことは自動検証済み)。
-  // i18n Stage B P5-1: 表示直前でt()を通す(POST_MATCH_FLAVOR_LINES等の共通表示点。
-  // 呼び出し元によっては既にt()済みの値を渡すこともあるが、t()の二重適用は
-  // 辞書に無いキーとしてfail-openするだけで無害なので、ここでも一律に通す)。
-  const _emrBubbleHtml = (t) => `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(WM_I18N.t(String(t)).replace(/^[「『]|[」』]$/g, ''))}」</span></div>`;
+  // P6-5配線修正: opts.victoryLine/opts.loserLineの生成元(POST_MATCH_FLAVOR_LINES/
+  // PPV_SUMMIT_VICTORY_LINES/_pickUnifiedTitleLine/_agwSurvivorLine/JT postMatchWin)は
+  // すべて呼び出し側でWM_I18N.tを通した完成文を渡す規約(_emrVictoryLineのpreferred分岐も
+  // 未加工のまま返す=呼び出し側が訳し済みの前提)。ここでt()を再適用すると、訳済み英文が
+  // 辞書に無いキーとしてi18n-missへ誤検出される(旧: 二重適用は無害としてここでも通していたが、
+  // 実際はfail-openの副作用でmissログを汚すだけだった)。表示直前の変換はescHtmlのみに絞る。
+  const _emrBubbleHtml = (t) => `<div class="emr-bubble"><span class="emr-bubble-line">「${escHtml(String(t).replace(/^[「『]|[」』]$/g, ''))}」</span></div>`;
   const bubbleHtml = showVictoryLine && line ? _emrBubbleHtml(line) : '';
   // task-75: 敗者側の予約枠も埋められるようにした。PPV で「負けた相手がこちらへ投げる言葉」を
   // 出すために使う。**渡されたときだけ**出す(既定は従来どおり空枠のまま。空枠は左右の画像の
@@ -18326,7 +18384,10 @@ function renderJuniorTournamentMatchResult(ri, mi) {
       const target = _jtRecoveredHpTarget(match, side, false);
       return target && target['jt-recover-pct'] != null ? target['jt-recover-pct'] : (side === 'left' ? match.hpLeft : match.hpRight);
     };
-    const winLine = getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || 'standard');
+    // P6-5配線修正: opts.victoryLineはshowEventMatchResultPopup側で訳し済み前提のため、
+    // 他の生成元(POST_MATCH_FLAVOR_LINES等)と同じくここでt()を通す(旧: 未訳のまま渡していた
+    // ため_emrBubbleHtmlの二重t()に依存していた=そちらを直したことで未訳のまま出る穴になる)。
+    const winLine = WM_I18N.t(getJuniorTournamentLine('postMatchWin', winner.personality || 'normal', winner.archetype || 'standard'));
     showEventMatchResultPopup({
       theme: 'summer', title: WM_I18N.t('{round} 第{n}試合　結果', { round: roundLabel, n: mi + 1 }), meta: WM_I18N.t('第{n}回大会 ・ 第{pos}試合 / 全{total}試合', { n: G.season, pos: position, total }),
       progress: `${position} / ${total}`, progressLabel: isFinal ? 'FINAL' : round.name === 'semiFinal' ? 'SEMI FINAL' : 'TOURNAMENT',
@@ -18504,10 +18565,14 @@ function _chSubImg(fighter) {
 }
 
 /** 吹き出しの予約枠。発言が無くても同じ高さの空枠を返し、左右/複数人の画像上端を揃える */
-function _chBubbleSlot(text, bubbleClass = '') {
+// P6-5配線修正: translated=trueのときは呼び出し元が既にt()済み(_agwChampionSpeech等、
+// {wins}/{org}をテンプレへ埋め込む都合で翻訳→変数置換の順が必須なdict-opts系)として
+// 二重t()を避ける。既定false=大多数の呼び出し元(生JA)はこれまでどおり
+function _chBubbleSlot(text, bubbleClass = '', translated = false) {
   const modifier = bubbleClass ? ` ${escHtml(bubbleClass)}` : '';
   // i18n Stage B P5-1: 表示直前でt()を通す(UNIFIED_TITLE_LINES等の年代記系共通表示点)。
-  return `<div class="ch-bubble-slot">${text ? `<div class="ch-bubble${modifier}">「${escHtml(WM_I18N.t(text))}」</div>` : ''}</div>`;
+  const out = translated ? String(text || '') : WM_I18N.t(text);
+  return `<div class="ch-bubble-slot">${text ? `<div class="ch-bubble${modifier}">「${escHtml(out)}」</div>` : ''}</div>`;
 }
 
 /** 団体エンブレム(実画像)。orgIdが取れないときだけ頭文字色丸へフォールバック(mockup-baseline-v0.1 §5) */
@@ -19701,7 +19766,8 @@ function renderAutumnWarResult() {
   const speechMember = memberRows.find(({ m }) => m.id === speech?.fighter?.id);
   const speechHtml = speech?.line ? `<div class="ch-trio-speech">
       <div class="ch-trio-speaker">${WM_I18N.t('最多勝コメント')}${speechMember ? ` ・ ${escHtml(speechMember.m.role)} ${escHtml(WM_I18N.pn(speechMember.m.f.name))}` : ''}</div>
-      ${_chBubbleSlot(speech.line, 'is-autumn-speech')}
+      ${/* P6-5配線修正: speech.lineは_agwChampionSpeechで{wins}/{org}置換前にt()済み */ ''}
+      ${_chBubbleSlot(speech.line, 'is-autumn-speech', true)}
     </div>` : '';
   const imgsRow = memberRows.map(({ m, isMvp }) => `<div class="ch-mem${isMvp ? ' is-mvp' : ''}">
       <div class="ch-por-wrap">

@@ -220,7 +220,9 @@ function section(source, startMarker, endMarker) {
   const championSpeech = section(ui, 'function _agwChampionSpeech', 'function _agwMiniClimbHtml');
   assert.ok(championSpeech.includes('result.fighterWins?.[b.id]'), '優勝台詞の話者を最多勝から選んでいない');
   assert.ok(resultView.includes('m.id === speech?.fighter?.id'), '最多勝コメントの話者情報を優勝隊列へ接続していない');
-  assert.ok(resultView.includes("_chBubbleSlot(speech.line, 'is-autumn-speech')"), 'championship speech must use the non-clipped autumn modifier');
+  // P6-5: _chBubbleSlotへtranslated引数(speech.lineが_agwChampionSpeechで既にt()済みである
+  // ことを示すフラグ)を追加したため、呼び出し形が変わった
+  assert.ok(resultView.includes("_chBubbleSlot(speech.line, 'is-autumn-speech', true)"), 'championship speech must use the non-clipped autumn modifier');
   assert.ok(resultView.includes('class="ch-trio-speech"'), 'championship speech must be a single centered block for the whole trio');
   assert.ok(!resultView.includes('class="ch-lineup-bubs"'), 'single championship speech must not leave three phantom bubble columns');
   assert.ok(resultView.includes('result.revenueDistribution'), 'result view must read the saved dome-event distribution');
