@@ -1918,7 +1918,13 @@ function _renderRosterDojoHeader() {
       // i18n Stage B P5-1: report.reportText はapp.js/management.jsで選択されたCOACH_VOICE_REPORT_LINES
       // の生JA行(選択ロジックには触れず、ここ=表示直前でt()を通す)。atmo.text はナレーション層
       // (ATMOSPHERE_TEXTS、本セリフ台帳の対象外)のため素通し。
-      let speechText = (report && report.reportText) ? WM_I18N.t(report.reportText) : atmo.text;
+      // i18n Stage B P5-2l: reportText は {name}/{stat} を残した原文テンプレなので、
+      // t()に params を渡して**辞書を引いてから**置換する(先に置換するとキーが一致しない)。
+      // {stat}はステータス名の日本語ラベル(UI辞書側のキー)なので、値の側もt()に通す。
+      // reportParams が無い＝旧セーブの置換済みテキスト。その場合は従来どおり素通し(fail-open)。
+      const _rp = report && report.reportParams;
+      const _reportParams = _rp ? { name: _rp.name, stat: WM_I18N.t(_rp.stat) } : undefined;
+      let speechText = (report && report.reportText) ? WM_I18N.t(report.reportText, _reportParams) : atmo.text;
       // コーチ報告の表示枠では、対象選手の今週の熱量を優先して伝える。
       // 既存の strain 報告も同じ枠を使うため、同じ週に2種類の警告を重ねない。
       const roster = G.roster || [];
