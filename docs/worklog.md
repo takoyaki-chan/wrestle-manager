@@ -1,5 +1,115 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-8 — 自団体興行記事のフォールバック本文をテンプレ化・英訳（生JAリテラルの解消）（2026-09-04・worktree agent-a5657312d40020460）
+
+指示書は specs/i18n-runtime-spec-v1.0.md §23-6（P7-7bの範囲外発見1件）。開始前にworktreeブランチをmain先端（e6040a8、P7-7bマージまで）へfast-forward済み。
+
+**訳出9キー**（template-ledger 2,923→**2,929**・未訳0 / ui-ledger 4,061→**4,064**・未訳0 / dialogue-ledger 16,674 は不触）。
+
+### 1. 真因は「空プール時のフォールバック」ではなく本体側だった
+
+§23-6の起票は「`App._NEWSPAPER_ARTICLES` のプールが空のときのフォールバック文字列組み立て」だったが、EN走破の `--ja-exposure-log` が実際に拾っていた文
+（`正直に言えば、メインイベントは物足りなさが残った。穴澤ほのかが…`）を辞書で引き直したところ、**`_NEWSPAPER_ARTICLES.lowMQ` の正規のプール要素**（P4-5で英訳済み）だった。
+
+真因は `ui-render.js` `_npSwapMainToSecondCard`（一面トップと興行メインが同じ試合になった週に第2試合をメイン枠へ繰り上げる関数）が、
+**本体 `App._generateNewspaperTexts` と同じプールを `kurodaText` ではなく素の `fn(promotedCtx)` で呼んでいた**こと。
+同じ表の消費点が2つあり、片方だけP4-5の配線から漏れていた（§6「UI層からの直接t()配線」の適用漏れ）。
+
+### 2. 配線方式（分岐一覧）
+
+| # | 対象 | 分岐 | 配線 |
+|---|---|---|---|
+| ① | 繰り上げ記事の**プール経路**（真因） | `ART[cat] \|\| ART.normal` から seeded pick / 低MQ追記 | `fn(ctx)` → **`kurodaText(fn, ctx, WM_I18N.t)`**。ただし素の呼び出しを先に1回通して成否を確かめる（下記3） |
+| ② | 繰り上げ記事の**フォールバック本文**（防御枝） | `m.isDraw` / `winnerName` / else の3分岐 ＋ `m.isTitleMatch` の注記2変種 ＋ `'決着技'` の1語ラベル＝計6文 | data.js の新表 **`NEWSPAPER_SHOW_FALLBACK_TEMPLATES`**（`draw`/`decisive`/`closingTitle`/`closingNormal`/`noWinner`/`finishFallback`）へ移設し、**PH置換前に**`WM_I18N.t(tpl, vars)` を1回。選手名・会場名は params 経由で `convertNames`（D-P6-2）が英語化 |
+| ③ | 同型の掃討: **主力対決の黒田寸評フォールバック**（`_npMatchupFlavorText` 空振り時） | `diff>5` / `diff<-5` / 互角 の3分岐 | 兄弟3件（P4-5配線済みの `KURODA_WAR_RECORD`/`KURODA_SPOTLIGHT`/`KURODA_RELATION_NARRATIVE`）と同じ**インライン`WM_I18N.t()`+ui-ledger**。差し込む `m.role`（エース/主力/中堅）は ui-ledger に既訳のある1語ラベルなので**値として引き直す** |
+
+台帳は `test/i18n-extract-templates.js` の `TARGET_TABLES` に `NEWSPAPER_SHOW_FALLBACK_TEMPLATES` を追加（data.jsのトップレベル`const`なので `loadAsGlobal` でそのまま取れる。app.jsの2プールのような `extractAppObjectLiteral` 経路は不要）。
+
+**技名**: 本文に入る `{finish}` は `Engine.formatFinish(…, WM_I18N.t)` の成形済み値で、生の技名リテラルはこの範囲に無い。したがって `WM_I18N.mv()`（P7-5が並行実装中）を呼ぶ箇所は**発生しなかった**。技名そのものの英訳はP7-5の領分のまま。
+
+**据え置き**: `App._generateNewspaperTexts` の `Math.random()`（未シード）は指示どおり不触。
+
+### 3. `kurodaText`は例外を投げない — 既存の保険を殺さない書き方
+
+素の `fn(d)` は `d.winner.name` のような未解決パスで**例外を投げ**、`catch` が空文字にしてフォールバックへ委ねていた。
+`kurodaText` は `undefined` を `String(undefined)` として本文へ差し込むだけで例外にならないため、素直に差し替えると
+「壊れたらフォールバックへ落ちる」保険が消えてJA出力が変わる（`undefinedが…`）。そこで:
+
+```js
+try {
+  const raw = fn(promotedCtx);                                          // 従来どおり素で呼んで成否を確かめ
+  promotedArticle = raw ? kurodaText(fn, promotedCtx, WM_I18N.t) : raw; // そのうえで訳出
+} catch (e) { promotedArticle = ''; }
+```
+
+`Engine.rng.pick` の位置（try の内／外）は**元のまま動かさない**（乱数の消費順が変わると出目が変わる）。
+
+### 4. 対訳全文（9キー）
+
+**A. `NEWSPAPER_SHOW_FALLBACK_TEMPLATES`（template-ledger・6キー）**
+
+| キー | JA | EN |
+|---|---|---|
+| draw | `{left}と{right}、{turns}ターンの攻防は決着を見なかった。互いに譲らず{venue}の{attendance}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。試合評価{mq}——再戦を望む声は早くも上がっている。` | `{left} and {right} went {turns} turns without a decision. Neither gave ground, the {attendance} at {venue} were still on their feet at the end, and what was left in the ring were two faces that could not quite accept the lack of a finish. Rated {mq} — the calls for a rematch have already started.` |
+| decisive | `{winner}が{loser}を{finish}で仕留めた{turns}ターンの一戦。{venue}の{attendance}人を前に試合評価{mq}を記録し、メインに次ぐ好カードとして紙面に残った。{closing}` | `{winner} put {loser} away by {finish} in {turns} turns. In front of the {attendance} at {venue} it rated {mq}, and it goes into the paper as the best thing on the card after the main.{closing}` |
+| closingTitle | `王座戦としての重みも感じさせる勝利だった。` | `␣It was a win that carried some of the weight of a title match.`（先頭に半角スペース） |
+| closingNormal | `{loser}も意地を見せたが、{winner}の地力が最後にものを言った形だ。` | `␣{loser} showed pride of her own, but in the end it was the raw ability of {winner} that decided it.`（先頭に半角スペース） |
+| noWinner | `{left}対{right}は{turns}ターンに及ぶ攻防となり、{venue}の{attendance}人を魅了。試合評価{mq}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。` | `{left} against {right} ran {turns} turns and held the {attendance} at {venue}. A rating of {mq} is enough for the semi on this card, and both of them come out of it worth more.` |
+| finishFallback | `決着技` | `a finishing hold` |
+
+**B. 主力対決の寸評フォールバック（ui-ledger・3キー）**
+
+| JA | EN |
+|---|---|
+| `{player}にOVR優位がある。{rival}は地力で押し返したい。` | `{player} has the edge in Overall. {rival} will want to push back on raw strength.` |
+| `{rival}が地力で勝る。{player}は工夫が要る。` | `{rival} is the stronger on raw ability. {player} will need to find a way around that.` |
+| `OVRは互角。{role}対決として見逃せない一戦になる。` | `Overall is even. As the {role} matchup, this is one not to miss.` |
+
+文体は docs/en-kuroda-style-draft-v0.1.md の**無署名の紙面本文**（黒田署名ではない）に合わせ、`試合評価{mq}` → `rated {mq}` / `総合力` → `Overall` の既定訳を踏襲。
+`a {role} matchup` のように**数値・可変語PHの前に不定冠詞を置かない**（§3-4 規則25・build-dictの機械検査対象）ため「As the {role} matchup」に寄せた。
+
+### 5. 実機EN出力（3本抜粋・実辞書で描画）
+
+```
+POOL / lowMQ   : Honestly, the main event left something wanting. Toko Abukuma beat Kanako Tomioka
+                 by German Suplex Hold → 3-count, and a rating of 31 tells you what was in it. …
+FALLBACK/title : Toko Abukuma put Kanako Tomioka away by German Suplex Hold → 3-count in 12 turns.
+                 In front of the 4,200 at Small Hall A it rated 63, and it goes into the paper as
+                 the best thing on the card after the main. It was a win that carried some of the
+                 weight of a title match.
+FALLBACK/draw  : Toko Abukuma and Kanako Tomioka went 12 turns without a decision. Neither gave
+                 ground, the 4,200 at Small Hall A were still on their feet at the end, …
+```
+
+### 6. 同型の追加発見（本バッチでは未修正・spec §24-6へ記録）
+
+- `_buildDepthNoteV2` / `_buildLeadSentences`（ui-render.js:4863付近）— ランキング画面の選手層寸評が断片連結の生JA。**P7-6の領分**
+- 団体比較号の `d.opportunity` / `actionDescs`（management.js:26300付近）— Engine関数内に直書きされた紹介文プール（§10-2型）
+
+### 検証結果
+
+- `node --check` 全触りファイル（data.js / ui-render.js / lang-en.js / lang-en-templates.js / test/i18n-extract-templates.js）OK
+- **JA同一性**: 凍結コピー（`git show e6040a8:src/ui-render.js`）との全分岐突合 **27,657通り・不一致0**（実プール／空プール＝フォールバック強制／Appなし × 勝敗4種 × 王座戦2 × MQ6 × ターン4 × 決着技2 × 観客2 × 会場2 × season/week3）。分岐名つきの読める突合も **128通り・不一致0**
+- `node test/ja-golden.js` **完全一致**（lines=11233・hash `6b3d05c8…` 不変・`--update`不使用）
+- `node test/i18n-build-template-dict.js` **2,929キー／未訳0**（黒田禁止語・PH完全性・PH直前の不定冠詞すべてクリア）
+- `node test/i18n-build-dict.js` **4,064キー／未訳0**
+- `npm test` **260/260 PASS**
+- `node test/i18n-ratchet.js` — data.js **+6**（新テーブル6キー）／ui-render.js **−3**（移設。旧コードは3本の長いテンプレートリテラルに畳まれていたため本数は1:1で対応しない）→ 総数 28,102→**28,105**、正当な移設として`--update`で基準更新
+- `node test/auto-sim.js 20 42` **ALL CLEAR**（violations 0・給与連続性／更改約束／資金恒等式いずれも違反0）
+- `npm run test:ui:walkthrough` **PASS・ja digest `1052faa82eaf7991` 不変**（328 actions・Issues 0）。さらに `--action-log` を新旧で取って **151,329バイト完全一致**を確認
+- `npm run test:ui:walkthrough:en` **PASS・i18n-miss 0維持**（416 actions・Issues 0）
+
+### EN走破のJA露出 before→after（`--ja-exposure-log`実測）
+
+| 対象 | before | after |
+|---|---|---|
+| `div.np-show-article` の地の文 | `正直に言えば、メインイベントは物足りなさが残った。穴澤ほのかが…`（先頭60字中 **JA 48字**） | `Honestly, the main event left something wanting. Honoka Anaz…`（先頭60字中 **JA 0字**） |
+| screen-newspaper の露出行数 | 8 | 9（**残りは全件が決着技名＝P7-5**。行数の増減はMath.random()由来で到達した紙面が違うため） |
+
+**注記**: 走破のOverflow件数は実行ごとにブレる（27/29/30/32を実測）。`App._generateNewspaperTexts`のMath.random()由来のノイズ。
+digest（行動ログ）は安定しているが、**まれに1手ズレる実行がある**（1回だけ327手 digest `e603d4e2…` を観測 → 同一コードで再実行すると328手・digest一致に戻った）。digestが違ったら再実行して再現を確かめること。
+
+specs/i18n-runtime-spec-v1.0.md に §24 として詳細（真因の見つけ方／`kurodaText`が例外を投げない件／`{closing}`の空白規約／同型掃討／JA同一性の作法／新規発見2件）を追記し、§23-6の該当項を✅化した。
 ## 🌐 Stage B P6-18 — 序章のテンプレ化+年代記カード単位語の構造化+年代記igniteシナリオ（2026-09-04・worktree agent-aedd279caf2555073）
 
 指示書は specs/i18n-runtime-spec-v1.0.md §21-6(P6-17の発見1〜3)。開始前にworktreeブランチをmain先端(2fd7108、P6-17マージまで)へfast-forward済み。

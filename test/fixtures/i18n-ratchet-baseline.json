@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-04T12:35:11.601Z",
+  "generatedAt": "2026-09-04T13:10:12.335Z",
   "files": {
     "data.js": {
-      "jaCount": 17137,
-      "jaChars": 308016
+      "jaCount": 17143,
+      "jaChars": 308251
     },
     "kuroda-text.js": {
       "jaCount": 900,
@@ -30,8 +30,8 @@
       "jaChars": 9614
     },
     "ui-render.js": {
-      "jaCount": 1035,
-      "jaChars": 9147
+      "jaCount": 1032,
+      "jaChars": 8958
     },
     "flag-dialogue.js": {
       "jaCount": 449,

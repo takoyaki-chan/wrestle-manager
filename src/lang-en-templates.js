@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー2952件、訳文あり2952件)
+//  生成元: i18n/template-ledger.json (総キー2958件、訳文あり2958件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -297,6 +297,8 @@
     "{leftName}と{rightName}。このカードを実現しない手はないだろう。期待している": "{leftName} and {rightName}. There is no argument for leaving this match unmade. I am looking forward to it.",
     "{leftName}と{rightName}のライバル関係が熱を帯びている。次の直接対決が楽しみだ": "The rivalry between {leftName} and {rightName} has heat on it now. I want to see the next meeting.",
     "{leftName}と{rightName}の因縁はまだ決着がついていない。次こそ白黒はっきりさせてほしいものだ": "Nothing between {leftName} and {rightName} has been settled. The next one should decide it one way or the other.",
+    "{left}と{right}、{turns}ターンの攻防は決着を見なかった。互いに譲らず{venue}の{attendance}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。試合評価{mq}——再戦を望む声は早くも上がっている。": "{left} and {right} went {turns} turns without a decision. Neither gave ground, the {attendance} at {venue} were still on their feet at the end, and what was left in the ring were two faces that could not quite accept the lack of a finish. Rated {mq} — the calls for a rematch have already started.",
+    "{left}対{right}は{turns}ターンに及ぶ攻防となり、{venue}の{attendance}人を魅了。試合評価{mq}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。": "{left} against {right} ran {turns} turns and held the {attendance} at {venue}. A rating of {mq} is enough for the semi on this card, and both of them come out of it worth more.",
     "{loserName}なすすべなし——{winnerName}の完勝": "Nothing for {loserName} — a clean win for {winnerName}",
     "{loserName}にとっては厳しい夜となった。{winnerName}の猛攻に防戦一方、{turns}ターンでの決着に{attendanceToLocaleString}人の観客も言葉を失った。": "A hard night for {loserName}. She had no answer to what {winnerName} brought, and when it ended in {turns} turns the {attendanceToLocaleString} in the building had nothing to say either.",
     "{loserName}にとっては悪夢。{winnerName}にとっては人生を変える一勝だ": "A nightmare for {loserName}. For {winnerName}, the win that changes a life",
@@ -305,6 +307,7 @@
     "{loserName}の牙城がついに崩れた。{turns}ターンに及ぶ攻防の末、{winnerName}が{finishLabel}で王座を奪取。{venueName}のリングに立つ新王者に、{attendanceToLocaleString}人のファンが惜しみない拍手を送った。": "The fortress {loserName} held has come down at last. After {turns} turns, {winnerName} took the title by {finishLabel}. The {attendanceToLocaleString} fans gave the new champion standing in the {venueName} ring everything they had.",
     "{loserName}は何をしに来たのか。一方的すぎる": "What did {loserName} come here to do. Far too one-sided",
     "{loser}の時代が、ここで終わった。挑戦者{winner}（{winnerOrg}）が業界の頂点のベルトを奪い取り、勢力図を塗り替えた。": "The {loser} era ends here. Challenger {winner} of {winnerOrg} took the belt at the top of the business and redrew the map.",
+    "{loser}も意地を見せたが、{winner}の地力が最後にものを言った形だ。": " {loser} showed pride of her own, but in the end it was the raw ability of {winner} that decided it.",
     "{losses}敗のうち、何敗が「惜しかった」のか。——まあ、聞くだけ無駄だが": "How many of those defeats — {losses} of them — were close? ...There is no use asking.",
     "{matches}度のリングで、両者は確実に「敬意」を交わし続けてきた。激しさはないが、確かさはある——本紙はそう書いておく。": "Across a {matches}-match record the two of them have kept passing respect back and forth. No ferocity in it, and there is certainty. This paper will leave it there.",
     "{matches}度のリングで、二人は確実に互いを引き上げ続けてきた。これを「ライバル」と呼ぶか「戦友」と呼ぶか——おそらく、両方が正しい。": "Across a {matches}-match record, the two of them have kept pulling each other up. Whether to call that a rivalry or call it comradeship — both are probably right.",
@@ -981,6 +984,7 @@
     "{winnerOrg} {scoreW}-{scoreL} {loserOrg}{note}": "{winnerOrg} {scoreW}-{scoreL} {loserOrg}{note}",
     "{winnerOrg}の{winner}、PPVで{loserOrg}{loser}を下す": "{winnerOrg}'s {winner} beats {loserOrg} {loser} at the PPV",
     "{winner}、PPVで{loserOrg}{loser}を下す": "{winner} beats {loserOrg} {loser} at the PPV",
+    "{winner}が{loser}を{finish}で仕留めた{turns}ターンの一戦。{venue}の{attendance}人を前に試合評価{mq}を記録し、メインに次ぐ好カードとして紙面に残った。{closing}": "{winner} put {loser} away by {finish} in {turns} turns. In front of the {attendance} at {venue} it rated {mq}, and it goes into the paper as the best thing on the card after the main.{closing}",
     "{winner}が業界の頂点を奪取 {loser}の牙城崩れる": "{winner} takes the top of the business — {loser}'s stronghold falls",
     "{winner}はHPを{hp}残しての圧勝。": "{winner} came through with {hp} HP still in hand.",
     "{wins}勝{losses}敗": "{wins}-{losses}",
@@ -2366,6 +2370,7 @@
     "決着つかず。ファンの消化不良感は否めないが、次への伏線にはなった": "No decision. The fans go home unsatisfied, and it sets up the next one",
     "決着はついた。だが{name}と{name2}が目を合わせた時、そこにはまだ何かがあった": "It has been settled. And yet, when {name} and {name2} met each other's eyes, something was still there",
     "決着戦でも、話し合いでも消えなかった火がある。「{factionAName}」と「{factionBName}」の対立は、もはや{org}の風土の一部と化した。ファンはこの緊張を目当てに会場へ足を運ぶ。憎悪も、長く続けば名物になる。": "Some fires go out neither in a decider nor at a table. The feud between {factionAName} and {factionBName} has become part of the weather at {org}. Fans buy tickets for that tension now. Hate, if it runs long enough, becomes part of the attraction.",
+    "決着技": "a finishing hold",
     "決着放棄上等の塩試合フラグ立ってない？": "Anyone else smell a time-limit draw and a nothing match coming?",
     "沖縄": "Okinawa",
     "波乱。{winnerName}がこの勝利で一気にステージを上げた": "An upset. This win moves {winnerName} up a stage at once",
@@ -2440,6 +2445,7 @@
     "王座奪取": "a title win",
     "王座奪取！ {winnerName}が{loserName}を下す": "Title taken! {winnerName} beats {loserName}",
     "王座奪還！{challengerName}が{toOrg}からベルトを取り戻した": "Title reclaimed! {challengerName} beats {toOrg}",
+    "王座戦としての重みも感じさせる勝利だった。": " It was a win that carried some of the weight of a title match.",
     "王座戦線は{championName}を軸に動いている。{challengerName}がどう絡むか、注目すべきだろう": "The title picture is moving around {championName}. How {challengerName} works into it is worth watching.",
     "王座返上——{name}、{toOrg}へ移籍": "Title surrendered — {name} to {toOrg}",
     "王座陥落": "a title lost",

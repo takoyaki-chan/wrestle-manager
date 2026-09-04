@@ -835,8 +835,9 @@ Fable裁定により演出として残さず英訳する方針が確定してい
 
 ### 25-6. 範囲外の新規発見(P7-7bでは修正していない)
 
-- **`div.np-show-article`の生JAフォールバック記事**(`ui-render.js` `_npRenderPlayerShow`内、`App._NEWSPAPER_ARTICLES`のプールが空のときのフォールバック文字列組み立て)。数文からなる長文テンプレをt()もpn()も通さず直接組み立てており、technique名だけでなく地の文全体がJAのまま出る。P7-5(技名)より大きい別枠の作業(複数文のテンプレ台帳化)が要るため、P7-7bのスコープ外として記録のみ
+- **✅解決(P7-8、2026-09-04)** — **`div.np-show-article`の生JAフォールバック記事**(`ui-render.js` `_npRenderPlayerShow`内、`App._NEWSPAPER_ARTICLES`のプールが空のときのフォールバック文字列組み立て)。数文からなる長文テンプレをt()もpn()も通さず直接組み立てており、technique名だけでなく地の文全体がJAのまま出る。P7-5(技名)より大きい別枠の作業(複数文のテンプレ台帳化)が要るため、P7-7bのスコープ外として記録のみ → **実コールサイトを追ったところ真因はフォールバックではなく本体側だった**(§24)
 - **`App._generateNewspaperTexts`のMath.random()非決定性**(P7-7aで指摘済み・据え置き継続。generateHypeと同族の乱数シード原則からの逸脱)
+
 ## 26. Stage B P7-1 — データ表の値層「C. ラベル・短い定義の表」を`DATA_TABLES`モードで台帳化・配線・英訳(2026-09-04追加)
 
 設計はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」13表と、P6-13が積み残した4件(秋対抗戦の団体名ロングテール/fanExpect理由テンプレ/特性バッジ/招聘市場パネルのラベル)を解決した。
@@ -1014,3 +1015,70 @@ return prefix + String(T(tmpl, { move: finMove })).replace('{move}', finMove);
 4. **`management.js:31053` / `32263` の `else` 分岐が生の `finMove` を出す**。ただし条件が `Engine.formatFinish &&` なので `formatFinish` が存在する限り到達しない死コード(§13-2-1型)
 5. **`tag-battle-lines.js` の `_tplTagLine` は `dict(str)` だけでPHの値を素通しする**。`{move}` は呼び出し側(`tag-battle-main.js`)で先に `mv()` を掛けて回避したが、同関数の `{winner}`/`{partner}` は依然として生JA名(P7-7b/P6-3ロングテールの領分)
 6. **選手ごとの「得意技」UIは存在しない**。P7設計が挙げていた表示点だが、`.moves` のような選手所有の技リストはコード上に無く(技はスタイルから毎試合抽選される)、`得意技` は紹介文の地の文にしか出ない。記録タブ・ランキング・年代記ハイライトにも決着技は出ない
+## 29. Stage B P7-8 — 自団体興行記事(繰り上げ記事)のdict配線とフォールバック本文のテンプレ化(2026-09-04追加)
+
+訳出**9キー**(template-ledger 2,923→**2,929**・未訳0 / ui-ledger 4,061→**4,064**・未訳0 / dialogue-ledgerは不触)。
+
+### 29-1. 「フォールバックがJA」だと思ったら、**本体側がJA**だった
+
+§23-6の起票は「`App._NEWSPAPER_ARTICLES` のプールが空のときのフォールバック文字列組み立て」だったが、EN走破の`--ja-exposure-log`が拾っていた実際の文
+(`正直に言えば、メインイベントは物足りなさが残った。…`)は**`_NEWSPAPER_ARTICLES.lowMQ` の正規のプール要素**だった。
+真因は `ui-render.js` `_npSwapMainToSecondCard`(一面トップと興行メインが同じ試合になった週に第2試合をメイン枠へ繰り上げる関数)が、
+**同じプールを `kurodaText` ではなく素の `fn(promotedCtx)` で呼んでいた**こと。
+本体の `App._generateNewspaperTexts` はP4-5で `kurodaText(entry, d, WM_I18N.t)` に配線済みだったのに、
+**同じプールの第2の消費点だけが取り残されていた**(§6「UI層からの直接t()配線」の適用漏れ)。
+
+- **教訓**: 露出した文字列を辞書で引いて「どの表の何行目か」を先に確定させる。表が既に訳出済みなら、
+  疑うべきはテーブルではなく**その表の消費点が複数ある**こと。`grep <TABLE名>` で消費点を全部数える(§23-2と同じ作法)
+- フォールバック(プールが空/例外時)は実際には防御的な到達不能枝だったが、**本体が英語になった今フォールバックだけJAで出る**
+  状態(§14-5-4と同型)になるため、同バッチでテンプレ化した
+
+### 29-2. `kurodaText`は未定義プロパティを `"undefined"` として本文へ出す — 既存の try/catch の保険を殺さない
+
+素の `fn(d)` は `d.winner.name` のような未解決パスで**例外を投げ**、呼び出し側の `catch` が空文字にしてフォールバックへ委ねていた。
+`kurodaText` は `kurodaEvalPath` が `undefined` を返しても `String(undefined)` を本文へ差し込むだけで**例外にならない**ため、
+素直に差し替えると「壊れたときフォールバックへ落ちる」という既存の保険が消え、JA出力が変わる(`undefinedが…`)。
+
+```js
+try {
+  const raw = fn(promotedCtx);                                   // 従来どおり素で呼んで成否を確かめ
+  promotedArticle = raw ? kurodaText(fn, promotedCtx, WM_I18N.t) : raw;  // そのうえで訳出
+} catch (e) { promotedArticle = ''; }
+```
+
+- `Engine.rng.pick` の位置(try の内/外)は**元のまま動かさない** — 乱数の消費順が変わると出目が変わる
+- 同型(`kurodaText`へ後付けで乗り換える消費点)では毎回この「素で呼んで確かめてから訳す」形を使う
+
+### 29-3. 末尾に直結する注記2変種は`{closing}`スロット+**EN訳文側の先頭スペース**
+
+`decisive` 本文の末尾は、元コードでは三項演算子で「王座戦だった」/「敗者も意地を見せた」のどちらかが**空白なしで直結**していた。
+§15-2のクラウス規約をそのまま適用し、テンプレは `…紙面に残った。{closing}` のまま、**EN訳文の側が先頭に半角スペースを持つ**。
+`closing` は先に `t()` で確定させてから本文の params に載せる(充填済みなので後段の置換で壊れない)。
+
+### 29-4. 同型の掃討 — 主力対決の黒田寸評フォールバック
+
+`grep 'if (!comment)' / 'if (!txt)'` 系で新聞セクションの「プール空振り時の直書きJA」を全数当たったところ、
+P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELATION_NARRATIVE`)の隣に**1件だけ未配線が残っていた**
+(`_npMatchupFlavorText` 空振り時の主力対決寸評3分岐)。1〜2文の短文なので、兄弟3件と同じく**インライン`WM_I18N.t()`+ui-ledger**へ寄せた
+(数文の地の文である興行記事フォールバックだけを data.js のテンプレ表にする、という置き場の使い分け)。
+差し込む `m.role`(`エース`/`主力`/`中堅`)は ui-ledger に既訳のある1語ラベルなので、**値として `WM_I18N.t()` で引き直す**(§14-2 `_wmDictLabel` と同じ流儀)。
+
+### 29-5. JA同一性の証明(27,657通り+128通り・不一致0)
+
+§15-5の作法①(凍結コピーとの全数突合)。`git show <BASE>:src/ui-render.js` から旧 `_npSwapMainToSecondCard` を切り出し、
+新旧を同じサンドボックス(ja素通しdict)で回して戻り値オブジェクト全体を `JSON.stringify` で突合した。
+
+- 実プール / **空プール(=フォールバック3分岐を強制)** / `App`なし の3系統 × 選手2組 × 勝敗4種(left/right/draw/勝敗不明) ×
+  王座戦2 × MQ 6値 × ターン 4値 × 決着技2 × 観客2値 × 会場2 × season/week 3組 = **27,657通り・不一致0**
+- 分岐名つきの読める形でも別途突合(draw/decisive+title/decisive+normal/noWinner × 32ケース = **128通り・不一致0**)
+- `npm run test:ui:walkthrough` の **`--action-log` が旧実装と1バイト一致**(151,329 bytes・digest `1052faa82eaf7991`・328 actions)
+- **走破のOverflow件数は実行ごとにブレる**(27/29/30/32を実測)。`App._generateNewspaperTexts`のMath.random()由来のノイズで、
+  digest(=行動ログ)は安定している。**まれに1手ズレる実行がある**(1回だけ327手 digest `e603d4e2…` を観測。
+  同一コードで再実行すると328手・digest一致に戻った)ので、**digestが違ったら再実行して再現するか先に確かめる**こと
+
+### 29-6. P7-8で新たに見つかった穴(未着手)
+
+- **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
+  条件分岐ごとの断片を `[first, second, third].join('')` で連結する型で、t()を一度も通らない。P7-6(ランキング画面)の領分として記録のみ
+- **団体比較号の `d.opportunity` / `actionDescs` 等(management.js:26300付近)** — Engine内の関数に直書きされた紹介文プール(§10-2型)。
+  `_npRenderOrgCompare` の紙面に出るが、テーブル化+dict糸通しが要る別枠

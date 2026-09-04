@@ -8184,25 +8184,59 @@ function _npSwapMainToSecondCard(d, seasonNum, weekNum) {
   else if ((m.mq || 0) >= 75) promotedCat = 'closeMQ';
   else promotedCat = 'normal';
   const ART = (typeof App !== 'undefined' && App._NEWSPAPER_ARTICLES) ? App._NEWSPAPER_ARTICLES : null;
+  // i18n Stage B P7-8: メイン記事(App._generateNewspaperTexts)は kurodaText(entry, d, WM_I18N.t)
+  // でdictを通しているのに、繰り上げ記事だけが素の fn(ctx) を呼んでおり、ENでも本文が
+  // JAのまま出ていた(EN走破 --ja-exposure-log の `div.np-show-article` はこの経路)。
+  // まず従来どおり素で呼んで「例外なく本文が組めるか」を確かめてから同じentryを
+  // kurodaText経由で訳出する — kurodaTextは未定義プロパティを "undefined" として本文へ
+  // 出すため、元の try/catch が担っていた「壊れたら空にして下のフォールバックへ委ねる」
+  // 保険を素の呼び出しで維持する(JA出力1バイト不変)。
   if (ART) {
     const pool = ART[promotedCat] || ART.normal || [];
     if (pool.length > 0) {
       const fn = Engine.rng.pick(promotedRng, pool);
-      try { promotedArticle = fn(promotedCtx); } catch(e) { promotedArticle = ''; }
+      try {
+        const raw = fn(promotedCtx);
+        promotedArticle = raw ? kurodaText(fn, promotedCtx, WM_I18N.t) : raw;
+      } catch(e) { promotedArticle = ''; }
     }
     // 低MQ追記
     if (promotedArticle && (m.mq || 0) < 40 && ART.lowMQ) {
-      try { promotedArticle = Engine.rng.pick(promotedRng, ART.lowMQ)(promotedCtx); } catch(e) {}
+      try {
+        const lowFn = Engine.rng.pick(promotedRng, ART.lowMQ);
+        const lowRaw = lowFn(promotedCtx);
+        promotedArticle = lowRaw ? kurodaText(lowFn, promotedCtx, WM_I18N.t) : lowRaw;
+      } catch(e) {}
     }
   }
   if (!promotedArticle) {
-    // フォールバックも長めに
+    // フォールバックも長めに。
+    // i18n Stage B P7-8: 数文からなる地の文をJSテンプレートリテラルで直に組んでいたため、
+    // t()もpn()も通らずENでも本文全体がJAで出ていた(specs §23-6 でP7-7bが起票)。
+    // 分岐ごとの完全文を NEWSPAPER_SHOW_FALLBACK_TEMPLATES(data.js)へ移設し、
+    // **PH置換前に**t()を通す(選手名・会場名はparams経由でconvertNames(D-P6-2)が英語化する)。
+    const FB = NEWSPAPER_SHOW_FALLBACK_TEMPLATES;
+    const fbVars = {
+      left: WM_I18N.pn(m.left.name),
+      right: WM_I18N.pn(m.right.name),
+      winner: WM_I18N.pn(winnerName),
+      loser: WM_I18N.pn(loserName),
+      // 決着技は Engine.formatFinish(…, WM_I18N.t) の成形済み値(技名そのものはP7-5の領分)。
+      // 取れなかったときの1語ラベルだけ、差し込む直前に辞書で引き直す(_wmDictLabelと同じ流儀)。
+      finish: m.finishLabel || WM_I18N.t(FB.finishFallback),
+      turns: m.turns || '?',
+      mq: m.mq || '?',
+      venue: WM_I18N.pn(promotedCtx.venue.name),
+      attendance: (d.attendance || 0).toLocaleString(),
+    };
     if (m.isDraw) {
-      promotedArticle = `${WM_I18N.pn(m.left.name)}と${WM_I18N.pn(m.right.name)}、${m.turns || '?'}ターンの攻防は決着を見なかった。互いに譲らず${WM_I18N.pn(promotedCtx.venue.name)}の${(d.attendance || 0).toLocaleString()}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。試合評価${m.mq || '?'}——再戦を望む声は早くも上がっている。`;
+      promotedArticle = WM_I18N.t(FB.draw, fbVars);
     } else if (winnerName) {
-      promotedArticle = `${winnerName}が${loserName}を${m.finishLabel || '決着技'}で仕留めた${m.turns || '?'}ターンの一戦。${WM_I18N.pn(promotedCtx.venue.name)}の${(d.attendance || 0).toLocaleString()}人を前に試合評価${m.mq || '?'}を記録し、メインに次ぐ好カードとして紙面に残った。${m.isTitleMatch ? '王座戦としての重みも感じさせる勝利だった。' : `${loserName}も意地を見せたが、${winnerName}の地力が最後にものを言った形だ。`}`;
+      // 末尾の注記2変種は decisive 本文に直結する({closing}。EN訳文が先頭スペースを持つ)
+      const closing = WM_I18N.t(m.isTitleMatch ? FB.closingTitle : FB.closingNormal, fbVars);
+      promotedArticle = WM_I18N.t(FB.decisive, Object.assign({}, fbVars, { closing }));
     } else {
-      promotedArticle = `${WM_I18N.pn(m.left.name)}対${WM_I18N.pn(m.right.name)}は${m.turns || '?'}ターンに及ぶ攻防となり、${WM_I18N.pn(promotedCtx.venue.name)}の${(d.attendance || 0).toLocaleString()}人を魅了。試合評価${m.mq || '?'}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。`;
+      promotedArticle = WM_I18N.t(FB.noWinner, fbVars);
     }
   }
 
@@ -8693,9 +8727,14 @@ function _npRenderPage2() {
       // 実際の対戦成績・スタイル・年齢から2文を組む(存在しないキーを引いていたのを是正)
       let comment = _npMatchupFlavorText(m, d, seasonNum, weekNum);
       if (!comment) {
-        comment = diff > 5 ? `${escHtml(WM_I18N.pn(m.player.name))}にOVR優位がある。${escHtml(WM_I18N.pn(m.rival.name))}は地力で押し返したい。`
-          : diff < -5 ? `${escHtml(WM_I18N.pn(m.rival.name))}が地力で勝る。${escHtml(WM_I18N.pn(m.player.name))}は工夫が要る。`
-          : `OVRは互角。${m.role}対決として見逃せない一戦になる。`;
+        // i18n Stage B P7-8: KURODA_MATCHUP_FLAVORが空振りしたときの直書きフォールバック
+        // (`_npSwapMainToSecondCard`の記事フォールバックと同型で、P4-5が拾い残していた
+        //  最後の1件)。t()で配線する。`m.role`(エース/主力/中堅)はui-ledgerに既訳のある
+        //  1語ラベルなので、差し込む直前に値として引き直す。
+        const _mpName = (n) => escHtml(WM_I18N.pn(n));
+        comment = diff > 5 ? WM_I18N.t('{player}にOVR優位がある。{rival}は地力で押し返したい。', { player: _mpName(m.player.name), rival: _mpName(m.rival.name) })
+          : diff < -5 ? WM_I18N.t('{rival}が地力で勝る。{player}は工夫が要る。', { player: _mpName(m.player.name), rival: _mpName(m.rival.name) })
+          : WM_I18N.t('OVRは互角。{role}対決として見逃せない一戦になる。', { role: WM_I18N.t(m.role) });
       }
       const pEmblem = _npOrgEmblem(G, 'player', 14);
       const rEmblem = _npOrgEmblem(G, _dbCompareTarget, 14);

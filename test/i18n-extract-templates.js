@@ -181,6 +181,12 @@ const TARGET_TABLES = [
   //                               変わらない形(規則23/24)。マークアップはテンプレ側に持つ
   'PROLOGUE_TEMPLATES',
   'CHRONICLE_UNIT_TEXTS',
+  // P7-8で追加。自団体興行結果の**繰り上げ記事**フォールバック本文(specs §23-6)。
+  // ui-render.js `_npSwapMainToSecondCard` の関数内直書きJSテンプレートリテラル
+  // (§10-2「関数の中のリテラルはどの抽出器からも見えない」型)をdata.jsのトップレベル
+  // テーブルへ移設したもの。消費点は同関数で `WM_I18N.t(FB.xxx, vars)`(UI層なので
+  // opts糸通しは不要 — §6「UI層からの直接t()配線」)。
+  'NEWSPAPER_SHOW_FALLBACK_TEMPLATES',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ

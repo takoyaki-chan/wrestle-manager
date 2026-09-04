@@ -18401,6 +18401,26 @@ const NEWSPAPER_SUB_TEMPLATES = {
   default: '{showName}・{venue}。観客{attendance}人。メイン試合評価{mq}、全{totalMatches}試合平均試合評価{avgMQ}',
 };
 
+// i18n Stage B P7-8: 自団体興行結果セクション(`div.np-show-article`)の**繰り上げ記事**
+// フォールバック本文(ui-render.js `_npSwapMainToSecondCard`)。一面トップと興行メインが
+// 同じ試合になった週は第2試合をメイン枠へ繰り上げ、`App._NEWSPAPER_ARTICLES` から記事を
+// 引き直す。そのプールが空振りしたときに使う数文の地の文が、t()もpn()も通らない生JAの
+// JSテンプレートリテラルで直接組まれていた(specs §23-6 でP7-7bが起票)。
+// 構造規約3(断片連結禁止)に従い、分岐ごとの完全文としてここへ移設する。
+//   draw / decisive / noWinner … 3分岐の本文(元コードの if(m.isDraw) / else if(winnerName) / else)
+//   closingTitle / closingNormal … decisive 末尾に**直結する**注記2変種(元コードの三項演算子)。
+//     JAは直結なので空白が要らないが、ENは文間に半角スペースが要るため
+//     **EN訳文の側が先頭に半角スペースを持つ**(specs §15-2 のクラウス規約と同じ)
+//   finishFallback … 決着技が取れなかったときに `{finish}` へ差し込む1語ラベル(値としてdictを引く)
+const NEWSPAPER_SHOW_FALLBACK_TEMPLATES = {
+  draw: '{left}と{right}、{turns}ターンの攻防は決着を見なかった。互いに譲らず{venue}の{attendance}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。試合評価{mq}——再戦を望む声は早くも上がっている。',
+  decisive: '{winner}が{loser}を{finish}で仕留めた{turns}ターンの一戦。{venue}の{attendance}人を前に試合評価{mq}を記録し、メインに次ぐ好カードとして紙面に残った。{closing}',
+  closingTitle: '王座戦としての重みも感じさせる勝利だった。',
+  closingNormal: '{loser}も意地を見せたが、{winner}の地力が最後にものを言った形だ。',
+  noWinner: '{left}対{right}は{turns}ターンに及ぶ攻防となり、{venue}の{attendance}人を魅了。試合評価{mq}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。',
+  finishFallback: '決着技',
+};
+
 // i18n Stage B P6-15: 新聞記事composer3本(統一王座/王座交代/ドラフト自団体1面)が使う
 // 「連結様式」と差し込みラベルのテンプレ。本文プールの3表(UNIFIED_TITLE_TEMPLATES /
 // CHAMPION_CHANGE_TEMPLATES / DRAFT_PLAYER_RESULT_PARTS)はいずれも「承認済み正本・

@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4066件、訳文あり4066件)
+//  生成元: i18n/ui-ledger.json (総キー4069件、訳文あり4069件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -151,6 +151,7 @@
     "OVR<strong>{ovr}</strong> / 人気<strong>{pop}</strong> / 年齢<strong>{age}</strong>": "OVR <strong>{ovr}</strong> / Pop <strong>{pop}</strong> / Age <strong>{age}</strong>",
     "OVR<strong>{ovr}</strong> 人気<strong>{pop}</strong>": "OVR <strong>{ovr}</strong> Pop <strong>{pop}</strong>",
     "OVR≤50の成長 ×1.5": "Growth ×1.5 for OVR ≤50",
+    "OVRは互角。{role}対決として見逃せない一戦になる。": "Overall is even. As the {role} matchup, this is one not to miss.",
     "OVR上位同士をマッチング": "Matches the highest OVR against each other",
     "OVR幅 {a}〜{b} / 出場順は開戦時に公開": "OVR range {a}–{b} / running order revealed at bell time",
     "OVR幅 {a}〜{b} / 最終出場順は開戦時に公開": "OVR range {a}–{b} / final running order revealed at bell time",
@@ -485,12 +486,14 @@
     "{plan}が組まれた。{a}と{b}は手を組んで観客を沸かせた。": "{plan} was booked. {a} and {b} teamed up and brought the house down.",
     "{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 絆 <strong>+1〜+3</strong>": "{plan} will be booked. Both factions' momentum <strong>+5 to +8</strong> / member-to-member bond <strong>+1 to +3</strong>",
     "{playerName}が対戦成績で先行している。{rivalName}としては反撃の機会を作りたいところだ。": "{playerName} leads the series. {rivalName} will be looking for a chance to hit back.",
+    "{player}にOVR優位がある。{rival}は地力で押し返したい。": "{player} has the edge in Overall. {rival} will want to push back on raw strength.",
     "{range} 累計": "{range} total",
     "{rank}位 {name} {pts}": "#{rank} {name} {pts}",
     "{rank}位/{total}": "#{rank}/{total}",
     "{right}の王座挑戦を望む声があります！": "There's talk of a title shot for {right}!",
     "{rivalName}が対戦成績で優位。{playerName}としては流れを変える一戦が必要になる。": "{rivalName} holds the edge in the series. {playerName} needs a win that changes the run of things.",
     "{rivalName}の看板。総合力{ovr}は当面の脅威。": "{rivalName}'s marquee name. An Overall of {ovr} is a threat for the foreseeable future.",
+    "{rival}が地力で勝る。{player}は工夫が要る。": "{rival} is the stronger on raw ability. {player} will need to find a way around that.",
     "{round} 第{n}試合　結果": "{round} Match {n} — Result",
     "{round}・第{n}フォール": "{round} · Fall {n}",
     "{seasons}シーズンの現役生活に区切り。引退と同時に{levelLabel}へ": "An end to the {seasons}-season career, with {levelLabel} induction on the same day",
