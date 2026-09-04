@@ -32741,11 +32741,16 @@ Engine.newspaper = {
         const tpl = (typeof NEWS_HEADLINE_TEMPLATES !== 'undefined') && NEWS_HEADLINE_TEMPLATES[fu.type];
         if (tpl && tpl.length) {
           const pick = tpl[(state.week || 1) % tpl.length];
-          const fill = (t) => Object.keys(fu.newsData)
-            .reduce((acc, k) => acc.split('{' + k + '}').join(fu.newsData[k]), String(t || ''));
+          // i18n P7-7b: 旧実装は dict(pick.headline) で訳文だけ取ってから手動fill()で
+          // {name}等を生値置換しており、t()のparams経由convertNames(D-P6-2)を迂回して
+          // 選手名がJAのままENへ出ていた。_wmFillWithDict(dict, tpl, params) は
+          // dict(tpl, params) を1回呼ぶだけで「翻訳+PH充填+名前自動変換」を済ませる
+          // 既存共通ヘルパー(P6-10)なので、それに乗り換える。JA出力は不変(dict='ja'時は
+          // 従来のfill()と同じ正規表現置換ロジックに帰着する)
           const st2 = {
             type: fu.type, priority: fu.priority,
-            headline: fill(dict(pick.headline)), body: fill(dict(pick.body)),
+            headline: _wmFillWithDict(dict, pick.headline, fu.newsData),
+            body: _wmFillWithDict(dict, pick.body, fu.newsData),
             characterId: fu.characterId, newsData: fu.newsData,
           };
           const ctx2 = Engine.newspaper.buildValueContext(state);

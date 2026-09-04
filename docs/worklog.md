@@ -1,5 +1,47 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-7b — 新聞/ロスター画面のJA露出修正（2026-09-04・worktree agent-a8adca91eead72232）
+
+P7-7a（調査のみ、直前のログ）が分類した9根本原因（技名finishLabelは対象外・P7-5裁定待ち）を1バッチで修正。開始前にworktreeをmain先端(b0f6dd6、P7-4/P7-7a調査まで)へfast-forward済み。
+
+**修正9件**:
+1. **マストヘッド「週刊グラップル」直書き**(ui-render.js:7057) — `WM_I18N.pn()`経由へ（名前辞書に既存訳語あり）
+2. **NP_KURODA_BYLINE(黒田幸子署名)直書き**(ui-render.js) — 参照側10箇所を`WM_I18N.t(NP_KURODA_BYLINE.xxx)`へ。**値そのものはgetterにできない**（後述23-1相当の発見）
+3. **buildFollowUpの名前がpn()自動変換を迂回**(management.js) — 消費側の手動`fill()`をやめ、P6-10確立済みの共通ヘルパー`_wmFillWithDict(dict, tpl, params)`に乗り換え（新規実装なし）
+4. **MVP小窓`_npV3MvpBox`の生fighterName**(ui-render.js:7788,7791) — `WM_I18N.pn()`を通す
+5. **決着時間/ターン数の書式が未ローカライズ** — `_npTurnsToTime`をEN時`mm:ss`表記に分岐、「決着時間 」「ターン」を`WM_I18N.t()`でラベル化
+6. **DOJO_SHOUTS(気合の掛け声)を英訳**(Fable裁定) — ui-render.js内ローカル定数だったものをdata.jsのトップレベルへ移設し、`test/i18n-extract-ui.js`の`DATA_TABLES`モードで台帳化。27本英訳（**実測27種、P7-7aの「26種」は目視カウント誤りだった**）
+7. **traitsがt()未通過で生結合**(ui-render.js:2130) — 顔ポップアップと同じ`c.traits.map(t => WM_I18N.t(t)).join(' / ')`に統一
+8. **「📈 今シーズン成長」見出し直書き**(ui-render.js:2307) — `WM_I18N.t()`でラップ
+9. **「人気+」成長ラベル直書き**(ui-render.js:2315) — `WM_I18N.t('人気')`経由へ
+
+**追加発見・同バッチで根治**（EN走破の再検証で判明。詳細はspecs/i18n-runtime-spec-v1.0.md §23）:
+- 一面トップ写真キャプションの`tsName`(`_npRenderBignewsTag`/一面トップ記事2箇所)が`ALL_CHARS`の生名前を`pn()`なしで直接joinしていた（MVP小窓と同じ穴が3箇所に横展開）
+- ダイジェスト表`_npRenderDigest`の`wName`/`lName`が`m.isDraw`分岐でしか`pn()`を通っておらず、通常の勝敗行（引き分け以外）で選手名が生JAのまま出ていた
+
+**範囲外として記録のみ**（P7-7bでは未修正）:
+- `div.np-show-article`の生JAフォールバック記事（`App._NEWSPAPER_ARTICLES`プールが空の週に組み立てる複数文の直書きテンプレ。technique名だけでなく地の文全体が未翻訳。P7-5より大きい別枠が必要）
+- `App._generateNewspaperTexts`のMath.random()非決定性（P7-7aで指摘済み・据え置き継続）
+
+### 検証結果
+
+- `node --check` 全触りファイル（ui-render.js/management.js/data.js/lang-en.js/test/i18n-extract-ui.js）OK
+- `node test/ja-golden.js` **完全一致**（lines=11233・hash不変・`--update`不使用）
+- `node test/i18n-build-dict.js` **台帳4,062キー／未訳0**
+- `npm test` **260/260 PASS**（初回実行時、getter化したNP_KURODA_BYLINEが`archetype-key-rename-test.js`を巻き込んで落ちたが、23-1の原因特定→参照側t()化に切り替えて解決）
+- `node test/i18n-ratchet.js` — DOJO_SHOUTS移設でdata.js側が構造的に+27（ui-render.js側は-32、正当な移動のため`--update`で基準更新）
+- `node test/auto-sim.js 20 42` **ALL CLEAR**（violations 0・給与連続性/更改約束/資金恒等式いずれも違反0）
+- `npm run test:ui:walkthrough` **PASS・ja digest `1052faa82eaf7991` 不変**（328 actions）
+- `npm run test:ui:walkthrough:en` **PASS・i18n-miss 0維持**
+
+### EN走破のJA露出 before→after（`--ja-exposure-log`実測）
+
+| 画面 | before(P7-7a実測) | after |
+|---|---:|---:|
+| screen-newspaper | 28 | **8**（残り全件が決着技名finishLabel絡み。技名以外は0） |
+| screen-roster | 25 | **0** |
+
+specs/i18n-runtime-spec-v1.0.md に §23 として詳細（NP_KURODA_BYLINEのTABLE_MANIFEST落とし穴／tsName横展開の発見手順／DOJO_SHOUTS移設の理由／範囲外2件）を追記済み。
 ## 🌐 Stage B P6-17 — 年代記の章題/副題/締め/ハイライトと週次ストーリー直書き6本の台帳化・配線、pendingLockerAir削除、該当選手キーの分離（2026-09-04・worktree agent-a42e639b20411de84）
 
 指示書は specs/i18n-runtime-spec-v1.0.md §15-6(P6-16の発見3・4)と §19-4(P7-3の発見1)。開始前にworktreeブランチをmain先端(9c3c8d0、P6-16マージまで)へfast-forward済み。

@@ -4302,6 +4302,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{n}ターン",
+    "en": "{n} turns",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 3,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{n}人",
     "en": "{n} wrestlers",
     "files": [
@@ -5802,6 +5812,39 @@
     "source": [
       "MILESTONE_EVENTS[3].narration[6]"
     ]
+  },
+  {
+    "key": "——黒田幸子(本紙)",
+    "en": "— Sachiko Kuroda, staff writer",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true
+  },
+  {
+    "key": "——黒田幸子(編集部)",
+    "en": "— Sachiko Kuroda, editorial desk",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true
+  },
+  {
+    "key": "——黒田幸子(週刊グラップル)",
+    "en": "— Sachiko Kuroda, Weekly Grapple",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true
   },
   {
     "key": "……あいつは、いねえもんとして扱ってる",
@@ -8047,6 +8090,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "あと三本!",
+    "en": "Three more!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[23]"
+    ]
+  },
+  {
     "key": "あと少し！ 4週連続で黒字を出し、資金3,000万以上を維持すれば経営安定化クリア！",
     "en": "Almost there! Turn a profit four weeks running and hold funds at ¥30M or more to clear the stability goal!",
     "files": [
@@ -8271,6 +8327,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "いける…!",
+    "en": "I've got this...!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[8]"
+    ]
+  },
+  {
     "key": "いたわね、そういえば。……それだけ",
     "en": "Oh, right, she's around. ...That's all.",
     "files": [
@@ -8305,6 +8374,32 @@
     "hasProperNoun": false,
     "source": [
       "MILESTONE_EVENTS[2].choices[2].result"
+    ]
+  },
+  {
+    "key": "うぅっ…",
+    "en": "Ngh...",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[12]"
+    ]
+  },
+  {
+    "key": "うおおっ!",
+    "en": "Raah!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[26]"
     ]
   },
   {
@@ -8367,6 +8462,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "おりゃ!",
+    "en": "Yah!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[10]"
+    ]
   },
   {
     "key": "お名前は存じています。お話する機会は少ないですけれど",
@@ -8512,6 +8620,32 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "くっ…!",
+    "en": "Ngh...!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[6]"
+    ]
+  },
+  {
+    "key": "こいっ!",
+    "en": "Bring it!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[20]"
+    ]
   },
   {
     "key": "ここで試合終了！さあ、次のカードへ参りましょう。",
@@ -9294,6 +9428,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "しゃあっ!",
+    "en": "Shah!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[15]"
+    ]
+  },
+  {
     "key": "すぐ進む",
     "en": "Skip Ahead",
     "files": [
@@ -9364,6 +9511,45 @@
     "hasProperNoun": false
   },
   {
+    "key": "せいっ!",
+    "en": "Hyah!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[2]"
+    ]
+  },
+  {
+    "key": "せーのっ!",
+    "en": "Ready, go!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[18]"
+    ]
+  },
+  {
+    "key": "ぜぇ…はぁ…",
+    "en": "Whew...",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[25]"
+    ]
+  },
+  {
     "key": "ぜってー負けねえ。でもまあ……いるから燃えんだよ",
     "en": "No way I'm losing. But yeah... having her around is what fires me up.",
     "files": [
@@ -9386,6 +9572,19 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "そこだ!",
+    "en": "There!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[14]"
+    ]
   },
   {
     "key": "そっと結束を後押しする",
@@ -9474,6 +9673,19 @@
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
+    "key": "たぁっ!",
+    "en": "Tah!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[7]"
+    ]
+  },
+  {
     "key": "たしなめる",
     "en": "Rein them in",
     "files": [
@@ -9548,6 +9760,19 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "とうっ!",
+    "en": "Toh!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[16]"
+    ]
   },
   {
     "key": "ど う 立 ち 会 い ま す か",
@@ -9680,6 +9905,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "どりゃ!",
+    "en": "Hup!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[13]"
+    ]
+  },
+  {
     "key": "なし",
     "en": "None",
     "files": [
@@ -9770,6 +10008,19 @@
     "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
   },
   {
+    "key": "ぬんっ!",
+    "en": "Hnn!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[17]"
+    ]
+  },
+  {
     "key": "ねえ、近寄らないでくれる？……本気で",
     "en": "Listen — don't come near me. ...I mean it.",
     "files": [
@@ -9822,6 +10073,45 @@
     "hasProperNoun": false
   },
   {
+    "key": "はぁっ…!",
+    "en": "Hah...!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[0]"
+    ]
+  },
+  {
+    "key": "はいっ!",
+    "en": "Yes!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[19]"
+    ]
+  },
+  {
+    "key": "はっ!",
+    "en": "Hah!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[5]"
+    ]
+  },
+  {
     "key": "はっきり言って、好きじゃない。関わりたくもない",
     "en": "Plainly, I don't like her. I don't want anything to do with her.",
     "files": [
@@ -9854,6 +10144,19 @@
     "hasProperNoun": false,
     "source": [
       "MILESTONE_EVENTS[2].choices[0].result"
+    ]
+  },
+  {
+    "key": "ふっ!",
+    "en": "Hff!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[1]"
     ]
   },
   {
@@ -9921,6 +10224,19 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "まだまだ!",
+    "en": "Not done yet!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[9]"
+    ]
   },
   {
     "key": "まだキャリア記録がありません",
@@ -10038,6 +10354,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "もう一本!",
+    "en": "One more!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[4]"
+    ]
+  },
+  {
     "key": "やっぱりやめる",
     "en": "Never Mind",
     "files": [
@@ -10058,6 +10387,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "よいしょ!",
+    "en": "Heave!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[3]"
+    ]
+  },
+  {
     "key": "よくやった",
     "en": "Well done",
     "files": [
@@ -10066,6 +10408,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "よし!",
+    "en": "Alright!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[11]"
+    ]
   },
   {
     "key": "よそよそしい",
@@ -14158,6 +14513,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "ラスト!",
+    "en": "Last one!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[24]"
+    ]
+  },
+  {
     "key": "ラストラン状態に入りました。次の興行で引退試合を組みましょう。",
     "en": "She has entered her last run. Book her retirement match on the next show.",
     "files": [
@@ -16692,7 +17060,7 @@
       "ui-common.js",
       "ui-render.js"
     ],
-    "count": 17,
+    "count": 18,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -29376,6 +29744,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "決着時間 {time}",
+    "en": "Time: {time}",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "決裁",
     "en": "Approval",
     "files": [
@@ -31493,6 +31871,19 @@
     ]
   },
   {
+    "key": "甘い!",
+    "en": "Too soft!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[22]"
+    ]
+  },
+  {
     "key": "生ける要塞",
     "en": "The Living Fortress",
     "files": [
@@ -32499,6 +32890,19 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "立てっ…!",
+    "en": "Get up...!",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "DOJO_SHOUTS[21]"
+    ]
   },
   {
     "key": "立て直すか、解散か",
@@ -40496,6 +40900,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "📈 今シーズン成長",
+    "en": "📈 This Season's Growth",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "📈 収入",
     "en": "📈 Income",
     "files": [
@@ -42218,6 +42632,16 @@
       "ui-render.js"
     ],
     "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}ターン）",
+    "en": "({n} turns)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
