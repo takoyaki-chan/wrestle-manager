@@ -1,5 +1,88 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-2 — 地の文プール前半7表（SNAPSHOT_TEXTS 276ほか計374キー）を台帳化・配線・英訳（2026-09-04・worktree agent-ab25eefac3f19acb4）
+
+指示書は docs/i18n-stage-b-p7-design-v0.1.md §3 の P7-2（分類A「地の文プール」前半）。開始前に worktree を main 先端（4e35e64＝P6-15まで）へfast-forward済み。`i18n/ui-ledger.json` と ui-render.js/ui-common.js の**名前表示サイト**は並行エージェント（P6-13）の領分、management.js の newspaper/chronicle/autumnWar 周辺は P6-16 の領分のため不触。
+
+**訳出374キー**（7表の367行＋連結様式1行）。**台帳3本とも未訳0を維持**（ui 3,530 / template **1,749→2,123** / dialogue 16,674）。§13-2 B の突合表から本7表が消え、残りは **37表・約1,053行**（着手前は54表≈1,445行）。
+
+### 1. 表ごとの配線方式と行数
+
+| 表 | 行 | 消費点（grep全数） | 配線 |
+|---|---:|---|---|
+| `SNAPSHOT_TEXTS` | 282 | `Engine.snapshot._buildSnapshotText`（relationships.js）→ tickWeek が `events`／`btLog.snapshotText`／`_pendingR3Modal` へ。表示は renderLog・`showR3Modal`（app.js 2箇所）・ブレイクスルー演出（ui-common.js 2箇所） | **追加フィールド方式（spec §14-3）**。完成文 `text` は**セーブ値として1バイト不変**のまま `tpl`/`vars`/`voiceLead` を併記し、表示点が **PH置換より前に**辞書を引き直す |
+| `ATMOSPHERE_TEXTS` | 33 | `Engine.lockerRoom.getAtmosphereText` → ui-render.js `_renderRosterDojoHeader` 2箇所（コーチ不在時の吹き出し・`.dojo-scene-atmosphere`） | UI直読みなので表示直前で `WM_I18N.t()` 1回。`emoji` フィールドは訳出対象外（抽出器のパスフィルタで除外） |
+| `FAREWELL_KIND_TEXT` | 15 | ui-common.js の引退セレモニー（`title`/`lead`/`body`） | 同上（表示直前 t()。選択ロジックは無改修） |
+| `LOCKER_AIR_TEXTS` | 14 | management.js tickWeek → `events.push()`＝**gameLog行**。表示は renderLog | gameLogエントリを**生文字列から `{type:'locker_air', text, tpl, vars}` へ**。`text` は従来と同一文字列 |
+| `CAMP_FLAVOR_TEXTS` | 12 | app.js 社長室「合宿」書類の結果 → ui-common.js `flavorHtml` | 表示専用（Gへ焼かない）なので `WM_I18N.t(tmpl, {name1,name2})` の1回だけ。**置換より前に t()** |
+| `PRE_WINDOW_TEXTS` | 9 | management.js tickWeek → `events.push()`（gameLog）＋ `_pendingPreWindowWarning` → app.js のトースト | gameLog は `{type:'pre_window_warning', text, tpl, vars, labelVars}`、トーストは `_snapshotLine(w)` |
+| `TEAM_SPIRIT_TEXTS` | 8 | management.js → `_pendingTeamSpirit` → app.js `showNotifEventToast` | PHが無いので app.js の**この系統の入口で** text/detail を t()。共通表示点 `showNotifEventToast` は他系統（NOTIF_EVENT_TEXTS＝P7-3）の未訳文も通るため**そこでは訳さない**（二重t()を作らない） |
+
+**表そのものは無改修**（並び順・要素数を変えると `Engine.rng.int` が引く添字が変わりJA出力が動く）。
+
+### 2. 「乱数で選んだテンプレを名前で充填した完成文をGへ焼く」族の共通ヘルパー
+
+3系統（スナップショット／ロッカー空気／移籍予兆）は選出が**消費済みの乱数ストリーム**に依存するため、P6-14 の「表示時に再生成」（spec §13-1）が使えない。P6-15 の `hypeTpl`/`hypeVars` と同じ**追加フィールド方式**に寄せ、正規化を1箇所へ集約した。
+
+- **`composedSnapshotText(entry)`（data.js、`_gameLogT` の直後）** — `{text, tpl, vars, voiceLead, labelVars}` を受け、`tpl` が無い旧セーブは `text` をそのまま返す（fail-open）。`_gameLogT(text, params)` に params 対応を足し、WM_I18N不在（Node単体・auto-sim）では `fillTemplateVars` に落ちる
+- **`gameLogEntryText`** は `entry.tpl` があるときだけこの新経路へ入る（既存の `entry.text` 早期returnより前）。renderLog のスナップショット枝も `l.text` 直参照をやめ `getLogText(l)` に統一
+- **`_snapshotLine(entry)`（ui-common.js、`_epithetLabel` 直後）** はそこへ委譲するだけ（`_epithetLabel` が `Engine.awards.epithetText` へ委譲するのと同じ作法。正規化を二重実装しない）
+- **タイプB「話者名＋全角スペース＋セリフ」は連結様式をテンプレ化**した。`ARTICLE_COMPOSE_TEMPLATES.snapshotVoice`（`{name}　{line}` → `{name}: {line}`）。P6-15 で決めた「i18n配線のために足す文字列は本表へ集約する」流儀に従い、SNAPSHOT_TEXTS の中には入れていない（`SNAPSHOT_TEXTS[source]` がソースIDを引くだけの表なので混ぜたくない）
+- **`{rival}` フォールバック `'他団体'` は成形済みJAラベル（spec §14-2 型）**。実在団体名は名前辞書がパラメータ値自動変換で訳すが、このフォールバックだけは**値としても辞書を引く**必要がある。`labelVars: ['rival']` を**フォールバックのときだけ**付ける（実在団体名に付けるとUI辞書側でミスログを量産する）
+
+### 3. JA同一性の確認方法（実測）
+
+- **JA（dict省略＝ja素通し）**: 実物の `Engine.snapshot._buildSnapshotText` を **全15ソース × 7アーキタイプ × 7性格 × 40シード × name2有無 × bond 2値**で回し、毎回 `composedSnapshotText(res) === res.text` を照合。ロッカー空気・移籍予兆・合宿は**旧実装の `.replace()` 直列**と `t(tpl, vars)` を全行×代表値で照合。素通し系3表は `t(原文)===原文`。**計117,696件・不一致0**
+- **表の網羅**: 7表の全373文字列のうち **372に到達**（未到達1件＝`SNAPSHOT_TEXTS.breakthrough.scene` は下記§5の死蔵行）
+- **EN**: 実物の `src/i18n.js` ＋生成辞書3本（lang-en / lang-en-templates / lang-en-names）を読み込み `setLang('en')` して同じ全経路を再走。**35,380件・日本語残り0・i18n-miss 0**（`voiceLead` の連結・`labelVars` の値引き・選手名/団体名の pn 変換を含む）
+- `node test/ja-golden.js` **完全一致**（lines=11233, hash=6b3d05c8…）。tickWeek の `events` はゴールデンの採取対象外だが、乱数の引き方を一切変えていないことの裏取りになる
+
+### 4. 台帳・辞書・検証の実測
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`（触った7ファイル） | OK |
+| `node test/i18n-extract-templates.js` | 総2,123キー / **既存1,749の en 保持=1,749（欠損0）** |
+| `node test/i18n-build-template-dict.js` | 総キー2,123・訳文あり2,123・**未訳0**（黒田禁止語grep・PH完全性・PH直前の不定冠詞すべてclean） |
+| 台帳間の重複キー | 8件（`…` `……` ほか）— **全件で dialogue-ledger と en が一致**、addDict のマージ順に依存しない |
+| `node test/ja-golden.js` | 完全一致（`--update` 不使用） |
+| `npm test` | **260/260 PASS** |
+| `node test/i18n-ratchet.js` | 増加なし（files=31 totalJaStrings=28,085・`--update` 不使用） |
+| `node test/auto-sim.js 20 42` | **ALL CLEAR ✓**（violations 0 / 台帳検査3種 違反0 / fingerprint 6b261868） |
+| `npm run test:ui:walkthrough` | **PASS**・ja digest `1052faa82eaf7991` **不変** |
+| `npm run test:ui:walkthrough:en` | **PASS**・**i18n-miss 0 維持** |
+
+**EN走破のJA露出（before → after）**
+
+| 画面 | before | after |
+|---|---:|---:|
+| screen-log | 51 | **44** |
+| screen-roster | 28 | **27** |
+| screen-week / shachoshitsu / show / newspaper / ranking / その他 | 56 / 55 / 39 / 33 / 24 | 変化なし |
+
+screen-log の −7 はスナップショット・ロッカー空気・移籍予兆のgameLog行、screen-roster の −1 は道場ヘッダーの雰囲気文。screen-shachoshitsu が動かないのは合宿書類が今回の走破で決裁されなかったため（露出の主因は `DECISION_DOCS` 63行＝P7-1の領分）。screen-database が動かないのは、相関図のスナップショット文が**週次ログ側にしか出ない**ため（設計書の見立て「screen-database が減るはず」は外れ。SNAPSHOT_TEXTS の消費点は Engine.snapshot → 週次 events だけで、相関図/DB画面には出ていない — grep全数確認）。
+
+### 5. 発見
+
+1. **`SNAPSHOT_TEXTS.breakthrough.scene`（1行）は死蔵**。`_collectCandidates` はブレイクスルーを必ず `type:'embedded'` で積み、`_buildSnapshotText` の embedded/breakthrough 枝は `voice` しか読まない。台帳には載せて訳出済み（表の構造は触っていない）。選択イベントS2/S6/E4型104行（P5-2g）と同型の死蔵
+2. **`pendingLockerAir`（management.js）は代入のみで未使用のデッド変数**。care-rework2 P1-3 の修正時に `events` 出力へ一本化された名残
+3. **`showNotifEventToast`（ui-common.js）は `event.text`/`event.detail` を無変換で出す共通表示点**。TEAM_SPIRIT／PRE_WINDOW は呼び出し側で訳して渡したが、**同じ入口を NOTIF_EVENT_TEXTS 102行・LARGE_EVENT_TEXTS 86行（P7-3）も通る**。P7-3 は「表示点で1回」ではなく**系統ごとの入口で訳す**か、`textTranslated` opt-in（spec §9 の `lineTranslated` と同型）を足すかの判断が要る
+4. **残る未収載表の棚卸し（機械列挙）**: 37表・約1,053行。内訳の大物は `CHAR_PROFILES` 127 / `ALL_COACHES` 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49（`ALL_CHARS` 152 は姓など名前辞書の別スキーマ側で解決済みの分を含む見かけ上の数）。いずれも P7-1/P7-3/P7-4/P7-5 の対象に収まっている＝**本バッチで新種の穴は出ていない**
+
+### 6. 抽出器の変更（test/i18n-extract-templates.js）
+
+- `TARGET_TABLES` へ7表を追加
+- **`TABLE_PATH_FILTER` を新設**（dialogue抽出器の `INCLUDE_PATH_FILTER` と同じ作法）。`walkStrings` に「テーブル直下から数えたオブジェクトキー列」を渡し、`ATMOSPHERE_TEXTS` の `emoji` 葉だけを除外する。配列インデックスはパスに含めない
+
+### 7. 確認してほしい画面・操作
+
+- **週次ログ画面（📋ログ）**: 💭付きのスナップショット行・💬ロッカールームの空気・👁️/⚠️移籍予兆が、JAで従来どおり／ENで英語になっているか
+- **道場（選手一覧の上部ヘッダー）**: コーチ不在時の雰囲気文（絵文字＋文）
+- **仲間の退団モーダル（R3）**・**ブレイクスルー演出の💭一行**
+- **引退セレモニー**の「壮絶な幕切れ」5型（勝者の代償／王座を守って／冠に届かず／追い込みのツケ／最後の一勝）の見出し・リード・地の文
+- **社長室→合宿**の結果画面のフレーバー一文
+- **逆境チームスピリット**通知・**移籍ウィンドウ前週**の予兆トースト
+
 ## 🌐 英語対応 P6-13 — ENモードに残るJA露出の全数棚卸しと修正: JA露出308→199(−35%)、i18n実行基盤の構造的欠落6系統を新規発見・解消(2026-09-04)
 
 `npm run test:ui:walkthrough:en`のJA exposure by screen(before)= screen-week=56/shachoshitsu=55/log=51/show=39/newspaper=34/roster=28/ranking=24/titleScreen=7/finance=7/save=3/database=2/help=2(合計308)がi18n-miss=0の状態で高止まりしていた──つまりt()に一度も渡っていない生JAが大量に残っていた──ことの原因究明と修正。開始前にworktreeブランチをmain先端(3a67933、P6-11=f833a10まで)へfast-forward済み。

@@ -18341,11 +18341,16 @@ const NEWSPAPER_SUB_TEMPLATES = {
 //   nameList       : 指名選手名の列挙。畳み込みの各段で選手名がdictのパラメータを通るため、
 //                    区切り文字だけでなく名前辞書(pn)の変換も同時に効く
 //   prevChampFallback: 前王者名が取れなかったときの差し込みラベル(値としてdictを引く)
+//   snapshotVoice  : (P7-2で追加)スナップショットのタイプB「話者名+全角スペース+セリフ」。
+//                    SNAPSHOT_TEXTS は「文面変更禁止」の但し書きこそ無いが、`_selectType`が
+//                    `SNAPSHOT_TEXTS[source]`でソースIDを引くだけの表なので、i18n配線用の
+//                    文字列を表の中へ混ぜず本表へ集約する(P6-15と同じ判断)
 const ARTICLE_COMPOSE_TEMPLATES = {
   join: '{a}{b}',
   champChangeJoin: '{lead}{profile}{reign}{closing}',
   nameList: '{a}、{b}',
   prevChampFallback: '前王者',
+  snapshotVoice: '{name}　{line}',
 };
 
 // task-77 §5-D: ドラフト自団体1面(リード+注目選手1〜2名+締め)。確定版・一字一句変更不可。
@@ -31049,9 +31054,49 @@ const GAMELOG_TEMPLATES = {
 // そのためテンプレ選択直後・fillTemplateVars直前にWM_I18N.tを1回通すだけでよい。
 // data.jsはブラウザ以外(Node単体require、auto-sim等)からも読み込まれ、その環境には
 // WM_I18Nが存在しないため、存在チェックしてfail-open(ja/未定義時は原文のまま)にする。
-function _gameLogT(text) {
-  return (typeof WM_I18N !== 'undefined' && WM_I18N && typeof WM_I18N.t === 'function')
-    ? WM_I18N.t(text) : text;
+function _gameLogT(text, params) {
+  if (typeof WM_I18N !== 'undefined' && WM_I18N && typeof WM_I18N.t === 'function') {
+    return params ? WM_I18N.t(text, params) : WM_I18N.t(text);
+  }
+  return params ? fillTemplateVars(text, params) : text;
+}
+
+/**
+ * i18n Stage B P7-2: 「乱数で選んだテンプレを名前で充填した完成文をGへ焼く」族の表示ヘルパー
+ * (specs/i18n-runtime-spec-v1.0.md §14-3 の追加フィールド方式)。
+ *
+ * 対象は Engine.snapshot の垣間見え / ロッカールームの空気ログ / 移籍ウィンドウ前週の予兆。
+ * いずれも選出が消費済みの乱数ストリームに依存するため「表示時に再生成」(§13-1)が使えない。
+ * そこで生成側が完成文 `text`(= **セーブに書く値は従来どおり不変**)に加えて、充填前の
+ * テンプレ `tpl` と充填値 `vars` を併記し、表示点でPH置換より前に辞書を引き直す。
+ *
+ * entry: { text, tpl, vars, voiceLead, labelVars }
+ *   voiceLead があるときは「話者名+セリフ」の連結様式(ARTICLE_COMPOSE_TEMPLATES.snapshotVoice)
+ *   をもう1段かぶせる(構造規約3「断片連結禁止」— JAは全角スペース直結、ENは別様式)。
+ *   labelVars は「値そのものが成形済みJAラベルで、値としても辞書を引く必要がある」
+ *   パラメータ名の配列(§14-2 の _wmDictLabel と同じ趣旨。gameLogEntryTextの
+ *   crowdLabel/tierLabel の先例と同型)。
+ * tpl が無い(この機構より前に焼かれた旧セーブ)ときは text をそのまま返す(fail-open)。
+ * ja/WM_I18N不在では t() が素通し+PH置換のみなので、戻り値は text と1バイト一致する。
+ */
+function composedSnapshotText(entry) {
+  if (!entry || typeof entry !== 'object') return '';
+  if (typeof entry.tpl !== 'string' || !entry.tpl) {
+    return typeof entry.text === 'string' ? entry.text : '';
+  }
+  let vars = entry.vars || {};
+  if (Array.isArray(entry.labelVars) && entry.labelVars.length > 0) {
+    vars = { ...vars };
+    entry.labelVars.forEach((k) => {
+      if (typeof vars[k] === 'string') vars[k] = _gameLogT(vars[k]);
+    });
+  }
+  const line = _gameLogT(entry.tpl, vars);
+  if (!entry.voiceLead) return line;
+  const joinTpl = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined' && ARTICLE_COMPOSE_TEMPLATES.snapshotVoice)
+    ? ARTICLE_COMPOSE_TEMPLATES.snapshotVoice : null;
+  if (!joinTpl) return line;
+  return _gameLogT(joinTpl, { name: entry.voiceLead, line });
 }
 
 /**
@@ -31064,6 +31109,9 @@ function _gameLogT(text) {
 function gameLogEntryText(entry) {
   if (typeof entry === 'string') return entry;
   if (!entry || typeof entry !== 'object') return '';
+  // i18n Stage B P7-2: tpl/vars を併記した族(スナップショット/ロッカー空気/移籍予兆)は
+  // 表示時にテンプレを辞書へ通してから充填する(§14-3)。jaでは text と1バイト一致。
+  if (typeof entry.tpl === 'string' && entry.tpl) return composedSnapshotText(entry);
   if (typeof entry.text === 'string') return entry.text; // 既存snapshot系など
   const tpl = entry.type ? GAMELOG_TEMPLATES[entry.type] : null;
   if (tpl == null) return '';
@@ -31210,7 +31258,7 @@ if (typeof module !== 'undefined' && module.exports) {
     GLIMPSE_A_THRESHOLDS, GLIMPSE_A_REARM_MARGIN, GLIMPSE_A_LINES, GLIMPSE_HOTSTREAK_END_LINES, GLIMPSE_B_LINES,
     // i18n Stage A P3a-3: gameLog構造化(D-G1〜D-G5)。require()経由のテストが
     // 表示時整形結果を検算できるようにエクスポートする。
-    GAMELOG_TEMPLATES, fillTemplateVars, gameLogEntryText, GAMELOG_TYPE_CATEGORY, gameLogEntryCategory,
+    GAMELOG_TEMPLATES, fillTemplateVars, gameLogEntryText, composedSnapshotText, GAMELOG_TYPE_CATEGORY, gameLogEntryCategory,
     GAMELOG_OFFSEASON_REPORT_TYPES,
   };
 }

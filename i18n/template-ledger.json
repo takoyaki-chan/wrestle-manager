@@ -2279,6 +2279,96 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name1}が{name2}に技の受け身を教えている場面が見られた",
+    "en": "{name1} was seen showing {name2} how to take the move safely",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name1}が合宿の記念写真を撮ろうとみんなを集めていた",
+    "en": "{name1} was rounding everyone up for a camp photo",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name1}が新技の研究に没頭している姿が印象的だった",
+    "en": "{name1} spent the camp buried in work on a new move, and it showed",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name1}と{name2}が夕食後のランニングで競い合っている",
+    "en": "{name1} and {name2} turning the after-dinner run into a race",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name1}と{name2}が朝から激しいスパーリングを繰り広げている…！",
+    "en": "{name1} and {name2} have been going hard at each other since morning...!",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name1}のムードメーカーぶりで合宿の雰囲気がぐっと明るくなった",
+    "en": "{name1} kept the mood up, and the whole camp felt lighter for it",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name2}がいなくなったロッカーの前で、{name}が立ち止まっていた",
+    "en": "{name} stopped in front of the locker {name2} had emptied out",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name2}さんとご一緒できて幸せでした。…お元気で",
+    "en": "I was happy to be here with {name2}. ...Please take care.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name2}のために、私はここで頑張るから",
+    "en": "I'm going to keep at it here, for {name2}.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{nameA1}＆{nameA2}組が挙げた一勝の評価は{mq}点。旧記録の{prevRecord}点を上回り、タッグ戦の歴代最高が更新された。舞台は{stage}。単騎の攻防では出ない数字だ。二組四人が同時に噛み合い、誰か一人の見せ場では終わらない完成度がそのまま点に出た。敗れた{nameB1}＆{nameB2}組の連係が高かったことも、この記録が生まれた一因である。｜特筆すべきは、この二人が本来は単独でも団体の中心を張れる格の選手だという点だ。{nameA1}も{nameA2}も一人で試合を成立させる力を持つ。その二人が個を競わせず、相手に譲る呼吸まで備えてコンビを優先した。強さの足し算を噛み合わせで別物に変えたところに、この記録の値打ちがある。手放しでは褒めない本紙も、この一点は評価する。",
     "en": "The win by {nameA1} and {nameA2} was rated {mq}. That passes the old mark of {prevRecord} and sets a new all-time best for tag matches. The setting: {stage}. It is not a number one-on-one exchanges produce. Two teams, four wrestlers, meshing at once, and a completeness that never came down to any single wrestler's spotlight went straight into the rating. That the beaten pair, {nameB1} and {nameB2}, worked well together is part of why the record exists at all.｜What deserves noting is that these two are the class of wrestler who could each anchor a promotion alone. {nameA1} and {nameA2} both have the power to hold a match up by themselves. They did not compete over who stood out; they carried the timing to give ground to each other and put the team first. Turning an addition of two strengths into something else through the meshing is where the value of this record sits. This paper does not hand out praise freely. On this one point it agrees.",
     "files": [
@@ -2363,6 +2453,16 @@
     "en": "{name} — an Overall of {ovr}, a popularity of {pop}. One of the few who can meet your ace head-on.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}　{line}",
+    "en": "{name}: {line}",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2669,10 +2769,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が{name2}に技を教えている。だが、その目にどこか翳りがある",
+    "en": "{name} is teaching {name2} a move. There is a shadow in her eyes while she does it",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が{name2}の練習態度について、小声で何か言っていた",
+    "en": "{name} said something under her breath about how {name2} trains",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が{name2}を下した一戦の評価は{mq}点。旧記録の{prevRecord}点を上回り、業界の歴代最高が更新された。舞台は{stage}。派手な決着ではなかったが、攻防の密度がそのまま数字に出た。狙って出せる記録ではない。この日、それがひとつ塗り替わった。",
     "en": "The match in which {name} beat {name2} was rated {mq}. That passes the old mark of {prevRecord} and sets a new all-time best for the business. The setting: {stage}. The finish was not a loud one, but the density of the exchanges came straight out in the number. This is not a record anyone produces on purpose. On this day one of them was rewritten anyway.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が{name2}を自主練に誘っている。いい雰囲気だ",
+    "en": "{name} is asking {name2} along to an extra session. Good to see",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2739,6 +2869,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}がタイトルマッチのポスターの前で足を止めていた",
+    "en": "{name} stopped in front of the poster for the title match",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}がリングに上がった。{age}歳。デビュー戦は{result}に終わった。数字上の勝敗より、スカウト筋がこの新人に付けていた評価のほうが業界を騒がせている。関係者の間では「ここ数年で一番の素材」との声が入団前から流れていた。実物を見た記者席のざわめきが、その評判を裏づけた。",
     "en": "{name} stepped into the ring. Age {age}. The debut ended one way: {result}. What has the business talking is less the result than the grade the scouts had already put on her. Word going around before she signed was that this is the best material in several years. The noise from the press seats, once they had seen her, backed that up.",
     "files": [
@@ -2749,10 +2889,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}がリングを降りる時、一瞬だけ{name2}のほうを振り返った。満足げに",
+    "en": "Stepping off the apron, {name} looked back at {name2} for just a second. Satisfied",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}がロッカールームで、誰かの契約書をちらりと見ていた",
+    "en": "In the locker room, {name} took a glance at someone else's contract",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が一人でリングの片付けをしている。手伝う者はいない",
+    "en": "{name} is breaking down the ring on her own. Nobody comes to help",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が化けている。総合力+{ovrGain}。放っておくと手がつけられなくなる",
     "en": "{name} has turned into a different wrestler. Overall up {ovrGain}. Leave this much longer and nobody will be able to handle her.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が帰り際、振り返って{name2}のほうを一瞬だけ見た",
+    "en": "On her way out {name} turned and looked at {name2} for a single moment",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2773,6 +2953,16 @@
     "en": "{name} announces her retirement — an empty slot high on the {org} card",
     "files": [
       "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が後輩の{name2}の試合を腕を組んで見ていた。複雑な表情だ",
+    "en": "{name} watched her junior {name2}'s match with her arms folded. Something complicated in her face",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2829,6 +3019,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が練習中、いつもより打ち込みが荒い。何かを持て余している",
+    "en": "{name}'s strikes in practice are rougher than usual. Something in her has nowhere to go",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が自主練の後、一人でリングを見つめていた",
+    "en": "After training on her own, {name} stood looking at the ring",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が試合のない週末を持て余しているようだ",
+    "en": "{name} seems at a loose end on a weekend with no match on it",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が試合後、自分の両手を見つめていた。何かを掴んだ表情だ",
+    "en": "After the match {name} stood looking at her own hands. The face of someone who has got hold of something",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が長期離脱へ——全治{weeks}週",
     "en": "{name} out long term — {weeks} weeks",
     "files": [
@@ -2839,10 +3069,100 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が食堂で同僚たちの輪に入らず、黙って食事をしていた",
+    "en": "{name} ate in the canteen apart from the others, saying nothing",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}と{name2}――{age}歳、次の十年を占う二人が出揃った",
     "en": "{name} and {name2}, {age} — the next ten years",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}が一緒に帰っていく姿が見えた。同世代の気安さがある",
+    "en": "{name} and {name2} were seen heading home together. The ease of two people from the same year",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}が同じテーブルに座ることを避けていた",
+    "en": "{name} and {name2} kept from sitting at the same table",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}が同時に控え室に入った瞬間、空気が変わった",
+    "en": "The moment {name} and {name2} walked into the dressing room together, the air changed",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}が控え室で目を合わせなかった",
+    "en": "{name} and {name2} did not meet each other's eyes in the dressing room",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}が昼食を一緒に取っている。どうやら仲がいいらしい",
+    "en": "{name} and {name2} are having lunch together. The two of them get on, it seems",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}が練習メニューの順番で揉めていた。些細なことだが",
+    "en": "{name} and {name2} got into it over the order of the drills. A small thing, but still",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}が自販機の前で笑い合っていた。何が面白いのか、こちらには分からないが",
+    "en": "{name} and {name2} were laughing together at the vending machine. What was funny is anyone's guess",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}と{name2}の間に、見えない壁がある。周りもそれを感じている",
+    "en": "There is a wall between {name} and {name2} that nobody can see. The others feel it too",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3029,6 +3349,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}の試合が終わった後、先輩たちが小さく頷いていた",
+    "en": "When {name}'s match finished, the senior wrestlers gave a small nod",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}の連勝が{count}まで伸びた。勝ち星を重ねるほど、対戦相手の警戒も強くなる。そのなかで自分の形を貫けるかが、次の焦点だ。",
     "en": "{name} has taken the streak to {count}. The more wins she stacks, the more carefully opponents come at her. Holding her own shape through that is the next thing.",
     "files": [
@@ -3079,6 +3409,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}は{name2}の退団を知り、しばらく言葉を失っていた",
+    "en": "{name} heard that {name2} was leaving, and for a while she had no words",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}はチームの勝利に拳を握りしめた。この団体の看板を背負う覚悟が見えた",
+    "en": "{name} clenched her fist at the team's win. You could see she is ready to carry this promotion's name",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}は人気{pop}。まだ実力は追いついていないが、集客面では無視できない",
     "en": "{name}, popularity {pop}. The ability has not caught up yet. On the draw, she cannot be ignored.",
     "files": [
@@ -3113,6 +3463,16 @@
     "en": "{name} cannot lift herself the way she wants to. The next match may be what turns her forward again.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}は無言でリングを降りた。その拳だけが震えていた",
+    "en": "{name} left the ring without a word. Only her fists were shaking",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6494,10 +6854,1770 @@
     "hasProperNoun": false
   },
   {
+    "key": "…",
+    "en": "...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 8,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…{name2}。……あなたがいなくなるなんて",
+    "en": "...{name2}. ...That you should be leaving us.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…{name2}。…ありがとう。…元気でね",
+    "en": "...{name2}. ...Thank you. ...Take care of yourself.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…{name2}がいないなんて、私…",
+    "en": "...{name2} not being here — I don't...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…{name2}がいない控え室なんて想像できない",
+    "en": "...I can't picture a dressing room without {name2} in it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……",
+    "en": "...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……!なんでわたしじゃないんですか!納得できません!",
+    "en": "...! Why isn't it me! I can't accept that!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……これで、いいんでしょうか。納得、できません",
+    "en": "...Is this really all right? I can't say it sits well with me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……さよなら、ね",
+    "en": "...Goodbye, then.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……そう、ね",
+    "en": "...Is that how it is.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……っ、わたしは平気です、ひとりでも全然平気です!",
+    "en": "...I'm fine, I'm completely fine on my own!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……ふ、そう",
+    "en": "...Hm. I see.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……ふ、勝利",
+    "en": "...Hm. A win.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……ふ、見えた",
+    "en": "...Hm. I can see it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……ふふ、これだけ?",
+    "en": "...Hehe. This much only?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……また、ないんですね。仕方ないです",
+    "en": "...Not this time either. That's how it goes.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……もう、あの人とは目も合わせられないんですね",
+    "en": "...I can't even meet her eyes anymore, can I.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……もう、終わった",
+    "en": "...It's over now.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……もくもくと",
+    "en": "...Steadily, then.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……やるしかない",
+    "en": "...Only one thing to do.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……わたくし、浮いておりますのね。らしくないですわ",
+    "en": "...I do stand apart here, do I not. It is not like me at all.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……わたし、ここにいていいのかしら",
+    "en": "...I do wonder whether I belong here.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……わたしも、あの輪に、入りたかったな",
+    "en": "...I would have liked to be in that circle too.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……一人のほうが、楽",
+    "en": "...Easier alone.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……今回も、外された",
+    "en": "...Left off again.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……何か、変わった気がします。体が、軽い",
+    "en": "...Something feels different. My body is light.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……信じてたのに。わたし、馬鹿みたいです",
+    "en": "...And I believed her. I feel like a fool.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……入れない",
+    "en": "...Can't join in.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……別に、いい",
+    "en": "...It's fine.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……別に、仲間はずれでもいいです!ひとりで上がります!",
+    "en": "...I don't mind being left out! I'll go out there on my own!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……別に、平気ですから",
+    "en": "...Really, I'm fine.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……勝った。守れた",
+    "en": "...We won. We held it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……呼ばれてない",
+    "en": "...Not called.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……嘘",
+    "en": "...A lie.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……変わった",
+    "en": "...Something changed.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……少ない、です",
+    "en": "...It isn't much.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……掴んだ",
+    "en": "...I have it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "……正直、ここまでやるとは思っていなかった。筆者の見る目がなかったことを、少しだけ認めざるを得ない",
     "en": "...Honestly, I did not expect this much. This writer misread them, and I will concede as much. A little.",
     "files": [
       "KURODA_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……続ける",
+    "en": "...Keep going.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……裏切られた",
+    "en": "...I was betrayed.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……誰も、見ていなくても。わたしは、練習します",
+    "en": "...Even if no one is watching. I'll keep practicing.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……誰もいない",
+    "en": "...Nobody's here.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……足りない",
+    "en": "...Not enough.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……遠い、わね",
+    "en": "...Far away, isn't it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……離れた",
+    "en": "...Drifted apart.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……静か、ね",
+    "en": "...Quiet, isn't it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…あ、あの人と、また話せたらいいな…",
+    "en": "...I-I hope I get to talk with her again...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…あ、あの人とは、距離を置きたい、かも…",
+    "en": "...I-I'd like to keep some distance from her, I think...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…あいつがいないと、張り合いがないな",
+    "en": "...Without her around there's nothing to push against.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…あの人にはまだ勝てない。でも、だからこそ",
+    "en": "...I still can't beat her. And that's exactly why.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…あの子、伸びたな",
+    "en": "...She's come a long way.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…あの子が評価されるのは正しいと思う。思うんだけど",
+    "en": "...She deserves the credit she's getting. I think that. I really do think that, and yet.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ありがとう。ずっと支えてくれて",
+    "en": "...Thank you. For holding me up all this time.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…いい加減使えよ。腐るぞ",
+    "en": "...Book me already. I'll go to waste.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…いつになったら",
+    "en": "...When, exactly.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…いつになったら私の番が来るの？",
+    "en": "...When does my turn come around?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…いなくなっちゃうんだ",
+    "en": "...So she's really going.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…うれしい…ここにいてよかった",
+    "en": "...I'm so glad... glad I stayed here.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…お金のことで文句を言うつもりはないけれど",
+    "en": "...I have no intention of complaining about money. And yet.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…か、勝てて、よかったです…",
+    "en": "...I-I'm glad we... won...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…くやしい",
+    "en": "...That's hard to swallow.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…こういう寂しさは初めてですわ",
+    "en": "...This particular loneliness is new to me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ここで積み重ねてきたものが、繋がった",
+    "en": "...Everything I stacked up here just connected.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ここで頑張ってきてよかった",
+    "en": "...I'm glad I put the work in here.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ここにいていいのかな",
+    "en": "...Am I supposed to be here?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…この借りは必ず返す",
+    "en": "...I'll pay this one back.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…この場所に感謝している",
+    "en": "...I'm grateful to this place.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…こんなはずでは…こんなはずでは、ないのに",
+    "en": "...This was not how it was to go... this was not how it was to go.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…そう。それだけのことだ",
+    "en": "...I see. That is all it is.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…そうか。…{name2}がいなくなるのか",
+    "en": "...I see. ...So {name2} is going.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…そうか。…分かった",
+    "en": "...I see. ...Understood.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…{name2}。…元気で",
+    "en": "...Kh... {name2}. ...Take care.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…ここにいてよかった",
+    "en": "...Kh... I'm glad I stayed here.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…まあ、いい",
+    "en": "...Kh... never mind.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…まあ、いいさ",
+    "en": "...Kh... never mind, then.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…先にいたのは、こっちなのに",
+    "en": "...Kh... I was the one here first.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…出番、まだかな",
+    "en": "...Kh... still no call?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…勝った。…うん、勝った",
+    "en": "...Kh... I won. ...Yeah. I won.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…勝った。…みんなのおかげだ",
+    "en": "...Ah... we won. ...I owe that to everyone.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…次は、こうはいかない",
+    "en": "...Kh... it won't go this way again.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…っ…黙ってるけど。…悔しくないわけじゃない",
+    "en": "...Kh... I keep quiet about it. ...That doesn't mean it doesn't hurt.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…つ、強くなりたい、です…",
+    "en": "...I-I want to get stronger...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…な、何かが、変わった気がします…",
+    "en": "...S-something feels... different...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…なんで…なんでだろ",
+    "en": "...Why... why is that.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…なんであの子と同じ扱いなわけ？",
+    "en": "...Why am I on the same terms as her?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…なんで私は勝てないの",
+    "en": "...Why can't I win?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ひ、ひとりだと、寂しいです…",
+    "en": "...B-being on my own is... lonely...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ふぅん。…まあ、いいけど",
+    "en": "...Hm. ...Fine, I suppose.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ふぅん。…まだ順番が来ないか",
+    "en": "...Hm. ...Still not my turn, then.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ふざけんなよ",
+    "en": "...You've gotta be kidding me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ふん。まだまだこんなもんじゃないけどね",
+    "en": "...Hmph. This isn't anywhere near my ceiling, mind.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ま、負けたく、ないです…",
+    "en": "...I-I don't want to lose...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まあ、いいんだけどね。一人でも",
+    "en": "...It's fine, though. Even on my own.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まあ、こんなものか",
+    "en": "...Well. This is about where it lands.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まあ、こんなもんか",
+    "en": "...Well. About what I expected.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まあ、一人のほうが気楽だし",
+    "en": "...It's easier on my own anyway.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まあ、待つさ",
+    "en": "...I'll wait. It's fine.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まあ、待つよ",
+    "en": "...I'll wait.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まだ、足りないのか",
+    "en": "...Still not enough, then.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まだまだ強くなれる！この団体でなら",
+    "en": "...I can still get stronger! Here, I can.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まだ先がある。…ここでなら",
+    "en": "...There's further to go. ...Here, there is.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…まだ足りないか。…次までに詰めるよ",
+    "en": "...Still short. ...I'll close the gap before the next one.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…みんな、私のこと嫌いなのかな",
+    "en": "...Do they all dislike me?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…みんなのおかげです。もっと恩返しがしたい",
+    "en": "...I owe this to everyone. I want to give more of it back.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…みんなの分も、背負えた。…よかった",
+    "en": "...I carried everyone's share as well. ...I'm glad.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…みんなの想いを背負って戦えて光栄です",
+    "en": "...It was an honor to fight carrying what everyone put on me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…も、もっと注目されないと、ダメですよね…",
+    "en": "...I-I suppose I need to get noticed more...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…もう少し、お給料が、上がったらいいな…",
+    "en": "...It would be nice if the pay went up, um, a little...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…もう少し、待てばいいのかな",
+    "en": "...Maybe I just wait a little longer.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…もう少し歩み寄った方がいいのかな",
+    "en": "...Maybe I should meet them halfway a little more.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…もう少し目立たないとダメなのかしら",
+    "en": "...Perhaps I need to stand out a little more.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…もっとみんなと話した方がいいのかな",
+    "en": "...Maybe I should talk to the others more.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…もっと結果を出せばいいだけの話、だよね",
+    "en": "...I just have to produce more. That's all it is, right?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…もっと練習する。絶対に",
+    "en": "...I'll train more. No question.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…やだ。嫌だよ。なんで…",
+    "en": "...No. No, I don't want this. Why...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…やってられっかよ",
+    "en": "...Screw this.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…やっと、追いついた",
+    "en": "...I finally caught up.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…やるね。…でも、まだ負けるつもりはない",
+    "en": "...Not bad at all. ...I don't plan on losing yet, though.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…やるべきことをやった。…それだけ",
+    "en": "...I did what I had to do. ...That's it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…わたくしにふさわしい舞台がまだ来ないなんて",
+    "en": "...To think the stage that suits me has still not come around.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…わたくしの価値、ちゃんと見てくださっているのかしら",
+    "en": "...I do wonder whether my worth is being seen properly here.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ガキが調子乗ってんじゃねーよ",
+    "en": "...Kid needs to quit getting ahead of herself.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…クソッ…！",
+    "en": "...Damn it...!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ザマァ見ろ",
+    "en": "...Serves her right.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…チッ",
+    "en": "...Tch.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…チッ。…寂しいなんて言わねーけど",
+    "en": "...Tch. ...Not gonna say I'll miss her or anything.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…チャンスは自分で作るものだと思っている",
+    "en": "...I take the view that chances are made, not handed out.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ハッ、群れるのは趣味じゃねーんだよ",
+    "en": "...Ha. Running with a pack was never my thing.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…バカ。なんで何も言わずに行くのよ",
+    "en": "...Idiot. Why would you go without saying anything?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…伸びたね。…まあ、焦ることはない",
+    "en": "...She's grown. ...No reason to rush, though.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…何か気に障ることをしたのでしょうか",
+    "en": "...Did I do something to upset them?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…使ってくれないと、困るんだけど",
+    "en": "...I'd rather they used me, honestly.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…使ってくれなきゃ意味ないじゃん",
+    "en": "...What's the point if they don't use me?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…先に始めたのは私なのに",
+    "en": "...I'm the one who started first.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…先輩としてちゃんと見てるよ。…でもね",
+    "en": "...I'm watching her the way a senior should. ...Still.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…出番、来ないかな",
+    "en": "...Wish they'd call my name.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…別に。一人でも困らない",
+    "en": "...It's nothing. I manage fine alone.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…別にいいけど。私は一人でやれるし",
+    "en": "...Doesn't bother me. I can manage alone.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…努力が足りないのかしら。でも…",
+    "en": "...Perhaps I have not worked hard enough. And yet...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…努力は裏切らない。…{name2}、ありがとう",
+    "en": "...The work does not betray you. ...{name2}, thank you.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…勝った…勝ったよ…！",
+    "en": "...I won... I actually won...!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…勝った…！ みんなのおかげだよ…！",
+    "en": "...We won...! It's all of you, all of you...!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…勝った。…うちの看板、守れたかな",
+    "en": "...We won. ...Kept our name intact, I think.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…勝った。…でも、まだだね",
+    "en": "...I won. ...Not there yet, though.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…勝った。でも、まだ終わってない",
+    "en": "...I won. It isn't over, though.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…孤独には慣れている",
+    "en": "...I am used to being alone.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…実力が足りないから？ それとも…",
+    "en": "...Is it that I'm not good enough? Or is it...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…年功序列なんて古い。分かってる。分かってるけど",
+    "en": "...Seniority is an old idea. I know that. I know that, but.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…当然の結果だ",
+    "en": "...The obvious result.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…待つのは好きじゃないな",
+    "en": "...I'm not fond of waiting.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…悔しい…悔しい…！",
+    "en": "...It hurts... it hurts...!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…悔しいな",
+    "en": "...That stings.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…悔しくないって言ったら嘘になる",
+    "en": "...It would be a lie to say it doesn't get to me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…悪くない。…やっと追いついた",
+    "en": "...Not bad. ...I caught up at last.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…悪くない環境だね。…感謝してる",
+    "en": "...Not a bad place to be. ...I'm grateful.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…敗因は分かっている。次までに修正する",
+    "en": "...I know why I lost. I will fix it before the next one.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…次は絶対に負けない",
+    "en": "...I am not losing the next one.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…次は返す。…覚えておいて",
+    "en": "...I'll take it back next time. ...Remember that.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…次も同じ結果とは限らない。気を引き締めろ、自分",
+    "en": "...Next time may not go the same way. Tighten up.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…正当な評価だろうね。…でも、自分もまだ",
+    "en": "...It's a fair read on her. ...I'm not finished either, though.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…泣くな、私。まだ先がある",
+    "en": "...Don't cry. There's more road ahead.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…準備はできてる。…いつでもね",
+    "en": "...I'm ready. ...Whenever they want.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…準備はできてる。いつでも",
+    "en": "...I'm ready. Any time.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…焦ってはいない。…でも、待つのも限度がある",
+    "en": "...I'm not in a hurry. ...There's a limit to waiting, though.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…環境に恵まれた。それは認める",
+    "en": "...I had a good place to work. I will grant that.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…私が勝つに決まってるでしょ。この団体を背負ってるんだから！",
+    "en": "...Of course I won. I'm the one carrying this promotion!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…私だって負けてない",
+    "en": "...I haven't fallen behind either.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…私の居場所、あるのかな",
+    "en": "...Is there a place for me here at all?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…私も、あそこに立ちたい",
+    "en": "...I want to be standing up there too.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…納得いかない",
+    "en": "...I'm not okay with this.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…結果で示すしかないか",
+    "en": "...Nothing for it but to show them results.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…置いていかれてる気がする",
+    "en": "...It feels like I'm being left behind.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…自分の力不足かな",
+    "en": "...Maybe I'm just not good enough yet.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…行くんだ。…まあ、{name2}が決めたことだからね",
+    "en": "...So she's off. ...Well, {name2} decided it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…見てくれてるのかな、私のこと",
+    "en": "...Is anyone even looking at me?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…足りなかった。…次、だね",
+    "en": "...Not enough. ...Next time, then.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…頑張ってるのにな",
+    "en": "...I do put the work in, though.",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7334,6 +9454,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚠️ {name}の周辺で他団体の動きが活発化している",
+    "en": "⚠️ Other promotions are moving more openly around {name}",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚠️ {name}への具体的なオファーが近いとの観測が出ている",
+    "en": "⚠️ Some expect a concrete offer for {name} before long",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚠️ 複数の団体が{name}に接触を試みている噂が流れている",
+    "en": "⚠️ There is talk that more than one promotion has tried to reach {name}",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚡ {nameA}と{nameB}——燻っていた因縁が宿怨に変わる。もう互いに退けない",
     "en": "⚡ {nameA} and {nameB} — a smoldering grudge has hardened into something neither will let go. Nobody backs off now",
     "files": [
@@ -7348,6 +9498,16 @@
     "en": "⛽ Ride out the red first and get the books into the black! [Business Survival]",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "✊ チーム全員が同じ方向を向いている",
+    "en": "✊ Everyone on the team is facing the same way",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7644,6 +9804,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "あ、あの…少し、お話できますか…",
+    "en": "U-um... could we talk for a moment...?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "あっという間の決着。実力差がそのまま出た",
     "en": "Over in no time. The difference in ability came out exactly as it is",
     "files": [
@@ -7654,10 +9824,70 @@
     "hasProperNoun": false
   },
   {
+    "key": "あと一歩が、遠かった。",
+    "en": "The last step was the one she never took.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "あの人……っ、あの人のこと、絶対に許さない!",
+    "en": "Her... I will never forgive her for this!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "あの人とは、もう絶対に口きかない!絶対に!",
+    "en": "I'm never speaking to her again! Never!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "あの子と、もっと話したい……っ……",
+    "en": "I want to talk with her more... mm...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "あの子とは、ちょっと距離を置きたいの……っ……",
+    "en": "I would like a little distance from her... mm...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "あの年のMVPは彼女以外に考えられなかった、と誰もが言う。",
     "en": "Nobody else was in the conversation for MVP that year, and everyone says so.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "あの方とは、もう距離ができてしまいましたのね……",
+    "en": "A distance has opened between us, has it not...",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7778,6 +10008,46 @@
     "en": "Isn't it always 'one more step' with them? When's the step",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "いつも通りの練習風景",
+    "en": "A practice like any other",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "うう……寂しい、寂しいけど、やるよ、わたしやるからね!",
+    "en": "Ugh... it's lonely, it's lonely, but I'll do it, I'm going to do it!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "うそっ、うそ、うそでしょ!?ねえ、うそって言ってよ!",
+    "en": "No — no, that's not true, is it!? Tell me it isn't true!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "うわああああ勝った勝った!!みんなありがとー!!",
+    "en": "Waaaah we won, we won!! Thank you, everyone!!",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8204,6 +10474,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "これなんだわ……ずっと探していたものは……!",
+    "en": "This is it... this is what I have been looking for all along...!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "こんな額じゃ納得できません……!わたし、こんなもんじゃないですよ!",
+    "en": "I can't accept a figure like this...! I'm worth more than this!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "すごい、すごいよ!なんか、なんかわかんないけどすごい!",
+    "en": "It's amazing, it's amazing! I don't — I don't even know what it is, but it's amazing!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ずっと応援してきたからこそ、この景色が嬉しい…！",
     "en": "Because I stayed with them the whole way, this view means everything...!",
     "files": [
@@ -8234,10 +10534,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "その体は、とうに限界を過ぎていた。",
+    "en": "Her body had been past its limit for a long time.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "その試合に、彼女は勝った。",
+    "en": "She won that match.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "その重厚なグラップリングが、挑戦者たちを次々と沈めた。",
     "en": "That heavy grappling put challenger after challenger down.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "どこかよそよそしい空気がある",
+    "en": "There is a distance in the air",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8334,10 +10664,240 @@
     "hasProperNoun": false
   },
   {
+    "key": "なんで!?なんでわたしじゃないの!悔しい!",
+    "en": "Why!? Why isn't it me! It isn't fair!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ねえ……みんな、どこ行っちゃったの……?",
+    "en": "Hey... where did everybody go...?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ねえ、仲間に入れてよー!って言えたら、いいのに……",
+    "en": "Hey, let me in with you! — I wish I could just say that...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ひとつの時代を、この女は確かに生きた。",
     "en": "One era, and this woman lived the whole of it.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ひとりは、ちょっと寂しいの……っ……",
+    "en": "Being on my own is a little lonely... mm...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ひどい、ひどいよ!わたしこんなに頑張ってるのに!",
+    "en": "That's awful, that's just awful! After everything I've been putting in!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ひどい、ひどいよ、わたしあの人のこと信じてたのに!",
+    "en": "That's awful, that's just awful, and I trusted her!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……あの日から、何も変わってないわね",
+    "en": "Hm... nothing has changed since that day.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……ひとりのほうが、静かで好きよ",
+    "en": "Hm... I prefer it alone. It's quieter.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……ひとりの時間が、わたしを作るの",
+    "en": "Hm... the hours alone are what make me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……わたしじゃ、ダメってこと?",
+    "en": "Hm... so I won't do, is that it?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……嘘、だったのね",
+    "en": "Hm... so it was a lie.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……群れない、それだけ",
+    "en": "Hm... I don't run with a crowd. That's all.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……舐められたものね",
+    "en": "Hm... they do think little of me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふ……覚醒、というやつ、かしら",
+    "en": "Hm... is this what they call waking up?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……これが、わたしたちの答えよ",
+    "en": "Hehe... this is our answer.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……ひとりも、悪くないわ",
+    "en": "Hehe... alone has its charms.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……わたし、何か手に入れた?",
+    "en": "Hehe... did I just get hold of something?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……わたしの値段、これっぽっち?",
+    "en": "Hehe... is that all I'm priced at?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……わたしを出さないなんて、もったいないわね",
+    "en": "Hehe... leaving me off the card. What a waste.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……一人は、嫌いじゃないわ",
+    "en": "Hehe... I don't mind my own company.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……誰にも見られず、磨かれていくのも、悪くないわ",
+    "en": "Hehe... polished where no one can see. That isn't so bad.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……遠ざかっていくのが、わかるわ",
+    "en": "Hehe... I can feel her drifting away.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ふふ……騙されたわたしも、悪かった、のかしら",
+    "en": "Hehe... perhaps the fault was mine for being taken in.",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8364,6 +10924,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "まあ……わたくし、こんなはした金で働いておりますのね",
+    "en": "Goodness... so this is the pittance I have been working for.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "まあ……わたくし、騙されておりましたの……?",
+    "en": "Goodness... was I being deceived all along...?",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "まあ、わたくしに何かが宿りましたの!素敵ですわ!",
+    "en": "Goodness, something has settled inside me! How wonderful!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "まあ、勝ちましたわ!皆様のおかげですの!",
+    "en": "Goodness, we have won! It is all thanks to everyone!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "まだ{age}歳。{styleJa}としての形は途中で、その途中のまま頂点に届いたことになる。",
     "en": "Only age {age}. Her {styleJa} form is halfway done, and halfway done is what reached the top.",
     "files": [
@@ -8382,6 +10982,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "みんなが輪になって笑っている。その輪に、自分の居場所はなかった",
+    "en": "Everyone is laughing in a circle. There was no place in it for her",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -8425,6 +11035,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "もう少し稼ぎたいわね……っ……",
+    "en": "I would like to be earning a little more... mm...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "もう突っ込むところがない。{leadAxisLabel}は鉄壁、{chaseAxisLabel}も盤石。ファンは存分に胸を張っていい。——ただ、筆者が手放しで褒めると不吉なのだ。気をつけてほしい。",
     "en": "There is nothing left to pick at. {leadAxisLabel} is a wall, {chaseAxisLabel} is solid. The fans can stand as tall as they like. ...Though when this writer praises something without reservation it tends to be a bad omen. Consider yourselves warned.",
     "files": [
@@ -8445,6 +11065,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "もっと強くなりたいの……っ……",
+    "en": "I want to get stronger... mm...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "もはや説明不要のカード。{leftName}と{rightName}による{rivalLabel}は今回も期待を裏切らなかった。{turns}ターン、互いの手の内を知り尽くした二人の攻防は試合評価{mq}を記録。最後は{winnerName}の{finishLabel}が決着を呼んだ。この因縁に終わりはあるのか——その答えは、まだ誰にも分からない。",
     "en": "A card that needs no introduction now. {rivalLabel}, between {leftName} and {rightName}, did not let anybody down this time either. {turns} turns between two who know every card the other holds, rated {mq}. It closed on {winnerName}'s {finishLabel}. Whether this thing between them ever ends — nobody has that answer yet.",
     "files": [
@@ -8452,6 +11082,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "やった……!わたしたちで、守り抜きました!",
+    "en": "We did it...! We held it, all of us together!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -8482,6 +11122,96 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたくし、ひとりでも平気ですの……平気、ですわ……",
+    "en": "I am perfectly all right on my own... quite all right...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたくし、呼ばれておりませんのね……悲しいですわ",
+    "en": "I have not been called on, then... how sad.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたくしの努力、いつか誰かが気づいてくれますかしら……",
+    "en": "Will anyone notice the work I put in one day, I wonder...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたくしの努力、これで済まされるのかしら……",
+    "en": "Is this what all my effort is worth, I wonder...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたし、まだ足りないのね……もっと、頑張らないと",
+    "en": "I'm still not enough... I'll have to give more.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたし、人を見る目がなかったんだわ……情けない",
+    "en": "I had no eye for people at all... how pathetic of me.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたし、何か悪いことしたのかしら……",
+    "en": "Have I done something wrong, I wonder...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたしたち、どこで間違えてしまったのかしら……",
+    "en": "Where did the two of us go wrong, I wonder...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "わたしには、練習しかないもの。やるしかないの",
+    "en": "Practice is all I have. So I do it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -8735,6 +11465,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "スタッフから: {name}と{name2}、ちょっと相性が良くないみたいで…",
+    "en": "From the staff: {name} and {name2} — the two of them don't seem to mix all that well...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スタッフから: {name}と{name2}、最近どうも空気がピリついてまして…",
+    "en": "From the staff: {name} and {name2} — things have been tense between them lately...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "スター対決！{name1}と{name2}、夢のカードが実現！",
     "en": "Star against star! {name1} and {name2} — the dream match is booked!",
     "files": [
@@ -8855,6 +11605,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "タイトル戦の話題が出た時、{name}だけが黙っていた",
+    "en": "When the title match came up, {name} was the only one who said nothing",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "タイトル獲得{titles}回、防衛{defenses}回。{name}が積み重ねた実績が評価され、殿堂入りを果たした。",
     "en": "Titles won: {titles}. Defenses: {defenses}. The record {name} built has been recognized, and she enters the Hall of Fame.",
     "files": [
@@ -8952,6 +11712,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "チーム全体に勢いがある",
+    "en": "The whole team has momentum",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -9305,6 +12075,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ベルトは、守った。",
+    "en": "The belt, she kept.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ベルトを失った団体に、雪辱の機会はいずれ巡ってくる。ただしそれが3か月後とは限らない。",
     "en": "The promotion that lost the belt will get a chance at it back eventually. There is no guarantee that eventually means three months.",
     "files": [
@@ -9335,6 +12115,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "マットが汗で滑るほど濡れている",
+    "en": "The mat is wet enough to slide on",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "マットに汗の跡がない",
+    "en": "There is not a sweat mark on the mat",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "メインを食った。この試合が一番面白かったという声も多いはず",
     "en": "It ate the main event. Plenty of people will say it was the best thing on the card",
     "files": [
@@ -9359,6 +12159,16 @@
     "en": "Hitting each other in the ring, laughing in the locker room",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リングに上がる者がいない",
+    "en": "Nobody is getting into the ring",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -9429,6 +12239,16 @@
     "en": "If they don't build the next generation while they're ahead, this flips in 2-3 years",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ロープの鳴る音が途切れない",
+    "en": "The ropes never stop ringing",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10175,6 +12995,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "仲間と掴んだ、この勝利……!忘れません",
+    "en": "A win we took together...! I won't forget it.",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "休憩が長引きがちだ",
+    "en": "The breaks are running long",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "会場に響くのは選手の声ばかり――{org}の興行が大幅な集客割れとなった。「このままでは…」と関係者も頭を抱えている。",
     "en": "The only voices carrying in the building were the wrestlers' own. The {org} show came in well under its draw. \"If this goes on...\" is as far as anyone at the promotion would finish the sentence.",
     "files": [
@@ -10182,6 +13022,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "会話が少ない",
+    "en": "There is little talk",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -10205,6 +13055,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "何かが変わった……っ……ふふ……",
+    "en": "Something has changed... mm... hehe...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "何から褒めればいいのか分からない状態だ。いや、褒めるところがないという意味ではなく……いや、ない。正直なところ。{rivalName}との比較で唯一言えるのは、伸びしろが大きいということ。裏を返せば、今が底だということだが。ここから這い上がる覚悟があるなら、付き合おう。記事のネタにはなる。",
     "en": "I do not know what to praise first. Not that there is nothing to praise... no. There is not. Honestly. The only thing the comparison with {rivalName} allows me to say is that there is a great deal of room to grow. Which is another way of saying this is the floor. If they have the resolve to climb from here, I will stay with them. It makes copy.",
     "files": [
@@ -10219,6 +13079,16 @@
     "en": "Two quick ones. Whoever gets caught first loses. Plain, and the plainness is what makes it frightening.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "信じていた人の嘘を、知ってしまった。胸の奥が、冷たくなる",
+    "en": "She has found out that someone she trusted lied to her. Something in her chest goes cold",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10365,6 +13235,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "全員で浜辺を走るメニューに{name1}が一番乗りでゴールした",
+    "en": "{name1} came in first on the beach run",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全員の目つきが違う",
+    "en": "Every one of them has a different look in her eyes",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "全国女子プロレス最強王者決定戦「天頂戦」、開催年を迎える",
     "en": "Tenchosen year arrives — the national decider",
     "files": [
@@ -10489,6 +13379,16 @@
     "en": "A match of ripened wrestlers. No youth in it, and the meeting of craft and pride is worth watching.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "冠 に 届 か ず",
+    "en": "NEVER CROWNED",
+    "files": [
+      "FAREWELL_KIND_TEXT"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10695,10 +13595,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "勝 者 の 代 償",
+    "en": "THE WINNER'S PRICE",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "勝ち名乗りを受けることは、なかった。担架が運び込まれ、歓声が戸惑いに変わっていく。後日、医師の所見が団体に届いた。もうリングには上がれない、と。",
+    "en": "She never heard her hand raised. A stretcher came in, and the cheering turned into something uneasy. Days later the doctor's opinion reached the promotion: she will not be getting into a ring again.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "勝ち越し。素直に評価する。ただ、圧勝とは言えない差なのも事実だが",
     "en": "Ahead on the head-to-head. I credit it plainly. It is also not a margin anyone would call commanding.",
     "files": [
       "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "勝った直後に、彼女は動けなくなった。予定されていた引退試合は、もう組めない。花道は、その途中で終わった。",
+    "en": "She won, and then she could not move. The retirement match already on the calendar cannot be booked now. The send-off ended partway down the aisle.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "勝てた……っ……ふふ、最高の気分……",
+    "en": "We won... mm... hehe, there is nothing better...",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10795,6 +13735,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "受け身の音が規則正しく響いている",
+    "en": "The sound of bumps comes at a steady beat",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "古参ファンの私、号泣してる。ここまで来たんだね…",
     "en": "Longtime fan here, full-on crying. Look how far they came...",
     "files": [
@@ -10832,6 +13782,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "合宿の食事は{name1}が率先して準備していた",
+    "en": "{name1} took charge of the meals for the camp",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -10959,6 +13919,16 @@
     "en": "Into the grudge — {name} joins {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "因縁は終わった。はずだ。…だが{name}は{name2}の動向を気にしている",
+    "en": "The grudge is over. It should be. ...And still {name} keeps track of what {name2} is doing",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -11215,6 +14185,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "声が飛び交っている",
+    "en": "Voices are going back and forth",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "夜の自主練で{name1}が黙々とスクワットをしている…",
+    "en": "{name1} working through squats in silence at the night session...",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "夢だけでは興行は続かない。本紙の取材によれば、{orgName}の資金は既に枯渇し、活動継続の見通しは立っていない。残された時間は——もう、長くない。",
     "en": "A dream on its own does not keep shows running. This paper's reporting has the funds at {orgName} already gone, with no prospect of continuing. The time left is not long now.",
     "files": [
@@ -11415,6 +14405,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "定刻通りに始まり、定刻通りに終わる",
+    "en": "It starts on time and it ends on time",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "実力伯仲！{name1}と{name2}、どちらが勝ってもおかしくない！",
     "en": "Too close to call! {name1} and {name2} — either one winning would surprise nobody!",
     "files": [
@@ -11512,6 +14512,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦を制した夜。リングの上で、旗を掲げる",
+    "en": "The night they took the interpromotional series. In the ring, the flag goes up",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -11685,6 +14695,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "廊下で、かつての仲間とすれ違う。目は、合わなかった",
+    "en": "She passes a former teammate in the corridor. Their eyes do not meet",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "引退 {name}({age}歳)",
     "en": "Retirement: {name} (age {age})",
     "files": [
@@ -11699,6 +14719,16 @@
     "en": "Retirement is the one fate no wrestler avoids. The question is who carries what comes after.",
     "files": [
       "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "引退を表明していた。その最後の一勝だった。",
+    "en": "She had already announced her retirement. This was the last win of her career.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -11772,6 +14802,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "張り出されたカード表を見る。自分の名前は、どこにもなかった",
+    "en": "She reads the card posted on the wall. Her name is not on a single line of it",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -11889,6 +14929,16 @@
     "en": "Just back from injury. Not pushing her is part of the GM's job.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "息が上がっても手を止めない",
+    "en": "Out of breath, and still nobody stops",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12185,6 +15235,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "挑戦は実らず、そしてそれが最後の試合になった。結局、彼女は一度もベルトを腰に巻かないまま去ることになる。記録に残るのは、挑戦者としての名前だけだ。",
+    "en": "The challenge came to nothing, and it turned out to be her last match. She leaves without ever having worn the belt. What the record keeps is her name as a challenger.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "挑戦権をもぎ取ったのは{winnerOrg}。団体の看板を背負って送り込まれた選手が、その期待に最高の結果で応えた。",
     "en": "It was {winnerOrg} that grabbed the shot. The wrestler they sent out carrying the promotion's name answered with the best result available.",
     "files": [
@@ -12229,6 +15289,26 @@
     "en": "The challenger is one of the best {challengerOrg} has. On her own promotion's rings she is the one being chased; on this night she went after the top of the business.",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "掛け声ひとつ上がらない",
+    "en": "Not one voice calls out",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "控え室の隅で、{name}がストレッチをしている。出番を待つ背中に焦りが見える",
+    "en": "In a corner of the dressing room, {name} is stretching. You can see the impatience in her back as she waits to be called",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -12745,6 +15825,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "早朝の海辺で{name1}が一人、基礎練習に励んでいた",
+    "en": "{name1} was down on the shore at first light, alone, working the basics",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "明確な優位。ただ、強者には強者の課題がある。見えているか",
     "en": "A clear advantage. The strong side has problems of its own, though. Do they see them?",
     "files": [
@@ -12795,6 +15885,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "昼休み。他の選手たちが談笑する中、{name}だけが離れた場所にいた",
+    "en": "Lunch break. The others were chatting away, and {name} alone sat apart from them",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "時代を何度もまたいだ{epithet}の物語。",
     "en": "{epithet}: the story of a career that ran across more than one era.",
     "files": [
@@ -12802,6 +15902,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "時計を気にする選手が目につく",
+    "en": "More than a few keep checking the clock",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -12839,6 +15949,36 @@
     "en": "An ordinary match. Neither good nor bad",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "更衣室の片隅。誰もいなくなった後も、しばらく動けずにいた",
+    "en": "A corner of the changing room. Long after everyone had gone, she still could not move",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最 後 の 一 勝",
+    "en": "THE LAST WIN",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最低限のメニューだけこなしている",
+    "en": "They are doing the minimum and nothing past it",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13302,6 +16442,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "来た……!これだ、これが欲しかった感覚!",
+    "en": "There it is...! This — this is the feeling I wanted!",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -13925,6 +17075,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "汗を拭いては、また組み直している",
+    "en": "They wipe the sweat off and lock up again",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決して恵まれた環境ではない。それでも、誰一人として文句を言わずに練習に打ち込む姿がある。",
+    "en": "It is not a comfortable place to work. Even so, not one of them complains, and every one of them puts the work in.",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "決着つかず。{leftName}も{rightName}も一歩も退かず",
     "en": "No decision — neither {leftName} nor {rightName} gives a step",
     "files": [
@@ -13952,6 +17122,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決着はついた。だが{name}と{name2}が目を合わせた時、そこにはまだ何かがあった",
+    "en": "It has been settled. And yet, when {name} and {name2} met each other's eyes, something was still there",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -13999,6 +17179,16 @@
     "en": "This is news that bears watching.",
     "files": [
       "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "活気のある練習場",
+    "en": "A gym with life in it",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14125,6 +17315,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "消灯の時間を過ぎても人が残っている",
+    "en": "People are still here past lights-out",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "消灯後も{name1}と{name2}がリングで語り合っていた",
+    "en": "{name1} and {name2} were still in the ring talking after lights-out",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "淡々と、しかし距離は縮まらない",
     "en": "Flatly, and the distance does not close",
     "files": [
@@ -14139,6 +17349,16 @@
     "en": "A flat shape. Predictable, for better and for worse",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "淡々とメニューをこなしている",
+    "en": "They are working through the drills without fuss",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14255,6 +17475,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "特に変わった様子はない",
+    "en": "Nothing looks out of the ordinary",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "特別な見どころはなかったが、手堅い試合運びだった",
     "en": "Nothing especially to see, and it was run soundly",
     "files": [
@@ -14329,6 +17559,16 @@
     "en": "Plainly: I wanted to leave partway through. If I were not a reporter I would have.",
     "files": [
       "KURODA_SHOW_RATING"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王 座 を 守 っ て",
+    "en": "TITLE DEFENDED",
+    "files": [
+      "FAREWELL_KIND_TEXT"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14955,6 +18195,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "空いた練習場で、一人シャドーを続ける。誰も、見ていなかった",
+    "en": "In the empty gym she keeps shadowing alone. Nobody was watching",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "空を舞う姿と、リングを降りたときの笑顔——どちらも本物だった。",
     "en": "The shape she cut in the air, and the smile she wore stepping out of the ring — both were real.",
     "files": [
@@ -15165,6 +18415,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "終わりの合図を誰も聞いていない",
+    "en": "Nobody hears the call to wrap up",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "組み合い、制する——それが彼女のすべてだった。",
     "en": "Tie up, take control — that was the whole of her.",
     "files": [
@@ -15182,6 +18442,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "組む相手を決めるのに手間取っている",
+    "en": "Pairing off is taking longer than it should",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -15215,6 +18485,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "給与明細をじっと見つめる。この数字では、報われた気がしなかった",
+    "en": "She looks at the pay slip a long time. This number does not feel like being paid back for anything",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "給料日。{name}が明細をじっと見つめていた",
+    "en": "Payday. {name} sat staring at her pay slip",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "統一王座、空位に 王者{name}が引退",
     "en": "Unified title vacant: champion {name} retires",
     "files": [
@@ -15239,6 +18529,66 @@
     "en": "Unified title falls: new champion is {winner}",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習に熱が入っている",
+    "en": "There is heat in the work today",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習場が静まり返っている",
+    "en": "The gym has gone completely quiet",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習場に笑い声が響いている",
+    "en": "There is laughter running through the gym",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習後、鏡に映る自分を見た。何かが、変わっていた",
+    "en": "After practice she looked at herself in the mirror. Something had changed",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習後の大浴場で{name1}と{name2}が今後の抱負を語り合っていた",
+    "en": "{name1} and {name2} talked over what comes next in the big bath after training",
+    "files": [
+      "CAMP_FLAVOR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習後の更衣室。{name}のロッカーの周りだけ、少し空間が空いている",
+    "en": "The changing room after practice. There is a little space around {name}'s locker and nowhere else",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -15295,6 +18645,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "自主練する選手が増えている",
+    "en": "More of them are staying on to train alone",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "興行のテンポを完全に殺した試合だった",
     "en": "A match that killed the pace of the show outright",
     "files": [
@@ -15335,6 +18695,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "若い頃から追い込みを重ねた体だった。踏ん張りが効かず、崩れるように倒れた。請求書は、忘れた頃に届く。今日がその日だった。",
+    "en": "It was a body she had driven hard since she was young. Her footing gave out and she went down in a heap. The bill arrives long after you have stopped waiting for it. Today was the day.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "若手の無謀さを、ベテランがどこまで許容するか。試合の器が試される",
     "en": "How far the veteran allows the recklessness of the young one to run. The size of the match gets tested there.",
     "files": [
@@ -15349,6 +18719,16 @@
     "en": "Young against young. Two possible future aces meeting.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "苦しい状況を全員で分かち合っている。この経験が、いつかチームの財産になるはずだ。",
+    "en": "They are carrying the hard part together. Some day this will be something the team owns.",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15539,6 +18919,16 @@
     "en": "Nothing to see. One to forget quickly",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "見ててくれる人なんていなくても関係ない!わたしは強くなる!",
+    "en": "It doesn't matter if nobody's watching! I'm going to get strong!",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15745,6 +19135,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "試合後、{name}の目に静かな炎が燃えていた",
+    "en": "After the match there was a quiet fire in {name}'s eyes",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "試合後、拍手が鳴り止まなかった。それが全てを物語っている",
     "en": "The applause did not stop afterward. That says all of it",
     "files": [
@@ -15759,6 +19159,16 @@
     "en": "The handshake after the match is real. And nothing is held back in the ring. A record of {matches}, best rated {bestMQ} — that number is what tells you the quality of this relationship. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合後の通路で、{name}が壁を叩く音がした",
+    "en": "In the corridor after the match came the sound of {name} hitting the wall",
+    "files": [
+      "SNAPSHOT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -15865,6 +19275,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "誰も目を合わせようとしない",
+    "en": "Nobody will meet anyone's eyes",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "課題だらけの大会。次こそは、と言い続けるのもそろそろ限界だ",
     "en": "A show made of problems. Saying next time, next time, is close to running out.",
     "files": [
@@ -15935,6 +19355,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "豪華な設備も潤沢な資金もない。だからこそ、選手同士で支え合う文化が自然に生まれている。",
+    "en": "There are no fine facilities here and no deep pockets. That is exactly why a habit of holding each other up has grown on its own.",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "負けたくないの……っ……ふふ……",
+    "en": "I don't want to lose... mm... hehe...",
+    "files": [
+      "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "負け越している。僅差とは言わないが、追いつけない差でもない。問題は実際に追いつく意志があるかどうかだ",
     "en": "They are behind on the head-to-head. Not a narrow margin, and not one they cannot close. The question is whether the will to close it is actually there.",
     "files": [
@@ -15949,6 +19389,16 @@
     "en": "The opponent she is behind on. Which is exactly why winning tonight would be worth something. I want to see the upset.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "資金繰りは厳しいが、選手たちの表情に迷いはない。困難を共にすることで、絆が強まっているようだ。",
+    "en": "Money is tight, but there is no doubt on their faces. Going through it together seems to be tying them closer.",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15983,6 +19433,16 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": true
+  },
+  {
+    "key": "追 い 込 み の ツ ケ",
+    "en": "THE BILL COMES DUE",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "追いかける立場は嫌なものだろう。だが、追いかける側には追いかける側のメリットがある。相手の手を見てから動ける。失敗から学べる。{rivalName}の強みと弱みが見えているなら、それをどう活かすか。受け身のままでは永遠に追いかけっこだ。",
@@ -16325,6 +19785,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "選手同士でアドバイスし合っている",
+    "en": "They are coaching each other",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "選手層の差がわずかにある。ここをどう埋めるかがポイント",
     "en": "There's a slight gap in roster depth. How they fill that is the point",
     "files": [
@@ -16349,6 +19819,16 @@
     "en": "The night that cannot be avoided will come",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "重い空気が漂っている",
+    "en": "There is a heaviness hanging over the room",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16535,6 +20015,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "防衛を告げるゴングの直後、王者はマットに崩れ落ちた。巻いたまま運ばれていく背中を、会場の誰もが見送るしかなかった。数日後、王座は返上されることになる。",
+    "en": "The bell had barely finished calling the defense when the champion went down on the mat. The hall could only watch her carried out with the belt still around her waist. A few days later the title was handed back.",
+    "files": [
+      "FAREWELL_KIND_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "防衛戦の相手はまだ決まっていない。ただ、この結果を見て名乗りを上げる選手は少なくないはずだ。",
     "en": "No opponent has been set for the first defense. Plenty of wrestlers will have seen this result and be ready to put their names in.",
     "files": [
@@ -16705,6 +20195,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "順番待ちの列ができている",
+    "en": "There is a line waiting for a turn",
+    "files": [
+      "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "頑張ってるのは分かるんだけど、結果が出ないとなあ",
     "en": "I can see they're working. It's the results that aren't coming",
     "files": [
@@ -16759,6 +20259,16 @@
     "en": "Kuroda actually praised them...! Now I'm scared something bad is coming",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "黙々と汗を流している",
+    "en": "They are sweating in silence",
+    "files": [
+      "ATMOSPHERE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16985,6 +20495,66 @@
     "hasProperNoun": false
   },
   {
+    "key": "👁️ {name}の名前が他団体の会議で挙がっていたとの噂",
+    "en": "👁️ Rumor has it {name}'s name came up in another promotion's meeting",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👁️ {name}への注目度が他団体内で高まっているようだ",
+    "en": "👁️ Interest in {name} appears to be rising inside other promotions",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👁️ {rival}のスカウトが{name}の試合をチェックしていた",
+    "en": "👁️ A scout from {rival} was watching {name}'s match",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👁️ {rival}関係者が{name}について詳しく探っているらしい",
+    "en": "👁️ People close to {rival} have been asking around about {name}",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👁️ 業界筋が{name}の試合映像を取り寄せているらしい",
+    "en": "👁️ People in the business have reportedly been asking for tape of {name}",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👁️ 業界紙が{name}を「動向注目の選手」として取り上げた",
+    "en": "👁️ A trade paper ran {name} as a wrestler to watch",
+    "files": [
+      "PRE_WINDOW_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "👑 {champName}が乱入者{intruderName}を退けた！ 団体人気+2、対戦pt+{intrusionPt}",
     "en": "👑 {champName} turned back the intruder {intruderName}! Promotion popularity +2, H2H Pts +{intrusionPt}",
     "files": [
@@ -17013,6 +20583,156 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": true
+  },
+  {
+    "key": "💪 逆境がチームを強くしている",
+    "en": "💪 Hard times are making this team stronger",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が一人で帰る姿を見かけた",
+    "en": "💬 {name} was seen leaving on her own",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}と{name2}が何か話し込んでいた",
+    "en": "💬 {name} and {name2} were deep in some conversation",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}の機嫌が明らかに悪い",
+    "en": "💬 {name} is plainly in a bad mood",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}の表情が最近硬い",
+    "en": "💬 {name} has looked tight in the face lately",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 ロッカーの会話が少ない日が続いている",
+    "en": "💬 The locker room has been short on conversation for days now",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 ロッカールームから笑い声が聞こえてくる",
+    "en": "💬 Laughter is coming out of the locker room",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 ロッカールームの空気が重い",
+    "en": "💬 The air in the locker room is heavy",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 控室で{name}がため息をついていた",
+    "en": "💬 {name} was sighing to herself in the dressing room",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 控室で小さな言い争いがあったらしい",
+    "en": "💬 There was a small argument in the dressing room, by the sound of it",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 控室の空気は和やかだ",
+    "en": "💬 The mood in the dressing room is easy",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 練習後、{name}がスマホをじっと見つめていた",
+    "en": "💬 After training, {name} sat staring at her phone",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 誰かが差し入れを持ってきたらしい",
+    "en": "💬 Someone brought food in for everyone, by the look of it",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 誰もが口数少なく着替えを済ませていた",
+    "en": "💬 Everyone changed and left with barely a word",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 選手たちが自主練で残っている",
+    "en": "💬 Some of them have stayed behind to train on their own",
+    "files": [
+      "LOCKER_AIR_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "💰 残り資金: {funds}万",
@@ -17435,6 +21155,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "🔥 苦しい中でもチームの結束が深まった",
+    "en": "🔥 The team pulled closer together in a hard stretch",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "😤 {nameA}と{nameB}——因縁の相手と同じ屋根の下。ロッカールームの空気が険悪に",
     "en": "😤 {nameA} and {nameB} — a grudge under one roof. The locker room has gone cold",
     "files": [
@@ -17502,6 +21232,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🤝 厳しい時期だからこそ仲間の大切さを実感",
+    "en": "🤝 A rough patch is teaching them what teammates are worth",
+    "files": [
+      "TEAM_SPIRIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   }
 ]

@@ -13218,18 +13218,26 @@ const Engine = {
             return true;
           });
           if (available.length > 0) {
-            let tmpl = available[Engine.rng.int(airRng, 0, available.length - 1)];
+            // i18n P7-2(§14-3 追加フィールド方式): 完成文 tmpl は従来どおりの生JAのまま
+            // gameLogへ積み、充填前テンプレ rawTpl と充填値 airVars を併記する。
+            // 表示点(data.js の gameLogEntryText → composedSnapshotText)がPH置換より
+            // 前に辞書を引き直す。旧セーブの文字列エントリは従来どおり素通し。
+            const rawTpl = available[Engine.rng.int(airRng, 0, available.length - 1)];
+            const airVars = {};
+            let tmpl = rawTpl;
             if (tmpl.includes('{name}') && pool.length > 0) {
               const idx1 = Engine.rng.int(airRng, 0, pool.length - 1);
-              tmpl = tmpl.replace('{name}', pool[idx1].name);
+              airVars.name = pool[idx1].name;
+              tmpl = tmpl.replace('{name}', airVars.name);
               if (tmpl.includes('{name2}') && pool.length >= 2) {
                 const remaining = pool.filter((_, i) => i !== idx1);
                 const idx2 = Engine.rng.int(airRng, 0, remaining.length - 1);
-                tmpl = tmpl.replace('{name2}', remaining[idx2].name);
+                airVars.name2 = remaining[idx2].name;
+                tmpl = tmpl.replace('{name2}', airVars.name2);
               }
             }
             pendingLockerAir = tmpl;
-            events.push(tmpl);
+            events.push({ type: 'locker_air', text: tmpl, tpl: rawTpl, vars: airVars });
           }
         }
       }
@@ -14241,7 +14249,12 @@ const Engine = {
             e => e.type === 'breakthrough' && e.fighterId === snap.fighterId
           );
           if (btLog) {
+            // i18n P7-2: 完成文(snapshotText)はセーブ値として不変。表示点が辞書を引き直せる
+            // よう充填前テンプレ+充填値を併記する(§14-3。表示は ui-common.js の _snapshotLine)
             btLog.snapshotText = snap.text;
+            btLog.snapshotTpl = snap.tpl;
+            btLog.snapshotVars = snap.vars;
+            btLog.snapshotVoiceLead = snap.voiceLead;
           }
         }
         // warVictory embedded は通常ログとして追加（モーダルは既に表示済み）
@@ -14249,6 +14262,9 @@ const Engine = {
           events.push({
             type: 'snapshot',
             text: snap.text,
+            tpl: snap.tpl,
+            vars: snap.vars,
+            voiceLead: snap.voiceLead,
             source: snap.source,
             fighterId: snap.fighterId,
           });
@@ -14266,6 +14282,9 @@ const Engine = {
       events.push({
         type: 'snapshot',
         text: snap.text,
+        tpl: snap.tpl,
+        vars: snap.vars,
+        voiceLead: snap.voiceLead,
         source: snap.source,
         fighterId: snap.fighterId,
         fighter2Id: snap.fighter2Id || null,
@@ -18486,6 +18505,11 @@ const Engine = {
             return orgRank > 0 && orgRank < playerRank;
           });
           const rivalName = higherOrgs.length > 0 ? higherOrgs[Engine.rng.int(pwRng, 0, higherOrgs.length - 1)].name : '他団体';
+          // i18n P7-2: 実在団体名は名前辞書(pn)がt()のパラメータ自動変換で訳すが、
+          // フォールバックの'他団体'は「成形済みJAラベル」(§14-2)なので値として辞書を
+          // 引き直す必要がある。フォールバックのときだけ labelVars で表示点へ知らせる
+          // (実在団体名にこれを付けるとUI辞書側でミスログを量産してしまう)。
+          const rivalIsLabel = higherOrgs.length === 0;
           // trust帯別テキスト生成
           const warnings = picked.map(f => {
             const trust = f.trust != null ? f.trust : 50;
@@ -18493,9 +18517,13 @@ const Engine = {
             const texts = PRE_WINDOW_TEXTS[tone];
             const tmpl = texts[Engine.rng.int(pwRng, 0, texts.length - 1)];
             const text = tmpl.replace('{name}', f.name).replace('{rival}', rivalName);
-            return { fighterId: f.id, name: f.name, tone, text, trust };
+            // i18n P7-2(§14-3): 完成文 text は不変。充填前テンプレ+充填値を併記して
+            // 表示点(トースト/gameLog)がPH置換より前に辞書を引き直せるようにする。
+            const w = { fighterId: f.id, name: f.name, tone, text, tpl: tmpl, vars: { name: f.name, rival: rivalName }, trust };
+            if (rivalIsLabel) w.labelVars = ['rival'];
+            return w;
           });
-          warnings.forEach(w => events.push(w.text));
+          warnings.forEach(w => events.push({ type: 'pre_window_warning', text: w.text, tpl: w.tpl, vars: w.vars, labelVars: w.labelVars }));
           s = { ...s, _pendingPreWindowWarning: warnings };
         }
       }

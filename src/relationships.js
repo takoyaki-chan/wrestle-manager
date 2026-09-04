@@ -4391,6 +4391,19 @@ Engine.snapshot = {
   },
 
   // ═══ テキスト生成 ═══
+  //
+  // i18n Stage B P7-2(specs/i18n-runtime-spec-v1.0.md §14-3 追加フィールド方式):
+  // 完成文 `text` は **セーブに書く値として従来どおり1バイト不変** のまま、充填前の
+  // テンプレ `tpl` と充填値 `vars`(タイプBは話者名 `voiceLead`)を併記する。
+  // 選出は消費済みの乱数ストリームに依存するため §13-1 の「表示時に再生成」が使えず、
+  // 表示点(data.js の composedSnapshotText)が tpl を辞書へ通してから充填し直す。
+  // Engineは WM_I18N を呼ばない(構造規約1)ので、ここで訳すことは一切しない。
+  _snapshotVars(name, name2) {
+    const vars = { name };
+    if (name2) vars.name2 = name2; // _expandTemplateと同じ条件(name2が無ければ{name2}は残す)
+    return vars;
+  },
+
   _buildSnapshotText(rng, candidate, state) {
     const { source, fighterId, fighter2Id } = candidate;
     const fighter = state.roster.find(f => f.id === fighterId);
@@ -4412,7 +4425,8 @@ Engine.snapshot = {
         const line = this._resolveVoice(rng, SNAPSHOT_TEXTS.R3.modal, fighter);
         const text = this._expandTemplate(line, name, name2);
         return {
-          text, source, fighterId, fighter2Id,
+          text, tpl: line, vars: this._snapshotVars(name, name2),
+          source, fighterId, fighter2Id,
           modalType: 'R3',
           departedName: candidate.departedName,
           reason: candidate.reason,
@@ -4420,24 +4434,26 @@ Engine.snapshot = {
       } else {
         // タイプA: ログのみ
         const line = this._pickRandom(rng, SNAPSHOT_TEXTS.R3.scene);
-        return { text: this._expandTemplate(line, name, name2), source, fighterId, fighter2Id };
+        return { text: this._expandTemplate(line, name, name2), tpl: line, vars: this._snapshotVars(name, name2), source, fighterId, fighter2Id };
       }
     }
 
     // ── embedded タイプ ──
     if (candidate.type === 'embedded') {
       if (source === 'breakthrough') {
+        // \u6ce8: \u3053\u306e\u7d4c\u8def\u3068\u4e0b\u306e warVictory(voice) \u306f _expandTemplate \u3092\u901a\u3057\u3066\u3044\u306a\u3044
+        //     (\u30d7\u30ec\u30fc\u30b9\u30db\u30eb\u30c0\u306f\u5f93\u6765\u304b\u3089\u7d20\u306e\u307e\u307e\u51fa\u308b)\u3002JA\u51fa\u529b\u30921\u30d0\u30a4\u30c8\u3082\u5909\u3048\u306a\u3044\u305f\u3081 vars \u306f\u7a7a\u3002
         const line = this._resolveVoice(rng, SNAPSHOT_TEXTS.breakthrough.voice, fighter);
-        return { text: `${name}\u3000${line}`, source, fighterId, embedded: true };
+        return { text: `${name}\u3000${line}`, tpl: line, vars: {}, voiceLead: name, source, fighterId, embedded: true };
       }
       if (source === 'warVictory') {
         const data = SNAPSHOT_TEXTS.warVictory;
         if (Engine.rng.float(rng) < 0.5 && data.scene && data.scene.length > 0) {
           const line = this._pickRandom(rng, data.scene);
-          return { text: this._expandTemplate(line, name, name2), source, fighterId, embedded: true };
+          return { text: this._expandTemplate(line, name, name2), tpl: line, vars: this._snapshotVars(name, name2), source, fighterId, embedded: true };
         } else {
           const line = this._resolveVoice(rng, data.voice, fighter);
-          return { text: `${name}\u3000${line}`, source, fighterId, embedded: true };
+          return { text: `${name}\u3000${line}`, tpl: line, vars: {}, voiceLead: name, source, fighterId, embedded: true };
         }
       }
     }
@@ -4452,18 +4468,18 @@ Engine.snapshot = {
 
     if (selectedType === 'C') {
       const line = this._pickRandom(rng, data.staff);
-      return { text: this._expandTemplate(line, name, name2), source, fighterId, fighter2Id };
+      return { text: this._expandTemplate(line, name, name2), tpl: line, vars: this._snapshotVars(name, name2), source, fighterId, fighter2Id };
     }
 
     if (selectedType === 'B') {
       const line = this._resolveVoice(rng, data.voice, fighter);
       const expanded = this._expandTemplate(line, name, name2);
-      return { text: `${name}\u3000${expanded}`, source, fighterId, fighter2Id };
+      return { text: `${name}\u3000${expanded}`, tpl: line, vars: this._snapshotVars(name, name2), voiceLead: name, source, fighterId, fighter2Id };
     }
 
     // タイプA（デフォルト）
     const line = this._pickRandom(rng, data.scene);
-    return { text: this._expandTemplate(line, name, name2), source, fighterId, fighter2Id };
+    return { text: this._expandTemplate(line, name, name2), tpl: line, vars: this._snapshotVars(name, name2), source, fighterId, fighter2Id };
   },
 
   // ═══ タイプ選択 ═══
