@@ -93,7 +93,7 @@
 | 私は……まだまだ強くなれる | I can become... stronger still. | A/B判定済(anchors9 #6・採用稿) |
 | …この程度か。……話にならない。 | ...Is that all? ...Then there is nothing more to say. | ネイティブ検品②で短縮(旧: Is this all you have?) |
 
-### 2-2. お嬢様×強気 — 大河内紗代子(Sayoko Okochi † ※ネイティブ提案: Ookouchi/Ōkouchi — 裁定待ち)
+### 2-2. お嬢様×強気 — 大河内紗代子(Sayoko Okochi † 2026-09-04裁定: Okochi維持)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
