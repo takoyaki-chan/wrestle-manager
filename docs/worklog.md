@@ -1,5 +1,95 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2j — セリフ英訳バッチ⑩(挑戦状393行+GLIMPSE_B 368行+秋MVP 315行)（2026-09-04・Opus主筆 worktree agent-ab88a17c4c0c75003）
+
+量産翻訳の第10バッチ。**`data.js:CHALLENGE_LINES` の394行中393行 + `data.js:GLIMPSE_B_LINES` の371行中368行 + `data.js:AUTUMN_WAR_MVP_LINES` の全315行 = 1,076行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2iの訳語判断(2cの対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2eのGLIMPSE_A低温語彙、2fのベルト=belt/王座=title、2hの `ふふ`=Mm/My 機能置換と `……っ……`=`... mm...`/`... ah...`、2iの `認める`=admit/grant/own の帯別割り分けを継承)。開始前にworktreeブランチをmain先端(1a3f129)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
+
+### 1. 対象範囲(1,076行)
+
+**挑戦状(団体戦直訴) 393行**(軸は `${archetype}_${personality}` の複合キー34セル × 4場面 × 3本 = 408スロット/394ユニーク。`Engine.challengeRequest.pickLine`(relationships.js:3844)。選手が社長に「三人であちらへ挑ませてください」と直訴する一連)
+
+| 場面 | スロット | 場面の中身 |
+|---|---|---|
+| `petition` | 102 | 社長への直訴(三人での他団体挑戦の願い出) |
+| `sendoff` | 102 | YES直後の返事(送り出しモーダル) |
+| `win` / `lose` | 102 / 102 | 三連戦を終えての勝利報告 / 敗戦報告 |
+
+**GLIMPSE_B(日常の垣間見え) 368行**(軸は `GL-xx → (subType) → archetype → personality`。`Engine.relationships.checkBLayer`(relationships.js:5001)。バッチ⑤のGLIMPSE_A 847行と対になる低温の独り言)
+
+| ノード | スロット | 場面 |
+|---|---|---|
+| `GL-01` win/loss/goodLoss/greatWin | 38/37/34/35 | 試合後の感情(勝ち・負け・惜敗MQ70+・会心の勝ちMQ70+) |
+| `GL-02` / `GL-02-hostile` | 27 / 25 | 練習中のひとこと / 因縁相手が同じ道場にいる日の練習 |
+| `GL-03` up / down | 19 / 19 | 信頼度が上がった週 / 下がった週 |
+| `GL-04` / `GL-05` | 15 / 15 | 仲間への想い(bond50+) / ライバルへの意識(rivalry30+) |
+| `GL-06` / `GL-07` | 22 / 15 | 興行に出られなかった鬱憤 / コンディション40未満 |
+| `GL-08` / `GL-09` / `GL-10` | 21 / 16 / 21 | 2連敗以上 / 3連勝以上 / 負傷中の焦り |
+| `GL-11` / `GL-12` | 9 / 5 | 冷たい距離(bond25以下・rivalry30未満) / **第三者視点ナレーション** |
+
+**秋4団体戦MVP 315行**(軸は `context → archetype → personality` の3×49セル全埋め。`_agwMvpLine`(ui-common.js:19729)・`_agwSurvivorLine`(19412)・`_agwChampionSpeech`(19434))
+
+| context | スロット | 誰の声か |
+|---|---|---|
+| `gauntlet` | 105 | 3人抜き以上の勝ち残り(何人来ても倒れなかった側) |
+| `champion` | 105 | 優勝団体のMVP(先鋒・中堅・大将の三人で繋いだ勝利) |
+| `defiant` | 105 | **団体は負けたが個人が光ったMVP**(賞では満たされない帯) |
+
+- **既訳9スロット(4ユニーク)は据え置き**(`……勝った`=`"...That's the win."`、`……悪くない`=`"...Not bad at all."`、`………`=`"..."`、`及びませんでした。悔しく思います。`=`"I did not measure up. It galls me."`。いずれもP5-2a〜2iで他テーブルと共有済み)
+- 属性内訳(1,076行): standard 318 / composed 154 / polite 154 / seductive 144 / ojousama 108 / delinquent 104 / cool 80 / null 14
+- **`cell` を3行だけ追記した**(P5-2b/2c/2gの慣行と同じ **`{archetype}` 形**)。CHALLENGE_LINES 内で「同一原文が複数セルに出る」ため抽出器が null にしたが、**archetype は一意に決まる**行 — `……負けました。申し訳ありません。`(polite_earnest/polite_quiet → polite)、`負けました。……申し訳ありません。`(ojousama_normal/ojousama_earnest → ojousama)、`勝てませんでした。……次は、必ず。`(ojousama_normal/ojousama_bold → ojousama)。**これでojousamaの短縮形禁止検査が2行ぶん効くようになった**
+- 残る `cell=null` 14行は (a)CHALLENGE_LINES 内で archetype も割れる短句8行 (b)GLIMPSE_B の他テーブル共有短句1行(`……負けた`)+GL-12ナレーション5行 で、**null が正しい**。中立英語を当てた(P5-2a〜2iの方針継承)。台帳の `cell` と実効テーブルの軸キーの突き合わせは**不一致0**
+
+### 2. 翻訳の方針
+
+- **挑戦状は「社長に直訴する声」**。この帯だけは原文が `社長` を実際に呼んでいるため、§6裁定4の書き分けを正面から使った — **polite / ojousama = `President`(13行)、standard / composed / cool / delinquent / seductive = `Boss`(62行)**。ただし「原則呼ばない」も守り、呼称を持つのは1,076行中75行のみ。P5-2c/2d(契約・派閥帯)で確立した温度をそのまま継承している
+- **`三人` は全帯で "the three of us"**。この機能は「選手が仲間2人を連れて他団体へ乗り込む」三連戦なので、`三連戦`=`three-match series` / `a three-match run`、`遠征`=`trip out there`、`乗り込む`=`walk in there` / `walk into their building` に割り分けた。**`あちら`/`あの団体` は §3-7(固有名詞禁止)どおり指示語のまま** — `over there` / `that promotion` で運び、団体名を一切入れていない
+- **秋MVPの3contextは「同じ大会の3つの立場」なので、英語の芯を別々に置いた** — `gauntlet`=**まだ立っている**の一点(still standing / never went to a knee)、`champion`=**三人で繋いだ**の一点(carried it / handed it forward / a win for three)、`defiant`=**賞では足りない**の一点(the award isn't enough / next time we take it all)。同じ「三人」でも champion は感謝、defiant は不足として書いてある
+- **`優勝旗` = `the banner`** に統一(defiant帯4行)。`人抜き` は既存UI辞書の `通算{n}人抜き`=`{n} opponents beaten`(lang-en.js:2727)に合わせ、セリフ側は数を数えない言い回し(`I stopped counting how many I put down.`)を基調にした。`先鋒`=`Lead-off` / `大将`=`Captain` は lang-en.js:1347/119 の既定訳に揃えた
+- **GLIMPSE_B は GLIMPSE_A(バッチ⑤)と同じ「日常の低温」**。§3-6(身体・抽象メタファー禁止)を最優先し、原文の `身体は限界を告げている` / `体が言うこと聞かない` / `全身が悲鳴を上げている` 型は**「体が語る」構文を全部落として**生活英語へ振り替えた(`I'm well past my limit.` / `Nothing wants to obey me today...` / `Everything hurts at once...`)。逆に英語で自然に立つ比喩(`the air seemed to freeze` / `she won't get out of my head`)は活かした
+- **GL-01の4subTypeは「敗北の質」で温度を分けた** — `loss`=素の悔しさ / `goodLoss`=**相手を認める**(admit / give it to her / a fight worth having) / `greatWin`=**節目の高揚**(この帯だけ感嘆符と `the best` を解禁) / `win`=平熱。属性の天井は崩していない(cool は greatWin でも `...That was perfect.` 一文)
+- **GL-12は第三者視点のナレーション5行**なので、セリフではなく**記事の地の文**として訳した(`They say {nameA} and {nameB} did not once meet each other's eyes in the locker room.`)。`〜という` の伝聞は `They say...` で運んでいる
+- **ト書き15行**(`……（無言で拳を握りしめている）` / `……（黙々とスクワットを続けている）` / `……（道具に八つ当たりしている）` / `……（視線は合わせない）` ほか)は P5-2c で確立した堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**で統一。アンカーの `... (silently clenches her fist)` と英語が重ならないよう全15本を別の動詞句にしてある
+- **属性=register**: ojousama=全108行で**短縮形ゼロ**(`We could not win. ...Next time, without fail.`) / cool=全80行で**感嘆符ゼロ・3文以内**(`...Standing. That's the result.`) / delinquent=冠詞主語の省略+`'Preciate it`型のくだけ(っす体は「ぶっきらぼうだが従う」で処理) / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **§4-6のネイティブ検品ルール適用**: 「今日の私」型0 / 「〜も」のtoo直訳0 / `maybe` は文頭のみ / 応援=support / **`I'll do my best` / `It can't be helped` / `As expected of` の禁止定型は機械検査で0** / `ふふ`=`Mm`/`My` に機能置換(`Fufu` 音写0) / 英国綴り0 / ALL CAPS 0
+- **均質化回避**: この帯は「勝った/負けた/悔しい」が構造的に大量発生する(GL-01だけで144行が試合直後)。事前検査で検出した**既訳との完全重複1件・近似重複(トークンJaccard≥0.90)3件・バッチ内近似重複4件をすべて書き直した**。最終的に**バッチ内EN完全重複0・近似重複0・既訳8,815行との完全重複0・近似重複0**(意図的な `………………`→`"..."` 1件を除く。`……`系を `"..."` に落とす P5-2b の方針に従った)
+- **卑語**: hell/damn は**1,076行中9回**、すべて delinquent 確定セル(`Hell of a team.` / `Damn thing's no use to me...!` / `Damn it...! This is killing me...!` / `Damn, that stings.` / `but damn, she's got something.` / `Damn... nothing's keeping up today.` / `Damn it, how am I supposed to fight in this state...!` / `Damn it... how many is that in a row now...` / `Damn, how long am I supposed to lie here...`)。f/sワードは0
+- **長さ**: 全1,076行が110字上限内(**最大106字・中央値51字**・EN/JA文字数比 2.43)。プレースホルダはGL-12の `{nameA}`/`{nameB}` 計4行のみで**原文と完全一致**。♪は1行に存置(原文と同数)、♡を含む原文は0行
+
+### 3. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,076行を記入+cell 3行を追記(**diffは `"en":` 行1,076本(2,152行)+cell 3件(12行)の計2,164行のみ** — 書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートしてから記入し、書き込み後に `git diff -U0` で `"en":`/`"cell":` 以外の増減0を機械確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。**ソース・配線は一切触っていない**
+
+### 4. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**9,891**(8,815→+1,076) / cell判定済み9,665 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ 直書き日本語の増加なし(files=31 / totalJaStrings=28089) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+data/data-faction-dialogue/management/match-engine/relationships)で**台帳1,076キーの直接t()が未訳0**。さらに実選択ロジックを走らせて **`getDialoguePool(AUTUMN_WAR_MVP_LINES[ctx], f)` 3context×49セル=315引き / `Engine.challengeRequest.pickLine` 49セル×4場面×30シード=5,880引き / `pickDialogueLine(GLIMPSE_B_LINES[...])` 16ノード×49セル×40シード** で**未訳0・`[i18n-miss]` 0件**、GLIMPSE_B は**371行すべてが到達可能**(死行0)。セル横断20本を目視 |
+| 品質スイープ(事前検査) | ✅ 網羅1,076/1,076・空訳0・日本語残り0・110字超0・PH不一致0・余分な空白0・`....`表記0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+| cell整合 | ✅ 台帳cellと実効テーブルの軸キーの**不一致0**。cell追記3件はソースから一意に導出 |
+
+### 5. 表示経路の確認(2件がENに届かない — いずれも1行修正で生きる)
+
+- **秋MVP 315行は届く**。`_agwMvpLine`(ui-common.js:19739)・`_agwSurvivorLine`(19418)・`_agwChampionSpeech`(19447)の3経路すべてが **`WM_I18N.t()` を `{wins}`/`{org}` の replaceAll より前**に通す設計(P5-1で対応済み)。このテーブル自体にプレースホルダは0
+- **挑戦状 291行(petition/win/lose)は届く**。petition=`_u3bSideHtml`(ui-common.js:245)が t() を通す / win・lose=`renderReactionScene`(13824)と決着シーケンス(13680)が `WM_I18N.t(entry.line)` を通す。`pickLine` の `{org}` 事前置換は**このテーブルに `{org}` を含む行が0**なので実害なし
+- **⚠ 挑戦状 `sendoff` 102行はENでもJAのまま**。`showChallengeSendoffModal`(ui-common.js:13393)が `<div class="inv-bubble">${escHtml(line)}</div>` と**t()を通さず生JAを描画**している(同関数内の他の文字列はすべて `WM_I18N.t()` 済み — セリフ1箇所だけ漏れている)。**訳文は投入済みなので `escHtml(WM_I18N.t(line))` の1語追加で102行が一気に生きる**
+- **GLIMPSE_B 364行は届く**。`_renderGlimpseCardHtml`(ui-common.js:15548)が `g.dialogue` を `_u3bSideHtml` へ渡し内部で t()、道場の休憩バブル(`ui-render.js:2015`)も `WM_I18N.t(g.dialogue)` を明示
+- **⚠ GLIMPSE_B の GL-12ナレーション4行はENでもJAのまま**。`relationships.js:5213` が `tpl.replace(/\{nameA\}/g, fA.name).replace(/\{nameB\}/g, fB.name)` と**t()より前に置換**するため、完成文が辞書キー(未置換の原文)と一致せずfail-openする(P5-2dの `selectDialogue`・P5-2hの `_flagFormatLine` と同型)。プレースホルダを持たない1行(`リング上ですれ違った瞬間、空気が凍ったように見えた`)だけは届く。根治は dict-opts / t()-with-params パターン(`specs/i18n-runtime-spec-v1.0.md` §6)で、`WM_I18N.t(tpl, { nameA: fA.name, nameB: fB.name })` へ置き換えるだけ
+
+### 6. 残課題(このバッチで判明したものを含む)
+
+1. **上記§5の表示経路2件**(sendoff 102行 + GL-12ナレーション4行)。**訳文は投入済み**なので、`escHtml(WM_I18N.t(line))` 1語 と `WM_I18N.t(tpl, {nameA, nameB})` 1行の合計2箇所の修正で106行が生きる。P5-2h/2iの積み残しと同じ型なので、**まとめて1タスクで根治するのが効率的**
+2. **JA原文側の重複11件**(`……負けました。すみません。`=polite_normal/standard_normal/composed_normal/cool_quiet の4セル共有、`勝ちました。……ありがとうございました。`=standard_normal/composed_normal/ojousama_earnest の3セル共有ほか)。翻訳側は中立英語で処理したが、**属性が違うのに同じ原文が置かれている**のは日本語側の書き分け漏れの可能性がある(P5-2f/2h/2iと同型)。とくに `勝ちました。……ありがとうございました。` は **ojousama と standard が同じ文を共有**しており、お嬢様帯の口調が立たない。要裁定
+3. **`AUTUMN_WAR_MVP_LINES` の context 分岐で `gauntlet` が他2つを食う**。`_agwMvpLine`(ui-common.js:19731)は `wins>=3 ? 'gauntlet' : (mvpOrgId===champion ? 'champion' : 'defiant')` の順で判定するため、**3人抜き以上のMVPは所属団体が優勝していても敗退していても一律 `gauntlet`** になる。「団体は負けたが個人が光った」105行と「三人で繋いだ」105行は、MVPが2人抜き以下の回でしか読めない。仕様として意図的かどうか要確認(翻訳経路の確認中に発見。ソースは触っていない)
+4. **`GL-02-hostile` は standard 帯が17行なのに他6属性が計8行しかない**(ojousama 2 / delinquent 2 / seductive 1 / polite 1 / cool 1 / composed 1)。`pickDialogueLine` のフォールバックで埋まるため実害はないが、**「因縁相手と同じ道場にいる日」という濃い場面が standard 以外ではほぼ1本しかない**。JAセリフの増補候補として記録
+5. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **秋MVP `champion` 105行の「三人で」**が英語で単調になっていないか(`the three of us` / `all three` / `a win for three` / `these three` の4系統に割ったが、105行は同一モチーフとしては最大級) (b) **挑戦状の `Boss` 62行 / `President` 13行**の温度(直訴という場面で敬語が過剰/不足の帯がないか) (c) **GL-12ナレーション5行**が新聞の地の文(P4の黒田文体)と同じ温度で読めるか
+
 ## 🌐 Stage B P6-2 — UI走破ハーネスのENモード対応（2026-09-04・Sonnet worktree agent-a21d65df0f42c5295）
 
 設計は `docs/i18n-stage-b-p6-design-v0.1.md` §3-1「ENウォークスルー」。`npm run test:ui:walkthrough` がjaでしか走らせられなかった状態から、`--lang <ja|en|pseudo>`(env `WM_LANG`でも可)でENモード起動できるようにし、実際にENで1季走破を試みて結果を分析した。**src/配下・i18n/台帳・lang-en-*.jsは一切触っていない**（`test/ui-walkthrough/*.js`と`package.json`のみ）。開始前にworktreeブランチをmain先端(1a3f129)へfast-forward済み。
