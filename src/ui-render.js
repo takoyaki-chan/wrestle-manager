@@ -1007,7 +1007,10 @@ function renderWeekScreen() {
     // データ**なので、チェーンがどこで止まっても伏せっぱなしにはならない
     // (失われた場合も App._recoverPendingAwards が作り直して表彰式へ回す)。
     if (offW === 1 && !G.pendingAwards) {
-      const review = Engine.seasonReview.build(G);
+      // i18n Stage B P5-2o: dict-opts(specs/i18n-runtime-spec-v1.0.md §9)。build内で
+      // 「辞書を引いてから{rank}等を埋める」ためにWM_I18N.tを渡す。ja では t() が
+      // 素通しなので日本語版の出力は1バイト不変。
+      const review = Engine.seasonReview.build(G, WM_I18N.t);
       html += _renderSeasonReview(review, G);
     } else if (offW === 1) {
       // 表彰式待ち。総括の場所は空けておく(ここに何か描くと結局背面に見えてしまう)。

@@ -21727,6 +21727,15 @@ Engine.seasonReview = {
     return String(line || '').replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null) ? String(vars[k]) : m);
   },
 
+  /** リード文とヒーロー文の継ぎ目。日本語は句点で直結(従来と1バイト同一)、英語は
+   *  文と文をスペースで継ぐ。言語ではなく**中身**で判定するので、部分翻訳の途中でも
+   *  文末が壊れない(P5-2n の _tcwSentence と同じ考え方)。 */
+  _joinLead(head, tail) {
+    if (!head) return String(tail || '');
+    if (!tail) return String(head);
+    return /[。！？」）]$/.test(head) ? head + tail : head + ' ' + tail;
+  },
+
   /** N点程度に等間隔で間引く。データ数がN以下ならそのまま返す(平均化はしない=最新値を保つ) */
   _downsample(values, n) {
     const arr = Array.isArray(values) ? values : [];
@@ -21808,15 +21817,32 @@ Engine.seasonReview = {
   /**
    * オフシーズン週画面(offWeek 0〜1)に必要な全データを1オブジェクトで返す。
    * @param {Object} state - GameState
+   * @param {Function} [dict] - i18n Stage B P5-2o: 表示層から渡す辞書引き(WM_I18N.t)。
+   *   Engine は WM_I18N を直接呼ばない(dict-opts規約 specs/i18n-runtime-spec-v1.0.md §9)。
+   *   **プレースホルダを埋める前**に引く — 先に置換すると辞書キー(PH入りの原文)と
+   *   一致せず必ず fail-open する(P5-2d/2h/2j/2l/2n と同型の欠陥)。
+   *   省略時は素通し = 日本語版の出力は1バイト不変。
    * @returns {Object} seasonReview データ
    */
-  build(state) {
+  build(state, dict) {
     const G = state;
     const ov = Engine.util.ov;
     const season = G.season;
     const processed = (G.offWeek || 0) >= 1; // offWeek1移行時点でシーズン末処理(applySeasonEnd)済み
     const _pickLine = Engine.seasonReview._pickLine;
     const _fillLine = Engine.seasonReview._fillLine;
+    const _joinLead = Engine.seasonReview._joinLead;
+    // 辞書引き→プレースホルダ置換の順で1本にまとめる。dict未指定(=Engine単体・テスト・
+    // auto-sim)では従来どおり _fillLine のみ = 出力1バイト不変。
+    // vars の null 値は渡さない —— _fillLine は未解決の {key} をそのまま残す仕様なので、
+    // applyParams 側に "null" を書かせないための同値化(prevRank が null の年に効く)。
+    const _line = (line, vars) => {
+      if (!line) return '';
+      if (typeof dict !== 'function') return _fillLine(line, vars);
+      const p = {};
+      if (vars) Object.keys(vars).forEach((k) => { if (vars[k] != null) p[k] = vars[k]; });
+      return dict(line, p);
+    };
     const _lines = (typeof SEASON_REVIEW_LINES !== 'undefined') ? SEASON_REVIEW_LINES : null;
     const _nseed = ((G.season || 1) * 7919) | 0; // シーズンごとに固定・rngは消費しない(build純関数のため)
 
@@ -21850,7 +21876,7 @@ Engine.seasonReview = {
         titleWonThisSeason = hist.some(e => e.type === 'titleWin' && e.season === season);
         const defenses = G.titles.world.defenses || 0;
         const champKey = defenses === 0 ? 'champ_v0' : defenses <= 2 ? 'champ_low' : defenses <= 4 ? 'champ_mid' : 'champ_high';
-        const champNarr = _lines ? _pickLine(_lines.records[champKey], _nseed + 11) : '';
+        const champNarr = _lines ? _line(_pickLine(_lines.records[champKey], _nseed + 11)) : '';
         champRecord = {
           tag: '王者', id: champ.id, name: champ.name,
           meta: `団体王座 / V${defenses}`,
@@ -21869,7 +21895,7 @@ Engine.seasonReview = {
       records.push({
         tag: 'JT優勝・新人王', id: j.id, name: j.name,
         meta: `${j.age != null ? `${j.age}歳 / ` : ''}OVR ${j.ovr}`,
-        narr: (_lines && _pickLine(_lines.records.jt, _nseed + 21)) || 'ジュニアトーナメントを制した。',
+        narr: (_lines && _line(_pickLine(_lines.records.jt, _nseed + 21))) || 'ジュニアトーナメントを制した。',
       });
     }
     if (awards && awards.mediaAward && awards.mediaAward.isPlayerOrg) {
@@ -21877,7 +21903,7 @@ Engine.seasonReview = {
       records.push({
         tag: 'メディア功労', id: m.id, name: m.name,
         meta: `${m.age != null ? m.age : '?'}歳`,
-        narr: (_lines && _pickLine(_lines.records.media, _nseed + 31)) || 'リング外での発信が団体を支えた。',
+        narr: (_lines && _line(_pickLine(_lines.records.media, _nseed + 31))) || 'リング外での発信が団体を支えた。',
       });
     }
     // 春のタッグリーグ優勝（自団体該当分のみ）。spring-tag-league-spec-v0.1 §12.4
@@ -21896,7 +21922,7 @@ Engine.seasonReview = {
         records.push({
           tag: '春タッグ優勝', id: f1.id, name: f1.name,
           meta: f2 ? `${f2.name}と組んで` : '',
-          narr: (_lines && _pickLine(_lines.records.springTag, _nseed + 41)) || '春のタッグリーグを制した。',
+          narr: (_lines && _line(_pickLine(_lines.records.springTag, _nseed + 41))) || '春のタッグリーグを制した。',
         });
       }
     }
@@ -21968,7 +21994,7 @@ Engine.seasonReview = {
 
       const leadLine = (_lines && leadKey) ? _pickLine(_lines.lead[leadKey], _nseed) : '';
       if (leadLine) {
-        lead = _fillLine(leadLine, { rank, prevRank });
+        lead = _line(leadLine, { rank, prevRank });
       } else {
         // フォールバック(仮文)
         if (prevRank != null) {
@@ -21982,8 +22008,10 @@ Engine.seasonReview = {
       if (hero) {
         const heroKey = hero.role === 'MOST VALUABLE' ? 'mvp' : 'ace';
         const heroLine = _lines ? _pickLine(_lines.leadHero[heroKey], _nseed >> 2) : '';
-        lead += heroLine ? _fillLine(heroLine, { hero: hero.name })
-          : (hero.role === 'MOST VALUABLE' ? `${hero.name}が年間MVPに輝いた。` : `${hero.name}がチームを牽引した。`);
+        // i18n Stage B P5-2o: リード文とヒーロー文は別々の辞書キー。日本語は句点で直結
+        // (従来と1バイト同一)、英語はピリオドの後にスペースを入れて継ぐ。
+        lead = _joinLead(lead, heroLine ? _line(heroLine, { hero: hero.name })
+          : (hero.role === 'MOST VALUABLE' ? `${hero.name}が年間MVPに輝いた。` : `${hero.name}がチームを牽引した。`));
       }
     }
 
@@ -21995,13 +22023,13 @@ Engine.seasonReview = {
       const CHASE_CLOSE_THRESHOLD = 40; // 🔧 射程圏閾値
       const closeKey = gap <= CHASE_CLOSE_THRESHOLD ? 'chase_close' : 'chase_far';
       const closingLine = _lines ? _pickLine(_lines.closing[closeKey], _nseed >> 4) : '';
-      closing = closingLine ? _fillLine(closingLine, { above: aboveMe.name, gap })
+      closing = closingLine ? _line(closingLine, { above: aboveMe.name, gap })
         : `上位${aboveMe.name}との差は${gap}点。来季も、着実に積み上げたい。`;
     } else if (meIdx === 0) {
-      const closingLine = _lines ? _pickLine(_lines.closing.top, _nseed >> 4) : '';
+      const closingLine = _lines ? _line(_pickLine(_lines.closing.top, _nseed >> 4)) : '';
       closing = closingLine || '業界の頂点として、来季も走り続ける。';
     } else {
-      const closingLine = _lines ? _pickLine(_lines.closing.fallback, _nseed >> 4) : '';
+      const closingLine = _lines ? _line(_pickLine(_lines.closing.fallback, _nseed >> 4)) : '';
       closing = closingLine || '来季も、この団体の物語は続く。';
     }
 

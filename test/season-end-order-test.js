@@ -156,7 +156,9 @@ section('9. 表彰式が無い年も同じ終わり方をする', () => {
 // 総括はレポートの週(offWeek 1)のもの。週で決め打つ。
 
 section('10. 総括は「レポートの週」だけに描く', () => {
-  assert.ok(/if \(offW === 1 && !G\.pendingAwards\) \{\n\s*const review = Engine\.seasonReview\.build\(G\);/.test(uiRender),
+  // 2026-09-04(P5-2o): build に dict-opts の第2引数(WM_I18N.t)が付いたため、引数リストは
+  // 緩く受ける。このセクションが守っているのは「描く週」であって呼び出しの引数ではない。
+  assert.ok(/if \(offW === 1 && !G\.pendingAwards\) \{\n(?:\s*\/\/[^\n]*\n)*\s*const review = Engine\.seasonReview\.build\(G[^)]*\);/.test(uiRender),
     'シーズン総括の描画がレポートの週(offWeek 1)に固定されていない');
   assert.ok(!/if \(offW <= 1/.test(uiRender),
     'offWeek 0 にも総括を描いている。表彰式の直後に出てしまい、翌週もう一度出る');
