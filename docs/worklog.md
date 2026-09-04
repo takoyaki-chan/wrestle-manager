@@ -1,5 +1,57 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P4-6 — 黒田記者の記事プール+自団体新聞プール908行の英訳（2026-09-04・主筆Opus / worktree agent-afc722cfb87f17226）
+
+P4-5で台帳化された未訳908行(kuroda-text.js 13プール + app.js の自団体新聞2プール)を全量英訳した。開始前にworktreeブランチをmain先端(24a7e47)へfast-forward済み。**テンプレ台帳 `i18n/template-ledger.json` は 1,459/1,459 が訳出済み(未訳0)になった。**
+
+### 1. 物差し
+
+`docs/en-kuroda-style-draft-v0.1.md` 全文 + `docs/en-tone-bible-draft-v0.1.md` §0/§1/§4 + 既訳551行(見出し・記事系)の訳語。守った要点:
+
+- **三層主語**: 本紙=`this paper` / 筆者=`this writer` / 鎧を外した一言=`I`。`we` で紙を指さない。`you` は社長・団体への呼びかけのみ
+- **「持ち上げて落とす」は文を切る**。but/however の従属節にすると効果が死ぬので、必ず断片を後置(例:「褒めよう、今回は」→ *I will praise it. This once.*)
+- **慨嘆は4道具に限定**(緩叙法・裸の過去形・事実への差し替え・書かずに終える)。禁止語grepで機械検査
+- **紙面の三声を潰さない**: 黒田幸子署名(kuroda-text.js 全プール)は**感嘆符ゼロ**。自団体紙面 `_NEWSPAPER_HEADLINES` のみ、日本語に「！」がある行に限り**1見出し1個**。`_NEWSPAPER_ARTICLES` は平叙の報道文で感嘆符なし
+- **maxim検査**: 締めの一文が単独でポスターに刷れる形になったら書き直した。「数字は嘘をつかない」で段落を終える行(#527/#648)は語順を組み替え、固定訳 `The numbers do not lie.` の**直後に必ず事実**を置く形にした
+- **決まり文句は固定訳で回した**: 40年見てきた中で→`Forty years on this beat, …` / 本紙としては〜と書いておく→`This paper will put it on record: …`・`…This paper will leave it there.`・`For the record, this paper's position is …` / 参った→`You have me.` / 率直に言えば→`Plainly:`・`To put it plainly,` / 分水嶺・正念場→`This is where it gets decided.` / 業界の盟主→`the flag carrier of the business`
+- **用語は既訳551行を継承**: 団体=promotion / 興行=show / 試合評価{mq}=**rated {mq}**(points と書かない) / 控室=locker room / 対抗戦=interpromotional / 王座=title・ベルト=belt / 連勝={streak} in a row / 総合力=Overall / 人気=popularity / 天頂戦=Tenchosen
+
+### 2. プレースホルダ安全則(§3-4「値に文法を決めさせない」)
+
+- **戦績**: 「{wins}勝{losses}敗」→ `{wins}-{losses}`(英語の記録表記そのもの・単複不変)。「通算」は `all told`(`overall` は総合力の訳語と衝突するため避けた)
+- **年数・試合数**: 「{years}年の付き合い」→ `a {years}-year association`、「{matches}度の対戦」→ `a {matches}-match record` の**ハイフン限定用法**(§3-4 規則24)で単複を吸収。`{years} years` / `{matches} meetings` 型は原則使わない(唯一の例外は対訳見本K10の `{matches} meetings`。承認済みサンプルの文体をそのまま採るため据え置き)
+- **残り週**: 「残り{weeksRemaining}週」→ `Weeks remaining: {weeksRemaining}.`(`{n} weeks left` は n=1 で破綻)
+- **敗戦数**: 「{losses}敗」→ `Defeats head to head: {losses}` / `those defeats — {losses} of them —`
+- **成形済み値を文法に埋めない**: `{finishLabel}`(実体は「技名 → 3-count」形の複合ラベル)・`{rivalLabel}`・`{leadAxisLabel}`/`{chaseAxisLabel}`(TOP5実力/選手層/団体人気/TOP5人気)・`{attendanceToLocaleString}` は裸の名詞句として扱い、不定冠詞を前置しない。ENスモークで `the {finishLabel} of {winnerName}` が冗長になることを実測し、§3-4 規則26で許される所有格 `{winnerName}'s {finishLabel}` へ3行修正した
+- 「総合力差{ovrGap}ポイント」は `an Overall gap of {ovrGap}`(`points` を出さない=試合中の得点に読まれない)
+
+### 3. 声の書き分け(プール別)
+
+| プール | 行数 | 声 |
+|---|---|---|
+| KURODA_HEADLINES / EDITORIAL | 94 / 63 | 黒田幸子。引用符に入る断定(headlines)と長文コラム(editorial)。語調帯 devastating〜dominant を温度差として保持 |
+| KURODA_WAR_RECORD / MATCHUP_FLAVOR / SPOTLIGHT / SHOW_RATING / PREVIEW / NEWS_COMMENT | 55/120/39/36/17/30 | 同上。断片リズム(長い事実文→短い事実文→断片の判定) |
+| KURODA_RELATION_NARRATIVE | 187 | 同上・取材モードの深い語り。9関係タグ×(headlines/bodies/contexts)。見出しは sentence case・末尾ピリオドなし |
+| KURODA_CRISIS / GAMEOVER | 10 / 6 | 宣言調。【経営警報】等の角括弧見出しは英語の `Financial alert: …` `Exclusive: …` `Bulletin: …` 型ラベルへ。GAMEOVER は改行入り4〜5行の宣告文 |
+| NEWSPAPER_DIGEST_COMMENTS | 61 | 黒田の一行寸評(§1-3「最後の一段だけを取り出したもの」)。JAに「！」がある upset 族も**感嘆符を落とした**(署名記事のため) |
+| FAN_OPINIONS | 148 | **黒田ではない**。ネット上のファンの声4層。neutral=日常口語 / hardcore=分析(短縮形+数値) / troll=嘲弄(`lol`・皮肉。ただし禁止語grepに触れる insane/savage/epic 等は使わない) / hopeful=情の強い支持 |
+| app.js:_NEWSPAPER_HEADLINES / _ARTICLES | 25 / 17 | 自団体紙面=無署名デスク。見出しは見出し文法(sentence case・冠詞省略・現在形・末尾ピリオドなし)、感嘆符はJAに「！」がある行のみ1個 |
+
+### 4. 検証
+
+- `node test/i18n-build-template-dict.js`: green(**訳文あり1,459 / 未訳0**)。機械検査=プレースホルダ完全性・重複キー・en内日本語残り・**黒田禁止語grep 9パターン**(タブロイド語彙/誇張/慨嘆の暴走/スポーツ面常套句/翻訳調/声の取り違え/用語の取り違え)を全通過
+- `node --check src/lang-en-templates.js`: OK
+- `node test/ja-golden.js`: **完全一致**(lines=11233, hash=6b3d05c8…) — JA出力1バイト不変
+- `npm test`: **260/260 PASS**
+- `node test/i18n-ratchet.js`: OK(直書きJAの増加なし)
+- **ENスモーク(vm・実dict・kurodaText経由)計106本・日本語残0**: ①12プール横断48本(KURODA_HEADLINES/EDITORIAL/WAR_RECORD/MATCHUP_FLAVOR/SHOW_RATING/SPOTLIGHT/PREVIEW/NEWS_COMMENT/RELATION_NARRATIVE/NEWSPAPER_DIGEST_COMMENTS/FAN_OPINIONS)②KURODA_CRISIS/GAMEOVER 全文字列 + app.js `_NEWSPAPER_HEADLINES`/`_ARTICLES` 全エントリ58本(app.js本体は評価せず、P4-5の抽出器と同じ波かっこ深さカウントでオブジェクトリテラルだけ切り出して評価)
+
+### 5. 残作業
+
+- **P4-5保留16件**(`docs/i18n-p4-5-kuroda-holdout-audit.md`)は台帳に載らないため今回も未訳。KURODA_WAR_RECORD 8(`Math.abs(d.streak)`)/ KURODA_SPOTLIGHT 7(`star`プール全7本の三項分岐)/ KURODA_RELATION_NARRATIVE 1(入れ子テンプレートリテラル)。ENでもJAのまま出る(fail-open)ので、**`star`プールは注目選手欄で日本語が出続ける**。抽出器を触らず直す最小の道は、該当関数を三項分岐なしの2エントリへ分割すること
+- ネイティブ検品(黒田文体は §2 の対訳20本を検品サンプルに流用する設計)
+- 見出し長の実測(§3-5 の「≤56半角」は暫定値。`.np-*` に対する擬似ロケール実測が未了)
+
 ## 🌐 Stage B P6-3 — 選手・コーチ名の直接補間サイトをpn()経由へ段階移行（2026-09-04・worktree agent-afb813d0664d28e98）
 
 P6-1で名前辞書`PN_EN`と`WM_I18N.pn(str)`(完全一致でEN・無ければ素通し・ja時素通し)が入ったが、テンプレ経由の名前(`t()`のparams)は自動変換される一方、`${c.name}`/`${c.surname}`の**直接補間**は未移行で、EN切替時に選手・コーチ名だけ日本語のままだった穴を埋めた。開始前にworktreeブランチをmain先端(79929e5)へfast-forward済み。対象5ファイル(ui-render.js/ui-common.js/app.js/battle-engine-main.js/tag-battle-main.js)。
