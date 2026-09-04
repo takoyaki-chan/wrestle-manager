@@ -7551,7 +7551,9 @@ function _npMatchupFlavorText(m, d, seasonNum, weekNum) {
   const axes = _npMatchupFlavorAxes(m, G);
   const ctx = {
     aName: escHtml(WM_I18N.pn(m.player.name)), bName: escHtml(WM_I18N.pn(m.rival.name)),
-    aOrg: d.playerName, bOrg: d.rivalName, role: m.role,
+    // i18n P7-11: `m.role`(エース/主力/中堅)は Engine が返す成形済みJAラベル。
+    // テンプレだけ訳しても `{role}` にJAが残るので、差し込む直前に値として引き直す(§14-2)。
+    aOrg: d.playerName, bOrg: d.rivalName, role: WM_I18N.t(m.role),
   };
   // 中身は**文字列と関数が混在**しているので両方受ける
   // i18n Stage B P4-5: kurodaText経由でt()を通す(文字列/関数どちらも対応、
@@ -8510,6 +8512,19 @@ function _npFeatureOn(page) {
   return true;
 }
 
+/**
+ * GRADE脇の短評(92px幅・9px)。
+ * JAは原文の先頭14字だけを出す(枠が狭く、全文は入らない)。この「14字で切る」は
+ * 全角前提の目分量で、英語に当てると単語の途中で切れる(`Outclassed on every` 等)。
+ * i18n Stage B P7-11: **ja/pseudoは従来どおり14字で切り(1バイト不変)、enは切らない**。
+ * EN訳文は台帳側でこの枠に収まる短さ(≦32半角)に揃えてある(§25-5 と同じ「JA固有の
+ * 文字数勘定はlang分岐が要る」型)。
+ */
+function _npGradeDescShort(desc) {
+  if (!desc) return '';
+  return (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en') ? desc : desc.slice(0, 14);
+}
+
 function _npRenderPage2() {
   const seasonNum = G.season || 1, weekNum = G.week || 1;
   // ライバル団体選択
@@ -8530,16 +8545,19 @@ function _npRenderPage2() {
   orgs.forEach(o => {
     const sel = (o.id === _dbCompareTarget) ? ' selected' : '';
     const nameDisp = (G.rivalOrgNames && G.rivalOrgNames[o.id]) || o.name || o.id;
-    html += `<option value="${o.id}"${sel}>${escHtml(nameDisp)} (Tier ${o.tier})</option>`;
+    html += `<option value="${o.id}"${sel}>${escHtml(WM_I18N.pn(nameDisp))} (Tier ${o.tier})</option>`;
   });
   html += `</select></div>`;
 
-  const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget);
+  // i18n Stage B P7-11: 紹介文プールはdata.jsの`ORG_COMPARE_*`へ移設済み。Engineは
+  // WM_I18Nを直接呼ばない(§6)ので、消費点であるこのUI層から`WM_I18N.t`をdictとして渡す。
+  const d = Engine.database.getOrgCompareAnalysis(G, _dbCompareTarget, WM_I18N.t);
   // U5: この関数はescHtml()を一度も呼んでいなかった(既知の欠落)。playerName/rivalNameは
   // このオブジェクトのローカルコピーなので、ここで一度だけ安全化すれば以降の全参照(黒田コラム・
   // ファンの声など地の文への埋め込みも含む)にそのまま効く。
-  d.playerName = escHtml(d.playerName || '');
-  d.rivalName = escHtml(d.rivalName || '');
+  // 団体名は名前辞書の住人なのでpn()も同じ1箇所で済ませる(ja/pseudoは素通し=1バイト不変)。
+  d.playerName = escHtml(WM_I18N.pn(d.playerName || ''));
+  d.rivalName = escHtml(WM_I18N.pn(d.rivalName || ''));
 
   // ヘッドラインセクション (黒田顔 + 引用 + グレード)
   // 引用は黒田の断定(KURODA_HEADLINES)。以前はここも下の記者コラムも同じ summaryText を
@@ -8555,7 +8573,7 @@ function _npRenderPage2() {
     <div class="np-headline-grade">
       <div class="lbl">GRADE</div>
       <div class="val">${d.grade}</div>
-      <div class="desc">${d.gradeDesc ? d.gradeDesc.slice(0, 14) : ''}</div>
+      <div class="desc">${_npGradeDescShort(d.gradeDesc)}</div>
     </div>
   </div>`;
 
@@ -8748,7 +8766,7 @@ function _npRenderPage2() {
           </div>
         </div>
         <div class="np-matchup-vs">
-          <span class="role">${m.role}</span>
+          <span class="role">${WM_I18N.t(m.role)}</span>
           <span class="verdict ${verdictCls}">${verdictText}</span>
         </div>
         <div class="np-matchup-fighter right">

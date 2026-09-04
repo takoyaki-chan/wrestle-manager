@@ -187,6 +187,24 @@ const TARGET_TABLES = [
   // テーブルへ移設したもの。消費点は同関数で `WM_I18N.t(FB.xxx, vars)`(UI層なので
   // opts糸通しは不要 — §6「UI層からの直接t()配線」)。
   'NEWSPAPER_SHOW_FALLBACK_TEMPLATES',
+  // P7-11で追加。新聞2面「団体比較号」の紹介文プール(specs §29-6 の発見2)。
+  // `Engine.database.getOrgCompareAnalysis()` の**関数本体に直書き**されていた
+  // (§10-2型)ものを data.js のトップレベルテーブルへ移設した。消費点は
+  // ui-render.js `_npRenderPage2` 1箇所で、そこから `WM_I18N.t` を dict として
+  // Engineへ糸通しする(§6のlang糸通し規約 — Engineは WM_I18N を直接呼ばない)。
+  //   GRADE_DESCS  5 / AXIS_TEXTS 20 / SUMMARY 7 / EDITORIAL 36 / TAGS 6 / ACTIONS 20 / ORG 2
+  // 軸ラベル(TOP5実力/選手層/団体人気/TOP5人気)はここに含めない — ui-ledger との
+  // 二重登録を避けるため management.js に JA を1本だけ置いて `_wmDictLabel` で引く(§15-3)。
+  'ORG_COMPARE_GRADE_DESCS',
+  'ORG_COMPARE_AXIS_TEXTS',
+  'ORG_COMPARE_SUMMARY_TEMPLATES',
+  'ORG_COMPARE_EDITORIAL_TEXTS',
+  'ORG_COMPARE_TAG_TEMPLATES',
+  'ORG_COMPARE_ACTION_TEXTS',
+  'ORG_COMPARE_ORG_TEMPLATES',
+  // P7-11: 比較対象団体の副題に入る一行紹介(`Tier {tier} / {desc}` の {desc})。
+  // 同表の他フィールドは識別子・色・絵文字・空文字列なので desc だけをパスフィルタで拾う。
+  'RIVAL_ORGS',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ
@@ -213,6 +231,10 @@ const TABLE_PATH_FILTER = {
   //   ✕ その他(grade/style/coachingType/observation/emoji) … 日本語を含まない識別子
   ALL_COACHES: (pathKeys) => ['desc', 'profile', 'origin', 'gender', 'flavor']
     .indexOf(pathKeys[pathKeys.length - 1]) >= 0,
+  // P7-11: `RIVAL_ORGS` もオブジェクト配列。訳出対象は団体比較号の副題に入る一行紹介
+  // (`desc`)だけで、id/tier/scoutStyle/color は識別子、emoji は絵文字、name は空文字
+  // (実際の団体名は RIVAL_ORG_NAME_POOL から生成され名前辞書の領分)。
+  RIVAL_ORGS: (pathKeys) => pathKeys[pathKeys.length - 1] === 'desc',
 };
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の

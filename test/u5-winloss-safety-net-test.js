@@ -1273,6 +1273,7 @@ function logGap(msg) {
      ${uiRenderFn('_npStandBg')}
      ${uiRenderFn('_hashStr')}
      ${uiRenderFn('_npKurodaBandLine')}
+     ${uiRenderFn('_npGradeDescShort')}
      ${uiRenderFn('_npRenderPage2')}
      return { _npRenderPage2, getCompareTarget: () => _dbCompareTarget };`
   );
