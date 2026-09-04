@@ -165,6 +165,15 @@ class WalkthroughDetectors {
     this.i18nMissCounts = new Map();
     // 画面id(またはoverlay:xxx) -> その画面で観測した日本語露出要素数の最大値
     this.jaExposureByScreen = new Map();
+    // P6-9: レイアウト溢れの情報集計(失敗条件にはしない)。ja/en/pseudo全モードで動かし、
+    // 同一harnessでja/en差分を比較できるようにする(EN文字幅がJA比で約2.4倍という実測を
+    // 踏まえ、吹き出し以外のUI要素で切れ/はみ出し/意図しない折り返しが起きていないかを
+    // 計測するだけで、CSS/訳文の修正はこのハーネスの対象外)
+    // screen id(またはoverlay:xxx) -> { total: ユニーク要素数, byKind: { clip/nowrap/wrap-height: 件数 } }
+    this.overflowByScreen = new Map();
+    // ユニーク要素(screen|kind|selector|text で重複排除)のフラットな一覧。上位N件抽出に使う
+    this.overflowRecords = [];
+    this._seenOverflowKeys = new Set();
   }
 
   attach(page) {
@@ -268,6 +277,130 @@ class WalkthroughDetectors {
       this.record('D3_TEXT', `${match.token} exposed in visible text`, match);
     }
     return matches;
+  }
+
+  // P6-9: レイアウト溢れの情報集計。3種を検出する(いずれもissuesには積まない=失敗条件にしない):
+  //   (a) clip      — overflow が hidden/clip (または text-overflow:ellipsis) で
+  //                    scrollWidth が clientWidth を2px超えて超過=テキストが物理的に切れている
+  //   (b) nowrap     — white-space:nowrap の要素が、横スクロールを許さない親の右端をはみ出している
+  //   (c) wrap-height — button/nav-btn/badge/tab/chip/pill の同種グループ(3件以上)内で、
+  //                    中央値より概ね1行分(line-height×0.9かつ4px超)高い=意図しない折り返し
+  // 要素ごとに screen/selector(短縮)/text(先頭40字)/kind/overflowPx を記録し、
+  // (screen, kind, selector, text) で重複排除する(同じ要素を毎手数え直さない)。
+  async scanOverflow(page) {
+    const result = await page.evaluate(() => {
+      const visible = element => {
+        if (!(element instanceof Element)) return false;
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0
+          && rect.width > 0 && rect.height > 0;
+      };
+      const shortSelector = element => {
+        if (element.id) return `#${element.id}`;
+        const classes = (typeof element.className === 'string' ? element.className : '')
+          .trim().split(/\s+/).filter(Boolean).slice(0, 2).join('.');
+        return classes ? `${element.tagName.toLowerCase()}.${classes}` : element.tagName.toLowerCase();
+      };
+      const textOf = element => (element.innerText || element.textContent || '').replace(/\s+/g, ' ').trim();
+
+      const titleScreen = document.getElementById('titleScreen');
+      const activeScreenEl = (titleScreen && visible(titleScreen))
+        ? titleScreen
+        : Array.from(document.querySelectorAll('.screen')).find(visible);
+      const overlayEl = Array.from(document.querySelectorAll('[id*="Overlay"], .overlay, [class*="overlay"], .emr-layer'))
+        .find(visible);
+      const screen = activeScreenEl?.id || (overlayEl ? `overlay:${overlayEl.id || overlayEl.className}` : 'unknown');
+
+      const found = [];
+      const push = (kind, element, overflowPx) => {
+        found.push({
+          kind,
+          overflowPx: Math.max(0, Math.round(overflowPx)),
+          selector: shortSelector(element),
+          text: textOf(element).slice(0, 40),
+        });
+      };
+
+      const allVisible = Array.from(document.querySelectorAll('body *')).filter(visible);
+
+      // (a)(b): 1要素1回のgetComputedStyleで両方判定する
+      for (const element of allVisible) {
+        const text = textOf(element);
+        if (!text) continue;
+        // ニュースティッカー(.news-ticker-bar)は`animation:tickerScroll 40s linear infinite`で
+        // 常時横スクロールする設計上のマーキー(src/index.html:2440-2448、テキストを2連結して
+        // シームレスループさせる仕様)。overflow:hidden+white-space:nowrapは「切れ」ではなく
+        // 意図した挙動であり、ja/en問わず毎ステップ検出されて上位30件を埋め尽くしてしまうため除外する
+        if (element.closest('.news-ticker-bar')) continue;
+        const style = getComputedStyle(element);
+
+        const overflowX = style.overflowX;
+        const isClipStyle = overflowX === 'hidden' || overflowX === 'clip' || style.textOverflow === 'ellipsis';
+        if (isClipStyle && element.clientWidth > 0 && element.scrollWidth > element.clientWidth + 2
+            && !element.querySelector('img, svg, canvas, video')) {
+          push('clip', element, element.scrollWidth - element.clientWidth);
+        }
+
+        if (style.whiteSpace === 'nowrap') {
+          const parent = element.parentElement;
+          if (parent) {
+            const parentStyle = getComputedStyle(parent);
+            if (!/(?:auto|scroll)/.test(parentStyle.overflowX)) {
+              const rect = element.getBoundingClientRect();
+              const parentRect = parent.getBoundingClientRect();
+              const overflowPx = rect.right - parentRect.right;
+              if (overflowPx > 2) push('nowrap', element, overflowPx);
+            }
+          }
+        }
+      }
+
+      // (c): ボタン/タブ/バッジ類を同種(タグ+先頭クラス)でグルーピングし、中央値より
+      // 1行分以上高い個体を意図しない折り返しとして拾う(同種2件だけだと基準が決まらないため3件以上で比較)
+      const groupSelector = 'button, .nav-btn, [class*="badge"], [class*="tab"], [class*="chip"], [class*="pill"]';
+      const groupCandidates = Array.from(document.querySelectorAll(groupSelector)).filter(visible);
+      const groups = new Map();
+      for (const element of groupCandidates) {
+        const firstClass = (typeof element.className === 'string' ? element.className : '')
+          .trim().split(/\s+/).filter(Boolean)[0] || '';
+        const key = `${element.tagName.toLowerCase()}.${firstClass}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(element);
+      }
+      for (const elements of groups.values()) {
+        if (elements.length < 3) continue;
+        const heights = elements.map(element => element.getBoundingClientRect().height);
+        const sortedHeights = [...heights].sort((a, b) => a - b);
+        const median = sortedHeights[Math.floor(sortedHeights.length / 2)];
+        elements.forEach((element, index) => {
+          const lineHeight = parseFloat(getComputedStyle(element).lineHeight) || 16;
+          const diff = heights[index] - median;
+          if (diff >= lineHeight * 0.9 && diff > 4) push('wrap-height', element, diff);
+        });
+      }
+
+      return { found, screen };
+    });
+    this._recordOverflow(result.screen, result.found);
+    return result.found;
+  }
+
+  // (screen, kind, selector, text) で重複排除しつつ画面別・種別集計を積む。
+  // 同じ壊れた要素を毎手数え直すとカウントが手数に比例して水増しされるため、
+  // 「ユニーク要素がいくつ見つかったか」の集計にする(jaExposureByScreenの最大値方式と同じ思想)
+  _recordOverflow(screen, found) {
+    if (!found || found.length === 0) return;
+    for (const item of found) {
+      const key = `${screen}|${item.kind}|${item.selector}|${item.text}`;
+      if (this._seenOverflowKeys.has(key)) continue;
+      this._seenOverflowKeys.add(key);
+      this.overflowRecords.push({ ...item, screen });
+      const bucket = this.overflowByScreen.get(screen) || { byKind: {}, total: 0 };
+      bucket.total += 1;
+      bucket.byKind[item.kind] = (bucket.byKind[item.kind] || 0) + 1;
+      this.overflowByScreen.set(screen, bucket);
+    }
   }
 
   noteProgress(snapshot, now = Date.now()) {

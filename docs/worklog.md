@@ -1,5 +1,60 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-9 — ENモードのレイアウト溢れ検出(走破ハーネスに情報集計を追加)（2026-09-04・worktree agent-ae6330a95762d3c96）
+
+EN訳文はJA比で文字幅が中央値2.4倍という実測を踏まえ、吹き出し(110字上限は設定済み)以外のUI要素(ボタン・ナビタブ・表のセル・バッジ・ヘッダー・モーダルのラベル)で切れ/はみ出し/折り返し崩れが起きていないかを、UI自動走破ハーネスに**情報集計として**追加した。開始前にworktreeブランチをmain先端(`c37225d`、バッチ⑮=P5-2o+P6-7まで)へfast-forward済み。**src/・i18n/・CSS・訳文は一切触っていない**(指示どおり報告のみ、変更は`test/ui-walkthrough/`3ファイル+READMEに限定)。
+
+### 1. 検出ロジック(`test/ui-walkthrough/detectors.js`)
+
+`scanOverflow(page)` を新設し、`scanText()`(既存D3検出)と同じ呼び出し箇所(`driver.js`のwalk本編2箇所+ナビ巡回1箇所)に配線した。3種を検出する。
+
+- **`clip`**: `overflow` が `hidden`/`clip`(または `text-overflow:ellipsis`)で `scrollWidth` が `clientWidth` を2px超えて超過=テキストが物理的に切れている
+- **`nowrap`**: `white-space:nowrap` の要素が、横スクロールを許さない親要素の右端をはみ出している(CSSによる保護が無く実際に箱の外へ描画がはみ出すパターン)
+- **`wrap-height`**: `button`/`.nav-btn`/バッジ/タブ/チップ/ピル類の同種グループ(3件以上)内で、中央値よりおおむね1行分(line-height×0.9かつ4px超)高い=意図しない折り返し
+
+要素ごとに `(screen, kind, selector, text)` で重複排除してユニーク要素数を数える(同じ要素を毎手数え直してカウントが手数に比例して水増しされるのを防ぐ)。**issuesには一切積まない=失敗条件にしない**。`lang`を問わず常時実行するため、ja/enを別々に走らせて同一harnessで直接差分を比較できる(`i18n-miss`/`JA exposure`と違い`options.lang!=='ja'`のゲートを掛けていない)。
+
+**除外した疑陽性**: ニュースティッカー(`.news-ticker-bar`配下。`animation:tickerScroll 40s linear infinite`で常時横スクロールする設計上のマーキー、テキストを2連結してシームレスループさせる仕様=overflowは意図通り)。除外前はティッカーだけで上位30件が埋まり他の知見が全く見えなかったため、検出器側でこのクラスを除外した(1回目のJA試走で発覚→即修正→再試走の順で対応)。
+
+### 2. 実行結果と主要な発見
+
+| 検査 | 結果 |
+|---|---|
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、Actions 328、**digest=`1052faa82eaf7991`(このタスク開始前のベースラインと完全一致・不変を確認)**、Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN、seed42・1季) | ✅ PASS、Actions 416、Issues 0、i18n-miss 16、season=2 week=1まで完走(1季完走維持) |
+| `npm test` | ✅ 260/260 green |
+| `node --check`(detectors.js/driver.js/run.js) | ✅ 全OK |
+
+JAのdigest不変は、`scanOverflow()`が読み取り専用(DOM変更・クリックなし)で走破の手順そのものに影響しないことの実測証拠になっている。
+
+**画面別件数(JA baseline vs EN)**: JA=31件(screen-week 17・screen-show 12・screen-roster 1〜2)、EN=87件(screen-show 39・screen-week 35・screen-roster 6〜8・screen-ranking 5・screen-shachoshitsu 2)。**EN固有の増分は+56件**。
+
+**上位30件の内訳**: 20件が選手名(`pb-fighter-name`/`flink`/`jtc-fn` — JA向け固定幅ラベルに英語フルネームが収まらずellipsis省略、最大+67px)、4件が興行結果の数値バフ内訳(`sp-appeal-bonuses` — `Even`/`Grudge`/`Title`/`Expectation`と単語を綴った訳がJAの一字〜二字ラベルより長く、CSS保護(nowrapのみ・省略記号なし)が無いため実際にはみ出す)、4件がロースター育成余地パネル(`rd-tab-content` — 後述、検出器の疑陽性と判定)、1件が新聞見出しバナー(`a1-wrap`、JA由来と判定)、1件が勝敗タグ(`jtc-win-tag`)。
+
+**`screen-week`のwrap-height 10件はJA側にも同数・同じボタンが同程度の超過pxで存在**(例:「⏩ 週を処理」+24px ↔ "⏩ PROCESS THE WEEK" +24px、「🤖 おまかせ」+19px ↔ "🤖 AUTO" +19px)しており、**EN起因ではなく既存の課題**と判定した(翻訳前から同じボタン群で高さが揃っていなかった)。
+
+**検出器の既知の限界**: `.rd-tab-content`(ロースター詳細の育成余地の説明文)の`wrap-height`4件は疑陽性。`(c)`の対象セレクタ`[class*="tab"]`が「タブ切替ボタン」だけでなく「タブの中身のパネル」にも部分一致してしまい、選手ごとに文章量が違って当然のプローズブロックを固定サイズのコントロールと誤って同グループ扱いしていた。次にこの検出器を触るバッチで`[class*="tab"]`を`-content`/`-panel`系除外の形へ絞るのが妥当(今回は未修正・申し送り)。
+
+**緊急項目はなし**。87件はいずれも表示の可読性・見た目の劣化(名前の省略・数値バフのはみ出し・ボタンの高さ不揃い)で、`D2_FREEZE`のような進行不能・押せないボタンには一件も該当しない。
+
+詳細な分類表(短縮訳で解決/CSS(min-width・折り返し許可・font-size段)で解決/構造変更が要る/対象外)は `docs/i18n-en-layout-overflow-report-v0.1.md` に記載。
+
+### 3. 触ったファイル
+
+- `test/ui-walkthrough/detectors.js` — `scanOverflow()`/`_recordOverflow()`新設、コンストラクタに`overflowByScreen`/`overflowRecords`/`_seenOverflowKeys`追加
+- `test/ui-walkthrough/driver.js` — `scanText()`と同じ3箇所(walk本編2箇所+ナビ巡回1箇所)に`scanOverflow()`を追加配線
+- `test/ui-walkthrough/run.js` — レポート末尾に`Overflow`集計(画面別・種別・上位30件)を出力。lang問わず常時出力
+- `test/ui-walkthrough/README.md` — 使い方セクション追加
+- `docs/i18n-en-layout-overflow-report-v0.1.md` — 報告書本体(新規)
+
+### 4. 残課題(次バッチへ)
+
+1. `.rd-tab-content`の疑陽性(§2後段)。`(c)`のセレクタを`-content`/`-panel`除外へ絞る
+2. **設計判断待ち**: 選手名表示方針(フルネーム表示 vs 姓のみ vs 2行許容)。決まればB分類の複数対象(`pb-fighter-name`/`jtc-fn`/`nm-tag`/`aw-team-name`)に一括適用できる
+3. `.sp-appeal-bonuses`の訳語短縮(Even/Grudge/Title/Expectation → JAと同じ一語慣行)は次の訳文バッチ向けの具体的な修正候補として記録済み
+
+---
+
 ## 🌐 Stage B P5-2o — セリフ英訳バッチ⑮(起用約束63+戴冠62+シーズン回顧61+レンタル加入61+王座陥落61+防衛60+対抗戦申込60+ドラフト関心59+挑戦失敗59+FA歓迎58+スカウト58+対抗戦辞退58+COMMON5 58+ゲームオーバー58+FA契約56+コーチ総括判定56+FA加入57+遺恨試合前56+COMMON3 54+エンディング52+コーチ招聘40+加入挨拶GENERIC 15 = 1,222行)（2026-09-04・Opus主筆 worktree agent-a72deb5fd37f41871）
 
 量産翻訳の第15バッチ。**26テーブルの未訳1,222行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則+③5則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2nの訳語判断(2fのベルト=belt/王座=title、2cの対社長温度Boss/President、seductiveの`ふふ`=Mm・ojousamaは`Hehe`、⑬の「」を落とす方針、⑫§4のコーチ8系統voiceを継承)。開始前にworktreeブランチをmain先端(cf541e2)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2k〜2nと同じ運用)。
