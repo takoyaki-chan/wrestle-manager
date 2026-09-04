@@ -28,17 +28,39 @@
 //       ほぼ100%一貫している — 全288トップレベルテーブルを目視分類した結果、
 //       この命名規則とセリフ/非セリフの実態が完全に一致した)。
 //       これにより新規セリフテーブルが今後追加されても本抽出器は無改修で追随する。
-//    3. 手動の例外(命名規約からの逸脱3件のみ):
+//    3. 手動の例外(命名規約からの逸脱5件のみ):
 //       - EXTRA_INCLUDE: CHALLENGE_REQUEST_OPPONENT_REACTIONS / RIVALRY_MATCH_REACTION
 //         (LINES/DIALOGUE(S)を含まないが実質は選手セリフの配列。サンプル目視で確認)
+//         + FAN_EXPECT_REACTIONS / SPECIAL_EVENT_INTRO
+//         (2026-09-04 P5-2p で追加。specs/i18n-runtime-spec-v1.0.md §10-2 が
+//          「3パイプラインいずれからも見えないテーブル」として起票した2件。
+//          FAN_EXPECT_REACTIONS は観客の声(goodCrowd/badCrowd)と勝者のセリフ
+//          (goodWinner/badWinner = archetype×personality軸)の混成で、後者は
+//          紛れもない選手セリフ。SPECIAL_EVENT_INTRO は INCLUDE_PATH_FILTER で
+//          セリフ部分(coach/fighter)だけに絞る — 下記参照)
 //       - EXTRA_EXCLUDE: EVENT_LINES_BY_KEY
 //         (他の EVENT_*_LINES テーブルへの参照を束ねただけの再エクスポート集約表。
 //          実体を含まないため対象に入れると同一文言が二重計上される)
+//    3b. INCLUDE_PATH_FILTER(2026-09-04 P5-2p): テーブル全体ではなく特定の部分木だけを
+//       セリフ層として扱う。SPECIAL_EVENT_INTRO は1テーブルの中に「大会タイトル・
+//       会場入りナレーション・ボタンラベル」(=UI層 i18n/ui-ledger.json の領分)と
+//       「コーチ/選手のセリフ」が同居するため、後者(coach / fighter 配下)のみを拾う。
+//       両台帳へ同じキーを二重登録すると addDict のマージで後勝ちになり、
+//       どちらの訳が出るかがスクリプト読み込み順に依存してしまうため。
+//    3c. CELL_SUPPRESS_PATHS(2026-09-04 P5-2p): 「軸キーはあるが、それは**話者**の
+//       archetypeではない」パスで cell を強制的に null にする。
+//       COMMON3_LINES.reaction は `reaction.<派閥アーキ>.<新人のarchetype>` という構造で、
+//       末端の archetype キーは**迎えられる新人**の口調(data.js:3052-3053のコメントに明記)、
+//       喋っているのは**派閥リーダー**。素直に拾うと機械検査(ojousama短縮形禁止・cool感嘆符
+//       禁止)がリーダーの発話に新人の属性規約を掛けてしまう(⑮ worklog §8-3 で起票)。
+//       このパス配下でしか出現しない原文は cell=null(=軸不明)として扱う。
+//       ※保持マージ(下記)は既存台帳の cell を優先するが、本抑止はそれより強く、
+//         既に cell が入っている行も null へ戻す(誤ったセルを残さないため)。
 //    4. 意図的に対象外とした「LINES/DIALOGUE(S)を含まない」隣接テーブル群
 //       (ファン・観客の声/ナレーション/ラベル/固有名詞リスト等)は
 //       dialogue-tone-spec-v1.0 §5 の「対象外: 話者不特定の軸なしセリフ(ファンの声等)」
 //       に該当するか、そもそも「セリフ」ではなくUIラベル・ナレーション・固有名詞であるため
-//       (例: FAN_EXPECT_REACTIONS=ファンの声/WEEKLY_STORY_TICKER・CAMP_FLAVOR_TEXTS・
+//       (WEEKLY_STORY_TICKER・CAMP_FLAVOR_TEXTS・
 //       SNAPSHOT_TEXTS等の"_TEXTS"/"_TICKER"/"_EVENTS"系=第三者視点のナレーション/
 //       ALL_CHARS・ALL_COACHES・VENUES・TITLES等=固有名詞/INJURY_LABEL・
 //       RIVALRY_THRESHOLDS・TRAIT_DEFS等=UIラベル・ツールチップ)。
@@ -125,8 +147,32 @@ const DIALOGUE_FILES = [
 
 const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
 
-const EXTRA_INCLUDE = new Set(['CHALLENGE_REQUEST_OPPONENT_REACTIONS', 'RIVALRY_MATCH_REACTION']);
+const EXTRA_INCLUDE = new Set([
+  'CHALLENGE_REQUEST_OPPONENT_REACTIONS',
+  'RIVALRY_MATCH_REACTION',
+  'FAN_EXPECT_REACTIONS',   // P5-2p(§10-2)
+  'SPECIAL_EVENT_INTRO',    // P5-2p(§10-2)。INCLUDE_PATH_FILTER でセリフ部分のみ
+]);
 const EXTRA_EXCLUDE = new Set(['EVENT_LINES_BY_KEY']);
+
+// テーブル名 -> (pathKeys) => 拾うか。未登録のテーブルは全部拾う(従来どおり)。
+// pathKeys はテーブル直下から数えたオブジェクトキー列(配列インデックスは含まない)。
+const INCLUDE_PATH_FILTER = {
+  // 大会タイトル/travelLine/nextLabel はUI層(i18n/ui-ledger.json)の領分なので拾わない
+  SPECIAL_EVENT_INTRO: (pathKeys) => pathKeys.indexOf('coach') >= 0 || pathKeys.indexOf('fighter') >= 0,
+};
+
+// 「軸キーが話者のarchetypeではない」パス。配下の原文は cell=null で台帳へ入れる。
+const CELL_SUPPRESS_PATHS = new Set(['COMMON3_LINES.reaction']);
+
+function isCellSuppressed(tableName, pathKeys) {
+  if (!CELL_SUPPRESS_PATHS.size) return false;
+  const full = [tableName].concat(pathKeys).join('.');
+  for (const p of CELL_SUPPRESS_PATHS) {
+    if (full === p || full.startsWith(p + '.')) return true;
+  }
+  return false;
+}
 
 function isDialogueTableName(name) {
   if (EXTRA_EXCLUDE.has(name)) return false;
@@ -264,11 +310,12 @@ function cellKey(cell) {
 //    ID軸ノードはvocab軸ノードと排他(charId集合がarchetype/personality語彙と衝突する
 //    ことは実データ上ない安全策)。
 // ──────────────────────────────────────────────────────────────────────
-function walkStrings(value, axis, idAxisSegments, charIdCellMap, onString) {
+function walkStrings(value, axis, idAxisSegments, charIdCellMap, onString, pathKeys) {
+  const keyPath = pathKeys || [];
   if (typeof value === 'string') {
-    onString(value, axis, idAxisSegments);
+    onString(value, axis, idAxisSegments, keyPath);
   } else if (Array.isArray(value)) {
-    value.forEach((v) => walkStrings(v, axis, idAxisSegments, charIdCellMap, onString));
+    value.forEach((v) => walkStrings(v, axis, idAxisSegments, charIdCellMap, onString, keyPath));
   } else if (value && typeof value === 'object') {
     const keys = Object.keys(value);
     const isIdAxisNode = charIdCellMap
@@ -288,7 +335,7 @@ function walkStrings(value, axis, idAxisSegments, charIdCellMap, onString) {
         };
       }
       const nextIdAxis = isIdAxisNode ? idAxisSegments.concat([k]) : idAxisSegments;
-      walkStrings(value[k], nextAxis, nextIdAxis, charIdCellMap, onString);
+      walkStrings(value[k], nextAxis, nextIdAxis, charIdCellMap, onString, keyPath.concat([k]));
     });
   }
 }
@@ -329,10 +376,10 @@ function main() {
   const skippedCandidates = []; // LINES/DIALOGUE(S)命名に一致しなかった隣接テーブル(参考記録)
   let dialogueTableCount = 0;
 
-  function record(text, fileName, tableName, axis, idAxisSegments) {
+  function record(text, fileName, tableName, axis, idAxisSegments, cellSuppressed) {
     if (typeof text !== 'string' || !text) return;
     let entry = ledgerMap.get(text);
-    const cell = resolveCell(axis, idAxisSegments, charIdCellMap);
+    const cell = cellSuppressed ? null : resolveCell(axis, idAxisSegments, charIdCellMap);
     if (!entry) {
       entry = {
         key: text,
@@ -347,6 +394,7 @@ function main() {
     }
     entry.filesSet.add(`${fileName}:${tableName}`);
     entry.count++;
+    if (cellSuppressed) entry._sawSuppressed = true;
     entry.cellCandidates.add(cellKey(cell));
     if (cell && !entry._cellObj) entry._cellObj = cell;
     else if (cell && entry._cellObj && cellKey(cell) !== cellKey(entry._cellObj)) entry._cellObj = 'CONFLICT';
@@ -377,8 +425,10 @@ function main() {
       }
       dialogueTableCount++;
       let extracted = 0;
-      walkStrings(table, { archetype: null, personality: null }, [], charIdCellMap, (text, axis, idAxisSegments) => {
-        record(text, fileName, name, axis, idAxisSegments);
+      const pathFilter = INCLUDE_PATH_FILTER[name] || null;
+      walkStrings(table, { archetype: null, personality: null }, [], charIdCellMap, (text, axis, idAxisSegments, pathKeys) => {
+        if (pathFilter && !pathFilter(pathKeys)) return;
+        record(text, fileName, name, axis, idAxisSegments, isCellSuppressed(name, pathKeys));
         extracted++;
       });
       perTableStats.push({ file: fileName, table: name, extracted });
@@ -389,6 +439,7 @@ function main() {
   let preservedEnCount = 0;
   let preservedCellCount = 0;
   let newlyResolvedCellCount = 0;
+  let suppressedCellCount = 0;
 
   const ledger = Array.from(ledgerMap.values())
     .map((e) => {
@@ -398,7 +449,12 @@ function main() {
       const en = existingEn.trim() ? existingEn : e.en;
       if (existingEn.trim()) preservedEnCount++;
       let cell;
-      if (existing && existing.cell) {
+      // CELL_SUPPRESS_PATHS 配下でしか出現しない原文は、既存台帳にcellがあっても null へ戻す
+      // (話者ではない軸キーを拾った誤ったセルを残さないため。保持マージより強い)
+      if (e._sawSuppressed && !cellResolved) {
+        cell = null;
+        suppressedCellCount++;
+      } else if (existing && existing.cell) {
         cell = existing.cell;
         preservedCellCount++;
       } else {
@@ -430,7 +486,7 @@ function main() {
   console.log(`[i18n-extract-dialogue] 台帳を生成しました: ${path.relative(ROOT, OUT_PATH)}`);
   console.log(`[i18n-extract-dialogue] 対象テーブル数=${dialogueTableCount} 総行数(ユニークキー)=${total} (生抽出総数=${rawTotal})`);
   console.log(`[i18n-extract-dialogue] hasProperNoun=${properCount} hasPlaceholder=${placeholderCount} cell判定済み=${cellResolvedCount} (${total ? Math.round(cellResolvedCount / total * 1000) / 10 : 0}%)`);
-  console.log(`[i18n-extract-dialogue] マージ: 既存台帳${existingLedger.size}件 / en保持=${preservedEnCount} / cell保持=${preservedCellCount} / cell新規解決=${newlyResolvedCellCount}`);
+  console.log(`[i18n-extract-dialogue] マージ: 既存台帳${existingLedger.size}件 / en保持=${preservedEnCount} / cell保持=${preservedCellCount} / cell新規解決=${newlyResolvedCellCount} / cell抑止(話者非一致パス)=${suppressedCellCount}`);
   console.log('[i18n-extract-dialogue] ファイル別テーブル数:');
   const byFile = {};
   perTableStats.forEach((s) => { byFile[s.file] = (byFile[s.file] || 0) + 1; });

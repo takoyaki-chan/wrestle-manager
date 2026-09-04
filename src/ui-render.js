@@ -9415,12 +9415,14 @@ function _getKurodaNewsComment(storyType) {
   if (typeof KURODA_NEWS_COMMENT !== 'undefined' && KURODA_NEWS_COMMENT[storyType]) {
     return KURODA_NEWS_COMMENT[storyType];
   }
-  // フォールバック: インライン汎用コメント
-  return [
-    () => '業界の動きは速い。目を離す暇はない',
-    () => '他団体の動向は、回り回って我々にも影響する',
-    () => '注視すべきニュースだ',
-  ];
+  // フォールバック: 既定プール(kuroda-text.js の KURODA_NEWS_COMMENT._default)。
+  // 2026-09-04(P5-2p): 以前はこの関数の中にインライン配列を直書きしていたが、
+  // トップレベルのテーブルでないため test/i18n-extract-templates.js の走査に載らず、
+  // 英語モードで日本語のまま出ていた(specs §10-2)。文面・並び順は不変。
+  if (typeof KURODA_NEWS_COMMENT !== 'undefined' && KURODA_NEWS_COMMENT._default) {
+    return KURODA_NEWS_COMMENT._default;
+  }
+  return [];
 }
 
 // ── 興行総合評価セクション ──
