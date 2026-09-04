@@ -8780,6 +8780,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "他団体の動向は、回り回って我々にも影響する",
+    "en": "What the other promotions do comes back around and reaches us too.",
+    "files": [
+      "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "他団体の王座移動は対岸の火事ではない。競争相手の顔ぶれが変わるということだ",
     "en": "A title moving at another promotion is not somebody else's fire. It means the faces of the competition have changed.",
     "files": [
@@ -11570,6 +11580,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "業界の動きは速い。目を離す暇はない",
+    "en": "The business moves fast. There is no spare moment to look away.",
+    "files": [
+      "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "業界の盟主と書いておく。書きすぎたら次号で訂正するが、現時点では事実だ",
     "en": "The flag carrier of the business — this paper will say so in print. If that runs too far, a correction goes in the next issue. As of today it is fact.",
     "files": [
@@ -12027,6 +12047,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "注視すべきニュースだ",
+    "en": "This is news that bears watching.",
+    "files": [
+      "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {

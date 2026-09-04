@@ -6428,7 +6428,8 @@ const App = {
     };
     Audio.play('link');
     refreshAll();
-    showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive',
+    // i18n(P5-2p): pickCoachVoiceQuote は内部で t() 済みの完成文を返す → speechTranslated で二重t()回避
+    showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'positive', speechTranslated: true,
       speech: pickCoachVoiceQuote('coachHire', coachId), detail: WM_I18N.t('🎓 {name}がコーチとして加入！（雇用費: {fee}万、決裁枠 -{dp}）', { name: coach.name, fee, dp: dpCost }) });
   },
 
@@ -6471,7 +6472,8 @@ const App = {
     };
     Audio.play('unlink');
     refreshAll();
-    if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative',
+    // i18n(P5-2p): pickCoachVoiceQuote は内部で t() 済み → speechTranslated で二重t()回避
+    if (coach) showEventPopup({ type:'coach', id:coachId, name:coach.name, tone:'negative', speechTranslated: true,
       speech: pickCoachVoiceQuote('coachFire', coachId), detail: WM_I18N.t('{name}がチームを去りました', { name: coach.name }) });
   },
 
@@ -10862,7 +10864,9 @@ const App = {
         type: 'fighter', id: winnerId, name: winnerName,
         tone: isGood ? 'gold' : 'neutral',
         speech: winnerLine,
-        detail: WM_I18N.t('📣 {text}', { text: crowdText }),
+        // i18n(P5-2p): crowdText は FAN_EXPECT_REACTIONS の生JA。t() の params は訳されないので
+        // ここで先に1回訳してから差し込む(speech 側は _u3bSideHtml が訳すので生JAのままでよい)
+        detail: WM_I18N.t('📣 {text}', { text: WM_I18N.t(crowdText) }),
         autoCloseMs: 2500,
       }), i * 100);
     });

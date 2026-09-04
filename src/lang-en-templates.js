@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー1490件、訳文あり1490件)
+//  生成元: i18n/template-ledger.json (総キー1493件、訳文あり1493件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -895,6 +895,7 @@
     "今日の興行代、返してほしいというファンの気持ちは理解できる": "If a fan wants tonight's money back, I understand the feeling.",
     "今興行のベストバウトはこの試合かもしれない": "This may be the best bout on tonight's show",
     "他の試合見ても物足りなく感じるくらい{playerName}が別格": "{playerName} is so far ahead that other matches feel thin by comparison",
+    "他団体の動向は、回り回って我々にも影響する": "What the other promotions do comes back around and reaches us too.",
     "他団体の王座移動は対岸の火事ではない。競争相手の顔ぶれが変わるということだ": "A title moving at another promotion is not somebody else's fire. It means the faces of the competition have changed.",
     "他団体の若手が力をつけている。将来の脅威になりうる": "The young ones at other promotions are getting stronger. That is a threat forming.",
     "他団体の試合レベルが上がっている。競争は激化する一方だ": "The standard of the matches at other promotions is rising. The competition only gets harder.",
@@ -1174,6 +1175,7 @@
     "業界には、こういう関係も必要だ。派手ではないが、確実に互いを高め合う——本紙としては、もっと注目されてもいいと書いておく。": "The business needs relationships like this one too. Nothing loud, and each of them reliably raises the other — this paper will put it in print that it deserves more attention.",
     "業界には盟主が必要だ。{playerName}はその役割を見事に果たしている。{rivalName}との差は構造的なもので、ちょっとやそっとでは埋まらない。本紙としては、この差を維持するだけでは物足りない、と書いておく。世界に通用する団体を目指すフェーズに入っているはずだ": "The business needs a flag carrier. {playerName} is filling that role admirably. The gap to {rivalName} is structural and will not close on a small effort. This paper will put it on record that holding the gap is no longer enough. They should be in the phase of aiming at a promotion that would hold up anywhere in the world.",
     "業界の中堅戦線、目が離せない": "The mid-card front of the business, impossible to look away from",
+    "業界の動きは速い。目を離す暇はない": "The business moves fast. There is no spare moment to look away.",
     "業界の盟主と書いておく。書きすぎたら次号で訂正するが、現時点では事実だ": "The flag carrier of the business — this paper will say so in print. If that runs too far, a correction goes in the next issue. As of today it is fact.",
     "業界の通常運転": "The ordinary running of the business",
     "業界トップを目指せる位置にいる。胸熱でしかない": "We're in position to go for number one in the business. Chills",
@@ -1220,6 +1222,7 @@
     "決着戦でも、話し合いでも消えなかった火がある。「{factionAName}」と「{factionBName}」の対立は、もはや{org}の風土の一部と化した。ファンはこの緊張を目当てに会場へ足を運ぶ。憎悪も、長く続けば名物になる。": "Some fires go out neither in a decider nor at a table. The feud between {factionAName} and {factionBName} has become part of the weather at {org}. Fans buy tickets for that tension now. Hate, if it runs long enough, becomes part of the attraction.",
     "決着放棄上等の塩試合フラグ立ってない？": "Anyone else smell a time-limit draw and a nothing match coming?",
     "波乱。{winnerName}がこの勝利で一気にステージを上げた": "An upset. This win moves {winnerName} up a stage at once",
+    "注視すべきニュースだ": "This is news that bears watching.",
     "派閥が割れたいま、{charA}と{charB}の確執は団体全体の構図を象徴するものになった。{matches}度のリングが、それぞれの陣営の士気と直結している——そういう試合になっている。本紙としては、これを「商品価値」と呼ぶのが正確かもしれない。": "With the factions split, what is between {charA} and {charB} has come to stand for the shape of the whole promotion. A {matches}-match record now runs straight into the spirit of each camp. That is what these matches have become. This paper suspects value is the accurate word for it.",
     "派閥が割れた今、{charA}と{charB}の対戦は団体全体の構図を凝縮するものになった。{matches}度の運命的な距離が、抗争の構図によってついに正面から組まれる。本紙としては、この一戦の結果が両派閥の今後を決定づけると見ている。": "With the factions split, a match between {charA} and {charB} now concentrates the shape of the whole promotion. A {matches}-match run of fated distance is finally booked head on by the logic of the feud. This paper reads the result of this one as deciding where both factions go.",
     "派閥が割れた今、{charA}と{charB}は別の旗の下に立つことになった。{matches}度の名勝負を共に作ってきた二人にとって、これは複雑な状況だ。「リングでは敵、控室では友」という器用さが、いま試されている——本紙はそう見ている。": "With the factions split, {charA} and {charB} stand under different flags. For two who built a {matches}-match run of great matches together, that is a complicated place to be. The deftness of enemies in the ring and friends in the locker room is being tested now. That is how this paper reads it.",

@@ -1,5 +1,156 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2p — セリフ英訳 **最終バッチ⑯**(残1,054行+抽出漏れ3表130行=1,184行)でセリフ層16,674行を完訳 / ト書き312行を`*…*`へ統一 / 配線穴11件を根治（2026-09-04・Opus主筆 worktree agent-aab907bb7c0abd59b）
+
+**P5(セリフ層)完了**。台帳16,674行の**未訳が0**になった。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。§4-6のネイティブ検品①7則+②8則+③5則を含む)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`docs/en-kuroda-style-draft-v0.1.md`(Bの黒田3行)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2oの訳語判断を継承。開始前にworktreeブランチをmain先端(c37225d)へfast-forward済み。
+
+本バッチは翻訳だけでなく**基盤の穴を4種まとめて塞いだ**: (A)残り全行の英訳 (B)3抽出パイプラインいずれからも見えなかった3テーブルの台帳化(specs §10-2の宿題) (C)ト書き表記の割れ一掃(⑮ §8-1の宿題) (D)`COMMON3_LINES.reaction`のセル誤判定(⑮ §8-3の宿題)。
+
+### 1. 対象範囲(1,184行 = 未訳1,054 + B追加130)
+
+| テーブル | 行数 | 軸 | 場面 |
+|---|---|---|---|
+| `data.js:COMMON1_LINES` | 98 | category(4)×派閥(7)×archetype | 派閥内対決の打診 |
+| `data.js:FAN_EXPECT_REACTIONS` | **87(B)** | 観客9 + archetype×personality | ファン期待カードの試合後反応 |
+| `data.js:PPV_SUMMIT_VICTORY_LINES` | 46 | archetype×personality | PPV頂上決戦の勝利 |
+| `data.js:PPV_OPPONENT_LINES` | 43 | archetype×personality | PPVの対戦相手コメント |
+| `data.js:SPECIAL_EVENT_INTRO` | **43(B)** | 大会5×coach/fighter(3種) | 特別興行の導入(コーチ→選手) |
+| `data.js:AWAY_CHALLENGE_RESULT_LINES` | 42 | 結果2×archetype | 遠征3連戦の結果 |
+| `data.js:FACTION_IGNITE_LINES` | 42 | provoke/respond×archetype | 派閥抗争の点火 |
+| `data.js:GLIMPSE_HOTSTREAK_END_LINES` | 41 | archetype×personality | 絶好調の終わり |
+| `data-faction-dialogue.js:FACTION_F08_PRE_MATCH_LINES_A` | 41 | archetype×personality×帯 | 派閥対決の試合前(挑む側) |
+| `data.js:BREAKTHROUGH_LINES` | 39 | archetype×personality | 限界突破 |
+| `data.js:MOTIVATION_LOSS_LINES` | 38 | archetype×personality | 意欲喪失 |
+| `data.js:SLUMP_END_LINES` / `FIRST_MEET_LINES` | 37 / 37 | archetype×personality | スランプ脱出 / 初対戦 |
+| `data.js:BT_HINT_LINES` / `MOTIVATION_RECOVERY_LINES` | 35 / 35 | archetype×personality | 突破の予兆(内心) / 意欲回復 |
+| `data-faction-dialogue.js:FACTION_F08_*` 残3表 | 32+31+30 | archetype×personality×HP帯 | 派閥対決の敗者/受ける側/勝者 |
+| `data.js:TENCHOSEN_PREEVENT_LINES` | 31 | coach(5系統)+archetype | 天頂戦の前週 |
+| `data.js:HEAT_STATE_COACH_LINES` | 21 | fresh/warm/heavy(`{name}`入り) | 練習熱のコーチ所見 |
+| `data.js:RELEASE_INTERVIEW_LINES` / `CHALLENGE_ARRIVAL_LINES` | 21 / 21 | archetype | 解雇の弁 / 果たし状の口上 |
+| `data-faction-dialogue.js:FACTION_F05_DISSIDENT_LINES` | 20 | archetype×personality | 派閥内の不満分子 |
+| `data.js:CHOICE_EVENT_RESULT_DIALOGUES` | 19 | E1×accept/recommend×セル | メディア出演の結果 |
+| `data-faction-dialogue.js:INTERNAL_CHALLENGE_*` 4表 | 18+18+10+9 | archetype×personality×HP帯 | 派閥内下剋上 |
+| `data.js:RETIREMENT_CHAMPION_WORRY_LINES_ARCHETYPE` | 17 | archetype | 王者のまま引退を迷う |
+| `coach-lines.js:COACH_VOICE_PRAISE/HIRE/FIRE_LINES` | 16+16+8 | voiceKey(8) | コーチ称賛/雇用/解雇 |
+| `data-faction-dialogue.js:FACTION_F06/F08/F09_*` 8表 | 15×3+11+9+8+7+7+4 | archetype×personality×帯 | 和解の兆し/対立/派閥全面戦 |
+| `data.js:CHALLENGE_REQUEST_NO_LINES` / `CRISIS_DIALOGUE` | 14 / 12 | archetype | 直訴の見送り / 経営危機 |
+| `data.js:BIG_NEWS_LEAD_LINES` / `SEASON_OPENING_NEWS_LEAD_LINES` | 11 / 3 | 記事type(地の文) | 号外リード / 新年号リード |
+| `coach-lines.js:FIGHTER_INVITE_GRAD(_NORMAL)/INVITE_AWAKENING_LINES` | 7+2+2 | archetype / ナレーション | 招聘コーチ卒業・開眼 |
+| **合計** | **1,184** | | |
+
+- **セル判定内訳**(1,184行): standard 409 / polite 122 / seductive 109 / ojousama 106 / delinquent 101 / composed 98 / cool 86 / **null 153**
+- **`cell` の追記は0件**。null 153行は所有全表を歩いて確認した結果すべて **null が正しい**: (a)`SPECIAL_EVENT_INTRO` 43 + `HEAT_STATE_COACH` 21 + `COACH_VOICE_*` 40 + `TENCHOSEN_PREEVENT.coach` 10 + `COMMON1.coachReport` 7 = **121行はコーチ/大会軸でarchetypeを持たない** (b)`BIG_NEWS_LEAD` 11 + `SEASON_OPENING` 3 + `INVITE_AWAKENING` 2 = **地の文** (c)`FAN_EXPECT` の goodCrowd/badCrowd 9行 = **観客の声**(話者不特定) (d)`FIGHTER_INVITE_GRAD_NORMAL` 2 = 軸なしフォールバック (e)残5行は**同一原文が2セルに再利用されて判定が割れる**行(`……話すことは、もうない` が standard.quiet と cool.quiet に、`……始めようか` が cool.normal と cool.quiet に、等)
+- `files.length>1` の共有未訳行は**0件**(⑬で掃討済み)
+
+### 2. B — 3抽出パイプラインいずれからも見えなかった3テーブルを台帳へ(specs §10-2)
+
+| 対象 | 穴の理由 | 対処 |
+|---|---|---|
+| `data.js:FAN_EXPECT_REACTIONS`(89行・うち新規87) | 定数名に`LINES`/`DIALOGUE(S)`を含まず、`test/i18n-extract-dialogue.js`の命名判定から漏れていた | **`EXTRA_INCLUDE`に追加**。goodWinner/badWinnerはarchetype×personality軸の紛れもない選手セリフ |
+| `data.js:SPECIAL_EVENT_INTRO`(43行) | 同上。ただし1テーブルの中に**UI層の文字列(大会タイトル/travelLine/nextLabel 15行)と選手・コーチのセリフが同居**する | **`EXTRA_INCLUDE` + 新設の`INCLUDE_PATH_FILTER`** で `coach`/`fighter` 配下だけを拾う。UI層15行は `i18n/ui-ledger.json` の領分なので**あえて拾わない**(両台帳へ同じキーを二重登録すると`addDict`のマージで後勝ちになり、どちらの訳が出るかがスクリプト読み込み順に依存してしまう) |
+| `ui-render.js:_getKurodaNewsComment` のインライン配列(3行) | 関数ローカルのリテラル配列でトップレベル`const`テーブルでないため、テンプレ抽出器の対象13表に入らない | **`kuroda-text.js:KURODA_NEWS_COMMENT._default` へ移設**。文面・並び順・配列長(3本)は1文字も変えていない(`Engine.rng.pick`の添字が変わらない)。`ui-render.js`側は`KURODA_NEWS_COMMENT._default`を返すだけにした。**template-ledgerが1,490→1,493行**になり、黒田英文体で訳出(`node test/i18n-build-template-dict.js` green・未訳0) |
+
+- **抽出器の再実行で既存en欠損は0件**。`node test/i18n-extract-dialogue.js` の実行前後を機械比較して **en変更0 / 削除0 / 新規130行 / files+count変更2行**(`……ありがとう`と`……次だ`が`FAN_EXPECT_REACTIONS`にも出現するため`files`が1件増えた)であることを確認した
+- `i18n-ratchet` は **kuroda-text.js +3 / ui-render.js -3 の移動**として基準を更新した(`totalJaStrings=28,083` は不変。増加ではなくファイル間の移動なので `--update` の正当条件に該当)
+
+### 3. C — ト書き312行を `*…*` へ統一(検品③・⑮ §8-1の宿題)
+
+台帳のJA原文が**全角括弧「（…）」を含む行を機械列挙して380行**。うち既訳336行の内訳は **`(…)`形式312 / `*…*`形式24**(⑮23+アンカー1)で、`EVENT_TITLE_DEFENSE_LINES` のように**同じテーブルの中で表記が割れていた**。312行を**1行ずつ目視して**変換した。
+
+変換規約(バイブル §4-6 検品③+⑮の既存24行の形に合わせた):
+- `(...)` → `*...*`、**先頭大文字**、**末尾ピリオドなし**、内部のピリオドは残す
+- **三人称の主語 she/he は落とす**(`(she holds out a hand)` → `*Holds out a hand*`)。**所有格・従属節の her/she は残す**(`*Presses her cheek to the belt*` / `*Staring at an opponent she already finished*` — ⑮の既存24行がその形)
+- **括弧の内側先頭にある「…」は外へ出す**(`(...lowers her eyes, quietly)` → `... *Lowers her eyes, quietly*`)。アンカー `... *Silently clenches fist*` と同じ形になる
+- 機械変換のあと**5行を手直し**した: 内部の文頭が小文字だった1行(`*No words. she only...*` → `She`)/主語落としで英語が壊れる4行(`(is lost for words a while)` → `*Lost for words a while*` / `(she has no idea what just happened)` → `*No idea what just happened*` / `(she's laughing, her eyes aren't)`×2 → `*Laughing, but not with her eyes*`)
+- 新規訳44行も同じ形で書いた(`BT_HINT_LINES` の内心モノローグを含む)
+- **検証**: 実ランタイムで380行全部を`t()`に通し、**ENに`()`残り0 / `*…*`あり380**を確認
+
+### 4. D — `COMMON3_LINES.reaction` のセル誤判定を抽出器で根治(⑮ §8-3の宿題)
+
+`COMMON3_LINES.reaction.<派閥アーキ>.<archetype>` の末端キーは **迎えられる新人の口調**(data.js:3052-3053のコメントに明記)で、**喋っているのは派閥リーダー**。抽出器はパス上の軸キーをそのまま話者のセルとして拾うため、機械検査がリーダーの発話に新人の属性規約(ojousamaの短縮形禁止・coolの感嘆符禁止)を掛けていた。
+
+抽出器に **`CELL_SUPPRESS_PATHS`**(既定 `COMMON3_LINES.reaction`)を新設し、このパス配下でしか出現しない原文は `cell=null` にする。**保持マージ(既存台帳のcellを優先する)より強い抑止**にしてあり、既に入っていたcellもnullへ戻す(誤ったセルを残さないため)。実行結果は**40行がcell=null化**(1行は同一原文が`newcomer`側にも出るため既存判定が正)。訳文は変えていない(⑮が規約に合わせて書いていたので検査は元から通る)。
+
+`walkStrings` に `pathKeys`(テーブル直下からのオブジェクトキー列)を通す最小変更で、B の `INCLUDE_PATH_FILTER` と同じ経路を使う。
+
+### 5. 翻訳の方針
+
+- **`COMMON1_LINES` 98行は「リングで片を付ける」という一つの決定を7派閥×7属性で言い換える表**。同じ日本語の骨格が49回繰り返されるので、**派閥ごとに動詞を変えて均質化を避けた**(AUTHORITY=`settle`/`the custom of this house` / BOND=`empty it out` / MERIT=`Rank gets decided` / HEEL=`tear each other up`+`product`/`merchandise` / FACE=`sharpening each other` / COMBAT=`fists` / `_any`=`clear this one up`)。`組ませる`は**book**(カード編成の英語)で統一
+- **`FAN_EXPECT_REACTIONS` は「観客の声」と「勝者の弁」を別の文体で書いた**。観客(goodCrowd/badCrowd)は**三人称の感想**として短く(`This is what I came for!`)、勝者は通常のセル規約。`期待に応える`は **answer**(`live up to` / `answer what you hoped for`)で通した
+- **`SPECIAL_EVENT_INTRO` のコーチ10行は社長への報告なので一律 Boss**(⑮のコーチ規約を継承)。大会名は固有名詞ドラフト確定分に従い **Autumn Gauntlet War(本文では the Gauntlet) / Spring Tag League / U-20 Junior Tournament / Tenchosen / PPV GRAND FINAL**
+- **`HEAT_STATE_COACH_LINES` 21行は「体に入るか入らないか」で全文を組んだ**。`入っていかない`=`isn't going in`、`効きが落ちる`=`the effect falls off`、`素通り`=`passes straight through` — 練習の手応えをコーチの生活語で言う形に揃え、`{name}` は**必ず文頭または主語位置**に置いた(英語の語順で自然に読めるように)
+- **`BIG_NEWS_LEAD_LINES`/`SEASON_OPENING_NEWS_LEAD_LINES` 14行は選手セリフではないので地の文**(ナレーション方針どおり格言化しない・事実記述)。`号外` は **EXTRA**(`i18n/ui-ledger.json` の既訳と揃えた。マストヘッドの語なので ALL CAPS 禁止の例外)、`新年号` は **Season opener**(同ledgerの`新年号 `=`Season Opener`に追随)
+- **`BT_HINT_LINES` の内心モノローグは `*…*` で囲んだ**(C の規約と同じ)。`——` は `—` を維持し、`体が勝手に動く`は`My body moves on its own`
+- **コーチ40行(PRAISE/HIRE/FIRE)は⑫確定の8系統voiceに従った**(roshi=`So be it.`/命令形 / tosho=規律の完全文 / bukotsu=`...`起点の断片 / seihitsu=同じ断片を丁寧な完全文で / mentor=見守りの緩衝 / oyaji=`you know`+間投詞 / anego=世話焼きの直言 / theorist=計測語彙)。**JAで内容がほぼ同一のroshi/tosho・bukotsu/seihitsu・oyaji/anegoの3ペアは英語では別の道具で差を付けた**(例: `「そうか。……達者でな」`=`So be it. ...Keep well, now.` ↔ `「そうか。達者で」`=`So be it. Keep well.`)
+- **`「」`括りのコーチセリフ40行は引用符を落とした**(⑬で確立した「吹き出しの中は台詞そのもの」方針)
+- **属性=register**: ojousama=**全106行で短縮形ゼロ** / cool=**全86行で感嘆符ゼロ・最大3文** / delinquent=冠詞主語の省略+gonna/wanna / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻+`Mm` / standard=特徴を足さない
+- **§4-6の検品ルール適用**: 応援=**support** / **`maybe`は文頭のみ** / 格上格下=better/worse / `undefeated` 0 / `Fufu`音写0 / 「今日の私」型0 / 「〜も」のtoo直訳0 / **禁止定型0**(`I'll do my best`は1行書き直し=`ほんとに……！？ 嬉しい……っ……頑張ります……！`→`...I won't waste this...!`) / `That's all.`不採用 / 英国綴り0(`smoulder`→`simmer`、`programme`→`program` を各1件書き直し) / ALL CAPS 0(EXTRAのみ既訳準拠) / `♪`は原文と同数(3行)
+- **卑語**: hell/damn は**1,184行中5回**、すべて delinquent 確定セル。f/sワードは0。標準帯の `……くそっ……` は `...Nngh...` に置き換えた(cellがstandardなので機械検査対象)
+- **長さ**: 全1,184行が110字上限内(**最大110字・中央値50字**・EN/JA文字数比 2.41)
+
+### 6. 均質化回避
+
+事前検査(自作 `check.js`。scratchpad の専用サブディレクトリ `p52p/` に隔離)で**バッチ内の完全重複・近似重複(トークンJaccard≥0.90)と、既訳15,490行との完全/近似重複を全数照合**し、**検出16件をすべて書き直した**。最終的に**バッチ内EN完全重複0・近似重複0・既訳との完全重複0・近似重複0**。
+
+書き直しの型は2つ。(a)**短い相槌が既訳と衝突**(`……わかった。`→`...Understood.`が既訳`……分かった`と衝突→`...All right, then.` / `……ええ`→`...Yes.`が`…はい。`と、`...Yeah.`が`…ああ`と二段で衝突→`...Mm. Understood.` / `……時間だ`→`...It's time.`が`…潮時だ`と衝突→`...Time's up.` / `……はい`→`...Okay.`が`……うん`と、`...I'm ready.`が`…準備は、できています`と衝突→`...Yes. I'll go.`)。(b)**JAが双子の行**(`「……そうですか。お世話になりました」`と既訳`……そうか。お世話になった` / `もう二度と、こっちに楯突かないことね`と既訳`もう二度と歯向かわないことね` / `ご指名、ありがとうございます。精一杯やります`と既訳`お選びいただき、ありがとうございます。精一杯頑張ります`)。
+
+同じ場面に7属性が並ぶ表では**同じ日本語に同じ英語を当てない**方針を徹底した。例: `もっとやれたはず`系11本は `I had more in me / There was more left in me / I should have given more / I could have given more / I know I could have tried harder` の5系統へ属性で割り、`戻ってきた`系(SLUMP_END)は `I'm finally back / I've returned / I have come back / Back where I was / I have made it back` に散らした。
+
+### 7. 発見して直した配線穴11件
+
+並行して全48テーブルの消費点を grep で列挙し、表示点まで1本ずつ追った(呼び出し元を全部数えてから直す)。**24テーブルは元から正しく届いていた**(`_u3bSideHtml`/`_mdlASubjectStage`/`showEventPopup`/`_pbFighterBlock` に生JAで渡し、表示点が唯一のt()を持つ形)。残る穴は以下の11件で、**すべてUI層**(Engine側のセレクタは全て生JAを返しており修正不要)。
+
+| # | 箇所 | 型 | 症状 | 修正 |
+|---|---|---|---|---|
+| 1 | `ui-common.js:1461`(`showBigNewsPopup`) | **PH事前置換+t()なし** | `BIG_NEWS_LEAD_LINES`/`SEASON_OPENING_NEWS_LEAD_LINES` **14行が t() を一度も通らず**、さらに`{mq}`を先に埋めていた | `WM_I18N.t(...)` を `.replace(/\{mq\}/g,…)` の**前**に置いた |
+| 2 | `ui-common.js:8304` | **表示点にt()なし** | `BT_HINT_LINES` **35行が生JAのままDOMへ**(`${ev.btHint}`)。t()を持つ別経路(`:8260`)は`_renderNextGrowthPopup`の早期returnで**到達不能**だった | `${WM_I18N.t(ev.btHint)}` |
+| 3 | `ui-common.js:10682`(F05) | **二重t()** | `_factionLine`が訳した完成文を`_u3bSideHtml`が再度t()に通し、**英語の完成文が`[i18n-miss]`に載る** | `lineTranslated: true`+フォールバック文もt() |
+| 4-5 | `ui-common.js:10770/10778`(F06) | 二重t() | 同上(2箇所) | 同上 |
+| 6-7 | `ui-common.js:11095/11103`(F08 leader) | 二重t() | 同上(2箇所) | 同上 |
+| 8-9 | `ui-common.js:12345/12352`(COMMON1 leaderDemand) | 二重t() | `getCommon1Line(..., WM_I18N.t)`(dict-opts)の戻り値に`lineTranslated`が付いていなかった | `lineTranslated: true`(同関数の`coachReport`側`:12341`は元から正しい) |
+| 10 | `ui-common.js:12917`(果たし状) | 表示点にt()なし | `CHALLENGE_ARRIVAL_LINES` **21行が生JAのまま**。表示側`showHostileArrivalStage`は`escHtml`のみで、**もう一方の呼び出し元(統一王座)は訳し済みの文を渡す**ためレンダラ側では直せない | 呼び出し元で`WM_I18N.t(arrivalLine)` |
+| 11 | `app.js:6433 / 6477` | 二重t() | `pickCoachVoiceQuote`が訳した完成文を`showEventPopup`→`_u3bSideHtml`が再度t() | `speechTranslated: true`(2箇所) |
+| 12 | `app.js:10866` | **値が生JAのままparamsへ** | `WM_I18N.t('📣 {text}', { text: crowdText })` — t()のparamsは訳されないので`FAN_EXPECT_REACTIONS`の**観客9行が英語モードでも日本語**(⑬の`COMMON7 planType`と同型) | `{ text: WM_I18N.t(crowdText) }` |
+| 13 | `app.js:13325` | **文字列連結+t()なし** | `` `${reqName}: 「${line}」` `` を組み立ててから`showToast`(t()を通さない)へ。`CHALLENGE_REQUEST_NO_LINES` 14行+名前+括弧が全部JA | `` `${WM_I18N.pn(reqName)}: ${WM_I18N.t('「{line}」', { line: WM_I18N.t(line) })}` ``。**`「{line}」`はP6-7で追加済みのui-ledgerキー**なので新規キーを作らずに済む(JA出力は文字列結合として同一) |
+
+### 8. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,184行を記入+ト書き312行を差し替え+B追加130行+D のcell null化40行。**書き込み前にJSON往復同一性をアサートし、書き込み後に`git diff -U0`でフィールド別に増減を機械確認**(`"en"` 2,862行 / `"cell"` 210行 / 新規130行分の`key`/`files`/`count`/`hasPlaceholder`/`hasProperNoun` = 想定と完全一致・それ以外の増減0)
+- `i18n/template-ledger.json` — 黒田既定プール3行を追加+英訳(1,490→1,493)
+- `src/lang-en-dialogue.js` / `src/lang-en-templates.js` — 上記から再生成(自動生成物)
+- `test/i18n-extract-dialogue.js` — `EXTRA_INCLUDE`に2表追加 / `INCLUDE_PATH_FILTER` 新設 / `CELL_SUPPRESS_PATHS` 新設 / `walkStrings`に`pathKeys`を追加(B・D)
+- `src/kuroda-text.js` — `KURODA_NEWS_COMMENT._default` 新設(B)
+- `src/ui-render.js` — `_getKurodaNewsComment` のフォールバックを`._default`参照へ(B)
+- `src/ui-common.js` — 配線穴 #1〜#10
+- `src/app.js` — 配線穴 #11〜#13
+- `test/fixtures/i18n-ratchet-baseline.json` — kuroda-text.js +3 / ui-render.js -3(移動・総数不変)
+- 他は worklog / roadmap のみ
+
+### 9. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。台帳総キー**16,674** / **訳文あり16,674 / 未訳0** / cell判定済み15,643 |
+| `node test/i18n-build-template-dict.js` | ✅ green。総キー1,493 / 訳文あり1,493 / **未訳0**(黒田禁止語grepも通過) |
+| `node --check` kuroda-text.js / ui-render.js / ui-common.js / app.js / i18n-extract-dialogue.js / lang-en-dialogue.js / lang-en-templates.js | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…、`--update`不使用) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ OK(files=31 / totalJaStrings=**28,083**・**総数不変**。kuroda-text +3 / ui-render -3 の移動として基準更新) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(errors 0 / 台帳検査3種 違反0 / 指紋 37bbd0cd) |
+| **`npm run test:ui:walkthrough:en`** | ✅ **PASS / Issues 0 / 1季完走(419アクション・279秒)・`i18n-miss` 16 → **0 occurrences / 0 unique keys**** |
+| 抽出器の非破壊性 | ✅ 再実行前後で **en変更0 / 行削除0**。新規130行・cell null化40行・files+count変更2行のみ |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+セリフ9ファイル)で **本バッチ1,184キーの直接t()が期待値と100%一致・日本語残り0**。さらに実選択ロジック(`pickDialogueLine`を9プール×49セル、本バッチ全48表の全数走査、`SPECIAL_EVENT_INTRO`のcoach/fighter、`kurodaText`経由の黒田既定プール3本)で**計1,355引き・日本語出力0・PH残り0**。ト書き380行は**ENに`()`残り0 / `*…*`あり380** |
+| 品質スイープ(事前検査) | ✅ 網羅1,184/1,184・空訳0・日本語残り0・110字超0・PH不一致0・改行数不一致0・余分な空白0・`....`表記0・全角括弧0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent 0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0(EXTRA除外)・♪欠落0・重複0・近似重複0 |
+
+### 10. 残課題(要裁定・本バッチで確認したもの)
+
+1. **`COACH_VOICE_PRAISE_LINES` 16行が消費点ゼロ(死蔵)**。`ui-common.js:3831` の `COACH_VOICE_QUOTE_TABLES` に `ppvPraise` として登録されているが、`pickCoachVoiceQuote('ppvPraise', …)` の呼び出しが `src/` のどこにも無い。data.js:30699 のコメントは「PPV称賛は E-8 Phase A/B で pickCoachVoiceQuote() 経由へ移行済み」と書いているが、**移行先の呼び出しが作られていない**。訳出はしたがゲーム内では一度も表示されない。**死蔵の累計は 187 + 16 = 203行**(⑬ COMMON7.resultLeader 3 / ⑭ HEAT_STATE_SELF 75 / ⑮ WAR_DECLINE 58 + COMMON5 51)。「配線する/削除する」の裁定がまとめて要る
+2. **`management.js:16763-16764` の `match.opponentLineLeft/Right` は書きっぱなしで誰も読まない**(`Engine.ppv.getOpponentLine` の唯一の呼び出し)。`PPV_OPPONENT_LINES` 自体は `ui-common.js` の3経路で生きているので**表は死んでいないが、この2行の代入は死コード**。削除の可否は要確認(セーブへ焼かれる値なので旧セーブ互換の確認が要る)
+3. **`ui-common.js:1461` のフォールバック文 `'号外――大ニュースが届いた'` は3台帳のどこにも無い**。今回 t() で包んだので、次に `test/i18n-extract-ui.js` を回すと `i18n/ui-ledger.json` に新規キーとして出る(**ui-ledgerは並行エージェント P6-8 の領分なので本バッチでは触っていない**)。`BIG_NEWS_LEAD_LINES` が現状6タイプ全部を持つため実際には踏まないが、**新しいニュースtypeを足したときに日本語で出る**。P6側で拾ってほしい
+4. **ネイティブ検品は未実施**(バイブル §5-2 の第三層)。特に見てもらいたい3点 — (a)**ト書き312行の`*…*`一掃**が、動作の書き方として英語圏のRP慣行に自然に収まっているか(特に主語を落とした`*Presses her cheek to the belt*`型と、内心モノローグを同じ記号で書いた`BT_HINT_LINES`の44行) (b)**`HEAT_STATE_COACH_LINES` の21行**が「体に入る/入らない」という日本の練習語彙を英語のコーチ語彙へ移せているか (c)**`COMMON1_LINES` の49行(leaderDemand)** が、同じ決定を7派閥の気風で言い分けたものとして読めるか(均質に見えたら失敗)
+5. **性格分岐の薄さ(1件追加)**: `FACTION_F09_*`/`INTERNAL_CHALLENGE_*` の各表は **standard 帯にだけ7性格が揃い、他6属性は bold/earnest/quiet の1〜2性格しか無い**(例: `FACTION_F09_MATCH_PRE_LINES` は7行すべて standard)。派閥全面戦は年に一度の大きな見せ場なので、ヤンキー・お嬢様帯の選手が standard の声で戦うのは惜しい。補筆要否の裁定が要る
+
+(起用約束63+戴冠62+シーズン回顧61+レンタル加入61+王座陥落61+防衛60+対抗戦申込60+ドラフト関心59+挑戦失敗59+FA歓迎58+スカウト58+対抗戦辞退58+COMMON5 58+ゲームオーバー58+FA契約56+コーチ総括判定56+FA加入57+遺恨試合前56+COMMON3 54+エンディング52+コーチ招聘40+加入挨拶GENERIC 15 = 1,222行)（2026-09-04・Opus主筆 worktree agent-a72deb5fd37f41871）
 ## 🌐 Stage B P6-9 — ENモードのレイアウト溢れ検出(走破ハーネスに情報集計を追加)（2026-09-04・worktree agent-ae6330a95762d3c96）
 
 EN訳文はJA比で文字幅が中央値2.4倍という実測を踏まえ、吹き出し(110字上限は設定済み)以外のUI要素(ボタン・ナビタブ・表のセル・バッジ・ヘッダー・モーダルのラベル)で切れ/はみ出し/折り返し崩れが起きていないかを、UI自動走破ハーネスに**情報集計として**追加した。開始前にworktreeブランチをmain先端(`c37225d`、バッチ⑮=P5-2o+P6-7まで)へfast-forward済み。**src/・i18n/・CSS・訳文は一切触っていない**(指示どおり報告のみ、変更は`test/ui-walkthrough/`3ファイル+READMEに限定)。

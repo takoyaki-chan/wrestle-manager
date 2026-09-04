@@ -1457,7 +1457,9 @@ function showBigNewsPopup(topStory, variant) {
     ? ((typeof SEASON_OPENING_NEWS_LEAD_LINES !== 'undefined') ? SEASON_OPENING_NEWS_LEAD_LINES : [])
     : ((typeof BIG_NEWS_LEAD_LINES !== 'undefined') ? (BIG_NEWS_LEAD_LINES[topStory.type] || []) : []);
   const pickIdx = leadPool.length > 0 ? ((G.season || 0) * 7 + (G.week || 0)) % leadPool.length : 0;
-  let lead = leadPool.length > 0 ? leadPool[pickIdx] : '号外――大ニュースが届いた';
+  // i18n(P5-2p): 辞書キーは**{mq}が残ったテンプレート**なので、t() は必ず replace より前。
+  // ここは表示点が持つ唯一の t()(下の _escapeHtml(lead) は素通し)。
+  let lead = WM_I18N.t(leadPool.length > 0 ? leadPool[pickIdx] : '号外――大ニュースが届いた');
   const mqVal = topStory.newsData && topStory.newsData.mq;
   if (mqVal != null) lead = lead.replace(/\{mq\}/g, mqVal);
 
@@ -8300,8 +8302,9 @@ function _renderBreakthroughAsMdlA(ev) {
   const hotStreakHtml = ev.hotStreak
     ? `<div style="text-align:center;font-size:12px;color:#b5453a;margin-top:4px;font-weight:700">${WM_I18N.t('🔥 絶好調突入！')}</div>`
     : '';
+  // i18n(P5-2p): ev.btHint は BT_HINT_LINES から選ばれた生JA。ここが唯一の表示点なので t() を通す
   const btHintHtml = ev.btHint
-    ? `<div style="font-family:'Shippori Mincho',serif;font-style:italic;font-size:13px;color:var(--cream-text-sub);margin:12px auto 0;max-width:440px;text-align:center;line-height:1.7">${ev.btHint}</div>`
+    ? `<div style="font-family:'Shippori Mincho',serif;font-style:italic;font-size:13px;color:var(--cream-text-sub);margin:12px auto 0;max-width:440px;text-align:center;line-height:1.7">${WM_I18N.t(ev.btHint)}</div>`
     : '';
   const snapHtml = ev.snapshotText
     ? `<div style="margin-top:8px;font-size:11px;color:var(--cream-text-dim);text-align:center">💭 ${ev.snapshotText}</div>`
@@ -10679,7 +10682,8 @@ function showFactionF05Modal(payload, state, onChoice) {
         ${_factionReporterStrip(state, '社長。お耳に入れておきます。あの組、中で軋みが出てるみたいです')}
         <div class="fevt-subject-stage u3b-theme-cream">
           ${_u3bSideHtml({
-            name: ringleaderName, line: line || '……もう、ついていけない。',
+            // i18n(P5-2p): _factionLine は内部で t() 済みの完成文を返す。lineTranslated で二重t()を避ける
+            name: ringleaderName, line: line || WM_I18N.t('……もう、ついていけない。'), lineTranslated: true,
             imgUrl: ringleaderUrl, role: ringleaderMeta,
             bubbleClass: 'fevt-bubble',
           })}
@@ -10751,7 +10755,9 @@ function showFactionF06Modal(payload, state, onChoice) {
   const speaker = speakerIsB ? leaderB : leaderA;
   const line = _factionLine(FACTION_F06_AMBIENT_LINES, speaker,
     Engine.rng.derive((state && state.rngSeed) || 1, (state && state.season) || 0, (state && state.week) || 0, 0xFA61));
-  const resolvedLine = line || '……もう、いいかな。あの人とぶつかり続ける理由も、正直、思い出せないし。';
+  // i18n(P5-2p): _factionLine は t() 済みの完成文を返す。フォールバックも同じく訳してから渡し、
+  // 下の _u3bSideHtml へは lineTranslated:true で渡して二重t()を避ける
+  const resolvedLine = line || WM_I18N.t('……もう、いいかな。あの人とぶつかり続ける理由も、正直、思い出せないし。');
 
   // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は発言者側の頭上吹き出しへ移行。
   // 発言しない側は line を渡さず(mockup-baseline-v0.1 §2-B「発言しない人は枠だけ」)予約枠のみ出す。
@@ -10767,7 +10773,7 @@ function showFactionF06Modal(payload, state, onChoice) {
           <div class="fevt-subject-pair">
             <div class="col">
               ${_u3bSideHtml({
-                name: leaderAName, line: speakerIsB ? '' : resolvedLine,
+                name: leaderAName, line: speakerIsB ? '' : resolvedLine, lineTranslated: true,
                 imgUrl: leaderAUrl, role: factionAName,
                 bubbleClass: 'fevt-bubble',
               })}
@@ -10775,7 +10781,7 @@ function showFactionF06Modal(payload, state, onChoice) {
             <div class="fevt-pair-bridge">↔</div>
             <div class="col right">
               ${_u3bSideHtml({
-                name: leaderBName, line: speakerIsB ? resolvedLine : '',
+                name: leaderBName, line: speakerIsB ? resolvedLine : '', lineTranslated: true,
                 imgUrl: leaderBUrl, role: factionBName,
                 bubbleClass: 'fevt-bubble',
               })}
@@ -11092,7 +11098,8 @@ function showFactionF08Modal(payload, state, onChoice) {
           <div class="fevt-subject-duel">
             <div class="col">
               ${_u3bSideHtml({
-                name: leaderAName, line: lineA || '……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。',
+                // i18n(P5-2p): _factionLine は t() 済みの完成文。lineTranslated で二重t()を避ける
+                name: leaderAName, line: lineA || WM_I18N.t('……もう、話し合いでは済まない。あの人とは、リングの上でしか答えが出ない。'), lineTranslated: true,
                 imgUrl: leaderAUrl, role: `${factionAName} ・ LEADER`, statLabel: 'OVR', statValue: leaderAOvr,
                 bubbleClass: 'fevt-bubble left', portraitClass: 'fevt-duel-portrait',
               })}
@@ -11100,7 +11107,7 @@ function showFactionF08Modal(payload, state, onChoice) {
             <div class="fevt-duel-vs">VS</div>
             <div class="col right">
               ${_u3bSideHtml({
-                name: leaderBName, line: lineB || 'いいでしょう。逃げも隠れもしない。来週、メインで、決着をつけましょう。',
+                name: leaderBName, line: lineB || WM_I18N.t('いいでしょう。逃げも隠れもしない。来週、メインで、決着をつけましょう。'), lineTranslated: true,
                 imgUrl: leaderBUrl, role: `${factionBName} ・ LEADER`, statLabel: 'OVR', statValue: leaderBOvr,
                 bubbleClass: 'fevt-bubble right', portraitClass: 'fevt-duel-portrait',
               })}
@@ -12342,14 +12349,15 @@ function showFactionCommon1Modal(payload, state, onChoice) {
         ${leaderStripHtml}
         <div class="fc1m-compare u3b-theme-cream">
           ${_u3bSideHtml({
-            name: aName, line: leaderSide === 'a' ? leaderLine : '', imgUrl: fA ? _factionUpperUrl(fA.id) : '',
+            // i18n(P5-2p): leaderLine は getCommon1Line(..., WM_I18N.t) で訳し済み(dict-opts規約)
+            name: aName, line: leaderSide === 'a' ? leaderLine : '', lineTranslated: true, imgUrl: fA ? _factionUpperUrl(fA.id) : '',
             role: factionTagA, statLabel: 'OVR', statValue: ovrA, onClick: aClick,
             bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
             extraHtml: `<div class="fc1m-stats">${renderStats('a')}</div>`,
           })}
           <div class="fc1m-vs">VS</div>
           ${_u3bSideHtml({
-            name: bName, line: leaderSide === 'b' ? leaderLine : '', imgUrl: fB ? _factionUpperUrl(fB.id) : '',
+            name: bName, line: leaderSide === 'b' ? leaderLine : '', lineTranslated: true, imgUrl: fB ? _factionUpperUrl(fB.id) : '',
             role: factionTagB, statLabel: 'OVR', statValue: ovrB, onClick: bClick,
             bubbleClass: 'fc1m-bubble-wrap', portraitClass: 'fc1m-portrait',
             extraHtml: `<div class="fc1m-stats">${renderStats('b')}</div>`,
@@ -12914,7 +12922,10 @@ function showChallengeRequestModal(payload, state, onChoice) {
       title: WM_I18N.t('果 た し 状'),
       subLabel: `CHALLENGE ARRIVED ・ ${WM_I18N.t('3人制シングル3連戦')} ・ WEEK ${state.week || '—'}`,
       speakerLabel: `${WM_I18N.t('挑戦状の主')} ・ ${WM_I18N.pn(requester.name)}`,
-      line: arrivalLine,
+      // i18n(P5-2p): showHostileArrivalStage の表示点は escHtml のみ(もう一方の呼び出し元
+      // showUnifiedTitleChallengerArrival は _pickUnifiedTitleLine で訳し済みの文を渡す)。
+      // よって t() はこの呼び出し元側で1回だけ通す。フォールバックも CHALLENGE_ARRIVAL_LINES の1行
+      line: WM_I18N.t(arrivalLine),
       members: displayMembers.map(fighter => ({
         id: fighter.id, name: fighter.name, roleLabel: roleById.get(fighter.id) || WM_I18N.t('挑戦者'),
       })),
