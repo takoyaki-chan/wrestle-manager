@@ -115,7 +115,9 @@ function actionScore(candidate, state) {
   // 昇給を受ける/引き留める(受諾側の選択肢)。dataChoice(idx)は選択肢が3択とも共通で
   // 個別ボタンを一意に特定できないため、ここはEN訳文言(src/lang-en.js実測)を併記する
   // P6-5: EN文言側はcase-insensitive一致にする(下のTo the Season Report →と同じ理由)
-  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留|Accept the Raise|Persuade Her to Stay/i.test(text)) return 9300;
+  // 2026-09-04: 「引き留める」のEN訳が "Persuade Her to Stay"→"Persuade to Stay" に変わり、
+  // EN走破が契約交渉(week49)で D5_WATCHDOG 化した。訳文の揺れに耐えるよう任意語を許す
+  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留|Accept the Raise|Persuade (?:\w+ )?to Stay/i.test(text)) return 9300;
   if (/declineDraft\(\)|draftSoloConfirm\(false\)|scoutResolve\([^)]*,\s*'skip'\)/.test(onclick)
     || /指名を行いません|今年は指名しない|辞退する|見送る|見送り/.test(text)) return 9250;
   if (/(?:^|;)(?:startShowPrep|resumeShowPrep)\(\)/.test(onclick) || /興行準備へ|興行準備に戻る/.test(text)) return 9200;

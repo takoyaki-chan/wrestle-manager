@@ -1,5 +1,9 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 走破ドライバ: 契約交渉の「引き留める」EN訳の揺れでD5_WATCHDOG(2026-09-04・Fable)
+
+P7-10マージ後のEN走破(seed42)が week49 の契約交渉で `D5_WATCHDOG`(94秒無進行)。artifacts の actions.json は step403〜408が `nav:今週(escape)` の連打で、契約交渉モーダルの選択肢を押せていなかった。原因は `src/lang-en.js` の「引き留める」が "Persuade Her to Stay"→"Persuade to Stay" に変わり(P7-6/P7-10のいずれかの訳文整備)、`driver.js:118` のEN文言正規表現 `Persuade Her to Stay` が一致しなくなったこと(JA一致条件は無傷=ja digest不変)。`Persuade (?:\w+ )?to Stay` に緩めた。**教訓: EN文言に依存する行動選択は訳文整備で壊れる。onclick/idで特定できないボタン(dataChoice共通)の残りは、`data-choice`のインデックスや役割属性を付けてテキスト依存を消すのが根治**(次のハーネス改修で)。
+
 ## 🌐 英語対応 P7-6 — ENモードに残るJA露出の掃除(画面限定): タイトル/経営/ランキング/週/興行/社長室(2026-09-04)
 
 対象は6画面限定(`titleScreen`/`screen-finance`/`screen-ranking`/`screen-week`/`screen-show`/`screen-shachoshitsu`)。`screen-roster`(P7-4)・`screen-newspaper`(P6-16)・`screen-log`(gameLogレガシー、恒久対象外)は不触。CHAR_PROFILES/ALL_COACHESの地の文、newspaper/chronicle/PPV記事生成、技名(P7-5待ち)も不触。開始前にworktreeをmain先端へfast-forward。
