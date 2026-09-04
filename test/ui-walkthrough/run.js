@@ -324,6 +324,29 @@ async function main() {
         ? exposureEntries.map(([screen, count]) => `${screen}=${count}`).join(', ')
         : 'none'}`);
     }
+    // P6-9: レイアウト溢れの情報集計(失敗条件にはしない)。i18n-miss/JA exposureと違い
+    // lang問わず常に出力する — ja側でも走らせて「ENで新規に溢れたのか元から溢れていたのか」の
+    // 差分を取れるようにするため(既存のja行より後に新規追加するだけなので、既存出力・digestは不変)
+    const overflowRecords = detectors.overflowRecords || [];
+    console.log(`Overflow (informational, not a failure condition): ${overflowRecords.length} unique elements`);
+    if (overflowRecords.length > 0) {
+      const byScreen = [...detectors.overflowByScreen.entries()].sort((a, b) => b[1].total - a[1].total);
+      console.log('Overflow by screen:');
+      for (const [screen, bucket] of byScreen) {
+        const kindStr = Object.entries(bucket.byKind).map(([kind, count]) => `${kind}=${count}`).join(', ');
+        console.log(`  ${screen}: ${bucket.total} (${kindStr})`);
+      }
+      const byKindTotal = overflowRecords.reduce((acc, record) => {
+        acc[record.kind] = (acc[record.kind] || 0) + 1;
+        return acc;
+      }, {});
+      console.log(`Overflow by kind: ${Object.entries(byKindTotal).map(([kind, count]) => `${kind}=${count}`).join(', ')}`);
+      const top = [...overflowRecords].sort((a, b) => b.overflowPx - a.overflowPx).slice(0, 30);
+      console.log(`Overflow top ${top.length}:`);
+      top.forEach((record, index) => {
+        console.log(`  ${index + 1}. [${record.kind}] ${record.screen} | ${record.selector} | "${record.text}" | +${record.overflowPx}px`);
+      });
+    }
     if (!passed) process.exitCode = 1;
   } finally {
     if (context) await context.close().catch(() => {});
