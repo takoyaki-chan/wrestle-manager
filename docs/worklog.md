@@ -1,5 +1,109 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2k — セリフ英訳バッチ⑪(表彰304行+通知304行+引き抜き252行+秋対抗戦227行)（2026-09-04・Opus主筆 worktree agent-a63e2d0ad22b42c62）
+
+量産翻訳の第11バッチ。**`data.js:AWARD_LINES` の305行中304行 + `data.js:NOTIF_DIALOGUES` の306行中304行 + `data.js:POACH_REACTION_DIALOGUES` の256行中252行 + `data.js:AUTUMN_WAR_MATCH_LINES` の228行中227行 = 1,087行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2jの訳語判断(2cの対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2fのベルト=belt/王座=title、2hの `ふふ`=Mm/My 機能置換、2jの `優勝旗`=the banner・秋対抗戦=Autumn Gauntlet War を継承)。開始前にworktreeブランチをmain先端(f446891)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。
+
+### 1. 対象範囲(1,087行)
+
+**年末表彰式 304行**(軸は `award → archetype → personality`。`_awardLine`(ui-common.js:2702)が `pickDialogueLine` で引き、`_awSpeech`/`_u3bSideHtml` が吹き出しに載せる)
+
+| 賞 | 行数 / セル充填 | 場面 |
+|---|---|---|
+| `rookie` / `bestMatch` / `mvp` | 38 / 42 / 42(35・38・38 of 49) | 新人王 / ベストマッチ / 年間MVP |
+| `champion` / `hallOfFame` | 41 / 42(38・38 of 49) | 年間王者(ベルト保持) / 殿堂入り(引退時) |
+| `mediaAward` | 22(**18 of 49**) | メディア功労賞 |
+| `springTagChampion` / `autumnWarChampion` | 37 / 37(37 of 49) | 春タッグリーグ優勝 / 秋4団体戦優勝 |
+| `hofCoach._default` | 5 | **殿堂入り選手を教えたコーチの声**(選手セリフではない) |
+
+**週次通知の選手一言 304行**(軸は `N-key → archetype → personality`。`Engine.eventSystem.getNotifDialogue`(management.js:25202) → `showNotifEventToast`(ui-common.js:15255) → `_u3bSideHtml`)
+
+| キー | 行数 | 状況(効果) |
+|---|---|---|
+| `N1` | 62 | 自主トレで手応え(対象能力+1) |
+| `N2` | 48 | 選手同士の交流が深まった(2人表示) |
+| `N3` | 49 | 疲れ気味(コンディション-5) |
+| `N4` | 51 | 人気が上り調子(人気+1・trust+2) |
+| `N5_warning` / `N5_low` | 48 / 48 | 元気がない(trust 40〜49) / 不満が溜まっている(trust<40) |
+
+**引き抜きオファーへの反応 252行**(軸は `outcome → archetype → personality`。`resolvePoach`(ui-common.js:6896)が `WM_I18N.t(pickDialogueLine(...))` を通して結果モーダルの吹き出しへ)
+
+| outcome | 行数 | 場面 |
+|---|---|---|
+| `accepted` | 86 | 社長が移籍を承認した(送り出しの別れ) |
+| `defended` | 86 | 引き留め成功(残留) |
+| `defense_failed` | 80 | 引き留め失敗・強制移籍(詫びの別れ) |
+
+**秋4団体勝ち残り対抗戦の試合前後 227行**(軸は `context → archetype → personality`。`getAutumnWarMatchLine`(data.js:17297)。各context 76行/34セル)
+
+| context | 行数 | 場面 |
+|---|---|---|
+| `preMatch` | 75 | 各フォール開始前の中立の集中(`_agwPreBoutDialogueHtml` 19388・抽選55%) |
+| `preFinal` | 76 | 決勝戦前(満身創痍で最後の一戦に立つ) |
+| `survivor` | 76 | 1人倒した直後、まだ立って次を呼ぶ(`_agwSurvivorLine` 19411・抽選60%) |
+
+- **既訳7スロットは据え置き**(`……次`=`"...Next one."`、`…ありがとう`=`"...Thank you."`、`……`/`…………`=`"..."`、`…ごめん…`=`"...I'm sorry..."`、`…じゃあね`=`"...See you."`、`…ごめんなさい…`=`"...Forgive me..."`。いずれもP5-2a〜2jで他テーブルと共有済み)
+- 属性内訳(1,087行): standard 231 / composed 165 / seductive 156 / delinquent 142 / ojousama 138 / polite 138 / cool 107 / null 10
+- **`cell` を1行だけ追記した**(P5-2b/2c/2g/2jの慣行と同じ **`{archetype}` 形**)。`…世話になった` は `accepted.cool.quiet` と `accepted.cool.shy` に出るため抽出器が null にしたが、**archetype は cool で一意**。これで cool の感嘆符・文数検査が1行ぶん効くようになった
+- 残る `cell=null` 9行は (a)`hofCoach._default` 5行(**コーチ発話で属性軸を持たない**) (b)他テーブルとの共有で archetype が割れる2行(`…ありがとうございます`=AWARD standard.quiet と DOME_FIRSTSHOW polite.quiet/composed.shy、`…申し訳…ありません…`=POACH ojousama.quiet と POST_MATCH_FLAVOR polite.quiet) (c)POACH内で archetype が割れる2行(`…ごめん。…でも、行かせてほしい`=cool/composed、`…さよなら`=seductive/standard) で、**null が正しい**。台帳の `cell` と実効テーブルの軸キーの突き合わせは**1,087件で不一致0**
+
+### 2. 翻訳の方針
+
+- **表彰式は「賞ごとに英語の芯を変えた」**。同じ「ありがとう/嬉しい」が9賞ぶん重なる帯なので、`rookie`=**始まりの宣言**(a checkpoint / the starting line / it begins from here)/ `bestMatch`=**相手への敬意**(全42行の3分の1が対戦相手に言及)/ `mvp`=**一年の総量**(a whole year / the record does the talking)/ `champion`=**重さと所有**(this belt / not handing it over)/ `hallOfFame`=**幕引きと後輩への言葉**(To the ones coming up / no regrets)/ `springTagChampion`=**相棒**(my partner)/ `autumnWarChampion`=**団体**(our promotion / everyone)、と別モチーフに割り分けてある
+- **賞名はP3bの既定訳語に完全に揃えた** — `新人王`=**Rookie of the Year**(lang-en.js:1958)/ `ベストバウト`=**Best Match**(1958帯・`大会ベストバウト`=Tournament Bout とは別)/ `メディア功労賞`=**Media Merit Award**(1030)/ `殿堂入り`=**Hall of Fame**(2132)/ `4団体勝ち残り対抗戦`=**Autumn Gauntlet War**(70)。原文が賞名を呼ぶ行だけに置き、それ以外は §3-7 どおり指示語(this award / the seat / the banner)で運んでいる
+- **`hofCoach` 5行は選手ではなくコーチの声**なので、選手セリフの属性レジスタを一切当てず、**教え子を見送る指導者の落ち着いた地の文**として訳した(`There is no greater reward for a coach...` / `of everyone I ever coached, she is the one I am proudest of.`)。`指導者冥利/コーチ冥利に尽きる` は2行が同義なので `no greater reward for a coach` と `all a coach could ask for` に割った
+- **通知は「効果に見合った温度」に留めた**(最重要則1)。N1=能力+1、N3=コンディション-5、N4=人気+1 という**小さな変化**なので、英語も小さく訳した — N1=`Something clicked today` / `Not enough yet` 程度、N3=`Just a bit tired. I'll be back soon enough.`、N4=`That's nice to hear.`。逆に N5_low(trust<40=退団リスク帯)だけは**留保のない不穏さ**を許した(`Maybe it's time I reconsidered what I'm doing here.` / `I'll do what I want.`)
+- **§3-6(身体・抽象メタファー禁止)を最優先**。N3の `体が追いつかない` / `体が言うこときかない` / 秋対抗戦の `身体が悲鳴を上げている` / `足が言うことを聞きません` は**「体が語る」構文を全部落として**生活英語へ振り替えた(`I can't quite keep up.` / `none of it will listen to me right now` / `Every part of me is protesting by now.` / `My legs won't do what I tell them.`)。P5-2jの `Nothing wants to obey me today...` とは別の言い回しにしてある
+- **引き抜きの3outcomeは「別れの向き」で書き分けた** — `accepted`=**感謝で閉じる**(承認された移籍なので詫びを主にしない。thanks for having me / I owe this place / I'll deliver over there)/ `defended`=**引き留められた側の照れと安堵**(you won't let go easily / I'm relieved I get to stay)/ `defense_failed`=**詫びが主**(引き留めを断る側なので forgive me / the debt unpaid / stopping me doesn't work)。**同じ `ごめんなさい` でも「行かせてほしい願い」と「断りの詫び」を英語で分けている**
+- **社長の呼称(§6裁定4)**: 引き抜き帯は原文が実際に `社長` を呼ぶ行が12行あり、そこだけ書き分けた — **ojousama = `President`(2行)、standard / composed / delinquent / seductive = `Boss`(10行)**。他1,075行は「原則呼ばない」どおり呼称なし。P5-2c/2d/2jで確立した温度をそのまま継承している
+- **秋対抗戦の3contextは「時間の位置」で芯を変えた** — `preMatch`=**まだ何も始まっていない中立**(誰が来ても/一戦ずつ/次に繋ぐ)、`preFinal`=**満身創痍で最後に立つ**(beaten to pieces / count the pain later / one more)、`survivor`=**まだ立っている、次を出せ**(still standing / who's next)。`繋ぐ` は **pass it on / hand it forward / carry it to** の3系統に属性で割り、P5-2jの秋MVP `champion` 帯(carried it / handed it forward)と英語が重ならないよう全76行を確認した
+- **`満身創痍`/`ボロボロ`/`傷だらけ` は4語に割り分けた**(beaten to pieces / in pieces / wrecked / covered in cuts)。76行×3contextで同じモチーフが構造的に大量発生するため
+- **ト書き9行**(`………（何も言わず、窓の外を見ている）` / `………（小さく舌打ちして、そっぽを向く）` / `（どこか上の空で、視線が泳いでいる）` ほか)は P5-2c で確立した堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**で統一。アンカーの `... (silently clenches her fist)` と重ならないよう全9本を別の動詞句にした
+- **属性=register**: ojousama=全138行で**短縮形ゼロ**(検出されたアポストロフィは `seniors'` の所有格1件のみ) / cool=全107行で**感嘆符ゼロ・3文以内**(`...Anyone will do.` / `...One. Still standing. Next.` / `...The record does the talking.`) / delinquent=冠詞主語の省略+gonna/wanna / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻 / standard=特徴を足さない
+- **§4-6のネイティブ検品ルール適用**: 「今日の私」型0 / 「〜も」のtoo直訳0(`リングの外でも`=`away from the ring as well`、`来年も`=`next year too` は加算の意味が正しい行のみ) / `maybe` は文頭のみ / 応援=**support**(N4の51行すべて) / **`I'll do my best` / `It can't be helped` / `As expected of` の禁止定型は機械検査で0**(`仕方ありませんわね`=`There is no helping you, is there.` に振り替え) / `ふふ`=`Mm`/`My` に機能置換(`Fufu` 音写0) / 英国綴り0 / ALL CAPS 0
+- **均質化回避**: この帯は「ありがとう」「ごめんなさい」「まだ立ってる」が構造的に大量発生する(引き抜き252行のうち感謝・謝罪が148行、秋対抗戦の `まだ立ってる` 系が48行)。事前検査で検出した**既訳との完全重複4件・近似重複(トークンJaccard≥0.90)10件・バッチ内近似重複13件をすべて書き直した**。最終的に**バッチ内EN完全重複0・近似重複0・既訳9,891行との完全重複0・近似重複0**
+- **卑語**: hell/damn は**1,087行中9回**、すべて delinquent 確定セル(`like hell I'm backing out` / `Hell of a night, though.` / `Damn it... I think about that match and my eyes start sweating...` / `I damn near died for it...!` / `Damn it... I told myself not to cry...` / `Damn. That feels good.` / `Damn it... don't cry, don't cry...` / `like hell I'm crying up here...` / `What the hell am I supposed to do...!`)。f/sワードは0
+- **長さ**: 全1,087行が110字上限内(**最大110字・中央値55字**・EN/JA文字数比 2.54)。プレースホルダは原文・訳文とも**0個**(4テーブルとも変数を持たない)。♪は1行に存置(原文と同数)、♡を含む原文は0行
+
+### 3. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,087行を記入+cell 1行を追記(**diffは 1,090挿入/1,088削除 = `"en":` 行1,087本 + cell 1件(`null`→3行)のみ** — 書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートしてから記入し、書き込み後に `git diff -U0` で `"en":`/`"cell":`/`"archetype":` 以外の増減0を機械確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- 他は worklog / roadmap のみ。**ソース・配線は一切触っていない**
+
+### 4. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**10,978**(9,891→+1,087) / cell判定済み10,743 |
+| `node --check src/lang-en-dialogue.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ 直書き日本語の増加なし(files=31 / totalJaStrings=28089) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+data/data-faction-dialogue/management/match-engine/relationships)で**台帳1,087キーの直接t()が未訳0**。さらに実選択ロジック(`pickDialogueLine(AWARD_LINES[key])` 8賞×49セル×8シード / `getDialoguePool(NOTIF_DIALOGUES[key])` 6キー×49セル全プール / `pickDialogueLine(POACH_REACTION_DIALOGUES[outcome])` 3×49×8 / `getAutumnWarMatchLine` 3context×49セル×12シード)で**計6,445引き・日本語出力0・`[i18n-miss]` 0件**。4テーブル**1,087行すべてが到達可能**(死行0)。セル横断21本を目視 |
+| 品質スイープ(事前検査) | ✅ 網羅1,087/1,087・空訳0・日本語残り0・110字超0・PH不一致0・余分な空白0・`....`表記0・ojousama短縮形0・cool感嘆符0・cool3文超0・hell/damn非delinquent0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+| cell整合 | ✅ 台帳cellと実効テーブルの軸キーの**不一致0**(1,087件照合)。cell追記1件はソースから一意に導出、残るnull 9件はすべて正しいnull |
+
+### 5. 表示経路の確認 — **4テーブルとも全行ENに届く(未達0)**
+
+- **表彰304行は届く**。`_awardLine`(ui-common.js:2702)が `WM_I18N.t(pickDialogueLine(lineObj, ch))` を通し、`_awSpeech`(2771)が表示直前にもう一度 t() を通す(二重t()はfail-openで無害)。`springTagChampion`/`autumnWarChampion` は `_buildSeasonEventChampionAward`(3121)の `_awardLine(kind === 'springTag' ? ... )` 経由、`hofCoach` は `_u3bSideHtml({line})`(3748)経由でいずれも t() に乗る。**8賞+hofCoachの9キーすべてに呼び出し元がある**
+- **通知304行は届く**。`getNotifDialogue` の戻り値は生JAだが `showNotifEventToast`(ui-common.js:15277)が `_u3bSideHtml({line: event.dialogue})` に渡し、その中(245行)で `WM_I18N.t()` を通す
+- **引き抜き252行は届く**。`resolvePoach`(ui-common.js:6905)が `WM_I18N.t(pickDialogueLine(dlg, result.fighterSnapshot))` を明示。モーダル見出し側の `{name}`/`{org}` は t() のparams経由なので P5-2d型のfail-openは起きない
+- **秋対抗戦227行は届く**。`_agwPreBoutDialogueHtml`(19396/19397)・`_agwSurvivorLine`(19423)の3箇所すべてが `WM_I18N.t(getAutumnWarMatchLine(...))` を明示
+- **プレースホルダを含む行が4テーブルとも0**なので、P5-2d/2h/2jで見つかった「PHをt()より前に置換してfail-openする」型の欠陥はこの範囲では起きない
+
+### 6. 残課題(このバッチで判明したものを含む)
+
+1. **`NOTIF_DIALOGUES` の polite / seductive 帯に「状況に噛み合わないフィラー」が10行**。polite.shy は6キー全部が `あ、あの…お知らせがあります…` / `報告です…あ、あの…` / `き、緊急のお知らせです…！` という**通知そのものの前口上**で、N1(練習の手応え)・N3(疲労)・N4(人気上昇)の中身に一切触れていない。seductive.emotional も同型で4行(`お知らせよ……っ……ふふ、聞いて……` ほか)。**吹き出しは選手の反応として出る**ので、「お知らせがあります」だけが顔の上に出る絵になっている。P5-2gで報告した汎用フィラー30本と同型。書き分けの起票候補。要裁定
+2. **`NOTIF_DIALOGUES` の polite は4性格しかない**(quiet / shy / earnest / emotional)。normal / bold / easygoing が6キーすべてで空で、フォールバックが埋める。丁寧×ノーマルは実在セル(澤出みずき)なので、**アンカーのいるセルが空**という点で他テーブルより穴が目立つ
+3. **`AWARD_LINES.mediaAward` だけ極端に薄い**(22行 / 18セル。他の賞は37〜42行 / 35〜38セル)。ojousama は normal 1行のみ、delinquent は normal/bold の2行のみ、seductive は normal/emotional の2行のみ、polite は normal/shy の2行のみ。メディア功労賞は「華のある賞」なのに**標準帯ばかりが出る**分布になっている。JAセリフの増補候補
+4. **`POACH_REACTION_DIALOGUES` の JA重複4件**(`…さよならだ`=accepted.cool.quiet / defense_failed.cool.quiet で**承認移籍と引き留め失敗という別文脈を共有**、`…世話になった`=accepted.cool.quiet / cool.shy、`…ごめん。…でも、行かせてほしい`=accepted.cool.shy / defense_failed.composed.shy で**属性も文脈も違うのに同文**、`…さよなら`=defense_failed.seductive.quiet / standard.quiet)。翻訳側は1つのENで処理したが、日本語側の書き分け漏れの可能性がある(P5-2f/2h/2i/2jと同型)。要裁定
+5. **`AUTUMN_WAR_MATCH_LINES.survivor` 76行は「団体戦の決着前」でしか読めない**。`_agwSurvivorLine`(ui-common.js:19413)は `match.winnerOrg` が立っていると `AUTUMN_WAR_MVP_LINES` に切り替わるため、**団体の勝敗が決した最後のフォールの勝ち残りコメントは survivor 側を引かない**。さらに preBout 55% / survivor 60% の抽選も掛かる。仕様として意図的かどうか要確認(翻訳経路の確認中に発見。ソースは触っていない)
+6. **`AUTUMN_WAR_MATCH_LINES` は3contextとも同じ34セル**で、ojousama は quiet/shy/emotional が空、cool は normal/quiet の2性格のみ、delinquent は normal/bold/easygoing の3性格のみ、polite は emotional が空。**クールとヤンキーの穴が大きい**(それぞれ5性格・4性格ぶんフォールバック)。年1回の大舞台なので増補の価値がある
+7. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **`hofCoach` 5行**がコーチの声として自然か(選手レジスタを当てていない唯一のブロック) (b) **引き抜き252行の感謝・謝罪148行**が3outcomeで温度差を保てているか(accepted=感謝 / defended=照れ / defense_failed=詫び) (c) **秋対抗戦 `繋ぐ` の3系統**(pass it on / hand it forward / carry it to)が英語として散っているか
+
+---
+
 ## 🌐 Stage B P4-7 — 黒田holdout16件を分岐なしエントリへ分割し英訳（2026-09-04・worktree agent-a4a3652b710c7e035）
 
 P4-5の`kurodaTemplateOf()`が正規化できずfail-open(=ENでもJA文のまま)になっていた**16エントリ**を、分岐のない複数エントリへ分割して台帳に載せ、英訳した。開始前にworktreeブランチをmain先端(771cf37)へfast-forward済み。**テンプレ台帳は1,459→1,490行、未訳0を維持。テンプレ層のfail-openは0件になった**(`docs/i18n-p4-5-kuroda-holdout-audit.md`が「合計0件」を出力)。
