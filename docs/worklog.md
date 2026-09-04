@@ -1,5 +1,133 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-3 — 地の文プール後半3表253行の台帳化・英訳: EN走破 i18n-miss 7→0、WEEKLY_STORY_TICKERはgameLog専用と判明(2026-09-04)
+
+`docs/i18n-stage-b-p7-design-v0.1.md` §1分類A(地の文プール)の後半3表を `test/i18n-extract-templates.js` の `TARGET_TABLES` へ追加し、253行を全訳した。開始前にworktreeブランチをmain先端(1487afa、P6-13=f368d04+ラチェット基準更新まで)へfast-forward済み。
+
+### 1. 表ごとの配線方式と行数
+
+| 表 | 行 | 消費点 | 本バッチでやったこと |
+|---|---:|---|---|
+| `NOTIF_EVENT_TEXTS` | 102 | `Engine.eventSystem.pickText(rng, key, vars, dict)`(management.js:25243) | **配線はP6-13で済んでいた**(PH置換前に`_wmFillWithDict`)。英訳のみ |
+| `LARGE_EVENT_TEXTS` | 86 | 同上(`B4_{activityType}` サブプール6種を含む) | 同上。英訳のみ |
+| `WEEKLY_STORY_TICKER` | 65 | `Engine.relationships.processWeeklyStoryEvents()` → **gameLogのレガシー文字列エントリ**のみ | 台帳化+英訳のみ。**消費点は無改修**(理由は §3) |
+
+template-ledger は 1,749 → **2,002キー・未訳0**(既訳1,749件はマージで全件保持)。抽出器への追加は指示どおりリストの**末尾に `// P7-3` コメント付きで3表だけ**を足し、既存行は並べ替えていない(並行するP7-2との衝突を最小化するため)。
+
+### 2. 「配線済み・辞書だけ無い」表は i18n-miss にそのまま出る(§15-1)
+
+P6-13が `pickText()` のPH先埋め(spec §9-10-1型)を直したことで、NOTIF/LARGE の2表は **t()を通るのに辞書に無い** 状態になっていた。着手前のEN走破の `i18n-miss` 7件のうち**6件がこの2表**(N3の疲労文2・N4の人気文2・B4_fashionのランウェイ文2)。
+
+つまり §13-2 B(t()を通らない54表)の中でも、**消費点がdict化された瞬間からその表はmissへ出る**。missが0でないときは「未配線」より先に「配線済み・未訳」を疑うのが正しい順序だった。
+
+### 3. `WEEKLY_STORY_TICKER` は名前に反して「ティッカー」に一切出ない — gameLog専用プール
+
+消費点をgrepで全数追った結果:
+
+- ニュースティッカー(`Engine.news.generateTicker`)が読むのは `NEWS_TICKER_TEMPLATES` であって本表ではない
+- 本表の唯一の消費点は `processWeeklyStoryEvents()`(relationships.js:833)。`` events.push(`[trust-warning] ${...}`) `` の形で**gameLogのレガシー文字列エントリ**を積む。`renderLog` は `gameLogEntryText()` 経由で文字列エントリを**無変換に素通し**する(data.js:31065)
+- これをEN化するには `{type, data}` オブジェクトエントリへ移行するしかなく、それは**セーブに書く値の変更**にあたる。spec §2-4「旧文字列エントリは無変換で共存」/ D-P6-4 に反し、§11-2 で「gameLog全体の再設計を要する別工程」として**既に見送りが確定している族**と同一
+
+よって**台帳化と英訳のみ**を行い、消費点は触っていない。目的は §13-2 B の突合表を閉じることと、gameLog再設計時に訳が揃っている状態を作ること。
+
+**さらに: 13キー中、実際に読まれているのは3キー36行だけだった。**
+
+| 状態 | キー | 行 |
+|---|---|---:|
+| 生きている | `clash` / `trustWarning` / `awakening` | 36 |
+| **参照0の死蔵** | `bestFriends` / `hostileEnemy` / `goodRivalZone` / `unrequitedBond` / `onesidedHostility` / `temperatureDiff` / `crossAsymmetry` / `highRivalryAwareness` / `goodRivalTicker` / `bitterRivalTicker` | **29** |
+
+死蔵10キーは第1層/第2層の関係ゾーン判定(親友・憎い敵・好敵手・片思い・一方的敵意・温度差・クロス非対称)ごとに書かれた文で、判定ロジック自体は `processWeeklyStoryEvents` に全部あるのに**文を出す行だけが無い**。復活か削除かはKeisuke裁定待ち(既存の死プール群と同じ扱い)。
+
+### 4. 会場名を「本文辞書」で引いていた1箇所を修正(miss 7件の残り1件)
+
+`management.js:13454`(会場費の内訳行)が
+
+```js
+{ venue: (typeof dict === 'function' ? dict(VENUES[G.showVenue].name) : VENUES[G.showVenue].name) }
+```
+
+と**本文辞書**で会場名を引いていた。会場名は `lang-en-names.js`(pn/名前辞書)側の住人なので必ず外れ、`[i18n-miss] 中ホールB` として毎回出ていた。正解は**値をそのままパラメータで渡す**こと — `t()` のenブランチが持つパラメータ値の名前自動変換(D-P6-2 `convertNames`)が引き当てる。JA/dict無し(auto-sim・ja-golden)経路はどちらの書き方でも生の会場名で1バイト不変。
+
+### 5. 英訳の方針(地の文=無署名の紙面本文/状況描写)
+
+- 通知文(`text`)は**短く事務的に**。日本語より温度を上げない(トーンバイブル §0 最重要則)。JAの絵文字はそのまま維持
+- 状況説明(`detail`)は第三者の観察文。`en-kuroda-style` §1-1〜1-4 の紙面本文の筆致で、慨嘆・格言化・タブロイド語彙を避ける
+- `awakening` 27行だけはセリフ(personality×archetype軸)なので、口調はトーンバイブル §2 の属性設計に従った(お嬢様=無短縮形+格調語彙 / ヤンキー=主語省略+`gonna` / クール=断片 / 丁寧=完全文+緩衝、等)。ト書きは動詞句へ落とし、「」は引用符へ(⑬の既定)
+- 身体メタファーは書き換えた(例:「体が悲鳴を上げている」→ *she may be past what she can absorb*、「見えない壁ができている」→ *Something has come up between her and the rest*)
+- `⚔️ {orgName}の選手が記者会見で挑発` を素直に訳すと `An {orgName} wrestler…` になり **PH直前の不定冠詞(黒田英文体 §3-4 規則25)**に抵触するため、冠詞を落とした形で書いた
+
+代表対訳:
+
+| JA | EN |
+|---|---|
+| 💪 {name}が自主トレで手応えを掴んだ | 💪 {name} is getting somewhere in her own training |
+| 毎朝の早出練習が続いている{name}。最近はスパーリング相手からも「動きが変わった」と言われることが増えてきた。 | {name} has kept up the early morning sessions, and lately her sparring partners keep telling her that her movement has changed. |
+| 🩹 {name}の体に疲労が溜まっているようだ | 🩹 Fatigue is building up in {name} |
+| 😶‍🌫️ {name}…大丈夫だろうか | 😶‍🌫️ {name}... is she all right? |
+| 📋 コーチ{coach}が報告:「{name}の様子が最近おかしい」 | 📋 Coach {coach} reports: "Something is off with {name} lately" |
+| 🚪 {name}が荷物をまとめて団体を去った | 🚪 {name} packed up and left the promotion |
+| ⚠️ {name}がロープワーク中に負傷 | ⚠️ {name} hurt during rope work |
+| 💥 {name1}と{name2}の関係が限界に | 💥 {name1} and {name2} have reached their limit |
+| ⚔️ {orgName}から果たし状が届いた | ⚔️ A written challenge has arrived from {orgName} |
+| 📺 {outletName}から「頂点の景色」取材オファー | 📺 {outletName} offers a shoot called "The View from the Top" |
+| 🎤 サイン会・トークショーの開催依頼 | 🎤 A request for a signing and talk show |
+| {nameA}と{nameB}——好敵手の二人が並んでストレッチをしている | {nameA} and {nameB} — two rivals, stretching side by side |
+| {name}の笑顔が減った——周囲もそれに気づいている | {name} smiles less than she did — and the others have noticed |
+| {nameB}が{nameA}に宣言した。「もう我慢いたしませんわ！ 全力でお相手して差し上げます！」(お嬢様×強気) | {nameB} made her declaration to {nameA}. "I shall endure it no longer! I will face you with everything I have!" |
+| {nameB}が{nameA}に吠えた。「上等だ！ その喧嘩、買ってやるよ！」(ヤンキー×強気) | {nameB} barked it at {nameA}. "Fine by me! You want a fight, you've got one!" |
+
+### 6. 検証結果
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(management.js / lang-en-templates.js) | ✅ |
+| `node test/ja-golden.js`(`--update`不使用) | ✅ 完全一致 `hash=6b3d05c8…4b8c1b3` |
+| `node test/i18n-build-template-dict.js` | ✅ 2,002キー・**未訳0**(PH整合・JA残り・黒田禁止語・PH直前の不定冠詞の4検査すべて0違反) |
+| `npm test` | ✅ 260/260 |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(files=31 / totalJaStrings=28,089) |
+| `npm run test:ui:walkthrough`(ja) | ✅ PASS・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en` | ✅ PASS・**i18n-miss 7→0**・Issues 0・digest `80a36226ab45c4b8` 不変 |
+| VM(3表253行の全数突合) | ✅ dict省略時のJA出力 == 従来出力 / EN辞書に日本語残り0 |
+
+EN走破の **JA露出 画面別 before→after**:
+
+| 画面 | before | after |
+|---|---:|---:|
+| screen-log | 48 | 48 |
+| screen-week | 47 | 47 |
+| screen-newspaper | 28 | 29 |
+| screen-roster | 25 | 25 |
+| screen-shachoshitsu | 13 | **12** |
+| screen-show | 10 | **9** |
+| titleScreen | 6 | 6 |
+| screen-finance | 5 | 5 |
+| screen-ranking | 4 | 4 |
+| 詳細レコード(全画面) | 646 | **638** |
+
+※ 画面別カウントは走破ごとに ±1 のゆらぎがある(ティッカー等の時限描画が捕捉タイミングで入れ替わるため)。newspaper=29 は P6-13 の報告値と同じで、本バッチのbaseline実測 28 のほうが下振れ側の外れ値。after は2本走らせて 29 で再現。
+
+**露出が減っていない画面の内訳**(`--ja-exposure-log` で全数確認):
+
+- 本バッチ3表のJA断片が画面に残っているのは **`trustWarning` 4種・計7要素のみで、全部 `screen-log`**(`[trust-warning] 高階まさみの笑顔が減った——…` 等)。§3のとおり仕様上JA固定なので想定どおり
+- `NOTIF_EVENT_TEXTS` / `LARGE_EVENT_TEXTS` は**画面上から完全に消えた**
+- `screen-log` の48件はこの `[trust-warning]`/`[grievance]`/`[hostile-pairs]` を含むgameLogレガシー文字列族。screen-log を1桁にするには gameLog の `{type,data}` 全面移行が前提
+
+### 7. 発見(未着手・次バッチ以降へ)
+
+1. **`processWeeklyStoryEvents` の直書きJA 6本**(relationships.js:1151/1251-1257) — `[grievance]`4本(給料・後輩の待遇・タイトル挑戦・出場機会)と `[hostile-pairs]`1本+ペア名の連結様式。`WEEKLY_STORY_TICKER` と**同じ関数の中で同じgameLogへ積まれる**のに、どの表にも入っていない実行文直書き(spec §10-2型)。gameLog再設計と同時に処理するのが自然
+2. **`WEEKLY_STORY_TICKER` の死蔵10キー29行**(上記 §3)。復活or削除のKeisuke裁定待ち
+3. **`i18n-miss` の意味の再確認** — 「t()を通らない層は永久にmissに出ない」は正しいが、その逆「missに出る=未配線」は誤り。P6-13以降のNOTIF/LARGEは配線済み・未訳でmissに出ていた。§13-2 Bの表を1つdict化するたびに、その表の未訳分がmissへ現れる
+
+### 8. 変更ファイル
+
+- `test/i18n-extract-templates.js` — `TARGET_TABLES` 末尾に3表を追加(`// P7-3` コメント付き)
+- `i18n/template-ledger.json` — +253行(1,749→2,002)、全行en入り
+- `src/lang-en-templates.js` — 再生成(自動生成物)
+- `src/management.js` — 会場費行の会場名を名前辞書経路へ(§4、1行+コメント)
+- `specs/i18n-runtime-spec-v1.0.md` — §13-2 Bの該当3表に✅、§15を新設
+- `docs/game-system-roadmap.md` — 「🌐 英語対応」行にP7-3の1節を追記
+
 ## 🌐 Stage B P7-2 — 地の文プール前半7表（SNAPSHOT_TEXTS 276ほか計374キー）を台帳化・配線・英訳（2026-09-04・worktree agent-ab25eefac3f19acb4）
 
 指示書は docs/i18n-stage-b-p7-design-v0.1.md §3 の P7-2（分類A「地の文プール」前半）。開始前に worktree を main 先端（4e35e64＝P6-15まで）へfast-forward済み。`i18n/ui-ledger.json` と ui-render.js/ui-common.js の**名前表示サイト**は並行エージェント（P6-13）の領分、management.js の newspaper/chronicle/autumnWar 周辺は P6-16 の領分のため不触。

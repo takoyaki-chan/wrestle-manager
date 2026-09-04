@@ -135,6 +135,19 @@ const TARGET_TABLES = [
   'CAMP_FLAVOR_TEXTS',
   'PRE_WINDOW_TEXTS',
   'TEAM_SPIRIT_TEXTS',
+  // P7-3(2026-09-04): 地の文プール後半3表(docs/i18n-stage-b-p7-design-v0.1.md §1分類A)。
+  //   NOTIF_EVENT_TEXTS   102行 — 通知型イベント(N1〜N5/N_isolation/N_coach_report/
+  //                               N_sudden_departure)の見出し+状況説明。消費点は
+  //                               Engine.eventSystem.pickText(rng,key,vars,dict)(P6-13でdict-opts化済み)
+  //   LARGE_EVENT_TEXTS    86行 — 大型イベント(B1〜B4+B4_*サブタイプ)の同上。消費点は同じpickText
+  //   WEEKLY_STORY_TICKER  65行 — 週次の人間関係ティッカー文。**消費点はgameLogのレガシー
+  //                               文字列エントリのみ**(relationships.js processWeeklyStoryEvents)で、
+  //                               specs §2-4/§12-1により表示はJA固定。台帳へは載せる(§13-2 Bを閉じる+
+  //                               gameLog再設計時に訳が揃っている状態にする)が、現時点で辞書は引かれない。
+  //                               詳細はworklogのP7-3エントリを参照。
+  'NOTIF_EVENT_TEXTS',
+  'LARGE_EVENT_TEXTS',
+  'WEEKLY_STORY_TICKER',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ

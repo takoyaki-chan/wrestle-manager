@@ -13459,7 +13459,12 @@ const Engine = {
 
         const occPct = Math.round(rev.occupancyRate * 100);
         details.push({ label: _wmFillWithDict(dict, 'チケット収入（{attendance}人 / {cap}席 {occPct}% {occLabel}）', { attendance, cap: VENUES[G.showVenue].cap, occPct, occLabel: _wmFillWithDict(dict, rev.occLabel) }), val: rev.ticketRev, type: 'income', category: 'ticket' });
-        details.push({ label: _wmFillWithDict(dict, '会場費（{venue}）', { venue: (typeof dict === 'function' ? dict(VENUES[G.showVenue].name) : VENUES[G.showVenue].name) }), val: -rev.venueCost, type: 'expense' });
+        // i18n Stage B P7-3: 会場名は t() の**本文辞書**ではなく**名前辞書**(pn/lang-en-names.js)の
+        // 住人。`dict(会場名)` と本文辞書を引くと必ず外れて [i18n-miss] になり、表示もJAのまま残る
+        // (EN走破で `中ホールB` が唯一の非テンプレmissとして出ていた)。値をそのままパラメータで
+        // 渡せば、t()のenブランチが持つパラメータ値の名前自動変換(D-P6-2 convertNames)が引き当てる。
+        // JA/dict無し(auto-sim・ja-golden)はどちらの経路でも生の会場名で1バイト不変。
+        details.push({ label: _wmFillWithDict(dict, '会場費（{venue}）', { venue: VENUES[G.showVenue].name }), val: -rev.venueCost, type: 'expense' });
 
         // 金銭バランス改善: 興行グッズブースト（出場選手のみ）
         const showGoods = Engine.economy.calcShowGoodsBoost(roster, G.lastShowResults, attendance, VENUES[G.showVenue].cap);

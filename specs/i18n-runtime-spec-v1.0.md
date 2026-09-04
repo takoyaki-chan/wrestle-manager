@@ -323,6 +323,7 @@ data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`
 
 **B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行(→ P7-2で7表367行を解決、残**37表・約1,053行**)**
 
+Engine/UIが直に読む地の文・ラベルのプール。大物は`SNAPSHOT_TEXTS` 276 / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 **✅P7-3** / `LARGE_EVENT_TEXTS` 86 **✅P7-3** / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 **✅P7-3(台帳のみ・表示はJA固定。§15-2)** / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / `ATMOSPHERE_TEXTS` 33、以下中小の表が続く。
 Engine/UIが直に読む地の文・ラベルのプール。大物は~~`SNAPSHOT_TEXTS` 276~~(**✅P7-2**) / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / ~~`ATMOSPHERE_TEXTS` 33~~(**✅P7-2**)、以下中小の表が続く。
 
 **✅P7-2(2026-09-04)で解決した7表**: `SNAPSHOT_TEXTS` 282 / `ATMOSPHERE_TEXTS` 33 / `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `CAMP_FLAVOR_TEXTS` 12 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8(詳細は§15)。
@@ -383,11 +384,59 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 3. **`Engine.autumnWar`の結果ニュース**(management.js:30729/30730) — `_orgName`+勝敗数の生JA組み立てを`industryNews.push`のdataへ焼く。§8の「生キー+render時点再構築」が要る型
 4. **composerがnullを返したときの直書きJAフォールバック2箇所** — `management.js`のAIチャンピオン交代(`${ev.orgName}の王座が動いた。…`)と`ui-common.js`のドラフト自団体1面(`${names}。新シーズンの陣容がひとつ厚くなった。`)。どちらもdictを通らないので、本体が英語になった今はフォールバックだけJAで出る
 
-## 15. Stage B P7-2 — 地の文プール前半7表(t()を一度も通らない層)の配線(2026-09-04追加)
+## 15. Stage B P7-3 — 地の文プール後半3表(253行)の台帳化・英訳(2026-09-04追加)
+
+`docs/i18n-stage-b-p7-design-v0.1.md` §1分類A(地の文プール)の後半3表を `test/i18n-extract-templates.js` の
+`TARGET_TABLES` へ追加し、全253行を英訳した。template-ledger は 1,749 → **2,002キー・未訳0**。
+
+| 表 | 行 | 消費点 | 配線 |
+|---|---:|---|---|
+| `NOTIF_EVENT_TEXTS` | 102 | `Engine.eventSystem.pickText(rng, key, vars, dict)` | ✅**P6-13で配線済み**。本バッチは英訳のみ |
+| `LARGE_EVENT_TEXTS` | 86 | 同上(`B4_{activityType}` サブプールを含む) | ✅同上 |
+| `WEEKLY_STORY_TICKER` | 65 | `Engine.relationships.processWeeklyStoryEvents()` → gameLogのレガシー文字列 | ⚠台帳のみ(§15-2) |
+
+### 15-1. 「配線済み・辞書だけ無い」表はEN走破の `i18n-miss` にそのまま出る
+
+P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARGE の2表は**t()を通るのに辞書に無い**状態
+= §13-2 Bの中で唯一 `i18n-miss` として可視化される族になっていた。着手前のEN走破の miss 7件のうち6件がこの2表。
+**§13-2 Bの表でも、消費点がdict化された瞬間からmissに出る**ので、missが0でないときは「未配線」ではなく
+「配線済み・未訳」の可能性を先に疑うこと。
+
+### 15-2. `WEEKLY_STORY_TICKER` は gameLog専用プール — 表示はJA固定(§2-4/§12-1)
+
+名前に反して**ティッカーには一切出ない**(`Engine.news.generateTicker` が読むのは `NEWS_TICKER_TEMPLATES`)。
+実際の消費点は `processWeeklyStoryEvents()` が `events.push('[trust-warning] …')` の形で積む
+**gameLogのレガシー文字列エントリ**(`renderLog` が `gameLogEntryText()` 経由で無変換に素通しする族)1点のみ。
+
+- 文字列エントリをEN化するには `{type, data}` オブジェクトエントリへ移行するしかなく、それは
+  **セーブに書く値の変更**にあたる(§2-4「旧文字列エントリは無変換で共存」/ D-P6-4)。§11-2で
+  「gameLog全体の再設計を要する別工程」として既に見送りが確定している族と同一
+- したがって本バッチは**台帳化と英訳のみ**を行い、消費点は無改修とした。§13-2 Bの突合表を閉じることと、
+  gameLog再設計時に訳が揃っている状態を作ることが目的
+- **13キー中、実際に読まれているのは `clash`(5) / `trustWarning`(4) / `awakening`(27) の36行だけ**。
+  残り10キー29行(`bestFriends` / `hostileEnemy` / `goodRivalZone` / `unrequitedBond` / `onesidedHostility` /
+  `temperatureDiff` / `crossAsymmetry` / `highRivalryAwareness` / `goodRivalTicker` / `bitterRivalTicker`)は
+  **参照0の死蔵**(2026-09-04 全数grep)
+
+### 15-3. 会場名は「本文辞書」ではなく「名前辞書」の住人
+
+`management.js` の会場費行が `dict(VENUES[...].name)` と**本文辞書**を引いており、会場名は
+`lang-en-names.js`(pn/名前辞書)側にしか無いため必ず外れて `[i18n-miss] 中ホールB` になっていた
+(EN走破の miss 7件の残り1件)。**値をそのままパラメータで渡す**のが正解 — `t()` のenブランチが持つ
+パラメータ値の名前自動変換(D-P6-2 `convertNames`)が引き当てる。`dict` で先に訳そうとしないこと。
+
+### 15-4. P7-3で新たに見つかった同型(未着手)
+
+1. **`processWeeklyStoryEvents` の直書きJA 6本** — `[grievance]`4本(給料/後輩の待遇/タイトル挑戦/出場機会)と
+   `[hostile-pairs]`1本+ペア名の連結様式。`WEEKLY_STORY_TICKER` と**同じ関数の中で同じgameLogへ積まれる**のに、
+   どの表にも入っていない実行文直書き(§10-2型)。gameLog再設計と同時に処理するのが自然
+2. **EN走破の `screen-log` のJA露出48件は、ほぼ全部がこのgameLogレガシー文字列族**。§13-2の完了指標
+   「各画面1桁」を screen-log に適用するには gameLog の `{type,data}` 全面移行が前提になる
+## 16. Stage B P7-2 — 地の文プール前半7表(t()を一度も通らない層)の配線(2026-09-04追加)
 
 §13-2 B の突合表のうち分類A「地の文プール」前半7表(`SNAPSHOT_TEXTS` 282 / `ATMOSPHERE_TEXTS` 33 / `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `CAMP_FLAVOR_TEXTS` 12 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8 = 373行)を台帳へ載せ、消費点を配線し、374キー(連結様式1件を含む)を英訳した。台帳はテンプレ層(§6)。
 
-### 15-1. 「乱数で選んだテンプレを名前で充填した完成文をGへ焼く」族 — `composedSnapshotText`
+### 16-1. 「乱数で選んだテンプレを名前で充填した完成文をGへ焼く」族 — `composedSnapshotText`
 
 `Engine.snapshot`の垣間見え / ロッカールームの空気ログ / 移籍ウィンドウ前週の予兆は、いずれも**選出が消費済みの乱数ストリームに依存する**ため §13-1 の「表示時に再生成」が使えない。§14-3 の`PPV_HYPE_TEMPLATES`(`hypeTpl`/`hypeVars`)と同じ**追加フィールド方式**へ寄せ、正規化を1箇所へ集約した。
 
@@ -399,17 +448,17 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 - **断片連結は`join`テンプレ化**。タイプB「話者名+全角スペース+セリフ」は`ARTICLE_COMPOSE_TEMPLATES.snapshotVoice`(`{name}　{line}` → `{name}: {line}`)。§14-1で決めた「i18n配線のために足す文字列は本表へ集約する」流儀に従い、`SNAPSHOT_TEXTS`の中には入れない
 - **`labelVars`(新設)** — 「値そのものが成形済みJAラベルで、値としても辞書を引く必要がある」パラメータ名の配列(§14-2 `_wmDictLabel`と同趣旨。`gameLogEntryText`の`crowdLabel`/`tierLabel`の先例と同型)。`PRE_WINDOW_TEXTS`の`{rival}`は実在団体名なら名前辞書のパラメータ値自動変換で訳されるが、フォールバックの`'他団体'`だけは辞書を引き直す必要がある。**フォールバックのときだけ付ける** — 実在団体名に付けるとUI辞書側でミスログを量産する
 
-### 15-2. UI直読み4表は表示直前でt()1回
+### 16-2. UI直読み4表は表示直前でt()1回
 
 `ATMOSPHERE_TEXTS`(ui-render.js `_renderRosterDojoHeader`の2箇所)・`FAREWELL_KIND_TEXT`(ui-common.jsの引退セレモニー title/lead/body)・`CAMP_FLAVOR_TEXTS`(app.jsの合宿書類 → ui-common.jsの`flavorHtml`。**PH置換より前に**`t(tmpl, {name1,name2})`)・`TEAM_SPIRIT_TEXTS`(app.jsのトースト組み立て)。いずれもGへ焼かないか、PHを持たないため追加フィールドは不要。
 
 **`showNotifEventToast`(ui-common.js)では訳さない。** これは`event.text`/`event.detail`を無変換で出す**共通表示点**で、`NOTIF_EVENT_TEXTS`/`LARGE_EVENT_TEXTS`(P7-3)など他系統の未訳文も同じ入口を通る。ここで一律t()を掛けると二重t()(§9)になる系統が出るため、**系統ごとの入口(app.js側)で訳して渡す**。P7-3がこの入口へ触るときは、系統別に訳すか`textTranslated` opt-in(§9の`lineTranslated`と同型)を足すかを決めること。
 
-### 15-3. 抽出器のパスフィルタ(`TABLE_PATH_FILTER`)
+### 16-3. 抽出器のパスフィルタ(`TABLE_PATH_FILTER`)
 
 `test/i18n-extract-templates.js`に、テーブルの特定の部分木だけを台帳から外すためのパスフィルタを追加した(`test/i18n-extract-dialogue.js`の`INCLUDE_PATH_FILTER`と同じ作法)。`walkStrings`が「テーブル直下から数えたオブジェクトキー列」(配列インデックスは含まない)を持ち回る。現在の唯一の登録は`ATMOSPHERE_TEXTS`で、`{ emoji, text }`の`emoji`葉(絵文字1文字・表示側も`${atmo.emoji} ${t(atmo.text)}`と分けて出す)を除外する。
 
-### 15-4. JA同一性の証明の作法(§13-1の作法①を実コードで回す形に変えた版)
+### 16-4. JA同一性の証明の作法(§13-1の作法①を実コードで回す形に変えた版)
 
 凍結コピーとの突合(§13-1)ではなく、**実物の生成関数を全到達分岐で回し、その場で「表示点の再構築 == 生成された完成文」を照合**した。生成側と表示側が同じ実装から出ているため、凍結コピーの取り違えが起きない。
 

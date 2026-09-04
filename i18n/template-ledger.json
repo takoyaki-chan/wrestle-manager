@@ -2279,6 +2279,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name1}がSNSに意味深な投稿をしたことで{name2}が激怒。控室で怒鳴り合う二人の声が外まで漏れていた。",
+    "en": "A pointed post from {name1} set {name2} off. The two of them shouting at each other in the locker room carried out into the hall.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name1}が{name2}に技の受け身を教えている場面が見られた",
     "en": "{name1} was seen showing {name2} how to take the move safely",
     "files": [
@@ -2389,10 +2399,590 @@
     "hasProperNoun": false
   },
   {
+    "key": "{nameA}が{nameB}との距離に少し戸惑っている様子だ",
+    "en": "{nameA} seems a little thrown by the distance {nameB} keeps",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}が{nameB}に話しかけるも、素っ気ない反応だった",
+    "en": "{nameA} spoke to {nameB} and got a flat answer back",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}が{nameB}に食ってかかり、スタッフが止めに入った",
+    "en": "{nameA} went at {nameB} and staff had to step in",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}が{nameB}の体調を気遣っている姿があった",
+    "en": "{nameA} was seen checking on how {nameB} is holding up",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}が{nameB}の勝利を知り、静かに拳を握った",
+    "en": "{nameA} learned {nameB} had won and quietly closed her fist",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}が{nameB}の試合映像を繰り返し見ている",
+    "en": "{nameA} keeps going back over {nameB}'s match footage",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}が{nameB}を睨みつけている。{nameB}は気づいていない",
+    "en": "{nameA} has been glaring at {nameB}. {nameB} has not noticed",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}が{nameB}を誘うが、{nameB}は別の用事があると去っていった",
+    "en": "{nameA} invited {nameB} along, and {nameB} left saying she had something else on",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}——好敵手の二人が並んでストレッチをしている",
+    "en": "{nameA} and {nameB} — two rivals, stretching side by side",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}がトレーニングで息の合った動きを見せている",
+    "en": "{nameA} and {nameB} are moving in sync in training",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が同じ廊下を歩くことを、誰もが避けさせている",
+    "en": "Everyone makes sure {nameA} and {nameB} are never in the same hallway",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が控室ですれ違い、空気が凍りついた",
+    "en": "{nameA} and {nameB} passed each other in the locker room and the air froze",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が控室で目も合わせない",
+    "en": "{nameA} and {nameB} will not look at each other in the locker room",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が掴み合いになりかけ、周囲が慌てて止めた",
+    "en": "{nameA} and {nameB} nearly got hold of each other before the room rushed in to separate them",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が練習中に激しく言い合いになった",
+    "en": "{nameA} and {nameB} got into a hard argument during practice",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が練習後に並んで帰る姿が目撃された",
+    "en": "{nameA} and {nameB} were seen walking home side by side after practice",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が練習後に言葉を交わし、互いに頷いていた",
+    "en": "{nameA} and {nameB} traded a few words after practice and nodded to each other",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}が練習後に静かに言葉を交わしていた",
+    "en": "{nameA} and {nameB} exchanged a few quiet words after practice",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}の口論が控室に響いた",
+    "en": "The argument between {nameA} and {nameB} carried through the locker room",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}の間で一触即発の空気が走った",
+    "en": "For a moment {nameA} and {nameB} were one word away from going at each other",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}と{nameB}の間に張り詰めた空気が漂っている",
+    "en": "The air between {nameA} and {nameB} is drawn tight",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{nameA}と{nameB}の関係修復に成功——{org}が動いた",
     "en": "{nameA}, {nameB} patched, {org}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}の練習が日に日に荒くなっている——{nameB}への執念が滲む",
+    "en": "{nameA}'s training gets rougher by the day — you can see what she is carrying about {nameB}",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}の表情が一瞬歪んだ——{nameB}の名前を聞いただけで",
+    "en": "{nameA}'s face twisted for an instant — all it took was hearing {nameB}'s name",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は{nameB}との関係をもっと深めたいようだが……",
+    "en": "{nameA} seems to want more from her friendship with {nameB}, but...",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は{nameB}のことを親友だと思っている——{nameB}がどう思っているかは別として",
+    "en": "{nameA} thinks of {nameB} as a close friend — what {nameB} thinks is another matter",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は{nameB}の名前を聞くたびに表情を歪めている",
+    "en": "Every time {nameB}'s name comes up, {nameA}'s face twists",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は{nameB}の試合を見て、小さく微笑んだ",
+    "en": "{nameA} watched {nameB}'s match and let out a small smile",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は{nameB}の試合結果を真っ先に確認している",
+    "en": "{nameA} checks {nameB}'s result before anything else",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は{nameB}の試合結果を聞いて、ゆっくりとテーピングを巻き直した",
+    "en": "Hearing how {nameB}'s match went, {nameA} slowly rewrapped her tape",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は{nameB}を目の敵にしている。{nameB}は{nameA}のことを仲間だと思っているのに",
+    "en": "{nameA} has singled {nameB} out, and {nameB} still counts {nameA} as one of her own",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameA}は客席から{nameB}の試合を食い入るように見つめていた",
+    "en": "{nameA} watched {nameB}'s match from the seats without taking her eyes off it",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}に向かって叫んだ。「もう我慢の限界よ！ あなたがそうなら、私も本気で行く！」",
+    "en": "{nameB} shouted at {nameA}. \"That's as far as I go! If that's how you want it, I'm coming at you for real!\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}に向き直った。「もう結構ですわ。あなたがその態度なら、こちらにも考えがありますの」",
+    "en": "{nameB} turned to face {nameA}. \"That will do. If that is the attitude you intend to take, I have thoughts of my own on the matter.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}に吠えた。「上等だ！ その喧嘩、買ってやるよ！」",
+    "en": "{nameB} barked it at {nameA}. \"Fine by me! You want a fight, you've got one!\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}に宣言した。「もう我慢いたしませんわ！ 全力でお相手して差し上げます！」",
+    "en": "{nameB} made her declaration to {nameA}. \"I shall endure it no longer! I will face you with everything I have!\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}の前に立ちはだかった。「いい加減にして。そのつもりなら、全力で相手になるから」",
+    "en": "{nameB} planted herself in {nameA}'s way. \"Enough. If that's your intention, I'll give you everything I have.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}をまっすぐ見据えた。「もう黙ってられない。受けて立つよ」",
+    "en": "{nameB} looked {nameA} straight on. \"I can't stay quiet anymore. I'll take you on.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}を真っ直ぐ見た。「…もう十分待った。…本気で行きます」",
+    "en": "{nameB} looked straight at {nameA}. \"...I've waited long enough. ...I'm coming at you for real.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が{nameA}を睨みつけた。「……てめえがそう来るなら、こっちも容赦しねえぞ」",
+    "en": "{nameB} fixed {nameA} with a glare. \"...You wanna play it like that, I'm done going easy.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が俯いたまま{nameA}に告げた。「…もう…我慢しない…です」",
+    "en": "Head down, {nameB} said it to {nameA} anyway. \"...I'm not... keeping quiet... anymore.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が小さく、しかし確かな声で言った。「…もう…我慢しません」",
+    "en": "{nameB} said it in a small voice, but a steady one. \"...I am... not going to endure it.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が押し殺した声で{nameA}に告げた。「…もういい。…覚えておいて」",
+    "en": "In a voice held down flat, {nameB} told {nameA}: \"...Enough. ...Remember this.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が涙を流しながら{nameA}に叫んだ。「なんで……！ なんでそんなことするの……！ もう……もう許さない……！」",
+    "en": "Crying, {nameB} shouted at {nameA}. \"Why...! Why would you do that...! I'm not — I'm not letting this go...!\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が深く息を吸い、言い放った。「これ以上は……お許しいただけません。全力で参ります」",
+    "en": "{nameB} drew a deep breath and said it plainly. \"I cannot allow any more of this... I will come at you with everything.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が無言で{nameA}の前に立ちはだかった。その目は——もう、以前の{nameB}ではなかった",
+    "en": "Without a word, {nameB} stepped into {nameA}'s path. The eyes were not the {nameB} anyone knew",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が真っ直ぐ{nameA}を見つめた。「ずっと信じていました。でも……もう限界です。本気で行きます」",
+    "en": "{nameB} held {nameA}'s gaze. \"I kept believing in you. But... this is as far as I go. I'm coming at you for real.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が笑顔で話しかけた{nameA}は、拳を握りしめて背を向けた",
+    "en": "{nameB} came over smiling; {nameA} closed her fist and turned away",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が静かに{nameA}の前に立った。「…もう十分だ。受けて立つよ」",
+    "en": "{nameB} stepped in front of {nameA} without hurry. \"...That's enough. I'll take you on.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が静かに{nameA}を見据えた。「…もういい。…覚悟は決めた」",
+    "en": "{nameB} settled her eyes on {nameA}. \"...Enough. ...I've made up my mind.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が静かに拳を握った。「ずっと信じてた。でももう……終わりにする」",
+    "en": "{nameB} quietly closed her fist. \"I believed in you the whole time. But now... I'm done.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}が静かに立ち上がった。「……もう十分だ。行くぞ」",
+    "en": "{nameB} stood up without a sound. \"...That's enough. Let's go.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}の目の色が変わった。「……もういい。あなたがそう思うなら、私も覚悟を決める」",
+    "en": "Something changed in {nameB}'s eyes. \"...Fine. If that's what you think of me, then I'm done holding back.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}の瞳が冷たく光った。「……そう。あなたがそうなら、私も本気を出すわ」",
+    "en": "A cold light came into {nameB}'s eyes. \"...I see. If that's how you are, then I'll stop holding back.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}の笑顔が消えた。「……さすがにさ。これはないよ。本気で怒ってるんだからね」",
+    "en": "The smile went off {nameB}'s face. \"...Okay, no. This one's not okay. I'm actually angry, you know.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}の笑顔が消えた。「…さすがにね。…こっちも本気で行くよ」",
+    "en": "The smile left {nameB}'s face. \"...Even for me, that's too far. ...I'm coming at you for real now.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}の表情が変わった。「……もういい。覚悟は決めた」",
+    "en": "Something shifted in {nameB}'s face. \"...Enough. I've decided.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}の表情が静かに変わった。「…そう。…なら、こちらも覚悟を決めるよ」",
+    "en": "{nameB}'s face changed, quietly. \"...I see. ...Then I'll make up my mind too.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nameB}の軽い口調が一変した。「……お前さぁ、いい加減にしろよ。マジで怒るぞ」",
+    "en": "The lightness dropped out of {nameB}'s voice. \"...Hey. Knock it off already. I'm gonna actually lose it.\"",
+    "files": [
+      "WEEKLY_STORY_TICKER"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2869,6 +3459,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}がひとりでロッカールームに佇んでいた",
+    "en": "{name} was standing alone in the locker room",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}がタイトルマッチのポスターの前で足を止めていた",
     "en": "{name} stopped in front of the poster for the title match",
     "files": [
@@ -2913,6 +3513,26 @@
     "en": "{name} is breaking down the ring on her own. Nobody comes to help",
     "files": [
       "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が今週の練習を短縮するよう申し出た。本人は問題ないと言っているが、顔色が優れないのが気になる。",
+    "en": "{name} asked to cut this week's sessions short. She says there is nothing wrong, but the color of her face says otherwise.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が休憩時間に一人で過ごすことが増えた。まだ深刻な段階ではなさそうだが、試合に出して活躍の場を作ることで変わるかもしれない。",
+    "en": "{name} spends more of her breaks alone now. It does not look serious yet, but booking her somewhere she can do something might turn it around.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2979,6 +3599,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が新技の練習中に着地に失敗。痛みを訴えている。",
+    "en": "{name} missed the landing while drilling a new move. She is reporting pain.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が殿堂入り——実績を振り返る",
     "en": "{name} enters the Hall of Fame — the record",
     "files": [
@@ -3029,6 +3659,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が練習中に技を受けた際にバランスを崩し、負傷してしまった。",
+    "en": "{name} lost her balance taking a move in practice and came away hurt.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が自主的に取り組んでいる体幹トレーニングの効果が出始めている。受け身の安定感が格段に上がった。",
+    "en": "The core work {name} took up on her own is starting to show. Her bumps land far more steadily now.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が自主練の後、一人でリングを見つめていた",
     "en": "After training on her own, {name} stood looking at the ring",
     "files": [
@@ -3053,6 +3703,16 @@
     "en": "After the match {name} stood looking at her own hands. The face of someone who has got hold of something",
     "files": [
       "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が誰もいない道場で汗を流していた。基礎をひとつひとつ確認しながら、何度も繰り返す姿が印象的だ。",
+    "en": "{name} was working up a sweat in an empty gym, checking the basics one at a time and running them again and again.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3149,6 +3809,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}と{name2}が自主的にスパーリングを重ねている。好敵手として切磋琢磨する関係が生まれつつある。",
+    "en": "{name} and {name2} keep setting up sparring on their own time. What is forming between them looks like a rivalry that makes them both better.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}と{name2}が自販機の前で笑い合っていた。何が面白いのか、こちらには分からないが",
     "en": "{name} and {name2} were laughing together at the vending machine. What was funny is anyone's guess",
     "files": [
@@ -3209,6 +3879,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}のTシャツやタオルが会場で飛ぶように売れている。追加発注を検討してもいいかもしれない。",
+    "en": "{name}'s shirts and towels are moving fast at the venue. A reorder may be worth considering.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}の{count}連勝は、まだ続いている",
     "en": "{name} still on {count} in a row",
     "files": [
@@ -3263,6 +3943,16 @@
     "en": "{name} since: {what}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の不満げな態度がチームメイトにも伝わっている。このまま放置すると退団リスクが高まりそうだ。待遇改善や直接の対話が必要かもしれない。",
+    "en": "The way {name} carries herself has reached her teammates. Left alone, the risk of her walking goes up. Better terms, or a direct conversation, may be needed.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3343,6 +4033,46 @@
     "en": "{name} moves: {fromOrg} to {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の笑顔が減った——周囲もそれに気づいている",
+    "en": "{name} smiles less than she did — and the others have noticed",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の笑顔を見る機会がめっきり減った。練習中も淡々とメニューをこなすだけで、チームメイトとの雑談もほとんどない。",
+    "en": "Chances to see {name} smile have dropped off sharply. In practice she just works the list, and there is almost no small talk with her teammates.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の練習への集中力が落ちてきている",
+    "en": "{name}'s focus in practice has been slipping",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}の表情が最近曇っている",
+    "en": "{name} has looked clouded over lately",
+    "files": [
+      "WEEKLY_STORY_TICKER"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3689,6 +4419,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{orgName}から正式な書面が届いた。「団体の威信をかけて一騎打ちを行いたい」——無視するわけにはいかない雰囲気だ。",
+    "en": "A formal letter came from {orgName}. They want a singles match with the standing of both promotions on it — not something that can be left unanswered.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{orgName}が「実力を見せてやる」と挑戦状を叩きつけてきた。",
+    "en": "{orgName} has thrown down a challenge, saying they intend to show what they can do.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{orgName}が対抗戦通算{wins}勝の節目を突破した。他団体にとって脅威となるその強さは、ロッカールームの結束の賜物だろう。",
     "en": "{orgName} has passed interpromotional win number {wins}. The strength that makes them a threat to other promotions comes out of how tightly that locker room holds together.",
     "files": [
@@ -4009,6 +4759,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{orgName}の代表が公の場でこちらの団体を挑発。挑戦状で決着をつけようと迫ってきた。",
+    "en": "The head of {orgName} needled this promotion in public and is pressing to settle it with a formal challenge.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{orgName}の新人{name}がデビューした。結果は{result}。荒削りな部分は目についたが、体の使い方に{age}歳とは思えない下地がある。複数のスカウトが入団前から動いていたという情報もあり、獲得競争の裏側込みで注目されていた一人だ。今後の伸び方を、業界が黙って見ている段階に入った。",
     "en": "A rookie at {orgName}, {name}, made her debut. The result: {result}. The rough edges were easy to spot, but there is groundwork in how she uses her body that does not read as {age}. More than one scout was said to be moving on her before she signed, and the competition behind the signing was part of why she was watched. How she grows from here is something the business is now watching in silence.",
     "files": [
@@ -4053,6 +4813,16 @@
     "en": "Pride of {orgName} — interpromotional: {milestone}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{orgName}の選手がメディアの前でこちらの団体名を出し、「いつでも受けて立つ」と公開挑戦状を叩きつけた。",
+    "en": "A wrestler from {orgName} named this promotion in front of the media and issued an open challenge: any time, any place.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4943,6 +5713,166 @@
     "en": "{name}, driven out of {ourOrg}, faced the side she has history with from the {toOrg} ring. The words of those weeks — {weeksSinceFired} of them — came out as fists.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}から「選手をCMの顔として起用したい」と打診が来た。",
+    "en": "{outletName} got in touch: they want to build a commercial around one of our wrestlers.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「アスリートのランウェイ参加を企画している」と打診してきた。",
+    "en": "{outletName} has asked about putting athletes on the runway.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「プロレスラーがゲスト出演するコーナーを作りたい」と打診してきた。",
+    "en": "{outletName} has asked about building a segment around a wrestler as a guest.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「プロレスラーの魅力をグラビアで届けたい」と申し出てきた。",
+    "en": "{outletName} has offered to put what makes a wrestler compelling into a photo spread.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「団体の顔に密着したい」とドキュメンタリー企画を持ち込んできた。",
+    "en": "{outletName} brought a documentary proposal: they want to shadow the face of the promotion.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「次世代のスターを追いかけたい」と密着取材を申し出ている。",
+    "en": "{outletName} has offered to follow one of our wrestlers around, saying they want to track the next generation.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「選手とのコラボ商品を作りたい」と申し出てきた。",
+    "en": "{outletName} has offered to build a product line with one of our wrestlers.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「長く戦い続ける選手の矜持に迫りたい」と密着取材を申し出ている。",
+    "en": "{outletName} has offered to follow a wrestler who has kept going for years, and to ask what keeps her there.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}が「頂点に立つ選手の日常を追いたい」と密着取材を打診してきた。",
+    "en": "{outletName} has asked to follow the daily life of a wrestler standing at the top.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}のディレクターが「若い才能に密着したい」と話を持ちかけてきた。",
+    "en": "A director from {outletName} came with an offer to shadow a young talent.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}のディレクターが来訪。「選手のキャラクターを全国に届けたい」とのこと。",
+    "en": "A director from {outletName} came by. They want to put one of our wrestlers in front of a national audience.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}のデザイナーが来訪。「ぜひ選手にランウェイを歩いてほしい」とのこと。",
+    "en": "The designer from {outletName} came by. They would like one of our wrestlers to walk the runway.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}のプロデューサーが来訪。「うちの団体の選手を広告塔に使いたい」とのこと。",
+    "en": "A producer from {outletName} came by. They want one of our wrestlers as the face of a campaign.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}のプロデューサーが来訪。「経験豊富な選手の素顔を追いたい」とのこと。",
+    "en": "A producer from {outletName} came by. They want the face behind a wrestler with years on her.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}の担当者が来訪。「選手のイメージを商品に落とし込みたい」とのこと。",
+    "en": "The contact at {outletName} came by. They want to work a wrestler's image into the product.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outletName}の編集長から直接連絡が入った。「ぜひ選手を誌面に起用したい」とのこと。",
+    "en": "The editor of {outletName} called directly. They want one of our wrestlers in the magazine.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9394,6 +10324,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚔️ {orgName}から挑戦状",
+    "en": "⚔️ A challenge from {orgName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔️ {orgName}から果たし状が届いた",
+    "en": "⚔️ A written challenge has arrived from {orgName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔️ {orgName}が宣戦布告",
+    "en": "⚔️ {orgName} declares war",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔️ {orgName}が興行に乗り込んできた",
+    "en": "⚔️ {orgName} came to our show",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔️ {orgName}の選手が記者会見で挑発",
+    "en": "⚔️ {orgName} wrestler taunts us at a press conference",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚖ ドラフト: {name} [{tierLabel}] → {orgName} ({cost}万 R{round})",
     "en": "⚖ Draft: {name} [{tierLabel}] → {orgName} (¥{cost:man}, R{round})",
     "files": [
@@ -9454,6 +10434,66 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚠️ {name}がスパーリング中に痛みを訴えた",
+    "en": "⚠️ {name} reported pain during sparring",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚠️ {name}がロープワーク中に負傷",
+    "en": "⚠️ {name} hurt during rope work",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚠️ {name}が練習で負傷",
+    "en": "⚠️ {name} injured in practice",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚠️ {name}が練習中にアクシデント",
+    "en": "⚠️ {name} had an accident in practice",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚠️ {name}が練習後に体の異変を報告",
+    "en": "⚠️ {name} reported a problem after practice",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚠️ {name}に練習中のトラブル",
+    "en": "⚠️ Trouble for {name} in practice",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚠️ {name}の周辺で他団体の動きが活発化している",
     "en": "⚠️ Other promotions are moving more openly around {name}",
     "files": [
@@ -9474,6 +10514,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚠️ コーチ{coach}:「{name}が心配です」",
+    "en": "⚠️ Coach {coach}: \"I am worried about {name}\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚠️ 複数の団体が{name}に接触を試みている噂が流れている",
     "en": "⚠️ There is talk that more than one promotion has tried to reach {name}",
     "files": [
@@ -9488,6 +10538,16 @@
     "en": "⚡ {nameA} and {nameB} — a smoldering grudge has hardened into something neither will let go. Nobody backs off now",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚡ {name}の態度にチーム内でも不安の声が",
+    "en": "⚡ {name}'s attitude has the locker room uneasy",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9518,6 +10578,16 @@
     "en": "✨ {name}: \"{line}\"",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "✨ {name}が練習で目を引く動きを見せた",
+    "en": "✨ {name} showed something worth watching in practice",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9594,10 +10664,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "「{name}、最近ちょっとおかしいです。技の精度は保ってるんですが、目が死んでるというか…このまま放っておくとまずいかもしれません」",
+    "en": "\"{name} has been strange lately. Her execution is holding up, but there is nothing behind her eyes. Leaving it alone could get bad.\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「{name}が最近、試合後も練習後もすぐに帰ってしまうんです。前は自主練していたのに。何か不満があるのかもしれません」とコーチ{coach}が心配そうに報告した。",
+    "en": "\"{name} goes straight home now, after matches and after practice. She used to stay and work. Something may be bothering her,\" Coach {coach} reported, plainly worried.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「{name}とは最近あまり話せていないんです。こちらから声をかけても素っ気ない返事しか返ってこなくて。何か手を打った方がいいかもしれません」",
+    "en": "\"I have not been able to talk with {name} much lately. When I go to her, all I get back is a flat answer. It may be time to do something about it.\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "「{winFaction}」が対抗戦を制圧——{loseLeader}の派閥に重い星",
     "en": "{winFaction} take the war — {loseLeader} beaten",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「…ずっと我慢してた…けど…もう限界です…」——{nameB}の声は小さいけど、震えていなかった",
+    "en": "\"...I kept quiet about it... but... I can't anymore...\" — {nameB}'s voice was small, but it did not shake",
+    "files": [
+      "WEEKLY_STORY_TICKER"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9694,6 +10804,66 @@
     "hasProperNoun": false
   },
   {
+    "key": "「ファンと選手が触れ合える機会を作りたい」——イベント会社からそんな提案が届いた。",
+    "en": "A chance for fans and wrestlers to be in the same room — that is the proposal from an events company.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「プロレスのパワーとブランドのスタイルを組み合わせたい」——{outletName}からそんな話が来た。",
+    "en": "Wrestling's force and the brand's style, put together — that is what came in from {outletName}.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「プロレスラーのカッコよさをCMで表現したい」——{outletName}からそんな依頼が届いた。",
+    "en": "They want a commercial that puts across how good a wrestler looks doing this — that is what came in from {outletName}.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「プロレスラーの迫力をランウェイで表現したい」——{outletName}からそんな話が届いた。",
+    "en": "They want the presence a wrestler carries to come across on a runway — that is what {outletName} sent over.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「プロレス界の未来を担う若手を追う」——{outletName}からそんな企画の依頼が来た。",
+    "en": "Following the young wrestlers who will carry the business forward — that is the pitch {outletName} sent over.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「ベテランだからこそ見える景色がある」——{outletName}からそんなテーマの企画が持ち込まれた。",
+    "en": "There are things you only see after enough years — that is the theme {outletName} brought in.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "「善戦している」で満足しているうちは二流のままだ",
     "en": "As long as a good showing is enough to satisfy them, second rate is what they stay.",
     "files": [
@@ -9701,6 +10871,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「団体を背負うエースに迫る」——{outletName}からそんなオファーが届いた。推薦する選手を選んでほしいという。",
+    "en": "A close look at the ace who carries a promotion — that is the offer from {outletName}. They want us to put a name forward.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -9744,10 +10924,50 @@
     "hasProperNoun": true
   },
   {
+    "key": "「女子プロレスラーの素顔に迫りたい」——{outletName}からそんな企画の打診が来た。",
+    "en": "The face behind the wrestler — that is the pitch {outletName} sent over.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "「次は獲る」——どちらかが必ずそう言う関係。{matches}度の対戦が、その言葉を絵空事ではなく現実の重みに変えている。数字は嘘をつかない。",
     "en": "\"I take it next time\" — a relationship in which one of them always says it. The numbers do not lie: a {matches}-match record has turned that sentence from wishful talk into something with weight.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「社長、{name}のモチベーションが下がっているように見えます。練習態度は悪くないんですが…どこか投げやりというか。ケアが必要かもしれません」",
+    "en": "\"Boss, {name} looks like she is losing her drive. Her practice habits are fine, but there is something resigned about it. She may need attention.\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「選手の素顔をファンに見せる場を作りたい」と主催者から打診があった。",
+    "en": "An organizer asked about creating a space where fans see the person behind the wrestler.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「面白いキャラクターのプロレスラーを探している」——{outletName}からそんな依頼が届いた。",
+    "en": "They are after a wrestler with a character that plays well on camera — that is what {outletName} sent over.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -10014,6 +11234,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "いつもは積極的に話しかけてくる{name}が、最近は静かに練習をこなして帰るだけになっている。何か気になることがあるのかもしれない。",
+    "en": "{name} usually starts the conversations. Lately she works through practice quietly and goes home. Something may be sitting with her.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "いつも通りの練習風景",
     "en": "A practice like any other",
     "files": [
@@ -10201,6 +11431,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "こちらの興行会場に{orgName}の関係者が姿を見せ、「リングで語り合おう」と挑戦状を突きつけてきた。",
+    "en": "People from {orgName} showed up at the venue and pushed a challenge into our hands: settle it in the ring.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -10985,6 +12225,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "みんなが中央のリングで合同練習をしている時、{name}は壁際で一人、基礎練習を繰り返していた。周囲とは見えない壁ができている。",
+    "en": "While everyone else worked the ring in the middle, {name} stayed by the wall running basics alone. Something has come up between her and the rest.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "みんなが輪になって笑っている。その輪に、自分の居場所はなかった",
     "en": "Everyone is laughing in a circle. There was no place in it for her",
     "files": [
@@ -11335,6 +12585,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "コーチ{coach}が社長室を訪れた。「{name}のことなんですが…練習中の集中力が明らかに落ちています。少し気にかけてやってほしい」",
+    "en": "Coach {coach} came by the office. \"It is about {name}. Her focus in practice has clearly dropped. I would like you to look in on her.\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "サブミッションの冷徹さが、彼女の強さの核心だった。",
     "en": "The cold of her submission game was the center of what made her strong.",
     "files": [
@@ -11502,6 +12762,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スパーリング中に{name}が一瞬だけ動きを止めることがあった。何か重いものを抱えているように見えた。",
+    "en": "There were moments in sparring when {name} simply stopped for a beat. She looked like she was carrying something heavy.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スパーリング中に{name}が相手の技を受け損ね、マットに叩きつけられた。",
+    "en": "{name} misread a move in sparring and went down hard on the mat.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -11692,6 +12972,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "チケット購入時に「{name}が見たくて来た」と声に出してくれるファンが増えている。地道に積み重ねてきた試合が実を結んでいる。",
+    "en": "At the ticket window, more people are saying out loud that they came to see {name}. The matches she has quietly stacked up are paying off.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -11905,6 +13195,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ファンが{name}のイラストや応援動画をSNSに投稿し、それが大きな話題を呼んでいる。知名度がじわじわと上昇中だ。",
+    "en": "Fans are posting drawings and tribute videos of {name}, and they are getting real traction. Her name keeps creeping upward.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "ファンが一番見たがっているのは{leftName}と{rightName}の対戦だ。組まない理由がないだろう",
     "en": "What the fans want most is {leftName} against {rightName}. No reason left not to book it.",
     "files": [
@@ -11992,6 +13292,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "プロレスの哲学について、{name}と{name2}が火花を散らすような議論を繰り広げた。二人とも目を輝かせていた。",
+    "en": "{name} and {name2} argued about what wrestling is for, and neither gave an inch. Both of them looked thoroughly alive.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -12242,6 +13552,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ロッカールームの一角で{nameA}と{nameB}の冷たい空気が流れている",
+    "en": "In one corner of the locker room the air between {nameA} and {nameB} has gone cold",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ロープの反動を利用した連続技の練習中、{name}の足がロープに絡まり転倒。すぐには立ち上がれなかった。",
+    "en": "Drilling a sequence off the ropes, {name} caught a foot in them and went down. She did not get up right away.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -12595,6 +13925,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "主催者から「選手とファンが直接交流できるイベントを開きたい」と相談が来た。",
+    "en": "An organizer got in touch about running an event where fans and wrestlers meet face to face.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "予想以上の好勝負。両者の株が上がった",
     "en": "Better than anyone expected. Both of them are worth more today",
     "files": [
@@ -12925,6 +14265,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "今日の{name}はルーティンをこなしているだけといった印象で、いつもの集中力がなかった。疲れか、それとも悩みがあるのか。",
+    "en": "Today {name} looked like she was only getting through the routine. The focus was not there. Fatigue, or something on her mind.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今日の{name}は朝から表情が暗かった。何か聞こうとしたが、やんわりと遮られてしまった。様子を見ておく必要がありそうだ。",
+    "en": "{name} came in with a dark look this morning. An attempt to ask about it was gently turned aside. This one needs watching.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今日の合同練習で、{name}が以前はできなかった動きを難なくこなしてみせた。コーチも思わず足を止めて見入っていた。",
+    "en": "In today's group session {name} went through a move she could not do before without any trouble. The coach stopped what she was doing to watch.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "今日の興行代、返してほしいというファンの気持ちは理解できる",
     "en": "If a fan wants tonight's money back, I understand the feeling.",
     "files": [
@@ -12995,6 +14365,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "以前から不穏な空気があった{name1}と{name2}の関係がついに破綻。練習にも支障が出始めている。",
+    "en": "The air between {name1} and {name2} had been bad for a while, and it has now broken down entirely. Practice is starting to suffer for it.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "以前はスパーリング相手を自分から探していた{name}が、最近は一人でサンドバッグを叩いている姿しか見ない。心を閉ざし始めているのかもしれない。",
+    "en": "{name} used to go looking for a sparring partner herself. Lately the only thing anyone sees is her alone on the heavy bag. She may be shutting down.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "以前は必ず参加していた自主練に{name}が来なかった。体調不良ではないらしいが…声をかけてみるか、ケアアクションで気にかけてみてもいいかもしれない。",
+    "en": "{name} did not show for the extra session she never used to miss. It does not appear to be illness. A word from you, or a care action, might be worth spending.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "以前は最後まで残って自主練をしていた{name}だが、最近は練習が終わると荷物をまとめてさっと帰ってしまう。何かを抱えているようだ。",
+    "en": "{name} used to stay to the end for extra work. Now she packs up and goes the moment it finishes. She is carrying something.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "以前は練習後もチームメイトと談笑していた{name}が、最近は黙って着替えて帰ることが増えた。チームの雰囲気にも影響が出てきそうだ。",
+    "en": "{name} used to stay and talk with the others after practice. Now she changes in silence and leaves. The mood of the room will feel it before long.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "仲間と掴んだ、この勝利……!忘れません",
     "en": "A win we took together...! I won't forget it.",
     "files": [
@@ -13015,10 +14435,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "休憩時間、他の選手たちが輪になって話す中、{name}は隅でスマホを見つめていた。以前はいつも誰かと一緒にいたのに。",
+    "en": "While the others stood talking in a circle, {name} was in the corner staring at her phone. She used to be with someone every time.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "会場に響くのは選手の声ばかり――{org}の興行が大幅な集客割れとなった。「このままでは…」と関係者も頭を抱えている。",
     "en": "The only voices carrying in the building were the wrestlers' own. The {org} show came in well under its draw. \"If this goes on...\" is as far as anyone at the promotion would finish the sentence.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "会場の外でも{name}を待つファンの姿が増えてきた。試合を見て初めてプロレスを好きになったと語るファンも現れはじめている。",
+    "en": "More fans are waiting outside the building for {name}. Some of them say her match was the one that made them like wrestling in the first place.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -13215,6 +14655,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "先月と比べると、{name}の練習時間が目に見えて減っている。怪我を抱えているわけではないだけに、少し心配だ。",
+    "en": "Against last month, the hours {name} puts in have visibly dropped. She is carrying no injury, which is what makes it worth watching.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "先月の試合映像と見比べると、{name}の動作に無駄がなくなっているのが分かる。地道な積み重ねが形になってきた。",
+    "en": "Set against last month's match footage, there is less wasted motion in what {name} does. The steady work is taking shape.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "先週の試合でのハイライトが拡散されて、{name}のSNSフォロワー数が急増している。知名度が着実に上がってきた。",
+    "en": "A clip from last week's match went around, and {name}'s follower count has jumped. Her name is spreading steadily.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "全カードが空回り。GMは今夜眠れないのではないか。眠れるなら、それはそれで問題だが",
     "en": "Every match on it spun its wheels. The GM will not sleep tonight. If they do sleep, that is a problem of its own.",
     "files": [
@@ -13232,6 +14702,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "全体練習の終了前に、{name}が黙って荷物をまとめて帰っていった。ケアアクションでボーナスを支給するか、試合で活躍の場を与えることで状況を改善できるかもしれない。",
+    "en": "Before the group session was over, {name} packed her bag without a word and left. A bonus through a care action, or a match where she can show something, might improve this.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -13782,6 +15262,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "合同練習の後も{name}は一人で黙々とストレッチをしている。以前はチームメイトと談笑していたのだが、最近はほとんど会話がない。",
+    "en": "After the group session {name} stretches by herself without a word. She used to be laughing with the others. Now there is barely any conversation.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "合同練習中、{name1}が{name2}への不満を公然と口にした。全員の前での出来事に、チーム全体が凍りついた。",
+    "en": "In the middle of group practice, {name1} said out loud what she thinks of {name2}. It happened in front of everyone, and the whole room went cold.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -14549,6 +16049,16 @@
     "en": "A threat in waiting — {name}. Rough still, and on this path she is the next ace at {orgName}.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "小さなことで感情が出やすくなっている{name}。直接の原因は不明だが、現状への不満が積み重なっているようだ。早めに話を聞いた方がいいかもしれない。",
+    "en": "Small things set {name} off now. The direct cause is not clear, but resentment about where she stands has been stacking up. It may be better to hear her out early.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -15325,6 +16835,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "控室で{name1}と{name2}の間に激しい口論が発生。周囲の制止も聞かず一触即発の状態になっている。",
+    "en": "A hard argument broke out between {name1} and {name2} in the locker room. Neither would listen to the people pulling them apart, and it is still one word away from going further.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "控室で他の選手たちが息を潜める瞬間がある——{charA}と{charB}が同じ空間に居合わせた時だ。{years}年来の憎悪が、団体の空気そのものを冷やしている。記者として、これは見ていてつらい。",
     "en": "There are moments backstage when the other wrestlers hold their breath — the moments {charA} and {charB} are in the same space. A {years}-year hatred is cooling the air of the promotion itself. As a reporter, this is hard to watch.",
     "files": [
@@ -15885,6 +17405,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "昨日まで普通に練習に来ていた{name}が、今日は姿を見せなかった。ロッカーの私物はすべて持ち出されていた。連絡もつかない。",
+    "en": "{name} was at practice as normal through yesterday. Today she did not appear. Everything of hers is out of the locker, and no one can reach her.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "昼休み。他の選手たちが談笑する中、{name}だけが離れた場所にいた",
     "en": "Lunch break. The others were chatting away, and {name} alone sat apart from them",
     "files": [
@@ -16045,6 +17575,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "最近、{name}と{name2}がよく行動を共にしているのが目につく。ランチを一緒にとったり、移動中も話し合っていることが増えた。",
+    "en": "Lately it is hard to miss how often {name} and {name2} are together. They eat lunch side by side and keep talking through the travel days.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最近の{name}は何を考えているのか読めない。返事はするが目が合わない、笑顔が一切見られない——チームの誰もが心配している。",
+    "en": "There is no reading {name} these days. She answers, but she does not meet your eyes, and she does not smile at all — everyone in the room has noticed.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "最近の成績が振るわないのが気がかりだ。メンタル面も含めて心配である",
     "en": "The recent results are the concern, and what they are doing to her head with it.",
     "files": [
@@ -16055,6 +17605,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "最近の連戦のダメージが{name}の体に残っているようだ。練習でも動きが鈍く、いつもの切れ味がない。",
+    "en": "The recent run of matches has left something in {name}. She is slow in practice and the sharpness is gone.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "最近ほんとに力が拮抗してて面白い",
     "en": "The two of them are genuinely level lately and it's great",
     "files": [
@@ -16062,6 +17622,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "月次の選手状態報告の中で、コーチ{coach}が{name}の名前を特記していた。「要注意。練習態度に変化あり。面談を推奨します」",
+    "en": "In the monthly roster report, Coach {coach} flagged {name} by name. \"Watch closely. Change in practice habits. Recommend a meeting.\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "朝、道場に着くと{name}のロッカーが空になっていた。誰にも何も言わず、荷物をまとめて去ったらしい。誰も止められなかった。",
+    "en": "The gym opened this morning to find {name}'s locker emptied. She packed and went without telling anyone. No one had the chance to stop her.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -16152,6 +17732,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "本来は軽い打ち合いのはずが、{name1}と{name2}のスパーリングが本気のぶつかり合いに発展。コーチが間に割って入る事態となった。",
+    "en": "What was meant to be a light exchange turned into {name1} and {name2} going at each other for real. A coach had to step between them.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -16995,6 +18585,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "毎朝の早出練習が続いている{name}。最近はスパーリング相手からも「動きが変わった」と言われることが増えてきた。",
+    "en": "{name} has kept up the early morning sessions, and lately her sparring partners keep telling her that her movement has changed.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "毎週同じ展開で勝ってるから、観てて飽きてきたまである",
     "en": "Winning the same way every week, it's honestly getting boring",
     "files": [
@@ -17042,6 +18642,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "気がつけば{name}はもういなかった。ロッカールームには何も残っていない。チームメイトたちも言葉を失っている。",
+    "en": "By the time anyone noticed, {name} was already gone. Nothing of hers is left in the locker room. Her teammates have no words for it.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18535,6 +20145,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "練習が終わってもロッカールームを離れようとしない二人。お互いの技や試合のことを真剣に語り合っているようだった。",
+    "en": "Neither of them would leave the locker room once the session ended. They seemed to be going over each other's moves and matches in earnest.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "練習に熱が入っている",
     "en": "There is heat in the work today",
     "files": [
@@ -18542,6 +20162,36 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習を終えた{name}が、動かすと痛む箇所があると申告。無理をしていた可能性がある。",
+    "en": "With the session done, {name} reported a spot that hurts when she moves it. She may have been pushing too hard.",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習パートナーとのスパーリングで{name}が技を受けた直後、顔をしかめて膝をついた。本人は続けられると言うが…",
+    "en": "Right after taking a move from her sparring partner, {name} winced and went to a knee. She says she can keep going...",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習中の{name}の目が、どこか遠くを見ているような瞬間が増えた。試合への集中は保てているが、何かを抱えているように見える。",
+    "en": "More often in practice, {name} looks off at nothing for a moment. She still holds her focus for matches, but she looks like she is carrying something.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18565,6 +20215,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "練習後、{name}が{name2}の動きを見て自ら声をかけた。2時間近く付き合って、丁寧に手ほどきしていたそうだ。",
+    "en": "After practice {name} watched {name2} work and spoke up on her own. She reportedly stayed nearly two hours, taking her through it carefully.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習後、{name}と{name2}が近所の定食屋で向かい合って談笑している姿が目撃された。チームの結束が深まっているようだ。",
+    "en": "After practice {name} and {name2} were seen across a table at the diner down the street, laughing over the meal. The room is knitting together.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "練習後、鏡に映る自分を見た。何かが、変わっていた",
     "en": "After practice she looked at herself in the mirror. Something had changed",
     "files": [
@@ -18572,6 +20242,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習後に{name}がストレッチに普段の倍の時間をかけていた。本人は何も言わないが、体が悲鳴を上げているのかもしれない。",
+    "en": "After practice {name} spent twice her usual time stretching. She says nothing about it, but she may be past what she can absorb.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "練習後のミーティングで、{name}の受け答えがぶっきらぼうになってきた。チームとの何らかの摩擦が生じているかもしれない。",
+    "en": "In the meetings after practice, {name}'s answers have gone blunt. There may be friction with the rest of the room.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18602,6 +20292,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "繰り返し練習してきた連携技が、{name}の体に馴染んできたようだ。実戦でも使えるレベルに仕上がりつつある。",
+    "en": "The combination {name} has drilled over and over seems to have settled into her body. It is nearly ready for a real match.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18682,6 +20382,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "花道の奥から{nameA}が{nameB}の試合を見ていた。その目は揺れていない",
+    "en": "From the far end of the aisle, {nameA} watched {nameB}'s match. Her eyes did not move",
+    "files": [
+      "WEEKLY_STORY_TICKER"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -19015,6 +20725,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "観客の入りを見ていると、{name}が出る試合は明らかに人が多い。ファンが友人を誘って来場するというケースも報告されている。",
+    "en": "Look at the attendance and the nights {name} works are plainly fuller. There are reports of fans bringing friends along.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "観客の反応は薄かった",
     "en": "The crowd stayed thin on it",
     "files": [
@@ -19132,6 +20852,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合が続いたせいか、{name}の動きにいつもの切れが見られない。練習後もすぐに休むことが多くなっている。",
+    "en": "The run of matches may be telling. The usual edge is missing from {name}'s movement, and she sits down as soon as practice ends.",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -20295,6 +22025,56 @@
     "hasProperNoun": true
   },
   {
+    "key": "🌟 {name}の努力が実を結びつつある",
+    "en": "🌟 {name}'s work is starting to pay off",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🌡️ {name}のコンディションが優れない",
+    "en": "🌡️ {name} is not in good condition",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🌸 {name}と{name2}の仲が深まってきた",
+    "en": "🌸 {name} and {name2} are growing closer",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🍙 {name}と{name2}が一緒に食事をとっていた",
+    "en": "🍙 {name} and {name2} ate together",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎉 SNSで{name}が話題になっている！",
+    "en": "🎉 {name} is getting talked about online!",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🎉 {name}の引き抜き交渉成功！（-{cost}万）",
     "en": "🎉 Poaching talks for {name} came off! (-¥{cost:man})",
     "files": [
@@ -20335,6 +22115,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "🎤 サイン会・トークショーの開催依頼",
+    "en": "🎤 A request for a signing and talk show",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎤 ファンイベント開催の打診",
+    "en": "🎤 An approach about a fan event",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎤 ファンミーティングの企画提案",
+    "en": "🎤 A fan meeting proposal",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "🎫 逸材特別交渉枠を使用しました",
     "en": "🎫 Used your special standout negotiation slot",
     "files": [
@@ -20342,6 +22152,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎯 {name}が技の精度を上げてきた",
+    "en": "🎯 {name} has sharpened her execution",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -20465,6 +22285,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "🏋️ {name}がフィジカルトレーニングで成果を見せた",
+    "en": "🏋️ {name} is showing results from her physical work",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🏟️ PPV GRAND FINAL「{ppvName}」エントリー完了！第{showWeek}週に開催",
     "en": "🏟️ Entry confirmed for PPV GRAND FINAL {ppvName}! Running in week {showWeek}",
     "files": [
@@ -20489,6 +22319,16 @@
     "en": "🏢 Free agents available to scout: {count}.",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👀 コーチ{coach}が{name}の変調に気づいた",
+    "en": "👀 Coach {coach} has noticed a change in {name}",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -20555,6 +22395,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "👊 {name}と{name2}が激しく語り合っていた",
+    "en": "👊 {name} and {name2} had it out over wrestling",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "👑 {champName}が乱入者{intruderName}を退けた！ 団体人気+2、対戦pt+{intrusionPt}",
     "en": "👑 {champName} turned back the intruder {intruderName}! Promotion popularity +2, H2H Pts +{intrusionPt}",
     "files": [
@@ -20575,6 +22425,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "👗 {outletName}がファッションショー出演者を募集",
+    "en": "👗 {outletName} is casting for a fashion show",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👗 {outletName}のコレクションへの参加依頼",
+    "en": "👗 An invitation to walk in the {outletName} collection",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👗 {outletName}のランウェイ出演オファー",
+    "en": "👗 A runway offer from {outletName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👤 {name}が道場の隅で黙々と練習していた",
+    "en": "👤 {name} trained in the corner of the gym without a word",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "💔 {challengerName} の奪還挑戦は失敗。{orgName} が団体王座を防衛した。",
     "en": "💔 {challengerName}'s bid to reclaim the title failed. {orgName} held the promotion title.",
     "files": [
@@ -20585,6 +22475,106 @@
     "hasProperNoun": true
   },
   {
+    "key": "💖 {name}目当てのファンが増えてきた！",
+    "en": "💖 More fans are buying tickets for {name}!",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💢 {name}が何かに苛立っている様子だ",
+    "en": "💢 Something is irritating {name}",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💤 {name}の練習に覇気がない日があった",
+    "en": "💤 {name} went through a session with no spark",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💥 {name1}と{name2}がスパーリングでエスカレート",
+    "en": "💥 Sparring between {name1} and {name2} got out of hand",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💥 {name1}と{name2}が衝突",
+    "en": "💥 {name1} and {name2} clashed",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💥 {name1}と{name2}の対立が深刻化",
+    "en": "💥 The trouble between {name1} and {name2} is getting worse",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💥 {name1}と{name2}の間に亀裂",
+    "en": "💥 A rift has opened between {name1} and {name2}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💥 {name1}と{name2}の関係が限界に",
+    "en": "💥 {name1} and {name2} have reached their limit",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💨 {name}の姿が消えた",
+    "en": "💨 {name} has disappeared",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💪 {name}が自主トレで手応えを掴んだ",
+    "en": "💪 {name} is getting somewhere in her own training",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "💪 逆境がチームを強くしている",
     "en": "💪 Hard times are making this team stronger",
     "files": [
@@ -20592,6 +22582,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💬 {name}が{name2}に技のコツを教えていた",
+    "en": "💬 {name} was walking {name2} through a move",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -20735,6 +22735,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "💭 {name}の様子が少し気になる",
+    "en": "💭 {name} is worth keeping an eye on",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "💰 残り資金: {funds}万",
     "en": "💰 Funds remaining: ¥{funds:man}",
     "files": [
@@ -20785,6 +22795,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "📈 {name}の動きが明らかに良くなっている",
+    "en": "📈 {name}'s movement is clearly better",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "📉 団体人気{delta}",
     "en": "📉 Promotion popularity {delta}",
     "files": [
@@ -20805,10 +22825,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "📊 コーチ{coach}の定期報告に{name}の名前が",
+    "en": "📊 {name}'s name appears in Coach {coach}'s regular report",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "📊 業界{rank}位からの挑戦が始まる。",
     "en": "📊 The climb starts from number {rank} in the business.",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📋 コーチ{coach}が報告:「{name}の様子が最近おかしい」",
+    "en": "📋 Coach {coach} reports: \"Something is off with {name} lately\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -20855,6 +22895,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "📝 コーチ{coach}:「{name}のことで相談が…」",
+    "en": "📝 Coach {coach}: \"I need to talk to you about {name}...\"",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "📝 スカウト獲得 {name} [{tierLabel}] 契約金{cost}万",
     "en": "📝 Scouted and signed {name} [{tierLabel}], signing fee ¥{cost:man}",
     "files": [
@@ -20885,10 +22935,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "📣 ファンから{name}への応援の声が増えている！",
+    "en": "📣 More fans are getting behind {name}!",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "📤 {name}を解雇",
     "en": "📤 Released {name}",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📦 {name}が突然いなくなった…",
+    "en": "📦 {name} is suddenly gone...",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -20989,6 +23059,196 @@
     "en": "📰 Weekly Women's Wrestling — {name} up close: the drive that shows on the practice floor",
     "files": [
       "management.js:MAGAZINE_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📱 {name}のファンアートがSNSで拡散中！",
+    "en": "📱 Fan art of {name} is spreading online!",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📷 {outletName}からグラビア出演のオファー",
+    "en": "📷 A photo spread offer from {outletName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📷 {outletName}からグラビア撮影の依頼",
+    "en": "📷 {outletName} requests a photo shoot",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📷 {outletName}がグラビア特集企画を検討",
+    "en": "📷 {outletName} is weighing a photo feature",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📸 {outletName}からCM出演の打診",
+    "en": "📸 {outletName} asks about a commercial",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📸 {outletName}がCMキャストを探している",
+    "en": "📸 {outletName} is casting for a commercial",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📸 {outletName}のCM出演オファー",
+    "en": "📸 A commercial offer from {outletName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}から「キャリアの深み」取材依頼",
+    "en": "📺 {outletName} requests a piece on the long career",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}から「頂点の景色」取材オファー",
+    "en": "📺 {outletName} offers a shoot called \"The View from the Top\"",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}からバラエティ出演のオファー",
+    "en": "📺 A variety show offer from {outletName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}から若手特集の申し入れ",
+    "en": "📺 {outletName} wants to do a feature on our young wrestlers",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}が「円熟の技」ドキュメントを提案",
+    "en": "📺 {outletName} proposes a documentary on craft",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}がエース密着企画を提案",
+    "en": "📺 {outletName} proposes a documentary on our ace",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}がゲスト出演の候補を探している",
+    "en": "📺 {outletName} is looking for a guest",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}がトップ選手の特集を企画中",
+    "en": "📺 {outletName} is planning a feature on a top wrestler",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}がベテラン特集を企画",
+    "en": "📺 {outletName} is planning a veterans feature",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}が注目の新星を追いたいと打診",
+    "en": "📺 {outletName} asks to follow a rising name",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}の「若手発掘」企画にうちの選手が候補に",
+    "en": "📺 One of ours is up for the {outletName} new talent series",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 {outletName}のトーク番組に出演依頼",
+    "en": "📺 A talk show booking request from {outletName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -21125,6 +23385,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "🔥 {name}の人気が上り調子だ！",
+    "en": "🔥 {name}'s popularity is on the rise!",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🔥 {orgName}の挑戦状を無視",
     "en": "🔥 Ignored the challenge letter from {orgName}",
     "files": [
@@ -21165,10 +23435,100 @@
     "hasProperNoun": false
   },
   {
+    "key": "🗣️ コーチ{coach}が{name}について進言",
+    "en": "🗣️ Coach {coach} raises a concern about {name}",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😐 {name}がチームメイトと距離を置き始めた",
+    "en": "😐 {name} is putting distance between herself and the others",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😑 {name}が練習中に何かを考えているようだった",
+    "en": "😑 {name} seemed to be somewhere else in practice",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😓 {name}が少し疲れ気味のようだ…",
+    "en": "😓 {name} looks a little worn down...",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😔 {name}が休憩時間にひとりぼっちだった",
+    "en": "😔 {name} spent the break by herself",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😔 {name}が練習量を落としているようだ",
+    "en": "😔 {name} seems to be training less",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😟 {name}から笑顔が消えてきた気がする",
+    "en": "😟 The smile has gone out of {name}",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "😤 {nameA}と{nameB}——因縁の相手と同じ屋根の下。ロッカールームの空気が険悪に",
     "en": "😤 {nameA} and {nameB} — a grudge under one roof. The locker room has gone cold",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😤 {name}が最近不満そうにしている…",
+    "en": "😤 {name} has looked unhappy lately...",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😩 {name}が連戦の疲れを引きずっている",
+    "en": "😩 {name} is carrying the wear of a busy stretch",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -21185,6 +23545,86 @@
     "hasProperNoun": false
   },
   {
+    "key": "😶 {name}が最近、練習で一人でいることが増えた…",
+    "en": "😶 {name} has been alone in practice more often lately...",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😶 {name}が最近どことなく元気がないようだ…",
+    "en": "😶 {name} has not seemed herself lately...",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😶‍🌫️ {name}…大丈夫だろうか",
+    "en": "😶‍🌫️ {name}... is she all right?",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "😶‍🌫️ {name}が自主練も一人で行うようになった",
+    "en": "😶‍🌫️ {name} does her extra work alone now too",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🚪 {name}が一人で練習場を出ていった",
+    "en": "🚪 {name} walked out of the gym alone",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🚪 {name}が荷物をまとめて団体を去った",
+    "en": "🚪 {name} packed up and left the promotion",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🚶 {name}が練習後にすぐ帰るようになった",
+    "en": "🚶 {name} leaves as soon as practice ends now",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🛍️ {name}のグッズが売れ行き好調！",
+    "en": "🛍️ {name}'s merchandise is selling well!",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🛠 年末表彰データを復旧しました",
     "en": "🛠 Restored the year-end awards data",
     "files": [
@@ -21195,10 +23635,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "🤔 {name}が浮かない顔をしていた",
+    "en": "🤔 {name} looked downcast",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🤜 {name}と{name2}が互いを高め合っている",
+    "en": "🤜 {name} and {name2} are pushing each other",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🤝 {nameA}と{nameB}が再会！ 旧友との再会でコンディション上昇",
     "en": "🤝 {nameA} and {nameB} are together again! Seeing an old friend lifted both their condition",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🤝 {name}と{name2}が練習後に話し込んでいた",
+    "en": "🤝 {name} and {name2} stayed talking after practice",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -21235,6 +23705,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "🤝 {outletName}からコラボ商品の提案",
+    "en": "🤝 {outletName} proposes a collaboration product",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🤝 {outletName}がコラボパートナーを探している",
+    "en": "🤝 {outletName} is looking for a collaboration partner",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🤝 {outletName}とのコラボ企画の打診",
+    "en": "🤝 An approach about a collaboration with {outletName}",
+    "files": [
+      "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🤝 厳しい時期だからこそ仲間の大切さを実感",
     "en": "🤝 A rough patch is teaching them what teammates are worth",
     "files": [
@@ -21242,6 +23742,36 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🩹 {name}の体に疲労が溜まっているようだ",
+    "en": "🩹 Fatigue is building up in {name}",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🫥 {name}が自主練を欠席する日があった",
+    "en": "🫥 {name} missed a day of her own training",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🫥 {name}の表情が硬い日が増えた",
+    "en": "🫥 {name} looks closed off more days than not",
+    "files": [
+      "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   }
 ]
