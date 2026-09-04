@@ -11,7 +11,7 @@
   },
   {
     "key": "1年前よりは確実に良くなってる…はず…多分…",
-    "en": "",
+    "en": "Definitely better than a year ago... probably... I think...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -381,7 +381,7 @@
   },
   {
     "key": "5番手以下の比較で僅かに有利。地力勝負は意外と{playerName}寄り",
-    "en": "",
+    "en": "Slight edge on the comparison below the top 5. Raw depth actually leans {playerName}",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -431,7 +431,7 @@
   },
   {
     "key": "TOP5の実力は互角。あとはカード編成とコンディション管理の差だな",
-    "en": "",
+    "en": "Top 5 ability is level. Rest is the difference in booking and condition management",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -581,7 +581,7 @@
   },
   {
     "key": "{bestMQ}点。この数字を「美談」として語ることはできない。憎しみが質を生むこともある——皮肉な現実を、本紙はそう書いておく。",
-    "en": "",
+    "en": "A rating of {bestMQ}. This number cannot be told as a heartening story. Hatred produces quality sometimes — this paper will put that ironic reality in print.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -591,7 +591,7 @@
   },
   {
     "key": "{bestMQ}点という最高評価。この数字は、二人がどれだけ互いを引き出してきたかの証明だ。{charA}にとっての{charB}、{charB}にとっての{charA}——どちらも、欠かせない存在になっている。",
-    "en": "",
+    "en": "A best rating of {bestMQ}. That number is the proof of how much the two have drawn out of each other. What {charB} is to {charA}, what {charA} is to {charB} — neither can do without the other now.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -601,7 +601,7 @@
   },
   {
     "key": "{bestMQ}点という最高評価。これは単なる数字ではなく、二人の関係が業界の中でどれほどの位置を占めているかの指標である。次戦への期待は、当然のように高まる。",
-    "en": "",
+    "en": "A best rating of {bestMQ}. That is not merely a number; it is the measure of how much space this relationship occupies in the business. Expectation for the next one rises as a matter of course.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -611,7 +611,7 @@
   },
   {
     "key": "{bestMQ}点という最高評価が示すのは、穏やかな関係でも質の高い試合は成立するという事実だ。{years}年の付き合いが、それを支えている。",
-    "en": "",
+    "en": "A best rating of {bestMQ} shows that a quiet relationship can still produce a match of quality. A {years}-year association holds it up.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -621,7 +621,7 @@
   },
   {
     "key": "{bestMQ}点という最高評価は、二人がリングで一切の妥協をしないことの証明だ。だが、控室では別の顔を見せる——記者として40年見てきた中で、こういう二面性を持つ関係は、本物だと感じている。",
-    "en": "",
+    "en": "A best rating of {bestMQ} is the proof that neither gives an inch in the ring. And in the locker room they show another face — forty years on this beat, and a relationship carrying two sides like that reads as genuine.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -631,7 +631,7 @@
   },
   {
     "key": "{bestMQ}点という評価。だが、その点数の重みを語る前に、本紙は二人がかつて同じ控室を分け合っていた事実から書き始めなければならない。裏切られた側にとって、リングは復讐の場でしかない——そういう関係である。",
-    "en": "",
+    "en": "A rating of {bestMQ}. Before saying what that number weighs, though, this paper has to start from the fact that the two of them once shared a locker room. For the side that was betrayed, a ring is only a place for revenge. That is the relationship.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -641,7 +641,7 @@
   },
   {
     "key": "{bestMQ}点という評価が示すのは、二人の対戦が単なる不仲試合に留まらない、という事実だ。憎しみが質を生むこともある——記者として、そう書いておく。",
-    "en": "",
+    "en": "What a rating of {bestMQ} shows is that these meetings are not merely bad-blood matches. Hatred produces quality sometimes. As a reporter, I will put that in print.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -651,7 +651,7 @@
   },
   {
     "key": "{bestMQ}点の最高評価は、両者が互いを「真の好敵手」と認めているからこそ生まれた数字だ。{years}年の付き合いの中で、両者の信頼はより深いものになっている。",
-    "en": "",
+    "en": "The best of them rated {bestMQ}, and that number exists because each accepts the other as the genuine article. Over a {years}-year association, the trust between them has only gone deeper.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -661,7 +661,7 @@
   },
   {
     "key": "{bestMQ}点を生んだ二人は、しかし一度道を違えた。それでもリングが、控室が、また同じ空気を共有している——本紙はそれを「奇跡」とは呼ばない。両者の覚悟が、ここまで連れてきたのだと書いておく。",
-    "en": "",
+    "en": "The two who produced a {bestMQ} did once take separate roads. And the ring, and the locker room, have them sharing the same air again — this paper will not call that a miracle. What carried them here was what both of them were prepared to do, and I will say so in print.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -751,7 +751,7 @@
   },
   {
     "key": "{charA}が勝った夜の{charB}の表情、{charB}が勝った夜の{charA}の表情——どちらも、悔しさよりも先に「次がある」という確信が浮かんでいた。{matches}度の蓄積が、そういう関係を作っている。",
-    "en": "",
+    "en": "The look on {charB} the night {charA} won, and the look on {charA} the night {charB} won — on both of them, before any frustration, was the certainty that there would be a next one. A {matches}-match accumulation makes a relationship like that.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -761,7 +761,7 @@
   },
   {
     "key": "{charA}が団体を移ったあとも、{charB}は彼女についての評価を一切下げていない——むしろ、距離があるほうが互いを正しく見られると感じているふしがある。{matches}度の対戦の積み重ねが、こういう成熟した関係を生んだ。本紙はそう書いておく。",
-    "en": "",
+    "en": "Since {charA} moved promotions, {charB} has not lowered her estimate of her by a single degree — if anything there are signs she feels the distance lets them see each other properly. A {matches}-match accumulation produced a relationship this mature. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -771,7 +771,7 @@
   },
   {
     "key": "{charA}と{charB}——一度ずれたあと、しっかり並び直した",
-    "en": "",
+    "en": "{charA} and {charB} — out of line once, back in line properly",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -781,7 +781,7 @@
   },
   {
     "key": "{charA}と{charB}——二人が同じリングに立つ夜は、業界の節目になる。数字がそう告げている。",
-    "en": "",
+    "en": "{charA} and {charB} — the night these two stand in the same ring will mark something for the business. The numbers say so.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -791,7 +791,7 @@
   },
   {
     "key": "{charA}と{charB}——互いを認める静かな関係。本紙としては、こうした成熟も評価したい。",
-    "en": "",
+    "en": "{charA} and {charB} — a quiet relationship in which each grants the other. This paper would like to credit that kind of maturity as well.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -801,7 +801,7 @@
   },
   {
     "key": "{charA}と{charB}——交わらない二本の線",
-    "en": "",
+    "en": "{charA} and {charB} — two lines that do not meet",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -811,7 +811,7 @@
   },
   {
     "key": "{charA}と{charB}——交わらない二本の線が、リングという交差点でだけ衝突する。{matches}度の衝突が、そのたびに業界に静かな余韻を残してきた。",
-    "en": "",
+    "en": "{charA} and {charB} — two lines that do not meet, colliding only at the crossing that is a ring. A {matches}-match record, and each one has left a quiet weight over the business afterward.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -821,7 +821,7 @@
   },
   {
     "key": "{charA}と{charB}——切磋琢磨の見本",
-    "en": "",
+    "en": "{charA} and {charB} — the model for sharpening each other",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -831,7 +831,7 @@
   },
   {
     "key": "{charA}と{charB}——別の旗の下、運命の再会",
-    "en": "",
+    "en": "{charA} and {charB} — under different flags, the meeting that was coming",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -841,7 +841,7 @@
   },
   {
     "key": "{charA}と{charB}——別の旗の下でも、相変わらず冷たい",
-    "en": "",
+    "en": "{charA} and {charB} — under different flags, as cold as ever",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -851,7 +851,7 @@
   },
   {
     "key": "{charA}と{charB}——別の旗の下でも、視線は変わらない",
-    "en": "",
+    "en": "{charA} and {charB} — under different flags, the same regard",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -861,7 +861,7 @@
   },
   {
     "key": "{charA}と{charB}——別れたあと、確執だけが残った",
-    "en": "",
+    "en": "{charA} and {charB} — after the parting, only the bad blood stayed",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -871,7 +871,7 @@
   },
   {
     "key": "{charA}と{charB}——和解という、最も難しい一歩",
-    "en": "",
+    "en": "{charA} and {charB} — reconciliation, the hardest step there is",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -881,7 +881,7 @@
   },
   {
     "key": "{charA}と{charB}——和解の二文字は、どこにもない",
-    "en": "",
+    "en": "{charA} and {charB} — the word reconciliation is nowhere in it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -891,7 +891,7 @@
   },
   {
     "key": "{charA}と{charB}——団体の不協和音の一部",
-    "en": "",
+    "en": "{charA} and {charB} — part of the discord inside the promotion",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -901,7 +901,7 @@
   },
   {
     "key": "{charA}と{charB}——団体の不協和音の中心",
-    "en": "",
+    "en": "{charA} and {charB} — at the center of the discord in the promotion",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -911,7 +911,7 @@
   },
   {
     "key": "{charA}と{charB}——団体の空気を凍らせる関係",
-    "en": "",
+    "en": "{charA} and {charB} — the relationship freezing a promotion",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -921,7 +921,7 @@
   },
   {
     "key": "{charA}と{charB}——団体内の境界線が、リングに引かれた",
-    "en": "",
+    "en": "{charA} and {charB} — the line inside the promotion, drawn in the ring",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -931,7 +931,7 @@
   },
   {
     "key": "{charA}と{charB}——尊敬は残ったまま、別の旗の下へ",
-    "en": "",
+    "en": "{charA} and {charB} — the respect stayed, the flags changed",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -941,7 +941,7 @@
   },
   {
     "key": "{charA}と{charB}——成熟した関係の見本",
-    "en": "",
+    "en": "{charA} and {charB} — the model of a mature relationship",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -951,7 +951,7 @@
   },
   {
     "key": "{charA}と{charB}——抗争の中の現実的な指標",
-    "en": "",
+    "en": "{charA} and {charB} — the realistic measure inside a feud",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -961,7 +961,7 @@
   },
   {
     "key": "{charA}と{charB}——抗争の最前線に立つ二人",
-    "en": "",
+    "en": "{charA} and {charB} — the two standing at the front of the feud",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -971,7 +971,7 @@
   },
   {
     "key": "{charA}と{charB}——抗争の象徴的一戦",
-    "en": "",
+    "en": "{charA} and {charB} — the match the feud stands on",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -981,7 +981,7 @@
   },
   {
     "key": "{charA}と{charB}——日常の小競り合い",
-    "en": "",
+    "en": "{charA} and {charB} — the everyday scuffle",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -991,7 +991,7 @@
   },
   {
     "key": "{charA}と{charB}——本紙が見守ってきた、業界屈指の関係",
-    "en": "",
+    "en": "{charA} and {charB} — the relationship this paper has watched",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1001,7 +1001,7 @@
   },
   {
     "key": "{charA}と{charB}——派閥が引き裂いた切磋琢磨",
-    "en": "",
+    "en": "{charA} and {charB} — the sharpening a faction tore apart",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1011,7 +1011,7 @@
   },
   {
     "key": "{charA}と{charB}——温度なき競争",
-    "en": "",
+    "en": "{charA} and {charB} — competition with no temperature",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1021,7 +1021,7 @@
   },
   {
     "key": "{charA}と{charB}——王座と意地が交錯する",
-    "en": "",
+    "en": "{charA} and {charB} — a title and a stubbornness, crossing",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1031,7 +1031,7 @@
   },
   {
     "key": "{charA}と{charB}——絆を再確認した夜のあとで",
-    "en": "",
+    "en": "{charA} and {charB} — after the night the bond was confirmed again",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1041,7 +1041,7 @@
   },
   {
     "key": "{charA}と{charB}——蓄積された対戦が、王座を懸ける夜",
-    "en": "",
+    "en": "{charA} and {charB} — the record stacked up, and a title on the night",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1051,7 +1051,7 @@
   },
   {
     "key": "{charA}と{charB}——裏切りが、憎しみを純化させた",
-    "en": "",
+    "en": "{charA} and {charB} — the betrayal purified the hatred",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1061,7 +1061,7 @@
   },
   {
     "key": "{charA}と{charB}——譲らぬ二人の記録",
-    "en": "",
+    "en": "{charA} and {charB} — the record of two who give nothing",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1071,7 +1071,7 @@
   },
   {
     "key": "{charA}と{charB}——軌道が交差する夜",
-    "en": "",
+    "en": "{charA} and {charB} — the night the paths cross",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1081,7 +1081,7 @@
   },
   {
     "key": "{charA}と{charB}。互いを「壁」と認識している関係は、得てして業界全体を引き上げる。本紙が{years}年見続けている理由が、そこにある。",
-    "en": "",
+    "en": "{charA} and {charB}. A relationship in which each reads the other as the wall tends to raise the whole business. That is why this paper has watched it across a {years}-year stretch.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1091,7 +1091,7 @@
   },
   {
     "key": "{charA}と{charB}が一度離れた時期があった——本紙はその空白を覚えている。{matches}度のリングを共にしてきた二人だが、ある時期から目を合わせない夜が続いた。それが、再び並んで立てるようになるまでに、どれだけの言葉が交わされたか。和解の重みを、数字では測れない。",
-    "en": "",
+    "en": "There was a period when {charA} and {charB} were apart — this paper remembers the blank. Two who have shared a {matches}-match record, and from a certain point there were nights their eyes did not meet. How many words it took before they could stand side by side again. The weight of a reconciliation is not something numbers measure.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1101,7 +1101,7 @@
   },
   {
     "key": "{charA}と{charB}が同じ控室にいるだけで、他の選手たちの会話量が減る——そういう状態が続いている。{matches}度の確執が、もはや個人の問題ではなく団体全体の空気を左右している。社長が手を打たない限り、これは静かに膿んでいく。",
-    "en": "",
+    "en": "{charA} and {charB} being in the same locker room is enough to reduce how much anyone else says, and that state of things has gone on. A {matches}-match antagonism has stopped being a private matter and started setting the air of the whole promotion. Unless the GM acts, this festers quietly.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1111,7 +1111,7 @@
   },
   {
     "key": "{charA}と{charB}の対決は、奪還挑戦という形でついに組まれた。{matches}度の予兆が、いま王座をめぐる一夜に集約される——記者として、これほど待たれた試合はそう多くない。本紙はこの一戦を、業界の歴史に位置づけて書く準備をしている。",
-    "en": "",
+    "en": "{charA} against {charB} has finally been booked, and it comes as a challenge to reclaim. A {matches}-match run of signs now gathers into one night with a title on it — as a reporter, few matches have been waited for like this one. This paper is preparing to write it into the history of the business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1121,7 +1121,7 @@
   },
   {
     "key": "{charA}と{charB}の間に、一時期、距離があった——本紙はそれを覚えている。理由はそれぞれだが、社長の仲介を経て、二人はまた控室で笑えるようになった。{matches}度のリングが、その関係を再び支えている。和解は数字には表れないが、確かにある。",
-    "en": "",
+    "en": "There was a stretch when distance sat between {charA} and {charB} — this paper remembers it. The reasons were their own, and after the GM stepped in the two of them can laugh in the locker room again. A {matches}-match record holds that up once more. A repair does not show in numbers, and it is there all the same.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1131,7 +1131,7 @@
   },
   {
     "key": "{charA}と{charB}の関係は、一度小さく揺らいだ。だが社長の手で結び直されたあと、二人は以前にも増して落ち着いた距離感でリングを共有している。{matches}度の対戦の重みが、この修復後の静けさを支えている——本紙はそう書いておく。",
-    "en": "",
+    "en": "What sits between {charA} and {charB} did waver once, slightly. After the GM tied it back together, the two of them share a ring at a distance calmer than before. The weight of a {matches}-match record holds up that quiet after the repair. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1141,7 +1141,7 @@
   },
   {
     "key": "{charA}と{charB}の関係は、業界の標準的なライバル関係。本紙としては、それ以上でも以下でもないと見ている。",
-    "en": "",
+    "en": "What sits between {charA} and {charB} is the standard rivalry of this business. This paper reads it as neither more nor less than that.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1151,7 +1151,7 @@
   },
   {
     "key": "{charA}と{charB}は、かつて同じ団体の選手だった——その事実が、いまの憎しみをより深いものにしている。離脱の夜に交わされた言葉、持ち去られたベルト、残された側の沈黙。{matches}度の対戦の、どれもがその夜の延長戦である。本紙はそう書いておく。",
-    "en": "",
+    "en": "{charA} and {charB} were once wrestlers in the same promotion — and that fact is what makes the hatred now run deeper. What was said on the night of the departure, the belt carried away, the silence left behind. Every match in a {matches}-match record is an extension of that night. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1591,7 +1591,7 @@
   },
   {
     "key": "{matches}度のリングで、両者は確実に「敬意」を交わし続けてきた。激しさはないが、確かさはある——本紙はそう書いておく。",
-    "en": "",
+    "en": "Across a {matches}-match record the two of them have kept passing respect back and forth. No ferocity in it, and there is certainty. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1601,7 +1601,7 @@
   },
   {
     "key": "{matches}度のリングで、二人は確実に互いを引き上げ続けてきた。これを「ライバル」と呼ぶか「戦友」と呼ぶか——おそらく、両方が正しい。",
-    "en": "",
+    "en": "Across a {matches}-match record, the two of them have kept pulling each other up. Whether to call that a rivalry or call it comradeship — both are probably right.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1611,7 +1611,7 @@
   },
   {
     "key": "{matches}度のリングで、笑顔を見せた瞬間は記憶にない。{bestMQ}点という評価は、観客が「険悪さの本物」を感じた証拠だ。本紙はそう書いておく。",
-    "en": "",
+    "en": "Across a {matches}-match record I cannot recall a moment either of them smiled. A rating of {bestMQ} is the proof that the crowd felt the bad blood as the real thing. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1621,7 +1621,7 @@
   },
   {
     "key": "{matches}度のリングで一度も笑顔の握手はない。とはいえ、明確な敵意もない——記者として40年見てきた中で、これほど温度のない関係は珍しい。",
-    "en": "",
+    "en": "A {matches}-match record and not one handshake with a smile behind it. And no clear hostility either — forty years on this beat, and a relationship with this little temperature in it is rare.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1631,7 +1631,7 @@
   },
   {
     "key": "{matches}度の対戦、いずれも遺恨を残した。試合後の挨拶もない、業界が認める「対立関係」の典型例。本紙としては、これを「因縁」と呼ぶのが正確だと見ている。",
-    "en": "",
+    "en": "A {matches}-match record, and every one of them left something behind. No handshake afterward; the textbook case of what the business calls an antagonism. This paper reads feud as the accurate word for it.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1641,7 +1641,7 @@
   },
   {
     "key": "{matches}度の対戦、一度の握手もない",
-    "en": "",
+    "en": "A {matches}-match record, and not one handshake",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1651,7 +1651,7 @@
   },
   {
     "key": "{matches}度の対戦で{bestMQ}点を記録。次戦も注目に値すると本紙は見ている。",
-    "en": "",
+    "en": "A {matches}-match record with a best of {bestMQ}. This paper reads the next one as worth watching too.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1661,7 +1661,7 @@
   },
   {
     "key": "{matches}度の対戦を経てなお、両者がともに「次もやりたい」と表明している、業界では珍しい関係。記者として、こうした関係性が業界全体を底上げしていると見ている。",
-    "en": "",
+    "en": "A {matches}-match record, and both of them still saying in public that they want the next one. That is a rare thing in this business. As a reporter I read relationships like this one as what lifts the whole business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1671,7 +1671,7 @@
   },
   {
     "key": "{matches}度の激突、いまだに笑顔の握手は一度もない",
-    "en": "",
+    "en": "A {matches}-match collision, and not once a handshake with a smile",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1681,7 +1681,7 @@
   },
   {
     "key": "{matches}度の激突、それでも次戦が待ち遠しい。記者として、これほど健全な因縁を業界で見たことはあまりない。もっとも、それを認めるかどうかは別の話だが。",
-    "en": "",
+    "en": "A {matches}-match record, and the next one is still worth waiting for. As a reporter I have not often seen a history this healthy in the business. Whether I admit it is another matter.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1691,7 +1691,7 @@
   },
   {
     "key": "{matches}度の積み重ねが、いま奪還挑戦という形で集約される。{charA}と{charB}の互角の数字が、王座という最大の懸け値の下で試される——本紙はこの一戦を、業界の重要な分岐点として注視している。",
-    "en": "",
+    "en": "A {matches}-match accumulation now gathers into a challenge to reclaim. The level numbers between {charA} and {charB} get tested under the largest stake there is — this paper is watching this one as an important fork for the business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1701,7 +1701,7 @@
   },
   {
     "key": "{matches}戦、それでも距離は変わらない",
-    "en": "",
+    "en": "A record of {matches}, and the distance is unchanged",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1711,7 +1711,7 @@
   },
   {
     "key": "{matches}戦、業界の標準的な記録",
-    "en": "",
+    "en": "A record of {matches}, standard for this business",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -1721,7 +1721,7 @@
   },
   {
     "key": "{matches}戦の蓄積、まだ終わらない",
-    "en": "",
+    "en": "A {matches}-match accumulation, not finished yet",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -3701,7 +3701,7 @@
   },
   {
     "key": "{playerName}、頑張ってるのは分かるんだけどなあ",
-    "en": "",
+    "en": "{playerName}, I can see you're trying, I really can",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3711,7 +3711,7 @@
   },
   {
     "key": "{playerName}が業界を引っ張ってる。誇らしい",
-    "en": "",
+    "en": "{playerName} is pulling the business along. I'm proud",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3721,7 +3721,7 @@
   },
   {
     "key": "{playerName}って名前覚えてもらえてるだけマシなのか",
-    "en": "",
+    "en": "Guess {playerName} should be grateful people remember the name at least",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3731,7 +3731,7 @@
   },
   {
     "key": "{playerName}って団体名じゃなくてジャンル名だよね。「弱い」っていうジャンル",
-    "en": "",
+    "en": "{playerName} isn't a promotion name, it's a genre. The genre is 'weak'",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3751,7 +3751,7 @@
   },
   {
     "key": "{playerName}と{rivalName}比較するの、もうやめてあげてwww",
-    "en": "",
+    "en": "Can we stop comparing {playerName} and {rivalName} already lol",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3771,7 +3771,7 @@
   },
   {
     "key": "{playerName}に勝てる団体、存在する？",
-    "en": "",
+    "en": "Does a promotion that beats {playerName} exist?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3801,7 +3801,7 @@
   },
   {
     "key": "{playerName}の存在意義って{rivalName}の引き立て役？",
-    "en": "",
+    "en": "Is {playerName}'s reason to exist making {rivalName} look good?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3811,7 +3811,7 @@
   },
   {
     "key": "{playerName}の方が勢いあるし、いけるでしょ！",
-    "en": "",
+    "en": "{playerName} has more momentum, we've got this!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3821,7 +3821,7 @@
   },
   {
     "key": "{playerName}の時代が来てる。これは間違いない",
-    "en": "",
+    "en": "It's {playerName}'s era. No question about it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -3841,7 +3841,7 @@
   },
   {
     "key": "{playerName}の試合見るのテレビの音消してても変わらんわ",
-    "en": "",
+    "en": "Watching a {playerName} match with the sound off is the exact same experience",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4051,7 +4051,7 @@
   },
   {
     "key": "{rivalName}、来年は頑張れよ（棒）",
-    "en": "",
+    "en": "Good luck next year, {rivalName}. Really. I mean it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4071,7 +4071,7 @@
   },
   {
     "key": "{rivalName}がかわいそうだからこの比較やめよ？",
-    "en": "",
+    "en": "Let's drop this comparison, it's unkind to {rivalName}",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4081,7 +4081,7 @@
   },
   {
     "key": "{rivalName}がかわいそうに見えてきた",
-    "en": "",
+    "en": "{rivalName} is starting to look like the sympathetic one",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4091,7 +4091,7 @@
   },
   {
     "key": "{rivalName}が転ぶのを待つ戦略ですか？",
-    "en": "",
+    "en": "So the strategy is waiting for {rivalName} to trip?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4101,7 +4101,7 @@
   },
   {
     "key": "{rivalName}ざっこwww もう相手にならんでしょ",
-    "en": "",
+    "en": "{rivalName} is so weak lol. Not even competition anymore",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4111,7 +4111,7 @@
   },
   {
     "key": "{rivalName}だっていつかは落ちてくるし、こっちは上がるだけ",
-    "en": "",
+    "en": "{rivalName} has to come down sometime, and we've only got up to go",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4121,7 +4121,7 @@
   },
   {
     "key": "{rivalName}だって最初から強かったわけじゃないし…",
-    "en": "",
+    "en": "{rivalName} wasn't born strong either...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4131,7 +4131,7 @@
   },
   {
     "key": "{rivalName}とのライバル関係が熱い",
-    "en": "",
+    "en": "The rivalry with {rivalName} is heating up",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4141,7 +4141,7 @@
   },
   {
     "key": "{rivalName}との対抗戦組まれたら離脱者続出するんじゃないの",
-    "en": "",
+    "en": "If they book an interpromotional with {rivalName} half the roster walks out",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4201,7 +4201,7 @@
   },
   {
     "key": "{rivalName}との戦力差は3-5pt帯。ここを縮めるには集中投資しかない",
-    "en": "",
+    "en": "The roster gap to {rivalName} is in the 3-5 pt band. Only way to close that is concentrated spending",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4281,7 +4281,7 @@
   },
   {
     "key": "{rivalName}と同レベルで満足してる時点でなあ",
-    "en": "",
+    "en": "Being satisfied with matching {rivalName} kind of says it all",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4291,7 +4291,7 @@
   },
   {
     "key": "{rivalName}と比べるのはさすがにかわいそうじゃない？",
-    "en": "",
+    "en": "Comparing them to {rivalName} is a bit cruel, isn't it?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4301,7 +4301,7 @@
   },
   {
     "key": "{rivalName}と肩を並べてる！ もうそれだけで誇らしい",
-    "en": "",
+    "en": "We're standing shoulder to shoulder with {rivalName}! That alone makes me proud",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4361,7 +4361,7 @@
   },
   {
     "key": "{rivalName}に勝っても{playerName}の格は上がらない説",
-    "en": "",
+    "en": "Theory: beating {rivalName} doesn't actually raise {playerName}'s standing",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4371,7 +4371,7 @@
   },
   {
     "key": "{rivalName}に勝てるようになったら起こして",
-    "en": "",
+    "en": "Wake me when they can beat {rivalName}",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4431,7 +4431,7 @@
   },
   {
     "key": "{rivalName}のTOP5平均と比較してみ？ 話にならんから",
-    "en": "",
+    "en": "Go compare our top 5 average with {rivalName}'s. It's not a conversation",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4441,7 +4441,7 @@
   },
   {
     "key": "{rivalName}のファンだけど、正直こっち見てない。存在感なさすぎ",
-    "en": "",
+    "en": "{rivalName} fan here, honestly nobody on our side is looking at you. No presence at all",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4451,7 +4451,7 @@
   },
   {
     "key": "{rivalName}の背中が見えてきた。あと少し、あと少しだから",
-    "en": "",
+    "en": "We can see {rivalName}'s back now. Just a bit more, just a bit",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4471,7 +4471,7 @@
   },
   {
     "key": "{rivalName}は出てくる前から負けてる。哀れすぎる",
-    "en": "",
+    "en": "{rivalName} loses before they walk out. It's a bit sad",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4481,7 +4481,7 @@
   },
   {
     "key": "{rivalName}は完全に噛ませ犬。もう比較する意味なくない？",
-    "en": "",
+    "en": "{rivalName} is purely there to get beaten. Is there even a point comparing?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4491,7 +4491,7 @@
   },
   {
     "key": "{rivalName}は強いけど、こっちも見どころはあると思う",
-    "en": "",
+    "en": "{rivalName} is strong, but I think we've got things worth watching too",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4501,7 +4501,7 @@
   },
   {
     "key": "{rivalName}は若手の伸びが著しい。油断してると一気に追いつかれるぞ",
-    "en": "",
+    "en": "{rivalName}'s young ones are coming up fast. Sleep on that and they're level again overnight",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4511,7 +4511,7 @@
   },
   {
     "key": "{rivalName}より上にいるの、素直に嬉しい",
-    "en": "",
+    "en": "Being above {rivalName} just feels good, honestly",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4581,7 +4581,7 @@
   },
   {
     "key": "{rivalName}を見下ろせる日が来るなんて、感慨深いわ",
-    "en": "",
+    "en": "Never thought I'd see the day we could look down on {rivalName}. Gets me",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4591,7 +4591,7 @@
   },
   {
     "key": "{rivalName}ファンの皆さん、ご愁傷さまです",
-    "en": "",
+    "en": "Condolences to the {rivalName} fans out there",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -4601,7 +4601,7 @@
   },
   {
     "key": "{rivalName}側からは「対等」と見なされてないという事実",
-    "en": "",
+    "en": "Fact: the {rivalName} side does not consider this an equal matchup",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -5051,7 +5051,7 @@
   },
   {
     "key": "{winnerName}がメインの大舞台で堂々たる勝利を飾った。{loserName}も要所で見せ場を作ったが、最終的には{winnerName}の{finishLabel}に沈んだ。{attendanceToLocaleString}人の観客が見守った{turns}ターンの一戦。",
-    "en": "{winnerName} won on the main event stage with nothing to apologize for. {loserName} had her moments at the right points and went down in the end to the {finishLabel} of {winnerName}. {turns} turns, watched by {attendanceToLocaleString}.",
+    "en": "{winnerName} won on the main event stage with nothing to apologize for. {loserName} had her moments at the right points and went down in the end to {winnerName}'s {finishLabel}. {turns} turns, watched by {attendanceToLocaleString}.",
     "files": [
       "app.js:_NEWSPAPER_ARTICLES"
     ],
@@ -5271,7 +5271,7 @@
   },
   {
     "key": "{years}年の付き合い、{matches}度の対戦。それでも飽きが来ないのは、両者が互いを真の好敵手と認めているからだろう。数字は嘘をつかない。",
-    "en": "",
+    "en": "A {years}-year association, a record of {matches}. The numbers do not lie: it has not gone stale, and that is because each accepts the other as the genuine article.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5281,7 +5281,7 @@
   },
   {
     "key": "{years}年の付き合い、それでも飽きが来ない理由",
-    "en": "",
+    "en": "A {years}-year association, and why it never goes stale",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5291,7 +5291,7 @@
   },
   {
     "key": "{years}年の付き合い。互いを認め合いながら、リングでは一歩も引かない。{bestMQ}点の最高評価は、その緊張感の産物だ。",
-    "en": "",
+    "en": "A {years}-year association. They grant each other everything and give nothing in the ring. The best of them rated {bestMQ}, and that is what the tension produces.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5301,7 +5301,7 @@
   },
   {
     "key": "{years}年の付き合いの中で、二人の間に温度が宿った瞬間はない。本紙としては、それでも興味深い関係だと書いておく。",
-    "en": "",
+    "en": "Over a {years}-year association there has not been a moment when anything warm sat between them. This paper will put it in print that the relationship is interesting all the same.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5311,7 +5311,7 @@
   },
   {
     "key": "{years}年来、まったく歩み寄らない関係。それでも興行に組まれ続けるのは、観客がこの確執の解消を望んでいるからではなく、むしろ持続を望んでいるからだろう——そう書くと身も蓋もないが、現実である。",
-    "en": "",
+    "en": "A {years}-year relationship with no step taken toward each other. That they keep getting booked is less because the crowd wants this settled than because the crowd wants it to continue — put that way it is graceless, and it is the reality.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5321,7 +5321,7 @@
   },
   {
     "key": "{years}年来、距離を測り合ってきた二人。それが団体を分けたあとに本格的に対峙する——記者として、こういう構図は何度見ても胸が騒ぐ。{bestMQ}点を超える試合になるのか、それとも別の意味で記憶される夜になるのか。注視している。",
-    "en": "",
+    "en": "Two who have spent a {years}-year relationship measuring the distance. And now they meet properly, after the promotions have split — as a reporter, this shape stirs me however many times I see it. Whether it becomes a match past {bestMQ}, or a night remembered for another reason. I am watching.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5331,7 +5331,7 @@
   },
   {
     "key": "{years}年来のライバル関係。{matches}試合分の蓄積が、次の一戦を意味あるものにしている。",
-    "en": "",
+    "en": "A {years}-year rivalry. A {matches}-match accumulation is what makes the next one mean something.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5341,7 +5341,7 @@
   },
   {
     "key": "{years}年来の関係。互いに距離を測りながら、いつかの本格対決を待っている——本紙はそう見ている。記者として40年見てきた中で、こういう関係は珍しくない。だが、いざ火が点くと、その熱は本物になる。",
-    "en": "",
+    "en": "A {years}-year relationship. Each of them measuring the distance, waiting for the real meeting to come. That is how this paper reads it. Forty years on this beat, and relationships like this one are not rare. When one does catch, though, the heat in it is genuine.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5351,7 +5351,7 @@
   },
   {
     "key": "{years}年来の関係だが、特別なエピソードはほとんどない。それが悪いとは言わない——業界には、こういう「日常」を支える関係も必要なのだから。",
-    "en": "",
+    "en": "A {years}-year relationship with almost no particular episode in it. I am not saying that is a fault — the business needs relationships that hold up the ordinary days too.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5361,7 +5361,7 @@
   },
   {
     "key": "{years}年来の険悪さが、団体の境界を越えてさらに強まった——{charA}と{charB}の場合、そうとしか言いようがない。{bestMQ}点を生んだリングは、もはや「過去を持つ二人」の戦場である。",
-    "en": "",
+    "en": "A {years}-year bad blood that has hardened further across the boundary between promotions — with {charA} and {charB} there is no other way to describe it. The ring that produced a {bestMQ} is now the battlefield of two people with a past.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5371,7 +5371,7 @@
   },
   {
     "key": "{years}年経って、{matches}試合戦って、それでも温度は氷点下のまま。記者として40年やってきたが、これほど一貫した敵意の記録は、業界の中でも数えるほどしかない。",
-    "en": "",
+    "en": "A {years}-year relationship, a {matches}-match record fought out, and the temperature stays below freezing. Forty years of this, and a record of hostility this consistent can be counted on one hand in the business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -5381,7 +5381,7 @@
   },
   {
     "key": "{years}年経っても、二人の関係は氷点下のまま。{matches}度戦って、一度の和解もない。記者として40年やってきたが、これほど一貫した敵意を見るのは、そう多くはない。",
-    "en": "",
+    "en": "A {years}-year relationship, and it stays below freezing. A {matches}-match record, and not one reconciliation. Forty years of this, and I do not often see hostility held this consistently.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6341,7 +6341,7 @@
   },
   {
     "key": "「あいつがいるから、自分は強くなれる」——両者が同じことを言える関係は、業界でもそう多くはない。{matches}度の対戦が、それを裏付けている。",
-    "en": "",
+    "en": "\"I can get stronger because she is there\" — a relationship where both can say the same sentence is not common in this business. A {matches}-match record bears it out.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6351,7 +6351,7 @@
   },
   {
     "key": "「あいつがいるから、自分も成長できる」——どちらかが言ったとされる言葉。本紙はそう書いておく。数字は嘘をつかない、関係性の質も同様だ。",
-    "en": "",
+    "en": "\"I can grow because she is there\" — one of them is said to have put it that way. This paper will leave it in print. The numbers do not lie. Neither, in this case, does what passes between them.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6361,7 +6361,7 @@
   },
   {
     "key": "「あいつだけは許せない」——どちらかが、いや、おそらく両者がそう思っている。{matches}度の対戦が、その確信を強めるばかりであるのが、この関係の業の深さだ。",
-    "en": "",
+    "en": "\"There is one person I cannot forgive\" — one of them thinks it, and probably both do. That a {matches}-match record only hardens the conviction is how deep this one runs.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6371,7 +6371,7 @@
   },
   {
     "key": "「あいつとの試合は、観客のためじゃなくて、自分たちのためにやってる」——どちらかがいつかそう漏らしていた。本当のところ、それが真実なのだろうと、記者として40年見てきた中で、そう思う。",
-    "en": "",
+    "en": "\"The matches with her are not for the crowd, they are for us\" — one of them let that out once. Forty years on this beat, and I think that is probably the truth of it.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6381,7 +6381,7 @@
   },
   {
     "key": "「あと一歩」が口癖の団体第1位",
-    "en": "",
+    "en": "Number one promotion for saying 'one more step'",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6391,7 +6391,7 @@
   },
   {
     "key": "「あの裏切りは、一生忘れない」——一方が漏らしたとされる言葉は、もう一方の耳にも届いている。{years}年経っても、二人の間の溝は埋まらない。むしろ、戦うたびに深くなる。記者として40年見てきたが、これほど業の深い関係は数えるほどしかない。",
-    "en": "",
+    "en": "\"I will never forget that betrayal\" — the words one of them is said to have let slip have reached the other's ears. A {years}-year relationship, and the gap between them has not closed. It deepens each time they fight. Forty years on this beat, and a relationship carrying this much can be counted on one hand.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6401,7 +6401,7 @@
   },
   {
     "key": "「あの試合だけはやり直したい」——そう言えるのが{charA}か{charB}か、おそらく両者だろう。{matches}度の対戦の、どれもが心残りを残している。これが「純粋な憎悪」と呼ばれる関係の本質である。",
-    "en": "",
+    "en": "\"There is one match I would take back\" — whether that is {charA} or {charB}, it is probably both. Every match in a {matches}-match record left something unfinished. That is the substance of what gets called pure hatred.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6411,7 +6411,7 @@
   },
   {
     "key": "「あの選手とは、どうしても波長が合わない」——そう公言する選手は珍しくないが、この二人の場合、それが{matches}試合分の数字として刻まれている。",
-    "en": "",
+    "en": "\"There is one wrestler I simply cannot get on with\" — plenty of wrestlers say that out loud, and in the case of these two it has been carved into a record {matches} matches long.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6421,7 +6421,7 @@
   },
   {
     "key": "「あの選手については、特にコメントはない」——どちらかが、いや、おそらく両者がそう言うだろう。{years}年の付き合いの結論が、それである。",
-    "en": "",
+    "en": "\"I have nothing in particular to say about that wrestler\" — one of them would say it, and probably both would. That is the conclusion of a {years}-year association.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6481,7 +6481,7 @@
   },
   {
     "key": "「次は獲る」——どちらかが必ずそう言う関係。{matches}度の対戦が、その言葉を絵空事ではなく現実の重みに変えている。数字は嘘をつかない。",
-    "en": "",
+    "en": "\"I take it next time\" — a relationship in which one of them always says it. The numbers do not lie: a {matches}-match record has turned that sentence from wishful talk into something with weight.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6561,7 +6561,7 @@
   },
   {
     "key": "あの頃ボロクソ言われてた時代から応援してきた甲斐があった…",
-    "en": "",
+    "en": "All those years supporting them back when everyone tore them apart, worth it...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6581,7 +6581,7 @@
   },
   {
     "key": "いい勝負になりそうで楽しみ！",
-    "en": "",
+    "en": "Looks like a good match coming, can't wait!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6621,7 +6621,7 @@
   },
   {
     "key": "いい時期だよね。この調子を維持してほしい",
-    "en": "",
+    "en": "Good stretch. Hope they hold it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6641,7 +6641,7 @@
   },
   {
     "key": "いつか追いつくと思ってたけど、いつなんだろう…",
-    "en": "",
+    "en": "I always thought we'd catch up someday. Wonder when someday is...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6651,7 +6651,7 @@
   },
   {
     "key": "いつも「あと一歩」って言ってない？ その一歩いつ出るの？",
-    "en": "",
+    "en": "Isn't it always 'one more step' with them? When's the step",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6671,7 +6671,7 @@
   },
   {
     "key": "かつての友、いまリングの向こう側",
-    "en": "",
+    "en": "Once friends, now the far side of the ring",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6681,7 +6681,7 @@
   },
   {
     "key": "かつて同じ控室で過ごした二人が、別々の旗を背負って同じリングに立つ夜——{charA}と{charB}にとって、それは単なる初対戦以上の意味を持つ。{matches}度の交わりが、別の色を帯びて再開される。本紙はこの一戦を、業界の節目として書き残しておきたい。",
-    "en": "",
+    "en": "The night two who shared a locker room stand in the same ring carrying different flags — for {charA} and {charB} that means more than a first meeting. A {matches}-match history resumes in another color. This paper would like to leave this one on the record as a marker for the business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6691,7 +6691,7 @@
   },
   {
     "key": "かつて同じ控室で過ごした日々を、いまの{charA}と{charB}を見ても想像しにくい。離脱の決断が、ただでさえ折り合いの悪かった二人の溝を決定的にした。{matches}度の対戦は、どれも「元同僚」という言葉が滲んでいる。本紙はそう書いておく。",
-    "en": "",
+    "en": "The days they spent in the same locker room are hard to picture, looking at {charA} and {charB} now. The decision to leave settled a gap that was already there between two who never got on. Every match in a {matches}-match record has the words former colleague seeping through it. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6701,7 +6701,7 @@
   },
   {
     "key": "かつて同じ控室を分け合った二人だ。{charA}と{charB}——{matches}度の名勝負の記憶は、団体を別にしてもなお生きている。「あの人だけは尊敬している」と一方が漏らした。リングの色は変わっても、互いを認める気持ちは変わらない。それが、この関係の業の深さでもある。",
-    "en": "",
+    "en": "The two of them once split a locker room between them. {charA} and {charB} — the memory of a {matches}-match run of great matches lives on with the promotions apart. \"She is the one person I respect,\" one of them let slip. The colors in the ring changed; what they grant each other did not. That is also how deep this one runs.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6731,7 +6731,7 @@
   },
   {
     "key": "ここから這い上がる物語を見たいから、私は離れない",
-    "en": "",
+    "en": "I'm not leaving, because I want to see the climb out of here",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6741,7 +6741,7 @@
   },
   {
     "key": "ここで勝ち越せたら一気に流れが来る！",
-    "en": "",
+    "en": "If we can get ahead here the whole flow comes our way!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6751,7 +6751,7 @@
   },
   {
     "key": "ここまでの優位を築いた育成方針は研究に値する。他団体のGMは見習え",
-    "en": "",
+    "en": "The development plan that built a lead like this is worth studying. Other GMs should take notes",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6781,7 +6781,7 @@
   },
   {
     "key": "ここまで差がつくとは思わなかった。すごい",
-    "en": "",
+    "en": "Didn't expect a gap this wide. Impressive",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6791,7 +6791,7 @@
   },
   {
     "key": "ここまで来るの長かったけど、報われてる感がある！",
-    "en": "",
+    "en": "Took forever to get here but it feels like it paid off!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6811,7 +6811,7 @@
   },
   {
     "key": "このまま突き放してほしい",
-    "en": "",
+    "en": "Just keep pulling away please",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6831,7 +6831,7 @@
   },
   {
     "key": "この勢いなら{rivalName}を完全に置き去りにできる",
-    "en": "",
+    "en": "At this rate we can leave {rivalName} behind for good",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6851,7 +6851,7 @@
   },
   {
     "key": "この団体を応援してきて本当によかった。涙が出る",
-    "en": "",
+    "en": "So glad I supported this promotion. I'm actually tearing up",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6861,7 +6861,7 @@
   },
   {
     "key": "この均衡を崩す一撃、楽しみにしてる",
-    "en": "",
+    "en": "Looking forward to the shot that breaks this balance",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6891,7 +6891,7 @@
   },
   {
     "key": "この強さがいつまで続くか、それだけが心配",
-    "en": "",
+    "en": "The only thing I worry about is how long this strength lasts",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6931,7 +6931,7 @@
   },
   {
     "key": "この距離感、追いつく直前が一番ワクワクする",
-    "en": "",
+    "en": "This distance right here, right before you catch them, is the most exciting part",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -6941,7 +6941,7 @@
   },
   {
     "key": "この関係には、勝敗を超えた何かがある。本紙としては、それを「同志」と呼ぶか「好敵手」と呼ぶか、いつも迷うのだが——おそらく、両方が正しい。{years}年の付き合いを、そう書いておく。",
-    "en": "",
+    "en": "There is something in this relationship past winning and losing. This paper is never sure whether to call it comradeship or call it rivalry — probably both are right. That is what a {years}-year association comes to.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -6991,7 +6991,7 @@
   },
   {
     "key": "ずっと応援してきたからこそ、この景色が嬉しい…！",
-    "en": "",
+    "en": "Because I stayed with them the whole way, this view means everything...!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7001,7 +7001,7 @@
   },
   {
     "key": "せめて1項目くらい勝ってるとこ見せてくれよ…あ、ないか",
-    "en": "",
+    "en": "Give me one column where you're ahead... ah, there isn't one",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7041,7 +7041,7 @@
   },
   {
     "key": "どこに課金すれば強くなんの？",
-    "en": "",
+    "en": "Where do I put money in to make them strong",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7061,7 +7061,7 @@
   },
   {
     "key": "どっちが勝ってもおかしくないのがワクワクする",
-    "en": "",
+    "en": "Not knowing which way it goes is the exciting part",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7071,7 +7071,7 @@
   },
   {
     "key": "どっちが勝つか読めない試合、これがプロレスの醍醐味",
-    "en": "",
+    "en": "A match you can't call — this is what wrestling is for",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7121,7 +7121,7 @@
   },
   {
     "key": "もうちょっとで追いつけそうなんだけどなあ",
-    "en": "",
+    "en": "Feels like we're this close to catching up and yet",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7151,7 +7151,7 @@
   },
   {
     "key": "もう圧倒的だよね。安心して見てられる",
-    "en": "",
+    "en": "It's not close anymore, is it. Comfortable to watch",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7181,7 +7181,7 @@
   },
   {
     "key": "もはや説明不要のカード。{leftName}と{rightName}による{rivalLabel}は今回も期待を裏切らなかった。{turns}ターン、互いの手の内を知り尽くした二人の攻防は試合評価{mq}を記録。最後は{winnerName}の{finishLabel}が決着を呼んだ。この因縁に終わりはあるのか——その答えは、まだ誰にも分からない。",
-    "en": "A card that needs no introduction now. {rivalLabel}, between {leftName} and {rightName}, did not let anybody down this time either. {turns} turns between two who know every card the other holds, rated {mq}. It closed on the {finishLabel} of {winnerName}. Whether this thing between them ever ends — nobody has that answer yet.",
+    "en": "A card that needs no introduction now. {rivalLabel}, between {leftName} and {rightName}, did not let anybody down this time either. {turns} turns between two who know every card the other holds, rated {mq}. It closed on {winnerName}'s {finishLabel}. Whether this thing between them ever ends — nobody has that answer yet.",
     "files": [
       "app.js:_NEWSPAPER_ARTICLES"
     ],
@@ -7221,7 +7221,7 @@
   },
   {
     "key": "わだかまりは、消えない",
-    "en": "",
+    "en": "What is between them does not go away",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -7231,7 +7231,7 @@
   },
   {
     "key": "エースが覚醒したら一気にひっくり返せるポテンシャルはある",
-    "en": "",
+    "en": "If the ace wakes up, the potential to flip this in one go is there",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7241,7 +7241,7 @@
   },
   {
     "key": "エースの差がそのまま団体の差になってる。ここを何とかしないと永遠にこのまま",
-    "en": "",
+    "en": "The gap at ace level is the gap between the promotions. Don't fix that and it's this forever",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7251,7 +7251,7 @@
   },
   {
     "key": "エースの年齢層を考えると、3年後の絵が描けてないのが懸念点",
-    "en": "",
+    "en": "Given the age spread on the aces, the worrying part is there's no picture for three years out",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7351,7 +7351,7 @@
   },
   {
     "key": "ジャイアントキリングをこの目で見るために通ってる",
-    "en": "",
+    "en": "I go to the shows so I can see the giant killing with my own eyes",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7361,7 +7361,7 @@
   },
   {
     "key": "スカウト基準が他団体と違いすぎる。根本的な分析が要る",
-    "en": "",
+    "en": "Their scouting criteria are way off what everyone else uses. Needs analysis from the ground up",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7491,7 +7491,7 @@
   },
   {
     "key": "タイトル防衛回数で見ると経験値はほぼ同じ。実績ベースで互角",
-    "en": "",
+    "en": "Look at title defense counts and the experience is about the same. Level on record",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7581,7 +7581,7 @@
   },
   {
     "key": "データ的には3年計画で見ないと追いつけない差。覚悟が要る",
-    "en": "",
+    "en": "On the data this is a gap you only close on a three-year plan. Takes commitment",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7591,7 +7591,7 @@
   },
   {
     "key": "データ的には安定期。維持するための投資を怠らないことが大事",
-    "en": "",
+    "en": "Data-wise this is the stable phase. Point is not to stop investing in keeping it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7601,7 +7601,7 @@
   },
   {
     "key": "ドラフトの目利きが鍵。即戦力と将来性のバランスを見極めないと",
-    "en": "",
+    "en": "Draft judgment is the key. Have to balance ready-now against upside",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7841,7 +7841,7 @@
   },
   {
     "key": "ベルトを抱えて去った日から、戻れない関係",
-    "en": "",
+    "en": "From the day she left with the belt, no way back",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -7861,7 +7861,7 @@
   },
   {
     "key": "リングで殴り合い、控室で笑い合う",
-    "en": "",
+    "en": "Hitting each other in the ring, laughing in the locker room",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -7881,7 +7881,7 @@
   },
   {
     "key": "リング上では敵、リング外では戦友",
-    "en": "",
+    "en": "Enemies in the ring, comrades outside it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -7921,7 +7921,7 @@
   },
   {
     "key": "リードしてるうちに次世代を育てないと、2〜3年後に逆転される可能性がある",
-    "en": "",
+    "en": "If they don't build the next generation while they're ahead, this flips in 2-3 years",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7931,7 +7931,7 @@
   },
   {
     "key": "ワンサイドゲーム確定。{rivalName}ファンは見ないほうがいい",
-    "en": "",
+    "en": "One-sided game confirmed. {rivalName} fans should look away",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -7961,7 +7961,7 @@
   },
   {
     "key": "一度ぎくしゃくした関係を、立て直した二人",
-    "en": "",
+    "en": "Two who rebuilt what had gone awkward",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -7971,7 +7971,7 @@
   },
   {
     "key": "一度断ち切れた糸を、結び直した二人",
-    "en": "",
+    "en": "Two who tied a cut thread back together",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -7981,7 +7981,7 @@
   },
   {
     "key": "一強時代の到来。次は他団体がどう対策してくるかを見たい",
-    "en": "",
+    "en": "One-promotion era. Now I want to see how everyone else answers it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8031,7 +8031,7 @@
   },
   {
     "key": "万年2位の匂いがするんだよなあ…",
-    "en": "",
+    "en": "Getting a real permanent-second-place smell off this one...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8041,7 +8041,7 @@
   },
   {
     "key": "上にいる景色は最高。もっと上を目指そう！",
-    "en": "",
+    "en": "The view from up here is the best. Let's aim higher!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8091,7 +8091,7 @@
   },
   {
     "key": "下剋上の物語を信じてる。物語は弱者から始まるんだ",
-    "en": "",
+    "en": "I believe in the underdog story. Every story starts from the weak side",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8171,7 +8171,7 @@
   },
   {
     "key": "並んだだけで「追いついた！」って騒ぐファン見てると微笑ましいね",
-    "en": "",
+    "en": "Fans yelling 'we caught up!' the moment they draw level are honestly kind of sweet",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8181,7 +8181,7 @@
   },
   {
     "key": "中堅の底上げが急務。エースだけ強くても団体力では勝てない",
-    "en": "",
+    "en": "Raising the middle of the card is urgent. A strong ace alone doesn't win a promotion war",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8251,7 +8251,7 @@
   },
   {
     "key": "互いに敵意を隠さない関係。リング上だけでなく、楽屋裏でも目を合わせない。それでも観客はこのカードを望み続け、興行のたびに同じリングに上げられる——憎しみだけが原動力の試合は、皮肉にもこの業界で最も売れる商品の一つだ。",
-    "en": "",
+    "en": "A relationship in which neither hides the hostility. Not only in the ring; their eyes do not meet backstage either. And the crowd keeps asking for the card, so they are put in the same ring every show — a match driven by nothing but hatred is, ironically, one of the best-selling products this business has.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8261,7 +8261,7 @@
   },
   {
     "key": "互いの背中を押し続ける、稀有な関係",
-    "en": "",
+    "en": "A rare relationship, each pushing the other forward",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8271,7 +8271,7 @@
   },
   {
     "key": "互いを必要としているライバル",
-    "en": "",
+    "en": "Rivals who need each other",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8311,7 +8311,7 @@
   },
   {
     "key": "互角って要するにどっちも決め手がないってことでしょ",
-    "en": "",
+    "en": "Level basically means neither of them has a finisher, right",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8321,7 +8321,7 @@
   },
   {
     "key": "互角で喜んでるの草。上を目指せよ",
-    "en": "",
+    "en": "People celebrating a draw, lol. Aim higher",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8331,7 +8331,7 @@
   },
   {
     "key": "互角の戦力だからこそ、一つのブレイクスルーが流れを変える",
-    "en": "",
+    "en": "Precisely because the rosters are level, one breakthrough turns the whole thing",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8341,7 +8341,7 @@
   },
   {
     "key": "互角の数字が告げる、関係の質",
-    "en": "",
+    "en": "What level numbers say about the quality of a relationship",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8361,7 +8361,7 @@
   },
   {
     "key": "互角まで持ってきたのがまずすごい。ここからもう一段！",
-    "en": "",
+    "en": "Getting to level in the first place is huge. One more step from here!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8401,7 +8401,7 @@
   },
   {
     "key": "今が底なら、あとは上がるだけだから！ ……上がるよね？",
-    "en": "",
+    "en": "If this is the bottom then it only goes up! ...It goes up, right?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8411,7 +8411,7 @@
   },
   {
     "key": "今のメンバーならやれる。信じてる",
-    "en": "",
+    "en": "With this roster they can do it. I believe that",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8421,7 +8421,7 @@
   },
   {
     "key": "今のリード幅は3-5pt。詰められると一気に互角に戻るので警戒",
-    "en": "",
+    "en": "Lead is 3-5 pts right now. Let that close and we're back to level in a hurry, so stay alert",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8431,7 +8431,7 @@
   },
   {
     "key": "今の優位を確固たるものにするなら、もう一人スターが要る",
-    "en": "",
+    "en": "If they want this lead nailed down, they need one more star",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8441,7 +8441,7 @@
   },
   {
     "key": "今の状態で{rivalName}と当たったらどうなるか、考えたくもない",
-    "en": "",
+    "en": "I don't even want to think about what happens if we meet {rivalName} like this",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8451,7 +8451,7 @@
   },
   {
     "key": "今は差があるけど、ここからの成長が楽しみだよ！",
-    "en": "",
+    "en": "There's a gap now but I'm looking forward to the growth from here!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8531,7 +8531,7 @@
   },
   {
     "key": "他の試合見ても物足りなく感じるくらい{playerName}が別格",
-    "en": "",
+    "en": "{playerName} is so far ahead that other matches feel thin by comparison",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8621,7 +8621,7 @@
   },
   {
     "key": "修復された絆は、修復前より強くなる——そういう仮説を、この二人は証明しようとしている。{years}年の付き合いの中で起きた小さな亀裂を、いま{charA}と{charB}は越えた。本紙としては、こうした関係を業界の財産だと書いておく。",
-    "en": "",
+    "en": "A bond that has been repaired comes back stronger than it was — these two are setting out to prove that hypothesis. The small crack that opened over a {years}-year association is one {charA} and {charB} have now crossed. This paper will put it in print: a relationship like that is an asset to the business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8631,7 +8631,7 @@
   },
   {
     "key": "修復という言葉は、軽く扱われがちだ。だが{charA}と{charB}の場合、それは確かに重い意味を持っていた。{years}年の付き合いの中で一度沈黙した関係が、いま再び呼吸を取り戻している。記者として、これほど祝福したい修復はそう多くない。",
-    "en": "",
+    "en": "The word repair gets handled lightly. In the case of {charA} and {charB} it carried real weight. A relationship that fell silent once over a {years}-year association is breathing again. As a reporter, there are not many repairs I would rather see.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8681,7 +8681,7 @@
   },
   {
     "key": "元同僚、いま完全に別の旗の下",
-    "en": "",
+    "en": "Former colleagues, now entirely under different flags",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8701,7 +8701,7 @@
   },
   {
     "key": "元同僚という言葉が、最も重い意味を持つ二人",
-    "en": "",
+    "en": "The two for whom former colleague carries the heaviest meaning",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -8771,7 +8771,7 @@
   },
   {
     "key": "全指標でリード。課題があるとすれば、強すぎて切磋琢磨の相手がいないこと",
-    "en": "",
+    "en": "Leading on every metric. If there's a problem it's being too strong to have anyone left to sharpen against",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -8781,7 +8781,7 @@
   },
   {
     "key": "全指標で劣勢。構造的な問題だから補強だけじゃ解決しないぞこれ",
-    "en": "",
+    "en": "Behind on every metric. It's structural, so signings alone won't fix this one",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9021,7 +9021,7 @@
   },
   {
     "key": "去年よりは確実にマシ。このペースなら来年には…！",
-    "en": "",
+    "en": "Definitely better than last year. At this pace, next year...!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9061,7 +9061,7 @@
   },
   {
     "key": "友情と勝負——両立しないはずの二つを、両立させた",
-    "en": "",
+    "en": "Friendship and competition — two that should not fit, fitted",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9071,7 +9071,7 @@
   },
   {
     "key": "友情と闘志、矛盾しない関係",
-    "en": "",
+    "en": "Friendship and fight, and no contradiction in it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9081,7 +9081,7 @@
   },
   {
     "key": "古参ファンの私、号泣してる。ここまで来たんだね…",
-    "en": "",
+    "en": "Longtime fan here, full-on crying. Look how far they came...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9241,7 +9241,7 @@
   },
   {
     "key": "団体が分かれてからも、{charA}と{charB}の関係は何も変わらない。{matches}度の冷えた対戦記録が、別の旗の下でも同じ温度で続くだけだ。{years}年来の距離感は、団体という枠組みすら越えて維持されている——皮肉な意味で、それは「一貫性」と呼べるかもしれない。",
-    "en": "",
+    "en": "Nothing about {charA} and {charB} changed when the promotions split. A cold {matches}-match record simply continues at the same temperature under a different flag. A {years}-year distance has been maintained across the frame of a promotion itself — in an ironic sense, that could be called consistency.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9251,7 +9251,7 @@
   },
   {
     "key": "団体の中で割れた二つの旗。その先頭に立つのが{charA}と{charB}だ。元から純粋な敵意で結ばれた二人にとって、抗争の構図は格好の舞台になる——皮肉な話だが、こういう関係こそ抗争を「商品」として成立させてしまう。",
-    "en": "",
+    "en": "Two flags split inside a promotion, and it is {charA} and {charB} standing at the head of them. For two already bound by pure hostility, the shape of a feud makes an ideal stage — an ironic thing, and it is relationships like this one that turn a feud into a product.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9261,7 +9261,7 @@
   },
   {
     "key": "団体の威信を背負う、純粋な憎悪",
-    "en": "",
+    "en": "Pure hatred, carrying the standing of a promotion",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9281,7 +9281,7 @@
   },
   {
     "key": "団体を分けたあとの、最初の対峙",
-    "en": "",
+    "en": "The first facing-off since the promotions split",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9291,7 +9291,7 @@
   },
   {
     "key": "団体を分けた選択が、ここまでこじれた",
-    "en": "",
+    "en": "The choice that split a promotion, tangled this far",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9301,7 +9301,7 @@
   },
   {
     "key": "団体を分けても、敬意は残った",
-    "en": "",
+    "en": "The promotions split; the respect stayed",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9311,7 +9311,7 @@
   },
   {
     "key": "団体を割った構図、その頂点同士の対峙",
-    "en": "",
+    "en": "The split that divided a promotion, and its two summits face to face",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9321,7 +9321,7 @@
   },
   {
     "key": "団体内のロッカールームが冷えきったいま、{charA}と{charB}の冷淡な関係も、その不協和音の一部として機能している。{matches}度の対戦が、控室の空気にじわじわ染み出している——記者として、これは座視できない状態である。",
-    "en": "",
+    "en": "With the locker room inside the promotion gone cold, the flat relationship between {charA} and {charB} works as one part of that discord. A {matches}-match record is seeping into the air backstage. As a reporter, this is not a state of things to sit and watch.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9331,7 +9331,7 @@
   },
   {
     "key": "団体内のロッカールームに、いま不穏な空気が漂っている。{charA}と{charB}の関係は、その不穏さの震源の一つだ。{matches}度の憎しみが、控室全体に染み出している——そう書いておく。社長が動かない限り、この空気は消えない。",
-    "en": "",
+    "en": "An uneasy air is hanging in the locker room inside the promotion. What sits between {charA} and {charB} is one epicenter of that unease. A {matches}-match hatred is seeping through the whole room. I will leave it there. Unless the GM moves, that air does not clear.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9341,7 +9341,7 @@
   },
   {
     "key": "団体内の力学を映す、互角の対峙",
-    "en": "",
+    "en": "A level facing-off that mirrors the balance in the promotion",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9351,7 +9351,7 @@
   },
   {
     "key": "団体内の境界が、戦友同士に引かれた。{bestMQ}点を共に作った{charA}と{charB}は、しかし派閥の論理から逃れられない。次のリングで二人が見せるのは、友情か、それとも陣営の矜持か——記者として、いま一番見たい一戦である。",
-    "en": "",
+    "en": "A line has been drawn inside the promotion, and it runs between comrades. {charA} and {charB} made a {bestMQ} between them, and neither escapes the logic of a faction. What the two of them show in the next ring — friendship, or the pride of a camp. As a reporter, that is the match I most want to see right now.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9491,7 +9491,7 @@
   },
   {
     "key": "奪われたベルト、奪い返す夜",
-    "en": "",
+    "en": "The belt taken, and the night to take it back",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9501,7 +9501,7 @@
   },
   {
     "key": "奪還挑戦という大舞台で、再び向き合う",
-    "en": "",
+    "en": "Facing each other again on the stage of a reclaim match",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9541,7 +9541,7 @@
   },
   {
     "key": "安泰に見えるけど、主力のピーク過ぎが重なる2年後が怖い。今から手を打つべき",
-    "en": "",
+    "en": "Looks safe, but two years out is scary when the top names hit the far side of their peak together. Act now",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9721,7 +9721,7 @@
   },
   {
     "key": "差がつくと見てて気持ちいいわ。もっと離せ",
-    "en": "",
+    "en": "A gap this wide is honestly satisfying to watch. Wider please",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9741,7 +9741,7 @@
   },
   {
     "key": "差はあるけど、去年よりは良くなってるよね",
-    "en": "",
+    "en": "There's a gap, but it's better than last year, right?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9751,7 +9751,7 @@
   },
   {
     "key": "差は縮まってる！ あと少しで追いつける！",
-    "en": "",
+    "en": "The gap is closing! A bit more and we catch them!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9801,7 +9801,7 @@
   },
   {
     "key": "弱い時から応援してた人間が最後に笑うんだよ。きっと",
-    "en": "",
+    "en": "The people who supported them when they were weak are the ones laughing last. I'm sure of it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9811,7 +9811,7 @@
   },
   {
     "key": "弱い時代を一緒に過ごしたファンが一番強いんだよ",
-    "en": "",
+    "en": "The fans who lived through the weak years are the strongest fans there are",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9821,7 +9821,7 @@
   },
   {
     "key": "弱い時代を知ってるから余計に感慨深い",
-    "en": "",
+    "en": "I remember the weak years, so this lands even harder",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9831,7 +9831,7 @@
   },
   {
     "key": "弱すぎて逆に応援したくなる。ならないけど",
-    "en": "",
+    "en": "So weak it almost makes you want to support them. Almost",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9851,7 +9851,7 @@
   },
   {
     "key": "弱点は明確。{rivalName}の得意分野で真っ向勝負を避けて、得意な軸で勝負すべき",
-    "en": "",
+    "en": "Weakness is clear. Don't meet {rivalName} head on where they're good, fight on our own axis",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9861,7 +9861,7 @@
   },
   {
     "key": "強い。強いんだけど、なんかマンネリ感あるのは俺だけ？",
-    "en": "",
+    "en": "Strong. They're strong. Is it just me or is it getting samey though",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9871,7 +9871,7 @@
   },
   {
     "key": "強い時代の応援は楽しいけど、弱い時代を知ってるからこそ沁みる",
-    "en": "",
+    "en": "Supporting a strong side is fun, but knowing the weak years is what makes it sink in",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9881,7 +9881,7 @@
   },
   {
     "key": "強くなったなあ。見てて安心感がある",
-    "en": "",
+    "en": "They've gotten strong. Feels safe watching now",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9891,7 +9891,7 @@
   },
   {
     "key": "強すぎてもう試合に緊張感ないわ",
-    "en": "",
+    "en": "So strong there's no tension left in the matches",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9921,7 +9921,7 @@
   },
   {
     "key": "応援しがいがあるってこういうことだよね。楽な団体を応援しても面白くない",
-    "en": "",
+    "en": "This is what it means for support to be worth something. Backing an easy promotion isn't fun",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9931,7 +9931,7 @@
   },
   {
     "key": "応援してるけど、正直見てられない差だよね…",
-    "en": "",
+    "en": "I support them, but honestly this gap is hard to look at...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9941,7 +9941,7 @@
   },
   {
     "key": "応援するの疲れてきた…",
-    "en": "",
+    "en": "Getting tired of cheering...",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -9951,7 +9951,7 @@
   },
   {
     "key": "応援団としては期待半分、不安半分って感じ",
-    "en": "",
+    "en": "As a supporter it's about half hope and half worry",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10001,7 +10001,7 @@
   },
   {
     "key": "惜しいんだよなー。惜しいで終わるのがこの団体",
-    "en": "",
+    "en": "So close. Ending on so close is what this promotion does",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10011,7 +10011,7 @@
   },
   {
     "key": "憎しみだけが原動力——それでも観客は望む",
-    "en": "",
+    "en": "Nothing but hatred driving it — and the crowd still asks",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10051,7 +10051,7 @@
   },
   {
     "key": "戦友、しかし旗は別になった",
-    "en": "",
+    "en": "Comrades, and the flags are different now",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10061,7 +10061,7 @@
   },
   {
     "key": "戦友であり、好敵手でもある",
-    "en": "",
+    "en": "Comrades, and each other's best opponent",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10071,7 +10071,7 @@
   },
   {
     "key": "戦友の溝、社長の手で埋まった",
-    "en": "",
+    "en": "The gap between comrades, closed by the GM",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10141,7 +10141,7 @@
   },
   {
     "key": "抗争のシンボルとなった、二人の確執",
-    "en": "",
+    "en": "The bad blood between two, now the symbol of a feud",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10151,7 +10151,7 @@
   },
   {
     "key": "抗争の中で問われる、本当の友情",
-    "en": "",
+    "en": "What a feud asks of a real friendship",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10161,7 +10161,7 @@
   },
   {
     "key": "折り合いの悪さは隠しようもない。{years}年の付き合いの中で、互いに歩み寄った瞬間は記憶にない。それでも興行は組まれ続ける——観客が望むからだ。",
-    "en": "",
+    "en": "The bad fit is past hiding. Over a {years}-year association I cannot recall a moment either of them moved toward the other. And the matches keep getting booked, because the crowd wants them.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10191,7 +10191,7 @@
   },
   {
     "key": "拮抗してるっていうか、どっちも決め手がないだけでは",
-    "en": "",
+    "en": "It's not that they're level, it's that neither has anything decisive",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10201,7 +10201,7 @@
   },
   {
     "key": "拮抗する数字、燃える夜",
-    "en": "",
+    "en": "Numbers in balance, and a night with heat in it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10241,7 +10241,7 @@
   },
   {
     "key": "控室で{charA}と{charB}を同じ部屋に入れない——これは興行関係者の暗黙のルールになっている。{matches}度の対戦が、その慎重さを必要にした。本紙としては、それでも組まれ続けるリングの上の構図を、ある種の業として見ている。",
-    "en": "",
+    "en": "Not putting {charA} and {charB} in the same room backstage has become an unspoken rule among the people who run the shows. A {matches}-match record made that care necessary. The shape that keeps getting booked in the ring anyway is something this paper reads as a thing the business cannot help doing.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10251,7 +10251,7 @@
   },
   {
     "key": "控室で他の選手たちが息を潜める瞬間がある——{charA}と{charB}が同じ空間に居合わせた時だ。{years}年来の憎悪が、団体の空気そのものを冷やしている。記者として、これは見ていてつらい。",
-    "en": "",
+    "en": "There are moments backstage when the other wrestlers hold their breath — the moments {charA} and {charB} are in the same space. A {years}-year hatred is cooling the air of the promotion itself. As a reporter, this is hard to watch.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10261,7 +10261,7 @@
   },
   {
     "key": "控室で笑い合って、リングで殴り合う。{matches}度の対戦が、その「切り替え」を見事にこなしてきた——記者として40年見てきた中で、これほど器用な二人は珍しい。",
-    "en": "",
+    "en": "Laughing together in the locker room, hitting each other in the ring. A {matches}-match record of switching between the two without a seam — forty years on this beat, and two this deft are rare.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10271,7 +10271,7 @@
   },
   {
     "key": "控室の二つの旗印を、それぞれの背中に背負って立つ{charA}と{charB}。{years}年来の険悪さが、いま抗争の最前線として機能している。皮肉な話だが、団体内対立はこういう関係を必要とするのだ。",
-    "en": "",
+    "en": "{charA} and {charB} stand with one of the two flags of the locker room on each of their backs. A {years}-year bad blood is now working as the front line of the feud. An ironic thing, and a fight inside a promotion needs relationships like this one.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10281,7 +10281,7 @@
   },
   {
     "key": "控室の冷気、その中心の二人",
-    "en": "",
+    "en": "The cold in the locker room, and the two at the center of it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10291,7 +10291,7 @@
   },
   {
     "key": "推しの団体だから応援する。逆境こそ燃えるでしょ",
-    "en": "",
+    "en": "It's my promotion so I support it. Adversity is what gets me going",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10301,7 +10301,7 @@
   },
   {
     "key": "推しを変えようかなって、ちょっと思っちゃった",
-    "en": "",
+    "en": "I did briefly think about switching to another promotion",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10341,7 +10341,7 @@
   },
   {
     "key": "数値的には僅差。こういう時はGMの采配で勝敗が分かれる",
-    "en": "",
+    "en": "Numerically it's a narrow margin. Times like this, the GM's calls decide it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10361,7 +10361,7 @@
   },
   {
     "key": "数字とか知らん。推しは推し。それだけ",
-    "en": "",
+    "en": "Don't know about numbers. My favorite is my favorite. That's it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10371,7 +10371,7 @@
   },
   {
     "key": "数字は互角でも空気感では完全に格下扱いされてる説",
-    "en": "",
+    "en": "Theory: numbers say level, but in the room they're still treated as the lesser side",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10391,7 +10391,7 @@
   },
   {
     "key": "数字は嘘をつかない。{bestMQ}点という評価は、観客がこの憎悪を本物だと感じている証左だ。だが、本紙はこの関係に救いがあるとは見ていない。",
-    "en": "",
+    "en": "The numbers do not lie. A rating of {bestMQ} is the evidence that the crowd feels this hatred as the real thing. This paper does not see anything redeeming in the relationship, though.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -10581,7 +10581,7 @@
   },
   {
     "key": "数字的にはまだ追える差。ただ補強の方向性を間違えると致命傷",
-    "en": "",
+    "en": "On the numbers it's still a catchable gap. Aim the signings wrong though and it's fatal",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10591,7 +10591,7 @@
   },
   {
     "key": "数字見たら分かるけど、選手層の差が一番キツい。中堅がいない",
-    "en": "",
+    "en": "Look at the numbers and the roster depth gap is the worst part. There's no middle of the card",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10751,7 +10751,7 @@
   },
   {
     "key": "最強って言い切っていいレベルじゃない？",
-    "en": "",
+    "en": "Isn't this the level where you can just call them the strongest?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10761,7 +10761,7 @@
   },
   {
     "key": "最強の座、守り続けよう！",
-    "en": "",
+    "en": "Strongest in the business. Let's hold it!",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10771,7 +10771,7 @@
   },
   {
     "key": "最後の最後まで勝負の行方は分からなかった。{loserName}も見せ場を作り続けたが、{winnerName}の{finishLabel}が決着を告げた。消耗戦を制した{winnerName}のタフネスが光った{turns}ターン。試合評価{mq}は今シーズン屈指の数字だ。",
-    "en": "Nobody knew where it was going until the last of it. {loserName} kept making her moments, and the {finishLabel} of {winnerName} called it. {turns} turns, with the toughness of {winnerName} winning a match of attrition. Rated {mq} — among the highest of the season.",
+    "en": "Nobody knew where it was going until the last of it. {loserName} kept making her moments, and {winnerName}'s {finishLabel} called it. {turns} turns, with the toughness of {winnerName} winning a war of attrition. Rated {mq} — among the highest of the season.",
     "files": [
       "app.js:_NEWSPAPER_ARTICLES"
     ],
@@ -10801,7 +10801,7 @@
   },
   {
     "key": "最近ほんとに力が拮抗してて面白い",
-    "en": "",
+    "en": "The two of them are genuinely level lately and it's great",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -10891,7 +10891,7 @@
   },
   {
     "key": "本紙が見守る、もう一つの宿命",
-    "en": "",
+    "en": "The other fate this paper has been watching",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11011,7 +11011,7 @@
   },
   {
     "key": "本紙としては、この二人の関係を「業界の地層」と呼んでおきたい。派手さはないが、いずれ何かのきっかけで火が点く可能性は、常にある。",
-    "en": "",
+    "en": "This paper would like to call what these two have the bedrock of the business. Nothing loud about it, and the possibility that something eventually lights it is always there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11161,7 +11161,7 @@
   },
   {
     "key": "来季も同じ記事書かれるに100万",
-    "en": "",
+    "en": "Betting a million they write the same article next season",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11191,7 +11191,7 @@
   },
   {
     "key": "格の違いってやつですわ",
-    "en": "",
+    "en": "This is what a difference in class looks like, folks",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11211,7 +11211,7 @@
   },
   {
     "key": "業界が待つ、二人の対峙",
-    "en": "",
+    "en": "The meeting the business is waiting for",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11221,7 +11221,7 @@
   },
   {
     "key": "業界では「組ませるべきではない」という声もある。だが本紙としては、この緊張感こそ商品価値の源泉だと書いておく。皮肉な話だが、それが現実である。",
-    "en": "",
+    "en": "There are voices in the business saying the two of them should not be put together. This paper will put it on record that the tension is exactly where the value comes from. An ironic thing to write, and it is the reality.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11231,7 +11231,7 @@
   },
   {
     "key": "業界における健全な競争関係の見本のような二人。本紙としては、この関係が長く続くことを願って書いておく。もっとも、願いだけで続くものでもないが。",
-    "en": "",
+    "en": "The pair of them are a model of healthy competition in this business. This paper will put it in print with a hope that it lasts. Although hoping is not what makes a thing last.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11241,7 +11241,7 @@
   },
   {
     "key": "業界には、こういう関係も必要だ。派手ではないが、確実に互いを高め合う——本紙としては、もっと注目されてもいいと書いておく。",
-    "en": "",
+    "en": "The business needs relationships like this one too. Nothing loud, and each of them reliably raises the other — this paper will put it in print that it deserves more attention.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11261,7 +11261,7 @@
   },
   {
     "key": "業界の中堅戦線、目が離せない",
-    "en": "",
+    "en": "The mid-card front of the business, impossible to look away from",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11281,7 +11281,7 @@
   },
   {
     "key": "業界の通常運転",
-    "en": "",
+    "en": "The ordinary running of the business",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11291,7 +11291,7 @@
   },
   {
     "key": "業界トップを目指せる位置にいる。胸熱でしかない",
-    "en": "",
+    "en": "We're in position to go for number one in the business. Chills",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11311,7 +11311,7 @@
   },
   {
     "key": "業界全体の活性化のためにも、敢えて{rivalName}を引き上げる仕掛けが要る",
-    "en": "",
+    "en": "For the health of the whole business somebody needs to engineer a lift for {rivalName}",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11341,7 +11341,7 @@
   },
   {
     "key": "楽屋ですれ違っても、目を合わせない",
-    "en": "",
+    "en": "Passing backstage, their eyes do not meet",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11371,7 +11371,7 @@
   },
   {
     "key": "次の対戦が、もう怖い",
-    "en": "",
+    "en": "The next meeting is already frightening",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11381,7 +11381,7 @@
   },
   {
     "key": "次の対抗戦が今から楽しみで仕方ない",
-    "en": "",
+    "en": "Already looking forward to the next interpromotional",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11411,7 +11411,7 @@
   },
   {
     "key": "次の興行で抜け出すのはこっち。根拠はないけど確信してる",
-    "en": "",
+    "en": "It's our side that pulls clear on the next show. No basis for that, I just know",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11421,7 +11421,7 @@
   },
   {
     "key": "次の補強でどこまで変わるか気になる",
-    "en": "",
+    "en": "Curious how much the next signing changes",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11431,7 +11431,7 @@
   },
   {
     "key": "次世代エース候補が育ってないと、世代交代で一気に転落するリスクがある",
-    "en": "",
+    "en": "If the next ace isn't being raised, the handover risks dropping the whole thing at once",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11591,7 +11591,7 @@
   },
   {
     "key": "毎週同じ展開で勝ってるから、観てて飽きてきたまである",
-    "en": "",
+    "en": "Winning the same way every week, it's honestly getting boring",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11601,7 +11601,7 @@
   },
   {
     "key": "比較する意味ある？ 結果分かってるじゃん",
-    "en": "",
+    "en": "Is there a point comparing? We know the answer",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11641,7 +11641,7 @@
   },
   {
     "key": "水と油、リングでも楽屋でも",
-    "en": "",
+    "en": "Oil and water, in the ring and backstage",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11661,7 +11661,7 @@
   },
   {
     "key": "永遠の挑戦者ポジション、もう何年目？",
-    "en": "",
+    "en": "Eternal challenger position, what year are we on now",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11711,7 +11711,7 @@
   },
   {
     "key": "決着放棄上等の塩試合フラグ立ってない？",
-    "en": "",
+    "en": "Anyone else smell a time-limit draw and a nothing match coming?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11731,7 +11731,7 @@
   },
   {
     "key": "派閥が割れたいま、{charA}と{charB}の確執は団体全体の構図を象徴するものになった。{matches}度のリングが、それぞれの陣営の士気と直結している——そういう試合になっている。本紙としては、これを「商品価値」と呼ぶのが正確かもしれない。",
-    "en": "",
+    "en": "With the factions split, what is between {charA} and {charB} has come to stand for the shape of the whole promotion. A {matches}-match record now runs straight into the spirit of each camp. That is what these matches have become. This paper suspects value is the accurate word for it.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11741,7 +11741,7 @@
   },
   {
     "key": "派閥が割れた今、{charA}と{charB}の対戦は団体全体の構図を凝縮するものになった。{matches}度の運命的な距離が、抗争の構図によってついに正面から組まれる。本紙としては、この一戦の結果が両派閥の今後を決定づけると見ている。",
-    "en": "",
+    "en": "With the factions split, a match between {charA} and {charB} now concentrates the shape of the whole promotion. A {matches}-match run of fated distance is finally booked head on by the logic of the feud. This paper reads the result of this one as deciding where both factions go.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11751,7 +11751,7 @@
   },
   {
     "key": "派閥が割れた今、{charA}と{charB}は別の旗の下に立つことになった。{matches}度の名勝負を共に作ってきた二人にとって、これは複雑な状況だ。「リングでは敵、控室では友」という器用さが、いま試されている——本紙はそう見ている。",
-    "en": "",
+    "en": "With the factions split, {charA} and {charB} stand under different flags. For two who built a {matches}-match run of great matches together, that is a complicated place to be. The deftness of enemies in the ring and friends in the locker room is being tested now. That is how this paper reads it.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11761,7 +11761,7 @@
   },
   {
     "key": "派閥が割れた今、憎しみは旗印になった",
-    "en": "",
+    "en": "With the factions split, the hatred became a flag",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11781,7 +11781,7 @@
   },
   {
     "key": "派閥の旗、それぞれの背中にひるがえる",
-    "en": "",
+    "en": "A faction flag on each of their backs",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11791,7 +11791,7 @@
   },
   {
     "key": "派閥同士のメンツがぶつかる、中堅戦線の主役",
-    "en": "",
+    "en": "Faction pride against faction pride, and the mid-card carries it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11811,7 +11811,7 @@
   },
   {
     "key": "派閥対立の中、ついに正面から組まれた",
-    "en": "",
+    "en": "Inside the faction split, booked head on at last",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11821,7 +11821,7 @@
   },
   {
     "key": "派閥抗争の中で、{charA}と{charB}の対戦は両陣営の力量を測る指標になっている。{matches}度の対戦記録は、抗争という構図のもとで新たな意味を持ち始めた——本紙はそう書いておく。",
-    "en": "",
+    "en": "Inside the faction war, a match between {charA} and {charB} works as the measure of what each camp is worth. A {matches}-match record has begun to carry a new meaning under the shape of a feud. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11831,7 +11831,7 @@
   },
   {
     "key": "派閥抗争の最中、{charA}と{charB}の対戦は単なる試合ではない。背負っている旗の重みが、二人の憎しみをさらに加速させている。{matches}度の対戦、{bestMQ}点——その数字の裏には、もはや個人ではなく集団の感情が乗っている。本紙はそう見ている。",
-    "en": "",
+    "en": "In the middle of a faction war, a match between {charA} and {charB} is not merely a match. The weight of the flag each carries drives the hatred further. A {matches}-match record, a best of {bestMQ} — behind those numbers now sits the feeling of a group rather than of two people. That is how this paper reads it.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11841,7 +11841,7 @@
   },
   {
     "key": "淡々と、しかし距離は縮まらない",
-    "en": "",
+    "en": "Flatly, and the distance does not close",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11861,7 +11861,7 @@
   },
   {
     "key": "淡々と試合をして、淡々と別れる。それでいて、目は合わない。{matches}度の対戦が、その距離を埋めることはなかった。",
-    "en": "",
+    "en": "They work the match flatly and part flatly. And their eyes do not meet. A {matches}-match record never closed that distance.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11901,7 +11901,7 @@
   },
   {
     "key": "無双状態。つまんないくらい強いわ",
-    "en": "",
+    "en": "Untouchable. Strong to the point of being boring",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -11931,7 +11931,7 @@
   },
   {
     "key": "熱くはないが、冷たい二人",
-    "en": "",
+    "en": "Not warm, and two who are cold",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11981,7 +11981,7 @@
   },
   {
     "key": "特筆すべきこともなく、しかし",
-    "en": "",
+    "en": "Nothing worth singling out, and still",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -11991,7 +11991,7 @@
   },
   {
     "key": "特筆すべきこともなく、しかし完全な無関心でもない。{matches}度の対戦は、業界の日常の一部である。",
-    "en": "",
+    "en": "Nothing worth singling out, and not complete indifference either. A {matches}-match record is part of the ordinary run of this business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12321,7 +12321,7 @@
   },
   {
     "key": "相容れない二人、それでも同じリングへ",
-    "en": "",
+    "en": "Two who cannot be reconciled, and the same ring again",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12331,7 +12331,7 @@
   },
   {
     "key": "相手の弱点突くカード編成ができるGMかどうかが分水嶺",
-    "en": "",
+    "en": "Whether the GM can book cards that hit their weak spot is where this gets decided",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -12481,7 +12481,7 @@
   },
   {
     "key": "穏やかな関係。リングで会っても、過度な熱は持ち込まない。{matches}度の対戦は、いずれも業界の良質な見本となっている。",
-    "en": "",
+    "en": "A quiet relationship. Meeting in the ring, neither brings excess heat into it. A {matches}-match record, and every one of them a good example for the business.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12491,7 +12491,7 @@
   },
   {
     "key": "穏やかに、しかし確かに意識し合う",
-    "en": "",
+    "en": "Quietly, and each certainly aware of the other",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12501,7 +12501,7 @@
   },
   {
     "key": "空気が冷えきった更衣室、その中央に立つ二人",
-    "en": "",
+    "en": "A dressing room gone cold, and the two standing in the middle of it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12511,7 +12511,7 @@
   },
   {
     "key": "笑いたきゃ笑え。でも絶対にここから上がるから。見てろ",
-    "en": "",
+    "en": "Laugh if you want. We're coming up from here. Watch",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -12681,7 +12681,7 @@
   },
   {
     "key": "練習試合ならともかく、ガチでやったら3タテ食らうだろ",
-    "en": "",
+    "en": "An exhibition maybe, but do it for real and they're getting swept 3-0",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -12701,7 +12701,7 @@
   },
   {
     "key": "育成方針そのものを見直すべきフェーズ。場当たりじゃ無理",
-    "en": "",
+    "en": "This is the phase where you rethink the development plan itself. Patching won't do it",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -12711,7 +12711,7 @@
   },
   {
     "key": "胸を張って応援できるって、こんなに嬉しいことなんだ",
-    "en": "",
+    "en": "Getting to support them with your head up — didn't know it felt this good",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -12791,7 +12791,7 @@
   },
   {
     "key": "荒れたロッカールーム、悪化の主因",
-    "en": "",
+    "en": "A locker room gone bad, and the main cause of it",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12801,7 +12801,7 @@
   },
   {
     "key": "荒れた控室、温度なき距離",
-    "en": "",
+    "en": "A locker room gone bad, and a distance with no temperature",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12811,7 +12811,7 @@
   },
   {
     "key": "荒れた控室で交わる、二つの視線",
-    "en": "",
+    "en": "In a locker room gone bad, two lines of sight cross",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -12861,7 +12861,7 @@
   },
   {
     "key": "袂を分かった戦友、再び対峙する",
-    "en": "",
+    "en": "Comrades who parted, facing each other again",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13011,7 +13011,7 @@
   },
   {
     "key": "解散届出してこいよもう",
-    "en": "",
+    "en": "Just go file the dissolution papers already",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -13061,7 +13061,7 @@
   },
   {
     "key": "言葉なき敬意、リングの上での対話",
-    "en": "",
+    "en": "Respect without words, a conversation in the ring",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13071,7 +13071,7 @@
   },
   {
     "key": "言葉も交わさず、視線も合わせず",
-    "en": "",
+    "en": "No words exchanged, no eyes met",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13121,7 +13121,7 @@
   },
   {
     "key": "試合後の握手は本物だ。だがリング上では一切の手加減もない。{matches}度の対戦、最高評価は{bestMQ}点——この数字こそ、二人の関係の質を物語っている。本紙はそう書いておく。",
-    "en": "",
+    "en": "The handshake after the match is real. And nothing is held back in the ring. A record of {matches}, best rated {bestMQ} — that number is what tells you the quality of this relationship. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13161,7 +13161,7 @@
   },
   {
     "key": "認め合うがゆえに、退けない",
-    "en": "",
+    "en": "Because they grant each other, neither can give way",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13331,7 +13331,7 @@
   },
   {
     "key": "追いつきそうで追いつかないの才能だよね",
-    "en": "",
+    "en": "Not quite catching up is genuinely a talent at this point",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -13351,7 +13351,7 @@
   },
   {
     "key": "逆に聞きたい。{rivalName}に勝てるポイントってどこ？",
-    "en": "",
+    "en": "Genuine question. Where exactly is the place where they beat {rivalName}?",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -13361,7 +13361,7 @@
   },
   {
     "key": "通算{bestMQ}点。数字としては悪くない。だが、二人の間の空気は、いつまでも凍ったままだ。本紙はそう書いておく。",
-    "en": "",
+    "en": "A best of {bestMQ} all told. Not a bad number. And the air between the two of them stays frozen the whole while. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13371,7 +13371,7 @@
   },
   {
     "key": "通算{matches}度の対戦、いまだに笑顔の握手は一度もない。{bestMQ}点の最高評価が示す通り、リング上の温度は本物だ。問題は、その温度の出どころが「闘志」ではなく「憎悪」だということである。本紙としては、そう書いておく。",
-    "en": "",
+    "en": "{matches} meetings, and not once a handshake with a smile behind it. The best of them rated {bestMQ}, so the heat in the ring is real enough. The trouble is where that heat comes from. Not fighting spirit. Hatred. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13381,7 +13381,7 @@
   },
   {
     "key": "通算{matches}戦、最高評価{bestMQ}点。数字が示すのは、両者がリングで一切妥協していないという事実である。本紙としては、これを「健全な競争」と呼んで差し支えないと見ている。",
-    "en": "",
+    "en": "A record of {matches} all told, best rated {bestMQ}. What the numbers show is that neither of them has compromised once in the ring. This paper sees no problem with calling that healthy competition.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13391,7 +13391,7 @@
   },
   {
     "key": "通算{matches}戦。{bestMQ}点という数字は、どちらの選手にとっても通常運転の範囲内である。だが、それでも組まれ続けるのは、観客が一定の関心を持っているからだろう。",
-    "en": "",
+    "en": "A record of {matches} all told. A rating of {bestMQ} is inside the normal range for either of them. That they keep getting booked anyway is presumably because the crowd carries a certain amount of interest.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13401,7 +13401,7 @@
   },
   {
     "key": "通算{matches}戦。両者のキャリアの重要な局面で、必ずと言っていいほど名前が交差する。偶然と呼ぶには出来すぎている、と本紙は書いておく。",
-    "en": "",
+    "en": "A record of {matches} all told. At every important turn in either career, their names cross without fail. Too neat to be called coincidence, and this paper will say so in print.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13591,7 +13591,7 @@
   },
   {
     "key": "運命の対峙が、奪還戦という形で実現する",
-    "en": "",
+    "en": "A meeting written in advance arrives as a reclaim match",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13601,7 +13601,7 @@
   },
   {
     "key": "運命の対決、まだ序章にすぎない",
-    "en": "",
+    "en": "A meeting written in advance, and still only the opening",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13641,7 +13641,7 @@
   },
   {
     "key": "選手層の差がわずかにある。ここをどう埋めるかがポイント",
-    "en": "",
+    "en": "There's a slight gap in roster depth. How they fill that is the point",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -13661,7 +13661,7 @@
   },
   {
     "key": "避けられない一夜が、いずれ来る",
-    "en": "",
+    "en": "The night that cannot be avoided will come",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13731,7 +13731,7 @@
   },
   {
     "key": "関係修復の先に、再び並んだ背中",
-    "en": "",
+    "en": "Past the repair, two backs side by side again",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13801,7 +13801,7 @@
   },
   {
     "key": "離脱があった夜の控室の沈黙を、本紙は覚えている。{charA}と{charB}は、しかし憎み合ってはいなかった。{bestMQ}点を共に作った二人にとって、別の旗の下に立つことは「裏切り」ではなく「選択」だったのだろう。それでも次にリングで会う夜は、特別なものになる。",
-    "en": "",
+    "en": "This paper remembers the silence in the locker room the night of the departure. {charA} and {charB} were not hating each other, though. For two who made a {bestMQ} together, standing under different flags was a choice rather than a betrayal. The night they next meet in a ring will be a particular one all the same.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13811,7 +13811,7 @@
   },
   {
     "key": "離脱と残留、二つの選択がリングで交差する",
-    "en": "",
+    "en": "Leaving and staying, two choices crossing in the ring",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13821,7 +13821,7 @@
   },
   {
     "key": "離脱を経ても、温度は変わらない",
-    "en": "",
+    "en": "A departure, and the temperature is unchanged",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13861,7 +13861,7 @@
   },
   {
     "key": "静かな信頼、亀裂を経てより確かなものに",
-    "en": "",
+    "en": "A quiet trust, surer for the crack it came through",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13871,7 +13871,7 @@
   },
   {
     "key": "静かな信頼、淡い競争",
-    "en": "",
+    "en": "Quiet trust, faint competition",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13881,7 +13881,7 @@
   },
   {
     "key": "静かに続く、ライバル関係の典型",
-    "en": "",
+    "en": "A quiet continuing, the typical rivalry",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13891,7 +13891,7 @@
   },
   {
     "key": "静謐な競争、それでも目が離せない",
-    "en": "",
+    "en": "A still competition, and impossible to look away from",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13931,7 +13931,7 @@
   },
   {
     "key": "頑張ってるのは分かるんだけど、結果が出ないとなあ",
-    "en": "",
+    "en": "I can see they're working. It's the results that aren't coming",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -13941,7 +13941,7 @@
   },
   {
     "key": "顔も見たくない、それでも組まれてしまう",
-    "en": "",
+    "en": "They will not look at each other, and it gets booked anyway",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -13961,7 +13961,7 @@
   },
   {
     "key": "黒田記者が褒めてる…！ 何か悪いこと起きそうで逆に怖い",
-    "en": "",
+    "en": "Kuroda actually praised them...! Now I'm scared something bad is coming",
     "files": [
       "FAN_OPINIONS"
     ],
