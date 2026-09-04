@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T05:44:42.179Z",
+  "generatedAt": "2026-09-04T06:36:44.062Z",
   "files": {
     "data.js": {
       "jaCount": 16694,
@@ -10,8 +10,8 @@
       "jaChars": 31310
     },
     "management.js": {
-      "jaCount": 2326,
-      "jaChars": 25722
+      "jaCount": 2327,
+      "jaChars": 25789
     },
     "tenchosen-final-lines.js": {
       "jaCount": 666,

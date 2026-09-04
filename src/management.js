@@ -3818,28 +3818,39 @@ const Engine = {
     CHANCE: 0.12,          // 12% per eligible fighter per week (~1 event every 8 weeks)
     POP_THRESHOLD: 55,     // non-champion needs popularity >= 55
 
+    // i18n Stage B P6-10: 関数プール `(name) => \`…${name}…\`` から `{name}` プレースホルダ
+    // 文字列へ移行した(JA出力は1バイト不変)。check() が dict-opts規約
+    // (specs/i18n-runtime-spec-v1.0.md §6)どおり「PH置換前に」辞書を引けるようにするため。
+    // test/i18n-extract-templates.js がこの2配列をmanagement.jsソースから直接切り出して
+    // i18n/template-ledger.json へ載せる(app.js:_NEWSPAPER_HEADLINES と同じ作法)。
+    // **配列の並び順は変えないこと** — Engine.rng.int が引く添字が変わるとJA出力が変わる。
     MAGAZINE_HEADLINES: [
-      (name) => `📰 週刊女子プロレス — 「${name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」`,
-      (name) => `📰 月刊プロレスマガジン — 「特集：${name}の素顔に迫る」`,
-      (name) => `📰 週刊女子プロレス — 「${name}、表紙＆巻頭グラビア！ファン歓喜」`,
-      (name) => `📰 スポーツ報知 — 「${name}が語る"強さの秘密"」`,
-      (name) => `📰 週刊女子プロレス — 「${name}密着ルポ。練習場から見えた執念」`,
-      (name) => `📰 月刊プロレスマガジン — 「${name}インタビュー。『ファンの声援が力になる』」`,
+      '📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」',
+      '📰 月刊プロレスマガジン — 「特集：{name}の素顔に迫る」',
+      '📰 週刊女子プロレス — 「{name}、表紙＆巻頭グラビア！ファン歓喜」',
+      '📰 スポーツ報知 — 「{name}が語る"強さの秘密"」',
+      '📰 週刊女子プロレス — 「{name}密着ルポ。練習場から見えた執念」',
+      '📰 月刊プロレスマガジン — 「{name}インタビュー。『ファンの声援が力になる』」',
     ],
     TV_HEADLINES: [
-      (name) => `📺 スポーツニュース — 「${name}がゴールデンタイムに登場。業界への注目が高まっている」`,
-      (name) => `📺 バラエティ番組出演 — 「${name}のトーク力に共演者も驚き」`,
-      (name) => `📺 朝の情報番組 — 「話題の女子プロレスラー${name}に密着取材」`,
-      (name) => `📺 スポーツドキュメント — 「${name}、リングの外の真実」`,
-      (name) => `📺 特番出演 — 「女子プロレス最前線！ ${name}の魅力を徹底解剖」`,
-      (name) => `📺 トーク番組 — 「${name}、意外な素顔にスタジオ沸く」`,
+      '📺 スポーツニュース — 「{name}がゴールデンタイムに登場。業界への注目が高まっている」',
+      '📺 バラエティ番組出演 — 「{name}のトーク力に共演者も驚き」',
+      '📺 朝の情報番組 — 「話題の女子プロレスラー{name}に密着取材」',
+      '📺 スポーツドキュメント — 「{name}、リングの外の真実」',
+      '📺 特番出演 — 「女子プロレス最前線！ {name}の魅力を徹底解剖」',
+      '📺 トーク番組 — 「{name}、意外な素顔にスタジオ沸く」',
     ],
 
     /**
      * フレーバーイベント判定。最大1件/週を返す。
-     * @returns {Array<{type:'magazine'|'tv', fighterId, fighterName, popGain?, heatGain?, headline}>}
+     * @param {Object} [opts] i18n Stage B P6-10: dict-opts(specs/i18n-runtime-spec-v1.0.md §6)。
+     *   `opts.dict`(=WM_I18N.t 相当の `(text, params) => text`)があれば見出しテンプレを
+     *   **プレースホルダ置換前に**辞書へ通す。省略時(auto-sim/ja-golden/プレビューtick)は
+     *   翻訳せず充填だけ行う(§6 generateTicker と同じ契約 — 単純な `(s)=>s` にすると
+     *   `{name}` が生のまま残る)。
+     * @returns {Array<{type:'magazine'|'tv', fighterId, fighterName, popGain?, heatGain?, headline, headlineJa}>}
      */
-    check(state, rng) {
+    check(state, rng, opts) {
       if (state.offSeason) return [];
       const champId = state.titles?.world?.championId;
       const eligible = (state.roster || []).filter(c =>
@@ -3856,30 +3867,50 @@ const Engine = {
 
         const isChamp = fighter.id === champId;
         const isMagazine = Engine.rng.float(rng) < 0.5;
+        const templates = isMagazine ? this.MAGAZINE_HEADLINES : this.TV_HEADLINES;
+        const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];
+        const params = { name: fighter.name };
+        // headline  = 表示用(dictがあればEN)。app.jsのイベントポップアップが出す。
+        // headlineJa = gameLogのレガシー文字列エントリ用の生JA。仕様§2-4のとおり
+        //   gameLogは無変換で共存させる族であり、周囲の装飾(「（人気+2）」等)が
+        //   JAのままなので、見出しだけENにすると1行の中で言語が混ざる。
+        const headline = Engine.flavor._headline(tpl, params, opts);
+        const headlineJa = Engine.flavor._fillHeadline(tpl, params);
 
         if (isMagazine) {
-          const templates = this.MAGAZINE_HEADLINES;
-          const headline = templates[Engine.rng.int(rng, 0, templates.length - 1)](fighter.name);
           return [{
             type: 'magazine',
             fighterId: fighter.id,
             fighterName: fighter.name,
             popGain: isChamp ? 3 : 2,
-            headline
+            headline, headlineJa
           }];
         } else {
-          const templates = this.TV_HEADLINES;
-          const headline = templates[Engine.rng.int(rng, 0, templates.length - 1)](fighter.name);
           return [{
             type: 'tv',
             fighterId: fighter.id,
             fighterName: fighter.name,
             heatGain: isChamp ? 2 : 1,
-            headline
+            headline, headlineJa
           }];
         }
       }
       return [];
+    },
+
+    /** 見出しテンプレのプレースホルダをJAのまま充填する(dict無しのフォールバック兼gameLog用) */
+    _fillHeadline(tpl, params) {
+      return Object.keys(params || {}).reduce(
+        (acc, k) => acc.split('{' + k + '}').join(String(params[k])), String(tpl));
+    },
+
+    /** 見出しテンプレを「PH置換前に」dictへ通してから充填する。dict未指定ならJA充填のみ */
+    _headline(tpl, params, opts) {
+      const dict = (opts && typeof opts.dict === 'function') ? opts.dict : null;
+      if (!dict) return Engine.flavor._fillHeadline(tpl, params);
+      // WM_I18N.t は (text, params) で充填+名前辞書変換まで行う。万一 dict が1引数実装
+      // だった場合に `{name}` が生で残らないよう、残ったPHは後段でJA充填する(冪等)。
+      return Engine.flavor._fillHeadline(dict(String(tpl), params), params);
     },
 
     /** フレーバーイベントの効果を適用 */
@@ -13994,13 +14025,16 @@ const Engine = {
     }
     // v1.2-9: Flavor events (雑誌取材・TV出演)
     const flavorRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 5555));
-    const flavorEvents = Engine.flavor.check(s, flavorRng);
+    const flavorEvents = Engine.flavor.check(s, flavorRng, opts);
     if (flavorEvents.length > 0) {
       s = Engine.flavor.apply(s, flavorEvents);
       s = { ...s, _flavorEvents: flavorEvents };
       flavorEvents.forEach(ev => {
-        if (ev.type === 'magazine') events.push(`${ev.headline}（${ev.fighterName} 人気+${ev.popGain}）`);
-        else events.push(`${ev.headline}（ヒート+${ev.heatGain}）`);
+        // gameLogへは生JA(headlineJa)を積む。周囲の装飾がJAのままの族(§2-4)なので
+        // 見出しだけENにすると1行で言語が混ざる。旧セーブ由来の互換でフォールバック。
+        const logHeadline = ev.headlineJa || ev.headline;
+        if (ev.type === 'magazine') events.push(`${logHeadline}（${ev.fighterName} 人気+${ev.popGain}）`);
+        else events.push(`${logHeadline}（ヒート+${ev.heatGain}）`);
       });
     }
     // N-04: 人気逆転チェック（pop更新後、週次decay前）
@@ -21274,6 +21308,23 @@ Engine.awards = {
     // rngがない場合（レガシー呼び出し）はプール先頭を返す
     if (!rng) return pool[0];
     return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+  },
+
+  /** i18n Stage B P6-10: 異名の**表示用**変換。
+   *  generateEpithet() が返す値は hofEntry.epithet としてG(セーブ)へ永続化されるため、
+   *  生成側は生JAのまま据え置き(D-P6-4「セーブに書く値は変えない」)、表示・紙面化の
+   *  瞬間にだけ辞書を引く。_EPITHET_TEMPLATES の中で唯一プレースホルダを持つ
+   *  `{n}人切り` は _resolvePlaceholders が生成時点で数値を埋めてしまうので、
+   *  保存値から数値を読み戻してテンプレのキーで辞書を引き直す。
+   *  辞書に無い値(未知の異名・旧セーブ)はfail-openで原文のまま返る。
+   *  @param {string} epithet 保存されている生JAの異名
+   *  @param {Function} [dict] WM_I18N.t 相当 (text, params) => text。省略時はJAのまま */
+  epithetText(epithet, dict) {
+    const raw = String(epithet || '');
+    if (!raw) return '';
+    const m = /^(\d+)人切り$/.exec(raw);
+    if (m) return _wmFillWithDict(dict, '{n}人切り', { n: m[1] });
+    return (typeof dict === 'function') ? dict(raw) : raw;
   },
 
   /** C-0b: 経歴に基づく語り文の自動生成 */
@@ -30810,6 +30861,16 @@ Engine.industryNews = {
 // data.js監査台帳(preformatted-values-audit.md){stamp}項。dict未指定(既定)時はJA原文の
 // まま連結する(既存呼び出し元は無改修で不変)。suffixJaはdict()経由の1語ラベルなので、
 // 既に英訳が無いJA語彙を渡す場合はi18n/ui-ledger.jsonに行を足しておくこと。
+// i18n Stage B P6-10: 「テンプレをdictへ通してからプレースホルダを充填する」共通ヘルパー。
+// dictが `WM_I18N.t`(2引数・名前辞書変換つき)でも、Engine内のフォールバック `(s) => s`
+// (1引数)でも壊れないことが要件 — 前者は dict 側で充填まで済むので後段の
+// fillTemplateVars は何も見つからず素通し(冪等)、後者は充填だけがここで行われる。
+// **必ずPH置換前にdictを通すこと**(置換後の完成文は辞書キーと一致せずfail-openする)。
+function _wmFillWithDict(dict, tpl, params) {
+  const translated = (typeof dict === 'function') ? dict(String(tpl), params) : String(tpl);
+  return params ? fillTemplateVars(translated, params) : translated;
+}
+
 function _wmNewsStamp(dict, season, week, suffixJa) {
   const T = (typeof dict === 'function') ? dict : (s) => s;
   return `${fillTemplateVars(T('第{season}年度・第{week}週'), { season, week })} ${T(suffixJa)}`;
@@ -31206,9 +31267,15 @@ Engine.newspaper = {
     return awarded || null;
   },
 
-  /** 殿堂入り引退だけに使う特別号の見出し・本文。通常引退テンプレは変更しない。 */
-  composeHallOfFameRetirement(d, hofEntry) {
+  /** 殿堂入り引退だけに使う特別号の見出し・本文。通常引退テンプレは変更しない。
+   *  i18n Stage B P6-10: 第3引数 dict(=WM_I18N.t 相当)を受けるdict-opts化。
+   *  呼び出し元は Engine.newspaper.generate() の2箇所のみで、いずれも generate の
+   *  ローカル dict をそのまま渡す。dict省略時はJA原文のまま(1バイト不変)。
+   *  異名(hofEntry.epithet)はセーブへ生JAで永続する値なので、ここでも**永続値には
+   *  触れず**、記事本文へ差し込む瞬間だけ辞書を引く(newsData.epithetは生JAのまま)。 */
+  composeHallOfFameRetirement(d, hofEntry, dict) {
     if (!d || !hofEntry) return null;
+    const T = (tpl, params) => _wmFillWithDict(dict, tpl, params);
     const name = d.name || hofEntry.name || '';
     const orgName = d.orgName || d.org || hofEntry.orgName || '所属団体';
     const seasons = Number(d.seasons) || Math.max(1,
@@ -31216,20 +31283,27 @@ Engine.newspaper = {
     const titleReigns = Math.max(Number(d.reigns) || 0, Number(hofEntry.titleReigns) || 0);
     const totalDefenses = Number(hofEntry.totalDefenses) || 0;
     const hofLevel = Math.max(1, Math.min(3, Number(hofEntry.hofLevel) || 1));
-    const levelLabel = hofLevel >= 3 ? '最高位・レジェンド殿堂' : hofLevel >= 2 ? 'ゴールド殿堂' : '殿堂';
-    const achievement = [];
-    if (titleReigns > 0) achievement.push(`通算${titleReigns}度の戴冠`);
-    if (totalDefenses > 0) achievement.push(`通算${totalDefenses}度の防衛`);
-    const recordLine = achievement.length
-      ? `${achievement.join('、')}。その数字は、${name}が団体の中心であり続けた時間の重さを物語る。`
-      : `記録の数字だけでは測れない存在感で、${name}は幾度も${orgName}のリングを支えた。`;
-    const epithet = hofEntry.epithet ? `「${hofEntry.epithet}」と呼ばれた` : '';
+    const levelLabel = T(hofLevel >= 3 ? '最高位・レジェンド殿堂' : hofLevel >= 2 ? 'ゴールド殿堂' : '殿堂');
+    // 実績の列挙は「戴冠のみ/防衛のみ/両方/なし」の4通りしかないため、読点で連結せずに
+    // 分岐ごとの完全文テンプレへ分けた(構造規約3「断片連結禁止」。JA出力は連結時と同一)。
+    const recordLine = (titleReigns > 0 && totalDefenses > 0)
+      ? T('通算{reigns}度の戴冠、通算{defenses}度の防衛。その数字は、{name}が団体の中心であり続けた時間の重さを物語る。', { reigns: titleReigns, defenses: totalDefenses, name })
+      : titleReigns > 0
+        ? T('通算{reigns}度の戴冠。その数字は、{name}が団体の中心であり続けた時間の重さを物語る。', { reigns: titleReigns, name })
+        : totalDefenses > 0
+          ? T('通算{defenses}度の防衛。その数字は、{name}が団体の中心であり続けた時間の重さを物語る。', { defenses: totalDefenses, name })
+          : T('記録の数字だけでは測れない存在感で、{name}は幾度も{org}のリングを支えた。', { name, org: orgName });
+    const epithet = hofEntry.epithet
+      ? T('「{epithet}」と呼ばれた', { epithet: Engine.awards.epithetText(hofEntry.epithet, dict) })
+      : '';
     return {
-      headline: `${name}、殿堂入り——${orgName}の一時代に幕`,
-      subhead: `${seasons}シーズンの現役生活に区切り。引退と同時に${levelLabel}へ`,
-      situation: '永久保存版　殿堂入り・引退特別号',
-      captionExtra: `${levelLabel}・引退特別号`,
-      body: `${epithet}${name}が現役を退き、${orgName}の殿堂にその名を刻んだ。${seasons}シーズンにわたる歩みは、ひとりの選手の経歴にとどまらず、団体そのものの歴史の一部となった。｜${recordLine}｜リングを去っても、その試合、その言葉、その背中は記録と記憶の中に残る。${orgName}は功績をたたえ、${name}を${levelLabel}入りとして永く顕彰する。`,
+      // 見出しキーは ui-render.js:7845(殿堂入りティッカー)と同一。既訳を共有する。
+      headline: T('{name}、殿堂入り——{org}の一時代に幕', { name, org: orgName }),
+      subhead: T('{seasons}シーズンの現役生活に区切り。引退と同時に{levelLabel}へ', { seasons, levelLabel }),
+      situation: T('永久保存版　殿堂入り・引退特別号'),
+      captionExtra: T('{levelLabel}・引退特別号', { levelLabel }),
+      body: T('{epithet}{name}が現役を退き、{org}の殿堂にその名を刻んだ。{seasons}シーズンにわたる歩みは、ひとりの選手の経歴にとどまらず、団体そのものの歴史の一部となった。｜{recordLine}｜リングを去っても、その試合、その言葉、その背中は記録と記憶の中に残る。{org}は功績をたたえ、{name}を{levelLabel}入りとして永く顕彰する。',
+        { epithet, name, org: orgName, seasons, recordLine, levelLabel }),
       newsData: {
         hallOfFameRetirement: true,
         hofLevel, titleReigns, totalDefenses,
@@ -31304,8 +31378,13 @@ Engine.newspaper = {
     return list[idx];
   },
 
-  /** テンプレ文字列の {org}/{name}/{age}/{seasons}/{reigns} を埋める */
-  _fillRetirementTemplate(t, d) {
+  /** テンプレ文字列の {org}/{name}/{age}/{seasons}/{reigns} を埋める
+   *  i18n Stage B P6-10: 第3引数 dict(=WM_I18N.t 相当)を受ける。RETIREMENT_TEMPLATES
+   *  (data.js)は §6 のテンプレ抽出対象14表に入っておらず、引退記事がENでもJAのまま
+   *  出ていた(EMOTION_TEXTS等と同型の「抽出パイプラインから見えないテーブル」)。
+   *  **PH置換前に**dictを通し、残ったPHを従来どおり手で埋める(dictが1引数実装でも
+   *  `{name}` が生で残らないための冪等な二段構え)。 */
+  _fillRetirementTemplate(t, d, dict) {
     if (!t) return '';
     const vars = {
       org: (d && (d.org || d.orgName)) || '',
@@ -31314,7 +31393,8 @@ Engine.newspaper = {
       seasons: (d && d.seasons != null) ? d.seasons : '',
       reigns: (d && d.reigns != null) ? d.reigns : '',
     };
-    return Object.keys(vars).reduce((acc, k) => acc.split('{' + k + '}').join(String(vars[k])), String(t));
+    const translated = (typeof dict === 'function') ? dict(String(t), vars) : String(t);
+    return Object.keys(vars).reduce((acc, k) => acc.split('{' + k + '}').join(String(vars[k])), translated);
   },
 
   /** style 内部値(Grappler/Striker/...)の和名。記事の地の文に英字トークンを出さないための共通変換表
@@ -32152,10 +32232,10 @@ Engine.newspaper = {
             const isAce = grade.tier === 'L' || grade.tier === 'A';
             const variant = Engine.newspaper.pickRetirementVariant(grade.tier, ev.reigns || 0, _retiredVariantCounts);
             const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.id);
-            const hofFeature = Engine.newspaper.composeHallOfFameRetirement(ev, hofEntry);
-            const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, ev)
+            const hofFeature = Engine.newspaper.composeHallOfFameRetirement(ev, hofEntry, dict);
+            const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, ev, dict)
               : `${ev.orgName}の${ev.name}が現役引退を表明`;
-            const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, ev)
+            const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, ev, dict)
               : `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。`;
             stories.push({
               type: isAce ? 'aiAceRetirement' : 'aiRetirement',
@@ -32467,10 +32547,10 @@ Engine.newspaper = {
               hofLevel: queuedHof.data?.hofLevel || 1,
               orgName: d.org || state.orgName,
             } : null);
-          const hofFeature = Engine.newspaper.composeHallOfFameRetirement(d, hofEntry);
-          const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, d)
+          const hofFeature = Engine.newspaper.composeHallOfFameRetirement(d, hofEntry, dict);
+          const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, d, dict)
             : `${d.org || ''}の${d.name || ''}が現役引退`;
-          const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d)
+          const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d, dict)
             : `${d.name || ''}が引退した。`;
           stories.push({
             type: ev.type,

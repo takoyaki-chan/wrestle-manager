@@ -51,6 +51,18 @@ function _quoteVal(value) {
   return WM_I18N.t('「{line}」', { line: value });
 }
 
+// ── i18n P6-10: 殿堂入り選手の異名(hofEntry.epithet)の表示用ラベル ─────────────
+// 異名は Engine.awards.generateEpithet が生成した**生JAのままG(殿堂エントリ)へ
+// 永続化される**値(D-P6-4「セーブに書く値は変えない」)。表示の瞬間にだけ辞書を引く。
+// 正規化ロジック(`{n}人切り` の数値読み戻し)は Engine 側の epithetText に一本化して
+// あるので、UI層はそこへ WM_I18N.t を渡すだけでよい。
+function _epithetLabel(epithet) {
+  if (typeof Engine === 'undefined' || !Engine.awards || !Engine.awards.epithetText) {
+    return String(epithet || '');
+  }
+  return Engine.awards.epithetText(epithet, WM_I18N.t);
+}
+
 // ── task-90: 共通数値表記(stat-notation-v1.0) ──────────────────────────
 // 選手ファイル・DB一覧・選手詳細で共用する。既存の _scale6 系は対象外画面の
 // 表現を維持するため変更せず、新しい適用画面だけがこの3ヘルパーを呼ぶ。
