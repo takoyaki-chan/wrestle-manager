@@ -18767,6 +18767,137 @@ const CHRONICLE_NARRATIVE_TEMPLATES = {
   }
 };
 
+// ── i18n Stage B P6-17: 年代記の章タイトル / サブタイトル / 章末 / ハイライト行 ──
+//
+// P6-16 が叙述文(CHRONICLE_NARRATIVE_TEMPLATES)を移設したのと同じ理由で、
+// Engine.chronicle のプロパティ・関数本体の直書きはどの抽出器からも見えない(specs §10-2)。
+// 章タイトル / 章末 / ハイライトは G.chronicle.chaptersCache へ**完成文が永続**するため、
+// 表示点は specs §15-1 の**追加フィールド方式**(`titleParts` / `closingParts` / `textParts`)で
+// 現在の言語に組み直す。サブタイトルだけは充填値を持たない素のプール文字列=辞書キーそのものなので
+// 追加フィールドを持たず、表示点で t() を1回引く(specs §17-2 の異名と同じ流儀)。
+//
+// **subtitle / closing の配列は順序も要素数も変更不可** — Engine.chronicle._pickTemplate が
+// 章境界のシードから添字を引くため、並びが変わるとJA出力が変わる。
+const CHRONICLE_CHAPTER_TEMPLATES = {
+  /** spec §4.4 章タイトル */
+  title: {
+    none: '無名の時代',
+    single: '{surname}世代',
+    dual: '{surname1}・{surname2}世代'
+  },
+
+  /** spec §4.4 サブタイトルテンプレ (Phase 2 — カテゴリ別に複数バリエーション) */
+  subtitle: {
+    early: ['旗揚げ世代', '創成期', '始まりの灯', '旗を立てた日々'],
+    golden: ['黄金期', '一強時代', '連続王者の時代', '誰にも届かぬ高み'],
+    almostThere: ['届かなかった頂', '壁の前で', '頂を仰ぐ者たち', '一歩、届かず', '影を踏んだ世代'],
+    challenge: ['挑戦者世代', '気鋭の時代', '牙を研ぐ日々', '壁にぶつかった世代'],
+    idol: ['華やかなる時代', '熱気と歓声の時代', 'ファン人気で支えた世代', '華のある世代'],
+    enduring: ['低迷期', '日陰の奉仕者たち', '灯を絶やさぬ者たち', '世代交代期'],
+    other: ['中堅職人世代', '残留組の時代', '端境期', '過渡期世代']
+  },
+
+  /** spec §5.5 章末フレーバーテンプレ (Phase 2 — magnitude × variation) */
+  closing: {
+    slight: [
+      'この世代は、{org}のスタイルを少しだけ{axis}寄りにした。',
+      '{org}の試合内容に{axis}の傾向が少し混じり始めた。',
+      'この世代は{org}に{axis}の傾向をわずかに残した。',
+      '{org}の基本路線に{axis}の要素が少し加わった。'
+    ],
+    moderate: [
+      'この世代は{org}のスタイルに{axis}色を残した。',
+      '{axis}中心の試合運びが、{org}全体の傾向を少し変えた。',
+      '次世代の選手は{axis}を一つの基準として育っていった。',
+      '{org}が{axis}を団体の特色として語れるようになったのは、この世代からだった。'
+    ],
+    strong: [
+      'この世代を経て、{org}のスタイルは{axis}色が明確になった。',
+      'この世代以降、{org}の若手は{axis}を基本として選ぶようになった。',
+      '{axis}が{org}の代名詞として定着した時期だった。',
+      'この世代以降、{org}の主流は{axis}に移った。'
+    ]
+  },
+
+  /** 章ハイライト1行。分岐ごとの完全文(構造規約3「断片連結禁止」)。
+   *  `<strong>` は文中の位置が言語で変わるためテンプレ側に置く。
+   *  opponents / opponentsMore は文末にだけ付く差し込み句で、ENの訳文は
+   *  連結様式 join('{a} {b}') が空白を入れるぶん**先頭スペースを持たない**(specs §15-2)。 */
+  highlight: {
+    titleLossDefendedTo: '<strong>{name}</strong> {belt} {count}度防衛の末に陥落（{by}に敗北）',
+    titleLossDefended: '<strong>{name}</strong> {belt} {count}度防衛の末に陥落',
+    titleLossTo: '<strong>{name}</strong> {belt} 王座陥落（{by}に敗北）',
+    titleLossPlain: '<strong>{name}</strong> {belt} 王座陥落',
+    jtRunnerUpTo: '<strong>{name}</strong> ジュニアトーナメント準優勝（決勝で{by}に敗北）',
+    jtRunnerUp: '<strong>{name}</strong> ジュニアトーナメント準優勝',
+    springTagRunnerUp: '<strong>{name}</strong> 春のタッグリーグ準優勝',
+    domeTitleWin: '<strong>{name}</strong> ドーム タイトル戦 勝利',
+    domeTitle: '<strong>{name}</strong> ドーム タイトル戦',
+    domeMainWin: '<strong>{name}</strong> ドーム メイン 勝利',
+    domeMain: '<strong>{name}</strong> ドーム メイン',
+    titleWinMulti: '<strong>{name}</strong> {belt} {count}度戴冠（{years}）',
+    titleWinOnce: '<strong>{name}</strong> {belt} 戴冠',
+    titleDefenseMulti: '<strong>{name}</strong> {belt} {count}度防衛など（{years}）',
+    titleDefenseOnce: '<strong>{name}</strong> {belt} {count}度防衛',
+    mvpStreak: '<strong>{name}</strong> MVP {count}度受賞・{streak}年連続（{years}）',
+    mvpMulti: '<strong>{name}</strong> MVP {count}度受賞（{years}）',
+    mvpOnce: '<strong>{name}</strong> MVP受賞',
+    bestMatchStreak: '<strong>{name}</strong> ベストマッチ賞 {count}度受賞・{streak}年連続（最高評価{mq}）',
+    bestMatchMulti: '<strong>{name}</strong> ベストマッチ賞 {count}度受賞（最高評価{mq}）',
+    bestMatchOnce: '<strong>{name}</strong> ベストマッチ賞（試合評価{mq}）',
+    rookieMulti: '<strong>{name}</strong> 新人賞 {count}度受賞（{years}）',
+    rookieOnce: '<strong>{name}</strong> 新人賞',
+    mediaMulti: '<strong>{name}</strong> メディア賞 {count}度受賞（{years}）',
+    mediaOnce: '<strong>{name}</strong> メディア賞',
+    jtStreak: '<strong>{name}</strong> ジュニアトーナメント {count}度優勝・{streak}連覇（{years}）',
+    jtMulti: '<strong>{name}</strong> ジュニアトーナメント {count}度優勝（{years}）',
+    jtOnce: '<strong>{name}</strong> ジュニアトーナメント優勝',
+    springTagStreak: '<strong>{name}</strong> 春のタッグリーグ {count}度優勝・{streak}連覇（{years}）',
+    springTagMulti: '<strong>{name}</strong> 春のタッグリーグ {count}度優勝（{years}）',
+    springTagOnce: '<strong>{name}</strong> 春のタッグリーグ優勝',
+    ppvMainStreak: '<strong>{name}</strong> PPVメインイベント {count}度制覇・{streak}連覇（{years}）',
+    ppvMainMulti: '<strong>{name}</strong> PPVメインイベント {count}度制覇（{years}）',
+    ppvMainOnce: '<strong>{name}</strong> PPVメインイベント制覇',
+    warWin: '<strong>{name}</strong> 対抗戦勝利',
+    warLoss: '対抗戦 <strong>{name}</strong> 敗退',
+    warRecord: '<strong>{name}</strong> 対抗戦{total}戦{wins}勝{losses}敗',
+    summitWin: '<strong>{name}</strong> サミット制覇',
+    summitLoss: '<strong>{name}</strong> サミット敗退',
+    summitRecord: '<strong>{name}</strong> サミット{total}戦{wins}勝{losses}敗',
+    challengeWinOrg: '<strong>{name}</strong> {org}に挑戦試合勝利',
+    challengeWinNoOrg: '<strong>{name}</strong> 他団体に挑戦試合勝利',
+    challengeLossOrg: '<strong>{name}</strong> {org}に挑戦試合敗北',
+    challengeLossNoOrg: '<strong>{name}</strong> 他団体に挑戦試合敗北',
+    challengeRecordOrg: '<strong>{name}</strong> {org}に挑戦試合{total}戦{wins}勝{losses}敗',
+    challengeRecordNoOrg: '<strong>{name}</strong> 他団体に挑戦試合{total}戦{wins}勝{losses}敗',
+    opponents: '（vs {items}）',
+    opponentsMore: '（vs {items} 他）',
+    // ev.orgName が取れないときのベルト名。1語ラベルとして辞書を引く(specs §14-2)
+    beltFallback: '団体王座'
+  }
+};
+
+// ── i18n Stage B P6-17: 週次ストーリーイベント(gameLogのレガシー文字列)の文面 ──
+//
+// Engine.relationships.processWeeklyStoryEvents が積む `[grievance]` / `[hostile-pairs]` の
+// 直書きJA(specs §19-4-1)。**表示はJA固定**(gameLogの旧・文字列エントリ形式は仕様上
+// 無変換で共存する族。specs §2-4 / §19-2)で、本表は台帳化と将来のgameLog再設計に備えた
+// 訳の置き場を兼ねる。`[tag]` 接頭辞は機械タグなので消費点に残す。
+const WEEKLY_STORY_EVENT_TEXTS = {
+  grievance: {
+    salary: '{name}が給料への不満を漏らしているようだ',
+    juniorNamed: '{name}が後輩（{junior}）の待遇に不満を感じている',
+    junior: '{name}が後輩の待遇に不満を感じている',
+    titleShot: '{name}がタイトル挑戦の機会を求めているようだ',
+    booking: '{name}が出場機会の少なさに不満を抱えている'
+  },
+  hostilePairs: {
+    plain: 'ロッカールームの空気が重い',
+    withPairs: 'ロッカールームの空気が重い（{pairs}）',
+    pair: '{a}と{b}'
+  }
+};
+
 // task-77 §5-D: ドラフト自団体1面(リード+注目選手1〜2名+締め)。確定版・一字一句変更不可。
 // featured は assessedTier(superElite/elite/promising)ごとのバリアント。raw/material は言及しない
 const DRAFT_PLAYER_RESULT_PARTS = {
@@ -31618,7 +31749,8 @@ if (typeof module !== 'undefined' && module.exports) {
     TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES,
     PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,
     CHRONICLE_QUOTE_CLAUSES, CHRONICLE_QUOTE_TEMPLATES_V2, CHRONICLE_QUOTE_TEMPLATES_V1,
-    CHRONICLE_QUOTE_TEMPLATES_DUAL, CHRONICLE_NARRATIVE_TEMPLATES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
+    CHRONICLE_QUOTE_TEMPLATES_DUAL, CHRONICLE_NARRATIVE_TEMPLATES, CHRONICLE_CHAPTER_TEMPLATES,
+    WEEKLY_STORY_EVENT_TEXTS, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
     GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
     GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES, BITTER_PREMATCH_LINES,
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,

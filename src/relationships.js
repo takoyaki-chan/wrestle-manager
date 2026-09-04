@@ -1145,10 +1145,17 @@ Engine.relationships = {
     if (moraleDelta < 0) {
       lockerRoomMorale = Engine.util.clamp(lockerRoomMorale + moraleDelta, 0, 100);
       // M1: ペア名を含むティッカーテキスト
-      const pairHint = hostilePairNames.length > 0
-        ? `（${hostilePairNames.slice(0, 2).map(p => `${p[0]}と${p[1]}`).join('、')}）`
-        : '';
-      events.push(`[hostile-pairs] ロッカールームの空気が重い${pairHint}`);
+      // i18n Stage B P6-17: 文面は data.js の WEEKLY_STORY_EVENT_TEXTS へ移設(specs §19-4-1)。
+      // gameLogのレガシー文字列エントリなので**表示はJA固定**(specs §2-4 / §19-2)。
+      const HP = WEEKLY_STORY_EVENT_TEXTS.hostilePairs;
+      if (hostilePairNames.length > 0) {
+        const pairs = hostilePairNames.slice(0, 2)
+          .map(p => fillTemplateVars(HP.pair, { a: p[0], b: p[1] }))
+          .reduce((a, b) => fillTemplateVars(ARTICLE_COMPOSE_TEMPLATES.nameList, { a, b }));
+        events.push(`[hostile-pairs] ${fillTemplateVars(HP.withPairs, { pairs })}`);
+      } else {
+        events.push(`[hostile-pairs] ${HP.plain}`);
+      }
     }
 
     // bond-rivalry plan P-4: ロッカー荒廃モーダル（同団体 bond≤30 ペアが3組以上）
@@ -1244,17 +1251,22 @@ Engine.relationships = {
     }
 
     // ── T4-T7: trust不満系ティッカー（_grievanceFlagsが立っている選手） ──
+    // i18n Stage B P6-17: 文面は data.js の WEEKLY_STORY_EVENT_TEXTS.grievance へ移設(specs §19-4-1)。
+    // WEEKLY_STORY_TICKER と同じ gameLog レガシー文字列エントリなので**表示はJA固定**。
+    const GR = WEEKLY_STORY_EVENT_TEXTS.grievance;
     const grievanceTickers = [];
     roster.forEach(f => {
       if (!f._grievanceFlags) return;
       const gf = f._grievanceFlags;
-      if (gf.G1) grievanceTickers.push(`[grievance] ${f.name}が給料への不満を漏らしているようだ`);
+      if (gf.G1) grievanceTickers.push(`[grievance] ${fillTemplateVars(GR.salary, { name: f.name })}`);
       if (gf.G2) {
         const juniorName = gf.G2_juniorId ? (roster.find(r => r.id === gf.G2_juniorId) || {}).name : null;
-        grievanceTickers.push(`[grievance] ${f.name}が後輩${juniorName ? '（' + juniorName + '）' : ''}の待遇に不満を感じている`);
+        grievanceTickers.push(`[grievance] ${juniorName
+          ? fillTemplateVars(GR.juniorNamed, { name: f.name, junior: juniorName })
+          : fillTemplateVars(GR.junior, { name: f.name })}`);
       }
-      if (gf.G3) grievanceTickers.push(`[grievance] ${f.name}がタイトル挑戦の機会を求めているようだ`);
-      if (gf.G4) grievanceTickers.push(`[grievance] ${f.name}が出場機会の少なさに不満を抱えている`);
+      if (gf.G3) grievanceTickers.push(`[grievance] ${fillTemplateVars(GR.titleShot, { name: f.name })}`);
+      if (gf.G4) grievanceTickers.push(`[grievance] ${fillTemplateVars(GR.booking, { name: f.name })}`);
     });
     // 過多にならないよう最大2件
     grievanceTickers.slice(0, 2).forEach(t => events.push(t));

@@ -11410,7 +11410,7 @@ function _renderPrologueBlock(prologue, chapters) {
     html += `<div class="chron-nav">
       <button class="chron-nav-btn disabled">◀ ${WM_I18N.t('前章なし')}</button>
       <div class="chron-nav-center">PROLOGUE</div>
-      <button class="chron-nav-btn" onclick="setDbChronicleIdx(1)">${WM_I18N.t('次章 / {title}', { title: nextCh.title })} ▶</button>
+      <button class="chron-nav-btn" onclick="setDbChronicleIdx(1)">${WM_I18N.t('次章 / {title}', { title: _chronicleChapterTitle(nextCh) })} ▶</button>
     </div>`;
   } else {
     html += `<div class="chron-nav">
@@ -11571,7 +11571,7 @@ function _renderDbChronicle() {
   html += `<div class="chron-header${isInProgress ? ' in-progress' : ''}">
     <div class="chron-eyebrow${isInProgress ? ' in-progress' : ''}">${isInProgress ? `◆ ${WM_I18N.t('進行中の章')} ◆` : `◆ ${WM_I18N.t('第{n}章', { n: current.number })} ◆`}</div>
     <div class="chron-num">CHAPTER ${romanNum}${isInProgress ? ' <span class="chron-writing-mark">— WRITING —</span>' : ''}</div>
-    <h2 class="chron-title">${current.title} — ${current.subtitle}</h2>
+    <h2 class="chron-title">${_chronicleChapterTitle(current)} — ${_chronicleChapterSubtitle(current)}</h2>
     <div class="chron-period">SEASON ${current.seasonStart} — SEASON ${current.seasonEnd}${isInProgress ? ` / ${WM_I18N.t('現在')}` : ''} ${focusLine}</div>
     ${overlapHtml}
     ${isInProgress ? `<div class="chron-writing-note">${WM_I18N.t('この章はまだ書きかけです。選手たちが引退して数年が経つと、章が確定します。')}</div>` : ''}
@@ -11710,7 +11710,7 @@ function _renderDbChronicle() {
     hl.forEach(h => {
       html += `<li class="chron-highlight${_chronicleHighlightClass(h.tier)}">
         <div class="chron-highlight-season">S${h.season || '?'}</div>
-        <div class="chron-highlight-text">${h.text}</div>
+        <div class="chron-highlight-text">${_chronicleParted(h.textParts, h.text)}</div>
       </li>`;
     });
     html += `</ul>`;
@@ -11824,13 +11824,13 @@ function _renderDbChronicle() {
   if (current.closing) {
     html += `<div class="chron-closing${isInProgress ? ' in-progress' : ''}">
       <div class="chron-closing-eyebrow">— ${isInProgress ? WM_I18N.t('書きかけの章末') : WM_I18N.t('章末')} —</div>
-      <div class="chron-closing-line">${current.closing}</div>
+      <div class="chron-closing-line">${_chronicleParted(current.closingParts, current.closing)}</div>
       ${isInProgress ? `<div class="chron-closing-note">${WM_I18N.t('この時代の気風はまだ動いています。この章の選手たちが引退したとき、最終的な傾向が確定します。')}</div>` : ''}
     </div>`;
   } else if (isInProgress) {
     html += `<div class="chron-closing in-progress">
       <div class="chron-closing-eyebrow">— ${WM_I18N.t('書きかけの章末')} —</div>
-      <div class="chron-closing-line">この世代が団体に残す傾向は、まだ確定していない。</div>
+      <div class="chron-closing-line">${WM_I18N.t('この世代が団体に残す傾向は、まだ確定していない。')}</div>
     </div>`;
   }
 
@@ -11842,14 +11842,14 @@ function _renderDbChronicle() {
   const prevChapter = hasPrevChapter ? chapters[_dbChronicleIdx - 2] : null;
   const nextChapter = hasNext ? chapters[_dbChronicleIdx] : null;
   const prevTarget = hasPrevChapter ? _dbChronicleIdx - 1 : 0;
-  const prevLabel = hasPrologueBack ? WM_I18N.t('序章') : (prevChapter ? prevChapter.title : WM_I18N.t('前章なし'));
+  const prevLabel = hasPrologueBack ? WM_I18N.t('序章') : (prevChapter ? _chronicleChapterTitle(prevChapter) : WM_I18N.t('前章なし'));
   html += `<div class="chron-nav">
     <button class="chron-nav-btn${hasPrev ? '' : ' disabled'}" ${hasPrev ? `onclick="setDbChronicleIdx(${prevTarget})"` : ''}>
       ◀ ${hasPrev ? WM_I18N.t('前章 / {title}', { title: prevLabel }) : WM_I18N.t('前章なし')}
     </button>
     <div class="chron-nav-center">CHAPTER ${romanNum} OF ${chapters.length}</div>
     <button class="chron-nav-btn${hasNext ? '' : ' disabled'}" ${hasNext ? `onclick="setDbChronicleIdx(${_dbChronicleIdx + 1})"` : ''}>
-      ${hasNext ? WM_I18N.t('次章 / {title}', { title: nextChapter.title }) : WM_I18N.t('次章なし')} ▶
+      ${hasNext ? WM_I18N.t('次章 / {title}', { title: _chronicleChapterTitle(nextChapter) }) : WM_I18N.t('次章なし')} ▶
     </button>
   </div>`;
 
@@ -11892,6 +11892,31 @@ function _chronicleNarrative(entry) {
     return Engine.chronicle.narrativeText(entry.narrativeParts, WM_I18N.t) || '';
   }
   return entry.narrative || '';
+}
+
+/** 年代記の「パーツがあれば現在の言語で組み直す / 無ければ保存済みJAをそのまま出す」共通形。
+ *  i18n P6-17: 章タイトル(titleParts) / 章末(closingParts) / ハイライト行(textParts) の
+ *  3系統が同じ形をしているので1関数に集約した(_chronicleNarrative と同じ流儀)。
+ *  **保存済みの完成文を t() に通さないこと** — 辞書キーと一致せず i18n-miss を汚染する。 */
+function _chronicleParted(parts, savedText) {
+  if (Array.isArray(parts) && parts.length
+      && Engine.chronicle && typeof Engine.chronicle.narrativeText === 'function') {
+    return Engine.chronicle.narrativeText(parts, WM_I18N.t) || (savedText || '');
+  }
+  return savedText || '';
+}
+
+/** 章タイトル(「○○世代」)。旧セーブは保存済みJAへ fail-open。 */
+function _chronicleChapterTitle(chapter) {
+  if (!chapter) return '';
+  return _chronicleParted(chapter.titleParts, chapter.title);
+}
+
+/** 章サブタイトル。プールの素の文字列=辞書キーそのものなので表示直前に t() を1回引く
+ *  (specs §17-2 の異名と同じ「永続値はJA・表示点で引く」型。旧セーブもキー一致すれば訳される) */
+function _chronicleChapterSubtitle(chapter) {
+  const s = chapter && chapter.subtitle;
+  return s ? WM_I18N.t(s) : '';
 }
 
 // ── 団体比較 ──────────────────────────────────────────────

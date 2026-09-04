@@ -5698,38 +5698,11 @@ const Engine = {
       return { aces, peers };
     },
 
-    /** spec §4.4 サブタイトルテンプレ (Phase 2 — カテゴリ別に複数バリエーション) */
-    SUBTITLE_TEMPLATES: {
-      early: ['旗揚げ世代', '創成期', '始まりの灯', '旗を立てた日々'],
-      golden: ['黄金期', '一強時代', '連続王者の時代', '誰にも届かぬ高み'],
-      almostThere: ['届かなかった頂', '壁の前で', '頂を仰ぐ者たち', '一歩、届かず', '影を踏んだ世代'],
-      challenge: ['挑戦者世代', '気鋭の時代', '牙を研ぐ日々', '壁にぶつかった世代'],
-      idol: ['華やかなる時代', '熱気と歓声の時代', 'ファン人気で支えた世代', '華のある世代'],
-      enduring: ['低迷期', '日陰の奉仕者たち', '灯を絶やさぬ者たち', '世代交代期'],
-      other: ['中堅職人世代', '残留組の時代', '端境期', '過渡期世代']
-    },
-
-    /** spec §5.5 章末フレーバーテンプレ (Phase 2 — magnitude × variation) */
-    CLOSING_TEMPLATES: {
-      slight: [
-        'この世代は、{org}のスタイルを少しだけ{axis}寄りにした。',
-        '{org}の試合内容に{axis}の傾向が少し混じり始めた。',
-        'この世代は{org}に{axis}の傾向をわずかに残した。',
-        '{org}の基本路線に{axis}の要素が少し加わった。'
-      ],
-      moderate: [
-        'この世代は{org}のスタイルに{axis}色を残した。',
-        '{axis}中心の試合運びが、{org}全体の傾向を少し変えた。',
-        '次世代の選手は{axis}を一つの基準として育っていった。',
-        '{org}が{axis}を団体の特色として語れるようになったのは、この世代からだった。'
-      ],
-      strong: [
-        'この世代を経て、{org}のスタイルは{axis}色が明確になった。',
-        'この世代以降、{org}の若手は{axis}を基本として選ぶようになった。',
-        '{axis}が{org}の代名詞として定着した時期だった。',
-        'この世代以降、{org}の主流は{axis}に移った。'
-      ]
-    },
+    // i18n Stage B P6-17: SUBTITLE_TEMPLATES / CLOSING_TEMPLATES は
+    // data.js の CHRONICLE_CHAPTER_TEMPLATES.subtitle / .closing へ移設した
+    // (Engineオブジェクトのプロパティはどの抽出器からも見えない・specs §10-2)。
+    // **配列の順序と要素数は移設前と1件も変えていない** — _pickTemplate が章境界のシードから
+    // 添字を引くため、並びが変わるとJA出力が変わる。
 
     /** 決定論的テンプレ選択 — 章の境界値をシード化 */
     _pickTemplate(arr, seed) {
@@ -5759,36 +5732,63 @@ const Engine = {
       else if (peakOVR < 85) category = 'enduring';
       else category = 'other';
 
-      const arr = Engine.chronicle.SUBTITLE_TEMPLATES[category] || Engine.chronicle.SUBTITLE_TEMPLATES.other;
+      const SUB = CHRONICLE_CHAPTER_TEMPLATES.subtitle;
+      const arr = SUB[category] || SUB.other;
       // シード: 章境界 + カテゴリ文字数 (同じ章は毎回同じ結果)
       const seed = (chapter.seasonStart || 0) * 31 + (chapter.seasonEnd || 0) * 7 + category.length * 13;
       return Engine.chronicle._pickTemplate(arr, seed);
     },
 
-    /** spec §5.5 章末フレーバー (Phase 2 — magnitude × バリエーション) */
-    _generateClosing(chapter, contributionsByAxis, orgName) {
+    /** spec §5.5 章末フレーバー (Phase 2 — magnitude × バリエーション)
+     *  i18n Stage B P6-17: 完成文は従来どおりJAで G へ永続する。表示点が現在の言語で
+     *  組み直せるよう、素材は _generateClosingParts が返す(追加フィールド `closingParts`)。 */
+    _generateClosing(chapter, contributionsByAxis, orgName, dict) {
+      const parts = Engine.chronicle._generateClosingParts(chapter, contributionsByAxis, orgName);
+      if (!parts) return null;
+      return Engine.chronicle.narrativeText(parts, dict) || null;
+    },
+
+    /** 上の素材(章末パーツ)だけを返す。寄与が極小の章は null(=章末を書かない)。 */
+    _generateClosingParts(chapter, contributionsByAxis, orgName) {
       let topAxis = null, topVal = 0;
       Object.entries(contributionsByAxis).forEach(([k, v]) => {
         if (v > topVal) { topVal = v; topAxis = k; }
       });
       if (!topAxis || topVal < 0.10) return null; // 極小寄与は無言
       const label = Engine.chronicle.AXIS_LABELS[topAxis] || topAxis;
-      const org = orgName || '団体';
+      // orgName が取れないときの「団体」は1語ラベルなので描画時に辞書を引く(L マーカー)。
+      // 実在の団体名は素の値のまま渡し、t() のパラメータ値自動変換(名前辞書)に任せる。
+      const org = Engine.chronicle._orgLabel({ orgName });
       let magnitude;
       if (topVal < 0.30) magnitude = 'slight';
       else if (topVal < 0.80) magnitude = 'moderate';
       else magnitude = 'strong';
 
-      const arr = Engine.chronicle.CLOSING_TEMPLATES[magnitude];
+      const arr = CHRONICLE_CHAPTER_TEMPLATES.closing[magnitude];
       // シード: 章境界 + 軸名 (同じ章は毎回同じ結果)
       const axisSeed = (topAxis || '').split('').reduce((s, c) => s + c.charCodeAt(0), 0);
       const seed = (chapter.seasonStart || 0) * 17 + (chapter.seasonEnd || 0) * 11 + axisSeed;
       const tpl = Engine.chronicle._pickTemplate(arr, seed);
-      return tpl.replace(/\{org\}/g, org).replace(/\{axis\}/g, label);
+      if (!tpl) return null;
+      return [{ t: tpl, v: { org, axis: label }, L: orgName ? ['axis'] : ['axis', 'org'] }];
     },
 
-    /** 章ハイライト生成 */
+    /** 章ハイライト生成
+     *  i18n Stage B P6-17: 1行の完成文(`text`)は従来どおりJAで G へ永続する。表示点が現在の
+     *  言語で組み直せるよう、素材を追加フィールド `textParts` として併記する(specs §15-1)。
+     *  `text` は必ず `narrativeText(textParts)`(dict無し=JA)から作るので、両者は常に一致する。 */
     _buildHighlights(chapter, aces, peers) {
+      const H = CHRONICLE_CHAPTER_TEMPLATES.highlight;
+      // 完成文とパーツをまとめて作る。以降 text は必ずここを通る(手組みの文字列を残さない)
+      const mk = parts => {
+        const list = parts.filter(Boolean);
+        return { textParts: list, text: Engine.chronicle.narrativeText(list) };
+      };
+      // ベルト名は「○○王座」というJA成形済み値。実在の値は描画時に _beltLabel で組み直し(B)、
+      // 取れなかったときの既定ラベルは1語として辞書を引く(L)
+      const beltSlot = orgName => (orgName
+        ? { belt: orgName, mark: { B: ['belt'] } }
+        : { belt: H.beltFallback, mark: { L: ['belt'] } });
       const grouped = new Map();
       const singles = [];
       const chars = [...aces, ...peers];
@@ -5837,6 +5837,7 @@ const Engine = {
               type: ev.type,
               charName,
               orgName: ev.orgName || '団体王座',
+              beltRaw: ev.orgName || null,
               tier: 'gold'
             });
             return;
@@ -5852,6 +5853,7 @@ const Engine = {
                 type: ev.type,
                 charName,
                 orgName: ev.orgName || '団体王座',
+                beltRaw: ev.orgName || null,
                 maxCount: inc,
                 tier: 'gold'
               });
@@ -5863,10 +5865,15 @@ const Engine = {
             const beltKey = ev.beltId || '_default';
             const prior = priorMaxByBelt.get(beltKey) || 0;
             const inc = Math.max(0, (ev.defenses || 0) - prior);
-            const text = inc >= 3
-              ? `<strong>${charName}</strong> ${ev.orgName || '団体王座'} ${inc}度防衛の末に陥落${ev.dethronedByName ? `（${ev.dethronedByName}に敗北）` : ''}`
-              : `<strong>${charName}</strong> ${ev.orgName || '団体王座'} 王座陥落${ev.dethronedByName ? `（${ev.dethronedByName}に敗北）` : ''}`;
-            addSingle({ season: ev.season, type: ev.type, text, tier: 'red' });
+            const slot = beltSlot(ev.orgName);
+            const by = ev.dethronedByName;
+            const v = { name: charName, belt: slot.belt };
+            if (inc >= 3) v.count = inc;
+            if (by) v.by = by;
+            const tpl = inc >= 3
+              ? (by ? H.titleLossDefendedTo : H.titleLossDefended)
+              : (by ? H.titleLossTo : H.titleLossPlain);
+            addSingle({ season: ev.season, type: ev.type, ...mk([{ t: tpl, v, ...slot.mark }]), tier: 'red' });
             return;
           }
           if (ev.type === 'awardMVP') {
@@ -5896,8 +5903,11 @@ const Engine = {
             return;
           }
           if (ev.type === 'juniorTournament' && ev.result === 'runnerUp') {
-            const text = `<strong>${charName}</strong> ジュニアトーナメント準優勝${ev.finalOpponentName ? `（決勝で${ev.finalOpponentName}に敗北）` : ''}`;
-            addSingle({ season: ev.season, type: ev.type, text, tier: 'silver' });
+            const by = ev.finalOpponentName;
+            const part = by
+              ? { t: H.jtRunnerUpTo, v: { name: charName, by } }
+              : { t: H.jtRunnerUp, v: { name: charName } };
+            addSingle({ season: ev.season, type: ev.type, ...mk([part]), tier: 'silver' });
             return;
           }
           if (ev.type === 'springTagLeague' && ev.result === 'champion') {
@@ -5905,8 +5915,10 @@ const Engine = {
             return;
           }
           if (ev.type === 'springTagLeague' && ev.result === 'runnerUp') {
-            const text = `<strong>${charName}</strong> 春のタッグリーグ準優勝`;
-            addSingle({ season: ev.season, type: ev.type, text, tier: 'silver' });
+            addSingle({
+              season: ev.season, type: ev.type,
+              ...mk([{ t: H.springTagRunnerUp, v: { name: charName } }]), tier: 'silver'
+            });
             return;
           }
           if (ev.type === 'ppvMainEvent' && (ev.result === 'champion' || ev.result === 'win' || ev.won === true)) {
@@ -5946,14 +5958,20 @@ const Engine = {
             });
             return;
           }
-          let text = null, tier = 'normal';
+          let part = null, tier = 'normal';
           switch (ev.type) {
-            case 'domeMain':
-              text = `<strong>${charName}</strong> ドーム ${ev.matchType === 'title' ? 'タイトル戦' : 'メイン'}${ev.result === 'win' ? ' 勝利' : ''}`;
+            case 'domeMain': {
+              const isTitle = ev.matchType === 'title';
+              const won = ev.result === 'win';
+              const tpl = isTitle
+                ? (won ? H.domeTitleWin : H.domeTitle)
+                : (won ? H.domeMainWin : H.domeMain);
+              part = { t: tpl, v: { name: charName } };
               tier = 'gold';
               break;
+            }
           }
-          if (text) addSingle({ season: ev.season, type: ev.type, text, tier });
+          if (part) addSingle({ season: ev.season, type: ev.type, ...mk([part]), tier });
         });
       });
       // 季節昇順にソート、重複除去
@@ -5987,87 +6005,112 @@ const Engine = {
       const summarized = [...grouped.values()].map(g => {
         const years = compactYears(g.seasons);
         const streak = maxStreak(g.seasons);
-        let text = null;
+        const name = g.charName;
+        let part = null;
         const oppList = g.opponents ? [...g.opponents].filter(Boolean) : [];
-        const oppFrag = oppList.length > 0 ? `（vs ${oppList.slice(0, 2).join('・')}${oppList.length > 2 ? ' 他' : ''}）` : '';
+        // 文末にだけ付く差し込み句。連結様式(join)が言語ごとの空白を入れる(specs §15-2)
+        const oppPart = oppList.length > 0
+          ? {
+            t: oppList.length > 2 ? H.opponentsMore : H.opponents,
+            v: {},
+            items: oppList.slice(0, 2),
+            sep: 'listDot'
+          }
+          : null;
         switch (g.type) {
-          case 'titleWin':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> ${g.orgName} ${g.count}度戴冠（${years}）`
-              : `<strong>${g.charName}</strong> ${g.orgName} 戴冠`;
+          case 'titleWin': {
+            const slot = beltSlot(g.beltRaw);
+            part = g.count >= 2
+              ? { t: H.titleWinMulti, v: { name, belt: slot.belt, count: g.count, years }, ...slot.mark }
+              : { t: H.titleWinOnce, v: { name, belt: slot.belt }, ...slot.mark };
             break;
-          case 'titleDefense':
-            text = `<strong>${g.charName}</strong> ${g.orgName} ${g.maxCount}度防衛${g.count >= 2 ? `など（${years}）` : ''}`;
+          }
+          case 'titleDefense': {
+            const slot = beltSlot(g.beltRaw);
+            part = g.count >= 2
+              ? { t: H.titleDefenseMulti, v: { name, belt: slot.belt, count: g.maxCount, years }, ...slot.mark }
+              : { t: H.titleDefenseOnce, v: { name, belt: slot.belt, count: g.maxCount }, ...slot.mark };
             break;
+          }
           case 'awardMVP':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> MVP ${g.count}度受賞${streak >= 2 ? `・${streak}年連続` : ''}（${years}）`
-              : `<strong>${g.charName}</strong> MVP受賞`;
+            part = g.count >= 2
+              ? (streak >= 2
+                ? { t: H.mvpStreak, v: { name, count: g.count, streak, years } }
+                : { t: H.mvpMulti, v: { name, count: g.count, years } })
+              : { t: H.mvpOnce, v: { name } };
             break;
           case 'awardBestMatch':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> ベストマッチ賞 ${g.count}度受賞${streak >= 2 ? `・${streak}年連続` : ''}（最高評価${g.maxMq || '?'}）`
-              : `<strong>${g.charName}</strong> ベストマッチ賞（試合評価${g.maxMq || '?'}）`;
+            part = g.count >= 2
+              ? (streak >= 2
+                ? { t: H.bestMatchStreak, v: { name, count: g.count, streak, mq: g.maxMq || '?' } }
+                : { t: H.bestMatchMulti, v: { name, count: g.count, mq: g.maxMq || '?' } })
+              : { t: H.bestMatchOnce, v: { name, mq: g.maxMq || '?' } };
             break;
           case 'awardRookie':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> 新人賞 ${g.count}度受賞（${years}）`
-              : `<strong>${g.charName}</strong> 新人賞`;
+            part = g.count >= 2
+              ? { t: H.rookieMulti, v: { name, count: g.count, years } }
+              : { t: H.rookieOnce, v: { name } };
             break;
           case 'awardMedia':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> メディア賞 ${g.count}度受賞（${years}）`
-              : `<strong>${g.charName}</strong> メディア賞`;
+            part = g.count >= 2
+              ? { t: H.mediaMulti, v: { name, count: g.count, years } }
+              : { t: H.mediaOnce, v: { name } };
             break;
           case 'juniorTournament':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> ジュニアトーナメント ${g.count}度優勝${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
-              : `<strong>${g.charName}</strong> ジュニアトーナメント優勝`;
+            part = g.count >= 2
+              ? (streak >= 2
+                ? { t: H.jtStreak, v: { name, count: g.count, streak, years } }
+                : { t: H.jtMulti, v: { name, count: g.count, years } })
+              : { t: H.jtOnce, v: { name } };
             break;
           case 'springTagLeague':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> 春のタッグリーグ ${g.count}度優勝${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
-              : `<strong>${g.charName}</strong> 春のタッグリーグ優勝`;
+            part = g.count >= 2
+              ? (streak >= 2
+                ? { t: H.springTagStreak, v: { name, count: g.count, streak, years } }
+                : { t: H.springTagMulti, v: { name, count: g.count, years } })
+              : { t: H.springTagOnce, v: { name } };
             break;
           case 'ppvMainEvent':
-            text = g.count >= 2
-              ? `<strong>${g.charName}</strong> PPVメインイベント ${g.count}度制覇${streak >= 2 ? `・${streak}連覇` : ''}（${years}）`
-              : `<strong>${g.charName}</strong> PPVメインイベント制覇`;
+            part = g.count >= 2
+              ? (streak >= 2
+                ? { t: H.ppvMainStreak, v: { name, count: g.count, streak, years } }
+                : { t: H.ppvMainMulti, v: { name, count: g.count, years } })
+              : { t: H.ppvMainOnce, v: { name } };
             break;
           case 'war': {
             const w = g.wins || 0, l = g.losses || 0;
-            if (w + l <= 1) {
-              text = w >= 1
-                ? `<strong>${g.charName}</strong> 対抗戦勝利${oppFrag}`
-                : `対抗戦 <strong>${g.charName}</strong> 敗退${oppFrag}`;
-            } else {
-              text = `<strong>${g.charName}</strong> 対抗戦${w + l}戦${w}勝${l}敗${oppFrag}`;
-            }
+            part = (w + l <= 1)
+              ? (w >= 1 ? { t: H.warWin, v: { name } } : { t: H.warLoss, v: { name } })
+              : { t: H.warRecord, v: { name, total: w + l, wins: w, losses: l } };
             break;
           }
           case 'summit': {
             const w = g.wins || 0, l = g.losses || 0;
-            if (w + l <= 1) {
-              text = w >= 1
-                ? `<strong>${g.charName}</strong> サミット制覇${oppFrag}`
-                : `<strong>${g.charName}</strong> サミット敗退${oppFrag}`;
-            } else {
-              text = `<strong>${g.charName}</strong> サミット${w + l}戦${w}勝${l}敗${oppFrag}`;
-            }
+            part = (w + l <= 1)
+              ? (w >= 1 ? { t: H.summitWin, v: { name } } : { t: H.summitLoss, v: { name } })
+              : { t: H.summitRecord, v: { name, total: w + l, wins: w, losses: l } };
             break;
           }
           case 'challenge_request_match': {
             const w = g.wins || 0, l = g.losses || 0;
-            const orgFrag = oppList.length > 0 ? `${oppList[0]}に` : '他団体に';
+            const org = oppList.length > 0 ? oppList[0] : null;
             if (w + l <= 1) {
-              text = `<strong>${g.charName}</strong> ${orgFrag}挑戦試合${w >= 1 ? '勝利' : '敗北'}`;
+              const tpl = w >= 1
+                ? (org ? H.challengeWinOrg : H.challengeWinNoOrg)
+                : (org ? H.challengeLossOrg : H.challengeLossNoOrg);
+              part = { t: tpl, v: org ? { name, org } : { name } };
             } else {
-              text = `<strong>${g.charName}</strong> ${orgFrag}挑戦試合${w + l}戦${w}勝${l}敗`;
+              part = org
+                ? { t: H.challengeRecordOrg, v: { name, org, total: w + l, wins: w, losses: l } }
+                : { t: H.challengeRecordNoOrg, v: { name, total: w + l, wins: w, losses: l } };
             }
             break;
           }
         }
-        return { season: Math.min(...g.seasons), type: g.type, text, tier: g.tier };
+        // 対抗戦 / サミットだけが対戦相手の差し込み句を持つ(挑戦試合は本文へ埋め込む)
+        const withOpp = (g.type === 'war' || g.type === 'summit') ? oppPart : null;
+        const built = part ? mk([part, withOpp]) : { text: null, textParts: null };
+        return { season: Math.min(...g.seasons), type: g.type, ...built, tier: g.tier };
       }).filter(h => h.text);
       const out = [...summarized, ...singles];
       out.sort((a, b) => (a.season || 0) - (b.season || 0));
@@ -6197,15 +6240,27 @@ const Engine = {
     //            { t, v, items: [パーツ], sep: 'listComma'|'listDot' }
     // ══════════════════════════════════════════════════════════════════
 
-    /** 叙述パーツ1つを1文へ。**PH置換前に**テンプレをdictへ通す(_wmFillWithDictの契約)。 */
+    /** 叙述パーツ1つを1文へ。**PH置換前に**テンプレをdictへ通す(_wmFillWithDictの契約)。
+     *  i18n Stage B P6-17:
+     *   - `items` の要素は**素の文字列**でもよい(その場合は連結様式のパラメータとして渡るので
+     *     D-P6-2の名前辞書変換が効く。1件のときは畳み込みが起きないが、`{items}`の値として
+     *     外側テンプレのパラメータを通るのでそこで変換される)
+     *   - `L` … 値が**JAの1語ラベル**なので値そのものも辞書で引き直すvキー(specs §14-2 `_wmDictLabel`)
+     *   - `B` … 値が**JAのベルト名**(「○○王座」)なので `_beltLabel` で組み直すvキー。
+     *     団体名だけがパラメータを通るため名前辞書(pn)が効く(specs §15-3)
+     *  L/B は保存されたパーツにだけ付く任意フィールドで、無ければ従来どおり素の値を充填する。 */
     _narrativePartText(part, dict) {
       if (!part || !part.t) return '';
       const N = CHRONICLE_NARRATIVE_TEMPLATES;
       const v = part.v ? { ...part.v } : {};
+      if (Array.isArray(part.L)) part.L.forEach(k => { if (v[k] != null) v[k] = _wmDictLabel(dict, v[k]); });
+      if (Array.isArray(part.B)) part.B.forEach(k => { if (v[k] != null) v[k] = Engine.chronicle._beltLabel(v[k], dict); });
       if (Array.isArray(part.items) && part.items.length) {
         const sepTpl = N[part.sep] || N.listComma;
+        // 内側のパーツも同じ手順(L/B マーカーを含む)で組む — 素直に _wmFillWithDict を
+        // 直接呼ぶと、items の中に入ったベルト名などがマーカーを通らずJAのまま残る
         v.items = part.items
-          .map(it => _wmFillWithDict(dict, it.t, it.v))
+          .map(it => (typeof it === 'string' ? it : Engine.chronicle._narrativePartText(it, dict)))
           .reduce((a, b) => _wmFillWithDict(dict, sepTpl, { a, b }));
       }
       return _wmFillWithDict(dict, part.t, v);
@@ -6258,11 +6313,13 @@ const Engine = {
       const bmCount = hist.filter(e => e.type === 'awardBestMatch').length;
       const seg2 = [];
       if (titleWins.length > 0) {
-        // {belt} は「○○王座」のようにJAで組み立て済みの保存値。1語ラベルとしてdictを引く
-        const beltName = Engine.chronicle._beltLabel(titleWins[0].orgName, dict);
+        // {belt} は「○○王座」のようにJAで組み立て済みの保存値。**JAのまま**パーツへ持たせ、
+        // 描画時に `B` マーカーで _beltLabel を通す(P6-17。パーツはGへ永続するため、
+        // ここでdictを適用すると保存値が言語依存になってしまう)
+        const beltName = Engine.chronicle._beltLabel(titleWins[0].orgName);
         seg2.push(titleWins.length >= 2
-          ? { t: A.titleWinMulti, v: { belt: beltName, count: titleWins.length } }
-          : { t: A.titleWinOnce, v: { belt: beltName } });
+          ? { t: A.titleWinMulti, v: { belt: beltName, count: titleWins.length }, B: ['belt'] }
+          : { t: A.titleWinOnce, v: { belt: beltName }, B: ['belt'] });
       }
       if (chapterDefenses >= 3) seg2.push({ t: A.defenses, v: { count: chapterDefenses } });
       if (mvpCount >= 1) seg2.push(mvpCount >= 2 ? { t: A.mvpMulti, v: { count: mvpCount } } : { t: A.mvpOnce, v: {} });
@@ -6286,10 +6343,10 @@ const Engine = {
           : { t: A.warNoOrg, v: { wins: extW, losses: extL } });
       }
       if (titleLossEv) {
-        const beltName = Engine.chronicle._beltLabel(titleLossEv.orgName, dict);
+        const beltName = Engine.chronicle._beltLabel(titleLossEv.orgName);
         seg3.push(titleLossEv.dethronedByName
-          ? { t: A.titleLossTo, v: { belt: beltName, name: titleLossEv.dethronedByName } }
-          : { t: A.titleLossLate, v: { belt: beltName } });
+          ? { t: A.titleLossTo, v: { belt: beltName, name: titleLossEv.dethronedByName }, B: ['belt'] }
+          : { t: A.titleLossLate, v: { belt: beltName }, B: ['belt'] });
       }
       if (seg3.length > 0) parts.push({ t: A.sentence3, v: {}, items: seg3, sep: 'listComma' });
 
@@ -6546,13 +6603,27 @@ const Engine = {
       };
     },
 
-    /** タイトル生成 */
-    _generateTitle(aces) {
-      if (!aces || aces.length === 0) return '無名の時代';
+    /** タイトル生成
+     *  i18n Stage B P6-17: 完成文は従来どおりJAで G へ永続する。表示点が現在の言語で
+     *  組み直せるよう、素材は _generateTitleParts が返す(追加フィールド `titleParts`)。 */
+    _generateTitle(aces, dict) {
+      return Engine.chronicle.narrativeText(Engine.chronicle._generateTitleParts(aces), dict);
+    },
+
+    /** 上の素材(章タイトルのパーツ)だけを返す。 */
+    _generateTitleParts(aces) {
+      const T = CHRONICLE_CHAPTER_TEMPLATES.title;
+      if (!aces || aces.length === 0) return [{ t: T.none, v: {} }];
       if (aces.length >= 2) {
-        return `${Engine.chronicle._getSurname(aces[0].name)}・${Engine.chronicle._getSurname(aces[1].name)}世代`;
+        return [{
+          t: T.dual,
+          v: {
+            surname1: Engine.chronicle._getSurname(aces[0].name),
+            surname2: Engine.chronicle._getSurname(aces[1].name)
+          }
+        }];
       }
-      return `${Engine.chronicle._getSurname(aces[0].name)}世代`;
+      return [{ t: T.single, v: { surname: Engine.chronicle._getSurname(aces[0].name) } }];
     },
 
     /** 章ステータス判定 (spec §4.5) */
@@ -6590,9 +6661,14 @@ const Engine = {
           const axis = Engine.chronicle._styleAxis(c.style);
           contributionsByAxis[axis] += Engine.chronicle.calcSpiritContribution(c);
         });
-        const title = Engine.chronicle._generateTitle(sel.aces);
+        // i18n Stage B P6-17: 章タイトル / 章末 は `narrativeText` で**dictを渡さず**JAの完成文を作り、
+        // 素材(`titleParts` / `closingParts`)を併記する(specs §15-1 の追加フィールド方式)。
+        // サブタイトルは充填値を持たない素のプール文字列=辞書キーそのものなので追加フィールドは不要。
+        const titleParts = Engine.chronicle._generateTitleParts(sel.aces);
+        const title = Engine.chronicle.narrativeText(titleParts);
         const subtitle = Engine.chronicle._generateSubtitle(boundForSelect, sel.aces);
-        const closing = Engine.chronicle._generateClosing(b, contributionsByAxis, state.orgName);
+        const closingParts = Engine.chronicle._generateClosingParts(b, contributionsByAxis, state.orgName);
+        const closing = closingParts ? (Engine.chronicle.narrativeText(closingParts) || null) : null;
         const highlights = Engine.chronicle._buildHighlights(b, sel.aces, sel.peers);
         const eraStats = Engine.chronicle._buildEraStats(b, sel.aces, sel.peers);
         const mode = Engine.chronicle._classifyChapterMode(b, state);
@@ -6616,6 +6692,7 @@ const Engine = {
           halfWidth: b.halfWidth,
           _hasActiveParticipants: hasActiveParticipants,
           title,
+          titleParts,
           subtitle,
           aces: sel.aces.map((a, i) => ({
             id: a.id, name: a.name, style: a.style,
@@ -6654,6 +6731,7 @@ const Engine = {
           eraStats,
           externalRivals,
           closing,
+          closingParts,
           _topAxis: (() => {
             let k = null, v = 0;
             Object.entries(contributionsByAxis).forEach(([ax, val]) => { if (val > v) { v = val; k = ax; } });
@@ -13033,8 +13111,8 @@ const Engine = {
       // LOCKER_AIR_TEXTS 14本が一度も出ないデッドコードだった。
       // 「2週に1度」の意図を偶奇ではなく確率30%で復元する(そのまま直すと通知が増えるため)。
       // 出力先は従来どおり events(ログ)のみ — モーダルもトーストも増やさない。
-      let pendingLockerAir = null;
-      const _airRng = (!Engine.util.isShowWeek(G.week) && !G.offSeason && roster.length > 0)
+      // (P6-17: 読み手が1つも無いデッド変数 pendingLockerAir を削除した。events.push が唯一の出力)
+      const _airRng =(!Engine.util.isShowWeek(G.week) && !G.offSeason && roster.length > 0)
         ? Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBF10))
         : null;
       const _airFires = !!_airRng && Engine.rng.int(_airRng, 1, 100) <= 30;
@@ -13085,7 +13163,6 @@ const Engine = {
                 tmpl = tmpl.replace('{name2}', airVars.name2);
               }
             }
-            pendingLockerAir = tmpl;
             events.push({ type: 'locker_air', text: tmpl, tpl: rawTpl, vars: airVars });
           }
         }

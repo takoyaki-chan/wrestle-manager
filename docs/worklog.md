@@ -1,5 +1,118 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-17 — 年代記の章題/副題/締め/ハイライトと週次ストーリー直書き6本の台帳化・配線、pendingLockerAir削除、該当選手キーの分離（2026-09-04・worktree agent-a42e639b20411de84）
+
+指示書は specs/i18n-runtime-spec-v1.0.md §15-6(P6-16の発見3・4)と §19-4(P7-3の発見1)。開始前にworktreeブランチをmain先端(9c3c8d0、P6-16マージまで)へfast-forward済み。
+
+**訳出103キー**(template-ledger 2,571→**2,672**・未訳0 / ui-ledger 4,028→**4,027**・未訳0 / dialogue-ledger 16,674 は不触)。
+
+### 1. 5件それぞれの配線方式
+
+| 件 | 対象 | 配線 |
+|---|---|---|
+| ① | `Engine.chronicle._generateTitle` / `_generateSubtitle` / `_generateClosing` / `_buildHighlights` | プールを `CHRONICLE_CHAPTER_TEMPLATES`(data.js)へ移設。**保存値はJAのまま不変**で、title/closing/highlightは追加フィールド(`titleParts`/`closingParts`/`textParts`)、subtitleは充填値を持たない素のプール文字列なので表示点で `t()` を1回引く |
+| ② | `processWeeklyStoryEvents`(relationships.js)の直書きJA 6本 | `WEEKLY_STORY_EVENT_TEXTS`(data.js)へ移設+台帳化+英訳。**消費点は無改修=表示はJA固定**(WEEKLY_STORY_TICKERと同じgameLogレガシー文字列族) |
+| ③ | `pendingLockerAir`(management.js) | 読み手ゼロのデッド変数を削除(宣言+代入の2行。出力は `events.push` が唯一) |
+| ④ | `該当選手` の文脈違い | **キー分割は不要だった**(§4)。ui-ledgerの `en` を "Matching Wrestlers" → **"Unnamed wrestler"** へ訂正 |
+| ⑤ | `SNAPSHOT_TEXTS.breakthrough.scene` 1行 / `RIVAL_ORGS.desc` 3文 | 記録のみ。docs/i18n-stage-a-p3a-design-v0.1.md の積み残し台帳(裁定待ちリスト)へ追記 |
+
+### 2. 4関数で解き方が3通りに割れた — 「保存値が辞書キーそのものか」で決まる
+
+年代記の章は `G.chronicle.chaptersCache.chapters[]` へ**完成文が永続**する。P6-16の叙述文(`narrativeParts`)と同じ層だが、充填値の有無で最小の手が変わる。
+
+- **`title`(○○世代) / `closing`(章末) / `highlights[].text`** … 姓・団体名・軸ラベル・ベルト名・年次を埋めた完成文なので、辞書キーと一致しない → **追加フィールド方式**(specs §15-1)。`titleParts` / `closingParts` / `highlights[].textParts`
+- **`subtitle`(「黄金期」等)** … プールの素の文字列がそのまま保存される=**保存値が辞書キーそのもの** → 追加フィールドを持たず、表示点で `WM_I18N.t(subtitle)` を1回引くだけ(specs §17-2 の殿堂入り異名と同型)。旧セーブもキーが一致すれば訳される
+- 完成文は必ず `narrativeText(parts)`(dict省略=JA)から作るようにした。手組みの文字列を1本も残していないので「保存値とパーツが食い違う」経路が構造的に生じない
+- 表示点は `ui-render.js` の **`_chronicleParted(parts, savedText)`** 1関数へ集約(章タイトル3箇所=見出し/前章ナビ/次章ナビ、章末、ハイライト行)。パーツが無い旧セーブは保存値をそのまま出す(fail-open)
+- **ハイライトは断片連結をやめ、分岐ごとの完全文48本にした**(構造規約3)。`<strong>` は文中の位置が言語で変わるためテンプレ側に置く(例: 対抗戦の敗退だけはJAで `対抗戦 <strong>{name}</strong> 敗退` と名前が文中に来る → EN `Interpromotional match: <strong>{name}</strong> eliminated`)。文末にだけ付く対戦相手の差し込み句(`（vs …）`)だけは specs §15-2 のクラウス方式
+
+### 3. パーツに値マーカー `L` / `B` を足した — と、そこでP6-16の実バグを踏んだ
+
+`{axis}`(打撃/組技/…)・`{org}`のフォールバック(団体)・`{belt}`(○○王座)は、**値そのものがJAで組み立て済み**なのでテンプレだけ訳しても本文にJAが残る(specs §6の構造穴)。`_narrativePartText` に任意フィールドを2つ足して解いた。
+
+- **`L: [vキー…]`** … 値がJAの1語ラベル。`_wmDictLabel(dict, 値)` で引き直す
+- **`B: [vキー…]`** … 値がJAのベルト名。`_beltLabel(値, dict)` で組み直すので団体名だけが**パラメータ**を通り名前辞書(pn)が効く
+- **実在の団体名・選手名にはマーカーを付けない**。`_wmDictLabel` はUI辞書を引くので、名前を渡すと `[i18n-miss]` を量産する。マーカーの有無は生成時に決まる(`ev.orgName` が取れたかどうか)ので、保存されるパーツに分岐が焼き付く
+
+**EN検品で見つけた実バグ(P6-16由来)**: `_narrativePartText` は `items`(列挙を内側に持つ文)の要素を `_wmFillWithDict(dict, it.t, it.v)` で**直接**埋めていたため、内側のパーツに付けたマーカーが働かない。P6-16の `_buildAceNarrativeParts` は2文目を `items` に積むので、ENでもエース叙述文の「{belt}を{count}度戴冠」が `凰翔プロレス王座` のまま出ていた(P6-16は生成時に `_beltLabel(orgName, dict)` を掛けていたが、`buildChapters` はdictを渡さないため保存されるのは常にJA — つまり**実際の画面ではベルト名が一度も英語化されていなかった**)。内側も `_narrativePartText` を再帰で呼ぶ形に直し、`_buildAceNarrativeParts` 側は `B: ['belt']` マーカーへ移した(**保存されるパーツの文字列は1バイトも変わらない** — JAのベルト名を持つのは以前と同じ)。
+
+### 4. 「同じキーを2つの台帳へ載せない」(specs §15-3)で衝突3件を裁いた
+
+`CHRONICLE_CHAPTER_TEMPLATES` を template-ledger の走査対象へ足すと、ui-ledger と同じキーになる行が3つ出た。読み込み順(lang-en.js → lang-en-templates.js)でテンプレ側が後勝ちするため、放置すると訳が入れ替わる。
+
+- **`黄金期` / `端境期`** — P6-16が `_wmDictLabel`(記者の目の `{eraTag}` 枠)向けに `kept:true` で手追加した行。**ui-ledger 側を削除**して template-ledger へ一本化した(`_wmDictLabel` は合成済み辞書を引くので配線は不変。extract-ui は management.js を走査しないので再追加もされない)。訳は既訳のまま(`a golden age` / `a lean spell`)— `{eraTag}` は "were nothing other than {eraTag}." のように文中へ入るので、**この2つだけはサブタイトルでも小文字の名詞句**になる
+- **`旗揚げ世代`** — ui-render.js の `WM_I18N.t('旗揚げ世代')`(序章のロースター見出し)から自動抽出される行なので消せない。意味が同一なので**両台帳へ同じ訳**(`The Founding Generation`)を置いた。訳が一致している限り読み込み順に依存しないので、これは許容できる唯一の重複形
+
+**`該当選手` は「文脈違い」ではなく単なる誤訳だった。** 起票(§15-6-3)は「検索フィルタ語の既訳が人名スロットに出る」としていたが、台帳の `count=1` / `files=[ui-common.js]` と全数grepから、**秋対抗戦MVPの人名スロットが唯一の消費点**と判明した(検索フィルタ語は別キー `該当する選手がいません` → "No wrestlers match")。キーを分けると同じJA表示文字列を持つ行が2つできてしまうので、`en` を **"Unnamed wrestler"** へ訂正するだけにした。管理側(`_AW_MVP_FALLBACK_JA` → `_wmDictLabel`)と表示側(`WM_I18N.t('該当選手')`)の両方が同じ訂正の恩恵を受ける。
+
+### 5. JA同一性の証明 — 109,956通り・不一致0
+
+P6-14/15/16の作法①(凍結コピーとの全数突合)を5関数へ適用した。HEADの `_generateTitle`/`_generateSubtitle`/`_generateClosing`/`_buildHighlights`/`_buildAceNarrativeParts` をソースから機械抽出し、`Object.create(Engine.chronicle)` のプロトタイプ経由で未変更ヘルパを共有して突合。
+
+| 対象 | 突合 | 不一致 |
+|---|---|---:|
+| 移設2表(`SUBTITLE_TEMPLATES`/`CLOSING_TEMPLATES`) | `JSON.stringify` 完全一致 | 0 |
+| `_generateTitle`(エース0〜3人 × 名前6種の直積 × dict省略/ja素通し/パーツ経由) | 432ケース | 0 |
+| `_generateSubtitle`(7カテゴリ × 章境界グリッド25×13) | 2,275ケース | 0 |
+| `_generateClosing`(5軸 × 寄与9段(境界値0.10/0.30/0.80含む) × org有無4種 × 章境界グリッド) | 16,380ケース×3経路 | 0 |
+| `_buildHighlights`(全イベント型 × 全分岐の直積 + 乱数fixture 4,000本) | 20,423行 | 0 |
+| `_buildAceNarrativeParts`(乱数fixture 3,000本) | 2,939行×3経路 | 0 |
+
+- **プールの網羅率を必ず出す**: サブタイトル**29/29**・章末**12/12**・ハイライト**48/48**(全テンプレに到達)
+- ハイライトは1行ごとに「保存文 == `narrativeText(textParts)`(dict省略)」「保存文 == `narrativeText(textParts, ja素通しdict)`」も同時に照合している
+- **auto-simのsemantic fingerprintは `c52c116c` → `afda03f8` に動くが、これは追加フィールドの分だけ**。指紋のreplacerで `titleParts`/`closingParts`/`textParts`/`B` を除外して**HEADと新実装の両方を再計測**したところ**どちらも `a8641a5a`**(HEADに同じ除外を掛けても値が動くのは、指紋対象にもとから別の `B` キーがあるため。両者へ同じ除外を掛けている以上、比較としては成立する)。**セーブに書く既存値は1バイトも変わっていない**
+
+### 6. 英訳
+
+`docs/en-kuroda-style-draft-v0.1.md` の**無署名デスク/年代記の記録voice**。平叙の事実文、感嘆符ゼロ、格言化なし、スポーツ面常套句なし。
+
+**章タイトル**: `無名の時代`→The Nameless Era / `{surname}世代`→The {surname} Generation / `{surname1}・{surname2}世代`→The {surname1}–{surname2} Generation(2枚看板はENダッシュで詰める — h2で副題と並ぶため長さを抑えた)
+
+**サブタイトル29本**(カテゴリ順):
+- early: 旗揚げ世代→The Founding Generation / 創成期→The Formative Years / 始まりの灯→The First Light / 旗を立てた日々→The Days the Flag Went Up
+- golden: 黄金期→a golden age(既訳踏襲・§4) / 一強時代→The Age of One Power / 連続王者の時代→The Age of the Unbroken Reign / 誰にも届かぬ高み→Heights No One Could Reach
+- almostThere: 届かなかった頂→The Summit They Never Reached / 壁の前で→Before the Wall / 頂を仰ぐ者たち→Those Who Looked Up at the Summit / 一歩、届かず→One Step Short / 影を踏んだ世代→The Generation That Stepped on the Shadow
+- challenge: 挑戦者世代→The Challengers' Generation / 気鋭の時代→The Age of the Upstarts / 牙を研ぐ日々→The Days of Sharpening Teeth / 壁にぶつかった世代→The Generation That Hit the Wall
+- idol: 華やかなる時代→The Bright Years / 熱気と歓声の時代→The Age of Heat and Cheers / ファン人気で支えた世代→The Generation Carried by Its Fans / 華のある世代→The Generation with Shine(「華」=shine はP6-16の先例)
+- enduring: 低迷期→The Years of Decline / 日陰の奉仕者たち→Those Who Served in the Shade / 灯を絶やさぬ者たち→Those Who Kept the Light On / 世代交代期→The Handover Years
+- other: 中堅職人世代→The Generation of Steady Hands / 残留組の時代→The Age of Those Who Stayed / 端境期→a lean spell(既訳踏襲) / 過渡期世代→The Transitional Generation
+
+**章末12本**(`{org}`=団体名 / `{axis}`=Striking・Grappling・Submission・Brawling・All-round):
+- slight: `この世代は、{org}のスタイルを少しだけ{axis}寄りにした。`→This generation tilted {org}'s style a little toward {axis}. / `{org}の試合内容に{axis}の傾向が少し混じり始めた。`→A trace of {axis} began to work its way into {org}'s matches. / `この世代は{org}に{axis}の傾向をわずかに残した。`→This generation left {org} with a faint leaning toward {axis}. / `{org}の基本路線に{axis}の要素が少し加わった。`→A little {axis} was added to {org}'s basic line.
+- moderate: `この世代は{org}のスタイルに{axis}色を残した。`→This generation left the mark of {axis} on {org}'s style. / `{axis}中心の試合運びが、{org}全体の傾向を少し変えた。`→Ring work built around {axis} shifted {org}'s tendencies a little. / `次世代の選手は{axis}を一つの基準として育っていった。`→The next generation grew up with {axis} as one of their measures. / `{org}が{axis}を団体の特色として語れるようになったのは、この世代からだった。`→It was from this generation on that {org} could speak of {axis} as a mark of the promotion.
+- strong: `この世代を経て、{org}のスタイルは{axis}色が明確になった。`→After this generation, the {axis} cast in {org}'s style was unmistakable. / `この世代以降、{org}の若手は{axis}を基本として選ぶようになった。`→From this generation on, {org}'s young wrestlers took {axis} as their base. / `{axis}が{org}の代名詞として定着した時期だった。`→This was when {axis} settled in as the byword for {org}. / `この世代以降、{org}の主流は{axis}に移った。`→From this generation on, {org}'s mainstream moved to {axis}.
+
+**ハイライト48本**は record 体の平叙文(`<strong>{name}</strong> won the {belt}` / `… defended the {belt} {count} times, among others ({years})` / `… lost the {belt} after {count} defenses (beaten by {by})` / `… won MVP {count} times, {streak} years running ({years})` / `… runner-up in the Junior Tournament (lost the Final to {by})` / `… {wins}-{losses} in {total} interpromotional matches (vs {items} and others)` ほか)。**数値PHは単複・冠詞が充填値で変わらない形へ**(規則23〜25)—「{count}度」は必ず2以上、「{count}度防衛」は必ず3以上、「{total}戦」は必ず2以上が保証された枠なので複数形で固定できる。`団体王座`(ベルト名が取れないときの既定)→Promotion Championship。用語は既訳に揃えた: 対抗戦=interpromotional match / 挑戦試合=challenge match / 新人賞=Rookie of the Year / 決勝=Final / 最高評価=best rating・試合評価=match rating。
+
+**週次ストーリー8本**(表示はJA固定・gameLog再設計時のための訳): 給料の不満→{name} seems to be voicing complaints about her pay / 後輩の待遇(名前あり/なし)→{name} is unhappy with how her junior ({junior}) is being treated ・ … how the juniors are being treated / タイトル挑戦→{name} seems to be after a title shot / 出場機会→{name} is unhappy about how little she is being booked / ロッカールームの空気が重い(+ペア)→The air in the locker room is heavy ({pairs}) / `{a}と{b}`→{a} and {b}。
+
+**ui-ledger 新規1件**: `この世代が団体に残す傾向は、まだ確定していない。`(章末が未確定のときの書きかけ表示。ui-render.js に生JAで直書きされていたのでt()化)→ What this generation leaves behind in the promotion's style is not settled yet.
+
+### 7. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(data/management/relationships/ui-render/lang-en/lang-en-templates) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(hash=`6b3d05c8…`、`--update`不使用) |
+| `node test/i18n-build-template-dict.js` | ✅ **2,672/2,672 未訳0**(PH完全性/重複キー/日本語残り/黒田禁止語/PH直前の不定冠詞すべて違反0) |
+| `node test/i18n-build-dict.js` | ✅ **4,027/4,027 未訳0** |
+| `npm test` | ✅ **260/260 green** |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(台帳検査3種も違反0)。指紋は§5のとおり追加フィールドのみで説明できる |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest **`1052faa82eaf7991` 不変**、Issues 0 |
+| `npm run test:ui:walkthrough:en` | ✅ PASS、Issues 0、**i18n-miss 0 維持**。JA露出合計154(screen-log=41 / week=28 / newspaper=28 / roster=24 / shachoshitsu=12 / title=6 / show=6 / finance=5 / ranking=4) |
+| `node test/i18n-ratchet.js` | 移設のため `--update`(内訳は下記)。総数 28,089 → **28,106(+17)** |
+
+**ラチェット+17の内訳**: data.js +100(新2表の101文字列のうち `（vs {items}）` だけが日本語文字を含まないため計数外) / management.js −77 / relationships.js −5 / ui-render.js −1。増分は**断片連結をやめて分岐ごとの完全文へ割った分**と、旧コードで入れ子テンプレートリテラルの中にあってスキャナから見えていなかった文字列が独立リテラルとして正しく計上されるようになった分(P6-15 §11-3 と同じ検出漏れの解消)。**JA文字列が新規に直書きされた箇所は無い**(移設元3ファイルはすべて減っている)。
+
+VM検品: 本物の `src/i18n.js` + 生成辞書4本を読み込んで lang=en にし、章タイトル3種・サブタイトル29本・章末12本×org有無・ハイライト48テンプレ・エース叙述文(ベルト名あり/なし)を描画 → **379件・日本語残り0・i18n-miss 0**。選手名(富岡加奈子→Kanako Tomioka)・団体名(グランエンプレス→Grand Empress)・ベルト名(凰翔プロレス王座→Soaring Phoenix Pro Wrestling Championship)がすべてパラメータ経由で英語化されることを確認した。
+
+### 8. 新たな発見(未着手・次バッチ以降)
+
+1. **序章(`Engine.prologue`)のハイライト・記者の見立て・章末が生JAのまま**。ui-render.js の序章描画は `h.text` を直参照し、「この章の主役が誰になるかは、まだ確定していない。…」「この世代の物語は、まだ始まったばかりだ。」がt()を通っていない。`Engine.chronicle` とは別レイヤー(`G.prologue`)なので、生成側(`Engine.prologue`)も同型のテンプレ化が要る
+2. **年代記のエース/同期カードに単位語の生JAが残る**(`${a.seasons}<span class="small">期</span>` / `${a.titleReigns}<span class="small">戴冠</span>` / peer行の `${p.titleReigns}度戴冠`)。数値+単位語は specs §4 の「Stage Bで複数形込みで設計する」族で、`_chronicleCompetitiveValueHtml`(「N度防衛」を正規表現で再解析する逆方向パターン)と一体で設計する必要がある
+3. **年代記画面はUI走破ハーネスが踏まない**(1季走破では章がまだ生成されない)。本バッチのEN確認はVM検品に依存している。レア画面強制点火カタログ(`test:ui:ignite`)に年代記シナリオを足す候補
+4. **`旗揚げ世代` の二重登録は「訳が一致している限り安全」という運用に依存している**。将来どちらかの訳を変えるときは両方を同時に変えること(§4)
+
 ## 🌐 Stage B P7-7a — 新聞/ロスター画面のJA露出残りの分類v0.1（調査のみ・2026-09-04・worktree agent-ab867a7463268a0a2）
 
 開始前にworktreeをmain先端(4197ead、P6-16まで)へfast-forward済み。`test:ui:walkthrough --lang en --ja-exposure-log`をseed42/seed7の2本回し、screen-newspaper(実測28件)とscreen-roster(実測25件+seed7新出2件)の全要素を1件ずつ生成箇所まで追跡。

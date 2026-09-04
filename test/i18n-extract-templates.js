@@ -170,6 +170,10 @@ const TARGET_TABLES = [
   'CHAR_PROFILES',
   'ALL_COACHES',
   'COACH_FLAVOR_DEFS',
+  // P6-17: 年代記の章タイトル / サブタイトル / 章末 / ハイライト行(Engineプロパティ+
+  // 関数内直書きの移設)と、週次ストーリーイベント(gameLogレガシー文字列)の文面。
+  'CHRONICLE_CHAPTER_TEMPLATES',
+  'WEEKLY_STORY_EVENT_TEXTS',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ
