@@ -1,5 +1,147 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2n — セリフ英訳バッチ⑭(天頂戦ドラマ91+派閥遷移84+試合後フレーバー81+コーチ総括80+熱量75+因縁70帯74+派閥F02 74+負傷74+解雇73+好敵手決着72+番狂わせ71+遺恨決着71+コーチ引退助言71+因縁90帯70+ドラフト加入69 = 1,130行)（2026-09-04・Opus主筆 worktree agent-a535c00627b7f0e16）
+
+量産翻訳の第14バッチ。**15テーブルの未訳1,130行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2mの訳語判断(2fのベルト=belt/王座=title、2cのト書き書式、seductiveの`ふふ`=Mm・ojousamaは`Hehe`、⑬の因縁=grudge/好敵手=rival、⑬の「」を落とす方針を継承)。開始前にworktreeブランチをmain先端(eb5fe55)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2k〜2mと同じ運用)。
+
+**このバッチも本題の半分は配線穴だった** — コーチ総括の言及80行(+同じ文の後半にあたる総評56行)と、コーチの引退助言71行が、**どちらも英語モードで日本語のまま出ていた**(下記§4)。前者は「PHをt()より前に置換」+「2文を連結してから t()」の合わせ技、後者は**表示点に t() が一度も無かった**。
+
+### 1. 対象範囲(1,130行)
+
+| テーブル | 未訳 | 本バッチで訳した行 | 軸 | 場面 |
+|---|---|---|---|---|
+| `data.js:TENCHOSEN_DRAMA_LINES` | 91 | 91 | role(A〜E)×archetype(性格分岐なし) | 天頂戦の関係性ドラマ(死闘の勝者/敗者・辱め・同門の亀裂/絆) |
+| `data.js:FACTION_TRANSITION_LINES` | 84 | 84 | reasonKey(6)×archetype × {leaderLine, narration} | 派閥アーキタイプの遷移(権威→結束/実力、闘争→結束、Face↔Heel) |
+| `data.js:POST_MATCH_FLAVOR_LINES` | 81 | 81 | winner/loser×archetype×personality | 試合直後の一言(autoClose 1.8s) |
+| `coach-lines.js:COACH_WRAPUP_MENTION_LINES` | 80 | 80 | **reason(6)×voiceKey(8)×solo/duo** | 大会総括でコーチが選手に触れる1文({n1}/{n2}) |
+| `data.js:HEAT_STATE_SELF_LINES` | 75 | 75 | state(3)×archetype×personality | 練習の熱量(自覚)の一言 |
+| `data.js:RIVALRY_CONFRONTATION_LINES_70` | 74 | 74 | attacker/defender×archetype×personality | 因縁70帯の対峙 |
+| `data.js:FACTION_F02_LINES` | 74 | 74 | **personality(6)×side(2)×archetype(7)** | 派閥F02の対峙(宣戦/応諾) |
+| `data.js:EVENT_INJURY_LINES` | 74 | 74 | archetype×personality | 負傷 |
+| `data.js:EVENT_RELEASE_LINES` | 73 | 73 | archetype×personality | 解雇・放出 |
+| `data.js:GOODRIVAL_RESOLUTION_LINES` | 72 | 72 | winner/loser×archetype×personality | 好敵手ルートの決着 |
+| `data.js:UPSET_RIVALRY_LINES` | 71 | 71 | winnerLines/loserLines×archetype×personality | 番狂わせ×高因縁 |
+| `data.js:BITTER_RESOLUTION_LINES` | 71 | 71 | winner/loser×archetype×personality | 遺恨(宿怨)ルートの決着 |
+| `coach-lines.js:COACH_VOICE_RETIRE_LINES` | 71 | 71 | **voiceKey(8)×見立て9段** | コーチが引退勧告の通りやすさを語る声 |
+| `data.js:RIVALRY_CONFRONTATION_LINES_90` | 70 | 70 | attacker/defender×archetype×personality | 因縁90帯の対峙 |
+| `data.js:EVENT_DRAFT_JOIN_LINES` | 69 | 69 | archetype×personality | ドラフト加入の挨拶 |
+| **合計** | **1,130** | **1,130** | | |
+
+- **`files.length>1` の共有未訳行は0件**(⑬で全数掃討済み。本バッチの1,130行はすべて単一テーブル所有)
+- **セル判定内訳**(1,130行): standard 235 / polite 139 / seductive 133 / composed 132 / ojousama 123 / delinquent 110 / cool 98 / **null 160**
+- **`cell` の追記は1件**(⑬と同じ `{archetype}` 形)。`……すぐ戻る` は `EVENT_INJURY_LINES.cool.normal` と `.cool.quiet` の2箇所に出て**personalityは割れるがarchetypeは cool で一意**。これで cool の感嘆符・文数検査が1行ぶん効くようになった
+- 残る `cell=null` 160行は所有全表を歩いて確認した結果すべて**null が正しい**: (a)`COACH_WRAPUP_MENTION_LINES` 80行 + `COACH_VOICE_RETIRE_LINES` 71行 = **151行はそもそもarchetype軸を持たない**(voiceKey軸のコーチ発話) (b)`FACTION_F02_LINES` の8行は同一文が2つのarchetypeで共有(`もう、同じ場所には立てない`=standard/composed、`上等よ。受けて立つわ`=standard/seductive ほか) (c)`BITTER_RESOLUTION_LINES` の1行(`決着がつきました。……もう、十分です`=standard/polite)
+- 台帳の `cell` と実効テーブルの軸キーの突き合わせは**969件(cellあり)で不一致0**
+
+### 2. 翻訳の方針
+
+- **天頂戦ドラマ91行は「敗者の5つの立ち位置」で芯を分けた**。A=**死闘の敗者**(称賛と清々しさ)、B=**死闘の勝者**(勝ってなお相手のおかげ)、C=**辱めを受けた敗者**(復讐の宣言)、D=**同門に負けて祝えない**(祝いの言葉が喉で止まる)、E=**同門に負けて誇らしい**。`4年` はこの大会だけの単位なので **Four years** を全訳で保ち、A/Cでは「4年後の再会」、B/Eでは「同じ旗の下」を軸にした。`借り`=**debt**、`屈辱`=**humiliation**(既訳と統一)
+- **派閥遷移84行は leaderLine と narration で文体を完全に分けた**。`leaderLine`=**降りる本人の声**(archetype軸のみ・性格ダイヤルなし)、`narration`=**地の文の事実記述**(CLAUDE.mdのナレーション方針どおり格言化しない)。`王道`=**the straight (line/banner)**、`ヒール`=**heel**(英語圏プロレスの現用語)、`反主流`=**the outsider side**、`権威/結束/実力主義`はUI辞書の既訳(Authority / Unity / Meritocracy)に揃えた。**`社長` を指す3行は UI辞書の慣行どおり "you"**(呼称 Boss/President は使っていない)
+- **派閥F02の74行は「同じ日本語が7属性に並ぶ表」なので全行を別の英語にした**。`もう、同じ場所には立てない`系6本、`上等よ。受けて立つわ`系6本、`仲良しごっこは終わり`系7本、`けじめをつける`系6本、`許せない`系7本、`引けない`系7本 — いずれも**属性ごとに別の言い回し**(例: 挑発の受諾は `Suits me.` / `Very well.` / `Nothing would please me more.` / `Good.` / `...Bring it.` / `Bring it. Come at me.` の6系統)
+- **熱量75行は §3-6(身体メタファー禁止)を最優先で書き替えた**。JA側が「体が軽い/重い」という体を主語にした構文に全面的に寄っているが、英語で `my body is light` は翻訳調になるため**全廃し `I feel light` / `Everything's heavy` の生活英語に統一**した。`体が言うことを聞かない` も `not everything is doing as it is told` へ言い換え、⑬のスランプ126行と重ならないことを全行照合した
+- **試合後フレーバー81行は「1.8秒で消える一言」なので短さを最優先にした**(中央値は本バッチ全体で46字だが、この表は特に短い)。`勝たせていただきました` 系9本は敬語の段差を **The win goes to me. Thank you. / I came away with it... / The win is mine. Thank you. / I came away with the win. Thank you for that. / The win came to me...! / The win is mine, then. / (+Hoho) / I'll be taking that one.** で刻んだ
+- **因縁70/90帯は「時間の位置」で分けた**(⑬の本体テーブルと同じ設計)。70帯=**今夜終わらせる宣戦**、90帯=**この日をずっと待っていた**。`この日を待っていた` 系は90帯だけで12本あるので **waited / awaited / longed for / been waiting on / wanted this day** の5系統に属性で割った。`因縁`=**grudge**(⑬既訳を継承)
+- **好敵手/遺恨/番狂わせの3表は「決着後に何が残るか」で書き分けた**。`GOODRIVAL`=**感謝と敬意が残る**(Thank you / I'm glad it was you / no regrets)、`BITTER`=**恨みが残る**(I don't accept it / I won't forget / this debt gets paid back)、`UPSET`=**信じられない**(勝者=ついに届いた / 敗者=こんなはずでは)。`最高の相手だった` 系8本、`認めない` 系10本、`嘘でしょう` 系7本はすべて別の英語にした
+- **コーチ2表は選手セリフではないので属性レジスタを一切当てず、⑫ worklog §4 で確定した8系統の英語voiceに従った**(roshi=命令形と断定 / tosho=規律の完全文 / bukotsu=`...`起点の断片 / seihitsu=同じ断片を丁寧な完全文で / mentor=見守りの緩衝 / oyaji=`you know`と`I reckon` / anego=世話焼きの直言 / theorist=計測語彙)。**JAで内容がほぼ同一の3ペア(roshi↔tosho / bukotsu↔seihitsu / oyaji↔anego)は英語では別の道具で差を付けている**(例: `……目が、死んどらん`=`...Her eyes. Not dead yet.` ↔ `……目が、死んでいらっしゃいません`=`...Her eyes. There is life in them yet.`)
+- **ト書き43行**(`………（手を差し出す）` / `………（膝をつき、震えている）` / `……（静かに立ち去る）` ほか)は P5-2c の堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**。アンカーの `... (silently clenches her fist)` および⑫⑬の既訳と重ならないよう全43本を別の動詞句にした
+- **属性=register**: ojousama=**全123行で短縮形ゼロ**(付加疑問の例外も未使用) / cool=**全98行で感嘆符ゼロ・最大3文** / delinquent=冠詞主語の省略+gonna/wanna / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻+`Mm` / standard=特徴を足さない
+- **§4-6の検品ルール適用**: 応援=**support**(`cheer for` 0件) / **`maybe` は文頭のみ**(文末の「かも」は `I think`・1行を書き直した) / 格上格下=**better/worse**(`格上を食う`=`take down someone better`) / `undefeated` 0 / `Fufu` 音写0 / 「今日の私」型0 / 「〜も」のtoo直訳0 / `I'll do my best`・`It can't be helped`・`As expected of` の禁止定型0 / 英国綴り0 / ALL CAPS 0 / `〜` の伸ばしは既訳の慣行どおり `~` で存置
+- **卑語**: hell/damn は**1,130行中15回**、すべて delinquent 確定セル。f/sワードは0
+- **長さ**: 全1,130行が110字上限内(**最大98字・中央値46字**・EN/JA文字数比 2.39)。♪を含む原文は1行(`ふふっ、ラッキー♪`)で♪は存置、♡を含む原文は0行
+
+### 3. 均質化回避
+
+事前検査(自作 `check.js`。**scratchpad の専用サブディレクトリ `p52n/` に隔離**)で**バッチ内の完全重複・近似重複(トークンJaccard≥0.90)と、既訳13,138行との完全/近似重複を全数照合**し、検出22件をすべて書き直した。最終的に**バッチ内EN完全重複0・近似重複0・既訳との完全重複0・近似重複0**。
+
+書き直しの型は3つ。(a)**短い定型が既訳と衝突**(`...Got it.`←「……了解」/ `...Took it.`←「……獲った」/ `...Beaten outright.`←「……完敗、です」/ `...I'm sorry.`←「……ごめん」/ `...My apologies.`←「…すまない」/ `...I lost.`←「……負けた」/ `...Yeah.`←「…ああ」/ `...Right.`←「…っす。」/ `...I'll give it everything.`←「…精一杯、やります」/ `Thank you very much.`・`Thank you, everyone.` ほか計12件)。(b)**JAがほぼ同文の双子行**(`許せない、あの子のやり方`(standard) と `許せません、あの方のやり方`(polite)、`………勝ち…ました…？`(polite) と `………勝った…の…？`(seductive)、`あなたのおかげで成長できました。〜` の3属性違いなど)。(c)**禁止語・表記**(文末 `maybe.` 1件、`....` 表記2件)。
+
+### 4. 発見して直した配線穴3件 — コーチ総括136行・コーチ引退助言71行がENでもJAのまま
+
+#### 4-1. コーチ総括(`buildCoachTournamentWrapup`) — **PH先置換 + 2文連結の合わせ技**
+
+`buildCoachTournamentWrapup`(ui-common.js:17454-17490)が **`{n1}`/`{n2}` を `.replace()` で先に埋めてから**、`_tcwSentence(mention) + _tcwSentence(verdict)` で**2文を句点で直結**し、その結果を `_u3bSideHtml` の t() に渡していた。辞書キーは (a) PH入りの原文 (b) 1文単位 なので、**連結後の文字列は辞書に存在しえず必ず fail-open** する。実害は **`COACH_WRAPUP_MENTION_LINES` 80行 + `COACH_WRAPUP_VERDICT_LINES` 56行 = 136行が英語モードでも日本語のまま**、5大会(ジュニア/春タッグ/秋対抗戦/PPV/天頂戦)の終了時に必ず1枚出る画面で発生していた。
+
+**修正(ui-common.js・4箇所)**
+- `verdict` を `WM_I18N.t(_tcwPickLine(...))` に(**1文単位で辞書を引く**)
+- `mention` を `WM_I18N.t(raw, { n1, n2 })` に(**PHを埋める前に辞書を引く**。選手名は t() の params 自動変換 D-P6-2 で英語表記になるので、呼び出し側は生JA名を渡すだけでよい)
+- `_tcwSentence` に **EN分岐**(句点ではなくピリオドで閉じる。**未訳キーは fail-open でJAが返るので「中身が日本語なら句点」を選ぶ** — 部分翻訳の途中でも文末が壊れない)
+- 連結を `parts.join(_tcwIsEn() ? ' ' : '')` に(**日本語は句点で直結=従来と1バイト同一**、英語は文と文をスペースで継ぐ)
+
+**JA側の1バイト不変を検証**: 切り出したブロックをJA/EN両モードで実行し、JAは `富岡加奈子は最後まで崩れませんでしたし、高津小春が序盤で作った流れも効いていました。積み上げてきたものが、そのまま一番高いところで出ましたね。`(=変更前と同一形)、ENは `Kanako Tomioka never came apart, and the flow Koharu Takatsu built early was doing work too. …` を確認。`npm test` の `tournament-coach-wrapup-test.js` 22セクションも全PASS。
+
+#### 4-2. コーチの引退助言 — **表示点に t() が一度も無かった**
+
+`ui-common.js:4513-4523`(選手詳細ポップアップの「─── 引退 ───」枠)が `${advice.text}` を**素のままDOMへ入れていた**。加えて `Engine.coach._buildRetireAdviceText`(management.js:8128)が `prefix + 本文` を連結して返していたため、仮に t() を掛けても一致しない二重の穴だった。**`COACH_VOICE_RETIRE_LINES` 71行が英語モードでも日本語のまま**。
+
+**修正(最小・dict-opts規約準拠 — EngineはWM_I18Nを直接呼ばない)**
+- `_buildRetireAdviceText` は**プールの1行そのまま**を返す(前置きを連結しない)。観察ランクE/Dの「わからない」1本はテーブルに無い文言なので **`null` を返し、文言は表示層が持つ**(=辞書キーになれる場所へ移す)
+- `getRetireAdvice` の戻り値に `unassigned`(担当外)/`vague`(E/D)を追加
+- 表示側が `WM_I18N.t(前置き) + WM_I18N.t(本文)` と**1文ずつ**引く。コーチ名も `WM_I18N.pn()` 経由に
+- **JA側の1バイト不変**: 前置き・本文とも同じ順で連結され、ja では t()/pn() が素通しなので表示は不変(`node test/ja-golden.js` 基準一致)
+
+#### 4-3. 派閥遷移 — **テンプレは訳されるが `{leader}` の代入値が生JAのまま**(⑬ planType と同型)
+
+`Engine.factions.getTransitionLine` は dict-opts 化済みで narration テンプレ自体は正しく訳されるが、呼び出し側(`showFactionArchetypeTransitionModal` ui-common.js:12054)が `{ leader: leader.name }` と**生JA名**を渡していた。英語モードでは *「After several refusals, 富岡加奈子 quietly let go of authority.」* という半英語になる。`WM_I18N.pn(leader.name)` 経由に修正(ja では pn() は素通し)。
+
+#### 4-4. あわせて `_u3bSideHtml` に `lineTranslated` オプトを追加
+
+`_u3bSideHtml` は `o.line` を無条件で t() に通すため、**既に訳し終えた文字列(複数キーの連結文)を渡す経路では必ず辞書ミスになり `[i18n-miss]` ログを汚す**。二重適用そのものは fail-open で無害だが、検査の信号を潰すので `lineTranslated: true` で外せるようにした(コーチ総括と派閥遷移のleaderLineの2箇所で使用。**ja では t() が素通しなので日本語版の出力は1バイト不変**)。派閥遷移側は `ui-common.js:12051` のコメントが「戻り値は既に訳文なので二重に通さない」と書いていたのに実装が伴っていなかった箇所で、これで意図と実装が一致した。
+
+### 5. 表示経路の到達確認 — **15テーブル中14テーブルは全行ENに届く。1テーブルは消費点ゼロ(死蔵)**
+
+全消費点を grep で列挙して1本ずつ追った(呼び出し元を全部数えてから直す)。
+
+- **TENCHOSEN_DRAMA_LINES 91行は届く**。`_pickDramaLine`(management.js:28822)が生JAを返し、`G.ppvTournament.dramaEvents[].lines[].text` に保存 → `_tcDramaActor`(ui-common.js:20563)が `escHtml(WM_I18N.t(bubbleText))`。**保存されるのは生JA=辞書キーなので旧セーブも英語で読める**
+- **FACTION_TRANSITION_LINES 84行は届く**(§4-3 の修正込み)。`getTransitionLine(reasonKey, leader, vars, WM_I18N.t)` の dict-opts が**テンプレを先に訳してから `{}` を置換**する正しい順序であることを本文で確認
+- **POST_MATCH_FLAVOR_LINES 81行は届く**(勝者=`_emrVictoryLine` ui-common.js:17997 と `_emrBubbleHtml` 18220 の二重t()、敗者=app.js:9424 が `showEventPopup({speech})` → `_renderEventPopupAsC3` → `_u3bSideHtml` の3経路すべてで t())
+- **COACH_WRAPUP_MENTION_LINES 80行は本コミットで届くようになった**(§4-1)
+- **HEAT_STATE_SELF_LINES 75行は消費点が一つも無い(死蔵・§8-1)**。訳出はしたが**ゲーム内では一度も表示されない**
+- **RIVALRY_CONFRONTATION_LINES_70/90 144行は届く**(`_renderRivalryPopup` ui-common.js:2583-2594 / `_rivalryPreMatchLines` 17814-17820 の2経路とも `WM_I18N.t(pickDialogueLine(...))`)
+- **FACTION_F02_LINES 74行は届く**(派閥対峙モーダルの組み立て ui-common.js:10061/10062 が `WM_I18N.t(Engine.factions.getF02ClashLine(...))`)
+- **EVENT_INJURY / EVENT_DRAFT_JOIN / EVENT_RELEASE 216行は届く**(`getTraitQuote`(ui-common.js:3792)が `WM_I18N.t(pickDialogueLine(pool, char))`。呼び出しは app.js:6279/10879/11689)
+- **GOODRIVAL / BITTER / UPSET 214行は届く**(`_renderRivalryPopup` ui-common.js:2624-2625 / `_buildRivalryMatchDialogue` 5556-5557 / `_buildB3Step3b` 14532・14593・14660 の各経路で t())
+- **COACH_VOICE_RETIRE_LINES 71行は本コミットで届くようになった**(§4-2)
+- **プレースホルダを含む行は122行**(FACTION_TRANSITION narration 42行の `{leader}`/`{org}` と COACH_WRAPUP_MENTION 80行の `{n1}`/`{n2}`)。**いずれも本コミットで「テンプレのまま t() に入る」形になった**
+
+### 6. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,130行を記入+cell 1行を追記(**diffは 1,133挿入/1,131削除 = `"en":` 行1,130本 + cell 1件(`null`→3行)のみ**。書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートし、書き込み後に `git diff -U0` で `"en":`/`"cell":`/`"archetype":`/波括弧 以外の増減**0件**を機械確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- `src/ui-common.js` — `_u3bSideHtml` の `lineTranslated` オプト(§4-4)/ コーチ総括の1文単位t()+PH先引き+EN終止符・区切り(§4-1)/ 引退助言の表示点t()(§4-2)/ 派閥遷移の `{leader}` を pn() 経由に(§4-3)
+- `src/management.js` — `_buildRetireAdviceText`/`getRetireAdvice` を「前置きを連結しない」形へ(§4-2)
+- 他は worklog / roadmap のみ
+
+### 7. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**14,268**(13,138→+1,130) / 未訳2,276 / cell判定済み13,635 |
+| `node --check src/lang-en-dialogue.js` / `src/ui-common.js` / `src/management.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…、`--update`不使用) |
+| `npm test` | ✅ **260 passed / 0 failed**(`tournament-coach-wrapup-test.js` 22セクション全PASSを含む) |
+| `node test/i18n-ratchet.js` | ✅ OK(直書き日本語の増加なし。files=31 / totalJaStrings=28093。前置き1本を management.js から ui-common.js の `${WM_I18N.t('…')}` へ移したぶん総数は-2) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(errors 0 / 台帳検査3種 違反0)。management.js を触ったため実行 |
+| JA同一性(コーチ総括) | ✅ ブロックを切り出してJA/EN両モードで組み立て、**JAは変更前と同形(句点直結・スペース混入なし)**、ENは名前もEN表記で組まれることを確認 |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+data/coach-lines/data-faction-dialogue/management/match-engine/relationships/flag-dialogue/factions/draft-negotiation)で**台帳1,130キーの直接t()が未訳0**。さらに実選択ロジック(`pickDialogueLine`/`getDialoguePool` で12プール×49セル、`TENCHOSEN_DRAMA_LINES` 全role×archetype×全エントリ、`Engine.factions.getF02ClashLine` を6性格×2side×7属性、`Engine.factions.getTransitionLine` を6理由×7属性(dict-opts経由)、`COACH_WRAPUP_MENTION_LINES` を6理由×8voice×solo/duo(PH先引き)、`Engine.coach._buildRetireAdviceText` を8voice×5ランク×誤認×8rate)で**計2,866引き・日本語出力0・PH残り0**。`[i18n-miss]` は**新設したUI辞書キー2本のみ**(§8-3) |
+| 品質スイープ(事前検査) | ✅ 網羅1,130/1,130・空訳0・日本語残り0・110字超0・PH不一致0・改行数不一致0・余分な空白0・`....`表記0・ojousama短縮形0(**本体 `test/i18n-build-dialogue-dict.js` と同じ固定語彙リスト+付加疑問除外で検査**)・cool感嘆符0・cool3文超0・hell/damn非delinquent 0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+
+### 8. 残課題(このバッチで判明したものを含む)
+
+1. **`HEAT_STATE_SELF_LINES` 75行は消費点がゼロ(完全な死蔵)**。`EVENT_LINES_BY_KEY.heatSelf` に登録されているだけで、`pickQuote('heatSelf')` を呼ぶ箇所が存在しない。しかも `test/heat-lines-test.js:56-58` が **「未接続の選手本人向け熱量セリフを選手詳細へ戻さない」ことを明示的にガードしている**(=意図的に切ってある)。道場バナーに出ているのは `HEAT_STATE_COACH_LINES`(コーチ側)だけ。**MEMORY.md の「熱量の可視化はtask-44で実装済み(HEAT_STATE_SELF/COACH_LINES+道場バナー配線)」は片方(コーチ側)だけが正しい**。選手本人の声を出すのかどうか要裁定(出さないなら75行は削除候補)
+2. **`COACH_WRAPUP_VERDICT_LINES` 56行が未訳のまま**(本バッチの対象表に入っていなかった)。§4-1 の修正で**同じ1文の前半(言及)だけが英語になり、後半(総評)はfail-openでJAのまま**という混在状態になる。`_tcwSentence` が「中身が日本語なら句点」を選ぶので文末は壊れないが、**次バッチで最優先に拾うべき56行**(コーチ総括は5大会それぞれの終了時に必ず出る)
+3. **本コミットで新しいUI辞書キーが2本生まれた**(`担当じゃないから確信はないですが…` / `…ちょっとわかりません`)。どちらも `ui-common.js` の `WM_I18N.t('…')` リテラルなので **`test/i18n-extract-ui.js` の次回抽出で自動的に `i18n/ui-ledger.json` へ入る**。台帳の持ち主がP6-5並行エージェントの領分のため、本バッチでは ui-ledger.json を触っていない
+4. **`…読めません`(management.js:8153)は到達不能な死コード**。A_sure/A_likely/A_iffy/A_hard の4プールは8voice全部で埋まっているため、このフォールバックは一度も発火しない(VM抜き取りの8voice×全rateで確認)
+5. **吹き出しの `「」` が35箇所でハードコードされている**(`grep -c '「\${' src/ui-common.js`)。⑬で「**ENの吹き出し内セリフは「」を外す**」方針を確立したが、それは**データ側に「」が書かれている行**の話で、**レンダラ側がテンプレで括っている分**は英語モードでもそのまま `「English line」` になる。本バッチの経路では `_tcDramaActor`(20563・天頂戦ドラマ)と `_emrBubbleHtml`(18220・試合後の勝利セリフ)が該当。**`_u3bSideHtml` は括っていない**ので、画面によって作法が割れている状態。英語で `「」` を残すか / `"..."` にするか / 外すか は演出の裁定(要裁定・ソース未変更)
+6. **`{surname}派` の派閥名が英語化されない**(§4-3 で `{leader}` は直したが `{org}` は生成ラベル)。UI辞書には `{surname} Group` という訳があるが、`factions.js:1244` が JA で組み立てた文字列がそのまま `{org}` に入る。**⑬が起票した P6-6(`_factionReporterStrip` の連結文)と同じ持ち主(ui-ledger)の問題**なので、そちらへ合流させるのが自然
+7. **性格分岐の薄さ(要裁定・3件追加)**:
+   - **`POST_MATCH_FLAVOR_LINES` の composed は winner/loser とも `normal` の1性格のみ**、seductive も 2/1。**試合のたびに必ず出るポップアップ**なので、鷹揚・蠱惑帯は毎回ほぼ同じ一言を言い続けることになる(standard は7性格すべてある)
+   - **`TENCHOSEN_DRAMA_LINES` は archetype軸のみで personality を持たない**(role×archetype×2〜3本)。4年に一度の見せ場で、しかも死闘の後という最も感情が出る場面
+   - **`COACH_VOICE_RETIRE_LINES` は全 voice×tier で配列長が1**(72通りすべて1本ずつ)。同じコーチに同じ選手のことを二度訊くと必ず同じ文が返る
+   - なお **`FACTION_TRANSITION_LINES` が archetype軸のみなのは仕様として明記済み**(data.js:1689「personality では分けない — 同じ archetype のキャラの口調が崩壊するため」)なので、こちらは対象外
+8. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **派閥遷移の narration 42本**(選手セリフではなく地の文。事実記述で格言化していないか。`王道`=the straight line / `ヒール`=heel の対比が英語圏プロレスの語感で自然か) (b) **熱量75行で「体が〜」構文を全廃した書き替え**(`I feel light` / `Everything's heavy` が、原文の「同じだけやっているのに手応えが薄い」という不安をちゃんと運べているか) (c) **コーチ8系統のうち roshi↔tosho と bukotsu↔seihitsu の差**(⑫で確定した設計を引退助言9段でも守れているか)
+
+---
+
 ## 🌐 Stage B P5-2m — セリフ英訳バッチ⑬(因縁対峙140+交渉130+因縁決着126+スランプ126+残留121+派閥COMMON4 115+COMMON7 110+対抗戦結果107+対抗戦勝利103+共有6 = 1,084行)（2026-09-04・Opus主筆 worktree agent-ac098c266cd152a2f）
 
 量産翻訳の第13バッチ。**9テーブルの未訳1,078行 + 対象外テーブルの共有未訳6行 = 1,084行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2lの訳語判断(2fのベルト=belt/王座=title、2cの対社長温度Boss/President、2cのト書き書式、seductiveの`ふふ`=Mm、2lの`百年早い`=a hundred years too soon を継承)。開始前にworktreeブランチをmain先端(4485520)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2k/2lと同じ運用)。

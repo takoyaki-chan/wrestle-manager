@@ -242,7 +242,13 @@ function _u3bSideHtml(o) {
   // o.line は data.js の各セリフテーブルから選択された生JA行(呼び出し元は個々にpickDialogueLine
   // 等で選択するのみで翻訳しない)。ここで一括してt()を通す(escHtmlより前=辞書キーは
   // HTMLエスケープ前の原文と一致させる必要があるため)。
-  const line = (o.line != null && o.line !== '') ? escHtml(WM_I18N.t(o.line)) : '';
+  // i18n Stage B P5-2n: o.lineTranslated は「呼び出し元が既に t() を済ませた文字列
+  // (複数の辞書キーを連結した文など、単独ではキーになりえない値)を渡す」明示オプト。
+  // 二重適用そのものは fail-open で無害だが [i18n-miss] ログを汚すため、その経路だけ外す。
+  // ja では t() が素通しなので、このフラグの有無で日本語版の出力は1バイトも変わらない。
+  const line = (o.line != null && o.line !== '')
+    ? escHtml(o.lineTranslated ? String(o.line) : WM_I18N.t(o.line))
+    : '';
   const bubbleCls = ['u3b-bubble', o.bubbleClass].filter(Boolean).join(' ');
   const bubbleInner = line ? `<div class="${bubbleCls}"><div class="u3b-bubble-text">${line}</div></div>` : '';
   const sizeKey = o.size || (o.isBig ? 'l' : 'm');
@@ -4507,9 +4513,13 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const advice = Engine.coach.getRetireAdvice(G, c.id);
           html += `<div style="margin-top:8px;padding:12px 14px;background:rgba(212,168,67,0.05);border:1px solid rgba(212,168,67,0.2);border-radius:6px;margin-bottom:10px">
             <div style="font-size:12px;font-weight:700;color:var(--gold);margin-bottom:6px;border-bottom:1px solid rgba(212,168,67,0.15);padding-bottom:4px">${WM_I18N.t('─── 引退 ───')}</div>`;
-          if (advice.text) {
+          if (advice.text || advice.vague) {
+            // i18n Stage B P5-2n: ここは t() を一度も通していなかった(COACH_VOICE_RETIRE_LINES
+            // 71行が英語モードでも日本語のまま出ていた)。前置き・本文・E/Dランクの「わからない」は
+            // それぞれ別の辞書キーなので、連結せず個別に引く。ja では t()/pn() が素通しなので
+            // 表示は1バイト不変。
             html += `<div style="font-size:12px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px;border-left:2px solid rgba(212,168,67,0.4)">
-              💬 <span style="color:var(--text-dim)">${advice.coachName}</span>「${advice.text}」
+              💬 <span style="color:var(--text-dim)">${WM_I18N.pn(advice.coachName)}</span>「${advice.unassigned ? WM_I18N.t('担当じゃないから確信はないですが…') : ''}${advice.vague ? WM_I18N.t('…ちょっとわかりません') : WM_I18N.t(advice.text)}」
             </div>`;
           }
           if (cooldown > 0) {
@@ -12029,7 +12039,10 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
 
   const roster = state ? (state.roster || []) : [];
   const leader = roster.find(c => c.id === payload.leaderId);
-  const leaderName = leader ? leader.name : '???';
+  // i18n Stage B P5-2n: narration の {leader} へ差し込む値。テンプレは getTransitionLine の
+  // dict-opts で訳されるが、**代入値が生JAのまま**だと英文の中に日本語名が残る(P5-2m の
+  // planType と同型)。名前辞書(D-P6-3)を通してから渡す。ja では pn() は素通し。
+  const leaderName = leader ? WM_I18N.pn(leader.name) : '???';
   const factionName = String(payload.factionName || WM_I18N.t('派閥'));
   const reasonKey = payload.reasonKey || '';
   const leaderUrl = leader ? _factionUpperUrl(leader.id) : '';
@@ -12059,7 +12072,7 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
         ${_factionReporterStrip(state, `${factionName}の色合いが変わったようです——${fromLabel}から${toLabel}へ。`)}
         <div class="fevt-subject-stage u3b-theme-cream">
           ${_u3bSideHtml({
-            name: leaderName, line: lines.leaderLine || '',
+            name: leaderName, line: lines.leaderLine || '', lineTranslated: true,
             imgUrl: leaderUrl, role: `${factionName} : ${fromLabel} → ${toLabel}`,
             bubbleClass: 'fevt-bubble',
           })}
@@ -17386,8 +17399,18 @@ function _tcwPickLine(pool) {
   return pool;
 }
 
+/** i18n: 英語モードかどうか(WM_I18N.lang を持たないテスト用スタブでは false=日本語扱い) */
+function _tcwIsEn() {
+  try { return typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en'; } catch (_e) { return false; }
+}
+
 function _tcwSentence(text) {
   if (!text) return '';
+  // i18n Stage B P5-2n: 英語では句点ではなくピリオドで閉じる。ja の分岐は従来のまま
+  // (日本語版の出力は1バイト不変)。未訳キーは fail-open で日本語のまま返るので、
+  // ENモードでも「中身が日本語なら句点」を選ぶ(部分翻訳の途中でも文末が壊れない)。
+  const isJa = /[぀-ヿ㐀-䶿一-鿿]/.test(text);
+  if (_tcwIsEn() && !isJa) return /[.!?)\]”"']$/.test(text) ? text : text + '.';
   return /[。！？!?]$/.test(text) ? text : text + '。';
 }
 
@@ -17427,7 +17450,9 @@ function buildCoachTournamentWrapup(kind, state, args) {
 
   const voice = (typeof getCoachVoiceKey === 'function') ? getCoachVoiceKey(coachId) : 'theorist';
   const verdictTable = (typeof COACH_WRAPUP_VERDICT_LINES !== 'undefined' && COACH_WRAPUP_VERDICT_LINES[grade]) || null;
-  const verdict = verdictTable ? _tcwPickLine(verdictTable[voice] || verdictTable.theorist) : '';
+  // i18n Stage B P5-2n: 総評と言及はそれぞれ別の辞書キー。連結したあとで t() を通しても
+  // 一致しないので(=ENでも日本語のまま出る)、ここで1文ずつ辞書を引いてから繋ぐ。
+  const verdict = verdictTable ? WM_I18N.t(_tcwPickLine(verdictTable[voice] || verdictTable.theorist)) : '';
 
   let mention = '';
   let mentionCompletesLine = false;
@@ -17443,14 +17468,20 @@ function buildCoachTournamentWrapup(kind, state, args) {
       } else if (raw) {
         spoken = raw.indexOf('{n2}') >= 0 ? picks.slice(0, 2) : picks.slice(0, 1);
         mentionCompletesLine = !wantsDuo && cell.soloComplete === true;
-        mention = raw
-          .replace('{n1}', (spoken[0] && spoken[0].name) || '')
-          .replace('{n2}', (spoken[1] && spoken[1].name) || '');
+        // i18n Stage B P5-2n: 名前を埋める**前**に辞書を引く。先に置換すると辞書キー
+        // (PH入りの原文)と一致せず必ず fail-open する(P5-2d/2h/2j/2l と同型の欠陥)。
+        // 選手名は t() の params 自動変換(D-P6-2)で英語表記になるため、渡すのは生JA名でよい。
+        mention = WM_I18N.t(raw, {
+          n1: (spoken[0] && spoken[0].name) || '',
+          n2: (spoken[1] && spoken[1].name) || '',
+        });
       }
     }
   }
   if (!mention) spoken = [];
-  const line = (_tcwSentence(mention) + (mentionCompletesLine ? '' : _tcwSentence(verdict))).trim();
+  // i18n Stage B P5-2n: 日本語は句点で直結(従来と1バイト同一)、英語は文と文をスペースで継ぐ。
+  const parts = [_tcwSentence(mention), mentionCompletesLine ? '' : _tcwSentence(verdict)].filter(Boolean);
+  const line = parts.join(_tcwIsEn() ? ' ' : '').trim();
   if (!line) return null;
 
   const meta = TCW_EVENT_META[kind] || { kicker: 'COACH NOTE', theme: '' };
@@ -17492,7 +17523,7 @@ function showCoachTournamentWrapup(payload, onDone) {
       <div class="war-victory-modal">
         <div class="tcw-kicker">${escHtml(payload.kicker || 'COACH NOTE')}</div>
         ${_u3bSideHtml({
-          name: payload.coachName, line: payload.line,
+          name: payload.coachName, line: payload.line, lineTranslated: true,
           imgUrl: payload.portraitUrl, fallback: payload.fallback,
           role: WM_I18N.t('コーチ'), size: 'm',
           bubbleClass: 'war-victory-line tcw-bubble', portraitClass: 'war-victory-img',
