@@ -8,7 +8,8 @@
 - 全スクリプトより先に読み込む(index.html/battle-engine.html/tag-battle.htmlの先頭script。release/manifest.json登録済み)
 - `t(text, params?)`: キーは**日本語原文**。ja=辞書非経由の素通し(params時は`{name}`置換のみ)/en=辞書引き・ミス時はfail-openで原文+`[WM] [i18n-miss]`ログ(セッション中1回・フライトレコーダーが拾う)/pseudo=`⟦原文~~⟧`(~は40%長・レイアウト溢れ検査用)
 - **プレースホルダフィルタ`{name:filter}`(Stage B P6 D-P6-5、2026-09-02追加)**: `params[name]`をフィルタ関数へ通してから埋め込む。ja側テンプレは常に無フィルタの`{name}`のままでよい(基底名が同じなら同一パラメータとして解決される。t()の`applyParams`とdata.jsの`fillTemplateVars`が同一契約の正規表現実装を独立に持つ — 後者はi18n.js非依存で単体読み込みされるため)。現在の唯一のフィルタは`man`(通貨B方式): 万単位の数値/カンマ区切り数字文字列(符号可)を英語圏標準のk/M表記へ変換する。100万未満(絶対値<100)→整数k(例: 15→150k)、100万以上→小数1桁までのM(末尾.0削除。例: 300→3M、120→1.2M、30000→300M)。符号はk/M表記の頭に付く。数値化できない値・未知のフィルタ名はいずれもfail-open(値をそのまま挿入)
-- `setLang('ja'|'en'|'pseudo')`: localStorage `wm_lang`(既定ja)。**セーブ(G)に言語は入れない**。切替UIは開発パネル(Ctrl+Shift+D)のみ(プレイヤー向けUIはStage B/P6)
+- `setLang('ja'|'en'|'pseudo')`: localStorage `wm_lang`(既定ja)。**セーブ(G)に言語は入れない**。切替UIは開発パネル(Ctrl+Shift+D)に加え、タイトル画面の言語トグル(Stage B/P6-12、`App.setTitleLanguage()`)からも変更できる
+- **言語の決まり方(`readStoredLang()`、P6-12で確定)**: 起動時は毎回 1) `localStorage.wm_lang` が**保存済み**ならそれを常に尊重(不正値でも既定`ja`に落とすだけでブラウザ言語は見ない) → 2) **未設定**(そのブラウザで一度も選ばれたことがない=初回起動)のときだけ`navigator.language`(**最優先の1言語のみ**。取得できない稀な環境でだけ`navigator.languages[0]`で代替)を見て、`en`で始まればEN、それ以外はJAを初期既定にする → 3) `navigator`不在・取得失敗はいずれもfail-openで`ja`。**`navigator.languages`の2番目以降(副次的な言語プリファレンス)は見ない**——主言語がjaでも配列に`en-US`等が混じる環境は珍しくなく、そこまで見ると「ブラウザの主言語はjaなのにENが既定になる」誤判定になる(実装時にPlaywright環境で実測)。この既定判定はwm_lang書き込みを伴わない(次回起動時も同じロジックで再計算されるだけで、ブラウザ言語が変われば既定も追従する)。タイトル画面の言語トグルで明示的に選んだ後は1)が常に優先されるため、既定判定は二度と発火しない
 - `addDict({原文: 訳文})`: Stage Bで英語辞書を登録する入口
 - `applyDom(root?)`: 静的HTML用。`data-i18n`要素のtextContent/`data-i18n-attr="title,placeholder"`属性を、原文退避(`data-i18n-orig`)→t()適用。DOMContentLoadedとsetLangで自動実行
 - 観戦iframeは自windowに別インスタンス(wm_lang共有で言語は揃う。試合ごとに開き直すため親のsetLangへの追従は不要)

@@ -1,5 +1,51 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P6-12 — タイトル画面に言語切替トグル(日本語/English)+初回起動のブラウザ言語既定（2026-09-04・worktree agent-a15ed207d2296ee51）
+
+プレイヤーがタイトル画面から表示言語を自分で切り替えられるようにした。従来は開発者モード(Ctrl+Shift+D)経由でしか切り替えられなかった。開始前にworktreeブランチをmain先端(`38b7dc7`、P6-9まで)へfast-forward済み。厳守事項(i18n/dialogue-ledger.json・src/lang-en-dialogue.js・src/kuroda-text.js・management.jsのEngine.flavor/Engine.awards周辺・src/data.jsのEMOTION_TEXTS)には一切触れていない。
+
+### 1. UI実装ルールに沿った事前準備
+
+- `docs/ui/01-foundations.md`・`docs/ui/02-layouts.md`・`docs/ui/mockup-baseline-v0.1.md`を読了
+- `docs/ui/03-screens/`にタイトル画面の仕様書が存在しなかったため、`docs/ui/03-screen-template.md`に沿って`docs/ui/03-screens/title-language-toggle.md`を新規作成(実装状況=完了、タイトル画面自体はOffice/Stage/Ceremonyのどれにも正式分類されていない旨を注記)
+
+### 2. 実装
+
+- **`src/index.html`**: `#titleScreen`内、`.title-bg`と`.title-content`の間に`.title-lang-toggle`(ピル型2択、`#titleLangJaBtn`/`#titleLangEnBtn`)を追加。CSSは`var(--gold)`/`var(--text-dim)`/`var(--text-sub)`/`var(--bg-dark)`トークン+既存`.title-btn`と同じ考え方のゴールドrgba値のみ(新規ハードコード16進カラーなし)。`max-width:600px`メディアクエリにモバイル用の縮小ルールを追加(375px幅で確認、はみ出しなし)
+- **`src/app.js`**: `App.setTitleLanguage(lang)`を新設(`titleLoadGame()`の直後)。`WM_I18N.setLang(lang)`で`wm_lang`を書き換えて`location.reload()`。既に選択中の言語なら何もしない(無駄なリロード防止)。`App.showTitleScreen()`にトグルのハイライト同期(`.is-active`クラス+`aria-pressed`)を追加(CONTINUE/LOAD GAMEボタンの表示制御と同じ場所)。ラベル文言(「日本語」「English」)には`data-i18n`を付けない(仕様どおり翻訳しない)
+- **`src/i18n.js`**: `readStoredLang()`を拡張。`wm_lang`が**保存済み**なら常にそれを尊重(不正値でも既定ja、ブラウザ言語は見ない=既存挙動不変)。**未設定**(初回起動)のときだけ`navigator.language`(最優先の1言語のみ)を見て`en*`ならen、それ以外はjaを既定にする新関数`detectBrowserDefaultLang()`を追加
+
+### 3. 実装中に見つけて即修正したバグ
+
+初回ブラウザ実機確認で「`navigator.language`が`ja`なのにタイトルが英語で開く」という逆の不具合を発見した。原因は`detectBrowserDefaultLang()`の初版が`navigator.language`だけでなく`navigator.languages`配列全体(2番目以降の副次的な言語プリファレンス)もOR条件で見ていたため、`navigator.languages=['ja','en-US']`のような(主言語は日本語だが英語も理解する、という)ごく一般的な設定で`en-US`の存在だけを拾って誤ってENを既定にしていた。**`navigator.language`(主言語1つ)のみを見る**(`navigator.language`が取得できない稀な環境でだけ`navigator.languages[0]`で代替)よう修正し、標準化されたNode vmベースの回帰テストに専用ケースを追加して再発を防いだ(下記検証参照)。
+
+### 4. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(src/i18n.js・src/app.js) | ✅ 両方OK |
+| `npm test` | ✅ 260/260 green(バグ修正の前後で2回実施、両方green) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、Actions 328、**digest=`1052faa82eaf7991`(不変を再確認)**、Issues 0(トグルは`primary`等のスコア対象クラスを持たずオーバーレイ外に配置しているため、走破のランダム選択に一切拾われない設計) |
+| `npm run test:ui:walkthrough:en` | ✅ PASS、Actions 417、Issues 0(i18n-miss 15件は本タスク無関係の既存未訳セリフ、トグルのラベル自体は仕様上t()を通さないため対象外) |
+| 独自Node vm回帰テスト(`readStoredLang()`の10ケース) | ✅ 全PASS — 未設定+en/ja/その他/navigator無し、設定済み(ja/en/不正値)がnavigator言語に左右されないこと、`navigator.languages`のみにenがある場合、および今回発見したregressionケース(主言語ja+副次en-USはjaのまま)を個別に確認 |
+| Playwright機械確認(`test/ui-walkthrough/server.js`を流用、独自スクリプト) | ✅ 全14アサーションPASS — 初回ja既定→English押下→リロード→EN表示+`wm_lang=en`永続化→日本語押下→リロード→JA復帰+`wm_lang=ja`→トグルのハイライトが都度一致→同じ言語を再度押しても無反応(リロードなし) |
+| スクリーンショット | `test/ui-walkthrough/artifacts/p6-12-lang-toggle/1-first-load-ja-default.png`(初回ja既定)・`2-after-switch-to-en.png`(English押下後)・`3-back-to-ja.png`(日本語へ復帰後) |
+| モバイル375px幅目視 | はみ出し・重なりなし(スクリーンショット確認済み、artifactsには未保存) |
+
+### 5. specs/roadmap更新
+
+- `specs/i18n-runtime-spec-v1.0.md` §1に「言語の決まり方(`readStoredLang()`)」の段を追記(wm_lang優先→未設定時のみnavigator.language主言語→ja、navigator.languagesの副次値は見ない旨も明記)
+- `docs/game-system-roadmap.md`「🌐 英語対応」行(既存の1本)にP6-12完了を追記し、残課題リストから「プレイヤー向け言語切替UI」を除去(本タスクで解消したため)
+
+### 6. 触ったファイル
+
+`src/index.html` / `src/app.js` / `src/i18n.js` / `specs/i18n-runtime-spec-v1.0.md` / `docs/game-system-roadmap.md` / `docs/ui/03-screens/title-language-toggle.md`(新規)。`release/manifest.json`は新規ファイルなし(既存の`src/index.html`/`src/app.js`/`src/i18n.js`はいずれも既に登録済み)のため変更不要と確認。観戦iframe(`battle-engine.html`/`tag-battle.html`)は既に自インスタンスの`i18n.js`を読み込みwm_langを共有する設計を確認済み(変更不要)。
+
+### 7. 残課題
+
+- Keisuke実機確認(ブラウザのタブ言語設定を実際に変えての初回起動確認、タイトル画面での見た目・操作感)
+- タイトル画面自体の正式なカテゴリ分類(Office/Stage/Ceremonyのどれにも完全一致しない)は本タスクのスコープ外。画面仕様書の「未決事項」に記録済み
+
 ## 🌐 Stage B P6-9 — ENモードのレイアウト溢れ検出(走破ハーネスに情報集計を追加)（2026-09-04・worktree agent-ae6330a95762d3c96）
 
 EN訳文はJA比で文字幅が中央値2.4倍という実測を踏まえ、吹き出し(110字上限は設定済み)以外のUI要素(ボタン・ナビタブ・表のセル・バッジ・ヘッダー・モーダルのラベル)で切れ/はみ出し/折り返し崩れが起きていないかを、UI自動走破ハーネスに**情報集計として**追加した。開始前にworktreeブランチをmain先端(`c37225d`、バッチ⑮=P5-2o+P6-7まで)へfast-forward済み。**src/・i18n/・CSS・訳文は一切触っていない**(指示どおり報告のみ、変更は`test/ui-walkthrough/`3ファイル+READMEに限定)。

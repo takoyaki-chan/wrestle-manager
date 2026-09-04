@@ -62,11 +62,36 @@
   // このセッションで既にログ済みの未訳キー(D7: 同一キーは1回だけ)。
   const missSeen = new Set();
 
+  // P6-12: wm_lang が未設定(=一度も保存されたことがない)ときだけ、
+  // navigator.language(最優先の1言語のみ)を見て初回既定を決める('en*'ならen、それ以外はja)。
+  // navigator.languagesの2番目以降(副次的な言語プリファレンス)は見ない —
+  // 主言語がjaでも配列に'en-US'等が混ざっている環境は珍しくなく、それらまで見ると
+  // 「ブラウザの主言語はjaなのにENが既定になる」誤判定になる(実機のPlaywright環境で実測)。
+  // navigator.languageが取得できない稀な環境でだけnavigator.languages[0]を代わりに見る。
+  // navigator不在・取得失敗はすべてfail-openでjaに落ちる。
+  function detectBrowserDefaultLang() {
+    try {
+      const nav = global.navigator;
+      if (!nav) return DEFAULT_LANG;
+      const primary = (typeof nav.language === 'string' && nav.language)
+        ? nav.language
+        : (Array.isArray(nav.languages) && typeof nav.languages[0] === 'string' ? nav.languages[0] : null);
+      if (primary && /^en/i.test(primary)) return 'en';
+    } catch (_e) { /* fail-openでja */ }
+    return DEFAULT_LANG;
+  }
+
+  // 言語の決まり方(優先順): 1) localStorage wm_lang が保存済みならそれを常に尊重
+  // (不正値でも既定'ja'に落とすだけで、ブラウザ言語は見ない) → 2) 未設定(初回起動)
+  // のときだけ navigator.language で既定を決める → 3) それでも決まらなければ'ja'。
+  // wm_lang が保存済みかどうかは store.getItem()の戻り値がnullかどうかで判定する
+  // (VALID_LANGS外の不正値は「保存済みだが壊れている」扱いでja、ブラウザ言語は見ない)。
   function readStoredLang() {
     try {
       const store = global.localStorage;
       const v = store ? store.getItem(STORAGE_KEY) : null;
-      return VALID_LANGS.indexOf(v) >= 0 ? v : DEFAULT_LANG;
+      if (v !== null) return VALID_LANGS.indexOf(v) >= 0 ? v : DEFAULT_LANG;
+      return detectBrowserDefaultLang();
     } catch (_e) {
       return DEFAULT_LANG;
     }
