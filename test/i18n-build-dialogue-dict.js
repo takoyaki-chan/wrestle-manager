@@ -21,6 +21,9 @@
 //    2. 重複キー検出: 台帳内に同一keyが複数存在しないか
 //    3. en内の日本語残り検出(絵文字誤検出を避ける正しいレンジ。同ファイルの注記参照)
 //    4. 吹き出し長110半角字上限(D-P5-3。en文字列長 > 110 で違反)
+//    4b. プレースホルダ直前の不定冠詞(P6-14): docs/en-kuroda-style-draft-v0.1.md §3-4 規則25。
+//       `a {name}` は名前の頭音で、`a {n}` は数値の読みで a/an が割れる。ハイフン限定用法
+//       (`a {n}-match …`)のみ許可。セリフ層も同じ規約に従う(充填値は同じdata由来のため)
 //
 //    セル別(D-P5-3。docs/en-tone-bible-draft-v0.1.md §1-1/§2-2/§2-3/§2-4/§4-6準拠。
 //    5〜6(ojousama/cool)は entry.cell が取れている行にのみ適用(cell不明の行は対象外)。
@@ -67,6 +70,10 @@ const PLACEHOLDER_RE = /\{([A-Za-z_][A-Za-z0-9_]*)(?::[A-Za-z_][A-Za-z0-9_]*)?\}
 const JA_RE = /[぀-ヿ㐀-䶿一-鿿豈-﫿ｦ-ﾟ]/;
 
 const MAX_LEN = 110;
+
+// P6-14: プレースホルダ直前の不定冠詞(docs/en-kuroda-style-draft-v0.1.md §3-4 規則25)。
+// 定義は test/i18n-build-dict.js と同一(台帳ごとに独立実行するため各スクリプトが持つ)。
+const ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i;
 
 // ── D-P5-3 セル別検査 ────────────────────────────────────────────────────
 // 実在する英語短縮形の固定リスト(所有格'sを誤検出しないための語彙リスト方式)。
@@ -204,6 +211,15 @@ function main() {
     // 4. 吹き出し長110半角字上限
     if (en.length > MAX_LEN) {
       violations.push(`吹き出し長上限(${MAX_LEN}字)超過(${en.length}字): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)}`);
+    }
+
+    // 4b. プレースホルダ直前の不定冠詞(§3-4 規則25)
+    const artHit = ARTICLE_BEFORE_PLACEHOLDER_RE.exec(en);
+    if (artHit) {
+      violations.push(
+        `PH直前の不定冠詞(規則25): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} `
+        + `(検出="${artHit[0]}"。a/anが充填値で変わる。ハイフン限定用法 \`a {n}-…\` へ逃がすか冠詞を落とす)`
+      );
     }
 
     // 5〜8. セル別検査(D-P5-3)

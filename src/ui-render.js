@@ -10238,11 +10238,25 @@ function showHofDetail(idx) {
 
   // 異名（フォールバック: 動的生成）。epithet は**保存されている生JA**のまま扱い、
   // 表示用の英訳は _epithetLabel() 経由で別に持つ(i18n P6-10)。
-  // generateBiography には生JAのepithetを渡す(語り文自体がまだ未英訳のため。§11-5)。
   const epithet = h.epithet || Engine.awards.generateEpithet(h, null, null);
   const epithetLabel = _epithetLabel(epithet);
-  // 語り文（フォールバック: 動的生成）
-  const biography = h.biography || Engine.awards.generateBiography({ ...h, epithet, orgName });
+
+  // 語り文(i18n P6-14)。保存値 `h.biography` は3文を**連結し終えた生JAの完成文**として
+  // G(殿堂入りエントリ)へ永続しているため、異名のように「表示点で辞書を1回引く」ことが
+  // できない(辞書キーは分解前の各文であり、完成文とは一致しない)。そこで同じ素材
+  // (エントリに残っている記録値)から dict 付きで**再生成**する。
+  //   1. まず dict 無し(JA)で再生成し、保存値と1バイト一致するかを確かめる
+  //      = 素材が揃っていて、テンプレも保存当時と同一である証拠
+  //   2. 一致したときだけ、現在の言語の dict(WM_I18N.t)+英訳済み異名で作り直した文を出す
+  //   3. 一致しない(旧セーブで素材が欠けている / テンプレが変わった)場合は保存値を優先
+  // JAモードでは 2 の結果が 1 と同一(t()はja素通し+PH置換のみ・_epithetLabelもja素通し)
+  // なので、日本語版の表示は1バイト不変。
+  const bioSource = { ...h, epithet, orgName };
+  const bioSaved = h.biography || '';
+  const bioJa = Engine.awards.generateBiography(bioSource);
+  const biography = (bioJa && (!bioSaved || bioJa === bioSaved))
+    ? Engine.awards.generateBiography({ ...bioSource, epithet: epithetLabel }, WM_I18N.t)
+    : bioSaved;
 
   // 顔画像
   // faceout-audit v0.2: 正方形faceの上限はcard 52(mockup-baseline §2-C)。主役は下の全身画像(XL)が担う

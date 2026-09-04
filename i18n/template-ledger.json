@@ -450,6 +450,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "PPV連覇の記憶は、{orgName}の伝説として語り継がれる。",
+    "en": "The back-to-back PPV wins have been handed down as part of the {orgName} story.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "SNSでも{leftName}と{rightName}の対戦を求める声が多い。ファンの目は正直だ",
     "en": "Plenty of voices online are asking for {leftName} against {rightName}. Fans are honest about what they want to watch.",
     "files": [
@@ -751,9 +761,19 @@
   },
   {
     "key": "{bestMQ}点を生んだ二人は、しかし一度道を違えた。それでもリングが、控室が、また同じ空気を共有している——本紙はそれを「奇跡」とは呼ばない。両者の覚悟が、ここまで連れてきたのだと書いておく。",
-    "en": "The two who produced a {bestMQ} did once take separate roads. And the ring, and the locker room, have them sharing the same air again — this paper will not call that a miracle. What carried them here was what both of them were prepared to do, and I will say so in print.",
+    "en": "The two who produced a match rated {bestMQ} did once take separate roads. And the ring, and the locker room, have them sharing the same air again — this paper will not call that a miracle. What carried them here was what both of them were prepared to do, and I will say so in print.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{bestMatchCount}度のベストバウト——試合を芸術に変える才能があった。",
+    "en": "Best bout awards: {bestMatchCount} — she had the gift for turning a match into art.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1300,6 +1320,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{defenses}人の挑戦者を退け続けた女王の治世は、誰の想像をも超えた。",
+    "en": "A reign that turned back {defenses} challengers in turn went past anything anyone had pictured.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度の防衛を積み重ねた王座は、彼女の代名詞となった。",
+    "en": "The belt she stacked {defenses} defenses onto became a byword for her.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{emoji} Heat変動: {oldLabel} → {newLabel}（集客倍率 ×{mult}）",
     "en": "{emoji} Heat shift: {oldLabel} → {newLabel} (attendance ×{mult})",
     "files": [
@@ -1314,6 +1354,26 @@
     "en": "{emoji} {winnerName} vs {loserName} — {label}! Both +{popBonus} popularity, promotion popularity {orgPopDelta}",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{epithet}——その名は復活の物語とともにある。",
+    "en": "{epithet} — the name comes attached to a story about coming back.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{epithet}の名は、{orgName}の歴史の一ページに刻まれた。",
+    "en": "The name {epithet} is written into a page of the {orgName} record.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1464,6 +1524,16 @@
     "en": "{name} since then: {how}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{intro}{core}{closing}",
+    "en": "{intro} {core} {closing}",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1830,6 +1900,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{maxSingleReign}度の防衛——その数字だけで語り継がれる女がいた。",
+    "en": "One reign carried {maxSingleReign} defenses — that figure alone was enough to keep her name in circulation.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{move} → 3カウント",
     "en": "{move} → 3-count",
     "files": [
@@ -1884,6 +1964,26 @@
     "en": "{mq} — the night the best rating on record was made",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{mvpCount}度のMVP——一回では終わらなかった。",
+    "en": "MVP awards: {mvpCount} — it did not stop at one.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{mvpCount}度のMVP受賞は、時代そのものだった証だ。",
+    "en": "The MVP column reads {mvpCount}, which is the proof that she was the era itself.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2900,6 +3000,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{orgName}に{seasons}シーズンの足跡を残した{epithet}。",
+    "en": "{epithet}, who left a {seasons}-season trail through {orgName}.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{orgName}に痛手、{name}が{weeks}週の離脱",
     "en": "Blow to {orgName} — {name} out {weeks} weeks",
     "files": [
@@ -3070,6 +3180,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{orgName}の{seasons}シーズンを生きた女がいた。",
+    "en": "There was a woman who lived out a {seasons}-season career inside {orgName}.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{orgName}の{stage}で組まれたタッグ戦が、試合評価{mq}点を記録した。これまでのタッグ戦の最高は{prevRecord}点。シングルの歴代最高とは別に積み上げられてきた数字が、この夜また一つ塗り替わった。{nameA1}と{nameA2}が{nameB1}＆{nameB2}組を下したが、点数を跳ね上げたのは四人の噛み合いだ。息の合った連係も、それを崩そうとする相手の意地も、すべてが同じリングで回っていた。｜{nameA1}と{nameA2}がこの日までに費やした時間が、そのまま数字の裏付けになっている。組んだ当初のぎこちなさを知る者ほど、その連携の成熟に驚くだろう。率先して前に出る{nameA1}、崩れた流れを立て直す{nameA2}。単独でもトップを背負える二人が我を張らずに合わせた結果の連係の精度という一点は、辛口を通す本紙も認めざるを得ない。",
     "en": "A tag match at {orgName} ({stage}) was rated {mq}. The best a tag match had reached until now: {prevRecord}. That figure, built up separately from the all-time singles best, was rewritten again on this night. {nameA1} and {nameA2} beat {nameB1} and {nameB2}, but what drove the rating up was how all four meshed. The teamwork that ran clean, and the refusal of the other side to let it run clean, were all turning inside the same ring.｜The hours {nameA1} and {nameA2} have put in up to this day are what stands behind the number. Anyone who remembers how awkward they were when they first teamed will be the most surprised at how the pairing has matured. {nameA1} goes forward first; {nameA2} rebuilds the flow when it breaks. Two wrestlers who could each carry a top spot alone, fitting to each other without insisting on themselves — the precision that comes out of that is the one point this paper, which stays hard on people, has to concede.",
     "files": [
@@ -3124,6 +3244,16 @@
     "en": "The match between {nameA1} and {nameA2} and the team of {nameB1} and {nameB2}, fought in the {orgName} ring, came out rated {mq}. The best a tag match had reached until now: {prevRecord}. It is measured on a different yardstick from the singles record, on the density four wrestlers weave between them. The team of {nameA1} won. The speed of the teamwork and the force trying to cut that teamwork apart pushed against each other, and the thickness of the meshing became the record itself.｜What holds the two of them up is a clean acceptance of roles and the trust underneath it. {nameA1} moves the team and makes the situation; {nameA2} trusts that back and answers it exactly, no more and no less. A relationship that does not argue over who is the lead did not break down as the exchanges got harder. Trust is hard to see in a number. On this night it became one. This paper keeps a cool head, and even so, what these two built cannot be taken lightly.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{orgName}のリングに、{epithet}として永遠に刻まれた名がある。",
+    "en": "One name is set into the {orgName} ring for good, remembered as {epithet}.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4211,7 +4341,7 @@
   },
   {
     "key": "{playerName}の試合見るのテレビの音消してても変わらんわ",
-    "en": "Watching a {playerName} match with the sound off is the exact same experience",
+    "en": "Watching {playerName}'s matches with the sound off is exactly the same experience",
     "files": [
       "FAN_OPINIONS"
     ],
@@ -5280,6 +5410,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{titleWins}度の戴冠——タイトルを獲ることの難しさを知る者には、その重さがわかる。",
+    "en": "Title reigns: {titleWins} — anyone who knows what it takes to win one knows what that weighs.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{titleWins}度の戴冠と{defenses}度の防衛が、彼女の実力を雄弁に物語る。",
+    "en": "Title reigns: {titleWins}. Defenses: {defenses}. The two columns say what she was.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{toOrg}が{fromOrg}の{name}を引き抜きに成功。即戦力としてチームを底上げする見込み。「この移籍は大きい」と業界紙が一様に報じた。",
     "en": "{toOrg} succeeded in poaching {name} from {fromOrg}. She is expected to lift the roster straight away, and the trade papers all reported it the same way: this move is a large one.",
     "files": [
@@ -5821,7 +5971,7 @@
   },
   {
     "key": "{years}年来の険悪さが、団体の境界を越えてさらに強まった——{charA}と{charB}の場合、そうとしか言いようがない。{bestMQ}点を生んだリングは、もはや「過去を持つ二人」の戦場である。",
-    "en": "A {years}-year bad blood that has hardened further across the boundary between promotions — with {charA} and {charB} there is no other way to describe it. The ring that produced a {bestMQ} is now the battlefield of two people with a past.",
+    "en": "A {years}-year bad blood that has hardened further across the boundary between promotions — with {charA} and {charB} there is no other way to describe it. The ring that produced a match rated {bestMQ} is now the battlefield of two people with a past.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -7010,6 +7160,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "あの年のMVPは彼女以外に考えられなかった、と誰もが言う。",
+    "en": "Nobody else was in the conversation for MVP that year, and everyone says so.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "あの解雇から{weeksSinceFired}週――{name}、古巣に挑む",
     "en": "{weeksSinceFired}-week gap — {name} faces her old promotion",
     "files": [
@@ -7024,6 +7184,16 @@
     "en": "All those years supporting them back when everyone tore them apart, worth it...",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "あらゆる局面に対応する万能さが、長きにわたる活躍を支えた。",
+    "en": "Having an answer for every situation is what carried her that long.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7480,6 +7650,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "その重厚なグラップリングが、挑戦者たちを次々と沈めた。",
+    "en": "That heavy grappling put challenger after challenger down.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "どこから手をつけるべきか。{chaseAxisLabel}は絶望的、{leadAxisLabel}も怪しい。率直に言えば、今の状態で比較記事を書くこと自体がおこがましいが、それが筆者の仕事である以上は書く。一つだけ救いがあるとすれば、これ以上落ちようがないということだ。あとは上がるだけ。——上がれれば、だが。",
     "en": "Where should anyone begin. {chaseAxisLabel} is hopeless, {leadAxisLabel} is doubtful. To put it plainly, writing a comparison piece about this state of things is presumptuous, and since it is this writer's job, I write it. If there is one mercy, it is that there is no further down to go. From here it only rises. ...If it rises.",
     "files": [
@@ -7540,10 +7720,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "どんな相手にも、どんな状況にも、対応できた。",
+    "en": "Any opponent, any situation, she had an answer.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "どんな試合でも手を抜かなかった。だからファンは彼女を信じた。",
+    "en": "She never worked a match at half effort. That is why the crowd trusted her.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "なぜこのカードを組んだのか理解に苦しむ",
     "en": "Why this card was booked is hard to follow",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ひとつの時代を、この女は確かに生きた。",
+    "en": "One era, and this woman lived the whole of it.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7740,6 +7950,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "オールラウンダーとして、彼女に死角はなかった。",
+    "en": "As an all-rounder she left nothing uncovered.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "カードほどの期待には応えられなかった印象",
     "en": "It did not answer the expectations the card carried",
     "files": [
@@ -7764,6 +7984,26 @@
     "en": "The gap in career is plain. Youth has a burst in it that no calculation accounts for, though.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "グラップラーとしての矜持を、最後まで貫いた。",
+    "en": "She held to a grappler's pride right to the end.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "サブミッションの冷徹さが、彼女の強さの核心だった。",
+    "en": "The cold of her submission game was the center of what made her strong.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7820,6 +8060,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "ジュニア、PPV、本戦タイトル——あらゆる栄冠を手にした唯一の女だった。",
+    "en": "The Junior Tournament, the PPV, the promotion title — she was the only one to hold all of them.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメントを制したその日、彼女の名前が{orgName}に刻まれた。",
+    "en": "The day she took the Junior Tournament, her name was written into {orgName}.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント三連覇。その壁を越えた挑戦者は、ついに現れなかった。",
+    "en": "Three straight Junior Tournaments. No challenger ever got over that wall.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "スカウト基準が他団体と違いすぎる。根本的な分析が要る",
     "en": "Their scouting criteria are way off what everyone else uses. Needs analysis from the ground up",
     "files": [
@@ -7844,6 +8114,16 @@
     "en": "A pairing where the difference in style is hard to read. Nobody knows until the lid comes off.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ストライカーとして、彼女はリングに嘘をつかなかった。",
+    "en": "As a striker she never lied to the ring.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -7910,10 +8190,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "スポットライトが当たらない日も、彼女はリングに立ち続けた。",
+    "en": "On the nights the light was somewhere else, she went out and worked anyway.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "セーブデータ自動修復: {changes}",
     "en": "Save data auto-repaired: {changes}",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "タイトルには届かなかった。それでも{orgName}のリングに欠かせない女だった。",
+    "en": "The title stayed out of reach. She was still a woman the {orgName} ring could not do without.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -8010,6 +8310,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "チャンピオンとして迎えた防衛戦が{defenses}度——そのたびに彼女は答えを出した。",
+    "en": "Defense matches taken as champion: {defenses} — and each time she gave an answer.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "チャンピオンのまま退いた女がいた。{orgName}は今もその名を讃える。",
+    "en": "There was a woman who stepped away while still champion. {orgName} still honors the name.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "テクニシャン同士の読み合い。地味に見えるかもしれないが、分かる人には堪らないカードだ",
     "en": "Two technicians reading each other. It may look understated; for the ones who see it, there is nothing better.",
     "files": [
@@ -8024,6 +8344,26 @@
     "en": "Technician against technician. This paper will put it on record that this card tests the eye of the person watching.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "デビューから{seasons}シーズン——その足跡を辿ると、{orgName}の歴史が浮かび上がる。",
+    "en": "A {seasons}-season run from her debut — follow the trail and the history of {orgName} comes up behind it.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "デビューした年に新人王を獲ったとき、この女の未来が見えた気がした。",
+    "en": "When she took Rookie of the Year in her debut season, you felt you could see where she was going.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8250,6 +8590,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "ブロウラーの本能が、彼女のキャリアを彩った。",
+    "en": "A brawler's instinct ran through the whole of her career.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベストバウトに選ばれたあの試合——あれだけで十分だ、と言う人もいる。",
+    "en": "That one match voted best bout — some people will tell you it was enough on its own.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ベストバウトは{player} vs {ai}（試合評価{mq}）。",
     "en": "Best bout: {player} vs {ai}, rated {mq}.",
     "files": [
@@ -8320,10 +8680,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "メディアの場でも、彼女は{orgName}の顔だった。",
+    "en": "In front of the press she was the face of {orgName} too.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "リングで殴り合い、控室で笑い合う",
     "en": "Hitting each other in the ring, laughing in the locker room",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リングの外でも、彼女の存在感は揺るがなかった。",
+    "en": "Away from the ring, she took up just as much room.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8430,6 +8810,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "一度ではなかった。彼女は{titleWins}度、頂点に返り咲いた。",
+    "en": "Once was not the end of it. The title column reads {titleWins}, and every entry there is a climb back to the top.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "一度断ち切れた糸を、結び直した二人",
     "en": "Two who tied a cut thread back together",
     "files": [
@@ -8490,10 +8880,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "一番大事な試合で勝てる——それが彼女の最大の強みだった。",
+    "en": "She won the matches that mattered most. That was the best thing about her.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "一試合が、すべてを語ることがある。彼女の場合がそうだった。",
+    "en": "One match can account for everything. Hers did.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "万年2位の匂いがするんだよなあ…",
     "en": "Getting a real permanent-second-place smell off this one...",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "三年連続でトーナメントを制した——それは強さではなく、支配だった。",
+    "en": "She took the tournament three years running — that is not strength, it is control.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "三度の年間最優秀——ひとつの時代に、これほど輝き続けた選手はいなかった。",
+    "en": "Three Wrestler of the Year awards — no one else stayed that far in front for a whole era.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8694,6 +9124,16 @@
     "en": "Both of them know the other's hand by now, so the quality of the feinting is a different thing altogether.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "二度の年間最優秀。その年の顔が、二度もこの女だった。",
+    "en": "Two Wrestler of the Year awards. Twice over, the face of the season was this woman.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -9104,6 +9544,16 @@
     "en": "The word repair gets handled lightly. In the case of {charA} and {charB} it carried real weight. A relationship that fell silent once over a {years}-year association is breathing again. As a reporter, there are not many repairs I would rather see.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "倒れるたびに立ち上がり、{titleWins}度の戴冠を刻んだ女がいた。",
+    "en": "There was a woman who got up every time she was put down, and left a {titleWins}-reign record behind her.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9821,7 +10271,7 @@
   },
   {
     "key": "団体内の境界が、戦友同士に引かれた。{bestMQ}点を共に作った{charA}と{charB}は、しかし派閥の論理から逃れられない。次のリングで二人が見せるのは、友情か、それとも陣営の矜持か——記者として、いま一番見たい一戦である。",
-    "en": "A line has been drawn inside the promotion, and it runs between comrades. {charA} and {charB} made a {bestMQ} between them, and neither escapes the logic of a faction. What the two of them show in the next ring — friendship, or the pride of a camp. As a reporter, that is the match I most want to see right now.",
+    "en": "A line has been drawn inside the promotion, and it runs between comrades. {charA} and {charB} made a match rated {bestMQ} between them, and neither escapes the logic of a faction. What the two of them show in the next ring — friendship, or the pride of a camp. As a reporter, that is the match I most want to see right now.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -9838,6 +10288,26 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": true
+  },
+  {
+    "key": "団体間抗争の勝ち星が{warWins}。その数字が彼女の本当の値打ちを示す。",
+    "en": "Her win column in interpromotional war reads {warWins}. That number is where her real worth shows.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体間抗争の舞台で輝く女がいた。旗を背負うことを、恐れなかった。",
+    "en": "There was a woman who was at her best on interpromotional ground. Carrying the flag never frightened her.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "圧倒的だ。{rivalName}がどう足掻いても、今季中にこの差は埋まらないだろう。——正直、ここまでやるとは思っていなかった。取材者として不明を恥じる。ほんの少しだけだが。",
@@ -9960,6 +10430,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "大舞台での連覇——彼女は最も大切な瞬間に、最も強かった。",
+    "en": "Back-to-back wins on the big stage — she was at her strongest when it counted most.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "天頂戦へ視線集まる — 特別招待は{invites}",
     "en": "Eyes on Tenchosen — invited: {invites}",
     "files": [
@@ -10024,6 +10504,16 @@
     "en": "Looks safe, but two years out is scary when the top names hit the far side of their peak together. Act now",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "完全制覇。その二文字が彼女のキャリアをすべて語っている。",
+    "en": "A clean sweep. Those two words cover the entire career.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10127,6 +10617,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦{warWins}勝——団体の旗を背負うとき、彼女は別人になった。",
+    "en": "Interpromotional wins: {warWins} — with the promotion flag on her back she became someone else.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦に呼ばれると、彼女は必ず応えた。{warWins}勝がその証だ。",
+    "en": "When the interpromotional call came, she always answered. The win column reads {warWins}.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -10244,6 +10754,26 @@
     "en": "The gap is closing! A bit more and we catch them!",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "年末の大舞台を制した夜、彼女は本物だと証明した。",
+    "en": "The night she won the year-end show, she proved she was the real thing.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "年間最優秀選手に選ばれたとき、彼女はただ静かに頷いた。",
+    "en": "When they named her Wrestler of the Year, she only nodded.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10590,6 +11120,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "打撃の一瞬に、彼女はすべてを込めた。",
+    "en": "Everything she had went into the instant a strike landed.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "打撃の鋭さとは裏腹に、彼女はファンに愛され続けた。",
+    "en": "Her striking was hard, and the crowd loved her all the same.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "技の引き出しが多い同士。どちらが先に相手の穴を見つけるか、知恵比べである",
     "en": "Two with a great deal to draw on. Which of them finds the other's hole first — a contest of wits.",
     "files": [
@@ -10740,6 +11290,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "挑戦者が途絶えることはなかった。それでも彼女は守り続けた。",
+    "en": "The challengers never stopped coming. She kept turning them back anyway.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "挑戦者たちが来るたび、彼女は応えた。{maxSingleReign}度、続けて。",
+    "en": "Every time a challenger came, she answered. {maxSingleReign} in a row.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "控室で{charA}と{charB}を同じ部屋に入れない——これは興行関係者の暗黙のルールになっている。{matches}度の対戦が、その慎重さを必要にした。本紙としては、それでも組まれ続けるリングの上の構図を、ある種の業として見ている。",
     "en": "Not putting {charA} and {charB} in the same room backstage has become an unspoken rule among the people who run the shows. A {matches}-match record made that care necessary. The shape that keeps getting booked in the ring anyway is something this paper reads as a thing the business cannot help doing.",
     "files": [
@@ -10854,6 +11424,16 @@
     "en": "The numbers went past the limit.\nSink this deep and no hand reaches.\nAs an ending for a dream, it is a cold one.\nThis paper does not write sentiment, though. Only the facts stay on the page.",
     "files": [
       "KURODA_GAMEOVER"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "数字が嘘をつかないとすれば、彼女は確かに一度、頂点に手が届いた。",
+    "en": "If the numbers do not lie, then once, at least, she had the top within reach.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -11150,6 +11730,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "新人王——その称号が、長いキャリアの最初の一文字だった。",
+    "en": "Rookie of the Year — that title was the first letter of a long career.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "新王者{winnerName}誕生——{venueName}が揺れた",
     "en": "New champion {winnerName} — {venueName} on its feet",
     "files": [
@@ -11228,6 +11818,16 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": true
+  },
+  {
+    "key": "時代を何度もまたいだ{epithet}の物語。",
+    "en": "{epithet}: the story of a career that ran across more than one era.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "時間切れで決着つかず。消化不良は否めない",
@@ -11900,6 +12500,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "極めの技術は芸術の域に達し、対戦相手に恐れられた。",
+    "en": "Her submission work reached the level of art, and opponents were afraid of it.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "楽屋ですれ違っても、目を合わせない",
     "en": "Passing backstage, their eyes do not meet",
     "files": [
@@ -12410,6 +13020,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "流星のように駆け抜けた{seasons}シーズン。",
+    "en": "A {seasons}-season run, past like a falling star.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "淡々と、しかし距離は縮まらない",
     "en": "Flatly, and the distance does not close",
     "files": [
@@ -12620,6 +13240,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座がなくても、彼女がいるカードには力があった。",
+    "en": "Belt or no belt, a card with her on it had weight.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座が動いた。新王者の手腕次第で、業界の勢力図が変わる可能性がある",
     "en": "The title has moved. Depending on what the new champion can do, the map of the business may change.",
     "files": [
@@ -12630,6 +13260,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座に就いた日の記憶は、{orgName}のファンの中に今も生きている。",
+    "en": "The day she took the belt is still alive in the memory of the {orgName} crowd.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座のベルトを抱えて{toOrg}へ移った元同僚に対し、{fromOrg}の{challengerName}が奪還を宣言した。裏切りへの答えはリングの上で——次の興行のメインで決着がつく。",
     "en": "A former teammate carried the belt with her when she moved to {toOrg}, and {challengerName} of {fromOrg} has declared she is taking it back. The answer to a betrayal gets given in the ring. It settles in the main event of the next show.",
     "files": [
@@ -12637,6 +13277,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座を守ることの難しさを、彼女は体で知っていた。",
+    "en": "She knew what it costs to hold a belt, and she knew it firsthand.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -12780,6 +13430,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "生涯最高の試合——そのスコアは今もファンの記憶に焼き付いている。",
+    "en": "Her career-best match — the rating on it is still fixed in the memory of everyone who saw it.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "登竜門を越えた女——その先に何が待つか、誰もが楽しみにしていた。",
+    "en": "A woman through the gate — everybody wanted to see what was waiting on the other side.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "盛り上がりに欠ける展開だった。カードの相性が悪かったか",
     "en": "It never built. Perhaps a poor pairing on the card",
     "files": [
@@ -12910,6 +13580,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "相手が声を出す前に、勝負はもう終わっていた。",
+    "en": "The match was over before her opponent had made a sound.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "相手の弱点突くカード編成ができるGMかどうかが分水嶺",
     "en": "Whether the GM can book cards that hit their weak spot is where this gets decided",
     "files": [
@@ -12937,6 +13617,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "短いキャリアだったが、その輝きは今も色褪せない。",
+    "en": "The career was short. What she did inside it has not faded.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -13077,6 +13767,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "空を舞う姿と、リングを降りたときの笑顔——どちらも本物だった。",
+    "en": "The shape she cut in the air, and the smile she wore stepping out of the ring — both were real.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "空中に描いた軌跡は、{orgName}の宝だ。",
+    "en": "The lines she drew in the air belong to {orgName} now.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -13230,6 +13940,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "組み合い、制する——それが彼女のすべてだった。",
+    "en": "Tie up, take control — that was the whole of her.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "組み技の重みと人柄の温かさ——{orgName}のファンが愛したのは、そのどちらでもあった。",
+    "en": "The weight of her grappling and the warmth of the person — {orgName} fans loved both, and never separated them.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "経験が勝つか、勢いが勝つか。プロレスの永遠のテーマだ",
     "en": "Experience or momentum. The oldest question in this business.",
     "files": [
@@ -13370,6 +14100,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "荒々しいファイトと、それに似合わない人望——{orgName}のファンは知っていた。",
+    "en": "A rough fighter carrying a regard that did not match the style — {orgName} fans knew it.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "荒々しくも力強いファイトで、会場を沸かせ続けた。",
+    "en": "Rough, strong work that kept the building loud.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "荒れたロッカールーム、悪化の主因",
     "en": "A locker room gone bad, and the main cause of it",
     "files": [
@@ -13407,6 +14157,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "荒削りでいい——観客が熱くなるなら、それでいい。そんな女だった。",
+    "en": "Let it be rough — if it gets the crowd hot, that is enough. She was that kind of woman.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -13557,6 +14317,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "観客が息を飲んだ試合が何度あっただろう。記録がその数を教えてくれる。",
+    "en": "How many nights did a crowd stop breathing? The record keeps the count.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -13790,6 +14560,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "誰にも捉えられないスピードで、観客を魅了し続けた。",
+    "en": "Nobody could catch her, and the crowd never got tired of watching.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "誰も彼女から王座を奪えなかった。{orgName}の歴史がそれを証明している。",
+    "en": "Nobody ever took the belt off her. The history of {orgName} is there as proof.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "課題だらけの大会。次こそは、と言い続けるのもそろそろ限界だ",
     "en": "A show made of problems. Saying next time, next time, is close to running out.",
     "files": [
@@ -13944,6 +14734,16 @@
     "en": "A best of {bestMQ} all told. Not a bad number. And the air between the two of them stays frozen the whole while. This paper will leave it there.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "通算{defenses}度の防衛——この数字は{orgName}の最高記録として残り続ける。",
+    "en": "Career defenses: {defenses} — the figure still stands as the {orgName} record.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -14270,6 +15070,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "鋭い打撃で幾多の名勝負を生み出した闘士だった。",
+    "en": "A fighter whose sharp striking produced one good match after another.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "長い王座の旅だった。{orgName}のファンはその旅に何度も息を飲んだ。",
+    "en": "It was a long run with the belt. {orgName} crowds held their breath on it more than once.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "長くはなかった。だが、{orgName}のファンは忘れない。",
+    "en": "It was not long. {orgName} crowds have not forgotten it.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "長く続いた{org}内の対立は、{winFaction}と{loseFaction}の決着戦で一旦の幕引きとなった。完全な和解ではないが、これ以上の消耗を避けるという意味では、双方にとっての落とし所だったのかもしれない。",
     "en": "The long feud inside {org} came to a stop, for now, in the decider between {winFaction} and {loseFaction}. It is not a full reconciliation. As a way of keeping both sides from wearing each other down further, it may have been where they were always going to land.",
     "files": [
@@ -14370,6 +15200,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "関節技の冷徹さとは別に、観客の心を掴む何かが彼女にはあった。",
+    "en": "Her submissions were cold work. Something else in her took hold of the crowd.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "隠れた名勝負。メインに引けを取らない内容だった",
     "en": "A great match nobody was looking for. It gave nothing away to the main",
     "files": [
@@ -14381,7 +15221,7 @@
   },
   {
     "key": "離脱があった夜の控室の沈黙を、本紙は覚えている。{charA}と{charB}は、しかし憎み合ってはいなかった。{bestMQ}点を共に作った二人にとって、別の旗の下に立つことは「裏切り」ではなく「選択」だったのだろう。それでも次にリングで会う夜は、特別なものになる。",
-    "en": "This paper remembers the silence in the locker room the night of the departure. {charA} and {charB} were not hating each other, though. For two who made a {bestMQ} together, standing under different flags was a choice rather than a betrayal. The night they next meet in a ring will be a particular one all the same.",
+    "en": "This paper remembers the silence in the locker room the night of the departure. {charA} and {charB} were not hating each other, though. For two who made a match rated {bestMQ} together, standing under different flags was a choice rather than a betrayal. The night they next meet in a ring will be a particular one all the same.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -14524,6 +15364,16 @@
     "en": "They will not look at each other, and it gets booked anyway",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "飛び続けた。それが彼女の答えだった。",
+    "en": "She kept flying. That was her answer.",
+    "files": [
+      "HOF_BIOGRAPHY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,

@@ -4127,7 +4127,7 @@
   },
   {
     "key": "{outlet}からの{label}オファー",
-    "en": "A {label} offer from {outlet}",
+    "en": "{label} offer from {outlet}",
     "files": [
       "ui-common.js"
     ],

@@ -422,7 +422,7 @@
     "{org}王座": "{org} title",
     "{org}興行　遠征試合結果": "{org} show — Away match results",
     "{org}（{n}名）": "{org} ({n})",
-    "{outlet}からの{label}オファー": "A {label} offer from {outlet}",
+    "{outlet}からの{label}オファー": "{label} offer from {outlet}",
     "{period}の給与支払い": "Payroll for {period}",
     "{plan}が組まれた。{a}と{b}は手を組んで観客を沸かせた。": "{plan} was booked. {a} and {b} teamed up and brought the house down.",
     "{plan}が組まれる。両派閥 勢い <strong>+5〜+8</strong>／メンバー間 絆 <strong>+1〜+3</strong>": "{plan} will be booked. Both factions' momentum <strong>+5 to +8</strong> / member-to-member bond <strong>+1 to +3</strong>",
