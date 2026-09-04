@@ -56,9 +56,10 @@
 
 UI文字列(§5)とは別に、data.jsのテンプレ表(ニュース記事・新聞・戦績ログの完全文テンプレート)を対象にした並行パイプライン。台帳・生成物とも§5とは別ファイルで、`WM_I18N.addDict()`は複数回呼んでも既存辞書へマージされる(src/i18n.js実装)ため読み込み順は問わない。
 
-- **対象テーブル(data.js、14個)**: `GAMELOG_TEMPLATES` `FINISH_TEXT` `PPV_SUMMIT_HEADLINE_TEMPLATES` `PPV_SUMMIT_MATCHPART_TEMPLATES` `PPV_SUMMIT_HPNOTE_TEMPLATES` `PPV_UNDERCARD_HEADLINE_TEMPLATES` `PPV_UNDERCARD_BODY_TEMPLATES` `AI_INJURY_RETIREMENT_TEMPLATES` `AI_CONTRACT_DEPARTURE_TEMPLATES` `CROSS_WAR_RESULT_TEXT` `LEAGUE_ELEVATION_TEXT` `NEWSPAPER_SUB_TEMPLATES` `NEWS_HEADLINE_TEMPLATES` `NEWS_TICKER_TEMPLATES`。`PPV_SUMMIT_VICTORY_LINES`(選手個人のセリフ)は対象外(P5のセリフ層で扱う)
+- **対象テーブル(data.js、15個)**: `GAMELOG_TEMPLATES` `FINISH_TEXT` `PPV_SUMMIT_HEADLINE_TEMPLATES` `PPV_SUMMIT_MATCHPART_TEMPLATES` `PPV_SUMMIT_HPNOTE_TEMPLATES` `PPV_UNDERCARD_HEADLINE_TEMPLATES` `PPV_UNDERCARD_BODY_TEMPLATES` `AI_INJURY_RETIREMENT_TEMPLATES` `AI_CONTRACT_DEPARTURE_TEMPLATES` `CROSS_WAR_RESULT_TEXT` `LEAGUE_ELEVATION_TEXT` `NEWSPAPER_SUB_TEMPLATES` `NEWS_HEADLINE_TEMPLATES` `NEWS_TICKER_TEMPLATES` `RETIREMENT_TEMPLATES`(**P6-10で追加**。通常引退記事のティア別テンプレ{L,A,B,C}×3変種×headline/body=24本。兄弟の`AI_INJURY_RETIREMENT_TEMPLATES`は最初から対象だったのに本表だけが一覧から漏れており、ENでも引退記事がJAのまま出ていた — §11-5の`EMOTION_TEXTS`と同型の構造穴。消費点は`Engine.newspaper._fillRetirementTemplate(t, d, dict)`でP6-10にdict-opts化済み)。`PPV_SUMMIT_VICTORY_LINES`(選手個人のセリフ)は対象外(P5のセリフ層で扱う)
 - **対象テーブル追加(kuroda-text.js、13個。P4-5で追加)**: `KURODA_HEADLINES` `KURODA_EDITORIAL` `KURODA_WAR_RECORD` `KURODA_MATCHUP_FLAVOR` `FAN_OPINIONS` `NEWSPAPER_DIGEST_COMMENTS` `KURODA_SHOW_RATING` `KURODA_PREVIEW` `KURODA_SPOTLIGHT` `KURODA_NEWS_COMMENT` `KURODA_RELATION_NARRATIVE` `KURODA_CRISIS` `KURODA_GAMEOVER`。`NEWSPAPER_DIGEST_COMMENTS`/`FAN_OPINIONS`は指示書上「data.jsにあれば」だったが実体はkuroda-text.jsのみに存在(2026-09-04確認)。`FAN_HANDLES`(ファンハンドル名の識別子文字列)は日本語を含まないため対象外。`KURODA_PREVIEW`は消費点(呼び出し箇所)がsrc/*.jsのどこにも見つからない死蔵テーブル(docs/archive参照では過去に配線予定だった形跡があるが未実装のまま)— 台帳には抽出するが実配線なし
 - **対象テーブル追加(app.js、2個。P4-5で追加)**: `App._NEWSPAPER_HEADLINES` `App._NEWSPAPER_ARTICLES`(自団体新聞の見出し/本文プール)。App.のプロパティでトップレベルconstではないため、`test/i18n-extract-templates.js`が波かっこ深さカウントでapp.jsソースから該当オブジェクトリテラルのテキスト範囲だけを切り出し、`eval()`で単独評価して取得する(app.js全体を読み込まない。DOM依存の副作用を避けるため)
+- **対象テーブル追加(management.js、2個。P6-10で追加)**: `Engine.flavor.MAGAZINE_HEADLINES` `Engine.flavor.TV_HEADLINES`(雑誌取材・TV出演フレーバーイベントの見出しプール各6本)。app.jsの2プールと同じ理由(トップレベルconstではない)で、抽出器の`extractArrayLiteralProp()`(`extractAppObjectLiteral`の**角かっこ版**)がmanagement.jsソースから当該配列リテラルの範囲だけを切り出して単独評価する(management.js全体は読み込まない)。台帳の`files`欄は`management.js:MAGAZINE_HEADLINES` / `:TV_HEADLINES`
 - **`test/i18n-extract-templates.js`**: 上記(data.js 14個 + kuroda-text.js 13個 + app.js 2個)テーブルの値を再帰ウォーカー(文字列/配列/オブジェクト/関数値の任意のネストを辿り、訳出可能な文字列の葉を全て拾う。関数値の扱いは次項)で走査し、`i18n/template-ledger.json`(配布対象外・manifest未登録)を生成する。台帳スキーマは§5のui-ledgerと同一(`{ key, en, files, count, hasPlaceholder, hasProperNoun }`)だが、`files`欄は「参照テーブル名」を意味する(§5では「ソースファイル名」)。data.js/kuroda-text.jsは`test/helpers/load-game.js`の`loadAsGlobal`(const→var変換+vm実行)で読み込む(module.exports未登録のテーブルも取得できる。ソースファイル自体は変更しない)。**台帳の保持マージ(P4-5で追加、P5のdialogue-ledgerと同じ作法)**: 既存台帳のen列(非空)は再生成時に上書きしない(新規行にのみ空文字のenを書く)
 - **関数値(`d => \`...${d.x}...\`\`)の正規化(P4-5で追加)**: kuroda-text.js/app.jsのプールの多くは、値がJSテンプレートリテラルで補間まで済ませる関数であり、data.jsの14テーブルが使う「`{name}`プレースホルダ文字列」とは形が異なる。素直には辞書キー(=補間前のJA原文)を取れないため、**`src/kuroda-text.js`に追加した`kurodaTemplateOf(fn)`**が関数ソース(`fn.toString()`)を軽量パースし、`${d.prop}` / `${d.a.b}` / `${d.a.b()}`(引数なしメソッド呼び出しのみ)を`{propName}`形式のプレースホルダへ機械的に正規化する(`kurodaParamName(path)`が`"a.b"→"aB"`のようにcamelCase化)。三項演算子で分岐する関数本体全体・入れ子テンプレートリテラル・`Math.abs()`等の計算式を含む関数は正規化できない(null)ため、台帳に載らず「保留」として`docs/i18n-p4-5-kuroda-holdout-audit.md`(抽出器が実行のたびに再生成)に集計される。0引数関数(補間なしの固定文)は`fn()`の戻り値をそのままJA原文として扱う。**プール要素は「分岐を関数本体に書かない」のが規約(P4-7で確立)** — 正規化できない形はfail-openでENでもJA文が出るため、条件分岐は次の2手のどちらかでデータ側へ出す: (a)**条件ごとに独立プールへ分割し、選択を消費点または薄いヘルパへ寄せる**(先例: `KURODA_SPOTLIGHT`の`star`を総合力帯ごとに`starAce`/`starSolid`/`starPopular`へ分割し、帯の解決を`kurodaSpotlightStarKey(ovr)`に集約)、(b)**`kurodaVariants([{when, text}, …])`でラップする**(`when`省略の枝がelse相当。返り値は従来どおり呼び出し可能な関数で、`entry.pickVariant(d)`が枝を返し、`entry.variants`が全枝を列挙する。`kurodaText`は枝を解決してから通常のプール要素として訳出し、抽出器の`walkStrings`は全枝を台帳へ載せる。`toString()`は全枝のソースを連結して返す — ui-render.jsの`_filterPraiseByMQ`等がプール要素の`fn.toString()`を正規表現で検査して本文を選別しているため)。**どちらの手でも配列長を変えないこと**(`Engine.rng.pick`が引く添字と`_npRivalryPairIndex % pool.length`が長さに依存しており、長さが変わるとJA出力が変わる)。計算式(`Math.abs()`等)は消費点で先に算出して`d`へ渡す(先例: `KURODA_WAR_RECORD.loseStreak`の`{streakAbs}`)。P4-5時点の保留16件はP4-7(2026-09-04)でこの規約に沿って全件解消され、**保留は0件**になった。**`kurodaText(entry, d, dict)`**が唯一の消費入口: `entry`(関数 or 文字列)を`kurodaTemplateOf`で正規化できればプレースホルダ値を`kurodaEvalPath(d, path)`で解決して`dict(template, params)`(=`WM_I18N.t`と同じ`(text, params)`契約)を呼び、正規化できない(または`dict`省略時)は従来通り`entry(d)`を直接呼ぶ(fail-open。適用前と挙動が完全に同一 = ja出力1バイト不変)。呼び出し元(ui-render.js/app.js)は`kurodaText(pool要素, d, WM_I18N.t)`の形で呼ぶだけでよく、Engine層は一切関与しない(消費点は全てUI層 — ui-render.js/app.jsのみ)
 - **`test/i18n-build-template-dict.js`**: 台帳の`en`列が非空の行だけを対象に機械検査(§5のD-B4と同じプレースホルダ完全性/重複キー/日本語残り検出)に加え、**黒田禁止語grep**(docs/en-kuroda-style-draft-v0.1.md §3-6のタブロイド語彙・慨嘆の暴走・スポーツ面常套句・翻訳調等9パターン)を通した上で`src/lang-en-templates.js`(`WM_I18N.addDict({...})`)を生成する。違反時はexit 1で書き換えない
@@ -194,15 +195,55 @@ fast-forward後の`npm run test:ui:walkthrough:en`(seed42)でi18n-miss 16件(指
 
 (B)が0件だったため「Bは全部潰す」は該当作業なし(=既に0)。EN走破再実行での実測は§11-6参照。
 
-### 11-5. 新規発見4件(未着手・次バッチ検討事項)
+### 11-5. 新規発見4件(**うち3件はP6-10で解決済み**)
 
-`「${`の全数確認・i18n-miss追跡の過程で、季総括カード以外にも構造的に未配線の箇所が4件見つかった。いずれも**Engine関数がdict/opts自体を持たない**か**生成内容がG(セーブ)へ焼き込まれる持続的コンテンツ**であり、単純な「「」の言語別化」では直せない(周囲の文自体が生JAのままEN画面に残るため、引用符だけ直しても実益が無い)。指示書のスコープ外と判断し、実装には着手していない。
+`「${`の全数確認・i18n-miss追跡の過程で、季総括カード以外にも構造的に未配線の箇所が4件見つかった。いずれも**Engine関数がdict/opts自体を持たない**か**生成内容がG(セーブ)へ焼き込まれる持続的コンテンツ**であり、単純な「「」の言語別化」では直せない(周囲の文自体が生JAのままEN画面に残るため、引用符だけ直しても実益が無い)。P6-8のスコープ外として起票し、**P6-10(2026-09-04)で1・3・4を実装・英訳した**(実装詳細は§12)。
 
-1. **`Engine.flavor`のMAGAZINE_HEADLINES/TV_HEADLINES(management.js:3821-3836、計12テンプレ)**: 雑誌取材・TV出演イベント(週1件・人気選手/王者向けフレーバーイベント)の見出しが`(name) => \`📰 ... 「${name}、...」\``という関数プールで、`Engine.flavor.check(state, rng)`がdict/optsを一切持たずに直接文字列化する。表示点(app.js `showEventPopup({message: ev.headline, ...})`)もt()を通さない。プレイヤーに毎週見える可能性のあるポップアップだが、Engine層の関数シグネチャ変更(dict-opts追加)+テンプレの正規化(`kurodaTemplateOf`的な処理か、テーブルをdata.js/kuroda-text.js側へ移設)が要る中規模タスク
-2. **gameLog文字列エントリ内の「」(management.js `advanceWeek`内、6箇所)**: `events.push(\`🏆 「${s.orgName}」が...\`)`等は、アーキテクチャ規約2(`specs/i18n-runtime-spec-v1.0.md` §2-4「旧文字列エントリは無変換で共存」)が定める**gameLogのレガシー文字列形式**そのもの(`G.gameLog`へ直接concatされ永続化される)。この形式は仕様上EN化の対象外(新形式`{type,data}`への移行はgameLog全体の再設計を要する別工程)と判断し、「」の言語別化だけを単独で行っても文全体はJAのまま残るため見送った
-3. **`Engine.awards.generateEpithet`(殿堂入り選手の異名、management.js)**: `hofEntry.epithet`/`h.epithet`として**生成時にG(殿堂入りエントリ)へ永続化される**JA文字列で、dict/opts無し。ui-render.js(殿堂detail modal、10319行)とmanagement.js(殿堂入り引退の特別号記事、31221行)の両方で「」ハードコードごしに消費されるが、いずれも中身が100%生JAのため引用符だけ直しても意味が無い。`Engine.awards.composeHallOfFameRetirement`自体もdict/optsを持たない未配線関数
-4. **`EMOTION_TEXTS`(ui-render.js、`getEmotionText`が参照するローカル定数)**: 相関図モバイル版(`rm-mobile-emotion`、13050行)が表示する関係性の一人称セリフ表(trust/rival_friend/destined_rival等12カテゴリ×7属性≈84行)。ui-render.js内のローカル`const`でLINES/DIALOGUE命名規則にも合致せず、§5/§6/§9いずれの抽出パイプラインからも見えない**4件目の構造的欠落**(§10-2の3件と同型)。セリフ量・性質(キャラの一人称)から見て本来はdialogue-ledgerの管轄であり、バッチ⑯の領分と判断し未着手
+1. **✅解決(P6-10)** — **`Engine.flavor`のMAGAZINE_HEADLINES/TV_HEADLINES(management.js、計12テンプレ)**: 雑誌取材・TV出演イベント(週1件・人気選手/王者向けフレーバーイベント)の見出しが`(name) => \`📰 ... 「${name}、...」\``という関数プールで、`Engine.flavor.check(state, rng)`がdict/optsを一切持たずに直接文字列化していた。表示点(app.js `showEventPopup({message: ev.headline, ...})`)もt()を通さない。→ プレースホルダ文字列化+`check(state, rng, opts)`のdict-opts化+抽出器への追加で解決(§12-1)
+2. **見送り継続** — **gameLog文字列エントリ内の「」(management.js `advanceWeek`内、6箇所)**: `events.push(\`🏆 「${s.orgName}」が...\`)`等は、アーキテクチャ規約2(§2-4「旧文字列エントリは無変換で共存」)が定める**gameLogのレガシー文字列形式**そのもの(`G.gameLog`へ直接concatされ永続化される)。この形式は仕様上EN化の対象外(新形式`{type,data}`への移行はgameLog全体の再設計を要する別工程)と判断し、「」の言語別化だけを単独で行っても文全体はJAのまま残るため見送った。**P6-10でも同じ判断**(むしろ§12-1で「gameLogへはJAを積み続ける」ことを明示的な設計として固めた)
+3. **✅解決(P6-10)** — **`Engine.awards.generateEpithet`(殿堂入り選手の異名、management.js)**: `hofEntry.epithet`/`h.epithet`として**生成時にG(殿堂入りエントリ)へ永続化される**JA文字列で、dict/opts無し。ui-render.js(殿堂detail modal)とmanagement.js(殿堂入り引退の特別号記事)の両方で「」ハードコードごしに消費されるが、いずれも中身が100%生JAだった。`Engine.newspaper.composeHallOfFameRetirement`自体もdict/optsを持たない未配線関数だった。→ 永続値は生JAのまま据え置き、表示点で引く`Engine.awards.epithetText()`の新設+`composeHallOfFameRetirement`のdict-opts化で解決(§12-2/§12-3)
+4. **✅解決(P6-10)** — **`EMOTION_TEXTS`(ui-render.js、`getEmotionText`が参照するローカル定数)**: 相関図が表示する関係性の一人称セリフ表(13カテゴリ×7属性=**91行**)。ui-render.js内のローカル`const`でLINES/DIALOGUE命名規則にも合致せず、§5/§6/§9いずれの抽出パイプラインからも見えない**4件目の構造的欠落**(§10-2の3件と同型)。→ dialogue側の抽出器・台帳は触らず`i18n/ui-ledger.json`へ`kept:true`で91行を追加し、唯一の消費入口`getEmotionText()`でt()を通して解決(§12-4)
 
 ### 11-6. 検証
 
 `node --check`(battle-anim.js/tag-battle-main.js/app.js/ui-render.js/management.js/lang-en.js)全OK。`node test/ja-golden.js`基準と完全一致(hash=6b3d05c8...)。`node test/i18n-build-dict.js`台帳3,321キー全訳。`npm test`260/260 green(newspaper-front-v3-test.js/u5-winloss-safety-net-test.jsの2ファイルへ`_quoteVal`のjaスタブを追加)。`node test/auto-sim.js 20 42` ALL CLEAR(semantic fingerprint 37bbd0cd、P6-7時点と同一)。
+
+## 12. Stage B P6-10 — 未配線3系統(雑誌/TV見出し・殿堂入り異名・EMOTION_TEXTS)の配線と英訳(2026-09-04追加)
+
+§11-5が起票した4件のうち3件(1・3・4)を実装・英訳した。訳出合計251行(template-ledger 36 / ui-ledger 215)。
+
+### 12-1. `Engine.flavor` のフレーバー見出し(dict-opts + gameLogはJA固定)
+
+- **関数プール → `{name}` プレースホルダ文字列**へ移行(JA出力1バイト不変)。**配列の並び順を変えないこと** — `Engine.rng.int(rng, 0, len-1)`が引く添字が変わるとJA出力が変わる
+- `Engine.flavor.check(state, rng, opts)`。`_headline(tpl, params, opts)`が**PH置換前に**`dict(tpl, params)`を通し、`_fillHeadline(tpl, params)`がJA充填のみを行う。`opts.dict`未指定(auto-sim / ja-golden / app.js:10166の`previewTick`)のフォールバックは「翻訳しないが**充填はする**」形にすること — 単純な`(s)=>s`だと`{name}`が生で残る(§6 `generateTicker`と同じ落とし穴)
+- **gameLogへは生JA(`ev.headlineJa`)を積む**。`tickWeek`の`events.push(\`${headline}（${fighterName} 人気+${popGain}）\`)`はレガシー文字列エントリ(§2-4)で周囲の装飾がJAのため、見出しだけENにすると1行の中で言語が混ざる。`check()`が`headline`(dict適用済み・ポップアップ表示用)と`headlineJa`(JA充填のみ・gameLog用)の**両方**を返し、tickWeekは`ev.headlineJa || ev.headline`で読む(旧セーブ互換)。**セーブに書く値は不変**
+- 台帳: `test/i18n-extract-templates.js`の`MANAGEMENT_FLAVOR_PROPS` + `extractArrayLiteralProp()`(§6参照)
+
+### 12-2. 殿堂入り異名は「永続値はJA・表示点で引く」
+
+- 生成側(`generateEpithet`)は**無改修**。`hofEntry.epithet`はG(殿堂入りエントリ)へ生JAで永続する(D-P6-4)
+- **`Engine.awards.epithetText(epithet, dict)`**(management.js、純粋関数)が表示用変換の唯一の入口。`_EPITHET_TEMPLATES`で唯一プレースホルダを持つ`{n}人切り`は`_resolvePlaceholders`が生成時点で数値を埋めるため、保存値`"23人切り"`から`/^(\d+)人切り$/`で数値を読み戻し、テンプレのキー`{n}人切り`で辞書を引き直す。未知の値はfail-open
+- UI層は**`_epithetLabel(epithet)`**(ui-common.js、`_quoteVal`直後)が`Engine.awards.epithetText(ep, WM_I18N.t)`を呼ぶだけ(正規化ロジックを二重実装しない)
+- **表示箇所は2箇所のみ**(2026-09-04 grep全数確認): `ui-render.js:showHofDetail`(殿堂詳細モーダル。`── 「{epithet}」──`をui-ledgerキー化)と`management.js:composeHallOfFameRetirement`(新聞特別号)。殿堂リストのカード・選手詳細・年代記に異名は出ていない。`generateBiography({...h, epithet})`へは**生JAのepithetを渡したまま**(語り文自体が未英訳のため。§12-5)
+- 台帳: `i18n/ui-ledger.json`へ`kept:true`+`note`で111行(`新人王`は既訳を再利用)
+
+### 12-3. `composeHallOfFameRetirement` のdict-opts化 + `_wmFillWithDict`
+
+- `composeHallOfFameRetirement(d, hofEntry, dict)`。呼び出し元は`Engine.newspaper.generate()`内の2箇所のみで、いずれもgenerateのローカル`dict`を渡す
+- 実績の列挙(`achievement.join('、')`)は**分岐ごとの完全文テンプレ4本**へ分解した(構造規約3「断片連結禁止」。JA出力は連結時と同一)
+- 見出しキー`{name}、殿堂入り——{org}の一時代に幕`は`ui-render.js:7845`(殿堂入りティッカー)と**同一キーで既訳を共有**するため、パラメータ名を`{orgName}`ではなく`{org}`に揃えてある。levelLabel 3種も既訳を再利用
+- `newsData.epithet`は**保存値として生JAのまま**返す
+- **新設ヘルパー`_wmFillWithDict(dict, tpl, params)`**(management.js、`_wmNewsStamp`の直前): テンプレを**PH置換前に**dictへ通してから`fillTemplateVars`で残PHを埋める冪等な二段構え。`WM_I18N.t`(2引数・名前辞書変換つき)でも、Engine内フォールバック`(s)=>s`(1引数)でも壊れない。P6-8が`_buildPpvSummitStory`にローカルで書いた`_quoted`と同じ問題への恒久版で、**Engine内でテンプレ+paramsを扱う新規コードはこれを使う**
+
+### 12-4. `EMOTION_TEXTS` は消費入口1点でt()
+
+- 配線は**唯一の消費入口`getEmotionText()`(ui-render.js)で1回だけ**。呼び出し元3箇所(モバイル相関図カード / 比較ビューA→B / B→A)は無改修 — **呼び出し側で改めてt()に包み直さないこと**(二重t()がi18n-missを汚染する。§9「二重t()適用は無害ではなかった」)
+- モバイルカードの`「${emotion}」`は`_quoteLine()`へ(ENでは引用符を落とす。§10)
+- 台帳は`i18n/ui-ledger.json`へ`kept:true`+`note`で91行。**dialogue-ledger側の抽出器・台帳は使っていない**(P6-10時点でバッチ⑯が並行作業中だったため)。将来テーブルを整理するなら、セリフの性質からは`test/i18n-extract-dialogue.js`の`EXTRA_INCLUDE`へ移すのが本筋
+- 英訳は`docs/en-tone-bible-draft-v0.1.md` §2の**属性レシピ準拠**。EMOTION_TEXTSは13カテゴリ×7属性の軸を持つのでstandard一律にはしていない
+
+### 12-5. P6-10で新たに見つかった穴(未着手・次バッチ検討事項)
+
+1. **`Engine.awards.generateBiography`(殿堂入り選手の語り文、management.js)**: 導入文6分岐×3 + 核心文17分岐×2〜3 + 余韻文(trust/media/style別)= **約82文**を連結した1本の文字列を`entry.biography`としてG(殿堂入りエントリ)へ**永続化**する。異名と同じ「永続JA」族だが、**連結後の完成文が保存される**ため異名のような「表示点で辞書を1回引く」形が使えない(辞書キーは分解前の各文であり、完成文と一致しない)。EN化するなら`generateBiography(entry, dict)`をdict-opts化した上で、**表示点で`h.biography`を使わずに再生成する**(pickがidとseasonsの決定的関数なのでrngは不要)分岐が要る。殿堂詳細モーダルで異名の真下に出るため、異名だけENになった今は同一モーダル内でJA/ENが混ざる状態
+2. **`RETIREMENT_TEMPLATES`の穴はP6-10で解消済み**(§6の対象テーブル一覧に追加)。同様に「兄弟表は対象なのに本表だけ漏れている」型が他に無いか、次に抽出器へ触るバッチで`data.js`のトップレベル`*_TEMPLATES`定数を機械列挙して対象一覧と突き合わせること
+3. **相関図の選手名pn()ロングテール**: P6-10でモバイル版の5箇所を配線したが、デスクトップ版(`rm-compare-*`等)や派閥オーバーレイには未通過の`${c.name}`が残る(D-P6-3の残≈634件の一部)

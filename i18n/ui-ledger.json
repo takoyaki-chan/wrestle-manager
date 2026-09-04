@@ -320,6 +320,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "10年選手",
+    "en": "Ten Years in the Ring",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "12週",
     "en": "12 weeks",
     "files": [
@@ -1111,6 +1123,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "MVP",
+    "en": "MVP",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "MVP2 ／ 新人王1.5 ／ ベストマッチ1 ／ メディア功労賞1.5",
     "en": "MVP 2 / Rookie of the Year 1.5 / Best Match 1 / Media Merit Award 1.5",
     "files": [
@@ -1139,6 +1163,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "MVP二冠",
+    "en": "Two-Time MVP",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "OVR {ovr}",
@@ -1324,6 +1360,30 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "PPVの申し子",
+    "en": "Born for PPV",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "PPVの記憶",
+    "en": "Remembered on PPV",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "PPV優勝",
@@ -1940,6 +2000,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "{epithet}{name}が現役を退き、{org}の殿堂にその名を刻んだ。{seasons}シーズンにわたる歩みは、ひとりの選手の経歴にとどまらず、団体そのものの歴史の一部となった。｜{recordLine}｜リングを去っても、その試合、その言葉、その背中は記録と記憶の中に残る。{org}は功績をたたえ、{name}を{levelLabel}入りとして永く顕彰する。",
+    "en": "{epithet}{name} has stepped away from the ring, and her name is now cut into the {org} Hall of Fame. The {seasons}-season walk belongs not only to one wrestler's record but to the history of the promotion itself.｜{recordLine}｜She has left the ring, but the matches, the words, and the way she carried herself stay in the record and in memory. {org} honors that work and will keep {name} enshrined in the {levelLabel} for good.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
+  },
+  {
     "key": "{factionA}と{factionB}、合同企画の打診が出ています。",
     "en": "There is a proposal for a joint project between {factionA} and {factionB}.",
     "files": [
@@ -2229,6 +2301,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{levelLabel}・引退特別号",
+    "en": "{levelLabel} · retirement special",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
   },
   {
     "key": "{level}。その功績を永久保存版で振り返る",
@@ -3564,6 +3648,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "{n}人切り",
+    "en": "{n} Turned Away",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "{n}件",
     "en": "{n}",
     "files": [
@@ -4138,6 +4234,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズンの現役生活に区切り。引退と同時に{levelLabel}へ",
+    "en": "An end to the {seasons}-season career, with {levelLabel} induction on the same day",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
   },
   {
     "key": "{season}-{week}号",
@@ -4792,6 +4900,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "……あいつは、いねえもんとして扱ってる",
+    "en": "...Far as I'm concerned, she isn't there.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "……あの方のことは、生涯、許すつもりはございません",
+    "en": "...I have no intention of forgiving that person for as long as I live.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "……いなければ、今の自分はいない。だからこそ、倒す",
+    "en": "...Without her, I would not be this. That is exactly why I beat her.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "……この借り、必ず返してやる",
     "en": "...I will pay this back. Count on it.",
     "files": [
@@ -4820,6 +4964,66 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "……別に気にしてねーし。してねーけど、目に入んだよ",
+    "en": "...Not like I care. I don't, but she keeps ending up in my line of sight.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "……同じ場にいるだけで、耐えがたいのです",
+    "en": "...Simply being in the same place as her is more than I can bear.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "……失礼ですが、同じ土俵という気にはなれません",
+    "en": "...Forgive me, but I can't think of us as standing on the same ground.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "……正直、近くにいられると気が休まりません",
+    "en": "...Honestly, I can't relax with her nearby.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "……申し訳ありませんが、お近づきになりたくはありません",
+    "en": "...I'm sorry, but I would rather not get any closer to her.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "……覚えてなさいよ。次は絶対に、私が勝つ",
@@ -5138,6 +5342,16 @@
   {
     "key": "⏳{n}週後",
     "en": "⏳ in {n} weeks",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "── 「{epithet}」──",
+    "en": "── \"{epithet}\" ──",
     "files": [
       "ui-render.js"
     ],
@@ -6601,6 +6815,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "「{epithet}」と呼ばれた",
+    "en": "Known as \"{epithet}\", ",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
+  },
+  {
     "key": "「{line}」",
     "en": "\"{line}\"",
     "files": [
@@ -6821,6 +7047,150 @@
     "hasProperNoun": false
   },
   {
+    "key": "あの子だけは、どうしても許せないの。穏やかではいられないわ",
+    "en": "That girl is the one I cannot forgive. I can't stay calm about it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あの子とは、どうしてもそりが合わないの。困ったことに",
+    "en": "She and I simply don't fit. It's a nuisance, really.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あの子とはいつか、決着をつけなければね。楽しみでもあるのよ",
+    "en": "She and I will have to settle it one day. I'm looking forward to that, too.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あの子のおかげで、わたくしも頑張れるの。ありがたい存在ね",
+    "en": "She's the reason I keep pushing. I'm glad she's here.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あの子のことは、はっきりと苦手ね。隠す気もないわ",
+    "en": "That girl and I don't get on, plainly. I'm not going to hide it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あの子のことは、わたくしの中では終わっているの",
+    "en": "As far as I'm concerned, that girl is finished business.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あの方だけは、決して許しませんわ。何があっても",
+    "en": "That one alone I will never forgive. Whatever happens.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あの方とは、お話する気にもなれませんの",
+    "en": "I cannot even bring myself to speak with that person.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あら、誰のこと？……ふふ、知らない人だわ",
+    "en": "Oh? Who is that... hehe. I don't know anyone by that name.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あらあら……まだそのレベルなのね。可愛いこと",
+    "en": "Goodness... still at that level. How sweet.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あー、いたな。それで?",
+    "en": "Ah, right, her. And?",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "あー、いたな。別にどうでもいいけど",
+    "en": "Ah, right, her. Don't really care either way.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "いいえ",
     "en": "No",
     "files": [
@@ -6829,6 +7199,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "いたわね、そういえば。……それだけ",
+    "en": "Oh, right, she's around. ...That's all.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "いぶし銀",
+    "en": "Burnished Silver",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "おかえり",
@@ -6892,6 +7286,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "お名前は存じています。お話する機会は少ないですけれど",
+    "en": "I know her name. We haven't had many chances to talk, though.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "お引き取り願う",
     "en": "Show Her Out",
     "files": [
@@ -6900,6 +7306,54 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "お見かけはしますけれど、特には……",
+    "en": "I do see her about, but nothing in particular...",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "お話できることは、何もございません。失礼します",
+    "en": "There is nothing I can say about her. Excuse me.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "お隣にいてくださると、心が穏やかになりますの",
+    "en": "When she is beside me, my heart is calm.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "お顔は存じているわ。それだけのことね",
+    "en": "I know her face. That's the whole of it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "かつての因縁",
@@ -7365,6 +7819,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "この気持ち、一生消えないと思う。許す気もないし",
+    "en": "I don't think this feeling ever goes away. I have no intention of forgiving her, either.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "この決裁は実行できませんでした",
     "en": "That approval could not be carried out",
     "files": [
@@ -7627,6 +8093,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "ごめんなさいね、あの子は無理。生理的に",
+    "en": "Sorry, but that one I can't do. Something in me refuses.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "ご判断の結果をお伝えします",
     "en": "Here's the outcome of your decision.",
     "files": [
@@ -7719,6 +8197,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "ぜってー負けねえ。でもまあ……いるから燃えんだよ",
+    "en": "No way I'm losing. But yeah... having her around is what fires me up.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "そうねぇ、お名前くらいは存じているかしら",
+    "en": "Let's see... I know her name, at least.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "そっと結束を後押しする",
     "en": "Quietly encourage them to close ranks",
     "files": [
@@ -7769,6 +8271,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "その存在が、私を突き動かしています。必ず、超えてみせます",
+    "en": "She is what keeps me moving. I will get past her, without fail.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "その年の顔",
+    "en": "The Face of That Year",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "そばにいてくれるだけで、なんだか安心する",
+    "en": "Just having her around puts me at ease, somehow.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "たしなめる",
     "en": "Rein them in",
     "files": [
@@ -7789,6 +8327,30 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "ちょっと気になるのよね……何がとは言えないけど",
+    "en": "She interests me a little... I couldn't tell you what it is.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "つい気にかけてしまいます。理由はよくわかりませんが",
+    "en": "I find myself watching out for her. I'm not really sure why.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "つづき",
@@ -7831,6 +8393,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "どういうわけか、あの子のことが気になるのよね",
+    "en": "For whatever reason, that girl stays on my mind.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "どうしても負けたくないんです。強い気持ちがあります",
+    "en": "I really don't want to lose to her. I feel strongly about it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "どうしますか？",
     "en": "What do you do?",
     "files": [
@@ -7839,6 +8425,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "どうにも、お顔を拝見するだけで気が立ちますの",
+    "en": "Somehow, merely seeing her face puts me on edge.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "どう介入しますか？",
@@ -7933,6 +8531,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "なぜかしら……気にかかって仕方がありませんの",
+    "en": "Why is it, I wonder... She is on my mind and I cannot help it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "なんかね、無性にカチンとくるのよ。理由は知らない",
+    "en": "Something about her just sets me off. No idea why.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "なんだろう、目で追ってしまう。気にしてないと言えば嘘になる",
+    "en": "I don't know why, my eyes follow her. I'd be lying if I said I wasn't curious.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "なんという試合だ…！今夜この瞬間を見られた人は幸せ者です！",
     "en": "What a match...! Anyone who got to witness this moment tonight is a lucky one!",
     "files": [
@@ -7943,6 +8577,18 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "ねえ、近寄らないでくれる？……本気で",
+    "en": "Listen — don't come near me. ...I mean it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "の指導について",
@@ -7985,6 +8631,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "はっきり言って、好きじゃない。関わりたくもない",
+    "en": "Plainly, I don't like her. I don't want anything to do with her.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "ひとつ戻る",
     "en": "Back One Step",
     "files": [
@@ -7993,6 +8651,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "ぶっ潰す。マジでぶっ潰す。それしかねえ",
+    "en": "I'm crushing her. I mean it. That's the whole plan.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "への引き抜き交渉を開始します。",
@@ -8023,6 +8693,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "まあ、知ってはいるけど……それだけかな",
+    "en": "I mean, I know who she is... and that's about it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "まだキャリア記録がありません",
@@ -8206,6 +8888,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "わたくしと並ぶには、まだ早うございますわ",
+    "en": "It is far too early for her to stand beside me.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "わたくしの視界には、入れておりませんの",
+    "en": "I do not permit her into my field of view.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "わだかまりが残る",
     "en": "Something still lingers",
     "files": [
@@ -8317,6 +9023,18 @@
     "count": 5,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "エースキラー",
+    "en": "The Ace Killer",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "エース候補にアサインすれば、成長がまるで違います。",
@@ -8793,6 +9511,42 @@
     "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "グランドスラム・クイーン",
+    "en": "Grand Slam Queen",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "グランドファイナリスト",
+    "en": "Grand Finalist",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "グランドファイナルの支配者",
+    "en": "Ruler of the GRAND FINAL",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "グレード",
@@ -9292,6 +10046,42 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアの星",
+    "en": "Star of the Juniors",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "ジュニアの独裁者",
+    "en": "Tyrant of the Junior Tournament",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "ジュニアの覇者",
+    "en": "Conqueror of the Juniors",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "ジュニアトーナメント",
@@ -9971,6 +10761,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "チッ……顔見るだけでイライラすんだよ",
+    "en": "Tch... just seeing her face gets on my nerves.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "チーム",
     "en": "Team",
     "files": [
@@ -10085,6 +10887,18 @@
     "kept": true
   },
   {
+    "key": "デビューイヤーの主役",
+    "en": "The Lead of Her Debut Year",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "データの読み込みに失敗しました。ファイルが破損している可能性があります。",
     "en": "Failed to load the data. The file may be corrupted.",
     "files": [
@@ -10093,6 +10907,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "トーナメント・ウィナー",
+    "en": "Tournament Winner",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "ドラフト",
@@ -10236,6 +11062,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "ハッ、雑魚が視界に入んな。場違いだ",
+    "en": "Hah. Small fry, stay out of my sight. She doesn't belong.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "バックナンバー {n}/{total}",
     "en": "Back Issues {n}/{total}",
     "files": [
@@ -10365,6 +11203,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "ファイナルの主役",
+    "en": "Star of the Final",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "ファイルの読み込みに失敗しました",
     "en": "Failed to load the file",
     "files": [
@@ -10393,6 +11243,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "ファンの心",
+    "en": "The Heart of the Fans",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "ファンの間に動揺が広がっている（人気{delta}）",
@@ -10633,6 +11495,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "ベストバウトの主役",
+    "en": "Star of the Best Bout",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "ベストバウト・アーティスト",
+    "en": "Best Bout Artist",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "ベストマッチ",
     "en": "Best Match",
     "files": [
@@ -10784,6 +11670,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "マジで無理。視界から消えてくれ",
+    "en": "Seriously, no. Just get out of my sight.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "メイン{n}回出場",
     "en": "{n} main events",
     "files": [
@@ -10907,6 +11805,30 @@
     "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "メディアのチャンピオン",
+    "en": "Champion of the Media",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "メディアの寵児",
+    "en": "Darling of the Media",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "メディア功労",
@@ -11228,6 +12150,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "リターン・クイーン",
+    "en": "Return Queen",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "リングで決めたい。",
     "en": "I want to settle it in the ring.",
     "files": [
@@ -11246,6 +12180,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "リングに生きた女",
+    "en": "The Woman Who Lived in the Ring",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "リングの上での敬意",
@@ -11286,6 +12232,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "リング外のMVP",
+    "en": "MVP Outside the Ring",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "リーグ 第{n}試合",
@@ -11804,6 +12762,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "ワンチャンス・クイーン",
+    "en": "One-Chance Queen",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "・タイトルマッチはそれ自体が興行の看板になる",
     "en": "• A title match is a headline attraction in itself",
     "files": [
@@ -11895,6 +12865,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "一年の主役",
+    "en": "The Lead of the Season",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "一戦の輝き",
+    "en": "The Shine of a Single Match",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "一方的な展開",
     "en": "One-Sided Bout",
     "files": [
@@ -11954,6 +12948,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "一緒にいてくれると、不思議と心が落ち着くのよね",
+    "en": "When she's around, I settle down. Strange, but there it is.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "一緒にいると……なんか、落ち着くんだよな",
+    "en": "Being around her... calms me down. Weird, huh.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "一致",
@@ -12025,6 +13043,54 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "三年王朝",
+    "en": "The Three-Year Dynasty",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "三度の栄冠",
+    "en": "Three Times Crowned",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "三度の頂",
+    "en": "Three Times at the Summit",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "三連覇の怪物",
+    "en": "Monster of Three Straight",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "三面",
@@ -12190,6 +13256,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "不快。距離を取りたい",
+    "en": "Unpleasant. I want distance.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "不敗伝説",
+    "en": "The Unbeaten Legend",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "不明",
     "en": "Unknown",
     "files": [
@@ -12209,6 +13299,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "不死鳥",
+    "en": "The Phoenix",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "不満を抱えている",
@@ -12231,6 +13333,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "不滅の王者",
+    "en": "The Undying Champion",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "不落の王座",
+    "en": "The Throne That Never Fell",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "世代",
     "en": "Generation",
     "files": [
@@ -12239,6 +13365,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "世代の悪夢",
+    "en": "Nightmare of a Generation",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "世代を二度制した女",
+    "en": "The Woman Who Took Her Generation Twice",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "両派の対立",
@@ -12769,6 +13919,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "二度の戴冠",
+    "en": "Twice Crowned",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "二度の最優秀",
+    "en": "Twice Named Best",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "二連覇の衝撃",
+    "en": "The Startling Repeat",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "二面",
     "en": "Page 2",
     "files": [
@@ -12787,6 +13973,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "互いに高め合える関係。……悪くない",
+    "en": "We sharpen each other. ...Not bad.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "互いの実力を認め合った。",
@@ -14071,6 +15269,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "何があっても……わたくしの手で超えてみせますわ",
+    "en": "Whatever it takes... I will get past her by my own hand.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "何もしない",
     "en": "Do nothing",
     "files": [
@@ -14159,6 +15369,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "信頼できる数少ない人間。それだけで十分",
+    "en": "One of the few I trust. That is enough.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "個人ランキング 1位",
@@ -14649,6 +15871,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "全冠の覇者",
+    "en": "Holder of Every Crown",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "全受賞者一覧",
@@ -15506,6 +16740,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "勝ちたい……でも、追いかけてる時間も嫌いじゃないの",
+    "en": "I want to win... but I don't mind the chasing, either.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "勝ち上がり",
     "en": "Advancing",
     "files": [
@@ -16076,6 +17322,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "受け付けない。理屈じゃない",
+    "en": "I cannot take her. Nothing to do with logic.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "受け入れる",
     "en": "Accept",
     "files": [
@@ -16238,6 +17496,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "同じリングに立っていい相手じゃない",
+    "en": "She has no business in the same ring as me.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "同じ場に立つ相手だとは、思っていないの。ごめんなさいね",
+    "en": "I don't see her as someone I share a ring with. Sorry about that.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "同じ志、別の道",
     "en": "Same conviction, different roads",
     "files": [
@@ -16258,6 +17540,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "同じ空間にいるだけで、息が詰まりますの",
+    "en": "Merely being in the same room makes it hard to breathe.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "同じ週に敵地遠征があるため、受けた挑戦試合は破棄せず次の通常興行まで持ち越します。",
     "en": "You have an away trip that same week, so the challenge match you accepted isn't dropped — it carries over to your next regular show.",
     "files": [
@@ -16266,6 +17560,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "同じ部屋にいるのも辛いの。本当に、無理なのよ",
+    "en": "Even being in the same room is hard. Truly, I can't do it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "同士討ち！",
@@ -16358,6 +17664,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "名前は知ってるけど、それ以上は別に",
+    "en": "I know the name. Beyond that, nothing.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "名前順",
     "en": "By Name",
     "files": [
@@ -16377,6 +17695,42 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "kept": true
+  },
+  {
+    "key": "名勝負の女神",
+    "en": "Goddess of the Great Match",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "名王者",
+    "en": "The Distinguished Champion",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "名脇役の勲章",
+    "en": "The Great Supporting Player",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "周囲の数名が自然と集まっているようです。",
@@ -16427,6 +17781,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "四六時中頭ん中にいやがる。絶対ぶっ倒す",
+    "en": "She's in my head all damn day. I'm putting her down.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "回復中",
@@ -16603,6 +17969,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体の切り札",
+    "en": "The Promotion's Trump Card",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "団体の名声が業界に轟いた！\n",
     "en": "Your promotion's name has rung out across the business!\n",
     "files": [
@@ -16661,6 +18039,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "団体の顔",
+    "en": "The Face of the Promotion",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "団体を選んでください",
@@ -17029,6 +18419,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体間抗争の主役",
+    "en": "The Lead in the Promotion Wars",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "固定収入",
     "en": "Fixed income",
     "files": [
@@ -17147,6 +18549,30 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "堅実なる戴冠者",
+    "en": "The Steady Titleholder",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "堅牢なる王者",
+    "en": "The Solid Champion",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "報告として、お耳に入れておきます。",
@@ -17403,6 +18829,42 @@
     "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
   },
   {
+    "key": "大舞台の主",
+    "en": "Master of the Big Stage",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "大舞台の勝者",
+    "en": "Winner on the Big Stage",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "大舞台の女王",
+    "en": "Queen of the Big Stage",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "大試合",
     "en": "Big match",
     "files": [
@@ -17421,6 +18883,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "天賦の才",
+    "en": "The Natural",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "天頂戦",
@@ -17697,6 +19171,18 @@
     "kept": true
   },
   {
+    "key": "好勝負請負人",
+    "en": "The One Who Delivers",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "好敵手 — 絆・因縁 ともに上昇(相互)",
     "en": "Worthy rivals — bond and grudge both rise (mutual)",
     "files": [
@@ -17717,6 +19203,54 @@
     "hasProperNoun": false
   },
   {
+    "key": "嫌い。マジで嫌い。それだけ",
+    "en": "Hate her. Seriously hate her. That's it.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "存じ上げてはおりますけれど、それ以上は……特に",
+    "en": "I am aware of her, but beyond that... nothing in particular.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "存じ上げてはおりますけれど、特別な感情はございませんわ",
+    "en": "I am aware of her, but I hold no particular feeling.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "存在を認識から外している。話すこともない",
+    "en": "I have taken her out of what I notice. Nothing to say to her.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "季",
     "en": "📅",
     "files": [
@@ -17735,6 +19269,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "守りの女王",
+    "en": "Queen of the Defense",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "安い順",
@@ -17776,6 +19322,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "完全制覇の女帝",
+    "en": "Empress of the Clean Sweep",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "定期興行",
@@ -17842,6 +19400,42 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "実力差は数字で出てる。語ることもない",
+    "en": "The gap shows in the numbers. Nothing to discuss.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "実力派チャンピオン",
+    "en": "A Champion on Merit",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "実力者",
+    "en": "A Genuine Talent",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "実施",
@@ -18188,6 +19782,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "対抗戦の功労者",
+    "en": "Standout of the Interpromotional Wars",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "対抗戦の機運",
     "en": "Interpromotional Buzz",
     "files": [
@@ -18206,6 +19812,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦の英雄",
+    "en": "Hero of the Interpromotional Wars",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "対抗戦の鬼",
+    "en": "Demon of the Interpromotional Ring",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "対抗戦を受諾する",
@@ -18639,6 +20269,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "年末の主人公",
+    "en": "The Lead of the Year's End",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "年表",
     "en": "Timeline",
     "files": [
@@ -18677,6 +20319,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "年間最優秀選手",
+    "en": "Wrestler of the Year",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "年間総決算ペイ・パー・ビュー",
@@ -18739,6 +20393,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "広報の星",
+    "en": "The Publicity Star",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "序",
@@ -19220,6 +20886,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "復活王者",
+    "en": "The Champion Restored",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "微増",
     "en": "Slight rise",
     "files": [
@@ -19228,6 +20906,18 @@
     "count": 7,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "忘れてはならない選手",
+    "en": "A Wrestler Not to Be Forgotten",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "応 　 戦",
@@ -19318,6 +21008,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "愛された女",
+    "en": "The Woman They Loved",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "態度に変化",
@@ -19582,6 +21284,18 @@
     "hasProperNoun": true
   },
   {
+    "key": "戴冠の記憶",
+    "en": "Remembered for the Crown",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "戻る",
     "en": "Back",
     "files": [
@@ -19683,6 +21397,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "技巧派",
+    "en": "The Technician",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "投げ技",
     "en": "Throw",
     "files": [
@@ -19712,6 +21438,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "抗争の立役者",
+    "en": "The One Who Made the Feud",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "抗争を公式戦に仕立てる",
@@ -20366,6 +22104,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "捲土重来",
+    "en": "Returned in Force",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "接戦+1pt（両者)",
@@ -21115,6 +22865,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "時代のエース",
+    "en": "Ace of Her Era",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "時代の主人公",
+    "en": "The Lead of Her Era",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "時間切れ…！決着はつきませんでした！",
     "en": "Time's up...! No decision tonight!",
     "files": [
@@ -21674,6 +23448,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "本当に感謝しています。大切な存在です",
+    "en": "I am truly grateful to her. She matters to me a great deal.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "本日の候補者 ・ {n}名",
     "en": "Today's candidates · {n}",
     "files": [
@@ -21782,6 +23568,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "栄光の常連",
+    "en": "A Regular at the Top",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "格で頼む",
@@ -22567,6 +24365,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "歴史を塗り替えた女",
+    "en": "The Woman Who Rewrote History",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "残り",
     "en": "Left",
     "files": [
@@ -22738,6 +24548,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "殿堂の誇り",
+    "en": "Pride of the Hall of Fame",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "殿堂ポイント15pt以上の選手が引退時に殿堂入りします。<br>",
     "en": "A wrestler with 15 or more Hall of Fame points is inducted when she retires.<br>",
     "files": [
@@ -22777,6 +24599,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "殿堂級MVP",
+    "en": "Hall of Fame MVP",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "毎年の頂点 ─ 直近から",
@@ -22839,6 +24673,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "気にしていないつもりだった……",
+    "en": "Thought I didn't care...",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "水と油、リングでも楽屋でも",
     "en": "Oil and water, in the ring and backstage",
     "files": [
@@ -22868,6 +24714,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "永久保存版　殿堂入り・引退特別号",
+    "en": "Keepsake edition — Hall of Fame induction and retirement special",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
+  },
+  {
+    "key": "永遠のMVP",
+    "en": "MVP for All Time",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "求心力",
@@ -23042,6 +24912,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "決戦のスペシャリスト",
+    "en": "The Big-Match Specialist",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "決着",
@@ -23884,6 +25766,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "流星のチャンピオン",
+    "en": "The Shooting-Star Champion",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "流札（フリー市場へ）",
     "en": "Unclaimed (to the free market)",
     "files": [
@@ -23892,6 +25786,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "消したい。自覚している。そういう感情だ",
+    "en": "I want her gone. I know that about myself. That is the feeling.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "消滅",
@@ -24146,6 +26052,54 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "無傷の戴冠者",
+    "en": "The Spotless Champion",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "無冠の実力者",
+    "en": "The Uncrowned Talent",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "無敗の女王",
+    "en": "The Undefeated Queen",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "無敵の長期政権",
+    "en": "The Long, Unbeaten Reign",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "無料",
@@ -24530,6 +26484,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座の番人",
+    "en": "Keeper of the Throne",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "王座は空位に。次のタイトルマッチで新王者を決定してください。",
     "en": "The title is vacant. Crown a new champion in the next title match.",
     "files": [
@@ -24847,6 +26813,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "生ける要塞",
+    "en": "The Living Fortress",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "生涯現役",
+    "en": "Active to the End",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "生理的に駄目。これは変わらない",
+    "en": "Something in me rejects her. That does not change.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "申し出を尊重し、対等な関係を示す",
     "en": "Respect the offer and meet her as an equal",
     "files": [
@@ -24986,6 +26988,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "登竜門の覇者",
+    "en": "Conqueror of the Proving Ground",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "白星",
@@ -25234,6 +27248,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "知ってるわよ、一応ね。……それだけ",
+    "en": "I know of her, sure. ...That's all.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "短信",
     "en": "In Brief",
     "files": [
@@ -25242,6 +27268,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "確かな足跡",
+    "en": "Footprints That Stayed",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "確定",
@@ -25629,6 +27667,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "競い合えることが、自分の力になっています",
+    "en": "Having someone to compete with is what makes me stronger, I think.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "競争",
@@ -26398,6 +28448,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "終わらない治世",
+    "en": "The Reign That Would Not End",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "終わり方",
     "en": "How It Ended",
     "files": [
@@ -26716,6 +28778,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "絶対に許さない。叩き潰すまで終わらない",
+    "en": "I will never forgive her. This does not end until I have broken her.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "絶対に遅れを取りたくありませんの。それだけですわ",
+    "en": "I absolutely will not be left behind by her. That is all.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "絶対王者",
+    "en": "The Undisputed Champion",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "継続",
     "en": "Continues",
     "files": [
@@ -27014,6 +29112,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "縁の下の力持ち",
+    "en": "The One Who Held It Up from Below",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "縮小",
     "en": "Zoom out",
     "files": [
@@ -27022,6 +29132,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "考えない日はない。絶対に、越えなきゃいけない壁",
+    "en": "Not a day goes by that I don't think about her. She's the wall I have to get past.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "肩記事",
@@ -27813,6 +29935,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "視界に入るたび、地味にイラっとくる",
+    "en": "Every time she crosses my line of sight, it grates a little.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "視線も合わせない。いないものとして扱ってる",
+    "en": "I don't meet her eyes. I treat her as though she isn't there.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "覚醒者",
+    "en": "The Awakened",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "親",
     "en": "Bond",
     "files": [
@@ -28157,6 +30315,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "記録の数字だけでは測れない存在感で、{name}は幾度も{org}のリングを支えた。",
+    "en": "With a presence the record numbers do not measure, {name} held up the {org} ring again and again.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
+  },
+  {
     "key": "記録保持者",
     "en": "Record Holder",
     "files": [
@@ -28283,6 +30453,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "試合の天才",
+    "en": "Genius of the Match",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "試合の面白さを表す指標で、団体の評判と収入に直結します。",
     "en": "A measure of how good the match was, tied directly to your promotion's reputation and income.",
     "files": [
@@ -28341,6 +30523,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "試合巧者",
+    "en": "The Ring General",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "試合形式",
@@ -28448,6 +30642,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "話題の中心",
+    "en": "The Center of the Conversation",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "該当する選手がいません",
     "en": "No wrestlers match",
     "files": [
@@ -28508,6 +30714,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "認識しているだけ。それ以上はない",
+    "en": "I register that she exists. That is all.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "認識はしている。それ以上でもそれ以下でもない",
+    "en": "I know she exists. Nothing more, nothing less.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "課題: ",
     "en": "Needs work: ",
     "files": [
@@ -28536,6 +30766,102 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "負けたくありませんけれど……実力は認めざるを得ませんわ",
+    "en": "I do not wish to lose to her... but I cannot deny what she can do.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "負けたくない。それだけは、はっきりしている",
+    "en": "I don't want to lose to her. That much is clear.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "負けたくない。でも、おかげで強くなれている気がする",
+    "en": "I don't want to lose to her. But I think she's the reason I'm getting stronger.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "負けたくないの。理由なんて知らないわ",
+    "en": "I don't want to lose to her. Don't ask me why.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "負けねえ。死んでも負けねえ",
+    "en": "Not losing. Not if it kills me.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "負けるわけにはいかない。理屈じゃない",
+    "en": "I cannot lose to her. It is not about reasons.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "負けるわけにはいかないわ。穏やかに、でも譲らない",
+    "en": "I can't afford to lose to her. Calmly, but I'm not giving ground.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "負け知らずの王者",
+    "en": "The Champion Who Never Lost",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "負け越し中",
@@ -28845,6 +31171,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "超一流の証",
+    "en": "The Mark of the Very Best",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "超逸材",
     "en": "Elite Prospect",
     "files": [
@@ -28995,6 +31333,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "返り咲きの女王",
+    "en": "Queen of the Comeback",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "返上",
@@ -29198,6 +31548,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "通算{defenses}度の防衛。その数字は、{name}が団体の中心であり続けた時間の重さを物語る。",
+    "en": "The defense column reads {defenses}. That number carries the weight of the years {name} spent at the center of the promotion.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
+  },
+  {
     "key": "通算{n}人抜き",
     "en": "{n} opponents beaten",
     "files": [
@@ -29216,6 +31578,30 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "通算{reigns}度の戴冠、通算{defenses}度の防衛。その数字は、{name}が団体の中心であり続けた時間の重さを物語る。",
+    "en": "The title column reads {reigns} and the defense column {defenses}. Those numbers carry the weight of the years {name} spent at the center of the promotion.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
+  },
+  {
+    "key": "通算{reigns}度の戴冠。その数字は、{name}が団体の中心であり続けた時間の重さを物語る。",
+    "en": "The title column reads {reigns}. That number carries the weight of the years {name} spent at the center of the promotion.",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り引退特別号(Engine.newspaper.composeHallOfFameRetirement)。management.jsはui-ledger走査対象外につき手追加"
   },
   {
     "key": "通算{total}戦で互角。次戦が大きな分岐点になりそうだ。",
@@ -29347,6 +31733,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "連覇の記憶",
+    "en": "Two Finals in a Row",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "連覇を刻んだ新星",
+    "en": "The Newcomer Who Went Back-to-Back",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "週を処理",
@@ -30008,6 +32418,42 @@
     "note": "_F07_INCIDENT_META choice.label"
   },
   {
+    "key": "鉄の防衛線",
+    "en": "The Iron Defense Line",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "鉄人",
+    "en": "The Iron Woman",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "鉄壁の女王",
+    "en": "The Iron Wall Queen",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "長 期 離 脱（推 定 {n} 週 +）",
     "en": "Out an Estimated {n}+ Weeks",
     "files": [
@@ -30334,6 +32780,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "防衛ロードの怪物",
+    "en": "Monster of the Title Run",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "防衛街道の果てに",
+    "en": "At the End of the Defense Road",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "限界",
     "en": "At the limit",
     "files": [
@@ -30392,6 +32862,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "隠れた実力派",
+    "en": "The Hidden Talent",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "隣にいると、居心地がいいのよね……ふふ",
+    "en": "It's comfortable next to her... hehe.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "集客 +12%、両リーダー間の因縁が一気に深まる（rivalry 大幅増）。負けた派閥は崩壊リスク",
@@ -30578,6 +33072,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "静かなる功労者",
+    "en": "The Quiet Contributor",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
     "key": "静かな確執",
     "en": "Quiet friction",
     "files": [
@@ -30710,6 +33216,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "頭から離れない……悔しいけど、そういうことなのよね",
+    "en": "She won't leave my head... it's galling, but that's what this is.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
     "key": "頼む",
     "en": "Ask",
     "files": [
@@ -30738,6 +33256,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "顔も見たくない。同じ空気を吸いたくない",
+    "en": "I don't want to see her face. I don't want to share the air.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
     "key": "飛び技",
@@ -30769,6 +33299,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "黄金のカード",
+    "en": "The Golden Card",
+    "files": [
+      "management.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
     "key": "黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）",

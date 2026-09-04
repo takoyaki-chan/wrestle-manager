@@ -1,5 +1,61 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-10 — P6-8発見の未配線3系統(雑誌/TV見出し・殿堂入り異名・相関図EMOTION_TEXTS)の配線と英訳+同型2件（2026-09-04・worktree agent-a0fa7464c9b010362）
+
+指示書はspecs/i18n-runtime-spec-v1.0.md §11-5がP6-8で起票した「3抽出パイプラインいずれからも見えない/Engineがdictを持たない」3系統の配線と英訳。開始前にworktreeブランチをmain先端(a349aaf、P6-8=75e1209まで)へfast-forward済み。`i18n/dialogue-ledger.json` / `src/lang-en-dialogue.js` / `test/i18n-extract-dialogue.js` / `src/kuroda-text.js` は指示どおり不触(並行バッチ⑯の領分)。
+
+**訳出合計251行**(template-ledger 36 + ui-ledger 215)。うち3系統=214行、過程で見つかった同型の穴=37行。
+
+### 1. `Engine.flavor` の MAGAZINE_HEADLINES / TV_HEADLINES(12本)
+
+雑誌取材・TV出演のフレーバーイベント見出し。`(name) => \`📰 … 「${name}、…」\`` という**関数プール**で、`Engine.flavor.check(state, rng)` がdict/optsを持たずに直接文字列化していた(週1件・人気55以上/王者に出るポップアップなので、ENでも毎週JAが出うる位置)。
+
+- **関数プール → `{name}` プレースホルダ文字列**へ移行(JA出力は1バイト不変)。**配列の並び順は不変**(`Engine.rng.int`が引く添字が変わるとJA出力が変わるため)
+- `check(state, rng, opts)` を dict-opts化(§6規約)。`Engine.flavor._headline(tpl, params, opts)` が**PH置換前に**`dict(tpl, params)`を通す。`opts.dict`未指定(auto-sim/ja-golden/`previewTick`)のフォールバックは「翻訳しないが充填はする」形(§6 `generateTicker`と同じ契約。単純な`(s)=>s`だと`{name}`が生で残る)
+- **gameLogは生JAのまま維持**。`tickWeek`の`events.push(\`${headline}（${fighterName} 人気+${popGain}）\`)`はレガシー文字列エントリ(§2-4)で周囲の装飾がJAのため、見出しだけENにすると1行で言語が混ざる。`check()`が`headlineJa`(JA充填のみ)を併せて返し、gameLogはそちらを使う(`ev.headlineJa || ev.headline`で旧セーブ互換)。**セーブに書く値は不変**
+- 台帳: `test/i18n-extract-templates.js`に`extractArrayLiteralProp()`(app.jsの`extractAppObjectLiteral`の角かっこ版)を追加し、management.jsソースから当該2配列だけを切り出して`i18n/template-ledger.json`へ載せた(`files`欄=`management.js:MAGAZINE_HEADLINES`/`:TV_HEADLINES`)。management.js全体は読み込まない
+- 表示点(`showEventPopup`)は無改修。`_u3bSideHtml`が既に`WM_I18N.pn(o.name)`を通しているため選手名も英語になる
+
+### 2. `Engine.awards.generateEpithet`(殿堂入り異名 112本)
+
+生成値が`hofEntry.epithet`としてG(殿堂入りエントリ)へ**生JAで永続化される**値。D-P6-4「セーブに書く値は変えない」を守るため生成側は無改修とし、**表示点でだけ辞書を引く**設計にした。
+
+- **`Engine.awards.epithetText(epithet, dict)`**(management.js、純粋関数)を新設。`_EPITHET_TEMPLATES`で唯一プレースホルダを持つ`{n}人切り`は`_resolvePlaceholders`が生成時点で数値を埋めてしまうため、保存値`"23人切り"`から`/^(\d+)人切り$/`で数値を読み戻し、テンプレのキー`{n}人切り`で辞書を引き直す。辞書に無い値(未知の異名・旧セーブ)はfail-open
+- UI層は`_epithetLabel(epithet)`(ui-common.js、`_quoteVal`直後)が`Engine.awards.epithetText(ep, WM_I18N.t)`を呼ぶだけ。正規化ロジックの二重実装を作らない
+- **表示箇所の全数列挙**: grepの結果、異名を表示する箇所は`ui-render.js:showHofDetail`(殿堂詳細モーダル)と`management.js:composeHallOfFameRetirement`(殿堂入り引退の新聞特別号)の**2箇所のみ**だった。殿堂リスト(`_hofFilteredList`のカード)・選手詳細・年代記のいずれにも異名は出ていない(`.epithet`の参照が存在しない)。もう1つの参照`generateBiography({...h, epithet})`は語り文の`{epithet}`差し込みで、語り文自体が未英訳のため**生JAのepithetを渡したまま**にした(§5の新規発見1)
+- 殿堂詳細モーダルの`── 「${epithet}」──`はテンプレ化(`WM_I18N.t('── 「{epithet}」──', {epithet})` → `── "{epithet}" ──`)。JA出力は`applyParams`の置換のみで1バイト不変
+
+### 3. `Engine.newspaper.composeHallOfFameRetirement`(殿堂入り引退特別号 9テンプレ)
+
+異名の表示点その2。中身が100%生JAのままでは異名だけENにしても記事の中で言語が混ざるため、**関数ごとdict-opts化**した(第3引数`dict`。呼び出し元は`Engine.newspaper.generate()`内の2箇所で、いずれもgenerateのローカル`dict`をそのまま渡す)。
+
+- 実績の列挙は「戴冠のみ/防衛のみ/両方/なし」の4通りしかないため、`achievement.join('、')`の断片連結をやめて**分岐ごとの完全文テンプレ**へ分けた(構造規約3。JA出力は連結時と同一)
+- 見出しキー`{name}、殿堂入り——{org}の一時代に幕`は`ui-render.js:7845`(殿堂入りティッカー)と同一のため**既訳を共有**(そのためパラメータ名を`{orgName}`ではなく`{org}`に揃えた)。levelLabel 3種(`殿堂`/`ゴールド殿堂`/`最高位・レジェンド殿堂`)も既訳を再利用
+- `newsData.epithet`は**保存値として生JAのまま**返す(記事本文へ差し込む瞬間だけ`epithetText`を通す)
+- 新設の共通ヘルパー**`_wmFillWithDict(dict, tpl, params)`**(management.js、`_wmNewsStamp`の直前): テンプレを**PH置換前に**dictへ通し、残ったPHを`fillTemplateVars`で埋める冪等な二段構え。`WM_I18N.t`(2引数・名前辞書変換つき)でも、Engine内フォールバック`(s)=>s`(1引数)でも壊れない。P6-8が`_buildPpvSummitStory`でローカルに書いた`_quoted`と同じ問題への恒久版
+
+### 4. `EMOTION_TEXTS`(相関図の関係性セリフ 91行)
+
+ui-render.jsのローカル`const`で、命名も`LINES`/`DIALOGUE`規則に合致しないため§5(ui)・§6(テンプレ)・§9(セリフ)いずれの抽出パイプラインからも見えなかった**4件目の構造的欠落**(spec §11-5-4)。指示どおりdialogue側の抽出器・台帳は触らず、`i18n/ui-ledger.json`へ`kept:true`+`note`で91行を手追加した。
+
+- 配線は**唯一の消費入口`getEmotionText()`で1回だけ**t()を通す(呼び出し元3箇所=モバイル相関図カード/比較ビューA→B/B→Aは無改修。二重t()を作らないため呼び出し側で包み直さない)
+- モバイルカードの`「${emotion}」`ハードコードは`_quoteLine()`へ(ENでは引用符を落とす。P6-7で確立した吹き出し方針)
+- 英訳は`docs/en-tone-bible-draft-v0.1.md` §2の属性レシピ準拠(EMOTION_TEXTSは13カテゴリ×**7属性**軸を持つので、standard一律ではなく属性ごとに書き分けた)。ojousama=無短縮形/cool=断片・感嘆符なし・3文以内/delinquent=主語省略・`damn`まで/polite=完全文+緩衝/composed=急がない大人/seductive=低温+"hehe"、§4-6の検品ルール(「あらあら」="Goodness,"・「ふふ」="Hehe...")も反映
+
+### 5. 過程で見つかった同型の穴(同時に修正)
+
+- **`RETIREMENT_TEMPLATES`(data.js、24本)が§6のテンプレ抽出対象14表に入っていなかった** — 兄弟表の`AI_INJURY_RETIREMENT_TEMPLATES`は最初から対象なのに、**プレイヤー団体/AI団体を問わず出る通常引退記事の本表だけ**が漏れていた(EMOTION_TEXTSと同型の「見えないテーブル」・5件目)。`TARGET_TABLES`へ追加し、`Engine.newspaper._fillRetirementTemplate(t, d, dict)`をdict-opts化(呼び出し元4箇所)。黒田英文体で24本(見出し12+本文12)を訳出
+- **`a {seasons}-season` 型のa/an破綻を訳出中に自己検出** — 8/11/18シーズンで`an`が要るため、`docs/en-kuroda-style-draft-v0.1.md` §3-4 規則25(プレースホルダの直前に不定冠詞を置かない)違反。見出しは冠詞を落とし(`— {seasons}-season run ends`)、本文は`the`で受ける形へ全数書き換えた。戴冠数`{reigns}`も`a {reigns}-time champion`だと同じ問題+1回のとき単複が崩れるため、`the title column reads {reigns}`型(単複・冠詞とも安全、かつ黒田の数値レジスタ)へ統一した
+- **相関図モバイル版の選手名・所属名がpn()未通過(5箇所)** — EMOTION_TEXTSを英語化した以上、同じカードの名前・所属だけJAで残るのは半端。`_relmapMobileRelationCard`のname/org・方向ラベルのcenterChar名・検索候補のname/org・heroのname/org・center indicatorの計5箇所に`WM_I18N.pn()`を配線した(D-P6-3ロングテールの一部消化)。検索フィルタの`.includes()`比較(13086行)はロジック比較のため**除外**(P6-3の除外方針どおり)
+
+### 6. 検証
+
+`node --check` 全触りファイル(management.js/ui-render.js/ui-common.js/lang-en.js/lang-en-templates.js/i18n-extract-templates.js)OK。`node test/ja-golden.js` 基準と完全一致(hash=`6b3d05c8…`、P6-8と同一)。`node test/i18n-build-dict.js` 3,533キー**未訳0**。`node test/i18n-build-template-dict.js` 1,526キー**未訳0**(黒田禁止語grepも通過)。`npm test` 260/260 green。`node test/auto-sim.js 20 42` ALL CLEAR(semantic fingerprint `37bbd0cd`、P6-7/P6-8と同一)。`npm run test:ui:walkthrough` PASS(**ja digest `1052faa82eaf7991` 不変**)。`npm run test:ui:walkthrough:en` PASS(Issues 0、i18n-miss 15件=全て(A)未訳セリフ=バッチ⑯待ち。3系統由来のmissは0)。
+
+VMで実ランタイム(i18n.js+生成辞書3本+data/management)をEN固定で読み込み、**雑誌/TV見出し12本・異名112本(`23人切り`の数値読み戻し含む)・殿堂入り引退特別号2ケース・引退記事24本・EMOTION_TEXTS 91行**の全EN出力を目視確認した(未訳0)。同じVMでdict省略呼び出しも実行し、JA出力が旧コードと一致することを確認。
+
+**副作用: ラチェット+1(management.js 2326→2327)**。`Engine.awards.epithetText`が辞書キーとして持つ`'{n}人切り'`リテラル1本の増加(dict()を経由する翻訳キーであって表示用の直書きではない)。`node test/i18n-ratchet.js --update`で基準を28084→28085に更新。
+
 ## 🌐 英語対応 P6-12 — タイトル画面に言語切替トグル(日本語/English)+初回起動のブラウザ言語既定（2026-09-04・worktree agent-a15ed207d2296ee51）
 
 プレイヤーがタイトル画面から表示言語を自分で切り替えられるようにした。従来は開発者モード(Ctrl+Shift+D)経由でしか切り替えられなかった。開始前にworktreeブランチをmain先端(`38b7dc7`、P6-9まで)へfast-forward済み。厳守事項(i18n/dialogue-ledger.json・src/lang-en-dialogue.js・src/kuroda-text.js・management.jsのEngine.flavor/Engine.awards周辺・src/data.jsのEMOTION_TEXTS)には一切触れていない。

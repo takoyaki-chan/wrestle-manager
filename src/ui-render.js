@@ -10233,8 +10233,11 @@ function showHofDetail(idx) {
   const orgName = h.orgName || _getHofOrgName(h.orgId);
   const sep = '<div style="border-top:1px solid rgba(255,255,255,0.1);margin:12px 0"></div>';
 
-  // 異名（フォールバック: 動的生成）
+  // 異名（フォールバック: 動的生成）。epithet は**保存されている生JA**のまま扱い、
+  // 表示用の英訳は _epithetLabel() 経由で別に持つ(i18n P6-10)。
+  // generateBiography には生JAのepithetを渡す(語り文自体がまだ未英訳のため。§11-5)。
   const epithet = h.epithet || Engine.awards.generateEpithet(h, null, null);
+  const epithetLabel = _epithetLabel(epithet);
   // 語り文（フォールバック: 動的生成）
   const biography = h.biography || Engine.awards.generateBiography({ ...h, epithet, orgName });
 
@@ -10318,7 +10321,7 @@ function showHofDetail(idx) {
       ${portraitHtml}
       <div>
         <div style="font-size:18px;font-weight:700;color:var(--text-main)">${WM_I18N.pn(h.name)}</div>
-        <div style="font-size:15px;color:var(--gold);margin:4px 0">── 「${epithet}」──</div>
+        <div style="font-size:15px;color:var(--gold);margin:4px 0">${WM_I18N.t('── 「{epithet}」──', { epithet: epithetLabel })}</div>
         <div style="font-size:13px;color:var(--text-sub)">${orgName} / ${h.style || 'Allround'}</div>
         <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('{years}（{n}シーズン）', { years: h.activeYears || '', n: (h.activeSeasonsEnd || 1) - (h.activeSeasonsStart || 1) + 1 })}</div>
         <div style="font-size:12px;color:var(--text-sub)">${WM_I18N.t('最高OVR {ovr}（S{season}）', { ovr: h.peakOVR || 0, season: h.peakOVRSeason || '?' })}</div>
@@ -12008,11 +12011,16 @@ function getEmotionCategory(bond, rivalry, selfOvr, targetOvr) {
   return 'hatred'; // bottom × high
 }
 
+// i18n P6-10: EMOTION_TEXTS は ui-render.js のローカル const で、命名も LINES/DIALOGUE
+// 規則に合致しないため §5(ui)・§6(テンプレ)・§9(セリフ)いずれの抽出パイプラインからも
+// 見えなかった(構造的欠落・spec §11-5-4)。台帳は i18n/ui-ledger.json へ kept:true で
+// 手追加し、翻訳はこの唯一の消費入口で1回だけ通す(呼び出し元3箇所は無改修。
+// 二重t()を作らないため、呼び出し側で改めて t() で包み直さないこと)。
 function getEmotionText(bond, rivalry, selfOvr, targetOvr, archetype) {
   const category = getEmotionCategory(bond, rivalry, selfOvr, targetOvr);
   const at = archetype || 'standard';
   const texts = EMOTION_TEXTS[category];
-  return texts[at] || texts.standard;
+  return WM_I18N.t(texts[at] || texts.standard);
 }
 
 function _relmapGetAllChars() {
@@ -13027,8 +13035,10 @@ function _relmapMobileRelationLabel(link, values) {
 function _relmapMobileRelationCard(centerChar, otherChar, link, factionNames = []) {
   const centerOvr = Engine.util.ov(centerChar);
   const otherOvr = Engine.util.ov(otherChar);
-  const safeName = _escapeHtml(otherChar.name || WM_I18N.t('不明'));
-  const safeOrg = _escapeHtml(_relmapGetOrgLabel(otherChar));
+  // i18n P6-10: 相関図モバイル版の表示名はpn()経由(D-P6-3の長尾。EMOTION_TEXTSを
+  // 英語化した以上、同じカードの名前・所属だけJAで残るのを避ける)。
+  const safeName = _escapeHtml(WM_I18N.pn(otherChar.name) || WM_I18N.t('不明'));
+  const safeOrg = _escapeHtml(WM_I18N.pn(_relmapGetOrgLabel(otherChar)));
   const safeStyle = _escapeHtml(otherChar.style || '');
   const factionText = factionNames.length ? `🎭 ${factionNames.map(_escapeHtml).join(' / ')}` : '';
   let relationHtml = '';
@@ -13046,10 +13056,10 @@ function _relmapMobileRelationCard(centerChar, otherChar, link, factionNames = [
     relationHtml = `
       <div class="rm-mobile-relation-label">${_escapeHtml(label)}</div>
       <div class="rm-mobile-direction-grid">
-        <div><span>${_escapeHtml(centerChar.name)} →</span><b>${WM_I18N.t('親密')} ${Math.round(values.bondOut)}</b><b>${WM_I18N.t('競争')} ${Math.round(values.rivOut)}</b></div>
+        <div><span>${_escapeHtml(WM_I18N.pn(centerChar.name))} →</span><b>${WM_I18N.t('親密')} ${Math.round(values.bondOut)}</b><b>${WM_I18N.t('競争')} ${Math.round(values.rivOut)}</b></div>
         <div><span>← ${safeName}</span><b>${WM_I18N.t('親密')} ${Math.round(values.bondIn)}</b><b>${WM_I18N.t('競争')} ${Math.round(values.rivIn)}</b></div>
       </div>
-      <div class="rm-mobile-emotion">「${_escapeHtml(emotion)}」</div>`;
+      <div class="rm-mobile-emotion">${_quoteLine(_escapeHtml(emotion))}</div>`;
   } else {
     relationHtml = `<div class="rm-mobile-relation-label">${WM_I18N.t('同じ派閥に所属')}</div>`;
   }
@@ -13082,7 +13092,7 @@ function _relmapMobileSearchResultsHtml(allChars, query) {
   if (!results.length) return `<div class="rm-mobile-search-empty">${WM_I18N.t('該当する選手がいません')}</div>`;
   return results.map(c => `<button type="button" onclick="_relmapMobileSetCenter(${Number(c.id)})">
     <span class="rm-mobile-search-face">${_relmapFaceHtml(c.id, 34)}</span>
-    <span><b>${_escapeHtml(c.name)}</b><small>${_escapeHtml(_relmapGetOrgLabel(c))} ・ OVR ${Engine.util.ov(c)}</small></span>
+    <span><b>${_escapeHtml(WM_I18N.pn(c.name))}</b><small>${_escapeHtml(WM_I18N.pn(_relmapGetOrgLabel(c)))} ・ OVR ${Engine.util.ov(c)}</small></span>
   </button>`).join('');
 }
 
@@ -13157,8 +13167,8 @@ function _renderDbRelmapMobile(allChars, centerChar) {
     <div class="rm-mobile-hero-face">${_relmapFaceHtml(centerChar.id, 74)}</div>
     <div class="rm-mobile-hero-main">
       <span class="rm-mobile-center-label">CENTER</span>
-      <h3>${_escapeHtml(centerChar.name)}</h3>
-      <p>${_escapeHtml(_relmapGetOrgLabel(centerChar))}</p>
+      <h3>${_escapeHtml(WM_I18N.pn(centerChar.name))}</h3>
+      <p>${_escapeHtml(WM_I18N.pn(_relmapGetOrgLabel(centerChar)))}</p>
       <div><b>OVR ${Engine.util.ov(centerChar)}</b>${centerChar.style ? `<span>${_escapeHtml(centerChar.style)}</span>` : ''}<span>${WM_I18N.t('関係 {n}人', { n: relationCount })}</span></div>
     </div>
     <button type="button" onclick="showFighterPopup(${Number(centerChar.id)})">${WM_I18N.t('選手詳細')}</button>
@@ -13217,7 +13227,7 @@ function _renderDbRelmap() {
   // Center indicator
   html += `<div class="rm-center-indicator" id="rmCenterIndicator" style="display:${_relmapCenterId && centerChar?'flex':'none'}">`;
   html += `<span class="ci-label">CENTER</span>`;
-  html += `<span class="ci-name" id="rmCenterName">${centerChar ? centerChar.name : ''}</span>`;
+  html += `<span class="ci-name" id="rmCenterName">${centerChar ? WM_I18N.pn(centerChar.name) : ''}</span>`;
   html += `<span class="ci-clear" onclick="_relmapClearCenter()" title="${WM_I18N.t('解除')}">\u2715</span>`;
   html += `</div>`;
   // Link filters

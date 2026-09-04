@@ -500,6 +500,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳、在籍{seasons}シーズン。大きな発表の並ぶ週に、短い一報として届いた。",
+    "en": "Age {age}, with the {seasons}-season tenure now closed. In a week lined with bigger announcements, it arrived as a short notice.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳。{name}がリングに立つ姿を見られる試合は、それ自体が貴重な体験だ",
     "en": "Age {age}. A match where you can still watch {name} stand in a ring is worth something on its own.",
     "files": [
@@ -514,6 +524,46 @@
     "en": "Age {age}. The way {name} has worked this season fits one word better than any other: matured.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。{reigns}度の戴冠を含め、この選手の名前が載った日の興行はカードの重さが変わった。理由をどう語ろうと、抜けたあとの{org}が同じ客席の温度を作れるかは別の問題として残る。引き継ぐ選手の名前は、今のところ本紙にも見えていない。",
+    "en": "Age {age}. The title column reads {reigns}, and on any night her name was on the card, the card weighed more. Whatever reason she gives, whether {org} can raise the same heat in the seats without her is a separate question, and it stays open. The name of whoever takes that place is not yet visible to this paper.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。{reigns}度の戴冠を経て、この{seasons}シーズンは団体のポスターに最も長く名前が載り続けた選手だった。その位置を空けたまま来季を始めるのか、誰かを繰り上げるのか、答えはまだ出ていない。",
+    "en": "Age {age}. She has {reigns} in the title column, and over the {seasons}-season stretch no name stayed on the promotion's posters longer. Whether next season opens with that place left empty, or with someone moved up into it, has not been answered.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。派手なカードに置かれることは多くなかったが、興行の中盤を任せられる選手が一人いるかいないかで、その日の流れは変わる。",
+    "en": "Age {age}. She was rarely put in the loud spots, but whether or not you have one wrestler you can trust with the middle of a show changes how the night runs.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳での引退。{reigns}度の戴冠と、上位カードに置かれ続けた年数がそのまま{org}の看板の一部だった。来季の主要興行のメインを誰が務めるのか、編成の見直しはここから始まる。",
+    "en": "Retirement at age {age}. The title column reads {reigns}, and the years spent high on the card were themselves part of what {org} put on its posters. Who works the main event at next season's big shows — the booking rethink starts here.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -574,6 +624,16 @@
     "en": "{name}, age {age}. A veteran holding an Overall of {ovr} works as the wall the young ones have to get past.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の{name}が引退 {org}の中心が空く",
+    "en": "{name} retires at {age} — the center of {org} comes open",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2060,6 +2120,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}、現役を退く 一つの区切りが{org}に",
+    "en": "{name} steps away — a line drawn at {org}",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}、総合力+{ovrGain}。成長曲線が急すぎて、来季にはエース級になっていてもおかしくない",
     "en": "{name}, Overall up {ovrGain}. The curve is steep enough that ace class next season would surprise nobody.",
     "files": [
@@ -2250,6 +2320,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が引退表明 {org}の上位カードに空席",
+    "en": "{name} announces her retirement — an empty slot high on the {org} card",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が成長の跡——試合内容に変化",
     "en": "{name} growing — ring work looks different",
     "files": [
@@ -2264,6 +2344,26 @@
     "en": "{name} enters the Hall of Fame — the record",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が現役引退 {org}",
+    "en": "{name} retires from {org}",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が現役引退 {org}で{seasons}シーズン",
+    "en": "{name} retires after {seasons}-season run at {org}",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3210,6 +3310,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}で{age}歳まで上がり続けた。長く同じ位置で試合を組まれた選手ほど、いなくなってから欠けたものに名前が付きにくい。",
+    "en": "She kept climbing into the ring at {org} until age {age}. The longer a wrestler is booked in the same place on the card, the harder it is to name what is missing once she is gone.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}で{seasons}シーズンを過ごし、{age}歳での決断となった。{reigns}度ベルトを巻いた選手だが、記者が覚えているのはむしろ落とした試合の翌週の上がり方のほうだ。この先しばらく、この団体の試合を見る人は、無意識に比べる相手を持つことになる。",
+    "en": "The {seasons}-season run at {org} closes with a decision made at age {age}. A wrestler with {reigns} in the title column, but what this writer remembers is the way she came back up the week after a loss. For a while yet, anyone watching this promotion will be measuring against her without meaning to.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}での{seasons}シーズンをもって現役を退く。今後の予定については本人からの発表を待つことになる。",
+    "en": "She retires at the end of the {seasons}-season run with {org}. What comes next waits on an announcement from her.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}では、関係が冷え込んだ選手同士が{count}組に増えている。対立を放置すれば、試合の連携や興行全体の雰囲気にも影響が出かねない。",
     "en": "At {org} the number of wrestler pairs who have gone cold on each other has risen to {count}. Leave the trouble alone and it can reach how they work together in matches, and the feel of the whole show.",
     "files": [
@@ -3224,6 +3354,16 @@
     "en": "The faction war booked at {org} went {score} to {winFaction}. {winLeader}, who led them, is worth more today; {loseLeader} of the beaten {loseFaction} left the ring with little to say. The order is decided in the ring. That principle got one more proof.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}に{seasons}シーズン。ベルトの数で語られる選手ではなかったが、対戦相手の格を引き上げる役を長く担い続けてきた。同じ場所に誰を置いても、しばらくは前任者の輪郭が透けて見えるだろう。空いた分の大きさが正確に測れるのは、来季の興行を何本か見てからになる。",
+    "en": "The {seasons}-season run at {org}. She was never a wrestler you described by the number of belts, but for years she did the work of raising whoever stood across from her. Put anyone in that same spot and, for a while, the outline of the one before will show through. How large the gap really is can only be measured after a few shows next season.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3284,6 +3424,16 @@
     "en": "{org}'s {name} looking for a way back",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の{name}、引退",
+    "en": "{org}'s {name} retires",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3720,6 +3870,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の顔、{name}が現役を終える",
+    "en": "{org}'s public face — {name} finishes her career",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}を支えた{name}がリングを去った。{detail}。その不在を、団体がどう埋めていくかが次の課題となる。",
     "en": "{name}, who held {org} up, has left the ring: {detail}. How the promotion fills the absence is the next problem.",
     "files": [
@@ -3734,6 +3894,36 @@
     "en": "{org} locker room unsettled — bad pairings: {count}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}・{name}、{age}歳で引退",
+    "en": "{org}'s {name} retires at {age}",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}・{name}が引退 {seasons}シーズンの現役に区切り",
+    "en": "{org}'s {name} retires — {seasons}-season run ends",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}・{name}が現役引退 {seasons}シーズンに幕",
+    "en": "{org}'s {name} retires — curtain on {seasons}-season career",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4804,6 +4994,36 @@
     "en": "Round: {round}. {winner} ({winnerOrg}) against {loser} ({loserOrg}) drew the highest rating of all 15 matches. {closing}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズン、故障の期間を挟みながらもリングに戻ってきた選手だ。記録に残る数字は多くない。ただ、同じ日に組まれた若手の顔ぶれを並べると、今の中堅の何人かがそこにいる。",
+    "en": "Over the {seasons}-season career she kept coming back to the ring around the injury layoffs. The numbers she leaves in the record are not many. But line up the young wrestlers booked on the same nights and several of today's mid-card are standing there.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズンで現役を終える。{age}歳での判断について、詳しい説明は出ていない。",
+    "en": "She finishes her career at the end of the {seasons}-season run. No detailed explanation has been given for the decision at age {age}.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズンの現役に区切り {name}が引退",
+    "en": "{seasons}-season career closes — {name} retires",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9650,6 +9870,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "在籍{seasons}シーズン、{age}歳。大会のメイン級に置かれ続けた選手が抜けた分は、下から一人繰り上げれば埋まるという性質のものではない。{org}が次に誰を同じ位置で使うかは、来季最初の数興行で見えてくる。",
+    "en": "The {seasons}-season tenure, age {age}. What goes missing when a wrestler kept at main-event level walks away is not the kind of hole you fill by moving one name up from below. Who {org} uses in that spot next will show in the first few shows of the season.",
+    "files": [
+      "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "均衡状態。見方を変えれば、ここから先は純粋にGMの差が出るということだ。戦力が互角なら、勝敗を分けるのは戦略と育成。{leadAxisLabel}を伸ばすか、{chaseAxisLabel}を補強するか。どちらを選んでもリスクはある。",
     "en": "A balance. Turn it around and it means that from here the difference is purely the GM. With the rosters level, what separates them is strategy and development. Grow {leadAxisLabel}, or sign into {chaseAxisLabel}. Either choice carries a risk.",
     "files": [
@@ -10034,6 +10264,16 @@
     "en": "{name} of {fromOrg} has joined {toOrg}, a promotion her old side has fought hard against many times. The move carries a fresh grudge into the next interpromotional card, and into the relationship between the two promotions.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "引退 {name}({age}歳)",
+    "en": "Retirement: {name} (age {age})",
+    "files": [
+      "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -14750,10 +14990,130 @@
     "hasProperNoun": false
   },
   {
+    "key": "📰 スポーツ報知 — 「{name}が語る\"強さの秘密\"」",
+    "en": "📰 Sports Hochi — {name} on 'the secret of her strength'",
+    "files": [
+      "management.js:MAGAZINE_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📰 月刊プロレスマガジン — 「{name}インタビュー。『ファンの声援が力になる』」",
+    "en": "📰 Pro Wrestling Monthly — {name} interview: 'The support from the fans is what carries me'",
+    "files": [
+      "management.js:MAGAZINE_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📰 月刊プロレスマガジン — 「特集：{name}の素顔に迫る」",
+    "en": "📰 Pro Wrestling Monthly — feature: up close with the real {name}",
+    "files": [
+      "management.js:MAGAZINE_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "📰 業界紙報道: {name}、{orgName} と電撃契約。スカウト合戦の裏で進められていた極秘交渉が明らかに",
     "en": "📰 From the trade press: {name} signs with {orgName} out of nowhere. Talks had been running in secret behind the scouting war",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📰 週刊女子プロレス — 「{name}、独占インタビュー掲載。『まだまだ頂点を譲る気はない』」",
+    "en": "📰 Weekly Women's Wrestling — exclusive interview with {name}: 'I have no plans to give up the top spot'",
+    "files": [
+      "management.js:MAGAZINE_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📰 週刊女子プロレス — 「{name}、表紙＆巻頭グラビア！ファン歓喜」",
+    "en": "📰 Weekly Women's Wrestling — {name} takes the cover and the opening spread! Fans delighted",
+    "files": [
+      "management.js:MAGAZINE_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📰 週刊女子プロレス — 「{name}密着ルポ。練習場から見えた執念」",
+    "en": "📰 Weekly Women's Wrestling — {name} up close: the drive that shows on the practice floor",
+    "files": [
+      "management.js:MAGAZINE_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 スポーツドキュメント — 「{name}、リングの外の真実」",
+    "en": "📺 Sports documentary — {name}: the truth outside the ring",
+    "files": [
+      "management.js:TV_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 スポーツニュース — 「{name}がゴールデンタイムに登場。業界への注目が高まっている」",
+    "en": "📺 Sports news — {name} appears in prime time, and interest in the business is rising",
+    "files": [
+      "management.js:TV_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 トーク番組 — 「{name}、意外な素顔にスタジオ沸く」",
+    "en": "📺 Talk show — an unexpected side of {name} wins the studio over",
+    "files": [
+      "management.js:TV_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 バラエティ番組出演 — 「{name}のトーク力に共演者も驚き」",
+    "en": "📺 Variety show appearance — {name}'s banter catches the other guests off guard",
+    "files": [
+      "management.js:TV_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 朝の情報番組 — 「話題の女子プロレスラー{name}に密着取材」",
+    "en": "📺 Morning show — a day with {name}, the women's wrestler everyone is talking about",
+    "files": [
+      "management.js:TV_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 特番出演 — 「女子プロレス最前線！ {name}の魅力を徹底解剖」",
+    "en": "📺 TV special — the front line of women's wrestling! A close look at what makes {name} worth watching",
+    "files": [
+      "management.js:TV_HEADLINES"
     ],
     "count": 1,
     "hasPlaceholder": true,

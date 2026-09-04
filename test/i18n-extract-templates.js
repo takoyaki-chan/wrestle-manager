@@ -95,6 +95,11 @@ const TARGET_TABLES = [
   'NEWSPAPER_SUB_TEMPLATES',
   'NEWS_HEADLINE_TEMPLATES',
   'NEWS_TICKER_TEMPLATES',
+  // P6-10で追加。引退記事のティア別テンプレ({L,A,B,C} × 3変種 × headline/body = 24本)。
+  // AI_INJURY_RETIREMENT_TEMPLATES は最初から対象だったのに、通常引退の本表だけが
+  // 対象一覧から漏れていた(EMOTION_TEXTSと同型の「見えないテーブル」)。消費点は
+  // Engine.newspaper._fillRetirementTemplate(P6-10でdict-opts化済み)。
+  'RETIREMENT_TEMPLATES',
 ];
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の
@@ -119,6 +124,12 @@ const KURODA_TABLES = [
 // P4-5: src/app.js の App.プロパティ(トップレベルconstではないためloadAsGlobalでは
 // 取れない。isolated evalで単独取得する)。
 const APP_NEWSPAPER_PROPS = ['_NEWSPAPER_HEADLINES', '_NEWSPAPER_ARTICLES'];
+
+// P6-10: src/management.js の Engine.flavor.プロパティ(雑誌取材・TV出演の見出しプール)。
+// app.jsの2プールと同じ理由(トップレベルconstではない)でisolated evalで取り出す。
+// management.js全体はEngine定義の巨大な単一オブジェクトリテラルで、loadAsGlobalすると
+// data.js等の読み込み順依存を抱えるため、対象の配列リテラルだけを切り出して評価する。
+const MANAGEMENT_FLAVOR_PROPS = ['MAGAZINE_HEADLINES', 'TV_HEADLINES'];
 
 const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
 
@@ -222,6 +233,38 @@ function extractAppObjectLiteral(appSrc, propName) {
   return null; // 対応する閉じかっこが見つからなかった(構造変化の可能性)
 }
 
+// ── P6-10: src/management.js から `<propName>: [ ... ]` の配列リテラルを単独取得する ──
+// extractAppObjectLiteral の角かっこ版。対象2配列は「絵文字+日本語+{name}」の
+// 素の文字列リテラルだけを要素に持つ(関数値でもネスト構造でもない)ため、
+// 角かっこ深さカウントで範囲を切り出して孤立評価すれば安全に取れる。
+// 文字列内に生の [ / ] が現れないことは 2026-09-04 に実データで確認済み。
+function extractArrayLiteralProp(src, propName) {
+  const marker = new RegExp('\\b' + propName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*:\\s*\\[');
+  const m = marker.exec(src);
+  if (!m) return null;
+  const openIdx = src.indexOf('[', m.index);
+  if (openIdx < 0) return null;
+  let depth = 0;
+  for (let i = openIdx; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === '[') depth++;
+    else if (ch === ']') {
+      depth--;
+      if (depth === 0) {
+        const literalSrc = src.slice(openIdx, i + 1);
+        try {
+          // eslint-disable-next-line no-eval
+          return eval('(' + literalSrc + ')');
+        } catch (e) {
+          console.error(`[i18n-extract-templates] 警告: ${propName} を評価できませんでした: ${e.message}`);
+          return null;
+        }
+      }
+    }
+  }
+  return null;
+}
+
 // ── 既存台帳の読み込み(マージ用。無ければ空マップ) ─────────────────────────
 function loadExistingLedger() {
   if (!fs.existsSync(OUT_PATH)) return new Map();
@@ -296,6 +339,13 @@ function main() {
   APP_NEWSPAPER_PROPS.forEach((propName) => {
     const obj = extractAppObjectLiteral(appSrc, propName);
     walkTable(`app.js:${propName}`, obj);
+  });
+
+  // ── 4. management.js の Engine.flavor 見出しプール2本(P6-10、isolated eval) ──
+  const mgmtSrc = fs.readFileSync(path.join(SRC_DIR, 'management.js'), 'utf8');
+  MANAGEMENT_FLAVOR_PROPS.forEach((propName) => {
+    const arr = extractArrayLiteralProp(mgmtSrc, propName);
+    walkTable(`management.js:${propName}`, arr);
   });
 
   const ledger = Array.from(ledgerMap.values())
