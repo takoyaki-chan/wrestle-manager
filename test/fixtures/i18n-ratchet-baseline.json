@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-09-03T00:25:50.332Z",
+  "generatedAt": "2026-09-04T02:05:10.754Z",
   "files": {
     "data.js": {
       "jaCount": 16694,
       "jaChars": 300518
     },
     "kuroda-text.js": {
-      "jaCount": 896,
-      "jaChars": 31257
+      "jaCount": 897,
+      "jaChars": 31310
     },
     "management.js": {
       "jaCount": 2328,
@@ -27,7 +27,7 @@
     },
     "ui-common.js": {
       "jaCount": 1376,
-      "jaChars": 9708
+      "jaChars": 9738
     },
     "ui-render.js": {
       "jaCount": 1081,
@@ -58,8 +58,8 @@
       "jaChars": 4297
     },
     "factions.js": {
-      "jaCount": 367,
-      "jaChars": 2937
+      "jaCount": 372,
+      "jaChars": 2951
     },
     "dev-event-catalog.js": {
       "jaCount": 187,
