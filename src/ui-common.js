@@ -727,11 +727,15 @@ document.addEventListener('click', (e) => {
 }, true);
 
 // ── War Challenge Dialogue Generator (personality×archetype) ──
+// i18n Stage B P5-2o: 戻り値は**生JA(=辞書キー)**。唯一の表示点である
+// _mdlAFlowPortraitHtml が表示直前に t() を通す規約(B3の挑戦状 _buildB3Step1 と同じ経路)。
+// ここで先に訳すと表示点の t() が二重適用になり、英語の完成文が辞書キーとして
+// [i18n-miss] に載ってログを汚す(P6-6 で同型を掃除済み)。
 function getWarChallengeDialogue(fighter, orgName) {
   if (typeof WAR_CHALLENGER_DIALOGUE !== 'undefined') {
-    return WM_I18N.t(pickDialogueLine(WAR_CHALLENGER_DIALOGUE, fighter));
+    return pickDialogueLine(WAR_CHALLENGER_DIALOGUE, fighter);
   }
-  return WM_I18N.t('…挑戦状を叩きつける');
+  return '…挑戦状を叩きつける';
 }
 
 // ── War Challenge Popup (F3: president delivers the challenge) ──
