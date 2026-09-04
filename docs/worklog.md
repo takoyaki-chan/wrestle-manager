@@ -1,5 +1,67 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-5 — EN走破i18n-miss 104(実測96)件の棚卸し+配線穴修正+D3_TEXT根治+1季完走達成（2026-09-04・worktree agent-aec89a43d9bdd6e93）
+
+開始前にworktreeブランチをmain先端(d29334c、バッチ⑪+P6-4保全マージ含む)へfast-forward済み。i18n/dialogue-ledger.json・src/lang-en-dialogue.js・test/i18n-build-dialogue-dict.js は指示どおり未変更。
+
+### 1. 全量棚卸し(104→実測96件)
+
+`npm run test:ui:walkthrough:en`(seed42)実行時点で main には既にバッチ⑪+P6-4がマージ済みだったため、指示書作成時の104件から**96件**に減っていた(想定どおりの自然減)。`test/ui-walkthrough/run.js` の出力が従来top10表示だったため、全量出力への小改修(ja digest不変)を先に入れて全96キーを取得。
+
+**分類手法**: 静的grep分類だけでは「二重t()適用」による見かけ上の“未訳”を「未訳」と誤判定するため、`src/i18n.js` の `logMiss()` に一時的にスタックトレース出力を仕込み(コミット前に除去)、EN走破を2本再走して**全96件の実際の呼び出し元関数**を実測で確定させた。この実測トレースが分類の一次資料。
+
+### 2. 4分類の結果
+
+| 分類 | 件数 | 内訳 |
+|---|---|---|
+| **(A) 未訳セリフ=対象外** | 約35〜40件 | `EVENT_INJURY_LINES`/`BREAKTHROUGH_LINES`/`SLUMP_START_LINES`/`MOTIVATION_LOSS_LINES`/`EVENT_TITLE_*`系/`WAR_CHALLENGER_DIALOGUE`/`WAR_VICTORY_LINES`/`WAR_POST_DIALOGUE`/`MILESTONE_LINES`/`FAN_EXPECT_REACTIONS`等、data.js側の台帳に`en:""`(未訳)で存在する行。配線は正しく単発t()で組まれている。P5バッチ待ち・対象外 |
+| **(B) 配線穴=src修正** | 約30件相当(下記) | 二重t()適用系11箇所+PH先埋め込み系6箇所+表示ヘルパーの言語非依存化2箇所+実バグ2件(下記詳細) |
+| **(C) 動的キー=ui-ledgerへkept追加+英訳** | 74件新規追加 | `_F07_INCIDENT_META`全体(タイトル12+選択肢ラベル17+ヒント33=62)+決裁枠ツールチップ2+`QUIET_SIGN_LINES`3+reporter-strip直書き4+P6-5で新設したt()テンプレ4(下記) |
+| **(D) JA原文が英語のギミック行** | **0件(重要な訂正)** | 過去の分析(P6-2b等)で「約20件はJA原文が最初から英語」と見込んでいたが、実測トレースでは該当ゼロだった。「英語なのに未訳扱い」に見えた行は**すべて(B)の二重t()適用バグ**(既訳の完成英文が再度辞書引きされ、テンプレの`{name}`入りキーと一致せずfail-openしていた)であり、原文が最初から英語のケースは今回の96件には存在しなかった |
+
+### 3. (B) 配線穴の詳細と修正箇所
+
+**二重t()適用(表示直前ヘルパーが2回t()を通す)**: `_pbFighterBlock`・`_u3bSideHtml`・`_mdlASubjectStage`・`_emrBubbleHtml`・`_chBubbleSlot`は「呼び出し元は生JAだけを渡し、翻訳はここで1回だけ行う」規約の共通表示点だが、一部の呼び出し元が**先にt()を通した完成英文**を渡していたため、その完成文が辞書キー(未置換のプレースホルダ入り原文)と一致せずi18n-missへ誤検出されていた(表示上は元々正しい英文のままなので実害はゼロ・純粋にログの誤検出)。
+- 事前t()を除去(単一消費先で他に依存がないと確認できたもの): `_buildRivalryMatchDialogue`(ui-common.js、RIVALRY_MATCH_REACTION win/loseLine)/`_renderB3MatchResult`/`_renderB2MatchResult`/`_renderRivalryPopup`の3箇所(confrontation×2+resolution×1)/PPV_OPPONENT_LINES(renderPPVMatchResultPopup isNext分岐)/`_specialIntroFighterLine`(JT summon分岐)/`_showJTImpressionChain`/POACH_REACTION_DIALOGUES(resolvePoach)
+- `_emrBubbleHtml`(showEventMatchResultPopup内ローカル関数)は自身の内部t()を除去。理由: `opts.victoryLine`/`opts.loserLine`の生成元(POST_MATCH_FLAVOR_LINES/PPV_SUMMIT_VICTORY_LINES/`_pickUnifiedTitleLine`/`_agwSurvivorLine`)は**すべて**呼び出し側で訳し済みで渡す設計だった(`_emrVictoryLine`のpreferred分岐も無加工で返す)——ただし1箇所だけ(`renderJuniorTournamentMatchResult`のpostMatchWin)が生JAのまま渡していたため、そちらをt()で包む側に統一(3消費元の整合を取った)
+- `_u3bSideHtml`/`_factionReporterStrip`/`_mdlAReporterStrip`/`_mdlASubjectStage`/`_chBubbleSlot`に`lineTranslated`/`speechTranslated`/`translated`引数を追加(既定false=既存の60箇所超の呼び出し元は無変更)。F07の`getF07Line`(resultLeader/coachReport、`{name}`をテンプレへ埋め込む都合で翻訳→変数置換の順が必須)・`showTitleDefenseResultModal`の`champLine`(`getTraitQuote`常時訳し済み)・`getTraitQuote('release'|'injury', …)`経由の`showEventPopup`3箇所・秋対抗戦優勝コメント(`_agwChampionSpeech`、`{wins}`/`{org}`置換のため翻訳必須)の計8箇所へ`true`を配線
+
+**PH先埋め込み(選手名/団体名を先に文字列連結してからt()に渡していた=selectDialogue/_flagFormatLineと同型の穴)**:
+- `_choiceEventReporterLine`(ui-common.js): S1〜S6/E1〜E6/S_boycott/S_grumble/S_snsの16テンプレ全てが`${nm}選手から…`のようにJS template literalで先に選手名を埋め込んでおり、EN時は常に未訳のまま出ていた。`WM_I18N.t(tmpl, {name: WM_I18N.pn(nm)})`へ書き換え
+- 敵陣反応2箇所(`_buildB3Step3b`の生きている方の定義+`_showWarEnemyAceStatement`相当の関数): `reporterLine`が`${orgName}側は…`を先埋め込みしていた(隣の`observationText`は既にt()+paramsで正しく配線済みだったのに取りこぼされていた)。同じ`{org}`パラメータ形式へ統一
+- 派閥F07の`reporterText`(leader分岐`{name}さんが社長室に向かいました。`/coachReport分岐フォールバック`{faction}の動向について報告があります。`)・war-entry代表選出`{n}名の代表を選んでください。…`・war-challenge挑戦状`{org}から正式な対抗戦の申し入れが届きました`の4箇所も同型で修正
+- **注**: `_buildB3Step3b`は同名の関数が2つ定義されており(JS仕様で後勝ち)、先頭側(元コードのセリフデータを優先…のコメント付き)は完全な死コード(呼び出されない)と判明。今回は触らず(別件)
+
+**実バグ2件(i18nと無関係・EN走破の過程で発見)**:
+1. **F07の選手名がpn()を通っていなかった**(app.js、`vars.leaderName`/`vars.targetName`): `{leaderName}の言葉、{targetName}には冷たい。…` → `"{leaderName}'s words go cold when {targetName} is the one hearing them…"`のように**テンプレは正しく訳されるのに、埋め込む名前が生JPのまま**という実際の表示バグ(例: `根岸亞里亞's words go cold when 長谷川レオナ is the one hearing them`)。`WM_I18N.pn()`で修正
+2. **`Engine.relationships.applyDepartureTrustImpact is not a function`で例外落ち**(app.js:13067、EN走破week34のD1_EXCEPTIONで発覚): 退団選手のbond/rivalry反映処理が存在しない関数を呼んでいた(他10箇所は全て`Engine.trust.applyDepartureTrustImpact`で正しく呼んでいる、単純な名前空間の書き間違い)。加えて引数の型(`G`丸ごと/文字列`'release'`/`{}`)も不正で、戻り値(更新後roster)も受け取っていなかった。**i18n無関係の既存バグ**(JAでも同じ経路で発生しうる)だが、EN走破1季完走の直接の阻害要因だったため修正。`node test/auto-sim.js 40 42`で全不変条件クリアを確認済み
+
+### 4. D3_TEXT(`condition`露出)の実態
+
+week39のD3_TEXTは**内部変数の露出ではなく検出器側の言語非対応が原因**(コーディネーターの指摘どおり)。実測トレースで一致箇所は新聞ティッカーの正当な英文`"…marquee name {name} is said to be in outstanding condition in training"`(「仕上がりが抜群」の訳・「好調」を意味する自然な英語)。`test/ui-walkthrough/detectors.js`の`INTERNAL_TOKEN_PATTERN`はJAでは絶対出現しない内部識別子として`morale`/`condition`も含めていたが、ENでは訳文自体が普通に使う英単語のため誤検出していた。**言語別に検査パターンを分離**(`INTERNAL_TOKEN_PATTERN_JA`=従来どおりフル/`INTERNAL_TOKEN_PATTERN_EN`=`orgPop`/`weekPhase`/`MQ`のみ、`morale`/`conditon`は除外)。JA側はパターン・digest共に不変。
+
+**副次発見(未修正・次バッチへ)**: 同じティッカー文に選手名3件(根岸亞里亞/穴澤ほのか/北畠吉乃、いずれもPN_EN辞書に登録済み)が訳されずJPのまま露出+「ブレイクスルー」という不明なJA語が`{org}`枠に入り込んでいる形跡。ティッカー生成側(kuroda-text.js周辺)の配線を要調査。
+
+### 5. EN走破ドライバのD2_FREEZE 2件(i18n-missとは別枠・EN走破1季完走の阻害要因)
+
+1. **`TO THE SEASON REPORT →`ボタンで停止(week49)**: `test/ui-walkthrough/driver.js`の`actionScore()`は既にEN訳文言`To the Season Report →`等を判定に含んでいた(P6-2bで追加済み)が、Chromiumの`element.innerText`はCSS `text-transform:uppercase` を反映して**全て大文字**の文字列を返すため、Title Caseの正規表現が不一致になっていた。該当するEN文言マッチ5箇所(週送り/season系4種・結果へ系・待遇交渉受諾系・次へ系・承認系)へ`i`(case-insensitive)フラグを追加。JA側の一致条件・スコアは無変更(digest不変を`npm run test:ui:walkthrough`で確認)
+2. **上記修正後、week34で`Engine.relationships.applyDepartureTrustImpact is not a function`のD1_EXCEPTIONに変化** → §3の実バグ2で修正
+
+### 6. 検証結果
+
+- `node test/ja-golden.js`: **基準と完全一致**(lines=11233, hash=6b3d05c8…)
+- `node test/i18n-build-dict.js`: 台帳総キー数=3,263 訳文あり=3,263 **未訳(fail-open)=0**
+- `npm test`: **260/260 green**(`autumn-war-ui-flow-test.js`は`_chBubbleSlot`呼び出しへの`translated`引数追加でソース文字列一致アサーションが変わったため期待値を更新)
+- `node test/auto-sim.js 40 42`: **ALL CLEAR**(不変条件違反0・台帳検査/給与連続性・約束履行・資金恒等式いずれも違反0)
+- `npm run test:ui:walkthrough`(JA): **PASS**、digest=`1052faa82eaf7991`(**指示どおり不変を確認**)
+- `npm run test:ui:walkthrough:en`(EN, seed42・1季): **PASS**、Issues=0、**season=2 week=1まで到達(週52→オフシーズン→ドラフト/移籍/開幕まで完走)**。i18n-miss=59件/59キー(進行が伸びたことで新たに到達した画面の分だけ増加。大半は(A)分類の同系統データ、末尾8件は交渉/慰留セリフ系の別の二重t()疑いで未着手・次バッチへ)
+
+### 7. 残課題(次バッチへ)
+
+- 交渉/慰留(`NEGOTIATE_LINES`等、`{tenure}`/`{record}`断片合成)まわりで新たに8件のEN二重t()疑いを検出(EN走破がオフシーズン交渉フェーズまで到達したことで露見)。今回は未調査・未修正
+- ニュースティッカーの選手名pn()漏れ+「ブレイクスルー」の枠ズレ(§4)
+- (A)未訳の約35〜40件はP5バッチ待ちのまま(対象外)
+
 ## 🌐 Stage B P5-2k — セリフ英訳バッチ⑪(表彰304行+通知304行+引き抜き252行+秋対抗戦227行)（2026-09-04・Opus主筆 worktree agent-a63e2d0ad22b42c62）
 
 量産翻訳の第11バッチ。**`data.js:AWARD_LINES` の305行中304行 + `data.js:NOTIF_DIALOGUES` の306行中304行 + `data.js:POACH_REACTION_DIALOGUES` の256行中252行 + `data.js:AUTUMN_WAR_MATCH_LINES` の228行中227行 = 1,087行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2jの訳語判断(2cの対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2fのベルト=belt/王座=title、2hの `ふふ`=Mm/My 機能置換、2jの `優勝旗`=the banner・秋対抗戦=Autumn Gauntlet War を継承)。開始前にworktreeブランチをmain先端(f446891)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。

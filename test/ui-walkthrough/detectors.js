@@ -11,7 +11,13 @@ const path = require('path');
 // 数字/記号直結型も拾う(素の\bMQ\bではQ|8間に語境界が無く素通りする)。
 // 「careerBestMQ」等の識別子は前側の語境界が無いため誤爆しない
 const RAW_VALUE_PATTERN = /undefined|\bNaN\b|\[object\s|\bnull\b/g;
-const INTERNAL_TOKEN_PATTERN = /\b(?:morale|orgPop|weekPhase|condition)\b|\bMQ(?![A-Za-z])/g;
+// P6-5: EN走破でD3_TEXTが「outstanding condition」のような正当な英文にも誤爆していた
+// (news tickerの「in outstanding condition in training」= 好調を意味する自然な英語)。
+// morale/conditionはJAでは絶対に出ない内部識別子だが、ENでは訳文自身が普通に使う英単語
+// でもあるため、言語別に検査対象を分ける。orgPop/weekPhase/MQは英語としても意味を持たない
+// 純内部トークンなので、ENでも変わらず検査する
+const INTERNAL_TOKEN_PATTERN_JA = /\b(?:morale|orgPop|weekPhase|condition)\b|\bMQ(?![A-Za-z])/g;
+const INTERNAL_TOKEN_PATTERN_EN = /\b(?:orgPop|weekPhase)\b|\bMQ(?![A-Za-z])/g;
 // P6-2: ENモードの日本語露出計測(ひらがな/カタカナ/CJK統合漢字+互換漢字)。
 // 失敗条件には使わない(意図的に残るナレーション等があるため) — 情報として集計するだけ
 const JAPANESE_CHAR_PATTERN = /[぀-ヿ㐀-鿿豈-﫿]/;
@@ -145,6 +151,9 @@ class WalkthroughDetectors {
   constructor(options = {}) {
     this.stackTimeoutMs = options.stackTimeoutMs || 5000;
     this.watchdogMs = options.watchdogMs || 90000;
+    // P6-5: D3_TEXTの内部トークン検査を言語別にするための既定'ja'(未指定時は従来どおり
+    // フル検査=ja digest不変)。run.js から --lang をそのまま渡す
+    this.lang = options.lang || 'ja';
     this.issues = [];
     this.consoleEntries = [];
     this.lastProgressAt = Date.now();
@@ -245,11 +254,13 @@ class WalkthroughDetectors {
     const snapshot = await readPageSnapshot(page);
     const lines = snapshot.text.split(/\r?\n/).map(compactText).filter(Boolean);
     const matches = [];
+    // P6-5: ENは訳文自体がmorale/condition等を普通の英単語として使うため専用パターンへ
+    const internalTokenPattern = this.lang === 'en' ? INTERNAL_TOKEN_PATTERN_EN : INTERNAL_TOKEN_PATTERN_JA;
     for (const line of lines) {
       for (const raw of line.matchAll(RAW_VALUE_PATTERN)) {
         matches.push({ kind: 'raw-value', token: raw[0], context: line.slice(0, 240) });
       }
-      for (const internal of line.matchAll(INTERNAL_TOKEN_PATTERN)) {
+      for (const internal of line.matchAll(internalTokenPattern)) {
         matches.push({ kind: 'internal-token', token: internal[0], context: line.slice(0, 240) });
       }
     }
