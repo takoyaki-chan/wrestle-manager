@@ -147,7 +147,7 @@ assert.ok(!c1rSrc.includes('_emrSingleSide('), '単発試合カードではな�
   }, pn(str) { return str; } };
 
   const build = new Function(
-    'Engine', 'G', 'document', 'escHtml', 'getUpperUrl', 'Math', 'WM_I18N',
+    'Engine', 'G', 'document', 'escHtml', 'getUpperUrl', 'Math', 'WM_I18N', '_factionDisplayName',
     `let _capturedHtml = '', _capturedOpts = null;
      function showFighterPopup() {}
      function _mdlAOpen(html, opts) { _capturedHtml = html; _capturedOpts = opts; return true; }
@@ -157,7 +157,8 @@ assert.ok(!c1rSrc.includes('_emrSingleSide('), '単発試合カードではな�
      ${functionSource('_renderCommon1MatchResult')}
      return { _renderCommon1MatchResult, getHtml: () => _capturedHtml, getOpts: () => _capturedOpts };`
   );
-  const built = build(EngineStub, Gstub, documentStub, escHtml, getUpperUrl, Math, WM_I18N_STUB);
+  // i18n P6-7: 派閥名(「{surname}派」)の表示直前変換。ja相当のpass-through。
+  const built = build(EngineStub, Gstub, documentStub, escHtml, getUpperUrl, Math, WM_I18N_STUB, name => name);
 
   const fA = { id: 11, name: 'A選手', pw: 80, sp: 78, te: 76, st: 82, mn: 74 };
   const fB = { id: 22, name: 'B選手', pw: 70, sp: 68, te: 66, st: 72, mn: 64 };

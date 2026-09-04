@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー3295件、訳文あり3295件)
+//  生成元: i18n/ui-ledger.json (総キー3313件、訳文あり3313件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -432,6 +432,7 @@
     "{sign}{v}万": "{sign}¥{v:man}",
     "{src}・残{w}週": "{src} · {w} weeks left",
     "{stat}を重点に指導中": "Focusing her coaching on {stat}",
+    "{surname}派": "{surname} Group",
     "{s}年目 末": "End of Year {s}",
     "{target}は{to}へ移っていった。{from}の空気は凍りついている。": "{target} moved over to {to}. The air in {from} has frozen.",
     "{target}：{from} → {to}": "{target}: {from} → {to}",
@@ -490,6 +491,7 @@
     "……どうだ、これが実力の差だ": "...See that? That's the gap between us.",
     "……わかった": "...All right",
     "……覚えてなさいよ。次は絶対に、私が勝つ": "...Remember this. Next time, I win.",
+    "…ちょっとわかりません": "...I'm not quite sure.",
     "…挑戦状を叩きつける": "...Throw down a challenge",
     "…見殺し": "...Left her to it",
     "※ PPVまでに負傷した場合、自動的に代理選手が出場します": "※ If she is injured before the PPV, a replacement is entered automatically",
@@ -664,6 +666,7 @@
     "⭐ 特別興行": "⭐ Special Show",
     "「{a}」が「{b}」を下した。リング上で、ようやく決着がついた。": "{a} beat {b}. In the ring, at last, it was settled.",
     "「{a}」と「{b}」の抗争は、もはや決着の気配すら見せない。終わらない戦いが、団体の空気を重くしていく。": "The feud between {a} and {b} shows no sign of ending. A war with no finish is weighing the promotion down.",
+    "「{line}」": "\"{line}\"",
     "「{org}」は活動停止を発表した。": "{org} has announced it is shutting down.",
     "「{org}」は資金難により活動停止を発表した。": "{org} has announced it is shutting down, out of money.",
     "「乗った」": "I'm in.",
@@ -1959,6 +1962,7 @@
     "押さえ": "Long shot",
     "押し寄せる大盛況": "Crowd surging in, big turnout",
     "担当: {n}/{max}名": "Assigned: {n}/{max}",
+    "担当じゃないから確信はないですが…": "I'm not her assigned coach, so take this with a grain of salt, but...",
     "担当なし": "No assignment",
     "担当コーチ": "Assigned Coach",
     "担当上限": "Assignment limit",
@@ -3308,7 +3312,21 @@
     "＋ 追加": "+ Add",
     "：互いに力を認め合い、表情が和らいだ": ": they acknowledged each other's strength, and their faces softened",
     "：社長の裁定に納得し、気持ちにも張りが戻った": ": she accepted your ruling, and the spring came back into her step",
-    "｜ 抗争{n}勝": "| {n} feud wins"
+    "｜ 抗争{n}勝": "| {n} feud wins",
+    "なんという試合だ…！今夜この瞬間を見られた人は幸せ者です！": "What a match...! Anyone who got to witness this moment tonight is a lucky one!",
+    "場内、総立ち！実況席まで震えが伝わってきます！": "The whole arena's on its feet! Even up here at ringside, we can feel it shaking!",
+    "これぞプロレス！長く語り継がれる一戦になるでしょう！": "This is what pro wrestling is about! They will be talking about this one for years!",
+    "決まったーッ！！見事なフィニッシュです！": "And there it is—!! What a beautiful finish!",
+    "大熱戦！客席のボルテージが最高潮です！": "What a war! The crowd's energy is through the roof!",
+    "素晴らしい攻防でした！拍手が鳴り止みません！": "What a back-and-forth battle! The applause won't stop!",
+    "勝負あり！手堅くまとめました！": "And that's the match! A solid, no-nonsense finish.",
+    "決着です！実力どおりの内容と言えるでしょう。": "It's settled! You could call that result about right on the merits.",
+    "ここで試合終了！さあ、次のカードへ参りましょう。": "That's the match! Now, on to the next bout.",
+    "…勝負あり。少し噛み合わなかった印象です。": "...And that is the match. It never quite clicked out there.",
+    "決着はつきましたが、静かな幕切れとなりました。": "It's decided, but a quiet way to end it.",
+    "淡々とした展開のまま、試合終了です。": "A flat, even-keeled match, and that is the finish.",
+    "時間切れ…！決着はつきませんでした！": "Time's up...! No decision tonight!",
+    "両者譲らず！これは決着つかずの裁定です！": "Neither side would give! The call is a draw!"
   }
   );
 })();

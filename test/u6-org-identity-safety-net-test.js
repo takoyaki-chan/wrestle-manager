@@ -237,7 +237,7 @@ function section(name, fn) {
     return out;
   }, pn(str) { return str; } };
   const build = new Function(
-    'document', 'G', 'Audio', 'window', 'Engine', 'portraitImg', 'WM_I18N',
+    'document', 'G', 'Audio', 'window', 'Engine', 'portraitImg', 'WM_I18N', '_quoteLine', '_quoteVal',
     `${uiFn('escHtml')}
      ${uiFn('orgIconHtml')}
      ${uiFn('_pbStars')}
@@ -296,7 +296,9 @@ function section(name, fn) {
       },
     };
     const portraitImgStub = opts.portraitImg || ((id, size) => `<img src="image/face/${id}.png" width="${size}">`);
-    const built = build(documentStub, GStub, AudioStub, windowStub, EngineStub, portraitImgStub, WM_I18N_STUB);
+    const built = build(documentStub, GStub, AudioStub, windowStub, EngineStub, portraitImgStub, WM_I18N_STUB,
+      text => `「${text == null ? '' : text}」`,
+      value => `「${value == null ? '' : value}」`);
     return { built, box, click, pressEnter, isTornDown };
   }
 

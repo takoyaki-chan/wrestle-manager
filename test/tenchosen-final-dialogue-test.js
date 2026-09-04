@@ -118,6 +118,8 @@ function makeCtx(opts) {
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
     }, pn(str) { return str; } },
+    // i18n P6-7: _tcFinalPreBubbleHtml等が吹き出しの「」を_quoteLine経由に(言語別化)。
+    _quoteLine: text => `「${text == null ? '' : text}」`,
   };
   vm.createContext(ctx);
   vm.runInContext(`${finalBlock}\n${focusCardSrc}\n${runAftermathSrc}\n`, ctx);

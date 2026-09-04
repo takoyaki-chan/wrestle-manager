@@ -4204,6 +4204,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{surname}派",
+    "en": "{surname} Group",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{s}年目 末",
     "en": "End of Year {s}",
     "files": [
@@ -4778,6 +4788,16 @@
   {
     "key": "……覚えてなさいよ。次は絶対に、私が勝つ",
     "en": "...Remember this. Next time, I win.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…ちょっとわかりません",
+    "en": "...I'm not quite sure.",
     "files": [
       "ui-common.js"
     ],
@@ -6526,6 +6546,16 @@
     "en": "The feud between {a} and {b} shows no sign of ending. A war with no finish is weighing the promotion down.",
     "files": [
       "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「{line}」",
+    "en": "\"{line}\"",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -19684,6 +19714,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "担当じゃないから確信はないですが…",
+    "en": "I'm not her assigned coach, so take this with a grain of salt, but...",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -33386,5 +33426,173 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "なんという試合だ…！今夜この瞬間を見られた人は幸せ者です！",
+    "en": "What a match...! Anyone who got to witness this moment tonight is a lucky one!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "場内、総立ち！実況席まで震えが伝わってきます！",
+    "en": "The whole arena's on its feet! Even up here at ringside, we can feel it shaking!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "これぞプロレス！長く語り継がれる一戦になるでしょう！",
+    "en": "This is what pro wrestling is about! They will be talking about this one for years!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "決まったーッ！！見事なフィニッシュです！",
+    "en": "And there it is—!! What a beautiful finish!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "大熱戦！客席のボルテージが最高潮です！",
+    "en": "What a war! The crowd's energy is through the roof!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "素晴らしい攻防でした！拍手が鳴り止みません！",
+    "en": "What a back-and-forth battle! The applause won't stop!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "勝負あり！手堅くまとめました！",
+    "en": "And that's the match! A solid, no-nonsense finish.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "決着です！実力どおりの内容と言えるでしょう。",
+    "en": "It's settled! You could call that result about right on the merits.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "ここで試合終了！さあ、次のカードへ参りましょう。",
+    "en": "That's the match! Now, on to the next bout.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "…勝負あり。少し噛み合わなかった印象です。",
+    "en": "...And that is the match. It never quite clicked out there.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "決着はつきましたが、静かな幕切れとなりました。",
+    "en": "It's decided, but a quiet way to end it.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "淡々とした展開のまま、試合終了です。",
+    "en": "A flat, even-keeled match, and that is the finish.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "時間切れ…！決着はつきませんでした！",
+    "en": "Time's up...! No decision tonight!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
+  },
+  {
+    "key": "両者譲らず！これは決着つかずの裁定です！",
+    "en": "Neither side would give! The call is a draw!",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
   }
 ]

@@ -249,7 +249,7 @@ const FACTION_WM_I18N_STUB = { t(text, params) {
 }, pn(str) { return str; } };
 
 const buildFaction = new Function(
-  'Engine', 'document', 'getUpperUrl', '_factionLine', '_factionReporterStrip', '_awOrgEmblem', 'WM_I18N',
+  'Engine', 'document', 'getUpperUrl', '_factionLine', '_factionReporterStrip', '_awOrgEmblem', 'WM_I18N', '_factionDisplayName',
   `let _popupQueue = [];
    let FACTION_F08_LEADER_LINES = {};
    let EVENT_LINES_BY_KEY = { challengeArrival: { standard: ['ARRIVAL_LINE_MARKER'] } };
@@ -312,7 +312,8 @@ function makeFactionBundle(overrides) {
   const reporterStripStub = overrides._factionReporterStrip
     || ((state, line) => `<div class="fevt-reporter-strip">${line}</div>`);
   const orgEmblemStub = overrides._awOrgEmblem || (() => '<span class="org-emblem-stub"></span>');
-  const built = buildFaction(EngineStub, doc, getUpperUrlStub, factionLineStub, reporterStripStub, orgEmblemStub, FACTION_WM_I18N_STUB);
+  // i18n P6-7: 派閥名(「{surname}派」)の表示直前変換。ja相当のpass-through。
+  const built = buildFaction(EngineStub, doc, getUpperUrlStub, factionLineStub, reporterStripStub, orgEmblemStub, FACTION_WM_I18N_STUB, name => name);
   return { built, getRoot };
 }
 

@@ -137,7 +137,7 @@ function logGap(msg) {
 // ===========================================================================
 (function challengeRequestResultSuite() {
   const build = new Function(
-    'Engine', 'document', 'getUpperUrl', 'getCoachPortraitUrl', 'RIVAL_ORGS', 'G', 'WM_I18N',
+    'Engine', 'document', 'getUpperUrl', 'getCoachPortraitUrl', 'RIVAL_ORGS', 'G', 'WM_I18N', '_quoteLine',
     `let _popupQueue = [];
      const _POPUP_OVERLAY_IDS = [];
      ${uiFn('escHtml')}
@@ -209,7 +209,8 @@ function logGap(msg) {
     const getCoachPortraitUrlStub = () => '';
     const RIVAL_ORGS_STUB = opts.RIVAL_ORGS || [{ id: 'org_a', name: 'ライバル団体' }];
     const GStub = opts.G || {};
-    const built = build(EngineStub, doc, getUpperUrlStub, getCoachPortraitUrlStub, RIVAL_ORGS_STUB, GStub, WM_I18N_STUB);
+    const built = build(EngineStub, doc, getUpperUrlStub, getCoachPortraitUrlStub, RIVAL_ORGS_STUB, GStub, WM_I18N_STUB,
+      text => `「${text == null ? '' : text}」`);
     return { built, getRoot };
   }
 
@@ -623,7 +624,7 @@ function logGap(msg) {
 
   // --- renderAutumnWarResult: 決勝の最終スコア(champion vs runnerUp) ---
   const buildResult = new Function(
-    'Engine', 'G', 'App', 'document', 'WM_I18N',
+    'Engine', 'G', 'App', 'document', 'WM_I18N', '_quoteLine',
     `${uiFn('escHtml')}
      ${uiFn('_agwTeam')}
      ${uiFn('_agwFighter')}
@@ -670,7 +671,8 @@ function logGap(msg) {
       ] },
     };
     const AppStub = opts.App || { _awPreview: opts.p };
-    const built = buildResult(EngineStub, GStub, AppStub, doc, WM_I18N_STUB);
+    const built = buildResult(EngineStub, GStub, AppStub, doc, WM_I18N_STUB,
+      text => `「${text == null ? '' : text}」`);
     return { built, getScreen };
   }
 
@@ -852,7 +854,7 @@ function logGap(msg) {
     return out;
   }, pn(str) { return str; } };
   const build = new Function(
-    'Engine', 'document', 'RIVAL_ORGS', 'G', 'getUpperUrl', 'pickDialogueLine', 'RIVALRY_MATCH_REACTION', 'WAR_POST_DIALOGUE', 'WM_I18N',
+    'Engine', 'document', 'RIVAL_ORGS', 'G', 'getUpperUrl', 'pickDialogueLine', 'RIVALRY_MATCH_REACTION', 'WAR_POST_DIALOGUE', 'WM_I18N', '_quoteLine',
     `${uiFn('escHtml')}
      ${uiFn('fLink')}
      ${uiFn('_pbStars')}
@@ -880,7 +882,8 @@ function logGap(msg) {
     const getUpperUrlStub = opts.getUpperUrl || ((id) => `image/upper/${id}.webp`);
     const pickDialogueLineStub = opts.pickDialogueLine || ((pool, f) => `LINE_${f && f.id}`);
     const RMR = opts.RIVALRY_MATCH_REACTION || { winnerLines: ['w'], loserLines: ['l'] };
-    const built = build(EngineStub, doc, RIVAL_ORGS_STUB, GStub, getUpperUrlStub, pickDialogueLineStub, RMR, undefined, WM_I18N_STUB);
+    const built = build(EngineStub, doc, RIVAL_ORGS_STUB, GStub, getUpperUrlStub, pickDialogueLineStub, RMR, undefined, WM_I18N_STUB,
+      text => `「${text == null ? '' : text}」`);
     return { built, box };
   }
 

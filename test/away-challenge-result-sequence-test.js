@@ -194,7 +194,7 @@ function makeSequenceBundle() {
   let overlayCloseCalls = 0;
   const build = new Function(
     'Engine', 'AWAY_CHALLENGE_RESULT_LINES', '_factionEnsureOverlayRoot', '_factionCloseCinematicOverlay',
-    '_factionUpperUrl', 'escHtml', 'setTimeout', 'clearTimeout', 'Audio', 'WM_I18N',
+    '_factionUpperUrl', 'escHtml', 'setTimeout', 'clearTimeout', 'Audio', 'WM_I18N', '_quoteLine',
     `let _challengeRequestResultSequenceActive = false;
      ${helperSources}
      ${showSequenceSource}
@@ -210,7 +210,9 @@ function makeSequenceBundle() {
     fn => timers.set(fn),
     id => timers.clear(id),
     undefined,
-    WM_I18N_STUB
+    WM_I18N_STUB,
+    // i18n P6-7: crrm-sequence/reaction-bubbleが吹き出しの「」を_quoteLine経由に(言語別化)。
+    text => `「${text == null ? '' : text}」`
   );
   return { ...dom, timers, ui, getOverlayCloseCalls: () => overlayCloseCalls };
 }

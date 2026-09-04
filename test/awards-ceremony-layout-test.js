@@ -29,13 +29,15 @@ const champions = fn('_buildChampionsAward');
 const hall = fn('_buildHallOfFame');
 
 // §3 / §4: 吹き出し本文だけを予約枠に入れ、画像より前に置く。
+// i18n P6-7: 各lineは_awardLine()経由で既にWM_I18N.t()済みのため、_awSpeechSlotへ
+// 二重t()回避の第2引数(true)を付けた(呼び出しの形自体・順序は不変)。
 assert.ok(!/speech-speaker/.test(fn('_awSpeech')), '吹き出しに名前を入れない');
-before(winnerBlock, '_awSpeechSlot(o.line)', 'class="${portraitClass}"', '単独受賞者は吹き出し→画像の順');
-before(bestMatch, '${_awSpeechSlot(line1)}', 'class="portrait-sm"', 'ベストマッチ左は吹き出し→画像の順');
-assert.ok(/\$\{_awSpeechSlot\(line2\)\}<div class="portrait-sm"/.test(bestMatch), 'ベストマッチ右は吹き出し→画像の順');
-before(eventAward, '${_awSpeechSlot(lineFor(f))}', 'class="aw-team-portrait"', '大会優勝の隊列は吹き出し→画像の順');
-before(champions, '${_awSpeechSlot(line)}', 'class="champ-portrait"', 'タイトル王者は吹き出し→画像の順');
-before(hall, '${_awSpeechSlot(line)}', 'class="hof-portrait"', '殿堂入りは吹き出し→画像の順');
+before(winnerBlock, '_awSpeechSlot(o.line, true)', 'class="${portraitClass}"', '単独受賞者は吹き出し→画像の順');
+before(bestMatch, '${_awSpeechSlot(line1, true)}', 'class="portrait-sm"', 'ベストマッチ左は吹き出し→画像の順');
+assert.ok(/\$\{_awSpeechSlot\(line2, true\)\}<div class="portrait-sm"/.test(bestMatch), 'ベストマッチ右は吹き出し→画像の順');
+before(eventAward, '${_awSpeechSlot(lineFor(f), true)}', 'class="aw-team-portrait"', '大会優勝の隊列は吹き出し→画像の順');
+before(champions, '${_awSpeechSlot(line, true)}', 'class="champ-portrait"', 'タイトル王者は吹き出し→画像の順');
+before(hall, '${_awSpeechSlot(line, true)}', 'class="hof-portrait"', '殿堂入りは吹き出し→画像の順');
 assert.ok(/\.aw-speech-slot\{height:auto;min-height:52px/.test(css), '吹き出し予約枠は最低2行分を確保し、全文を表示する');
 assert.ok(/\.award-card \.speech-bubble::before\{[^}]*bottom:-8px[^}]*border-top-color/.test(css), '吹き出しの尻尾は画像へ向けて下向き');
 assert.ok(/\.speech-text\{[^}]*display:block;overflow:visible/.test(css), '吹き出し本文は省略せずに全文を表示する');

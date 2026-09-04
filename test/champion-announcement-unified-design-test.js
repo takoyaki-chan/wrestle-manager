@@ -132,6 +132,10 @@ assert.ok(!agwFn.includes('class="ch-lineup-bubs"'), '見えない空欄を含�
 // new Function() bodies resolve free identifiers against the real global object,
 // so a temporary global.WM_I18N stub (matching test/helpers/load-game.js) makes it visible.
 global.WM_I18N = global.WM_I18N || { t(text) { return text; }, pn(str) { return str; } };
+// i18n P6-7: _chBubbleSlot now wraps bubble text via _quoteLine (「」の言語別化). Same
+// global-stub trick as WM_I18N above (new Function() bodies resolve free identifiers
+// against the real global object).
+global._quoteLine = global._quoteLine || (text => `「${text == null ? '' : text}」`);
 const bubbleSlot = new Function(
   'escHtml',
   `${functionSource(ui, '_chBubbleSlot')}; return _chBubbleSlot;`

@@ -258,6 +258,8 @@ function section(source, startMarker, endMarker) {
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
     }, pn(str) { return str; } },
+    // i18n P6-7: _agwPreBoutDialogueHtml now wraps bubble text via _quoteLine (「」の言語別化).
+    _quoteLine: text => `「${text == null ? '' : text}」`,
   };
   vm.runInNewContext(`${dialogueSource}\nthis.renderDialogue = _agwPreBoutDialogueHtml;`, sandbox);
 

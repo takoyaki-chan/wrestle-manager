@@ -63,7 +63,9 @@ section('A2. 隣り合う吹き出しは重ならない(画像は18pxのまま�
 
 section('A3. 吹き出しは画像より前(上)に出力され、margin-topで下に付いていない', () => {
   const body = fn('_buildSeasonEventChampionAward');
-  const speechAt = body.indexOf('_awSpeechSlot(lineFor(f))');
+  // i18n P6-7: lineFor(f)は_awardLine()経由で既にWM_I18N.t()済みのため、二重t()回避の
+  // 第2引数(true)を付けた(_awSpeechSlotのtranslatedオプト)。呼び出しの形自体は不変。
+  const speechAt = body.indexOf('_awSpeechSlot(lineFor(f), true)');
   const portraitAt = body.indexOf('class="aw-team-portrait"');
   assert.ok(speechAt >= 0 && portraitAt >= 0, '吹き出し/画像の出力箇所が見つからない');
   assert.ok(speechAt < portraitAt, '隊列は吹き出し→画像の順になっていない');

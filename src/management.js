@@ -8149,8 +8149,11 @@ const Engine = {
       let tier;
       if (isInaccurate) { tier = rate >= 80 ? 'likely' : rate >= 60 ? 'sure' : rate >= 40 ? 'hard' : 'iffy'; }
       else               { tier = rate >= 80 ? 'sure'   : rate >= 60 ? 'likely' : rate >= 40 ? 'iffy' : 'hard'; }
+      // i18n P6-7: `texts` はA_sure/A_likely/A_iffy/A_hardの4種いずれかで、8voice全てで
+      // 常に非空(VM抜き取りで確認済み)。フォールバック'…読めません'は到達不能な死コードだった
+      // ため削除(挙動不変)。
       const texts = pool[`A_${tier}`];
-      return texts ? texts[Math.floor(Math.random() * texts.length)] : '…読めません';
+      return texts[Math.floor(Math.random() * texts.length)];
     },
   },
 
@@ -30959,13 +30962,16 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
     bodyParts.push(`過去対戦${ph.matches}回（${ph.wins}勝${ph.losses}敗）、再戦での決着となる。`);
   }
 
+  // i18n P6-7: sr.winnerLine/loserLineはpickDialogueLine/pickPpvLineが返す生JA(=辞書キー、
+  // §8の「render時点再構築」と同じくpush側は加工しない)。この関数は他の箇所でTを通しているのに
+  // ここだけ素通しで、ENでも常にJAのまま出ていた(同型の配線穴)。
   if (sr.winnerLine) {
-    bodyParts.push(`「${sr.winnerLine}」——${winnerName}は静かにその栄誉を噛み締めた。`);
+    bodyParts.push(`「${T(sr.winnerLine)}」——${winnerName}は静かにその栄誉を噛み締めた。`);
   }
   // task-75: 敗者の言葉。app.js が summitLose から引いて渡していたが、
   // 紙面が読んでいなかったため一度も出ていなかった(2026-08-01 修正)
   if (sr.loserLine) {
-    bodyParts.push(`引き上げる${loserName}は「${sr.loserLine}」と言葉を残した。`);
+    bodyParts.push(`引き上げる${loserName}は「${T(sr.loserLine)}」と言葉を残した。`);
   }
 
   return {

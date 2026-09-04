@@ -117,6 +117,7 @@ const build = new Function(
   '_drainPopupQueue',
   'setTimeout',
   'WM_I18N',
+  '_factionDisplayName',
   [
     functionSource('_factionUpperUrl'),
     functionSource('_factionEnsureOverlayRoot'),
@@ -135,7 +136,9 @@ const { showFactionF03Modal } = build(
   [],
   () => { drained++; },
   fn => fn(),
-  WM_I18N_STUB
+  WM_I18N_STUB,
+  // i18n P6-7: 派閥名(「{surname}派」)の表示直前変換。ja相当のpass-through。
+  name => name
 );
 
 let continued = 0;

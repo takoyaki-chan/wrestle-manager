@@ -1,5 +1,87 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-7 — レンダラ側「」ハードコード35箇所の言語別化+EN走破i18n-miss実コールサイト追跡（2026-09-04・worktree agent-a6eb1b5523369c7ff）
+
+指示書はバッチ⑭(P5-2n)発見の残課題5(吹き出しの「」35箇所)+6({surname}派)+P6-6発見の残課題2(4)(`…読めません`死コード)。開始前にworktreeブランチをmain先端(cf541e2、バッチ⑭+P6-6まで)へfast-forward済み。i18n/dialogue-ledger.json・src/lang-en-dialogue.jsは指示どおり不触。
+
+### 1. 「」の言語別化(35箇所)
+
+`grep -c '「\${' src/ui-common.js` の35行(36出現・10173行に2箇所)を実際に読み、**吹き出し(セリフ)29箇所**と**地の文の引用6箇所(7出現)**に分類した。
+
+- **吹き出し29箇所** → 共通ヘルパー`_quoteLine(text)`(ui-common.js、escHtml直後に新設)。`WM_I18N.lang === 'en'`のときは引用符を落として本文のみ返す(バッチ⑬で確立した「吹き出しの中は台詞そのもの」方針をレンダラ側にも適用)。ja/pseudo/`WM_I18N`が無いテスト環境は`「${text}」`のまま=1バイト不変。内訳: `_awSpeech`(award系)/`_pbFighterBlock`/`ppvprog-dlb`×2/PPV実況`_liveLine`/marker+line型2箇所/コーチ系3箇所(引退助言・化ける演出・天頂戦ドラマの2箇所)/`emr-bubble`系3箇所(F02リーダー・`_emrBubbleHtml`共通ヘルパー・MVP)/`crrm-*-bubble`2箇所/`mc-dlb`2箇所/`jt-bub`系9箇所(ジュニア/秋対抗戦/天頂戦決勝の宣戦布告バブル)/`_chBubbleSlot`共通ヘルパー
+- **地の文6箇所(7出現)** → 別ヘルパー`_quoteVal(value)`。`WM_I18N.t('「{line}」', { line: value })`を呼ぶテンプレヘルパーで、ja出力は`applyParams`の`{line}`置換のみ=1バイト不変、enは`"{line}"`(ダブルクォート)。対象: PPV開幕演出の`ppvName`引用/F02モーダル前段ナレーションの`factionAName`・`factionBName`(1行に2箇所)/業界制覇セレモニー`orgName`引用/ゲームオーバー「CONGRATULATIONS」スライド`orgName`×2/ゲームオーバー「THE END」スライド`orgName`。**このうち5箇所(F02ナレーション1行+ceremony4箇所)は、引用符を囲む文自体が現状どこでもt()を通っていない**(ナレーション全文が生JA直書き。既存の別課題で本バッチのスコープ外)ため、EN切替後も文全体はJAのままだが、引用符の様式(「」→""）だけはWM_I18N経由になり、将来その文がテンプレ化されたときに崩れない
+- 新規ui-ledgerキー2件: `「{line}」`(→`"{line}"`)・`{surname}派`(→`{surname} Group`、既訳`{name}派（{arch}）`と統一)。いずれも`test/i18n-extract-ui.js`の静的literal走査が自動検出
+
+### 2. 過程で見つけた同型の穴(quote-mark修正の副産物として発見・全修正)
+
+読み進める過程で、35箇所のうち複数が「吹き出しの形はしているが中身の値がそもそもt()を通っていない」ことに気づき、同型の穴として計3件を追加修正した。
+
+- **PPV放送の実況コメント`LIVE_LINES`(ui-common.js `renderPPVResult`ローカル、14行)**: `_liveLine(r)`が`pool[...]`を選ぶだけでt()を一度も通していなかった(常にJA直書き)。表示直前にWM_I18N.tを追加。台帳に動的キーとして`kept:true`+note付きで14行を手追加(§1参照)
+- **PPVプログラム画面`summitPre`(ui-common.js、頂上決戦の宣戦布告)**: `pickPpvLine('summitPre', ...)`の戻り値をt()なしで返していた。同じ枠の他2経路(`ppvRiv.leftLine`/`_getPPVPreMatchLine`)は既にt()済みなのに、優先度最上位のこの経路だけ生JAのまま出ていた実害あり。`WM_I18N.t(pickPpvLine(...) || '')`に修正
+- **PPV頂上決戦の新聞記事`_buildPpvSummitStory`(management.js)**: `sr.winnerLine`/`sr.loserLine`(pickDialogueLine/pickPpvLineの生JA)を、同関数が他の箇所で使っている`T()`(=dict-opts)に通さず直接埋め込んでいた。両方とも`T(...)`で包む形に修正(dict省略時=ja-golden等は`T`が恒等関数のためJA不変)
+
+### 3. EN走破i18n-miss 39件の実コールサイト追跡(39→23)
+
+P6-5/P6-6と同じ手法で`src/i18n.js`の`logMiss()`に一時スタックトレース出力を仕込み(+`test/ui-walkthrough/detectors.js`に一時のprint分岐)、`npm run test:ui:walkthrough:en`を実行して39件全ての実際の呼び出し元を実測確定させた(コミット前に両ファイルとも除去・`git diff`で無変更を確認)。指示書記載の「i18n-miss 40」は、開始前fast-forward後の時点で自然減により39になっていた。
+
+**分類結果**
+
+| 分類 | 件数 | 内訳 |
+|---|---|---|
+| (B) 配線穴=修正 | 15件 | `_awSpeech`系(AWARD_LINES、年間表彰式)12件+war勝利/敵陣エースの`_u3bSideHtml`3件 |
+| (A) 未訳セリフ=対象外 | 24件 | P5バッチ待ち(下記) |
+
+**(B) `_awSpeech`/`_awSpeechSlot`の二重t()適用(12件)**: `_awardLine(key, fighter)`(2751行)が`WM_I18N.t(pickDialogueLine(...))`で選択直後に翻訳した完成文を返す設計なのに、その戻り値を渡す`_awSpeechSlot`側に`translated`opt-inが無く、内部の`_awSpeech`が無条件でもう一度t()していた(§9の`_u3bSideHtml`と同型だが、award系はP5-1のリファクタ対象に入っていなかったため見落とされていた)。`_awSpeech(line, translated)`/`_awSpeechSlot(line, translated)`に第2引数を追加(既定false)し、`_awardLine()`経由の値を渡す7箇所(`_awWinnerBlock`内部・大会優勝隊列・ベストマッチ両サイド・タイトル王者・殿堂入り・選手たちの声スライド)へ`true`を配線。`_pickLines()`やゲームオーバーの`_pickGameOverLinesForTop3`/`_pickCoachGameOverLines`(いずれもt()を経由しない生JAを返す)を渡す3箇所は既定のまま(単発翻訳が正しい経路であることを個別に確認済み)。
+
+**(B) `_showWarVictoryChain`/`_showWarEnemyAceStatement`の二重t()適用(3件)**: `_getWarVictoryLine()`/`getWarPostDialogue()`が内部で翻訳済みの完成文を返すのに、`_u3bSideHtml({..., line, ...})`へ`lineTranslated`を付け忘れていた(§9のopt-inパターンの単純な付け忘れ)。両箇所に`lineTranslated: true`を追加。
+
+**(A) 未訳セリフ24件の内訳**: `EVENT_TITLE_WIN/DEFENSE/LOSS/CHALLENGE_LOSS_LINES`(タイトル関連、`getTraitQuote`経由6件)/`PPV_OPPONENT_LINES`(4件)/`BREAKTHROUGH_LINES`(1件)/`WAR_CHALLENGER_DIALOGUE`(1件)/`MOTIVATION_LOSS_LINES`(1件)/`FAN_EXPECT_REACTIONS`(8件)/`SPECIAL_EVENT_INTRO`(2件)/`_getKurodaNewsComment`フォールバック配列(1件)——いずれも表示点の配線は単発t()で正しく、単に台帳の`en`が空(P5バッチ待ち)。
+
+**新たな発見: 24件中11件は台帳にすら存在しない(3抽出パイプラインいずれからも見えない構造穴)**。`FAN_EXPECT_REACTIONS`(定数名に`LINES`/`DIALOGUE`を含まないため`test/i18n-extract-dialogue.js`の命名パターン判定から漏れる)・`SPECIAL_EVENT_INTRO`(§5/§6/§9いずれの対象テーブル一覧にも入っていない)・`_getKurodaNewsComment`のインラインフォールバック配列(kuroda-text.jsの名前付きテーブルではなくui-render.js内の関数ローカル配列のため§6の対象外)の3件。台帳・抽出器を変更しないと拾えないため、今回のスコープ(dialogue-ledger.json不触)では未着手。詳細はspecs/i18n-runtime-spec-v1.0.md §10-2に記録した。
+
+### 4. `{surname}派`の表示直前変換
+
+`_factionDisplayName(name)`(ui-common.js、`_factionSurname`直後に新設)。派閥名は生成時に`` `${surname}派` ``という平文字列としてfactions.js側で組み立てられG(セーブ)へ焼き込まれる(D-P6-4「セーブ内の名前はJAのまま」を守るため生成ロジックは無改修)。表示直前で`/^(.+)派$/`を検出し、姓だけ`pn()`経由で英語化してから`{surname}派`テンプレ(新規ui-ledgerキー、既訳の`{name}派（{arch}）`と表記統一)へ通す。「派」で終わらない値はそのまま返す(ja/pseudo・「派」で終わらないケースは1バイト不変)。
+
+`const factionName = ...payload.factionName...`という同一パターンの宣言9箇所(showFactionArchetypeTransitionModal含む)全てに適用した。うち`showFactionArchetypeTransitionModal`は`getTransitionLine`の`{org}`param・`_factionReporterStrip`の`{faction}`param・直接HTML表示の3経路すべてが同じ`factionName`変数を参照するため、宣言1箇所の修正で3経路まとめて解消した(P5-2n §4-3で`{leader}`は直したが`{org}`が生成ラベルのまま残っていた分の後始末)。派閥名を扱う他の同型宣言(表示専用で今回のtranslationLine/{org}のような二次利用が無いもの、約15箇所)は今回未着手(長尾対象)。
+
+### 5. 到達不能な死コードの削除
+
+`Engine.coach._buildRetireAdviceText`(management.js:8153)の`texts ? texts[...] : '…読めません'`フォールバックを削除。VM抜き取りで8voice全てのA_sure/A_likely/A_iffy/A_hardが常に非空であることを確認済み(P5-2n worklog §8-4で既に指摘されていた到達不能コード)。
+
+### 触ったファイル
+
+- `src/ui-common.js` — `_quoteLine`/`_quoteVal`/`_factionDisplayName`ヘルパー新設+35箇所の置き換え+`_awSpeech`/`_awSpeechSlot`のtranslated引数+7呼び出し元+war勝利/敵陣エースの`lineTranslated`+`summitPre`のt()配線+`LIVE_LINES`のt()配線+`factionName`宣言9箇所
+- `src/management.js` — `_buildPpvSummitStory`のwinner/loserLine t()配線+`_buildRetireAdviceText`死コード削除
+- `i18n/ui-ledger.json` — 新規2キー(`「{line}」`・`{surname}派`)+動的キー14件(LIVE_LINES)を追記
+- `src/lang-en.js` — 上記から再生成(自動生成物)
+- `test/fixtures/i18n-ratchet-baseline.json` — `--update`(management.js -1=死コード削除・ui-common.js +1=新設ヘルパー3件のリテラル追加。ネットでは35箇所除去の効果が上回り総計28093→28083に減少)
+- `test/autumn-war-ui-flow-test.js`/`champion-announcement-unified-design-test.js`/`tenchosen-final-dialogue-test.js`/`away-challenge-result-sequence-test.js`/`faction-f03-modal-flow-test.js`/`u1-match-result-unification-test.js`/`u3-group-b-safety-net-test.js`/`u5-winloss-safety-net-test.js`/`u6-org-identity-safety-net-test.js` — 新ヘルパーを参照する`new Function()`/`vm`サンドボックスへスタブ追加(9ファイル)
+- `test/awards-ceremony-layout-test.js`/`awards-ceremony-polish-test.js` — `_awSpeechSlot(...)`呼び出しの厳密文字列一致アサーションを`, true`引数込みの新シグネチャへ更新(挙動自体は無変更)
+- `specs/i18n-runtime-spec-v1.0.md` — §10(本バッチの新規パターン)+§10-2(3パイプライン共通の構造穴の記録)を追記
+
+### 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(ui-common/management/i18n) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…、`--update`不使用) |
+| `node test/i18n-build-dict.js` | ✅ 台帳総キー数=3,313 訳文あり=3,313 未訳(fail-open)=0 |
+| `node test/i18n-ratchet.js` | ✅ `--update`後OK(files=31 totalJaStrings=28083。内訳は上記) |
+| `npm test` | ✅ 260/260 green(awards-ceremony-layout/polish-testのシグネチャ更新込み) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(違反0・errors 0・台帳検査3種違反0・Semantic fingerprint=37bbd0cd、management.js改修前と同一) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest=`1052faa82eaf7991`(**指示どおり不変を確認**) |
+| `npm run test:ui:walkthrough:en`(EN, seed42・1季) | ✅ PASS、Issues=0、season=2 week=1まで完走(1季完走維持)。**i18n-miss=39→23**(指示の「40から減ること」を達成。残23は全て(A)未訳セリフ、うち11件は§3後段の構造穴) |
+
+### 残課題・新たな発見(次バッチへ)
+
+1. **§3後段の3パイプライン構造穴**(`FAN_EXPECT_REACTIONS`/`SPECIAL_EVENT_INTRO`/`_getKurodaNewsComment`フォールバック配列、計11行)。台帳・抽出器を触る次のバッチで拾うこと(specs §10-2に詳細記録)
+2. **地の文の「」5箇所は文全体が未だt()を通っていない**(§1参照)。`_quoteVal`で引用符の様式だけは整えたが、周囲の文(F02前段ナレーション・業界制覇/ゲームオーバー各セレモニーの本文)はEN切替後も生JAのまま。テンプレ化は別バッチのスコープ
+3. **派閥名を扱う他の同型宣言(約15箇所)は`_factionDisplayName`未適用**(§4参照)。表示専用で実害が確認できていないため今回は見送ったが、機械的に洗えば同じ手当てができる
+4. **`COMMON7_LINES.resultLeader`3行が消費点ゼロで死蔵**(P6-6で発見済み・Keisuke裁定待ち、本バッチでは未着手)
+
+---
+
 ## 🌐 Stage B P5-2n — セリフ英訳バッチ⑭(天頂戦ドラマ91+派閥遷移84+試合後フレーバー81+コーチ総括80+熱量75+因縁70帯74+派閥F02 74+負傷74+解雇73+好敵手決着72+番狂わせ71+遺恨決着71+コーチ引退助言71+因縁90帯70+ドラフト加入69 = 1,130行)（2026-09-04・Opus主筆 worktree agent-a535c00627b7f0e16）
 
 量産翻訳の第14バッチ。**15テーブルの未訳1,130行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2mの訳語判断(2fのベルト=belt/王座=title、2cのト書き書式、seductiveの`ふふ`=Mm・ojousamaは`Hehe`、⑬の因縁=grudge/好敵手=rival、⑬の「」を落とす方針を継承)。開始前にworktreeブランチをmain先端(eb5fe55)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2k〜2mと同じ運用)。
