@@ -13657,18 +13657,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "他団体の動向は、回り回って我々にも影響する",
-    "en": "What happens at other promotions has a way of coming back around to us.",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_getKurodaNewsCommentのインラインフォールバック配列(3件のうち2番目)"
-  },
-  {
     "key": "他団体の指名はこのまま進みます。",
     "en": "The other promotions' picks go ahead as they are.",
     "files": [
@@ -15886,13 +15874,14 @@
   },
   {
     "key": "友情と闘志、矛盾しない関係",
-    "en": "Friendship and fight, with no contradiction",
+    "en": "Friendship and fight, and no contradiction in it",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "note": "template-ledger(黒田)と同文のUI直書きキー。enはテンプレ台帳と同一に保つ(後勝ち依存を避ける)"
   },
   {
     "key": "友情・親愛",
@@ -20038,13 +20027,14 @@
   },
   {
     "key": "拮抗する数字、燃える夜",
-    "en": "Numbers dead even, nights on fire",
+    "en": "Numbers in balance, and a night with heat in it",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "note": "template-ledger(黒田)と同文のUI直書きキー。enはテンプレ台帳と同一に保つ(後勝ち依存を避ける)"
   },
   {
     "key": "指名",
@@ -21834,18 +21824,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "業界の動きは速い。目を離す暇はない",
-    "en": "The business moves fast. There is no time to look away.",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_getKurodaNewsCommentのインラインフォールバック配列(3件)。kuroda-text.jsのKURODA_NEWS_COMMENT本体ではなくui-render.js内のローカル配列のためテンプレ抽出器の対象外(specs/i18n-runtime-spec-v1.0.md §10-2)"
-  },
-  {
     "key": "業界の挑戦順が自団体へ回ってきました。遠征させる選手を一人選んでください。",
     "en": "The industry challenge order has come around to us. Choose one wrestler to make the trip.",
     "files": [
@@ -22862,13 +22840,14 @@
   },
   {
     "key": "水と油、リングでも楽屋でも",
-    "en": "Oil and water, in the ring and out of it",
+    "en": "Oil and water, in the ring and backstage",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "note": "template-ledger(黒田)と同文のUI直書きキー。enはテンプレ台帳と同一に保つ(後勝ち依存を避ける)"
   },
   {
     "key": "水面下でくすぶっていた火種は、<em>{fight}</em>にまで燃え広がった。",
@@ -23312,18 +23291,6 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
-  },
-  {
-    "key": "注視すべきニュースだ",
-    "en": "News that bears watching.",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_getKurodaNewsCommentのインラインフォールバック配列(3件のうち3番目)"
   },
   {
     "key": "活 動 休 止",
@@ -30857,6 +30824,246 @@
     "note": "_F07_INCIDENT_META choice.label"
   },
   {
+    "key": "（OVR+5バフ適用）",
+    "en": "(OVR +5 buff applied)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（S{season}: {prev} → 現在: {cur}）",
+    "en": "(S{season}: {prev} → now: {cur})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{age}歳）",
+    "en": "(age {age})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}件反映中 → 評価+5/試合）",
+    "en": "({n} in effect → rating +5 per match)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}防衛）",
+    "en": "({n} defenses)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{q}入替）",
+    "en": "({q} rotation)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（このコーチの専門）",
+    "en": "(this coach's specialty)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（ランク{r}位）",
+    "en": "(rank {r})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（上限）",
+    "en": "(cap)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（今季使用済み）",
+    "en": "(already used this season)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（前払い一括）",
+    "en": "(paid up front)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（四半期入替）",
+    "en": "(quarterly rotation)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（残り{n}週）",
+    "en": "({n} weeks left)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（給与変動: {n}名）",
+    "en": "(salary changes: {n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（評価+{n}）",
+    "en": "(rating +{n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（軽め）",
+    "en": "(light)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（重め）",
+    "en": "(heavy)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（集客×{mult}）",
+    "en": "(attendance ×{mult})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 展開",
+    "en": "+ Expand",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 枠拡張 ({n}万)",
+    "en": "+ Add a Slot (¥{n:man})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 追加",
+    "en": "+ Add",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：互いに力を認め合い、表情が和らいだ",
+    "en": ": they acknowledged each other's strength, and their faces softened",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
+    "en": ": she accepted your ruling, and the spring came back into her step",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "｜ 抗争{n}勝",
+    "en": "| {n} feud wins",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🅰 堅実",
     "en": "🅰 Safe",
     "files": [
@@ -33449,246 +33656,6 @@
       "ui-common.js"
     ],
     "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（OVR+5バフ適用）",
-    "en": "(OVR +5 buff applied)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（S{season}: {prev} → 現在: {cur}）",
-    "en": "(S{season}: {prev} → now: {cur})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{age}歳）",
-    "en": "(age {age})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}件反映中 → 評価+5/試合）",
-    "en": "({n} in effect → rating +5 per match)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}防衛）",
-    "en": "({n} defenses)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{q}入替）",
-    "en": "({q} rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（このコーチの専門）",
-    "en": "(this coach's specialty)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（ランク{r}位）",
-    "en": "(rank {r})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（上限）",
-    "en": "(cap)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（今季使用済み）",
-    "en": "(already used this season)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（前払い一括）",
-    "en": "(paid up front)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（四半期入替）",
-    "en": "(quarterly rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（残り{n}週）",
-    "en": "({n} weeks left)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（給与変動: {n}名）",
-    "en": "(salary changes: {n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（評価+{n}）",
-    "en": "(rating +{n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（軽め）",
-    "en": "(light)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（重め）",
-    "en": "(heavy)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（集客×{mult}）",
-    "en": "(attendance ×{mult})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 展開",
-    "en": "+ Expand",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 枠拡張 ({n}万)",
-    "en": "+ Add a Slot (¥{n:man})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 追加",
-    "en": "+ Add",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：互いに力を認め合い、表情が和らいだ",
-    "en": ": they acknowledged each other's strength, and their faces softened",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
-    "en": ": she accepted your ruling, and the spring came back into her step",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "｜ 抗争{n}勝",
-    "en": "| {n} feud wins",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   }
