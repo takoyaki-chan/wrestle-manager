@@ -69,7 +69,7 @@ function makeSandbox() {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
   const api = new Function(
     'Engine', 'ALL_COACHES', 'getCoachVoiceKey', 'COACH_WRAPUP_VERDICT_LINES',
     'COACH_WRAPUP_MENTION_LINES', 'getCoachPortraitUrl', 'escHtml', '_u3bSideHtml',

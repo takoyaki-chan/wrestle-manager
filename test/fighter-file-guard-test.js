@@ -56,7 +56,7 @@ const context = {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } },
+  }, pn(str) { return str; } },
 };
 
 // 実ブラウザと同じく app.js ブロック→ui-common.js ブロックの順で定義する。

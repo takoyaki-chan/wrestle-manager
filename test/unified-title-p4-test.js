@@ -224,7 +224,7 @@ assert.strictEqual(Engine.awards.calcHofPoints(legacyHofFixture), 35.5);
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
   const makeReigns = new Function('G', 'Engine', 'WM_I18N',
     `${functionSource(ui, '_recordBookUnifiedReigns')}; return _recordBookUnifiedReigns;`)(
     {

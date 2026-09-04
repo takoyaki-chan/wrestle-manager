@@ -99,7 +99,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -246,7 +246,7 @@ const FACTION_WM_I18N_STUB = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-} };
+}, pn(str) { return str; } };
 
 const buildFaction = new Function(
   'Engine', 'document', 'getUpperUrl', '_factionLine', '_factionReporterStrip', '_awOrgEmblem', 'WM_I18N',

@@ -199,7 +199,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -370,7 +370,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -533,7 +533,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeFocusBundle(opts) {
     opts = opts || {};
@@ -750,7 +750,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeDom() {
     const box = { innerHTML: '' };
@@ -850,7 +850,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
   const build = new Function(
     'Engine', 'document', 'RIVAL_ORGS', 'G', 'getUpperUrl', 'pickDialogueLine', 'RIVALRY_MATCH_REACTION', 'WAR_POST_DIALOGUE', 'WM_I18N',
     `${uiFn('escHtml')}
@@ -977,7 +977,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -1061,7 +1061,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -1146,7 +1146,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -1281,7 +1281,7 @@ function logGap(msg) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makePage2D(overrides) {
     return Object.assign({
@@ -1388,7 +1388,7 @@ console.log('  [skip] fighter popup overall record / last-5 (embedded in showFig
        let out = text;
        Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
        return out;
-     } };
+     }, pn(str) { return str; } };
      ${uiFn('escHtml')}
      function ov(c) { return Engine.util.ov(c); }
      function _tipAttr() { return ''; }

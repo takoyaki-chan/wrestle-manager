@@ -91,7 +91,7 @@ const WM_I18N_STUB = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-} };
+}, pn(str) { return str; } };
 
 const modalRoot = { innerHTML: '', querySelector() { return null; } };
 const showIgnite = new Function(

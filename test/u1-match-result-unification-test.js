@@ -144,7 +144,7 @@ assert.ok(!c1rSrc.includes('_emrSingleSide('), '単発試合カードではな�
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   const build = new Function(
     'Engine', 'G', 'document', 'escHtml', 'getUpperUrl', 'Math', 'WM_I18N',

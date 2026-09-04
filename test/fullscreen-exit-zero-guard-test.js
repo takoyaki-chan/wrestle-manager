@@ -161,7 +161,7 @@ function makeEl(id) {
       let out = text;
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
-    } };
+    }, pn(str) { return str; } };
     const built = build(
       GStub, EngineStub,
       { play() {}, bgm: { play() { calls.bgm++; } } },
@@ -339,7 +339,7 @@ function makeEl(id) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -466,7 +466,7 @@ function makeEl(id) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
   const build = new Function(
     'document', 'Audio', 'window', '_isPopupActive', '_popupQueue', '_drainPopupQueue',
     'setTimeout', 'clearTimeout', 'WM_I18N',

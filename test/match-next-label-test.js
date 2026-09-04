@@ -37,7 +37,7 @@ const ctx = {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } },
+  }, pn(str) { return str; } },
 };
 vm.createContext(ctx);
 new vm.Script(uiCommon.match(/function _matchNextLabel\([\s\S]*?\n\}/)[0]).runInContext(ctx);
