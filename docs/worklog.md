@@ -1,5 +1,59 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-2 — UI走破ハーネスのENモード対応（2026-09-04・Sonnet worktree agent-a21d65df0f42c5295）
+
+設計は `docs/i18n-stage-b-p6-design-v0.1.md` §3-1「ENウォークスルー」。`npm run test:ui:walkthrough` がjaでしか走らせられなかった状態から、`--lang <ja|en|pseudo>`(env `WM_LANG`でも可)でENモード起動できるようにし、実際にENで1季走破を試みて結果を分析した。**src/配下・i18n/台帳・lang-en-*.jsは一切触っていない**（`test/ui-walkthrough/*.js`と`package.json`のみ）。開始前にworktreeブランチをmain先端(1a3f129)へfast-forward済み。
+
+### 1. `--lang` オプションの実装
+
+- `test/ui-walkthrough/run.js`: `parseArgs`に`--lang`(既定`ja`。`process.env.WM_LANG`があればそれを既定値として採用)を追加。`setupPage`の`page.addInitScript`内、既存の`wm_audio`初期化と同じ場所で`localStorage.setItem('wm_lang', uiLang)`を書く。`'ja'`を明示的に書いても`src/i18n.js`の`readStoredLang()`の既定値と同じなので既存挙動と結果は不変
+- `package.json`に`test:ui:walkthrough:en`(`node test/ui-walkthrough/run.js --lang en`)を追加
+
+### 2. EN検出(失敗条件にはしない・情報集計)
+
+- `test/ui-walkthrough/detectors.js`: `readPageSnapshot`が可視リーフ要素を走査する既存ループを流用し、要素textContentに日本語(ひらがな/カタカナ/CJK統合漢字+互換漢字)が含まれる要素数`jaExposureCount`を追加算出。`WalkthroughDetectors.snapshot()`が呼ばれるたびに`jaExposureByScreen`(画面id→観測した最大値)を更新する。**失敗条件には一切していない**(スコアは`didProgress`にもissue判定にも使わない)
+- `[WM] [i18n-miss]`(`src/i18n.js:140`のfail-openログ)を`consoleEntries`収集はそのまま行いつつ、**D1_CONSOLE issueの記録対象からは除外**し`i18nMissCounts`(欠落キー→出現回数)へ集計する専用パスを追加。理由: このログはenモードでの想定内挙動(未訳キーのfail-open)であり、既存実装のまま(`[WM]`プレフィックス一致でD1扱い)だと未訳が1件でもあれば走破が1手目で強制終了し、1季走破が原理的に不可能になっていた
+- `run.js`の結果出力に、`options.lang !== 'ja'`のときだけ`i18n-miss: N occurrences / M unique keys`+上位10件、`JA exposure by screen: ...`を追記。ja既定では出力を増やさない(既存の標準出力を変えない)
+
+### 3. 副次的に見つかった・直したナビ巡回のハードブロック
+
+ENで実走したところ、**nav巡回(NAV_TOUR_STOPS)の最初の停車駅で即D2_FREEZEした**。原因は`test/ui-walkthrough/driver.js`の`runNavTour`が`page.locator('.nav-btn', { hasText: stop.label })`(`stop.label`は「団体」「社長室」等の**日本語文言**)でナビボタンを特定していたため、ENモードで文言が英訳されるとヒット0件になり、遮蔽物が無いのに常設ナビが押せない=死にタブとして記録されていた。
+
+`src/index.html`の`.nav-btn`は`onclick="showScreen('roster',event)"`のように**言語非依存の第一引数**を持つ(表示言語に関わらずDOM構造は同じ)。これを利用し、`navButtonLocator(page, key)`ヘルパー(`.nav-btn[onclick^="showScreen('${key}'"]`)を新設して、nav巡回3箇所(各停車駅のクリック/巡回末尾の「今週」への帰還/主ループの側画面からの脱出)を文言一致からこの属性一致へ置き換えた。`NAV_TOUR_STOPS`各要素に`key`フィールド(例: `roster`)を追加。**表示ログの`label`は日本語のまま残している**(可読性のため。クリック対象特定には使っていない)。
+
+これはハーネス側のみの修正で、`src/`は無改修。jaでの再走で挙動・digestが変わらないことを確認済み(§5)。
+
+### 4. 検証結果
+
+| 検査 | 結果 |
+|---|---|
+| `node --check` (run.js/detectors.js/driver.js) | ✅ OK |
+| `npm run test:ui:walkthrough`(ja、既定) | ✅ **PASS**。Actions: 328 digest=`1052faa82eaf7991`。nav巡回修正の前後で同一digestを確認(git stashで旧実装に戻して再走し同じdigestを実測) |
+| `npm run test:ui:walkthrough:en`(seed42・1季) | ❌ **FAIL**。week6・showPrep中でD2_FREEZE 1件。同一seedで2回再走し、actions数(50)・digest(`20451333f495f9bb`)・停止地点が完全一致(決定論的に再現) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+
+### 5. ENウォークスルーの結果(issues 0は未達・分析して報告)
+
+- **Issues: 1件(D2_FREEZE)**。`App.skipAllMatches()`ボタン(EN文言 "Skip all remaining matches (4)")のクリックが`<iframe id="battleIframe">`に5秒間ブロックされ続けて失敗。直前の手順は`App.watchMatch`(観戦iframeを開く)→ほぼ直後に`skipAllMatches`を選択、という並び。**推定原因**: `driver.js`の`actionScore`が多くの優先度判定を日本語文言の正規表現(`/興行開催/`・`/この布陣で|.../` 等)に依存しており、ENモードではこれらがヒットせず一般スコア(`primary`クラス等)にフォールバックするため、jaとは異なる手順・タイミングでアクションが選ばれる。今回はそれが「観戦iframe起動直後にスキップボタンを叩く」という、iframeの初期化が終わる前の際どいタイミングを踏んだと見られる。**同一seedで完全に再現する**ため偶発的なフレークではない
+- **`actionScore`のJA文言依存はEN対応として未解決のまま残っている**。全面的な英語パターンの追加は影響範囲が広く、本タスクの指示(「出たら内容を分析して報告=修正はしない」)にも反するため、今回は着手していない。次にENでの走破率を上げるなら、まずここに手を入れるのが本筋
+- **i18n-miss: 28 occurrences / 28 unique keys**(week6到達時点まで)。上位に社長室ツールチップ(決裁枠の説明文、プレースホルダ`{dpMax}`込み)や、選手セリフ系の短文(「話しかけると、少し間が空くようになった」「最近、目を合わせる回数が減った気がする」等、関係性フレーバー文と思われる)が並ぶ。P5セリフ台帳の未訳/未配線の実測リストとして次バッチの着手候補になる
+- **JA exposure by screen(画面別・観測した可視要素の最大数、情報のみ)**: `screen-show=69`(最多) / `screen-shachoshitsu=52` / `screen-week=39` / `screen-roster=38` / `screen-ranking=29` / `screen-finance=7` / `titleScreen=6` / `screen-newspaper=3` / `screen-log=3` / `screen-save=3` / `screen-database=2` / `screen-help=2`。選手名・フレーバーテキスト等、意図的に据え置きの日本語(選手データ・キャラプロフィール等)を多く含むと見られ、この数字だけでは「バグ」と「意図的な据え置き」を区別できない(design doc記載どおり失敗条件にはしていない)
+
+### 6. 触ったファイル
+
+- `test/ui-walkthrough/run.js` — `--lang`/`WM_LANG`パース・`setupPage`へのwm_lang書き込み・EN集計の結果出力
+- `test/ui-walkthrough/detectors.js` — `jaExposureCount`算出・`jaExposureByScreen`集計・`i18nMissCounts`集計(D1_CONSOLEから除外)
+- `test/ui-walkthrough/driver.js` — `navButtonLocator`によるnav巡回のEN対応(onclick属性ベースへ変更)
+- `package.json` — `test:ui:walkthrough:en`スクリプト追加
+- `test/ui-walkthrough/README.md` — `--lang`の使い方を追記
+- `docs/game-system-roadmap.md` — 英語対応行にP6-2の1行を追記
+
+### 7. 残課題
+
+- `driver.js`の`actionScore`/`DESTRUCTIVE_TEXT`等のJA文言依存パターンをEN文言にも対応させないと、ENウォークスルーはja同等の「意図に沿った」手順選択ができない(今回のD2_FREEZEの遠因)
+- 上記i18n-miss 28件・FLAG_DIALOGUE等roadmap記載の既知未訳と合わせて、次の翻訳/配線バッチの実測材料にする
+- ネイティブ通読・レイアウト溢れの目視検査(design doc §3-2〜3-3)は本タスクの範囲外(擬似ロケール/ネイティブレビューは別工程)
+
 ## 🌐 Stage B P5-2i — セリフ英訳バッチ⑨(挑戦要求リアクション408行+ジュニアトーナメント402行)（2026-09-04・Opus主筆 worktree agent-a00be017f5f7a55e4）
 
 量産翻訳の第9バッチ。**`data.js:CHALLENGE_REQUEST_OPPONENT_REACTIONS` の全408行 + `data.js:JUNIOR_TOURNAMENT_LINES` の402行中392行 = 800行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2hの訳語判断(2cの対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2fのベルト=belt/王座=title、2hの `ふふ`=Mm/My/Heheh 機能置換と `……っ……`=`... mm...`/`... ah...` を継承)。開始前にworktreeブランチをmain先端(ecae448)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。

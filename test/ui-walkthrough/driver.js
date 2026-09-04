@@ -21,17 +21,31 @@ function isNavigationControl(candidate) {
 // ナビ巡回の停車駅(②2026-08-31監査対応)。自然走破が構造的に到達できない自由閲覧画面を
 // 進行を妨げないクリーン状態で一巡し、開くだけ(中の操作はしない)でD1/D3走査を通す。
 // 「今週」「興行準備」は通常進行が毎週踏むため巡回対象外。
+// label は診断ログ表示用の日本語ラベル(可読性のためだけ・クリック対象の特定には使わない)。
+// key は src/index.html の onclick="showScreen('roster',event)" 第1引数と同じ言語非依存の
+// 識別子(P6-2: EN対応でnavButtonLocatorが使う。クリック文言に依存しないのでwm_langに
+// 関わらず同じ経路で動く)
 const NAV_TOUR_STOPS = [
-  { label: '団体', screen: 'screen-roster' },
-  { label: '社長室', screen: 'screen-shachoshitsu' },
-  { label: 'ランキング', screen: 'screen-ranking' },
-  { label: 'データベース', screen: 'screen-database' },
-  { label: '新聞', screen: 'screen-newspaper' },
-  { label: '経営', screen: 'screen-finance' },
-  { label: 'ログ', screen: 'screen-log' },
-  { label: 'セーブ', screen: 'screen-save' },
-  { label: 'ヘルプ', screen: 'screen-help' },
+  { label: '団体', key: 'roster', screen: 'screen-roster' },
+  { label: '社長室', key: 'shachoshitsu', screen: 'screen-shachoshitsu' },
+  { label: 'ランキング', key: 'ranking', screen: 'screen-ranking' },
+  { label: 'データベース', key: 'database', screen: 'screen-database' },
+  { label: '新聞', key: 'newspaper', screen: 'screen-newspaper' },
+  { label: '経営', key: 'finance', screen: 'screen-finance' },
+  { label: 'ログ', key: 'log', screen: 'screen-log' },
+  { label: 'セーブ', key: 'save', screen: 'screen-save' },
+  { label: 'ヘルプ', key: 'help', screen: 'screen-help' },
 ];
+
+// P6-2: ナビボタンをonclick第1引数(showScreen()へ渡す画面キー)で特定する。
+// .nav-btnの可視テキストはEN/pseudoモードでは日本語ラベルと一致しないため、
+// hasText:JA文言でのクリックはENモードで死にタブ扱いになってしまっていた
+// (2026-09-04実測: nav-tour(early)が最初の停車駅でD2_FREEZE)。
+// onclick属性の引数文字列はlang非依存(表示言語を問わず同じDOM構造)なので、
+// これを一次識別子にするとja/en/pseudoすべてで同じ経路になる
+function navButtonLocator(page, key) {
+  return page.locator(`.nav-btn[onclick^="showScreen('${key}'"]`);
+}
 
 function createSeededPrng(seed) {
   let state = Number(seed) >>> 0;
@@ -265,7 +279,7 @@ async function runNavTour({ page, detectors, actionLog, navTourVisited, seed, st
       process.stdout.write(`  nav-tour(${tourKey}) aborted before ${stop.label}: popup active\n`);
       break;
     }
-    const clicked = await page.locator('.nav-btn', { hasText: stop.label }).first()
+    const clicked = await navButtonLocator(page, stop.key).first()
       .click({ timeout: 1500 }).then(() => true).catch(() => false);
     if (!clicked) {
       const blocked = await detectors.snapshot(page);
@@ -295,7 +309,7 @@ async function runNavTour({ page, detectors, actionLog, navTourVisited, seed, st
     if (detectors.issues.length > 0) return;
   }
   // 帰還。失敗しても主ループの脱出口(「今週」への帰還)が拾う
-  await page.locator('.nav-btn', { hasText: '今週' }).first().click({ timeout: 1500 }).catch(() => {});
+  await navButtonLocator(page, 'week').first().click({ timeout: 1500 }).catch(() => {});
   await settleClock(page);
 }
 
@@ -412,7 +426,7 @@ async function runWalk(options) {
     if (!selected && before.activeScreen && before.activeScreen !== 'screen-week') {
       // 週次新聞ジャック等で側画面へ遷移した直後は前進コントロールが無い。
       // ナビタブ禁止の原則は保ちつつ「今週」への帰還だけを脱出口として許す
-      const homeClicked = await page.locator('.nav-btn', { hasText: '今週' }).first()
+      const homeClicked = await navButtonLocator(page, 'week').first()
         .click({ timeout: 1500 }).then(() => true).catch(() => false);
       if (homeClicked) {
         await settleClock(page);

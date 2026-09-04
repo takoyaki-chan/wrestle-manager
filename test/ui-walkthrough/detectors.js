@@ -12,6 +12,13 @@ const path = require('path');
 // 「careerBestMQ」等の識別子は前側の語境界が無いため誤爆しない
 const RAW_VALUE_PATTERN = /undefined|\bNaN\b|\[object\s|\bnull\b/g;
 const INTERNAL_TOKEN_PATTERN = /\b(?:morale|orgPop|weekPhase|condition)\b|\bMQ(?![A-Za-z])/g;
+// P6-2: ENモードの日本語露出計測(ひらがな/カタカナ/CJK統合漢字+互換漢字)。
+// 失敗条件には使わない(意図的に残るナレーション等があるため) — 情報として集計するだけ
+const JAPANESE_CHAR_PATTERN = /[぀-ヿ㐀-鿿豈-﫿]/;
+// i18n.js logMiss() の console.warn 出力プレフィックス(src/i18n.js:140)。
+// enモードでの未訳キーは仕様上fail-openの想定挙動であり、走破のD1失敗にはしない
+// (「失敗条件にはしない」§P6-2設計) — 件数・ユニークキーとして別集計する
+const I18N_MISS_PREFIX = '[WM] [i18n-miss]';
 
 function stableHash(value) {
   return crypto.createHash('sha256').update(String(value)).digest('hex').slice(0, 16);
@@ -26,7 +33,7 @@ function sanitizeName(value) {
 }
 
 async function readPageSnapshot(page) {
-  return page.evaluate(() => {
+  return page.evaluate((japanesePatternSource) => {
     const visible = element => {
       if (!(element instanceof Element)) return false;
       const style = getComputedStyle(element);
@@ -34,10 +41,14 @@ async function readPageSnapshot(page) {
       return style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) !== 0
         && rect.width > 0 && rect.height > 0;
     };
-    const text = Array.from(document.querySelectorAll('body *'))
-      .filter(element => visible(element) && element.children.length === 0)
-      .map(element => element.textContent || '')
-      .join('\n');
+    const leafElements = Array.from(document.querySelectorAll('body *'))
+      .filter(element => visible(element) && element.children.length === 0);
+    const text = leafElements.map(element => element.textContent || '').join('\n');
+    // P6-2: 日本語文字が露出している可視リーフ要素の数(EN/pseudoモードの情報計測用。
+    // ja時も計算コストは軽微だが値は使わない — 呼び出し側でlang!=='ja'のときだけ集計・出力する)
+    const japanesePattern = new RegExp(japanesePatternSource);
+    const jaExposureCount = leafElements
+      .filter(element => japanesePattern.test(element.textContent || '')).length;
     const overlays = Array.from(document.querySelectorAll('[id*="Overlay"], .overlay, [class*="overlay"], .emr-layer'))
       .filter(visible)
       .map(element => {
@@ -95,6 +106,7 @@ async function readPageSnapshot(page) {
     return {
       activeScreen: activeScreen?.id || null,
       domShape,
+      jaExposureCount,
       overlays,
       popup,
       state,
@@ -102,13 +114,14 @@ async function readPageSnapshot(page) {
       title: document.title,
       url: location.href,
     };
-  });
+  }, JAPANESE_CHAR_PATTERN.source);
 }
 
 function summarizeSnapshot(snapshot) {
   return {
     activeScreen: snapshot.activeScreen,
     domHash: stableHash(snapshot.domShape),
+    jaExposureCount: snapshot.jaExposureCount,
     overlays: snapshot.overlays,
     popup: snapshot.popup,
     state: snapshot.state,
@@ -137,6 +150,12 @@ class WalkthroughDetectors {
     this.lastProgressAt = Date.now();
     this.lastProgressKey = null;
     this._seenIssueKeys = new Set();
+    // P6-2: EN検出の集計(失敗条件にはしない・情報として報告するだけ)。
+    // key(原文の欠落キー) -> 出現回数(observe iframe/親windowで別インスタンスなので
+    // 同一キーが2回出ることもある)。ja/pseudoでは発火しないので常時初期化しても無害
+    this.i18nMissCounts = new Map();
+    // 画面id(またはoverlay:xxx) -> その画面で観測した日本語露出要素数の最大値
+    this.jaExposureByScreen = new Map();
   }
 
   attach(page) {
@@ -151,6 +170,13 @@ class WalkthroughDetectors {
       this.consoleEntries.push(entry);
       // favicon.ico はブラウザの自動リクエストで、配信サーバに実体が無いだけのノイズ
       if (/Failed to load resource/.test(entry.text) && /favicon\.ico/.test(entry.url)) return;
+      // P6-2: i18n未訳キーのfail-openログ(src/i18n.js logMiss)はenモードでの想定内挙動。
+      // D1失敗にはせず、件数+ユニークキーとして別集計する(設計: docs/i18n-stage-b-p6-design-v0.1.md §3-1)
+      if (entry.text.startsWith(I18N_MISS_PREFIX)) {
+        const key = entry.text.slice(I18N_MISS_PREFIX.length).trim();
+        this.i18nMissCounts.set(key, (this.i18nMissCounts.get(key) || 0) + 1);
+        return;
+      }
       // 2026-08-31監査: [WM Debug](不変条件違反)だけでなく [WM](自己修復・スキップ・
       // オートセーブ失敗などの「壊れたが黙って立て直した」証拠ログ)も検出対象にする。
       // 自己修復が走った走破は健全ではない — flight-recorderと同じ基準に揃える。
@@ -177,7 +203,20 @@ class WalkthroughDetectors {
   }
 
   async snapshot(page) {
-    return summarizeSnapshot(await readPageSnapshot(page));
+    const summary = summarizeSnapshot(await readPageSnapshot(page));
+    this._recordJaExposure(summary);
+    return summary;
+  }
+
+  // P6-2: 画面(activeScreen、無ければ最前面overlay)ごとの日本語露出要素数の最大値を
+  // 記録する。ステップ毎に呼ばれるが値は「その画面で見えた最大値」だけを保持するので、
+  // 同じ画面に長く留まっても数字が水増しされない
+  _recordJaExposure(summary) {
+    if (!summary || typeof summary.jaExposureCount !== 'number') return;
+    const bucket = summary.activeScreen
+      || (summary.overlays && summary.overlays.length ? `overlay:${summary.overlays[0]}` : 'unknown');
+    const previous = this.jaExposureByScreen.get(bucket) || 0;
+    if (summary.jaExposureCount > previous) this.jaExposureByScreen.set(bucket, summary.jaExposureCount);
   }
 
   async beginMutationWatch(page) {

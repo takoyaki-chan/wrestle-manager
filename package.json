@@ -22,6 +22,7 @@
                     "test:engine:spring-tag-result":  "node test/spring-tag-league-result-placement-test.js",
                     "test:ui:autumn-war":  "node test/autumn-war-ui-flow-test.js",
                     "test:ui:walkthrough":  "node test/ui-walkthrough/run.js",
+                    "test:ui:walkthrough:en":  "node test/ui-walkthrough/run.js --lang en",
                     "test:ui:ignite":  "node test/ui-walkthrough/run.js --mode ignite",
                     "test:data:autumn-war-mvp":  "node test/autumn-war-mvp-lines-test.js",
                     "test:engine:autumn-war-live":  "node test/autumn-war-live-engine-test.js",
