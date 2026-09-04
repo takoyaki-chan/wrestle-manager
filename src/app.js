@@ -5010,6 +5010,18 @@ const App = {
       loadBtn.style.opacity = hasAnySave ? '' : '0.3';
     }
 
+    // P6-12: 言語切替トグルの現在言語ハイライト(pseudoは開発者モード専用のためja扱い)
+    const langJaBtn = document.getElementById('titleLangJaBtn');
+    const langEnBtn = document.getElementById('titleLangEnBtn');
+    if (langJaBtn && langEnBtn) {
+      const curLang = (typeof WM_I18N !== 'undefined') ? WM_I18N.lang : 'ja';
+      const isEn = curLang === 'en';
+      langJaBtn.classList.toggle('is-active', !isEn);
+      langEnBtn.classList.toggle('is-active', isEn);
+      langJaBtn.setAttribute('aria-pressed', String(!isEn));
+      langEnBtn.setAttribute('aria-pressed', String(isEn));
+    }
+
     // タイトル画面のBGM: WM-C01 タイトル・オープニング。
     // 初回表示は自動再生ポリシーで蹴られるが、FileBGM が最初の操作で拾い直す
     try { Audio.bgm.play('kaimaku'); } catch (e) {}
@@ -5065,6 +5077,22 @@ const App = {
     refreshAll();
     showScreen('save');
     Audio.bgm.play('management');
+  },
+
+  // P6-12: タイトル画面の言語切替トグル。wm_langを書き換えてリロードし、
+  // 部分再描画の取りこぼしなく全面に反映する(進行中データはタイトル画面には無いため
+  // 確認ダイアログなしで即リロードしてよい)。既に選択中の言語を押した場合は何もしない
+  setTitleLanguage(lang) {
+    if (lang !== 'ja' && lang !== 'en') return;
+    const curLang = (typeof WM_I18N !== 'undefined') ? WM_I18N.lang : 'ja';
+    if (curLang === lang) return;
+    try { Audio.play('select'); } catch (_e) {}
+    if (typeof WM_I18N !== 'undefined') {
+      WM_I18N.setLang(lang);
+    } else {
+      try { localStorage.setItem('wm_lang', lang); } catch (_e) {}
+    }
+    location.reload();
   },
 
   // Select org icon (called from icon grid)

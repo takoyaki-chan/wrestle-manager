@@ -923,6 +923,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .title-btn:disabled{opacity:0.3;cursor:not-allowed;transform:none;box-shadow:none}
 .title-links{display:flex;justify-content:center;gap:14px;margin-top:6px}
 .title-links .title-credits-link{margin-top:0}
+/* P6-12: タイトル画面の言語切替トグル(日本語/English)。右上固定・ピル型2択 */
+.title-lang-toggle{position:absolute;top:16px;right:16px;z-index:2;display:flex;gap:2px;
+  padding:3px;border:1px solid rgba(212,168,67,0.25);border-radius:999px;background:rgba(0,0,0,0.25)}
+.title-lang-btn{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:1px;
+  padding:6px 14px;border:none;border-radius:999px;background:transparent;
+  color:var(--text-dim);cursor:pointer;transition:background .2s,color .2s}
+.title-lang-btn:hover{color:var(--text-sub)}
+.title-lang-btn.is-active{background:var(--gold);color:var(--bg-dark);font-weight:700}
 
 /* ═══ stat-notation-v1.0: 共通の枠越えバー ═══ */
 .stat-over-row{display:flex;align-items:center;gap:var(--space-sm)}
@@ -1058,6 +1066,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .title-logo{font-size:42px;letter-spacing:6px}
   .title-sub{font-size:12px;letter-spacing:3px}
   .title-portraits img{width:180px;height:180px}
+  .title-lang-toggle{top:8px;right:8px}
+  .title-lang-btn{padding:5px 10px;font-size:10px}
   .org-setup-title{font-size:28px}
   .app{padding:8px}
   .top-bar{padding:8px 10px}
@@ -10383,6 +10393,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 <div class="title-screen" id="titleScreen" style="display:none">
   <div class="title-bg">
     <div class="title-portraits" id="titlePortraits"></div>
+  </div>
+  <!-- P6-12: 言語切替トグル。ラベル自体(日本語/English)は翻訳しない -->
+  <div class="title-lang-toggle" role="group" aria-label="言語 / Language">
+    <button type="button" class="title-lang-btn" id="titleLangJaBtn" onclick="App.setTitleLanguage('ja')">日本語</button>
+    <button type="button" class="title-lang-btn" id="titleLangEnBtn" onclick="App.setTitleLanguage('en')">English</button>
   </div>
   <div class="title-content">
     <div class="title-logo">WRESTLE<br>MANAGER</div>
