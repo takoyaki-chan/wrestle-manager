@@ -215,6 +215,15 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
      - カジュアル帯は文頭のI省略可("Guess I made...")・gonna可(delinquent専用ではなくemotional/easygoingのくだけた行でも)
      - 単語強調は**1語の大文字化まで可**("with THIS leg strength")。ALL CAPS発話の禁止はそのまま
      - 「私みたいな〜」の明示("A hot girl like me")が英語では自然になる場合がある(日本語の暗黙の自己言及の補完)
+   - **ネイティブ検品第2弾(2026-09-04・お嬢様ブロック12行)からの追加ルール**:
+     - お嬢様の「〜かしら？」「〜わね」は**付加疑問で受ける**("did it not?" / "won't you?")。付加疑問の短縮形(won't you?)は短縮形禁止の例外(機械検査 i18n-build-dialogue-dict も文末の付加疑問だけ除外)
+     - 「〜かしら」の含み = **may not be** の緩い否定("may not be very ladylike")。hardly / is not で言い切らない
+     - **息継ぎの「…」はコンマに落とす**("As one of Himemiya's twin aces, I absolutely cannot…")。"..."は溜め専用で、文中の間延びには使わない
+     - もてなしの問いかけは**疑問形のまま+「I do hope so.」を後置**(聞き手への誠意)。平叙への言い換え(旧 "I do hope you all enjoyed yourselves.")は不採用に戻す
+     - 一人称の決意文は一人称のまま("My daily effort will not betray me.")。一般論の you へ逃がさない
+     - 異名の格: Strong→**Mighty**(品のある強さ)。剛の芝= Shiba the Mighty / 柔の白銀= Shirogane the Supple
+     - 「ふふ」= "Hehe..."("My..." への言い換えは不採用)。「あらあら」= "Goodness,"
+     - 短い問い返しは短く("...Is that all?"。"Is this all you have?" と膨らませない)
    - はしゃぎの反復・伸ばし表記: "I did iiit!" / "I did it! I really did it!" — 勢いは感嘆符と
      文の短さが背負う。**素直な一回**("I did it!")が正(2026-09-01 Keisuke判定 A/B#17)
 

@@ -102,7 +102,10 @@ function countSentences(text) {
 function checkCellRules(entry, en, violations) {
   const cell = entry.cell;
   if (cell && cell.archetype === 'ojousama') {
-    const m = en.match(CONTRACTION_RE);
+    // 2026-09-04 ネイティブ検品②: 「〜かしら？」を受ける付加疑問("won't you?" / "isn't it?")は
+    // お嬢様帯の礼節表現であり短縮形禁止の対象外。文末の「, <短縮形> <代名詞>?」だけを除いて検査する
+    const enNoTag = en.replace(/,\s*(won't|isn't|aren't|wasn't|weren't|don't|doesn't|didn't|can't|couldn't|wouldn't|shouldn't|hasn't|haven't|hadn't)\s+(you|it|she|he|they|we|I)\?/gi, '?');
+    const m = enNoTag.match(CONTRACTION_RE);
     if (m) {
       violations.push(`[cell:ojousama]短縮形禁止: ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} (検出="${m[0]}")`);
     }
