@@ -13,11 +13,16 @@ const { startStaticServer } = require('./server');
 const HARNESS_ROOT = __dirname;
 const PROJECT_ROOT = path.resolve(HARNESS_ROOT, '..', '..');
 const DEFAULT_FIXTURE = 'season-1-week-1-seed42.json';
+const VALID_LANGS = ['ja', 'en', 'pseudo'];
 
 function parseArgs(argv) {
   const options = {
     actionLog: null,
     fixture: DEFAULT_FIXTURE,
+    // P6-2: --lang(またはenv WM_LANG)。既定は'ja'で、従来どおりwm_langへ何も書かない
+    // 既存挙動・digestと完全に揃える(setupPageは'ja'でも明示的に書くが、readStoredLang()の
+    // 既定値と同じなので結果は不変)
+    lang: VALID_LANGS.includes(process.env.WM_LANG) ? process.env.WM_LANG : 'ja',
     maxSteps: 1200,
     maxStepsExplicit: false,
     mode: 'walk',
@@ -41,6 +46,7 @@ function parseArgs(argv) {
     else if (arg === '--max-steps') { options.maxSteps = Number(argv[++index]); options.maxStepsExplicit = true; }
     else if (arg === '--timeout-ms') options.timeoutMs = Number(argv[++index]);
     else if (arg === '--action-log') options.actionLog = path.resolve(argv[++index]);
+    else if (arg === '--lang') options.lang = argv[++index];
     else if (arg === '--help' || arg === '-h') options.help = true;
     else throw new Error(`Unknown argument: ${arg}`);
   }
@@ -52,6 +58,9 @@ function parseArgs(argv) {
     if (!scenarios[options.scenario]) {
       throw new Error(`Unknown scenario: ${options.scenario}. Available: ${Object.keys(scenarios).join(', ')}`);
     }
+  }
+  if (!VALID_LANGS.includes(options.lang)) {
+    throw new Error(`Unsupported --lang: ${options.lang}. Use one of ${VALID_LANGS.join(', ')}`);
   }
   for (const key of ['seasons', 'seed', 'maxSteps', 'timeoutMs']) {
     if (!Number.isFinite(options[key]) || options[key] <= 0) throw new Error(`--${key} must be a positive number`);
@@ -73,10 +82,11 @@ function usage() {
     '  --max-steps <n>      deterministic action ceiling (default: 1200 / scenario walk.maxSteps)',
     '  --timeout-ms <n>     whole-run timeout (default: 900000)',
     '  --action-log <file>  write the deterministic operation log',
+    `  --lang <${VALID_LANGS.join('|')}>  UI language via localStorage wm_lang (default: ja, or env WM_LANG)`,
   ].join('\n');
 }
 
-async function setupPage(browser, server, fixtureText, seed) {
+async function setupPage(browser, server, fixtureText, seed, lang = 'ja') {
   const context = await browser.newContext({
     locale: 'ja-JP',
     reducedMotion: 'reduce',
@@ -84,17 +94,20 @@ async function setupPage(browser, server, fixtureText, seed) {
   });
   const page = await context.newPage();
   await page.clock.install({ time: new Date('2026-01-01T00:00:00.000Z') });
-  await page.addInitScript(({ save, runSeed }) => {
+  await page.addInitScript(({ save, runSeed, uiLang }) => {
     localStorage.setItem('wm_audio', JSON.stringify({
       muted: true,
       bgmMuted: true,
       bgmMasterVol: 0,
       sfxMasterVol: 0,
     }));
+    // P6-2: src/i18n.js の readStoredLang() は wm_lang 未設定時に既定'ja'へ落ちるため、
+    // 'ja'を明示的に書いても既存挙動と結果は同一(digest不変)
+    localStorage.setItem('wm_lang', uiLang);
     const parsed = JSON.parse(save);
     parsed.rngSeed = runSeed;
     localStorage.setItem('wrestle_manager_autosave', JSON.stringify(parsed));
-  }, { save: fixtureText, runSeed: seed });
+  }, { save: fixtureText, runSeed: seed, uiLang: lang });
   await page.goto(`${server.baseUrl}/`, { waitUntil: 'domcontentloaded' });
   await page.clock.runFor(1000);
   return { context, page };
@@ -184,7 +197,7 @@ async function main() {
     }
 
     const fixtureText = fs.readFileSync(fixturePath, 'utf8');
-    const setup = await setupPage(browser, server, fixtureText, effectiveSeed);
+    const setup = await setupPage(browser, server, fixtureText, effectiveSeed, options.lang);
     context = setup.context;
     const page = setup.page;
     const detectors = new WalkthroughDetectors();
@@ -283,8 +296,31 @@ async function main() {
       console.log(`Observed screens: ${[...seenScreens].sort().join(', ') || 'none'}`);
       for (const failure of ignitionFailures) console.log(`Ignition failure: ${failure}`);
     }
-    console.log(`Issues: ${result.issues.length}`);
+    const issueTypeCounts = result.issues.reduce((acc, issue) => {
+      acc[issue.type] = (acc[issue.type] || 0) + 1;
+      return acc;
+    }, {});
+    console.log(`Issues: ${result.issues.length}${result.issues.length
+      ? ` (${Object.entries(issueTypeCounts).map(([type, count]) => `${type}=${count}`).join(', ')})`
+      : ''}`);
     if (result.artifactDirectory) console.log(`Artifacts: ${result.artifactDirectory}`);
+    // P6-2: EN/pseudoモードの情報集計(失敗条件にはしない)。ja既定では出力しない
+    // (既存の標準出力を変えないため)
+    if (options.lang !== 'ja') {
+      const missEntries = [...detectors.i18nMissCounts.entries()].sort((a, b) => b[1] - a[1]);
+      const missTotal = missEntries.reduce((sum, [, count]) => sum + count, 0);
+      console.log(`i18n-miss: ${missTotal} occurrences / ${missEntries.length} unique keys`);
+      if (missEntries.length > 0) {
+        console.log('i18n-miss top10:');
+        for (const [key, count] of missEntries.slice(0, 10)) {
+          console.log(`  ${count}x ${key}`);
+        }
+      }
+      const exposureEntries = [...detectors.jaExposureByScreen.entries()].sort((a, b) => b[1] - a[1]);
+      console.log(`JA exposure by screen (informational, not a failure condition): ${exposureEntries.length
+        ? exposureEntries.map(([screen, count]) => `${screen}=${count}`).join(', ')
+        : 'none'}`);
+    }
     if (!passed) process.exitCode = 1;
   } finally {
     if (context) await context.close().catch(() => {});
