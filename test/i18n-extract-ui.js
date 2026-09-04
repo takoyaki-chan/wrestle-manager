@@ -185,6 +185,14 @@ const DATA_TABLES = [
       table.forEach((row, i) => { if (row.msg) onEntry(row.msg, `LOSING_STREAK_PENALTIES[${i}].msg`); });
     },
   },
+  {
+    name: 'DOJO_SHOUTS',
+    // consumer: ui-render.js(_renderRosterDojoHeader、道場シーンの気合の掛け声)。
+    // P7-7b: Fable裁定により演出として残さず英訳する(要素そのものが文字列の配列)。
+    extract(table, onEntry) {
+      table.forEach((s, i) => { if (s) onEntry(s, `DOJO_SHOUTS[${i}]`); });
+    },
+  },
 ];
 
 const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;

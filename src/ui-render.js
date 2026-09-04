@@ -2041,22 +2041,22 @@ function _renderRosterDojoHeader() {
 
   // 吹き出しテキストを毎サイクルでランダム差し替え
   // 2026-08-13 Keisuke指摘「バラエティが少ない」を受け+12本(気合/技の掛け声/受け答え/回数/息切れ)
-  const DOJO_SHOUTS = [
-    'はぁっ…!','ふっ!','せいっ!','よいしょ!','もう一本!',
-    'はっ!','くっ…!','たぁっ!','いける…!','まだまだ!',
-    'おりゃ!','よし!','うぅっ…','どりゃ!','そこだ!',
-    'しゃあっ!','とうっ!','ぬんっ!','せーのっ!','はいっ!',
-    'こいっ!','立てっ…!','甘い!','あと三本!','ラスト!',
-    'ぜぇ…はぁ…','うおおっ!'
-  ];
+  // i18n P7-7b: DOJO_SHOUTS本体はdata.jsのトップレベル定数へ移設(DATA_TABLESモードで
+  // 台帳化するため)。乱数抽選は生JAで比較・保持し(=前回と同じ掛け声を連続させない判定は
+  // 言語非依存)、textContentへ書き込む瞬間だけt()を通す
   el.querySelectorAll('.dojo-scene-shout').forEach(s => {
-    const pick = (prev) => {
-      let t;
-      do { t = DOJO_SHOUTS[Math.floor(Math.random() * DOJO_SHOUTS.length)]; } while (t === prev && DOJO_SHOUTS.length > 1);
-      return t;
+    const pick = (prevRaw) => {
+      let raw;
+      do { raw = DOJO_SHOUTS[Math.floor(Math.random() * DOJO_SHOUTS.length)]; } while (raw === prevRaw && DOJO_SHOUTS.length > 1);
+      return raw;
     };
-    s.textContent = pick('');
-    s.addEventListener('animationiteration', () => { s.textContent = pick(s.textContent); });
+    const applyPick = () => {
+      const raw = pick(s.dataset.shoutRaw || '');
+      s.dataset.shoutRaw = raw;
+      s.textContent = WM_I18N.t(raw);
+    };
+    applyPick();
+    s.addEventListener('animationiteration', applyPick);
   });
 }
 
@@ -2127,7 +2127,10 @@ function _renderRosterDetailPanel(c, hired) {
   </div>`;
 
   // === Tab 1: 能力 ===
-  const traitsText = (c.traits || []).join(' / ');
+  // i18n P7-7b: 顔ポップアップ(ui-common.js _renderFighterPopup)と同じ経路 —
+  // c.traits の各要素はTRAIT_DEFSキーそのもの(=辞書キー)なので、要素ごとにt()を通す。
+  // 従来は生JAをそのままjoinしており、EN配線が漏れていた
+  const traitsText = (c.traits || []).map(t => WM_I18N.t(t)).join(' / ');
   const peakOVR = Number((c.careerRecord || {}).peakOVR) || 0;
   const peakOVRSeason = (c.careerRecord || {}).peakOVRSeason;
   const peakHtml = ov(c) < peakOVR
@@ -2304,7 +2307,7 @@ function _renderRosterGrowthLog() {
   });
   if (growthEntries.length > 0) {
     let html = '<div class="panel" style="margin-top:12px;background:#d4ccb8;border-color:rgba(100,85,50,0.18)"><div class="train-season-log" style="background:rgba(122,101,48,0.06);border-color:rgba(122,101,48,0.15);color:#4a4638">';
-    html += '<div style="font-weight:700;color:#7a6530;margin-bottom:4px">📈 今シーズン成長</div>';
+    html += `<div style="font-weight:700;color:#7a6530;margin-bottom:4px">${WM_I18N.t('📈 今シーズン成長')}</div>`;
     growthEntries.forEach(c => {
       const parts = [];
       ['pw','sp','te','st','mn'].forEach(s => {
@@ -2312,7 +2315,7 @@ function _renderRosterGrowthLog() {
         if (v > 0) parts.push(`<span style="color:#1a8a4a">${s.toUpperCase()}+${v}</span>`);
       });
       const popG = Math.round((c.seasonPopGrowth || 0) * 10) / 10;
-      if (popG > 0) parts.push(`<span style="color:#c07a10">人気+${popG}</span>`);
+      if (popG > 0) parts.push(`<span style="color:#c07a10">${WM_I18N.t('人気')}+${popG}</span>`);
       if (parts.length > 0) html += `<div><span style="color:#5c4a1e;font-weight:700;font-size:11px">${WM_I18N.pn(c.name)}</span>: ${parts.join(' ')}</div>`;
     });
     html += '</div></div>';
@@ -7054,7 +7057,7 @@ function _npPaperHeader(seasonNum, weekNum, isSeasonOpening) {
     ? WM_I18N.t('【新年号】シーズン{season} 第{week}週', { season: seasonNum, week: weekNum })
     : WM_I18N.t('シーズン{season} 第{week}週', { season: seasonNum, week: weekNum });
   return `<div class="np-paper-header">
-    <div class="logo">週刊グラップル</div>
+    <div class="logo">${WM_I18N.pn('週刊グラップル')}</div>
     <div class="issue">${issueLabel}<small>${today}</small></div>
   </div>`;
 }
@@ -7184,10 +7187,11 @@ function _npRenderBignewsTag(state, ts, seasonNum, weekNum) {
         const src = upper || portrait;
         if (!src) return '';
         const fighter = ALL_CHARS.find(c => c.id === id);
-        return `<div class="np-bignews-photo-member np-bignews-photo-member-${idx + 1}" onclick="showFighterPopup(${id})"><img src="${src}" alt="${escHtml(fighter?.name || '')}"></div>`;
+        return `<div class="np-bignews-photo-member np-bignews-photo-member-${idx + 1}" onclick="showFighterPopup(${id})"><img src="${src}" alt="${escHtml(WM_I18N.pn(fighter?.name || ''))}"></div>`;
       }).join('')
     : '';
-  const tsName = ids.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(' ＆ ');
+  // i18n P7-7b: 生JA名を直接joinしており<strong>タグへの直書きがpn()を通っていなかった
+  const tsName = ids.map(id => WM_I18N.pn(ALL_CHARS.find(c => c.id === id)?.name || '')).filter(Boolean).join(' ＆ ');
   const primaryId = ids[0] || null;
   const tsOrgKey = primaryId ? _npFindFighterOrgKey(state, primaryId) : null;
   const tsOrgName = primaryId ? _findFighterOrgName(state, primaryId) : '';
@@ -7223,15 +7227,30 @@ function _npKurodaFaceUrl() {
   return (typeof getNpcPortraitUrl === 'function') ? getNpcPortraitUrl('reporter') : '';
 }
 // 1ターン=1分30秒換算で「X分Y秒」表記を返す
+// i18n P7-7b: 「○分○秒」はJA固有の書式で辞書引きでは訳せない(数値組み立て)ため、
+// ここでlang分岐する。ENはmm:ss(コロン区切り、常に秒2桁)——「24分30秒」のような
+// 単位語の連続よりレイアウト幅を食わない(P6-9/P6-11のEN溢れ対策と同じ配慮)。
+// ja/pseudoは従来どおり(1バイト不変)
 function _npTurnsToTime(turns) {
   const t = Number(turns) || 0;
   if (t < 1) return '';
   const totalSec = t * 90;
   const min = Math.floor(totalSec / 60);
   const sec = totalSec % 60;
+  if (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en') {
+    return `${min}:${String(sec).padStart(2, '0')}`;
+  }
   return sec === 0 ? `${min}分` : `${min}分${sec}秒`;
 }
 // 黒田の署名・肩書ローテーション (用途別)
+// i18n P7-7b: NP_KURODA_BYLINE は tools/extract-dialogue.js の TABLE_MANIFEST に
+// 直接登録されたテーブル(KURODA_*と同族)——axis-rewrite.js等のツールが
+// Object.keys()+プロパティアクセスで構造走査するため、値をgetter化してWM_I18N.t()を
+// 仕込むと(vm評価サンドボックスにWM_I18Nが無く)ReferenceErrorで壊れる
+// (実機のarchetype-key-rename-test.jsで検出)。値は他のKURODA_*プールと同じく
+// 生JA文字列のまま据え置き、**参照側で**WM_I18N.t()を通す(kurodaTextのdict引数と同じ流儀)。
+// 書式は docs/en-kuroda-style-draft-v0.1.md §4-3の推奨(— Sachiko Kuroda, Weekly Grapple 型)
+// に揃える(docs/en-proper-nouns-draft-v0.1.md 付録Bで裁定済み)
 const NP_KURODA_BYLINE = {
   news: '——黒田幸子(週刊グラップル)',     // 一面記事/興行寸評
   rating: '——黒田幸子(本紙)',              // 興行総合評価
@@ -7436,7 +7455,7 @@ function _npCrisisColumnHtml(seasonNum, weekNum, isLatest) {
     <div style="font-family:'Noto Sans JP',sans-serif;font-size:11px;letter-spacing:2px;color:#ff8888;margin-bottom:6px;text-transform:uppercase">${WM_I18N.t('編集記事 — {name}', { name: '黒田幸子' })}</div>
     <h3 style="margin:0 0 8px 0;font-size:18px;color:#ffd6d6;font-weight:700">${headline}</h3>
     <p style="margin:0;font-size:13px;line-height:1.8;white-space:pre-wrap">${body}</p>
-    <div style="text-align:right;margin-top:10px;font-size:11px;color:#cc8888">${NP_KURODA_BYLINE.editorial}</div>
+    <div style="text-align:right;margin-top:10px;font-size:11px;color:#cc8888">${WM_I18N.t(NP_KURODA_BYLINE.editorial)}</div>
   </section>`;
 }
 
@@ -7583,7 +7602,8 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
     const primaryId = tagPhotoIds[0] || ts.characterId || null;
     const photoBg = isTagPhoto ? '' : _npPhotoBg(primaryId, ts);
     const photoIds = isTagPhoto ? tagPhotoIds : (primaryId ? [primaryId] : []);
-    const tsName = photoIds.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(' / ');
+    // i18n P7-7b: 生JA名を直接joinしており<strong>タグへの直書きがpn()を通っていなかった
+    const tsName = photoIds.map(id => WM_I18N.pn(ALL_CHARS.find(c => c.id === id)?.name || '')).filter(Boolean).join(' / ');
     const tsOrgKey = primaryId ? _npFindFighterOrgKey(G, primaryId) : null;
     const tsOrgName = primaryId ? _findFighterOrgName(G, primaryId) : '';
     const tsOrgEmblem = tsOrgKey ? _npOrgEmblem(G, tsOrgKey, 18) : '';
@@ -7614,7 +7634,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
       if (txt) {
         html += `<div class="np-kuroda" style="margin-bottom:14px">
           <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-          <div><div class="np-kuroda-text">${_quoteVal(txt)}</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
+          <div><div class="np-kuroda-text">${_quoteVal(txt)}</div><div class="np-kuroda-byline">${WM_I18N.t(NP_KURODA_BYLINE.news)}</div></div>
         </div>`;
       }
     }
@@ -7664,7 +7684,7 @@ function _npFrontLegacy(wp, seasonNum, weekNum, isLatest) {
     if (txt) {
       html += `<div class="np-kuroda">
         <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-        <div><div class="np-kuroda-text">${_quoteVal(txt)}</div><div class="np-kuroda-byline">${NP_KURODA_BYLINE.news}</div></div>
+        <div><div class="np-kuroda-text">${_quoteVal(txt)}</div><div class="np-kuroda-byline">${WM_I18N.t(NP_KURODA_BYLINE.news)}</div></div>
       </div>`;
     }
   } else {
@@ -7785,10 +7805,10 @@ function _npV3MvpBox(isLatest) {
   const rows = (G.mvpRace && G.mvpRace.rankings) || [];
   if (rows.length === 0) return '';
   const top3 = rows.slice(0, 3).map(e => `<div class="np-v3-mvprow" onclick="event.stopPropagation();showFighterPopup(${e.fighterId},null,true)">
-      <span class="rank">${e.rank}</span><span class="who">${escHtml(e.fighterName || '')}</span><span class="pt">${Math.round(e.points || 0)}</span>
+      <span class="rank">${e.rank}</span><span class="who">${escHtml(WM_I18N.pn(e.fighterName || ''))}</span><span class="pt">${Math.round(e.points || 0)}</span>
     </div>`).join('');
   const chase = rows.slice(3, 5)
-    .map(e => WM_I18N.t('{rank}位 {name} {pts}', { rank: e.rank, name: escHtml(e.fighterName || ''), pts: Math.round(e.points || 0) }))
+    .map(e => WM_I18N.t('{rank}位 {name} {pts}', { rank: e.rank, name: escHtml(WM_I18N.pn(e.fighterName || '')), pts: Math.round(e.points || 0) }))
     .join(' / ');
   const chaseHtml = chase ? `<div class="np-v3-mvpchase">${chase}</div>` : '';
   return `<div class="np-v3-mvpbox">
@@ -7808,7 +7828,7 @@ function _npV3KurodaColumn(wp, seasonNum, weekNum) {
         <div class="np-v3-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
         <div>
           <div class="np-v3-kuroda-text">${_quoteVal(txt)}</div>
-          <div class="np-v3-kuroda-byline">${NP_KURODA_BYLINE.editorial}</div>
+          <div class="np-v3-kuroda-byline">${WM_I18N.t(NP_KURODA_BYLINE.editorial)}</div>
         </div>
       </div>`;
     }
@@ -7896,7 +7916,7 @@ function _npV3HallOfFameRetirement(ts, seasonNum, weekNum) {
         <div class="np-v3-art np-v3-hof-body">${bodyHtml}</div>
       </div>
     </div>
-    <div class="np-v3-byline">${NP_KURODA_BYLINE.rating}</div>
+    <div class="np-v3-byline">${WM_I18N.t(NP_KURODA_BYLINE.rating)}</div>
   </article>`;
 }
 
@@ -7918,7 +7938,9 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
   const photoIds = isTagPhoto ? tagPhotoIds : (primaryId ? [primaryId] : []);
   // 組んだ2人(タッグ・同期)は「/」、戦った2人(歴代最高評価)は「vs」で繋ぐ
   const pairJoin = ts.type === 'mqAllTimeRecord' ? ' vs ' : ' / ';
-  const tsName = photoIds.map(id => ALL_CHARS.find(c => c.id === id)?.name || '').filter(Boolean).join(pairJoin);
+  // i18n P7-7b: ALL_CHARS由来の生JA名を直接joinしており、<strong>タグへの直書きが
+  // pn()を通っていなかった(EN走破で発見)
+  const tsName = photoIds.map(id => WM_I18N.pn(ALL_CHARS.find(c => c.id === id)?.name || '')).filter(Boolean).join(pairJoin);
   const orgKey = primaryId ? _npFindFighterOrgKey(G, primaryId) : null;
   const orgName = primaryId ? _findFighterOrgName(G, primaryId) : '';
   const emblem = orgKey ? _npOrgEmblem(G, orgKey, 18) : '';
@@ -7951,7 +7973,7 @@ function _npV3TopStory(wp, seasonNum, weekNum) {
     <h2 class="np-v3-hl-top">${ts.headline || '——'}</h2>
     ${ts.subhead ? `<div class="np-v3-deck">${ts.subhead}</div>` : ''}
     ${headHtml}${tailHtml}
-    <div class="np-v3-byline">${NP_KURODA_BYLINE.rating}</div>
+    <div class="np-v3-byline">${WM_I18N.t(NP_KURODA_BYLINE.rating)}</div>
   </article>`;
 }
 
@@ -8254,8 +8276,8 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     </div>
     ${(() => {
       const timeStr = _npTurnsToTime(d.turns);
-      const turnsTail = timeStr ? (d.turns ? `<span class="dec-turns">（${d.turns}ターン）</span>` : '') : (d.turns ? `<span class="dec-time">${d.turns}ターン</span>` : '');
-      const timeMain = timeStr ? `<span class="dec-time">決着時間 ${timeStr}</span>` : '';
+      const turnsTail = timeStr ? (d.turns ? `<span class="dec-turns">${WM_I18N.t('（{n}ターン）', { n: d.turns })}</span>` : '') : (d.turns ? `<span class="dec-time">${WM_I18N.t('{n}ターン', { n: d.turns })}</span>` : '');
+      const timeMain = timeStr ? `<span class="dec-time">${WM_I18N.t('決着時間 {time}', { time: timeStr })}</span>` : '';
       if (d.isDraw) {
         return `<div class="np-show-decision"><span class="dec-text">${WM_I18N.t('決着つかず')}</span></div>`;
       }
@@ -8270,7 +8292,7 @@ function _npRenderPlayerShow(d, seasonNum, weekNum) {
     <div class="np-result-line">
       <div>${d.matchLabel || WM_I18N.t('メインイベント')}</div>
       <div class="mq-block"><label>${WM_I18N.t('評価')}</label><strong>${d.mq || '?'}</strong></div>
-      <div class="duration">${_npTurnsToTime(d.turns) || (d.turns ? `${d.turns}ターン` : '')}</div>
+      <div class="duration">${_npTurnsToTime(d.turns) || (d.turns ? WM_I18N.t('{n}ターン', { n: d.turns }) : '')}</div>
     </div>
     ${d.article ? `<div class="np-show-article">${d.article}</div>` : ''}
     ${_renderNewspaperInjuries(d)}`;
@@ -8328,8 +8350,11 @@ function _npRenderDigest(d, seasonNum, weekNum) {
     const lId = m.isDraw ? m.right.id : loserId;
     // U5: escHtml済みの形でwName/lNameを確定させる(以降このスコープで参照する箇所は
     // マーク表示・寸評コメント埋め込みも含めてすべてこの安全な値を使う)。
-    const wName = escHtml(m.isDraw ? WM_I18N.pn(m.left.name) : winnerName);
-    const lName = escHtml(m.isDraw ? WM_I18N.pn(m.right.name) : loserName);
+    // i18n P7-7b: pn()はisDraw分岐でしか通っておらず、勝敗が付いた通常の
+    // シングルマッチ行(np-digest-nameへの直接埋め込み。t()のparams経由ではないので
+    // convertNamesの恩恵を受けない)は生JA名のまま出ていた(EN走破で発見)
+    const wName = escHtml(WM_I18N.pn(m.isDraw ? m.left.name : winnerName));
+    const lName = escHtml(WM_I18N.pn(m.isDraw ? m.right.name : loserName));
 
     let badge = '';
     if (m.isTitleMatch) badge = `<span class="badge-title">${WM_I18N.t('王座戦')}</span>`;
@@ -8365,8 +8390,8 @@ function _npRenderDigest(d, seasonNum, weekNum) {
     const dTimeStr = _npTurnsToTime(m.turns);
     const dTimeMain = dTimeStr ? `<span class="np-digest-time">${dTimeStr}</span>` : '';
     const dTurnsSub = dTimeStr
-      ? (m.turns ? `<span class="np-digest-turns-sub">（${m.turns}ターン）</span>` : '')
-      : (m.turns ? `<span class="np-digest-time">${m.turns}ターン</span>` : '');
+      ? (m.turns ? `<span class="np-digest-turns-sub">${WM_I18N.t('（{n}ターン）', { n: m.turns })}</span>` : '')
+      : (m.turns ? `<span class="np-digest-time">${WM_I18N.t('{n}ターン', { n: m.turns })}</span>` : '');
     let finishLine = '';
     if (m.isDraw) {
       finishLine = `<span class="np-digest-finish-text">${WM_I18N.t('決着つかず')}</span>`;
@@ -8491,7 +8516,7 @@ function _npRenderPage2() {
     <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
     <div>
       <div class="np-headline-quote">${_quoteVal(headlineQuote)}</div>
-      <div class="np-headline-byline">${NP_KURODA_BYLINE.editorial}</div>
+      <div class="np-headline-byline">${WM_I18N.t(NP_KURODA_BYLINE.editorial)}</div>
     </div>
     <div class="np-headline-grade">
       <div class="lbl">GRADE</div>
@@ -8615,7 +8640,7 @@ function _npRenderPage2() {
       </div>
       <div class="np-war-comment">
         <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
-        <div>${_quoteVal(warComment)}<div class="np-kuroda-byline">${NP_KURODA_BYLINE.warRecord}</div></div>
+        <div>${_quoteVal(warComment)}<div class="np-kuroda-byline">${WM_I18N.t(NP_KURODA_BYLINE.warRecord)}</div></div>
       </div>
     </div>`;
   }
@@ -8742,7 +8767,7 @@ function _npRenderPage2() {
         <div class="np-kuroda-face sm" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
         <div style="flex:1">
           <div class="np-editorial-text">${editorialLead ? `${editorialLead}<br>` : ''}${d.summaryText || ''}<br>${WM_I18N.t('勝ち筋:')} ${d.opportunity || ''}<br>${WM_I18N.t('リスク:')} ${d.risk || ''}<br>${WM_I18N.t('補強提案:')} ${d.scout || ''}</div>
-          <div class="np-editorial-byline">${NP_KURODA_BYLINE.editorial}</div>
+          <div class="np-editorial-byline">${WM_I18N.t(NP_KURODA_BYLINE.editorial)}</div>
         </div>
       </div>
     </div>`;
@@ -9042,7 +9067,7 @@ function _npRenderPage3() {
     </div>
     <div class="np-rivalry-narrative">
       ${narrativeParas.map(p => `<p>${p}</p>`).join('')}
-      <div style="text-align:right;font-size:10px;color:#7a5b32;margin-top:6px">${NP_KURODA_BYLINE.rivalry}</div>
+      <div style="text-align:right;font-size:10px;color:#7a5b32;margin-top:6px">${WM_I18N.t(NP_KURODA_BYLINE.rivalry)}</div>
     </div>
     <div class="np-rivalry-facts">${facts.join('')}</div>
   </div>`;

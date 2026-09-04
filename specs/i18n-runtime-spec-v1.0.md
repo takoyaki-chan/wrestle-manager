@@ -682,3 +682,41 @@ P6-10 の `extractArrayLiteralProp`(ソース文字列から `prop: [ … ]` を
 
 - 防御的フォールバックとして枝は残し、`desc` 35行も**台帳へ載せて訳した**。表の全行が台帳に載っている状態(§13-2 Bの完了指標)を優先する
 - ただし**「訳したのに出ない行」がある**ことは記録しておく。枝を消すか `desc` を短縮表示として実際に使うかはKeisuke裁定
+
+## 23. Stage B P7-7b — 新聞/ロスター画面のJA露出修正(2026-09-04追加)
+
+P7-7a(§前掲・調査のみ)が分類した根本原因のうち、技名(finishLabel、P7-5裁定待ち)を除く9件を修正した。EN走破のJA露出(`--ja-exposure-log`)は newspaper 28→8(残8件は全て決着技名=finishLabel絡み。技名以外は0)/ roster 25→0。
+
+### 23-1. `NP_KURODA_BYLINE` はgetter化できない — `tools/extract-dialogue.js` TABLE_MANIFEST の落とし穴
+
+黒田署名(`——黒田幸子(週刊グラップル)` 等)を「値そのものをgetterにしてWM_I18N.t()を仕込む」形で直そうとしたところ、`test/archetype-key-rename-test.js` が `ReferenceError: WM_I18N is not defined` で壊れた。原因: `NP_KURODA_BYLINE` は `tools/extract-dialogue.js` の `TABLE_MANIFEST` に `KURODA_HEADLINES`/`KURODA_EDITORIAL` 等と同列で直接登録された「セリフ系テーブル」で、`tools/axis-rewrite.js` の構造走査(`Object.keys(node)` → `node[k]`)が**vm評価サンドボックス(WM_I18Nが存在しない)でプロパティへ実アクセスする**。getterにすると即座に例外化する。
+
+- **教訓**: `TABLE_MANIFEST` に載っているテーブル(`grep NP_KURODA_BYLINE tools/extract-dialogue.js` 等で確認可能)は、値を生JA文字列のまま維持し、**参照側で`WM_I18N.t(TABLE.key)`を呼ぶ**(`kurodaText(entry, d, dict)` と同じ「dictは呼び出し側が持ち込む」流儀)。テーブル自体をi18n化しない
+- 5プロパティ×10箇所の参照サイトはすべて `${NP_KURODA_BYLINE.xxx}` → `${WM_I18N.t(NP_KURODA_BYLINE.xxx)}` の機械的な置換で足りた
+- 新規3キー(news用/rating用/editorial用の署名文字列)はui-ledgerへ追加。書式は `docs/en-kuroda-style-draft-v0.1.md` §4-3の推奨(`— Sachiko Kuroda, Weekly Grapple` 型、em dash+半角スペース)と `docs/en-proper-nouns-draft-v0.1.md` 付録Bの裁定に合わせた(news/warRecord→`, Weekly Grapple`、rating→`, staff writer`、editorial→`, editorial desk`)
+
+### 23-2. 「headline/MVP小窓は直したのに、同じ選手名が別の`<strong>`で漏れる」— ALL_CHARS直読みが3箇所
+
+MVP小窓(`_npV3MvpBox`)の`fighterName`は直したが、EN走破で再検査すると一面トップ記事の写真キャプション(`<strong>${tsName}</strong>`)にも同じ穴があった。`tsName`は`ALL_CHARS.find(...).name`を`pn()`を通さず直接`join()`していた——3箇所(`_npRenderBignewsTag`/`_npV3Top`相当2箇所)が同型。**「該当関数だけ直して終わり」にせず、同じ変数名(`tsName`)・同じ生成パターンで`grep`し直したことで発見**。合わせてダイジェスト表(`_npRenderDigest`)の`wName`/`lName`も`m.isDraw`分岐でしか`pn()`を通していなかった(引き分け以外の通常勝敗行が漏れる)ことが判明し、同じバッチで根治した。
+
+- **教訓**: 「生名前をpn()に通す」修正は、P7-7aの分類が拾った1箇所だけでなく、**同じ生成元(`ALL_CHARS.find().name`・`m.left.name`/`m.right.name`)を持つ他の表示点をgrepで洗い出す**ことでEN走破の再検証時に0件へ落ちる。1箇所だけ直すと「直したのにEN走破でまだ引っかかる」を繰り返す
+
+### 23-3. `DOJO_SHOUTS`(気合の掛け声26種、実測27種)はUIファイルからdata.jsへ移設して`DATA_TABLES`台帳化
+
+Fable裁定により演出として残さず英訳する方針が確定していたため、`test/i18n-extract-ui.js`の`DATA_TABLES`モード(P7-1で確立)に載せる必要があった。`DATA_TABLES`は`loadAsGlobal('data.js')`でdata.jsのトップレベル宣言だけを対象にするため、**元々`ui-render.js`内のローカル`const`だったものをdata.jsのトップレベルへ移設**した(ブラウザではdata.jsの`<script>`がui-render.jsより先に読み込まれるため、非exportのトップレベル`const`でも後続scriptから参照できる——`TRAIT_DEFS`等の既存表と同じ運用)。乱数抽選の「前回と同じ掛け声を連続させない」比較は生JAのまま行い(`s.dataset.shoutRaw`に保持)、`textContent`へ書く瞬間だけ`WM_I18N.t()`を通す。
+
+- 英訳はFable裁定の「実際にジムで飛ぶ短い掛け声」方針+en-tone-bible §1(感嘆符1つまで・ALL CAPS禁止)に従った27本。効果音的な純粋な気合(はぁっ/ふっ/うぅっ 等13本)は英語の対応語彙が薄いため`Hah!`/`Ngh...!`/`Hup!`型の短い間投詞へ、意味を持つ掛け声(もう一本!/まだまだ!/ラスト! 等14本)は`One more!`/`Not done yet!`/`Last one!`のように直訳した
+- **件数の実測訂正**: P7-7aの調査時点の呼称「26種」は配列の目視カウント誤り。`node`で`eval`実測したところ**実際は27種**だった(以後この表を参照するときは27で数える)
+
+### 23-4. `buildFollowUp`の名前配線は既存共通ヘルパー`_wmFillWithDict`への乗り換えで解決(新規実装ゼロ)
+
+消費側(`management.js`)が`dict(pick.headline)`で訳文だけ取ってから手動`fill()`(split/join)で`{name}`等を生値のまま置換していたため、`t()`のparams経由`convertNames`(D-P6-2)を素通りしていた。P6-10で確立済みの共通ヘルパー`_wmFillWithDict(dict, tpl, params)`(`dict(String(tpl), params)`を1回呼ぶだけで翻訳+PH充填+名前自動変換を済ませる)に乗り換えるだけで解決し、新規の翻訳コンテンツもロジックも増えていない。
+
+### 23-5. `決着時間`/`ターン数`の書式はJA固有の数値組み立てなのでlang分岐が要る
+
+`_npTurnsToTime(turns)`は「Xターン=90秒」から`○分○秒`を**文字列組み立てで生成**しており、辞書引き(t())だけでは訳せない型(§2-4「成形済み値」と同族)。EN側は`mm:ss`(コロン区切り・常に秒2桁)を採用した——「24m30s」のような単位語連続よりレイアウト幅を食わない(P6-9/P6-11のEN溢れ対策と同じ配慮)。「決着時間 」「ターン」の直書きラベルは通常のt()化(`決着時間 {time}` → `Time: {time}`、`{n}ターン` → `{n} turns`)で足りた。
+
+### 23-6. 範囲外の新規発見(P7-7bでは修正していない)
+
+- **`div.np-show-article`の生JAフォールバック記事**(`ui-render.js` `_npRenderPlayerShow`内、`App._NEWSPAPER_ARTICLES`のプールが空のときのフォールバック文字列組み立て)。数文からなる長文テンプレをt()もpn()も通さず直接組み立てており、technique名だけでなく地の文全体がJAのまま出る。P7-5(技名)より大きい別枠の作業(複数文のテンプレ台帳化)が要るため、P7-7bのスコープ外として記録のみ
+- **`App._generateNewspaperTexts`のMath.random()非決定性**(P7-7aで指摘済み・据え置き継続。generateHypeと同族の乱数シード原則からの逸脱)
