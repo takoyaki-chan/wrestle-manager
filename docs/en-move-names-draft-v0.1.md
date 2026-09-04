@@ -1,5 +1,10 @@
 # 技名 英語表記ドラフト v0.1（Keisuke 裁定用）
 
+> **裁定確定(2026-09-04・Keisuke)**: 設問①〜⑤すべて推奨案で確定。
+> ① JA/EN呼称ズレ11件は英語の実技名に合わせる(ブレーンバスター=Vertical Suplex / 垂直落下式=Brainbuster / コブラツイスト=Abdominal Stretch / アームリンガー=Arm Wringer / ヒール・ホールド=Heel Hook / 回転エビ固め=O'Connor Roll ほか)
+> ② 創作技は意訳一択(音写・併記なし) ③ （専）（喧）（打）（大）（飛）マーカーは括弧を持ち込まず上位版名/Deep前置/別名 ④ 「→」は into に開く ⑤ インディアン・デスロック=Deathlock
+> ★印38件は個別の異議なし=推奨EN名を採用(実装後に実機で気になる名があれば1語差し替えで直す)。実装は P7-5(names-ledger拡張+表示時t()のみ・エンジンにEN名を流さない)。
+
 - 作成: 2026-09-04(Fable)
 - 位置づけ: **Stage B P7-5 の裁定用ドラフト**(`docs/i18n-stage-b-p7-design-v0.1.md` §1-D / §4「Keisuke裁定が要るもの」)。`docs/en-proper-nouns-draft-v0.1.md` §9 で「別ドラフト(次工程)」として切り出した技名がこれ
 - 規範元: `docs/en-proper-nouns-draft-v0.1.md`(裁定済みの方針: 意訳を基本・格が要るものだけ音写) / `docs/en-tone-bible-draft-v0.1.md` §1(温度を上げない・忠実さより自然さ) / `docs/move-catalog-reclassified-v0.2.md`(分類語)
