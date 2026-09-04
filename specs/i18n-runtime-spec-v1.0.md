@@ -1014,3 +1014,40 @@ return prefix + String(T(tmpl, { move: finMove })).replace('{move}', finMove);
 4. **`management.js:31053` / `32263` の `else` 分岐が生の `finMove` を出す**。ただし条件が `Engine.formatFinish &&` なので `formatFinish` が存在する限り到達しない死コード(§13-2-1型)
 5. **`tag-battle-lines.js` の `_tplTagLine` は `dict(str)` だけでPHの値を素通しする**。`{move}` は呼び出し側(`tag-battle-main.js`)で先に `mv()` を掛けて回避したが、同関数の `{winner}`/`{partner}` は依然として生JA名(P7-7b/P6-3ロングテールの領分)
 6. **選手ごとの「得意技」UIは存在しない**。P7設計が挙げていた表示点だが、`.moves` のような選手所有の技リストはコード上に無く(技はスタイルから毎試合抽選される)、`得意技` は紹介文の地の文にしか出ない。記録タブ・ランキング・年代記ハイライトにも決着技は出ない
+
+## 29. Stage B P7-10 — 共通レンダラの二重t()全数洗い直し+規則23機械検査+`_getSurname`調査(2026-09-04追加)
+
+P6-18(§23-10-1)が見つけた型を`_u3bSideHtml`の全61呼び出し元と、同系統の共通レンダラ`_mdlASubjectStage`/`_mdlBSoloStage`/`_emrBubbleHtml`/`_chBubbleSlot`/`_pbFighterBlock`/`_awSpeech`系/`_negSpeakerHtml`/`_mdlAFlowPortraitHtml`/`_tcFinalPick`の全消費先まで対象を広げて洗い直した。実バグ9箇所(§10-1と同型)を発見・修正。
+
+### 29-1. `_pbFighterBlock`/`_mdlAFlowPortraitHtml`は§9の`lineTranslated`opt-inパターンが存在しなかった
+
+`_u3bSideHtml`(§9)・`_awSpeech`(§10-1)は最初から`lineTranslated`/`translated`引数を持つ設計だったが、`_pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine)`と`_mdlAFlowPortraitHtml(opts)`は**エスケープ機構そのものが無く**、`dialogueLine`/`o.line`を常に無条件で`WM_I18N.t()`していた。それぞれ`dialogueTranslated`(第6引数)・`o.lineTranslated`を新規追加し、二重t()になっていた呼び出し元へ`true`を配線した:
+
+- `_pbFighterBlock`: 対抗戦勝利プレビュー(`renderWarMatchPreview`)の左右2枠。渡していた`result.victoryLine`は`_getWarVictoryLine()`(§10-1で既に「内部でt()済み」と確立している関数)の戻り値だった
+- `_mdlAFlowPortraitHtml`: B2対立決着(`_buildB2Step3`勝者コマ/`_buildB2Step3b`敗者コマ)・B3挑戦状決着(`_buildB3Step3b`/`showB3OpponentAftermath`、いずれも`WM_I18N.t(pickDialogueLine(...) || 'フォールバック文')`型)の計4箇所
+
+他に`_u3bSideHtml`直呼びで2箇所(派閥抗争クラッシュ`_factionF02RenderClash`の左右)・`_snapshotLine`経由(R3別れモーダル`showR3Modal`)・`getSigningQuote`経由(契約セレモニー`showSigningCeremony`)・`_tcFinalPick`経由(天頂戦決勝アフターマス`_showTcFinalAftermath`)の計4箇所も同型で未フラグだった。修正後は`lineTranslated: true`を渡す。
+
+**残り80箇所超はすべて生JA+単一t()の正しい配線**であることをソースまで遡って確認した。生成元がEngine層関数(`pickDialogueLine`/`Engine.negotiate.getDialogue`/`Engine.factions._getF08LineByBand`/`Engine.retirement.selectLine`/`Engine.eventSystem.get*Dialogue`等)であれば必ず生JA(Engineは`WM_I18N`を直接呼ばない設計のため)、UI層のヘルパー(`_awardLine`/`_getWarVictoryLine`/`_snapshotLine`/`getSigningQuote`/`_tcFinalPick`/`Engine.shachoshitsu.getReactionText`)であれば個別に確認が要る、という判別ルールが実務上そのまま使える。
+
+### 29-2. 規則23(黒田英文体§3-4)の機械検査を3本のbuild-dictに追加
+
+`\{[a-z]+\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b`(数値プレースホルダ直後の可算名詞複数形)をwarning専用(exit 1にしない)で検出する。ui-ledger 73件/template-ledger 61件/dialogue-ledger 30件=計164件がヒットする現状(大半は「{n} weeks left」のような実際に1になりうる値)。既訳2キー(`{n}名`→`Wrestlers: {n}`、`{wins}勝`→`wins: {wins}`)のみ本バッチで修正し、残りは次の掃討バッチへ。exit 1化の判断はそのバッチで違反一覧を見てから行う。
+
+### 29-3. `Engine.chronicle._getSurname`は文字列引数では日本語名を分割できない(未修正・裁定待ち)
+
+```js
+_getSurname(arg) {
+  if (!arg) return '名無し';
+  if (typeof arg === 'object') {
+    if (arg.surname) return arg.surname;
+    return Engine.chronicle._getSurname(arg.name);
+  }
+  const parts = String(arg).split(/[\s　]+/);
+  return parts[0] || String(arg);
+},
+```
+
+オブジェクト引数は`.surname`優先、文字列引数は空白区切りの先頭。日本語氏名(`name`)は空白を含まないため、**文字列で呼ぶと氏名全体が返る**。2つの経路が影響する: (1) `_getSurname(ace.name)`のように`.name`を先に取り出してから呼ぶ箇所(`_buildQuoteContext`/`_buildAceNarrativeParts`/`_generateTitleParts`)は`.surname`の有無に関わらずこの経路には入らない、(2) 章キャッシュの縮約ace/peer(management.js約6710〜6742行の`aces:`/`peers:`構築で`id/name/style/...`は複写するが`surname`は複写していない)をオブジェクトのまま渡す箇所(`_getSurname(top)`等)はオブジェクト分岐に入るが`.surname`が無く文字列分岐へフォールスルーする。`state.roster`/`ALL_CHARS`の生キャラクターを直接渡す箇所は`.surname`を持つため正しく動作する。
+
+章タイトル(例:「木村レイカ世代」がフルネーム+世代になる)・叙述文・記者の目の一部が影響を受ける。修正案は(a)縮約キャッシュへ`surname`を追加コピーし呼び出し元をオブジェクト渡しへ統一、(b)`_getSurname`内でALL_CHARS/roster逆引きの補完、のいずれか。**完成文がGへ永続する層のため、JA出力が変わる=Keisuke裁定待ち・本バッチでは不触**。

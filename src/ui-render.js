@@ -11292,7 +11292,7 @@ function _renderPrologueBlock(prologue, chapters) {
   const firstChampionId = Engine.prologue.firstChampionId(G);
 
   const STYLE_JP = { Striker: WM_I18N.t('打撃'), Grappler: WM_I18N.t('組技'), Submission: WM_I18N.t('関節技'), Brawler: WM_I18N.t('喧嘩'), Aerial: WM_I18N.t('空中戦'), Allround: WM_I18N.t('万能') };
-  const ROLE_JP = { Babyface: WM_I18N.t('ベビー'), Heel: WM_I18N.t('ヒール'), Tweener: WM_I18N.t('ニュートラル') };
+  const ROLE_JP = { Babyface: WM_I18N.t('ベビー'), Heel: WM_I18N.t('ヒール'), Neutral: WM_I18N.t('ニュートラル'), Tweener: WM_I18N.t('ニュートラル') };
 
   const isInProgress = prologue.status === 'in_progress';
   const totalTicks = chapters.length + 1; // 序 + 確定章

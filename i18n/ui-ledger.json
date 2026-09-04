@@ -4356,7 +4356,7 @@
   },
   {
     "key": "{n}名",
-    "en": "{n} wrestlers",
+    "en": "Wrestlers: {n}",
     "files": [
       "factions.js",
       "ui-render.js"
@@ -5313,7 +5313,7 @@
   },
   {
     "key": "{wins}勝",
-    "en": "{wins} wins",
+    "en": "wins: {wins}",
     "files": [
       "management.js"
     ],
