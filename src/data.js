@@ -18326,6 +18326,25 @@ const NEWSPAPER_SUB_TEMPLATES = {
   default: '{showName}・{venue}。観客{attendance}人。メイン試合評価{mq}、全{totalMatches}試合平均試合評価{avgMQ}',
 };
 
+// i18n Stage B P6-15: 新聞記事composer3本(統一王座/王座交代/ドラフト自団体1面)が使う
+// 「連結様式」と差し込みラベルのテンプレ。本文プールの3表(UNIFIED_TITLE_TEMPLATES /
+// CHAMPION_CHANGE_TEMPLATES / DRAFT_PLAYER_RESULT_PARTS)はいずれも「承認済み正本・
+// 一字一句変更不可」の但し書きが付いた表なので、i18n配線のために足す文字列は本表へ集約する。
+// P6-14の殿堂入り語り文(HOF_BIOGRAPHY_TEMPLATES.join)と同型 — 断片を連結して1本の本文に
+// する族は、**連結の様式そのものを1キーのテンプレ**にするのが構造規約3(断片連結禁止)を
+// 満たす唯一の形。JAは区切り無しで直結、ENは文間に半角スペースが要る。
+//   join           : 断片数が可変(統一王座3〜5本・ドラフト2〜4本)なので2スロットの畳み込みで使う
+//   champChangeJoin: 王座交代記事は常にリード+プロフィール+戴冠歴+締めの4本固定
+//   nameList       : 指名選手名の列挙。畳み込みの各段で選手名がdictのパラメータを通るため、
+//                    区切り文字だけでなく名前辞書(pn)の変換も同時に効く
+//   prevChampFallback: 前王者名が取れなかったときの差し込みラベル(値としてdictを引く)
+const ARTICLE_COMPOSE_TEMPLATES = {
+  join: '{a}{b}',
+  champChangeJoin: '{lead}{profile}{reign}{closing}',
+  nameList: '{a}、{b}',
+  prevChampFallback: '前王者',
+};
+
 // task-77 §5-D: ドラフト自団体1面(リード+注目選手1〜2名+締め)。確定版・一字一句変更不可。
 // featured は assessedTier(superElite/elite/promising)ごとのバリアント。raw/material は言及しない
 const DRAFT_PLAYER_RESULT_PARTS = {
@@ -31131,7 +31150,7 @@ if (typeof module !== 'undefined' && module.exports) {
     MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, LONG_TERM_INJURY, INJURY_DEBUFF_TABLE,
-    TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
+    TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
     GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
     GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES, BITTER_PREMATCH_LINES,
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,

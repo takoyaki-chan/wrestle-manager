@@ -285,16 +285,16 @@ P6-9(`docs/i18n-en-layout-overflow-report-v0.1.md`)が計測したEN溢れ87〜8
 
 data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`を全件列挙して実値を評価**し、3台帳の収録キー+固有名詞辞書(`src/lang-en-names.js`)と突き合わせた。
 
-**A. 「兄弟表は対象なのに本表だけ漏れている」型 — 4件(未着手・次バッチ)**
+**A. 「兄弟表は対象なのに本表だけ漏れている」型 — 4件(✅**P6-15で全件解決**、2026-09-04。詳細は§14)**
 
 | 表 | 未収録行数 | 消費点 | 状態 |
 |---|---|---|---|
-| `UNIFIED_TITLE_TEMPLATES` | 96 | `Engine.newspaper.composeUnifiedTitleArticle(type, data, seed)` | dict引数なし。lead+profile+reign+closingの4断片を`join('')`連結 |
-| `CHAMPION_CHANGE_TEMPLATES` | 26 | `Engine.newspaper.composeChampionChangeBody(ev, seed)` | dict引数なし。同じ4断片連結 |
-| `PPV_HYPE_TEMPLATES` | 10 | `Engine.ppv.generateHype(match)` → `match.hype`(Gへ永続) | dict引数なし。かつ**選出が`Math.random()`なので表示時再生成(§13-1)が使えない**唯一の族。`hypeTpl`+`hypeVars`を併記する追加フィールド方式(§12-1の`headlineJa`と同型)が要る |
-| `DRAFT_PLAYER_RESULT_PARTS` | 14 | `Engine.newspaper.composeDraftPlayerResult(org, fighters, seed)` | dict引数なし。lead+featured+closingの断片連結 |
+| `UNIFIED_TITLE_TEMPLATES` | 96 | `Engine.newspaper.composeUnifiedTitleArticle(type, data, seed, dict)` | ✅dict-opts化+`join`畳み込み(P6-15) |
+| `CHAMPION_CHANGE_TEMPLATES` | 26 | `Engine.newspaper.composeChampionChangeBody(ev, seed, dict)` | ✅dict-opts化+4スロット`champChangeJoin`(P6-15) |
+| `PPV_HYPE_TEMPLATES` | 10 | `Engine.ppv.buildHype(match)` → `match.hype`+`hypeTpl`+`hypeVars` | ✅追加フィールド方式(P6-15)。`Math.random()`は据え置き |
+| `DRAFT_PLAYER_RESULT_PARTS` | 14 | `Engine.newspaper.composeDraftPlayerResult(org, fighters, seed, dict)` | ✅dict-opts化+`join`/`nameList`畳み込み(P6-15) |
 
-**この4件は台帳へ載せるだけでは無意味**(消費点がdictを持たないので辞書を引く機会が無い)。必要なのは①composerのdict-opts化 ②断片連結の`join`テンプレ化(§13-1と同型) ③146行の英訳、の3点セット。`composeUnifiedTitleArticle`/`composeChampionChangeBody`は呼び出し元が`Engine.newspaper.generate()`(ローカル`dict`あり)なので配線自体は素直。
+**この4件は台帳へ載せるだけでは無意味**(消費点がdictを持たないので辞書を引く機会が無い)。必要だったのは①composerのdict-opts化 ②断片連結の`join`テンプレ化(§13-1と同型) ③146行の英訳、の3点セットで、P6-15がこれを実施した。
 
 **B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行**
 
@@ -310,3 +310,48 @@ Engine/UIが直に読む地の文・ラベルのプール。大物は`SNAPSHOT_T
 - `a {n}` は充填値が8/11/18のとき"an"が正しくなり、`a {name}` は名前の頭音で割れる
 - **ハイフン付きの限定用法(`a {n}-match history` = 規則24の逃がし方)は常に"a"で正しいので許可**する。`}`の直後がハイフンかどうかで機械的に区別する
 - 導入時点の既存違反は6件(ui 1 / template 5)。いずれも`{label} offer from {outlet}`(冠詞を落とす) / `a match rated {bestMQ}`(§1-7の固定対訳へ寄せる) / `{playerName}'s matches`(規則26の所有格へ逃がす)の形で書き直した
+
+## 14. Stage B P6-15 — 新聞composer3本+PPV煽りのdict-opts化(§13-2 A表の4件を全解決、2026-09-04追加)
+
+§13-2の突合表Aが起票した4表(146行)を「①composerのdict-opts化 ②断片連結の`join`テンプレ化 ③英訳」の3点セットで解決した。新規訳出は**135キー**(146行のうち15行はプロフィール4プールを`UNIFIED_TITLE_TEMPLATES`と`CHAMPION_CHANGE_TEMPLATES`が**同じ配列参照で共有**しているため台帳では1行に畳まれる。加えて連結様式+差し込みラベル4行)。台帳3本とも未訳0を維持(ui 3,530 / template **1,749** / dialogue 16,674)。
+
+### 14-1. 承認済み本文プールに手を入れず`join`を持たせる — `ARTICLE_COMPOSE_TEMPLATES`
+
+`UNIFIED_TITLE_TEMPLATES`(「承認済み正本。文面変更禁止」)・`CHAMPION_CHANGE_TEMPLATES`/`DRAFT_PLAYER_RESULT_PARTS`(「確定版・一字一句変更不可」)はいずれも表そのものに但し書きが付いている。P6-14が`HOF_BIOGRAPHY_TEMPLATES.join`を表の中に置いたのと違い、**i18n配線のために足す文字列は data.js の別テーブル`ARTICLE_COMPOSE_TEMPLATES`へ集約**した(`test/i18n-extract-templates.js`の`TARGET_TABLES`へ4表と共に追加)。
+
+| キー | JA | EN | 用途 |
+|---|---|---|---|
+| `join` | `{a}{b}` | `{a} {b}` | 断片数が可変な連結の**2スロット畳み込み**(統一王座3〜5本・ドラフト2〜4本) |
+| `champChangeJoin` | `{lead}{profile}{reign}{closing}` | `{lead} {profile} {reign} {closing}` | 王座交代は常に4断片固定 |
+| `nameList` | `{a}、{b}` | `{a}, {b}` | ドラフト指名選手名の列挙 |
+| `prevChampFallback` | `前王者` | `the previous champion` | 前王者名が取れないときの差し込みラベル |
+
+- **断片数が可変な族は固定スロットの`join`が使えない**。空の枠の分だけENに二重スペースが出るため、**2スロットのテンプレを初期値なしの`reduce`で畳み込む**。JA(dict省略/ja素通し)では`join('')`と1バイト同一
+- **`nameList`の畳み込みは区切り文字だけでなく名前辞書(pn)の変換も効かせる**。各段で選手名が`dict(tpl, params)`のパラメータを通るため、D-P6-2のパラメータ値自動変換が働く。1名のときは畳み込みが起きないが、その場合`{names}`の値が選手名そのものなので記事テンプレ側の充填で変換される
+- **`prevChampFallback`のJA文字列は data.js 側にだけ置く**。management.js に防御的フォールバックとして同じ literal を残すと`i18n-ratchet`が「直書き再発」として拾うため、`ARTICLE_COMPOSE_TEMPLATES`が取れない場合は**composerがnullを返す**(呼び出し元が旧・単文テンプレへフォールバックする)構造にした
+
+### 14-2. 「テンプレは訳されるが差し込む値が生JA」を1語ラベルとして引く — `_wmDictLabel`
+
+`{styleJa}`(グラップラー/ストライカー/…)は上流の`Engine.newspaper.STYLE_JA`がJAで組み立てた**成形済み値**で、テンプレだけ訳しても本文にJAが残る(§6「成形済み値の構造穴」)。**新設`_wmDictLabel(dict, jaLabel)`**(management.js、`_wmNewsStamp`の直前)が差し込む直前に辞書を引き直す。テンプレ本文ではなく**値**を引く点が`_wmFillWithDict`との違い(`_wmNewsStamp`の`suffixJa`と同じ流儀)。既訳は`i18n/ui-ledger.json`側に既にあり(グラップラー→Grappler 他5語)、新規行は不要だった。
+
+EN本文では`{styleJa}`が大文字始まりの名詞として入るため、**`a {styleJa}`型の枠(規則25違反でもある)は使わず`her {styleJa} work / game / form`へ寄せる**(`Submission`/`Aerial`/`All-round`は人を指す名詞にならないため、この枠でないと英文が壊れる)。
+
+### 14-3. `Math.random()`で選ぶ族は「表示時再生成」が使えない — 追加フィールド方式
+
+`PPV_HYPE_TEMPLATES`はP6-14が「表示時再生成が効かない唯一の族」と特定したとおり、選出が`Math.random()`で決定的でない。**`Engine.ppv.buildHype(match, rivalries)`**を新設し、`{ text, tpl, vars }`を返す(選出ロジックは移設のみ・`Math.random()`は不変)。カード生成の2箇所が`match.hype`(JA完成文=**セーブに書く既存値は不変**)に加えて`match.hypeTpl`/`match.hypeVars`を併記し、表示点(`ui-common.js`のPPVプログラム、grepで消費点は1箇所)が`match.hypeTpl ? WM_I18N.t(match.hypeTpl, match.hypeVars) : match.hype`でfail-openする(§12-1の`headlineJa`と同型)。従来の`generateHype(match)`は`buildHype(...).text`を返す薄いラッパとして残し、呼び出し契約を壊さない。
+
+**`Engine.ppv.generateHype`の`Math.random()`はアーキテクチャ5原則の「乱数シード管理」に反する**(同じシードでも煽り文が変わる)。本タスクの範囲外として据え置いた — 直すとJAの出目が変わるため、別途`Engine.rng`ストリームの選定と`ja-golden`基準の更新をセットで行うこと。
+
+### 14-4. JA同一性の証明
+
+P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用した。着手前の`composeChampionChangeBody`/`composeUnifiedTitleArticle`/`composeDraftPlayerResult`/`generateHype`を凍結コピーとして切り出し、代表値・境界値の直積(年齢帯4分割の境界21/22/24/25/29/30、戴冠回数0/1/2、8種別×分岐フラグ、ティア5種×人数1〜3、`Math.random()`固定3値ほか)を回して**1,505,127通り**を新旧突合 → **不一致0**。dict省略経路と「ja素通しdict」経路の両方を同時に比較している。
+
+- **`fill()`の「値がnullならPHを残す」挙動に注意**。`composeUnifiedTitleArticle`の旧`fill`は`data[name] != null`でなければ`{name}`をそのまま残していたが、`fillTemplateVars`は**paramsに積んだキーを無条件に置換する**(nullを積むと`"null"`が出る)。**非nullのキーだけをparamsへ積む**こと
+- **可変長の畳み込みは初期値なしの`reduce`で**。初期値`''`を与えるとENで先頭に空白が1つ入る
+
+### 14-5. P6-15で新たに見つかった同型(未着手)
+
+1. **`_buildPpvSummitStory`(management.js)** — PPV頂上決戦の紙面本文。**dict糸通しは済んでいる**のに、(a)`bodyParts.join('')`に連結様式テンプレが無くENでは文が空白なしで直結する、(b)本文の大半(舞台説明文・試合経過文・試合評価文4変種・通算戦績2文・勝者/敗者コメントの地の文2文)が**生JAのJSテンプレートリテラルで`T()`を通っていない**。P6-8が`_quoted`だけを直したため「一部だけ英語になる」状態で残っている。**次バッチの筆頭候補**
+2. **`Engine.chronicle`の年代記叙述4関数**(management.js:5201/5253/6391/6641) — dictを一切持たない断片連結。`QUOTE_TEMPLATES_DUAL`はEngineオブジェクトのプロパティで抽出器から見えない(§10-2型)。加えて`_buildPeerNarrative`等は分岐ごとの実行文プールで、§6 pool③(`Engine.mvpRace`の叙述family)と同じ性格
+3. **`Engine.autumnWar`の結果ニュース**(management.js:30729/30730) — `_orgName`+勝敗数の生JA組み立てを`industryNews.push`のdataへ焼く。§8の「生キー+render時点再構築」が要る型
+4. **composerがnullを返したときの直書きJAフォールバック2箇所** — `management.js`のAIチャンピオン交代(`${ev.orgName}の王座が動いた。…`)と`ui-common.js`のドラフト自団体1面(`${names}。新シーズンの陣容がひとつ厚くなった。`)。どちらもdictを通らないので、本体が英語になった今はフォールバックだけJAで出る

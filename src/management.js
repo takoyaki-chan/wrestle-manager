@@ -16671,8 +16671,16 @@ const Engine = {
       return PPV_NAMES[Engine.rng.int(rng, 0, PPV_NAMES.length - 1)];
     },
 
-    /** 煽り文生成 */
-    generateHype(match, rivalries) {
+    /** 煽り文生成: テンプレ+差し込み値+JA完成文をまとめて返す。
+     *  i18n Stage B P6-15: この族だけは選出が `Math.random()` で、しかも完成文が
+     *  `match.hype` としてカードに載ったまま残る(=決定的でないので「表示時に再生成する」
+     *  P6-14の手が使えない唯一のテンプレ族)。そこで**生成時にテンプレキーと差し込み値も
+     *  併記して持たせ**、表示点でそれを使って言語別に組み直す(P6-10の `headlineJa` と
+     *  同型の追加フィールド方式)。`hype`(JA完成文)は従来どおりの値のまま置く —
+     *  旧セーブ・旧カードにはtpl/varsが無いので、表示点はそちらへfail-openする。
+     *  `Math.random()` は乱数シード管理の規約からは外れているが、ここを差し替えるとJAの
+     *  出目が変わるため本タスクでは触らない(別途申し送り)。 */
+    buildHype(match, rivalries) {
       const n1 = match.left.name, n2 = match.right.name;
       const o1 = match.left._ppvOrgName || '', o2 = match.right._ppvOrgName || '';
       let templates;
@@ -16686,8 +16694,13 @@ const Engine = {
         else templates = PPV_HYPE_TEMPLATES.closeOVR;
       }
       const tmpl = templates[Math.floor(Math.random() * templates.length)];
-      return tmpl.replace(/{name1}/g, n1).replace(/{name2}/g, n2)
-                .replace(/{org1}/g, o1).replace(/{org2}/g, o2);
+      const vars = { name1: n1, name2: n2, org1: o1, org2: o2 };
+      return { text: fillTemplateVars(tmpl, vars), tpl: tmpl, vars };
+    },
+
+    /** 煽り文(JA完成文のみ)。従来の呼び出し契約を保つ薄いラッパ */
+    generateHype(match, rivalries) {
+      return Engine.ppv.buildHype(match, rivalries).text;
     },
 
     /** 対戦相手の一言セリフ選択（personality×archetype） */
@@ -16793,7 +16806,12 @@ const Engine = {
       // 煽り文＋セリフ付加
       const hypeRng = Engine.rng.create(Engine.rng.derive(state.rngSeed, state.season, 0xBBF2));
       card.forEach(match => {
-        match.hype = Engine.ppv.generateHype(match, rivalries);
+        // i18n P6-15: JA完成文(hype)は従来どおり。表示点が言語別に組み直せるよう、
+        // テンプレキー(hypeTpl)と差し込み値(hypeVars)を追加フィールドとして併記する
+        const _hype = Engine.ppv.buildHype(match, rivalries);
+        match.hype = _hype.text;
+        match.hypeTpl = _hype.tpl;
+        match.hypeVars = _hype.vars;
         match.opponentLineLeft = Engine.ppv.getOpponentLine(hypeRng, match.left);
         match.opponentLineRight = Engine.ppv.getOpponentLine(hypeRng, match.right);
       });
@@ -17332,7 +17350,12 @@ const Engine = {
       const rivalries = state.rivalries || {};
       const card = Engine.ppv.generateCard(entries, rivalries, summitPair);
       card.forEach(match => {
-        match.hype = Engine.ppv.generateHype(match, rivalries);
+        // i18n P6-15: JA完成文(hype)は従来どおり。表示点が言語別に組み直せるよう、
+        // テンプレキー(hypeTpl)と差し込み値(hypeVars)を追加フィールドとして併記する
+        const _hype = Engine.ppv.buildHype(match, rivalries);
+        match.hype = _hype.text;
+        match.hypeTpl = _hype.tpl;
+        match.hypeVars = _hype.vars;
       });
 
       const results = card.map((match, idx) => {
@@ -30772,6 +30795,15 @@ function _wmFillWithDict(dict, tpl, params) {
   return params ? fillTemplateVars(translated, params) : translated;
 }
 
+// i18n Stage B P6-15: 「テンプレのプレースホルダへ差し込む1語ラベルが上流でJA成形済み」
+// (§6の成形済み値の構造穴)を、差し込む直前に辞書で引き直すための共通ヘルパー。
+// テンプレ本文ではなく**値**を引く点が _wmFillWithDict との違い(_wmNewsStamp の suffixJa と同じ流儀)。
+// 空文字・非文字列・dict未指定はいずれもそのまま返す(fail-open・JA不変)。
+function _wmDictLabel(dict, jaLabel) {
+  if (!jaLabel || typeof jaLabel !== 'string') return jaLabel;
+  return (typeof dict === 'function') ? String(dict(jaLabel)) : jaLabel;
+}
+
 function _wmNewsStamp(dict, season, week, suffixJa) {
   const T = (typeof dict === 'function') ? dict : (s) => s;
   return `${fillTemplateVars(T('第{season}年度・第{week}週'), { season, week })} ${T(suffixJa)}`;
@@ -31323,19 +31355,32 @@ Engine.newspaper = {
    *  複数回目の戴冠テンプレは [取り返した版, 汎用版] の順で並んでいる前提(§4)。
    *  repeatSameTitle が true のときだけ取り返した版を選択肢に含める。判定できない/falseなら汎用版のみ。
    *  内部数値(OVR/MQ)は一切使わない(task-80 §B)。seed は号数などの整数(乱数は使わない)。 */
-  composeChampionChangeBody(ev, seed) {
+  composeChampionChangeBody(ev, seed, dict) {
     const parts = (typeof CHAMPION_CHANGE_TEMPLATES !== 'undefined') ? CHAMPION_CHANGE_TEMPLATES : null;
-    if (!parts || !ev) return null;
+    // JOIN(連結様式+差し込みラベル)は本文プールと同じ data.js のテーブルなので、
+    // 揃わないときは組み立て自体を諦めてnullを返す(呼び出し元が旧・単文テンプレへ
+    // フォールバックする)。ここでJA文字列を直書きしないための構造(i18n-ratchet)。
+    const JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
+    if (!parts || !JOIN || !ev) return null;
     const sVal = Number(seed) || 0;
     const pickAt = (arr, salt) => (arr && arr.length) ? arr[Math.abs(sVal + salt) % arr.length] : '';
-    const fill = (t) => String(t || '')
-      .split('{org}').join(ev.orgName || '')
-      .split('{name}').join(ev.newChampName || '')
-      .split('{prevChamp}').join(ev.prevChampName || '前王者')
-      .split('{age}').join(ev.age != null ? String(ev.age) : '')
-      .split('{seasons}').join(ev.careerSeasons != null ? String(ev.careerSeasons) : '')
-      .split('{styleJa}').join(ev.styleJa || '')
-      .split('{reigns}').join(ev.titleReigns != null ? String(ev.titleReigns) : '');
+    // i18n Stage B P6-15: 旧 fill() の7項目と同一の値をそのまま params オブジェクトへ移した
+    // (JA出力は1バイト不変)。値を **dictのパラメータとして渡す**ことで、選手名・団体名は
+    // WM_I18N.t の名前辞書変換(D-P6-2)が効く(旧 fill() の手置換では効かなかった)。
+    const vars = {
+      org: ev.orgName || '',
+      name: ev.newChampName || '',
+      prevChamp: ev.prevChampName || _wmDictLabel(dict, JOIN.prevChampFallback),
+      age: ev.age != null ? String(ev.age) : '',
+      seasons: ev.careerSeasons != null ? String(ev.careerSeasons) : '',
+      // {styleJa} は上流(management.js の STYLE_JA 参照)がJAで組み立てた成形済み値なので、
+      // テンプレだけ訳しても本文にJAが残る(§6「成形済み値の構造穴」)。1語ラベルとして
+      // ここでdictを引く(_wmNewsStamp の suffixJa と同じ流儀)。
+      styleJa: _wmDictLabel(dict, ev.styleJa || ''),
+      reigns: ev.titleReigns != null ? String(ev.titleReigns) : '',
+    };
+    // **PH置換前に**dictを通す(_wmFillWithDict の契約。置換後の完成文は辞書キーと一致しない)
+    const fill = (t) => _wmFillWithDict(dict, String(t || ''), vars);
 
     const age = Number(ev.age) || 0;
     let profilePool;
@@ -31353,13 +31398,18 @@ Engine.newspaper = {
     const profile = fill(pickAt(profilePool, 7));
     const reignText = fill(pickAt(reignPool, 13));
     const closing = fill(pickAt(parts.closing, 19));
-    return [lead, profile, reignText, closing].join('');
+    // 連結様式もテンプレ経由(JA=区切り無しで直結 / EN=文間に半角スペース)。断片は常に4本。
+    return _wmFillWithDict(dict, JOIN.champChangeJoin, { lead, profile, reign: reignText, closing });
   },
 
-  /** task-88 §H: 承認済み全国統一王座テンプレートを種別ごとに合成する。 */
-  composeUnifiedTitleArticle(type, data, seed) {
+  /** task-88 §H: 承認済み全国統一王座テンプレートを種別ごとに合成する。
+   *  i18n Stage B P6-15: 第4引数 dict(=WM_I18N.t 相当)を受けるdict-opts化。呼び出し元は
+   *  Engine.newspaper.generate() の1箇所のみで、generateのローカルdictをそのまま渡す。
+   *  dict省略時はJA原文のまま(1バイト不変)。 */
+  composeUnifiedTitleArticle(type, data, seed, dict) {
     const all = (typeof UNIFIED_TITLE_TEMPLATES !== 'undefined') ? UNIFIED_TITLE_TEMPLATES : null;
     if (!all || !data) return null;
+    const JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
     const key = {
       unifiedTitleCreation: 'creation', unifiedTitleCrown: 'crown', unifiedTitleRepeat: 'repeat',
       unifiedTitleDefense: 'defense', unifiedTitleMove: 'move',
@@ -31370,7 +31420,15 @@ Engine.newspaper = {
     if (!parts) return null;
     const sVal = Number(seed) || 0;
     const pickAt = (arr, salt) => (arr && arr.length) ? arr[Math.abs(sVal + salt) % arr.length] : '';
-    const fill = text => String(text || '').replace(/\{(\w+)\}/g, (m, name) => data[name] != null ? String(data[name]) : m);
+    // i18n Stage B P6-15: 旧 fill() は「data[name] が null/undefined なら {name} を残す」
+    // 挙動だったので、**非nullのキーだけ**を params に積む(fillTemplateVars は積んだキーを
+    // 無条件に置換するため、nullを積むと "null" が出て旧挙動と変わってしまう)。
+    const vars = {};
+    Object.keys(data).forEach((k) => { if (data[k] != null) vars[k] = String(data[k]); });
+    // {styleJa} は上流がJAで組み立てた成形済み値。1語ラベルとしてdictを引く(§6の構造穴)
+    if (vars.styleJa) vars.styleJa = _wmDictLabel(dict, vars.styleJa);
+    // **PH置換前に**dictを通す。値をparamsで渡すので選手名・団体名は名前辞書変換が効く
+    const fill = text => _wmFillWithDict(dict, String(text || ''), vars);
     const profile = () => {
       const age = Number(data.age) || 0;
       const pool = age <= 21 ? parts.profileYoung : age <= 24 ? parts.profileRising
@@ -31402,7 +31460,15 @@ Engine.newspaper = {
     if (key === 'return' && data.entered) body.push(fill(pickAt(parts.closingEntered, 19)));
     else if (key === 'move' && Number(data.orgCount) >= 3 && Math.abs(sVal + 23) % 3 === 0) body.push(fill(parts.closing[2]));
     else body.push(fill(pickAt(parts.closing, 19)));
-    return { headline: fill(pickAt(parts.headline, 0)), body: body.filter(Boolean).join('') };
+    // 連結様式もテンプレ経由(JA=直結 / EN=半角スペース区切り)。断片数が種別ごとに3〜5本と
+    // 可変なので、2スロットのテンプレを畳み込んで連結する(固定スロットだと欠けた枠の分だけ
+    // ENに二重スペースが出る)。JA(dict省略/ja素通し)では join('') と1バイト同一。
+    const joinTpl = JOIN ? JOIN.join : '{a}{b}';
+    const bodyParts = body.filter(Boolean);
+    const bodyText = bodyParts.length
+      ? bodyParts.reduce((a, b) => _wmFillWithDict(dict, joinTpl, { a, b }))
+      : '';
+    return { headline: fill(pickAt(parts.headline, 0)), body: bodyText };
   },
 
   // ══════════════════════════════════════════════════════════════════
@@ -31416,17 +31482,25 @@ Engine.newspaper = {
    *  内部数値(pot/trainCap/OVR)は一切使わない(newspaper-spec §3-2)。
    *  seed は年で変える(state.season 目安)。乱数(rng)は使わない — この呼び出し元(UI層)に
    *  rng が渡っていないため、シード値による疑似ランダムで年ごとの組文を変える */
-  composeDraftPlayerResult(org, fighters, seed) {
+  composeDraftPlayerResult(org, fighters, seed, dict) {
     const parts = (typeof DRAFT_PLAYER_RESULT_PARTS !== 'undefined') ? DRAFT_PLAYER_RESULT_PARTS : null;
     if (!parts || !Array.isArray(fighters) || !fighters.length) return null;
+    const JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
     const names = fighters.map(f => f && f.name).filter(Boolean);
     if (!names.length) return null;
     const sVal = Number(seed) || 0;
     const pickAt = (arr, salt) => arr[Math.abs(sVal + salt) % arr.length];
-    const fillCommon = (t) => String(t || '')
-      .split('{org}').join(org || '')
-      .split('{count}').join(String(names.length))
-      .split('{names}').join(names.join('、'));
+    // i18n Stage B P6-15: 名前の列挙も「様式のテンプレ」を畳み込む。JAは読点で直結、
+    // ENは ", " 区切り。畳み込みの各段で選手名がdictのパラメータを通るため、区切りだけで
+    // なく名前辞書(pn)の変換もここで効く。1名のときは畳み込みが起きないが、その場合は
+    // {names} の値が選手名そのものなので、記事テンプレ側の充填時に名前変換が効く。
+    const nameListTpl = JOIN ? JOIN.nameList : '{a}、{b}';
+    const namesText = names.length > 1
+      ? names.reduce((a, b) => _wmFillWithDict(dict, nameListTpl, { a, b }))
+      : names[0];
+    const commonVars = { org: org || '', count: String(names.length), names: namesText };
+    // **PH置換前に**dictを通す。値をparamsで渡すので団体名・選手名は名前辞書変換が効く
+    const fillCommon = (t) => _wmFillWithDict(dict, String(t || ''), commonVars);
 
     const lead = fillCommon(pickAt(parts.lead, 0));
     const closing = fillCommon(pickAt(parts.closing, 11));
@@ -31448,15 +31522,23 @@ Engine.newspaper = {
       if (!pool.length) return '';
       const idx = (usedIdx[f.tier] || 0) % pool.length;
       usedIdx[f.tier] = (usedIdx[f.tier] || 0) + 1;
-      return pool[idx]
-        .split('{age}').join(f.age != null ? String(f.age) : '')
-        .split('{h}').join(f.h != null ? String(f.h) : '')
-        .split('{rookieName}').join(f.name || '')
-        .split('{styleJa}').join(STYLE_JA[f.style] || f.style || '')
-        .split('{org}').join(org || '');
+      return _wmFillWithDict(dict, pool[idx], {
+        age: f.age != null ? String(f.age) : '',
+        h: f.h != null ? String(f.h) : '',
+        rookieName: f.name || '',
+        // {styleJa} は STYLE_JA 経由のJA成形済み値。1語ラベルとしてdictを引く(§6の構造穴)
+        styleJa: _wmDictLabel(dict, STYLE_JA[f.style] || f.style || ''),
+        org: org || '',
+      });
     }).filter(Boolean);
 
-    return { body: [lead, ...featuredLines, closing].join('') };
+    // 連結様式もテンプレ経由。断片はリード+注目選手0〜2名+締めで2〜4本と可変なので畳み込む
+    // (初期値なしのreduce。初期値''を与えるとENで先頭に空白が1つ入ってしまう)
+    const joinTpl = JOIN ? JOIN.join : '{a}{b}';
+    const bodyParts = [lead, ...featuredLines, closing].filter(Boolean);
+    return {
+      body: bodyParts.length ? bodyParts.reduce((a, b) => _wmFillWithDict(dict, joinTpl, { a, b })) : '',
+    };
   },
 
   /** 1週ぶんの採点で使う参照を**1回だけ**作る。
@@ -31950,7 +32032,7 @@ Engine.newspaper = {
       const fill = str => String(str).replace(/\{(\w+)\}/g, (m, k) => (ev.data && ev.data[k] != null) ? ev.data[k] : m);
       const bodySeed = (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.characterId || 0);
       const composedBody = ev.data && ev.data.age != null
-        ? Engine.newspaper.composeChampionChangeBody(ev.data, bodySeed) : null;
+        ? Engine.newspaper.composeChampionChangeBody(ev.data, bodySeed, dict) : null;
       stories.push({
         type: 'playerTitleChange',
         priority: P.playerTitleChange,
@@ -32113,7 +32195,7 @@ Engine.newspaper = {
           const ev = aiData._newsChampionChange;
           const isAce = ev.ovr >= 75;
           const bodySeed = (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.newChampId || 0);
-          const composedBody = Engine.newspaper.composeChampionChangeBody(ev, bodySeed);
+          const composedBody = Engine.newspaper.composeChampionChangeBody(ev, bodySeed, dict);
           stories.push({
             type: 'aiChampionChange',
             priority: P.aiChampionChange + (isAce ? 20 : 0),
@@ -32415,6 +32497,7 @@ Engine.newspaper = {
           const article = Engine.newspaper.composeUnifiedTitleArticle(
             ev.type, ev.data || {},
             (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.characterId || 0) + _evIdx,
+            dict,
           );
           if (!article) return;
           stories.push({

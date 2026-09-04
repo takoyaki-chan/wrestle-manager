@@ -10,6 +10,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "16名の精鋭を4連勝でなぎ倒しての栄冠である。決勝のゴングから間を置かず、リング上でベルトの授与が発表され、場内の熱は最高潮に達した。",
+    "en": "Four straight wins over 16 picked entrants, and the crown at the end of it. The presentation was announced in the ring almost before the final bell had stopped, and the building was as loud as it got all night.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "1年前よりは確実に良くなってる…はず…多分…",
     "en": "Definitely better than a year ago... probably... I think...",
     "files": [
@@ -17,6 +27,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "3か月に一度の頂上決戦が、ついにベルトを動かした。新しい全国統一王者は{winner}（{winnerOrg}）である。",
+    "en": "The summit match that comes around every three months has finally moved the belt. The new Unified National champion is {winner} of {winnerOrg}.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -380,6 +400,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "4団体がしのぎを削ってきたこの業界に、初めて「統一」の二文字が刻まれた。真新しいベルトを掲げたのは{name}（{org}）。天頂戦の頂点が、そのまま業界の頂点になった。",
+    "en": "In a business four promotions have spent years cutting into one another over, the word unified has been struck onto a belt for the first time. The one who held the new plate up was {name} of {org}. The top of Tenchosen has become the top of the business.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "4団体勝ち残り対抗戦、組み合わせ決定",
     "en": "Autumn Gauntlet War brackets set",
     "files": [
@@ -400,6 +430,56 @@
     "hasProperNoun": true
   },
   {
+    "key": "4年に一度の争奪戦を制したのは{org}の{name}。業界のすべての選手の上に、この夜から一人が立つ。",
+    "en": "The scramble that comes once every four years went to {name} of {org}. From tonight one wrestler stands above everyone else in the business.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "4年に一度の儀式である。開幕を1週間後に控えた天頂戦へ、王者{name}（{org}）が全国統一王座を返還した。",
+    "en": "A ceremony that comes once every four years. With Tenchosen a week from opening, champion {name} of {org} returned the Unified National Championship to the tournament.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4年間の防衛ロードが始まる。この夜の栄光が本物かどうかは、これからの挑戦者たちが確かめに来る。",
+    "en": "A four-year run of defenses starts here. Whether tonight was the real thing is something the challengers will come and check.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "4年間守り、規定どおり返し、また勝って取り戻す。空位はわずか1週間。ベルトが他人の腰を知らないまま、2期目が始まる。",
+    "en": "Four years of defenses, a surrender by the rule book, then a win to take it straight back. The title sat vacant for one week. A second term begins without the belt ever having been around anyone else's waist.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "4連勝。それ以外に頂点への道はない。前王者が返したベルトは空位のまま決勝を待ち、勝者の腰にだけ巻かれた。",
+    "en": "Four wins in a row. There is no other road to the top of this. The belt the previous champion handed back waited out the final vacant, and went around the winner's waist and no one else's.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "4週の猶予があった。\nそれでも、立て直しは間に合わなかった。\n経営とは、そういうものだ。\n本紙は{orgName}の解散を、ただ確認する。",
     "en": "There were four weeks of grace.\nThe repair did not arrive in time even so.\nRunning a promotion is like that.\nThis paper simply confirms it: {orgName} is dissolved.",
     "files": [
@@ -417,6 +497,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "8年間、頂点はただ一人。この記録の前に、業界中の挑戦者が並び直すことになる。",
+    "en": "Eight years, one name at the top. Every challenger in the business now has to get back in line behind that record.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -510,6 +600,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳、{styleJa}としての組み立てが安定してきた時期の戴冠だ。取りこぼしが減ったことが、そのまま結果に出ている。",
+    "en": "Age {age}, with her {styleJa} work at the point where it holds together. She has stopped dropping the ones she should win, and the result says so.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳、在籍{seasons}シーズン。大きな発表の並ぶ週に、短い一報として届いた。",
     "en": "Age {age}, with the {seasons}-season tenure now closed. In a week lined with bigger announcements, it arrived as a short notice.",
     "files": [
@@ -560,6 +661,61 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳。{seasons}シーズンをリングで過ごしてきた選手が、ここで頂点に立った。{styleJa}の細部は、そのまま年数の記録でもある。",
+    "en": "Age {age}. A wrestler with a {seasons}-season career behind her has reached the top. The detail in her {styleJa} work is itself a record of those years.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。{styleJa}が最も噛み合うのはもう少し先で、全盛の時期をベルトとともに迎えることになる。",
+    "en": "Age {age}. Her {styleJa} game will not lock in fully for a while yet, which means she will hit her best years with the belt already on her.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。仕上がる前に届いた戴冠で、{styleJa}の型もまだ手を入れている途中に見える。",
+    "en": "Age {age}. The title arrived before she was finished, and her {styleJa} form still looks like work in progress.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。体も試合勘も揃う頃合いで、{styleJa}の型は相手に読まれても通る段階に入っている。",
+    "en": "Age {age}. The body and the ring sense have arrived together, and her {styleJa} form now works even when the opponent knows what is coming.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。同世代の多くがまだ前座で試合数を重ねている時期に、この選手はベルトを持って上がることになった。",
+    "en": "Age {age}. Most of her year group is still stacking up matches in the opening bouts. She will be going out with a belt.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳。派手なカードに置かれることは多くなかったが、興行の中盤を任せられる選手が一人いるかいないかで、その日の流れは変わる。",
     "en": "Age {age}. She was rarely put in the loud spots, but whether or not you have one wrestler you can trust with the middle of a show changes how the night runs.",
     "files": [
@@ -576,6 +732,39 @@
       "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳での戴冠になる。若さはそのまま伸びしろでもあるが、次からはベルトを持った側として見られる。",
+    "en": "A title at age {age}. The youth is room to grow, but from here she gets looked at as the one holding the belt.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳での戴冠は、早すぎるわけではないが完成を待った結果でもない。挑戦者として蓄えるはずだった時間を、これからは防衛に使うことになる。",
+    "en": "A title at age {age} is not too early, but it is not the product of waiting until she was finished either. The time she would have spent stocking up as a challenger will now go into defenses.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳での戴冠は到達点というより通過点に見える。これから伸ばす分は、まだ一つも王座に反映されていない。",
+    "en": "A title at age {age} looks less like an arrival than a place she passes through. Nothing she still has to add has shown up on the belt yet.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -660,6 +849,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳の{rookieName}は、{styleJa}としての基礎を評価されての指名。{h}cmの体をどこまで作れるかが最初の課題になる。",
+    "en": "{rookieName}, age {age}, was picked on the {styleJa} fundamentals. How much she can build onto her {h}cm frame is the first job.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の{rookieName}は、{styleJa}として上の年代と噛み合う下地があるとの見立てだ。{h}cmという体格をどう使うかで、伸び方の幅は変わってくる。",
+    "en": "The read on {rookieName}, age {age}, is that her {styleJa} base already meshes with older opponents. How she uses {h}cm will decide how wide the growth gets.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳のベテラン{name}。一試合の重みが他の選手とは違う、という視点で見るべき存在だ",
     "en": "{name}, a veteran at {age}. She should be watched with this in mind: one match weighs differently for her than for anyone else.",
     "files": [
@@ -670,10 +879,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳・{h}cmの{rookieName}には、{org}のスカウト陣が近年例を見ない評価を付けた。{styleJa}としての完成度ではなく、伸びしろの底が見えないという言い方だった。",
+    "en": "{rookieName}, age {age} and {h}cm, drew a grade from the {org} scouts that they have not handed out in years. Not for how finished her {styleJa} work is — for the fact that nobody could find the bottom of what she might become.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳前後の有望株が、ほぼ同時期に頭角を現した。{orgName}の{name}と{orgName2}の{name2}。育成関係者の見立てでは、どちらも一団体の看板を背負える器だという。育成の現場では、同世代に競う相手がいる選手ほど伸びると言われる。この二人が並んだこと自体が、今後十年の業界地図に関わってくる。",
     "en": "Two prospects around {age} came through at almost the same time. {name} of {orgName} and {name2} of {orgName2}. The people who develop wrestlers say both are built to carry a promotion's banner. In the training rooms they will tell you a wrestler grows most when there is someone her own age to measure against. That these two arrived together is itself something that touches the next ten years of the business.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}{b}",
+    "en": "{a} {b}",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}、{b}",
+    "en": "{a}, {b}",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -818,6 +1057,16 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{challengerOrg}の{challenger}、届かず。全国統一王座は{name}の腰で輝き続け、防衛の数字は{n}に伸びた。",
+    "en": "{challenger} of {challengerOrg} came up short. The Unified National Championship stays around {name}'s waist, and the defense column moves to {n}.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
   },
   {
     "key": "{championName}、全国女子プロレス最強王者決定戦「天頂戦」優勝",
@@ -1290,6 +1539,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{count}名。今季{org}が迎え入れたのは{names}の面々だ。指名順を見るかぎり、狙いを絞った指名だった。",
+    "en": "{count} called. This season {org} brought in {names}. Going by the order of the picks, this was a narrow, targeted set.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{count}名がどの団体からも指名されず",
     "en": "{count} go undrafted by any promotion",
     "files": [
@@ -1530,6 +1789,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{h}cm・{age}歳の{rookieName}にも高い評価が付いた。{styleJa}の型がすでに一本通っており、あとは実戦で削られたときに何が残るか。",
+    "en": "{rookieName}, {h}cm and age {age}, graded high as well. The {styleJa} form already runs clean through her. What is left once live matches start shaving at it is the open question.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{intro}{core}{closing}",
     "en": "{intro} {core} {closing}",
     "files": [
@@ -1584,6 +1853,16 @@
     "en": "{factionName}, without {leaderName}, has decided to lower its flag for now. Not a disbanding, a pause. The ones who remain go back to their own fights. Whether a group waiting for its head to return ever raises that flag again is another matter.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{lead}{profile}{reign}{closing}",
+    "en": "{lead} {profile} {reign} {closing}",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1734,6 +2013,16 @@
     "en": "What did {loserName} come here to do. Far too one-sided",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{loser}の時代が、ここで終わった。挑戦者{winner}（{winnerOrg}）が業界の頂点のベルトを奪い取り、勢力図を塗り替えた。",
+    "en": "The {loser} era ends here. Challenger {winner} of {winnerOrg} took the belt at the top of the business and redrew the map.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2180,10 +2469,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}、全国の頂点へ 天頂戦制覇で統一王座戴冠",
+    "en": "{name} reaches the national summit — Tenchosen win takes the unified title",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "{name}、古巣への一矢――解雇{weeksSinceFired}週で迎えた邂逅",
     "en": "{name} strikes back at her old side — {weeksSinceFired}-week wait",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}、圧巻の連覇 統一王座は渡さない",
+    "en": "{name} repeats — unified title stays put",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2224,6 +2533,46 @@
     "en": "{name} steps away — a line drawn at {org}",
     "files": [
       "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}、統一王座を死守 {n}度目の防衛",
+    "en": "{name} holds the unified title — defense number {n}",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}、統一王座を返上 所属喪失で無念の手放し",
+    "en": "{name} surrenders unified title after losing her promotion",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}、統一王座を返上 頂点のまま去る",
+    "en": "{name} surrenders unified title — leaves from the top",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}、統一王座を返還 4年間の王座に幕",
+    "en": "{name} returns unified title — curtain on a 4-year reign",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2954,6 +3303,16 @@
     "en": "{ourOrg} {score} {opponentOrg}: {requesterName} wins",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org2}の壁！{name1}は{name2}を越えられるか！",
+    "en": "The {org2} wall! Can {name1} climb past {name2}?",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3880,6 +4239,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}のタイトルマッチは挑戦者の側に落ちた。{name}が{prevChamp}を退け、新しい王者になっている。",
+    "en": "The {org} title match fell to the challenger's side. {name} turned back {prevChamp} and now holds the belt.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}のロッカールームで、{count}組の選手同士が険悪な関係にある。リング外の対立が試合へ持ち込まれれば、団体全体の編成にも影響が及びかねない。",
     "en": "In the {org} locker room, the count of pairings on bad terms stands at {count}. If trouble from outside the ring gets carried into the matches, it can reach the booking of the whole promotion.",
     "files": [
@@ -3894,6 +4263,16 @@
     "en": "The trouble between {factionAName} and {factionBName} has come out into the open at {org}. The locker room has split, and even booking a main event now takes care. \"There is no settling it anywhere but the ring.\" The voices coming out of both sides are cold, and heavy.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の指名は{count}名。{names}が新たに名簿に加わった。",
+    "en": "{org} called {count} in the draft. New on the roster: {names}.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3944,6 +4323,16 @@
     "en": "{org} cools: {factionAName}, {factionBName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の王座が動いた。{name}が{prevChamp}を下し、ベルトはこの日を境に持ち主を変えた。",
+    "en": "The {org} title has moved. {name} beat {prevChamp}, and from this day the belt has a different owner.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4400,10 +4789,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{prevChamp}の防衛は、ここで途切れた。{org}のベルトは挑戦者だった{name}の腰に渡っている。",
+    "en": "The run of defenses by {prevChamp} stops here. The {org} belt has passed to {name}, who came in as the challenger.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{prevChamp}の防衛を止めた{name}が、{org}の新王者となった。新たな王者を軸に、次の挑戦者争いも動き出す。",
     "en": "{name} stopped {prevChamp}'s defense and is the new {org} champion. With a new champion at the center, the fight to be next challenger starts moving too.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{reigns}度目のベルトだ。この団体の王座の歴史に、同じ名前がまた並ぶ。",
+    "en": "Reign number {reigns}. The same name goes into this promotion's title history again.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5110,6 +5519,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{rookieName}は{h}cm・{age}歳。{styleJa}の適性は認められたが、見立ては分かれた。使われ方次第という但し書きが付く。",
+    "en": "{rookieName} is {h}cm, age {age}. The {styleJa} aptitude was acknowledged, but the reads split. The note attached says it depends on how she gets used.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{round}で組まれた{winner}（{winnerOrg}）と{loser}（{loserOrg}）の一戦が、大会最高の{mq}点を記録した。{closing}",
     "en": "Round: {round}. The match between {winner} ({winnerOrg}) and {loser} ({loserOrg}) was rated {mq}, the highest of the tournament. {closing}",
     "files": [
@@ -5126,6 +5545,17 @@
       "NEWS_HEADLINE_TEMPLATES"
     ],
     "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズン、{age}歳。上がってくる若手より一回りも二回りも多く試合を持っている側が、この日は勝った。",
+    "en": "A {seasons}-season career, age {age}. On this night the win went to the side with far more matches in hand than the young ones coming up.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -5156,6 +5586,39 @@
       "RETIREMENT_TEMPLATES"
     ],
     "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズンを費やしての戴冠になる。長いとみるか間に合ったとみるかは、この先の防衛が決める。",
+    "en": "It took a {seasons}-season career to get here. Whether that reads as long or as just in time will be settled by the defenses ahead.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズン目での戴冠で、団体内の視線はもうこの選手に向いている。若い王者を追う側に回った挑戦者たちが次に何を仕掛けてくるかも含めて、動きの多い一年になる。",
+    "en": "The title came inside a {seasons}-season career, and the eyes inside the promotion are already on her. What the challengers now chasing a young champion come up with next is part of what makes the year ahead a busy one.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{seasons}シーズン目での戴冠になる。これから伸びる時期を王者として過ごすことが、その伸び方をどう変えるかはまだ分からない。",
+    "en": "The title arrives inside a {seasons}-season career. She will spend her growing years as the champion, and what that does to the growing is not yet known.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -5394,6 +5857,27 @@
     "en": "{streak} in a row. A run usually ends on the night somebody eased off, so this is the time to tighten up.",
     "files": [
       "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{styleJa}としての完成度は、{age}歳という年齢に見合うところまで来ている。あとはその型が、防衛戦の連続に耐えるかどうかだ。",
+    "en": "Her {styleJa} work is as finished as age {age} would suggest. What is left is whether that form holds up through defenses back to back.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{styleJa}の{rookieName}は、複数のスカウトが揃って最上位の評価を付けた一人だ。{age}歳、{h}cm。入り口の段階でここまで評価が割れなかった新人は珍しい。",
+    "en": "{rookieName} and her {styleJa} game drew top grades from several scouts at once. Age {age}, {h}cm. It is rare for the reads on a rookie to line up this closely at the door.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5784,6 +6268,16 @@
     "en": "{winner} beats {loserOrg} {loser} at the PPV",
     "files": [
       "PPV_UNDERCARD_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{winner}が業界の頂点を奪取 {loser}の牙城崩れる",
+    "en": "{winner} takes the top of the business — {loser}'s stronghold falls",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -7360,6 +7854,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ここから4年、この名前が業界の中心にいる。まず最初の防衛戦で、王者の器が試される。",
+    "en": "For the next four years this name sits at the center of the business. The first defense is where the size of the champion gets measured.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ここから這い上がる物語を見たいから、私は離れない",
     "en": "I'm not leaving, because I want to see the climb out of here",
     "files": [
@@ -7427,6 +7931,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この4年間、ベルトはただの一度も持ち主を変えなかった。防衛{n}度、そのすべてを守り切っての返還である。胸を張ってベルトを置ける王者が、どれだけいるだろうか。",
+    "en": "Across these four years the belt never once changed hands. Defenses: {n}, every one of them held, and now it goes back. Not many champions get to set it down standing straight.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この4年間でベルトは{holderCount}人の保持者と{orgCount}団体を渡った。激動の4年の最後にベルトを巻いていたのが、この選手だった。",
+    "en": "Holders over these four years: {holderCount}. Promotions: {orgCount}. She is the one who happened to be wearing it at the end of a turbulent stretch.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -7550,6 +8074,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "この王座に情状はない。勝った者がすべてを持っていく。{loserOrg}の手を離れたベルトは、この夜から{winnerOrg}の至宝になった。",
+    "en": "This title makes no allowances. Whoever wins takes all of it. Out of the hands of {loserOrg}, the belt becomes the prize of {winnerOrg} from tonight.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この王座の防衛戦はおよそ3か月に一度、業界の看板級だけが挑める頂上決戦だ。今回は{challengerOrg}が挑戦権をもぎ取り、団体最上位級の{challenger}を送り込んだ。",
+    "en": "Defenses of this title come around about every three months, and only the marquee names in the business get to challenge. This time {challengerOrg} took the shot and sent {challenger}, who sits at the top of their card.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この王座は団体王座の上に立つ。防衛戦はおよそ3か月に一度、団体の垣根を越えて業界の看板級が挑んでくる。ベルトは奪った者のもの。そして4年後、次の天頂戦が来れば王者はベルトを大会に返し、また16名の争奪戦が始まる。",
+    "en": "This title sits above the promotion titles. Defenses come about every three months, with marquee names crossing promotional lines to challenge. The belt belongs to whoever takes it. Four years on, when the next Tenchosen comes, the champion hands it back to the tournament and 16 wrestlers start fighting over it again.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "この試合がなくても興行は成立した。つまりそういうことだ",
     "en": "The show holds up without this match. Which tells you what it was",
     "files": [
@@ -7577,6 +8131,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "これが最初のベルトになる。追う立場から追われる立場へ、位置が入れ替わった。",
+    "en": "This is her first belt. She has swapped the position of the one chasing for the position of the one being chased.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -7610,6 +8174,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "これでベルトは{orgCount}団体目。業界の頂点は、まだ一つの団体に留まろうとしない。",
+    "en": "The belt is now at promotion number {orgCount}. The top of the business still refuses to settle in one place.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "これで興行を打てるのだから、度胸だけは本物だ。褒めてはいないが",
     "en": "They run shows with this, so the nerve at least is genuine. That is not praise.",
     "files": [
@@ -7617,6 +8191,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "これで通算{reigns}回目の戴冠になる。一度手放したベルトを、取り返した形だ。",
+    "en": "That makes reign number {reigns}. She let this belt go once, and she has taken it back.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -7780,6 +8364,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "まだ{age}歳。{styleJa}としての形は途中で、その途中のまま頂点に届いたことになる。",
+    "en": "Only age {age}. Her {styleJa} form is halfway done, and halfway done is what reached the top.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES",
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "まだ{rivalName}とは一度も拳を交えていない。それが幸運なのか不幸なのかは、これから分かるだろう",
     "en": "Not one exchange with {rivalName} so far. Whether that has been luck or the other thing will become clear soon enough.",
     "files": [
@@ -7894,6 +8489,16 @@
     "en": "What is between them does not go away",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "エントリー16名、負ければ終わりの一発勝負を4つ。その全部を制した者だけが届く高さに、このベルトは置かれた。",
+    "en": "Entries: 16. Four single-elimination matches with no second chance. The belt was set at a height only someone who wins all four can reach.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8100,6 +8705,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "スカウト陣が推したのは{styleJa}の{rookieName}。{h}cm、{age}歳。すぐ上位に食い込む種類ではないが、二、三年で計算が立つという読みだった。",
+    "en": "The scouts pushed for {rookieName} and her {styleJa} game. {h}cm, age {age}. Not the type to cut into the upper card right away, but the read was that she becomes something you can count on in two or three years.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "スタイルの相性は未知数。やってみないと分からない",
     "en": "How the styles sit together is unknown. Nobody finds out until they do it.",
     "files": [
@@ -8117,6 +8732,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スター対決！{name1}と{name2}、夢のカードが実現！",
+    "en": "Star against star! {name1} and {name2} — the dream match is booked!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -8658,6 +9283,46 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "ベルトが大会に帰る夜 天頂戦前夜の返還式",
+    "en": "The night the belt goes back — return ceremony on Tenchosen eve",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ベルトのない1週間が、4年ぶりに始まる。次にこれを巻くのは、4連勝を成し遂げたただ一人だ。",
+    "en": "A week without the belt begins, the first in four years. The next person to wear it is whoever wins four in a row.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベルトを失った団体に、雪辱の機会はいずれ巡ってくる。ただしそれが3か月後とは限らない。",
+    "en": "The promotion that lost the belt will get a chance at it back eventually. There is no guarantee that eventually means three months.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベルトを巻いたまま、王者はリングを去る。{name}（{org}）の引退にともない、全国統一王座は空位となった。",
+    "en": "The champion leaves the ring with the belt still on her. With the retirement of {name} of {org}, the Unified National Championship is vacant.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
   },
   {
     "key": "ベルトを抱えて去った日から、戻れない関係",
@@ -9230,6 +9895,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "互角の実力——勝敗を分けるのは、この一瞬の判断！",
+    "en": "Dead even on paper — one split-second call decides it!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "互角の戦力だからこそ、一つのブレイクスルーが流れを変える",
     "en": "Precisely because the rosters are level, one breakthrough turns the whole thing",
     "files": [
@@ -9300,6 +9975,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "人気者同士の激突！{name1} vs {name2}、会場が沸く！",
+    "en": "Two crowd favorites collide! {name1} vs {name2} — the building is going to move!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "今が底なら、あとは上がるだけだから！ ……上がるよね？",
     "en": "If this is the bottom then it only goes up! ...It goes up, right?",
     "files": [
@@ -9357,6 +10042,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今季のドラフトで{org}は{count}名を指名した。{names}の顔ぶれが、そのまま来季の若手層になる。",
+    "en": "{org} called {count} in this season's draft. The intake — {names} — is next season's young division as it stands.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -9560,6 +10255,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "優勝即戴冠——この王座の規定が、天頂戦を業界最大の舞台へ押し上げている。挑む側だった選手が、今夜から迎え撃つ側になる。",
+    "en": "Win the tournament, wear the belt — that rule is what has pushed Tenchosen up into the biggest stage in the business. The one who came in challenging is the one being challenged from tonight.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "優勢——いい状態だ。だが油断するなとも書いておく。{chaseAxisLabel}にまだ伸びしろがあるのは事実で、ここを放置するといずれ{rivalName}に詰められる。完璧な団体などないが、完璧を目指す姿勢は持ち続けるべきだ",
     "en": "Ahead — a good place to be. This paper will also put on record: do not ease off. There is room left in {chaseAxisLabel}, and left alone that is where {rivalName} closes the distance. No promotion is perfect. Aiming at it anyway is a posture worth keeping.",
     "files": [
@@ -9690,6 +10395,26 @@
     "hasProperNoun": true
   },
   {
+    "key": "全国統一王座、最初の防衛戦を制したのは王者だった。{name}（{org}）が{challengerOrg}の{challenger}を退け、ベルトの重みを見せつけた。",
+    "en": "The first defense of the Unified National Championship went to the champion. {name} of {org} turned back {challenger} of {challengerOrg} and showed what the belt weighs.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "全国統一王座、誕生 初代王者は{name}",
+    "en": "Unified National Championship created: first champion is {name}",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "全指標でリード。課題があるとすれば、強すぎて切磋琢磨の相手がいないこと",
     "en": "Leading on every metric. If there's a problem it's being too strong to have anyone left to sharpen against",
     "files": [
@@ -9770,6 +10495,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "初めての戴冠だ。挑戦者としての試合しか知らない選手が、次からは防衛戦の日程を背負う。",
+    "en": "It is a first title. A wrestler who has only ever worked as a challenger now carries a defense schedule.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "初対戦。お互い探り探りの序盤になるだろうが、ハマれば化ける可能性がある",
     "en": "A first meeting. The opening will be careful on both sides, and if it clicks it can turn into something.",
     "files": [
@@ -9784,6 +10519,16 @@
     "en": "A first meeting. With neither hand readable, the feinting early on is the key.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "初戴冠である。ベルトを持たない側で組んできた一年が、ここで区切りを迎えた。",
+    "en": "A first title. The year she spent being booked from the side without a belt closes here.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -9830,6 +10575,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "前の4年間、ベルトは{holderCount}人の腰と{orgCount}団体を渡り歩いた。その流転の歴史に、新しい章が加わる。",
+    "en": "Waists the belt went around over the previous four years: {holderCount}. Promotions: {orgCount}. A new chapter is added to that drifting history.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前の4年間、ベルトはただの一度も動かなかった。その鉄壁の記録を超えられるか、新王者の4年間が始まる。",
+    "en": "Over the previous four years the belt did not move once. Whether that record can be beaten is the question the new champion's four years begin with.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前の4年間の防衛は{n}度。挑戦者を退け続け、トーナメントでも頂点に立った。今この選手を止められる者が業界にいるのか——次の4年間が、その答え合わせになる。",
+    "en": "Defenses over the previous four years: {n}. She turned back every challenger and then won the tournament as well. Whether anyone in the business can stop her is what the next four years are there to settle.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "前回も勝っている。精神的な優位は確実にある",
     "en": "She won the last one as well. The advantage in the head is certain.",
     "files": [
@@ -9844,6 +10619,26 @@
     "en": "She lost the last one as well. Without changing something, the result repeats.",
     "files": [
       "KURODA_MATCHUP_FLAVOR"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前王者",
+    "en": "the previous champion",
+    "files": [
+      "ARTICLE_COMPOSE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前王者は最初の防衛を守り切れないまま、玉座を追われた。",
+    "en": "The previous champion was put off the throne without getting through a first defense.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -10140,6 +10935,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "因縁の対決！{name1}と{name2}、この大舞台で決着なるか！",
+    "en": "The grudge match! {name1} and {name2} — does it get settled on this stage?",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "因縁の相手、{name}。対戦するたびにドラマが生まれる、ある意味ありがたい存在である",
     "en": "{name}, the opponent with history. Every meeting between them makes a story. In its way, that is something to be grateful for.",
     "files": [
@@ -10174,6 +10979,26 @@
     "en": "Two flags split inside a promotion, and it is {charA} and {charB} standing at the head of them. For two already bound by pure hostility, the shape of a feud makes an ideal stage — an ironic thing, and it is relationships like this one that turn a feud into a product.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体の垣根を越えた頂上決戦は、王者の勝利で終わった。{name}（{org}）、{n}度目の防衛である。",
+    "en": "The cross-promotional summit match ended with the champion winning. {name} of {org}, defense number {n}.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体の威信を懸けた頂上決戦！{name1} vs {name2}！",
+    "en": "A summit match with promotional pride on it! {name1} vs {name2}!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -10340,6 +11165,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "圧巻の連覇である。返還と再戴冠のあいだにあったのは、16名トーナメントの4試合だけ。{name}（{org}）は、その全部に勝った。",
+    "en": "A repeat, and a commanding one. Between handing the belt back and putting it on again there were four matches in a 16-woman bracket. {name} of {org} won all four.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "在位{heldYears}年、防衛{n}度。最後まで誰にも奪わせなかったベルトを、自らの手で置いていく。",
+    "en": "A {heldYears}-year reign, and the defense column reads {n}. She sets down, by her own hand, a belt nobody ever took off her.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "在籍{seasons}シーズン、{age}歳。大会のメイン級に置かれ続けた選手が抜けた分は、下から一人繰り上げれば埋まるという性質のものではない。{org}が次に誰を同じ位置で使うかは、来季最初の数興行で見えてくる。",
     "en": "The {seasons}-season tenure, age {age}. What goes missing when a wrestler kept at main-event level walks away is not the kind of hole you fill by moving one name up from below. Who {org} uses in that spot next will show in the first few shows of the season.",
     "files": [
@@ -10450,6 +11295,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "奪ったベルトを守れるのか。およそ3か月後の最初の防衛戦で、今度はこの選手が試される番だ。",
+    "en": "Can she hold what she took? At the first defense, roughly three months out, it is her turn to be tested.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "奪われたベルト、奪い返す夜",
     "en": "The belt taken, and the night to take it back",
     "files": [
@@ -10457,6 +11312,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "奪取からの防衛は{n}度目。ベルトを奪った者が、守る者としても本物であることを証明し始めた。",
+    "en": "Defense number {n} since she took it. The one who took the belt has started proving she is the real thing at keeping it too.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -10547,6 +11412,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "実力伯仲！{name1}と{name2}、どちらが勝ってもおかしくない！",
+    "en": "Too close to call! {name1} and {name2} — either one winning would surprise nobody!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -10777,6 +11652,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "年間王者を決める最終決戦——{name1}と{name2}、頂点に立つのはどちらだ！",
+    "en": "The final that decides the year's champion — {name1} or {name2}, which one ends up on top!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -11120,6 +12005,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "戴冠から日は浅かった。それでも返上の規定に例外はない。",
+    "en": "It had not been long since the coronation. The surrender rule has no exceptions all the same.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "打撃の一瞬に、彼女はすべてを込めた。",
     "en": "Everything she had went into the instant a strike landed.",
     "files": [
@@ -11260,6 +12155,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "指名の当たり外れが数字になるのは何年も先の話だ。{org}の来季は、この新しい名前をどこに置くかから始まる。",
+    "en": "Whether these picks hit or miss will not turn into numbers for years. Next season at {org} starts with where the new names get placed.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "指名漏れ{count}名、フリー市場へ",
     "en": "{count} go unpicked, into the free market",
     "files": [
@@ -11277,6 +12182,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "挑戦権をもぎ取ったのは{winnerOrg}。団体の看板を背負って送り込まれた選手が、その期待に最高の結果で応えた。",
+    "en": "It was {winnerOrg} that grabbed the shot. The wrestler they sent out carrying the promotion's name answered with the best result available.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -11304,6 +12219,16 @@
     "en": "Every time a challenger came, she answered. {maxSingleReign} in a row.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "挑戦者は{challengerOrg}の精鋭。所属のリングでは追われる側の選手が、この日は業界の頂点に牙を剥いた。",
+    "en": "The challenger is one of the best {challengerOrg} has. On her own promotion's rings she is the one being chased; on this night she went after the top of the business.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -11394,6 +12319,26 @@
     "en": "After a long exchange, {winner} finished {loser}: {finish}.",
     "files": [
       "PPV_SUMMIT_MATCHPART_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "敗れた{challengerOrg}に次の挑戦権が回る保証はない。頂点への列は、3か月ごとに引き直される。",
+    "en": "There is no guarantee the next shot comes back around to {challengerOrg} after this loss. The line to the top gets redrawn every three months.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "敗れた前王者の在位は{heldYears}年、防衛{n}度。積み上げた数字は、この一敗ですべて過去のものになった。",
+    "en": "The beaten champion held it through a {heldYears}-year reign, with the defense column reading {n}. One loss put all of those figures into the past.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -11720,6 +12665,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "新しい王者を名乗れるのは、次の天頂戦の優勝者ただ一人である。",
+    "en": "The only person who can call herself champion now is whoever wins the next Tenchosen.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "新しい頂点が決まった。第{edition}回天頂戦を制した{name}（{org}）が、全国統一王座を戴冠した。",
+    "en": "A new summit has been decided. {name} of {org}, winner of Tenchosen {edition}, has taken the Unified National Championship.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "新人{total}名が出そろう",
     "en": "Rookie class of {total} complete",
     "files": [
@@ -11737,6 +12702,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "新体制での練習は来週から始まる。{org}がこの{count}名をどの順で人前に出すかで、来季の興行の形も変わってくる。",
+    "en": "Training under the new lineup starts next week. The order {org} puts this year's {count} in front of a crowd will shape what next season's shows look like.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -11864,6 +12839,26 @@
     "en": "An ordinary match. Neither good nor bad",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最初の刺客はおよそ3か月後に来る。玉座に座った瞬間から、狙われる4年間が始まっている。",
+    "en": "The first challenger comes in roughly three months. The four years of being hunted started the moment she sat down on the throne.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最初の挑戦はおよそ3か月後。業界中の上位陣が、もうこのベルトに照準を合わせている。",
+    "en": "The first challenge comes in roughly three months. The upper card across the business already has this belt in its sights.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12350,6 +13345,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "格上挑戦！{name1}が{org2}の{name2}に挑む！",
+    "en": "Punching up! {name1} takes on {name2} of {org2}!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "業界1位の座を奪取した「{orgName}」の快挙に触発され、ライバル団体が選手強化策とコーチ招聘に乗り出した。A級・B級団体が大型補強に動き、もはや安泰の時代は終わった。真の群雄割拠が始まる——。",
     "en": "{orgName} taking the top spot in the business has moved everyone else. Rival promotions have opened their wallets on training programs and on coaching staff, and the Class A and Class B promotions are signing hard. The safe years are over. No promotion's position is settled now.",
     "files": [
@@ -12430,6 +13435,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "業界の歴史が変わった夜である。第{edition}回天頂戦を制した{name}（{org}）に、全団体の頂点を示す新設ベルト——全国統一王座が授与された。",
+    "en": "This was the night the history of the business changed. {name} of {org}, winner of Tenchosen {edition}, was presented with a newly created belt that marks the top of every promotion — the Unified National Championship.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "業界の盟主と書いておく。書きすぎたら次号で訂正するが、現時点では事実だ",
     "en": "The flag carrier of the business — this paper will say so in print. If that runs too far, a correction goes in the next issue. As of today it is fact.",
     "files": [
@@ -12444,6 +13459,56 @@
     "en": "The ordinary running of the business",
     "files": [
       "KURODA_RELATION_NARRATIVE"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "業界の頂点が、ひっくり返った。{winnerOrg}の{winner}が王者{loser}（{loserOrg}）を撃破し、全国統一王座は団体ごと持ち主を変えた。",
+    "en": "The top of the business has turned over. {winner} of {winnerOrg} beat champion {loser} of {loserOrg}, and the Unified National Championship changed hands and promotions at once.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "業界の頂点が、空になった。王者{name}（{org}）が現役生活に幕を下ろし、全国統一王座は規定により返上された。",
+    "en": "The top of the business is empty. Champion {name} of {org} has closed out her career, and the Unified National Championship was surrendered under the rules.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "業界の頂点のベルトが、行き場を失った。王者{name}が所属を失い、全国統一王座は規定により返上された。",
+    "en": "The belt at the top of the business has nowhere to go. Champion {name} has lost her promotion, and the Unified National Championship was surrendered under the rules.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "業界の頂点は揺るがなかった。{name}（{org}）が挑戦者{challenger}（{challengerOrg}）を下し、{n}度目の防衛に成功した。",
+    "en": "The top of the business did not shift. {name} of {org} beat challenger {challenger} of {challengerOrg} to complete defense number {n}.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "業界の頂点は誰か——長年の問いに、初めてベルトという形の答えが出た。",
+    "en": "Who stands at the top of the business — the question has been asked for years, and for the first time there is an answer shaped like a belt.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12540,6 +13605,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "次の刺客はおよそ3か月後に来る。どの団体が挑戦権を取るか、業界の上位陣から目が離せない。",
+    "en": "The next challenger arrives in roughly three months. Which promotion takes the shot is worth watching across the whole upper card.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "次の対戦が、もう怖い",
     "en": "The next meeting is already frightening",
     "files": [
@@ -12594,6 +13669,16 @@
     "en": "Curious how much the next signing changes",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "次は追われる側として組まれる。挑戦者の列がどう並ぶかは、ここからの数週で見えてくる。",
+    "en": "She gets booked as the hunted one from here. How the line of challengers arranges itself will show over the next few weeks.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12894,6 +13979,16 @@
     "en": "An upset. This win moves {winnerName} up a stage at once",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "注目は{age}歳の{rookieName}。{h}cmの体格と{styleJa}としての組み立ては、担当したスカウト陣が最上位の見立てを最後まで崩さなかった理由でもある。",
+    "en": "The one to watch is {rookieName}, age {age}. The {h}cm frame and the way her {styleJa} game is put together are why the scouts on her never came off their top grade.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -13280,6 +14375,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座の規定は保持者に所属団体を求める。無所属となった{name}は、実力とは関係のないところでベルトを手放すことになった。",
+    "en": "The title rules require the holder to belong to a promotion. Now unaffiliated, {name} gives up the belt for reasons that have nothing to do with how good she is.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座は次の天頂戦まで空位となる。繰り上げも代替戦もない。頂点の椅子は、簡単には埋まらない。",
+    "en": "The title stays vacant until the next Tenchosen. No promotion up the order, no substitute match. The chair at the top does not fill easily.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "王座を守ることの難しさを、彼女は体で知っていた。",
     "en": "She knew what it costs to hold a belt, and she knew it firsthand.",
     "files": [
@@ -13394,6 +14509,66 @@
     "en": "Champion {winnerName} turns back {loserName}",
     "files": [
       "app.js:_NEWSPAPER_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王者が、王者のまま帰ってきた。前週にベルトを返還した{name}（{org}）が第{edition}回天頂戦を制し、全国統一王座を自らの手で取り戻した。",
+    "en": "The champion came back as the champion. {name} of {org}, who returned the belt a week earlier, won Tenchosen {edition} and took the Unified National Championship back with her own hands.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "王者が代われば、狙う顔ぶれも代わる。防衛が積み上がるかどうかは、まだ何とも言えない。",
+    "en": "When the champion changes, so does the set of faces aiming at her. Whether defenses stack up is not something anyone can say yet.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王者が王者のまま {name}、天頂戦を連覇",
+    "en": "Champion stays champion: {name} repeats at Tenchosen",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "王者の腰からベルトが外れた。奪われたのではない——規定に従い、次の優勝者を決める大会へ自ら返したのだ。",
+    "en": "The belt has come off the champion's waist. It was not taken — under the rules she handed it back herself, to the tournament that decides who wears it next.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王者不在の業界で、各団体の勢力争いは続く。空いた頂点を誰が獲るか——次の天頂戦への号砲は、もう鳴っている。",
+    "en": "With no champion, the promotions go on fighting each other for position. Who takes the empty summit — the starting gun for the next Tenchosen has already sounded.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "王者健在 {name}が{challenger}を返り討ち",
+    "en": "Champion still standing: {name} turns back {challenger}",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -13750,6 +14925,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "積み重ねてきた因縁——{name1}と{name2}の物語が、ここで動く！",
+    "en": "A grudge built up over time — the story of {name1} and {name2} moves here!",
+    "files": [
+      "PPV_HYPE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "穏やかな関係。リングで会っても、過度な熱は持ち込まない。{matches}度の対戦は、いずれも業界の良質な見本となっている。",
     "en": "A quiet relationship. Meeting in the ring, neither brings excess heat into it. A {matches}-match record, and every one of them a good example for the business.",
     "files": [
@@ -13788,6 +14973,46 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "空位のまま迎える次の天頂戦は、そのまま新王者決定戦になる。大きな大会になることだけは、いまから決まっている。",
+    "en": "The next Tenchosen arrives with the title vacant, which makes the whole thing a match to crown a new champion. That it will be a big tournament is already settled.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "空位のベルトが、ついに主を得た。16名の頂上決戦を勝ち抜いた{name}（{org}）である。",
+    "en": "The vacant belt finally has an owner: {name} of {org}, who came through a 16-woman summit.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "空位のベルトに新たな主 {name}が16名の頂上決戦を制す",
+    "en": "Vacant belt finds an owner: {name} takes the 16-woman bracket",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "空位は次の天頂戦まで続く。それまで、この頂点に挑む道はない。",
+    "en": "The vacancy lasts until the next Tenchosen. Until then there is no road to challenge for this summit.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "空気が冷えきった更衣室、その中央に立つ二人",
@@ -13990,10 +15215,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "統一王座、空位に 王者{name}が引退",
+    "en": "Unified title vacant: champion {name} retires",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "統一王座、空位に 王者{name}が無所属へ",
+    "en": "Unified title vacant: champion {name} goes unaffiliated",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "統一王座、陥落 新王者は{winner}",
+    "en": "Unified title falls: new champion is {winner}",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "練習試合ならともかく、ガチでやったら3タテ食らうだろ",
     "en": "An exhibition maybe, but do it for real and they're getting swept 3-0",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "翌週、16名のトーナメントが新しい持ち主を決める。返還した王者自身も、その16名に名を連ねる——奪い返す資格は、誰よりも持っている。",
+    "en": "Next week a 16-woman bracket decides the new owner. The champion who handed it back is in that field herself — nobody has more right to take it back.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -14308,6 +15573,26 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "規定に情けはない。王者もベルトを手放し、他の15名と同じスタートラインに並ぶ。そこから4連勝——文句のつけようがない連覇だった。",
+    "en": "The rules show no mercy. The champion gives the belt up and lines up with the other 15. Four straight wins from there — a repeat nobody can argue with.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "規定は苛烈だ。王者はおよそ3か月ごとに他団体の刺客を迎え撃つ。負ければベルトは団体ごと持っていかれる。引退すれば返上、次の天頂戦まで誰の腰にも巻かれない。",
+    "en": "The rules are harsh. About every three months the champion has to meet a challenger sent from another promotion. Lose, and the belt leaves with them, promotion and all. Retire, and it is surrendered and goes around nobody's waist until the next Tenchosen.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "親しい{friend}と{enemy}の対立をきっかけに、{carrier}も{enemy}と距離を置き始めた。個人間の不和が周囲へ広がり、控室の関係を複雑にしている。",
@@ -14690,6 +15975,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "返上した本人が次の天頂戦のリングに立てるかどうかは、新しい所属次第。実力者の去就に、業界中の視線が集まる。",
+    "en": "Whether the woman who gave it up stands in the next Tenchosen ring depends on where she signs. Where a wrestler this good ends up is being watched across the business.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "追いかける立場は嫌なものだろう。だが、追いかける側には追いかける側のメリットがある。相手の手を見てから動ける。失敗から学べる。{rivalName}の強みと弱みが見えているなら、それをどう活かすか。受け身のままでは永遠に追いかけっこだ。",
     "en": "Chasing is not a pleasant place to be. The chasing side has its own advantages, though. They move after seeing the other's hand. They learn from the failures. If the strengths and weaknesses of {rivalName} are visible to them, the question is what they do with that. Stay reactive and the chase never ends.",
     "files": [
@@ -14970,6 +16265,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "連覇王者への挑戦権を、どの団体が最初にもぎ取るか。次の3か月は、その争いから始まる。",
+    "en": "Which promotion grabs the first shot at a two-time champion? The next three months start with that fight.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "運命の対峙が、奪還戦という形で実現する",
     "en": "A meeting written in advance arrives as a reclaim match",
     "files": [
@@ -15210,6 +16515,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "防衛が積み上がるほど、王者の名は重くなる。次の天頂戦での返還まで、この牙城に挑む機会は限られている。",
+    "en": "The more defenses stack up, the heavier the champion's name gets. Until the belt goes back at the next Tenchosen, chances at this fortress are limited.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "防衛は連続{n}度。授与から{heldYears}年、ベルトはただの一度も持ち主を変えていない。",
+    "en": "Consecutive defenses: {n}. In the {heldYears}-year span since it was first presented, the belt has not changed hands once.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "防衛戦の相手はまだ決まっていない。ただ、この結果を見て名乗りを上げる選手は少なくないはずだ。",
+    "en": "No opponent has been set for the first defense. Plenty of wrestlers will have seen this result and be ready to put their names in.",
+    "files": [
+      "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "隠れた名勝負。メインに引けを取らない内容だった",
     "en": "A great match nobody was looking for. It gave nothing away to the main",
     "files": [
@@ -15350,6 +16685,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "頂点はただ一人 {name}が業界初の統一王者に",
+    "en": "Only one at the top: {name} becomes the first unified champion",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "頂点はただ一人。その一人を決めるベルトが、ついに生まれた。初代・全国統一王者は{name}。第{edition}回天頂戦の優勝者だ。",
+    "en": "There is only one at the top, and the belt that decides which one has finally been made. The first Unified National champion is {name}, winner of Tenchosen {edition}.",
+    "files": [
+      "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "頑張ってるのは分かるんだけど、結果が出ないとなあ",
     "en": "I can see they're working. It's the results that aren't coming",
     "files": [
@@ -15357,6 +16712,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "顔ぶれは揃った。{org}にとって次に問われるのは、誰を早く実戦に置くかの判断のほうだ。",
+    "en": "The faces are in. The next question for {org} is the judgment call about who gets put into live matches early.",
+    "files": [
+      "DRAFT_PLAYER_RESULT_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {

@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-09-04T07:36:38.149Z",
+  "generatedAt": "2026-09-04T08:26:08.334Z",
   "files": {
     "data.js": {
-      "jaCount": 16778,
-      "jaChars": 302481
+      "jaCount": 16779,
+      "jaChars": 302484
     },
     "kuroda-text.js": {
       "jaCount": 900,
       "jaChars": 31355
     },
     "management.js": {
-      "jaCount": 2243,
-      "jaChars": 23826
+      "jaCount": 2242,
+      "jaChars": 23823
     },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
