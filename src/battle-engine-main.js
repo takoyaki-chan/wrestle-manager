@@ -238,35 +238,29 @@ const CUTIN_LINES = {
     }}
 };
 
-// ─── FINISH_SUSPENSE ──────────────────────────────────────────────────────
-// フィニッシュクリックボックス表示中の実況テキストプール。{d}=被攻撃者名
-const FINISH_SUSPENSE = {
-  fall: [
-    "入ったか…！？ スリーカウントなるかーーーっ！！",
-    "カウントツー！ 返せるのか！？ 返せないのか！？",
-    "万事休すか…！ {d}、ここが正念場だーっ！",
-    "このまま決まってしまうのか…！！",
-    "会場が息を飲んでいる…！ {d}の運命やいかにーーっ！"
-  ],
-  gu: [
-    "タップするのか…！？ しないのか…！？",
-    "ロープに手が届くか…！ {d}、必死に腕を伸ばす…！！",
-    "{d}の表情が…！ 耐えられるのか！？",
-    "レフェリーが確認している…！ ギブアップか…！？",
-    "極まっている…！ {d}、絶体絶命だーーっ！"
-  ],
-  rollup: ["まさかの丸め込み…！ これで決まるのか！？"],
-  pin: [
-    "フォールだ！ 返せるか…！？ カウント…！！",
-    "大技の後のカバー！ {d}、肩を上げられるか…！？",
-    "ここで勝負を決めに来た！ {d}の運命は…！！"
-  ],
-  tko: [
-    "もう立ち上がれない…！ レフェリーが試合を見ている！",
-    "意識が飛んでいる…！ TKOか！？",
-    "これ以上は危険だ！ ストップがかかるか！？"
-  ]
+// ─── ピンカウント導入ナレーション ────────────────────────────────────────
+// i18n P7-9: 旧 FINISH_SUSPENSE(finishClickボックス表示中の実況プール5種17行)は
+// 「結末ネタバレ防止: 全 attemptType で結末を示唆しない汎用文に統一」(_buildPinCtrl の
+// finishClick label='…！？')の際に消費点が無くなっており、参照0の死蔵プールだった
+// (src/ 全体で FINISH_SUSPENSE の参照は本宣言のみ)。訳出対象を実際に画面へ出るものだけに
+// 保つため本バッチで削除した。**画面に出る導入ナレーションは下の PIN_INTRO_TEXTS**。
+//
+// PIN_INTRO_TEXTS / SUB_ATTEMPT_INTRO_TEXTS は _buildPinCtrl の関数本体に直書きされて
+// いたプール(specs §10-2「関数の中の配列はどの抽出器からも永久に見えない」)を
+// トップレベルへ出したもの。表の値は**日本語原文のまま**で、英訳は表示直前の
+// WM_I18N.t() が辞書から引く(選択ロジック=JAのまま・ja出力1バイト不変)。
+// tag-battle-main.js にも同名同値の表がある(両iframeは互いを読み込まない独立構成)。
+const PIN_INTRO_TEXTS = {
+  fall: ['フォールに入った！ ここで決まるのか！？','押さえ込んだーっ！ スリーカウントなるか！？','カバー！ これで決着か！？'],
+  pin:  ['押さえ込んだーっ！ これで決まるのか！？','強引にフォールへ！ 返せるのか！？','カバーに入った！ 決着か！？'],
+  tko:  ['もう立ち上がれない…！ レフェリーが試合を見ている！','意識が飛んでいる…！ TKOか！？','これ以上は危険だ！ ストップがかかるか！？'],
 };
+// 試合中の極め技トライ(HP>0で脱出される)の導入。
+const SUB_ATTEMPT_INTRO_TEXTS = [
+  '関節技を決めた！ このまま極めるか！？',
+  '絞り上げる！ ギブアップするか！？',
+  '逃げられるか！？ 極め技に捕らえた！',
+];
 
 // ─── ユーティリティ ──────────────────────────────────────────────────────
 function clamp(v, lo, hi){ return Math.max(lo, Math.min(hi, v)); }
@@ -303,6 +297,21 @@ const MOVE_PRESENTATION = {
   rollup:     { label: WM_I18N.t('丸め込み'), guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
 };
 
+// i18n P7-9: 技名の正規表現で guide を上書きする分岐。_movePresentation の関数本体に
+// if/else連鎖で直書きされていたものを、順序を変えずにトップレベル表へ出した
+// (specs §10-2「関数の中の配列はどの抽出器からも永久に見えない」)。
+// `cat` 付きの行は「カテゴリも一致したときだけ採用」= 元の `&& cat === 'throw'` と同義で、
+// 不一致なら次の行の判定へ進む(if/else連鎖のフォールスルーと完全に同じ)。
+const MOVE_GUIDE_OVERRIDES = [
+  { re: /ドロップキック/, guide: '両足を突き出して相手を蹴り、勢いと間合いで体勢を崩す打撃。' },
+  { re: /キック|PK|延髄斬り|ニー/, guide: '脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。' },
+  { re: /エルボー|ラリアット|クローズライン|チョップ|パンチ|ブロー|頭突き|ヘッドバット/, guide: '腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。' },
+  { re: /スープレックス|バックドロップ/, guide: '相手を抱えて反らすように投げ、背中からマットへ落とす投げ技。' },
+  { re: /パワーボム|ドライバー|スラム|DDT|ブリーカー|ドロップ/, cat: 'throw', guide: '相手を抱え上げるか頭部を制し、落差を使ってマットへ叩きつける投げ技。' },
+  { re: /ロック|ホールド|クラッチ|固め|絞め|STF|卍|アームバー|ベアハッグ/, cat: 'submission', guide: '身体の一部を固定して逃げ道を狭め、ギブアップを迫る技。' },
+  { re: /ダイビング|プレス|スプラッシュ|ムーンサルト|セントーン|トペ|プランチャ/, guide: '高い位置や助走から飛び込み、落下の勢いを全身でぶつける飛び技。' },
+];
+
 // **日本語名を返す**関数。効果音判定(battle-sfx.js guessCategory)と _movePresentation の
 // 解説文選択がこの戻り値を正規表現で見ているので、ここで英訳してはいけない
 // (docs/en-move-names-draft-v0.1.md §7-2)。英語化は表示の直前だけ — 下の _mvDisp() を使う。
@@ -329,15 +338,10 @@ function _movePresentation(action){
   const cat = action && action.moveCat ? action.moveCat : 'strike';
   const base = MOVE_PRESENTATION[cat] || MOVE_PRESENTATION.strike;
   const name = _actionMoveName(action);
-  let guide = base.guide;
-  if (/ドロップキック/.test(name)) guide = '両足を突き出して相手を蹴り、勢いと間合いで体勢を崩す打撃。';
-  else if (/キック|PK|延髄斬り|ニー/.test(name)) guide = '脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。';
-  else if (/エルボー|ラリアット|クローズライン|チョップ|パンチ|ブロー|頭突き|ヘッドバット/.test(name)) guide = '腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。';
-  else if (/スープレックス|バックドロップ/.test(name)) guide = '相手を抱えて反らすように投げ、背中からマットへ落とす投げ技。';
-  else if (/パワーボム|ドライバー|スラム|DDT|ブリーカー|ドロップ/.test(name) && cat === 'throw') guide = '相手を抱え上げるか頭部を制し、落差を使ってマットへ叩きつける投げ技。';
-  else if (/ロック|ホールド|クラッチ|固め|絞め|STF|卍|アームバー|ベアハッグ/.test(name) && cat === 'submission') guide = '身体の一部を固定して逃げ道を狭め、ギブアップを迫る技。';
-  else if (/ダイビング|プレス|スプラッシュ|ムーンサルト|セントーン|トペ|プランチャ/.test(name)) guide = '高い位置や助走から飛び込み、落下の勢いを全身でぶつける飛び技。';
-  return { label: base.label, guide };
+  const ov = MOVE_GUIDE_OVERRIDES.find(o => o.re.test(name) && (!o.cat || o.cat === cat));
+  // **返り値のguideは日本語のまま**(この関数は判定層 — 効果音判定と同じくJA技名の
+  // 正規表現で選ぶ)。英訳は表示直前の WM_I18N.t(meta.guide) が行う(§23-3/P7-9)。
+  return { label: base.label, guide: ov ? ov.guide : base.guide };
 }
 
 function _moveResultText(action){
@@ -578,7 +582,7 @@ function _liveRingHtml(fr){
     <div class="bigmove-name" id="bigmoveName"></div>
     <div class="narration-box wm-commentary" id="narBox">
       <div class="wm-commentary-label">${WM_I18N.t('実況')}</div>
-      <div class="nar-empty">ゴング！　「次の攻防」で試合を進めてください</div>
+      <div class="nar-empty">${WM_I18N.t('ゴング！　「次の攻防」で試合を進めてください')}</div>
     </div>
   </section>`;
 }
@@ -635,7 +639,7 @@ function _centerHtml(fr){
   return `<div class="center-panel wm-move-detail" id="centerPanel">
     <div class="move-label" id="moveCatLabel">${escHtml(meta.label)}</div>
     <div class="move-value" id="moveV">${escHtml(_mvDisp(_actionMoveName(action)))}</div>
-    <div class="wm-move-guide" id="moveGuide">${escHtml(meta.guide)}</div>
+    <div class="wm-move-guide" id="moveGuide">${escHtml(WM_I18N.t(meta.guide))}</div>
     <div class="wm-move-result" id="moveResult">${escHtml(_moveResultText(action))}</div>
   </div>`;
 }
@@ -801,7 +805,7 @@ function nextFrame(){
     if (S.pinSeqPending) return;
     _notifyFinishCue();
     const finishNarEl = document.getElementById('narBox');
-    if (finishNarEl) finishNarEl.innerHTML = '<div class="nar-line dramatic">決着！</div>';
+    if (finishNarEl) finishNarEl.innerHTML = `<div class="nar-line dramatic">${escHtml(WM_I18N.t('決着！'))}</div>`;
     setTimeout(() => showResult(fr), 1800);
     return;
   }
@@ -939,12 +943,13 @@ function _spawnAttackArrow(action){
   if (action.kind === 'counter') {
     const origDir = action.atkSide === 'left' ? 'rtl' : 'ltr';
     const retDir  = origDir === 'ltr' ? 'rtl' : 'ltr';
-    // P7-5: 矢印ラベルの技名だけ表示用に英語化する(接頭の地の文は別バッチの担当)
-    _renderArrow(layer, origDir, _mvDisp(action.move) || '攻撃', false, false);
-    setTimeout(() => _renderArrow(layer, retDir, 'カウンター！ ' + (_mvDisp(action.counterMove || action.move) || ''), true, false), 1000);
+    // P7-5: 技名は表示用の短縮EN(_mvDisp)。P7-9: 接頭の地の文もt()経由にした。
+    // 技名は既に表示用へ変換済みの値をパラメータで渡す(convertNamesは英語値を素通しする)。
+    _renderArrow(layer, origDir, _mvDisp(action.move) || WM_I18N.t('攻撃'), false, false);
+    setTimeout(() => _renderArrow(layer, retDir, WM_I18N.t('カウンター！ {move}', { move: _mvDisp(action.counterMove || action.move) || '' }), true, false), 1000);
   } else {
     const dir = action.atkSide === 'left' ? 'ltr' : 'rtl';
-    _renderArrow(layer, dir, _mvDisp(action.move) || '攻撃', false, isMiss);
+    _renderArrow(layer, dir, _mvDisp(action.move) || WM_I18N.t('攻撃'), false, isMiss);
   }
 }
 
@@ -1228,17 +1233,17 @@ function _buildPinCtrl(fr){
     }
   }
 
-  const INTRO = {
-    fall: ['フォールに入った！ ここで決まるのか！？','押さえ込んだーっ！ スリーカウントなるか！？','カバー！ これで決着か！？'],
-    pin:  ['押さえ込んだーっ！ これで決まるのか！？','強引にフォールへ！ 返せるのか！？','カバーに入った！ 決着か！？'],
-    tko:  ['もう立ち上がれない…！ レフェリーが試合を見ている！','意識が飛んでいる…！ TKOか！？','これ以上は危険だ！ ストップがかかるか！？'],
-  };
+  // i18n P7-9: seq のテキストは push 時点で t() を通す(既存の damage ステップと同じ作法)。
+  // 観戦iframeは試合ごとに開き直すので試合中に言語が変わることはない。
+  // 名前・技名は**プレースホルダの値として渡す**(t()のenブランチが名前辞書/技名辞書を
+  // 引き当てる。置換より前に辞書を引くのが規約 — specs §9)。
+  const INTRO = PIN_INTRO_TEXTS;
 
   // TKO
   if (fr.tkoStop) {
-    seq.push({ kind: 'introBig', text: pk(INTRO.tko), dramatic: true });
-    seq.push({ kind: 'finishClick', label: '…！？' });
-    seq.push({ kind: 'count', text: 'TKO！！', cls: 'tko' });
+    seq.push({ kind: 'introBig', text: WM_I18N.t(pk(INTRO.tko)), dramatic: true });
+    seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
+    seq.push({ kind: 'count', text: WM_I18N.t('TKO！！'), cls: 'tko' });
     return { seq, idx: -1, fr };
   }
 
@@ -1249,18 +1254,20 @@ function _buildPinCtrl(fr){
     const objChar  = atkSide === 'left' ? S.R : S.L;
     const subjSide = atkSide === 'left' ? 'L' : 'R';
     const objSide  = subjSide === 'L' ? 'R' : 'L';
-    const statusText = subjChar ? `${WM_I18N.pn(subjChar.name)}が押さえ込んでいる！` : '押さえ込んでいる！';
+    const statusText = subjChar
+      ? WM_I18N.t('{subj}が押さえ込んでいる！', { subj: subjChar.name })
+      : WM_I18N.t('押さえ込んでいる！');
     if (subjChar && objChar) {
-      seq.push({ kind: 'introBig', text: `${WM_I18N.pn(subjChar.name)}が${WM_I18N.pn(objChar.name)}を丸め込んだ！`, dramatic: true, rollupHighlight: { subjSide, objSide } });
+      seq.push({ kind: 'introBig', text: WM_I18N.t('{subj}が{obj}を丸め込んだ！', { subj: subjChar.name, obj: objChar.name }), dramatic: true, rollupHighlight: { subjSide, objSide } });
     }
-    seq.push({ kind: 'count', text: 'ワン！', cls: '', rollupStatus: statusText });
-    seq.push({ kind: 'count', text: 'ツー！', cls: 'two', rollupStatus: statusText });
-    seq.push({ kind: 'finishClick', label: '…！？' });
+    seq.push({ kind: 'count', text: WM_I18N.t('ワン！'), cls: '', rollupStatus: statusText });
+    seq.push({ kind: 'count', text: WM_I18N.t('ツー！'), cls: 'two', rollupStatus: statusText });
+    seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
     if (fr.rollup === 'success') {
-      seq.push({ kind: 'count', text: '3ーーーっ！！', cls: 'three', rollupStatus: statusText });
+      seq.push({ kind: 'count', text: WM_I18N.t('3ーーーっ！！'), cls: 'three', rollupStatus: statusText });
     } else {
       // kickout
-      seq.push({ kind: 'count', text: '返したーーっ！', cls: 'kickout' });
+      seq.push({ kind: 'count', text: WM_I18N.t('返したーーっ！'), cls: 'kickout' });
     }
     return { seq, idx: -1, fr };
   }
@@ -1270,31 +1277,26 @@ function _buildPinCtrl(fr){
     const atkSide = fr.action ? fr.action.atkSide : 'left';
     const atkChar = atkSide === 'left' ? S.L : S.R;
     const defChar = atkSide === 'left' ? S.R : S.L;
-    const moveName = fr.action ? _mvFull(fr.action.move || '') : '';
-    if (atkChar && defChar) seq.push({ kind: 'introBig', text: `${WM_I18N.pn(atkChar.name)}が${WM_I18N.pn(defChar.name)}に${moveName}をがっちりロック！`, dramatic: true });
+    const moveName = fr.action ? (fr.action.move || '') : '';
+    if (atkChar && defChar) seq.push({ kind: 'introBig', text: WM_I18N.t('{atk}が{def}に{move}をがっちりロック！', { atk: atkChar.name, def: defChar.name, move: moveName }), dramatic: true });
     const isWin = fr.winner != null;
     if (isWin) {
-      seq.push({ kind: 'finishClick', label: '…！？' });
-      if (defChar) seq.push({ kind: 'count', text: `${WM_I18N.pn(defChar.name)}がタップ！！`, cls: 'tap' });
+      seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
+      if (defChar) seq.push({ kind: 'count', text: WM_I18N.t('{def}がタップ！！', { def: defChar.name }), cls: 'tap' });
     } else {
-      seq.push({ kind: 'finishClick', label: '…！？' });
-      seq.push({ kind: 'count', text: 'ロープ！ ロープブレイクーーっ！！', cls: 'escape' });
+      seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
+      seq.push({ kind: 'count', text: WM_I18N.t('ロープ！ ロープブレイクーーっ！！'), cls: 'escape' });
     }
     return { seq, idx: -1, fr };
   }
 
   // submission mid-match attempt (HP>0 で極め技が脱出された)
   if (fr.pinAttempt === 'kickout2_sub') {
-    const SUB_INTRO = [
-      '関節技を決めた！ このまま極めるか！？',
-      '絞り上げる！ ギブアップするか！？',
-      '逃げられるか！？ 極め技に捕らえた！',
-    ];
     const atkSide = fr.action ? fr.action.atkSide : 'left';
     const defChar = atkSide === 'left' ? S.R : S.L;
-    seq.push({ kind: 'introBig', text: pk(SUB_INTRO), dramatic: true });
-    seq.push({ kind: 'finishClick', label: '…！？' });
-    seq.push({ kind: 'count', text: defChar ? `${WM_I18N.pn(defChar.name)}が振りほどいた！！` : '振りほどいた！！', cls: 'escape' });
+    seq.push({ kind: 'introBig', text: WM_I18N.t(pk(SUB_ATTEMPT_INTRO_TEXTS)), dramatic: true });
+    seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
+    seq.push({ kind: 'count', text: defChar ? WM_I18N.t('{def}が振りほどいた！！', { def: defChar.name }) : WM_I18N.t('振りほどいた！！'), cls: 'escape' });
     return { seq, idx: -1, fr };
   }
 
@@ -1302,15 +1304,15 @@ function _buildPinCtrl(fr){
   const isPin  = fr.pinAttempt === 'kickout2'; // HP > 0 でのフォール試み
   const isFall = !isPin && fr.kickout && (fr.kickout.escapeType === 'fall' || fr.kickout.count != null);
   const introArr = isPin ? INTRO.pin : INTRO.fall;
-  seq.push({ kind: 'introBig', text: pk(introArr), dramatic: true });
+  seq.push({ kind: 'introBig', text: WM_I18N.t(pk(introArr)), dramatic: true });
   const count = (fr.kickout && fr.kickout.count) ? fr.kickout.count : 2;
-  if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
-  if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: 'two' });
-  seq.push({ kind: 'finishClick', label: '…！？' });
+  if (count >= 1) seq.push({ kind: 'count', text: WM_I18N.t('ワン！'), cls: '' });
+  if (count >= 2) seq.push({ kind: 'count', text: WM_I18N.t('ツー！'), cls: 'two' });
+  seq.push({ kind: 'finishClick', label: WM_I18N.t('…！？') });
   if (fr.winner != null) {
-    seq.push({ kind: 'count', text: '3ーーーーっ！！！', cls: 'three' });
+    seq.push({ kind: 'count', text: WM_I18N.t('3ーーーーっ！！！'), cls: 'three' });
   } else {
-    seq.push({ kind: 'count', text: '返したーーーーっ！！', cls: 'kickout' });
+    seq.push({ kind: 'count', text: WM_I18N.t('返したーーーーっ！！'), cls: 'kickout' });
   }
   return { seq, idx: -1, fr };
 }
@@ -1410,7 +1412,7 @@ function _finishPinSeq(){
     _notifyFinishCue();
     // narBox を「決着！」に差し替え
     const narEl = document.getElementById('narBox');
-    if (narEl) narEl.innerHTML = '<div class="nar-line dramatic">決着！</div>';
+    if (narEl) narEl.innerHTML = `<div class="nar-line dramatic">${escHtml(WM_I18N.t('決着！'))}</div>`;
     if (btn) btn.disabled = true;
     setTimeout(() => showResult(fr), 800);
   } else {
@@ -1612,14 +1614,37 @@ const _LOCAL_FINISH_TEXT = {
   'TKO': '{move} → レフェリーストップ',
   '丸め込み': '{move} → 丸め込み',
 };
+// data.js の FINISH_TEXT_FALLBACK と同値。**変数で t() へ渡すのは意図的** —
+// このキーは i18n/template-ledger.json 側に既にあり、静的リテラルで書くと
+// test/i18n-extract-ui.js が拾って ui-ledger にも同じキーが載る=二重登録になる
+// (どちらの訳が出るかが addDict の読み込み順に依存する。specs §9 の禁止事項)。
+const _LOCAL_FINISH_FALLBACK = '激闘決着';
+
+// i18n P7-9: result.finType は**ロジックキー**(日本語固定・セーブ互換 — specs §2-2)。
+// 表示ラベルは辞書で引く。ここを switch + 静的リテラルで書くのは、
+// test/i18n-extract-ui.js が WM_I18N.t() の静的第1引数を機械抽出するから
+// (変数を渡すと台帳に載らず、kept:true の手追加が要る)。
+// ja では t() が素通しするので、返る文字列は finType そのもの = 1バイト不変。
+function _finTypeLabel(finType){
+  switch (finType) {
+    case 'フォール':   return WM_I18N.t('フォール');
+    case 'ピン':       return WM_I18N.t('ピン');
+    case 'ギブアップ': return WM_I18N.t('ギブアップ');
+    case 'TKO':        return WM_I18N.t('TKO');
+    case '丸め込み':   return WM_I18N.t('丸め込み');
+    case 'HP判定':     return WM_I18N.t('HP判定');
+    default:           return finType || '';
+  }
+}
+// i18n P7-9: battle-engine.html が lang-en-templates.js を読み込むようになったので、
+// テンプレ本体(=data.js FINISH_TEXT と同じ辞書キー)もt()で引けるようになった(P7-5の発見1)。
+// 技名は**パラメータで渡す** — t()のenブランチが技名辞書を引き当てる(Engine.formatFinish
+// と同じ作法。dictで先に訳してから置換しないこと)。
 function _localFormatFinish(finType, finMove){
-  if (!finMove) return finType || '激闘決着';
+  if (!finMove) return finType ? _finTypeLabel(finType) : WM_I18N.t(_LOCAL_FINISH_FALLBACK);
   const tmpl = _LOCAL_FINISH_TEXT[finType];
-  // P7-5: テンプレ本体はJAのまま(観戦iframeはlang-en-templates.jsを読まないので、
-  // ここでt()に通すと必ずfail-openして[i18n-miss]を出す)。技名だけ名前辞書経由で英語化する。
-  const mvName = _mvFull(finMove);
-  if (tmpl) return tmpl.replace('{move}', mvName);
-  return `${mvName} (${finType || '決着'})`;
+  if (tmpl) return WM_I18N.t(tmpl, { move: finMove });
+  return WM_I18N.t('{move} ({type})', { move: finMove, type: finType ? _finTypeLabel(finType) : WM_I18N.t('決着') });
 }
 
 // ─── 試合終了 → 親フレームへ結果通知 ────────────────────────────────────
@@ -1655,7 +1680,8 @@ function openBp(side){
   const hasRivalry = mi.rivalryTier > 0;
   const isTitle    = !!mi.isTitle;
   const mirrorStyle = side === 'L' ? 'transform:scaleX(-1)' : '';
-  const age = ch.age ? ch.age + '歳' : '';
+  // i18n P7-9(同型の穴): 選手ポップアップの年齢だけ生JAの連結だった(既存キー`{age}歳`)
+  const age = ch.age ? WM_I18N.t('{age}歳', { age: ch.age }) : '';
   let badges = '';
   if (hasRivalry) badges += '<span class="bp-badge rival">🔥 RIVAL</span>';
   if (isTitle)    badges += '<span class="bp-badge title">🏆 TITLE MATCH</span>';
@@ -1711,16 +1737,21 @@ document.addEventListener('keydown', e => {
 const _spTimers = {};
 function _narrationHtml(nar){
   if (!nar || !nar.text) {
-    return '<div class="wm-commentary-label">' + WM_I18N.t('実況') + '</div><div class="nar-empty">ゴング！　「次の攻防」で試合を進めてください</div>';
+    return '<div class="wm-commentary-label">' + WM_I18N.t('実況') + '</div><div class="nar-empty">' + escHtml(WM_I18N.t('ゴング！　「次の攻防」で試合を進めてください')) + '</div>';
   }
   return `<div class="wm-commentary-label">${WM_I18N.t('実況')}</div><div class="nar-line nar-main show${nar.dramatic ? ' dramatic' : ''}">${escHtml(nar.text)}</div>`;
 }
 
+// i18n P7-9: \u5b9f\u6cc1\u30ca\u30ec\u30fc\u30b7\u30e7\u30f3\u306f\u300c\u30c6\u30f3\u30d7\u30ec+\u30d1\u30e9\u30e1\u30fc\u30bf\u300d\u3067t()\u3078\u6e21\u3059(\u00a79\u306e\u914d\u7dda\u898f\u7d04 \u2014
+// \u30d7\u30ec\u30fc\u30b9\u30db\u30eb\u30c0\u3092\u7f6e\u63db\u3057\u305f\u5b8c\u6210\u6587\u3092t()\u3078\u6e21\u3059\u3068\u8f9e\u66f8\u30ad\u30fc(\u672a\u7f6e\u63db\u306e\u539f\u6587)\u3068\u4e00\u81f4\u305b\u305a
+// fail-open\u3059\u308b)\u3002\u9078\u624b\u540d\u30fb\u6280\u540d\u306f**\u5024\u3068\u3057\u3066\u6e21\u3059\u3060\u3051\u3067\u3088\u3044**: t()\u306een\u30d6\u30e9\u30f3\u30c1\u304c
+// \u540d\u524d\u8f9e\u66f8\u2192\u6280\u540d\u8f9e\u66f8\u306e\u9806\u306b\u5f15\u304d\u5f53\u3066\u308b(D-P6-2 / P7-5)\u3002ja \u3067\u306f applyParams \u306e
+// {key} \u7f6e\u63db\u3060\u3051\u304c\u8d70\u308b\u306e\u3067\u3001\u5f93\u6765\u306e\u6587\u5b57\u5217\u9023\u7d50\u30681\u30d0\u30a4\u30c8\u540c\u4e00\u306b\u306a\u308b\u3002
 function _narrateFrame(fr){
   if (!fr) return { text: '', dramatic: false };
   if (fr.winner) {
     if (S.pinSeqPending) return { text: '\u2026', dramatic: true };
-    return { text: '\u6c7a\u7740\uff01', dramatic: true };
+    return { text: WM_I18N.t('\u6c7a\u7740\uff01'), dramatic: true };
   }
 
   const action = fr.action;
@@ -1732,21 +1763,21 @@ function _narrateFrame(fr){
 
   if (action.kind === 'miss') {
     return {
-      text: `${WM_I18N.pn(atk.name)}の${_mvFull(action.move) || ''}は空を切る！ ${WM_I18N.pn(def.name)}が間合いを外した。`,
+      text: WM_I18N.t('{atk}の{move}は空を切る！ {def}が間合いを外した。', { atk: atk.name, move: action.move || '', def: def.name }),
       dramatic: false,
     };
   }
   if (action.kind === 'counter') {
     return {
-      text: `${WM_I18N.pn(atk.name)}が待っていた！ ${WM_I18N.pn(def.name)}の攻めを読み、${_mvFull(action.counterMove || action.move) || ''}で切り返す！`,
+      text: WM_I18N.t('{atk}が待っていた！ {def}の攻めを読み、{move}で切り返す！', { atk: atk.name, def: def.name, move: action.counterMove || action.move || '' }),
       dramatic: true,
     };
   }
 
   return {
     text: action.isCrit
-      ? `${WM_I18N.pn(atk.name)}の${_mvFull(action.move) || ''}が深く入った！ ${WM_I18N.pn(def.name)}を大きく揺らす！`
-      : `${WM_I18N.pn(atk.name)}が${_mvFull(action.move) || ''}！ ${WM_I18N.pn(def.name)}の体勢を崩していく。`,
+      ? WM_I18N.t('{atk}の{move}が深く入った！ {def}を大きく揺らす！', { atk: atk.name, move: action.move || '', def: def.name })
+      : WM_I18N.t('{atk}が{move}！ {def}の体勢を崩していく。', { atk: atk.name, move: action.move || '', def: def.name }),
     dramatic: !!action.isCrit,
   };
 }
@@ -1759,7 +1790,7 @@ function _updateMoveDetail(fr){
   const category = document.getElementById('moveCatLabel');
   if (category) category.textContent = meta.label;
   const guide = document.getElementById('moveGuide');
-  if (guide) guide.textContent = meta.guide;
+  if (guide) guide.textContent = WM_I18N.t(meta.guide);
   const result = document.getElementById('moveResult');
   if (result){ result.textContent = _moveResultText(action); result.classList.toggle('big', !!(action && (action.isCrit || action.kind === 'counter'))); }
 }

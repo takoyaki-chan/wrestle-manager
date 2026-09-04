@@ -117,6 +117,47 @@ const TAG_MOVE_PRESENTATION = {
   tag:        { label: WM_I18N.t('連携技'), guide: 'パートナーと呼吸を合わせ、二人の動きを一つの攻撃へつなげる。' },
 };
 
+// i18n P7-9: 技名の正規表現で guide を上書きする分岐。_movePresentation の関数本体に
+// if/else連鎖で直書きされていたものを、順序を変えずにトップレベル表へ出した
+// (specs §10-2「関数の中の配列はどの抽出器からも永久に見えない」)。
+// `cat` 付きの行は「カテゴリも一致したときだけ採用」= 元の `&& cat === 'throw'` と同義で、
+// 不一致なら次の行の判定へ進む(if/else連鎖のフォールスルーと完全に同じ)。
+// battle-engine-main.js の MOVE_GUIDE_OVERRIDES と同名同値(両iframeは互いを読み込まない)。
+const MOVE_GUIDE_OVERRIDES = [
+  { re: /ドロップキック/, guide: '両足を突き出して相手を蹴り、勢いと間合いで体勢を崩す打撃。' },
+  { re: /キック|PK|延髄斬り|ニー/, guide: '脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。' },
+  { re: /エルボー|ラリアット|クローズライン|チョップ|パンチ|ブロー|頭突き|ヘッドバット/, guide: '腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。' },
+  { re: /スープレックス|バックドロップ/, guide: '相手を抱えて反らすように投げ、背中からマットへ落とす投げ技。' },
+  { re: /パワーボム|ドライバー|スラム|DDT|ブリーカー|ドロップ/, cat: 'throw', guide: '相手を抱え上げるか頭部を制し、落差を使ってマットへ叩きつける投げ技。' },
+  { re: /ロック|ホールド|クラッチ|固め|絞め|STF|卍|アームバー|ベアハッグ/, cat: 'submission', guide: '身体の一部を固定して逃げ道を狭め、ギブアップを迫る技。' },
+  { re: /ダイビング|プレス|スプラッシュ|ムーンサルト|セントーン|トペ|プランチャ/, guide: '高い位置や助走から飛び込み、落下の勢いを全身でぶつける飛び技。' },
+];
+
+// ピンカウント導入ナレーション。_buildPinCtrl の関数本体に直書きされていたプールを
+// トップレベルへ出したもの(specs §10-2)。値は日本語原文のままで、英訳は表示直前の
+// WM_I18N.t() が引く(選択ロジック=JAのまま・ja出力1バイト不変)。
+const PIN_INTRO_TEXTS = {
+  fall: ['フォールに入った！ ここで決まるのか！？', '押さえ込んだーっ！ スリーカウントなるか！？', 'カバー！ これで決着か！？'],
+  pin: ['押さえ込んだーっ！ これで決まるのか！？', '強引にフォールへ！ 返せるのか！？', 'カバーに入った！ 決着か！？'],
+  tko: ['もう立ち上がれない…！ レフェリーが試合を見ている！', '意識が飛んでいる…！ TKOか！？', 'これ以上は危険だ！ ストップがかかるか！？'],
+};
+
+// i18n P7-9: result.finType は**ロジックキー**(日本語固定・セーブ互換 — specs §2-2)。
+// 表示ラベルは辞書で引く。switch + 静的リテラルで書くのは、test/i18n-extract-ui.js が
+// WM_I18N.t() の静的第1引数を機械抽出するため(変数を渡すと台帳に載らない)。
+// ja では t() が素通しするので、返る文字列は finType そのもの = 1バイト不変。
+function _finTypeLabel(finType){
+  switch (finType) {
+    case 'フォール':   return WM_I18N.t('フォール');
+    case 'ピン':       return WM_I18N.t('ピン');
+    case 'ギブアップ': return WM_I18N.t('ギブアップ');
+    case 'TKO':        return WM_I18N.t('TKO');
+    case '丸め込み':   return WM_I18N.t('丸め込み');
+    case 'HP判定':     return WM_I18N.t('HP判定');
+    default:           return finType || '';
+  }
+}
+
 // i18n Stage B P7-5: 技名の**表示専用**変換。_movePresentation の解説文選択と
 // battle-sfx.js の効果音判定は日本語の技名を正規表現で見ているので、_actionMoveName
 // の戻り値そのものを英訳してはいけない(docs/en-move-names-draft-v0.1.md §7-2)。
@@ -140,15 +181,10 @@ function _movePresentation(action, fr){
   const cat = doubleEv ? 'tag' : (action && action.moveCat ? action.moveCat : 'strike');
   const base = TAG_MOVE_PRESENTATION[cat] || TAG_MOVE_PRESENTATION.strike;
   const name = doubleEv && doubleEv.move ? doubleEv.move : _actionMoveName(action);
-  let guide = base.guide;
-  if (/ドロップキック/.test(name)) guide = '両足を突き出して相手を蹴り、勢いと間合いで体勢を崩す打撃。';
-  else if (/キック|PK|延髄斬り|ニー/.test(name)) guide = '脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。';
-  else if (/エルボー|ラリアット|クローズライン|チョップ|パンチ|ブロー|頭突き|ヘッドバット/.test(name)) guide = '腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。';
-  else if (/スープレックス|バックドロップ/.test(name)) guide = '相手を抱えて反らすように投げ、背中からマットへ落とす投げ技。';
-  else if (/パワーボム|ドライバー|スラム|DDT|ブリーカー|ドロップ/.test(name) && cat === 'throw') guide = '相手を抱え上げるか頭部を制し、落差を使ってマットへ叩きつける投げ技。';
-  else if (/ロック|ホールド|クラッチ|固め|絞め|STF|卍|アームバー|ベアハッグ/.test(name) && cat === 'submission') guide = '身体の一部を固定して逃げ道を狭め、ギブアップを迫る技。';
-  else if (/ダイビング|プレス|スプラッシュ|ムーンサルト|セントーン|トペ|プランチャ/.test(name)) guide = '高い位置や助走から飛び込み、落下の勢いを全身でぶつける飛び技。';
-  return { label: base.label, guide, name };
+  const ov = MOVE_GUIDE_OVERRIDES.find(o => o.re.test(name) && (!o.cat || o.cat === cat));
+  // **返り値のguideは日本語のまま**(この関数は判定層 — 効果音判定と同じくJA技名の
+  // 正規表現で選ぶ)。英訳は表示直前の WM_I18N.t(meta.guide) が行う(§23-3/P7-9)。
+  return { label: base.label, guide: ov ? ov.guide : base.guide, name };
 }
 
 function _moveResultText(action){
@@ -369,7 +405,7 @@ function _statsHtml(fighter, side){
 function _liveRingHtml(fr){
   const phase = fr ? (fr.phase || 'Opening') : 'Opening';
   const turn = fr ? fr.turn : 1;
-  const nar = fr ? _narrateFrame(fr) : { text:'ゴング！ 「次の攻防」で試合を進めてください', dramatic:false };
+  const nar = fr ? _narrateFrame(fr) : { text: WM_I18N.t('ゴング！ 「次の攻防」で試合を進めてください'), dramatic:false };
   const header = (S.matchInfo && S.matchInfo.header) || 'TAG MATCH';
   return `<section class="wm-tag-live-ring" id="liveRing">
     <img class="wm-tag-ring-bg" src="../image/battle-ring-bg-mockup-v2.webp" alt="${WM_I18N.t('プロレス会場のリング')}" onerror="this.src='../image/battle-bg_venue_4.webp'">
@@ -384,7 +420,7 @@ function _liveRingHtml(fr){
     <div class="attack-arrow-layer wm-tag-ring-arrow-layer" id="arrowLayer"></div>
     <div class="bigmove-splash" id="bigmoveSplash"></div>
     <div class="flash-overlay" id="flashOverlay"></div>
-    <div class="move-narration wm-tag-commentary${nar.dramatic?' dramatic':''}" id="moveNarration"><span>${nar.text}</span></div>
+    <div class="move-narration wm-tag-commentary${nar.dramatic?' dramatic':''}" id="moveNarration"><span>${escHtml(nar.text)}</span></div>
   </section>`;
 }
 
@@ -420,7 +456,7 @@ function _moveDisplayHtml(fr){
   return `<div class="move-display wm-tag-move-detail" id="moveDisplay">
     <div class="move-label" id="moveCatLabel">${escHtml(meta.label)}</div>
     <div class="move-name" id="moveName">${escHtml(_mvDisp(meta.name))}</div>
-    <div class="wm-move-guide" id="moveGuide">${escHtml(meta.guide)}</div>
+    <div class="wm-move-guide" id="moveGuide">${escHtml(WM_I18N.t(meta.guide))}</div>
     <div class="move-damage wm-move-result" id="moveDmg">${escHtml(_moveResultText(action))}</div>
   </div>`;
 }
@@ -428,39 +464,46 @@ function _moveDisplayHtml(fr){
 function _dmgText(action){
   if (action.kind === 'miss') return { text: 'MISS', cls: 'miss' };
   if (action.kind === 'counter') return { text: `COUNTER! -${action.dmg}`, cls: 'counter' };
-  if (action.kind === 'hit') return { text: `-${action.dmg} ダメージ`, cls: 'hit' };
+  if (action.kind === 'hit') return { text: WM_I18N.t('-{n} ダメージ', { n: action.dmg }), cls: 'hit' };
   return { text: '', cls: '' };
 }
 
+// i18n P7-9: 実況ナレーションは「テンプレ+パラメータ」でt()へ渡す(§9の配線規約 —
+// プレースホルダを置換した完成文をt()へ渡すと辞書キー(未置換の原文)と一致せず
+// fail-openする)。選手名・技名は**値として渡すだけでよい**: t()のenブランチが
+// 名前辞書→技名辞書の順に引き当てる(D-P6-2 / P7-5)。ja では applyParams の
+// {key} 置換だけが走るので、従来の文字列連結と1バイト同一になる。
+// HTMLエスケープは表示点(_liveRingHtml / _updateNarration)に一本化した
+// (値ごとのescHtmlを残すと、エスケープ済み文字列が辞書キーと一致しなくなるため)。
 function _narrateFrame(fr){
   if (!fr) return { text:'', dramatic:false };
   // イベント優先
   if (fr.events && fr.events.length) {
     const ev = fr.events[fr.events.length - 1];
-    if (ev.type === 'hotTag') return { text:'会場が一気に沸いた！ 反撃のタッチだーーっ！', dramatic:true };
+    if (ev.type === 'hotTag') return { text: WM_I18N.t('会場が一気に沸いた！ 反撃のタッチだーーっ！'), dramatic:true };
     if (ev.type === 'doubleTeam') {
       // T1: 技カテゴリに応じて実況文を選択。フィニッシュにつながる場合は別プールから決め台詞。
       const isFinish = !!(fr.winner && fr.events.some(e => e.type === 'doubleTeam'));
       return { text: WM_I18N.t(pickDoubleTeamCommentary(ev.moveCat, isFinish)), dramatic:true };
     }
-    if (ev.type === 'cutinSave') return { text:'パートナーが間一髪で救出！ これがタッグマッチ！', dramatic:true };
-    if (ev.type === 'friendlyFire') return { text:'あーっと！ 味方に当たってしまった！ 痛恨のミス！', dramatic:true };
-    if (ev.type === 'betrayal') return { text:'助けに行かない…！ なんということだ…！', dramatic:true };
+    if (ev.type === 'cutinSave') return { text: WM_I18N.t('パートナーが間一髪で救出！ これがタッグマッチ！'), dramatic:true };
+    if (ev.type === 'friendlyFire') return { text: WM_I18N.t('あーっと！ 味方に当たってしまった！ 痛恨のミス！'), dramatic:true };
+    if (ev.type === 'betrayal') return { text: WM_I18N.t('助けに行かない…！ なんということだ…！'), dramatic:true };
   }
   if (fr.winner) {
     // ピン seq が進行予定なら「決着！」ネタバレを隠し、seq 完了まで「…！？」に差し替え
-    if (S.pinSeqPending) return { text:'…！？', dramatic:true };
-    return { text:'決着！', dramatic:true };
+    if (S.pinSeqPending) return { text: WM_I18N.t('…！？'), dramatic:true };
+    return { text: WM_I18N.t('決着！'), dramatic:true };
   }
   const a = fr.action;
   if (!a) return { text: (fr.logLines||[]).join(' '), dramatic:false };
   const atk = byId(a.attackerId);
   const def = byId(a.defenderId);
-  if (!atk || !def) return { text: escHtml(_mvFull(a.move)||''), dramatic:false };
-  if (a.kind === 'miss') return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(_mvFull(a.move))} → かわされた！`, dramatic:false };
-  if (a.kind === 'counter') return { text: `${escHtml(WM_I18N.pn(atk.name))}がカウンター！ ${escHtml(_mvFull(a.move))} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic:true };
+  if (!atk || !def) return { text: _mvFull(a.move)||'', dramatic:false };
+  if (a.kind === 'miss') return { text: WM_I18N.t('{atk}の{move} → かわされた！', { atk: atk.name, move: a.move || '' }), dramatic:false };
+  if (a.kind === 'counter') return { text: WM_I18N.t('{atk}がカウンター！ {move} → {def}に{n}ダメージ', { atk: atk.name, move: a.move || '', def: def.name, n: a.dmg }), dramatic:true };
   const drama = a.isCrit;
-  return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(_mvFull(a.move))} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic: drama };
+  return { text: WM_I18N.t('{atk}の{move} → {def}に{n}ダメージ', { atk: atk.name, move: a.move || '', def: def.name, n: a.dmg }), dramatic: drama };
 }
 
 function _controlsHtml(){
@@ -591,7 +634,7 @@ function _updateCenter(fr){
   const nar = _narrateFrame(fr);
   const narEl = document.getElementById('moveNarration');
   if (narEl) {
-    narEl.innerHTML = `<span>${nar.text}</span>`;
+    narEl.innerHTML = `<span>${escHtml(nar.text)}</span>`;
     narEl.className = `move-narration wm-tag-commentary${nar.dramatic?' dramatic':''}`;
   }
   const mn = document.getElementById('moveName');
@@ -868,11 +911,12 @@ function _spawnAttackArrow(action){
     const origAtkSide = origAtkKey && (origAtkKey === 'a1' || origAtkKey === 'a2') ? 'a' : 'b';
     const stage1Dir = origAtkSide === 'a' ? 'ltr' : 'rtl';
     const stage2Dir = stage1Dir === 'ltr' ? 'rtl' : 'ltr';
-    _renderArrow(layer, stage1Dir, _mvDisp(action.origMove) || '攻撃', false, false);
-    setTimeout(() => _renderArrow(layer, stage2Dir, 'カウンター！ ' + (_mvDisp(action.move) || ''), true, false), 1000);
+    // P7-9: 接頭の地の文もt()経由。技名は既に表示用へ変換済みの値をパラメータで渡す。
+    _renderArrow(layer, stage1Dir, _mvDisp(action.origMove) || WM_I18N.t('攻撃'), false, false);
+    setTimeout(() => _renderArrow(layer, stage2Dir, WM_I18N.t('カウンター！ {move}', { move: _mvDisp(action.move) || '' }), true, false), 1000);
   } else {
     const dir = atkSide === 'a' ? 'ltr' : 'rtl';
-    _renderArrow(layer, dir, _mvDisp(action.move) || '攻撃', false, isMiss);
+    _renderArrow(layer, dir, _mvDisp(action.move) || WM_I18N.t('攻撃'), false, isMiss);
   }
 }
 
@@ -1109,20 +1153,19 @@ function _buildPinCtrl(pinEv, fr){
   const defKey2 = fr.action ? keyById(fr.action.defenderId) : null;
   const atkChar = atkKey2 ? f(atkKey2) : null;
   const defChar = defKey2 ? f(defKey2) : null;
-  const moveName = _mvFull((fr.action && fr.action.move) || '');
+  const moveName = (fr.action && fr.action.move) || '';
   // シングル battle-engine.html の showFinishClickBtn ラベルに完全準拠
   // 結末ネタバレ防止: 全 attemptType で結末を示唆しない汎用文に統一
-  const FINISH_LABELS = { 'fall': '…！？', 'pin': '…！？', 'gu': '…！？', 'rollup': '…！？', 'tko': '…！？' };
+  // i18n P7-9: seq のテキストは push 時点で t() を通す(既存の damage ステップと同じ作法)。
+  // 観戦iframeは試合ごとに開き直すので、試合中に言語が変わることはない。
+  const finishLabel = WM_I18N.t('…！？');
+  const FINISH_LABELS = { 'fall': finishLabel, 'pin': finishLabel, 'gu': finishLabel, 'rollup': finishLabel, 'tko': finishLabel };
   // D4: カウント前導入ナレーション (attemptType 別の短文。moveNarration に出してサスペンスを作る)
-  const INTRO_NARRATIONS = {
-    fall: ['フォールに入った！ ここで決まるのか！？', '押さえ込んだーっ！ スリーカウントなるか！？', 'カバー！ これで決着か！？'],
-    pin: ['押さえ込んだーっ！ これで決まるのか！？', '強引にフォールへ！ 返せるのか！？', 'カバーに入った！ 決着か！？'],
-    tko: ['もう立ち上がれない…！ レフェリーが試合を見ている！', '意識が飛んでいる…！ TKOか！？', 'これ以上は危険だ！ ストップがかかるか！？'],
-  };
+  // プールはトップレベルの PIN_INTRO_TEXTS へ移設済み(specs §10-2)。
   const _pickIntro = (type) => {
-    const arr = INTRO_NARRATIONS[type];
+    const arr = PIN_INTRO_TEXTS[type];
     if (!arr) return null;
-    return arr[Math.floor(Math.random() * arr.length)];
+    return WM_I18N.t(arr[Math.floor(Math.random() * arr.length)]);
   };
 
   // attemptType 別にカウント/専用テキストを構築 (シングル battle-engine.html 準拠)
@@ -1132,18 +1175,20 @@ function _buildPinCtrl(pinEv, fr){
     const introT = _pickIntro('tko');
     if (introT) seq.push({ kind: 'introBig', text: introT, dramatic: true });
     seq.push({ kind: 'finishClick', label: FINISH_LABELS.tko });
-    seq.push({ kind: 'count', text: 'TKO！！', cls: 'tko' });
+    seq.push({ kind: 'count', text: WM_I18N.t('TKO！！'), cls: 'tko' });
   } else if (attemptType === 'gu') {
     // ギブアップ: ロック → (win のみ) 極まり → finishClick → タップ/エスケープ
     if (defChar) {
-      const lockText = atkChar ? `${WM_I18N.pn(atkChar.name)}が${WM_I18N.pn(defChar.name)}に${moveName}をがっちりロック！` : `${WM_I18N.pn(defChar.name)}に${moveName}が極まった！`;
+      const lockText = atkChar
+        ? WM_I18N.t('{atk}が{def}に{move}をがっちりロック！', { atk: atkChar.name, def: defChar.name, move: moveName })
+        : WM_I18N.t('{def}に{move}が極まった！', { def: defChar.name, move: moveName });
       seq.push({ kind: 'introBig', text: lockText, dramatic: true });
       if (outcome === 'win') {
         seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
-        seq.push({ kind: 'count', text: `${WM_I18N.pn(defChar.name)}がタップ！！`, cls: 'tap' });
+        seq.push({ kind: 'count', text: WM_I18N.t('{def}がタップ！！', { def: defChar.name }), cls: 'tap' });
       } else if (outcome === 'escape') {
         seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
-        seq.push({ kind: 'count', text: 'ロープ！ ロープブレイクーーっ！！', cls: 'escape' });
+        seq.push({ kind: 'count', text: WM_I18N.t('ロープ！ ロープブレイクーーっ！！'), cls: 'escape' });
       }
     }
   } else if (attemptType === 'rollup') {
@@ -1154,16 +1199,18 @@ function _buildPinCtrl(pinEv, fr){
     const objChar = objKey ? f(objKey) : null;
     const subjSide = (subjKey === 'a1' || subjKey === 'a2') ? 'a' : 'b';
     const objSide = subjSide === 'a' ? 'b' : 'a';
-    const statusText = subjChar ? `${WM_I18N.pn(subjChar.name)}が押さえ込んでいる！` : '押さえ込んでいる！';
+    const statusText = subjChar
+      ? WM_I18N.t('{subj}が押さえ込んでいる！', { subj: subjChar.name })
+      : WM_I18N.t('押さえ込んでいる！');
 
     if (subjChar && objChar) {
-      seq.push({ kind: 'introBig', text: `${WM_I18N.pn(subjChar.name)}が${WM_I18N.pn(objChar.name)}を丸め込んだ！`, dramatic: true, rollupHighlight: { subjSide, objSide } });
+      seq.push({ kind: 'introBig', text: WM_I18N.t('{subj}が{obj}を丸め込んだ！', { subj: subjChar.name, obj: objChar.name }), dramatic: true, rollupHighlight: { subjSide, objSide } });
     }
-    if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '', rollupStatus: statusText });
-    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: 'two', rollupStatus: statusText });
+    if (count >= 1) seq.push({ kind: 'count', text: WM_I18N.t('ワン！'), cls: '', rollupStatus: statusText });
+    if (count >= 2) seq.push({ kind: 'count', text: WM_I18N.t('ツー！'), cls: 'two', rollupStatus: statusText });
     seq.push({ kind: 'finishClick', label: FINISH_LABELS.rollup });
     if (outcome === 'win') {
-      seq.push({ kind: 'count', text: '3ーーーっ！！', cls: 'three', rollupStatus: statusText });
+      seq.push({ kind: 'count', text: WM_I18N.t('3ーーーっ！！'), cls: 'three', rollupStatus: statusText });
     } else if (outcome === 'cutinSave') {
       const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
       if (cutinEv) {
@@ -1179,13 +1226,13 @@ function _buildPinCtrl(pinEv, fr){
     // fall / pin: 導入ナレーション → ワン/ツー → finishClick → スリー/返した/cutin
     const introF = _pickIntro(attemptType === 'pin' ? 'pin' : 'fall');
     if (introF) seq.push({ kind: 'introBig', text: introF, dramatic: true });
-    if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '' });
-    if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: 'two' });
+    if (count >= 1) seq.push({ kind: 'count', text: WM_I18N.t('ワン！'), cls: '' });
+    if (count >= 2) seq.push({ kind: 'count', text: WM_I18N.t('ツー！'), cls: 'two' });
     seq.push({ kind: 'finishClick', label: FINISH_LABELS[attemptType] || FINISH_LABELS.fall });
     if (outcome === 'win' || outcome === 'betrayalWin') {
-      seq.push({ kind: 'count', text: '3ーーーーっ！！！', cls: 'three' });
+      seq.push({ kind: 'count', text: WM_I18N.t('3ーーーーっ！！！'), cls: 'three' });
     } else if (outcome === 'kickout') {
-      seq.push({ kind: 'count', text: '返したーーーーっ！！', cls: 'kickout' });
+      seq.push({ kind: 'count', text: WM_I18N.t('返したーーーーっ！！'), cls: 'kickout' });
     } else if (outcome === 'cutinSave') {
       const cutinEv = fr.events && fr.events.find(e => e.type === 'cutinSave');
       if (cutinEv) {
@@ -1352,7 +1399,7 @@ function _finishPinSeq(){
   if (fr && fr.winner) {
     const narEl = document.getElementById('moveNarration');
     if (narEl) {
-      narEl.textContent = '決着！';
+      narEl.textContent = WM_I18N.t('決着！');
       narEl.className = 'move-narration wm-tag-commentary dramatic';
     }
   }
@@ -1598,8 +1645,10 @@ function showResult(fr){
   // Finish type
   const vicType = document.getElementById('vicType');
   const segments = (result.segments || []).length;
-  // P7-5: 技名だけ名前辞書経由で英語化する(finType/finishPhase の地の文は別バッチの担当)
-  vicType.textContent = `${finType}${finMove ? ' — ' + _mvFull(finMove) : ''}${finishPhase ? ' / ' + finishPhase : ''} / ${result.turns} Turns`;
+  // P7-5: 技名は名前辞書経由。P7-9: finType もロジックキー→表示ラベルの辞書を通す。
+  // finishPhase(Opening/Mid/End/Climax/Timeout)は元から英語なので変換不要
+  // — data.js の PHASES/BIGMATCH_PHASES の name がそのまま流れてくる。
+  vicType.textContent = `${_finTypeLabel(finType)}${finMove ? ' — ' + _mvFull(finMove) : ''}${finishPhase ? ' / ' + finishPhase : ''} / ${result.turns} Turns`;
 
   // 決着画面は勝者中心。決め手となった選手のコメントと実況だけを表示する。
   // pinnedBy = 決め技を打った勝者
@@ -1617,9 +1666,11 @@ function showResult(fr){
       // WM_I18N.tを第4引数として渡す(呼び出し後にt()で包み直さない — 包み直すと
       // 置換済みの完成文が辞書キー(未置換の原文)と一致せずfail-openしてしまう)。
       const winLine = WM_I18N.t(pickTagWinLine(winFinisher));
-      // P7-5: _tplTagLine は dict をテンプレにだけ通して {move} の**値**は素通しするので、
-      // 技名は渡す前に名前辞書で引いておく
-      const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, _mvFull(finMove), WM_I18N.t);
+      // P7-9: _tplTagLine が dict(tpl, params) 形になったので、名前も技名も**生JAのまま**
+      // 渡してよい(t()のenブランチが名前辞書→技名辞書の順で値を変換する)。
+      // P7-5で技名だけ先に _mvFull() で訳していた回避はこれで不要になり、
+      // {winner}/{partner} の生JA名(P7-5の発見5)も同時に解決する。
+      const commentary = pickTagWinCommentary(winFinisher.name, winPartner.name, finMove, WM_I18N.t);
       // faceout-audit v0.2: 話者名は吹き出しの外(上のラベル)に出す(mockup-baseline §3。
       // 名前を吹き出し内に書かない)。実況は地の文のまま
       vicLines.innerHTML =

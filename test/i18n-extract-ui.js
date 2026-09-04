@@ -195,6 +195,115 @@ const DATA_TABLES = [
   },
 ];
 
+// ── JS_TABLES モード (Stage B P7-9) ────────────────────────────────────────
+// 観戦iframe(battle-engine-main.js / tag-battle-main.js)の**地の文プール**。
+// これらは `pk(pool)` で選ばれてから表示直前に t() へ渡る「動的キー」なので、
+// WM_I18N.t() の静的第1引数だけを見る extractJsCalls には原理的に載らない。
+// P6-8/P6-10 の LIVE_LINES・EMOTION_TEXTS は kept:true の手追加で凌いだが、
+// P7-1 が確立した方針(「kept扱いではなく走査対象として再現可能にする」)に従い、
+// ソースからトップレベル const の値リテラルだけを切り出して評価する
+// (DATA_TABLES が data.js に対してやっていることの、iframe用JS版)。
+//
+// 制約と前提:
+//  - 対象は**トップレベルの `const NAME = { … }` / `= [ … ]`** だけ(関数内は対象外。
+//    そもそも「関数の中の配列は抽出器から永久に見えない」= specs §10-2 が禁じた形)
+//  - ファイル全体は読み込まない(iframeのJSは document/window 依存の副作用を持つため)。
+//    波かっこ/角かっこの深さカウントで当該リテラルの範囲だけを切り出し、
+//    WM_I18N のスタブだけを与えた孤立スコープで評価する
+//    (MOVE_PRESENTATION の label が `WM_I18N.t('打撃技')` を呼ぶため)
+//  - 深さカウントは文字列・正規表現リテラル内の括弧も数えてしまうが、
+//    対象表の値にそれらは含まれない(2026-09-04に実データで確認)
+const JS_TABLES = [
+  {
+    file: 'battle-engine-main.js',
+    name: 'MOVE_PRESENTATION',
+    // label は WM_I18N.t() の静的リテラルとして既に抽出済み。ここでは guide のみ。
+    extract(table, onEntry) {
+      Object.keys(table).forEach((cat) => {
+        const g = table[cat] && table[cat].guide;
+        if (g) onEntry(g, `MOVE_PRESENTATION.${cat}.guide`);
+      });
+    },
+  },
+  {
+    file: 'battle-engine-main.js',
+    name: 'MOVE_GUIDE_OVERRIDES',
+    extract(table, onEntry) {
+      table.forEach((row, i) => { if (row && row.guide) onEntry(row.guide, `MOVE_GUIDE_OVERRIDES[${i}].guide`); });
+    },
+  },
+  {
+    file: 'battle-engine-main.js',
+    name: 'PIN_INTRO_TEXTS',
+    extract(table, onEntry) {
+      Object.keys(table).forEach((k) => (table[k] || []).forEach((s, i) => { if (s) onEntry(s, `PIN_INTRO_TEXTS.${k}[${i}]`); }));
+    },
+  },
+  {
+    file: 'battle-engine-main.js',
+    name: 'SUB_ATTEMPT_INTRO_TEXTS',
+    extract(table, onEntry) {
+      table.forEach((s, i) => { if (s) onEntry(s, `SUB_ATTEMPT_INTRO_TEXTS[${i}]`); });
+    },
+  },
+  {
+    file: 'tag-battle-main.js',
+    name: 'TAG_MOVE_PRESENTATION',
+    extract(table, onEntry) {
+      Object.keys(table).forEach((cat) => {
+        const g = table[cat] && table[cat].guide;
+        if (g) onEntry(g, `TAG_MOVE_PRESENTATION.${cat}.guide`);
+      });
+    },
+  },
+  {
+    file: 'tag-battle-main.js',
+    name: 'MOVE_GUIDE_OVERRIDES',
+    extract(table, onEntry) {
+      table.forEach((row, i) => { if (row && row.guide) onEntry(row.guide, `MOVE_GUIDE_OVERRIDES[${i}].guide`); });
+    },
+  },
+  {
+    file: 'tag-battle-main.js',
+    name: 'PIN_INTRO_TEXTS',
+    extract(table, onEntry) {
+      Object.keys(table).forEach((k) => (table[k] || []).forEach((s, i) => { if (s) onEntry(s, `PIN_INTRO_TEXTS.${k}[${i}]`); }));
+    },
+  },
+];
+
+// `const NAME = { … }` / `const NAME = [ … ]` の右辺リテラルだけを切り出して評価する。
+// test/i18n-extract-templates.js の extractAppObjectLiteral / extractArrayLiteralProp と
+// 同じ考え方(あちらは `prop: {…}` 形、こちらはトップレベル const 宣言形)。
+function extractTopLevelConstLiteral(src, name, warnings, filename) {
+  const marker = new RegExp('^const\\s+' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\s*=\\s*([{[])', 'm');
+  const m = marker.exec(src);
+  if (!m) return null;
+  const open = m[1];
+  const close = open === '{' ? '}' : ']';
+  const openIdx = src.indexOf(open, m.index);
+  let depth = 0;
+  for (let i = openIdx; i < src.length; i++) {
+    const ch = src[i];
+    if (ch === open) depth++;
+    else if (ch === close) {
+      depth--;
+      if (depth === 0) {
+        const literalSrc = src.slice(openIdx, i + 1);
+        try {
+          // eslint-disable-next-line no-new-func
+          return new Function('WM_I18N', 'return (' + literalSrc + ');')({ t: (s) => s });
+        } catch (e) {
+          warnings.push(`JS_TABLES: ${filename} の ${name} を評価できませんでした: ${e.message}`);
+          return null;
+        }
+      }
+    }
+  }
+  warnings.push(`JS_TABLES: ${filename} の ${name} の閉じ括弧が見つかりません(構造変化の可能性)`);
+  return null;
+}
+
 const PLACEHOLDER_RE = /\{[A-Za-z_][A-Za-z0-9_]*\}/g;
 
 // ── 固有名詞リスト(data.js 由来 + 明示リテラル) ─────────────────────────────────
@@ -472,6 +581,16 @@ function main() {
     entry.count++;
   }
 
+  // JS_TABLES モード(Stage B P7-9): 観戦iframeのJSから拾った表。files にはソース
+  // ファイル名を、source には `ファイル名:テーブル内パス` を記録する。
+  function recordJsTable(text, filename, tablePath) {
+    if (typeof text !== 'string' || !text) return;
+    const entry = getOrCreateEntry(text);
+    entry.filesSet.add(filename);
+    entry.sourceSet.add(`${filename}:${tablePath}`);
+    entry.count++;
+  }
+
   const perFileStats = [];
 
   JS_FILES.forEach((filename) => {
@@ -507,6 +626,32 @@ function main() {
     let extracted = 0;
     extract(table, (text, tablePath) => { recordTable(text, name, tablePath); extracted++; });
     perTableStats.push({ table: name, extracted });
+  });
+
+  // ── JS_TABLES モード(Stage B P7-9) ──
+  // 観戦iframeのJSソースからトップレベル const の値リテラルだけを切り出して評価する。
+  const jsSrcCache = new Map();
+  const perJsTableStats = [];
+  JS_TABLES.forEach(({ file, name, extract }) => {
+    if (!jsSrcCache.has(file)) {
+      const p = path.join(SRC_DIR, file);
+      jsSrcCache.set(file, fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : null);
+    }
+    const src = jsSrcCache.get(file);
+    if (src == null) {
+      warnings.push(`JS_TABLES: ${file} が存在しない(スキップ)`);
+      perJsTableStats.push({ table: `${file}:${name}`, extracted: 0, missing: true });
+      return;
+    }
+    const table = extractTopLevelConstLiteral(src, name, warnings, file);
+    if (table == null) {
+      warnings.push(`JS_TABLES: ${file} の "${name}" が見つかりません(スキップ)`);
+      perJsTableStats.push({ table: `${file}:${name}`, extracted: 0, missing: true });
+      return;
+    }
+    let extracted = 0;
+    extract(table, (text, tablePath) => { recordJsTable(text, file, tablePath); extracted++; });
+    perJsTableStats.push({ table: `${file}:${name}`, extracted });
   });
 
   // ── 保全マージ(2026-09-04) ──
@@ -572,6 +717,8 @@ function main() {
   perFileStats.forEach((s) => console.log(`  ${s.file.padEnd(24)} ${String(s.extracted).padStart(6)}`));
   console.log('[i18n-extract-ui] DATA_TABLES別抽出件数(Stage B P7-1):');
   perTableStats.forEach((s) => console.log(`  ${s.table.padEnd(24)} ${String(s.extracted).padStart(6)}${s.missing ? '  (テーブル未検出)' : ''}`));
+  console.log('[i18n-extract-ui] JS_TABLES別抽出件数(Stage B P7-9・観戦iframeの地の文プール):');
+  perJsTableStats.forEach((s) => console.log(`  ${s.table.padEnd(44)} ${String(s.extracted).padStart(6)}${s.missing ? '  (テーブル未検出)' : ''}`));
   console.log(`[i18n-extract-ui] 固有名詞リスト件数=${properNouns.length}`);
 
   if (warnings.length) {

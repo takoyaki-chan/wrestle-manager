@@ -458,6 +458,9 @@ body{
 .wm-live-ring .wm-commentary{position:absolute;z-index:13;right:auto;bottom:13px;left:50%;width:min(calc(100% - 82px),1080px);min-height:0;padding:12px 25px 17px;overflow:hidden;border:0;border-top:1px solid var(--gold-dim);border-radius:0;background:linear-gradient(90deg,rgba(0,0,0,.88),var(--card-bg) 50%,rgba(0,0,0,.88));box-shadow:0 12px 28px rgba(0,0,0,.55),inset 0 1px rgba(255,255,255,.04);text-align:center;clip-path:polygon(18px 0,calc(100% - 18px) 0,100% 18px,100% calc(100% - 9px),calc(50% + 15px) calc(100% - 9px),50% 100%,calc(50% - 15px) calc(100% - 9px),0 calc(100% - 9px),0 18px);transform:translateX(-50%)}
 .wm-live-ring .wm-commentary::before{position:absolute;top:0;right:9%;left:9%;height:2px;background:linear-gradient(90deg,transparent,var(--gold),var(--gold-light),var(--gold),transparent);content:''}
 .wm-live-ring .wm-commentary::after{position:absolute;top:3px;left:50%;padding:0 8px;color:var(--gold);background:var(--card-bg);content:'実況';font-family:'Oswald','Noto Sans JP',sans-serif;font-size:8px;font-weight:700;letter-spacing:2px;line-height:10px;transform:translateX(-50%)}
+/* i18n P7-9: 実況ストリップの見出しはCSSの擬似要素なのでt()を通せない。§12(P6-11)の
+   html[lang="en"]分岐で言語別に出し分ける(JA側のセレクタには一切触れない=1バイト不変)。 */
+html[lang="en"] .wm-live-ring .wm-commentary::after{content:'COMMENTARY'}
 .wm-commentary-label{height:5px;visibility:hidden}
 .wm-live-ring .wm-commentary .nar-line,.wm-live-ring .wm-commentary .nar-line.nar-main{margin:4px 0 0;color:var(--text-main);font-size:clamp(17px,1.5vw,22px);font-weight:900;line-height:1.4;text-align:center;text-shadow:0 2px 5px var(--bg-dark)}.wm-live-ring .wm-commentary .nar-line.dramatic{color:var(--gold-light)}.wm-live-ring .wm-commentary .nar-empty{padding:4px 0 0;font-size:14px}
 
@@ -494,6 +497,11 @@ body{
 <script src="lang-en.js"></script>
 <!-- 名前辞書PN_EN(Stage B P6-1)。test/i18n-build-names.jsが生成。addNamesはdict(通常UI辞書)とは別領域 -->
 <script src="lang-en-names.js"></script>
+<!-- EN辞書・テンプレ層(Stage B P4-2)。test/i18n-build-template-dict.jsが生成。
+     P7-9で追加: 決着文テンプレ(`{move} → 3カウント`等)はこちらにしか無いため、
+     読み込まないと _localFormatFinish が必ずfail-openしてJAのまま出る(P7-5の発見1)。
+     index.htmlと同じ順序(lang-en-names.jsの直後)に置く。 -->
+<script src="lang-en-templates.js"></script>
 <!-- EN辞書・セリフ層(Stage B P5-1)。test/i18n-build-dialogue-dict.jsが生成。addDictは既存辞書へマージするため読み込み順は問わない -->
 <script src="lang-en-dialogue.js"></script>
 <script>

@@ -220,6 +220,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "-{n} ダメージ",
+    "en": "-{n} damage",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "-{v}万",
     "en": "-¥{v:man}",
     "files": [
@@ -508,6 +518,28 @@
       "ui-render.js"
     ],
     "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "3ーーーっ！！",
+    "en": "Threeee!!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "3ーーーーっ！！！",
+    "en": "Threeeee!!!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -1194,6 +1226,17 @@
     "hasProperNoun": true
   },
   {
+    "key": "HP判定",
+    "en": "Decision",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "JSONファイルを選択するとすぐにロードされます",
     "en": "Selecting a JSON file loads it straight away",
     "files": [
@@ -1740,6 +1783,28 @@
     ]
   },
   {
+    "key": "TKO",
+    "en": "TKO",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "TKO！！",
+    "en": "TKO!!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "TOP3平均OVRが100で100点 (上限100)",
     "en": "An average OVR of 100 across your top 3 scores 100 (capped at 100)",
     "files": [
@@ -1897,9 +1962,10 @@
     "key": "{age}歳",
     "en": "Age {age}",
     "files": [
+      "battle-engine-main.js",
       "ui-render.js"
     ],
-    "count": 9,
+    "count": 10,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -1976,6 +2042,87 @@
     "en": "{alloc}. Team entry runs next week (Week {w}).",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}が{def}に{move}をがっちりロック！",
+    "en": "{atk} has {def} locked up tight in {move}!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}が{move}！ {def}の体勢を崩していく。",
+    "en": "{atk} hits {move}! {def}'s posture is coming apart.",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}がカウンター！ {move} → {def}に{n}ダメージ",
+    "en": "{atk} counters! {move} → {n} damage to {def}",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}が待っていた！ {def}の攻めを読み、{move}で切り返す！",
+    "en": "{atk} was waiting for it! She reads {def}'s attack and turns it around with {move}!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}の{move} → {def}に{n}ダメージ",
+    "en": "{atk}'s {move} → {n} damage to {def}",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}の{move} → かわされた！",
+    "en": "{atk}'s {move} → dodged!",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}の{move}が深く入った！ {def}を大きく揺らす！",
+    "en": "{atk}'s {move} lands deep! It shakes {def} badly!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{atk}の{move}は空を切る！ {def}が間合いを外した。",
+    "en": "{atk}'s {move} cuts through empty air! {def} took herself out of range.",
+    "files": [
+      "battle-engine-main.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2365,6 +2512,37 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{def}がタップ！！",
+    "en": "{def} taps!!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{def}が振りほどいた！！",
+    "en": "{def} shakes free!!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{def}に{move}が極まった！",
+    "en": "The {move} is locked in on {def}!",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "{delta}(解消)",
@@ -2779,6 +2957,16 @@
     "hasPlaceholder": true,
     "hasProperNoun": false,
     "note": "ui-common.js:showCard結果パネルのmonthLabel(未配線でt()を一度も通していなかった配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "{move} ({type})",
+    "en": "{move} ({type})",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "{n1}と{n2}——\nリング上で何度も火花を散らしたふたりの間に、\n特別な空気が漂い始めている。\nこの因縁、どう活かしていくか——",
@@ -5168,6 +5356,28 @@
     "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
   },
   {
+    "key": "{subj}が{obj}を丸め込んだ！",
+    "en": "{subj} rolls {obj} up!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{subj}が押さえ込んでいる！",
+    "en": "{subj} has her held down!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{surname}はこの世代の主役だった。",
     "en": "{surname} was the face of this generation.",
     "files": [
@@ -6094,6 +6304,17 @@
       "tag-battle-main.js"
     ],
     "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "…！？",
+    "en": "…?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 8,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -8337,6 +8558,16 @@
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
+    "key": "あーっと！ 味方に当たってしまった！ 痛恨のミス！",
+    "en": "Oh no! She caught her own partner! A costly mistake!",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "いいえ",
     "en": "No",
     "files": [
@@ -9424,6 +9655,21 @@
     "hasProperNoun": false
   },
   {
+    "key": "これ以上は危険だ！ ストップがかかるか！？",
+    "en": "Any more is dangerous! Are they going to stop it?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.tko[2]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.tko[2]"
+    ]
+  },
+  {
     "key": "ごめんなさいね、あの子は無理。生理的に",
     "en": "Sorry, but that one I can't do. Something in me refuses.",
     "files": [
@@ -10409,6 +10655,21 @@
     ]
   },
   {
+    "key": "もう立ち上がれない…！ レフェリーが試合を見ている！",
+    "en": "She can't get back up…! The referee is watching this closely!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.tko[0]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.tko[0]"
+    ]
+  },
+  {
     "key": "やっぱりやめる",
     "en": "Never Mind",
     "files": [
@@ -10955,6 +11216,17 @@
     ]
   },
   {
+    "key": "カウンター！ {move}",
+    "en": "Counter! {move}",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "カットイン！",
     "en": "Cut-in!",
     "files": [
@@ -10963,6 +11235,36 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "カバーに入った！ 決着か！？",
+    "en": "Into the cover! Is this the finish?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.pin[2]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.pin[2]"
+    ]
+  },
+  {
+    "key": "カバー！ これで決着か！？",
+    "en": "A cover! Is that the match?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.fall[2]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.fall[2]"
+    ]
   },
   {
     "key": "カメラ",
@@ -11085,6 +11387,17 @@
     "files": [
       "app.js",
       "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ギブアップ",
+    "en": "Submission",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
     ],
     "count": 2,
     "hasPlaceholder": false,
@@ -11678,6 +11991,26 @@
     "files": [
       "battle-engine-main.js",
       "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ゴング！ 「次の攻防」で試合を進めてください",
+    "en": "The bell! Use \"Next Exchange\" to move the match along.",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ゴング！　「次の攻防」で試合を進めてください",
+    "en": "The bell! Use \"Next Exchange\" to move the match along.",
+    "files": [
+      "battle-engine-main.js"
     ],
     "count": 2,
     "hasPlaceholder": false,
@@ -12890,6 +13223,17 @@
     ]
   },
   {
+    "key": "ツー！",
+    "en": "Two!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 4,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "テクニシャン",
     "en": "Technician",
     "files": [
@@ -13275,6 +13619,44 @@
     ]
   },
   {
+    "key": "パンチやキックなどで相手の姿勢を崩し、次の攻めにつなげる。",
+    "en": "Punches and kicks that break the opponent's posture and set up the next attack.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_PRESENTATION.strike.guide",
+      "tag-battle-main.js:TAG_MOVE_PRESENTATION.strike.guide"
+    ]
+  },
+  {
+    "key": "パートナーが間一髪で救出！ これがタッグマッチ！",
+    "en": "The partner breaks it up with no time to spare! This is what tag wrestling is!",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "パートナーと呼吸を合わせ、二人の動きを一つの攻撃へつなげる。",
+    "en": "Times it with her partner so that two sets of movement become one attack.",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "tag-battle-main.js:TAG_MOVE_PRESENTATION.tag.guide"
+    ]
+  },
+  {
     "key": "ヒート +{n}",
     "en": "Heat +{n}",
     "files": [
@@ -13342,6 +13724,17 @@
     "source": [
       "TRAIT_DEFS.ヒール適性.$key"
     ]
+  },
+  {
+    "key": "ピン",
+    "en": "Pin",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "ピーク",
@@ -13522,6 +13915,32 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "フォール",
+    "en": "Pinfall",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "フォールに入った！ ここで決まるのか！？",
+    "en": "She's into the cover! Can she finish it here?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.fall[0]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.fall[0]"
+    ]
   },
   {
     "key": "フライヤー",
@@ -15323,6 +15742,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "ロープ！ ロープブレイクーーっ！！",
+    "en": "The ropes! Rope break!!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ワンチャンス・クイーン",
     "en": "One-Chance Queen",
     "files": [
@@ -15333,6 +15763,17 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "ワン！",
+    "en": "One!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 4,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "・タイトルマッチはそれ自体が興行の看板になる",
@@ -15509,6 +15950,21 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。",
+    "en": "Uses a split-second change of position to hold the shoulders down and go for the three count.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_PRESENTATION.rollup.guide",
+      "tag-battle-main.js:TAG_MOVE_PRESENTATION.rollup.guide"
+    ]
   },
   {
     "key": "一緒にいてくれると、不思議と心が落ち着くのよね",
@@ -16230,6 +16686,21 @@
     "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
   },
   {
+    "key": "両足を突き出して相手を蹴り、勢いと間合いで体勢を崩す打撃。",
+    "en": "A strike that thrusts both feet into the opponent, breaking her posture with momentum and distance.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[0].guide",
+      "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[0].guide"
+    ]
+  },
+  {
     "key": "両選手の人気",
     "en": "Popularity of both wrestlers",
     "files": [
@@ -16491,7 +16962,7 @@
       "battle-engine-main.js",
       "tag-battle-main.js"
     ],
-    "count": 2,
+    "count": 4,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -18166,6 +18637,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "会場が一気に沸いた！ 反撃のタッチだーーっ！",
+    "en": "The building erupts! That's the tag, and here comes the comeback!",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "会場の熱",
     "en": "Venue heat",
     "files": [
@@ -18538,6 +19019,21 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
+    "key": "倒れた相手へ追撃し、起き上がる余裕と体力を奪う。",
+    "en": "Follows up on a downed opponent, taking away her stamina and her room to get up.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_PRESENTATION.ground.guide",
+      "tag-battle-main.js:TAG_MOVE_PRESENTATION.ground.guide"
+    ]
   },
   {
     "key": "倒産",
@@ -19916,6 +20412,16 @@
       "ui-render.js"
     ],
     "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "助けに行かない…！ なんということだ…！",
+    "en": "She isn't going in to help…! I can't believe what I'm seeing…!",
+    "files": [
+      "tag-battle-main.js"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -24764,6 +25270,21 @@
     "hasProperNoun": false
   },
   {
+    "key": "強引にフォールへ！ 返せるのか！？",
+    "en": "Forcing her way into a cover! Can she kick out?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.pin[1]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.pin[1]"
+    ]
+  },
+  {
     "key": "強気で押す",
     "en": "Push Hard",
     "files": [
@@ -25146,6 +25667,21 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "意識が飛んでいる…！ TKOか！？",
+    "en": "She's out on her feet…! Is this a TKO?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.tko[1]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.tko[1]"
+    ]
   },
   {
     "key": "意識し合う相手",
@@ -25854,6 +26390,47 @@
     "hasProperNoun": false
   },
   {
+    "key": "押さえ込んだーっ！ これで決まるのか！？",
+    "en": "She's got her held down! Is this it?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.pin[0]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.pin[0]"
+    ]
+  },
+  {
+    "key": "押さえ込んだーっ！ スリーカウントなるか！？",
+    "en": "She's got her held down! Will it go to three?!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:PIN_INTRO_TEXTS.fall[1]",
+      "tag-battle-main.js:PIN_INTRO_TEXTS.fall[1]"
+    ]
+  },
+  {
+    "key": "押さえ込んでいる！",
+    "en": "She has her held down!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "押し寄せる大盛況",
     "en": "Crowd surging in, big turnout",
     "files": [
@@ -26395,6 +26972,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "振りほどいた！！",
+    "en": "She shakes free!!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "据え置く",
     "en": "Leave It As Is",
     "files": [
@@ -26641,6 +27228,17 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "_F01_ARCHETYPE_META(派閥承認画面)のデータ表。t()に変数で渡るため走査外"
+  },
+  {
+    "key": "攻撃",
+    "en": "Attack",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 4,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。",
@@ -29720,9 +30318,10 @@
     "key": "決着",
     "en": "Settled",
     "files": [
+      "battle-engine-main.js",
       "ui-render.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -29829,6 +30428,17 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決着！",
+    "en": "It's over!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 5,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -32403,6 +33013,51 @@
     "hasProperNoun": false
   },
   {
+    "key": "相手の重心を奪い、持ち上げるか回転させてマットへ叩きつける。",
+    "en": "Takes the opponent's balance, then lifts or spins her and drives her into the mat.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_PRESENTATION.throw.guide",
+      "tag-battle-main.js:TAG_MOVE_PRESENTATION.throw.guide"
+    ]
+  },
+  {
+    "key": "相手を抱えて反らすように投げ、背中からマットへ落とす投げ技。",
+    "en": "A throw that hoists the opponent and arches back, dropping her onto the mat back-first.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[3].guide",
+      "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[3].guide"
+    ]
+  },
+  {
+    "key": "相手を抱え上げるか頭部を制し、落差を使ってマットへ叩きつける投げ技。",
+    "en": "A throw that lifts the opponent or controls her head, using the drop to drive her into the mat.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[4].guide",
+      "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[4].guide"
+    ]
+  },
+  {
     "key": "相手団体",
     "en": "Opposing Promotion",
     "files": [
@@ -34011,6 +34666,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "絞り上げる！ ギブアップするか！？",
+    "en": "She's wrenching it in! Will she tap?!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:SUB_ATTEMPT_INTRO_TEXTS[1]"
+    ]
+  },
+  {
     "key": "給与",
     "en": "Salary",
     "files": [
@@ -34638,6 +35306,36 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "脚の振りや踏み込みを使い、相手の上半身や足元を狙う打撃。",
+    "en": "A strike that uses the swing of the leg and a step in to target the upper body or the legs.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[1].guide",
+      "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[1].guide"
+    ]
+  },
+  {
+    "key": "腕や頭部を直接ぶつけ、相手の動きと姿勢を止める打撃。",
+    "en": "A strike that drives an arm or the head straight in to stop her movement and her posture.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[2].guide",
+      "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[2].guide"
+    ]
   },
   {
     "key": "自",
@@ -36859,6 +37557,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "跳躍や落下の勢いに体重を乗せ、一気に大きな衝撃を与える。",
+    "en": "Puts full body weight behind the leap and the fall to land one large impact.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_PRESENTATION.aerial.guide",
+      "tag-battle-main.js:TAG_MOVE_PRESENTATION.aerial.guide"
+    ]
+  },
+  {
+    "key": "身体の一部を固定して逃げ道を狭め、ギブアップを迫る技。",
+    "en": "A hold that pins down one part of the body, closing off the escape and forcing a submission.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[5].guide",
+      "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[5].guide"
+    ]
+  },
+  {
     "key": "身長 {h}cm",
     "en": "Height {h}cm",
     "files": [
@@ -36976,6 +37704,27 @@
       "ui-common.js"
     ],
     "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "返したーーっ！",
+    "en": "Kickout!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "返したーーーーっ！！",
+    "en": "Kickout!!",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -37106,6 +37855,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "逃げられるか！？ 極め技に捕らえた！",
+    "en": "Can she get out of it?! She's caught in the hold!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:SUB_ATTEMPT_INTRO_TEXTS[2]"
+    ]
   },
   {
     "key": "逆転劇の主役になりかけている団体",
@@ -38700,6 +39462,21 @@
     ]
   },
   {
+    "key": "関節や首を捕らえて動きを奪い、ギブアップや消耗を狙う。",
+    "en": "Traps a joint or the neck to take her movement away, going for a submission or for the wear.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_PRESENTATION.submission.guide",
+      "tag-battle-main.js:TAG_MOVE_PRESENTATION.submission.guide"
+    ]
+  },
+  {
     "key": "関節・絞め技",
     "en": "Locks & Chokes",
     "files": [
@@ -38719,6 +39496,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "関節技を決めた！ このまま極めるか！？",
+    "en": "The hold is locked in! Can she keep it on?!",
+    "files": [
+      "battle-engine-main.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:SUB_ATTEMPT_INTRO_TEXTS[0]"
+    ]
   },
   {
     "key": "闘志",
@@ -39517,6 +40307,21 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "高い位置や助走から飛び込み、落下の勢いを全身でぶつける飛び技。",
+    "en": "An aerial move launched from height or from a run, putting the whole body behind the fall.",
+    "files": [
+      "battle-engine-main.js",
+      "tag-battle-main.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "battle-engine-main.js:MOVE_GUIDE_OVERRIDES[6].guide",
+      "tag-battle-main.js:MOVE_GUIDE_OVERRIDES[6].guide"
+    ]
   },
   {
     "key": "高い順",
