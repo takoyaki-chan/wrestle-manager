@@ -1,5 +1,74 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-5 — 技名159+タッグ連携82の英語表記ドラフト(Keisuke裁定用・コード不触)（2026-09-04・worktree agent-a933f262c14059bf8）
+
+指示はP7設計 `docs/i18n-stage-b-p7-design-v0.1.md` §1-D / §4「Keisuke裁定が要るもの」。固有名詞ドラフト `docs/en-proper-nouns-draft-v0.1.md` §9 が「量が多く判断軸が3つに割れるため別ドラフト(次工程)」として切り出していた技名層。開始前にworktreeブランチをmain先端(22e93c0、P7設計まで)へfast-forward済み。
+
+**成果物は `docs/en-move-names-draft-v0.1.md`(607行)の1枚のみ。`src/`・`i18n/`・`test/` は一切触っていない。**
+
+### 1. 対象の実測 — 設計の「160種」は概数だった
+
+| 表 | 場所 | 件数 |
+|---|---|---:|
+| `commonMoves` | data.js:626〜660 | 76 |
+| `styleMoves` | data.js:661〜705 | 83 |
+| 技名 小計 | | **159**(ユニーク名も159) |
+| `STYLE_TAG_MOVES` | data.js:918〜1064 | のべ89エントリ = **ユニーク82** |
+| `getTagMove` フォールバック直書き | data.js:1073 | **1**(表外) |
+| **合計** | | **242** |
+
+- **タッグ連携は「のべ89」ではなく「ユニーク82」**。`ダブル関節技`(3組)・`空中からの合体関節技`/`崩し＆極め連携`/`叩き潰してからの関節技`/`投げからの関節極め`/`打撃で崩して関節技`(各2組)の6文字列が使い回されている。いずれも `STYLE_COMPAT_MATRIX.Technique = STYLE_COMPAT_MATRIX.Submission` の名残で、Technique組がSubmission組と同文。**辞書は文字列キーなので1件訳せば全組に効くが、抽出器が「のべ89」で数えると未訳カウントがズレる**
+- **表外1件の発見**: `getTagMove` に `if (!arr || arr.length === 0) return { n: '合体スラム', d: 16, c: 'throw' };` の直書きフォールバックがある。`STYLE_TAG_MOVES` のテーブルだけを走査する抽出器では**永久に拾えない**。CLAUDE.md/i18n spec §10-2「関数の中に直書きした配列は禁止」と同じ型で、P5で7回踏んだ「書いてあるのに拾えていない」族の8件目
+
+### 2. 裁定設問5問(すべて推奨案+根拠付き)
+
+1. **JAとENでプロレス語が指す技がズレるとき、どちらに合わせるか** → 推奨: **英語の実技名**。該当11件。最重要は**ブレーンバスターの親子逆転** — 綴りをそのまま戻すと d8 の中技が `Brainbuster`、d14 の大技が `Vertical-Drop Brainbuster` になり威力帯と名前が食い違う。推奨は ブレーンバスター=**Vertical Suplex** / 垂直落下式=**Brainbuster**。ほかコブラツイスト=Abdominal Stretch、アームリンガー=**Arm Wringer**(カタカナが arm wringer の訛り)、ヒール・ホールド=**Heel Hook**(「ホールド」は和製)、回転エビ固め=**O'Connor Roll** など。**逆方向の結論も同じ原則から出る** — 延髄斬り=Enzuigiri / 卍固め=Octopus Hold / トペ・スイシーダ=Tope Suicida は「日本語だから音写」ではなく「英語圏での定着名がそれだから」そのまま
+2. **創作技(タッグ82件ほか)は意訳/音写/併記のどれか** → 推奨: **意訳一択**。技名は「何をしたか」の説明であって固有名詞ではない。天頂戦(音写)は**大会の格**を語法の違いで見せる装置だったが、技名にその機能はない。**音写ゼロ**。将来 個人技スロットが実装され「選手の異名と結びついた必殺技」が生まれたら再検討
+3. **（専）（喧）（打）（大）（飛）マーカー15件をどう出すか** → 推奨: **括弧を英語に持ち込まない**。実在の上位版名で置換8件(Missile Dropkick / Backdrop Driver / Dragon Screw Legwhip / Grapevined Ankle Lock / Spike Piledriver / Spike Tombstone / Chokebomb / Running Shining Wizard)+`Deep` 前置5件+衝突回避の別名2件(Top-Rope Splash / Corner Assault)
+4. **技名中の「→」** → 推奨: **`into` に開く**。決着表示が P4英訳済みの `{move} → 3-count` なので、技名にも矢印を残すと **"Whip → Running Kick → 3-count" と二重**になる
+5. **インディアン・デスロック** → 推奨: **`Deathlock`**。英語圏の現行呼称。日本語側は変更しない
+
+### 3. 内訳と機械検査
+
+- **実在技の定着名がそのまま使える 130件**(うちJA/EN呼称ズレ11・カタカナ綴りの復元2) / **創作技・記述名で意訳が要る 112件**(意訳95+衝突回避4+マーカー解決13)
+- **★=個別に見てほしい行 38件**。残り204件は実在名か語彙表どおりの機械的な意訳なので通し読みで足りる
+- **機械検査(生成時に実行)**: (a) `src/data.js` との**名称・威力・カテゴリ全数突合** → commonMoves 76 / styleMoves 83 / STYLE_TAG_MOVES 82 すべて完全一致・訳漏れ0・表外0 (b) **推奨EN名242件が全件ユニーク**であること
+- **英語で衝突しかけた4件は別名で回避済み**: ダイビング・ボディ・プレス と（大）→ Diving Splash / **Top-Rope Splash** ／ ヘッドバット と 頭突き → Headbutt / **Charging Headbutt** ／ ミサイルキック と（飛）→ Missile Kick / **Missile Dropkick** ／ コンビネーション・スラム と 合体スラム → Combination Slam / **Team Slam**
+- **商標・実在レスラー名が近い3件**(Last Ride / Swanton Bomb / Tombstone Piledriver)は英語圏で一般名として流通しているので推奨案では採用し、避けたい場合の対案を併記
+
+### 4. 字幅は「全角8字」ではなく **26字** が物差しだった
+
+表示点4か所(観戦画面の技名シングル/タッグ、ビッグムーブ演出、決着表示・新聞・戦績)を実測。**最も狭い枠は観戦画面の技名詳細カラム** `minmax(230px,1.18fr)`・15px・`overflow:hidden`(内寸約212px)で、**EN約27字が1行**。
+
+**日本語版はこの枠を既に超えている** — 最長「ツームストン・パイルドライバー（喧）」は18全角≒270pxで**既に2行に折れている**。したがって:
+
+- **26字以下なら既存のJAより狭いか同等** → 242件中 **236件**
+- **27字超は6件のみ**。全件に短縮形を用意(最長 `Strike Combo into Finishing Hold` 32字 → `Strike Combo into Hold` 22字)。予防的に24〜26字の13件にも併記し合計19件
+- ビッグムーブ演出(`.bigmove-name` 56px Bebas Neue)は**英語のほうが日本語より狭い**(Bebas Neue は極端な condensed、JAは代替フォントで全角56px)
+- **英語化で新たに折り返しが発生する技は1つもない**
+
+### 5. 実装メモ(次工程で踏む地雷を先に書いた)
+
+**技名を「差し替え」てはいけない。表示時の辞書引きに限ること。** 技名の**日本語文字列そのものを正規表現で判定しているコードが3か所**ある:
+
+| ファイル | 行 | 何をしているか |
+|---|---|---|
+| `src/battle-sfx.js` | 182〜184 | `/スープレックス\|バスター\|スラム\|DDT\|…/` で**効果音の種類**を選ぶ |
+| `src/battle-engine-main.js` | 318〜324 | `_movePresentation` が技名から**解説文**を選ぶ |
+| `src/tag-battle-main.js` | 135〜139 | 同上(タッグ側の複製) |
+
+英語名をエンジンへ流すと**効果音が全部フォールバックに落ち、技の解説文も打撃固定になる**。加えて `finMove` は `sp.results[]` として **Gへ永続**(`app.js:7525` ほか)。→ 規約どおり「表示点で `t()` を1回」、JA名は安定キーとしてGに残す(§13-1「永続値は変えない」)。
+
+配線先も列挙済み: `Engine.formatFinish` は **`{move}` PHがdictを素通し**(テンプレ側だけP4-2でdict化済み。P5で7回踏んだ「PH置換より前にdictを通す」型の穴が残っている)/`_actionMoveName`/`_showBigMoveSplash`(短縮形の使いどころ)/`battle-engine-main.js:1257` の introBig 文/`ui-common.js:13849`・`13995` の `finMove` 直出し2箇所。台帳は `i18n/names-ledger.json` に `moves` 節、`test/i18n-build-names.js` に既存検査1〜3と同型の全数突合(**フォールバック直書き1件を対象に含めること**+EN重複検査)。
+
+### 6. 分類語の対訳表も作った
+
+- **カテゴリ語6件は既訳に揃えた**(`src/lang-en.js` を確認: 打撃技=Strike / 投げ技=Throw / 関節・絞め技=Locks & Chokes / 飛び技=Aerial / グラウンド攻撃=Ground Attack / 丸め込み=Roll-up)。新規に作らない
+- 技帯・配置語(小技/中技/大技/共有技/スタイル技/個人技…)は**現状どこにも表示されない**ので訳案のみ。個人技スロット実装時に使う
+- **修飾語の統一グロス表が242件の意訳の背骨**: 連打=Flurry / 乱打=Barrage / 連携・連係=Combo / シンクロ=**Tandem** / 踏み台式=Step-Up / スラッピング=**High-Five** / ホイップ=Whip / →=into / 崩し=Takedown / 四の字=Figure-Four ほか
+
+**確認してほしいもの**: `docs/en-move-names-draft-v0.1.md` の §0 裁定設問5問(推奨案でよいか)と、§3・§4 の★38行。
+
 ## 🌐 Stage B P6-14 — 殿堂入り語り文のEN化(dict-opts+表示時再生成)+`*_TEMPLATES`全数突合+不定冠詞の機械検査（2026-09-04・worktree agent-ac324efc0ee382fc0）
 
 指示書はspecs/i18n-runtime-spec-v1.0.md §12-5がP6-10で起票した3件のうち、1(`generateBiography`)と2(`*_TEMPLATES`の全数突合)。開始前にworktreeブランチをmain先端(631d1bd、P6-10まで)へfast-forward済み。`src/index.html`のCSS・`ui-render.js`の名前ラベル・`i18n.js`の`pnSurname`は並行エージェントの領分のため不触。
