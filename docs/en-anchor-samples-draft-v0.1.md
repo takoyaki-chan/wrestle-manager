@@ -127,16 +127,16 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 別に。普通に勝っただけ(赤沼) | Nothing special. I just won. | A/B収束(#10・両稿完全同文) |
-| 私の経験値。そんなに舐めないで。(西川) | My experience. Don't take it so lightly. | A/B収束(#11・「そんなに」を落とさない側を採用) |
-| 流れを読んで合わせる。それだけ(柳沼) | Read the flow. Adjust. That's all. | A/B収束(#12・断片が短い側を採用) |
+| 別に。普通に勝っただけ(赤沼) | No big deal. I just won like normal. | ネイティブ検品③で差し替え(自然さ優先。旧: Nothing special. I just won.) |
+| 私の経験値。そんなに舐めないで。(西川) | Don't take my experience so lightly. | ネイティブ検品③で一文に(経験値=experience。ゲーム用語XPにはしない。旧: My experience. Don't take it so lightly.) |
+| 流れを読んで合わせる。それだけ(柳沼) | Read the flow. Adjust. That's it. | ネイティブ検品③(That's all→That's it) |
 
 ### 3-2. クール×寡黙 — 堂前ユキ(Yuki Domae)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| ……（無言で拳を握りしめる） | ... (silently clenches her fist) | バイブル見本(§2-3)/ト書きなので括弧内は地の文の書式に従う |
-| …一撃で決める。それだけ。 | ...One strike ends it. That's all. | A/B判定済(anchors9 #11・採用稿) |
+| ……（無言で拳を握りしめる） | ... *Silently clenches fist* | ネイティブ検品③: 動作のト書きは *…* で囲む(英語圏の慣行。括弧は使わない) |
+| …一撃で決める。それだけ。 | ...One strike ends it. Just like that. | ネイティブ検品③(That's all→Just like that.) |
 | ……次。 | ...Next. | A/B判定済(anchors9 #12・両稿同文) |
 
 ---

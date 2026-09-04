@@ -36887,7 +36887,7 @@
   },
   {
     "key": "……（無言で拳を握りしめる）",
-    "en": "... (silently clenches her fist)",
+    "en": "... *Silently clenches fist*",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -62981,7 +62981,7 @@
   },
   {
     "key": "…一撃で決める。それだけ。",
-    "en": "...One strike ends it. That's all.",
+    "en": "...One strike ends it. Just like that.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -171261,7 +171261,7 @@
   },
   {
     "key": "別に。普通に勝っただけ",
-    "en": "Nothing special. I just won.",
+    "en": "No big deal. I just won like normal.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -199096,7 +199096,7 @@
   },
   {
     "key": "流れを読んで合わせる。それだけ",
-    "en": "Read the flow. Adjust. That's all.",
+    "en": "Read the flow. Adjust. That's it.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -208579,7 +208579,7 @@
   },
   {
     "key": "私の経験値。そんなに舐めないで。",
-    "en": "My experience. Don't take it so lightly.",
+    "en": "Don't take my experience so lightly.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],

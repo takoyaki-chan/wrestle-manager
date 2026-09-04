@@ -123,9 +123,9 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
 
 | JA(堂前ユキ・クール×寡黙) | EN |
 |---|---|
-| …一撃で決める。それだけ。 | ...One strike ends it. That's all. |
+| …一撃で決める。それだけ。 | ...One strike ends it. Just like that. |
 | ……次。 | ...Next. |
-| ……（無言で拳を握りしめる） | ... (silently clenches her fist) |
+| ……（無言で拳を握りしめる） | ... *Silently clenches fist* |
 
 ### 2-4. ヤンキー(delinquent)
 
@@ -224,6 +224,12 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
      - 異名の格: Strong→**Mighty**(品のある強さ)。剛の芝= Shiba the Mighty / 柔の白銀= Shirogane the Supple
      - 「ふふ」= "Hehe..."("My..." への言い換えは不採用)。「あらあら」= "Goodness,"
      - 短い問い返しは短く("...Is that all?"。"Is this all you have?" と膨らませない)
+   - **ネイティブ検品第3弾(2026-09-04・クールブロック6行)からの追加ルール**:
+     - **動作のト書きは *アスタリスク* で囲む**("... *Silently clenches fist*")。括弧は使わない(英語圏のチャット/RP慣行。Discordではイタリック化されるがゲームUIでは文字として出る)。既訳のト書き行は一掃対象
+     - 「経験値」= **experience**(ゲーム用語の XP にしない。西川は比喩で言っている)
+     - 「別に。」= "No big deal." / 「普通に」= "like normal"
+     - クールの断片は三語文の連打で良い("Read the flow. Adjust. That's it.")。締めの「それだけ」は説明の締め= "That's it."、結果の断言= "Just like that."("That's all." は不採用)
+     - 「そんなに舐めないで」型は主語を落とした命令形一文("Don't take my experience so lightly.")
    - はしゃぎの反復・伸ばし表記: "I did iiit!" / "I did it! I really did it!" — 勢いは感嘆符と
      文の短さが背負う。**素直な一回**("I did it!")が正(2026-09-01 Keisuke判定 A/B#17)
 
