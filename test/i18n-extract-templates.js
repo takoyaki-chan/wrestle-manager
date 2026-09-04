@@ -174,6 +174,13 @@ const TARGET_TABLES = [
   // 関数内直書きの移設)と、週次ストーリーイベント(gameLogレガシー文字列)の文面。
   'CHRONICLE_CHAPTER_TEMPLATES',
   'WEEKLY_STORY_EVENT_TEXTS',
+  // P6-18: 序章(G.prologue)の章題/記者の見立て/章末/ハイライト12種と、年代記カードの
+  // 「数値+単位語」(specs §4 が積み残していた族・§21-6-2)。
+  //   PROLOGUE_TEMPLATES   17行 — Engine.prologue が焼くハイライト/章末 + UIの静的文
+  //   CHRONICLE_UNIT_TEXTS 13行 — 期/戴冠/度防衛/勝敗/中黒連結。ENは充填値で単複が
+  //                               変わらない形(規則23/24)。マークアップはテンプレ側に持つ
+  'PROLOGUE_TEMPLATES',
+  'CHRONICLE_UNIT_TEXTS',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ

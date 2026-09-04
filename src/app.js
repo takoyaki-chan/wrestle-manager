@@ -15050,24 +15050,29 @@ const App = {
     const champId = G.titles?.world?.championId;
     const titleEstablished = !!G.titleEstablished;
 
+    // i18n Stage B P6-18: 完成文は組まず**素材(textParts)だけ**を渡す。保存する text は
+    // Engine.prologue.addHighlight が narrativeText(parts)(dict省略=JA)から作るので、
+    // 「保存値とパーツが食い違う」経路が構造的に生じない(specs §15-1 / §21-1)
+    const HL = PROLOGUE_TEMPLATES.highlight;
+    const plain = tpl => [{ t: tpl }];
     const triggers = [];
-    if (totalShows >= 1) triggers.push({ id:'first_show', tier:'gold',
-      text:`旗揚げ戦。最初の興行が開かれ、団体は始動した。` });
-    if (titleEstablished) triggers.push({ id:'first_title_setup', tier:'normal',
-      text:`団体王座の設立が認定された。` });
+    if (totalShows >= 1) triggers.push({ id:'first_show', tier:'gold', textParts: plain(HL.firstShow) });
+    if (titleEstablished) triggers.push({ id:'first_title_setup', tier:'normal', textParts: plain(HL.firstTitleSetup) });
     if (champId) {
       const ch = G.roster.find(c => c.id === champId);
-      const chName = ch?.name || '初代王者';
+      // 実在の選手名は素の値のまま(t()のパラメータ値自動変換=名前辞書に任せる)。
+      // 引けなかったときの既定ラベルだけ1語として辞書を引く(L マーカー・specs §21-2)
       triggers.push({ id:'first_title_winner', tier:'red', characterId: champId,
-        text:`${chName}が初代王者に。最初の頂が決まった。` });
+        textParts: [ch?.name
+          ? { t: HL.firstTitleWinner, v: { name: ch.name } }
+          : { t: HL.firstTitleWinner, v: { name: '初代王者' }, L: ['name'] }] });
     }
-    if (peakMQ >= 50) triggers.push({ id:'first_mq50', tier:'silver', text:`試合評価50到達。観客の目つきが変わり始めた。` });
-    if (peakMQ >= 70) triggers.push({ id:'first_mq70', tier:'silver', text:`試合評価70到達。名勝負と呼ぶに値する試合が出た。` });
-    if (peakMQ >= 80) triggers.push({ id:'first_mq80', tier:'gold', text:`試合評価80到達。この章の選手が業界の壁を叩いた瞬間。` });
-    if (orgPop >= 25) triggers.push({ id:'pop_25', tier:'normal', text:`団体人気25到達。スポンサー筋に動きが出始めた。` });
-    if (orgPop >= 50) triggers.push({ id:'pop_50', tier:'silver', text:`団体人気50到達。大会場での興行が現実的に。` });
-    if (G.survivalCleared) triggers.push({ id:'survival_clear', tier:'red',
-      text:`経営安定化達成。月次黒字が定着し、団体存続の目処が立った。` });
+    if (peakMQ >= 50) triggers.push({ id:'first_mq50', tier:'silver', textParts: plain(HL.mq50) });
+    if (peakMQ >= 70) triggers.push({ id:'first_mq70', tier:'silver', textParts: plain(HL.mq70) });
+    if (peakMQ >= 80) triggers.push({ id:'first_mq80', tier:'gold', textParts: plain(HL.mq80) });
+    if (orgPop >= 25) triggers.push({ id:'pop_25', tier:'normal', textParts: plain(HL.pop25) });
+    if (orgPop >= 50) triggers.push({ id:'pop_50', tier:'silver', textParts: plain(HL.pop50) });
+    if (G.survivalCleared) triggers.push({ id:'survival_clear', tier:'red', textParts: plain(HL.survivalClear) });
 
     // founder の引退検出 (id ベース冪等)
     (G.prologue.founderIds || []).forEach(fid => {
@@ -15078,7 +15083,7 @@ const App = {
       triggers.push({
         id: `founder_first_retire_${fid}`,
         tier: 'red',
-        text: `旗揚げメンバー ${name} が引退。`,
+        textParts: [{ t: HL.founderRetire, v: { name } }],
       });
     });
 

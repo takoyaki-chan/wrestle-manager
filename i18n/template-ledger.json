@@ -530,6 +530,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "<div class=\"chron-rival-record\">{losses}敗</div>",
+    "en": "<div class=\"chron-rival-record\">0-{losses}</div>",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<div class=\"chron-rival-record\">{total}戦</div>",
+    "en": "<div class=\"chron-rival-record\">{total} drawn</div>",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<div class=\"chron-rival-record\">{wins}勝</div>",
+    "en": "<div class=\"chron-rival-record\">{wins}-0</div>",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<div class=\"chron-rival-record\">{wins}勝{losses}敗</div>",
+    "en": "<div class=\"chron-rival-record\">{wins}-{losses}</div>",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "<strong>{name}</strong> MVP {count}度受賞・{streak}年連続（{years}）",
     "en": "<strong>{name}</strong> won MVP {count} times, {streak} years running ({years})",
     "files": [
@@ -1574,6 +1614,26 @@
     "en": "Ring work built around {axis} shifted {org}'s tendencies a little.",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a} ・ {b}",
+    "en": "{a} · {b}",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}<span class=\"chron-overlap-sep\">・</span>{b}",
+    "en": "{a}<span class=\"chron-overlap-sep\">·</span>{b}",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4384,6 +4444,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が初代王者に。最初の頂が決まった。",
+    "en": "{name} became the first champion. The first summit was settled.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が化けている。総合力+{ovrGain}。放っておくと手がつけられなくなる",
     "en": "{name} has turned into a different wrestler. Overall up {ovrGain}. Leave this much longer and nobody will be able to handle her.",
     "files": [
@@ -5238,6 +5308,56 @@
     "en": "{nextChapterTopSurname} had her footing on the reigns {surname} stacked up in this chapter.",
     "files": [
       "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n}<span class=\"small\">度防衛</span>",
+    "en": "{n}<span class=\"small\">def.</span>",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n}<span class=\"small\">度防衛・王座失陥</span>",
+    "en": "{n}<span class=\"small\">def. · title lost</span>",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n}<span class=\"small\">戴冠</span>",
+    "en": "{n}",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n}<span class=\"small\">期</span>",
+    "en": "{n}",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n}度戴冠",
+    "en": "reigns: {n}",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6628,6 +6748,16 @@
     "en": "Infighting brewing at {org} — enemies in one room",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}旗揚げ。最初の5人が揃い、最初の物語が始まった。",
+    "en": "{org} is founded. The first five are in place, and the first story begins.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9634,6 +9764,16 @@
     "en": "{wins}-{losses}. The one thing they have got good at is getting used to losing.",
     "files": [
       "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{w}<span class=\"small\">勝</span>{l}<span class=\"small\">敗</span>",
+    "en": "{w}<span class=\"small\">W</span>{l}<span class=\"small\">L</span>",
+    "files": [
+      "CHRONICLE_UNIT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -13550,6 +13690,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "この世代の物語は、まだ始まったばかりだ。",
+    "en": "The story of this generation has only just started.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "この世代は{org}に{axis}の傾向をわずかに残した。",
     "en": "This generation left {org} with a faint leaning toward {axis}.",
     "files": [
@@ -13757,6 +13907,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この章の主役が誰になるかは、まだ確定していない。",
+    "en": "Who this chapter belongs to is not settled yet.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -19132,6 +19292,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体人気25到達。スポンサー筋に動きが出始めた。",
+    "en": "Promotion popularity 25 reached. Sponsors began to move.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気50到達。大会場での興行が現実的に。",
+    "en": "Promotion popularity 50 reached. Shows in the big halls became realistic.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "団体内のロッカールームが冷えきったいま、{charA}と{charB}の冷淡な関係も、その不協和音の一部として機能している。{matches}度の対戦が、控室の空気にじわじわ染み出している——記者として、これは座視できない状態である。",
     "en": "With the locker room inside the promotion gone cold, the flat relationship between {charA} and {charB} works as one part of that discord. A {matches}-match record is seeping into the air backstage. As a reporter, this is not a state of things to sit and watch.",
     "files": [
@@ -19176,6 +19356,16 @@
     "en": "Promotion Championship",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "団体王座の設立が認定された。",
+    "en": "The Promotion Championship was sanctioned.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -21642,10 +21832,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "旗揚げ — 最初の5人と、最初の会場",
+    "en": "Founding — The First Five, and the First Hall",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "旗揚げの5人がそれぞれの形でこの団体を背負っている。",
+    "en": "The founding five each carry the promotion in their own way.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "旗揚げメンバー {name} が引退。",
+    "en": "Founding member {name} retired.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "旗揚げ世代",
     "en": "The Founding Generation",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "旗揚げ戦。最初の興行が開かれ、団体は始動した。",
+    "en": "The inaugural show. The first card was run, and the promotion was under way.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -21886,6 +22116,26 @@
     "en": "Strongest in the business. Let's hold it!",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最後の旗揚げメンバーが去り、団体は次の世代へと託された。",
+    "en": "The last of the founding members has gone, and the promotion passes to the next generation.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最後の旗揚げメンバーが引退。序章は閉じられた。",
+    "en": "The last founding member retired. The prologue is closed.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -24995,6 +25245,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "経営安定化達成。月次黒字が定着し、団体存続の目処が立った。",
+    "en": "Business stabilized. The monthly books settled into the black, and the promotion's survival came into view.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "経験が勝つか、勢いが勝つか。プロレスの永遠のテーマだ",
     "en": "Experience or momentum. The oldest question in this business.",
     "files": [
@@ -26034,6 +26294,36 @@
     ],
     "count": 2,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価50到達。観客の目つきが変わり始めた。",
+    "en": "Match rating 50 reached. The look in the seats began to change.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価70到達。名勝負と呼ぶに値する試合が出た。",
+    "en": "Match rating 70 reached. A match worth calling a classic came out of it.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価80到達。この章の選手が業界の壁を叩いた瞬間。",
+    "en": "Match rating 80 reached. The moment the wrestlers of this chapter struck the wall of the business.",
+    "files": [
+      "PROLOGUE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {

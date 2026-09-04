@@ -24,7 +24,13 @@ if (!Number.isFinite(seed) || seed <= 0) {
   process.exit(1);
 }
 
-let G = advanceUntil({ seed, until: scenario.fixture.until });
+// maxWeeks: 既定600週(=約11季)を超える停止条件を持つシナリオ(年代記は章の確定に十数季かかる)
+// のために、シナリオ側から上限を宣言できるようにする(未指定は従来どおり headless-sim の既定)
+let G = advanceUntil({
+  seed,
+  until: scenario.fixture.until,
+  ...(scenario.fixture.maxWeeks ? { maxWeeks: scenario.fixture.maxWeeks } : {}),
+});
 if (scenario.fixture.engineer) G = scenario.fixture.engineer(G);
 
 const assertFails = scenario.fixture.assert ? scenario.fixture.assert(G) : [];

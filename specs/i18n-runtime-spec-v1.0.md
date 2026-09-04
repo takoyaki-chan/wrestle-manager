@@ -60,6 +60,7 @@ UI文字列(§5)とは別に、data.jsのテンプレ表(ニュース記事・�
 
 - **対象テーブル(data.js、16個)**: `GAMELOG_TEMPLATES` `FINISH_TEXT` `PPV_SUMMIT_HEADLINE_TEMPLATES` `PPV_SUMMIT_MATCHPART_TEMPLATES` `PPV_SUMMIT_HPNOTE_TEMPLATES` `PPV_UNDERCARD_HEADLINE_TEMPLATES` `PPV_UNDERCARD_BODY_TEMPLATES` `AI_INJURY_RETIREMENT_TEMPLATES` `AI_CONTRACT_DEPARTURE_TEMPLATES` `CROSS_WAR_RESULT_TEXT` `LEAGUE_ELEVATION_TEXT` `NEWSPAPER_SUB_TEMPLATES` `NEWS_HEADLINE_TEMPLATES` `NEWS_TICKER_TEMPLATES` `RETIREMENT_TEMPLATES`(**P6-10で追加**。通常引退記事のティア別テンプレ{L,A,B,C}×3変種×headline/body=24本。兄弟の`AI_INJURY_RETIREMENT_TEMPLATES`は最初から対象だったのに本表だけが一覧から漏れており、ENでも引退記事がJAのまま出ていた — §11-5の`EMOTION_TEXTS`と同型の構造穴。消費点は`Engine.newspaper._fillRetirementTemplate(t, d, dict)`でP6-10にdict-opts化済み) `HOF_BIOGRAPHY_TEMPLATES`(**P6-14で追加**。殿堂入り選手の語り文。導入6分岐×3 + 核心19分岐×2〜3 + 余韻3系統 + 連結様式`join` = 85本。P6-10までは`Engine.awards.generateBiography()`の**関数本体に直書きされた配列リテラル**で、§10-2が禁じた「関数の中の配列はどの抽出器からも永久に見えない」型だった。消費点は`generateBiography(entry, dict)`でP6-14にdict-opts化済み。詳細は§13)。`PPV_SUMMIT_VICTORY_LINES`(選手個人のセリフ)は対象外(P5のセリフ層で扱う)
 - **対象テーブル追加(data.js、7個。P7-2で追加)**: `SNAPSHOT_TEXTS` `ATMOSPHERE_TEXTS` `FAREWELL_KIND_TEXT` `LOCKER_AIR_TEXTS` `CAMP_FLAVOR_TEXTS` `PRE_WINDOW_TEXTS` `TEAM_SPIRIT_TEXTS`(§13-2 B の分類A「地の文プール」前半373行。Engine/UIが直に読む状況描写・演出文で、消費点がt()もdictも持たなかった層)。`ATMOSPHERE_TEXTS`の`emoji`フィールドだけは抽出器の`TABLE_PATH_FILTER`で除外する。配線は§15
+- **対象テーブル追加(data.js、2個。P6-18で追加)**: `PROLOGUE_TEMPLATES`(序章の章題/記者の見立て/章末/ハイライト12種=17行。`Engine.prologue` が `G.prologue` へ焼く文と、ui-render.js の静的文をまとめて置く表。UIの静的文も**あえて本表に置く**ことで `WM_I18N.t()` の引数が非リテラルになり、extract-ui からは見えない=二重登録が起きない) `CHRONICLE_UNIT_TEXTS`(年代記カードの「数値+単位語」12行。`<span class="small">` 込みのテンプレで、ENは充填値で単複が変わらない形にする)。配線は§23
 - **対象テーブル追加(data.js、2個。P6-17で追加)**: `CHRONICLE_CHAPTER_TEMPLATES`(年代記の章タイトル3 / サブタイトル29 / 章末12 / ハイライト行49=93行。`Engine.chronicle.SUBTITLE_TEMPLATES`/`CLOSING_TEMPLATES` のプロパティと `_generateTitle`/`_buildHighlights` の関数内直書きの移設先) `WEEKLY_STORY_EVENT_TEXTS`(週次ストーリーイベントの `[grievance]`/`[hostile-pairs]` 8行。gameLogレガシー文字列専用で**表示はJA固定**)。配線は§21
 - **対象テーブル追加(kuroda-text.js、13個。P4-5で追加)**: `KURODA_HEADLINES` `KURODA_EDITORIAL` `KURODA_WAR_RECORD` `KURODA_MATCHUP_FLAVOR` `FAN_OPINIONS` `NEWSPAPER_DIGEST_COMMENTS` `KURODA_SHOW_RATING` `KURODA_PREVIEW` `KURODA_SPOTLIGHT` `KURODA_NEWS_COMMENT` `KURODA_RELATION_NARRATIVE` `KURODA_CRISIS` `KURODA_GAMEOVER`。`NEWSPAPER_DIGEST_COMMENTS`/`FAN_OPINIONS`は指示書上「data.jsにあれば」だったが実体はkuroda-text.jsのみに存在(2026-09-04確認)。`FAN_HANDLES`(ファンハンドル名の識別子文字列)は日本語を含まないため対象外。`KURODA_PREVIEW`は消費点(呼び出し箇所)がsrc/*.jsのどこにも見つからない死蔵テーブル(docs/archive参照では過去に配線予定だった形跡があるが未実装のまま)— 台帳には抽出するが実配線なし
 - **対象テーブル追加(app.js、2個。P4-5で追加)**: `App._NEWSPAPER_HEADLINES` `App._NEWSPAPER_ARTICLES`(自団体新聞の見出し/本文プール)。App.のプロパティでトップレベルconstではないため、`test/i18n-extract-templates.js`が波かっこ深さカウントでapp.jsソースから該当オブジェクトリテラルのテキスト範囲だけを切り出し、`eval()`で単独評価して取得する(app.js全体を読み込まない。DOM依存の副作用を避けるため)
@@ -585,11 +586,12 @@ P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARG
 - ハイライトは1行ごとに「保存文 == `narrativeText(textParts)`(dict省略)」「保存文 == `narrativeText(textParts, ja素通しdict)`」も同時に照合する(20,423行)
 - **auto-simのsemantic fingerprintは追加フィールドの分だけ動く**(`c52c116c` → `afda03f8`)。指紋のreplacerで `titleParts`/`closingParts`/`textParts`/`B` を除外して**HEADと新実装の両方を再計測**し、**どちらも `a8641a5a`** になることを実測した(HEADで同じ除外を掛けても値が変わるのは、指紋対象に別の `B` キーが元から存在するため。両者に同じ除外を掛けている以上、比較としては成立している)
 
-### 21-6. P6-17で新たに見つかった穴(未着手)
+### 21-6. P6-17で新たに見つかった穴
 
-1. **序章(`Engine.prologue`)のハイライト・記者の見立て・章末が生JAのまま**。`ui-render.js` の序章描画は `h.text` を直参照し、「この章の主役が誰になるかは、まだ確定していない。…」「この世代の物語は、まだ始まったばかりだ。」がt()を通っていない。`Engine.chronicle` とは別レイヤー(`G.prologue`)で、ハイライトの生成側(`Engine.prologue`)も同型のテンプレ化が要る
-2. **年代記のエース/同期カードに単位語の生JAが残る**(`${a.seasons}<span class="small">期</span>` / `${a.titleReigns}<span class="small">戴冠</span>` / peer行の `${p.titleReigns}度戴冠`)。数値+単位語は §4 の「Stage Bで複数形込みで設計する」族
+1. **✅解決(P6-18)** — **序章(`Engine.prologue`)のハイライト・記者の見立て・章末が生JAのまま**。`ui-render.js` の序章描画は `h.text` を直参照し、「この章の主役が誰になるかは、まだ確定していない。…」「この世代の物語は、まだ始まったばかりだ。」がt()を通っていない。`Engine.chronicle` とは別レイヤー(`G.prologue`)で、ハイライトの生成側(`Engine.prologue`)も同型のテンプレ化が要る → §23-1
+2. **✅解決(P6-18)** — **年代記のエース/同期カードに単位語の生JAが残る**(`${a.seasons}<span class="small">期</span>` / `${a.titleReigns}<span class="small">戴冠</span>` / peer行の `${p.titleReigns}度戴冠`)。数値+単位語は §4 の「Stage Bで複数形込みで設計する」族 → §23-2・§23-3
 3. **`Engine.chronicle._getSurname` の `名無し` フォールバック**(§15-6-5)は引き続きdict化していない(実質到達不能)
+4. **✅解決(P6-18)** — **年代記画面はUI走破ハーネスが踏まない**(1季走破では章がまだ生成されない)。レア画面強制点火カタログ(`test:ui:ignite`)へ年代記シナリオを足す候補 → §23-4(`--scenario chronicle`、JA/ENの2本)
 ## 20. Stage B P7-1 — データ表の値層「C. ラベル・短い定義の表」を`DATA_TABLES`モードで台帳化・配線・英訳(2026-09-04追加)
 
 設計はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」13表と、P6-13が積み残した4件(秋対抗戦の団体名ロングテール/fanExpect理由テンプレ/特性バッジ/招聘市場パネルのラベル)を解決した。
@@ -742,3 +744,59 @@ P6-10 の `extractArrayLiteralProp`(ソース文字列から `prop: [ … ]` を
 
 - 防御的フォールバックとして枝は残し、`desc` 35行も**台帳へ載せて訳した**。表の全行が台帳に載っている状態(§13-2 Bの完了指標)を優先する
 - ただし**「訳したのに出ない行」がある**ことは記録しておく。枝を消すか `desc` を短縮表示として実際に使うかはKeisuke裁定
+
+## 23. Stage B P6-18 — 序章のテンプレ化 / 年代記カードの単位語 / 年代記の強制点火シナリオ(2026-09-04追加)
+
+§21-6 が起票した3件(発見1〜3)を解決した。訳出**29キー**(template-ledger 2,923→**2,952**・未訳0 / ui-ledger 4,027→**4,032**・未訳0 / dialogue-ledger 16,674 は不触)。
+
+### 23-1. 序章(`G.prologue`)は年代記と同じ層 — 解き方も同じ3通りに割れる
+
+`Engine.prologue` は `Engine.chronicle` とは別レイヤーだが、抱えている構造は同じ(完成文が `G` へ永続する)。文面プールは `PROLOGUE_TEMPLATES`(data.js トップレベル)へ移設し、§21-1 の表と同じ基準で解いた。
+
+| 対象 | 保存値 | 配線 |
+|---|---|---|
+| `highlights[].text`(12種) | 団体名・選手名を埋めた完成文 | **追加フィールド `textParts`**(§15-1)。`Engine.prologue.addHighlight` は `textParts` を受け取ったとき `text` を必ず `Engine.chronicle.narrativeText(parts)`(dict省略=JA)から作るので、手組みの文字列が1本も残らない |
+| `closing`(確定時) | **充填値を持たない素のプール文字列** | 追加フィールドを持たず、表示点で `WM_I18N.t(closing)` を1回引く(§21-1 のサブタイトルと同型) |
+| 章題 / 記者の見立て / 書きかけの章末 | `G` に入らないUIの静的文 | 同じ表に置き、ui-render.js が `WM_I18N.t(PROLOGUE_TEMPLATES.…)` で引く |
+
+- **UIの静的文もテンプレ表へ入れた**のは、`t()` の引数が非リテラル(`PROLOGUE_TEMPLATES.title`)になり `extract-ui` から見えないため。ui-ledger と template-ledger の二重登録が起きず(§15-3)、序章の文面が1つの表に集まる
+- 記者の見立ての2文は**別の `t()` 呼び出しのまま2行に分けて**置く。1キーに畳むとJAの改行(=HTMLの空白1つ)が消えて表示が1バイト変わる
+- 発火側(`App.checkPrologueHighlights`)は**完成文を組まず素材(`textParts`)だけを渡す**。初代王者が引けないときの既定ラベル(`初代王者`)にだけ `L` マーカーを付ける(§21-2)
+- **`Engine.prologue.firstChampionId` は旧セーブ向けに `text.startsWith(\`${name}が初代王者に\`)` という完成文の前方一致を持つ**(構造規約5の例外)。`text` はJAのまま不変なのでこの経路は壊れない。新しいハイライトは `characterId` を持つので前方一致は旧セーブ専用
+
+### 23-2. 「数値+単位語」は枠(キー)が単位を名乗るかどうかで訳が変わる
+
+§4 が「Stage Bで複数形込みで設計する」として積み残していた族。表示はすべてUI層で `G` には焼かないので、`CHRONICLE_UNIT_TEXTS`(data.js)のテンプレを表示点(`_chronicleUnit`)で引くだけでよい。
+
+- **`<span class="small">` はテンプレ側に置く**。単位語の位置・有無が言語で変わるため(ハイライト行の `<strong>` と同じ理屈・§21-1)
+- **ENは充填値で単複・冠詞が変わらない形にする**(黒田英文体 規則23/24)。`{n}期`/`{n}戴冠` のようにタイル側のキー(`ERA RUN` / `TITLES`)が既に英語で単位を名乗っている枠は、**ENでは数値だけを出す**(JAの単位語は英語キーとの重複表示を避けるためのもので、ENでは冗語)。キーが単位を名乗らない枠(競争記録タイルの値・同期カードのメタ行・外敵の成績)は値の側に単位を持たせる: `{n}<span class="small">def.</span>` / `{w}<span class="small">W</span>{l}<span class="small">L</span>` / `reigns: {n}` / `{wins}-{losses}`
+- **JAが0の側を省く枠は分岐ごとの完全文にする**(構造規約3)。外敵の成績は `{wins}勝{losses}敗` / `{wins}勝` / `{losses}敗` / `{total}戦` の4本。最後の1本は勝敗が付かなかった枠=全て引き分け(`total = wins+losses+draws`)なので EN は `{total} drawn`
+- **`{wins}勝` は ui-ledger に既訳("{wins} wins" = 対抗戦マイルストーンのラベル・5の倍数専用)がある**。ENで採りたい形(`{wins}-0`)が違うので、外敵の4本は**枠(`<div class="chron-rival-record">`)ごとテンプレに入れてキーを分けた**。素のキーにすると二重登録で訳が読み込み順に入れ替わる(§15-3)。逆に `{n}名`(在籍選手数)は既訳 "{n} wrestlers" と意味が同じなので**テンプレ表へ入れず ui-ledger の既存キーを共用する**(`WM_I18N.t('{n}名', …)` を表示点に直書き)
+
+### 23-3. 逆方向の正規表現をやめる — 構造化値を先に持ち、表示時に整形する
+
+`_chronicleCompetitiveValueHtml` は保存済みの完成文(`eraStats.competitiveRecord.valueText`)を `/^(\d+)度防衛(.*)$/` で**読み直して**装飾していた。JA文字列の形に依存する逆方向パターンで、ENでは成立しない。
+
+- `_buildCompetitiveRecord` に**追加フィールド `value`**(`{ kind:'defenses'|'defensesTitleLost'|'winLoss', defenses|wins,losses }`)を持たせる。`valueText`(セーブに書く既存値)は1バイトも変えない
+- 表示点は `value` から現在の言語で整形する。`value` を持たない旧セーブだけ従来の逆方向パーサへ fail-open する(JA表示のみ)
+- **mode ラベル(`君臨`/`防衛戦`/…)は充填値を持たない素のラベル**なので追加フィールドを持たず表示点で `t()` を1回引く。ただし `陥落` は ui-ledger に既訳("Dethroned")があるため、**JA原文は management.js のトップレベル定数 `_CHRONICLE_MODE_LABEL_JA` に1本だけ置き**(`_AW_ROUND_JA` と同じ流儀・§15-3)、残る5つを ui-ledger へ `kept:true` の手追加行として登録した
+
+### 23-4. 走破が構造的に踏めない画面のための「画面ツアー」(`tour`)
+
+年代記画面は **データベースタブ → 年代記サブタブ → 各章** という自由閲覧画面の奥にあり、走破ハーネスは**ナビタブをランダム走のスコアラーから外す設計**(driver.js `NAVIGATION_TEXT`)なので永久に到達できない。ignite モード(walkモードのナビ巡回は対象外)へ `tour` を足して解いた。
+
+- `scenarios.js` の `tour.steps[]` = `{ label, selector, expectScreen?, probe?, required? }` を走破の**後**に決定論クリックで巡回する(`driver.js` `runScreenTour`)。各停車点で D1/D3 走査・レイアウト/JA露出集計・点火マーカー観測・`probe` 収集を行う
+- **クリックが遮蔽されたら走破と同じスコアラーで安全な前進コントロールを1つ押してから再挑戦する**(最大6回)。週送り直後はポップアップ列が残っていることがあり、ナビを力ずくで押すのではなく実プレイと同じ順序で前進させる
+- `tourAssert(probes, lang)` が中身の不発を検出する(「章題が空」「`.chron-wrap` が描画されていない」など)。**`tour.jaExposureScreens` に画面idを並べると、ENモードのときだけその画面のJA露出0が失敗条件になる**(他画面の `JA exposure by screen` は従来どおり情報集計)
+- `fixture.maxWeeks` で headless 進行の上限週(既定600=約11季)を引き上げられるようにした。年代記は章の確定に十数季かかる
+
+### 23-5. 「点火シナリオが踏める分岐」と「テンプレの全分岐」は別物
+
+`chronicle` fixture(seed42/S18)は自然生成なので、**外敵の対戦成績・同期カードの戴冠回数・`度防衛`/`王座失陥` の枝には到達しない**(このセーブでは王座戴冠も対外戦も0)。点火シナリオは「実UIで描画が壊れないこと・EN表示に日本語が残らないこと」のゲートであって、**テンプレの網羅は別途VM検品で測る**(§21-5 と同じ分担)。P6-18 は VM検品113件で全35テンプレへ到達し、日本語残り0・i18n-miss 0 を確認した。
+
+### 23-6. P6-18 で新たに見つかった穴(未着手)
+
+1. **`_u3bSideHtml` の二重t()が派閥COMMON3(加入挨拶)にも残っていた**(§10-1と同型)。`ui-common.js` の加入モーダルが `WM_I18N.t(getCommon3Line(...))` で訳した文字列を `lineTranslated` 無しで渡していたため、EN訳文が辞書キーとして引かれて `[i18n-miss]` を12件量産していた。**P6-18で `lineTranslated: true` を付けて根治**(JAは t() が素通しなので二重適用でも表示不変=1バイト不変)。**この型は「呼び出し元が先に訳す共通レンダラ」全部に潜む** — `_u3bSideHtml` の全呼び出し元を一度洗い直すこと
+2. **`{n}名`→"{n} wrestlers" / `{wins}勝`→"{wins} wins" は規則23違反**(充填値が1のとき "1 wrestlers")。どちらも P6-18 以前からある ui-ledger の行で、前者は9箇所・後者は5の倍数専用のため実害は限定的だが、規則を機械検査に載せるなら最初に落ちる行
+3. **`Engine.chronicle._getSurname` が姓を取れず氏名を返している**。年代記の章タイトルが「木村レイカ世代」のように**フルネーム+世代**になる(章キャッシュの ace/peer は `surname` を持たない縮約オブジェクトのため)。JAの既存挙動なので P6-18 では触っていないが、ENでは "The Reika Kimura Generation" と長くなり h2 の折り返しリスクがある
+4. **序章の初代王者フォールバックが「初代王者が初代王者に。」になる**(`ch?.name` が引けないとき)。JAも同じ文になる既存挙動で、実質到達不能(champId が立っている週にその選手がロスターから消えた場合のみ)

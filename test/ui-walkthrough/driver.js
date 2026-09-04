@@ -375,6 +375,59 @@ async function runNavTour({ page, detectors, actionLog, navTourVisited, seed, st
   await settleClock(page);
 }
 
+// 画面ツアー(③2026-09-04 P6-18で追加)。レア画面のうち「自由閲覧画面の奥」にあるもの
+// (データベース→年代記タブ→各章)は、ランダム走がナビタブを踏まない設計(§NAVIGATION_TEXT)
+// のため走破では永久に到達できない。シナリオが宣言した決定論的なクリック列で開き、
+// 各停車点で D1/D3 走査・レイアウト/JA露出集計・点火マーカー観測・probe収集を行う。
+// クリックは実UI経由(principle 1)で、DOMを直接書き換えない。PRNGは消費しない。
+async function runScreenTour({ page, detectors, steps, observe, actionLog, seed, step }) {
+  const failures = [];
+  const probes = {};
+  // 走破の停止直後はポップアップ列が残っていることがある(週送りの直後が典型)。
+  // 遮蔽物は走破と同じスコアラーで1つずつ片付けてから再挑戦する — ナビタブを
+  // 力ずくで押すのではなく、実プレイと同じ順序で前進させるため
+  const random = createSeededPrng(seed);
+  for (const stop of steps) {
+    let clicked = false;
+    for (let attempt = 0; attempt < 6 && !clicked; attempt += 1) {
+      clicked = await page.locator(stop.selector).first()
+        .click({ timeout: 2500 }).then(() => true).catch(() => false);
+      if (clicked) break;
+      const blockedSnapshot = await detectors.snapshot(page);
+      const candidates = await listCandidates(page);
+      const unblock = chooseCandidate(candidates, blockedSnapshot, random, null);
+      if (!unblock) break;
+      process.stdout.write(`  screen-tour: ${stop.label} blocked -> ${actionLabel(unblock)}\n`);
+      await clickCandidate(unblock, page).catch(() => {});
+    }
+    if (!clicked) {
+      if (stop.required === false) {
+        process.stdout.write(`  screen-tour: ${stop.label} skipped (不在)\n`);
+        continue;
+      }
+      failures.push(`画面ツアー: ${stop.label} をクリックできない (${stop.selector})`);
+      break;
+    }
+    await settleClock(page);
+    const snapshot = await detectors.snapshot(page);
+    if (stop.expectScreen && snapshot.activeScreen !== stop.expectScreen) {
+      failures.push(`画面ツアー: ${stop.label} が ${stop.expectScreen} を開かない (active=${snapshot.activeScreen})`);
+      break;
+    }
+    actionLog.push({ action: `screen-tour:${stop.label}`, after: snapshot.state, before: snapshot.state, seed, step });
+    if (observe) observe(snapshot);
+    await detectors.scanText(page);
+    await detectors.scanOverflow(page);
+    await detectors.scanJaExposureDetail(page);
+    if (stop.probe) {
+      probes[stop.label] = await page.evaluate(stop.probe).catch(error => ({ probeError: String(error) }));
+    }
+    process.stdout.write(`  screen-tour: ${stop.label} -> ${snapshot.activeScreen}\n`);
+    if (detectors.issues.length > 0) break;
+  }
+  return { failures, probes };
+}
+
 async function runWalk(options) {
   const {
     artifactRoot,
@@ -623,4 +676,4 @@ async function runWalk(options) {
   return { actionLog, completed: false, finalState: finalSnapshot.state, issues: detectors.issues, artifactDirectory: directory, navTourScreens: [...navTourVisited], navTourSkipped: navTourPlan.map(entry => entry.key), recoveries, specialScreens: [...specialScreens].sort() };
 }
 
-module.exports = { createSeededPrng, listCandidates, runWalk };
+module.exports = { createSeededPrng, listCandidates, runScreenTour, runWalk };

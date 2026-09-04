@@ -11240,7 +11240,7 @@ function _chronicleStyleBlock() {
 
 // 序章ブロック (VARIANT B) — chronicle-prologue-mockup-v0.1.html 準拠
 function _renderPrologueBlock(prologue, chapters) {
-  const orgName = G.orgName || WM_I18N.t('あなたの団体');
+  const orgName = G.orgName ? WM_I18N.pn(G.orgName) : WM_I18N.t('あなたの団体');
   const founderIds = prologue.founderIds || [];
   // founder の最新スナップショット (roster / archive / retiredFighters のいずれかから取得)
   const founders = founderIds.map(id => {
@@ -11291,7 +11291,7 @@ function _renderPrologueBlock(prologue, chapters) {
   chapters.forEach((c, i) => {
     const localIdx = i + 1;
     const pct = totalTicks === 1 ? 50 : 6 + (88 * localIdx / (totalTicks - 1));
-    html += `<div class="chron-timeline-tick" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${c.title}"></div>`;
+    html += `<div class="chron-timeline-tick" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${_chronicleChapterTitle(c)}"></div>`;
     html += `<div class="chron-timeline-label" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})">CH.${c.number}</div>`;
   });
   html += `</div></div>`;
@@ -11300,7 +11300,7 @@ function _renderPrologueBlock(prologue, chapters) {
   html += `<div class="chron-header${isInProgress ? ' in-progress' : ''}">
     <div class="chron-eyebrow${isInProgress ? ' in-progress' : ''}">${isInProgress ? `◆ ${WM_I18N.t('序章 / 進行中')} ◆` : `◆ ${WM_I18N.t('序章')} ◆`}</div>
     <div class="chron-num">PROLOGUE${isInProgress ? ' <span class="chron-writing-mark">— WRITING —</span>' : ''}</div>
-    <h2 class="chron-title">旗揚げ — 最初の5人と、最初の会場</h2>
+    <h2 class="chron-title">${WM_I18N.t(PROLOGUE_TEMPLATES.title)}</h2>
     <div class="chron-period">SEASON ${prologue.startSeason} — ${isInProgress ? WM_I18N.t('現在') : `SEASON ${prologue.endSeason}`}</div>
     ${isInProgress ? `<div class="chron-writing-note">${WM_I18N.t('この章はまだ書きかけです。旗揚げメンバー全員が引退すると、序章が確定します。')}</div>` : ''}
   </div>`;
@@ -11341,8 +11341,8 @@ function _renderPrologueBlock(prologue, chapters) {
   if (isInProgress) {
     html += `<div class="chron-prologue-quote">
       <span class="chron-prologue-quote-eyebrow">${WM_I18N.t('記者の見立て')}</span>
-      この章の主役が誰になるかは、まだ確定していない。
-      旗揚げの5人がそれぞれの形でこの団体を背負っている。
+      ${WM_I18N.t(PROLOGUE_TEMPLATES.quote1)}
+      ${WM_I18N.t(PROLOGUE_TEMPLATES.quote2)}
     </div>`;
   }
   html += `</div>`; // .chron-section
@@ -11367,7 +11367,7 @@ function _renderPrologueBlock(prologue, chapters) {
       const tierCls = _chronicleHighlightClass(h.tier);
       html += `<li class="chron-highlight${tierCls}">
         <div class="chron-highlight-season">S${h.season}</div>
-        <div class="chron-highlight-text">${h.text}</div>
+        <div class="chron-highlight-text">${_chronicleParted(h.textParts, h.text)}</div>
       </li>`;
     });
   }
@@ -11378,7 +11378,7 @@ function _renderPrologueBlock(prologue, chapters) {
       <div class="chron-era-stats">
         <div class="chron-era-stat">
           <div class="chron-era-stat-key">TITLES</div>
-          <div class="chron-era-stat-val">${titleCount}<span class="small">戴冠</span></div>
+          <div class="chron-era-stat-val">${_chronicleUnit('titleReigns', { n: titleCount })}</div>
         </div>
         <div class="chron-era-stat">
           <div class="chron-era-stat-key">${WM_I18N.t('最高評価')}</div>
@@ -11397,7 +11397,11 @@ function _renderPrologueBlock(prologue, chapters) {
   </div>`;
 
   // Closing
-  const closingText = prologue.closing || (isInProgress ? 'この世代の物語は、まだ始まったばかりだ。' : '');
+  // i18n P6-18: `prologue.closing` は充填値を持たない素のプール文字列=辞書キーそのものなので
+  // 表示直前に t() を1回引く(specs §21-1 のサブタイトルと同型。旧セーブもキー一致で訳される)
+  const closingText = prologue.closing
+    ? WM_I18N.t(prologue.closing)
+    : (isInProgress ? WM_I18N.t(PROLOGUE_TEMPLATES.closingWriting) : '');
   html += `<div class="chron-closing${isInProgress ? ' in-progress' : ''}">
     <div class="chron-closing-eyebrow">— ${isInProgress ? WM_I18N.t('書きかけの章末') : WM_I18N.t('章末')} —</div>
     <div class="chron-closing-line">${closingText}</div>
@@ -11447,7 +11451,7 @@ function _renderDbChronicle() {
   // Subhead
   html += `<div class="chron-subhead">
     <div class="chron-subhead-label">◆ ${WM_I18N.t('団体年代記')} ◆</div>
-    <div class="chron-subhead-org">${G.orgName || WM_I18N.t('あなたの団体')}</div>
+    <div class="chron-subhead-org">${G.orgName ? WM_I18N.pn(G.orgName) : WM_I18N.t('あなたの団体')}</div>
   </div>`;
 
   // 空状態 (確定章ゼロ): 序章があれば自動で序章へ遷移、なければ既存の空状態
@@ -11476,12 +11480,12 @@ function _renderDbChronicle() {
         </div>
         <div class="chron-empty-meta-row">
           <span class="chron-empty-meta-key">${WM_I18N.t('在籍選手')}</span>
-          <span class="chron-empty-meta-val">${rosterSize}名</span>
+          <span class="chron-empty-meta-val">${WM_I18N.t('{n}名', { n: rosterSize })}</span>
         </div>
         ${topByOvr.length > 0 ? `
         <div class="chron-empty-meta-row">
           <span class="chron-empty-meta-key">${WM_I18N.t('代表的な選手')}</span>
-          <span class="chron-empty-meta-val">${topByOvr.map(t => t.name).join(' ・ ')}</span>
+          <span class="chron-empty-meta-val">${_chronicleDotJoin(topByOvr.map(t => WM_I18N.pn(t.name)), true)}</span>
         </div>` : ''}
       </div>
       <div style="display:flex;justify-content:center;padding:8px 22px 16px">
@@ -11538,7 +11542,7 @@ function _renderDbChronicle() {
     const pct = seasonToPct(c.focusSeason || c.seasonStart || 1);
     const isCurrent = (i + 1) === _dbChronicleIdx;
     const cls = `chron-timeline-tick${isCurrent ? ' current' : ''}${c.status === 'in_progress' ? ' in-progress' : ''}`;
-    html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${c.title}"></div>`;
+    html += `<div class="${cls}" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})" title="${_chronicleChapterTitle(c)}"></div>`;
     html += `<div class="chron-timeline-label${isCurrent ? ' current' : ''}" style="left:${pct}%" onclick="setDbChronicleIdx(${i + 1})">CH.${c.number}</div>`;
   });
   html += `</div></div>`;
@@ -11565,7 +11569,9 @@ function _renderDbChronicle() {
     const parts = [];
     if (prevOverlap) parts.push(`<span class="chron-overlap-prev">${WM_I18N.t('← 第{n}章と SEASON {start}–{end} で重なる', { n: prevOverlap.ch.number, start: prevOverlap.start, end: prevOverlap.end })}</span>`);
     if (nextOverlap) parts.push(`<span class="chron-overlap-next">${WM_I18N.t('第{n}章と SEASON {start}–{end} で重なる →', { n: nextOverlap.ch.number, start: nextOverlap.start, end: nextOverlap.end })}</span>`);
-    overlapHtml = `<div class="chron-overlap-row">${parts.join('<span class="chron-overlap-sep">・</span>')}</div>`;
+    // 区切りは中黒(JA)/中点(EN)で言語が変わるため、マークアップごと連結様式テンプレへ入れる
+    overlapHtml = `<div class="chron-overlap-row">${parts.reduce((a, b) =>
+      WM_I18N.t(CHRONICLE_UNIT_TEXTS.overlapJoin, { a, b }))}</div>`;
   }
 
   html += `<div class="chron-header${isInProgress ? ' in-progress' : ''}">
@@ -11615,7 +11621,7 @@ function _renderDbChronicle() {
         : '';
       const nameHtml = hofSet.has(a.id)
         ? `<span class="chron-hof-link" onclick="openHofDetailById(${a.id})">${WM_I18N.pn(a.name)}</span>${hofBadge}`
-        : a.name;
+        : WM_I18N.pn(a.name);
       return `<div class="chron-dual-card">
         ${_buildAcePortrait(a, true)}
         <div class="chron-dual-info">
@@ -11636,11 +11642,11 @@ function _renderDbChronicle() {
             </div>
             <div class="chron-dual-meta">
               <div class="chron-dual-meta-key">ERA RUN</div>
-              <div class="chron-dual-meta-val">${a.seasons || 1}<span class="small">期</span></div>
+              <div class="chron-dual-meta-val">${_chronicleUnit('seasons', { n: a.seasons || 1 })}</div>
             </div>
             <div class="chron-dual-meta">
               <div class="chron-dual-meta-key">TITLES</div>
-              <div class="chron-dual-meta-val">${a.titleReigns || 0}<span class="small">戴冠</span></div>
+              <div class="chron-dual-meta-val">${_chronicleUnit('titleReigns', { n: a.titleReigns || 0 })}</div>
             </div>
           </div>
           ${_chronicleNarrative(a) ? `<div class="chron-ace-narrative">${_chronicleNarrative(a)}</div>` : ''}
@@ -11662,7 +11668,7 @@ function _renderDbChronicle() {
       : '';
     const nameHtml = hofSet.has(a.id)
       ? `<span class="chron-hof-link" onclick="openHofDetailById(${a.id})">${WM_I18N.pn(a.name)}</span>${hofBadge}`
-      : a.name;
+      : WM_I18N.pn(a.name);
     html += `<div class="chron-ace-row">
       ${_buildAcePortrait(a, false)}
       <div>
@@ -11683,11 +11689,11 @@ function _renderDbChronicle() {
           </div>
           <div class="chron-ace-meta">
             <div class="chron-ace-meta-key">ERA RUN</div>
-            <div class="chron-ace-meta-val">${a.seasons || 1}<span class="small">期</span></div>
+            <div class="chron-ace-meta-val">${_chronicleUnit('seasons', { n: a.seasons || 1 })}</div>
           </div>
           <div class="chron-ace-meta">
             <div class="chron-ace-meta-key">TITLES</div>
-            <div class="chron-ace-meta-val">${a.titleReigns || 0}<span class="small">戴冠</span></div>
+            <div class="chron-ace-meta-val">${_chronicleUnit('titleReigns', { n: a.titleReigns || 0 })}</div>
           </div>
         </div>
         <div class="chron-ace-quote">${_chronicleAceQuote(a, current)}</div>
@@ -11722,16 +11728,21 @@ function _renderDbChronicle() {
     html += `<div class="chron-sec-label" style="margin-top:18px">${WM_I18N.t('この時代の外敵')}</div>
       <ul class="chron-rivals">`;
     xrLeft.forEach(r => {
-      const recordParts = [];
-      if (r.wins > 0) recordParts.push(`${r.wins}勝`);
-      if (r.losses > 0) recordParts.push(`${r.losses}敗`);
-      const record = recordParts.join('') || `${r.total}戦`;
+      // i18n P6-18: JAは0の側を省く断片連結だった。分岐ごとの完全文にする(構造規約3)。
+      // 勝敗が1つも付かない枠は total = draws(_buildExternalRivals は total>0 のみ返す)
+      const record = (r.wins > 0 && r.losses > 0)
+        ? _chronicleUnit('rivalWinLoss', { wins: r.wins, losses: r.losses })
+        : r.wins > 0 ? _chronicleUnit('rivalWinsOnly', { wins: r.wins })
+          : r.losses > 0 ? _chronicleUnit('rivalLossesOnly', { losses: r.losses })
+            : _chronicleUnit('rivalNoDecision', { total: r.total });
       const oppFrag = (r.mainOpponents && r.mainOpponents.length > 0)
-        ? `<span class="chron-rival-opp">${WM_I18N.t('主な相手: {names}', { names: r.mainOpponents.join('・') })}</span>`
+        ? `<span class="chron-rival-opp">${WM_I18N.t('主な相手: {names}', {
+          names: _chronicleDotJoin(r.mainOpponents.map(n => WM_I18N.pn(n))),
+        })}</span>`
         : '';
       html += `<li class="chron-rival">
-        <div class="chron-rival-org">${r.orgName}</div>
-        <div class="chron-rival-record">${record}</div>
+        <div class="chron-rival-org">${WM_I18N.pn(r.orgName)}</div>
+        ${record}
         ${oppFrag}
       </li>`;
     });
@@ -11743,11 +11754,11 @@ function _renderDbChronicle() {
       <div class="chron-era-stats">
         <div class="chron-era-stat">
           <div class="chron-era-stat-key">TITLES</div>
-          <div class="chron-era-stat-val">${es.totalTitleWins || 0}<span class="small">戴冠</span></div>
+          <div class="chron-era-stat-val">${_chronicleUnit('titleReigns', { n: es.totalTitleWins || 0 })}</div>
         </div>
         <div class="chron-era-stat">
-          <div class="chron-era-stat-key">${es.competitiveRecord ? es.competitiveRecord.label : 'VS S-TIER'}</div>
-          <div class="chron-era-stat-val">${es.competitiveRecord ? _chronicleCompetitiveValueHtml(es.competitiveRecord.valueText) : `${(es.vsStier && es.vsStier.wins) || 0}<span class="small">勝</span>${(es.vsStier && es.vsStier.losses) || 0}<span class="small">敗</span>`}</div>
+          <div class="chron-era-stat-key">${es.competitiveRecord ? WM_I18N.t(es.competitiveRecord.label) : 'VS S-TIER'}</div>
+          <div class="chron-era-stat-val">${es.competitiveRecord ? _chronicleCompetitiveValueHtml(es.competitiveRecord) : _chronicleUnit('winLoss', { w: (es.vsStier && es.vsStier.wins) || 0, l: (es.vsStier && es.vsStier.losses) || 0 })}</div>
         </div>
         <div class="chron-era-stat">
           <div class="chron-era-stat-key">PEAK POP</div>
@@ -11778,15 +11789,17 @@ function _renderDbChronicle() {
       const styleLabel = _chronicleStyleLabel(p.style);
       const metaParts = [styleLabel];
       // peer 行は narrative を主役に。OVR/人気 の数値繰り返しは ace 側のタイルに集約。
-      if (isIdol && p.traits && p.traits.length > 0) metaParts.push(p.traits.slice(0, 2).join('・'));
-      else if (p.titleReigns > 0) metaParts.push(`${p.titleReigns}度戴冠`);
+      // 特性名は TRAIT_DEFS のキー=ui辞書のキーそのものなので表示直前に t() を1回引く
+      if (isIdol && p.traits && p.traits.length > 0) {
+        metaParts.push(_chronicleDotJoin(p.traits.slice(0, 2).map(tr => WM_I18N.t(tr))));
+      } else if (p.titleReigns > 0) metaParts.push(_chronicleUnit('peerReigns', { n: p.titleReigns }));
       // HoFバッジ (hofSet は上のエースセクションで定義済み)
       const pHofBadge = hofSet.has(p.id)
         ? `<span class="chron-hof-badge" onclick="openHofDetailById(${p.id})" title="${WM_I18N.t('殿堂入り')}">🏅</span>`
         : '';
       const pNameHtml = hofSet.has(p.id)
         ? `<span class="chron-hof-link" onclick="openHofDetailById(${p.id})">${WM_I18N.pn(p.name)}</span>${pHofBadge}`
-        : p.name;
+        : WM_I18N.pn(p.name);
       // Phase B: 4 枠ごとの役割タグ
       let roleTag = '';
       if (isIdol) roleTag = `<div class="chron-gen-idol-tag">★ ${WM_I18N.t('アイドル選手')}</div>`;
@@ -11803,7 +11816,7 @@ function _renderDbChronicle() {
         <div class="chron-gen-info">
           ${roleTag}
           <div class="chron-gen-name">${pNameHtml}</div>
-          <div class="chron-gen-meta">${metaParts.join(' ・ ')}</div>
+          <div class="chron-gen-meta">${_chronicleDotJoin(metaParts, true)}</div>
           ${_chronicleNarrative(p) ? `<div class="chron-gen-narrative">${_chronicleNarrative(p)}</div>` : ''}
         </div>
         <div class="chron-gen-ovr">
@@ -11862,8 +11875,37 @@ function _renderDbChronicle() {
   return html;
 }
 
-/** spec v0.2 §C.1 mode別 valueText の HTML 装飾 */
-function _chronicleCompetitiveValueHtml(text) {
+/** 年代記/序章カードの「数値+単位語」。テンプレは CHRONICLE_UNIT_TEXTS(data.js)にあり、
+ *  `<span class="small">` は位置が言語で変わるためテンプレ側に入っている(specs §21-1)。
+ *  ENは充填値で単複・冠詞が変わらない形(黒田英文体 規則23/24)。 */
+function _chronicleUnit(key, params) {
+  const tpl = CHRONICLE_UNIT_TEXTS[key];
+  if (!tpl) return '';
+  return WM_I18N.t(tpl, params);
+}
+
+/** 中黒区切りの列挙。区切り文字は言語で変わるので連結様式テンプレを引く。
+ *  詰めた形は CHRONICLE_NARRATIVE_TEMPLATES.listDot と同じキーなのでそちらを使う
+ *  (同じキーを2つの台帳へ載せない・specs §15-3)。値はパラメータを通るので名前辞書が効く。 */
+function _chronicleDotJoin(list, spaced) {
+  const items = (list || []).filter(x => x != null && x !== '');
+  if (items.length === 0) return '';
+  const tpl = spaced ? CHRONICLE_UNIT_TEXTS.dotJoinSpaced : CHRONICLE_NARRATIVE_TEMPLATES.listDot;
+  return items.reduce((a, b) => WM_I18N.t(tpl, { a, b }));
+}
+
+/** spec v0.2 §C.1 mode別 競争記録タイルの値。
+ *  i18n P6-18: 以前は保存済みの完成文(`valueText`)を正規表現で読み直して装飾していた
+ *  (「N度防衛」を逆方向に再解析する型)。**構造化値を先に持ち、表示時に整形する**形へ変えた —
+ *  `_buildCompetitiveRecord` が追加フィールド `value`(種別+数値)を併記する(specs §15-1)。
+ *  `value` を持たない旧セーブだけ、従来の逆方向パーサへ fail-open する(JA表示のみ)。 */
+function _chronicleCompetitiveValueHtml(record) {
+  if (!record) return '';
+  const v = record.value;
+  if (v && v.kind === 'defenses') return _chronicleUnit('defenses', { n: v.defenses || 0 });
+  if (v && v.kind === 'defensesTitleLost') return _chronicleUnit('defensesTitleLost', { n: v.defenses || 0 });
+  if (v && v.kind === 'winLoss') return _chronicleUnit('winLoss', { w: v.wins || 0, l: v.losses || 0 });
+  const text = record.valueText;
   if (!text) return '';
   let m = text.match(/^(\d+)度防衛(.*)$/);
   if (m) return `${m[1]}<span class="small">度防衛${m[2]}</span>`;

@@ -6165,28 +6165,41 @@ const Engine = {
       return 'challenge';
     },
 
-    /** spec v0.2 §C.1 mode別の表示マトリクス */
+    /** spec v0.2 §C.1 mode別の表示マトリクス
+     *  i18n Stage B P6-18: `valueText`(JA完成文)は**セーブに書く既存値なので不変**のまま、
+     *  追加フィールド `value`(構造化値 = 種別+数値)を併記する(specs §15-1)。
+     *  表示側(`_chronicleCompetitiveValueHtml`)は完成文を正規表現で読み直すのをやめ、
+     *  この構造化値から現在の言語で整形する。`label` は充填値を持たない素のラベルなので
+     *  追加フィールドを持たず、表示点で t() を1回引く(specs §21-1 のサブタイトルと同型)。
+     *  ラベルのJA原文は `王座`/`団体` と同じく **management.js 側に1本だけ**置く
+     *  (`陥落` は ui-ledger に既訳があり、テンプレ台帳へ入れると二重登録になる・specs §15-3)。 */
     _buildCompetitiveRecord(chapter, mode, eraStats) {
       const def = eraStats.totalTitleDefenses || 0;
       const w = (eraStats.vsStier && eraStats.vsStier.wins) || 0;
       const l = (eraStats.vsStier && eraStats.vsStier.losses) || 0;
+      const L = _CHRONICLE_MODE_LABEL_JA;
+      const wl = { kind: 'winLoss', wins: w, losses: l };
       switch (mode) {
         case 'summit':
-          return { mode, label: '君臨', valueText: `${def}度防衛` };
+          return { mode, label: L.summit, valueText: `${def}度防衛`, value: { kind: 'defenses', defenses: def } };
         case 'defense':
-          return { mode, label: '防衛戦', valueText: `${def}度防衛` };
+          return { mode, label: L.defense, valueText: `${def}度防衛`, value: { kind: 'defenses', defenses: def } };
         case 'contention':
-          return { mode, label: 'つばぜり合い', valueText: `${w}勝${l}敗` };
+          return { mode, label: L.contention, valueText: `${w}勝${l}敗`, value: wl };
         case 'challenge':
-          return { mode, label: '殴り込み', valueText: `${w}勝${l}敗` };
+          return { mode, label: L.challenge, valueText: `${w}勝${l}敗`, value: wl };
         case 'ascend':
-          return { mode, label: '下剋上', valueText: `${w}勝${l}敗` };
+          return { mode, label: L.ascend, valueText: `${w}勝${l}敗`, value: wl };
         case 'decline': {
-          const lost = eraStats._titleLossInChapter ? '・王座失陥' : '';
-          return { mode, label: '陥落', valueText: `${def}度防衛${lost}` };
+          const titleLost = !!eraStats._titleLossInChapter;
+          const lost = titleLost ? '・王座失陥' : '';
+          return {
+            mode, label: L.decline, valueText: `${def}度防衛${lost}`,
+            value: { kind: titleLost ? 'defensesTitleLost' : 'defenses', defenses: def },
+          };
         }
         default:
-          return { mode: 'challenge', label: '殴り込み', valueText: `${w}勝${l}敗` };
+          return { mode: 'challenge', label: L.challenge, valueText: `${w}勝${l}敗`, value: wl };
       }
     },
 
@@ -6815,23 +6828,35 @@ const Engine = {
       next = Engine.prologue.addHighlight(next, {
         id: 'org_founded',
         tier: 'gold',
-        text: `${state.orgName || '団体'}旗揚げ。最初の5人が揃い、最初の物語が始まった。`,
+        // 団体名が取れないときの「団体」は1語ラベルなので描画時に辞書を引く(L マーカー)。
+        // 実在の団体名は素の値のまま渡し、t() のパラメータ値自動変換(名前辞書)に任せる
+        textParts: [{
+          t: PROLOGUE_TEMPLATES.highlight.orgFounded,
+          v: { org: Engine.chronicle._orgLabel(state) },
+          ...(state.orgName ? {} : { L: ['org'] }),
+        }],
       });
       return next;
     },
 
-    /** ハイライトを追記 (重複IDはスキップ / status=in_progress のときのみ) */
+    /** ハイライトを追記 (重複IDはスキップ / status=in_progress のときのみ)
+     *  i18n Stage B P6-18: `textParts`(specs §15-1 の追加フィールド)を渡すと、保存する
+     *  `text` は必ず `Engine.chronicle.narrativeText(parts)`(dict省略=JA)から作る。
+     *  手組みの文字列を残さないので「保存値とパーツが食い違う」経路が構造的に生じない。
+     *  `text` 直渡しの旧経路も残す(パーツ無し=表示は保存値そのまま・fail-open)。 */
     addHighlight(state, entry) {
       const p = state.prologue;
       if (!p || p.status !== 'in_progress') return state;
       if (!entry || !entry.id) return state;
       if ((p.highlights || []).some(h => h.id === entry.id)) return state;
+      const parts = Array.isArray(entry.textParts) && entry.textParts.length ? entry.textParts : null;
       const hl = {
         id: entry.id,
         season: entry.season != null ? entry.season : (state.season || 0),
         week: entry.week != null ? entry.week : (state.week || 0),
         tier: entry.tier || 'normal',
-        text: entry.text || '',
+        text: parts ? Engine.chronicle.narrativeText(parts) : (entry.text || ''),
+        ...(parts ? { textParts: parts } : {}),
         ...(entry.characterId != null ? { characterId: entry.characterId } : {}),
       };
       return { ...state, prologue: { ...p, highlights: [...(p.highlights || []), hl] } };
@@ -6901,7 +6926,9 @@ const Engine = {
           endSeason: state.season || p.startSeason,
           endWeek: state.week || p.startWeek,
           status: 'confirmed',
-          closing: '最後の旗揚げメンバーが去り、団体は次の世代へと託された。',
+          // 充填値を持たない素のプール文字列=辞書キーそのもの。追加フィールドは持たず、
+          // 表示点で WM_I18N.t() を1回引く(specs §21-1 のサブタイトルと同型)
+          closing: PROLOGUE_TEMPLATES.closingConfirmed,
         }
       };
       next = Engine.prologue.addHighlight({
@@ -6910,7 +6937,7 @@ const Engine = {
       }, {
         id: 'prologue_end',
         tier: 'red',
-        text: '最後の旗揚げメンバーが引退。序章は閉じられた。',
+        textParts: [{ t: PROLOGUE_TEMPLATES.highlight.prologueEnd }],
       });
       // status を confirmed に戻す
       return { ...next, prologue: { ...next.prologue, status: 'confirmed' } };
@@ -30840,6 +30867,20 @@ function _wmTitleName(dict, orgName) {
 // JA原文をここに1本だけ置いて _wmDictLabel で引く(同じキーを2つの台帳へ載せない・specs §9)。
 const _AW_ROUND_JA = { roundFinal: '決勝', roundSemiFinal: '準決勝' };
 const _AW_MVP_FALLBACK_JA = '該当選手';
+
+// ── i18n Stage B P6-18: 年代記の競争記録タイルの mode ラベル ──
+// `陥落` は ui-ledger に既訳("Dethroned")があり、data.js のテンプレ表へ入れると
+// 同じキーが2つの台帳に載る(読み込み順で訳が入れ替わる)。上の _AW_ROUND_JA と同じく
+// JA原文をここに1本だけ置き、表示点(ui-render.js)が WM_I18N.t() で引く(specs §15-3)。
+// 残る5つは ui-ledger へ kept:true の手追加行として登録してある。
+const _CHRONICLE_MODE_LABEL_JA = {
+  summit: '君臨',
+  defense: '防衛戦',
+  contention: 'つばぜり合い',
+  challenge: '殴り込み',
+  ascend: '下剋上',
+  decline: '陥落',
+};
 // 生キー {winnerOrg, loserOrg, scoreW, scoreL, noteKey} から「A 3-1 B（同時全滅、…）」を組む。
 // 団体名は**dictのパラメータ**として渡すのでD-P6-2の名前辞書変換(pn)が効く。dict省略=JA。
 function _wmAutumnWarMatchSummary(raw, dict) {

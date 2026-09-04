@@ -18877,6 +18877,93 @@ const CHRONICLE_CHAPTER_TEMPLATES = {
   }
 };
 
+// ── i18n Stage B P6-18: 序章(Engine.prologue / G.prologue)の文面 ──
+//
+// 年代記(Engine.chronicle)とは別レイヤーだが、抱えている構造は同じ:
+//   - ハイライト行・章末は `G.prologue` へ**完成文が永続**する → specs §15-1 の追加フィールド
+//     方式(`highlights[].textParts`)。`text` は必ず `Engine.chronicle.narrativeText(parts)`
+//     (dict省略=JA)から作るので、手組みの文字列は1本も残らない
+//   - 章末(confirm時)は**充填値を持たない素のプール文字列=辞書キーそのもの**なので追加
+//     フィールドを持たず、表示点で `WM_I18N.t()` を1回引く(specs §21-1 のサブタイトルと同型)
+//   - 章題・記者の見立て・書きかけの章末はUIの静的文で `G` に入らないが、
+//     **序章の文面を1つの表に集める**ため本表へ置き、ui-render.js が `t()` で引く
+//     (`WM_I18N.t(PROLOGUE_TEMPLATES.…)` は非リテラル引数なので extract-ui からは見えず、
+//      テンプレ台帳との二重登録が起きない・specs §15-3)
+const PROLOGUE_TEMPLATES = {
+  /** 章題(UIの静的文) */
+  title: '旗揚げ — 最初の5人と、最初の会場',
+  /** 記者の見立て(UIの静的文・進行中のみ)。2文が別行なのは、JAのHTMLを1バイトも
+   *  変えずに済ませるため(改行+インデントが空白1つに畳まれる既存の見た目を保つ) */
+  quote1: 'この章の主役が誰になるかは、まだ確定していない。',
+  quote2: '旗揚げの5人がそれぞれの形でこの団体を背負っている。',
+  /** 書きかけの章末(UIの静的文・`prologue.closing` が未確定のとき) */
+  closingWriting: 'この世代の物語は、まだ始まったばかりだ。',
+  /** 確定時の章末。`G.prologue.closing` へ**素のまま**永続するので辞書キーそのもの */
+  closingConfirmed: '最後の旗揚げメンバーが去り、団体は次の世代へと託された。',
+  /** ハイライト1行。分岐ごとの完全文(構造規約3「断片連結禁止」)。
+   *  `{org}` は団体名が取れないときだけ1語ラベル(団体)になるので、そのときだけ L マーカーを付ける。
+   *  `{name}` も同様に、初代王者が引けないときの既定ラベル(初代王者)にだけ L マーカーが付く
+   *  (実在の選手名・団体名はマーカー無しの素の値のまま渡し、t() のパラメータ値自動変換に任せる・specs §21-2) */
+  highlight: {
+    orgFounded: '{org}旗揚げ。最初の5人が揃い、最初の物語が始まった。',
+    firstShow: '旗揚げ戦。最初の興行が開かれ、団体は始動した。',
+    firstTitleSetup: '団体王座の設立が認定された。',
+    firstTitleWinner: '{name}が初代王者に。最初の頂が決まった。',
+    mq50: '試合評価50到達。観客の目つきが変わり始めた。',
+    mq70: '試合評価70到達。名勝負と呼ぶに値する試合が出た。',
+    mq80: '試合評価80到達。この章の選手が業界の壁を叩いた瞬間。',
+    pop25: '団体人気25到達。スポンサー筋に動きが出始めた。',
+    pop50: '団体人気50到達。大会場での興行が現実的に。',
+    survivalClear: '経営安定化達成。月次黒字が定着し、団体存続の目処が立った。',
+    founderRetire: '旗揚げメンバー {name} が引退。',
+    prologueEnd: '最後の旗揚げメンバーが引退。序章は閉じられた。',
+  },
+};
+
+// ── i18n Stage B P6-18: 年代記カードの「数値+単位語」 ──
+//
+// specs §4 が「Stage Bで複数形込みで設計する」として積み残していた族(§21-6-2)。
+// 表示は**すべてUI層**(ui-render.js の年代記/序章カード)で、`G` には何も焼かない。
+//
+//  ■ `<span class="small">` をテンプレ側に置く理由
+//    単位語の位置は言語で変わる(JAは数値の後、ENは語そのものが変わる/消える)ため、
+//    ハイライト行の `<strong>` と同じくマークアップをテンプレへ入れる(specs §21-1)。
+//
+//  ■ ENは充填値で単複・冠詞が変わらない形にする(黒田英文体 規則23/24)
+//    - タイル(`chron-era-stat` / `chron-ace-meta`)は**キーが単位を名乗っている**
+//      (ERA RUN / TITLES / 在籍選手)ので、ENは数値だけを出す。JAの単位語は
+//      英語キーとの重複表示を避けるためのもので、ENでは冗語になる
+//    - キーが単位を名乗らない枠(競争記録タイルの値・同期カードのメタ行・外敵の対戦成績)は
+//      値の側に単位を持たせる。`def.` / `W` / `L` / `reigns: {n}` のように**数値に左右されない**形
+const CHRONICLE_UNIT_TEXTS = {
+  /** エースカードの ERA RUN(章にまたがった期数) */
+  seasons: '{n}<span class="small">期</span>',
+  /** TITLES タイル(章の戴冠数 / 序章の通算戴冠数) */
+  titleReigns: '{n}<span class="small">戴冠</span>',
+  /** 同期カードのメタ行(キーの無い枠なので単位を語で持つ)。`p.titleReigns > 0` の枠 */
+  peerReigns: '{n}度戴冠',
+  /** 競争記録タイル(`eraStats.competitiveRecord`)の値。キーは mode ラベル(君臨/陥落…) */
+  defenses: '{n}<span class="small">度防衛</span>',
+  defensesTitleLost: '{n}<span class="small">度防衛・王座失陥</span>',
+  winLoss: '{w}<span class="small">勝</span>{l}<span class="small">敗</span>',
+  /** 外敵カードの対戦成績。JAは0の側を省くので、分岐ごとの完全文にする(構造規約3)。
+   *  `noDecision` は勝敗が1つも付かなかった枠=全て引き分け(`total = wins+losses+draws`)。
+   *  **枠(`<div class="chron-rival-record">`)ごとテンプレに入れてある** — `{wins}勝` 単独は
+   *  ui-ledger に既訳("{wins} wins" = 対抗戦マイルストーンのラベル。5の倍数専用)があり、
+   *  素のキーにすると二重登録で訳が入れ替わる(specs §15-3)。ENは "3–2" 型の成績表記に
+   *  したいので既訳とは形が違う。枠込みにすればキーが分かれ、`<span class="small">` を
+   *  テンプレへ入れるのと同じ理屈でマークアップの位置も言語側で決められる */
+  rivalWinLoss: '<div class="chron-rival-record">{wins}勝{losses}敗</div>',
+  rivalWinsOnly: '<div class="chron-rival-record">{wins}勝</div>',
+  rivalLossesOnly: '<div class="chron-rival-record">{losses}敗</div>',
+  rivalNoDecision: '<div class="chron-rival-record">{total}戦</div>',
+  /** 値の列挙(中黒)。詰めた形は CHRONICLE_NARRATIVE_TEMPLATES.listDot と同じキーになるので
+   *  そちらを使い(二重登録の禁止・specs §15-3)、本表は前後に空白が入る形だけを持つ */
+  dotJoinSpaced: '{a} ・ {b}',
+  /** 章の重なり表示の区切り(マークアップ込みの連結様式) */
+  overlapJoin: '{a}<span class="chron-overlap-sep">・</span>{b}',
+};
+
 // ── i18n Stage B P6-17: 週次ストーリーイベント(gameLogのレガシー文字列)の文面 ──
 //
 // Engine.relationships.processWeeklyStoryEvents が積む `[grievance]` / `[hostile-pairs]` の
@@ -31750,6 +31837,7 @@ if (typeof module !== 'undefined' && module.exports) {
     PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,
     CHRONICLE_QUOTE_CLAUSES, CHRONICLE_QUOTE_TEMPLATES_V2, CHRONICLE_QUOTE_TEMPLATES_V1,
     CHRONICLE_QUOTE_TEMPLATES_DUAL, CHRONICLE_NARRATIVE_TEMPLATES, CHRONICLE_CHAPTER_TEMPLATES,
+    PROLOGUE_TEMPLATES, CHRONICLE_UNIT_TEXTS,
     WEEKLY_STORY_EVENT_TEXTS, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
     GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
     GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES, BITTER_PREMATCH_LINES,

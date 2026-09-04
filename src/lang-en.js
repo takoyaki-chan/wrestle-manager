@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4027件、訳文あり4027件)
+//  生成元: i18n/ui-ledger.json (総キー4032件、訳文あり4032件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -932,6 +932,7 @@
     "ちょっと気になるのよね……何がとは言えないけど": "She interests me a little... I couldn't tell you what it is.",
     "つい気にかけてしまいます。理由はよくわかりませんが": "I find myself watching out for her. I'm not really sure why.",
     "つづき": "Continued",
+    "つばぜり合い": "Contention",
     "と{faction}の動きについて、社長室での相談です。": " and what {faction} is up to — a matter for the office.",
     "と{faction}の様子について、社長の判断を仰ぎたいとのことです。": " and how {faction} is doing — they would like your decision.",
     "ど う 立 ち 会 い ま す か": "How Will You Witness This?",
@@ -1483,6 +1484,7 @@
     "下位ながら反転の兆しを見せる": "Down near the bottom, but showing the first signs of a turnaround",
     "下位に甘んじている苦しい時期": "Stuck in a rough stretch near the bottom",
     "下克上 ―― {winner}が{faction}リーダー{loser}を下した。{flavor}。": "Coup — {winner} has brought down {faction} leader {loser}. {flavor}.",
+    "下剋上": "Overthrow",
     "不一致": "No match",
     "不参加": "Not entered",
     "不和の兆し": "Signs of friction",
@@ -1980,6 +1982,7 @@
     "名勝負製造機": "Match Maker",
     "名王者": "The Distinguished Champion",
     "名脇役の勲章": "The Great Supporting Player",
+    "君臨": "Reign",
     "周囲の数名が自然と集まっているようです。": "A few of the others seem to be drifting together.",
     "和 　 解": "RECONCILED",
     "和解": "Reconciliation",
@@ -2747,6 +2750,7 @@
     "残金": "Balance",
     "残金(決裁後)": "Balance (after approval)",
     "残高:": "Balance:",
+    "殴り込み": "Raid",
     "殿": "HOF",
     "殿堂": "Hall of Fame",
     "殿堂pt: {pt} ／ 殿堂入り: S{season}": "HOF pts: {pt} / Inducted: S{season}",
@@ -3646,6 +3650,7 @@
     "防衛": "Defense",
     "防衛 {n}回": "{n} defenses",
     "防衛ロードの怪物": "Monster of the Title Run",
+    "防衛戦": "Defenses",
     "防衛街道の果てに": "At the End of the Defense Road",
     "限界": "At the limit",
     "限界突破": "Limit Break",
