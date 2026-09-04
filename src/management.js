@@ -8114,34 +8114,43 @@ const Engine = {
       const inaccuracy = COACH_OBS_INACCURACY[obsRank] || 0;
       const isInaccurate = inaccuracy > 0 && Math.random() < inaccuracy;
       const text = Engine.coach._buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned, coach);
-      return { coachId: coach.id, coachName: coach.name, coachEmoji: coach.emoji, text };
+      // i18n Stage B P5-2n: text は COACH_VOICE_RETIRE_LINES の1行そのもの(=辞書キー)。
+      // 「担当じゃないから〜」の前置きは連結せず unassigned フラグで返し、表示側が
+      // 1文ずつ t() を通してから繋ぐ(連結した文字列は辞書に存在しえず必ず fail-open するため)。
+      // vague は観察ランクE/D(=見立てが立たない)。文言はテーブルに無いので表示層が持つ。
+      return {
+        coachId: coach.id, coachName: coach.name, coachEmoji: coach.emoji,
+        text, unassigned: !isAssigned, vague: text == null,
+      };
     },
 
+    // 戻り値は**プールの1行そのまま**(前置きを連結しない)。dict-opts規約: EngineはWM_I18Nを呼ばない。
     _buildRetireAdviceText(obsRank, rate, isInaccurate, isAssigned, coach) {
-      const prefix = isAssigned ? '' : '担当じゃないから確信はないですが…';
       const voiceKey = getCoachVoiceKey(coach && coach.id);
       const pool = COACH_VOICE_RETIRE_LINES[voiceKey] || COACH_VOICE_RETIRE_LINES.theorist;
       if (obsRank === 'E' || obsRank === 'D') {
-        return prefix + '…ちょっとわかりません';
+        // 観察ランクE/Dは「わからない」1本。COACH_VOICE_RETIRE_LINES に無い文言なので
+        // ここでは null を返し、文言は表示層(=辞書キーになれる場所)に置く。
+        return null;
       }
       if (obsRank === 'C') {
         const positive = isInaccurate ? (rate < 50) : (rate >= 50);
         const texts = positive ? pool.C_positive : pool.C_negative;
-        return prefix + texts[Math.floor(Math.random() * texts.length)];
+        return texts[Math.floor(Math.random() * texts.length)];
       }
       if (obsRank === 'B') {
         let tier;
         if (isInaccurate) { tier = rate >= 70 ? 'maybe' : rate >= 40 ? 'high' : 'hard'; }
         else               { tier = rate >= 70 ? 'high'  : rate >= 40 ? 'maybe' : 'hard'; }
         const texts = pool[`B_${tier}`];
-        return prefix + texts[Math.floor(Math.random() * texts.length)];
+        return texts[Math.floor(Math.random() * texts.length)];
       }
       // A rank (4段階 + 揺らぎ5%)
       let tier;
       if (isInaccurate) { tier = rate >= 80 ? 'likely' : rate >= 60 ? 'sure' : rate >= 40 ? 'hard' : 'iffy'; }
       else               { tier = rate >= 80 ? 'sure'   : rate >= 60 ? 'likely' : rate >= 40 ? 'iffy' : 'hard'; }
       const texts = pool[`A_${tier}`];
-      return prefix + (texts ? texts[Math.floor(Math.random() * texts.length)] : '…読めません');
+      return texts ? texts[Math.floor(Math.random() * texts.length)] : '…読めません';
     },
   },
 
