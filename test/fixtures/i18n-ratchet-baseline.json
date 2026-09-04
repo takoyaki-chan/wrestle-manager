@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-09-04T10:19:04.162Z",
+  "generatedAt": "2026-09-04T10:51:02.988Z",
   "files": {
     "data.js": {
-      "jaCount": 16980,
-      "jaChars": 306650
+      "jaCount": 17080,
+      "jaChars": 307573
     },
     "kuroda-text.js": {
       "jaCount": 900,
       "jaChars": 31355
     },
     "management.js": {
-      "jaCount": 2044,
-      "jaChars": 19719
+      "jaCount": 1967,
+      "jaChars": 19086
     },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
@@ -30,8 +30,8 @@
       "jaChars": 9614
     },
     "ui-render.js": {
-      "jaCount": 1080,
-      "jaChars": 9371
+      "jaCount": 1079,
+      "jaChars": 9349
     },
     "flag-dialogue.js": {
       "jaCount": 449,
@@ -90,8 +90,8 @@
       "jaChars": 597
     },
     "relationships.js": {
-      "jaCount": 51,
-      "jaChars": 479
+      "jaCount": 46,
+      "jaChars": 397
     },
     "flight-recorder.js": {
       "jaCount": 13,

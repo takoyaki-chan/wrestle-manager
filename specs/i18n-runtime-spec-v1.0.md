@@ -60,6 +60,7 @@ UI文字列(§5)とは別に、data.jsのテンプレ表(ニュース記事・�
 
 - **対象テーブル(data.js、16個)**: `GAMELOG_TEMPLATES` `FINISH_TEXT` `PPV_SUMMIT_HEADLINE_TEMPLATES` `PPV_SUMMIT_MATCHPART_TEMPLATES` `PPV_SUMMIT_HPNOTE_TEMPLATES` `PPV_UNDERCARD_HEADLINE_TEMPLATES` `PPV_UNDERCARD_BODY_TEMPLATES` `AI_INJURY_RETIREMENT_TEMPLATES` `AI_CONTRACT_DEPARTURE_TEMPLATES` `CROSS_WAR_RESULT_TEXT` `LEAGUE_ELEVATION_TEXT` `NEWSPAPER_SUB_TEMPLATES` `NEWS_HEADLINE_TEMPLATES` `NEWS_TICKER_TEMPLATES` `RETIREMENT_TEMPLATES`(**P6-10で追加**。通常引退記事のティア別テンプレ{L,A,B,C}×3変種×headline/body=24本。兄弟の`AI_INJURY_RETIREMENT_TEMPLATES`は最初から対象だったのに本表だけが一覧から漏れており、ENでも引退記事がJAのまま出ていた — §11-5の`EMOTION_TEXTS`と同型の構造穴。消費点は`Engine.newspaper._fillRetirementTemplate(t, d, dict)`でP6-10にdict-opts化済み) `HOF_BIOGRAPHY_TEMPLATES`(**P6-14で追加**。殿堂入り選手の語り文。導入6分岐×3 + 核心19分岐×2〜3 + 余韻3系統 + 連結様式`join` = 85本。P6-10までは`Engine.awards.generateBiography()`の**関数本体に直書きされた配列リテラル**で、§10-2が禁じた「関数の中の配列はどの抽出器からも永久に見えない」型だった。消費点は`generateBiography(entry, dict)`でP6-14にdict-opts化済み。詳細は§13)。`PPV_SUMMIT_VICTORY_LINES`(選手個人のセリフ)は対象外(P5のセリフ層で扱う)
 - **対象テーブル追加(data.js、7個。P7-2で追加)**: `SNAPSHOT_TEXTS` `ATMOSPHERE_TEXTS` `FAREWELL_KIND_TEXT` `LOCKER_AIR_TEXTS` `CAMP_FLAVOR_TEXTS` `PRE_WINDOW_TEXTS` `TEAM_SPIRIT_TEXTS`(§13-2 B の分類A「地の文プール」前半373行。Engine/UIが直に読む状況描写・演出文で、消費点がt()もdictも持たなかった層)。`ATMOSPHERE_TEXTS`の`emoji`フィールドだけは抽出器の`TABLE_PATH_FILTER`で除外する。配線は§15
+- **対象テーブル追加(data.js、2個。P6-17で追加)**: `CHRONICLE_CHAPTER_TEMPLATES`(年代記の章タイトル3 / サブタイトル29 / 章末12 / ハイライト行49=93行。`Engine.chronicle.SUBTITLE_TEMPLATES`/`CLOSING_TEMPLATES` のプロパティと `_generateTitle`/`_buildHighlights` の関数内直書きの移設先) `WEEKLY_STORY_EVENT_TEXTS`(週次ストーリーイベントの `[grievance]`/`[hostile-pairs]` 8行。gameLogレガシー文字列専用で**表示はJA固定**)。配線は§21
 - **対象テーブル追加(kuroda-text.js、13個。P4-5で追加)**: `KURODA_HEADLINES` `KURODA_EDITORIAL` `KURODA_WAR_RECORD` `KURODA_MATCHUP_FLAVOR` `FAN_OPINIONS` `NEWSPAPER_DIGEST_COMMENTS` `KURODA_SHOW_RATING` `KURODA_PREVIEW` `KURODA_SPOTLIGHT` `KURODA_NEWS_COMMENT` `KURODA_RELATION_NARRATIVE` `KURODA_CRISIS` `KURODA_GAMEOVER`。`NEWSPAPER_DIGEST_COMMENTS`/`FAN_OPINIONS`は指示書上「data.jsにあれば」だったが実体はkuroda-text.jsのみに存在(2026-09-04確認)。`FAN_HANDLES`(ファンハンドル名の識別子文字列)は日本語を含まないため対象外。`KURODA_PREVIEW`は消費点(呼び出し箇所)がsrc/*.jsのどこにも見つからない死蔵テーブル(docs/archive参照では過去に配線予定だった形跡があるが未実装のまま)— 台帳には抽出するが実配線なし
 - **対象テーブル追加(app.js、2個。P4-5で追加)**: `App._NEWSPAPER_HEADLINES` `App._NEWSPAPER_ARTICLES`(自団体新聞の見出し/本文プール)。App.のプロパティでトップレベルconstではないため、`test/i18n-extract-templates.js`が波かっこ深さカウントでapp.jsソースから該当オブジェクトリテラルのテキスト範囲だけを切り出し、`eval()`で単独評価して取得する(app.js全体を読み込まない。DOM依存の副作用を避けるため)
 - **対象テーブル追加(management.js、2個。P6-10で追加)**: `Engine.flavor.MAGAZINE_HEADLINES` `Engine.flavor.TV_HEADLINES`(雑誌取材・TV出演フレーバーイベントの見出しプール各6本)。app.jsの2プールと同じ理由(トップレベルconstではない)で、抽出器の`extractArrayLiteralProp()`(`extractAppObjectLiteral`の**角かっこ版**)がmanagement.jsソースから当該配列リテラルの範囲だけを切り出して単独評価する(management.js全体は読み込まない)。台帳の`files`欄は`management.js:MAGAZINE_HEADLINES` / `:TV_HEADLINES`
@@ -343,8 +344,8 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 
 1. **`ui-ledger`の抽出器が main に対して4行ぶん古い**。`test/i18n-extract-ui.js`を再実行すると`ui-common.js`の`WM_I18N.t()`literal 4件(派閥離脱系セリフ)が新規行として増え、うち`……もう、ついていけない。`は**dialogue-ledgerに既訳がある**(=ui-ledgerへ載せると二重登録)。P6-16は台帳をHEADへ戻し、必要な1行だけ手挿入した。**次にextract-uiへ触るバッチで、この4件をどちらの台帳の領分にするか決めること**
 2. **`Engine.chronicle.AXIS_LABELS`の`喧嘩`が ui-ledger で "Quarrel"**。スタイル軸のラベルとしては`Brawling`が正しい。`{styleJa}`/`{spiritAxis}`の枠に入るため年代記のEN本文に出る
-3. **`該当選手`の既訳 "Matching Wrestlers" が文脈違い**。秋対抗戦MVPが解決できないときの人名スロットのフォールバックで、`ui-common.js:19902`の同じ場面と同一キーなのに検索フィルタ語として訳されている
-4. **`Engine.chronicle._generateTitle`/`_generateSubtitle`/`_generateClosing`/`_buildHighlights`は未着手**。年代記画面の章タイトル・サブタイトル・締め・ハイライト行はまだ生JA(§13-2 B表と同じ層)
+3. **✅解決(P6-17)** — **`該当選手`の既訳 "Matching Wrestlers" が文脈違い**。秋対抗戦MVPが解決できないときの人名スロットのフォールバックで、`ui-common.js:19902`の同じ場面と同一キーなのに検索フィルタ語として訳されている。→ 台帳の`files`/`count`を確認したところ**この人名スロットが唯一の消費点**(count=1)で、検索フィルタ語は別キー(`該当する選手がいません`)だったため、キー分割はせず`en`を`Unnamed wrestler`へ訂正した(§21-4)
+4. **✅解決(P6-17)** — **`Engine.chronicle._generateTitle`/`_generateSubtitle`/`_generateClosing`/`_buildHighlights`は未着手**。年代記画面の章タイトル・サブタイトル・締め・ハイライト行はまだ生JA(§13-2 B表と同じ層)。→ §21
 5. **`Engine.chronicle._getSurname`の`名無し`フォールバック**は他のchronicleコードからも共用されるためdict化していない(実質到達不能)
 1. **`_buildPpvSummitStory`(management.js)** — PPV頂上決戦の紙面本文。**dict糸通しは済んでいる**のに、(a)`bodyParts.join('')`に連結様式テンプレが無くENでは文が空白なしで直結する、(b)本文の大半(舞台説明文・試合経過文・試合評価文4変種・通算戦績2文・勝者/敗者コメントの地の文2文)が**生JAのJSテンプレートリテラルで`T()`を通っていない**。P6-8が`_quoted`だけを直したため「一部だけ英語になる」状態で残っている。**次バッチの筆頭候補**
 2. **`Engine.chronicle`の年代記叙述4関数**(management.js:5201/5253/6391/6641) — dictを一切持たない断片連結。`QUOTE_TEMPLATES_DUAL`はEngineオブジェクトのプロパティで抽出器から見えない(§10-2型)。加えて`_buildPeerNarrative`等は分岐ごとの実行文プールで、§6 pool③(`Engine.mvpRace`の叙述family)と同じ性格
@@ -524,11 +525,70 @@ P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARG
 
 ### 19-4. P7-3で新たに見つかった同型(未着手)
 
-1. **`processWeeklyStoryEvents` の直書きJA 6本** — `[grievance]`4本(給料/後輩の待遇/タイトル挑戦/出場機会)と
+1. **✅解決(P6-17)** — **`processWeeklyStoryEvents` の直書きJA 6本** — `[grievance]`4本(給料/後輩の待遇/タイトル挑戦/出場機会)と
    `[hostile-pairs]`1本+ペア名の連結様式。`WEEKLY_STORY_TICKER` と**同じ関数の中で同じgameLogへ積まれる**のに、
-   どの表にも入っていない実行文直書き(§10-2型)。gameLog再設計と同時に処理するのが自然
+   どの表にも入っていない実行文直書き(§10-2型)。→ `WEEKLY_STORY_EVENT_TEXTS`(data.js)へ移設し台帳化・英訳した。
+   **表示はJA固定のまま**(§19-2と同じ判断・§21-3)
 2. **EN走破の `screen-log` のJA露出48件は、ほぼ全部がこのgameLogレガシー文字列族**。§13-2の完了指標
    「各画面1桁」を screen-log に適用するには gameLog の `{type,data}` 全面移行が前提になる
+
+## 21. Stage B P6-17 — 年代記の章タイトル/副題/締め/ハイライトと週次ストーリー直書き6本(2026-09-04追加)
+
+§15-6 が起票した4件(発見3・4)と §19-4 の1件を解決した。訳出**103キー**(template-ledger 2,571→**2,672**・未訳0 / ui-ledger 4,028→**4,027**・未訳0)。
+
+### 21-1. 「保存される完成文」は追加フィールド、「保存値が辞書キーそのもの」は表示点で1回引く
+
+年代記の章は `G.chronicle.chaptersCache.chapters[]` へ**完成文が永続**する。4つとも同じ層だが、充填値の有無で解き方が割れる。
+
+| 対象 | 保存値 | 配線 |
+|---|---|---|
+| `title`(○○世代) | 姓を埋めた完成文 | **追加フィールド `titleParts`**(§15-1) |
+| `subtitle`(黄金期 等) | **充填値を持たない素のプール文字列** | 追加フィールドを持たず、表示点で `WM_I18N.t(subtitle)` を1回引く(§17-2 の異名と同型) |
+| `closing`(章末) | 団体名・軸ラベルを埋めた完成文 | **追加フィールド `closingParts`** |
+| `highlights[].text` | 選手名・ベルト名・年次を埋めた完成文(HTML) | **追加フィールド `highlights[].textParts`** |
+
+- プールは `CHRONICLE_CHAPTER_TEMPLATES`(data.js、`title`/`subtitle`/`closing`/`highlight`)へ移設した。`SUBTITLE_TEMPLATES`/`CLOSING_TEMPLATES` は Engine のプロパティ(§10-2型で抽出器から不可視)だったので `Engine.chronicle` からは削除している。**配列の順序・要素数は変更不可**(`_pickTemplate` が章境界のシードから添字を引く)
+- 完成文は必ず `narrativeText(parts)`(dict省略=JA)から作る。手組みの文字列を残さないので「保存値とパーツが食い違う」経路が構造的に生じない
+- 表示点は `ui-render.js` の **`_chronicleParted(parts, savedText)`** 1関数へ集約(章タイトル3箇所・章末・ハイライト)。パーツが無い旧セーブは**保存値をそのまま出す**(fail-open)。**保存値を`t()`に通さないこと**
+- **ハイライトは断片連結をやめ、分岐ごとの完全文48本にした**(構造規約3)。`<strong>` は文中の位置が言語で変わるためテンプレ側に置く。文末にだけ付く対戦相手の差し込み句(`（vs …）`)だけは §15-2 のクラウス方式(EN訳文は先頭スペースを持たず、連結様式 `join` が空白を入れる)
+
+### 21-2. パーツの値マーカー `L` / `B` — 「値そのものが辞書を引く必要のあるJAラベル」
+
+`_narrativePartText` に2つの任意フィールドを足した。**どちらも `v` の値に対して働く**(テンプレ本文ではなく値を引く点で `_wmDictLabel` と同趣旨・§14-2)。
+
+- **`L: [vキー…]`** … 値がJAの1語ラベル(`打撃`/`団体`/`団体王座` 等)。`_wmDictLabel(dict, 値)` で引き直す
+- **`B: [vキー…]`** … 値がJAのベルト名(`○○王座`)。`Engine.chronicle._beltLabel(値, dict)` で組み直すので、団体名だけが**パラメータ**を通り名前辞書(pn)が効く。`王座`単独(orgName不明)は "Title" へ落ちる
+- **実在の団体名・選手名には付けない** — `_wmDictLabel` はUI辞書を引くので、名前を渡すと `[i18n-miss]` を量産する。名前はマーカー無しの素の値のまま渡し、`t()` のパラメータ値自動変換(D-P6-2)に任せる。マーカーを付けるかどうかは**生成時に決まる**(`ev.orgName` が取れたかどうか)ので、保存されるパーツに分岐が焼き付く
+- **`items` の中のパーツにも同じ手順を適用すること**。P6-16の`_narrativePartText`は `items` を `_wmFillWithDict(dict, it.t, it.v)` で直接埋めていたため、内側に入ったベルト名がマーカーを通らずJAのまま残った(**P6-17のEN検品で発見した実バグ**。`_buildAceNarrativeParts` の2文目「{belt}を{count}度戴冠」がENでも`凰翔プロレス王座`のまま出ていた)。内側も `_narrativePartText` を再帰で呼ぶ形に直した
+- **`items` の要素は素の文字列でもよい**(P6-17で追加)。連結様式のパラメータとして渡るので名前辞書の変換が効く。1件のときは畳み込みが起きないが、その場合は `{items}` の値として外側テンプレのパラメータを通るのでそこで変換される(`joinNameList` と同じ理屈・§14-1)
+
+### 21-3. `WEEKLY_STORY_EVENT_TEXTS` — gameLog専用プールの2つ目
+
+`processWeeklyStoryEvents`(relationships.js)の `[grievance]`5本+`[hostile-pairs]`2本+ペア連結1本を `WEEKLY_STORY_EVENT_TEXTS`(data.js)へ移設した。**消費点は無改修=表示はJA固定**(§19-2 の `WEEKLY_STORY_TICKER` と同じ関数・同じgameLogレガシー文字列エントリなので判断も同じ)。`[grievance]` 等の接頭辞は機械タグなので消費点に残す。ペア名の列挙は `ARTICLE_COMPOSE_TEMPLATES.nameList` の畳み込みへ寄せた(§14-1)。
+
+### 21-4. 同じキーを2つの台帳へ載せない(§15-3)の実運用 — 衝突3件の裁き方
+
+`CHRONICLE_CHAPTER_TEMPLATES` を template-ledger の走査対象に足すと、ui-ledger と**同じキー**になる行が3つ出た。読み込み順(lang-en.js → lang-en-templates.js)でテンプレ側が後勝ちするため、放置すると訳が入れ替わる。
+
+- `黄金期` / `端境期` … P6-16が management.js の `_wmDictLabel(dict, …)`(記者の目の`{eraTag}`枠)向けに **`kept:true` で手追加**した行。**ui-ledger 側を削除**し、template-ledger に一本化した(`_wmDictLabel` は合成済み辞書を引くので配線は不変)。訳文は既訳(`a golden age` / `a lean spell`)を踏襲する — `{eraTag}` は "were nothing other than {eraTag}." のように文中へ入るため、この2つだけは**サブタイトルでも小文字の名詞句**になる
+- `旗揚げ世代` … ui-render.js の `WM_I18N.t('旗揚げ世代')`(序章のロースター見出し)から**自動抽出される**行なので消せない。意味が同一なので**両台帳に同じ訳**(`The Founding Generation`)を置く。**訳が一致している限り読み込み順に依存しない**ので、これは許容できる唯一の重複形
+
+`該当選手` は「文脈違い」と起票されていたが(§15-6-3)、台帳の `count=1` / `files=[ui-common.js]` から**秋対抗戦MVPの人名スロットが唯一の消費点**と判明した(検索フィルタ語は別キー `該当する選手がいません` → "No wrestlers match")。キー分割はせず `en` を `Unnamed wrestler` へ訂正した。
+
+### 21-5. JA同一性の証明(109,956通り・不一致0)
+
+§15-5 の作法(凍結コピーとの全数突合)を5関数へ適用。HEADの `_generateTitle`/`_generateSubtitle`/`_generateClosing`/`_buildHighlights`/`_buildAceNarrativeParts` をソースから機械抽出し、`Object.create(Engine.chronicle)` のプロトタイプ経由で未変更ヘルパを共有して突合した。
+
+- 移設した2表(`SUBTITLE_TEMPLATES`/`CLOSING_TEMPLATES`)は `JSON.stringify` で凍結コピーと**完全一致**
+- サブタイトル**29/29**・章末**12/12**・ハイライト**48/48**の全テンプレに到達(章境界グリッド+全イベント型の直積+乱数fixture 4,000本)
+- ハイライトは1行ごとに「保存文 == `narrativeText(textParts)`(dict省略)」「保存文 == `narrativeText(textParts, ja素通しdict)`」も同時に照合する(20,423行)
+- **auto-simのsemantic fingerprintは追加フィールドの分だけ動く**(`c52c116c` → `afda03f8`)。指紋のreplacerで `titleParts`/`closingParts`/`textParts`/`B` を除外して**HEADと新実装の両方を再計測**し、**どちらも `a8641a5a`** になることを実測した(HEADで同じ除外を掛けても値が変わるのは、指紋対象に別の `B` キーが元から存在するため。両者に同じ除外を掛けている以上、比較としては成立している)
+
+### 21-6. P6-17で新たに見つかった穴(未着手)
+
+1. **序章(`Engine.prologue`)のハイライト・記者の見立て・章末が生JAのまま**。`ui-render.js` の序章描画は `h.text` を直参照し、「この章の主役が誰になるかは、まだ確定していない。…」「この世代の物語は、まだ始まったばかりだ。」がt()を通っていない。`Engine.chronicle` とは別レイヤー(`G.prologue`)で、ハイライトの生成側(`Engine.prologue`)も同型のテンプレ化が要る
+2. **年代記のエース/同期カードに単位語の生JAが残る**(`${a.seasons}<span class="small">期</span>` / `${a.titleReigns}<span class="small">戴冠</span>` / peer行の `${p.titleReigns}度戴冠`)。数値+単位語は §4 の「Stage Bで複数形込みで設計する」族
+3. **`Engine.chronicle._getSurname` の `名無し` フォールバック**(§15-6-5)は引き続きdict化していない(実質到達不能)
 ## 20. Stage B P7-1 — データ表の値層「C. ラベル・短い定義の表」を`DATA_TABLES`モードで台帳化・配線・英訳(2026-09-04追加)
 
 設計はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」13表と、P6-13が積み残した4件(秋対抗戦の団体名ロングテール/fanExpect理由テンプレ/特性バッジ/招聘市場パネルのラベル)を解決した。

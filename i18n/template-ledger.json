@@ -510,6 +510,456 @@
     "hasProperNoun": false
   },
   {
+    "key": "<strong>{name}</strong> MVP {count}度受賞・{streak}年連続（{years}）",
+    "en": "<strong>{name}</strong> won MVP {count} times, {streak} years running ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> MVP {count}度受賞（{years}）",
+    "en": "<strong>{name}</strong> won MVP {count} times ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> MVP受賞",
+    "en": "<strong>{name}</strong> won MVP",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> PPVメインイベント {count}度制覇・{streak}連覇（{years}）",
+    "en": "<strong>{name}</strong> won the PPV main event {count} times, {streak} in a row ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> PPVメインイベント {count}度制覇（{years}）",
+    "en": "<strong>{name}</strong> won the PPV main event {count} times ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> PPVメインイベント制覇",
+    "en": "<strong>{name}</strong> won the PPV main event",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} {count}度戴冠（{years}）",
+    "en": "<strong>{name}</strong> won the {belt} {count} times ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} {count}度防衛",
+    "en": "<strong>{name}</strong> defended the {belt} {count} times",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} {count}度防衛など（{years}）",
+    "en": "<strong>{name}</strong> defended the {belt} {count} times, among others ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} {count}度防衛の末に陥落",
+    "en": "<strong>{name}</strong> lost the {belt} after {count} defenses",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} {count}度防衛の末に陥落（{by}に敗北）",
+    "en": "<strong>{name}</strong> lost the {belt} after {count} defenses (beaten by {by})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} 戴冠",
+    "en": "<strong>{name}</strong> won the {belt}",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} 王座陥落",
+    "en": "<strong>{name}</strong> lost the {belt}",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {belt} 王座陥落（{by}に敗北）",
+    "en": "<strong>{name}</strong> lost the {belt} (beaten by {by})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {org}に挑戦試合{total}戦{wins}勝{losses}敗",
+    "en": "<strong>{name}</strong> {wins}-{losses} in {total} challenge matches against {org}",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {org}に挑戦試合勝利",
+    "en": "<strong>{name}</strong> won a challenge match against {org}",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> {org}に挑戦試合敗北",
+    "en": "<strong>{name}</strong> lost a challenge match against {org}",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> サミット{total}戦{wins}勝{losses}敗",
+    "en": "<strong>{name}</strong> {wins}-{losses} in {total} summit matches",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> サミット制覇",
+    "en": "<strong>{name}</strong> won a summit match",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> サミット敗退",
+    "en": "<strong>{name}</strong> beaten in a summit match",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ジュニアトーナメント {count}度優勝・{streak}連覇（{years}）",
+    "en": "<strong>{name}</strong> won the Junior Tournament {count} times, {streak} in a row ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ジュニアトーナメント {count}度優勝（{years}）",
+    "en": "<strong>{name}</strong> won the Junior Tournament {count} times ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ジュニアトーナメント優勝",
+    "en": "<strong>{name}</strong> won the Junior Tournament",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ジュニアトーナメント準優勝",
+    "en": "<strong>{name}</strong> runner-up in the Junior Tournament",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ジュニアトーナメント準優勝（決勝で{by}に敗北）",
+    "en": "<strong>{name}</strong> runner-up in the Junior Tournament (lost the Final to {by})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ドーム タイトル戦",
+    "en": "<strong>{name}</strong> in the Dome title match",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> ドーム タイトル戦 勝利",
+    "en": "<strong>{name}</strong> won the Dome title match",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> ドーム メイン",
+    "en": "<strong>{name}</strong> in the Dome main event",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> ドーム メイン 勝利",
+    "en": "<strong>{name}</strong> won the Dome main event",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> ベストマッチ賞 {count}度受賞・{streak}年連続（最高評価{mq}）",
+    "en": "<strong>{name}</strong> won Best Match {count} times, {streak} years running (best rating {mq})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ベストマッチ賞 {count}度受賞（最高評価{mq}）",
+    "en": "<strong>{name}</strong> won Best Match {count} times (best rating {mq})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> ベストマッチ賞（試合評価{mq}）",
+    "en": "<strong>{name}</strong> won Best Match (match rating {mq})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> メディア賞",
+    "en": "<strong>{name}</strong> won the Media Award",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> メディア賞 {count}度受賞（{years}）",
+    "en": "<strong>{name}</strong> won the Media Award {count} times ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 他団体に挑戦試合{total}戦{wins}勝{losses}敗",
+    "en": "<strong>{name}</strong> {wins}-{losses} in {total} challenge matches against other promotions",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 他団体に挑戦試合勝利",
+    "en": "<strong>{name}</strong> won a challenge match against another promotion",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 他団体に挑戦試合敗北",
+    "en": "<strong>{name}</strong> lost a challenge match against another promotion",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 対抗戦{total}戦{wins}勝{losses}敗",
+    "en": "<strong>{name}</strong> {wins}-{losses} in {total} interpromotional matches",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 対抗戦勝利",
+    "en": "<strong>{name}</strong> won an interpromotional match",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 新人賞",
+    "en": "<strong>{name}</strong> won Rookie of the Year",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 新人賞 {count}度受賞（{years}）",
+    "en": "<strong>{name}</strong> won Rookie of the Year {count} times ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<strong>{name}</strong> 春のタッグリーグ {count}度優勝・{streak}連覇（{years}）",
+    "en": "<strong>{name}</strong> won the Spring Tag League {count} times, {streak} in a row ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 春のタッグリーグ {count}度優勝（{years}）",
+    "en": "<strong>{name}</strong> won the Spring Tag League {count} times ({years})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 春のタッグリーグ優勝",
+    "en": "<strong>{name}</strong> won the Spring Tag League",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "<strong>{name}</strong> 春のタッグリーグ準優勝",
+    "en": "<strong>{name}</strong> runner-up in the Spring Tag League",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "A・B各ブロック1位がぶつかった決勝で、{championOrg}の{champ1}・{champ2}組が{runnerUpOrg}の{runner1}・{runner2}組を破り、第{season}回春のタッグリーグの優勝チームとなった。",
     "en": "In the final between the winners of Blocks A and B, {champ1} and {champ2} of {championOrg} beat {runner1} and {runner2} of {runnerUpOrg} to become the champion team of Spring Tag League No. {season}.",
     "files": [
@@ -1010,10 +1460,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{axis}が{org}の代名詞として定着した時期だった。",
+    "en": "This was when {axis} settled in as the byword for {org}.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{axis}の時代",
     "en": "the age of {axis}",
     "files": [
       "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{axis}中心の試合運びが、{org}全体の傾向を少し変えた。",
+    "en": "Ring work built around {axis} shifted {org}'s tendencies a little.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1040,6 +1510,16 @@
       "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}と{b}",
+    "en": "{a} and {b}",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
+    ],
+    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -3734,6 +4214,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}がタイトル挑戦の機会を求めているようだ",
+    "en": "{name} seems to be after a title shot",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}がリングに上がった。{age}歳。デビュー戦は{result}に終わった。数字上の勝敗より、スカウト筋がこの新人に付けていた評価のほうが業界を騒がせている。関係者の間では「ここ数年で一番の素材」との声が入団前から流れていた。実物を見た記者席のざわめきが、その評判を裏づけた。",
     "en": "{name} stepped into the ring. Age {age}. The debut ended one way: {result}. What has the business talking is less the result than the grade the scouts had already put on her. Word going around before she signed was that this is the best material in several years. The noise from the press seats, once they had seen her, backed that up.",
     "files": [
@@ -3794,6 +4284,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が出場機会の少なさに不満を抱えている",
+    "en": "{name} is unhappy about how little she is being booked",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が化けている。総合力+{ovrGain}。放っておくと手がつけられなくなる",
     "en": "{name} has turned into a different wrestler. Overall up {ovrGain}. Leave this much longer and nobody will be able to handle her.",
     "files": [
@@ -3838,6 +4338,26 @@
     "en": "{name} watched her junior {name2}'s match with her arms folded. Something complicated in her face",
     "files": [
       "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が後輩の待遇に不満を感じている",
+    "en": "{name} is unhappy with how the juniors are being treated",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が後輩（{junior}）の待遇に不満を感じている",
+    "en": "{name} is unhappy with how her junior ({junior}) is being treated",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3898,6 +4418,16 @@
     "en": "{name} moves — {toOrg} looking stronger",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が給料への不満を漏らしているようだ",
+    "en": "{name} seems to be voicing complaints about her pay",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5224,6 +5754,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}が{axis}を団体の特色として語れるようになったのは、この世代からだった。",
+    "en": "It was from this generation on that {org} could speak of {axis} as a mark of the promotion.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}が{count}名を指名",
     "en": "{org} names {count} in the draft",
     "files": [
@@ -5724,6 +6264,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の基本路線に{axis}の要素が少し加わった。",
+    "en": "A little {axis} was added to {org}'s basic line.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の指名は{count}名。{names}が新たに名簿に加わった。",
     "en": "{org} called {count} in the draft. New on the roster: {names}.",
     "files": [
@@ -5838,6 +6388,16 @@
     "en": "Nobody at the {org} show — the draw keeps falling",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の試合内容に{axis}の傾向が少し混じり始めた。",
+    "en": "A trace of {axis} began to work its way into {org}'s matches.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -7709,6 +8269,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{surname1}・{surname2}世代",
+    "en": "The {surname1}–{surname2} Generation",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{surname}が{debutSeason}シーズンにデビューしたのは、ちょうどこの章の最中だった。",
     "en": "{surname} debuted in season {debutSeason}, right in the middle of this chapter.",
     "files": [
@@ -8414,6 +8984,16 @@
     "en": "People came through the doors to see {surname}. That was what this generation actually was.",
     "files": [
       "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}世代",
+    "en": "The {surname} Generation",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -12800,6 +13380,66 @@
     "hasProperNoun": false
   },
   {
+    "key": "この世代は{org}に{axis}の傾向をわずかに残した。",
+    "en": "This generation left {org} with a faint leaning toward {axis}.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この世代は{org}のスタイルに{axis}色を残した。",
+    "en": "This generation left the mark of {axis} on {org}'s style.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この世代は、{org}のスタイルを少しだけ{axis}寄りにした。",
+    "en": "This generation tilted {org}'s style a little toward {axis}.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この世代を経て、{org}のスタイルは{axis}色が明確になった。",
+    "en": "After this generation, the {axis} cast in {org}'s style was unmistakable.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この世代以降、{org}の主流は{axis}に移った。",
+    "en": "From this generation on, {org}'s mainstream moved to {axis}.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この世代以降、{org}の若手は{axis}を基本として選ぶようになった。",
+    "en": "From this generation on, {org}'s young wrestlers took {axis} as their base.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "この内容でお金を取るのは厳しい",
     "en": "Charging money for this is a stretch",
     "files": [
@@ -14661,6 +15301,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ファン人気で支えた世代",
+    "en": "The Generation Carried by Its Fans",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "フレッシュな顔合わせ。伸びしろが大きい分、予想外の展開もあり得る",
     "en": "A fresh pairing. With that much room to grow in both of them, something unforeseen is entirely possible.",
     "files": [
@@ -14981,6 +15631,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "ロッカールームの空気が重い",
+    "en": "The air in the locker room is heavy",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ロッカールームの空気が重い（{pairs}）",
+    "en": "The air in the locker room is heavy ({pairs})",
+    "files": [
+      "WEEKLY_STORY_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "ロープの反動を利用した連続技の練習中、{name}の足がロープに絡まり転倒。すぐには立ち上がれなかった。",
     "en": "Drilling a sequence off the ropes, {name} caught a foot in them and went down. She did not get up right away.",
     "files": [
@@ -15061,6 +15731,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "一強時代",
+    "en": "The Age of One Power",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "一強時代の到来。次は他団体がどう対策してくるかを見たい",
     "en": "One-promotion era. Now I want to see how everyone else answers it",
     "files": [
@@ -15098,6 +15778,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "一歩、届かず",
+    "en": "One Step Short",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -15261,6 +15951,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "世代交代期",
+    "en": "The Handover Years",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "両者ともに引き出しが深い。これが純粋な技術戦の醍醐味というものだ",
     "en": "Both of them have deep reserves. This is the pleasure of a pure technical match.",
     "files": [
@@ -15335,6 +16035,16 @@
     "en": "Raising the middle of the card is urgent. A strong ace alone doesn't win a promotion war",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "中堅職人世代",
+    "en": "The Generation of Steady Hands",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16001,6 +16711,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "低迷期",
+    "en": "The Years of Decline",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "何かが変わった……っ……ふふ……",
     "en": "Something has changed... mm... hehe...",
     "files": [
@@ -16559,6 +17279,16 @@
     ],
     "count": 2,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "創成期",
+    "en": "The Formative Years",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -17122,6 +17852,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体王座",
+    "en": "Promotion Championship",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "団体王座を保持していた{name}が{toOrg}へ移籍し、ベルトは空位となった。{fromOrg}は新王者決定に向けて動くことになる。",
     "en": "{name}, who held the promotion title, has moved to {toOrg}, and the belt is vacant. {fromOrg} will now move to decide a new champion.",
     "files": [
@@ -17226,6 +17966,26 @@
     "en": "A solid, good match. Comfortable to watch",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "壁にぶつかった世代",
+    "en": "The Generation That Hit the Wall",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "壁の前で",
+    "en": "Before the Wall",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17402,6 +18162,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "始まりの灯",
+    "en": "The First Light",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "安泰に見えるけど、主力のピーク過ぎが重なる2年後が怖い。今から手を打つべき",
     "en": "Looks safe, but two years out is scary when the top names hit the far side of their peak together. Act now",
     "files": [
@@ -17572,6 +18342,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "対抗戦 <strong>{name}</strong> 敗退",
+    "en": "Interpromotional match: <strong>{name}</strong> eliminated",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "対抗戦{warWins}勝——団体の旗を背負うとき、彼女は別人になった。",
     "en": "Interpromotional wins: {warWins} — with the promotion flag on her back she became someone else.",
     "files": [
@@ -17649,6 +18429,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "届かなかった頂",
+    "en": "The Summit They Never Reached",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -17966,6 +18756,16 @@
     "en": "So strong there's no tension left in the matches",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "影を踏んだ世代",
+    "en": "The Generation That Stepped on the Shadow",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -18449,6 +19249,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "挑戦者世代",
+    "en": "The Challengers' Generation",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -18996,6 +19806,36 @@
     "en": "A new champion. The question is whether she can pull the promotion along now that she has the belt.",
     "files": [
       "KURODA_NEWS_COMMENT"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "旗を立てた日々",
+    "en": "The Days the Flag Went Up",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "旗揚げ世代",
+    "en": "The Founding Generation",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "日陰の奉仕者たち",
+    "en": "Those Who Served in the Shade",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20082,6 +20922,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "次世代の選手は{axis}を一つの基準として育っていった。",
+    "en": "The next generation grew up with {axis} as one of their measures.",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "次世代エース候補が育ってないと、世代交代で一気に転落するリスクがある",
     "en": "If the next ace isn't being raised, the handover risks dropping the whole thing at once",
     "files": [
@@ -20242,6 +21092,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "残留組の時代",
+    "en": "The Age of Those Who Stayed",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "毎朝の早出練習が続いている{name}。最近はスパーリング相手からも「動きが変わった」と言われることが増えてきた。",
     "en": "{name} has kept up the early morning sessions, and lately her sparring partners keep telling her that her movement has changed.",
     "files": [
@@ -20309,6 +21169,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "気鋭の時代",
+    "en": "The Age of the Upstarts",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -20682,10 +21552,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "灯を絶やさぬ者たち",
+    "en": "Those Who Kept the Light On",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "無双状態。つまんないくらい強いわ",
     "en": "Untouchable. Strong to the point of being boring",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "無名の時代",
+    "en": "The Nameless Era",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20722,6 +21612,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "熱気と歓声の時代",
+    "en": "The Age of Heat and Cheers",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "熱血気質の{surname}はリングで気持ちを前面に出すタイプだった。",
     "en": "Hot-blooded by nature, {surname} was the type to put feeling out in front in the ring.",
     "files": [
@@ -20739,6 +21639,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "牙を研ぐ日々",
+    "en": "The Days of Sharpening Teeth",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -21665,6 +22575,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "端境期",
+    "en": "a lean spell",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "笑いたきゃ笑え。でも絶対にここから上がるから。見てろ",
     "en": "Laugh if you want. We're coming up from here. Watch",
     "files": [
@@ -22355,6 +23275,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "華のある世代",
+    "en": "The Generation with Shine",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "華やかなる時代",
+    "en": "The Bright Years",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "衝撃の鞍替え——{targetName}、「{toFaction}」入り",
     "en": "A switch nobody saw — {targetName} joins {toFaction}",
     "files": [
@@ -22867,6 +23807,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "誰にも届かぬ高み",
+    "en": "Heights No One Could Reach",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "誰にも捉えられないスピードで、観客を魅了し続けた。",
     "en": "Nobody could catch her, and the crowd never got tired of watching.",
     "files": [
@@ -23337,6 +24287,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "連続王者の時代",
+    "en": "The Age of the Unbroken Reign",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "連覇王者への挑戦権を、どの団体が最初にもぎ取るか。次の3か月は、その争いから始まる。",
     "en": "Which promotion grabs the first shot at a two-time champion? The next three months start with that fight.",
     "files": [
@@ -23404,6 +24364,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "過渡期世代",
+    "en": "The Transitional Generation",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -23817,6 +24787,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "頂を仰ぐ者たち",
+    "en": "Those Who Looked Up at the Summit",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "頂上直接対決へ——「{factionAName}」{leaderAName} vs 「{factionBName}」{leaderBName}",
     "en": "{factionAName} {leaderAName} vs {factionBName} {leaderBName}",
     "files": [
@@ -23914,6 +24894,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "黄金期",
+    "en": "a golden age",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -25701,6 +26691,26 @@
     "en": "🫥 {name} looks closed off more days than not",
     "files": [
       "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（vs {items} 他）",
+    "en": "(vs {items} and others)",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（vs {items}）",
+    "en": "(vs {items})",
+    "files": [
+      "CHRONICLE_CHAPTER_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
