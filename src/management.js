@@ -13302,7 +13302,7 @@ const Engine = {
       promoIncomes.forEach(pi => {
         totalIncome += pi.income;
         const popTag = pi.popGain > 0 ? ` 人気+${Math.round(pi.popGain * 10) / 10}` : '';
-        details.push({ label: _wmFillWithDict(dict, 'プロモ収入（{name} {eventName}{popTag}）', { name: pi.name, eventName: pi.eventName, popTag }), val: pi.income, type: 'income', category: 'promo' });
+        details.push({ label: _wmFillWithDict(dict, 'プロモ収入（{name} {eventName}{popTag}）', { name: pi.name, eventName: _wmDictLabel(dict, pi.eventName), popTag }), val: pi.income, type: 'income', category: 'promo' });
       });
 
       // 金銭バランス改善: 週次グッズ収入（全選手・毎週）
@@ -23462,7 +23462,7 @@ Engine.shachoshitsu = {
     const T = (typeof dict === 'function') ? dict : (s) => s;
     if (req.axis === 'grade') return fillTemplateVars(T('{g}級のコーチ'), { g: req.value });
     const label = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[req.value]) || req.value;
-    return fillTemplateVars(T('{label}に強いコーチ'), { label });
+    return fillTemplateVars(T('{label}に強いコーチ'), { label: T(label) });
   },
 
   // periodKey が現在と食い違っていれば再抽選、そうでなければそのまま返す(tickWeek から毎週呼ぶ)
@@ -25972,7 +25972,11 @@ Engine.freshness = {
 Engine.fanExpect = {
   // ── ファン期待カードの生成（純粋関数）─────────────────────────────────────
   // 返り値: [{ leftId, rightId, leftName, rightName, reason, priority }] 最大3件
-  generate(state) {
+  // i18n Stage B P7-1: dict(第2引数、任意)は「辞書参照関数」。UI層(ui-render.js)から
+  // 呼ぶ場合はWM_I18N.tを渡してよい。省略時はJA原文のまま(既存Engine内呼び出し元は無改修で不変)。
+  // reasonは選手名を{left}/{right}に持つテンプレを_wmFillWithDictへ通してから組み立てる
+  // (名前を先に埋め込んだ完成文へdictを通すと辞書キーと一致せずfail-openする、P5-2系の穴と同型)。
+  generate(state, dict) {
     const roster = (state.roster || []).filter(f => !f.injury && !f.isRental);
     if (roster.length < 2) return [];
 
@@ -25983,7 +25987,7 @@ Engine.fanExpect = {
     const candidates = [];
     const seen = new Set();
 
-    const addCandidate = (f1, f2, reason, priority) => {
+    const addCandidate = (f1, f2, tpl, priority) => {
       if (!f1 || !f2 || f1.id === f2.id) return;
       const key = [f1.id, f2.id].sort().join('-');
       if (seen.has(key)) return;
@@ -25992,10 +25996,15 @@ Engine.fanExpect = {
       const freshness = Engine.freshness.calc(matchupLog, f1.id, f2.id, totalShows, roster.length, null);
       if (freshness.bonus <= -4) return; // 深刻なマンネリ以上（countInWindow >= 4）は完全除外
       let adjustedPriority = priority;
+      let adjustedTpl = tpl;
       if (freshness.bonus < 0) {
         adjustedPriority = Math.max(0, priority - 1);
-        reason = reason.replace('期待の声', '根強い人気はあるが新鮮味も求める声');
+        // 旧実装は名前埋め込み後の完成文へ.replace()していたが、英訳文には
+        // '期待の声'という日本語部分文字列が存在せず置換が効かない。名前を
+        // 埋め込む前のテンプレ段階で置換することで、EN辞書経由でも同じ分岐が効く。
+        adjustedTpl = tpl.replace('期待の声', '根強い人気はあるが新鮮味も求める声');
       }
+      const reason = _wmFillWithDict(dict, adjustedTpl, { left: f1.name, right: f2.name });
       candidates.push({ leftId: f1.id, rightId: f2.id, leftName: f1.name, rightName: f2.name, reason, priority: adjustedPriority });
     };
 
@@ -26012,7 +26021,7 @@ Engine.fanExpect = {
       if (pairState.resolvedType === 'goodRival') {
         const lastFightWeek = rv.lastAbsWeek || 0;
         if (lastFightWeek && ((Engine.util.absWeek(state.season, state.week)) - lastFightWeek) < 4) return;
-        addCandidate(f1, f2, `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声`, 1);
+        addCandidate(f1, f2, '🤝 {left} vs {right}の名勝負再現に期待の声', 1);
         return;
       }
       if (pairState.resolvedType === 'bitter') {
@@ -26023,16 +26032,16 @@ Engine.fanExpect = {
         const bitterLastFight = rv.lastAbsWeek || 0;
         if (bitterLastFight && (bitterAw - bitterLastFight) < 8) return;
         if (((bitterAw + id1 * 7 + id2 * 13) % 6) !== 0) return;
-        addCandidate(f1, f2, `💀 ${f1.name} vs ${f2.name}——宿怨の一戦は、いまも客を呼べます`, 1);
+        addCandidate(f1, f2, '💀 {left} vs {right}——宿怨の一戦は、いまも客を呼べます', 1);
         return;
       }
       if (pairState.minRivalry < 50 && !pairState.isOneSided) return;
       if (rv.lastResolvedWeek && (state.week - rv.lastResolvedWeek) < 4) return;
       const priority = pairState.minRivalry >= 80 ? 3 : pairState.minRivalry >= 60 ? 2 : 1;
-      const reason = pairState.isOneSided
-        ? `${f1.name} vs ${f2.name}の温度差ある対決が話題です！`
-        : `${f1.name} vs ${f2.name}の決着を望む声が高まっています！`;
-      addCandidate(f1, f2, reason, priority);
+      const tpl = pairState.isOneSided
+        ? '{left} vs {right}の温度差ある対決が話題です！'
+        : '{left} vs {right}の決着を望む声が高まっています！';
+      addCandidate(f1, f2, tpl, priority);
     });
 
     // Priority 2: チャンピオンへの挑戦（人気3位以内のノンチャンプ）
@@ -26046,7 +26055,7 @@ Engine.fanExpect = {
           .sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
         if (challengers.length > 0) {
           const chal = challengers[0];
-          addCandidate(champ, chal, `${chal.name}の王座挑戦を望む声があります！`, 2);
+          addCandidate(champ, chal, '{right}の王座挑戦を望む声があります！', 2);
         }
       }
     }
@@ -26054,10 +26063,10 @@ Engine.fanExpect = {
     // Priority 1: 人気上位2名の対決（未追加の場合）
     const topByPop = [...roster].sort((a, b) => (b.popularity || 0) - (a.popularity || 0));
     if (topByPop.length >= 2) {
-      addCandidate(topByPop[0], topByPop[1], `${topByPop[0].name} vs ${topByPop[1].name}の対決が見たい！`, 1);
+      addCandidate(topByPop[0], topByPop[1], '{left} vs {right}の対決が見たい！', 1);
     }
     if (topByPop.length >= 3) {
-      addCandidate(topByPop[0], topByPop[2], `${topByPop[0].name} vs ${topByPop[2].name}の実現を望む声もあります`, 1);
+      addCandidate(topByPop[0], topByPop[2], '{left} vs {right}の実現を望む声もあります', 1);
     }
 
     return candidates.sort((a, b) => b.priority - a.priority).slice(0, 3);

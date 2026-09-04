@@ -3969,7 +3969,7 @@ function _fighterPopupStatBarsHtml(c, stats, isAiFighter) {
     const decay = statDecayView(c, s.key, 150, isAiFighter);
     return statOverBarHtml(s.key, value, {
       label: s.label,
-      labelTitle: STAT_TIPS[s.key],
+      labelTitle: STAT_TIPS[s.key] ? WM_I18N.t(STAT_TIPS[s.key]) : STAT_TIPS[s.key],
       lost: decay.lostPts,
       gain: seasonGain,
     });
@@ -4105,7 +4105,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
             const td = TRAIT_DEFS[t]; if (!td) return '';
-            return '<span ' + _tipAttr(td.desc) + ' style="font-size:12px;padding:2px 7px;border-radius:8px;background:' + td.color + '22;color:' + td.color + ';border:1px solid ' + td.color + '44;white-space:nowrap;cursor:help">' + td.icon + ' ' + t + '</span>';
+            return '<span ' + _tipAttr(WM_I18N.t(td.desc)) + ' style="font-size:12px;padding:2px 7px;border-radius:8px;background:' + td.color + '22;color:' + td.color + ';border:1px solid ' + td.color + '44;white-space:nowrap;cursor:help">' + td.icon + ' ' + WM_I18N.t(t) + '</span>';
           }).join('')}</div>` : ''}
           <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:14px;color:var(--text-sub)">
             ${c.age !== undefined ? `<span>📅 ${c.age}歳</span>` : ''}
@@ -4412,8 +4412,8 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const td = TRAIT_DEFS[t];
           if (!td) return;
           html += `<div style="display:flex;align-items:center;gap:6px;padding:3px 0;font-size:11px">
-            <span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;background:${td.color}22;color:${td.color};border:1px solid ${td.color}44;font-weight:600;min-width:90px">${td.icon} ${t}</span>
-            <span style="color:var(--text-sub)">${td.desc}</span></div>`;
+            <span style="display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:8px;background:${td.color}22;color:${td.color};border:1px solid ${td.color}44;font-weight:600;min-width:90px">${td.icon} ${WM_I18N.t(t)}</span>
+            <span style="color:var(--text-sub)">${WM_I18N.t(td.desc)}</span></div>`;
         });
         html += '</div>';
       }
@@ -8534,15 +8534,19 @@ function showMilestoneEvent(evt, onChoice) {
   if (_isPopupActive()) { _popupQueue.push(() => showMilestoneEvent(evt, onChoice)); return; }
 
   // Phase 1: ナレーション + 3択(B-5型 ゴールドステージ)
-  const title = (evt.title || '').replace(/^[\W\s]+/, '') || evt.title || 'MILESTONE';
+  // i18n Stage B P7-1: title/narration/choices.*はMILESTONE_EVENTSのJA原文。
+  // 絵文字の先頭除去(replace)は台帳キー(絵文字込みの原文)と一致させるため、
+  // 必ずt()で訳してから行う(訳語も先頭に同じ絵文字を残す規約)。
+  const titleT = WM_I18N.t(evt.title || '');
+  const title = titleT.replace(/^[\W\s]+/, '') || titleT || 'MILESTONE';
   const sub = 'MILESTONE ACHIEVED';
   const choicesHtml = evt.choices.map((c, i) =>
-    `<button class="mdl-b-btn${i === 0 ? ' primary' : ''}" data-idx="${i}">${c.label}</button>`
+    `<button class="mdl-b-btn${i === 0 ? ' primary' : ''}" data-idx="${i}">${WM_I18N.t(c.label)}</button>`
   ).join('');
 
   const html = `
     ${_mdlBTitleBand(title, 'milestone', sub)}
-    <div class="mdl-b-atmosphere" style="max-width:640px;white-space:pre-line">${evt.narration || ''}</div>
+    <div class="mdl-b-atmosphere" style="max-width:640px;white-space:pre-line">${WM_I18N.t(evt.narration || '', evt.narrationVars)}</div>
     <div class="mdl-b-decision" id="mdlBMilestoneChoices">${choicesHtml}</div>
   `;
 
@@ -8558,9 +8562,9 @@ function showMilestoneEvent(evt, onChoice) {
         // Phase 2: 結果を同じオーバーレイに差し替え
         const resultHtml = `
           ${_mdlBTitleBand(title, 'milestone', sub)}
-          <div class="mdl-b-solo-line" style="max-width:720px;white-space:pre-line">${choice.result}</div>
+          <div class="mdl-b-solo-line" style="max-width:720px;white-space:pre-line">${WM_I18N.t(choice.result)}</div>
           <div style="text-align:center;margin:6px 0 22px">
-            <div style="display:inline-block;padding:10px 30px;border:1px solid var(--gold);color:var(--gold-light);font-family:var(--font-label);font-size:13px;letter-spacing:4px;background:rgba(212,168,67,0.08);border-radius:2px">${choice.effectLabel}</div>
+            <div style="display:inline-block;padding:10px 30px;border:1px solid var(--gold);color:var(--gold-light);font-family:var(--font-label);font-size:13px;letter-spacing:4px;background:rgba(212,168,67,0.08);border-radius:2px">${WM_I18N.t(choice.effectLabel)}</div>
           </div>
           ${_mdlBActions([{ label: WM_I18N.t('— 閉 じ る —'), primary: true, id: 'mdlBMilestoneClose' }])}
         `;
@@ -15651,7 +15655,7 @@ function _renderGlimpseCardHtml(g) {
   // label は関係変化の説明であり、人物の発話ではない。
   // dialogue が無いときに label を吹き出しへ代入しない。
   const dialogue = g.dialogue || '';
-  const label = g.label || '';
+  const label = g.label ? WM_I18N.t(g.label) : '';
   const tagHtml = label ? `<div class="gc-tag">${escHtml(label)}</div>` : '';
 
   if (g.targetId) {
@@ -18655,29 +18659,32 @@ function _chOrgEmblemInner(orgId, orgName) {
       : (typeof Engine.util.getOrgIconPath === 'function' ? Engine.util.getOrgIconPath(G, orgId) : '');
     if (path) return `<img src="${path}" alt="" loading="lazy">`;
   }
-  return `<span class="ch-org-ini">${escHtml(_emrOrgInitial(orgName))}</span>`;
+  return `<span class="ch-org-ini">${escHtml(_emrOrgInitial(WM_I18N.pn(orgName)))}</span>`;
 }
 
 /** 個人優勝(JT/天頂戦)の団体バッジ。対外(他団体が絡む)ときだけ呼ぶこと */
 function _chOrgBadgeHtml(orgId, orgName) {
   if (!orgName) return '';
-  return `<div class="ch-org"><span class="oe">${_chOrgEmblemInner(orgId, orgName)}</span><span class="on">${escHtml(orgName)}</span></div>`;
+  const orgNameT = WM_I18N.pn(orgName);
+  return `<div class="ch-org"><span class="oe">${_chOrgEmblemInner(orgId, orgNameT)}</span><span class="on">${escHtml(orgNameT)}</span></div>`;
 }
 
 /** 団体優勝(春タッグ/秋対抗戦)の団体名帯。主役は団体そのもの */
 function _chTeamlineHtml(orgId, orgName) {
   if (!orgName) return '';
-  return `<div class="ch-teamline"><span class="oe">${_chOrgEmblemInner(orgId, orgName)}</span><span class="ch-teamname">${escHtml(orgName)}</span></div>`;
+  const orgNameT = WM_I18N.pn(orgName);
+  return `<div class="ch-teamline"><span class="oe">${_chOrgEmblemInner(orgId, orgNameT)}</span><span class="ch-teamname">${escHtml(orgNameT)}</span></div>`;
 }
 
 /** 準優勝以下チップ1枚 */
 function _chSubCardHtml(rankLabel, fighter, orgId, orgName, prizeAmt) {
   if (!fighter) return '';
   const isOwn = orgId === 'player';
+  const orgNameT = orgName ? WM_I18N.pn(orgName) : orgName;
   return `<div class="ch-sub-card">
     <span class="ch-sub-rank">${escHtml(rankLabel)}</span>
     <div class="ch-sub-img">${_chSubImg(fighter)}</div>
-    <div><div class="ch-sub-nm">${escHtml(WM_I18N.pn(fighter.name) || '?')}</div><div class="ch-sub-org">${orgName ? `<span class="ch-sub-dot" style="background:${isOwn ? 'var(--c-positive)' : 'var(--accent-hostility)'}"></span>${escHtml(orgName)}` : ''}${prizeAmt ? `<span class="ch-sub-prize">¥${prizeAmt}万</span>` : ''}</div></div>
+    <div><div class="ch-sub-nm">${escHtml(WM_I18N.pn(fighter.name) || '?')}</div><div class="ch-sub-org">${orgNameT ? `<span class="ch-sub-dot" style="background:${isOwn ? 'var(--c-positive)' : 'var(--accent-hostility)'}"></span>${escHtml(orgNameT)}` : ''}${prizeAmt ? `<span class="ch-sub-prize">¥${prizeAmt}万</span>` : ''}</div></div>
   </div>`;
 }
 
@@ -19493,7 +19500,7 @@ function _agwLiveTeamHtml(result, matchIndex, boutIndex, match, orgId, side) {
     if (!fighter) return '';
     const stateLabel = state === 'out' ? 'OUT' : state === 'ring' ? 'RING' : 'WAIT';
     return `<button type="button" class="agw-live-name is-${state} agw-live-slot-${index}" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar',true)">
-      <small>${_agwRoleLabel(order, id)} / ${stateLabel}</small><b>${escHtml(WM_I18N.pn(fighter.name))}</b>
+      <small>${WM_I18N.t(_agwRoleLabel(order, id))} / ${stateLabel}</small><b>${escHtml(WM_I18N.pn(fighter.name))}</b>
     </button>`;
   }).join('');
   return `<div class="agw-live-team is-${side}">
@@ -19507,7 +19514,7 @@ function _agwStatusRailHtml(result, matchIndex, boutIndex) {
     const view = _agwTeamViewState(result, matchIndex, boutIndex, team);
     const active = view.label === '対戦中';
     return `<div class="agw-status-team${active ? ' is-active' : ''}${view.remaining === 0 ? ' is-out' : ''}">
-      <small>${escHtml(view.label)} / ${view.remaining}名生存</small><b>${escHtml(team.orgName || '')}</b>
+      <small>${escHtml(WM_I18N.t(view.label))} / ${WM_I18N.t('{n}名生存', { n: view.remaining })}</small><b>${escHtml(WM_I18N.pn(team.orgName || ''))}</b>
     </div>`;
   }).join('')}</div>`;
 }
@@ -19586,7 +19593,7 @@ function _agwChampionSpeech(result, championTeam) {
     fighter,
     line: WM_I18N.t(String(line))
       .replaceAll('{wins}', String(wins))
-      .replaceAll('{org}', championTeam.orgName || WM_I18N.t('この団体')),
+      .replaceAll('{org}', WM_I18N.pn(championTeam.orgName) || WM_I18N.t('この団体')),
   };
 }
 
@@ -19602,7 +19609,7 @@ function _agwMiniClimbHtml(result, matchIndex, boutIndex) {
     if (!m) return `<div class="agw-climb-cell"><span>${label}</span><b>${WM_I18N.t('進出団体 未決定')}</b></div>`;
     const done = matchDone(m);
     const a = _agwTeam(m.orgA), b = _agwTeam(m.orgB);
-    return `<div class="agw-climb-cell${done ? ' is-done' : ''}"><span>${label}</span><b>${done ? escHtml(_agwTeam(m.winnerOrg)?.orgName || '') : `${escHtml(a?.orgName || '')} vs ${escHtml(b?.orgName || '')}`}</b><small>${done ? 'WINNER' : 'UPCOMING'}</small></div>`;
+    return `<div class="agw-climb-cell${done ? ' is-done' : ''}"><span>${label}</span><b>${done ? escHtml(WM_I18N.pn(_agwTeam(m.winnerOrg)?.orgName || '')) : `${escHtml(WM_I18N.pn(a?.orgName || ''))} vs ${escHtml(WM_I18N.pn(b?.orgName || ''))}`}</b><small>${done ? 'WINNER' : 'UPCOMING'}</small></div>`;
   };
   return `<div class="agw-climb">
     <div class="agw-climb-semis">${semis.map((m, i) => cell(m, WM_I18N.t('準決勝 {n}', { n: i + 1 }))).join('')}</div>
@@ -19629,7 +19636,7 @@ function _agwFocusHtml(match, boutIndex, displayOrgIds) {
     const winner = _agwTeam(match.winnerOrg);
     return `<div class="agw-live-complete">
       <div class="agw-focus-kicker">TEAM MATCH COMPLETE</div>
-      <div class="agw-focus-winner">${escHtml(winner?.orgName || '')}</div>
+      <div class="agw-focus-winner">${escHtml(WM_I18N.pn(winner?.orgName || ''))}</div>
       <div class="agw-focus-score">${score[displayOrgIds.left] || 0} — ${score[displayOrgIds.right] || 0}</div>
       <div class="agw-focus-note">${match.round === 'final' ? WM_I18N.t('秋の総力戦、決着') : WM_I18N.t('決勝へ勝ち上がる')}</div>
       <button class="btn btn-gold" onclick="App.awAdvanceMatch()">${match.round === 'final' ? WM_I18N.t('大会結果へ') : WM_I18N.t('次の団体戦へ')} ▶</button>
@@ -19650,7 +19657,7 @@ function _agwFocusHtml(match, boutIndex, displayOrgIds) {
   // ここだけ役割ラベルが名前より上に出ていた(2026-08-01 是正)
   const sideHtml = (current, orgId, order, side) => `<div class="agw-bout-side is-${side}">
     <button type="button" onclick="event.stopPropagation();showFighterPopup(${current.id},'autumnWar',true)">${escHtml(current.fighter?.name || '')}</button>
-    <small>${WM_I18N.t('第{n}フォール・', { n: next.index })}${escHtml(_agwTeam(orgId)?.orgName || '')} / ${_agwRoleLabel(order, current.id)}</small>
+    <small>${WM_I18N.t('第{n}フォール・', { n: next.index })}${escHtml(WM_I18N.pn(_agwTeam(orgId)?.orgName || ''))} / ${WM_I18N.t(_agwRoleLabel(order, current.id))}</small>
     ${_agwConditionBar(current.condition, side === 'right')}
   </div>`;
   return `<div class="agw-live-current">
@@ -19676,9 +19683,9 @@ function _agwLiveBoardHtml(result, matchIndex, boutIndex, match) {
   const roundLabel = match.round === 'final' ? 'FINAL' : 'SEMI FINAL';
   return `<section class="agw-live-board">
     <div class="agw-live-head">
-      <strong>${escHtml(_agwTeam(displayOrgIds.left)?.orgName || '')}</strong>
+      <strong>${escHtml(WM_I18N.pn(_agwTeam(displayOrgIds.left)?.orgName || ''))}</strong>
       <div><span>${roundLabel} / TEAM SCORE</span><b>${score[displayOrgIds.left] || 0} — ${score[displayOrgIds.right] || 0}</b></div>
-      <strong>${escHtml(_agwTeam(displayOrgIds.right)?.orgName || '')}</strong>
+      <strong>${escHtml(WM_I18N.pn(_agwTeam(displayOrgIds.right)?.orgName || ''))}</strong>
     </div>
     <div class="agw-live-stage">
       ${_agwLiveTeamHtml(result, matchIndex, boutIndex, match, displayOrgIds.left, 'left')}
@@ -19707,13 +19714,13 @@ function renderAutumnWarBoutResultPopup(match, bout, onContinue) {
   const roundLabel = match.round === 'final' ? WM_I18N.t('決勝') : WM_I18N.t('準決勝');
   const victoryLine = _agwSurvivorLine(match, bout, winner);
   showEventMatchResultPopup({
-    theme: 'autumn', title: `${roundLabel} ${WM_I18N.t('第{n}フォール　結果', { n: bout.index || match.bouts.length })}`, meta: `${_agwTeam(displayOrgIds.left)?.orgName || ''} vs ${_agwTeam(displayOrgIds.right)?.orgName || ''} ・ ${WM_I18N.t('スコア')} ${score[displayOrgIds.left] || 0}–${score[displayOrgIds.right] || 0}`,
+    theme: 'autumn', title: `${roundLabel} ${WM_I18N.t('第{n}フォール　結果', { n: bout.index || match.bouts.length })}`, meta: `${WM_I18N.pn(_agwTeam(displayOrgIds.left)?.orgName || '')} vs ${WM_I18N.pn(_agwTeam(displayOrgIds.right)?.orgName || '')} ・ ${WM_I18N.t('スコア')} ${score[displayOrgIds.left] || 0}–${score[displayOrgIds.right] || 0}`,
     progress: String(bout.index || match.bouts.length), progressLabel: match.winnerOrg ? 'FINAL FALL' : 'FALL',
     context: [[WM_I18N.t('団体スコア'), `${score[displayOrgIds.left] || 0}–${score[displayOrgIds.right] || 0}`], [WM_I18N.t('勝者コンディション'), winnerCond != null ? `${Math.round(winnerCond)}%` : '—'], [WM_I18N.t('戦況'), match.winnerOrg ? WM_I18N.t('団体戦決着') : WM_I18N.t('続行')]],
-    left: { ...left, org: _agwTeam(displayOrgIds.left)?.orgName || '', orgId: displayOrgIds.left }, right: { ...right, org: _agwTeam(displayOrgIds.right)?.orgName || '', orgId: displayOrgIds.right },
+    left: { ...left, org: WM_I18N.pn(_agwTeam(displayOrgIds.left)?.orgName || ''), orgId: displayOrgIds.left }, right: { ...right, org: WM_I18N.pn(_agwTeam(displayOrgIds.right)?.orgName || ''), orgId: displayOrgIds.right },
     winnerSide, winnerFighter: winner, victoryLine, showVictoryLine: !!victoryLine,
-    leftRole: `${winnerSide === 'left' ? 'Survivor' : 'Eliminated'} ・ ${_agwRoleLabel(_agwOrderFor(match, displayOrgIds.left), left.id)}`,
-    rightRole: `${winnerSide === 'right' ? 'Survivor' : 'Eliminated'} ・ ${_agwRoleLabel(_agwOrderFor(match, displayOrgIds.right), right.id)}`,
+    leftRole: `${winnerSide === 'left' ? 'Survivor' : 'Eliminated'} ・ ${WM_I18N.t(_agwRoleLabel(_agwOrderFor(match, displayOrgIds.left), left.id))}`,
+    rightRole: `${winnerSide === 'right' ? 'Survivor' : 'Eliminated'} ・ ${WM_I18N.t(_agwRoleLabel(_agwOrderFor(match, displayOrgIds.right), right.id))}`,
     leftStatLabel: 'COND', leftStat: Math.round(bout.conditionAfter?.[left.id] || 0), rightStatLabel: 'COND', rightStat: Math.round(bout.conditionAfter?.[right.id] || 0),
     resultLabel: bout.draw ? 'NO CONTEST' : 'SURVIVE', finish: Engine.formatFinish(bout.finType, bout.finMove, undefined, WM_I18N.t), turns: bout.turns || 0, mq: bout.mq,
     chips: [WM_I18N.t('団体スコア {a}–{b}', { a: score[displayOrgIds.left] || 0, b: score[displayOrgIds.right] || 0 }), match.winnerOrg ? WM_I18N.t('団体戦決着') : WM_I18N.t('勝ち残り'), roundLabel], hpLeft: bout.conditionAfter?.[left.id], hpRight: bout.conditionAfter?.[right.id], hpLabel: 'CONDITION',
@@ -19760,20 +19767,20 @@ function renderAutumnWarReorder() {
   const selected = order.map(id => _agwFighter('player', id)).filter(Boolean);
   const eligible = (playerTeam?.memberIds || order).map(id => _agwFighter('player', id)).filter(Boolean);
   const conditionValue = id => Math.round(conditions[id] ?? Engine.autumnWar.INITIAL_CONDITION);
-  const opponentSummary = `<div class="agw-entry-opponent-summary"><span>${WM_I18N.t('決勝の相手')}</span><strong>${escHtml(opponent?.orgName || WM_I18N.t('決勝進出団体'))}</strong>${_agwOvrHtml(strength.average, WM_I18N.t('平均OVR'))}<small>${WM_I18N.t('OVR幅 {a}〜{b} / 最終出場順は開戦時に公開', { a: strength.min, b: strength.max })}</small></div>`;
+  const opponentSummary = `<div class="agw-entry-opponent-summary"><span>${WM_I18N.t('決勝の相手')}</span><strong>${escHtml(WM_I18N.pn(opponent?.orgName) || WM_I18N.t('決勝進出団体'))}</strong>${_agwOvrHtml(strength.average, WM_I18N.t('平均OVR'))}<small>${WM_I18N.t('OVR幅 {a}〜{b} / 最終出場順は開戦時に公開', { a: strength.min, b: strength.max })}</small></div>`;
   const figures = selected.map((fighter, index) => {
     const full = typeof getFullUrl === 'function' ? getFullUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<div class="agw-entry-figure" data-order="${index}">${full ? `<img src="${full}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}</div>`;
   }).join('');
-  const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${role}</b></div>`).join('');
+  const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${WM_I18N.t(role)}</b></div>`).join('');
   const opponentSlots = roles.map(() => '<div class="agw-entry-empty-slot" aria-hidden="true"></div>').join('');
-  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${roles[index]}</span><b>${escHtml(WM_I18N.pn(fighter.name))}</b>${_agwOvrHtml(Engine.util.ov(fighter))}${_agwConditionBar(conditionValue(fighter.id), false)}</button>`).join('');
+  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${WM_I18N.t(roles[index])}</span><b>${escHtml(WM_I18N.pn(fighter.name))}</b>${_agwOvrHtml(Engine.util.ov(fighter))}${_agwConditionBar(conditionValue(fighter.id), false)}</button>`).join('');
   const finalOrgIds = final ? [final.orgA, final.orgB] : (p.result.finalists || []);
   const playerOnLeft = finalOrgIds[0] === 'player';
   const playerSide = playerOnLeft ? 'left' : 'right';
   const opponentSide = playerOnLeft ? 'right' : 'left';
-  const playerPanel = `<div class="agw-entry-team is-player is-${playerSide}"><div class="agw-entry-team-label"><span>YOUR FINAL ORDER</span><b>${escHtml(G.orgName || WM_I18N.t('自団体'))}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>`;
-  const opponentPanel = `<div class="agw-entry-team is-opponent is-${opponentSide}"><div class="agw-entry-team-label"><span>FINAL OPPONENT</span><b>${escHtml(opponent?.orgName || WM_I18N.t('決勝進出団体'))}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>`;
+  const playerPanel = `<div class="agw-entry-team is-player is-${playerSide}"><div class="agw-entry-team-label"><span>YOUR FINAL ORDER</span><b>${escHtml(WM_I18N.pn(G.orgName) || WM_I18N.t('自団体'))}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>`;
+  const opponentPanel = `<div class="agw-entry-team is-opponent is-${opponentSide}"><div class="agw-entry-team-label"><span>FINAL OPPONENT</span><b>${escHtml(WM_I18N.pn(opponent?.orgName) || WM_I18N.t('決勝進出団体'))}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>`;
   const mobileCards = selected.map((fighter, index) => {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
@@ -19837,7 +19844,7 @@ function renderAutumnWarResult() {
   });
   const speechMember = memberRows.find(({ m }) => m.id === speech?.fighter?.id);
   const speechHtml = speech?.line ? `<div class="ch-trio-speech">
-      <div class="ch-trio-speaker">${WM_I18N.t('最多勝コメント')}${speechMember ? ` ・ ${escHtml(speechMember.m.role)} ${escHtml(WM_I18N.pn(speechMember.m.f.name))}` : ''}</div>
+      <div class="ch-trio-speaker">${WM_I18N.t('最多勝コメント')}${speechMember ? ` ・ ${escHtml(WM_I18N.t(speechMember.m.role))} ${escHtml(WM_I18N.pn(speechMember.m.f.name))}` : ''}</div>
       ${/* P6-5配線修正: speech.lineは_agwChampionSpeechで{wins}/{org}置換前にt()済み */ ''}
       ${_chBubbleSlot(speech.line, 'is-autumn-speech', true)}
     </div>` : '';
@@ -19846,7 +19853,7 @@ function renderAutumnWarResult() {
         <div class="ch-por" style="cursor:pointer" onclick="showFighterPopup(${m.id},'autumnWar')">${_chPortraitImg(m.f)}</div></div>
     </div>`).join('');
   const namesRow = memberRows.map(({ m, wins, isMvp }) => `<div class="ch-mem${isMvp ? ' is-mvp' : ''}">
-      <div class="ch-order">${escHtml(m.role)}</div>
+      <div class="ch-order">${escHtml(WM_I18N.t(m.role))}</div>
       <div class="ch-name">${escHtml(WM_I18N.pn(m.f.name))}</div>
       <div class="ch-mem-rec">${WM_I18N.t('通算{n}人抜き', { n: wins })}${isMvp ? ` ・ ${WM_I18N.t('大会MVP')}` : ''}</div>
     </div>`).join('');
@@ -19861,7 +19868,7 @@ function renderAutumnWarResult() {
       </div>
       <div class="ch-foot"><span class="ch-prize">${WM_I18N.t('優勝賞金')}<b>¥${Engine.autumnWar.PRIZE.champion}万</b></span></div>
     </div>
-    <div class="agw-result-score"><span>FINAL</span><b>${scoreW} — ${scoreL}</b><small>${escHtml(_agwTeam(result.runnerUp)?.orgName || '')}</small></div>
+    <div class="agw-result-score"><span>FINAL</span><b>${scoreW} — ${scoreL}</b><small>${escHtml(WM_I18N.pn(_agwTeam(result.runnerUp)?.orgName || ''))}</small></div>
     ${financeHtml}
     <button class="btn btn-gold" onclick="App.awShowMvpScene()">${WM_I18N.t('大会MVP発表へ')} ▶</button>
   </div>`;
@@ -19877,7 +19884,7 @@ function _agwMvpLine(fighter, result) {
   if (!pool.length) pool = ['……この三人で、最後まで立てた。それが全部です'];
   const seed = Math.abs(((G.season || 1) * 131 + (fighter?.id || 0) * 17 + wins * 7) | 0);
   // i18n Stage B P5-1: t()は{wins}/{org}のreplaceAllより前(辞書キーはプレースホルダ入りの原文)。
-  return WM_I18N.t(String(pool[seed % pool.length])).replaceAll('{wins}', String(wins)).replaceAll('{org}', _agwTeam(result.mvpOrgId)?.orgName || WM_I18N.t('この団体'));
+  return WM_I18N.t(String(pool[seed % pool.length])).replaceAll('{wins}', String(wins)).replaceAll('{org}', WM_I18N.pn(_agwTeam(result.mvpOrgId)?.orgName) || WM_I18N.t('この団体'));
 }
 
 function renderAutumnWarMvpScene() {
@@ -19896,7 +19903,7 @@ function renderAutumnWarMvpScene() {
       <button type="button" class="agw-mvp-portrait" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')">${upper ? `<img src="${upper}" alt="">` : ''}</button>
       <button type="button" class="agw-mvp-name" onclick="showFighterPopup(${fighter?.id || 0},'autumnWar')"><h2>${escHtml(fighter?.name || WM_I18N.t('該当選手'))}</h2></button>
       <span class="agw-mvp-role">${WM_I18N.t('大会MVP')}</span>
-      <small class="agw-mvp-org">${escHtml(_agwTeam(result.mvpOrgId)?.orgName || '')} ・ ${WM_I18N.t('通算{n}人抜き', { n: wins })}</small>
+      <small class="agw-mvp-org">${escHtml(WM_I18N.pn(_agwTeam(result.mvpOrgId)?.orgName || ''))} ・ ${WM_I18N.t('通算{n}人抜き', { n: wins })}</small>
     </div>
     <button type="button" class="pb-close-btn" onclick="App.finalizeAutumnWarReplay()">${WM_I18N.t('大会を終える')}</button>
   </div>`;
@@ -19919,25 +19926,25 @@ function _awEntryScreenHtml() {
   const playerSide = playerOnLeft ? 'left' : 'right';
   const opponentSide = playerOnLeft ? 'right' : 'left';
   const strength = _agwOpponentStrength(opponent);
-  const opponentSummary = `<div class="agw-entry-opponent-summary"><span>${WM_I18N.t('初戦の相手')}</span><strong>${escHtml(opponent?.orgName || WM_I18N.t('上位シード待ち'))}</strong>${_agwOvrHtml(strength.average, WM_I18N.t('平均OVR'))}<small>${WM_I18N.t('OVR幅 {a}〜{b} / 出場順は開戦時に公開', { a: strength.min, b: strength.max })}</small></div>`;
+  const opponentSummary = `<div class="agw-entry-opponent-summary"><span>${WM_I18N.t('初戦の相手')}</span><strong>${escHtml(WM_I18N.pn(opponent?.orgName) || WM_I18N.t('上位シード待ち'))}</strong>${_agwOvrHtml(strength.average, WM_I18N.t('平均OVR'))}<small>${WM_I18N.t('OVR幅 {a}〜{b} / 出場順は開戦時に公開', { a: strength.min, b: strength.max })}</small></div>`;
   const figures = selected.map((fighter, index) => {
     const full = typeof getFullUrl === 'function' ? getFullUrl(fighter.id, fighter.ovr) : '';
     return `<div class="agw-entry-figure" data-order="${index}">${full ? `<img src="${full}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}</div>`;
   }).join('');
-  const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${role}</b></div>`).join('');
+  const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${WM_I18N.t(role)}</b></div>`).join('');
   const opponentSlots = roles.map(() => '<div class="agw-entry-empty-slot" aria-hidden="true"></div>').join('');
   const mobileCards = selected.map((fighter, index) => {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, fighter.ovr) : '';
     const cond = Math.round(fighter.condition == null ? Engine.autumnWar.INITIAL_CONDITION : fighter.condition);
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
       <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${stand ? `<img src="${stand}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}</button>
-      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(WM_I18N.pn(fighter.name))}</button><div>${_agwOvrHtml(fighter.ovr)}<small>CONDITION ${cond}</small></div><em>${roleNotes[index]}</em></div>
+      <div class="agw-entry-mobile-info"><span>${WM_I18N.t(roles[index])}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(WM_I18N.pn(fighter.name))}</button><div>${_agwOvrHtml(fighter.ovr)}<small>CONDITION ${cond}</small></div><em>${roleNotes[index]}</em></div>
       <div class="agw-entry-mobile-actions"><button type="button" onclick="App.awSelectEntryRole(${index})">${WM_I18N.t('交代')}</button><button type="button" ${index === 0 ? 'disabled' : ''} onclick="App.awMoveEntry(${index},-1)">↑</button><button type="button" ${index === 2 ? 'disabled' : ''} onclick="App.awMoveEntry(${index},1)">↓</button></div>
     </article>`;
   }).join('');
-  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectEntryRole(${index})"><span>${roles[index]}</span><b>${escHtml(WM_I18N.pn(fighter.name))}</b>${_agwOvrHtml(fighter.ovr)}</button>`).join('');
-  const playerPanel = `<div class="agw-entry-team is-player is-${playerSide}"><div class="agw-entry-team-label"><span>YOUR TEAM</span><b>${escHtml(G.orgName || WM_I18N.t('自団体'))}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>`;
-  const opponentPanel = `<div class="agw-entry-team is-opponent is-${opponentSide}"><div class="agw-entry-team-label"><span>OPPONENT</span><b>${escHtml(opponent?.orgName || WM_I18N.t('対戦団体'))}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>`;
+  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectEntryRole(${index})"><span>${WM_I18N.t(roles[index])}</span><b>${escHtml(WM_I18N.pn(fighter.name))}</b>${_agwOvrHtml(fighter.ovr)}</button>`).join('');
+  const playerPanel = `<div class="agw-entry-team is-player is-${playerSide}"><div class="agw-entry-team-label"><span>YOUR TEAM</span><b>${escHtml(WM_I18N.pn(G.orgName) || WM_I18N.t('自団体'))}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>`;
+  const opponentPanel = `<div class="agw-entry-team is-opponent is-${opponentSide}"><div class="agw-entry-team-label"><span>OPPONENT</span><b>${escHtml(WM_I18N.pn(opponent?.orgName) || WM_I18N.t('対戦団体'))}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>`;
   const candidates = eligible.map(fighter => {
     const selectedIndex = order.indexOf(fighter.id);
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, fighter.ovr) : '';

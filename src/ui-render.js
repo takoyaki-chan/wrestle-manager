@@ -2021,7 +2021,7 @@ function _renderRosterDojoHeader() {
         // i18n Stage B P5-1: g.dialogue はrelationships.jsのGLIMPSE_A/B_LINES選択(pickDialogueLine)
         // で得た生JA行(relationships.jsは並行エージェントの領分のため選択ロジックには触れず、
         // ここ=表示直前でt()を通す)。
-        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">${_quoteLine(WM_I18N.t(g.dialogue) || g.label || '')}</div>`;
+        html += `<div class="dojo-rest-bubble" style="--rest-cycle:22s;--rest-delay:${delay}s">${_quoteLine(WM_I18N.t(g.dialogue) || WM_I18N.t(g.label) || '')}</div>`;
         html += `<div class="dojo-rest-avatar">${portraitImg(g.speakerId, 34)}</div>`;
         html += '</div>';
       });
@@ -2156,7 +2156,7 @@ function _renderRosterDetailPanel(c, hired) {
       : '';
     const lostTag = dv.lostPts > 0 ? `<span class="rd-stat-lost">▼${dv.lostPts}</span>` : '';
     tab1 += `<div class="rd-stat-row">
-      <span class="rd-stat-label" style="color:${col};cursor:help" ${_tipAttr(STAT_TIPS[s])}>${STAT_LABELS[s]}</span>
+      <span class="rd-stat-label" style="color:${col};cursor:help" ${_tipAttr(WM_I18N.t(STAT_TIPS[s]))}>${STAT_LABELS[s]}</span>
       <div class="rd-stat-bar-outer">${lostBar}<div class="rd-stat-bar-current" style="width:${Math.min(100, current/1.5)}%;background:${col}"></div></div>
       <span class="rd-stat-val" style="color:${col}">${current}</span>
       <span class="rd-stat-growth" style="color:${sg > 0 ? '#1a8a4a' : '#7a7466'}">${sg > 0 ? '+' + sg : lostTag || '—'}</span>
@@ -2503,11 +2503,11 @@ function renderRoster() {
           </div>
           <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
             <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
-            <span ${_tipAttr(STAT_TIPS.pw)}>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
-            <span ${_tipAttr(STAT_TIPS.sp)}>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
-            <span ${_tipAttr(STAT_TIPS.te)}>TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
-            <span ${_tipAttr(STAT_TIPS.st)}>ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
-            <span ${_tipAttr(STAT_TIPS.mn)}>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
+            <span ${_tipAttr(WM_I18N.t(STAT_TIPS.pw))}>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b>${statG('pw')}</span>
+            <span ${_tipAttr(WM_I18N.t(STAT_TIPS.sp))}>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b>${statG('sp')}</span>
+            <span ${_tipAttr(WM_I18N.t(STAT_TIPS.te))}>TE<b style="color:#1e1c16">${Math.round(c.te)}</b>${statG('te')}</span>
+            <span ${_tipAttr(WM_I18N.t(STAT_TIPS.st))}>ST<b style="color:#1e1c16">${Math.round(c.st)}</b>${statG('st')}</span>
+            <span ${_tipAttr(WM_I18N.t(STAT_TIPS.mn))}>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b>${statG('mn')}</span>
             <span style="color:#bcb39f;margin:0 2px">｜</span>
             <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></span>
           </div>
@@ -2546,11 +2546,11 @@ function renderRoster() {
             </div>
             <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:#4a4638;flex-wrap:wrap">
               <span style="font-size:17px;font-weight:900;color:#5c4a1e">${ov(c)}</span>
-              <span ${_tipAttr(STAT_TIPS.pw)}>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
-              <span ${_tipAttr(STAT_TIPS.sp)}>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
-              <span ${_tipAttr(STAT_TIPS.te)}>TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
-              <span ${_tipAttr(STAT_TIPS.st)}>ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
-              <span ${_tipAttr(STAT_TIPS.mn)}>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
+              <span ${_tipAttr(WM_I18N.t(STAT_TIPS.pw))}>PW<b style="color:#1e1c16">${Math.round(c.pw)}</b></span>
+              <span ${_tipAttr(WM_I18N.t(STAT_TIPS.sp))}>SP<b style="color:#1e1c16">${Math.round(c.sp)}</b></span>
+              <span ${_tipAttr(WM_I18N.t(STAT_TIPS.te))}>TE<b style="color:#1e1c16">${Math.round(c.te)}</b></span>
+              <span ${_tipAttr(WM_I18N.t(STAT_TIPS.st))}>ST<b style="color:#1e1c16">${Math.round(c.st)}</b></span>
+              <span ${_tipAttr(WM_I18N.t(STAT_TIPS.mn))}>MN<b style="color:#1e1c16">${Math.round(c.mn)}</b></span>
               <span style="color:#bcb39f;margin:0 2px">｜</span>
               <span style="display:inline-flex;align-items:center;gap:3px">⭐<b style="color:#1e1c16">${Engine.util.dispPop(c.popularity)}</b></span>
             </div>
@@ -3498,7 +3498,9 @@ function renderShowPrep() {
   // この画面が描画される時点では原則として遠征は解決済み（固定興行週で消化待ちの間は無表示）。
   // App.startAwayChallengeFromPrep() 自体は安全弁として executeShow() 側に残置している。
 
-  const fanExpects = Engine.fanExpect.generate(G);
+  // i18n Stage B P7-1: dict(第2引数)を渡す。exp.reasonは選手名込みの完成文なので
+  // ここで渡さないとEN画面でも常にJAのまま(名前埋め込み後の文字列はどの辞書キーとも一致しない)。
+  const fanExpects = Engine.fanExpect.generate(G, WM_I18N.t);
   // 判定は confirmExecuteShow と共有するためファイル先頭の _spIsValidSlot に移した
   const validCurrent = G.showCard.filter(m => !m.matchType && m.left > 0 && m.right > 0);
   const matchedCount = Engine.fanExpect.countMatched(validCurrent, fanExpects);
@@ -5185,7 +5187,7 @@ function _renderShachoshitsuSummary(tab) {
     const rCap = G.rosterCap || 8;
     const visibleFAIds = Engine.util.getVisibleFAIds(G);
     const currentQ = getQuarter(G.week);
-    const qLabel = QUARTER_LABELS[currentQ] || '';
+    const qLabel = QUARTER_LABELS[currentQ] ? WM_I18N.t(QUARTER_LABELS[currentQ]) : '';
     return `<div class="shachoshitsu-summary">${WM_I18N.t('所属:')} <b>${WM_I18N.t('{n}/{cap}名', { n: ownCount, cap: rCap })}</b> ｜ FA: <b>${WM_I18N.t('{n}名', { n: G.freeAgents.length })}</b> ｜ ${WM_I18N.t('紹介枠:')} <b>${WM_I18N.t('{n}名', { n: visibleFAIds.length })}</b>${WM_I18N.t('（{q}入替）', { q: qLabel })}</div>`;
   }
   if (tab === 'rental') {
@@ -5302,8 +5304,8 @@ function _renderInviteMarketPanel() {
       return `<div class="imp-cand">
         <div class="imp-face" style="${faceStyle}"></div>
         <div class="imp-name">${WM_I18N.pn(c.name)}${mark}</div>
-        <div class="imp-meta">${gradeLabel[c.grade] || c.grade} ・ ${typeLabel}</div>
-        <div class="imp-style">${WM_I18N.t('得意: {style}', { style: styleLabel })}</div>
+        <div class="imp-meta">${gradeLabel[c.grade] || c.grade} ・ ${typeLabel ? WM_I18N.t(typeLabel) : ''}</div>
+        <div class="imp-style">${WM_I18N.t('得意: {style}', { style: WM_I18N.t(styleLabel) })}</div>
       </div>`;
     }).join('');
   }
@@ -5324,7 +5326,7 @@ function _renderInviteMarketPanel() {
     const axes = Engine.shachoshitsu.getCoachRequestAxes();
     const styleOpts = axes.style.map(s => {
       const label = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[s]) || s;
-      return `<option value="style:${s}">${WM_I18N.t('{label}に強いコーチ', { label })}</option>`;
+      return `<option value="style:${s}">${WM_I18N.t('{label}に強いコーチ', { label: WM_I18N.t(label) })}</option>`;
     }).join('');
     const gradeOpts = axes.grade.map(g => `<option value="grade:${g}">${WM_I18N.t('{g}級のコーチ', { g })}</option>`).join('');
     requestHtml = `<label class="imp-req-label" for="impReqSelect">${WM_I18N.t('秘書に探してもらう')}</label>
@@ -6498,18 +6500,16 @@ function renderCoach() {
   const gradeColors = {C:'#888', B:'#2ecc71', A:'var(--gold)'};
   const coachEffectHtml = (c) => {
     const mult = c.gMult || 1.0;
-    const abText = (c.abilities||[]).map(a => {
-      const cat = COACH_ABILITY_CATALOG[a];
-      return cat ? `<span class="coach-trait">${a}</span>` : `<span class="coach-trait">${a}</span>`;
-    }).join(' ');
+    const abText = (c.abilities||[]).map(a => `<span class="coach-trait">${WM_I18N.t(a)}</span>`).join(' ');
+    const styleLabel = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[c.style]) || c.style;
     return `<span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
       <span style="font-size:12px;color:var(--gold);font-weight:700">成長×${mult}</span>
-      <span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span>
+      <span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${WM_I18N.t(styleLabel)}</span>
       ${abText}`;
   };
 
   // Brief effect explanation
-  const coachBrief = (c) => (c.abilities||[]).map(a => (COACH_ABILITY_CATALOG[a]||{}).desc||a).join(' / ');
+  const coachBrief = (c) => (c.abilities||[]).map(a => WM_I18N.t((COACH_ABILITY_CATALOG[a]||{}).desc||a)).join(' / ');
 
   const maxCoaches = Engine.coach.getMaxCoaches(G);
   const nextCost = Engine.coach.getNextSlotCost(G);

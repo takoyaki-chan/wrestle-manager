@@ -48,7 +48,17 @@ const detailBarsSource = extractFunction(uiCommon, '_fighterPopupStatBarsHtml');
 const dbBlock = extractFunction(uiRender, '_renderDbFighters');
 const popupBlock = markedBlock(uiCommon, 'function showFighterPopup(', '\nfunction closeFighterPopup(');
 
-const sharedContext = { STAT_TIPS: { pw: 'パワー', sp: 'スピード', te: 'テクニック', st: 'スタミナ', mn: 'マインド' } };
+// i18n Stage B P7-1: _fighterPopupStatBarsHtml が STAT_TIPS[s.key] を WM_I18N.t() へ通すようになった
+// ため、抽出したソースをvm評価するこのテストにも(dbContextと同じ契約の)スタブが要る。
+const sharedContext = {
+  STAT_TIPS: { pw: 'パワー', sp: 'スピード', te: 'テクニック', st: 'スタミナ', mn: 'マインド' },
+  WM_I18N: { t(text, params) {
+    if (typeof text !== 'string' || !params) return text;
+    let out = text;
+    Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
+    return out;
+  }, pn(str) { return str; }, pnSurname(str) { return str; } },
+};
 vm.runInNewContext(`${statBlock}\n${statDecaySource}\n${detailBarsSource}\nthis.api = {
   statTierStyle, barDispOver, statOverBarHtml, detailBars: _fighterPopupStatBarsHtml,
 };`, sharedContext, { filename: 'stat-notation-backport-shared.js' });
