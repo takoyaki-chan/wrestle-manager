@@ -6525,7 +6525,9 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
           style: (live && live.style) || (c && c.style) || null,
         };
       });
-      const composed = Engine.newspaper.composeDraftPlayerResult(org, featuredSrc, state.season);
+      // i18n P6-15: composeDraftPlayerResult は Engine側だがこの呼び出し元はUI層なので、
+      // opts糸通しは要らず WM_I18N.t をそのまま dict として渡せる(§6のUI層直接配線)
+      const composed = Engine.newspaper.composeDraftPlayerResult(org, featuredSrc, state.season, WM_I18N.t);
       push('draftPlayerResult', ports.map(p => p.name), {
         org,
         characterId: ports[0] ? ports[0].id : null,
@@ -7330,10 +7332,16 @@ function renderPPVMatchPreview() {
     const lineR = summitPre(R, L) || (ppvRiv && ppvRiv.rightLine) || _getPPVPreMatchLine(R);
     const badge = match.isRivalry ? `<div class="ppvprog-vsb">${WM_I18N.t('🔥 因縁対決')}</div>` : '';
     const mainClass = isMain ? ' is-main' : '';
+    // i18n P6-15: 煽り文はカードに完成文(JA)が載ったまま残る族。Engine.ppv.buildHype が
+    // テンプレキー(hypeTpl)と差し込み値(hypeVars)も併記するので、あればそちらから
+    // 言語別に組み直す。無い(旧カード/旧セーブ)ならJA完成文をそのまま出す(fail-open)。
+    const hypeText = match.hypeTpl
+      ? WM_I18N.t(match.hypeTpl, match.hypeVars || {})
+      : match.hype;
 
     html += `<div class="ppvprog-mc${mainClass}">
       <div class="ppvprog-mn">${typeLabel}</div>
-      ${match.hype ? `<div class="ppvprog-hype">${match.hype}</div>` : ''}
+      ${hypeText ? `<div class="ppvprog-hype">${hypeText}</div>` : ''}
       <div class="ppvprog-dl">
         <div class="ppvprog-dlc left">${lineL ? `<div class="ppvprog-dlb">${_quoteLine(lineL)}</div>` : ''}</div>
         <div class="ppvprog-dlc right">${lineR ? `<div class="ppvprog-dlb">${_quoteLine(lineR)}</div>` : ''}</div>

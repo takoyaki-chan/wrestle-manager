@@ -105,6 +105,19 @@ const TARGET_TABLES = [
   // の関数本体に直書きされた配列リテラルで、§10-2 の「関数の中の配列は抽出器から
   // 永久に見えない」型だった。消費点は generateBiography(entry, dict)(P6-14でdict-opts化)。
   'HOF_BIOGRAPHY_TEMPLATES',
+  // P6-15で追加。§13-2の突合表A「兄弟表は対象なのに本表だけ漏れている」型の4表。
+  // いずれも消費点(composer)がdictを持たず、台帳へ載せるだけでは辞書を引く機会が
+  // 無かったため、composerのdict-opts化と同時に対象へ入れた。
+  //   UNIFIED_TITLE_TEMPLATES  96行 — composeUnifiedTitleArticle(type, data, seed, dict)
+  //   CHAMPION_CHANGE_TEMPLATES 26行 — composeChampionChangeBody(ev, seed, dict)
+  //   DRAFT_PLAYER_RESULT_PARTS 14行 — composeDraftPlayerResult(org, fighters, seed, dict)
+  //   PPV_HYPE_TEMPLATES       10行 — Engine.ppv.buildHype(match) が hypeTpl/hypeVars を併記
+  //   ARTICLE_COMPOSE_TEMPLATES 4行 — 上記composerの連結様式+差し込みラベル(P6-14のjoinと同型)
+  'UNIFIED_TITLE_TEMPLATES',
+  'CHAMPION_CHANGE_TEMPLATES',
+  'DRAFT_PLAYER_RESULT_PARTS',
+  'PPV_HYPE_TEMPLATES',
+  'ARTICLE_COMPOSE_TEMPLATES',
 ];
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の
