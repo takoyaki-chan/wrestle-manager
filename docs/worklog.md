@@ -1,5 +1,111 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-10 — P6-18が見つけた4件（Neutral生表示・規則23違反2キー・共通レンダラ二重t()洗い直し・_getSurname）（2026-09-04・worktree agent-a4a801e09e7019002）
+
+指示書は docs/worklog.md P6-18エントリ§10「新たな発見」の4件。開始前にworktreeブランチをmain先端(c3a30a7b、P6-18マージまで)へfast-forward済み。
+
+### 1. JA表示バグ: 序章ロスターカードの役割ラベルに`Neutral`が生で出る
+
+`src/ui-render.js` `_renderPrologueBlock`内のローカル`ROLE_JP`が `{ Babyface, Heel, Tweener }` で、実データの `role` フィールドは `Babyface`/`Heel`/`Neutral` の3値(`Tweener`は存在しない・data.js全キャラで確認)。フォールバック `ROLE_JP[f.role] || f.role` が未定義キー`Neutral`で生値へ落ち、JA画面でも「関節技 / Neutral」と英単語が混ざっていた。
+
+**修正**: `Neutral: WM_I18N.t('ニュートラル')` を追加(既存の`Tweener`キーは後方互換のため残置)。`'ニュートラル'`は同ファイルのROLE_META(798行)で既に使われている既存辞書キーを再利用しているため、**新規翻訳は発生せず・ja-golden不変**。
+
+**横展開**: 同ファイル内の他2箇所のROLE_JP(5691行・5947行)は元々`Neutral`キーを持っており無事。`ui-common.js`のROLE_SHORTも`Neutral: 'Neu'`を保有済み。他に`role`をラベル化している箇所(ROLE_META等)も全数確認し、抜けはこの1箇所のみだった。
+
+### 2. 規則23違反の既訳2キー(ui-ledger)を書き直し+機械検査を新設
+
+`{n}名`→`"{n} wrestlers"` と `{wins}勝`→`"{wins} wins"` は、充填値が1のとき文法上「1 wrestlers」「1 wins」になる(黒田英文体 docs/en-kuroda-style-draft-v0.1.md §3-4 規則23違反)。
+
+- `{n}名` → `"Wrestlers: {n}"`。呼び出し元9箇所を確認すると、既にラベル付き文脈(紹介枠/FA/所属/在籍選手/獲得上限/選択中/離脱メンバー)が大半で、チップ単体表示(ランキングカードのタグ列)でも単独で意味が通る形を優先した
+- `{wins}勝` → `"wins: {wins}"`。唯一の呼び出し元は対抗戦マイルストーン(5勝ごと)の`{milestone}`差し込み値で、実行上nは常に5の倍数(1になることはない)だが、規則23は充填値の文法依存そのものを禁じているため書き直した
+- どちらも `i18n/ui-ledger.json` を編集→`node test/i18n-build-dict.js`で`src/lang-en.js`を再生成(手編集はしない、既存パイプライン規約どおり)
+
+**機械検査の新設**: `test/i18n-build-dict.js` / `test/i18n-build-template-dict.js` / `test/i18n-build-dialogue-dict.js` の3本に、`\{[a-z]+\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b`(数値プレースホルダ直後の可算名詞複数形)を検出するwarning専用チェックを追加。**exit 1にはしない**(既存訳文に大量の該当があり、CI必須化は次の掃討バッチの判断)。
+
+| 台帳 | 検出件数 |
+|---|---:|
+| ui-ledger | 73件 |
+| template-ledger | 61件 |
+| dialogue-ledger | 30件 |
+| 計 | 164件 |
+
+大半は「{n} weeks left」「{n} defenses」のような**残り週数・防衛回数など実際に1になりうる値**で、rule 23を厳密に満たすには「Label: {n}」形やハイフン限定用法への書き換えが要る。件数が多いため今回のバッチでは範囲外とし、**exit 1化するかは次バッチで違反一覧を見てから判断**する(まずは警告として可視化する段階)。
+
+### 3. `_u3bSideHtml`ほか共通レンダラの二重t()洗い直し — 実バグ9件を発見・修正
+
+P6-18が見つけた型(呼び出し元が先にt()した完成文を`lineTranslated`無しで渡す→表示点がもう一度t()を掛け、EN訳文が辞書キーとして引かれず`[i18n-miss]`を汚染する。JAは無害=fail-openなので視覚上バレない)を、`_u3bSideHtml`の**全61呼び出し元**と、同型の共通レンダラ`_mdlASubjectStage`/`_mdlBSoloStage`/`_emrBubbleHtml`/`_chBubbleSlot`/`_pbFighterBlock`/`_awSpeech`系/`_negSpeakerHtml`/`_mdlAFlowPortraitHtml`/`_tcFinalPick`について、`line`/`speech`/`dialogue`引数の生成元を1つずつソースまで遡って「生JA(t()未適用)」か「t()済み」かを判定した。
+
+**判定の集計**(関数ごとの呼び出し元数と内訳):
+
+| 関数 | 呼び出し元数 | 生JA(正しい) | t()済みだがフラグ無し(バグ) | 既にフラグ済み |
+|---|---:|---:|---:|---:|
+| `_u3bSideHtml` | 61 | 43 | 2(F02クラッシュ2箇所) | 16 |
+| `_mdlASubjectStage` | 10 | 9 | 0 | 1 |
+| `_mdlBSoloStage` | 2 | 2 | 0 | 0 |
+| `_chBubbleSlot` | 5 | 4 | 0 | 1 |
+| `_pbFighterBlock` | 17 | 15 | 2(対抗戦勝利セリフ、1箇所を2回呼ぶ) | 0(新規フラグ追加) |
+| `_awSpeech`/`_awSpeechSlot`/`_awWinnerBlock` | 14 | 5 | 0 | 9 |
+| `_negSpeakerHtml` | 4 | 0 | 0 | 4(既存修正済み) |
+| `_mdlAFlowPortraitHtml` | 9 | 5 | 4(B2×2/B3×2) | 0(新規フラグ追加) |
+| `_tcFinalPick`消費先(`_u3bSideHtml`経由) | 1 | 0 | 1 | 0(上のu3b内数に含む) |
+
+**修正した実バグ9箇所**:
+
+| # | 画面/関数 | 生成元 | 症状 |
+|---|---|---|---|
+| 1-2 | 派閥抗争クラッシュ(`_factionF02RenderClash`)左右2枠 | `WM_I18N.t(Engine.factions.getF02ClashLine(...))` | `aLine`/`bLine`が事前にt()済みなのに`_u3bSideHtml`へフラグ無しで渡していた |
+| 3 | 対抗戦勝利プレビュー(`renderWarMatchPreview`)左右2枠 | `result.victoryLine`(=`_getWarVictoryLine`、既にt()済み) | `_pbFighterBlock`が`dialogueLine`を無条件でt()する設計(フラグ自体が存在しなかった)。新規`dialogueTranslated`引数を追加 |
+| 4 | R3(仲良し退団/引退)モーダル `showR3Modal` | `_snapshotLine`(新形式は内部でt()済み・旧形式はfail-openで生JAのまま) | 新形式のときだけ二重t()。旧形式は元々辞書に無いので実害は無いが、フラグを立てて一本化 |
+| 5 | 契約セレモニー `showSigningCeremony` | `getSigningQuote(fighter)`(内部で無条件t()) | 唯一の呼び出し元がフラグ無しで渡していた |
+| 6-7 | B2対立決着(`_buildB2Step3`勝者コマ/`_buildB2Step3b`敗者コマ) | `WM_I18N.t(pickDialogueLine(RIVALRY_RESOLUTION_LINES...) \|\| 'フォールバック文')` | `_mdlAFlowPortraitHtml`が`o.line`を無条件でt()する設計(フラグ自体が存在しなかった)。新規`lineTranslated`引数を追加 |
+| 8-9 | B3挑戦状決着(`_buildB3Step3b`/`showB3OpponentAftermath`、自陣勝利・相手勝利の2文脈×2関数で同型) | 同上(`challengerLine`) | 同上 |
+
+`_pbFighterBlock`と`_mdlAFlowPortraitHtml`はP6-18時点で**エスケープ機構そのものが存在しなかった**(`_u3bSideHtml`の`lineTranslated`/`_awSpeech`の`translated`に相当する引数が無く、常に無条件でt()を通す設計だった)ため、両関数に新規オプション引数(`dialogueTranslated`/`lineTranslated`)を追加してから該当呼び出し元にフラグを立てた。**残り80箇所超はすべて生JA+単一t()の正しい配線と確認済み**(Engine層関数=`pickDialogueLine`/`Engine.negotiate.getDialogue`/`Engine.factions._getF08LineByBand`/`Engine.retirement.selectLine`/`Engine.eventSystem.get*Dialogue`等はいずれもt()を一度も通さない生JAを返す設計であることをソースで確認)。
+
+### 4. `Engine.chronicle._getSurname`が姓を取れず氏名を返す問題 — 修正案の報告(未実装)
+
+```js
+_getSurname(arg) {
+  if (!arg) return '名無し';
+  if (typeof arg === 'object') {
+    if (arg.surname) return arg.surname;
+    return Engine.chronicle._getSurname(arg.name);
+  }
+  const parts = String(arg).split(/[\s　]+/);
+  return parts[0] || String(arg);
+},
+```
+
+`arg`がオブジェクトなら`.surname`優先、文字列なら空白区切りの先頭部分を返す設計。日本語の氏名(`name`)は空白を含まないため、**文字列引数で呼ぶと必ず氏名全体が返る**。実際に2種類の呼び出しパターンがあり、両方が影響している:
+
+1. **文字列で明示的に呼ぶ箇所**(`_getSurname(ace.name)`のように`.name`を先に取り出してから渡す): `_buildQuoteContext`/`_buildAceNarrativeParts`/`_generateTitleParts`など。オブジェクトに`.surname`があってもこの経路では一切参照されない
+2. **章キャッシュの縮約ace/peerオブジェクトを渡す箇所**(`_getSurname(top)`/`_getSurname(next.aces[0])`): `management.js`の章確定処理(約6710〜6742行)が`aces:`/`peers:`をキャッシュへ保存する際、`id/name/style/personality/archetype/peakOVR/...`は複写するが**`surname`だけ複写していない**(縮約オブジェクト)。この経路はオブジェクト分岐に入るが`.surname`が無いため`.name`分岐へフォールスルーする
+
+一方、`state.roster`/`fighterArchive`/`ALL_CHARS`から取得した**生の**キャラクターオブジェクトを直接渡す箇所(例: `_buildQuoteContext`内の`topRivalSurname = Engine.chronicle._getSurname(r)`)は`.surname`を正しく持っているため問題なく動作している。
+
+**修正案(いずれか)**:
+- (a) 縮約キャッシュオブジェクトの構築時(`aces:`/`peers:`の`.map()`)に`surname: a.surname`/`surname: p.surname`を追加コピーし、あわせて`_getSurname(ace.name)`のような呼び出し元をすべて`_getSurname(ace)`(オブジェクトそのもの)へ直す。呼び出し元10箇所超を書き換える必要があるが、`_getSurname`関数自体は無改修
+- (b) `_getSurname`内で、文字列引数の空白分割が1トークンのまま(=分割できなかった)ときにALL_CHARS/roster/fighterArchiveへ名前で逆引きし`.surname`を補う。呼び出し元は無改修で済むが、Engine内から他テーブルへの逆引きが増える
+
+章タイトル(「木村レイカ世代」のようにフルネーム+世代)・叙述文・記者の目の一部の表示文言(**Gへ永続する完成文**)が変わるため、**Keisuke裁定待ち・未実装**。JAの既存挙動なので今回は不触。
+
+### 5. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(ui-render/ui-common/lang-en/build-dict3本) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(hash=`6b3d05c8…`、`--update`不使用)。1の修正は既存辞書キー再利用のためJA出力1バイト不変 |
+| `node test/i18n-build-dict.js` | ✅ 4,066/4,066 未訳0(規則23 warning 73件・exit0) |
+| `node test/i18n-build-template-dict.js` | ✅ 2,952/2,952 未訳0(規則23 warning 61件・exit0) |
+| `node test/i18n-build-dialogue-dict.js` | ✅ 16,674/16,674 未訳0(規則23 warning 30件・exit0) |
+| `npm test` | ✅ 260/260 green |
+| `node test/i18n-ratchet.js` | 1の修正でui-render.js 1035→1036(+1、`WM_I18N.t('ニュートラル')`の新規リテラル1箇所)。理由が明確なため`--update`実施 |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(violations 0/errors 0、台帳検査3種も違反0)。semantic fingerprint `f5c3ee76`(P6-18から不変、UI層のみの変更のため) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest **`1052faa82eaf7991` 不変**、Issues 0(この乱数シードでは序章の`Neutral`役割キャラクター画面を踏んでいない=digestに影響なし) |
+| `npm run test:ui:walkthrough:en` | ✅ PASS、Issues 0、**i18n-miss 0 維持** |
+| `npm run test:ui:ignite -- --scenario chronicle`(JA) | ✅ PASS(Marker HIT・Issues 0) |
+| `npm run test:ui:ignite -- --scenario chronicle --lang en` | ✅ PASS(**screen-database JA露出 0**・i18n-miss 0・Issues 0) |
+
 ## 🌐 Stage B P7-9 — 観戦iframeにテンプレ辞書を読み込み、実況/矢印/guide/タッグ文の地の文を台帳化・英訳、_tplTagLineのPH値を辞書経由へ（2026-09-04・worktree agent-a1a5b12ffbb9a9b90）
 
 P7-5(a978f8a)が起票した発見6件のうち **1(テンプレ辞書未読込)・2(地の文まるごと未配線)・5(`_tplTagLine`のPH値素通し)** を解決した。開始前にworktreeブランチをmain先端(bcbdc8a、P7-5マージまで)へfast-forward済み。

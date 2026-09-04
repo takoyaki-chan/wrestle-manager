@@ -54,6 +54,11 @@ const JA_RE = /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF66-\uFF9
 // \u5E38\u306B "a" \u3067\u6B63\u3057\u3044\u306E\u3067\u8A31\u53EF\u3059\u308B \u2014 `}` \u306E\u76F4\u5F8C\u304C\u30CF\u30A4\u30D5\u30F3\u304B\u3069\u3046\u304B\u3067\u6A5F\u68B0\u7684\u306B\u533A\u5225\u3059\u308B\u3002
 // 3\u672C\u306Ebuild-dict(ui/template/dialogue)\u3067\u540C\u4E00\u306E\u5B9A\u7FA9\u3092\u6301\u3064(\u53F0\u5E33\u3054\u3068\u306B\u72EC\u7ACB\u5B9F\u884C\u3059\u308B\u305F\u3081)\u3002
 const ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i;
+// Stage B P7-10: プレースホルダ直後の可算名詞複数形(docs/en-kuroda-style-draft-v0.1.md §3-4 規則23)。
+// `{n} wrestlers` / `{wins} wins` のような形は充填値が1のとき単複が食い違う(「1 wrestlers」)。
+// P6-18が発見した ui-ledger の既訳2キー({n}名/{wins}勝)がこの型だった。
+// warning専用(exit 1にしない) — 件数を見てCI必須化を判断するため、まずは違反一覧の報告に留める。
+const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{[a-z]+\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/i;
 
 function placeholderSet(str) {
   const set = new Set();
@@ -89,6 +94,7 @@ function main() {
   }
 
   const violations = [];
+  const warnings = [];
   const seenKeys = new Set();
   const dict = {};
   let translatedCount = 0;
@@ -133,12 +139,27 @@ function main() {
       );
     }
 
+    // 5. プレースホルダ直後の可算名詞複数形(§3-4 規則23) — warning専用(P7-10)
+    const pluralHit = PLURAL_NOUN_AFTER_PLACEHOLDER_RE.exec(en);
+    if (pluralHit) {
+      warnings.push(
+        `PH直後の可算名詞複数形(規則23候補): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} `
+        + `(検出="${pluralHit[0]}"。充填値が1のとき単複不一致になりうる。Label: {n} 形かハイフン限定用法へ)`
+      );
+    }
+
     if (Object.prototype.hasOwnProperty.call(dict, entry.key)) {
       // seenKeysで既に検出済みのはずだが、防御的に二重登録は上書きせず警告のみに留める。
       return;
     }
     dict[entry.key] = en;
   });
+
+  if (warnings.length) {
+    console.warn(`[i18n-build-dict] WARN: 規則23候補(PH直後の可算名詞複数形)を${warnings.length}件検出しました(exit 1にはしません)。`);
+    warnings.slice(0, 100).forEach((w) => console.warn(`  - ${w}`));
+    if (warnings.length > 100) console.warn(`  ...ほか${warnings.length - 100}件`);
+  }
 
   if (violations.length) {
     console.error(`[i18n-build-dict] NG: 機械検査で${violations.length}件の違反を検出しました。src/lang-en.js は生成していません。`);

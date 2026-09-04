@@ -1092,8 +1092,10 @@ function renderWarMatchPreview() {
 
       // 通常の pb-fighter 枠のみ使用（is-player-side / is-enemy-side のサイドアクセントは
       // 勝者/敗者の標準フレームと二重表示になっていたため撤去）
-      const leftBlock = _pbFighterBlock('left', pf, leftCls, playerOrgName, leftLine);
-      const rightBlock = _pbFighterBlock('right', af, rightCls, ev.opponentName, rightLine);
+      // i18n P7-10: result.victoryLine(=_getWarVictoryLine)は既にWM_I18N.t()済みのため
+      // dialogueTranslated:true で二重t()を避ける(§10-1と同型)
+      const leftBlock = _pbFighterBlock('left', pf, leftCls, playerOrgName, leftLine, true);
+      const rightBlock = _pbFighterBlock('right', af, rightCls, ev.opponentName, rightLine, true);
       const winnerLabel = `🏆 ${escHtml(playerWon ? WM_I18N.pn(pf.name) : WM_I18N.pn(af.name))} WIN`;
 
       html += `<div class="pb-mrow is-resolved${hasDialogue ? ' has-dialogue' : ''}">`;
@@ -1462,6 +1464,11 @@ function showR3Modal({ fighterId, fighterName, fighterFace, departedName, reason
     <div class="r3-dialogue-speaker u3b-theme-dark">${_u3bSideHtml({
       name: fighterName,
       line,
+      // i18n P7-10: line(=_snapshotLine)はtpl併記の新形式ではcomposedSnapshotText内部で
+      // 既にWM_I18N.t()済み(旧形式text直値はfail-openで生JAのまま)。どちらの経路でも
+      // 「ここでt()を再度掛ける」のは無駄(新形式は二重t()でi18n-missを汚染、旧形式は
+      // 元々辞書に無いので無害)なので lineTranslated:true で1回に統一する
+      lineTranslated: true,
       size: 's',
       imgUrl: upperUrl || fighterFace || '',
     })}</div>
@@ -1816,6 +1823,9 @@ function showSigningCeremony(charId) {
   html += `<div class="legacy-character-stage u3b-theme-dark">${_u3bSideHtml({
     name: fighter.name,
     line: quote,
+    // i18n P7-10: quote(=getSigningQuote)は内部でWM_I18N.t()済みの完成文を返す
+    // (二重t()はEN訳文が辞書キーとして引かれi18n-missへ誤検出される・§10-1と同型)
+    lineTranslated: true,
     size: 's',
     imgUrl: fUrl,
     role: fighter.style || 'FIGHTER',
@@ -5941,14 +5951,18 @@ function _pbPortraitImg(fighter) {
   return `<div class="pb-portrait-placeholder">${escHtml(initial)}</div>`;
 }
 
-function _pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine) {
+function _pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine, dialogueTranslated) {
   const nameLink = fLink(fighter, { source: 'roster', skipQueue: true });
   const ovr = Engine.util.ov(fighter);
   // U1: 吹き出しの中身はセリフ本文のみ(話者名は画像下の.pb-fighter-nameが既に示している)
   let bubbleHtml = '';
   if (dialogueLine) {
     // i18n Stage B P5-1: 表示直前でt()を通す(Pattern-B試合結果画面の共通表示点)。
-    bubbleHtml = `<div class="pb-dialogue"><span class="pb-dialogue-line">${_quoteLine(escHtml(WM_I18N.t(dialogueLine)))}</span></div>`;
+    // i18n P7-10: 対抗戦(renderWarMatchPreview)は result.victoryLine(=_getWarVictoryLine、
+    // 既にWM_I18N.t()済み)を渡すため、dialogueTranslated:true のときは二重t()を避けて
+    // 素通しする(§10-1と同型。既定false=他の全呼び出し元は生JAを渡す規約のため不変)。
+    const dialogueText = dialogueTranslated ? String(dialogueLine) : WM_I18N.t(dialogueLine);
+    bubbleHtml = `<div class="pb-dialogue"><span class="pb-dialogue-line">${_quoteLine(escHtml(dialogueText))}</span></div>`;
   }
   const ovrHtml = side === 'left'
     ? `<span class="val">${ovr}</span><span class="lbl">OVR</span>`
@@ -13357,7 +13371,10 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
 function _mdlAFlowPortraitHtml(opts) {
   const o = opts || {};
   // i18n Stage B P5-1: 表示直前でt()を通す(RIVALRY_RESOLUTION_LINES等の共通表示点)。
-  const line = o.line != null ? WM_I18N.t(String(o.line)) : '';
+  // i18n P7-10: 一部の呼び出し元(_buildB2Step3/_buildB2Step3b/_buildB3Step3b/
+  // showB3OpponentAftermath)は WM_I18N.t(pickDialogueLine(...)) で既に訳し済みの完成文を
+  // 渡すため(§10-1と同型)、o.lineTranslated:true のときは二重t()を避けて素通しする。
+  const line = o.line != null ? (o.lineTranslated ? String(o.line) : WM_I18N.t(String(o.line))) : '';
   const bubble = line
     ? `<div class="u3b-bubble mdl-a-flow-bubble ${o.toneClass || ''}"><div class="u3b-bubble-text">${escHtml(line).replace(/\n/g, '<br>')}</div></div>`
     : '';
@@ -14498,6 +14515,7 @@ function _buildB2Step3(event, state, roster) {
       </div>
       ${_mdlAFlowPortraitHtml({
         line: winnerLine,
+        lineTranslated: true,
         toneClass: speechCls,
         portraitClass: 'mdl-a-subject-portrait',
         portraitStyle,
@@ -14533,6 +14551,7 @@ function _buildB2Step3b(event, state, roster) {
     <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: loserLine,
+        lineTranslated: true,
         toneClass: 'resentment',
         portraitClass: 'mdl-a-subject-portrait defeat',
         portraitStyle,
@@ -14740,6 +14759,7 @@ function _buildB3Step3b(event, state, roster) {
     <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: challengerLine,
+        lineTranslated: true,
         toneClass: speechVariant,
         portraitClass: 'mdl-a-subject-portrait defeat',
         portraitStyle,
@@ -14811,6 +14831,7 @@ function showB3OpponentAftermath(event, matchResult, onDone) {
       <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
         ${_mdlAFlowPortraitHtml({
           line: challengerLine,
+          lineTranslated: true,
           toneClass: speechVariant,
           portraitClass: 'mdl-a-subject-portrait defeat',
           portraitStyle,
@@ -20346,7 +20367,11 @@ function _tcFinalAftermathStep(steps, idx, onDone) {
     <div class="war-victory-modal">
       <div class="tc-final-kicker">Quadrennial Final · After the bell</div>
       ${_u3bSideHtml({
-        name: f.name, line: st.line, imgUrl: upperUrl,
+        name: f.name, line: st.line,
+        // i18n P7-10: st.line(=_tcFinalPick)は内部でWM_I18N.t()済みの完成文を返す
+        // (二重t()はEN訳文が辞書キーとして引かれi18n-missへ誤検出される・§10-1と同型)
+        lineTranslated: true,
+        imgUrl: upperUrl,
         fallback: (f.name || '?').charAt(0), size: 'm', isLoser: !st.isWin,
         roleHtml: `<div class="u3b-role" style="color:${roleColor}">${escHtml(st.isWin ? WM_I18N.t('戴冠') : WM_I18N.t('準優勝'))}</div>`,
         statLabel: 'OVR', statValue: ovr,

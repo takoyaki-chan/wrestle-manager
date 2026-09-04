@@ -1039,73 +1039,43 @@ return prefix + String(T(tmpl, { move: finMove })).replace('{move}', finMove);
 4. **`management.js:31053` / `32263` の `else` 分岐が生の `finMove` を出す**。ただし条件が `Engine.formatFinish &&` なので `formatFinish` が存在する限り到達しない死コード(§13-2-1型)
 5. **`tag-battle-lines.js` の `_tplTagLine` は `dict(str)` だけでPHの値を素通しする**。`{move}` は呼び出し側(`tag-battle-main.js`)で先に `mv()` を掛けて回避したが、同関数の `{winner}`/`{partner}` は依然として生JA名(P7-7b/P6-3ロングテールの領分)
 6. **選手ごとの「得意技」UIは存在しない**。P7設計が挙げていた表示点だが、`.moves` のような選手所有の技リストはコード上に無く(技はスタイルから毎試合抽選される)、`得意技` は紹介文の地の文にしか出ない。記録タブ・ランキング・年代記ハイライトにも決着技は出ない
-## 29. Stage B P7-8 — 自団体興行記事(繰り上げ記事)のdict配線とフォールバック本文のテンプレ化(2026-09-04追加)
 
-訳出**9キー**(template-ledger 2,923→**2,929**・未訳0 / ui-ledger 4,061→**4,064**・未訳0 / dialogue-ledgerは不触)。
+## 29. Stage B P7-10 — 共通レンダラの二重t()全数洗い直し+規則23機械検査+`_getSurname`調査(2026-09-04追加)
 
-### 29-1. 「フォールバックがJA」だと思ったら、**本体側がJA**だった
+P6-18(§23-10-1)が見つけた型を`_u3bSideHtml`の全61呼び出し元と、同系統の共通レンダラ`_mdlASubjectStage`/`_mdlBSoloStage`/`_emrBubbleHtml`/`_chBubbleSlot`/`_pbFighterBlock`/`_awSpeech`系/`_negSpeakerHtml`/`_mdlAFlowPortraitHtml`/`_tcFinalPick`の全消費先まで対象を広げて洗い直した。実バグ9箇所(§10-1と同型)を発見・修正。
 
-§23-6の起票は「`App._NEWSPAPER_ARTICLES` のプールが空のときのフォールバック文字列組み立て」だったが、EN走破の`--ja-exposure-log`が拾っていた実際の文
-(`正直に言えば、メインイベントは物足りなさが残った。…`)は**`_NEWSPAPER_ARTICLES.lowMQ` の正規のプール要素**だった。
-真因は `ui-render.js` `_npSwapMainToSecondCard`(一面トップと興行メインが同じ試合になった週に第2試合をメイン枠へ繰り上げる関数)が、
-**同じプールを `kurodaText` ではなく素の `fn(promotedCtx)` で呼んでいた**こと。
-本体の `App._generateNewspaperTexts` はP4-5で `kurodaText(entry, d, WM_I18N.t)` に配線済みだったのに、
-**同じプールの第2の消費点だけが取り残されていた**(§6「UI層からの直接t()配線」の適用漏れ)。
+### 29-1. `_pbFighterBlock`/`_mdlAFlowPortraitHtml`は§9の`lineTranslated`opt-inパターンが存在しなかった
 
-- **教訓**: 露出した文字列を辞書で引いて「どの表の何行目か」を先に確定させる。表が既に訳出済みなら、
-  疑うべきはテーブルではなく**その表の消費点が複数ある**こと。`grep <TABLE名>` で消費点を全部数える(§23-2と同じ作法)
-- フォールバック(プールが空/例外時)は実際には防御的な到達不能枝だったが、**本体が英語になった今フォールバックだけJAで出る**
-  状態(§14-5-4と同型)になるため、同バッチでテンプレ化した
+`_u3bSideHtml`(§9)・`_awSpeech`(§10-1)は最初から`lineTranslated`/`translated`引数を持つ設計だったが、`_pbFighterBlock(side, fighter, stateCls, metaText, dialogueLine)`と`_mdlAFlowPortraitHtml(opts)`は**エスケープ機構そのものが無く**、`dialogueLine`/`o.line`を常に無条件で`WM_I18N.t()`していた。それぞれ`dialogueTranslated`(第6引数)・`o.lineTranslated`を新規追加し、二重t()になっていた呼び出し元へ`true`を配線した:
 
-### 29-2. `kurodaText`は未定義プロパティを `"undefined"` として本文へ出す — 既存の try/catch の保険を殺さない
+- `_pbFighterBlock`: 対抗戦勝利プレビュー(`renderWarMatchPreview`)の左右2枠。渡していた`result.victoryLine`は`_getWarVictoryLine()`(§10-1で既に「内部でt()済み」と確立している関数)の戻り値だった
+- `_mdlAFlowPortraitHtml`: B2対立決着(`_buildB2Step3`勝者コマ/`_buildB2Step3b`敗者コマ)・B3挑戦状決着(`_buildB3Step3b`/`showB3OpponentAftermath`、いずれも`WM_I18N.t(pickDialogueLine(...) || 'フォールバック文')`型)の計4箇所
 
-素の `fn(d)` は `d.winner.name` のような未解決パスで**例外を投げ**、呼び出し側の `catch` が空文字にしてフォールバックへ委ねていた。
-`kurodaText` は `kurodaEvalPath` が `undefined` を返しても `String(undefined)` を本文へ差し込むだけで**例外にならない**ため、
-素直に差し替えると「壊れたときフォールバックへ落ちる」という既存の保険が消え、JA出力が変わる(`undefinedが…`)。
+他に`_u3bSideHtml`直呼びで2箇所(派閥抗争クラッシュ`_factionF02RenderClash`の左右)・`_snapshotLine`経由(R3別れモーダル`showR3Modal`)・`getSigningQuote`経由(契約セレモニー`showSigningCeremony`)・`_tcFinalPick`経由(天頂戦決勝アフターマス`_showTcFinalAftermath`)の計4箇所も同型で未フラグだった。修正後は`lineTranslated: true`を渡す。
+
+**残り80箇所超はすべて生JA+単一t()の正しい配線**であることをソースまで遡って確認した。生成元がEngine層関数(`pickDialogueLine`/`Engine.negotiate.getDialogue`/`Engine.factions._getF08LineByBand`/`Engine.retirement.selectLine`/`Engine.eventSystem.get*Dialogue`等)であれば必ず生JA(Engineは`WM_I18N`を直接呼ばない設計のため)、UI層のヘルパー(`_awardLine`/`_getWarVictoryLine`/`_snapshotLine`/`getSigningQuote`/`_tcFinalPick`/`Engine.shachoshitsu.getReactionText`)であれば個別に確認が要る、という判別ルールが実務上そのまま使える。
+
+### 29-2. 規則23(黒田英文体§3-4)の機械検査を3本のbuild-dictに追加
+
+`\{[a-z]+\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b`(数値プレースホルダ直後の可算名詞複数形)をwarning専用(exit 1にしない)で検出する。ui-ledger 73件/template-ledger 61件/dialogue-ledger 30件=計164件がヒットする現状(大半は「{n} weeks left」のような実際に1になりうる値)。既訳2キー(`{n}名`→`Wrestlers: {n}`、`{wins}勝`→`wins: {wins}`)のみ本バッチで修正し、残りは次の掃討バッチへ。exit 1化の判断はそのバッチで違反一覧を見てから行う。
+
+### 29-3. `Engine.chronicle._getSurname`は文字列引数では日本語名を分割できない(未修正・裁定待ち)
 
 ```js
-try {
-  const raw = fn(promotedCtx);                                   // 従来どおり素で呼んで成否を確かめ
-  promotedArticle = raw ? kurodaText(fn, promotedCtx, WM_I18N.t) : raw;  // そのうえで訳出
-} catch (e) { promotedArticle = ''; }
+_getSurname(arg) {
+  if (!arg) return '名無し';
+  if (typeof arg === 'object') {
+    if (arg.surname) return arg.surname;
+    return Engine.chronicle._getSurname(arg.name);
+  }
+  const parts = String(arg).split(/[\s　]+/);
+  return parts[0] || String(arg);
+},
 ```
 
-- `Engine.rng.pick` の位置(try の内/外)は**元のまま動かさない** — 乱数の消費順が変わると出目が変わる
-- 同型(`kurodaText`へ後付けで乗り換える消費点)では毎回この「素で呼んで確かめてから訳す」形を使う
+オブジェクト引数は`.surname`優先、文字列引数は空白区切りの先頭。日本語氏名(`name`)は空白を含まないため、**文字列で呼ぶと氏名全体が返る**。2つの経路が影響する: (1) `_getSurname(ace.name)`のように`.name`を先に取り出してから呼ぶ箇所(`_buildQuoteContext`/`_buildAceNarrativeParts`/`_generateTitleParts`)は`.surname`の有無に関わらずこの経路には入らない、(2) 章キャッシュの縮約ace/peer(management.js約6710〜6742行の`aces:`/`peers:`構築で`id/name/style/...`は複写するが`surname`は複写していない)をオブジェクトのまま渡す箇所(`_getSurname(top)`等)はオブジェクト分岐に入るが`.surname`が無く文字列分岐へフォールスルーする。`state.roster`/`ALL_CHARS`の生キャラクターを直接渡す箇所は`.surname`を持つため正しく動作する。
 
-### 29-3. 末尾に直結する注記2変種は`{closing}`スロット+**EN訳文側の先頭スペース**
-
-`decisive` 本文の末尾は、元コードでは三項演算子で「王座戦だった」/「敗者も意地を見せた」のどちらかが**空白なしで直結**していた。
-§15-2のクラウス規約をそのまま適用し、テンプレは `…紙面に残った。{closing}` のまま、**EN訳文の側が先頭に半角スペースを持つ**。
-`closing` は先に `t()` で確定させてから本文の params に載せる(充填済みなので後段の置換で壊れない)。
-
-### 29-4. 同型の掃討 — 主力対決の黒田寸評フォールバック
-
-`grep 'if (!comment)' / 'if (!txt)'` 系で新聞セクションの「プール空振り時の直書きJA」を全数当たったところ、
-P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELATION_NARRATIVE`)の隣に**1件だけ未配線が残っていた**
-(`_npMatchupFlavorText` 空振り時の主力対決寸評3分岐)。1〜2文の短文なので、兄弟3件と同じく**インライン`WM_I18N.t()`+ui-ledger**へ寄せた
-(数文の地の文である興行記事フォールバックだけを data.js のテンプレ表にする、という置き場の使い分け)。
-差し込む `m.role`(`エース`/`主力`/`中堅`)は ui-ledger に既訳のある1語ラベルなので、**値として `WM_I18N.t()` で引き直す**(§14-2 `_wmDictLabel` と同じ流儀)。
-
-### 29-5. JA同一性の証明(27,657通り+128通り・不一致0)
-
-§15-5の作法①(凍結コピーとの全数突合)。`git show <BASE>:src/ui-render.js` から旧 `_npSwapMainToSecondCard` を切り出し、
-新旧を同じサンドボックス(ja素通しdict)で回して戻り値オブジェクト全体を `JSON.stringify` で突合した。
-
-- 実プール / **空プール(=フォールバック3分岐を強制)** / `App`なし の3系統 × 選手2組 × 勝敗4種(left/right/draw/勝敗不明) ×
-  王座戦2 × MQ 6値 × ターン 4値 × 決着技2 × 観客2値 × 会場2 × season/week 3組 = **27,657通り・不一致0**
-- 分岐名つきの読める形でも別途突合(draw/decisive+title/decisive+normal/noWinner × 32ケース = **128通り・不一致0**)
-- `npm run test:ui:walkthrough` の **`--action-log` が旧実装と1バイト一致**(151,329 bytes・digest `1052faa82eaf7991`・328 actions)
-- **走破のOverflow件数は実行ごとにブレる**(27/29/30/32を実測)。`App._generateNewspaperTexts`のMath.random()由来のノイズで、
-  digest(=行動ログ)は安定している。**まれに1手ズレる実行がある**(1回だけ327手 digest `e603d4e2…` を観測。
-  同一コードで再実行すると328手・digest一致に戻った)ので、**digestが違ったら再実行して再現するか先に確かめる**こと
-
-### 29-6. P7-8で新たに見つかった穴(未着手)
-
-- **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
-  条件分岐ごとの断片を `[first, second, third].join('')` で連結する型で、t()を一度も通らない。P7-6(ランキング画面)の領分として記録のみ
-- **団体比較号の `d.opportunity` / `actionDescs` 等(management.js:26300付近)** — Engine内の関数に直書きされた紹介文プール(§10-2型)。
-  `_npRenderOrgCompare` の紙面に出るが、テーブル化+dict糸通しが要る別枠
+章タイトル(例:「木村レイカ世代」がフルネーム+世代になる)・叙述文・記者の目の一部が影響を受ける。修正案は(a)縮約キャッシュへ`surname`を追加コピーし呼び出し元をオブジェクト渡しへ統一、(b)`_getSurname`内でALL_CHARS/roster逆引きの補完、のいずれか。**完成文がGへ永続する層のため、JA出力が変わる=Keisuke裁定待ち・本バッチでは不触**。
 ## 30. Stage B P7-1 — データ表の値層「C. ラベル・短い定義の表」を`DATA_TABLES`モードで台帳化・配線・英訳(2026-09-04追加)
 
 設計はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」13表と、P6-13が積み残した4件(秋対抗戦の団体名ロングテール/fanExpect理由テンプレ/特性バッジ/招聘市場パネルのラベル)を解決した。
@@ -1151,3 +1121,70 @@ P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELAT
 ### 30-5. 検証
 
 `node --check`全触りファイルOK。`node test/ja-golden.js`**完全一致**(hash `6b3d05c8…`、全編集を通じて不変)。`node test/i18n-build-dict.js`台帳4,022キー・未訳4件(すべてP7-1と無関係の既存drift、ui-common.js内のセリフ的文字列でsourceタグなし)。`npm test` **260/260 green**(`stat-notation-backport-test.js`が抽出評価するvmサンドボックスに`WM_I18N`スタブが無く1件red化→スタブ追加で解消、既存47ファイルへの機械追加と同型の対応)。`node test/auto-sim.js 20 42` **ALL CLEAR**、semantic fingerprint `37bbd0cd`(P6-7/8/10/13と同一)。`npm run test:ui:walkthrough` **PASS**、ja digest **`1052faa82eaf7991`不変**。`npm run test:ui:walkthrough:en` **PASS**、i18n-miss **7件で不変**(全てNOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS由来、P7-3の担当領域で本バッチでは意図的に不触)。JA exposure合計は**186→166**(−11%)。`node test/i18n-ratchet.js`増加なし(28,089不変)。
+## 31. Stage B P7-8 — 自団体興行記事(繰り上げ記事)のdict配線とフォールバック本文のテンプレ化(2026-09-04追加)
+
+訳出**9キー**(template-ledger 2,923→**2,929**・未訳0 / ui-ledger 4,061→**4,064**・未訳0 / dialogue-ledgerは不触)。
+
+### 31-1. 「フォールバックがJA」だと思ったら、**本体側がJA**だった
+
+§23-6の起票は「`App._NEWSPAPER_ARTICLES` のプールが空のときのフォールバック文字列組み立て」だったが、EN走破の`--ja-exposure-log`が拾っていた実際の文
+(`正直に言えば、メインイベントは物足りなさが残った。…`)は**`_NEWSPAPER_ARTICLES.lowMQ` の正規のプール要素**だった。
+真因は `ui-render.js` `_npSwapMainToSecondCard`(一面トップと興行メインが同じ試合になった週に第2試合をメイン枠へ繰り上げる関数)が、
+**同じプールを `kurodaText` ではなく素の `fn(promotedCtx)` で呼んでいた**こと。
+本体の `App._generateNewspaperTexts` はP4-5で `kurodaText(entry, d, WM_I18N.t)` に配線済みだったのに、
+**同じプールの第2の消費点だけが取り残されていた**(§6「UI層からの直接t()配線」の適用漏れ)。
+
+- **教訓**: 露出した文字列を辞書で引いて「どの表の何行目か」を先に確定させる。表が既に訳出済みなら、
+  疑うべきはテーブルではなく**その表の消費点が複数ある**こと。`grep <TABLE名>` で消費点を全部数える(§23-2と同じ作法)
+- フォールバック(プールが空/例外時)は実際には防御的な到達不能枝だったが、**本体が英語になった今フォールバックだけJAで出る**
+  状態(§14-5-4と同型)になるため、同バッチでテンプレ化した
+
+### 31-2. `kurodaText`は未定義プロパティを `"undefined"` として本文へ出す — 既存の try/catch の保険を殺さない
+
+素の `fn(d)` は `d.winner.name` のような未解決パスで**例外を投げ**、呼び出し側の `catch` が空文字にしてフォールバックへ委ねていた。
+`kurodaText` は `kurodaEvalPath` が `undefined` を返しても `String(undefined)` を本文へ差し込むだけで**例外にならない**ため、
+素直に差し替えると「壊れたときフォールバックへ落ちる」という既存の保険が消え、JA出力が変わる(`undefinedが…`)。
+
+```js
+try {
+  const raw = fn(promotedCtx);                                   // 従来どおり素で呼んで成否を確かめ
+  promotedArticle = raw ? kurodaText(fn, promotedCtx, WM_I18N.t) : raw;  // そのうえで訳出
+} catch (e) { promotedArticle = ''; }
+```
+
+- `Engine.rng.pick` の位置(try の内/外)は**元のまま動かさない** — 乱数の消費順が変わると出目が変わる
+- 同型(`kurodaText`へ後付けで乗り換える消費点)では毎回この「素で呼んで確かめてから訳す」形を使う
+
+### 31-3. 末尾に直結する注記2変種は`{closing}`スロット+**EN訳文側の先頭スペース**
+
+`decisive` 本文の末尾は、元コードでは三項演算子で「王座戦だった」/「敗者も意地を見せた」のどちらかが**空白なしで直結**していた。
+§15-2のクラウス規約をそのまま適用し、テンプレは `…紙面に残った。{closing}` のまま、**EN訳文の側が先頭に半角スペースを持つ**。
+`closing` は先に `t()` で確定させてから本文の params に載せる(充填済みなので後段の置換で壊れない)。
+
+### 31-4. 同型の掃討 — 主力対決の黒田寸評フォールバック
+
+`grep 'if (!comment)' / 'if (!txt)'` 系で新聞セクションの「プール空振り時の直書きJA」を全数当たったところ、
+P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELATION_NARRATIVE`)の隣に**1件だけ未配線が残っていた**
+(`_npMatchupFlavorText` 空振り時の主力対決寸評3分岐)。1〜2文の短文なので、兄弟3件と同じく**インライン`WM_I18N.t()`+ui-ledger**へ寄せた
+(数文の地の文である興行記事フォールバックだけを data.js のテンプレ表にする、という置き場の使い分け)。
+差し込む `m.role`(`エース`/`主力`/`中堅`)は ui-ledger に既訳のある1語ラベルなので、**値として `WM_I18N.t()` で引き直す**(§14-2 `_wmDictLabel` と同じ流儀)。
+
+### 31-5. JA同一性の証明(27,657通り+128通り・不一致0)
+
+§15-5の作法①(凍結コピーとの全数突合)。`git show <BASE>:src/ui-render.js` から旧 `_npSwapMainToSecondCard` を切り出し、
+新旧を同じサンドボックス(ja素通しdict)で回して戻り値オブジェクト全体を `JSON.stringify` で突合した。
+
+- 実プール / **空プール(=フォールバック3分岐を強制)** / `App`なし の3系統 × 選手2組 × 勝敗4種(left/right/draw/勝敗不明) ×
+  王座戦2 × MQ 6値 × ターン 4値 × 決着技2 × 観客2値 × 会場2 × season/week 3組 = **27,657通り・不一致0**
+- 分岐名つきの読める形でも別途突合(draw/decisive+title/decisive+normal/noWinner × 32ケース = **128通り・不一致0**)
+- `npm run test:ui:walkthrough` の **`--action-log` が旧実装と1バイト一致**(151,329 bytes・digest `1052faa82eaf7991`・328 actions)
+- **走破のOverflow件数は実行ごとにブレる**(27/29/30/32を実測)。`App._generateNewspaperTexts`のMath.random()由来のノイズで、
+  digest(=行動ログ)は安定している。**まれに1手ズレる実行がある**(1回だけ327手 digest `e603d4e2…` を観測。
+  同一コードで再実行すると328手・digest一致に戻った)ので、**digestが違ったら再実行して再現するか先に確かめる**こと
+
+### 31-6. P7-8で新たに見つかった穴(未着手)
+
+- **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
+  条件分岐ごとの断片を `[first, second, third].join('')` で連結する型で、t()を一度も通らない。P7-6(ランキング画面)の領分として記録のみ
+- **団体比較号の `d.opportunity` / `actionDescs` 等(management.js:26300付近)** — Engine内の関数に直書きされた紹介文プール(§10-2型)。
+  `_npRenderOrgCompare` の紙面に出るが、テーブル化+dict糸通しが要る別枠
