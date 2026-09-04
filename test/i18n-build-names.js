@@ -166,6 +166,14 @@ function main() {
     process.exit(1);
   }
 
+  // ── P6-11: 姓のみ辞書(フルネームJA → 姓のみEN)の構築 ──
+  // names(pn)とは別領域。.flink/.jtc-fn/.nm-tag等の固定幅1行枠でフルネームだと
+  // 折り返し・はみ出しが起きる箇所向け(docs/i18n-en-layout-overflow-report-v0.1.md)。
+  // 選手・コーチのみ対象(団体・大会等は「姓」という概念が無い)。
+  const surnameByFullName = Object.create(null);
+  (ledger.characters || []).forEach((c) => { surnameByFullName[c.ja] = c.enSurname; });
+  (ledger.coaches || []).forEach((c) => { surnameByFullName[c.ja] = c.enSurname; });
+
   // ── 生成 ──
   const charCount = (ledger.characters || []).length;
   const coachCount = (ledger.coaches || []).length;
@@ -185,27 +193,44 @@ function main() {
       + `コーチ${coachCount}名・うち暫定読み${unconfirmedCoach}名 / 団体・大会・ベルト・会場・付録)`,
     '//  WM_I18N.pn()/t()のパラメータ値自動変換(D-P6-2/D-P6-3)経由でenのときだけ参照される。',
     '//  jaのときは無関係(1バイト不変)。辞書に無い名前はfail-openで原文のまま表示される。',
+    '//  addSurnames(P6-11): フルネームJA→姓のみEN。WM_I18N.pnSurname()経由でenのときだけ参照。',
     '// ══════════════════════════════════════════════════════════════════════════════',
     '(function () {',
     '  \'use strict\';',
     '  if (typeof WM_I18N === \'undefined\' || !WM_I18N.addNames) return;',
     '  WM_I18N.addNames(',
   ].join('\n');
-  const footer = '\n  );\n})();\n';
+  const footer = '\n  );\n';
 
   const body = JSON.stringify(merged, null, 2)
     .split('\n')
     .map((line) => '  ' + line)
     .join('\n');
 
-  fs.writeFileSync(OUT_PATH, header + '\n' + body + footer, 'utf8');
+  const surnameHeader = [
+    '  if (WM_I18N.addSurnames) {',
+    '    WM_I18N.addSurnames(',
+  ].join('\n');
+  const surnameBody = JSON.stringify(surnameByFullName, null, 2)
+    .split('\n')
+    .map((line) => '    ' + line)
+    .join('\n');
+  const surnameFooter = '\n    );\n  }\n})();\n';
+
+  fs.writeFileSync(
+    OUT_PATH,
+    header + '\n' + body + footer + surnameHeader + '\n' + surnameBody + surnameFooter,
+    'utf8',
+  );
 
   const totalKeys = Object.keys(merged).length;
+  const surnameKeys = Object.keys(surnameByFullName).length;
   console.log(`[i18n-build-names] 生成しました: ${path.relative(ROOT, OUT_PATH)}`);
   console.log(`[i18n-build-names] 選手=${charCount}(暫定読み${unconfirmedChar}) コーチ=${coachCount}(暫定読み${unconfirmedCoach}) `
     + `団体=${(ledger.orgs || []).length} 大会=${(ledger.events || []).length} ベルト=${(ledger.titles || []).length} `
     + `会場=${(ledger.venues || []).length} 学校地名=${(ledger.schools || []).length} 媒体NPC=${(ledger.npc || []).length}`);
   console.log(`[i18n-build-names] 辞書エントリ総数(フルネーム+姓のみ+その他を統合)=${totalKeys}`);
+  console.log(`[i18n-build-names] 姓のみ辞書(フルネームJA→姓のみEN)エントリ数=${surnameKeys}`);
 }
 
 main();

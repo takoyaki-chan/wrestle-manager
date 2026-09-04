@@ -46,6 +46,15 @@
 //      文字列かつ名前辞書に完全一致すれば変換してから埋め込む(manフィルタ等の通常の
 //      プレースホルダフィルタより前段で評価する)。ja/pseudo時は従来どおり無変換。
 //      これによりテンプレ経由の名前({name}/{winner}等)は配線ゼロで英語化される。
+//  ■ 姓のみ辞書 pnSurname (Stage B P6-11、docs/i18n-en-layout-overflow-report-v0.1.md):
+//    チップ・1行の表・ランキング行(.flink/.jtc-fn/.nm-tag等の固定幅1行枠)はフルネーム
+//    だと英語で折り返し・はみ出しが起きる。pn()と同じ「フルネームJA」を入力に取り、
+//    姓だけを返す。姓のみ辞書に無ければpn()(フルネーム訳、それも無ければ原文)へ
+//    fail-openする。addSurnames(map)が登録入口(生成元はpn()と同じsrc/lang-en-names.js)。
+//  ■ <html lang>属性の同期 (Stage B P6-11): setLang()呼び出し時と読み込み時に
+//    document.documentElement.lang を 'en'(currentLang==='en')/'ja'(それ以外) へ同期する。
+//    静的HTMLは`<html lang="ja">`固定なので、EN専用CSS(`html[lang="en"] .foo{...}`)が
+//    JAの見た目に一切触れずにレイアウトだけ言語別に出し分けられるようにするための入口。
 // ══════════════════════════════════════════════════════════════════════════════
 (function (global) {
   'use strict';
@@ -59,6 +68,11 @@
   // 固有名詞(選手・コーチ・団体・大会・ベルト・会場等)の 原文 → 訳文。
   // 通常のUI辞書(dict)とは別領域(Stage B P6 D-P6-1)。生成元: src/lang-en-names.js。
   const names = Object.create(null);
+  // フルネーム(JA) → 姓のみ(EN)。P6-11: チップ・1行固定枠(.flink/.jtc-fn/.nm-tag等)で
+  // フルネームだと折り返し・はみ出しが起きる箇所向け。names(pn)とは別領域。
+  // 生成元: src/lang-en-names.js(test/i18n-build-names.jsがnames-ledger.jsonの
+  // ja(フルネーム)→enSurnameを突合して生成)。
+  const surnames = Object.create(null);
   // このセッションで既にログ済みの未訳キー(D7: 同一キーは1回だけ)。
   const missSeen = new Set();
 
@@ -229,12 +243,25 @@
     }
   }
 
+  // P6-11: <html lang>属性の同期。EN専用CSS(`html[lang="en"] .foo{...}`)がJAの見た目に
+  // 一切触れずにレイアウトだけ言語別に出し分けられるようにするための入口。
+  // pseudoはEN専用CSSの対象外(レイアウト溢れの目視検査用途で、幅の物差しが違うため)なので
+  // 'ja'のまま据え置く。document不在環境(node等)では何もしない。
+  function syncHtmlLangAttr() {
+    try {
+      if (typeof document !== 'undefined' && document.documentElement) {
+        document.documentElement.lang = (currentLang === 'en') ? 'en' : 'ja';
+      }
+    } catch (_e) { /* 属性設定不可でも動作は続行 */ }
+  }
+
   function setLang(lang) {
     if (VALID_LANGS.indexOf(lang) < 0) return;
     currentLang = lang;
     try {
       if (global.localStorage) global.localStorage.setItem(STORAGE_KEY, lang);
     } catch (_e) { /* 保存不可でも動作は続行(既定'ja'に落ちるだけ) */ }
+    syncHtmlLangAttr();
     applyDom();
   }
 
@@ -252,6 +279,14 @@
     Object.keys(map).forEach((key) => { names[key] = map[key]; });
   }
 
+  // ── P6-11: 姓のみ辞書(フルネームJA → 姓のみEN)の登録入口 ──
+  // names(pn)とは別領域。{ フルネームJA: 姓のみEN } のマップをマージする(複数回呼び出し可)。
+  // 生成元: test/i18n-build-names.js → src/lang-en-names.js。
+  function addSurnames(map) {
+    if (!map) return;
+    Object.keys(map).forEach((key) => { surnames[key] = map[key]; });
+  }
+
   // ── D-P6-3: 直接補間サイト用ヘルパー ──
   // strが名前辞書に完全一致すればEN訳を返す。一致しなければ原文のまま(fail-open)。
   // ja/pseudo時は素通し(t()のpseudo分岐が辞書引きをしないのと同じ扱い。D-P6-2参照)。
@@ -261,9 +296,23 @@
     return Object.prototype.hasOwnProperty.call(names, str) ? names[str] : str;
   }
 
+  // ── P6-11: チップ・1行固定枠(.flink/.jtc-fn/.nm-tag等)向け姓のみヘルパー ──
+  // strはフルネームJA(pn()と同じ入力形)。姓のみ辞書に完全一致すればEN姓を返す。
+  // 一致しなければ pn(str)(フルネームEN、無ければ原文)にfail-open。
+  // ja/pseudo時は素通し(pn()と対称)。
+  function pnSurname(str) {
+    if (typeof str !== 'string') return str;
+    if (currentLang !== 'en') return str;
+    if (Object.prototype.hasOwnProperty.call(surnames, str)) return surnames[str];
+    return pn(str);
+  }
+
   // DOMContentLoaded時に自動適用。i18n.jsはbody内の他スクリプトより前に読み込まれる
   // (index.htmlのコメント参照)ため、それまでにパースされた静的要素は既にDOM上に
   // 存在している。念のためDOMContentLoadedでも再適用し、取りこぼしを防ぐ。
+  // P6-11: <html lang>属性も初回読み込み時点のcurrentLangに合わせて同期する
+  // (静的HTMLはlang="ja"固定のため、EN既定端末の初回起動でズレないようにする)。
+  syncHtmlLangAttr();
   if (typeof document !== 'undefined') {
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => applyDom());
@@ -278,7 +327,9 @@
     t,
     addDict,
     addNames,
+    addSurnames,
     pn,
+    pnSurname,
     applyDom,
     // D7: 翻訳漏れログの記録先。テスト/デバッグから中身を読めるようSetのまま公開する。
     _misses: missSeen,

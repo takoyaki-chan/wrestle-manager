@@ -17644,9 +17644,11 @@ function _jtcFx(f, isWin, isLose) {
     : `<span class="jtc-ini">${escHtml((WM_I18N.pn(f.name) || '?')[0])}</span>`;
   // U7 §2-C: ブラケットも顔が出ている以上、押せば選手詳細が開く
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'juniorTournament',true)"`;
+  // P6-11: ブラケットセルは40〜132px幅の固定枠(1行)。フルネームだと英語ではみ出すため
+  // 姓のみ表示にする(i18n-en-layout-overflow-report-v0.1.md §5-B。JAはpnSurname無関係=不変)
   return `<div class="jtc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
-    <div class="jtc-fn">${escHtml(WM_I18N.pn(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}</div>
+    <div class="jtc-fn">${escHtml(WM_I18N.pnSurname(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}</div>
   </div>`;
 }
 
@@ -19989,9 +19991,10 @@ function _tcCircleFx(f, isWin, isLose, withOrg) {
     : `<span class="jtc-ini">${escHtml((WM_I18N.pn(f.name) || '?')[0])}</span>`;
   const org = withOrg ? `<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span>` : '';
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)"`;
+  // P6-11: ブラケットセルは52〜76px幅の固定枠(1行)。姓のみ表示(jtc-fnと同じ理由)
   return `<div class="tc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="tc-cir ${cls}">${img}</div>
-    <div class="tc-fn">${escHtml(WM_I18N.pn(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}${org}</div>
+    <div class="tc-fn">${escHtml(WM_I18N.pnSurname(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}${org}</div>
   </div>`;
 }
 
@@ -20003,9 +20006,10 @@ function _tcRectFx(f, isWin, isLose) {
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
     : `<span class="jtc-ini">${escHtml((WM_I18N.pn(f.name) || '?')[0])}</span>`;
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)"`;
+  // P6-11: 104〜132px幅の固定枠(1行、white-space:nowrap+ellipsis)。姓のみ表示(jtc-fnと同じ理由)
   return `<div class="tc-rc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
-    <div class="tc-fn">${escHtml(WM_I18N.pn(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
+    <div class="tc-fn">${escHtml(WM_I18N.pnSurname(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
   </div>`;
 }
 

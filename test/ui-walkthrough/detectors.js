@@ -358,8 +358,19 @@ class WalkthroughDetectors {
 
       // (c): ボタン/タブ/バッジ類を同種(タグ+先頭クラス)でグルーピングし、中央値より
       // 1行分以上高い個体を意図しない折り返しとして拾う(同種2件だけだと基準が決まらないため3件以上で比較)
+      // P6-11: [class*="tab"] は「タブ切替ボタン」だけでなく「タブの中身のパネル」
+      // (例: .rd-tab-content。ロースター詳細の育成余地パネル)にも部分一致してしまい、
+      // 本来は選手ごとに文章量が違って当然のプローズ(散文)ブロックを、固定サイズのはずの
+      // コントロール(ボタン/バッジ)と誤って同グループ扱いしていた(P6-9報告書§6の既知の限界)。
+      // -content/-panel で終わるクラスを持つ要素はコントロールではなくパネル本体とみなし除外する
+      const isContentOrPanelClass = element => {
+        const classes = (typeof element.className === 'string' ? element.className : '').trim().split(/\s+/);
+        return classes.some(cls => /(?:-content|-panel)$/.test(cls));
+      };
       const groupSelector = 'button, .nav-btn, [class*="badge"], [class*="tab"], [class*="chip"], [class*="pill"]';
-      const groupCandidates = Array.from(document.querySelectorAll(groupSelector)).filter(visible);
+      const groupCandidates = Array.from(document.querySelectorAll(groupSelector))
+        .filter(visible)
+        .filter(element => !isContentOrPanelClass(element));
       const groups = new Map();
       for (const element of groupCandidates) {
         const firstClass = (typeof element.className === 'string' ? element.className : '')

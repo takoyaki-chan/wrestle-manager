@@ -31,7 +31,7 @@ const renderActors = new Function('escHtml', 'WM_I18N',
   `${ui.slice(helperStart, helperEnd)}; return _emrTagFinishActors;`
 )(value => String(value).replace(/[&<>"]/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
-})[char]), { pn(str) { return str; } });
+})[char]), { pn(str) { return str; }, pnSurname(str) { return str; } });
 const options = {
   winAttribution: { pinnedBy: 2, pinnedWho: 3 },
   teamLeft: { members: [{ id: 1, name: 'Partner' }, { id: 2, name: '<Finisher>' }] },

@@ -1,5 +1,47 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 P6-11 — ENモードのレイアウト溢れ修正: EN固有+56〜58件→+2件(目標10件以下達成)、JA不変(2026-09-04)
+
+P6-9報告書(`docs/i18n-en-layout-overflow-report-v0.1.md`)の計測結果(EN 87〜89件、JA基準比+56〜58件)にFable裁定の方針1〜4で対処した。開始前にworktreeブランチをmain先端(d1f1a73)へfast-forward済み。
+
+### 対処内容(方針別)
+
+1. **肖像下ラベルの2行折り返し**(`html[lang="en"]`分岐、JAは1px不変): `.pb-fighter-name`(試合結果カードの選手名)・`.aw-team-name`(表彰式隊列の選手名。同型パターンと判定し追加適用)へ`white-space:normal;display:-webkit-box;-webkit-line-clamp:2;min-height:2.3em`(line-height 1.15基準のem指定で16px/18px/14pxいずれの文脈でも比率維持)。"Nahoko Kawanobe"の溢れが+67px→+10pxまで圧縮
+2. **姓のみ表示**(`WM_I18N.pnSurname()`新設): `.jtc-fn`/`.tc-fn`(トーナメントブラケット、ui-common.js 3箇所)・`.nm-tag`(ランキング画面、ui-render.js 1箇所)を`pn()`(フルネーム)から`pnSurname()`へ切替。`.flink`は`.pb-fighter-name`の子として方針1の折り返しに含まれ配線不要だった
+3. **フォントサイズ1段階縮小**(最後の手段): `.emr-foot-note`(9px→8px、タイプスケールmicro段)
+4. **短縮訳**(`i18n/ui-ledger.json`): `.sp-appeal-bonuses`のバフ内訳5キー(例: `📣Expectation +{n}`→`📣Hype+{n}`)、`.neg-btn-hint`契約交渉ヒント7キー(最長68字→38字程度)、追加で判明した引き留め選択肢2キー、計14キー
+5. **検出器の偽陽性除外**: `test/ui-walkthrough/detectors.js`の`wrap-height`グルーピングから`-content`/`-panel`終わりのクラス(`.rd-tab-content`等)を除外(P6-9報告書§6の申し送り事項)
+
+### 基盤整備
+
+- `src/i18n.js`: 姓のみ辞書`surnames`+`WM_I18N.addSurnames()`/`pnSurname()`を新設(`pn()`と対称のfail-open設計)。`document.documentElement.lang`をEN/JAへ同期する`syncHtmlLangAttr()`を追加(方針1のCSS分岐が前提とする`html[lang="en"]`セレクタの土台。静的HTMLは`lang="ja"`固定のため、これが無いとEN専用CSSが機能しない)
+- `test/i18n-build-names.js`: `i18n/names-ledger.json`の`jaSurname`→`enSurname`から姓のみ辞書を生成する処理を追加、`src/lang-en-names.js`を再生成(選手127+コーチ35=162エントリ)
+- P6-3が確立した前例(WM_I18Nテストスタブへの機械追加)に倣い、`pn(str){return str;}`スタブを持つtest/配下47ファイル67箇所に`pnSurname(str){return str;}`を機械追加(`ranking-depth-redesign-test.js`が実際に`TypeError: WM_I18N.pnSurname is not a function`で落ちたため必須の対応だった)
+
+### 結果(before → after、`npm run test:ui:walkthrough[:en]`実走)
+
+| 指標 | before | after(直近実走) |
+|---|---:|---:|
+| EN合計 | 87〜89 | **34**(対処直後の実走では37) |
+| JA合計 | 30〜31 | **32**(digest `1052faa82eaf7991` 不変) |
+| EN固有の増分 | +56〜58 | **+2**(もう1本の実走では+7)。**目標10以下達成** |
+
+画面別: `screen-show` 40→22 / `screen-week` 36→12(`wrap-height=10`はJA由来のため意図的に不変) / `screen-roster` 5→0 / `screen-ranking` 5→0 / `screen-shachoshitsu` 2→0。
+
+残った溢れは全てJA由来(`screen-week`の`wrap-height`10件・`.a1-wrap`・`.dojo-scene-shout`)か対象外明示済み(`.pb-dialogue-line`110字上限管理下)、または`.sp-appeal-bonuses`の最悪ケース(4バフ同時・全2桁値)の小幅な残存(+52px→+29〜32px)。詳細な内訳・残課題の理由はdocs/i18n-en-layout-overflow-report-v0.1.md §9。
+
+### 検証
+
+`node --check`(i18n.js/ui-common.js/ui-render.js/test/i18n-build-names.js/detectors.js)全OK。`npm test` 260/260 green。`node test/ja-golden.js`完全一致(hash `6b3d05c8daa3d93f62c7e2fcb3b21e7d6ffebc6dc1c4951919a229a2d4b8c1b3`)。`node test/i18n-ratchet.js`増加なし。`node test/i18n-build-dict.js`/`node test/i18n-build-names.js`台帳再生成・未訳0。`npm run test:ui:walkthrough`(JA)×2本 PASS・digest不変・Issues 0。`npm run test:ui:walkthrough:en`×2本 PASS・Issues 0・i18n-miss 0。Playwright(走破のブラウザ流用)でENのスクリーンショット3枚(興行準備のカード・ロスター一覧・ランキング)を保存し目視確認(カード魅力バフの短縮表記・ブラケット/ランキングの姓のみ表示を確認)。
+
+### 触っていないもの(厳守事項どおり)
+
+i18n/dialogue-ledger.json・i18n/template-ledger.json・src/lang-en-dialogue.js・kuroda-text.js・management.jsのEngine.flavor/awards・タイトル画面・data.js EMOTION_TEXTS。この過程で見つけた観察事項(セリフ・翻訳完成度に関わるもの、レイアウト溢れとは別種の課題)は該当パイプラインの担当バッチへ申し送る: (a)興行準備カードの「初顔合わせ」ラベルがt()を通っておらず英語モードでも生JAのまま(i18n-missにも計上されない=t()自体を経由していない配線穴の疑い)、(b)ランキング画面の団体プロフィール文が4団体とも同一のフォールバック文言("この団体の顔は間違いなく彼女だ…")になっている。
+
+### 残: 実機確認
+
+docs/実機確認バックログ.md に「英語対応 P6-11 — ENレイアウト溢れ修正(09-04)」として追記済み。
+
 ## 🌐 Stage B P5-2p — セリフ英訳 **最終バッチ⑯**(残1,054行+抽出漏れ3表130行=1,184行)でセリフ層16,674行を完訳 / ト書き312行を`*…*`へ統一 / 配線穴11件を根治（2026-09-04・Opus主筆 worktree agent-aab907bb7c0abd59b）
 
 **P5(セリフ層)完了**。台帳16,674行の**未訳が0**になった。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。§4-6のネイティブ検品①7則+②8則+③5則を含む)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`docs/en-kuroda-style-draft-v0.1.md`(Bの黒田3行)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2oの訳語判断を継承。開始前にworktreeブランチをmain先端(c37225d)へfast-forward済み。
