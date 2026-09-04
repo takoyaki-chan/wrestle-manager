@@ -1661,7 +1661,7 @@ function openBp(side){
         <div class="bp-detail-item"><span class="bp-detail-label">${WM_I18N.t('現在HP')}</span><span class="bp-detail-value">${Math.max(0, Math.round(ch.hp))} / ${ch.mhp} (${hp.pct}%)</span></div>
         <div class="bp-detail-item"><span class="bp-detail-label">${WM_I18N.t('モメンタム')}</span><span class="bp-detail-value">${S.mom > 15 ? (side==='L'?WM_I18N.t('優勢'):WM_I18N.t('劣勢')) : S.mom < -15 ? (side==='L'?WM_I18N.t('劣勢'):WM_I18N.t('優勢')) : WM_I18N.t('互角')}</span></div>
       </div>
-      ${ch.profile?`<div class="bp-divider"></div><div class="bp-profile"><div class="bp-profile-label">PROFILE</div><div class="bp-profile-text">${escHtml(ch.profile)}</div></div>`:''}
+      ${ch.profile?`<div class="bp-divider"></div><div class="bp-profile"><div class="bp-profile-label">PROFILE</div><div class="bp-profile-text">${escHtml(WM_I18N.t(ch.profile))}</div></div>`:''}
       ${badges?`<div class="bp-badges">${badges}</div>`:''}
     </div>
   </div>`;

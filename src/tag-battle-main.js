@@ -1691,7 +1691,7 @@ function openBp(posKey){
         <span class="bp-stat-val">${s.v}</span>
       </div>`).join('')}</div>
       <div style="margin-top:8px;font-size:12px;color:var(--text-sub)">${WM_I18N.t('現在HP')}: ${Math.max(0,Math.round(ch.hp))} / ${ch.mhp} (${hpPct}%)</div>
-      ${ch.profile ? `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,0.03);border-radius:3px;font-size:12px;line-height:1.6;color:var(--text-sub)">${escHtml(ch.profile)}</div>` : ''}
+      ${ch.profile ? `<div style="margin-top:10px;padding:10px;background:rgba(255,255,255,0.03);border-radius:3px;font-size:12px;line-height:1.6;color:var(--text-sub)">${escHtml(WM_I18N.t(ch.profile))}</div>` : ''}
     </div>
   </div>`;
   ov.classList.add('show');

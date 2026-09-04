@@ -444,6 +444,22 @@
 | 柔の白銀(白銀麗子の異名) | Shirogane the Supple | 「剛の芝」= Shiba the Mighty(ネイティブ検品②で Strong→Mighty に確定)と対の造語 |
 | ギャル3人衆 | the gyaru trio | gyaruは英語圏プロレス/サブカル文脈で通用 |
 
+## 追加起案(P7-4でプロフィール文の英訳中に発生・Fable仮批准、Keisuke確認は随時)
+
+`CHAR_PROFILES`(選手紹介文127本)・`ALL_COACHES`(コーチ紹介文70本)の地の文に出た異名・通称。**紹介文には静的な英語表記で埋め込んである**(PHではないので名前辞書の自動変換が効かない)。表記を変える場合は辞書1行ではなく該当する紹介文の行を直す。
+
+| JA | EN案 | 出典 | 備考 |
+|---|---|---|---|
+| 姫宮の白雪姫(白銀麗子の第2の異名) | the Snow White of Himemiya | CHAR_PROFILES 37 | 「柔の白銀」と併記される |
+| 岬浜のツインタワー(上野原・真鍋) | the Misakihama Twin Towers | CHAR_PROFILES 35 / 36 | 付録Aで既出。個別には "the other Misakihama Twin Tower" |
+| 哲玖四天王 | the Tekkyu Four | CHAR_PROFILES 28 / 128 | 「四天王」を Four Heavenly Kings と直訳せず、英語圏プロレスの語法(the Four Horsemen 型)に寄せた |
+| 哲玖の毒蛇(巳沼紗霧) | the viper of Tekkyu | CHAR_PROFILES 128 | |
+| 鉄人(頑健な選手の形容) | Iron Woman | CHAR_PROFILES 27 / 60 | ui-ledger の既訳「鉄人 → The Iron Woman」に合わせた |
+| 鉄の母(コーチ31 神崎鋼子の異名) | the Iron Mother | ALL_COACHES 31 | |
+| 技の神(コーチ34 御堂清四郎の異名) | the God of Technique | ALL_COACHES 34 | |
+| 閃光(コーチ22 安藤美波のMMA時代の異名) | Flash | ALL_COACHES 22 | リングネーム語法(§1-8)。冠詞なしで "fought as Flash" |
+| 器用貧乏(コーチ6 の現役時代の渾名) | a jack of all trades | ALL_COACHES 6 | 渾名というより評語なので意訳 |
+
 ## 用語規約追記(P5-2f・Fable批准)
 
 - セリフ中の**ベルト=belt**(物として持つ・返す文脈)/**王座=title**(地位・抽象)。地の文・ナレーションはtitle基調(既存lang-en.jsと整合)

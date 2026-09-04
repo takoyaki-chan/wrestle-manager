@@ -17522,7 +17522,7 @@ function _fighterFileDetailHtml(fighter, traitDefs) {
       </div>
     </div>
     <div class="fighter-file-section"><div class="fighter-file-section-label">${WM_I18N.t('Traits — 特性')}</div>${traits}</div>
-    <div class="fighter-file-section"><div class="fighter-file-section-label">${WM_I18N.t('Profile — 紹介')}</div><div class="fighter-file-profile">${escHtml(fighter.profile)}</div></div>
+    <div class="fighter-file-section"><div class="fighter-file-section-label">${WM_I18N.t('Profile — 紹介')}</div><div class="fighter-file-profile">${escHtml(WM_I18N.t(fighter.profile))}</div></div>
     <div class="fighter-file-footnote">${WM_I18N.t('※ 記載の能力値は各選手の能力基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。')}</div>`;
 }
 

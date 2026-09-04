@@ -1,5 +1,63 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-4 — プロフィール文3表（CHAR_PROFILES 127＋コーチ123＋連結様式1＝251キー）を台帳化・配線・英訳（2026-09-04・worktree agent-a2e882557b9d80cdc）
+
+指示書は docs/i18n-stage-b-p7-design-v0.1.md §3 の P7-4（分類B「プロフィール文」）。開始前に worktree を main 先端（a9d6f50＝P7-2まで）へ fast-forward 済み。ラベル表と ui-ledger の走査モード（P7-1）／NOTIF・LARGE_EVENT・WEEKLY_STORY_TICKER（P7-3）／management.js の newspaper・chronicle・autumnWar（P6-16）は並行エージェントの領分のため不触。`test/i18n-extract-templates.js` の `TARGET_TABLES` へは**末尾に「P7-4」コメント付きで自分の3表だけ**を追記し、既存行は並べ替えていない（P7-3と同じリストを触るため衝突面を最小化）。
+
+**訳出251キー**。台帳は template 2,123→**2,374・未訳0**（ui 3,833 / dialogue 16,674 は不触）。§13-2 B の突合表から `CHAR_PROFILES` 127 と `COACH_FLAVOR_DEFS` 11 が消え、`ALL_COACHES` 125 は**112行が解決・残13は `COACH_ABILITY_CATALOG`（P7-1のui台帳）と同一文字列の特殊能力名**。
+
+### 1. 表ごとの配線方式と行数
+
+| 表 | 台帳行 | 消費点（grepで全数確認） | 配線 |
+|---|---:|---|---|
+| `CHAR_PROFILES` | 127 | 表示点は**4箇所のみ**。①ui-common.js `showFighterPopup`（表を直読み）②app.js `_fighterFileDetailHtml`（選手ファイル詳細）③battle-engine-main.js `openBp`④tag-battle-main.js `openBp`。app.js の17箇所の `profile:` は**すべて postMessage 用のローカル`msg`**で、G／セーブには入らない（サブエージェントで producer→render を全数追跡） | **表示点で `WM_I18N.t()` 1回**。iframe 2本にも WM_I18N が読み込まれているのでペイロードはJAのまま渡し、表示側で訳す（セーブに書く値・postMessageの値は不変） |
+| `ALL_COACHES` の `desc`/`profile`/`origin`/`gender`/`flavor` | 112 | `showCoachTooltip`（ui-common.js）が唯一の詳細表示点。`flavor` のキーだけ ui-render.js `_renderDbCoaches`（データベースのコーチ表）にも出る | 表示直前に t()。**メタ行の「歳／性／出身」は直書き連結だった**ので `ARTICLE_COMPOSE_TEMPLATES.coachProfileMeta` の1テンプレへ畳み、値（男／女・出身地）は差し込む前に辞書を引き直す（spec §14-2 `_wmDictLabel` と同趣旨） |
+| `COACH_FLAVOR_DEFS` の `desc` | 11 | 同ツールチップの特殊能力ブロック（`🌿 {flavor}: {desc}`） | 新設 `_coachFlavorDesc(flavorKey)` に委譲。**定義が引けないとき `t('')` を呼ばない**（ENで空文字の i18n-miss を量産するため） |
+
+`ALL_COACHES` の抽出は P6-10 の `extractArrayLiteralProp`（ソース文字列から `prop: [ … ]` を切り出す）と同じ「配列のプロパティだけを台帳へ載せる」目的だが、`ALL_COACHES` はトップレベル`const`で評価済みの値がそのまま取れるため、**ソース切り出しではなく `TABLE_PATH_FILTER` のパスフィルタ**で同じことをした。`name` は名前辞書、`abilities` は `COACH_ABILITY_CATALOG`（P7-1）の領分として除外している。
+
+### 2. 英語の声（設計 §4「CHAR_PROFILESの英語の声」の実装）
+
+**抑えた三人称・現在形の人物紹介**（選手ファイルの紹介文であって黒田署名ではない）。en-tone-bible §1・§4-6 に従い、温度を上げない／格言化しない／身体・抽象メタファーを足さない。JAの構文をなぞる義務はない（バイブル最重要則2）ので、`〜が武器`／`〜が持ち味`のような定型は英語として自然な言い回しへ散らした。
+
+固有名詞は docs/en-proper-nouns-draft-v0.1.md（付録Aの学校・地名を含む）に従う。**紹介文の地の文に埋まった人名・校名は静的に英語表記で書いてある**（PHではないので名前辞書の自動変換が効かない）。よって**要読み確認49件の裁定で表記が変わったら、該当する紹介文の行も差し替えが要る**（辞書1行では済まない箇所）。影響するのは大河内＝Okochi／橘玲美＝Remi Tachibana／芝＝Shiba／白銀＝Shirogane／井沢遥＝Haruka Izawa／沢登鮎＝Ayu Sawanobori／伊勢原文奈＝Fumina Isehara ほか。
+
+### 3. 技名（P7-5裁定前の仮置き）
+
+本文に技名が出るのは **CHAR_PROFILES id=1（阿武隈塔子）の1行だけ** — 「パワーボム」「ラリアット」。docs/en-move-names-draft-v0.1.md の推奨EN名（#77 Powerbomb／#18 Lariat）を採り、**固有の必殺技名ではなく一般名詞としての言及**なので小文字で `the powerbomb and a heavy lariat` とした。P7-5の裁定でこの2語の表記が変わる場合はこの1行を直す。
+
+### 4. 検証
+
+- `node --check` 全触りファイル OK ／ `node test/ja-golden.js` **完全一致**（lines=11233・`--update` 不使用）
+- `node test/i18n-build-template-dict.js` **2,374キー／未訳0**。機械検査で黒田禁止語 `legendary` を2件検出→書き換え（`The coach they call the Iron Mother, and a name that carries weight anywhere.` ／ `A coach of great standing who went to four Olympic Games…`）。「legend／living legend」は禁止語ではないので存置
+- `npm test` **260/260 PASS**
+- `node test/i18n-ratchet.js` — data.js が +1（`coachProfileMeta` の追加分。i18n配線のために足す文字列を data.js の表へ集約する P6-15/P7-2 の流儀）。`--update` で基準更新（16779→16780・差分3行）
+- `npm run test:ui:walkthrough` **PASS・ja digest `1052faa82eaf7991` 不変**
+- `npm run test:ui:walkthrough:en` **PASS**（i18n-miss 7＝P7-3対象のNOTIF系で着手前と同数）
+- **VM検証**: 3表の全291値について、JA（`setLang('ja')`）の `t()` 出力が表の原文と**1バイト一致**（不一致0）／EN（生成辞書込み）の出力に**日本語残り0**。コーチのメタ行は35名全員で旧・直書き連結とJA1バイト一致（EN例: `Age 58 | Male | From Hokkaido`）
+
+### 5. EN走破のJA露出 before→after
+
+| 画面 | before | after |
+|---|---:|---:|
+| screen-week | 47 | **46** |
+| screen-log | 41 | 41 |
+| screen-newspaper | 28 | 28 |
+| screen-roster | 24 | 24 |
+| screen-shachoshitsu | 13 | 13 |
+| screen-show | 10 | 10 |
+| titleScreen / finance / ranking | 6 / 5 / 4 | 6 / 5 / 4 |
+| **要素数(detail records)** | **635** | **625** |
+
+画面別の数字は**ユニーク要素数**なので、選手ポップアップの紹介文10件が1要素に畳まれて `screen-week` の −1 にしか見えない。実効は detail records の **−10＝CHAR_PROFILES の露出10件が0件**（`--ja-exposure-log` の突合で確認）。**コーチ画面（ツールチップ）は走破ハーネスが開かないため数字に出ない** — 効果はKeisukeの実機確認（道場ヘッダー／コーチ画面／招聘市場／データベースのコーチ表からコーチ名をクリック）で見ていただきたい。
+
+### 6. 発見（次バッチ・裁定へ）
+
+1. **`ui-common.js` のコーチツールチップ `else if (c.desc)` 枝は到達不能**。`ALL_COACHES` 35名は全員 `profile` を持ち、`Engine.coach.generateSeasonalPool()` は `.map(c => c.id)` でIDしか返さない（オブジェクトの複製・push・`profile` 削除はコード全体で0箇所）。防御的フォールバックとして枝は残し、`desc` 35行も台帳へ載せて訳してあるが、**現状は表示されない**。削除するか、`desc` を短縮表示として実際に使うかはKeisuke裁定。
+2. **`ALL_COACHES.abilities` と `COACH_ABILITY_CATALOG` のキーは同一文字列**で、`walkStrings` は値しか拾わないため**どちらの抽出器からも「キー」としては見えない**。P7-1 の `DATA_TABLES` モードが値（`desc`）だけを台帳化すると、`闘志注入` などの**能力名がツールチップとデータベース表で生JAのまま残る**。同型の穴を `COACH_FLAVOR_DEFS` 側では `ALL_COACHES.flavor`（値として実在する）を拾うことで塞いだ。P7-1へ引き継ぎ。
+3. **`_renderInviteMarketPanel`（ui-render.js:5299-5309）の職種・得意ラベルが未配線**。`COACHING_TYPE_LABELS[c.coachingType]` は t() を一度も通らず、`WM_I18N.t('得意: {style}', { style: styleLabel })` は**テンプレだけ訳して値が生JA**（spec §14-2 と同じ「成形済み値の構造穴」）。EN走破の `screen-shachoshitsu` に `Class A ・ 職人気質` / `Specialty: サブミッション` として出ている。ラベル表なのでP7-1の領分として不触。
+4. **`ui-common.js:4441` の選手紹介文だけ `escHtml()` を通していない**。他3つの表示点（app.js:17517／battle-engine-main.js:1664／tag-battle-main.js:1694）は通している。データは作者管理の静的文字列なので実害はないが、4箇所で作法が割れている。
+5. **セッションのスクラッチパッドは並行エージェントと共有**。`ja-exposure-*.json` のような自然なファイル名は他エージェントの同名ファイルに上書きされうる（本バッチで実際に1度踏み、他worktreeの計測値を自分のbeforeと誤認しかけた）。走破の before/after は**ファイルではなく自分のstdoutを正とする**か、ファイル名にバッチIDを入れること。
 ## 🌐 Stage B P6-16 — PPV頂上決戦記事本文・年代記叙述4関数・秋対抗戦ニュース・composerフォールバックの配線と英訳（2026-09-04・worktree agent-a15bfd0260246f532）
 
 指示書は specs/i18n-runtime-spec-v1.0.md §14-5 が起票した「P6-15が見つけた同型4件」。開始前にworktreeブランチをmain先端(4e35e64、P6-15まで)へfast-forward済み。
