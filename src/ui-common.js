@@ -172,7 +172,7 @@ if (typeof window !== 'undefined') window.statDecayView = statDecayView;
 
 function _imgOrInitial(url, charId, size, extraStyle = '') {
   const ch = ALL_CHARS.find(c => c.id === charId);
-  const initial = ch ? ch.name.charAt(0) : '?';
+  const initial = ch ? WM_I18N.pn(ch.name).charAt(0) : '?';
   const STYLE_COLORS = {Grappler:'#bb8fce',Striker:'#e74c3c',Submission:'#e67e22',Aerial:'#2ecc71',Allround:'#f1c40f',Brawler:'#e88a82'};
   const col = ch ? (STYLE_COLORS[ch.style] || '#888') : '#888';
   const fallback = `<div style="width:${size}px;height:${size}px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,${col}33,${col}11);font-size:${Math.round(size*0.35)}px;font-weight:900;color:${col};border-radius:8px;${extraStyle}">${initial}</div>`;
@@ -237,7 +237,7 @@ function crossOrgEmblemHtml(fighter, opponent, size = 16) {
  */
 function _u3bSideHtml(o) {
   o = o || {};
-  const name = escHtml(o.name != null ? o.name : '?');
+  const name = escHtml(WM_I18N.pn(o.name) != null ? WM_I18N.pn(o.name) : '?');
   // i18n Stage B P5-1: セリフの共通吹き出しレンダラ(60箇所超の呼び出し元を持つ最終表示点)。
   // o.line は data.js の各セリフテーブルから選択された生JA行(呼び出し元は個々にpickDialogueLine
   // 等で選択するのみで翻訳しない)。ここで一括してt()を通す(escHtmlより前=辞書キーは
@@ -755,7 +755,7 @@ function showWarChallenge() {
         portraitClass: 'mdl-a-subject-portrait big danger',
         portraitStyle,
       })}
-      <div class="mdl-a-subject-name danger">${enemyAce.name}</div>
+      <div class="mdl-a-subject-name danger">${WM_I18N.pn(enemyAce.name)}</div>
       <div class="mdl-a-subject-org danger">${ev.opponentName} ・ ACE</div>
       <div class="mdl-a-subject-ovr danger"><span class="label">OVR</span>${aceOvr}</div>
       <div class="mdl-a-subject-divider"></div>
@@ -816,14 +816,14 @@ function _warEntrySelectionHtml() {
         onclick="App.warToggleEntryFighter(${id})">
       ${picked ? `<div class="war-entry-pick-number">${selectedIndex + 1}</div>` : ''}
       <div class="mdl-a-candidate-upper" style="${upperStyle}"></div>
-      <div class="mdl-a-candidate-name">${escHtml(f.name)}</div>
+      <div class="mdl-a-candidate-name">${escHtml(WM_I18N.pn(f.name))}</div>
       <div class="mdl-a-candidate-ovr-label">OVR</div>
       <div class="mdl-a-candidate-ovr">${Engine.util.ov(f)}</div>
     </div>`;
   }).join('');
 
   const selectedNames = selected.map(id => candidates.find(f => Number(f.id) === Number(id)))
-    .filter(Boolean).map(f => escHtml(f.name));
+    .filter(Boolean).map(f => escHtml(WM_I18N.pn(f.name)));
   const canConfirm = selected.length === required;
 
   return `
@@ -838,7 +838,7 @@ function _warEntrySelectionHtml() {
         <div class="mdl-a-opponent-text">
           <div class="mdl-a-opponent-label">OPPONENT ・ ${WM_I18N.t('対 戦 団 体')}</div>
           <div class="mdl-a-opponent-name">${escHtml(ev.opponentName || WM_I18N.t('他団体'))}</div>
-          <div class="mdl-a-opponent-meta">${WM_I18N.t('{n}試合の団体対決', { n: required })}${enemyAce ? ` ・ ACE ${escHtml(enemyAce.name)}` : ''}</div>
+          <div class="mdl-a-opponent-meta">${WM_I18N.t('{n}試合の団体対決', { n: required })}${enemyAce ? ` ・ ACE ${escHtml(WM_I18N.pn(enemyAce.name))}` : ''}</div>
         </div>
         <div class="war-entry-versus">${required}<span>${WM_I18N.t('対')}</span>${required}</div>
       </div>
@@ -958,7 +958,7 @@ function renderWarMatchPreview() {
   const statusText = playerWins > aiWins ? WM_I18N.t('勝ち越し中') : playerWins === aiWins ? (resolved > 0 ? WM_I18N.t('タイ') : WM_I18N.t('試合開始')) : WM_I18N.t('負け越し中');
   const statusColor = playerWins > aiWins ? 'var(--c-info)' : playerWins === aiWins ? 'var(--stage-text-sub)' : 'var(--c-negative)';
   const nextMatch = nextIdx >= 0 ? wp.card[nextIdx] : null;
-  const nextLabel = nextMatch ? `${nextMatch.playerFighter.name} vs ${nextMatch.aiFighter.name}` : '—';
+  const nextLabel = nextMatch ? `${WM_I18N.pn(nextMatch.playerFighter.name)} vs ${WM_I18N.pn(nextMatch.aiFighter.name)}` : '—';
 
   const tierLabel = orgCfg.tier === 'S' ? WM_I18N.t('Sランク王者') : orgCfg.tier === 'A' ? WM_I18N.t('Aランク挑戦者') : WM_I18N.t('Bランク');
   const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
@@ -1028,7 +1028,7 @@ function renderWarMatchPreview() {
       // 勝者/敗者の標準フレームと二重表示になっていたため撤去）
       const leftBlock = _pbFighterBlock('left', pf, leftCls, playerOrgName, leftLine);
       const rightBlock = _pbFighterBlock('right', af, rightCls, ev.opponentName, rightLine);
-      const winnerLabel = `🏆 ${escHtml(playerWon ? pf.name : af.name)} WIN`;
+      const winnerLabel = `🏆 ${escHtml(playerWon ? WM_I18N.pn(pf.name) : WM_I18N.pn(af.name))} WIN`;
 
       html += `<div class="pb-mrow is-resolved${hasDialogue ? ' has-dialogue' : ''}">`;
       html += leftBlock;
@@ -1064,7 +1064,7 @@ function renderWarMatchPreview() {
       </div>`;
       html += `</div>`;
     } else if (isPending) {
-      html += `<div class="pb-mrow is-pending"><div class="pb-pending-text">${WM_I18N.t('第{n}試合', { n: matchNum })} — ${escHtml(pf.name)} vs ${escHtml(af.name)}</div></div>`;
+      html += `<div class="pb-mrow is-pending"><div class="pb-pending-text">${WM_I18N.t('第{n}試合', { n: matchNum })} — ${escHtml(WM_I18N.pn(pf.name))} vs ${escHtml(WM_I18N.pn(af.name))}</div></div>`;
     }
   }
   html += `</div>`; // .pb-matches
@@ -1188,7 +1188,7 @@ function renderWarFinalResult(ev, results, playerWins, aiWins, eventWon) {
     const leftBlock = _pbFighterBlock('left', pf, `${leftCls}`, playerOrgName, '');
     const rightBlock = _pbFighterBlock('right', af, `${rightCls}`, ev.opponentName, '');
 
-    const winnerLabel = `🏆 ${escHtml(playerWon ? pf.name : af.name)} WIN`;
+    const winnerLabel = `🏆 ${escHtml(playerWon ? WM_I18N.pn(pf.name) : WM_I18N.pn(af.name))} WIN`;
     const rowCls = `pb-mrow${isMain ? ' is-main' : ''}`;
 
     html += `<div class="${rowCls}">`;
@@ -1496,7 +1496,7 @@ function showRosterOverflowSigningModal(pending) {
     releaseCandidates.forEach(c => {
       candidatesHtml += `<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 12px;border-radius:4px;background:rgba(255,255,255,0.35);border:1px solid rgba(100,85,50,0.15)">
         <div>
-          <div style="font-size:13px;font-weight:700;color:var(--cream-text-main)">${c.name}</div>
+          <div style="font-size:13px;font-weight:700;color:var(--cream-text-main)">${WM_I18N.pn(c.name)}</div>
           <div style="font-size:11px;color:var(--cream-text-sub)">OVR ${ov(c)} ・ ${c.age || '?'}歳</div>
         </div>
         <button class="mdl-a-continue-btn" style="padding:6px 12px;font-size:11px;letter-spacing:2px;background:var(--cream-gold);color:#fff;border-color:var(--cream-gold)" onclick="confirmRosterOverflowSigning(${c.id})">${WM_I18N.t('解雇して契約')}</button>
@@ -1587,7 +1587,7 @@ function showNegotiatePopup(orgId, fighterId) {
   // Header
   html += `<div style="text-align:center;margin:-20px -20px 0 -20px;padding:16px 20px 12px;background:linear-gradient(180deg,${rc}20,transparent);border-radius:12px 12px 0 0">`;
   html += `<div style="font-size:13px;letter-spacing:2px;color:${rc};font-weight:700">${WM_I18N.t('🤝 引き抜き交渉')}</div>`;
-  html += `<div style="font-size:11px;color:var(--text-sub);margin-top:4px">${orgCfg.emoji} ${orgCfg.name}（${orgCfg.tier}級）</div>`;
+  html += `<div style="font-size:11px;color:var(--text-sub);margin-top:4px">${orgCfg.emoji} ${WM_I18N.pn(orgCfg.name)}（${orgCfg.tier}級）</div>`;
   html += `</div>`;
 
   // Speaker: reserved bubble slot -> 2:3 upper -> name -> stats.
@@ -1655,7 +1655,7 @@ function confirmNegotiation(orgId, fighterId, planIndex) {
   const confirmRateLabel = Engine.negotiate.getRateLabel(confirmRate);
   document.getElementById('showResultOverlay').classList.remove('active');
   showConfirm(
-    `<div style="text-align:center"><strong>${fighter.name}</strong>${WM_I18N.t('への引き抜き交渉を開始します。')}<br><br>` +
+    `<div style="text-align:center"><strong>${WM_I18N.pn(fighter.name)}</strong>${WM_I18N.t('への引き抜き交渉を開始します。')}<br><br>` +
     `${WM_I18N.t('プラン')}: ${planLabels[planIndex]}（${WM_I18N.t('費用')}: ${cost}万）<br>` +
     `${WM_I18N.t('見通し')}: <strong style="color:${confirmRateLabel.color}">${confirmRateLabel.text}</strong><br>` +
     `${WM_I18N.t('交渉期間: 4週間（キャンセル不可）')}<br><br>` +
@@ -1823,7 +1823,7 @@ function showCoachTooltip(coachId) {
   // 左: 上半身画像 or アバター
   if (upperUrl) {
     html += `<div style="flex-shrink:0;position:relative">
-      <img class="coach-tooltip-upper-img" src="${upperUrl}" alt="${c.name}" onerror="this.onerror=null;${faceUrl ? `this.src='${faceUrl}';this.style.height='88px';this.style.width='88px';this.style.borderRadius='50%'` : `this.parentElement.innerHTML='<div style=\\'width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,${color}33,${color}11);border:2px solid ${color}88\\'>${c.emoji}</div>'`}">
+      <img class="coach-tooltip-upper-img" src="${upperUrl}" alt="${WM_I18N.pn(c.name)}" onerror="this.onerror=null;${faceUrl ? `this.src='${faceUrl}';this.style.height='88px';this.style.width='88px';this.style.borderRadius='50%'` : `this.parentElement.innerHTML='<div style=\\'width:88px;height:88px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:40px;background:linear-gradient(135deg,${color}33,${color}11);border:2px solid ${color}88\\'>${c.emoji}</div>'`}">
     </div>`;
   } else {
     html += `<div class="coach-tooltip-avatar" style="background:linear-gradient(135deg, ${color}33, ${color}11);border:2px solid ${color}88;overflow:hidden">
@@ -1834,7 +1834,7 @@ function showCoachTooltip(coachId) {
   // 右: 名前・ステータス
   html += `<div style="flex:1;min-width:0">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px">
-        <div style="font-weight:700;font-size:20px;margin-bottom:6px">${c.name}</div>
+        <div style="font-weight:700;font-size:20px;margin-bottom:6px">${WM_I18N.pn(c.name)}</div>
         <button onclick="closeCoachTooltip()" style="background:none;border:none;color:var(--text-dim);font-size:20px;cursor:pointer;padding:4px;line-height:1;flex-shrink:0">✕</button>
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:10px">
@@ -2043,7 +2043,7 @@ function _flagBuildM12(modal, meta) {
     const tmpl = (typeof FLAG_DIALOGUE !== 'undefined')
       ? FLAG_DIALOGUE._pickSubLine('M-12', sub, _flagPickArchetype(rem), rem.id)
       : '';
-    return `<b style="color:${r.forgiven ? 'var(--cream-gold)' : 'var(--cream-text-muted)'}">${rem.name}</b>: ${_flagFormatLine(tmpl, rem, returner)}`;
+    return `<b style="color:${r.forgiven ? 'var(--cream-gold)' : 'var(--cream-text-muted)'}">${WM_I18N.pn(rem.name)}</b>: ${_flagFormatLine(tmpl, rem, returner)}`;
   }).filter(Boolean);
 
   return {
@@ -2719,7 +2719,7 @@ function _awPortrait(id, cssClass) {
   const url = typeof getUpperUrl === 'function' ? getUpperUrl(id) : '';
   if (url) return `<img src="${url}" alt="" onerror="this.style.display='none'">`;
   const ch = ALL_CHARS.find(c => c.id === id);
-  return ch ? ch.name.charAt(0) : '?';
+  return ch ? WM_I18N.pn(ch.name).charAt(0) : '?';
 }
 
 // Best-match snapshots can outlive a transfer or release at season end.  Old
@@ -2789,7 +2789,7 @@ function _awWinnerBlock(d, opts) {
   return `<div class="aw-winner-block ${o.className || ''}">
     ${_awSpeechSlot(o.line)}
     <div class="${portraitClass}"${openAttr}>${o.glow ? '<div class="portrait-glow"></div>' : ''}${_awPortrait(d.id)}</div>
-    <div class="${nameClass}"${nameStyle}${openAttr}>${d.name}</div>
+    <div class="${nameClass}"${nameStyle}${openAttr}>${WM_I18N.pn(d.name)}</div>
     ${role ? `<div class="aw-winner-role">${role}</div>` : ''}
     ${orgName ? `<div class="aw-winner-emblem">${_awOrgEmblem(orgName, isPlayerOrg)}</div>` : ''}
   </div>`;
@@ -2847,7 +2847,7 @@ function _travelFaceHtml(member) {
   if (url) {
     return `<div class="travel-face" style="background:${bg}"><img src="${url}" alt="" onerror="this.style.display='none'"></div>`;
   }
-  const initial = escHtml(((member && member.name) || '?').charAt(0));
+  const initial = escHtml(((member && WM_I18N.pn(member.name)) || '?').charAt(0));
   return `<div class="travel-face" style="background:${bg}"><span class="travel-face-ini">${initial}</span></div>`;
 }
 
@@ -3088,7 +3088,7 @@ function _buildMediaAward(d) {
 function _buildJTChampionAward(d) {
   // 新人王はジュニアトーナメント優勝者に授与される。受賞セリフは rookie プールが正。
   const line = _awardLine('rookie', d);
-  const runnerUpText = d.runnerUp ? `${WM_I18N.t('決勝')}: vs ${d.runnerUp.name}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
+  const runnerUpText = d.runnerUp ? `${WM_I18N.t('決勝')}: vs ${WM_I18N.pn(d.runnerUp.name)}${d.runnerUp.orgName ? ` (${d.runnerUp.orgName})` : ''}` : '';
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">🏟️</span><span class="badge-jp">${WM_I18N.t('ジュニアトーナメント 優勝')}</span></div>
   <div class="rookie-layout">
     ${_awWinnerBlock(d, { line, glow: true, role: d.age != null ? `${d.age}歳` : '' })}
@@ -3131,7 +3131,7 @@ function _buildSeasonEventChampionAward(d, kind) {
     return `<div class="aw-team-member${center ? ' is-center' : ''}">
       ${_awSpeechSlot(lineFor(f))}
       <div class="aw-team-portrait"${openAttr}>${_awPortrait(f.id)}</div>
-      <div class="aw-team-name"${openAttr}>${f.name}</div>
+      <div class="aw-team-name"${openAttr}>${WM_I18N.pn(f.name)}</div>
     </div>`;
   }).join('');
   return `<div class="award-card"><div class="award-badge"><span class="badge-icon">${cfg.icon}</span><span class="badge-jp">${cfg.label}</span></div>
@@ -3172,7 +3172,7 @@ function _buildBestMatchAward(d) {
   <div class="bestmatch-fighters">
     <div class="fighter-side">
       ${_awSpeechSlot(line1)}<div class="portrait-sm"${open1Attr}>${_awPortrait(f1.id)}</div>
-      <div class="fighter-name"${open1Attr}>${f1.name}</div>
+      <div class="fighter-name"${open1Attr}>${WM_I18N.pn(f1.name)}</div>
       <div class="fighter-org">${f1OrgName}</div>
       <div class="aw-winner-emblem">${_awOrgEmblem(f1OrgName, d.isPlayerOrg, 22)}</div>
     </div>
@@ -3186,7 +3186,7 @@ function _buildBestMatchAward(d) {
     </div>
     <div class="fighter-side">
       ${_awSpeechSlot(line2)}<div class="portrait-sm"${open2Attr}>${_awPortrait(f2.id)}</div>
-      <div class="fighter-name"${open2Attr}>${f2.name}</div>
+      <div class="fighter-name"${open2Attr}>${WM_I18N.pn(f2.name)}</div>
       <div class="fighter-org">${f2OrgName}</div>
       <div class="aw-winner-emblem">${_awOrgEmblem(f2OrgName, false, 22)}</div>
     </div>
@@ -3211,7 +3211,7 @@ function _buildChampionsAward(champions) {
     return `<div class="champ-col rank-${rank}" id="aw-champ-rank${rank}">
       <div class="champ-quote">${_awSpeechSlot(line)}</div>
       <div class="champ-portrait"${openAttr}><span class="rank-badge">${WM_I18N.t('{n}位', { n: rank })}</span>${_awPortrait(c.id)}</div>
-      <div class="champ-name"${openAttr}>${c.name}</div>
+      <div class="champ-name"${openAttr}>${WM_I18N.pn(c.name)}</div>
       ${defText ? `<div class="champ-defense" ${isPlayer ? 'style="color:var(--gold)"' : ''}>${defText}</div>` : ''}
       <div class="champ-org">${_awOrgEmblem(c.orgName, c.isPlayer, rank === 1 ? 36 : 24)}<span class="champ-orgname"${isPlayer ? ' style="color:var(--gold)"' : ''}>${c.orgName}</span></div>
     </div>`;
@@ -3300,7 +3300,7 @@ function _buildHallOfFame(d) {
     <div class="aw-winner-block hof-winner-block">
       ${_awSpeechSlot(line)}
       <div class="hof-portrait"${openAttr}><div class="hof-glow-outer"></div>${_awPortrait(d.id)}</div>
-      <div class="hof-name"${openAttr}>${d.name}</div>
+      <div class="hof-name"${openAttr}>${WM_I18N.pn(d.name)}</div>
       <div class="aw-winner-emblem">${_awOrgEmblem(d.orgName, d.orgId === 'player', 32)}</div>
     </div>
     <div class="hof-stars">${stars}</div>
@@ -3943,7 +3943,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     for (const [oId, oData] of Object.entries(G.aiOrgs)) {
       if (oData.roster?.some(f => f.id === c.id)) {
         const org = RIVAL_ORGS.find(o => o.id === oId);
-        orgLabel = org ? `${org.emoji} ${org.name}` : oId;
+        orgLabel = org ? `${org.emoji} ${WM_I18N.pn(org.name)}` : oId;
         negotiateOrgId = oId;
         isAiFighter = true;
         break;
@@ -3951,7 +3951,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
     }
   }
 
-  const initial = c.name.charAt(0);
+  const initial = WM_I18N.pn(c.name).charAt(0);
   const ovrVal = Engine.util.ov(c);
   const peakOVR = Number((c.careerRecord || {}).peakOVR) || 0;
   const peakOVRSeason = (c.careerRecord || {}).peakOVRSeason;
@@ -3996,9 +3996,9 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
 
     // 上半身画像（onerror時はface画像にフォールバック）
     const imgHtml = uUrl
-      ? `<img src="${uUrl}" style="width:200px;height:300px;border-radius:14px;object-fit:cover;object-position:top;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}" onerror="this.onerror=null;this.src='${pUrl}';this.style.height='140px';this.style.width='140px'">`
+      ? `<img src="${uUrl}" style="width:200px;height:300px;border-radius:14px;object-fit:cover;object-position:top;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${WM_I18N.pn(c.name)}" onerror="this.onerror=null;this.src='${pUrl}';this.style.height='140px';this.style.width='140px'">`
       : pUrl
-      ? `<img src="${pUrl}" style="width:140px;height:140px;border-radius:14px;object-fit:cover;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${c.name}">`
+      ? `<img src="${pUrl}" style="width:140px;height:140px;border-radius:14px;object-fit:cover;border:3px solid ${popBorderColor};box-shadow:${popShadow}" alt="${WM_I18N.pn(c.name)}">`
       : `<div style="width:140px;height:140px;border-radius:14px;background:linear-gradient(135deg,${sm.color}33,${sm.color}11);border:3px solid ${popBorderColor};box-shadow:${popShadow};display:flex;align-items:center;justify-content:center"><span style="font-size:48px;font-weight:900;color:${sm.color}">${initial}</span></div>`;
 
     html += `<div style="background:${sm.color}0a;border-bottom:1px solid rgba(200,190,170,0.08);padding:20px;text-align:center">
@@ -4009,7 +4009,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
         </div>
         <div style="flex:1;min-width:0;text-align:left">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
-            <span style="font-weight:700;font-size:24px">${c.name}</span>
+            <span style="font-weight:700;font-size:24px">${WM_I18N.pn(c.name)}</span>
             <span style="font-size:36px;font-weight:900;color:var(--gold)">${ovrVal}</span>
             ${peakHeader}
           </div>
@@ -4031,7 +4031,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
               const isExecRole = !isLeaderRole && Engine.factions.isExecutive(G, c.id);
               const role = isLeaderRole ? WM_I18N.t('リーダー') : isExecRole ? WM_I18N.t('幹部') : WM_I18N.t('メンバー');
               const icon = isLeaderRole ? '👑' : isExecRole ? '⭐' : '🎭';
-              return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="${WM_I18N.t('派閥タブで詳細を見る')}">${icon} ${f.name}・${role}</span>`;
+              return `<span class="fp-faction-badge" onclick="event.stopPropagation();openFactionPanel(${f.id})" title="${WM_I18N.t('派閥タブで詳細を見る')}">${icon} ${WM_I18N.pn(f.name)}・${role}</span>`;
             })()}
           </div>
           ${(c.traits && c.traits.length > 0) ? `<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px">${c.traits.map(t => {
@@ -4265,7 +4265,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           const styleBadgeCls = sm.type === 'none' ? 'style="font-size:10px;padding:1px 5px;margin-left:4px;border-radius:3px;background:rgba(136,136,136,0.08);color:#888;border:1px solid rgba(136,136,136,0.2);opacity:0.7"' : `class="badge badge-${coach.style}" style="font-size:10px;padding:1px 5px;margin-left:4px"`;
           html += `<div style="font-size:11px;color:var(--text-sub);margin-bottom:8px;padding:6px 8px;background:rgba(200,190,170,0.03);border-radius:4px">
             🎓 <span style="color:var(--text-dim)">${WM_I18N.t('担当コーチ')}:</span>
-            <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${coach.name}</span>
+            <span class="flink" onclick="event.stopPropagation();closeFighterPopup();setTimeout(()=>showCoachTooltip(${coach.id}),200)" style="display:inline-flex;align-items:center;gap:4px">${coachPortraitImg(coach, 18)} ${WM_I18N.pn(coach.name)}</span>
             <span ${styleBadgeCls}>${coach.style}</span>
             ${matchHtml}
             <span style="color:var(--text-dim);font-size:12px;margin-left:4px">×${coach.gMult||1.0} / ${(coach.abilities||[]).join('・')}</span>
@@ -4300,7 +4300,7 @@ function showFighterPopup(fighterId, source, _skipQueueCheck) {
           myRivalries.forEach(r => {
             const other = findFighter(r.otherId);
             const lvl = r.level;
-            html += `<div style="font-size:12px;margin-bottom:3px">${lvl.emoji} <span style="color:${lvl.color};font-weight:600">${lvl.label}</span>: ${other ? `<span class="flink" onclick="event.stopPropagation();showFighterPopup(${r.otherId},'')">${other.name}</span>` : `ID#${r.otherId}`} <span style="color:var(--text-dim)">(riv ${Math.round(lvl.rivalry || 0)} / ${r.entry.matches || 0}戦)</span></div>`;
+            html += `<div style="font-size:12px;margin-bottom:3px">${lvl.emoji} <span style="color:${lvl.color};font-weight:600">${lvl.label}</span>: ${other ? `<span class="flink" onclick="event.stopPropagation();showFighterPopup(${r.otherId},'')">${WM_I18N.pn(other.name)}</span>` : `ID#${r.otherId}`} <span style="color:var(--text-dim)">(riv ${Math.round(lvl.rivalry || 0)} / ${r.entry.matches || 0}戦)</span></div>`;
           });
         }
         if (myExpects.length > 0) {
@@ -4665,7 +4665,7 @@ function fLink(c, opts = {}) {
   const sizeStyle = size ? `font-size:${size};` : '';
   // skipQueue: オーバーレイ上から呼ぶ場合にキューチェックをスキップ
   const skipArg = opts.skipQueue ? ',true' : '';
-  return `<span class="flink" style="${cls}${sizeStyle}" onclick="event.stopPropagation();showFighterPopup(${c.id},'${src}'${skipArg})">${escHtml(c.name)}</span>${extra}`;
+  return `<span class="flink" style="${cls}${sizeStyle}" onclick="event.stopPropagation();showFighterPopup(${c.id},'${src}'${skipArg})">${escHtml(WM_I18N.pn(c.name))}</span>${extra}`;
 }
 
 function getScheduledChallengeCard() {
@@ -5262,13 +5262,13 @@ function renderMatchPreview() {
         const isChamp = G.titles?.world?.championId === f.id;
         // portraitImg(f.id, 40) was the former fallback; keep the tag fallback on the L group scale instead.
         const portraitHtml = upper
-          ? `<img src="${upper}" alt="${f.name}" onerror="this.style.display='none'">`
-          : `<div class="smc-tag-portrait-placeholder">${escHtml((f.name || '?').charAt(0))}</div>`;
+          ? `<img src="${upper}" alt="${WM_I18N.pn(f.name)}" onerror="this.style.display='none'">`
+          : `<div class="smc-tag-portrait-placeholder">${escHtml((WM_I18N.pn(f.name) || '?').charAt(0))}</div>`;
         return `<div class="smc-tag-fighter">
           <button type="button" class="smc-tag-portrait" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)})">${portraitHtml}</button>
           <div class="smc-tag-info">
             ${isChamp ? '<span class="smc-tag-champ-mark">👑</span>' : ''}
-            <div class="fname">${f.name}</div>
+            <div class="fname">${WM_I18N.pn(f.name)}</div>
             <div class="smc-tag-ovr-row">
               <span class="smc-tag-style-label">${f.style || '—'}</span>
               <span class="ovr-line">OVR&thinsp;<span class="ovr-num" style="${statTierStyle('ovr', ovr)}">${ovr}</span></span>
@@ -5303,8 +5303,8 @@ function renderMatchPreview() {
       </div>`;
       if (isResolved) {
         let wNames = WM_I18N.t('決着つかず');
-        if (result.winner === 'teamA') wNames = `${tA1.name} & ${tA2.name}`;
-        else if (result.winner === 'teamB') wNames = `${tB1.name} & ${tB2.name}`;
+        if (result.winner === 'teamA') wNames = `${WM_I18N.pn(tA1.name)} & ${WM_I18N.pn(tA2.name)}`;
+        else if (result.winner === 'teamB') wNames = `${WM_I18N.pn(tB1.name)} & ${WM_I18N.pn(tB2.name)}`;
         html += `<div class="smc-result">
           <span class="winner-tag">${WM_I18N.t('🏆 {names} 勝利', { names: wNames })}</span>
           <span class="finish">${(result.finType || result.finMove) ? Engine.formatFinish(result.finType, result.finMove) : ''} / ${result.turns}ターン</span>
@@ -5375,10 +5375,10 @@ function renderMatchPreview() {
         return `<div class="smc-away-side ${isPlayerSide ? 'is-player-side' : 'is-foe-side'} ${charClass}">
           <button type="button" onclick="showFighterPopup(${Number(fighter.id)}, 'roster')" class="smc-away-portrait-btn">
             <div class="upper-wrap">
-              ${upper ? `<img src="${upper}" alt="${escHtml(fighter.name)}" onerror="this.style.display='none'">` : portraitImg(fighter.id, imgW)}
+              ${upper ? `<img src="${upper}" alt="${escHtml(WM_I18N.pn(fighter.name))}" onerror="this.style.display='none'">` : portraitImg(fighter.id, imgW)}
             </div>
           </button>
-          <div class="fname">${escHtml(fighter.name)}</div>
+          <div class="fname">${escHtml(WM_I18N.pn(fighter.name))}</div>
           ${orgLabel}
           <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${statTierStyle('ovr', ovr)}">${ovr}</span></div>
           <div class="fc1m-stats smc-away-stats">${_awayChallengeStatsHtml(fighter, opponent)}</div>
@@ -5407,10 +5407,10 @@ function renderMatchPreview() {
       html += `<div class="smc-char ${leftCharClass}">
         <button type="button" onclick="showFighterPopup(${charL.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
           <div class="upper-wrap">
-            ${upperL ? `<img src="${upperL}" alt="${charL.name}" onerror="this.style.display='none'">` : portraitImg(charL.id, imgW)}
+            ${upperL ? `<img src="${upperL}" alt="${WM_I18N.pn(charL.name)}" onerror="this.style.display='none'">` : portraitImg(charL.id, imgW)}
           </div>
         </button>
-        <div class="fname">${charL.name}</div>
+        <div class="fname">${WM_I18N.pn(charL.name)}</div>
         <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${statTierStyle('ovr', ovrL)}">${ovrL}</span></div>
         ${_matchOrgLabel(charL, charR)}
       </div>`;
@@ -5420,10 +5420,10 @@ function renderMatchPreview() {
       html += `<div class="smc-char ${rightCharClass}">
         <button type="button" onclick="showFighterPopup(${charR.id}, 'roster')" style="background:none;border:none;padding:0;cursor:pointer">
           <div class="upper-wrap">
-            ${upperR ? `<img src="${upperR}" alt="${charR.name}" onerror="this.style.display='none'">` : portraitImg(charR.id, imgW)}
+            ${upperR ? `<img src="${upperR}" alt="${WM_I18N.pn(charR.name)}" onerror="this.style.display='none'">` : portraitImg(charR.id, imgW)}
           </div>
         </button>
-        <div class="fname">${charR.name}</div>
+        <div class="fname">${WM_I18N.pn(charR.name)}</div>
         <div class="ovr-line"><span class="ovr-label">OVR</span><span class="ovr-num" style="${statTierStyle('ovr', ovrR)}">${ovrR}</span></div>
         ${_matchOrgLabel(charR, charL)}
       </div>`;
@@ -5639,7 +5639,7 @@ function renderShowResult(results, injuryResults) {
       <span class="pb-attend-hero-pct ${attendCls}">${occPct}%</span>
     </div>
     <div class="pb-attend-hero-bar"><div class="pb-attend-hero-bar-fill ${attendCls}" style="width:${Math.min(occPct,100)}%"></div></div>
-    <div class="pb-attend-hero-venue">${WM_I18N.t('会場')}: ${escHtml(venue.name)}</div>
+    <div class="pb-attend-hero-venue">${WM_I18N.t('会場')}: ${escHtml(WM_I18N.pn(venue.name))}</div>
   </div>`;
 
   // Secondary strip — 4 cells (MQ / Heat / Matches / Injuries)
@@ -5763,7 +5763,7 @@ function renderShowResult(results, injuryResults) {
     if (isDraw) winnerLabel = 'NO CONTEST';
     else {
       const winF = leftIsWinner ? r.left : r.right;
-      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
+      winnerLabel = `🏆 ${escHtml(WM_I18N.pn(winF.name))} WIN`;
     }
 
     const rowCls = `pb-mrow${isMain ? ' is-main' : ''}${hasDialogue ? ' has-dialogue' : ''}`;
@@ -5784,7 +5784,7 @@ function renderShowResult(results, injuryResults) {
       const leftRel = r._challengeRelationshipDelta[r.left.id];
       const rightRel = r._challengeRelationshipDelta[r.right.id];
       const relLine = (fighter, delta) => delta
-        ? `<span><strong>${escHtml(fighter.name)}</strong> → ${WM_I18N.t('因縁')} ${signedRel(delta.rivalry)} / ${WM_I18N.t('相手との関係')} ${signedRel(delta.bond)}</span>`
+        ? `<span><strong>${escHtml(WM_I18N.pn(fighter.name))}</strong> → ${WM_I18N.t('因縁')} ${signedRel(delta.rivalry)} / ${WM_I18N.t('相手との関係')} ${signedRel(delta.bond)}</span>`
         : '';
       html += `<div style="grid-column:1/-1;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;padding:7px 10px;border-top:1px solid var(--line);color:var(--accent-warm);font-size:11px">${relLine(r.left, leftRel)}${relLine(r.right, rightRel)}</div>`;
     }
@@ -5826,7 +5826,7 @@ function _pbStars(mq) {
 
 function _pbPortraitImg(fighter) {
   const url = getUpperUrl(fighter.id);
-  if (url) return `<img src="${url}" alt="${escHtml(fighter.name || '')}" onerror="this.style.display='none'">`;
+  if (url) return `<img src="${url}" alt="${escHtml(WM_I18N.pn(fighter.name) || '')}" onerror="this.style.display='none'">`;
   const initial = (fighter.name || '?').charAt(0);
   return `<div class="pb-portrait-placeholder">${escHtml(initial)}</div>`;
 }
@@ -5907,7 +5907,7 @@ function _pbHpMini(hpL, hpR, opts = {}) {
 }
 
 function _pbInjuryBlock(injuries) {
-  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type))}</span> <span class="name">${escHtml(ir.name)}</span> ${WM_I18N.t('全治 {n}週間', { n: ir.injury.weeksLeft })}</span>`).join('');
+  const items = injuries.map(ir => `<span class="pb-injury-item"><span class="type">${escHtml(injuryLabel(ir.injury.type))}</span> <span class="name">${escHtml(WM_I18N.pn(ir.name))}</span> ${WM_I18N.t('全治 {n}週間', { n: ir.injury.weeksLeft })}</span>`).join('');
   return `<div class="pb-injury">
     <span class="pb-injury-label">🏥 Injury</span>
     ${items}
@@ -6231,7 +6231,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
       <div class="b1-hero-img">${imgHtml}</div>
       <div class="b1-hero-body">
         <div class="b1-hero-tier">${WM_I18N.t('超逸材')}</div>
-        <div class="b1-hero-name">${f.name}</div>
+        <div class="b1-hero-name">${WM_I18N.pn(f.name)}</div>
         <div class="b1-hero-meta">${f.age}歳 ・ ${STYLE_JP_FULL[f.style] || f.style} ・ ${ROLE_SHORT[f.role] || f.role}</div>
         <div class="b1-hero-ovr">OVR <span class="v">${ovr}</span></div>
         <div class="b1-hero-stats">
@@ -6268,7 +6268,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
         ${portrait}
         <div class="b1-age">${f.age}歳</div>
       </div>
-      <div class="b1-name">${f.name}</div>
+      <div class="b1-name">${WM_I18N.pn(f.name)}</div>
       <div class="b1-ovr">OVR <span class="v">${ovr}</span></div>
       <div class="b1-stats">
         ${statRow('PWR', f.pw || 0)}
@@ -6353,7 +6353,7 @@ function _finalizeDraft(state, summary, rngState, maxPicks) {
           setTimeout(() => {
             showPopup({
               type: 'scout', tone: 'negative',
-              message: `業界紙報道: ${ev.template.name}、${sOrgName} と電撃契約`,
+              message: `業界紙報道: ${WM_I18N.pn(ev.template.name)}、${sOrgName} と電撃契約`,
               detail: 'スカウト合戦の裏で進められていた極秘交渉が明らかに',
             });
           }, 500);
@@ -6513,8 +6513,8 @@ function _queueDraftIndustryNews(state, draftNewsPage, summary) {
             // i18n Stage B P4-4(P4-3b発見分): tierが日本語のまま値に混入していた。
             // 全角括弧+読点はJA書式なので、EN側は半角括弧+カンマ区切りへ形も合わせる。
             names: (WM_I18N.lang === 'en')
-              ? top.map(p => `${p.name} (${WM_I18N.t(TIER_LABEL[p.tier] || '素材')})`).join(', ')
-              : top.map(p => `${p.name}（${TIER_LABEL[p.tier] || '素材'}）`).join('、'),
+              ? top.map(p => `${WM_I18N.pn(p.name)} (${WM_I18N.t(TIER_LABEL[p.tier] || '素材')})`).join(', ')
+              : top.map(p => `${WM_I18N.pn(p.name)}（${TIER_LABEL[p.tier] || '素材'}）`).join('、'),
             headName: top[0].name,
           },
         });
@@ -7128,7 +7128,7 @@ function showPPVMatchCardIntro(onStart) {
       rightId: m.right.id, rightOvr: m.right.ovr,
       badge: m.isRivalry ? WM_I18N.t('🔥 ライバル対決') : '',
       note: (rec && rec.matches > 0)
-        ? `${WM_I18N.t('通算')}: ${m.left.name} ${rec.wins}勝 - ${rec.losses}勝 ${m.right.name}`
+        ? `${WM_I18N.t('通算')}: ${WM_I18N.pn(m.left.name)} ${rec.wins}勝 - ${rec.losses}勝 ${WM_I18N.pn(m.right.name)}`
         : 'FIRST MEETING',
       isMain,
     });
@@ -7192,7 +7192,7 @@ function renderPPVMatchPreview() {
       // 未到達（霧）
       html += `<div class="ppvprog-mw">
         <div class="ppvprog-mwh">${typeLabel}</div>
-        <div class="ppvprog-mwn">${match.left.name} vs ${match.right.name}</div>
+        <div class="ppvprog-mwn">${WM_I18N.pn(match.left.name)} vs ${WM_I18N.pn(match.right.name)}</div>
       </div>`;
       continue;
     }
@@ -7258,21 +7258,21 @@ function renderPPVMatchPreview() {
       <div class="ppvprog-va">
         <div class="ppvprog-fc left">
           <div class="ppvprog-fi">
-            <div class="ppvprog-fn">${L.name}</div>
+            <div class="ppvprog-fn">${WM_I18N.pn(L.name)}</div>
             <div class="ppvprog-fo">${ppvEmblem(L)}${orgL}</div>
             <div class="ppvprog-fol">OVR</div>
             <div class="ppvprog-fov">${ovrL}</div>
           </div>
-          <div class="ppvprog-fp">${upperL ? `<img src="${upperL}" alt="${L.name}" onerror="this.style.display='none'">` : ''}</div>
+          <div class="ppvprog-fp">${upperL ? `<img src="${upperL}" alt="${WM_I18N.pn(L.name)}" onerror="this.style.display='none'">` : ''}</div>
         </div>
         <div class="ppvprog-vsf">
           <div class="ppvprog-vst">VS</div>
           ${badge}
         </div>
         <div class="ppvprog-fc right">
-          <div class="ppvprog-fp">${upperR ? `<img src="${upperR}" alt="${R.name}" onerror="this.style.display='none'">` : ''}</div>
+          <div class="ppvprog-fp">${upperR ? `<img src="${upperR}" alt="${WM_I18N.pn(R.name)}" onerror="this.style.display='none'">` : ''}</div>
           <div class="ppvprog-fi">
-            <div class="ppvprog-fn">${R.name}</div>
+            <div class="ppvprog-fn">${WM_I18N.pn(R.name)}</div>
             <div class="ppvprog-fo">${ppvEmblem(R)}${orgR}</div>
             <div class="ppvprog-fol">OVR</div>
             <div class="ppvprog-fov">${ovrR}</div>
@@ -7486,7 +7486,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
     if (isDraw) winnerLabel = 'NO CONTEST';
     else {
       const winF = leftIsWinner ? r.left : r.right;
-      winnerLabel = `🏆 ${escHtml(winF.name)} WIN`;
+      winnerLabel = `🏆 ${escHtml(WM_I18N.pn(winF.name))} WIN`;
     }
 
     const rowCls = `pb-mrow${isMain ? ' is-main is-ppv' : ''}`;
@@ -7565,9 +7565,9 @@ function renderPPVTvBroadcast(card, results, ppvName) {
   // 左上だけが丸く切り取られていた。カード列は主役を並べるため upper(2:3) の chip を使う。
   const _face = (f, cls) => {
     const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
-    const fallback = escHtml((f.name || '?').charAt(0));
+    const fallback = escHtml((WM_I18N.pn(f.name) || '?').charAt(0));
     return `<div class="ptv-upper ${cls || ''}">${upperUrl
-      ? `<img src="${upperUrl}" alt="${escHtml(f.name || '')}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+      ? `<img src="${upperUrl}" alt="${escHtml(WM_I18N.pn(f.name) || '')}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
       : ''}<span class="ptv-upper-fallback"${upperUrl ? '' : ' style="display:flex"'}>${fallback}</span></div>`;
   };
   // U6団体バッジ統一: 対戦相手と所属団体が異なるときだけ実エンブレムを出す
@@ -7598,7 +7598,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     return `<div class="ptv-result-fighter is-${outcome}">
       <div class="ptv-result-mark" aria-label="${role}">${mark}</div>
       ${_face(fighter, `ptv-result-upper ptv-result-upper--${size}`)}
-      <div class="ptv-result-name ptv-flash-name">${escHtml(fighter.name)}${showWinLabel ? '<span class="ptv-result-win">WIN</span>' : ''}</div>
+      <div class="ptv-result-name ptv-flash-name">${escHtml(WM_I18N.pn(fighter.name))}${showWinLabel ? '<span class="ptv-result-win">WIN</span>' : ''}</div>
       <div class="ptv-result-org">${_ptvOrgTag(fighter, otherF)}${escHtml(fighter._ppvOrgName || '')}</div>
     </div>`;
   };
@@ -7624,9 +7624,9 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       const main = m.isSummit;
       return `<div class="ptv-mrow ${main ? 'is-main' : ''}">
         ${main ? `<div class="ptv-mtag">MAIN EVENT — ${WM_I18N.t('頂上決戦')}</div>` : ''}
-        <div class="ptv-wcell">${_face(m.left)}<div><div class="ptv-wname">${escHtml(m.left.name)}</div><div class="ptv-worg">${_ptvOrgTag(m.left, m.right)}${escHtml(m.left._ppvOrgName || '')}</div></div></div>
+        <div class="ptv-wcell">${_face(m.left)}<div><div class="ptv-wname">${escHtml(WM_I18N.pn(m.left.name))}</div><div class="ptv-worg">${_ptvOrgTag(m.left, m.right)}${escHtml(m.left._ppvOrgName || '')}</div></div></div>
         <div class="ptv-vs">VS</div>
-        <div class="ptv-wcell is-right"><div><div class="ptv-wname">${escHtml(m.right.name)}</div><div class="ptv-worg">${_ptvOrgTag(m.right, m.left)}${escHtml(m.right._ppvOrgName || '')}</div></div>${_face(m.right)}</div>
+        <div class="ptv-wcell is-right"><div><div class="ptv-wname">${escHtml(WM_I18N.pn(m.right.name))}</div><div class="ptv-worg">${_ptvOrgTag(m.right, m.left)}${escHtml(m.right._ppvOrgName || '')}</div></div>${_face(m.right)}</div>
       </div>`;
     };
     const order = hasSummit ? [summitIdx, ...underIdxs] : [...underIdxs];
@@ -7663,7 +7663,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         </div>
         <div class="ptv-commentary"><div class="ptv-who">${WM_I18N.t('実況')}</div>「${_liveLine(r)}」</div>
         <div class="ptv-dots">${dots}</div>
-      </div>` + _hint + _telop(WM_I18N.t('速報'), `第${pos + 1}試合 ${winF ? escHtml(winF.name) + ' 勝利' : '決着つかず'}`,
+      </div>` + _hint + _telop(WM_I18N.t('速報'), `第${pos + 1}試合 ${winF ? escHtml(WM_I18N.pn(winF.name)) + ' 勝利' : '決着つかず'}`,
         pos < underIdxs.length - 1 ? '画面の前で、次を見届ける。' : '次はいよいよ、メインイベント。'),
     });
   });
@@ -7675,9 +7675,9 @@ function renderPPVTvBroadcast(card, results, ppvName) {
     const winF = r.winner === 'left' ? m.left : r.winner === 'right' ? m.right : null;
     const loseF = winF === m.left ? m.right : m.left;
     const vsBlock = `<div class="ptv-summit-vs">
-        <div>${_face(m.left, 'is-big')}<div class="ptv-sname">${escHtml(m.left.name)}</div><div class="ptv-sorg">${_ptvOrgTag(m.left, m.right)}${escHtml(m.left._ppvOrgName || '')}</div></div>
+        <div>${_face(m.left, 'is-big')}<div class="ptv-sname">${escHtml(WM_I18N.pn(m.left.name))}</div><div class="ptv-sorg">${_ptvOrgTag(m.left, m.right)}${escHtml(m.left._ppvOrgName || '')}</div></div>
         <div class="ptv-vs-big">VS</div>
-        <div>${_face(m.right, 'is-big')}<div class="ptv-sname">${escHtml(m.right.name)}</div><div class="ptv-sorg">${_ptvOrgTag(m.right, m.left)}${escHtml(m.right._ppvOrgName || '')}</div></div>
+        <div>${_face(m.right, 'is-big')}<div class="ptv-sname">${escHtml(WM_I18N.pn(m.right.name))}</div><div class="ptv-sorg">${_ptvOrgTag(m.right, m.left)}${escHtml(m.right._ppvOrgName || '')}</div></div>
       </div>`;
     const summitResultBlock = isDraw
       ? `<div class="ptv-result-fighters ptv-summit-result-fighters is-draw">${_resultSide(m.left, m.right, 'draw', 'xl', false)}<div class="ptv-result-divider">DRAW</div>${_resultSide(m.right, m.left, 'draw', 'xl', false)}</div>`
@@ -7698,7 +7698,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         <div class="ptv-summit-kicker">MAIN EVENT ─ ${WM_I18N.t('頂上決戦')}</div>
         ${summitResultBlock}
         <div class="ptv-summit-result">${r.turns || 0}ターンの死闘の末に——
-          <div class="ptv-win-line">${isDraw ? WM_I18N.t('△ 両者譲らず、DRAW') : WM_I18N.t('🏆 {name}、業界の頂点へ', { name: escHtml(winF.name) })}</div>
+          <div class="ptv-win-line">${isDraw ? WM_I18N.t('△ 両者譲らず、DRAW') : WM_I18N.t('🏆 {name}、業界の頂点へ', { name: escHtml(WM_I18N.pn(winF.name)) })}</div>
         </div>
       </div>` + _hint + _telop(WM_I18N.t('速報'), `頂上決戦 決着 — 評価 ${r.mq} ${_pbStars(r.mq)}`, isDraw ? '決着は、来年に持ち越された。' : 'これが、頂点の景色。'),
     });
@@ -8178,7 +8178,7 @@ function _renderNextGrowthPopup() {
     if (url) faceHtml = `<img src="${url}" alt="">`;
     else {
       const ch = ALL_CHARS.find(c => c.id === fighter.id);
-      faceHtml = `<div class="emoji-face">${ch ? ch.name.charAt(0) : '?'}</div>`;
+      faceHtml = `<div class="emoji-face">${ch ? WM_I18N.pn(ch.name).charAt(0) : '?'}</div>`;
     }
   }
 
@@ -8537,7 +8537,7 @@ function showDecisionTargetModal(docId, state) {
   const costText = doc.costLabel ? doc.costLabel : (actualCost === 0 ? WM_I18N.t('無料') : `${actualCost}万`);
 
   const candidateCards = candidates.map((f, i) => {
-    const lastName = f.name.split(/\s/).pop();
+    const lastName = WM_I18N.pn(f.name).split(/\s/).pop();
     const cooling = coolLeft(f);
     let hintText = '';
     let hintCls = '';
@@ -8925,7 +8925,7 @@ function showInviteCoachModal(state) {
       : `background:linear-gradient(135deg,#5a4a3a,#3a2d22)`;
     return `<div class="mdl-a-decision-card${selCls}" data-id="${c.id}" style="text-align:center${afford ? '' : ';opacity:0.45;pointer-events:none'}">
       <div style="width:64px;height:64px;margin:0 auto 8px;${bg};background-color:#2a2520;border:2px solid var(--cream-gold-dark);border-radius:50%"></div>
-      <div class="mdl-a-decision-label" style="font-size:15px;margin-bottom:2px">${c.name}</div>
+      <div class="mdl-a-decision-label" style="font-size:15px;margin-bottom:2px">${WM_I18N.pn(c.name)}</div>
       <div style="font-family:var(--font-label);font-size:9px;color:var(--cream-gold);letter-spacing:1.5px;margin-bottom:6px">${gradeLabel[c.grade] || c.grade} ・ ${typeLabel}</div>
       <div style="font-size:11px;color:var(--cream-text-sub);margin-bottom:4px">${WM_I18N.t('得意')}: ${styleLabel}</div>
       <div style="font-size:10px;color:var(--cream-text-dim);line-height:1.5;min-height:2.2em">${abilities}</div>
@@ -9001,7 +9001,7 @@ function showInviteTargetModal(coachId, state) {
 
   const absoluteWeek = Engine.util.absWeekTotal(state.season, state.week, state.offSeason, state.offWeek);
   const cards = candidates.map((f, i) => {
-    const lastName = f.name.split(/\s/).pop();
+    const lastName = WM_I18N.pn(f.name).split(/\s/).pop();
     const sm = (typeof getCoachStyleMatch === 'function') ? getCoachStyleMatch(coach, f) : { icon: '', cls: 'none' };
     // 無印方式(2026-07-07 Keisuke 判断): 不一致が標準なので何も出さない。
     // バッジが付くこと自体をボーナスとして見せる(「不一致」の減点表示をやめる)
@@ -9127,7 +9127,7 @@ function showInviteMidtermPopup(payload, state, onDone) {
   const voiceKey = getCoachVoiceKey(coach.id);
   const line = (COACH_INVITE_LINES.midterm && COACH_INVITE_LINES.midterm[voiceKey]) || '';
   if (typeof showNotifEventToast !== 'function' || !document.getElementById('mdlDOverlay')) {
-    showToast(`${coach.name}${WM_I18N.t('コーチ')}: ${WM_I18N.t(line)}`);
+    showToast(`${WM_I18N.pn(coach.name)}${WM_I18N.t('コーチ')}: ${WM_I18N.t(line)}`);
     if (onDone) onDone();
     return;
   }
@@ -9152,7 +9152,7 @@ function showInviteConflictModal(payload, state, onChoice) {
 
   const stageBody = `
     <div class="mdl-a-observation centered" style="padding-top:6px">
-      <span class="marker">${fighter.name}</span> ${WM_I18N.t('の指導について')}
+      <span class="marker">${WM_I18N.pn(fighter.name)}</span> ${WM_I18N.t('の指導について')}
     </div>
   `;
   const html = `
@@ -9201,7 +9201,7 @@ function showInviteExtensionModal(payload, state, onChoice) {
 
   const stageBody = `
     <div class="mdl-a-observation centered" style="padding-top:6px">
-      <span class="marker">${fighter.name}</span> ${WM_I18N.t('の指導期間延長(+2週)')}
+      <span class="marker">${WM_I18N.pn(fighter.name)}</span> ${WM_I18N.t('の指導期間延長(+2週)')}
     </div>
     <div style="text-align:center;font-size:13px;color:var(--cream-text-main);margin-top:10px">
       ${WM_I18N.t('追加費用')} <strong style="color:var(--cream-gold-dark)">${cost.toLocaleString()}万</strong>
@@ -9277,7 +9277,7 @@ function showInviteGraduationModal(payload, state, onDone) {
   const awakeningHtml = payload.awakened
     ? `<div style="text-align:center;margin-bottom:16px;padding:14px;border:1px solid var(--cream-gold);border-radius:8px;background:rgba(212,168,67,0.08)">
         <div style="font-family:'Shippori Mincho',serif;font-size:13px;color:var(--cream-gold-dark);line-height:1.8;font-style:italic">${WM_I18N.t(INVITE_AWAKENING_LINES.narration)}</div>
-        <div style="margin-top:8px;font-size:13px;color:var(--cream-text-main)">${coach.name}${WM_I18N.t('コーチ')}「${WM_I18N.t(INVITE_AWAKENING_LINES.coachLine).replace(/^「|」$/g, '')}」</div>
+        <div style="margin-top:8px;font-size:13px;color:var(--cream-text-main)">${WM_I18N.pn(coach.name)}${WM_I18N.t('コーチ')}「${WM_I18N.t(INVITE_AWAKENING_LINES.coachLine).replace(/^「|」$/g, '')}」</div>
         <div style="margin-top:6px;font-size:11px;color:var(--cream-gold-dark);letter-spacing:2px;font-family:var(--font-label)">${WM_I18N.t('— 才能の壁を、一枚だけ超えた —')}</div>
       </div>`
     : '';
@@ -9417,7 +9417,7 @@ function showDecisionPairModal(docId, state) {
     const u = getPortraitUrl(f.id);
     const base = 'width:30px;height:30px;border-radius:50%;object-fit:cover;border:1.5px solid var(--cream-gold);background:var(--cream-panel-bg);display:block';
     if (!u) return `<span style="${base};display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--cream-text-dim);background:var(--cream-panel-bg)${overlap ? ';margin-left:-10px' : ''}">👤</span>`;
-    return `<img src="${u}" alt="${escHtml(f.name || '')}" style="${base}${overlap ? ';margin-left:-10px' : ''}" onerror="this.style.display='none'">`;
+    return `<img src="${u}" alt="${escHtml(WM_I18N.pn(f.name) || '')}" style="${base}${overlap ? ';margin-left:-10px' : ''}" onerror="this.style.display='none'">`;
   };
 
   const _renderPairList = () => {
@@ -9427,9 +9427,9 @@ function showDecisionPairModal(docId, state) {
       return `<div class="mdl-a-pair-row" data-pairkey="${p.key}" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:6px;cursor:pointer;background:${sel ? 'rgba(232,196,118,0.35)' : 'rgba(255,255,255,0.35)'};border:1px solid ${sel ? 'var(--cream-gold)' : 'rgba(100,85,50,0.15)'};margin-bottom:6px">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="display:flex;align-items:center">${_pairFaceImg(p.fA, false)}${_pairFaceImg(p.fB, true)}</span>
-          <span style="font-weight:700;color:var(--cream-text-main)">${p.fA.name}</span>
+          <span style="font-weight:700;color:var(--cream-text-main)">${WM_I18N.pn(p.fA.name)}</span>
           <span style="color:var(--cream-text-dim);font-size:12px">×</span>
-          <span style="font-weight:700;color:var(--cream-text-main)">${p.fB.name}</span>
+          <span style="font-weight:700;color:var(--cream-text-main)">${WM_I18N.pn(p.fB.name)}</span>
         </div>
         <div style="display:flex;gap:14px;align-items:center;font-size:12px">
           <span style="color:${rel.color};font-weight:${rel.weight}">${WM_I18N.t('二人の関係')}: ${rel.text}</span>
@@ -11087,7 +11087,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionA.leaderName, line: data.lineA, imgUrl: aPortraitUrl,
-                role: `${data.factionA.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
+                role: `${WM_I18N.pn(data.factionA.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11095,7 +11095,7 @@ function showFactionF08PreMatchModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionB.leaderName, line: data.lineB, imgUrl: bPortraitUrl,
-                role: `${data.factionB.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
+                role: `${WM_I18N.pn(data.factionB.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11230,7 +11230,7 @@ function showInternalChallengePreModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.challenger.name, line: data.lineChallenger, imgUrl: cPortraitUrl,
-                role: `${data.faction.name} ・ CHALLENGER`, statLabel: 'OVR', statValue: data.challenger.ovr,
+                role: `${WM_I18N.pn(data.faction.name)} ・ CHALLENGER`, statLabel: 'OVR', statValue: data.challenger.ovr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11238,7 +11238,7 @@ function showInternalChallengePreModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.leader.name, line: data.lineLeader, imgUrl: lPortraitUrl,
-                role: `${data.faction.name} ・ LEADER`, statLabel: 'OVR', statValue: data.leader.ovr,
+                role: `${WM_I18N.pn(data.faction.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.leader.ovr,
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
             </div>
@@ -11298,7 +11298,7 @@ function showInternalChallengePostModal(data, state, onContinue) {
     AUTHORITY: WM_I18N.t('権威型'),
   });
   const transitionHtml = data.archetypeTransition
-    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:var(--stage-text-main)">― ${escHtml(data.faction.name)}は《${escHtml(transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from)}》から《${escHtml(transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to)}》へ気風を変えた ―</div>`
+    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:var(--stage-text-main)">― ${escHtml(WM_I18N.pn(data.faction.name))}は《${escHtml(transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from)}》から《${escHtml(transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to)}》へ気風を変えた ―</div>`
     : '';
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。1人ずつ順に見せる決着画面のため
@@ -11315,7 +11315,7 @@ function showInternalChallengePostModal(data, state, onContinue) {
         <div class="fevt-arena-stage u3b-theme-stage is-internal">
           ${_u3bSideHtml({
             name: data.winner.name, line: data.winnerLine, imgUrl: wPortraitUrl, isBig: true,
-            role: `${data.faction.name} ・ ${data.leaderWon ? 'LEADER (DEFENDED)' : 'NEW LEADER'}`,
+            role: `${WM_I18N.pn(data.faction.name)} ・ ${data.leaderWon ? 'LEADER (DEFENDED)' : 'NEW LEADER'}`,
             bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
           })}
           <div class="fevt-arena-divider"></div>
@@ -11393,7 +11393,7 @@ function showFactionF09OpeningModal(data, state, onContinue) {
   const bPp = _factionUpperUrl(data.factionB.leaderId);
   const memberRow = (members) => `<div style="display:flex;gap:4px;justify-content:center;margin:8px 0;flex-wrap:wrap">${(members || []).map(m => {
     const url = _factionUpperUrl(m.id);
-    return `<div style="width:42px;height:54px;background:#2a2520 url('${escHtml(url)}') center 20%/cover no-repeat;border:1px solid rgba(255,255,255,0.08)" title="${escHtml(m.name)}"></div>`;
+    return `<div style="width:42px;height:54px;background:#2a2520 url('${escHtml(url)}') center 20%/cover no-repeat;border:1px solid rgba(255,255,255,0.08)" title="${escHtml(WM_I18N.pn(m.name))}"></div>`;
   }).join('')}</div>`;
 
   const html = `
@@ -11409,7 +11409,7 @@ function showFactionF09OpeningModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionA.leaderName, line: data.lineA, imgUrl: aPp,
-                role: `${data.factionA.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
+                role: `${WM_I18N.pn(data.factionA.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionA.leaderOvr,
                 extraHtml: memberRow(data.factionA.members),
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
@@ -11418,7 +11418,7 @@ function showFactionF09OpeningModal(data, state, onContinue) {
             <div class="fevt-arena-col">
               ${_u3bSideHtml({
                 name: data.factionB.leaderName, line: data.lineB, imgUrl: bPp,
-                role: `${data.factionB.name} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
+                role: `${WM_I18N.pn(data.factionB.name)} ・ LEADER`, statLabel: 'OVR', statValue: data.factionB.leaderOvr,
                 extraHtml: memberRow(data.factionB.members),
                 bubbleClass: 'fevt-arena-bubble', portraitClass: 'fevt-arena-portrait',
               })}
@@ -11563,13 +11563,13 @@ function showFactionF09EndingModal(data, state, onContinue) {
         <div class="fevt-arena-stage u3b-theme-stage is-hostility">
           ${_u3bSideHtml({
             name: data.winnerFaction.leaderName, line: data.winnerLine, imgUrl: wPp, isBig: true,
-            role: `${data.winnerFaction.name} ・ ${WM_I18N.t('勝ち越し派閥')}`,
+            role: `${WM_I18N.pn(data.winnerFaction.name)} ・ ${WM_I18N.t('勝ち越し派閥')}`,
             bubbleClass: 'fevt-arena-bubble winner-big', portraitClass: 'fevt-arena-portrait winner-big',
           })}
           <div class="fevt-arena-divider"></div>
           ${_u3bSideHtml({
             name: data.loserFaction.leaderName, line: data.loserLine, imgUrl: lPp, isLoser: true,
-            role: `${data.loserFaction.name} ・ ${WM_I18N.t('敗退派閥')}`,
+            role: `${WM_I18N.pn(data.loserFaction.name)} ・ ${WM_I18N.t('敗退派閥')}`,
             bubbleClass: 'fevt-arena-bubble loser', portraitClass: 'fevt-arena-portrait loser',
           })}
         </div>
@@ -11669,14 +11669,14 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
   const provokeLine = _factionIgniteLine(FACTION_IGNITE_LINES.provoke, leaderA, state, 0xFA21);
   const respondLine = _factionIgniteLine(FACTION_IGNITE_LINES.respond, leaderB, state, 0xFA22);
 
-  const initial = (fighter, fallbackName) => escHtml(String((fighter && fighter.name) || fallbackName || '？').trim().charAt(0) || '？');
+  const initial = (fighter, fallbackName) => escHtml(String((fighter && WM_I18N.pn(fighter.name)) || fallbackName || '？').trim().charAt(0) || '？');
   const leaderUpper = (fighter, url, fallbackName) => url
     ? `<img class="fevt-leader-upper" src="${escHtml(url)}" alt="">`
     : `<div class="fevt-leader-upper fevt-ign-initial">${initial(fighter, fallbackName)}</div>`;
   const memberChips = (ids) => `<div class="fevt-ign-member-chips">${ids.map(id => {
     const fighter = roster.find(c => c.id === id);
     const url = fighter ? _factionUpperUrl(fighter.id) : '';
-    const title = escHtml(fighter ? fighter.name : '所属選手');
+    const title = escHtml(fighter ? WM_I18N.pn(fighter.name) : '所属選手');
     return url
       ? `<img class="fevt-ign-member-chip" src="${escHtml(url)}" alt="" title="${title}">`
       : `<div class="fevt-ign-member-chip fevt-ign-initial" title="${title}">${initial(fighter, '？')}</div>`;
@@ -12520,8 +12520,8 @@ function showUnifiedTitleCoronation(payload, onDone) {
       <div class="unified-coronation-title" id="unifiedCoronationTitle">${WM_I18N.t('頂 点')}</div>
       <div class="unified-coronation-one">${WM_I18N.t('業界の頂点は、ただ一人')}</div>
       <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
-      ${imgUrl ? `<img class="unified-coronation-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(fighter.name || '')}">` : `<div class="unified-coronation-fallback">${escHtml((fighter.name || '?').charAt(0))}</div>`}
-      <div class="unified-coronation-name">${escHtml(fighter.name || '???')}</div>
+      ${imgUrl ? `<img class="unified-coronation-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(WM_I18N.pn(fighter.name) || '')}">` : `<div class="unified-coronation-fallback">${escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0))}</div>`}
+      <div class="unified-coronation-name">${escHtml(WM_I18N.pn(fighter.name) || '???')}</div>
       <div class="unified-coronation-org">${escHtml(cfg.orgName || '')} ・ ${WM_I18N.t('第{n}回 天頂戦覇者', { n: escHtml(cfg.edition || 1) })}</div>
       <div class="unified-beltband">${escHtml(cfg.beltLabel || WM_I18N.t('全国統一王者'))}</div>
       <button class="unified-coronation-next" type="button">${WM_I18N.t('次へ')}</button>
@@ -12564,8 +12564,8 @@ function showUnifiedTitleReturnCeremony(payload, state, onDone) {
       <div class="unified-return-label">WEEK ${escHtml(state?.week || '47')} ・ ${WM_I18N.t('天頂戦前夜')}</div>
       <div class="unified-return-title" id="unifiedReturnTitle">${WM_I18N.t('返 還 式')}</div>
       <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
-      ${imgUrl ? `<img class="unified-return-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(fighter.name || '')}">` : `<div class="unified-return-fallback">${escHtml((fighter.name || '?').charAt(0))}</div>`}
-      <div class="unified-return-name">${escHtml(fighter.name || '???')} <span>${escHtml(cfg.orgName || '')}</span></div>
+      ${imgUrl ? `<img class="unified-return-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(WM_I18N.pn(fighter.name) || '')}">` : `<div class="unified-return-fallback">${escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0))}</div>`}
+      <div class="unified-return-name">${escHtml(WM_I18N.pn(fighter.name) || '???')} <span>${escHtml(cfg.orgName || '')}</span></div>
       <div class="unified-return-record">在位 <b>${escHtml(cfg.heldYears || 1)}年</b> ・ 防衛 <b>${escHtml(cfg.defenses || 0)}度</b><br>${escHtml(holderText)}</div>
       <div class="unified-return-next">${WM_I18N.t('ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる')}</div>
       <button class="unified-return-close" type="button">${WM_I18N.t('返還式を終える')}</button>
@@ -12606,12 +12606,12 @@ function showHostileArrivalStage(opts) {
   const memberHtml = members.map(member => {
     const imgUrl = member.id != null ? _factionUpperUrl(member.id) : '';
     const portrait = imgUrl
-      ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(member.name || '')}">`
-      : `<div class="inv-mem-fallback">${escHtml((member.name || '?').charAt(0))}</div>`;
+      ? `<img src="${escHtml(imgUrl)}" alt="${escHtml(WM_I18N.pn(member.name) || '')}">`
+      : `<div class="inv-mem-fallback">${escHtml((WM_I18N.pn(member.name) || '?').charAt(0))}</div>`;
     return `<div class="inv-mem" data-member-id="${escHtml(String(member.id != null ? member.id : ''))}">${portrait}</div>`;
   }).join('');
   const namesHtml = members.map(member => `<div class="inv-name">
-    <b>${escHtml(member.name || '???')}</b><span>${escHtml(member.roleLabel || WM_I18N.t('挑戦者'))}</span>
+    <b>${escHtml(WM_I18N.pn(member.name) || '???')}</b><span>${escHtml(member.roleLabel || WM_I18N.t('挑戦者'))}</span>
   </div>`).join('');
   const orgBadgeHtml = cfg.orgBadge && typeof _u3bOrgBadgeHtml === 'function'
     ? _u3bOrgBadgeHtml({ ...cfg.orgBadge, isHome: false })
@@ -12721,16 +12721,16 @@ function showUnifiedTitleChallengeModal(payload, state, onChoice) {
     ? _u3bOrgBadgeHtml({ orgId: champion.orgId, orgName, isHome: false }) : '';
   const choices = eligible.map(f => `<div class="unified-challenge-candidate">
     <div class="unified-challenge-face">${portraitImg(f.id, 52, '', 'roster')}</div>
-    <div class="unified-challenge-candidate-info"><strong>${escHtml(f.name)}</strong><span>OVR <b>${Engine.util.ov(f)}</b></span></div>
+    <div class="unified-challenge-candidate-info"><strong>${escHtml(WM_I18N.pn(f.name))}</strong><span>OVR <b>${Engine.util.ov(f)}</b></span></div>
     <button class="unified-challenge-send" type="button" data-unified-fighter="${f.id}">${WM_I18N.t('遠征に送る')}</button>
   </div>`).join('');
   const html = `
     ${_mdlAHeader(WM_I18N.t('全国統一王座 挑戦権'), `${_mdlASeasonLabel(state)} ・ PLAYER TURN`)}
-    ${_mdlAReporterStrip(state, `${Engine.unifiedTitle._orgName(state, champion.orgId)}の王者${champion.fighter.name}へ挑む番が来ました`)}
+    ${_mdlAReporterStrip(state, `${Engine.unifiedTitle._orgName(state, champion.orgId)}の王者${WM_I18N.pn(champion.fighter.name)}へ挑む番が来ました`)}
     <div class="mdl-a-subject-stage unified-challenge-office">
       <div class="unified-challenge-champion">
-        ${championImg ? `<img src="${escHtml(championImg)}" alt="${escHtml(champion.fighter.name)}">` : `<div class="unified-challenge-champion-fallback">${escHtml((champion.fighter.name || '?').charAt(0))}</div>`}
-        <strong>${escHtml(champion.fighter.name)}</strong>
+        ${championImg ? `<img src="${escHtml(championImg)}" alt="${escHtml(WM_I18N.pn(champion.fighter.name))}">` : `<div class="unified-challenge-champion-fallback">${escHtml((WM_I18N.pn(champion.fighter.name) || '?').charAt(0))}</div>`}
+        <strong>${escHtml(WM_I18N.pn(champion.fighter.name))}</strong>
         ${orgBadge}
       </div>
       <div class="unified-challenge-choice"><p>${WM_I18N.t('業界の挑戦順が自団体へ回ってきました。遠征させる選手を一人選んでください。')}</p>${choices}</div>
@@ -12802,7 +12802,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
     showHostileArrivalStage({
       title: WM_I18N.t('果 た し 状'),
       subLabel: `CHALLENGE ARRIVED ・ ${WM_I18N.t('3人制シングル3連戦')} ・ WEEK ${state.week || '—'}`,
-      speakerLabel: `${WM_I18N.t('挑戦状の主')} ・ ${requester.name}`,
+      speakerLabel: `${WM_I18N.t('挑戦状の主')} ・ ${WM_I18N.pn(requester.name)}`,
       line: arrivalLine,
       members: displayMembers.map(fighter => ({
         id: fighter.id, name: fighter.name, roleLabel: roleById.get(fighter.id) || WM_I18N.t('挑戦者'),
@@ -12857,8 +12857,8 @@ function showChallengeRequestModal(payload, state, onChoice) {
 
   // 取次コーチセリフ
   const coachLine = isInverse
-    ? `社長、${requesterOrgName}の${requester.name}選手から団体戦挑戦の直訴です。${opponentOrgName}へ、私たち三人で挑みたい、と。`
-    : `社長、${requester.name}選手から団体戦挑戦の直訴です。${otherOrgName}へ、私たち三人で挑みたい、と。`;
+    ? `社長、${requesterOrgName}の${WM_I18N.pn(requester.name)}選手から団体戦挑戦の直訴です。${opponentOrgName}へ、私たち三人で挑みたい、と。`
+    : `社長、${WM_I18N.pn(requester.name)}選手から団体戦挑戦の直訴です。${otherOrgName}へ、私たち三人で挑みたい、と。`;
 
   const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
   const ovrA = ovr(requester), ovrB = ovr(opponent);
@@ -12895,7 +12895,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
     const selected = selectedAwayIds.includes(fighter.id);
     return `<button class="crq-party-cand${selected ? ' sel' : ''}" type="button" data-away-candidate-id="${fighter.id}" aria-pressed="${selected ? 'true' : 'false'}">
       <img src="${escHtml(_factionUpperUrl(fighter.id))}" alt="">
-      <span class="crq-party-name">${escHtml(fighter.name)}</span>
+      <span class="crq-party-name">${escHtml(WM_I18N.pn(fighter.name))}</span>
       <span class="crq-party-ovr">OVR ${candidate.ovr}</span>
     </button>`;
   }).join('');
@@ -12977,7 +12977,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
           <div class="fevt-decision-card" data-choice="NO">
             <div class="fevt-decision-letter">B</div>
             <div class="fevt-decision-label">${isInverse ? WM_I18N.t('お引き取り願う') : WM_I18N.t('今は時期じゃない')}</div>
-            <div class="fevt-decision-hint">${isInverse ? WM_I18N.t('{name}の挑戦は保留。同じ相手からの再打診は当分先になる', { name: escHtml(requester.name) }) : WM_I18N.t('{name}の意気込みは保留。同じ相手への再打診は当分先になる', { name: escHtml(requester.name) })}</div>
+            <div class="fevt-decision-hint">${isInverse ? WM_I18N.t('{name}の挑戦は保留。同じ相手からの再打診は当分先になる', { name: escHtml(WM_I18N.pn(requester.name)) }) : WM_I18N.t('{name}の意気込みは保留。同じ相手への再打診は当分先になる', { name: escHtml(WM_I18N.pn(requester.name)) })}</div>
           </div>
         </div>
       </div>
@@ -13112,15 +13112,15 @@ function showTitleMilestoneResultModal(champion, opponent, champLine, opponentLi
       ? ` onclick="event.stopPropagation();showFighterPopup(${safeId},'title',true)"`
       : '';
     const portrait = upperUrl
-      ? `<img src="${escHtml(upperUrl)}" alt="${escHtml(fighter.name || '')}" onerror="this.style.display='none'">`
+      ? `<img src="${escHtml(upperUrl)}" alt="${escHtml(WM_I18N.pn(fighter.name) || '')}" onerror="this.style.display='none'">`
       : '';
     return `<article class="mdl-a-title-person${defeated ? ' defeated' : ''}">
       <div class="mdl-a-title-bubble"><span>${escHtml(line || '')}</span></div>
-      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${WM_I18N.t('{name}の詳細を開く', { name: escHtml(fighter.name || '') })}">
-        <span class="mdl-a-title-portrait-fallback">${escHtml((fighter.name || '?').charAt(0))}</span>
+      <button type="button" class="mdl-a-title-portrait"${openAttr} aria-label="${WM_I18N.t('{name}の詳細を開く', { name: escHtml(WM_I18N.pn(fighter.name) || '') })}">
+        <span class="mdl-a-title-portrait-fallback">${escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0))}</span>
         ${portrait}
       </button>
-      <div class="mdl-a-title-name">${escHtml(fighter.name || '')}</div>
+      <div class="mdl-a-title-name">${escHtml(WM_I18N.pn(fighter.name) || '')}</div>
       <div class="mdl-a-title-role">${roleLabel}</div>
     </article>`;
   };
@@ -13232,7 +13232,7 @@ function showTitleDefenseResultModal(champion, champLine, defenses, done) {
   metaParts.push(typeof _mdlASeasonLabel === 'function' ? _mdlASeasonLabel(G) : '');
   const metaHtml = metaParts.filter(Boolean).join(' ・ ');
 
-  const narrationText = WM_I18N.t('{name}が王座防衛に成功した。', { name: escHtml(champion.name || '') });
+  const narrationText = WM_I18N.t('{name}が王座防衛に成功した。', { name: escHtml(WM_I18N.pn(champion.name) || '') });
   const narrationHtml = `<div class="mdl-a-observation centered" style="text-align:left;padding-top:6px">${narrationText}</div>`;
 
   const subjectHtml = _mdlASubjectStage(champion, narrationHtml, {
@@ -13317,7 +13317,7 @@ function showSpecialEventIntro(eventKey, state, onDone, opts) {
     small: true,
     speech: pickLine(cfg.coach),
     portraitUrl: coachUrl,
-    name: escHtml(coach.name || ''),
+    name: escHtml(WM_I18N.pn(coach.name) || ''),
     meta: 'COACH',
   });
   const html = `
@@ -13376,7 +13376,7 @@ function showChallengeSendoffModal(fighter, line, state, card, onDone) {
       : `<strong>${escHtml(opponentOrgName)}</strong>`;
     const teamHtml = team.map((member, idx) => `<div class="crq-sendoff-member${member.id === fighter.id ? ' initiator' : ''}">
       <img src="${escHtml(_factionUpperUrl(member.id))}" alt="">
-      <span>${escHtml(member.name || '')}</span>
+      <span>${escHtml(WM_I18N.pn(member.name) || '')}</span>
       <small>${idx === 0 ? WM_I18N.t('発起人') : WM_I18N.t('同行者 {n}', { n: idx })}</small>
     </div>`).join('');
     const root = _factionEnsureOverlayRoot();
@@ -13392,7 +13392,7 @@ function showChallengeSendoffModal(fighter, line, state, card, onDone) {
             <div class="crq-sendoff-speaker">
               <div class="inv-bubble">${escHtml(WM_I18N.t(line))}</div>
               <img src="${escHtml(_factionUpperUrl(fighter.id))}" alt="">
-              <strong>${escHtml(fighter.name || '')}</strong>
+              <strong>${escHtml(WM_I18N.pn(fighter.name) || '')}</strong>
             </div>
             <div class="crq-sendoff-team" aria-label="${WM_I18N.t('遠征する3名')}">${teamHtml}</div>
             <button class="mdl-a-continue-btn crq-sendoff-close" type="button">${WM_I18N.t('— 送 り 出 す —')}</button>
@@ -13678,8 +13678,8 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
     const url = _factionUpperUrl(entry.fighter.id);
     return `<div class="crrm-sequence-person ${sizeClass} ${resultClass}">
       <div class="crrm-sequence-bubble-slot"><div class="crrm-sequence-bubble">「${escHtml(WM_I18N.t(entry.line))}」</div></div>
-      <div class="crrm-sequence-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((entry.fighter.name || '?').slice(0, 1))}</div>
-      <div class="crrm-sequence-name">${escHtml(entry.fighter.name || '')}</div>
+      <div class="crrm-sequence-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((WM_I18N.pn(entry.fighter.name) || '?').slice(0, 1))}</div>
+      <div class="crrm-sequence-name">${escHtml(WM_I18N.pn(entry.fighter.name) || '')}</div>
       <div class="crrm-sequence-role">${escHtml(entry.role)}</div>
       ${entry.orgName ? `<div class="crrm-sequence-org">${escHtml(entry.orgName)}</div>` : ''}
     </div>`;
@@ -13699,9 +13699,9 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
     };
     return `<div class="crrm-row">
       <div class="crrm-row-num">${WM_I18N.t('第{n}試合', { n: index + 1 })}</div>
-      <div class="crrm-row-side crrm-row-a">${mark(leftSide)} <span class="crrm-name">${escHtml(leftFighter.name)}${relText(leftFighter)}</span></div>
+      <div class="crrm-row-side crrm-row-a">${mark(leftSide)} <span class="crrm-name">${escHtml(WM_I18N.pn(leftFighter.name))}${relText(leftFighter)}</span></div>
       <div class="crrm-row-vs">vs</div>
-      <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(rightFighter.name)}${relText(rightFighter)}</span> ${mark(rightSide)}</div>
+      <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(WM_I18N.pn(rightFighter.name))}${relText(rightFighter)}</span> ${mark(rightSide)}</div>
       <div class="crrm-row-mq">${WM_I18N.t('評価 {n}', { n: Math.round(match.mq || 0) })}</div>
       <div class="crrm-row-fin">${match.finMove ? escHtml(match.finMove) : ''}</div>
     </div>`;
@@ -13819,10 +13819,10 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
   const renderReactionScene = (rx) => {
     if (!rx || !rx.line || !rx.fighter) return '';
     const url = _factionUpperUrl(rx.fighter.id);
-    const nm = escHtml(rx.fighter.name || '');
+    const nm = escHtml(WM_I18N.pn(rx.fighter.name) || '');
     return `<div class="crrm-reaction-scene${rx.defeated ? ' is-defeated' : ' is-victorious'}">
         <div class="crrm-reaction-bubble-slot"><div class="crrm-reaction-bubble"><span class="crrm-reaction-line">「${escHtml(WM_I18N.t(rx.line))}」</span></div></div>
-        <div class="crrm-reaction-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((rx.fighter.name || '?').slice(0, 1))}</div>
+        <div class="crrm-reaction-portrait"${url ? ` style="background-image:url('${url}')"` : ''}>${url ? '' : escHtml((WM_I18N.pn(rx.fighter.name) || '?').slice(0, 1))}</div>
         <div class="crrm-reaction-copy">
           <div class="crrm-reaction-name">${nm}</div>
           <div class="crrm-reaction-role">${escHtml(rx.label)}</div>
@@ -13864,9 +13864,9 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
     return `
       <div class="crrm-row">
         <div class="crrm-row-num">${numLabel}</div>
-        <div class="crrm-row-side crrm-row-a">${leftLabel} <span class="crrm-name">${escHtml(leftFighter.name)}${relText(leftFighter)}</span></div>
+        <div class="crrm-row-side crrm-row-a">${leftLabel} <span class="crrm-name">${escHtml(WM_I18N.pn(leftFighter.name))}${relText(leftFighter)}</span></div>
         <div class="crrm-row-vs">vs</div>
-        <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(rightFighter.name)}${relText(rightFighter)}</span> ${rightLabel}</div>
+        <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(WM_I18N.pn(rightFighter.name))}${relText(rightFighter)}</span> ${rightLabel}</div>
         <div class="crrm-row-mq">${WM_I18N.t('評価 {n}', { n: Math.round(m.mq || 0) })}</div>
         <div class="crrm-row-fin">${finLabel}</div>
       </div>`;
@@ -14280,8 +14280,8 @@ function _buildB2Step3(event, state, roster) {
   const n2 = f2 ? f2.name : (event.name2 || '?');
   const resultRow = isDraw
     ? `<div class="mdl-a-result-row"><span>${WM_I18N.t('結果')}</span><strong>${WM_I18N.t('決着つかず')}</strong></div>`
-    : `<div class="mdl-a-result-row"><span>${winnerF ? escHtml(winnerF.name) : ''}</span><strong>${WM_I18N.t('社長の判断に満足')}</strong></div>
-       <div class="mdl-a-result-row"><span>${loserF ? escHtml(loserF.name) : ''}</span><strong>${WM_I18N.t('わだかまりを残した')}</strong></div>
+    : `<div class="mdl-a-result-row"><span>${winnerF ? escHtml(WM_I18N.pn(winnerF.name)) : ''}</span><strong>${WM_I18N.t('社長の判断に満足')}</strong></div>
+       <div class="mdl-a-result-row"><span>${loserF ? escHtml(WM_I18N.pn(loserF.name)) : ''}</span><strong>${WM_I18N.t('わだかまりを残した')}</strong></div>
        <div class="mdl-a-result-row"><span>${WM_I18N.t('両者の士気')}</span><strong>${WM_I18N.t('一旦リセット')}</strong></div>`;
 
   const closePart = isDraw
@@ -14412,7 +14412,7 @@ function _buildB3Step2(event, state, roster) {
     const us = uUrl ? `background-image:url('${uUrl}')` : 'background:#2a2520';
     return `<div class="mdl-a-candidate-card" data-fighter-id="${f.id}">
       <div class="mdl-a-candidate-upper" style="${us}"></div>
-      <div class="mdl-a-candidate-name">${f.name}</div>
+      <div class="mdl-a-candidate-name">${WM_I18N.pn(f.name)}</div>
       <div class="mdl-a-candidate-ovr-label">OVR</div>
       <div class="mdl-a-candidate-ovr">${ovr}</div>
     </div>`;
@@ -14462,7 +14462,7 @@ function _buildB3Step3(event, state, roster) {
   const pLine      = isDraw ? '互角の戦いを見せた。' : won ? 'この試合は、譲れなかった' : '…';
 
   const resultRows = `
-    <div class="mdl-a-result-row"><span>${WM_I18N.t('対戦相手')}</span><strong>${escHtml(challenger.name || '???')}（${escHtml(orgName)}）</strong></div>
+    <div class="mdl-a-result-row"><span>${WM_I18N.t('対戦相手')}</span><strong>${escHtml(WM_I18N.pn(challenger.name) || '???')}（${escHtml(orgName)}）</strong></div>
     <div class="mdl-a-result-row"><span>${WM_I18N.t('試合評価')}</span><span class="gold">${result.mq ? '★' + result.mq : '?'}</span></div>`;
 
   const closePart = isDraw
@@ -14852,11 +14852,11 @@ function _renderB3MatchResult(event, matchResult, playerFighter, challenger) {
   // _renderB2MatchResultと同じ「常に勝者名を立てる」パターンに揃える)
   let verdictLabel, verdictColor;
   if (draw) { verdictLabel = '⚖ NO CONTEST'; verdictColor = 'var(--c-warning)'; }
-  else { verdictLabel = `🏆 ${escHtml(winChar.name)}`; verdictColor = 'var(--gold)'; }
+  else { verdictLabel = `🏆 ${escHtml(WM_I18N.pn(winChar.name))}`; verdictColor = 'var(--gold)'; }
 
   let winnerLabel;
   if (draw) winnerLabel = 'NO CONTEST';
-  else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
+  else winnerLabel = `🏆 ${escHtml(WM_I18N.pn(winChar.name))} WIN`;
 
   const playerOrgName = G.orgName || WM_I18N.t('プレイヤー団体');
 
@@ -14951,8 +14951,8 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
   // セリフ吹き出し
   if (lineL || lineR) {
     html += `<div class="mc-dl">`;
-    if (lineL) html += `<div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:${pColor}">${f1.name}</div>「${lineL}」</div></div>`;
-    if (lineR) html += `<div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:${eColor}">${f2.name}</div>「${lineR}」</div></div>`;
+    if (lineL) html += `<div class="mc-dlc left"><div class="mc-dlb"><div class="mc-dlsp" style="color:${pColor}">${WM_I18N.pn(f1.name)}</div>「${lineL}」</div></div>`;
+    if (lineR) html += `<div class="mc-dlc right"><div class="mc-dlb"><div class="mc-dlsp" style="color:${eColor}">${WM_I18N.pn(f2.name)}</div>「${lineR}」</div></div>`;
     html += `</div>`;
   }
 
@@ -14960,7 +14960,7 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
   html += `<div class="mc-va">
     <div class="mc-fc left">
       <div class="mc-fi">
-        <div class="mc-fn">${f1.name}</div>
+        <div class="mc-fn">${WM_I18N.pn(f1.name)}</div>
         <div class="mc-fol">OVR</div>
         <div class="mc-fov" style="background:linear-gradient(180deg,${pLight},${pColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrL}</div>
       </div>
@@ -14972,7 +14972,7 @@ function _renderB2MatchPreview(event, f1, f2, interventionChoice) {
     <div class="mc-fc right">
       <div class="mc-fp">${standR ? `<img src="${standR}" alt="" onerror="this.style.display='none'">` : ''}</div>
       <div class="mc-fi">
-        <div class="mc-fn">${f2.name}</div>
+        <div class="mc-fn">${WM_I18N.pn(f2.name)}</div>
         <div class="mc-fol">OVR</div>
         <div class="mc-fov" style="background:linear-gradient(180deg,${eLight},${eColor});-webkit-background-clip:text;-webkit-text-fill-color:transparent">${ovrR}</div>
       </div>
@@ -15032,11 +15032,11 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
 
   let verdictLabel, verdictColor;
   if (draw) { verdictLabel = '⚖ NO CONTEST'; verdictColor = 'var(--c-warning)'; }
-  else { verdictLabel = `🏆 ${escHtml(winChar.name)}`; verdictColor = 'var(--gold)'; }
+  else { verdictLabel = `🏆 ${escHtml(WM_I18N.pn(winChar.name))}`; verdictColor = 'var(--gold)'; }
 
   let winnerLabel;
   if (draw) winnerLabel = 'NO CONTEST';
-  else winnerLabel = `🏆 ${escHtml(winChar.name)} WIN`;
+  else winnerLabel = `🏆 ${escHtml(WM_I18N.pn(winChar.name))} WIN`;
 
   // 介入ラベル
   let interventionLabel = WM_I18N.t('放置（介入なし）');
@@ -15052,7 +15052,7 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   html += `<div class="pb-banner">
     <div class="pb-live is-b2">💥 CONFLICT RESOLUTION</div>
     <div class="pb-banner-title is-b2">${WM_I18N.t('決 着 の 試 合 — 結 果')}</div>
-    <div class="pb-banner-sub">${escHtml(f1.name)}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(f2.name)}</div>
+    <div class="pb-banner-sub">${escHtml(WM_I18N.pn(f1.name))}<span class="dot">·</span>vs<span class="dot">·</span>${escHtml(WM_I18N.pn(f2.name))}</div>
   </div>`;
 
   // 介入選択バナー
@@ -15063,7 +15063,7 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   // Scoreboard 4: Intervention / Verdict / MQ / Bond/Rivalry 変動
   html += `<div class="pb-score-strip" style="grid-template-columns:1.3fr 1.2fr 1fr 1.2fr">
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="font-size:13px;color:var(--stage-text-main)">${interventionChoice === 2 ? WM_I18N.t('放置') : (interventionChoice === 0 ? WM_I18N.t('{name}激励', { name: escHtml(f1.name) }) : WM_I18N.t('{name}激励', { name: escHtml(f2.name) }))}</div>
+      <div class="pb-score-val" style="font-size:13px;color:var(--stage-text-main)">${interventionChoice === 2 ? WM_I18N.t('放置') : (interventionChoice === 0 ? WM_I18N.t('{name}激励', { name: escHtml(WM_I18N.pn(f1.name)) }) : WM_I18N.t('{name}激励', { name: escHtml(WM_I18N.pn(f2.name)) }))}</div>
       <div class="pb-score-lbl">Intervention</div>
     </div>
     <div class="pb-score-cell">
@@ -15102,11 +15102,11 @@ function _renderB2MatchResult(event, matchResult, f1, f2, interventionChoice) {
   html += `<div class="pb-b2-resolution">
     <div class="pb-b2-resolution-label">💭 ${WM_I18N.t('対立解決')}</div>`;
   if (!draw) {
-    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(winChar.name)}</b>${WM_I18N.t('：社長の裁定に納得し、気持ちにも張りが戻った')}</span></div>`;
-    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(loseChar.name)}</b>：${intensePenalty ? WM_I18N.t('社長の裁定に強い不満とわだかまりを残した') : WM_I18N.t('少し不満そうだが、気持ちは立て直している')}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-positive)">✅</span><span><b>${escHtml(WM_I18N.pn(winChar.name))}</b>${WM_I18N.t('：社長の裁定に納得し、気持ちにも張りが戻った')}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon" style="color:var(--c-negative)">❌</span><span><b>${escHtml(WM_I18N.pn(loseChar.name))}</b>：${intensePenalty ? WM_I18N.t('社長の裁定に強い不満とわだかまりを残した') : WM_I18N.t('少し不満そうだが、気持ちは立て直している')}</span></div>`;
   } else {
-    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f1.name)}</b>${WM_I18N.t('：互いに力を認め合い、表情が和らいだ')}</span></div>`;
-    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(f2.name)}</b>${WM_I18N.t('：互いに力を認め合い、表情が和らいだ')}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(WM_I18N.pn(f1.name))}</b>${WM_I18N.t('：互いに力を認め合い、表情が和らいだ')}</span></div>`;
+    html += `<div class="pb-b2-resolution-row"><span class="icon">🤝</span><span><b>${escHtml(WM_I18N.pn(f2.name))}</b>${WM_I18N.t('：互いに力を認め合い、表情が和らいだ')}</span></div>`;
   }
   html += `</div>`;
 
@@ -15205,7 +15205,7 @@ function _buildB4Modal(event, state, roster) {
       // stopPropagation+選手詳細が選択リスナーを飲み込み、顔を押しても選べなくなる
       html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
         ${face}
-        <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}${compatTag}</div>
+        <div style="font-size:11px;font-weight:600;margin-top:2px">${WM_I18N.pn(f.name)}${compatTag}</div>
         <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / ${WM_I18N.t('人気')} ${pop}</div>
       </div>`;
     });
@@ -15234,7 +15234,7 @@ function _buildB4Modal(event, state, roster) {
     const face = portraitImg(f.id, 40);
     html += `<div class="large-evt-fighter-pick" data-fighter-id="${f.id}">
       ${face}
-      <div style="font-size:11px;font-weight:600;margin-top:2px">${f.name}</div>
+      <div style="font-size:11px;font-weight:600;margin-top:2px">${WM_I18N.pn(f.name)}</div>
       <div style="font-size:10px;color:var(--text-dim)">OVR ${ovr} / ${WM_I18N.t('人気')} ${pop}</div>
     </div>`;
   });
@@ -16020,7 +16020,7 @@ function showEndingCeremony(data, onDone) {
       return `<div style="flex:1;text-align:center;min-width:0;max-width:160px">
         ${_awSpeechSlot(line)}
         <div style="display:flex;justify-content:center;margin-bottom:8px">${_endingPortrait(f.id, 100)}</div>
-        <div style="font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:var(--text)">${f.name}</div>
+        <div style="font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:var(--text)">${WM_I18N.pn(f.name)}</div>
         <div style="font-size:10px;color:var(--text-dim);margin-top:2px">OVR ${ovr}</div>
       </div>`;
     }).join('');
@@ -16302,7 +16302,7 @@ function showGameOverCeremony(data, onDone) {
       return `<div style="flex:1;text-align:center;min-width:0;max-width:160px">
         ${_awSpeechSlot(line)}
         <div style="display:flex;justify-content:center;margin-bottom:8px">${_gameoverPortrait(f.id, 100)}</div>
-        <div style="font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:#d8c8c8">${f.name}</div>
+        <div style="font-family:'Noto Serif JP',serif;font-size:13px;font-weight:700;color:#d8c8c8">${WM_I18N.pn(f.name)}</div>
         <div style="font-size:10px;color:#887878;margin-top:2px">OVR ${ovr}</div>
       </div>`;
     }).join('');
@@ -17032,12 +17032,12 @@ function renderJuniorTournamentSummon() {
   html += `<div class="jt-so" onclick="App.jtNextSummon()">`;
   html += `<div class="jt-so-top"><div class="tg">NATIONAL U-20 ${WM_I18N.t('召集通知')}</div><h2>${WM_I18N.t('第{n}回 ジュニアトーナメント', { n: season })}</h2></div>`;
   html += `<div class="jt-so-card" key="${summonIndex}">`;
-  html += `<div class="jt-so-card-img">${faceUrl ? `<img src="${faceUrl}" alt="${p.name}">` : ''}</div>`;
+  html += `<div class="jt-so-card-img">${faceUrl ? `<img src="${faceUrl}" alt="${WM_I18N.pn(p.name)}">` : ''}</div>`;
   html += `<div class="jt-so-card-body">`;
-  html += `<div class="jt-so-nm">${p.name}</div>`;
+  html += `<div class="jt-so-nm">${WM_I18N.pn(p.name)}</div>`;
   html += `<div class="jt-so-inf">${p._orgName || ''} ・ OVR ${p.ovr}</div>`;
   if (line) {
-    html += `<div class="jt-so-bub"><div class="sp">${p.name}</div>「${line}」</div>`;
+    html += `<div class="jt-so-bub"><div class="sp">${WM_I18N.pn(p.name)}</div>「${line}」</div>`;
   }
   html += `</div></div>`;
   // dots
@@ -17533,12 +17533,12 @@ function _jtcFx(f, isWin, isLose) {
   const cls = isWin ? 'w' : isLose ? 'l' : '';
   const img = upperUrl
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
-    : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
+    : `<span class="jtc-ini">${escHtml((WM_I18N.pn(f.name) || '?')[0])}</span>`;
   // U7 §2-C: ブラケットも顔が出ている以上、押せば選手詳細が開く
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'juniorTournament',true)"`;
   return `<div class="jtc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
-    <div class="jtc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}</div>
+    <div class="jtc-fn">${escHtml(WM_I18N.pn(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}</div>
   </div>`;
 }
 
@@ -17618,11 +17618,11 @@ function _jtcPeakBlock(jt, riseClass) {
   const season = G.season;
   const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
   const img = upperUrl
-    ? `<img src="${upperUrl}" alt="${escHtml(champion.name)}" onerror="this.style.display='none'">`
-    : `<span class="jtc-ini">${escHtml((champion.name || '?')[0])}</span>`;
+    ? `<img src="${upperUrl}" alt="${escHtml(WM_I18N.pn(champion.name))}" onerror="this.style.display='none'">`
+    : `<span class="jtc-ini">${escHtml((WM_I18N.pn(champion.name) || '?')[0])}</span>`;
   return `<div class="jtc-peak${riseClass}" onclick="App.jtGoToFinalResult()">
     <div class="jtc-up jtc-up-peak w">${img}</div>
-    <div class="jtc-peak-name">${escHtml(champion.name)}</div>
+    <div class="jtc-peak-name">${escHtml(WM_I18N.pn(champion.name))}</div>
     <div class="jtc-peak-title">${WM_I18N.t('第{n}回大会ジュニアチャンピオン', { n: season })}</div>
     <div class="jtc-peak-cta">${WM_I18N.t('表彰へ')} ▶</div>
     <div class="jtc-peak-auto-note">${WM_I18N.t('1.6秒で自動的に進みます(タップで即スキップ)')}</div>
@@ -17838,7 +17838,7 @@ function _jtcFcCore({ label, f1, f2, own1, own2, upperL, upperR, hpLeftBlock, hp
     const style = String(f.style || 'FIGHTER').toUpperCase();
     const age = f.age != null ? `AGE ${f.age}` : '';
     return `<div class="jtc-fc-nm is-${side}"${detail}>
-      <div class="n">${escHtml(f.name)}</div>
+      <div class="n">${escHtml(WM_I18N.pn(f.name))}</div>
       <div class="jtc-fc-statline">
         <span class="jtc-fc-style">${escHtml(style)}</span>
         ${age ? `<span>${escHtml(age)}</span>` : ''}
@@ -18152,7 +18152,7 @@ function _emrTagFinishActors(opts, winnerSide) {
   const by = members.find(member => String(member.id) === String(attribution.pinnedBy));
   const who = members.find(member => String(member.id) === String(attribution.pinnedWho));
   if (!by || !who) return '';
-  return `<div class="emr-finish-actors"><b>${escHtml(by.name)}</b><span>&#8594;</span><b class="is-loser">${escHtml(who.name)}</b></div>`;
+  return `<div class="emr-finish-actors"><b>${escHtml(WM_I18N.pn(by.name))}</b><span>&#8594;</span><b class="is-loser">${escHtml(WM_I18N.pn(who.name))}</b></div>`;
 }
 
 function _matchNextLabel(isLast) {
@@ -18368,7 +18368,7 @@ function renderJuniorTournamentMatchResult(ri, mi) {
 
   const metaLeft = `${match.left._orgName || ''}`.trim() || '—';
   const metaRight = `${match.right._orgName || ''}`.trim() || '—';
-  const winnerLabel = `🏆 ${escHtml(winner.name)} WIN`;
+  const winnerLabel = `🏆 ${escHtml(WM_I18N.pn(winner.name))} WIN`;
   const seasonLabel = `第${G.season}回 JT`;
   const matchNoLabel = isFinal ? '決勝' : `${escHtml(roundLabel)} 第${mi + 1}試合`;
 
@@ -18497,7 +18497,7 @@ function _chSubImg(fighter) {
   if (!fighter) return '';
   const url = typeof getPortraitUrl === 'function' ? getPortraitUrl(fighter.id) : '';
   if (url) return `<img src="${url}" alt="" onerror="this.style.display='none'">`;
-  return `<span class="ini">${escHtml((fighter.name || '?').charAt(0))}</span>`;
+  return `<span class="ini">${escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0))}</span>`;
 }
 
 /** 吹き出しの予約枠。発言が無くても同じ高さの空枠を返し、左右/複数人の画像上端を揃える */
@@ -18537,7 +18537,7 @@ function _chSubCardHtml(rankLabel, fighter, orgId, orgName, prizeAmt) {
   return `<div class="ch-sub-card">
     <span class="ch-sub-rank">${escHtml(rankLabel)}</span>
     <div class="ch-sub-img">${_chSubImg(fighter)}</div>
-    <div><div class="ch-sub-nm">${escHtml(fighter.name || '?')}</div><div class="ch-sub-org">${orgName ? `<span class="ch-sub-dot" style="background:${isOwn ? 'var(--c-positive)' : 'var(--accent-hostility)'}"></span>${escHtml(orgName)}` : ''}${prizeAmt ? `<span class="ch-sub-prize">¥${prizeAmt}万</span>` : ''}</div></div>
+    <div><div class="ch-sub-nm">${escHtml(WM_I18N.pn(fighter.name) || '?')}</div><div class="ch-sub-org">${orgName ? `<span class="ch-sub-dot" style="background:${isOwn ? 'var(--c-positive)' : 'var(--accent-hostility)'}"></span>${escHtml(orgName)}` : ''}${prizeAmt ? `<span class="ch-sub-prize">¥${prizeAmt}万</span>` : ''}</div></div>
   </div>`;
 }
 
@@ -18587,7 +18587,7 @@ function renderJuniorTournamentResult() {
     <div class="ch-hero">
       ${_chBubbleSlot(champLine)}
       <div class="ch-por-wrap"><span class="ch-glow"></span><span class="ch-crown">🏆</span><div class="ch-por">${_chPortraitImg(champion)}</div></div>
-      <div class="ch-name">${escHtml(champion.name)}</div>
+      <div class="ch-name">${escHtml(WM_I18N.pn(champion.name))}</div>
       <div class="ch-role">${WM_I18N.t('優勝')}</div>
       ${_chOrgBadgeHtml(champion._orgId, champion._orgName)}
       <div class="ch-stat"><small>OVR</small>${champOvr}</div>
@@ -18659,7 +18659,7 @@ function renderJuniorTournamentResult() {
     html += `<div class="pb-champion-prizebox">
       <div class="pb-champion-prizebox-label">💰 ${WM_I18N.t('自団体の獲得賞金')}</div>
       <div class="pb-champion-prizebox-list">
-        ${prizeDetails.map(d => `<div class="pb-champion-prizebox-item"><span class="n">${escHtml(d.name)}</span><span class="r">${d.rank}</span><span class="a">¥${d.amt}万</span></div>`).join('')}
+        ${prizeDetails.map(d => `<div class="pb-champion-prizebox-item"><span class="n">${escHtml(WM_I18N.pn(d.name))}</span><span class="r">${d.rank}</span><span class="a">¥${d.amt}万</span></div>`).join('')}
       </div>
       <div class="pb-champion-prizebox-total">${WM_I18N.t('合計')} <span>¥${totalPrize}万</span></div>
     </div>`;
@@ -18705,7 +18705,7 @@ function _stlFaceImg(f) {
   const u = getPortraitUrl(f.id);
   // U7 §2-C: 顔が出ているなら押せば選手詳細が開く
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'springTagLeague',true)"`;
-  return u ? `<img src="${u}" alt="${escHtml(f.name || '')}"${open} onerror="this.style.display='none'">` : '';
+  return u ? `<img src="${u}" alt="${escHtml(WM_I18N.pn(f.name) || '')}"${open} onerror="this.style.display='none'">` : '';
 }
 
 /** condition(40-80)を定性3段に変換。数値は表に出さない */
@@ -18793,9 +18793,9 @@ function _stlLastMatchStripHtml(m) {
   // △DRAWタグを明示する(is-draw)。勝敗色は既存の verdict 表現(--c-warning=引分)に合わせる。
   return `<div class="stl-lastmatch">
     <span class="stl-lastmatch-label">${m.block && m.block !== 'FINAL' ? WM_I18N.t('{block}ブロック ', { block: m.block }) : ''}${WM_I18N.t('第{n}試合 結果', { n: m.blockRound || m.round })}</span>
-    <span class="stl-lastmatch-duo ${aWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}<span class="n">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}${aWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
+    <span class="stl-lastmatch-duo ${aWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}<span class="n">${escHtml(fA1 ? WM_I18N.pn(fA1.name) : '?')} &amp; ${escHtml(fA2 ? WM_I18N.pn(fA2.name) : '?')}${aWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
     <span class="stl-lastmatch-vs">VS</span>
-    <span class="stl-lastmatch-duo ${bWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}<span class="n">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}${bWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
+    <span class="stl-lastmatch-duo ${bWin ? 'is-win' : (m.isDraw ? 'is-draw' : 'is-lose')}">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}<span class="n">${escHtml(fB1 ? WM_I18N.pn(fB1.name) : '?')} &amp; ${escHtml(fB2 ? WM_I18N.pn(fB2.name) : '?')}${bWin ? '<br><b class="win-tag">WIN</b>' : (m.isDraw ? '<br><b class="draw-tag">NO CONTEST</b>' : '')}</span></span>
     <span class="stl-lastmatch-meta">${WM_I18N.t('評価 {n}', { n: m.mq })}${closeBonus ? `<span class="bonus">${WM_I18N.t('接戦+1pt（両者)')}</span>` : ''}<span class="stl-lastmatch-time">${escHtml(timeStr || '')}</span></span>
   </div>`;
 }
@@ -18808,9 +18808,9 @@ function _stlFinalPreviewHtml(finalM) {
     <div class="stl-final-label">FINAL</div>
     <div class="stl-final-sub">${WM_I18N.t('優勝決定戦')}</div>
     <div class="stl-final-faceoff">
-      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('A1位')}</span><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('A1位')}</span><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? WM_I18N.pn(fA1.name) : '?')} &amp; ${escHtml(fA2 ? WM_I18N.pn(fA2.name) : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
       <div class="stl-final-vs">VS</div>
-      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('B1位')}</span><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="stl-block-origin">${WM_I18N.t('B1位')}</span><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? WM_I18N.pn(fB1.name) : '?')} &amp; ${escHtml(fB2 ? WM_I18N.pn(fB2.name) : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
     </div>
   </div>`;
 }
@@ -18824,9 +18824,9 @@ function _stlUpcomingMatchHtml(m, matchNumber) {
     <div class="stl-match-preview-label">NEXT MATCH</div>
     <div class="stl-match-preview-round">${m.block ? WM_I18N.t('{block}ブロック 第{n}試合', { block: m.block, n: m.blockRound }) : WM_I18N.t('リーグ 第{n}試合', { n: matchNumber })} ${WM_I18N.t('/ 全体{n}試合目', { n: matchNumber })}</div>
     <div class="stl-final-faceoff">
-      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? fA1.name : '?')} &amp; ${escHtml(fA2 ? fA2.name : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fA1)}${_stlFaceImg(fA2)}</span><span class="nm">${escHtml(fA1 ? WM_I18N.pn(fA1.name) : '?')} &amp; ${escHtml(fA2 ? WM_I18N.pn(fA2.name) : '?')}</span><span class="org">${teamA ? escHtml(teamA.orgName) : ''}</span></div>
       <div class="stl-final-vs">VS</div>
-      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? fB1.name : '?')} &amp; ${escHtml(fB2 ? fB2.name : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
+      <div class="stl-final-side"><span class="faces">${_stlFaceImg(fB1)}${_stlFaceImg(fB2)}</span><span class="nm">${escHtml(fB1 ? WM_I18N.pn(fB1.name) : '?')} &amp; ${escHtml(fB2 ? WM_I18N.pn(fB2.name) : '?')}</span><span class="org">${teamB ? escHtml(teamB.orgName) : ''}</span></div>
     </div>
   </div>`;
 }
@@ -18911,7 +18911,7 @@ function renderSpringTagLeagueBoard() {
           <span class="stl-league-faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
           <span>
             <span class="stl-league-org">${isMine ? WM_I18N.t('★ 自団体 第{n}代表', { n: team.slot || 1 }) : `${escHtml(team.orgName)} ${WM_I18N.t('第{n}代表', { n: team.slot || 1 })}`}</span>
-            <span class="stl-league-team-name">${escHtml(f1 ? f1.name : '?')} &amp; ${escHtml(f2 ? f2.name : '?')}</span>
+            <span class="stl-league-team-name">${escHtml(f1 ? WM_I18N.pn(f1.name) : '?')} &amp; ${escHtml(f2 ? WM_I18N.pn(f2.name) : '?')}</span>
             ${idx > 0 ? `<span class="stl-league-condition">${_stlWearBarHtml(cond)}</span>` : ''}
           </span>
         </div></td>
@@ -19019,8 +19019,8 @@ function renderSpringTagLeagueChampion() {
         <div class="ch-mem"><div class="ch-por-wrap"><div class="ch-por">${_chPortraitImg(f2 || { id: null, name: '?' })}</div></div></div>
       </div>
       <div class="ch-lineup-names">
-        <div class="ch-mem"><div class="ch-name">${escHtml(f1 ? f1.name : '?')}</div></div>
-        <div class="ch-mem"><div class="ch-name">${escHtml(f2 ? f2.name : '?')}</div></div>
+        <div class="ch-mem"><div class="ch-name">${escHtml(f1 ? WM_I18N.pn(f1.name) : '?')}</div></div>
+        <div class="ch-mem"><div class="ch-name">${escHtml(f2 ? WM_I18N.pn(f2.name) : '?')}</div></div>
       </div>
     </div>`;
 
@@ -19110,7 +19110,7 @@ function _stlEntryModalHtml() {
       const chemLabel = sug.chemistry >= 70 ? '◎' : sug.chemistry >= 45 ? '◯' : '△';
       html += `<div class="stl-suggest-chip" onclick="App.stlPickSuggestion(${f1.id},${f2.id})">
         <span class="faces">${_stlFaceImg(f1)}${_stlFaceImg(f2)}</span>
-        <span>${escHtml(f1.name)} &amp; ${escHtml(f2.name)}</span>
+        <span>${escHtml(WM_I18N.pn(f1.name))} &amp; ${escHtml(WM_I18N.pn(f2.name))}</span>
         <span class="chem">${chemLabel}</span>
       </div>`;
     });
@@ -19125,9 +19125,9 @@ function _stlEntryModalHtml() {
     const upperUrl = getUpperUrl(f.id);
     const tagCls = _STL_STYLE_CREAM[f.style] || 'tag-cream-neutral';
     html += `<div class="draft-fc cand${picked ? ' picked' : ''}${locked ? ' stl-is-locked' : ''}"${locked ? '' : ` onclick="App.stlPickFighter(${f.id})"`}>
-      <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(f.name)}">` : ''}</div>
+      <div class="draft-fc-portrait">${upperUrl ? `<img src="${upperUrl}" alt="${escHtml(WM_I18N.pn(f.name))}">` : ''}</div>
       <div class="draft-fc-info">
-        <div class="draft-fc-name-row"><span class="draft-fc-name">${escHtml(f.name)}</span></div>
+        <div class="draft-fc-name-row"><span class="draft-fc-name">${escHtml(WM_I18N.pn(f.name))}</span></div>
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
           <span class="draft-fc-ovr-label">OVR</span><span class="draft-fc-ovr">${f.ovr}</span>
         </div>
@@ -19146,7 +19146,7 @@ function _stlEntryModalHtml() {
   }
   html += `<div class="stl-summary-bar">
     <span class="stl-summary-label">${WM_I18N.t('第{n}代表', { n: activeSlot + 1 })}</span>
-    <span class="stl-summary-names">${f1 ? escHtml(f1.name) : WM_I18N.t('未選択')} &amp; ${f2 ? escHtml(f2.name) : WM_I18N.t('未選択')}</span>
+    <span class="stl-summary-names">${f1 ? escHtml(WM_I18N.pn(f1.name)) : WM_I18N.t('未選択')} &amp; ${f2 ? escHtml(WM_I18N.pn(f2.name)) : WM_I18N.t('未選択')}</span>
     ${chemLabel ? `<span class="stl-summary-chem">${WM_I18N.t('相性')} ${chemLabel}</span>` : ''}
   </div>`;
 
@@ -19345,7 +19345,7 @@ function _agwLiveTeamHtml(result, matchIndex, boutIndex, match, orgId, side) {
     const full = typeof getFullUrl === 'function' ? getFullUrl(id, Engine.util.ov(fighter)) : '';
     return `<div class="agw-live-figure is-${state} agw-live-slot-${index}">
       ${state === 'ring' ? '<span>IN RING</span>' : ''}
-      ${full ? `<img src="${full}" alt="${escHtml(fighter.name)}">` : ''}
+      ${full ? `<img src="${full}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}
     </div>`;
   }).join('');
   const names = displayOrder.map(({ id, state }, index) => {
@@ -19353,7 +19353,7 @@ function _agwLiveTeamHtml(result, matchIndex, boutIndex, match, orgId, side) {
     if (!fighter) return '';
     const stateLabel = state === 'out' ? 'OUT' : state === 'ring' ? 'RING' : 'WAIT';
     return `<button type="button" class="agw-live-name is-${state} agw-live-slot-${index}" onclick="event.stopPropagation();showFighterPopup(${id},'autumnWar',true)">
-      <small>${_agwRoleLabel(order, id)} / ${stateLabel}</small><b>${escHtml(fighter.name)}</b>
+      <small>${_agwRoleLabel(order, id)} / ${stateLabel}</small><b>${escHtml(WM_I18N.pn(fighter.name))}</b>
     </button>`;
   }).join('');
   return `<div class="agw-live-team is-${side}">
@@ -19526,7 +19526,7 @@ function _agwFocusHtml(match, boutIndex, displayOrgIds) {
       <button type="button" class="btn" onclick="App.awRevealBout()">${WM_I18N.t('この試合の結果を見る')} ▶</button>
       <button type="button" class="btn agw-team-skip" onclick="App.awSkipTeamMatch()">${WM_I18N.t('まとめてスキップ')}</button>
     </div>
-    ${last ? `<div class="agw-last-result">${WM_I18N.t('前フォール:')} ${escHtml(last.draw ? WM_I18N.t('決着つかず') : WM_I18N.t('{name} 勝利', { name: last.winnerId === last.left.id ? last.left.name : last.right.name }))} / ${WM_I18N.t('評価 {n}', { n: last.mq })}</div>` : ''}
+    ${last ? `<div class="agw-last-result">${WM_I18N.t('前フォール:')} ${escHtml(last.draw ? WM_I18N.t('決着つかず') : WM_I18N.t('{name} 勝利', { name: last.winnerId === last.left.id ? WM_I18N.pn(last.left.name) : WM_I18N.pn(last.right.name) }))} / ${WM_I18N.t('評価 {n}', { n: last.mq })}</div>` : ''}
   </div>`;
 }
 
@@ -19623,11 +19623,11 @@ function renderAutumnWarReorder() {
   const opponentSummary = `<div class="agw-entry-opponent-summary"><span>${WM_I18N.t('決勝の相手')}</span><strong>${escHtml(opponent?.orgName || WM_I18N.t('決勝進出団体'))}</strong>${_agwOvrHtml(strength.average, WM_I18N.t('平均OVR'))}<small>${WM_I18N.t('OVR幅 {a}〜{b} / 最終出場順は開戦時に公開', { a: strength.min, b: strength.max })}</small></div>`;
   const figures = selected.map((fighter, index) => {
     const full = typeof getFullUrl === 'function' ? getFullUrl(fighter.id, Engine.util.ov(fighter)) : '';
-    return `<div class="agw-entry-figure" data-order="${index}">${full ? `<img src="${full}" alt="${escHtml(fighter.name)}">` : ''}</div>`;
+    return `<div class="agw-entry-figure" data-order="${index}">${full ? `<img src="${full}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}</div>`;
   }).join('');
   const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${role}</b></div>`).join('');
   const opponentSlots = roles.map(() => '<div class="agw-entry-empty-slot" aria-hidden="true"></div>').join('');
-  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${roles[index]}</span><b>${escHtml(fighter.name)}</b>${_agwOvrHtml(Engine.util.ov(fighter))}${_agwConditionBar(conditionValue(fighter.id), false)}</button>`).join('');
+  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectFinalRole(${index})"><span>${roles[index]}</span><b>${escHtml(WM_I18N.pn(fighter.name))}</b>${_agwOvrHtml(Engine.util.ov(fighter))}${_agwConditionBar(conditionValue(fighter.id), false)}</button>`).join('');
   const finalOrgIds = final ? [final.orgA, final.orgB] : (p.result.finalists || []);
   const playerOnLeft = finalOrgIds[0] === 'player';
   const playerSide = playerOnLeft ? 'left' : 'right';
@@ -19637,8 +19637,8 @@ function renderAutumnWarReorder() {
   const mobileCards = selected.map((fighter, index) => {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
-      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
-      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>CONDITION ${conditionValue(fighter.id)}</small></div>${_agwConditionBar(conditionValue(fighter.id), false)}<em>${roleNotes[index]}</em></div>
+      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${stand ? `<img src="${stand}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}</button>
+      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(WM_I18N.pn(fighter.name))}</button><div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>CONDITION ${conditionValue(fighter.id)}</small></div>${_agwConditionBar(conditionValue(fighter.id), false)}<em>${roleNotes[index]}</em></div>
       <div class="agw-entry-mobile-actions"><button type="button" onclick="App.awSelectFinalRole(${index})">${WM_I18N.t('交代')}</button><button type="button" ${index === 0 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},-1)">↑</button><button type="button" ${index === 2 ? 'disabled' : ''} onclick="App.awMoveFinal(${index},1)">↓</button></div>
     </article>`;
   }).join('');
@@ -19647,7 +19647,7 @@ function renderAutumnWarReorder() {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, Engine.util.ov(fighter)) : '';
     return `<article class="agw-entry-candidate is-selected">
       <button type="button" class="agw-entry-candidate-pick" onclick="App.awPickFinalFighter(${fighter.id})">${stand ? `<img src="${stand}" alt="">` : ''}<em>${roles[selectedIndex]}</em></button>
-      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button>
+      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(WM_I18N.pn(fighter.name))}</button>
       <div>${_agwOvrHtml(Engine.util.ov(fighter))}<small>COND ${conditionValue(fighter.id)} / ${escHtml(fighter.style || '')}</small></div>
       ${_agwConditionBar(conditionValue(fighter.id), false)}
     </article>`;
@@ -19697,7 +19697,7 @@ function renderAutumnWarResult() {
   });
   const speechMember = memberRows.find(({ m }) => m.id === speech?.fighter?.id);
   const speechHtml = speech?.line ? `<div class="ch-trio-speech">
-      <div class="ch-trio-speaker">${WM_I18N.t('最多勝コメント')}${speechMember ? ` ・ ${escHtml(speechMember.m.role)} ${escHtml(speechMember.m.f.name)}` : ''}</div>
+      <div class="ch-trio-speaker">${WM_I18N.t('最多勝コメント')}${speechMember ? ` ・ ${escHtml(speechMember.m.role)} ${escHtml(WM_I18N.pn(speechMember.m.f.name))}` : ''}</div>
       ${_chBubbleSlot(speech.line, 'is-autumn-speech')}
     </div>` : '';
   const imgsRow = memberRows.map(({ m, isMvp }) => `<div class="ch-mem${isMvp ? ' is-mvp' : ''}">
@@ -19706,7 +19706,7 @@ function renderAutumnWarResult() {
     </div>`).join('');
   const namesRow = memberRows.map(({ m, wins, isMvp }) => `<div class="ch-mem${isMvp ? ' is-mvp' : ''}">
       <div class="ch-order">${escHtml(m.role)}</div>
-      <div class="ch-name">${escHtml(m.f.name)}</div>
+      <div class="ch-name">${escHtml(WM_I18N.pn(m.f.name))}</div>
       <div class="ch-mem-rec">${WM_I18N.t('通算{n}人抜き', { n: wins })}${isMvp ? ` ・ ${WM_I18N.t('大会MVP')}` : ''}</div>
     </div>`).join('');
   const html = `<div class="agw-wrap agw-result">${_agwHeaderHtml('Survival War Champion', WM_I18N.t('全団体戦終了'))}
@@ -19781,7 +19781,7 @@ function _awEntryScreenHtml() {
   const opponentSummary = `<div class="agw-entry-opponent-summary"><span>${WM_I18N.t('初戦の相手')}</span><strong>${escHtml(opponent?.orgName || WM_I18N.t('上位シード待ち'))}</strong>${_agwOvrHtml(strength.average, WM_I18N.t('平均OVR'))}<small>${WM_I18N.t('OVR幅 {a}〜{b} / 出場順は開戦時に公開', { a: strength.min, b: strength.max })}</small></div>`;
   const figures = selected.map((fighter, index) => {
     const full = typeof getFullUrl === 'function' ? getFullUrl(fighter.id, fighter.ovr) : '';
-    return `<div class="agw-entry-figure" data-order="${index}">${full ? `<img src="${full}" alt="${escHtml(fighter.name)}">` : ''}</div>`;
+    return `<div class="agw-entry-figure" data-order="${index}">${full ? `<img src="${full}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}</div>`;
   }).join('');
   const placeholders = roles.map((role, index) => `<div class="agw-entry-placeholder" data-order="${index}"><span>?</span><b>${role}</b></div>`).join('');
   const opponentSlots = roles.map(() => '<div class="agw-entry-empty-slot" aria-hidden="true"></div>').join('');
@@ -19789,12 +19789,12 @@ function _awEntryScreenHtml() {
     const stand = typeof getStandUrl === 'function' ? getStandUrl(fighter.id, fighter.ovr) : '';
     const cond = Math.round(fighter.condition == null ? Engine.autumnWar.INITIAL_CONDITION : fighter.condition);
     return `<article class="agw-entry-mobile-card${index === activeRole ? ' is-active' : ''}">
-      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${stand ? `<img src="${stand}" alt="${escHtml(fighter.name)}">` : ''}</button>
-      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button><div>${_agwOvrHtml(fighter.ovr)}<small>CONDITION ${cond}</small></div><em>${roleNotes[index]}</em></div>
+      <button type="button" class="agw-entry-mobile-detail" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${stand ? `<img src="${stand}" alt="${escHtml(WM_I18N.pn(fighter.name))}">` : ''}</button>
+      <div class="agw-entry-mobile-info"><span>${roles[index]}</span><button type="button" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(WM_I18N.pn(fighter.name))}</button><div>${_agwOvrHtml(fighter.ovr)}<small>CONDITION ${cond}</small></div><em>${roleNotes[index]}</em></div>
       <div class="agw-entry-mobile-actions"><button type="button" onclick="App.awSelectEntryRole(${index})">${WM_I18N.t('交代')}</button><button type="button" ${index === 0 ? 'disabled' : ''} onclick="App.awMoveEntry(${index},-1)">↑</button><button type="button" ${index === 2 ? 'disabled' : ''} onclick="App.awMoveEntry(${index},1)">↓</button></div>
     </article>`;
   }).join('');
-  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectEntryRole(${index})"><span>${roles[index]}</span><b>${escHtml(fighter.name)}</b>${_agwOvrHtml(fighter.ovr)}</button>`).join('');
+  const roleTabs = selected.map((fighter, index) => `<button type="button" class="agw-entry-role-tab${index === activeRole ? ' is-active' : ''}" onclick="App.awSelectEntryRole(${index})"><span>${roles[index]}</span><b>${escHtml(WM_I18N.pn(fighter.name))}</b>${_agwOvrHtml(fighter.ovr)}</button>`).join('');
   const playerPanel = `<div class="agw-entry-team is-player is-${playerSide}"><div class="agw-entry-team-label"><span>YOUR TEAM</span><b>${escHtml(G.orgName || WM_I18N.t('自団体'))}</b></div><div class="agw-entry-formation">${figures}</div><div class="agw-entry-slot-row">${roleTabs}</div></div>`;
   const opponentPanel = `<div class="agw-entry-team is-opponent is-${opponentSide}"><div class="agw-entry-team-label"><span>OPPONENT</span><b>${escHtml(opponent?.orgName || WM_I18N.t('対戦団体'))}</b></div><div class="agw-entry-formation">${placeholders}</div><div class="agw-entry-slot-row is-opponent">${opponentSlots}</div></div>`;
   const candidates = eligible.map(fighter => {
@@ -19803,7 +19803,7 @@ function _awEntryScreenHtml() {
     const cond = Math.round(fighter.condition == null ? Engine.autumnWar.INITIAL_CONDITION : fighter.condition);
     return `<article class="agw-entry-candidate${selectedIndex >= 0 ? ' is-selected' : ''}">
       <button type="button" class="agw-entry-candidate-pick" onclick="App.awPickFighter(${fighter.id})">${stand ? `<img src="${stand}" alt="">` : ''}${selectedIndex >= 0 ? `<em>${roles[selectedIndex]}</em>` : `<em>${WM_I18N.t('選出')}</em>`}</button>
-      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(fighter.name)}</button>
+      <button type="button" class="agw-entry-candidate-name" onclick="event.stopPropagation();showFighterPopup(${fighter.id},'autumnWar',true)">${escHtml(WM_I18N.pn(fighter.name))}</button>
       <div>${_agwOvrHtml(fighter.ovr)}<small>COND ${cond} / ${escHtml(fighter.style || '')}</small></div>
     </article>`;
   }).join('');
@@ -19867,12 +19867,12 @@ function _tcCircleFx(f, isWin, isLose, withOrg) {
   const cls = isWin ? 'w' : isLose ? 'l' : '';
   const img = upperUrl
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
-    : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
+    : `<span class="jtc-ini">${escHtml((WM_I18N.pn(f.name) || '?')[0])}</span>`;
   const org = withOrg ? `<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span>` : '';
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)"`;
   return `<div class="tc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="tc-cir ${cls}">${img}</div>
-    <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}${org}</div>
+    <div class="tc-fn">${escHtml(WM_I18N.pn(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}${org}</div>
   </div>`;
 }
 
@@ -19882,11 +19882,11 @@ function _tcRectFx(f, isWin, isLose) {
   const cls = isWin ? 'w' : isLose ? 'l' : '';
   const img = upperUrl
     ? `<img src="${upperUrl}" alt="" onerror="this.style.display='none'">`
-    : `<span class="jtc-ini">${escHtml((f.name || '?')[0])}</span>`;
+    : `<span class="jtc-ini">${escHtml((WM_I18N.pn(f.name) || '?')[0])}</span>`;
   const open = ` style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)"`;
   return `<div class="tc-rc-fx${isLose ? ' is-lose' : ''}"${open}>
     <div class="jtc-up ${cls}">${img}</div>
-    <div class="tc-fn">${escHtml(f.name)}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
+    <div class="tc-fn">${escHtml(WM_I18N.pn(f.name))}${isWin ? ' <span class="jtc-win-tag">WIN</span>' : ''}<span class="org">${escHtml(f._orgName || '')}${_tcOwnPill(f.orgId)}</span></div>
   </div>`;
 }
 
@@ -19952,11 +19952,11 @@ function _tcPeakBlock(tc, riseClass) {
   const champion = finalMatch.winnerId === finalMatch.left.id ? finalMatch.left : finalMatch.right;
   const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(champion.id) : '';
   const img = upperUrl
-    ? `<img src="${upperUrl}" alt="${escHtml(champion.name)}" onerror="this.style.display='none'">`
-    : `<span class="jtc-ini">${escHtml((champion.name || '?')[0])}</span>`;
+    ? `<img src="${upperUrl}" alt="${escHtml(WM_I18N.pn(champion.name))}" onerror="this.style.display='none'">`
+    : `<span class="jtc-ini">${escHtml((WM_I18N.pn(champion.name) || '?')[0])}</span>`;
   return `<div class="jtc-peak${riseClass}" onclick="App.tcGoToFinalResult()">
     <div class="jtc-up jtc-up-peak w">${img}</div>
-    <div class="jtc-peak-name">${escHtml(champion.name)}</div>
+    <div class="jtc-peak-name">${escHtml(WM_I18N.pn(champion.name))}</div>
     <div class="jtc-peak-title">${WM_I18N.t('第{n}回 天頂戦 覇者', { n: _tcEditionNo() })}</div>
     <div class="jtc-peak-cta">${WM_I18N.t('表彰へ')} ▶</div>
     <div class="jtc-peak-auto-note">${WM_I18N.t('1.6秒で自動的に進みます(タップで即スキップ)')}</div>
@@ -20422,7 +20422,7 @@ function renderTenchosenMatchResult(ri, mi) {
   html += `<div class="pb-mrow is-main is-jt is-tenchosen">`;
   html += _pbFighterBlock('left', leftF, leftCls, metaLeft, '');
   html += _pbResultColumn({
-    winnerLabel: `🏆 ${escHtml(winner.name)} WIN`,
+    winnerLabel: `🏆 ${escHtml(WM_I18N.pn(winner.name))} WIN`,
     winnerIsDraw: false,
     finishText: Engine.formatFinish(match.finType, match.finMove),
     turns: match.turns || 0,
@@ -20484,7 +20484,7 @@ function renderTenchosenResult() {
       <div class="ch-hero">
         ${_chBubbleSlot(champLine)}
         <div class="ch-por-wrap"><span class="ch-glow"></span><span class="ch-crown">👑</span><div class="ch-por">${_chPortraitImg(champion)}</div></div>
-        <div class="ch-name">${escHtml(champion.name)}</div>
+        <div class="ch-name">${escHtml(WM_I18N.pn(champion.name))}</div>
         <div class="ch-role">${WM_I18N.t('戴冠')}</div>
         ${_chOrgBadgeHtml(champion.orgId, champion._orgName)}
         <div class="ch-stat"><small>WINS</small>${winCount}</div>
@@ -20501,15 +20501,15 @@ function renderTenchosenResult() {
 /** 関係性ドラマ: ナレーション(事実記述・固定文) */
 function _tcDramaNarration(evClass, winner, loser) {
   if (evClass === 'epic') return '死闘の後、敗者は勝者の前に立った。';
-  if (evClass === 'humiliation') return `敗れた${loser.name}は、バックステージで${winner.name}を待っていた。`;
+  if (evClass === 'humiliation') return `敗れた${WM_I18N.pn(loser.name)}は、バックステージで${WM_I18N.pn(winner.name)}を待っていた。`;
   if (evClass === 'stablemate_rift') return '試合後の控室で、二人の間に言葉は少なかった。';
-  return `試合後の控室で、${loser.name}は${winner.name}のもとへ歩み寄った。`;
+  return `試合後の控室で、${WM_I18N.pn(loser.name)}は${WM_I18N.pn(winner.name)}のもとへ歩み寄った。`;
 }
 
 /** 関係性ドラマ: 関係変化チップ */
 function _tcDramaChip(evClass, winner, loser) {
   if (evClass === 'epic') return `<span class="tcdr-chip bond">${WM_I18N.t('好敵手 — 絆・因縁 ともに上昇(相互)')}</span>`;
-  if (evClass === 'humiliation') return `<span class="tcdr-chip riv">${WM_I18N.t('因縁 激発展({loser} → {winner})', { loser: escHtml(loser.name), winner: escHtml(winner.name) })}</span>`;
+  if (evClass === 'humiliation') return `<span class="tcdr-chip riv">${WM_I18N.t('因縁 激発展({loser} → {winner})', { loser: escHtml(WM_I18N.pn(loser.name)), winner: escHtml(WM_I18N.pn(winner.name)) })}</span>`;
   if (evClass === 'stablemate_rift') return `<span class="tcdr-chip riv">${WM_I18N.t('絆に亀裂')}</span>`;
   return `<span class="tcdr-chip bond">${WM_I18N.t('絆 深化')}</span>`;
 }
@@ -20531,7 +20531,7 @@ function _tcDramaActor(fighter, bubbleText, emoBadge, crimson) {
   return `<div class="tcdr-actor">
     ${top}
     <div class="tcdr-rc">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.opacity=0">` : ''}</div>
-    <div class="tcdr-name">${escHtml(fighter.name)}<span class="org">${escHtml(fighter._orgName || '')}${_tcOwnPill(fighter.orgId)}</span></div>
+    <div class="tcdr-name">${escHtml(WM_I18N.pn(fighter.name))}<span class="org">${escHtml(fighter._orgName || '')}${_tcOwnPill(fighter.orgId)}</span></div>
   </div>`;
 }
 
@@ -20575,7 +20575,7 @@ function renderTenchosenDrama(idx) {
     <div class="tcdr-head">Aftermath — Backstage</div>
     <div class="tcdr-head-jp">${WM_I18N.t('大会が生んだ関係')}</div>
     <div class="tcdr-card jt-su">
-      <div class="tcdr-src">${escHtml(roundLabel)} — ${escHtml(winner.name)} ○ ${escHtml(loser.name)} ×${mqNote}</div>
+      <div class="tcdr-src">${escHtml(roundLabel)} — ${escHtml(WM_I18N.pn(winner.name))} ○ ${escHtml(WM_I18N.pn(loser.name))} ×${mqNote}</div>
       <div class="tcdr-narr">${escHtml(_tcDramaNarration(ev.class, winner, loser))}</div>
       <div class="tcdr-stagegrid">${actors}</div>
       <div class="tcdr-chips">${_tcDramaChip(ev.class, winner, loser)}</div>
@@ -20615,14 +20615,14 @@ function renderTenchosenTVResult() {
   html += `<div class="pb-matches">`;
   t.rounds.forEach(round => {
     const isFinal = round.name === 'final';
-    html += `<div class="pb-divider${isFinal ? ' is-main' : ''}">${isFinal ? '👑 ' : ''}${escHtml(_tcRoundLabel(round.name))}</div>`;
+    html += `<div class="pb-divider${isFinal ? ' is-main' : ''}">${isFinal ? '👑 ' : ''}${escHtml(_tcRoundLabel(WM_I18N.pn(round.name)))}</div>`;
     round.matches.forEach(m => {
       const w = m.winnerId === m.left.id ? m.left : m.right;
       const l = m.winnerId === m.left.id ? m.right : m.left;
       html += `<div class="tc-tv-row">
-        <span class="w">○ ${escHtml(w.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(w._orgName || '')})</span>
+        <span class="w">○ ${escHtml(WM_I18N.pn(w.name))}</span><span style="color:var(--stage-text-dim)">(${escHtml(w._orgName || '')})</span>
         <span style="color:var(--stage-text-dim)">—</span>
-        <span>× ${escHtml(l.name)}</span><span style="color:var(--stage-text-dim)">(${escHtml(l._orgName || '')})</span>
+        <span>× ${escHtml(WM_I18N.pn(l.name))}</span><span style="color:var(--stage-text-dim)">(${escHtml(l._orgName || '')})</span>
         <span class="mq">${WM_I18N.t('評価 {n}', { n: m.mq })}</span>
       </div>`;
     });
@@ -20634,7 +20634,7 @@ function renderTenchosenTVResult() {
       ${upperUrl ? `<img src="${upperUrl}" style="width:100%;height:100%;object-fit:cover;object-position:top" alt="">` : ''}
     </div>
     <div style="font-family:var(--font-label);font-size:10px;letter-spacing:5px;color:var(--gold);text-transform:uppercase">Champion</div>
-    <div style="font-size:22px;font-weight:900;color:var(--stage-text-main);margin-top:2px">${escHtml(champion.name)}</div>
+    <div style="font-size:22px;font-weight:900;color:var(--stage-text-main);margin-top:2px">${escHtml(WM_I18N.pn(champion.name))}</div>
     <div style="font-size:11px;color:var(--stage-text-sub);margin-top:2px">${escHtml(champion._orgName || '')} — ${WM_I18N.t('第{n}回 天頂戦 覇者', { n: _tcEditionNo() })}</div>
   </div>`;
 
@@ -20667,19 +20667,19 @@ function renderTenchosenPreEvent() {
   const coachFaceUrl = coach && typeof getCoachPortraitUrl === 'function' ? getCoachPortraitUrl(coach.id) : '';
   const coachHtml = coach ? `
     <div class="tcpe-coach">
-      <div class="tcdr-bub"><div class="sp">${escHtml(coach.name)} ${WM_I18N.t('コーチ')}</div>「${escHtml(WM_I18N.t(coach.line))}」</div>
+      <div class="tcdr-bub"><div class="sp">${escHtml(WM_I18N.pn(coach.name))} ${WM_I18N.t('コーチ')}</div>「${escHtml(WM_I18N.t(coach.line))}」</div>
       <div class="tc-cir w">${coachFaceUrl
         ? `<img src="${coachFaceUrl}" alt="" onerror="this.style.display='none'">`
         : `<span class="tcpe-coach-face">👩‍🏫</span>`}</div>
-      <div class="tcdr-name">${escHtml(coach.name)} ${WM_I18N.t('コーチ')}</div>
+      <div class="tcdr-name">${escHtml(WM_I18N.pn(coach.name))} ${WM_I18N.t('コーチ')}</div>
     </div>` : '';
 
   const fightersHtml = (tp.fighters || []).map(f => {
     const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(f.id) : '';
     return `<div class="tcdr-actor">
-      <div class="tcdr-bub"><div class="sp">${escHtml(f.name)}</div>「${escHtml(WM_I18N.t(f.line))}」</div>
+      <div class="tcdr-bub"><div class="sp">${escHtml(WM_I18N.pn(f.name))}</div>「${escHtml(WM_I18N.t(f.line))}」</div>
       <div class="tcdr-rc">${upperUrl ? `<img src="${upperUrl}" alt="" onerror="this.style.opacity=0">` : ''}</div>
-      <div class="tcdr-name">${escHtml(f.name)}</div>
+      <div class="tcdr-name">${escHtml(WM_I18N.pn(f.name))}</div>
     </div>`;
   }).join('');
 
@@ -20723,7 +20723,7 @@ function _tcEntryModalHtml() {
     html += `<div class="tc-invite-card" style="cursor:pointer" onclick="event.stopPropagation();showFighterPopup(${Number(f.id)},'tenchosen',true)">
       <div class="tc-invite-kind">${kindLabel}</div>
       <div class="tc-invite-up">${upperUrl ? `<img src="${upperUrl}" alt="">` : ''}</div>
-      <div class="tc-invite-name">${escHtml(f.name)}</div>
+      <div class="tc-invite-name">${escHtml(WM_I18N.pn(f.name))}</div>
       <div class="tc-invite-org">${escHtml(orgName)}${_tcOwnPill(inv.orgId)}</div>
     </div>`;
   });
@@ -20742,7 +20742,7 @@ function _tcEntryModalHtml() {
     html += `<div class="${cls}" style="border:1px solid var(--stage-border-lit);border-radius:6px;cursor:${isChamp ? 'default' : 'pointer'}"${click}>
       <span style="font-size:18px;width:24px;text-align:center">${picked ? (isChamp ? '👑' : '✅') : '⬜'}</span>
       ${portraitImg(f.id, 40)}
-      <span style="flex:1;font-size:13px;color:var(--stage-text-main)">${escHtml(f.name)}${isChamp ? ` <span style="font-size:10px;color:var(--gold)">${WM_I18N.t('王者・出場必須')}</span>` : ''}</span>
+      <span style="flex:1;font-size:13px;color:var(--stage-text-main)">${escHtml(WM_I18N.pn(f.name))}${isChamp ? ` <span style="font-size:10px;color:var(--gold)">${WM_I18N.t('王者・出場必須')}</span>` : ''}</span>
       <span style="font-size:11px;color:var(--stage-text-sub)">OVR ${ovr}</span>
       <span style="font-size:11px;color:var(--stage-text-dim)">${WM_I18N.t('人気')} ${Math.round(f.popularity || 0)}</span>
     </div>`;

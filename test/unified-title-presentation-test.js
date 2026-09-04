@@ -30,7 +30,7 @@ const WM_I18N_STUB = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-} };
+}, pn(str) { return str; } };
 
 (function auroraTokensMatchApprovedMock() {
   const expected = {
@@ -63,7 +63,7 @@ const WM_I18N_STUB = { t(text, params) {
     },
   };
   // i18n Stage B P5-1: _pickUnifiedTitleLine now calls WM_I18N.t() at the display point.
-  const WM_I18N = { t: (text) => text };
+  const WM_I18N = { t: (text) => text, pn: (str) => str };
   const pick = new Function('EVENT_LINES_BY_KEY', 'Engine', 'WM_I18N',
     `${functionSource(ui, '_pickUnifiedTitleLine')}; return _pickUnifiedTitleLine;`)(EVENT_LINES_BY_KEY, Engine, WM_I18N);
   const state = { rngSeed: 42, season: 8, week: 48, nested: { untouched: true } };

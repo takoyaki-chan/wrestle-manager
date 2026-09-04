@@ -75,16 +75,17 @@ function linesAround(source, anchorRegex, before, after, label) {
   ];
   for (const [anchor, label] of anchors) {
     const blocks = linesAround(uiRender, anchor, 0, 0, label);
-    // 「✕ この選手を外す」行も同じ onclick を持つので、選手行(${c.name} を含む行)だけ見る
-    const fighterRows = blocks.filter(b => b.includes('${c.name}'));
+    // 「✕ この選手を外す」行も同じ onclick を持つので、選手行(${WM_I18N.pn(c.name)} を含む行)だけ見る
+    // (i18n P6-3: 選手名の直接補間を pn() 経由へ移行済み。旧 ${c.name} 形は残らない)
+    const fighterRows = blocks.filter(b => b.includes('${WM_I18N.pn(c.name)}'));
     assert.ok(fighterRows.length > 0,
-      `${label}: 選手行(\${c.name} を含む行)が見つからない(検査が空振り=stale)。テンプレートが変わったなら本テストを新しい真実に合わせること`);
+      `${label}: 選手行(\${WM_I18N.pn(c.name)} を含む行)が見つからない(検査が空振り=stale)。テンプレートが変わったなら本テストを新しい真実に合わせること`);
     for (const row of fighterRows) {
       assert.ok(!CLICKABLE_PORTRAIT.test(row),
         `${label}内の顔は専用ラッパーで操作を分ける。portraitImg自体へ第4引数を戻さないこと:\n${row}`);
       assert.ok(/class="sp-picker-face-detail"[^>]*onclick="event\.stopPropagation\(\);showFighterPopup/.test(row),
         `${label}の顔クリックが選手詳細に割り当てられていない:\n${row}`);
-      assert.ok(!/<span[^>]*onclick=[^>]*>\$\{c\.name\}<\/span>/.test(row),
+      assert.ok(!/<span[^>]*onclick=[^>]*>\$\{WM_I18N\.pn\(c\.name\)\}<\/span>/.test(row),
         `${label}の名前に詳細onclickが残っている。名前は親行へ伝播して選択する:\n${row}`);
     }
   }

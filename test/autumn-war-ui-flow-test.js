@@ -255,7 +255,7 @@ function section(source, startMarker, endMarker) {
       let out = text;
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
-    } },
+    }, pn(str) { return str; } },
   };
   vm.runInNewContext(`${dialogueSource}\nthis.renderDialogue = _agwPreBoutDialogueHtml;`, sandbox);
 

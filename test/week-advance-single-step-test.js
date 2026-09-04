@@ -17,7 +17,7 @@ global.WM_I18N = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-} };
+}, pn(str) { return str; } };
 const root = path.join(__dirname, '..');
 const srcDir = path.join(root, 'src');
 

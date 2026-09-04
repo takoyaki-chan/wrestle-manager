@@ -1,5 +1,55 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-3 — 選手・コーチ名の直接補間サイトをpn()経由へ段階移行（2026-09-04・worktree agent-afb813d0664d28e98）
+
+P6-1で名前辞書`PN_EN`と`WM_I18N.pn(str)`(完全一致でEN・無ければ素通し・ja時素通し)が入ったが、テンプレ経由の名前(`t()`のparams)は自動変換される一方、`${c.name}`/`${c.surname}`の**直接補間**は未移行で、EN切替時に選手・コーチ名だけ日本語のままだった穴を埋めた。開始前にworktreeブランチをmain先端(79929e5)へfast-forward済み。対象5ファイル(ui-render.js/ui-common.js/app.js/battle-engine-main.js/tag-battle-main.js)。
+
+### 1. 呼び出し元の機械列挙と分類
+
+`.name`/`.surname`アクセスの生パターンを正規表現で全数走査すると対象5ファイルで**1,108箇所**。うち直接補間`${EXPR.name}`/`${EXPR.surname}`の厳密形が**336箇所**、`escHtml(EXPR.name)`のような明示的HTML表示用ラップが別途多数、残りは比較・ソート・検索フィルタ・オブジェクトキー構築などロジック/データ用途だった。
+
+分類は「表示(display)」「ロジックキー(比較・sort・filter・検索)」「セーブ書込み(G/gameLog/growthLog等)」「ログdata値(console.warn等の開発診断)」の4種で行い、**表示のみ**を移行対象にした。
+
+### 2. 移行した内容(自動+手動の複合パス)
+
+1. **完全一致の直接補間**: `${EXPR.name}` / `${EXPR.surname}` を `${WM_I18N.pn(EXPR.name)}` へ機械置換(オフセット→行番号変換で位置を追跡し、app.js内の`App._NEWSPAPER_HEADLINES`/`App._NEWSPAPER_ARTICLES`(kurodaText系テンプレプール、`d => \`${d.winner.name}...\`\`` 形。P4-5で`kurodaTemplateOf()`が関数ソースをパースして`{winnerName}`プレースホルダへ正規化し、D-P6-2のt()パラメータ自動変換で名前が訳される別パイプライン)の範囲(9683-9787行)を除外)
+2. **escHtml()経由の表示**: `escHtml(EXPR.name)`の単純形だけでなく、`escHtml(EXPR.name || '?')`・`escHtml(cond ? A.name : B.name)`のような複合式も、`escHtml(...)`の**balanced-paren抽出**で引数全体を取り出し、内部の`.name`/`.surname`参照だけをpn()で包む汎用パスで対応(ternary/fallback/nested callを含め167+70=237箇所)
+3. **truncate/initial系の手動修正**: `.charAt(0)`(アバターの頭文字フォールバック)・`.substring(0,4)`/`.slice(0,3\~5)`(コーチチップ・相関図ラベルの短縮表示)・`.split(' ')[0]`/`.split(/\s/).pop()`(コーチ選択プルダウンの姓表示)は、EN名を切ってから頭文字/短縮を取る必要があるため`WM_I18N.pn(X.name)`を**先に**適用してから切り詰める形に修正(ロスター詳細パネル・コーチチップ・データベース相関図・ランキング比較ポップアップ)
+4. **観戦モードHUD**: battle-engine-main.js/tag-battle-main.jsのHP名ラベル・丸め込み/ギブアップ演出テキスト・タッグHUDの選手名を全数pn()化(battle-engine-main.jsは残0件まで完走)
+
+### 3. 意図的に除外した箇所(セーブ/ロジック/既存パイプライン)
+
+自動escHtml一括変換後、`WM_I18N.pn(`導入箇所の前後をキーワード検査(`log.push`/`gameLog`/`growthLog`/`wmDiag`/`G = {`/`_pending\w* = {`等)で再走査し、以下8箇所を**復元**(pn()を外してJA原文に戻した):
+- `App`内`log.push({type:'fighter_released_claimed', data:{...ejectedSuffix...}})`×2箇所 — gameLog(G保存値)。表示時はGAMELOG_TEMPLATES+t()の名前自動変換に委ねる仕様のため生JAのまま
+- `wmDiag(...)`×2箇所 — 開発者診断ログ(console.warn、プレイヤー非表示)
+- `_pendingF09Ending.narration`(app.js) — Fステート(`s._pendingF09Ending`)に焼き込まれる文字列。G保存値扱いで据え置き
+- `stats.bestMQMatch`(app.js) — `G.seasonStats`相当の保存値。タッグ側の兄弟分岐(`tA1?.name`)が元々未変換だったこととの整合も兼ねて据え置き
+- `fighter.growthLog`のdetail文字列(app.js) — キャラの永続ログフィールド
+- `signingLine`のフォールバック文字列(ui-common.js) — `G._pendingDraftSigningPopup`へ焼き込まれる
+
+また検索フィルタ(`.name.toLowerCase().includes(q)`、データベース画面の名前検索)、`pickTagWinCommentary`/`_buildF09OpeningData`等**dict引数を受け取り内部で名前を自動変換する既存Engine関数への生名前渡し**(D-P6-2で二重に変換不要と確認)は変更していない。
+
+### 4. 副作用として直した既存テストの破損
+
+`WM_I18N.pn`はP6-3で初めて呼ばれるようになったため、テストが`new Function(...)`/`vm`でui-render.js/ui-common.js等の一部関数を切り出して実行する際に使っていた**手製WM_I18Nスタブ**(`{ t(text, params) {...} }`、`pn`を持たない)が軒並み`TypeError: WM_I18N.pn is not a function`で落ちた。45ファイル・64箇所の同型スタブに`pn(str) { return str; }`(ja相当のpassthrough)を機械追加して解消。加えて、以下は個別対応:
+- `test/selection-surface-portrait-guard-test.js` / `test/victory-overlay-speaker-test.js`: ソースコード中の`${c.name}`/`escHtml(winner.name)`リテラルを直接文字列比較するレグレッションガードだったため、新しい`${WM_I18N.pn(c.name)}`/`escHtml(WM_I18N.pn(winner.name))`の形に合わせて更新
+- `test/tag-result-attribution-test.js`: `new Function('escHtml', ...)`に`'WM_I18N'`引数とスタブを追加
+
+### 5. 検証結果
+
+- `node test/ja-golden.js` — 完全一致(lines=11233、ja出力1バイト不変。pn()はja時no-opのため当然)
+- `node test/i18n-ratchet.js` — 直書き日本語文字列の増加なし
+- `npm test` — **260/260 PASS**(修正前は11件が`WM_I18N.pn is not a function`等で失敗)
+- `npm run test:ui:walkthrough` — **PASS**、issues=0、328アクション・digest=1052faa82eaf7991(ja-golden同様1バイト不変のためbaselineと一致する想定)
+- vm抜き取り検査(EN時のロスターHTML断片で名前がローマ字になるか): `src/i18n.js`+`src/lang-en-names.js`をvmへロードし`ALL_CHARS`から実名5件を抽出、`<span class="rd-name">${WM_I18N.pn(name)}</span>`という実テンプレ相当の断片を生成 → **ja時は5/5 1バイト不変、en時は5/5ローマ字化**(例: 富岡加奈子→Kanako Tomioka)を確認
+
+### 6. 移行数・残数
+
+pn()導入 **497箇所**(ui-render.js 151 / ui-common.js 247 / app.js 25 / battle-engine-main.js 29 / tag-battle-main.js 45)。完走した画面: ロスター一覧・カード / 選手詳細ポップアップ(fp-*系) / 興行編成カード・ピッカー(sp-picker系) / 試合結果ポップアップ / データベース・相関図(relmap系) / ランキング・シーズンレビュー / 観戦モード(battle-engine-main.jsは残0、tag-battle-main.jsは既存dict pipeline委譲の2箇所のみ残)。
+
+残(pn()未導入の`.name`/`.surname`参照、上記の意図的除外分含む)は機械カウントで**約634箇所**(ui-render.js 116 / ui-common.js 249 / app.js 267。大半はapp.js側のkurodaText系プール・gameLog系・比較ロジックで、純粋な長尾表示サイトはより少ない)。画面別の内訳は棚卸ししておらず、次バッチで`.name.toLowerCase()`検索フィルタのEN対応可否も含め要判断。
+
+---
 ## 🌐 Stage B P5-2j — セリフ英訳バッチ⑩(挑戦状393行+GLIMPSE_B 368行+秋MVP 315行)（2026-09-04・Opus主筆 worktree agent-ab88a17c4c0c75003）
 
 量産翻訳の第10バッチ。**`data.js:CHALLENGE_LINES` の394行中393行 + `data.js:GLIMPSE_B_LINES` の371行中368行 + `data.js:AUTUMN_WAR_MVP_LINES` の全315行 = 1,076行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2iの訳語判断(2cの対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2eのGLIMPSE_A低温語彙、2fのベルト=belt/王座=title、2hの `ふふ`=Mm/My 機能置換と `……っ……`=`... mm...`/`... ah...`、2iの `認める`=admit/grant/own の帯別割り分けを継承)。開始前にworktreeブランチをmain先端(1a3f129)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。

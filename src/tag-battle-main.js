@@ -256,8 +256,8 @@ function _hudHtml(fr){
         </div>
         <div class="wm-hud-meta">
           <div class="wm-hud-label">${WM_I18N.t('青コーナー')}</div>
-          <div class="wm-hud-name" id="hudTeamNameA">${escHtml(legalA.name)} ＆ ${escHtml(apronA.name)}</div>
-          <div class="wm-hud-active-label" id="hudActiveA">${WM_I18N.t('リング上')} · ${escHtml(legalA.name)}</div>
+          <div class="wm-hud-name" id="hudTeamNameA">${escHtml(WM_I18N.pn(legalA.name))} ＆ ${escHtml(WM_I18N.pn(apronA.name))}</div>
+          <div class="wm-hud-active-label" id="hudActiveA">${WM_I18N.t('リング上')} · ${escHtml(WM_I18N.pn(legalA.name))}</div>
         </div>
       </div>
       <div class="wm-hud-center">
@@ -273,8 +273,8 @@ function _hudHtml(fr){
         </div>
         <div class="wm-hud-meta right">
           <div class="wm-hud-label">${WM_I18N.t('赤コーナー')}</div>
-          <div class="wm-hud-name" id="hudTeamNameB">${escHtml(legalB.name)} ＆ ${escHtml(apronB.name)}</div>
-          <div class="wm-hud-active-label" id="hudActiveB">${WM_I18N.t('リング上')} · ${escHtml(legalB.name)}</div>
+          <div class="wm-hud-name" id="hudTeamNameB">${escHtml(WM_I18N.pn(legalB.name))} ＆ ${escHtml(WM_I18N.pn(apronB.name))}</div>
+          <div class="wm-hud-active-label" id="hudActiveB">${WM_I18N.t('リング上')} · ${escHtml(WM_I18N.pn(legalB.name))}</div>
         </div>
       </div>
     </div>
@@ -283,18 +283,18 @@ function _hudHtml(fr){
       <div class="wm-mom-r" id="momR" style="width:${clamp(momR,0,100)}%"></div>
     </div>
     <div class="wm-hp-row">
-      <span class="wm-hp-name" id="hudHpNameA">${escHtml(legalA.name)}</span>
+      <span class="wm-hp-name" id="hudHpNameA">${escHtml(WM_I18N.pn(legalA.name))}</span>
       <span class="wm-hp-pct ${hpCls(hpA.ratio)}" id="hudHpPctA">${hpA.pct}%</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill left ${hpCls(hpA.ratio)}" id="hudHpFillA" style="width:${hpA.pct}%"></div></div>
       <span class="wm-hp-label">${WM_I18N.t('リング上 HP')}</span>
       <div class="wm-hp-bar"><div class="wm-hp-fill right ${hpCls(hpB.ratio)}" id="hudHpFillB" style="width:${hpB.pct}%"></div></div>
       <span class="wm-hp-pct ${hpCls(hpB.ratio)}" id="hudHpPctB">${hpB.pct}%</span>
-      <span class="wm-hp-name right" id="hudHpNameB">${escHtml(legalB.name)}</span>
+      <span class="wm-hp-name right" id="hudHpNameB">${escHtml(WM_I18N.pn(legalB.name))}</span>
     </div>
     <div class="wm-apron-hp-row">
-      <div class="wm-apron-hp-side left"><span class="wm-apron-hp-name" id="hudApronNameA">${escHtml(apronA.name)}</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill left ${hpCls(hpApronA.ratio)}" id="hudApronFillA" style="width:${hpApronA.pct}%"></div></div><span class="wm-apron-hp-pct" id="hudApronPctA">${hpApronA.pct}%</span></div>
+      <div class="wm-apron-hp-side left"><span class="wm-apron-hp-name" id="hudApronNameA">${escHtml(WM_I18N.pn(apronA.name))}</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill left ${hpCls(hpApronA.ratio)}" id="hudApronFillA" style="width:${hpApronA.pct}%"></div></div><span class="wm-apron-hp-pct" id="hudApronPctA">${hpApronA.pct}%</span></div>
       <span class="wm-apron-hp-label">${WM_I18N.t('控え HP')}</span>
-      <div class="wm-apron-hp-side right"><span class="wm-apron-hp-pct" id="hudApronPctB">${hpApronB.pct}%</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill right ${hpCls(hpApronB.ratio)}" id="hudApronFillB" style="width:${hpApronB.pct}%"></div></div><span class="wm-apron-hp-name" id="hudApronNameB">${escHtml(apronB.name)}</span></div>
+      <div class="wm-apron-hp-side right"><span class="wm-apron-hp-pct" id="hudApronPctB">${hpApronB.pct}%</span><div class="wm-apron-hp-track"><div class="wm-apron-hp-fill right ${hpCls(hpApronB.ratio)}" id="hudApronFillB" style="width:${hpApronB.pct}%"></div></div><span class="wm-apron-hp-name" id="hudApronNameB">${escHtml(WM_I18N.pn(apronB.name))}</span></div>
     </div>
   </div>`;
 }
@@ -319,12 +319,12 @@ function _playerCardHtml(side, layer, posKey){
   if (ch.hotTagBuff > 0) cls.push('hot-tag-buff');
   return `<div class="${cls.join(' ')}" id="card-${side}-legal" data-fighter-key="${posKey}">
     <div class="portrait-area" id="portrait-${side}-legal">
-      <img class="wm-tag-full-figure" src="${getFullUrl(ch)}" alt="${escHtml(ch.name)}" onerror="this.style.display='none'">
+      <img class="wm-tag-full-figure" src="${getFullUrl(ch)}" alt="${escHtml(WM_I18N.pn(ch.name))}" onerror="this.style.display='none'">
       <div class="monitor-frame"></div>
       <div class="danger-glow" id="dangerGlow-${side}"${ratio <= 0.25 && ratio > 0 ? ' style="opacity:1"' : ''}></div>
       <div class="speech-bubble" id="sp-${side}"></div>
     </div>
-    <button class="wm-tag-ring-nameplate" onclick="openBp('${posKey}')"><span>${WM_I18N.t('リング上')}</span><b class="player-name">${escHtml(ch.name)}</b></button>
+    <button class="wm-tag-ring-nameplate" onclick="openBp('${posKey}')"><span>${WM_I18N.t('リング上')}</span><b class="player-name">${escHtml(WM_I18N.pn(ch.name))}</b></button>
   </div>`;
 }
 
@@ -332,7 +332,7 @@ function _apronCardHtml(side, posKey){
   const ch = f(posKey);
   return `<div class="player-card wm-tag-ring-helper ${side === 'a' ? 'left' : 'right'}" id="card-${side}-apron" data-fighter-key="${posKey}" aria-hidden="true">
     <div class="portrait-area"><img class="wm-tag-full-figure" src="${getFullUrl(ch)}" alt="" onerror="this.style.display='none'"></div>
-    <span class="apron-name">${escHtml(ch.name)}</span>
+    <span class="apron-name">${escHtml(WM_I18N.pn(ch.name))}</span>
   </div>`;
 }
 
@@ -395,7 +395,7 @@ function _teamMemberHtml(side, layer, posKey){
   return `<div class="wm-tag-member${active?' active':''}" id="team-${side}-${layer}" data-fighter-key="${posKey}">
     <img class="wm-tag-member-upper" src="${getUpperUrl(ch)}" alt="" onerror="this.style.display='none'">
     <div class="wm-tag-member-profile">
-      <div class="wm-tag-member-head"><button onclick="openBp('${posKey}')">${escHtml(ch.name)}</button><strong>OVR ${_calcOvr(ch)}</strong></div>
+      <div class="wm-tag-member-head"><button onclick="openBp('${posKey}')">${escHtml(WM_I18N.pn(ch.name))}</button><strong>OVR ${_calcOvr(ch)}</strong></div>
       <div class="wm-tag-member-meta"><span class="wm-tag-member-role">${role}</span><span>${escHtml(ch.style||'')}${recovery}</span></div>
     </div>
     <div class="wm-tag-micro-stats">${_statsHtml(ch, side)}</div>
@@ -408,7 +408,7 @@ function _moveDisplayHtml(fr){
   const meta = _movePresentation(action, fr);
   return `<div class="move-display wm-tag-move-detail" id="moveDisplay">
     <div class="move-label" id="moveCatLabel">${escHtml(meta.label)}</div>
-    <div class="move-name" id="moveName">${escHtml(meta.name)}</div>
+    <div class="move-name" id="moveName">${escHtml(WM_I18N.pn(meta.name))}</div>
     <div class="wm-move-guide" id="moveGuide">${escHtml(meta.guide)}</div>
     <div class="move-damage wm-move-result" id="moveDmg">${escHtml(_moveResultText(action))}</div>
   </div>`;
@@ -446,10 +446,10 @@ function _narrateFrame(fr){
   const atk = byId(a.attackerId);
   const def = byId(a.defenderId);
   if (!atk || !def) return { text: escHtml(a.move||''), dramatic:false };
-  if (a.kind === 'miss') return { text: `${escHtml(atk.name)}の${escHtml(a.move)} → かわされた！`, dramatic:false };
-  if (a.kind === 'counter') return { text: `${escHtml(atk.name)}がカウンター！ ${escHtml(a.move)} → ${escHtml(def.name)}に${a.dmg}ダメージ`, dramatic:true };
+  if (a.kind === 'miss') return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(a.move)} → かわされた！`, dramatic:false };
+  if (a.kind === 'counter') return { text: `${escHtml(WM_I18N.pn(atk.name))}がカウンター！ ${escHtml(a.move)} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic:true };
   const drama = a.isCrit;
-  return { text: `${escHtml(atk.name)}の${escHtml(a.move)} → ${escHtml(def.name)}に${a.dmg}ダメージ`, dramatic: drama };
+  return { text: `${escHtml(WM_I18N.pn(atk.name))}の${escHtml(a.move)} → ${escHtml(WM_I18N.pn(def.name))}に${a.dmg}ダメージ`, dramatic: drama };
 }
 
 function _controlsHtml(){
@@ -511,18 +511,18 @@ function _updateHud(){
     if (pct) { pct.textContent = hp.pct + '%'; pct.className = pctId.includes('Apron') ? 'wm-apron-hp-pct' : `wm-hp-pct ${hpCls(hp.ratio)}`; }
     if (nameEl) nameEl.textContent = name;
   };
-  updateHp('hudHpFillA','hudHpPctA','hudHpNameA',hpA,legalA.name,'wm-hp-fill left');
-  updateHp('hudHpFillB','hudHpPctB','hudHpNameB',hpB,legalB.name,'wm-hp-fill right');
-  updateHp('hudApronFillA','hudApronPctA','hudApronNameA',hpApronA,apronA.name,'wm-apron-hp-fill left');
-  updateHp('hudApronFillB','hudApronPctB','hudApronNameB',hpApronB,apronB.name,'wm-apron-hp-fill right');
+  updateHp('hudHpFillA','hudHpPctA','hudHpNameA',hpA,WM_I18N.pn(legalA.name),'wm-hp-fill left');
+  updateHp('hudHpFillB','hudHpPctB','hudHpNameB',hpB,WM_I18N.pn(legalB.name),'wm-hp-fill right');
+  updateHp('hudApronFillA','hudApronPctA','hudApronNameA',hpApronA,WM_I18N.pn(apronA.name),'wm-apron-hp-fill left');
+  updateHp('hudApronFillB','hudApronPctB','hudApronNameB',hpApronB,WM_I18N.pn(apronB.name),'wm-apron-hp-fill right');
   const teamNameA = document.getElementById('hudTeamNameA');
   const teamNameB = document.getElementById('hudTeamNameB');
   const activeA = document.getElementById('hudActiveA');
   const activeB = document.getElementById('hudActiveB');
-  if (teamNameA) teamNameA.textContent = `${legalA.name} ＆ ${apronA.name}`;
-  if (teamNameB) teamNameB.textContent = `${legalB.name} ＆ ${apronB.name}`;
-  if (activeA) activeA.textContent = `${WM_I18N.t('リング上')} · ${legalA.name}`;
-  if (activeB) activeB.textContent = `${WM_I18N.t('リング上')} · ${legalB.name}`;
+  if (teamNameA) teamNameA.textContent = `${WM_I18N.pn(legalA.name)} ＆ ${WM_I18N.pn(apronA.name)}`;
+  if (teamNameB) teamNameB.textContent = `${WM_I18N.pn(legalB.name)} ＆ ${WM_I18N.pn(apronB.name)}`;
+  if (activeA) activeA.textContent = `${WM_I18N.t('リング上')} · ${WM_I18N.pn(legalA.name)}`;
+  if (activeB) activeB.textContent = `${WM_I18N.t('リング上')} · ${WM_I18N.pn(legalB.name)}`;
   [['hudFaceALegal',legalA],['hudFaceAApron',apronA],['hudFaceBLegal',legalB],['hudFaceBApron',apronB]].forEach(([id,ch]) => {
     const img = document.getElementById(id);
     if (img) { img.src = getFaceUrl(ch); img.style.display = ''; }
@@ -1029,7 +1029,7 @@ function animateTouchSwap(side, fr){
   setTimeout(() => {
     const banner = document.getElementById('tagBanner');
     if (banner && newLegal) {
-      banner.textContent = isHot ? `🔥 ${WM_I18N.t('反撃のタッチ！')} ${newLegal.name}` : `🔄 ${WM_I18N.t('タッチ')} → ${newLegal.name}`;
+      banner.textContent = isHot ? `🔥 ${WM_I18N.t('反撃のタッチ！')} ${WM_I18N.pn(newLegal.name)}` : `🔄 ${WM_I18N.t('タッチ')} → ${WM_I18N.pn(newLegal.name)}`;
       banner.className = 'tag-banner' + (isHot ? ' hottag' : '') + ' show';
       setTimeout(() => banner.classList.remove('show'), 1800);
     }
@@ -1124,11 +1124,11 @@ function _buildPinCtrl(pinEv, fr){
   } else if (attemptType === 'gu') {
     // ギブアップ: ロック → (win のみ) 極まり → finishClick → タップ/エスケープ
     if (defChar) {
-      const lockText = atkChar ? `${atkChar.name}が${defChar.name}に${moveName}をがっちりロック！` : `${defChar.name}に${moveName}が極まった！`;
+      const lockText = atkChar ? `${WM_I18N.pn(atkChar.name)}が${WM_I18N.pn(defChar.name)}に${moveName}をがっちりロック！` : `${WM_I18N.pn(defChar.name)}に${moveName}が極まった！`;
       seq.push({ kind: 'introBig', text: lockText, dramatic: true });
       if (outcome === 'win') {
         seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
-        seq.push({ kind: 'count', text: `${defChar.name}がタップ！！`, cls: 'tap' });
+        seq.push({ kind: 'count', text: `${WM_I18N.pn(defChar.name)}がタップ！！`, cls: 'tap' });
       } else if (outcome === 'escape') {
         seq.push({ kind: 'finishClick', label: FINISH_LABELS.gu });
         seq.push({ kind: 'count', text: 'ロープ！ ロープブレイクーーっ！！', cls: 'escape' });
@@ -1142,10 +1142,10 @@ function _buildPinCtrl(pinEv, fr){
     const objChar = objKey ? f(objKey) : null;
     const subjSide = (subjKey === 'a1' || subjKey === 'a2') ? 'a' : 'b';
     const objSide = subjSide === 'a' ? 'b' : 'a';
-    const statusText = subjChar ? `${subjChar.name}が押さえ込んでいる！` : '押さえ込んでいる！';
+    const statusText = subjChar ? `${WM_I18N.pn(subjChar.name)}が押さえ込んでいる！` : '押さえ込んでいる！';
 
     if (subjChar && objChar) {
-      seq.push({ kind: 'introBig', text: `${subjChar.name}が${objChar.name}を丸め込んだ！`, dramatic: true, rollupHighlight: { subjSide, objSide } });
+      seq.push({ kind: 'introBig', text: `${WM_I18N.pn(subjChar.name)}が${WM_I18N.pn(objChar.name)}を丸め込んだ！`, dramatic: true, rollupHighlight: { subjSide, objSide } });
     }
     if (count >= 1) seq.push({ kind: 'count', text: 'ワン！', cls: '', rollupStatus: statusText });
     if (count >= 2) seq.push({ kind: 'count', text: 'ツー！', cls: 'two', rollupStatus: statusText });
@@ -1574,7 +1574,7 @@ function showResult(fr){
   // Names
   const names = document.getElementById('vicNames');
   if (winners.length === 2) {
-    names.textContent = `${winners[0].name} & ${winners[1].name}`;
+    names.textContent = `${WM_I18N.pn(winners[0].name)} & ${WM_I18N.pn(winners[1].name)}`;
     names.style.background = 'linear-gradient(180deg, #ffd700, #daa520)';
     names.style.webkitBackgroundClip = 'text';
   } else {
@@ -1608,7 +1608,7 @@ function showResult(fr){
       // faceout-audit v0.2: 話者名は吹き出しの外(上のラベル)に出す(mockup-baseline §3。
       // 名前を吹き出し内に書かない)。実況は地の文のまま
       vicLines.innerHTML =
-        `<div class="vic-speaker-label">${escHtml(winFinisher.name)}</div>` +
+        `<div class="vic-speaker-label">${escHtml(WM_I18N.pn(winFinisher.name))}</div>` +
         `<div class="vic-win-line">「${escHtml(winLine)}」</div>` +
         `<div class="vic-commentary">${escHtml(commentary)}</div>`;
     } else {
@@ -1625,7 +1625,7 @@ function showResult(fr){
         `<img class="vic-loser-face" src="${getFaceUrl(losers[1])}" onerror="this.style.display='none'">` +
       `</div>` +
       `<div>` +
-        `<div class="vic-loser-names">${escHtml(losers[0].name)} & ${escHtml(losers[1].name)}</div>` +
+        `<div class="vic-loser-names">${escHtml(WM_I18N.pn(losers[0].name))} & ${escHtml(WM_I18N.pn(losers[1].name))}</div>` +
         `<div class="vic-loser-tag">×</div>` +
       `</div>`;
   } else {
@@ -1683,7 +1683,7 @@ function openBp(posKey){
     <button class="bp-close" onclick="closeBp()">✕</button>
     <div class="bp-img"><img src="${getFullUrl(ch)}" onerror="this.style.display='none'"></div>
     <div class="bp-info">
-      <div class="bp-name">${escHtml(ch.name)}</div>
+      <div class="bp-name">${escHtml(WM_I18N.pn(ch.name))}</div>
       <div class="bp-style">${escHtml(ch.style||'')} ／ OVR ${_calcOvr(ch)}</div>
       <div class="bp-stats">${stats.map(s=>`<div class="bp-stat-row">
         <span class="bp-stat-name">${s.l}</span>

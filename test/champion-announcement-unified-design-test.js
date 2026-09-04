@@ -131,7 +131,7 @@ assert.ok(!agwFn.includes('class="ch-lineup-bubs"'), '見えない空欄を含�
 // i18n Stage B P5-1: _chBubbleSlot now calls WM_I18N.t() at the display point.
 // new Function() bodies resolve free identifiers against the real global object,
 // so a temporary global.WM_I18N stub (matching test/helpers/load-game.js) makes it visible.
-global.WM_I18N = global.WM_I18N || { t(text) { return text; } };
+global.WM_I18N = global.WM_I18N || { t(text) { return text; }, pn(str) { return str; } };
 const bubbleSlot = new Function(
   'escHtml',
   `${functionSource(ui, '_chBubbleSlot')}; return _chBubbleSlot;`

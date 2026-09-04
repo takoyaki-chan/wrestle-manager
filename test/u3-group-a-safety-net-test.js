@@ -124,7 +124,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeCoachFgEl() {
     return {
@@ -229,7 +229,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -325,7 +325,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeEl() {
     return {
@@ -439,7 +439,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeAceDom() {
     let created = null;
@@ -543,7 +543,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeChainDom() {
     const created = [];
@@ -644,7 +644,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeBundle(opts) {
     opts = opts || {};
@@ -747,7 +747,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } };
+  }, pn(str) { return str; } };
 
   function makeOverlay() {
     return {
@@ -862,7 +862,7 @@ function section(name, fn) {
   // i18n Stage B P5-1: _u3bSideHtml now calls WM_I18N.t() at the display point.
   // new Function() bodies resolve free identifiers against the real global object,
   // so a temporary global.WM_I18N stub (matching test/helpers/load-game.js) makes it visible.
-  global.WM_I18N = global.WM_I18N || { t(text) { return text; } };
+  global.WM_I18N = global.WM_I18N || { t(text) { return text; }, pn(str) { return str; } };
   const build = new Function(
     'document', 'getPortraitUrl', 'ALL_CHARS', 'G',
     `${dataFn('portraitImg')}

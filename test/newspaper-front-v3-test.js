@@ -66,7 +66,7 @@ const pureCtx = vm.createContext({
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  } },
+  }, pn(str) { return str; } },
 });
 vm.runInContext([
   fnBody('_npV3Paragraphs'),
@@ -370,7 +370,7 @@ function makeRenderCtx() {
       let out = text;
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
-    } },
+    }, pn(str) { return str; } },
   };
   vm.createContext(ctx);
   // i18n Stage B P4-5: _npCrisisColumnHtml/_npKurodaCommentText 等が

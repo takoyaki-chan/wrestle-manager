@@ -75,7 +75,7 @@ const wmI18nStub = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-} };
+}, pn(str) { return str; } };
 const runResumeLoadedSpecialPhase = new Function('App', 'G', `${resumeLoadedSpecialPhaseBody}`);
 const runEscapeBattle = new Function('App', 'Audio', 'document', 'clearTimeout', 'renderMatchPreview', `${escapeBattleBody}`);
 

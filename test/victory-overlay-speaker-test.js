@@ -18,10 +18,11 @@ assert.ok(statsIdx > bottomIdx, 'single-match victory identity card must be foll
 
 const singleSpeakerCard = single.slice(bottomIdx, statsIdx);
 assert.ok(singleSpeakerCard.includes('_getFaceUrl(winner)'), 'single-match quote card must use the winner portrait');
-assert.ok(singleSpeakerCard.includes('escHtml(winner.name)'), 'single-match quote card must use the winner name');
+// i18n P6-3: 選手名の直接補間を pn() 経由へ移行済み(escHtml(WM_I18N.pn(winner.name)))
+assert.ok(singleSpeakerCard.includes('escHtml(WM_I18N.pn(winner.name))'), 'single-match quote card must use the winner name');
 assert.ok(singleSpeakerCard.includes('WINNER'), 'single-match quote card must label the speaker as WINNER');
 assert.ok(!singleSpeakerCard.includes('_getFaceUrl(loser)'), 'single-match quote card must not show the loser portrait');
-assert.ok(!singleSpeakerCard.includes('escHtml(loser.name)'), 'single-match quote card must not show the loser name');
+assert.ok(!singleSpeakerCard.includes('escHtml(loser.name)') && !singleSpeakerCard.includes('escHtml(WM_I18N.pn(loser.name))'), 'single-match quote card must not show the loser name');
 
 const tag = readSource('tag-battle-main.js');
 const tagQuoteIdx = tag.indexOf('const winLine = WM_I18N.t(pickTagWinLine');

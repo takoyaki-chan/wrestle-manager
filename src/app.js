@@ -1641,7 +1641,7 @@ function showCeremonyEvent(evt, speakers, onContinue) {
       : App.resolveDomeLine(fighter, evt.dialogueKey);
     const portraitSrc = getUpperUrl(fighter.id);
     const isTriumph = evt.visualVariant === 'triumph' ? ' triumph-glow' : '';
-    const imgHtml = `<img src="${escHtml(portraitSrc || '')}" alt="${escHtml(fighter.name)}"
+    const imgHtml = `<img src="${escHtml(portraitSrc || '')}" alt="${escHtml(WM_I18N.pn(fighter.name))}"
             style="width:100%;height:100%;object-fit:cover;object-position:top"
             onerror="this.style.display='none'">`;
     return `<div class="cerem-speaker">${_u3bSideHtml({
@@ -5257,8 +5257,8 @@ const App = {
             const upperUrl = typeof getUpperUrl === 'function' ? getUpperUrl(m.id) : '';
             return `<div class="team-member${m.isFixed ? ' fixed-mark' : ''}">
               <div class="team-bubble" style="--greeting-index:${i}">${foundingGreetings[i]}</div>
-              ${upperUrl ? `<img src="${upperUrl}" alt="${m.name}">` : '<div style="width:100%;aspect-ratio:2/3;background:#222"></div>'}
-              <div class="team-member-name">${m.name}</div>
+              ${upperUrl ? `<img src="${upperUrl}" alt="${WM_I18N.pn(m.name)}">` : '<div style="width:100%;aspect-ratio:2/3;background:#222"></div>'}
+              <div class="team-member-name">${WM_I18N.pn(m.name)}</div>
             </div>`;
           }).join('')}
         </div>
@@ -6302,7 +6302,7 @@ const App = {
     dlg.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center';
     const opts = eligible
       .sort((a, b) => Engine.util.ov(b) - Engine.util.ov(a))
-      .map(c => `<option value="${c.id}">${c.name}（OVR ${Engine.util.ov(c)}）</option>`)
+      .map(c => `<option value="${c.id}">${WM_I18N.pn(c.name)}（OVR ${Engine.util.ov(c)}）</option>`)
       .join('');
     dlg.innerHTML = `
       <div style="background:#1a1a24;border:1px solid #d4607a;border-radius:8px;padding:20px 24px;width:90%;max-width:480px;color:#eee">
@@ -7282,7 +7282,7 @@ const App = {
       result,
       matchInfo: {
         header: m._unifiedTitleMatch ? WM_I18N.t('🌐 全国統一王座戦') : m.isTitle ? (G.titles.world.championId ? '🏆 TITLE MATCH' : WM_I18N.t('🏆 初代王者決定戦')) : (idx === 0 ? WM_I18N.t('メインイベント') : WM_I18N.t('第{n}試合', { n: sp.validMatches.length - idx })),
-        subHeader: `${charL.name} vs ${charR.name}`,
+        subHeader: `${WM_I18N.pn(charL.name)} vs ${WM_I18N.pn(charR.name)}`,
         matchNum: idx === 0 ? sp.validMatches.length : (sp.validMatches.length - idx),
         totalMatches: sp.validMatches.length,
         isTitle: !!m.isTitle,
@@ -9591,7 +9591,7 @@ const App = {
       factionB: { id: fB.id, name: fB.name, leaderId: leaderB.id, leaderName: leaderB.name, leaderOvr: Engine.util.ov(leaderB), members: memberMini(fB) },
       lineA: App._f09PickLine(linesA, leaderA),
       lineB: App._f09PickLine(linesB, leaderB),
-      narration: `${fA.name}と${fB.name}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。`,
+      narration: `${WM_I18N.pn(fA.name)}と${WM_I18N.pn(fB.name)}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。`,
     };
   },
   _buildF09MatchPreData(m, idx) {
@@ -14120,7 +14120,7 @@ const App = {
       },
       matchInfo: {
         header: WM_I18N.t('⚔ 挑戦状'),
-        subHeader: `${pf.name} vs ${af.name}`,
+        subHeader: `${WM_I18N.pn(pf.name)} vs ${WM_I18N.pn(af.name)}`,
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, pf.id, af.id); return rl ? rl.tier : 0; })(),
@@ -14335,7 +14335,7 @@ const App = {
       },
       matchInfo: {
         header: WM_I18N.t('💥 決着の試合'),
-        subHeader: `${f1.name} vs ${f2.name}`,
+        subHeader: `${WM_I18N.pn(f1.name)} vs ${WM_I18N.pn(f2.name)}`,
         matchNum: 1, totalMatches: 1,
         isTitle: false, isSpecialMatch: true, matchTier: 2,
         rivalryTier: (() => { const rl = Engine.title.getRivalryLevel(G, f1.id, f2.id); return rl ? rl.tier : 0; })(),
@@ -15210,7 +15210,7 @@ const App = {
       },
       matchInfo: {
         header: WM_I18N.t('⚔ 対抗戦 第{n}試合', { n: idx + 1 }),
-        subHeader: `${pf.name} vs ${af.name}`,
+        subHeader: `${WM_I18N.pn(pf.name)} vs ${WM_I18N.pn(af.name)}`,
         matchNum: idx + 1,
         totalMatches: wp.card.length,
         isTitle: false,
@@ -15666,7 +15666,7 @@ App.ppvWatchMatch = function(idx) {
     },
     matchInfo: {
       header: match.isSummit ? WM_I18N.t('🏆 頂上決戦') : WM_I18N.t('PPV 第{n}試合', { n: matchNum }),
-      subHeader: `${match.left.name} vs ${match.right.name}`,
+      subHeader: `${WM_I18N.pn(match.left.name)} vs ${WM_I18N.pn(match.right.name)}`,
       matchNum,
       totalMatches: total,
       isTitle: false,
@@ -16489,7 +16489,7 @@ App.jtWatchMatch = function(roundIdx, matchIdx) {
     },
     matchInfo: {
       header: WM_I18N.t('🏆 ジュニアトーナメント {round}', { round: roundLabel }),
-      subHeader: `${match.left.name} vs ${match.right.name}`,
+      subHeader: `${WM_I18N.pn(match.left.name)} vs ${WM_I18N.pn(match.right.name)}`,
       matchNum: matchIdx + 1,
       totalMatches: round.matches.length,
       isSpecialMatch: !!isFinal,
@@ -16953,7 +16953,7 @@ App.tcWatchMatch = function(roundIdx, matchIdx) {
     },
     matchInfo: {
       header: WM_I18N.t('👑 天頂戦 {round}', { round: roundLabel }),
-      subHeader: `${match.left.name} vs ${match.right.name}`,
+      subHeader: `${WM_I18N.pn(match.left.name)} vs ${WM_I18N.pn(match.right.name)}`,
       matchNum: matchIdx + 1,
       totalMatches: round.matches.length,
       isSpecialMatch: !!isFinal,
@@ -17357,7 +17357,7 @@ function _fighterFileStyleBadge(style) {
 }
 
 function _fighterFileFaceHtml(fighter) {
-  const initial = escHtml((fighter.name || '?').charAt(0));
+  const initial = escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0));
   const fallback = `<span class="fighter-file-face-fallback">${initial}</span>`;
   if (!fighter.portraitKey) return `<div class="fighter-file-face-wrap">${fallback}</div>`;
   const url = `../image/face_${fighter.portraitKey}.png`;
@@ -17365,10 +17365,10 @@ function _fighterFileFaceHtml(fighter) {
 }
 
 function _fighterFileUpperHtml(fighter) {
-  const initial = escHtml((fighter.name || '?').charAt(0));
+  const initial = escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0));
   if (!fighter.portraitKey) return `<div class="fighter-file-upper-fallback">${initial}</div>`;
   const url = `../image/upper/upper_${fighter.portraitKey}.webp`;
-  return `<img src="${escHtml(url)}" alt="${escHtml(fighter.name)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="fighter-file-upper-fallback" hidden>${initial}</div>`;
+  return `<img src="${escHtml(url)}" alt="${escHtml(WM_I18N.pn(fighter.name))}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="fighter-file-upper-fallback" hidden>${initial}</div>`;
 }
 
 function _fighterFileRadarHtml(fighter) {
@@ -17412,7 +17412,7 @@ function _fighterFileListHtml(catalog, state) {
       `<td class="is-number" style="${statTierStyle(stat.key, fighter[stat.key])}">${fighter[stat.key]}</td>`).join('');
     return `<tr onclick="App.openFighterFileDetail(${fighter.id})">
       <td>${_fighterFileFaceHtml(fighter)}</td>
-      <td class="fighter-file-name">${escHtml(fighter.name)}</td>
+      <td class="fighter-file-name">${escHtml(WM_I18N.pn(fighter.name))}</td>
       <td>${_fighterFileStyleBadge(fighter.style)}</td>
       <td class="fighter-file-ovr" style="${statTierStyle('ovr', fighter.ovr)}">${fighter.ovr}</td>
       ${stats}
@@ -17437,7 +17437,7 @@ function _fighterFileDetailHtml(fighter, traitDefs) {
     <div class="fighter-file-detail-main">
       <div class="fighter-file-upper">${_fighterFileUpperHtml(fighter)}</div>
       <div class="fighter-file-detail-info">
-        <h3 class="fighter-file-detail-name">${escHtml(fighter.name)}</h3>
+        <h3 class="fighter-file-detail-name">${escHtml(WM_I18N.pn(fighter.name))}</h3>
         <div class="fighter-file-detail-badges">${_fighterFileStyleBadge(fighter.style)}<span class="fighter-file-role-badge">${escHtml(fighter.role)}</span></div>
         <div class="fighter-file-detail-meta">${WM_I18N.t('身長 {h}cm', { h: fighter.h })}</div>
         <div class="fighter-file-detail-ovr"><strong style="${statTierStyle('ovr', fighter.ovr)}">${fighter.ovr}</strong><span>${WM_I18N.t('OVR — 基準値')}</span></div>

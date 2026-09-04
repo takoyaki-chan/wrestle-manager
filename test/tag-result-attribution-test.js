@@ -27,11 +27,11 @@ assert.ok(css.includes('.emr-finish-actors{'),
 
 const helperStart = ui.indexOf('function _emrTagFinishActors');
 const helperEnd = ui.indexOf('\nfunction _matchNextLabel', helperStart);
-const renderActors = new Function('escHtml',
+const renderActors = new Function('escHtml', 'WM_I18N',
   `${ui.slice(helperStart, helperEnd)}; return _emrTagFinishActors;`
 )(value => String(value).replace(/[&<>"]/g, char => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;',
-})[char]));
+})[char]), { pn(str) { return str; } });
 const options = {
   winAttribution: { pinnedBy: 2, pinnedWho: 3 },
   teamLeft: { members: [{ id: 1, name: 'Partner' }, { id: 2, name: '<Finisher>' }] },
