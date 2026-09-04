@@ -85,7 +85,7 @@ function makeTagPayload() {
 const PROBE = `([payload, isTag]) => new Promise((resolve) => {
   const rec = {
     sfx: [], moveNames: [], bigmove: [], guides: [], judged: [], arrowLabels: [],
-    narrations: [], bigIntros: [], pinCounts: [], finishLabels: [], i18nMiss: [],
+    narrations: [], bigIntros: [], bigIntroLong: [], pinCounts: [], finishLabels: [], i18nMiss: [],
   };
   ['hitStrike','hitThrow','hitSubmission','hitAerial','hitGround','hitRollup'].forEach((k) => {
     if (typeof sfx === 'undefined' || !sfx[k]) return;
@@ -98,7 +98,7 @@ const PROBE = `([payload, isTag]) => new Promise((resolve) => {
         const lb = n.querySelector('.label');
         if (lb) rec.arrowLabels.push(lb.textContent);
       }
-      if (n.classList.contains('big-intro')) rec.bigIntros.push(n.textContent);
+      if (n.classList.contains('big-intro')) { rec.bigIntros.push(n.textContent); rec.bigIntroLong.push(n.classList.contains('long')); }
       if (n.classList.contains('pin-count')) rec.pinCounts.push(n.textContent);
     }));
   });
@@ -128,6 +128,20 @@ const PROBE = `([payload, isTag]) => new Promise((resolve) => {
         rec.judged.push(['mvShort', WM_I18N.mvShort ? WM_I18N.mvShort('上下同時極め') : 'NO-MVSHORT']);
         rec.judged.push(['lang', WM_I18N.lang]);
       } catch (e) { rec.judgeErr = String(e); }
+      // P7-12: _spawnBigIntro の .long 判定境界を実関数で直接検査する(合成文字列、
+      // MutationObserverは一時停止して実試合の bigIntros/bigIntroLong を汚さない)。
+      // JA=閾値16(15字=通常/16字=long)・EN=閾値37(36字=通常/37字=long)。
+      try {
+        mo.disconnect();
+        const n0 = (WM_I18N.lang === 'en') ? 36 : 15; // 閾値-1字(通常のはず)
+        const n1 = (WM_I18N.lang === 'en') ? 37 : 16; // 閾値ちょうど(longのはず)
+        _spawnBigIntro('x'.repeat(n0));
+        _spawnBigIntro('x'.repeat(n1));
+        const probeEls = Array.from(document.querySelectorAll('.big-intro')).slice(-2);
+        rec.bigIntroBoundary = probeEls.map((el) => el.classList.contains('long'));
+        probeEls.forEach((el) => el.remove());
+        mo.observe(document.body, { childList: true, subtree: true });
+      } catch (e) { rec.bigIntroBoundaryErr = String(e); }
     }
     if (steps > 400 || (S.frames && S.frameIdx >= S.frames.length && steps > 8)) {
       mo.disconnect();
@@ -343,6 +357,8 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
     (r.pinSeqTexts || []).forEach((s) => console.log('    · ' + s));
     if (r.pinSeqErr) console.log('    !! pinSeqErr:', r.pinSeqErr);
     console.log('  ピン導入(big-intro):', uniq(r.bigIntros).join(' / ') || '(なし)');
+    console.log('  ピン導入の.long有無(P7-12・実試合の発生順):', (r.bigIntroLong || []).map((b) => (b ? 'long' : 'normal')).join(',') || '(なし)');
+    console.log('  .long閾値の境界テスト(P7-12・[閾値-1字, 閾値字]):', JSON.stringify(r.bigIntroBoundary || []), r.bigIntroBoundaryErr ? `!! ${r.bigIntroBoundaryErr}` : '');
     console.log('  ピンカウント:', uniq(r.pinCounts).join(' / ') || '(なし)');
     console.log('  finishClickラベル:', uniq(r.finishLabels).join(' / ') || '(なし)');
     console.log('  決着表記:', r.finishLabel);
@@ -427,6 +443,16 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
       ja.moveNames.length > 0 && en.moveNames.length > 0
       && ja.narrations.length > 0 && en.narrations.length > 0);
     check('例外ゼロ', ja.pageErrors.length === 0 && en.pageErrors.length === 0);
+    // ── P7-12: _spawnBigIntro の .long 判定閾値(言語別化) ──
+    // JAは元の閾値16を1文字も変えない(15字=通常/16字=long)。ENは実測で導出した37字
+    // (36字=通常/37字=long)。境界テストは合成文字列で決定的に検査するため、
+    // 実試合のランダムな技/セリフ選択の運に左右されない。
+    check('JA: .long閾値16の境界が正しい(15字=通常/16字=long。JA不変)',
+      JSON.stringify(ja.bigIntroBoundary) === JSON.stringify([false, true]),
+      `bigIntroBoundary=${JSON.stringify(ja.bigIntroBoundary)} err=${ja.bigIntroBoundaryErr || ''}`);
+    check('EN: .long閾値37の境界が正しい(36字=通常/37字=long。短文が.longにならないことの確認)',
+      JSON.stringify(en.bigIntroBoundary) === JSON.stringify([false, true]),
+      `bigIntroBoundary=${JSON.stringify(en.bigIntroBoundary)} err=${en.bigIntroBoundaryErr || ''}`);
   }
   console.log(`\n出力: ${OUT}`);
   console.log(ng === 0 ? '\nALL CHECKS PASS' : `\n${ng}件のNG`);

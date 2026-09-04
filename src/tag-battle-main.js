@@ -1421,9 +1421,13 @@ function _finishPinSeq(){
 }
 
 // 決着寸前導入テキスト: 画面中央に大きな文字を pop させて短く残す (2.2s自動消滅)
+// P7-12: .long判定の閾値は言語別。JAは元の16字を1文字も変えない。ENの根拠は
+// battle-engine-main.js の同名関数のコメント参照(両iframeとも同じPIN_INTRO_TEXTS内容)。
+const BIG_INTRO_LONG_THRESHOLD_EN = 37;
 function _spawnBigIntro(text){
   const el = document.createElement('div');
-  const long = String(text).length >= 16;
+  const isEn = (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en');
+  const long = String(text).length >= (isEn ? BIG_INTRO_LONG_THRESHOLD_EN : 16);
   el.className = 'big-intro' + (long ? ' long' : '');
   el.textContent = text;
   document.body.appendChild(el);

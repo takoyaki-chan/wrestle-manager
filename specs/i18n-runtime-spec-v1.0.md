@@ -120,6 +120,7 @@ UI文字列(§5)・テンプレ(§6)とは別に、キャラクターの発話(�
 - **二重t()適用は「無害」ではなかった(2026-09-04 P6-5で訂正)**: 上の設計メモは「一部の呼び出し元では二重にt()が呼ばれるが、対象が既に英語のためfail-open(ミスログ)で無害」としていたが、実際にはEN走破の`[WM][i18n-miss]`ログを大量に汚染し、本当の未訳(P5バッチ待ち)と配線穴の区別を困難にしていた(P6-5棚卸しの96件中、実測トレースで約30件がこの二重適用起因と判明・原文が最初から英語のケースは0件だった)。呼び出し元でt()済みの完成文を渡す必要があるケース(変数埋め込みの都合で「先に翻訳してから置換」が必須なdict-opts系の戻り値)向けに、共通表示点`_u3bSideHtml`/`_factionReporterStrip`/`_mdlAReporterStrip`/`_mdlASubjectStage`/`_chBubbleSlot`/`_negSpeakerHtml`(P6-6で追加。契約交渉の4画面が対象)へ**`lineTranslated`/`speechTranslated`/`translated`という opt-in の第3〜5引数(またはoptsフィールド)**を追加した。既定値は`false`(=従来どおり内部で1回t()する)なので既存60箇所超の呼び出し元は無変更・無影響。`true`を渡すのは呼び出し元が確実に訳し済みの完成文を渡すことを明示するときだけ(F07のgetF07Line経由・`_agwChampionSpeech`の`{wins}`/`{org}`置換後・`getTraitQuote`常時訳し済み系・`Engine.contract.selectDialogue`/`resolveNegotiation`経由の契約交渉セリフなど)。単純なpickDialogueLine選択(変数埋め込みなし)で「表示側に先んじてt()していた」だけの箇所は、t()呼び出しを表示側の1回だけへ削るほうを優先した(フラグに頼らず生JAを渡す設計に戻す)
 - **文字列連結してから表示点のt()に通す「PH先埋め込み」型の穴は網羅的に踏みやすい(2026-09-04 P6-6で追加発見・全修正)**: `_factionReporterStrip`/`_mdlAReporterStrip`の呼び出し元でJS`` `${a}が${b}...` ``のようにテンプレートリテラルを直接組み立ててから渡すと、その完成済みJA文字列が(t()の内部で)辞書キーと一致せずfail-openする(selectDialogue/`_flagFormatLine`と同型)。`getCommonXLine`/`getTransitionLine`等のdict-opts関数から返る**既に訳し済みの文字列**を`_u3bSideHtml`/`_factionReporterStrip`へ渡す側でも、`lineTranslated`を付け忘れると同じ症状になる(表示は無害だがi18n-missを汚染)。P6-6で`_factionReporterStrip`3箇所+`_mdlAReporterStrip`3箇所+Common1/5/7のcoachLine計4箇所+団体戦挑戦直訴のcoachLine1箇所を修正。**新しい表示文字列をこの系統の関数へ渡すときは、必ず「テンプレ+params」か「dict-opts関数の戻り値+translated:true」のどちらかにし、素の文字列連結を挟まないこと**
 - 運用: 翻訳バッチ(Opus主筆)が`i18n/dialogue-ledger.json`の`en`列を埋める→`node test/i18n-build-dialogue-dict.js`で再生成→`node test/ja-golden.js`(ja不変)・`npm test`・`npm run test:ui:walkthrough`(EN抜き取り)で検証、のループを回す
+- **「両台帳へ同じキーを二重登録してはいけない」は`npm test`で機械検査される(2026-09-04 P7-12で追加)**: `test/i18n-ledger-consistency-test.js`がui-ledger/template-ledger/dialogue-ledgerの3本を突合し、同一キーが2台帳以上に存在する行の`en`が食い違っていればexit 1にする。詳細と所有判定の作法は§15-3・§31参照
 
 ## 10. 吹き出しの「」の言語別化(Stage B P6-7、2026-09-04追加)
 
@@ -327,6 +328,12 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 - `_AW_ROUND_JA` / `_AW_MVP_FALLBACK_JA` — management.js のトップレベル定数
 
 **`_wmTitleName(dict, orgName)`(management.js、新設)**: 保存値の`○○王座`は「団体名+様式」のJA成形済み値(§6の構造穴)で、テンプレだけ訳しても本文にJAが残る。`/^(.+)王座$/`で団体名を取り出し、既存キー`{orgName}王座`(→`{orgName} Championship`)へ**params経由で**通すので団体名は名前辞書(pn)で英語化される。ui-common.js の`_factionDisplayName`が「○○派」に対してやっているのと同法(§10)。`_wmResolvePreformattedIndustryData`の`topChampionInjury`も同ヘルパーへ寄せ、JA literal を1箇所に保っている。
+
+**運用: 「同じキーを2つの台帳へ載せない」の例外と機械検査(2026-09-04 P7-12で追加)**。上の作法は「JA原文を1箇所に集約して二重登録そのものを避ける」やり方だが、それでも避けられない二重登録が2種類ある。
+
+- **(a) 所有権の取り違え**: データ表(data.js等)由来の文字列を、動的キー(`t(変数)`で辞書を引くため機械抽出できない箇所向け)としてui-ledgerへも手作業で複製しただけの行。本物の二重出現ではない。P7-9で発見した12件(合宿フレーバー`CAMP_FLAVOR_TEXTS`)がこれで、所有台帳(この例ではtemplate-ledger)へ一本化し、ui-ledger側は削除した。**`test/i18n-extract-ui.js`は再実行のたびtemplate-ledger.json/dialogue-ledger.jsonを読み、「今回のスキャンでは見つからず(=kept:trueでしか残っていない)、かつ他台帳が非空`en`で持っている」行を自動的に除外する**(`loadOtherLedgerOwnedKeys`)ので、削除した行は次回抽出で空`en`の新規キーとして復活しない。今回のスキャンで実際に見つかった行(=UI側コードが独立してその文字列を呼んでいる)は無条件で残る — 除外はあくまで「前回の`kept:true`だけで生き延びていた行」が対象
+- **(c) 本物の二重出現**: UI側のコード自身が独立して`WM_I18N.t('…')`を呼んでおり(多くはEngine関数の防御的フォールバック値。例: `ui-common.js`の`_factionLine`が空を返したときの`……もう、ついていけない。`)、たまたまデータ表側の文言と一致しているだけの行。こちらは両台帳に残してよい——ただし`addDict()`のマージは「後勝ち」(読み込み順依存)なので、**訳文を一致させておけば読み込み順に依存しなくなる**(=どちらが後に読み込まれても同じ英語が出る)。P7-9で見つけた22件(ui∩template 16件・ui∩dialogue 6件)のうち10件がこの型で、うち4件(`……もう、ついていけない。`/`……わかった`/`よろしく。`/`合同企画`)は訳文が食い違っていたため揃えた
+- **`test/i18n-ledger-consistency-test.js`(npm testに組み込み済み)**: ui-ledger/template-ledger/dialogue-ledgerの3本を突合し、`en`が非空の同一キーが2台帳以上に存在する行を全て集め、訳文が食い違っていればexit 1にする回帰ガード。新しい重複が生まれた/既存の重複の片方だけ訳文を直し忘れた、をその場で検出する。未訳(`en`が空)の行は対象外(各台帳の`i18n-build-*.js`が別途担当)
 
 ### 15-4. 記事テンプレ末尾の「2つの任意の注記が直結する」枠
 
@@ -1118,14 +1125,89 @@ _getSurname(arg) {
 
 `SCANDAL_CONFIG.messages`(スキャンダル発生時の見出し)と`LOSING_STREAK_PENALTIES.msg`(連敗ペナルティ通知)は、消費点`Engine.popularity.checkScandal`/`checkLosingStreak`の戻り値`.msg`を全呼び出し元で追跡した結果、**唯一の表示経路が`events.push(...)`→`tickWeek`の戻り値`events`→`G.gameLog`への直接concat**(§2規約4「旧文字列エントリは無変換で共存」)であることを確認した。実際にプレイヤーへ通知される内容(`app.js`の`showNotifEventToast`)は`scandal.msg`を使わず別の固定テンプレ(`📰 {name}のスキャンダルが週刊誌に掲載された！`、既訳済み)を組み立てており、`scandal.msg`自体はgameLog行にしか現れない。したがって**この2表はDATA_TABLESで台帳化・英訳したが、コード側の配線(t()呼び出し)は行っていない**(spec §2-4の仕様どおり、gameLogは意図的にJA固定)。将来gameLogが`{type,data}`形式へ移行する際に訳文を再利用できるよう、台帳には残す。
 
-### 30-5. 検証
+### 30-5. 検証(P7-1)
 
 `node --check`全触りファイルOK。`node test/ja-golden.js`**完全一致**(hash `6b3d05c8…`、全編集を通じて不変)。`node test/i18n-build-dict.js`台帳4,022キー・未訳4件(すべてP7-1と無関係の既存drift、ui-common.js内のセリフ的文字列でsourceタグなし)。`npm test` **260/260 green**(`stat-notation-backport-test.js`が抽出評価するvmサンドボックスに`WM_I18N`スタブが無く1件red化→スタブ追加で解消、既存47ファイルへの機械追加と同型の対応)。`node test/auto-sim.js 20 42` **ALL CLEAR**、semantic fingerprint `37bbd0cd`(P6-7/8/10/13と同一)。`npm run test:ui:walkthrough` **PASS**、ja digest **`1052faa82eaf7991`不変**。`npm run test:ui:walkthrough:en` **PASS**、i18n-miss **7件で不変**(全てNOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS由来、P7-3の担当領域で本バッチでは意図的に不触)。JA exposure合計は**186→166**(−11%)。`node test/i18n-ratchet.js`増加なし(28,089不変)。
-## 31. Stage B P7-8 — 自団体興行記事(繰り上げ記事)のdict配線とフォールバック本文のテンプレ化(2026-09-04追加)
+
+---
+
+## 31. Stage B P7-12 — ui∩(template|dialogue)重複キー22件の一本化+一致検査新設、観戦ビッグムーブ`.long`判定の言語別化(2026-09-04追加)
+
+P7-9(87a6600)が「新たな発見」として起票した5件のうち3(ui∩(template|dialogue)重複キー22件)・5(`_spawnBigIntro`の`.long`判定16文字固定)を解決した。1(`HP判定`のJAロジックキー露出。JA出力を変える=golden採り直しが要るためKeisuke裁定待ち)・2(タッグの`↔ タッチ`実況行、{type,data}化待ち)は今回のスコープ外として据え置き(2は記録のみ・変更なし)。開始前にworktreeブランチをmain先端(86e4a540、P7-9マージまで)へfast-forward済み。
+
+### 31-1. 重複キー22件の裁き — 所有台帳を1つに決める
+
+`ui-ledger.json`と`template-ledger.json`/`dialogue-ledger.json`の全キーを突合すると、ui∩template 16件・ui∩dialogue 6件=22件が重複していた。内訳を1件ずつコード上で追跡すると2種類に分かれた。
+
+**(a) 所有権の取り違え(12件、すべてtemplate側)**: `data.js:CAMP_FLAVOR_TEXTS`(合宿決裁結果のフレーバー12行、`{name1}が{name2}に技の受け身を教えている場面が見られた`等)。P6-13で`app.js`の消費点(`WM_I18N.t(tmpl, {name1,name2})`、`tmpl`はプールからのランダム選択=動的キー)が「t()を一度も通っていない配線穴」として修正された際、静的抽出できない動的キー向けに`kept:true`でui-ledgerへも手作業複製されたが、その後P7-1でtemplate-ledger側がDATA_TABLESモードでCAMP_FLAVOR_TEXTSを正式に走査対象化したため、ui-ledger側の複製が死んだ重複として残っていた。`grep`で全12キーの原文を`src/`全体から検索し、**data.js(CAMP_FLAVOR_TEXTS)以外に出現箇所が無い**(=ui側の独立したコードは存在しない)ことを1件ずつ確認した上で、template-ledgerへ一本化してui-ledgerから削除した。
+
+**(c) 本物の二重出現(10件)**: UI側のコード自身が独立して`WM_I18N.t('…')`を呼んでおり、たまたまデータ表側の文言と一致しているだけの行。全件`grep`でui-ledger側の呼び出し元を特定し、「防御的フォールバック値」または「たまたま同じ短句を使う独立したUI要素」であることを確認した。
+
+| キー | ui側の実体 | データ表側の実体 | 措置 |
+|---|---|---|---|
+| `……もう、ついていけない。` | `ui-common.js` F05モーダルの`_factionLine`空返り時フォールバック | `data-faction-dialogue.js:FACTION_F05_DISSIDENT_LINES`(quiet帯の脱退予備軍セリフ) | en を dialogue側の`"...I can't follow anymore."`へ統一(quiet=抑えた諦観のトーンに合わせた) |
+| `……わかった` | `ui-common.js` 突発退団モーダルのOKボタンラベル | `CARE_REACTION_DIALOGUES`/`JUNIOR_TOURNAMENT_LINES`/`WAR_DECLINE_DIALOGUE`(複数キャラの短い相槌) | en を dialogue側の`"...All right."`へ統一 |
+| `よろしく。` | `ui-common.js` Common-3モーダルの`getCommon3Line`未定義時フォールバック(新加入への**reaction**側=既存メンバーの反応) | `COMMON3_LINES`/`FLAG_DIALOGUE` | en を dialogue側の`"Good to have you."`へ統一(reaction文脈=「よろしく」ではなく「迎える側の一言」と確認したため`"Good to be here."`ではなくこちらを採用) |
+| `よろしくお願いします！` | `ui-common.js` `getJoinGreeting`最終フォールバック | `CARE_REACTION_DIALOGUES`/`FIRST_MEET_LINES` | 訳文が最初から一致(`"Looking forward to working with you!"`)。変更なし |
+| `友情と闘志、矛盾しない関係` | `ui-render.js` 相関図バッジ`allied_rivalry.desc` | `kuroda-text.js:KURODA_RELATION_NARRATIVE`(新聞の関係性語り) | 訳文が最初から一致。変更なし |
+| `合同企画` | `factions.js` Common-7 `planType`未定義時フォールバック(`fevt-subject-org`表示用の短いラベル) | `data.js:COMMON7_LINES._any`(企画名プールの既定値) | en を dialogue側の`"Joint Project"`(Title Case)へ統一(`派閥合同企画`="Joint Faction Project"等、姉妹ラベルの表記と揃える) |
+| `拮抗する数字、燃える夜` | `ui-render.js` 相関図バッジ`standard_rivalry.desc` | `kuroda-text.js:KURODA_RELATION_NARRATIVE` | 訳文が最初から一致。変更なし |
+| `旗揚げ世代` | `ui-render.js` 年代記画面のセクション見出し(固定文言) | `data.js:CHRONICLE_CHAPTER_TEMPLATES.early`(章タイトル抽選プールの1候補) | 訳文が最初から一致。変更なし |
+| `水と油、リングでも楽屋でも` | `ui-render.js` 相関図バッジ`bitter_feud.desc` | `kuroda-text.js:KURODA_RELATION_NARRATIVE` | 訳文が最初から一致。変更なし |
+| `派閥合宿` | `app.js`/`factions.js` Common-4のイベントカテゴリラベル/`getCommon4Line`未定義時フォールバック | `data.js:COMMON4_LINES._any[0].headline` | 訳文が最初から一致。変更なし |
+
+**内訳**: 22件 = (a)所有権の取り違え12件(削除) + (c)本物の二重出現10件(維持、うち4件は訳文を統一・6件は既に一致)。
+
+### 31-2. `test/i18n-extract-ui.js`: 他台帳所有キーの自動除外(復活防止)
+
+(a)を手作業でui-ledger.jsonから削るだけでは、再度誰かが同じ動的キーを`kept:true`で複製してしまえば同じ穴が再発する。`loadOtherLedgerOwnedKeys()`を新設し、抽出→保全マージの最終段で「**今回のスキャンでは見つからず**(=前回台帳の`kept:true`だけで生き延びていた行)、かつ**template-ledger.json/dialogue-ledger.jsonのいずれかが非空`en`で同じキーを持っている**」行を`kept`集合から除外するようにした。
+
+- 判定は台帳の`source`/`kept`区分そのもの(=「今回のスキャンで実際に見つかったか」)を使う。**今回のスキャンで見つかった行(=(c)のような本物の二重出現)は無条件で残る** — 除外はあくまで「前回の`kept:true`だけで残っていた行」が対象なので、(c)の10件を誤って消すことはない
+- 他台帳側に専用のマーカーは追加していない(既存の`en`列だけで判定できるため)
+- 実行結果: `node test/i18n-extract-ui.js`を再実行すると`他台帳所有で除外=12`件(初回)と表示され、ui-ledgerが4,135→**4,123**(−12)になった。**再度実行しても除外0件**(=削除済みキーは動的キーゆえ静的スキャンでは二度と見つからず、復活しない)ことを確認した
+
+### 31-3. `test/i18n-ledger-consistency-test.js`(新設・npm test組み込み)
+
+3台帳(ui-ledger/template-ledger/dialogue-ledger)を読み込み、`en`が非空の同一キーが2台帳以上に存在する行を全て集めて、訳文が食い違っていれば`exit 1`にする回帰ガード。`test/i18n-build-dict.js`への追加ではなく**独立ファイル**にした理由: `i18n-build-dict.js`系(build-dict/build-template-dict/build-dialogue-dict)は`npm test`に組み込まれておらず(`test/*-test.js`の命名規則で`test/run-all.js`が自動discoverする方式のため)、単体ではCIの回帰ガードにならない。ファイル名を`-test.js`サフィックス付きにすることで`npm test`実行時に自動的に含まれる。
+
+- 未訳(`en`が空)の行は対象外(各台帳の`i18n-build-*.js`が別途「未訳0」を検査する担当)
+- 実行結果: 現時点で2台帳以上に存在するキーは**15件**(本バッチで裁いた(c)10件 + 既存のtemplate∩dialogue重複5件`……`/`……さよなら、ね`/`…っ…勝った。…みんなのおかげだ`/`…っ…次は、こうはいかない`/`…当然の結果だ`。これらはui-ledgerと無関係でP7-12のスコープ外だが、汎用の3台帳横断チェックのため副次的に検出された)。**全15件が訳文一致**、違反0
+
+### 31-4. `_spawnBigIntro`の`.long`判定を言語別化
+
+シングル/タッグ両観戦iframe(`battle-engine-main.js`/`tag-battle-main.js`)の`_spawnBigIntro(text)`は、決着直前の大きな導入テキスト(`PIN_INTRO_TEXTS`/`SUB_ATTEMPT_INTRO_TEXTS`のプール文、または`{atk}`/`{move}`等のPH入りテンプレ)を画面中央へポップさせる。文字数`>=16`で`.long`クラス(フォントを一段小さく)を付けていたが、この閾値はJA前提で決め打ちされており、EN文はJAより長いため「短文=大きく見せる」という演出意図がENでほぼ崩れていた(EN文がほぼ全て`.long`扱い)。
+
+**実測による閾値算出**: `PIN_INTRO_TEXTS`(fall/pin/tko各3種)+`SUB_ATTEMPT_INTRO_TEXTS`(3種)=計12件の英訳を全数採取したところ、JA文字数は13〜26字(閾値16でJA10件がlong・2件が通常)、対応するEN文字数は28〜61字だった。EN側の閾値を37字にすると、この12件が**1件も食い違わずJAと同じ long/通常の分かれ方**になることを確認した(36字以下2件が通常、37字以上10件がlong)。閾値38(指示書が概算として示した`16×2.4`)では境界上の2件(EN 37字)がJAでlongなのにENで通常になる食い違いが出るため採用せず、37字を採用した。
+
+```js
+// JA長: 20 22 13 20 17 14 26 17 21 19 17 18 字 → JA閾値16でlong/通常 = 10件long・2件通常
+// EN長: 46 46 28 37 48 36 61 39 50 43 37 49 字 → EN閾値37でlong/通常 = 10件long・2件通常(1件も不一致なし)
+const BIG_INTRO_LONG_THRESHOLD_EN = 37;
+function _spawnBigIntro(text){
+  const isEn = (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en');
+  const long = String(text).length >= (isEn ? BIG_INTRO_LONG_THRESHOLD_EN : 16);
+  ...
+}
+```
+
+JA側は閾値16のまま1文字も変えていない(1バイト不変)。`{atk}が{def}に{move}をがっちりロック！`のようなPH入りテンプレは、選手名・技名を埋め込んだ**後**の完成文字列に対して長さ判定するため、実際の選手名・技名次第で変動するが、これはJA版でも元から同じ挙動(閾値16でPH埋め込み後の文字列を判定)であり、今回変更していない。
+
+`src/battle-anim.js`には`.long`判定ロジックは存在しない(確認のみ、変更なし)。
+
+### 31-5. `test/ui-walkthrough/spectator-move-i18n-check.js`の拡張
+
+1. **実試合の`.long`発生記録**: `MutationObserver`が捕捉する`.big-intro`要素ごとに`classList.contains('long')`を`rec.bigIntroLong`(`rec.bigIntros`と対の配列)へ記録し、レポート出力に追加した(`ピン導入の.long有無`行)
+2. **境界の決定的検査**: 実試合はプールからのランダム選択なので「短文がlongにならない」ことを1回の実行で確実に踏めるとは限らない。そこで`_spawnBigIntro`を合成文字列(閾値-1字/閾値ちょうど)で直接2回呼び出し、`classList`を検査する決定的テストを追加した(`rec.bigIntroBoundary`)。`MutationObserver`は一時的に`disconnect()`して実試合側の`bigIntros`/`bigIntroLong`を汚さないようにし、検査後に生成した2要素は`el.remove()`で即座に片付けてから`observe()`を再開する
+3. **受け入れ基準に2件追加**: `JA: .long閾値16の境界が正しい(15字=通常/16字=long)`・`EN: .long閾値37の境界が正しい(36字=通常/37字=long)`。single/tag両方×JA/EN両方で検査(計4箇所)
+
+### 31-6. 検証
+
+`node --check`(battle-engine-main.js/tag-battle-main.js/test/i18n-extract-ui.js/test/i18n-ledger-consistency-test.js/test/ui-walkthrough/spectator-move-i18n-check.js)全OK。`node test/ja-golden.js`基準と**完全一致**(hash`6b3d05c8…`不変)。`node test/i18n-build-dict.js`/`-template-dict`/`-dialogue-dict`/`-names`いずれも**未訳0**(ui 4,135→**4,123**、template 2,958・dialogue 16,674は不変)。`node test/i18n-ledger-consistency-test.js`**green**(15件、訳文食い違い0)。`npm test` **261/261 green**(既存260本+新設1本)。`node test/i18n-ratchet.js`**増加なし**(28,109不変)。`npm run test:ui:walkthrough`(JA) **PASS**(Actions 328、digest**`1052faa82eaf7991`不変**)、Issues 0。`npm run test:ui:walkthrough:en`(EN) **PASS**(Actions 419、digest`ae3f036b2efc97c5`)、Issues 0、i18n-miss 0(1回目のみ年間表彰式コールバック待ちの既知タイミングフレーク`[WM] awards chain callback lost`でD1_CONSOLE 1件が出たが、本バッチの変更範囲外・直後2回の再実行はいずれもクリーン)。`node test/ui-walkthrough/spectator-move-i18n-check.js` **ALL CHECKS PASS**(single 20項目/tag 20項目。新設の`.long`境界検査4項目含む、全てJA`[false,true]`・EN`[false,true]`で一致)。
+## 32. Stage B P7-8 — 自団体興行記事(繰り上げ記事)のdict配線とフォールバック本文のテンプレ化(2026-09-04追加)
 
 訳出**9キー**(template-ledger 2,923→**2,929**・未訳0 / ui-ledger 4,061→**4,064**・未訳0 / dialogue-ledgerは不触)。
 
-### 31-1. 「フォールバックがJA」だと思ったら、**本体側がJA**だった
+### 32-1. 「フォールバックがJA」だと思ったら、**本体側がJA**だった
 
 §23-6の起票は「`App._NEWSPAPER_ARTICLES` のプールが空のときのフォールバック文字列組み立て」だったが、EN走破の`--ja-exposure-log`が拾っていた実際の文
 (`正直に言えば、メインイベントは物足りなさが残った。…`)は**`_NEWSPAPER_ARTICLES.lowMQ` の正規のプール要素**だった。
@@ -1139,7 +1221,7 @@ _getSurname(arg) {
 - フォールバック(プールが空/例外時)は実際には防御的な到達不能枝だったが、**本体が英語になった今フォールバックだけJAで出る**
   状態(§14-5-4と同型)になるため、同バッチでテンプレ化した
 
-### 31-2. `kurodaText`は未定義プロパティを `"undefined"` として本文へ出す — 既存の try/catch の保険を殺さない
+### 32-2. `kurodaText`は未定義プロパティを `"undefined"` として本文へ出す — 既存の try/catch の保険を殺さない
 
 素の `fn(d)` は `d.winner.name` のような未解決パスで**例外を投げ**、呼び出し側の `catch` が空文字にしてフォールバックへ委ねていた。
 `kurodaText` は `kurodaEvalPath` が `undefined` を返しても `String(undefined)` を本文へ差し込むだけで**例外にならない**ため、
@@ -1155,13 +1237,13 @@ try {
 - `Engine.rng.pick` の位置(try の内/外)は**元のまま動かさない** — 乱数の消費順が変わると出目が変わる
 - 同型(`kurodaText`へ後付けで乗り換える消費点)では毎回この「素で呼んで確かめてから訳す」形を使う
 
-### 31-3. 末尾に直結する注記2変種は`{closing}`スロット+**EN訳文側の先頭スペース**
+### 32-3. 末尾に直結する注記2変種は`{closing}`スロット+**EN訳文側の先頭スペース**
 
 `decisive` 本文の末尾は、元コードでは三項演算子で「王座戦だった」/「敗者も意地を見せた」のどちらかが**空白なしで直結**していた。
 §15-2のクラウス規約をそのまま適用し、テンプレは `…紙面に残った。{closing}` のまま、**EN訳文の側が先頭に半角スペースを持つ**。
 `closing` は先に `t()` で確定させてから本文の params に載せる(充填済みなので後段の置換で壊れない)。
 
-### 31-4. 同型の掃討 — 主力対決の黒田寸評フォールバック
+### 32-4. 同型の掃討 — 主力対決の黒田寸評フォールバック
 
 `grep 'if (!comment)' / 'if (!txt)'` 系で新聞セクションの「プール空振り時の直書きJA」を全数当たったところ、
 P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELATION_NARRATIVE`)の隣に**1件だけ未配線が残っていた**
@@ -1169,7 +1251,7 @@ P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELAT
 (数文の地の文である興行記事フォールバックだけを data.js のテンプレ表にする、という置き場の使い分け)。
 差し込む `m.role`(`エース`/`主力`/`中堅`)は ui-ledger に既訳のある1語ラベルなので、**値として `WM_I18N.t()` で引き直す**(§14-2 `_wmDictLabel` と同じ流儀)。
 
-### 31-5. JA同一性の証明(27,657通り+128通り・不一致0)
+### 32-5. JA同一性の証明(27,657通り+128通り・不一致0)
 
 §15-5の作法①(凍結コピーとの全数突合)。`git show <BASE>:src/ui-render.js` から旧 `_npSwapMainToSecondCard` を切り出し、
 新旧を同じサンドボックス(ja素通しdict)で回して戻り値オブジェクト全体を `JSON.stringify` で突合した。
@@ -1182,7 +1264,7 @@ P4-5が配線した3件(`KURODA_WAR_RECORD` / `KURODA_SPOTLIGHT` / `KURODA_RELAT
   digest(=行動ログ)は安定している。**まれに1手ズレる実行がある**(1回だけ327手 digest `e603d4e2…` を観測。
   同一コードで再実行すると328手・digest一致に戻った)ので、**digestが違ったら再実行して再現するか先に確かめる**こと
 
-### 31-6. P7-8で新たに見つかった穴(未着手)
+### 32-6. P7-8で新たに見つかった穴(未着手)
 
 - **`_buildDepthNoteV2` / `_buildLeadSentences`(ui-render.js:4863付近)の生JA組み立て** — ランキング画面(団体紹介パネル)の選手層寸評。
   条件分岐ごとの断片を `[first, second, third].join('')` で連結する型で、t()を一度も通らない。P7-6(ランキング画面)の領分として記録のみ
