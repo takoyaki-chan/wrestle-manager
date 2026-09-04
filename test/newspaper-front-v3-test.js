@@ -66,7 +66,7 @@ const pureCtx = vm.createContext({
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  }, pn(str) { return str; } },
+  }, pn(str) { return str; }, pnSurname(str) { return str; } },
 });
 vm.runInContext([
   fnBody('_npV3Paragraphs'),
@@ -370,7 +370,7 @@ function makeRenderCtx() {
       let out = text;
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
-    }, pn(str) { return str; } },
+    }, pn(str) { return str; }, pnSurname(str) { return str; } },
     // i18n P6-8: _npKurodaBandLine/_npV3KurodaColumn等が引用符の言語別化に
     // ui-common.js の _quoteVal(WM_I18N.t('「{line}」', {line})) を使うようになった。
     // ja契約と同じ挙動のスタブで足りる(src/ui-common.js の _quoteVal参照)。

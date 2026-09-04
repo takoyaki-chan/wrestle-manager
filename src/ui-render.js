@@ -4505,10 +4505,13 @@ function renderRanking() {
     const url = getUpperUrl(f.id);
     const imgTag = url ? `<img src="${url}" alt="" onerror="this.style.display='none'">` : '';
     const badges = roleBadgesHtml(f, championId, boardId, coreIds);
+    // P6-11: .nm-tagは肖像下にposition:absoluteで中央寄せするnowrap固定枠のため、
+    // フルネームだと英語で左右にはみ出す(i18n-en-layout-overflow-report-v0.1.md §5-B)。
+    // 姓のみ表示にする(ホバーtitleはフルネームのまま=情報は保持)
     return `<div class="orgcell-fcell pos-${pos}${isChamp ? ' is-champ' : ''}" onclick="showFighterPopup(${f.id},'${popupSource}')" title="${escHtml(WM_I18N.pn(f.name))} OVR ${o}">
       ${badges}
       <div class="img-wrap">${imgTag}</div>
-      <div class="nm-tag">${escHtml(WM_I18N.pn(f.name))}<span class="ovr ${_ovrCss(o)}">${o}</span></div>
+      <div class="nm-tag">${escHtml(WM_I18N.pnSurname(f.name))}<span class="ovr ${_ovrCss(o)}">${o}</span></div>
     </div>`;
   };
 

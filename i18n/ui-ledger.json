@@ -6043,7 +6043,7 @@
   },
   {
     "key": "⚔他団体挑戦+{n}",
-    "en": "⚔ Rival promotion challenge +{n}",
+    "en": "⚔Challenge+{n}",
     "files": [
       "ui-render.js"
     ],
@@ -6456,7 +6456,7 @@
   },
   {
     "key": "⚡因縁+{n}",
-    "en": "⚡ Grudge +{n}",
+    "en": "⚡Grudge+{n}",
     "files": [
       "ui-render.js"
     ],
@@ -11630,7 +11630,7 @@
   },
   {
     "key": "ボーナスも清算し、関係が大きく軋む ／ 移籍志願のおそれ",
-    "en": "Settle the bonus too — the relationship strains badly / she may ask for a transfer",
+    "en": "Strains trust badly — transfer risk",
     "files": [
       "ui-common.js"
     ],
@@ -12931,7 +12931,7 @@
   },
   {
     "key": "一時金{a}万 + 給与+{b}万/週",
-    "en": "Signing bonus ¥{a:man} + salary +¥{b:man}/week",
+    "en": "Bonus +¥{a:man} + pay +¥{b:man}/wk",
     "files": [
       "ui-common.js"
     ],
@@ -20549,7 +20549,7 @@
   },
   {
     "key": "引き留める",
-    "en": "Persuade Her to Stay",
+    "en": "Persuade to Stay",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -21063,7 +21063,7 @@
   },
   {
     "key": "成功時　給与+{n}万/週",
-    "en": "If it works: salary +¥{n:man}/week",
+    "en": "If successful: +¥{n:man}/wk",
     "files": [
       "ui-common.js"
     ],
@@ -23389,7 +23389,7 @@
   },
   {
     "key": "本人に強い不満が残るおそれ",
-    "en": "She may be left deeply unhappy",
+    "en": "She may be deeply unhappy",
     "files": [
       "ui-common.js"
     ],
@@ -23419,7 +23419,7 @@
   },
   {
     "key": "本人は強く報われたと感じる　給与+{n}万/週",
-    "en": "She feels genuinely rewarded — salary +¥{n:man}/week",
+    "en": "Feels rewarded — pay +¥{n:man}/wk",
     "files": [
       "ui-common.js"
     ],
@@ -25873,7 +25873,7 @@
   },
   {
     "key": "温情を示し、本人とロッカーの空気が明るくなる",
-    "en": "Showing some kindness lifts the mood for her and for the locker room",
+    "en": "Lifts her mood and the locker room",
     "files": [
       "ui-common.js"
     ],
@@ -26850,7 +26850,7 @@
   },
   {
     "key": "申し出を尊重し、対等な関係を示す",
-    "en": "Respect the offer and meet her as an equal",
+    "en": "Respects the offer as an equal",
     "files": [
       "ui-common.js"
     ],
@@ -32690,7 +32690,7 @@
   },
   {
     "key": "関係が良ければ納得するが、そうでなければ不満が残る",
-    "en": "If they get on well she accepts it; if not, resentment stays",
+    "en": "Accepted if close, resented if not",
     "files": [
       "ui-common.js"
     ],
@@ -34199,7 +34199,7 @@
   },
   {
     "key": "🏆タイトル+{n}",
-    "en": "🏆Title +{n}",
+    "en": "🏆Title+{n}",
     "files": [
       "ui-render.js"
     ],
@@ -35201,7 +35201,7 @@
   },
   {
     "key": "📣期待+{n}",
-    "en": "📣Expectation +{n}",
+    "en": "📣Hype+{n}",
     "files": [
       "ui-render.js"
     ],
@@ -35722,7 +35722,7 @@
   },
   {
     "key": "😈善悪+{n}",
-    "en": "😈Alignment +{n}",
+    "en": "😈Align+{n}",
     "files": [
       "ui-render.js"
     ],

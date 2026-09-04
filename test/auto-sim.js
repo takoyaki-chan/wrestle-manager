@@ -67,7 +67,7 @@ global.WM_I18N = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-}, pn(str) { return str; } };
+}, pn(str) { return str; }, pnSurname(str) { return str; } };
 
 // ── Step 1: ソースコードをグローバルスコープで実行 ──
 // data.js / engine.js はブラウザ向けのグローバル const で宣言されているため、

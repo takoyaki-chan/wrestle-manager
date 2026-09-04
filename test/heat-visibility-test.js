@@ -32,7 +32,7 @@ const wmI18nStub = {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  }, pn(str) { return str; },
+  }, pn(str) { return str; }, pnSurname(str) { return str; },
 };
 const context = vm.createContext({ WM_I18N: wmI18nStub });
 vm.runInContext([

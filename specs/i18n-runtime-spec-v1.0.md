@@ -19,6 +19,8 @@
   - **D-P6-3実装(2026-09-04、P6-3)**: ui-render.js/ui-common.js/app.js/battle-engine-main.js/tag-battle-main.jsの`.name`/`.surname`直接補間サイトを機械列挙・分類し、表示サイトへ`pn()`を497箇所配線(内訳・完走画面はworklog参照)。**除外した箇所**: gameLog/growthLog/`_pending*`等G保存値に焼き込まれる文字列(D-P6-4「セーブ内の名前は日本語のまま」を厳守)、開発診断ログ(`wmDiag`)、`.name.toLowerCase().includes()`等の検索フィルタ(ロジック比較)、kurodaText系テンプレプール(`App._NEWSPAPER_HEADLINES`/`_ARTICLES`。P4-5の`kurodaTemplateOf()`正規化+D-P6-2のt()パラメータ自動変換で別途訳される)。`.charAt(0)`/`.substring()`/`.split()`等の切り詰め表示は`pn()`適用後に切り詰める順序(EN名の頭文字/姓を正しく取るため)。残約634箇所(主にapp.js)は次バッチの長尾対象
   - **t()のパラメータ値自動変換**: `applyParams(str, params, convertNames)`の第3引数が真のとき、挿入する値が文字列かつ名前辞書に完全一致すれば、プレースホルダフィルタ(`{name:man}`等)適用より前段で訳文へ差し替える。`t()`は`en`ブランチのときだけ`convertNames=true`で呼ぶ(ja/pseudoは従来どおり無変換=1バイト不変)。これによりテンプレ経由の名前(`{name}`/`{winner}`等)は配線ゼロで英語化される
   - 姓のみ表示(隊列ラベル・戦績表・派閥名等)向けに、フルネームとは別に姓単独のキーも登録される(例: `"富岡加奈子"→"Kanako Tomioka"`と`"富岡"→"Tomioka"`の両方)。表記の正は `docs/en-proper-nouns-draft-v0.1.md`(2026-09-02 Keisuke裁定確定分)。ID13 堂前ユキ(given name Yuki)とID108 結城玲奈(surname 結城)のローマ字衝突は、ID108を`Rena Yuuki`(結城=Yuuki)へ上書きして回避
+  - **姓のみ辞書 pnSurname(Stage B P6-11、2026-09-04追加)**: `names`(pn)とは別領域`surnames`を持つ。キーは**フルネームJA**(pn()と同じ入力形)、値は**姓のみEN**。`addSurnames({フルネームJA: 姓のみEN})`が登録入口(生成元は`test/i18n-build-names.js`が`i18n/names-ledger.json`のcharacters/coaches各行の`ja`→`enSurname`を突合して`src/lang-en-names.js`へ出力。`addNames`呼び出しの直後に`addSurnames`も呼ばれる)。`pnSurname(str)`は姓のみ辞書に完全一致すればEN姓を返し、無ければ`pn(str)`(フルネーム訳、それも無ければ原文)へfail-open。ja/pseudo時は素通し(pn()と対称)。`.flink`/`.jtc-fn`/`.tc-fn`/`.nm-tag`のような固定幅1行枠(ブラケット表・ランキングタグ)で、英語フルネームだと折り返し無しでは収まらない箇所向け(docs/i18n-en-layout-overflow-report-v0.1.md §5-B/§9)
+- **`<html lang>`属性の同期(Stage B P6-11、2026-09-04追加)**: `syncHtmlLangAttr()`が`document.documentElement.lang`を`setLang()`呼び出し時と読み込み時に`'en'`(currentLang==='en')/`'ja'`(それ以外、pseudo含む)へ同期する。静的HTML(`src/index.html`等)は`<html lang="ja">`固定のため、これが無いとEN専用CSS(`html[lang="en"] .foo{...}`)がJAの見た目に一切触れずにレイアウトだけ言語別に出し分けるという設計が成立しない。§12参照
 
 ## 2. 構造規約(コードを書くときの鉄則)
 
@@ -208,6 +210,17 @@ fast-forward後の`npm run test:ui:walkthrough:en`(seed42)でi18n-miss 16件(指
 
 `node --check`(battle-anim.js/tag-battle-main.js/app.js/ui-render.js/management.js/lang-en.js)全OK。`node test/ja-golden.js`基準と完全一致(hash=6b3d05c8...)。`node test/i18n-build-dict.js`台帳3,321キー全訳。`npm test`260/260 green(newspaper-front-v3-test.js/u5-winloss-safety-net-test.jsの2ファイルへ`_quoteVal`のjaスタブを追加)。`node test/auto-sim.js 20 42` ALL CLEAR(semantic fingerprint 37bbd0cd、P6-7時点と同一)。
 
+## 12. ENレイアウト溢れ修正(Stage B P6-11、2026-09-04追加)
+
+P6-9(`docs/i18n-en-layout-overflow-report-v0.1.md`)が計測したEN溢れ87〜89件(JA基準31件比+56件)への対処。**src側の変更は表示層(CSS・JS呼び出し先の切替)のみ**で、セリフ・テンプレの訳文そのものは対象外(i18n/ui-ledgerの短縮訳12キーを除く)。
+
+- **`html[lang="en"]`言語別CSS分岐**: §1の`<html lang>`属性同期を前提に、`.pb-fighter-name`(試合結果カードの選手名)と`.aw-team-name`(表彰式・隊列の選手名)へ「名/姓の2行折り返しを許可し、枠は常に2行分確保する」EN専用ルールを追加。`display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.3em`(line-height 1.15基準)というem相対の指定にし、メインイベント18px/通常16px/縮小14pxいずれのフォントサイズ文脈でも比率が保たれるようにした。JAは`white-space:nowrap`のまま(セレクタごと分岐するため1バイトも変わらない)
+- **姓のみ辞書(pnSurname)**: `.jtc-fn`/`.tc-fn`(トーナメントブラケットの選手名セル、40〜132px幅の固定枠)と`.nm-tag`(ランキング画面の肖像下タグ)の表示点を、`WM_I18N.pn(f.name)`から`WM_I18N.pnSurname(f.name)`へ切替。§1参照
+- **最後の手段(フォントサイズ1段)**: `.emr-foot-note`(試合結果ポップアップの脚注)をEN限定で9px→8px(タイプスケールのmicro段)。任意pxは発明せず既存スケールから選んだ
+- **短縮訳**: `i18n/ui-ledger.json`の12キー(`.sp-appeal-bonuses`のバフ内訳5種+`.neg-btn-hint`契約交渉ヒット7種)を意味を保ったまま短縮。例: `📣Expectation +{n}`→`📣Hype+{n}`、`She feels genuinely rewarded — salary +¥{n:man}/week`→`Feels rewarded — pay +¥{n:man}/wk`
+- **検出器側の是正**: `test/ui-walkthrough/detectors.js`の`wrap-height`グルーピングが`[class*="tab"]`で「タブの中身のパネル」(`.rd-tab-content`)まで拾ってしまう疑陽性を、`-content`/`-panel`で終わるクラスを除外する形で解消(P6-9報告書§6の申し送りに対応)
+- **テストスタブの機械追加**: `pnSurname`新設に伴い、`pn(str){return str;}`という前方互換スタブを持つtest/配下47ファイル67箇所へ`pnSurname(str){return str;}`を同様に機械追加した(P6-3が確立した前例と同じ作法)
+- **結果**: EN溢れ87〜89件→**34件**(直近実走)、JA溢れは30〜31件→**32件**(walkthrough digest `1052faa82eaf7991`不変)。EN固有の増分は+56〜58件→**+2件**(目標10件以下を達成)。詳細はdocs/i18n-en-layout-overflow-report-v0.1.md §9
 ## 12. Stage B P6-10 — 未配線3系統(雑誌/TV見出し・殿堂入り異名・EMOTION_TEXTS)の配線と英訳(2026-09-04追加)
 
 §11-5が起票した4件のうち3件(1・3・4)を実装・英訳した。訳出合計251行(template-ledger 36 / ui-ledger 215)。

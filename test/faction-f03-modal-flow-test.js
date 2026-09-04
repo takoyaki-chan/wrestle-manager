@@ -107,7 +107,7 @@ const WM_I18N_STUB = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-}, pn(str) { return str; } };
+}, pn(str) { return str; }, pnSurname(str) { return str; } };
 
 const build = new Function(
   'document',

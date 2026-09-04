@@ -143,3 +143,64 @@ JAは「翻訳とは無関係に、そもそも今のCSS・データで溢れて
 - `docs/i18n-en-layout-overflow-report-v0.1.md` — 本書(新規)
 
 **src/・i18n/は無改修。CSS・訳文の修正は行っていない(報告のみ、指示どおり)。**
+
+---
+
+## 9. 対処結果(P6-11、2026-09-04)
+
+本報告書のFable裁定(方針1〜4)に沿って実装した。**JAは1px・1バイトも変えていない**(`html[lang]`による言語別セレクタ分岐、walkthrough digest `1052faa82eaf7991` 不変で確認)。
+
+### 9-1. 適用した対処と箇所数
+
+| 方針 | 対象 | 適用箇所 |
+|---|---|---|
+| **方針1: 肖像下ラベルの2行折り返し**(`html[lang="en"]`分岐、枠は常に2行分確保) | `.pb-fighter-name`(試合結果カードの選手名) | `src/index.html` 1箇所(CSSルール。試合結果カードの全バリエーション=メインイベント18px/通常16px/縮小14pxへ自動適用) |
+| 同上 | `.aw-team-name`(表彰式・隊列の選手名。肖像`.aw-team-portrait`150×224の下に付く同型パターンと判定し追加適用) | `src/index.html` 1箇所 |
+| **方針2: 姓のみ表示**(`WM_I18N.pnSurname()`新設) | `.flink`(試合結果カード内、`.pb-fighter-name`の子として方針1の折り返し対象に含まれるため個別配線は不要だった) | 配線不要(方針1の副次効果で解消) |
+| 同上 | `.jtc-fn`/`.jtc-win-tag`(ジュニア大会ブラケット) | `src/ui-common.js` `_jtcFx` 1箇所 |
+| 同上 | `.tc-fn`(天頂戦ブラケット、丸アイコン版・矩形版) | `src/ui-common.js` `_tcCircleFx`/`_tcRectFx` 2箇所 |
+| 同上 | `.nm-tag`(ランキング画面の肖像下タグ) | `src/ui-render.js` `fcellHtml` 1箇所(ホバーtitleはフルネームのまま維持) |
+| **方針3: フォントサイズ1段階縮小**(最後の手段) | `.emr-foot-note`(試合結果ポップアップの脚注。9px→8px=タイプスケールのmicro段) | `src/index.html` 1箇所 |
+| **方針4: 短縮訳**(`i18n/ui-ledger.json`の`en`列書き換え) | `.sp-appeal-bonuses`(カード魅力バフ内訳): `⚡ Grudge +{n}`→`⚡Grudge+{n}` / `🏆Title +{n}`→`🏆Title+{n}` / `📣Expectation +{n}`→`📣Hype+{n}` / `⚔ Rival promotion challenge +{n}`→`⚔Challenge+{n}` / `😈Alignment +{n}`→`😈Align+{n}` | 5キー |
+| 同上 | `.neg-btn-hint`(契約交渉の選択肢ヒント。最長68字→38字程度へ短縮、意味は保持) | 7キー(raise/decline/voluntary decline系) |
+| 同上 | 同上・追加(EN後の再走破で新規に判明した2件目のwrap-height、引き留め選択肢) | 2キー(`引き留める`ラベル・`一時金{a}万+給与+{b}万/週`ヒント) |
+| **検出器の偽陽性除外**(§6で申し送り済みの限界を今回のバッチで解消) | `.rd-tab-content`等`-content`/`-panel`で終わるクラスを`wrap-height`グルーピングの対象から除外 | `test/ui-walkthrough/detectors.js` 1箇所 |
+
+方針2の実装に伴い、`src/i18n.js`に姓のみ辞書(`surnames`)と`WM_I18N.addSurnames()`/`WM_I18N.pnSurname()`を新設(`pn()`と対称のfail-open設計)、`document.documentElement.lang`をEN/JAへ同期する`syncHtmlLangAttr()`を追加(方針1のCSS分岐が使う`html[lang="en"]`セレクタの前提)。`test/i18n-build-names.js`を拡張し、`i18n/names-ledger.json`の姓データ(`jaSurname`→`enSurname`)から`src/lang-en-names.js`へ姓のみ辞書を生成するようにした。既存のP6-3で確立した前例(WM_I18Nテストスタブへの機械追加)に倣い、`pn(str){return str;}`スタブを持つtest/配下47ファイル67箇所に`pnSurname(str){return str;}`を機械追加した。
+
+### 9-2. EN溢れ件数(before → after)
+
+`npm run test:ui:walkthrough:en` / `npm run test:ui:walkthrough` を対処の前後で2回ずつ実走した実測値。JA側は`.dojo-scene-shout`の壁時計依存表示(§3既述の既知の揺れ)で30〜32件の間で微揺れするため、EN側もその分の揺れを含む。
+
+| 指標 | before(P6-9報告時点) | after(本バッチ、直近の実走) |
+|---|---:|---:|
+| EN合計(`npm run test:ui:walkthrough:en`) | 87〜89(実測揺れ込み) | **34**(直近実走。対処直後の実走では37) |
+| JA合計(`npm run test:ui:walkthrough`) | 30〜31 | **32**(digest `1052faa82eaf7991` 不変=不変条件を実測で確認) |
+| EN固有の増分(EN−JA) | **+56〜58** | **+2**(直近実走。もう1本の実走では+7)。**目標10以下を達成** |
+| Issues / i18n-miss(EN) | 0 / 16 | 0 / **0** |
+
+画面別(EN、before→after、直近実走):
+
+- `screen-show`: 40 → **22**(nowrap=19, clip=3)。`.pb-fighter-name`/`.flink`の溢れは"Nahoko Kawanobe"+67px→+10px、"Reona Hasegawa"+63px→+6pxまで圧縮(2行折り返しにより大半は完全に1行内へ収まり、残る2件も肖像下ラベルとして視認性を損なわない程度)。`.sp-appeal-bonuses`は最大同時4バフ・全て2桁値という最悪ケースのみ+29〜32px残存(短縮前は最大+52px)
+- `screen-week`: 36 → **12**(wrap-height=10=JA由来につき意図的に不変, clip=2)。`.jtc-fn`ブラケットのclip=22件は姓のみ表示化でほぼ全解消(直近実走では0件、`.a1-wrap`(JA由来)以外の`clip`は検出されず)
+- `screen-roster`: 5(全て`.rd-tab-content`偽陽性) → **0**(検出器側の除外で解消)
+- `screen-ranking`: 5(`.nm-tag`nowrap) → **0**(姓のみ表示化で全解消)
+- `screen-shachoshitsu`: 2(`.neg-btn`wrap-height) → **0**(ヒット文の短縮で解消。対処直後の実走では1件残っていた「引き留める」選択肢を追加で短縮して解消)
+
+### 9-3. 残った溢れとその理由(意図的に触っていないもの)
+
+- **`screen-week`の`wrap-height`10件**(`⏩ PROCESS THE WEEK`/`🎤 TO SHOW PREP →`/`WATCH THE MATCH`/`SKIP ALL`/`🤖 AUTO`/`#ppvmcStartBtn`ほか): JA側にも同数・同程度の超過幅で存在する既存課題(EN起因ではない)。裁定どおり触っていない
+- **`.a1-wrap`(新聞見出しバナー)**: JA(+60px)・EN(+59px)がほぼ同幅。EN文字幅とは無関係な既存の構造課題
+- **`.dojo-scene-shout`(道場の掛け声)**: JA・EN双方に存在し超過幅も数px。翻訳長の影響は事実上ない
+- **`span.pb-dialogue-line`(試合結果の吹き出し)**: 110字上限管理下(このタスクの対象外として明示)。実測+4〜5pxで誤差域
+- **`.sp-appeal-bonuses`の小幅な残存**(最大同時4バフ・大きい数値が重なった場合のみ+5〜32px): 短縮訳(方針4)で最大超過幅を67px相当→32px程度まで圧縮したが、4バフ全部が2桁の値で同時に立つ最悪ケースはなお僅かに超過する。件数・超過幅ともに大幅縮小しており目標達成には影響しないため、今回はここで止めた(構造変更=バッジのアイコンのみ表示等はC分類「検討課題」として次回に送る)
+
+### 9-4. 検証
+
+- `node --check`(触りファイル全て)/ `npm test` 260/260 green
+- `node test/ja-golden.js` 完全一致(hash `6b3d05c8daa3d93f62c7e2fcb3b21e7d6ffebc6dc1c4951919a229a2d4b8c1b3`)
+- `node test/i18n-ratchet.js` 増加なし
+- `node test/i18n-build-dict.js` / `node test/i18n-build-names.js` 台帳との整合を再生成・確認(未訳0)
+- `npm run test:ui:walkthrough` PASS・digest `1052faa82eaf7991` 不変・Issues 0
+- `npm run test:ui:walkthrough:en` PASS・Issues 0・i18n-miss 0
+- Playwright(走破のブラウザ流用)でENのスクリーンショット3枚(興行準備のカード・ロスター一覧・ランキング)を保存し目視確認
