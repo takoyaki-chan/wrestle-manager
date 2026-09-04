@@ -1,5 +1,124 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2l — セリフ英訳バッチ⑫(マイルストーン186行+コーチ報告184行+引退承諾/拒否276行+統一王座147行+ドーム285行)（2026-09-04・Opus主筆 worktree agent-a971a3f4b9e05f2e5）
+
+量産翻訳の第12バッチ。**7テーブルの未訳1,076行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2kの訳語判断(2fのベルト=belt/王座=title、2cの対社長温度Boss/President、2cのト書き書式、seductiveの`ふふ`=Mm を継承)。開始前にworktreeブランチをmain先端(d29334c)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2kと同じ運用)。
+
+**このバッチの本題は翻訳ではなく配線穴だった** — `COACH_VOICE_REPORT_LINES` 184行のうち**144行が「ENでも日本語のまま」**の状態だった(下記§5)。P5-2d/2h/2jと同型の「プレースホルダをt()より前に置換する」欠陥で、コーチ報告は道場画面の常設吹き出しなのでプレイ中の露出頻度が高い。
+
+### 1. 対象範囲(1,076行)
+
+| テーブル | 未訳 | 本バッチで訳した行 | 軸 | 場面 |
+|---|---|---|---|---|
+| `data.js:MILESTONE_LINES` | 186 | 186 | archetype×personality(6プール) | 成長の節目(ovr_growth/elite/legend・pop_growth/star・cap_reached) |
+| `coach-lines.js:COACH_VOICE_REPORT_LINES` | 184 | 184 | **voiceKey(8系統)×報告種別(11)** | コーチが社長に選手の様子を報告する声 |
+| `data.js:RETIRE_ACCEPT_LINES` | 152 | 152 | category(5)×archetype×personality | 引退勧告を受け入れる本人の言葉 |
+| `data.js:UNIFIED_TITLE_LINES` | 147 | 147 | **scene(7)×archetypeのみ**(性格分岐なし) | 全国統一王座の戴冠/返還/挑戦/防衛/失冠/奪取/失敗 |
+| `data.js:DOME_FIRSTSHOW_LINES` | 143 | 142 | archetype×personality(7×7で欠けなし) | 初のドーム興行 |
+| `data.js:DOME_SELLOUT_LINES` | 142 | 141 | archetype×personality(7×7で欠けなし) | ドーム満員 |
+| `data.js:RETIRE_REFUSE_LINES` | 124 | 124 | category(4)×archetype×personality | 引退勧告を拒む本人の言葉 |
+| **合計** | **1,078** | **1,076** | | 差2は表内共有キー2件(`…はい`=DOME_FIRSTSHOW cool.shy と RETIRE_ACCEPT accept_no_title.polite.quiet、`……（静かに微笑む）`=DOME両テーブルの seductive.quiet) |
+
+- **既訳6行は据え置き**(スキップ理由=P5-2a〜2kで他テーブルと共有済み): `……`=`"..."` / `…ありがとうございます`=`"...Thank you, sincerely."` / `…まだだ`=`"...It's not over."` / `…やります`=`"...Yes, I'll do it."` / `…十分だ`=`"...That's enough."` / `…忘れない`=`"...I won't forget."`
+- **セル判定内訳**(1,076行): standard 194 / composed 147 / seductive 121 / polite 116 / ojousama 108 / delinquent 107 / cool 93 / **null 190**
+- **`cell` の追記は0件**。null 190行の内訳は (a)**COACH_VOICE_REPORT_LINES 184行 — コーチ発話でarchetype軸を持たない**(voiceKey軸)ので null が正しい (b)残6行は複数セル/複数テーブルで archetype が割れており一意に決まらない(`……うん`=composed/standard、`……そう、だね`=standard/composed、`…このベルトがある限りは`=polite/composed、`…はい`=cool/polite、`…満員`=cool/composed、`…よろしくお願いします`=polite/standard)。**兄弟キーから確定できる行は1件も無かった**
+- 台帳の `cell` と実効テーブルの軸キーの突き合わせは**1,076件で不一致0**
+
+### 2. 翻訳の方針
+
+- **統一王座7場面は「ベルトの居場所」で芯を分けた**。`coronation`=重さを受け取る / `return`=**4年の期限で返す**(この大会だけの所作なので `return it` / `hand it back` / `leave it in safekeeping` を属性で割った) / `challengerArrival`=名乗り / `defenseWin`=渡さない / `beltLost`=言葉が出ない / `captureWin`=**敵地から持ち帰る**(`coming home with me`) / `challengeFailed`=届かなかった。**ベルト=belt(物として持つ・返す)** の規約どおりで、王座名は原文が呼んでいないため1行も出していない(§3-7)
+- **`届かなかった` 系5行を全部違う英語にした**(`Didn't reach it` / `I couldn't get there` / `Came up short` / `It stayed out of reach` / `I fell short`)。同じ場面に7属性が並ぶテーブルなので、同じ日本語に同じ英語を当てると帯の差が消える
+- **マイルストーンは「節目の大きさ」で温度を段付けした**(最重要則1)。`ovr_growth`(OVR65〜75)は**小さく**(`...A waypoint.` / `...I can feel it.` / `Hey, I did get a bit stronger.`)、`ovr_legend` だけ言葉を失わせた(`...Ahaha, no good. I'm too happy to make words.`)。`cap_reached`(限界到達)は**諦めでなく肯定で閉じる**(`...But every step of the road here was real.`)
+- **引退承諾/拒否は「誰に向けた言葉か」で分けた**。`accept_*`=社長への**受諾と礼**(`Thank you. It helped, hearing it from you.`)、`refuse_*`=**押し返し**(`refuse_champ`=ベルトを盾に / `refuse_distrust`=在籍年数を突きつける / `refuse_heel`=次の興行で証明する / `refuse_fighting`=まだ闘える)。`100年早い`は `a hundred years too soon` に統一(4行)、`潮時` は `the right time` / `about time` / `time's up` に割った
+- **ドームは初開催と満員で英語の主語を変えた**。`FIRSTSHOW`=**これから**(`The Dome. ...We finally made it here.`)、`SELLOUT`=**満員の事実と礼**(`Sold out.` を基調に `A full house` を交ぜて反復を割った)。`満員` は **sold out / a full house / packed** の3系統
+- **コーチ報告は選手セリフではないので属性レジスタを一切当てず、8系統それぞれの英語voiceを新しく設計した**(§4)
+- **社長の呼称(§6裁定4)**: 原文が実際に `社長` を呼ぶ行は9行のみ。**ojousama/polite = `President`(3行)、standard/composed/delinquent/seductive = `Boss`(6行)**。他1,067行は呼称なし
+- **ト書き13行**(`……（静かに立っている）` / `……(目を伏せる)` / `…………（静かに拳を握る）` ほか)は P5-2c の堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**。アンカーの `... (silently clenches her fist)` と重ならないよう `... (her hand closes into a fist)` にしてある
+- **属性=register**: ojousama=**全108行で短縮形ゼロ**(アポストロフィ自体が0件) / cool=**全93行で感嘆符ゼロ・最大3文** / delinquent=冠詞主語の省略+gonna/wanna / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻+`Mm` / standard=特徴を足さない
+- **§4-6の検品ルール適用**: 応援=**support**(`cheer for` 0件) / `maybe` は文頭のみ(文末の「かも」は `I think` / 「かな」は `I guess`) / 格上格下=**better/worse** / `undefeated` 0 / `Fufu` 音写0(seductiveは `Mm`、ojousamaは `Hehe`/`Hoho`) / 「今日の私」型0 / 「〜も」のtoo直訳0 / `I'll do my best` `It can't be helped` `As expected of` の禁止定型0 / 英国綴り0(`honour`→`honor`) / ALL CAPS 0
+- **卑語**: hell/damn は**1,076行中6回**、すべて delinquent 確定セル(`Damn... it's the Dome.` / `Damn. So this is what a packed Dome looks like...` / `Damn it, sold out...` / `Damn it, this is the limit?` / `...damn, I've got goosebumps.` / `The hell is this.`)。f/sワードは0
+- **長さ**: 全1,076行が110字上限内(**最大100字・中央値49字**・EN/JA文字数比 2.50)。♪は6行に存置(原文と同数)、♡を含む原文は0行
+
+### 3. 均質化回避
+
+事前検査(自作 `check.js`)で**バッチ内の完全重複・近似重複(トークンJaccard≥0.90)と、既訳10,978行との完全/近似重複を全数照合**し、検出19件をすべて書き直した。最終的に**バッチ内EN完全重複0・近似重複0・既訳との完全重複0・近似重複0**。
+
+書き直しの型は3つ。(a)**既訳と衝突した短い定型**(`...Going.` `...Yes.` `...Not bad.` `...Understood.` 等7件)——既訳側は別テーブルの別文脈なので、こちらを言い換えた。(b)**バッチ内の双子行**(`……ありがとう、ございます…`(composed) と `…ありがとうございます、本当に`(composed) など)。(c)**翻訳調・禁止語**(`cheer for` 1件、文末 `maybe.` 1件)。
+
+### 4. コーチ8系統の英語voice設計(**新規確定・coach-lines.js の残5テーブルはこれに揃える**)
+
+コーチ報告は**選手のセリフではない**ので、7属性レシピは当てていない。日本語側は「老師の〜とる/闘将の標準語/職人の……断片/ですます丁寧/理論家の計測語彙/親父と姐御の性差」で書き分けられているが、**英語には語尾も性差もない**ので、registerと構文で作り直した。JAで内容がほぼ同一の3ペア(roshi↔tosho / bukotsu↔seihitsu / oyaji↔anego)は、英語では**別の道具で差を付けている**。
+
+| voiceKey | 英語の作り | 例 |
+|---|---|---|
+| `sparta_roshi`(鬼塚・巌流) | 命令形と断定。緩衝ゼロ。古風な重さ | `{name}. Her {stat} has stopped. That is not softness. That is a wall.` |
+| `sparta_tosho`(赤城・安藤ほか) | 規律の完全文。名を伏せる言い方が丁寧 | `One of them is forcing it. I will keep the name. ...That arrives later.` |
+| `artisan_bukotsu`(鶴見・御堂ほか) | `...`起点の断片。説明しない | `...{name}. Borrowing against her body. The bill comes in.` |
+| `artisan_seihitsu`(羽田・冴島) | 同じ断片を**丁寧な完全文**で。短縮形を使わない | `...{name} is borrowing against her body. That debt gets collected.` |
+| `mentor`(沢村・宮本ほか) | 見守りの緩衝表現。選手の内面を語る | `{name} seems to be feeling it come together herself.` |
+| `bigheart_oyaji`(朝日・紅林ほか) | 陽気な間投詞と `you know`。ゆっくり | `{name} comes into the gym with a good look on her face these days.` |
+| `bigheart_anego`(土屋・中村ほか) | 世話焼きの直言。社長への軽い命令 | `{name} has been a bit flat lately. Go and say something to her.` |
+| `theorist`(飛鳥・岩田ほか) | 計測語彙(curve / index / accumulated load)。断定を避ける | `From the slope of the growth curve, {name}'s {stat} sits close to its ceiling.` |
+
+- `{stat}` は `Power / Speed / Technique / Stamina`(P3b既定訳語・`src/lang-en.js`)。`{name}` は名前辞書(`WM_I18N.addNames`)がt()のparams自動変換で英語表記に変える(D-P6-2)ので、**呼び出し側は生JA名を渡すだけでよい**
+- 「〜とる/〜おる」の方言は**英語では追わない**(§1-10 方言コスプレ禁止)。老師らしさは**imperativeと省略**で出した
+
+### 5. 発見して直した配線穴 — コーチ報告144行がENでもJAのまま
+
+`Engine.coach._buildReportText`(management.js:8034)が **`{name}`/`{stat}` を`.replace()`で先に埋めた文字列を返し**、`G.currentCoachReport.reportText` にそれを保存していた。表示側(ui-render.js:1927)は `WM_I18N.t(report.reportText)` を通しているが、**辞書キーはプレースホルダ入りの原文**なので一致せず fail-open。`vague` プール(名前なし)40行だけが当たり、**残り144行は英語モードでも日本語のまま道場バナーに出続けていた**。P5-2d/2h/2jで見つかったのと同じ型で、今回は**引き当て頻度が高い常設バナー**なのが違う。
+
+**修正(最小・dict-opts規約準拠 — EngineはWM_I18Nを直接呼ばない)**
+
+- `_buildReportText` の戻り値を **`{ text: プレースホルダを残した原文テンプレ, params: { name, stat } }`** に変更(5箇所のreturn。**シグネチャと分岐構造は不変** — `test/growth-strain-presentation-test.js` の§13〜17がソース文字列をgrepしているため)
+- `generateReport` は `reportText: built.text, reportParams: built.params` を返す
+- 表示側だけが `WM_I18N.t(reportText, { name, stat: WM_I18N.t(stat) })` で**辞書を引いてから**置換する。`{stat}`はステータス名の日本語ラベル(UI辞書のキー)なので値の側もt()を通す
+- **旧セーブ互換**: `reportParams` を持たない既存セーブは `t(置換済みテキスト, undefined)` となり、従来どおりfail-openでJA表示(壊れない・翌週の報告から英語になる)
+
+**JA側の1バイト不変を検証**: 8系統×5観察眼×誤認2×消耗2×怪我2×24シード=**7,680件で、旧`.replace()`直列と新`t(tmpl,params)`の出力が完全一致(不一致0)**。`node test/ja-golden.js` も基準と完全一致。
+
+### 6. 表示経路の到達確認 — **7テーブルとも全行ENに届く(未達0)**
+
+- **マイルストーン186行は届く**。`app.js:11849` が `pickDialogueLine(MILESTONE_LINES[pool], msF)` で選び、`showGrowthEventPopups`(ui-common.js:8166)が `WM_I18N.t(ev.line || '')` を通す。**プレースホルダを持つ行は0**
+- **ドーム285行は届く**。`App.resolveDomeLine`(app.js:12960)→`showCeremonyOverlay`(app.js:1641)→`_u3bSideHtml({line})`(ui-common.js:245)で t()。PH 0
+- **引退承諾/拒否276行は届く**。`Engine.retirement.selectAdviseLine`(management.js:7466)→`_pendingRetireAdviseResult`→`showRetireAdviseResultPopup`(ui-common.js:2475)→`_mdlBSoloStage`→`_u3bSideHtml` で t()。PH 0
+- **統一王座147行は届く**。`_pickUnifiedTitleLine`(ui-common.js:12484)が `EVENT_LINES_BY_KEY[scene][archetype]` から引き、`_chBubbleSlot`(ui-common.js:18507)が `escHtml(WM_I18N.t(text))`。PH 0
+- **コーチ報告184行は本コミットで届くようになった**(上記§5)。**PH入りは全体で144行、すべてこのテーブル**
+- 「PHをt()より前に置換してfail-openする」型の欠陥は、**この7テーブルの範囲ではコーチ報告1件のみ**(他6テーブルは原文にPHが無い)
+
+### 7. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,076行を記入(**diffは 1,076挿入/1,076削除 = `"en":` 行のみ**。書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートし、書き込み後に `git diff -U0` で `"en":` 以外の増減**0件**を機械確認)。**cell追記は0件**
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- `src/management.js` — `_buildReportText`/`generateReport` を{text,params}返却へ(§5)
+- `src/ui-render.js` — 道場バナーが `t(tmpl, params)` で置換するよう修正(§5)
+- 他は worklog / roadmap のみ
+
+### 8. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**12,054**(10,978→+1,076) / cell判定済み11,629 |
+| `node --check src/lang-en-dialogue.js` / `src/management.js` / `src/ui-render.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…、`--update`不使用) |
+| `npm test` | ✅ **260 passed / 0 failed**(`growth-strain-presentation-test.js` 22セクション全PASSを含む) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(errors 0 / 台帳検査3種 違反0)。management.js を触ったため実行 |
+| `node test/i18n-ratchet.js` | ⚠ NG。ただし**本バッチ以前(main d29334c)から既にNG** — factions.js 367→372(+5) / kuroda-text.js 896→897(+1)。stashして確認済みで**本バッチ由来ではない**。他エージェントの領分なので `--update` はしていない(§9-1) |
+| JA同一性(コーチ報告) | ✅ 7,680件で旧`.replace()`と新`t(tmpl,params)`の出力が完全一致(不一致0) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+coach-lines/data/data-faction-dialogue/management/match-engine/relationships)で**台帳1,076キーの直接t()が未訳0**。さらに実選択ロジック(`pickDialogueLine`/`getDialoguePool`でMILESTONE 6プール・DOME 2表・RETIRE 9カテゴリを全セル列挙、`EVENT_LINES_BY_KEY`で統一王座7場面×7属性を全列挙、`Engine.coach._buildReportText`を8voice×5rank×誤認×消耗×怪我×24シード)で**計10,087引き・日本語出力0・PH残り0・`[i18n-miss]` 0件** |
+| 品質スイープ(事前検査) | ✅ 網羅1,076/1,076・空訳0・日本語残り0・110字超0・PH不一致0(1,076/1,076一致)・余分な空白0・`....`表記0・ojousama短縮形0(アポストロフィ自体0)・cool感嘆符0・cool 3文超0・hell/damn非delinquent 0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+
+### 9. 残課題(このバッチで判明したものを含む)
+
+1. **`test/i18n-ratchet.js` が main 時点で既にNG**(factions.js +5 / kuroda-text.js +1)。並行エージェントの作業由来と思われる。**基準更新(`--update`)の判断は当該エージェント側で**。本バッチはこの2ファイルを触っていない
+2. **`docs/game-system-roadmap.md` の「🌐 英語対応」行が6本に増殖している**(29〜34行目)。並行worktreeのマージ痕で、内容が互いに古い/新しい。本バッチは**バッチ⑪の数字を持つ1本(29行目)だけを編集**した。**どれを正とするかの整理が要る**(34行目はP4-7/P6-2〜4の情報を持つが累計行数が古い)
+3. **`MILESTONE_LINES` は seductive が全6プールで normal/emotional の2性格のみ**。cool・delinquent・ojousama も2〜3性格で、standard 6・composed 6 との差が大きい。**成長の節目という頻出イベントで、蠱惑/クール/ヤンキー帯は常にフォールバックの標準セリフを喋る**。JAセリフの増補候補(要裁定)
+4. **`RETIRE_ACCEPT/REFUSE` の cool は bold/quiet の2性格のみ**(9カテゴリ中7。`accept_terminal`/`refuse_champ` だけ normal を足した3)。polite も quiet/shy/earnest の3性格が基本。**引退勧告という一世一代の場面**なので、ここのフォールバックは他より目立つ。要裁定
+5. **`…よろしくお願いします` が5テーブル(FIRST_MEET/DOME_FIRSTSHOW/EVENT_DRAFT_JOIN/EVENT_FA_SIGNING/EVENT_FA_WELCOME)で共有されたまま⑪まで未訳で残っていた**。どのバッチの対象テーブルにも「他テーブル由来」として現れるため境界からこぼれた。本バッチで訳出(`"...Let's make it a good one."` — 初対面/入団/大舞台の3文脈すべてで通る形にした)。**同型の取りこぼしが他にもないか、残バッチで `files.length>1` の未訳行を一度洗う価値がある**
+6. **`UNIFIED_TITLE_LINES` は archetype軸のみで personality を持たない**(7場面×7属性×3行=147)。年に数回・4年に一度の最上位ベルトの場面としては、性格の分岐が無いぶん同じキャラが同じことを言いやすい。仕様として意図的かどうか要確認(`_pickUnifiedTitleLine` ui-common.js:12484 は `table[archetype]` しか見ない)
+7. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **コーチ8系統の英語voice**(§4)が「別人が喋っている」と読めるか。特に roshi↔tosho と bukotsu↔seihitsu の差 (b) **統一王座の `return` 21行**(4年の期限でベルトを返すという日本語圏プロレスに無い所作が英語で自然か) (c) **`潮時` の3系統**(the right time / about time / time's up)が引退承諾30行で散っているか
+
+---
+
 ## 🌐 Stage B P5-2k — セリフ英訳バッチ⑪(表彰304行+通知304行+引き抜き252行+秋対抗戦227行)（2026-09-04・Opus主筆 worktree agent-a63e2d0ad22b42c62）
 
 量産翻訳の第11バッチ。**`data.js:AWARD_LINES` の305行中304行 + `data.js:NOTIF_DIALOGUES` の306行中304行 + `data.js:POACH_REACTION_DIALOGUES` の256行中252行 + `data.js:AUTUMN_WAR_MATCH_LINES` の228行中227行 = 1,087行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品第1弾ルール7件を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2jの訳語判断(2cの対社長温度・Boss/Presidentの書き分け、2cのト書き書式、2fのベルト=belt/王座=title、2hの `ふふ`=Mm/My 機能置換、2jの `優勝旗`=the banner・秋対抗戦=Autumn Gauntlet War を継承)。開始前にworktreeブランチをmain先端(f446891)へfast-forward済み。**指示どおり抽出器(`test/i18n-extract-dialogue.js`)は実行していない**。

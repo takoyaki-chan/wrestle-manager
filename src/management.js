@@ -8020,16 +8020,23 @@ const Engine = {
       const obsRank = coach.observation || 'D';
       const inaccuracy = COACH_OBS_INACCURACY[obsRank] || 0;
       const isInaccurate = inaccuracy > 0 && Engine.rng.float(rng) < inaccuracy;
-      const reportText = Engine.coach._buildReportText(rng, obsRank, fighter, isInaccurate, coach);
+      // i18n Stage B P5-2l: reportText は **{name}/{stat} を残したままの原文テンプレ**。
+      // 置換は表示直前(ui-render.js の道場バナー)が WM_I18N.t(テンプレ, params) で行う。
+      // ここで先に replace すると辞書キー(=プレースホルダ入りの原文)と一致しなくなり、
+      // ENでも日本語のまま出てしまう(P5-2d/2h/2j と同型の穴)。
+      const built = Engine.coach._buildReportText(rng, obsRank, fighter, isInaccurate, coach);
       return { coachId: coach.id, coachName: coach.name, coachEmoji: coach.emoji,
                hasPortrait: !!coach.hasPortrait, observation: obsRank,
-               fighterId: fighter.id, fighterName: fighter.name, reportText, isInaccurate };
+               fighterId: fighter.id, fighterName: fighter.name,
+               reportText: built.text, reportParams: built.params, isInaccurate };
     },
+    // 戻り値: { text: プレースホルダを残した原文テンプレ, params: { name, stat } }
     _buildReportText(rng, obsRank, fighter, isInaccurate, coach) {
       const name = fighter.name;
       const stats = ['pw', 'sp', 'te', 'st'];
       const randomStat = stats[Engine.rng.int(rng, 0, stats.length - 1)];
       const statLabel = STAT_LABELS_JP[randomStat] || randomStat;
+      const params = { name, stat: statLabel };
       const voiceKey = getCoachVoiceKey(coach && coach.id);
       const voicePool = COACH_VOICE_REPORT_LINES[voiceKey] || COACH_VOICE_REPORT_LINES.theorist;
       // growth-rebalance v1.0: 追い込みのツケを匂わせる差し替え。
@@ -8053,12 +8060,12 @@ const Engine = {
         const strainKey = (obsRank === 'E' || obsRank === 'D') ? 'strain_vague'
           : strainInjured ? 'strain_injured' : 'strain_named';
         const sp = voicePool[strainKey];
-        if (sp && sp.length) return sp[Engine.rng.int(rng, 0, sp.length - 1)].replace('{name}', name);
+        if (sp && sp.length) return { text: sp[Engine.rng.int(rng, 0, sp.length - 1)], params };
       }
       // E-D: 漠然（名前なし）
       if (obsRank === 'E' || obsRank === 'D') {
         const pool = voicePool.vague;
-        return pool[Engine.rng.int(rng, 0, pool.length - 1)];
+        return { text: pool[Engine.rng.int(rng, 0, pool.length - 1)], params };
       }
       // C: 名前+ムード
       if (obsRank === 'C') {
@@ -8068,7 +8075,7 @@ const Engine = {
         if (isInaccurate) { mood = growing ? 'named_negative' : 'named_positive'; }
         else { mood = growing ? 'named_positive' : (fighter.condition < 40 || fighter.slump) ? 'named_negative' : 'named_neutral'; }
         const pool = voicePool[mood];
-        return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name);
+        return { text: pool[Engine.rng.int(rng, 0, pool.length - 1)], params };
       }
       // B: 名前+具体ステータス
       if (obsRank === 'B') {
@@ -8077,7 +8084,7 @@ const Engine = {
         if (isInaccurate) { poolKey = sg > 0.5 ? 'stat_stagnant' : 'stat_growing'; }
         else { poolKey = sg > 0.5 ? 'stat_growing' : 'stat_stagnant'; }
         const pool = voicePool[poolKey];
-        return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name).replace('{stat}', statLabel);
+        return { text: pool[Engine.rng.int(rng, 0, pool.length - 1)], params };
       }
       // A: 天井接近ヒント
       const current = fighter[randomStat] || 0;
@@ -8087,7 +8094,7 @@ const Engine = {
       if (isInaccurate) { poolKey = pct >= 0.85 ? 'far_from_cap' : 'near_cap'; }
       else { poolKey = pct >= 0.85 ? 'near_cap' : 'far_from_cap'; }
       const pool = voicePool[poolKey];
-      return pool[Engine.rng.int(rng, 0, pool.length - 1)].replace('{name}', name).replace('{stat}', statLabel);
+      return { text: pool[Engine.rng.int(rng, 0, pool.length - 1)], params };
     },
     getSalaryTotal(G) {
       return Engine.coach.getHiredCoaches(G).reduce((s, c) => s + c.salary, 0);
