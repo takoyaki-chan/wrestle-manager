@@ -89,33 +89,33 @@
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 日々の努力は裏切らない | Daily practice does not betray you. | A/B判定済(anchors9 #5・採用稿) |
+| 日々の努力は裏切らない | My daily effort will not betray me. | ネイティブ検品②で差し替え(一人称に戻す。旧: Daily practice does not betray you.) |
 | 私は……まだまだ強くなれる | I can become... stronger still. | A/B判定済(anchors9 #6・採用稿) |
-| …この程度か。……話にならない。 | ...Is this all you have? ...Then there is nothing more to say. | A/B判定済(anchors9 #7・採用稿+疑問符裁定を適用) |
+| …この程度か。……話にならない。 | ...Is that all? ...Then there is nothing more to say. | ネイティブ検品②で短縮(旧: Is this all you have?) |
 
-### 2-2. お嬢様×強気 — 大河内紗代子(Sayoko Okochi †)
+### 2-2. お嬢様×強気 — 大河内紗代子(Sayoko Okochi † ※ネイティブ提案: Ookouchi/Ōkouchi — 裁定待ち)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
 | …まったく…身の程知らずもいいところね | ...Honestly... You truly did not know your place, did you. | A/B判定済(anchors9 #8・採用稿+大文字裁定を適用) |
 | 頂点に立つ者の重み…あなたには一生わからないでしょうね。 | The weight of standing at the summit... I am afraid you will never know it. | A/B判定済(anchors9 #9・採用稿) |
-| ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | My... what a tedious match. Do try to entertain me a little better. | A/B判定済(anchors9 #10・採用稿) |
+| ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | Hehe... what a tedious match. Do try to entertain me a little better, won't you? | ネイティブ検品②で付加疑問に(「かしら？」を won't you? で受ける。旧: My... / 平叙) |
 
 ### 2-3. お嬢様×お気楽 — 蔵前静(Shizuka Kuramae)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| あらあら、うまくいきましたわね | My, my. That did go rather well, did it not? | 新規 |
-| ねじ伏せるというのは、ちょっと品が無いかしら。と思いつつも癖になってしまって | Wrenching someone into submission is hardly ladylike... and yet it has quite become a habit. | A/B判定済(focus #6・採用稿) |
-| みなさま、楽しんでいただけましたか？ | I do hope you all enjoyed yourselves. | A/B収束(#7・もてなしの定型として平叙で収束。疑問符裁定は「疑問形をピリオドで終える技巧」の禁止であって、平叙への言い換えは対象外) |
+| あらあら、うまくいきましたわね | Goodness, that did go rather well, did it not? | ネイティブ検品②(原文の並びに寄せる。旧: My, my. …) |
+| ねじ伏せるというのは、ちょっと品が無いかしら。と思いつつも癖になってしまって | Wrenching others into submission may not be very ladylike... and yet it has quite become a habit. | ネイティブ検品②(「かしら」の含みを may not be で残す。旧: is hardly ladylike) |
+| みなさま、楽しんでいただけましたか？ | Did you enjoy yourselves, everyone? I do hope so. | ネイティブ検品②で疑問形に戻し「I do hope so.」を後置(聞き手への誠意)。旧: 平叙 I do hope you all enjoyed yourselves. |
 
 ### 2-4. お嬢様×真面目 — 芝彩音(Ayane Shiba †)
 
 | 日本語 | EN | 出所 |
 |---|---|---|
-| 「剛の芝」のパワー、その身でしかと受けていただけたかしら？ | The power of "Shiba the Strong" — I trust you felt every bit of it? | 新規(固有名詞: 異名「剛の芝」= Shiba the Strong 仮置き・辞書待ち) |
+| 「剛の芝」のパワー、その身でしかと受けていただけたかしら？ | The power of "Shiba the Mighty" — I trust you felt every bit of it? | ネイティブ検品②: 異名は Shiba the Mighty(Strong より品がある。柔の白銀= Shirogane the Supple と対) |
 | 手加減するなんて失礼だもの。もちろん全力で当たりましたわ。 | Holding back would have been an insult. I met you with everything I had, of course. | A/B収束(#8・試合後は過去形の裁定に適合する側を採用) |
-| 姫宮の二枚看板として…絶対に負けるわけにはいかない！ | As one of Himemiya's twin aces... I absolutely cannot afford to lose! | A/B収束(#9)/(固有名詞: 姫宮 = Himemiya・辞書待ち) |
+| 姫宮の二枚看板として…絶対に負けるわけにはいかない！ | As one of Himemiya's twin aces, I absolutely cannot afford to lose! | ネイティブ検品②で「…」をコンマに(息継ぎの…は英語では間延びする)。固有名詞: 姫宮 = Himemiya |
 
 ---
 
@@ -341,8 +341,8 @@
    - 「やっと実を結んだ/報われた」: 川野辺 = "it finally paid off!" / 岸 = "it showed today."
    - 「舐めないで」: 西川 = "Don't take it so lightly." / 菊池 = "Don't get too comfortable."
 3. **§1-2(自分を三人称で呼ばない)と衝突する行が1本**ある(新見ゆり「それが新見ゆりのスタイル」)。個別セリフなので原文どおり保持したが、共通セリフへ横展開してはいけない行として印を付けてある
-4. **固有名詞が本文に出る行は7件**: 姫宮(Himemiya) / 剛の芝(Shiba the Strong) / 四天王(The Big Four) / マドンナの座(the Madonna spot) / 副ちゃん(Fuku-chan) / 新見ゆり(Yuri Niimi) / 焼肉(yakiniku)。うち**四天王・副ちゃん・焼肉はA/Bで判定済み**。残る4件は辞書確定時に1語差し替えで済む形にしてある
-5. **蔵前静の「みなさま、楽しんでいただけましたか？」を平叙で訳している**(両稿収束形)。疑問符裁定との関係を §2-3 の注記に書いたが、疑問形に戻す判断もありうる
+4. **固有名詞が本文に出る行は7件**: 姫宮(Himemiya) / 剛の芝(Shiba the Mighty・ネイティブ検品②で確定) / 四天王(The Big Four) / マドンナの座(the Madonna spot) / 副ちゃん(Fuku-chan) / 新見ゆり(Yuri Niimi) / 焼肉(yakiniku)。うち**四天王・副ちゃん・焼肉はA/Bで判定済み**。残る4件は辞書確定時に1語差し替えで済む形にしてある
+5. ~~蔵前静の「みなさま、楽しんでいただけましたか？」を平叙で訳している~~ → ネイティブ検品②で疑問形+「I do hope so.」に確定(2026-09-04)
 
 ---
 

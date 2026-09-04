@@ -184,7 +184,7 @@
 | 6 | 副沢たまき | Tamaki **Fukuzawa** | Soezawa / Soesawa | 「副沢」は希少姓。フクザワ/ソエザワ |
 | 8 | 林真尋 | **Mahiro** Hayashi | Masahiro / Mihiro | 「真尋」はマヒロが現代女性名として優勢だが確定しない |
 | 11 | 橘玲美 | **Remi** Tachibana | Tamami / Reimi | 「玲美」レミ/タマミ/レイミ。蠱惑属性のアンカー選手なので特に要確認 |
-| 16 | 大河内紗代子 | Sayoko **Okochi** | Okawachi | 「大河内」オオコウチ/オオカワチ。**お嬢様属性のアンカー選手**(トーンバイブル §2-2 のキャラ裁定対象)なので最優先で確定したい |
+| 16 | 大河内紗代子 | Sayoko **Okochi** (※ネイティブ提案: 長音を感じさせる Ookouchi / Ōkouchi。マクロンなし裁定との整合をKeisuke裁定) | Okawachi | 「大河内」オオコウチ/オオカワチ。**お嬢様属性のアンカー選手**(トーンバイブル §2-2 のキャラ裁定対象)なので最優先で確定したい |
 | 21 | 木ノ内幸音 | **Yukine** Kinouchi | Kone / Yukine Kinonouchi | 「幸音」ユキネ/コウネ。姓もキノウチ/キノウチ |
 | 25 | 石戸谷なつき | Natsuki **Ishitoya** | Ishidoya | 「石戸谷」イシトヤ/イシドヤ両方実在 |
 | 29 | 相沢未来 | **Mirai** Aizawa | Miku / Miki | 「未来」ミライ/ミク/ミキ。どれも女性名として普通 |
@@ -441,7 +441,7 @@
 
 | JA | EN案 | 備考 |
 |---|---|---|
-| 柔の白銀(白銀麗子の異名) | Shirogane the Supple | 「剛の芝」= Shiba the Strong と対の造語 |
+| 柔の白銀(白銀麗子の異名) | Shirogane the Supple | 「剛の芝」= Shiba the Mighty(ネイティブ検品②で Strong→Mighty に確定)と対の造語 |
 | ギャル3人衆 | the gyaru trio | gyaruは英語圏プロレス/サブカル文脈で通用 |
 
 ## 用語規約追記(P5-2f・Fable批准)

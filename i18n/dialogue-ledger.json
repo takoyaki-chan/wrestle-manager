@@ -46009,7 +46009,7 @@
   },
   {
     "key": "…この程度か。……話にならない。",
-    "en": "...Is this all you have? ...Then there is nothing more to say.",
+    "en": "...Is that all? ...Then there is nothing more to say.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -86897,7 +86897,7 @@
   },
   {
     "key": "「剛の芝」のパワー、その身でしかと受けていただけたかしら？",
-    "en": "The power of \"Shiba the Strong\" — I trust you felt every bit of it?",
+    "en": "The power of \"Shiba the Mighty\" — I trust you felt every bit of it?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -97900,7 +97900,7 @@
   },
   {
     "key": "あらあら、うまくいきましたわね",
-    "en": "My, my. That did go rather well, did it not?",
+    "en": "Goodness, that did go rather well, did it not?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -131976,7 +131976,7 @@
   },
   {
     "key": "ねじ伏せるというのは、ちょっと品が無いかしら。と思いつつも癖になってしまって",
-    "en": "Wrenching someone into submission is hardly ladylike... and yet it has quite become a habit.",
+    "en": "Wrenching others into submission may not be very ladylike... and yet it has quite become a habit.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -135007,7 +135007,7 @@
   },
   {
     "key": "ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？",
-    "en": "My... what a tedious match. Do try to entertain me a little better.",
+    "en": "Hehe... what a tedious match. Do try to entertain me a little better, won't you?",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -141887,7 +141887,7 @@
   },
   {
     "key": "みなさま、楽しんでいただけましたか？",
-    "en": "I do hope you all enjoyed yourselves.",
+    "en": "Did you enjoy yourselves, everyone? I do hope so.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -180751,7 +180751,7 @@
   },
   {
     "key": "姫宮の二枚看板として…絶対に負けるわけにはいかない！",
-    "en": "As one of Himemiya's twin aces... I absolutely cannot afford to lose!",
+    "en": "As one of Himemiya's twin aces, I absolutely cannot afford to lose!",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],
@@ -190375,7 +190375,7 @@
   },
   {
     "key": "日々の努力は裏切らない",
-    "en": "Daily practice does not betray you.",
+    "en": "My daily effort will not betray me.",
     "files": [
       "victory-lines.js:VICTORY_LINES"
     ],

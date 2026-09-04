@@ -114,7 +114,7 @@ boldの標準変調(感嘆符解禁)は**この帯では属性の天井が抑え
 |---|---|
 | …まったく…身の程知らずもいいところね | ...Honestly... You truly did not know your place, did you. |
 | 頂点に立つ者の重み…あなたには一生わからないでしょうね。 | The weight of standing at the summit... I am afraid you will never know it. |
-| ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | My... what a tedious match. Do try to entertain me a little better. |
+| ふふ…退屈な試合だったわ。もっと楽しませてくれないかしら？ | Hehe... what a tedious match. Do try to entertain me a little better, won't you? |
 
 ### 2-3. クール(cool)
 
