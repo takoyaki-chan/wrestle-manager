@@ -1,5 +1,128 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P5-2m — セリフ英訳バッチ⑬(因縁対峙140+交渉130+因縁決着126+スランプ126+残留121+派閥COMMON4 115+COMMON7 110+対抗戦結果107+対抗戦勝利103+共有6 = 1,084行)（2026-09-04・Opus主筆 worktree agent-ac098c266cd152a2f）
+
+量産翻訳の第13バッチ。**9テーブルの未訳1,078行 + 対象外テーブルの共有未訳6行 = 1,084行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2lの訳語判断(2fのベルト=belt/王座=title、2cの対社長温度Boss/President、2cのト書き書式、seductiveの`ふふ`=Mm、2lの`百年早い`=a hundred years too soon を継承)。開始前にworktreeブランチをmain先端(4485520)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2k/2lと同じ運用)。
+
+**⑫の宿題「`files.length>1` の未訳行を一度洗う」を実行した** — 未訳4,490行のうち複数テーブル共有は17行しかなく、うち11行は今回の対象テーブル内、**残る6行が「どのバッチの対象テーブルにも他テーブル由来として現れて境界からこぼれ続けていた行」**だった(§1末尾)。これで共有行の取りこぼしはゼロになった。
+
+### 1. 対象範囲(1,084行)
+
+| テーブル | 未訳 | 本バッチで訳した行 | 軸 | 場面 |
+|---|---|---|---|---|
+| `data.js:RIVALRY_CONFRONTATION_LINES` | 140 | 140 | scene(4)×archetype×personality | 因縁の対峙(attacker/defender + 運命の最終戦 fateAttacker/fateDefender) |
+| `data.js:NEGOTIATE_LINES` | 130 | 130 | phase(4)×archetype×personality | 引き抜き交渉(start/success/blocked/fail) |
+| `data.js:RIVALRY_RESOLUTION_LINES` | 126 | 126 | scene(4)×archetype×personality | 因縁の決着(winner/loser + fateWinner/fateLoser) |
+| `data.js:SLUMP_START_LINES` | 126 | 126 | trigger(4)×archetype×personality | スランプ入り(敗戦/中傷復帰/重傷復帰/謹慎明け) |
+| `data.js:RETAIN_LINES` | 121 | 121 | category(4)×archetype×personality | 残留決定(former_champ/high_trust/default/heel) |
+| `data.js:COMMON4_LINES` | 115 | 115 | **派閥アーキタイプ(7)×3フィールド** | 派閥合宿・慰労会(headline/narration/leaderQuote) |
+| `data.js:COMMON7_LINES` | 110 | 110 | **category(5)×派閥アーキタイプ×話者アーキタイプ** | 派閥間合同企画 |
+| `data.js:WAR_POST_DIALOGUE` | 107 | 107 | result(2)×archetype×personality | 対抗戦の試合後(勝ち/負け) |
+| `data.js:WAR_VICTORY_LINES` | 103 | 103 | archetype×personality(scene層なし) | 対抗戦の勝利 |
+| **9テーブル計** | **1,078** | **1,078** | | |
+| **共有未訳(対象外テーブル)** | — | **6** | | 下記 |
+
+- **共有行6件の内訳**(⑫§9-5で起票した型。どのバッチの対象にも「他テーブル由来」として現れるため境界からこぼれ続けていた):
+  - `………（静かにベルトを見つめている）` = EVENT_TITLE_DEFENSE + PPV_SUMMIT_VICTORY → `"... (she stands looking quietly at the belt)"`
+  - `…てっぺんを獲りに来た。よろしく` = EVENT_DRAFT_JOIN + EVENT_FA_SIGNING
+  - `…よろしく。精一杯やる` = EVENT_DRAFT_INTEREST + EVENT_DRAFT_JOIN
+  - `…よろしく。精一杯やるよ` = EVENT_DRAFT_JOIN + EVENT_FA_WELCOME
+  - `よろしくな。暴れさせてもらうぜ` = EVENT_DRAFT_JOIN + EVENT_FA_SIGNING
+  - `本日はよろしくお願いいたします` = EVENT_DRAFT_JOIN + FIRST_MEET
+- 9テーブル内の共有行11件は `RIVALRY_CONFRONTATION_LINES_70/_90`(5件)・`WAR_CHALLENGER_DIALOGUE`・`INTERNAL_CHALLENGE_PRE_LEADER_LINES`・`FACTION_F08_PRE_MATCH_LINES_B`・`WAR_VICTORY_LINES`(2件)との共有で、**両方の文脈で読める訳文**にしてある(例: `……いいだろう` = 因縁の受諾と派閥内挑戦の受諾の両方 → `"...So be it."`)
+- **セル判定内訳**(1,084行): standard 246 / composed 164 / seductive 161 / polite 129 / ojousama 119 / delinquent 113 / cool 104 / **null 48**
+- **`cell` の追記は1件**(P5-2b/2c/2g/2j/2kと同じ **`{archetype}` 形**)。`……来い` は `RIVALRY_CONFRONTATION_LINES.defender.cool.normal` / `_70.defender.cool.quiet` / `WAR_CHALLENGER_DIALOGUE.cool.quiet` の3箇所に出て**personalityは割れるがarchetypeは3表とも cool で一意**。これで cool の感嘆符・文数検査が1行ぶん効くようになった
+- 残る `cell=null` 48行は所有全表を歩いて確認した結果すべて**null が正しい**: (a)**COMMON4 の headline 13行 + narration 13行 + COMMON7 の coachReport/planType/resultLeader 12行 = 38行はそもそもarchetype軸を持たない**(イベント名・地の文・企画名・結果ナレーション) (b)COMMON4 leaderQuote の ojousama/polite 同文2件 (c)対象外テーブルとの共有で archetype が割れる8件(`………（静かに頷く）`=standard/composed、`……いいだろう`=cool/standard、`……いいよ`=composed/standard、`……望むところよ`=standard/ojousama ほか)
+- 台帳の `cell` と実効テーブルの軸キーの突き合わせは**1,084件で不一致0**
+
+### 2. 翻訳の方針
+
+- **因縁2表は「時間の位置」で芯を分けた**。`attacker/defender`=**通常の因縁戦の宣戦と受諾**、`fateAttacker/fateDefender`=**運命の最終戦**(長い因縁の終わり)。後者だけに「長かった」「最後」「ずっと待ってた」を集中させ、前者は今日の一戦に閉じた。`決着をつける` は **settle it / finish this / end it / put it to rest / see this through** の5系統に属性で割った(同じ場面に7属性が並ぶため、同じ日本語に同じ英語を当てると帯の差が消える)
+- **交渉4フェーズは「誰に向けた断りか」で分けた**。`start`=**値踏み**(条件次第 = depends on the terms / on the table / on what you offer / rests upon them の4系統)、`success`=**新天地への挨拶**、`blocked`=**信頼が高すぎて話にならない**(仲間を理由に押し返す)、`fail`=**最後に断る**(詫びが主)。`この団体を離れるのは簡単じゃない…でも聞くだけなら` は5属性で同文なので、5本すべて別の英語にした
+- **スランプ126行は §3-6(身体メタファー禁止)を最優先で書き替えた**。JA側が「体は治った」「体が覚えている」「気持ちがついてこない」という体を主語にした構文に強く寄っているが、**「体が覚えている/体が言う」型は英語では翻訳調になる**ため全廃した(`体が覚えてるの、あの痛みを` → `"that pain stayed with me. I know exactly where it lives."`)。P5-2j/2kの `Nothing wants to obey me today...` とも重ならないよう全行を確認した
+- **残留4カテゴリは「残る理由」で書き分けた**。`former_champ`=**ベルトへの未練**(あのベルトにもう一度手を伸ばしたい = reach for / get my hands on / hold / touch の4系統)、`high_trust`=**信じてくれた礼**、`heel`=**まだ使い道がある、という取引**(付き合ってあげる = play along / keep you company / indulge you / stick around)、`default`=**もう少しだけ**。`もう少しだけ` 系は17行あるので **a while / a bit / a little / further / carry on** で散らした
+- **COMMON4 は3フィールドで完全に文体を変えた**。`headline`=**名詞句のイベント名**(Training Camp / Back-Alley Gathering)、`narration`=**地の文の事実記述**(CLAUDE.mdのナレーション方針どおり格言化しない・過去形)、`leaderQuote`=**派閥リーダーの声**(archetype軸のみ・性格ダイヤルなし)。`看板` は **the name** に統一(WAR_VICTORY_LINES とも揃えた)
+- **COMMON7 の 「」で括られたリーダー発言98行は英語では引用符を落とした**。表示は `_u3bSideHtml` の**頭上吹き出しの中**(ui-common.js:12403/12410)で、吹き出し自体が引用の装置なので、英語で内側にクォートを重ねるのは誤植になる。CLAUDE.mdの「吹き出しの中身はセリフだけ」とも整合。**これは本バッチで確立した方針で、残る 「」括り236キーも同じ扱いにすること**
+- **対抗戦2表は「主語」で分けた**。`WAR_POST_DIALOGUE`=**団体としての勝敗**(We lost / We won)、`WAR_VICTORY_LINES`=**個人の勝利報告に団体の名が乗る**(the promotion / the name)。`対抗戦` という語は §3-7 どおり**セリフに一度も出していない**(P3b用語集の `Interpromotional Match` は硬いため、指示語 = this one / that meeting / a good one が背負う)
+- **社長の呼称(§6裁定4)**: 本バッチの1,084行のうち原文が `社長` を呼ぶ行は**0行**。RETAIN/NEGOTIATE は社長に向けた発話だが原文が呼称を使っていないため、英語でも呼称なし(原則どおり)
+- **ト書き29行**(`………（静かに構える）` / `……（拳を握りしめる）` / `………（唇を噛む）` ほか)は P5-2c の堂前ユキ形式に合わせ **括弧内・小文字始まり・現在形・終止符なし**。アンカーの `... (silently clenches her fist)` および⑫の `... (her hand closes into a fist)` と重ならないよう全29本を別の動詞句にした
+- **属性=register**: ojousama=**全119行で短縮形ゼロ**(所有格 `promotion's` は短縮形ではないので可) / cool=**全104行で感嘆符ゼロ・最大3文** / delinquent=冠詞主語の省略+gonna/wanna / polite=完全文+緩衝 / composed=急がない英語+後置though / seductive=低温+余韻+`Mm` / standard=特徴を足さない
+- **§4-6の検品ルール適用**: 応援=**support**(`cheer for` 0件) / **`maybe` は文頭のみ**(文末の「かも」は `I think`・4行を書き直した) / 格上格下=better/worse / `undefeated` 0 / `Fufu` 音写0 / 「今日の私」型0 / 「〜も」のtoo直訳0 / `I'll do my best`・`It can't be helped`・`As expected of` の禁止定型0 / 英国綴り0 / ALL CAPS 0 / `〜` の伸ばしは既訳374行の慣行どおり `~` で存置
+- **卑語**: hell/damn は**1,084行中14回**、すべて delinquent 確定セル。f/sワードは0
+- **長さ**: 全1,084行が110字上限内(**最大109字・中央値52字**・EN/JA文字数比 2.54)。♪♡を含む原文は0行
+
+### 3. 均質化回避
+
+事前検査(自作 `check.js`。**scratchpad の専用サブディレクトリ `p52m/` に隔離**)で**バッチ内の完全重複・近似重複(トークンJaccard≥0.90)と、既訳12,054行との完全/近似重複を全数照合**し、検出19件をすべて書き直した。最終的に**バッチ内EN完全重複0・近似重複0・既訳との完全重複0・近似重複0**。
+
+書き直しの型は3つ。(a)**短い定型が既訳と衝突**(`...I'll stay.` `...All right.` `...Fine.` `...Come.` `...No.` `...Understood.` `...I know.` `...I'll take it.` `...On to the next.` `...Fine by me.` `... (nods without a word)` `Thank you for the support...` の12件)——既訳側は別テーブルの別文脈なのでこちらを言い換えた。**`……わかっている` は `...I know.` / `...I'm aware.` / `...I know that already.` の3案が順に既訳と衝突し、4案目 `"...No need to tell me."` で解決**。(b)**JAがほぼ同文の双子行**(`負けてしまいましたわ`(WAR_POST) と `あらあら、勝ってしまいましたわね`(WAR_VICTORY) など)。(c)**禁止語**(文末 `maybe.` 4件)。
+
+### 4. 発見して直した配線穴 — COMMON7 の `planType` が t() を通らず、本バッチで訳した8行が死んでいた
+
+`showFactionCommon7Modal`(ui-common.js:12372)が `const planType = String(payload.planType || WM_I18N.t('合同企画'))` で**テーブルの生JA値をそのまま受けていた**。`planType` は `COMMON7_LINES.planType` の値(`合同合宿・温泉旅行` 等8種)で**それ自体が辞書キー**なのに、値の側が一度も辞書を引いていない。P5-2d/2h/2j/2lの「PHをt()より前に置換する」型とは別の、**「テンプレは正しく訳されるが、差し込む値が生JAのまま」**という新しい変種。
+
+英語モードでの実害は3箇所:
+1. **ui-common.js:12416** — `<div class="fevt-subject-org">${planType}</div>` で**企画名がそのままDOMへ**(t()を通る経路が一つもない)
+2. **ui-common.js:12376→12381** — `vars.planType` として `coachReport` 文へ混入。テンプレ自体は正しく訳されるので *「…a joint project has been proposed. Along the lines of 合同合宿・温泉旅行.」* という半英語になる
+3. **ui-common.js:12424 / factions.js:3610** — 選択肢ヒントと結果文の `{plan}` に生JAが入る
+
+**修正(最小・2行)**
+
+- `src/ui-common.js:12372` を `WM_I18N.t(String(payload.planType || '合同企画'))` に。この1行で上記1〜3のうち1・2・3(ヒント側)が同時に直る(下流はすべてこのローカルを読むため)
+- `src/factions.js:3610` の `resultText` は `payload` から直接 `planType` を受ける別経路なので、`{ plan: WM_I18N.t(planType) }` と値の側にも t() を掛けた。**同関数(`applyCommon7Choice` 3607〜3627)は既に20箇所で `WM_I18N` を直接呼んでおり**、dict-opts規約の例外運用が先行している区画なので、その既存の書き方に合わせた(規約違反を新規に広げてはいない)
+
+**JA側の1バイト不変を検証**: 7派閥アーキタイプ×7 = **49ペアすべてで `t(planType)` の出力が生値と完全一致**(JAモードでは t() がキーをそのまま返すため)。`node test/ja-golden.js` も基準と完全一致。
+
+### 5. 表示経路の到達確認 — **9テーブルとも全行ENに届く(未達0)**
+
+全消費点を grep で列挙して1本ずつ追った(呼び出し元を全部数えてから直す)。
+
+- **RIVALRY_CONFRONTATION_LINES 140行は届く**。`_renderRivalryPopup`(ui-common.js:2577-2591)が `WM_I18N.t(pickDialogueLine(...))`、`_rivalryPreMatchLines`(17780-17802)がローカル `pick()` 内で t()。**2経路とも t() が `escHtml` より前**
+- **NEGOTIATE_LINES 130行は届く**。`Engine.negotiate.getDialogue`(management.js:15743)は生JAを返す(Engine層として正しい)。表示は ui-common.js:1551/1581/1689 の3箇所とも `_u3bSideHtml({line})` 経由で245行の t() に乗る。**行内の `\n` は t() の後に処理されるので辞書キーが壊れない**(`_mdlAFlowPortraitHtml`:13171 も t()→`replace(/\n/g,'<br>')` の順で同様)
+- **RIVALRY_RESOLUTION_LINES 126行は届く**(ui-common.js:2611-2619 / 14275 / 14327 の3経路)
+- **SLUMP_START_LINES 126行は届く**(ui-common.js:8118-8120 の単一経路。生産側 management.js:12645/12692・app.js:8850/15820 は `{type,trigger}` を積むだけ)
+- **RETAIN_LINES 121行は届く**。`Engine.retirement.selectRetainLine`(management.js:7677)→ app.js:6137 のローカル →`showEventPopup({speech})`→`_renderEventPopupAsC3`(2177)→`_u3bSideHtml`。**ゲーム状態に保存されない一時値**なので旧セーブ互換の問題もない
+- **COMMON4_LINES 115行は届く**。`headline`/`narration` は ui-common.js:12115/12116 で明示的に t()、`leaderQuote` は `_u3bSideHtml` 経由。**3フィールドとも到達**
+- **COMMON7_LINES 110行は本コミットで届くようになった**(§4)。`getCommon7Line`(factions.js:3651)自体は **dict-opts の順序が正しい**(`T(s)` で先に辞書を引き、その後に `{}` を置換)ことを本文で確認済み
+- **WAR_POST_DIALOGUE 107行は届く**(ui-common.js:1086-1088 / 14519 / 14580 / 14647 / 14841 の5経路すべてで t())
+- **WAR_VICTORY_LINES 103行は届く**(`_getWarVictoryLine` ui-common.js:1248-1249)
+- **プレースホルダを含む行は COMMON7 の2行のみ**(`coachReport` と `resultLeader.A`)で、いずれもテンプレのまま t() に入ることを確認した
+
+### 6. 触ったファイル
+
+- `i18n/dialogue-ledger.json` — en列1,084行を記入+cell 1行を追記(**diffは 1,087挿入/1,085削除 = `"en":` 行1,084本 + cell 1件(`null`→3行)のみ**。書き込み前にJSON往復同一性(indent=2+CRLF+末尾CRLF)をアサートし、書き込み後に `git diff -U0` で `"en":`/`"cell":`/`"archetype":` 以外の増減**0件**を機械確認)
+- `src/lang-en-dialogue.js` — 上記から再生成(自動生成物)
+- `src/ui-common.js` — `showFactionCommon7Modal` の `planType` を t() 経由に(§4)
+- `src/factions.js` — `applyCommon7Choice` の `resultText` で `{plan}` の値も t() 経由に(§4)
+- 他は worklog / roadmap のみ
+
+### 7. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node test/i18n-build-dialogue-dict.js` | ✅ green(違反0)。訳文あり**13,138**(12,054→+1,084) / cell判定済み12,665 |
+| `node --check src/lang-en-dialogue.js` / `src/ui-common.js` / `src/factions.js` | ✅ OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…、`--update`不使用) |
+| `npm test` | ✅ **260 passed / 0 failed** |
+| `node test/i18n-ratchet.js` | ✅ OK(直書き日本語の増加なし。files=31 / totalJaStrings=28095)。⑫時点のNGは09-04の基準更新(59cbb46)で解消済み |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(errors 0 / 台帳検査3種 違反0)。factions.js を触ったため実行 |
+| JA同一性(COMMON7 planType) | ✅ 7×7=**49ペアで `t(planType)` と生値が完全一致**(不一致0) |
+| VMでEN抜き取り | ✅ 実ランタイム(i18n.js+生成辞書4本+data/data-faction-dialogue/coach-lines/victory-lines/factions)で**台帳1,084キーの直接t()が未訳0**。さらに実選択ロジック(`pickDialogueLine`/`getDialoguePool` で6テーブル×scene×49セル、`WAR_VICTORY_LINES` 49セル、`COMMON4_LINES` 全7バケツ×全エントリ×3フィールド、`Engine.factions._common7PlanType`/`getCommon7Line` を7×7派閥ペアで全列挙)で**計8,442引き・日本語出力0・PH残り0・`[i18n-miss]` 0件** |
+| 品質スイープ(事前検査) | ✅ 網羅1,084/1,084・空訳0・日本語残り0・110字超0・PH不一致0・改行数不一致0・余分な空白0・`....`表記0・ojousama短縮形0(**本体 `test/i18n-build-dialogue-dict.js` と同じ固定語彙リスト+付加疑問除外で検査**)・cool感嘆符0・cool3文超0・hell/damn非delinquent 0・f/sワード0・翻訳調0・英国綴り0・ALL CAPS 0・♪♡欠落0・重複0・近似重複0 |
+
+### 8. 残課題(このバッチで判明したものを含む)
+
+1. **`_factionReporterStrip` の連結文が3箇所ENでも日本語のまま(要対応・本バッチでは触っていない)**。`ui-common.js:12126` の `` `${factionName}が${line.headline}を組んだみたいです。` `` は**実行時の文字列連結**なので辞書キーが存在しえず、`_u3bSideHtml` の t() を通っても必ず fail-open する。**同型が 11986(`${newcomerName}が${factionName}に加わったみたいです。`)・12059(`${factionName}の色合いが変わったようです——${fromLabel}から${toLabel}へ。`)にもある**。修正は `WM_I18N.t('{faction}が{headline}を組んだみたいです。', { faction, headline })` 型への書き換えだが、**生まれる辞書キーの持ち主は `i18n/ui-ledger.json`(P6-5並行エージェントの領分)なので本バッチでは手を入れなかった**。src側を直せば `test/i18n-extract-ui.js` が次回抽出で自動的に拾う形になる
+2. **`COMMON7_LINES.resultLeader` に消費点が一つも無い**(3行が死蔵)。`getCommon7Line` の呼び出しは ui-common.js:12381/12384/12387 の3箇所だけで、`'resultLeader'` を渡す箇所は存在しない。結果画面は `applyCommon7Choice` の `resultText`(factions.js:3610-3626)を使っている。**訳出はしたが表示されない**。仕様として意図的か要確認
+3. **`COMMON4_LINES` の `getCommon4Line` が参照返しになりうる**(factions.js:2903)。`leaderQuote` が文字列のエントリでは `entry` をそのまま返すため、ui-common.js:12115/12116 の `line.headline = WM_I18N.t(...)` が**`COMMON4_LINES` を恒久的に書き換える**。**現行13エントリはすべてオブジェクト形式で 2901 の `{...entry}` コピー分岐に入るので今は発火しない**が、テーブル追記時に踏む地雷。防御的コピーの追加が望ましい(要裁定・ソース未変更)
+4. **`_buildB3Step3b` が同一ファイル内で二重定義**(ui-common.js:14501 と 14563)。後者が前者を静かに上書きしている。**i18n的には両方 t() を通っており差異はない**が、死コードが残っている(要裁定・ソース未変更)
+5. **`COMMON7_LINES.planType` は8種のうち5種が複数キーの共有**(`エキシビションマッチ` が COMBAT_COMBAT / MERIT_COMBAT / COMBAT_MERIT の3ペア、`チャリティ興行` が BOND_FACE / FACE_BOND、`リーダー対決興行` が AUTHORITY_COMBAT / COMBAT_AUTHORITY)。**7×7=49ペアのうち実際に固有名が付くのは11ペアだけで、残る38ペアはすべて `_any`=`合同企画`(Joint Project)にフォールバックする**。派閥アーキタイプの組み合わせが企画名に反映されない場面のほうが多い。JA側の増補候補(要裁定)
+6. **`COMMON4_LINES` の `leaderQuote` は archetype軸のみで personality を持たない**(115行中98行がリーダー発言)。同じ派閥アーキタイプなら誰がリーダーでも同じことを言う。合宿は年に何度も出る画面なので、性格分岐の追加価値はある(要裁定)
+7. **JA側の書き分け漏れ2件**(P5-2f/2h/2i/2j/2kと同型)。`COMMON4_LINES.FACE.leaderQuote` の ojousama と polite が同文(`応援してくださる街に、こちらからも何かお返ししたいだけです。`)、`COMMON4_LINES.MERIT.leaderQuote` も同じ2属性が同文(`数字は嘘をつきません。次の興行までに、もう一段上げましょう。`)。**お嬢様帯と丁寧帯は英語では短縮形の有無で分かれる帯**なので、同文だと片方の声が死ぬ。翻訳側は1つのEN(短縮形なし)で処理した。要裁定
+8. **ネイティブ検品は未実施**(トーンバイブル§5-2の第三層)。特に見てもらいたい3点 — (a) **COMMON4 の narration 13本**(選手セリフではなく地の文。事実記述で格言化していないか) (b) **COMMON7 の 「」引用符を落とした判断**(§2)が吹き出し表示として正しいか (c) **スランプ126行で「体が〜」構文を全廃した書き替え**が、原文の「治ったのに動けない」という不安をちゃんと運べているか
+
+---
+
 ## 🌐 Stage B P5-2l — セリフ英訳バッチ⑫(マイルストーン186行+コーチ報告184行+引退承諾/拒否276行+統一王座147行+ドーム285行)（2026-09-04・Opus主筆 worktree agent-a971a3f4b9e05f2e5）
 
 量産翻訳の第12バッチ。**7テーブルの未訳1,076行**を訳した。規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。**§4-6のネイティブ検品①7則+②8則を含む**)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`docs/en-proper-nouns-draft-v0.1.md`+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2kの訳語判断(2fのベルト=belt/王座=title、2cの対社長温度Boss/President、2cのト書き書式、seductiveの`ふふ`=Mm を継承)。開始前にworktreeブランチをmain先端(d29334c)へfast-forward済み。**抽出器(`test/i18n-extract-dialogue.js`)は実行していない**(P5-2kと同じ運用)。
