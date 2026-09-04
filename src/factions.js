@@ -2900,7 +2900,11 @@ Engine.factions = {
       const a = (leader && leader.archetype) || 'standard';
       return { ...entry, leaderQuote: q[a] || q.standard || '' };
     }
-    return entry;
+    // P6-6配線修正: 文字列leaderQuoteのエントリはそのまま参照を返していたため、呼び出し側
+    // (showFactionCommon4Modal)の `line.headline = WM_I18N.t(line.headline)` が
+    // COMMON4_LINES テーブルの原本を恒久的に書き換えてしまう地雷だった(現行データは全件
+    // オブジェクト形式でこの分岐に入らず不発だったが、将来の追記で踏む)。浅いコピーで防ぐ。
+    return { ...entry };
   },
 
   // ── Common-1 派閥内試合提案 ──

@@ -22013,7 +22013,18 @@ Engine.news = {
   // i18n Stage B P4-2(D-P4-2): 第3引数 opts.dict は任意の「辞書参照関数」。省略時は
   // 従来どおりJA原文のまま(既存呼び出し元は無改修で不変)。
   generateTicker(rng, state, opts) {
-    const dict = (opts && typeof opts.dict === 'function') ? opts.dict : (s) => s;
+    // P6-6配線修正: 従来はdict(template)で「テンプレの翻訳」だけを行い、プレースホルダの
+    // 値は下の.replace()で生JAのまま挿入していた(選手名/団体名がpn()を通らずENでも
+    // 原文のまま露出するバグ)。dict(template, params)へ一本化し、値の変換もdict任せにする。
+    // opts.dictを渡さない呼び出し(test/ja-golden.js等)向けのフォールバックは、
+    // 旧来の手動置換ループと同じ置換だけを行う恒等関数にする(翻訳はしないが、
+    // プレースホルダの充填は従来どおり必須のため)。
+    const dict = (opts && typeof opts.dict === 'function') ? opts.dict : (s, params) => {
+      if (!params) return s;
+      let out = s;
+      Object.keys(params).forEach(k => { out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), params[k]); });
+      return out;
+    };
     const items = [];
     const ov = Engine.util.ov;
     const orgName = id => Engine.awards ? Engine.awards._orgName(state, id) : id;
@@ -22150,11 +22161,7 @@ Engine.news = {
     const resolved = items.map(item => {
       const templates = NEWS_TICKER_TEMPLATES[item.cat];
       if (!templates || templates.length === 0) return null;
-      let text = dict(Engine.rng.pick(rng, templates));
-      Object.keys(item.data).forEach(k => {
-        text = text.replace(new RegExp(`\\{${k}\\}`, 'g'), item.data[k]);
-      });
-      return text;
+      return dict(Engine.rng.pick(rng, templates), item.data);
     }).filter(Boolean);
 
     // シャッフルして3〜5件

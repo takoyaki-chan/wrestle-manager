@@ -123,8 +123,12 @@ function sliceTopLevelFunction(src, startIndexOrAnchor, label) {
 // 5-a. war-victory-overlay 系(ui-common.js): 生きている4箇所
 //   - _showWarVictoryChain の close(▶ボタン、次の勝利者セリフへ連鎖)
 //   - _showWarEnemyAceStatement の close(敵エース一言、onDoneへ)
-//   - showB3OpponentAftermath の close(mojibake版を上書きした「生きている」定義のみ。
-//     文字化けした最初の定義は関数再宣言で完全にシャドウされ絶対に実行されないため対象外)
+//   - showB3OpponentAftermath の close
+//     (P6-6, 2026-09-04: このテスト作成当時に隣接していた _buildB3Step3b の
+//     mojibake版初回宣言/「Re-declare...」マーカーコメントは死コードとして削除済み
+//     〈docs/i18n-stage-a-p3a-design-v0.1.md「バッチ4の積み残し台帳」参照〉。
+//     showB3OpponentAftermath 自体は元々このファイルに1箇所しか定義がないため、
+//     マーカー経由の間接参照をやめて直接アンカーする)
 //   - _showJTImpressionChain の close(▶ボタン、次のコメントへ連鎖)
 {
   const a = sliceTopLevelFunction(uiSrc, 'function _showWarVictoryChain(list, idx, onDone) {', '_showWarVictoryChain');
@@ -135,14 +139,13 @@ function sliceTopLevelFunction(src, startIndexOrAnchor, label) {
   assert.ok(/overlay\.remove\(\);[\s\S]*?_drainPopupQueue\(\);/.test(b),
     '_showWarEnemyAceStatement の close ハンドラが overlay.remove() の後に _drainPopupQueue() を呼んでいない');
 
-  const marker = uiSrc.indexOf('// Re-declare the B3 aftermath renderers');
-  assert.ok(marker >= 0, 'showB3OpponentAftermath の再宣言マーカーコメントが見つからない'
-    + '(コメント文言が変わったならこのテストのアンカーも合わせて直すこと)');
-  const liveStart = uiSrc.indexOf('function showB3OpponentAftermath', marker);
-  assert.ok(liveStart >= 0, '再宣言マーカーの後に showB3OpponentAftermath の定義が見つからない');
-  const c = sliceTopLevelFunction(uiSrc, liveStart, 'showB3OpponentAftermath(live)');
+  const occurrences = uiSrc.split('function showB3OpponentAftermath').length - 1;
+  assert.strictEqual(occurrences, 1,
+    'showB3OpponentAftermath の定義数が1でない(重複が生まれた/消えた疑い。'
+    + '重複が復活したなら再びマーカーで生存側を絞り込む必要がある)');
+  const c = sliceTopLevelFunction(uiSrc, 'function showB3OpponentAftermath', 'showB3OpponentAftermath');
   assert.ok(/overlay\.remove\(\);[\s\S]*?_drainPopupQueue\(\);/.test(c),
-    '(生きている方の)showB3OpponentAftermath の close ハンドラが overlay.remove() の後に '
+    'showB3OpponentAftermath の close ハンドラが overlay.remove() の後に '
     + '_drainPopupQueue() を呼んでいない');
 
   const d = sliceTopLevelFunction(uiSrc, 'function _showJTImpressionChain(list, idx, onDone) {', '_showJTImpressionChain');

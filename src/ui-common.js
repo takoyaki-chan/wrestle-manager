@@ -12024,7 +12024,7 @@ function showFactionCommon3Modal(payload, state, onClose) {
           <div class="fevt-report-title">🤝 ${escHtml(factionName)}${WM_I18N.t('へ加入')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, `${escHtml(newcomerName)}が${escHtml(factionName)}に加わったみたいです。`)}
+        ${_factionReporterStrip(state, WM_I18N.t('{name}が{faction}に加わったみたいです。', { name: newcomerName, faction: factionName }), true)}
         <div class="fevt-subject-stage">
           <div class="fc1m-compare u3b-theme-cream">
             ${_u3bSideHtml({
@@ -12097,10 +12097,10 @@ function showFactionArchetypeTransitionModal(payload, state, onClose) {
           <div class="fevt-report-title">🔄 ${factionName} ${WM_I18N.t('派閥の変質')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, `${factionName}の色合いが変わったようです——${fromLabel}から${toLabel}へ。`)}
+        ${_factionReporterStrip(state, WM_I18N.t('{faction}の色合いが変わったようです——{from}から{to}へ。', { faction: factionName, from: fromLabel, to: toLabel }), true)}
         <div class="fevt-subject-stage u3b-theme-cream">
           ${_u3bSideHtml({
-            name: leaderName, line: lines.leaderLine || '',
+            name: leaderName, line: lines.leaderLine || '', lineTranslated: true,
             imgUrl: leaderUrl, role: `${factionName} : ${fromLabel} → ${toLabel}`,
             bubbleClass: 'fevt-bubble',
           })}
@@ -12164,7 +12164,7 @@ function showFactionCommon4Modal(payload, state, onClose) {
           <div class="fevt-report-title">🏕 ${factionName} ${line.headline}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, `${factionName}が${line.headline}を組んだみたいです。`)}
+        ${_factionReporterStrip(state, WM_I18N.t('{faction}が{headline}を組んだみたいです。', { faction: factionName, headline: line.headline }), true)}
         <div class="fevt-subject-stage u3b-theme-cream">
           ${_u3bSideHtml({
             name: leaderName, line: line.leaderQuote || '',
@@ -12220,9 +12220,13 @@ function showFactionCommon1Modal(payload, state, onChoice) {
   // i18n Stage B P5基盤修正: getCommon1Lineはdict-opts化済み(§9)。プレースホルダ置換**前**の
   // テンプレへdictを通すため、WM_I18N.tを第3引数として渡す(戻り値をt()で包み直さない —
   // 包み直すと置換済みの完成文が辞書キーと一致せずfail-openする)。
+  // P6-6配線修正: フォールバック枝(Engine.factions.getCommon1Line不在時)も
+  // WM_I18N.t()経由にし、下流の_factionReporterStrip呼び出しをtranslated固定で
+  // 安全にできるようにする(旧実装は生JAのままで、二重t()回避のtranslated:trueを
+  // 付けるとフォールバック時にENで未訳のまま出てしまう構造だった)。
   const coachLine = (Engine.factions.getCommon1Line)
     ? Engine.factions.getCommon1Line('coachReport', { archetypeId, vars }, WM_I18N.t)
-    : `${factionName}内の${aName}と${bName}に火種があります。`;
+    : WM_I18N.t('{faction}内の{a}と{b}に火種があります。', { faction: factionName, a: aName, b: bName });
   const leaderLine = (Engine.factions.getCommon1Line)
     ? Engine.factions.getCommon1Line('leaderDemand', { archetypeId, vars, fighter: leader || fA }, WM_I18N.t)
     : WM_I18N.t('リングで決めたい。');
@@ -12275,7 +12279,7 @@ function showFactionCommon1Modal(payload, state, onChoice) {
           <div class="fevt-report-title">⚔ ${WM_I18N.t('派閥内対決の打診')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, escHtml(coachLine))}
+        ${_factionReporterStrip(state, coachLine, true)}
         ${leaderStripHtml}
         <div class="fc1m-compare u3b-theme-cream">
           ${_u3bSideHtml({
@@ -12344,11 +12348,13 @@ function showFactionCommon5Modal(payload, state, onChoice) {
 
   const vars = { factionName, leaderName };
   // i18n Stage B P5基盤修正: getCommon5Lineはdict-opts化済み(§9)。WM_I18N.tを渡し、
-  // プレースホルダ置換前のテンプレを翻訳させる(下流の_factionReporterStrip→
-  // _u3bSideHtmlが訳文をそのままt()に通しても、既に英語のためfail-openで無害)。
+  // プレースホルダ置換前のテンプレを翻訳させる。
+  // P6-6配線修正: 下流の_factionReporterStripが「既に英語のためfail-openで無害」というのは
+  // 誤りだった(specs/i18n-runtime-spec-v1.0.md §9)——実際はEN走破のi18n-missログを汚染する。
+  // translated:trueを渡して二重t()を避ける(フォールバック枝もt()経由に統一し安全に)。
   const coachLine = (Engine.factions.getCommon5Line)
     ? Engine.factions.getCommon5Line('coachReport', { archetypeId, vars }, WM_I18N.t)
-    : `${factionName}に取材依頼が来ています。`;
+    : WM_I18N.t('{faction}に取材依頼が来ています。', { faction: factionName });
 
   const html = `
     <div class="fevt-overlay-office" id="fevtCommon5Overlay">
@@ -12357,7 +12363,7 @@ function showFactionCommon5Modal(payload, state, onChoice) {
           <div class="fevt-report-title">📰 ${WM_I18N.t('派閥代表メディア取材')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, coachLine)}
+        ${_factionReporterStrip(state, coachLine, true)}
         <div class="fevt-subject-stage">
           <div style="display:flex;justify-content:center;margin-bottom:8px">${portrait}</div>
           <div class="fevt-subject-name">${leaderName}（${factionName}）</div>
@@ -12419,17 +12425,19 @@ function showFactionCommon7Modal(payload, state, onChoice) {
 
   const vars = { factionAName, factionBName, planType };
   // i18n Stage B P5基盤修正: getCommon7Lineはdict-opts化済み(§9)。WM_I18N.tを渡し、
-  // プレースホルダ置換前のテンプレを翻訳させる(下流の_u3bSideHtml/_factionReporterStripが
-  // 訳文をそのままt()に通しても、既に英語のためfail-openで無害)。
+  // プレースホルダ置換前のテンプレを翻訳させる。
+  // P6-6配線修正: 下流の_u3bSideHtml/_factionReporterStripが「既に英語のためfail-openで
+  // 無害」というのは誤りだった(specs/i18n-runtime-spec-v1.0.md §9・EN走破のi18n-missログを
+  // 汚染する)。translated:trueで二重t()を避ける(フォールバック枝もt()経由に統一)。
   const coachLine = (Engine.factions.getCommon7Line)
     ? Engine.factions.getCommon7Line('coachReport', { vars }, WM_I18N.t)
-    : `${factionAName}と${factionBName}、合同企画の打診が出ています。`;
+    : WM_I18N.t('{factionA}と{factionB}、合同企画の打診が出ています。', { factionA: factionAName, factionB: factionBName });
   const aQuote = (Engine.factions.getCommon7Line)
     ? Engine.factions.getCommon7Line('leaderAQuote', { archetypeId: archA, vars, fighter: lA }, WM_I18N.t)
-    : '「組んでみるか」';
+    : WM_I18N.t('「組んでみるか」');
   const bQuote = (Engine.factions.getCommon7Line)
     ? Engine.factions.getCommon7Line('leaderBQuote', { archetypeId: archB, vars, fighter: lB }, WM_I18N.t)
-    : '「乗った」';
+    : WM_I18N.t('「乗った」');
 
   // U3グループD統一(2026-07-26): .fevt-quote(本人セリフ)は各リーダー側の頭上吹き出しへ移行。
   // 両者とも発言するので F08 の duel 型と同様、両側の bubble-slot を埋める。
@@ -12440,19 +12448,19 @@ function showFactionCommon7Modal(payload, state, onChoice) {
           <div class="fevt-report-title">🤝 ${WM_I18N.t('派閥間合同企画')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, coachLine)}
+        ${_factionReporterStrip(state, coachLine, true)}
         <div class="fevt-subject-stage u3b-theme-cream">
           <div class="fevt-subject-pair">
             <div class="col">
               ${_u3bSideHtml({
-                name: lAName, line: aQuote, imgUrl: lA ? _factionUpperUrl(lA.id) : '',
+                name: lAName, line: aQuote, lineTranslated: true, imgUrl: lA ? _factionUpperUrl(lA.id) : '',
                 role: factionAName, bubbleClass: 'fevt-bubble',
               })}
             </div>
             <div class="fevt-pair-bridge">＋</div>
             <div class="col right">
               ${_u3bSideHtml({
-                name: lBName, line: bQuote, imgUrl: lB ? _factionUpperUrl(lB.id) : '',
+                name: lBName, line: bQuote, lineTranslated: true, imgUrl: lB ? _factionUpperUrl(lB.id) : '',
                 role: factionBName, bubbleClass: 'fevt-bubble',
               })}
             </div>
@@ -12770,7 +12778,7 @@ function showUnifiedTitleChallengeModal(payload, state, onChoice) {
   </div>`).join('');
   const html = `
     ${_mdlAHeader(WM_I18N.t('全国統一王座 挑戦権'), `${_mdlASeasonLabel(state)} ・ PLAYER TURN`)}
-    ${_mdlAReporterStrip(state, `${Engine.unifiedTitle._orgName(state, champion.orgId)}の王者${WM_I18N.pn(champion.fighter.name)}へ挑む番が来ました`)}
+    ${_mdlAReporterStrip(state, WM_I18N.t('{org}の王者{name}へ挑む番が来ました', { org: orgName, name: champion.fighter.name }), true)}
     <div class="mdl-a-subject-stage unified-challenge-office">
       <div class="unified-challenge-champion">
         ${championImg ? `<img src="${escHtml(championImg)}" alt="${escHtml(WM_I18N.pn(champion.fighter.name))}">` : `<div class="unified-challenge-champion-fallback">${escHtml((WM_I18N.pn(champion.fighter.name) || '?').charAt(0))}</div>`}
@@ -12900,9 +12908,13 @@ function showChallengeRequestModal(payload, state, onChoice) {
   const flavorLine = Engine.challengeRequest.pickFlavorLine(rivalry, bond, requester.name, opponent.name);
 
   // 取次コーチセリフ
+  // P6-6配線修正: 従来は選手名・団体名を先にJS文字列連結してから_factionReporterStrip側の
+  // t()に渡していたため(selectDialogue/_flagFormatLineと同型の穴)、完成文が辞書キーと
+  // 一致せずENで常に未訳のまま出ていた。テンプレ化してparamsで置換する(nameはt()の
+  // convertNamesで自動pn()化されるため個別のWM_I18N.pn()呼び出しは不要)。
   const coachLine = isInverse
-    ? `社長、${requesterOrgName}の${WM_I18N.pn(requester.name)}選手から団体戦挑戦の直訴です。${opponentOrgName}へ、私たち三人で挑みたい、と。`
-    : `社長、${WM_I18N.pn(requester.name)}選手から団体戦挑戦の直訴です。${otherOrgName}へ、私たち三人で挑みたい、と。`;
+    ? WM_I18N.t('社長、{reqOrg}の{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。', { reqOrg: requesterOrgName, name: requester.name, oppOrg: opponentOrgName })
+    : WM_I18N.t('社長、{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。', { name: requester.name, oppOrg: otherOrgName });
 
   const ovr = (f) => f ? Math.round(((f.pw||0)+(f.sp||0)+(f.te||0)+(f.st||0)+(f.mn||0))/5) : '—';
   const ovrA = ovr(requester), ovrB = ovr(opponent);
@@ -12971,7 +12983,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
           <div class="fevt-report-title">👥 ${WM_I18N.t('団体戦挑戦の直訴')}</div>
           <div class="fevt-report-meta">${_factionSeasonLabel(state)}</div>
         </div>
-        ${_factionReporterStrip(state, escHtml(coachLine))}
+        ${_factionReporterStrip(state, coachLine, true)}
         <div class="crq-briefing" aria-label="${WM_I18N.t('挑戦試合の開催形式')}">
           <div class="crq-briefing-item ${isInverse ? 'is-home' : 'is-away'}">
             <div class="crq-briefing-kicker">${WM_I18N.t('開催地')}</div>
@@ -14382,7 +14394,7 @@ function _buildB2Step3b(event, state, roster) {
       <div class="mdl-a-header-title">😔 ${WM_I18N.t('敗 者 の 声')}</div>
       <div class="mdl-a-header-meta">AFTERMATH ・ 2 / 2</div>
     </div>
-    ${_mdlAReporterStrip(state, `${loserName}は納得していないようです…`)}
+    ${_mdlAReporterStrip(state, WM_I18N.t('{name}は納得していないようです…', { name: loserName }), true)}
     <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: loserLine,
@@ -14416,7 +14428,7 @@ function _buildB3Step1(event, state) {
       <div class="mdl-a-header-title">⚔ ${WM_I18N.t('シングル挑戦の直訴')}</div>
       <div class="mdl-a-header-meta">CHALLENGE LETTER ・ ${_mdlASeasonLabel(state)}</div>
     </div>
-    ${_mdlAReporterStrip(state, `興行会場に${orgName}の関係者が来ています`)}
+    ${_mdlAReporterStrip(state, WM_I18N.t('興行会場に{org}の関係者が来ています', { org: orgName }), true)}
     <div class="mdl-a-subject-stage danger" style="padding-top:30px">
       ${_mdlAFlowPortraitHtml({
         line: event.challengerDialogue || '…',
@@ -14547,68 +14559,9 @@ function _buildB3Step3(event, state, roster) {
 }
 
 // ── B3 Step 3b: 敵陣反応 (frame 3b) ──────────────────────────────────────
-function _buildB3Step3b(event, state, roster) {
-  const result = event.matchResult || {};
-  const challenger = event.challenger || {};
-  const orgName = event.orgName || '他団体';
-  const won = result.winner === 'left';  // player won
-  const upperUrl = challenger.id ? getUpperUrl(challenger.id) : '';
-  const portraitStyle = upperUrl ? `background-image:url('${upperUrl}')` : 'background:#2a1a14';
-  const cOvr = challenger.pw ? Math.round((challenger.pw + challenger.sp + challenger.te + challenger.st + challenger.mn) / 5) : '?';
-
-  // 元コードのセリフデータを優先:
-  //   敵が負けた → BITTER_RESOLUTION_LINES.loser (恨み)
-  //   敵が勝った → WAR_POST_DIALOGUE.result_win (勝利宣言)
-  let challengerLine;
-  if (won) {
-    challengerLine = (typeof pickDialogueLine === 'function' && typeof BITTER_RESOLUTION_LINES !== 'undefined')
-      ? WM_I18N.t(pickDialogueLine(BITTER_RESOLUTION_LINES.loser, challenger) || '……この借り、必ず返してやる')
-      : WM_I18N.t('……この借り、必ず返してやる');
-  } else {
-    challengerLine = (typeof WAR_POST_DIALOGUE !== 'undefined' && typeof pickDialogueLine === 'function')
-      ? WM_I18N.t(pickDialogueLine(WAR_POST_DIALOGUE.result_win, challenger) || '……どうだ、これが実力の差だ')
-      : WM_I18N.t('……どうだ、これが実力の差だ');
-  }
-
-  const speechVariant = won ? 'resentment' : 'danger';
-  const headerTitle   = won ? '😠 敵 陣 の 反 応' : '😤 敵 の 勝 利 宣 言';
-  const reporterLine  = won
-    ? `${orgName}側は怒りを隠せない様子です…`
-    : `${orgName}側は勝利を誇示しています`;
-  const observationText = won
-    ? `${orgName}との<span class="marker danger">因縁</span>は、まだ終わっていない。`
-    : `${orgName}の<span class="marker danger">挑発</span>に、どう応えるか——`;
-
-  return `
-    <div class="mdl-a-header danger">
-      <div class="mdl-a-header-title">${headerTitle}</div>
-      <div class="mdl-a-header-meta">OPPONENT AFTERMATH ・ 2 / 2</div>
-    </div>
-    ${_mdlAReporterStrip(state, reporterLine)}
-    <div class="mdl-a-subject-stage defeat" style="padding-top:30px">
-      ${_mdlAFlowPortraitHtml({
-        line: challengerLine,
-        toneClass: speechVariant,
-        portraitClass: 'mdl-a-subject-portrait defeat',
-        portraitStyle,
-      })}
-      <div style="margin-top:12px"><div class="mdl-a-defeat-badge">${won ? 'DEFEATED ・ 敗 者' : 'VICTOR ・ 勝 者'}</div></div>
-      <div class="mdl-a-subject-name" style="color:rgba(232,220,200,0.85)">${challenger.name || '???'}</div>
-      <div class="mdl-a-subject-org" style="color:rgba(200,180,150,0.7)">${orgName} ・ OVR ${cOvr}</div>
-      <div class="mdl-a-observation" style="color:rgba(232,220,200,0.8);font-size:13px;margin-top:16px">
-        ${observationText}
-      </div>
-    </div>
-    <div class="mdl-a-tap-hint">TAP TO CONTINUE ・ ${WM_I18N.t('クリックで進む')}</div>
-    <div class="mdl-a-prompt" style="padding-bottom:24px">
-      <button class="mdl-a-continue-btn" data-choice="0">${WM_I18N.t('— 見 届 け る —')}</button>
-    </div>`;
-}
-
-// ── B3 VS対峙画面 (showResultOverlay) ─────────────────────────────────────
-
-
-// Re-declare the B3 aftermath renderers with clean strings to override mojibake above.
+// P6-6(2026-09-04): 同名関数の遮蔽された初回宣言(mojibake版、docs/i18n-stage-a-p3a-design-v0.1.md
+// 「バッチ4の積み残し台帳」に掃除候補として記録済み)を削除し1本化。JS仕様上どのみち後勝ちで
+// 常にこちらが実行されていたため、削除による挙動変化は無い(死コード除去のみ)。
 function _buildB3Step3b(event, state, roster) {
   const result = event.matchResult || {};
   const challenger = event.challenger || {};
@@ -16704,12 +16657,18 @@ function showTrialEndMessage() {
 // U3グループA統一(2026-07-26)注記: 解雇面談(renderShachoshitsuReleaseInterview)だけを
 // _u3bSideHtml(.u3b-*)へ移行したため、意匠の異なるこちら(契約更新交渉)は
 // .negotiation-* とのクラス名衝突を避けて .negc-* に改名した(見た目・挙動は変更なし)。
-function _negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel) {
+// P6-6配線修正: dialogueは常にEngine.contract.selectDialogue/resolveNegotiation
+// (dict-opts、{tenure}/{record}等の断片を翻訳→置換した完成文)からしか渡ってこないため、
+// 既定で二重t()になっていた(視覚上は無害だがEN走破のi18n-missログを汚染していた・
+// specs/i18n-runtime-spec-v1.0.md §9と同型)。他の共通表示点と揃えて
+// lineTranslated引数を追加し、4箇所の呼び出し元すべてでtrueを渡す。
+function _negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel, lineTranslated) {
   // 顔と名前から選手詳細を開けるようにする(2026-07-27 Keisuke)。
   // 交渉相手の成績・能力を確かめないまま判断することになっていたため。
   return `<div class="negc-speaker u3b-theme-dark">${_u3bSideHtml({
     name: neg.fighterName,
     line: dialogue,
+    lineTranslated: !!lineTranslated,
     size: 'm',
     imgUrl: typeof getUpperUrl === 'function' ? getUpperUrl(neg.fighterId) : '',
     portraitClass: 'negc-speaker-portrait',
@@ -16798,8 +16757,11 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
       ? (isVoluntaryDecline ? 'decline_voluntary_open' : 'decline_open')
       : 'raise_open';
   // i18n Stage B: selectDialogueはdict-opts化済み(specs/i18n-runtime-spec-v1.0.md §6)。
-  // プレースホルダ置換前のテンプレを翻訳させるためWM_I18N.tを渡す(戻り値は_negSpeakerHtml
-  // →_u3bSideHtmlへそのまま渡り、_u3bSideHtml内部のt()は既に訳文のためfail-openで無害)。
+  // プレースホルダ置換前のテンプレを翻訳させるためWM_I18N.tを渡す。
+  // P6-6配線修正: 戻り値は_negSpeakerHtml→_u3bSideHtmlへ渡るが、「既に訳文のため
+  // fail-openで無害」というのは誤りだった(specs/i18n-runtime-spec-v1.0.md §9・EN走破の
+  // i18n-missログを汚染する)。_negSpeakerHtmlのlineTranslated引数(P6-6で追加)で
+  // 二重t()そのものを避ける(4箇所の呼び出し元すべてでtrueを渡す)。
   const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, openPhase, neg.context, WM_I18N.t);
   const retentionRaise = isTransfer && fighter
     ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state)
@@ -16872,7 +16834,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
     ${infoHtml}
     <div class="neg-choices">${choicesHtml}</div>`;
 
-  renderShachoshitsuNegotiation(_negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel), deskHtml);
+  renderShachoshitsuNegotiation(_negSpeakerHtml(neg, dialogue, badgeCls, badgeLabel, true), deskHtml);
   Audio.play('event');
 
   let choiceConsumed = false;
@@ -16902,7 +16864,7 @@ function showContractReactionModal(neg, reactionText, onDone) {
   if (!el) { if (onDone) onDone(); return; }
   if (!reactionText) { if (onDone) onDone(); return; }
 
-  const wallHtml = _negSpeakerHtml(neg, reactionText, 'neg-badge-raise', '');
+  const wallHtml = _negSpeakerHtml(neg, reactionText, 'neg-badge-raise', '', true);
   const deskHtml = `
     <button class="neg-btn" id="contractReactionOk" style="width:100%;justify-content:center;padding:12px;font-size:13px;font-weight:700">
       ${WM_I18N.t('次へ')}
@@ -16926,7 +16888,7 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
   const fighter = (state.roster || []).find(f => f.id === neg.fighterId);
   const retentionRaise = fighter ? Engine.contract.calcRetentionRaiseAmount(neg, fighter, state) : 0;
   const retentionTerms = WM_I18N.t('一時金{a}万 + 給与+{b}万/週', { a: neg.retentionBonus, b: retentionRaise });
-  const wallHtml = _negSpeakerHtml(neg, listenText, 'neg-badge-transfer', WM_I18N.t('🚪 移籍志願'));
+  const wallHtml = _negSpeakerHtml(neg, listenText, 'neg-badge-transfer', WM_I18N.t('🚪 移籍志願'), true);
 
   const deskHtml = `
     <div class="neg-card-title">📋 ${WM_I18N.t('{name}の話を聞く', { name: neg.fighterName })}</div>
@@ -16966,7 +16928,7 @@ function showContractSuddenDepartureModal(neg, state, onDone) {
   // i18n Stage B: selectDialogueはdict-opts化済み(§6)。WM_I18N.tを渡し、プレースホルダ
   // 置換前のテンプレを翻訳させる(戻り値をt()で包み直さない)。
   const dialogue = Engine.contract.selectDialogue(dialogueRng, neg, 'sudden_departure', neg.context, WM_I18N.t);
-  const wallHtml = _negSpeakerHtml(neg, dialogue, 'neg-badge-sudden', WM_I18N.t('⚡ 突発退団'));
+  const wallHtml = _negSpeakerHtml(neg, dialogue, 'neg-badge-sudden', WM_I18N.t('⚡ 突発退団'), true);
 
   const deskHtml = `
     <div class="neg-card-info neg-card-info-sudden" style="font-size:12px;text-align:center;margin-bottom:14px">

@@ -1,6 +1,92 @@
 # Wrestle Manager 作業ログ（worklog）
 
-## 🌐 Stage B P6-5 — EN走破i18n-miss 104(実測96)件の棚卸し+配線穴修正+D3_TEXT根治+1季完走達成（2026-09-04・worktree agent-aec89a43d9bdd6e93）
+## 🌐 Stage B P6-6 — バッチ⑬とP6-5が起票した配線残の掃除（2026-09-04・worktree agent-a313e58caa3653a86）
+
+指示書は⑬(P5-2m)・P6-5両worklogが発見済みの7項目+同型探索。開始前にworktreeブランチをmain先端(e93b714、P6-5=ef8a130・検品③=e93b714まで)へfast-forward済み。i18n/dialogue-ledger.json・src/lang-en-dialogue.jsは指示どおり不触。
+
+### 1. `_factionReporterStrip` の文字列連結3箇所（ui-common.js）
+
+`showFactionCommon3Modal`(新加入)・`showFactionArchetypeTransitionModal`(派閥変質)・`showFactionCommon4Modal`(合宿)の3箇所が`` `${a}が${b}...` ``でJS文字列連結してから`_factionReporterStrip`に渡していたため、完成文が辞書キー(未置換の原文)と一致せずENでも常にJAのまま出ていた(内部で二重にescHtmlもされていたが、日本語名にHTML特殊文字を含まないため実害はJAでは無音)。3箇所とも`WM_I18N.t(テンプレ, params)`+`_factionReporterStrip(..., true)`(訳し済みなので二重t()回避)へ書き換え。
+
+- `{name}が{faction}に加わったみたいです。` → "It looks like {name} has joined {faction}."
+- `{faction}の色合いが変わったようです——{from}から{to}へ。` → "{faction}'s character seems to be shifting — from {from} to {to}."
+- `{faction}が{headline}を組んだみたいです。` → "It looks like {faction} has put together {headline}."
+
+`{name}`/`{faction}`は選手名・派閥名を生値のまま渡す(t()のconvertNamesが選手名だけpn()経由で自動英訳。派閥名は`"○○派"`形式の合成文字列で名前辞書に無いため既存の他表示箇所と同様に不変=このファイル内の既存挙動と揃えた)。
+
+### 2. `getCommon4Line`(factions.js:2903)の参照返し
+
+`leaderQuote`が文字列型のエントリでは`return entry;`と生の参照を返していたため、呼び出し元`showFactionCommon4Modal`の`line.headline = WM_I18N.t(line.headline)`が**`COMMON4_LINES`テーブルの原本を恒久的に書き換える**地雷だった(ENで一度描画すると、以後JAへ切り替えてもそのエントリだけEN文字列が出続ける)。現行13エントリは全てオブジェクト形式で該当分岐に入らず不発だったが、`return { ...entry };`へ浅いコピー化して防御した。
+
+### 3. `_buildB3Step3b` の二重宣言(ui-common.js)
+
+同名関数が2つ定義されており(旧mojibake版が14550行台、クリーン版が14612行台)、JS仕様上つねに後者(クリーン版)が生存・前者は完全な死コードだった(docs/i18n-stage-a-p3a-design-v0.1.mdの積み残し台帳に4b-3時点から記録済みの既知項目)。死コード(旧mojibake版・約58行)を削除し1本化。挙動は元々後勝ちのため無変化(JA出力はja-goldenで確認)。
+
+副作用: `test/audit-cheap-items-test.js`が削除した「Re-declare the B3 aftermath renderers...」というコメント文言をテキストアンカーにして`showB3OpponentAftermath`の定義位置を間接的に絞り込んでいた(当時`_buildB3Step3b`の重複騒ぎのついでに書かれた迂遠なアンカーで、`showB3OpponentAftermath`自体はファイル内に1箇所しか定義がなく本来マーカーは不要だった)。テストの自己文書化コメント「コメント文言が変わったならこのテストのアンカーも合わせて直すこと」に従い、`function showB3OpponentAftermath`への直接アンカー+定義数=1のアサーションへ書き換えた(重複が将来復活したら検知できるよう定義数チェックは残す)。
+
+### 4. `COMMON7_LINES.resultLeader` 3行の消費点ゼロ
+
+`getCommon7Line('resultLeader', ...)`を呼ぶ箇所がsrc全体に存在しない。`showFactionCommon7Modal`は`coachReport`/`leaderAQuote`/`leaderBQuote`の3カテゴリしか引かず、結果画面は`applyCommon7Choice`(factions.js)が組む完全文`resultText`を使う別経路。訳出済み(EN)だが表示に届かない「死行」であることを確認し、新規UI配線はP6-6のスコープ外のため見送り、`docs/i18n-stage-a-p3a-design-v0.1.md`の積み残し台帳へ記録した(Keisuke裁定待ち)。
+
+### 5. オフシーズン契約交渉の二重t()（`_negSpeakerHtml`、ui-common.js）
+
+`showContractNegotiationModal`/`showContractReactionModal`/`showContractListenModal`/`showContractSuddenDepartureModal`の4画面はいずれも`Engine.contract.selectDialogue`/`resolveNegotiation`(dict-opts、`{tenure}`/`{record}`等の断片を翻訳→置換した完成文)からしかセリフを受け取らないのに、共通表示ヘルパー`_negSpeakerHtml`が`lineTranslated`引数を持たず常に内部でt()し直していた(視覚上は無害だが、EN走破の`[WM][i18n-miss]`ログを汚染。P6-5が残した「新たに8件のEN二重t()疑い」の正体)。`_negSpeakerHtml`に`lineTranslated`引数(specs §9の`_u3bSideHtml`等と同じopt-inパターン)を追加し、4箇所すべてで`true`を渡した。
+
+### 6+7. ニュースティッカーの選手名・団体名がpn()未通過（`Engine.news.generateTicker`、management.js）
+
+`generateTicker`は`dict(template)`でテンプレ本文だけ翻訳し、プレースホルダの値(選手名・団体名)は呼び出し側の生の`.replace()`で挿入していたため、選手名(根岸亞里亞/穴澤ほのか/北畠吉乃など)がENでもJAのまま露出していた。P6-5が「不明なJA語が{org}枠に混入」と報告していた`ブレイクスルー`は**バグではなく実在のAI団体名**(`RIVAL_ORGS`のS格団体の1つ、`i18n/names-ledger.json`の`orgs`セクションに`"Breakthrough"`として登録済み)で、これも同じ「値がpn()を通らない」バグの一系統だった。`dict(template, item.data)`(=`WM_I18N.t`の`(text, params)`契約)へ一本化し、値の変換もdict任せにした。`opts.dict`未指定時(test/ja-golden.js)のフォールバックは、翻訳はしないがプレースホルダの充填だけは行う恒等関数に差し替えた(単純な`(s)=>s`だと無指定呼び出しで`{name}`等が生のまま出てしまう)。
+
+直接検証(vmで実ランタイムを読み込み、rngシードを振ってaiAce/winStreakカテゴリを強制ヒット):
+- EN: `◆ Breakthrough's marquee name Aria Negishi is said to be in outstanding condition in training` / `◆ Honoka Anazawa's streak has reached 4. Whoever is next will not sleep well`
+- JA(opts省略・ja-golden相当の呼び出し): `◆ ブレイクスルーの看板選手根岸亞里亞、練習での仕上がりが抜群とのこと` / `◆ 快進撃の穴澤ほのか、4連勝で勢いが止まらない`(旧実装と1バイト一致・ja-goldenのhashも不変)
+
+### 8. 同型の穴(見つけて同時に修正)
+
+呼び出し元を全部数える方針(feedback_enumerate_all_call_sites)で、`_mdlAReporterStrip`/`_u3bSideHtml`/`_factionReporterStrip`へのdict-opts系戻り値渡しを総ざらいし、①③に加えて計8箇所を発見・修正:
+
+- `_mdlAReporterStrip`の文字列連結3箇所: 統一王座挑戦到来(`{org}の王者{name}へ挑む番が来ました`)/派閥内対決敗者(`{name}は納得していないようです…`)/シングル挑戦状到来(`興行会場に{org}の関係者が来ています`)
+- `getCommon1Line('coachReport')`→`showFactionCommon1Modal`の`coachLine`が`_factionReporterStrip`へ`escHtml()`込み・`lineTranslated`無しで渡っていた(二重t()+二重escHtml。JAでは実害なしだがENで未訳表示+ログ汚染)
+- `getCommon5Line('coachReport')`→`showFactionCommon5Modal`の`coachLine`が同型
+- `getCommon7Line('coachReport'/'leaderAQuote'/'leaderBQuote')`→`showFactionCommon7Modal`の`coachLine`/`aQuote`/`bQuote`が同型(3箇所)
+- `getTransitionLine`→`showFactionArchetypeTransitionModal`の`lines.leaderLine`が`_u3bSideHtml`へ`lineTranslated`無しで渡っていた
+- 団体戦挑戦の直訴(`showChallengeRequestModal`系)の`coachLine`が`` `社長、${a}選手から...` ``という素の文字列連結(selectDialogue/`_flagFormatLine`と同型のPH先埋め込み穴・dict-opts経由ですらなかった)。テンプレ化(`社長、{reqOrg}の{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。`ほか1本)して修正
+
+上記のうちEngine.factions.getCommonXLineの各フォールバック枝(`Engine.factions.getCommonXLine`が未定義のときの防御的分岐。実運用では到達しない)も、`lineTranslated:true`を安全に付けられるようWM_I18N.t()経由のテンプレへ揃えた(`{faction}内の{a}と{b}に火種があります。`/`{faction}に取材依頼が来ています。`/`{factionA}と{factionB}、合同企画の打診が出ています。`/`「組んでみるか」`/`「乗った」`)。
+
+### 台帳・辞書
+
+`test/i18n-extract-ui.js`を再実行したところ、上記で新設した6キー+フォールバック5キー+団体戦挑戦の直訴2キーに加えて、**P6-6と無関係な17キー**(決裁枠ツールチップ`_choiceEventReporterLine`の16分岐+デフォルト2種、及びP6-5で`_buildB3Step3b`生存側に導入済みだった`{org}勢は苛立ちを隠せない表情です`/`{org}勢は勝利を確信しています`2件)が「新規キー(en空)」として検出された。これらは全てP6-5時点で既にsrcへ実装済みだったが、抽出器の再実行がP6-5コミット後に一度も行われていなかったための積み残し(台帳の恒常的なドリフト。私の変更が原因ではない — `git diff`でapp.js等は無変更と確認済み)。計32キー全てに英訳を補い、`node test/i18n-build-dict.js`で未訳0を確認した。構造チェック(旧台帳との差分)で`en`値の書き換えは無く、`count`/`files`/`kept`の付随フィールドのみ再計算で変動(死コード削除による出現数減少+抽出器の再走査による正しい再検出)であることをNode一発スクリプトで機械確認した。
+
+### 触ったファイル
+
+- `src/ui-common.js` — 上記1・2(参照側)・3・5・8
+- `src/factions.js` — 上記2(`getCommon4Line`本体)
+- `src/management.js` — 上記6+7(`generateTicker`)
+- `i18n/ui-ledger.json` — 新規32キーの`en`列を記入(再抽出込み)
+- `src/lang-en.js` — 上記から再生成(自動生成物)
+- `test/audit-cheap-items-test.js` — 上記3の副作用で失効したテキストアンカーを修正
+- `docs/i18n-stage-a-p3a-design-v0.1.md` — 積み残し台帳に4の死行記録+3(`_buildB3Step3b`)を解決済みへ更新
+- `specs/i18n-runtime-spec-v1.0.md` — `_negSpeakerHtml`をlineTranslated系共通表示点リストへ追加/PH先埋め込み型の穴の注意書き追加/`generateTicker`の値置換契約修正を追記
+
+### 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check` (ui-common/factions/management/lang-en/audit-cheap-items-test) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(lines=11233, hash=6b3d05c8…、`--update`不使用) |
+| `node test/i18n-build-dict.js` | ✅ 台帳総キー数=3295 訳文あり=3295 未訳(fail-open)=0 |
+| `npm test` | ✅ 260/260 green(audit-cheap-items-test.jsのアンカー更新込み) |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR(violations 0・errors 0・台帳検査3種違反0。factions.js/management.js改修のため実行) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest=`1052faa82eaf7991`(**指示どおり不変を確認**) |
+| `npm run test:ui:walkthrough:en`(EN, seed42・1季) | ✅ PASS、Issues=0、season=2 week=1まで完走(1季完走維持)。**i18n-miss=45件/45キー**(指示の57から減少を確認)。残る45件は主にP5バッチ待ちの未訳セリフ+今回のスコープ外の別の二重t()疑い(次バッチ) |
+| ticker直接検証(vmで実ランタイム・rngシード総当たり) | ✅ 上記6+7節参照(EN/JA双方で選手名・団体名の扱いを実測確認) |
+
+### 残課題・新たな発見(次バッチへ)
+
+1. **`test/fixtures/i18n-ratchet-baseline.json`がP6-5コミット(ef8a130)以降app.jsに対して1件古い**(baseline 541 / 実測542)。app.js自体は本バッチで無変更(`git diff`で確認済み)であり、P6-5が`--update`を回さずコミットした既存の積み残し。本バッチのスコープ外のため`--update`はせず、事実のみ記録する
+2. EN走破i18n-miss 45件のうち、`I won thanks to everyone in the promotion...`/`Oh my~ that was enjoyable...`/`The top of the spring belongs to us...`等、**既に英訳済みの完成文がミスログに出ている**行が複数あり、本バッチで直したのと同型(二重t()または渡し忘れ)の穴が他にもまだ残っている可能性が高い。具体的な発生源(呼び出し元)は未特定・次バッチの調査対象
+3. `getCommon1Line('resultLoser')`/`getCommon1Line('resultLeader')`(派閥内対決の結果画面)は`escHtmlSafe(line||'')`で直接描画しており二重t()の対象外と確認済み(バグなし・調査メモとして記録)
+4. 「」で括られたリーダー発言セリフ(F1M型: `` 「${escHtml(leaderLine)}」 ``のようにJSリテラルで囲む形)がShowCommon1Modal等にまだ複数残っている。P5-2m worklogで確立した「英語では引用符を落とす」方針(セリフ層のt()辞書内では適用済み)が、**UI層のJSリテラル側の囲み記号には及んでいない**ため、EN訳の完成文が「"quoted text"」のように二重引用に見える箇所がある。今回は調査のみで未着手(該当関数を書き換えるとui-ledgerではなくUIのHTML構造修正になるため、範囲外と判断)
 
 開始前にworktreeブランチをmain先端(d29334c、バッチ⑪+P6-4保全マージ含む)へfast-forward済み。i18n/dialogue-ledger.json・src/lang-en-dialogue.js・test/i18n-build-dialogue-dict.js は指示どおり未変更。
 

@@ -713,6 +713,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\n社長室の書類を決裁するのに使う。<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span>",
+    "en": "<strong style=\"color:var(--gold)\">⚡ Decision Points</strong><br>\nSpent to decide papers in the president's office.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "決裁枠ツールチップ(通常時)。複数行テンプレ literal のため走査外"
+  },
+  {
+    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\n社長室の書類を決裁するのに使う。<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">いまは満タン。<strong style=\"color:var(--text-main)\">次の回復は捨てられる</strong></span>",
+    "en": "<strong style=\"color:var(--gold)\">⚡ Decision Points</strong><br>\nSpent to decide papers in the president's office.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">Currently full. <strong style=\"color:var(--text-main)\">The next recovery will be wasted</strong></span>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "決裁枠ツールチップ(満タン時)。複数行テンプレ literal のため走査外"
+  },
+  {
     "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\r\n社長室の書類を決裁するのに使う。<br>\r\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span>",
     "en": "<strong style=\"color:var(--gold)\">⚡ Approvals</strong><br>\r\nSpent to approve the documents on your desk.<br>\r\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span>",
     "files": [
@@ -1892,6 +1916,67 @@
     "hasProperNoun": false
   },
   {
+    "key": "{factionA}と{factionB}、合同企画の打診が出ています。",
+    "en": "There is a proposal for a joint project between {factionA} and {factionB}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{faction}が{headline}を組んだみたいです。",
+    "en": "It looks like {faction} has put together {headline}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{faction}に取材依頼が来ています。",
+    "en": "A media request has come in for {faction}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{faction}の動向について報告があります。",
+    "en": "There's a report on {faction}'s movements.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "note": "showFactionF07Modal coachReport分岐のフォールバック文。P6-5で${factionName}直書きからt()+paramsへ配線修正"
+  },
+  {
+    "key": "{faction}の色合いが変わったようです——{from}から{to}へ。",
+    "en": "{faction}'s character seems to be shifting — from {from} to {to}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{faction}内の{a}と{b}に火種があります。",
+    "en": "There is tension between {a} and {b} in {faction}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{faction}内の序列を懸けた一戦に決着がついた。",
     "en": "The match for rank inside {faction} has been settled.",
     "files": [
@@ -2532,6 +2617,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}が{faction}に加わったみたいです。",
+    "en": "It looks like {name} has joined {faction}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}が{fin}で勝利。",
     "en": "{name} wins by {fin}.",
     "files": [
@@ -2640,6 +2735,17 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{name}さんが社長室に向かいました。",
+    "en": "{name} has headed to the president's office.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "note": "showFactionF07Modal leader分岐のreporter文。P6-5で${leaderSurname}直書きからt()+paramsへ配線修正"
   },
   {
     "key": "{name}と{label}",
@@ -3052,6 +3158,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}は納得していないようです…",
+    "en": "It looks like {name} isn't satisfied...",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}は誌面で次の標的を名指しした。火種は派閥外へと撒かれた。",
     "en": "{name} named her next target in print. The spark has been scattered beyond the faction.",
     "files": [
@@ -3212,6 +3328,116 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}選手から、タイトル挑戦を希望する申し出が来ています",
+    "en": "{name} has petitioned for a title shot.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手から休養願いが出ています。コンディションの問題かもしれません",
+    "en": "{name} has asked for time off. It may be a condition issue.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手から待遇への強い不満が…退団も口にしています。早急なご判断を",
+    "en": "{name} has strong complaints about her treatment... she's even mentioned leaving. This needs your attention right away.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手が、因縁の相手との対戦を希望しています",
+    "en": "{name} wants to face her rival in the ring.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手が、後輩の指導役を申し出ています",
+    "en": "{name} has offered to mentor the younger wrestlers.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手が特訓を志願しています。ご判断を",
+    "en": "{name} has volunteered for intensive training. Your call.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手が練習をボイコットしています。対応をお願いします",
+    "en": "{name} is boycotting practice. Please respond.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手にメディアから出演オファーが届いています。出すか、断るか、別の選手を推薦するか——ご判断を",
+    "en": "A media appearance offer has come in for {name}. Send her, decline, or recommend someone else — your call.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手に他団体から引き抜きオファーが入りました。早急なご判断を",
+    "en": "Another promotion has made a poaching offer for {name}. This needs your attention right away.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手のSNS投稿が話題に…早めの対応をご検討ください",
+    "en": "{name}'s social media post is making waves... please consider a prompt response.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}選手の不満がロッカーで広がっています",
+    "en": "{name}'s discontent is spreading through the locker room.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}陣",
     "en": "{name}'s side",
     "files": [
@@ -3332,6 +3558,17 @@
     "count": 9,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{n}名の代表を選んでください。団体の威信を懸けた総力戦です",
+    "en": "Choose {n} representatives. The org's pride rides on this all-out battle.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "note": "war-entry代表選出画面のreporter文。P6-5で${required}直書きからt()+paramsへ配線修正"
   },
   {
     "key": "{n}名トーナメントの進行データを保持しています。大会画面に戻って進行を続けてください。",
@@ -3566,6 +3803,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}から正式な対抗戦の申し入れが届きました",
+    "en": "{org} has sent an official challenge for an inter-promotion war.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "note": "showWarChallengeのreporter文。P6-5で${ev.opponentName}直書きからt()+paramsへ配線修正"
+  },
+  {
     "key": "{org}が獲得！",
     "en": "{org} takes it!",
     "files": [
@@ -3666,6 +3914,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の王者{name}へ挑む番が来ました",
+    "en": "Your turn has come to challenge {org}'s champion, {name}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の足跡",
     "en": "The road {org} has walked",
     "files": [
@@ -3682,6 +3940,26 @@
       "app.js"
     ],
     "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}勢は勝利を確信しています",
+    "en": "{org}'s side is confident of victory.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}勢は苛立ちを隠せない表情です",
+    "en": "{org}'s side can't hide their frustration.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -4403,7 +4681,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 8,
+    "count": 7,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -4473,7 +4751,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 3,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -4483,7 +4761,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 3,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -6274,6 +6552,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "「乗った」",
+    "en": "I'm in.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「組んでみるか」",
+    "en": "Might as well team up.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "【{feature}】は製品版で解放されます！",
     "en": "{feature} is unlocked in the full version!",
     "files": [
@@ -7226,6 +7524,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "ご判断の結果をお伝えします",
+    "en": "Here's the outcome of your decision.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "決裁結果モーダルのreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)"
+  },
+  {
     "key": "しばらく成長が止まるかもしれない",
     "en": "Her growth may stall for a while",
     "files": [
@@ -7354,6 +7664,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "たしなめる",
+    "en": "Rein them in",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
   },
   {
     "key": "ただ、それぞれの派閥は、抗争が続くことの<em>{futility}</em>を知り、<em>{standDown}</em>を選んだ。",
@@ -8291,7 +8613,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 8,
+    "count": 7,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -8438,6 +8760,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "コンディション <strong>+3</strong>／注意累積 +1。",
+    "en": "Condition <strong>+3</strong>. Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE choice C hint"
+  },
+  {
     "key": "コーチ",
     "en": "Coach",
     "files": [
@@ -8556,6 +8890,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "コーチ経由で個別ケア／注意累積 +1。",
+    "en": "Individual care through a coach. Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE choice C hint"
+  },
+  {
+    "key": "コーチ経由で調整／注意累積 +1。",
+    "en": "Adjustment through a coach. Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD choice C hint"
   },
   {
     "key": "コーチ経由ケア",
@@ -8872,6 +9230,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "スカウトからの情報が入りました。動くかどうかご判断を",
+    "en": "A scout has sent in some information. Your call on whether to act.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "スキップ",
     "en": "Skip",
     "files": [
@@ -9011,6 +9379,16 @@
       "ui-render.js"
     ],
     "count": 7,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スポンサーから提案が届いています。受けるかどうかご判断ください",
+    "en": "A sponsor has sent a proposal. Please decide whether to accept it.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -9912,6 +10290,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "ファン期待の重圧",
+    "en": "The Weight of Fan Expectations",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE.titleText"
+  },
+  {
     "key": "フィジカル",
     "en": "Physical",
     "files": [
@@ -10340,6 +10730,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "メインカード相談",
+    "en": "Main Card Request",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MAIN.titleText"
+  },
+  {
     "key": "メインドラフト",
     "en": "Main Draft",
     "files": [
@@ -10481,6 +10883,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "メンバーごとに労をねぎらう。注意累積 +1。",
+    "en": "You thank each member individually. Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION choice C hint"
+  },
+  {
+    "key": "メンバー一人一人に目を配る。<br>注意累積 +1。",
+    "en": "You look after each member individually.<br>Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MONEY choice C hint"
   },
   {
     "key": "メンバー間 絆",
@@ -10770,9 +11196,201 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 5,
+    "count": 6,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "リーダーの意向を尊重する代わりに、コンディションが落ちる。",
+    "en": "You respect the leader's wishes, but condition drops.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE choice B hint"
+  },
+  {
+    "key": "リーダーの要求",
+    "en": "The Leader's Demand",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT.titleText"
+  },
+  {
+    "key": "リーダーの顔は立つが、ロッカーにわだかまりが残る。",
+    "en": "The leader saves face, but resentment lingers in the locker room.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK choice B hint"
+  },
+  {
+    "key": "リーダーの顔を立てつつ、標的を個別に支える。注意累積 +1。",
+    "en": "You save the leader's face while quietly supporting the target. Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT choice C hint"
+  },
+  {
+    "key": "リーダーは不服そうだが、コンディションは回復する。",
+    "en": "The leader looks unhappy, but condition recovers.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE choice A hint"
+  },
+  {
+    "key": "リーダーは不服そうだが、中位メンバーは救われる。",
+    "en": "The leader looks unhappy, but the mid-tier members are spared.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK choice A hint"
+  },
+  {
+    "key": "リーダーは不満を募らせるが、派閥外には公平な対応と映りそうだ。",
+    "en": "The leader's frustration builds, but it should read as fair to those outside the faction.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MAIN choice B hint"
+  },
+  {
+    "key": "リーダーは勢いづくが、怪我の危険が高まる。",
+    "en": "The leader gains momentum, but injury risk rises.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD choice B hint"
+  },
+  {
+    "key": "リーダーは勢いづく一方、標的とロッカー全体に不満が残る。",
+    "en": "The leader gains momentum, while the target and the locker room are left dissatisfied.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT choice B hint"
+  },
+  {
+    "key": "リーダーは反発。次回興行の集客が一時微減し、注意累積 +1。",
+    "en": "The leader pushes back. Next show's attendance dips slightly, and caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_HEEL_PROVOKE choice A hint"
+  },
+  {
+    "key": "リーダーは反発するが、メンバーの消耗を抑えられる。勢いは落ちる。",
+    "en": "The leader resents it, but member fatigue is held in check. Momentum drops.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD choice A hint"
+  },
+  {
+    "key": "リーダーは反発するが、対象選手は守られたと感じる。注意累積 +1。",
+    "en": "The leader resents it, but the wrestler in question feels protected. Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_BOUNDARY choice A hint"
+  },
+  {
+    "key": "リーダーは口出しに反発するが、標的になった選手は守られたと感じる。",
+    "en": "The leader resents the interference, but the targeted wrestler feels protected.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT choice A hint"
+  },
+  {
+    "key": "リーダーは強く反発する一方、非メンバーには歓迎される。<br>4 回累積で権威型資格剥がし。",
+    "en": "The leader pushes back hard, but non-members welcome it.<br>Four such marks strip an authority-type leader's status.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT choice B hint"
+  },
+  {
+    "key": "リーダーは満足するが、ロッカー全体の空気が悪くなる。",
+    "en": "The leader is satisfied, but the mood across the locker room sours.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE choice B hint"
+  },
+  {
+    "key": "リーダーは満足するが、非メンバーとロッカー全体には反発が広がる。<br>権威型なら「独裁化」する。",
+    "en": "The leader is satisfied, but resentment spreads among non-members and the locker room at large.<br>An authority-type leader may drift toward tyranny.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT choice A hint"
   },
   {
     "key": "リーダーは社長の裁定を受け入れている",
@@ -10783,6 +11401,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "リーダーは評価されなかったと感じそうだ。",
+    "en": "The leader is likely to feel overlooked.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION choice B hint"
   },
   {
     "key": "リーダーへの一方向の追従が強く、トップダウンの色が濃いようです。",
@@ -12795,6 +13425,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "介入する",
+    "en": "Step in",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
     "key": "介入なし。自然減衰に任せる（CD 16週まで再判定なし）",
     "en": "No intervention. Let it cool off on its own (no new check for 16 weeks)",
     "files": [
@@ -12842,6 +13484,16 @@
       "ui-render.js"
     ],
     "count": 13,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "他団体から合同練習の誘いが来ています",
+    "en": "Another promotion has invited us to a joint training session.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -13400,6 +14052,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "個別の声かけで応える",
+    "en": "Answer with a word to each",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
     "key": "個別の試合データは記録に残っていない。次戦からは時系列で刻まれる。",
     "en": "There is no match-by-match record yet. From the next match on it will be logged in order.",
     "files": [
@@ -13408,6 +14072,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "個別ケアで応える",
+    "en": "Answer with individual care",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
   },
   {
     "key": "倒産",
@@ -14098,6 +14774,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "内部格付け争い",
+    "en": "An Internal Pecking Order",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK.titleText"
+  },
+  {
     "key": "再 燃",
     "en": "REIGNITED",
     "files": [
@@ -14399,6 +15087,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "別の幹部を立てる",
+    "en": "Raise up another leader",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
     "key": "別カードに置換",
     "en": "Replace with another match",
     "files": [
@@ -14407,6 +15107,30 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "別ルートで応える",
+    "en": "Answer another way",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
+    "key": "別ルートで諭す",
+    "en": "Counsel them another way",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
   },
   {
     "key": "削除",
@@ -15210,6 +15934,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "受け流す",
+    "en": "Let it slide",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
     "key": "古参選手",
     "en": "Long-serving wrestler",
     "files": [
@@ -15283,10 +16019,9 @@
     "key": "合同企画",
     "en": "Joint project",
     "files": [
-      "factions.js",
-      "ui-common.js"
+      "factions.js"
     ],
-    "count": 2,
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -18232,6 +18967,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "待遇相談",
+    "en": "Treatment Request",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MONEY.titleText"
+  },
+  {
+    "key": "待遇相談は黙認する。リーダーは不満を残しそうだ。",
+    "en": "You let the treatment request go unanswered. The leader is likely to stay dissatisfied.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MONEY choice B hint"
+  },
+  {
     "key": "後継なく消滅",
     "en": "Disbanded with no successor",
     "files": [
@@ -20348,6 +21107,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "最近、目を合わせる回数が減った気がする",
+    "en": "Lately, it feels like she avoids eye contact.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "QUIET_SIGN_LINES(信頼40-55帯の低調サイン)。配列インデックス経由でt()に渡るため走査外"
+  },
+  {
     "key": "最近は社長室を避けがちだという噂がある",
     "en": "Word is she has been avoiding the president's office lately",
     "files": [
@@ -20992,6 +21763,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "権威を認める",
+    "en": "Acknowledge the authority",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
     "key": "権威型",
     "en": "Authority",
     "files": [
@@ -21279,6 +22062,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "次オフで反映する",
+    "en": "Reflect it next off-season",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
+    "key": "次オフ契約交渉で +10% 反映予定（Phase D 実装）。<br>派閥メンバーは前向きな回答と受け止める。",
+    "en": "A +10% bump is slated for next off-season negotiations (Phase D).<br>The faction takes it as a positive answer.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MONEY choice A hint"
+  },
+  {
     "key": "次ラウンド",
     "en": "Next Round",
     "files": [
@@ -21309,6 +22116,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "次回興行のメイン提案で、{factionName}メンバーを優先候補にする。<br>派閥内では期待に応えたと受け止められそうだ。",
+    "en": "Next show's main event proposal will favor {factionName} members.<br>The faction will likely feel their expectations were met.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MAIN choice A hint"
+  },
+  {
     "key": "次回興行集客",
     "en": "Next show's attendance",
     "files": [
@@ -21317,6 +22136,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "次回興行集客一時+。",
+    "en": "A brief bump to next show's attendance.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_HEEL_PROVOKE choice B hint"
   },
   {
     "key": "次戦",
@@ -22172,6 +23003,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "注意する",
+    "en": "Give a warning",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
     "key": "注目の上位指名候補 — {n}名",
     "en": "Top prospects to watch — {n}",
     "files": [
@@ -22328,6 +23171,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "派閥について、ひとつご報告があります",
+    "en": "There's one thing to report about the faction.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "showFactionEventResultのopts.reporterText既定値(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)"
+  },
+  {
     "key": "派閥にはリーダーの気風が宿ります——権威で束ねる者、結束を誇る者、実力だけを信じる者……。気風によって、起きる事件も変わります。",
     "en": "A faction takes on its leader's temper — one who binds by authority, one who takes pride in unity, one who believes in ability alone... The temper decides what kind of trouble comes.",
     "files": [
@@ -22336,6 +23191,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "派閥の壁",
+    "en": "A Wall Around the Faction",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_BOUNDARY.titleText"
   },
   {
     "key": "派閥の変質",
@@ -22358,6 +23225,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "派閥の結束は強まるが、派閥外には距離を置かれる。",
+    "en": "The faction's bond strengthens, but outsiders keep their distance.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_BONDING choice B hint"
+  },
+  {
     "key": "派閥の顔役同士の試合：集客ブースト",
     "en": "A match between faction figureheads: attendance boost",
     "files": [
@@ -22376,6 +23255,42 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "派閥は勢いづく一方、対象選手に不満が残る。",
+    "en": "The faction gains momentum, while the wrestler in question is left dissatisfied.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_BOUNDARY choice B hint"
+  },
+  {
+    "key": "派閥は反発するが、ロッカー全体には規律を示せる。",
+    "en": "The faction pushes back, but it shows the locker room where the line is.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE choice A hint"
+  },
+  {
+    "key": "派閥は少し不満を持つが、派閥外には公平な態度と映る。",
+    "en": "The faction is a little dissatisfied, but it reads as fair to those outside it.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_BONDING choice A hint"
   },
   {
     "key": "派閥は禁止されていません",
@@ -22398,6 +23313,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "派閥メンバーは報われたと感じ、ロッカーの空気も少し明るくなる。",
+    "en": "The faction feels rewarded, and the locker room air lifts a little.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION choice A hint"
+  },
+  {
     "key": "派閥不成立。本人と周囲に角が立つ",
     "en": "No faction forms. It leaves her and those around her prickly",
     "files": [
@@ -22416,6 +23343,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "派閥内 bond 微増／注意累積 +1。",
+    "en": "A slight bond increase within the faction. Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK choice C hint"
   },
   {
     "key": "派閥内対決",
@@ -22476,6 +23415,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "派閥内結束",
+    "en": "Faction Bonds",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_BONDING.titleText"
   },
   {
     "key": "派閥分裂",
@@ -22547,6 +23498,18 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "派閥外への当たり",
+    "en": "Trouble Outside the Faction",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT.titleText"
   },
   {
     "key": "派閥対立のヒートアップによる直接対決：この試合は固定枠です",
@@ -22649,6 +23612,18 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "流す",
+    "en": "Let it pass",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
   },
   {
     "key": "流れを引き戻す二番手",
@@ -23479,6 +24454,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "現リーダーは反発し、別幹部は社長の意図を汲む。<br>権威型資格は剥がれるが、派閥内に新たな対立軸。",
+    "en": "The current leader resists while another officer reads your intent.<br>Authority-type status is stripped, but a new fault line opens inside the faction.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT choice C hint"
+  },
+  {
     "key": "現在",
     "en": "Now",
     "files": [
@@ -23955,6 +24942,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "相談に乗る",
+    "en": "Hear them out",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
+  },
+  {
     "key": "看板",
     "en": "Marquee",
     "files": [
@@ -24005,6 +25004,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "社長、{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。",
+    "en": "President, {name} is petitioning for an interpromotional match — the three of them want to challenge {oppOrg}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "社長、{reqOrg}の{name}選手から団体戦挑戦の直訴です。{oppOrg}へ、私たち三人で挑みたい、と。",
+    "en": "President, {name} of {reqOrg} is petitioning for an interpromotional match — the three of them want to challenge {oppOrg}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "社長、お願いがあります。",
     "en": "Boss, I have a request.",
     "files": [
@@ -24013,6 +25032,50 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "社長、ちょっと気になる動きがあるのですが",
+    "en": "President, there's a development I'd like to flag.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "showFactionF07Modal coachReport導入文(_factionReporterStripへ生JAリテラル引数として渡るため走査外)"
+  },
+  {
+    "key": "社長、ひとつ判断をお願いしたい件があります",
+    "en": "President, there is a matter that needs your decision.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "社長、判断をお願いします",
+    "en": "President, your decision is needed.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "社長、嬉しい知らせです",
+    "en": "President, I have good news.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_renderBreakthroughAsMdlAのreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)"
   },
   {
     "key": "社長として、どう対処しますか？",
@@ -25594,6 +26657,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "練習が終わると、すぐに帰るようになったらしい",
+    "en": "She's said to head straight home after practice now.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "QUIET_SIGN_LINES。配列インデックス経由でt()に渡るため走査外"
+  },
+  {
+    "key": "練習サボり連鎖",
+    "en": "A Chain of Skipped Practice",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE.titleText"
+  },
+  {
     "key": "練習中のアクシデント",
     "en": "An Accident in Practice",
     "files": [
@@ -25990,6 +27077,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "興行会場に{org}の関係者が来ています",
+    "en": "A representative from {org} has arrived at the venue.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "興行収入",
     "en": "Show Revenue",
     "files": [
@@ -26331,6 +27428,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "要求自体には応じず、メンバーへの個別ケアで返す。<br>注意累積 +1。",
+    "en": "You don't grant the request itself, answering instead with care for each member.<br>Caution tally +1.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_MAIN choice C hint"
+  },
+  {
     "key": "見 守 る ✓",
     "en": "Watch and Wait ✓",
     "files": [
@@ -26480,6 +27589,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "観客挑発エピソード",
+    "en": "Baiting the Crowd",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.INCIDENT_HEEL_PROVOKE.titleText"
   },
   {
     "key": "観客満足度 {n}.0 / 5",
@@ -26858,6 +27979,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "評価要求",
+    "en": "A Demand for Recognition",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION.titleText"
+  },
+  {
     "key": "試 合 結 果",
     "en": "MATCH RESULT",
     "files": [
@@ -27021,6 +28154,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "話しかけると、少し間が空くようになった",
+    "en": "There's a small pause now before she answers.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "QUIET_SIGN_LINES。配列インデックス経由でt()に渡るため走査外"
+  },
+  {
     "key": "話し合いで解決",
     "en": "Settle It by Talking",
     "files": [
@@ -27179,6 +28324,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "貢献を認める",
+    "en": "Acknowledge the contribution",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
   },
   {
     "key": "費用",
@@ -27542,6 +28699,16 @@
     "en": "Defending side",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "近隣の地域イベント実行委員会から、営業試合の依頼が届いています",
+    "en": "A local community event committee has requested an exhibition match.",
+    "files": [
+      "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -28051,6 +29218,18 @@
     "hasProperNoun": false
   },
   {
+    "key": "過度な追い込み",
+    "en": "Pushing Too Hard",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD.titleText"
+  },
+  {
     "key": "道場に新しいトレーニングスペースを増設した。",
     "en": "A new training space has been added to the dojo.",
     "files": [
@@ -28543,6 +29722,18 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "釘を刺す",
+    "en": "Set them straight",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
   },
   {
     "key": "長 期 離 脱（推 定 {n} 週 +）",
@@ -29349,244 +30540,16 @@
     "hasProperNoun": false
   },
   {
-    "key": "（OVR+5バフ適用）",
-    "en": "(OVR +5 buff applied)",
+    "key": "黙認する",
+    "en": "Look the other way",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（S{season}: {prev} → 現在: {cur}）",
-    "en": "(S{season}: {prev} → now: {cur})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{age}歳）",
-    "en": "(age {age})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}件反映中 → 評価+5/試合）",
-    "en": "({n} in effect → rating +5 per match)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}防衛）",
-    "en": "({n} defenses)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{q}入替）",
-    "en": "({q} rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（このコーチの専門）",
-    "en": "(this coach's specialty)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（ランク{r}位）",
-    "en": "(rank {r})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（上限）",
-    "en": "(cap)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（今季使用済み）",
-    "en": "(already used this season)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（前払い一括）",
-    "en": "(paid up front)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（四半期入替）",
-    "en": "(quarterly rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（残り{n}週）",
-    "en": "({n} weeks left)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（給与変動: {n}名）",
-    "en": "(salary changes: {n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（評価+{n}）",
-    "en": "(rating +{n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（軽め）",
-    "en": "(light)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（重め）",
-    "en": "(heavy)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（集客×{mult}）",
-    "en": "(attendance ×{mult})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 展開",
-    "en": "+ Expand",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 枠拡張 ({n}万)",
-    "en": "+ Add a Slot (¥{n:man})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 追加",
-    "en": "+ Add",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：互いに力を認め合い、表情が和らいだ",
-    "en": ": they acknowledged each other's strength, and their faces softened",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
-    "en": ": she accepted your ruling, and the spring came back into her step",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "｜ 抗争{n}勝",
-    "en": "| {n} feud wins",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_F07_INCIDENT_META choice.label"
   },
   {
     "key": "🅰 堅実",
@@ -32185,891 +33148,243 @@
     "hasProperNoun": false
   },
   {
-    "key": "社長、ちょっと気になる動きがあるのですが",
-    "en": "President, there's a development I'd like to flag.",
+    "key": "（OVR+5バフ適用）",
+    "en": "(OVR +5 buff applied)",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "showFactionF07Modal coachReport導入文(_factionReporterStripへ生JAリテラル引数として渡るため走査外)"
+    "hasProperNoun": false
   },
   {
-    "key": "派閥について、ひとつご報告があります",
-    "en": "There's one thing to report about the faction.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "showFactionEventResultのopts.reporterText既定値(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)"
-  },
-  {
-    "key": "社長、嬉しい知らせです",
-    "en": "President, I have good news.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_renderBreakthroughAsMdlAのreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)"
-  },
-  {
-    "key": "ご判断の結果をお伝えします",
-    "en": "Here's the outcome of your decision.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "決裁結果モーダルのreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)"
-  },
-  {
-    "key": "{n}名の代表を選んでください。団体の威信を懸けた総力戦です",
-    "en": "Choose {n} representatives. The org's pride rides on this all-out battle.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "war-entry代表選出画面のreporter文。P6-5で${required}直書きからt()+paramsへ配線修正"
-  },
-  {
-    "key": "{org}から正式な対抗戦の申し入れが届きました",
-    "en": "{org} has sent an official challenge for an inter-promotion war.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "showWarChallengeのreporter文。P6-5で${ev.opponentName}直書きからt()+paramsへ配線修正"
-  },
-  {
-    "key": "{name}さんが社長室に向かいました。",
-    "en": "{name} has headed to the president's office.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "showFactionF07Modal leader分岐のreporter文。P6-5で${leaderSurname}直書きからt()+paramsへ配線修正"
-  },
-  {
-    "key": "{faction}の動向について報告があります。",
-    "en": "There's a report on {faction}'s movements.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "showFactionF07Modal coachReport分岐のフォールバック文。P6-5で${factionName}直書きからt()+paramsへ配線修正"
-  },
-  {
-    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\n社長室の書類を決裁するのに使う。<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">いまは満タン。<strong style=\"color:var(--text-main)\">次の回復は捨てられる</strong></span>",
-    "en": "<strong style=\"color:var(--gold)\">⚡ Decision Points</strong><br>\nSpent to decide papers in the president's office.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span><br><br><span style=\"color:var(--text-sub);font-size:11px\">Currently full. <strong style=\"color:var(--text-main)\">The next recovery will be wasted</strong></span>",
+    "key": "（S{season}: {prev} → 現在: {cur}）",
+    "en": "(S{season}: {prev} → now: {cur})",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "決裁枠ツールチップ(満タン時)。複数行テンプレ literal のため走査外"
+    "hasProperNoun": false
   },
   {
-    "key": "<strong style=\"color:var(--gold)\">⚡ 決裁枠</strong><br>\n社長室の書類を決裁するのに使う。<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">4週ごとに2</strong>回復（上限{dpMax}）</span>",
-    "en": "<strong style=\"color:var(--gold)\">⚡ Decision Points</strong><br>\nSpent to decide papers in the president's office.<br>\n<span style=\"color:var(--text-sub)\"><strong style=\"color:var(--text-main)\">+2 every 4 weeks</strong> (cap {dpMax})</span>",
+    "key": "（{age}歳）",
+    "en": "(age {age})",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "決裁枠ツールチップ(通常時)。複数行テンプレ literal のため走査外"
+    "hasProperNoun": false
   },
   {
-    "key": "最近、目を合わせる回数が減った気がする",
-    "en": "Lately, it feels like she avoids eye contact.",
+    "key": "（{n}件反映中 → 評価+5/試合）",
+    "en": "({n} in effect → rating +5 per match)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}防衛）",
+    "en": "({n} defenses)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{q}入替）",
+    "en": "({q} rotation)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（このコーチの専門）",
+    "en": "(this coach's specialty)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（ランク{r}位）",
+    "en": "(rank {r})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（上限）",
+    "en": "(cap)",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "QUIET_SIGN_LINES(信頼40-55帯の低調サイン)。配列インデックス経由でt()に渡るため走査外"
+    "hasProperNoun": false
   },
   {
-    "key": "練習が終わると、すぐに帰るようになったらしい",
-    "en": "She's said to head straight home after practice now.",
+    "key": "（今季使用済み）",
+    "en": "(already used this season)",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "QUIET_SIGN_LINES。配列インデックス経由でt()に渡るため走査外"
+    "hasProperNoun": false
   },
   {
-    "key": "話しかけると、少し間が空くようになった",
-    "en": "There's a small pause now before she answers.",
+    "key": "（前払い一括）",
+    "en": "(paid up front)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（四半期入替）",
+    "en": "(quarterly rotation)",
     "files": [
       "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "QUIET_SIGN_LINES。配列インデックス経由でt()に渡るため走査外"
+    "hasProperNoun": false
   },
   {
-    "key": "メインカード相談",
-    "en": "Main Card Request",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MAIN.titleText"
-  },
-  {
-    "key": "待遇相談",
-    "en": "Treatment Request",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MONEY.titleText"
-  },
-  {
-    "key": "リーダーの要求",
-    "en": "The Leader's Demand",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT.titleText"
-  },
-  {
-    "key": "評価要求",
-    "en": "A Demand for Recognition",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION.titleText"
-  },
-  {
-    "key": "派閥外への当たり",
-    "en": "Trouble Outside the Faction",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT.titleText"
-  },
-  {
-    "key": "練習サボり連鎖",
-    "en": "A Chain of Skipped Practice",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE.titleText"
-  },
-  {
-    "key": "内部格付け争い",
-    "en": "An Internal Pecking Order",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK.titleText"
-  },
-  {
-    "key": "ファン期待の重圧",
-    "en": "The Weight of Fan Expectations",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE.titleText"
-  },
-  {
-    "key": "過度な追い込み",
-    "en": "Pushing Too Hard",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD.titleText"
-  },
-  {
-    "key": "派閥の壁",
-    "en": "A Wall Around the Faction",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_BOUNDARY.titleText"
-  },
-  {
-    "key": "派閥内結束",
-    "en": "Faction Bonds",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_BONDING.titleText"
-  },
-  {
-    "key": "観客挑発エピソード",
-    "en": "Baiting the Crowd",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_HEEL_PROVOKE.titleText"
-  },
-  {
-    "key": "相談に乗る",
-    "en": "Hear them out",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "受け流す",
-    "en": "Let it slide",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "別ルートで応える",
-    "en": "Answer another way",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "次オフで反映する",
-    "en": "Reflect it next off-season",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "個別ケアで応える",
-    "en": "Answer with individual care",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "権威を認める",
-    "en": "Acknowledge the authority",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "釘を刺す",
-    "en": "Set them straight",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "別の幹部を立てる",
-    "en": "Raise up another leader",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "貢献を認める",
-    "en": "Acknowledge the contribution",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "個別の声かけで応える",
-    "en": "Answer with a word to each",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "介入する",
-    "en": "Step in",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "黙認する",
-    "en": "Look the other way",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "別ルートで諭す",
-    "en": "Counsel them another way",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "注意する",
-    "en": "Give a warning",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "流す",
-    "en": "Let it pass",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "たしなめる",
-    "en": "Rein them in",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META choice.label"
-  },
-  {
-    "key": "次回興行のメイン提案で、{factionName}メンバーを優先候補にする。<br>派閥内では期待に応えたと受け止められそうだ。",
-    "en": "Next show's main event proposal will favor {factionName} members.<br>The faction will likely feel their expectations were met.",
+    "key": "（残り{n}週）",
+    "en": "({n} weeks left)",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": true,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MAIN choice A hint"
+    "hasProperNoun": false
   },
   {
-    "key": "リーダーは不満を募らせるが、派閥外には公平な対応と映りそうだ。",
-    "en": "The leader's frustration builds, but it should read as fair to those outside the faction.",
+    "key": "（給与変動: {n}名）",
+    "en": "(salary changes: {n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（評価+{n}）",
+    "en": "(rating +{n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（軽め）",
+    "en": "(light)",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MAIN choice B hint"
+    "hasProperNoun": false
   },
   {
-    "key": "要求自体には応じず、メンバーへの個別ケアで返す。<br>注意累積 +1。",
-    "en": "You don't grant the request itself, answering instead with care for each member.<br>Caution tally +1.",
+    "key": "（重め）",
+    "en": "(heavy)",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MAIN choice C hint"
+    "hasProperNoun": false
   },
   {
-    "key": "次オフ契約交渉で +10% 反映予定（Phase D 実装）。<br>派閥メンバーは前向きな回答と受け止める。",
-    "en": "A +10% bump is slated for next off-season negotiations (Phase D).<br>The faction takes it as a positive answer.",
+    "key": "（集客×{mult}）",
+    "en": "(attendance ×{mult})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 展開",
+    "en": "+ Expand",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 枠拡張 ({n}万)",
+    "en": "+ Add a Slot (¥{n:man})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 追加",
+    "en": "+ Add",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：互いに力を認め合い、表情が和らいだ",
+    "en": ": they acknowledged each other's strength, and their faces softened",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
+    "en": ": she accepted your ruling, and the spring came back into her step",
     "files": [
       "ui-common.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MONEY choice A hint"
+    "hasProperNoun": false
   },
   {
-    "key": "待遇相談は黙認する。リーダーは不満を残しそうだ。",
-    "en": "You let the treatment request go unanswered. The leader is likely to stay dissatisfied.",
+    "key": "｜ 抗争{n}勝",
+    "en": "| {n} feud wins",
     "files": [
-      "ui-common.js"
+      "ui-render.js"
     ],
     "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MONEY choice B hint"
-  },
-  {
-    "key": "メンバー一人一人に目を配る。<br>注意累積 +1。",
-    "en": "You look after each member individually.<br>Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_MONEY choice C hint"
-  },
-  {
-    "key": "リーダーは満足するが、非メンバーとロッカー全体には反発が広がる。<br>権威型なら「独裁化」する。",
-    "en": "The leader is satisfied, but resentment spreads among non-members and the locker room at large.<br>An authority-type leader may drift toward tyranny.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT choice A hint"
-  },
-  {
-    "key": "リーダーは強く反発する一方、非メンバーには歓迎される。<br>4 回累積で権威型資格剥がし。",
-    "en": "The leader pushes back hard, but non-members welcome it.<br>Four such marks strip an authority-type leader's status.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT choice B hint"
-  },
-  {
-    "key": "現リーダーは反発し、別幹部は社長の意図を汲む。<br>権威型資格は剥がれるが、派閥内に新たな対立軸。",
-    "en": "The current leader resists while another officer reads your intent.<br>Authority-type status is stripped, but a new fault line opens inside the faction.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_ABSTRACT choice C hint"
-  },
-  {
-    "key": "派閥メンバーは報われたと感じ、ロッカーの空気も少し明るくなる。",
-    "en": "The faction feels rewarded, and the locker room air lifts a little.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION choice A hint"
-  },
-  {
-    "key": "リーダーは評価されなかったと感じそうだ。",
-    "en": "The leader is likely to feel overlooked.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION choice B hint"
-  },
-  {
-    "key": "メンバーごとに労をねぎらう。注意累積 +1。",
-    "en": "You thank each member individually. Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.DEMAND_RECOGNITION choice C hint"
-  },
-  {
-    "key": "リーダーは口出しに反発するが、標的になった選手は守られたと感じる。",
-    "en": "The leader resents the interference, but the targeted wrestler feels protected.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT choice A hint"
-  },
-  {
-    "key": "リーダーは勢いづく一方、標的とロッカー全体に不満が残る。",
-    "en": "The leader gains momentum, while the target and the locker room are left dissatisfied.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT choice B hint"
-  },
-  {
-    "key": "リーダーの顔を立てつつ、標的を個別に支える。注意累積 +1。",
-    "en": "You save the leader's face while quietly supporting the target. Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_RIVAL_HEAT choice C hint"
-  },
-  {
-    "key": "派閥は反発するが、ロッカー全体には規律を示せる。",
-    "en": "The faction pushes back, but it shows the locker room where the line is.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE choice A hint"
-  },
-  {
-    "key": "リーダーは満足するが、ロッカー全体の空気が悪くなる。",
-    "en": "The leader is satisfied, but the mood across the locker room sours.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE choice B hint"
-  },
-  {
-    "key": "コーチ経由で個別ケア／注意累積 +1。",
-    "en": "Individual care through a coach. Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_ABSENCE choice C hint"
-  },
-  {
-    "key": "リーダーは不服そうだが、中位メンバーは救われる。",
-    "en": "The leader looks unhappy, but the mid-tier members are spared.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK choice A hint"
-  },
-  {
-    "key": "リーダーの顔は立つが、ロッカーにわだかまりが残る。",
-    "en": "The leader saves face, but resentment lingers in the locker room.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK choice B hint"
-  },
-  {
-    "key": "派閥内 bond 微増／注意累積 +1。",
-    "en": "A slight bond increase within the faction. Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_INTERNAL_RANK choice C hint"
-  },
-  {
-    "key": "リーダーは不服そうだが、コンディションは回復する。",
-    "en": "The leader looks unhappy, but condition recovers.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE choice A hint"
-  },
-  {
-    "key": "リーダーの意向を尊重する代わりに、コンディションが落ちる。",
-    "en": "You respect the leader's wishes, but condition drops.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE choice B hint"
-  },
-  {
-    "key": "コンディション <strong>+3</strong>／注意累積 +1。",
-    "en": "Condition <strong>+3</strong>. Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_FAN_PRESSURE choice C hint"
-  },
-  {
-    "key": "リーダーは反発するが、メンバーの消耗を抑えられる。勢いは落ちる。",
-    "en": "The leader resents it, but member fatigue is held in check. Momentum drops.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD choice A hint"
-  },
-  {
-    "key": "リーダーは勢いづくが、怪我の危険が高まる。",
-    "en": "The leader gains momentum, but injury risk rises.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD choice B hint"
-  },
-  {
-    "key": "コーチ経由で調整／注意累積 +1。",
-    "en": "Adjustment through a coach. Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.OBSERVE_TRAINING_HARD choice C hint"
-  },
-  {
-    "key": "リーダーは反発するが、対象選手は守られたと感じる。注意累積 +1。",
-    "en": "The leader resents it, but the wrestler in question feels protected. Caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_BOUNDARY choice A hint"
-  },
-  {
-    "key": "派閥は勢いづく一方、対象選手に不満が残る。",
-    "en": "The faction gains momentum, while the wrestler in question is left dissatisfied.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_BOUNDARY choice B hint"
-  },
-  {
-    "key": "派閥は少し不満を持つが、派閥外には公平な態度と映る。",
-    "en": "The faction is a little dissatisfied, but it reads as fair to those outside it.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_BONDING choice A hint"
-  },
-  {
-    "key": "派閥の結束は強まるが、派閥外には距離を置かれる。",
-    "en": "The faction's bond strengthens, but outsiders keep their distance.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_BONDING choice B hint"
-  },
-  {
-    "key": "リーダーは反発。次回興行の集客が一時微減し、注意累積 +1。",
-    "en": "The leader pushes back. Next show's attendance dips slightly, and caution tally +1.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_HEEL_PROVOKE choice A hint"
-  },
-  {
-    "key": "次回興行集客一時+。",
-    "en": "A brief bump to next show's attendance.",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true,
-    "note": "_F07_INCIDENT_META.INCIDENT_HEEL_PROVOKE choice B hint"
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   }
 ]

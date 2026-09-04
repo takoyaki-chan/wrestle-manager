@@ -62,7 +62,8 @@
 - RETIREMENT_LINESに同一JA文がセル違いで2組重複(P5-2fで発見・日本語側の書き分け漏れ疑い): 「お泣きにならないで。みっともなくてよ」=A3_heelお嬢様normal/bold両方、「体がね…もう言うことを聞かないの…」=B2_primeお嬢様/蠱惑normal両方。ENは1本に統一済み。日本語の書き分けはKeisuke裁定待ち
 - GLIMPSE_A_LINESの初期const宣言(~880行・data.js:25908)は直後の再代入で全上書きされる死コード(P5-2eで発見)。掃除候補(JA出力不変・goldenが番人)
 - ~~VOLUNTARY_STAY 34行がENへ届かない~~ → **✅解決(70e6edd)**: pushをGAMELOG_TEMPLATES.voluntary_stay+advanceWeekのdict糸通し経由で組む形へ(ja不変・golden一致)。あわせてgameLogEntryTextをWM_I18N.t経由にし、EN時のログ内選手名ローマ字化が無配線で効くようになった
-- 死コード2ブロック(ui-common.js・4b-3で発見)— `_buildB3Step3b`の遮蔽された初回宣言/Junior・Tenchosen結果画面の無条件return後の到達不能尾部。P3a外で掃除候補
+- 死コード2ブロック(ui-common.js・4b-3で発見)— ~~`_buildB3Step3b`の遮蔽された初回宣言~~(**✅P6-6で削除・2026-09-04**。JS仕様上どのみち後勝ちで常に生存側が実行されていたため挙動不変)/Junior・Tenchosen結果画面の無条件return後の到達不能尾部(未着手のまま)。P3a外で掃除候補
+- **`COMMON7_LINES.resultLeader`(data.js)3行が消費点ゼロで死蔵(P5-2mで発見・P6-6で確認)** — `getCommon7Line('resultLeader', ...)`を呼ぶ箇所がsrc全体に存在しない。`showFactionCommon7Modal`は`coachReport`/`leaderAQuote`/`leaderBQuote`の3カテゴリしか引かず、結果画面は`applyCommon7Choice`(factions.js)が組む完全文`resultText`を使う別経路。訳出済み(EN)だが表示に届かない。合同企画の結果でリーダーが一言添わる画面を新設するか、このままデータとして残すかはKeisuke裁定待ち(新規UI配線は本バッチのスコープ外のため見送り)
 - `SURVIVAL_MILESTONES`/`SURVIVAL_PHASES`(app.js・4c-1で発見)— モジュールロード時定数。`label`/`desc`はui-render.js:1204で`${m.label}`と非ラップ参照されており表示に乗る(`SURVIVAL_PHASES.label`は逆にどこからも参照されない死フィールド、これは対象外のまま)。他バッチの`FLAG_MODAL_META`/`_F01_ARCHETYPE_META`と同型の「宣言据え置き・参照側でt()評価」対応が必要だが参照側がui-render.js(既完走ファイル)のため本バッチ単独では直せず保留
 - `Survival.updateSurvival`内`events.push('🎊 経営安定化達成！...')`(app.js・4c-1で発見)— 戻り値`events`を呼び出し側`checkSurvivalUpdate`が一切参照しない死コード。当該メッセージは別途エスケープ済みunicodeの`showEventPopup`側(同機能)でt()化済み。コード自体の削除はP3a外
 - `applyDepartureTrustImpact`の`reason`引数(management.js全11箇所+app.js1箇所)— 自由記述のJA文字列(`'引退'`/`'AI怪我引退'`/`'突然退団'`等)がEngine側関数へ渡る。表示/内部判定どちらの用途か不明で、Engine本体(management.js)が対象外の本バッチでは1箇所だけ直すと不整合になるため全数非ラップ据え置き。Engine側のロジックキー整理が必要
