@@ -12369,7 +12369,10 @@ function showFactionCommon7Modal(payload, state, onChoice) {
   const lBName = lB ? lB.name : (payload.leaderBName || '???');
   const factionAName = String(payload.factionAName || WM_I18N.t('派閥A'));
   const factionBName = String(payload.factionBName || WM_I18N.t('派閥B'));
-  const planType = String(payload.planType || WM_I18N.t('合同企画'));
+  // i18n Stage B P5-2m: planType は COMMON7_LINES.planType の生JA値(辞書キー)。
+  // ここで t() を通さないと (a) 12416 の直挿入 (b) vars 経由で coachReport 文へ
+  // 混入 (c) 12424 のヒント文 の3箇所で日本語のまま出る。値の側も辞書を引く。
+  const planType = WM_I18N.t(String(payload.planType || '合同企画'));
   const archA = payload.archetypeAId || null;
   const archB = payload.archetypeBId || null;
 

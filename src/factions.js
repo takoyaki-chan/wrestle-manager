@@ -3607,7 +3607,10 @@ Engine.factions = {
       impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionAName }), delta: `+${momA}` });
       impactSummary.push({ label: WM_I18N.t('{name} 勢い', { name: factionBName }), delta: `+${momB}` });
       impactSummary.push({ label: WM_I18N.t('両派閥 メンバー間 絆'), delta: `+${bondDelta}` });
-      resultText = WM_I18N.t('{plan}が組まれた。{a}と{b}は手を組んで観客を沸かせた。', { plan: planType, a: factionAName, b: factionBName });
+      // i18n Stage B P5-2m: planType は辞書キー(COMMON7_LINES.planType の生JA値)なので
+      // 値の側も t() を通す。テンプレは payload 由来の生値をそのまま埋めると英語モードで
+      // 「{英文}に 合同合宿・温泉旅行 が混ざる」半英語になる。
+      resultText = WM_I18N.t('{plan}が組まれた。{a}と{b}は手を組んで観客を沸かせた。', { plan: WM_I18N.t(planType), a: factionAName, b: factionBName });
     } else if (choiceId === 'B') {
       resultText = WM_I18N.t('{a}と{b}は適度な距離を保った。関係は穏やかなまま。', { a: factionAName, b: factionBName });
       impactSummary.push({ label: WM_I18N.t('両派閥 関係'), delta: WM_I18N.t('維持') });
