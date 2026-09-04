@@ -2754,6 +2754,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{left}と{right}、{turns}ターンの攻防は決着を見なかった。互いに譲らず{venue}の{attendance}人を最後まで沸かせ、リング上には決着がつかなかったことに納得しきれない両者の表情が残った。試合評価{mq}——再戦を望む声は早くも上がっている。",
+    "en": "{left} and {right} went {turns} turns without a decision. Neither gave ground, the {attendance} at {venue} were still on their feet at the end, and what was left in the ring were two faces that could not quite accept the lack of a finish. Rated {mq} — the calls for a rematch have already started.",
+    "files": [
+      "NEWSPAPER_SHOW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{left}対{right}は{turns}ターンに及ぶ攻防となり、{venue}の{attendance}人を魅了。試合評価{mq}は今興行のセミとして十分な数字で、両者の評価をさらに押し上げる結果となった。",
+    "en": "{left} against {right} ran {turns} turns and held the {attendance} at {venue}. A rating of {mq} is enough for the semi on this card, and both of them come out of it worth more.",
+    "files": [
+      "NEWSPAPER_SHOW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{loserName}なすすべなし——{winnerName}の完勝",
     "en": "Nothing for {loserName} — a clean win for {winnerName}",
     "files": [
@@ -2828,6 +2848,16 @@
     "en": "The {loser} era ends here. Challenger {winner} of {winnerOrg} took the belt at the top of the business and redrew the map.",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{loser}も意地を見せたが、{winner}の地力が最後にものを言った形だ。",
+    "en": " {loser} showed pride of her own, but in the end it was the raw ability of {winner} that decided it.",
+    "files": [
+      "NEWSPAPER_SHOW_FALLBACK_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -9524,6 +9554,16 @@
     "en": "{winner} beats {loserOrg} {loser} at the PPV",
     "files": [
       "PPV_UNDERCARD_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{winner}が{loser}を{finish}で仕留めた{turns}ターンの一戦。{venue}の{attendance}人を前に試合評価{mq}を記録し、メインに次ぐ好カードとして紙面に残った。{closing}",
+    "en": "{winner} put {loser} away by {finish} in {turns} turns. In front of the {attendance} at {venue} it rated {mq}, and it goes into the paper as the best thing on the card after the main.{closing}",
+    "files": [
+      "NEWSPAPER_SHOW_FALLBACK_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -23262,6 +23302,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "決着技",
+    "en": "a finishing hold",
+    "files": [
+      "NEWSPAPER_SHOW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "決着放棄上等の塩試合フラグ立ってない？",
     "en": "Anyone else smell a time-limit draw and a nothing match coming?",
     "files": [
@@ -24002,6 +24052,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座戦としての重みも感じさせる勝利だった。",
+    "en": " It was a win that carried some of the weight of a title match.",
+    "files": [
+      "NEWSPAPER_SHOW_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {

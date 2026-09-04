@@ -1426,6 +1426,16 @@
     ]
   },
   {
+    "key": "OVRは互角。{role}対決として見逃せない一戦になる。",
+    "en": "Overall is even. As the {role} matchup, this is one not to miss.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "OVR上位同士をマッチング",
     "en": "Matches the highest OVR against each other",
     "files": [
@@ -4885,6 +4895,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{player}にOVR優位がある。{rival}は地力で押し返したい。",
+    "en": "{player} has the edge in Overall. {rival} will want to push back on raw strength.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{range} 累計",
     "en": "{range} total",
     "files": [
@@ -4940,6 +4960,16 @@
   {
     "key": "{rivalName}の看板。総合力{ovr}は当面の脅威。",
     "en": "{rivalName}'s marquee name. An Overall of {ovr} is a threat for the foreseeable future.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival}が地力で勝る。{player}は工夫が要る。",
+    "en": "{rival} is the stronger on raw ability. {player} will need to find a way around that.",
     "files": [
       "ui-render.js"
     ],
