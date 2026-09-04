@@ -1,5 +1,89 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P6-16 — PPV頂上決戦記事本文・年代記叙述4関数・秋対抗戦ニュース・composerフォールバックの配線と英訳（2026-09-04・worktree agent-a15bfd0260246f532）
+
+指示書は specs/i18n-runtime-spec-v1.0.md §14-5 が起票した「P6-15が見つけた同型4件」。開始前にworktreeブランチをmain先端(4e35e64、P6-15まで)へfast-forward済み。
+
+**訳出195キー**(template-ledger 1,749→**1,944**・未訳0 / ui-ledger 3,530→**3,536**・未訳0 / dialogue-ledger 16,674 は不触)。**ラチェット総数28,085不変**(移設は差引ゼロ)。
+
+### 1. 4件それぞれの配線方式
+
+| 件 | 対象 | 配線 |
+|---|---|---|
+| ① | `_buildPpvSummitStory`(management.js) | 地の文12本を **`PPV_SUMMIT_STORY_TEMPLATES`**(data.js)へ移設。全断片を`_wmFillWithDict`で**PH置換前に**dictへ通し、`bodyParts`は`join`(`{a}{b}`→`{a} {b}`)の畳み込みで連結。dict糸通しは既存のまま |
+| ② | `Engine.chronicle` 叙述4関数 | `QUOTE_TEMPLATES_V2/V1/DUAL`(Engineプロパティ=抽出器から不可視)と`_buildAceNarrative`/`_buildPeerNarrative`の**関数内直書きプール**を`CHRONICLE_QUOTE_CLAUSES`/`CHRONICLE_QUOTE_TEMPLATES_V2`/`_V1`/`_DUAL`/`CHRONICLE_NARRATIVE_TEMPLATES`へ移設。記者の目2本(`buildAceQuote`/`buildDualAceQuote`)は**表示時生成**なので第4引数`dict`を足すだけ。叙述文は**Gへ永続**するため §14-3 の**追加フィールド方式** |
+| ③ | `Engine.autumnWar.apply` の結果ニュース | §8「生キー+render時点再構築」。`semi1Raw`/`semi2Raw`/`finalRaw`/`gauntletRaw`/`tieBreakRaw`/`mvpNameMissing`を`data`へ併記し、紙面へ載る瞬間(`_wmResolvePreformattedIndustryData`)で組み直す。焼かれたJA値も残すので旧セーブのキューはfail-open |
+| ④ | composer null時の直書きJAフォールバック2箇所 | `NEWS_FALLBACK_TEMPLATES`(data.js)へ。AI王者交代は見出しも同じstoryの中で本文だけENになるのを避けるため同時にテンプレ化。ドラフト自団体1面(ui-common.js)は`Engine.newspaper.joinNameList`(P6-15の内部実装を公開ヘルパーへ切り出し)で名前列挙も名前辞書変換が効く形にした |
+
+### 2. 永続する叙述文は「追加フィールド」で解く — `narrativeParts`
+
+年代記の`narrative`は`G.chronicle.chaptersCache.chapters[].aces[]/peers[]`へ**永続する完成文**。P6-14の殿堂入り語り文(§13-1)は「表示点で再生成して保存値と1バイト照合」で解けたが、**年代記はキャッシュ側のace/peerが`careerRecord`を持たない縮約オブジェクト**なので同じ手が使えない(再生成しても保存値と一致しない)。
+
+そこで §14-3(PPV煽りの`hypeTpl`/`hypeVars`)と同じ**追加フィールド方式**を採った。
+
+- `narrative` … 従来どおり**JAの完成文**。`buildChapters`は**dictを渡さない**ので**セーブに書く既存値は1バイト不変**(D-P6-4)
+- `narrativeParts` … 新規フィールド。`{ t, v, items, sep }` の配列で、表示点が現在の言語で組み直す素材
+- 表示点は`ui-render.js`の**`_chronicleNarrative(entry)`1関数**に集約(ace単独/二枚看板/同期の3箇所)。`narrativeParts`が無い旧セーブは**保存値をそのまま出す**(fail-open)。**保存値をt()に通さないこと** — 完成文は辞書キーと一致せずi18n-missを汚染する
+- パーツは`{ t, v }`(単文)と`{ t, v, items:[パーツ], sep }`(列挙を内側に持つ文)の2形。`sep`は`listComma`(読点)/`listDot`(中黒)
+
+### 3. ENの空白規約 — クラウス訳文は先頭に半角スペースを持つ
+
+記者の目テンプレは`{topRivalClause}`のような**条件次第で空文字になる差し込み句**を持ち、JAは直結なのでテンプレ側にもクラウス側にも空白が要らない。ENで文間に空白が要るが、テンプレ側に置くと空のときだけ二重スペース・末尾スペースになる。
+
+→ **ENのクラウス訳文の側に先頭スペースを持たせる**(JA訳文は持たない)。節の先頭にクラウスが来る型(defender/generationShift/uncrowned の §C)では先頭スペースが残るので、**`_joinQuoteSections`が節ごとに`trim()`してから連結**する(JAは空白を含まないので trim は no-op = 1バイト不変)。同法を`_orgParen`(`（{org}）`→` ({org})`)と秋対抗戦の`（同時全滅…）`にも適用した。
+
+### 4. 「同じキーを2つの台帳へ載せない」で踏んだ設計判断
+
+`王座` `団体` `決勝` `準決勝` `該当選手` は **ui-ledger に既訳がある**ため、data.js のテンプレ表へ入れると template-ledger と ui-ledger で**同じキーの二重登録**になり、どちらの訳が出るかがスクリプト読み込み順に依存する(specs §9)。JA原文を management.js 側に**1本だけ**置き、`_wmDictLabel`で引く形にした。
+
+- `Engine.chronicle._orgLabel(state, dict)` / `_beltLabel(orgName, dict)`(`_buildQuoteContext`と叙述2関数で共用)
+- `_AW_ROUND_JA` / `_AW_MVP_FALLBACK_JA`(management.js のトップレベル定数)
+
+**副産物: ベルト名の成形済み値を解消した。** 保存値の`○○王座`はテンプレだけ訳しても本文にJAが残る(§6の構造穴)。新設`_wmTitleName(dict, orgName)`が`/^(.+)王座$/`から団体名を取り出し、既存キー`{orgName}王座`(→`{orgName} Championship`)へparams経由で通すので、団体名は名前辞書(pn)で英語化される。ui-common.js の`_factionDisplayName`が「○○派」に対してやっているのと同法(§10)。`_wmResolvePreformattedIndustryData`の`topChampionInjury`も同ヘルパーへ寄せ、JA literal は1箇所に保った。
+
+**もう1つの副産物**: 秋対抗戦の記事テンプレ末尾は`{gauntletNote}{tieBreakNote}`の直結で、ENでは2文が空白なしでくっついていた。**2本を`join`テンプレで畳んで1つの値にまとめ**、`tieBreakNote`は空にした(JAでは`join='{a}{b}'`なので連結結果は1バイト不変。片方が空のときに空白が余らないよう畳み込み前に`filter(Boolean)`)。
+
+### 5. JA同一性の証明 — 4,388,545通り・不一致0
+
+P6-14/P6-15の作法①(凍結コピーとの全数突合)を全族へ適用した。着手前(HEAD)の`_buildPpvSummitStory`・`_buildQuoteContext`・`buildAceQuote`・`buildDualAceQuote`・`_buildAceNarrative`・`_buildPeerNarrative`をソースから機械抽出して凍結コピーにし、`Object.create(Engine.chronicle)`のプロトタイプ経由で未変更ヘルパを共有させて新旧を突合した。
+
+| 対象 | 突合数 | 不一致 |
+|---|---:|---:|
+| `_buildPpvSummitStory`(順位有無×所属×MQ9段×HP6段×H2H5種×フェーズ6×ターン3×決着3×セリフ4×勝敗3の直積) | 4,199,040 | 0 |
+| 年代記5関数(乱数化fixture 8,000本+稀カテゴリ強制+**`Engine.rng.derive`差し替えによる全プール全添字の強制走査**) | 188,800 | 0 |
+| 秋対抗戦の生キー→JA組み立て / `joinNameList` / `composeDraftPlayerResult` / フォールバック2件 | 705 | 0 |
+
+- **移設した3表(V2/V1/DUAL)は`JSON.stringify`で凍結コピーと完全一致**を別途確認
+- **叙述テンプレ83本すべてが実際に選択されたことを網羅計測**(`used=83 / never-selected=0`)。実seedでは`Engine.rng.derive`の戻り値が偶数に偏るらしく長さ4のプールの奇数添字に到達しないため、`derive`を固定値へ差し替える強制パスを足した
+- dict省略経路と「ja素通しdict」経路の**両方**を同時に比較している
+
+### 6. 英訳
+
+`docs/en-kuroda-style-draft-v0.1.md`の**無署名デスク/年代記の記録voice**。平叙の事実文、感嘆符ゼロ、格言化なし、スポーツ面常套句なし。
+
+- **数値PHは単複・冠詞が充填値で変わらない形へ**(規則23〜25)。`{count}度の防衛`(1〜可)→`a {count}-defense run` / `対外戦{count}勝`→`a {count}-win interpromotional run` / `{titleReigns}度の戴冠`(1〜可の枠)→`a {titleReigns}-reign career`。**≥2が保証された枠だけ複数形**(`{count} title reigns` / `{count} MVP awards` / `{count} Best Match awards`)
+- **build-template-dictの不定冠詞検査で1件落ちた**: `as a {styleJa} hand` → `in the {styleJa} game` へ書き直し
+- 用語は既訳に揃えた: 総合力/OVR=**Overall** / 人気=**Popularity** / 団体=**promotion** / 王座=title・ベルト=belt / 対外戦=**interpromotional matches** / 章=chapter / 世代=generation / 4団体勝ち残り対抗戦=**Autumn Gauntlet War** / 決勝=Final・準決勝=Semifinal
+- **JAの「」は強調であって引用ではない**(規則19)ので英語では引用符を付けず開いた: 「華」→`had shine` / 「名勝負製造機」→`a maker of classics` / 「無冠の重み」→`the weight of the uncrowned`
+- `_wmDictLabel`が引く1語ラベル5件を ui-ledger へ`kept:true`で追加: 独自→Freestyle / 次の流派→the next school / 次世代の主役→the next generation's lead / 黄金期→a golden age / 端境期→a lean spell(いずれもmanagement.jsの防御的フォールバックで、`{styleJa}`/`{eraTag}`の枠へ文法的に収まる語を選んだ)
+
+### 7. 検証
+
+`node --check` 全触りファイルOK。**`node test/ja-golden.js` 基準と完全一致**(hash=`6b3d05c8…`、`--update`不使用)。`node test/i18n-build-dict.js` 3,536/3,536・`node test/i18n-build-template-dict.js` **1,944/1,944 未訳0**(PH完全性/重複キー/日本語残り/黒田禁止語/PH直前の不定冠詞のいずれも違反0)。`npm test` **260/260 green**。`node test/auto-sim.js 20 42` **ALL CLEAR**。`npm run test:ui:walkthrough` **PASS**(ja digest `1052faa82eaf7991` **不変**・Issues 0)。`npm run test:ui:walkthrough:en` **PASS**(Issues 0・**i18n-miss 0 維持**)。`node test/i18n-ratchet.js` は移設のため`--update`(data.js 16,779→16,980 / management.js 2,242→2,042 / ui-common.js 1,366→1,365、**総数28,085不変**)。
+
+**auto-sim の semantic fingerprint は 37bbd0cd → 82823ea9 に動くが、これは追加フィールドの分だけ**。指紋のreplacerで`narrativeParts`と秋対抗戦の`*Raw`/`mvpNameMissing`を除外して再計測すると**HEADと同一の37bbd0cd**に戻ることを実測で確認した(HEAD実測も37bbd0cd)。**セーブに書く既存値は1バイトも変わっていない**。
+
+VM検品: 本物の`src/i18n.js`+生成済み辞書4本を読み込んで lang=en にし、PPV頂上決戦記事3本・記者の目(単独/二枚看板)・エース叙述文・同期叙述文3本(**JAで保存 → narrativePartsからEN再描画**の実経路)・秋対抗戦ニュース(見出し+本文)・フォールバック3件を描画 → **日本語残り0・i18n-miss 0**。選手名(富岡加奈子→Kanako Tomioka)・団体名(凰翔プロレス→Soaring Phoenix Pro Wrestling)・会場名(市民会館→Civic Hall)・ベルト名(凰翔プロレス王座→Soaring Phoenix Pro Wrestling Championship)がすべてパラメータ経由で英語化されることを確認した。
+
+### 8. 新たな発見(未着手・次バッチ以降)
+
+1. **`ui-ledger`の抽出器が main に対して4行ぶん古い**。`node test/i18n-extract-ui.js`を再実行すると`ui-common.js`の`WM_I18N.t()`literal 4件(`……もう、ついていけない。`ほか派閥離脱系セリフ)が**新規行として増える**。うち`……もう、ついていけない。`は**dialogue-ledgerに既訳がある**(=ui-ledgerへ載せると二重登録)。今回は台帳をHEADへ戻し、必要な1行(`{surname}はこの世代の主役だった。`)だけ手挿入した。**次にextract-uiへ触るバッチで、この4件をどちらの台帳の領分にするか決めること**
+2. **`Engine.chronicle.AXIS_LABELS`の`喧嘩`が ui-ledger で "Quarrel"**。スタイル軸のラベルとしては`Brawling`が正しいが、ui-ledger は P6-13 の領分なので触っていない。`{styleJa}`/`{spiritAxis}`の枠に入るため年代記のEN本文に出る
+3. **`該当選手`の既訳 "Matching Wrestlers" が文脈違い**。秋対抗戦MVPが解決できないときの人名スロットのフォールバックで、`ui-common.js:19902`(同じ大会MVP見出し)と**同じ意味の同じ場面**なのに検索フィルタ語として訳されている。防御的フォールバックで実際にはほぼ発火しないが、直すなら ui-ledger 側の1行
+4. **`Engine.chronicle._generateTitle`/`_generateSubtitle`/`_generateClosing`/`_buildHighlights` は未着手**。年代記画面の章タイトル・サブタイトル・締め・ハイライト行は今回のスコープ(叙述4関数)の外で、まだ生JA。§13-2 B表(54表・約1,445行)と同じ層
+5. **`Engine.chronicle._getSurname`の`名無し`フォールバック**は名前解決失敗時の値で、他のchronicleコードからも共用されるためdict化していない(実質到達不能)
+6. **`Engine.ppv.generateHype`の`Math.random()`**(P6-15起票)は引き続き据え置き
+
 ## 🌐 英語対応 P7-1 — データ表の値層「Cラベル表」13表をDATA_TABLESモードで台帳化・配線・英訳+P6-13積み残し3件を解決: JA露出186→166(2026-09-04)
 
 指示書はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」と、P6-13が積み残した4件(§8参照)のうち3件を解決した。開始前にworktreeブランチをmain先端(1487afa、P6-13/P6-15まで)へfast-forward済み。

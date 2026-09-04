@@ -530,6 +530,77 @@
     "hasProperNoun": false
   },
   {
+    "key": "MVP 受賞",
+    "en": "an MVP award",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "MVPを{count}度受賞",
+    "en": "{count} MVP awards",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "MVPを受賞",
+    "en": "an MVP award",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "OVR と人気の双方で団体を支えた二人の在位は、{eraTag}そのものだった。",
+    "en": "Holding the promotion up in both Overall and Popularity, their years were exactly that: {eraTag}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "OVR{peakOVR}に達した{surname}は、無冠ながら誰よりも信頼される選手だった。",
+    "en": "At Overall {peakOVR}, {surname} never wore a belt and was trusted more than anyone.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "OVR{peakOVR}の{surname}が立った時代、それは{eraTag}に他ならなかった。",
+    "en": "The years {surname} stood over at Overall {peakOVR} were nothing other than {eraTag}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "OVR{peakOVR}・人気{peakPop}に達したこの選手の在位は、{eraTag}と呼ぶに相応しい時代を作った。",
+    "en": "Overall {peakOVR}, Popularity {peakPop} — her reign built a stretch that earns the name: {eraTag}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "PPV {tone} — {winnerOrg}{winner}が{loserOrg}{loser}を撃破（試合評価{mq}）",
     "en": "PPV {tone} — {winnerOrg} {winner} beats {loserOrg} {loser} (rated {mq})",
     "files": [
@@ -537,6 +608,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV メイン {count}度",
+    "en": "{count} PPV main events",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV メイン 出場",
+    "en": "a PPV main event",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -554,6 +645,26 @@
     "en": "Plenty of voices online are asking for {leftName} against {rightName}. Fans are honest about what they want to watch.",
     "files": [
       "KURODA_PREVIEW"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "S{season}にOVR{ovr}でピーク到達",
+    "en": "peak Overall {ovr} in S{season}",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "S{season}デビュー",
+    "en": "debut in S{season}",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -899,12 +1010,25 @@
     "hasProperNoun": false
   },
   {
+    "key": "{axis}の時代",
+    "en": "the age of {axis}",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{a}{b}",
     "en": "{a} {b}",
     "files": [
-      "ARTICLE_COMPOSE_TEMPLATES"
+      "ARTICLE_COMPOSE_TEMPLATES",
+      "AUTUMN_WAR_NEWS_PARTS",
+      "CHRONICLE_NARRATIVE_TEMPLATES",
+      "PPV_SUMMIT_STORY_TEMPLATES"
     ],
-    "count": 1,
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -912,7 +1036,48 @@
     "key": "{a}、{b}",
     "en": "{a}, {b}",
     "files": [
-      "ARTICLE_COMPOSE_TEMPLATES"
+      "ARTICLE_COMPOSE_TEMPLATES",
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}・{b}",
+    "en": "{a}, {b}",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{belt}は{name}に明け渡した",
+    "en": "the {belt} handed over to {name}",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{belt}を{count}度戴冠",
+    "en": "{count} reigns with the {belt}",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{belt}を戴冠",
+    "en": "a reign with the {belt}",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1569,6 +1734,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{count}度の戴冠",
+    "en": "{count} title reigns",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{count}度の防衛",
+    "en": "a {count}-defense run",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{count}連勝。数字だけを見れば順調だが、当たった相手の顔ぶれを並べれば内容は違って見える。連勝が続くほど、次に組まれる相手の格は上がっていく。",
     "en": "{count} in a row. On the number alone it is going well; line up the opponents she actually met and it reads differently. The longer a streak runs, the higher the class of the next one booked against her.",
     "files": [
@@ -1593,6 +1778,26 @@
     "en": "The belt she stacked {defenses} defenses onto became a byword for her.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度の防衛を重ねた{surname}は、団体の絶対的な軸として君臨した。",
+    "en": "With a {defenses}-defense run behind her, {surname} sat as the promotion's fixed axis.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度防衛——{surname}が王座にいる時間が、この世代の輪郭を形作った。",
+    "en": "A {defenses}-defense run — the time {surname} spent holding the title drew the outline of this generation.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1633,6 +1838,26 @@
     "en": "The name {epithet} is written into a page of the {orgName} record.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{eraTag}と呼ばれるこの時代、戴冠者の名前を聞かれれば誰もが{surname}の名を挙げた。",
+    "en": "In what gets called {eraTag}, ask who held the title and everyone gave the same name: {surname}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{eraTag}と呼ばれるこの章で、{surname1}と{surname2}はそれぞれ別の頂点を立てた。",
+    "en": "In the chapter people call {eraTag}, {surname1} and {surname2} each raised a summit of their own.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1803,6 +2028,16 @@
     "en": "{intro} {core} {closing}",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{items}。",
+    "en": "{items}.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2999,6 +3234,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{names}。新シーズンの陣容がひとつ厚くなった。",
+    "en": "{names}. The roster goes into the new season one layer deeper.",
+    "files": [
+      "NEWS_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{names}。来季の顔ぶれが動く。",
     "en": "{names}. The faces change for next season.",
     "files": [
@@ -3453,6 +3698,16 @@
     "en": "A few weeks have passed since {name} did it: {what}. Whether a big result stays a one-off or turns into the next win is the question. The cards ahead, and what she does inside them, are worth watching.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が{wins}人抜きを達成した。",
+    "en": "{name} ran through {wins} opponents.",
+    "files": [
+      "AUTUMN_WAR_NEWS_PARTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4319,6 +4574,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "{nextChapterTopSurname}が前に出るとき、その背後には{surname}の積み上げた{styleJa}があった。",
+    "en": "When {nextChapterTopSurname} stepped forward, behind her was the {styleJa} {surname} had stacked up.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nextChapterTopSurname}が王座を獲るとき、{surname}が残した「無冠の重み」が背後に静かに横たわっていた。",
+    "en": "When {nextChapterTopSurname} took the title, the weight of the uncrowned that {surname} left behind lay quietly at her back.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nextChapterTopSurname}が登る山は、{surname}が手を伸ばし続けた山だった。",
+    "en": "The mountain {nextChapterTopSurname} climbs is the one {surname} kept reaching for.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nextChapterTopSurname}が立つ前提として、{surname}が築いた地盤があった。",
+    "en": "{nextChapterTopSurname} stood on ground {surname} had already built.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{nextChapterTopSurname}の足場は、この章の{surname}の戴冠の積み重ねの上に立った。",
+    "en": "{nextChapterTopSurname} had her footing on the reigns {surname} stacked up in this chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{oldLeaderName}が去った「{factionName}」で、{newLeaderName}が新たに旗を預かることになった。慕われた前任者の穴は小さくない。それでも残った者たちは、この人の下でやっていくと決めたようだ。看板の重さを知るのは、これからだ。",
     "en": "With {oldLeaderName} gone from {factionName}, {newLeaderName} takes charge of the flag. The hole a well-liked predecessor leaves is not a small one. The ones who stayed appear to have decided they will do this under her. What the name weighs, she finds out from here.",
     "files": [
@@ -4849,6 +5154,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}——新王者{name}が誕生",
+    "en": "{org} — {name} the new champion",
+    "files": [
+      "NEWS_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}、{nameA}と{nameB}の溝を埋める——再び同じリングへ",
     "en": "{org}: {nameA} and {nameB} again",
     "files": [
@@ -4973,6 +5288,16 @@
     "en": "The faction war booked at {org} went {score} to {winFaction}. {winLeader}, who led them, is worth more today; {loseLeader} of the beaten {loseFaction} left the ring with little to say. The order is decided in the ring. That principle got one more proof.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}との対外戦{record}も、この章の彼女の重みを物語る。",
+    "en": " An interpromotional record of {record} against {org} says as much about her weight in this chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5469,6 +5794,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の王座が動いた。{name}が{prevChamp}を下し、新たな頂点に立った。",
+    "en": "The {org} title has changed hands. {name} beat {prevChamp} and now holds the belt.",
+    "files": [
+      "NEWS_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の王座が動く——{name}が新王者に",
     "en": "{org} title changes hands — {name}",
     "files": [
@@ -5523,6 +5858,16 @@
     "en": "{org}'s public face — {name} finishes her career",
     "files": [
       "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}を中心とした対外戦で{wins}勝{losses}敗",
+    "en": "{wins}-{losses} in interpromotional matches, mostly against {org}",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5879,6 +6224,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "{peer}との因縁は、章の外まで尾を引いた。",
+    "en": "The grudge with {peer} trailed on past the end of the chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{peer}との絆が、ロッカーでの{surname}を支えた。",
+    "en": "The bond with {peer} held {surname} up in the locker room.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{peer}ら次世代の選手たちの基準になった。",
+    "en": " It became the mark for {peer} and the wrestlers coming up behind her.",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{playerName}、頑張ってるのは分かるんだけどなあ",
     "en": "{playerName}, I can see you're trying, I really can",
     "files": [
@@ -6099,6 +6474,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{quote}——{winner}は静かにその栄誉を噛み締めた。",
+    "en": "{quote} — {winner} took it in quietly.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{reigns}度目のベルトだ。この団体の王座の歴史に、同じ名前がまた並ぶ。",
     "en": "Reign number {reigns}. The same name goes into this promotion's title history again.",
     "files": [
@@ -6223,6 +6608,36 @@
     "en": "{requesterName} crossed over to ask for the 3-on-3, and {ourOrg} lost it {score}. She carried the result back to her old promotion, and in the locker room she kept her eyes shut a long time.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{risingClause}{surname}が橋渡した先に、次章の{nextChapterTopSurname}が立った。",
+    "en": "{risingClause} At the far end of the bridge {surname} laid stood {nextChapterTopSurname} of the next chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{risingClause}{surname}の存在感は、無冠であることの強さとして次世代に伝わった。",
+    "en": "{risingClause} What {surname} carried reached the next generation as the strength of going uncrowned.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{risingClause}{surname}の積み上げた防衛は、後進にとっての到達目標になった。",
+    "en": "{risingClause} The defenses {surname} stacked up became the mark the next ones aimed at.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6809,6 +7224,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "{rival}との一戦が、この章の{surname}に色を残した。",
+    "en": "The one match against {rival} left its color on {surname}'s chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival}との一戦が章の見せ場になった。",
+    "en": " The one match against {rival} was the high point of the chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival}との二度の対戦は、この章の{surname}を語る上で外せない。",
+    "en": "The two meetings with {rival} cannot be left out of {surname}'s chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival}との度重なる対戦が、この時代の{surname}の輪郭を形作った。",
+    "en": "The repeated meetings with {rival} drew the outline of {surname} in this era.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival}との激闘は世代の語り草となった。",
+    "en": " The wars with {rival} became the story the generation tells.",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{rookieName}は{h}cm・{age}歳。{styleJa}の適性は認められたが、見立ては分かれた。使われ方次第という但し書きが付く。",
     "en": "{rookieName} is {h}cm, age {age}. The {styleJa} aptitude was acknowledged, but the reads split. The note attached says it depends on how she gets used.",
     "files": [
@@ -6833,6 +7298,16 @@
     "en": "Round: {round}. {winner} ({winnerOrg}) against {loser} ({loserOrg}) drew the highest rating of all 15 matches. {closing}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{round}は{summary}。",
+    "en": "The {round} ended {summary}.",
+    "files": [
+      "AUTUMN_WAR_NEWS_PARTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6953,10 +7428,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{spiritAxis}の地力を保ったまま、団体は次世代へと足場を移し始めていた。",
+    "en": "Holding on to its {spiritAxis} base, the promotion had begun moving its footing to the next generation.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{stamp}。{opponent}との対抗戦が行われ、{playerWins}勝{aiWins}敗で{result}。",
     "en": "{stamp}. The interpromotional series against {opponent} finished {playerWins}-{aiWins}: {result}.",
     "files": [
       "CROSS_WAR_RESULT_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp}。{player}{playerOrg}と{ai}{aiOrg}が、シーズンの頂点を懸けて激突した。",
+    "en": "{stamp}. {player}{playerOrg} met {ai}{aiOrg}, with the top of the season on the line.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -7037,6 +7532,16 @@
     "en": "{stamp}. {turns} turns, and {winner} ({winnerOrg}) took the 3-count off {loser} ({loserOrg}): {finish}. Rated {mq} — {tone}.",
     "files": [
       "PPV_UNDERCARD_BODY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp}。ランキング{r1}位の{name1}{org1}と{r2}位の{name2}{org2}が、シーズンの頂点を懸けて激突した。",
+    "en": "{stamp}. No. {r1} {name1}{org1} met No. {r2} {name2}{org2}, with the top of the season on the line.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -7174,10 +7679,791 @@
     "hasProperNoun": false
   },
   {
+    "key": "{surname1}と{surname2}が並走したこの章は、二人の名前なしには語れない。{topVenueClause}",
+    "en": "This chapter, with {surname1} and {surname2} running side by side, cannot be told without both names.{topVenueClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname1}と{surname2}が並走した時代の余熱は、{risingPeerSurname}ら次世代に継がれた。",
+    "en": "The heat left over from the years {surname1} and {surname2} ran together passed to {risingPeerSurname} and the next generation.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname1}と{surname2}は二枚看板としてこの章の主役を担った。{topRivalClause}{warClause}",
+    "en": "{surname1} and {surname2} carried this chapter as its two headline names.{topRivalClause}{warClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が{debutSeason}シーズンにデビューしたのは、ちょうどこの章の最中だった。",
+    "en": "{surname} debuted in season {debutSeason}, right in the middle of this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が{styleJa}で団体を引っ張った時期、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。",
+    "en": "While {surname} led the promotion with her {styleJa} game, the color of {spiritAxis} soaked deep into how {org} worked a match.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が会場を埋めた時代の余熱は、次の章の{nextChapterTopSurname}の入場にも残っていた。",
+    "en": "The heat left over from the years {surname} filled halls was still there for {nextChapterTopSurname}'s entrance in the next chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が古参と新参の間に立った時間は、団体の世代の連続性そのものだった。",
+    "en": "The time {surname} spent standing between the old hands and the new was the promotion's continuity itself.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が届かなかった頂は、{risingPeerSurname}ら次世代の目標として残された。",
+    "en": "The summit {surname} never reached was left standing as the target for {risingPeerSurname} and those behind her.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が登場するだけで会場の空気が変わる——そんなアイドル性をこの章は持っていた。",
+    "en": "The air in the hall changed the moment {surname} came out — this chapter had that kind of star quality in it.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が立っていることが、団体の安定そのものだった。挑戦者たちはなかなか手が届かなかった。{warClause}",
+    "en": "{surname} standing there was the promotion's stability itself. Challengers rarely got close.{warClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が築いた華やぎの記憶は、{risingPeerSurname}たち次世代の客寄せにも引き継がれた。",
+    "en": "The shine {surname} built was handed on to {risingPeerSurname} and the next generation's draw.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が継いだ{styleJa}の系譜は、{risingPeerSurname}ら次世代にも残った。",
+    "en": "The {styleJa} line {surname} carried stayed with {risingPeerSurname} and the next generation.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が背中で見せた挑み続ける姿勢は、{risingPeerSurname}たち次世代の選手に受け継がれた。",
+    "en": "The habit of keeping at it, which {surname} showed without saying it, passed to {risingPeerSurname} and the wrestlers behind her.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}が見せた{styleJa}は、{risingClause}次章の主役{nextChapterTopSurname}が立ち上がる足場は、確かにこの世代に築かれていた。",
+    "en": "The {styleJa} {surname} showed left its mark.{risingClause} The ground {nextChapterTopSurname} would rise on in the next chapter was laid here.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}という名前が初めて{org}のリングに刻まれたのは、この章の{debutSeason}シーズンだった。",
+    "en": "The name {surname} was cut into the {org} ring for the first time in season {debutSeason} of this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}にとってこの章は、リングの隅から中心へと歩み出した時代だった。",
+    "en": "For {surname}, this chapter was when she walked from the corner of the ring toward the middle of it.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}にとってこの章は、自身の戦いを締めくくる時間だった。",
+    "en": "For {surname}, this chapter was the time she brought her own fight to a close.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の{defenses}度の防衛は、この章の屋台骨だった。",
+    "en": "{surname}'s {defenses}-defense run was the frame this chapter stood on.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の{styleJa}は、この章の{org}を{spiritAxis}に染め上げた。",
+    "en": "{surname}'s {styleJa} dyed {org} the color of {spiritAxis} for this chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の{styleJa}は派手さこそないが、{org}を底から支え続けた。",
+    "en": "There was nothing flashy in {surname}'s {styleJa} work, and it held {org} up from underneath all the same.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の{styleJa}は派手さこそないが、団体を底から支え続けた。",
+    "en": "There was nothing flashy in {surname}'s {styleJa} work, and it held the promotion up from underneath all the same.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}のキャリアはこの章の中で始まった。S{debutSeason}でリングに上がり、ここから先の時代を背負っていく。",
+    "en": "{surname}'s career started inside this chapter. She stepped into the ring in S{debutSeason} and would carry the years after it.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。",
+    "en": "{surname}'s popularity carried the gate. This was a generation that made its era on attendance, not on results.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。{topVenueClause}",
+    "en": "{surname}'s popularity carried the gate. This was a generation that made its era on attendance, not on results.{topVenueClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の人気は会場の動員を左右するほどだった。",
+    "en": "{surname}'s popularity was enough to move the attendance in a hall.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の存在は団体のチケットそのものだった。",
+    "en": "{surname} was the promotion's ticket, in person.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が既に伸び始めていた。",
+    "en": "As {surname}'s chapter closed, the shadows of younger wrestlers carrying on {successorStyle} were already lengthening in the promotion.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の章は、勝てなかった日々の記録である。だが、それでも諦めず挑戦を続けた日々の記録でもある。",
+    "en": "{surname}'s chapter is a record of days she could not win. It is also a record of days she kept challenging anyway.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の章は、過去と未来が混じり合った時間として{org}史に残る。{eraTag}と呼ぶには複雑な時代だった。",
+    "en": "{surname}'s chapter stays in {org} history as a stretch where past and future ran together. Too tangled a time to call it {eraTag}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}の章は、過去と未来が混じり合った時間として団体史に残る。",
+    "en": "{surname}'s chapter stays in the promotion's history as a stretch where past and future ran together.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{debutSeason}シーズンのデビューから、この章で名前を覚えられる位置まで来た。",
+    "en": "From her debut in season {debutSeason}, {surname} reached the place in this chapter where people learned her name.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{debutSeason}シーズン以来のキャリアを、この章でゆっくりと畳み始めていた。",
+    "en": "{surname} had begun folding away a career running since season {debutSeason}, slowly, in this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{items}。",
+    "en": "{surname}: {items}.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{styleJa}で中盤戦線を担った。",
+    "en": "{surname} carried the middle of the card with her {styleJa} game.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{styleJa}を武器に、この章の上位戦線を走り続けた。",
+    "en": "With her {styleJa} game as the weapon, {surname} kept running the upper card of this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。",
+    "en": "{surname} held the promotion up on her {styleJa} game. The title stayed out of reach, and she was the pillar of the generation.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。{topRivalClause}",
+    "en": "{surname} held the promotion up on her {styleJa} game. The title stayed out of reach, and she was the pillar of the generation.{topRivalClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。",
+    "en": "{surname} held to her {styleJa} game, and the wall above her was thick. The chapter closes without her reaching it.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。{warClause}",
+    "en": "{surname} held to her {styleJa} game, and the wall above her was thick. The chapter closes without her reaching it.{warClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{styleJa}を貫き、この章の主力グループに名を連ねた。",
+    "en": "{surname} held to her {styleJa} game and put her name among this chapter's first team.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{titleReigns}度の戴冠を経て、この章の主役を担った。",
+    "en": "Through {titleReigns} title reigns, {surname} carried this chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は{titleReigns}度の戴冠を重ね、この章の主役を担った。{topRivalClause}",
+    "en": "{surname} put together {titleReigns} title reigns and carried this chapter.{topRivalClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は「名勝負製造機」と呼ばれ、相手を引き上げる試合を作ることで知られた。",
+    "en": "They called {surname} a maker of classics, and she was known for building matches that lifted her opponent.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}はこの章で{styleJa}の使い手として一定の存在感を持ち続けた。",
+    "en": "Through this chapter {surname} kept a steady presence in the {styleJa} game.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}はこの章で派手さこそないが、地道に試合数をこなした。",
+    "en": "There was nothing flashy about {surname} in this chapter, and she worked her way through the dates.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}はこの章で頭角を現し始めた若手だった。",
+    "en": "{surname} was a young wrestler who began to show in this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}はこの章のリングに立ち続け、団体の地力となった。",
+    "en": "{surname} kept taking the ring through this chapter and became part of what the promotion was made of.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}はこの章のリングを牽引した実力者だった。",
+    "en": "{surname} was the one with the ability who pulled this chapter's ring along.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}はこの章を通じて王座を{defenses}度防衛した。{topRivalClause}{topVenueClause}",
+    "en": "{surname} defended the title {defenses} times across this chapter.{topRivalClause}{topVenueClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}はムードメーカーとして場の空気を整える側にいた。",
+    "en": "{surname} was on the side that set the mood and kept the room right.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は中堅から上位への階段を、この章で着実に上っていった。",
+    "en": "{surname} climbed the stairs from the middle of the card to the top of it, steadily, in this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は人望の厚さでロッカーに馴染み、若手から慕われた。",
+    "en": "{surname} fit into the locker room on how well people thought of her, and the young ones looked up to her.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は人気{peakPop}を記録し、客足を背負ったスターだった。",
+    "en": "{surname} reached Popularity {peakPop} and was the star the gate rested on.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は何度も上位に挑み、何度も敗れた。それでも立ち上がり続けた世代だった。",
+    "en": "{surname} went at the top again and again and lost again and again. This was a generation that kept getting up.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。",
+    "en": "{surname} ran alongside the leads of the previous generation and became the bridge between them.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。{topRivalClause}",
+    "en": "{surname} ran alongside the leads of the previous generation and became the bridge between them.{topRivalClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は古参と新参の間に立ち、団体の世代を繋いだ。",
+    "en": "{surname} stood between the old hands and the new and joined the promotion's generations.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は安定した働きでこの章のリングを支えた。",
+    "en": "{surname} held this chapter's ring up with steady work.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は強気のスタイルで相手に向かっていく試合運びを好んだ。",
+    "en": "{surname} liked to work forward, going at her opponent from the front.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は最後までベルトを巻かなかった。だが{org}史はこの選手を主役として記憶する。",
+    "en": "{surname} never put a belt around her waist. {org} history remembers her as the lead all the same.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は最後までベルトを巻かなかった。だが団体史はこの選手を主役として記憶する。",
+    "en": "{surname} never put a belt around her waist. The promotion's history remembers her as the lead all the same.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は派手さこそないが、固定ファンを持つ選手だった。",
+    "en": "There was nothing flashy about {surname}, and she had fans who stayed.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。",
+    "en": "{surname} never held a belt and was still the lead of this generation. There was a presence there that no title measures.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。{topRivalClause}",
+    "en": "{surname} never held a belt and was still the lead of this generation. There was a presence there that no title measures.{topRivalClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は王座を{defenses}度防衛し、{titleReigns}度の戴冠と合わせて団体の核を担った。{topRivalClause}",
+    "en": "{surname} carried the core of the promotion with a {defenses}-defense run on top of a {titleReigns}-reign career.{topRivalClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は王座を{defenses}度防衛し、団体の核として時代を背負った。",
+    "en": "{surname} put together a {defenses}-defense run and carried the era as the promotion's core.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は王座を離さなかった。挑戦者たちはなかなか手が届かなかった。",
+    "en": "{surname} would not let the title go. Challengers rarely got close.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は章を通じて{defenses}度の防衛を積み上げ、団体の中心軸であり続けた。",
+    "en": "{surname} stacked up a {defenses}-defense run across the chapter and stayed the promotion's axis.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は繊細なメンタルを抱えながら、それでもリングに立ち続けた。",
+    "en": "{surname} carried a fragile mind with her and kept taking the ring anyway.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は職人気質の{styleJa}でリングに居続けた。",
+    "en": "{surname} stayed in the ring on a tradesman's {styleJa} game.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は華のあるキャラクターで客席を惹きつけた。",
+    "en": "{surname} pulled the crowd in with a character that had shine to it.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}は試合のリズムを崩さずに章を走り抜けた選手だった。",
+    "en": "{surname} was a wrestler who ran the chapter through without letting the rhythm of a match break.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}を中心に、{org}は{spiritAxis}の色を強めた章だった。",
+    "en": "With {surname} at the center, this was the chapter {org} deepened the color of {spiritAxis}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{surname}を見るために客が会場に押し寄せた。それがこの世代の正体だった。",
+    "en": "People came through the doors to see {surname}. That was what this generation actually was.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{targetName}が寝返った——「{fromFaction}」から「{toFaction}」へ電撃移籍",
     "en": "{targetName}: {fromFaction} to {toFaction}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{titleReigns}度の戴冠、{defenses}度の防衛——{surname}は挑戦者を退け続けた。{warClause}",
+    "en": "Title reigns {titleReigns}, defenses {defenses} — {surname} kept turning challengers away.{warClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{titleReigns}度の戴冠と{defenses}度の防衛。{surname}が立っていることが、団体の安定そのものだった。",
+    "en": "A {titleReigns}-reign career, a {defenses}-defense run. {surname} standing there was the promotion's stability itself.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{titleReigns}度の戴冠を通じて、{surname}はこの章の流れを作った。",
+    "en": "Across {titleReigns} title reigns, {surname} set the current of this chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{titleReigns}度の戴冠を重ねた{surname}は、この世代の中心人物の一人だった。",
+    "en": "With {titleReigns} title reigns behind her, {surname} was one of the central figures of this generation.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -7544,6 +8830,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{winnerOrg} {scoreW}-{scoreL} {loserOrg}{note}",
+    "en": "{winnerOrg} {scoreW}-{scoreL} {loserOrg}{note}",
+    "files": [
+      "AUTUMN_WAR_NEWS_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{winnerOrg}の{winner}、PPVで{loserOrg}{loser}を下す",
     "en": "{winnerOrg}'s {winner} beats {loserOrg} {loser} at the PPV",
     "files": [
@@ -7578,6 +8874,16 @@
     "en": "{winner} came through with {hp} HP still in hand.",
     "files": [
       "PPV_SUMMIT_HPNOTE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{wins}勝{losses}敗",
+    "en": "{wins}-{losses}",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -10954,6 +12260,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "「華」を備えた{surname}は、リング映えのする選手としてファンに記憶されている。",
+    "en": "{surname} had shine, and the fans remember her as a wrestler who looked right in a ring.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "「選手の素顔をファンに見せる場を作りたい」と主催者から打診があった。",
     "en": "An organizer asked about creating a space where fans see the person behind the wrestler.",
     "files": [
@@ -11612,6 +12928,26 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": true
+  },
+  {
+    "key": "この章では{items}。",
+    "en": "In this chapter: {items}.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この章では{items}という記録を残した。",
+    "en": "She left {items} on the record in this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "この試合がなくても興行は成立した。つまりそういうことだ",
@@ -12575,6 +13911,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "キャリア晩期の{surname}は、背中で語る選手だった。",
+    "en": "Late in her career, {surname} was a wrestler who said it with her back.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "クールな{surname}は、感情を抑えた立ち振る舞いで一線を引いていた。",
+    "en": "Cool as she was, {surname} kept a line drawn with a bearing that held feeling back.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "グラップラーとしての矜持を、最後まで貫いた。",
     "en": "She held to a grappler's pride right to the end.",
     "files": [
@@ -12679,6 +14035,16 @@
     "en": "Three straight Junior Tournaments. No challenger ever got over that wall.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ジュニアトーナメント制覇",
+    "en": "a Junior Tournament win",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13195,6 +14561,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ピーク OVR {peakOVR} に達した{surname}は、章の主軸として試合を組み立てた。",
+    "en": "Reaching a peak Overall of {peakOVR}, {surname} built matches as the chapter's main axis.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "ファンが{name}のイラストや応援動画をSNSに投稿し、それが大きな話題を呼んでいる。知名度がじわじわと上昇中だ。",
     "en": "Fans are posting drawings and tribute videos of {name}, and they are getting real traction. Her name keeps creeping upward.",
     "files": [
@@ -13242,6 +14618,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ファンに愛された{surname}は、戦績では測れない存在感をリングに残した。",
+    "en": "Loved by the fans, {surname} left a presence in the ring that no record measures.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -13319,6 +14705,36 @@
     "en": "Best bout: {player} vs {ai}, rated {mq}.",
     "files": [
       "CROSS_WAR_RESULT_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベストマッチ賞",
+    "en": "a Best Match award",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベストマッチ賞 {count} 度",
+    "en": "{count} Best Match awards",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベストマッチ賞{count}度",
+    "en": "{count} Best Match awards",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -13725,6 +15141,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "万能型の{surname}は、相手に合わせた試合運びを身上とした。",
+    "en": "An all-round type, {surname} made her name on working a match to suit whoever was across from her.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "三年連続でトーナメントを制した——それは強さではなく、支配だった。",
     "en": "She took the tournament three years running — that is not strength, it is control.",
     "files": [
@@ -13769,6 +15195,16 @@
     "en": "Standing on top is fine. The trouble is that staying there is far harder.",
     "files": [
       "KURODA_HEADLINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "上位シードが不戦勝",
+    "en": "the higher seed advanced unopposed",
+    "files": [
+      "AUTUMN_WAR_NEWS_PARTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13855,6 +15291,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "両者は通算{matches}戦{wins}勝{losses}敗、互いに譲らぬ因縁の決着戦でもあった。",
+    "en": "{matches} meetings between them, {wins}-{losses}, with neither giving ground — this was the settling of it.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "両者一歩も譲らず。内容は悪くなかったが、決着は見たかった",
     "en": "Neither gave a step. There was nothing wrong with it; a finish would have been better",
     "files": [
@@ -13935,6 +15381,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "主力の{surname}は、章を通して安定した戦績で団体を支えた。",
+    "en": "A first-team name, {surname} held the promotion up with steady results across the chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "予想以上の好勝負。両者の株が上がった",
     "en": "Better than anyone expected. Both of them are worth more today",
     "files": [
@@ -13942,6 +15398,36 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "二つの頂が並んだこの章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が伸び始めていた。",
+    "en": "As the chapter of two summits closed, the shadows of younger wrestlers carrying on {successorStyle} were lengthening in the promotion.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "二人が引っ張った時代、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。",
+    "en": "In the years the two of them led, the color of {spiritAxis} soaked deep into how {org} worked a match.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "二人が走り抜けた後、次章の主役{nextChapterTopSurname}が立ち上がる足場ができていた。",
+    "en": "After the two of them had run their course, the ground was there for {nextChapterTopSurname} to rise on in the next chapter.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -14135,6 +15621,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "人気{peakPop}を記録したこの選手は、{org}にとってチケットそのものだった。",
+    "en": "At Popularity {peakPop}, she was the ticket itself for {org}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "人気者同士の激突！{name1} vs {name2}、会場が沸く！",
     "en": "Two crowd favorites collide! {name1} vs {name2} — the building is going to move!",
     "files": [
@@ -14325,6 +15821,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "他団体との対外戦で{wins}勝{losses}敗",
+    "en": "{wins}-{losses} in interpromotional matches",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "他団体の動向は、回り回って我々にも影響する",
     "en": "What the other promotions do comes back around and reaches us too.",
     "files": [
@@ -14509,6 +16015,26 @@
     "en": "I do not know what to praise first. Not that there is nothing to praise... no. There is not. Honestly. The only thing the comparison with {rivalName} allows me to say is that there is a great deal of room to grow. Which is another way of saying this is the floor. If they have the resolve to climb from here, I will stay with them. It makes copy.",
     "files": [
       "KURODA_EDITORIAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。",
+    "en": "However often she lost the belt, {surname} came back. {titleReigns} title reigns are the proof of that.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。{warClause}",
+    "en": "However often she lost the belt, {surname} came back. {titleReigns} title reigns are the proof of that.{warClause}",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -15025,6 +16551,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "前章の主役たちが退いていく中、{surname}が次の中心を担った。",
+    "en": "As the leads of the previous chapter stepped back, {surname} took the center next.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "力で押せば崩れる、いなされれば消耗する。パワー側のジレンマが見どころだ",
     "en": "Push with strength and it comes apart; get turned aside and it drains you. The dilemma on the power side is the thing to watch.",
     "files": [
@@ -15379,6 +16916,16 @@
     "en": "{factionName}: {nameA} vs {nameB}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "喧嘩スタイルの{surname}は、試合の流れを荒らすことで結果を引き寄せた。",
+    "en": "Fighting in a brawling style, {surname} pulled results in by roughing up the flow of a match.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -15945,6 +17492,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "対外戦{count}勝",
+    "en": "a {count}-win interpromotional run",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対外戦{count}敗",
+    "en": "a {count}-loss interpromotional run",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対外戦{record}という記録もこの章に残った。",
+    "en": " The chapter also left an interpromotional record of {record}.",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "対戦成績で上回っている。相手は苦手意識を持っているはずだ",
     "en": "She is ahead on the head-to-head. The other side will be carrying doubt into it.",
     "files": [
@@ -16059,6 +17636,16 @@
     "en": "Small things set {name} off now. The direct cause is not clear, but resentment about where she stands has been stacking up. It may be better to hear her out early.",
     "files": [
       "NOTIF_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "届かなかった世代の象徴として、{surname}は{org}の地力に深い陰影を残した。",
+    "en": "As the emblem of a generation that fell short, {surname} left deep shading on what {org} was made of.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -16195,6 +17782,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "年齢を重ねた{surname}は、勝敗を超えた何かを試合に残そうとしていた。",
+    "en": "Older now, {surname} was trying to leave something in her matches beyond winning and losing.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "幾度も激戦を繰り広げてきた{toOrg}に、{fromOrg}の{name}が加入した。両団体の関係を含め、次の対抗戦へ新たな因縁を持ち込む移籍となる。",
     "en": "{name} of {fromOrg} has joined {toOrg}, a promotion her old side has fought hard against many times. The move carries a fresh grudge into the next interpromotional card, and into the relationship between the two promotions.",
     "files": [
@@ -16212,6 +17809,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "引き上げる{loser}は{quote}と言葉を残した。",
+    "en": "Leaving the ring, {loser} said {quote}.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -16595,6 +18202,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "打撃を軸にした{surname}は、リングを真っ向から攻める選手だった。",
+    "en": "Built around striking, {surname} was a wrestler who came at the ring head-on.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "技の引き出しが多い同士。どちらが先に相手の穴を見つけるか、知恵比べである",
     "en": "Two with a great deal to draw on. Which of them finds the other's hole first — a contest of wits.",
     "files": [
@@ -16745,6 +18362,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。",
+    "en": "She challenged and lost, and still {surname} never dropped her {styleJa} game.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。届かなかった世代の象徴である。",
+    "en": "She challenged and lost, and still {surname} never dropped her {styleJa} game. She is the emblem of a generation that fell short.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "挑戦は実らず、そしてそれが最後の試合になった。結局、彼女は一度もベルトを腰に巻かないまま去ることになる。記録に残るのは、挑戦者としての名前だけだ。",
     "en": "The challenge came to nothing, and it turned out to be her last match. She leaves without ever having worn the belt. What the record keeps is her name as a challenger.",
     "files": [
@@ -16805,6 +18442,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "挑戦者を{defenses}度退けた{surname}は、この章の屋台骨だった。",
+    "en": "Having turned challengers away {defenses} times, {surname} was the frame this chapter stood on.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "掛け声ひとつ上がらない",
     "en": "Not one voice calls out",
     "files": [
@@ -16812,6 +18459,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "控えめな{surname}は、口数の少なさを試合で埋めるタイプだった。",
+    "en": "Quiet by nature, {surname} was the type to make up for saying little in the ring.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -19015,6 +20672,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "激闘決着",
+    "en": "a hard-fought finish",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "無双状態。つまんないくらい強いわ",
     "en": "Untouchable. Strong to the point of being boring",
     "files": [
@@ -19052,6 +20719,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "熱血気質の{surname}はリングで気持ちを前面に出すタイプだった。",
+    "en": "Hot-blooded by nature, {surname} was the type to put feeling out in front in the ring.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -19205,6 +20882,38 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座とは縁がなかったが、{surname}の{styleJa}はこの章の地力そのものだった。",
+    "en": "Titles never came to her, and {surname}'s {styleJa} work was what this chapter was made of.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座とリングの中心を{surname1}と{surname2}が分け合い、団体は二つの頂を持つ時代に入った。",
+    "en": "{surname1} and {surname2} split the title and the center of the ring between them, and the promotion entered a stretch with two summits.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_DUAL"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座にこそ恵まれなかったが、{surname}の華やかさが客席を埋めた。",
+    "en": "The title never came her way, and {surname}'s shine filled the seats.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座に就いた日の記憶は、{orgName}のファンの中に今も生きている。",
     "en": "The day she took the belt is still alive in the memory of the {orgName} crowd.",
     "files": [
@@ -19265,6 +20974,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座を獲ることはなかったが、{surname}抜きにこの章は語れない。",
+    "en": "She never took the title, and this chapter cannot be told without {surname}.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座交代——{name}が{org}の頂点へ",
     "en": "Title changes hands — {name} tops {org}",
     "files": [
@@ -19292,6 +21012,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座奪取",
+    "en": "a title win",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -19332,6 +21062,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座陥落",
+    "en": "a title lost",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -19645,6 +21385,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "真面目な{surname}は、練習量で答える職人だった。",
+    "en": "Serious about it, {surname} was a tradesman who answered with the hours she trained.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "短いキャリアだったが、その輝きは今も色褪せない。",
     "en": "The career was short. What she did inside it has not faded.",
     "files": [
@@ -19885,6 +21635,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "章の終盤に{belt}を陥落",
+    "en": "the {belt} lost late in the chapter",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "章を通じて{items}を経験した。",
+    "en": "Across the chapter she went through {items}.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "章窓の戦績は{items}。",
+    "en": "Her record inside the chapter: {items}.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "笑いたきゃ笑え。でも絶対にここから上がるから。見てろ",
     "en": "Laugh if you want. We're coming up from here. Watch",
     "files": [
@@ -20049,6 +21829,16 @@
     "en": "The weight of her grappling and the warmth of the person — {orgName} fans loved both, and never separated them.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "組み技を主体にした{surname}は、地に足のついた攻めを得意とした。",
+    "en": "Working mainly from grappling, {surname} was best at attacks with her feet on the ground.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -20365,6 +22155,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "舞台となったのは{venue}だった。",
+    "en": " The stage for it was {venue}.",
+    "files": [
+      "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "良い興行だ。カード編成とコンディション管理が噛み合った結果だろう",
     "en": "A good show. The card and the condition of the roster met each other, and this is the result.",
     "files": [
@@ -20412,6 +22212,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若さで挑み続けた{surname}は、この章でリングの空気を変え始めた。",
+    "en": "Challenging on youth alone, {surname} began to change the air in the ring in this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若手の{surname}は、この時代を足場に階段を駆け上がっていった。",
+    "en": "Young as she was, {surname} used this era as footing and ran up the stairs.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -20855,6 +22675,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "記録には残らないが、記憶には深く残る。{surname}はそういう世代の主役だった。",
+    "en": "Nothing on the record, and a great deal in the memory. {surname} was that kind of lead.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "試合が続いたせいか、{name}の動きにいつもの切れが見られない。練習後もすぐに休むことが多くなっている。",
     "en": "The run of matches may be telling. The usual edge is missing from {name}'s movement, and she sits down as soon as practice ends.",
     "files": [
@@ -20905,10 +22736,61 @@
     "hasProperNoun": false
   },
   {
+    "key": "試合記録には残らない記憶というものを、{surname}は、その人気でこの世代に刻みつけた。",
+    "en": "The kind of memory that never reaches a result sheet — {surname} cut that into this generation with her popularity.",
+    "files": [
+      "CHRONICLE_QUOTE_TEMPLATES_V1",
+      "CHRONICLE_QUOTE_TEMPLATES_V2"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "試合評価{mq}——今シーズンのベストバウト候補が生まれた。{leftName}と{rightName}は{turns}ターンにわたって技術と闘志をぶつけ合い、{venueName}の{attendanceToLocaleString}人を熱狂の渦に巻き込んだ。{winnerName}が{finishLabel}で勝利を収めたが、勝敗を超えた価値がこの試合にはあった。",
     "en": "Rated {mq} — a candidate for best bout of the season has arrived. {leftName} and {rightName} put technique and fight against each other for {turns} turns and swept the {attendanceToLocaleString} at {venueName} up with them. {winnerName} took it by {finishLabel}; what this match was worth ran past the result.",
     "files": [
       "app.js:_NEWSPAPER_ARTICLES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価{mq}——歴史に残る一戦として記録される。",
+    "en": "Rated {mq} — a match the record will keep.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価{mq}、見応えある決戦となった。",
+    "en": "Rated {mq}, and the decider held up.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価{mq}。期待された熱戦には届かなかったが、頂点を懸けた一戦であることに変わりはない。",
+    "en": "Rated {mq}. Short of the match people had hoped for, and the top of the season was still on the line.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価{mq}を記録。",
+    "en": "Rated {mq}.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -21515,6 +23397,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "過去対戦{matches}回（{wins}勝{losses}敗）、再戦での決着となる。",
+    "en": "{matches} prior meetings ({wins}-{losses}), and the rematch settles it.",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "選手同士でアドバイスし合っている",
     "en": "They are coaching each other",
     "files": [
@@ -21609,6 +23501,16 @@
     "en": "It was not long. {orgName} crowds have not forgotten it.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "長くリングに立った{surname}は、この章で若手にバトンを渡し始めていた。",
+    "en": "After a long time in the ring, {surname} had started handing the baton to the young ones in this chapter.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -21725,6 +23627,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "関節技を武器にした{surname}は、終盤で勝負を決めにいく選手だった。",
+    "en": "With submissions as her weapon, {surname} went for the finish late.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "防衛が積み上がるほど、王者の名は重くなる。次の天頂戦での返還まで、この牙城に挑む機会は限られている。",
     "en": "The more defenses stack up, the heavier the champion's name gets. Until the belt goes back at the next Tenchosen, chances at this fortress are limited.",
     "files": [
@@ -21762,6 +23674,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "陽気な{surname}は、ファンにとっても親しみやすい存在だった。",
+    "en": "Cheerful as she was, {surname} was easy for the fans to be close to.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -21982,6 +23904,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "鷹揚な性分の{surname}は、リング外でも内でも余裕を崩さなかった。",
+    "en": "Easy by temperament, {surname} never let go of her margin, inside the ring or out.",
+    "files": [
+      "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -23772,6 +25704,36 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{org}）",
+    "en": " ({org})",
+    "files": [
+      "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（同時全滅、勝ち抜き数判定）",
+    "en": " (both sides eliminated, decided on falls)",
+    "files": [
+      "AUTUMN_WAR_NEWS_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（同時全滅、抽選決着）",
+    "en": " (both sides eliminated, decided by draw)",
+    "files": [
+      "AUTUMN_WAR_NEWS_PARTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   }
 ]

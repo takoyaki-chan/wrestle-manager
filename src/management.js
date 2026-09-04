@@ -4742,175 +4742,10 @@ const Engine = {
       return 'allround';
     },
 
-    /** Phase C (spec §5-bis): 3 段構成のテンプレート集
-     *  §A 章での手触り (固有戦績) / §B 時代における意味 / §C 次世代への接続
-     *  V1 は後方互換のため残存。新しい buildAceQuote は V2 を優先で使う。 */
-    QUOTE_TEMPLATES_V2: {
-      peakDefender: {
-        sectionA: [
-          '{surname}はこの章を通じて王座を{defenses}度防衛した。{topRivalClause}{topVenueClause}',
-          '{titleReigns}度の戴冠、{defenses}度の防衛——{surname}は挑戦者を退け続けた。{warClause}'
-        ],
-        sectionB: [
-          '{surname}が{styleJa}で団体を引っ張った時期、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。',
-          'OVR{peakOVR}・人気{peakPop}に達したこの選手の在位は、{eraTag}と呼ぶに相応しい時代を作った。'
-        ],
-        sectionC: [
-          '{surname}が見せた{styleJa}は、{risingClause}次章の主役{nextChapterTopSurname}が立ち上がる足場は、確かにこの世代に築かれていた。',
-          '{surname}の章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が既に伸び始めていた。'
-        ]
-      },
-      defender: {
-        sectionA: [
-          '{surname}は王座を{defenses}度防衛し、{titleReigns}度の戴冠と合わせて団体の核を担った。{topRivalClause}',
-          '{surname}が立っていることが、団体の安定そのものだった。挑戦者たちはなかなか手が届かなかった。{warClause}'
-        ],
-        sectionB: [
-          '{surname}の{styleJa}は、この章の{org}を{spiritAxis}に染め上げた。',
-          '{eraTag}と呼ばれるこの時代、戴冠者の名前を聞かれれば誰もが{surname}の名を挙げた。'
-        ],
-        sectionC: [
-          '{risingClause}{surname}の積み上げた防衛は、後進にとっての到達目標になった。',
-          '{nextChapterTopSurname}が立つ前提として、{surname}が築いた地盤があった。'
-        ]
-      },
-      champion: {
-        sectionA: [
-          '{surname}は{titleReigns}度の戴冠を重ね、この章の主役を担った。{topRivalClause}',
-          '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。{warClause}'
-        ],
-        sectionB: [
-          '{surname}を中心に、{org}は{spiritAxis}の色を強めた章だった。',
-          'OVR{peakOVR}の{surname}が立った時代、それは{eraTag}に他ならなかった。'
-        ],
-        sectionC: [
-          '{surname}が背中で見せた挑み続ける姿勢は、{risingPeerSurname}たち次世代の選手に受け継がれた。',
-          '{nextChapterTopSurname}の足場は、この章の{surname}の戴冠の積み重ねの上に立った。'
-        ]
-      },
-      popStar: {
-        sectionA: [
-          '{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。{topVenueClause}',
-          '王座にこそ恵まれなかったが、{surname}の華やかさが客席を埋めた。'
-        ],
-        sectionB: [
-          '人気{peakPop}を記録したこの選手は、{org}にとってチケットそのものだった。',
-          '試合記録には残らない記憶というものを、{surname}は、その人気でこの世代に刻みつけた。'
-        ],
-        sectionC: [
-          '{surname}が築いた華やぎの記憶は、{risingPeerSurname}たち次世代の客寄せにも引き継がれた。',
-          '{surname}が会場を埋めた時代の余熱は、次の章の{nextChapterTopSurname}の入場にも残っていた。'
-        ]
-      },
-      generationShift: {
-        sectionA: [
-          '{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。{topRivalClause}',
-          '前章の主役たちが退いていく中、{surname}が次の中心を担った。'
-        ],
-        sectionB: [
-          '{surname}の章は、過去と未来が混じり合った時間として{org}史に残る。{eraTag}と呼ぶには複雑な時代だった。',
-          '{spiritAxis}の地力を保ったまま、団体は次世代へと足場を移し始めていた。'
-        ],
-        sectionC: [
-          '{risingClause}{surname}が橋渡した先に、次章の{nextChapterTopSurname}が立った。',
-          '{surname}が古参と新参の間に立った時間は、団体の世代の連続性そのものだった。'
-        ]
-      },
-      struggle: {
-        sectionA: [
-          '{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。{warClause}',
-          '挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。'
-        ],
-        sectionB: [
-          '{surname}の章は、勝てなかった日々の記録である。だが、それでも諦めず挑戦を続けた日々の記録でもある。',
-          '届かなかった世代の象徴として、{surname}は{org}の地力に深い陰影を残した。'
-        ],
-        sectionC: [
-          '{surname}が届かなかった頂は、{risingPeerSurname}ら次世代の目標として残された。',
-          '{nextChapterTopSurname}が登る山は、{surname}が手を伸ばし続けた山だった。'
-        ]
-      },
-      craftsman: {
-        sectionA: [
-          '{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。{topRivalClause}',
-          'OVR{peakOVR}に達した{surname}は、無冠ながら誰よりも信頼される選手だった。'
-        ],
-        sectionB: [
-          '{surname}の{styleJa}は派手さこそないが、{org}を底から支え続けた。',
-          '王座とは縁がなかったが、{surname}の{styleJa}はこの章の地力そのものだった。'
-        ],
-        sectionC: [
-          '{surname}が継いだ{styleJa}の系譜は、{risingPeerSurname}ら次世代にも残った。',
-          '{nextChapterTopSurname}が前に出るとき、その背後には{surname}の積み上げた{styleJa}があった。'
-        ]
-      },
-      uncrowned: {
-        sectionA: [
-          '{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。{topRivalClause}',
-          '王座を獲ることはなかったが、{surname}抜きにこの章は語れない。'
-        ],
-        sectionB: [
-          '{surname}は最後までベルトを巻かなかった。だが{org}史はこの選手を主役として記憶する。',
-          '記録には残らないが、記憶には深く残る。{surname}はそういう世代の主役だった。'
-        ],
-        sectionC: [
-          '{risingClause}{surname}の存在感は、無冠であることの強さとして次世代に伝わった。',
-          '{nextChapterTopSurname}が王座を獲るとき、{surname}が残した「無冠の重み」が背後に静かに横たわっていた。'
-        ]
-      }
-    },
-
-    /** spec v0.2 §D.4 8カテゴリ × 各3〜4本のテンプレート集 (V1 / 後方互換) */
-    QUOTE_TEMPLATES: {
-      peakDefender: [
-        '{surname}は章を通じて{defenses}度の防衛を積み上げ、団体の中心軸であり続けた。',
-        '挑戦者を{defenses}度退けた{surname}は、この章の屋台骨だった。',
-        '{defenses}度防衛——{surname}が王座にいる時間が、この世代の輪郭を形作った。',
-        '{defenses}度の防衛を重ねた{surname}は、団体の絶対的な軸として君臨した。'
-      ],
-      defender: [
-        '{surname}は王座を{defenses}度防衛し、団体の核として時代を背負った。',
-        '{titleReigns}度の戴冠と{defenses}度の防衛。{surname}が立っていることが、団体の安定そのものだった。',
-        '{surname}は王座を離さなかった。挑戦者たちはなかなか手が届かなかった。',
-        '{surname}の{defenses}度の防衛は、この章の屋台骨だった。'
-      ],
-      champion: [
-        '{surname}は{titleReigns}度の戴冠を経て、この章の主役を担った。',
-        '{titleReigns}度の戴冠を重ねた{surname}は、この世代の中心人物の一人だった。',
-        '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。',
-        '{titleReigns}度の戴冠を通じて、{surname}はこの章の流れを作った。'
-      ],
-      popStar: [
-        '{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。',
-        '王座にこそ恵まれなかったが、{surname}の華やかさが客席を埋めた。',
-        '試合記録には残らない記憶というものを、{surname}は、その人気でこの世代に刻みつけた。',
-        '{surname}を見るために客が会場に押し寄せた。それがこの世代の正体だった。'
-      ],
-      generationShift: [
-        '{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。',
-        '{surname}の章は、過去と未来が混じり合った時間として団体史に残る。',
-        '前章の主役たちが退いていく中、{surname}が次の中心を担った。',
-        '{surname}は古参と新参の間に立ち、団体の世代を繋いだ。'
-      ],
-      struggle: [
-        '{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。',
-        '挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。届かなかった世代の象徴である。',
-        '{surname}の章は、勝てなかった日々の記録である。だが、それでも諦めず挑戦を続けた日々の記録でもある。',
-        '{surname}は何度も上位に挑み、何度も敗れた。それでも立ち上がり続けた世代だった。'
-      ],
-      craftsman: [
-        '{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。',
-        'OVR{peakOVR}に達した{surname}は、無冠ながら誰よりも信頼される選手だった。',
-        '{surname}の{styleJa}は派手さこそないが、団体を底から支え続けた。',
-        '王座とは縁がなかったが、{surname}の{styleJa}はこの章の地力そのものだった。'
-      ],
-      uncrowned: [
-        '{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。',
-        '王座を獲ることはなかったが、{surname}抜きにこの章は語れない。',
-        '{surname}は最後までベルトを巻かなかった。だが団体史はこの選手を主役として記憶する。',
-        '記録には残らないが、記憶には深く残る。{surname}はそういう世代の主役だった。'
-      ]
-    },
+    // i18n Stage B P6-16: 記者の目テンプレ3表(V2 / V1 / DUAL)は data.js の
+    // CHRONICLE_QUOTE_TEMPLATES_V2 / _V1 / _DUAL へ移設した。Engineオブジェクトの
+    // プロパティのままでは specs §10-2 のとおりどの抽出器からも見えず英語辞書に載らないため
+    // (文面・配列の並び順・要素数はそのまま。pickIdx が添字を引くので並びは変更不可)。
 
     /** chapter.aces[i] は summary に剥がされていて careerRecord を持たないので、
      *  full fighter を state.roster / chronicle.fighterArchive から ID で引き直す。 */
@@ -5016,12 +4851,35 @@ const Engine = {
     },
 
     /** spec v0.2 §D 記者の目本体 (純粋関数、決定論的) */
-    /** Phase C: 章コンテキストから記者の目用スロットを集計 */
-    _buildQuoteContext(ace, chapter, state) {
+    /** i18n Stage B P6-16: 記者の目/叙述文が使う既定ラベル。
+     *  JA原文は **management.js 側に1本だけ**置き、表示語は ui-ledger の既訳
+     *  (団体→Promotion / 王座→Title)を `_wmDictLabel` で引く。
+     *  data.js のテンプレ表へ入れると template-ledger と ui-ledger で同じキーを二重登録することになり、
+     *  どちらの訳が出るかがスクリプト読み込み順に依存してしまう(specs §9)。 */
+    _orgLabel(state, dict) {
+      return (state && state.orgName) || _wmDictLabel(dict, '団体');
+    },
+    _beltLabel(orgName, dict) {
+      if (!orgName) return _wmDictLabel(dict, '王座');
+      // 保存値の「○○王座」は団体名+様式のJA成形済み値(specs §6の構造穴)。
+      // 団体名だけを params 経由で名前辞書(pn)へ通し、様式は `{orgName}王座` テンプレで組み直す
+      // (ui-common.js の _factionDisplayName が「○○派」に対してやっているのと同法・§10)。
+      const m = /^(.+)王座$/.exec(orgName);
+      if (m) return _wmTitleName(dict, m[1]);
+      return _wmDictLabel(dict, orgName);
+    },
+
+    /** Phase C: 章コンテキストから記者の目用スロットを集計
+     *  i18n Stage B P6-16: 第4引数 dict(=WM_I18N.t 相当)を受けるdict-opts化。差し込み句
+     *  ({topRivalClause}等)は CHRONICLE_QUOTE_CLAUSES(data.js)のテンプレを**PH置換前に**
+     *  dictへ通して組む。dict省略時はJA原文のまま(1バイト不変)。 */
+    _buildQuoteContext(ace, chapter, state, dict) {
+      const CL = CHRONICLE_QUOTE_CLAUSES;
+      const clause = (tpl, params) => _wmFillWithDict(dict, tpl, params);
       const surname = Engine.chronicle._getSurname(ace.name);
       const styleAxis = Engine.chronicle._styleAxis(ace.style);
-      const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
-      const org = (state && state.orgName) || '団体';
+      const styleJa = _wmDictLabel(dict, Engine.chronicle.AXIS_LABELS[styleAxis] || '独自');
+      const org = Engine.chronicle._orgLabel(state, dict);
       const chapterDefenses = Engine.chronicle._countChapterDefensesForAce(ace, chapter, state);
 
       // 章窓内の history を抽出
@@ -5056,8 +4914,8 @@ const Engine = {
         }
       });
       const topRivalClause = topRivalCount >= 2 && topRivalSurname
-        ? `${topRivalSurname}との激闘は世代の語り草となった。`
-        : (topRivalCount === 1 && topRivalSurname ? `${topRivalSurname}との一戦が章の見せ場になった。` : '');
+        ? clause(CL.topRivalMany, { rival: topRivalSurname })
+        : (topRivalCount === 1 && topRivalSurname ? clause(CL.topRivalOnce, { rival: topRivalSurname }) : '');
 
       // topVenue: 章窓内に最も多く立ったベニュー (簡易: 試合履歴に venue があれば最頻、無ければ空文字列)
       let topVenue = '';
@@ -5070,7 +4928,7 @@ const Engine = {
         venueCount.forEach((v, k) => { if (v > max) { max = v; best = k; } });
         topVenue = best || '';
       }
-      const topVenueClause = topVenue ? `舞台となったのは${topVenue}だった。` : '';
+      const topVenueClause = topVenue ? clause(CL.topVenue, { venue: topVenue }) : '';
 
       // war: 章窓内対外戦の主要対戦団体と勝敗
       let warOpponentOrg = '';
@@ -5086,10 +4944,10 @@ const Engine = {
         warOrgCount.forEach((v, k) => { if (v > max) { max = v; best = k; } });
         warOpponentOrg = best || '';
       }
-      const warRecord = (warWins + warLosses > 0) ? `${warWins}勝${warLosses}敗` : '';
+      const warRecord = (warWins + warLosses > 0) ? clause(CL.warRecord, { wins: warWins, losses: warLosses }) : '';
       const warClause = (warOpponentOrg && warRecord)
-        ? `${warOpponentOrg}との対外戦${warRecord}も、この章の彼女の重みを物語る。`
-        : (warRecord ? `対外戦${warRecord}という記録もこの章に残った。` : '');
+        ? clause(CL.warWithOrg, { org: warOpponentOrg, record: warRecord })
+        : (warRecord ? clause(CL.warNoOrg, { record: warRecord }) : '');
 
       // risingPeer: 同章の rising peer のうち最も talent score が高い者
       let risingPeerSurname = '';
@@ -5099,7 +4957,7 @@ const Engine = {
         if (top) risingPeerSurname = Engine.chronicle._getSurname(top);
       }
       const risingClause = risingPeerSurname
-        ? `${risingPeerSurname}ら次世代の選手たちの基準になった。`
+        ? clause(CL.rising, { peer: risingPeerSurname })
         : '';
 
       // nextChapter: chapter cache から次章を引く (in_progress 章では §C を出さないので参照のみ)
@@ -5110,18 +4968,18 @@ const Engine = {
       if (next && next.aces && next.aces[0]) {
         nextChapterTopSurname = Engine.chronicle._getSurname(next.aces[0]);
         const nAxis = next._topAxis;
-        successorStyle = (Engine.chronicle.AXIS_LABELS && Engine.chronicle.AXIS_LABELS[nAxis]) || '次の流派';
+        successorStyle = _wmDictLabel(dict, (Engine.chronicle.AXIS_LABELS && Engine.chronicle.AXIS_LABELS[nAxis]) || '次の流派');
       }
       // フォールバック (next が無い / topAxis 未設定)
       if (!successorStyle) successorStyle = styleJa;
-      if (!nextChapterTopSurname) nextChapterTopSurname = '次世代の主役';
+      if (!nextChapterTopSurname) nextChapterTopSurname = _wmDictLabel(dict, '次世代の主役');
 
       // eraTag: chapter._topAxis + 戴冠数で導出 (簡易)
       const ax = chapter._topAxis;
-      const axJa = (Engine.chronicle.AXIS_LABELS && Engine.chronicle.AXIS_LABELS[ax]) || styleJa;
-      let eraTag = `${axJa}の時代`;
-      if ((ace.titleReigns || 0) >= 3 && chapterDefenses >= 4) eraTag = '黄金期';
-      else if ((ace.titleReigns || 0) === 0 && chapterDefenses === 0) eraTag = '端境期';
+      const axJa = _wmDictLabel(dict, (Engine.chronicle.AXIS_LABELS && Engine.chronicle.AXIS_LABELS[ax]) || '') || styleJa;
+      let eraTag = clause(CL.eraTagAxis, { axis: axJa });
+      if ((ace.titleReigns || 0) >= 3 && chapterDefenses >= 4) eraTag = _wmDictLabel(dict, '黄金期');
+      else if ((ace.titleReigns || 0) === 0 && chapterDefenses === 0) eraTag = _wmDictLabel(dict, '端境期');
 
       const spiritAxis = axJa;
 
@@ -5140,63 +4998,69 @@ const Engine = {
       };
     },
 
-    /** Phase D: 二枚看板章の記者の目を 1 つに統合。
-     *  両エースの quote が個別に並ぶと slot (topRival / eraTag / next 章) が同じで
-     *  内容がほぼ同じに読めてしまうため、二人の名前を入れた単一 quote を返す。 */
-    QUOTE_TEMPLATES_DUAL: {
-      sectionA: [
-        '{surname1}と{surname2}は二枚看板としてこの章の主役を担った。{topRivalClause}{warClause}',
-        '{surname1}と{surname2}が並走したこの章は、二人の名前なしには語れない。{topVenueClause}',
-        '王座とリングの中心を{surname1}と{surname2}が分け合い、団体は二つの頂を持つ時代に入った。'
-      ],
-      sectionB: [
-        '二人が引っ張った時代、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。',
-        '{eraTag}と呼ばれるこの章で、{surname1}と{surname2}はそれぞれ別の頂点を立てた。',
-        'OVR と人気の双方で団体を支えた二人の在位は、{eraTag}そのものだった。'
-      ],
-      sectionC: [
-        '二人が走り抜けた後、次章の主役{nextChapterTopSurname}が立ち上がる足場ができていた。',
-        '{surname1}と{surname2}が並走した時代の余熱は、{risingPeerSurname}ら次世代に継がれた。',
-        '二つの頂が並んだこの章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が伸び始めていた。'
-      ]
+    /** 記者の目テンプレの `{…}` スロットを ctx から埋めるための params を作る。
+     *  i18n Stage B P6-16: 旧実装の `.replace(/\{x\}/g, …)` チェーンを **params + dict** へ変えた。
+     *  値を dict のパラメータとして渡すので、選手の姓・団体名・会場名は D-P6-2 の
+     *  名前辞書変換(pn)が効く(旧実装の手置換では効かなかった)。JA出力は1バイト不変。 */
+    _quoteSlotVars(ctx) {
+      return {
+        surname: ctx.surname,
+        surname1: ctx.surname1 != null ? ctx.surname1 : ctx.surname,
+        surname2: ctx.surname2 != null ? ctx.surname2 : '',
+        styleJa: ctx.styleJa,
+        org: ctx.org,
+        titleReigns: String(ctx.titleReigns),
+        defenses: String(ctx.defenses),
+        peakOVR: String(ctx.peakOVR),
+        peakPop: String(ctx.peakPop),
+        topRivalSurname: ctx.topRivalSurname || '',
+        topRivalClause: ctx.topRivalClause,
+        topVenue: ctx.topVenue || '',
+        topVenueClause: ctx.topVenueClause,
+        warOpponentOrg: ctx.warOpponentOrg || '',
+        warRecord: ctx.warRecord,
+        warClause: ctx.warClause,
+        risingPeerSurname: ctx.risingPeerSurname || '',
+        risingClause: ctx.risingClause,
+        nextChapterTopSurname: ctx.nextChapterTopSurname || '',
+        successorStyle: ctx.successorStyle,
+        eraTag: ctx.eraTag,
+        spiritAxis: ctx.spiritAxis
+      };
     },
 
-    buildDualAceQuote(aces, chapter, state) {
+    /** 節(§A/§B/§C)を1本の記者の目へ連結する。
+     *  連結様式もテンプレ経由(JA=直結 / EN=文間に半角スペース)。断片数が可変(1〜3)なので
+     *  2スロットのテンプレを**初期値なしの reduce**で畳み込む(specs §14-1と同じ理由)。
+     *  ENのクラウス訳文は先頭に半角スペースを持つ規約なので、節の先頭にクラウスが来る型
+     *  (defender/generationShift/uncrowned の §C 等)では先頭に空白が残る。**節ごとに trim** して
+     *  から連結する — JAは空白を含まないので trim は no-op(1バイト不変)。 */
+    _joinQuoteSections(sections, dict) {
+      const parts = (sections || []).map(s => String(s == null ? '' : s).trim()).filter(Boolean);
+      if (!parts.length) return '';
+      return parts.reduce((a, b) => _wmFillWithDict(dict, CHRONICLE_NARRATIVE_TEMPLATES.join, { a, b }));
+    },
+
+    /** Phase D: 二枚看板章の記者の目を 1 つに統合。
+     *  両エースの quote が個別に並ぶと slot (topRival / eraTag / next 章) が同じで
+     *  内容がほぼ同じに読めてしまうため、二人の名前を入れた単一 quote を返す。
+     *  i18n Stage B P6-16: 第4引数 dict(=WM_I18N.t 相当)。呼び出し元は ui-render.js(UI層)
+     *  1箇所のみで、表示時に生成される値なのでセーブには残らない。 */
+    buildDualAceQuote(aces, chapter, state, dict) {
       if (!aces || aces.length < 2) {
-        return Engine.chronicle.buildAceQuote(aces[0], chapter, state);
+        return Engine.chronicle.buildAceQuote(aces[0], chapter, state, dict);
       }
       const [a1, a2] = aces;
       // 主役の context を a1 ベースで取り、{surname2} を追加
-      const ctx = Engine.chronicle._buildQuoteContext(a1, chapter, state);
+      const ctx = Engine.chronicle._buildQuoteContext(a1, chapter, state, dict);
       ctx.surname1 = ctx.surname;
       ctx.surname2 = Engine.chronicle._getSurname(a2);
       const seedBase = (state && state.rngSeed) || 1;
       const aceIdNum = (typeof a1.id === 'number' ? a1.id : (Number(a1.id) || 0))
         + (typeof a2.id === 'number' ? a2.id : (Number(a2.id) || 0));
-      const fillSlots = (tpl) => tpl
-        .replace(/\{surname1\}/g, ctx.surname1)
-        .replace(/\{surname2\}/g, ctx.surname2)
-        .replace(/\{surname\}/g, ctx.surname1)
-        .replace(/\{styleJa\}/g, ctx.styleJa)
-        .replace(/\{org\}/g, ctx.org)
-        .replace(/\{titleReigns\}/g, String(ctx.titleReigns))
-        .replace(/\{defenses\}/g, String(ctx.defenses))
-        .replace(/\{peakOVR\}/g, String(ctx.peakOVR))
-        .replace(/\{peakPop\}/g, String(ctx.peakPop))
-        .replace(/\{topRivalSurname\}/g, ctx.topRivalSurname || '')
-        .replace(/\{topRivalClause\}/g, ctx.topRivalClause)
-        .replace(/\{topVenue\}/g, ctx.topVenue || '')
-        .replace(/\{topVenueClause\}/g, ctx.topVenueClause)
-        .replace(/\{warOpponentOrg\}/g, ctx.warOpponentOrg || '')
-        .replace(/\{warRecord\}/g, ctx.warRecord)
-        .replace(/\{warClause\}/g, ctx.warClause)
-        .replace(/\{risingPeerSurname\}/g, ctx.risingPeerSurname || '')
-        .replace(/\{risingClause\}/g, ctx.risingClause)
-        .replace(/\{nextChapterTopSurname\}/g, ctx.nextChapterTopSurname || '')
-        .replace(/\{successorStyle\}/g, ctx.successorStyle)
-        .replace(/\{eraTag\}/g, ctx.eraTag)
-        .replace(/\{spiritAxis\}/g, ctx.spiritAxis);
-      const v2 = Engine.chronicle.QUOTE_TEMPLATES_DUAL;
+      const vars = Engine.chronicle._quoteSlotVars(ctx);
+      const fillSlots = (tpl) => _wmFillWithDict(dict, tpl, vars);
+      const v2 = CHRONICLE_QUOTE_TEMPLATES_DUAL;
       const pickIdx = (arr, salt) => {
         const seed = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, aceIdNum, salt);
         return ((seed | 0) % arr.length + arr.length) % arr.length;
@@ -5207,42 +5071,24 @@ const Engine = {
       const B = bShown ? fillSlots(v2.sectionB[pickIdx(v2.sectionB, 0xCB51)]) : '';
       const isLatest = chapter.status === 'in_progress';
       const C = isLatest ? '' : fillSlots(v2.sectionC[pickIdx(v2.sectionC, 0xCB60)]);
-      return [A, B, C].filter(Boolean).join('');
+      return Engine.chronicle._joinQuoteSections([A, B, C], dict);
     },
 
-    /** Phase C: V2 段別テンプレ + V1 後方互換ありの記者の目本体 */
-    buildAceQuote(ace, chapter, state) {
+    /** Phase C: V2 段別テンプレ + V1 後方互換ありの記者の目本体
+     *  i18n Stage B P6-16: 第4引数 dict(=WM_I18N.t 相当)。dict省略時はJA原文のまま。 */
+    buildAceQuote(ace, chapter, state, dict) {
       const category = Engine.chronicle._classifyAceQuoteCategory(ace, chapter, state);
       const seedBase = (state && state.rngSeed) || 1;
       const aceIdNum = typeof ace.id === 'number' ? ace.id : (Number(ace.id) || 0);
-      const ctx = Engine.chronicle._buildQuoteContext(ace, chapter, state);
+      const ctx = Engine.chronicle._buildQuoteContext(ace, chapter, state, dict);
 
-      const fillSlots = (tpl) => tpl
-        .replace(/\{surname\}/g, ctx.surname)
-        .replace(/\{styleJa\}/g, ctx.styleJa)
-        .replace(/\{org\}/g, ctx.org)
-        .replace(/\{titleReigns\}/g, String(ctx.titleReigns))
-        .replace(/\{defenses\}/g, String(ctx.defenses))
-        .replace(/\{peakOVR\}/g, String(ctx.peakOVR))
-        .replace(/\{peakPop\}/g, String(ctx.peakPop))
-        .replace(/\{topRivalSurname\}/g, ctx.topRivalSurname || '')
-        .replace(/\{topRivalClause\}/g, ctx.topRivalClause)
-        .replace(/\{topVenue\}/g, ctx.topVenue || '')
-        .replace(/\{topVenueClause\}/g, ctx.topVenueClause)
-        .replace(/\{warOpponentOrg\}/g, ctx.warOpponentOrg || '')
-        .replace(/\{warRecord\}/g, ctx.warRecord)
-        .replace(/\{warClause\}/g, ctx.warClause)
-        .replace(/\{risingPeerSurname\}/g, ctx.risingPeerSurname || '')
-        .replace(/\{risingClause\}/g, ctx.risingClause)
-        .replace(/\{nextChapterTopSurname\}/g, ctx.nextChapterTopSurname || '')
-        .replace(/\{successorStyle\}/g, ctx.successorStyle)
-        .replace(/\{eraTag\}/g, ctx.eraTag)
-        .replace(/\{spiritAxis\}/g, ctx.spiritAxis);
+      const vars = Engine.chronicle._quoteSlotVars(ctx);
+      const fillSlots = (tpl) => _wmFillWithDict(dict, tpl, vars);
 
       // V2 が存在するカテゴリは段別組み立て、無ければ V1 にフォールバック
-      const v2 = Engine.chronicle.QUOTE_TEMPLATES_V2 && Engine.chronicle.QUOTE_TEMPLATES_V2[category];
+      const v2 = CHRONICLE_QUOTE_TEMPLATES_V2 && CHRONICLE_QUOTE_TEMPLATES_V2[category];
       if (!v2) {
-        const v1 = Engine.chronicle.QUOTE_TEMPLATES[category] || Engine.chronicle.QUOTE_TEMPLATES.uncrowned;
+        const v1 = CHRONICLE_QUOTE_TEMPLATES_V1[category] || CHRONICLE_QUOTE_TEMPLATES_V1.uncrowned;
         const seed = Engine.rng.derive(seedBase, chapter.number || chapter.seasonStart || 0, aceIdNum, 0xCB02);
         const idx = ((seed | 0) % v1.length + v1.length) % v1.length;
         return fillSlots(v1[idx]);
@@ -5259,7 +5105,7 @@ const Engine = {
       // §C は in_progress 章 (= 最新章) では出さない (次章エースを語り切れないため)
       const isLatest = chapter.status === 'in_progress';
       const C = (!isLatest && v2.sectionC && v2.sectionC.length > 0) ? fillSlots(v2.sectionC[pickIdx(v2.sectionC, 0xCB30)]) : '';
-      return [A, B, C].filter(Boolean).join('');
+      return Engine.chronicle._joinQuoteSections([A, B, C], dict);
     },
 
     /** 苗字抽出 (日本語名は全角/半角スペース前) */
@@ -6337,25 +6183,71 @@ const Engine = {
       return arr.slice(0, 4);
     },
 
+    // ══════════════════════════════════════════════════════════════════
+    //  i18n Stage B P6-16: 叙述パーツ(narrativeParts)の描画
+    //  ──────────────────────────────────────────────────────────────
+    //  年代記の叙述文(narrative)は buildChapters が **G.chronicle.chaptersCache へ永続化**する
+    //  ため、specs §13-1 の「表示点で再生成する」型が使えない(キャッシュ側のace/peerは
+    //  careerRecord を持たない縮約オブジェクトなので、保存値と同じ文を作り直せない)。
+    //  代わりに specs §14-3 の**追加フィールド方式**を採る:
+    //    - `narrative`      … 従来どおり **JAの完成文**(セーブに書く既存値は不変)
+    //    - `narrativeParts` … 新規フィールド。`{ t, v, items, sep }` の配列で、
+    //                          表示点(ui-render.js)が現在の言語で組み直せる素材
+    //  パーツ形: { t: テンプレ, v: params } / 列挙を内側に持つ文は
+    //            { t, v, items: [パーツ], sep: 'listComma'|'listDot' }
+    // ══════════════════════════════════════════════════════════════════
+
+    /** 叙述パーツ1つを1文へ。**PH置換前に**テンプレをdictへ通す(_wmFillWithDictの契約)。 */
+    _narrativePartText(part, dict) {
+      if (!part || !part.t) return '';
+      const N = CHRONICLE_NARRATIVE_TEMPLATES;
+      const v = part.v ? { ...part.v } : {};
+      if (Array.isArray(part.items) && part.items.length) {
+        const sepTpl = N[part.sep] || N.listComma;
+        v.items = part.items
+          .map(it => _wmFillWithDict(dict, it.t, it.v))
+          .reduce((a, b) => _wmFillWithDict(dict, sepTpl, { a, b }));
+      }
+      return _wmFillWithDict(dict, part.t, v);
+    },
+
+    /** 叙述パーツ配列を1本の叙述文へ。連結様式もテンプレ経由(JA=直結 / EN=半角スペース)。 */
+    narrativeText(parts, dict) {
+      const N = CHRONICLE_NARRATIVE_TEMPLATES;
+      const texts = (parts || [])
+        .map(p => Engine.chronicle._narrativePartText(p, dict))
+        .filter(Boolean);
+      if (!texts.length) return '';
+      return texts.reduce((a, b) => _wmFillWithDict(dict, N.join, { a, b }));
+    },
+
     /** エースの叙述文(2〜3文、テンプレ穴埋めではなく事実列挙)
-     * 出力: 文字列(HTML、<strong>許可) */
-    _buildAceNarrative(ace, chapter, aces, peers, state) {
+     * 出力: 文字列(HTML、<strong>許可)。i18n P6-16: 第6引数 dict(=WM_I18N.t 相当)。 */
+    _buildAceNarrative(ace, chapter, aces, peers, state, dict) {
+      const parts = Engine.chronicle._buildAceNarrativeParts(ace, chapter, aces, peers, state, dict);
+      if (!parts.length) return null;
+      return Engine.chronicle.narrativeText(parts, dict) || null;
+    },
+
+    /** 上の素材(叙述パーツ)だけを返す。buildChapters が narrativeParts として保存する。 */
+    _buildAceNarrativeParts(ace, chapter, aces, peers, state, dict) {
+      const A = CHRONICLE_NARRATIVE_TEMPLATES.ace;
       const surname = Engine.chronicle._getSurname(ace.name);
       const allHist = ((ace.careerRecord || {}).history || []);
       const joinS = Engine.career.joinSeason(ace);
       const histPost = Engine.career.filterPostJoin(allHist, joinS);
       const hist = histPost.filter(e => (e.season || 0) >= chapter.seasonStart && (e.season || 0) <= chapter.seasonEnd);
 
-      const sentences = [];
+      const parts = [];
 
       // 1文目: デビュー / ピーク
       const debutEv = histPost.find(e => e.type === 'debut');
       const peakOVR = ace.peakOVR || 0;
       const peakSeason = ace.peakOVRSeason || ace.primeEnd || chapter.seasonStart;
       const seg1 = [];
-      if (debutEv && debutEv.season) seg1.push(`S${debutEv.season}デビュー`);
-      if (peakOVR >= 80) seg1.push(`S${peakSeason}にOVR${peakOVR}でピーク到達`);
-      if (seg1.length > 0) sentences.push(`${surname}は${seg1.join('、')}。`);
+      if (debutEv && debutEv.season) seg1.push({ t: A.debut, v: { season: debutEv.season } });
+      if (peakOVR >= 80) seg1.push({ t: A.peak, v: { season: peakSeason, ovr: peakOVR } });
+      if (seg1.length > 0) parts.push({ t: A.sentence1, v: { surname }, items: seg1, sep: 'listComma' });
 
       // 2文目: 章内タイトル戴冠 / 防衛 / 受賞
       const titleWins = hist.filter(e => e.type === 'titleWin');
@@ -6366,13 +6258,16 @@ const Engine = {
       const bmCount = hist.filter(e => e.type === 'awardBestMatch').length;
       const seg2 = [];
       if (titleWins.length > 0) {
-        const beltName = titleWins[0].orgName || '王座';
-        seg2.push(titleWins.length >= 2 ? `${beltName}を${titleWins.length}度戴冠` : `${beltName}を戴冠`);
+        // {belt} は「○○王座」のようにJAで組み立て済みの保存値。1語ラベルとしてdictを引く
+        const beltName = Engine.chronicle._beltLabel(titleWins[0].orgName, dict);
+        seg2.push(titleWins.length >= 2
+          ? { t: A.titleWinMulti, v: { belt: beltName, count: titleWins.length } }
+          : { t: A.titleWinOnce, v: { belt: beltName } });
       }
-      if (chapterDefenses >= 3) seg2.push(`${chapterDefenses}度の防衛`);
-      if (mvpCount >= 1) seg2.push(mvpCount >= 2 ? `MVPを${mvpCount}度受賞` : 'MVPを受賞');
-      if (bmCount >= 2) seg2.push(`ベストマッチ賞${bmCount}度`);
-      if (seg2.length > 0) sentences.push(`この章では${seg2.join('、')}。`);
+      if (chapterDefenses >= 3) seg2.push({ t: A.defenses, v: { count: chapterDefenses } });
+      if (mvpCount >= 1) seg2.push(mvpCount >= 2 ? { t: A.mvpMulti, v: { count: mvpCount } } : { t: A.mvpOnce, v: {} });
+      if (bmCount >= 2) seg2.push({ t: A.bestMatch, v: { count: bmCount } });
+      if (seg2.length > 0) parts.push({ t: A.sentence2, v: {}, items: seg2, sep: 'listComma' });
 
       // 3文目: 対外 / 対同期
       const seg3 = [];
@@ -6386,18 +6281,19 @@ const Engine = {
       });
       if (extW + extL >= 1) {
         const topOpp = [...extOpp.entries()].sort((a, b) => b[1] - a[1])[0];
-        const oppFrag = topOpp ? `${topOpp[0]}を中心とした` : '他団体との';
-        seg3.push(`${oppFrag}対外戦で${extW}勝${extL}敗`);
+        seg3.push(topOpp
+          ? { t: A.warWithOrg, v: { org: topOpp[0], wins: extW, losses: extL } }
+          : { t: A.warNoOrg, v: { wins: extW, losses: extL } });
       }
       if (titleLossEv) {
-        const beltName = titleLossEv.orgName || '王座';
+        const beltName = Engine.chronicle._beltLabel(titleLossEv.orgName, dict);
         seg3.push(titleLossEv.dethronedByName
-          ? `${beltName}は${titleLossEv.dethronedByName}に明け渡した`
-          : `章の終盤に${beltName}を陥落`);
+          ? { t: A.titleLossTo, v: { belt: beltName, name: titleLossEv.dethronedByName } }
+          : { t: A.titleLossLate, v: { belt: beltName } });
       }
-      if (seg3.length > 0) sentences.push(`${seg3.join('、')}。`);
+      if (seg3.length > 0) parts.push({ t: A.sentence3, v: {}, items: seg3, sep: 'listComma' });
 
-      return sentences.length > 0 ? sentences.join('') : null;
+      return parts;
     },
 
     /** 同期(peer)の事実ベース1行叙述 */
@@ -6410,13 +6306,23 @@ const Engine = {
      *  各選手の trait / personality / archetype / style / OVR帯 / pop帯 / debut /
      *  titleReigns / topRival / bond/rivalry を素材に、stage 別 opening + 戦績パーツ +
      *  キャラ性パーツ + 関係性パーツの 4 ブロックを seed 抽選で組み合わせる。
-     *  同一選手は常に同じ narrative (id seed) / 別選手は異なる narrative。 */
-    _buildPeerNarrative(peer, chapter, aces, peers, state) {
+     *  同一選手は常に同じ narrative (id seed) / 別選手は異なる narrative。
+     *  i18n Stage B P6-16: 第6引数 dict(=WM_I18N.t 相当)。文プールは data.js の
+     *  CHRONICLE_NARRATIVE_TEMPLATES.peer へ移設した(関数本体の直書き配列は specs §10-2 の
+     *  とおりどの抽出器からも見えない)。**プールの並び順・要素数は変更不可**。 */
+    _buildPeerNarrative(peer, chapter, aces, peers, state, dict) {
+      const parts = Engine.chronicle._buildPeerNarrativeParts(peer, chapter, aces, peers, state, dict);
+      return Engine.chronicle.narrativeText(parts, dict);
+    },
+
+    /** 上の素材(叙述パーツ)だけを返す。buildChapters が narrativeParts として保存する。 */
+    _buildPeerNarrativeParts(peer, chapter, aces, peers, state, dict) {
+      const PT = CHRONICLE_NARRATIVE_TEMPLATES.peer;
       const surname = Engine.chronicle._getSurname(peer);
       const role = peer._role || (peer._isIdol ? 'idol' : 'strength');
       const stage = peer._stage || 'prime';
       const styleAxis = Engine.chronicle._styleAxis(peer.style);
-      const styleJa = Engine.chronicle.AXIS_LABELS[styleAxis] || '独自';
+      const styleJa = _wmDictLabel(dict, Engine.chronicle.AXIS_LABELS[styleAxis] || '独自');
       const allHist = ((peer.careerRecord || {}).history || []);
       const joinS = Engine.career.joinSeason(peer);
       const histPost = Engine.career.filterPostJoin(allHist, joinS);
@@ -6498,51 +6404,10 @@ const Engine = {
       const popTier = peakPop >= 90 ? 'star' : peakPop >= 75 ? 'high' : peakPop >= 55 ? 'mid' : 'low';
 
       // ── A. opening (stage / role 別、ID 抽選で 1 つ選択)
-      const OPENINGS = {
-        rising_debut_in_chapter: [
-          `${surname}が${debutSeason}シーズンにデビューしたのは、ちょうどこの章の最中だった。`,
-          `${surname}のキャリアはこの章の中で始まった。S${debutSeason}でリングに上がり、ここから先の時代を背負っていく。`,
-          `${surname}という名前が初めて${state && state.orgName ? state.orgName : '団体'}のリングに刻まれたのは、この章の${debutSeason}シーズンだった。`
-        ],
-        rising: [
-          `${surname}はこの章で頭角を現し始めた若手だった。`,
-          `若手の${surname}は、この時代を足場に階段を駆け上がっていった。`,
-          `${surname}は${debutSeason}シーズンのデビューから、この章で名前を覚えられる位置まで来た。`,
-          `${surname}にとってこの章は、リングの隅から中心へと歩み出した時代だった。`,
-          `若さで挑み続けた${surname}は、この章でリングの空気を変え始めた。`
-        ],
-        veteran: [
-          `キャリア晩期の${surname}は、背中で語る選手だった。`,
-          `長くリングに立った${surname}は、この章で若手にバトンを渡し始めていた。`,
-          `${surname}にとってこの章は、自身の戦いを締めくくる時間だった。`,
-          `年齢を重ねた${surname}は、勝敗を超えた何かを試合に残そうとしていた。`,
-          `${surname}は${debutSeason}シーズン以来のキャリアを、この章でゆっくりと畳み始めていた。`
-        ],
-        idol: [
-          `${surname}は華のあるキャラクターで客席を惹きつけた。`,
-          `ファンに愛された${surname}は、戦績では測れない存在感をリングに残した。`,
-          `${surname}が登場するだけで会場の空気が変わる——そんなアイドル性をこの章は持っていた。`,
-          `${surname}は人気${peakPop}を記録し、客足を背負ったスターだった。`,
-          `${surname}の存在は団体のチケットそのものだった。`
-        ],
-        prime_top: [
-          `${surname}はこの章のリングを牽引した実力者だった。`,
-          `ピーク OVR ${peakOVR} に達した${surname}は、章の主軸として試合を組み立てた。`,
-          `${surname}は${styleJa}を武器に、この章の上位戦線を走り続けた。`,
-          `主力の${surname}は、章を通して安定した戦績で団体を支えた。`
-        ],
-        prime_high: [
-          `${surname}は${styleJa}を貫き、この章の主力グループに名を連ねた。`,
-          `${surname}はこの章で${styleJa}の使い手として一定の存在感を持ち続けた。`,
-          `${surname}は中堅から上位への階段を、この章で着実に上っていった。`,
-          `${surname}は安定した働きでこの章のリングを支えた。`
-        ],
-        prime_mid: [
-          `${surname}は${styleJa}で中盤戦線を担った。`,
-          `${surname}はこの章で派手さこそないが、地道に試合数をこなした。`,
-          `${surname}は職人気質の${styleJa}でリングに居続けた。`,
-          `${surname}は試合のリズムを崩さずに章を走り抜けた選手だった。`
-        ]
+      const OPENINGS = PT.opening;
+      const openVars = {
+        surname, debutSeason, peakPop, peakOVR, styleJa,
+        org: Engine.chronicle._orgLabel(state, dict)
       };
       let openingPool;
       if (stage === 'rising' && debutInChapter) openingPool = OPENINGS.rising_debut_in_chapter;
@@ -6552,106 +6417,84 @@ const Engine = {
       else if (ovrTier === 'top') openingPool = OPENINGS.prime_top;
       else if (ovrTier === 'high') openingPool = OPENINGS.prime_high;
       else openingPool = OPENINGS.prime_mid;
-      const openingLine = openingPool[pickSalt(0xCE01, openingPool.length)];
+      const openingPart = { t: openingPool[pickSalt(0xCE01, openingPool.length)], v: openVars };
 
       // ── B. 戦績フレーズ (cap 2)
+      const AC = PT.ach;
       const achPool = [];
-      if (titleWins >= 2) achPool.push(`${titleWins}度の戴冠`);
-      else if (titleWins === 1) achPool.push('王座奪取');
-      if (defenses >= 3) achPool.push(`${defenses}度の防衛`);
-      else if (defenses >= 1) achPool.push(`${defenses}度の防衛`);
-      if (mvp >= 1) achPool.push('MVP 受賞');
-      if (bm >= 2) achPool.push(`ベストマッチ賞 ${bm} 度`);
-      else if (bm === 1) achPool.push('ベストマッチ賞');
-      if (jt) achPool.push('ジュニアトーナメント制覇');
-      if (ppvMain >= 1) achPool.push(`PPV メイン ${ppvMain >= 2 ? `${ppvMain}度` : '出場'}`);
-      if (warWins >= 1) achPool.push(`対外戦${warWins}勝`);
-      else if (warLosses >= 2) achPool.push(`対外戦${warLosses}敗`);
-      if (titleLossInWin) achPool.push('王座陥落');
-      let achLine = '';
+      if (titleWins >= 2) achPool.push({ t: AC.titleWinMulti, v: { count: titleWins } });
+      else if (titleWins === 1) achPool.push({ t: AC.titleWinOnce, v: {} });
+      if (defenses >= 3) achPool.push({ t: AC.defenses, v: { count: defenses } });
+      else if (defenses >= 1) achPool.push({ t: AC.defenses, v: { count: defenses } });
+      if (mvp >= 1) achPool.push({ t: AC.mvp, v: {} });
+      if (bm >= 2) achPool.push({ t: AC.bestMatchMulti, v: { count: bm } });
+      else if (bm === 1) achPool.push({ t: AC.bestMatchOnce, v: {} });
+      if (jt) achPool.push({ t: AC.juniorTournament, v: {} });
+      if (ppvMain >= 1) achPool.push(ppvMain >= 2 ? { t: AC.ppvMainMulti, v: { count: ppvMain } } : { t: AC.ppvMainOnce, v: {} });
+      if (warWins >= 1) achPool.push({ t: AC.warWins, v: { count: warWins } });
+      else if (warLosses >= 2) achPool.push({ t: AC.warLosses, v: { count: warLosses } });
+      if (titleLossInWin) achPool.push({ t: AC.titleLoss, v: {} });
+      let achPart = null;
       if (achPool.length > 0) {
         const items = achPool.slice(0, 3);
-        const verbPool = [
-          `この章では${items.join('・')}という記録を残した。`,
-          `章を通じて${items.join('・')}を経験した。`,
-          `章窓の戦績は${items.join('・')}。`
-        ];
-        achLine = verbPool[pickSalt(0xCE02, verbPool.length)];
+        const verbPool = PT.achVerb;
+        achPart = { t: verbPool[pickSalt(0xCE02, verbPool.length)], v: {}, items, sep: 'listDot' };
       }
 
       // ── C. キャラ性 (trait / personality / archetype / popularity / style)
+      // **push の順序が pickSalt の添字になるので順序を変えないこと**
       const charPool = [];
-      if (traits.includes('華') || traits.includes('ファンサービス')) {
-        charPool.push(`「華」を備えた${surname}は、リング映えのする選手としてファンに記憶されている。`);
-      }
-      if (traits.includes('人望')) {
-        charPool.push(`${surname}は人望の厚さでロッカーに馴染み、若手から慕われた。`);
-      }
-      if (traits.includes('ムードメーカー')) {
-        charPool.push(`${surname}はムードメーカーとして場の空気を整える側にいた。`);
-      }
-      if (traits.includes('熱血')) {
-        charPool.push(`熱血気質の${surname}はリングで気持ちを前面に出すタイプだった。`);
-      }
-      if (traits.includes('名勝負製造機')) {
-        charPool.push(`${surname}は「名勝負製造機」と呼ばれ、相手を引き上げる試合を作ることで知られた。`);
-      }
-      if (traits.includes('ガラスのハート')) {
-        charPool.push(`${surname}は繊細なメンタルを抱えながら、それでもリングに立ち続けた。`);
-      }
+      const cv = { surname };
+      if (traits.includes('華') || traits.includes('ファンサービス')) charPool.push({ t: PT.trait.hana, v: cv });
+      if (traits.includes('人望')) charPool.push({ t: PT.trait.jinbo, v: cv });
+      if (traits.includes('ムードメーカー')) charPool.push({ t: PT.trait.moodMaker, v: cv });
+      if (traits.includes('熱血')) charPool.push({ t: PT.trait.nekketsu, v: cv });
+      if (traits.includes('名勝負製造機')) charPool.push({ t: PT.trait.classicMaker, v: cv });
+      if (traits.includes('ガラスのハート')) charPool.push({ t: PT.trait.glassHeart, v: cv });
       if (popTier === 'star') {
-        charPool.push(`${surname}の人気は会場の動員を左右するほどだった。`);
+        charPool.push({ t: PT.pop.star, v: cv });
       } else if (popTier === 'high' && !traits.includes('華')) {
-        charPool.push(`${surname}は派手さこそないが、固定ファンを持つ選手だった。`);
+        charPool.push({ t: PT.pop.high, v: cv });
       }
       if (personality === 'aggressive' || personality === '強気') {
-        charPool.push(`${surname}は強気のスタイルで相手に向かっていく試合運びを好んだ。`);
+        charPool.push({ t: PT.personality.aggressive, v: cv });
       } else if (personality === 'composed' || personality === '鷹揚') {
-        charPool.push(`鷹揚な性分の${surname}は、リング外でも内でも余裕を崩さなかった。`);
+        charPool.push({ t: PT.personality.composed, v: cv });
       } else if (personality === 'shy' || personality === '控えめ') {
-        charPool.push(`控えめな${surname}は、口数の少なさを試合で埋めるタイプだった。`);
+        charPool.push({ t: PT.personality.shy, v: cv });
       } else if (personality === 'cheerful' || personality === '陽気') {
-        charPool.push(`陽気な${surname}は、ファンにとっても親しみやすい存在だった。`);
+        charPool.push({ t: PT.personality.cheerful, v: cv });
       } else if (personality === 'cool' || personality === 'クール') {
-        charPool.push(`クールな${surname}は、感情を抑えた立ち振る舞いで一線を引いていた。`);
+        charPool.push({ t: PT.personality.cool, v: cv });
       } else if (personality === 'serious' || personality === '真面目') {
-        charPool.push(`真面目な${surname}は、練習量で答える職人だった。`);
+        charPool.push({ t: PT.personality.serious, v: cv });
       }
-      const styleVerbPool = {
-        striker: [`打撃を軸にした${surname}は、リングを真っ向から攻める選手だった。`],
-        grappler: [`組み技を主体にした${surname}は、地に足のついた攻めを得意とした。`],
-        submission: [`関節技を武器にした${surname}は、終盤で勝負を決めにいく選手だった。`],
-        brawler: [`喧嘩スタイルの${surname}は、試合の流れを荒らすことで結果を引き寄せた。`],
-        allround: [`万能型の${surname}は、相手に合わせた試合運びを身上とした。`]
-      };
-      if (styleVerbPool[styleAxis]) charPool.push(...styleVerbPool[styleAxis]);
-      let charLine = '';
-      if (charPool.length > 0) charLine = charPool[pickSalt(0xCE03, charPool.length)];
+      if (PT.style[styleAxis]) charPool.push({ t: PT.style[styleAxis], v: cv });
+      let charPart = null;
+      if (charPool.length > 0) charPart = charPool[pickSalt(0xCE03, charPool.length)];
 
       // ── D. 関係性
-      let relLine = '';
+      let relPart = null;
       const relPool = [];
       if (topRivalSurname && topRivalCount >= 3) {
-        relPool.push(`${topRivalSurname}との度重なる対戦が、この時代の${surname}の輪郭を形作った。`);
+        relPool.push({ t: PT.rel.rivalMany, v: { rival: topRivalSurname, surname } });
       } else if (topRivalSurname && topRivalCount === 2) {
-        relPool.push(`${topRivalSurname}との二度の対戦は、この章の${surname}を語る上で外せない。`);
+        relPool.push({ t: PT.rel.rivalTwice, v: { rival: topRivalSurname, surname } });
       } else if (topRivalSurname && topRivalCount === 1) {
-        relPool.push(`${topRivalSurname}との一戦が、この章の${surname}に色を残した。`);
+        relPool.push({ t: PT.rel.rivalOnce, v: { rival: topRivalSurname, surname } });
       }
       if (topBondSurname && topBondVal >= 60 && topBondSurname !== topRivalSurname) {
-        relPool.push(`${topBondSurname}との絆が、ロッカーでの${surname}を支えた。`);
+        relPool.push({ t: PT.rel.bond, v: { peer: topBondSurname, surname } });
       }
       if (topRivSurnameByVal && topRivVal >= 60 && topRivSurnameByVal !== topRivalSurname) {
-        relPool.push(`${topRivSurnameByVal}との因縁は、章の外まで尾を引いた。`);
+        relPool.push({ t: PT.rel.rivalry, v: { peer: topRivSurnameByVal, surname } });
       }
-      if (relPool.length > 0) relLine = relPool[pickSalt(0xCE04, relPool.length)];
+      if (relPool.length > 0) relPart = relPool[pickSalt(0xCE04, relPool.length)];
 
-      // ── 組み立て (空文字は除外)
-      const out = [openingLine, achLine, charLine, relLine].filter(Boolean).join('');
+      // ── 組み立て (空は除外)
+      const out = [openingPart, achPart, charPart, relPart].filter(Boolean);
       // 完全に空ならフォールバック
-      if (!out) {
-        return `${surname}はこの章のリングに立ち続け、団体の地力となった。`;
-      }
+      if (!out.length) return [{ t: PT.fallback, v: { surname } }];
       return out;
     },
 
@@ -6756,8 +6599,12 @@ const Engine = {
         eraStats.competitiveRecord = Engine.chronicle._buildCompetitiveRecord(b, mode, eraStats);
         delete eraStats._titleLossInChapter;
         const externalRivals = Engine.chronicle._buildExternalRivals(b, sel.aces, sel.peers);
-        const aceNarratives = sel.aces.map(a => Engine.chronicle._buildAceNarrative(a, b, sel.aces, sel.peers, state));
-        const peerNarratives = sel.peers.map(p => Engine.chronicle._buildPeerNarrative(p, b, sel.aces, sel.peers, state));
+        // i18n Stage B P6-16: `narrative` は**常にJA**(dictを渡さない = セーブに書く既存値は不変)。
+        // 併せて `narrativeParts`(新規フィールド)を持たせ、表示点が現在の言語で組み直せるようにする。
+        const aceNarrativeParts = sel.aces.map(a => Engine.chronicle._buildAceNarrativeParts(a, b, sel.aces, sel.peers, state));
+        const peerNarrativeParts = sel.peers.map(p => Engine.chronicle._buildPeerNarrativeParts(p, b, sel.aces, sel.peers, state));
+        const aceNarratives = aceNarrativeParts.map(pt => Engine.chronicle.narrativeText(pt) || null);
+        const peerNarratives = peerNarrativeParts.map(pt => Engine.chronicle.narrativeText(pt));
         const hasActiveParticipants = [...sel.aces, ...sel.peers].some(c => c._active);
         chapters.push({
           id: `ch_focus${b.focusSeason}_${b.seasonStart}_${b.seasonEnd}`,
@@ -6783,7 +6630,8 @@ const Engine = {
             traits: a.traits || [],
             stage: a._stage || 'prime',
             aceScore: a._ace || 0,
-            narrative: aceNarratives[i] || null
+            narrative: aceNarratives[i] || null,
+            narrativeParts: aceNarrativeParts[i] && aceNarrativeParts[i].length ? aceNarrativeParts[i] : null
           })),
           peers: sel.peers.map((p, i) => ({
             id: p.id, name: p.name, style: p.style,
@@ -6799,7 +6647,8 @@ const Engine = {
             stage: p._stage || 'prime',
             aceScore: p._ace || 0,
             traits: p.traits || [],
-            narrative: peerNarratives[i] || null
+            narrative: peerNarratives[i] || null,
+            narrativeParts: peerNarrativeParts[i] && peerNarrativeParts[i].length ? peerNarrativeParts[i] : null
           })),
           highlights,
           eraStats,
@@ -30798,19 +30647,30 @@ Engine.autumnWar = {
       s = { ...s, aiOrgs };
     }
 
-    const matchSummary = m => {
-      const scoreW = m.teamWins[m.winnerOrg] || 0, scoreL = m.teamWins[m.loserOrg] || 0;
-      const note = m.tieBreak ? (m.tieBreak.type === 'fallCount' ? '（同時全滅、勝ち抜き数判定）' : '（同時全滅、抽選決着）') : '';
-      return `${Engine.autumnWar._orgName(s, m.winnerOrg)} ${scoreW}-${scoreL} ${Engine.autumnWar._orgName(s, m.loserOrg)}${note}`;
-    };
+    // i18n Stage B P6-16: 紙面に載るのは最大数週間あとなので、ここでJAへ組み立てた値を
+    // キューへ焼くと生成時の言語に固定される(specs §8)。**生キー**を data に併記し、
+    // 実際に載る瞬間(_wmResolvePreformattedIndustryData)で組み直す。
+    // 下の matchSummary はJA完成値(旧セーブ互換のフォールバック用)として従来どおり残す。
+    const matchSummaryRaw = m => ({
+      winnerOrg: Engine.autumnWar._orgName(s, m.winnerOrg),
+      loserOrg: Engine.autumnWar._orgName(s, m.loserOrg),
+      scoreW: m.teamWins[m.winnerOrg] || 0,
+      scoreL: m.teamWins[m.loserOrg] || 0,
+      noteKey: m.tieBreak ? (m.tieBreak.type === 'fallCount' ? 'noteFallCount' : 'noteDraw') : null,
+    });
+    const matchSummary = m => _wmAutumnWarMatchSummary(matchSummaryRaw(m));
     const mvpFighter = Engine.autumnWar._orgRoster(s, mvpOrgId).find(f => f.id === mvpId);
-    const gauntletHeroes = teams.flatMap(t => t.memberIds.map(id => ({ id, orgId: t.orgId })))
+    const gauntletRaw = teams.flatMap(t => t.memberIds.map(id => ({ id, orgId: t.orgId })))
       .filter(x => (fighterWins[x.id] || 0) >= 3)
       .map(x => {
         const fighter = Engine.autumnWar._orgRoster(s, x.orgId).find(f => f.id === x.id);
-        return fighter ? `${fighter.name}が${fighterWins[x.id]}人抜きを達成した。` : '';
-      }).filter(Boolean).join('');
-    const tieBreakNotes = result.results.filter(m => m.tieBreak).map(m => `${m.round === 'final' ? '決勝' : '準決勝'}は${matchSummary(m)}。`).join('');
+        return fighter ? { name: fighter.name, wins: fighterWins[x.id] } : null;
+      }).filter(Boolean);
+    const tieBreakRaw = result.results.filter(m => m.tieBreak)
+      .map(m => ({ roundKey: m.round === 'final' ? 'roundFinal' : 'roundSemiFinal', match: matchSummaryRaw(m) }));
+    const semi1Raw = semifinalResults[0] ? matchSummaryRaw(semifinalResults[0]) : null;
+    const semi2Raw = semifinalResults[1] ? matchSummaryRaw(semifinalResults[1]) : null;
+    const finalRaw = matchSummaryRaw(finalResult);
     s = Engine.industryNews.push(s, {
       type: 'autumnWarResult',
       characterId: mvpId,
@@ -30818,14 +30678,18 @@ Engine.autumnWar = {
         season: s.season,
         championOrg: Engine.autumnWar._orgName(s, champion),
         runnerUpOrg: Engine.autumnWar._orgName(s, runnerUp),
-        semi1: semifinalResults[0] ? matchSummary(semifinalResults[0]) : '上位シードが不戦勝',
-        semi2: semifinalResults[1] ? matchSummary(semifinalResults[1]) : '上位シードが不戦勝',
-        finalResult: matchSummary(finalResult),
-        mvpName: mvpFighter ? mvpFighter.name : '該当選手',
+        // JA完成値(旧セーブ互換の据え置き。載る瞬間に *Raw から組み直せるならそちらが勝つ)
+        semi1: semi1Raw ? _wmAutumnWarMatchSummary(semi1Raw) : AUTUMN_WAR_NEWS_PARTS.bye,
+        semi2: semi2Raw ? _wmAutumnWarMatchSummary(semi2Raw) : AUTUMN_WAR_NEWS_PARTS.bye,
+        finalResult: _wmAutumnWarMatchSummary(finalRaw),
+        mvpName: mvpFighter ? mvpFighter.name : _AW_MVP_FALLBACK_JA,
         mvpOrg: Engine.autumnWar._orgName(s, mvpOrgId),
         mvpWins: fighterWins[mvpId] || 0,
-        gauntletNote: gauntletHeroes,
-        tieBreakNote: tieBreakNotes,
+        gauntletNote: _wmAutumnWarGauntletNote(gauntletRaw),
+        tieBreakNote: _wmAutumnWarTieBreakNote(tieBreakRaw),
+        // i18n Stage B P6-16: 生キー(specs §8)。紙面へ載る瞬間に言語別へ組み直す
+        semi1Raw, semi2Raw, finalRaw, gauntletRaw, tieBreakRaw,
+        mvpNameMissing: mvpFighter ? undefined : true,
       },
     });
     events.push(`🏆 第${s.season}回4団体勝ち残り対抗戦優勝: ${Engine.autumnWar._orgName(s, champion)}`);
@@ -30887,6 +30751,47 @@ function _wmDictLabel(dict, jaLabel) {
   return (typeof dict === 'function') ? String(dict(jaLabel)) : jaLabel;
 }
 
+// i18n Stage B P6-16: 「○○王座」というJA成形済みのベルト名を、団体名だけ名前辞書へ通して
+// 様式テンプレで組み直す共通ヘルパー。JA原文(`{orgName}王座`)は**この1箇所だけ**に置き、
+// _wmResolvePreformattedIndustryData と Engine.chronicle._beltLabel の両方から使う。
+function _wmTitleName(dict, orgName) {
+  return _wmFillWithDict(dict, '{orgName}王座', { orgName });
+}
+
+// ── i18n Stage B P6-16: 4団体勝ち残り対抗戦の結果ニュース(specs §8 生キー+render時点再構築) ──
+// 決勝/準決勝/該当選手は ui-ledger に既訳があるため data.js のテンプレ表へは入れず、
+// JA原文をここに1本だけ置いて _wmDictLabel で引く(同じキーを2つの台帳へ載せない・specs §9)。
+const _AW_ROUND_JA = { roundFinal: '決勝', roundSemiFinal: '準決勝' };
+const _AW_MVP_FALLBACK_JA = '該当選手';
+// 生キー {winnerOrg, loserOrg, scoreW, scoreL, noteKey} から「A 3-1 B（同時全滅、…）」を組む。
+// 団体名は**dictのパラメータ**として渡すのでD-P6-2の名前辞書変換(pn)が効く。dict省略=JA。
+function _wmAutumnWarMatchSummary(raw, dict) {
+  if (!raw) return '';
+  const A = AUTUMN_WAR_NEWS_PARTS;
+  const note = raw.noteKey && A[raw.noteKey] ? _wmDictLabel(dict, A[raw.noteKey]) : '';
+  return _wmFillWithDict(dict, A.matchSummary, {
+    winnerOrg: raw.winnerOrg, loserOrg: raw.loserOrg,
+    scoreW: raw.scoreW, scoreL: raw.scoreL, note,
+  });
+}
+// 「{name}が{n}人抜きを達成した。」の列挙。JAは直結、ENは join テンプレで半角スペース区切り。
+function _wmAutumnWarGauntletNote(list, dict) {
+  const A = AUTUMN_WAR_NEWS_PARTS;
+  const items = (list || []).map(x => _wmFillWithDict(dict, A.gauntlet, { name: x.name, wins: x.wins }));
+  if (!items.length) return '';
+  return items.reduce((a, b) => _wmFillWithDict(dict, A.join, { a, b }));
+}
+// 「{決勝|準決勝}は{summary}。」の列挙。
+function _wmAutumnWarTieBreakNote(list, dict) {
+  const A = AUTUMN_WAR_NEWS_PARTS;
+  const items = (list || []).map(x => _wmFillWithDict(dict, A.tieBreak, {
+    round: _wmDictLabel(dict, _AW_ROUND_JA[x.roundKey] || _AW_ROUND_JA.roundSemiFinal),
+    summary: _wmAutumnWarMatchSummary(x.match, dict),
+  }));
+  if (!items.length) return '';
+  return items.reduce((a, b) => _wmFillWithDict(dict, A.join, { a, b }));
+}
+
 function _wmNewsStamp(dict, season, week, suffixJa) {
   const T = (typeof dict === 'function') ? dict : (s) => s;
   return `${fillTemplateVars(T('第{season}年度・第{week}週'), { season, week })} ${T(suffixJa)}`;
@@ -30907,7 +30812,7 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
   switch (ev.type) {
     case 'topChampionInjury':
       if (!data.orgName) return data;
-      return { ...data, titleName: fillTemplateVars(T('{orgName}王座'), { orgName: data.orgName }) };
+      return { ...data, titleName: _wmTitleName(dict, data.orgName) };
     case 'longInjury':
       if (!data.injuryTypeRaw) return data;
       return { ...data, injuryType: injuryLabel(data.injuryTypeRaw, T) || T('負傷') };
@@ -30934,6 +30839,28 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
     case 'mqTagRecord':
       if (!data.stageKey) return data;
       return { ...data, stage: T(Engine.mq.STAGE_LABELS[data.stageKey] || '興行') };
+    case 'autumnWarResult': {
+      // P6-16: 生キーが無い(このコミットより前に積まれた旧セーブのキュー)なら焼かれた値のまま
+      if (!data.finalRaw) return data;
+      const A = AUTUMN_WAR_NEWS_PARTS;
+      // 記事テンプレ末尾は `{gauntletNote}{tieBreakNote}` の直結。JAはそれで正しいが、ENでは
+      // 2つの文がスペース無しでくっつく。**2本を join テンプレで畳んで1つの値にまとめ**、
+      // tieBreakNote は空にする(JAでは join='{a}{b}' なので連結結果は1バイト不変)。
+      // 片方が空のときに空白が余らないよう、畳み込み前に filter(Boolean) する。
+      const notes = [
+        _wmAutumnWarGauntletNote(data.gauntletRaw, T),
+        _wmAutumnWarTieBreakNote(data.tieBreakRaw, T),
+      ].filter(Boolean);
+      return {
+        ...data,
+        semi1: data.semi1Raw ? _wmAutumnWarMatchSummary(data.semi1Raw, T) : _wmDictLabel(T, A.bye),
+        semi2: data.semi2Raw ? _wmAutumnWarMatchSummary(data.semi2Raw, T) : _wmDictLabel(T, A.bye),
+        finalResult: _wmAutumnWarMatchSummary(data.finalRaw, T),
+        mvpName: data.mvpNameMissing ? _wmDictLabel(T, _AW_MVP_FALLBACK_JA) : data.mvpName,
+        gauntletNote: notes.length ? notes.reduce((a, b) => _wmFillWithDict(T, A.join, { a, b })) : '',
+        tieBreakNote: '',
+      };
+    }
     default:
       return data;
   }
@@ -30951,6 +30878,10 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
   // 1引数のみ扱う)で {line} が置換されず壊れるため、テンプレ自体をT()に通してから
   // 手動で {line} を差し込む(dict省略時=ja-golden等は従来どおり1バイト不変)。
   const _quoted = (line) => T('「{line}」').replace('{line}', T(line));
+  // i18n Stage B P6-16: 本文の地の文を PPV_SUMMIT_STORY_TEMPLATES(data.js)へ移設した。
+  // テンプレは**PH置換前に**_wmFillWithDictでdictへ通す(置換後の完成文は辞書キーと一致しない)。
+  const S = PPV_SUMMIT_STORY_TEMPLATES;
+  const fill = (tpl, params) => _wmFillWithDict(dict, tpl, params);
   const stamp = `${_wmNewsStamp(T, season, week, 'PPV GRAND FINAL')} ${T('メインイベント')}`;
 
   const winnerName = sr.winnerName || (sr.won ? sr.playerName : sr.aiName);
@@ -30961,7 +30892,8 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
   const winnerOrgName = sr.winnerId === sr.aiId ? sr.aiOrgName : sr.playerOrgName;
   // 所属が解決できない(理論上ほぼ発生しない)場合は「他団体」で埋めず、
   // 所属句そのものを省いた文型に切り替える。
-  const _orgParen = (name) => name ? `（${name}）` : '';
+  // ENの訳文は先頭に半角スペースを持つ(所属無しの回に二重スペースを作らないため。§P6-16)
+  const _orgParen = (name) => name ? fill(S.orgParen, { org: name }) : '';
 
   const winnerHpPct = sr.winnerHpMax ? (sr.winnerHpFinal / sr.winnerHpMax) : 0.5;
   const isOverwhelm = winnerHpPct >= 0.55;
@@ -30992,7 +30924,10 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
   } else {
     headlineKey = 'default';
   }
-  const headline = fillTemplateVars(T(PPV_SUMMIT_HEADLINE_TEMPLATES[headlineKey]), {
+  // i18n P6-16: 旧実装は `fillTemplateVars(T(tpl), vars)` で「先に翻訳→後から生JAの値を埋める」
+  // 形だったため、選手名・団体名が英語モードでもJAのまま残っていた。値をdictのパラメータとして
+  // 渡す(_wmFillWithDict)ことで D-P6-2 の名前辞書変換が効く。JA出力は1バイト不変。
+  const headline = fill(PPV_SUMMIT_HEADLINE_TEMPLATES[headlineKey], {
     winner: winnerName,
     loser: loserName,
     rematchNum: hasHistory ? (ph.matches + 1) : '',
@@ -31003,7 +30938,7 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
 
   const bodyParts = [];
 
-  let stagePart = `${stamp}。`;
+  let stagePart;
   if (sr.playerRank && sr.aiRank) {
     const r1 = Math.min(sr.playerRank, sr.aiRank);
     const r2 = Math.max(sr.playerRank, sr.aiRank);
@@ -31017,9 +30952,16 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
     const org1 = isR1Player ? sr.playerOrgName : sr.aiOrgName;
     const name2 = isR1Player ? sr.aiName : sr.playerName;
     const org2 = isR1Player ? sr.aiOrgName : sr.playerOrgName;
-    stagePart += `ランキング${r1}位の${name1}${_orgParen(org1)}と${r2}位の${name2}${_orgParen(org2)}が、シーズンの頂点を懸けて激突した。`;
+    stagePart = fill(S.stageRanked, {
+      stamp, r1, r2, name1, name2,
+      org1: _orgParen(org1), org2: _orgParen(org2),
+    });
   } else {
-    stagePart += `${sr.playerName}${_orgParen(sr.playerOrgName)}と${sr.aiName}${_orgParen(sr.aiOrgName)}が、シーズンの頂点を懸けて激突した。`;
+    stagePart = fill(S.stagePlain, {
+      stamp,
+      player: sr.playerName, playerOrg: _orgParen(sr.playerOrgName),
+      ai: sr.aiName, aiOrg: _orgParen(sr.aiOrgName),
+    });
   }
   bodyParts.push(stagePart);
 
@@ -31031,7 +30973,7 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
   })[sr.finishPhase] || '');
   const finishStr = (typeof Engine !== 'undefined' && Engine.formatFinish && sr.finMove)
     ? Engine.formatFinish(sr.finType, sr.finMove, false, dict)
-    : (sr.finMove ? `${sr.finMove}` : (sr.finType || '激闘決着'));
+    : (sr.finMove ? `${sr.finMove}` : (sr.finType || _wmDictLabel(dict, S.finishFallback)));
   // i18n Stage A P3a-2: PPV_SUMMIT_MATCHPART_TEMPLATES(data.js)から完全文を選ぶ
   // (監査3-1・最優先)。ターン数有無×決着タイプ3種×フェーズラベル有無の全12通り。
   const fightKey = isCloseFight ? 'close' : (isOverwhelm ? 'overwhelm' : 'attrition');
@@ -31040,55 +30982,64 @@ function _buildPpvSummitStory(sr, season, week, P, dict) {
   else if (sr.turns && !phaseLabel) turnsPhaseKey = 'turnsNoPhase';
   else if (!sr.turns && phaseLabel) turnsPhaseKey = 'noTurnsPhase';
   else turnsPhaseKey = 'noTurnsNoPhase';
-  let matchPart = fillTemplateVars(T(PPV_SUMMIT_MATCHPART_TEMPLATES[fightKey][turnsPhaseKey]), {
+  const matchPart = fill(PPV_SUMMIT_MATCHPART_TEMPLATES[fightKey][turnsPhaseKey], {
     turns: sr.turns,
     phase: phaseLabel,
     winner: winnerName,
     finish: finishStr,
     loser: loserName,
   });
+  bodyParts.push(matchPart);
   // HP補足は「。」境界の直後に続く独立文(PPV_SUMMIT_HPNOTE_TEMPLATES)。
+  // 旧実装は matchPart への文字列連結だったが、bodyParts が join('') される以上
+  // 独立要素として push しても**JA出力は1バイト同一**で、ENでは join テンプレの
+  // 半角スペースが正しく入る。
   let hpNoteKey = null;
   if (isCloseFight && sr.winnerHpFinal < 15) hpNoteKey = 'closeLowHp';
   else if (isOverwhelm) hpNoteKey = 'overwhelm';
   if (hpNoteKey) {
-    matchPart += fillTemplateVars(T(PPV_SUMMIT_HPNOTE_TEMPLATES[hpNoteKey]), {
+    bodyParts.push(fill(PPV_SUMMIT_HPNOTE_TEMPLATES[hpNoteKey], {
       hp: Math.round(sr.winnerHpFinal),
       winner: winnerName,
-    });
+    }));
   }
-  bodyParts.push(matchPart);
 
-  let qualityPart = '';
-  if (isMasterpiece) qualityPart = `試合評価${sr.mq}——歴史に残る一戦として記録される。`;
-  else if (isGreat) qualityPart = `試合評価${sr.mq}、見応えある決戦となった。`;
-  else if (sr.mq >= 50) qualityPart = `試合評価${sr.mq}を記録。`;
-  else qualityPart = `試合評価${sr.mq}。期待された熱戦には届かなかったが、頂点を懸けた一戦であることに変わりはない。`;
-  bodyParts.push(qualityPart);
+  let qualityKey;
+  if (isMasterpiece) qualityKey = 'qualityMasterpiece';
+  else if (isGreat) qualityKey = 'qualityGreat';
+  else if (sr.mq >= 50) qualityKey = 'qualityGood';
+  else qualityKey = 'qualityLow';
+  bodyParts.push(fill(S[qualityKey], { mq: sr.mq }));
 
   if (isLongRivalry) {
-    bodyParts.push(`両者は通算${ph.matches}戦${ph.wins}勝${ph.losses}敗、互いに譲らぬ因縁の決着戦でもあった。`);
+    bodyParts.push(fill(S.historyLongRivalry, { matches: ph.matches, wins: ph.wins, losses: ph.losses }));
   } else if (isRematch) {
-    bodyParts.push(`過去対戦${ph.matches}回（${ph.wins}勝${ph.losses}敗）、再戦での決着となる。`);
+    bodyParts.push(fill(S.historyRematch, { matches: ph.matches, wins: ph.wins, losses: ph.losses }));
   }
 
   // i18n P6-7: sr.winnerLine/loserLineはpickDialogueLine/pickPpvLineが返す生JA(=辞書キー、
   // §8の「render時点再構築」と同じくpush側は加工しない)。この関数は他の箇所でTを通しているのに
   // ここだけ素通しで、ENでも常にJAのまま出ていた(同型の配線穴)。
   if (sr.winnerLine) {
-    bodyParts.push(`${_quoted(sr.winnerLine)}——${winnerName}は静かにその栄誉を噛み締めた。`);
+    bodyParts.push(fill(S.winnerComment, { quote: _quoted(sr.winnerLine), winner: winnerName }));
   }
   // task-75: 敗者の言葉。app.js が summitLose から引いて渡していたが、
   // 紙面が読んでいなかったため一度も出ていなかった(2026-08-01 修正)
   if (sr.loserLine) {
-    bodyParts.push(`引き上げる${loserName}は${_quoted(sr.loserLine)}と言葉を残した。`);
+    bodyParts.push(fill(S.loserComment, { loser: loserName, quote: _quoted(sr.loserLine) }));
   }
+
+  // 連結様式もテンプレ経由(JA=直結 / EN=文間に半角スペース)。断片数が可変なので
+  // 2スロットのテンプレを**初期値なしの reduce**で畳み込む(§14-1と同じ理由)。
+  const body = bodyParts.filter(Boolean).length
+    ? bodyParts.filter(Boolean).reduce((a, b) => fill(S.join, { a, b }))
+    : '';
 
   return {
     type: 'ppvSummitResult',
     priority: P ? P.ppvSummitResult : 200,
     headline,
-    body: bodyParts.join(''),
+    body,
     characterId: sr.winnerId || (sr.won ? sr.playerId : sr.aiId),
     summitData: sr,
     situation: stamp,
@@ -31558,6 +31509,18 @@ Engine.newspaper = {
   //  task-77 §B: ドラフト自団体1面の拡充(リード+注目選手1〜2名+締め)
   // ══════════════════════════════════════════════════════════════════
 
+  /** 選手名の列挙を `ARTICLE_COMPOSE_TEMPLATES.nameList` の畳み込みで作る(JA=読点 / EN=", ")。
+   *  i18n Stage B P6-16: composeDraftPlayerResult の内部実装だったものを、同じ列挙が要る
+   *  ui-common.js のフォールバック経路(§14-5-4)からも使えるよう公開ヘルパーにした。
+   *  畳み込みの各段で選手名が dict のパラメータを通るため、名前辞書(pn)の変換も同時に効く。 */
+  joinNameList(names, dict) {
+    const list = (names || []).filter(Boolean);
+    if (!list.length) return '';
+    const JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
+    const tpl = JOIN ? JOIN.nameList : '{a}、{b}';
+    return list.length > 1 ? list.reduce((a, b) => _wmFillWithDict(dict, tpl, { a, b })) : list[0];
+  },
+
   /** fighters = [{ name, tier(assessedTier), age, h, style }] を材料に本文を組み立てる。
    *  注目選手は tier 降順(superElite/elite/promisingのみ)で上位1〜2名。
    *  superElite/eliteがいれば2名目まで、promising以下しかいなければ1名だけ言及(§B-1)。
@@ -31577,10 +31540,7 @@ Engine.newspaper = {
     // ENは ", " 区切り。畳み込みの各段で選手名がdictのパラメータを通るため、区切りだけで
     // なく名前辞書(pn)の変換もここで効く。1名のときは畳み込みが起きないが、その場合は
     // {names} の値が選手名そのものなので、記事テンプレ側の充填時に名前変換が効く。
-    const nameListTpl = JOIN ? JOIN.nameList : '{a}、{b}';
-    const namesText = names.length > 1
-      ? names.reduce((a, b) => _wmFillWithDict(dict, nameListTpl, { a, b }))
-      : names[0];
+    const namesText = Engine.newspaper.joinNameList(names, dict);
     const commonVars = { org: org || '', count: String(names.length), names: namesText };
     // **PH置換前に**dictを通す。値をparamsで渡すので団体名・選手名は名前辞書変換が効く
     const fillCommon = (t) => _wmFillWithDict(dict, String(t || ''), commonVars);
@@ -32279,11 +32239,20 @@ Engine.newspaper = {
           const isAce = ev.ovr >= 75;
           const bodySeed = (state.season || 0) * 131 + (state.week || 0) * 17 + (ev.newChampId || 0);
           const composedBody = Engine.newspaper.composeChampionChangeBody(ev, bodySeed, dict);
+          // i18n Stage B P6-16: 見出しと「composerがnullのときの本文」は生JAのテンプレートリテラル
+          // だったため、本文が英語化されたP6-15以降は**フォールバックだけJAで出る**状態だった。
+          // literal は NEWS_FALLBACK_TEMPLATES(data.js)へ集約し、PH置換前にdictへ通す。
+          const FB = NEWS_FALLBACK_TEMPLATES;
+          const _JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
           stories.push({
             type: 'aiChampionChange',
             priority: P.aiChampionChange + (isAce ? 20 : 0),
-            headline: `${ev.orgName}——新王者${ev.newChampName}が誕生`,
-            body: composedBody || `${ev.orgName}の王座が動いた。${ev.newChampName}が${ev.prevChampName || '前王者'}を下し、新たな頂点に立った。`,
+            headline: _wmFillWithDict(dict, FB.aiChampionChangeHeadline, { org: ev.orgName, name: ev.newChampName }),
+            body: composedBody || _wmFillWithDict(dict, FB.aiChampionChangeBody, {
+              org: ev.orgName,
+              name: ev.newChampName,
+              prevChamp: ev.prevChampName || (_JOIN ? _wmDictLabel(dict, _JOIN.prevChampFallback) : ''),
+            }),
             characterId: ev.newChampId,
           });
         }

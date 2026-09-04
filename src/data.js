@@ -18244,6 +18244,58 @@ const PPV_SUMMIT_HPNOTE_TEMPLATES = {
   overwhelm: '{winner}はHPを{hp}残しての圧勝。',
 };
 
+// i18n Stage B P6-16: 頂上決戦記事本文の**残り全部**。P3a-2 が見出し/matchPart/HPノートの
+// 3表だけをテーブル化し、P6-8 が引用符の「」だけを直したため、舞台説明文・試合評価文・
+// 通算戦績文・勝者/敗者コメントの地の文は **生JAのJSテンプレートリテラルのまま** management.js に
+// 残っていた(＝ENで「一部だけ英語」になる)。分岐は元コードの if/elseif チェーンと1:1。
+//   join     : 本文断片の連結様式(JA=直結 / EN=文間に半角スペース)。P6-14/P6-15の join と同型
+//   orgParen : 所属の丸かっこ。**ENは先頭に半角スペースを持つ**(所属が無いとき''になるので、
+//              テンプレ側に空白を置くと所属無しの回だけ二重スペースになる)
+//   finishFallback / beltDefault : テンプレ本文ではなく**値**として差し込む1語ラベル(_wmDictLabel)
+const PPV_SUMMIT_STORY_TEMPLATES = {
+  join: '{a}{b}',
+  orgParen: '（{org}）',
+  finishFallback: '激闘決着',
+  stageRanked: '{stamp}。ランキング{r1}位の{name1}{org1}と{r2}位の{name2}{org2}が、シーズンの頂点を懸けて激突した。',
+  stagePlain: '{stamp}。{player}{playerOrg}と{ai}{aiOrg}が、シーズンの頂点を懸けて激突した。',
+  qualityMasterpiece: '試合評価{mq}——歴史に残る一戦として記録される。',
+  qualityGreat: '試合評価{mq}、見応えある決戦となった。',
+  qualityGood: '試合評価{mq}を記録。',
+  qualityLow: '試合評価{mq}。期待された熱戦には届かなかったが、頂点を懸けた一戦であることに変わりはない。',
+  historyLongRivalry: '両者は通算{matches}戦{wins}勝{losses}敗、互いに譲らぬ因縁の決着戦でもあった。',
+  historyRematch: '過去対戦{matches}回（{wins}勝{losses}敗）、再戦での決着となる。',
+  winnerComment: '{quote}——{winner}は静かにその栄誉を噛み締めた。',
+  loserComment: '引き上げる{loser}は{quote}と言葉を残した。',
+};
+
+// i18n Stage B P6-16: composer が null を返したときの直書きJAフォールバック(specs §14-5-4)。
+// 本体(composeChampionChangeBody / composeDraftPlayerResult)が P6-15 で英語化された結果、
+// **フォールバック経路だけが日本語で出る**状態になっていたので、literal をここへ集約する。
+// aiChampionChangeHeadline は fallback ではなく常用の見出しだが、同じ story の中で
+// 本文だけENになるのを避けるため同時にテーブル化した。
+const NEWS_FALLBACK_TEMPLATES = {
+  aiChampionChangeHeadline: '{org}——新王者{name}が誕生',
+  aiChampionChangeBody: '{org}の王座が動いた。{name}が{prevChamp}を下し、新たな頂点に立った。',
+  draftPlayerResultBody: '{names}。新シーズンの陣容がひとつ厚くなった。',
+};
+
+// i18n Stage B P6-16: 4団体勝ち残り対抗戦の結果ニュース(specs §8「生キー+render時点再構築」)。
+// Engine.autumnWar.apply は industryNews キューへ **JAで組み立て終えた** semi1/semi2/finalResult/
+// gauntletNote/tieBreakNote を焼いていた。キューは最大数週間滞留してから紙面化されるため、
+// 積む側(dictを持たない)ではなく **載る瞬間**(_wmResolvePreformattedIndustryData)で
+// 生キーから組み直す。JA出力は従来と1バイト不変(旧セーブは生キーが無いので焼かれた値をそのまま使う)。
+const AUTUMN_WAR_NEWS_PARTS = {
+  join: '{a}{b}',
+  matchSummary: '{winnerOrg} {scoreW}-{scoreL} {loserOrg}{note}',
+  noteFallCount: '（同時全滅、勝ち抜き数判定）',
+  noteDraw: '（同時全滅、抽選決着）',
+  bye: '上位シードが不戦勝',
+  gauntlet: '{name}が{wins}人抜きを達成した。',
+  tieBreak: '{round}は{summary}。',
+  // 決勝 / 準決勝 / 該当選手 は ui-ledger に既訳があるので本表へ入れない(二重登録の禁止・specs §9)。
+  // JA原文は management.js の _AW_ROUND_JA / _AW_MVP_FALLBACK_JA に1本だけ置く。
+};
+
 // i18n Stage A P3a-2: PPVアンダーカード記事(management.js:31868-31891・監査3-2)。
 // 見出しはisTitleMatch/mq>=75の2分岐は元コードが所属名を無条件連結(分岐なし)だったので
 // そのままプレースホルダに、elseブロックのみ元コードが所属の有無で「の」の有無を分岐して
@@ -18351,6 +18403,363 @@ const ARTICLE_COMPOSE_TEMPLATES = {
   nameList: '{a}、{b}',
   prevChampFallback: '前王者',
   snapshotVoice: '{name}　{line}',
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  i18n Stage B P6-16: 団体年代記(Engine.chronicle)の叙述テンプレ群
+//  ──────────────────────────────────────────────────────────────────────────
+//  移設元は management.js の `Engine.chronicle.QUOTE_TEMPLATES_V2 / QUOTE_TEMPLATES /
+//  QUOTE_TEMPLATES_DUAL`(Engineオブジェクトのプロパティ = §10-2「どの抽出器からも見えない」型)と、
+//  `_buildAceNarrative` / `_buildPeerNarrative` の**関数本体に直書きされた**文プール。
+//  **配列の並び順・要素数は変更不可** — pickIdx/pickSalt が `Engine.rng.derive` の値を
+//  `% arr.length` して添字を引くため、並びが変わるとJA出力が変わる(HOF_BIOGRAPHY_TEMPLATESと同じ制約)。
+//
+//  ■ 節(section)に差し込まれる `{…Clause}` の空白規約(EN)
+//    JAは断片を直結するので、テンプレ側にもクラウス側にも空白が要らない。ENは文間に半角スペースが
+//    要るが、クラウスは条件次第で空文字になるため、テンプレ側に空白を置くと空のときだけ二重スペース・
+//    末尾スペースになる。そこで **ENのクラウス訳文は先頭に半角スペースを持つ**(JA訳文は持たない)。
+//    節の先頭にクラウスが来る型では先頭スペースが残るので、消費点(buildAceQuote/buildDualAceQuote)が
+//    節ごとに trim() してから連結する(JAでは空白が無いので trim は no-op = 1バイト不変)。
+// ══════════════════════════════════════════════════════════════════════════════
+
+// spec §D 記者の目: 章コンテキストの差し込み句。値(clause)は各テンプレの `{…Clause}` へ入る。
+const CHRONICLE_QUOTE_CLAUSES = {
+  topRivalMany: '{rival}との激闘は世代の語り草となった。',
+  topRivalOnce: '{rival}との一戦が章の見せ場になった。',
+  topVenue: '舞台となったのは{venue}だった。',
+  warRecord: '{wins}勝{losses}敗',
+  warWithOrg: '{org}との対外戦{record}も、この章の彼女の重みを物語る。',
+  warNoOrg: '対外戦{record}という記録もこの章に残った。',
+  rising: '{peer}ら次世代の選手たちの基準になった。',
+  eraTagAxis: '{axis}の時代',
+};
+
+/** Phase C (spec §5-bis): 3 段構成のテンプレート集
+ *  §A 章での手触り (固有戦績) / §B 時代における意味 / §C 次世代への接続 */
+const CHRONICLE_QUOTE_TEMPLATES_V2 = {
+  peakDefender: {
+    sectionA: [
+      '{surname}はこの章を通じて王座を{defenses}度防衛した。{topRivalClause}{topVenueClause}',
+      '{titleReigns}度の戴冠、{defenses}度の防衛——{surname}は挑戦者を退け続けた。{warClause}'
+    ],
+    sectionB: [
+      '{surname}が{styleJa}で団体を引っ張った時期、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。',
+      'OVR{peakOVR}・人気{peakPop}に達したこの選手の在位は、{eraTag}と呼ぶに相応しい時代を作った。'
+    ],
+    sectionC: [
+      '{surname}が見せた{styleJa}は、{risingClause}次章の主役{nextChapterTopSurname}が立ち上がる足場は、確かにこの世代に築かれていた。',
+      '{surname}の章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が既に伸び始めていた。'
+    ]
+  },
+  defender: {
+    sectionA: [
+      '{surname}は王座を{defenses}度防衛し、{titleReigns}度の戴冠と合わせて団体の核を担った。{topRivalClause}',
+      '{surname}が立っていることが、団体の安定そのものだった。挑戦者たちはなかなか手が届かなかった。{warClause}'
+    ],
+    sectionB: [
+      '{surname}の{styleJa}は、この章の{org}を{spiritAxis}に染め上げた。',
+      '{eraTag}と呼ばれるこの時代、戴冠者の名前を聞かれれば誰もが{surname}の名を挙げた。'
+    ],
+    sectionC: [
+      '{risingClause}{surname}の積み上げた防衛は、後進にとっての到達目標になった。',
+      '{nextChapterTopSurname}が立つ前提として、{surname}が築いた地盤があった。'
+    ]
+  },
+  champion: {
+    sectionA: [
+      '{surname}は{titleReigns}度の戴冠を重ね、この章の主役を担った。{topRivalClause}',
+      '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。{warClause}'
+    ],
+    sectionB: [
+      '{surname}を中心に、{org}は{spiritAxis}の色を強めた章だった。',
+      'OVR{peakOVR}の{surname}が立った時代、それは{eraTag}に他ならなかった。'
+    ],
+    sectionC: [
+      '{surname}が背中で見せた挑み続ける姿勢は、{risingPeerSurname}たち次世代の選手に受け継がれた。',
+      '{nextChapterTopSurname}の足場は、この章の{surname}の戴冠の積み重ねの上に立った。'
+    ]
+  },
+  popStar: {
+    sectionA: [
+      '{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。{topVenueClause}',
+      '王座にこそ恵まれなかったが、{surname}の華やかさが客席を埋めた。'
+    ],
+    sectionB: [
+      '人気{peakPop}を記録したこの選手は、{org}にとってチケットそのものだった。',
+      '試合記録には残らない記憶というものを、{surname}は、その人気でこの世代に刻みつけた。'
+    ],
+    sectionC: [
+      '{surname}が築いた華やぎの記憶は、{risingPeerSurname}たち次世代の客寄せにも引き継がれた。',
+      '{surname}が会場を埋めた時代の余熱は、次の章の{nextChapterTopSurname}の入場にも残っていた。'
+    ]
+  },
+  generationShift: {
+    sectionA: [
+      '{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。{topRivalClause}',
+      '前章の主役たちが退いていく中、{surname}が次の中心を担った。'
+    ],
+    sectionB: [
+      '{surname}の章は、過去と未来が混じり合った時間として{org}史に残る。{eraTag}と呼ぶには複雑な時代だった。',
+      '{spiritAxis}の地力を保ったまま、団体は次世代へと足場を移し始めていた。'
+    ],
+    sectionC: [
+      '{risingClause}{surname}が橋渡した先に、次章の{nextChapterTopSurname}が立った。',
+      '{surname}が古参と新参の間に立った時間は、団体の世代の連続性そのものだった。'
+    ]
+  },
+  struggle: {
+    sectionA: [
+      '{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。{warClause}',
+      '挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。'
+    ],
+    sectionB: [
+      '{surname}の章は、勝てなかった日々の記録である。だが、それでも諦めず挑戦を続けた日々の記録でもある。',
+      '届かなかった世代の象徴として、{surname}は{org}の地力に深い陰影を残した。'
+    ],
+    sectionC: [
+      '{surname}が届かなかった頂は、{risingPeerSurname}ら次世代の目標として残された。',
+      '{nextChapterTopSurname}が登る山は、{surname}が手を伸ばし続けた山だった。'
+    ]
+  },
+  craftsman: {
+    sectionA: [
+      '{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。{topRivalClause}',
+      'OVR{peakOVR}に達した{surname}は、無冠ながら誰よりも信頼される選手だった。'
+    ],
+    sectionB: [
+      '{surname}の{styleJa}は派手さこそないが、{org}を底から支え続けた。',
+      '王座とは縁がなかったが、{surname}の{styleJa}はこの章の地力そのものだった。'
+    ],
+    sectionC: [
+      '{surname}が継いだ{styleJa}の系譜は、{risingPeerSurname}ら次世代にも残った。',
+      '{nextChapterTopSurname}が前に出るとき、その背後には{surname}の積み上げた{styleJa}があった。'
+    ]
+  },
+  uncrowned: {
+    sectionA: [
+      '{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。{topRivalClause}',
+      '王座を獲ることはなかったが、{surname}抜きにこの章は語れない。'
+    ],
+    sectionB: [
+      '{surname}は最後までベルトを巻かなかった。だが{org}史はこの選手を主役として記憶する。',
+      '記録には残らないが、記憶には深く残る。{surname}はそういう世代の主役だった。'
+    ],
+    sectionC: [
+      '{risingClause}{surname}の存在感は、無冠であることの強さとして次世代に伝わった。',
+      '{nextChapterTopSurname}が王座を獲るとき、{surname}が残した「無冠の重み」が背後に静かに横たわっていた。'
+    ]
+  }
+};
+
+/** spec v0.2 §D.4 8カテゴリ × 各4本のテンプレート集 (V1 / 後方互換)。
+ *  現行の8カテゴリはすべてV2を持つため実行時には引かれないが、V2に無いカテゴリが
+ *  将来足されたときのフォールバック経路として残す(移設のみ・文面不変)。 */
+const CHRONICLE_QUOTE_TEMPLATES_V1 = {
+  peakDefender: [
+    '{surname}は章を通じて{defenses}度の防衛を積み上げ、団体の中心軸であり続けた。',
+    '挑戦者を{defenses}度退けた{surname}は、この章の屋台骨だった。',
+    '{defenses}度防衛——{surname}が王座にいる時間が、この世代の輪郭を形作った。',
+    '{defenses}度の防衛を重ねた{surname}は、団体の絶対的な軸として君臨した。'
+  ],
+  defender: [
+    '{surname}は王座を{defenses}度防衛し、団体の核として時代を背負った。',
+    '{titleReigns}度の戴冠と{defenses}度の防衛。{surname}が立っていることが、団体の安定そのものだった。',
+    '{surname}は王座を離さなかった。挑戦者たちはなかなか手が届かなかった。',
+    '{surname}の{defenses}度の防衛は、この章の屋台骨だった。'
+  ],
+  champion: [
+    '{surname}は{titleReigns}度の戴冠を経て、この章の主役を担った。',
+    '{titleReigns}度の戴冠を重ねた{surname}は、この世代の中心人物の一人だった。',
+    '何度王座から落ちても、{surname}は戻ってきた。{titleReigns}度の戴冠はその粘りの証だった。',
+    '{titleReigns}度の戴冠を通じて、{surname}はこの章の流れを作った。'
+  ],
+  popStar: [
+    '{surname}の人気が客足を支えた。戦績ではなく動員で、時代を作った世代だった。',
+    '王座にこそ恵まれなかったが、{surname}の華やかさが客席を埋めた。',
+    '試合記録には残らない記憶というものを、{surname}は、その人気でこの世代に刻みつけた。',
+    '{surname}を見るために客が会場に押し寄せた。それがこの世代の正体だった。'
+  ],
+  generationShift: [
+    '{surname}は前世代の主役たちと並走し、世代交代の橋渡しとなった。',
+    '{surname}の章は、過去と未来が混じり合った時間として団体史に残る。',
+    '前章の主役たちが退いていく中、{surname}が次の中心を担った。',
+    '{surname}は古参と新参の間に立ち、団体の世代を繋いだ。'
+  ],
+  struggle: [
+    '{surname}は{styleJa}を貫いたが、上位の壁は厚かった。届かないまま章は閉じる。',
+    '挑んでは敗れ、それでも{surname}は{styleJa}を捨てなかった。届かなかった世代の象徴である。',
+    '{surname}の章は、勝てなかった日々の記録である。だが、それでも諦めず挑戦を続けた日々の記録でもある。',
+    '{surname}は何度も上位に挑み、何度も敗れた。それでも立ち上がり続けた世代だった。'
+  ],
+  craftsman: [
+    '{surname}は{styleJa}を武器に団体を支えた。王座にこそ届かなかったが、世代の支柱だった。',
+    'OVR{peakOVR}に達した{surname}は、無冠ながら誰よりも信頼される選手だった。',
+    '{surname}の{styleJa}は派手さこそないが、団体を底から支え続けた。',
+    '王座とは縁がなかったが、{surname}の{styleJa}はこの章の地力そのものだった。'
+  ],
+  uncrowned: [
+    '{surname}は無冠ながらこの世代の主役だった。タイトルでは測れない存在感がそこにあった。',
+    '王座を獲ることはなかったが、{surname}抜きにこの章は語れない。',
+    '{surname}は最後までベルトを巻かなかった。だが団体史はこの選手を主役として記憶する。',
+    '記録には残らないが、記憶には深く残る。{surname}はそういう世代の主役だった。'
+  ]
+};
+
+/** Phase D: 二枚看板章の記者の目を 1 つに統合したときのテンプレ集 */
+const CHRONICLE_QUOTE_TEMPLATES_DUAL = {
+  sectionA: [
+    '{surname1}と{surname2}は二枚看板としてこの章の主役を担った。{topRivalClause}{warClause}',
+    '{surname1}と{surname2}が並走したこの章は、二人の名前なしには語れない。{topVenueClause}',
+    '王座とリングの中心を{surname1}と{surname2}が分け合い、団体は二つの頂を持つ時代に入った。'
+  ],
+  sectionB: [
+    '二人が引っ張った時代、{org}全体の試合運びには{spiritAxis}の色が濃く染み込んでいった。',
+    '{eraTag}と呼ばれるこの章で、{surname1}と{surname2}はそれぞれ別の頂点を立てた。',
+    'OVR と人気の双方で団体を支えた二人の在位は、{eraTag}そのものだった。'
+  ],
+  sectionC: [
+    '二人が走り抜けた後、次章の主役{nextChapterTopSurname}が立ち上がる足場ができていた。',
+    '{surname1}と{surname2}が並走した時代の余熱は、{risingPeerSurname}ら次世代に継がれた。',
+    '二つの頂が並んだこの章が閉じるとき、団体には{successorStyle}を継ぐ若手の影が伸び始めていた。'
+  ]
+};
+
+// エース/同期の叙述文(_buildAceNarrative / _buildPeerNarrative)。
+//   join      : 文と文の連結(JA=直結 / EN=半角スペース)
+//   listComma : 事実列挙の読点連結(エース叙述)
+//   listDot   : 事実列挙の中黒連結(同期叙述の戦績パーツ)
+// ace.* は「文の器 + 器へ入れる事実断片」。断片数が可変(0〜4)なので、
+// 完全文の直積(最大15通り×3文)ではなく listComma の畳み込みで組む(§14-1と同じ判断)。
+const CHRONICLE_NARRATIVE_TEMPLATES = {
+  join: '{a}{b}',
+  listComma: '{a}、{b}',
+  listDot: '{a}・{b}',
+  ace: {
+    sentence1: '{surname}は{items}。',
+    sentence2: 'この章では{items}。',
+    sentence3: '{items}。',
+    // 既定ラベル(王座 / 団体)は本表へ入れない — ui-ledger に既訳があり、テンプレ台帳へ
+    // 同じキーを載せると二重登録になるため。JA原文は management.js の
+    // Engine.chronicle._beltLabel / _orgLabel に1本だけ置く(specs §9)。
+    debut: 'S{season}デビュー',
+    peak: 'S{season}にOVR{ovr}でピーク到達',
+    titleWinMulti: '{belt}を{count}度戴冠',
+    titleWinOnce: '{belt}を戴冠',
+    defenses: '{count}度の防衛',
+    mvpMulti: 'MVPを{count}度受賞',
+    mvpOnce: 'MVPを受賞',
+    bestMatch: 'ベストマッチ賞{count}度',
+    warWithOrg: '{org}を中心とした対外戦で{wins}勝{losses}敗',
+    warNoOrg: '他団体との対外戦で{wins}勝{losses}敗',
+    titleLossTo: '{belt}は{name}に明け渡した',
+    titleLossLate: '章の終盤に{belt}を陥落',
+  },
+  peer: {
+    fallback: '{surname}はこの章のリングに立ち続け、団体の地力となった。',
+    // A. opening(stage / role 別)。**配列長を変えないこと**
+    opening: {
+      rising_debut_in_chapter: [
+        '{surname}が{debutSeason}シーズンにデビューしたのは、ちょうどこの章の最中だった。',
+        '{surname}のキャリアはこの章の中で始まった。S{debutSeason}でリングに上がり、ここから先の時代を背負っていく。',
+        '{surname}という名前が初めて{org}のリングに刻まれたのは、この章の{debutSeason}シーズンだった。'
+      ],
+      rising: [
+        '{surname}はこの章で頭角を現し始めた若手だった。',
+        '若手の{surname}は、この時代を足場に階段を駆け上がっていった。',
+        '{surname}は{debutSeason}シーズンのデビューから、この章で名前を覚えられる位置まで来た。',
+        '{surname}にとってこの章は、リングの隅から中心へと歩み出した時代だった。',
+        '若さで挑み続けた{surname}は、この章でリングの空気を変え始めた。'
+      ],
+      veteran: [
+        'キャリア晩期の{surname}は、背中で語る選手だった。',
+        '長くリングに立った{surname}は、この章で若手にバトンを渡し始めていた。',
+        '{surname}にとってこの章は、自身の戦いを締めくくる時間だった。',
+        '年齢を重ねた{surname}は、勝敗を超えた何かを試合に残そうとしていた。',
+        '{surname}は{debutSeason}シーズン以来のキャリアを、この章でゆっくりと畳み始めていた。'
+      ],
+      idol: [
+        '{surname}は華のあるキャラクターで客席を惹きつけた。',
+        'ファンに愛された{surname}は、戦績では測れない存在感をリングに残した。',
+        '{surname}が登場するだけで会場の空気が変わる——そんなアイドル性をこの章は持っていた。',
+        '{surname}は人気{peakPop}を記録し、客足を背負ったスターだった。',
+        '{surname}の存在は団体のチケットそのものだった。'
+      ],
+      prime_top: [
+        '{surname}はこの章のリングを牽引した実力者だった。',
+        'ピーク OVR {peakOVR} に達した{surname}は、章の主軸として試合を組み立てた。',
+        '{surname}は{styleJa}を武器に、この章の上位戦線を走り続けた。',
+        '主力の{surname}は、章を通して安定した戦績で団体を支えた。'
+      ],
+      prime_high: [
+        '{surname}は{styleJa}を貫き、この章の主力グループに名を連ねた。',
+        '{surname}はこの章で{styleJa}の使い手として一定の存在感を持ち続けた。',
+        '{surname}は中堅から上位への階段を、この章で着実に上っていった。',
+        '{surname}は安定した働きでこの章のリングを支えた。'
+      ],
+      prime_mid: [
+        '{surname}は{styleJa}で中盤戦線を担った。',
+        '{surname}はこの章で派手さこそないが、地道に試合数をこなした。',
+        '{surname}は職人気質の{styleJa}でリングに居続けた。',
+        '{surname}は試合のリズムを崩さずに章を走り抜けた選手だった。'
+      ]
+    },
+    // B. 戦績フレーズ(cap 3)を包む器。**配列長を変えないこと**
+    achVerb: [
+      'この章では{items}という記録を残した。',
+      '章を通じて{items}を経験した。',
+      '章窓の戦績は{items}。'
+    ],
+    ach: {
+      titleWinMulti: '{count}度の戴冠',
+      titleWinOnce: '王座奪取',
+      defenses: '{count}度の防衛',
+      mvp: 'MVP 受賞',
+      bestMatchMulti: 'ベストマッチ賞 {count} 度',
+      bestMatchOnce: 'ベストマッチ賞',
+      juniorTournament: 'ジュニアトーナメント制覇',
+      ppvMainMulti: 'PPV メイン {count}度',
+      ppvMainOnce: 'PPV メイン 出場',
+      warWins: '対外戦{count}勝',
+      warLosses: '対外戦{count}敗',
+      titleLoss: '王座陥落'
+    },
+    // C. キャラ性。push される順序が抽選の添字になるので**順序を変えないこと**
+    trait: {
+      hana: '「華」を備えた{surname}は、リング映えのする選手としてファンに記憶されている。',
+      jinbo: '{surname}は人望の厚さでロッカーに馴染み、若手から慕われた。',
+      moodMaker: '{surname}はムードメーカーとして場の空気を整える側にいた。',
+      nekketsu: '熱血気質の{surname}はリングで気持ちを前面に出すタイプだった。',
+      classicMaker: '{surname}は「名勝負製造機」と呼ばれ、相手を引き上げる試合を作ることで知られた。',
+      glassHeart: '{surname}は繊細なメンタルを抱えながら、それでもリングに立ち続けた。'
+    },
+    pop: {
+      star: '{surname}の人気は会場の動員を左右するほどだった。',
+      high: '{surname}は派手さこそないが、固定ファンを持つ選手だった。'
+    },
+    personality: {
+      aggressive: '{surname}は強気のスタイルで相手に向かっていく試合運びを好んだ。',
+      composed: '鷹揚な性分の{surname}は、リング外でも内でも余裕を崩さなかった。',
+      shy: '控えめな{surname}は、口数の少なさを試合で埋めるタイプだった。',
+      cheerful: '陽気な{surname}は、ファンにとっても親しみやすい存在だった。',
+      cool: 'クールな{surname}は、感情を抑えた立ち振る舞いで一線を引いていた。',
+      serious: '真面目な{surname}は、練習量で答える職人だった。'
+    },
+    style: {
+      striker: '打撃を軸にした{surname}は、リングを真っ向から攻める選手だった。',
+      grappler: '組み技を主体にした{surname}は、地に足のついた攻めを得意とした。',
+      submission: '関節技を武器にした{surname}は、終盤で勝負を決めにいく選手だった。',
+      brawler: '喧嘩スタイルの{surname}は、試合の流れを荒らすことで結果を引き寄せた。',
+      allround: '万能型の{surname}は、相手に合わせた試合運びを身上とした。'
+    },
+    // D. 関係性。push される順序が抽選の添字になるので**順序を変えないこと**
+    rel: {
+      rivalMany: '{rival}との度重なる対戦が、この時代の{surname}の輪郭を形作った。',
+      rivalTwice: '{rival}との二度の対戦は、この章の{surname}を語る上で外せない。',
+      rivalOnce: '{rival}との一戦が、この章の{surname}に色を残した。',
+      bond: '{peer}との絆が、ロッカーでの{surname}を支えた。',
+      rivalry: '{peer}との因縁は、章の外まで尾を引いた。'
+    }
+  }
 };
 
 // task-77 §5-D: ドラフト自団体1面(リード+注目選手1〜2名+締め)。確定版・一字一句変更不可。
@@ -31201,7 +31610,10 @@ if (typeof module !== 'undefined' && module.exports) {
     MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, LONG_TERM_INJURY, INJURY_DEBUFF_TABLE,
-    TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
+    TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES,
+    PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,
+    CHRONICLE_QUOTE_CLAUSES, CHRONICLE_QUOTE_TEMPLATES_V2, CHRONICLE_QUOTE_TEMPLATES_V1,
+    CHRONICLE_QUOTE_TEMPLATES_DUAL, CHRONICLE_NARRATIVE_TEMPLATES, RIVALRY_THRESHOLDS, RIVALRY_POPUP_CONFIG, RIVALRY_CONFRONTATION_LINES, RIVALRY_RESOLUTION_LINES,
     GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
     GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES, BITTER_PREMATCH_LINES,
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,

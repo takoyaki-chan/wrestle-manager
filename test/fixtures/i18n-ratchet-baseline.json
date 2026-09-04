@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-09-04T09:03:44.439Z",
+  "generatedAt": "2026-09-04T10:19:04.162Z",
   "files": {
     "data.js": {
-      "jaCount": 16779,
-      "jaChars": 302484
+      "jaCount": 16980,
+      "jaChars": 306650
     },
     "kuroda-text.js": {
       "jaCount": 900,
       "jaChars": 31355
     },
     "management.js": {
-      "jaCount": 2244,
-      "jaChars": 23865
+      "jaCount": 2044,
+      "jaChars": 19719
     },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
@@ -26,8 +26,8 @@
       "jaChars": 9816
     },
     "ui-common.js": {
-      "jaCount": 1366,
-      "jaChars": 9631
+      "jaCount": 1365,
+      "jaChars": 9614
     },
     "ui-render.js": {
       "jaCount": 1080,
