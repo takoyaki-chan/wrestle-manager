@@ -14205,7 +14205,10 @@ const Engine = {
 
     // ★★★ B層 Glimpse（日常の垣間見え + 絶好調終了）★★★
     const glimpseBRng = Engine.rng.create(Engine.rng.derive(s.rngSeed, s.season, s.week, 0xEE02));
-    const glimpseBResult = Engine.glimpse.checkBLayer(s, glimpseBRng);
+    // i18n(2026-09-03): GL-12ナレーション({nameA}/{nameB}入り)を生成時言語で確定させるため、
+    // tickWeekのopts.dictを糸通し(未指定=ja=従来と同一文字列)
+    const glimpseBResult = Engine.glimpse.checkBLayer(s, glimpseBRng,
+      (opts && typeof opts.dict === 'function') ? opts.dict : null);
     s = glimpseBResult.state;
     if (glimpseBResult.glimpses.length > 0) {
       s = { ...s, _pendingGlimpseB: glimpseBResult.glimpses };

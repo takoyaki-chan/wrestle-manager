@@ -13390,7 +13390,7 @@ function showChallengeSendoffModal(fighter, line, state, card, onDone) {
           <div class="crq-sendoff-body">
             <div class="crq-sendoff-destination"><span>${WM_I18N.t('行き先')}</span>${orgBadgeHtml}</div>
             <div class="crq-sendoff-speaker">
-              <div class="inv-bubble">${escHtml(line)}</div>
+              <div class="inv-bubble">${escHtml(WM_I18N.t(line))}</div>
               <img src="${escHtml(_factionUpperUrl(fighter.id))}" alt="">
               <strong>${escHtml(fighter.name || '')}</strong>
             </div>

@@ -4998,7 +4998,7 @@ Engine.glimpse = {
   // ══════════════════════════════════════════════════════════
   //  P5+P6: B層 Glimpse — 日常の垣間見え
   // ══════════════════════════════════════════════════════════
-  checkBLayer(state, rng) {
+  checkBLayer(state, rng, dict) {
     const glimpses = [];
     const roster = (state.roster || []).filter(f => !f.isRental);
     const cooldowns = { ...(state._glimpseBCooldowns || {}) };
@@ -5210,7 +5210,11 @@ Engine.glimpse = {
           const pool = (GLIMPSE_B_LINES['GL-12'] && GLIMPSE_B_LINES['GL-12']._narration) || [];
           if (pool.length > 0) {
             const tpl = pool[Engine.rng.int(rng, 0, pool.length - 1)];
-            const text = tpl.replace(/\{nameA\}/g, fA.name).replace(/\{nameB\}/g, fB.name);
+            // i18n(2026-09-03): dict(=WM_I18N.t)が渡っていれば置換前テンプレで辞書を引く(specs§6 dict-opts)。
+            // 置換後にt()しても辞書キーと一致しないため。dict無し(ja/auto-sim)は従来どおり
+            const text = (typeof dict === 'function')
+              ? dict(tpl, { nameA: fA.name, nameB: fB.name })
+              : tpl.replace(/\{nameA\}/g, fA.name).replace(/\{nameB\}/g, fB.name);
             candidates.push({ type: 'GL-12', weight: 1, fighterId: fA.id,
               fighterName: fA.name, fighter2Id: fB.id, fighter2Name: fB.name,
               dialogue: text, tone: 'narration', label: '第三者の証言' });
