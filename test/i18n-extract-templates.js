@@ -118,7 +118,33 @@ const TARGET_TABLES = [
   'DRAFT_PLAYER_RESULT_PARTS',
   'PPV_HYPE_TEMPLATES',
   'ARTICLE_COMPOSE_TEMPLATES',
+  // P7-2で追加(§13-2の突合表B「A. 地の文プール」前半7表)。Engine/UIが直に読む
+  // 状況描写・演出文のプールで、消費点がt()もdictも持たなかったためENでもJAのまま
+  // 出ていた層。表そのものは無改修(並び順・要素数を変えると乱数の出目が変わる)。
+  //   SNAPSHOT_TEXTS     282 — 相関図/週次ログの垣間見え(scene/voice/staff/modal)
+  //   ATMOSPHERE_TEXTS    33 — 道場ヘッダーの雰囲気文(emojiフィールドは対象外・下記フィルタ)
+  //   FAREWELL_KIND_TEXT  15 — 引退セレモニーの型別 見出し/リード/地の文
+  //   LOCKER_AIR_TEXTS    14 — ロッカールームの空気ログ
+  //   CAMP_FLAVOR_TEXTS   12 — 合宿フレーバー
+  //   PRE_WINDOW_TEXTS     9 — 移籍ウィンドウ前週の予兆
+  //   TEAM_SPIRIT_TEXTS    8 — 逆境チームスピリット(text+detail)
+  'SNAPSHOT_TEXTS',
+  'ATMOSPHERE_TEXTS',
+  'FAREWELL_KIND_TEXT',
+  'LOCKER_AIR_TEXTS',
+  'CAMP_FLAVOR_TEXTS',
+  'PRE_WINDOW_TEXTS',
+  'TEAM_SPIRIT_TEXTS',
 ];
+
+// P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ
+// (test/i18n-extract-dialogue.js の INCLUDE_PATH_FILTER と同じ作法)。
+// `pathKeys` はテーブル直下から数えたオブジェクトキー列(配列インデックスは含まない)。
+// ATMOSPHERE_TEXTS は `{ emoji, text }` の対で、emoji は絵文字1文字=訳出対象ではない
+// (表示側も `${atmo.emoji} ${t(atmo.text)}` と分けて出す)。
+const TABLE_PATH_FILTER = {
+  ATMOSPHERE_TEXTS: (pathKeys) => pathKeys[pathKeys.length - 1] !== 'emoji',
+};
 
 // P4-5: src/kuroda-text.js の対象プール(FAN_HANDLESは日本語を含まない識別子文字列の
 // ため対象外。KURODA_PREVIEWは消費点が見つからない死蔵テーブルだが、テーブルとして
@@ -191,14 +217,17 @@ function hasPlaceholder(text) {
 // 関数値は src/kuroda-text.js の kurodaTemplateOf() で { template, paths } へ
 // 正規化できたときだけ template(=辞書キー)を拾う。正規化できない(三項分岐・
 // 入れ子テンプレート・計算式混入)関数は onHeldFn へ通知するだけで台帳には載せない。
-function walkStrings(value, onString, onHeldFn) {
+// P7-2: `pathFilter`(任意)は「テーブル直下から数えたオブジェクトキー列」を受け取り、
+// falseを返した文字列を台帳から除外する(配列インデックスはパスに含めない)。
+function walkStrings(value, onString, onHeldFn, pathFilter, pathKeys) {
+  const keys = pathKeys || [];
   if (typeof value === 'string') {
-    onString(value);
+    if (!pathFilter || pathFilter(keys)) onString(value);
   } else if (typeof value === 'function') {
     // P4-7: 条件分岐ラッパ(kurodaVariants)は枝(=単一テンプレの関数)へ分解して全枝拾う。
     // 分岐は関数本体ではなくデータ側に出ているので、枝は普通に正規化できる。
     if (Array.isArray(value.variants)) {
-      value.variants.forEach((v) => walkStrings(v && v.text, onString, onHeldFn));
+      value.variants.forEach((v) => walkStrings(v && v.text, onString, onHeldFn, pathFilter, keys));
       return;
     }
     const tpl = (typeof kurodaTemplateOf === 'function') ? kurodaTemplateOf(value) : null;
@@ -208,9 +237,9 @@ function walkStrings(value, onString, onHeldFn) {
       onHeldFn(value);
     }
   } else if (Array.isArray(value)) {
-    value.forEach((v) => walkStrings(v, onString, onHeldFn));
+    value.forEach((v) => walkStrings(v, onString, onHeldFn, pathFilter, keys));
   } else if (value && typeof value === 'object') {
-    Object.keys(value).forEach((k) => walkStrings(value[k], onString, onHeldFn));
+    Object.keys(value).forEach((k) => walkStrings(value[k], onString, onHeldFn, pathFilter, keys.concat(k)));
   }
   // 数値・null等は対象テーブルには出現しない想定のため無視する。
 }
@@ -340,7 +369,9 @@ function main() {
     walkStrings(
       table,
       (text) => { record(text, tableName); extracted++; },
-      () => { held++; }
+      () => { held++; },
+      TABLE_PATH_FILTER[tableName] || null,
+      []
     );
     perTableStats.push({ table: tableName, extracted });
     if (held > 0) heldFnStats.push({ table: tableName, count: held });

@@ -63,6 +63,20 @@ function _epithetLabel(epithet) {
   return Engine.awards.epithetText(epithet, WM_I18N.t);
 }
 
+// ── i18n P7-2: スナップショット/ロッカー空気/移籍予兆の表示用ヘルパー ─────────
+// いずれも「乱数で選んだテンプレを名前で充填した完成文をGへ焼く」族で、選出が消費済みの
+// 乱数ストリームに依存するため §13-1 の「表示時に再生成」が使えない。生成側(Engine)が
+// 完成文 text に加えて充填前テンプレ tpl と充填値 vars を併記し(§14-3 追加フィールド方式)、
+// 表示点であるここが data.js の composedSnapshotText へ委譲する(正規化ロジックの二重実装を
+// 避ける — _epithetLabel が Engine.awards.epithetText へ委譲するのと同じ作法)。
+// tpl を持たない旧セーブは text をそのまま返す(fail-open)。
+function _snapshotLine(entry) {
+  if (typeof composedSnapshotText !== 'function') {
+    return (entry && typeof entry.text === 'string') ? entry.text : '';
+  }
+  return composedSnapshotText(entry);
+}
+
 // ── task-90: 共通数値表記(stat-notation-v1.0) ──────────────────────────
 // 選手ファイル・DB一覧・選手詳細で共用する。既存の _scale6 系は対象外画面の
 // 表現を維持するため変更せず、新しい適用画面だけがこの3ヘルパーを呼ぶ。
@@ -2390,9 +2404,11 @@ function _renderRetirementPopup() {
   const summary = r.summary || [];
   // C「壮絶な幕切れ」の型があれば見出しと地の文を差し替える。
   // **引退であって死ではない**ので、命に関わる書き方はしない(spec v0.2 §3-C)
+  // i18n P7-2: FAREWELL_KIND_TEXT(型別の見出し/リード/地の文)はテンプレ台帳へ収録済み。
+  // 表示直前でt()を1回通す(プレースホルダなし・選択ロジックには触れない)。
   const fk = (r.farewellKind && typeof FAREWELL_KIND_TEXT !== 'undefined')
     ? FAREWELL_KIND_TEXT[r.farewellKind] : null;
-  const title = fk ? fk.title : (isInjury ? WM_I18N.t('無 念 の 引 退') : WM_I18N.t('旅 　 立 ち'));
+  const title = fk ? WM_I18N.t(fk.title) : (isInjury ? WM_I18N.t('無 念 の 引 退') : WM_I18N.t('旅 　 立 ち'));
   // 型の見出しには「引退」の語が入らないので、**副題で必ず引退だと分かるようにする**
   const sub = fk ? WM_I18N.t('現 役 引 退 ・ FAREWELL')
     : (isInjury ? `FAREWELL ・ INJURY` : `FAREWELL ・ ${careerYears} YEARS`);
@@ -2402,8 +2418,8 @@ function _renderRetirementPopup() {
   // 型ごとの地の文。セリフではないので白い吹き出しには入れない(ベースライン §3)
   const farewellNarration = fk
     ? `<div style="max-width:560px;margin:0 auto 14px;padding:12px 16px;border-left:2px solid rgba(200,180,150,0.25)">
-         <div style="font-size:14px;color:rgba(232,220,200,0.95);line-height:1.8;margin-bottom:6px">${escHtml(fk.lead)}</div>
-         <div style="font-size:13px;color:rgba(200,190,175,0.78);line-height:1.9">${escHtml(fk.body)}</div>
+         <div style="font-size:14px;color:rgba(232,220,200,0.95);line-height:1.8;margin-bottom:6px">${escHtml(WM_I18N.t(fk.lead))}</div>
+         <div style="font-size:13px;color:rgba(200,190,175,0.78);line-height:1.9">${escHtml(WM_I18N.t(fk.body))}</div>
        </div>`
     : '';
   const careerHtml = summary.length > 0
@@ -8281,7 +8297,8 @@ function _renderNextGrowthPopup() {
   // app.jsの領分のため触れず、ここ=表示直前でt()を通す)。
   const hintHtml = ev.btHint ? `<div class="growth-event-hint">${WM_I18N.t(ev.btHint)}</div>` : '';
   // スナップショット追記（あれば）
-  const snapHtml = ev.snapshotText ? `<div class="log-snapshot" style="margin-top:8px;font-size:11px">\u{1F4AD} ${ev.snapshotText}</div>` : '';
+  // i18n P7-2: ブレイクスルー演出へ追記された垣間見え。tpl/varsを持つ新形式は表示時に訳す。
+  const snapHtml = ev.snapshotText ? `<div class="log-snapshot" style="margin-top:8px;font-size:11px">\u{1F4AD} ${_snapshotLine({ text: ev.snapshotText, tpl: ev.snapshotTpl, vars: ev.snapshotVars, voiceLead: ev.snapshotVoiceLead })}</div>` : '';
 
   const categoryHtml = ev.category ? `<div class="growth-event-category">${ev.category}</div>` : '';
   box.className = `growth-event-box ${tone}`;
@@ -8327,7 +8344,7 @@ function _renderBreakthroughAsMdlA(ev) {
     ? `<div style="font-family:'Shippori Mincho',serif;font-style:italic;font-size:13px;color:var(--cream-text-sub);margin:12px auto 0;max-width:440px;text-align:center;line-height:1.7">${WM_I18N.t(ev.btHint)}</div>`
     : '';
   const snapHtml = ev.snapshotText
-    ? `<div style="margin-top:8px;font-size:11px;color:var(--cream-text-dim);text-align:center">💭 ${ev.snapshotText}</div>`
+    ? `<div style="margin-top:8px;font-size:11px;color:var(--cream-text-dim);text-align:center">💭 ${_snapshotLine({ text: ev.snapshotText, tpl: ev.snapshotTpl, vars: ev.snapshotVars, voiceLead: ev.snapshotVoiceLead })}</div>`
     : '';
 
   const stageBody = `

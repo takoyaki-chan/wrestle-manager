@@ -59,6 +59,7 @@
 UI文字列(§5)とは別に、data.jsのテンプレ表(ニュース記事・新聞・戦績ログの完全文テンプレート)を対象にした並行パイプライン。台帳・生成物とも§5とは別ファイルで、`WM_I18N.addDict()`は複数回呼んでも既存辞書へマージされる(src/i18n.js実装)ため読み込み順は問わない。
 
 - **対象テーブル(data.js、16個)**: `GAMELOG_TEMPLATES` `FINISH_TEXT` `PPV_SUMMIT_HEADLINE_TEMPLATES` `PPV_SUMMIT_MATCHPART_TEMPLATES` `PPV_SUMMIT_HPNOTE_TEMPLATES` `PPV_UNDERCARD_HEADLINE_TEMPLATES` `PPV_UNDERCARD_BODY_TEMPLATES` `AI_INJURY_RETIREMENT_TEMPLATES` `AI_CONTRACT_DEPARTURE_TEMPLATES` `CROSS_WAR_RESULT_TEXT` `LEAGUE_ELEVATION_TEXT` `NEWSPAPER_SUB_TEMPLATES` `NEWS_HEADLINE_TEMPLATES` `NEWS_TICKER_TEMPLATES` `RETIREMENT_TEMPLATES`(**P6-10で追加**。通常引退記事のティア別テンプレ{L,A,B,C}×3変種×headline/body=24本。兄弟の`AI_INJURY_RETIREMENT_TEMPLATES`は最初から対象だったのに本表だけが一覧から漏れており、ENでも引退記事がJAのまま出ていた — §11-5の`EMOTION_TEXTS`と同型の構造穴。消費点は`Engine.newspaper._fillRetirementTemplate(t, d, dict)`でP6-10にdict-opts化済み) `HOF_BIOGRAPHY_TEMPLATES`(**P6-14で追加**。殿堂入り選手の語り文。導入6分岐×3 + 核心19分岐×2〜3 + 余韻3系統 + 連結様式`join` = 85本。P6-10までは`Engine.awards.generateBiography()`の**関数本体に直書きされた配列リテラル**で、§10-2が禁じた「関数の中の配列はどの抽出器からも永久に見えない」型だった。消費点は`generateBiography(entry, dict)`でP6-14にdict-opts化済み。詳細は§13)。`PPV_SUMMIT_VICTORY_LINES`(選手個人のセリフ)は対象外(P5のセリフ層で扱う)
+- **対象テーブル追加(data.js、7個。P7-2で追加)**: `SNAPSHOT_TEXTS` `ATMOSPHERE_TEXTS` `FAREWELL_KIND_TEXT` `LOCKER_AIR_TEXTS` `CAMP_FLAVOR_TEXTS` `PRE_WINDOW_TEXTS` `TEAM_SPIRIT_TEXTS`(§13-2 B の分類A「地の文プール」前半373行。Engine/UIが直に読む状況描写・演出文で、消費点がt()もdictも持たなかった層)。`ATMOSPHERE_TEXTS`の`emoji`フィールドだけは抽出器の`TABLE_PATH_FILTER`で除外する。配線は§15
 - **対象テーブル追加(kuroda-text.js、13個。P4-5で追加)**: `KURODA_HEADLINES` `KURODA_EDITORIAL` `KURODA_WAR_RECORD` `KURODA_MATCHUP_FLAVOR` `FAN_OPINIONS` `NEWSPAPER_DIGEST_COMMENTS` `KURODA_SHOW_RATING` `KURODA_PREVIEW` `KURODA_SPOTLIGHT` `KURODA_NEWS_COMMENT` `KURODA_RELATION_NARRATIVE` `KURODA_CRISIS` `KURODA_GAMEOVER`。`NEWSPAPER_DIGEST_COMMENTS`/`FAN_OPINIONS`は指示書上「data.jsにあれば」だったが実体はkuroda-text.jsのみに存在(2026-09-04確認)。`FAN_HANDLES`(ファンハンドル名の識別子文字列)は日本語を含まないため対象外。`KURODA_PREVIEW`は消費点(呼び出し箇所)がsrc/*.jsのどこにも見つからない死蔵テーブル(docs/archive参照では過去に配線予定だった形跡があるが未実装のまま)— 台帳には抽出するが実配線なし
 - **対象テーブル追加(app.js、2個。P4-5で追加)**: `App._NEWSPAPER_HEADLINES` `App._NEWSPAPER_ARTICLES`(自団体新聞の見出し/本文プール)。App.のプロパティでトップレベルconstではないため、`test/i18n-extract-templates.js`が波かっこ深さカウントでapp.jsソースから該当オブジェクトリテラルのテキスト範囲だけを切り出し、`eval()`で単独評価して取得する(app.js全体を読み込まない。DOM依存の副作用を避けるため)
 - **対象テーブル追加(management.js、2個。P6-10で追加)**: `Engine.flavor.MAGAZINE_HEADLINES` `Engine.flavor.TV_HEADLINES`(雑誌取材・TV出演フレーバーイベントの見出しプール各6本)。app.jsの2プールと同じ理由(トップレベルconstではない)で、抽出器の`extractArrayLiteralProp()`(`extractAppObjectLiteral`の**角かっこ版**)がmanagement.jsソースから当該配列リテラルの範囲だけを切り出して単独評価する(management.js全体は読み込まない)。台帳の`files`欄は`management.js:MAGAZINE_HEADLINES` / `:TV_HEADLINES`
@@ -296,9 +297,11 @@ data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`
 
 **この4件は台帳へ載せるだけでは無意味**(消費点がdictを持たないので辞書を引く機会が無い)。必要だったのは①composerのdict-opts化 ②断片連結の`join`テンプレ化(§13-1と同型) ③146行の英訳、の3点セットで、P6-15がこれを実施した。
 
-**B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行**
+**B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行(→ P7-2で7表367行を解決、残**37表・約1,053行**)**
 
-Engine/UIが直に読む地の文・ラベルのプール。大物は`SNAPSHOT_TEXTS` 276 / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / `ATMOSPHERE_TEXTS` 33、以下中小の表が続く。
+Engine/UIが直に読む地の文・ラベルのプール。大物は~~`SNAPSHOT_TEXTS` 276~~(**✅P7-2**) / `CHAR_PROFILES` 127(dialogue-tone-spec §5でP5末尾送りと明示済み) / `ALL_COACHES`のflavor 125 / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / ~~`ATMOSPHERE_TEXTS` 33~~(**✅P7-2**)、以下中小の表が続く。
+
+**✅P7-2(2026-09-04)で解決した7表**: `SNAPSHOT_TEXTS` 282 / `ATMOSPHERE_TEXTS` 33 / `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `CAMP_FLAVOR_TEXTS` 12 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8(詳細は§15)。
 
 **⚠ `i18n-miss 0` は「英語化が終わった」の指標ではない。** missは「t()を通ったが辞書に無い」ときにしか出ないので、**そもそもt()を通っていないこの層は永久にmissへ出ない**。進捗はEN走破の「JA exposure by screen」(P6-14時点: screen-week=56 / screen-shachoshitsu=55 / screen-log=51 / screen-show=39 / screen-newspaper=33 …)と本突合表を併読して測る。
 
@@ -355,3 +358,38 @@ P6-14の作法①(凍結コピーとの全数突合)を4族すべてに適用し
 2. **`Engine.chronicle`の年代記叙述4関数**(management.js:5201/5253/6391/6641) — dictを一切持たない断片連結。`QUOTE_TEMPLATES_DUAL`はEngineオブジェクトのプロパティで抽出器から見えない(§10-2型)。加えて`_buildPeerNarrative`等は分岐ごとの実行文プールで、§6 pool③(`Engine.mvpRace`の叙述family)と同じ性格
 3. **`Engine.autumnWar`の結果ニュース**(management.js:30729/30730) — `_orgName`+勝敗数の生JA組み立てを`industryNews.push`のdataへ焼く。§8の「生キー+render時点再構築」が要る型
 4. **composerがnullを返したときの直書きJAフォールバック2箇所** — `management.js`のAIチャンピオン交代(`${ev.orgName}の王座が動いた。…`)と`ui-common.js`のドラフト自団体1面(`${names}。新シーズンの陣容がひとつ厚くなった。`)。どちらもdictを通らないので、本体が英語になった今はフォールバックだけJAで出る
+
+## 15. Stage B P7-2 — 地の文プール前半7表(t()を一度も通らない層)の配線(2026-09-04追加)
+
+§13-2 B の突合表のうち分類A「地の文プール」前半7表(`SNAPSHOT_TEXTS` 282 / `ATMOSPHERE_TEXTS` 33 / `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `CAMP_FLAVOR_TEXTS` 12 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8 = 373行)を台帳へ載せ、消費点を配線し、374キー(連結様式1件を含む)を英訳した。台帳はテンプレ層(§6)。
+
+### 15-1. 「乱数で選んだテンプレを名前で充填した完成文をGへ焼く」族 — `composedSnapshotText`
+
+`Engine.snapshot`の垣間見え / ロッカールームの空気ログ / 移籍ウィンドウ前週の予兆は、いずれも**選出が消費済みの乱数ストリームに依存する**ため §13-1 の「表示時に再生成」が使えない。§14-3 の`PPV_HYPE_TEMPLATES`(`hypeTpl`/`hypeVars`)と同じ**追加フィールド方式**へ寄せ、正規化を1箇所へ集約した。
+
+- **`composedSnapshotText(entry)`(data.js、`_gameLogT`の直後)** — `{ text, tpl, vars, voiceLead, labelVars }` を受け、`tpl`が無い旧セーブは`text`をそのまま返す(fail-open)。`_gameLogT(text, params)`に params 対応を足してあり、WM_I18N不在(Node単体・auto-sim)では`fillTemplateVars`へ落ちる。**ja/WM_I18N不在では戻り値が`text`と1バイト一致する**
+- **完成文`text`はセーブ値として不変**(D-P6-4)。`tpl`/`vars`は**追加**するだけで、既存フィールドの意味は変えない
+- **`gameLogEntryText`(data.js)** は`entry.tpl`があるときだけこの新経路へ入る(既存の`entry.text`早期returnより**前**に置く)。`renderLog`のスナップショット枝も`l.text`直参照をやめ`getLogText(l)`へ統一した
+- **`_snapshotLine(entry)`(ui-common.js、`_epithetLabel`の直後)** はそこへ委譲するだけ(`_epithetLabel`が`Engine.awards.epithetText`へ委譲するのと同じ作法。**正規化を二重実装しない**)
+- **gameLogへ積む生文字列は`{type, text, tpl, vars}`のオブジェクトへ移す**(§2-4の推奨形)。`gameLogEntryCategory`は`entry.text`を持つ行に`[]`を返すため、旧・生文字列がキーワード判定でどのカテゴリにも一致しなかった族(ロッカー空気14行・移籍予兆9行はいずれも非該当)は**フィルタ挙動が変わらない**。移す前に必ずキーワード表と突き合わせること
+- **断片連結は`join`テンプレ化**。タイプB「話者名+全角スペース+セリフ」は`ARTICLE_COMPOSE_TEMPLATES.snapshotVoice`(`{name}　{line}` → `{name}: {line}`)。§14-1で決めた「i18n配線のために足す文字列は本表へ集約する」流儀に従い、`SNAPSHOT_TEXTS`の中には入れない
+- **`labelVars`(新設)** — 「値そのものが成形済みJAラベルで、値としても辞書を引く必要がある」パラメータ名の配列(§14-2 `_wmDictLabel`と同趣旨。`gameLogEntryText`の`crowdLabel`/`tierLabel`の先例と同型)。`PRE_WINDOW_TEXTS`の`{rival}`は実在団体名なら名前辞書のパラメータ値自動変換で訳されるが、フォールバックの`'他団体'`だけは辞書を引き直す必要がある。**フォールバックのときだけ付ける** — 実在団体名に付けるとUI辞書側でミスログを量産する
+
+### 15-2. UI直読み4表は表示直前でt()1回
+
+`ATMOSPHERE_TEXTS`(ui-render.js `_renderRosterDojoHeader`の2箇所)・`FAREWELL_KIND_TEXT`(ui-common.jsの引退セレモニー title/lead/body)・`CAMP_FLAVOR_TEXTS`(app.jsの合宿書類 → ui-common.jsの`flavorHtml`。**PH置換より前に**`t(tmpl, {name1,name2})`)・`TEAM_SPIRIT_TEXTS`(app.jsのトースト組み立て)。いずれもGへ焼かないか、PHを持たないため追加フィールドは不要。
+
+**`showNotifEventToast`(ui-common.js)では訳さない。** これは`event.text`/`event.detail`を無変換で出す**共通表示点**で、`NOTIF_EVENT_TEXTS`/`LARGE_EVENT_TEXTS`(P7-3)など他系統の未訳文も同じ入口を通る。ここで一律t()を掛けると二重t()(§9)になる系統が出るため、**系統ごとの入口(app.js側)で訳して渡す**。P7-3がこの入口へ触るときは、系統別に訳すか`textTranslated` opt-in(§9の`lineTranslated`と同型)を足すかを決めること。
+
+### 15-3. 抽出器のパスフィルタ(`TABLE_PATH_FILTER`)
+
+`test/i18n-extract-templates.js`に、テーブルの特定の部分木だけを台帳から外すためのパスフィルタを追加した(`test/i18n-extract-dialogue.js`の`INCLUDE_PATH_FILTER`と同じ作法)。`walkStrings`が「テーブル直下から数えたオブジェクトキー列」(配列インデックスは含まない)を持ち回る。現在の唯一の登録は`ATMOSPHERE_TEXTS`で、`{ emoji, text }`の`emoji`葉(絵文字1文字・表示側も`${atmo.emoji} ${t(atmo.text)}`と分けて出す)を除外する。
+
+### 15-4. JA同一性の証明の作法(§13-1の作法①を実コードで回す形に変えた版)
+
+凍結コピーとの突合(§13-1)ではなく、**実物の生成関数を全到達分岐で回し、その場で「表示点の再構築 == 生成された完成文」を照合**した。生成側と表示側が同じ実装から出ているため、凍結コピーの取り違えが起きない。
+
+- `Engine.snapshot._buildSnapshotText` を 全15ソース × 7アーキタイプ × 7性格 × 40シード × name2有無 × bond 2値 で回し、毎回`composedSnapshotText(res) === res.text`(実測117,696件・不一致0)
+- ロッカー空気・移籍予兆・合宿は**旧実装の`.replace()`直列**と`t(tpl, vars)`を全行×代表値で照合する。`.replace(str, …)`は**最初の1つ**しか置換しないが`applyParams`は全置換するため、同じPHが2回出るテンプレがあれば出力が割れる — 実データに無いことをこの突合で確認する
+- **表の網羅率を必ず出す**。7表の全373文字列のうち372に到達し、未到達1件(`SNAPSHOT_TEXTS.breakthrough.scene`)は`_collectCandidates`がブレイクスルーを常に`type:'embedded'`で積むため`voice`しか読まれない**死蔵行**だと特定できた
+- EN側は実物の`src/i18n.js`+生成辞書3本を読み込み`setLang('en')`して同じ全経路を再走し、**日本語残り0・i18n-miss 0**を確認する(`voiceLead`の連結・`labelVars`の値引き・名前のpn変換を含む。実測35,380件)

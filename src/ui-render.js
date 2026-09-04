@@ -1919,15 +1919,16 @@ function _renderRosterDojoHeader() {
     if (coachForBubble) {
       const speakerName = (report && report.coachName) ? report.coachName : coachForBubble.name;
       // i18n Stage B P5-1: report.reportText はapp.js/management.jsで選択されたCOACH_VOICE_REPORT_LINES
-      // の生JA行(選択ロジックには触れず、ここ=表示直前でt()を通す)。atmo.text はナレーション層
-      // (ATMOSPHERE_TEXTS、本セリフ台帳の対象外)のため素通し。
+      // の生JA行(選択ロジックには触れず、ここ=表示直前でt()を通す)。
+      // i18n Stage B P7-2: atmo.text(ATMOSPHERE_TEXTS)はテンプレ台帳へ収録済みになったので
+      // 同じく表示直前でt()を通す(プレースホルダなし)。atmo.emoji は訳出対象外。
       // i18n Stage B P5-2l: reportText は {name}/{stat} を残した原文テンプレなので、
       // t()に params を渡して**辞書を引いてから**置換する(先に置換するとキーが一致しない)。
       // {stat}はステータス名の日本語ラベル(UI辞書側のキー)なので、値の側もt()に通す。
       // reportParams が無い＝旧セーブの置換済みテキスト。その場合は従来どおり素通し(fail-open)。
       const _rp = report && report.reportParams;
       const _reportParams = _rp ? { name: _rp.name, stat: WM_I18N.t(_rp.stat) } : undefined;
-      let speechText = (report && report.reportText) ? WM_I18N.t(report.reportText, _reportParams) : atmo.text;
+      let speechText = (report && report.reportText) ? WM_I18N.t(report.reportText, _reportParams) : WM_I18N.t(atmo.text);
       // コーチ報告の表示枠では、対象選手の今週の熱量を優先して伝える。
       // 既存の strain 報告も同じ枠を使うため、同じ週に2種類の警告を重ねない。
       const roster = G.roster || [];
@@ -1952,7 +1953,7 @@ function _renderRosterDojoHeader() {
         </div>
         <div class="dojo-scene-coach-name">${speakerName}</div>`;
     } else {
-      html += `<div class="dojo-scene-atmosphere">${atmo.emoji} ${atmo.text}</div>`;
+      html += `<div class="dojo-scene-atmosphere">${atmo.emoji} ${WM_I18N.t(atmo.text)}</div>`;
     }
     html += '</div>';
   }
@@ -4404,7 +4405,9 @@ function renderLog() {
   html += `<div style="font-size:12px;color:var(--text-dim);margin-bottom:4px">${WM_I18N.t('{total}件中 最新{shown}件', { total: filtered.length, shown: Math.min(display.length, 100) })}</div>`;
   display.forEach(l => {
     if (isSnapshot(l)) {
-      html += `<div class="log-snapshot" style="padding:3px 0;border-bottom:1px solid rgba(200,190,170,0.03);font-size:11px">\u{1F4AD} ${l.text}</div>`;
+      // i18n P7-2: tpl/vars を持つ新形式は getLogText(=gameLogEntryText)が辞書を引いて
+      // 組み直す。旧セーブ(textのみ)は従来どおり素通し(fail-open)。
+      html += `<div class="log-snapshot" style="padding:3px 0;border-bottom:1px solid rgba(200,190,170,0.03);font-size:11px">\u{1F4AD} ${getLogText(l)}</div>`;
     } else {
       html += `<div style="padding:3px 0;border-bottom:1px solid rgba(200,190,170,0.03);font-size:11px;color:var(--text-sub)">${getLogText(l)}</div>`;
     }

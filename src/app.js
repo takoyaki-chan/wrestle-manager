@@ -11075,7 +11075,9 @@ const App = {
         fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
         departedName: pendingR3Spec.departedName || '???',
         reason: pendingR3Spec.reason || 'departed',
-        line: pendingR3Spec.text,
+        // i18n P7-2: SNAPSHOT_TEXTS.R3.modal の生JA完成文ではなく、併記された
+        // tpl/vars から表示時に組み直す(§14-3。旧セーブは text へfail-open)
+        line: _snapshotLine(pendingR3Spec),
       };
       popupActions.push(done => {
         showR3Modal(r3Args);
@@ -11986,7 +11988,14 @@ const App = {
     }
     if (pendingTeamSpirit) {
       const spiritDelay = (newInjuries.length + flavorEvents.length + weekGrowthEvents.length) * 100 + 350;
-      setTimeout(() => showNotifEventToast(pendingTeamSpirit), spiritDelay);
+      // i18n P7-2: TEAM_SPIRIT_TEXTS の text/detail はプレースホルダ無しの地の文。
+      // 共通表示点 showNotifEventToast は他系統(NOTIF_EVENT_TEXTS等)の未訳文も通るため、
+      // そこでは訳さずここ=この系統の入口で1回だけt()を通す(二重t()を作らない。§9)。
+      setTimeout(() => showNotifEventToast({
+        ...pendingTeamSpirit,
+        text: WM_I18N.t(pendingTeamSpirit.text),
+        detail: pendingTeamSpirit.detail ? WM_I18N.t(pendingTeamSpirit.detail) : pendingTeamSpirit.detail,
+      }), spiritDelay);
     }
 
     // §B-2: 移籍ウィンドウ前週の予兆通知
@@ -12001,7 +12010,9 @@ const App = {
         setTimeout(() => showNotifEventToast({
           type: 'N_pre_window',
           fighter: w.fighterId,
-          text: w.text,
+          // i18n P7-2: PRE_WINDOW_TEXTS はPH置換済みの完成文が w.text に入る。
+          // 併記された tpl/vars から表示時に組み直す(§14-3)
+          text: _snapshotLine(w),
           detail: w.tone === 'serious'
             ? WM_I18N.t('⚠️ 来週は移籍ウィンドウです。信頼ケアの最後のチャンスかもしれません。')
             : WM_I18N.t('👁️ 来週は移籍ウィンドウです。動向を注視しましょう。'),
@@ -12098,7 +12109,7 @@ const App = {
           fighterFace: r3Fighter ? getPortraitUrl(r3Fighter.id) : null,
           departedName: pendingR3Modal.departedName || '???',
           reason: pendingR3Modal.reason || 'departed',
-          line: pendingR3Modal.text,
+          line: _snapshotLine(pendingR3Modal), // i18n P7-2(§14-3)
         });
       }, r3Delay);
     }
@@ -14850,9 +14861,13 @@ const App = {
       if (docId === 'camp' && typeof CAMP_FLAVOR_TEXTS !== 'undefined' && participants.length >= 2) {
         const tmpl = CAMP_FLAVOR_TEXTS[Math.floor(Math.random() * CAMP_FLAVOR_TEXTS.length)];
         const shuffled = [...participants].sort(() => Math.random() - 0.5);
-        campFlavor = tmpl
-          .replace('{name1}', shuffled[0].name)
-          .replace('{name2}', shuffled[1] ? shuffled[1].name : shuffled[0].name);
+        // i18n P7-2: 表示専用(Gへ焼かない)ので追加フィールドは不要。**PH置換より前に**
+        // t()を通す(先に置換すると辞書キーと一致しない — P5-2d等で7回踏んだ穴)。
+        // 選手名は t() のパラメータ値自動変換(D-P6-2)がpn()相当の変換をする。
+        campFlavor = WM_I18N.t(tmpl, {
+          name1: shuffled[0].name,
+          name2: shuffled[1] ? shuffled[1].name : shuffled[0].name,
+        });
       }
       displayData = {
         fighter: null, isTeam: true,
