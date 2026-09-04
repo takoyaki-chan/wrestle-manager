@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T11:51:41.937Z",
+  "generatedAt": "2026-09-04T12:50:05.554Z",
   "files": {
     "data.js": {
       "jaCount": 17108,
@@ -45,13 +45,13 @@
       "jaCount": 542,
       "jaChars": 6624
     },
-    "battle-engine-main.js": {
-      "jaCount": 539,
-      "jaChars": 4948
-    },
     "index.html": {
       "jaCount": 3,
       "jaChars": 4942
+    },
+    "battle-engine-main.js": {
+      "jaCount": 530,
+      "jaChars": 4700
     },
     "data-faction-dialogue.js": {
       "jaCount": 317,
@@ -78,8 +78,8 @@
       "jaChars": 938
     },
     "tag-battle-main.js": {
-      "jaCount": 88,
-      "jaChars": 860
+      "jaCount": 98,
+      "jaChars": 894
     },
     "match-engine.js": {
       "jaCount": 95,

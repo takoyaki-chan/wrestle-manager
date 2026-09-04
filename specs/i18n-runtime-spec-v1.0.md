@@ -756,14 +756,14 @@ return prefix + String(T(tmpl, { move: finMove })).replace('{move}', finMove);
 - `sfx.hit*` を包んだ**効果音呼び出し列も JA/EN 完全一致**
 - ENの技名パネル・ビッグムーブに日本語が1文字も無い / JA側は日本語のまま
 
-### 23-6. P7-5で新たに見つかった穴(未着手)
+### 23-6. P7-5で新たに見つかった穴(1/2/5は**P7-9で解決**・§26)
 
-1. **観戦iframeは `lang-en-templates.js` を読み込まない**。`{move} → 3カウント` の訳は template-ledger 側にしか無いため、`battle-engine-main.js` の `_localFormatFinish`(`FINISH_TEXT` のローカル複製)は**テンプレだけENにできない**。今回は技名だけ `mv()` で訳し、テンプレはJAのまま残した(`t()` に通すと必ず `[i18n-miss]` になる)。解くにはiframeへ `lang-en-templates.js` を足すか、当該5キーを ui-ledger へ移す
-2. **観戦画面の地の文が丸ごと未配線**。実況ナレーション5型・攻撃矢印の `'攻撃'`/`'カウンター！'`・ギブアップ導入文・`MOVE_PRESENTATION.guide` 13本(6カテゴリ+7上書き)・タッグ勝利オーバーレイの `finType`/`finishPhase` は `t()` を一度も通っていない。技名だけENの混成文になっている
-3. **試合ログ行は表示とセーブを兼ねている**。`match-engine.js` が `${mv.n}` を埋めて組む19本のログ文は観戦画面のログパネルに出ると同時に `result.log` として `G` へ永続する。生成時に訳すとセーブが汚れるので、`{type,data}` 化(§2-4)が前提
-4. **`management.js:31053` / `32263` の `else` 分岐が生の `finMove` を出す**。ただし条件が `Engine.formatFinish &&` なので `formatFinish` が存在する限り到達しない死コード(§13-2-1型)
-5. **`tag-battle-lines.js` の `_tplTagLine` は `dict(str)` だけでPHの値を素通しする**。`{move}` は呼び出し側(`tag-battle-main.js`)で先に `mv()` を掛けて回避したが、同関数の `{winner}`/`{partner}` は依然として生JA名(P7-7b/P6-3ロングテールの領分)
-6. **選手ごとの「得意技」UIは存在しない**。P7設計が挙げていた表示点だが、`.moves` のような選手所有の技リストはコード上に無く(技はスタイルから毎試合抽選される)、`得意技` は紹介文の地の文にしか出ない。記録タブ・ランキング・年代記ハイライトにも決着技は出ない
+1. **✅解決(P7-9)** — **観戦iframeは `lang-en-templates.js` を読み込まない**。`{move} → 3カウント` の訳は template-ledger 側にしか無いため、`battle-engine-main.js` の `_localFormatFinish`(`FINISH_TEXT` のローカル複製)は**テンプレだけENにできない**。P7-5は技名だけ `mv()` で訳しテンプレはJAのまま残した(`t()` に通すと必ず `[i18n-miss]` になる)。→ P7-9で両iframeの `lang-en-names.js` 直後(index.htmlと同じ順序)へ `lang-en-templates.js` を追加して解決
+2. **✅解決(P7-9)** — **観戦画面の地の文が丸ごと未配線**。実況ナレーション5型・攻撃矢印の `'攻撃'`/`'カウンター！'`・ギブアップ導入文・`MOVE_PRESENTATION.guide` 13本(6カテゴリ+7上書き)・タッグ勝利オーバーレイの `finType`/`finishPhase` は `t()` を一度も通っていない。技名だけENの混成文になっている。→ P7-9で66キーを台帳化・英訳し配線(§26)
+3. **未着手** — **試合ログ行は表示とセーブを兼ねている**。`match-engine.js` が `${mv.n}` を埋めて組む19本のログ文は観戦画面のログパネルに出ると同時に `result.log` として `G` へ永続する。生成時に訳すとセーブが汚れるので、`{type,data}` 化(§2-4)が前提。**P7-9で症状を1つ実測**: タッグの `_narrateFrame` は action を持たないフレーム(タッチ等)で `(fr.logLines||[]).join(' ')` を実況ストリップへそのまま出すため、EN画面の実況に `↔ タッチ(消耗): 阿武隈塔子 → 富岡加奈子` がJAのまま出る。構造化データが無い(タッチは `dramaSummary` に積まれず `pushLog` の文字列だけ)ので、`{type,data}` 化と同時にしか直せない
+4. **未着手・ただし前提が誤り(P7-9で訂正)** — `management.js:31053` / `32263` の `else` 分岐は**死コードではない**。条件は `Engine.formatFinish && sr.finMove` なので、**`finMove` が `null` の決着(タイムアウト=`finType:'HP判定'`)で到達する**。到達時の出力はロジックキーそのままの `HP判定` で、`Engine.formatFinish('HP判定', null, …)` が返す `判定勝ち`(EN: "Win by decision")とは別物 — つまり**JA側でも内部キーがそのまま紙面に出る**(feedback「プレイヤー向け表記に内部変数名を使わない」違反)。条件を `Engine.formatFinish` だけにすれば1行で直るが**JA出力が変わる**(`HP判定`→`判定勝ち`)ため ja-golden の採り直しが要る。JA不変を守るP7-9のスコープ外として据え置き、**Keisuke裁定待ち**(直すなら「JAの表示バグ修正」として基準更新)
+5. **✅解決(P7-9)** — **`tag-battle-lines.js` の `_tplTagLine` は `dict(str)` だけでPHの値を素通しする**。`{move}` は呼び出し側(`tag-battle-main.js`)で先に `mv()` を掛けて回避したが、同関数の `{winner}`/`{partner}` は依然として生JA名。→ P7-9で `dict(str, vars)` 形へ変更し、呼び出し側の先回り `mv()` も撤去(§26-3)
+6. **未着手** — **選手ごとの「得意技」UIは存在しない**。P7設計が挙げていた表示点だが、`.moves` のような選手所有の技リストはコード上に無く(技はスタイルから毎試合抽選される)、`得意技` は紹介文の地の文にしか出ない。記録タブ・ランキング・年代記ハイライトにも決着技は出ない
 ## 24. Stage B P6-14 — 殿堂入り語り文のEN化+`*_TEMPLATES`全数突合+不定冠詞の機械検査(2026-09-04追加)
 
 ### 24-1. 「連結後の完成文が永続する」族は**表示点で再生成する**
@@ -856,3 +856,65 @@ Fable裁定により演出として残さず英訳する方針が確定してい
 
 - **`div.np-show-article`の生JAフォールバック記事**(`ui-render.js` `_npRenderPlayerShow`内、`App._NEWSPAPER_ARTICLES`のプールが空のときのフォールバック文字列組み立て)。数文からなる長文テンプレをt()もpn()も通さず直接組み立てており、technique名だけでなく地の文全体がJAのまま出る。P7-5(技名)より大きい別枠の作業(複数文のテンプレ台帳化)が要るため、P7-7bのスコープ外として記録のみ
 - **`App._generateNewspaperTexts`のMath.random()非決定性**(P7-7aで指摘済み・据え置き継続。generateHypeと同族の乱数シード原則からの逸脱)
+
+## 26. Stage B P7-9 — 観戦画面(iframe)の地の文層(2026-09-04追加)
+
+§23-6が起票した P7-5 の発見のうち **1(テンプレ辞書未読込)・2(地の文未配線)・5(`_tplTagLine`のPH値素通し)** を解決した。新規訳出は **ui-ledger 66キー**(テンプレ台帳・セリフ台帳は1キーも増えていない)。台帳は ui 4,061→**4,127**、未訳0を維持。
+
+### 26-1. 観戦iframeへ `lang-en-templates.js` を追加した(発見1)
+
+`src/battle-engine.html` / `src/tag-battle.html` の `lang-en-names.js` 直後(index.htmlと同じ順序)に1行追加しただけ。`release/manifest.json` は登録済みで変更不要。これで `_localFormatFinish` が `{move} → 3カウント` 等の**テンプレ側キー**を引けるようになり、技名は `t()` のパラメータ値自動変換(D-P6-2 / P7-5)に任せられる:
+
+```js
+if (tmpl) return WM_I18N.t(tmpl, { move: finMove });   // dictで先に訳さない(§19-3/§23-2と同型)
+```
+
+**二重登録の禁止(§9)に注意**: `激闘決着` は template-ledger 側にあるキーなので、`WM_I18N.t('激闘決着')` と静的リテラルで書くと `test/i18n-extract-ui.js` が拾って ui-ledger にも同じキーが載り、どちらの訳が出るかが `addDict` の読み込み順に依存する。**変数(`_LOCAL_FINISH_FALLBACK`)経由で渡して抽出器から隠す**のが正しい形。※既存の ui∩(template|dialogue) 重複キーは22件あり(合宿フレーバー6・年代記見出し3・セリフ短句4ほか)、いずれも訳文がほぼ同文のため実害は出ていないが、**同じ穴が増えないよう新規キーでは必ず突合すること**。
+
+### 26-2. 「選択はJA・表示だけEN」を関数の境界で守る(発見2)
+
+P7-5の `_mvDisp`/`_mvFull`(技名)と同じ設計を地の文にも広げた。**`_movePresentation()` は判定層**(JA技名の正規表現で解説文を選ぶ)なので**戻り値の `guide` は日本語のまま**返し、英訳は表示直前の `WM_I18N.t(meta.guide)` が行う。これで `test/ui-walkthrough/spectator-move-i18n-check.js` の「全フレームの `_movePresentation().guide` 列が JA と EN で完全一致」という判定層の機械証明がそのまま生き続ける。
+
+| 層 | 実装 |
+|---|---|
+| 実況ナレーション(single 6型 / tag 9型) | `WM_I18N.t(テンプレ, { atk, def, move, n })`。**プレースホルダ置換より前にt()**(§9)。名前・技名は値として渡すだけで en ブランチの `convertNames` が名前辞書→技名辞書の順に引く |
+| 技の解説文 `guide`(14本ユニーク) | 表示点(`_centerHtml`/`_updateMoveDetail`、tagは`_moveDisplayHtml`)で `t()` |
+| 攻撃矢印ラベル | `_mvDisp(move) \|\| WM_I18N.t('攻撃')` / `WM_I18N.t('カウンター！ {move}', { move: _mvDisp(…) })` |
+| ピンシーケンス(導入9本+極め技3本+カウント/タップ/ロープブレイク等) | `seq.push()` の**push時点**で `t()`(既存の `damage` ステップと同じ作法。観戦iframeは試合ごとに開き直すので試合中に言語は変わらない) |
+| `finType`(フォール/ピン/ギブアップ/TKO/丸め込み/HP判定) | 新設 `_finTypeLabel(finType)`。**`switch` + 静的リテラル**で書くのは `test/i18n-extract-ui.js` が `WM_I18N.t()` の静的第1引数を機械抽出するため(変数を渡すと台帳に載らず kept:true の手追加が要る)。ja では t() が素通しして finType そのものが返る=1バイト不変 |
+| `finishPhase` | **変換不要**。`Opening`/`Mid`/`End`/`Climax`/`Timeout` は data.js の `PHASES`/`BIGMATCH_PHASES` の `name` がそのまま流れてくる元から英語の値 |
+| 実況ストリップの見出し `実況` | **CSSの `::after { content:'実況' }`** でt()を通せない。§12(P6-11)の `html[lang="en"]` 分岐で `content:'COMMENTARY'` に出し分ける(JA側のセレクタには触れない) |
+
+**プールはトップレベル表へ出した(§10-2の規約)**: `_movePresentation` の if/else連鎖に直書きされていた解説文上書き7本を `MOVE_GUIDE_OVERRIDES`(順序・`cat` 条件つきフォールスルーまで元と同義)へ、`_buildPinCtrl` 内の `INTRO`/`INTRO_NARRATIONS`/`SUB_INTRO` を `PIN_INTRO_TEXTS`/`SUB_ATTEMPT_INTRO_TEXTS` へ。**表の値は日本語原文のまま**で、英訳は表示直前の `t()` が引く。
+
+### 26-3. `_tplTagLine` を `dict(tpl, params)` 形へ(発見5)
+
+`String(T(str)).replace(…)` → `String(T(str, vars)).replace(…)`。これだけで `{winner}`/`{partner}` の生JA名が解決する(`t()` の `convertNames` が名前辞書を引く)。後段の `.replace()` は dict 省略時と params 非対応 dict のフォールバックとして残すので **ja出力は1バイト不変**(`Engine.formatFinish` / `_wmFillWithDict` と同じ二段構え)。呼び出し側 `tag-battle-main.js` が P7-5 で入れていた先回りの `_mvFull(finMove)` は不要になったので撤去した(生JAを渡す形に戻す — §9の「フラグに頼らず生JAを渡す設計に戻す」と同じ判断)。
+
+### 26-4. `test/i18n-extract-ui.js` に **JS_TABLES モード**を追加した
+
+観戦iframeの地の文プールは `pk(pool)` で選ばれてから `t()` に渡る**動的キー**なので、`WM_I18N.t()` の静的第1引数だけを見る `extractJsCalls` には原理的に載らない。P6-8/P6-10 の `LIVE_LINES`・`EMOTION_TEXTS` は `kept:true` の手追加で凌いだが、P7-1 が確立した方針(「kept扱いではなく走査対象として再現可能にする」)に従い、**ソースからトップレベル `const NAME = {…}` / `= […]` の値リテラルだけを切り出して評価する**モードを足した(DATA_TABLES が data.js に対してやっていることの iframe用JS版)。
+
+- ファイル全体は読み込まない(iframeのJSは document/window 依存の副作用を持つ)。波かっこ/角かっこの深さカウントで範囲を切り出し、`new Function('WM_I18N', …)` に **`{ t: s => s }` のスタブだけを与えた孤立スコープ**で評価する(`MOVE_PRESENTATION` の `label` が `WM_I18N.t('打撃技')` を呼ぶため)
+- 対象7表(single 4 / tag 3): `MOVE_PRESENTATION.guide` `MOVE_GUIDE_OVERRIDES[].guide` `PIN_INTRO_TEXTS` `SUB_ATTEMPT_INTRO_TEXTS` / `TAG_MOVE_PRESENTATION.guide` `MOVE_GUIDE_OVERRIDES[].guide` `PIN_INTRO_TEXTS`
+- 台帳行には `source: ["battle-engine-main.js:PIN_INTRO_TEXTS.tko[0]", …]` が付く(DATA_TABLES と同じ体裁)
+- **`_LOCAL_FINISH_TEXT` は対象に入れない** — 同じキーが template-ledger にあるため(§26-1の二重登録禁止)
+
+### 26-5. 死蔵プールの削除
+
+`FINISH_SUSPENSE`(battle-engine-main.js、finishClickボックス表示中の実況プール5種17行)は **`src/` 全体で参照が宣言1箇所のみ**の死蔵だった。「結末ネタバレ防止: 全 attemptType で結末を示唆しない汎用文に統一」(finishClick label を `…！？` へ一本化)した際に消費点が消えたまま残っていたもの。訳出対象を実際に画面へ出るものだけに保つため削除した(§10-2の `KURODA_PREVIEW` と違い、**同じ機能の後継(`PIN_INTRO_TEXTS`)が現役で動いている**ため復活の余地がない)。
+
+### 26-6. 検証: 観戦ハーネスを「地の文まで」拡張した
+
+`test/ui-walkthrough/spectator-move-i18n-check.js`(手動実行)を4点拡張した。
+
+1. **worktreeパス直書きを廃止** — `ROOT` を `path.resolve(__dirname, '..', '..')` に。worktreeを移すたび書き換えが要る状態だった
+2. **地の文の採取**: 実況ストリップ(`#narBox`/`#moveNarration`)・解説文(`#moveGuide`)・ビッグ導入(`.big-intro`)・ピンカウント(`.pin-count`)・finishClickラベル(`#finishBtn`)・決着表記。**EN側の全表示文字列に日本語残り0** と **JA側は日本語のまま** を両方見る
+3. **ピンシーケンス全分岐のカバレッジ**: 実時間再生では1試合で1分岐しか踏めず決着まで数十秒かかるので、`_buildPinCtrl` を**直接**叩いて TKO / 丸め込み(成功・返し) / ギブアップ(タップ・ロープブレイク) / 極め技脱出 / フォール(3カウント・返し) の全分岐の seq テキストを採取する(single 37行 / tag 32行)。`isCrit:false` 固定でダメージセリフの乱数を混ぜない
+4. **`WM_I18N._misses` を直接読む** — `console.warn` を後から差し替える方式ではスクリプト読み込み中に出た miss を取り逃す
+
+**SFX列の突合は「共通接頭」比較に変えた**。JA/ENで到達フレーム数が1つずれることがある(実時間サンプリングのため)。全フレームの決定的な突合は従来どおり `presentSeq`(`[内部技名|解説文|効果音カテゴリ|moveCat]`)が担う。
+
+**試合ログ行の実況ストリップ落ち込み**(§23-6-3)は、`action` を持たないフレームの `logLines` を機械的に集めて**既知の繰り越しとして判定から除外**し、件数と実文を必ず表示する(黙って消さない)。
+
+結果: **ALL CHECKS PASS**(single 20項目 / tag 20項目)。繰り越し1種(`↔ タッチ(消耗): …`)。

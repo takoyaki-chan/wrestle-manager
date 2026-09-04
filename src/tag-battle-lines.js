@@ -755,9 +755,16 @@ const TAG_MATCH_COMMENTARY_WIN_LINES = [
 // specs/i18n-runtime-spec-v1.0.md §6のdict-optsパターンに合わせ、プレースホルダ置換の
 // **前**に辞書を通す(置換後の文字列は辞書キー(未置換の原文)と一致しなくなるため)。
 // dict省略時は恒等関数と同じ=JA原文のまま(既存呼び出しは無改修でJA不変)。
+// i18n Stage B P7-9: 値も dict に渡すよう `dict(tpl, params)` 形へ拡張した。
+// 従来の `dict(str)` だけの形では、テンプレは英訳されるのに {winner}/{partner} へ
+// 差し込む選手名が**生の日本語のまま**残った(P7-5の発見5)。WM_I18N.t の
+// (text, params) 契約に乗せると、en ブランチのパラメータ値自動変換(D-P6-2)が
+// 名前辞書・技名辞書を引き当てるので、呼び出し側は追加配線なしで英語化される。
+// 後段の .replace() は dict 省略時(恒等関数)と params 非対応の dict のためのフォールバック
+// (Engine.formatFinish / _wmFillWithDict と同じ二段構え)。**ja出力は1バイト不変**。
 function _tplTagLine(str, vars, dict) {
   const T = (typeof dict === 'function') ? dict : (s) => s;
-  return String(T(str)).replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? vars[k] : m));
+  return String(T(str, vars)).replace(/\{(\w+)\}/g, (m, k) => (vars && vars[k] != null ? vars[k] : m));
 }
 // [archetype][personality] 二軸テーブルからフォールバック連鎖で配列を取り出す。
 // **第一分岐はアーキタイプ**(口調)、第二分岐が性格。性格を先に引くと
