@@ -238,7 +238,7 @@ function section(name, fn) {
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  }, pn(str) { return str; }, pnSurname(str) { return str; } };
+  }, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } };
   const build = new Function(
     'document', 'G', 'Audio', 'window', 'Engine', 'portraitImg', 'WM_I18N', '_quoteLine', '_quoteVal',
     `${uiFn('escHtml')}

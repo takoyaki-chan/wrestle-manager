@@ -836,7 +836,14 @@ Engine.formatFinish = function(finType, finMove, isFinisher, dict) {
   const tmpl = FINISH_TEXT[finType];
   if (!tmpl) return finType || FINISH_TEXT_FALLBACK;
   const prefix = isFinisher ? '★ ' : '';
-  return prefix + T(tmpl).replace('{move}', finMove);
+  // i18n Stage B P7-5: 技名も辞書の住人(名前辞書と同じ「data由来の値」)。テンプレ側だけ
+  // dictを通して{move}は素通しにしていたので、決着文の技名だけJAで残っていた。
+  // 値は**パラメータとして渡す** — WM_I18N.tのenブランチが持つパラメータ値の自動変換
+  // (D-P6-2、P7-5で技名辞書も見るよう拡張)が引き当てる。dictで先に訳そうとしないこと
+  // (specs §19-3の会場名と同型)。dict省略時(恒等関数)やparams非対応のdictでは{move}が
+  // 残るので、従来どおりの.replace()を後段に残してJA出力を1バイト不変に保つ
+  // (先例: management.js の _wmFillWithDict も dict(tpl, params) → fill の二段構え)。
+  return prefix + String(T(tmpl, { move: finMove })).replace('{move}', finMove);
 };
 
 // ╔══════════════════════════════════════════════════════════╗

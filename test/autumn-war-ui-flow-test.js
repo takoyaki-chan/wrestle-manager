@@ -257,7 +257,7 @@ function section(source, startMarker, endMarker) {
       let out = text;
       Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
       return out;
-    }, pn(str) { return str; }, pnSurname(str) { return str; } },
+    }, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } },
     // i18n P6-7: _agwPreBoutDialogueHtml now wraps bubble text via _quoteLine (「」の言語別化).
     _quoteLine: text => `「${text == null ? '' : text}」`,
   };

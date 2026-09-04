@@ -56,7 +56,7 @@ global.WM_I18N = { t(text, params) {
   let out = text;
   Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
   return out;
-}, pn(str) { return str; }, pnSurname(str) { return str; } };
+}, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } };
 
 // auto-sim.js 同様、Math.random に依存する残存経路も固定シードで再現可能にする。
 let legacyRandomState = SEED >>> 0;

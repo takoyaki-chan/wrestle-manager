@@ -58,7 +58,7 @@ section('3. 歴代優勝カードはOVRを表示し、引退者はpeakOVRへフ�
     let out = text;
     Object.keys(params).forEach((key) => { out = out.split('{' + key + '}').join(params[key]); });
     return out;
-  }, pn(str) { return str; }, pnSurname(str) { return str; } };
+  }, pn(str) { return str; }, pnSurname(str) { return str; }, mv(str) { return str; }, mvShort(str) { return str; } };
   const upper = loadFunction(uiRender, '_recordBookUpper', { escHtml, getUpperUrl: () => '', _recordBookPeak: () => 0 });
   const name = loadFunction(uiRender, '_recordBookName', { Engine, G: {} });
   const displayOvr = loadFunction(uiRender, '_recordBookDisplayOvr', { Engine });

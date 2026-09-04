@@ -13897,7 +13897,7 @@ function _showChallengeRequestResultSequence(card, result, state, onClose) {
       <div class="crrm-row-vs">vs</div>
       <div class="crrm-row-side crrm-row-b"><span class="crrm-name">${escHtml(WM_I18N.pn(rightFighter.name))}${relText(rightFighter)}</span> ${mark(rightSide)}</div>
       <div class="crrm-row-mq">${WM_I18N.t('評価 {n}', { n: Math.round(match.mq || 0) })}</div>
-      <div class="crrm-row-fin">${match.finMove ? escHtml(match.finMove) : ''}</div>
+      <div class="crrm-row-fin">${match.finMove ? escHtml(WM_I18N.mv(match.finMove)) : ''}</div>
     </div>`;
   }).join('');
 
@@ -14043,7 +14043,7 @@ function showChallengeRequestResultModal(card, result, state, onClose) {
     const winLabelA = winSide === 'A' ? '<span class="crrm-win">○</span>' : (winSide === 'B' ? '<span class="crrm-loss">×</span>' : '');
     const winLabelB = winSide === 'B' ? '<span class="crrm-win">○</span>' : (winSide === 'A' ? '<span class="crrm-loss">×</span>' : '');
     const numLabel = [WM_I18N.t('第1試合'), WM_I18N.t('第2試合'), WM_I18N.t('第3試合')][i] || WM_I18N.t('第{n}試合', { n: i + 1 });
-    const finLabel = m.finMove ? `<span class="crrm-fin">${m.finMove}</span>` : '';
+    const finLabel = m.finMove ? `<span class="crrm-fin">${WM_I18N.mv(m.finMove)}</span>` : '';
     // inverse: 行表示も player を左に揃える（fighterB が player 側）
     const leftFighter = isInverse ? m.fighterB : m.fighterA;
     const rightFighter = isInverse ? m.fighterA : m.fighterB;
@@ -14872,7 +14872,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
   const ovrA = Math.round(Engine.util.ov(fA)), ovrB = Math.round(Engine.util.ov(fB));
   const finText = (typeof Engine.formatFinish === 'function')
     ? Engine.formatFinish(matchResult.finType, matchResult.finMove, undefined, WM_I18N.t)
-    : `${matchResult.finMove || ''} → ${matchResult.finType || ''}`;
+    : `${WM_I18N.mv(matchResult.finMove || '')} → ${matchResult.finType || ''}`;
 
   // 影響はキャラクターの台詞ではないため、吹き出しに入れずA型の結果欄へ置く。
   const impactRows = (applyResult.impactSummary || []).map(item => {

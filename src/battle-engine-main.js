@@ -303,11 +303,26 @@ const MOVE_PRESENTATION = {
   rollup:     { label: WM_I18N.t('丸め込み'), guide: '一瞬の体勢変化を使って肩を押さえ、3カウントを狙う。' },
 };
 
+// **日本語名を返す**関数。効果音判定(battle-sfx.js guessCategory)と _movePresentation の
+// 解説文選択がこの戻り値を正規表現で見ているので、ここで英訳してはいけない
+// (docs/en-move-names-draft-v0.1.md §7-2)。英語化は表示の直前だけ — 下の _mvDisp() を使う。
 function _actionMoveName(action){
   if (!action) return '---';
   return action.kind === 'counter'
     ? (action.counterMove || action.move || '---')
     : (action.move || '---');
+}
+
+// i18n Stage B P7-5: 技名の**表示専用**変換。観戦画面の技名枠(.move-value 内寸約212px=
+// EN約27字)・攻撃矢印のラベル・ビッグムーブ演出はいずれも最狭クラスなので、短縮形が
+// 用意されている19件はそちらを使う(mvShortは未登録ならフルEN名→原文へfail-open)。
+function _mvDisp(name){
+  return (typeof WM_I18N !== 'undefined' && WM_I18N.mvShort) ? WM_I18N.mvShort(name) : name;
+}
+
+// 折り返しの効く地の文(実況ナレーション・決着ラベル)向けはフルEN名。
+function _mvFull(name){
+  return (typeof WM_I18N !== 'undefined' && WM_I18N.mv) ? WM_I18N.mv(name) : name;
 }
 
 function _movePresentation(action){
@@ -619,7 +634,7 @@ function _centerHtml(fr){
   const meta = _movePresentation(action);
   return `<div class="center-panel wm-move-detail" id="centerPanel">
     <div class="move-label" id="moveCatLabel">${escHtml(meta.label)}</div>
-    <div class="move-value" id="moveV">${escHtml(_actionMoveName(action))}</div>
+    <div class="move-value" id="moveV">${escHtml(_mvDisp(_actionMoveName(action)))}</div>
     <div class="wm-move-guide" id="moveGuide">${escHtml(meta.guide)}</div>
     <div class="wm-move-result" id="moveResult">${escHtml(_moveResultText(action))}</div>
   </div>`;
@@ -924,11 +939,12 @@ function _spawnAttackArrow(action){
   if (action.kind === 'counter') {
     const origDir = action.atkSide === 'left' ? 'rtl' : 'ltr';
     const retDir  = origDir === 'ltr' ? 'rtl' : 'ltr';
-    _renderArrow(layer, origDir, action.move || '攻撃', false, false);
-    setTimeout(() => _renderArrow(layer, retDir, 'カウンター！ ' + (action.counterMove || action.move || ''), true, false), 1000);
+    // P7-5: 矢印ラベルの技名だけ表示用に英語化する(接頭の地の文は別バッチの担当)
+    _renderArrow(layer, origDir, _mvDisp(action.move) || '攻撃', false, false);
+    setTimeout(() => _renderArrow(layer, retDir, 'カウンター！ ' + (_mvDisp(action.counterMove || action.move) || ''), true, false), 1000);
   } else {
     const dir = action.atkSide === 'left' ? 'ltr' : 'rtl';
-    _renderArrow(layer, dir, action.move || '攻撃', false, isMiss);
+    _renderArrow(layer, dir, _mvDisp(action.move) || '攻撃', false, isMiss);
   }
 }
 
@@ -989,7 +1005,8 @@ function _showDmgPop(side, val, isCrit, isCounter){
 function _showBigMoveSplash(moveName){
   const el = document.getElementById('bigmoveName');
   if (!el) return;
-  el.textContent = '— ' + moveName + ' —';
+  // P7-5: Bebas Neue 56px の1行枠(モバイルは36px/max-width 92vw)。短縮形を優先する
+  el.textContent = '— ' + _mvDisp(moveName) + ' —';
   el.className = 'bigmove-name show';
   setTimeout(() => el.classList.add('fade'), 1200);
   setTimeout(() => { el.className = 'bigmove-name'; el.textContent = ''; }, 1600);
@@ -1253,7 +1270,7 @@ function _buildPinCtrl(fr){
     const atkSide = fr.action ? fr.action.atkSide : 'left';
     const atkChar = atkSide === 'left' ? S.L : S.R;
     const defChar = atkSide === 'left' ? S.R : S.L;
-    const moveName = fr.action ? (fr.action.move || '') : '';
+    const moveName = fr.action ? _mvFull(fr.action.move || '') : '';
     if (atkChar && defChar) seq.push({ kind: 'introBig', text: `${WM_I18N.pn(atkChar.name)}が${WM_I18N.pn(defChar.name)}に${moveName}をがっちりロック！`, dramatic: true });
     const isWin = fr.winner != null;
     if (isWin) {
@@ -1598,8 +1615,11 @@ const _LOCAL_FINISH_TEXT = {
 function _localFormatFinish(finType, finMove){
   if (!finMove) return finType || '激闘決着';
   const tmpl = _LOCAL_FINISH_TEXT[finType];
-  if (tmpl) return tmpl.replace('{move}', finMove);
-  return `${finMove} (${finType || '決着'})`;
+  // P7-5: テンプレ本体はJAのまま(観戦iframeはlang-en-templates.jsを読まないので、
+  // ここでt()に通すと必ずfail-openして[i18n-miss]を出す)。技名だけ名前辞書経由で英語化する。
+  const mvName = _mvFull(finMove);
+  if (tmpl) return tmpl.replace('{move}', mvName);
+  return `${mvName} (${finType || '決着'})`;
 }
 
 // ─── 試合終了 → 親フレームへ結果通知 ────────────────────────────────────
@@ -1708,25 +1728,25 @@ function _narrateFrame(fr){
 
   const atk = action.atkSide === 'left' ? S.L : S.R;
   const def = action.atkSide === 'left' ? S.R : S.L;
-  if (!atk || !def) return { text: action.move || '', dramatic: false };
+  if (!atk || !def) return { text: _mvFull(action.move) || '', dramatic: false };
 
   if (action.kind === 'miss') {
     return {
-      text: `${WM_I18N.pn(atk.name)}の${action.move || ''}は空を切る！ ${WM_I18N.pn(def.name)}が間合いを外した。`,
+      text: `${WM_I18N.pn(atk.name)}の${_mvFull(action.move) || ''}は空を切る！ ${WM_I18N.pn(def.name)}が間合いを外した。`,
       dramatic: false,
     };
   }
   if (action.kind === 'counter') {
     return {
-      text: `${WM_I18N.pn(atk.name)}が待っていた！ ${WM_I18N.pn(def.name)}の攻めを読み、${action.counterMove || action.move || ''}で切り返す！`,
+      text: `${WM_I18N.pn(atk.name)}が待っていた！ ${WM_I18N.pn(def.name)}の攻めを読み、${_mvFull(action.counterMove || action.move) || ''}で切り返す！`,
       dramatic: true,
     };
   }
 
   return {
     text: action.isCrit
-      ? `${WM_I18N.pn(atk.name)}の${action.move || ''}が深く入った！ ${WM_I18N.pn(def.name)}を大きく揺らす！`
-      : `${WM_I18N.pn(atk.name)}が${action.move || ''}！ ${WM_I18N.pn(def.name)}の体勢を崩していく。`,
+      ? `${WM_I18N.pn(atk.name)}の${_mvFull(action.move) || ''}が深く入った！ ${WM_I18N.pn(def.name)}を大きく揺らす！`
+      : `${WM_I18N.pn(atk.name)}が${_mvFull(action.move) || ''}！ ${WM_I18N.pn(def.name)}の体勢を崩していく。`,
     dramatic: !!action.isCrit,
   };
 }
@@ -1735,7 +1755,7 @@ function _updateMoveDetail(fr){
   const action = fr && fr.action;
   const meta = _movePresentation(action);
   const move = document.getElementById('moveV');
-  if (move){ move.textContent = _actionMoveName(action); move.classList.remove('move-pop'); void move.offsetWidth; move.classList.add('move-pop'); }
+  if (move){ move.textContent = _mvDisp(_actionMoveName(action)); move.classList.remove('move-pop'); void move.offsetWidth; move.classList.add('move-pop'); }
   const category = document.getElementById('moveCatLabel');
   if (category) category.textContent = meta.label;
   const guide = document.getElementById('moveGuide');

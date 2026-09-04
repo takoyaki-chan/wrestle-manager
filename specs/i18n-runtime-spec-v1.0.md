@@ -533,6 +533,51 @@ P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARG
 2. **EN走破の `screen-log` のJA露出48件は、ほぼ全部がこのgameLogレガシー文字列族**。§13-2の完了指標
    「各画面1桁」を screen-log に適用するには gameLog の `{type,data}` 全面移行が前提になる
 
+## 20. Stage B P7-1 — データ表の値層「C. ラベル・短い定義の表」を`DATA_TABLES`モードで台帳化・配線・英訳(2026-09-04追加)
+
+設計はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」13表と、P6-13が積み残した4件(秋対抗戦の団体名ロングテール/fanExpect理由テンプレ/特性バッジ/招聘市場パネルのラベル)を解決した。
+
+### 20-1. `test/i18n-extract-ui.js` に `DATA_TABLES` モードを新設
+
+既存の`test/i18n-extract-templates.js`の汎用再帰ウォーカー(`walkStrings`、値を無差別に拾う)とは別に、**表ごとに専用の抽出器を書く**方式にした。理由: このC分類の表は「オブジェクトのキー自体がラベル」(`TRAIT_DEFS`/`COACH_ABILITY_CATALOG`)・「特定フィールドだけが訳出対象で他は英語enum/数値」(`MILESTONE_EVENTS`/`GLIMPSE_A_THRESHOLDS`/`DECISION_DOCS`)・「値がそのまま訳出対象」(`PROMO_EVENT_NAMES`/`COACHING_TYPE_LABELS`/`COACH_STYLE_MAP`/`STAT_TIPS`/`QUARTER_LABELS`)の3系統が混在し、汎用ウォーカーでは`color`(hex)・`grade`(単一英字)・`cat`(enum)等の非翻訳フィールドまで拾って台帳を汚してしまうため。
+
+- `DATA_TABLES`配列の各エントリは`{ name, extract(table, onEntry) }`。`onEntry(text, tablePath)`で`source:'TABLE.path'`(例: `TRAIT_DEFS.華.desc`、キー自体を拾うときは`TRAIT_DEFS.華.$key`)付きの行を記録する
+- 表アクセスは`require()`ではなく`test/helpers/load-game.js`の`loadAsGlobal('data.js')`(vm経由)。`DECISION_DOCS`/`COACHING_TYPE_LABELS`はdata.jsの`module.exports`に載っていない(exportされているのはゲーム内で他ファイルから直接参照される表のみ)ため、requireでは見えない
+- 保全マージ(既存en非破壊)は既存のロジックをそのまま使う。**`SPECIAL_EVENT_INTRO`/`DECISION_DOCS`はP6-13が「走査対象外につき手追加」の`kept:true`で登録していたが、DATA_TABLESが両表を対象に加えたことで次回抽出時に自動的に`kept`が外れ`source`が付く**(設計§1-Cの「kept扱いではなく走査対象として再現可能に」を達成)。この移行時、両表に付いていた「走査対象外につき手追加」のnoteは事実と異なるため、`source`が付いた行に限り引き継がない機械判定を追加した
+
+### 20-2. 対象13表・訳出内訳
+
+| 表 | 行数 | 内訳 |
+|---|---:|---|
+| `TRAIT_DEFS` | 50 | キー25(既存の`en:`フィールドをそのまま採用) + desc25(新規) |
+| `MILESTONE_EVENTS` | 51 | title/titleMain/titleSub/narration(文字列 or 配列)/continueLabel/choices[].{label,result,effectLabel} |
+| `COACH_ABILITY_CATALOG` | 26 | キー13(新規) + desc13(新規) |
+| `SPECIAL_EVENT_INTRO` | 15 | title/travelLine/nextLabel(P6-13で訳出済み・今回は走査対象への昇格のみ) |
+| `DECISION_DOCS` | 75 | label/categoryLabel/costLabel/body/detailText/effectSummary/recommendation(P6-13で大半訳出済み。今回`relationship_repair.recommendation`と`encourage.effectSummary`の全角括弧版2件が新規) |
+| `PROMO_EVENT_NAMES` | 12 | low/mid/highの3プール×4件 |
+| `GLIMPSE_A_THRESHOLDS` | 11 | `.label`のみ |
+| `COACHING_TYPE_LABELS` | 5 | 全件新規(非export) |
+| `COACH_STYLE_MAP` | 6 | 5件は既存訳(選手スタイル表示と共用)、`ブローラー`のみ新規 |
+| `STAT_TIPS` | 5 | 全件新規 |
+| `QUARTER_LABELS` | 4 | 全件新規 |
+| `SCANDAL_CONFIG.messages` | 3 | 全件新規(§15-4参照。実消費点は現状gameLog専用) |
+| `LOSING_STREAK_PENALTIES.msg` | 3 | 全件新規(同上) |
+
+新規訳出170行(台帳の新規キー174件のうち4件はP7-1と無関係の既存drift)。加えて配線中に発見した「表に無いがdata.js外(management.js/app.js/ui-common.js)の関数内リテラル」8+1+6=15件を`kept:true`で手追加(§15-3)。
+
+### 20-3. DATA_TABLESの走査対象外だが配線した3件
+
+1. **`Engine.fanExpect.generate(state, dict)`(management.js)** — ファン期待カード理由文。旧実装は`` `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声` ``のようにJS template literalで選手名を先に埋め込んでいたため、辞書キー(埋め込み前の原文)と一致せず翻訳不能だった(P6-13 §8で「単純なdict-opts化では済まない」と指摘)。`addCandidate(f1, f2, tpl, priority)`のシグネチャを`reason`(完成文)から`tpl`(`{left}`/`{right}`プレースホルダ入りテンプレ)へ変更し、freshness降格時の`.replace('期待の声', ...)`もテンプレ段階(埋め込み前)で行うよう移した。表示点(`ui-render.js`)は`Engine.fanExpect.generate(G, WM_I18N.t)`とdictを渡す。テンプレ7本+freshness降格の差し替え変種1本、計8件を`i18n/ui-ledger.json`へ手追加
+2. **`app.js` の`first_rivalry`マイルストーンの動的ナレーション** — `MILESTONE_EVENTS`表の`narration`はbase値が`null`(選手名を後から埋め込むため)。旧実装は選手名埋め込み後の完成文をそのまま`narration`へ入れていたため、`showMilestoneEvent`(ui-common.js)が単純に`WM_I18N.t(evt.narration)`しても翻訳できなかった。`narration`をPH入りの原文のまま保ち、埋め込み値を新設`narrationVars`フィールドへ分離、`showMilestoneEvent`側で`WM_I18N.t(evt.narration, evt.narrationVars)`(訳してから埋める)を行うよう修正。1件を手追加
+3. **秋対抗戦(Autumn War、`ui-common.js`)の団体名ロングテール(P6-13 §8の積み残し)** — `_agwTeam(id)?.orgName || ''`型の未`pn()`箇所を全数(約18箇所)`WM_I18N.pn()`配線。共有ヘルパー`_chTeamlineHtml`/`_chOrgBadgeHtml`/`_chOrgEmblemInner`/`_chSubCardHtml`(春季タッグ/JT等でも使われる団体名表示部品)は関数内で`pn()`を1回適用する形にして呼び出し側の重複配線を避けた。同じ画面で見つかった副次的な未配線(`_agwTeamViewState`の状態ラベル`敗退/決勝進出/出番待ち/優勝/対戦中`、`_agwRoleLabel`の役割ラベル`先鋒/中堅/大将/代表`)も合わせて配線・6件を手追加
+
+### 20-4. 発見: gameLogレガシー文字列専用の表は配線不要(§2-4の適用確認)
+
+`SCANDAL_CONFIG.messages`(スキャンダル発生時の見出し)と`LOSING_STREAK_PENALTIES.msg`(連敗ペナルティ通知)は、消費点`Engine.popularity.checkScandal`/`checkLosingStreak`の戻り値`.msg`を全呼び出し元で追跡した結果、**唯一の表示経路が`events.push(...)`→`tickWeek`の戻り値`events`→`G.gameLog`への直接concat**(§2規約4「旧文字列エントリは無変換で共存」)であることを確認した。実際にプレイヤーへ通知される内容(`app.js`の`showNotifEventToast`)は`scandal.msg`を使わず別の固定テンプレ(`📰 {name}のスキャンダルが週刊誌に掲載された！`、既訳済み)を組み立てており、`scandal.msg`自体はgameLog行にしか現れない。したがって**この2表はDATA_TABLESで台帳化・英訳したが、コード側の配線(t()呼び出し)は行っていない**(spec §2-4の仕様どおり、gameLogは意図的にJA固定)。将来gameLogが`{type,data}`形式へ移行する際に訳文を再利用できるよう、台帳には残す。
+
+### 20-5. 検証
+
+`node --check`全触りファイルOK。`node test/ja-golden.js`**完全一致**(hash `6b3d05c8…`、全編集を通じて不変)。`node test/i18n-build-dict.js`台帳4,022キー・未訳4件(すべてP7-1と無関係の既存drift、ui-common.js内のセリフ的文字列でsourceタグなし)。`npm test` **260/260 green**(`stat-notation-backport-test.js`が抽出評価するvmサンドボックスに`WM_I18N`スタブが無く1件red化→スタブ追加で解消、既存47ファイルへの機械追加と同型の対応)。`node test/auto-sim.js 20 42` **ALL CLEAR**、semantic fingerprint `37bbd0cd`(P6-7/8/10/13と同一)。`npm run test:ui:walkthrough` **PASS**、ja digest **`1052faa82eaf7991`不変**。`npm run test:ui:walkthrough:en` **PASS**、i18n-miss **7件で不変**(全てNOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS由来、P7-3の担当領域で本バッチでは意図的に不触)。JA exposure合計は**186→166**(−11%)。`node test/i18n-ratchet.js`増加なし(28,089不変)。
 ## 21. Stage B P6-17 — 年代記の章タイトル/副題/締め/ハイライトと週次ストーリー直書き6本(2026-09-04追加)
 
 §15-6 が起票した4件(発見3・4)と §19-4 の1件を解決した。訳出**103キー**(template-ledger 2,571→**2,672**・未訳0 / ui-ledger 4,028→**4,027**・未訳0)。
@@ -590,106 +635,6 @@ P6-13が `pickText()` のPH先埋め(§9-10-1型)を直した結果、NOTIF/LARG
 1. **序章(`Engine.prologue`)のハイライト・記者の見立て・章末が生JAのまま**。`ui-render.js` の序章描画は `h.text` を直参照し、「この章の主役が誰になるかは、まだ確定していない。…」「この世代の物語は、まだ始まったばかりだ。」がt()を通っていない。`Engine.chronicle` とは別レイヤー(`G.prologue`)で、ハイライトの生成側(`Engine.prologue`)も同型のテンプレ化が要る
 2. **年代記のエース/同期カードに単位語の生JAが残る**(`${a.seasons}<span class="small">期</span>` / `${a.titleReigns}<span class="small">戴冠</span>` / peer行の `${p.titleReigns}度戴冠`)。数値+単位語は §4 の「Stage Bで複数形込みで設計する」族
 3. **`Engine.chronicle._getSurname` の `名無し` フォールバック**(§15-6-5)は引き続きdict化していない(実質到達不能)
-## 20. Stage B P7-1 — データ表の値層「C. ラベル・短い定義の表」を`DATA_TABLES`モードで台帳化・配線・英訳(2026-09-04追加)
-
-設計はdocs/i18n-stage-b-p7-design-v0.1.md §1-C。§13-2 Bの54表のうち、地の文プール(P7-2/P7-3)・プロフィール文(P7-4)・技名(P7-5)を除いた「ラベル・短い定義の表」13表と、P6-13が積み残した4件(秋対抗戦の団体名ロングテール/fanExpect理由テンプレ/特性バッジ/招聘市場パネルのラベル)を解決した。
-
-### 20-1. `test/i18n-extract-ui.js` に `DATA_TABLES` モードを新設
-
-既存の`test/i18n-extract-templates.js`の汎用再帰ウォーカー(`walkStrings`、値を無差別に拾う)とは別に、**表ごとに専用の抽出器を書く**方式にした。理由: このC分類の表は「オブジェクトのキー自体がラベル」(`TRAIT_DEFS`/`COACH_ABILITY_CATALOG`)・「特定フィールドだけが訳出対象で他は英語enum/数値」(`MILESTONE_EVENTS`/`GLIMPSE_A_THRESHOLDS`/`DECISION_DOCS`)・「値がそのまま訳出対象」(`PROMO_EVENT_NAMES`/`COACHING_TYPE_LABELS`/`COACH_STYLE_MAP`/`STAT_TIPS`/`QUARTER_LABELS`)の3系統が混在し、汎用ウォーカーでは`color`(hex)・`grade`(単一英字)・`cat`(enum)等の非翻訳フィールドまで拾って台帳を汚してしまうため。
-
-- `DATA_TABLES`配列の各エントリは`{ name, extract(table, onEntry) }`。`onEntry(text, tablePath)`で`source:'TABLE.path'`(例: `TRAIT_DEFS.華.desc`、キー自体を拾うときは`TRAIT_DEFS.華.$key`)付きの行を記録する
-- 表アクセスは`require()`ではなく`test/helpers/load-game.js`の`loadAsGlobal('data.js')`(vm経由)。`DECISION_DOCS`/`COACHING_TYPE_LABELS`はdata.jsの`module.exports`に載っていない(exportされているのはゲーム内で他ファイルから直接参照される表のみ)ため、requireでは見えない
-- 保全マージ(既存en非破壊)は既存のロジックをそのまま使う。**`SPECIAL_EVENT_INTRO`/`DECISION_DOCS`はP6-13が「走査対象外につき手追加」の`kept:true`で登録していたが、DATA_TABLESが両表を対象に加えたことで次回抽出時に自動的に`kept`が外れ`source`が付く**(設計§1-Cの「kept扱いではなく走査対象として再現可能に」を達成)。この移行時、両表に付いていた「走査対象外につき手追加」のnoteは事実と異なるため、`source`が付いた行に限り引き継がない機械判定を追加した
-
-### 20-2. 対象13表・訳出内訳
-
-| 表 | 行数 | 内訳 |
-|---|---:|---|
-| `TRAIT_DEFS` | 50 | キー25(既存の`en:`フィールドをそのまま採用) + desc25(新規) |
-| `MILESTONE_EVENTS` | 51 | title/titleMain/titleSub/narration(文字列 or 配列)/continueLabel/choices[].{label,result,effectLabel} |
-| `COACH_ABILITY_CATALOG` | 26 | キー13(新規) + desc13(新規) |
-| `SPECIAL_EVENT_INTRO` | 15 | title/travelLine/nextLabel(P6-13で訳出済み・今回は走査対象への昇格のみ) |
-| `DECISION_DOCS` | 75 | label/categoryLabel/costLabel/body/detailText/effectSummary/recommendation(P6-13で大半訳出済み。今回`relationship_repair.recommendation`と`encourage.effectSummary`の全角括弧版2件が新規) |
-| `PROMO_EVENT_NAMES` | 12 | low/mid/highの3プール×4件 |
-| `GLIMPSE_A_THRESHOLDS` | 11 | `.label`のみ |
-| `COACHING_TYPE_LABELS` | 5 | 全件新規(非export) |
-| `COACH_STYLE_MAP` | 6 | 5件は既存訳(選手スタイル表示と共用)、`ブローラー`のみ新規 |
-| `STAT_TIPS` | 5 | 全件新規 |
-| `QUARTER_LABELS` | 4 | 全件新規 |
-| `SCANDAL_CONFIG.messages` | 3 | 全件新規(§15-4参照。実消費点は現状gameLog専用) |
-| `LOSING_STREAK_PENALTIES.msg` | 3 | 全件新規(同上) |
-
-新規訳出170行(台帳の新規キー174件のうち4件はP7-1と無関係の既存drift)。加えて配線中に発見した「表に無いがdata.js外(management.js/app.js/ui-common.js)の関数内リテラル」8+1+6=15件を`kept:true`で手追加(§15-3)。
-
-### 20-3. DATA_TABLESの走査対象外だが配線した3件
-
-1. **`Engine.fanExpect.generate(state, dict)`(management.js)** — ファン期待カード理由文。旧実装は`` `🤝 ${f1.name} vs ${f2.name}の名勝負再現に期待の声` ``のようにJS template literalで選手名を先に埋め込んでいたため、辞書キー(埋め込み前の原文)と一致せず翻訳不能だった(P6-13 §8で「単純なdict-opts化では済まない」と指摘)。`addCandidate(f1, f2, tpl, priority)`のシグネチャを`reason`(完成文)から`tpl`(`{left}`/`{right}`プレースホルダ入りテンプレ)へ変更し、freshness降格時の`.replace('期待の声', ...)`もテンプレ段階(埋め込み前)で行うよう移した。表示点(`ui-render.js`)は`Engine.fanExpect.generate(G, WM_I18N.t)`とdictを渡す。テンプレ7本+freshness降格の差し替え変種1本、計8件を`i18n/ui-ledger.json`へ手追加
-2. **`app.js` の`first_rivalry`マイルストーンの動的ナレーション** — `MILESTONE_EVENTS`表の`narration`はbase値が`null`(選手名を後から埋め込むため)。旧実装は選手名埋め込み後の完成文をそのまま`narration`へ入れていたため、`showMilestoneEvent`(ui-common.js)が単純に`WM_I18N.t(evt.narration)`しても翻訳できなかった。`narration`をPH入りの原文のまま保ち、埋め込み値を新設`narrationVars`フィールドへ分離、`showMilestoneEvent`側で`WM_I18N.t(evt.narration, evt.narrationVars)`(訳してから埋める)を行うよう修正。1件を手追加
-3. **秋対抗戦(Autumn War、`ui-common.js`)の団体名ロングテール(P6-13 §8の積み残し)** — `_agwTeam(id)?.orgName || ''`型の未`pn()`箇所を全数(約18箇所)`WM_I18N.pn()`配線。共有ヘルパー`_chTeamlineHtml`/`_chOrgBadgeHtml`/`_chOrgEmblemInner`/`_chSubCardHtml`(春季タッグ/JT等でも使われる団体名表示部品)は関数内で`pn()`を1回適用する形にして呼び出し側の重複配線を避けた。同じ画面で見つかった副次的な未配線(`_agwTeamViewState`の状態ラベル`敗退/決勝進出/出番待ち/優勝/対戦中`、`_agwRoleLabel`の役割ラベル`先鋒/中堅/大将/代表`)も合わせて配線・6件を手追加
-
-### 20-4. 発見: gameLogレガシー文字列専用の表は配線不要(§2-4の適用確認)
-
-`SCANDAL_CONFIG.messages`(スキャンダル発生時の見出し)と`LOSING_STREAK_PENALTIES.msg`(連敗ペナルティ通知)は、消費点`Engine.popularity.checkScandal`/`checkLosingStreak`の戻り値`.msg`を全呼び出し元で追跡した結果、**唯一の表示経路が`events.push(...)`→`tickWeek`の戻り値`events`→`G.gameLog`への直接concat**(§2規約4「旧文字列エントリは無変換で共存」)であることを確認した。実際にプレイヤーへ通知される内容(`app.js`の`showNotifEventToast`)は`scandal.msg`を使わず別の固定テンプレ(`📰 {name}のスキャンダルが週刊誌に掲載された！`、既訳済み)を組み立てており、`scandal.msg`自体はgameLog行にしか現れない。したがって**この2表はDATA_TABLESで台帳化・英訳したが、コード側の配線(t()呼び出し)は行っていない**(spec §2-4の仕様どおり、gameLogは意図的にJA固定)。将来gameLogが`{type,data}`形式へ移行する際に訳文を再利用できるよう、台帳には残す。
-
-### 20-5. 検証
-
-`node --check`全触りファイルOK。`node test/ja-golden.js`**完全一致**(hash `6b3d05c8…`、全編集を通じて不変)。`node test/i18n-build-dict.js`台帳4,022キー・未訳4件(すべてP7-1と無関係の既存drift、ui-common.js内のセリフ的文字列でsourceタグなし)。`npm test` **260/260 green**(`stat-notation-backport-test.js`が抽出評価するvmサンドボックスに`WM_I18N`スタブが無く1件red化→スタブ追加で解消、既存47ファイルへの機械追加と同型の対応)。`node test/auto-sim.js 20 42` **ALL CLEAR**、semantic fingerprint `37bbd0cd`(P6-7/8/10/13と同一)。`npm run test:ui:walkthrough` **PASS**、ja digest **`1052faa82eaf7991`不変**。`npm run test:ui:walkthrough:en` **PASS**、i18n-miss **7件で不変**(全てNOTIF_EVENT_TEXTS/LARGE_EVENT_TEXTS由来、P7-3の担当領域で本バッチでは意図的に不触)。JA exposure合計は**186→166**(−11%)。`node test/i18n-ratchet.js`増加なし(28,089不変)。
-## 21. Stage B P6-14 — 殿堂入り語り文のEN化+`*_TEMPLATES`全数突合+不定冠詞の機械検査(2026-09-04追加)
-
-### 21-1. 「連結後の完成文が永続する」族は**表示点で再生成する**
-
-異名(§12-2)は「永続値はJAのまま・表示点で辞書を1回引く」で足りたが、語り文は3文を連結し終えた完成文が保存されるため同じ手が使えない。P6-14で確立した型は次のとおりで、**同型(完成文がGへ焼かれる紙面/記録テキスト)には今後これを使う**。
-
-- **文プールは必ずトップレベルの`const`テーブルへ**。`HOF_BIOGRAPHY_TEMPLATES`(data.js)。関数本体に直書きされた配列は§10-2のとおりどの抽出器からも見えない
-- **配列の並び順・要素数は変更不可**。`pick()`が`(entry.id * 31 + seasons) % arr.length`で添字を引くため、並びが変わると**保存済みの語り文と一致しなくなり、表示時再生成がフォールバックへ落ちる**
-- **`generateBiography(entry, dict)`**。各文を**PH置換前に**`_wmFillWithDict(dict, tpl, vars)`(§12-3)へ通してから連結する
-- **連結様式そのものをテンプレにする**: `join: '{intro}{core}{closing}'` → EN `'{intro} {core} {closing}'`。JAは区切り無しで直結、ENは文間に半角スペースが要る。3文の直積(6×19×3系統)を1本の完全文テンプレへ畳むことはできないため、**様式を1キーにするのが構造規約3(断片連結禁止)を満たす唯一の形**
-- **保存するのは常にdict無し(JA)の戻り値**。`_buildHofEntry`はdictを渡さない(D-P6-4)
-- **表示点(`ui-render.js: showHofDetail`。grepで消費点は1箇所のみ)は自己検証型のfail-open**:
-  1. dict無し(JA)で再生成する
-  2. 保存値と**1バイト一致**するか確かめる(=素材が揃っていて、テンプレも保存当時と同一である証拠)
-  3. 一致したときだけ`WM_I18N.t`+**英訳済みの異名**(`_epithetLabel()`の戻り値でentryを浅くコピーして差し替える)で作り直した文を出す
-  4. 一致しない(旧セーブで素材が欠けている/テンプレが変わった)なら**保存値を優先**する
-  - JAモードでは3の結果が1と同一(t()はja素通し+PH置換のみ、`_epithetLabel`もja素通し)なので**日本語版の表示は1バイト不変**
-  - **同一性チェックは異名を差し替える前の生JAで行う**。差し替え後で比較するとENモードでは必ず不一致になり、常に保存値フォールバックへ落ちてしまう
-- **JA同一性の証明の作法**: ①着手前の実装を凍結コピーとして切り出し、全分岐を代表値・境界値の直積で回して新旧突合(P6-14では606,256通り・不一致0) ②`auto-sim`に`_buildHofEntry`のフックを挿して**実際に生成された殿堂エントリ**を収集し、本物の`src/i18n.js`+生成済み辞書で表示点の手順を再現(P6-14では38件・JA再生成==保存値 38/38、EN日本語残り0・i18n-miss 0)
-
-### 21-2. `*_TEMPLATES`全数突合の結果(§12-5-2の宿題)
-
-data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`を全件列挙して実値を評価**し、3台帳の収録キー+固有名詞辞書(`src/lang-en-names.js`)と突き合わせた。
-
-**A. 「兄弟表は対象なのに本表だけ漏れている」型 — 4件(✅**P6-15で全件解決**、2026-09-04。詳細は§14)**
-
-| 表 | 未収録行数 | 消費点 | 状態 |
-|---|---|---|---|
-| `UNIFIED_TITLE_TEMPLATES` | 96 | `Engine.newspaper.composeUnifiedTitleArticle(type, data, seed, dict)` | ✅dict-opts化+`join`畳み込み(P6-15) |
-| `CHAMPION_CHANGE_TEMPLATES` | 26 | `Engine.newspaper.composeChampionChangeBody(ev, seed, dict)` | ✅dict-opts化+4スロット`champChangeJoin`(P6-15) |
-| `PPV_HYPE_TEMPLATES` | 10 | `Engine.ppv.buildHype(match)` → `match.hype`+`hypeTpl`+`hypeVars` | ✅追加フィールド方式(P6-15)。`Math.random()`は据え置き |
-| `DRAFT_PLAYER_RESULT_PARTS` | 14 | `Engine.newspaper.composeDraftPlayerResult(org, fighters, seed, dict)` | ✅dict-opts化+`join`/`nameList`畳み込み(P6-15) |
-
-**この4件は台帳へ載せるだけでは無意味**(消費点がdictを持たないので辞書を引く機会が無い)。必要だったのは①composerのdict-opts化 ②断片連結の`join`テンプレ化(§13-1と同型) ③146行の英訳、の3点セットで、P6-15がこれを実施した。
-
-**B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行(→ P7-2で7表367行、P7-4で3表250行を解決、残**34表・約816行**)**
-
-Engine/UIが直に読む地の文・ラベルのプール。大物は~~`SNAPSHOT_TEXTS` 276~~(**✅P7-2**) / ~~`CHAR_PROFILES` 127~~(**✅P7-4**。dialogue-tone-spec §5でP5末尾送りと明示済みだった) / ~~`ALL_COACHES`のflavor 125~~(**✅P7-4で112行**。残13＝特殊能力名は`COACH_ABILITY_CATALOG`と同一文字列でP7-1側) / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / ~~`ATMOSPHERE_TEXTS` 33~~(**✅P7-2**) / ~~`COACH_FLAVOR_DEFS` 11~~(**✅P7-4**)、以下中小の表が続く。
-
-**✅P7-2(2026-09-04)で解決した7表**: `SNAPSHOT_TEXTS` 282 / `ATMOSPHERE_TEXTS` 33 / `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `CAMP_FLAVOR_TEXTS` 12 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8(詳細は§15)。
-
-**✅P7-4(2026-09-04)で解決した3表**: `CHAR_PROFILES` 127 / `ALL_COACHES`の`desc`+`profile`+`origin`+`gender`+`flavor` 112 / `COACH_FLAVOR_DEFS` 11(＋連結様式1)(詳細は§16)。
-
-**⚠ `i18n-miss 0` は「英語化が終わった」の指標ではない。** missは「t()を通ったが辞書に無い」ときにしか出ないので、**そもそもt()を通っていないこの層は永久にmissへ出ない**。進捗はEN走破の「JA exposure by screen」(P6-14時点: screen-week=56 / screen-shachoshitsu=55 / screen-log=51 / screen-show=39 / screen-newspaper=33 …)と本突合表を併読して測る。
-
-### 21-3. プレースホルダ直前の不定冠詞の機械検査(黒田英文体 §3-4 規則25)
-
-`test/i18n-build-dict.js` / `i18n-build-template-dict.js` / `i18n-build-dialogue-dict.js` の3本が同一定義の
-`ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i` を持ち、違反があれば**exit 1・辞書を生成しない**。
-
-- `a {n}` は充填値が8/11/18のとき"an"が正しくなり、`a {name}` は名前の頭音で割れる
-- **ハイフン付きの限定用法(`a {n}-match history` = 規則24の逃がし方)は常に"a"で正しいので許可**する。`}`の直後がハイフンかどうかで機械的に区別する
-- 導入時点の既存違反は6件(ui 1 / template 5)。いずれも`{label} offer from {outlet}`(冠詞を落とす) / `a match rated {bestMQ}`(§1-7の固定対訳へ寄せる) / `{playerName}'s matches`(規則26の所有格へ逃がす)の形で書き直した
-
-
 ## 22. Stage B P7-4 — プロフィール文3表(§13-2 B の分類B)の配線(2026-09-04追加)
 
 §13-2 B の分類B「プロフィール文」3表(`CHAR_PROFILES` 127 / `ALL_COACHES` 112 / `COACH_FLAVOR_DEFS` 11)を台帳へ載せ、消費点を配線し、251キー(連結様式1件を含む)を英訳した。台帳はテンプレ層(§6)。
@@ -743,11 +688,142 @@ P6-10 の `extractArrayLiteralProp`(ソース文字列から `prop: [ … ]` を
 - 防御的フォールバックとして枝は残し、`desc` 35行も**台帳へ載せて訳した**。表の全行が台帳に載っている状態(§13-2 Bの完了指標)を優先する
 - ただし**「訳したのに出ない行」がある**ことは記録しておく。枝を消すか `desc` を短縮表示として実際に使うかはKeisuke裁定
 
-## 23. Stage B P7-7b — 新聞/ロスター画面のJA露出修正(2026-09-04追加)
+## 23. Stage B P7-5 — 技名242件の名前辞書化と表示時翻訳(2026-09-04追加)
+
+技名(`commonMoves` 76 / `styleMoves` 83 / `STYLE_TAG_MOVES` ユニーク82 / `getTagMove` の既定値1 = **242件**)を英語化した。表記の正は `docs/en-move-names-draft-v0.1.md`(2026-09-04 Keisuke裁定確定)。
+
+### 23-1. 技名は「名前辞書」の住人。ただし `pn()` とは別領域にする
+
+選手名・会場名と同じく **data由来の「値」** なのでキー一致の `t()` では訳せない(§19-3の会場名と同型)。台帳は `i18n/names-ledger.json` の **`moves` 節**(`[{ ja, en, short?, confirmed }]`)、生成器は既存の `test/i18n-build-names.js`、出力先も `src/lang-en-names.js`。
+
+**しかし `names`(pn/pnSurname)には混ぜない。** 技名の日本語文字列は英語化した後も
+
+| 用途 | 実装 |
+|---|---|
+| 効果音の種類選択 | `src/battle-sfx.js` `guessCategory(moveName)` の6正規表現 |
+| 技の解説文(guide)選択 | `battle-engine-main.js` / `tag-battle-main.js` の `_movePresentation` の7分岐 |
+| 同試合内の連続回避 | `data.js` `getTagMove(..., avoidMoveName)` の `m.n !== avoidMoveName` |
+| 威力・ティア逆引き | `match-engine.js` `B.findMoveByName(finMove)` |
+| セーブ値 | `result.finMove` → `sp.results[]` → `G`(§13-1「永続値は変えない」) |
+
+で**安定キーとして生き続ける**。人名(pn)の守備範囲と混ぜると「どこまで英語にしてよいか」の線が引けなくなるため、専用領域にした。
+
+- `addMoves(map)` / `addMoveShorts(map)`: 登録入口。`addNames`/`addSurnames` の直後に呼ばれる
+- `mv(str)`: 技名辞書に完全一致すればEN訳、無ければ原文(fail-open)。ja/pseudoは素通し
+- `mvShort(str)`: 狭い枠向け短縮形(19件)。未登録なら `mv(str)` へfail-openするので、呼び出し側は**枠の狭さだけを見て選べばよい**
+- **`t()` のパラメータ値自動変換(D-P6-2)は `names` → `moves` の順で引く**。これで `{move}` のようなPHは配線ゼロで英語化される
+
+### 23-2. `Engine.formatFinish` の `{move}` は「値をパラメータで渡す」だけで解ける
+
+P4-2でテンプレ側(`FINISH_TEXT`)だけ `dict` を通していたので、決着文の技名だけJAで残っていた(§13-2-2 と同じ「dict-optsはあるのに使い切れていない」型)。修正は1行:
+
+```js
+return prefix + String(T(tmpl, { move: finMove })).replace('{move}', finMove);
+```
+
+`dict` に `WM_I18N.t` が渡っていれば en ブランチの `convertNames` が技名辞書を引き当てる。**dict で先に訳そうとしないこと**(§19-3)。後段の `.replace()` は dict 省略時(恒等関数)や params 非対応の dict 向けのフォールバックで、これがあるので**JA出力は1バイト不変**(ja-golden hash `6b3d05c8…` 不変で実証)。先例は `management.js` の `_wmFillWithDict`(`dict(tpl, params)` → `fill` の二段構え)。
+
+これで `formatFinish` を呼ぶ29箇所(興行結果・PPV・派閥・ジュニアトーナメント・春タッグ・秋対抗戦・天頂戦・新聞の `finishLabel`)が**配線ゼロで**英語化された。
+
+### 23-3. 表示点は「判定に使う値」と「画面に出す値」を関数レベルで分ける
+
+観戦画面の `_actionMoveName(action)` は `_movePresentation` の正規表現入力でもあるので**戻り値をそのまま英訳できない**。両iframeに表示専用ヘルパー `_mvDisp()`(=`mvShort`)/`_mvFull()`(=`mv`)を置き、**描画の直前でだけ**通す形にした。
+
+| 枠 | ヘルパー | 理由 |
+|---|---|---|
+| 技名パネル(`#moveV`/`#moveName`)・攻撃矢印ラベル・ビッグムーブ演出 | `_mvDisp`(短縮形優先) | 最狭は `.move-value` 内寸 約212px ≒ **EN 27字**。27字超の6件+予防的13件に短縮形を用意した |
+| 実況ナレーション・ギブアップ導入文・決着ラベル・タッグ勝利オーバーレイ | `_mvFull`(フルEN名) | 折り返しが効く地の文 |
+
+`tag-battle-main.js` の技名パネルは **`WM_I18N.pn()` を呼んでいて訳が出ていなかった**(§13-2-6「pn()とt()の取り違え」の技名版。pn はfail-openなので**サイレントに素通しするだけ**で気づけない)。`mvShort()` へ差し替えた。
+
+### 23-4. 表の外に落ちていた技を表へ戻す
+
+`getTagMove` の関数本体に直書きされていた `{ n: '合体スラム', d: 16, c: 'throw' }` を `STYLE_TAG_MOVES['__default__']` へ移設した(§10-2「3パイプラインいずれからも見えないテーブル」と同型。キーはスタイル名の組 `[a,b].sort().join('+')` と衝突しない形)。**JAの挙動は不変**(唯一の呼び出し元が `.n/.d/.c` を読むだけで、返却オブジェクトを書き換えない)。
+
+`test/i18n-build-names.js` に技名の全数突合検査を足したので、以後 data.js 側で技を足す・改名するとビルドが落ちる:
+
+1. data.js の全技名(既定値を含む)が `moves` 節に存在し、逆に台帳にあって data.js に無い技も無い
+2. `moves` 節内で `ja` / `en` がそれぞれ一意(§5-D の英語衝突 — Diving Splash / Top-Rope Splash 等 — の再発防止)
+3. `moves` の `ja` が `names` 側と衝突しない(衝突すると `convertNames` が技名を人名として訳す)
+
+なお `data.js` の `module.exports` に `commonMoves` / `styleMoves` / `STYLE_TAG_MOVES` を追加した(この突合のためのnode側公開。ブラウザ側の参照経路は不変)。
+
+### 23-5. 検証: 「英語が判定層へ漏れていない」ことの機械証明
+
+`test/ui-walkthrough/spectator-move-i18n-check.js`(**手動実行**。`run-all` は `*-test.js` しか拾わないので自動実行には入らない)。実試合を1本シミュして観戦iframeへ `START_MATCH` を投げ、JA/EN 両方で走らせて突き合わせる。
+
+- **全フレームの `[_actionMoveName | _movePresentation().guide | guessCategory() | moveCat]` 列が JA と EN で完全一致**(single 23フレーム / tag 24フレーム)。DOMポーリングではなく全フレームを直接走査するのでアニメのタイミングに揺れない(最初はDOMポーリングで書いて、サンプリング位置のずれで3/201件が偽陽性になった)
+- `sfx.hit*` を包んだ**効果音呼び出し列も JA/EN 完全一致**
+- ENの技名パネル・ビッグムーブに日本語が1文字も無い / JA側は日本語のまま
+
+### 23-6. P7-5で新たに見つかった穴(未着手)
+
+1. **観戦iframeは `lang-en-templates.js` を読み込まない**。`{move} → 3カウント` の訳は template-ledger 側にしか無いため、`battle-engine-main.js` の `_localFormatFinish`(`FINISH_TEXT` のローカル複製)は**テンプレだけENにできない**。今回は技名だけ `mv()` で訳し、テンプレはJAのまま残した(`t()` に通すと必ず `[i18n-miss]` になる)。解くにはiframeへ `lang-en-templates.js` を足すか、当該5キーを ui-ledger へ移す
+2. **観戦画面の地の文が丸ごと未配線**。実況ナレーション5型・攻撃矢印の `'攻撃'`/`'カウンター！'`・ギブアップ導入文・`MOVE_PRESENTATION.guide` 13本(6カテゴリ+7上書き)・タッグ勝利オーバーレイの `finType`/`finishPhase` は `t()` を一度も通っていない。技名だけENの混成文になっている
+3. **試合ログ行は表示とセーブを兼ねている**。`match-engine.js` が `${mv.n}` を埋めて組む19本のログ文は観戦画面のログパネルに出ると同時に `result.log` として `G` へ永続する。生成時に訳すとセーブが汚れるので、`{type,data}` 化(§2-4)が前提
+4. **`management.js:31053` / `32263` の `else` 分岐が生の `finMove` を出す**。ただし条件が `Engine.formatFinish &&` なので `formatFinish` が存在する限り到達しない死コード(§13-2-1型)
+5. **`tag-battle-lines.js` の `_tplTagLine` は `dict(str)` だけでPHの値を素通しする**。`{move}` は呼び出し側(`tag-battle-main.js`)で先に `mv()` を掛けて回避したが、同関数の `{winner}`/`{partner}` は依然として生JA名(P7-7b/P6-3ロングテールの領分)
+6. **選手ごとの「得意技」UIは存在しない**。P7設計が挙げていた表示点だが、`.moves` のような選手所有の技リストはコード上に無く(技はスタイルから毎試合抽選される)、`得意技` は紹介文の地の文にしか出ない。記録タブ・ランキング・年代記ハイライトにも決着技は出ない
+## 24. Stage B P6-14 — 殿堂入り語り文のEN化+`*_TEMPLATES`全数突合+不定冠詞の機械検査(2026-09-04追加)
+
+### 24-1. 「連結後の完成文が永続する」族は**表示点で再生成する**
+
+異名(§12-2)は「永続値はJAのまま・表示点で辞書を1回引く」で足りたが、語り文は3文を連結し終えた完成文が保存されるため同じ手が使えない。P6-14で確立した型は次のとおりで、**同型(完成文がGへ焼かれる紙面/記録テキスト)には今後これを使う**。
+
+- **文プールは必ずトップレベルの`const`テーブルへ**。`HOF_BIOGRAPHY_TEMPLATES`(data.js)。関数本体に直書きされた配列は§10-2のとおりどの抽出器からも見えない
+- **配列の並び順・要素数は変更不可**。`pick()`が`(entry.id * 31 + seasons) % arr.length`で添字を引くため、並びが変わると**保存済みの語り文と一致しなくなり、表示時再生成がフォールバックへ落ちる**
+- **`generateBiography(entry, dict)`**。各文を**PH置換前に**`_wmFillWithDict(dict, tpl, vars)`(§12-3)へ通してから連結する
+- **連結様式そのものをテンプレにする**: `join: '{intro}{core}{closing}'` → EN `'{intro} {core} {closing}'`。JAは区切り無しで直結、ENは文間に半角スペースが要る。3文の直積(6×19×3系統)を1本の完全文テンプレへ畳むことはできないため、**様式を1キーにするのが構造規約3(断片連結禁止)を満たす唯一の形**
+- **保存するのは常にdict無し(JA)の戻り値**。`_buildHofEntry`はdictを渡さない(D-P6-4)
+- **表示点(`ui-render.js: showHofDetail`。grepで消費点は1箇所のみ)は自己検証型のfail-open**:
+  1. dict無し(JA)で再生成する
+  2. 保存値と**1バイト一致**するか確かめる(=素材が揃っていて、テンプレも保存当時と同一である証拠)
+  3. 一致したときだけ`WM_I18N.t`+**英訳済みの異名**(`_epithetLabel()`の戻り値でentryを浅くコピーして差し替える)で作り直した文を出す
+  4. 一致しない(旧セーブで素材が欠けている/テンプレが変わった)なら**保存値を優先**する
+  - JAモードでは3の結果が1と同一(t()はja素通し+PH置換のみ、`_epithetLabel`もja素通し)なので**日本語版の表示は1バイト不変**
+  - **同一性チェックは異名を差し替える前の生JAで行う**。差し替え後で比較するとENモードでは必ず不一致になり、常に保存値フォールバックへ落ちてしまう
+- **JA同一性の証明の作法**: ①着手前の実装を凍結コピーとして切り出し、全分岐を代表値・境界値の直積で回して新旧突合(P6-14では606,256通り・不一致0) ②`auto-sim`に`_buildHofEntry`のフックを挿して**実際に生成された殿堂エントリ**を収集し、本物の`src/i18n.js`+生成済み辞書で表示点の手順を再現(P6-14では38件・JA再生成==保存値 38/38、EN日本語残り0・i18n-miss 0)
+
+### 24-2. `*_TEMPLATES`全数突合の結果(§12-5-2の宿題)
+
+data.js/kuroda-text.js/セリフ専用ファイルの**トップレベル`const`を全件列挙して実値を評価**し、3台帳の収録キー+固有名詞辞書(`src/lang-en-names.js`)と突き合わせた。
+
+**A. 「兄弟表は対象なのに本表だけ漏れている」型 — 4件(✅**P6-15で全件解決**、2026-09-04。詳細は§14)**
+
+| 表 | 未収録行数 | 消費点 | 状態 |
+|---|---|---|---|
+| `UNIFIED_TITLE_TEMPLATES` | 96 | `Engine.newspaper.composeUnifiedTitleArticle(type, data, seed, dict)` | ✅dict-opts化+`join`畳み込み(P6-15) |
+| `CHAMPION_CHANGE_TEMPLATES` | 26 | `Engine.newspaper.composeChampionChangeBody(ev, seed, dict)` | ✅dict-opts化+4スロット`champChangeJoin`(P6-15) |
+| `PPV_HYPE_TEMPLATES` | 10 | `Engine.ppv.buildHype(match)` → `match.hype`+`hypeTpl`+`hypeVars` | ✅追加フィールド方式(P6-15)。`Math.random()`は据え置き |
+| `DRAFT_PLAYER_RESULT_PARTS` | 14 | `Engine.newspaper.composeDraftPlayerResult(org, fighters, seed, dict)` | ✅dict-opts化+`join`/`nameList`畳み込み(P6-15) |
+
+**この4件は台帳へ載せるだけでは無意味**(消費点がdictを持たないので辞書を引く機会が無い)。必要だったのは①composerのdict-opts化 ②断片連結の`join`テンプレ化(§13-1と同型) ③146行の英訳、の3点セットで、P6-15がこれを実施した。
+
+**B. 3台帳・固有名詞辞書のいずれにも載っていない表 — 54表・約1,445行(→ P7-2で7表367行、P7-4で3表250行を解決、残**34表・約816行**)**
+
+Engine/UIが直に読む地の文・ラベルのプール。大物は~~`SNAPSHOT_TEXTS` 276~~(**✅P7-2**) / ~~`CHAR_PROFILES` 127~~(**✅P7-4**。dialogue-tone-spec §5でP5末尾送りと明示済みだった) / ~~`ALL_COACHES`のflavor 125~~(**✅P7-4で112行**。残13＝特殊能力名は`COACH_ABILITY_CATALOG`と同一文字列でP7-1側) / `NOTIF_EVENT_TEXTS` 102 / `LARGE_EVENT_TEXTS` 86 / `STYLE_TAG_MOVES` 82 / `WEEKLY_STORY_TICKER` 65 / `DECISION_DOCS` 63 / `TRAIT_DEFS` 50 / `MILESTONE_EVENTS` 49 / ~~`ATMOSPHERE_TEXTS` 33~~(**✅P7-2**) / ~~`COACH_FLAVOR_DEFS` 11~~(**✅P7-4**)、以下中小の表が続く。
+
+**✅P7-2(2026-09-04)で解決した7表**: `SNAPSHOT_TEXTS` 282 / `ATMOSPHERE_TEXTS` 33 / `FAREWELL_KIND_TEXT` 15 / `LOCKER_AIR_TEXTS` 14 / `CAMP_FLAVOR_TEXTS` 12 / `PRE_WINDOW_TEXTS` 9 / `TEAM_SPIRIT_TEXTS` 8(詳細は§15)。
+
+**✅P7-4(2026-09-04)で解決した3表**: `CHAR_PROFILES` 127 / `ALL_COACHES`の`desc`+`profile`+`origin`+`gender`+`flavor` 112 / `COACH_FLAVOR_DEFS` 11(＋連結様式1)(詳細は§16)。
+
+**⚠ `i18n-miss 0` は「英語化が終わった」の指標ではない。** missは「t()を通ったが辞書に無い」ときにしか出ないので、**そもそもt()を通っていないこの層は永久にmissへ出ない**。進捗はEN走破の「JA exposure by screen」(P6-14時点: screen-week=56 / screen-shachoshitsu=55 / screen-log=51 / screen-show=39 / screen-newspaper=33 …)と本突合表を併読して測る。
+
+### 24-3. プレースホルダ直前の不定冠詞の機械検査(黒田英文体 §3-4 規則25)
+
+`test/i18n-build-dict.js` / `i18n-build-template-dict.js` / `i18n-build-dialogue-dict.js` の3本が同一定義の
+`ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i` を持ち、違反があれば**exit 1・辞書を生成しない**。
+
+- `a {n}` は充填値が8/11/18のとき"an"が正しくなり、`a {name}` は名前の頭音で割れる
+- **ハイフン付きの限定用法(`a {n}-match history` = 規則24の逃がし方)は常に"a"で正しいので許可**する。`}`の直後がハイフンかどうかで機械的に区別する
+- 導入時点の既存違反は6件(ui 1 / template 5)。いずれも`{label} offer from {outlet}`(冠詞を落とす) / `a match rated {bestMQ}`(§1-7の固定対訳へ寄せる) / `{playerName}'s matches`(規則26の所有格へ逃がす)の形で書き直した
+
+
+## 25. Stage B P7-7b — 新聞/ロスター画面のJA露出修正(2026-09-04追加)
 
 P7-7a(§前掲・調査のみ)が分類した根本原因のうち、技名(finishLabel、P7-5裁定待ち)を除く9件を修正した。EN走破のJA露出(`--ja-exposure-log`)は newspaper 28→8(残8件は全て決着技名=finishLabel絡み。技名以外は0)/ roster 25→0。
 
-### 23-1. `NP_KURODA_BYLINE` はgetter化できない — `tools/extract-dialogue.js` TABLE_MANIFEST の落とし穴
+### 25-1. `NP_KURODA_BYLINE` はgetter化できない — `tools/extract-dialogue.js` TABLE_MANIFEST の落とし穴
 
 黒田署名(`——黒田幸子(週刊グラップル)` 等)を「値そのものをgetterにしてWM_I18N.t()を仕込む」形で直そうとしたところ、`test/archetype-key-rename-test.js` が `ReferenceError: WM_I18N is not defined` で壊れた。原因: `NP_KURODA_BYLINE` は `tools/extract-dialogue.js` の `TABLE_MANIFEST` に `KURODA_HEADLINES`/`KURODA_EDITORIAL` 等と同列で直接登録された「セリフ系テーブル」で、`tools/axis-rewrite.js` の構造走査(`Object.keys(node)` → `node[k]`)が**vm評価サンドボックス(WM_I18Nが存在しない)でプロパティへ実アクセスする**。getterにすると即座に例外化する。
 
@@ -755,28 +831,28 @@ P7-7a(§前掲・調査のみ)が分類した根本原因のうち、技名(fini
 - 5プロパティ×10箇所の参照サイトはすべて `${NP_KURODA_BYLINE.xxx}` → `${WM_I18N.t(NP_KURODA_BYLINE.xxx)}` の機械的な置換で足りた
 - 新規3キー(news用/rating用/editorial用の署名文字列)はui-ledgerへ追加。書式は `docs/en-kuroda-style-draft-v0.1.md` §4-3の推奨(`— Sachiko Kuroda, Weekly Grapple` 型、em dash+半角スペース)と `docs/en-proper-nouns-draft-v0.1.md` 付録Bの裁定に合わせた(news/warRecord→`, Weekly Grapple`、rating→`, staff writer`、editorial→`, editorial desk`)
 
-### 23-2. 「headline/MVP小窓は直したのに、同じ選手名が別の`<strong>`で漏れる」— ALL_CHARS直読みが3箇所
+### 25-2. 「headline/MVP小窓は直したのに、同じ選手名が別の`<strong>`で漏れる」— ALL_CHARS直読みが3箇所
 
 MVP小窓(`_npV3MvpBox`)の`fighterName`は直したが、EN走破で再検査すると一面トップ記事の写真キャプション(`<strong>${tsName}</strong>`)にも同じ穴があった。`tsName`は`ALL_CHARS.find(...).name`を`pn()`を通さず直接`join()`していた——3箇所(`_npRenderBignewsTag`/`_npV3Top`相当2箇所)が同型。**「該当関数だけ直して終わり」にせず、同じ変数名(`tsName`)・同じ生成パターンで`grep`し直したことで発見**。合わせてダイジェスト表(`_npRenderDigest`)の`wName`/`lName`も`m.isDraw`分岐でしか`pn()`を通していなかった(引き分け以外の通常勝敗行が漏れる)ことが判明し、同じバッチで根治した。
 
 - **教訓**: 「生名前をpn()に通す」修正は、P7-7aの分類が拾った1箇所だけでなく、**同じ生成元(`ALL_CHARS.find().name`・`m.left.name`/`m.right.name`)を持つ他の表示点をgrepで洗い出す**ことでEN走破の再検証時に0件へ落ちる。1箇所だけ直すと「直したのにEN走破でまだ引っかかる」を繰り返す
 
-### 23-3. `DOJO_SHOUTS`(気合の掛け声26種、実測27種)はUIファイルからdata.jsへ移設して`DATA_TABLES`台帳化
+### 25-3. `DOJO_SHOUTS`(気合の掛け声26種、実測27種)はUIファイルからdata.jsへ移設して`DATA_TABLES`台帳化
 
 Fable裁定により演出として残さず英訳する方針が確定していたため、`test/i18n-extract-ui.js`の`DATA_TABLES`モード(P7-1で確立)に載せる必要があった。`DATA_TABLES`は`loadAsGlobal('data.js')`でdata.jsのトップレベル宣言だけを対象にするため、**元々`ui-render.js`内のローカル`const`だったものをdata.jsのトップレベルへ移設**した(ブラウザではdata.jsの`<script>`がui-render.jsより先に読み込まれるため、非exportのトップレベル`const`でも後続scriptから参照できる——`TRAIT_DEFS`等の既存表と同じ運用)。乱数抽選の「前回と同じ掛け声を連続させない」比較は生JAのまま行い(`s.dataset.shoutRaw`に保持)、`textContent`へ書く瞬間だけ`WM_I18N.t()`を通す。
 
 - 英訳はFable裁定の「実際にジムで飛ぶ短い掛け声」方針+en-tone-bible §1(感嘆符1つまで・ALL CAPS禁止)に従った27本。効果音的な純粋な気合(はぁっ/ふっ/うぅっ 等13本)は英語の対応語彙が薄いため`Hah!`/`Ngh...!`/`Hup!`型の短い間投詞へ、意味を持つ掛け声(もう一本!/まだまだ!/ラスト! 等14本)は`One more!`/`Not done yet!`/`Last one!`のように直訳した
 - **件数の実測訂正**: P7-7aの調査時点の呼称「26種」は配列の目視カウント誤り。`node`で`eval`実測したところ**実際は27種**だった(以後この表を参照するときは27で数える)
 
-### 23-4. `buildFollowUp`の名前配線は既存共通ヘルパー`_wmFillWithDict`への乗り換えで解決(新規実装ゼロ)
+### 25-4. `buildFollowUp`の名前配線は既存共通ヘルパー`_wmFillWithDict`への乗り換えで解決(新規実装ゼロ)
 
 消費側(`management.js`)が`dict(pick.headline)`で訳文だけ取ってから手動`fill()`(split/join)で`{name}`等を生値のまま置換していたため、`t()`のparams経由`convertNames`(D-P6-2)を素通りしていた。P6-10で確立済みの共通ヘルパー`_wmFillWithDict(dict, tpl, params)`(`dict(String(tpl), params)`を1回呼ぶだけで翻訳+PH充填+名前自動変換を済ませる)に乗り換えるだけで解決し、新規の翻訳コンテンツもロジックも増えていない。
 
-### 23-5. `決着時間`/`ターン数`の書式はJA固有の数値組み立てなのでlang分岐が要る
+### 25-5. `決着時間`/`ターン数`の書式はJA固有の数値組み立てなのでlang分岐が要る
 
 `_npTurnsToTime(turns)`は「Xターン=90秒」から`○分○秒`を**文字列組み立てで生成**しており、辞書引き(t())だけでは訳せない型(§2-4「成形済み値」と同族)。EN側は`mm:ss`(コロン区切り・常に秒2桁)を採用した——「24m30s」のような単位語連続よりレイアウト幅を食わない(P6-9/P6-11のEN溢れ対策と同じ配慮)。「決着時間 」「ターン」の直書きラベルは通常のt()化(`決着時間 {time}` → `Time: {time}`、`{n}ターン` → `{n} turns`)で足りた。
 
-### 23-6. 範囲外の新規発見(P7-7bでは修正していない)
+### 25-6. 範囲外の新規発見(P7-7bでは修正していない)
 
 - **`div.np-show-article`の生JAフォールバック記事**(`ui-render.js` `_npRenderPlayerShow`内、`App._NEWSPAPER_ARTICLES`のプールが空のときのフォールバック文字列組み立て)。数文からなる長文テンプレをt()もpn()も通さず直接組み立てており、technique名だけでなく地の文全体がJAのまま出る。P7-5(技名)より大きい別枠の作業(複数文のテンプレ台帳化)が要るため、P7-7bのスコープ外として記録のみ
 - **`App._generateNewspaperTexts`のMath.random()非決定性**(P7-7aで指摘済み・据え置き継続。generateHypeと同族の乱数シード原則からの逸脱)

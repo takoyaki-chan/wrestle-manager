@@ -1061,6 +1061,13 @@ const STYLE_TAG_MOVES = {
     { n: 'テクニカル・シンクロ・ロック', d: 18, c: 'submission' },
     { n: '緻密な連係グラウンド', d: 17, c: 'submission' },
   ],
+  // i18n Stage B P7-5: スタイル組が表に無いときの既定値。以前は getTagMove の関数本体に
+  // 直書きしてあり、STYLE_TAG_MOVES を走査するだけの抽出器・辞書生成器から見えなかった
+  // (specs/i18n-runtime-spec-v1.0.md §10-2 と同型の穴。docs/en-move-names-draft-v0.1.md §5-A)。
+  // キーはスタイル名の組(`[a,b].sort().join('+')`)と衝突しない形にしてある。
+  '__default__': [
+    { n: '合体スラム', d: 16, c: 'throw' },
+  ],
 };
 
 // T1: 配列からランダム選択。rng が渡された場合は Engine.rng.float を使用 (auto-sim 再現性)。
@@ -1070,7 +1077,7 @@ function getTagMove(styleA, styleB, rng, avoidMoveName) {
   const sB = styleB || 'Allround';
   const key = [sA, sB].sort().join('+');
   const arr = STYLE_TAG_MOVES[key];
-  if (!arr || arr.length === 0) return { n: '合体スラム', d: 16, c: 'throw' };
+  if (!arr || arr.length === 0) return STYLE_TAG_MOVES['__default__'][0];
   let pool = arr;
   if (avoidMoveName && arr.length > 1) {
     const filtered = arr.filter(m => m.n !== avoidMoveName);
@@ -31758,6 +31765,9 @@ if (typeof module !== 'undefined' && module.exports) {
     SCANDAL_CONFIG, LOSING_STREAK_PENALTIES, PROMO_POP_CAP, PROMO_EVENT_INCOME_CURVE, PROMO_EVENT_NAMES, TRANSFER_POP_MULT,
     MEDIA_ORGPOP_CURVE, MEDIA_CONFIG, MEDIA_AWARD_CONFIG, VENUE_MEDIA_MULT, TRUST_RAISE_DISCOUNT,
     FIXED_COSTS, SUBSIDY_TABLE,
+    // i18n Stage B P7-5: 技名242件の台帳突合(test/i18n-build-names.js)用にnode側へ公開する。
+    // ブラウザ側は従来どおりグローバル定数として参照する(この行はnode専用)。
+    commonMoves, styleMoves, STYLE_TAG_MOVES,
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, LONG_TERM_INJURY, INJURY_DEBUFF_TABLE,
     TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES,
     PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,

@@ -1,5 +1,100 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 Stage B P7-5 — 技名242件を名前辞書化し表示時翻訳(formatFinish/カットイン/得意技/新聞/記録)、合体スラムの表外フォールバックを移設（2026-09-04・worktree agent-ac3d08ad41701c824）
+
+裁定の正は `docs/en-move-names-draft-v0.1.md`(2026-09-04 Keisuke確定: 設問①〜⑤すべて推奨案・★38件も推奨EN採用)。開始前にworktreeブランチをmain先端(e30eb51、技名裁定の記録コミットまで)へfast-forward済み。
+
+**技名242件を英訳**(共有技76 + スタイル技83 + タッグ連携82(ユニーク) + `getTagMove` 既定値 `合体スラム` 1)。**本文辞書3本(ui/template/dialogue)は1キーも増えていない** — 技名は名前辞書の住人。
+
+### 1. 辞書の構造 — 名前辞書に置くが `pn()` とは別領域
+
+| 層 | 実体 |
+|---|---|
+| 台帳 | `i18n/names-ledger.json` の **`moves` 節**(242件・`{ ja, en, short?, confirmed }`)。`short` は19件 |
+| 生成器 | `test/i18n-build-names.js`(既存。moves の全数突合検査を追加) |
+| 生成物 | `src/lang-en-names.js` の `WM_I18N.addMoves({242})` + `addMoveShorts({19})` |
+| 参照 | `WM_I18N.mv(str)` / `mvShort(str)`、および `t()` のパラメータ値自動変換(D-P6-2) |
+
+**`names`(pn/pnSurname)に混ぜなかった**のは、技名の日本語が英語化後も「効果音の種類選択(`battle-sfx.js` `guessCategory` の6正規表現)」「解説文の選択(`_movePresentation` の7分岐)」「同試合内の連続回避(`getTagMove` の `avoidMoveName`)」「威力・ティア逆引き(`findMoveByName`)」「セーブ値 `finMove`」の**安定キーとして生き続ける**から。人名の守備範囲と混ぜると「どこまで英語にしてよいか」の線が引けなくなる。
+
+`applyParams` の `convertNames` は **`names` → `moves` の順**で引く。この1行のおかげで `{move}` のようなPHは配線ゼロで英語化される。
+
+台帳の転記は文書の表(§3-1/§3-2/§4/§4-1)を機械パースして流し込んだ。**242行すべてが data.js の実データと名称完全一致・ja/en ともユニーク・names 側との衝突0** をその場で検算している(手打ちしていない)。
+
+### 2. `Engine.formatFinish` — 「値をパラメータで渡す」だけで29箇所が一斉に直った
+
+P4-2でテンプレ側(`FINISH_TEXT`)だけ `dict` を通しており、`{move}` は素通しだった(P5で7回踏んだ「PH置換より前にdict」型の残り)。
+
+```js
+- return prefix + T(tmpl).replace('{move}', finMove);
++ return prefix + String(T(tmpl, { move: finMove })).replace('{move}', finMove);
+```
+
+`dict` が `WM_I18N.t` なら en ブランチの `convertNames` が技名辞書を引き当てる。**dict で先に訳そうとしない**(specs §19-3 の会場名と同型)。後段の `.replace()` は dict 省略時(恒等関数)と params 非対応の dict のためのフォールバックで、これがあるから **JA出力は1バイト不変**。先例は `_wmFillWithDict` の `dict(tpl, params)` → `fill` 二段構え。
+
+これで `formatFinish` を呼ぶ**29箇所**(ui-common 24 / app.js 3 / management.js 2)——通常興行・タッグ・PPV・派閥共通1・大型イベントB2/B3・ジュニアトーナメント・春タッグリーグ・秋4団体戦・天頂戦・対抗戦、および**新聞の `finishLabel`**(P7-7aが「新聞28件中8件」と数えたクラスタ)——が**追加配線ゼロで**英語化された。
+
+### 3. 表示点は「判定に使う値」と「画面に出す値」を関数レベルで分ける
+
+`_actionMoveName(action)` は `_movePresentation` の正規表現入力でもあるので**戻り値を英訳できない**。両iframeに表示専用ヘルパーを置き、**描画の直前でだけ**通した。
+
+| ヘルパー | 使う枠 | 配線先 |
+|---|---|---|
+| `_mvDisp`(=`mvShort`) | 最狭枠 | 技名パネル(`#moveV` 初期HTML+`_updateMoveDetail` / `#moveName`)・攻撃矢印ラベル3+3箇所・ビッグムーブ演出2箇所 |
+| `_mvFull`(=`mv`) | 折り返しの効く地の文 | 実況ナレーション(single 5型/tag 4型)・ギブアップ導入文2箇所・`_localFormatFinish`・タッグ勝利オーバーレイの決着表記・`pickTagWinCommentary` の `{move}` 引数 |
+
+`.move-value` の内寸は約212px ≒ **EN 27字**。文書§6の実測どおり242件中236件は26字以下に収まるので、短縮形が要るのは6件+予防的13件=19件だけ。`mvShort` は未登録ならフル名→原文へfail-openするので、呼び出し側は**枠の狭さだけを見て選べる**。
+
+ui-common.js の**生 `finMove` 直出し3箇所**(他団体挑戦の結果シーケンス/結果モーダル/派閥共通1の formatFinish 不在フォールバック)にも `mv()` を入れた。
+
+**実バグ**: `tag-battle-main.js` の技名パネルが `WM_I18N.pn(meta.name)` を呼んでいた。pn は名前辞書しか見ないので**技名は一度も訳されず、しかもfail-openなのでサイレントに素通しするだけ**(specs §13-2-6「pn()とt()の取り違え」の技名版)。`mvShort()` へ差し替えた。
+
+### 4. 表の外に落ちていた `合体スラム` を表へ戻した(§10-2型)
+
+`getTagMove` の関数本体に直書きされていた `{ n: '合体スラム', d: 16, c: 'throw' }` を `STYLE_TAG_MOVES['__default__']` へ移設。キーはスタイル名の組(`[a,b].sort().join('+')`)と衝突しない形。**JAの挙動は不変**(唯一の呼び出し元が `.n/.d/.c` を読むだけで返却オブジェクトを書き換えない)。
+
+`test/i18n-build-names.js` に技名の全数突合を足したので、以後 data.js 側で技を足す・改名するとビルドが落ちる: ①data.js の全技名(既定値含む)が台帳にあり逆も真 ②`moves` 節内で ja/en がそれぞれ一意(§5-D の英語衝突 Diving Splash / Top-Rope Splash 等の再発防止) ③`moves` の ja が `names` 側と衝突しない。突合のため `data.js` の `module.exports` に `commonMoves`/`styleMoves`/`STYLE_TAG_MOVES` を追加した(node専用。ブラウザ側の参照経路は不変)。
+
+### 5. 観戦画面の受け入れ確認 — 「英語が判定層へ漏れていない」ことの機械証明
+
+`test/ui-walkthrough/spectator-move-i18n-check.js` を新設(**手動実行**。`run-all` は `*-test.js` しか拾わないので自動実行には入らない)。実試合を1本シミュして観戦iframeへ `START_MATCH` を投げ、**JA/EN 両方で走らせて突き合わせる**。
+
+- **全フレームの `[_actionMoveName | _movePresentation().guide | guessCategory() | moveCat]` 列が JA と EN で完全一致**(single 23フレーム / tag 24フレーム)
+- `sfx.hit*` を包んだ**効果音呼び出し列も JA/EN 完全一致**(=効果音は従来どおり鳴る)
+- ENの技名パネル・ビッグムーブ・矢印ラベルに日本語が1文字も無い / JA側は日本語のまま / 例外0
+
+> 最初はDOMを30ms間隔でポーリングして guide 列を比べたが、アニメの更新タイミングとサンプリング位置がずれて **201件中3件が偽陽性**になった。全フレームを直接走査する形に変えて安定させている(検出器を疑う前に自分の計測を疑う)。
+
+スクリーンショット: `test/ui-walkthrough/artifacts/p7-5-spectator/`(`single-{ja,en}-cutin.png` / `tag-{ja,en}-cutin.png` / 各 `-end.png` / `result.json`。Git管理外)。EN のカットインは技名パネル `Leg Drop`・ビッグムーブ `— LEG DROP —`・矢印 `Leg Drop`、JA は `レッグドロップ`。タッグは `Machine Gun Chops` / `マシンガン・チョップ`。
+
+### 6. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(i18n / data / match-engine / battle-engine-main / tag-battle-main / ui-common / lang-en-names / i18n-build-names) | ✅ 全OK |
+| `node test/ja-golden.js` | ✅ 基準と完全一致(hash=`6b3d05c8…`、`--update`不使用)。`formatFinish` を触ってもJA出力は1バイト不変 |
+| `node test/i18n-build-names.js` | ✅ 技名242件(短縮19)・**data.js実データ242件と全数一致**・ja/en重複0・names衝突0 |
+| `node test/i18n-build-dict.js` / `-template-dict` / `-dialogue-dict` | ✅ 4,027 / 2,923 / 16,674 いずれも**未訳0**(3本とも出力差分なし=本文辞書は1キーも増えていない) |
+| `node test/i18n-ratchet.js` | ✅ **増加なし**(`--update`不要。28,107。`合体スラム` は関数本体→表へ移っただけで data.js の計数は不変) |
+| `npm test` | ✅ **260/260 green**(WM_I18Nスタブへ `mv`/`mvShort` を47ファイル68箇所へ機械追加=P6-3/P6-11の前例どおり) |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**(violations 0 / errors 0 / 台帳検査3種も違反0)。指紋 `afda03f8` |
+| `node test/balance-baseline.js` | ✅ **ベースラインから逸脱なし**(anchor ターン14.74 / gapCurve +0=50.2%〜+20=93.0% / spikeGrid 60構成 / styleAvg 49.8〜50.3%)。エンジンの挙動不変の証明 |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS、digest **`1052faa82eaf7991` 不変**、Issues 0、Overflow 31(不変) |
+| `npm run test:ui:walkthrough:en` | ✅ PASS、Issues 0、**i18n-miss 0 維持**。**JA露出 154→142**、うち **screen-newspaper 28→21(−7)** / screen-show 6→2(−4) / screen-week 28→27(−1)。他画面は不変 |
+| `node test/ui-walkthrough/spectator-move-i18n-check.js` | ✅ **ALL CHECKS PASS**(single/tag × 12項目)。§5参照 |
+
+VM検品(本物の `src/i18n.js`+生成辞書4本、lang=en): `Engine.formatFinish` が
+`ブレーンバスター → Vertical Suplex → 3-count` / `卍固め（専） → Deep Octopus Hold → submission`(**括弧マーカーが英語へ持ち込まれない**) / `回転エビ固め → O'Connor Roll → roll-up` / `合体スラム → Team Slam → 3-count` / `★ Shooting Star Press → 3-count` を返し、**i18n-miss 0**。dict省略時は `ブレーンバスター → 3カウント` のまま(JA不変)。
+
+### 7. 新たな発見(未着手・次バッチ以降)
+
+1. **観戦iframeは `lang-en-templates.js` を読み込まない**(`i18n.js`/`lang-en.js`/`lang-en-names.js`/`lang-en-dialogue.js` の4本だけ)。`{move} → 3カウント` の訳は template-ledger 側にしか無いので、`_localFormatFinish`(`FINISH_TEXT` のローカル複製)は**テンプレだけENにできない**。今回は技名だけ `mv()` で訳しテンプレはJAのまま残した(`t()` に通すと必ず `[i18n-miss]` が出るため)。解くにはiframeへ `lang-en-templates.js` を足すか、当該5キーを ui-ledger へ移す
+2. **観戦画面の地の文が丸ごと未配線**。実況ナレーション(single 5型/tag 4型)・攻撃矢印の `'攻撃'`/`'カウンター！'`・ギブアップ導入文・`MOVE_PRESENTATION.guide` 13本(6カテゴリ+7上書き)・タッグ勝利オーバーレイの `finType`/`finishPhase` は `t()` を一度も通っていない。**技名だけENの混成文**になっている
+3. **試合ログ行は表示とセーブを兼ねている**。`match-engine.js` が `${mv.n}` を埋めて組む19本のログ文は観戦画面のログパネルに出ると同時に `result.log` として `G` へ永続する。生成時に訳すとセーブが汚れるので `{type,data}` 化(§2-4)が前提
+4. **`management.js:31053` / `32263` の `else` 分岐が生の `finMove` を出す**。ただし条件が `Engine.formatFinish &&` なので、`formatFinish` が存在する限り到達しない死コード(§13-2-1型)
+5. **`tag-battle-lines.js` の `_tplTagLine` は `dict(str)` だけでPHの値を素通しする**。`{move}` は呼び出し側で先に `mv()` を掛けて回避したが、同関数の `{winner}`/`{partner}` は依然として生JA名(P7-7b/P6-3ロングテールの領分)
+6. **選手ごとの「得意技」UIは存在しない**。P7設計が表示点として挙げていたが、`.moves` のような選手所有の技リストはコード上に無く(技はスタイルから毎試合抽選される)、`得意技` は紹介文の地の文にしか出ない。**記録タブ・ランキング・年代記ハイライトにも決着技は出ない**(`ui-render.js` に `finMove` 参照0・キャリアハイライト15型と年代記テンプレに技名0)
+
 ## 🌐 Stage B P7-7b — 新聞/ロスター画面のJA露出修正（2026-09-04・worktree agent-a8adca91eead72232）
 
 P7-7a（調査のみ、直前のログ）が分類した9根本原因（技名finishLabelは対象外・P7-5裁定待ち）を1バッチで修正。開始前にworktreeをmain先端(b0f6dd6、P7-4/P7-7a調査まで)へfast-forward済み。
