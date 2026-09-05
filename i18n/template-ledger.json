@@ -8660,6 +8660,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{stamp} 定期興行",
+    "en": "{stamp} Regular show",
+    "files": [
+      "NEWS_STAMP_SUFFIX_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp} 挑戦状",
+    "en": "{stamp} Challenge",
+    "files": [
+      "NEWS_STAMP_SUFFIX_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{stamp}。{challengerName}が{defenderOrg}に叩きつけた挑戦状の一騎討ちは、{winnerOrg}の{winnerName}が勝利。試合評価{mq}。{tone}",
     "en": "{stamp}. The challenge {challengerName} threw down to {defenderOrg} was settled in singles, and {winnerName} of {winnerOrg} won it. Rated {mq}.{tone}",
     "files": [

@@ -1,5 +1,101 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-19 — P7-16が残した新聞3件(ブレイクスルー{stat}内部キー・スタンプsuffix文脈違い・天頂戦invites/championWatchの言語固定)の解消(2026-09-05・worktree agent-a9c61d40e88358d3e)
+
+指示書はP7-16 worklogエントリの「10. 発見(P7-16では直していない)」と`specs/i18n-runtime-spec-v1.0.md`§35-7。開始前にworktreeブランチをmain先端(`a9c673ab`。P7-16=d2594a41までmain入り)へfast-forward。
+
+新規訳出2キー(`NEWS_STAMP_SUFFIX_TEXTS`。template-ledger 3,141→**3,143**・未訳0)。ラチェット総数+8(data.js +2/management.js +6・内訳は§4)。specs詳細は`specs/i18n-runtime-spec-v1.0.md`§37に追記。
+
+### 1. AI団体ブレイクスルー記事の`{stat}`内部キー露出(意図的なJA修正)
+
+`_newsBreakthroughs`(management.js、AI団体ロスターの練習成長処理)が`btResult.stat`(`pw`/`sp`/`te`/`st`/`mn`の内部キー)を生で積み、`generate()`の`aiBreakthrough`分岐がそのまま`{stat}`へ差し込んでいた。同じ`Engine.newspaper.buildFollowUp`(`followUpBreakthrough`)は`STAT_LABELS_JP[bt.stat] || 'メンタル'`でJAラベル化してから`T()`を通しており、**AI団体側だけが素通し**だった(既存コードには「JAを変えないためここでは値に手を入れない」というコメントが残っていた)。
+
+```js
+// before
+body: T(NAI.breakthroughBody, { org: ev.orgName, name: ev.name, stat: ev.stat }),
+// after
+body: T(NAI.breakthroughBody, {
+  org: ev.orgName, name: ev.name,
+  stat: L((typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[ev.stat]) || 'メンタル'),
+}),
+```
+
+`パワー`/`スピード`/`テクニック`/`スタミナ`/`メンタル`はいずれもui-ledgerに既訳(`Power`/`Speed`/`Technique`/`Stamina`/`Mental`)があるため新規登録・二重登録は発生しない(§15-3の「ui-ledgerに既訳がある1語ラベル」パターンそのもの)。
+
+**JA出力が変わる意図的な修正**。`node test/ja-golden.js`の10件表示制限を外した一時スクリプトで全差分をダンプし、固定シード20季 seed42 corpusで変わるのは**53件**すべて「紙面本文の`pw`/`sp`/`te`/`st`/`mn`→`パワー`/`スピード`/`テクニック`/`スタミナ`/`メンタル`」の型のみ(他の変更は皆無)であることを確認してから`--update`した。
+
+### 2. `_wmNewsStamp`のsuffixがui-ledgerの1語ラベルを文脈違いのまま借りていた
+
+`定期興行`/`挑戦状`はui-ledgerに既訳があるが、その訳は**別の消費点(ナビタブ・画面見出し)向け**——`定期興行`→`Regular shows`(複数形、タブ名)/`挑戦状`→`Challenge Letter`(見出し語)——で、「第N年度・第M週 ○○」という日付+種別のスタンプ文脈には合わない。
+
+WM_I18Nの`t()`は「JA原文そのものをキーにする」設計なので、同じJA文字列に文脈ごとに異なる訳を持たせることはできない。ui-ledgerを書き換えるとナビ側が壊れ、別のJA原文を発明すると表示文字列が変わる(JA不変違反)。解決は**「スタンプの日付部分{stamp}を差し込み値として持つ、より長い一意なテンプレ文字列」を新しいキーにする**こと。
+
+- data.jsへ`NEWS_STAMP_SUFFIX_TEXTS = { regularShow: '{stamp} 定期興行', challenge: '{stamp} 挑戦状' }`を新設(`test/i18n-extract-templates.js`のTARGET_TABLESへ登録)
+- `_wmNewsStamp`は`定期興行`/`挑戦状`の2suffixだけこの新キーへ迂回。`_wmFillWithDict(dict, NST.regularShow, {stamp})`のJA側は`{stamp}`置換だけが起きるので、従来の`` `${stamp} ${T(suffixJa)}` ``と1バイト一致。ENは新キーを引くので`Regular show`(単数)/`Challenge`(短縮)を独立に割り当てられ、ナビ側の訳(`Regular shows`/`Challenge Letter`)は不変
+- `タイトル戦`/`対抗戦`/`PPV GRAND FINAL`は単数・見出し体の既訳がそのままスタンプに合うため、この2つだけを特別扱いする
+
+### 3. `buildTenchosenAnnouncementData`/`buildTenchosenFieldData`のinvites/championWatchへ§8適用
+
+天頂戦の告知記事(`tenchosenAnnounce`)・エントリー記事(`tenchosenFieldSet`)の`invites`(特別招待者名の列挙 or「選考通過者」フォールバック)と`championWatch`(前回覇者への言及、条件成立時のみ)はpush時点の言語で完成文へ焼かれ`state._industryNewsEvents`へ積まれる。P7-16は`preview`だけ生キー化しており、この2つは§8未適用のまま残っていた。
+
+- **`invitesRaw`**(招待者の生名配列。空配列も「招待者ゼロ」を示す有効値として併記): `_wmResolvePreformattedIndustryData`の`tenchosenFieldSet`ケースが`Array.isArray(data.invitesRaw)`のときだけ再構築(`joinNameList`または`NEWS_FALLBACK_TEMPLATES.tenchosenInvites`フォールバックを載る瞬間に選び直す)。名前は`joinNameList`の畳み込みでdictのparamsを通るため名前辞書(pn)変換も自動で効く
+- **`championWatchRaw`**(`{variant:'announce'|'field', name}`。条件不成立時は`null`): announce/fieldでJA原文が異なるため`_NP_TENCHOSEN_CHAMPION_WATCH_JA = {announce, field}`(management.js)に1本だけ置き、新設`_wmResolveTenchosenChampionWatch(raw, dict)`が`raw.variant`でテンプレを選んで`_wmFillWithDict(dict, tpl, {name})`で組み直す
+- 副次効果: `_wmFillWithDict`はparamsをdict経由で渡すため**選手名のpn()変換もここで初めて効く**ようになった(旧実装`fillTemplateVars(T(tpl), {name})`はTに名前を通していなかったのでENでも選手名がJAのまま出る副次バグがあったが、§8方式への統一で解消)
+- 生キーの無い旧セーブは`invitesRaw`/`championWatchRaw`が`undefined`のまま→fail-openで焼かれたJA完成文をそのまま返す
+- `championWatch`/`invites`(完成文)自体の計算方法は変更していない(旧セーブ互換・JA不変を担保する既存コードそのまま)。Rawフィールドは純粋な追加
+
+### 4. ラチェット+8の内訳(すべて正当・凍結コピーとの文字列多重集合突合で確認)
+
+| 文字列 | old→new | 説明 |
+|---|---|---|
+| `メンタル` | 1→2 | `buildFollowUp`の既存フォールバックに次ぐ2件目(§1のL()引数) |
+| `前回覇者の{name}にも、4年越しの連覇を期待する声がある。` | 1→2 | `_NP_TENCHOSEN_CHAMPION_WATCH_JA.announce`として1本追加(push側の既存呼び出しは不変) |
+| `前回覇者の{name}も出場圏内に入り、連覇への期待が高まる。` | 1→2 | 同上(`.field`) |
+| `定期興行` | 2→3 | `_NP_STAMP_SUFFIX_KEY`のオブジェクトキーとして1本追加 |
+| `挑戦状` | 1→2 | 同上 |
+| `第{season}年度・第{week}週` | 0→1 | **スキャナの計測アーティファクト**。旧実装はバッククォートテンプレートリテラルの`${...}`内にネストしており、`test/i18n-scan.js`はテンプレートリテラルの`${}`内部を展開せず1個のスペースへ潰すため文字列として見えなかった。新実装は独立した`const stamp = fillTemplateVars(...)`文に切り出したため可視化されただけで、実際のt()配線・出力は1バイトも変わっていない |
+
+data.jsの+2は`NEWS_STAMP_SUFFIX_TEXTS`の新規2値。
+
+### 5. 検証結果
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(data.js/management.js/test/i18n-extract-templates.js) | ✅ 全OK |
+| `node test/ja-golden.js`(意図的差分53件を確認後`--update`) | ✅ 差分53件すべて§1の`{stat}`ラベル化のみ。`--update`後は完全一致 |
+| `node test/i18n-build-template-dict.js` | ✅ 3,143キー(+2)・未訳0・規則23警告61件(増減0) |
+| `node test/i18n-build-dict.js` | ✅ 4,243キー・未訳0(ui-ledger不触) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー15件・すべて訳文一致(新規重複なし) |
+| `npm test` | ✅ **261/261 PASS** |
+| `node test/i18n-ratchet.js --update` | data.js +2/management.js +6(理由は§4ですべて説明済み) |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**(台帳検査3種すべて違反0) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・418手・**i18n-miss 0**・Issues 0・JA露出by screenに`screen-newspaper`は出ない |
+| `npm run test:ui:ignite -- --scenario tenchosen`(JA) | ✅ PASS(`unified-coronation`点火・Issues 0) |
+| VM検証(実際のWM_I18N+lang-en*.js辞書を読み込んで`Engine.newspaper.generate`/`_wmResolvePreformattedIndustryData`/`_wmNewsStamp`を実行) | ✅ 全ケースで期待どおりのJA/EN出力(§6) |
+
+**発見(範囲外・別タスク起票済み)**: `npm run test:ui:ignite -- --scenario tenchosen --lang en`(この組み合わせのEN実行は過去に記録が無い)を試したところ、天頂戦とは無関係な挑戦状パーティ選出画面(`crq-party-cand`)でドライバが停止するD5_WATCHDOGが発生した。天頂戦・新聞コードとは無関係(挑戦状パーティ選出のdriver.js役割スコアリングの問題と推測)なため本バッチでは追わず、別セッションへ起票した。
+
+### 6. VM実出力の例(実際のlang-en.js/lang-en-templates.js/lang-en-names.jsを読み込んで確認)
+
+- ブレイクスルー(EN): `Anju Matsukawa of Tencho Pro Wrestling has broken through. Power is up sharply, and what she does next is worth watching.`(stat=pw/te/mnの3種で確認、選手名もpn()でEN化)
+- スタンプ(EN): `Year 3, Week 10 Regular show` / `Year 3, Week 10 Challenge`(ナビ既訳`Regular shows`/`Challenge Letter`は不変のまま)
+- invites再構築(EN、招待者2名): `Hikari Asahina, Rina Morgan`(JA「朝比奈ひかり、リナ・モーガン」から選手名・区切りともEN化)
+- invites再構築(EN、招待者ゼロ): `those who came through selection`(JA「選考通過者」)
+- championWatch再構築(EN、announce系): `There is talk that Anju Matsukawa, the previous champion, could win it again after four years.`
+- championWatch再構築(EN、field系): `Anju Matsukawa, the previous champion, has also made the field, and hopes for a repeat are rising.`
+- 旧セーブ(生キー無し)をENで開いた場合: 焼かれたJA完成文がそのまま出る(fail-open。次にpushされた号からはEN再構築が効く)
+
+### 7. 確認してほしいこと(実機)
+
+- **JAモードの新聞**で以下が従来どおりであること:
+  1. AI団体のブレイクスルー記事の本文(内部キーではなく「パワー」「テクニック」等の日本語ラベルが出る——これは元々JAでは正しく出ていたので見た目は変わらない)
+  2. 新聞記事の「第N年度・第M週 定期興行」「第N年度・第M週 挑戦状」というスタンプ表記
+  3. 天頂戦の告知号・エントリー号にある「本紙が挙げる注目は…」「前回覇者の…」の一段落
+- **同じ画面をENで開いて**: AI団体ブレイクスルー記事の`{stat}`が`Power`/`Speed`/`Technique`/`Stamina`/`Mental`のいずれかで出ているか(内部キー`pw`等が出ていないか)/新聞スタンプが`Year N, Week M Regular show`・`Year N, Week M Challenge`になっているか(ナビの「Regular shows」タブ表記とは別物でよい)/天頂戦の告知号でinvites・championWatchが英語で読めるか
+
+---
+
 ## 🌐 英語対応 P7-16 — `Engine.newspaper` に残る生JA 83行(ジュニアTN/AI団体ニュース/対抗戦/挑戦状/選出理由/展望)のテンプレ化・英訳(2026-09-05・worktree agent-a1c34365617010ffa)
 
 指示書は P7-11 worklog §7 / `specs/i18n-runtime-spec-v1.0.md §34-7`。開始前にworktreeブランチをmain先端(`084cd401`)へfast-forward。
