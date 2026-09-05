@@ -12783,7 +12783,11 @@ function _findFighterOrgName(state, charId) {
   for (const orgId in aiOrgs) {
     const org = aiOrgs[orgId];
     if ((org.roster || []).some(c => c.id === charId)) {
-      return (typeof RIVAL_ORGS !== 'undefined' && RIVAL_ORGS.find(o => o.id === orgId)?.name) || org.name || orgId;
+      // i18n P7-43: プレイヤー側は pn() を通していたのにAI団体側は生JA名のまま返していた
+      // (EN走破で新聞の所属バッジ「天頂プロレス」が未訳のまま露出)。RIVAL_ORGS名はpnの
+      // 名前辞書に団体名として登録済みなので、プレイヤー側と同じくpn()を通す。
+      const name = (typeof RIVAL_ORGS !== 'undefined' && RIVAL_ORGS.find(o => o.id === orgId)?.name) || org.name || orgId;
+      return WM_I18N.pn(name);
     }
   }
   return '';

@@ -4094,7 +4094,14 @@ Engine.factions = {
   // ── §9.7 F07 派閥動向 選択適用（v0.4 共通フレーム化）──
   // incidentType × choice で分岐。impactSummary を返り値に含めて結果モーダル新シグネチャに連携
   applyF07Choice(state, payload, choiceId, rng) {
-    const { factionId, factionName, leaderId, leaderName, archetypeId, incidentType, incidentPayload } = payload;
+    const { factionId, factionName: _f07FactionNameRaw, leaderId, leaderName, archetypeId, incidentType, incidentPayload } = payload;
+    // i18n P7-43: DEMAND_RECOGNITION/A分岐だけ this._factionDisplayName(factionName) 済み
+    // (P7-6)で、他の約30箇所は factionName を生JAのまま resultText/impactSummary の
+    // {faction}パラメータへ渡していた(EN走破でDEMAND_MAINの結果ナレーションに
+    // 「根岸派」が生JA露出)。destructuring直後に一括変換すれば全分岐が一度に直る
+    // (_factionDisplayNameは「派」で終わらない・既に訳し済みの文字列には素通しなので、
+    // 下のDEMAND_RECOGNITION分岐が二重に通しても1バイト不変=冪等)。
+    const factionName = this._factionDisplayName(_f07FactionNameRaw);
     const cfg = FACTION_CONFIG;
     const ri = (lo, hi) => lo + Math.floor(Engine.rng.float(rng) * (hi - lo + 1));
 
@@ -4269,9 +4276,9 @@ Engine.factions = {
         const d = ri(3, 5);
         s = this._applyTrustToMembers(s, memberIds(), d);
         s = this._applyLockerRoomMorale(s, ri(1, 2));
-        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: this._factionDisplayName(factionName) }), delta: `+${d}` });
+        impactSummary.push({ label: WM_I18N.t('{name} メンバー trust', { name: factionName }), delta: `+${d}` });
         impactSummary.push({ label: WM_I18N.t('ロッカー士気'), delta: WM_I18N.t('+1〜2') });
-        resultText = WM_I18N.t('{name}の貢献を、興行の場で言葉にして認めた。', { name: this._factionDisplayName(factionName) });
+        resultText = WM_I18N.t('{name}の貢献を、興行の場で言葉にして認めた。', { name: factionName });
       } else if (choiceId === 'B') {
         s = this._applyTrustToMembers(s, [leaderId], -ri(2, 4));
         impactSummary.push({ label: WM_I18N.t('{name} trust', { name: leaderName }), delta: '−' });

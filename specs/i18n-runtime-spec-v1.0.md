@@ -2345,4 +2345,42 @@ DOMに入るが描画されないので同じく除外。
 | EN走破のJA露出(検出器拡張**前**の物差し) | 着手前 146 → 着手後 **146**(同値)。序章・派閥クロニクル・王座奪還バナーは走破が踏まない画面のため数字は動かない |
 | EN走破のJA露出(検出器拡張**後**の新しい物差し) | 161 → **157**(`_orgName` の `pn()` 化で −4)。以後の比較はこちら |
 | `npm run test:ui:ignite -- --scenario chronicle`(JA / EN) | ✅ 両方 PASS・Issues 0・`screen-database` ゼロゲート0件 |
+
+## 45. Stage B P7-43 — 新聞1面のJA露出12件+F07/F02派閥名露出の修正(2026-09-06追加)
+
+新しいパターンは増えていない。§13-2発見5(PH先埋め込み)・§14-2(`_wmDictLabel`)・§10(`_factionDisplayName`)を**未対策のまま残っていた呼び出し元へ適用しただけ**の回。「1つのヘルパーを導入したあと、同じ生成元を全部grepし直さないと取りこぼす」という§25-2の教訓がここでも再現したので、その事例として記録する。
+
+### 45-1. `rep()`手動PH充填(§13-2発見5)の未対策箇所が management.js にまだ残っていた
+
+`Engine.newspaper.generate()`内、業界ニュースキューの汎用記事化経路(`NEWS_HEADLINE_TEMPLATES[ev.type]`を直接引く箇所。P6-15がdict-opts化したのは`UNIFIED_TITLE_TEMPLATES`等の**専用composerを持つ4表**だけで、この汎用経路は対象外のまま残っていた)が`rep(dict(tpl.headline))`——テンプレ本文だけ`dict()`で訳し、`{name}`/`{orgName}`は`data`の生JA値のまま`.replace()`で差し込む——という発見5そのものの実装だった。`_wmFillWithDict(dict, tpl, params)`へ差し替えて解決した。**`fillTemplateVars`/`applyParams`は値がnullだと文字列`"null"`を埋める**(§14-4で既知)ため、`data`をそのまま渡さず、null/undefinedを空文字へ正規化した別オブジェクト`params`を作ってから渡す(`newsData: data`は下流の`intensityBonus`等が生値を読むため書き換えない)。
+
+### 45-2. 値そのものが未翻訳の1語ラベル(§14-2)も1箇所残っていた
+
+因縁記事の`{rivalLabel}`(`RIVALRY_THRESHOLDS`の「因縁」「宿敵」「宿命」)がapp.jsで値のまま`d.rivalLabel`として`kurodaText`プールへ渡っていた。`_wmDictLabel(WM_I18N.t, rivalLvl.label)`を計算時点に挟むだけで解決(ui-ledgerに既訳があったため新規訳出は不要)。
+
+### 45-3. `_factionDisplayName`(§10)は「1箇所だけ対策して満足」すると同じ関数内の兄弟呼び出しを取りこぼす
+
+`Engine.factions.applyF07Choice`(factions.js)は`Engine.factions._factionDisplayName`という同名メソッド(P7-6で追加)を**30箇所前後ある`factionName`の使用のうち2箇所だけ**(DEMAND_RECOGNITION/A分岐)に適用済みで、残りは生JAのまま`resultText`/`impactSummary`へ渡っていた。**関数の引数を受け取った直後(destructuring直後)で一括変換する**のが正しい形——個々の使用箇所を1つずつ`_factionDisplayName()`で包むと、新しい分岐が追加されるたびに同じ穴が再発する。`_factionDisplayName`は「派」で終わらない・既に訳し済みの文字列には素通しする設計(§10)なので、既存の2箇所の明示呼び出しと衝突しても冪等(二重適用しても1バイト不変)——今回は冗長なので単純化して`factionName`直読みへ戻した。
+
+`ui-common.js`の`showFactionF02Modal`(F02開戦ナレーション)も同型で、`payload.factionAName`/`factionBName`を宣言時に`_factionDisplayName()`へ通すよう修正した。同じ`factionAName`という変数名を持つ`_factionF02RenderClash`(同ファイル内の別関数、F02のact2)は**独立したスコープの別変数**なので影響しないが、同型の未対策のまま残っている(§45-4)。
+
+### 45-4. 範囲外で見つかった同型(未修正)
+
+- F08合同企画(`showFactionF08Modal`周辺)の`factionAName`/`factionBName`直読み・興行準備画面の「Main event recommendation from ○○派」バナー(ui-common.js、いずれも10箇所以上)
+- F02クラッシュ画面`_factionF02RenderClash`の`factionAName`/`factionBName`(showFactionF02Modalとは別スコープ)
+- ignite fixtureの事前生成(`headless-sim.js`)がJAコンテキストで`tickWeek`を回すため、`weeklyNewspaper`の一部記事(王座交代・一部負傷記事の本文)が生成時点でJA文字列としてGへ焼かれ、後から言語を切り替えても遡及再生成されない。過去号アーカイブとしては妥当な設計の可能性があり、バグかどうかの切り分けを含め別枠
+
+### 45-5. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(app.js/factions.js/management.js/ui-common.js/ui-render.js) | ✅ |
+| `node test/ja-golden.js` | ✅ 完全一致(`dd2e536b…` 不変) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 重複17件・訳文一致 |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(31ファイル・28,038行) |
+| `npm test` | ✅ 264/264 |
+| `node test/auto-sim.js 20 42` | ✅ ALL CLEAR・指紋`e96444c1`が変更前後で完全一致 |
+| JA UI走破 | ✅ PASS・336手・digest `b3b7a2c05a7e6016`(現行基準と一致) |
+| EN UI走破(`--ja-exposure-log`) | ✅ PASS・i18n-miss 0・`screen-newspaper`露出0・`screen-week`のF07派閥名露出も解消 |
+| `npm run test:ui:ignite -- --scenario newspaper-mvprace`(JA/EN) | ✅ 両方PASS・EN側のJA露出は16→12(退行なし、AI団体名3件が副次的に解消) |
 | `node test/ui-walkthrough/opening-scene-i18n-check.js` | ✅ **ALL CHECKS PASS**(JA 4幕が基準と完全一致 / EN 4幕に日本語0 / i18n-miss 0 / 段の一致3件) |
