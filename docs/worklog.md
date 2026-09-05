@@ -1,5 +1,28 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🔍 P7-28 副産物 — 特性名ミスマッチで死んでいる数値ボーナス3件の調査報告(コード未変更・Keisuke裁定待ち)(2026-09-05・worktree compassionate-blackwell-b15916)
+
+**何をしたか**: P7-28(死コード=旧特性名の参照の掃除)で見つかった、文章選びではなく**数値の発火条件**に紛れていた3件を調査し、大きさを計測して裁定案をまとめた。**ゲームコードは1行も変えていない**(計測用の一時パッチは `git checkout` で全戻し、`git status` で確認済み)。
+
+**3件**(すべて `Traits.has` の引数が `TRAIT_DEFS` に無い文字列 → 常時 false):
+1. management.js:1233/1276 `'ファンサ'`(正 `'ファンサービス'`・所持19名) — 集客力 drawPower の特性加算 `+8 + popDraw×0.05`(華と同式)。**一度も発動していない**
+2. management.js:1315/1377-1378 `'ヒール'`(正 `'ヒール適性'`・所持14名) — ヒールvsベビー構図のカード魅力 +6。同上
+3. management.js:16528 `'人脈'` — 選手にもコーチにも存在しない。スカウト見立てノイズ ±10%→±5% の分岐が到達不能(常に ±10%)
+
+**履歴**: リネームのドリフトではない。`git log -S` で `'ファンサ':`/`'ヒール':`/`'人脈':` が `TRAIT_DEFS` のキーだった commit は無し。集客v2(c70c129a, 2026-03-29)は `docs/archive/attendance-redesign-v1.md` の表の略称(A4「ファンサ」/A5「ヒール」)をそのまま書いた。`'人脈'` はドラフト改修 v1.0(f2b42e78, 2026-03-13)で当時の training-system-spec v1.2 の**コーチ特性**「人脈」を**選手ロスター**に探しており、その後コーチ能力カタログ v0.2 で「人脈」自体が消えた。`specs/scout-system-spec-v1.0.md` §4.2 は今も「コーチ『人脈』」を書いている(宙に浮いた spec)。
+
+**計測**(`test/auto-sim.js` 40季):
+- 軌道比較(現状/ファンサ修正/ヒール修正・seed 42)は違反0だが効果量は読めない — 別の修正2本が S20 以降ほぼ同じ軌道(orgPop 55.2/55.2)に乗り、離散分岐1回の差が支配的。修正2本の `ISSUES FOUND` は `[FREQ WARN] 天頂戦ドラマ0件の大会がない`(頻度ヒューリスティック)で不変条件違反ではない
+- **受動ペアプローブ**(auto-sim.js の一時ラップ: `calcShowDraw` で試合appeal配列を掴み、`calcAttendanceV2`(rng付き=本番経路)内で修正後 showDraw を本番と同じ式で再計算。fingerprint b1b348bb が現状と一致=受動性確認)。seed 42・762興行: **#1 発動で動員 +1.13%/興行**(所持者出場興行 547/762 で +1.58%)、**#2 で +0.52%**(構図成立 358/762 で +1.10%)、**両方 +1.65%(+26人/興行)**。draw上限2.0で消えた興行0。ヒールは序盤帯 0%(初期ロスターに適性持ちなし)でロスター構成依存が強い
+- seed 7(763興行)で再現: #1 +1.12% / #2 +0.37% / 両方 +1.48%(+27人)。#2 は在籍するヒール適性持ちの数で倍近く揺れる(構図成立シングル 16.6% vs 10.7%)。低 orgPop 帯ほど相対効果が大きい(0-20 帯で両方 +2〜3.5%)
+- 決定論の換算(`scratchpad/p7-28-traits/micro-measure.js`): 所持者1名の drawPower 増分は人気30/50/70/90で +9.1/+10.0/+11.1/+12.4。本番経路はシングル=両者平均なので Δ/2 で効く。ランダム組でヒールvsベビーが付く確率は特性基準 19.6% / 役回り基準 31.6% / Heel役×Babyface役 13.3%
+- 副次発見: `Engine.attendanceV2.measureShow`(auto-sim v2レポート専用)は `drawA+drawB+matchAppeal(平均込み)` と個人集客を1.5倍に重ねる式で本番経路と違う(ゲーム影響なし・メモ)。`ファンサービス` の説明文「グッズ売上にボーナス」も週次グッズ収入に特性項が無く未配線(別件)
+
+**裁定案**(詳細 `docs/dead-trait-checks-report-v0.1.md` §4、一覧 `docs/i18n-keisuke-rulings-pending-v0.1.md` C-5): #1 は文字列修正で発動+`TRAIT_DEFS` 説明文に「集客力にもボーナス」追記(JA/EN) / #2 は特性ではなく役回り(`Engine.factions._getHeelAlignment` の閾値)を鍵にした「構図」判定へ設計し直し(暫定で文字列修正も可) / #3 はコーチ `observation` 等級(A/B→±5%)に接続。採用時は3件1コミット、auto-sim 40季1本+走破1本、fingerprint/digest golden 取り直し、specs(集客v2 A4・B系 / scout §4.2 / TRAIT_DEFS説明文)更新。
+
+**触ったファイル**: `docs/dead-trait-checks-report-v0.1.md`(新規)、`docs/i18n-keisuke-rulings-pending-v0.1.md`(C-5追加)、`docs/worklog.md`、`docs/game-system-roadmap.md`(1行)。src/ と test/ は差分なし。
+**残課題**: Keisuke 裁定 → 実装(3件)。specs/manifest は裁定後(今回は未実施=変更対象なし)。
+
 ## 🌐 英語対応 P7-23 — `Engine.mvpRace` の新聞フレーバー文285本を `MVP_RACE_TEXTS` へ移設しdict-opts化・英訳(2026-09-05・worktree agent-a0409052ac22effa7)
 
 指示書は `docs/i18n-coverage-report-v0.1.md` A分類 #1(285件/4,924字)。開始前にworktreeブランチをmain先端(`da2d1ed5`。P7-19マージ+golden再採取までmain入り)へfast-forward。
