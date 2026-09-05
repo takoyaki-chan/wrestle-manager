@@ -5923,7 +5923,7 @@ function renderShowResult(results, injuryResults) {
                        (heat.id === 'cold' || heat.id === 'ice_cold') ? 'is-cold' : '';
   html += `<div class="pb-footer">
     <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
-    <button type="button" class="pb-close-btn" onclick="closeShowResult()">${WM_I18N.t('結果を確認 →')}</button>
+    <button type="button" class="pb-close-btn" data-walk-role="to-result" onclick="closeShowResult()">${WM_I18N.t('結果を確認 →')}</button>
   </div>`;
 
   html += `</div>`; // .pb-container
@@ -7672,7 +7672,7 @@ function renderPPVResult(card, results, summitPair, heatChange, mqBonuses) {
   html += `<div class="pb-footer">
     ${footerExtras}
     <div class="pb-footer-heat">Heat<span class="val ${heatFooterCls}">${heat.emoji} ${escHtml(heat.label.toUpperCase())}</span></div>
-    <button type="button" class="pb-close-btn" onclick="App.closePPVResult()">${WM_I18N.t('オフシーズンへ →')}</button>
+    <button type="button" class="pb-close-btn" data-walk-role="to-result" onclick="App.closePPVResult()">${WM_I18N.t('オフシーズンへ →')}</button>
   </div>`;
 
   html += `</div>`; // .pb-container
@@ -14977,7 +14977,7 @@ function _renderCommon1MatchResult(payload, matchResult, fA, fB, applyResult, on
       <div class="mdl-a-result-summary">${summaryRows}</div>
     </div>
     <div class="mdl-a-prompt mdl-a-title-actions">
-      <button class="mdl-a-continue-btn" id="c1rCloseBtn">${WM_I18N.t('結果を確認する')}</button>
+      <button class="mdl-a-continue-btn" id="c1rCloseBtn" data-walk-role="to-result">${WM_I18N.t('結果を確認する')}</button>
     </div>
   `;
   if (!_mdlAOpen(html, { wide: true, topAligned: true })) { if (onClose) onClose(); return; }
@@ -16940,7 +16940,9 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
   let choices;
   if (neg.attitude === 'raise') {
     choices = [
-      { label: WM_I18N.t('昇給を受ける'), hint: WM_I18N.t('本人は強く報われたと感じる　給与+{n}万/週', { n: neg.raiseAmount }), idx: 0 },
+      // P7-15: 走破ドライバ用の役割属性(data-walk-role)。3択がdata-choiceを共有し
+      // 個別ボタンをonclickで特定できないため、EN訳文の揺れに耐える言語非依存の識別子を付与する
+      { label: WM_I18N.t('昇給を受ける'), hint: WM_I18N.t('本人は強く報われたと感じる　給与+{n}万/週', { n: neg.raiseAmount }), idx: 0, role: 'contract-accept-raise' },
       { label: WM_I18N.t('交渉する'),     hint: WM_I18N.t('成功時　給与+{n}万/週', { n: neg.counterOffer }), idx: 1 },
       { label: WM_I18N.t('拒否する'),     hint: WM_I18N.t('本人に強い不満が残るおそれ'), idx: 2 },
     ];
@@ -16957,7 +16959,7 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
     ];
   } else {
     choices = [
-      { label: WM_I18N.t('引き留める'), hint: retentionTerms, idx: 0,
+      { label: WM_I18N.t('引き留める'), hint: retentionTerms, idx: 0, role: 'contract-retain',
         disabled: (state.funds || 0) < neg.retentionBonus },
       { label: WM_I18N.t('理由を聞く'), hint: '', idx: 1 },
       { label: WM_I18N.t('送り出す'),   hint: WM_I18N.t('退団'), idx: 2 },
@@ -16990,8 +16992,9 @@ function showContractNegotiationModal(neg, idx, total, state, onChoice) {
 
   const choicesHtml = choices.map(c => {
     const disAttr = c.disabled ? ' disabled' : '';
+    const roleAttr = c.role ? ` data-walk-role="${c.role}"` : '';
     const hintHtml = c.hint ? `<span class="neg-btn-hint">${c.hint}</span>` : '';
-    return `<button class="neg-btn" data-choice="${c.idx}"${disAttr}><span>${c.label}</span>${hintHtml}</button>`;
+    return `<button class="neg-btn" data-choice="${c.idx}"${roleAttr}${disAttr}><span>${c.label}</span>${hintHtml}</button>`;
   }).join('');
 
   const deskHtml = `
@@ -17061,7 +17064,7 @@ function showContractListenModal(neg, listenText, state, onSubChoice) {
   const deskHtml = `
     <div class="neg-card-title">📋 ${WM_I18N.t('{name}の話を聞く', { name: neg.fighterName })}</div>
     <div class="neg-choices">
-      <button class="neg-btn" data-sub="retain"${canAfford ? '' : ' disabled'}>
+      <button class="neg-btn" data-sub="retain" data-walk-role="contract-retain"${canAfford ? '' : ' disabled'}>
         <span>${WM_I18N.t('引き留める')}</span>
         <span class="neg-btn-hint">${retentionTerms}</span>
       </button>
@@ -18847,7 +18850,7 @@ function renderJuniorTournamentResult() {
       <div class="pb-score-lbl">${WM_I18N.t('決勝評価')}</div>
     </div>
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="color:var(--gold);font-size:22px">¥${PRIZE.champion}<span style="font-size:12px"> 万</span></div>
+      <div class="pb-score-val" style="color:var(--gold);font-size:22px">¥${PRIZE.champion}<span style="font-size:12px"> ${WM_I18N.t('万')}</span></div>
       <div class="pb-score-lbl">Prize</div>
     </div>
     <div class="pb-score-cell">

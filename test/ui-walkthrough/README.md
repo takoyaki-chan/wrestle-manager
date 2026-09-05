@@ -36,7 +36,23 @@ EN訳文はJA比で文字幅が中央値2.4倍という実測(吹き出し以外
 
 要素ごとに `screen`(activeScreenまたは`overlay:xxx`)/`selector`(短縮)/`text`(表示テキスト先頭40字)/`overflowPx`(超過px)を記録し、`(screen, kind, selector, text)` で重複排除します(同じ壊れた要素を毎手数え直してカウントが手数に比例して水増しされるのを防ぐ)。レポートには**画面別・種別の集計**と**超過pxの大きい順 上位30件**が出ます。CSS/訳文の修正はこのハーネスの対象外です(報告のみ)。
 
-**既知の制約**: `driver.js` のアクション優先度付け(`actionScore`)は日本語文言の正規表現に多く依存しているため、ENモードでは多くのボタンが一般スコアにフォールバックし、ja走破とは異なる手順・タイミングを踏みます。ナビ巡回のボタン特定は `showScreen('roster',event)` のような `onclick` 第一引数(言語非依存)へ2026-09-04に切り替え済みですが、それ以外のアクション選択はja文言依存のままです。2026-09-04の実走(seed42・1季)では week6 で `App.skipAllMatches` クリックが観戦iframeにブロックされる `D2_FREEZE` が決定論的に再現し、1季走破は未達でした。詳細は `docs/worklog.md` の P6-2 エントリを参照してください。
+**既知の制約**: `driver.js` のアクション優先度付け(`actionScore`)は、大半のtierをonclick/id/`data-walk-role`(後述)で言語非依存に特定できるよう2026-09-04(P6-2b/P7-15)で整備済みですが、汎用「次へ/閉じる」系(score 8900)・「結果を見る」系(8800)・「承認」系(8600)の3tierはボタン側の生成箇所が数十か所に散らばっており、いまもJA文言+EN訳文の正規表現に依存しています(`Next`/`Continue`/`Close`/`Done`/`Confirmed`/`See the Result`/`Approve`のような短い定型英単語で翻訳ゆれのリスクが低いため、P7-15では対応を見送りました — 判断根拠は `docs/worklog.md` の P7-15 エントリ)。この3tierに該当するボタン文言の英訳を変更する場合は、変更後に `npm run test:ui:walkthrough:en` を1本回して確認してください。
+
+#### `data-walk-role` 役割属性(2026-09-04 P7-15)
+
+onclick/idだけでは個別ボタンを特定できない箇所(同じハンドラ・同じ`data-choice`を複数の文言が共有する等)向けに、ボタン生成側(`src/ui-common.js`/`src/ui-render.js`)が言語非依存の`data-walk-role="<役割名>"`属性を付与できます。`driver.js`の`listCandidates()`が`candidate.walkRole`として拾い、`actionScore()`の`WALK_ROLE_SCORES`テーブルが**JA/EN文言の正規表現より先に**スコアを確定します。既存のJA文言条件は保険としてすべて残っており、role属性が付いていないボタンは従来どおりJA/EN正規表現で判定されます。
+
+現在定義済みの役割(`test/ui-walkthrough/driver.js`の`WALK_ROLE_SCORES`参照):
+
+| 役割名 | score | 生成箇所 |
+|---|---:|---|
+| `contract-accept-raise` | 9300 | 契約交渉モーダルの昇給受諾ボタン(`src/ui-common.js` `showContractNegotiationModal`) |
+| `contract-retain` | 9300 | 契約交渉モーダルの引き留めボタン(同関数)+「理由を聞く」後の引き留めボタン(`showContractListenModal`) |
+| `advance-week` | 9100 | 週処理ボタン(`doProcessWeek()`)・週総括の「次の週へ →」(`App.advanceFromWeekSummary()`)(`src/ui-render.js`) |
+| `to-season-report` / `to-draft` / `to-transfer` / `start-season` | 9100 | オフシーズン進行ボタン(`advanceWeek()`共有、`src/ui-render.js`のnextLabels配列。offW===1の「次へ →」上書きだけは汎用「次へ」系と同じ扱いのため役割なし) |
+| `to-result` | 9000 | 興行結果/PPV結果/JT遷移/ドラフト遷移の各クローズボタン(`src/ui-common.js`/`src/ui-render.js`) |
+
+新しいtierを言語非依存化するときは、(1) ボタン生成側に`data-walk-role`を追加、(2) `WALK_ROLE_SCORES`に**そのボタンが従来出していたのと同じスコア値**を登録、の順で行ってください。スコア値を変えるとja側の選択候補が変わり`Actions: N digest=...`が変化するため、既存tierのスコアと必ず一致させることが前提条件です。
 
 ### ナビ巡回(walkモード限定・2026-08-31監査対応)
 

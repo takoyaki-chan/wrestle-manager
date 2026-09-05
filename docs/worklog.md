@@ -1,5 +1,67 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-15 — 走破ドライバのEN文言依存を`data-walk-role`役割属性で根治(+「万」単独span1件)(2026-09-04〜09-05)
+
+前セッション(worktree `agent-a7d3b43f689fe1060`)が実装を書いた状態でセッション終了し、未コミット差分が残っていた。今回は引き継ぎ判定→適用→検証→仕上げを行った。開始前にworktreeをmain先端(`084cd401`。P7-11/P7-14マージ済み)へfast-forward。
+
+### 0. 引き継ぎ差分の判定
+
+前セッションのworktreeは未コミットのまま(base `eac27b55`)残っており、`git diff`が使えない(worktree跨ぎの直接git操作は本セッションのサンドボックスで禁止)ため、`git show eac27b55:<path>`で凍結blobを取り出し、通常の`diff --strip-trailing-cr`(先方はCRLF、blobはLF)で照合した。
+
+| ファイル | 内容 | 判定 |
+|---|---|---|
+| `test/ui-walkthrough/driver.js` | `WALK_ROLE_SCORES`テーブル新設+`actionScore`の役割優先判定+EN訳文正規表現の削減+`walkRole`フィールド追加 | 完成・そのまま採用 |
+| `src/ui-common.js` | 契約交渉モーダル2箇所(昇給受諾/引き留め)+結果クローズ3箇所(pb-close-btn×2, c1rCloseBtn)に`data-walk-role`付与+「万」span1件のt()化 | 完成・そのまま採用 |
+| `src/ui-render.js` | オフシーズン進行4種(`nextRoles`配列)+週処理/次の週へ+JT/ドラフト遷移2箇所に`data-walk-role`付与 | 完成・そのまま採用 |
+| `test/ui-walkthrough/README.md` | `data-walk-role`規約セクション+既知の制約の更新 | 完成・そのまま採用 |
+| `docs/game-system-roadmap.md` | P7-15✅エントリ(前セッションの1行) | mainがP7-11/P7-14で先に進んでいたため**自分で同じ行の末尾に付け直し**(前セッションの生差分は使わず、現行の英語対応行の最後に追記) |
+
+全ファイルとも「JA正規表現は保険として残し、role属性を一次判定に追加する」という設計方針が一貫しており、書きかけ・矛盾箇所は無かった。適用はworktree跨ぎの`git apply`を避け、各ファイルを個別にRead→Edit照合(現在のui-common.js/ui-render.jsの該当行が前セッションの凍結blobと1バイト一致することをgrepで確認済み)する方式にした。適用後、`driver.js`は前セッションの最終版と`diff --strip-trailing-cr`で完全一致、`ui-common.js`/`ui-render.js`は該当箇所のみ一致(他はP7-11/P7-14分の差)を確認している。
+
+### 1. `data-walk-role`役割属性の一覧
+
+| 役割名 | score | 生成箇所 |
+|---|---:|---|
+| `contract-accept-raise` | 9300 | 契約交渉モーダルの昇給受諾ボタン(`showContractNegotiationModal`、ui-common.js) |
+| `contract-retain` | 9300 | 契約交渉モーダルの引き留めボタン(同関数)+「理由を聞く」後の引き留めボタン(`showContractListenModal`) |
+| `advance-week` | 9100 | 週処理ボタン(`doProcessWeek()`)・週総括の「次の週へ →」(`App.advanceFromWeekSummary()`)(ui-render.js) |
+| `to-season-report`/`to-draft`/`to-transfer`/`start-season` | 9100 | オフシーズン進行ボタン(`advanceWeek()`共有、ui-render.jsの`nextLabels`と同じ添字の`nextRoles`配列。offW===1の「次へ →」上書きだけは汎用「次へ」系と同じ扱いのため役割なし) |
+| `to-result` | 9000 | 興行結果/PPV結果/JT遷移/ドラフト遷移の各クローズボタン(ui-common.js/ui-render.js、計5箇所) |
+
+いずれも「role属性が付いていればJA/EN正規表現より先にスコア確定」という一次判定を`driver.js`の`actionScore()`冒頭(DESTRUCTIVE_TEXT/ナビ判定の直後)に追加しただけで、既存のJA文言条件・スコア値は1つも変更していない。EN専用の正規表現(`Accept the Raise`・`Persuade (?:\w+ )?to Stay`・`Process the Week`等の完全一致キー)はrole属性側でカバーされる箇所についてのみ削除した。汎用「次へ/閉じる」(8900)・「結果を見る」(8800)・「承認」(8600)の3tierは生成箇所が数十箇所に散らばるため今回は対象外(README.mdに理由を明記)。
+
+### 2. 「万」単独span1件の修正
+
+P7-6が残した課題「screen-weekに`万`だけの`<span>`が生JAで出る(未特定)」を特定した。実体はJT(ジュニアトーナメント)優勝スコアボード(`ui-common.js`の`決勝評価`/`Prize`表示、renderJuniorTournamentResult系)で、JT結果はscreen-week上のオーバーレイとして開くため`--ja-exposure-log`の祖先screenが`screen-week`になっていた。
+
+```
+<div class="pb-score-val" ...>¥${PRIZE.champion}<span style="font-size:12px"> 万</span></div>
+```
+→
+```
+<div class="pb-score-val" ...>¥${PRIZE.champion}<span style="font-size:12px"> ${WM_I18N.t('万')}</span></div>
+```
+
+`万`キーは既に`i18n/ui-ledger.json`(en: `×10k`)に登録済みで、`src/lang-en.js`にも配線済みだったため辞書側の追加作業は不要だった。
+
+**同型の未修正3件を確認(次バッチ候補・未対応)**: 季総括資金チャート(`ui-render.js:647` `sr-chart-now`)・ボーナス起案モーダル(`ui-common.js:8817` `mdl-a-decision-label`)・ドラフト契約金合計(`ui-common.js:6434` `新戦力`サブ行)。いずれも同じ「金額の直後に生の`万`」パターンだが、`--ja-exposure-log`のscreen-week単体には出ていないため今回のスコープ外(1件のみが指示対象)。
+
+### 3. 検証結果
+
+- `node --check` 全触りファイル(ui-common.js/ui-render.js/driver.js) — OK
+- `node test/ja-golden.js` — **完全一致**(hash `6b3d05c8daa3d93f62c7e2fcb3b21e7d6ffebc6dc1c4951919a229a2d4b8c1b3`、`--update`未使用)
+- `node test/i18n-build-dict.js` — 未訳(fail-open)=0(既存の規則23警告群は今回の変更と無関係の既知事項)。台帳総キー数=4243。**副作用として`src/lang-en.js`が再生成されるが内容差分は無かったため`git checkout`で復元**(コミット対象外)
+- `npm test` — **261/261 PASS**
+- `npm run test:ui:walkthrough`(JA) — **PASS**。`Actions: 328 digest=1052faa82eaf7991`(**指示された不変digestと一致**)。Issues: 0
+- `npm run test:ui:walkthrough:en`(EN) — 1回目は`D1_CONSOLE`(`[WM] awards chain callback lost`、P7-12 worklogに既知の年間表彰式コールバック待ちタイミングフレークとして記録済み・本変更と無関係)で失敗、再走で**PASS**。`Actions: 416 digest=d99e3973381ce795`、season 2 week 1まで1季完走、Issues: 0、i18n-miss: 0
+- **訳文差し替え耐性の確認**: role属性が付いた8箇所に対応するEN訳14件(`引き留める`→`Persuade to Stay`等)を全て無関係な文字列(`Zzyzx Quux One`〜`Fourteen`)へ一時的に書き換えて`npm run test:ui:walkthrough:en`を実行。1回目は前述の既知タイミングフレークで`D1_CONSOLE`(発生ステップも375→377とほぼ同一)、再走で**PASS**、`Actions: 416 digest=d99e3973381ce795`——**訳文を書き換える前の正常実行と1バイト一致のdigest**。role属性を持つボタンの選択結果が訳文の内容に一切依存しないことを機械的に証明した。検証後、破壊した`src/lang-en.js`は元のバックアップから復元(`git diff`で無差分を確認)
+
+検証中、共有ルート(`wrestle-manager/node_modules`。Node解決がworktree配下から親をたどって参照する構造)が並行エージェントの作業により一時的に空になる事象が発生したが、数十秒で自然復旧し、以降の実行に影響は無かった(自分では`npm install`等を行っていない)。
+
+### 4. 変更ファイル
+
+`src/ui-common.js`(8箇所)・`src/ui-render.js`(6箇所)・`test/ui-walkthrough/driver.js`(役割属性優先判定+テーブル)・`test/ui-walkthrough/README.md`(規約セクション追加)・`docs/game-system-roadmap.md`(英語対応行末尾に1エントリ追記)。
+
 ## 🌐 英語対応 P7-14 — ランキング画面の選手層寸評「連結の様式」のテンプレ化(2026-09-04)
 
 P7-8が「未着手」として残した発見1(`_buildDepthNoteV2` / `_buildLeadSentences` が断片連結の生JA)を潰した。開始前にworktreeをmain先端(`3021d166`)へfast-forward。

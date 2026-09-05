@@ -1051,12 +1051,19 @@ function renderWeekScreen() {
     }
 
     const nextLabels = [WM_I18N.t('シーズンレポートへ →'), WM_I18N.t('ドラフト会議へ →'), WM_I18N.t('移籍ウィンドウへ →'), WM_I18N.t('新シーズン開幕 →')];
+    // P7-15: 走破ドライバ用の役割属性。4種ともadvanceWeek()を共有し、onclickだけでは
+    // 個別特定できない(EN訳文の矢印込み完全一致に頼っていた=訳文整備で壊れる根本原因)ため、
+    // 表示文言(nextLabels)と同じ添字で言語非依存の役割名を並べる。offW===1だけ「次へ →」に
+    // 上書きされ、これは汎用「次へ」系(役割属性は今回未導入)と同じ扱いのため役割を付けない
+    // (付けるとスコアが変わりja digestが壊れる — テキストと役割の分岐条件を必ず一致させる)
+    const nextRoles = ['to-season-report', 'to-draft', 'to-transfer', 'start-season'];
     const nextLabel = nextLabels[offW] || WM_I18N.t('オフシーズン第{n}週へ →', { n: offW + 1 });
     const nextLabelOverrides = {
       1: WM_I18N.t('次へ →'),
     };
     const btnClass = offW >= 3 ? 'btn-gold' : 'btn-blue';
-    html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}" onclick="advanceWeek()">${nextLabelOverrides[offW] || nextLabel}</button></div>`;
+    const nextRoleAttr = nextLabelOverrides[offW] ? '' : (nextRoles[offW] ? ` data-walk-role="${nextRoles[offW]}"` : '');
+    html += `<div class="btn-row" style="margin-top:16px"><button class="btn ${btnClass}"${nextRoleAttr} onclick="advanceWeek()">${nextLabelOverrides[offW] || nextLabel}</button></div>`;
 
     el.innerHTML = html;
     return;
@@ -1296,14 +1303,14 @@ function renderWeekScreen() {
     // v1.0: Primary action buttons — top-left, large, prominent
     html += '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center">';
     if (typeof App !== 'undefined' && App.canEnterJuniorTournamentThisWeek && App.canEnterJuniorTournamentThisWeek()) {
-      html += `<button class="btn btn-gold" onclick="App.enterJuniorTournamentFromWeek({ processWeekOnCancel: true })" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">${WM_I18N.t('JTへ進む')}</button>`;
+      html += `<button class="btn btn-gold" data-walk-role="to-result" onclick="App.enterJuniorTournamentFromWeek({ processWeekOnCancel: true })" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">${WM_I18N.t('JTへ進む')}</button>`;
     } else if (isShow) {
       // showPrep 中に「今週」タブへ戻ってきた場合は準備画面へ復帰する導線にする
       html += G.weekPhase === 'showPrep'
         ? `<button class="btn btn-gold" onclick="resumeShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 ${WM_I18N.t('興行準備に戻る →')}</button>`
         : `<button class="btn btn-gold" onclick="startShowPrep()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">🎤 ${WM_I18N.t('興行準備へ →')}</button>`;
     } else {
-      html += `<button class="btn btn-gold" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ ${WM_I18N.t('週を処理')}</button>`;
+      html += `<button class="btn btn-gold" data-walk-role="advance-week" onclick="doProcessWeek()" style="font-size:16px;padding:12px 28px;font-weight:700;letter-spacing:0.5px">⏩ ${WM_I18N.t('週を処理')}</button>`;
     }
     html += `<button class="btn" onclick="App.autoManage()" style="font-size:14px;padding:10px 20px;background:rgba(46,204,113,0.12);color:#2ecc71;border:1px solid rgba(46,204,113,0.3);font-weight:600" title="${WM_I18N.t('体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに切り替えます。それ以外の方針は維持されます')}">🤖 ${WM_I18N.t('おまかせ')}</button>`;
     html += _tipIcon(WM_I18N.t('<strong style="color:var(--gold)">🤖 おまかせ</strong><br>体調80未満の選手を休養にし、体調80以上で休養方針の選手をバランスに戻します。それ以外の方針は維持されます。'));
@@ -1514,7 +1521,7 @@ function renderWeekScreen() {
     html += `<div style="font-size:15px">${WM_I18N.t('残高:')} <strong style="color:${G.funds>=0?'var(--green)':'var(--red)'}">${WM_I18N.t('{v}万', { v: Math.round(G.funds).toLocaleString() })}</strong></div>`;
     html += `</div>`;
     html += `<div class="btn-row" style="justify-content:center">
-      <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" onclick="App.advanceFromWeekSummary()">${WM_I18N.t('次の週へ →')}</button>
+      <button class="btn btn-gold" style="font-size:15px;padding:12px 32px;font-weight:700" data-walk-role="advance-week" onclick="App.advanceFromWeekSummary()">${WM_I18N.t('次の週へ →')}</button>
     </div>`;
   }
   else if (G.weekPhase === 'settled') {
@@ -1846,7 +1853,7 @@ function renderWeekScreen() {
       </div>
       <div class="a1-stats" style="grid-template-columns:repeat(${statCells.length},1fr);">${statsHtml}</div>
       <div class="a1-footer">
-        <button class="btn btn-gold a1-btn-go" onclick="showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">⚖ ${WM_I18N.t('ドラフトへ')}</button>
+        <button class="btn btn-gold a1-btn-go" data-walk-role="to-result" onclick="showScreen('scoutEvent');try{Audio.bgm.play('tension')}catch(e){}">⚖ ${WM_I18N.t('ドラフトへ')}</button>
         <button class="btn btn-ghost" onclick="declineDraft()">${WM_I18N.t('辞退する →')}</button>
       </div>
     </div>`;
@@ -5393,7 +5400,7 @@ function _renderShachoshitsuScoutDesk() {
     return `<div class="shachoshitsu-draft-notice">
       <div class="headline">${WM_I18N.t('📰 ドラフト速報が届いています')}</div>
       <div class="sub">${WM_I18N.t('候補 {n}名の調査報告が届きました。<br>ドラフト会場で交渉が始まります。', { n: G.scoutCandidates.length })}</div>
-      <button onclick="showScreen('scoutEvent');Audio.bgm.play('tension')">${WM_I18N.t('⚖ ドラフトへ')}</button>
+      <button data-walk-role="to-result" onclick="showScreen('scoutEvent');Audio.bgm.play('tension')">${WM_I18N.t('⚖ ドラフトへ')}</button>
     </div>`;
   }
 
