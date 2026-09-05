@@ -13,7 +13,6 @@
 //    Engine.rng.create/deriveでシードを一元管理)でヘッドレス進行させながら、
 //    エンジンから決定的に得られる生成テキストを毎週集める:
 //      - 週刊新聞 (G.weeklyNewspaper: 一面+サブ記事の見出し・本文)
-//      - ティッカー (Engine.news.generateTicker — app.js _refreshTicker と同じ導出)
 //      - 興行の決着文 (Engine.formatFinish(finType, finMove) — 全試合)
 //      - 興行のフレーバーイベント文 (executeShow の戻り値 events配列)
 //      - 引退演出のセリフ選択結果 (Engine.retirement.selectLine の line/summary/
@@ -110,14 +109,9 @@ function collectNewspaper(G) {
   });
 }
 
-function collectTicker(G) {
-  if (G.offSeason) return;
-  const tag = `S${G.season}W${G.week}/ticker`;
-  // app.js App._refreshTicker() と全く同じ導出(0xBEEF)。読み取り専用(Gには書き戻さない)。
-  const tickerRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBEEF));
-  const items = Engine.news.generateTicker(tickerRng, G) || [];
-  items.forEach((text, i) => pushText(`${tag}${i}`, text));
-}
+// collectTicker(週次ティッカー収集)は 2026-09-06 に削除した(P7-36。
+// Engine.news.generateTicker/App._refreshTicker/.news-ticker-bar ごと廃止)。
+// 基準ファイルは --update で再焼きし、差分がティッカー行のみであることを確認済み。
 
 function collectShowResult(G, showResult) {
   if (!showResult || showResult.error) return;
@@ -511,7 +505,6 @@ function runSimulation() {
       G = { ...tickResult.state, gameLog: [] };
       G = Engine.unifiedTitle.autoConsumePlayerTurn(G);
       collectNewspaper(G);
-      collectTicker(G);
       G = autoHandleFactionEvent(G, simRng);
       G = clearTransients(G);
 

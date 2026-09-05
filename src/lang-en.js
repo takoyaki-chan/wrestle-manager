@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4686件、訳文あり4686件)
+//  生成元: i18n/ui-ledger.json (総キー4687件、訳文あり4687件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -3032,6 +3032,7 @@
     "本日の候補者 ・ {n}名": "Today's candidates · {n}",
     "本紙つづき": "Continued in this paper",
     "条件が揃ったら初代王者決定戦を。ベルトは団体の格を一段上げます。": "Once the conditions are met, run a match to crown your first champion. A title lifts the promotion a full step.",
+    "来週、招聘に応じるコーチの顔ぶれが入れ替わる": "Next week, the coaches open to a guest stint will change.",
     "来週の興行、メインは——この一戦。観客も、この対決に期待を膨らませている。": "Next week's show, the main event — this one. The crowd is already leaning into it.",
     "果 た し 状": "THE DUEL",
     "果たし状、成就。": "The duel: won.",

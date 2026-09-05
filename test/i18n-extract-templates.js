@@ -9,7 +9,7 @@
 //    src/data.js の対象テーブル(GAMELOG_TEMPLATES/FINISH_TEXT/PPV_SUMMIT_*/
 //    PPV_UNDERCARD_*/AI_INJURY_RETIREMENT_TEMPLATES/AI_CONTRACT_DEPARTURE_TEMPLATES/
 //    CROSS_WAR_RESULT_TEXT/LEAGUE_ELEVATION_TEXT/NEWSPAPER_SUB_TEMPLATES/
-//    NEWS_HEADLINE_TEMPLATES/NEWS_TICKER_TEMPLATES)から全JAテンプレ文字列を再帰的に
+//    NEWS_HEADLINE_TEMPLATES)から全JAテンプレ文字列を再帰的に
 //    抽出し、i18n/template-ledger.json を生成する(test/i18n-extract-ui.jsのUI台帳とは
 //    別ファイル・別スキーマ運用だが、行の形は同一: { key, en, files, count,
 //    hasPlaceholder, hasProperNoun })。
@@ -94,7 +94,7 @@ const TARGET_TABLES = [
   'LEAGUE_ELEVATION_TEXT',
   'NEWSPAPER_SUB_TEMPLATES',
   'NEWS_HEADLINE_TEMPLATES',
-  'NEWS_TICKER_TEMPLATES',
+  // NEWS_TICKER_TEMPLATES はP7-36(2026-09-06)のティッカー廃止で表ごと削除済み。
   // P6-10で追加。引退記事のティア別テンプレ({L,A,B,C} × 3変種 × headline/body = 24本)。
   // AI_INJURY_RETIREMENT_TEMPLATES は最初から対象だったのに、通常引退の本表だけが
   // 対象一覧から漏れていた(EMOTION_TEXTSと同型の「見えないテーブル」)。消費点は
@@ -140,14 +140,16 @@ const TARGET_TABLES = [
   //                               N_sudden_departure)の見出し+状況説明。消費点は
   //                               Engine.eventSystem.pickText(rng,key,vars,dict)(P6-13でdict-opts化済み)
   //   LARGE_EVENT_TEXTS    86行 — 大型イベント(B1〜B4+B4_*サブタイプ)の同上。消費点は同じpickText
-  //   WEEKLY_STORY_TICKER  65行 — 週次の人間関係ティッカー文。**消費点はgameLogのレガシー
-  //                               文字列エントリのみ**(relationships.js processWeeklyStoryEvents)で、
+  //   RELATION_EVENT_LINES(旧WEEKLY_STORY_TICKER) — 関係性イベントの地の文。
+  //                               **消費点はgameLogのレガシー文字列エントリのみ**
+  //                               (relationships.js processWeeklyStoryEvents)で、
   //                               specs §2-4/§12-1により表示はJA固定。台帳へは載せる(§13-2 Bを閉じる+
   //                               gameLog再設計時に訳が揃っている状態にする)が、現時点で辞書は引かれない。
-  //                               詳細はworklogのP7-3エントリを参照。
+  //                               P7-36(2026-09-06)でティッカー廃止に伴い改名+未使用9キー(29本)削除、
+  //                               現存3キー(clash/trustWarning/awakening)のみ。詳細はworklogのP7-3/P7-36エントリを参照。
   'NOTIF_EVENT_TEXTS',
   'LARGE_EVENT_TEXTS',
-  'WEEKLY_STORY_TICKER',
+  'RELATION_EVENT_LINES',
   // P6-16で追加。specs §14-5 が起票した同型4件の移設先。
   //   PPV_SUMMIT_STORY_TEMPLATES 13行 — 頂上決戦記事の地の文(P3a-2が3表だけ移設して残した分)
   //   NEWS_FALLBACK_TEMPLATES     3行 — composerがnullのときの直書きJAフォールバック

@@ -1189,17 +1189,8 @@ function renderWeekScreen() {
       </div>`;
     }
 
-    // v1.4w: ティッカー（ニュースバー）
-    const tickerItems = G._tickerItems || [];
-    if (tickerItems.length > 0) {
-      const tickerText = tickerItems.join('　　');
-      // 2回分繰り返してシームレスにスクロール
-      html += `<div class="news-ticker-bar">
-        <div class="news-ticker-track">
-          <span class="news-ticker-text">${tickerText}　　${tickerText}</span>
-        </div>
-      </div>`;
-    }
+    // v1.4w のティッカー（ニュースバー、.news-ticker-bar）は 2026-09-06 に廃止した
+    // (P7-36。Keisuke裁定 2026-09-05「ティッカーは廃止」)。
 
     // Upcoming events strip
     if (upcomingItems.length > 0) {
@@ -5375,6 +5366,12 @@ function _renderInviteMarketPanel() {
   const swapText = weeksLeft == null
     ? WM_I18N.t('まもなく入れ替わる')
     : (weeksLeft === 1 ? WM_I18N.t('次の週で入れ替わる') : WM_I18N.t('入れ替わりまで あと{n}週', { n: weeksLeft }));
+  // P7-36(2026-09-06): 廃止した📰ティッカーの予告1行「【招聘】来週、招聘に応じる
+  // コーチの顔ぶれが入れ替わる」の移設先。文言はティッカー時代のものを踏襲(【招聘】接頭辞は
+  // ティッカーの中で由来を示す記号だったため、専用パネルの中では不要と判断し外した)。
+  const eveNoticeHtml = Engine.shachoshitsu.isInviteMarketEveWeek(G)
+    ? `<div class="imp-eve">${WM_I18N.t('来週、招聘に応じるコーチの顔ぶれが入れ替わる')}</div>`
+    : '';
 
   const gradeLabel = { C: WM_I18N.t('C級'), B: WM_I18N.t('B級'), A: WM_I18N.t('A級') };
   const requestedId = (market && market.requestResult && market.requestResult.fulfilled)
@@ -5432,6 +5429,7 @@ function _renderInviteMarketPanel() {
       <span class="imp-title">${WM_I18N.t('招聘に応じるコーチ')}</span>
       <span class="imp-swap">${swapText}</span>
     </div>
+    ${eveNoticeHtml}
     <div class="imp-cands">${cardsHtml}</div>
     <div class="imp-note">${WM_I18N.t('頼めるのは「どんな人を探すか」まで。誰が応じるかは決められない。')}</div>
     <div class="imp-request">${requestHtml}</div>

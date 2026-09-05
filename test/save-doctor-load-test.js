@@ -60,4 +60,42 @@ assert(repaired.after.missingRetiredSeasons.length === 0, `expected no missing r
   assert(!probe.after.missing.includes(1), 'expected retired fighter id to remain tracked after repair');
 })();
 
+// P7-36(2026-09-06): 廃止した週次ティッカーの残骸 `_tickerItems` を旧セーブから静かに落とす。
+(function testTickerItemsAreStrippedOnLoad() {
+  const withTicker = Engine.saveDoctor.repairOnLoad({
+    season: 2,
+    week: 5,
+    rngSeed: 42,
+    roster: [],
+    freeAgents: [],
+    scoutCandidates: [],
+    dormantPool: [],
+    retiredIds: [],
+    retiredSeasons: {},
+    retiredFighters: [],
+    aiOrgs: {},
+    _tickerItems: ['◆ 旧v1.4wティッカーの残骸'],
+  });
+  assert(!Object.prototype.hasOwnProperty.call(withTicker.state, '_tickerItems'),
+    'expected _tickerItems to be removed from state after repair');
+  assert(withTicker.changes.includes('ticker_items_removed'),
+    'expected repair changes to record ticker_items_removed');
+
+  const withoutTicker = Engine.saveDoctor.repairOnLoad({
+    season: 2,
+    week: 5,
+    rngSeed: 42,
+    roster: [],
+    freeAgents: [],
+    scoutCandidates: [],
+    dormantPool: [],
+    retiredIds: [],
+    retiredSeasons: {},
+    retiredFighters: [],
+    aiOrgs: {},
+  });
+  assert(!withoutTicker.changes.includes('ticker_items_removed'),
+    'expected no ticker_items_removed change when _tickerItems is already absent (no-op, idempotent)');
+})();
+
 console.log('PASS: save-doctor load repair restored the broken fixture');

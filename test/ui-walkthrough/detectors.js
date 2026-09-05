@@ -337,11 +337,9 @@ class WalkthroughDetectors {
       for (const element of allVisible) {
         const text = textOf(element);
         if (!text) continue;
-        // ニュースティッカー(.news-ticker-bar)は`animation:tickerScroll 40s linear infinite`で
-        // 常時横スクロールする設計上のマーキー(src/index.html:2440-2448、テキストを2連結して
-        // シームレスループさせる仕様)。overflow:hidden+white-space:nowrapは「切れ」ではなく
-        // 意図した挙動であり、ja/en問わず毎ステップ検出されて上位30件を埋め尽くしてしまうため除外する
-        if (element.closest('.news-ticker-bar')) continue;
+        // v1.4wのニュースティッカー(.news-ticker-bar)専用の除外はP7-36(2026-09-06)で
+        // ティッカー自体が廃止されたため削除した。設計上のマーキー(常時スクロール)を
+        // 意図的にoverflow:hiddenで作る要素が今後増えたら、ここに同様の除外を足すこと。
         const style = getComputedStyle(element);
 
         const overflowX = style.overflowX;

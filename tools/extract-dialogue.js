@@ -129,7 +129,7 @@ const TABLE_MANIFEST = [
   T('BITTER_PREMATCH_LINES', 'data.js', '03'),
   T('RIVALRY_MATCH_REACTION', 'data.js', '03'),
   T('UPSET_RIVALRY_LINES', 'data.js', '03'),
-  T('WEEKLY_STORY_TICKER', 'data.js', '03'),
+  T('RELATION_EVENT_LINES', 'data.js', '03'), // 旧WEEKLY_STORY_TICKER(P7-36で改名)
 
   // ---- 04: 挑戦試合(直訴/遠征) ----
   T('CHALLENGE_LINES', 'data.js', '04'),
@@ -203,7 +203,7 @@ const TABLE_MANIFEST = [
   // ---- 10: ニュース/新聞/黒田記者コラム ----
   // AI_BREAKTHROUGH_NEWS / AI_SLUMP_NEWS / AI_MOTIVATION_LOSS_NEWS も
   // 同じく c79a3ba で削除済み。現在の記事文は NEWS_HEADLINE_TEMPLATES 側にある。
-  T('NEWS_TICKER_TEMPLATES', 'data.js', '10'),
+  // NEWS_TICKER_TEMPLATES は P7-36(2026-09-06、📰ティッカー廃止)で表ごと削除済み。
   T('NEWS_HEADLINE_TEMPLATES', 'data.js', '10'),
   T('RETIREMENT_TEMPLATES', 'data.js', '10'),
   T('DRAFT_PLAYER_RESULT_PARTS', 'data.js', '10'),

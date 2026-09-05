@@ -173,7 +173,6 @@
   function restore(raw) {
     if (!raw || !Storage.deserialize(raw)) throw new Error('開発用セーブの読み込みに失敗しました。');
     sessionRng = Engine.rng.create(G.rngSeed);
-    if (App._refreshTicker) App._refreshTicker();
     showScreen('week'); refreshAll(); Audio.bgm.playForState();
   }
   function defaultSchedules(state) {
@@ -310,7 +309,7 @@
     if (!targetReached(state, targetSeason, targetWeek)) throw new Error('高速進行の上限に達しました。');
     // The requested week is the inspection point: do not consume its tournament/entry flow.
     G = state; saveCheckpoint(label || `S${targetSeason}W${targetWeek}`); saveDevAuto();
-    sessionRng = Engine.rng.create(G.rngSeed); if (App._refreshTicker) App._refreshTicker(); showScreen('week'); refreshAll();
+    sessionRng = Engine.rng.create(G.rngSeed); showScreen('week'); refreshAll();
     renderPanel(`${phaseLabel(G)} で停止し、開発用チェックポイントを保存しました。`);
   }
   function presetRows() {

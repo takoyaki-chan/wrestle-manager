@@ -3844,7 +3844,6 @@ const Storage = {
       if (G.weekPhase === 'showPrep' || G.weekPhase === 'showExec') G = { ...G, weekPhase: 'manage' };
           refreshAll();
           App.resumeLoadedSpecialPhase();
-          if (App._refreshTicker) App._refreshTicker();
           Audio.bgm.playForState();
           Audio.play('save');
         } else {
@@ -3862,7 +3861,6 @@ function saveGame(slot) { Audio.play('save'); return Storage.save(slot); }
 function loadGame(slot) {
   Audio.play('select');
   const r = Storage.load(slot);
-  if (r && App._refreshTicker) App._refreshTicker();
   Audio.bgm.playForState();
   // 業界底上げセレモニー: ロード直後に未表示なら即表示
   if (r && G._pendingLeagueElevation) {
@@ -5072,7 +5070,6 @@ const App = {
       return;
     }
     sessionRng = Engine.rng.create(G.rngSeed);
-    App._refreshTicker(); // v1.4w
     Audio.bgm.playForState();
     refreshAll();
   },
@@ -11000,8 +10997,6 @@ const App = {
         }
       }
     }
-    // v1.4w: ティッカー更新
-    App._refreshTicker();
 
     // v1.2-9: Flavor event popups after show settlement
     const showFlavorEvents = G._flavorEvents || [];
@@ -11231,14 +11226,8 @@ const App = {
     }
   },
 
-  // v1.4w: ティッカーニュース再生成（manage画面表示用）
-  // i18n Stage B P4-2(D-P4-2): 生成時点のWM_I18N.tを糸通しする(Engineは直接WM_I18Nを
-  // 呼ばないため、辞書参照関数として引数で渡す)。ja時はt()が素通しなので表示不変。
-  _refreshTicker() {
-    if (!G || G.offSeason) return;
-    const tickerRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xBEEF));
-    G = { ...G, _tickerItems: Engine.news.generateTicker(tickerRng, G, { lang: WM_I18N.lang, dict: WM_I18N.t }) };
-  },
+  // v1.4w の _refreshTicker(週次ティッカー再生成)は 2026-09-06 に削除した(P7-36。
+  // Keisuke裁定 2026-09-05「ティッカーは廃止」)。呼び出し元も全て除去済み。
 
   // 業界ニュースを新聞へ積む（2026-07-27 に旧「新聞パネル」から移管）。
   //
@@ -11666,7 +11655,6 @@ const App = {
     App.checkTenchosenPreEvent();
     App.checkUnifiedTitlePresentation();
     sessionRng = Engine.rng.create(G.rngSeed);
-    App._refreshTicker();
     Storage.autoSave();
     showScreen('week');
     document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -11735,8 +11723,6 @@ const App = {
     // v1.5s25b: 週次バフ消費（weekly_funds適用含む）
     App._applyWeeklyBuffEffects();
     App._tickMilestoneBuffsWeekly();
-    // v1.4w: ティッカー更新
-    App._refreshTicker();
     // relationship-flags-spec-v1.0 §4: 関係性フラグモーダルを順次 popup に流す
     // Common-3 派閥加入通知 / §6 アーキタイプ遷移ナレーション（F07 rebuke 4 累積など）
     // care-rework v0.1 §3.4 P4: 招聘の過程イベント（中間報告/衝突/延長打診/卒業レポート）
@@ -12481,8 +12467,6 @@ const App = {
           fromOrg: fromOrg ? fromOrg.from : '他団体',
           ovr: Engine.util.ov(nf) } });
     }
-    // v1.4w: ティッカー更新
-    App._refreshTicker();
 
     // 2026-07-27: ここにあった App._seasonEndChainActive（総括を伏せるフラグ）は廃止した。
     // advanceWeek のたびに立ち、演出チェーンが完走したときにしか下りない作りだったため、
@@ -16224,7 +16208,6 @@ App.closePPVResult = function() {
   G = { ...G, showCard: [] };
   App.preloadNewspaperImages(G.weeklyNewspaper);
 
-  App._refreshTicker();
   App.checkSurvivalUpdate();
   // Step 5-6: バフ消費
   App._tickMilestoneBuffsShow();
@@ -16381,7 +16364,6 @@ App.closePPVTV = function() {
   G = { ...result.state, seasonStats: stats, fundsHistory: fh, gameLog: [...G.gameLog, ...result.events] };
   App.preloadNewspaperImages(G.weeklyNewspaper);
 
-  App._refreshTicker();
   App.checkSurvivalUpdate();
   App._applyWeeklyBuffEffects();
   App._tickMilestoneBuffsWeekly();
@@ -16921,7 +16903,8 @@ App.finalizeJuniorTournament = function() {
   G = { ...applied.state, gameLog: [...G.gameLog, ...applied.events] };
 
   // 新聞を再生成（JT結果を反映させる）
-  // i18n Stage B P4-2(D-P4-2): 生成時点のWM_I18N.tを糸通しする(理由は_refreshTicker参照)。
+  // i18n Stage B P4-2(D-P4-2): 生成時点のWM_I18N.tを糸通しする(Engineは直接WM_I18Nを
+  // 呼ばないため、辞書参照関数として引数で渡す。ja時はt()が素通しなので表示不変)。
   const newsRng = Engine.rng.create(Engine.rng.derive(G.rngSeed, G.season, G.week, 0xEE57));
   G = { ...G, weeklyNewspaper: Engine.newspaper.generate(G, newsRng, { lang: WM_I18N.lang, dict: WM_I18N.t }) };
   App.preloadNewspaperImages(G.weeklyNewspaper);

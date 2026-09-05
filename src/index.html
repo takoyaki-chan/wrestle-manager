@@ -2452,16 +2452,8 @@ html[lang="en"] .aw-team-name{white-space:normal;word-break:normal;line-height:1
 .sf-continue-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 @keyframes sfPulse{0%{transform:scale(0.82) translateY(24px);opacity:0}100%{transform:scale(1) translateY(0);opacity:1}}
 
-/* v1.4w: ニュースティッカー */
-.news-ticker-bar{overflow:hidden;white-space:nowrap;margin-bottom:8px;padding:5px 0;
-  background:linear-gradient(90deg,rgba(212,168,67,0.06),rgba(212,168,67,0.03),rgba(212,168,67,0.06));
-  border:1px solid rgba(212,168,67,0.1);border-radius:4px;position:relative}
-.news-ticker-bar::before{content:'📰';position:absolute;left:6px;top:50%;transform:translateY(-50%);
-  font-size:12px;z-index:1}
-.news-ticker-track{padding-left:26px;overflow:hidden}
-.news-ticker-text{display:inline-block;font-size:12px;color:var(--text-sub);letter-spacing:0.5px;
-  animation:tickerScroll 40s linear infinite;white-space:nowrap}
-@keyframes tickerScroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+/* v1.4w のニュースティッカー(.news-ticker-bar/-track/-text、@keyframes tickerScroll)は
+   2026-09-06 に廃止した(P7-36。Keisuke裁定 2026-09-05「ティッカーは廃止」)。 */
 
 /* v1.4w の新聞パネル(.newspaper-overlay/-box/-header/-headline/-body/-close/-nav)は
    2026-07-27 に撤去。業界ニュースは📰新聞へ一本化した(開く側のコードごと削除済み)。 */
@@ -4666,6 +4658,9 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
   padding-bottom:8px;border-bottom:1px solid rgba(100,85,50,0.24);margin-bottom:12px}
 .invite-market-panel .imp-title{font-size:14px;font-weight:700;letter-spacing:1px}
 .invite-market-panel .imp-swap{font-size:11px;color:var(--cream-gold)}
+.invite-market-panel .imp-eve{font-size:11px;font-weight:700;color:var(--cream-gold-dark);
+  background:rgba(212,168,67,0.1);border:1px solid rgba(212,168,67,0.22);border-radius:4px;
+  padding:5px 10px;margin-bottom:12px}
 .invite-market-panel .imp-cands{display:flex;flex-wrap:wrap;gap:14px}
 .invite-market-panel .imp-cand{display:flex;flex-direction:column;align-items:center;width:132px;text-align:center}
 .invite-market-panel .imp-face{width:40px;height:40px;border-radius:50%;margin-bottom:6px;
