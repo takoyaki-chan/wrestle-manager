@@ -32,8 +32,8 @@ const context = vm.createContext({
 });
 vm.runInContext(data.slice(data.indexOf('const MILESTONE_EVENTS = ['), data.indexOf('\n];', data.indexOf('const MILESTONE_EVENTS = [')) + 3), context);
 vm.runInContext(`var App = {${['_checkMilestones', '_checkAndShowMilestone', '_applyMilestoneChoice'].map(method).join(',')}};`, context);
-function afterShow(totalShows, milestones = {}) {
-  context.G = { totalShows, milestones, roster: [], orgPop: 0, rivalries: {}, showVenue: 0 };
+function afterShow(totalShows, milestones = {}, orgPop = 0) {
+  context.G = { totalShows, milestones, roster: [], orgPop, rivalries: {}, showVenue: 0 };
   shown = []; saved = 0; queued = null;
   vm.runInContext(`(function() {${chain}})()`, context);
   assert.deepStrictEqual(shown, [], 'Do not open before the week advance clears popups');
@@ -59,4 +59,25 @@ for (let choice = 0; choice < 3; choice++) {
 }
 afterShow(12);
 assert.deepStrictEqual(shown, ['first_show'], 'An existing save with an unclaimed milestone is still eligible');
+
+afterShow(2, { first_show: true }, 19);
+assert.deepStrictEqual(shown, [], 'Local buzz does not trigger below popularity 20');
+afterShow(3, { first_show: true }, 20);
+assert.deepStrictEqual(shown, ['orgpop_20'], 'Local buzz appears after the qualifying show, without waiting for awards');
+choiceCallback(0);
+assert.strictEqual(context.G.milestones.orgpop_20, true);
+assert.strictEqual(saved, 1, 'Persist local buzz completion');
+assert.strictEqual(context.G.milestoneBuffs[0].remainingWeeks, 4);
+afterShow(4, context.G.milestones, 20);
+assert.deepStrictEqual(shown, [], 'Do not repeat local buzz at later shows');
+context.G.offSeason = true;
+context.G.totalShows = 24;
+vm.runInContext('App._checkAndShowMilestone(() => {})', context);
+assert.deepStrictEqual(shown, [], 'Do not repeat local buzz after annual awards');
+
+afterShow(1, {}, 20);
+assert.deepStrictEqual(shown, ['first_show'], 'Opening show takes priority when both conditions are met');
+choiceCallback(0);
+afterShow(2, context.G.milestones, 20);
+assert.deepStrictEqual(shown, ['orgpop_20'], 'A simultaneous local buzz milestone is picked up at the next show, not year end');
 console.log('post-show-milestone-timing-test: PASS');
