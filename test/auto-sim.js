@@ -2615,7 +2615,7 @@ if (s.orgPopHistory && s.orgPopHistory.length >= 5) {
   }
 }
 
-// ─��� 新集客v2計測レポート ──
+// ── 新集客v2計測レポート ──
 if (result.stats.v2Samples && result.stats.v2Samples.length > 0) {
   const samples = result.stats.v2Samples;
   console.log('');
