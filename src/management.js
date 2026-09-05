@@ -575,6 +575,15 @@ const Engine = {
         changes.push('faction_timeline_initialized');
       }
 
+      // P7-36(2026-09-06): v1.4wのティッカー廃止に伴う残骸フィールドの掃除。
+      // _tickerItems は表示専用キャッシュで参照整合性もvalidateGameStateの対象にも
+      // 入っていないため実害はないが、死んだ機能の痕跡をセーブに残さない。
+      if (Object.prototype.hasOwnProperty.call(state, '_tickerItems')) {
+        const { _tickerItems: _removedTicker, ...clean } = state;
+        state = clean;
+        changes.push('ticker_items_removed');
+      }
+
       return {
         state,
         changed: changes.length > 0,
@@ -3899,7 +3908,7 @@ const Engine = {
      * @param {Object} [opts] i18n Stage B P6-10: dict-opts(specs/i18n-runtime-spec-v1.0.md §6)。
      *   `opts.dict`(=WM_I18N.t 相当の `(text, params) => text`)があれば見出しテンプレを
      *   **プレースホルダ置換前に**辞書へ通す。省略時(auto-sim/ja-golden/プレビューtick)は
-     *   翻訳せず充填だけ行う(§6 generateTicker と同じ契約 — 単純な `(s)=>s` にすると
+     *   翻訳せず充填だけ行う(dict-opts共通契約 — 単純な `(s)=>s` にすると
      *   `{name}` が生のまま残る)。
      * @returns {Array<{type:'magazine'|'tv', fighterId, fighterName, popGain?, heatGain?, headline, headlineJa}>}
      */
@@ -21944,176 +21953,12 @@ Engine.seasonReview = {
 // ══════════════════════════════════════════════════════════
 Engine.news = {
 
-  /** ティッカーニュース生成（毎週 manage画面に表示） */
-  // i18n Stage B P4-2(D-P4-2): 第3引数 opts.dict は任意の「辞書参照関数」。省略時は
-  // 従来どおりJA原文のまま(既存呼び出し元は無改修で不変)。
-  generateTicker(rng, state, opts) {
-    // P6-6配線修正: 従来はdict(template)で「テンプレの翻訳」だけを行い、プレースホルダの
-    // 値は下の.replace()で生JAのまま挿入していた(選手名/団体名がpn()を通らずENでも
-    // 原文のまま露出するバグ)。dict(template, params)へ一本化し、値の変換もdict任せにする。
-    // opts.dictを渡さない呼び出し(test/ja-golden.js等)向けのフォールバックは、
-    // 旧来の手動置換ループと同じ置換だけを行う恒等関数にする(翻訳はしないが、
-    // プレースホルダの充填は従来どおり必須のため)。
-    const dict = (opts && typeof opts.dict === 'function') ? opts.dict : (s, params) => {
-      if (!params) return s;
-      let out = s;
-      Object.keys(params).forEach(k => { out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), params[k]); });
-      return out;
-    };
-    const items = [];
-    const ov = Engine.util.ov;
-    const orgName = id => Engine.awards ? Engine.awards._orgName(state, id) : id;
-
-    // AI団体の興行結果（興行週なら）
-    if (Engine.util.isRegularShowWeek(state.week)) {
-      if (state.aiOrgs) {
-        Object.keys(state.aiOrgs).forEach(orgId => {
-          const org = RIVAL_ORGS.find(o => o.id === orgId);
-          if (!org) return;
-          if (Engine.rng.float(rng) < 0.4) {
-            items.push({ cat: 'aiShow', data: { org: org.name } });
-          }
-        });
-      }
-    }
-
-    // 自団体: 実際のstreak値を使用（3連勝以上 / 3連敗以上）
-    (state.roster || []).forEach(f => {
-      const streak = f.streak || 0;
-      if (streak >= 3) {
-        items.push({ cat: 'winStreak', data: { name: f.name, count: streak } });
-      }
-      if (streak <= -3) {
-        items.push({ cat: 'loseStreak', data: { name: f.name, count: Math.abs(streak) } });
-      }
-    });
-
-    // AI団体: エース級選手の動向フレーバー（怪我中は除外）
-    if (state.aiOrgs) {
-      Object.keys(state.aiOrgs).forEach(orgId => {
-        const org = RIVAL_ORGS.find(o => o.id === orgId);
-        if (!org || !state.aiOrgs[orgId].roster) return;
-        const healthy = state.aiOrgs[orgId].roster.filter(f => !f.injury);
-        const top = [...healthy].sort((a, b) => ov(b) - ov(a));
-        if (top.length > 0 && Engine.rng.float(rng) < 0.25) {
-          items.push({ cat: 'aiAce', data: { name: top[0].name, org: org.name } });
-        }
-      });
-    }
-
-    // フレーバー（ランダム全団体選手）
-    const allFighters = [...(state.roster || [])];
-    if (state.aiOrgs) {
-      Object.values(state.aiOrgs).forEach(o => { if (o.roster) allFighters.push(...o.roster); });
-    }
-    if (allFighters.length >= 2 && Engine.rng.float(rng) < 0.5) {
-      const f1 = Engine.rng.pick(rng, allFighters);
-      const f2 = Engine.rng.pick(rng, allFighters.filter(f => f.id !== f1.id));
-      items.push({ cat: 'flavor', data: { name: f1.name, name2: f2 ? f2.name : '???' } });
-    }
-
-    // AI団体の負傷情報（実際にinjuryフラグが立っている選手のみ）
-    if (state.aiOrgs) {
-      Object.keys(state.aiOrgs).forEach(orgId => {
-        const org = RIVAL_ORGS.find(o => o.id === orgId);
-        if (!org) return;
-        const roster = state.aiOrgs[orgId].roster || [];
-        const injured = roster.filter(f => f.injury);
-        injured.forEach(f => {
-          if (Engine.rng.float(rng) < 0.3) {
-            items.push({ cat: 'injury', data: { org: org.name, name: f.name } });
-          }
-        });
-      });
-    }
-
-    // スカウト動向（FA市場に選手がいる場合のみ）
-    if ((state.freeAgents || []).length > 0 && Engine.rng.float(rng) < 0.2) {
-      items.push({ cat: 'scout', data: {} });
-    }
-
-    // 経済（AI団体のorgPop/fundsを参照し、なければtierフォールバック）
-    if (state.aiOrgs) {
-      const orgIds = Object.keys(state.aiOrgs);
-      if (orgIds.length > 0 && Engine.rng.float(rng) < 0.15) {
-        const orgId = Engine.rng.pick(rng, orgIds);
-        const org = RIVAL_ORGS.find(o => o.id === orgId);
-        if (org) {
-          const aiData = state.aiOrgs[orgId];
-          let cat;
-          if (aiData.orgPop != null) {
-            cat = aiData.orgPop >= 40 ? 'economyGood' : 'economyStruggle';
-          } else {
-            const tier = org.tier || 'B';
-            cat = (tier === 'S' || tier === 'A') ? 'economyGood' : 'economyStruggle';
-          }
-          items.push({ cat, data: { org: org.name } });
-        }
-      }
-    }
-
-    // ジュニアトーナメント結果（開催週の翌週以降に表示）
-    if (state._juniorTournamentResult) {
-      const jtr = state._juniorTournamentResult;
-      if (jtr.champion) {
-        items.push({ cat: 'juniorTournament', data: { name: jtr.champion.name, orgName: jtr.champion._orgName } });
-      }
-    }
-
-    // 一般
-    if (Engine.rng.float(rng) < 0.2) {
-      items.push({ cat: 'general', data: {} });
-    }
-
-    // rivalry — 因縁ペアのフレーバー（自団体のみ）
-    const rivalryKeys = Object.keys(state.rivalries || {});
-    rivalryKeys.forEach(key => {
-      const rv = state.rivalries[key];
-      if (!rv || (rv.matches || 0) < 2) return;
-      if (Engine.rng.float(rng) < 0.2) {
-        const ids = key.split('-');
-        const f1 = (state.roster || []).find(f => f.id === parseInt(ids[0]));
-        const f2 = (state.roster || []).find(f => f.id === parseInt(ids[1]));
-        if (f1 && f2) {
-          const cat = rv.resolved ? 'rivalryGoodRival' : 'rivalryActive';
-          items.push({ cat, data: { name1: f1.name, name2: f2.name } });
-        }
-      }
-    });
-
-    // champion — 王座フレーバー（自団体にチャンピオンがいる場合）
-    const champId = state.titles?.world?.championId;
-    if (champId && Engine.rng.float(rng) < 0.2) {
-      const champ = (state.roster || []).find(f => f.id === champId);
-      if (champ) {
-        const defenses = state.titles.world.defenses || 0;
-        const cat = defenses >= 5 ? 'championLongReign' : 'champion';
-        items.push({ cat, data: { name: champ.name, defenses } });
-      }
-    }
-
-    // テンプレート適用して3〜5件選出
-    const resolved = items.map(item => {
-      const templates = NEWS_TICKER_TEMPLATES[item.cat];
-      if (!templates || templates.length === 0) return null;
-      return dict(Engine.rng.pick(rng, templates), item.data);
-    }).filter(Boolean);
-
-    // シャッフルして3〜5件
-    const shuffled = [...resolved];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Engine.rng.int(rng, 0, i);
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    const count = Math.min(shuffled.length, Engine.rng.int(rng, 3, 5));
-    const picked = shuffled.slice(0, count);
-    // care-rework2 P3-3: 招聘の顔ぶれが替わる前週の予告を1行。乱数を一切消費しない
-    // 確定枠として最後に足す(他の項目を押し出さない・既存の抽選列も動かさない)。
-    if (Engine.shachoshitsu.isInviteMarketEveWeek(state)) {
-      picked.push('【招聘】来週、招聘に応じるコーチの顔ぶれが入れ替わる');
-    }
-    return picked;
-  },
+  // v1.4w の generateTicker(週次ティッカー生成)は 2026-09-06 に削除した(P7-36。
+  // Keisuke裁定 2026-09-05「ティッカーは廃止。ゲームの各要素が揃う前に作ったもの」)。
+  // 招聘市場の入れ替わり予告は Engine.shachoshitsu.isInviteMarketEveWeek を UI 側
+  // (社長室の招聘パネル、_renderInviteMarketPanel)から直接呼ぶ形に付け替え済み。
+  // ジュニア大会優勝は Engine.newspaper 側の juniorTournamentResult 記事で
+  // 既にカバーされていたため移設不要だった。詳細は docs/worklog.md P7-36 エントリ参照。
 
   /** 新聞パネル記事生成（イベント配列から Article[] を生成） */
   generateHeadlines(rng, events) {

@@ -1,5 +1,57 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-36 — 週次ティッカー(📰帯)廃止(2026-09-06・worktree agent-ac58d81c02c63e492)
+
+Keisuke裁定(2026-09-05「ティッカーは廃止。ゲームの各要素が揃う前に作ったもの」)。背景と決定は `docs/i18n-keisuke-rulings-pending-v0.1.md` E節。着手前にworktreeをmain先端(863ff2b1)へfast-forward済み。
+
+### 撤去したもの
+
+- **生成**: `Engine.news.generateTicker`(management.js、約170行)。招聘市場の予告push・テンプレ抽選ロジックごと削除
+- **描画**: `src/ui-render.js` の `.news-ticker-bar` 生成ブロック、`src/index.html` の `.news-ticker-bar/-track/-text`+`@keyframes tickerScroll` CSS
+- **更新呼び出し**: `App._refreshTicker`(app.js)本体+全9呼び出し元(load-from-file/loadGame/continueGame/closeShowResult/advanceWeek/processWeek/season-end/closePPVResult/closePPVTV)、`src/dev-tools.js` の2箇所(restore/fast-forward)
+- **文面**: `NEWS_TICKER_TEMPLATES`(data.js、14カテゴリ・約75本)を表ごと削除
+- **`WEEKLY_STORY_TICKER`の整理**: `RELATION_EVENT_LINES` へ改名(relationships.js 7箇所+data.js定義)。未使用9キー(bestFriends/hostileEnemy/goodRivalZone/unrequitedBond/onesidedHostility/temperatureDiff/crossAsymmetry/highRivalryAwareness/goodRivalTicker/bitterRivalTicker、計29本)を削除。現存は`clash`(5)/`trustWarning`(4)/`awakening`(27)の3キー36行のみ(gameLogレガシー文字列エントリとして不変)
+- **台帳**: `i18n/template-ledger.json`(3585→3481件、104件削除+36件`RELATION_EVENT_LINES`へfiles改名。差分は正規化済みfull-regenerate結果と完全一致=手動突合で検証)、`test/i18n-extract-templates.js` TARGET_TABLESから`NEWS_TICKER_TEMPLATES`削除+`WEEKLY_STORY_TICKER`→`RELATION_EVENT_LINES`。`tools/extract-dialogue.js` TABLE_MANIFESTも同様に更新(docs/dialogue/配下は別件で全面的に古かったため今回は再生成せず現状維持 — 下記「見つけた別件」参照)
+- **セーブ残骸**: `Engine.saveDoctor.repairOnLoad`にロード時 `_tickerItems` 静音削除を追加(`ticker_items_removed`をchangesへ記録)。`test/save-doctor-load-test.js`に単体テスト追加(あり→削除+changes記録/なし→no-op)
+
+### 移し先2件
+
+1. **招聘市場の入れ替わり予告** — 「来週、招聘に応じるコーチの顔ぶれが入れ替わる」を社長室の招聘市場常設パネル(`_renderInviteMarketPanel`、ui-render.js)のヘッダー直下に`.imp-eve`として表示(`Engine.shachoshitsu.isInviteMarketEveWeek(G)`が真の週のみ、乱数消費なし)。文言は1バイト不変(【招聘】接頭辞のみ落とした — パネル内では出所を示す記号が不要なため)。この文字列は元々`generateTicker`内で`dict()`を通さず直接pushされておりEN未対応だったため、新規に`WM_I18N.t()`化してui-ledgerへ追加(新規キー1件・EN訳追加、既存の他キーの並び/訳文は無改修 — 差分はサロゲート挿入1件のみで検証済み)
+2. **ジュニア大会優勝** — `Engine.newspaper`側に元々`juniorTournamentResult`記事(`state._juniorTournamentResult`から生成、management.js内)があり、ティッカー抜きでも新聞紙面でカバー済みと確認。移設作業は不要だった
+
+### 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check` 全触ったファイル | 全OK |
+| `npm test` | 264/264 PASS(既存264件+ticker関連拡張2件は既存ファイルへの追記) |
+| `node test/ja-golden.js --update`→無引数 | OK: 完全一致。**旧基準からticker行3800本だけを除いた残り7507行が新基準と1バイト一致することをスクリプトで機械証明**(旧基準の`[S*/ticker*]`タグ行を正規表現で除外→新基準とindex-by-index完全一致、mismatch=0)。新digest: lines=7507 hash=3466a6ff87e94cf3f2e5683f7f50b9d8bc198e0c91ab0adb83578e12fce1037b |
+| `node test/i18n-ratchet.js`→`--update` | data.js -104行・management.js -1行(招聘予告のJA直書きがWM_I18N.t()化されたため)で減少確認。基準更新(理由: 直書き削減の正当な反映) |
+| `node test/i18n-build-template-dict.js` | 3481/3481訳文あり、未訳0。lang-en-templates.js差分は削除104件のみ |
+| `node test/i18n-build-dict.js`(ui) | 4687/4687訳文あり、未訳0。lang-en.js差分は新規1件のみ |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上重複17件、訳文一致) |
+| `node test/auto-sim.js 20 42` | ALL CLEAR、violations 0、台帳検査3種違反0。**Semantic fingerprint = e96444c1(変更前と同一)** — ティッカーのrngは`Engine.rng.create(Engine.rng.derive(...))`の使い捨てストリームで本編のrng状態を一切消費しないため無影響 |
+| `npm run test:ui:walkthrough`(JA) | PASS。Actions 336 digest=b3b7a2c05a7e6016(DOM変更のため旧digestから変化・想定どおり)。Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | PASS。Actions 399 digest=a21c9e961ea228ed。Issues 0・**i18n-miss 0**(新規追加した招聘予告キーも含め全訳あり)。環境メモ: JA走破直後、共有`node_modules`(main直下・worktree外)が空になりPlaywrightが解決不能になった。約25分(3回)待っても復旧しなかったため、**このworktree自身に**`npm ci`でローカルnode_modulesを作成して解消(main側の共有ファイルには一切触れていない。`node_modules/`は`.gitignore`済みのためコミット対象外) |
+| `npm run test:ui:ignite -- --scenario tenchosen`(JA) | PASS。digest=299589bd59d9ce1e。Issues 0。Marker HIT: unified-coronation |
+| `npm run test:ui:ignite -- --scenario tenchosen --lang en` | PASS。digest=ad3e5de452bcb053。Issues 0・i18n-miss 0 |
+| `npm run test:ui:ignite -- --scenario gameover`(JA) | PASS。digest=08630790bbbd54ed。Issues 0。Marker HIT: gameover-ceremony/gameover-back-to-title |
+| `npm run test:ui:ignite -- --scenario gameover --lang en` | PASS。digest=338836fc021abc31。Issues 0・i18n-miss 0 |
+
+### 見つけた別件(このタスクの範囲外・未対応)
+
+- `docs/dialogue/` 配下(`tools/extract-dialogue.js`による自動生成markdown)がP7-37等の直近のセリフ改訂を反映しておらず古い。再生成すると無関係な差分が大量に出るため今回はTABLE_MANIFESTの更新のみ行い、mdファイル自体の再生成は見送った(別途まとめて実行すべき)
+- `test/_patched.js`(+`test/_run_patch.js`)はv1.14時代の古いdialogue patchスクリプトの副産物で、どこからも`require`されていない完全な死蔵ファイル。`NEWS_TICKER_TEMPLATES`/`WEEKLY_STORY_TICKER`の旧内容がそのまま残っているが実行に影響しないため放置(削除するなら別タスク)
+- `docs/ui/mockups/newspaper-hof-retirement-render-check.html` と `autumn-gauntlet-war-ui-3patterns-v0.1.html` に旧`.news-ticker-bar`風CSSクラスが残るが、静的モックアップ(実行時に読み込まれない)のため対象外
+- 一部specs(`care-visibility-spec-v1.0.md`§2、`glimpse-cascade-spec-v1.0.md`、`challenge-request-spec-v0.1.md`§4.3)は「ティッカー」という語をトースト/gameLog一行通知の意味で使っており、今回廃止した`.news-ticker-bar`とは別概念(実装を確認: `CHALLENGE_REQUEST_NO_LINES`は`showToast()`経由)。誤解を招く古い用語だが実体は無傷のため未修正 — 用語整理は別タスクで検討の余地あり
+
+### 触ったファイル
+
+src: app.js / data.js / dev-tools.js / index.html / lang-en.js / lang-en-templates.js / management.js / relationships.js / ui-render.js
+test: fixtures/i18n-ratchet-baseline.json / fixtures/ja-golden-baseline.json / i18n-extract-templates.js / ja-golden.js / save-doctor-load-test.js / ui-walkthrough/detectors.js / week-advance-single-step-test.js
+tools: extract-dialogue.js
+i18n: template-ledger.json / ui-ledger.json
+docs/specs: i18n-keisuke-rulings-pending-v0.1.md(E節+A-1) / game-system-roadmap.md(🌐行) / ui/03-screens/shachoshitsu.md / 実機確認バックログ.md / specs/shachoshitsu-spec-v1.0.md / specs/i18n-runtime-spec-v1.0.md
 ## 🌐 英語対応 P7-42 — Glimpse A層(道場「休憩中の選手」吹き出し)は**既に全訳・全配線済み**だった / 指示の「51行」は上書きで死んだリテラル(src変更なし・回帰ガード1本追加)(2026-09-06・worktree agent-ab2ea68b73f20deb3)
 
 着手前に worktree を main 先端(`863ff2b1`)へ fast-forward 済み。裁定の出どころは `docs/i18n-keisuke-rulings-pending-v0.1.md` A-2(2026-09-05 訂正版=「削除ではなく51行を dialogue-ledger 経路で英訳する」)。

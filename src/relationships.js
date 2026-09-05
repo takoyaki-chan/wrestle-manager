@@ -943,7 +943,7 @@ Engine.relationships = {
             applyConditionDelta(right.id, -clashDamage);
             applyTrustDelta(left.id, -0.4);
             applyTrustDelta(right.id, -0.4);
-            pairEventNames.push(_pick(WEEKLY_STORY_TICKER.clash, left.name, right.name));
+            pairEventNames.push(_pick(RELATION_EVENT_LINES.clash, left.name, right.name));
           }
         }
 
@@ -1006,7 +1006,7 @@ Engine.relationships = {
             relationships[keyBA] = boostedBA;
             updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
             // right=B(覚醒する側)のpersonality×archetypeでセリフ選出
-            const awPool1 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, right);
+            const awPool1 = getDialoguePool(RELATION_EVENT_LINES.awakening, right);
             const awTpl1 = awPool1[Engine.rng.int(rng, 0, awPool1.length - 1)];
             events.push(`[awakening] ${awTpl1.replace(/\{nameA\}/g, left.name).replace(/\{nameB\}/g, right.name)}`);
           }
@@ -1021,7 +1021,7 @@ Engine.relationships = {
             relationships[keyAB] = boostedAB;
             updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
             // left=B(覚醒する側)のpersonality×archetypeでセリフ選出
-            const awPool2 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, left);
+            const awPool2 = getDialoguePool(RELATION_EVENT_LINES.awakening, left);
             const awTpl2 = awPool2[Engine.rng.int(rng, 0, awPool2.length - 1)];
             events.push(`[awakening] ${awTpl2.replace(/\{nameA\}/g, right.name).replace(/\{nameB\}/g, left.name)}`);
           }
@@ -1105,7 +1105,7 @@ Engine.relationships = {
               boostedBA.bond = this._clampAxisValue((boostedBA.bond || 50) + awakeBondDrop, 'bond');
               relationships[keyBA] = boostedBA;
               updateFighter(right.id, fighter => ({ ...fighter, _awakened: true }));
-              const awPool1 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, right);
+              const awPool1 = getDialoguePool(RELATION_EVENT_LINES.awakening, right);
               const awTpl1 = awPool1[Engine.rng.int(rentalRivalryRng, 0, awPool1.length - 1)];
               events.push(`[awakening] ${awTpl1.replace(/\{nameA\}/g, left.name).replace(/\{nameB\}/g, right.name)}`);
             }
@@ -1119,7 +1119,7 @@ Engine.relationships = {
               boostedAB.bond = this._clampAxisValue((boostedAB.bond || 50) + awakeBondDrop, 'bond');
               relationships[keyAB] = boostedAB;
               updateFighter(left.id, fighter => ({ ...fighter, _awakened: true }));
-              const awPool2 = getDialoguePool(WEEKLY_STORY_TICKER.awakening, left);
+              const awPool2 = getDialoguePool(RELATION_EVENT_LINES.awakening, left);
               const awTpl2 = awPool2[Engine.rng.int(rentalRivalryRng, 0, awPool2.length - 1)];
               events.push(`[awakening] ${awTpl2.replace(/\{nameA\}/g, right.name).replace(/\{nameB\}/g, left.name)}`);
             }
@@ -1138,7 +1138,7 @@ Engine.relationships = {
       const trust = f.trust != null ? f.trust : 50;
       return trust >= 40 && trust <= 49;
     }).slice(0, 2).map(f => f.name);
-    warningNames.forEach(name => events.push(`[trust-warning] ${_pick(WEEKLY_STORY_TICKER.trustWarning, name, '')}`));
+    warningNames.forEach(name => events.push(`[trust-warning] ${_pick(RELATION_EVENT_LINES.trustWarning, name, '')}`));
 
     // ── 憎い敵ゾーンのモラルペナルティ ──
     const moraleDelta = -Math.min(3, moralePenaltyRaw);
@@ -1252,7 +1252,7 @@ Engine.relationships = {
 
     // ── T4-T7: trust不満系ティッカー（_grievanceFlagsが立っている選手） ──
     // i18n Stage B P6-17: 文面は data.js の WEEKLY_STORY_EVENT_TEXTS.grievance へ移設(specs §19-4-1)。
-    // WEEKLY_STORY_TICKER と同じ gameLog レガシー文字列エントリなので**表示はJA固定**。
+    // RELATION_EVENT_LINES と同じ gameLog レガシー文字列エントリなので**表示はJA固定**。
     const GR = WEEKLY_STORY_EVENT_TEXTS.grievance;
     const grievanceTickers = [];
     roster.forEach(f => {

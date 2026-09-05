@@ -5937,21 +5937,13 @@ const RIVALRY_CONFRONTATION_LINES_90 = {
     }}
 };
 
-// ── 週次ティッカーテキスト ──
-const WEEKLY_STORY_TICKER = {
-  // 第1層: 双方条件
-  bestFriends: [
-    // 親友ゾーン（bond70+, rivalry40未満）
-    '{nameA}と{nameB}が練習後に並んで帰る姿が目撃された',
-    '{nameA}と{nameB}がトレーニングで息の合った動きを見せている',
-    '{nameA}が{nameB}の体調を気遣っている姿があった',
-  ],
-  hostileEnemy: [
-    // 憎い敵ゾーン（rivalry40+, bond40未満）
-    '{nameA}と{nameB}の間に張り詰めた空気が漂っている',
-    '{nameA}と{nameB}が控室で目も合わせない',
-    'ロッカールームの一角で{nameA}と{nameB}の冷たい空気が流れている',
-  ],
+// ── 関係性イベントの地の文(gameLog行) ──
+// 旧称 WEEKLY_STORY_TICKER。v1.4wの📰ティッカー廃止(P7-36、2026-09-06)に伴い改名。
+// clash/trustWarning/awakening の3キー(下記)以外は processWeeklyStoryEvents から
+// 一度も参照されない死蔵プールだったため、廃止と同時に削除した(bestFriends等29本、
+// 2026-09-06確認)。残る3キーの消費点は relationships.js の gameLog レガシー文字列
+// エントリのみ(specs §2-4/§12-1により表示はJA固定)。
+const RELATION_EVENT_LINES = {
   clash: [
     // 衝突発生（憎い敵ゾーン、5%判定ヒット時）
     '{nameA}と{nameB}が練習中に激しく言い合いになった',
@@ -5959,53 +5951,6 @@ const WEEKLY_STORY_TICKER = {
     '{nameA}が{nameB}に食ってかかり、スタッフが止めに入った',
     '{nameA}と{nameB}の間で一触即発の空気が走った',
     '{nameA}と{nameB}が掴み合いになりかけ、周囲が慌てて止めた',
-  ],
-  goodRivalZone: [
-    // 好敵手的ゾーン（rivalry40+, bond50+）
-    '{nameA}が{nameB}の試合映像を繰り返し見ている',
-    '{nameA}と{nameB}が練習後に言葉を交わし、互いに頷いていた',
-    '{nameA}は{nameB}の試合結果を真っ先に確認している',
-  ],
-  // 第2層: 非対称
-  unrequitedBond: [
-    // 片思い（A→B bond70+ / B→A bond40以下）
-    '{nameA}が{nameB}に話しかけるも、素っ気ない反応だった',
-    '{nameA}は{nameB}のことを親友だと思っている——{nameB}がどう思っているかは別として',
-    '{nameA}が{nameB}を誘うが、{nameB}は別の用事があると去っていった',
-  ],
-  onesidedHostility: [
-    // 一方的な敵意（A→B rivalry50+ bond30以下 / B→A rivalry20以下）
-    '{nameA}が{nameB}を睨みつけている。{nameB}は気づいていない',
-    '{nameA}は{nameB}の名前を聞くたびに表情を歪めている',
-    '{nameA}の練習が日に日に荒くなっている——{nameB}への執念が滲む',
-  ],
-  temperatureDiff: [
-    // 温度差（A→B bond70+ / B→A bond50-65, 差15+）
-    '{nameA}が{nameB}との距離に少し戸惑っている様子だ',
-    '{nameA}は{nameB}との関係をもっと深めたいようだが……',
-  ],
-  crossAsymmetry: [
-    // クロス非対称（A: 高riv+低bond / B: 低riv+高bond）
-    '{nameA}は{nameB}を目の敵にしている。{nameB}は{nameA}のことを仲間だと思っているのに',
-    '{nameB}が笑顔で話しかけた{nameA}は、拳を握りしめて背を向けた',
-  ],
-  // 高rivalry: 非対戦時の意識テキスト
-  highRivalryAwareness: [
-    '{nameA}は客席から{nameB}の試合を食い入るように見つめていた',
-    '{nameA}は{nameB}の試合結果を聞いて、ゆっくりとテーピングを巻き直した',
-    '{nameA}が{nameB}の勝利を知り、静かに拳を握った',
-    '花道の奥から{nameA}が{nameB}の試合を見ていた。その目は揺れていない',
-  ],
-  // resolved状態のティッカー
-  goodRivalTicker: [
-    '{nameA}と{nameB}が練習後に静かに言葉を交わしていた',
-    '{nameA}と{nameB}——好敵手の二人が並んでストレッチをしている',
-    '{nameA}は{nameB}の試合を見て、小さく微笑んだ',
-  ],
-  bitterRivalTicker: [
-    '{nameA}と{nameB}が控室ですれ違い、空気が凍りついた',
-    '{nameA}の表情が一瞬歪んだ——{nameB}の名前を聞いただけで',
-    '{nameA}と{nameB}が同じ廊下を歩くことを、誰もが避けさせている',
   ],
   // trust警告帯テキスト（trust 40-49）
   trustWarning: [
@@ -16816,118 +16761,13 @@ const MOTIVATION_RECOVERY_LINES = {
 // §2.6 ブレークスルーSEノート（Audio.playで使用）
 // 'breakthrough' キーを Audio に追加する（app.js側で対応）
 
-// ══════════════════════════════════════════════
-//  v1.4w: 世界観演出 ニューステンプレート
-// ══════════════════════════════════════════════
-
-// §6.1 ティッカー用テンプレート（カテゴリ別・各5+パターン）
-const NEWS_TICKER_TEMPLATES = {
-  aiShow: [
-    '◆ {org}、今週も安定した集客で興行を成功させた',
-    '◆ {org}の興行が盛況。地元ファンの支持は厚い',
-    '◆ {org}が堅実な興行運営。観客の満足度も上々とのこと',
-    '◆ {org}の今週の興行は好評。会場には熱気が充満していた',
-    '◆ {org}、地域密着型の興行でファン層を着実に広げている',
-  ],
-  winStreak: [
-    '◆ {name}が{count}連勝中！ 絶好調の波に乗っている',
-    '◆ 快進撃の{name}、{count}連勝で勢いが止まらない',
-    '◆ {name}の連勝が{count}に到達。次の対戦相手は戦々恐々か',
-    '◆ 止まらない{name}！ {count}連勝で注目度が急上昇',
-    '◆ {name}が{count}連勝。充実した練習の成果が出ている',
-  ],
-  loseStreak: [
-    '◆ {name}に元気がない…{count}連敗にファンから心配の声',
-    '◆ {name}の不調が続く。{count}連敗で表情にも陰りが',
-    '◆ {name}が{count}連敗中。調子を取り戻すきっかけが欲しいところ',
-    '◆ {name}の連敗が止まらない。周囲のサポートが鍵になりそう',
-    '◆ {name}が苦しい時期を過ごしている。{count}連敗でも腐らない姿勢にファンはエールを送る',
-  ],
-  aiAce: [
-    '◆ {org}の{name}が好調を維持。エースとしての存在感を発揮',
-    '◆ {name}が{org}を牽引中。対戦を望む声が各団体から上がっている',
-    '◆ {org}の{name}に注目が集まる。実力は業界屈指との評判',
-    '◆ {name}の充実ぶりが話題に。{org}の大黒柱は健在',
-    '◆ {org}の看板選手{name}、練習での仕上がりが抜群とのこと',
-  ],
-  flavor: [
-    '◆ {name}が仕事帰りのトレーニング姿をSNSに投稿。ファンが反応',
-    '◆ {name}が地元のイベントでファンと交流。笑顔で写真撮影に応じていた',
-    '◆ {name}がSNSで{name2}の試合について触れていた。ファンが反応',
-    '◆ {name}の本業での活躍ぶりも話題に。「文武両道」とファンが称賛',
-    '◆ {name}のSNSに{name2}がコメント。ファンの間で話題に',
-    '◆ {name}が休日の過ごし方を公開。オフの素顔にファンがほっこり',
-  ],
-  injury: [
-    '◆ {org}の{name}がトレーニング中に負傷か。詳細は未発表',
-    '◆ {name}の出場が危ぶまれる。{org}の今後のカード編成に影響も',
-    '◆ {org}・{name}の負傷情報。復帰時期は未定とのこと',
-    '◆ {name}にアクシデント。{org}は代役の検討を迫られる',
-    '◆ {org}の{name}が離脱。早期復帰を願う声がSNSに溢れている',
-  ],
-  scout: [
-    '◆ 地元のアマチュア大会で将来有望な選手が目撃されたとの情報',
-    '◆ 各団体のスカウトが活発化。フリーの実力者を巡る争奪戦の気配',
-    '◆ 異業種から転身した新人が話題に。ポテンシャルは未知数',
-    '◆ 地域のレスリング教室出身者に注目が集まっている',
-    '◆ フリーで活動中の選手に複数団体がオファーを出しているとの噂',
-  ],
-  economyGood: [
-    '◆ {org}の経営が好調。スポンサー契約も順調に増えている',
-    '◆ {org}のグッズ売上が伸びている。人気選手のタオルが品薄に',
-    '◆ {org}が新しいスポンサーを獲得。資金面に余裕が生まれそう',
-    '◆ {org}の興行収入が安定。地域からの協賛も増加傾向',
-    '◆ {org}が練習施設を拡充。選手からも好評の声',
-  ],
-  economyStruggle: [
-    '◆ {org}の集客がやや伸び悩み。新たなファン開拓が課題か',
-    '◆ {org}の経営陣がテコ入れ策を検討中との報道',
-    '◆ {org}が経費削減に取り組んでいるとの噂。厳しい台所事情か',
-    '◆ {org}の観客動員が課題に。魅力的なカード作りで巻き返しを図る',
-    '◆ {org}、限られた予算の中で奮闘中。選手の頑張りが支え',
-  ],
-  rivalryActive: [
-    '◆ {name1}と{name2}の間にただならぬ空気が漂っている',
-    '◆ {name1} vs {name2}の因縁が深まっている。次の直接対決に注目',
-    '◆ {name1}が{name2}について意味深なコメント。火花が散る予感',
-    '◆ {name1}と{name2}のライバル関係にファンが熱視線を送っている',
-    '◆ {name1} vs {name2}の再戦を望むファンの声がSNSで増加中',
-  ],
-  rivalryGoodRival: [
-    '◆ {name1}と{name2}の名勝負が今も語り草になっている',
-    '◆ {name1}と{name2}——好敵手同士の再戦を望む声は根強い',
-    '◆ {name1}と{name2}の物語は終わっても、ファンの記憶には鮮やかに残る',
-    '◆ 「{name1} vs {name2}をもう一度」——ファン投票で再戦希望が上位に',
-    '◆ {name1}と{name2}、練習場ですれ違うと自然に笑顔になるという',
-  ],
-  champion: [
-    '◆ 王者{name}に挑戦者候補が続々。次の防衛戦の相手は誰だ',
-    '◆ {name}の王座に虎視眈々と狙いを定める選手たち',
-    '◆ 王者{name}、練習での仕上がりは万全とのこと',
-    '◆ {name}の次の防衛戦に注目が集まっている',
-    '◆ 王者{name}、どんな挑戦者でも受けて立つ構え',
-  ],
-  championLongReign: [
-    '◆ {name}の長期政権が続く。{defenses}度の防衛は伊達ではない',
-    '◆ 絶対王者{name}、{defenses}回防衛の実績に業界も脱帽',
-    '◆ {name}の王座はもはや鉄壁。{defenses}度防衛の壁を越える者は現れるか',
-    '◆ {name}の安定感が際立つ。王者として{defenses}回の防衛を重ねた風格',
-    '◆ 「{name}時代」と呼ぶ声も。{defenses}回防衛の偉業は続く',
-  ],
-  juniorTournament: [
-    '◆ 🏆 ジュニアトーナメント優勝は{name}（{orgName}）！ 若き才能が頂点に立った',
-    '◆ 🏆 {name}がジュニアトーナメントを制覇。{orgName}の未来を担うエースの誕生だ',
-    '◆ 🏆 U-20の頂点に{name}（{orgName}）。鮮烈な勝利で全団体を沸かせた',
-  ],
-  general: [
-    '◆ 今週末の大会に向けてSNSでの話題が盛り上がりを見せている',
-    '◆ レスリング関連グッズの売上が堅調。推し選手のタオルが人気',
-    '◆ 地域のスポーツ施設でレスリング教室の申込が増加傾向',
-    '◆ 人気選手の得意技を真似する人がジムで増えているとか',
-    '◆ 各団体の試合ハイライト動画の再生数が伸びている',
-    '◆ レスリング保険の加入者数が前年比で増加。安全意識の高まりか',
-  ],
-};
+// v1.4w の週次ティッカー（📰帯・NEWS_TICKER_TEMPLATES、旧§6.1）は 2026-09-06 に廃止した
+// (P7-36。Keisuke裁定 2026-09-05「ティッカーは廃止。ゲームの各要素が揃う前に作ったもの」)。
+// 生成元 Engine.news.generateTicker・描画 .news-ticker-bar・App._refreshTicker ごと削除済み。
+// 招聘市場の入れ替わり予告は社長室の招聘パネル(_renderInviteMarketPanel)へ、
+// ジュニア大会優勝は既存の新聞記事(Engine.newspaper が state._juniorTournamentResult から
+// 生成する juniorTournamentResult 記事)で既にカバー済みのため移設不要だった。
+// 詳細は docs/worklog.md の P7-36 エントリを参照。
 
 // ══════════════════════════════════════════════════════════
 //  U-20 ジュニアトーナメント セリフ定数
@@ -33022,7 +32862,7 @@ if (typeof module !== 'undefined' && module.exports) {
     GOODRIVAL_MQ_BONUS, GOODRIVAL_LABEL, GOODRIVAL_EMOJI, GOODRIVAL_COLOR, BITTER_RIVAL_MQ_BONUS, BITTER_RIVAL_LABEL, BITTER_RIVAL_EMOJI, BITTER_RIVAL_COLOR,
     GOODRIVAL_RESOLUTION_LINES, BITTER_RESOLUTION_LINES, BITTER_PREMATCH_LINES,
     RIVALRY_CONFRONTATION_LINES_70, RIVALRY_CONFRONTATION_LINES_90,
-    WEEKLY_STORY_TICKER, RIVALRY_MATCH_REACTION, UPSET_RIVALRY_LINES,
+    RELATION_EVENT_LINES, RIVALRY_MATCH_REACTION, UPSET_RIVALRY_LINES,
     FRESHNESS_CONFIG, COACH_STYLE_MAP, COACH_STYLE_BONUS,
     COACH_SLOT_COSTS, COACH_POOL_CFG, COACH_ABILITY_CATALOG, COACH_FLAVOR_DEFS, ALL_COACHES,
     COACH_HIRE_FEE, COACH_MAX_ASSIGN,
@@ -33039,7 +32879,7 @@ if (typeof module !== 'undefined' && module.exports) {
     AWARD_LINES, AUTUMN_WAR_MATCH_LINES, BT_HINT_LINES, BREAKTHROUGH_LINES, MILESTONE_LINES, FIRST_MEET_LINES, POST_MATCH_FLAVOR_LINES, getDialoguePool, pickDialogueLine,
     SLUMP_START_LINES, SLUMP_END_LINES,
     MOTIVATION_LOSS_LINES, MOTIVATION_RECOVERY_LINES,
-    NEWS_TICKER_TEMPLATES, NEWS_HEADLINE_TEMPLATES, SEASON_REVIEW_LINES,
+    NEWS_HEADLINE_TEMPLATES, SEASON_REVIEW_LINES,
     MILESTONE_EVENTS, NOTIF_EVENT_TEXTS, NOTIF_DIALOGUES,
     DOME_FIRSTSHOW_LINES, DOME_SELLOUT_LINES,
     CAMP_FLAVOR_TEXTS, CARE_REACTION_DIALOGUES,

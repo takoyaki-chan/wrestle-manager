@@ -31965,6 +31965,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "来週、招聘に応じるコーチの顔ぶれが入れ替わる",
+    "en": "Next week, the coaches open to a guest stint will change.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "来週の興行、メインは——この一戦。観客も、この対決に期待を膨らませている。",
     "en": "Next week's show, the main event — this one. The crowd is already leaning into it.",
     "files": [

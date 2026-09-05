@@ -4441,130 +4441,10 @@
     "hasProperNoun": false
   },
   {
-    "key": "{nameA}が{nameB}との距離に少し戸惑っている様子だ",
-    "en": "{nameA} seems a little thrown by the distance {nameB} keeps",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}が{nameB}に話しかけるも、素っ気ない反応だった",
-    "en": "{nameA} spoke to {nameB} and got a flat answer back",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
     "key": "{nameA}が{nameB}に食ってかかり、スタッフが止めに入った",
     "en": "{nameA} went at {nameB} and staff had to step in",
     "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}が{nameB}の体調を気遣っている姿があった",
-    "en": "{nameA} was seen checking on how {nameB} is holding up",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}が{nameB}の勝利を知り、静かに拳を握った",
-    "en": "{nameA} learned {nameB} had won and quietly closed her fist",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}が{nameB}の試合映像を繰り返し見ている",
-    "en": "{nameA} keeps going back over {nameB}'s match footage",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}が{nameB}を睨みつけている。{nameB}は気づいていない",
-    "en": "{nameA} has been glaring at {nameB}. {nameB} has not noticed",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}が{nameB}を誘うが、{nameB}は別の用事があると去っていった",
-    "en": "{nameA} invited {nameB} along, and {nameB} left saying she had something else on",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}——好敵手の二人が並んでストレッチをしている",
-    "en": "{nameA} and {nameB} — two rivals, stretching side by side",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}がトレーニングで息の合った動きを見せている",
-    "en": "{nameA} and {nameB} are moving in sync in training",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}が同じ廊下を歩くことを、誰もが避けさせている",
-    "en": "Everyone makes sure {nameA} and {nameB} are never in the same hallway",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}が控室ですれ違い、空気が凍りついた",
-    "en": "{nameA} and {nameB} passed each other in the locker room and the air froze",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}が控室で目も合わせない",
-    "en": "{nameA} and {nameB} will not look at each other in the locker room",
-    "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4574,7 +4454,7 @@
     "key": "{nameA}と{nameB}が掴み合いになりかけ、周囲が慌てて止めた",
     "en": "{nameA} and {nameB} nearly got hold of each other before the room rushed in to separate them",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4584,37 +4464,7 @@
     "key": "{nameA}と{nameB}が練習中に激しく言い合いになった",
     "en": "{nameA} and {nameB} got into a hard argument during practice",
     "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}が練習後に並んで帰る姿が目撃された",
-    "en": "{nameA} and {nameB} were seen walking home side by side after practice",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}が練習後に言葉を交わし、互いに頷いていた",
-    "en": "{nameA} and {nameB} traded a few words after practice and nodded to each other",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}が練習後に静かに言葉を交わしていた",
-    "en": "{nameA} and {nameB} exchanged a few quiet words after practice",
-    "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4624,7 +4474,7 @@
     "key": "{nameA}と{nameB}の口論が控室に響いた",
     "en": "The argument between {nameA} and {nameB} carried through the locker room",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4634,17 +4484,7 @@
     "key": "{nameA}と{nameB}の間で一触即発の空気が走った",
     "en": "For a moment {nameA} and {nameB} were one word away from going at each other",
     "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}と{nameB}の間に張り詰めた空気が漂っている",
-    "en": "The air between {nameA} and {nameB} is drawn tight",
-    "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4661,110 +4501,10 @@
     "hasProperNoun": false
   },
   {
-    "key": "{nameA}の練習が日に日に荒くなっている——{nameB}への執念が滲む",
-    "en": "{nameA}'s training gets rougher by the day — you can see what she is carrying about {nameB}",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}の表情が一瞬歪んだ——{nameB}の名前を聞いただけで",
-    "en": "{nameA}'s face twisted for an instant — all it took was hearing {nameB}'s name",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は{nameB}との関係をもっと深めたいようだが……",
-    "en": "{nameA} seems to want more from her friendship with {nameB}, but...",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は{nameB}のことを親友だと思っている——{nameB}がどう思っているかは別として",
-    "en": "{nameA} thinks of {nameB} as a close friend — what {nameB} thinks is another matter",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は{nameB}の名前を聞くたびに表情を歪めている",
-    "en": "Every time {nameB}'s name comes up, {nameA}'s face twists",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は{nameB}の試合を見て、小さく微笑んだ",
-    "en": "{nameA} watched {nameB}'s match and let out a small smile",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は{nameB}の試合結果を真っ先に確認している",
-    "en": "{nameA} checks {nameB}'s result before anything else",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は{nameB}の試合結果を聞いて、ゆっくりとテーピングを巻き直した",
-    "en": "Hearing how {nameB}'s match went, {nameA} slowly rewrapped her tape",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は{nameB}を目の敵にしている。{nameB}は{nameA}のことを仲間だと思っているのに",
-    "en": "{nameA} has singled {nameB} out, and {nameB} still counts {nameA} as one of her own",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameA}は客席から{nameB}の試合を食い入るように見つめていた",
-    "en": "{nameA} watched {nameB}'s match from the seats without taking her eyes off it",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
     "key": "{nameB}が{nameA}に向かって叫んだ。「もう我慢の限界よ！ あなたがそうなら、私も本気で行く！」",
     "en": "{nameB} shouted at {nameA}. \"That's as far as I go! If that's how you want it, I'm coming at you for real!\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4774,7 +4514,7 @@
     "key": "{nameB}が{nameA}に向き直った。「もう結構ですわ。あなたがその態度なら、こちらにも考えがありますの」",
     "en": "{nameB} turned to face {nameA}. \"That will do. If that is the attitude you intend to take, I have thoughts of my own on the matter.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4784,7 +4524,7 @@
     "key": "{nameB}が{nameA}に吠えた。「上等だ！ その喧嘩、買ってやるよ！」",
     "en": "{nameB} barked it at {nameA}. \"Fine by me! You want a fight, you've got one!\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4794,7 +4534,7 @@
     "key": "{nameB}が{nameA}に宣言した。「もう我慢いたしませんわ！ 全力でお相手して差し上げます！」",
     "en": "{nameB} made her declaration to {nameA}. \"I shall endure it no longer! I will face you with everything I have!\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4804,7 +4544,7 @@
     "key": "{nameB}が{nameA}の前に立ちはだかった。「いい加減にして。そのつもりなら、全力で相手になるから」",
     "en": "{nameB} planted herself in {nameA}'s way. \"Enough. If that's your intention, I'll give you everything I have.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4814,7 +4554,7 @@
     "key": "{nameB}が{nameA}をまっすぐ見据えた。「もう黙ってられない。受けて立つよ」",
     "en": "{nameB} looked {nameA} straight on. \"I can't stay quiet anymore. I'll take you on.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4824,7 +4564,7 @@
     "key": "{nameB}が{nameA}を真っ直ぐ見た。「…もう十分待った。…本気で行きます」",
     "en": "{nameB} looked straight at {nameA}. \"...I've waited long enough. ...I'm coming at you for real.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4834,7 +4574,7 @@
     "key": "{nameB}が{nameA}を睨みつけた。「……てめえがそう来るなら、こっちも容赦しねえぞ」",
     "en": "{nameB} fixed {nameA} with a glare. \"...You wanna play it like that, I'm done going easy.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4844,7 +4584,7 @@
     "key": "{nameB}が俯いたまま{nameA}に告げた。「…もう…我慢しない…です」",
     "en": "Head down, {nameB} said it to {nameA} anyway. \"...I'm not... keeping quiet... anymore.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4854,7 +4594,7 @@
     "key": "{nameB}が小さく、しかし確かな声で言った。「…もう…我慢しません」",
     "en": "{nameB} said it in a small voice, but a steady one. \"...I am... not going to endure it.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4864,7 +4604,7 @@
     "key": "{nameB}が押し殺した声で{nameA}に告げた。「…もういい。…覚えておいて」",
     "en": "In a voice held down flat, {nameB} told {nameA}: \"...Enough. ...Remember this.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4874,7 +4614,7 @@
     "key": "{nameB}が涙を流しながら{nameA}に叫んだ。「なんで……！ なんでそんなことするの……！ もう……もう許さない……！」",
     "en": "Crying, {nameB} shouted at {nameA}. \"Why...! Why would you do that...! I'm not — I'm not letting this go...!\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4884,7 +4624,7 @@
     "key": "{nameB}が深く息を吸い、言い放った。「これ以上は……お許しいただけません。全力で参ります」",
     "en": "{nameB} drew a deep breath and said it plainly. \"I cannot allow any more of this... I will come at you with everything.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4894,7 +4634,7 @@
     "key": "{nameB}が無言で{nameA}の前に立ちはだかった。その目は——もう、以前の{nameB}ではなかった",
     "en": "Without a word, {nameB} stepped into {nameA}'s path. The eyes were not the {nameB} anyone knew",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4904,17 +4644,7 @@
     "key": "{nameB}が真っ直ぐ{nameA}を見つめた。「ずっと信じていました。でも……もう限界です。本気で行きます」",
     "en": "{nameB} held {nameA}'s gaze. \"I kept believing in you. But... this is as far as I go. I'm coming at you for real.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "{nameB}が笑顔で話しかけた{nameA}は、拳を握りしめて背を向けた",
-    "en": "{nameB} came over smiling; {nameA} closed her fist and turned away",
-    "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4924,7 +4654,7 @@
     "key": "{nameB}が静かに{nameA}の前に立った。「…もう十分だ。受けて立つよ」",
     "en": "{nameB} stepped in front of {nameA} without hurry. \"...That's enough. I'll take you on.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4934,7 +4664,7 @@
     "key": "{nameB}が静かに{nameA}を見据えた。「…もういい。…覚悟は決めた」",
     "en": "{nameB} settled her eyes on {nameA}. \"...Enough. ...I've made up my mind.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4944,7 +4674,7 @@
     "key": "{nameB}が静かに拳を握った。「ずっと信じてた。でももう……終わりにする」",
     "en": "{nameB} quietly closed her fist. \"I believed in you the whole time. But now... I'm done.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4954,7 +4684,7 @@
     "key": "{nameB}が静かに立ち上がった。「……もう十分だ。行くぞ」",
     "en": "{nameB} stood up without a sound. \"...That's enough. Let's go.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4964,7 +4694,7 @@
     "key": "{nameB}の目の色が変わった。「……もういい。あなたがそう思うなら、私も覚悟を決める」",
     "en": "Something changed in {nameB}'s eyes. \"...Fine. If that's what you think of me, then I'm done holding back.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4974,7 +4704,7 @@
     "key": "{nameB}の瞳が冷たく光った。「……そう。あなたがそうなら、私も本気を出すわ」",
     "en": "A cold light came into {nameB}'s eyes. \"...I see. If that's how you are, then I'll stop holding back.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4984,7 +4714,7 @@
     "key": "{nameB}の笑顔が消えた。「……さすがにさ。これはないよ。本気で怒ってるんだからね」",
     "en": "The smile went off {nameB}'s face. \"...Okay, no. This one's not okay. I'm actually angry, you know.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4994,7 +4724,7 @@
     "key": "{nameB}の笑顔が消えた。「…さすがにね。…こっちも本気で行くよ」",
     "en": "The smile left {nameB}'s face. \"...Even for me, that's too far. ...I'm coming at you for real now.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5004,7 +4734,7 @@
     "key": "{nameB}の表情が変わった。「……もういい。覚悟は決めた」",
     "en": "Something shifted in {nameB}'s face. \"...Enough. I've decided.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5014,7 +4744,7 @@
     "key": "{nameB}の表情が静かに変わった。「…そう。…なら、こちらも覚悟を決めるよ」",
     "en": "{nameB}'s face changed, quietly. \"...I see. ...Then I'll make up my mind too.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5024,7 +4754,7 @@
     "key": "{nameB}の軽い口調が一変した。「……お前さぁ、いい加減にしろよ。マジで怒るぞ」",
     "en": "The lightness dropped out of {nameB}'s voice. \"...Hey. Knock it off already. I'm gonna actually lose it.\"",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5604,7 +5334,7 @@
     "key": "{name}がひとりでロッカールームに佇んでいた",
     "en": "{name} was standing alone in the locker room",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6284,7 +6014,7 @@
     "key": "{name}の笑顔が減った——周囲もそれに気づいている",
     "en": "{name} smiles less than she did — and the others have noticed",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6304,7 +6034,7 @@
     "key": "{name}の練習への集中力が落ちてきている",
     "en": "{name}'s focus in practice has been slipping",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6314,7 +6044,7 @@
     "key": "{name}の表情が最近曇っている",
     "en": "{name} has looked clouded over lately",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -13998,756 +13728,6 @@
     "hasProperNoun": false
   },
   {
-    "key": "◆ {name1} vs {name2}の再戦を望むファンの声がSNSで増加中",
-    "en": "◆ Calls for {name1} vs {name2} again are building on social media",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1} vs {name2}の因縁が深まっている。次の直接対決に注目",
-    "en": "◆ The grudge between {name1} and {name2} keeps deepening. Their next meeting is worth watching",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1}が{name2}について意味深なコメント。火花が散る予感",
-    "en": "◆ {name1} says something pointed about {name2}. Sparks look close",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1}と{name2}——好敵手同士の再戦を望む声は根強い",
-    "en": "◆ {name1} and {name2} — the calls for these two to meet again have never gone away",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1}と{name2}、練習場ですれ違うと自然に笑顔になるという",
-    "en": "◆ {name1} and {name2} apparently break into a smile whenever they pass in the gym",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1}と{name2}のライバル関係にファンが熱視線を送っている",
-    "en": "◆ Fans are watching the rivalry between {name1} and {name2} closely",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1}と{name2}の名勝負が今も語り草になっている",
-    "en": "◆ People still talk about the classic {name1} and {name2} had",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1}と{name2}の物語は終わっても、ファンの記憶には鮮やかに残る",
-    "en": "◆ The story of {name1} and {name2} is over, but the fans have not let go of it",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name1}と{name2}の間にただならぬ空気が漂っている",
-    "en": "◆ There is something in the air between {name1} and {name2}",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}がSNSで{name2}の試合について触れていた。ファンが反応",
-    "en": "◆ {name} mentioned {name2}'s match on social media. The fans noticed",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が{count}連勝。充実した練習の成果が出ている",
-    "en": "◆ {name} has won {count} in a row. The work in the gym is showing",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が{count}連勝中！ 絶好調の波に乗っている",
-    "en": "◆ {name} is {count} in a row and still climbing",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が{count}連敗中。調子を取り戻すきっかけが欲しいところ",
-    "en": "◆ {name} has lost {count} in a row. She could use something to turn it on",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が{org}を牽引中。対戦を望む声が各団体から上がっている",
-    "en": "◆ {name} is carrying {org}. Other promotions are asking for a match",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が仕事帰りのトレーニング姿をSNSに投稿。ファンが反応",
-    "en": "◆ {name} posted herself training after work. The fans answered",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が休日の過ごし方を公開。オフの素顔にファンがほっこり",
-    "en": "◆ {name} showed how she spends a day off. The fans liked seeing her out of gear",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が地元のイベントでファンと交流。笑顔で写真撮影に応じていた",
-    "en": "◆ {name} met fans at a local event and stayed for every photo",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}が苦しい時期を過ごしている。{count}連敗でも腐らない姿勢にファンはエールを送る",
-    "en": "◆ {name} is in a hard stretch. {count} straight losses and she has not soured on it; the fans are behind her",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}にアクシデント。{org}は代役の検討を迫られる",
-    "en": "◆ {name} has had an accident. {org} now has to look at a replacement",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}に元気がない…{count}連敗にファンから心配の声",
-    "en": "◆ {name} does not look herself... {count} straight losses, and the fans are worried",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}のSNSに{name2}がコメント。ファンの間で話題に",
-    "en": "◆ {name2} left a comment on {name}'s post. The fans have run with it",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の不調が続く。{count}連敗で表情にも陰りが",
-    "en": "◆ {name}'s slump goes on. {count} straight losses, and it shows on her face",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の充実ぶりが話題に。{org}の大黒柱は健在",
-    "en": "◆ {name} is in good shape by every account. {org}'s pillar is still standing",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の出場が危ぶまれる。{org}の今後のカード編成に影響も",
-    "en": "◆ {name} may not make the card. {org}'s booking could feel it",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の安定感が際立つ。王者として{defenses}回の防衛を重ねた風格",
-    "en": "◆ {name} does not waver. Defense number {defenses} as champion, and she wears it well",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の本業での活躍ぶりも話題に。「文武両道」とファンが称賛",
-    "en": "◆ {name} is doing just as well at her day job. The fans admire that she keeps both going",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の次の防衛戦に注目が集まっている",
-    "en": "◆ {name}'s next title defense is the one to watch",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の王座に虎視眈々と狙いを定める選手たち",
-    "en": "◆ Wrestlers are lining up with an eye on {name}'s title",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の王座はもはや鉄壁。{defenses}度防衛の壁を越える者は現れるか",
-    "en": "◆ {name}'s title looks sealed. Is anyone getting past defense number {defenses}?",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の連勝が{count}に到達。次の対戦相手は戦々恐々か",
-    "en": "◆ {name}'s streak has reached {count}. Whoever is next will not sleep well",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の連敗が止まらない。周囲のサポートが鍵になりそう",
-    "en": "◆ {name} cannot stop the slide. What she gets from the people around her will decide it",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {name}の長期政権が続く。{defenses}度の防衛は伊達ではない",
-    "en": "◆ {name}'s long reign holds. Defense number {defenses} was not handed to her",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}、今週も安定した集客で興行を成功させた",
-    "en": "◆ {org} drew steadily again this week and ran a successful show",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}、地域密着型の興行でファン層を着実に広げている",
-    "en": "◆ {org} keeps widening its base with shows rooted in the local area",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}、限られた予算の中で奮闘中。選手の頑張りが支え",
-    "en": "◆ {org} is fighting a tight budget. The wrestlers are what holds it up",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}が堅実な興行運営。観客の満足度も上々とのこと",
-    "en": "◆ {org} runs a solid show, and the crowds are said to be leaving happy",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}が新しいスポンサーを獲得。資金面に余裕が生まれそう",
-    "en": "◆ {org} has landed a new sponsor. The books should breathe a little",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}が経費削減に取り組んでいるとの噂。厳しい台所事情か",
-    "en": "◆ Word is {org} is cutting costs. The kitchen may be tighter than it looks",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}が練習施設を拡充。選手からも好評の声",
-    "en": "◆ {org} has expanded its training facility. The wrestlers say it shows",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の{name}がトレーニング中に負傷か。詳細は未発表",
-    "en": "◆ {org}'s {name} may have been hurt in training. No details released",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の{name}が好調を維持。エースとしての存在感を発揮",
-    "en": "◆ {org}'s {name} is holding her form and looking every bit the ace",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の{name}が離脱。早期復帰を願う声がSNSに溢れている",
-    "en": "◆ {org}'s {name} is out. Social media is full of people hoping it is short",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の{name}に注目が集まる。実力は業界屈指との評判",
-    "en": "◆ {org}'s {name} is the name to watch. They say she is among the best in the business",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}のグッズ売上が伸びている。人気選手のタオルが品薄に",
-    "en": "◆ Merch sales at {org} are up. Towels for the popular names are running short",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の今週の興行は好評。会場には熱気が充満していた",
-    "en": "◆ {org}'s show went over well this week. The building stayed warm all night",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の看板選手{name}、練習での仕上がりが抜群とのこと",
-    "en": "◆ {org}'s marquee name {name} is said to be in outstanding condition in training",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の経営が好調。スポンサー契約も順調に増えている",
-    "en": "◆ {org} is running well. Sponsor deals keep coming in",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の経営陣がテコ入れ策を検討中との報道",
-    "en": "◆ Reports say {org}'s front office is weighing a shake-up",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の興行が盛況。地元ファンの支持は厚い",
-    "en": "◆ {org} drew a full house. The local support runs deep",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の興行収入が安定。地域からの協賛も増加傾向",
-    "en": "◆ {org}'s gate is steady, and local sponsorship keeps rising",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の観客動員が課題に。魅力的なカード作りで巻き返しを図る",
-    "en": "◆ Attendance is {org}'s problem. They mean to book their way back",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}の集客がやや伸び悩み。新たなファン開拓が課題か",
-    "en": "◆ {org}'s draw has flattened. Finding new fans looks like the job",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ {org}・{name}の負傷情報。復帰時期は未定とのこと",
-    "en": "◆ Injury news on {org}'s {name}. No date set for a return",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 「{name1} vs {name2}をもう一度」——ファン投票で再戦希望が上位に",
-    "en": "◆ '{name1} vs {name2}, one more time' — the rematch sits near the top of the fan poll",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 「{name}時代」と呼ぶ声も。{defenses}回防衛の偉業は続く",
-    "en": "◆ Some are calling it the {name} era. Defense number {defenses}, and counting",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ フリーで活動中の選手に複数団体がオファーを出しているとの噂",
-    "en": "◆ Word is several promotions have offers out to wrestlers working free",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ レスリング保険の加入者数が前年比で増加。安全意識の高まりか",
-    "en": "◆ Wrestling insurance sign-ups are up year on year. Safety may be on more minds",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ レスリング関連グッズの売上が堅調。推し選手のタオルが人気",
-    "en": "◆ Wrestling merch keeps selling. Towels for a favorite wrestler move best",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 人気選手の得意技を真似する人がジムで増えているとか",
-    "en": "◆ More people in the gyms are apparently copying the signature moves of the big names",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 今週末の大会に向けてSNSでの話題が盛り上がりを見せている",
-    "en": "◆ Talk about this weekend's card is picking up online",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 各団体のスカウトが活発化。フリーの実力者を巡る争奪戦の気配",
-    "en": "◆ Scouting has picked up across the promotions. A fight over the best free wrestlers looks likely",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 各団体の試合ハイライト動画の再生数が伸びている",
-    "en": "◆ Match highlight views are climbing across the promotions",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 地元のアマチュア大会で将来有望な選手が目撃されたとの情報",
-    "en": "◆ Word of a promising wrestler spotted at a local amateur event",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 地域のスポーツ施設でレスリング教室の申込が増加傾向",
-    "en": "◆ Sign-ups for wrestling classes at community sports centers keep rising",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 地域のレスリング教室出身者に注目が集まっている",
-    "en": "◆ Graduates of the community wrestling classes are worth keeping an eye on",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 快進撃の{name}、{count}連勝で勢いが止まらない",
-    "en": "◆ {name} is on a run: {count} in a row, and no sign of it slowing",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 止まらない{name}！ {count}連勝で注目度が急上昇",
-    "en": "◆ No stopping {name} — {count} in a row, and every eye on her",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 王者{name}、どんな挑戦者でも受けて立つ構え",
-    "en": "◆ Champion {name} says she will take on whoever comes",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 王者{name}、練習での仕上がりは万全とのこと",
-    "en": "◆ Champion {name} is said to be fully prepared in training",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 王者{name}に挑戦者候補が続々。次の防衛戦の相手は誰だ",
-    "en": "◆ Challengers keep putting their names in for champion {name}. Who gets the next defense?",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 異業種から転身した新人が話題に。ポテンシャルは未知数",
-    "en": "◆ People are talking about a rookie who came in from another line of work. Nobody knows her ceiling",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 絶対王者{name}、{defenses}回防衛の実績に業界も脱帽",
-    "en": "◆ {name} reigns unchallenged. Defense number {defenses}, and the business tips its hat",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 🏆 U-20の頂点に{name}（{orgName}）。鮮烈な勝利で全団体を沸かせた",
-    "en": "◆ 🏆 {name} of {orgName} takes the U-20. A vivid win that had every promotion on its feet",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 🏆 {name}がジュニアトーナメントを制覇。{orgName}の未来を担うエースの誕生だ",
-    "en": "◆ 🏆 {name} wins the Junior Tournament. {orgName} has its ace for the years ahead",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "◆ 🏆 ジュニアトーナメント優勝は{name}（{orgName}）！ 若き才能が頂点に立った",
-    "en": "◆ 🏆 The Junior Tournament goes to {name} of {orgName}. A young talent standing on top",
-    "files": [
-      "NEWS_TICKER_TEMPLATES"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
     "key": "★★★レジェンド",
     "en": "★★★ Legend",
     "files": [
@@ -15191,7 +14171,7 @@
     "key": "「…ずっと我慢してた…けど…もう限界です…」——{nameB}の声は小さいけど、震えていなかった",
     "en": "\"...I kept quiet about it... but... I can't anymore...\" — {nameB}'s voice was small, but it did not shake",
     "files": [
-      "WEEKLY_STORY_TICKER"
+      "RELATION_EVENT_LINES"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -19507,16 +18487,6 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "ロッカールームの一角で{nameA}と{nameB}の冷たい空気が流れている",
-    "en": "In one corner of the locker room the air between {nameA} and {nameB} has gone cold",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -31431,16 +30401,6 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "花道の奥から{nameA}が{nameB}の試合を見ていた。その目は揺れていない",
-    "en": "From the far end of the aisle, {nameA} watched {nameB}'s match. Her eyes did not move",
-    "files": [
-      "WEEKLY_STORY_TICKER"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {

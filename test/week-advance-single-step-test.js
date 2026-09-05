@@ -85,7 +85,6 @@ function runSummaryHandler(state, calls, uiLog) {
       checkTitleEstablishment: () => {}, checkRosterCapMilestones: () => {},
       checkPrologueHighlights: () => {}, checkTenchosenPreEvent: () => {},
       checkUnifiedTitlePresentation: () => {},
-      _refreshTicker: () => {},
     };
     const invoke = new Function(
       'App', 'Engine', 'initialState', 'uiLog',
