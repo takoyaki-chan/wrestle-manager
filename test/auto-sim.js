@@ -2415,6 +2415,10 @@ function runSimulation(seed, seasons) {
     if (key === 'mqInventory' || key === 'debugLog' || key === 'gameLog') return undefined;
     // task-88 I-1: 王座創設前の null は旧HEAD(undefined)と同じ意味として指紋から除外。
     if (key === 'unifiedTitle' && value == null) return undefined;
+    // i18n P7-28: growthLog(成長ログ)の match/milestone エントリへ表示専用の追加フィールド
+    // detailTpl/detailVars(§14-3の追加フィールド方式)を新設。detail(JA完成文・セーブ値)は
+    // 不変だが、この2フィールドの追加分だけ指紋が動くため除外する(P6-16/P7-25と同じ作法)。
+    if (key === 'detailTpl' || key === 'detailVars') return undefined;
     return value;
   });
   let semanticFingerprint = 2166136261;

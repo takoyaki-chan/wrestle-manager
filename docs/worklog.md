@@ -1,5 +1,92 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-28 — P7-25が残した3件(成長ログmatch/milestone・怪我名detail・ns.log)+P7-20/P7-1の掃除2件(2026-09-05)
+
+P7-25(`docs/worklog.md` 先頭・当時)が「§9 P7-25で新たに見つかった穴」に残した3件と、P7-20/P7-1発見の掃除2件を解決した。開始前にworktreeブランチをmain先端(`c8eca673`。P7-25まで main入り)へfast-forward済み。
+
+### 1. 成長ログの`match`/`milestone`行 — §14-3と同型の追加フィールド方式
+
+`growthLog[].detail`(選手ポップアップ「成長経過」タブへ**永続**する行)のうち`type:'match'`/`type:'milestone'`は、名前・数値を埋めた完成文がそのままセーブへ焼き込まれる。§14-3(PPV煽りの`hypeTpl`/`hypeVars`)・P7-25のドラフト交渉ナレーション(`narrationTpl`/`narrationVars`)と同型で解いた: **`detail`はJA完成文のまま不変**(セーブ値不変)にし、`detailTpl`/`detailVars`を新規フィールドとして併記する。表示点(ui-render.js成長経過タブ)は`entry.detailTpl ? WM_I18N.t(entry.detailTpl, entry.detailVars) : entry.detail`でfail-open(旧セーブ=detailTplなしはdetailをそのまま表示)。
+
+生成点は4箇所(management.js 2箇所=タッグ/シングル・app.js 2箇所=`App.finalizeShow`のタッグ/シングル共通経路・`App._finalizeAwayChallengeShow`)、milestone側は1箇所(app.js、pendingMilestone処理、ovr/pop/stat の3分岐)。`App.finalizeShow`のタッグ経路は`oppLabel`(`w/{partner} vs {opps}`)というmanagement.js側とは別のJA文型を使うため、tplも別キー(`vs w/{partner} vs {opps}`)にした——同じ情報を表す2つのJA表現をどちらも尊重し、無理に統一しない(統一するとJA出力が変わってしまう)。milestone側の`{stat}`はSTAT_JA由来のUIラベル値(パワー等)なので、表示点で**先に`WM_I18N.t()`を通してから**外側テンプレへ差し込む(§14-2 `_wmDictLabel`と同趣旨のUI側版。`{n}`は数値なので変換不要)。
+
+新規テンプレキー7件(`タッグ({partner}) vs {opps}` / `vs {name}` / `vs w/{partner} vs {opps}` / `敵地遠征 vs {name}` / `総合力{n}到達` / `人気{n}到達` / `{stat}が限界に到達`)は`management.js`/`app.js`がui-ledgerの走査対象外のため`kept:true`+`note`で手追加。`総合力{n}到達`/`人気{n}到達`は既存キー(`総合力 {n} 到達`等、スペース有・ui-common.jsの成長ポップアップ用)とJA原文が微妙に異なる別キーだが、訳文("Overall {n} reached"等)は揃えた。
+
+### 2. careerHistory[].detailの怪我名 — 逆引き表+injuryLabelで引き直す(追加フィールドではなく表示点解決)
+
+`careerHistory[].detail`は「Engineがpush時点でWM_I18Nを呼べないため、`injuryLabel(type)`をdict無しで通した結果(内部キーではなく**JA表示ラベル**)を埋め込んだ完成文」がそのまま永続する3パターンと判明した:
+
+| パターン | 生成箇所 | 例 |
+|---|---|---|
+| A: 実怪我(中傷/重傷) | management.js:1749 | `中程度の負傷（8週離脱）` |
+| B: 実怪我引退 | management.js:11008/14923/14953(3箇所) | `重傷により引退` |
+| C: 疑似経歴(`Engine.career.generateBackstory`)の怪我フレーバー | management.js:4427 | `膝の負傷で長期欠場`(実怪我システムと無関係の別語彙) |
+
+**push側は無改修**。data.jsへ`INJURY_LABEL_REVERSE`(JA表示ラベル→内部キーの逆引き。値が全て相異なるため一意)と`BACKSTORY_INJURY_LABELS`(パターンCの疑似経歴専用語彙。generateBackstoryのローカル配列から昇格)を新設し、management.jsの`_wmCareerInjuryDetail(dict, detail)`(`_wmDictLabel`直後)が3パターンの語尾(`（{n}週離脱）`/`により引退`/`で長期欠場`)を正規表現で判定→ラベル部分を逆引き→`injuryLabel(type, dict)`/`_wmDictLabel(dict, label)`で引き直す→`_wmFillWithDict`でテンプレへ通す。**マッチしない値はfail-open**(生JAのまま)。
+
+表示点は2箇所: `Engine.milestone.get`の「Convert careerHistory events」ループ(既存dict引数へ相乗り。年表画面)と、ui-common.jsの「経歴(怪我・重大事項)」セクション(`h.type`が`injury`/`injury_retirement`のときだけ適用。他type=生成経歴のtitle_win等は本バッチの対象外=非ラップ据え置き。怪我欄画面)。
+
+**方式選定の理由**: pushサイトへ追加フィールドを足す方式(§1と同型)も検討したが、(a) 3パターンとも正規表現で確実に復元できる固定書式で値の逆引きが一意、(b) 3ファイル5箇所のpushサイトを触るより表示点2関数に集約するほうが影響範囲が小さい、(c) 既存の`injuryLabel(type, dict)`(data.js)をそのまま再利用でき新概念が要らない、の3点で表示点解決を採った。
+
+新規テンプレキー3件(`{label}（{n}週離脱）`→"{label} ({n}-week absence)" / `{label}により引退`→"Retired due to {label}" / `{label}で長期欠場`→"Out long-term with {label}")+疑似経歴の語彙5件(膝/肩/腰/首/足首の負傷)をui-ledgerへ手追加。
+
+### 3. ns.log(交渉ログ)は消費点ゼロを再確認 — 削除せず裁定待ちリストへ記録
+
+`Engine.draftNegotiation.stepRound`(draft-negotiation.js:468/492)と`draftPlayerAction`(ui-common.js:6739、降りるアクション)が`ns.log.push(...)`するが、`G._draftNegotiation.negState.log`を読む箇所がsrc/testに1つも無い(`_renderDraftNegotiation`は`.round`/`.currentBid`/`.winner`等のみ参照)ことを確認した。**削除はしない**(将来ログパネルとして描画する可能性があるため)。台帳化・翻訳とも未実施のまま、`docs/i18n-stage-a-p3a-design-v0.1.md`の裁定待ちリストへ「描画するなら要配線」として追記した。
+
+### 4. 掃除(a): TRAIT_DEFS死参照10件の削除 — 機械列挙で数値バグ3件も新たに発見
+
+`docs/i18n-coverage-report-v0.1.md`B分類が挙げた7特性名(熱血/天才肌/心技体/影の支配者/ガラスのハート・ガラスの心臓/燃えやすい)の死参照を`Traits.has`/`traits.includes`/配列フィルタの全消費点で機械列挙し、いずれも**ナラティブ選択(常にfalseの到達不能分岐・削除しても生成文字列は不変)**であることを確認して削除した:
+
+- management.js: chronicle の`kept`配列(2件削除)・MVP race `charPool`のif文2行削除・`_traitPhrase`の`order`配列(5件削除)+`M`辞書(5エントリ削除)
+- app.js: `hofToArchive`/`retiredToArchive`の同型フィルタ配列(2箇所、それぞれ2件削除)
+- `Engine.career.generateBackstory`の`injuryPool`配列(5語)はdata.jsの`BACKSTORY_INJURY_LABELS`へ移設(§2で共用するため。JA値は不変)
+
+**同じ機械列挙で見つかった別種の3件は今回は直さなかった**: `Traits.has(fighter, 'ファンサ')`(management.js:1233/1276、正しくは`'ファンサービス'`。週次人気ドロー計算のボーナスが常に無効)・`Traits.has(fighterA/B, 'ヒール')`(management.js:1315/1372-1378、正しくは`'ヒール適性'`。ヒールvsベビー対戦アピールボーナスが常に無効)・`Traits.has(f, '人脈')`(management.js:16514、TRAIT_DEFSに存在しないキー。スカウト推定値のノイズ縮小が常に無効)。これらは**数値ゲームバランスに実効するdead branch**であり、直せばauto-simの分布が動く。i18nバッチの範囲外・Keisuke裁定が必要と判断し、`mcp__ccd_session__spawn_task`で別タスク化した(task_06dbb801「Fix 3 dead trait-name checks affecting live balance」・未着手)。**「TRAIT_DEFSに無い特性名への死参照」という同じ症状でも、文字列(ナラティブ選択)と数値(ゲームバランス)は分けて扱うこと。**
+
+### 5. 掃除(b): RIVAL_ORGS.descを計算するdeck変数の削除
+
+`docs/i18n-stage-a-p3a-design-v0.1.md`に記録されていた死コード(ランキング画面の`deck`変数、P7-1で発見)を解決した。`deck`は`org.desc`(または`''`)を代入されるだけで、宣言〜代入〜スコープ終了まで一度も参照されない(grep突合で確認)。**JA出力を変えない側(削除)を採用**——復活(描画)は新しい可視文字列を追加することになりJA不変の制約に反するため、この文脈では「削除」だけが1バイト不変の選択肢だった。`RIVAL_ORGS.desc`データ自体はP7-11の団体比較号(新聞)で現役利用中のため無変更。
+
+### 6. 台帳化(15キー)
+
+ui-ledger 4,275→**4,290**(未訳0)。template-ledger 3,303・dialogue-ledger 16,674は不触。
+
+### 7. auto-simの指紋除外に`detailTpl`/`detailVars`を追加
+
+growthLog(`G.roster[].growthLog[]`)はauto-simのsemantic fingerprint計算対象(`JSON.stringify({G,...})`)に含まれるため、§1の追加フィールドの分だけ指紋が動く。`test/auto-sim.js`のreplacerへ`detailTpl`/`detailVars`の除外を追加(§15-1/P6-16と同じ作法)。除外後、`node test/auto-sim.js 20 42`が**P7-28着手前の実測値と同一の`640b2591`**になることを確認した(手順: `git stash`で一時的にP7-28差分を退避→着手前コードでauto-sim実測(640b2591を確認)→`git stash pop`で復元→指紋除外を追加した状態で再実測→同一値を確認)。
+
+### 8. JA同一性の証明
+
+- `node test/ja-golden.js`(`--update`不使用): 基準hash `dd2e536bc18a4433…`と**完全一致**
+- VM検証(実物の`src/i18n.js`+`src/lang-en.js`+`src/data.js`+`src/management.js`を`vm`でロード): growthLog 7型(match×4形/milestone×3形)とcareerHistory怪我detail 26パターン(実怪我4種×週数3+実怪我引退4種+fallback1+疑似経歴5語+fail-open2種+null)を全て**JA再構築1バイト一致**で確認(dict無し/`WM_I18N.t`(ja)経由の両方)。EN側も各型を`setLang('en')`で目視確認、i18n-miss 0
+
+### 9. 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(data.js/management.js/app.js/ui-common.js/ui-render.js/test/auto-sim.js) | ✅ 全OK |
+| `node test/ja-golden.js`(`--update`不使用) | ✅ **完全一致**(lines=11307・hash `dd2e536bc18a4433…`) |
+| build-dict 3本 | ✅ ui **4,290**(未訳0)・template 3,303(不触・未訳0)・dialogue 16,674(不触・未訳0) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー16件・すべて訳文一致 |
+| `npm test` | ✅ **261/261 PASS** |
+| `node test/i18n-ratchet.js --update` | 28,057→**28,042**(−15)。data.js +5(BACKSTORY_INJURY_LABELSの移設)/ management.js −20(死参照削除の方が移設分より大きい)/ app.js jaChars +1(コメントのみ) |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**(violations 0・errors 0・台帳検査3種違反0)。fingerprint **`640b2591`**(P7-28着手前の実測値と同一・§7) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・412手・**i18n-miss 0**・Issues 0・JA露出57(HEAD実測57と同値。内訳(log/week/shachoshitsu/show/title)は走破ごとに変動するが総数は一致=走破の非決定性の範囲内) |
+
+### 10. Keisukeに確認してほしい画面・操作・表示
+
+1. **選手ポップアップ →「成長経過」タブ** — 試合による成長行(`vs {name}` / タッグの`タッグ({partner}) vs {opps}`)と、OVR/人気/ステータス上限到達時の🔔マイルストーン行。JAが従来と1文字も変わっていないこと
+2. **選手ポップアップ →「記録」タブ(キャリア年表)と、その下の「経歴(怪我・重大事項)」欄** — 中傷/重傷で離脱した選手の年表・怪我欄の表示。JA不変
+3. **(EN)** 上記1・2を言語をEnglishに切り替えて。特に成長ログの試合行(選手名がpn辞書に無いと英語化されない既知の制約=今回のスコープ外)と怪我名("Moderate injury (8-week absence)"等)の見え方
+4. **データベース → ランキング画面 → 団体プロフィール** — 各団体カードの表示に欠落が無いこと(dead変数`deck`を削除したのみで見た目は変わらないはずだが、念のため)
+5. 特性(トレイト)まわりの表示・効果は今回**意図的に無変更**(削除したのは常にfalseで発火しなかった死コードのみ)。ただし別途チップで報告した3件(ファンサ/ヒール/人脈の数値バグ)は着手時に相談させてください
+
+### 11. 未実施・残課題
+
+- なし(P7-25が残した3件+P7-20/P7-1の掃除2件、すべて解決)
+
 ## 🌐 英語対応 P7-25 — 台帳未収載の中小プール5件(キャリア年表/殿堂ハイライト/成長ログ/ドラフト交渉/季総括)(2026-09-05)
 
 `docs/i18n-coverage-report-v0.1.md`(P7-20の全数棚卸し)のA表のうち、並行バッチ(P7-21 CUTIN_LINES / P7-23 mvpRace / P7-24 ヘルプ)が担当する3件を除く**残り全件**を配線・英訳した。着手前に worktree を main 先端(8f379e61、P7-18/P7-19 まで)へ fast-forward 済み。

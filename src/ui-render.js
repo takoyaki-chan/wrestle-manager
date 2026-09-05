@@ -2200,7 +2200,10 @@ function _renderRosterDetailPanel(c, hired) {
     if (entry.type === 'match') {
       const resColor = entry.result === 'win' ? '#5c4a1e' : entry.result === 'lose' ? '#b03030' : '#7a7466';
       const resLabel = entry.result === 'win' ? WM_I18N.t('勝利') : entry.result === 'lose' ? WM_I18N.t('敗北') : WM_I18N.t('引分');
-      eventText = `🏆 ${entry.detail} — <b style="color:${resColor}">${resLabel}</b>`;
+      // i18n P7-28: detailTpl/detailVars(§14-3の追加フィールド)があれば言語別に組み直す。
+      // 旧行(P7-28より前のセーブ)はdetailTplが無いのでdetailへfail-open
+      const matchText = entry.detailTpl ? WM_I18N.t(entry.detailTpl, entry.detailVars || {}) : entry.detail;
+      eventText = `🏆 ${matchText} — <b style="color:${resColor}">${resLabel}</b>`;
     } else if (entry.type === 'practice') {
       // i18n P7-25: 外側のテンプレはt()を通っていたが、差し込む {detail} は
       // growthLog へ**生JAで永続**した行動ラベル(GROWTH_LOG_LABELS)なので、
@@ -2213,7 +2216,16 @@ function _renderRosterDetailPanel(c, hired) {
       // detail は内部キー('中傷'等)のことがある。表示は必ず injuryLabel を通す
       eventText = `🏥 ${WM_I18N.t('療養（{detail}）', { detail: injuryLabel(entry.detail, WM_I18N.t) || entry.detail })}`;
     } else if (entry.type === 'milestone') {
-      eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${entry.detail}</span>`;
+      // i18n P7-28: detailTpl/detailVars(§14-3)。{stat}はSTAT_JA由来のUIラベル値なので
+      // 外側テンプレへ差し込む前に先に辞書を引く(§14-2 _wmDictLabel と同趣旨のUI側版。
+      // {n}はOVR/人気の数値なので変換不要)
+      let msText = entry.detail;
+      if (entry.detailTpl) {
+        const v = entry.detailVars || {};
+        const vars = v.stat != null ? { ...v, stat: WM_I18N.t(v.stat) } : v;
+        msText = WM_I18N.t(entry.detailTpl, vars);
+      }
+      eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${msText}</span>`;
     } else {
       eventText = entry.detail || '—';
     }
@@ -4954,14 +4966,17 @@ function renderRanking() {
     const rankClass = `is-rank-${r.rank}`;
     const playerClass = isPlayer ? ' is-player' : '';
 
-    let roster, championId, defenses, orgPop, deck, rentalRoster;
+    // i18n P7-28掃除(P7-1発見分): RIVAL_ORGS.descを計算するだけで一度も描画しない
+    // `deck` 変数は死コード(P6-13の_buildAceCopy/_buildLeadSentences刷新で旧描画経路が
+    // 置き換わり、変数だけ取り残されたと推定)だったため削除。RIVAL_ORGS.desc自体は
+    // 新聞の団体比較号(P7-11でテンプレ化済み)で現役利用中なので不触。JA出力不変
+    let roster, championId, defenses, orgPop, rentalRoster;
     if (isPlayer) {
       roster = (G.roster || []).filter(c => !c.isRental && !c.injury && !c.forcedRest);
       rentalRoster = (G.roster || []).filter(c => c.isRental);
       championId = G.titles?.world?.championId || null;
       defenses = G.titles?.world?.defenses || 0;
       orgPop = G.orgPop;
-      deck = '';
     } else {
       const aiData = G.aiOrgs && G.aiOrgs[r.orgId];
       if (!aiData) return;
@@ -4970,7 +4985,6 @@ function renderRanking() {
       championId = aiData.titles?.world?.championId || null;
       defenses = aiData.titles?.world?.defenses || 0;
       orgPop = aiData.orgPop;
-      deck = (org && org.desc) || '';
     }
     const popupSource = isPlayer ? 'roster' : ('ai:' + r.orgId);
     const rosterAll = isPlayer ? (G.roster || []).filter(c => !c.isRental) : roster;
