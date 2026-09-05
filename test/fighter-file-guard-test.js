@@ -80,8 +80,12 @@ const confidentialLines = [
   '※ 記載の能力値は各選手の能力基準値。',
 ];
 // i18n Stage A P3a-4d: data-i18n属性がclass直後に付く(HTML構造は不変・属性追加のみ)。
+// i18n P7-33: notice-subは<br>を挟むため、data-i18nをdivへ直接付けると抽出器が
+// 「textContentに子要素混在」として黙ってスキップする(test/i18n-extract-ui.js)。
+// 既存の同型箇所(index.html「あなたはこの世界で～」等)と同じく、テキストを
+// <span data-i18n>2本+リテラル<br>」へ分割して両方訳出可能にした(見た目・改行位置は不変)。
 const noticeMain = indexSource.match(/<div class="fighter-file-notice-main"[^>]*>([^<]*)<\/div>/);
-const noticeSub = indexSource.match(/<div class="fighter-file-notice-sub"[^>]*>([^<]*)<br>([^<]*)<\/div>/);
+const noticeSub = indexSource.match(/<div class="fighter-file-notice-sub"[^>]*><span data-i18n>([^<]*)<\/span><br><span data-i18n>([^<]*)<\/span><\/div>/);
 assert.ok(noticeMain && noticeSub, '機密注記の3行DOMが見つかる');
 assert.strictEqual(noticeMain[1], confidentialLines[0]);
 assert.strictEqual(noticeSub[1], confidentialLines[1]);

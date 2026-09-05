@@ -5,7 +5,7 @@
 //  手動で編集しないこと。翻訳の追加・修正は i18n/ui-ledger.json の en 列を編集し、
 //  node test/i18n-build-dict.js を再実行して再生成する。
 //
-//  生成元: i18n/ui-ledger.json (総キー4517件、訳文あり4517件)
+//  生成元: i18n/ui-ledger.json (総キー4563件、訳文あり4563件)
 //  D-B2(i18n-stage-b-p3b-design-v0.1.md): 辞書に無いキーは原文のままfail-openで表示される。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -4530,7 +4530,53 @@
     "＋オフシーズンです。": " plus an offseason.",
     "：互いに力を認め合い、表情が和らいだ": ": they acknowledged each other's strength, and their faces softened",
     "：社長の裁定に納得し、気持ちにも張りが戻った": ": she accepted your ruling, and the spring came back into her step",
-    "｜ 抗争{n}勝": "| {n} feud wins"
+    "｜ 抗争{n}勝": "| {n} feud wins",
+    "{a}と{b}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。": "{a} and {b} — the long-standing feud between the two factions finally reaches its night of full settlement, in the form of a Faction War.",
+    "{r}が{o}の試合映像を何度も見返しているらしい": "Word is {r} has been watching {o}'s match footage over and over.",
+    "{r}の中で{o}は、特別な位置にいる": "{o} holds a special place in {r}'s mind.",
+    "{r}の中で、{o}との決着が宿題になっている": "Settling things with {o} has become unfinished business for {r}.",
+    "{r}の中で、何かが煮詰まっている": "Something is coming to a boil inside {r}.",
+    "{r}の溜めたものは、リングでしか出せない": "Whatever {r} has been bottling up, the ring is the only place it comes out.",
+    "{r}は{o}との次の一戦を待ち続けている": "{r} keeps waiting for the next match with {o}.",
+    "{r}は{o}に強い思いを抱いている": "{r} carries strong feelings about {o}.",
+    "{r}は{o}の名前を出すたびに目つきが変わる": "{r}'s eyes change every time {o}'s name comes up.",
+    "{r}は{o}を意識しすぎている節がある": "{r} seems to think about {o} more than she'd let on.",
+    "{winner}が{winScore}勝{loseScore}敗で{loser}を制した――対抗戦は決着した。": "{winner} defeated {loser} {winScore}–{loseScore} — the Faction War is settled.",
+    "この団体を、必ず大きくしてみせます。": "I'll make this promotion big, I promise.",
+    "コンディション不良": "Poor Condition",
+    "パートナー": "Partner",
+    "ライバルへの意識": "Aware of a Rival",
+    "不出場の鬱憤": "Frustration at Being Left Off the Card",
+    "世代交代": "Changing of the Guard",
+    "仲間への想い": "Feelings for a Teammate",
+    "全員で一番を目指しましょう、社長。": "Let's all aim for the top together, President.",
+    "冷え込み": "Cooling Off",
+    "冷たい距離": "A Cold Distance",
+    "地固め": "Laying the Groundwork",
+    "女子プロレス タッグバトル観戦": "Women's Pro Wrestling Tag Match Viewer",
+    "女子プロレス バトルエンジン v4.2": "Women's Pro Wrestling Battle Engine v4.2",
+    "小競り合い": "Skirmish",
+    "怪我中の焦り": "Anxious While Injured",
+    "期待には試合で応えます。": "I'll answer your expectations in the ring.",
+    "決め技": "Finisher",
+    "泥沼": "Quagmire",
+    "社長、これからよろしくお願いします！": "President, thank you for having me!",
+    "私たちのリング、ここから始めましょう。": "This is our ring. Let's start right here.",
+    "第三者の証言": "A Bystander's Account",
+    "絶好調の終わり": "End of a Hot Streak",
+    "練習中のひとこと": "A Word from Practice",
+    "練習中の敵意": "Hostility in Practice",
+    "船出": "Setting Sail",
+    "血みどろ": "Bloodbath",
+    "表情が和らいだ": "A Softer Look",
+    "試合後の感情": "Feelings After the Match",
+    "試練": "Trial",
+    "距離を置く気配": "Keeping Her Distance",
+    "連勝の自信": "Confidence from a Winning Streak",
+    "連敗のストレス": "Stress from a Losing Streak",
+    "雌伏": "Biding Her Time",
+    "飛躍": "Breakthrough",
+    "🔍 スカウトイベント": "🔍 Scouting Event"
   }
   );
 })();

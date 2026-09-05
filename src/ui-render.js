@@ -13054,7 +13054,7 @@ function _dfcRenderCard(faction, state, opts = {}) {
     const hAB = hostMap[`${faction.id}>${opts.feudOpponent.id}`] || 0;
     const hBA = hostMap[`${opts.feudOpponent.id}>${faction.id}`] || 0;
     const avg = (hAB + hBA) / 2;
-    html += `<span class="dfc-meter">${WM_I18N.t('{name}と{label}', { name: opts.feudOpponent.name, label: Engine.factions.getHostilityLabel(avg) })}</span>`;
+    html += `<span class="dfc-meter">${WM_I18N.t('{name}と{label}', { name: opts.feudOpponent.name, label: WM_I18N.t(Engine.factions.getHostilityLabel(avg)) })}</span>`;
   }
   html += `</div></div>`;
 

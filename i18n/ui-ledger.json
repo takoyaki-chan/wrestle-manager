@@ -7351,8 +7351,7 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true
+    "hasProperNoun": false
   },
   {
     "key": "※ 記載の能力値は各選手の能力基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。",
@@ -23696,8 +23695,7 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
-    "hasProperNoun": false,
-    "kept": true
+    "hasProperNoun": false
   },
   {
     "key": "合同企画",
@@ -47829,6 +47827,538 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{a}と{b}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。",
+    "en": "{a} and {b} — the long-standing feud between the two factions finally reaches its night of full settlement, in the form of a Faction War.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{r}が{o}の試合映像を何度も見返しているらしい",
+    "en": "Word is {r} has been watching {o}'s match footage over and over.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(respect)"
+  },
+  {
+    "key": "{r}の中で{o}は、特別な位置にいる",
+    "en": "{o} holds a special place in {r}'s mind.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(respect)"
+  },
+  {
+    "key": "{r}の中で、{o}との決着が宿題になっている",
+    "en": "Settling things with {o} has become unfinished business for {r}.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(default)"
+  },
+  {
+    "key": "{r}の中で、何かが煮詰まっている",
+    "en": "Something is coming to a boil inside {r}.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(pure)"
+  },
+  {
+    "key": "{r}の溜めたものは、リングでしか出せない",
+    "en": "Whatever {r} has been bottling up, the ring is the only place it comes out.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(pure)"
+  },
+  {
+    "key": "{r}は{o}との次の一戦を待ち続けている",
+    "en": "{r} keeps waiting for the next match with {o}.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(respect)"
+  },
+  {
+    "key": "{r}は{o}に強い思いを抱いている",
+    "en": "{r} carries strong feelings about {o}.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(default)"
+  },
+  {
+    "key": "{r}は{o}の名前を出すたびに目つきが変わる",
+    "en": "{r}'s eyes change every time {o}'s name comes up.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(pure)"
+  },
+  {
+    "key": "{r}は{o}を意識しすぎている節がある",
+    "en": "{r} seems to think about {o} more than she'd let on.",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:Engine.challengeRequest.pickFlavorLine(default)"
+  },
+  {
+    "key": "{winner}が{winScore}勝{loseScore}敗で{loser}を制した――対抗戦は決着した。",
+    "en": "{winner} defeated {loser} {winScore}–{loseScore} — the Faction War is settled.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この団体を、必ず大きくしてみせます。",
+    "en": "I'll make this promotion big, I promise.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "コンディション不良",
+    "en": "Poor Condition",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-07).label"
+  },
+  {
+    "key": "パートナー",
+    "en": "Partner",
+    "files": [
+      "tag-battle-lines.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=tag-battle-lines.js:pickTagLossLine/pickTagWinCommentary fallback"
+  },
+  {
+    "key": "ライバルへの意識",
+    "en": "Aware of a Rival",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-05).label"
+  },
+  {
+    "key": "不出場の鬱憤",
+    "en": "Frustration at Being Left Off the Card",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-06).label"
+  },
+  {
+    "key": "世代交代",
+    "en": "Changing of the Guard",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=data.js:SEASON_HEADLINE_LABEL"
+  },
+  {
+    "key": "仲間への想い",
+    "en": "Feelings for a Teammate",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-04).label"
+  },
+  {
+    "key": "全員で一番を目指しましょう、社長。",
+    "en": "Let's all aim for the top together, President.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "冷え込み",
+    "en": "Cooling Off",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=factions.js:getHostilityLabel(default)"
+  },
+  {
+    "key": "冷たい距離",
+    "en": "A Cold Distance",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(coldness).label"
+  },
+  {
+    "key": "地固め",
+    "en": "Laying the Groundwork",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=data.js:SEASON_HEADLINE_LABEL"
+  },
+  {
+    "key": "女子プロレス タッグバトル観戦",
+    "en": "Women's Pro Wrestling Tag Match Viewer",
+    "files": [
+      "tag-battle.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "女子プロレス バトルエンジン v4.2",
+    "en": "Women's Pro Wrestling Battle Engine v4.2",
+    "files": [
+      "battle-engine.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "小競り合い",
+    "en": "Skirmish",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=factions.js:getHostilityLabel(>=20)"
+  },
+  {
+    "key": "怪我中の焦り",
+    "en": "Anxious While Injured",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-10).label"
+  },
+  {
+    "key": "期待には試合で応えます。",
+    "en": "I'll answer your expectations in the ring.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決め技",
+    "en": "Finisher",
+    "files": [
+      "tag-battle-lines.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=tag-battle-lines.js:pickTagWinCommentary fallback"
+  },
+  {
+    "key": "泥沼",
+    "en": "Quagmire",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=factions.js:getHostilityLabel(>=60)"
+  },
+  {
+    "key": "社長、これからよろしくお願いします！",
+    "en": "President, thank you for having me!",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "私たちのリング、ここから始めましょう。",
+    "en": "This is our ring. Let's start right here.",
+    "files": [
+      "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "第三者の証言",
+    "en": "A Bystander's Account",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-12 narration).label"
+  },
+  {
+    "key": "絶好調の終わり",
+    "en": "End of a Hot Streak",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(hotstreak_end).label"
+  },
+  {
+    "key": "練習中のひとこと",
+    "en": "A Word from Practice",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-02).label"
+  },
+  {
+    "key": "練習中の敵意",
+    "en": "Hostility in Practice",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-02 hostile).label"
+  },
+  {
+    "key": "船出",
+    "en": "Setting Sail",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=data.js:SEASON_HEADLINE_LABEL"
+  },
+  {
+    "key": "血みどろ",
+    "en": "Bloodbath",
+    "files": [
+      "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=factions.js:getHostilityLabel(>=80)"
+  },
+  {
+    "key": "表情が和らいだ",
+    "en": "A Softer Look",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-03 up).label"
+  },
+  {
+    "key": "試合後の感情",
+    "en": "Feelings After the Match",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-01).label"
+  },
+  {
+    "key": "試練",
+    "en": "Trial",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=data.js:SEASON_HEADLINE_LABEL"
+  },
+  {
+    "key": "距離を置く気配",
+    "en": "Keeping Her Distance",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-03 down).label"
+  },
+  {
+    "key": "連勝の自信",
+    "en": "Confidence from a Winning Streak",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-09).label"
+  },
+  {
+    "key": "連敗のストレス",
+    "en": "Stress from a Losing Streak",
+    "files": [
+      "relationships.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=relationships.js:checkBLayer(GL-08).label"
+  },
+  {
+    "key": "雌伏",
+    "en": "Biding Her Time",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=data.js:SEASON_HEADLINE_LABEL"
+  },
+  {
+    "key": "飛躍",
+    "en": "Breakthrough",
+    "files": [
+      "data.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "i18n P7-33: 動的キー(変数経由でt()に渡るため extractJsCalls の静的第1引数走査に載らない)。source=data.js:SEASON_HEADLINE_LABEL"
+  },
+  {
+    "key": "🔍 スカウトイベント",
+    "en": "🔍 Scouting Event",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   }
 ]

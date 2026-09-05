@@ -1,5 +1,109 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-05 英語対応 P7-33 — relationships.js/factions.js/app.js/data.js一部/index.html/観戦系5件の未カバーJA文字列EN化と死骸の仕分け
+
+### 1. 対象と進め方
+
+対象ファイルの未カバーJA文字列195件(relationships.js 38/factions.js 4/app.js 33/data.js一部105/index.html 4/観戦系5ファイル11。観戦系の合計は指示書の「10」ではなく各ファイル明細の合計「11」が正——tag-battle-lines.js 3+tag-battle-main.js 4+battle-engine-main.js 2+battle-engine.html 1+tag-battle.html 1)を1件ずつ実際の消費点まで追跡し、(a)表示到達→EN化/(b)ロジック比較・セーブ移行・内部キー→仕様除外/(c)呼び出し元ゼロの死骸→報告、に仕分けた。内訳は本文末尾の表を参照。詳細な仕分け根拠は `docs/i18n-coverage-report-v0.1.md` §8 に一覧化した(Keisuke裁定が要る項目もそこにまとめてある)。
+
+### 2. (a) EN化した項目
+
+**relationships.js**
+- `Engine.challengeRequest.pickFlavorLine`(社長視点の関係性フレーバー1行、直訴プレビュー画面「直近対戦」の隣に表示)を第5引数`dict`のdict-optsパターンへ改修。断片連結(`${r}${o}`直接補間)をやめ`{r}`/`{o}`プレースホルダのテンプレ+`_wmFillWithDict`へ。呼び出し元 `ui-common.js`(直訴プレビュー生成)が`WM_I18N.t`を渡す。9本すべて新規テンプレとしてui-ledgerへ手追加(dict-opts値なので抽出器の静的走査には載らない動的キー)
+- `checkBLayer`(P5/P6 B層Glimpse)が積む`label`(絶好調の終わり/GL-01〜GL-12の15種)は、消費点 `ui-common.js` `_renderGlimpseCardHtml`(興行後「SHOW AFTERMATH」カスケード演出の`.gc-tag`)が**既に`WM_I18N.t(g.label)`を通していた**——`g.label`が変数経由(動的キー)のため`test/i18n-extract-ui.js`の静的第1引数走査に載らず辞書が空だっただけ。コード変更なし、ui-ledgerへ15件手追加のみで解決
+
+**factions.js**
+- `getHostilityLabel`(血みどろ/泥沼/小競り合い/冷え込み。抗争は既訳)自体は、`ui-common.js`の`hostilityBands.indexOf(hostilityLabel)`(L11869、対立度に応じた🔥アイコン本数の算出)という**ロジック判定と共用**されているため非ラップのまま維持(specs §2構造規約1「Engineは WM_I18N を呼ばない」+既存コードのコメントどおり)。**表示側4箇所**(`ui-common.js` L10888/L11192/L11216/L11915、`ui-render.js` L13019)へ`WM_I18N.t(hostilityLabel)`ラップを追加してEN化(indexOf判定のL11869は不変)
+
+**data.js**
+- `SEASON_HEADLINE_LABEL`(世代交代/飛躍/雌伏/地固め/試練/船出。戴冠は既訳"Crowned"を流用)は`ui-render.js:597`の`WM_I18N.t(seasonHeadlineLabel(review.headline))`で**既に配線済み**(動的キーのため抽出器に載らず辞書が空だっただけ)。ui-ledgerへ6件手追加のみ
+
+**app.js**(いずれも「同ティック内で生成・即表示・非永続」であることを確認してから対応。産物がGへ永続する項目は§4のとおり見送り)
+- F09派閥対抗戦の**開幕**ナレーション(`_buildF09OpeningData`)と**結末**ナレーション(F09Ending処理)——断片連結(JS三項演算子+文字列結合)をやめ、既存の`winnerScore`/`loserScore`を使ったフルテンプレ+`WM_I18N.t()`直呼びへ(app.jsはUI層としてWM_I18N直接呼び出し可・specs §6)
+- 旗揚げ完了画面(5人集合写真)の頭上吹き出し挨拶5行を`WM_I18N.t()`でラップ
+- 成長ログ「敵地遠征 vs {opponent}」——`detail`をテンプレのまま永続させ(GROWTH_LOG_LABELSと同型)、表示点`ui-render.js`の`type==='match'`分岐で`{opponent}`プレースホルダの**有無を見て**t()を通すかどうか切り替える(既存の「vs {name}」のような対戦相手名を焼き込み済みの生JA完成文——management.js/app.js他箇所が生成——をt()に通すとキー不一致で`i18n-miss`が常時発生するため、プレースホルダの有無という構造的な目印で判別。EN走破で実際に検知して直した、詳細は§5)
+- 成長マイルストーン(総合力/人気/各ステータス上限到達)も同様に`detail`をテンプレ化(`総合力{value}到達`/`人気{value}到達`/ステータス別5本の完全文)し`value`フィールドを追加、表示点で`WM_I18N.t(entry.detail, { value: entry.value })`
+
+**index.html / battle-engine.html / tag-battle.html**
+- `#scoutEventTitle`(スカウトイベント画面タイトル。JSが必ず即座に上書きするので通常は見えないが保険として)へ`data-i18n`付与
+- 選手ファイルの機密注記2文目(`各選手の潜在能力は機密事項…`+`※ 記載の能力値は…`)——`<br>`を挟むため、divへ直接`data-i18n`を付けると抽出器が「textContentに子要素混在」としてスキップする。既存の同型箇所(index.htmlの「あなたはこの世界で～」等)と同じく`<span data-i18n>`2本+リテラル`<br>`へ分割(見た目・改行位置は不変)。**この2文はすでに`en`訳がui-ledgerに存在していた**(過去のkept行が偶然一致・そのまま引き継がれた)ため翻訳作業は発生せず
+- `battle-engine.html`/`tag-battle.html`の`<title>`へ`data-i18n`付与(index.htmlの`<title data-i18n>`と同じ扱いに揃えた)
+
+**tag-battle-lines.js**
+- `pickTagLossLine`/`pickTagWinCommentary`の未提供時フォールバック語(パートナー/決め技。勝者は既存の"Winner"キーを流用)を、`dict(tpl, vars)`の値変換(名前/技名のみ対象)では訳せない一般名詞と判断し、`T('パートナー')`のようにdictへ直接通す形へ
+
+### 3. (b) 仕様除外(ロジック比較・セーブ移行・内部キー)にした項目
+
+- **relationships.js** `backstoryTypes`(同期入団/元タッグパートナー/過去の遺恨、5件)——`bsType`比較にのみ使う内部分岐キーで、`relationships[key]`には数値(bond/rivalry)しか書き込まれず表示に出ない
+- **app.js** `d.label.includes('チケット'|'グッズ'|'会場')`(週間収支見積りの興行収入抽出、3件)、`遅咲き`(save移行、2件)、`熱血`/`ガラスのハート`(殿堂入りアーカイブのtraitホワイトリスト、4件)、`引退試合`等の`reason`(`.includes('引退')`分岐にのみ使う内部値、1件)、`mqTextFixes`(旧セーブの「MQ」表記を「試合評価」へ書き換えるJA→JA移行regex、10件)
+- **data.js** `INJURY_TABLE`/`INJURY_LABEL`/`INJURY_LABEL_SHORT`/`INJURY_DEBUFF_TABLE`の内部キー`'中傷'`(4件)——表示に出るのは`INJURY_LABEL['中傷']`側の値("中程度の負傷")で、`injuryLabel()`が既にdict対応済み
+- **観戦系** `tag-battle-main.js`/`battle-engine-main.js`の`t.includes('★ 決着')`等(6件)——ログ行を演出クラスへ分類する後方互換フォールバック(新フレームは`fr.logLineClasses`で分類済み、旧フレームのみ通る経路とコード自身が明記)。翻訳すると分類が無音故障する危険パターンとして据え置き
+- **index.html** `日本語`(言語トグルの自言語表記、既存コメントで翻訳しない設計と明記)/`たこやき`(クレジットの制作者名)
+
+### 4. (c) 死骸・裁定待ち・追補待ち(報告のみ、コード変更なし)
+
+- `BOND_LABELS`/`RIVALRY_LABELS`(relationships.js、9件)——`inspect()`/`stats()`という「デバッグ用ヘルパー」節の2関数からしか参照されず、その2関数を呼ぶコードがsrc/にもtest/にも0件。**`docs/i18n-coverage-report-v0.1.md`(P7-25)が既に同じ結論でB分類へ訂正済み**だったものを本タスクで独立に再確認
+- `TRAIT_DEFS`の1文字漢字アイコン23種(data.js)——ui-common.jsのtraitバッジで生表示され到達可能だが、意匠(絵文字相当)であり訳語の要否はKeisuke裁定事項
+- `GLIMPSE_A_LINES`51行(data.js)——`checkALayer`経由で`showGlimpseCascade`まで生きて表示に到達するキャラクターセリフプール(archetype/personality軸)。訳出はセリフ層(dialogue-ledger、Opus主筆)の管轄のため未着手、報告のみ
+- `SURVIVAL_MILESTONES.icon`('杯'、app.js)——`Survival.getMilestones()`の戻り値`icon`はui-render.jsのどの描画箇所からも参照されない完全な死フィールド
+- `FAREWELL_CLOSING`(data.js)——grepで消費ゼロを確認。兄弟の`FAREWELL_KIND_TEXT`(引退セレモニーの型別見出し/リード/本文、15件・5型)は**既にui-common.js:2432-2447で`WM_I18N.t(fk.title/lead/body)`済みで翻訳も完了していた**(template-ledgerへの登録・訳出はP7-2で完了済み)。今回の「13件」という指示書の数え方は`body`がJS文字列連結(`+`)で複数行に書かれているため、評価後は1個の完成文になる——ソースの見た目(行分割数)と実際のキー単位(評価後の文字列)がズレていた誤検知
+- `元所属団体`(app.js:11379)/AI団体ブレークスルー`{detail}`3種(app.js:12526-12528)/`対抗戦出演料`(app.js:15567、副次発見: 隣接する`対抗戦 vs {name}`も同型)——いずれも`industryNews`キュー等の**永続構造に載る値**で、`_wmResolvePreformattedIndustryData`(management.js)側にRaw値再構築の受け皿(`case`)が無いため、app.js側だけで先に翻訳すると「言語切替後に混在する」既存の§8規約(render時点再構築)に反する。management.js側の追補が対にならないと安全に直せないため、**management.jsは今回の担当外につき未着手**。今回EN化できたF09演出・foundingGreetings等は全て「同ティック内で生成・即表示・非永続」であることを確認してから直しており、この5件はその条件を満たさない
+
+### 5. 発見・修正した実バグ
+
+1. **`Survival.estimateWeeklyNet`(週間収支見積り)の潜在バグ**——`G.weeklyFinance.details[].label`のJA部分一致(`.includes('チケット')`等)で興行収入を集計していたが、`processSettlement(G, dict)`(management.js)がこの`label`を実際にEN訳する経路が既に存在する(`_wmFillWithDict(dict, 'チケット収入…', …)`)ため、**EN実行時はサバイバルパネルの週間収支見積りが常に興行収入0として計算される**バグだった。チケット/グッズ収入側は`category`フィールド(`'ticket'`/`'goods'`)が既存だったため、そちらへ判定を差し替えて解消。会場費側(`category`未整備)は据え置き
+2. **`entry.detail`をt()に通す際のi18n-miss汚染**——ui-render.jsの成長ログ`type==='match'`分岐で、新設した「敵地遠征 vs {opponent}」だけでなく、既存の「vs {name}」(management.js/app.js他箇所が生成する対戦相手名焼き込み済みの生JA完成文)まで無条件でt()に通す実装にしてしまい、EN走破で12件の`i18n-miss`が新規発生(§6のEN走破1回目で検出)。`{opponent}`という**未充填のプレースホルダの有無**で判別する形に直して解消(内容の部分一致=キーワードスニッフィングではなく、プレースホルダ構文という構造的な目印での判別)
+
+### 6. 検証
+
+- `node --check` 触ったファイル全部(relationships.js/factions.js/app.js/data.js/ui-common.js/ui-render.js/tag-battle-lines.js/i18n.js/lang-en.js/battle-engine.html/tag-battle.html/index.html) OK
+- `node test/ja-golden.js` — 基準と完全一致(`dd2e536bc18a4433b2c1530cc81e7a02090f09db7c7cb0dc184f5df75fd5e44e`、11,307行)
+- `node test/i18n-build-dict.js` — 台帳総キー数4,556、訳文あり4,556、未訳0
+- `node test/i18n-ledger-consistency-test.js` — ok(2台帳以上に存在するキー16件、すべて訳文一致)
+- `node test/i18n-ratchet.js` — app.jsの生JA文字列+5(=536→541相当。growthLog系テンプレの新設。--updateで基準採取・理由明記)。以降OK(files=31 totalJaStrings=28,060)
+- `npm test` — 261/261 PASS(初回2件FAIL→修正。詳細は§7)
+- `node test/auto-sim.js 20 42` — ALL CLEAR、violations 0、台帳検査(給与連続性/更改の約束/資金恒等式)違反0
+- `npm run test:ui:walkthrough`(JA) — 4回実行。1・2・4回目はPASS・digest **1052faa82eaf7991**(既存基準と完全一致)。3回目のみdigest`469744a89589d620`に揺れたが、調査の結果**本バッチのコード変更は無関係と特定**——揺れた回・揺れなかった回のどちらの成長ログ表示コード(`_renderRosterDetailPanel`、本バッチの唯一のJA分岐変更点)も`toggleRosterDetail`が全走破ログに1回も出現せず**そもそも実行されていない**ことをログ突合で確認。`Survival.estimateWeeklyNet`のcategory判定切替もJA側は数値集計結果が不変であることを事前に検算済み。既存worklog(P7-9マージ後等)にも「凍結コピー(HEAD)を同条件で走らせても同じ揺れが出た」記録がある**既知のPlaywrightタイミングフレーク**と判断し、直近2回連続PASS+digest一致で決着
+- `npm run test:ui:walkthrough:en`(EN) — 1回目PASSだが`i18n-miss`12件検出(§5-2のバグ)→修正後に再走、**PASS**・Actions 411・digest`2b37a964856b5049`・Issues 0・**`i18n-miss: 0`**
+
+### 7. 既存テストの追従修正(構造変更に伴うもの、2件)
+
+- `test/fighter-file-guard-test.js` — 選手ファイル機密注記のDOM構造が`<span data-i18n>`2本+`<br>`へ変わったため、正規表現を新構造に合わせて更新(文言自体のチェックは不変)
+- `test/opening-scene-ui-test.js` — 旗揚げ完了画面の挨拶配列が`WM_I18N.t('…')`でラップされたため、行の抽出フィルタに`WM_I18N.t(`始まりも追加(非空チェックも`WM_I18N.t(`と引用符の両方を剥がす形に更新)
+
+### 8. 仕分け件数まとめ
+
+| 分類 | 件数 | 内訳 |
+|---|---:|---|
+| (a) EN化 | 56 | relationships.js 24(pickFlavorLine 9+checkBLayer label 15)/factions.js 4/app.js 9/data.js 12(SEASON_HEADLINE_LABEL)/index.html 2/観戦系5 |
+| (b) 仕様除外 | 31 | relationships.js 5/app.js 18/観戦系6/index.html 2 |
+| (c) 死骸 | 12 | relationships.js 9(BOND/RIVALRY_LABELS)/app.js 1(杯)/data.js 2(FAREWELL_CLOSING) |
+| 既に完了済み(誤検知の確認のみ) | 13 | data.js FAREWELL_KIND_TEXT |
+| management.js追補待ち | 5 | app.js(元所属団体/breakthrough detail×3/対抗戦出演料) |
+| Keisuke裁定待ち | 78 | data.js(TRAIT_DEFS 23/INJURY_* 4/GLIMPSE_A_LINES 51) |
+| **合計** | **195** | |
+
+### 9. 代表対訳10組
+
+| JA | EN |
+|---|---|
+| 絶好調の終わり | End of a Hot Streak |
+| {r}は{o}との次の一戦を待ち続けている | {r} keeps waiting for the next match with {o}. |
+| 血みどろ | Bloodbath |
+| 雌伏 | Biding Her Time |
+| 全員で一番を目指しましょう、社長。 | Let's all aim for the top together, President. |
+| {winner}が{winScore}勝{loseScore}敗で{loser}を制した――対抗戦は決着した。 | {winner} defeated {loser} {winScore}–{loseScore} — the Faction War is settled. |
+| 敵地遠征 vs {opponent} | Away trip vs {opponent} |
+| 🔍 スカウトイベント | 🔍 Scouting Event |
+| 女子プロレス タッグバトル観戦 | Women's Pro Wrestling Tag Match Viewer |
+| パートナー(タッグ実況フォールバック語) | Partner |
+
+### 10. 残・裁定事項
+
+`docs/i18n-coverage-report-v0.1.md` §8-5にまとめた。TRAIT_DEFSアイコン23種の扱い/GLIMPSE_A_LINES51行のセリフ層委譲/`元所属団体`等5件のmanagement.js追補要否/会場費側のcategoryフィールド追加要否の4点。実機確認は`docs/実機確認バックログ.md`「英語対応 P7-33」節。
+
+specs更新: 本タスクは既存の§1/§2/§6/§8/§14-2規約をそのまま適用しただけで、新しい構造パターンは導入していないため`specs/i18n-runtime-spec-v1.0.md`への追記はなし。
+
 ## 2026-09-05 P7-35b — igniteモードの `--ja-exposure-log` が空ファイルになる不具合を修正+新聞画面の残り露出15件の正体
 
 - **不具合**: `test/ui-walkthrough/run.js` は走破本体の直後に露出一覧を書き出していたが、ignite の点火ツアー(新聞4面へ移動して走査)はその後に走るため、ignite モードでは常に `[]` が書かれていた(標準出力の件数は正しかった)。集計直前に同じ内容で書き直す1ブロックを追加。walkthrough モードの出力は不変。

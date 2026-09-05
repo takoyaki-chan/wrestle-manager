@@ -3878,33 +3878,38 @@ Engine.challengeRequest = {
     return this.pickLine(requester, 'petition', rng, orgName);
   },
 
-  /** 社長視点の関係性フレーバー1行（数値を出さない） */
-  pickFlavorLine(rivalry, bond, requesterName, otherName) {
+  /** 社長視点の関係性フレーバー1行（数値を出さない）
+   *  i18n P7-33: Engineは WM_I18N を呼ばない(specs/i18n-runtime-spec-v1.0.md §2)ため、
+   *  第5引数dictはdict-optsパターン(§6、Engine.factions.getCommon1Line等と同型)。
+   *  断片連結(${r}${o}直接補間)をやめ{r}/{o}プレースホルダのテンプレ+_wmFillWithDictへ。
+   *  dict未指定(既存呼び出し元)はparamsのみでfillTemplateVarsが充填するためJA不変。 */
+  pickFlavorLine(rivalry, bond, requesterName, otherName, dict) {
     const pure = bond < 50 && rivalry >= 60;       // 純粋憎悪
     const respect = bond >= 75;                     // 好敵手
     const r = requesterName || '○○', o = otherName || '△△';
+    const fill = (tpl) => _wmFillWithDict(dict, tpl, { r, o });
     if (pure) {
       const opts = [
-        `${r}の中で、何かが煮詰まっている`,
-        `${r}は${o}の名前を出すたびに目つきが変わる`,
-        `${r}の溜めたものは、リングでしか出せない`
+        '{r}の中で、何かが煮詰まっている',
+        '{r}は{o}の名前を出すたびに目つきが変わる',
+        '{r}の溜めたものは、リングでしか出せない'
       ];
-      return opts[Math.floor(Math.random() * opts.length)];
+      return fill(opts[Math.floor(Math.random() * opts.length)]);
     }
     if (respect) {
       const opts = [
-        `${r}は${o}との次の一戦を待ち続けている`,
-        `${r}の中で${o}は、特別な位置にいる`,
-        `${r}が${o}の試合映像を何度も見返しているらしい`
+        '{r}は{o}との次の一戦を待ち続けている',
+        '{r}の中で{o}は、特別な位置にいる',
+        '{r}が{o}の試合映像を何度も見返しているらしい'
       ];
-      return opts[Math.floor(Math.random() * opts.length)];
+      return fill(opts[Math.floor(Math.random() * opts.length)]);
     }
     const opts = [
-      `${r}は${o}に強い思いを抱いている`,
-      `${r}の中で、${o}との決着が宿題になっている`,
-      `${r}は${o}を意識しすぎている節がある`
+      '{r}は{o}に強い思いを抱いている',
+      '{r}の中で、{o}との決着が宿題になっている',
+      '{r}は{o}を意識しすぎている節がある'
     ];
-    return opts[Math.floor(Math.random() * opts.length)];
+    return fill(opts[Math.floor(Math.random() * opts.length)]);
   },
 
   /** シーズン境界でクォータをリセット */

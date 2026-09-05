@@ -1816,8 +1816,13 @@ const Survival = {
     // Use last show's revenue if available, or estimate from orgPop
     let avgShowIncomePerWeek = 0;
     if (G.lastShowResults && G.lastShowResults.length > 0 && G.weeklyFinance) {
+      // i18n P7-33: labelは_wmFillWithDict(dict,...)経由でEN訳される値のため、JA部分一致
+      // (.includes('チケット')等)はEN実行時に一致せずshowIncomeが常に0になる潜在バグだった
+      // (構造規約5「完成文の部分一致でのUI分岐禁止」)。ticket/goods側は既存のcategoryフィールド
+      // (management.js processSettlement)で言語非依存に判定できるためそちらへ切替。
+      // expense側(会場費)はcategoryが未付与のため今回は据え置き(要: management.js側の追補)。
       const showIncome = G.weeklyFinance.details
-        .filter(d => d.type === 'income' && (d.label.includes('チケット') || d.label.includes('グッズ')))
+        .filter(d => d.type === 'income' && (d.category === 'ticket' || d.category === 'goods'))
         .reduce((s, d) => s + d.val, 0);
       const showCost = G.weeklyFinance.details
         .filter(d => d.type === 'expense' && d.label.includes('会場'))
@@ -5234,12 +5239,14 @@ const App = {
       const c = G.roster.find(r => r.id === id) || ALL_CHARS.find(r => r.id === id);
       return { id, name: c ? c.name : '???', isFixed: fixedIds.includes(id) };
     });
+    // i18n P7-33: 旗揚げ完了画面は同ティック内で組み立て・即表示され保存されないため、
+    // ここでWM_I18N.t()を適用してもJA不変が保てる(F09演出と同型)。
     const foundingGreetings = [
-      '社長、これからよろしくお願いします！',
-      'この団体を、必ず大きくしてみせます。',
-      '私たちのリング、ここから始めましょう。',
-      '期待には試合で応えます。',
-      '全員で一番を目指しましょう、社長。',
+      WM_I18N.t('社長、これからよろしくお願いします！'),
+      WM_I18N.t('この団体を、必ず大きくしてみせます。'),
+      WM_I18N.t('私たちのリング、ここから始めましょう。'),
+      WM_I18N.t('期待には試合で応えます。'),
+      WM_I18N.t('全員で一番を目指しましょう、社長。'),
     ];
 
     // ── 本編への出口(task-103と同型の根治・2026-08-31) ──
@@ -8595,7 +8602,12 @@ const App = {
             scoreA: winsA, scoreB: winsB,
             winnerScore, loserScore,
             swept: Math.abs(winsA - winsB) >= 2,
-            narration: `${winF.name}が${winF.name === winF.name && winsA > winsB ? winsA + '勝' + winsB + '敗' : winsB + '勝' + winsA + '敗'}で${losF.name}を制した――対抗戦は決着した。`,
+            // i18n P7-33: 断片連結(JS三項+文字列結合)をやめ、フルテンプレ+t()へ。app.jsはUI層
+            // としてWM_I18Nを直接呼んでよい(§6)。_pendingF09Endingは同ティック内で
+            // drain・表示され保存されないため、生成時点のt()適用でJA不変が保てる。
+            narration: WM_I18N.t('{winner}が{winScore}勝{loseScore}敗で{loser}を制した――対抗戦は決着した。', {
+              winner: WM_I18N.pn(winF.name), winScore: winnerScore, loseScore: loserScore, loser: WM_I18N.pn(losF.name),
+            }),
           }};
         }
       }
@@ -9634,7 +9646,11 @@ const App = {
       factionB: { id: fB.id, name: fB.name, leaderId: leaderB.id, leaderName: leaderB.name, leaderOvr: Engine.util.ov(leaderB), members: memberMini(fB) },
       lineA: App._f09PickLine(linesA, leaderA),
       lineB: App._f09PickLine(linesB, leaderB),
-      narration: `${WM_I18N.pn(fA.name)}と${WM_I18N.pn(fB.name)}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。`,
+      // i18n P7-33: 断片連結をやめフルテンプレ+t()へ。_buildF09OpeningDataは同ティック内で
+      // 生成・表示され保存されないため、生成時点のt()適用でJA不変が保てる。
+      narration: WM_I18N.t('{a}と{b}――両派閥の積年の抗争が、ついに対抗戦という形で全面決着の夜を迎える。', {
+        a: WM_I18N.pn(fA.name), b: WM_I18N.pn(fB.name),
+      }),
     };
   },
   _buildF09MatchPreData(m, idx) {
