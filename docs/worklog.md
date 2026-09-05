@@ -173,7 +173,7 @@ grep していたので、dict-opts化に合わせて `(?:, dict)?` を許すよ
 - **経緯**: P7-24(ヘルプ画面の英訳)の副産物で、`index.html` の `#rosterCount`(所属選手 (N名))と `#faCount`(スカウト画面)がJSから一度も更新されず初期値 `0` のまま表示されていることが判明。同じ見出しの `#staffCount/#staffMax` は `renderRoster` 内で更新されているのに選手側だけ抜けていた既存JAバグ。
 - **修正**: `src/ui-render.js` renderRoster で `ownFighters.length`(レンタルを除く契約選手数、レンタルは別節で列挙されるため)を `#rosterCount` に書く2行を追加。`#faCount` を持つ `<div id="screen-scout">` はJSからの参照がゼロ(`showScreen('scout')` も `#scoutContent` の描画もない死骸)なので7行ごと撤去。UI台帳は 4,502 キーのまま(キー集合・訳文とも差分0、並びが3-way unionのキー順から抽出器の出現順へ戻っただけ)。
 - **同日マージ**: P7-24(a6ceace→2dbe9295: ヘルプ画面214キー+index.html未付与13箇所、UI 4,502)/ P7-27(99e345a→6ac6ff2f: 年代記 `_buildPeerNarrativeParts` の `styleJa` Lマーカー欠落を修正、ignite chronicle JA/EN PASS)。
-- **検証**: ja-golden 完全一致(dd2e536b…)/ npm test 261 / ratchet 28,057 不変 / 台帳整合 ok / auto-sim 20季 ALL CLEAR(P7-27マージ後)/ P7-25マージ後の走破: ja 328手 digest 1052faa82eaf7991・EN 412手 miss 0。P7-29後の走破はこのコミット直後に別途1本(結果は次エントリ)。
+- **検証**: ja-golden 完全一致(dd2e536b…)/ npm test 261 / ratchet 28,057 不変 / 台帳整合 ok / auto-sim 20季 ALL CLEAR(P7-27マージ後)/ P7-25マージ後の走破: ja 328手 digest 1052faa82eaf7991・EN 412手 miss 0。P7-29後(8287f6a)およびP7-23マージ後(fc7e228)の走破: いずれも ja 328手 digest 1052faa82eaf7991・EN 412手 miss 0・JA露出内訳不変(log39/week11/shachoshitsu3/show3/title1)。
 - **実機確認**: docs/実機確認バックログ.md「英語対応 P7-24/P7-27/P7-29」節。
 
 ## 🌐 英語対応 P7-27 — `npm run test:ui:ignite -- --scenario chronicle --lang en` のFAIL(叙述文の軸ラベルがENでJAのまま)を根治(2026-09-05・worktree agent-a5e26c79f6e079cb5)
