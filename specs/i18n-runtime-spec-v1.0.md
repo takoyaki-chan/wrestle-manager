@@ -1734,13 +1734,137 @@ data.jsの+2は`NEWS_STAMP_SUFFIX_TEXTS`の新規2値。`node test/i18n-ratchet.
 - championWatch再構築(EN、field系): `Anju Matsukawa, the previous champion, has also made the field, and hopes for a repeat are rising.`
 - 旧セーブ(生キー無し)をENで開いた場合: 焼かれたJA完成文がそのまま出る(fail-open。次にpushされた号からはEN再構築が効く)
 
-## 38. Stage B P7-25 — 台帳未収載の中小プール5件(キャリア年表/殿堂ハイライト/成長ログ/ドラフト交渉/季総括)の配線と英訳(2026-09-05追加)
+## 39. Stage B P7-23 — 新聞4面「年間MVPレース」の地の文システム(285本)のテーブル化・配線・英訳(2026-09-05追加)
+
+`docs/i18n-coverage-report-v0.1.md` A分類 #1(285件/4,924字)。`Engine.mvpRace` の叙述family
+(`generateNarrative` / `_traitPhrase` / `generateTagline` / `generatePageHeadline` / `generatePageLead` /
+`generateKurodaComment` / `_topElements` / `_roleLabel` / `_seasonLabel` / `_collectFactChips` /
+`_composeChaseLine` / `_composeFlavorLine` / `generateRichBlocks`)が、**メソッド本体に直書きされた
+配列リテラル**(§10-2「関数の中の配列はどの抽出器からも永久に見えない」型)で文プールを持ち、
+`ui-render.js` の4面描画が `${_escapeHtml(entry.narrative)}` で無変換描画していた。
+
+訳出**286キー**(template-ledger 3,143→**3,425**・未訳0。うち4キーは既存の連結様式キーへマージ)。
+
+### 39-1. `G` へ焼かれる完成文だが**素材が `G` に揃っている**族 → §18-1(表示点で再生成)
+
+`recalcRanking` は `narrative` / `tagline` / `pageHeadline` / `pageLead` / `kurodaComment` を
+**JA完成文のまま `G.mvpRace` へ焼く**。§15-1(追加フィールド)と §18-1(表示点で再生成)の分かれ目は
+「素材が残っているか」で、本族は素材(`state.rngSeed`/`season`/`week`/`roster`/`h2h`/`relationships`/
+`snapshots` と `entry.breakdown.meta`)がすべて `G` と保存済み `rankings` に残っている。
+そこで §18-1 を採り、**追加フィールドを1つも増やさない**(=`auto-sim` の semantic fingerprint も動かない。
+P7-23実測 `640b2591` が着手前と一致)。
+
+- `recalcRanking` は **dictを渡さない** → セーブに書く値は従来どおりJA(D-P6-4)
+- 表示点は `ui-render.js` の **`_npMvpI18n(saved, regen)` 1関数に集約**(消費点は6箇所:
+  pageHeadline / pageLead / kurodaComment / 1位カードのnarrative / 2-3位カードのnarrative /
+  4位以下のtagline)。手順は §18-1 と同一 —
+  ①dict無しで再生成 ②保存値と1バイト一致を確認 ③一致したときだけ `WM_I18N.t` を dict として渡した版を出す
+  ④不一致(旧セーブ/表の改訂)は保存値をそのまま出す。**保存値を `t()` に通さないこと**
+- `generateRichBlocks`(headlineLine / factChips / flavorLine)は**表示のたびに `G` から作り直される**
+  (§22-1と同じ型)ので `dict` を渡すだけでよい
+
+**実データ検証**: `test/fixtures/wm_save_real.json`(S6W40)を現エンジンで `recalcRanking` し直した状態で
+**再生成==保存値 13/13・fallback 0・i18n-miss 0**。同じfixtureを**そのまま**(旧プールで焼かれた古いセーブ)
+使うと13件中9〜11件がフォールバックへ落ち、保存値のJAがそのまま出る — これが④の設計どおりの挙動。
+
+### 39-2. `pick()` の添字は**プールの並び順と要素数**に乗っている
+
+どのプールも `arr[Engine.rng.int(rng, 0, arr.length - 1)]` で引かれる。**data.js へ移設するときに
+要素を足す/減らす/並べ替えると同じシードでも出目が変わる**(=JA出力が変わり、§38-1の自己検証も
+常にフォールバックへ落ちる)。`MVP_RACE_TEXTS` のコメント冒頭にこの禁止を明記した。
+
+移設で「テンプレを選んでから充填する」形(`fill(pick(pool), vars)`)へ変えているが、
+`pick` は引数評価で先に走るため**乱数の消費順は不変**。分岐内で先に組む差し込み句
+(`lossClause` / `domeClause` / `head` / `elemText`)は乱数を消費しないので順序に影響しない。
+
+### 39-3. 「1語ラベルは ui-ledger の領分」の実運用(§15-3)が最大規模で効いた
+
+4面は既存UI(メタチップ・ピル・バッジ)と**同じ語彙**を地の文でも使う。次はすべて ui-ledger に既訳があり、
+`MVP_RACE_TEXTS` へは入れず **JA原文を management.js に1本だけ置いて `_wmDictLabel(dict, …)` で引く**:
+
+- 役割6種 `エース`/`中堅`/`新人`/`ヒール`/`ベテラン`/`ベビーフェイス`(`_roleLabel`)
+- 季4種 `春`/`夏`/`秋`/`冬`(`_seasonLabel`)
+- 試合種別 `タイトル戦`/`対抗戦`/`通常興行`
+- 実績ラベル `天頂戦優勝`/`PPV優勝`/`4団体勝ち残り対抗戦優勝`/`春のタッグリーグ優勝`/`現王者`/`優勝`/`準優勝`
+- 結果 `勝利`/`決着つかず`
+- 特性名25種(`_traitPhrase` の汎用フォールバックが差し込む `{trait}`)
+
+`PPV` は日本語を1文字も含まない識別子なので**辞書を通さない**(通すと `logMiss` を汚染する)。
+
+### 39-4. `{age}歳` は「枠込みでキーを分ける」— 同じJAでも文脈が違えば別キーにする
+
+`_traitPhrase` は `早熟` + `25歳` を `早熟の25歳` という名詞句へ組む。`{age}歳` 単体は ui-ledger に
+既訳があるが、それは**メタチップ用の "Age {age}"** で、地の文の名詞句には嵌まらない
+("Early Bloomer Age 25")。そこで**句ごと1キー**(`早熟の{age}歳` → `an early-blooming {age}-year-old`)
+にした。§15-3 の `rivalWinLoss`(枠 `<div>` ごとテンプレにしてキーを分ける)と同じ作法。
+
+同じ理由で `{losses}敗` を単独キーにしていない。ui-ledger の既訳 `Losses: {losses}` は成績欄の
+ラベルで、文中の差し込み句としては噛み合わない。**敗戦の有無で完全な一文に分ける**
+(`他団体相手に{wins}勝` / `他団体相手に{wins}勝{losses}敗` の2キー+テンプレ側は `{record}`)
+ことで、二重登録そのものを起こさずに済ませた。**同型は `test/i18n-ledger-consistency-test.js` が
+必ず検出する**ので、訳を書く前に既訳の有無をキー単位で当たること。
+
+### 39-5. ENの数値まわり — 規則23/25は「機械検査を通す」だけでは足りない
+
+規則23(数値PH直後の可算名詞複数形)と規則25(数値PH直前の不定冠詞)の**機械検査はハイフン限定用法を
+一律に許す**ため、`a {defenses}-defense run` は検査を通る。しかし充填値が **8 / 11 / 18** のとき
+`a 8-defense run` になる。P7-23では EN側の実データ描画(§38-1の検証スクリプト)で
+`A 8-week run-in` / `Only 1 pts of cover` を実際に踏んで発見した。運用則:
+
+1. **値が 8/11/18 を取りうる枠には不定冠詞を置かない**。定冠詞(`the {defenses}-defense run`)か、
+   序数風の言い回し(`defense number {defenses}`)か、冠詞なしの名詞句へ逃がす
+2. **値が 0/1 を取りうる枠には裸の複数形を置かない**。ハイフン限定用法(`a {gap}-point gap` —
+   0〜5しか取らないので不定冠詞も安全)、`×{n}` 型のチップ表記(`classics ×{n}`)、
+   単位を持たない形(`Just {gap} adrift`)のいずれかへ
+3. **分岐の下限・上限を読んでから訳す**。`bigMatches >= 3` の枝なら `{big} classics` は常に複数形で安全、
+   `bigMatches >= 1` の枝なら `a {big}-classic season` にする、という判断はテンプレ単位で変わる
+
+### 39-6. `generateKurodaComment` は編集長 黒田貫一郎の声(§1-5 の三声のうち2番目)
+
+P4-5で保留されていた5本を本バッチで同時にテーブル化した(4面の他の全文が英語になる以上、
+署名コラムだけJAで残すのは不整合)。`docs/en-kuroda-style-draft-v0.1.md` §1-5 の指定どおり、
+幸子より短く・砕けて・皮肉が薄い/短縮形を常用(`Nothing's settled`)/`this writer` を使わず
+`this paper` のみ。同§に載っている貫一郎の見本対訳1本をそのまま採用している。
+
+### 39-7. JA同一性の証明(1,440,320通り・不一致0)
+
+§15-5と同じ作法。着手前(`da2d1ed5`)の `src/data.js` + `src/management.js` を **別VMコンテキスト**へ
+`git show` から読み込んで凍結コピーとし、13関数を新旧突合した。
+
+- `Engine.rng.int` を新旧同時に差し替えて添字 `k` を 0〜9 で強制し、**プール添字の直積を踏ませる**
+- `k` と meta プリセット添字を **同じ剰余系に乗せない**(乗せると (preset, k) の組が
+  `lcm(155,10)=310` 通りしか出ず、7本プールの後半添字に永久に到達しない)
+- サンプリング用LCGは**上位ビットから**乱数を作る(`lcg % n` は下位ビットの周期が2〜4で、
+  `role='Neutral'` や `rnd(2)` が `i` の偶奇と癒着し、4本プールの奇数添字・宿敵分岐が踏まれない)
+- 自然確率 1/9000 級の低頻度枝(`_composeFlavorLine` の末尾フォールバック)は**決定的に総なめする**
+  ループを別に足す
+- **dict省略経路と「ja素通しdict」経路の両方**を毎回比較する
+- `_wmFillWithDict` / `_wmDictLabel` をラップして**表の葉293本が全部使われたか**を計測(未使用0)
+
+### 39-8. P7-23で見つかった穴(未着手)
+
+1. **`generatePageHeadline` の `追走者` フォールバックは構造的に到達不能**。`{n2}` が空になるのは
+   2位が居ないときだけだが、そのとき `gap12 = 999` で必ず `runaway` 枝へ行く。防御値として残し、
+   台帳にも訳を入れてある(JA同一性の網羅計測からは除外)
+2. **`_traitPhrase` の年齢不明枝(`age <= 0`)はJA原文のまま返す**。旧実装が `早熟の`(表内)/
+   素の特性名(表外)を返していた挙動をそのまま保っており、EN でもJAが出る。`f.age` が欠ける
+   ケースは実データに無い(`age: f.age || 0` の防御)ので fail-open で据え置いた
+3. **`_traitPhrase` の汎用フォールバック `{trait}の{age}歳` は現行TRAIT_DEFSでは到達不能**。
+   25特性のうち23は専用句、`名勝負製造機`/`ライバル体質` は `traitPhraseExtra` で拾うため。
+   訳(`a {trait}-driven {age}-year-old`)は不定冠詞が `{trait}` の値で揺れるが、到達しないので据え置き
+4. **`test/ui-walkthrough` は新聞4面(MVPレース)を踏まない**。EN走破の `JA exposure by screen` に
+   newspaper が1件も出ないのはそのため。**この画面の検査は §38-1 の実データ検証スクリプトが唯一の網**で、
+   レア画面強制点火カタログ(`npm run test:ui:ignite`)へ `newspaper-mvprace` シナリオを足すのが本筋
+5. **EN走破の digest は run ごとに揺れる**(同一コードで 417 / 418 / 419 actions を実測)。
+   揺れているのは `recovered-by-retry` の判定で、JA走破の digest は `1052faa82eaf7991` で安定している。
+   **EN側の digest は回帰の指標に使えない**(PASS と `i18n-miss: 0` で見る)
+## 40. Stage B P7-25 — 台帳未収載の中小プール5件(キャリア年表/殿堂ハイライト/成長ログ/ドラフト交渉/季総括)の配線と英訳(2026-09-05追加)
 
 `docs/i18n-coverage-report-v0.1.md` のA表 #4/#5/#6/#7/#9 を解決した。訳出**177キー**
 (template-ledger 3,143→**3,303**・未訳0 / ui-ledger 4,258→**4,275**・未訳0 /
 dialogue-ledger 16,674 は不触)。**#8(絆/因縁レベルラベル)は消費点ゼロと判明したため配線せずB分類へ訂正**(38-5)。
 
-### 38-1. 同じ「管理画面の記録テキスト」でも、永続の有無で解き方が3通りに割れる
+### 40-1. 同じ「管理画面の記録テキスト」でも、永続の有無で解き方が3通りに割れる
 
 5プールはどれも「Engineが組み立てた完成文をUIが素通しで出す」型だが、**その完成文がGへ焼かれるか**で解が変わる。
 
@@ -1752,7 +1876,7 @@ dialogue-ledger 16,674 は不触)。**#8(絆/因縁レベルラベル)は消費�
 | ドラフト交渉ナレーション(`negState.narration`) | **焼かれる**+選出が消費済み乱数依存で再生成不可 | **追加フィールド**`narrationTpl`/`narrationVars`(§14-3/§16-1と同型) |
 | 季総括の仮文(`Engine.seasonReview.build`) | 焼かれない | 既存の`_line`(=dict)へ通すだけ |
 
-### 38-2. 「フォールバック語を`{org}`へ差し込む」と英語で語が重複する
+### 40-2. 「フォールバック語を`{org}`へ差し込む」と英語で語が重複する
 
 `{org} 獲得`(org=`ev.orgName || '団体王座'`)を `Won the {org} title` と訳すと、
 フォールバック時に **"Won the Promotion Championship title"** になる。`{org}{n}度防衛達成`
@@ -1764,14 +1888,14 @@ dialogue-ledger 16,674 は不触)。**#8(絆/因縁レベルラベル)は消費�
   (`titleWinNoOrg: '団体王座 獲得'` → "Won the promotion title")。JAの充填結果は1バイト同一なので
   構造規約3の「分岐ごとの完全文」をそのまま適用できる
 
-### 38-3. 既訳が「文脈違い」なのか「全消費点で誤り」なのかを`count`で見分ける
+### 40-3. 既訳が「文脈違い」なのか「全消費点で誤り」なのかを`count`で見分ける
 
 `他団体` の既訳は **"Other promotions"**(複数形)だったが、ui-ledgerの13件の消費点を全数追ったところ
 **すべてが `団体名 || t('他団体')` 形の「名前が取れないときの1団体を指すフォールバック」**で、
 複数形が正しい箇所は1つも無かった。§15-6-3(`該当選手`)と同じ手順で `en` を **"Another promotion"**
 へ訂正した(キー分割は不要)。**「文脈違い」を見つけたら、まず全消費点を数えてから直す**。
 
-### 38-4. 分岐の完全文化はラチェットを増やす — その分は理由として書く
+### 40-4. 分岐の完全文化はラチェットを増やす — その分は理由として書く
 
 `${orgPrefix}${viaJp}入団` のような断片連結を構造規約3どおり完全文へ展開すると、
 **JA文字列の本数はむしろ増える**(入団8本 / ドーム大会12本 / 対抗戦4本 …)。
@@ -1779,7 +1903,7 @@ P7-25 は data.js +136 / management.js −115 / ui-render.js −6 / ui-common.js
 draft-negotiation.js +1 の **総計 +7**。移設(差引ゼロ)ではないので、
 `--update` 時は「どの分岐を何本に展開したか」を worklog に残すこと。
 
-### 38-5. 「A分類」も鵜呑みにしない — 消費点を自分で数える
+### 40-5. 「A分類」も鵜呑みにしない — 消費点を自分で数える
 
 `BOND_LABELS`/`RIVALRY_LABELS`(relationships.js:14-28)は棚卸しレポートで
 「相関図の絆/因縁バーが参照」とA分類されていたが、実際の消費点は
@@ -1789,7 +1913,7 @@ draft-negotiation.js +1 の **総計 +7**。移設(差引ゼロ)ではないの�
 加えて `宿命のライバル` は GLIMPSE_B のイベントラベルとして ui-ledger に既訳
 ("A fated nemesis")があり、帯域ラベルとして`t()`へ通すと文脈違いの訳が出る(§15-3)。
 
-### 38-6. 抽出器の入口を2つ増やした
+### 40-6. 抽出器の入口を2つ増やした
 
 - **`test/i18n-extract-templates.js`**: `TARGET_TABLES` に `CAREER_MILESTONE_TEMPLATES` /
   `HOF_HIGHLIGHT_TEMPLATES` / `SEASON_REVIEW_FALLBACK_TEMPLATES` を追加。加えて
@@ -1802,7 +1926,7 @@ draft-negotiation.js +1 の **総計 +7**。移設(差引ゼロ)ではないの�
   JS_TABLESは観戦iframe専用の仕組みではなく「トップレベル`const`をソースから切り出して
   孤立評価する」汎用モードなので、Engine依存のあるファイルでもそのまま使える
 
-### 38-7. JA同一性の証明(5,418行・不一致0)
+### 40-7. JA同一性の証明(5,418行・不一致0)
 
 `git archive HEAD` で**凍結コピーを丸ごと別ディレクトリへ展開**し、同一のダンプスクリプトを
 新旧両方の `src/` に対して実行して出力をバイト比較した(凍結コピーの取り違えが起きない)。
@@ -1817,7 +1941,7 @@ draft-negotiation.js +1 の **総計 +7**。移設(差引ゼロ)ではないの�
   (追加フィールド `narrationTpl`/`narrationVars` は `G._draftNegotiation` にしか載らず、
   auto-simは交渉UIを踏まないため指紋に現れない)
 
-### 38-8. 検証
+### 40-8. 検証
 
 | 項目 | 結果 |
 |---|---|
@@ -1835,7 +1959,7 @@ draft-negotiation.js +1 の **総計 +7**。移設(差引ゼロ)ではないの�
 **EN走破のdigestは元々非決定的**(HEADで2回走らせて `1373a572…` → `bfea1fc6…`)。
 JA走破のdigestだけが安定した不変条件なので、EN側はPASS/Issues/i18n-miss/JA露出で見る。
 
-### 38-9. P7-25で新たに見つかった穴(未着手)
+### 40-9. P7-25で新たに見つかった穴(未着手)
 
 1. **成長ログの`match`行と`milestone`行はまだ生JA** — `vs {name}` / `タッグ({partner}) vs {opps}` /
    `敵地遠征 vs {name}`(management.js・app.js)と `総合力{n}到達` / `人気{n}到達` /

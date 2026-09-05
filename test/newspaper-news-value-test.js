@@ -382,7 +382,9 @@ section('MVPレース4位以下は順位争いだけを書く(N-12)', () => {
   assert.ok(!/因縁|宿敵|好敵手/.test(line), `下位に因縁の話を書いている: ${line}`);
   // 4位以上は chase 側へ回る
   const src = require('fs').readFileSync(path.join(__dirname, '..', 'src', 'management.js'), 'utf8');
-  assert.ok(/MVP_CHASE_FROM_RANK/.test(src) && /_composeChaseLine\(state, entry\)/.test(src),
+  // i18n Stage B P7-23: 叙述familyがdict-opts化され、呼び出しが (state, entry, dict) になった。
+  // ガードの意図は「4位以下は _composeChaseLine へ回す」なので dict 引数の有無は問わない。
+  assert.ok(/MVP_CHASE_FROM_RANK/.test(src) && /_composeChaseLine\(state, entry(?:, dict)?\)/.test(src),
     '4位以下の分岐が _composeFlavorLine に入っていない');
 });
 
