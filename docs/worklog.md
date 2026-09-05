@@ -1,5 +1,66 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-22 — `npm run test:ui:ignite -- --scenario tenchosen --lang en` がドライバ停止する件を根治(2026-09-05・worktree agent-a7dbef864645e5ab8)
+
+P7-19が発見した「天頂戦igniteのEN初実行が、天頂戦とは無関係な画面でドライバ停止する」件の調査・修正。開始前にworktreeブランチをmain先端(`da2d1ed5`。P7-19=da2d1ed5までmain入り)へfast-forward。
+
+### 1. 再現と特定
+
+`node test/ui-walkthrough/run.js --mode ignite --scenario tenchosen --lang en` を実行し、`test/ui-walkthrough/artifacts/…-D2_FREEZE/` の `state.json`(`overlays: ["fevtF07Overlay"]`)と `screenshot.png` から、天頂戦ではなく**派閥F07モーダル「メインカード相談」(`showFactionF07Modal`、`src/ui-common.js`)**の3択カード(`.fevt-decision-card`、`data-choice="A"/"B"/"C"`)で止まっていることを特定した。`driver.js`に一時デバッグ出力(`listCandidates()`の戻り値をダンプ)を仕込んで直接原因を追ったところ、当該画面では**候補ゼロ**(`no safe progress control is visible`)だった。
+
+原因は`ui-common.js`側の生成コードではなく、`test/ui-walkthrough/driver.js`の`listCandidates()`自身にあった:
+
+```js
+// listCandidates() 内、BUTTON/fullSurface以外の要素を候補化する直前のフィルタ(修正前)
+if (metadata.id !== 'travelSceneOverlay' && metadata.tagName !== 'BUTTON' && !metadata.fullSurface
+  && (text.length > 100 || /Overlay$/i.test(metadata.id))) continue;
+```
+
+このフィルタは記事本文のような無差別`[onclick]` divを候補から弾くためのものだが、`.fevt-decision-card`のhint文(F03/F07/F08/F09等の派閥モーダルが共有)はJAでは短く(DEMAND_MAINの選択肢Aで68字)常に素通りしていた一方、EN訳は同内容でも文字数が伸びやすく(同じ文が136字)**100字フィルタに誤って捕まり、3択が1つも候補に残らなかった**。JAでこの組み合わせ(tenchosen fixture × F07 DEMAND_MAIN)が一度も踏まれていなかったための見落とし。
+
+修正: `data-choice`/`data-fighter-id`/`data-walk-role`のいずれかを持つ要素(=`.large-evt-fighter-pick`の`data-fighter-id`と同じ「構造化された選択肢ピッカー」の既存識別規約)を、この100字フィルタの対象外にした。`dataChoice`が付いていれば`actionScore()`側は元から`if (candidate.dataChoice) return 8300;`等でスコアできるため、ボタン生成側(`ui-common.js`)への`data-walk-role`追加は不要と判断した(§4参照)。
+
+### 2. 2つ目のD2_FREEZE(EN固有・無限往復)
+
+上記を直すと「メインカード相談」は通過したが、続く天頂戦の**防衛式典モーダル**(`showTitleMilestoneResultModal`、`src/ui-common.js`)で、選手ポートレートの開閉を無限に繰り返す新しい停止が出た(`button:closeFighterPopup` ⇄ `button:stopPropagation` を50手以上往復、D5_WATCHDOG)。
+
+`chooseCandidate()`はオーバーレイ内に候補があれば**オーバーレイ外の候補(週送り等)を一切見ない**設計のため、オーバーレイ内で最高スコアの要素がどれになるかが命運を分ける。デバッグダンプで実測すると:
+
+- ポートレート(`class="mdl-a-title-portrait"`、フォールバック文字は`(WM_I18N.pn(fighter.name)||'?').charAt(0)`、`aria-label="{name}の詳細を開く"`)が **score 8200**
+- 正しい続行ボタン「式典を終える」(`id="mdlATitleMilestoneClose"`、`class="mdl-a-continue-btn"`)は`candidate.primary`扱いの**score 5000**
+
+8200を出していたのは`actionScore()`の旧来ルール:
+
+```js
+if (/^[AB][\s:：]|選択肢\s*[AB]/.test(text)) return 8200; // text = candidate.searchText || candidate.text
+```
+
+このルールは本来「選択肢A: …」のように**可視テキスト自体に**A/B表記を持つ要素を拾うためのもの(現行UIに実例なし。`data-choice`系に置き換わって久しい)。ところが判定対象の`text`はP6-2bで導入された`candidate.searchText`(=可視テキスト+aria-labelをスペース結合)になっており、可視テキストが単独の"A"/"B"(名前頭文字のフォールバックアバター)でaria-labelが非空だと、結合後が偶然`"A <aria-labelの内容...>"`の形になって**必ず誤爆する**。EN訳の選手名がたまたま"A"/"B"始まり(このシードでは"Asuka Aikawa"相当)だったため、ポートレートが続行ボタンより高スコアを取り続け、押しても押しても式典が終わらない無限往復になった。JAの選手名(漢字)は`[AB]`に一致しないため今まで顕在化していなかった。
+
+修正: このルールだけ`candidate.text`(aria-label結合前の可視テキスト単体)で判定するように変更。単独の"A"は`^[AB][\s:：]`(2文字目必須)に一致しなくなる。JA側は元々このルールに一致したことが無いため、挙動・digestは不変。
+
+### 3. 検証
+
+- `node --check test/ui-walkthrough/driver.js` OK
+- `node test/ja-golden.js` — 基準と完全一致(update不要)
+- `npm test` — 261/261 PASS
+- `npm run test:ui:walkthrough`(JA) — PASS、`Actions: 328 digest=1052faa82eaf7991`(既存基準と一致・不変)
+- `npm run test:ui:walkthrough:en` — PASS、`i18n-miss: 0`
+- `ignite --scenario tenchosen`(JA) — PASS、`digest=aff573dbfd9a1387`(修正前と完全一致・不変)
+- `ignite --scenario tenchosen --lang en` — **PASS**(修正前はD2_FREEZE)、`digest=9607ceaba6658d70`。再実行でも同digestで安定(コインフリップ的要素はあるがJAと同じ土俵に落ちただけで、JA同様に数手で収束する)
+- `ignite --scenario gameover`(JA/EN) — 両方PASS(EN: digest=338836fc021abc31。同モーダル種を含むが今回のシードでは選手名が[AB]に一致せず素通り)
+- `ignite --scenario chronicle`(JA) — PASS、`digest=d9384fe8a6c0fdfc`(不変)
+- `ignite --scenario chronicle --lang en` — **FAIL(既知・別件)**。今回の2修正とは無関係な、`Engine.chronicle.AXIS_LABELS`由来の叙述文("万能"/"組技"等)がEN表示でもJAのまま残る問題(訳語自体は`src/lang-en.js`に既存なので単位語sweep(P7-18)の対象ではなく、`narrativeParts`(specs §14-3の追加フィールド)の生成側配線漏れの疑い)。P7-22のスコープ外のため、`mcp__ccd_session__spawn_task`で別タスクとして切り出した(未着手)。詳細は`test/ui-walkthrough/README.md`「既知の未解決FAIL」に記載
+
+### 4. なぜ`data-walk-role`(P7-15流儀)を追加しなかったか
+
+指示書はP7-15の流儀(ボタン側に`data-walk-role`を付与)を根治の第一候補として挙げていたが、実際に見つかった2つの原因は**いずれも`test/ui-walkthrough/driver.js`自身の判定ロジックの欠陥**(候補化前のテキスト長フィルタ/aria-label結合後の文字列に対する誤爆)であり、`ui-common.js`側の生成コードは`data-choice`という既に十分な言語非依存の識別子を持っていた。この状況で`data-walk-role`を追加しても実害(誤判定)は消えず、テスト専用コードの変更を実装側(製品コード)にまで広げるだけになるため、**CLAUDE.md「変更は可能な限りシンプルに、影響範囲を最小に保つ」に従い`driver.js`側の2箇所の修正のみに留めた**。`src/ui-common.js`/`src/ui-render.js`は無変更(製品コード・DOM・挙動は一切変えていない)。
+
+### 5. 変更ファイル
+
+- `test/ui-walkthrough/driver.js` — `listCandidates()`の100字フィルタに構造化ピッカー(`dataChoice`/`dataFighterId`/`walkRole`)の除外を追加、`actionScore()`の`^[AB]`ルールを`candidate.text`基準に変更
+- `test/ui-walkthrough/README.md` — 上記2バグの説明を追記、ignite全シナリオを`--lang en`でも回す推奨ゲートを追記、`chronicle --lang en`の既知FAILを明記
+- `docs/game-system-roadmap.md` / `docs/worklog.md`(本項)
 ## 🌐 英語対応 P7-21 — 観戦カットイン `CUTIN_LINES` 441スロットを `battle-lines.js` へ移設し台帳化・英訳418行(2026-09-05・worktree agent-ae9c3371bbb25c84b)
 
 指示書は `docs/i18n-coverage-report-v0.1.md` A分類 #2(P7-20の全数棚卸しで可視化された「表示点は t() に乗っているのに辞書が空」のプール)。開始前にworktreeブランチをmain先端(`4a4e944b`=P7-20)へfast-forward。

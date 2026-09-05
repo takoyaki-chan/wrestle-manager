@@ -38,6 +38,11 @@ EN訳文はJA比で文字幅が中央値2.4倍という実測(吹き出し以外
 
 **既知の制約**: `driver.js` のアクション優先度付け(`actionScore`)は、大半のtierをonclick/id/`data-walk-role`(後述)で言語非依存に特定できるよう2026-09-04(P6-2b/P7-15)で整備済みですが、汎用「次へ/閉じる」系(score 8900)・「結果を見る」系(8800)・「承認」系(8600)の3tierはボタン側の生成箇所が数十か所に散らばっており、いまもJA文言+EN訳文の正規表現に依存しています(`Next`/`Continue`/`Close`/`Done`/`Confirmed`/`See the Result`/`Approve`のような短い定型英単語で翻訳ゆれのリスクが低いため、P7-15では対応を見送りました — 判断根拠は `docs/worklog.md` の P7-15 エントリ)。この3tierに該当するボタン文言の英訳を変更する場合は、変更後に `npm run test:ui:walkthrough:en` を1本回して確認してください。
 
+**P7-22で判明した2つの落とし穴(`listCandidates`/`actionScore`側・2026-09-05)**: `ignite --scenario tenchosen --lang en` が派閥F07モーダル(`.fevt-decision-card`)でD2_FREEZEした実例から見つかった、ボタン生成側(ui-common.js)ではなくドライバ自身に潜んでいた2つのEN固有バグ。どちらも既存のJA挙動・digestには一切影響しない(JAでは元から発火条件に触れないため)。
+
+- **候補ピッカーの100字フィルタ誤爆**: `listCandidates()` は記事本文のような無差別`[onclick]` divを弾くため、BUTTON/fullSurface以外で可視テキストが100字を超える要素を候補から除外していた。`.fevt-decision-card`(`data-choice`付き。F03/F07/F08/F09等の派閥モーダルが共有)のhint文はJAでは短い(<100字)ため素通りしていたが、EN訳は同じ内容でも文字数が伸びやすく100字を超えて誤って除外され、選択肢が1つも候補に残らずD2_FREEZEした。修正: `data-choice`/`data-fighter-id`/`data-walk-role`のいずれかを持つ要素(=`.large-evt-fighter-pick`と同じ「構造化された選択肢ピッカー」の識別規約)は、この100字フィルタの対象外にした
+- **`^[AB]`正規表現がaria-label結合後の文字列に誤爆**: `actionScore`の`/^[AB][\s:：]|選択肢\s*[AB]/`規則(旧: 可視テキスト自体が「A: ...」のように書かれた選択肢を拾うためのもの、現在の実UIに実例なし)が、`candidate.searchText`(可視テキスト+aria-labelをスペース結合した文字列)に対して判定されていたため、可視テキストが単独の"A"/"B"(名前頭文字のフォールバックアバター等、`.mdl-a-title-portrait-fallback`)でaria-labelが非空な要素全般に誤爆していた(結合後が偶然"A <aria-labelの内容>"の形になるため)。天頂戦の防衛式典モーダルで、選手の英語名が"A"/"B"始まり(例: Asuka Aikawa)だとポートレートに8200点が付き、正しい続行ボタン(primaryタイの5000点)より高スコアになって無限往復した。修正: この規則だけ可視テキスト単体(`candidate.text`、aria-label結合前)で判定するようにした
+
 #### `data-walk-role` 役割属性(2026-09-04 P7-15)
 
 onclick/idだけでは個別ボタンを特定できない箇所(同じハンドラ・同じ`data-choice`を複数の文言が共有する等)向けに、ボタン生成側(`src/ui-common.js`/`src/ui-render.js`)が言語非依存の`data-walk-role="<役割名>"`属性を付与できます。`driver.js`の`listCandidates()`が`candidate.walkRole`として拾い、`actionScore()`の`WALK_ROLE_SCORES`テーブルが**JA/EN文言の正規表現より先に**スコアを確定します。既存のJA文言条件は保険としてすべて残っており、role属性が付いていないボタンは従来どおりJA/EN正規表現で判定されます。
@@ -80,6 +85,14 @@ npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直�
 
 現行シナリオ(2026-08-14): `tenchosen`(天頂戦通年+初代統一王座戴冠) / `gameover`(資金破綻→解散セレモニー) / `away-challenge`(CH-1直訴→遠征→2拍) / `incoming-challenge`(果たし状迎撃→シリーズ) / `faction-ignite`(派閥開戦。boostが実際にリーダー対決をカード編成する) / `unified-player-turn`(統一王座「こちらの番」→挑戦者選出→遠征。**全6本PASS** — 当初FAILの正体は孤児化した直訴pendingが週次モーダル枠を恒久占有する製品バグで、修正済み。`specs/challenge-request-spec-v0.1.md` 2026-08-14追加改修+`test/challenge-request-stale-pending-test.js`)
 
+**推奨ゲート(2026-09-05 P7-22)**: 天頂戦igniteのEN初実行でD2_FREEZEが見つかった(→`driver.js`の2バグとして根治済み、上の「P7-22で判明した2つの落とし穴」参照)ことから分かるとおり、`--lang en`は各igniteシナリオで**一度も実走していない組み合わせ**が残っていると新しい落とし穴を踏む。`driver.js`/`ui-common.js`/`ui-render.js`を大きく触った後は、`npm run test:ui:walkthrough:en` に加えて**点火カタログの全シナリオを`--lang en`でも1本ずつ回す**ことを推奨する:
+
+```powershell
+npm run test:ui:ignite -- --scenario tenchosen --lang en
+npm run test:ui:ignite -- --scenario gameover --lang en
+npm run test:ui:ignite -- --scenario chronicle --lang en
+```
+
 - スナップショットの `overlays` は、汎用モーダル枠(mdlA〜D/notifModal)についてはカード直下2階層のクラス列を `mdlAOverlay:mdl-a-card.narrow.…` の形で連結します(枠idだけでは中身を識別できず点火マーカーが書けないため)。`popup` プローブ(`_popupQueue` 残量+`_isPopupActive`)も常時観測され、残量が変わった手は `popup-queue: 0 -> 1 …` として標準出力に出ます
 
 - シナリオ定義は `scenarios.js`。fixture は初回実行時に `fixtures/generated/`(Git管理外)へ自動生成されます(headless進行+`Engine.validateGameState` ゲート)
@@ -96,6 +109,8 @@ npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直�
 - `fixture.maxWeeks` で headless 進行の上限週(既定600=約11季)を引き上げられます。年代記は章の確定に十数季かかるため `chronicle` は 1400 を指定しています(fixture生成に約2分)
 
 `chronicle` シナリオは **S18・序章=進行中・確定章3本**のセーブから、序章(記者の見立て/ハイライト/書きかけの章末)・各章(章題/副題/エース/同期/外敵/通算タイル/章末)・「年代記を再構築」ボタンを一巡します。**年代記まわりのコード(`Engine.chronicle` / `Engine.prologue` / `_renderPrologueBlock` / `_renderDbChronicle`)を触ったら JA と `--lang en` の2本**を回してください。
+
+**既知の未解決FAIL(`chronicle --lang en`・2026-09-05 P7-22で発見)**: 現状 `IGNITION_MISFIRE` になります。原因はドライバ側ではなく製品側で、`AXIS_LABELS`(`打撃`/`組技`/`関節技`/`喧嘩`/`万能`。`src/management.js` の `Engine.chronicle`)由来の一部叙述文が、EN表示中でも辞書訳(`src/lang-en.js` に既存)を経由せずJAのまま出る(「年代記を再構築」クリック後も再現)。翻訳語彙自体は揃っているため単位語sweep(P7-18)の対象ではなく、`narrativeParts`(表示時に現在言語で組み直すための追加フィールド、specs §14-3)の生成側に固有の配線漏れがある可能性が高い。P7-22の作業スコープ外のため、この場ではドライバ側の2バグ(上記)のみ修正し、本件は別タスクとして切り出した(未着手)。
 
 検出器だけを既知バグ入りサンドボックスで確認するには次を実行します。
 

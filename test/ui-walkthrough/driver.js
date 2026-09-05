@@ -175,7 +175,20 @@ function actionScore(candidate, state) {
   if (/^(?:A|accept|yes)$/i.test(candidate.dataChoice)) return 8400;
   if (candidate.dataChoice) return 8300;
   if (candidate.dataFighterId) return 8250;
-  if (/^[AB][\s:：]|選択肢\s*[AB]/.test(text)) return 8200;
+  // P7-22: 可視テキストのみで判定する(mergedのtextではない)。textはsearchText
+  // (=可視テキスト+aria-labelをスペース結合)を優先するため、可視テキストが単独の
+  // "A"/"B"(名前頭文字のフォールバックアバター等)でaria-labelが何であれ非空だと、
+  // 結合後の文字列が偶然 "A <aria-labelの内容...>" の形になり `^[AB][\s:：]` に
+  // 誤爆していた。天頂戦igniteのEN走破で防衛式典モーダル(.mdl-a-title-portrait、
+  // aria-label="Open details for {name}"、フォールバック文字が"A"/"B"始まりの
+  // EN選手名)がこの誤爆で本来の続行ボタン(式典を終える系、primaryタイの5000点)より
+  // 高スコア(8200)を取り続け、ポートレート↔選手ポップアップ間で無限往復した
+  // (2026-09-05実測)。この規則は本来「選択肢A: ...」のような可視テキスト自体に
+  // A/B表記を持つ要素を拾うためのもの(現行UIに実例なし・dataChoice系が代替済み)で、
+  // aria-label結合を通す必要はない。可視テキスト単体を見れば"A"単体はマッチせず
+  // (`^[AB][\s:：]`は2文字目が必須)、JA側は元々この規則に一致したことが無いため
+  // digestは不変
+  if (/^[AB][\s:：]|選択肢\s*[AB]/.test(candidate.text || '')) return 8200;
   if (candidate.primary || (candidate.inOverlay && candidate.tagName === 'BUTTON')) return 5000;
   return -Infinity;
 }
@@ -236,7 +249,14 @@ async function listCandidates(page) {
   const candidates = [];
   for (const metadata of entries) {
     const text = normalizeText(metadata.text || metadata.ariaLabel);
-    if (metadata.id !== 'travelSceneOverlay' && metadata.tagName !== 'BUTTON' && !metadata.fullSurface
+    // P7-22: data-choice/data-fighter-id/data-walk-role付きの要素は.large-evt-fighter-pick
+    // (dataFighterId)と同じ既存の識別規約に従う「構造化された選択肢ピッカー」であり、
+    // 記事本文のような無差別onclick divを弾く100字フィルタの対象外にする。
+    // .fevt-decision-card(F03/F07/F08/F09等多数の派閥モーダルが共有)のhint文がEN訳で
+    // 100字を超えてこのフィルタに誤爆し、天頂戦igniteのEN走破がF07モーダルでD2_FREEZEした
+    // 実例(2026-09-05)。JAのhintは短く(<100字)常に素通りしていたため気づかれていなかった
+    const isStructuredPicker = !!(metadata.dataChoice || metadata.dataFighterId || metadata.walkRole);
+    if (metadata.id !== 'travelSceneOverlay' && metadata.tagName !== 'BUTTON' && !metadata.fullSurface && !isStructuredPicker
       && (text.length > 100 || /Overlay$/i.test(metadata.id))) continue;
     candidates.push({
       ...metadata,
