@@ -66,6 +66,24 @@ function normalizeText(value) {
   return String(value || '').replace(/\s+/g, ' ').trim();
 }
 
+// P7-15: 走破ドライバのEN文言依存を根治する言語非依存の役割属性(data-walk-role)。
+// 契約交渉の3択(dataChoice共通)やオフシーズン進行4種(advanceWeek()共通)のように、
+// onclick/idだけでは個別ボタンを特定できずEN訳文の正規表現に頼っていた箇所で、
+// ボタン生成側(ui-common.js/ui-render.js)がこの属性を付与するようになった。
+// ここに載っている役割は、対応するJA文言が生成していた**旧スコアと同じ値**を返す
+// (=ja側の選択候補・digestは不変。役割は「同じ判定になる、より頑丈な信号」の追加)。
+// 各役割の生成箇所はdocs/worklog.mdのP7-15エントリを参照。
+const WALK_ROLE_SCORES = {
+  'contract-accept-raise': 9300,
+  'contract-retain': 9300,
+  'advance-week': 9100,
+  'to-season-report': 9100,
+  'to-draft': 9100,
+  'to-transfer': 9100,
+  'start-season': 9100,
+  'to-result': 9000,
+};
+
 // P6-2b: 各判定はJA文言の正規表現を主とし、EN対応は「同じ判定になるシグナルを追加する」
 // 形で行う(既存のJA一致条件は一切削らない・スコア値も変えない)。追加するシグナルは
 // 優先して onclick 属性(App.xxx()等、表示言語に関わらず同じDOM構造)・要素id・
@@ -78,6 +96,12 @@ function normalizeText(value) {
 function actionScore(candidate, state) {
   const text = candidate.searchText || candidate.text;
   if (!text || DESTRUCTIVE_TEXT.test(text) || isNavigationControl(candidate)) return -Infinity;
+  // P7-15: 役割属性が付いていれば一次判定にする(EN訳文の揺れの影響を受けない)。
+  // マップに載っている役割は元のJA/EN正規表現と同じスコアを返すよう較正済みなので、
+  // ここで早期returnしてもja側の選択結果・digestは変わらない
+  if (candidate.walkRole && Object.prototype.hasOwnProperty.call(WALK_ROLE_SCORES, candidate.walkRole)) {
+    return WALK_ROLE_SCORES[candidate.walkRole];
+  }
   const onclick = candidate.onclick || '';
 
   // 大文字固定の"CONTINUE"はUI上ハードコードの英語演出文言(WM_I18N.t()を通らず両言語で
@@ -113,28 +137,32 @@ function actionScore(candidate, state) {
   if (/App\.(?:warAutoSelectEntry|awAutoFinalOrder|awAutoEntry|tcSuggestPicks)\(\)|autoFillCardByAppeal\(\)/.test(onclick)
     || /おまかせ選出|おまかせ編成|🔥\s*おすすめ|^おまかせ$/.test(text)) return 9400;
   // 昇給を受ける/引き留める(受諾側の選択肢)。dataChoice(idx)は選択肢が3択とも共通で
-  // 個別ボタンを一意に特定できないため、ここはEN訳文言(src/lang-en.js実測)を併記する
-  // P6-5: EN文言側はcase-insensitive一致にする(下のTo the Season Report →と同じ理由)
-  // 2026-09-04: 「引き留める」のEN訳が "Persuade Her to Stay"→"Persuade to Stay" に変わり、
-  // EN走破が契約交渉(week49)で D5_WATCHDOG 化した。訳文の揺れに耐えるよう任意語を許す
-  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留|Accept the Raise|Persuade (?:\w+ )?to Stay/i.test(text)) return 9300;
+  // 個別ボタンを一意に特定できない。P7-15以前はここにEN訳文言(src/lang-en.js実測)を
+  // 併記していたが、「引き留める」のEN訳が "Persuade Her to Stay"→"Persuade to Stay" に
+  // 変わりEN走破が契約交渉(week49)でD5_WATCHDOG化した実例があった(訳文整備で壊れる)。
+  // P7-15でボタン側に data-walk-role="contract-accept-raise"/"contract-retain" を付与し、
+  // 上の一次判定(WALK_ROLE_SCORES)がEN/JAどちらでも先に確定するようにした。
+  // ここのJA文言条件は保険としてそのまま残す(role属性が万一付かない場合のフォールバック)
+  if (/昇給を受ける|現状維持|契約を続ける|引き留める|残留/i.test(text)) return 9300;
   if (/declineDraft\(\)|draftSoloConfirm\(false\)|scoutResolve\([^)]*,\s*'skip'\)/.test(onclick)
     || /指名を行いません|今年は指名しない|辞退する|見送る|見送り/.test(text)) return 9250;
   if (/(?:^|;)(?:startShowPrep|resumeShowPrep)\(\)/.test(onclick) || /興行準備へ|興行準備に戻る/.test(text)) return 9200;
   // 週を処理/次の週へは1関数=1ボタンでonclick確定可。オフシーズン進行4種は
   // advanceWeek() を「次へ」(オフW1、別tierの汎用文言)とも共有するため、
-  // ハンドラ一致ではなくEN訳文言(矢印込みの完全一致キー)で個別に特定する
-  // P6-5: ボタンのCSS text-transform:uppercase により candidate.text(innerText経由)が
-  // 全て大文字化して届く実測(EN走破 seed42 week49「TO THE SEASON REPORT →」でD2_FREEZE、
-  // レンダリング後は大文字だがtextContent自体は"To the Season Report →"のTitle Case)。
-  // EN訳文言側は一律case-insensitiveにする(JA側の一致条件・スコアは変えない)
+  // ハンドラ一致だけでは個別特定できない。P7-15以前はここにEN訳文言(矢印込みの完全一致キー)
+  // を併記していたが(ボタンのCSS text-transform:uppercaseでcandidate.textが大文字化される
+  // ためcase-insensitiveにしていた)、訳文が変わるたびに壊れる根本原因だった。
+  // P7-15でボタン側に data-walk-role="advance-week"/"to-season-report"/"to-draft"/
+  // "to-transfer"/"start-season" を付与し、上の一次判定が先に確定するようにした
+  // (オフW1の「次へ →」上書きだけは汎用「次へ」系と同じ扱いのため役割を付けていない)。
+  // ここのonclick/JA文言条件は保険としてそのまま残す
   if (/doProcessWeek\(\)|App\.advanceFromWeekSummary\(\)/.test(onclick)
-    || /週を処理|次の週へ|シーズンレポートへ|ドラフト会議へ|移籍ウィンドウへ|新シーズン開幕/.test(text)
-    || /Process the Week|Next Week →|To the Season Report →|To the Draft →|To the Transfer Window →|Start the New Season →/i.test(text)) return 9100;
+    || /週を処理|次の週へ|シーズンレポートへ|ドラフト会議へ|移籍ウィンドウへ|新シーズン開幕/.test(text)) return 9100;
+  // 結果へ/JTへ/ドラフトへ。onclick/idで既に一意特定できていたが、P7-15で
+  // data-walk-role="to-result" を付与し役割属性を一次判定に統一した(保険は残す)
   if (/App\.closePPVResult\(\)|closeShowResult\(\)|App\.enterJuniorTournamentFromWeek\(|showScreen\('scoutEvent'/.test(onclick)
     || candidate.id === 'c1rCloseBtn'
-    || /オフシーズンへ|結果へ|結果を確認|決着へ|表彰式へ|大会へ進む|JTへ進む|ドラフトへ/.test(text)
-    || /To the Off-season →|To the Result|See the Result →|Go to the JT|⚖ To the Draft/i.test(text)) return 9000;
+    || /オフシーズンへ|結果へ|結果を確認|決着へ|表彰式へ|大会へ進む|JTへ進む|ドラフトへ/.test(text)) return 9000;
   if (/^(?:次へ|続ける|進む|閉じる|完了|終了|確定|OK|Next|Continue|Close|Done|Confirmed)(?:\s*[→▶›])?$/i.test(text)) return 8900;
   // 相槌型の確認ボタン(契約更改の突発退団「……わかった」等)。id="contractSuddenOk"のみが
   // このボタンの実体なので、id一致をJA/EN共通の一次判定にする
@@ -200,6 +228,9 @@ async function listCandidates(page) {
           || element.classList.contains('mdl-a-continue-btn') || element.classList.contains('pb-close-btn'),
         tagName: element.tagName,
         text,
+        // P7-15: 言語非依存の役割属性(data-walk-role)。ボタン生成側が付与していれば
+        // actionScore側でJA/EN文言の正規表現より優先して読む(表示言語に関わらず同じ値)
+        walkRole: element.getAttribute('data-walk-role') || '',
       };
     }).filter(Boolean));
   const candidates = [];
