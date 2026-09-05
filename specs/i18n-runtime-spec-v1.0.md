@@ -2191,3 +2191,111 @@ growthLog(`G.roster[].growthLog[]`)は auto-sim の semantic fingerprint 計算�
 | `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・412手・**i18n-miss 0**・Issues 0・JA露出57(HEAD実測57と同値。内訳は走破ごとに変動するが総数は一致) |
 | VM検証(実物のi18n.js+lang-en.js+data.js+management.jsを読み込み) | ✅ growthLog 7型・careerHistory怪我detail 26パターン(全怪我種×週数+3引退+疑似経歴5語+fail-open2種+null)を全てJA再構築1バイト一致で確認、EN側も各型を目視確認 |
 
+## 44. Stage B P7-31 — `ui-render.js` の未カバーJA(旗揚げ序章オーバーレイほか)の配線と英訳(2026-09-05追加)
+
+`ui-render.js` に残っていた未カバーJA 79件を仕分け・配線・英訳した。訳出**36キー**
+(ui-ledger 4,502→**4,538**・未訳0。template 3,303 / dialogue 17,092 は不触)。
+
+### 44-1. 「EN走破のJA露出検査が拾わない」には**2段**の理由がある
+
+旗揚げ序章(`renderOpeningScreen`)の4幕は、ゲームを新規に始めた人が**最初に読む地の文**
+なのにEN画面でも丸ごと日本語のままだった。EN走破の `i18n-miss` にも `JA exposure` にも
+一度も出ていない。原因は独立した2つで、**片方だけ直しても検出されない**:
+
+1. **走破は序章を構造的に踏まない(主因)** — walk も ignite も
+   `test/ui-walkthrough/fixtures/*.json` のオートセーブから起動する。全fixtureが
+   `weekPhase:'manage'`(S1W1・`draftComplete`)であり、序章は「タイトル→新規ゲーム→団体名入力」の
+   直後の `weekPhase:'opening'` にしか存在しない。**セーブから始める限りどのモードでも到達しない**
+2. **JA露出計測が「リーフ要素」しか見ない(副因)** — `readPageSnapshot()` / `scanJaExposureDetail()`
+   はどちらも `element.children.length === 0` で絞る。序章の `.opening-act-line` は
+   `地の文<br>地の文<span>…</span>` という形で子要素を持つため、**自分の直下テキストノードは
+   誰にも読まれない**。この死角は序章に限らず「地の文の中に `<br>` や `<strong>` が挟まる枠」全部に効く
+
+**打ち手**: 1 に対しては専用の点検スクリプト `test/ui-walkthrough/opening-scene-i18n-check.js`
+(§37-4 のカットイン検査と同じ「実関数を直接叩く」流儀)。2 に対しては `scanJaExposureDetail()` を
+**リーフ + 「自分の直下テキストノードにJAを持つ非リーフ」** へ広げた(子孫のテキストは子孫自身の行で
+数えるので二重計上にならない)。`readPageSnapshot()` の `jaExposureCount`(画面別の最大値)は
+**変えていない** — あちらはJA走破の毎手のスナップショットに乗るため。
+
+**拡張した検出器は入れた直後に実害を1件出した**。`ignite --scenario chronicle --lang en` の
+`screen-database` ゼロゲートが4件(団体名)で落ち、出どころは**データベース→全選手一覧の所属団体セル**
+`ui-render.js:9880` `<td>${f._orgName}${…Badge}</td>` だった。`<td>` がバッジ `<span>` を子に持つため
+リーフ判定から外れ、**今まで一度も走査されていなかった**。`WM_I18N.pn(f._orgName)` の1語で解決
+(並べ替えキー側の `_orgName` は生値のまま=JA挙動不変)。
+**`<td>`/`<div>` にバッジやアイコンが同居する枠は同型の死角なので、拡張後の物差しで
+EN走破のJA露出一覧を分類し直すこと**(EN走破 157件・ignite chronicle 17件が新しい基準)。
+
+### 44-2. JA同一性は「見えている行」で測る — `display:none` の要素の `innerText` は罠
+
+序章のように **HTMLの字下げごとテンプレへ畳む**修正は、ソースの改行・空白が動く。
+バイト比較では落ちるが、HTMLはその空白を畳んで描くので**見た目は1バイトも変わらない**。
+そこで基準は `innerText`(ブラウザが実際に見せる行。`<br>`とブロック境界が改行になり、
+畳める空白は1個に正規化される)を `' | '` で連結した文字列で採る。
+
+- **`display:none` の要素の `innerText` は `textContent` へ落ちる**(`<br>` が消える)。序章は
+  幕2〜4が `style="display:none"` なので、**計測の間だけ表示に戻してから読む**。これを忘れると
+  「幕1だけ正しく改行され、幕2〜4は改行が消える」という一貫しない基準になる(P7-31で実際に踏んだ)
+- 幕3は設立2名の名前が起動ごとに変わる。後方参照付きの正規表現で**形だけ**を検査する
+
+### 44-3. 文字数で見た目を切り替える判定は言語別化する(§31-4 の2例目)
+
+`.opening-org-line` の段(`is-medium` / `is-long` で 28px→24px→18px)は
+`orgName.length >= 16 / >= 11` の決め打ちだった。EN団体名は同じ字数でも幅が半分しかないため、
+**ENでは段が早く落ちて小さく出る**。§31-4 と同じく閾値だけを言語別にする。
+
+- **実測(Playwright・`.opening-org-line` の Range 実幅)**: 28px で JA 約32.2px/字・EN 約16.5px/字
+  (比 1.95)、24px で JA 約27px/字・EN 約13.5px/字
+- JAの段の境目の実幅(normal上限 10字=386px / medium上限 15字≒460px)に EN を合わせて
+  **EN 20字 / 31字**。JA側の 11 / 16 は1文字も変えていない
+- `white-space:nowrap` の枠なので、**閾値は「文字数」ではなく「その段のフォントでの実幅」で決める**。
+  検査も `getBoundingClientRect().width` ではなく **Range の実幅**で測ること
+  (`display:block` の要素は幅が親いっぱいになり、`scrollWidth` は常に親の幅を返す)
+
+### 44-4. 単体の `const NAME = '…'` は3つの抽出器のどれからも見えない
+
+§10-2 が「関数内の配列は見えない」と書いた穴の**変種**。`TRAINING_FATIGUE_TOOLTIP` /
+`_RM_TIP_BOND` / `_RM_TIP_RIVALRY` は消費点が正しく `WM_I18N.t(定数)` を通っているのに、
+`t()` の第1引数が**変数**なので `extractJsCalls` に載らず、台帳に1行も無かった
+(=ENでは常に原文のまま fail-open)。同じ理由で `_scoutComment` 関数内の `STYLE_FLAIR` も不可視だった。
+
+- 直し方は P7-1 が確立した方針どおり「kept:true の手追加で凌がず、**走査対象として再現可能にする**」。
+  ui-render.js のトップレベルへ `UI_TIP_TEXTS`(3件)/ `DRAFT_STYLE_FLAIR`(7件)として出し、
+  `test/i18n-extract-ui.js` の `JS_TABLES` へ登録した(`JS_TABLES` は観戦iframe専用ではなく
+  **任意のJSファイルのトップレベル const** を切り出せる)
+- **抽出条件は「列0のトップレベル `const NAME = { … }`」**(`extractTopLevelConstLiteral`)。
+  関数内・字下げ付きの宣言は対象外
+- `TRAINING_FATIGUE_TOOLTIP` は別名として残した(`test/heat-visibility-test.js` が
+  ソースを正規表現で読むため、そちらの参照先を `trainingFatigue:` へ寄せた)
+
+### 44-5. 「未カバー」の中には**訳してはいけないもの**が3種混ざる
+
+79件の仕分けは **訳した39 / 論理比較で除外5 / HTMLコメント1 / 死骸34** に割れた。
+死骸は消費点をgrepで数えて確定し、**訳さず・消さず・報告する**(出すか削るかはKeisuke裁定。
+`HEAT_STATE_SELF_LINES` 75行の据え置きと同じ扱い)。
+
+| 死骸 | 場所 | 根拠 |
+|---|---|---|
+| `STYLE_META[*].desc`(**6件**) | ui-render.js:818-823(旗揚げドラフト画面) | 同関数内の `sm.` 参照は `.cream` だけ。`sm.desc` は `src/` 全体で0件。他2つの `STYLE_META` 定義(ui-common.js:4037・ui-render.js:6451)には `desc` プロパティ自体が無い |
+| `_aceFlavorByPersona` の `archMap`/`persMap`(**28件**・アーキタイプ7種18本+性格5種10本) | ui-render.js:4771-4793(団体紹介の講評) | **関数そのものが `src/` から1度も呼ばれていない**(定義1件のみ)。同スコープの `_pickSeed` を使う他の講評文プール(`_orgContextSentences` ほか)は全部 P7-6/P7-14 で `t()` 配線済みなので、この1本だけが取り残されている |
+
+論理比較(`_normalizeFinanceLabel` の `startsWith('チケット収入')` 等、`renderLog` のカテゴリ
+`match: l => l.includes('引き抜き')` 等)は**構造規約2「ロジックキーは日本語のまま」**の適用対象で、
+表示側と共有していないことを確認したうえで除外する。HTMLコメント(`<!-- アッパー画像は… -->`)は
+DOMに入るが描画されないので同じく除外。
+
+### 44-6. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(ui-render.js / detectors.js / extract-ui.js / heat-visibility-test.js / opening-scene-i18n-check.js) | ✅ |
+| `node test/ja-golden.js` | ✅ 基準と**完全一致**(`dd2e536b…` 不変) |
+| `node test/i18n-build-dict.js` | ✅ ui 4,538・**未訳0**(template 3,303 / dialogue 17,092 不触) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー16件・訳文一致 |
+| `npm test` | ✅ **261/261**(`heat-visibility-test.js` の定数参照を39-4に合わせて更新) |
+| `node test/i18n-ratchet.js` | ✅ **増加なし**(28,057→28,038・−19。テンプレ化で生JAが減った分) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `node test/ui-walkthrough/run.js --lang en` | ✅ PASS・412手・**i18n-miss 0**・Issues 0 |
+| EN走破のJA露出(検出器拡張**前**の物差し) | 着手前 146 → 着手後 **146**(同値)。序章・派閥クロニクル・王座奪還バナーは走破が踏まない画面のため数字は動かない |
+| EN走破のJA露出(検出器拡張**後**の新しい物差し) | 161 → **157**(`_orgName` の `pn()` 化で −4)。以後の比較はこちら |
+| `npm run test:ui:ignite -- --scenario chronicle`(JA / EN) | ✅ 両方 PASS・Issues 0・`screen-database` ゼロゲート0件 |
+| `node test/ui-walkthrough/opening-scene-i18n-check.js` | ✅ **ALL CHECKS PASS**(JA 4幕が基準と完全一致 / EN 4幕に日本語0 / i18n-miss 0 / 段の一致3件) |

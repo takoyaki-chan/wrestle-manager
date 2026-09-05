@@ -58,7 +58,29 @@ function getTrainingState(fighter) {
   return 'heavy';
 }
 
-const TRAINING_FATIGUE_TOOLTIP = '追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。';
+// i18n Stage B P7-31: 単体の `const NAME = '…'` は t() の静的第1引数にならないため
+// test/i18n-extract-ui.js の走査に永久に載らない(specs §10-2 と同型の穴)。説明ティップス
+// はトップレベル1表へ集め、JS_TABLES の走査対象として台帳に再現可能な形にする。
+// **列0のトップレベル `const` であることが抽出条件**(extractTopLevelConstLiteral)。
+const UI_TIP_TEXTS = {
+  trainingFatigue: '追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。',
+  // C-4宿題: 絆/因縁バーの説明ティップス(data-tip)。内部変数名(bond/rivalry)は出さず日本語のみ
+  relmapBond: '一緒に過ごした時間や共闘で深まる、相手への信頼と親愛。高いほど息が合いやすくなります',
+  relmapRivalry: '対戦の因縁や敵意。高いほど試合が激しくなります',
+};
+const TRAINING_FATIGUE_TOOLTIP = UI_TIP_TEXTS.trainingFatigue;
+
+// ドラフト新聞「記者の目」のスタイル別フレーバー句(_scoutComment の {flair})。
+// 表示直前に WM_I18N.t() を1回通す(選択はJAキーのまま — 構造規約2)。
+const DRAFT_STYLE_FLAIR = {
+  Grappler: '組み技のセンスが光る',
+  Striker: '打撃の鋭さが際立つ',
+  Submission: '関節技に天性の嗅覚がある',
+  Aerial: '空中戦の身のこなしが目を引く',
+  Allround: 'バランスの良さが持ち味の',
+  Brawler: '荒々しいファイトが魅力の',
+  _default: '素質を感じる',
+};
 
 // 数値や内部状態を見せず、選手の様子として控えめに伝える表示専用のサイン。
 function renderTrainingFatigueSignal(fighter, placement) {
@@ -350,11 +372,20 @@ function renderOpeningScreen() {
 
   const orgName = WM_I18N.pn(G.orgName || 'プレイヤー団体');
   const fixed = Engine.draft.getFixedInfo();
-  const name1 = fixed[0]?.name || '???';
-  const name2 = fixed[1]?.name || '???';
+  const name1 = WM_I18N.pn(fixed[0]?.name || '???');
+  const name2 = WM_I18N.pn(fixed[1]?.name || '???');
   const upper1 = getUpperUrl(fixed[0]?.id);
   const upper2 = getUpperUrl(fixed[1]?.id);
-  const orgLengthClass = orgName.length >= 16 ? ' is-long' : orgName.length >= 11 ? ' is-medium' : '';
+  // i18n Stage B P7-31: 段の閾値は言語別(§31-4 の `.long` 判定と同じ流儀)。文字数の
+  // 決め打ちはJA前提で、EN団体名は同じ字数でも半分の幅しか無いため段が早く落ちていた。
+  // 実測(Playwright・`.opening-org-line` の Range 実幅): 28px で JA 約32.2px/字・
+  // EN 約16.5px/字(比 1.95)、24px で JA 約27px/字・EN 約13.5px/字。
+  // JAの段の境目の実幅(normal上限 10字=386px / medium上限 15字≒460px)に EN を合わせると
+  // 20字(≒386px)・31字(≒460px)。JA側の閾値は1文字も変えていない。
+  const _isEn = (typeof WM_I18N !== 'undefined' && WM_I18N.lang === 'en');
+  const ORG_LEN_MEDIUM = _isEn ? 20 : 11;
+  const ORG_LEN_LONG = _isEn ? 31 : 16;
+  const orgLengthClass = orgName.length >= ORG_LEN_LONG ? ' is-long' : orgName.length >= ORG_LEN_MEDIUM ? ' is-medium' : '';
 
   _openingAct = 0;
   _openingTransitioning = false;
@@ -362,22 +393,21 @@ function renderOpeningScreen() {
   // ── Acts データ ──
   const acts = [
     // 幕1: 旗を揚げる
+    // i18n Stage B P7-31: 地の文は t() 経由(<br> の位置ごとテンプレへ入れる — ENは
+    // 意味で改行を決め直せる)。団体名の行だけは文字サイズの段を持つので span を分ける
     `<div class="opening-act" id="openingAct0">
       <div class="opening-act-line">
-        今、ひとつの団体が旗を揚げようとしている。<br>
-        団体の名は
-        <span class="opening-org-line${orgLengthClass}">「<span class="org">${orgName}</span>」。</span>
+        ${WM_I18N.t('今、ひとつの団体が旗を揚げようとしている。<br>団体の名は')}
+        <span class="opening-org-line${orgLengthClass}">${WM_I18N.t('「{org}」。', { org: `<span class="org">${orgName}</span>` })}</span>
       </div>
     </div>`,
     // 幕2: 弱小団体としての宣言
     `<div class="opening-act" id="openingAct1" style="display:none">
       <div class="opening-act-line">
-        後ろ盾があるわけではない。<br>
-        期待されているわけでもない。<br>
-        いつまで経営が続くかわからない弱小団体。
+        ${WM_I18N.t('後ろ盾があるわけではない。<br>期待されているわけでもない。<br>いつまで経営が続くかわからない弱小団体。')}
       </div>
       <div class="opening-act-line question">
-        業界へ爪痕を残すことはできるだろうか。
+        ${WM_I18N.t('業界へ爪痕を残すことはできるだろうか。')}
       </div>
     </div>`,
     // 幕3: 仲間の紹介
@@ -393,16 +423,16 @@ function renderOpeningScreen() {
         </div>
       </div>
       <div class="opening-act-line">
-        新団体旗揚げの噂を聞きつけ、集まったのは2名。<br>
-        <span style="font-family:'Noto Sans JP',sans-serif;font-weight:700;letter-spacing:0.1em">${name1}</span>と<span style="font-family:'Noto Sans JP',sans-serif;font-weight:700;letter-spacing:0.1em">${name2}</span>。<br>
-        彼女たちと共に、ここから業界への挑戦が始まる。
+        ${WM_I18N.t('新団体旗揚げの噂を聞きつけ、集まったのは2名。<br>{a}と{b}。<br>彼女たちと共に、ここから業界への挑戦が始まる。', {
+          a: `<span style="font-family:'Noto Sans JP',sans-serif;font-weight:700;letter-spacing:0.1em">${name1}</span>`,
+          b: `<span style="font-family:'Noto Sans JP',sans-serif;font-weight:700;letter-spacing:0.1em">${name2}</span>`,
+        })}
       </div>
     </div>`,
     // 幕4: ドラフトへの導入
     `<div class="opening-act" id="openingAct3" style="display:none">
       <div class="opening-act-line">
-        さらに3名。<br>
-        立ち上げメンバーを選びに行こう。
+        ${WM_I18N.t('さらに3名。<br>立ち上げメンバーを選びに行こう。')}
       </div>
     </div>`
   ];
@@ -848,7 +878,7 @@ function renderWeekScreen() {
 
     // 持ち越しナレーション
     html += `<div class="draft-narration">
-      <p>さらに3名。<br>立ち上げメンバーを選びに行こう。</p>
+      <p>${WM_I18N.t('さらに3名。<br>立ち上げメンバーを選びに行こう。')}</p>
       <div class="small">${WM_I18N.t('候補6名の中から3名を選び、5名の所属選手でシーズンを開始する')}</div>
     </div>`;
 
@@ -1954,7 +1984,7 @@ function _renderRosterDojoHeader() {
         ));
         // i18n Stage B P5-1: t()は{name}のreplaceより前(辞書キーはプレースホルダ入りの原文)。
         speechText = WM_I18N.t(heatPool[Engine.rng.int(heatRng, 0, heatPool.length - 1)])
-          .replace('{name}', heatFighter.name || 'この子');
+          .replace('{name}', WM_I18N.pn(heatFighter.name) || WM_I18N.t('この子'));
       }
       html += `<div class="dojo-scene-bubble-slot"><div class="dojo-scene-bubble">${_quoteLine(speechText)}</div></div>
         <div class="dojo-scene-coach-avatar" onclick="showCoachTooltip(${coachForBubble.id})" style="cursor:pointer">
@@ -2271,7 +2301,7 @@ function _renderRosterDetailPanel(c, hired) {
       const aCount = getCoachAssignees(h.id).length;
       const isCurrent = coach && coach.id === h.id;
       const isFull = aCount >= COACH_MAX_ASSIGN && !isCurrent;
-      const effShort = `${h.grade}級 ×${h.gMult||1.0}`;
+      const effShort = `${WM_I18N.t('{tier}級', { tier: h.grade })} ×${h.gMult||1.0}`;
       const sm = getCoachStyleMatch(h, c);
       const matchTag = sm.icon ? ` ${sm.icon}${sm.label}` : '';
       opts += `<option value="${h.id}"${isCurrent?' selected':''}${isFull?' disabled':''}>${h.emoji} ${WM_I18N.pn(h.name)} [${effShort}]${matchTag} (${aCount}/${COACH_MAX_ASSIGN})${isFull?` [${WM_I18N.t('満')}]`:''}</option>`;
@@ -2362,7 +2392,7 @@ function renderRoster() {
 
     const coachEffectShort = (c) => {
       const mult = c.gMult || 1.0;
-      return `${c.grade}級 ×${mult} <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>`;
+      return `${WM_I18N.t('{tier}級', { tier: c.grade })} ×${mult} <span class="badge badge-${c.style}" style="font-size:10px;padding:1px 5px">${c.style}</span>`;
     };
 
     let staffHtml = '';
@@ -2990,10 +3020,9 @@ function renderShowPrep() {
   if (G.mediaSpotlight) {
     const sp = G.mediaSpotlight;
     const spFighter = G.roster.find(f => f.id === sp.fighterId);
-    const spName = spFighter ? spFighter.name : sp.fighterName;
+    const spName = WM_I18N.pn(spFighter ? spFighter.name : sp.fighterName);
     html += `<div class="media-spotlight-banner">
-      📺 <strong>${spName}</strong>の密着取材中（${sp.outletName}・残り${sp.remainingShows}興行）
-      — この選手にいい試合を組んでください
+      ${WM_I18N.t('📺 <strong>{name}</strong>の密着取材中（{outlet}・残り{n}興行） — この選手にいい試合を組んでください', { name: spName, outlet: sp.outletName, n: sp.remainingShows })}
     </div>`;
   }
 
@@ -3010,8 +3039,7 @@ function renderShowPrep() {
       html += `<div style="background:linear-gradient(135deg,#0d2a3a,#1a3f5a);border:1px solid #6fa8c8;border-radius:8px;padding:12px 16px;margin-bottom:14px">
         <div style="font-size:14px;font-weight:700;color:#bfe0ff;letter-spacing:1px;margin-bottom:6px">${WM_I18N.t('👑 団体王座 空位中')}</div>
         <div style="font-size:12px;color:#dfeefc;line-height:1.6">
-          王座決定戦の有力候補: <strong>${WM_I18N.pn(a.name)}</strong>（OVR ${Engine.util.ov(a)}） × <strong>${WM_I18N.pn(b.name)}</strong>（OVR ${Engine.util.ov(b)}）<br>
-          メインイベントの 🏆 を有効化すると王座決定戦になります（勝者が新王者）。
+          ${WM_I18N.t('王座決定戦の有力候補: <strong>{a}</strong>（OVR {ovrA}） × <strong>{b}</strong>（OVR {ovrB}）<br>メインイベントの 🏆 を有効化すると王座決定戦になります（勝者が新王者）。', { a: WM_I18N.pn(a.name), ovrA: Engine.util.ov(a), b: WM_I18N.pn(b.name), ovrB: Engine.util.ov(b) })}
         </div>
       </div>`;
     }
@@ -3021,10 +3049,10 @@ function renderShowPrep() {
   if (G.titles?.world?.externalHolder) {
     const eh = G.titles.world.externalHolder;
     const heldByOrg = G.aiOrgs?.[eh.orgId];
-    const heldByOrgName = heldByOrg?.name || eh.orgId;
+    const heldByOrgName = WM_I18N.pn(heldByOrg?.name || eh.orgId);
     // 元王者の名前を AI 団体ロスターから引く（離脱直後に該当しているはず）
     const exChamp = heldByOrg?.roster?.find(c => c.id === eh.fighterId);
-    const exChampName = exChamp?.name || `元王者#${eh.fighterId}`;
+    const exChampName = WM_I18N.pn(exChamp?.name) || WM_I18N.t('元王者#{id}', { id: eh.fighterId });
     const canIssue = Engine.title.canIssueReclaim(G, 'world');
     const pending = !!G._pendingReclaim;
     const nowAbs = Engine.util.absWeek(G.season, G.week);
@@ -3038,20 +3066,20 @@ function renderShowPrep() {
     );
 
     html += `<div style="background:linear-gradient(135deg,#3a0d12,#5a1f28);border:1px solid #d4607a;border-radius:8px;padding:12px 16px;margin-bottom:14px">
-      <div style="font-size:14px;font-weight:700;color:#ffb3c1;letter-spacing:1px;margin-bottom:6px">🏆 持ち出された王座</div>
+      <div style="font-size:14px;font-weight:700;color:#ffb3c1;letter-spacing:1px;margin-bottom:6px">${WM_I18N.t('🏆 持ち出された王座')}</div>
       <div style="font-size:12px;color:#f5d4dc;line-height:1.6">
-        ${exChampName} が <strong>${heldByOrgName}</strong> へ団体王座を持ち去った。挑戦状を発行して取り戻せ。
+        ${WM_I18N.t('{name} が <strong>{org}</strong> へ団体王座を持ち去った。挑戦状を発行して取り戻せ。', { name: exChampName, org: heldByOrgName })}
       </div>`;
     if (pending) {
       const ch = G.roster.find(c => c.id === G._pendingReclaim.challengerId);
       html += `<div style="margin-top:10px;padding:8px 10px;background:rgba(255,195,0,0.15);border-radius:6px;color:#ffd966;font-size:12px">
-        📜 挑戦状発行済み — 次の興行のメインで <strong>${ch?.name || '挑戦者'}</strong> vs ${exChampName}
-        <button class="btn-secondary" style="margin-left:12px;padding:4px 10px;font-size:11px" onclick="App.cancelReclaim()">取り下げる</button>
+        ${WM_I18N.t('📜 挑戦状発行済み — 次の興行のメインで <strong>{challenger}</strong> vs {champion}', { challenger: WM_I18N.pn(ch?.name) || WM_I18N.t('挑戦者'), champion: exChampName })}
+        <button class="btn-secondary" style="margin-left:12px;padding:4px 10px;font-size:11px" onclick="App.cancelReclaim()">${WM_I18N.t('取り下げる')}</button>
       </div>`;
     } else if (canIssue) {
-      html += `<div style="margin-top:10px"><button class="btn-primary" style="background:linear-gradient(135deg,#d4607a,#a8334d);padding:8px 16px;font-size:13px" onclick="App.openReclaimDialog()">⚔ 奪還挑戦状を発行</button></div>`;
+      html += `<div style="margin-top:10px"><button class="btn-primary" style="background:linear-gradient(135deg,#d4607a,#a8334d);padding:8px 16px;font-size:13px" onclick="App.openReclaimDialog()">${WM_I18N.t('⚔ 奪還挑戦状を発行')}</button></div>`;
     } else {
-      html += `<div style="margin-top:10px;color:#aaa;font-size:11px">挑戦可能まで残り <strong>${cdRemain}</strong> 週</div>`;
+      html += `<div style="margin-top:10px;color:#aaa;font-size:11px">${WM_I18N.t('挑戦可能まで残り <strong>{n}</strong> 週', { n: cdRemain })}</div>`;
     }
     html += '</div>';
   }
@@ -3082,7 +3110,7 @@ function renderShowPrep() {
       const ok = mainContainsFaction;
       const remaining = dir.remainingShows != null ? dir.remainingShows : 1;
       const total = dir.totalShows != null ? dir.totalShows : remaining;
-      const periodLabel = total > 1 ? `（残り ${remaining}/${total} 興行）` : '';
+      const periodLabel = total > 1 ? WM_I18N.t('（残り {n}/{total} 興行）', { n: remaining, total }) : '';
       html += `<div style="background:linear-gradient(135deg,${ok ? '#1d2e1a,#2a4422' : '#2e2a1a,#443a22'});border:1px solid ${ok ? '#7bc46c' : '#e0c98a'};border-radius:8px;padding:10px 14px;margin-bottom:14px">
         <div style="font-size:13px;font-weight:700;color:${ok ? '#bff5b3' : '#f0d99a'};letter-spacing:1px;margin-bottom:4px">${WM_I18N.t('📣 {name} からのメイン推薦{period}', { name: fac.name, period: periodLabel })}</div>
         <div style="font-size:12px;color:#dcd6c0;line-height:1.55">
@@ -5777,16 +5805,15 @@ function _renderDraftCandidateList(candidates, context) {
 
   function _scoutComment(c) {
     const tier = c.assessedTier || 'material';
-    const STYLE_FLAIR = {
-      Grappler: '組み技のセンスが光る', Striker: '打撃の鋭さが際立つ',
-      Submission: '関節技に天性の嗅覚がある', Aerial: '空中戦の身のこなしが目を引く',
-      Allround: 'バランスの良さが持ち味の', Brawler: '荒々しいファイトが魅力の',
-    };
-    const flair = STYLE_FLAIR[c.style] || '素質を感じる';
+    // i18n Stage B P7-31: 寸評は「スタイル別の一句 + tier別の完成文」。文面プールは
+    // トップレベルの DRAFT_STYLE_FLAIR へ出した(関数内リテラルは抽出器から見えない・§10-2)。
+    // JAは修飾句が後続の名詞へ直結する(「〜光る逸材で」)が、ENは {flair} を独立した
+    // 一文として置き、テンプレ側で語順を決め直す。
+    const flair = WM_I18N.t(DRAFT_STYLE_FLAIR[c.style] || DRAFT_STYLE_FLAIR._default);
     const comments = {
-      superElite: `${c.age}歳にして複数の能力が標準を大きく上回る。${flair}逸材で、今年の業界最大の話題人物。`,
-      elite: `${flair}将来性豊かな新人。長期育成で看板選手に化ける可能性を秘めている。`,
-      promising: `着実な成長が見込める堅実なタイプ。${flair}。`,
+      superElite: WM_I18N.t('{age}歳にして複数の能力が標準を大きく上回る。{flair}逸材で、今年の業界最大の話題人物。', { age: c.age, flair }),
+      elite: WM_I18N.t('{flair}将来性豊かな新人。長期育成で看板選手に化ける可能性を秘めている。', { flair }),
+      promising: WM_I18N.t('着実な成長が見込める堅実なタイプ。{flair}。', { flair }),
     };
     return comments[tier] || '';
   }
@@ -6569,8 +6596,8 @@ function renderCoach() {
     const mult = c.gMult || 1.0;
     const abText = (c.abilities||[]).map(a => `<span class="coach-trait">${WM_I18N.t(a)}</span>`).join(' ');
     const styleLabel = (typeof COACH_STYLE_MAP !== 'undefined' && COACH_STYLE_MAP[c.style]) || c.style;
-    return `<span class="coach-grade coach-grade-${c.grade}">${c.grade}級</span>
-      <span style="font-size:12px;color:var(--gold);font-weight:700">成長×${mult}</span>
+    return `<span class="coach-grade coach-grade-${c.grade}">${WM_I18N.t('{tier}級', { tier: c.grade })}</span>
+      <span style="font-size:12px;color:var(--gold);font-weight:700">${WM_I18N.t('成長×{mult}', { mult })}</span>
       <span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${WM_I18N.t(styleLabel)}</span>
       ${abText}`;
   };
@@ -6940,11 +6967,11 @@ let _dbCoachSortAsc = false;
 let _dbCoachFilterGrade = '';
 let _dbCoachFilterName = '';
 // Phase 6v2: 相関図 state (force-directed network)
-// C-4宿題: 絆/因縁バーの説明ティップス(data-tip)。内部変数名(bond/rivalry)は出さず日本語のみ
 // i18n Stage A: 言語切替(dev-tools)はページ再読込を伴わないため、t()呼び出しは
 // 参照時(_tipAttr渡し時)に行う。モジュールロード時に一度だけ評価される定数化はしない。
-const _RM_TIP_BOND = '一緒に過ごした時間や共闘で深まる、相手への信頼と親愛。高いほど息が合いやすくなります';
-const _RM_TIP_RIVALRY = '対戦の因縁や敵意。高いほど試合が激しくなります';
+// 文面の実体は UI_TIP_TEXTS(ファイル先頭・P7-31 で抽出器から見える形へ移した)。
+const _RM_TIP_BOND = UI_TIP_TEXTS.relmapBond;
+const _RM_TIP_RIVALRY = UI_TIP_TEXTS.relmapRivalry;
 let _relmapCenterId = null;
 let _relmapFilter = 'all';
 let _relmapSelected = null;
@@ -9905,7 +9932,7 @@ function _renderDbFighters() {
     html += `<tr class="clickable" onclick="showFighterPopup(${f.id},'${source}')">
       <td>${portraitImg(f.id, 40, '', false)}</td>
       <td style="font-weight:600">${WM_I18N.pn(f.name)}<span class="db-title-badges">${titleBadges}</span></td>
-      <td style="font-size:12px">${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>
+      <td style="font-size:12px">${WM_I18N.pn(f._orgName)}${tierBadge}${faBadge}${playerBadge}</td>
       <td><span class="badge badge-${f.style}" style="font-size:11px">${f.style || '—'}</span></td>
       <td class="num" style="${statTierStyle('ovr', ovr)};font-size:15px">${ovr}</td>
       ${_statCell('pw', f.pw)}${_statCell('sp', f.sp)}${_statCell('te', f.te)}${_statCell('st', f.st)}${_statCell('mn', f.mn)}
@@ -12906,23 +12933,26 @@ function _dfcChronicle(faction, state, opts = {}) {
     const fp = opts.feudEntry;
     const myPt = (fp && (fp.factionAId === faction.id ? fp.pointsA : fp.pointsB)) || 0;
     const oppPt = (fp && (fp.factionAId === faction.id ? fp.pointsB : fp.pointsA)) || 0;
-    const tide = myPt > oppPt ? '優勢' : (myPt < oppPt ? '劣勢' : '互角');
-    const tideStrong = myPt - oppPt >= 25 ? '大きく優勢' : (oppPt - myPt >= 25 ? '苦戦色濃く' : tide);
-    html += `<p>${created} 結成、<em>${WM_I18N.pn(leader.name)}</em>を頂点に<strong>${flavor}</strong>を掲げる派閥。`
-      + `結成${eraWeeks}週で<em>${WM_I18N.pn(otherFaction.name)}</em>と<strong>抗争状態</strong>に突入し、現在 W${eraWeeks} 目の戦線。</p>`;
+    // i18n Stage B P7-31: 断片連結をやめ、分岐ごとの完成文テンプレへ畳む(構造規約3)。
+    // 派閥名は「{姓}派」という生成済み文字列なので pn() ではなく _factionDisplayName()。
+    const tide = WM_I18N.t(myPt > oppPt ? '優勢' : (myPt < oppPt ? '劣勢' : '互角'));
+    const tideStrong = myPt - oppPt >= 25 ? WM_I18N.t('大きく優勢') : (oppPt - myPt >= 25 ? WM_I18N.t('苦戦色濃く') : tide);
+    const otherName = _factionDisplayName(otherFaction.name);
+    html += WM_I18N.t('<p>{created} 結成、<em>{leader}</em>を頂点に<strong>{flavor}</strong>を掲げる派閥。結成{weeks}週で<em>{other}</em>と<strong>抗争状態</strong>に突入し、現在 W{weeks} 目の戦線。</p>',
+      { created, leader: WM_I18N.pn(leader.name), flavor, weeks: eraWeeks, other: otherName });
     if (keyMember) {
-      html += `<p>要は <em>${WM_I18N.pn(keyMember.name)}</em>（OVR ${Engine.util.ov(keyMember)}）。`
-        + `${WM_I18N.pn(otherFaction.name)}との抗争で<strong>${tideStrong}</strong>を維持しつつ、${WM_I18N.pn(faction.name)}の象徴となる選手。</p>`;
+      html += WM_I18N.t('<p>要は <em>{name}</em>（OVR {ovr}）。{other}との抗争で<strong>{tide}</strong>を維持しつつ、{faction}の象徴となる選手。</p>',
+        { name: WM_I18N.pn(keyMember.name), ovr: Engine.util.ov(keyMember), other: otherName, tide: tideStrong, faction: _factionDisplayName(faction.name) });
     } else {
-      html += `<p>抗争ポイントは <strong>${myPt} - ${oppPt}</strong>（${tideStrong}）。`
-        + `結束は<em>${solidarity}</em>、リーダー直轄の規律で戦線を保つ。</p>`;
+      html += WM_I18N.t('<p>抗争ポイントは <strong>{my} - {opp}</strong>（{tide}）。結束は<em>{solidarity}</em>、リーダー直轄の規律で戦線を保つ。</p>',
+        { my: myPt, opp: oppPt, tide: tideStrong, solidarity });
     }
   } else {
-    html += `<p>${created} 結成、<em>${WM_I18N.pn(leader.name)}</em>のもとに集まった<strong>${flavor}</strong>の派閥。`
-      + `結成から${eraWeeks}週、結束は<em>${solidarity}</em>。</p>`;
+    html += WM_I18N.t('<p>{created} 結成、<em>{leader}</em>のもとに集まった<strong>{flavor}</strong>の派閥。結成から{weeks}週、結束は<em>{solidarity}</em>。</p>',
+      { created, leader: WM_I18N.pn(leader.name), flavor, weeks: eraWeeks, solidarity });
     if (keyMember) {
-      html += `<p>要は <em>${WM_I18N.pn(keyMember.name)}</em>（OVR ${Engine.util.ov(keyMember)}）。`
-        + `${WM_I18N.pn(faction.name)}の柱として安定した戦力を提供している。</p>`;
+      html += WM_I18N.t('<p>要は <em>{name}</em>（OVR {ovr}）。{faction}の柱として安定した戦力を提供している。</p>',
+        { name: WM_I18N.pn(keyMember.name), ovr: Engine.util.ov(keyMember), faction: _factionDisplayName(faction.name) });
     }
   }
   html += `</div>`;

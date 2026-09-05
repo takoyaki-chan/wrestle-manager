@@ -454,11 +454,22 @@ class WalkthroughDetectors {
       const screen = activeScreenEl?.id || (overlayEl ? `overlay:${overlayEl.id || overlayEl.className}` : 'unknown');
 
       const pattern = new RegExp(japanesePatternSource);
-      const leafElements = Array.from(document.querySelectorAll('body *'))
-        .filter(element => visible(element) && element.children.length === 0);
+      // P7-31: 「リーフ要素だけ」では `地の文<br>地の文<span>…</span>` 型の枠を1つも見ない
+      // (子要素を持つので走査対象から外れ、自分の直下テキストノードは誰にも読まれない)。
+      // 旗揚げ序章の `.opening-act-line` が丸ごとこの死角だった。リーフに加えて
+      // **自分の直下テキストノードだけ**を持つ非リーフ要素も見る(子孫のテキストは
+      // その子孫自身の行で数えるので、二重計上にはならない)。
+      const directTextOf = (element) => Array.from(element.childNodes)
+        .filter(node => node.nodeType === 3)
+        .map(node => node.textContent || '')
+        .join(' ')
+        .replace(/\s+/g, ' ')
+        .trim();
       const found = [];
-      for (const element of leafElements) {
-        const text = textOf(element);
+      for (const element of Array.from(document.querySelectorAll('body *'))) {
+        if (!visible(element)) continue;
+        const isLeaf = element.children.length === 0;
+        const text = isLeaf ? textOf(element) : directTextOf(element);
         if (!text || !pattern.test(text)) continue;
         let path = '';
         let cur = element;
