@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🐛 data.js:60 高橋まゆみの特性名「名勝負製造機」が文字化けし特性が無効化していた(2026-09-05・Fable)
+
+P7-20(台帳未収載の棚卸し)の副産物。`ALL_CHARS` id=49 高橋まゆみの `traits` に `'名���負製造機'`(「勝」がU+FFFD×3に化けたもの。2026-03の文字化け事故と同族)が入っており、`TRAIT_DEFS` に一致しないため**この特性が実質無効**だった(バッジも効果も出ない)。全ALL_CHARSを走査して不一致はこの1件のみ、src配下の他のU+FFFDも0。
+
+修正: `'名勝負製造機'` へ戻した。特性が有効になるためシミュレーション結果が変わる=**意図的なJA変更**として `node test/ja-golden.js --update`(差分は S1W5 のティッカー抽選以降の乱数消費のずれ。hash 6b3d05c8…→新基準)。npm test 261 / auto-sim 20季 ALL CLEAR / balance-baseline 逸脱なし。実機確認: 高橋まゆみの選手詳細に「名勝負製造機」バッジが出ること(バックログ記載)。
+
 ## 🌐 英語対応 P7-20 — 台帳未収載の日本語文字列の全数棚卸し(調査のみ・コード変更なし)(2026-09-05・worktree agent-af4c20f4cbcb37d3e)
 
 指示書: docs/i18n-stage-b-p7-design-v0.1.md §0/§5 の完了指標を機械計測。開始前にworktreeブランチを最新main(a9c673ab)へfast-forward。
