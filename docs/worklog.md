@@ -1,5 +1,66 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-39 — 旧セーブの新聞4面(年間MVPレース)をENのときだけ現行プールで再生成(Keisuke裁定B-3=③、2026-09-05)
+
+### 1. 背景
+
+P7-23(`docs/worklog.md` 発見6)で、新聞4面(年間MVPレース)の永続5文字列(narrative/tagline/pageHeadline/pageLead/kurodaComment)は「JAを再生成→保存値とバイト一致したときだけEN版を出し、不一致なら保存値のまま」という自己検証型fail-open(specs §18-1/§39)でEN化した。P7-23以前のセーブは旧プール(現行の`MVP_RACE_TEXTS`に統合される前の文プール)で焼かれた完成文を持つため一致せず、EN版でも4面だけ日本語のまま残っていた(`docs/i18n-keisuke-rulings-pending-v0.1.md` B-3として保留)。2026-09-05、Keisukeが選択肢③「JAセーブは一切触らず、言語がENのときだけ保存値を捨てて現行プールで作り直す」を裁定。
+
+### 2. 実装: `_npMvpI18n`(ui-render.js)への1条件追加
+
+判定は**表示時**のみで行い、ロード時にセーブを書き換えることはしない。
+
+```js
+function _npMvpI18n(saved, regen) {
+  if (!saved || typeof saved !== 'string') return saved || '';
+  if (typeof Engine === 'undefined' || !Engine.mvpRace) return saved;
+  try {
+    const matches = regen() === saved;
+    if (!matches && WM_I18N.lang !== 'en') return saved;
+    const out = regen(WM_I18N.t);
+    return (typeof out === 'string' && out) ? out : saved;
+  } catch (_e) { return saved; }
+}
+```
+
+- 旧セーブ判定を別途持たない(「保存値≠現行プールの再生成」を旧セーブの十分条件として扱う、Keisuke指示どおり)
+- JA/pseudoは従来どおり保存値のまま(1バイト不変)。言語をJAへ戻せば旧文がそのまま出る
+- ENは一致・不一致のどちらでも最終的に`regen(WM_I18N.t)`を返す(呼び出し側5箇所は無改修)
+- regen()の呼び出し回数は従来と同じ最大2回(bare1回+dict1回)。不一致×JA/pseudoはbare1回だけで確定するので追加コストは無い
+
+### 3. 検証: ignite `newspaper-mvprace-legacy` を新設(実セーブではなくfixtureの故意改変で再現)
+
+`test/ui-walkthrough/fixtures/legacy-saves/`には実際に旧プールの完成文を持つ実セーブが2本ある(`prerefix_S12W45_2026-07-27.json`/`v1.25_S3W11_2026-08-03.json`、pageHeadlineが「生駒エリカが突き抜けた冬 ―― 業界の視線は首位に集中」等の現行プールに無い文面)。これらはsave-regression棚(`test/save-regression.js`)の実データ検査用に温存し、ignite fixture生成パイプライン(`headless-sim.js`→`Engine.validateGameState`)へ実セーブをそのまま載せる経路は作らなかった(スキーマ差分による無関係な検証エラーを持ち込むリスクを避けるため)。
+
+代わりに、既存`newspaper-mvprace`と同じ土台のセーブ(S1W3)に対し`fixture.engineer`で保存済み5文字列を現行プールに存在しない文言(`旧プール文言(P7-39点火fixture・現行プールには存在しない)・見出し`等)へ機械的に差し替え、「旧プールで焼かれた完成文」を模擬した。`fixture.assert`で差し替え文が現行プールの再生成結果と偶然一致していないことも機械確認する。計測フック`MVP_INSTRUMENT_PROBE`(`window.__mvpFallback`)は実装と同じ分岐へ更新した(不一致時、`WM_I18N.lang!=='en'`のときだけ`saved`へ抜ける)。
+
+実測結果:
+
+| 検査項目 | JA | EN |
+|---|---|---|
+| `window.__mvpFallback`(regen-mismatch件数) | 6件(見出し/リード/黒田寸評/TOP3寸評×3) | 6件(判定自体は言語に関係なく発生) |
+| 4面表示 | 差し替えた保存値がそのまま1バイト不変で表示 | 差し替え前の「旧プール文言」が0件(現行プールで作り直した文に置き換わっている) |
+| `#newspaperContent`のJA露出 | (対象外) | 0件 |
+| `i18n-miss` | - | 0件 |
+
+既存`newspaper-mvprace`(非legacy)シナリオはJA/EN両方とも`mvpFallback: []`のまま(回帰なし)。
+
+### 4. 検証(すべてフォアグラウンド実行)
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(ui-render.js/test/ui-walkthrough/scenarios.js) | OK |
+| `node test/ja-golden.js` | **完全一致** `dd2e536bc18a4433b2c1530cc81e7a02090f09db7c7cb0dc184f5df75fd5e44e` |
+| `npm test` | **261/261 PASS** |
+| `node test/i18n-ratchet.js` | 増加なし(28,058。`--update`不使用) |
+| `npm run test:ui:ignite -- --scenario newspaper-mvprace`(JA/EN) | 両PASS・`mvpFallback: []`(回帰なし) |
+| `npm run test:ui:ignite -- --scenario newspaper-mvprace-legacy`(JA/EN、新設) | 両PASS(§3の表のとおり) |
+| `npm run test:ui:walkthrough` | PASS・digest `1052faa82eaf7991` 不変・Issues 0 |
+
+### 5. 実機確認
+
+`docs/実機確認バックログ.md`「英語対応 P7-39」節に追記(旧セーブをENで開いて4面が英語になること/JAでは従来どおり1バイト不変であること)。P7-34/P7-35節の該当項目は本バッチで解決した旨に更新した。
+
 ## 🌐 英語対応 P7-28 — P7-25が残した3件(成長ログmatch/milestone・怪我名detail・ns.log)+P7-20/P7-1の掃除2件(2026-09-05)
 
 P7-25(`docs/worklog.md` 先頭・当時)が「§9 P7-25で新たに見つかった穴」に残した3件と、P7-20/P7-1発見の掃除2件を解決した。開始前にworktreeブランチをmain先端(`c8eca673`。P7-25まで main入り)へfast-forward済み。

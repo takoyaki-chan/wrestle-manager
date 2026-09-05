@@ -2026,3 +2026,54 @@ growthLog(`G.roster[].growthLog[]`)は auto-sim の semantic fingerprint 計算�
 | `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
 | `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・412手・**i18n-miss 0**・Issues 0・JA露出57(HEAD実測57と同値。内訳は走破ごとに変動するが総数は一致) |
 | VM検証(実物のi18n.js+lang-en.js+data.js+management.jsを読み込み) | ✅ growthLog 7型・careerHistory怪我detail 26パターン(全怪我種×週数+3引退+疑似経歴5語+fail-open2種+null)を全てJA再構築1バイト一致で確認、EN側も各型を目視確認 |
+
+## 41. Stage B P7-39 — 旧セーブの新聞4面(年間MVPレース)をENのときだけ現行プールで再生成(Keisuke裁定B-3=③、2026-09-05追加)
+
+§39(P7-23)が確立した`_npMvpI18n`の自己検証型fail-open(4分岐目「一致しない(旧セーブ/素材欠け/表の改訂)なら保存値をそのまま出す」)は、P7-23以前のセーブ(旧プールで焼かれた完成文を持つ)だと**ENでも保存値=JAのまま**表示してしまう欠陥を残していた(§39-9の発見5)。Keisuke裁定B-3(`docs/i18n-keisuke-rulings-pending-v0.1.md`)は選択肢③「JAセーブは一切触らず、言語がENのときだけ保存値を捨てて現行プールで作り直す」を採用した。
+
+### 41-1. 実装は`_npMvpI18n`(ui-render.js)への1条件の追加のみ
+
+判定は**表示時**に行い、ロード時にセーブを書き換えることはしない(=セーブへの書き戻しマイグレーションは行わない。B-3の選択肢①は不採用)。
+
+```js
+function _npMvpI18n(saved, regen) {
+  if (!saved || typeof saved !== 'string') return saved || '';
+  if (typeof Engine === 'undefined' || !Engine.mvpRace) return saved;
+  try {
+    const matches = regen() === saved;
+    if (!matches && WM_I18N.lang !== 'en') return saved;
+    const out = regen(WM_I18N.t);
+    return (typeof out === 'string' && out) ? out : saved;
+  } catch (_e) { return saved; }
+}
+```
+
+- **旧セーブ判定を別途持たない**(裁定の指示どおり)。「保存値≠現行プールの再生成」を旧セーブの十分条件として扱う(§39の1〜3のロジックは無変更、4の分岐だけ`WM_I18N.lang`で場合分けする)
+- **JA/pseudoでは従来どおり保存値のまま**(1バイト不変)。言語をJAへ戻せば旧文がそのまま出る——これが「JAセーブは一切触らない」の実装上の意味
+- **ENのときは一致・不一致どちらの枝でも最終的に`regen(WM_I18N.t)`を返す**(一致時は§39の3、不一致時が今回追加した経路)。呼び出し側(`_npRenderPage4`/`_npMvpRaceRank1Card`/`_npMvpRaceMinorCard`/`_npMvpRaceListRow`)は無改修
+- **regen()の呼び出し回数は従来と同じ最大2回**(bare1回+dict1回)。不一致×JA/pseudoのときはbareの1回だけで確定して`return saved`するので、パフォーマンス上の追加コストはEN×不一致のときの1パターンのみ(dict版の1回)
+
+### 41-2. 検証: ignite `newspaper-mvprace-legacy`(実データではなくfixtureの故意改変で再現)
+
+`test/ui-walkthrough/fixtures/legacy-saves/`には実際に旧プールの完成文を持つ実セーブが2本ある(`prerefix_S12W45_2026-07-27.json`/`v1.25_S3W11_2026-08-03.json`)が、save-regression棚(`test/save-regression.js`)の実データ検査用に温存し、ignite fixture生成パイプライン(`headless-sim.js`のvalidateGameState等)へ実セーブをそのまま載せる経路は作らなかった(スキーマ差分による無関係な検証エラーを持ち込むリスクを避けるため)。代わりに`newspaper-mvprace`と同じ土台のセーブ(S1W3)に対し、`fixture.engineer`で保存済み5文字列(pageHeadline/pageLead/kurodaComment/TOP3の narrative×3/4位以下の tagline)を現行プールに存在しない文言へ機械的に差し替え、「旧プールで焼かれた完成文」を模擬した。`fixture.assert`で差し替え文が現行プールの再生成結果と偶然一致していないことも機械確認する(一致するとfixtureが「旧セーブ」を模擬できていないことになるため)。
+
+計測は§39-9(P7-23)と同じ`window.__mvpFallback`計測フック(`MVP_INSTRUMENT_PROBE`)を使うが、**実装と同じ分岐**へ更新した(不一致時、`WM_I18N.lang!=='en'`のときだけ`saved`へ抜ける。ENのときは`regen(dict)`を返す)。
+
+| 検査項目 | JA | EN |
+|---|---|---|
+| `window.__mvpFallback`(regen-mismatch件数) | 6件(見出し/リード/黒田寸評/TOP3寸評×3) | 6件(同数。判定自体は言語に関係なく発生する) |
+| 4面表示 | 差し替えた保存値がそのまま1バイト不変で表示(`旧プール文言`を含む) | 差し替え前の`旧プール文言`が0件(現行プールで作り直された文に置き換わっている) |
+| `#newspaperContent`のJA露出 | (JA表示が仕様なので対象外) | 0件 |
+| `i18n-miss` | - | 0件 |
+
+### 41-3. 検証(すべてフォアグラウンド実行)
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(ui-render.js/test/ui-walkthrough/scenarios.js) | ✅ OK |
+| `node test/ja-golden.js` | ✅ **完全一致**(`dd2e536bc18a4433b2c1530cc81e7a02090f09db7c7cb0dc184f5df75fd5e44e`) |
+| `npm test` | ✅ **261/261 PASS** |
+| `node test/i18n-ratchet.js` | ✅ 増加なし(28,058。`--update`不使用) |
+| `npm run test:ui:ignite -- --scenario newspaper-mvprace`(JA/EN) | ✅ 両PASS・`mvpFallback: []`(既存セーブは無改修=フォールバック0のまま。§39-9の回帰確認) |
+| `npm run test:ui:ignite -- --scenario newspaper-mvprace-legacy`(JA/EN、新設) | ✅ 両PASS(41-2の表のとおり) |
+| `npm run test:ui:walkthrough` | ✅ PASS・digest `1052faa82eaf7991` 不変・Issues 0 |

@@ -222,6 +222,9 @@ const chronicleStop = (index, required) => ({
 // (window.__mvpFallback に理由付きで記録)。差し替えても分岐ロジックは完全に同じなので
 // 表示内容には影響しない(=JA出力は不変)。2停車目(4面を開く)で実際にラップされた
 // 関数が呼ばれ、フォールバック有無が記録される。
+// P7-39: 実装(ui-render.js `_npMvpI18n`)の分岐をそのまま写す。不一致(regen-mismatch)は
+// 引き続き記録するが、`WM_I18N.lang === 'en'` のときは実装と同じく保存値を捨てて
+// `regen(dict)` を返す(旧セーブでもENでは現行プールの文が出る、というP7-39の本題)。
 const MVP_INSTRUMENT_PROBE = `(() => {
   if (window.__mvpFallback) return { alreadyPatched: true };
   window.__mvpFallback = [];
@@ -235,9 +238,10 @@ const MVP_INSTRUMENT_PROBE = `(() => {
     }
     try {
       const bare = regen();
-      if (bare !== saved) {
-        window.__mvpFallback.push({ reason: 'regen-mismatch', saved: saved.slice(0, 40) });
-        return saved;
+      const matches = bare === saved;
+      if (!matches) {
+        window.__mvpFallback.push({ reason: 'regen-mismatch', lang: window.WM_I18N.lang, saved: saved.slice(0, 40) });
+        if (window.WM_I18N.lang !== 'en') return saved;
       }
       const out = regen(window.WM_I18N.t);
       if (typeof out !== 'string' || !out) {
@@ -475,6 +479,133 @@ module.exports = {
       } else if (probe.mvpFallback.length > 0) {
         const head = probe.mvpFallback.slice(0, 5).map(x => `${x.reason}:"${x.saved}"`).join(' / ');
         fails.push(`_npMvpI18n のフォールバックが${probe.mvpFallback.length}件発生(新品fixtureでは0が期待) — ${head}`);
+      }
+      return fails;
+    },
+  },
+
+  // ── P7-39: 旧セーブ(P7-23以前=現行プールに存在しない完成文を持つ)の4面点火 ──
+  // Keisuke裁定 B-3=③: 「言語がENのときだけ、保存値を捨てて現行プールで作り直す」。
+  // newspaper-mvprace と同じ土台のセーブ(S1W3)を使い、fixture.engineer で保存済み5文字列
+  // (見出し/リード/黒田寸評/TOP3寸評/4位以下タグライン)を現行プールに存在しない文面へ
+  // 差し替えて「旧プールで焼かれた完成文」を模擬する(実物の旧セーブ2本
+  // test/ui-walkthrough/fixtures/legacy-saves/{prerefix_S12W45,v1.25_S3W11}.jsonは
+  // save-regression棚の実データ検査用に取っておき、ここでは現行fixture生成パイプライン
+  // 〈headless-sim→validateGameState〉に載る形で「不一致」を機械的に作る)。
+  'newspaper-mvprace-legacy': {
+    description: '新聞4面(年間MVPレース)の旧セーブ点火(P7-39): newspaper-mvpraceと同じ土台のセーブの保存済み5文字列を現行プールに存在しない文面へ差し替え、「旧プールで焼かれた完成文」を模擬する。ENでは_npMvpI18n(P7-39裁定B-3)が現行プールで作り直した文を表示してJA露出0・差し替え前文言の残存0になること、JAでは差し替えた保存値がそのまま1バイト不変で出ることを検査する',
+    fixture: {
+      seed: 42,
+      until: G => G.season === 1 && G.week === 3 && !G.offSeason,
+      engineer: G => {
+        const race = G.mvpRace;
+        if (!race || !Array.isArray(race.rankings)) return G;
+        const MARK = '旧プール文言(P7-39点火fixture・現行プールには存在しない)';
+        const rankings = race.rankings.map((r, i) => (
+          i < 3
+            ? { ...r, narrative: `${MARK}・寸評#${i}` }
+            : { ...r, tagline: `${MARK}・タグライン#${i}` }
+        ));
+        return {
+          ...G,
+          mvpRace: {
+            ...race,
+            rankings,
+            pageHeadline: `${MARK}・見出し`,
+            pageLead: `${MARK}・リード`,
+            kurodaComment: `${MARK}・黒田寸評`,
+          },
+        };
+      },
+      assert: G => {
+        const fails = [];
+        const race = G.mvpRace;
+        const rankings = (race && race.rankings) || [];
+        if (rankings.length < 4) fails.push(`mvpRace.rankings が${rankings.length}件(4件以上必要 — 4位以下の一覧行を検査するため)`);
+        if (!G.weeklyNewspaper || G.weeklyNewspaper.layout !== 'v3') fails.push('weeklyNewspaper.layout が v3 でない(旧レイアウトは4面リンクを持たない)');
+        // 差し替えた5文字列が「現行プールの再生成結果と偶然一致していない」ことを機械確認する。
+        // 一致してしまうと _npMvpI18n のフォールバック条件(regen()!==saved)を踏めず、
+        // 旧セーブを模擬できていないfixtureになる
+        const mismatch = (label, saved, regenerated) => {
+          if (saved === regenerated) fails.push(`${label}: 差し替え文が現行プールの再生成結果と一致してしまった(旧セーブを模擬できていない) — MARK文言を変えること`);
+        };
+        if (race) {
+          mismatch('pageHeadline', race.pageHeadline, Engine.mvpRace.generatePageHeadline(race.rankings, G));
+          mismatch('pageLead', race.pageLead, Engine.mvpRace.generatePageLead(race.rankings, G));
+          mismatch('kurodaComment', race.kurodaComment, Engine.mvpRace.generateKurodaComment(race.rankings, G));
+          rankings.slice(0, 3).forEach((r, i) => mismatch(`rankings[${i}].narrative`, r.narrative, Engine.mvpRace.generateNarrative(r, G)));
+          rankings.slice(3).forEach((r, i) => mismatch(`rankings[${i + 3}].tagline`, r.tagline, Engine.mvpRace.generateTagline(r, G)));
+        }
+        return fails;
+      },
+    },
+    walk: { seasons: 1, maxSteps: 5 },
+    until: s => !!(s.state),
+    ignition: [
+      { name: 'newspaper-screen', required: true, match: s => s.activeScreen === 'screen-newspaper' },
+    ],
+    tour: {
+      steps: [
+        {
+          label: '新聞を開く',
+          selector: `.nav-btn[onclick^="showScreen('newspaper'"]`,
+          expectScreen: 'screen-newspaper',
+          probe: MVP_INSTRUMENT_PROBE,
+        },
+        {
+          label: '4面 MVPレース詳細',
+          selector: `[onclick*="setNewspaperSubPage(4)"]`,
+          expectScreen: 'screen-newspaper',
+          probe: MVPRACE_PROBE,
+        },
+      ],
+    },
+    tourAssert: (probes, lang) => {
+      const fails = [];
+      const instrument = probes['新聞を開く'];
+      if (!instrument || instrument.probeError) fails.push(`計測フックの設置に失敗: ${instrument && instrument.probeError}`);
+      else if (instrument.patched === false) fails.push(`_npMvpI18n の計測フックを仕込めなかった: ${instrument.reason}`);
+      const p = probes['4面 MVPレース詳細'];
+      if (!p || p.probeError) { fails.push(`4面: probe失敗 ${p && p.probeError}`); return fails; }
+      if (!p.present) { fails.push('4面: .np-mvprace-list が描画されていない(不発)'); return fails; }
+      if (!p.headline) fails.push('4面: 見出し(.np-page-headline)が空');
+      if (!p.lead) fails.push('4面: リード(.np-page-lead)が空');
+      if (!p.kuroda) fails.push('4面: 黒田寸評(.np-kuroda-text)が空');
+      if (!p.rank1Name) fails.push('4面: 1位選手名(.np-mvprace-name)が空');
+      if (!p.rank1Narrative) fails.push('4面: 1位の寸評(.np-mvprace-narrative)が空');
+      if (lang === 'en') {
+        // ENでは「旧プール文言(P7-39点火fixture」という差し替え前のマーカーが1文字も
+        // 残ってはいけない(=保存値を捨てて現行プールで作り直された証拠)
+        const surfaces = [p.headline, p.lead, p.kuroda, p.rank1Narrative, ...(p.minorNarratives || []), ...(p.listFlavors || [])];
+        if (surfaces.some(s => /旧プール文言/.test(s))) {
+          fails.push('4面: ENなのに差し替え前の旧プール文言(fixtureのMARK)が残っている(表示時再生成が働いていない)');
+        }
+        if (p.jaLeaves && p.jaLeaves.length > 0) {
+          const head = p.jaLeaves.slice(0, 10).map(x => `${x.selector}:"${x.text}"`).join(' / ');
+          fails.push(`4面: ENなのに日本語が${p.jaLeaves.length}件残っている — ${head}`);
+        }
+      } else {
+        // JA(既定)では保存値(=差し替えた旧文)がそのまま1バイト不変で出ること
+        // (セーブは一切触っていないことの確認 — 言語をJAへ戻せば旧文のまま、が裁定の骨子)
+        if (!/旧プール文言/.test(p.headline)) fails.push('4面: JAなのに差し替えた保存値(見出し)が表示されていない');
+        if (!/旧プール文言/.test(p.lead)) fails.push('4面: JAなのに差し替えた保存値(リード)が表示されていない');
+        if (!/旧プール文言/.test(p.kuroda)) fails.push('4面: JAなのに差し替えた保存値(黒田寸評)が表示されていない');
+        if (!/旧プール文言/.test(p.rank1Narrative)) fails.push('4面: JAなのに差し替えた保存値(1位寸評)が表示されていない');
+      }
+      return fails;
+    },
+    // window.__mvpFallback は MVP_INSTRUMENT_PROBE が仕込んだ計測器。このfixtureは
+    // 保存値を意図的に現行プールと不一致にしてあるので、newspaper-mvpraceとは逆に
+    // フォールバック(regen-mismatch)が1件以上発生することを期待する
+    finalProbe: `(() => ({
+      mvpFallback: (typeof window !== 'undefined' && window.__mvpFallback) ? window.__mvpFallback : null,
+    }))()`,
+    finalAssert: probe => {
+      const fails = [];
+      if (!probe || probe.mvpFallback == null) {
+        fails.push('計測器(window.__mvpFallback)が見つからない — MVP_INSTRUMENT_PROBEが刺さっていない');
+      } else if (probe.mvpFallback.length === 0) {
+        fails.push('_npMvpI18n のフォールバック(regen-mismatch)が0件(差し替えた旧文が現行プールと一致してしまっている=fixtureが機能していない)');
       }
       return fails;
     },
