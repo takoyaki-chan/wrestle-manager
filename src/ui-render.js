@@ -9309,11 +9309,19 @@ function _npRenderPage3() {
 //   3. 一致したときだけ `WM_I18N.t` を dict として渡した版を出す
 //   4. 一致しない(旧セーブ/素材欠け/表の改訂)なら保存値をそのまま出す
 // JAモードでは3の結果が1と同一(t()はja素通し+PH置換のみ)なので**日本語版の表示は1バイト不変**。
+//
+// P7-39(Keisuke裁定 B-3=③、2026-09-05): 4の「一致しない」枝は、P7-23以前のセーブ(旧プールで
+// 焼かれた完成文を持つ)だとENでも保存値=JAのまま出てしまう。判定は**表示時**のみで行い
+// セーブは一切書き換えない。`WM_I18N.lang === 'en'` のときだけ、不一致を「旧セーブ」の
+// 十分条件とみなして保存値を捨て、現行プールで作り直した文(3と同じ `regen(WM_I18N.t)`)を
+// 表示する。JA/pseudoでは従来どおり保存値のまま(=JA表示は1バイトも変えない)。
+// 言語をJAへ戻せば旧文がそのまま出る(=セーブを触っていないことの確認手段でもある)。
 function _npMvpI18n(saved, regen) {
   if (!saved || typeof saved !== 'string') return saved || '';
   if (typeof Engine === 'undefined' || !Engine.mvpRace) return saved;
   try {
-    if (regen() !== saved) return saved;
+    const matches = regen() === saved;
+    if (!matches && WM_I18N.lang !== 'en') return saved;
     const out = regen(WM_I18N.t);
     return (typeof out === 'string' && out) ? out : saved;
   } catch (_e) { return saved; }
