@@ -18336,6 +18336,528 @@ const AUTUMN_WAR_NEWS_PARTS = {
 };
 
 // ══════════════════════════════════════════════════════════════════════════════
+//  i18n Stage B P7-23: 新聞4面「年間MVPレース」の地の文プール(MVP_RACE_TEXTS)
+//  ──────────────────────────────────────────────────────────────────────────
+//  移設元は management.js `Engine.mvpRace` の叙述family
+//  (generateNarrative / _traitPhrase / generateTagline / generatePageHeadline /
+//   generatePageLead / generateKurodaComment / _topElements / _collectFactChips /
+//   _composeChaseLine / _composeFlavorLine / generateRichBlocks)の
+//  **関数本体に直書きされた配列リテラル**(§10-2「関数の中の配列はどの抽出器からも
+//  永久に見えない」型)。docs/i18n-coverage-report-v0.1.md A分類 #1(285件/4,924字)。
+//
+//  ■ 並び順・要素数を変えないこと
+//    どのプールも `pick = arr[Engine.rng.int(rng, 0, arr.length - 1)]` で引かれる。
+//    要素を足す/減らす/並べ替えると同じシードでも出目が変わり、JA出力が変わる。
+//
+//  ■ 消費点
+//    Engine.mvpRace.* の各関数が第2/第3引数の `dict` を `_wmFillWithDict` へ渡し、
+//    **PH置換前に**辞書を引く(§6のlang糸通し。EngineはWM_I18Nを直接呼ばない)。
+//    - 表示のたびに作り直される族(generateRichBlocks = headlineLine/factChips/
+//      flavorLine)は dict を渡すだけでよい(§22-1)
+//    - `G.mvpRace` へ焼かれて永続する族(narrative/tagline/pageHeadline/pageLead/
+//      kurodaComment)は **§18-1 の「表示点で再生成」**。`recalcRanking` はdictを渡さないので
+//      **セーブに書く値はJA完成文のまま不変**(追加フィールドは1つも増やさない=auto-simの
+//      semantic fingerprintも動かない)。表示点 ui-render.js `_npMvpI18n` が
+//      「dict無しで再生成 → 保存値と1バイト一致を確認 → 一致したときだけ辞書版を出す」
+//      という自己検証型fail-openで作り直す(**保存値をt()に通さないこと** —
+//      完成文は辞書キーと一致せずi18n-missを汚染する)
+//
+//  ■ ui-ledger に既訳がある1語ラベルは本表へ入れない(二重登録の禁止・§9/§15-3)
+//    `エース`/`中堅`/`新人`/`ヒール`/`ベテラン`/`ベビーフェイス`(役割)、
+//    `春`/`夏`/`秋`/`冬`(季)、`タイトル戦`/`対抗戦`/`通常興行`(試合種別)、
+//    `天頂戦優勝`/`PPV優勝`/`4団体勝ち残り対抗戦優勝`/`春のタッグリーグ優勝`/
+//    `現王者`/`優勝`/`準優勝`(実績ラベル)、`勝利`/`決着つかず`(結果)、
+//    特性名25種。JA原文は management.js 側に1本だけ置き `_wmDictLabel` で引く。
+// ══════════════════════════════════════════════════════════════════════════════
+const MVP_RACE_TEXTS = {
+  // 連結様式。いずれも既存の同一キー(ARTICLE_COMPOSE_TEMPLATES/CHRONICLE_NARRATIVE_TEMPLATES)
+  // と同じ文字列なので、台帳では1行にマージされる(files欄に本表名が足されるだけ)。
+  join: '{a}{b}',
+  sentenceJoin: '{a}。{b}',
+  sentenceEnd: '{s}。',
+  listDot: '{a}・{b}',
+
+  // ── _topElements(): 実績ラベル。JAの並び順=表示順 ──
+  element: {
+    titleDefenses: '王座{n}度防衛',
+    holdingTitle: '王座を保持中',
+    tenchosenRunnerUp: '天頂戦準優勝',
+    ppvRunnerUp: 'PPV準優勝',
+    autumnWarWins: '4団体勝ち残り対抗戦{n}勝',
+    autumnWarRunnerUp: '4団体勝ち残り対抗戦準優勝',
+    springTagRunnerUp: '春のタッグリーグ準優勝',
+    mqRecord: '歴代最高の試合評価を更新',
+    warWins: '対抗戦{n}勝',
+    bigMatches: '名勝負{n}本',
+    domeAppearances: 'ドーム{n}戦',
+  },
+
+  // ── 値が引けなかったときのフォールバック語 ──
+  fallback: {
+    seasonAccumulation: 'シーズンの積み重ね',
+    solidRecord: '安定した戦績',
+    opponent: '相手',
+    chaser: '追走者',
+  },
+
+  // ── 特筆試合(signature match)の種別ラベルと結果句 ──
+  //   `PPV` は日本語を含まない識別子なので辞書を通さない(EN側も "PPV")。
+  sig: {
+    tagPpvFinal: 'PPV決勝',
+    tagBout: '一戦',
+    resultWon: '制した',
+    resultLost: '惜敗を喫した',
+    resultDraw: '譲り合った',
+    resultPhraseLose: '惜敗',
+  },
+
+  // ── generateNarrative(): 直近の特筆試合を添える補足センテンス ──
+  narrativeSig: '第{week}週、{opponent}との{tag}で試合評価{mq}を刻み、{result}記憶も新しい。',
+
+  // ── generateNarrative(): メイン1文(実績ベース。分岐ごとに5〜10案) ──
+  narrativeMain: {
+    titleDefense3: [
+      '王座を{defenses}度防衛し続ける現役最強。{age}歳、円熟期の貫禄が団体の屋台骨を支えている。',
+      '{defenses}度の防衛を制した王者。今期はまだ一度も首位を譲っていない、まさに王道の積み重ねだ。',
+      'ベルトを背負い続けるのは並大抵のことではない。{defenses}度の防衛——それは数字以上の重みを持つ。',
+      '{defenses}度の防衛戦をすべて凌ぎきった鉄の王者。誰がこの牙城を崩せるのかが今期の最大の問いだ。',
+      '挑戦者を{defenses}人退けてベルトを腰に巻き続ける。業界はこの王者の背中を見て歩いている。',
+      '{defenses}度防衛——もはや団体の象徴と呼ぶべき領域に達している。',
+      '防衛戦{defenses}連勝。挑戦者の列はまだ途切れず、王座の座は静かに重みを増していく。',
+    ],
+    titleDefense1: [
+      '王座を{defenses}度防衛し、看板の座を譲らない{age}歳。',
+      '戴冠後{defenses}度の防衛を成功させ、まずは盤石の滑り出しを見せている。',
+      '{defenses}度の防衛戦を制し、ベルトの色を自分のものに染め直しつつある。',
+      '防衛戦{defenses}本を凌ぎきった{age}歳の王者。次戦の挑戦者にも妥協はない。',
+      '{defenses}度の防衛が、王者としての説得力をじわりと積み上げている。',
+    ],
+    titleWinNew: [
+      '今期、王座を奪取して頂点に立った{age}歳。最初の防衛戦が次の試金石となる。',
+      '今シーズン王座戴冠。ここからの防衛ロードでこの数字をどこまで伸ばせるかが見どころだ。',
+      '奪取からまだ防衛戦を経ていない新王者。ベルトの重みをこれから知っていく{age}歳。',
+      '今期王座を掴み取り、業界の中心に名乗りを上げた{age}歳。',
+      '戴冠したばかりの{age}歳、王者としての一歩目を業界全体が見守っている。',
+    ],
+    champion: [
+      '{age}歳の現王者として、リングの中心に立ち続けている。',
+      '現王者の座を維持しながら、シーズンを戦う{age}歳。',
+      'ベルトを腰に巻いてリングに上がる{age}歳——挑戦者の影は近いか、まだ遠いか。',
+      '現王者の肩書きが、今期の戦いに重みを加えている{age}歳。',
+    ],
+    tenchosenChampion: [
+      '天頂戦を制した{age}歳。4年に一度の頂点で積み上げた勝ち星が、年間レースを大きく動かしている。',
+      '天頂戦優勝。全国の強豪を越えた一夜の連続が、{age}歳を上位戦線の中心へ押し上げた。',
+    ],
+    tenchosenRunnerUp: [
+      '天頂戦で決勝まで進んだ{age}歳。あと一歩届かなかった悔しさも、年間レースでは大きな存在感になっている。',
+      '天頂戦準優勝。4年に一度の大舞台で重ねた勝利が、{age}歳を上位へ運んできた。',
+    ],
+    autumnWarWins: [
+      '4団体勝ち残り対抗戦で{wins}勝。勝ち抜き戦で見せた働きが、{age}歳の評価を押し上げている。',
+      '4団体勝ち残り対抗戦の{wins}勝が、{age}歳を上位戦線へ引き上げた。チームの結果以上に、その勝ち星が雄弁だ。',
+    ],
+    springTagChampion: [
+      '春のタッグリーグを制した{age}歳。相棒と掴んだ頂点が、個人としての年間レースにも確かな重みを与えている。',
+      '春のタッグリーグ優勝。二人で積み上げた信頼が、{age}歳を上位へ押し上げた。',
+    ],
+    mqRecord: [
+      '歴代最高の試合評価を更新した{age}歳。勝敗を越えて刻まれた一戦が、今期の存在感を決定づけている。',
+      '歴代最高の試合評価を塗り替えた{age}歳。その一夜の熱量が、年間レースにも残り続けている。',
+    ],
+    ppvChampion: [
+      '先週のPPV決勝で{pts}pt一撃を獲得。{age}歳、上位を一気に飲み込む勢いがある。',
+      'PPVで頂点に立った勢いをそのまま年間MVPレースに持ち込んだ。観客の記憶に残る一撃が、業界の数字をひっくり返す。',
+      '決勝のリングで掴んだ{pts}pt。これが今期の物語を書き換える起点になるかもしれない。',
+      'PPV制覇で得た{pts}ptは、年間レースの計算式を一変させる衝撃だった。',
+      '満員の会場で頂点に立った{age}歳、PPVのトロフィーは今シーズン最大の重量を持つ。',
+      'PPVで頂点を掴んだ{age}歳。あの夜の決勝の余韻はまだ業界中に残っている。',
+      '決勝戦を勝ち切ってPPVを制した。{age}歳、いまや上位戦線の真ん中にいる。',
+    ],
+    ppvRunnerUp: [
+      'PPV決勝で惜しくも届かず——だが準V{runnerUp}回はそのまま{age}歳の今期を象徴する数字となった。',
+      'PPV準優勝の悔しさが、残るシーズンを駆動する燃料になりそうだ。{age}歳。',
+      '決勝のリングで一歩届かなかった{age}歳。だがその一試合分の存在感は本物だ。',
+      'PPV準V。あと一勝が遠いと感じるのは{age}歳のいまだからこそで、来年の物語はもう始まっている。',
+    ],
+    warWins4: [
+      '対抗戦で{wins}連勝の英雄。ベルトを持たずとも、勝ち星で示し続ける異端の存在。',
+      '{wins}勝という数字が、何より雄弁にこの選手の今期を語っている。',
+      '他団体相手に{wins}勝。誰も止められないと言われ始めている。',
+      '対抗戦{wins}勝。{age}歳の名前が、他団体の控室でも警戒を込めて語られるようになった。',
+      '{wins}勝という対抗戦の数字は、もはや団体を超えた業界の事件だ。',
+      '{age}歳、対抗戦{wins}勝でリング内外の評価を一気に塗り替えた。',
+      '対抗戦の{wins}勝は、時代の流れを少しだけ早めている。',
+    ],
+    warWins2: [
+      '対抗戦{wins}勝で他団体への土産を着実に積み上げた{age}歳。',
+      '{record}。{age}歳、対抗戦の主役級の活躍だ。',
+      '対抗戦の{wins}勝が、団体の看板選手としての評価を確かなものにしている。',
+    ],
+    // 上記2本目の {record}。JAは `他団体相手に3勝1敗`(敗戦0なら `他団体相手に3勝`)。
+    // **`{losses}敗` を単独キーにしない** — ui-ledger に既訳("Losses: {losses}" = 成績欄の
+    // ラベル)があり、文中へ差し込む句としては訳が噛み合わないため(§15-3の二重登録回避)。
+    // 枠ごとテンプレにしてキーを分ける(CHRONICLE_UNIT_TEXTS.rivalWinLoss と同じ作法)。
+    warRecordWins: '他団体相手に{wins}勝',
+    warRecordWinsLosses: '他団体相手に{wins}勝{losses}敗',
+    bigMatches3: [
+      '名勝負を{big}本量産する職人型。観客の心を最も動かす一人。{domeClause}業界の話題を独占し続けている。',
+      '{big}本の大試合を生み出した名勝負製造機。点数より、観客の記憶のほうが先に語っている。',
+      '{big}本の名勝負が、{age}歳の今期を業界の財産にしている。',
+      '名勝負を{big}本——勝敗ではなく試合の質で語られるタイプの{age}歳。',
+      '今シーズン、{big}夜の名勝負を作り上げた{age}歳。会場の温度はそのたびに変わった。',
+    ],
+    // 上記1本目の {domeClause}(ドーム出場が0なら空文字)。ENは先頭に半角スペースを持たない
+    // ——JAでもENでも直後に文が続く枠なので、**末尾**に区切りを持たせる(§15-2の裏返し)。
+    bigMatchesDomeClause: 'ドーム{dome}戦も含め、',
+    bigMatches1: [
+      '{big}本の名勝負を残した{age}歳。次の一夜が早くも待たれている。',
+      '名勝負を{big}本——{age}歳、試合の質で点数を稼ぐタイプの戦いぶりだ。',
+      '今期{big}本の名勝負。観客の記憶の方が、ポイントより先に名前を覚えていく。',
+    ],
+    domeAppearances: [
+      'ドーム{dome}戦のメインを張った{age}歳。大舞台への適応力で点数を伸ばしている。',
+      '今期{dome}度のドーム出場。{age}歳、看板選手として頭一つ抜けた存在感だ。',
+    ],
+    youngTop: [
+      '若くして上位{rank}に食い込んだ{age}歳、台頭の年。{head}で点を稼いでいる。',
+      '{age}歳での上位入り。新時代の予兆を、業界に刻みつつある。',
+      '{age}歳が{rank}位を走っているという事実が、すでに今期最大のニュースの一つだ。',
+      '{age}歳の若さで上位{rank}名に並ぶ——{head}を武器に時代を引き寄せている。',
+    ],
+    growthRoom: [
+      '{elemText}で{pts}pt。{age}歳、まだ伸びしろは残されている。',
+      '{elemText}を武器に上位戦線へ食い込んでいる{age}歳。',
+      '{elemText}を積み上げて{pts}pt。{age}歳の上昇余地はまだ尽きていない。',
+      '{age}歳、{elemText}を支えに上位を窺っている。先のシーズンが楽しみな立ち位置だ。',
+    ],
+    matured: [
+      '{elemText}で{pts}pt。{age}歳、円熟期の戦い方が業界に滲む。',
+      '{elemText}を武器に上位を維持する{age}歳。経験の差が点数の重みに変わっている。',
+      '{elemText}で{pts}pt。{age}歳、ベテランの計算が点数の裏側で効いている。',
+      '{age}歳。{elemText}を支えに、業界の上位戦線で安定した光を放っている。',
+    ],
+  },
+
+  // ── generateNarrative(): 末尾のキャラ色付け1文 ──
+  narrativeColor: {
+    traitRole: [
+      '{traitPhrase}の{role}として、業界に名を刻み続けている。',
+      '{traitPhrase}の{role}——その存在感が、今期の業界地図を彩っている。',
+      '{traitPhrase}の{role}が、リング内外で点数以上の物語を作っている。',
+      '{traitPhrase}の{role}、その立ち姿が今シーズンの業界の風景を変えつつある。',
+      '{traitPhrase}の{role}としての色が、ファンの記憶に確かに残っていく。',
+    ],
+    traitOnly: [
+      '{traitPhrase}が、業界の真ん中で揺るぎない存在感を放っている。',
+      '{traitPhrase}——その立ち姿は、いま業界で最も目を引くものの一つだ。',
+      '{traitPhrase}が、勝ち星の裏で確かに業界を動かしている。',
+      '{traitPhrase}としての歩みが、今期の物語に厚みを加えている。',
+    ],
+    roleOnly: [
+      '{age}歳の{role}として、シーズンを戦い抜いている。',
+      '{age}歳の{role}——その存在感は、業界の上位戦線で日に日に増している。',
+      '{age}歳の{role}として、勝ち星の積み上げを止めない。',
+      '{age}歳の{role}が、ファンの期待を背負って戦い続ける。',
+    ],
+    plain: [
+      '{age}歳の戦いぶりが、業界の上位を確かに照らしている。',
+      '{age}歳。点数の積み重ねが、今期の業界に厚みを加えている。',
+      '{age}歳。ファンが待っていた働きを、確かに見せつけている。',
+      '{age}歳——その一週一週が、業界の語り草になりつつある。',
+    ],
+  },
+
+  // ── _traitPhrase(): 特性 + 年齢を1つの名詞句へ ──
+  //   `{age}歳` 単体は ui-ledger に既訳("Age {age}" = メタチップ用)があり文脈が違うので、
+  //   ここでは句ごと1キーにして年齢を直接差し込む(§15-3の「枠込みでキーを分ける」)。
+  traitPhrase: {
+    '早熟': '早熟の{age}歳',
+    '晩成': '晩成型の{age}歳',
+    '反骨心': '反骨心を燃やす{age}歳',
+    '不屈': '不屈の{age}歳',
+    '鉄人': '鉄人と称される{age}歳',
+    '天才肌': '天才肌の{age}歳',
+    '心技体': '心技体の整った{age}歳',
+    '影の支配者': '陰の支配者と囁かれる{age}歳',
+    'リーダー気質': 'リーダー気質の{age}歳',
+    'ムードメーカー': 'ムードメーカー気質の{age}歳',
+    '忠誠心': '忠誠心の篤い{age}歳',
+    '人望': '人望厚い{age}歳',
+    '威圧感': '威圧感を放つ{age}歳',
+    '野心': '野心を秘めた{age}歳',
+    '破天荒': '破天荒な{age}歳',
+    '努力家': '努力家肌の{age}歳',
+    '闘志': '闘志あふれる{age}歳',
+    '負けず嫌い': '負けず嫌いな{age}歳',
+    '頑丈さ': '頑丈な体躯の{age}歳',
+    '華': '華のある{age}歳',
+    '番狂わせ体質': '番狂わせを呼ぶ{age}歳',
+    '適応力': '適応力に富む{age}歳',
+    '引き出し上手': '引き出しの広い{age}歳',
+    'ヒール適性': 'ヒール適性の高い{age}歳',
+    'ファンサービス': 'ファンを大切にする{age}歳',
+    'ガラスの心臓': '脆さを抱える{age}歳',
+    'ガラスの身体': '脆さを抱える{age}歳',
+    '燃えやすい': '燃えやすい性格の{age}歳',
+  },
+  // `traitPhrase` に無い特性は旧実装では `${特性名}の${age}歳` を素で組んでいた。
+  // 現行 TRAIT_DEFS のうちここに落ちるのは `名勝負製造機` と `ライバル体質` の2つだけで、
+  // どちらも実キャラが持つ頻出特性なので専用の訳を用意する(**JAは旧フォールバックと
+  // 1バイト同一**なので出力は変わらない)。それ以外は下の traitPhraseFallback。
+  traitPhraseExtra: {
+    '名勝負製造機': '名勝負製造機の{age}歳',
+    'ライバル体質': 'ライバル体質の{age}歳',
+  },
+  traitPhraseFallback: '{trait}の{age}歳',
+
+  // ── generateTagline(): 4位以下の一行寸評 ──
+  tagline: {
+    champDefense2: [
+      '王座防衛{defenses}回。団体の屋台骨。',
+      '{defenses}度の防衛で安定感。{age}歳の貫禄。',
+      '{defenses}度防衛——王者として揺るがず。',
+      '防衛戦{defenses}本を凌ぎ続ける現王者。',
+    ],
+    champDefense1: [
+      '戴冠後初防衛を成功。次戦が試金石。',
+      '初防衛をクリア。{age}歳の王者の物語が始まる。',
+    ],
+    champion: [
+      '現王者として今期を戦う{age}歳。',
+      'ベルトを巻いてリングに上がる{age}歳、防衛戦が間近。',
+    ],
+    titleWin: [
+      '今期王座奪取。{age}歳、若き王。',
+      '王座戴冠で一気に上位入り。',
+      '今シーズン、頂点を掴んだ{age}歳。',
+      '{age}歳でベルトを腰に。新時代の足音。',
+    ],
+    tenchosenChampion: [
+      '天頂戦優勝。4年に一度の頂点が、レースを動かした。',
+      '天頂戦を制覇。積み上げた勝ち星は重い。',
+    ],
+    tenchosenRunnerUp: [
+      '天頂戦準優勝。決勝までの道のりが上位へ導いた。',
+      '天頂戦で決勝進出。悔しさを次の勝利へ。',
+    ],
+    autumnWarWins: [
+      '4団体勝ち残り対抗戦{wins}勝。勝ち抜き戦の主役。',
+      '対抗戦で{wins}人抜き。団体を越えて名を上げた。',
+    ],
+    springTagChampion: [
+      '春のタッグリーグ優勝。相棒と掴んだ頂点。',
+      '春のタッグリーグ制覇。二人の信頼が点になった。',
+    ],
+    mqRecord: [
+      '歴代最高の試合評価を更新。あの一戦が残り続ける。',
+      '記録に残る名勝負。勝敗を越えた夜だった。',
+    ],
+    ppvChampion: [
+      'PPV優勝で+{pts}pt獲得。次戦で更なる飛躍を。',
+      'PPV制覇——あの一夜が点数を塗り替えた。',
+      'PPVのトロフィーを掴んだ{age}歳。',
+    ],
+    ppvRunnerUp: [
+      'PPV準優勝で+{pts}pt獲得。決勝の悔しさを次に。',
+      'PPV決勝で一歩届かず。来期への燃料となるか。',
+    ],
+    warWins4: [
+      '対抗戦{wins}連勝の英雄。勢いはまだ落ちない。',
+      '{wins}勝——他団体が警戒する名前。',
+      '対抗戦{wins}勝の異能、止まらない。',
+    ],
+    warWins2: [
+      '対抗戦{wins}勝。チームを引っ張る勝ち星。',
+      '他団体相手に{wins}勝、団体の看板働き。',
+    ],
+    bigMatches3: [
+      '名勝負を{big}本量産する職人型。',
+      '{big}本の名勝負が今期を彩る。',
+      '観客の記憶に残る試合を{big}本残した{age}歳。',
+    ],
+    bigMatches1: [
+      '大試合を{big}本作った職人気質。',
+      '名勝負を{big}本残し、次戦が待たれる。',
+    ],
+    domeAppearances: [
+      'ドーム{dome}戦に立った{age}歳。大舞台適性は折り紙付き。',
+      'ドームのメインを張った{age}歳、看板の重みを引き受ける。',
+    ],
+    young: [
+      '{age}歳で上位{rank}入り。台頭の年。',
+      '{age}歳の上位食い込み——時代が動き始めている。',
+    ],
+    falling: [
+      '序盤の勢いから失速。{role}がどこで踏み止まるか。',
+      '{role}としての真価、後半戦の踏ん張りに懸かる。',
+    ],
+    rising: [
+      '後半戦で急上昇。連勝が続けばさらに上も視野に。',
+      '勢いそのままに上位戦線へ食い込んでいる。',
+    ],
+    newEntry: [
+      '初の十傑入り。台頭の予兆。',
+      '初登場で十傑入り——{age}歳の名前を覚えておきたい。',
+    ],
+    steady: [
+      '{role}として確実な積み重ね。{pts}pt。',
+      '{age}歳、{role}の安定感で点数を伸ばす。',
+      '{role}の働きでシーズンを支えている{age}歳。',
+    ],
+  },
+
+  // ── generatePageHeadline(): 4面の主見出し ──
+  pageHeadline: {
+    empty: '年間MVPレース ── 集計待ち',
+    threeWay: [
+      '三傑が大接戦 ―― {n1}・{n2}・{n3}が拮抗',
+      '{n1}・{n2}・{n3} ―― 三つ巴の{season}が始まっている',
+      '首位争い、団子状態 ―― {n1}を{n2}・{n3}が射程に捉える',
+    ],
+    runaway: [
+      '{n1}、独走の{season} ―― 追走者は遠く',
+      '{season}は{n1}の独壇場 ―― 二位以下を大きく引き離す',
+      '{n1}が突き抜けた{season} ―― 業界の視線は首位に集中',
+    ],
+    contested: [
+      '{n1}、独走の{season} ―― だが追走者の足音が近づいている',
+      '{n1}が首位を維持 ―― {n2}の追い上げが始まった',
+      '{season}の首位は{n1} ―― 安定感の裏に、迫る背中の気配',
+    ],
+  },
+
+  // ── generatePageLead(): 4面のリード文(1文ずつ組み上げる) ──
+  pageLead: {
+    empty: 'まだMVPレースのデータが揃っていない。週を進めると更新される。',
+    head: '第{week}週時点、首位を走る{name}は{elem}で{pts}pt。',
+    secondTied: '同点で{elem}の{name}が並ぶ。',
+    secondBehind: 'そのわずか{gap}pt後ろにつけるのが、{elem}の{name}。',
+    thirdGapTied: '同点で',
+    thirdGap: 'さらに{gap}pt差で、',
+    thirdWithElem: '{gapPhrase}{elem}の{name}が虎視眈々と上位を狙う。',
+    thirdNoElem: '{gapPhrase}{name}が虎視眈々と上位を狙う。',
+    tail: '残り{remaining}週、{events} —— このレースの主人公として年末を迎えるのは、果たして誰になるのか。',
+    eventsEarly: 'PPV予選、対抗戦、ドーム興行',
+    eventsMid: '対抗戦、ドーム興行、年末の頂上決戦',
+    eventsLate: '年末の頂上決戦',
+  },
+
+  // ── generateKurodaComment(): 編集長 黒田の寸評(4面) ──
+  //   署名(「— 編集長 黒田 貫一郎」)付きで出る枠なので docs/en-kuroda-style の筆致に寄せる。
+  kuroda: [
+    'この三人がレースを引っ張っている。あと{remaining}週、誰が抜き、誰が抜かれるか。次のPPVが終われば、首位は入れ替わっているかもしれない。',
+    '頂上は{n1}。だがこのレース、まだ何も決まっちゃいない。残り{remaining}週、地殻変動はいつでも起こりうる。',
+    '{n1}が一歩前に出ている。{n2Clause}残り{remaining}週、目を離せばすぐに順位はひっくり返る。',
+    '{remaining}週で決まる年間レース。今期は数字以上に、選手の選択ひとつで大きく動く気配がある。',
+    '業界の話題は今、この上位陣に集まっている。{remaining}週後、誰が"今シーズンの顔"として残っているか——書き手としては予測したくない。',
+  ],
+  // 上記3本目の {n2Clause}(2位がいなければ空文字)。ENは §15-2 の裏返しで**末尾**に区切りを持つ。
+  kurodaSecondClause: '{n2}がぴたりと背後につけ、',
+
+  // ── _collectFactChips(): 実績チップの本文(アイコンはテンプレ外) ──
+  factChip: {
+    unifiedDefenses: '統一王座防衛{n}回',
+    unifiedCapture: '統一王座奪取',
+    unifiedChamp: '現統一王者',
+    titleDefenses: '王座防衛{n}回',
+    titleWins: '王座奪取{n}回',
+    ppvChampionN: 'PPV優勝{n}回',
+    ppvRunnerUp: 'PPV準優勝',
+    ppvRunnerUpN: 'PPV準優勝{n}回',
+    ppvParticipation: 'PPV出場{n}回',
+    tenchosenRunnerUp: '天頂戦準優勝',
+    autumnWar: '4団体勝ち残り対抗戦 {rank}{winsClause}',
+    autumnWarEntry: '出場',
+    autumnWarWinsClause: '・{n}勝',
+    springTagRunnerUp: '春のタッグリーグ準優勝',
+    mqRecord2: '歴代最高の試合評価を2件更新',
+    mqRecord: '歴代最高の試合評価を更新',
+    warRecord: '対抗戦{w}勝{l}敗',
+    dome: 'ドーム{n}戦',
+    bigMatches: '名勝負{n}本',
+  },
+
+  // ── _composeChaseLine(): 4位以下の「順位争い」だけで組む一行 ──
+  chase: {
+    rankUp: '前週{prev}位から{rank}位へ上げた',
+    rankDown: '前週{prev}位から{rank}位へ下げた',
+    rankSame: '{rank}位で足踏みしている',
+    gapUpClose: '上とは{gap}点差、射程に入っている',
+    gapUpMid: '上とは{gap}点差',
+    gapUpFar: '上まで{gap}点は開いている',
+    gapDown: '下からも{gap}点差で詰められている',
+    weeksFew: '残りは{n}週、動かせる試合は数えるほどしかない',
+    weeksSome: '残り{n}週で、あと何試合組めるかの勝負になる',
+    weeksMany: '残り{n}週、まだ順位は動く',
+  },
+
+  // ── _composeFlavorLine(): 2〜3位のカラー1行 ──
+  flavor: {
+    sigWin: [
+      '{opponent}との{tag}で試合評価{mq}を刻み、勝ち切った夜の余韻が点数に乗っている。',
+      '{opponent}を下した{tag}（試合評価{mq}）が、今期最高の手応えとして残っている。',
+      '{opponent}との{tag}で勝利、試合評価{mq}——あの夜の鼓動が今もシーズンを引っ張っている。',
+    ],
+    sigLose: [
+      '{opponent}との{tag}で試合評価{mq}を刻んだが、勝利には届かず——その悔しさが今も燃えている。',
+      '{opponent}に敗れた{tag}（試合評価{mq}）の記憶が、まだ拳の中にある。',
+      '{opponent}との{tag}は惜敗、それでも試合評価{mq}は今期屈指の試合の一つだった。',
+    ],
+    sigDraw: [
+      '{opponent}との{tag}は試合評価{mq}で決着つかず。次戦へ持ち越された。',
+      '{opponent}との{tag}は試合評価{mq}を記録するも、決着は別の機会へ。',
+    ],
+    rival: [
+      '宿敵 {rival} への意地が、点数の裏側で燃え続けている。',
+      '{rival} との因縁は、今期の戦いの底で確かに動力となっている。',
+      '{rival} への対抗心が、勝ち星と直結する戦いぶりに出ている。',
+      '{rival} の名前が、リングの内外でこの選手の燃料になっている。',
+    ],
+    breakthrough: [
+      '先週ブレイクスルー——OVRの壁を一段越えた手応えを残している。',
+      '先週、何かを掴んだ。次の試合からの動きが楽しめそうだ。',
+      '先週の練習で殻を破った気配——ここからの伸びが見もの。',
+    ],
+    careerBestMQ: [
+      '先週、自身の試合評価の最高値を更新。質で語れる戦いが増えてきた。',
+      '自身の最高評価を先週更新。試合の中身で点数を稼ぎ始めた。',
+      '試合評価の自己ベスト更新の余韻——この{age}歳がいま化けつつある。',
+    ],
+    traitRole: [
+      '{traitPhrase}の{role}、点を着実に積み上げている。',
+      '{traitPhrase}の{role}として、業界の中で位置を上げ続けている。',
+      '{traitPhrase}の{role}——その色が、点数の数字以上に語っている。',
+      '{traitPhrase}の{role}、勝ち星の重みが少しずつ変わってきた。',
+      '{traitPhrase}の{role}として、上位戦線の常連入りを窺っている。',
+    ],
+    traitOnly: [
+      '{traitPhrase}が、業界の中で確かな存在感を放っている。',
+      '{traitPhrase}——その立ち姿が今期の業界を彩っている。',
+      '{traitPhrase}が、今期のシーズンに独自の色を加えている。',
+    ],
+    roleAge: [
+      '{age}歳の{role}として、シーズンを地道に積み上げている。',
+      '{age}歳の{role}が、勝ち星の積み重ねで点数を伸ばしている。',
+      '{age}歳、{role}としての働きで上位を窺う。',
+    ],
+    ageOnly: [
+      '{age}歳、点数の積み重ねでシーズンを戦い抜いている。',
+      '{age}歳の戦いぶりが、業界の中で着実に評価を上げている。',
+      '{age}歳。シーズンを通した安定感で、勝ち星をまとめている。',
+    ],
+  },
+
+  // ── generateRichBlocks(): 1〜3位カードの補足見出し行 ──
+  richHeadline: [
+    '第{week}週 {opponent} との{tag}で試合評価{mq}を記録（{result}）。',
+    '{week}週、{opponent}との{tag}——試合評価{mq}、結果は{result}。',
+    '{opponent}との{tag}（第{week}週、{result}）で試合評価{mq}を刻んだ。',
+  ],
+};
+
+
+// ══════════════════════════════════════════════════════════════════════════════
 //  i18n Stage B P7-16: Engine.newspaper に残っていた直書きJAの移設先(specs §34-7)
 //  ──────────────────────────────────────────────────────────────────────────
 //  移設元は management.js `Engine.newspaper` の関数本体に直書きされた見出し・本文の
@@ -32244,6 +32766,7 @@ if (typeof module !== 'undefined' && module.exports) {
     TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES,
     PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,
     NEWS_CONTENDER_TEXTS, NEWS_JUNIOR_TOURNAMENT_TEXTS, NEWS_AI_ORG_TEXTS, NEWS_STAMP_SUFFIX_TEXTS,
+    MVP_RACE_TEXTS,
     CHRONICLE_QUOTE_CLAUSES, CHRONICLE_QUOTE_TEMPLATES_V2, CHRONICLE_QUOTE_TEMPLATES_V1,
     CHRONICLE_QUOTE_TEMPLATES_DUAL, CHRONICLE_NARRATIVE_TEMPLATES, CHRONICLE_CHAPTER_TEMPLATES,
     PROLOGUE_TEMPLATES, CHRONICLE_UNIT_TEXTS,

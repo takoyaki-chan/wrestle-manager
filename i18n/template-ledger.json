@@ -430,10 +430,70 @@
     "hasProperNoun": true
   },
   {
+    "key": "4団体勝ち残り対抗戦 {rank}{winsClause}",
+    "en": "Autumn Gauntlet War: {rank}{winsClause}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦{n}勝",
+    "en": "{n}-win Autumn Gauntlet War",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦{wins}勝。勝ち抜き戦の主役。",
+    "en": "{wins} taken in the Autumn Gauntlet War. The lead role in the survival format.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "4団体勝ち残り対抗戦、組み合わせ決定",
     "en": "Autumn Gauntlet War brackets set",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦で{wins}勝。勝ち抜き戦で見せた働きが、{age}歳の評価を押し上げている。",
+    "en": "{wins} taken in the Autumn Gauntlet War. What she did in the survival format has pushed her standing up at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦の{wins}勝が、{age}歳を上位戦線へ引き上げた。チームの結果以上に、その勝ち星が雄弁だ。",
+    "en": "Those {wins} in the Autumn Gauntlet War lifted her, at {age}, into the front-runners. More than the team result, those results speak.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "4団体勝ち残り対抗戦準優勝",
+    "en": "Autumn Gauntlet War runner-up",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -1191,6 +1251,176 @@
     "hasProperNoun": false
   },
   {
+    "key": "PPVで頂点に立った勢いをそのまま年間MVPレースに持ち込んだ。観客の記憶に残る一撃が、業界の数字をひっくり返す。",
+    "en": "She carried the pace of standing on top at PPV straight into the annual MVP race. One night the crowd keeps, and the numbers in this business turn over.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPVで頂点を掴んだ{age}歳。あの夜の決勝の余韻はまだ業界中に残っている。",
+    "en": "She took the top at PPV at {age}. What was left of that final still hangs over the business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPVのトロフィーを掴んだ{age}歳。",
+    "en": "The PPV trophy in her hands at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV予選、対抗戦、ドーム興行",
+    "en": "PPV qualifiers, interpromotional matches, and Dome shows",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "PPV優勝{n}回",
+    "en": "PPV winner ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV優勝で+{pts}pt獲得。次戦で更なる飛躍を。",
+    "en": "PPV win, +{pts} pts. Further to climb in the next one.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV出場{n}回",
+    "en": "PPV appearance ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV制覇——あの一夜が点数を塗り替えた。",
+    "en": "PPV taken — that one night repainted the points.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV制覇で得た{pts}ptは、年間レースの計算式を一変させる衝撃だった。",
+    "en": "The {pts} pts from the PPV win changed the arithmetic of the annual race outright.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV決勝",
+    "en": "PPV final",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV決勝で一歩届かず。来期への燃料となるか。",
+    "en": "One step short in the PPV final. Fuel for next season, perhaps.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV決勝で惜しくも届かず——だが準V{runnerUp}回はそのまま{age}歳の今期を象徴する数字となった。",
+    "en": "One step short in the PPV final — and a {runnerUp}-time runner-up finish became the number that stands for her year at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV準V。あと一勝が遠いと感じるのは{age}歳のいまだからこそで、来年の物語はもう始まっている。",
+    "en": "PPV runner-up. One more win feels far away precisely because she is {age} now, and next year's story has already started.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV準優勝",
+    "en": "PPV runner-up",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV準優勝{n}回",
+    "en": "PPV runner-up ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV準優勝で+{pts}pt獲得。決勝の悔しさを次に。",
+    "en": "PPV runner-up, +{pts} pts. The sting of the final goes forward.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "PPV準優勝の悔しさが、残るシーズンを駆動する燃料になりそうだ。{age}歳。",
+    "en": "The sting of PPV runner-up looks like the fuel for the rest of her season. She is {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "PPV連覇の記憶は、{orgName}の伝説として語り継がれる。",
     "en": "The back-to-back PPV wins have been handed down as part of the {orgName} story.",
     "files": [
@@ -1311,10 +1541,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳——その一週一週が、業界の語り草になりつつある。",
+    "en": "Age {age} — week by week, she is turning into something the business talks about.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳——勝ち方を覚え始めた頃合いだ。{name}の試合は、見るたびに上達が分かる",
     "en": "Age {age} — about when they start learning how to win. Every time I watch {name} the improvement is visible.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳、{elemText}を支えに上位を窺っている。先のシーズンが楽しみな立ち位置だ。",
+    "en": "At {age}, {elemText} has her looking up the board. A position that makes the seasons ahead worth waiting for.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳、{role}としての働きで上位を窺う。",
+    "en": "Age {age}, and {role} work has her looking up the board.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳、{role}の安定感で点数を伸ばす。",
+    "en": "At {age}, she grows her points on {role} consistency.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1336,6 +1606,36 @@
     "en": "Age {age}, with the {seasons}-season tenure now closed. In a week lined with bigger announcements, it arrived as a short notice.",
     "files": [
       "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳、対抗戦{wins}勝でリング内外の評価を一気に塗り替えた。",
+    "en": "At {age}, {wins} interpromotional results have repainted how she is rated in the ring and out of it.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳、点数の積み重ねでシーズンを戦い抜いている。",
+    "en": "At {age}, she is working through the season on points stacked one at a time.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。{elemText}を支えに、業界の上位戦線で安定した光を放っている。",
+    "en": "She is {age}. On {elemText}, she gives off a steady light among the front-runners.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1404,6 +1704,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳。シーズンを通した安定感で、勝ち星をまとめている。",
+    "en": "She is {age}. Steady across the season, and the wins add up.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。ファンが待っていた働きを、確かに見せつけている。",
+    "en": "She is {age}, and she is showing the fans exactly the work they were waiting for.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳。仕上がる前に届いた戴冠で、{styleJa}の型もまだ手を入れている途中に見える。",
     "en": "Age {age}. The title arrived before she was finished, and her {styleJa} form still looks like work in progress.",
     "files": [
@@ -1441,6 +1761,36 @@
     "en": "Age {age}. She was rarely put in the loud spots, but whether or not you have one wrestler you can trust with the middle of a show changes how the night runs.",
     "files": [
       "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳。点数の積み重ねが、今期の業界に厚みを加えている。",
+    "en": "She is {age}. The points she stacks add thickness to the business this season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳が{rank}位を走っているという事実が、すでに今期最大のニュースの一つだ。",
+    "en": "That someone of {age} is running at number {rank} is already one of the biggest stories of the season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳での上位入り。新時代の予兆を、業界に刻みつつある。",
+    "en": "A high finish at {age}. She is marking the business with the first sign of a new era.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1486,6 +1836,26 @@
       "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳でベルトを腰に。新時代の足音。",
+    "en": "The belt on her waist at {age}. Footsteps of a new era.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳で上位{rank}入り。台頭の年。",
+    "en": "Into the top {rank} at {age}. The year she arrived.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -1570,6 +1940,66 @@
     "hasProperNoun": false
   },
   {
+    "key": "{age}歳の{role}——その存在感は、業界の上位戦線で日に日に増している。",
+    "en": "{role}, age {age} — her presence among the front-runners grows by the week.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の{role}が、ファンの期待を背負って戦い続ける。",
+    "en": "{role}, age {age}, carrying what the fans expect of her into every match.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の{role}が、勝ち星の積み重ねで点数を伸ばしている。",
+    "en": "{role}, age {age}, growing her points on a pile of wins.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の{role}として、シーズンを地道に積み上げている。",
+    "en": "{role}, age {age}, building the season up quietly.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の{role}として、シーズンを戦い抜いている。",
+    "en": "{role}, age {age} — she has worked her way through the season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の{role}として、勝ち星の積み上げを止めない。",
+    "en": "{role} at age {age}, and the wins keep stacking.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳の{rookieName}は、{styleJa}としての基礎を評価されての指名。{h}cmの体をどこまで作れるかが最初の課題になる。",
     "en": "{rookieName}, age {age}, was picked on the {styleJa} fundamentals. How much she can build onto her {h}cm frame is the first job.",
     "files": [
@@ -1594,6 +2024,56 @@
     "en": "{name}, a veteran at {age}. She should be watched with this in mind: one match weighs differently for her than for anyone else.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の上位食い込み——時代が動き始めている。",
+    "en": "A high finish at {age} — the era has started moving.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の戦いぶりが、業界の上位を確かに照らしている。",
+    "en": "The way she works at {age} throws real light on the top of the business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の戦いぶりが、業界の中で着実に評価を上げている。",
+    "en": "The way she works at {age} keeps raising her standing in the business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の現王者として、リングの中心に立ち続けている。",
+    "en": "The reigning champion at {age}, still standing in the middle of the ring.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{age}歳の若さで上位{rank}名に並ぶ——{head}を武器に時代を引き寄せている。",
+    "en": "Standing among the top {rank} at just {age} — {head} is how she is pulling the era toward her.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -1676,9 +2156,10 @@
       "ARTICLE_COMPOSE_TEMPLATES",
       "AUTUMN_WAR_NEWS_PARTS",
       "CHRONICLE_NARRATIVE_TEMPLATES",
+      "MVP_RACE_TEXTS",
       "PPV_SUMMIT_STORY_TEMPLATES"
     ],
-    "count": 4,
+    "count": 5,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -1697,9 +2178,10 @@
     "key": "{a}。{b}",
     "en": "{a}. {b}",
     "files": [
-      "ARTICLE_COMPOSE_TEMPLATES"
+      "ARTICLE_COMPOSE_TEMPLATES",
+      "MVP_RACE_TEXTS"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -1718,10 +2200,11 @@
     "en": "{a}, {b}",
     "files": [
       "CHRONICLE_NARRATIVE_TEMPLATES",
+      "MVP_RACE_TEXTS",
       "NEWS_AI_ORG_TEXTS",
       "NEWS_CONTENDER_TEXTS"
     ],
-    "count": 3,
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -1850,6 +2333,46 @@
     "en": "Best bout awards: {bestMatchCount} — she had the gift for turning a match into art.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{big}本の名勝負が、{age}歳の今期を業界の財産にしている。",
+    "en": "{big} classics have made her year at {age} an asset to the business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{big}本の名勝負が今期を彩る。",
+    "en": "{big} classics color her season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{big}本の名勝負を残した{age}歳。次の一夜が早くも待たれている。",
+    "en": "At {age}, she has a {big}-classic season behind her. The next night is already awaited.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{big}本の大試合を生み出した名勝負製造機。点数より、観客の記憶のほうが先に語っている。",
+    "en": "A match maker who produced {big} big ones. The crowd's memory speaks before the points do.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2466,6 +2989,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "{defenses}度の防衛が、王者としての説得力をじわりと積み上げている。",
+    "en": "A {defenses}-defense run is slowly building the case for her as champion.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度の防衛で安定感。{age}歳の貫禄。",
+    "en": "The {defenses}-defense run, and the poise that comes at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度の防衛を制した王者。今期はまだ一度も首位を譲っていない、まさに王道の積み重ねだ。",
+    "en": "A champion who has come through defense number {defenses}. She has not given up the top spot once this season — the orthodox way, laid down piece by piece.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{defenses}度の防衛を積み重ねた王座は、彼女の代名詞となった。",
     "en": "The belt onto which she built a {defenses}-defense reign became a byword for her.",
     "files": [
@@ -2486,10 +3039,110 @@
     "hasProperNoun": false
   },
   {
+    "key": "{defenses}度の防衛戦をすべて凌ぎきった鉄の王者。誰がこの牙城を崩せるのかが今期の最大の問いだ。",
+    "en": "An iron champion who has survived every night of the {defenses}-defense run. Who can pull that fortress down is the biggest question of the season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度の防衛戦を制し、ベルトの色を自分のものに染め直しつつある。",
+    "en": "Through a {defenses}-defense run, she is repainting the belt in her own color.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{defenses}度防衛——{surname}が王座にいる時間が、この世代の輪郭を形作った。",
     "en": "A {defenses}-defense run — the time {surname} spent holding the title drew the outline of this generation.",
     "files": [
       "CHRONICLE_QUOTE_TEMPLATES_V1"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度防衛——もはや団体の象徴と呼ぶべき領域に達している。",
+    "en": "Defense number {defenses} — she has reached the point where she simply is the promotion.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{defenses}度防衛——王者として揺るがず。",
+    "en": "Defense number {defenses} — unshaken as champion.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{elemText}で{pts}pt。{age}歳、まだ伸びしろは残されている。",
+    "en": "{pts} pts — {elemText}. At {age}, there is room left in her.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{elemText}で{pts}pt。{age}歳、ベテランの計算が点数の裏側で効いている。",
+    "en": "{pts} pts — {elemText}. At {age}, a veteran's arithmetic is working behind the numbers.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{elemText}で{pts}pt。{age}歳、円熟期の戦い方が業界に滲む。",
+    "en": "{pts} pts — {elemText}. At {age}, the way a wrestler works in her prime seeps through.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{elemText}を武器に上位を維持する{age}歳。経験の差が点数の重みに変わっている。",
+    "en": "At {age}, {elemText} keeps her near the top. The gap in experience turns into the weight of the points.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{elemText}を武器に上位戦線へ食い込んでいる{age}歳。",
+    "en": "At {age}, she has cut into the front-runners on {elemText}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{elemText}を積み上げて{pts}pt。{age}歳の上昇余地はまだ尽きていない。",
+    "en": "{pts} pts stacked up from {elemText}. At {age}, the room to climb is not used up.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2680,6 +3333,26 @@
     "en": "{name} has left {fromOrg} for {toOrg}, the promotion her old one has history with. If she meets her old side in a coming interpromotional match, that is the one everybody will watch.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{gapPhrase}{elem}の{name}が虎視眈々と上位を狙う。",
+    "en": "{gapPhrase}{name} — {elem} — is watching the top of the board.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{gapPhrase}{name}が虎視眈々と上位を狙う。",
+    "en": "{gapPhrase}{name} is watching the top of the board.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3250,6 +3923,76 @@
     "en": "The MVP column reads {mvpCount}, which is the proof that she was the era itself.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n1}、独走の{season} ―― だが追走者の足音が近づいている",
+    "en": "{n1} out front in {season} — but footsteps close in",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n1}、独走の{season} ―― 追走者は遠く",
+    "en": "{n1} runs away with {season} — chasers far back",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n1}が一歩前に出ている。{n2Clause}残り{remaining}週、目を離せばすぐに順位はひっくり返る。",
+    "en": "{n1} is a step out front. {n2Clause}Over the {remaining}-week run-in, look away for a moment and the order flips.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n1}が突き抜けた{season} ―― 業界の視線は首位に集中",
+    "en": "{n1} breaks clear in {season} — all eyes on the lead",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n1}が首位を維持 ―― {n2}の追い上げが始まった",
+    "en": "{n1} holds the lead — {n2} starts the chase",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n1}・{n2}・{n3} ―― 三つ巴の{season}が始まっている",
+    "en": "{n1}, {n2}, and {n3} — three-way {season} underway",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n2}がぴたりと背後につけ、",
+    "en": "{n2} is right on her shoulder. ",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5626,6 +6369,96 @@
     "hasProperNoun": false
   },
   {
+    "key": "{opponent}との{tag}で勝利、試合評価{mq}——あの夜の鼓動が今もシーズンを引っ張っている。",
+    "en": "A win over {opponent} in that {tag}, rated {mq} — the beat of that night is still pulling her season along.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}との{tag}で試合評価{mq}を刻み、勝ち切った夜の余韻が点数に乗っている。",
+    "en": "The {tag} with {opponent} came in rated {mq}, and she closed it out. What was left of that night rides on her points.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}との{tag}で試合評価{mq}を刻んだが、勝利には届かず——その悔しさが今も燃えている。",
+    "en": "The {tag} with {opponent} came in rated {mq} with no win at the end of it, and that still burns.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}との{tag}は惜敗、それでも試合評価{mq}は今期屈指の試合の一つだった。",
+    "en": "A narrow loss to {opponent} in that {tag}, and rated {mq} it was still one of the best matches of the season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}との{tag}は試合評価{mq}で決着つかず。次戦へ持ち越された。",
+    "en": "The {tag} with {opponent} was rated {mq} and finished without a decision. It carries over.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}との{tag}は試合評価{mq}を記録するも、決着は別の機会へ。",
+    "en": "The {tag} with {opponent} came in rated {mq}, and the decision waits for another day.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}との{tag}（第{week}週、{result}）で試合評価{mq}を刻んだ。",
+    "en": "The {tag} with {opponent} (week {week}, {result}) came in rated {mq}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}に敗れた{tag}（試合評価{mq}）の記憶が、まだ拳の中にある。",
+    "en": "The memory of the {tag} she lost to {opponent} (rated {mq}) is still in her hands.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{opponent}を下した{tag}（試合評価{mq}）が、今期最高の手応えとして残っている。",
+    "en": "The {tag} where she beat {opponent} (rated {mq}) stands as the best she has felt all season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org2}の壁！{name1}は{name2}を越えられるか！",
     "en": "The {org2} wall! Can {name1} climb past {name2}?",
     "files": [
@@ -7666,10 +8499,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "{rank}位で足踏みしている",
+    "en": "Stuck at {rank}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{record}。{age}歳、対抗戦の主役級の活躍だ。",
+    "en": "{record}. At {age}, that is lead-role work in interpromotional matches.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{reigns}度目のベルトだ。この団体の王座の歴史に、同じ名前がまた並ぶ。",
     "en": "Reign number {reigns}. The same name goes into this promotion's title history again.",
     "files": [
       "CHAMPION_CHANGE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{remaining}週で決まる年間レース。今期は数字以上に、選手の選択ひとつで大きく動く気配がある。",
+    "en": "An annual race decided over the {remaining}-week run-in. This season it looks like one wrestler's choice moves things more than the numbers do.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -8406,6 +9269,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "{rival} との因縁は、今期の戦いの底で確かに動力となっている。",
+    "en": "What runs between her and {rival} is the engine under this season's work.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival} の名前が、リングの内外でこの選手の燃料になっている。",
+    "en": "The name {rival} is what fuels her, in the ring and out of it.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{rival} への対抗心が、勝ち星と直結する戦いぶりに出ている。",
+    "en": "Her drive against {rival} shows up directly in the results.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{rival}との一戦が、この章の{surname}に色を残した。",
     "en": "The one match against {rival} left its color on {surname}'s chapter.",
     "files": [
@@ -8480,6 +9373,36 @@
     "en": " The wars with {rival} became the story the generation tells.",
     "files": [
       "CHRONICLE_QUOTE_CLAUSES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{role}としての真価、後半戦の踏ん張りに懸かる。",
+    "en": "What the {role} is really worth rides on the second half.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{role}として確実な積み重ね。{pts}pt。",
+    "en": "Steady work in the {role} spot. {pts} pts.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{role}の働きでシーズンを支えている{age}歳。",
+    "en": "At {age}, she holds the season up with {role} work.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -8606,6 +9529,26 @@
       "UNIFIED_TITLE_TEMPLATES"
     ],
     "count": 4,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{season}の首位は{n1} ―― 安定感の裏に、迫る背中の気配",
+    "en": "{n1} tops {season} — steady, with a back closing in behind",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{season}は{n1}の独壇場 ―― 二位以下を大きく引き離す",
+    "en": "{season} belongs to {n1} — daylight back to second",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -9755,9 +10698,10 @@
     "key": "{s}。",
     "en": "{s}.",
     "files": [
-      "ARTICLE_COMPOSE_TEMPLATES"
+      "ARTICLE_COMPOSE_TEMPLATES",
+      "MVP_RACE_TEXTS"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -9902,6 +10846,186 @@
     "hasProperNoun": false
   },
   {
+    "key": "{traitPhrase}——その立ち姿が今期の業界を彩っている。",
+    "en": "The way {traitPhrase} carries herself colors the business this season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}——その立ち姿は、いま業界で最も目を引くものの一つだ。",
+    "en": "There are few figures in the business right now that catch the eye like {traitPhrase}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}が、今期のシーズンに独自の色を加えている。",
+    "en": "A color all her own comes from {traitPhrase} this season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}が、勝ち星の裏で確かに業界を動かしている。",
+    "en": "Behind the results, the business is being moved by {traitPhrase}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}が、業界の中で確かな存在感を放っている。",
+    "en": "There is a real presence about {traitPhrase} inside this business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}が、業界の真ん中で揺るぎない存在感を放っている。",
+    "en": "Right in the middle of the business stands {traitPhrase}, and she does not move.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}としての歩みが、今期の物語に厚みを加えている。",
+    "en": "The road walked by {traitPhrase} adds thickness to the story of this season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}——その存在感が、今期の業界地図を彩っている。",
+    "en": "The map of the business this season is colored by {traitPhrase} {role}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}——その色が、点数の数字以上に語っている。",
+    "en": "The color of {traitPhrase} {role} says more than the points do.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}、その立ち姿が今シーズンの業界の風景を変えつつある。",
+    "en": "The way {traitPhrase} {role} carries herself is changing the scenery of the business this season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}、勝ち星の重みが少しずつ変わってきた。",
+    "en": "For {traitPhrase} {role}, the weight of a win has been changing bit by bit.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}、点を着実に積み上げている。",
+    "en": "The points keep stacking for {traitPhrase} {role}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}が、リング内外で点数以上の物語を作っている。",
+    "en": "In the ring and out of it, {traitPhrase} {role} is making a story worth more than the points.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}として、上位戦線の常連入りを窺っている。",
+    "en": "As {traitPhrase} {role}, she is looking to become a regular among the front-runners.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}として、業界に名を刻み続けている。",
+    "en": "As {traitPhrase} {role}, she keeps cutting her name into the business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}として、業界の中で位置を上げ続けている。",
+    "en": "As {traitPhrase} {role}, she keeps moving up inside the business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{traitPhrase}の{role}としての色が、ファンの記憶に確かに残っていく。",
+    "en": "Her color as {traitPhrase} {role} stays in the memory of the fans.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{trait}の{age}歳",
+    "en": "a {trait}-driven {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{turns}ターンに及ぶ一方的な展開で、{phase}に{winner}が{finish}で{loser}を下した。",
     "en": "A one-sided {turns}-turn match, and {winner} finished {loser}: {finish} ({phase}).",
     "files": [
@@ -10006,6 +11130,16 @@
     "en": "{venue}, {attendance} in the building. {totalMatches} on the card at an average of {avgMQ} — a deep card at {showName}",
     "files": [
       "NEWSPAPER_SUB_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{week}週、{opponent}との{tag}——試合評価{mq}、結果は{result}。",
+    "en": "Week {week}, {tag} with {opponent} — rated {mq}, result {result}.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -10316,6 +11450,36 @@
     "en": "{wins}-{losses}. The one thing they have got good at is getting used to losing.",
     "files": [
       "KURODA_WAR_RECORD"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{wins}勝——他団体が警戒する名前。",
+    "en": "{wins} of them — a name other promotions watch for.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{wins}勝という対抗戦の数字は、もはや団体を超えた業界の事件だ。",
+    "en": "An interpromotional figure of {wins} is past being one promotion's business. It belongs to the industry.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{wins}勝という数字が、何より雄弁にこの選手の今期を語っている。",
+    "en": "A number like {wins} speaks for her season better than anything else could.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -14292,6 +15456,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "この三人がレースを引っ張っている。あと{remaining}週、誰が抜き、誰が抜かれるか。次のPPVが終われば、首位は入れ替わっているかもしれない。",
+    "en": "These three are pulling the race along. Over the {remaining}-week run-in, who passes who is anyone's guess. Once the next PPV is done, the name on top might not be the same one.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "この世代の物語は、まだ始まったばかりだ。",
     "en": "The story of this generation has only just started.",
     "files": [
@@ -14652,6 +15826,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "さらに{gap}pt差で、",
+    "en": "Another {gap} adrift, ",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "しかし{name}（{org}）の勢いも侮れない。",
     "en": "The momentum {name} ({org}) is carrying is not to be waved off, though.",
     "files": [
@@ -14699,6 +15883,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "そのわずか{gap}pt後ろにつけるのが、{elem}の{name}。",
+    "en": "Just {gap} adrift sits {name} — {elem}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -15176,6 +16370,16 @@
     "en": "Also, ",
     "files": [
       "ORG_COMPARE_SUMMARY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "まだMVPレースのデータが揃っていない。週を進めると更新される。",
+    "en": "There is not enough data for the MVP race yet. It updates as the weeks advance.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15777,6 +16981,16 @@
     "en": "A former sprinter who took an Olympic silver in short-track speed skating. Carrying the explosive acceleration the ice gave her and a nerve that never flinched from contact, she moved into women's pro wrestling after retiring and defined an era there. Having stood at the top of two worlds, she reads sleeping speed in a wrestler more accurately than anyone and knows how to bring it out. Speed comes down to being willing to stake everything on the first step: that is her line, and people follow it.",
     "files": [
       "ALL_COACHES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "シーズンの積み重ね",
+    "en": "steady work across the season",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16503,6 +17717,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "ドーム{dome}戦に立った{age}歳。大舞台適性は折り紙付き。",
+    "en": "At {age}, a {dome}-show Dome season. The big stage suits her, no question.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム{dome}戦のメインを張った{age}歳。大舞台への適応力で点数を伸ばしている。",
+    "en": "At {age}, she topped {dome} Dome shows. She grows her points on how she handles the big stage.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム{dome}戦も含め、",
+    "en": "Dome shows included, {dome} of them. ",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドーム{n}戦",
+    "en": "Dome shows ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "ドームのメインを張った{age}歳、看板の重みを引き受ける。",
+    "en": "She topped a Dome card at {age}, and takes on what the marquee weighs.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
     "key": "ハニートラップでオヤジ狩りをしていたギャル。手段を選ばないダーティなブロウラー。",
     "en": "A gyaru who used to lure older men and rob them. A dirty brawler with no scruples about method.",
     "files": [
@@ -16643,6 +17907,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ヒール適性の高い{age}歳",
+    "en": "a natural-heel {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "ピーク OVR {peakOVR} に達した{surname}は、章の主軸として試合を組み立てた。",
     "en": "Reaching a peak Overall of {peakOVR}, {surname} built matches as the chapter's main axis.",
     "files": [
@@ -16740,6 +18014,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ファンを大切にする{age}歳",
+    "en": "a fan-first {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -16953,6 +18237,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "ベルトを巻いてリングに上がる{age}歳、防衛戦が間近。",
+    "en": "Out with the belt on at {age}, and a defense close at hand.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "ベルトを抱えて去った日から、戻れない関係",
     "en": "From the day she left with the belt, no way back",
     "files": [
@@ -16960,6 +18254,26 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベルトを背負い続けるのは並大抵のことではない。{defenses}度の防衛——それは数字以上の重みを持つ。",
+    "en": "Carrying the belt this long is no ordinary thing. Defense number {defenses} — that weighs more than the number says.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ベルトを腰に巻いてリングに上がる{age}歳——挑戦者の影は近いか、まだ遠いか。",
+    "en": "At {age} she walks out with the belt on — the shadow of a challenger, close or still far off.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -17033,6 +18347,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ムードメーカー気質の{age}歳",
+    "en": "a mood-setting {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "メインを食った。この試合が一番面白かったという声も多いはず",
     "en": "It ate the main event. Plenty of people will say it was the best thing on the card",
     "files": [
@@ -17103,6 +18427,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ライバル体質の{age}歳",
+    "en": "a rivalry-prone {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "リングで殴り合い、控室で笑い合う",
     "en": "Hitting each other in the ring, laughing in the locker room",
     "files": [
@@ -17167,6 +18501,16 @@
     "en": "{factionName} of {org}, which had been without a leader, starts again with {newLeaderName} at its center. The group carried a lot of {oldLeaderName}'s color, so the way it gets led will change of itself. Change the head and the balance in the locker room always moves.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リーダー気質の{age}歳",
+    "en": "a born-leader {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -17293,6 +18637,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "・{n}勝",
+    "en": " · {n} won",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "一つの時代が幕を下ろす。本紙としては感慨深いと書いておく",
     "en": "An era comes down. This paper will put it in print: this one is felt.",
     "files": [
@@ -17357,6 +18711,16 @@
     "en": "One-promotion era. Now I want to see how everyone else answers it",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "一戦",
+    "en": "bout",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -17473,6 +18837,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "三傑が大接戦 ―― {n1}・{n2}・{n3}が拮抗",
+    "en": "Top three in a dead heat — {n1}, {n2}, and {n3} level",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "三年連続でトーナメントを制した——それは強さではなく、支配だった。",
     "en": "She took the tournament three years running — that is not strength, it is control.",
     "files": [
@@ -17543,6 +18917,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "上とは{gap}点差",
+    "en": "A gap of {gap} up to the one above",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "上とは{gap}点差、射程に入っている",
+    "en": "A {gap}-point gap to the one above, well within range",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "上にいる景色は最高。もっと上を目指そう！",
     "en": "The view from up here is the best. Let's aim higher!",
     "files": [
@@ -17570,6 +18964,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "上まで{gap}点は開いている",
+    "en": "Open ground of {gap} up to the one above",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -17603,6 +19007,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "下からも{gap}点差で詰められている",
+    "en": "Only a {gap}-point cushion from below",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "下剋上——{challengerName}が「{factionName}」の頭を獲った",
     "en": "Coup — {challengerName} takes the head of {factionName}",
     "files": [
@@ -17620,6 +19034,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "不屈の{age}歳",
+    "en": "an unbending {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -18213,6 +19637,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "人望厚い{age}歳",
+    "en": "a widely respected {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "人気{peakPop}を記録したこの選手は、{org}にとってチケットそのものだった。",
     "en": "At Popularity {peakPop}, she was the ticket itself for {org}.",
     "files": [
@@ -18333,6 +19767,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "今シーズン、{big}夜の名勝負を作り上げた{age}歳。会場の温度はそのたびに変わった。",
+    "en": "At {age}, she built {big} nights of classics this season. The temperature in the hall changed every time.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今シーズン、頂点を掴んだ{age}歳。",
+    "en": "She took the top this season, at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今シーズン王座戴冠。ここからの防衛ロードでこの数字をどこまで伸ばせるかが見どころだ。",
+    "en": "Crowned this season. How far she can push the number on the defense road from here is the thing to watch.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "今季のドラフトで{org}は{count}名を指名した。{names}の顔ぶれが、そのまま来季の若手層になる。",
     "en": "{org} called {count} in this season's draft. The intake — {names} — is next season's young division as it stands.",
     "files": [
@@ -18443,6 +19907,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "今期{big}本の名勝負。観客の記憶の方が、ポイントより先に名前を覚えていく。",
+    "en": "A {big}-classic season so far. The crowd's memory learns her name before the points do.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今期{dome}度のドーム出場。{age}歳、看板選手として頭一つ抜けた存在感だ。",
+    "en": "{dome} Dome appearances this season. At {age}, she stands a head above as a marquee name.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "今期、王座を奪取して頂点に立った{age}歳。最初の防衛戦が次の試金石となる。",
+    "en": "At {age}, she took the belt this season and stands on top. The first defense is the next test.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今期王座を掴み取り、業界の中心に名乗りを上げた{age}歳。",
+    "en": "At {age}, she took the belt this season and put her name in the middle of the business.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今期王座奪取。{age}歳、若き王。",
+    "en": "Took the belt this season. A young champion at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "今興行のベストバウトはこの試合かもしれない",
     "en": "This may be the best bout on tonight's show",
     "files": [
@@ -18510,6 +20024,46 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "他団体相手に{wins}勝",
+    "en": "She has taken {wins} off other promotions",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "他団体相手に{wins}勝{losses}敗",
+    "en": "She is {wins}-{losses} against other promotions",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "他団体相手に{wins}勝、団体の看板働き。",
+    "en": "{wins} taken off other promotions. Marquee work for the promotion.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "他団体相手に{wins}勝。誰も止められないと言われ始めている。",
+    "en": "{wins} taken off other promotions. People have started saying nobody stops her.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -19223,6 +20777,46 @@
     "hasProperNoun": true
   },
   {
+    "key": "先週、何かを掴んだ。次の試合からの動きが楽しめそうだ。",
+    "en": "Last week she got hold of something. What she does from the next match should be worth watching.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "先週、自身の試合評価の最高値を更新。質で語れる戦いが増えてきた。",
+    "en": "She set a personal best rating last week. More of her matches can be talked about on quality now.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "先週のPPV決勝で{pts}pt一撃を獲得。{age}歳、上位を一気に飲み込む勢いがある。",
+    "en": "Last week's PPV final brought {pts} pts in one stroke. At {age}, she has the pace to swallow the field whole.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "先週の練習で殻を破った気配——ここからの伸びが見もの。",
+    "en": "Something cracked open in training last week — how far she goes from here is worth the ticket.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "先週の試合でのハイライトが拡散されて、{name}のSNSフォロワー数が急増している。知名度が着実に上がってきた。",
     "en": "A clip from last week's match went around, and {name}'s follower count has jumped. Her name is spreading steadily.",
     "files": [
@@ -19231,6 +20825,16 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "先週ブレイクスルー——OVRの壁を一段越えた手応えを残している。",
+    "en": "A breakthrough last week — she came through a wall in Overall and she knows it.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
   },
   {
     "key": "入居2年目ながら高い実力を示す若手の実力者。鋭い打撃を得意とする早熟型。若さに似合わぬ冷静な試合運びと確かな打撃技術で、短期間でトップクラスの実力を身につけた。早熟型ゆえに伸びしろが懸念されるが、現時点の実力は侮れない。",
@@ -19563,6 +21167,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "出場",
+    "en": "entrant",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "初の十傑入り。台頭の予兆。",
+    "en": "First time in the top ten. A sign of what is coming.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "初めての恋人に浮かれる素直で明るい女子高生。技術面はまだ発展途上だが、パワーとスピードのバランスが良い。",
     "en": "A cheerful, straightforward high schooler, giddy over her first boyfriend. The technique is still developing; power and speed are nicely balanced.",
     "files": [
@@ -19613,6 +21237,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "初登場で十傑入り——{age}歳の名前を覚えておきたい。",
+    "en": "Top ten on her first appearance — a name to remember at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "初防衛をクリア。{age}歳の王者の物語が始まる。",
+    "en": "First defense cleared. The story of a champion at {age} begins.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "初顔合わせ。データがない対戦は、地力が試される",
     "en": "A first meeting. A match with no data is a test of what they actually have.",
     "files": [
@@ -19650,6 +21294,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "制した",
+    "en": "took it",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -19734,6 +21388,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "前週{prev}位から{rank}位へ上げた",
+    "en": "Up from {prev} to {rank} since last week",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "前週{prev}位から{rank}位へ下げた",
+    "en": "Down from {prev} to {rank} since last week",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "剣道仕込みの闘志で格上にも決して引かない負けず嫌い。技術は粗削りだがメンタルの強さは粕田随一。試合終盤に底力を発揮するタイプで、何度打ちのめされても立ち上がる不屈の精神は観客の心を掴む。将来の技術向上次第では大化けする可能性を秘めた逸材。",
     "en": "Kendo gave her a fighting spirit that will not back down from anyone better than her. Her technique is rough, but nobody in Kasuda is mentally stronger. She finds her reserves late in a match, and the way she gets up however many times she is put down takes hold of a crowd. If the technique comes, she could turn into something else entirely.",
     "files": [
@@ -19801,6 +21475,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "努力家肌の{age}歳",
+    "en": "a hard-working {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -19888,6 +21572,16 @@
     "en": "Momentum: steady",
     "files": [
       "ORG_COMPARE_TAG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "勢いそのままに上位戦線へ食い込んでいる。",
+    "en": "Riding the pace straight into the front-runners.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -20041,6 +21735,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "反骨心を燃やす{age}歳",
+    "en": "a defiant {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -20234,6 +21938,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "同点で",
+    "en": "Level again, ",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "同点で{elem}の{name}が並ぶ。",
+    "en": "Level with her is {name} — {elem}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "同門対決実現——「{factionName}」の{nameA}と{nameB}がリングで激突",
     "en": "{factionName}: {nameA} vs {nameB}",
     "files": [
@@ -20254,6 +21978,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "名勝負{n}本",
+    "en": "classics ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "名勝負となった一戦は",
     "en": "In a match that turned out to be one of the good ones, ",
     "files": [
@@ -20261,6 +21995,66 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名勝負を{big}本——{age}歳、試合の質で点数を稼ぐタイプの戦いぶりだ。",
+    "en": "A {big}-classic season — at {age}, she earns her points on the quality of the match.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名勝負を{big}本——勝敗ではなく試合の質で語られるタイプの{age}歳。",
+    "en": "{big} classics — at {age}, the kind who gets talked about for the quality of the match rather than the result.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名勝負を{big}本残し、次戦が待たれる。",
+    "en": "A {big}-classic season so far, and the next one is awaited.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名勝負を{big}本量産する職人型。",
+    "en": "A craftsman turning out {big} classics.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名勝負を{big}本量産する職人型。観客の心を最も動かす一人。{domeClause}業界の話題を独占し続けている。",
+    "en": "A craftsman turning out classics, {big} of them. Nobody moves a crowd more. {domeClause}She has had the business talking all season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名勝負製造機の{age}歳",
+    "en": "a match-making {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -21154,6 +22948,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "大試合を{big}本作った職人気質。",
+    "en": "A craftsman's temperament — a {big}-classic haul.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "大阪",
     "en": "Osaka",
     "files": [
@@ -21164,6 +22968,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "天才肌の{age}歳",
+    "en": "a naturally gifted {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "天頂戦で決勝まで進んだ{age}歳。あと一歩届かなかった悔しさも、年間レースでは大きな存在感になっている。",
+    "en": "She reached the Tenchosen final at {age}. Even the sting of falling one step short counts for a great deal in the annual race.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦で決勝進出。悔しさを次の勝利へ。",
+    "en": "Into the Tenchosen final. The sting goes into the next win.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "天頂戦へ視線集まる — 特別招待は{invites}",
     "en": "Eyes on Tenchosen — invited: {invites}",
     "files": [
@@ -21171,6 +23005,76 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦を制した{age}歳。4年に一度の頂点で積み上げた勝ち星が、年間レースを大きく動かしている。",
+    "en": "Tenchosen winner at {age}. What she stacked up at a summit that comes every four years has moved the annual race a long way.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦を制覇。積み上げた勝ち星は重い。",
+    "en": "Tenchosen taken. What she stacked up there weighs a lot.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦優勝。4年に一度の頂点が、レースを動かした。",
+    "en": "Tenchosen winner. A summit that comes every four years moved the race.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦優勝。全国の強豪を越えた一夜の連続が、{age}歳を上位戦線の中心へ押し上げた。",
+    "en": "Tenchosen winner. Night after night past the best in the country, and at {age} she sits in the middle of the front-runners.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦準優勝",
+    "en": "Tenchosen runner-up",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦準優勝。4年に一度の大舞台で重ねた勝利が、{age}歳を上位へ運んできた。",
+    "en": "Tenchosen runner-up. What she piled up on a stage that comes every four years carried her, at {age}, into the top tier.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "天頂戦準優勝。決勝までの道のりが上位へ導いた。",
+    "en": "Tenchosen runner-up. The road to the final carried her up the board.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": true
   },
   {
@@ -21228,6 +23132,16 @@
     "en": "Defense number {n} since she took it. The one who took the belt has started proving she is the real thing at keeping it too.",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "奪取からまだ防衛戦を経ていない新王者。ベルトの重みをこれから知っていく{age}歳。",
+    "en": "A new champion who has not defended yet. At {age}, she is about to learn what the belt weighs.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -21322,6 +23236,26 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": true
+  },
+  {
+    "key": "威圧感を放つ{age}歳",
+    "en": "an intimidating {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "安定した戦績",
+    "en": "solid results",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "安泰に見えるけど、主力のピーク過ぎが重なる2年後が怖い。今から手を打つべき",
@@ -21434,6 +23368,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "宿敵 {rival} への意地が、点数の裏側で燃え続けている。",
+    "en": "The stubbornness she carries toward {rival} keeps burning behind the points.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "富岡家の専属メイドにして忠実な護衛。関節技のセンスに光るものがあり、お嬢様を支えながら地道に力をつけている。お嬢様を守るためなら自らの身を盾にすることも厭わない献身的な性格。",
     "en": "The Tomioka family's private maid, and a loyal bodyguard. She has a real feel for submissions, and she is building strength quietly while supporting her mistress. She would put her own body between that mistress and harm without a second thought.",
     "files": [
@@ -21534,6 +23478,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "対抗戦{n}勝",
+    "en": "{n}-win interpromotional run",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "対抗戦{warWins}勝——団体の旗を背負うとき、彼女は別人になった。",
     "en": "Interpromotional wins: {warWins} — with the promotion flag on her back she became someone else.",
     "files": [
@@ -21544,10 +23498,120 @@
     "hasProperNoun": false
   },
   {
+    "key": "対抗戦{wins}勝。{age}歳の名前が、他団体の控室でも警戒を込めて語られるようになった。",
+    "en": "{wins} taken in interpromotional matches. At {age}, her name gets spoken carefully in other promotions' locker rooms now.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦{wins}勝。チームを引っ張る勝ち星。",
+    "en": "{wins} in interpromotional matches. Results that pull a team along.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦{wins}勝で他団体への土産を着実に積み上げた{age}歳。",
+    "en": "At {age}, {wins} taken in interpromotional matches, piled up steadily against the other promotions.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦{wins}勝の異能、止まらない。",
+    "en": "{wins} in interpromotional matches, and no sign of stopping.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦{wins}連勝の英雄。勢いはまだ落ちない。",
+    "en": "A hero, {wins} straight in interpromotional matches. The pace has not dropped.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦{w}勝{l}敗",
+    "en": "Interpromotional {w}-{l}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦、ドーム興行、年末の頂上決戦",
+    "en": "interpromotional matches, Dome shows, and the year-end summit",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "対抗戦で{wins}人抜き。団体を越えて名を上げた。",
+    "en": "Through {wins} opponents in a row. A name made beyond her promotion.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦で{wins}連勝の英雄。ベルトを持たずとも、勝ち星で示し続ける異端の存在。",
+    "en": "A hero, {wins} straight in interpromotional matches. No belt, and she still makes the case in results — an outlier.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "対抗戦に呼ばれると、彼女は必ず応えた。{warWins}勝がその証だ。",
     "en": "When the interpromotional call came, she always answered. The win column reads {warWins}.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦の{wins}勝が、団体の看板選手としての評価を確かなものにしている。",
+    "en": "Those {wins} interpromotional results have made her standing as a marquee name solid.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "対抗戦の{wins}勝は、時代の流れを少しだけ早めている。",
+    "en": "Those {wins} interpromotional results have moved the era along a little faster.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -21804,6 +23868,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "年末の頂上決戦",
+    "en": "the year-end summit",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "年間MVPレース ── 集計待ち",
+    "en": "Annual MVP race — awaiting count",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "年間最優秀選手に選ばれたとき、彼女はただ静かに頷いた。",
     "en": "When they named her Wrestler of the Year, she only nodded.",
     "files": [
@@ -21874,6 +23958,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "序盤の勢いから失速。{role}がどこで踏み止まるか。",
+    "en": "The early pace has gone. Where the {role} plants her feet is the question.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "廃校寸前の元砥石川高校出身。バランス重視の堅実なファイトで確かな実力を見せる。母校の廃校を経験した苦い思い出をバネに、早くから自立心を鍛えてきた。安定感のある試合運びと粘り強さで、どんな相手にも一定以上の戦いができる信頼のおける選手。",
     "en": "Out of the former Toishigawa High School, which closed. She fights a balanced, dependable match and the ability is real. Losing her school left a bitter memory she used, and she learned to stand on her own early. Steady in how she works a match, and stubborn with it: whoever she faces, she gives a decent account.",
     "files": [
@@ -21898,6 +23992,16 @@
     "en": "Leaving the ring, {loser} said {quote}.",
     "files": [
       "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "引き出しの広い{age}歳",
+    "en": "a wide-ranging {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -22074,6 +24178,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "後半戦で急上昇。連勝が続けばさらに上も視野に。",
+    "en": "A sharp climb in the second half. Keep the run going and higher is in sight.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "後輩思いの良い先輩。面倒見がよいので頼られがちな性格。相手の良さを引き出すグラップリングが持ち味の堅実派。",
     "en": "A good senior, mindful of the younger ones. She looks after people, so people lean on her. A dependable wrestler whose grappling brings out the best in an opponent.",
     "files": [
@@ -22114,6 +24228,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "心技体の整った{age}歳",
+    "en": "a well-rounded {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "応援しがいがあるってこういうことだよね。楽な団体を応援しても面白くない",
     "en": "This is what it means for support to be worth something. Backing an easy promotion isn't fun",
     "files": [
@@ -22151,6 +24275,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "忠誠心の篤い{age}歳",
+    "en": "a fiercely loyal {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -22228,6 +24362,26 @@
     "en": "So close. Ending on so close is what this promotion does",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "惜敗",
+    "en": "Narrow loss",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "惜敗を喫した",
+    "en": "came up just short",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -22348,6 +24502,36 @@
     "en": "It had not been long since the coronation. The surrender rule has no exceptions all the same.",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "戴冠したばかりの{age}歳、王者としての一歩目を業界全体が見守っている。",
+    "en": "Newly crowned at {age}, and the whole business is watching her first step as champion.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "戴冠後{defenses}度の防衛を成功させ、まずは盤石の滑り出しを見せている。",
+    "en": "A {defenses}-defense start since the crown. Solid ground under her so far.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "戴冠後初防衛を成功。次戦が試金石。",
+    "en": "First defense since the crown, done. The next one is the test.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -22648,6 +24832,16 @@
     "en": "The challenger is one of the best {challengerOrg} has. On her own promotion's rings she is the one being chased; on this night she went after the top of the business.",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "挑戦者を{defenses}人退けてベルトを腰に巻き続ける。業界はこの王者の背中を見て歩いている。",
+    "en": "Challenger after challenger turned away, {defenses} of them, and the belt has not moved. The business walks along watching this champion's back.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -23394,6 +25588,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "早熟の{age}歳",
+    "en": "an early-blooming {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "明確な優位。ただ、強者には強者の課題がある。見えているか",
     "en": "A clear advantage. The strong side has problems of its own, though. Do they see them?",
     "files": [
@@ -23431,6 +25635,56 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "春のタッグリーグを制した{age}歳。相棒と掴んだ頂点が、個人としての年間レースにも確かな重みを与えている。",
+    "en": "Spring Tag League winner at {age}. The summit she took with her partner puts real weight behind her own year as well.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "春のタッグリーグ優勝。二人で積み上げた信頼が、{age}歳を上位へ押し上げた。",
+    "en": "Spring Tag League winner. The trust the two of them built pushed her, at {age}, up the board.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
+  },
+  {
+    "key": "春のタッグリーグ優勝。相棒と掴んだ頂点。",
+    "en": "Spring Tag League winners. A summit taken with a partner.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "春のタッグリーグ制覇。二人の信頼が点になった。",
+    "en": "Spring Tag League taken. Trust between two turned into points.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "春のタッグリーグ準優勝",
+    "en": "Spring Tag League runner-up",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
     "hasProperNoun": true
   },
   {
@@ -23491,6 +25745,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "晩成型の{age}歳",
+    "en": "a late-blooming {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -24374,6 +26638,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "業界の話題は今、この上位陣に集まっている。{remaining}週後、誰が\"今シーズンの顔\"として残っているか——書き手としては予測したくない。",
+    "en": "The business is talking about this top group right now. Who's still the face of the season at the end of the {remaining}-week run-in — this paper won't guess.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "業界の通常運転",
     "en": "The ordinary running of the business",
     "files": [
@@ -24754,6 +27028,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "歴代最高の試合評価を2件更新",
+    "en": "two new all-time rating records",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "歴代最高の試合評価を塗り替えた{age}歳。その一夜の熱量が、年間レースにも残り続けている。",
+    "en": "At {age}, she rewrote the best rating on record. The heat of that one night is still in the annual race.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "歴代最高の試合評価を更新",
+    "en": "new all-time rating record",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "歴代最高の試合評価を更新。あの一戦が残り続ける。",
+    "en": "A new all-time rating. That match keeps standing.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "歴代最高の試合評価を更新した{age}歳。勝敗を越えて刻まれた一戦が、今期の存在感を決定づけている。",
+    "en": "At {age}, she set a new all-time match rating. A match cut above win or loss has settled how she looms over the season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "歴代最高評価、{mq}点に更新――{name}が刻んだ数字",
     "en": "All-time best rating now {mq} — {name}'s number",
     "files": [
@@ -24834,10 +27158,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "残り{n}週、まだ順位は動く",
+    "en": "Over the {n}-week run-in the order can still move",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "残り{n}週で、あと何試合組めるかの勝負になる",
+    "en": "Over the {n}-week run-in it comes down to how many more can be booked",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "残り{remaining}週、{events} —— このレースの主人公として年末を迎えるのは、果たして誰になるのか。",
+    "en": "Weeks left: {remaining}, with {events} still to come — who reaches the end of the year as the lead of this race is the open question.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "残り{weeksRemaining}週。{orgName}が黒字へ戻る道筋は、本紙には見えていない。だが、奇跡を否定するのは、記者の仕事ではない。",
     "en": "Weeks remaining: {weeksRemaining}. This paper cannot see the road that puts {orgName} back in profit. Ruling out a miracle is not a reporter's job, though.",
     "files": [
       "KURODA_CRISIS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "残りは{n}週、動かせる試合は数えるほどしかない",
+    "en": "Over the {n}-week run-in only a handful of matches can still be put together for her",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -25001,6 +27365,36 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決勝のリングで一歩届かなかった{age}歳。だがその一試合分の存在感は本物だ。",
+    "en": "One step short in the ring at the final, at {age}. What she showed in that one match is real all the same.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決勝のリングで掴んだ{pts}pt。これが今期の物語を書き換える起点になるかもしれない。",
+    "en": "{pts} pts taken in the final. That may be the point where the story of this season gets rewritten.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決勝戦を勝ち切ってPPVを制した。{age}歳、いまや上位戦線の真ん中にいる。",
+    "en": "She closed out the final and took PPV. At {age}, she is right in the middle of the front-runners now.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -25324,6 +27718,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "満員の会場で頂点に立った{age}歳、PPVのトロフィーは今シーズン最大の重量を持つ。",
+    "en": "She stood on top in a full house at {age}, and the PPV trophy is the heaviest thing anyone picked up this season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "準決勝で分かれた明暗 — 「天頂戦」",
     "en": "Tenchosen semifinals — the night divided",
     "files": [
@@ -25494,6 +27898,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "燃えやすい性格の{age}歳",
+    "en": "an easily fired-up {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "燃え上がった対立が、静かに温度を下げた。「{factionAName}」と「{factionBName}」の間に流れていた険悪な空気は、ここ数週で目に見えて薄まったという。決着がついたわけではない。ただ、いまは矛を交える理由がない——それだけのことだ。",
     "en": "A feud that had caught fire quietly lost temperature. The bad air between {factionAName} and {factionBName} has thinned visibly over the past few weeks, by every account. Nothing was settled. There is simply no reason to cross weapons right now. That is all it is.",
     "files": [
@@ -25644,6 +28058,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座{n}度防衛",
+    "en": "{n}-defense title run",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座がなくても、彼女がいるカードには力があった。",
     "en": "Belt or no belt, a card with her on it had weight.",
     "files": [
@@ -25736,6 +28160,36 @@
     "hasProperNoun": true
   },
   {
+    "key": "王座を{defenses}度防衛し、看板の座を譲らない{age}歳。",
+    "en": "At {age}, on a {defenses}-defense run, she is not handing over the top of the marquee.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座を{defenses}度防衛し続ける現役最強。{age}歳、円熟期の貫禄が団体の屋台骨を支えている。",
+    "en": "The strongest wrestler working today, deep into the {defenses}-defense run she has going with the belt. At {age}, in her prime, she holds the promotion up.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座を保持中",
+    "en": "still holding the title",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座を守ることの難しさを、彼女は体で知っていた。",
     "en": "She knew what it costs to hold a belt, and she knew it firsthand.",
     "files": [
@@ -25807,6 +28261,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座奪取{n}回",
+    "en": "Title win ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座奪取！ {winnerName}が{loserName}を下す",
     "en": "Title taken! {winnerName} beats {loserName}",
     "files": [
@@ -25847,10 +28311,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "王座戴冠で一気に上位入り。",
+    "en": "Crowned, and straight up the board.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座返上——{name}、{toOrg}へ移籍",
     "en": "Title surrendered — {name} to {toOrg}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座防衛{defenses}回。団体の屋台骨。",
+    "en": "Defense number {defenses}. The spine of the promotion.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座防衛{n}回",
+    "en": "Title defense ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -26007,6 +28501,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "現王者として今期を戦う{age}歳。",
+    "en": "Working the season as reigning champion at {age}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "現王者の座を維持しながら、シーズンを戦う{age}歳。",
+    "en": "At {age}, she works through the season with the title still in hand.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "現王者の肩書きが、今期の戦いに重みを加えている{age}歳。",
+    "en": "At {age}, the champion's title adds weight to everything she does this season.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "現統一王者",
+    "en": "Reigning unified champion",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "理学療法",
     "en": "Physical Therapy",
     "files": [
@@ -26064,6 +28598,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "番狂わせを呼ぶ{age}歳",
+    "en": "an upset-making {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -26217,6 +28761,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "相手",
+    "en": "an unnamed opponent",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "相手が声を出す前に、勝負はもう終わっていた。",
     "en": "The match was over before her opponent had made a sound.",
     "files": [
@@ -26284,6 +28838,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "破天荒な{age}歳",
+    "en": "an unruly {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -26717,6 +29281,36 @@
     "hasProperNoun": true
   },
   {
+    "key": "第{week}週 {opponent} との{tag}で試合評価{mq}を記録（{result}）。",
+    "en": "Week {week}: {tag} with {opponent}, rated {mq} ({result}).",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "第{week}週、{opponent}との{tag}で試合評価{mq}を刻み、{result}記憶も新しい。",
+    "en": "Week {week}: the {tag} with {opponent}, rated {mq}, and she {result}. That night is still fresh.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "第{week}週時点、首位を走る{name}は{elem}で{pts}pt。",
+    "en": "As of week {week}, {name} leads on {pts} pts — {elem}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "第{week}週開催のU-20ジュニアトーナメントに{count}名が選出された。",
     "en": "The field for the U-20 Junior Tournament in week {week} has been set at {count}.",
     "files": [
@@ -26961,6 +29555,26 @@
     "en": "Unified title falls: new champion is {winner}",
     "files": [
       "UNIFIED_TITLE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "統一王座奪取",
+    "en": "Unified title taken",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "統一王座防衛{n}回",
+    "en": "Unified title defense ×{n}",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -27227,6 +29841,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "脆さを抱える{age}歳",
+    "en": "a fragile {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "臨床心理士の資格を持つスポーツ心理学者。試合前のプレッシャー管理、集中力維持、モチベーション管理を得意とする。穏やかな物腰だが、核心を突く洞察力を持つ。",
     "en": "A sports psychologist with a clinical license. She works on pre-match pressure, holding concentration, and managing drive. Gentle in manner, with insight that goes straight to the point.",
     "files": [
@@ -27241,6 +29865,16 @@
     "en": "More of them are staying on to train alone",
     "files": [
       "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "自身の最高評価を先週更新。試合の中身で点数を稼ぎ始めた。",
+    "en": "A personal best rating last week. She has started earning points on what happens inside the match.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -27334,6 +29968,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "若くして上位{rank}に食い込んだ{age}歳、台頭の年。{head}で点を稼いでいる。",
+    "en": "At {age} she has broken into the top {rank}, and this is the year she arrived. The points come from {head}.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -27534,6 +30178,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "華のある{age}歳",
+    "en": "a charismatic {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -27837,6 +30491,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "観客の記憶に残る試合を{big}本残した{age}歳。",
+    "en": "At {age}, {big} classics the crowd will not forget.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "観客を総立ちにさせた試合内容。文句なし",
     "en": "It put the crowd on its feet. No complaint anywhere",
     "files": [
@@ -27965,6 +30629,16 @@
     ],
     "count": 2,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "記録に残る名勝負。勝敗を越えた夜だった。",
+    "en": "A classic for the record. A night past winning and losing.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -28123,6 +30797,16 @@
     "en": "Rated {mq}.",
     "files": [
       "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価の自己ベスト更新の余韻——この{age}歳がいま化けつつある。",
+    "en": "Still riding a personal best rating — at {age}, she is turning into something else.",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -28319,6 +31003,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "譲り合った",
+    "en": "settled for a draw",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "豪華な設備も潤沢な資金もない。だからこそ、選手同士で支え合う文化が自然に生まれている。",
     "en": "There are no fine facilities here and no deep pockets. That is exactly why a habit of holding each other up has grown on its own.",
     "files": [
@@ -28326,6 +31020,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "負けず嫌いな{age}歳",
+    "en": "a fiercely competitive {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -28433,6 +31137,16 @@
     "en": "Not quite catching up is genuinely a talent at this point",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "追走者",
+    "en": "the chasing pack",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -28799,6 +31513,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "適応力に富む{age}歳",
+    "en": "an adaptable {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "選手同士でアドバイスし合っている",
     "en": "They are coaching each other",
     "files": [
@@ -28979,10 +31703,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "野心を秘めた{age}歳",
+    "en": "a quietly ambitious {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "金字塔！{orgName}、対抗戦通算{milestone}達成",
     "en": "A landmark for {orgName}! Interpromotional: {milestone}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "鉄人と称される{age}歳",
+    "en": "an iron {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -29169,6 +31913,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "闘志あふれる{age}歳",
+    "en": "a fiery {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "防衛が積み上がるほど、王者の名は重くなる。次の天頂戦での返還まで、この牙城に挑む機会は限られている。",
     "en": "The more defenses stack up, the heavier the champion's name gets. Until the belt goes back at the next Tenchosen, chances at this fortress are limited.",
     "files": [
@@ -29199,6 +31953,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "防衛戦{defenses}本を凌ぎきった{age}歳の王者。次戦の挑戦者にも妥協はない。",
+    "en": "A champion of {age} who has come through a {defenses}-defense run. No concessions for the next challenger either.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "防衛戦{defenses}本を凌ぎ続ける現王者。",
+    "en": "The reigning champion, still coming through the {defenses}-defense run.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "防衛戦{defenses}連勝。挑戦者の列はまだ途切れず、王座の座は静かに重みを増していく。",
+    "en": "{defenses} straight in defense. The line of challengers has not thinned, and the title quietly gains weight.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "防衛戦の相手はまだ決まっていない。ただ、この結果を見て名乗りを上げる選手は少なくないはずだ。",
     "en": "No opponent has been set for the first defense. Plenty of wrestlers will have seen this result and be ready to put their names in.",
     "files": [
@@ -29206,6 +31990,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "陰の支配者と囁かれる{age}歳",
+    "en": "a quietly dominant {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -29389,6 +32183,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "頂上は{n1}。だがこのレース、まだ何も決まっちゃいない。残り{remaining}週、地殻変動はいつでも起こりうる。",
+    "en": "{n1} sits on top. Nothing's settled in this race, though. Over the {remaining}-week run-in, the ground can move any week of it.",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "頂上直接対決へ——「{factionAName}」{leaderAName} vs 「{factionBName}」{leaderBName}",
     "en": "{factionAName} {leaderAName} vs {factionBName} {leaderBName}",
     "files": [
@@ -29426,6 +32230,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "頑丈な体躯の{age}歳",
+    "en": "a durable {age}-year-old",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -29486,6 +32300,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "首位争い、団子状態 ―― {n1}を{n2}・{n3}が射程に捉える",
+    "en": "Lead bunched up — {n2} and {n3} have {n1} in range",
+    "files": [
+      "MVP_RACE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {

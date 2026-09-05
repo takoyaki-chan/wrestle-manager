@@ -1,5 +1,174 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-23 — `Engine.mvpRace` の新聞フレーバー文285本を `MVP_RACE_TEXTS` へ移設しdict-opts化・英訳(2026-09-05・worktree agent-a0409052ac22effa7)
+
+指示書は `docs/i18n-coverage-report-v0.1.md` A分類 #1(285件/4,924字)。開始前にworktreeブランチをmain先端(`da2d1ed5`。P7-19マージ+golden再採取までmain入り)へfast-forward。
+
+新規訳出**286キー**(template-ledger 3,143→**3,425**・未訳0。うち4キーは既存の連結様式キー `{a}{b}`/`{a}。{b}`/`{s}。`/`{a}・{b}` へマージされたので実質282行の増)。ラチェット総数 28,050→28,056(+6・data.js +320 / management.js −314 = 移設ぶんの差引ゼロ+分岐を完全文へ割った分)。specs詳細は `specs/i18n-runtime-spec-v1.0.md` §38。
+
+### 1. 何が起きていたか
+
+新聞4面「年間MVPレース」の寸評・タグライン・見出し・リード文・実績チップ・追い上げ文・カラー文は、
+`Engine.mvpRace` の13関数の**本体に直書きされた配列リテラル**で持たれていた(§10-2「関数の中の配列は
+どの抽出器からも永久に見えない」型)。`recalcRanking` がJA完成文を `G.mvpRace` へ焼き、`ui-render.js`
+の4面が `${_escapeHtml(entry.narrative)}` で無変換描画する。**t()を一度も通らない**ので、
+EN走破の `i18n-miss` にも出ず、4台帳のどこにも載っていなかった。
+
+### 2. 配線方式 — §18-1「表示点で再生成」(追加フィールドは1つも増やしていない)
+
+`G.mvpRace` へ焼かれる5種(`narrative` / `tagline` / `pageHeadline` / `pageLead` / `kurodaComment`)は
+「完成文が永続する」族だが、**素材がすべて `G` と保存済み `rankings` に残っている**
+(`rngSeed`/`season`/`week`/`roster`/`h2h`/`relationships`/`snapshots` + `entry.breakdown.meta`)。
+§15-1(追加フィールド)ではなく §18-1(表示点で再生成)が使える型なので、そちらを採った。
+
+結果、**セーブに書く値は1バイトも変わらず、新フィールドも0**。auto-simのsemantic fingerprintは
+着手前と同一(`640b2591` — 基準リビジョンのツリーを `git archive` で切り出して同条件で実測して照合)。
+
+- `recalcRanking` は dict を渡さない → 保存値はJAのまま
+- 表示点は `ui-render.js` の新設 **`_npMvpI18n(saved, regen)` 1関数**へ集約(消費点6箇所)。
+  ①dict無しで再生成 ②保存値と1バイト一致を確認 ③一致したときだけ `WM_I18N.t` を dict として渡した版を出す
+  ④不一致なら保存値をそのまま出す(**保存値を `t()` に通さない** — 完成文は辞書キーと一致せずmissを汚染する)
+- `generateRichBlocks`(headlineLine/factChips/flavorLine)は元から表示のたび `G` から作り直される
+  (§22-1の型)ので、`WM_I18N.t` を第3引数で渡すだけ
+
+`generateKurodaComment`(P4-5で保留されていた5本)も同時に取り込んだ。4面の他の全文が英語になる以上、
+署名コラムだけJAで残すのは不整合になるため。
+
+### 3. JA同一性 — 1,440,320通り・不一致0 / 表の葉293本すべて到達
+
+§15-5の作法。着手前(`da2d1ed5`)の `src/data.js`+`src/management.js` を `git show` から
+**別VMコンテキスト**へ読み込んで凍結コピーとし、13関数を新旧突合した。踏み落としを避けるために要った工夫:
+
+- `Engine.rng.int` を新旧同時に差し替えて添字 `k` を 0〜9 で強制し、プール添字の直積を踏ませる
+- **`k` と meta プリセット添字を同じ剰余系に乗せない**。`k = i % 10` / `preset = i % 155` にすると
+  組が `lcm(155,10)=310` 通りしか出ず、7本プールの後半添字に永久に到達しない
+- **サンプリング用LCGは上位ビットから作る**。`lcg % n` は下位ビットの周期が2〜4しかなく、
+  `role='Neutral'` や `rnd(2)` が `i` の偶奇と癒着して4本プールの奇数添字・宿敵分岐が踏まれない
+- 自然確率1/9000級の低頻度枝(`_composeFlavorLine` 末尾フォールバック)は決定的に総なめするループを別に足す
+- dict省略経路と「ja素通しdict」経路の**両方**を毎回比較
+- `_wmFillWithDict`/`_wmDictLabel` をラップして表の葉293本の使用を計測(未使用0)
+
+加えて `node test/ja-golden.js` は基準(`dd2e536b…`)と完全一致、`npm run test:ui:walkthrough` の
+ja digest は基準 `1052faa82eaf7991` のまま不変。
+
+### 4. 台帳 — 「1語ラベルはui-ledgerの領分」が最大規模で効いた(§15-3)
+
+4面は既存UI(メタチップ・ピル・バッジ)と同じ語彙を地の文でも使う。次は ui-ledger に既訳があるので
+`MVP_RACE_TEXTS` へは入れず、**JA原文を management.js に1本だけ置いて `_wmDictLabel` で引く**:
+役割6種 / 季4種 / `タイトル戦`・`対抗戦`・`通常興行` / `天頂戦優勝`・`PPV優勝`・`4団体勝ち残り対抗戦優勝`・
+`春のタッグリーグ優勝`・`現王者`・`優勝`・`準優勝` / `勝利`・`決着つかず` / 特性名25種。
+`PPV` は日本語を1文字も含まない識別子なので辞書を通さない(通すと `logMiss` を汚染する)。
+
+**同じJAでも文脈が違えば枠ごとキーを分ける**(§15-3 `rivalWinLoss` と同じ作法)を2件で使った:
+
+- `{age}歳` 単体の既訳は**メタチップ用の "Age {age}"** で、地の文の名詞句には嵌まらない
+  ("Early Bloomer Age 25")。`_traitPhrase` は句ごと1キーにした
+  (`早熟の{age}歳` → `an early-blooming {age}-year-old`)
+- `{losses}敗` の既訳は成績欄ラベル `Losses: {losses}` で、文中の差し込み句としては噛み合わない。
+  **敗戦の有無で完全な一文に分ける**(`他団体相手に{wins}勝` / `他団体相手に{wins}勝{losses}敗` の2キー、
+  テンプレ側は `{record}`)ことで二重登録そのものを起こさずに済ませた。
+  `test/i18n-ledger-consistency-test.js` が両件とも検出してくれたので、訳を書く前にキー単位で当たること
+
+`PPV優勝{n}回` は ui-ledger に既訳 `PPV winner ×{n}` があったので、こちらを採用し**回数チップ族を
+`×{n}` 体裁に統一**した(`Title defense ×{n}` / `Title win ×{n}` / `Unified title defense ×{n}` /
+`PPV runner-up ×{n}` / `PPV appearance ×{n}` / `classics ×{n}` / `Dome shows ×{n}`)。
+
+### 5. 代表対訳20本
+
+| JA | EN |
+|---|---|
+| `第{week}週、{opponent}との{tag}で試合評価{mq}を刻み、{result}記憶も新しい。` | `Week {week}: the {tag} with {opponent}, rated {mq}, and she {result}. That night is still fresh.` |
+| `王座を{defenses}度防衛し続ける現役最強。{age}歳、円熟期の貫禄が団体の屋台骨を支えている。` | `The strongest wrestler working today, deep into the {defenses}-defense run she has going with the belt. At {age}, in her prime, she holds the promotion up.` |
+| `ベルトを背負い続けるのは並大抵のことではない。{defenses}度の防衛——それは数字以上の重みを持つ。` | `Carrying the belt this long is no ordinary thing. Defense number {defenses} — that weighs more than the number says.` |
+| `先週のPPV決勝で{pts}pt一撃を獲得。{age}歳、上位を一気に飲み込む勢いがある。` | `Last week's PPV final brought {pts} pts in one stroke. At {age}, she has the pace to swallow the field whole.` |
+| `対抗戦で{wins}連勝の英雄。ベルトを持たずとも、勝ち星で示し続ける異端の存在。` | `A hero, {wins} straight in interpromotional matches. No belt, and she still makes the case in results — an outlier.` |
+| `今シーズン、{big}夜の名勝負を作り上げた{age}歳。会場の温度はそのたびに変わった。` | `At {age}, she built {big} nights of classics this season. The temperature in the hall changed every time.` |
+| `{age}歳が{rank}位を走っているという事実が、すでに今期最大のニュースの一つだ。` | `That someone of {age} is running at number {rank} is already one of the biggest stories of the season.` |
+| `{elemText}で{pts}pt。{age}歳、円熟期の戦い方が業界に滲む。` | `{pts} pts — {elemText}. At {age}, the way a wrestler works in her prime seeps through.` |
+| `{traitPhrase}の{role}として、業界に名を刻み続けている。` | `As {traitPhrase} {role}, she keeps cutting her name into the business.` |
+| `{traitPhrase}が、業界の真ん中で揺るぎない存在感を放っている。` | `Right in the middle of the business stands {traitPhrase}, and she does not move.` |
+| `早熟の{age}歳` / `不屈の{age}歳` / `華のある{age}歳` | `an early-blooming {age}-year-old` / `an unbending {age}-year-old` / `a charismatic {age}-year-old` |
+| `初登場で十傑入り——{age}歳の名前を覚えておきたい。` | `Top ten on her first appearance — a name to remember at {age}.` |
+| `三傑が大接戦 ―― {n1}・{n2}・{n3}が拮抗` | `Top three in a dead heat — {n1}, {n2}, and {n3} level` |
+| `{n1}が首位を維持 ―― {n2}の追い上げが始まった` | `{n1} holds the lead — {n2} starts the chase` |
+| `第{week}週時点、首位を走る{name}は{elem}で{pts}pt。` | `As of week {week}, {name} leads on {pts} pts — {elem}.` |
+| `残り{remaining}週、{events} —— このレースの主人公として年末を迎えるのは、果たして誰になるのか。` | `Weeks left: {remaining}, with {events} still to come — who reaches the end of the year as the lead of this race is the open question.` |
+| `頂上は{n1}。だがこのレース、まだ何も決まっちゃいない。残り{remaining}週、地殻変動はいつでも起こりうる。` | `{n1} sits on top. Nothing's settled in this race, though. Over the {remaining}-week run-in, the ground can move any week of it.` |
+| `前週{prev}位から{rank}位へ上げた` / `上とは{gap}点差、射程に入っている` | `Up from {prev} to {rank} since last week` / `A {gap}-point gap to the one above, well within range` |
+| `{opponent}に敗れた{tag}（試合評価{mq}）の記憶が、まだ拳の中にある。` | `The memory of the {tag} she lost to {opponent} (rated {mq}) is still in her hands.` |
+| `宿敵 {rival} への意地が、点数の裏側で燃え続けている。` | `The stubbornness she carries toward {rival} keeps burning behind the points.` |
+
+黒田貫一郎(編集長)の5本は `docs/en-kuroda-style-draft-v0.1.md` §1-5 の指定どおり、幸子より短く・砕けて・
+皮肉が薄い/短縮形を常用(`Nothing's settled`)/`this writer` を使わず `this paper` のみ。同§に載っている
+貫一郎の見本対訳1本はそのまま採用した。
+
+### 6. ENの数値まわり — 機械検査を通すだけでは足りない(spec §38-5)
+
+規則23/25の検査は**ハイフン限定用法を一律に許す**ので `a {defenses}-defense run` は通るが、
+充填値が **8 / 11 / 18** のとき `a 8-defense run` になる。EN側の実データ描画で
+`A 8-week run-in` と `Only 1 pts of cover` を実際に踏んで見つけた。書き直した運用則は3つ:
+
+1. 値が 8/11/18 を取りうる枠に不定冠詞を置かない → 定冠詞 / `defense number {n}` / 冠詞なし名詞句へ
+2. 値が 0/1 を取りうる枠に裸の複数形を置かない → `a {gap}-point gap`(0〜5限定なので不定冠詞も安全)/
+   `×{n}` 型チップ表記 / `Just {gap} adrift` のような単位を持たない形へ
+3. **分岐の下限・上限を読んでから訳す**。`bigMatches >= 3` の枝なら `{big} classics` は常に安全、
+   `>= 1` の枝なら `a {big}-classic season` にする、という判断はテンプレ単位で変わる
+
+### 7. 検証(すべてフォアグラウンド実行)
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(data/management/ui-render/lang-en-templates/extract-templates) | OK |
+| `node test/ja-golden.js` | **基準と完全一致** `dd2e536bc18a4433b2c1530cc81e7a02090f09db7c7cb0dc184f5df75fd5e44e` |
+| `node test/i18n-build-template-dict.js` | 3,425/3,425・**未訳0**(規則23/25検査込み) |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上に存在するキー16件・すべて訳文一致) |
+| `npm test` | **261/261 PASS** |
+| `node test/i18n-ratchet.js` | 移設のため `--update`(28,050→28,056・+6の内訳は§冒頭) |
+| `node test/auto-sim.js 20 42` | **ALL CLEAR ✓**・fingerprint `640b2591` = **着手前と同一**(基準ツリーを切り出して実測) |
+| `npm run test:ui:walkthrough` | **PASS**・ja digest `1052faa82eaf7991`(着手前の実測と一致) |
+| `npm run test:ui:walkthrough:en` | **PASS**・**i18n-miss 0**・JA露出は着手前と同数 |
+| VM 凍結コピー突合 | **1,440,320通り・不一致0**・表の葉293本すべて到達 |
+| EN実データ描画(fixture を現エンジンで `recalcRanking`) | **再生成==保存値 13/13・fallback 0・i18n-miss 0** |
+
+抽出器の再実行が冪等(台帳がバイト一致)であること、`i18n/template-ledger.json` に旧キー
+(`{losses}敗` / `他団体相手に{wins}勝{lossClause}。…`)が残っていないことも確認済み。
+
+`test/newspaper-news-value-test.js` の N-12 ガードはソース文字列 `_composeChaseLine(state, entry)` を
+grep していたので、dict-opts化に合わせて `(?:, dict)?` を許すよう1行だけ緩めた(ガードの意図
+「4位以下は `_composeChaseLine` へ回す」は不変)。
+
+### 8. 同画面/同関数群の生JA残りの機械列挙
+
+`Engine.mvpRace`(management.js 19457-20280)と4面の描画関数8本(`_npRenderPage4` /
+`_npMvpRaceArrowText` / `_npMvpRaceArrow1ChipText` / `_npMvpRaceMetaChips` / `_npMvpRaceRank1Card` /
+`_npMvpRaceMinorCard` / `_npMvpRaceListRow` / `_npV3MvpBox` / `_npMvpI18n`)の文字列リテラルを全数列挙した。
+
+- **Engine側の残り62件はすべて `_wmDictLabel(dict, …)` / `_wmFillWithDict(dict, …)` の引数**
+  (=ui-ledgerの領分として意図的に管理.js側へ置いたもの)か、**表示されない照合キー**
+  (`_traitPhrase` の `order` 配列28件・`_hasGrowthRoom` の `traits.includes('晩成'/'早熟')`)か、
+  年齢不明枝の `String(tpl).replace('{age}歳','')`。**dictを経由しない表示文字列は0件**
+- **ui-render側は全件が既に `WM_I18N.t(...)` 経由**(4面は本バッチ以前からラベル層だけ配線済みだった)
+
+### 9. 発見(P7-23では直していない)
+
+1. **`generatePageHeadline` の `追走者` フォールバックは構造的に到達不能**。`{n2}` が空になるのは2位が
+   居ないときだけで、そのとき `gap12 = 999` となり必ず `runaway` 枝へ行く。防御値として残し訳も入れた
+2. **`_traitPhrase` の年齢不明枝(`age <= 0`)はENでもJAが出る**。旧実装が `早熟の`(表内)/素の特性名
+   (表外)を返していた挙動をそのまま保った fail-open。`age: f.age || 0` の防御で実データには無い枝
+3. **`_traitPhrase` の汎用フォールバック `{trait}の{age}歳` は現行TRAIT_DEFSでは到達不能**。25特性のうち
+   23は専用句、`名勝負製造機`/`ライバル体質` は `traitPhraseExtra` が拾う。訳の不定冠詞が `{trait}` の値で
+   揺れるが到達しないので据え置き
+4. **走破ハーネスは新聞4面(MVPレース)を1度も踏まない**。EN走破の `JA exposure by screen` に newspaper が
+   出ないのはそのため。**この画面の唯一の網が §38-1 の実データ検証スクリプト**なので、レア画面強制点火
+   カタログ(`npm run test:ui:ignite`)へ `newspaper-mvprace` シナリオを足すのが本筋(次バッチ候補)
+5. **EN走破の digest は run ごとに揺れる**。同一コードで 417 / 418 / 419 actions を実測しており、揺れは
+   `recovered-by-retry` の判定(`closeEventPopup` が進行と見なされるかどうか)。ja digest は安定しているので、
+   **EN側の digest は回帰の指標に使えない**(PASS と `i18n-miss: 0` で見る)。ハーネス側の既知フレーク扱い
+6. **fixtureのセーブ2本は旧プールで焼かれた古い完成文を持つ**(`MQ85超を3本量産する職人型。` /
+   `TOP3が大接戦` / `トップは入れ替わっている` など、現行プールに存在しない文面)。§18-1の自己検証は
+   これを正しくフォールバックさせるが、**「旧セーブでは4面だけJAのまま」がEN版の仕様になる**。
+   気になるなら表示点で「素材から作り直した文を保存値へ書き戻す」マイグレーションが要る(Keisuke裁定案件)
+
 ## 🌐 英語対応 P7-19 — P7-16が残した新聞3件(ブレイクスルー{stat}内部キー・スタンプsuffix文脈違い・天頂戦invites/championWatchの言語固定)の解消(2026-09-05・worktree agent-a9c61d40e88358d3e)
 
 指示書はP7-16 worklogエントリの「10. 発見(P7-16では直していない)」と`specs/i18n-runtime-spec-v1.0.md`§35-7。開始前にworktreeブランチをmain先端(`a9c673ab`。P7-16=d2594a41までmain入り)へfast-forward。

@@ -1,17 +1,13 @@
 {
-  "generatedAt": "2026-09-05T03:19:42.992Z",
+  "generatedAt": "2026-09-05T04:51:22.929Z",
   "files": {
     "data.js": {
-      "jaCount": 17322,
-      "jaChars": 311211
+      "jaCount": 17642,
+      "jaChars": 316520
     },
     "kuroda-text.js": {
       "jaCount": 900,
       "jaChars": 31355
-    },
-    "management.js": {
-      "jaCount": 1786,
-      "jaChars": 16068
     },
     "tenchosen-final-lines.js": {
       "jaCount": 666,
@@ -20,6 +16,10 @@
     "victory-lines.js": {
       "jaCount": 760,
       "jaChars": 14589
+    },
+    "management.js": {
+      "jaCount": 1472,
+      "jaChars": 10832
     },
     "coach-lines.js": {
       "jaCount": 483,

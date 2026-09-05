@@ -9277,6 +9277,24 @@ function _npRenderPage3() {
 // ══════════════════════════════════════════════════════════════
 // 4面: 年間MVPレース (MVPレース v2 / mvp-race-page4-final.html 準拠)
 // ══════════════════════════════════════════════════════════════
+// i18n Stage B P7-23: `G.mvpRace` に焼かれている寸評/見出し/リード/黒田コメントは
+// **JAの完成文**で、辞書キーとは一致しない(t()に通すとi18n-missを汚染する)。
+// specs §18-1 の自己検証型fail-openで作り直す:
+//   1. dict無し(=JA)で再生成する
+//   2. 保存値と1バイト一致するか確かめる(素材が揃っていて、表も保存当時と同一である証拠)
+//   3. 一致したときだけ `WM_I18N.t` を dict として渡した版を出す
+//   4. 一致しない(旧セーブ/素材欠け/表の改訂)なら保存値をそのまま出す
+// JAモードでは3の結果が1と同一(t()はja素通し+PH置換のみ)なので**日本語版の表示は1バイト不変**。
+function _npMvpI18n(saved, regen) {
+  if (!saved || typeof saved !== 'string') return saved || '';
+  if (typeof Engine === 'undefined' || !Engine.mvpRace) return saved;
+  try {
+    if (regen() !== saved) return saved;
+    const out = regen(WM_I18N.t);
+    return (typeof out === 'string' && out) ? out : saved;
+  } catch (_e) { return saved; }
+}
+
 function _npRenderPage4() {
   const seasonNum = G.season || 1, weekNum = G.week || 1;
   let html = `<div class="np-paper">${_npPaperHeader(seasonNum, weekNum)}<div class="np-content">`;
@@ -9293,8 +9311,10 @@ function _npRenderPage4() {
   // 既存セーブでキャッシュ済みの古いテキストには 5.159999...pt のような小数が残っているので
   // レンダー時に整数化する (例: "5.16pt" / "0.000003pt" → "5pt" / "0pt")
   const _sanitizePts = (txt) => (txt || '').replace(/(\d+(?:\.\d+)?)pt/g, (_, n) => `${Math.round(parseFloat(n))}pt`);
-  html += `<h2 class="np-page-headline">${_escapeHtml(_sanitizePts(race.pageHeadline))}</h2>`;
-  html += `<p class="np-page-lead">${_escapeHtml(_sanitizePts(race.pageLead))}</p>`;
+  const headlineTxt = _npMvpI18n(race.pageHeadline, d => Engine.mvpRace.generatePageHeadline(race.rankings, G, d));
+  const leadTxt = _npMvpI18n(race.pageLead, d => Engine.mvpRace.generatePageLead(race.rankings, G, d));
+  html += `<h2 class="np-page-headline">${_escapeHtml(_sanitizePts(headlineTxt))}</h2>`;
+  html += `<p class="np-page-lead">${_escapeHtml(_sanitizePts(leadTxt))}</p>`;
   html += `<div class="np-page-meta">${WM_I18N.t('第{week}週時点 ・ 注目選手 上位三傑 ・ 全団体合同', { week: weekNum })}</div>`;
 
   // TOP3カード
@@ -9309,7 +9329,7 @@ function _npRenderPage4() {
     html += `<div class="np-kuroda">
       <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
       <div>
-        <div class="np-kuroda-text">${_escapeHtml(race.kurodaComment)}</div>
+        <div class="np-kuroda-text">${_escapeHtml(_npMvpI18n(race.kurodaComment, d => Engine.mvpRace.generateKurodaComment(race.rankings, G, d)))}</div>
         <div class="np-kuroda-byline">${WM_I18N.t('— 編集長 {name}', { name: '黒田 貫一郎' })}</div>
       </div>
     </div>`;
@@ -9375,7 +9395,7 @@ function _npMvpRaceRank1Card(entry) {
   const bd = entry.breakdown;
   const m = bd.meta;
   const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
-    ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
+    ? Engine.mvpRace.generateRichBlocks(entry, G, WM_I18N.t) : { headlineLine: '', factChips: [], flavorLine: '' };
   const titleDetail = m.titleWins > 0 || m.titleDefenses > 0 || m.isCurrentChamp
     ? WM_I18N.t('奪取{wins}+防衛{defenses}{holding}', { wins: m.titleWins, defenses: m.titleDefenses, holding: m.isCurrentChamp ? WM_I18N.t('+保持') : '' }) : WM_I18N.t('王座なし');
   const ppvDetail = m.ppvChampion > 0 ? WM_I18N.t('優勝{n}回', { n: m.ppvChampion }) : (m.ppvRunnerUp > 0 ? WM_I18N.t('準V{n}回', { n: m.ppvRunnerUp }) : (m.ppvParticipation > 0 ? WM_I18N.t('出場{n}回', { n: m.ppvParticipation }) : WM_I18N.t('未開催')));
@@ -9406,7 +9426,7 @@ function _npMvpRaceRank1Card(entry) {
         <div class="np-mvprace-stat-box ovr"><span class="lbl">OVR</span><strong>${entry.ovr}</strong></div>
         <div class="np-mvprace-stat-box pts"><span class="lbl">${WM_I18N.t('ポイント')}</span><strong>${Math.round(entry.points)}<span class="unit">pt</span></strong></div>
       </div>
-      ${entry.narrative ? `<div class="np-mvprace-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
+      ${entry.narrative ? `<div class="np-mvprace-narrative">${_escapeHtml(_npMvpI18n(entry.narrative, d => Engine.mvpRace.generateNarrative(entry, G, d)))}</div>` : ''}
       ${rich.headlineLine ? `<div class="np-mvprace-rich-line">${_escapeHtml(rich.headlineLine)}</div>` : ''}
       <div class="np-mvprace-badges">
         <div class="np-mvprace-badge${titleZero}">
@@ -9470,7 +9490,7 @@ function _npMvpRaceMinorCard(entry, rank) {
     return `<span class="np-mvprace-minor-pill${zero}">${p.icon} ${p.label}<strong>${sign}${p.val}</strong></span>`;
   }).join('');
   const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
-    ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
+    ? Engine.mvpRace.generateRichBlocks(entry, G, WM_I18N.t) : { headlineLine: '', factChips: [], flavorLine: '' };
   const factChipsHtml = rich.factChips && rich.factChips.length > 0
     ? `<div class="np-mvprace-fact-chips">${rich.factChips.map(c => `<span class="np-mvprace-fact-chip">${c.icon} ${_escapeHtml(c.text)}</span>`).join('')}</div>` : '';
   const flavorHtml = rich.flavorLine
@@ -9488,7 +9508,7 @@ function _npMvpRaceMinorCard(entry, rank) {
         ${arrowText ? `<span class="np-mvprace-minor-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</span>` : ''}
       </div>
       <div class="np-mvprace-minor-meta">${_escapeHtml(entry.orgName)}${role ? `<span class="div">/</span><span>${role}</span>` : ''}${m.age ? `<span class="div">/</span><span>${WM_I18N.t('{age}歳', { age: m.age })}</span>` : ''}</div>
-      ${entry.narrative ? `<div class="np-mvprace-minor-narrative">${_escapeHtml(entry.narrative)}</div>` : ''}
+      ${entry.narrative ? `<div class="np-mvprace-minor-narrative">${_escapeHtml(_npMvpI18n(entry.narrative, d => Engine.mvpRace.generateNarrative(entry, G, d)))}</div>` : ''}
       ${factChipsHtml}
       ${flavorHtml}
       <div class="np-mvprace-minor-pills">${pills}</div>
@@ -9515,12 +9535,12 @@ function _npMvpRaceListRow(entry) {
     : (m.role === 'Veteran') ? WM_I18N.t('ベテラン') : '';
   const champBadge = m.isCurrentChamp ? `<span class="np-mvprace-list-champ">${WM_I18N.t('👑 現王者')}</span>` : '';
   const rich = (typeof Engine !== 'undefined' && Engine.mvpRace && Engine.mvpRace.generateRichBlocks)
-    ? Engine.mvpRace.generateRichBlocks(entry, G) : { headlineLine: '', factChips: [], flavorLine: '' };
+    ? Engine.mvpRace.generateRichBlocks(entry, G, WM_I18N.t) : { headlineLine: '', factChips: [], flavorLine: '' };
   const factChipsHtml = rich.factChips && rich.factChips.length > 0
     ? `<div class="np-mvprace-list-facts">${rich.factChips.map(c => `<span class="np-mvprace-fact-chip">${c.icon} ${_escapeHtml(c.text)}</span>`).join('')}</div>` : '';
   const flavorHtml = rich.flavorLine
     ? `<div class="np-mvprace-list-flavor">${_escapeHtml(rich.flavorLine)}</div>`
-    : (entry.tagline ? `<div class="np-mvprace-list-flavor">${_escapeHtml(entry.tagline)}</div>` : '');
+    : (entry.tagline ? `<div class="np-mvprace-list-flavor">${_escapeHtml(_npMvpI18n(entry.tagline, d => Engine.mvpRace.generateTagline(entry, G, d)))}</div>` : '');
   const metaLine = [role, m.age ? WM_I18N.t('{age}歳', { age: m.age }) : ''].filter(Boolean).join(' / ');
 
   return `<div class="np-mvprace-list-row np-mvprace-list-row--rich${isPlayer ? ' player' : ''}" onclick="event.stopPropagation();showFighterPopup(${entry.fighterId},null,true)">

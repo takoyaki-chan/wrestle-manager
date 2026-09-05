@@ -6,7 +6,7 @@
 
 - P7-1〜P7-19 は **data.js のトップレベル表54個**という既知チェックリストを完走し、そこは全て解決済み
 - しかし本タスクで **src/ 全体(data.js だけでなく management.js・battle-engine-main.js・index.html 等すべて)を機械的に全文字列走査**したところ、**チェックリストの外にあった新規の未収載プールが複数見つかった**。共通点は「data.js のトップレベル `const` 表ではなく、Engine メソッド本体に直書きされた配列/オブジェクト(§10-2が本来禁じている形)」「data.js 以外のファイル(battle-engine-main.js は`セリフ専用ファイル8本`のリストに入っていない)」の2パターン
-- 未収載 1,784件・21,185字のうち、**実際に表示されうると確認できたもの(A分類)が988件・13,063字(61.7%)** — 最大の塊は MVPレース新聞コラムの地の文システム(Engine.mvpRace、285件)と観戦画面のカットイン台詞(CUTIN_LINES、410件)
+- 未収載 1,784件・21,185字のうち、**実際に表示されうると確認できたもの(A分類)が988件・13,063字(61.7%)** — 最大の塊は MVPレース新聞コラムの地の文システム(Engine.mvpRace、285件 → ✅P7-23で解決)と観戦画面のカットイン台詞(CUTIN_LINES、410件)
 - 副産物として **data.js 60行目に文字化けバグ**(`'名勝負製造機'` の「勝」が壊れて `'名���負製造機'` になっている、キャラid:49)を発見。i18nと無関係の実データ破損なので別途報告する
 
 ## 1. 手法
@@ -70,7 +70,7 @@
 
 | # | プール名 | 場所 | 件数/字数 | 何に使われるか・根拠 | 提案バッチ |
 |---|---|---|---:|---|---|
-| 1 | **`Engine.mvpRace` 地の文システム**(`generateNarrative`/`_traitPhrase`/`generateTagline`/`generatePageHeadline`/`generatePageLead`/`_collectFactChips`/`_composeChaseLine`/`_composeFlavorLine`) | management.js:19700-20521(`generateKurodaComment`20206-20224を除く。そこはP4-5で保留済み・新規発見ではない) | **285件/4,924字** | 新聞「MVPレース」コラムの寸評・タグライン・見出し・リード文・実績チップ・追い上げ文・カラー文。`entry.narrative`/`entry.tagline`等としてui-render.js:9409/9491で`${_escapeHtml(entry.narrative)}`により**無変換描画**。t()を一度も通らない | P7-21(generateNarrative+_traitPhrase+generateTagline、最大の塊) / P7-22(残り) |
+| 1 | ✅**解決(P7-23、2026-09-05)** **`Engine.mvpRace` 地の文システム**(`generateNarrative`/`_traitPhrase`/`generateTagline`/`generatePageHeadline`/`generatePageLead`/`_collectFactChips`/`_composeChaseLine`/`_composeFlavorLine`) | management.js:19700-20521(`generateKurodaComment`20206-20224を除く。そこはP4-5で保留済み・新規発見ではない) | **285件/4,924字** | 新聞「MVPレース」コラムの寸評・タグライン・見出し・リード文・実績チップ・追い上げ文・カラー文。`entry.narrative`/`entry.tagline`等としてui-render.js:9409/9491で`${_escapeHtml(entry.narrative)}`により**無変換描画**。t()を一度も通らない | ✅**P7-23で完了**。`MVP_RACE_TEXTS`(data.js)へ移設し13関数をdict-opts化、表示点は `_npMvpI18n` の自己検証型fail-open(specs §18-1/§38)。286キー訳出・未訳0。P4-5保留の`generateKurodaComment`5本も同時取り込み |
 | 2 | **`CUTIN_LINES`**(観戦カットイン台詞、archetype×personality 2D表) | battle-engine-main.js:46-252 | **410件/3,717字**(表全体440件/3,858字、うち30件は他所と偶然完全一致し収載済み) | 観戦画面のカットイン(`showCutin`)。**コード自身のコメントが「本台帳の抽出対象外だが、表示直前でt()を通しておけば将来ledger化されたときに無改修で乗る」と明記** — 配線(`WM_I18N.t(pk(lines))`)は既に完了しているが、動的キー選択のため抽出器が無く辞書が空。CUTIN_LINESはtag戦には存在しない(single専用、spec確認済み) | P7-23(JS_TABLESモードの抽出器をbattle-engine-main.js向けに追加、dialogue-ledgerへ) |
 | 3 | **index.html「遊び方ガイド」ヘルプ本文** | index.html:9986以降(ヘルプパネル全域) | **126件/3,053字**(HTMLマークアップ、JS文字列ではない) | **既知・追跡済み**(`docs/i18n-stage-a-p3a-design-v0.1.md` 75行目)。約100段落の大半が`<strong>`混在構造のため`data-i18n`のテキスト全置換方式が使えず保留、純テキスト`<p>`約38件のみ対応済みで残りは未対応のまま現在に至る | P7-24(黒田記事バッチ2と同じ「分岐を完全な一文に展開」方式、または`<strong>`用の別機構を新設) |
 | 4 | **キャリア年表ビルダー**(`milestones.push`) | management.js:6978-7196 | **58件/368字** | 選手個人の「キャリア年表」表示用。入団/王座獲得・陥落・防衛/移籍/引退/PPV優勝/新人王・MVP・メディア功労賞受賞等29種類の`type`別`text`。t()なしで直接文字列化 | P7-25 |

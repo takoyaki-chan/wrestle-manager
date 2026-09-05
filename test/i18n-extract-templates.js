@@ -222,6 +222,16 @@ const TARGET_TABLES = [
   // ui-ledgerの2キーとは別のキー(`{stamp} 定期興行`/`{stamp} 挑戦状`)としてスタンプ専用の
   // 訳を持たせる(specs §35-7-2 → §37)。
   'NEWS_STAMP_SUFFIX_TEXTS',
+  // P7-23で追加。新聞4面「年間MVPレース」の地の文システム(docs/i18n-coverage-report-v0.1.md
+  // A分類 #1、285件/4,924字)。`Engine.mvpRace` の叙述family(generateNarrative /
+  // _traitPhrase / generateTagline / generatePageHeadline / generatePageLead /
+  // generateKurodaComment / _topElements / _collectFactChips / _composeChaseLine /
+  // _composeFlavorLine / generateRichBlocks)の**関数本体に直書きされた配列リテラル**
+  // (§10-2型)を data.js のトップレベル表へ移設したもの。消費点は同family(dict-opts)で、
+  // ui-render.js の4面描画が `WM_I18N.t` を dict として糸通しする。
+  // 役割6種・季4種・試合種別3種・実績ラベル7種・特性名は ui-ledger に既訳があるので
+  // 本表へは入れない(§15-3。JA原文は management.js に1本だけ置き `_wmDictLabel` で引く)。
+  'MVP_RACE_TEXTS',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ
