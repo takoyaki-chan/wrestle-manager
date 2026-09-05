@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-09-05T03:19:42.992Z",
+  "generatedAt": "2026-09-05T04:29:53.153Z",
   "files": {
     "data.js": {
       "jaCount": 17322,
-      "jaChars": 311211
+      "jaChars": 311212
     },
     "kuroda-text.js": {
       "jaCount": 900,
@@ -26,12 +26,12 @@
       "jaChars": 9816
     },
     "ui-common.js": {
-      "jaCount": 1336,
-      "jaChars": 9456
+      "jaCount": 1330,
+      "jaChars": 9390
     },
     "ui-render.js": {
-      "jaCount": 999,
-      "jaChars": 8982
+      "jaCount": 993,
+      "jaChars": 8968
     },
     "flag-dialogue.js": {
       "jaCount": 449,
@@ -45,13 +45,13 @@
       "jaCount": 532,
       "jaChars": 6439
     },
+    "battle-lines.js": {
+      "jaCount": 594,
+      "jaChars": 5078
+    },
     "index.html": {
       "jaCount": 3,
       "jaChars": 4942
-    },
-    "battle-engine-main.js": {
-      "jaCount": 530,
-      "jaChars": 4700
     },
     "data-faction-dialogue.js": {
       "jaCount": 317,
@@ -65,10 +65,6 @@
       "jaCount": 187,
       "jaChars": 1611
     },
-    "battle-lines.js": {
-      "jaCount": 154,
-      "jaChars": 1220
-    },
     "ppv-lines.js": {
       "jaCount": 56,
       "jaChars": 1206
@@ -80,6 +76,10 @@
     "tag-battle-main.js": {
       "jaCount": 98,
       "jaChars": 894
+    },
+    "battle-engine-main.js": {
+      "jaCount": 90,
+      "jaChars": 842
     },
     "match-engine.js": {
       "jaCount": 95,
