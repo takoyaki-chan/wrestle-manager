@@ -21,8 +21,11 @@ function extractFunction(source, name) {
   throw new Error(`${name} の終端が見つかりません`);
 }
 
-const tooltipMatch = renderSource.match(/const TRAINING_FATIGUE_TOOLTIP = ('[^']+');/);
-assert(tooltipMatch, 'ツールチップ定数が見つかりません');
+// i18n Stage B P7-31: 文面の実体は UI_TIP_TEXTS.trainingFatigue へ移した
+// (単体の const 文字列は台帳抽出器から見えないため)。TRAINING_FATIGUE_TOOLTIP は
+// その別名として残っている。ここでは表の値を直接拾う。
+const tooltipMatch = renderSource.match(/\btrainingFatigue: ('[^']+'),/);
+assert(tooltipMatch, 'ツールチップ定数(UI_TIP_TEXTS.trainingFatigue)が見つかりません');
 // WM_I18N.t() は ja では素通し(+プレースホルダ置換)。i18n.js 本体は読み込まず、
 // 同じ契約のスタブで足りる(src/i18n.js の D1/D2 参照)。
 const wmI18nStub = {

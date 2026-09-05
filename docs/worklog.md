@@ -1,5 +1,159 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-31 — `ui-render.js` の未カバーJA 79件の仕分け・配線・英訳(**旗揚げ序章オーバーレイ**を含む。2026-09-05・worktree agent-a737b9f752993d44f)
+
+着手前に worktree を main 先端(`8287f6af`。P7-24/25/27/29 入り)へ fast-forward。
+対象は `scratchpad/cov2/uncovered-ui-render.js.txt` の79件。**新規ゲームを始めた人が最初に読む地の文
+(旗揚げ序章の4幕)が、EN画面でも丸ごと日本語のまま**だったのが最大の露出。
+
+### 1. 仕分け結果(79件)
+
+| 区分 | 件数 | 中身 |
+|---:|---:|---|
+| **訳した** | **39** | 旗揚げ序章4幕 / ドラフトナレーション / 派閥クロニクル12 / ドラフト新聞「記者の目」10 / 王座奪還・空位バナー6 / メディア密着バナー / F07メイン推薦の期間ラベル / コーチ格付け / 常設ティップス3(😮‍💨+絆+因縁) / コーチ助言の選手名フォールバック |
+| **論理比較で除外** | **5** | `_normalizeFinanceLabel` の `startsWith('チケット収入'/'グッズ収入')` 2件、`renderLog` カテゴリの `l.includes('頂上'/'引き抜き'/'オフ')` 3件。いずれも構造規約2「ロジックキーは日本語のまま」。**表示側と文字列を共有していないことを確認済み**(income系の返り値は expense 専用の2呼び出し元からは到達しない) |
+| **HTMLコメントで除外** | **1** | `ui-render.js:9174` `<!-- アッパー画像は左右反転しない(…) -->`。DOMには入るが描画されない |
+| **死骸(訳さず報告)** | **34** | `STYLE_META[*].desc` 6件 + `_aceFlavorByPersona` の `archMap`/`persMap` 28件。詳細は §3 |
+
+### 2. 配線方式
+
+- **旗揚げ序章(`renderOpeningScreen`)**: 地の文を `<br>` ごと `WM_I18N.t()` のテンプレへ畳んだ
+  (ENは意味で改行を決め直せる)。団体名の行だけは文字サイズの段(`orgLengthClass`)を持つので
+  `「{org}」。` を別キーにして `.opening-org-line` の中に置く。幕3の2名は `{a}`/`{b}` で差し込み、
+  設立メンバー名に `pn()` を通した(`alt` と `.opening-portrait-name` にも波及)
+- **派閥クロニクル(`_dfcChronicle`)**: `html += A + B` の断片連結をやめ、
+  抗争中/中立 × 要となる選手あり/なし の**4分岐ぶん完全文テンプレ5本**へ畳んだ(構造規約3)。
+  同じ値を2度差す `{weeks}` は同名PHの繰り返しで解決(applyParams は全出現を置換する)。
+  派閥名は `pn()` ではなく `_factionDisplayName()`(「{姓}派」→「{Surname} Group」)へ
+- **ドラフト新聞「記者の目」**: スタイル別の一句を `DRAFT_STYLE_FLAIR`(トップレベル表)へ出し、
+  tier別3本のテンプレへ `{flair}` で差し込む。ENは `{flair}` を**独立した1文**にして語順を決め直した
+- **既訳の再利用**: `元王者#{id}`("Ex-champion #{id}"・app.js既訳)/ `{tier}級`("Class {tier}")/
+  `成長×{mult}`("Growth ×{mult}")/ `挑戦者` / `優勢`・`劣勢`・`互角` は新規キーを作らず共用
+- **抽出器から見えなかった単体const**: `TRAINING_FATIGUE_TOOLTIP` / `_RM_TIP_BOND` / `_RM_TIP_RIVALRY`
+  は消費点が `WM_I18N.t(定数)` で正しく配線されているのに、`t()` の第1引数が変数のため台帳に1行も無かった
+  (=ENで常に原文のまま fail-open)。`UI_TIP_TEXTS` へ集約し `test/i18n-extract-ui.js` の `JS_TABLES` へ登録。
+  `DRAFT_STYLE_FLAIR` も同様(P7-1の「kept:true で凌がず走査対象にする」方針)
+
+### 3. 死骸2件(**Keisuke裁定待ち**・訳さず消さず据え置き)
+
+1. **`STYLE_META[*].desc`(6件、ui-render.js:818-823)** — 旗揚げドラフト画面のスタイル説明文
+   (「投げ技と関節技を軸にした正統派。パワーとテクニックに優れる」等)。同関数内の `sm.` 参照は
+   `.cream` のみで、`sm.desc` は `src/` 全体で**0件**。他2つの `STYLE_META` 定義には `desc` 自体が無い
+2. **`_aceFlavorByPersona`(28件、ui-render.js:4771-4793)** — 団体紹介のアーキタイプ別18本+性格別10本。
+   **関数そのものが `src/` から1度も呼ばれていない**(定義1件のみ)。同スコープの他の講評文プールは
+   P7-6/P7-14 で全部 `t()` 配線済みなので、この1本だけ取り残されている
+
+### 4. なぜEN走破のJA露出検査が序章を拾わなかったか(**原因は独立した2つ**)
+
+1. **走破は序章を構造的に踏まない(主因)** — walk も ignite も
+   `test/ui-walkthrough/fixtures/*.json` のオートセーブから起動する。全fixtureが
+   `weekPhase:'manage'`(S1W1・`draftComplete`)であり、序章は「タイトル→新規ゲーム→団体名入力」の直後の
+   `weekPhase:'opening'` にしか存在しない。**セーブから始める限りどのモードでも到達しない**
+2. **JA露出計測が「リーフ要素」しか見ない(副因)** — `readPageSnapshot()`/`scanJaExposureDetail()` とも
+   `element.children.length === 0` で絞る。序章の `.opening-act-line` は `地の文<br>地の文<span>…</span>`
+   という形で子要素を持つので、**自分の直下テキストノードは誰にも読まれない**。序章に限らず
+   「地の文の中に `<br>`/`<strong>` が挟まる枠」全部に効く死角
+
+**打ち手(両方とも安価だったので直した)**:
+- 1 → `test/ui-walkthrough/opening-scene-i18n-check.js` を新設(手動実行。`*-test.js` ではないので
+  `npm test` には入らない。§37-4 のカットイン検査と同じ「実関数を直接叩く」流儀)。
+  JA4幕を実ブラウザで描いて**着手前に採った基準と完全一致**を検査、EN4幕の日本語0・i18n-miss 0、
+  団体名の段がJA/ENで一致し実幅が内寸(640px)を超えないことまで見る
+- 2 → `scanJaExposureDetail()` を **リーフ + 「直下テキストノードにJAを持つ非リーフ」** へ拡張。
+  子孫のテキストは子孫自身の行で数えるので二重計上しない。**`readPageSnapshot()` の
+  `jaExposureCount` は変更していない**(JA走破の毎手スナップショットに乗るため)
+
+**拡張した検出器は入れた直後に実害を1件見つけた**: `npm run test:ui:ignite -- --scenario chronicle --lang en`
+の `screen-database` ゼロゲートが `4件`(`ふたば女子プロレス` / `プレイヤー団体` / `天頂プロレス` /
+`ブレイクスルー`)で落ちた。出どころは**データベース→全選手一覧の所属団体セル**
+(`ui-render.js:9880` `<td>${f._orgName}${tierBadge}${faBadge}${playerBadge}</td>`)で、
+`<td>` がバッジ `<span>` を子に持つため**リーフ判定から外れて今まで一度も走査されていなかった**。
+4団体とも names-ledger に既訳があるので `WM_I18N.pn(f._orgName)` の1語で解決
+(並べ替えキー `_dbSortKey==='org'` 側の `_orgName` は生値のまま=JA挙動不変)。修正後ゲートは 0件。
+
+**測り方の罠(P7-31で実際に踏んだ)**: JA同一性は `innerText`(見えている行)で測るが、
+**`display:none` の要素の `innerText` は `textContent` に落ちて `<br>` が消える**。
+序章は幕2〜4が `display:none` なので、計測の間だけ表示に戻してから読む必要がある。
+
+### 5. `orgLengthClass` の言語別化(§31-4 の2例目)
+
+`.opening-org-line` の段(28px→24px→18px)は `orgName.length >= 16 / >= 11` の決め打ちで、
+EN団体名は同字数でも幅が半分しかないため**ENでは段が早く落ちて小さく出て**いた。
+
+実測(Playwright・`.opening-org-line` の Range 実幅。`display:block` なので `scrollWidth` は
+常に親の幅を返す — Range で測ること):
+
+```
+28px  JA 2字=128 / 10字=386 / 16字=579 / 20字=708   → 約32.2px/字
+      EN 5字=140 / 20字=402 / 31字=574 / 42字=758   → 約16.5px/字   (比 1.95)
+24px  JA 10字=328 / 15字≒460   EN 20字=326 / 31字=460
+```
+
+JAの段の境目の実幅(normal上限 386px / medium上限 ≒460px)に EN を合わせて **EN 20字 / 31字**。
+**JA側の 11 / 16 は1文字も変えていない**。
+
+### 6. 代表対訳10組
+
+| JA | EN |
+|---|---|
+| `今、ひとつの団体が旗を揚げようとしている。<br>団体の名は` | `Right now, one promotion is about to raise its flag.<br>Its name —` |
+| `「{org}」。` | `"{org}".` |
+| `後ろ盾があるわけではない。<br>期待されているわけでもない。<br>いつまで経営が続くかわからない弱小団体。` | `There is no backing.<br>There are no expectations.<br>A small promotion with no telling how long it can keep the doors open.` |
+| `業界へ爪痕を残すことはできるだろうか。` | `Can it leave a mark on the industry?` |
+| `新団体旗揚げの噂を聞きつけ、集まったのは2名。<br>{a}と{b}。<br>彼女たちと共に、ここから業界への挑戦が始まる。` | `Word of the new promotion got out, and two answered.<br>{a} and {b}.<br>With them, the run at the industry starts here.` |
+| `さらに3名。<br>立ち上げメンバーを選びに行こう。` | `Three more.<br>Time to go pick the founding members.` |
+| `<p>{created} 結成、<em>{leader}</em>を頂点に<strong>{flavor}</strong>を掲げる派閥。結成{weeks}週で<em>{other}</em>と<strong>抗争状態</strong>に突入し、現在 W{weeks} 目の戦線。</p>` | `<p>Formed {created}: a <strong>{flavor}</strong> faction with <em>{leader}</em> at the top. By week {weeks} it had fallen into a <strong>feud</strong> with <em>{other}</em>, and the front line now stands at W{weeks}.</p>` |
+| `{age}歳にして複数の能力が標準を大きく上回る。{flair}逸材で、今年の業界最大の話題人物。` | `At {age}, several of her attributes already sit well above the standard. {flair} A prospect, and the biggest talking point in the industry this year.` |
+| `追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。` | `Keep pushing her and she turns heavy, so the same training sticks less. Rest brings her back.` |
+| `📺 <strong>{name}</strong>の密着取材中（{outlet}・残り{n}興行） — この選手にいい試合を組んでください` | `📺 {outlet} is running a feature on <strong>{name}</strong> (shows left: {n}) — please book her a good match` |
+
+(`大きく優勢`→`Well ahead` / `苦戦色濃く`→`Struggling` / `組み技のセンスが光る`→`Her grappling sense stands out.` /
+`この子`→`this girl` / `⚔ 奪還挑戦状を発行`→`⚔ Issue a reclaim challenge`)
+
+### 7. 検証
+
+| 検証 | 結果 |
+|---|---|
+| `node --check` ×5(ui-render.js / detectors.js / i18n-extract-ui.js / heat-visibility-test.js / opening-scene-i18n-check.js) | ✅ |
+| `node test/ja-golden.js` | ✅ 基準と**完全一致**(`dd2e536bc18a4433b2c1530cc81e7a02090f09db7c7cb0dc184f5df75fd5e44e` 不変) |
+| `node test/i18n-build-dict.js` | ✅ ui-ledger 4,502→**4,538**(+36)・**未訳0**。template 3,303 / dialogue 17,092 は不触 |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー16件・すべて訳文一致 |
+| `npm test` | ✅ **261/261**(`heat-visibility-test.js` の定数参照を `UI_TIP_TEXTS.trainingFatigue` へ更新) |
+| `node test/i18n-ratchet.js` | ✅ **増加なし**(基準28,057 に対し **28,038**・−19。`--update` はしていない) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `node test/ui-walkthrough/run.js --lang en` | ✅ PASS・412手・**i18n-miss 0**・Issues 0 |
+| EN走破のJA露出(**検出器拡張前**の物差しで着手前/後を比較) | 146 → **146**(同値)。序章・派閥クロニクル・王座奪還/空位バナー・メディア密着は走破が踏まない画面なので数字は動かない。着手前の値は `src/ui-render.js` を HEAD 版へ一時的に戻して実測 |
+| EN走破のJA露出(**検出器拡張後**の新しい物差し) | 161 → **157**(`_orgName` の `pn()` 化で −4)。以後の比較はこちらを基準にすること |
+| `npm run test:ui:ignite -- --scenario chronicle`(JA) | ✅ PASS・Issues 0・マーカーHIT |
+| `npm run test:ui:ignite -- --scenario chronicle --lang en` | ✅ PASS・Issues 0・**`screen-database` ゼロゲート 0件**(拡張直後は4件でFAIL→`pn()` 修正で解消) |
+| `node test/ui-walkthrough/opening-scene-i18n-check.js` | ✅ **ALL CHECKS PASS**(JA 4幕が基準と完全一致 / EN 4幕に日本語0 / EN i18n-miss 0 / 段の一致3件・実幅640px以内) |
+
+### 8. 発見(本バッチ範囲外・次バッチ向け)
+
+1. **財務タブの明細ラベル `d.label` が6箇所で生JAのまま描画される**(ui-render.js:1576/1595/1605/4217/4249/4285)。
+   値はGの `weeklyFinance[].details[].label` に**永続**しているので、§14-3の追加フィールドか
+   `{type,data}` 化が要る。`_normalizeFinanceLabel` の戻り値(`label.replace(...)` の枝)もここに出る
+2. **F07メイン推薦バナーの派閥名が生JA**(`fac.name` を `_factionDisplayName()` に通していない)。
+   §10 が挙げた「派閥名ロングテール約15箇所」の1つ。EN走破のJA露出146件のうち6件がこれ
+3. **`{tier}級 ×{mult}` は今回79件の外にも2箇所あった**(ui-render.js:2292 育成画面のコーチ選択
+   プルダウン / 2383 社長室スタッフ一覧)。同じ族なので既訳キーを使って一緒に直した(新規キー0)
+4. **走破fixtureは全部「セーブから始める」ので、タイトル→新規ゲーム→団体名入力→序章→旗揚げドラフト
+   という開幕導線が丸ごと未検査**。序章は本バッチで専用チェックを入れたが、団体名入力画面・
+   旗揚げドラフト画面・設立挨拶(`foundingGreetings`)は同じ穴に残っている
+5. **GL-12(第三者の証言)ナレーションが EN で i18n-miss を1件出す**(本バッチ着手前から。
+   `インタビュー後、近藤ゆりかは沢登鮎の名前を口にしなかった`)。`relationships.js:5238` は
+   `dict` が渡っていれば置換前テンプレで辞書を引く正しい実装だが、**`dict` を渡さない呼び出し元**
+   から来た完成文が表示点で `t()` に掛かっている(§13-2 型2/型5 と同型)。
+   `dialogue-ledger` 側には `インタビュー後、{nameA}は{nameB}の名前を口にしなかった` の既訳がある
+6. **`<td>`/`<div>` にバッジやアイコンの子要素が付く枠は、旧検出器では一度も走査されていなかった**。
+   §4の `_orgName` はその1例目にすぎない。拡張後の物差しで EN 走破 157件・ignite 17件を
+   もう一度分類し直すと、同型がまだ出てくる可能性が高い
+
+### 9. 実機確認
+
+`docs/実機確認バックログ.md`「英語対応 P7-31」節(序章4幕のJA/EN・団体名の段・ドラフト寸評・
+派閥クロニクル・各バナー・コーチ格付け・ティップス)。
+
 ## 2026-09-05 英語対応 P7-29 — ロスター画面の所属選手件数が常に0のJAバグ修正+死骸のスカウト画面を撤去 / P7-24・P7-27マージ
 
 - **経緯**: P7-24(ヘルプ画面の英訳)の副産物で、`index.html` の `#rosterCount`(所属選手 (N名))と `#faCount`(スカウト画面)がJSから一度も更新されず初期値 `0` のまま表示されていることが判明。同じ見出しの `#staffCount/#staffMax` は `renderRoster` 内で更新されているのに選手側だけ抜けていた既存JAバグ。

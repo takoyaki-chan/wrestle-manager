@@ -310,6 +310,24 @@ const JS_TABLES = [
       Object.keys(table).forEach((k) => { if (table[k]) onEntry(table[k], `DRAFT_UI_NARRATION.${k}`); });
     },
   },
+  // P7-31: ui-render.js のトップレベル表2件。いずれも消費点は t() を通っているが、
+  // 引数が変数(表の値)なので extractJsCalls には載らない層(§10-2 と同型)。
+  {
+    file: 'ui-render.js',
+    name: 'UI_TIP_TEXTS',
+    // consumer: renderTrainingFatigueSignal の title / 相関図の _tipAttr(WM_I18N.t(_RM_TIP_*))
+    extract(table, onEntry) {
+      Object.keys(table).forEach((k) => { if (table[k]) onEntry(table[k], `UI_TIP_TEXTS.${k}`); });
+    },
+  },
+  {
+    file: 'ui-render.js',
+    name: 'DRAFT_STYLE_FLAIR',
+    // consumer: _scoutComment(ドラフト新聞「記者の目」の {flair})
+    extract(table, onEntry) {
+      Object.keys(table).forEach((k) => { if (table[k]) onEntry(table[k], `DRAFT_STYLE_FLAIR.${k}`); });
+    },
+  },
 ];
 
 // `const NAME = { … }` / `const NAME = [ … ]` の右辺リテラルだけを切り出して評価する。

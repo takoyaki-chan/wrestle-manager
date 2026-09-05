@@ -1093,6 +1093,56 @@
     "hasProperNoun": false
   },
   {
+    "key": "<p>{created} 結成、<em>{leader}</em>のもとに集まった<strong>{flavor}</strong>の派閥。結成から{weeks}週、結束は<em>{solidarity}</em>。</p>",
+    "en": "<p>Formed {created}: a <strong>{flavor}</strong> faction gathered around <em>{leader}</em>. Now at week {weeks}, unity reads <em>{solidarity}</em>.</p>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<p>{created} 結成、<em>{leader}</em>を頂点に<strong>{flavor}</strong>を掲げる派閥。結成{weeks}週で<em>{other}</em>と<strong>抗争状態</strong>に突入し、現在 W{weeks} 目の戦線。</p>",
+    "en": "<p>Formed {created}: a <strong>{flavor}</strong> faction with <em>{leader}</em> at the top. By week {weeks} it had fallen into a <strong>feud</strong> with <em>{other}</em>, and the front line now stands at W{weeks}.</p>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<p>抗争ポイントは <strong>{my} - {opp}</strong>（{tide}）。結束は<em>{solidarity}</em>、リーダー直轄の規律で戦線を保つ。</p>",
+    "en": "<p>Feud points stand at <strong>{my} - {opp}</strong> ({tide}). Unity reads <em>{solidarity}</em>, and the line holds under the leader's own discipline.</p>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<p>要は <em>{name}</em>（OVR {ovr}）。{faction}の柱として安定した戦力を提供している。</p>",
+    "en": "<p>The linchpin is <em>{name}</em> (OVR {ovr}). She supplies steady strength as a pillar of {faction}.</p>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<p>要は <em>{name}</em>（OVR {ovr}）。{other}との抗争で<strong>{tide}</strong>を維持しつつ、{faction}の象徴となる選手。</p>",
+    "en": "<p>The linchpin is <em>{name}</em> (OVR {ovr}). She keeps the feud with {other} at <strong>{tide}</strong> while standing as the symbol of {faction}.</p>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "<span class=\"marker\">{leader}</span>を中心として、",
     "en": "With <span class=\"marker\">{leader}</span> at the center, ",
     "files": [
@@ -2363,6 +2413,16 @@
     "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
   },
   {
+    "key": "{age}歳にして複数の能力が標準を大きく上回る。{flair}逸材で、今年の業界最大の話題人物。",
+    "en": "At {age}, several of her attributes already sit well above the standard. {flair} A prospect, and the biggest talking point in the industry this year.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{age}歳の若き王者。{defenseCount}度の防衛は、まだ通過点に見える。",
     "en": "A young champion at {age}. Her {defenseCount}-defense reign still looks like just a waypoint.",
     "files": [
@@ -3086,6 +3146,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{flair}将来性豊かな新人。長期育成で看板選手に化ける可能性を秘めている。",
+    "en": "{flair} A rookie with real upside — with long-term development she could turn into a marquee name.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{funds}万",
     "en": "¥{funds:man}",
     "files": [
@@ -3586,6 +3656,16 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{name} が <strong>{org}</strong> へ団体王座を持ち去った。挑戦状を発行して取り戻せ。",
+    "en": "{name} carried the promotion title off to <strong>{org}</strong>. Issue a challenge and take it back.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
   },
   {
     "key": "{name} が去った。",
@@ -5993,7 +6073,7 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 4,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -7966,6 +8046,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚔ 奪還挑戦状を発行",
+    "en": "⚔ Issue a reclaim challenge",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚔ 宿敵戦勝利",
     "en": "⚔ Beat a nemesis",
     "files": [
@@ -9274,6 +9364,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "「{org}」。",
+    "en": "\"{org}\".",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "「{org}」は活動停止を発表した。",
     "en": "{org} has announced it is shutting down.",
     "files": [
@@ -10350,6 +10450,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "この子",
+    "en": "this girl",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "この布陣で決勝へ",
     "en": "To the Final with This Lineup",
     "files": [
@@ -10867,6 +10977,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "決裁結果モーダルのreporter文(_mdlAReporterStripへ生JAリテラル引数として渡るため走査外)"
+  },
+  {
+    "key": "さらに3名。<br>立ち上げメンバーを選びに行こう。",
+    "en": "Three more.<br>Time to go pick the founding members.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "しばらく成長が止まるかもしれない",
@@ -15250,6 +15370,19 @@
     ]
   },
   {
+    "key": "バランスの良さが持ち味の",
+    "en": "Her balance is the selling point.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:DRAFT_STYLE_FLAIR.Allround"
+    ]
+  },
+  {
     "key": "バランスより、エース候補を1人。団体の顔が育てば興行が回り始めます。",
     "en": "Better than a balanced roster: one wrestler who can be the ace. Once you have a face for the promotion, the shows start to work.",
     "files": [
@@ -17899,6 +18032,19 @@
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
+    "key": "一緒に過ごした時間や共闘で深まる、相手への信頼と親愛。高いほど息が合いやすくなります",
+    "en": "Trust and affection built up through time spent together and fighting side by side. The higher it runs, the easier they click in the ring",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:UI_TIP_TEXTS.relmapBond"
+    ]
+  },
+  {
     "key": "一致",
     "en": "Match",
     "files": [
@@ -19620,6 +19766,16 @@
     "en": "Popularity and Money",
     "files": [
       "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今、ひとつの団体が旗を揚げようとしている。<br>団体の名は",
+    "en": "Right now, one promotion is about to raise its flag.<br>Its name —",
+    "files": [
+      "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -21393,9 +21549,10 @@
     "key": "元王者#{id}",
     "en": "Ex-champion #{id}",
     "files": [
-      "app.js"
+      "app.js",
+      "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -23325,6 +23482,16 @@
     "en": "Finances:",
     "files": [
       "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "取り下げる",
+    "en": "Withdraw",
+    "files": [
+      "ui-render.js"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -25334,6 +25501,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "大きく優勢",
+    "en": "Well ahead",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "大きな変化は数値には出なかったが、確かな手応えが残った",
     "en": "Nothing much showed in the numbers, but something real came out of it",
     "files": [
@@ -26598,6 +26775,19 @@
     "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "対戦の因縁や敵意。高いほど試合が激しくなります",
+    "en": "Grudges and hostility carried over from past matches. The higher it runs, the fiercer the match",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:UI_TIP_TEXTS.relmapRivalry"
+    ]
   },
   {
     "key": "対戦の軌跡",
@@ -28059,6 +28249,16 @@
     "note": "_F07_INCIDENT_META.DEMAND_MONEY choice B hint"
   },
   {
+    "key": "後ろ盾があるわけではない。<br>期待されているわけでもない。<br>いつまで経営が続くかわからない弱小団体。",
+    "en": "There is no backing.<br>There are no expectations.<br>A small promotion with no telling how long it can keep the doors open.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "後継なく消滅",
     "en": "Disbanded with no successor",
     "files": [
@@ -28512,7 +28712,7 @@
     "files": [
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -28879,6 +29079,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "打撃の鋭さが際立つ",
+    "en": "Her striking is notably sharp.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:DRAFT_STYLE_FLAIR.Striker"
+    ]
   },
   {
     "key": "打撃技",
@@ -29568,6 +29781,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "挑戦可能まで残り <strong>{n}</strong> 週",
+    "en": "Weeks until a challenge is possible: <strong>{n}</strong>",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "挑戦状",
     "en": "Challenge Letter",
     "files": [
@@ -29632,9 +29855,10 @@
     "en": "Challenger",
     "files": [
       "app.js",
-      "ui-common.js"
+      "ui-common.js",
+      "ui-render.js"
     ],
-    "count": 7,
+    "count": 8,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -30342,6 +30566,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "新団体旗揚げの噂を聞きつけ、集まったのは2名。<br>{a}と{b}。<br>彼女たちと共に、ここから業界への挑戦が始まる。",
+    "en": "Word of the new promotion got out, and two answered.<br>{a} and {b}.<br>With them, the run at the industry starts here.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -31860,6 +32094,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "業界へ爪痕を残すことはできるだろうか。",
+    "en": "Can it leave a mark on the industry?",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "業界ニュース",
@@ -35356,6 +35600,16 @@
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
   },
   {
+    "key": "王座決定戦の有力候補: <strong>{a}</strong>（OVR {ovrA}） × <strong>{b}</strong>（OVR {ovrB}）<br>メインイベントの 🏆 を有効化すると王座決定戦になります（勝者が新王者）。",
+    "en": "Front-runners for the vacant title: <strong>{a}</strong> (OVR {ovrA}) × <strong>{b}</strong> (OVR {ovrB})<br>Turn on the 🏆 in the main event to make it a title decider (the winner becomes the new champion).",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座獲得",
     "en": "Title Won",
     "files": [
@@ -36274,6 +36528,16 @@
     "note": "ui-render.js:_buildLeadSentences() aceNameのフォールバック値(featured不在時)。走査対象外につき手追加"
   },
   {
+    "key": "着実な成長が見込める堅実なタイプ。{flair}。",
+    "en": "A steady type who should grow reliably. {flair}",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "矛を収めること",
     "en": "to lay down its arms",
     "files": [
@@ -36760,6 +37024,19 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "空中戦の身のこなしが目を引く",
+    "en": "Her movement in the air catches the eye.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:DRAFT_STYLE_FLAIR.Aerial"
+    ]
   },
   {
     "key": "空位",
@@ -37622,6 +37899,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "素質を感じる",
+    "en": "There is raw talent there.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:DRAFT_STYLE_FLAIR._default"
+    ]
+  },
+  {
     "key": "細かく",
     "en": "Fine",
     "files": [
@@ -37703,6 +37993,19 @@
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "kept": true
+  },
+  {
+    "key": "組み技のセンスが光る",
+    "en": "Her grappling sense stands out.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:DRAFT_STYLE_FLAIR.Grappler"
+    ]
   },
   {
     "key": "組み直す",
@@ -39114,6 +39417,29 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "苦戦色濃く",
+    "en": "Struggling",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "荒々しいファイトが魅力の",
+    "en": "The appeal is how rough she fights.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:DRAFT_STYLE_FLAIR.Brawler"
+    ]
   },
   {
     "key": "華",
@@ -41281,6 +41607,19 @@
     ]
   },
   {
+    "key": "追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。",
+    "en": "Keep pushing her and she turns heavy, so the same training sticks less. Rest brings her back.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:UI_TIP_TEXTS.trainingFatigue"
+    ]
+  },
+  {
     "key": "追加費用",
     "en": "Extra Cost",
     "files": [
@@ -43134,6 +43473,19 @@
     "hasProperNoun": false
   },
   {
+    "key": "関節技に天性の嗅覚がある",
+    "en": "She has a natural nose for submissions.",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "source": [
+      "ui-render.js:DRAFT_STYLE_FLAIR.Submission"
+    ]
+  },
+  {
     "key": "関節技を決めた！ このまま極めるか！？",
     "en": "The hold is locked in! Can she keep it on?!",
     "files": [
@@ -44750,6 +45102,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "🏆 持ち出された王座",
+    "en": "🏆 The title taken out of the promotion",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "🏆 王座返上",
     "en": "🏆 Title Relinquished",
     "files": [
@@ -45936,6 +46298,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "📜 挑戦状発行済み — 次の興行のメインで <strong>{challenger}</strong> vs {champion}",
+    "en": "📜 Challenge issued — <strong>{challenger}</strong> vs {champion} in the main event of the next show",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "📜 歴代記録",
     "en": "📜 All-Time Records",
     "files": [
@@ -46268,6 +46640,16 @@
     ],
     "count": 2,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 <strong>{name}</strong>の密着取材中（{outlet}・残り{n}興行） — この選手にいい試合を組んでください",
+    "en": "📺 {outlet} is running a feature on <strong>{name}</strong> (shows left: {n}) — please book her a good match",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -47488,6 +47870,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（残り {n}/{total} 興行）",
+    "en": " (shows left: {n}/{total})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
