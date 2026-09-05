@@ -10941,8 +10941,9 @@ const App = {
     const pendingResolutions = App._pendingRivalryResolutions || [];
     App._pendingRivalryResolutions = [];
 
-    // チェーンを逆順に組み立て（retirement ← growth ← resolution ← eventPopups）
+    // 興行後の節目は既存キューで表示する。同期表示は後続の週送りで消されるため避ける。
     const popupActions = [];
+    popupActions.push(done => App._checkAndShowMilestone(done));
     // 王座結果は通常の通知ではなく、既存の節目イベントと同じ式典シーケンスで見せる。
     titleOutcomes.forEach(outcome => {
       const championId = outcome?.outcome === 'defense' ? outcome.champId : outcome?.newChampId;
