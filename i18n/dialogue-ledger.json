@@ -27604,6 +27604,20 @@
     }
   },
   {
+    "key": "……寝てな",
+    "en": "...Lights out.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……対抗戦。……お願いします",
     "en": "...A match against your promotion. ...Please.",
     "files": [
@@ -33563,7 +33577,7 @@
       "data.js:BITTER_RESOLUTION_LINES",
       "data.js:GLIMPSE_A_LINES"
     ],
-    "count": 4,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
@@ -116994,10 +117008,13 @@
     "files": [
       "battle-lines.js:CUTIN_LINES"
     ],
-    "count": 2,
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
   },
   {
     "key": "こ、ここから…ですの…!",
@@ -132262,6 +132279,20 @@
     }
   },
   {
+    "key": "そんなに…私を怒らせたいのっ…！",
+    "en": "Mm... you really do want me angry...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "そんなに力まなくても、ちゃんと相手するって。",
     "en": "You can relax, you know. I'll give you a real match.",
     "files": [
@@ -133692,6 +133723,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "つ、次は…わたしの番ですっ…！",
+    "en": "N-Next... it's my turn...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
     }
   },
   {
@@ -147204,6 +147249,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "もう…もう止まれませんっ…！",
+    "en": "I can't stop — I can't stop now...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "emotional"
     }
   },
@@ -216853,10 +216912,13 @@
     "files": [
       "battle-lines.js:CUTIN_LINES"
     ],
-    "count": 2,
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
   },
   {
     "key": "絶対に…絶対にですわっ…！",
@@ -223302,10 +223364,13 @@
     "files": [
       "battle-lines.js:CUTIN_LINES"
     ],
-    "count": 2,
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false,
-    "cell": null
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
   },
   {
     "key": "負けたくないですっ…！",
