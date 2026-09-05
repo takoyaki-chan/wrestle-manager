@@ -36,9 +36,9 @@ assert.ok(/\.ptv-result-upper--s\{width:108px;height:162px\}\.ptv-result-upper--
   '速報の勝者M 132×194 / 敗者S 108×162を別段にする');
 
 assert.ok(broadcast.includes('const summitResultBlock ='), '頂上決戦の決着専用ブロックがある');
-assert.ok(broadcast.includes('${vsBlock}\n        <div class="ptv-summit-result">両団体'),
+assert.ok(broadcast.includes('${vsBlock}\n        <div class="ptv-summit-result">${WM_I18N.t(\'両団体'),
   '対峙シーンだけがvsBlockを使う');
-assert.ok(broadcast.includes('${summitResultBlock}\n        <div class="ptv-summit-result">${r.turns'),
+assert.ok(broadcast.includes('${summitResultBlock}\n        <div class="ptv-summit-result">${WM_I18N.t(\'{n}ターンの死闘の末に——\', { n: r.turns'),
   '決着シーンはvsBlockを使い回さない');
 assert.ok(/\.ptv-result-upper--xl\{width:172px;height:258px\}/.test(css),
   '頂上決戦の勝者はXL 172×258');

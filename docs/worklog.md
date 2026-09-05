@@ -1,5 +1,111 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-05 英語対応 P7-30 — `src/ui-common.js` の未カバーJA 106件を仕分け(訳92/仕様除外14)・EN化(worktree agent-a829c46369a98d413)
+
+`docs/i18n-coverage-report-v0.1.md` §5 のC分類「ui-common.js 144件」の残り(P7-24/25/27/29 マージ後の実測106件)を1件ずつ描画パスまで追い、
+**(a) 表示に到達する 92件を台帳へ載せて英訳 / (b) 論理比較・到達不能・コメントの 14件を仕様除外**に仕分けた。
+ui-ledger 4,502 → **4,589**(未訳0)。ラチェット 28,057 → **28,058**(+1・内訳は下記)。
+
+### 1. 配線方式は「表示点が既にt()を持つか」「完成文がGへ焼かれるか」で3通りに割れた
+
+| 型 | 件数 | 直し方 |
+|---|---:|---|
+| 表示点にt()が無い(直書き) | 52キー | その場で `WM_I18N.t()`(PHがあるならテンプレ1本)。extract-uiが自動で拾う |
+| 表示点は既にt()だがキーが**変数**(動的キー) | 31キー | コードは触らず ui-ledger へ `kept:true` で手追加(§5の保全マージ規約) |
+| 完成文が**Gへ焼かれる**(ドラフト業界紙まとめ記事) | 4キー | 保存値はJAのまま据え置き、**追加フィールド**`headlineTpl/headlineVars`・`bodyTpl/bodyNames`を併記し表示点で組み直す(§14-3/§16-1) |
+
+動的キーの内訳: `FLAG_MODAL_META` の title 22種+既定値 `フラグ`(表示は `WM_I18N.t(meta.title)`)、
+大ニュースのリード既定値、レンタル拒否の `speech`、派閥合宿ナレーションの既定値、団体戦直訴の既定値、
+挑戦状結果の一言2種、秋対抗戦の優勝/MVPセリフの既定値2種。
+
+ドラフト記事は `_queueDraftIndustryNews` が `headline`/`body` を**読点で分割して業界ニュースを組み直す材料**にしているため、
+保存値のJAは1バイトも触れない。名前の列挙(`{names}`)はENの完成文をセーブへ焼かないよう
+`bodyNames`(生JA名の配列)だけを持たせ、表示点(`_renderNewspaperExtraPage`)で `Engine.newspaper.joinNameList(…, WM_I18N.t)` に畳む。
+`headlineTpl` は `WM_I18N.t()` の引数ではなく**データとして持つ文字列**なので extract-ui からは見えない(=二重登録が起きない)。
+指名漏れ見出しは template-ledger に既訳のある `指名漏れ{count}名、フリー市場へ` をそのまま借りた。
+
+### 2. 「書式そのものがJA固有」なものはlang分岐(§25-5/§34-3と同型)
+
+ボーナス起案の案番号は JA が漢数字(案 一/二/三/四)。ENは算用数字が正なので
+`const kanji = (WM_I18N.lang === 'en') ? ['1','2','3','4'] : ['一','二','三','四'];` の1行分岐にした(JA側は不変)。
+
+### 3. 仕様除外 14件(訳さない)とその根拠
+
+| 箇所 | 件数 | 根拠 |
+|---|---:|---|
+| L802 `あんたの団体` | 1 | `getWarChallengeDialogue(fighter, orgName)` が **orgName を本体で一切参照していない**(4行の関数)。引数ごと撤去した |
+| L6483 `S級団体` | 1 | `RIVAL_ORGS.find(o=>o.id==='org_s').name` のフォールバック。org_s は data.js の静的表に常在するので到達不能 |
+| L6490/6491 業界紙報道ポップアップ | 2 | **`showPopup` は src/ 全体に定義が無い**。`typeof showPopup === 'function'` が常に false の死コード(発見1) |
+| L6521 `ドラフト会議終了`/`全候補の交渉が完了しました` | 2 | `s.weeklyNewspaper` が無いときだけ作る既定号。publish は tickWeek 末で毎週走るのでドラフト時点では常に存在する |
+| L6739 `R{n}: プレイヤー降り` | 1 | `negState.log` はどこにも描画されない(specs §38-9-3 で既出) |
+| L11868 hostilityBands | 4 | `indexOf(hostilityLabel)` と `map((_, i) => …)` にしか使われず、配列の**値は一度も表示されない**(炎アイコンの本数を数えるだけ) |
+| L14109 / L16762 / L16780 | 3 | テンプレートリテラル内のCSSコメント・HTMLコメント(TODOメモ) |
+
+### 4. JA同一性の証明(337通り・不一致0)
+
+実物の `src/i18n.js` を `lang='ja'` で読み込み、**置換前の組み立て式と置換後の `t()`** を
+代表値の直積(数値9通り×名前4通り×団体3通り×ラベル3通り+名前リスト5パターン)で突き合わせた。
+PPVのターン数/評価テロップ・派閥ナレーション・F07コーチ報告・アーキタイプ転換・返還式の在位/防衛・
+レジェンドエンディングのナレーション・エンディング/解散の締め・単位語4種・天頂戦ドラマ2種・
+案番号の漢数字・ドラフト記事の見出し/本文6種、および引数なしt()化37本の素通し。**checks=337 / fails=0**。
+`node test/ja-golden.js` も基準hash `dd2e536b…` と完全一致(lines=11307)。
+
+### 5. 代表対訳
+
+| JA | EN |
+|---|---|
+| 年末恒例・女子プロレス年間総決算 | A year-end tradition — women's wrestling closes out the year |
+| テレビの明かりを消す。…いつか——**あの画面の中に立つのはうちの選手たちだ。** | I switch off the television. … Someday — **it will be my wrestlers standing inside that screen.** |
+| {n}ターンの死闘の末に—— | After {n} turns of war — |
+| ここ数週、ロッカールームの空気が変わっていた。 | The air in the locker room had been changing these past few weeks. |
+| 一人では、派閥とは呼べない | One person isn't a faction. |
+| ― {faction}は《{from}》から《{to}》へ気風を変えた ― | — {faction} changed its character from "{from}" to "{to}" — |
+| 在位 <b>{y}</b> ・ 防衛 <b>{d}</b> | Reign <b>{y}</b> · Defenses <b>{d}</b> |
+| もはや安泰の時代は終わった。<br><em>真の群雄割拠が始まる——</em> | The safe years are over.<br><em>Now the real scramble begins —</em> |
+| だが選手たちの戦いは続く——<br>どこか別の団体の下で。 | But the wrestlers fight on —<br>somewhere else, under another banner. |
+| 🥋 師弟 / 🪦 共闘ペアの裏切り | 🥋 Mentor and Protege / 🪦 A Tag Partner's Betrayal |
+
+### 6. ラチェット +1 の内訳(ui-common.js 1,327 → 1,328)
+
++6: `headlineVars` へ出した `プレイヤー団体`(従来は `${}` の中でスキャナに数えられていなかった)+ドラフト記事のテンプレ5本。
+−5: 撤去した `あんたの団体` 1本 + JAが完全に消えたテンプレートリテラル4本(頂上決戦の対峙/決着・派閥アーキタイプ転換・レジェンドエンディングのステージ)。
+差引 **+1**。`--update` 済み(総数 28,057 → 28,058)。
+
+### 7. 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(ui-common.js / ui-render.js / ppv-tv-result-clarity-test.js) | ✅ |
+| `node test/ja-golden.js` | ✅ 完全一致(lines=11307・hash `dd2e536b…`) |
+| `node test/i18n-build-dict.js` | ✅ ui **4,589**・未訳0 |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー16件・すべて訳文一致 |
+| `npm test` | ✅ **261/261 PASS** |
+| `node test/i18n-ratchet.js --update` | 28,057 → **28,058**(+1・内訳は§6) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・411手・**i18n-miss 0**・Issues 0・JA露出57(P7-25実測57と同値) |
+| ignite gameover(JA/EN) | ✅ PASS/PASS・マーカー2本HIT・EN i18n-miss 0 |
+| ignite tenchosen(JA/EN) | ✅ PASS/PASS・`unified-coronation` HIT・EN i18n-miss 0 |
+| ignite unified-player-turn(EN) | ✅ PASS・マーカー2本HIT・i18n-miss 0 |
+| ignite faction-ignite(JA) | ✅ PASS |
+| ignite faction-ignite(EN) | ⚠ **FAIL(既存)** — 下記「発見3」 |
+
+### 8. 発見(いずれも本バッチでは修正していない)
+
+1. **`showPopup` が存在しない** — `ui-common.js:6486` の EMPRESS安全網(S級団体との電撃契約)の「§6.4 ドラマ演出: 通知ポップアップ」は、
+   `typeof showPopup === 'function'` が常に false のため**一度も出たことがない**。i18nではなくゲーム側の欠落。
+2. **黒田記者の署名が2種類ある** — 解散セレモニーのコラム見出しだけ `黒田 沙智子 編集記事`(ui-common.js:16437)で、
+   ゲーム全体の正である `黒田幸子`(names-ledger `npc`・ui-render.js の署名ローテーション)と姓名が食い違う。
+   ENは辞書の正(`Sachiko Kuroda`)へ寄せた("Editorial by Sachiko Kuroda")。**JAをどちらに揃えるかはKeisuke裁定待ち**。
+3. **`npm run test:ui:ignite -- --scenario faction-ignite --lang en` が既存FAIL** —
+   `ignite-ceremony` マーカー未観測 / `factionPendingIgnite` 残留 / hostility が開戦水準に届かない(max=55)+ `D5_WATCHDOG`。
+   本バッチの変更前(`git stash` でHEADへ戻した状態)でも **digest `62a61bb9eb424fd8` まで完全に同一のFAIL**を再現したので、
+   P7-30 起因ではない。JAは PASS(digest `b97c8f52a3663ffb`)なので、**EN経路だけ派閥開戦へ辿り着けていない**(走破ルートの問題)。
+4. **`test/ppv-tv-result-clarity-test.js` の契約2件がソースの形を見ていた** — `${vsBlock}` / `${summitResultBlock}` の直後に来る
+   地の文を生JAの literal で検査していたため、t()配線で落ちた。守っている性質(対峙シーンだけがvsBlockを使う/決着シーンは使い回さない)は
+   変えずに、`${WM_I18N.t('両団体…` / `${WM_I18N.t('{n}ターンの死闘の末に——', { n: r.turns` へ更新した。
+
+- **実機確認**: docs/実機確認バックログ.md「英語対応 P7-30」節。
+
 ## 2026-09-05 英語対応 P7-29 — ロスター画面の所属選手件数が常に0のJAバグ修正+死骸のスカウト画面を撤去 / P7-24・P7-27マージ
 
 - **経緯**: P7-24(ヘルプ画面の英訳)の副産物で、`index.html` の `#rosterCount`(所属選手 (N名))と `#faCount`(スカウト画面)がJSから一度も更新されず初期値 `0` のまま表示されていることが判明。同じ見出しの `#staffCount/#staffMax` は `renderRoster` 内で更新されているのに選手側だけ抜けていた既存JAバグ。

@@ -9609,6 +9609,19 @@ function _renderNewspaperExtraPage(wp, pageData) {
   </div>`;
 
   pageData.stories.forEach(story => {
+    // i18n P7-30: 見出し/本文がGへ焼かれた完成文の記事(ドラフト3種)は、併記された
+    // テンプレ+差し込み値から表示時に組み直す(specs §14-3/§16-1)。保存値そのものを
+    // t() へ通さないこと — 完成文は辞書キーと一致せず i18n-miss を汚す(§15-1)。
+    // 追加フィールドを持たない旧セーブ・他種の記事は従来どおり保存値を素通しする。
+    const _joinNames = (typeof Engine !== 'undefined' && Engine.newspaper && Engine.newspaper.joinNameList) || null;
+    const _extraNames = (_joinNames && Array.isArray(story.bodyNames) && story.bodyNames.length)
+      ? _joinNames(story.bodyNames, WM_I18N.t) : null;
+    const _headline = story.headlineTpl
+      ? WM_I18N.t(story.headlineTpl, story.headlineVars || undefined) : story.headline;
+    const _body = story.bodyTpl
+      ? WM_I18N.t(story.bodyTpl, Object.assign({}, story.bodyVars || null, _extraNames != null ? { names: _extraNames } : null))
+      : (_extraNames != null ? _extraNames : story.body);
+    story = Object.assign({}, story, { headline: _headline, body: _body });
     html += `<div style="padding:12px 20px;border-bottom:1px solid rgba(95,69,35,0.12);">`;
     html += `<div style="font-size:16px;font-weight:900;line-height:1.3;margin-bottom:6px;">${story.headline}</div>`;
 

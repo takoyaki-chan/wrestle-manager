@@ -1844,3 +1844,117 @@ JA走破のdigestだけが安定した不変条件なので、EN側はPASS/Issue
 2. **キャリア年表の「経歴(怪我・重大事項)」欄の`detail`** — `careerHistory[].detail`(怪我名)は
    データ側の値で、年表・怪我欄の両方に生JAで出る。injuryLabel と同じ層の解決が要る
 3. **`ns.log`(交渉ログ `R{n}: プレイヤー降り ({bid}万)`)は現状どこにも描画されない** — 描画するなら要配線
+
+## 39. Stage B P7-30 — `ui-common.js` の未カバーJA 106件の仕分けとEN化(2026-09-05追加)
+
+`docs/i18n-coverage-report-v0.1.md` §5 の C分類「ui-common.js」を全数消化した。
+**表示に到達する92件を訳出**(ui-ledger 4,502→**4,589**・未訳0)、**14件を仕様除外**。
+ラチェット 28,057→**28,058**(+1)。
+
+### 39-1. C分類の消化は「訳す前に、表示に到達するかを1件ずつ数える」
+
+106件のうち **14件(13%)は一度も画面に出ない**。内訳は5型で、いずれも grep だけでは見分けられず
+呼び出し元・描画点まで追って初めて判る。**同型を次のバッチでも最初に振り分けること。**
+
+| 型 | 例 | 見分け方 |
+|---|---|---|
+| **呼ばれる先が存在しない** | `typeof showPopup === 'function'` で守られた通知(`showPopup` は src/ 全体に定義が無い) | ガード付き呼び出しは**関数の定義を grep する**。ガードがあるほど疑う |
+| **関数が引数を使っていない** | `getWarChallengeDialogue(fighter, orgName)` の `orgName`(本体4行で一度も参照しない) | 実引数側だけ見ると「団体名のフォールバック」に見える。**必ず関数本体を読む** |
+| **到達不能なフォールバック** | `RIVAL_ORGS.find(o=>o.id==='org_s').name || 'S級団体'` / `s.weeklyNewspaper` が無いときの既定号 | 左辺が**静的データ表**か**毎週必ず設定される状態**なら不能 |
+| **論理比較専用の配列** | `hostilityBands` は `indexOf(label)` と `map((_, i) => …)` にしか使われない | 値が `_` で捨てられているか、`indexOf`/`includes` の引数にしかならないか |
+| **テンプレートリテラル内のコメント** | `\`<style>… /* U1: 試合結果表示の… */ …\`` / `<!-- TODO: … -->` | スキャナは `${}` を除いた塊を1本の文字列として拾うので、CSS/HTMLコメントが「未カバーJA」に化ける |
+
+### 39-2. 「表示点が既にt()を持つ」動的キーはコードを触らず台帳へ
+
+`FLAG_MODAL_META[modal.type].title` は `WM_I18N.t(meta.title)` で正しく引かれているのに、
+`t()` の第1引数が**変数**なので extract-ui の走査に出ない(=辞書が空でENでもJAのまま)。
+この族はコードを1文字も変えず、**ui-ledger へ `kept:true` の行を手で足すのが正解**(§5の保全マージ規約)。
+P7-30 で手追加したのは31キー — FLAG_MODAL_META の title 22種+既定値 `フラグ`、
+大ニュースのリード既定値、レンタル拒否の `speech`、派閥合宿ナレーションの既定値、
+団体戦直訴の既定値、挑戦状結果の一言2種、秋対抗戦の優勝/MVPセリフの既定値2種。
+
+**見分け方**: その文字列を `showEventPopup({speech})` / `_u3bSideHtml({line})` / `_mdlAFlowPortraitHtml({line})` /
+`WM_I18N.t(meta.title)` のように**共通レンダラへ渡しているだけ**なら、レンダラ側が既にt()を持っている。
+ここで呼び出し元にもt()を足すと二重適用になり、置換済みの完成文が `[i18n-miss]` を汚す(§15-1)。
+
+### 39-3. 「完成文がGへ焼かれ、かつ**別の処理がその完成文を読み直す**」族
+
+ドラフト業界紙まとめ記事(`_buildDraftSummaryPage`)の `headline`/`body` は
+`G.weeklyNewspaper.pages` と `G._draftResultPages` へ**完成文のまま永続**するうえ、
+`_queueDraftIndustryNews` が `String(st.headline).split('、')[0]` / `String(st.body).split('、')` で
+**読点分割して業界ニュースを組み直す材料**にしている。つまり保存値のJAは表示以外の役目も持つ。
+
+- **保存値(`headline`/`body`)は1バイトも変えない**。§14-3/§16-1の**追加フィールド**を併記する
+  (`headlineTpl`/`headlineVars`、`bodyTpl`/`bodyVars`)
+- 名前の列挙は**ENの完成文をセーブへ焼かない**ため `bodyNames`(生JA名の配列)だけを持たせ、
+  表示点で `Engine.newspaper.joinNameList(story.bodyNames, WM_I18N.t)` に畳んで `{names}` へ入れる
+- 表示点は `ui-render.js` の `_renderNewspaperExtraPage` **1関数**に集約(story を浅いコピーで差し替える)。
+  追加フィールドを持たない旧セーブ・他種の記事は従来どおり保存値を素通しする
+- **`headlineTpl` は `WM_I18N.t()` の引数ではなく「データとして持つ文字列」なので extract-ui からは見えない。**
+  これは事故ではなく利点で、**他台帳が既に持っているキーをそのまま借りられる**
+  (`指名漏れ{count}名、フリー市場へ` は `NEWS_HEADLINE_TEMPLATES` 由来で template-ledger に既訳がある)。
+  借りずに新しく起こしたキーだけを ui-ledger へ `kept:true` で足せば、§15-3の二重登録も起きない
+
+### 39-4. 「1つの枠に2つの単位語」は既訳キーの文脈を確かめてから借りる
+
+ゲームオーバー/エンディングの成績表は左に見出し(`活動期間`=Active Years)、右に `{n} シーズン` のような
+**空白付きの単位語**が来る。ui-ledger には空白なしの `{n}位`→`#{n}` / `{n}回`→`{n}` / `{n}名`→`Wrestlers: {n}` が既にあるが、
+JAを1バイトも変えられない以上 `{n} 位`(空白あり)は**別キー**になる。訳文は「その枠の見出しが何を名乗っているか」で決める:
+
+- `{n} 位` → `#{n}`(既訳と同じ)/ `{n} 回` → `{n}`(見出しが Shows Run なので単位語は不要)
+- `{n} シーズン` → `Seasons: {n}`(規則23が `{n} seasons` を禁じるのでコロン列挙型)
+- `{n} 名` → `{n} inducted`(消費点2つともが殿堂入り人数だったので、汎用の `Wrestlers: {n}` より枠に合う)
+
+### 39-5. 「書式そのものがJA固有」はlang分岐(§25-5/§34-3の3例目)
+
+社長室のボーナス起案の案番号は JA が漢数字(`案 一`〜`案 四`)。ENは算用数字が正なので、
+`const kanji = (WM_I18N.lang === 'en') ? ['1','2','3','4'] : ['一','二','三','四'];` の1行分岐にした。
+辞書で解けないのは「値そのものが表記体系」だから — 数値の書式・文字数勘定と同じ族。
+
+### 39-6. JA同一性の証明(337通り・不一致0)
+
+実物の `src/i18n.js` を `lang='ja'` で VM に読み込み、**置換前の組み立て式と置換後の `t()`** を
+代表値の直積で突き合わせた(数値9×名前4×団体3×ラベル3+名前リスト5パターン)。
+PPVのターン数/評価テロップ・派閥ナレーション・F07コーチ報告・アーキタイプ転換・返還式の在位/防衛・
+レジェンドエンディングのナレーション・エンディング/解散の締め・単位語4種・天頂戦ドラマ2種・
+案番号の漢数字・ドラフト記事の見出し/本文6種、および引数なしt()化37本の素通し。**checks=337 / fails=0**。
+`node test/ja-golden.js` も基準hash `dd2e536b…` と完全一致。
+
+### 39-7. ソースの形を見る契約テストはi18n配線で落ちる
+
+`test/ppv-tv-result-clarity-test.js` は `${vsBlock}` / `${summitResultBlock}` の**直後に来る地の文**を
+生JAの literal で照合して「対峙シーンだけがvsBlockを使う」を守っていた。t()配線でこの形が変わるので、
+**守っている性質は変えずに照合文字列だけ `${WM_I18N.t('…` 形へ更新する**。
+同種(ソース文字列の contains で設計を守る契約テスト)は他にもあるので、UI層のt()化バッチでは
+`npm test` の失敗を「テストが古い」と決めつけず、**そのテストが何を守っているか**を読んでから直す。
+
+### 39-8. 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(ui-common.js / ui-render.js / ppv-tv-result-clarity-test.js) | ✅ |
+| `node test/ja-golden.js` | ✅ 完全一致(lines=11307・hash `dd2e536b…`) |
+| `node test/i18n-build-dict.js` | ✅ ui **4,589**・未訳0 |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 重複16件・訳文一致 |
+| `npm test` | ✅ **261/261 PASS** |
+| `node test/i18n-ratchet.js --update` | 28,057→**28,058**(+1。内訳: `headlineVars`へ出した`プレイヤー団体`+ドラフト記事テンプレ5本 = +6 / 撤去した未使用引数1本+JAが消えたテンプレートリテラル4本 = −5) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・411手・**i18n-miss 0**・Issues 0・JA露出57(§38-8実測と同値) |
+| ignite gameover / tenchosen / unified-player-turn(EN) | ✅ すべてPASS・i18n-miss 0 |
+| ignite gameover / tenchosen / faction-ignite(JA) | ✅ すべてPASS |
+
+### 39-9. P7-30で新たに見つかった穴(未着手)
+
+1. **`showPopup` が存在しない** — `ui-common.js:6486` の EMPRESS安全網(S級団体との電撃契約)の
+   「§6.4 ドラマ演出: 通知ポップアップ」は `typeof showPopup === 'function'` が常に false で**一度も出たことがない**。
+   i18nではなくゲーム側の欠落。復活させるなら `showEventPopup` 系へ載せ替える
+2. **黒田記者の署名が2種類ある** — 解散セレモニーのコラム見出しだけ `黒田 沙智子 編集記事`(ui-common.js:16437)で、
+   ゲーム全体の正である `黒田幸子`(names-ledger `npc` / ui-render.js の署名ローテーション)と姓名が食い違う。
+   ENは辞書の正(`Sachiko Kuroda`)へ寄せた。**JAをどちらに揃えるかはKeisuke裁定待ち**
+3. **`--scenario faction-ignite --lang en` が既存FAIL** — `ignite-ceremony` 未観測 / `factionPendingIgnite` 残留 /
+   hostility が開戦水準に届かない(max=55)+ `D5_WATCHDOG`。**HEADへ戻した状態でも digest `62a61bb9eb424fd8` まで
+   完全に同一のFAIL**を再現したので P7-30 起因ではない。JAは PASS(digest `b97c8f52a3663ffb`)なので、
+   EN経路だけ派閥開戦へ辿り着けていない(走破ルート側の問題)
+4. **`showFactionF02Modal` の派閥名が `_factionDisplayName` を通っていない** — 開戦ナレーション2行目の
+   `payload.factionAName`/`factionBName` は生値のまま `_quoteVal` に入る(§10で導入した「○○派」の表示直前変換を経由しない)。
+   P7-30 は挙動を変えないため据え置いた
