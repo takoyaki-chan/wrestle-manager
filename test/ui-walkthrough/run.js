@@ -349,6 +349,12 @@ async function main() {
           console.log(`  ${count}x ${key}`);
         }
       }
+      // P7-35b: igniteモードでは点火ツアーが走破本体の後に走るため、上の書き出し時点では
+      // ツアー中の露出が未収集で空ファイルになっていた。集計直前に全量で書き直す(内容は同一構造)。
+      if (options.jaExposureLog) {
+        fs.writeFileSync(options.jaExposureLog, `${JSON.stringify(detectors.jaExposureRecords, null, 2)}
+`, 'utf8');
+      }
       const exposureEntries = [...detectors.jaExposureByScreen.entries()].sort((a, b) => b[1] - a[1]);
       console.log(`JA exposure by screen (informational, not a failure condition): ${exposureEntries.length
         ? exposureEntries.map(([screen, count]) => `${screen}=${count}`).join(', ')
