@@ -165,7 +165,7 @@ section('事前記事の段落は断定しない / 素材が無ければ空を�
   const par = NP.eventPreviewParagraph(st, [101, 102]);
   assert.ok(par && par.length > 0, '段落が組み立てられない');
   assert.ok(!/優勝する|必ず|確実/.test(par), `記者の予想が断定になっている: ${par}`);
-  assert.ok(!/OVR|総合値|pw/.test(par), `生の能力値が漏れている: ${par}`);
+  assert.ok(!/OVR|総合値|\bpw\b/.test(par), `生の能力値が漏れている: ${par}`);
   assert.strictEqual(NP.eventPreviewParagraph(st, []), '', '素材が無いのに文を作っている');
 });
 

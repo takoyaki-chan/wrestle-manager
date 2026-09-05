@@ -1,5 +1,42 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🐛 特性名の文字化け(data.js:60)の追跡 — 旧セーブへの修復パスを saveDoctor に追加+リポジトリ全体の U+FFFD 棚卸し(2026-09-05・Fable・worktree determined-mclaren-0e9759)
+
+P7-20 が見つけた data.js:60(高橋まゆみ id:49 の `'名���負製造機'`)の修正タスク。着手時点で**マスタ側は db9ce9a5(同日12:50・別セッション)で修正済み**だったため、本タスクでは「同族の破損が他に無いか」「既存セーブに届いているか」の2点を詰めた。結論: **src/ に他の破損は無いが、修正は既存セーブに届いていなかった**。
+
+### 1. 既存セーブには届いていなかった → `Engine.saveDoctor._normTraits`(management.js +44行)
+
+特性は `traits` 配列ごと選手オブジェクトに焼かれてセーブへ永続する(app.js の `_migrated_npc_traits` は traits 未設定のAI選手を埋めるだけで既存値は触らない)。よって修正前に始めたセーブでは高橋まゆみの特性は化けたまま=`Traits.has()` が false のまま効果もバッジも出ない。走破ハーネスの S1W1 フィクスチャ(`season-1-week-1-seed42.json`、id:49 は org_s 所属)を含むセーブフィクスチャ4本が実際にそうなっていた。
+
+対処は Engine 側の既存の読込修復パス `Engine.saveDoctor.repairOnLoad`(task-68 の `_normArchetype` と同じ場所・同じ型。app.js:3668 から毎ロード呼ばれる)に `_normTraits` を追加:
+- 対象は「`TRAIT_DEFS` に無く、かつ U+FFFD を含む」特性名だけ。U+FFFD の連続を「元の1文字以上」のワイルドカード(`^名.+負製造機$`)にして、まず同キャラのマスタ特性、次に `TRAIT_DEFS` 全キーと突合し、**候補が一意に決まる場合のみ置換**。決まらなければ触らない(fail-open)。既に正しい特性を併せ持つ場合は二重付与しない
+- roster / freeAgents / scoutCandidates / retiredFighters / aiOrgs[].roster の全プール。dormantPool は {id,age} のみで対象外(spawn 時にマスタから引く)
+- 正常な選手は参照同一で返す(冪等)。修復時は `changes` に `trait_mojibake_repaired:49:名勝負製造機` が積まれ、app.js 側の既存経路で `[WM Load Repair]` コンソール行+gameLog `save_repair_applied` に残る。プレイヤー向けの説明文は出さない(不在データ方針と同じく静かに直す)
+
+### 2. リポジトリ全体の U+FFFD / 文字化け棚卸し
+
+`git ls-files` 1,296 ファイルを U+FFFD・U+FFFE/FFFF・孤立サロゲート・途中BOM・C0制御文字・SJIS/Latin-1 二重エンコード痕の7種で走査:
+- **src/ は 0 件**(配布 manifest は src/ 38 ファイルのみ → 出荷物は健全)。二重エンコード痕・サロゲート・途中BOM も全ファイル 0
+- 同じ `'名���負製造機'` が残っていた箇所: `specs/character-data-spec-v1.7.md`(id:49 の行・**修正**)/`test/_patched.js`(v1.14 期の data.js 丸ごとコピー・据え置き)/セーブフィクスチャ4本(`season-1-week-1-seed42`・`chronicle-demo-30seasons-seed4242`・`wm_save_real`・`legacy-saves/v1.25_S3W11`。**据え置き=修復パスの退行フィクスチャとして使う**。直すと退行ガードにならない)
+- 別の破損で復元できたもの(**修正**): `specs/weekly-gameloop-spec-v1_0.md:91` `AI��体間移籍`→`AI団体間移籍`/`test/auto-sim.js:2614`・`test/track-org-rosters.js:793` のコメント罫線 `─���`→`──`/`test/newspaper-news-value-test.js:168` の正規表現 `\bpw\b` が**生のバックスペース 0x08** に化けて pw 検出が死んでいた(直しても PASS=現状 pw 漏れなし)
+- 据え置き(復元不能 or アーカイブ): `docs/archive/` 139 件(attendance-redesign-v1 59・bug-audit-202603xx 4本×19=2026-03 事故期の文書)/`legacy-saves/v1.0x_S2W23_2026-03-21.json` 63 件・`v1.20_S4W3` 54 件(ティッカー文字列が保存時点で化けていた実セーブ。読込互換の検体なのでそのまま)/`test/fixtures/save-3seasons-seed42.json` の `"reason":"AI����"` 4 件(原文不明)/`docs/worklog.md`・`docs/i18n-coverage-report-v0.1.md` の引用 17 件(意図的)
+- **削除候補(Keisuke裁定待ち)**: `test/_xlsx_compact.txt`・`_xlsx_compact2.txt`(Shift_JIS のセリフ書き出しスクラッチ。UTF-8 として不正 14,278 箇所=走査ノイズの 97%)と `test/_patched.js`(17,693 行の旧 data.js コピー、`test/_run_patch.js` のみ参照)。いずれも実行系・npm test から参照なし
+- `tools/axis-rewrite.js` の NUL 区切りキーは意図的(問題なし)
+
+### 3. 検証
+
+- 新規 `test/trait-mojibake-repair-test.js`(35 検査・QUICK に追加): マスタ全特性が TRAIT_DEFS に一致し U+FFFD 無し(**data.js:60 型の破損は今後コミット前に落ちる**)/全5プールの修復/`Traits.has` 復活/マスタ無し選手の TRAIT_DEFS 突合/冪等・fail-open 3種・二重付与なし/実フィクスチャ通し
+- `npm test` 262/262 PASS(261+新規1)。`node test/auto-sim.js 40`(着手時・マスタ修正の受け入れ)と `20 42`(management.js 編集後)ともに ALL CLEAR。`node test/ja-golden.js` 基準と完全一致(新規ゲームの経路は不変)
+- 走破ハーネス ja: フィクスチャの id:49 が修復されて特性が有効になるため、行動 digest は `1052faa82eaf7991` から **`47acf96d788785a7`** に変わる(Actions 337・Issues 0・Walkthrough PASS、フル出力はスクラッチに保存)。**i18n 側で「ja digest 不変」を確認する際は今後この値を基準にする**(変化の理由は実バグ修正であって訳文起因ではない)
+
+### 4. 実機確認
+
+`docs/実機確認バックログ.md` の「特性名の文字化け修正(09-05)」に、修正前のセーブを読み込んだときの確認項目を1つ追加。
+
+変更: src/management.js(+44)/test/trait-mojibake-repair-test.js(新規)/test/run-all.js(QUICK +1)/specs/character-data-spec-v1.7.md(表記修正+§2.6 整合性行+改訂履歴)/specs/weekly-gameloop-spec-v1_0.md(表記修正)/test/auto-sim.js・test/track-org-rosters.js(コメント)/test/newspaper-news-value-test.js(正規表現)/docs/game-system-roadmap.md/docs/実機確認バックログ.md/本項
+
+---
+
 ## 🌐 英語対応 P7-22 — `npm run test:ui:ignite -- --scenario tenchosen --lang en` がドライバ停止する件を根治(2026-09-05・worktree agent-a7dbef864645e5ab8)
 
 P7-19が発見した「天頂戦igniteのEN初実行が、天頂戦とは無関係な画面でドライバ停止する」件の調査・修正。開始前にworktreeブランチをmain先端(`da2d1ed5`。P7-19=da2d1ed5までmain入り)へfast-forward。

@@ -95,6 +95,37 @@ const Engine = {
       return { ...c, archetype: 'standard' };
     },
 
+    // 2026-09-05: 特性名の文字化け修復(旧セーブ互換)。data.js:60 高橋まゆみ(id:49)の
+    // '名\uFFFD\uFFFD\uFFFD負製造機'(「勝」が U+FFFD×3 に化けていた)は db9ce9a5 でマスタ側を直したが、
+    // 特性は選手オブジェクトに焼かれてセーブへ永続するため既存セーブには届かず、
+    // TRAIT_DEFS と一致しない特性は Traits.has() が常に false(効果もバッジも出ない)のまま残る。
+    // 対象は「TRAIT_DEFS に無く、かつ U+FFFD を含む」特性名だけ。U+FFFD の連続を「元の1文字以上」の
+    // ワイルドカードとして、まず同キャラのマスタ特性、次に TRAIT_DEFS 全キーと突合し、候補が
+    // 一意に決まる場合のみ置換する。決まらなければ触らない(fail-open)。正常な特性しか持たない
+    // 選手は参照同一で返す(冪等・毎ロード実行で無害)。log 配列を渡すと "id:特性名" を積む。
+    _normTraits(c, log) {
+      if (!c || !Array.isArray(c.traits)) return c;
+      const isBroken = t => typeof t === 'string' && t.includes('\uFFFD') && !Traits.getDef(t);
+      if (!c.traits.some(isBroken)) return c;
+      const master = (ALL_CHARS || []).find(ch => ch.id === c.id);
+      const masterTraits = (master && Array.isArray(master.traits)) ? master.traits : [];
+      const allKeys = (typeof TRAIT_DEFS !== 'undefined' && TRAIT_DEFS) ? Object.keys(TRAIT_DEFS) : [];
+      const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const traits = c.traits.map(t => {
+        if (!isBroken(t)) return t;
+        const re = new RegExp('^' + t.split(/\uFFFD+/).map(esc).join('.+') + '$');
+        const uniq = pool => {
+          const hits = pool.filter(k => Traits.getDef(k) && re.test(k) && !c.traits.includes(k));
+          return hits.length === 1 ? hits[0] : null;
+        };
+        const fixed = uniq(masterTraits) || uniq(allKeys);
+        if (!fixed) return t;
+        if (Array.isArray(log)) log.push(`${c.id}:${fixed}`);
+        return fixed;
+      });
+      return { ...c, traits };
+    },
+
     _diag(state) {
       const allIds = Engine.saveDoctor._allIds();
       const seen = new Map();
@@ -282,6 +313,19 @@ const Engine = {
         aiOrgs: Object.fromEntries(Object.entries(rawState.aiOrgs || {}).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(Engine.saveDoctor._normArchetype) }])),
       };
       const changes = [];
+      // 2026-09-05: 特性名の文字化け(U+FFFD)をマスタと突合して修復(_normTraits 参照)。
+      // roster/freeAgents/scoutCandidates/retiredFighters/aiOrgs[].roster の全選手が対象。
+      // dormantPool は {id,age} のみで特性を持たない(spawn 時にマスタから引く)ため対象外。
+      {
+        const repairedTraits = [];
+        const normTraits = c => Engine.saveDoctor._normTraits(c, repairedTraits);
+        state.roster = state.roster.map(normTraits);
+        state.freeAgents = state.freeAgents.map(normTraits);
+        state.scoutCandidates = state.scoutCandidates.map(normTraits);
+        state.retiredFighters = state.retiredFighters.map(normTraits);
+        state.aiOrgs = Object.fromEntries(Object.entries(state.aiOrgs).map(([orgId, org]) => [orgId, { ...org, roster: (org.roster || []).map(normTraits) }]));
+        if (repairedTraits.length > 0) changes.push(`trait_mojibake_repaired:${repairedTraits.join('/')}`);
+      }
       const baselineSeason = Math.max(1, (state.season || 1) - 10);
       const before = Engine.saveDoctor._diag(state);
       const occupied = new Set();
