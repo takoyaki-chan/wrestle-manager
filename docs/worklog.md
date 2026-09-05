@@ -1,5 +1,12 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-05 停止点 — 第3波(P7-30/31/33)マージ完了・main緑(c43a8e1b)。メモリ負荷のため Keisuke 指示でここで中断
+
+- **状態**: ja-golden 完全一致(dd2e536b…)/ npm test 263 / UI辞書 4,686・テンプレ 3,585・セリフ 17,092・未訳0 / opening-scene-i18n-check PASS。P7-30 と P7-31 の specs 追記は §42/§44 に採番(P7-28 は §43)。
+- **走破 digest は未確定**: エージェント5本の走破が並行した時間帯で ja 327〜333手・毎回別 digest(既知の並行 flake)。P7-30/31 はそれぞれ単独で 1052faa82eaf7991 を再現している。**次回セッション冒頭に main で単独1本(ja)+EN 1本**を回して確定させる。
+- **未処理**: P7-37(カットイン重複2組の書き分け・Opus・実行中。結果は `worktree-agent-a7fd47f56da990dc6`)/ 別セッションのチップ task_58e123f3(management.js の industryNews 3欄の Raw 値再構築)。どちらも結果が出たら通常手順でマージ。
+- **次の順**: P7-36 ティッカー廃止 → P7-38 年代記の姓(B-2) → P7-40/41(A-1 配線: `docs/ui/03-screens/dojo-heat-self-bubble.md` / `war-challenge-modal.md`)→ P7-42 GLIMPSE_A 51行の英訳(A-2 は削除から訳出へ訂正)→ C-3 `_aceFlavorByPersona` 配線 → 財務明細 `d.label` 6箇所(§14-3)→ 開幕導線の走破穴 → 裁定: 黒田記者の署名2種類(沙智子/幸子)・`showPopup` 未定義(EMPRESS 電撃契約ポップアップが一度も出ていない)。
+
 ## 🌐 英語対応 P7-31 — `ui-render.js` の未カバーJA 79件の仕分け・配線・英訳(**旗揚げ序章オーバーレイ**を含む。2026-09-05・worktree agent-a737b9f752993d44f)
 
 着手前に worktree を main 先端(`8287f6af`。P7-24/25/27/29 入り)へ fast-forward。
