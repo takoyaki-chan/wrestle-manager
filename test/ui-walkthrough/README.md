@@ -110,7 +110,7 @@ npm run test:ui:ignite -- --scenario chronicle --lang en
 
 `chronicle` シナリオは **S18・序章=進行中・確定章3本**のセーブから、序章(記者の見立て/ハイライト/書きかけの章末)・各章(章題/副題/エース/同期/外敵/通算タイル/章末)・「年代記を再構築」ボタンを一巡します。**年代記まわりのコード(`Engine.chronicle` / `Engine.prologue` / `_renderPrologueBlock` / `_renderDbChronicle`)を触ったら JA と `--lang en` の2本**を回してください。
 
-**既知の未解決FAIL(`chronicle --lang en`・2026-09-05 P7-22で発見)**: 現状 `IGNITION_MISFIRE` になります。原因はドライバ側ではなく製品側で、`AXIS_LABELS`(`打撃`/`組技`/`関節技`/`喧嘩`/`万能`。`src/management.js` の `Engine.chronicle`)由来の一部叙述文が、EN表示中でも辞書訳(`src/lang-en.js` に既存)を経由せずJAのまま出る(「年代記を再構築」クリック後も再現)。翻訳語彙自体は揃っているため単位語sweep(P7-18)の対象ではなく、`narrativeParts`(表示時に現在言語で組み直すための追加フィールド、specs §14-3)の生成側に固有の配線漏れがある可能性が高い。P7-22の作業スコープ外のため、この場ではドライバ側の2バグ(上記)のみ修正し、本件は別タスクとして切り出した(未着手)。
+**(解消済み・P7-27)** `chronicle --lang en` はかつて `IGNITION_MISFIRE` でした。原因は `Engine.chronicle._buildPeerNarrativeParts`(`src/management.js`)が `styleJa`(`AXIS_LABELS` = `打撃`/`組技`/`関節技`/`喧嘩`/`万能`)を **buildChapters 側(dict無し=JA固定)で先に辞書解決してしまい**、`narrativeParts.opening` パーツに `L` マーカーを付けずに保存していたこと。表示時(`ui-render.js` の `_chronicleNarrative` → `narrativeText(…, WM_I18N.t)`)は `L` が無い値を再解決しないため、キャッシュに焼き込まれたJAの軸ラベルがENテンプレへそのまま素通りしていた。修正で `styleJa`/`org`(既定ラベルにフォールバックした場合のみ)を生JAのまま保持し `openingPart.L` に載せ、表示時に再解決するようにした(`_generateClosingParts` の `axis`/`org` と同じ流儀)。JA完成文は1バイト不変(`node test/ja-golden.js` 一致)。
 
 検出器だけを既知バグ入りサンドボックスで確認するには次を実行します。
 
