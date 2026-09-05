@@ -44,6 +44,8 @@
 | R9 | 開眼演出 | 隠しシード | 開眼シードと格上戦条件を満たす対戦を配置 | 次バッチ |
 | R10 | 大ニュース一面(hotProspectDebut/fatedRivals/王座交代) | trainCap等の条件 | 該当条件の新人/王者交代を加工 | 次バッチ |
 | R11 | 怪我発生→欠場→復帰 | 確率 | 怪我状態を加工し復帰週まで走破 | 次バッチ |
+| R12 | 年代記/序章(データベース→年代記タブ→序章/各章/再構築を巡回。`tour`方式) | 章確定に十数季かかる | S18まで進めた確定章3本以上のセーブ。`fixture.maxWeeks=1400` | ✅ PASS(JA/EN) — 詳細は`test/ui-walkthrough/README.md` |
+| R13 | 新聞4面(年間MVPレース)。1面「MVPレース詳細 ▶」→4面を`tour`で巡回、`_npMvpI18n`(P7-23)のフォールバック件数も計測 | ナビ巡回・自然走破のどちらも素通りする | S1W3までheadless進行(加工不要。mvpRace.rankings≥4件をassert) | ✅ PASS(JA) / ❌ FAIL(EN・既知の未修正バグ。§8参照) |
 
 優先順位はレア度×実装の新しさ×壊れたときの被害で決める。R3/R4(2026-08-13マージの最新画面)とR5が次候補。
 
@@ -64,6 +66,7 @@
 ```powershell
 npm run test:ui:ignite -- --scenario tenchosen
 npm run test:ui:ignite -- --scenario gameover
+npm run test:ui:ignite -- --scenario newspaper-mvprace
 npm run test:ui:ignite -- --scenario tenchosen --regen   # fixtureを作り直す
 ```
 
@@ -82,3 +85,11 @@ R1天頂戦=**PASS**(77操作85秒・S4W41→W48開催→優勝発表→初代�
 - **製品バグ1件**: 選択サーフェス内の顔画像(portraitImg第4引数)がstopPropagationで選択リスナーを飲み込む型。大型イベントピック2/天頂戦エントリー行/通常PPV行の4箇所修正+`test/selection-surface-portrait-guard-test.js`。カード編成ピッカー行2箇所は同型だが操作感が変わるためKeisuke裁定待ち(チップ起票済み)
 - **②ハーネスの不備4件**: waitForTimedUiのclock.pauseAt競合クラッシュ / titleScreenがactiveScreenに出ない(.screenではない+下の画面が残る) / 全画面タップ面(.tcwn-wrap等)が候補から漏れ優勝発表で詰む / クリック恒久失敗が墜落(→D2+アーティファクトで着地に変更)。加えて側画面(新聞等)からの「今週」帰還脱出口を新設
 - **fixture生成の教訓**: make-save.jsはauto-simの古いコピーでJT/秋対抗戦/派閥イベントを消化しない。headless-sim.jsは現行auto-simループを正として移植し、UI消化フラグ(pendingAwards等)の残骸を実プレイ相当へ戻してから書き出す
+
+## 8. R13 新聞4面(年間MVPレース)追加の記録（2026-09-05 P7-34）
+
+P7-23(`Engine.mvpRace`の新聞フレーバー285本をJA完成文でセーブし、表示時に`_npMvpI18n`が「dict無しで再生成→保存値とバイト一致したときだけEN版を出す」§18-1のfail-open方式へ移した回)は、新聞4面を実UIで検査したことが一度も無いまま完了していた(②のUI自動走破は4面を踏まない設計のため)。R13はその穴を埋めるignite追加。
+
+**JA: PASS**。**EN: FAIL(新規発見・未修正)**。`--lang en`で`#newspaperContent`内に18件のJA露出——内訳は`src/ui-render.js`の`_npMvpRaceRank1Card`/`_npMvpRaceMinorCard`/`_npMvpRaceListRow`が選手名(`entry.fighterName`)・団体名(`entry.orgName`)を表示する箇所で、同ファイル内の他箇所と揃えて使うべき`WM_I18N.pn()`を通していないこと、および黒田コラム署名(`WM_I18N.t('— 編集長 {name}', { name: '黒田 貫一郎' })`)が名前をハードコードで埋め込み`pn()`を通していないことの2種類。`window.__mvpFallback`(`_npMvpI18n`のフォールバック計測)は常に0件で、P7-23が実装した見出し/リード/寸評/黒田コメントの再生成方式そのものは正常——EN失敗はP7-23の担当範囲ではなく、page4のカードUIが元々(Stage B以前から)持っていた固有名詞の未配線。
+
+このタスクの範囲は検証ハーネスの新設のみ(`src/`改変は他エージェントとの並行作業を避けるため対象外)としたため、`src/ui-render.js`の3関数+署名1箇所へ`WM_I18N.pn()`を足す修正は別タスクへ切り出した(spawn_task経由でチケット化)。修正はJAで無変化(`pn()`はja/pseudo時に素通しのfail-open)、EN側のみ改善される想定で、修正後はR13が自動的にEN PASSへ切り替わる。

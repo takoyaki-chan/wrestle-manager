@@ -1,5 +1,51 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-34 — レア画面強制点火カタログに新聞4面(年間MVPレース)の`newspaper-mvprace`を追加(2026-09-05・worktree agent-ab646028f5668ba07)
+
+P7-23(`Engine.mvpRace`の新聞フレーバー285本を`MVP_RACE_TEXTS`へ移設・`_npMvpI18n`の§18-1自己検証型fail-open配線)は、実UIでの検査実績がゼロのまま完了していた——②のUI自動走破ハーネスは新聞4面(1面の目次リンクを踏まないと開かない)を一度も踏まない設計のため(P7-23 worklogの発見事項)。本タスクはその穴を③レア画面強制点火カタログへ`newspaper-mvprace`シナリオとして埋めるもの。**触ったのはtest/とdocsのみ**(src/は他エージェントの並行編集を避けるため対象外という指示のもと、原則どおり無編集)。
+
+### 1. シナリオ設計(`test/ui-walkthrough/scenarios.js`)
+
+- **fixture**: S1W3(headless進行のみ・engineer不要)。`mvpRace`は「通常週確定の毎週末」に再集計される(`management.js`のREGULAR WEEK ADVANCE分岐)ため、週の頭で止めるfixtureはW2以降でないと空。4位以下の一覧行も検査したいのでW3まで進めassertで`rankings.length>=4`と`weeklyNewspaper.layout==='v3'`を確認
+- **tour**(2停車点。P6-18の`chronicle`と同じ「自由閲覧画面の奥」パターン): ①ナビ「📰新聞」を開く→②1面の目次「MVPレース詳細 ▶」またはMVP小窓「詳細 ▶」(どちらも`onclick="setNewspaperSubPage(4)"`。セレクタは`[onclick*="setNewspaperSubPage(4)"]`+`.first()`)を押して4面へ
+- **1停車目のprobe**(`MVP_INSTRUMENT_PROBE`)で`window._npMvpI18n`を計測用ラッパーへ差し替え、フォールバック(保存値≠再生成)の発生を理由付きで`window.__mvpFallback`へ記録する。分岐ロジックは完全に複製しているだけなので表示内容・JA出力に影響なし
+- **2停車目のprobe**(`MVPRACE_PROBE`、`CHRONICLE_PROBE`と同じ「対象コンテナに限定して葉要素を読む」方式。走査範囲を`#newspaperContent`に絞り1面の残存要素を巻き込まない)で見出し/リード/黒田寸評/TOP3寸評/4位以下一覧件数と、可視葉要素のJA文字含有(`jaLeaves`)を収集
+- `tourAssert`が内容の非空(見出し・リード・黒田寸評・1〜3位の寸評・一覧1件以上)と、ENのみ`jaLeaves`の0件を検査。`finalAssert`が`__mvpFallback`の0件を検査(新品fixtureでは0が期待——「保存値≠再生成」は本来old-pool救済専用の分岐)
+
+### 2. 実行結果
+
+- **JA: PASS**(2アクション・4〜5秒、点火マーカーHIT、`mvpFallback: []`)
+- **EN: FAIL(新規発見・未修正)**。`#newspaperContent`内に**18件のJA露出**。内訳:
+  - `_npMvpRaceRank1Card`の`entry.fighterName`(1件)
+  - `_npMvpRaceMinorCard`の`entry.fighterName`(2件。orgNameは4位以下欄で見えるslotのみ表示のためこの2件では非表示)
+  - `_npMvpRaceListRow`(4位以下一覧)の`entry.fighterName`+`entry.orgName`のペア×7行=14件
+  - `.np-kuroda-byline`の`WM_I18N.t('— 編集長 {name}', { name: '黒田 貫一郎' })` — nameパラメータが生JAハードコード(1件)
+  - いずれも`src/ui-render.js`内の**同じファイルの他の全箇所**(例: 351/835/1665/2794/4390/4545/…行の`WM_I18N.pn(orgName)`/`WM_I18N.pn(name)`)と揃えて通すべき`WM_I18N.pn()`を通していないだけ。P7-23が実装した`_npMvpI18n`の再生成方式そのものは**`__mvpFallback`が両言語とも0件**で正常動作を確認——EN失敗はP7-23の担当範囲(見出し/リード/寸評/黒田コメント本文)の外側にある、Stage B以前から存在した固有名詞配線の抜けだと判明
+- 修正候補(次タスクへ委譲・spawn_task起票): `_npMvpRaceRank1Card`/`_npMvpRaceMinorCard`/`_npMvpRaceListRow`の`entry.fighterName`/`entry.orgName`表示箇所と黒田署名の`name`パラメータへ`WM_I18N.pn()`を追加。`pn()`はja/pseudo時に素通しのfail-open実装(`src/i18n.js`)なのでJA側は1バイトも変わらない見込み(要`node test/ja-golden.js`確認)
+
+### 3. 既存3シナリオの退行確認(JA/EN各1回)
+
+タスク仕様どおり`chronicle`/`tenchosen`/`gameover`をJA/EN各1本ずつ回した。**全6本PASS、退行なし**:
+
+| シナリオ | JA | EN |
+|---|---|---|
+| chronicle | PASS(37手48s) | PASS(39手47s。screen-database JA露出0) |
+| tenchosen | PASS | PASS |
+| gameover | PASS | PASS |
+
+### 4. その他の検証
+
+- `npm test`: 261/261 PASS
+- `node test/ja-golden.js`: 基準と完全一致(hash `dd2e536b...`) — src/を触っていないため当然だが確認
+- srcを触っていないため`npm run test:ui:walkthrough`のJA digest確認は対象外(タスク仕様どおり)
+
+### 5. ドキュメント更新
+
+- `test/ui-walkthrough/README.md`: 実行コマンド例+`newspaper-mvprace`の設計・現状(JA PASS/EN FAIL既知バグ)を追記
+- `docs/rare-screen-ignition-catalog-design-v0.1.md`: カタログ表にR13行を追加、§8に本タスクの実行記録を追記
+- `docs/game-system-roadmap.md`: 🌐英語対応の既存1行へP7-34の要約を追記(新規行は追加していない)
+- 発見したpn()未配線バグはspawn_taskで別セッションへチケット化(このセッションでは`src/`不変)
+
 ## 🌐 英語対応 P7-23 — `Engine.mvpRace` の新聞フレーバー文285本を `MVP_RACE_TEXTS` へ移設しdict-opts化・英訳(2026-09-05・worktree agent-a0409052ac22effa7)
 
 指示書は `docs/i18n-coverage-report-v0.1.md` A分類 #1(285件/4,924字)。開始前にworktreeブランチをmain先端(`da2d1ed5`。P7-19マージ+golden再採取までmain入り)へfast-forward。
