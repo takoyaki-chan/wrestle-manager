@@ -30853,6 +30853,21 @@ const _NP_PLAYER_ORG_FALLBACK_JA = 'プレイヤー団体';
 // _wmResolvePreformattedIndustryData の再構築が同じ literal を見るよう1本に寄せる。
 const _NP_RECORD_LINE_JA = { broken: '団体記録を塗り替えた。', match: '団体記録に王手をかけた。' };
 
+// i18n Stage B P7-19: buildTenchosenAnnouncementData/buildTenchosenFieldData の
+// championWatch は push時点(オフシーズン開幕処理/エントリー確定週)の dict で完成文に
+// 焼かれ、preview 同様に industryNews キューへ最大数週間滞留する(§8)。滞留中に言語を
+// 切り替えると旧言語のまま出るため、preview と同じ「生キー併記+載る瞬間に再構築」を適用する。
+// テンプレJA原文はここに1本だけ置く(announceとfieldで文言が異なる。specs §35-7-3)。
+const _NP_TENCHOSEN_CHAMPION_WATCH_JA = {
+  announce: '前回覇者の{name}にも、4年越しの連覇を期待する声がある。',
+  field: '前回覇者の{name}も出場圏内に入り、連覇への期待が高まる。',
+};
+function _wmResolveTenchosenChampionWatch(raw, dict) {
+  const tpl = raw && _NP_TENCHOSEN_CHAMPION_WATCH_JA[raw.variant];
+  if (!tpl) return '';
+  return _wmFillWithDict(dict, tpl, { name: raw.name });
+}
+
 // ── i18n Stage B P6-18: 年代記の競争記録タイルの mode ラベル ──
 // `陥落` は ui-ledger に既訳("Dethroned")があり、data.js のテンプレ表へ入れると
 // 同じキーが2つの台帳に載る(読み込み順で訳が入れ替わる)。上の _AW_ROUND_JA と同じく
@@ -30895,9 +30910,20 @@ function _wmAutumnWarTieBreakNote(list, dict) {
   return items.reduce((a, b) => _wmFillWithDict(dict, A.join, { a, b }));
 }
 
+// i18n Stage B P7-19: suffixJa(`定期興行`/`挑戦状`)は ui-ledger にも既訳がある1語ラベルだが、
+// そちらは「定期興行」タブ(複数形)・「挑戦状」画面見出しのための訳で、日付+種別の
+// スタンプ(「第N年度・第M週 ○○」という見出し体)には文脈が合わない(specs §35-7-2)。
+// この2つだけ NEWS_STAMP_SUFFIX_TEXTS の専用キーへ逃がす。ui-ledger側の`定期興行`/`挑戦状`は
+// 触らない(§15-3: 同じキーを2台帳へ載せない)。他のsuffix(タイトル戦/対抗戦/PPV GRAND FINAL)は
+// 単数・見出し体の既訳がそのままスタンプに合うため従来どおりT()で引く。
+const _NP_STAMP_SUFFIX_KEY = { '定期興行': 'regularShow', '挑戦状': 'challenge' };
 function _wmNewsStamp(dict, season, week, suffixJa) {
   const T = (typeof dict === 'function') ? dict : (s) => s;
-  return `${fillTemplateVars(T('第{season}年度・第{week}週'), { season, week })} ${T(suffixJa)}`;
+  const stamp = fillTemplateVars(T('第{season}年度・第{week}週'), { season, week });
+  const NST = (typeof NEWS_STAMP_SUFFIX_TEXTS !== 'undefined') ? NEWS_STAMP_SUFFIX_TEXTS : {};
+  const stampKey = _NP_STAMP_SUFFIX_KEY[suffixJa];
+  if (stampKey && NST[stampKey]) return _wmFillWithDict(dict, NST[stampKey], { stamp });
+  return `${stamp} ${T(suffixJa)}`;
 }
 
 // i18n Stage B P4-4: industryNewsキュー(_industryNewsEvents)は「起きた週」に生の値を積み、
@@ -30986,6 +31012,29 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
         gauntletNote: notes.length ? notes.reduce((a, b) => _wmFillWithDict(T, A.join, { a, b })) : '',
         tieBreakNote: '',
       };
+    }
+    case 'tenchosenAnnounce': {
+      // i18n P7-19: 生キー(championWatchRaw)が無い(=このコミットより前に積まれた
+      // 旧セーブのキュー)なら焼かれたJA完成値のまま(fail-open)
+      if (data.championWatchRaw === undefined) return data;
+      return { ...data, championWatch: _wmResolveTenchosenChampionWatch(data.championWatchRaw, dict) };
+    }
+    case 'tenchosenFieldSet': {
+      let out = data;
+      // invitesRaw は「招待者ゼロ」も有効値(空配列)として併記するため Array.isArray で判定
+      if (Array.isArray(data.invitesRaw)) {
+        out = {
+          ...out,
+          invites: data.invitesRaw.length
+            ? Engine.newspaper.joinNameList(data.invitesRaw, dict)
+            : ((typeof NEWS_FALLBACK_TEMPLATES !== 'undefined')
+              ? _wmDictLabel(dict, NEWS_FALLBACK_TEMPLATES.tenchosenInvites) : ''),
+        };
+      }
+      if (data.championWatchRaw !== undefined) {
+        out = { ...out, championWatch: _wmResolveTenchosenChampionWatch(data.championWatchRaw, dict) };
+      }
+      return out;
     }
     default:
       return data;
@@ -32024,12 +32073,15 @@ Engine.newspaper = {
     if (previousChampionId && candidateIds.includes(previousChampionId)) ids.push(previousChampionId);
     picks.forEach(row => { if (!ids.includes(row.id)) ids.push(row.id); });
     const previousChampion = previousChampionId && this._findFighter(state, previousChampionId);
+    const championWatchOk = !!(previousChampion && candidateIds.includes(previousChampionId));
     return {
       season: state.season,
       characterId: ids[0] || null,
       characterIds: ids.slice(0, 3),
-      championWatch: previousChampion && candidateIds.includes(previousChampionId)
+      championWatch: championWatchOk
         ? fillTemplateVars(T('前回覇者の{name}にも、4年越しの連覇を期待する声がある。'), { name: previousChampion.name }) : '',
+      // i18n P7-19: 完成文は据え置き(旧セーブ互換)、生キーを併記して載る瞬間に組み直す(§8)
+      championWatchRaw: championWatchOk ? { variant: 'announce', name: previousChampion.name } : null,
       // P7-16: 完成文は据え置き、生キーを併記して載る瞬間に組み直す(specs §8)
       preview: this.eventPreviewParagraph(state, candidateIds),
       previewRaw: this.eventPreviewParagraphRaw(state, candidateIds),
@@ -32050,6 +32102,7 @@ Engine.newspaper = {
     const inviteNames = specialIds.map(id => this._findFighter(state, id)?.name).filter(Boolean);
     const previousChampionId = state.unifiedTitle?.championId || null;
     const previousChampion = previousChampionId && this._findFighter(state, previousChampionId);
+    const championWatchOk = !!(previousChampion && entryIds.includes(previousChampionId));
     return {
       season: state.season,
       characterId: ids[0] || null,
@@ -32060,8 +32113,12 @@ Engine.newspaper = {
         ? Engine.newspaper.joinNameList(inviteNames, dict)
         : ((typeof NEWS_FALLBACK_TEMPLATES !== 'undefined')
           ? _wmDictLabel(dict, NEWS_FALLBACK_TEMPLATES.tenchosenInvites) : ''),
-      championWatch: previousChampion && entryIds.includes(previousChampionId)
+      // i18n P7-19: 完成文は据え置き(旧セーブ互換)、生キー(招待者名の生配列)を併記して
+      // 載る瞬間に組み直す(§8)。空配列も「招待者ゼロ」を示す有効値として併記する
+      invitesRaw: inviteNames,
+      championWatch: championWatchOk
         ? fillTemplateVars(T('前回覇者の{name}も出場圏内に入り、連覇への期待が高まる。'), { name: previousChampion.name }) : '',
+      championWatchRaw: championWatchOk ? { variant: 'field', name: previousChampion.name } : null,
       // P7-16: 完成文は据え置き、生キーを併記して載る瞬間に組み直す(specs §8)
       preview: this.eventPreviewParagraph(state, entryIds),
       previewRaw: this.eventPreviewParagraphRaw(state, entryIds),
@@ -32664,9 +32721,13 @@ Engine.newspaper = {
               type: 'aiBreakthrough',
               priority: P.aiBreakthrough,
               headline: T(NAI.breakthroughHeadline, { org: ev.orgName, name: ev.name }),
-              // {stat} は内部キー(pw/tc等)がそのまま出る既存挙動。JAを変えないためここでは
-              // 値に手を入れない(specs §34-8 の残課題として記録)
-              body: T(NAI.breakthroughBody, { org: ev.orgName, name: ev.name, stat: ev.stat }),
+              // i18n P7-19: {stat} が内部キー(pw/te等)のまま出ていたバグ修正。
+              // buildFollowUp(followUpBreakthrough)と同じ経路(STAT_LABELS_JPでJAラベル化→
+              // _wmDictLabelで引き直す)へ揃える。'mn'はSTAT_LABELS_JPに無いのでフォールバックも同じにする
+              body: T(NAI.breakthroughBody, {
+                org: ev.orgName, name: ev.name,
+                stat: L((typeof STAT_LABELS_JP !== 'undefined' && STAT_LABELS_JP[ev.stat]) || 'メンタル'),
+              }),
               characterId: ev.id,
             });
           });

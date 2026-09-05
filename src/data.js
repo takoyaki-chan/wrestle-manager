@@ -18307,6 +18307,17 @@ const NEWS_FALLBACK_TEMPLATES = {
   playerShowHeadline: '定期興行開催',
 };
 
+// i18n Stage B P7-19: `_wmNewsStamp`(management.js)の suffix が ui-ledger の1語ラベルを
+// そのまま借りていたため、日付+種別の見出し体スタンプに文脈違いの訳が出ていた
+// (`定期興行`→ナビ用複数形"Regular shows" / `挑戦状`→"Challenge Letter"。specs §35-7-2)。
+// ui-ledgerの`定期興行`/`挑戦状`とは**別キー**として切り出し、スタンプ専用の訳を持たせる。
+// JAは`{stamp} 定期興行`のまま(`_wmNewsStamp`従来の半角スペース1個連結と同一)なので
+// 表示文字列は1バイトも変わらない — {stamp}には既に言語別に組み立て済みの日付文字列が入る。
+const NEWS_STAMP_SUFFIX_TEXTS = {
+  regularShow: '{stamp} 定期興行',
+  challenge: '{stamp} 挑戦状',
+};
+
 // i18n Stage B P6-16: 4団体勝ち残り対抗戦の結果ニュース(specs §8「生キー+render時点再構築」)。
 // Engine.autumnWar.apply は industryNews キューへ **JAで組み立て終えた** semi1/semi2/finalResult/
 // gauntletNote/tieBreakNote を焼いていた。キューは最大数週間滞留してから紙面化されるため、
@@ -32232,7 +32243,7 @@ if (typeof module !== 'undefined' && module.exports) {
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, LONG_TERM_INJURY, INJURY_DEBUFF_TABLE,
     TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES,
     PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,
-    NEWS_CONTENDER_TEXTS, NEWS_JUNIOR_TOURNAMENT_TEXTS, NEWS_AI_ORG_TEXTS,
+    NEWS_CONTENDER_TEXTS, NEWS_JUNIOR_TOURNAMENT_TEXTS, NEWS_AI_ORG_TEXTS, NEWS_STAMP_SUFFIX_TEXTS,
     CHRONICLE_QUOTE_CLAUSES, CHRONICLE_QUOTE_TEMPLATES_V2, CHRONICLE_QUOTE_TEMPLATES_V1,
     CHRONICLE_QUOTE_TEMPLATES_DUAL, CHRONICLE_NARRATIVE_TEMPLATES, CHRONICLE_CHAPTER_TEMPLATES,
     PROLOGUE_TEMPLATES, CHRONICLE_UNIT_TEXTS,

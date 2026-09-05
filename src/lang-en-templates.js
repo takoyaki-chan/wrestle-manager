@@ -8,7 +8,7 @@
 //  src/lang-en.js(UI文字列辞書)とは別ファイル。WM_I18N.addDict()は既存辞書への
 //  マージなので、読み込み順は問わない(src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/template-ledger.json (総キー3141件、訳文あり3141件)
+//  生成元: i18n/template-ledger.json (総キー3143件、訳文あり3143件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -881,6 +881,8 @@
     "{showName}・{venue}。観客{attendance}人、{turns}ターンの攻防は決着を見ず。全{totalMatches}試合の平均試合評価{avgMQ}": "{showName}, {venue}. {attendance} in the building; {turns} turns in the main event and no decision. {totalMatches} on the card, average rating {avgMQ}",
     "{showName}・{venue}。観客{attendance}人。メイン試合評価{mq}、全{totalMatches}試合平均試合評価{avgMQ}": "{showName}, {venue}. {attendance} in the building. Main rated {mq}, {totalMatches} on the card at an average of {avgMQ}",
     "{spiritAxis}の地力を保ったまま、団体は次世代へと足場を移し始めていた。": "Holding on to its {spiritAxis} base, the promotion had begun moving its footing to the next generation.",
+    "{stamp} 定期興行": "{stamp} Regular show",
+    "{stamp} 挑戦状": "{stamp} Challenge",
     "{stamp}。{challengerName}が{defenderOrg}に叩きつけた挑戦状の一騎討ちは、{winnerOrg}の{winnerName}が勝利。試合評価{mq}。{tone}": "{stamp}. The challenge {challengerName} threw down to {defenderOrg} was settled in singles, and {winnerName} of {winnerOrg} won it. Rated {mq}.{tone}",
     "{stamp}。{challengerName}と{defenderName}による挑戦状の一騎討ちは決着つかず。試合評価{mq}。": "{stamp}. The challenge singles between {challengerName} and {defenderName} ended without a decision. Rated {mq}.",
     "{stamp}。{challengerName}と{defenderName}の代表対決は決着つかずに終わった。試合評価{mq}。{tone}": "{stamp}. The representatives' match between {challengerName} and {defenderName} ended without a decision. Rated {mq}.{tone}",

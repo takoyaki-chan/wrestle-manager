@@ -217,6 +217,11 @@ const TARGET_TABLES = [
   'NEWS_CONTENDER_TEXTS',
   'NEWS_JUNIOR_TOURNAMENT_TEXTS',
   'NEWS_AI_ORG_TEXTS',
+  // P7-19で追加。`_wmNewsStamp`(management.js)の suffix が ui-ledger の1語ラベル
+  // (`定期興行`→ナビ用複数形/`挑戦状`→見出し語)を文脈違いのまま借りていたバグの修正先。
+  // ui-ledgerの2キーとは別のキー(`{stamp} 定期興行`/`{stamp} 挑戦状`)としてスタンプ専用の
+  // 訳を持たせる(specs §35-7-2 → §37)。
+  'NEWS_STAMP_SUFFIX_TEXTS',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ
