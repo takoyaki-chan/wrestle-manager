@@ -2427,6 +2427,8 @@ function renderRoster() {
   };
   const ownFighters = G.roster.filter(c => !c.isRental).sort(_sortFn);
   const rentalFighters = G.roster.filter(c => c.isRental).sort((a,b) => ov(b) - ov(a));
+  const rosterCountEl = document.getElementById('rosterCount');
+  if (rosterCountEl) rosterCountEl.textContent = ownFighters.length;
   const sorted = ownFighters;
   // roster-cap v1.0: 所属枠ヘッダーをhtmlの先頭に追加
   const rosterCap = G.rosterCap || 8;
