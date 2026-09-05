@@ -10337,8 +10337,12 @@ function showFactionF02Modal(payload, state, onChoice) {
   const roster = state ? (state.roster || []) : [];
   const leaderA = roster.find(c => c.id === payload.leaderAId);
   const leaderB = roster.find(c => c.id === payload.leaderBId);
-  const factionAName = payload.factionAName || WM_I18N.t('派閥A');
-  const factionBName = payload.factionBName || WM_I18N.t('派閥B');
+  // i18n P7-43: payload.factionAName/BNameは「○○派」形式の成形済み値(G保存値、D-P6-4)。
+  // ここは前段ナレーションだけが消費する局所変数なので、他のF02表示点(_factionF02RenderClash
+  // 等)とは独立に_factionDisplayName()を通しておく(EN走破で開戦ナレーション2行目に
+  // 生JAの派閥名が露出していた)。
+  const factionAName = _factionDisplayName(payload.factionAName) || WM_I18N.t('派閥A');
+  const factionBName = _factionDisplayName(payload.factionBName) || WM_I18N.t('派閥B');
   const aUrl = leaderA ? _factionUpperUrl(leaderA.id) : '';
   const bUrl = leaderB ? _factionUpperUrl(leaderB.id) : '';
 

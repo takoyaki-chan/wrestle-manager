@@ -32898,19 +32898,23 @@ Engine.newspaper = {
         if (!templates || templates.length === 0) return;
         const tpl = templates[Engine.rng.int(rng, 0, templates.length - 1)];
         const data = _wmResolvePreformattedIndustryData(ev, dict);
-        const rep = (s) => {
-          let out = s;
-          Object.keys(data).forEach(k => {
-            out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), data[k] != null ? data[k] : '');
-          });
-          return out;
-        };
+        // i18n P7-43: 旧rep()はdict(tpl.headline)でテンプレ本文だけ訳したあと、{name}/{orgName}
+        // 等を.replace()でdataの生JA値のまま差し込んでいた(§13-2発見5と同型のPH先埋め込み)。
+        // EN走破で選手名・団体名(佐久間ひより/天頂プロレス等)が新聞のkaiganAwakening/
+        // longInjury/autumnWarAnnounce記事で未訳のまま露出していた。
+        // _wmFillWithDict(dict, tpl, params) は dict(tpl, params) を1回呼ぶだけで
+        // 「翻訳+PH充填+名前自動変換(pn())」を済ませる既存共通ヘルパー(P6-10)。
+        // fillTemplateVars/applyParamsは値がnullだと"null"を埋めてしまうため(§14-4)、
+        // 旧rep()と同じ「null/undefinedは空文字」に正規化してから渡す。dataそのものは
+        // newsData等で下流にも渡るため書き換えず、別オブジェクトへ写す。
+        const params = {};
+        Object.keys(data).forEach(k => { params[k] = data[k] != null ? data[k] : ''; });
         const priority = P[ev.type] || P.general;
         stories.push({
           type: ev.type,
           priority,
-          headline: rep(dict(tpl.headline)),
-          body: rep(dict(tpl.body)),
+          headline: _wmFillWithDict(dict, tpl.headline, params),
+          body: _wmFillWithDict(dict, tpl.body, params),
           characterId: ev.characterId || null,
           // task-54: サブ記事の隊列写真は最大3人。元の人数を characterCount に残し、
           // 3人を超えたぶんは「+N」表示に使う(現状の呼び出し元はどれも2人までしか積まないため

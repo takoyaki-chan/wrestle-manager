@@ -10008,7 +10008,12 @@ const App = {
     const rivalLvl = isTagMain ? null : getRivalryLevel(main.left.id, main.right.id);
     const hasRivalry = !!rivalLvl && !rivalLvl.isGoodRival;
     const isGoodRival = !!rivalLvl && rivalLvl.isGoodRival;
-    const rivalLabel = rivalLvl ? rivalLvl.label : null;
+    // i18n P7-43: RIVALRY_THRESHOLDSのlabel(因縁/宿敵/宿命)は成形済みのJA一語ラベルで、
+    // ui-ledgerに既訳がある(§14-2と同型)。_generateNewspaperTexts経由でd.rivalLabelとして
+    // kurodaTemplateOf正規化済みテンプレへ差し込まれるが、これは名前辞書(pn)の対象ではないため
+    // t()のparams自動変換だけでは訳せず、ここで先に辞書を引いておく必要がある
+    // (EN走破で新聞の因縁記事に「宿敵」が生JAのまま露出していた)。
+    const rivalLabel = rivalLvl ? _wmDictLabel(WM_I18N.t, rivalLvl.label) : null;
     let bondAvg = 50;
     if (!isTagMain && G.relationships) {
       const kAB = `${main.left.id}>${main.right.id}`;
@@ -13915,8 +13920,13 @@ const App = {
         // P6-5配線修正: {leaderName}/{targetName}はテンプレへ生名で埋め込まれるため、
         // ENでは選手名も訳語に変換されなければ英文中にJP名が漏れる(getF07Lineは
         // 訳→変数置換の順で、置換値そのものは変換しない=呼び出し側の責任)
+        // i18n P7-43: factionNameは「○○派」形式の成形済み値で、getF07Line内のsubst()が
+        // 各varへ掛けるpn()は名前辞書(人物名)しか見ないため「派」を含む文字列は変換されない
+        // (showFactionF07Modal初期表示側は_factionDisplayName済みだったが、この結果ナレーション
+        // 側は素通しのままだった=EN走破で観察文に「根岸派」が生JA露出)。ui-common.jsの他の
+        // F07/F02/F04表示と同じ_factionDisplayName()を先に通しておく。
         const vars = {
-          factionName: payload.factionName || '',
+          factionName: _factionDisplayName(payload.factionName || ''),
           leaderName: WM_I18N.pn(payload.leaderName || (leader ? leader.name : '')),
           targetName: WM_I18N.pn(target ? target.name : (payload.incidentPayload && payload.incidentPayload.targetName) || ''),
         };

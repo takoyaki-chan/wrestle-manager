@@ -1,5 +1,63 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-43 — EN新聞1面のJA露出12件+F07/F02派閥名露出の修正(2026-09-06・worktree agent-aa0f0e38326d6f63a)
+
+前エントリ(走破digest基準更新)の副産物として見つかった、EN走破(`season-1-week-1-seed42`fixture)で新聞1面に出る選手名・団体名・「宿敵」ラベルのJA露出12件と、派閥イベントF07/F02の観察文・ナレーションの派閥名露出を修正した。specs/i18n-runtime-spec-v1.0.md §13-2(発見5「PH先埋め込み」)・§14-2(`_wmDictLabel`)・§25-2(同一生成元をgrepで洗い出す)の作法をそのまま適用。
+
+### 1. 原因の特定 — 12件は3つの根本原因に集約された
+
+12件それぞれを個別に潰すのではなく、生成経路を遡ると3つの共通バグに集約された。
+
+| # | 露出テキスト(EN) | 記事型/箇所 | 根本原因 |
+|---|---|---|---|
+| 1 | `佐久間ひより moves differently against a better opponent` | kaiganAwakening(見出し) | 原因A |
+| 2 | `佐久間ひより of プレイヤー団体 moved in a way...` | kaiganAwakening(本文) | 原因A |
+| 3 | `Where 宿敵 goes — Nahoko Kawanobe takes it` | 肩記事(因縁カード見出し) | 原因B |
+| 4 | `The two known as 宿敵 met in the ring again...` | 肩記事(因縁カード本文) | 原因B |
+| 5 | `The promotions in Autumn Gauntlet War No. 1 are 天頂プロレス, ブレイク...` | autumnWarAnnounce(準トップ本文) | 原因A |
+| 6 | `宮ケ瀬千夏 out long term — a 5-week absence` | longInjury(見出し) | 原因A |
+| 7 | `プレイヤー団体's 宮ケ瀬千夏 was hurt — Severe injury...` | longInjury(本文) | 原因A |
+| 8 | `天頂プロレス`(所属バッジ) | np-sub-org-line(小記事の団体バッジ) | 原因C |
+| 9 | `天頂プロレス 高津小春: Minor injury...` | longInjury(見出し・別変種) | 原因A |
+| 10 | `天頂プロレス's 高津小春 has been diagnosed...` | longInjury(本文・別変種) | 原因A |
+| 11/12 | 3・4と同文(興行結果面 `np-show-headline`/`np-show-article`) | 肩記事と同じプールの再掲 | 原因B |
+
+- **原因A(7件、management.js)**: `Engine.newspaper.generate()`内、業界ニュースキューの汎用記事化(`NEWS_HEADLINE_TEMPLATES[ev.type]`を引く経路。kaiganAwakening/longInjury/autumnWarAnnounceが該当)が`rep(dict(tpl.headline))`という「先にテンプレ本文だけdict()で訳し、その後`{name}`/`{orgName}`をdataの生JA値のまま`.replace()`で差し込む」実装だった(spec §13-2発見5と同型のPH先埋め込み)。`_wmFillWithDict(dict, tpl, params)`(P6-10確立の既存ヘルパー。`dict(tpl, params)`を1回呼ぶだけで翻訳+PH充填+名前自動変換を済ませる)へ差し替え。`fillTemplateVars`/`applyParams`は値がnullだと文字列`"null"`を埋めてしまうため(§14-4)、旧`rep()`と同じ「null/undefinedは空文字」正規化を保った別オブジェクト`params`を作って渡した(`newsData: data`が下流の`intensityBonus`等でも読まれるため`data`自体は書き換えない)。
+- **原因B(4件、app.js)**: 通常興行の因縁カード記事(`App._NEWSPAPER_HEADLINES`/`_ARTICLES`の`kurodaText`系プール、`{rivalLabel}`プレースホルダ)へ渡す`rivalLabel`が`rivalLvl.label`(`RIVALRY_THRESHOLDS`の生JAラベル「因縁」「宿敵」「宿命」)のまま未翻訳だった。`_wmDictLabel(WM_I18N.t, rivalLvl.label)`で辞書を引いてから渡すよう修正(1行)。ui-ledgerには`"宿敵": "Nemesis"`等が既に登録済みだったので新規訳出は不要。
+- **原因C(1件、ui-render.js)**: `_findFighterOrgName(state, charId)`はプレイヤー側の分岐(`WM_I18N.pn(state.orgName || 'プレイヤー団体')`)だけpn()を通し、AI団体側の分岐(`RIVAL_ORGS.find(...).name`)は生JAのまま返していた。プレイヤー側と対称に`WM_I18N.pn(name)`を追加。org名は名前辞書(pn)に団体名として登録済み(例:`"天頂プロレス": "Tencho Pro Wrestling"`)。この関数はデータベース画面のh2h比較文等でも共用のため、副次的に他画面の同型露出も一緒に直った(ignite `newspaper-mvprace`のAI団体バッジ3件が根拠)。
+
+### 2. F07/F02の派閥名露出 — 観察文ではなく「結果ナレーション」が真因だった
+
+タスク記述の例文「You heard Aria Negishi out and told her 根岸派 would be pushed」は`ui-common.js`のF07モーダル初期表示(`showFactionF07Modal`、`_factionDisplayName`済み)ではなく、選択後に出る結果ナレーション(`mdl-a-observation.centered`、`opts.resultText`)だった。これは`app.js`の`getF07Line('resultLeader'/'resultTarget', ...)`(`charLine`/`targetLine`)ではなく、`Engine.factions.applyF07Choice(state, payload, choiceId, rng)`(factions.js)が返す`result.resultText`が生成元。
+
+- `applyF07Choice`は`payload`から`factionName`を素で分割代入し、以降30箇所前後の`WM_I18N.t()`呼び出し(`resultText`/`impactSummary`のラベル)へ`{faction}`パラメータとして生JAのまま渡していた。t()のパラメータ自動変換(`convertNames`)は名前辞書(`names`)の完全一致しか見ないため、「○○派」という複合文字列は変換されない。
+- 実は`Engine.factions._factionDisplayName(name)`という同名メソッドが既に factions.js 内に存在し(P7-6で追加)、DEMAND_RECOGNITION/A分岐の2箇所だけ`this._factionDisplayName(factionName)`で個別に対策済みだった——他の約28箇所が未対策のまま残っていた。**destructuring直後に`const factionName = this._factionDisplayName(payload.factionName)`と一括変換**することで、全分岐を1箇所で直した(`_factionDisplayName`は「派」で終わらない・既に訳し済みの文字列には素通しなので冪等——既存2箇所の明示呼び出しはそのまま残しても問題ないが、二重呼び出しは冗長なので`factionName`直読みへ簡略化)。
+- F02の開戦前ナレーション(`showFactionF02Modal`、act1)も同型で、`payload.factionAName`/`factionBName`をナレーション2行目(`<em>{a}</em>と<em>{b}</em>——並び立っていた二つの派閥の間に、`)へ生JAのまま渡していた。宣言時に`_factionDisplayName()`を通すよう修正(この関数内で他に使われていない局所変数のため、`_factionF02RenderClash`(clash画面。同名だが別スコープの変数、今回スコープ外)には影響しない)。
+
+### 3. 検証
+
+| 項目 | 結果 |
+|---|---|
+| `node --check`(app.js/factions.js/management.js/ui-common.js/ui-render.js) | 全OK |
+| `node test/ja-golden.js` | 完全一致(`dd2e536bc18a4433b2c1530cc81e7a02090f09db7c7cb0dc184f5df75fd5e44e`、変更前と同一) |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上重複17件、訳文一致) |
+| `node test/i18n-ratchet.js` | 増加なし(31ファイル・28,038行) |
+| `npm test` | 264/264 PASS |
+| `node test/auto-sim.js 20 42` | ALL CLEAR・0 violations・**指紋`e96444c1`が変更前後で完全一致**(stashで前後比較して確認) |
+| JA UI走破(`test/ui-walkthrough/run.js`) | PASS・336手・digest `b3b7a2c05a7e6016`(現行基準と一致。1回だけ337手/別digestが出たが、stash比較でbaseline側でも再現しない自分の変更に起因しない揺れと確認——CLAUDE.mdが警告する「並行エージェントの影響で揺れる」事例) |
+| EN UI走破(`--lang en --ja-exposure-log`) | PASS・i18n-miss 0・**JA exposure by screenに`screen-newspaper`が出現しない(=0)**・`screen-week`のF07派閥名露出(`根岸派`)も消滅 |
+| ignite `newspaper-mvprace`(JA/EN) | 両方PASS・EN側のJA露出は**16→12**(退行なし、AI団体名3件が副次的に解消) |
+
+### 4. 範囲外で見つかった同型の残存(未修正・報告のみ)
+
+- **F08合同企画のu3b-role/show-prep推薦バナー**: `showFactionF08Modal`周辺の`factionAName`/`factionBName`直読み(ui-common.js、10箇所以上)と、興行準備画面の「📣 Main event recommendation from 根岸派」バナーは同型未対策のまま(今回のスコープはF07/F02のみと明示されていたため未着手)。
+- **F02クラッシュ画面**: `_factionF02RenderClash`(ui-common.js、`showFactionF02Modal`のact1の後に出るact2)は`showFactionF02Modal`とは別スコープの`factionAName`/`factionBName`を持ち、同じ未対策のまま。
+- **ignite fixtureの事前bake**: `newspaper-mvprace`のEN実行で見えた王座交代記事(`天頂プロレス——新王者富岡加奈子が誕生`等)・一部負傷記事の本文全体がJAのまま残る。これは`headless-sim.js`によるfixture事前生成がJAコンテキストで`tickWeek`を回すため、`weeklyNewspaper`の該当記事が生成時点でJA文字列としてGへ焼かれ、その後の言語切替では遡及再生成されない(過去号の紙面はアーカイブなので設計として妥当な可能性が高い)。バグかどうかの切り分けを含め別枠。
+
+### 5. 触ったファイル
+
+`src/management.js`(`stories.push`の`rep()`→`_wmFillWithDict`)・`src/app.js`(`rivalLabel`に`_wmDictLabel`、F07の`vars.factionName`に`_factionDisplayName`)・`src/factions.js`(`applyF07Choice`のdestructuring直後で`_factionDisplayName`一括適用)・`src/ui-common.js`(`showFactionF02Modal`のfactionAName/BName)・`src/ui-render.js`(`_findFighterOrgName`のAI団体分岐にpn()追加)。specs/i18n-runtime-spec-v1.0.mdは新規追記なし(既存§13-2/§14-2/§25-2の作法をそのまま適用したのみのため)。
+
 ## 2026-09-06 走破 digest の変化(328手/1052faa82eaf7991 → 336手/b3b7a2c05a7e6016)の原因特定 — 2件とも正当な変化・基準を更新
 
 - **方法**: 基準コミット 8287f6af を一時 worktree に展開して走破(328手・1052faa82eaf7991 を再現)、現 main(336手・b3b7a2c05a7e6016)と `--action-log` を突き合わせ。さらにマイルストーン修正の1行(app.js `popupActions.push(done => App._checkAndShowMilestone(done))`)を一時的に外した走破(336手・9b5bf8732280b983)も採取して二段で切り分けた。
