@@ -351,6 +351,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "1. ドラフトで軸を作る",
+    "en": "1. Build Around One Ace",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "1.6秒で自動的に進みます(タップで即スキップ)",
     "en": "Advances automatically after 1.6 seconds (tap to skip)",
     "files": [
@@ -406,10 +416,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "12週に1回",
+    "en": "once every 12 weeks",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "15分1本勝負",
     "en": "15-Minute One Fall",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "1〜4シーズン",
+    "en": "1 to 4 seasons",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -470,6 +500,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "2. 公民館から",
+    "en": "2. Start at the Community Center",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "20代半ばにさしかかる頃から、リングに上がり続けた分だけ毎年少しずつ蓄積します。そこに上乗せされるのが——",
     "en": "From about the middle of her twenties, every year she keeps stepping into the ring adds a little more wear. And on top of that comes—",
     "files": [
@@ -486,6 +526,16 @@
       "ui-render.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "25週目",
+    "en": "week 25",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -595,10 +645,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "3. メインを大切に",
+    "en": "3. Protect the Main Event",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "30分1本勝負",
     "en": "30-Minute One Fall",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "30歳を過ぎると、選手は進退を考え始めます。引き際は選手それぞれ——引退した選手はロスターを去り、功績次第で",
+    "en": "Past 30, a wrestler starts weighing her future. When to step away differs from woman to woman — a retired wrestler leaves the roster, and depending on what she achieved, she may be inducted into the ",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -664,6 +734,46 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "4. 体調管理",
+    "en": "4. Manage Condition",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "43週目にエントリー、48週目",
+    "en": "Enter in week 43, and week 48",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "48週",
+    "en": "48 weeks",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "48週目の後はオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）と1年の総括に続き、",
+    "en": "After week 48 comes the offseason. Following the year-end awards ceremony (Rookie of the Year, MVP, Hall of Fame inductions, and more) and the annual wrap-up, the new season begins after ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -826,6 +936,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "4週ごとに+2回復（上限6）",
+    "en": "recover by +2 every 4 weeks (cap 6)",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "4週ごとに入れ替わり",
+    "en": "turns over every 4 weeks",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "4週間",
+    "en": "4 weeks",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "4週間 +{pct}%",
     "en": "4 weeks, +{pct}%",
     "files": [
@@ -865,6 +1005,46 @@
   {
     "key": "5,000万",
     "en": "¥50M",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "5. コーチは早めに",
+    "en": "5. Get a Coach Early",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "6. 王座を建てる",
+    "en": "6. Build Toward a Title",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "7. 会場は一段ずつ",
+    "en": "7. Move Up Venues Step by Step",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "8. 信頼は資産",
+    "en": "8. Trust Is an Asset",
     "files": [
       "index.html"
     ],
@@ -1287,6 +1467,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "FAやライバル団体の選手を",
+    "en": "You can loan free agents or rival-promotion wrestlers for ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "FA（フリーエージェント）：",
+    "en": "FA (Free Agent):",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "FULL HOUSE",
     "en": "FULL HOUSE",
     "files": [
@@ -1674,6 +1874,16 @@
     "hasProperNoun": true
   },
   {
+    "key": "PPV GRAND FINAL：",
+    "en": "PPV GRAND FINAL:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "PPV カードを表示",
     "en": "Show the PPV Card",
     "files": [
@@ -2007,6 +2217,16 @@
     "source": [
       "DECISION_DOCS.relationship_repair.recommendation"
     ]
+  },
+  {
+    "key": "WRESTLE MANAGER — 女子プロレス団体経営シミュレーション",
+    "en": "WRESTLE MANAGER — A women's pro wrestling management simulation",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "Week 1 — 非興行週",
@@ -6029,6 +6249,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "—",
+    "en": "— reserved for wrestlers with the most serious injuries:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 1〜4週の休暇を与える。体調が戻り、",
+    "en": "— grants 1 to 4 weeks of leave. Condition recovers, and ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 4 位 以 下 ・ 追 走 集 団 —",
     "en": "— 4th and Below · The Chasing Pack —",
     "files": [
@@ -6069,6 +6309,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "— コーチ雇用時に消費される",
+    "en": "— spent when you hire a coach",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— シーズン{s}終了 —",
     "en": "— End of Season {s} —",
     "files": [
@@ -6076,6 +6326,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— ステータス成長を重視",
+    "en": "— focuses on stat growth",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— スロースタート、20代後半で本領発揮",
+    "en": "— a slow starter who hits her stride in her late twenties",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -6112,12 +6382,42 @@
     "hasProperNoun": false
   },
   {
+    "key": "— ロッカールームの空気が和らぐ",
+    "en": "— eases the mood in the locker room",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 一度の負傷は治っても、確実に体に残ります",
+    "en": "— an injury heals, but it always leaves something behind",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 了 解 —",
     "en": "— Understood —",
     "files": [
       "ui-common.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 人気上昇を重視（人気には上限あり）",
+    "en": "— focuses on raising popularity (which has a ceiling)",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -6169,6 +6469,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "— 体調回復を優先",
+    "en": "— prioritizes recovering condition",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 倒産まで推定{w}週",
     "en": "— An estimated {w}-week runway before going under",
     "files": [
@@ -6176,6 +6486,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 全員の練習効果を短期間ブースト",
+    "en": "— gives everyone's training a short-term boost",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -6212,10 +6532,60 @@
     "hasProperNoun": false
   },
   {
+    "key": "— 団体の外から指導者を短期招聘する",
+    "en": "— brings in an outside coach for a short stint",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 契約を見送る —",
     "en": "— Pass on the Contract —",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 安定して伸びる",
+    "en": "— grows steadily",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 宿命のライバル関係を特集する紙面",
+    "en": "— a feature on fated rivalries",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 年度末の総決算（ANNUAL RECORD）",
+    "en": "— the year-end wrap-up (ANNUAL RECORD)",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 年間の試合数が多い選手ほど体は削れます",
+    "en": "— the more matches a wrestler has in a year, the more it wears her down",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -6242,10 +6612,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "— 振れ幅が極端",
+    "en": "— swings to extremes",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 敗者の心 —",
     "en": "— The Loser's Heart —",
     "files": [
       "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 数シーズンごとに「章」が編まれ、時代の主役が刻まれます。旗揚げ世代の物語は「序章」として永久保存",
+    "en": "— every few seasons a new \"chapter\" is compiled, recording the stars of that era. The story of the founding generation is preserved forever as the \"Prologue\"",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -6258,6 +6648,26 @@
       "ui-common.js"
     ],
     "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 殿堂入りした名選手たちの記憶と、歴代の栄冠",
+    "en": "— the memory of Hall of Fame wrestlers and every champion in the promotion's history",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 毎週発行。興行の結果、業界の動き、記者のコラム",
+    "en": "— published every week: show results, industry news, and columns from the press",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -6313,6 +6723,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "— 結果処理",
+    "en": "— processes the results",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 続 け る —",
     "en": "— Continue —",
     "files": [
@@ -6343,6 +6763,36 @@
     "hasProperNoun": false
   },
   {
+    "key": "— 興行週はプロモ、練習週は練習（デフォルト）",
+    "en": "— promo on show weeks, training on practice weeks (default)",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 若いうちは何も起きません。重ねた無理は表に出ないまま溜まり、峠にさしかかった年に一度に返ってきます",
+    "en": "— nothing shows while she's young. The strain piles up unseen, then comes due all at once the year she nears the wall",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 若い時期に急成長、以降は鈍化",
+    "en": "— grows fast while young, then slows down",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 見 届 け る —",
     "en": "— See It Through —",
     "files": [
@@ -6363,10 +6813,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "— 起案された4案から支給額を選ぶ交渉型。額面が選手の格に見合ってこそ誠意は伝わります。",
+    "en": "— a negotiation where you pick an amount from four proposed figures. Sincerity only comes through when the sum matches her standing. ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "— 送 り 出 す —",
     "en": "— Send Her Off —",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 選手ごとの育成方針と⚡追込を設定",
+    "en": "— set each wrestler's training policy and ⚡ hard training",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 選手の人気と団体の知名度を上げる",
+    "en": "— raises a wrestler's popularity and the promotion's profile",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "— 選手詳細から見られる、一人ひとりの年表",
+    "en": "— each wrestler's own timeline, viewable from her detail screen",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -6403,10 +6893,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "——そして「延命術」を使うコーチは、蓄積そのものを緩やかにしてくれます。",
+    "en": " — and a coach who knows the \"Longevity Technique\" can slow that buildup itself.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "——ロッカールームの若手が、先輩たちの顔色を窺うようになった。",
     "en": "—The young ones in the locker room have started reading their seniors' faces.",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "——蓄積が峠を越えるとステータスは下り坂に入り、引退が視野に入ります。",
+    "en": " — once the buildup carries her past the wall, her stats turn downward and retirement comes into view.",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -6761,6 +7271,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "※ 記載の能力値は各選手の能力基準値。",
+    "en": "※ The stats shown are each wrestler's baseline values.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true
+  },
+  {
     "key": "※ 記載の能力値は各選手の能力基準値。潜在能力・成長タイプ・体調・戦績は、本ファイルには記載されない。",
     "en": "※ The stats listed here are each wrestler's base values. Potential, growth type, condition and record are not in this file.",
     "files": [
@@ -6959,6 +7480,36 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "①",
+    "en": "1.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "②",
+    "en": "2.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "③",
+    "en": "3.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -7389,6 +7940,16 @@
     "en": "⚔ Accept the Challenge",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔ 因縁列伝",
+    "en": "⚔ Grudge Chronicles",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8019,6 +8580,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚠️ 資金がマイナスに落ちると",
+    "en": "⚠️ If your funds fall below zero, you enter a ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚠️ 遠征対抗戦の処理に問題が発生したため、相手選手を除去して予約を解除しました。",
     "en": "⚠️ Something went wrong with the away interpromotional match, so the opposing wrestlers were removed and the booking cancelled.",
     "files": [
@@ -8132,6 +8703,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "⚡ボタンで設定。成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも背負います。",
+    "en": "⚡ Set it with the button. Growth jumps sharply, but condition drains fast and you take on real injury risk. ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚡因縁+{n}",
     "en": "⚡Grudge+{n}",
     "files": [
@@ -8146,6 +8727,26 @@
     "en": "⚡ Hard drilling — growth jumps. It also cuts into her condition, and now and then it breaks someone. The strain never goes away; it comes back all at once in the year she starts down the far side.",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚡追込の使いすぎ",
+    "en": "⚡ Overusing hard training",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚡追込練習：",
+    "en": "⚡ Hard Training:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8179,6 +8780,16 @@
     ],
     "count": 2,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⛺ 合宿実施手配書",
+    "en": "⛺ Training Camp Order",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -8521,6 +9132,106 @@
     "hasProperNoun": false
   },
   {
+    "key": "、20歳以下の若手による業界横断の一日トーナメント。優勝は若手にとって最初の勲章です。",
+    "en": " brings a one-day, industry-wide tournament for wrestlers 20 and under. Winning it is a young wrestler's first medal.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "、2つの軸で動きます。想いは一方通行のこともあります——彼女は慕っていても、相手はそうでもない、ということも。",
+    "en": ". Feelings can run one-way, too — she might look up to someone who doesn't feel the same in return.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "、奇数週が",
+    "en": ", and every odd week is a ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "。つまり2週に1回、興行を開催できます。",
+    "en": ". In other words, you can run a show once every 2 weeks.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "。予算プラン3種から選んで",
+    "en": ". Pick one of three budget plans and enter ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "。契約が切れれば帰っていきます",
+    "en": ". When the loan ends, they go home.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "。専属の指導で鍛え込むこと自体は安全です——削るのは、あくまでリングの上のダメージと無理な起用です。",
+    "en": ". Dedicated instruction is safe on its own — what wears her down is damage taken in the ring, and being pushed too hard.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "。発動条件を満たさない書類は机に並びません。",
+    "en": " during the season. Papers whose conditions aren't met won't appear on your desk.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "。育てた因縁は団体の財産です。",
+    "en": ". A grudge you've cultivated is an asset for the promotion.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "。赤字が深く沈みすぎれば、猶予を待たず経営は破綻します。",
+    "en": ". And if the deficit sinks too deep, the business collapses without waiting out the grace period.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "「{a}」が「{b}」を下した。リング上で、ようやく決着がついた。",
     "en": "{a} beat {b}. In the ring, at last, it was settled.",
     "files": [
@@ -8583,6 +9294,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "「▶ 次の週へ」",
+    "en": "\"▶ Advance to Next Week\"",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「スタッフ」からコーチを雇用できます。指導力の高いコーチは成長速度を引き上げ、選手と得意スタイルが合えばさらに伸びます。コーチ枠は最初1つ——",
+    "en": "You can hire coaches from \"Staff.\" A skilled coach raises the growth rate, and it grows even more if her style matches the wrestler's. You start with one coaching slot — ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "「乗った」",
     "en": "I'm in.",
     "files": [
@@ -8597,6 +9328,16 @@
     "en": "Might as well team up.",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "「🤝 選手を引き抜く」",
+    "en": "\"🤝 Poach This Wrestler\"",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -8770,6 +9511,16 @@
     "en": "Your promotion's story<br>has only just begun.<br><br>The full version lets you play<br>from Season 4 onward without limit.<br><span style=\"color:var(--gold)\">Your save data carries over as it is.</span>",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "あなたはこの世界で新たな女子プロレス団体を旗揚げする。",
+    "en": "In this world, you found a new women's wrestling promotion.",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -9077,6 +9828,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "おまかせ編成：",
+    "en": "Auto Booking:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "おまかせ選出",
     "en": "Auto Select",
     "files": [
@@ -9225,6 +9986,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "が条件です。",
+    "en": " is required.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "が生まれます。",
+    "en": " is born.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "が見たい！",
     "en": "— wants this match!",
     "files": [
@@ -9323,6 +10104,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "こじれたとき：",
+    "en": "When Things Sour:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "この5名でシーズン開始",
@@ -10088,6 +10879,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "します",
+    "en": ".",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "しゃあっ!",
     "en": "Shah!",
     "files": [
@@ -10381,6 +11182,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "だけ",
+    "en": " are eligible to challenge",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ちょっと気になるのよね……何がとは言えないけど",
     "en": "She interests me a little... I couldn't tell you what it is.",
     "files": [
@@ -10427,6 +11238,66 @@
     "note": "P6-18: 年代記の競争記録タイルの mode ラベル(_CHRONICLE_MODE_LABEL_JA)。t()には変数で渡るので抽出器からは見えない。陥落は既存行を共用"
   },
   {
+    "key": "で、それぞれの勢力と火種を確認できます。",
+    "en": " lets you check each faction's strength and tensions.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "で、団体内の人間模様を一望できます。",
+    "en": " lets you see every relationship in the promotion at a glance.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "できます。団体タブの選手カードからアサインを管理しましょう。",
+    "en": ". Manage assignments from the wrestler cards on the Promotion tab.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "で決まります。超満員（🔥）なら収入も会場の熱も跳ね上がり、ガラガラ（😰）だと収入が沈んで評判も落ちます。興行準備画面の",
+    "en": ". A sellout (🔥) sends both income and the venue's heat soaring; an empty house (😰) sinks income and hurts your reputation. Use the ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "で進行します。1シーズンは",
+    "en": ". A season is ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "と",
+    "en": " and ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "と{faction}の動きについて、社長室での相談です。",
     "en": " and what {faction} is up to — a matter for the office.",
     "files": [
@@ -10458,6 +11329,26 @@
     "source": [
       "DOJO_SHOUTS[16]"
     ]
+  },
+  {
+    "key": "として積み上がり、限界を超えると",
+    "en": ", and once it passes a limit, it escalates into ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "との一戦は大きく跳ねる",
+    "en": " — a match against one spikes hard",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "ど う 立 ち 会 い ま す か",
@@ -10580,6 +11471,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "どの方針でも、",
+    "en": "Whatever the policy, ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "どの起案額にも資金が足りません",
     "en": "You cannot afford any of the proposed amounts",
     "files": [
@@ -10693,6 +11594,66 @@
     "note": "PPV放送(renderPPVResult)の実況コメントプール(LIVE_LINES)。ローカル配列から動的選択されるため走査外(P6-7で表示直前t()配線を追加)"
   },
   {
+    "key": "になることも。再支給のたびに「相場」は吊り上がります",
+    "en": ", and the \"going rate\" climbs every time you pay one out",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "に切り替わります。",
+    "en": " automatically.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "に業界全体の大興行が開かれます。ランキング上位ほど出場枠が多く、頂点で待つのは「頂上決戦」——業界の看板を懸けたメインイベントです。",
+    "en": " brings the industry's biggest show. The higher your ranking, the more entry slots you get, and waiting at the top is the \"Summit Match\" — the main event with the whole industry's reputation on the line.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "に発展します。",
+    "en": ".",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "に突入します。4週以内に黒字へ戻せなければ",
+    "en": ". Fail to get back into the black within 4 weeks and it's ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "に迎えられ、その名は年代記に残ります。",
+    "en": ", her name kept in the chronicle.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ぬんっ!",
     "en": "Hnn!",
     "files": [
@@ -10716,6 +11677,36 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "のが社長の仕事です。トレーナー系の書類は即効ではなく、",
+    "en": " — that's the president's job. Trainer-type papers aren't instant, either; ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "の交渉に入ります。同時に進められるのは1件、失敗すれば費用の半分は戻りません。格上の看板選手ほど、財布だけでは落ちません。",
+    "en": " of negotiations. You can only run one at a time, and if it fails, half the cost is gone for good. The bigger the star, the less a fat wallet alone will do.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "の出来が、興行全体の印象を決めます",
+    "en": "'s quality decides the impression of the whole show",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "の指導について",
@@ -10742,6 +11733,26 @@
     "en": " — consider making a run at it",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "の期間限定で借りられます。",
+    "en": " at a time.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "の重傷者にだけ発注できる切り札。残る離脱期間を4割から半分ほど削ります",
+    "en": ". It cuts her remaining recovery time by roughly 40 to 50 percent.",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -11265,6 +12276,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "を消費します。決裁枠はシーズン中",
+    "en": ". Approvals ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "を目安に選びましょう。",
+    "en": " on the show-booking screen as your guide.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "を目指しましょう。業界にはライバルの3団体（S級・A級・B級）がひしめいています。",
+    "en": ". Three rival promotions — S-Class, A-Class, and B-Class — crowd the industry.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "を経て新シーズンが始まります。",
+    "en": ".",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "アイドル選手",
     "en": "Idol wrestler",
     "files": [
@@ -11500,6 +12551,16 @@
     "en": "You cannot make promises in the off-season",
     "files": [
       "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "オフシーズンの補強：",
+    "en": "Offseason Reinforcement:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12077,6 +13138,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "ゲームの目的",
+    "en": "The Game's Objective",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ゲームは",
+    "en": "The game runs ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ゲームデザイン・開発",
     "en": "Game Design & Development",
     "files": [
@@ -12421,6 +13502,16 @@
     ]
   },
   {
+    "key": "コーチ：",
+    "en": "Coaches:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ゴングを待っています",
     "en": "Waiting for the bell",
     "files": [
@@ -12608,6 +13699,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "シーズンと週の流れ",
+    "en": "Seasons and the Weekly Flow",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "シーズンの勲章を多数抱え、勢いのある団体としての印象が定着している",
     "en": "A haul of season honors has cemented its image as an organization with momentum",
     "files": [
@@ -12618,6 +13719,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "ui-render.js:_buildLeadSentences()/_orgContextSentences()(ランキング画面の団体プロフィール「リード文」)。_pickSeed()で選んだ文をWM_I18N.tへ通す形にP6-13で配線(以前は選択のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
+  },
+  {
+    "key": "シーズンの終わり：",
+    "en": "End of Season:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "シーズンレポートへ →",
@@ -12759,6 +13870,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ジュニアトーナメント：",
+    "en": "Junior Tournament:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ジュニア王者",
     "en": "Junior Champion",
     "files": [
@@ -12769,10 +13890,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "スカウト / フリーエージェント",
+    "en": "Scout / Free Agents",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "スカウトからの情報が入りました。動くかどうかご判断を",
     "en": "A scout has sent in some information. Your call on whether to act.",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "スカウトタブに、契約金を払えば即入団のFA選手が並びます。市場は",
+    "en": "The Scout tab lists free agents who join immediately once you pay a signing fee. The market ",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13102,6 +14243,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "スランプ・モチベ喪失：",
+    "en": "Slumps and Lost Motivation:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "スランプ中の選手だ。今日は、少し時間を取ろう。",
     "en": "She's in a slump. Take a little time with her today.",
     "files": [
@@ -13349,6 +14500,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "タイトルマッチに出場不可",
+    "en": "cannot compete in title matches",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "タイトルマッチの挑戦者が差し替わった！\nOVR {ovr} の強敵が王座を狙う！",
     "en": "The title match has a new challenger!\nAn OVR {ovr} threat is coming for the title!",
     "files": [
@@ -13447,6 +14608,16 @@
     "en": "Title Holder — 1st",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "タイプもあります。",
+    "en": ".",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -13838,6 +15009,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "データベースの",
+    "en": "The Database's ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "トークショー",
     "en": "Talk show",
     "files": [
@@ -13866,9 +15047,10 @@
     "key": "ドラフト",
     "en": "Draft",
     "files": [
+      "index.html",
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -14604,6 +15786,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "プレイスタイルを選んでください。",
+    "en": "Choose your play style.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "プレイヤー",
     "en": "Player",
     "files": [
@@ -14648,9 +15840,10 @@
     "key": "プロモ優先",
     "en": "Promo Focus",
     "files": [
+      "index.html",
       "ui-render.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -15054,9 +16247,10 @@
     "en": "Main Event",
     "files": [
       "app.js",
+      "index.html",
       "ui-render.js"
     ],
-    "count": 5,
+    "count": 6,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -15554,6 +16748,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "ライバル団体の選手詳細から",
+    "en": "From a rival wrestler's detail screen, choose ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ライバル心",
     "en": "Rivalry",
     "files": [
@@ -15641,6 +16845,16 @@
     "en": "Low Risk",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "リスク指標（🟢安全/🟡注意/🔴危険）",
+    "en": "risk marker (🟢 safe / 🟡 caution / 🔴 danger)",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -16183,6 +17397,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "レンタル移籍：",
+    "en": "Loan Transfers:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "レンタル選手はタイトルマッチに出場できません",
     "en": "Loaned wrestlers cannot appear in title matches",
     "files": [
@@ -16324,6 +17548,16 @@
     ]
   },
   {
+    "key": "ロッカールームの空気：",
+    "en": "Locker Room Mood:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ロッカールームの緊張は限界に近く、メンバー全員が次の興行のカード編成を待っている。",
     "en": "Tension in the locker room is near breaking point, and everyone is waiting to see the next show's card.",
     "files": [
@@ -16398,8 +17632,28 @@
     "hasProperNoun": false
   },
   {
+    "key": "・",
+    "en": "• ",
+    "files": [
+      "index.html"
+    ],
+    "count": 28,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "・タイトルマッチはそれ自体が興行の看板になる",
     "en": "• A title match is a headline attraction in itself",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "・タイトルマッチを組めるのは",
+    "en": "• You can book a title match ",
     "files": [
       "index.html"
     ],
@@ -16415,6 +17669,16 @@
     ],
     "count": 2,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "・レンタル選手は",
+    "en": "• Loaned wrestlers ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -16440,6 +17704,16 @@
   {
     "key": "・実力の近い者同士は良い試合になりやすい",
     "en": "• Evenly matched wrestlers tend to have better matches",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "・挑戦資格を持つのは団体の",
+    "en": "• Only your promotion's ",
     "files": [
       "index.html"
     ],
@@ -16511,6 +17785,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
+  },
+  {
+    "key": "一方で、",
+    "en": "That said, ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "一方的な展開",
@@ -18330,6 +19614,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "人気とお金",
+    "en": "Popularity and Money",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "今がまさに全盛期と呼べる団体",
     "en": "An organization at its absolute peak right now",
     "files": [
@@ -18874,6 +20168,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "今週タブ",
+    "en": "This Week tab",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今週タブの育成方針：",
+    "en": "Training Policy on the This Week Tab:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "介入",
     "en": "Intervene",
     "files": [
@@ -19184,6 +20498,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "休ませた週数のぶんだけ蓄積した消耗が癒えます",
+    "en": "accumulated wear heals by exactly as many weeks as she rests",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "休ませる",
     "en": "Let her rest",
     "files": [
@@ -19263,6 +20587,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "休暇中は興行に欠場",
+    "en": "She sits out shows while on leave",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "休暇中は興行に欠場します。体調が回復し、蓄積した衰えも少し癒えます。",
     "en": "She misses shows while on leave. Her condition recovers, and some of the accumulated wear heals.",
     "files": [
@@ -19276,9 +20610,10 @@
     "key": "休暇辞令",
     "en": "Leave Order",
     "files": [
-      "data.js"
+      "data.js",
+      "index.html"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "source": [
@@ -19314,9 +20649,10 @@
     "key": "休養重視",
     "en": "Rest Focus",
     "files": [
+      "index.html",
       "ui-render.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -19398,6 +20734,16 @@
     "en": "Choose a Venue",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "会場：",
+    "en": "Venue:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -19488,6 +20834,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "体調が60を切った選手は自動で休養",
+    "en": "a wrestler whose condition drops below 60 is switched to rest",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "体調が大きく戻る。消耗の回復も",
     "en": "Condition recovers a lot, and some wear with it",
     "files": [
@@ -19550,6 +20906,16 @@
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
   },
   {
+    "key": "何が体を削るのか：",
+    "en": "What Wears the Body Down:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "何もしない",
     "en": "Do nothing",
     "files": [
@@ -19586,6 +20952,16 @@
       "app.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "何度も拳を交えた相手、遺恨を残した相手。",
+    "en": "Someone she's traded blows with again and again, someone who left a grudge behind. ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -19654,6 +21030,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "相関図の関係性セリフ(ui-render.js:EMOTION_TEXTS)。ローカルconstかつLINES/DIALOGUE命名でないため3抽出パイプラインいずれからも見えない。表示点getEmotionText()でt()。"
+  },
+  {
+    "key": "信頼：",
+    "en": "Trust:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "個人ランキング 1位",
@@ -19777,6 +21163,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "倒産（ゲームオーバー）",
+    "en": "bankruptcy (game over)",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "候 補 者",
     "en": "The Shortlist",
     "files": [
@@ -19860,6 +21256,16 @@
   {
     "key": "偶数週に対戦カードと会場を決めて興行を開催します。",
     "en": "On even weeks you set the card and the venue and run a show.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "偶数週（第2, 4, 6…週）が",
+    "en": "Every even week (2, 4, 6, and so on) is a ",
     "files": [
       "index.html"
     ],
@@ -20464,6 +21870,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "全盛期 → ⚠ 衰え → ⬇ 衰退期 → ⬇⬇ 限界",
+    "en": "Prime → ⚠ Fading → ⬇ Decline → ⬇⬇ The Wall",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "全試合の試合評価+3、集客×1.15（4週間）",
     "en": "+3 match rating on every match, attendance ×1.15 (4 weeks)",
     "files": [
@@ -20511,6 +21927,16 @@
     "source": [
       "DECISION_DOCS.camp.body"
     ]
+  },
+  {
+    "key": "全面対抗戦",
+    "en": "an all-out faction war",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "公式戦化",
@@ -21079,6 +22505,16 @@
     ]
   },
   {
+    "key": "刺してみないとわからない",
+    "en": "You won't know until you try it",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "削除",
     "en": "Delete",
     "files": [
@@ -21275,9 +22711,10 @@
     "key": "努力家",
     "en": "Hard Worker",
     "files": [
-      "data.js"
+      "data.js",
+      "index.html"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "source": [
@@ -21307,6 +22744,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "効き方は選手それぞれ：",
+    "en": "It Affects Each Wrestler Differently:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "効果",
@@ -21872,6 +23319,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "収支：",
+    "en": "Finances:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "取材、誰に委ねますか？",
     "en": "Who takes the interview?",
     "files": [
@@ -22133,6 +23590,17 @@
     "hasProperNoun": false
   },
   {
+    "key": "各選手の潜在能力は機密事項。さらに同じ選手であっても、その数値はプレイごとに変化する。",
+    "en": "Every wrestler's potential is classified. And even for the same wrestler, the number changes from playthrough to playthrough.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true
+  },
+  {
     "key": "合同企画",
     "en": "Joint Project",
     "files": [
@@ -22262,6 +23730,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "同じ書類でも、性格とタイプで響き方がまるで違います。深く刺されば「🌟」、空振りなら「💤」。",
+    "en": "The same paper lands completely differently depending on personality and type. Hit deep and it's \"🌟\"; miss and it's \"💤\". ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "同じ派閥に所属",
     "en": "In the same faction",
     "files": [
@@ -22385,6 +23863,16 @@
       "ui-render.js"
     ],
     "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "名)",
+    "en": ")",
+    "files": [
+      "index.html"
+    ],
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -22642,10 +24130,11 @@
     "en": "Grudge",
     "files": [
       "data.js",
+      "index.html",
       "ui-common.js",
       "ui-render.js"
     ],
-    "count": 4,
+    "count": 5,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "source": [
@@ -22673,6 +24162,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "因縁の一戦は観客を沸かせ、試合を大きく熱くします",
+    "en": "A grudge match fires up the crowd and raises the temperature of the whole bout",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "因縁の始まり",
     "en": "A rivalry begins",
     "files": [
@@ -22684,6 +24183,16 @@
     "source": [
       "GLIMPSE_A_THRESHOLDS[4:rivalry_30_up].label"
     ]
+  },
+  {
+    "key": "因縁の相手",
+    "en": "A grudge opponent",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "因縁の終息",
@@ -22775,6 +24284,16 @@
     ]
   },
   {
+    "key": "因縁：",
+    "en": "Grudges:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "団体",
     "en": "Promotion",
     "files": [
@@ -22784,6 +24303,16 @@
       "ui-render.js"
     ],
     "count": 9,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体が育ってくると、選手たちが旗を掲げ、",
+    "en": "As your promotion grows, wrestlers raise their own banners, and a ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -23007,6 +24536,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "団体ランキング",
+    "en": "Promotion Rankings",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体ランキング1位",
+    "en": "the #1 promotion ranking",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "団体ランキングと来季",
     "en": "Promotion Rankings and Next Season",
     "files": [
@@ -23020,10 +24569,11 @@
     "key": "団体人気",
     "en": "Promotion popularity",
     "files": [
+      "index.html",
       "ui-common.js",
       "ui-render.js"
     ],
-    "count": 3,
+    "count": 4,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -23072,6 +24622,16 @@
     "en": "Promotion popularity has passed 25! As the promotion grows, you have more room in your contract slots.",
     "files": [
       "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気が30に達すると出場資格を獲得。",
+    "en": "Reach promotion popularity 30 and you qualify. ",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -23135,6 +24695,16 @@
     "en": "Promotion popularity trend",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "団体人気：",
+    "en": "Promotion Popularity:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -23311,6 +24881,16 @@
     "en": "The curtain falls on the promotion title match.",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "団体王座：",
+    "en": "Promotion Championship:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -23742,6 +25322,16 @@
     ]
   },
   {
+    "key": "外部コーチ招聘：",
+    "en": "Guest Coaching:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "大きな変化は数値には出なかったが、確かな手応えが残った",
     "en": "Nothing much showed in the numbers, but something real came out of it",
     "files": [
@@ -24151,10 +25741,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "契約更新 → ドラフト → 移籍ウィンドウ",
+    "en": "Contract Renewal → Draft → Transfer Window",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "契約更新 完了",
     "en": "Contract renewals complete",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "契約更新（去就に迷う選手との1対1交渉）→",
+    "en": "Contract Renewal (one-on-one talks with wrestlers weighing their future) →",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -24423,6 +26033,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "安すぎる額は逆効果",
+    "en": "Lowballing it can backfire",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "安全",
     "en": "Safe",
     "files": [
@@ -24528,6 +26148,16 @@
     "en": "Ability rewrote the pecking order",
     "files": [
       "factions.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "実力上位陣",
+    "en": "top-ranked wrestlers",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -25194,6 +26824,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "対抗戦：",
+    "en": "Interpromotional Matches:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "対決は組まない。火種は残ったまま継続",
     "en": "No match is booked. The spark stays lit",
     "files": [
@@ -25436,6 +27076,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "小さな公民館から始まるその物語の、最初の一歩を踏み出そう。",
+    "en": "Take the first step in a story that begins at a small Community Center.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
     "key": "小さな揺らぎ",
     "en": "A small wobble",
     "files": [
@@ -25532,6 +27182,16 @@
     "en": "Depth — the roster that keeps the shows running",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "峠と引退",
+    "en": "The Wall and Retirement",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -25884,6 +27544,16 @@
     ]
   },
   {
+    "key": "序盤攻略のコツ",
+    "en": "Early-Game Tips",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "序章",
     "en": "Prologue",
     "files": [
@@ -26001,6 +27671,16 @@
     "source": [
       "TRAIT_DEFS.忠誠心.desc"
     ]
+  },
+  {
+    "key": "引き抜き交渉：",
+    "en": "Poaching Negotiations:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "引き留める",
@@ -26498,6 +28178,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "怪我",
+    "en": "Injury",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "怪我からの復帰が速い",
     "en": "Recovers from injury quickly",
     "files": [
@@ -26859,6 +28549,16 @@
     "source": [
       "TRAIT_DEFS.破天荒.desc"
     ]
+  },
+  {
+    "key": "成長のかたち：",
+    "en": "How Growth Works:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "成長やや低下",
@@ -27271,6 +28971,16 @@
       "ui-render.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "抗争ポイント",
+    "en": "Conflict Points",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -28781,9 +30491,10 @@
     "key": "早熟",
     "en": "Early Bloomer",
     "files": [
-      "data.js"
+      "data.js",
+      "index.html"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "source": [
@@ -29006,9 +30717,10 @@
     "key": "晩成",
     "en": "Late Bloomer",
     "files": [
-      "data.js"
+      "data.js",
+      "index.html"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "source": [
@@ -29115,6 +30827,16 @@
     "en": "Most Defenses",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "最大2週連続、体調50以上",
+    "en": "At most two consecutive weeks, condition 50 or above",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -29500,6 +31222,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "期間中にじわじわ信頼が育つ",
+    "en": "some let trust build slowly over the period",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -31132,9 +32864,10 @@
     "key": "殿堂",
     "en": "Hall of Fame",
     "files": [
+      "index.html",
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -31214,10 +32947,30 @@
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
+    "key": "毎年",
+    "en": "Every year, ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "毎年の頂点 ─ 直近から",
     "en": "Champions by year — most recent first",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "毎週やること：",
+    "en": "Every Week:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -31746,6 +33499,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "決裁枠⚡",
+    "en": "Approvals ⚡",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "決裁枠が不足しています",
     "en": "You do not have enough approvals",
     "files": [
@@ -31907,10 +33670,11 @@
     "files": [
       "app.js",
       "factions.js",
+      "index.html",
       "ui-common.js",
       "ui-render.js"
     ],
-    "count": 19,
+    "count": 21,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -32132,6 +33896,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "派閥タブ",
+    "en": "The Factions tab",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "派閥タブで詳細を見る",
     "en": "See the details on the Factions tab",
     "files": [
@@ -32295,6 +34069,16 @@
       "factions.js"
     ],
     "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "派閥同士の火種は",
+    "en": "Tension between factions builds up as ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -33376,6 +35160,16 @@
     "note": "ui-render.js:_buildAceCopy(ランキング画面の団体プロフィール「エース欄」)。_pickSeed()で選んだテンプレをWM_I18N.tへparams付きで通す形にP6-13で配線(以前はescHtml(aceCopy)のみでt()を一度も通さず、EN画面でも生JAのまま出ていた配線穴)。走査対象外につき手追加"
   },
   {
+    "key": "王座とビッグマッチ",
+    "en": "Titles and Big Matches",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "王座なし",
     "en": "No title",
     "files": [
@@ -34412,6 +36206,16 @@
     "note": "_F07_INCIDENT_META choice.label"
   },
   {
+    "key": "相関図",
+    "en": "Relationship Map",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "看板",
     "en": "Marquee",
     "files": [
@@ -34503,9 +36307,10 @@
     "key": "破天荒",
     "en": "Maverick",
     "files": [
-      "data.js"
+      "data.js",
+      "index.html"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "source": [
@@ -34713,8 +36518,28 @@
     "hasProperNoun": false
   },
   {
+    "key": "社長室",
+    "en": "The President's Office",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "社長室の「外部コーチ招聘状」で、団体の外から名伯楽を短期間だけ招けます。候補の顔ぶれは四半期ごとに入れ替わります。",
     "en": "The Guest Coach Invitation in your office brings in a great teacher from outside for a short stint. The list of candidates turns over every quarter.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "社長室の机には決裁書類が並びます。印を押せば実行——ただし",
+    "en": "Decision papers pile up on your desk in the president's office. Stamp one and it takes effect — but it costs ",
     "files": [
       "index.html"
     ],
@@ -35898,6 +37723,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "絆",
+    "en": "Bond",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "絆 深化",
     "en": "Bond deepened",
     "files": [
@@ -35918,10 +37753,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "絆と因縁",
+    "en": "Bonds and Grudges",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "絆に亀裂",
     "en": "A crack in the bond",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "絆：",
+    "en": "Bond:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -36471,6 +38326,16 @@
     "note": "QUIET_SIGN_LINES。配列インデックス経由でt()に渡るため走査外"
   },
   {
+    "key": "練習やコーチの指導そのものは体を削りません",
+    "en": "training and coaching by themselves don't wear a wrestler down",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "練習サボり連鎖",
     "en": "A Chain of Skipped Practice",
     "files": [
@@ -36520,9 +38385,10 @@
     "key": "練習優先",
     "en": "Practice First",
     "files": [
+      "index.html",
       "ui-render.js"
     ],
-    "count": 2,
+    "count": 3,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -36570,6 +38436,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "data.js:INJURY_LABEL_SHORT(狭い枠用の短い負傷ラベル)。ui-render.js:injuryLabelShort()の消費点(ロスターバッジ)がP6-13でdict引数を配線されるまで未訳だった。走査対象外につき手追加"
+  },
+  {
+    "key": "練習週",
+    "en": "practice week",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "練習（{detail}）",
@@ -37017,6 +38893,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "興行の組み方",
+    "en": "How to Book a Show",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "興行ダイジェスト",
     "en": "Show Digest",
     "files": [
@@ -37092,7 +38978,7 @@
     "files": [
       "index.html"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -37130,9 +39016,10 @@
     "key": "興行週",
     "en": "Show week",
     "files": [
+      "index.html",
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -37141,6 +39028,16 @@
     "en": "This is not a show week.",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "興行週と練習週：",
+    "en": "Show Weeks and Practice Weeks:",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -37228,6 +39125,16 @@
     "source": [
       "TRAIT_DEFS.華.$key"
     ]
+  },
+  {
+    "key": "蓄積の速さは体質でも変わります。「鉄人」や晩成型は長持ちし、早熟型は早く峠が来ます。減らす手段はただ一つ、",
+    "en": "How fast it builds up depends on constitution, too. An \"Iron Woman\" or a Late Bloomer lasts longer, and an Early Bloomer hits the wall sooner. There's exactly one way to reduce it: the ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "行き先",
@@ -37382,6 +39289,16 @@
       "ui-render.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "補強",
+    "en": "Recruiting",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -38182,6 +40099,16 @@
     "note": "殿堂入り異名(Engine.awards._EPITHET_TEMPLATES)。生成値はGへ生JAで永続するため、表示点(Engine.awards.epithetText)でのみt()を通す。management.jsは走査対象外につき手追加"
   },
   {
+    "key": "試合の詰め込み",
+    "en": "A packed schedule",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "試合の面白さを表す指標で、団体の評判と収入に直結します。",
     "en": "A measure of how good the match was, tied directly to your promotion's reputation and income.",
     "files": [
@@ -38311,6 +40238,16 @@
       "ui-common.js"
     ],
     "count": 3,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合評価：",
+    "en": "Match Rating:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -38489,6 +40426,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "選択型イベント(S1/S3/S4/S5/E1/E5/E6/S_boycott/S_grumble/S_sns)の選択肢label/hint(Engine.eventSystem.buildChoices)。management.jsは走査対象外につきP7-6で手追加。表示はui-common.jsの選択肢レンダラでWM_I18N.t(c.label)/WM_I18N.t(c.hint)"
+  },
+  {
+    "key": "読みもの",
+    "en": "Things to Read",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "課題: ",
@@ -38864,6 +40811,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "資金を投資して最大4枠まで拡張",
+    "en": "invest funds and expand to as many as 4 slots",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "資金不足",
     "en": "Not enough funds",
     "files": [
@@ -38900,7 +40857,7 @@
     "files": [
       "index.html"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -39776,6 +41733,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "週単位",
+    "en": "week by week",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "週合計 +{n}万",
     "en": "Week total +¥{n:man}",
     "files": [
@@ -40145,8 +42112,38 @@
     "hasProperNoun": false
   },
   {
+    "key": "選手の体には、リングで受けたダメージが静かに刻まれていきます。",
+    "en": "The damage a wrestler takes in the ring is quietly etched into her body. ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手の心",
+    "en": "A Wrestler's Heart",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "選手の気持ちの動きを見逃さないこと。冷えてからでは高くつきます。",
     "en": "Do not miss the way their feelings move. Once they have gone cold, it costs you.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選手の育成",
+    "en": "Developing Wrestlers",
     "files": [
       "index.html"
     ],
@@ -40255,6 +42252,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "選手をスカウト・育成し、興行を開催して資金と人気を集め、",
+    "en": "Scout and develop wrestlers, run shows to build funds and popularity, and aim for ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "選手ケア",
     "en": "Player Care",
     "files": [
@@ -40329,6 +42336,16 @@
     ]
   },
   {
+    "key": "選手人気：",
+    "en": "Wrestler Popularity:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "選手全員を合宿地へ送り込み、短期集中で基礎を鍛え直す。ひとり40万×人数ぶんの費用と決裁枠3を消費する重量級書類。",
     "en": "Send the whole roster to a training camp for a short, intensive rebuild of the fundamentals. A heavyweight paper — it costs ¥400k per fighter plus 3 decision points.",
     "files": [
@@ -40375,6 +42392,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "Engine.shachoshitsu.execute内changes[].text(決裁結果モーダルの変化サマリ本文)。P6-13でexecute()にoptions.dict糸通しを追加(§6 dict-opts方式)。走査対象外につき手追加"
+  },
+  {
+    "key": "選手同士の関係は",
+    "en": "Relationships between wrestlers run along two axes: ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "選手名",
@@ -40476,6 +42503,16 @@
     "source": [
       "DECISION_DOCS.faction_decree.effectSummary"
     ]
+  },
+  {
+    "key": "選択イベント：",
+    "en": "Choice Events:",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "選択中",
@@ -40796,6 +42833,16 @@
     "source": [
       "DECISION_DOCS.special_treatment.body"
     ]
+  },
+  {
+    "key": "長期離脱（10週以上）",
+    "en": "long-term absences (10+ weeks)",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "閉じる",
@@ -41363,6 +43410,16 @@
     "source": [
       "TRAIT_DEFS.華.desc"
     ]
+  },
+  {
+    "key": "集客力は",
+    "en": "Draw is set by ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "雇用 ({fee}万 / ⚡{dp})",
@@ -41998,6 +44055,316 @@
     "note": "_F07_INCIDENT_META choice.label"
   },
   {
+    "key": "（2名去り、2名参入）。ドラフトで指名が掛からなかった若い世代が中心です。",
+    "en": " (two leave, two arrive). It's mostly made up of young wrestlers who went undrafted.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（OVR+5バフ適用）",
+    "en": "(OVR +5 buff applied)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（S{season}: {prev} → 現在: {cur}）",
+    "en": "(S{season}: {prev} → now: {cur})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{age}歳）",
+    "en": "(age {age})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}ターン）",
+    "en": "({n} turns)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}件反映中 → 評価+5/試合）",
+    "en": "({n} in effect → rating +5 per match)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{n}防衛）",
+    "en": "(Defenses: {n})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（{q}入替）",
+    "en": "({q} rotation)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（このコーチの専門）",
+    "en": "(this coach's specialty)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（ランク{r}位）",
+    "en": "(rank {r})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（上限）",
+    "en": "(cap)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（今季使用済み）",
+    "en": "(already used this season)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（前払い一括）",
+    "en": "(paid up front)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（四半期入替）",
+    "en": "(quarterly rotation)",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（新人候補を巡ってライバル団体とセリ合い。各団体の関心と交渉のヒートを読みながら入札します）→ 移籍ウィンドウ、の順で進みます。",
+    "en": " (a bidding war with rival promotions over rookie prospects — you bid while reading each promotion's interest and how heated the talks are) → Transfer Window, in that order.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（残り{n}週）",
+    "en": "(Weeks left: {n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（無料） — 選手ポップアップから実行。決裁枠も資金も使わない、社長自らの行動です。気持ちが揺らいだ選手にボタンが灯ります。",
+    "en": " (free) — done from a wrestler's popup. No approvals or funds spent, just the president's own initiative. The button lights up for a wrestler whose feelings are wavering.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（給与変動: {n}名）",
+    "en": "(salary changes: {n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（興行週のみ）— 対戦カードと会場を決めて開催",
+    "en": " (show weeks only) — set the card and venue and run it",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（評価+{n}）",
+    "en": "(rating +{n})",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（軽め）",
+    "en": "(light)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（選手生命を延ばせる唯一の手。ただし癒やせる量には一年あたりの限りがあります）。",
+    "en": " (the only way to extend a career, though there's a yearly cap on how much it can heal). ",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（重め）",
+    "en": "(heavy)",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "（集客×{mult}）",
+    "en": "(attendance ×{mult})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 展開",
+    "en": "+ Expand",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 枠拡張 ({n}万)",
+    "en": "+ Add a Slot (¥{n:man})",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋ 追加",
+    "en": "+ Add",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "＋オフシーズンです。",
+    "en": " plus an offseason.",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：互いに力を認め合い、表情が和らいだ",
+    "en": ": they acknowledged each other's strength, and their faces softened",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
+    "en": ": she accepted your ruling, and the spring came back into her step",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "｜ 抗争{n}勝",
+    "en": "| {n} feud wins",
+    "files": [
+      "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "🅰 堅実",
     "en": "🅰 Safe",
     "files": [
@@ -42312,6 +44679,16 @@
     ]
   },
   {
+    "key": "🍶 慰労会開催届",
+    "en": "🍶 Team Party Order",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "🎉 交渉成功！",
     "en": "🎉 Deal done!",
     "files": [
@@ -42385,6 +44762,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "🎓 スタッフ募集",
+    "en": "🎓 Staff Openings",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "🎓 卒業レポート",
     "en": "🎓 Graduation Report",
     "files": [
@@ -42401,6 +44788,16 @@
       "ui-common.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🎓 所属スタッフ",
+    "en": "🎓 Staff",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -42721,6 +45118,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "🏖️ 休暇辞令",
+    "en": "🏖️ Leave Order",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "🏖️休暇 あと{w}週",
     "en": "🏖️Leave: {w}w left",
     "files": [
@@ -42741,6 +45148,16 @@
     "hasProperNoun": false,
     "kept": true,
     "note": "management.js:Engine.season.processSettlement()(週次財務内訳weeklyFinance.details[].label)。表示点(ui-render.js finance-row)がt()を一度も通していなかった配線穴をP6-13でdict-opts化(§6規約)して解消。走査対象外につき手追加"
+  },
+  {
+    "key": "🏛️ 社長室",
+    "en": "🏛️ President's Office",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "🏟️ PPV GRAND FINAL",
@@ -42866,6 +45283,16 @@
     ],
     "count": 2,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🏥 特別治療指示書",
+    "en": "🏥 Special Treatment Order",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -43017,6 +45444,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "👤 選手経歴",
+    "en": "👤 Wrestler History",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "👥 同世代",
     "en": "👥 Same Generation",
     "files": [
@@ -43029,6 +45466,16 @@
   {
     "key": "👥 団体",
     "en": "👥 Promotions",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "👥 所属選手",
+    "en": "👥 Roster",
     "files": [
       "index.html"
     ],
@@ -43083,6 +45530,16 @@
     "en": "💎 Special talks with one standout-rank wrestler on the FA market\n",
     "files": [
       "app.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💡 「おまかせ」をONにすると、体調管理を自動化してワンボタンで週を進められます。",
+    "en": "💡 Turn on \"Auto\" and condition management runs itself, so you can advance the week with a single button.",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -43192,6 +45649,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "💬 声をかける",
+    "en": "💬 Talk to Her",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "💬 選手からの申し入れ",
     "en": "💬 A Request from a Wrestler",
     "files": [
@@ -43206,6 +45673,16 @@
     "en": "💭 She's been distant lately",
     "files": [
       "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "💰 ボーナス支給願",
+    "en": "💰 Bonus Request",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -43376,6 +45853,16 @@
     "en": "💾 Manual Save Slots",
     "files": [
       "ui-render.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📅 シーズン総括",
+    "en": "📅 Season Recap",
+    "files": [
+      "index.html"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -43617,6 +46104,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "📋 コーチ雇用決裁書",
+    "en": "📋 Coach Hiring Decision",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "📋 シーズン{season} 契約更新",
     "en": "📋 Season {season} Contract Renewals",
     "files": [
@@ -43717,6 +46214,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "📜 団体年代記",
+    "en": "📜 Promotion Chronicle",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📜 外部コーチ招聘状",
+    "en": "📜 Guest Coach Invitation",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "📜 対 抗 戦 ・ 挑 戦 状",
     "en": "📜 INTERPROMOTIONAL · THE CHALLENGE LETTER",
     "files": [
@@ -43740,9 +46257,10 @@
     "key": "📜 記録",
     "en": "📜 Records",
     "files": [
+      "index.html",
       "ui-render.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -44015,6 +46533,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "📰 新聞",
+    "en": "📰 Newspaper",
+    "files": [
+      "index.html"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "📰 週刊誌にスクープが…",
     "en": "📰 A tabloid scoop breaks…",
     "files": [
@@ -44087,6 +46615,16 @@
       "ui-common.js"
     ],
     "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📺 メディア露出手配書",
+    "en": "📺 Media Push Order",
+    "files": [
+      "index.html"
+    ],
+    "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -45107,256 +47645,6 @@
       "ui-common.js"
     ],
     "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（OVR+5バフ適用）",
-    "en": "(OVR +5 buff applied)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（S{season}: {prev} → 現在: {cur}）",
-    "en": "(S{season}: {prev} → now: {cur})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{age}歳）",
-    "en": "(age {age})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}ターン）",
-    "en": "({n} turns)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}件反映中 → 評価+5/試合）",
-    "en": "({n} in effect → rating +5 per match)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{n}防衛）",
-    "en": "(Defenses: {n})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（{q}入替）",
-    "en": "({q} rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（このコーチの専門）",
-    "en": "(this coach's specialty)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（ランク{r}位）",
-    "en": "(rank {r})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（上限）",
-    "en": "(cap)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（今季使用済み）",
-    "en": "(already used this season)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（前払い一括）",
-    "en": "(paid up front)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（四半期入替）",
-    "en": "(quarterly rotation)",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（残り{n}週）",
-    "en": "(Weeks left: {n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（給与変動: {n}名）",
-    "en": "(salary changes: {n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（評価+{n}）",
-    "en": "(rating +{n})",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（軽め）",
-    "en": "(light)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（重め）",
-    "en": "(heavy)",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "（集客×{mult}）",
-    "en": "(attendance ×{mult})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 展開",
-    "en": "+ Expand",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 枠拡張 ({n}万)",
-    "en": "+ Add a Slot (¥{n:man})",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": true,
-    "hasProperNoun": false
-  },
-  {
-    "key": "＋ 追加",
-    "en": "+ Add",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：互いに力を認め合い、表情が和らいだ",
-    "en": ": they acknowledged each other's strength, and their faces softened",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 2,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "：社長の裁定に納得し、気持ちにも張りが戻った",
-    "en": ": she accepted your ruling, and the spring came back into her step",
-    "files": [
-      "ui-common.js"
-    ],
-    "count": 1,
-    "hasPlaceholder": false,
-    "hasProperNoun": false
-  },
-  {
-    "key": "｜ 抗争{n}勝",
-    "en": "| {n} feud wins",
-    "files": [
-      "ui-render.js"
-    ],
-    "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
   }

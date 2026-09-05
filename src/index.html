@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>WRESTLE MANAGER — 女子プロレス団体経営シミュレーション</title>
+<title data-i18n>WRESTLE MANAGER — 女子プロレス団体経営シミュレーション</title>
 <!-- ファビコン素材は持たない。指定が無いとブラウザが /favicon.ico を自動要求して 404 になるため、
      空の data URI で「アイコンは無い」と明示してリクエスト自体を止める。 -->
 <link rel="icon" href="data:,">
@@ -10013,10 +10013,10 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
     <button class="nav-btn active" onclick="showScreen('week',event)" data-i18n>📅 今週</button>
     <button class="nav-btn" onclick="showScreen('show',event)" data-i18n>🎤 興行準備</button>
     <button class="nav-btn" onclick="showScreen('roster',event)" data-i18n>👥 団体</button>
-    <button class="nav-btn" onclick="showScreen('shachoshitsu',event)">🏛️ 社長室<span id="shachoshitsuBadge" class="nav-badge-dot is-office" style="display:none"></span></button>
+    <button class="nav-btn" onclick="showScreen('shachoshitsu',event)"><span data-i18n>🏛️ 社長室</span><span id="shachoshitsuBadge" class="nav-badge-dot is-office" style="display:none"></span></button>
     <button class="nav-btn" onclick="showScreen('ranking',event)" data-i18n>🏆 ランキング</button>
     <button class="nav-btn" onclick="showScreen('database',event)" data-i18n>📊 データベース</button>
-    <button class="nav-btn" onclick="showScreen('newspaper',event)">📰 新聞<span id="newspaperBadge" class="nav-badge-dot" style="display:none"></span></button>
+    <button class="nav-btn" onclick="showScreen('newspaper',event)"><span data-i18n>📰 新聞</span><span id="newspaperBadge" class="nav-badge-dot" style="display:none"></span></button>
     <button class="nav-btn" onclick="showScreen('finance',event)" data-i18n>🏢 経営</button>
     <button class="nav-btn" onclick="showScreen('log',event)" data-i18n>📋 ログ</button>
     <button class="nav-btn" onclick="showScreen('save',event)" data-i18n>💾 セーブ</button>
@@ -10035,7 +10035,7 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
   <div class="screen" id="screen-ranking">
     <div class="ranking-popup">
       <div class="popup-header">
-        <h2><span class="dot"></span>団体ランキング</h2>
+        <h2><span class="dot"></span><span data-i18n>団体ランキング</span></h2>
       </div>
       <div id="rankingMast"></div>
       <div id="rankingVictoryBar"></div>
@@ -10059,13 +10059,13 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
   <div class="screen" id="screen-roster">
     <div id="rosterDojoHeader"></div>
     <div class="panel">
-      <div class="panel-title">🎓 所属スタッフ (<span id="staffCount">0</span>/<span id="staffMax">3</span>)
+      <div class="panel-title"><span data-i18n>🎓 所属スタッフ</span> (<span id="staffCount">0</span>/<span id="staffMax">3</span>)
         <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('coach',event)" data-i18n>スタッフ募集 →</button>
       </div>
       <div id="rosterStaffSection"></div>
     </div>
     <div class="panel" style="margin-top:12px">
-      <div class="panel-title">👥 所属選手 (<span id="rosterCount">0</span>名)</div>
+      <div class="panel-title"><span data-i18n>👥 所属選手</span> (<span id="rosterCount">0</span><span data-i18n>名)</span></div>
       <div id="rosterTable"></div>
     </div>
     <div id="rosterGrowthLog"></div>
@@ -10074,7 +10074,7 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
   <!-- SCREEN: Scout -->
   <div class="screen cream-screen" id="screen-scout">
     <div class="panel">
-      <div class="panel-title">スカウト / フリーエージェント (<span id="faCount">0</span>名)</div>
+      <div class="panel-title"><span data-i18n>スカウト / フリーエージェント</span> (<span id="faCount">0</span><span data-i18n>名)</span></div>
       <div id="scoutContent"></div>
     </div>
   </div>
@@ -10119,7 +10119,7 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
   <!-- SCREEN: Staff Room (Coach Management) -->
   <div class="screen cream-screen" id="screen-coach">
     <div class="panel">
-      <div class="panel-title">🎓 スタッフ募集
+      <div class="panel-title"><span data-i18n>🎓 スタッフ募集</span>
         <button class="btn btn-sm" style="font-size:12px;padding:3px 10px;margin-left:auto" onclick="showScreen('roster',event)" data-i18n>← 団体に戻る</button>
       </div>
       <div id="coachContent"></div>
@@ -10142,251 +10142,251 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🎯</span> ゲームの目的 <span class="help-arrow">▶</span>
+            <span class="help-icon">🎯</span> <span data-i18n>ゲームの目的</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
             <p data-i18n>あなたは新興の女子プロレス団体のオーナーです。</p>
-            <p>選手をスカウト・育成し、興行を開催して資金と人気を集め、<strong style="color:var(--gold)">団体ランキング1位</strong>を目指しましょう。業界にはライバルの3団体（S級・A級・B級）がひしめいています。</p>
-            <p style="color:var(--text-sub);font-size:12px">⚠️ 資金がマイナスに落ちると<strong>資金危機</strong>に突入します。4週以内に黒字へ戻せなければ<strong style="color:var(--red)">倒産（ゲームオーバー）</strong>。赤字が深く沈みすぎれば、猶予を待たず経営は破綻します。</p>
+            <p><span data-i18n>選手をスカウト・育成し、興行を開催して資金と人気を集め、</span><strong style="color:var(--gold)" data-i18n>団体ランキング1位</strong><span data-i18n>を目指しましょう。業界にはライバルの3団体（S級・A級・B級）がひしめいています。</span></p>
+            <p style="color:var(--text-sub);font-size:12px"><span data-i18n>⚠️ 資金がマイナスに落ちると</span><strong data-i18n>資金危機</strong><span data-i18n>に突入します。4週以内に黒字へ戻せなければ</span><strong style="color:var(--red)" data-i18n>倒産（ゲームオーバー）</strong><span data-i18n>。赤字が深く沈みすぎれば、猶予を待たず経営は破綻します。</span></p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📅</span> シーズンと週の流れ <span class="help-arrow">▶</span>
+            <span class="help-icon">📅</span> <span data-i18n>シーズンと週の流れ</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>ゲームは<strong>週単位</strong>で進行します。1シーズンは<strong>48週</strong>＋オフシーズンです。</p>
-            <p><strong style="color:var(--gold)">興行週と練習週：</strong></p>
-            <p>偶数週（第2, 4, 6…週）が<strong>興行週</strong>、奇数週が<strong>練習週</strong>。つまり2週に1回、興行を開催できます。</p>
-            <p><strong style="color:var(--gold)">毎週やること：</strong></p>
-            <p>① <strong>今週タブ</strong> — 選手ごとの育成方針と⚡追込を設定</p>
-            <p>② <strong>興行準備</strong>（興行週のみ）— 対戦カードと会場を決めて開催</p>
-            <p>③ <strong>「▶ 次の週へ」</strong> — 結果処理</p>
-            <p><strong style="color:var(--gold)">シーズンの終わり：</strong></p>
-            <p>48週目の後はオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）と1年の総括に続き、<strong>契約更新 → ドラフト → 移籍ウィンドウ</strong>を経て新シーズンが始まります。</p>
-            <p style="color:var(--text-sub);font-size:12px">💡 「おまかせ」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
+            <p><span data-i18n>ゲームは</span><strong data-i18n>週単位</strong><span data-i18n>で進行します。1シーズンは</span><strong data-i18n>48週</strong><span data-i18n>＋オフシーズンです。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>興行週と練習週：</strong></p>
+            <p><span data-i18n>偶数週（第2, 4, 6…週）が</span><strong data-i18n>興行週</strong><span data-i18n>、奇数週が</span><strong data-i18n>練習週</strong><span data-i18n>。つまり2週に1回、興行を開催できます。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>毎週やること：</strong></p>
+            <p><span data-i18n>①</span> <strong data-i18n>今週タブ</strong> <span data-i18n>— 選手ごとの育成方針と⚡追込を設定</span></p>
+            <p><span data-i18n>②</span> <strong data-i18n>興行準備</strong><span data-i18n>（興行週のみ）— 対戦カードと会場を決めて開催</span></p>
+            <p><span data-i18n>③</span> <strong data-i18n>「▶ 次の週へ」</strong> <span data-i18n>— 結果処理</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>シーズンの終わり：</strong></p>
+            <p><span data-i18n>48週目の後はオフシーズンへ。年末表彰式（新人王・MVP・殿堂入りなど）と1年の総括に続き、</span><strong data-i18n>契約更新 → ドラフト → 移籍ウィンドウ</strong><span data-i18n>を経て新シーズンが始まります。</span></p>
+            <p style="color:var(--text-sub);font-size:12px" data-i18n>💡 「おまかせ」をONにすると、体調管理を自動化してワンボタンで週を進められます。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">👥</span> 選手の育成 <span class="help-arrow">▶</span>
+            <span class="help-icon">👥</span> <span data-i18n>選手の育成</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">今週タブの育成方針：</strong></p>
-            <p>・<strong>バランス</strong> — 興行週はプロモ、練習週は練習（デフォルト）</p>
-            <p>・<strong>練習優先</strong> — ステータス成長を重視</p>
-            <p>・<strong>プロモ優先</strong> — 人気上昇を重視（人気には上限あり）</p>
-            <p>・<strong>休養重視</strong> — 体調回復を優先</p>
-            <p>どの方針でも、<strong>体調が60を切った選手は自動で休養</strong>に切り替わります。</p>
-            <p><strong style="color:var(--gold)">⚡追込練習：</strong></p>
-            <p>⚡ボタンで設定。成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも背負います。<strong>最大2週連続、体調50以上</strong>が条件です。</p>
-            <p><strong style="color:var(--gold)">成長のかたち：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>今週タブの育成方針：</strong></p>
+            <p><span data-i18n>・</span><strong data-i18n>バランス</strong> <span data-i18n>— 興行週はプロモ、練習週は練習（デフォルト）</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>練習優先</strong> <span data-i18n>— ステータス成長を重視</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>プロモ優先</strong> <span data-i18n>— 人気上昇を重視（人気には上限あり）</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>休養重視</strong> <span data-i18n>— 体調回復を優先</span></p>
+            <p><span data-i18n>どの方針でも、</span><strong data-i18n>体調が60を切った選手は自動で休養</strong><span data-i18n>に切り替わります。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>⚡追込練習：</strong></p>
+            <p><span data-i18n>⚡ボタンで設定。成長が大きく伸びる代わりに体調の消耗が激しく、怪我のリスクも背負います。</span><strong data-i18n>最大2週連続、体調50以上</strong><span data-i18n>が条件です。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>成長のかたち：</strong></p>
             <p data-i18n>選手は毎週の練習と試合経験で育ちます。伸び方は年齢・特性・コーチで大きく変わります。</p>
-            <p>・<strong>早熟</strong> — 若い時期に急成長、以降は鈍化</p>
-            <p>・<strong>晩成</strong> — スロースタート、20代後半で本領発揮</p>
-            <p>・<strong>努力家</strong> — 安定して伸びる</p>
-            <p>・<strong>破天荒</strong> — 振れ幅が極端</p>
-            <p><strong style="color:var(--gold)">コーチ：</strong></p>
-            <p>「スタッフ」からコーチを雇用できます。指導力の高いコーチは成長速度を引き上げ、選手と得意スタイルが合えばさらに伸びます。コーチ枠は最初1つ——<strong>資金を投資して最大4枠まで拡張</strong>できます。団体タブの選手カードからアサインを管理しましょう。</p>
-            <p><strong style="color:var(--gold)">外部コーチ招聘：</strong></p>
+            <p><span data-i18n>・</span><strong data-i18n>早熟</strong> <span data-i18n>— 若い時期に急成長、以降は鈍化</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>晩成</strong> <span data-i18n>— スロースタート、20代後半で本領発揮</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>努力家</strong> <span data-i18n>— 安定して伸びる</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>破天荒</strong> <span data-i18n>— 振れ幅が極端</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>コーチ：</strong></p>
+            <p><span data-i18n>「スタッフ」からコーチを雇用できます。指導力の高いコーチは成長速度を引き上げ、選手と得意スタイルが合えばさらに伸びます。コーチ枠は最初1つ——</span><strong data-i18n>資金を投資して最大4枠まで拡張</strong><span data-i18n>できます。団体タブの選手カードからアサインを管理しましょう。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>外部コーチ招聘：</strong></p>
             <p data-i18n>社長室の「外部コーチ招聘状」で、団体の外から名伯楽を短期間だけ招けます。候補の顔ぶれは四半期ごとに入れ替わります。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🎤</span> 興行の組み方 <span class="help-arrow">▶</span>
+            <span class="help-icon">🎤</span> <span data-i18n>興行の組み方</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
             <p data-i18n>偶数週に対戦カードと会場を決めて興行を開催します。</p>
-            <p><strong style="color:var(--gold)">試合評価：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>試合評価：</strong></p>
             <p data-i18n>試合の面白さを表す指標で、団体の評判と収入に直結します。</p>
             <p data-i18n>・実力の近い者同士は良い試合になりやすい</p>
-            <p>・<strong>因縁の相手</strong>との一戦は大きく跳ねる</p>
+            <p><span data-i18n>・</span><strong data-i18n>因縁の相手</strong><span data-i18n>との一戦は大きく跳ねる</span></p>
             <p data-i18n>・タイトルマッチはそれ自体が興行の看板になる</p>
-            <p>・<strong>メインイベント</strong>の出来が、興行全体の印象を決めます</p>
-            <p><strong style="color:var(--gold)">おまかせ編成：</strong></p>
+            <p><span data-i18n>・</span><strong data-i18n>メインイベント</strong><span data-i18n>の出来が、興行全体の印象を決めます</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>おまかせ編成：</strong></p>
             <p data-i18n>🔥おすすめ（因縁・鮮度・話題性）／💪OVR順／🎤集客力順 の3ボタンで自動編成もできます。</p>
-            <p><strong style="color:var(--gold)">会場：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>会場：</strong></p>
             <p data-i18n>公民館（150人）からドーム（22,500人）まで10段階。大きい会場ほどコストが上がり、試合枠が増えます。</p>
-            <p>集客力は<strong>団体人気</strong>で決まります。超満員（🔥）なら収入も会場の熱も跳ね上がり、ガラガラ（😰）だと収入が沈んで評判も落ちます。興行準備画面の<strong>リスク指標（🟢安全/🟡注意/🔴危険）</strong>を目安に選びましょう。</p>
+            <p><span data-i18n>集客力は</span><strong data-i18n>団体人気</strong><span data-i18n>で決まります。超満員（🔥）なら収入も会場の熱も跳ね上がり、ガラガラ（😰）だと収入が沈んで評判も落ちます。興行準備画面の</span><strong data-i18n>リスク指標（🟢安全/🟡注意/🔴危険）</strong><span data-i18n>を目安に選びましょう。</span></p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏆</span> 王座とビッグマッチ <span class="help-arrow">▶</span>
+            <span class="help-icon">🏆</span> <span data-i18n>王座とビッグマッチ</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">団体王座：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>団体王座：</strong></p>
             <p data-i18n>興行の実績・団体人気・所属人数が一定に達すると、王座を設立できます。まずは「初代王者決定戦」を組みましょう。</p>
-            <p>・挑戦資格を持つのは団体の<strong>実力上位陣</strong>だけ</p>
-            <p>・タイトルマッチを組めるのは<strong>12週に1回</strong></p>
+            <p><span data-i18n>・挑戦資格を持つのは団体の</span><strong data-i18n>実力上位陣</strong><span data-i18n>だけ</span></p>
+            <p><span data-i18n>・タイトルマッチを組めるのは</span><strong data-i18n>12週に1回</strong></p>
             <p data-i18n>・レンタル選手は出場できません</p>
-            <p><strong style="color:var(--gold)">ジュニアトーナメント：</strong></p>
-            <p>毎年<strong>25週目</strong>、20歳以下の若手による業界横断の一日トーナメント。優勝は若手にとって最初の勲章です。</p>
-            <p><strong style="color:var(--gold)">PPV GRAND FINAL：</strong></p>
-            <p>団体人気が30に達すると出場資格を獲得。<strong>43週目にエントリー、48週目</strong>に業界全体の大興行が開かれます。ランキング上位ほど出場枠が多く、頂点で待つのは「頂上決戦」——業界の看板を懸けたメインイベントです。</p>
-            <p><strong style="color:var(--gold)">対抗戦：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>ジュニアトーナメント：</strong></p>
+            <p><span data-i18n>毎年</span><strong data-i18n>25週目</strong><span data-i18n>、20歳以下の若手による業界横断の一日トーナメント。優勝は若手にとって最初の勲章です。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>PPV GRAND FINAL：</strong></p>
+            <p><span data-i18n>団体人気が30に達すると出場資格を獲得。</span><strong data-i18n>43週目にエントリー、48週目</strong><span data-i18n>に業界全体の大興行が開かれます。ランキング上位ほど出場枠が多く、頂点で待つのは「頂上決戦」——業界の看板を懸けたメインイベントです。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>対抗戦：</strong></p>
             <p data-i18n>ライバル団体から挑戦状が届くことがあります。3本勝負または5本勝負の団体戦。勝てば人気と業界での立場が上がり、負ければ痛手を負います。選手が「あの団体とやらせてほしい」と直訴してくることもあります。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🤝</span> 選手の心 <span class="help-arrow">▶</span>
+            <span class="help-icon">🤝</span> <span data-i18n>選手の心</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">信頼：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>信頼：</strong></p>
             <p data-i18n>選手一人ひとりが、社長への信頼を胸の内に持っています。数値では見えません——表情や様子、コーチの報告から察してください。出場機会とケアで育ち、冷遇と放置で冷えます。冷え切った心は、不満・造反・移籍の火種になります。</p>
-            <p><strong style="color:var(--gold)">ロッカールームの空気：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>ロッカールームの空気：</strong></p>
             <p data-i18n>団体全体の空気は、成長やイベントの起きやすさに響きます。勝ちが続けば和み、連敗と空席が続けば荒みます。「人望」のある選手は、いるだけで空気を少し明るくします。</p>
-            <p><strong style="color:var(--gold)">スランプ・モチベ喪失：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>スランプ・モチベ喪失：</strong></p>
             <p data-i18n>選手は時に沈みます。放置は禁物——休ませる、声をかける、環境を変える。手の打ち方は一つではありません。</p>
-            <p><strong style="color:var(--gold)">選択イベント：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>選択イベント：</strong></p>
             <p data-i18n>タイトル挑戦の直訴、休養申請、不満の爆発……社長の判断を求める出来事が起きます。選択肢に添えられた一言が、結果の手がかりです。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏛️</span> 社長室 <span class="help-arrow">▶</span>
+            <span class="help-icon">🏛️</span> <span data-i18n>社長室</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>社長室の机には決裁書類が並びます。印を押せば実行——ただし<strong>決裁枠⚡</strong>を消費します。決裁枠はシーズン中<strong>4週ごとに+2回復（上限6）</strong>。発動条件を満たさない書類は机に並びません。</p>
-            <p>・<strong>💰 ボーナス支給願</strong> — 起案された4案から支給額を選ぶ交渉型。額面が選手の格に見合ってこそ誠意は伝わります。<strong style="color:var(--red)">安すぎる額は逆効果</strong>になることも。再支給のたびに「相場」は吊り上がります</p>
-            <p>・<strong>🏖️ 休暇辞令</strong> — 1〜4週の休暇を与える。体調が戻り、<strong>休ませた週数のぶんだけ蓄積した消耗が癒えます</strong>（選手生命を延ばせる唯一の手。ただし癒やせる量には一年あたりの限りがあります）。<strong>休暇中は興行に欠場</strong>します</p>
-            <p>・<strong>🍶 慰労会開催届</strong> — ロッカールームの空気が和らぐ</p>
-            <p>・<strong>📜 外部コーチ招聘状</strong> — 団体の外から指導者を短期招聘する</p>
-            <p>・<strong>⛺ 合宿実施手配書</strong> — 全員の練習効果を短期間ブースト</p>
-            <p>・<strong>📺 メディア露出手配書</strong> — 選手の人気と団体の知名度を上げる</p>
-            <p>・<strong>🏥 特別治療指示書</strong> — <strong>長期離脱（10週以上）</strong>の重傷者にだけ発注できる切り札。残る離脱期間を4割から半分ほど削ります</p>
-            <p>・<strong>📋 コーチ雇用決裁書</strong> — コーチ雇用時に消費される</p>
-            <p><strong style="color:var(--gold)">効き方は選手それぞれ：</strong></p>
-            <p>同じ書類でも、性格とタイプで響き方がまるで違います。深く刺されば「🌟」、空振りなら「💤」。<strong>刺してみないとわからない</strong>のが社長の仕事です。トレーナー系の書類は即効ではなく、<strong>期間中にじわじわ信頼が育つ</strong>タイプもあります。</p>
-            <p>・<strong>💬 声をかける</strong>（無料） — 選手ポップアップから実行。決裁枠も資金も使わない、社長自らの行動です。気持ちが揺らいだ選手にボタンが灯ります。</p>
+            <p><span data-i18n>社長室の机には決裁書類が並びます。印を押せば実行——ただし</span><strong data-i18n>決裁枠⚡</strong><span data-i18n>を消費します。決裁枠はシーズン中</span><strong data-i18n>4週ごとに+2回復（上限6）</strong><span data-i18n>。発動条件を満たさない書類は机に並びません。</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>💰 ボーナス支給願</strong> <span data-i18n>— 起案された4案から支給額を選ぶ交渉型。額面が選手の格に見合ってこそ誠意は伝わります。</span><strong style="color:var(--red)" data-i18n>安すぎる額は逆効果</strong><span data-i18n>になることも。再支給のたびに「相場」は吊り上がります</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>🏖️ 休暇辞令</strong> <span data-i18n>— 1〜4週の休暇を与える。体調が戻り、</span><strong data-i18n>休ませた週数のぶんだけ蓄積した消耗が癒えます</strong><span data-i18n>（選手生命を延ばせる唯一の手。ただし癒やせる量には一年あたりの限りがあります）。</span><strong data-i18n>休暇中は興行に欠場</strong><span data-i18n>します</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>🍶 慰労会開催届</strong> <span data-i18n>— ロッカールームの空気が和らぐ</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>📜 外部コーチ招聘状</strong> <span data-i18n>— 団体の外から指導者を短期招聘する</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>⛺ 合宿実施手配書</strong> <span data-i18n>— 全員の練習効果を短期間ブースト</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>📺 メディア露出手配書</strong> <span data-i18n>— 選手の人気と団体の知名度を上げる</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>🏥 特別治療指示書</strong> <span data-i18n>—</span> <strong data-i18n>長期離脱（10週以上）</strong><span data-i18n>の重傷者にだけ発注できる切り札。残る離脱期間を4割から半分ほど削ります</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>📋 コーチ雇用決裁書</strong> <span data-i18n>— コーチ雇用時に消費される</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>効き方は選手それぞれ：</strong></p>
+            <p><span data-i18n>同じ書類でも、性格とタイプで響き方がまるで違います。深く刺されば「🌟」、空振りなら「💤」。</span><strong data-i18n>刺してみないとわからない</strong><span data-i18n>のが社長の仕事です。トレーナー系の書類は即効ではなく、</span><strong data-i18n>期間中にじわじわ信頼が育つ</strong><span data-i18n>タイプもあります。</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>💬 声をかける</strong><span data-i18n>（無料） — 選手ポップアップから実行。決裁枠も資金も使わない、社長自らの行動です。気持ちが揺らいだ選手にボタンが灯ります。</span></p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">💞</span> 絆と因縁 <span class="help-arrow">▶</span>
+            <span class="help-icon">💞</span> <span data-i18n>絆と因縁</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>選手同士の関係は<strong>絆</strong>と<strong>因縁</strong>、2つの軸で動きます。想いは一方通行のこともあります——彼女は慕っていても、相手はそうでもない、ということも。</p>
-            <p><strong style="color:var(--gold)">絆：</strong></p>
+            <p><span data-i18n>選手同士の関係は</span><strong data-i18n>絆</strong><span data-i18n>と</span><strong data-i18n>因縁</strong><span data-i18n>、2つの軸で動きます。想いは一方通行のこともあります——彼女は慕っていても、相手はそうでもない、ということも。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>絆：</strong></p>
             <p data-i18n>タッグや日々の交わりの中で育ちます。深い絆は成長を後押しし、土壇場の踏ん張りに効きます。</p>
-            <p><strong style="color:var(--gold)">因縁：</strong></p>
-            <p>何度も拳を交えた相手、遺恨を残した相手。<strong>因縁の一戦は観客を沸かせ、試合を大きく熱くします</strong>。育てた因縁は団体の財産です。</p>
-            <p><strong style="color:var(--gold)">こじれたとき：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>因縁：</strong></p>
+            <p><span data-i18n>何度も拳を交えた相手、遺恨を残した相手。</span><strong data-i18n>因縁の一戦は観客を沸かせ、試合を大きく熱くします</strong><span data-i18n>。育てた因縁は団体の財産です。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>こじれたとき：</strong></p>
             <p data-i18n>関係が険悪に沈むと、ロッカーが荒れ、タッグが壊れ、最悪の場合は造反や離脱に至ります。修復の道も残されています——社長室に修復の書類が並ぶことがあります。</p>
-            <p>データベースの<strong>相関図</strong>で、団体内の人間模様を一望できます。</p>
+            <p><span data-i18n>データベースの</span><strong data-i18n>相関図</strong><span data-i18n>で、団体内の人間模様を一望できます。</span></p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🏴</span> 派閥 <span class="help-arrow">▶</span>
+            <span class="help-icon">🏴</span> <span data-i18n>派閥</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>団体が育ってくると、選手たちが旗を掲げ、<strong>派閥</strong>が生まれます。</p>
+            <p><span data-i18n>団体が育ってくると、選手たちが旗を掲げ、</span><strong data-i18n>派閥</strong><span data-i18n>が生まれます。</span></p>
             <p data-i18n>派閥にはリーダーの気風が宿ります——権威で束ねる者、結束を誇る者、実力だけを信じる者……。気風によって、起きる事件も変わります。</p>
-            <p>派閥同士の火種は<strong>抗争ポイント</strong>として積み上がり、限界を超えると<strong>全面対抗戦</strong>に発展します。</p>
+            <p><span data-i18n>派閥同士の火種は</span><strong data-i18n>抗争ポイント</strong><span data-i18n>として積み上がり、限界を超えると</span><strong data-i18n>全面対抗戦</strong><span data-i18n>に発展します。</span></p>
             <p data-i18n>合宿、取材、同門対決、下剋上——派閥がらみの報せには、社長の判断を求めるものもあります。静観するか、油を注ぐか、水を差すか。</p>
-            <p><strong>派閥タブ</strong>で、それぞれの勢力と火種を確認できます。</p>
+            <p><strong data-i18n>派閥タブ</strong><span data-i18n>で、それぞれの勢力と火種を確認できます。</span></p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">🔍</span> 補強 <span class="help-arrow">▶</span>
+            <span class="help-icon">🔍</span> <span data-i18n>補強</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">FA（フリーエージェント）：</strong></p>
-            <p>スカウトタブに、契約金を払えば即入団のFA選手が並びます。市場は<strong>4週ごとに入れ替わり</strong>（2名去り、2名参入）。ドラフトで指名が掛からなかった若い世代が中心です。</p>
-            <p><strong style="color:var(--gold)">レンタル移籍：</strong></p>
-            <p>FAやライバル団体の選手を<strong>1〜4シーズン</strong>の期間限定で借りられます。</p>
+            <p><strong style="color:var(--gold)" data-i18n>FA（フリーエージェント）：</strong></p>
+            <p><span data-i18n>スカウトタブに、契約金を払えば即入団のFA選手が並びます。市場は</span><strong data-i18n>4週ごとに入れ替わり</strong><span data-i18n>（2名去り、2名参入）。ドラフトで指名が掛からなかった若い世代が中心です。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>レンタル移籍：</strong></p>
+            <p><span data-i18n>FAやライバル団体の選手を</span><strong data-i18n>1〜4シーズン</strong><span data-i18n>の期間限定で借りられます。</span></p>
             <p data-i18n>・費用は前払い一括</p>
             <p data-i18n>・同時レンタルは2〜3枠（ロスター規模による）</p>
             <p data-i18n>・相手団体の看板上位3名は借りられません</p>
-            <p>・レンタル選手は<strong>タイトルマッチに出場不可</strong>。契約が切れれば帰っていきます</p>
-            <p><strong style="color:var(--gold)">引き抜き交渉：</strong></p>
-            <p>ライバル団体の選手詳細から<strong>「🤝 選手を引き抜く」</strong>。予算プラン3種から選んで<strong>4週間</strong>の交渉に入ります。同時に進められるのは1件、失敗すれば費用の半分は戻りません。格上の看板選手ほど、財布だけでは落ちません。</p>
+            <p><span data-i18n>・レンタル選手は</span><strong data-i18n>タイトルマッチに出場不可</strong><span data-i18n>。契約が切れれば帰っていきます</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>引き抜き交渉：</strong></p>
+            <p><span data-i18n>ライバル団体の選手詳細から</span><strong data-i18n>「🤝 選手を引き抜く」</strong><span data-i18n>。予算プラン3種から選んで</span><strong data-i18n>4週間</strong><span data-i18n>の交渉に入ります。同時に進められるのは1件、失敗すれば費用の半分は戻りません。格上の看板選手ほど、財布だけでは落ちません。</span></p>
             <p data-i18n>※逆もあります。上位団体があなたの選手に引き抜きオファーを出してくることも。日頃の信頼が防波堤になります。</p>
-            <p><strong style="color:var(--gold)">オフシーズンの補強：</strong></p>
-            <p>契約更新（去就に迷う選手との1対1交渉）→ <strong>ドラフト</strong>（新人候補を巡ってライバル団体とセリ合い。各団体の関心と交渉のヒートを読みながら入札します）→ 移籍ウィンドウ、の順で進みます。</p>
+            <p><strong style="color:var(--gold)" data-i18n>オフシーズンの補強：</strong></p>
+            <p><span data-i18n>契約更新（去就に迷う選手との1対1交渉）→</span> <strong data-i18n>ドラフト</strong><span data-i18n>（新人候補を巡ってライバル団体とセリ合い。各団体の関心と交渉のヒートを読みながら入札します）→ 移籍ウィンドウ、の順で進みます。</span></p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📈</span> 峠と引退 <span class="help-arrow">▶</span>
+            <span class="help-icon">📈</span> <span data-i18n>峠と引退</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p>選手の体には、リングで受けたダメージが静かに刻まれていきます。<strong>全盛期 → ⚠ 衰え → ⬇ 衰退期 → ⬇⬇ 限界</strong>——蓄積が峠を越えるとステータスは下り坂に入り、引退が視野に入ります。</p>
-            <p><strong style="color:var(--gold)">何が体を削るのか：</strong></p>
+            <p><span data-i18n>選手の体には、リングで受けたダメージが静かに刻まれていきます。</span><strong data-i18n>全盛期 → ⚠ 衰え → ⬇ 衰退期 → ⬇⬇ 限界</strong><span data-i18n>——蓄積が峠を越えるとステータスは下り坂に入り、引退が視野に入ります。</span></p>
+            <p><strong style="color:var(--gold)" data-i18n>何が体を削るのか：</strong></p>
             <p data-i18n>20代半ばにさしかかる頃から、リングに上がり続けた分だけ毎年少しずつ蓄積します。そこに上乗せされるのが——</p>
-            <p>・<strong>試合の詰め込み</strong> — 年間の試合数が多い選手ほど体は削れます</p>
-            <p>・<strong>怪我</strong> — 一度の負傷は治っても、確実に体に残ります</p>
-            <p>・<strong>⚡追込の使いすぎ</strong> — 若いうちは何も起きません。重ねた無理は表に出ないまま溜まり、峠にさしかかった年に一度に返ってきます</p>
-            <p>一方で、<strong>練習やコーチの指導そのものは体を削りません</strong>。専属の指導で鍛え込むこと自体は安全です——削るのは、あくまでリングの上のダメージと無理な起用です。</p>
-            <p>蓄積の速さは体質でも変わります。「鉄人」や晩成型は長持ちし、早熟型は早く峠が来ます。減らす手段はただ一つ、<strong>休暇辞令</strong>——そして「延命術」を使うコーチは、蓄積そのものを緩やかにしてくれます。</p>
-            <p>30歳を過ぎると、選手は進退を考え始めます。引き際は選手それぞれ——引退した選手はロスターを去り、功績次第で<strong>殿堂</strong>に迎えられ、その名は年代記に残ります。</p>
+            <p><span data-i18n>・</span><strong data-i18n>試合の詰め込み</strong> <span data-i18n>— 年間の試合数が多い選手ほど体は削れます</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>怪我</strong> <span data-i18n>— 一度の負傷は治っても、確実に体に残ります</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>⚡追込の使いすぎ</strong> <span data-i18n>— 若いうちは何も起きません。重ねた無理は表に出ないまま溜まり、峠にさしかかった年に一度に返ってきます</span></p>
+            <p><span data-i18n>一方で、</span><strong data-i18n>練習やコーチの指導そのものは体を削りません</strong><span data-i18n>。専属の指導で鍛え込むこと自体は安全です——削るのは、あくまでリングの上のダメージと無理な起用です。</span></p>
+            <p><span data-i18n>蓄積の速さは体質でも変わります。「鉄人」や晩成型は長持ちし、早熟型は早く峠が来ます。減らす手段はただ一つ、</span><strong data-i18n>休暇辞令</strong><span data-i18n>——そして「延命術」を使うコーチは、蓄積そのものを緩やかにしてくれます。</span></p>
+            <p><span data-i18n>30歳を過ぎると、選手は進退を考え始めます。引き際は選手それぞれ——引退した選手はロスターを去り、功績次第で</span><strong data-i18n>殿堂</strong><span data-i18n>に迎えられ、その名は年代記に残ります。</span></p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📊</span> 人気とお金 <span class="help-arrow">▶</span>
+            <span class="help-icon">📊</span> <span data-i18n>人気とお金</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">選手人気：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>選手人気：</strong></p>
             <p data-i18n>良い試合、戴冠、メディア露出で上がります。高くなるほど上がりにくく、逆に連敗・スキャンダル・怪我での長期欠場は人気を削ります。</p>
-            <p><strong style="color:var(--gold)">団体人気：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>団体人気：</strong></p>
             <p data-i18n>集客もスポンサーも放映料も、すべての土台です。こちらも高いほど上がりにくく、シーズン末には順位に応じた自然減があります——頂の維持にも努力が要ります。</p>
-            <p><strong style="color:var(--gold)">収支：</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>収支：</strong></p>
             <p data-i18n>収入の柱はチケット・グッズ・スポンサー・放映料。支出の柱は給与です。選手が育って格が上がれば、給与も上がります。赤字が続けば資金危機に（→ ゲームの目的）。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">📰</span> 読みもの <span class="help-arrow">▶</span>
+            <span class="help-icon">📰</span> <span data-i18n>読みもの</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
             <p data-i18n>この団体の歩みは、いくつもの紙面に記録されていきます。</p>
-            <p>・<strong>📰 新聞</strong> — 毎週発行。興行の結果、業界の動き、記者のコラム</p>
-            <p>・<strong>📜 団体年代記</strong> — 数シーズンごとに「章」が編まれ、時代の主役が刻まれます。旗揚げ世代の物語は「序章」として永久保存</p>
-            <p>・<strong>⚔ 因縁列伝</strong> — 宿命のライバル関係を特集する紙面</p>
-            <p>・<strong>👤 選手経歴</strong> — 選手詳細から見られる、一人ひとりの年表</p>
-            <p>・<strong>📜 記録</strong> — 殿堂入りした名選手たちの記憶と、歴代の栄冠</p>
-            <p>・<strong>📅 シーズン総括</strong> — 年度末の総決算（ANNUAL RECORD）</p>
+            <p><span data-i18n>・</span><strong data-i18n>📰 新聞</strong> <span data-i18n>— 毎週発行。興行の結果、業界の動き、記者のコラム</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>📜 団体年代記</strong> <span data-i18n>— 数シーズンごとに「章」が編まれ、時代の主役が刻まれます。旗揚げ世代の物語は「序章」として永久保存</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>⚔ 因縁列伝</strong> <span data-i18n>— 宿命のライバル関係を特集する紙面</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>👤 選手経歴</strong> <span data-i18n>— 選手詳細から見られる、一人ひとりの年表</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>📜 記録</strong> <span data-i18n>— 殿堂入りした名選手たちの記憶と、歴代の栄冠</span></p>
+            <p><span data-i18n>・</span><strong data-i18n>📅 シーズン総括</strong> <span data-i18n>— 年度末の総決算（ANNUAL RECORD）</span></p>
             <p data-i18n>攻略情報ではありません。でも、このゲームの主役は数字ではなく彼女たちです。ときどき、読み返してあげてください。</p>
           </div>
         </div>
 
         <div class="help-section">
           <button class="help-toggle" onclick="toggleHelp(this)">
-            <span class="help-icon">💡</span> 序盤攻略のコツ <span class="help-arrow">▶</span>
+            <span class="help-icon">💡</span> <span data-i18n>序盤攻略のコツ</span> <span class="help-arrow">▶</span>
           </button>
           <div class="help-body">
-            <p><strong style="color:var(--gold)">1. ドラフトで軸を作る</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>1. ドラフトで軸を作る</strong></p>
             <p data-i18n>バランスより、エース候補を1人。団体の顔が育てば興行が回り始めます。</p>
-            <p><strong style="color:var(--gold)">2. 公民館から</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>2. 公民館から</strong></p>
             <p data-i18n>満員を確実に取り、黒字を積む。背伸びは資金危機への近道です。</p>
-            <p><strong style="color:var(--gold)">3. メインを大切に</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>3. メインを大切に</strong></p>
             <p data-i18n>エース候補をメインに据えて高い試合評価を。同じ相手と当て続ければ、因縁も育ちます。</p>
-            <p><strong style="color:var(--gold)">4. 体調管理</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>4. 体調管理</strong></p>
             <p data-i18n>怪我は長期離脱＋人気低下のダブルパンチ。⚡追込は使いどころを選んで。</p>
-            <p><strong style="color:var(--gold)">5. コーチは早めに</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>5. コーチは早めに</strong></p>
             <p data-i18n>エース候補にアサインすれば、成長がまるで違います。</p>
-            <p><strong style="color:var(--gold)">6. 王座を建てる</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>6. 王座を建てる</strong></p>
             <p data-i18n>条件が揃ったら初代王者決定戦を。ベルトは団体の格を一段上げます。</p>
-            <p><strong style="color:var(--gold)">7. 会場は一段ずつ</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>7. 会場は一段ずつ</strong></p>
             <p data-i18n>リスク指標🟢を目安に。焦って大箱に出ると空席が団体を蝕みます。</p>
-            <p><strong style="color:var(--gold)">8. 信頼は資産</strong></p>
+            <p><strong style="color:var(--gold)" data-i18n>8. 信頼は資産</strong></p>
             <p data-i18n>選手の気持ちの動きを見逃さないこと。冷えてからでは高くつきます。</p>
           </div>
         </div>
@@ -10484,8 +10484,8 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
     <div class="org-setup-icon">🏟️</div>
     <div class="org-setup-title">ESTABLISH YOUR PROMOTION</div>
     <div class="org-setup-desc">
-      あなたはこの世界で新たな女子プロレス団体を旗揚げする。<br>
-      小さな公民館から始まるその物語の、最初の一歩を踏み出そう。
+      <span data-i18n>あなたはこの世界で新たな女子プロレス団体を旗揚げする。</span><br>
+      <span data-i18n>小さな公民館から始まるその物語の、最初の一歩を踏み出そう。</span>
     </div>
     <div class="org-setup-input-wrap">
       <div class="org-setup-label">PROMOTION NAME</div>
@@ -10515,7 +10515,7 @@ html[lang="en"] .pb-fighter-name{white-space:normal;word-break:normal;line-heigh
     <div class="org-setup-icon">⚔️</div>
     <div class="org-setup-title" data-i18n>難易度を選択</div>
     <div class="org-setup-desc">
-      プレイスタイルを選んでください。<br>
+      <span data-i18n>プレイスタイルを選んでください。</span><br>
       <span style="color:var(--text-sub);font-size:13px" data-i18n>開始後は変更できません</span>
     </div>
     <div style="display:flex;flex-direction:column;gap:12px;margin:24px 0;width:100%;max-width:380px">

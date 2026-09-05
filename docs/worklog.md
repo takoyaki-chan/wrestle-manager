@@ -1,5 +1,58 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-24 — index.htmlヘルプ画面(遊び方ガイド)126本のdata-i18n化・英訳(2026-09-05・worktree agent-ad1557817b2231a90)
+
+指示書はP7-20棚卸し(`docs/i18n-coverage-report-v0.1.md` #3行)。開始前にworktreeブランチをmain先端(`da2d1ed5`。UI 4,243・未訳0)へfast-forward。
+
+### 1. 未付与の原因: `<strong>`混在構造への`data-i18n`適用不可
+
+`applyDom()`は`[data-i18n]`要素の`textContent`を丸ごと置換する設計(`src/i18n.js`)のため、子要素(`<strong>`等)が混在する要素へ`data-i18n`を付けると翻訳時に子要素が消える。ヘルプパネルは「・<strong>バランス</strong> — 興行週は…」のような`<strong>`混在`<p>`が大半で、Stage A P3a時点から純テキスト`<p>`約38件のみ対応・残りは保留のまま放置されていた。
+
+### 2. 解決方式: バラ文字テキストランを`<span data-i18n>`で個別に囲む
+
+`<strong>`前後の裸テキストを`<span data-i18n>核心部</span>`で囲み(先頭・末尾の空白はスパンの外に残す — 空白ごとdata-i18nに入れるとEN訳へ差し替わった瞬間に消えるため)、`<strong>`自体は子要素を持たないので直接`data-i18n`を付与する機械変換スクリプトを書いて適用。DOM構造・見た目(JA)は1バイトも変えず、属性追加とスパン挿入のみ。
+
+- `<p>`が`<strong>`を含まず純テキストのみ・未タグの場合は`<p>`に直接`data-i18n`を付与(スパン不要)
+- 14個のアコーディオン見出し(`<span class="help-icon">絵文字</span> 見出し文 <span class="help-arrow">▶</span>`)も同様に見出し文だけ`<span data-i18n>`で囲む
+- 生成した214キーを`node test/i18n-extract-ui.js`で台帳化(新規214/走破は既存の日本語プロレス用語(決裁枠→Approvals・派閥→Faction・因縁→Grudge・頂上決戦→Summit Match等)を`i18n/ui-ledger.json`から流用し訳語を統一)。英訳は`docs/en-tone-bible-draft-v0.1.md`の「温度を上げない」方針に沿った平易な説明文体
+
+### 3. 同時に発見・解消したindex.html内の他の未付与13件
+
+`data-i18n`未付与のJA文字列を全数機械列挙(コメント/script/style除去後の正規表現走査)した結果、ヘルプパネル外にも13件の付け漏れを発見:
+- `<title>`タグ(ブラウザタブ名) — 未付与
+- ナビボタン「🏛️ 社長室」「📰 新聞」(バッジ用`<span>`混在のため付与漏れ) — バッジと分離して付与
+- ランキング画面`<h2>`「団体ランキング」(装飾用`.dot`spanと混在) — 分離して付与
+- パネルタイトル4件(「🎓 所属スタッフ」「👥 所属選手」「スカウト / フリーエージェント」「🎓 スタッフ募集」、いずれも動的カウント`<span id=...>`やボタンと混在) — テキスト部分だけ分離して付与
+- タイトル画面の旗揚げ説明文・難易度選択画面の説明文(各`<br>`で2文に分かれる箇所) — `<br>`前後をそれぞれ`<span data-i18n>`化
+
+**除外(意図的に手を付けなかったもの)**: 選手ファイルモーダルの機密注記(`fighter-file-notice-sub`、`<br>`混在)は一度span化したが`test/fighter-file-guard-test.js`が「`<div class="fighter-file-notice-sub"[^>]*>([^<]*)<br>([^<]*)<\/div>`(タグ混在なし)」を厳密に検査しており失敗したため**元の構造へ差し戻し**(このテストの改修は本タスクの範囲外と判断)。`crisisWeeksLabel`の「残り4週」と`scoutEventTitle`の「🔍 スカウトイベント」は静的プレースホルダで、表示前に必ずJS側が`WM_I18N.t()`経由の動的文字列で上書きするため実際には露出しない(コード確認済み・対応不要)。`言語 / Language`ラベルと「日本語」ボタンは既存コメントで「翻訳しない」と明記されている言語切替トグル自体なので対象外。クレジット画面の「たこやき」は開発者名(固有名詞)のため対象外
+
+台帳は最終的に4,243→**4,470**(index.html由来+227・未訳0)。
+
+### 4. 実機で発見した訳文の品質問題2件(EN画面を手動確認して修正)
+
+自動走破ハーネスはヘルプ画面のアコーディオンを開閉しない(ナビ巡回で画面遷移するのみ)ため、ヘルプ本文の実際の見た目は別途worktree専用の簡易static server(`npx serve <worktree>/src -l 3099`。共有`.claude/launch.json`の`dev`設定はmainツリーの`src`を指すため使えなかった)経由でBrowserペインを開き、`wm_lang=en`をセットして14アコーディオンを全展開して目視確認した:
+
+1. **箇条書きの絵文字と語のあいだにスペースがない**: JAの「・」は語と密着していて違和感がないが、EN訳の「•」がそのまま流用されたため「•Balanced」のように詰まって見えた。「・」→「•」の訳語末尾へ半角スペースを追加(`i18n/ui-ledger.json`の該当キーのみ・28箇所すべてに反映)
+2. **単数/複数の不一致**: 「偶数週が興行週、奇数週が練習週」の英訳が"are Show week, and odd weeks are practice weeks"(単数/複数混在)になっていた。`興行週`(単独)は`ui-render.js`で「今週は興行週」のような単数バッジ表示にも使われる共有キーのため訳語("Show week")を変更できず、代わりに前後の自分の訳文("Every even week...is a"/"and every odd week is a")と`練習週`(index.html専用キー)を単数形に合わせて修正
+
+いずれも`i18n/ui-ledger.json`の訳文修正のみ(HTML構造・JA出力は無変更)。`node test/i18n-build-dict.js`で`src/lang-en.js`を再生成。
+
+### 5. 検証結果(すべてフォアグラウンドで実行)
+
+- `node test/ja-golden.js`: **基準と完全一致**(hash `dd2e536b...`、main先端時点の値から不変)
+- `node test/i18n-build-dict.js`: 台帳総キー数4,470・訳文あり4,470・未訳0
+- `node test/i18n-ledger-consistency-test.js`: ok(2台帳以上に存在するキー15件、すべて訳文一致)
+- `npm test`: 261/261 PASS(`fighter-file-guard-test.js`は§3の差し戻しで解消済み)
+- `node test/i18n-ratchet.js`: OK(直書き日本語文字列の増加なし)
+- `npm run test:ui:walkthrough`(JA): PASS・Issues 0。**digest=`1052faa82eaf7991`が変更前後で完全一致**(`git stash`でi18n関連差分を退避→変更前のmain先端でも同一digestを実測してから復元・再実測して比較。旧worklogにあった懸念値と同じ値のままだった)
+- `npm run test:ui:walkthrough:en`: PASS・Issues 0・**i18n-miss 0**・**screen-helpのJA露出0**(JA exposure by screenの一覧にscreen-helpが登場しない)。ヘルプ画面のオーバーフローは自動走破では検出できない(アコーディオン非展開のため)ので、上記の手動ブラウザ確認で14セクション全展開時の`scrollWidth`/`clientWidth`をJSで全要素走査し**横溢れ0件**をデスクトップ幅・モバイル幅(375px)の両方で確認
+
+### 6. 残課題・裁定不要事項
+
+- なし(本タスク範囲は完了)。ただし副次発見として`#rosterCount`/`#faCount`(団体タブのパネルタイトル内、所属選手数・FA数を表示するはずの`<span id="...">`)が**どのJSからも参照されておらず常に初期値「0」のまま**と判明。i18n作業とは無関係の別バグの可能性が高いため`spawn_task`で別チケット化(本タスクでは触っていない)
+
+**触ったファイル**: `src/index.html`(data-i18n付与・span分割)、`i18n/ui-ledger.json`(214+13キー追加、既存2キーの訳文微修正)、`src/lang-en.js`(自動生成の再出力)。`docs/i18n-coverage-report-v0.1.md` #3行を✅化
 ## 🌐 英語対応 P7-25 — 台帳未収載の中小プール5件(キャリア年表/殿堂ハイライト/成長ログ/ドラフト交渉/季総括)(2026-09-05)
 
 `docs/i18n-coverage-report-v0.1.md`(P7-20の全数棚卸し)のA表のうち、並行バッチ(P7-21 CUTIN_LINES / P7-23 mvpRace / P7-24 ヘルプ)が担当する3件を除く**残り全件**を配線・英訳した。着手前に worktree を main 先端(8f379e61、P7-18/P7-19 まで)へ fast-forward 済み。
