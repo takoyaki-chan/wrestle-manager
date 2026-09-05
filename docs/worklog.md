@@ -1,5 +1,83 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-13(再開) — 規則23(数値PH直後の可算名詞複数形)違反164件の一掃+検査のexit 1化(2026-09-05)
+
+前セッション(worktree `agent-a0d461bff73eae7b4`、ベース106da6b8)が未コミットのまま停止していたため、開始前にworktreeをmain先端(`084cd401`、P7-11/P7-14マージ済み)へfast-forwardし、前セッションの途中成果を引き継いだ。
+
+### 1. 前セッションの引き継ぎ方法 — worktree隔離下でのキー単位移植
+
+作業サンドボックスが「他worktreeへのgit操作」を拒否するため、`git show 106da6b8:<path>`で自worktree内にベース版を取り出し、前worktreeの作業コピー(CRLF)を`sed`でLF正規化した上でNode製の突合スクリプトで`en`列が変化したキーだけを抽出した(ファイル丸ごとのapplyはしない — mainの台帳はP7-11/P7-14で行が増えているため)。
+
+- 抽出結果: ui-ledger **76件** / template-ledger **47件** / dialogue-ledger **29件**(計152件)の`en`書き直し + build-dict3本の検査変更(exit 1化+誤検知除外)
+- 移植: 自worktreeの現行ledger(P7-11/P7-14マージ済み)へ**キー単位**で適用。適用前に「現在のenが前セッションの旧en値と一致するか」を検査し、**mismatched=0/missing=0**(P7-11/P7-14が同じキーを触っていないことを確認済み)
+- 出力はCRLF+2-space indentのJSON.stringify整形で書き戻し、`git diff`が意図した`en`フィールドのみを差分表示することを確認(改行コード起因の全行差分ノイズは事前に排除)
+
+### 2. 検査スクリプト3本をwarning→exit 1へ格上げ
+
+前セッションが仕込んでいた変更をそのまま採用(3本で完全に同一のロジック):
+
+```js
+const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{([a-zA-Z]+)\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/gi;
+const NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|requesterName)$/i;
+```
+
+- 正規表現を`/i`(単発)→`/gi`(全マッチ)へ拡張し、プレースホルダ名の大文字も許容(`[a-z]+`→`[a-zA-Z]+`)
+- `wins`/`reigns`の2語に限り、PH名が名前・団体名系(`{name}`/`{winnerName}`/`{championName}`/`{championOrg}`/`{requesterName}`)なら除外 — 「{name}が勝つ」の三人称単数動詞`-s`は複数形の`-s`ではなく、PHへ何を充填しても文法は崩れないため
+- 旧`warnings`配列を廃止し、1件でもヒットすれば`violations`へ積んでexit 1・辞書ファイルを生成しない(既存の規則25検査と同じ扱い)
+
+### 3. 書き直しの3パターン(黒田英文体 §3-4 規則23/24)
+
+| パターン | 例(before→after) | 主な使用場面 |
+|---|---|---|
+| コロン列挙型 | `{n} weeks` → `Weeks: {n}` | HUD数値・見出し脇の集計・カード内メタ行 |
+| ハイフン限定用法(規則24) | `{n} weeks left` → `a {n}-week absence` / `{defenseCount} defenses` → `a {defenseCount}-defense reign` | 地の文・寸評・記事本文 |
+| 単位を持たない形 | `{n} matches` → `{n}-match record` / `{count} times` → `a {count}-time champion` | MVP/PPV/ジュニアトーナメント等の受賞歴テンプレ |
+
+セリフ層(dialogue-ledger)は**コロン列挙型を使わず**2・3のみで逃がした(ラベル型を混ぜるとキャラの声が崩れるため)。代表例:
+
+| JA(key) | before | after |
+|---|---|---|
+| `{n}人` | `{n} wrestlers` | `Wrestlers: {n}` |
+| `{defenses}度防衛` | `{defenses} defenses` | `Defenses: {defenses}` |
+| `(riv {riv} / {n}戦)` | `(riv {riv} / {n} matches)` | `(riv {riv} / {n}-match history)` |
+| `全治{n}週` | `Out {n} weeks` | `Weeks out: {n}` |
+| `{age}歳の若き王者。{defenseCount}度の防衛は、まだ通過点に見える。` | `…{defenseCount} defenses look like just a waypoint.` | `…Her {defenseCount}-defense reign still looks like just a waypoint.` |
+| `<strong>{name}</strong> MVP {count}度受賞（{years}）` | `…won MVP {count} times ({years})` | `…, a {count}-time MVP ({years})` |
+| `{belt}を{count}度戴冠` | `{count} reigns with the {belt}` | `Title reigns with the {belt}: {count}` |
+| `……ここでの{n}年。`(cool) | ` {n} years here.` | ` A {n}-year run here.` |
+| `ここで{n}年やってきて、`(delinquent) | ` I've put in {n} years here.` | ` I've put in a {n}-year stint here.` |
+| `上をゆく{above}との差は{gap}点。…` | `{gap} points separate the promotion from {above}…` | `A {gap}-point gap separates the promotion from {above}…` |
+
+### 4. 「164件」との件数差の内訳 — 全て誤検知として確定済み
+
+指示書記載の164件(ui73/template61/dialogue30)と、本セッションで実際に書き直した152件(ui76/template47/dialogue29)の差分17件を突合したところ、**全17件(ui4/template13)が§2の除外パターンに該当する誤検知**だった(`{name} wins`/`{winnerName}勝利`/`{championName}、〜優勝`等)。旧検査(`[a-z]+`小文字限定・単発マッチ)と新検査(`[a-zA-Z]+`・全マッチ・除外ロジック)の間でカウント方法が変わったための差であり、書き直し漏れではない。独立検証スクリプト(build-dictとは別実装で同一ロジックを現行3台帳に直接適用)でも**違反0件**を確認し、検査ロジック自体のfalse negativeでないことを担保した。
+
+### 5. specs更新
+
+`specs/i18n-runtime-spec-v1.0.md` に **§35** を新設し、書き直しパターン・除外ロジック・検証結果を記録。§29-2(P7-10がwarning専用で導入した経緯)に「→§35で書き直し・exit1化済み」の前方参照を追記。
+
+### 6. 検証(すべてフォアグラウンドで実行)
+
+- `node --check` 触りファイル3本: OK
+- `node test/ja-golden.js`: **完全一致**(lines=11233, hash=6b3d05c8…)
+- `node test/i18n-build-{dict,template-dict,dialogue-dict}.js`: 3本ともexit 0・規則23違反0・未訳0(ui 4,243 / template 3,059 / dialogue 16,674、いずれも既存キー数のまま)
+- `node test/i18n-ledger-consistency-test.js`: ok(2台帳以上に存在するキー15件、すべて訳文一致)
+- `npm test`: **261 PASS / 0 FAIL**
+- `node test/i18n-ratchet.js`: OK(直書き日本語文字列の増加なし)
+- `npm run test:ui:walkthrough`: PASS(328手・digest `1052faa82eaf7991` — 指示書記載値と一致・JA出力不変を実UIでも確認)
+- `npm run test:ui:walkthrough:en`: PASS(417手・digest `f3f7030d03c3bdad`・i18n-miss 0)
+
+### 触ったファイル
+
+- `i18n/ui-ledger.json` / `i18n/template-ledger.json` / `i18n/dialogue-ledger.json`(en列76+47+29=152キー書き直し)
+- `src/lang-en.js` / `src/lang-en-templates.js` / `src/lang-en-dialogue.js`(build-dict再生成物)
+- `test/i18n-build-dict.js` / `test/i18n-build-template-dict.js` / `test/i18n-build-dialogue-dict.js`(規則23検査をexit 1化+誤検知除外ロジック追加)
+- `specs/i18n-runtime-spec-v1.0.md`(§35新設+§29-2前方参照)
+
+### 残課題
+
+- なし(指示書の完了条件をすべて満たした)。並行エージェント(P7-15/P7-16)の新規キー追加とは競合しない領域のみを触った
+
 ## 🌐 英語対応 P7-14 — ランキング画面の選手層寸評「連結の様式」のテンプレ化(2026-09-04)
 
 P7-8が「未着手」として残した発見1(`_buildDepthNoteV2` / `_buildLeadSentences` が断片連結の生JA)を潰した。開始前にworktreeをmain先端(`3021d166`)へfast-forward。

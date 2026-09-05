@@ -1066,6 +1066,8 @@ P6-18(§23-10-1)が見つけた型を`_u3bSideHtml`の全61呼び出し元と、
 
 `\{[a-z]+\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b`(数値プレースホルダ直後の可算名詞複数形)をwarning専用(exit 1にしない)で検出する。ui-ledger 73件/template-ledger 61件/dialogue-ledger 30件=計164件がヒットする現状(大半は「{n} weeks left」のような実際に1になりうる値)。既訳2キー(`{n}名`→`Wrestlers: {n}`、`{wins}勝`→`wins: {wins}`)のみ本バッチで修正し、残りは次の掃討バッチへ。exit 1化の判断はそのバッチで違反一覧を見てから行う。
 
+**→ §35(P7-13)で残存分を全件書き直し、検査をexit 1へ格上げ済み。**
+
 ### 29-3. `Engine.chronicle._getSurname`は文字列引数では日本語名を分割できない(未修正・裁定待ち)
 
 ```js
@@ -1422,3 +1424,39 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
 **83行は本バッチの上限(≦40行)を大きく超えるため、報告のみ**。次バッチの筆頭候補は `generate` の61行で、
 うち大半は「AI団体の業界ニュース」= §8 の生キー+render時点再構築が既に効いている枠の**隣**にある直書きなので、
 `NEWS_HEADLINE_TEMPLATES` へ寄せるのが素直な形になる。
+
+## 35. Stage B P7-13 — 規則23(数値PH直後の可算名詞複数形)違反の一掃+検査のexit 1化(2026-09-04追加)
+
+§29-2(P7-10)がwarning専用で検出したまま残っていた規則23違反を全件書き直し、3本のbuild-dict(ui/template/dialogue)の検査を**warningからexit 1へ格上げ**した。ui-ledger 4,243/template-ledger 3,059/dialogue-ledger 16,674、いずれも未訳0・規則23違反0でgreen。
+
+### 35-1. 書き直しの3パターン(黒田英文体 §3-4 規則23/24)
+
+数値プレースホルダの直後に可算名詞の複数形を置く形(`{n} weeks` 等)は、充填値が1のとき単複が食い違う(`1 weeks`)。これを機械検査(規則23)が検出する。逃がし方は3通りで、文脈によって使い分けた:
+
+1. **コロン列挙型** — `{n} weeks` → `Weeks: {n}`。ラベル+値の枠(HUD数値・見出し脇の集計・カード内メタ行)で最も多く使った型。名詞を単数形の「見出し語」として独立させ、PHは値としてのみ置く
+2. **ハイフン限定用法(規則24)** — `{n} weeks left` → `a {n}-week absence` / `{defenseCount} defenses` → `a {defenseCount}-defense reign`。地の文・寸評・記事本文など「文として読ませたい」箇所で使用。`}`の直後がハイフンかどうかで規則23の検査自体が機械的に除外する
+3. **単位を持たない形** — `{n} matches` → `{n}-match record` のように名詞側を形容詞化して数だけを残す、または`{count} times` → `a {count}-time champion`のように動詞・肩書きへ畳み込む。MVP/PPV/ジュニアトーナメント等の受賞歴テンプレで多用
+
+セリフ層(dialogue-ledger)は上記1(コロン列挙)を使わず、2・3のみで逃がした。地の文としてキャラが喋っている文脈にラベル型を混ぜると声が崩れるため(例: `……ここでの{n}年。` → ラベル化せず `A {n}-year run here.`)。
+
+### 35-2. 誤検知の除外 — 名前・団体名PH+wins/reignsの三人称単数動詞
+
+規則23の正規表現を`/i`(単発マッチ)から`/gi`(全マッチ)へ広げ、プレースホルダ名の大文字を許容(`[a-z]+`→`[a-zA-Z]+`)した結果、`{name} wins`(「{name}が勝つ」)のような**PHが数値ではない**行まで拾うようになった。これは英語の三人称単数現在形の`-s`であって複数形の`-s`ではなく、PHへ何を充填しても文法は崩れない(誤検知)。
+
+`NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|requesterName)$/i` を定義し、**wins/reignsの2語に限り**このPH名なら検査対象から除外する。棚卸しの結果、ui-ledgerの`{name}勝`系4件・template-ledgerの`{winnerName}勝利`系13件がすべてこの型だった(§35-3参照)。**数値PH+名詞**(`{count} reigns with the belt`等)はこの除外の対象にしない — これは正真正銘の規則23違反のため
+
+### 35-3. 検査ロジック(3本のbuild-dictに同一定義を配置)
+
+```js
+const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{([a-zA-Z]+)\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/gi;
+const NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|requesterName)$/i;
+```
+
+1行に複数マッチがありうるため`lastIndex = 0`でリセットしてから`while`ループで全マッチを収集し、`wins`/`reigns`かつPH名が除外リストに一致する場合のみ`continue`でスキップする。1件でも本物の違反が残れば`violations`へ積み、**exit 1・辞書ファイルを生成しない**(既存のプレースホルダ完全性/重複キー/日本語残り/不定冠詞(規則25)検査と同じ扱い)。
+
+### 35-4. 検証
+
+- 3本のbuild-dict全て `node test/i18n-build-{dict,template-dict,dialogue-dict}.js` でexit 0・規則23違反0件・未訳0件
+- 独立検査(build-dictと同一の正規表現+除外ロジックを別スクリプトで再実装し、現行3台帳を直接スキャン)でも違反0件を確認 — 検査ロジック自体のバグ(false negative)ではないことを担保
+- 書き直し対象の154キー(ui 76 / template 47 / dialogue 29 — うち一部は§29-2の164件のカウント方法(旧`/i`単発マッチ・小文字限定PH名)と本検査(`/gi`全マッチ・大小文字PH名+除外ロジック)の差により件数が前後した。旧検査基準で残っていた17件(ui 4/template 13)は棚卸しの結果すべて§35-2の誤検知パターンで、書き直し不要と確定)はすべてプレースホルダ完全性を保ったまま(ja/en の`{}`集合が完全一致)書き直し
+- `node test/ja-golden.js` 完全一致 / `node test/i18n-ledger-consistency-test.js` green / `npm test` 全green / `node test/i18n-ratchet.js` / `npm run test:ui:walkthrough` PASS / `npm run test:ui:walkthrough:en` PASS(miss 0)

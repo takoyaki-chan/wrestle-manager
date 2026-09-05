@@ -571,7 +571,7 @@
   },
   {
     "key": "<strong>{name}</strong> MVP {count}度受賞・{streak}年連続（{years}）",
-    "en": "<strong>{name}</strong> won MVP {count} times, {streak} years running ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time MVP on a {streak}-year run ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -581,7 +581,7 @@
   },
   {
     "key": "<strong>{name}</strong> MVP {count}度受賞（{years}）",
-    "en": "<strong>{name}</strong> won MVP {count} times ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time MVP ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -601,7 +601,7 @@
   },
   {
     "key": "<strong>{name}</strong> PPVメインイベント {count}度制覇・{streak}連覇（{years}）",
-    "en": "<strong>{name}</strong> won the PPV main event {count} times, {streak} in a row ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time PPV main event winner, {streak} in a row ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -611,7 +611,7 @@
   },
   {
     "key": "<strong>{name}</strong> PPVメインイベント {count}度制覇（{years}）",
-    "en": "<strong>{name}</strong> won the PPV main event {count} times ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time PPV main event winner ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -631,7 +631,7 @@
   },
   {
     "key": "<strong>{name}</strong> {belt} {count}度戴冠（{years}）",
-    "en": "<strong>{name}</strong> won the {belt} {count} times ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time {belt} champion ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -641,7 +641,7 @@
   },
   {
     "key": "<strong>{name}</strong> {belt} {count}度防衛",
-    "en": "<strong>{name}</strong> defended the {belt} {count} times",
+    "en": "<strong>{name}</strong> turned in a {count}-defense reign with the {belt}",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -651,7 +651,7 @@
   },
   {
     "key": "<strong>{name}</strong> {belt} {count}度防衛など（{years}）",
-    "en": "<strong>{name}</strong> defended the {belt} {count} times, among others ({years})",
+    "en": "<strong>{name}</strong> turned in a {count}-defense reign with the {belt}, among others ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -661,7 +661,7 @@
   },
   {
     "key": "<strong>{name}</strong> {belt} {count}度防衛の末に陥落",
-    "en": "<strong>{name}</strong> lost the {belt} after {count} defenses",
+    "en": "<strong>{name}</strong> lost the {belt} after a {count}-defense reign",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -671,7 +671,7 @@
   },
   {
     "key": "<strong>{name}</strong> {belt} {count}度防衛の末に陥落（{by}に敗北）",
-    "en": "<strong>{name}</strong> lost the {belt} after {count} defenses (beaten by {by})",
+    "en": "<strong>{name}</strong> lost the {belt} after a {count}-defense reign (beaten by {by})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -771,7 +771,7 @@
   },
   {
     "key": "<strong>{name}</strong> ジュニアトーナメント {count}度優勝・{streak}連覇（{years}）",
-    "en": "<strong>{name}</strong> won the Junior Tournament {count} times, {streak} in a row ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time Junior Tournament winner, {streak} in a row ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -781,7 +781,7 @@
   },
   {
     "key": "<strong>{name}</strong> ジュニアトーナメント {count}度優勝（{years}）",
-    "en": "<strong>{name}</strong> won the Junior Tournament {count} times ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time Junior Tournament winner ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -861,7 +861,7 @@
   },
   {
     "key": "<strong>{name}</strong> ベストマッチ賞 {count}度受賞・{streak}年連続（最高評価{mq}）",
-    "en": "<strong>{name}</strong> won Best Match {count} times, {streak} years running (best rating {mq})",
+    "en": "<strong>{name}</strong>, a {count}-time Best Match winner on a {streak}-year run (best rating {mq})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -871,7 +871,7 @@
   },
   {
     "key": "<strong>{name}</strong> ベストマッチ賞 {count}度受賞（最高評価{mq}）",
-    "en": "<strong>{name}</strong> won Best Match {count} times (best rating {mq})",
+    "en": "<strong>{name}</strong>, a {count}-time Best Match winner (best rating {mq})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -901,7 +901,7 @@
   },
   {
     "key": "<strong>{name}</strong> メディア賞 {count}度受賞（{years}）",
-    "en": "<strong>{name}</strong> won the Media Award {count} times ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time Media Award winner ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -971,7 +971,7 @@
   },
   {
     "key": "<strong>{name}</strong> 新人賞 {count}度受賞（{years}）",
-    "en": "<strong>{name}</strong> won Rookie of the Year {count} times ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time Rookie of the Year ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -981,7 +981,7 @@
   },
   {
     "key": "<strong>{name}</strong> 春のタッグリーグ {count}度優勝・{streak}連覇（{years}）",
-    "en": "<strong>{name}</strong> won the Spring Tag League {count} times, {streak} in a row ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time Spring Tag League winner, {streak} in a row ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -991,7 +991,7 @@
   },
   {
     "key": "<strong>{name}</strong> 春のタッグリーグ {count}度優勝（{years}）",
-    "en": "<strong>{name}</strong> won the Spring Tag League {count} times ({years})",
+    "en": "<strong>{name}</strong>, a {count}-time Spring Tag League winner ({years})",
     "files": [
       "CHRONICLE_CHAPTER_TEMPLATES"
     ],
@@ -1715,7 +1715,7 @@
   },
   {
     "key": "{belt}を{count}度戴冠",
-    "en": "{count} reigns with the {belt}",
+    "en": "Title reigns with the {belt}: {count}",
     "files": [
       "CHRONICLE_NARRATIVE_TEMPLATES"
     ],
@@ -2425,7 +2425,7 @@
   },
   {
     "key": "{defenses}度の防衛を積み重ねた王座は、彼女の代名詞となった。",
-    "en": "The belt she stacked {defenses} defenses onto became a byword for her.",
+    "en": "The belt onto which she built a {defenses}-defense reign became a byword for her.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
     ],
@@ -3105,7 +3105,7 @@
   },
   {
     "key": "{maxSingleReign}度の防衛——その数字だけで語り継がれる女がいた。",
-    "en": "One reign carried {maxSingleReign} defenses — that figure alone was enough to keep her name in circulation.",
+    "en": "A {maxSingleReign}-defense reign alone was enough to keep her name in circulation.",
     "files": [
       "HOF_BIOGRAPHY_TEMPLATES"
     ],
@@ -4715,7 +4715,7 @@
   },
   {
     "key": "{name}が長期離脱へ——全治{weeks}週",
-    "en": "{name} out long term — {weeks} weeks",
+    "en": "{name} out long term — a {weeks}-week absence",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5295,7 +5295,7 @@
   },
   {
     "key": "{name}（{orgName}）の{injuryType}は全治{weeks}週。復帰の目処が立つまで、上位カードの組み替えは避けられない。",
-    "en": "The injury to {name} ({orgName}) — {injuryType} — carries an estimate of {weeks} weeks. Until a return date is in sight, rebuilding the top of the card cannot be avoided.",
+    "en": "The injury to {name} ({orgName}) — {injuryType} — carries an estimate of a {weeks}-week absence. Until a return date is in sight, rebuilding the top of the card cannot be avoided.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5575,7 +5575,7 @@
   },
   {
     "key": "{orgName}に痛手、{name}が{weeks}週の離脱",
-    "en": "Blow to {orgName} — {name} out {weeks} weeks",
+    "en": "Blow to {orgName} — {name} out for a {weeks}-week stretch",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5615,7 +5615,7 @@
   },
   {
     "key": "{orgName}の{name}、{injuryType}で全治{weeks}週",
-    "en": "{orgName} {name}: {injuryType}, {weeks} weeks",
+    "en": "{orgName} {name}: {injuryType}, a {weeks}-week absence",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5665,7 +5665,7 @@
   },
   {
     "key": "{orgName}の{name}が{injuryType}と診断された。全治{weeks}週の見込みで、この間はカードから外れる。復帰後にどこまで戻せるかが次の焦点になる。",
-    "en": "{orgName}'s {name} has been diagnosed: {injuryType}. The estimate is {weeks} weeks, and she is off the cards until then. How much she gets back after the return is the next thing.",
+    "en": "{orgName}'s {name} has been diagnosed: {injuryType}. The estimate is a {weeks}-week absence, and she is off the cards until then. How much she gets back after the return is the next thing.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5675,7 +5675,7 @@
   },
   {
     "key": "{orgName}の{name}が{injuryType}を負い、全治{weeks}週と発表された。離脱期間は団体の編成に直接響く。穴をどう埋めるかは、そのまま今季の残りを左右する。",
-    "en": "{orgName}'s {name} was hurt — {injuryType} — and the estimate announced was {weeks} weeks. Time out hits the booking directly. How the hole gets filled decides the rest of the season.",
+    "en": "{orgName}'s {name} was hurt — {injuryType} — and the estimate announced was a {weeks}-week absence. Time out hits the booking directly. How the hole gets filled decides the rest of the season.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5775,7 +5775,7 @@
   },
   {
     "key": "{orgName}の{titleName}王者{name}が重傷、{weeks}週の長期欠場へ",
-    "en": "{orgName}: {name} out {weeks} weeks, {titleName}",
+    "en": "{orgName}: {name} out for a {weeks}-week stretch, {titleName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5785,7 +5785,7 @@
   },
   {
     "key": "{orgName}の{titleName}王者{name}が重傷を負った。欠場は{weeks}週規模とみられ、防衛ロードは白紙に戻る。ランキング上位団体のトップが長期で不在になるのは、ここ数シーズンでも例がない。空いた頂点を誰が埋めるのか、それとも帰りを待つのか。団体は難しい判断を抱えることになった。",
-    "en": "{name}, the champion at {orgName} — the belt: {titleName} — took a serious injury. The absence looks like it runs to {weeks} weeks, and the defense schedule goes back to a blank sheet. The top wrestler at a highly ranked promotion being away this long has no precedent in the last few seasons. Who fills the empty peak, or whether they wait for her return, is a hard call the promotion now carries.",
+    "en": "{name}, the champion at {orgName} — the belt: {titleName} — took a serious injury. The absence looks like it runs to a {weeks}-week stretch, and the defense schedule goes back to a blank sheet. The top wrestler at a highly ranked promotion being away this long has no precedent in the last few seasons. Who fills the empty peak, or whether they wait for her return, is a hard call the promotion now carries.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -5895,7 +5895,7 @@
   },
   {
     "key": "{orgName}の看板を背負う{name}が試合で重傷を負い、{weeks}週の欠場が避けられない情勢となった。{titleName}をどう扱うかは団体の判断待ちだが、いずれにせよ王座は当面動かせない。強い王者がいる前提で組まれていた対戦の流れが、根元から止まった。影響の広さは、これから表に出てくる。",
-    "en": "{name}, who carries the banner at {orgName}, took a serious injury in a match, and an absence of {weeks} weeks now looks unavoidable. What happens to the belt — {titleName} — waits on the promotion, but either way the title cannot move for a while. A run of matches booked on the assumption of a strong champion has stopped at the root. How wide the effect runs will show itself from here.",
+    "en": "{name}, who carries the banner at {orgName}, took a serious injury in a match, and a {weeks}-week absence now looks unavoidable. What happens to the belt — {titleName} — waits on the promotion, but either way the title cannot move for a while. A run of matches booked on the assumption of a strong champion has stopped at the root. How wide the effect runs will show itself from here.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -6275,7 +6275,7 @@
   },
   {
     "key": "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。",
-    "en": "{org}'s {name} has decided to retire on accumulated damage, closing out {seasons} seasons in the ring.",
+    "en": "{org}'s {name} has decided to retire on accumulated damage, closing out a {seasons}-season career in the ring.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -6285,7 +6285,7 @@
   },
   {
     "key": "{org}の{name}が蓄積されたダメージにより引退を決断。{seasons}シーズンにわたる現役生活にピリオドを打った。通算{reigns}度の戴冠を誇る。",
-    "en": "{org}'s {name} has decided to retire on accumulated damage, closing out {seasons} seasons in the ring. Title reigns over that span: {reigns}.",
+    "en": "{org}'s {name} has decided to retire on accumulated damage, closing out a {seasons}-season career in the ring. Title reigns over that span: {reigns}.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -6295,7 +6295,7 @@
   },
   {
     "key": "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。エース級の突然の退場は団体に激震を走らせた。",
-    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. {seasons} seasons in the ring, closed with no warning. Losing an ace this way leaves the promotion with a hole it never planned for.",
+    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career in the ring, closed with no warning. Losing an ace this way leaves the promotion with a hole it never planned for.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -6305,7 +6305,7 @@
   },
   {
     "key": "{org}の{name}が試合中の壊滅的な怪我により緊急引退を発表。{seasons}シーズンのキャリアが予期せぬ形で幕を閉じた。リング上での悲劇に関係者は言葉を失った。",
-    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. {seasons} seasons in the ring, closed with no warning. Nobody around the promotion had anything to say about what they had just seen.",
+    "en": "{org}'s {name} announced her immediate retirement after a career-ending injury in the ring. A {seasons}-season career in the ring, closed with no warning. Nobody around the promotion had anything to say about what they had just seen.",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -6395,7 +6395,7 @@
   },
   {
     "key": "{org}の{name}（{age}歳）、度重なる怪我で引退——{seasons}シーズンの現役生活に幕",
-    "en": "{org}'s {name}, {age}, retires on repeated injuries — {seasons} seasons in the ring come to an end",
+    "en": "{org}'s {name}, {age}, retires on repeated injuries — a {seasons}-season career in the ring comes to an end",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
     ],
@@ -8409,7 +8409,7 @@
   },
   {
     "key": "{streakAbs}回連続で負けている。同じやり方で同じ相手に勝てると思っているのだろうか",
-    "en": "Beaten {streakAbs} times in a row. Do they still believe the same method beats the same opponent?",
+    "en": "Beaten, {streakAbs} in a row. Do they still believe the same method beats the same opponent?",
     "files": [
       "KURODA_WAR_RECORD"
     ],
@@ -8419,7 +8419,7 @@
   },
   {
     "key": "{streakAbs}連敗。そろそろ「次こそは」以外の言葉が聞きたいものだが",
-    "en": "{streakAbs} losses in a row. I would like to hear something other than \"next time for sure\" by about now.",
+    "en": "A losing streak, {streakAbs} in a row. I would like to hear something other than \"next time for sure\" by about now.",
     "files": [
       "KURODA_WAR_RECORD"
     ],
@@ -8429,7 +8429,7 @@
   },
   {
     "key": "{streakAbs}連敗。もう対策とか分析とかではなく、根本的に何かを変えないと",
-    "en": "{streakAbs} losses in a row. This has gone past countermeasures and analysis. Something at the root has to change.",
+    "en": "A losing streak, {streakAbs} in a row. This has gone past countermeasures and analysis. Something at the root has to change.",
     "files": [
       "KURODA_WAR_RECORD"
     ],
@@ -8439,7 +8439,7 @@
   },
   {
     "key": "{streakAbs}連敗。勝てない相手に何度挑んでも結果は同じだ。アプローチを変えるべきだろう",
-    "en": "{streakAbs} losses in a row. Throw yourself at an opponent you cannot beat as often as you like; the result comes out the same. The approach is what needs changing.",
+    "en": "A losing streak, {streakAbs} in a row. Throw yourself at an opponent you cannot beat as often as you like; the result comes out the same. The approach is what needs changing.",
     "files": [
       "KURODA_WAR_RECORD"
     ],
@@ -8449,7 +8449,7 @@
   },
   {
     "key": "{streakAbs}連敗中。もう驚かなくなってきたのが一番怖いところだ",
-    "en": "{streakAbs} losses in a row as things stand. The frightening part is that it has stopped being a surprise.",
+    "en": "A losing streak, {streakAbs} in a row as things stand. The frightening part is that it has stopped being a surprise.",
     "files": [
       "KURODA_WAR_RECORD"
     ],
@@ -8459,7 +8459,7 @@
   },
   {
     "key": "{streakAbs}連敗中。本紙としては、もう「相性」では片付けられない数字だと書いておく",
-    "en": "{streakAbs} losses in a row. This paper will put it on record: that is no longer a number the word matchup covers.",
+    "en": "A losing streak, {streakAbs} in a row. This paper will put it on record: that is no longer a number the word matchup covers.",
     "files": [
       "KURODA_WAR_RECORD"
     ],
@@ -9031,7 +9031,7 @@
   },
   {
     "key": "{surname}はこの章を通じて王座を{defenses}度防衛した。{topRivalClause}{topVenueClause}",
-    "en": "{surname} defended the title {defenses} times across this chapter.{topRivalClause}{topVenueClause}",
+    "en": "{surname} put together a {defenses}-defense title reign across this chapter.{topRivalClause}{topVenueClause}",
     "files": [
       "CHRONICLE_QUOTE_TEMPLATES_V2"
     ],
@@ -13001,7 +13001,7 @@
   },
   {
     "key": "「あの選手とは、どうしても波長が合わない」——そう公言する選手は珍しくないが、この二人の場合、それが{matches}試合分の数字として刻まれている。",
-    "en": "\"There is one wrestler I simply cannot get on with\" — plenty of wrestlers say that out loud, and in the case of these two it has been carved into a record {matches} matches long.",
+    "en": "\"There is one wrestler I simply cannot get on with\" — plenty of wrestlers say that out loud, and in the case of these two it has been carved into a {matches}-match record.",
     "files": [
       "KURODA_RELATION_NARRATIVE"
     ],
@@ -22023,7 +22023,7 @@
   },
   {
     "key": "挑戦者を{defenses}度退けた{surname}は、この章の屋台骨だった。",
-    "en": "Having turned challengers away {defenses} times, {surname} was the frame this chapter stood on.",
+    "en": "A {defenses}-defense reign of turning challengers away made {surname} the frame this chapter stood on.",
     "files": [
       "CHRONICLE_QUOTE_TEMPLATES_V1"
     ],
@@ -22383,7 +22383,7 @@
   },
   {
     "key": "数字は嘘をつかない。{streakAbs}連敗は実力差の証明だ。認めることから始めるべきだろう",
-    "en": "The numbers do not lie. {streakAbs} losses in a row is proof of a gap in ability. Admitting that is where this starts.",
+    "en": "The numbers do not lie. A losing streak, {streakAbs} in a row, is proof of a gap in ability. Admitting that is where this starts.",
     "files": [
       "KURODA_WAR_RECORD"
     ],
@@ -23793,7 +23793,7 @@
   },
   {
     "key": "業界上位の一角に痛手。{titleName}を保持する{name}が試合中に負傷し、復帰まで{weeks}週前後を要する見込みとなった。王座の扱いは団体の判断に委ねられ、挑戦戦線は宙に浮く。上位団体の看板が一枚欠けることの影響は、その団体だけにとどまらない。",
-    "en": "A blow to one of the top corners of the business. {name}, who holds the belt — {titleName} — was hurt during a match, and the return is expected to take around {weeks} weeks. What happens to the title is left to the promotion, and the challenger picture is left hanging. When a top promotion loses one of its banner names, the effect does not stay inside that promotion.",
+    "en": "A blow to one of the top corners of the business. {name}, who holds the belt — {titleName} — was hurt during a match, and the return is expected to take around a {weeks}-week stretch. What happens to the title is left to the promotion, and the challenger picture is left hanging. When a top promotion loses one of its banner names, the effect does not stay inside that promotion.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -25246,7 +25246,7 @@
   },
   {
     "key": "王者離脱――{name}が{weeks}週欠場、{titleName}戦線に空白",
-    "en": "{name} out {weeks} weeks — {titleName}",
+    "en": "{name} out for a {weeks}-week stretch — {titleName}",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
     ],
@@ -25266,7 +25266,7 @@
   },
   {
     "key": "現在{streakAbs}連敗中。そろそろ真剣に原因を考えたほうがいい",
-    "en": "{streakAbs} losses in a row as things stand. It is about time somebody looked seriously at why.",
+    "en": "A losing streak, {streakAbs} in a row as things stand. It is about time somebody looked seriously at why.",
     "files": [
       "KURODA_WAR_RECORD"
     ],

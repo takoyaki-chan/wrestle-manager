@@ -777,7 +777,7 @@
   },
   {
     "key": "{above}まで{gap}点。この差を数字で見て怯むか奮い立つかは、これからの動き次第だ。",
-    "en": "{gap} points to {above}. Whether that number daunts or drives is decided by what comes next.",
+    "en": "A {gap}-point gap to {above}. Whether that number daunts or drives is decided by what comes next.",
     "files": [
       "data.js:SEASON_REVIEW_LINES"
     ],
@@ -788,7 +788,7 @@
   },
   {
     "key": "{above}まであと{gap}点。この一年で詰めた距離が、来季の景色を変えるかもしれない。",
-    "en": "{gap} points to {above}. The distance closed this year may change what next season looks like.",
+    "en": "A {gap}-point gap to {above}. The distance closed this year may change what next season looks like.",
     "files": [
       "data.js:SEASON_REVIEW_LINES"
     ],
@@ -953,7 +953,7 @@
   },
   {
     "key": "{gap}点。{above}の背中は、もう遠くない。",
-    "en": "{gap} points. {above}'s back is no longer far off.",
+    "en": "A {gap}-point gap. {above}'s back is no longer far off.",
     "files": [
       "data.js:SEASON_REVIEW_LINES"
     ],
@@ -964,7 +964,7 @@
   },
   {
     "key": "{gap}点の開き。{above}に届くには、一年では足りない。腰を据えるしかない。",
-    "en": "A gap of {gap} points. One year is not enough to reach {above}. This calls for settling in.",
+    "en": "A {gap}-point gap. One year is not enough to reach {above}. This calls for settling in.",
     "files": [
       "data.js:SEASON_REVIEW_LINES"
     ],
@@ -13985,7 +13985,7 @@
   },
   {
     "key": "……ここでの{n}年。",
-    "en": " {n} years here.",
+    "en": " A {n}-year run here.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -13998,7 +13998,7 @@
   },
   {
     "key": "……ここでの{n}年。無駄じゃなかったと思いたい。",
-    "en": " {n} years here. I'd like to think they weren't wasted.",
+    "en": " A {n}-year run here. I'd like to think it wasn't wasted.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -21001,7 +21001,7 @@
   },
   {
     "key": "……もう{n}年。",
-    "en": " {n} years already.",
+    "en": " A {n}-year stretch already.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -44832,7 +44832,7 @@
   },
   {
     "key": "…ここで過ごした{n}年、無駄じゃなかったと思いたいな。",
-    "en": " I'd like to think the {n} years here weren't for nothing.",
+    "en": " I'd like to think this {n}-year stretch here wasn't for nothing.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -44845,7 +44845,7 @@
   },
   {
     "key": "…ここで過ごした{n}年ね、",
-    "en": " It's been {n} years here, you know.",
+    "en": " It's been a {n}-year stretch here, you know.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -58290,7 +58290,7 @@
   },
   {
     "key": "…もう{n}年か。早いね。",
-    "en": " {n} years already. That went fast.",
+    "en": " A {n}-year stretch already. That went fast.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -115941,7 +115941,7 @@
   },
   {
     "key": "ここで{n}年やってきて、",
-    "en": " I've put in {n} years here.",
+    "en": " I've put in a {n}-year stint here.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116547,7 +116547,7 @@
   },
   {
     "key": "ここで過ごさせていただいた{n}年間、",
-    "en": " I've been allowed {n} years here.",
+    "en": " I've been allowed a {n}-year stint here.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116560,7 +116560,7 @@
   },
   {
     "key": "ここで過ごさせていただいた{n}年間、無駄ではなかったと思いたいです。",
-    "en": " I want to believe the {n} years you gave me here were not for nothing.",
+    "en": " I want to believe this {n}-year stint you gave me here was not for nothing.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116573,7 +116573,7 @@
   },
   {
     "key": "ここで過ごした{n}年、",
-    "en": " {n} years spent here, all told.",
+    "en": " A {n}-year stretch spent here, all told.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116586,7 +116586,7 @@
   },
   {
     "key": "ここで過ごした{n}年、無駄じゃなかったと思いたいわ。",
-    "en": " I'd like to think the {n} years I spent here meant something.",
+    "en": " I'd like to think this {n}-year stretch I spent here meant something.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116599,7 +116599,7 @@
   },
   {
     "key": "ここで過ごした{n}年、無駄じゃなかったと思いてぇ。",
-    "en": " I wanna believe the {n} years I put in here counted for something.",
+    "en": " I wanna believe this {n}-year stretch I put in here counted for something.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116612,7 +116612,7 @@
   },
   {
     "key": "ここで過ごした{n}年、無駄ではなかったと思いたいのです。",
-    "en": " I should like to believe my {n} years here were not in vain.",
+    "en": " I should like to believe my {n}-year stretch here was not in vain.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116625,7 +116625,7 @@
   },
   {
     "key": "ここで過ごした{n}年間、",
-    "en": " I've spent {n} years here.",
+    "en": " I've spent a {n}-year stretch here.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -116638,7 +116638,7 @@
   },
   {
     "key": "ここで過ごした{n}年間、無駄じゃなかったって思いたいです。",
-    "en": " I want to believe my {n} years here weren't wasted.",
+    "en": " I want to believe my {n}-year stretch here wasn't wasted.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -120281,7 +120281,7 @@
   },
   {
     "key": "この団体で過ごした{n}年、",
-    "en": " I have spent {n} years with this company.",
+    "en": " I have spent a {n}-year stretch with this company.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -143638,7 +143638,7 @@
   },
   {
     "key": "もう{n}年か……早ぇもんだな。",
-    "en": " {n} years already, huh... time flies.",
+    "en": " A {n}-year stretch already, huh... time flies.",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -143651,7 +143651,7 @@
   },
   {
     "key": "もう{n}年になりますのね……。",
-    "en": " It has been {n} years already...",
+    "en": " It has been a {n}-year stretch already...",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -143664,7 +143664,7 @@
   },
   {
     "key": "もう{n}年になるのですね……。",
-    "en": " It's been {n} years now, hasn't it...",
+    "en": " It's been a {n}-year stretch now, hasn't it...",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -143677,7 +143677,7 @@
   },
   {
     "key": "もう{n}年になるのね……。",
-    "en": " {n} years already, is it...",
+    "en": " A {n}-year stretch already, is it...",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -143690,7 +143690,7 @@
   },
   {
     "key": "もう{n}年になるんですね……。",
-    "en": " It's been {n} years already...",
+    "en": " It's been a {n}-year stretch already...",
     "files": [
       "data.js:CONTRACT_NEGOTIATION_LINES"
     ],
@@ -153722,7 +153722,7 @@
   },
   {
     "key": "タッグの歴代最高評価、{mq}点。四人が刻んだ記録",
-    "en": "All-time best in tag, {mq} points. A record cut by four.",
+    "en": "All-time best in tag, rated {mq}. A record cut by four.",
     "files": [
       "data.js:BIG_NEWS_LEAD_LINES"
     ],
@@ -163037,7 +163037,7 @@
   },
   {
     "key": "上をゆく{above}との差は{gap}点。手を伸ばせば届く距離に、来季の勝負がある。",
-    "en": "{gap} points separate the promotion from {above} above it. Next season's fight sits within reach.",
+    "en": "A {gap}-point gap separates the promotion from {above} above it. Next season's fight sits within reach.",
     "files": [
       "data.js:SEASON_REVIEW_LINES"
     ],
@@ -163048,7 +163048,7 @@
   },
   {
     "key": "上をゆく{above}との差は{gap}点。遠い背中だが、追う一年に意味がないわけではない。",
-    "en": "{gap} points back of {above}. A distant target, but a year spent chasing is not a year wasted.",
+    "en": "A {gap}-point deficit to {above}. A distant target, but a year spent chasing is not a year wasted.",
     "files": [
       "data.js:SEASON_REVIEW_LINES"
     ],
@@ -197944,7 +197944,7 @@
   },
   {
     "key": "歴代最高評価、{mq}点。記録が塗り替わった",
-    "en": "All-time best rating, {mq} points. The record has been rewritten.",
+    "en": "All-time best, rated {mq}. The record has been rewritten.",
     "files": [
       "data.js:BIG_NEWS_LEAD_LINES"
     ],

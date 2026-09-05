@@ -31,7 +31,7 @@
   },
   {
     "key": " / {n}週離脱",
-    "en": " / out {n} weeks",
+    "en": " / {n}-week absence",
     "files": [
       "ui-render.js"
     ],
@@ -111,7 +111,7 @@
   },
   {
     "key": "(riv {riv} / {n}戦)",
-    "en": "(riv {riv} / {n} matches)",
+    "en": "(riv {riv} / {n}-match history)",
     "files": [
       "ui-common.js"
     ],
@@ -121,7 +121,7 @@
   },
   {
     "key": "({n}週)",
-    "en": "({n} weeks)",
+    "en": "(Weeks: {n})",
     "files": [
       "ui-render.js"
     ],
@@ -563,7 +563,7 @@
   },
   {
     "key": "2番手以下のOVR{ovr}以上は{n}人。層は形になりつつあるが、上位と分けるのは控えの最後のひと押しだ。",
-    "en": "{n} wrestlers clear OVR {ovr} below the second string. The depth is taking shape, but one last push from the bench is what separates them from the top.",
+    "en": "Wrestlers clearing OVR {ovr} below the second string: {n}. The depth is taking shape, but one last push from the bench is what separates them from the top.",
     "files": [
       "ui-render.js"
     ],
@@ -774,7 +774,7 @@
   },
   {
     "key": "4年に一度の全国女子プロレス最強王者決定戦。<br>特別招待2名に続き、団体枠 {n}名を選出してください。",
-    "en": "The national tournament held every four years to crown the strongest woman in wrestling.<br>After the two special invitations, choose {n} wrestlers for your promotion's slots.",
+    "en": "The national tournament held every four years to crown the strongest woman in wrestling.<br>After the two special invitations, choose {n} for your promotion's slots.",
     "files": [
       "ui-common.js"
     ],
@@ -2076,7 +2076,7 @@
   },
   {
     "key": "{age}年前 ({season}年目)",
-    "en": "{age} years ago (Year {season})",
+    "en": "Years ago: {age} (Year {season})",
     "files": [
       "ui-render.js"
     ],
@@ -2143,7 +2143,7 @@
   },
   {
     "key": "{age}歳の若き王者。{defenseCount}度の防衛は、まだ通過点に見える。",
-    "en": "A young champion at {age}. {defenseCount} defenses look like just a waypoint.",
+    "en": "A young champion at {age}. Her {defenseCount}-defense reign still looks like just a waypoint.",
     "files": [
       "ui-render.js"
     ],
@@ -2416,7 +2416,7 @@
   },
   {
     "key": "{a}と{b}。{n}戦のぶつかり合い。",
-    "en": "{a} and {b}. A rivalry {n} matches deep.",
+    "en": "{a} and {b}. A {n}-match rivalry.",
     "files": [
       "ui-render.js"
     ],
@@ -2637,7 +2637,7 @@
   },
   {
     "key": "{cur}週 → {reduced}週に短縮",
-    "en": "{cur} weeks → cut to {reduced} weeks",
+    "en": "Weeks: {cur} → {reduced} (shortened)",
     "files": [
       "management.js"
     ],
@@ -2679,7 +2679,7 @@
   },
   {
     "key": "{defenseCount}度の防衛を重ねる王者。完成された試合運びは衰えを知らず、挑戦者に世代交代を許さない。",
-    "en": "A champion with {defenseCount} defenses under her belt. Her polished ring work shows no sign of decline, and she won't hand the torch to the next generation.",
+    "en": "A champion carrying a {defenseCount}-defense streak. Her polished ring work shows no sign of decline, and she won't hand the torch to the next generation.",
     "files": [
       "ui-render.js"
     ],
@@ -2691,7 +2691,7 @@
   },
   {
     "key": "{defenses}度防衛",
-    "en": "{defenses} defenses",
+    "en": "Defenses: {defenses}",
     "files": [
       "ui-common.js"
     ],
@@ -3135,7 +3135,7 @@
   },
   {
     "key": "{losses}敗",
-    "en": "{losses} losses",
+    "en": "Losses: {losses}",
     "files": [
       "ui-common.js"
     ],
@@ -4366,7 +4366,7 @@
   },
   {
     "key": "{name}コーチ招聘中 — 練習効果アップ(残{w}週)",
-    "en": "Coach {name} on retainer — training boosted ({w} weeks left)",
+    "en": "Coach {name} on retainer — training boosted (weeks left: {w})",
     "files": [
       "ui-render.js"
     ],
@@ -4656,7 +4656,7 @@
   },
   {
     "key": "{n}人",
-    "en": "{n} wrestlers",
+    "en": "Wrestlers: {n}",
     "files": [
       "app.js"
     ],
@@ -4666,7 +4666,7 @@
   },
   {
     "key": "{n}人が欠場中で、選手層は見た目より薄い。",
-    "en": "{n} wrestlers are out, so the roster is thinner than it looks.",
+    "en": "Wrestlers out: {n}, so the roster is thinner than it looks.",
     "files": [
       "ui-render.js"
     ],
@@ -4792,7 +4792,7 @@
   },
   {
     "key": "{n}期",
-    "en": "{n} seasons",
+    "en": "Seasons: {n}",
     "files": [
       "ui-render.js"
     ],
@@ -4822,7 +4822,7 @@
   },
   {
     "key": "{n}試合",
-    "en": "{n} matches",
+    "en": "Matches: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -4863,7 +4863,7 @@
   },
   {
     "key": "{n}週",
-    "en": "{n} weeks",
+    "en": "Weeks: {n}",
     "files": [
       "factions.js"
     ],
@@ -4873,7 +4873,7 @@
   },
   {
     "key": "{n}週+",
-    "en": "{n} weeks+",
+    "en": "Weeks: {n}+",
     "files": [
       "factions.js"
     ],
@@ -4883,7 +4883,7 @@
   },
   {
     "key": "{n}週ぶんの休みが、積み重なった消耗を癒やしていく",
-    "en": "{n} weeks of rest heals the wear she's built up",
+    "en": "A {n}-week rest heals the wear she's built up",
     "files": [
       "management.js"
     ],
@@ -4895,7 +4895,7 @@
   },
   {
     "key": "{n}週間",
-    "en": "{n} weeks",
+    "en": "Weeks: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -4905,7 +4905,7 @@
   },
   {
     "key": "{n}週間、興行を欠場して休養に入る",
-    "en": "Takes {n} weeks away from shows to rest",
+    "en": "Takes a {n}-week break from shows to rest",
     "files": [
       "management.js"
     ],
@@ -4927,7 +4927,7 @@
   },
   {
     "key": "{n}週間の低迷から立ち直った！",
-    "en": "She is back after {n} weeks in the doldrums!",
+    "en": "She is back after a {n}-week stretch in the doldrums!",
     "files": [
       "ui-common.js"
     ],
@@ -4937,7 +4937,7 @@
   },
   {
     "key": "{n}防衛",
-    "en": "{n} defenses",
+    "en": "Defenses: {n}",
     "files": [
       "ui-render.js"
     ],
@@ -5497,7 +5497,7 @@
   },
   {
     "key": "{src}・残{w}週",
-    "en": "{src} · {w} weeks left",
+    "en": "{src} · weeks left: {w}",
     "files": [
       "ui-render.js"
     ],
@@ -5759,7 +5759,7 @@
   },
   {
     "key": "{weeks}週間 +{pct}%",
-    "en": "{weeks} weeks, +{pct}%",
+    "en": "Weeks: {weeks}, +{pct}%",
     "files": [
       "management.js"
     ],
@@ -5802,7 +5802,7 @@
   },
   {
     "key": "{wins}度戴冠・通算{defenses}度防衛",
-    "en": "{wins}-time champion, {defenses} defenses total",
+    "en": "{wins}-time champion, total defenses: {defenses}",
     "files": [
       "ui-common.js"
     ],
@@ -5823,7 +5823,7 @@
   },
   {
     "key": "{w}週",
-    "en": "{w} weeks",
+    "en": "Weeks: {w}",
     "files": [
       "ui-render.js"
     ],
@@ -5833,7 +5833,7 @@
   },
   {
     "key": "{years}（{n}シーズン）",
-    "en": "{years} ({n} seasons)",
+    "en": "{years} (Seasons: {n})",
     "files": [
       "ui-render.js"
     ],
@@ -5918,7 +5918,7 @@
   },
   {
     "key": "×{n}週",
-    "en": "×{n} weeks",
+    "en": "Weeks ×{n}",
     "files": [
       "ui-render.js"
     ],
@@ -6068,7 +6068,7 @@
   },
   {
     "key": "— 倒産まで推定{w}週",
-    "en": "— About {w} weeks from going under",
+    "en": "— An estimated {w}-week runway before going under",
     "files": [
       "ui-render.js"
     ],
@@ -6841,7 +6841,7 @@
   },
   {
     "key": "⏳{n}週",
-    "en": "⏳{n} weeks",
+    "en": "⏳ Weeks: {n}",
     "files": [
       "ui-render.js"
     ],
@@ -6851,7 +6851,7 @@
   },
   {
     "key": "⏳{n}週後",
-    "en": "⏳ in {n} weeks",
+    "en": "⏳ Weeks until: {n}",
     "files": [
       "ui-render.js"
     ],
@@ -6891,7 +6891,7 @@
   },
   {
     "key": "━━ {n}年間の軌跡 ━━",
-    "en": "━━ The Path of {n} Years ━━",
+    "en": "━━ A {n}-Year Path ━━",
     "files": [
       "ui-common.js"
     ],
@@ -8592,7 +8592,7 @@
   },
   {
     "key": "あと{n}週",
-    "en": "{n} weeks to go",
+    "en": "Weeks to go: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -9244,7 +9244,7 @@
   },
   {
     "key": "この{n}年間、ベルトは{m}人を渡った",
-    "en": "Over these {n} years, the title passed through {m} hands",
+    "en": "Over a {n}-year span, the title passed through {m} hands",
     "files": [
       "ui-common.js"
     ],
@@ -9254,7 +9254,7 @@
   },
   {
     "key": "この{n}年間、ベルトは一度も持ち主を変えなかった",
-    "en": "Over these {n} years, the title never changed hands",
+    "en": "Over a {n}-year span, the title never changed hands",
     "files": [
       "ui-common.js"
     ],
@@ -10040,7 +10040,7 @@
   },
   {
     "key": "すでに招聘中のコーチがいます({name}・残{n}週)",
-    "en": "You already have a coach on retainer ({name} · {n} weeks left)",
+    "en": "You already have a coach on retainer ({name} · weeks left: {n})",
     "files": [
       "ui-common.js"
     ],
@@ -12128,7 +12128,7 @@
   },
   {
     "key": "コーチ招聘中 — 練習効果アップ(残{w}週)",
-    "en": "Guest coach on site — training boosted ({w} weeks left)",
+    "en": "Guest coach on site — training boosted (weeks left: {w})",
     "files": [
       "ui-render.js"
     ],
@@ -12138,7 +12138,7 @@
   },
   {
     "key": "コーチ招聘中 残り{n}週",
-    "en": "Guest coach on site — {n} weeks left",
+    "en": "Guest coach on site — weeks left: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -13193,7 +13193,7 @@
   },
   {
     "key": "タイトルマッチは12週に1回のみ開催できます（あと{n}週）",
-    "en": "A title match can only be held once every 12 weeks ({n} weeks to go)",
+    "en": "A title match can only be held once every 12 weeks (weeks to go: {n})",
     "files": [
       "app.js",
       "ui-common.js"
@@ -18275,7 +18275,7 @@
   },
   {
     "key": "今季防衛 {n}回",
-    "en": "{n} defenses this season",
+    "en": "Defenses this season: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -18361,7 +18361,7 @@
   },
   {
     "key": "今後{weeks}週、団体全体に一体感が育っていきそうだ",
-    "en": "Over the next {weeks} weeks, a sense of unity looks set to grow across the whole organization",
+    "en": "Over the next {weeks}-week stretch, a sense of unity looks set to grow across the whole organization",
     "files": [
       "management.js"
     ],
@@ -19767,7 +19767,7 @@
   },
   {
     "key": "入れ替わりまで あと{n}週",
-    "en": "{n} weeks until the next rotation",
+    "en": "Weeks until the next rotation: {n}",
     "files": [
       "ui-render.js"
     ],
@@ -19837,7 +19837,7 @@
   },
   {
     "key": "全{n}試合",
-    "en": "{n} matches in all",
+    "en": "Matches in all: {n}",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -19848,7 +19848,7 @@
   },
   {
     "key": "全{n}試合 ─ {a}/{b} 完了",
-    "en": "{n} matches in all ─ {a}/{b} done",
+    "en": "Matches in all: {n} ─ {a}/{b} done",
     "files": [
       "ui-common.js"
     ],
@@ -20177,7 +20177,7 @@
   },
   {
     "key": "全治 {n}週間",
-    "en": "Out for {n} weeks",
+    "en": "Weeks out: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -20187,7 +20187,7 @@
   },
   {
     "key": "全治{n}週",
-    "en": "Out {n} weeks",
+    "en": "Weeks out: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -23158,7 +23158,7 @@
   },
   {
     "key": "在位 {n}年",
-    "en": "{n} years as champion",
+    "en": "Years as champion: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -25119,7 +25119,7 @@
   },
   {
     "key": "専属指導中 — 練習効果アップ(残{w}週)",
-    "en": "Personal coaching — training boosted ({w} weeks left)",
+    "en": "Personal coaching — training boosted (weeks left: {w})",
     "files": [
       "ui-render.js"
     ],
@@ -25788,7 +25788,7 @@
   },
   {
     "key": "引退試合をカードに組みましょう。（期限 あと約{n}週）",
-    "en": "Book her retirement match on a card. (About {n} weeks left)",
+    "en": "Book her retirement match on a card. (About a {n}-week window left)",
     "files": [
       "ui-common.js"
     ],
@@ -27294,7 +27294,7 @@
   },
   {
     "key": "招聘中: {name}（残{w}週・終了後は元の担当に自動復帰）",
-    "en": "Guest coach on site: {name} ({w} weeks left; assignments revert automatically when it ends)",
+    "en": "Guest coach on site: {name} (weeks left: {w}; assignments revert automatically when it ends)",
     "files": [
       "ui-render.js"
     ],
@@ -27304,7 +27304,7 @@
   },
   {
     "key": "招聘中: {name}（残{w}週）",
-    "en": "Guest coach on site: {name} ({w} weeks left)",
+    "en": "Guest coach on site: {name} (weeks left: {w})",
     "files": [
       "ui-render.js"
     ],
@@ -30689,7 +30689,7 @@
   },
   {
     "key": "残り{n}週",
-    "en": "{n} weeks left",
+    "en": "Weeks left: {n}",
     "files": [
       "ui-common.js",
       "ui-render.js"
@@ -30720,7 +30720,7 @@
   },
   {
     "key": "残り猶予{weeks}週 — 立て直すか、解散か",
-    "en": "{weeks} weeks of grace left — turn it around, or fold",
+    "en": "A {weeks}-week grace period left — turn it around, or fold",
     "files": [
       "app.js"
     ],
@@ -33167,7 +33167,7 @@
   },
   {
     "key": "王座を{defenseCount}度防衛し、王者としての輪郭を固めつつある。",
-    "en": "She's defended the title {defenseCount} times, and the shape of a champion is starting to take hold.",
+    "en": "She's put together a {defenseCount}-defense title reign, and the shape of a champion is starting to take hold.",
     "files": [
       "ui-render.js"
     ],
@@ -36791,7 +36791,7 @@
   },
   {
     "key": "興行開催！（{n}試合）",
-    "en": "Show day! ({n} matches)",
+    "en": "Show day! (Matches: {n})",
     "files": [
       "ui-render.js"
     ],
@@ -40772,7 +40772,7 @@
   },
   {
     "key": "防衛 {n}回",
-    "en": "{n} defenses",
+    "en": "Defenses: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -41563,7 +41563,7 @@
   },
   {
     "key": "黒字転換達成！ この調子で{n}週間黒字を維持すればクリア！（現在の資金: {funds}万{goalNote}）",
-    "en": "You're in the black! Keep it up for {n} weeks and you clear the goal! (funds now: ¥{funds:man}{goalNote})",
+    "en": "You're in the black! Keep it up for a {n}-week stretch and you clear the goal! (funds now: ¥{funds:man}{goalNote})",
     "files": [
       "ui-render.js"
     ],
@@ -41666,7 +41666,7 @@
   },
   {
     "key": "（{n}防衛）",
-    "en": "({n} defenses)",
+    "en": "(Defenses: {n})",
     "files": [
       "ui-render.js"
     ],
@@ -41746,7 +41746,7 @@
   },
   {
     "key": "（残り{n}週）",
-    "en": "({n} weeks left)",
+    "en": "(Weeks left: {n})",
     "files": [
       "ui-common.js"
     ],
@@ -41946,7 +41946,7 @@
   },
   {
     "key": "🌅 引退を勧める（クールダウン {n}週）",
-    "en": "🌅 Suggest Retirement (cooldown {n} weeks)",
+    "en": "🌅 Suggest Retirement (cooldown weeks: {n})",
     "files": [
       "ui-common.js"
     ],
@@ -42051,7 +42051,7 @@
   },
   {
     "key": "🌐 全国統一王者（{n}防衛）",
-    "en": "🌐 Unified National Champion ({n} defenses)",
+    "en": "🌐 Unified National Champion (Defenses: {n})",
     "files": [
       "ui-common.js"
     ],
@@ -42579,7 +42579,7 @@
   },
   {
     "key": "🏋️ 合宿 残り{n}週 — 団体にも馴染んできている",
-    "en": "🏋️ Camp, {n} weeks left — she is settling in with the promotion",
+    "en": "🏋️ Camp, weeks left: {n} — she is settling in with the promotion",
     "files": [
       "ui-common.js"
     ],
@@ -42717,7 +42717,7 @@
   },
   {
     "key": "🏥 {cur}週 → {reduced}週に短縮（-{cost}万）",
-    "en": "🏥 {cur} weeks → {reduced} weeks (-¥{cost:man})",
+    "en": "🏥 Weeks: {cur} → {reduced} (shortened, -¥{cost:man})",
     "files": [
       "app.js"
     ],
@@ -42727,7 +42727,7 @@
   },
   {
     "key": "🏥 {label} — 全治{weeks}週間",
-    "en": "🏥 {label} — {weeks} weeks to heal",
+    "en": "🏥 {label} — Weeks to heal: {weeks}",
     "files": [
       "app.js"
     ],
@@ -42843,7 +42843,7 @@
   },
   {
     "key": "👑 王者（{n}防衛）",
-    "en": "👑 Champion ({n} defenses)",
+    "en": "👑 Champion (Defenses: {n})",
     "files": [
       "ui-common.js"
     ],
@@ -43130,7 +43130,7 @@
   },
   {
     "key": "💰 週間給与推移 ({n}週)",
-    "en": "💰 Weekly Salary ({n} weeks)",
+    "en": "💰 Weekly Salary (Weeks: {n})",
     "files": [
       "ui-render.js"
     ],
@@ -43180,7 +43180,7 @@
   },
   {
     "key": "💹 資金推移 (シーズン末値・{n}年分)",
-    "en": "💹 Funds Over Time (season-end, {n} years)",
+    "en": "💹 Funds Over Time (season-end, {n}-year span)",
     "files": [
       "ui-render.js"
     ],
@@ -43200,7 +43200,7 @@
   },
   {
     "key": "💹 資金推移 (直近{n}週)",
-    "en": "💹 Funds Over Time (last {n} weeks)",
+    "en": "💹 Funds Over Time (last {n}-week span)",
     "files": [
       "ui-render.js"
     ],
@@ -43300,7 +43300,7 @@
   },
   {
     "key": "📈 週間収入推移 ({n}週)",
-    "en": "📈 Weekly Income ({n} weeks)",
+    "en": "📈 Weekly Income (Weeks: {n})",
     "files": [
       "ui-render.js"
     ],
@@ -43392,7 +43392,7 @@
   },
   {
     "key": "📉 週間支出推移 ({n}週)",
-    "en": "📉 Weekly Spending ({n} weeks)",
+    "en": "📉 Weekly Spending (Weeks: {n})",
     "files": [
       "ui-render.js"
     ],
@@ -43635,7 +43635,7 @@
   },
   {
     "key": "📢 プロモ活動 {n}週",
-    "en": "📢 Promo work ×{n} weeks",
+    "en": "📢 Promo work — Weeks: {n}",
     "files": [
       "ui-common.js"
     ],
@@ -44278,7 +44278,7 @@
   },
   {
     "key": "🔥 絶好調（残り{n}週 / OVR+{m}）",
-    "en": "🔥 On fire ({n} weeks left / OVR +{m})",
+    "en": "🔥 On fire (Weeks left: {n} / OVR +{m})",
     "files": [
       "ui-common.js"
     ],
@@ -44753,7 +44753,7 @@
   },
   {
     "key": "🤝 レンタル（残{n}週）",
-    "en": "🤝 On loan ({n} weeks left)",
+    "en": "🤝 On loan (Weeks left: {n})",
     "files": [
       "ui-common.js"
     ],
@@ -44763,7 +44763,7 @@
   },
   {
     "key": "🤝 交渉中: {name}（残{w}週）",
-    "en": "🤝 In talks: {name} ({w} weeks left)",
+    "en": "🤝 In talks: {name} (Weeks left: {w})",
     "files": [
       "ui-render.js"
     ],

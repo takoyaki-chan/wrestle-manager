@@ -24,6 +24,10 @@
 //    4b. プレースホルダ直前の不定冠詞(P6-14): docs/en-kuroda-style-draft-v0.1.md §3-4 規則25。
 //       `a {name}` は名前の頭音で、`a {n}` は数値の読みで a/an が割れる。ハイフン限定用法
 //       (`a {n}-match …`)のみ許可。セリフ層も同じ規約に従う(充填値は同じdata由来のため)
+//    4c. プレースホルダ直後の可算名詞複数形(P7-10で新設・P7-13でexit 1化): 同 §3-4 規則23。
+//       `{n} years` のように数値PHの直後に可算名詞の複数形を置くと、充填値が1のとき単複が
+//       食い違う。ハイフン限定用法(規則24)・単位を持たない形へ書き直して逃がす(セリフの声を
+//       崩さない範囲で)。名前・団体名PH+wins/reignsの三人称単数動詞は誤検知として除外。
 //
 //    セル別(D-P5-3。docs/en-tone-bible-draft-v0.1.md §1-1/§2-2/§2-3/§2-4/§4-6準拠。
 //    5〜6(ojousama/cool)は entry.cell が取れている行にのみ適用(cell不明の行は対象外)。
@@ -74,9 +78,12 @@ const MAX_LEN = 110;
 // P6-14: プレースホルダ直前の不定冠詞(docs/en-kuroda-style-draft-v0.1.md §3-4 規則25)。
 // 定義は test/i18n-build-dict.js と同一(台帳ごとに独立実行するため各スクリプトが持つ)。
 const ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i;
-// Stage B P7-10: プレースホルダ直後の可算名詞複数形(docs/en-kuroda-style-draft-v0.1.md §3-4 規則23)。
-// 定義は test/i18n-build-dict.js と同一(台帳ごとに独立実行するため各スクリプトが持つ)。warning専用。
-const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{[a-z]+\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/i;
+// Stage B P7-10で新設・P7-13でexit 1化: プレースホルダ直後の可算名詞複数形
+// (docs/en-kuroda-style-draft-v0.1.md §3-4 規則23)。定義は test/i18n-build-dict.js と同一
+// (台帳ごとに独立実行するため各スクリプトが持つ)。
+const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{([a-zA-Z]+)\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/gi;
+// P7-13: 誤検知の除外。定義は test/i18n-build-dict.js と同一。
+const NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|requesterName)$/i;
 
 // ── D-P5-3 セル別検査 ────────────────────────────────────────────────────
 // 実在する英語短縮形の固定リスト(所有格'sを誤検出しないための語彙リスト方式)。
@@ -175,7 +182,6 @@ function main() {
   }
 
   const violations = [];
-  const warnings = [];
   const seenKeys = new Set();
   const dict = {};
   let translatedCount = 0;
@@ -230,12 +236,22 @@ function main() {
     if (entry.cell) cellCheckedCount++;
     checkCellRules(entry, en, violations);
 
-    // 9. プレースホルダ直後の可算名詞複数形(§3-4 規則23) — warning専用(P7-10)
-    const pluralHit = PLURAL_NOUN_AFTER_PLACEHOLDER_RE.exec(en);
-    if (pluralHit) {
-      warnings.push(
-        `PH直後の可算名詞複数形(規則23候補): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} `
-        + `(検出="${pluralHit[0]}"。充填値が1のとき単複不一致になりうる。Label: {n} 形かハイフン限定用法へ)`
+    // 9. プレースホルダ直後の可算名詞複数形(§3-4 規則23。P7-13でexit 1化)
+    PLURAL_NOUN_AFTER_PLACEHOLDER_RE.lastIndex = 0;
+    const pluralHits = [];
+    let pluralMatch;
+    while ((pluralMatch = PLURAL_NOUN_AFTER_PLACEHOLDER_RE.exec(en))) {
+      const word = pluralMatch[2].toLowerCase();
+      if ((word === 'wins' || word === 'reigns') && NAME_SUBJECT_VERB_EXEMPT_RE.test(pluralMatch[1])) {
+        continue; // 誤検知除外(名前・団体名PH + 三人称単数動詞)
+      }
+      pluralHits.push(pluralMatch[0]);
+    }
+    if (pluralHits.length) {
+      violations.push(
+        `PH直後の可算名詞複数形(規則23): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} `
+        + `(検出=[${pluralHits.join(', ')}]。充填値が1のとき単複不一致になりうる。`
+        + `ハイフン限定用法(規則24)・単位を持たない形へ書き直す)`
       );
     }
 
@@ -244,12 +260,6 @@ function main() {
     }
     dict[entry.key] = en;
   });
-
-  if (warnings.length) {
-    console.warn(`[i18n-build-dialogue-dict] WARN: 規則23候補(PH直後の可算名詞複数形)を${warnings.length}件検出しました(exit 1にはしません)。`);
-    warnings.slice(0, 100).forEach((w) => console.warn(`  - ${w}`));
-    if (warnings.length > 100) console.warn(`  ...ほか${warnings.length - 100}件`);
-  }
 
   if (violations.length) {
     console.error(`[i18n-build-dialogue-dict] NG: 機械検査で${violations.length}件の違反を検出しました。src/lang-en-dialogue.js は生成していません。`);

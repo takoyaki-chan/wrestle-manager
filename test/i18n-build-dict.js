@@ -18,6 +18,12 @@
 //       のように a/an の直後にプレースホルダを置くと、a/an の正否が**充填値**で決まる
 //       (a 92 / an 88、a Kaori / an Ayaka)。ハイフン付きの限定用法
 //       (`a {n}-match run` = 規則24の逃がし方)だけは許可する
+//    5. プレースホルダ直後の可算名詞複数形(P7-10で新設・P7-13でexit 1化): 黒田英文体
+//       §3-4 規則23。`{n} wrestlers` のように数値PHの直後に可算名詞の複数形を置くと、
+//       充填値が1のとき単複が食い違う(「1 wrestlers」)。コロン列挙型(`Wrestlers: {n}`)・
+//       ハイフン限定用法(規則24)・単位を持たない形(`{n} in a row`)へ書き直して逃がす。
+//       名前・団体名PH({name}等)+wins/reigns(三人称単数動詞)は誤検知として除外する
+//       (PHが数値ではないため単複の食い違いが起こらない)
 //
 //  ■ 使い方
 //    node test/i18n-build-dict.js            src/lang-en.js を(再)生成
@@ -54,11 +60,18 @@ const JA_RE = /[\u3040-\u30FF\u3400-\u4DBF\u4E00-\u9FFF\uF900-\uFAFF\uFF66-\uFF9
 // \u5E38\u306B "a" \u3067\u6B63\u3057\u3044\u306E\u3067\u8A31\u53EF\u3059\u308B \u2014 `}` \u306E\u76F4\u5F8C\u304C\u30CF\u30A4\u30D5\u30F3\u304B\u3069\u3046\u304B\u3067\u6A5F\u68B0\u7684\u306B\u533A\u5225\u3059\u308B\u3002
 // 3\u672C\u306Ebuild-dict(ui/template/dialogue)\u3067\u540C\u4E00\u306E\u5B9A\u7FA9\u3092\u6301\u3064(\u53F0\u5E33\u3054\u3068\u306B\u72EC\u7ACB\u5B9F\u884C\u3059\u308B\u305F\u3081)\u3002
 const ARTICLE_BEFORE_PLACEHOLDER_RE = /\b(a|an)\s+\{[^}]+\}(?!-)/i;
-// Stage B P7-10: プレースホルダ直後の可算名詞複数形(docs/en-kuroda-style-draft-v0.1.md §3-4 規則23)。
+// Stage B P7-10で新設・P7-13でexit 1化: プレースホルダ直後の可算名詞複数形
+// (docs/en-kuroda-style-draft-v0.1.md §3-4 規則23)。
 // `{n} wrestlers` / `{wins} wins` のような形は充填値が1のとき単複が食い違う(「1 wrestlers」)。
-// P6-18が発見した ui-ledger の既訳2キー({n}名/{wins}勝)がこの型だった。
-// warning専用(exit 1にしない) — 件数を見てCI必須化を判断するため、まずは違反一覧の報告に留める。
-const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{[a-z]+\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/i;
+// P6-18が発見した ui-ledger の既訳2キー({n}名/{wins}勝)がこの型だった。P7-13で残存164件を
+// コロン列挙型(`Wrestlers: {n}`)・ハイフン限定用法(規則24)・単位を持たない形へ書き直し、
+// 本検査をwarningからexit 1へ格上げした。
+const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{([a-zA-Z]+)\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/gi;
+// P7-13: 誤検知の除外。名前・団体名PH({name}/{winnerName}/{championName}/{championOrg}/
+// {requesterName}) + wins/reigns は「Xが勝つ/君臨する」の三人称単数動詞であり、PHが数値では
+// ないため単複の食い違いは起こらない({name}に何を充填しても"wins"は常に正しい)。
+// 数値PH+名詞(`{count} reigns with the belt` 等)はこの除外の対象にしない。
+const NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|requesterName)$/i;
 
 function placeholderSet(str) {
   const set = new Set();
@@ -94,7 +107,6 @@ function main() {
   }
 
   const violations = [];
-  const warnings = [];
   const seenKeys = new Set();
   const dict = {};
   let translatedCount = 0;
@@ -139,12 +151,22 @@ function main() {
       );
     }
 
-    // 5. プレースホルダ直後の可算名詞複数形(§3-4 規則23) — warning専用(P7-10)
-    const pluralHit = PLURAL_NOUN_AFTER_PLACEHOLDER_RE.exec(en);
-    if (pluralHit) {
-      warnings.push(
-        `PH直後の可算名詞複数形(規則23候補): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} `
-        + `(検出="${pluralHit[0]}"。充填値が1のとき単複不一致になりうる。Label: {n} 形かハイフン限定用法へ)`
+    // 5. プレースホルダ直後の可算名詞複数形(§3-4 規則23。P7-13でexit 1化)
+    PLURAL_NOUN_AFTER_PLACEHOLDER_RE.lastIndex = 0;
+    const pluralHits = [];
+    let pluralMatch;
+    while ((pluralMatch = PLURAL_NOUN_AFTER_PLACEHOLDER_RE.exec(en))) {
+      const word = pluralMatch[2].toLowerCase();
+      if ((word === 'wins' || word === 'reigns') && NAME_SUBJECT_VERB_EXEMPT_RE.test(pluralMatch[1])) {
+        continue; // 誤検知除外(名前・団体名PH + 三人称単数動詞)
+      }
+      pluralHits.push(pluralMatch[0]);
+    }
+    if (pluralHits.length) {
+      violations.push(
+        `PH直後の可算名詞複数形(規則23): ${JSON.stringify(entry.key)} → ${JSON.stringify(en)} `
+        + `(検出=[${pluralHits.join(', ')}]。充填値が1のとき単複不一致になりうる。`
+        + `コロン列挙型(Label: {n})・ハイフン限定用法(規則24)・単位を持たない形へ書き直す)`
       );
     }
 
@@ -154,12 +176,6 @@ function main() {
     }
     dict[entry.key] = en;
   });
-
-  if (warnings.length) {
-    console.warn(`[i18n-build-dict] WARN: 規則23候補(PH直後の可算名詞複数形)を${warnings.length}件検出しました(exit 1にはしません)。`);
-    warnings.slice(0, 100).forEach((w) => console.warn(`  - ${w}`));
-    if (warnings.length > 100) console.warn(`  ...ほか${warnings.length - 100}件`);
-  }
 
   if (violations.length) {
     console.error(`[i18n-build-dict] NG: 機械検査で${violations.length}件の違反を検出しました。src/lang-en.js は生成していません。`);
