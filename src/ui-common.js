@@ -10885,7 +10885,7 @@ function showFactionF06Modal(payload, state, onChoice) {
               })}
             </div>
           </div>
-          <div class="fevt-subject-org" style="margin-top:6px">${WM_I18N.t('かつての因縁')} ・ ${hostLabel}</div>
+          <div class="fevt-subject-org" style="margin-top:6px">${WM_I18N.t('かつての因縁')} ・ ${WM_I18N.t(hostLabel)}</div>
           <div class="fevt-subject-divider" style="margin-top:12px"></div>
           <div class="fevt-observation-note">
             ${WM_I18N.t(`対立が始まって以来、両派閥のリーダー<span class="marker">{a}</span>と<span class="marker">{b}</span>の間にあった棘は、
@@ -11189,7 +11189,7 @@ function showFactionF08Modal(payload, state, onChoice) {
       <div class="fevt-report-card f08">
         <div class="fevt-report-header">
           <div class="fevt-report-title">${WM_I18N.t('🔥 対立ヒートアップ')}</div>
-          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ ${WM_I18N.t('{label}の対立', { label: hostilityLabel })}</div>
+          <div class="fevt-report-meta">${_factionSeasonLabel(state)} ・ ${WM_I18N.t('{label}の対立', { label: WM_I18N.t(hostilityLabel) })}</div>
         </div>
         ${_factionReporterStrip(state, '……もう、止めても無駄だと思います。両方とも、リングで決着つける覚悟です')}
         <div class="fevt-subject-stage u3b-theme-cream">
@@ -11213,7 +11213,7 @@ function showFactionF08Modal(payload, state, onChoice) {
           </div>
           <div class="fevt-subject-divider" style="margin-top:18px"></div>
           <div class="fevt-observation-note">
-            ${WM_I18N.t('二人の対立は、<span class="marker hostile">{stage}</span>まで来ている。', { stage: WM_I18N.t('{label}の段階', { label: hostilityLabel }) })}
+            ${WM_I18N.t('二人の対立は、<span class="marker hostile">{stage}</span>まで来ている。', { stage: WM_I18N.t('{label}の段階', { label: WM_I18N.t(hostilityLabel) }) })}
             ${WM_I18N.t('ロッカールームの緊張は限界に近く、メンバー全員が次の興行のカード編成を待っている。')}<br>
             ${WM_I18N.t('この熱を、どこに着火させるかは社長の手の中にある。')}
           </div>
@@ -11912,7 +11912,7 @@ function showFactionF02IgniteModal(payload, state, onContinue) {
           <div class="fevt-ign-vs">VS</div>
           <div class="fevt-ign-hostility">
             <div class="lbl">${WM_I18N.t('両派の対立')}</div>
-            <div class="band">${hostilityLabel}</div>
+            <div class="band">${WM_I18N.t(hostilityLabel)}</div>
             <div class="fevt-ign-flames">${flamesHtml}</div>
           </div>
         </div>
@@ -13075,7 +13075,7 @@ function showChallengeRequestModal(payload, state, onChoice) {
   // 旧アーキタイプ単軸14本(CHALLENGE_GROUP_PETITION_LINES)は置き換えで撤去(2026-08-12 Keisuke裁定)
   const requesterLine = Engine.challengeRequest.pickRequesterLine(requester, lineRng, opponentOrgName)
     || `私たち三人で、挑ませてください。`;
-  const flavorLine = Engine.challengeRequest.pickFlavorLine(rivalry, bond, requester.name, opponent.name);
+  const flavorLine = Engine.challengeRequest.pickFlavorLine(rivalry, bond, requester.name, opponent.name, WM_I18N.t);
 
   // 取次コーチセリフ
   // P6-6配線修正: 従来は選手名・団体名を先にJS文字列連結してから_factionReporterStrip側の

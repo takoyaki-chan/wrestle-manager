@@ -2200,7 +2200,16 @@ function _renderRosterDetailPanel(c, hired) {
     if (entry.type === 'match') {
       const resColor = entry.result === 'win' ? '#5c4a1e' : entry.result === 'lose' ? '#b03030' : '#7a7466';
       const resLabel = entry.result === 'win' ? WM_I18N.t('勝利') : entry.result === 'lose' ? WM_I18N.t('敗北') : WM_I18N.t('引分');
-      eventText = `🏆 ${entry.detail} — <b style="color:${resColor}">${resLabel}</b>`;
+      // i18n P7-33: detail は「敵地遠征 vs {opponent}」の未充填テンプレ(このバッチで新設)と、
+      // 既存の「vs {name}」「タッグ({partner}) vs {names}」のような**対戦相手名を焼き込み済みの
+      // 生JA完成文**(management.js/app.js 他箇所)が混在する。後者をt()に通すとキー不一致で
+      // i18n-missが常時発生する(EN実行時の表示は据え置きと同じ生JAへfail-openするだけで実害は
+      // 無いが、ミス検出が汚染される)。{opponent}という**未充填のプレースホルダ**を含む形だけを
+      // t()の対象にし、それ以外(既に埋まっている旧形式)は従来どおり無変換で通す。
+      const detailText = entry.detail && entry.detail.indexOf('{opponent}') >= 0
+        ? WM_I18N.t(entry.detail, { opponent: entry.opponent })
+        : entry.detail;
+      eventText = `🏆 ${detailText} — <b style="color:${resColor}">${resLabel}</b>`;
     } else if (entry.type === 'practice') {
       // i18n P7-25: 外側のテンプレはt()を通っていたが、差し込む {detail} は
       // growthLog へ**生JAで永続**した行動ラベル(GROWTH_LOG_LABELS)なので、
@@ -2213,7 +2222,9 @@ function _renderRosterDetailPanel(c, hired) {
       // detail は内部キー('中傷'等)のことがある。表示は必ず injuryLabel を通す
       eventText = `🏥 ${WM_I18N.t('療養（{detail}）', { detail: injuryLabel(entry.detail, WM_I18N.t) || entry.detail })}`;
     } else if (entry.type === 'milestone') {
-      eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${entry.detail}</span>`;
+      // i18n P7-33: detail は完全文 or "{value}到達"テンプレで永続する。{value}が無い形は
+      // params指定があっても素通しなので無害。
+      eventText = `<span style="color:#c9a84c;font-weight:700">🔔 ${WM_I18N.t(entry.detail, { value: entry.value })}</span>`;
     } else {
       eventText = entry.detail || '—';
     }
@@ -13012,7 +13023,7 @@ function _dfcRenderCard(faction, state, opts = {}) {
     const hAB = hostMap[`${faction.id}>${opts.feudOpponent.id}`] || 0;
     const hBA = hostMap[`${opts.feudOpponent.id}>${faction.id}`] || 0;
     const avg = (hAB + hBA) / 2;
-    html += `<span class="dfc-meter">${WM_I18N.t('{name}と{label}', { name: opts.feudOpponent.name, label: Engine.factions.getHostilityLabel(avg) })}</span>`;
+    html += `<span class="dfc-meter">${WM_I18N.t('{name}と{label}', { name: opts.feudOpponent.name, label: WM_I18N.t(Engine.factions.getHostilityLabel(avg)) })}</span>`;
   }
   html += `</div></div>`;
 

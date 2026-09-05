@@ -795,12 +795,16 @@ function pickTagWinLine(fighter) {
 function pickTagLossLine(fighter, partnerName, dict) {
   const arr = _tagLineArrFor(TAG_MATCH_LOSS_LINES, fighter);
   const line = arr[Math.floor(Math.random() * arr.length)];
-  return _tplTagLine(line, { partner: partnerName || 'パートナー' }, dict);
+  // i18n P7-33: partnerName未提供時のフォールバック語は名前辞書に無い一般名詞なので、
+  // t()のパラメータ値自動変換(名前/技名のみ対象)では訳せない。dictで直接引く。
+  const T = (typeof dict === 'function') ? dict : (s) => s;
+  return _tplTagLine(line, { partner: partnerName || T('パートナー') }, dict);
 }
 function pickTagWinCommentary(winnerName, partnerName, moveName, dict) {
   const arr = TAG_MATCH_COMMENTARY_WIN_LINES;
   const line = arr[Math.floor(Math.random() * arr.length)];
-  return _tplTagLine(line, { winner: winnerName || '勝者', partner: partnerName || 'パートナー', move: moveName || '決め技' }, dict);
+  const T = (typeof dict === 'function') ? dict : (s) => s;
+  return _tplTagLine(line, { winner: winnerName || T('勝者'), partner: partnerName || T('パートナー'), move: moveName || T('決め技') }, dict);
 }
 
 function pickHotTagLine(fighter) {

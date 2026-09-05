@@ -27,13 +27,15 @@ assert.ok(
 // 配列そのものを抽出して「5人分・全員非空」を behavior として検証する(文字列一致に頼らない)。
 const foundingGreetingsMatch = app.match(/const foundingGreetings = \[([\s\S]*?)\];/);
 assert.ok(foundingGreetingsMatch, 'foundingGreetings array must be defined in app.js');
+// i18n P7-33: 各行はWM_I18N.t('…')でラップされた(表示側でENへ訳出可能にするため)。
+// クォート始まり/WM_I18N.t(始まりのどちらも1要素として拾う。
 const foundingGreetings = foundingGreetingsMatch[1]
   .split('\n')
   .map(line => line.trim())
-  .filter(line => line.startsWith("'") || line.startsWith('"'));
+  .filter(line => line.startsWith("'") || line.startsWith('"') || line.startsWith('WM_I18N.t('));
 assert.strictEqual(foundingGreetings.length, 5, 'all 5 founding members need a greeting line');
 assert.ok(
-  foundingGreetings.every(line => line.replace(/^['",]+|['",]+$/g, '').trim().length > 0),
+  foundingGreetings.every(line => line.replace(/^WM_I18N\.t\(/, '').replace(/^['",]+|['",)]+$/g, '').trim().length > 0),
   'every founding greeting line must be non-empty'
 );
 assert.ok(

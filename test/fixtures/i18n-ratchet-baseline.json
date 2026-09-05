@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-05T05:17:19.824Z",
+  "generatedAt": "2026-09-05T06:11:45.671Z",
   "files": {
     "data.js": {
       "jaCount": 17458,
@@ -42,8 +42,8 @@
       "jaChars": 7482
     },
     "app.js": {
-      "jaCount": 532,
-      "jaChars": 6439
+      "jaCount": 537,
+      "jaChars": 6491
     },
     "battle-lines.js": {
       "jaCount": 594,
@@ -51,7 +51,7 @@
     },
     "index.html": {
       "jaCount": 3,
-      "jaChars": 4942
+      "jaChars": 4928
     },
     "data-faction-dialogue.js": {
       "jaCount": 317,

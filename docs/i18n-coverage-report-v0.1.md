@@ -120,12 +120,12 @@ GLIMPSE_B のイベントラベルとして ui-ledger に既訳("A fated nemesis
 |---|---:|---:|---|
 | ui-common.js | 144 | 1,764 | `⛓️ 価値観の決裂`、`新戦力◯名を獲得`、`また来年 — GRAND FINAL`、`泥沼`(hostilityBands系ラベル?)、award-card等HTML塊の断片 |
 | ui-render.js | 104 | 1,396 | `追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。`(コーチ助言文?)、`常に落ち着いた佇まいが格を生む`(archetype紹介文プール?)、HTML塊の断片多数 |
-| data.js | 108 | 1,298 | `名���負製造機`(**★文字化けバグ、下記参照**)、`試練`、`{name}は、この日を最後に現役を引退した。`、絆・因縁イベントの短い口上(27000番台) |
-| management.js(上記A/B以外の残り) | 170 | 1,242 | `📉◯に◯（連敗◯）`、`🌅◯が今季限りでの引退を表明`、`タッグ(◯) vs ◯`、`少し距離を感じる`(gameLog隣接の短い通知文が主体) |
-| app.js | 55 | 538 | `杯`、`自身の試合評価の最高値`、`この団体を、必ず大きくしてみせます。`(イントロ台詞?)、`[WM][challenge-request]...`系デバッグconsole.error |
+| data.js | 108 | 1,298 | `名���負製造機`(**★文字化けバグ、下記参照**)、`試練`、`{name}は、この日を最後に現役を引退した。`、絆・因縁イベントの短い口上(27000番台)。**★P7-33で仕分け済み**(TRAIT_DEFS/INJURY_*/SEASON_HEADLINE_LABEL/FAREWELL_CLOSING/FAREWELL_KIND_TEXT/GLIMPSE_A_LINES分。§8参照。他の残りは未着手) |
+| management.js(上記A/B以外の残り) | 170 | 1,242 | `📉◯に◯（連敗◯）`、`🌅◯が今季限りでの引退を表明`、`タッグ(◯) vs ◯`、`少し距離を感じる`(gameLog隣接の短い通知文が主体)。**P7-33で関連バグ2件を発見**(§8参照。management.js自体は編集対象外のため未修正) |
+| app.js | 55 | 538 | `杯`、`自身の試合評価の最高値`、`この団体を、必ず大きくしてみせます。`(イントロ台詞?)、`[WM][challenge-request]...`系デバッグconsole.error。**★P7-33で仕分け済み**(33件。§8参照。残22件はconsole.error等デバッグ文字列で本タスク対象外) |
 | match-engine.js | 48 | 451 | `T{turn}: [開幕大技]{atk}の{move} → 透かされた！`等、`T{turn}:`接頭の実況トレース文。実際の観戦画面に出る実況ログか内部トレースのみかは要確認 |
-| relationships.js(上記A以外) | 29 | 265 | `同期入団`、`元タッグパートナー`、`練習中の敵意`、`仲間への想い`(関係性イベントの短いラベル) |
-| factions.js / tag-battle-main.js / その他5ファイル | 32 | 91 | 小粒(1ファイルあたり数件〜十数件) |
+| relationships.js(上記A以外) | 29 | 265 | `同期入団`、`元タッグパートナー`、`練習中の敵意`、`仲間への想い`(関係性イベントの短いラベル)。**★P7-33で仕分け済み**(38件。§8参照) |
+| factions.js / tag-battle-main.js / その他5ファイル | 32 | 91 | 小粒(1ファイルあたり数件〜十数件)。**★P7-33で仕分け済み**(factions.js 4件+観戦系10件。§8参照) |
 
 ### 5.1 副産物: data.js のデータ破損(i18nと無関係のバグ)
 
@@ -142,3 +142,50 @@ data.js **60行目**、キャラid:49(高橋まゆみ)の`traits`配列で `'名
 2. **`before`(直前80文字)による文脈タグは機械的な近似**。`t-call`/`object-value`/`array-or-arg`等のタグはヒューリスティックであり、最終判定は必ずコードを読んで確認すること(実際、A分類の9項目はすべて描画コード側を`grep`で追跡して確認した)
 3. **C分類はまだ「表示されない」と確定していない**。件数の大きいui-common.js/ui-render.js/data.jsから優先して個別確認することを推奨する
 4. HTMLマークアップの行数カウントは、既存`i18n-scan.js`の「ファイル単位で1本」という粗い集計と、本調査の「行単位で複数本」という集計で本数が異なる(字数は完全一致)。次バッチで本数ベースの指標を使うときはどちらの定義か明記すること
+
+## 8. P7-33 仕分け(2026-09-05・relationships.js/factions.js/app.js/data.js一部/index.html/観戦系5件)
+
+`relationships.js`(38)/`factions.js`(4)/`app.js`(33)/`data.js`一部(105)/`index.html`(4)/観戦系5ファイル(実測11。tag-battle-lines.js 3+tag-battle-main.js 4+battle-engine-main.js 2+battle-engine.html 1+tag-battle.html 1)=**195件**を1件ずつ表示到達を追跡し仕分けた。内訳は **(a)EN化=56**(relationships.js 24+factions.js 4+app.js 9+data.js 12+index.html 2+観戦系5)/ **(b)ロジック比較・セーブ移行・内部キーで仕様除外=31**(relationships.js 5+app.js 18+観戦系6+index.html 2)/ **(c)死骸=12**(relationships.js 9+app.js 1+data.js 2)/ **(d)既に完了済み(調査で確認、追加作業なし)=13**(data.js FAREWELL_KIND_TEXT)/ **(e)生存確認済みだがmanagement.js側の追補が対にならないと直せない=5**(app.js)/ **(f)Keisuke裁定待ち(意匠/セリフ層の担当越え)=78**(data.js TRAIT_DEFS 23+INJURY_* 4+GLIMPSE_A_LINES 51)。
+
+### 8-1. (a) EN化した項目(配線+ui-ledger登録。詳細はworklog参照)
+
+- **relationships.js** `Engine.challengeRequest.pickFlavorLine`(9行、社長視点フレーバー1行)をdict-optsパターン化(`{r}`/`{o}`プレースホルダ+`_wmFillWithDict`)。呼び出し元 ui-common.js(直訴モーダル)が`WM_I18N.t`を渡す
+- **relationships.js** `checkBLayer`が積む`label`(15種、GL-01〜GL-12・絶好調終了)は消費点(ui-common.js `_renderGlimpseCardHtml`)で既に`WM_I18N.t(g.label)`済みだったが、`g.label`が変数経由(動的キー)のため抽出器に載らず辞書が空だった。ui-ledgerへ手追加のみで解決(コード変更なし)
+- **factions.js** `getHostilityLabel`(血みどろ/泥沼/小競り合い/冷え込み)は`ui-common.js`のindexOf判定(L11869)と共用のため関数自体は非ラップのまま維持し、**表示側4箇所**(ui-common.js L10888/11192/11216/11915、ui-render.js L13019相当)へ`WM_I18N.t(hostilityLabel)`ラップを追加
+- **data.js** `SEASON_HEADLINE_LABEL`(世代交代/飛躍/雌伏/地固め/試練/船出。戴冠は既訳流用)は`ui-render.js:597`で既に`WM_I18N.t(seasonHeadlineLabel(...))`済み。ui-ledger手追加のみ
+- **app.js** F09派閥対抗戦の開幕/結末ナレーション2件(断片連結→フルテンプレ化)、旗揚げ完了画面の挨拶5行、成長ログ「敵地遠征 vs」テンプレ化、成長マイルストーンのgrowthLog表示(総合力/人気/各ステータス上限)をテンプレ化+ui-render.js側でt()を1回引くよう配線
+- **index.html** `#scoutEventTitle`・fighter-file機密注記(2文分割)へ`data-i18n`付与、`battle-engine.html`/`tag-battle.html`の`<title>`へ`data-i18n`付与
+- **tag-battle-lines.js** `pickTagLossLine`/`pickTagWinCommentary`のフォールバック語(パートナー/決め技。勝者は既訳キー流用)をdict経由に変更
+
+### 8-2. (b) 仕様除外(ロジック比較・セーブ移行・内部キー)
+
+- **relationships.js**: `backstoryTypes`(同期入団/元タッグパートナー/過去の遺恨、5件)はbsType比較にのみ使う内部分岐キー(表示なし・関係数値の生成範囲を選ぶだけ)
+- **app.js**: `d.label.includes('チケット'|'グッズ'|'会場')`(3件)は完成文の部分一致判定。**チケット/グッズ側はcategoryフィールドが既存だったため`category==='ticket'||'goods'`へ書き換えて実際に修正**(EN実行時にサバイバルパネルの週間収支見積りが0になる潜在バグを解消)。会場費側はcategory未整備のため据え置き(§8-4で報告)。`遅咲き`(2件)・`熱血`/`ガラスのハート`(4件)はセーブ移行/特性フィルタの内部キー比較。`引退試合`等の`reason`(1件)は`.includes('引退')`分岐にのみ使う内部値。`(平均試合評価 `等mqTextFixes(10件)はJA→JAの用語リネーム移行(旧セーブの「MQ」表記を「試合評価」へ書き換えるregex、EN化とは無関係)
+- **data.js**: `INJURY_TABLE`/`INJURY_LABEL`/`INJURY_LABEL_SHORT`/`INJURY_DEBUFF_TABLE`の内部キー`'中傷'`(4件)は表示に出ない(表示値は`INJURY_LABEL['中傷']`='中程度の負傷'側で、既にinjuryLabel()がdict対応済み)
+- **観戦系**: `tag-battle-main.js`(4件)・`battle-engine-main.js`(2件)の`t.includes('★ 決着')`等はログ行を演出クラス(finish/hottag等)へ分類する後方互換フォールバック(新フレームは`fr.logLineClasses`で分類済み、旧フレームのみ通る経路とコード自身が明記)。翻訳すると分類が無音故障する既知の危険パターンとして据え置き
+- **index.html**: `日本語`(言語トグルの自言語表記、意図的に翻訳しない設計コメントあり)/`たこやき`(クレジットの制作者名、固有名詞)
+
+### 8-3. (c)死骸・(d)既に完了済み・(e)追補待ち・(f)裁定待ち — 報告のみ(Keisuke裁定用)
+
+| 項目 | 件数 | 場所 | 根拠 |
+|---|---:|---|---|
+| `BOND_LABELS`/`RIVALRY_LABELS` | 9 | relationships.js:14-28 | §3-1で既報告済みの死コード(`inspect()`/`stats()`の2関数からしか参照されず、その2関数を呼ぶコードがsrc/にもtest/にも0件)。本タスクで独立に再確認、追加の消費点は見つからず |
+| `TRAIT_DEFS`の1文字漢字アイコン | 23 | data.js:279-302 | `td.icon`はui-common.jsのtraitバッジで生表示されており**到達可能**だが、絵文字/記号相当の意匠であり訳語ではなく差し替えアイコンの要否がKeisuke裁定事項。今回は据え置き |
+| `SURVIVAL_MILESTONES.icon`('杯') | 1 | app.js:1791 | `Survival.getMilestones()`の戻り値`icon`フィールドはui-render.jsのどの描画箇所からも参照されていない(labelとdescのみ使用)。完全な死フィールド |
+| `FAREWELL_CLOSING` | 2(連結後1文) | data.js:11946 | `grep`で消費ゼロを確認(定義+module.exports列挙のみ)。同じ型の`FAREWELL_KIND_TEXT`(15件・5型×title/lead/body)は**既に翻訳済みで表示に到達している**(ui-common.js:2432-2447が`WM_I18N.t(fk.title/lead/body)`済み・template-ledgerに既訳あり)。本タスクの「13件」は`body`がJS文字列連結(`+`)で書かれているため評価後は1個の完成文になり、台帳側は正しく1行として扱っていた——**行単位で分割数を数えるソースコードの見た目**と**評価後の実文字列単位**がズレていただけの誤検知と判明 |
+| `GLIMPSE_A_LINES` | 51 | data.js:27374〜 | `checkALayer`(relationships.js)経由で`_pendingGlimpseA`→`showGlimpseCascade`(ui-common.js)まで**生きて表示に到達する**キャラクターセリフプール(archetype/personality軸)。訳出はセリフ層(dialogue-ledger、Opus主筆)の管轄のため今回は未着手 |
+| `元所属団体` | 1 | app.js:11379 | `_maybeEmitFiredReturn`の`_orgNameOf`フォールバック値。`firedReturn`型industryNewsイベントの`ourOrg`/`toOrg`に焼き込まれ、`_wmResolvePreformattedIndustryData`(management.js)に`case 'firedReturn'`のRaw値再構築が無いため**push時点の言語で永続**してしまう。app.js側で先に訳すと「後で言語を切り替えると混在する」既存の§8規約に反するため、management.js側の追補(Rawフィールド追加)が対になって初めて安全に直せる。編集対象外のため未着手 |
+| 成長イベント`{detail}`3種(を大きく伸ばした/をはっきりと伸ばした/に確かな伸びを見せた) | 3 | app.js:12526-12528 | AI団体ブレークスルー記事の`detail`値。`data.detail`は断片連結のままindustryNewsキューに積まれ、`_wmResolvePreformattedIndustryData`に`case 'breakthrough'`が無いため表示時に訳し直せない。同型の`{stat}`はP7-19(§38-1)で解決済みだが`detail`側は未着手のまま残っていたと判明。management.js側の追補が必要 |
+| `対抗戦出演料` | 1 | app.js:15567 | `_pendingMediaIncomes[].label`。消費点(management.js:13351)は`_wmFillWithDict(dict, 'メディア収入（{label}）', { label: pm.label })`で**値としての`pm.label`を再度dictで引き直していない**(`_wmDictLabel`パターン未適用)。management.js側の追補が必要なため未着手。**副次発見(未収載カウント対象外・調査中に発見)**: 同じ`warMediaIncomes`配列の隣接行(app.js:15566)`label: \`対抗戦 vs ${WM_I18N.pn(ev.opponentName)}\`` はテンプレ+値の分離自体がされておらず(相手団体名が生成時に焼き込み済み)、こちらも同じ`_wmDictLabel`未適用の影響を受ける。まとめて追補する候補 |
+| 上記(元所属団体1+detail3+対抗戦出演料1=5件)の共通所見 | — | app.js | いずれも「app.jsはUI層としてWM_I18N直接呼び出し可(§6)」の例外を使えない——**industryNewsキュー等の永続構造に載る値**であり、render時点再構築(§8)の受け皿がmanagement.js側に無いため。今回EN化できた同種の項目(F09演出・foundingGreetings)は全て**同ティック内で生成・即表示・非永続**であることを確認してから直しており、この5件はその条件を満たさないため意図的に見送った |
+
+### 8-4. 発見した実バグ(P7-33で修正)
+
+`Survival.estimateWeeklyNet`(app.js)の`avgShowIncomePerWeek`計算が`G.weeklyFinance.details[].label`のJA部分一致(`.includes('チケット')`等)で興行収入を集計しており、`processSettlement(G, dict)`(management.js)が`label`を実際にEN訳する経路が既に存在するため、**EN実行時はサバイバルパネルの週間収支見積りが常に興行収入0として計算される**潜在バグだった。チケット/グッズ収入側は`category`フィールド(`'ticket'`/`'goods'`)が既に付与されていたため、そちらへ判定を差し替えて解消(§8-2)。会場費(`category`未整備)側は今回のスコープでは据え置き。
+
+### 8-5. Keisuke裁定が必要な項目まとめ
+
+1. `TRAIT_DEFS`の1文字漢字アイコン23種をEN版でどう見せるか(据え置き/差し替え)
+2. `GLIMPSE_A_LINES`51行の英訳(Opus主筆のセリフ層バッチへ回付)
+3. `元所属団体`/AI団体ブレークスルー`{detail}`3種/`対抗戦出演料`系2件——management.js側にRaw値再構築(`_wmResolvePreformattedIndustryData`への`case`追加、または`_wmDictLabel`適用)を追加する追補タスクの起票要否
+4. 会場費(`会場`部分一致)側のcategoryフィールド追加要否
