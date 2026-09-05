@@ -1,5 +1,90 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-37 — 観戦カットイン `CUTIN_LINES` のアーキタイプ跨ぎ同文を書き分け(JA原文改訂4行+EN訳4行)(2026-09-05・worktree agent-a7fd47f56da990dc6)
+
+裁定は `docs/i18n-keisuke-rulings-pending-v0.1.md` A-3(2026-09-05 Keisuke=**①書き分ける**)。着手前に worktree ブランチを main 先端(`2309d36c`)へ fast-forward 済み。
+
+### 1. 実測は「2組」ではなく4組だった — null行だけ数えると取りこぼす
+
+A-3 の記載は「重複セル2組」だが、`CUTIN_LINES`(3セクション × archetype 7 × personality 7 = 147セル / 441スロット)を機械走査した実測は **アーキタイプ跨ぎの同一JA文が4組**。指示どおり実測を正とした。
+
+内訳の理由がはっきりしている。P7-21 の worklog は「同一原文が2セルに再利用されて cell 判定が割れる null 5行」を挙げていて、そのうち3行が今回の対象。**4組目の `……終わりだ`(bigmove の standard / delinquent)は null 5行に入っていなかった** — この行は `data.js:BITTER_RESOLUTION_LINES` / `GLIMPSE_A_LINES` にも同文があり、P7-21 の時点で既に台帳にあって訳文も入っていた(=「新規訳出418行」の外側で、cell も他表から決まっていた)。**「cell:null の行数」は重複の指標として不完全**で、重複検査は表そのものを走査しないと数が合わない。
+
+残り2組は**同一アーキタイプ内の性格違い**(`…ここから` = cool.normal / cool.bold、`…ここから、だよ` = composed.normal / composed.quiet)なので指示どおり対象外・報告のみ。同型はセクション跨ぎにあと2件(`…いく` = atk.cool.normal / bigmove.cool.normal、`…全力で、いくね` = atk.composed.earnest / bigmove.composed.earnest)、**同一アーキタイプ内の重複は計4件が残る**。書き分けるならアーキタイプ跨ぎとは別の判断(同じ口調の中で性格差をどこまで出すか)になるので、今回は触っていない。
+
+### 2. 書き分けた4組(旧JA / 新JA / EN)
+
+**どちらを直すか**は指示どおり「そのセルの archetype の口調から遠い方」で決めた。
+
+| # | 直したセル | 旧JA(=残す側と同文) | 新JA | 新EN |
+|---|---|---|---|---|
+| 1 | `atk.seductive.emotional[0]` | `負けたくないっ…！` | `そんなに…私を怒らせたいのっ…！` | `Mm... you really do want me angry...!` |
+| 2 | `atk.polite.emotional[1]` | `絶対に…絶対にっ…！` | `もう…もう止まれませんっ…！` | `I can't stop — I can't stop now...!` |
+| 3 | `atk.standard.shy[3]` | `こ、ここから…ですっ…！` | `つ、次は…わたしの番ですっ…！` | `N-Next... it's my turn...!` |
+| 4 | `bigmove.delinquent.quiet[1]` | `……終わりだ` | `……寝てな` | `...Lights out.` |
+
+**残した側**(同文の相方。1文字も変えていない): 1=`atk.standard.emotional[0]` / 2=`atk.standard.emotional[1]` / 3=`atk.polite.shy[3]` / 4=`bigmove.standard.quiet[2]`。
+
+選定理由:
+
+1. **蠱惑を直した**。`負けたくないっ…！` は平叙のタメ口で、標準の骨格そのもの。蠱惑には「わ/の/よ」も余裕も無く、いちばん遠い。新JAは口調シート `docs/tone-bible/蠱惑×感情的.md` の裁定(**このセルの「感情的」= 取り乱しではなく敵意・攻撃性が漏れるセクシー系**)に合わせ、「負けを拒む」という枠のセリフを相手への敵意へ裏返した。ENは §2-7 の低温マーカー `Mm...` を頭に置き、声を荒げないまま敵意だけ出す。
+2. **丁寧を直した**。`絶対に…絶対にっ…！` には敬語成分が1つも無い。このスロットは各アーキタイプが「絶対に」の反復に自分の語尾を足す形(お嬢様 `絶対に…絶対にですわっ…！` 等)だが、丁寧だけ素の形のまま残っていた。ただし `絶対にです` は日本語として据わりが悪いので、**反復という装置(標準×感情的の骨格「同じ語の反復」)は保ったまま語を替えた**。既存セル内で `負け`(3行中2行)・`諦め`(earnest)と語が食い合わないよう `止まれません` を選択。ENも `I can't stop — I can't stop now` と反復にし、§3 の emotional 変調(ダッシュでの息継ぎ・語の反復)に合わせた。
+3. **標準を直した**。`こ、ここから…ですっ…！` の `です` は丁寧の本籍。丁寧側は4行すべてが敬体で揃っているのに対し、標準側は `ま、負けたくないから…！` と混在していた。新JAは口調シート `docs/tone-bible/標準×内気.md` の「**敬体が地の声**(標準属性の他セルはタメ口基調で、この敬体自体が内気の変調)」を尊重して敬体のまま、`ここから` 系がアーキタイプ7つ横並びで並んでいる状態から離して**攻守交代の一言**に振り替えた(atk カットイン=フェーズ切替の合図なので意味も合う)。一人称は §3-2 の内気帯例外どおりひらがな `わたし`。
+4. **ヤンキーを直した**。`終わりだ` は伝法(じゃねえ/かよ/だぜ)が1つも無く、ヤンキー骨格から最も遠い。しかも標準側は `bigmove.standard.normal` に `ここで…終わりだ！` があり、標準の語彙としては既に定着している。新JAは `寡黙` の語数最小(`……沈め` `……いくぞ` と同じ4〜5字帯)を保ったまま、フィニッシャー直前の突き放しに。EN `...Lights out.` は §2-4 の「冠詞・主語の省略」に沿った断片で、[0] の `...Go down.` と語が重ならない。
+
+鉄則の自己確認: 身体・抽象メタファーなし / 固有名詞なし / 一人称は必要行のみ(蠱惑=漢字「私」、内気=ひらがな「わたし」) / 全角記号(`！`)はセル慣行どおり / 長さは JA 5〜16字(カットインは大技直前の一言なので短く)。
+
+**書き分けの結果、アーキタイプ跨ぎの同文は 4組 → 0組**(同一アーキタイプ内の4件は上記のとおり据え置き)。
+
+### 3. 台帳 — 新規4行だけ、既存 en の書き換えゼロ
+
+`node test/i18n-extract-dialogue.js` の前後を機械比較:
+
+| 項目 | 値 |
+|---|---|
+| 行数 | 17,092 → **17,096**(+4=改訂した新JA 4行) |
+| 削除行 | **0**(旧JA 4行はいずれも「残す側」のセルに健在なので台帳から落ちない) |
+| 既存 en の変更 | **0** |
+| cell の変化 | 3行が `null` → 解決(`負けたくないっ…！`→standard/emotional、`絶対に…絶対にっ…！`→standard/emotional、`こ、ここから…ですっ…！`→polite/shy)。同文が消えて曖昧さが無くなったため |
+| count の変化 | 上記3行が 2→1、`……終わりだ` が 4→3(CUTIN 由来の1つが減っただけで、BITTER_RESOLUTION / GLIMPSE_A の2つは不変) |
+
+新規4行の cell 判定は**兄弟キー集合ルールで自動解決**され、手による補正は0件。`node test/i18n-build-dialogue-dict.js` のセル検査(お嬢様=短縮形禁止 / クール=感嘆符禁止・3文超禁止 / hell・damn は delinquent 確定セルのみ / 110半角字上限)は**新規4行のどれも該当帯に入らない**(seductive / polite / standard / delinquent、最長37字)ため無違反で通過。未訳0を維持。
+
+### 4. ja-golden は再焼き不要だった — 差分ゼロの構造的な理由
+
+指示は「JA原文を意図的に変えるので `ja-golden.js` は不一致になる。`--update` で再焼きし、差分が改訂2組由来だけであることを diff で証明せよ」だったが、**実際には無引数で完全一致 PASS した**(`lines=11307, hash=dd2e536b…`)。基準ファイル `test/fixtures/ja-golden-baseline.json` は**1バイトも触っていない**(`git status` に現れない)。
+
+理由は golden の採取範囲。`test/ja-golden.js:79-89` の `loadAsGlobal()` は `victory-lines.js` / `data.js` / `coach-lines.js` / `data-faction-dialogue.js` / `management.js` / `match-engine.js` / `relationships.js` / `flag-dialogue.js` / `factions.js` / `draft-negotiation.js` の10本しか読まず、**`src/battle-lines.js` を読み込まない**。採取対象も新聞・ティッカー・決着文・興行フレーバー・引退セリフ・デバッグログで、観戦画面(battle-engine.html / tag-battle.html の iframe)のカットインは冒頭コメントどおり最初からスコープ外。したがって `CUTIN_LINES` の改訂は golden にそもそも到達し得ない。**「差分が改訂由来だけ」より強い証明**(そもそも差分が発生し得ない)なので、基準の取り直しはしていない。
+
+### 5. UI自動走破の digest は不変 — action-log がバイト一致
+
+`npm run test:ui:walkthrough -- --mode walk --seasons 1 --seed 42` を、**同じ worktree で「改訂を `git stash` した状態」と「改訂を戻した状態」の2回**回して比較した。
+
+| | Actions | digest |
+|---|---:|---|
+| 改訂前(stash 中) | 328 | `1052faa82eaf7991` |
+| 改訂後 | 328 | `1052faa82eaf7991` |
+
+`--action-log` で書き出した操作列は **151,329バイトがバイト単位で完全一致**。ロードマップに記録されている ja digest `1052faa82eaf7991` は不変。
+
+**注意した1点**: 途中、シード無し(既定=乱数シード)の走破を2本回したところ1本が `D2_FREEZE` で落ち、seed 42 固定でも1本だけ `Actions: 327 digest=c0003beafbe83f9f` が出た。だが**同じツリーで seed 42 を回し直すと 328 / `1052faa82eaf7991` に戻り、stash した無改訂ツリーと action-log がバイト一致した**ので、これは改訂由来ではなくハーネス側のタイミング揺れ。走破の判定は「同一シードで2回一致」まで見ないと誤診し得る、という記録として残す(基準の取り直しはしていない)。
+
+**stash の副作用に注意**: `git stash push` / `pop` を挟むと、`i18n/dialogue-ledger.json` と `src/lang-en-dialogue.js`(どちらも生成物で **LF** 改行)が `core.autocrlf` により **CRLF に変換されて戻る**。今回は stash 前に scratchpad へ退避しておいた実体を書き戻して LF を回復し、`node test/i18n-build-dialogue-dict.js` の再生成結果とバイト一致することまで確認した。**CRLF/LF が混在するリポジトリで stash を実験用に使うときは、生成物の改行を必ず戻すこと。**
+
+### 6. 検証(すべてフォアグラウンド実行)
+
+| コマンド | 結果 |
+|---|---|
+| `node --check src/battle-lines.js` | OK(CRLF 307行・末尾改行を維持) |
+| `node test/i18n-build-dialogue-dict.js` | 総キー17,096 / 訳文あり17,096 / **未訳0** / cell判定済み16,063・セル検査無違反 |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上に存在するキー17件、すべて訳文一致) |
+| `node test/ja-golden.js` | **OK: 基準と完全一致**(lines=11307 / hash=`dd2e536b…`)。再焼きなし |
+| `npm test` | **total 261 / passed 261 / failed 0** |
+| `node test/i18n-ratchet.js` | OK(増加なし・files=31 / totalJaStrings=28,058。441スロットは本数不変) |
+| `node test/ui-walkthrough/spectator-move-i18n-check.js` | **ALL CHECKS PASS**(single/tag 両方で「選出層 CUTIN_LINES の生値が JA と EN で完全一致・441スロット」「EN のカットイン全スロットに日本語残り0(441行)」「EN で `[i18n-miss]` が出ていない」を含む) |
+| `npm run test:ui:walkthrough -- --mode walk --seasons 1 --seed 42` | PASS / Issues 0 / digest `1052faa82eaf7991`(改訂前と action-log バイト一致) |
+| 選出の実確認(`_getCutinLines` 移植) | 新4セルとも新セリフを選出可・EN辞書で解決。**残す側4セルに旧セリフ健在・書換側4セルから旧セリフ消滅**も同時に検算 |
+
 ## 2026-09-05 停止点 — 第3波(P7-30/31/33)マージ完了・main緑(c43a8e1b)。メモリ負荷のため Keisuke 指示でここで中断
 
 - **状態**: ja-golden 完全一致(dd2e536b…)/ npm test 263 / UI辞書 4,686・テンプレ 3,585・セリフ 17,092・未訳0 / opening-scene-i18n-check PASS。P7-30 と P7-31 の specs 追記は §42/§44 に採番(P7-28 は §43)。

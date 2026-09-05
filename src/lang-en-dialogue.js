@@ -9,7 +9,7 @@
 //  別ファイル。WM_I18N.addDict()は既存辞書へのマージなので、読み込み順は問わない
 //  (src/i18n.js addDict実装参照)。
 //
-//  生成元: i18n/dialogue-ledger.json (総キー17092件、訳文あり17092件、cell判定済み16056件)
+//  生成元: i18n/dialogue-ledger.json (総キー17096件、訳文あり17096件、cell判定済み16063件)
 //  辞書に無いキーは原文のままfail-openで表示される(D-B2と同じ規約)。
 //  よってこのファイルは訳文を部分的に持つ状態のまま安全にコミットできる。
 // ══════════════════════════════════════════════════════════════════════════════
@@ -2079,6 +2079,7 @@
     "……完璧に近かった": "...About as close to perfect as it gets.",
     "……実力で語る。それだけだ": "...Ability does the talking. That is it.",
     "……実感が追いつきません。少し待ってください。": "...It hasn't sunk in yet. Please give me a moment.",
+    "……寝てな": "...Lights out.",
     "……対抗戦。……お願いします": "...A match against your promotion. ...Please.",
     "……対抗戦を。…よろしく": "...A match between our promotions. ...If you would.",
     "……対抗戦を申し込む": "...I am challenging your promotion.",
@@ -9646,6 +9647,7 @@
     "そろそろ白黒つけましょうよ？　おあつらえ向きの舞台でしょう？": "Shall we finally settle this? Rather a fitting stage for it, wouldn't you say?",
     "そんな……っ……なんで、そこまで……。……すみません、少しだけ、顔を上げられません……。": "Oh no... ah... why would you go that far...? ...Sorry, I can't lift my head just now...",
     "そんな……っ。……ずるいですわ、そういうお優しさは。……泣いてしまうでしょう": "You must not... ...That is unfair, kindness like that. ...You will make me cry.",
+    "そんなに…私を怒らせたいのっ…！": "Mm... you really do want me angry...!",
     "そんなに力まなくても、ちゃんと相手するって。": "You can relax, you know. I'll give you a real match.",
     "そんなに構えなくていいですよ。ちゃんとお相手します。": "No need to brace yourself like that. I'll give you a proper match.",
     "そんなに気を張らないで。ちゃんとお相手します。": "Do not hold yourself so tight. I will give you a proper match.",
@@ -9750,6 +9752,7 @@
     "ったく、潰れんの勘弁してくれよ。私のリングを取り上げるな": "Come on, don't you dare fold on me. Don't take my ring away.",
     "ったく。来るなら来いよ": "Tch. Come on then, if you're coming.",
     "っへ！ これでシメだ！": "Heh! That's a wrap!",
+    "つ、次は…わたしの番ですっ…！": "N-Next... it's my turn...!",
     "つ、次は…必ず…{partner}さんを勝たせますわ…！": "N-Next time... I shall win it for you, {partner}...!",
     "つ、次は…絶対…{partner}さんを勝たせます…！": "N-Next time... I'll get you that win, {partner}...!",
     "つ、次は…絶対…{partner}を、勝たせるわ…！": "N-Next time... I'll win it for {partner}... I will...!",
@@ -10725,6 +10728,7 @@
     "もう…もうわかりません…っ、どうすればよいの…っ": "I do not... I do not understand anymore...! What am I to do...!",
     "もう…もうわかんねえよ…っ、どうすりゃいいんだよ…っ": "I don't... I don't know anymore...! What the hell am I supposed to do...!",
     "もう…もう分かんない…！どうすればいいの…！": "I can't... I can't work it out anymore...! What do I even do...!",
+    "もう…もう止まれませんっ…！": "I can't stop — I can't stop now...!",
     "もう…もう無理です…！あの方と一緒にいると…辛くて…！": "I can't... I can't do it...! Being with her... it hurts...!",
     "もう…一緒には、いられない…": "Can't... be on your side anymore...",
     "もう…伸びないの…？ …でも、ここまで来れた。それだけで…！": "It... won't grow anymore...? ...But I got here. And that alone is...!",

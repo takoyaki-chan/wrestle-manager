@@ -1657,6 +1657,46 @@ P5-2p の `kuroda-text.js` ↔ `ui-render.js` と同じ扱いで基準を更新�
 - 同じ日本語の骨格が7属性×3セクションで繰り返される表なので、**均質化回避を全数照合で担保**した。
   最終的に **バッチ内EN完全重複0・近似重複(トークンJaccard≥0.90)0・既訳16,674行との完全重複0・近似重複0**
   (検出36件をすべて書き直した)
+
+### 37-6. P7-37 — アーキタイプ跨ぎの同文4組を書き分け(2026-09-05追記)
+
+P7-21 の移設は JA を1文字も変えなかったが、**表の中身には元からアーキタイプ跨ぎの同一JA文が4組あった**
+(裁定待ち一覧 A-3 → 2026-09-05 Keisuke 裁定=**①書き分ける**)。P7-37 で **4スロットの JA 原文を意図的に改訂**したので、
+§37-2 の「JA原文は1文字も変えていない」は**移設時点の性質**であって、`CUTIN_LINES` の JA を将来にわたり凍結する条件ではない。
+改訂したのは各組の**口調から遠い側だけ**で、相方(残す側)は不変:
+
+| 直したセル | 旧JA(=相方と同文) | 新JA | EN | 残した側 |
+|---|---|---|---|---|
+| `atk.seductive.emotional[0]` | `負けたくないっ…！` | `そんなに…私を怒らせたいのっ…！` | `Mm... you really do want me angry...!` | `atk.standard.emotional[0]` |
+| `atk.polite.emotional[1]` | `絶対に…絶対にっ…！` | `もう…もう止まれませんっ…！` | `I can't stop — I can't stop now...!` | `atk.standard.emotional[1]` |
+| `atk.standard.shy[3]` | `こ、ここから…ですっ…！` | `つ、次は…わたしの番ですっ…！` | `N-Next... it's my turn...!` | `atk.polite.shy[3]` |
+| `bigmove.delinquent.quiet[1]` | `……終わりだ` | `……寝てな` | `...Lights out.` | `bigmove.standard.quiet[2]` |
+
+台帳は 17,092 → **17,096行**(新規4・削除0・既存en変更0・未訳0)。スロット数441・配列長・並び順・キー順は不変なので `pk()` の添字は動かない。
+`cell` は同文が消えた3行が `null` → 解決(`負けたくないっ…！`・`絶対に…絶対にっ…！`→standard/emotional、`こ、ここから…ですっ…！`→polite/shy)。
+
+重複検査についての教訓が2つある。
+
+- **`cell:null` の行数は重複の指標にならない**。§37-2 が挙げた「null 5行」に4組目の `……終わりだ` は入っていなかった
+  — この行は `data.js:BITTER_RESOLUTION_LINES` / `GLIMPSE_A_LINES` にも同文があり、cell が他表から決まっていたため。
+  **重複は表そのものを走査して数える**(セル配列の完全一致と、行単位の一致の両方を見る)
+- **同一アーキタイプ内の性格違いの同文は別問題**として据え置いた(4件: `…ここから`=cool.normal/cool.bold、
+  `…ここから、だよ`=composed.normal/composed.quiet、`…いく`=atk.cool.normal/bigmove.cool.normal、
+  `…全力で、いくね`=atk.composed.earnest/bigmove.composed.earnest)。書き分けるなら「同じ口調の中で性格差をどこまで出すか」という別の判断が要る
+
+### 37-7. `ja-golden` は `CUTIN_LINES` を覆っていない(P7-37で確認)
+
+`test/ja-golden.js` の `loadAsGlobal()` が読むのは victory-lines / data / coach-lines / data-faction-dialogue /
+management / match-engine / relationships / flag-dialogue / factions / draft-negotiation の**10本だけで、`src/battle-lines.js` を含まない**。
+採取対象も新聞・ティッカー・決着文(`formatFinish`)・興行フレーバー・引退セリフ・デバッグログで、
+観戦 iframe(battle-engine.html / tag-battle.html)の描画は冒頭コメントどおり最初からスコープ外。
+
+したがって **カットインの JA を変えても golden は動かない**(P7-37 で4行を改訂したうえで無引数実行し
+`OK: 基準と完全一致` を実測。`test/fixtures/ja-golden-baseline.json` は再焼きしていない)。
+**逆に言えば、観戦系セリフの JA 回帰は golden では守られない**。守っているのは
+`test/ui-walkthrough/spectator-move-i18n-check.js` の `cutinRawJa`(§37-4。選出層の生値を441スロット全数で JA/EN 照合)と
+`test/i18n-ratchet.js`(本数)なので、**`battle-lines.js` / `tag-battle-lines.js` を触ったらこの2本を回す**。
+
 ## 38. Stage B P7-19 — §35-7の残3件(ブレイクスルー内部キー・スタンプsuffix文脈違い・invites/championWatch言語固定)の解消(2026-09-05追加)
 
 §35-7(P7-16)が記録のみで残した3件をすべて解消。新規訳出2キー(`NEWS_STAMP_SUFFIX_TEXTS`。template-ledger 3,141→**3,143**・未訳0)。ラチェット総数 +8(data.js +2 / management.js +6。理由は下記37-4)。
