@@ -1,5 +1,236 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-42 — Glimpse A層(道場「休憩中の選手」吹き出し)は**既に全訳・全配線済み**だった / 指示の「51行」は上書きで死んだリテラル(src変更なし・回帰ガード1本追加)(2026-09-06・worktree agent-ab2ea68b73f20deb3)
+
+着手前に worktree を main 先端(`863ff2b1`)へ fast-forward 済み。裁定の出どころは `docs/i18n-keisuke-rulings-pending-v0.1.md` A-2(2026-09-05 訂正版=「削除ではなく51行を dialogue-ledger 経路で英訳する」)。
+
+### 1. 結論 — 英訳する対象は既に無かった。「51行」は別のもの
+
+| 問い | 実測 |
+|---|---|
+| `GLIMPSE_A_LINES` は台帳に載っているか | **載っている**。`i18n/dialogue-ledger.json` に `data.js:GLIMPSE_A_LINES` 由来 **847行**(生抽出848・重複1)。テーブル名 `GLIMPSE_A_LINES` は `_` 分割に `LINES` を含むので `isDialogueTableName()` が**最初から**拾っていた(`EXTRA_INCLUDE` への追加は不要) |
+| 未訳は何行か | **0行**。847行すべて `en` 非空・訳文へのJA残留0 |
+| 表示点は `t()` を通っているか | **通っている**。`ui-render.js:2064` の `.dojo-rest-bubble` が `WM_I18N.t(g.dialogue) \|\| WM_I18N.t(g.label)`。`g.dialogue` は `relationships.js:4965/5006` の `pickDialogueLine()` が返す**生JA原文**で、プレースホルダを含まない完成文の焼き込みではない(§13-2 型2/型5 に該当せず、§14-3 の追加フィールドは**不要**) |
+| `g.label`(11本)は解決するか | **する**。`打ち解けた様子`→`Opening up` 等11本すべて ui-ledger 既訳(P7-33 の追加分) |
+
+**したがって src/ は1バイトも変えていない**(`git diff` 空)。この工程の成果物は (a) 上を機械で固定する回帰ガード1本、(b)「51行」の正体の特定と裁定材料、の2つ。
+
+### 2. 「51行」の正体 — 上書きで死んだリテラル 52行
+
+`docs/i18n-coverage-report-v0.1.md` §8-3 が `GLIMPSE_A_LINES | 51 | data.js:27374〜` と挙げていた数は、**生きているセリフの未訳数ではなく、`data.js` のソーステキストに残っている到達不能なJAリテラルの数**だった。
+
+data.js には `GLIMPSE_A_LINES` の定義が**2つ**ある。
+
+- `data.js:27901-28778`(878行) — `const GLIMPSE_A_LINES = { bond_60_up: { _default: {…}, ojousama: {…} }, … }`。**アーキタイプ→性格**の順で書かれた初代の表
+- `data.js:28780-29504` — `GLIMPSE_A_LINES.bond_60_up = {…}` 形式の**代入11本**。**性格→アーキタイプ**の順(`getDialoguePool` の後段ループが拾う配置)で書かれた現行の表
+
+代入は11閾値**すべて**を対象にしており、しかも `.bond_60_up = {…}` は**プロパティごと丸ごと差し替える**。つまり前半878行は評価直後に全部捨てられている。実行時オブジェクトに残るのは後半だけ(実測: 実行時847ユニーク / 前半リテラルの290ユニークのうち**52行**は実行時に存在しない)。抽出器は `global[name]`(=実行時の値)を読むので、この52行は台帳にもEN辞書にも入らない — 3台帳・EN辞書・data.js実行時オブジェクトのどこを探しても0件。**ゲーム中に一度も出ない文**なので、英訳しても誰の目にも触れない。
+
+52行のうち大半は 2026-08-12 の口調バイブル全直し(866件)で**同じセルの言い回しが改訂された**痕跡で(`認めてあげてもいいわよ`→`…いいかな`、`ここがわたくしの居場所。誇りに思います`→`…居場所ですわ。誇りに思います`)、改訂側だけが代入ブロックに反映されて旧文がリテラル側に取り残された形。**「出す/削る/維持」の判断は data.js のJA原文に触る変更なので Keisuke 裁定に回す**(本タスクの禁止事項「data.js の JA 原文は1バイトも変えない」に従い未着手)。
+
+**全52行**(左=上書きで消えた文、右=同じ閾値・同じ性格・同じアーキタイプのセルで**いま実際に出ている**文):
+
+
+| # | 閾値 | 性格 | アーキタイプ | 上書きで消えたJA(=「51行」) | いま出ているJA(同じセル) |
+|---:|---|---|---|---|---|
+| 1 | `bond_60_up` | bold | standard(既定) | なかなかやるじゃない。認めてあげてもいいわよ | いい空気ね。背中を預けられそう / なかなかやるじゃない。認めてあげてもいいかな |
+| 2 | `bond_60_up` | bold | ojousama | 多少の可愛げはあるわね。無下にはしないつもりよ。 | 良き仲間になれそうですわ。認めてあげます |
+| 3 | `bond_80_up` | bold | ojousama | 私を支える資格は十分にあるわね | わたくしたち、最強のペアですわ |
+| 4 | `bond_80_up` | emotional | seductive | あの子と一緒にいると……っ……ふふ、満たされるの…… | この人のためなら何でもできるの…！ 絶対に守るわ…！ / 巡り合えたこと、心から幸せなの…！ |
+| 5 | `bond_80_up` | shy | polite | あの人といると…なんだか、心が、安らぐんです… | あの方がいなければ…わたし、とっくに駄目になっていたと思います… / 隣にいてくださるだけで…なんでも頑張れる気がするんです… |
+| 6 | `bond_59_down` | emotional | seductive | 少し離れちゃったのかしら……っ……ふふ、寂しいわね…… | 離れていく…嫌よ…こんなの… / どうして…以前のように言葉をくれないの… |
+| 7 | `bond_59_down` | shy | polite | 最近…あの人と、少し距離があるような… | 最近…目を合わせるのが怖くて…わたし、何かしてしまったんでしょうか… / あの方の態度が…前と違うんです…わたしのせい…ですよね… |
+| 8 | `bond_39_down` | emotional | seductive | もう戻れないのかしら……っ……ふふ、切ないわ…… | 考えると苦しいの…もう無理… |
+| 9 | `bond_39_down` | shy | polite | あの人とは…もう、前みたいには、戻れないんでしょうか… | …もう…同じ部屋にいるだけで…苦しいんです… |
+| 10 | `rivalry_30_up` | quiet | standard(既定) | ……燃えている。自分の中で | ……考えてしまう。どうしても / ……燃えている。自分の中の何かが |
+| 11 | `rivalry_30_up` | earnest | standard(既定) | 意識し始めてる。負けたくない | ライバルとして意識し始めている自分がいる / 超えることが、今の一番の目標だ |
+| 12 | `rivalry_30_up` | emotional | seductive | あの子には……っ……ふふ、絶対に負けたくないの…… | 絶対に負けないわ…！ 絶対に…！ / 考えるだけで胸が熱くなるの…！ |
+| 13 | `rivalry_30_up` | shy | polite | あ、あの人には…ま、負けたくないです… | あの方のことを考えると…胸が締めつけられて…負けたくないんです… / 練習しているのを見かけると…わたしも走り出したくなります… |
+| 14 | `rivalry_50_up` | bold | standard(既定) | 全力を出せる相手。ここから先が楽しみね | 全力を出せる相手。最高の敵ね / 超える。それが今の私の全て |
+| 15 | `rivalry_50_up` | bold | standard(既定) | 超える。今はそれしか考えてない | 全力を出せる相手。最高の敵ね / 超える。それが今の私の全て |
+| 16 | `rivalry_50_up` | earnest | standard(既定) | この人を超えないと、次がない | この壁を超えない限り、自分の成長はない / 最大の壁。だからこそ、越えなきゃいけない |
+| 17 | `rivalry_50_up` | earnest | standard(既定) | 一番の壁。だから越えなきゃいけない | この壁を超えない限り、自分の成長はない / 最大の壁。だからこそ、越えなきゃいけない |
+| 18 | `rivalry_50_up` | emotional | seductive | あの子のこと……っ……頭から離れないの…… | くっ…考えると熱くなるの…！ / 絶対に…超えてみせるわ…！！ |
+| 19 | `rivalry_50_up` | shy | polite | あの人を…意識せずには、いられません… | あの方にだけは…絶対に負けたくありません…今はそれだけです… / 怖いです…けれど、逃げたらもっと後悔します…だから… |
+| 20 | `rivalry_50_up` | earnest | polite | 超えることが、今の目標です | 超えることが、私の覚悟です |
+| 21 | `rivalry_50_up` | quiet | cool | ……超えないと、先へ進めない | ……超えなければ、先へ進めない |
+| 22 | `rivalry_70_up` | normal | standard(既定) | もう離れられないんだと思う。この人とは | もう運命みたいなものだと思ってる / この存在がなかったら、今の自分はいない |
+| 23 | `rivalry_70_up` | normal | standard(既定) | この人がいなかったら、今の自分はない | もう運命みたいなものだと思ってる / この存在がなかったら、今の自分はいない |
+| 24 | `rivalry_70_up` | bold | standard(既定) | この戦いはずっと続く。望むところよ | この人がいるから強くなれた。感謝してる…でも負けない / この戦いは一生続く。望むところよ |
+| 25 | `rivalry_70_up` | quiet | standard(既定) | ……この相手がいる限り、立ち続ける | ……この相手がいる限り、リングに立ち続ける / ……言葉はいらない。リングの上で語り合おう |
+| 26 | `rivalry_70_up` | quiet | standard(既定) | ……言葉はいらない。リングで | ……この相手がいる限り、リングに立ち続ける / ……言葉はいらない。リングの上で語り合おう |
+| 27 | `rivalry_70_up` | easygoing | standard(既定) | この試合が一番楽しい。ずっと続けばいいのに | この試合が一番楽しい。ずっとこの関係が続けばいいのに / 運命のライバルだね〜。最高だよ |
+| 28 | `rivalry_70_up` | easygoing | standard(既定) | ずっと一緒に走っていたいね〜。最高だよ | この試合が一番楽しい。ずっとこの関係が続けばいいのに / 運命のライバルだね〜。最高だよ |
+| 29 | `rivalry_70_up` | emotional | standard(既定) | この人がいなかったら今の私はなかった…！ | この出会いがなければ今の私はなかった…！ / この因縁に終わりなんてない…！ 永遠に戦い続ける…！ |
+| 30 | `rivalry_70_up` | emotional | standard(既定) | まだまだ終わらない…！ ずっと戦い続ける…！ | この出会いがなければ今の私はなかった…！ / この因縁に終わりなんてない…！ 永遠に戦い続ける…！ |
+| 31 | `rivalry_70_up` | earnest | standard(既定) | この人が自分を高めてくれる。だから負けたくない | この存在が自分を高めてくれる。これが宿命というものか / 戦えることに感謝してる。でも次は絶対に勝つ |
+| 32 | `rivalry_70_up` | normal | ojousama | 強い因縁を感じます…この方とは | わたくしの宿命ですわ…それ以外に言葉がない |
+| 33 | `rivalry_70_up` | bold | delinquent | ずっと殴り合ってやる。最後まで | 生涯の敵だ。最後まで殴り合ってやる |
+| 34 | `rivalry_70_up` | normal | seductive | 私のすべて…最高の相手よ | 私の全て…最高の獲物よ |
+| 35 | `rivalry_70_up` | emotional | seductive | あの子とは……っ……決着をつけずにはいられない…… | あの出会いがなければ今の私はいなかった…！ / この因縁に終わりなんてないわ…！ 永遠に戦い続けるの…！ |
+| 36 | `rivalry_70_up` | normal | polite | この人との戦いが…私のプロレスそのものです | この戦いが…私のプロレス人生そのものです |
+| 37 | `rivalry_70_up` | shy | polite | あ、あの人とは…絶対に、決着をつけたいです… | あの方がいなければ…今のわたしはいません。それだけは…わかるんです… / 逃げたい…でも…あの方からだけは逃げてはいけない… |
+| 38 | `rivalry_70_up` | earnest | polite | この人と競い合えることが、私の原動力です | この切磋琢磨こそが、私の原動力です |
+| 39 | `rivalry_29_down` | normal | standard(既定) | あの張り合いも…もう終わったのかな | 前ほど意識しなくなったかもしれない / あの因縁も…もう終わったのかな |
+| 40 | `rivalry_29_down` | easygoing | standard(既定) | まぁずっと続くわけじゃないよね〜 | 熱い関係も一段落かぁ。ちょっと寂しいね / まぁ因縁も永遠じゃないよね〜 |
+| 41 | `rivalry_29_down` | emotional | standard(既定) | 終わっちゃったんだ…少し寂しい… | 因縁…終わっちゃったんだ…少し寂しい… / ……あの熱さが消えていく。これでいいのかな… |
+| 42 | `rivalry_29_down` | earnest | standard(既定) | あの頃から学んだことは多い。次の目標を見つけなきゃ | 関係も変わった。前に進もう / あの因縁から学んだことは多い。次の目標を見つけなきゃ |
+| 43 | `rivalry_29_down` | emotional | seductive | あの子と争う気持ちが……っ……ふふ、少し冷めてきたわ…… | 因縁…終わっちゃったのね…少し寂しい… / ……あの熱さが消えていくわ。これでいいのかしら… |
+| 44 | `rivalry_29_down` | shy | polite | あの人と…もう、競う気持ちが薄れてきたかもしれません… | 最近…あの方のこと、前ほど気にならなくなった…かもしれません… / あの頃の張りつめた感じ…もうないんでしょうか… |
+| 45 | `trust_below_35` | bold | ojousama | わたくしの価値を、理解出来ていないのね | わたくしの価値をご理解いただけていませんわね |
+| 46 | `trust_below_35` | emotional | seductive | ……っ……ちょっと、寂しいの…… | 不安なの…これでいいのかしら…？ 私、忘れられてない…？ |
+| 47 | `trust_below_35` | shy | polite | あ、あの…少し、わたしを見ていただけてないような… | …ここにわたしの居場所なんて…あるんでしょうか…… |
+| 48 | `trust_below_20` | emotional | seductive | 私のこと……っ……もう、どうでもいいのかしら…… | もう…信じられないわ…！ どうして…！ / 裏切られたのね…全部…偽りだったの…？ |
+| 49 | `trust_below_20` | shy | polite | わ、わたしのこと…どう思っていらっしゃるんでしょうか… | …もう…無理です…ここにいてはいけない気がするんです…… |
+| 50 | `trust_above_75` | normal | ojousama | ここがわたくしの居場所。誇りに思います | ここがわたくしの居場所ですわ。誇りに思います |
+| 51 | `trust_above_75` | emotional | seductive | いつも見ていてくれて……っ……ふふ、嬉しいの…… | みんなのこと…大好きよ…！ この団体のために全力を尽くすわ…！ / ここで出会えた仲間は宝物なの…絶対に裏切らないわ…！ |
+| 52 | `trust_above_75` | shy | polite | いつも気にかけてくださって…あ、あの、本当に、感謝しています… | ここにいてもいいんだと…最近ようやく思えるようになったんです… / この団体に来られて…本当によかったです…心からそう思います… |
+
+### 3. 生きている847行の実測 — 全セル EN 解決 miss 0
+
+`pickDialogueLine()` が実際に引く `getDialoguePool()` を、**11閾値 × (7アーキタイプ×7性格の合成選手49 + `ALL_CHARS` 実選手127)= 1,936セル**で叩き、返ったプールの**全行**をEN辞書と突き合わせた。
+
+| 指標 | 実測 |
+|---|---|
+| 到達可能なユニークJA行 | **847**(= 実行時オブジェクトの全文字列と一致。到達不能セル0) |
+| EN辞書に無い行 | **0** |
+| 訳文にJAが残る行 | **0** |
+| `…`(省略記号)フォールバックに落ちるセル | **0** |
+| ラベル11本の未訳 | **0** |
+| `Engine.glimpse.checkALayer()` を実際に呼んで積まれた glimpse | **539件**(11閾値すべて発火)。全件の `dialogue`/`label` が辞書キーとして解決・未置換プレースホルダ0 |
+
+**Keisuke レビュー用の代表77行**(11閾値 × 7アーキタイプ、性格は `normal` 固定。同じ閾値で口調がどう変わるかが縦に読める並び):
+
+
+| 閾値(ラベル JA / EN) | アーキタイプ | JA | EN |
+|---|---|---|---|
+| `bond_60_up`<br>打ち解けた様子 / Opening up | 標準 | 最近、一緒にいるとなんだか居心地がいい気がする | Lately it just feels easy, being around her. |
+| 〃 | お嬢様 | 不思議と波長が合いますの。心地よい距離感ですわ | We are curiously well matched. A most comfortable distance. |
+| 〃 | クール | いいバランスだ。やりやすい | Good balance. Easy to work with. |
+| 〃 | ヤンキー | 一緒にいると肩の力が抜けるっつーか | Something about her takes the edge off, I guess. |
+| 〃 | 丁寧 | 一緒にいると自然体でいられます。ありがたいです | I can just be myself around her. I'm grateful for that. |
+| 〃 | 落ち着き | …悪くない距離感だね。一緒にいて楽だ | ...Not a bad distance to keep. She's easy company. |
+| 〃 | 蠱惑 | なかなか面白い人ね。もっと近くで見ていたい | She's interesting. I'd like a closer look at her. |
+| `bond_80_up`<br>深い絆の芽生え / A deep bond takes root | 標準 | もう仲間とかそういう言葉じゃ足りない。大事な存在。 | "Teammate" doesn't cover it anymore. She matters to me. |
+| 〃 | お嬢様 | かけがえのない方ですわ。何物にも代えられません | She is irreplaceable. Nothing in the world could stand in her place. |
+| 〃 | クール | 唯一の、本当の仲間だ | The one real friend I have. |
+| 〃 | ヤンキー | ダチだ。何があっても守ってやる | She's family. Whatever happens, I've got her. |
+| 〃 | 丁寧 | なくてはならない方です。心からそう思います | I could not do without her. I mean that sincerely. |
+| 〃 | 落ち着き | …大事な存在。…それだけで十分 | ...She matters. ...That's enough to say. |
+| 〃 | 蠱惑 | 特別な存在。他の誰とも違うの | She's special. Not like anyone else. |
+| `bond_59_down`<br>距離ができた / Some distance has grown | 標準 | 最近、目が合わなくなった気がする | We don't really catch each other's eye anymore. |
+| 〃 | お嬢様 | 少し距離ができたように感じますわ | A certain distance has opened between us, I believe. |
+| 〃 | クール | 距離感が…変わった | The distance... changed. |
+| 〃 | ヤンキー | 最近よそよそしくねぇか… | She's been kinda cold lately, hasn't she... |
+| 〃 | 丁寧 | 少し壁ができたようで…気のせいだといいんですが | It's as if a wall went up... I hope it's just me. |
+| 〃 | 落ち着き | …少し距離が開いたかな | ...Bit of space between us now, isn't there. |
+| 〃 | 蠱惑 | 最近どこか冷たいわ…気のせいかしら | There's a chill in her lately... or am I imagining it? |
+| `bond_39_down`<br>不和の兆し / Signs of friction | 標準 | …もうダメかもしれない | ...I think it might be past saving. |
+| 〃 | お嬢様 | もう以前のようには戻れませんわ | We shall not return to what we were. |
+| 〃 | クール | …相容れない | ...We don't fit. |
+| 〃 | ヤンキー | 顔見るとイラつくんだよ | Seeing her face just sets me off. |
+| 〃 | 丁寧 | もう以前のようには…すみません | It won't be like before... I'm sorry. |
+| 〃 | 落ち着き | …合わないね。…仕方ない | ...We don't match up. ...No forcing it. |
+| 〃 | 蠱惑 | もう…合わないみたいね | We just... don't fit anymore, do we. |
+| `rivalry_30_up`<br>因縁の始まり / A rivalry begins | 標準 | …最近やたら気になる。負けたくない | ...She's been on my mind a lot. I don't want to lose to her. |
+| 〃 | お嬢様 | 負けたくありませんわ…こんな気持ちは初めて | I do not wish to lose to her... I have never felt this before. |
+| 〃 | クール | この存在が…引っかかる | Something about her... catches. |
+| 〃 | ヤンキー | 目障りなんだよ…ぶっ潰してやる | She's in my eyeline... I'm gonna flatten her. |
+| 〃 | 丁寧 | どうしても負けたくないんです…この気持ちは… | I really don't want to lose to her... I don't know what this feeling is... |
+| 〃 | 落ち着き | …気になるね。…負けたくない | ...She's got my attention. ...I don't want to lose to her. |
+| 〃 | 蠱惑 | 気になるわ…潰しがいがありそうね | She interests me... She'd be worth breaking. |
+| `rivalry_50_up`<br>宿敵として意識 / Sees her as a nemesis | 標準 | 絶対に負けられない。絶対に | I can't lose to her. I won't. |
+| 〃 | お嬢様 | 何としてでも超えてみせますわ | By whatever means, I shall surpass her. |
+| 〃 | クール | 倒すまで、止まれない | I don't stop until she's down. |
+| 〃 | ヤンキー | 絶対ぶっ倒す。覚悟しろ | I'm putting her down. She'd better be ready. |
+| 〃 | 丁寧 | 絶対に負けるわけにはいきません | There is no version of this where I lose to her. |
+| 〃 | 落ち着き | …負けるわけにはいかない。…絶対に | ...I can't afford to lose this one. ...Not this one. |
+| 〃 | 蠱惑 | どうしても許せない。必ず私が勝つわ | I can't let it stand. I'm the one who wins this. |
+| `rivalry_70_up`<br>宿命のライバル / A fated nemesis | 標準 | もう運命みたいなものだと思ってる | At this point I think of it as fate. |
+| 〃 | お嬢様 | わたくしの宿命ですわ…それ以外に言葉がない | She is my destiny... I have no other word for it. |
+| 〃 | クール | 決着をつけるまで、死んでも死にきれない | I can't be done until this is settled. |
+| 〃 | ヤンキー | この勝負が全てだ。他はどうでもいい | This fight's the whole thing. Nothing else matters. |
+| 〃 | 丁寧 | この戦いが…私のプロレス人生そのものです | This fight... it's my whole career in one. |
+| 〃 | 落ち着き | …運命みたいなものだね。…この人とは | ...It's something like fate, isn't it. ...With her. |
+| 〃 | 蠱惑 | 私の全て…最高の獲物よ | She's everything to me... the finest quarry there is. |
+| `rivalry_29_down`<br>因縁の終息 / The rivalry cools | 標準 | 前ほど意識しなくなったかもしれない | I don't watch her the way I used to. |
+| 〃 | お嬢様 | もう過去のことですわ | That is behind us now. |
+| 〃 | クール | …執着は、消えたか | ...The hold is gone. |
+| 〃 | ヤンキー | …もう興味ねーよ | ...Not interested anymore. |
+| 〃 | 丁寧 | 関係も、穏やかになってきました | Things between us have settled down. |
+| 〃 | 落ち着き | …もう終わったことだね | ...That's behind us now, isn't it. |
+| 〃 | 蠱惑 | もういいかしら。次を探さなきゃ | I think I'm done with her. Time to find the next one. |
+| `trust_below_35`<br>社長室を避ける気配 / Signs of avoiding the president's office | 標準 | この団体で…本当にやっていけるのかな | Can I really make it work here...? |
+| 〃 | お嬢様 | この団体の運営方針に…疑問を感じますわ | I have begun to question how this promotion is run. |
+| 〃 | クール | この環境に…疑問を感じ始めている | This setup... I'm starting to have doubts. |
+| 〃 | ヤンキー | ここ、ちゃんとしてんのかよ…不安になるぜ | Is this place even run right... starting to worry me. |
+| 〃 | 丁寧 | すみません…少し不安になってきました… | I'm sorry... I've started to feel a little uneasy... |
+| 〃 | 落ち着き | …ここで本当にやれるのかな | ...Can I actually do this here, I wonder. |
+| 〃 | 蠱惑 | ここにいる意味…本当にあるのかしら | Is there any point in me being here, really? |
+| `trust_below_20`<br>退団を考えているという噂 / Rumors she's thinking about leaving | 標準 | もう限界かもしれない。ここにいる理由が見つからない | I might be at my limit. I can't find a reason to stay. |
+| 〃 | お嬢様 | このような扱いを受ける覚えはございませんわ | I do not recall doing anything to deserve this treatment. |
+| 〃 | クール | ここにいる理由が…もうない | The reason to stay... it's gone. |
+| 〃 | ヤンキー | こんなとこ、もういられるか。出て行ってやる | Can't stay in a place like this. I'm walking. |
+| 〃 | 丁寧 | …すみません。もう限界かもしれません | ...I'm sorry. I think I've reached my limit. |
+| 〃 | 落ち着き | …ここにいる理由が、見つからなくなった | ...I've run out of reasons to be here. |
+| 〃 | 蠱惑 | ここにはもう何も残ってないわ | There's nothing left for me here. |
+| `trust_above_75`<br>団体への愛着がにじむ / A growing attachment to the promotion | 標準 | この団体に来てよかった。ここが自分の居場所だ | Coming to this promotion was the right call. This is where I belong. |
+| 〃 | お嬢様 | ここがわたくしの居場所ですわ。誇りに思います | This is where I belong. I am proud of it. |
+| 〃 | クール | ここが…自分の場所だ | This is... my place. |
+| 〃 | ヤンキー | ここは私の場所だ。誰にも渡さねぇ | This place is mine. Nobody's taking it. |
+| 〃 | 丁寧 | この団体の一員でいられて…本当に幸せです | Being part of this promotion... it truly makes me happy. |
+| 〃 | 落ち着き | …ここが自分の居場所だね。…悪くない | ...This is where I belong, isn't it. ...Not bad at all. |
+| 〃 | 蠱惑 | ここでなら…私らしくいられるわ | Here, at least... I get to be myself. |
+
+残る770行(性格 `bold`/`quiet`/`shy`/`easygoing`/`earnest`/`emotional` 帯)は `i18n/dialogue-ledger.json` の `files` に `data.js:GLIMPSE_A_LINES` を持つ行がそれ。全文を出すと表だけで847行になるため、ここには代表を置き、全数は台帳と下記ガードで担保する。
+
+### 4. 追加した回帰ガード `test/glimpse-a-dojo-i18n-test.js`(新規・唯一のsrc外変更)
+
+「訳は入っているのに表示点で `t()` を通していない」「表が差し替わって新セルだけ未訳になる」を**次に壊したとき**に落とすためのガード。EN辞書(`src/lang-en*.js`)を実際に読み込んで解決を確かめる**初めてのテスト**(既存の `glimpse-dialogue-resolution-test.js` はJAのプール到達性だけを見ている)。4検査:
+
+1. **プール網羅** — 上記1,936セルの全行がEN辞書にあり、訳文にJAが残らない
+2. **ラベル** — `GLIMPSE_A_THRESHOLDS[].label` 11本
+3. **チャンネル** — `Engine.glimpse.checkALayer()` を合成stateで実行(rate ゲートを通すため `Engine.rng.float` を検査中だけ 0 に固定→`finally` で復帰)。11閾値すべての発火を確認したうえで、積まれた `dialogue` が**辞書キーそのもの**であること(=完成文の焼き込みでないこと)を検査
+4. **表示点** — `ui-render.js` の `.dojo-rest-bubble` 行が `WM_I18N.t(g.dialogue)` と `WM_I18N.t(g.label)` の両方を通していること
+
+**変異検査**: EN辞書から `いい空気ね。背中を預けられそう` の1行を抜いて実行 → 検査1が8件の未解決で FAIL することを確認(=ガードが本当に効いている)。辞書は復元済み。
+
+### 5. 副次発見 — 「退団を考えているという噂」の週次レポート1行がEN未配線(本タスク対象外)
+
+Glimpse A層のもう一方の消費点。`management.js:14286` が
+
+```
+.forEach(g => events.push(`💬 ${g.speakerName}が退団を考えているという噂がある`));
+```
+
+と**エンジン側で選手名を焼き込んだ完成文**を作り、`app.js:16156` が `gameLog` へ永続させている。`tickWeek(state, opts)` は `opts.dict` を受け取れる(同じ関数内の `processManage`/`processSettlement` は渡している)のに、この行は使っていない。EN実行では**ログ画面に日本語のまま残る**。EN走破の `JA exposure by screen` が `screen-log=40` と全画面中で最大なのはこの族(`tickWeek` 内の生JA `events.push` は同種が15箇所以上、`management.js` の直書きJAは 1,347件)。**永続構造に載る値なので §14-3 の受け皿が要る**=`management.js` 側の追補タスクで、`GLIMPSE_A_LINES` の英訳とは別工程。`docs/i18n-coverage-report-v0.1.md` §8-5 の裁定項目3(management.js 追補の起票要否)と同じ束なので、そこへ追記した。
+
+`_isGlimpseTier1()`(ui-common.js:15618)は A層/B層とも常に `false` を返すので、`showGlimpseCascade` / `showGlimpseAModal` は**到達しない**(08-13 裁定どおり)。A層セリフの生きた表示点は道場の休憩吹き出し1つだけ、という A-2 訂正の内容を実装側でも再確認した。
+
+### 6. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check test/glimpse-a-dojo-i18n-test.js` | OK |
+| `node test/ja-golden.js` | **完全一致** `lines=11307 hash=dd2e536bc18a4433b2c1530cc81e7a02090f09db7c7cb0dc184f5df75fd5e44e` |
+| `node test/i18n-extract-dialogue.js` | 再実行で台帳**バイト不変**。総行数17,096 / `data.js:GLIMPSE_A_LINES` 848 |
+| `node test/i18n-build-dialogue-dict.js` | 台帳17,096・訳文あり17,096・**未訳0**・セル検査違反0。`src/lang-en-dialogue.js` バイト不変 |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上に存在するキー17件・すべて訳文一致) |
+| `npm test` | **265 passed / 0 failed**(既存264 + 本ガード1) |
+| `node test/i18n-ratchet.js` | OK・増加なし(`files=31 totalJaStrings=28038`) |
+| `node test/glimpse-a-dojo-i18n-test.js` | ok(プール検査1,936件 / 実行時セリフ847行 / checkALayer産539件 / ラベル11本) |
+| `npm run test:ui:walkthrough:en` | **PASS** / Actions 399 digest `a21c9e961ea228ed` / Issues 0 / **`i18n-miss: 0`** / `JA exposure` に `screen-roster` は出ない |
+| `npm run test:ui:walkthrough`(JA) | **PASS**・Issues 0 を2本。ただし digest は 328手 `a96a6c3e680dca56` と 336手 `b3b7a2c05a7e6016` で**揺れた**(下記) |
+| auto-sim | **不要**(`relationships.js`/`management.js`/`data.js` いずれも未変更) |
+
+**JA走破 digest の揺れについて**: 基準は `1052faa82eaf7991`。今回2本とも一致しなかったが、**本タスクの差分は `test/glimpse-a-dojo-i18n-test.js` の新規1ファイルのみで `src/` は `git diff` が空**なので、走破の入力は main(`863ff2b1`)そのものであり、揺れは本タスクに起因しようがない。並行して別エージェント(P7-36 ティッカー廃止)の走破が走っている時間帯で、`docs/worklog.md` 冒頭 §5 と P7-31 エントリが記録している**並行 flake の型**(327〜336手・毎回別 digest)に一致する。基準の取り直しはしない。**main 単独での digest 確定は依然として未消化**(P7-31 が起票した宿題のまま)。
+
+### 7. 触ったファイル / 残課題
+
+**触ったファイル**: `test/glimpse-a-dojo-i18n-test.js`(新規)、`docs/worklog.md`、`docs/game-system-roadmap.md`(既存1行を編集)、`docs/i18n-keisuke-rulings-pending-v0.1.md`(A-2 に結果)、`docs/i18n-coverage-report-v0.1.md`(§8-3 の行と §8-5 の裁定項目)、`docs/実機確認バックログ.md`。**`src/` と `i18n/` は差分なし**。`release/manifest.json` は配布対象(src/)が増えていないので更新不要。specs は「新しい確定仕様」が生まれていない(既存の `i18n-runtime-spec-v1.0.md` §13-2/§14-3 の規約どおりだと確認しただけ)ため更新なし。
+
+**Keisuke 裁定待ち(新規1件)**: 上の52行(死んだリテラル `data.js:27901-28778` の878行ブロック)を **削る / 残す**。削る場合は data.js のJA原文が878行減るので `ja-golden` の焼き直しが要る(=別コミット・別工程)。`docs/i18n-keisuke-rulings-pending-v0.1.md` A-2 に転記済み。
+
 ## 2026-09-06 走破 digest の変化(328手/1052faa82eaf7991 → 336手/b3b7a2c05a7e6016)の原因特定 — 2件とも正当な変化・基準を更新
 
 - **方法**: 基準コミット 8287f6af を一時 worktree に展開して走破(328手・1052faa82eaf7991 を再現)、現 main(336手・b3b7a2c05a7e6016)と `--action-log` を突き合わせ。さらにマイルストーン修正の1行(app.js `popupActions.push(done => App._checkAndShowMilestone(done))`)を一時的に外した走破(336手・9b5bf8732280b983)も採取して二段で切り分けた。
