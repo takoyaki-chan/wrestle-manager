@@ -1,5 +1,29 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 EN走破のD3「condition」検出を追跡 — factions.jsのimpactSummaryラベルはP6-4で修正済み・src変更なし（2026-09-04・Fable worktree keen-shannon）
+
+P6-2b(走破ハーネスの言語非依存化)のEN走破がW30でD3_TEXT「condition」を検出した件を、描画経路まで追跡した。**結論: srcに直すものは残っていない。検出の正体はEN辞書の正規の英単語で、D3の語彙表がJAモード前提なのが原因**。
+
+### 1. 疑われた箇所は既に修正済み
+
+- `factions.js` `applyF07Choice` の OBSERVE_FAN_PRESSURE / OBSERVE_TRAINING_HARD 分岐(4348/4356/4364/4377行)の `'{name} condition'` ラベルは、**P6-4(d7c853e)で JA原文 `'{name} 体調'` に置換済み**。main と本worktreeは同一(f5844b1)。
+- `lang-en.js:253` で `"{name} 体調": "{name} condition"` と訳出済み。姉妹行(`{name} popularity` / `{name} momentum`)と同型で、ENでは正規の表示文。
+
+### 2. 描画経路(このラベルは画面に到達しない)
+
+- F07の結果は `app.js:13808` で `showFactionEventResult` に渡るが、この結果モーダルは**設計上 impactSummary を画面に出さない**(`ui-common.js:10374`「受け取るが画面表示しない(数値はナレーション側で吸収する方針)」)。関数本体にも参照なし。
+- impactSummary を描画する唯一の消費者は `_renderCommon1MatchResult`(`ui-common.js:14739`、派閥内対決の結果モーダル)。供給元は `applyCommon1MatchResult`(`factions.js:2878`)で、こちらも既に `'{name} 体調'`。
+- trust/rivalry の生ラベル置換連鎖(`ui-common.js:14741-14745`)に `condition` を足す必要はない — JA原文に内部語彙 `condition` は残っていない(`grep "WM_I18N.t('[^']*condition" src/factions.js` = 0件)。
+
+### 3. W30で検出された「condition」の正体
+
+- D3 の `INTERNAL_TOKEN_PATTERN`(`test/ui-walkthrough/detectors.js:14`)は `/\b(?:morale|orgPop|weekPhase|condition)\b|\bMQ(?![A-Za-z])/` — 「英単語が可視文に出たら内部語彙」というJAモード前提の判定。
+- ENモードでは `lang-en.js` に **"condition" を含む正規の訳が22件**(`Winner's condition` / `Maximum recovery for both condition and wear` / `The conditions for this document have not been met` 等)、**"morale" が6件**(`Locker room morale` 等)ある。どの画面でも踏み得るので、EN走破では condition/morale が**偽陽性**になる。
+- 対処は P6-2b 側(detectors.js は当該作業領域なので本worktreeでは触っていない): ENでは語彙表を `orgPop|weekPhase|MQ` に絞る、または camelCase/全大文字トークンのみを内部語彙とみなす等、言語別に判定を分けるのが筋。
+
+### 4. 検証
+
+- src 無変更のため npm test / auto-sim は回していない(回す対象がない)。
 ## 🌐 英語対応 P7-28 — P7-25が残した3件(成長ログmatch/milestone・怪我名detail・ns.log)+P7-20/P7-1の掃除2件(2026-09-05)
 
 P7-25(`docs/worklog.md` 先頭・当時)が「§9 P7-25で新たに見つかった穴」に残した3件と、P7-20/P7-1発見の掃除2件を解決した。開始前にworktreeブランチをmain先端(`c8eca673`。P7-25まで main入り)へfast-forward済み。
