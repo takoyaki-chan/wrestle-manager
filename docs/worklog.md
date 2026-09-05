@@ -1,5 +1,11 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 2026-09-05 英語対応 P7-35 — 新聞4面(MVPレース)の順位カードで選手名・団体名・編集長署名がpn()未通過だった露出を修正
+
+- **経緯**: P7-34 が追加した ignite `newspaper-mvprace` の EN 実行で、`#newspaperContent` 内に JA 露出18件。内訳は `_npMvpRaceRank1Card`/`_npMvpRaceMinorCard`/`_npMvpRaceListRow` の `entry.fighterName`/`entry.orgName`(5箇所)と、署名 `— 編集長 {name}` に渡す `'黒田 貫一郎'`。P7-23 の本文配線(見出し/リード/寸評/叙述: `_npMvpI18n` フォールバック0)は正しく、これは以前からあった穴。
+- **修正**: 5箇所を `WM_I18N.pn()` で包む。署名は名前台帳 `npc` に `黒田 貫一郎 → Kanichiro Kuroda`(P7-23 の worklog と同綴り)を追加して `pn()` 経由に。JA は `pn()` が恒等なので不変。
+- **検証**: ja-golden 完全一致(dd2e536b…)/ npm test 261 / names 辞書再生成 / ignite newspaper-mvprace **JA PASS・EN PASS**(mvpFallback 0)。EN の参考値 JA 露出(newspaper=16)は `#newspaperContent` 外の要素で、内訳は次エントリで確認。
+
 ## 🌐 英語対応 P7-34 — レア画面強制点火カタログに新聞4面(年間MVPレース)の`newspaper-mvprace`を追加(2026-09-05・worktree agent-ab646028f5668ba07)
 
 P7-23(`Engine.mvpRace`の新聞フレーバー285本を`MVP_RACE_TEXTS`へ移設・`_npMvpI18n`の§18-1自己検証型fail-open配線)は、実UIでの検査実績がゼロのまま完了していた——②のUI自動走破ハーネスは新聞4面(1面の目次リンクを踏まないと開かない)を一度も踏まない設計のため(P7-23 worklogの発見事項)。本タスクはその穴を③レア画面強制点火カタログへ`newspaper-mvprace`シナリオとして埋めるもの。**触ったのはtest/とdocsのみ**(src/は他エージェントの並行編集を避けるため対象外という指示のもと、原則どおり無編集)。

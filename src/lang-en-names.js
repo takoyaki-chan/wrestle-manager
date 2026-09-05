@@ -420,7 +420,8 @@
     "灰汁洲商業高校": "Akusu Commercial High School",
     "粕田台団地": "the Kasudadai housing complex",
     "週刊グラップル": "Weekly Grapple",
-    "黒田幸子": "Sachiko Kuroda"
+    "黒田幸子": "Sachiko Kuroda",
+    "黒田 貫一郎": "Kanichiro Kuroda"
   }
   );
   if (WM_I18N.addSurnames) {

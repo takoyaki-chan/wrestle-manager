@@ -9340,7 +9340,7 @@ function _npRenderPage4() {
       <div class="np-kuroda-face" style="background-image:url('${_npKurodaFaceUrl()}')"></div>
       <div>
         <div class="np-kuroda-text">${_escapeHtml(_npMvpI18n(race.kurodaComment, d => Engine.mvpRace.generateKurodaComment(race.rankings, G, d)))}</div>
-        <div class="np-kuroda-byline">${WM_I18N.t('— 編集長 {name}', { name: '黒田 貫一郎' })}</div>
+        <div class="np-kuroda-byline">${WM_I18N.t('— 編集長 {name}', { name: WM_I18N.pn('黒田 貫一郎') })}</div>
       </div>
     </div>`;
   }
@@ -9428,7 +9428,7 @@ function _npMvpRaceRank1Card(entry) {
     </div>
     <div class="np-mvprace-info">
       <div class="np-mvprace-name-row">
-        <div class="np-mvprace-name">${_escapeHtml(entry.fighterName)}</div>
+        <div class="np-mvprace-name">${_escapeHtml(WM_I18N.pn(entry.fighterName))}</div>
         <span class="np-mvprace-arrow ${entry.arrow}">${_escapeHtml(arrowChip)}</span>
       </div>
       <div class="np-mvprace-meta">${meta}</div>
@@ -9514,10 +9514,10 @@ function _npMvpRaceMinorCard(entry, rank) {
     </div>
     <div class="np-mvprace-minor-mid">
       <div class="np-mvprace-minor-name-row">
-        <div class="np-mvprace-minor-name">${_escapeHtml(entry.fighterName)}</div>
+        <div class="np-mvprace-minor-name">${_escapeHtml(WM_I18N.pn(entry.fighterName))}</div>
         ${arrowText ? `<span class="np-mvprace-minor-arrow ${entry.arrow}">${_escapeHtml(arrowText)}</span>` : ''}
       </div>
-      <div class="np-mvprace-minor-meta">${_escapeHtml(entry.orgName)}${role ? `<span class="div">/</span><span>${role}</span>` : ''}${m.age ? `<span class="div">/</span><span>${WM_I18N.t('{age}歳', { age: m.age })}</span>` : ''}</div>
+      <div class="np-mvprace-minor-meta">${_escapeHtml(WM_I18N.pn(entry.orgName))}${role ? `<span class="div">/</span><span>${role}</span>` : ''}${m.age ? `<span class="div">/</span><span>${WM_I18N.t('{age}歳', { age: m.age })}</span>` : ''}</div>
       ${entry.narrative ? `<div class="np-mvprace-minor-narrative">${_escapeHtml(_npMvpI18n(entry.narrative, d => Engine.mvpRace.generateNarrative(entry, G, d)))}</div>` : ''}
       ${factChipsHtml}
       ${flavorHtml}
@@ -9560,8 +9560,8 @@ function _npMvpRaceListRow(entry) {
     <div class="np-mvprace-list-emb" style="${embBg}"></div>
     <div class="np-mvprace-list-name">
       <div class="name-line">
-        <strong>${_escapeHtml(entry.fighterName)}</strong>
-        <span class="org">${_escapeHtml(entry.orgName)}</span>
+        <strong>${_escapeHtml(WM_I18N.pn(entry.fighterName))}</strong>
+        <span class="org">${_escapeHtml(WM_I18N.pn(entry.orgName))}</span>
         ${champBadge}
       </div>
       ${metaLine ? `<div class="np-mvprace-list-metaline">${_escapeHtml(metaLine)}</div>` : ''}
