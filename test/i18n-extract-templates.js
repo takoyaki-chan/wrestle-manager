@@ -205,6 +205,18 @@ const TARGET_TABLES = [
   // P7-11: 比較対象団体の副題に入る一行紹介(`Tier {tier} / {desc}` の {desc})。
   // 同表の他フィールドは識別子・色・絵文字・空文字列なので desc だけをパスフィルタで拾う。
   'RIVAL_ORGS',
+  // P7-16で追加(specs §34-7 が起票した `Engine.newspaper` の残83行)。
+  // management.js の関数本体に直書きされていた見出し・本文(§10-2型)の移設先。
+  // 消費点は Engine.newspaper.generate / eventContenders / eventPreviewParagraph で、
+  // いずれも generate のローカル dict を _wmFillWithDict へ渡す(§6のlang糸通し)。
+  //   NEWS_CONTENDER_TEXTS         12 — 優勝候補の選出理由と事前記事の一段落
+  //   NEWS_JUNIOR_TOURNAMENT_TEXTS 24 — ジュニアTNの結果面/特集面/前週プレビュー
+  //   NEWS_AI_ORG_TEXTS            41 — AI団体の業界ニュース(引退/退団/殿堂/興行/対抗戦/挑戦状…)
+  // `現王者`/`決勝`/`準決勝`/`準々決勝`/`殿堂入り`/`勝者`/`決勝の相手`/`プレイヤー団体`と
+  // 大会名4種は ui-ledger に既訳があるのでここに入れない(§15-3)。
+  'NEWS_CONTENDER_TEXTS',
+  'NEWS_JUNIOR_TOURNAMENT_TEXTS',
+  'NEWS_AI_ORG_TEXTS',
 ];
 
 // P7-2: テーブル全体ではなく特定の部分木だけを台帳へ載せるためのパスフィルタ

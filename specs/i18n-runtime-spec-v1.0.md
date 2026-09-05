@@ -1407,7 +1407,7 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
 - ja-golden 完全一致 / npm test 260 PASS / auto-sim 20季 seed42 ALL CLEAR /
   走破 ja PASS(328手・digest `1052faa82eaf7991` 不変)/ EN走破 PASS・i18n-miss 0 維持
 
-### 34-7. 横展開の棚卸し — `Engine.newspaper` にはまだ **83行**の生JAが残る(本バッチ範囲外)
+### 34-7. 横展開の棚卸し — `Engine.newspaper` にはまだ **83行**の生JAが残る(本バッチ範囲外・**✅P7-16で解消 → §35**)
 
 `Engine.newspaper = { … }`(management.js:31167〜33094)の全行を機械列挙し、
 `T(` / `dict` / `_wmNewsStamp` / `injuryLabel` / `fillTemplateVars` のいずれも通らない生JA行を数えた(コメント行・gameLog系は除外)。
@@ -1425,11 +1425,137 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
 うち大半は「AI団体の業界ニュース」= §8 の生キー+render時点再構築が既に効いている枠の**隣**にある直書きなので、
 `NEWS_HEADLINE_TEMPLATES` へ寄せるのが素直な形になる。
 
-## 35. Stage B P7-13 — 規則23(数値PH直後の可算名詞複数形)違反の一掃+検査のexit 1化(2026-09-04追加)
+---
+
+## 35. `Engine.newspaper` の直書きJAをテンプレ化(Stage B P7-16、2026-09-05確定・実装)
+
+§34-7 が起票した83行(再計測で82行)の解消。訳出 **82キー**(template-ledger 3,059→**3,141**・未訳0)。
+ラチェット総数 28,053→**28,045**(data.js +82 / management.js −84 = 移設と literal 共有の差引。`--update` 済み)。
+
+### 35-1. 3つの配線方式を出どころで使い分ける
+
+同じ「生JA」でも**どこで文字列が確定するか**で必要な処置が違う。P7-16 は3種類が同居していた。
+
+| # | 出どころ | 方式 | 対象 |
+|---|---|---|---|
+| A | `generate()` の中(dictが揃っている) | data.js のテンプレ表へ移設 + `_wmFillWithDict` | ジュニアTN / AI団体ニュース / 対抗戦 / 挑戦状 の headline・body |
+| B | ui-ledger に既訳がある**1語ラベル** | JA原文を management.js に1本だけ置き `_wmDictLabel` で引く(§15-3) | `現王者` `決勝` `準決勝` `準々決勝` `殿堂入り` `勝者` `決勝の相手` `プレイヤー団体` `STYLE_JA` 6種 と大会名4種 |
+| C | `push` 時に完成文が**キューへ焼かれる** | 生キーを併記して**載る瞬間**に再構築(§8) | 事前記事の一段落(`preview`)・`プレイヤー団体` フォールバック |
+
+**Aの実装**: `generate()` の冒頭に `T`(=`_wmFillWithDict`)/`L`(=`_wmDictLabel`)の短縮参照と
+`NJT`/`NAI`/`NFB`(表の参照)を置き、以降の `stories.push` がそれを使う。
+Engine から `WM_I18N` は呼ばない(§2-1)——`dict` は `generate(state, rng, { dict })` の糸通しのまま。
+
+新規テーブル(いずれも `test/i18n-extract-templates.js` の `TARGET_TABLES` へ登録):
+
+| テーブル | 行数 | 中身 |
+|---|---:|---|
+| `NEWS_CONTENDER_TEXTS` | 12 | 優勝候補の選出理由7種 + 連結様式 + 事前記事の一段落3本 |
+| `NEWS_JUNIOR_TOURNAMENT_TEXTS` | 25 | ジュニアTNの結果面/特集面(全試合詳報・ベストバウト・準決勝敗退者)/前週プレビュー面(出場選手決定・黒田記者の展望) |
+| `NEWS_AI_ORG_TEXTS` | 45 | AI団体の引退・大量退団・殿堂入り・定期興行・ブレイクスルー・確執3分岐・練習中負傷・密着取材2種・対抗戦2分岐・挑戦状3分岐 |
+| `NEWS_FALLBACK_TEMPLATES`(既存表へ追加) | +3 | `所属団体` / `選考通過者` / `定期興行開催` の「値が無いときだけ出る」フォールバック |
+
+### 35-2. `STYLE_JA` は**既に配線済みだった**(棚卸しの数え方の限界)
+
+§34-7 が数えた2行は `Engine.newspaper.STYLE_JA` の**表の宣言そのもの**で、
+消費点(`composeChampionChangeBody` / `composeUnifiedTitleArticle`)は P6-15 の時点で
+`_wmDictLabel(dict, ev.styleJa)` を通していた。産出側4箇所(`titleChange` / `_newsChampionChange` /
+`unifiedTitle*` 2種)が `styleJa` をJA完成値でキューへ焼いても、**載る瞬間に1語ラベルとして引き直す**
+形になっているため EN でJAは出ない。**無改修**。
+同様に `intensityBonus` の `/[Ii]njury|怪我/` はイベント種別を判定する正規表現で、表示文字列ではない。
+
+→ **「生JA行の機械カウント」は上限の目安にはなるが、そのうち何行が実際にEN画面へ出るかとは一致しない。**
+表の宣言(JAが正本の場所)と判定用リテラルは残るのが正しい姿。
+
+### 35-3. 事前記事の一段落は「生キー+render時点再構築」が要る唯一の族
+
+`eventPreviewParagraph(state, ids)` が返す完成文は
+`springTagAnnounce` / `autumnWarAnnounce` / `tenchosenAnnounce` / `tenchosenFieldSet` の
+`data.preview` へ**焼かれてキューに数週間滞留する**(§8 の典型)。
+
+- `eventContenders` は `reason`(完成文)に加えて **`reasonRaw`**(`{k:'mvpRank', rank:2}` 等の生キー配列)を返す
+- `eventPreviewParagraphRaw(state, ids)` を新設し、`{ picks:[{name,orgName,reasonRaw}], rematch }` を返す
+- push 側は `preview`(旧セーブ互換の完成文)と **`previewRaw`(追加フィールド)** を**併記**する
+- `_wmResolvePreviewParagraph`(`_wmResolvePreformattedIndustryData` の前段)が
+  `previewRaw` があれば `_composePreviewParagraph(raw, dict)` で組み直す。無ければ焼かれた値のまま(fail-open)
+
+`プレイヤー団体` も同型。`scanRosterNews` は dict を持たない深い tickWeek から押すので、
+**値ではなく `*Missing` フラグ**(`orgNameMissing` / `orgMissing` / `fromOrgMissing` / `toOrgMissing`)を
+`data` へ併記し、`_wmResolvePlayerOrgFallback` が載る瞬間に `_wmDictLabel` で引き直す。
+`retirementDeclare` は `NEWS_HEADLINE_TEMPLATES` を通らない専用分岐なので、
+その枝でも `_wmResolvePreformattedIndustryData(ev, dict)` を明示的に通すよう変えた。
+
+### 35-4. 連結様式は既存キーへ寄せる(新しい区切りを発明しない)
+
+- 選出理由の `・` 連結 → `NEWS_CONTENDER_TEXTS.reasonJoin`(`{a}・{b}` → `{a}, {b}`。
+  `CHRONICLE_NARRATIVE_TEMPLATES` の同一キーと訳文一致・consistency-test で担保)
+- 注目選手の列挙・退団者の列挙・準決勝敗退者の列挙 → `Engine.newspaper.joinNameList`(`ARTICLE_COMPOSE_TEMPLATES.nameList`)
+- 事前記事の「一段落+注目カード」/ 黒田の展望3文 → `ARTICLE_COMPOSE_TEMPLATES.join`(JA=直結 / EN=半角スペース)
+- 殿堂入りの実績列挙 → `NEWS_AI_ORG_TEXTS.hofStatsJoin`(同じく `{a}・{b}`)
+- MQ帯の締め(`歴史に残る名勝負！` / `好勝負を展開。`)は本文末に**直結**するので、
+  §15-2 のクラウスと同じく **EN訳文が先頭に半角スペース**を持つ。テンプレ側は `{mq}。{tone}` / `{mq}.{tone}` のまま
+- 確執のリング決着トーン(`名勝負となった一戦は`)は逆に**後続へ直結**するので **EN訳文が末尾に半角スペース**を持つ(§34-4 の裏返し)
+
+### 35-5. 英訳で避けた形(検査に落ちる書き方)
+
+- **`{seasons} seasons` / `{weeks} weeks`** は規則23(PH直後の可算名詞複数形)に当たる。
+  ハイフン限定用法へ逃がした(`a {seasons}-season run` / `a {weeks}-week layoff`)。
+  `a {ph}-` は規則25(PH直前の不定冠詞)の**ハイフン例外**なので両方を同時に満たす
+- 「複数シーズン」の `複数` は上のハイフンスロットに入るため **`multi`**(→ `a multi-season run`)とした
+- **`{count}度目`** の序数化(`3th`)は破綻するので、序数を使わず `match {count} between them` へ逃がした
+- **`伝説的キャリア`** は黒田禁止語 `legendary` に落ちるため `a place among the greats` へ。
+  `★★★レジェンド` の `Legend`(階級名)は禁止語リストに当たらず、ui-ledger の `★★ ゴールド殿堂`→`★★ Gold Hall of Fame` と表記を揃えた
+- 動詞の `wins` も規則23の正規表現に当たる(false positive)ため、新規行では `takes it` を使い
+  **警告件数を増やしていない**(build-template-dict の警告は 61件のまま=P7-16 前と同数)
+
+### 35-6. 検証
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(data.js / management.js / lang-en-templates.js / i18n-extract-templates.js / injury-label-test.js) | ✅ 全OK(+ template-ledger.json のJSON妥当性・抽出器の再実行で台帳がバイト一致) |
+| `node test/ja-golden.js`(`--update`不使用) | ✅ 完全一致(lines=11233, hash=`6b3d05c8…` 不変) |
+| `node test/i18n-build-template-dict.js` | ✅ 3,141キー(+82)・**未訳0** |
+| `node test/i18n-build-dict.js` | ✅ 4,243キー・未訳0(ui-ledgerは不触) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー15件・すべて訳文一致 |
+| `npm test` | ✅ **261/261 green**(`injury-label-test` §6 の検査先をテンプレ表へ付け替え) |
+| `node test/i18n-ratchet.js --update` | data.js +82 / management.js −84 / 総数 −8(理由=関数内直書きの表移設+literal共有) |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**(台帳検査3種すべて違反0)。指紋 f5c3ee76→464f6941 は**追加6フィールドのみで説明**(下記) |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest `1052faa82eaf7991` **不変**・Issues 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・416手・**i18n-miss 0**・Issues 0・**JA露出by screen に `screen-newspaper` は出ない** |
+| `npm run test:ui:ignite -- --scenario tenchosen` | ✅ PASS(`unified-coronation` 点火・Issues 0) |
+| VM全分岐突合(JA同一性) | ✅ **8,880通り / 不一致0** |
+
+**auto-sim 指紋の説明**: 指紋は最終 `G` 全体を hash するので、`previewRaw` / `reasonRaw` /
+`orgNameMissing` / `orgMissing` / `fromOrgMissing` / `toOrgMissing` の**追加フィールドが載るだけで変わる**。
+`JSON.stringify` の replacer でこの6キーだけを除外して同条件で走らせると
+**`f5c3ee76`**(=P7-11 が記録した20季 seed42 の値)に**完全一致**した。
+=既存のセマンティック状態は1バイトも動いていない。
+
+**JA同一性の内訳**(凍結コピー=HEAD `084cd401` をVMへ復元し、同じ合成stateで `JSON.stringify` 突合):
+
+| 対象 | 直積 | 件数 | 不一致 |
+|---|---|---:|---:|
+| `generate()` 全記事型 | ジュニアTN(tone4×次点有無2×準決勝敗退者有無2×round4) / AI団体13型 / retirementDeclare / preview 4型 / winStreak・longInjury・transferDone(団体名欠落2) | **162** | **0** |
+| `eventContenders` + `eventPreviewParagraph` | 王座2×MVP6×人気3×優勝歴4×連勝5×団体名2×対戦歴3 の直積 | **8,640** | **0** |
+| `composeHallOfFameRetirement` | 所属3(null/空/実名)×殿堂位3×戴冠2×防衛2 | **36** | **0** |
+| `buildTenchosen*Data` | 特別招待0/1/2名 × 2関数 | **6** | **0** |
+| 引退記事の**素のフォールバック** | `RETIREMENT_TEMPLATES` を空にして強制到達(実運用では踏めない枝) | **36** | **0** |
+
+### 35-7. 残(P7-16 の範囲外・記録のみ)
+
+1. **ブレイクスルー記事の `{stat}` が内部キー(`pw`/`te` 等)のまま紙面に出る**。
+   `_newsBreakthroughs` が `btResult.stat` を生で積み、`generate` がそのまま差し込んでいる。
+   同じ `Engine.newspaper` の `buildFollowUp` は `STAT_LABELS_JP[bt.stat]` を通しているので、**AI団体側だけが素通し**。
+   feedback「プレイヤー向け表記に内部変数名を使わない」に当たるが、**直すとJA出力が変わる**(golden採り直し)ため据え置き・Keisuke裁定待ち
+2. **`_wmNewsStamp` の suffix が文脈に合わない既訳を引く**。`定期興行` → ui-ledger の `Regular shows`(ナビ用の複数形)、
+   `挑戦状` → `Challenge Letter`。スタンプは「第N年度・第M週 種別」の見出しなので単数・見出し体が正。§15-3 の副作用で、**P7-16 より前から**同じ
+3. `buildTenchosen*Data` の `invites` / `championWatch` は **push時のlangで焼かれる**(dictがpush側に渡っている)。
+   `preview` だけ生キー化したので、この2つは §8 未適用のまま(言語を切り替えた週にキューが残っていると旧言語で出る)
+## 36. Stage B P7-13 — 規則23(数値PH直後の可算名詞複数形)違反の一掃+検査のexit 1化(2026-09-04追加)
 
 §29-2(P7-10)がwarning専用で検出したまま残っていた規則23違反を全件書き直し、3本のbuild-dict(ui/template/dialogue)の検査を**warningからexit 1へ格上げ**した。ui-ledger 4,243/template-ledger 3,059/dialogue-ledger 16,674、いずれも未訳0・規則23違反0でgreen。
 
-### 35-1. 書き直しの3パターン(黒田英文体 §3-4 規則23/24)
+### 36-1. 書き直しの3パターン(黒田英文体 §3-4 規則23/24)
 
 数値プレースホルダの直後に可算名詞の複数形を置く形(`{n} weeks` 等)は、充填値が1のとき単複が食い違う(`1 weeks`)。これを機械検査(規則23)が検出する。逃がし方は3通りで、文脈によって使い分けた:
 
@@ -1439,13 +1565,13 @@ GRADE脇の短評(92px枠)は `d.gradeDesc.slice(0, 14)` で先頭14字だけを
 
 セリフ層(dialogue-ledger)は上記1(コロン列挙)を使わず、2・3のみで逃がした。地の文としてキャラが喋っている文脈にラベル型を混ぜると声が崩れるため(例: `……ここでの{n}年。` → ラベル化せず `A {n}-year run here.`)。
 
-### 35-2. 誤検知の除外 — 名前・団体名PH+wins/reignsの三人称単数動詞
+### 36-2. 誤検知の除外 — 名前・団体名PH+wins/reignsの三人称単数動詞
 
 規則23の正規表現を`/i`(単発マッチ)から`/gi`(全マッチ)へ広げ、プレースホルダ名の大文字を許容(`[a-z]+`→`[a-zA-Z]+`)した結果、`{name} wins`(「{name}が勝つ」)のような**PHが数値ではない**行まで拾うようになった。これは英語の三人称単数現在形の`-s`であって複数形の`-s`ではなく、PHへ何を充填しても文法は崩れない(誤検知)。
 
 `NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|requesterName)$/i` を定義し、**wins/reignsの2語に限り**このPH名なら検査対象から除外する。棚卸しの結果、ui-ledgerの`{name}勝`系4件・template-ledgerの`{winnerName}勝利`系13件がすべてこの型だった(§35-3参照)。**数値PH+名詞**(`{count} reigns with the belt`等)はこの除外の対象にしない — これは正真正銘の規則23違反のため
 
-### 35-3. 検査ロジック(3本のbuild-dictに同一定義を配置)
+### 36-3. 検査ロジック(3本のbuild-dictに同一定義を配置)
 
 ```js
 const PLURAL_NOUN_AFTER_PLACEHOLDER_RE = /\{([a-zA-Z]+)\}\s+(wrestlers|wins|losses|defenses|reigns|matches|times|seasons|years|weeks|days|points)\b/gi;
@@ -1454,7 +1580,7 @@ const NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|
 
 1行に複数マッチがありうるため`lastIndex = 0`でリセットしてから`while`ループで全マッチを収集し、`wins`/`reigns`かつPH名が除外リストに一致する場合のみ`continue`でスキップする。1件でも本物の違反が残れば`violations`へ積み、**exit 1・辞書ファイルを生成しない**(既存のプレースホルダ完全性/重複キー/日本語残り/不定冠詞(規則25)検査と同じ扱い)。
 
-### 35-4. 検証
+### 36-4. 検証
 
 - 3本のbuild-dict全て `node test/i18n-build-{dict,template-dict,dialogue-dict}.js` でexit 0・規則23違反0件・未訳0件
 - 独立検査(build-dictと同一の正規表現+除外ロジックを別スクリプトで再実装し、現行3台帳を直接スキャン)でも違反0件を確認 — 検査ロジック自体のバグ(false negative)ではないことを担保
