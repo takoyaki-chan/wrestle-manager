@@ -63,8 +63,16 @@ section('5. プレイヤーに見える箇所で生の type を出していな�
 });
 
 section('6. 新聞の練習怪我見出しが言い換えを通っている', () => {
+  // i18n Stage B P7-16: 見出しは management.js の直書きテンプレートリテラルから
+  // data.js の NEWS_AI_ORG_TEXTS.practiceInjuryHeadline へ移設された。
+  // 検査の狙い(内部キーが記事に漏れないこと)は変えず、見る場所だけ移す。
+  assert.ok(typeof NEWS_AI_ORG_TEXTS !== 'undefined' && NEWS_AI_ORG_TEXTS.practiceInjuryHeadline,
+    '練習怪我の見出しテンプレが見つからない');
+  const tpl = NEWS_AI_ORG_TEXTS.practiceInjuryHeadline;
+  assert.ok(/練習中に\{injury\}/.test(tpl),
+    `見出しテンプレが {injury} を差し込み口にしていない: ${tpl}`);
   const mgmt = read('src/management.js');
-  assert.ok(/練習中に\$\{injuryLabel\(ev\.injuryType\)\}/.test(mgmt),
+  assert.ok(/injury: injuryLabel\(ev\.injuryType, dict\)/.test(mgmt),
     '練習怪我の見出しが言い換えを通っていない(記事本文に内部語が出る)');
 });
 

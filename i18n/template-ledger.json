@@ -1100,6 +1100,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "MVPレース{rank}位",
+    "en": "MVP Race No. {rank}",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "MVPレース首位",
+    "en": "MVP Race Leader",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "OVR と人気の双方で団体を支えた二人の在位は、{eraTag}そのものだった。",
     "en": "Holding the promotion up in both Overall and Popularity, their years were exactly that: {eraTag}.",
     "files": [
@@ -1697,9 +1717,11 @@
     "key": "{a}・{b}",
     "en": "{a}, {b}",
     "files": [
-      "CHRONICLE_NARRATIVE_TEMPLATES"
+      "CHRONICLE_NARRATIVE_TEMPLATES",
+      "NEWS_AI_ORG_TEXTS",
+      "NEWS_CONTENDER_TEXTS"
     ],
-    "count": 1,
+    "count": 3,
     "hasPlaceholder": true,
     "hasProperNoun": false
   },
@@ -2404,10 +2426,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{count}度防衛",
+    "en": "{count} successful defenses",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{count}連勝。数字だけを見れば順調だが、当たった相手の顔ぶれを並べれば内容は違って見える。連勝が続くほど、次に組まれる相手の格は上がっていく。",
     "en": "{count} in a row. On the number alone it is going well; line up the opponents she actually met and it reads differently. The longer a streak runs, the higher the class of the next one booked against her.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{count}連勝中",
+    "en": "{count}-Match Win Streak",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -2688,6 +2730,26 @@
     "en": "{items}.",
     "files": [
       "CHRONICLE_NARRATIVE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{label}の優勝経験",
+    "en": "Past {label} Winner",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{label}を含む大会{count}度の優勝経験",
+    "en": "{count}-Time Tournament Winner, {label} Among Them",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -3954,6 +4016,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{names}は準決勝で敗退。しかしこの大舞台での経験は、必ず今後の糧になるだろう。",
+    "en": "{names} went out in the semifinals. What they took from a stage that size will show up in the seasons ahead.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{name}——うちのエースが最も意識している存在だ。次に当たるときは因縁を含んだカードになる",
     "en": "{name} — the one your ace is most conscious of. Next time they meet, the match carries history with it.",
     "files": [
@@ -4208,6 +4280,16 @@
     "en": "{name}, an Overall of {ovr} on a popularity of {pop}. The balance between ability and name is good, and she fits anywhere on a card.",
     "files": [
       "KURODA_SPOTLIGHT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}、若き栄冠！ 第{season}回ジュニアトーナメント制覇",
+    "en": "{name} crowned young! Junior Tournament No. {season}",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -4528,6 +4610,16 @@
     "en": "{name} retires — a line under the career",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}が引退した。",
+    "en": "{name} has retired.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -5304,6 +5396,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "{name}（{org}・{reason}）",
+    "en": "{name} ({org}, {reason})",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}（{org}）",
+    "en": "{name} ({org})",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}（{org}）が{runnerUp}を下し、ジュニアトーナメント優勝を飾った。{tone}。優勝賞金1,000万円。",
+    "en": "{name} ({org}) beat {runnerUp} to take the Junior Tournament. It was {tone}. Winner's purse: ¥10M.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{name}（{reason}）",
+    "en": "{name} ({reason})",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{newLeaderName}、「{factionName}」を継承——{org}の火は消えず",
     "en": "{newLeaderName} inherits {factionName}, {org}",
     "files": [
@@ -6014,6 +6146,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}から{names}の{count}名が退団。団体の先行きに不安が広がる。",
+    "en": "{names} have left {org}, {count} in all. Where the promotion goes from here is an open question.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}が{axis}を団体の特色として語れるようになったのは、この世代からだった。",
     "en": "It was from this generation on that {org} could speak of {axis} as a mark of the promotion.",
     "files": [
@@ -6054,10 +6196,50 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}で{name1}と{name2}の対立がリング上で決着。{tone}{winner}が勝利を収めた。",
+    "en": "The feud between {name1} and {name2} at {org} was settled in the ring. {tone}{winner} took the win.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}で{name1}と{name2}の確執が浮上——話し合いで収束",
+    "en": "Friction between {name1} and {name2} at {org} — settled by talking",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}で{seasons}シーズンを戦った{name}（{age}歳）が引退を発表。",
+    "en": "{name}, age {age}, has announced her retirement after a {seasons}-season run with {org}.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}で{seasons}シーズンを過ごし、{age}歳での決断となった。{reigns}度ベルトを巻いた選手だが、記者が覚えているのはむしろ落とした試合の翌週の上がり方のほうだ。この先しばらく、この団体の試合を見る人は、無意識に比べる相手を持つことになる。",
     "en": "The {seasons}-season run at {org} closes with a decision made at age {age}. A wrestler with {reigns} in the title column, but what this writer remembers is the way she came back up the week after a loss. For a while yet, anyone watching this promotion will be measuring against her without meaning to.",
     "files": [
       "RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}で{years}を戦った{name}が殿堂入り。{career}。殿堂ポイント{points}ptを獲得。",
+    "en": "{name}, who wrestled {years} with {org}, goes into the Hall of Fame. {career}. Hall of Fame points: {points}.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6078,6 +6260,16 @@
     "en": "At {org} the number of wrestler pairs who have gone cold on each other has risen to {count}. Leave the trouble alone and it can reach how they work together in matches, and the feel of the whole show.",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}で大量退団——{count}名が離脱",
+    "en": "Exodus at {org} — {count} out the door",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6164,10 +6356,40 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の{name1}と{name2}、リング上で決着！ {winner}が勝利（試合評価{mq}）",
+    "en": "{name1} and {name2} settle it in the ring at {org}! {winner} takes it (rated {mq})",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の{name1}と{name2}に亀裂——団体側は静観の構え",
+    "en": "A rift between {name1} and {name2} at {org} — promotion stands back",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の{name}、再起のきっかけを求めて",
     "en": "{org}'s {name} looking for a way back",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の{name}、密着取材で好評——人気急上昇",
+    "en": "{name} of {org} comes off well on film — popularity climbing",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6188,6 +6410,16 @@
     "en": "{org}'s {name} looking for the road back",
     "files": [
       "NEWS_HEADLINE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の{name}、練習中に{injury}で{weeks}週離脱",
+    "en": "{name} of {org} faces a {weeks}-week layoff — {injury} in training",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6244,6 +6476,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の{name}が急成長——注目の存在に",
+    "en": "{name} of {org} takes a jump — one to watch now",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の{name}が現役を退いた。{detail}。これまでの実績と、団体に残したものを振り返りたい。",
     "en": "{org}'s {name} has stepped away from active competition: {detail}. This is a moment to look back at the record, and at what she leaves the promotion.",
     "files": [
@@ -6254,10 +6496,30 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の{name}が現役引退",
+    "en": "{name} of {org} retires",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の{name}が現役引退を決断",
     "en": "{org}'s {name} decides to retire",
     "files": [
       "AI_CONTRACT_DEPARTURE_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の{name}が現役引退を表明",
+    "en": "{name} of {org} announces her retirement",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6398,6 +6660,16 @@
     "en": "{org}'s {name}, {age}, retires on repeated injuries — {seasons} seasons in the ring come to an end",
     "files": [
       "AI_INJURY_RETIREMENT_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の{name}（{age}歳）が{star}",
+    "en": "{name} of {org}, age {age}: {star}",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -6624,6 +6896,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}の練習中に{name}が負傷。{weeks}週間の離脱を余儀なくされる。",
+    "en": "{name} was hurt in training at {org}. She is looking at a {weeks}-week absence.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}の興行が壊滅的な集客に終わった。団体の看板に傷がつく事態に、社長の手腕が問われる局面だ。",
     "en": "The {org} show ended with a draw that can only be called ruinous. The name on the banner takes the damage, and this is the point where the GM's ability gets tested.",
     "files": [
@@ -6744,6 +7026,26 @@
     "hasProperNoun": false
   },
   {
+    "key": "{org}内で{name1}と{name2}の間に緊張が走ったが、話し合いにより事態は収束した。",
+    "en": "Tension ran between {name1} and {name2} inside {org}, but they talked it through and it settled.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}内で{name1}と{name2}の関係が悪化。団体側は介入せず静観を決め込んでいる。",
+    "en": "Relations between {name1} and {name2} inside {org} have gone bad. The promotion is not stepping in and has settled on watching.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{org}内で派閥抗争勃発——「{factionAName}」vs「{factionBName}」",
     "en": "{org}: {factionAName} vs {factionBName}",
     "files": [
@@ -6802,6 +7104,26 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": false
+  },
+  {
+    "key": "{org}定期興行——{winner}が{loser}を下す",
+    "en": "{org} regular show — {winner} beats {loser}",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}所属の{name}がブレイクスルーを達成。{stat}が大幅に向上し、今後の活躍が期待される。",
+    "en": "{name} of {org} has broken through. {stat} is up sharply, and what she does next is worth watching.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": true
   },
   {
     "key": "{org}旗揚げ。最初の5人が揃い、最初の物語が始まった。",
@@ -7048,6 +7370,36 @@
     "en": "The editor of {outletName} called directly. They want one of our wrestlers in the magazine.",
     "files": [
       "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outlet}が{org}の{name}に密着取材開始",
+    "en": "{outlet} starts a documentary feature on {name} of {org}",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outlet}が{org}所属の{name}への密着取材を開始。今後3興行の活躍に注目が集まる。",
+    "en": "{outlet} has begun a documentary feature on {name} of {org}. Her next three shows are the ones to watch.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{outlet}の密着取材を受けた{name}が好成績を収め、人気が急上昇した。平均試合評価{avgMQ}。",
+    "en": "{name}, followed by {outlet}, delivered results and her popularity climbed. Average rating {avgMQ}.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -8154,6 +8506,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "{round}で行われた{winner}と{loser}の一戦が、大会最高の試合内容を見せた。{tone}",
+    "en": "The {round} bout between {winner} and {loser} produced the best wrestling of the tournament. {tone}",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{round}の{winner}（{winnerOrg}）対{loser}（{loserOrg}）が、全15試合を通して最も高い評価を集めた。{closing}",
     "en": "Round: {round}. {winner} ({winnerOrg}) against {loser} ({loserOrg}) drew the highest rating of all 15 matches. {closing}",
     "files": [
@@ -8298,10 +8660,70 @@
     "hasProperNoun": false
   },
   {
+    "key": "{stamp}。{challengerName}が{defenderOrg}に叩きつけた挑戦状の一騎討ちは、{winnerOrg}の{winnerName}が勝利。試合評価{mq}。{tone}",
+    "en": "{stamp}. The challenge {challengerName} threw down to {defenderOrg} was settled in singles, and {winnerName} of {winnerOrg} won it. Rated {mq}.{tone}",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp}。{challengerName}と{defenderName}による挑戦状の一騎討ちは決着つかず。試合評価{mq}。",
+    "en": "{stamp}. The challenge singles between {challengerName} and {defenderName} ended without a decision. Rated {mq}.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp}。{challengerName}と{defenderName}の代表対決は決着つかずに終わった。試合評価{mq}。{tone}",
+    "en": "{stamp}. The representatives' match between {challengerName} and {defenderName} ended without a decision. Rated {mq}.{tone}",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp}。{challengerOrg}と{defenderOrg}の対抗戦で、{winnerOrg}の{winnerName}が勝利を収めた。試合評価{mq}。{tone}",
+    "en": "{stamp}. In the interpromotional match between {challengerOrg} and {defenderOrg}, {winnerName} of {winnerOrg} took the win. Rated {mq}.{tone}",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp}。{challengerOrg}の{challengerName}が{defenderOrg}に挑戦状を叩きつけたが、{defenderOrg}側はこれを辞退した。",
+    "en": "{stamp}. {challengerName} of {challengerOrg} threw down a challenge to {defenderOrg}, and {defenderOrg} turned it down.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "{stamp}。{opponent}との対抗戦が行われ、{playerWins}勝{aiWins}敗で{result}。",
     "en": "{stamp}. The interpromotional series against {opponent} finished {playerWins}-{aiWins}: {result}.",
     "files": [
       "CROSS_WAR_RESULT_TEXT"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stamp}。{org}の興行で{winner}が{loser}に勝利。試合評価{mq}を記録した。",
+    "en": "{stamp}. {winner} beat {loser} on the {org} show. The match rated {mq}.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -8402,6 +8824,16 @@
     "en": "{stamp}. No. {r1} {name1}{org1} met No. {r2} {name2}{org2}, with the top of the season on the line.",
     "files": [
       "PPV_SUMMIT_STORY_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{stats}の伝説的キャリア",
+    "en": "A career of {stats}, and a place among the greats",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -12520,6 +12952,46 @@
     "hasProperNoun": false
   },
   {
+    "key": "★★★レジェンド",
+    "en": "★★★ Legend",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "★★ゴールド殿堂",
+    "en": "★★ Gold Hall of Fame",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔ {challengerOrg} vs {defenderOrg} 対抗戦——{winnerOrg}の{winnerName}が勝利",
+    "en": "⚔ {challengerOrg} vs {defenderOrg} — {winnerName} of {winnerOrg} takes it",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "⚔ {challengerOrg} vs {defenderOrg} 対抗戦は決着つかず",
+    "en": "⚔ {challengerOrg} vs {defenderOrg} — no decision in the interpromotional",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "⚔ {opponentName}との対抗戦を辞退",
     "en": "⚔ Declined the interpromotional match with {opponentName}",
     "files": [
@@ -13204,6 +13676,16 @@
     "en": "They are after a wrestler with a character that plays well on camera — that is what {outletName} sent over.",
     "files": [
       "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "【{round}】{winner}（{winnerOrg}） def. {loser}（{loserOrg}） 試合評価{mq}",
+    "en": "[{round}] {winner} ({winnerOrg}) def. {loser} ({loserOrg}) rated {mq}",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -14060,6 +14542,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "これぞ若手の底力。",
+    "en": "This is what the young ones have in them.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "これだけの差をつけて、まだ油断するなとは言わない。だが、強すぎる組織には別の問題が出てくるものだ。マンネリ、慢心、次世代不足。{leadAxisLabel}も{chaseAxisLabel}も文句なしの今、考えるべきは「この先何年維持できるか」である。",
     "en": "With a gap this size I will not bother telling them to stay alert. An organization this strong develops different problems, though. It goes stale, it gets complacent, the next generation thins out. With {leadAxisLabel} and {chaseAxisLabel} both beyond argument, the thing to think about is how many years this holds.",
     "files": [
@@ -14137,6 +14629,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "しかし{name}（{org}）の勢いも侮れない。",
+    "en": "The momentum {name} ({org}) is carrying is not to be waved off, though.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -14805,6 +15307,16 @@
     "en": "We did it...! We held it, all of us together!",
     "files": [
       "SNAPSHOT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "やや一方的な展開だった",
+    "en": "a somewhat one-sided affair",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -15941,6 +16453,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "トーナメント特集",
+    "en": "Tournament special",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "ドラフトの目利きが鍵。即戦力と将来性のバランスを見極めないと",
     "en": "Draft judgment is the key. Have to balance ready-now against upside",
     "files": [
@@ -16991,6 +17513,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "上々の内容と言えるだろう。",
+    "en": "The content was more than respectable.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "上にいる景色は最高。もっと上を目指そう！",
     "en": "The view from up here is the best. Let's aim higher!",
     "files": [
@@ -17701,6 +18233,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "人気上位",
+    "en": "High Popularity",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "人気者同士の激突！{name1} vs {name2}、会場が沸く！",
     "en": "Two crowd favorites collide! {name1} vs {name2} — the building is going to move!",
     "files": [
@@ -17828,6 +18370,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "今後の成長に期待したい。",
+    "en": "There is room to grow here, and reason to expect it.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -18801,6 +19353,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "全試合詳報",
+    "en": "Full match report",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "全面劣勢。正面から勝てる要素がない。",
     "en": "Behind everywhere. No opening.",
     "files": [
@@ -19672,6 +20234,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "名勝負となった一戦は",
+    "en": "In a match that turned out to be one of the good ones, ",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "名古屋",
     "en": "Nagoya",
     "files": [
@@ -20432,6 +21004,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "大会ベストバウト: {winner} vs {loser}（試合評価{mq}）",
+    "en": "Best bout of the tournament: {winner} vs {loser} (rated {mq})",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "大手不動産の事務職OL。営業職の男たちに囲まれたストレスを地下プロレスで発散している。",
     "en": "Administrative staff at a large real estate firm. Surrounded by the men in sales, she works the pressure off on the underground circuit.",
     "files": [
@@ -20662,6 +21244,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "好勝負を展開。",
+    "en": " A good match, well worked.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "好敵手の予感――{age}歳の{name}と{name2}が同時代に",
     "en": "Rivals in the making — {name}, {name2}, {age}",
     "files": [
@@ -20766,6 +21358,16 @@
     "en": "It starts on time and it ends on time",
     "files": [
       "ATMOSPHERE_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "定期興行開催",
+    "en": "Regular show held",
+    "files": [
+      "NEWS_FALLBACK_TEMPLATES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -21732,6 +22334,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "所属団体",
+    "en": "her promotion",
+    "files": [
+      "NEWS_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "打撃の一瞬に、彼女はすべてを込めた。",
     "en": "Everything she had went into the instant a strike landed.",
     "files": [
@@ -22189,6 +22801,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "数々の名勝負を残した",
+    "en": "Left behind a long list of matches worth remembering",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -23112,6 +23734,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "期待外れの決勝だった",
+    "en": "a disappointing final",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "期待通りの内容。両者ともよく準備してきた印象",
     "en": "What was expected. Both of them came prepared, by the look of it",
     "files": [
@@ -23166,6 +23798,16 @@
     "en": "What was meant to be a light exchange turned into {name1} and {name2} going at each other for real. A coach had to step between them.",
     "files": [
       "LARGE_EVENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "本紙が挙げる注目は{list}。",
+    "en": "The names this paper puts forward: {list}.",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,
@@ -23832,6 +24474,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "業界屈指の人気",
+    "en": "Top Popularity in the Business",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "業界最高評価を更新――{name}対{name2}、{mq}点",
     "en": "Best on record — {name} vs {name2}, {mq}",
     "files": [
@@ -24089,6 +24741,26 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "歴史に残る名勝負だ",
+    "en": "one that will be remembered",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "歴史に残る名勝負！",
+    "en": " One that will be remembered.",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -24402,6 +25074,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "波乱の予感がする大会になりそうだ。",
+    "en": "This has the feel of a tournament where the order gets turned over.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "注目は{age}歳の{rookieName}。{h}cmの体格と{styleJa}としての組み立ては、担当したスカウト陣が最上位の見立てを最後まで崩さなかった理由でもある。",
     "en": "The one to watch is {rookieName}, age {age}. The {h}cm frame and the way her {styleJa} game is put together are why the scouts on her never came off their top grade.",
     "files": [
@@ -24630,6 +25312,16 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": true
+  },
+  {
+    "key": "準決勝で散った才能たち",
+    "en": "Talent that fell in the semifinals",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
   },
   {
     "key": "準決勝は{a1}（{a1org}）対{a2}（{a2org}）、{b1}（{b1org}）対{b2}（{b2org}）の2試合。勝ち上がったのは{a1}と{b1}だった。試合評価は{mqA}点と{mqB}点。",
@@ -25955,6 +26647,26 @@
     "hasProperNoun": true
   },
   {
+    "key": "第{season}回ジュニアトーナメント 全試合結果",
+    "en": "Junior Tournament No. {season}: all results",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "第{season}回ジュニアトーナメント 出場選手決定！",
+    "en": "Junior Tournament No. {season}: field set!",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "第{season}回春のタッグリーグの出場枠が決まった。団体ランキング順の配分は{entrySummary}。各代表タッグは編成期間を経て、第12週にA・Bブロックの総当たりへ挑む。{preview}",
     "en": "The entry slots for Spring Tag League No. {season} are settled. The allocation by promotion ranking: {entrySummary}. Each promotion's team takes a period to form up, then goes into the round-robin of Blocks A and B in week 12. {preview}",
     "files": [
@@ -25983,6 +26695,26 @@
     "count": 1,
     "hasPlaceholder": true,
     "hasProperNoun": true
+  },
+  {
+    "key": "第{week}週開催のU-20ジュニアトーナメントに{count}名が選出された。",
+    "en": "The field for the U-20 Junior Tournament in week {week} has been set at {count}.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "筆頭は{name}（{org}、総合力{ovr}）。",
+    "en": "{name} ({org}, overall {ovr}) heads the field.",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
   },
   {
     "key": "粕田台団地に入居してきたちょっときつめの奥さん。前の住まいでは町内会プロレスの実力者。外には厳しく家では陽気。負けず嫌いの性格と適応力の高さで新しい環境にもすぐに溶け込んだ。打撃を軸にした攻撃的なスタイルで、闘志を前面に押し出す熱い試合を見せる。",
@@ -26082,6 +26814,16 @@
     ],
     "count": 1,
     "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "組み合わせ次第では{a}と{b}の{count}度目が実現する。",
+    "en": "Depending on the draw, {a} and {b} could meet for match {count} between them.",
+    "files": [
+      "NEWS_CONTENDER_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
     "hasProperNoun": false
   },
   {
@@ -26845,6 +27587,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "複数",
+    "en": "multi",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
     "key": "複数の項目で後れを取っている。巻き返しには相当な覚悟が要る",
     "en": "Behind in several columns. Coming back from that takes a real commitment.",
     "files": [
@@ -26969,6 +27721,16 @@
     "en": "A match worth watching. I hope this holds",
     "files": [
       "NEWSPAPER_DIGEST_COMMENTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "見応えのある決勝戦だった",
+    "en": "a final worth watching",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -27687,6 +28449,16 @@
     "hasProperNoun": false
   },
   {
+    "key": "通算{count}度戴冠",
+    "en": "{count} title reigns",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
     "key": "通算{defenses}度の防衛——この数字は{orgName}の最高記録として残り続ける。",
     "en": "Career defenses: {defenses} — the figure still stands as the {orgName} record.",
     "files": [
@@ -28134,6 +28906,16 @@
     ],
     "count": 1,
     "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "選考通過者",
+    "en": "those who came through selection",
+    "files": [
+      "NEWS_FALLBACK_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
     "hasProperNoun": false
   },
   {
@@ -28781,6 +29563,16 @@
     "en": "Kuroda actually praised them...! Now I'm scared something bad is coming",
     "files": [
       "FAN_OPINIONS"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "黒田記者の展望",
+    "en": "Kuroda's outlook",
+    "files": [
+      "NEWS_JUNIOR_TOURNAMENT_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -29661,6 +30453,36 @@
     "en": "📋 Contract renewals done: {stayCount} staying, {departCount} leaving",
     "files": [
       "GAMELOG_TEMPLATES"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📜 {challengerOrg} vs {defenderOrg} 挑戦状一騎討ちは決着つかず",
+    "en": "📜 {challengerOrg} vs {defenderOrg} — challenge singles ends without a decision",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📜 {challengerOrg}・{challengerName}が{defenderOrg}に挑戦状——{winnerOrg}の{winnerName}が制す",
+    "en": "📜 {challengerName} of {challengerOrg} challenges {defenderOrg} — {winnerName} of {winnerOrg} takes it",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "📜 {defenderOrg}、{challengerOrg}・{challengerName}からの挑戦状を辞退",
+    "en": "📜 {defenderOrg} turns down the challenge from {challengerName} of {challengerOrg}",
+    "files": [
+      "NEWS_AI_ORG_TEXTS"
     ],
     "count": 1,
     "hasPlaceholder": true,

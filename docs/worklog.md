@@ -1,5 +1,271 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-16 — `Engine.newspaper` に残る生JA 83行(ジュニアTN/AI団体ニュース/対抗戦/挑戦状/選出理由/展望)のテンプレ化・英訳(2026-09-05・worktree agent-a1c34365617010ffa)
+
+指示書は P7-11 worklog §7 / `specs/i18n-runtime-spec-v1.0.md §34-7`。開始前にworktreeブランチをmain先端(`084cd401`)へfast-forward。
+
+**訳出82キー**(template-ledger 3,059→**3,141**・未訳0 / ui-ledger 4,243 は不触 / dialogue-ledger 16,674 は不触)。
+ラチェット総数 28,053→**28,045**(data.js +82 / management.js −84。`--update` 済み)。
+
+### 1. 起票の83行を再計測すると82行、うち**5行は直すべきでなかった**
+
+P7-11 と同じ条件(`T(`/`dict`/`_wmNewsStamp`/`injuryLabel`/`fillTemplateVars` のいずれも通らない生JA行)で
+`Engine.newspaper` を機械列挙すると **82行**。作業後に同じスキャンを回すと **5行**が残るが、いずれも残すのが正しい:
+
+| 残った行 | 判断 |
+|---|---|
+| `STYLE_JA` の表宣言2行 | **JAの正本**。消費点(`composeChampionChangeBody`/`composeUnifiedTitleArticle`)は P6-15 の時点で `_wmDictLabel` を通しており、産出側4箇所がキューへJA完成値を焼いても**載る瞬間に引き直される**。無改修 |
+| `intensityBonus` の `/[Ii]njury|怪我/` | イベント**種別**を判定する正規表現。表示文字列ではない |
+| `_composeContenderReason` / `eventContenders` の `join('・')` 2行 | テンプレ表が読めないときの fail-open 分岐(実運用では到達しない) |
+
+**「生JA行の機械カウント」は上限の目安にはなるが、EN画面に実際に出る行数とは一致しない。**
+表の宣言と判定用リテラルが残るのは正しい姿で、棚卸しの数字をそのまま「直すべき行数」と読むと過剰修正になる。
+
+### 2. 配線方式 — 同じ「生JA」でも**文字列が確定する場所**で処置が3つに分かれた
+
+| # | 出どころ | 方式 | 対象 |
+|---|---|---|---|
+| A | `generate()` の中(dictが揃っている) | data.js のテンプレ表へ移設 + `_wmFillWithDict` | ジュニアTN / AI団体ニュース13型 / 対抗戦2分岐 / 挑戦状3分岐 の headline・body |
+| B | ui-ledger に既訳がある**1語ラベル** | JA原文を management.js に1本だけ置き `_wmDictLabel` で引く(§15-3) | `現王者` `決勝` `準決勝` `準々決勝` `殿堂入り` `勝者` `決勝の相手` `プレイヤー団体` と大会名4種 |
+| C | `push` 時に完成文が**キューへ焼かれる** | 生キーを併記して**載る瞬間**に再構築(§8) | 事前記事の一段落(`preview`)・`プレイヤー団体` フォールバック |
+
+Aの実装は `generate()` の冒頭に `T`(=`_wmFillWithDict`)/`L`(=`_wmDictLabel`)と表参照(`NJT`/`NAI`/`NFB`)を1組だけ置き、
+以降の `stories.push` がそれを使う形。Engine から `WM_I18N` は呼ばない(dictは `generate(state, rng, {dict})` の糸通しのまま)。
+
+新規テーブル(いずれも `test/i18n-extract-templates.js` の `TARGET_TABLES` へ「// P7-16」コメント付きで登録):
+
+| テーブル | 行数 | 中身 |
+|---|---:|---|
+| `NEWS_CONTENDER_TEXTS` | 12 | 優勝候補の選出理由7種 + 連結様式 + 事前記事の一段落3本 |
+| `NEWS_JUNIOR_TOURNAMENT_TEXTS` | 25 | ジュニアTNの結果面 / 特集面(全試合詳報・ベストバウト・準決勝敗退者) / 前週プレビュー面(出場選手決定・黒田記者の展望) |
+| `NEWS_AI_ORG_TEXTS` | 45 | AI団体の引退・大量退団・殿堂入り・定期興行・ブレイクスルー・確執3分岐・練習中負傷・密着取材2種・対抗戦2分岐・挑戦状3分岐 |
+| `NEWS_FALLBACK_TEMPLATES`(既存表へ追加) | +3 | `所属団体` / `選考通過者` / `定期興行開催` |
+
+### 3. 事前記事の一段落は「生キー+render時点再構築」が要る唯一の族(§8)
+
+`eventPreviewParagraph()` の完成文は `springTagAnnounce`/`autumnWarAnnounce`/`tenchosenAnnounce`/`tenchosenFieldSet` の
+`data.preview` へ**焼かれ、キューに最大数週間滞留してから紙面化される**。push側(tickWeek深部)は正しいdictを持たない。
+
+- `eventContenders(state, ids, limit, dict)` が `reason`(完成文)に加えて **`reasonRaw`**(`{k:'mvpRank',rank:2}` 等)を返す
+- `eventPreviewParagraphRaw(state, ids)` を新設(`{picks:[{name,orgName,reasonRaw}], rematch}`)
+- push側は `preview`(旧セーブ互換の完成文)と **`previewRaw`(追加フィールド)** を**併記**する
+- `_wmResolvePreviewParagraph`(`_wmResolvePreformattedIndustryData` の前段)が `previewRaw` から組み直す。無ければ焼かれた値のまま(fail-open)
+
+`プレイヤー団体` も同型。`scanRosterNews` は**値ではなく `*Missing` フラグ**(`orgNameMissing`/`orgMissing`/`fromOrgMissing`/`toOrgMissing`)を
+`data` へ併記し、`_wmResolvePlayerOrgFallback` が載る瞬間に引き直す。
+`retirementDeclare` は `NEWS_HEADLINE_TEMPLATES` を通らない専用分岐なので、その枝でも resolver を明示的に通すよう変えた。
+
+`winStreakMilestone` の `団体記録を塗り替えた。`/`王手をかけた。` は、push側の焼き込みと resolver 側の再構築が
+**同じ literal を二度書いていた**ので `_NP_RECORD_LINE_JA` に1本化した(ラチェットが −2 になる理由の一つ)。
+
+### 4. 連結様式は既存キーへ寄せる(新しい区切りを発明しない)
+
+- 選出理由の `・` 連結 → `NEWS_CONTENDER_TEXTS.reasonJoin`(`{a}・{b}`→`{a}, {b}`。`CHRONICLE_NARRATIVE_TEMPLATES` と同一キー・訳文一致)
+- 注目選手 / 退団者 / 準決勝敗退者の列挙 → `Engine.newspaper.joinNameList`(`ARTICLE_COMPOSE_TEMPLATES.nameList`)
+- 事前記事の「一段落+注目カード」/ 黒田の展望3文 → `ARTICLE_COMPOSE_TEMPLATES.join`(JA=直結 / EN=半角スペース)
+- MQ帯の締め(`歴史に残る名勝負！`/`好勝負を展開。`)は本文末に直結するので **EN訳文が先頭に半角スペース**(§15-2)
+- 確執のリング決着トーン(`名勝負となった一戦は`)は後続へ直結するので **EN訳文が末尾に半角スペース**(§34-4の裏返し)
+
+### 5. 英訳で避けた形
+
+- **`{seasons} seasons` / `{weeks} weeks`** は規則23(PH直後の可算名詞複数形)。ハイフン限定用法へ逃がした
+  (`a {seasons}-season run` / `a {weeks}-week layoff`)。`a {ph}-` は規則25のハイフン例外なので両方を同時に満たす
+- 「複数シーズン」の `複数` は上のハイフンスロットに入るため **`multi`**(→`a multi-season run`)
+- **`{count}度目`** の序数化(`3th`)は破綻するので序数を使わず `match {count} between them` へ
+- **`伝説的キャリア`** は黒田禁止語 `legendary` に落ちるので `a place among the greats` へ
+- 動詞の `wins` も規則23の正規表現に当たる(false positive)ため新規行は `takes it`。
+  **build-template-dict の規則23警告は61件のまま=P7-16 で1件も増やしていない**
+
+### 6. 対訳全文(82キー)
+
+**`NEWS_CONTENDER_TEXTS`(11。`{a}・{b}` は既訳を共有)**
+
+| JA | EN |
+|---|---|
+| MVPレース首位 | MVP Race Leader |
+| MVPレース{rank}位 | MVP Race No. {rank} |
+| 業界屈指の人気 | Top Popularity in the Business |
+| 人気上位 | High Popularity |
+| {label}の優勝経験 | Past {label} Winner |
+| {label}を含む大会{count}度の優勝経験 | {count}-Time Tournament Winner, {label} Among Them |
+| {count}連勝中 | {count}-Match Win Streak |
+| {name}（{org}・{reason}） | {name} ({org}, {reason}) |
+| {name}（{reason}） | {name} ({reason}) |
+| 本紙が挙げる注目は{list}。 | The names this paper puts forward: {list}. |
+| 組み合わせ次第では{a}と{b}の{count}度目が実現する。 | Depending on the draw, {a} and {b} could meet for match {count} between them. |
+
+**`NEWS_JUNIOR_TOURNAMENT_TEXTS`(25)**
+
+| JA | EN |
+|---|---|
+| 歴史に残る名勝負だ | one that will be remembered |
+| 見応えのある決勝戦だった | a final worth watching |
+| やや一方的な展開だった | a somewhat one-sided affair |
+| 期待外れの決勝だった | a disappointing final |
+| {name}、若き栄冠！ 第{season}回ジュニアトーナメント制覇 | {name} crowned young! Junior Tournament No. {season} |
+| {name}（{org}）が{runnerUp}を下し、ジュニアトーナメント優勝を飾った。{tone}。優勝賞金1,000万円。 | {name} ({org}) beat {runnerUp} to take the Junior Tournament. It was {tone}. Winner's purse: ¥10M. |
+| 第{season}回ジュニアトーナメント 全試合結果 | Junior Tournament No. {season}: all results |
+| 【{round}】{winner}（{winnerOrg}） def. {loser}（{loserOrg}） 試合評価{mq} | [{round}] {winner} ({winnerOrg}) def. {loser} ({loserOrg}) rated {mq} |
+| 大会ベストバウト: {winner} vs {loser}（試合評価{mq}） | Best bout of the tournament: {winner} vs {loser} (rated {mq}) |
+| これぞ若手の底力。 | This is what the young ones have in them. |
+| 上々の内容と言えるだろう。 | The content was more than respectable. |
+| 今後の成長に期待したい。 | There is room to grow here, and reason to expect it. |
+| {round}で行われた{winner}と{loser}の一戦が、大会最高の試合内容を見せた。{tone} | The {round} bout between {winner} and {loser} produced the best wrestling of the tournament. {tone} |
+| 準決勝で散った才能たち | Talent that fell in the semifinals |
+| {name}（{org}） | {name} ({org}) |
+| {names}は準決勝で敗退。しかしこの大舞台での経験は、必ず今後の糧になるだろう。 | {names} went out in the semifinals. What they took from a stage that size will show up in the seasons ahead. |
+| 全試合詳報 | Full match report |
+| トーナメント特集 | Tournament special |
+| 第{season}回ジュニアトーナメント 出場選手決定！ | Junior Tournament No. {season}: field set! |
+| 第{week}週開催のU-20ジュニアトーナメントに{count}名が選出された。 | The field for the U-20 Junior Tournament in week {week} has been set at {count}. |
+| 黒田記者の展望 | Kuroda's outlook |
+| 筆頭は{name}（{org}、総合力{ovr}）。 | {name} ({org}, overall {ovr}) heads the field. |
+| しかし{name}（{org}）の勢いも侮れない。 | The momentum {name} ({org}) is carrying is not to be waved off, though. |
+| 波乱の予感がする大会になりそうだ。 | This has the feel of a tournament where the order gets turned over. |
+
+**`NEWS_AI_ORG_TEXTS`(43。`{a}・{b}` は既訳を共有)**
+
+| JA | EN |
+|---|---|
+| {org}の{name}が現役引退を表明 | {name} of {org} announces her retirement |
+| {org}で{seasons}シーズンを戦った{name}（{age}歳）が引退を発表。 | {name}, age {age}, has announced her retirement after a {seasons}-season run with {org}. |
+| 複数 | multi |
+| {org}の{name}が現役引退 | {name} of {org} retires |
+| {name}が引退した。 | {name} has retired. |
+| {org}で大量退団——{count}名が離脱 | Exodus at {org} — {count} out the door |
+| {org}から{names}の{count}名が退団。団体の先行きに不安が広がる。 | {names} have left {org}, {count} in all. Where the promotion goes from here is an open question. |
+| ★★★レジェンド | ★★★ Legend |
+| ★★ゴールド殿堂 | ★★ Gold Hall of Fame |
+| 通算{count}度戴冠 | {count} title reigns |
+| {count}度防衛 | {count} successful defenses |
+| {stats}の伝説的キャリア | A career of {stats}, and a place among the greats |
+| 数々の名勝負を残した | Left behind a long list of matches worth remembering |
+| {org}の{name}（{age}歳）が{star} | {name} of {org}, age {age}: {star} |
+| {org}で{years}を戦った{name}が殿堂入り。{career}。殿堂ポイント{points}ptを獲得。 | {name}, who wrestled {years} with {org}, goes into the Hall of Fame. {career}. Hall of Fame points: {points}. |
+| {org}定期興行——{winner}が{loser}を下す | {org} regular show — {winner} beats {loser} |
+| {stamp}。{org}の興行で{winner}が{loser}に勝利。試合評価{mq}を記録した。 | {stamp}. {winner} beat {loser} on the {org} show. The match rated {mq}. |
+| {org}の{name}が急成長——注目の存在に | {name} of {org} takes a jump — one to watch now |
+| {org}所属の{name}がブレイクスルーを達成。{stat}が大幅に向上し、今後の活躍が期待される。 | {name} of {org} has broken through. {stat} is up sharply, and what she does next is worth watching. |
+| {org}で{name1}と{name2}の確執が浮上——話し合いで収束 | Friction between {name1} and {name2} at {org} — settled by talking |
+| {org}内で{name1}と{name2}の間に緊張が走ったが、話し合いにより事態は収束した。 | Tension ran between {name1} and {name2} inside {org}, but they talked it through and it settled. |
+| 名勝負となった一戦は | In a match that turned out to be one of the good ones,␣ |
+| {org}の{name1}と{name2}、リング上で決着！ {winner}が勝利（試合評価{mq}） | {name1} and {name2} settle it in the ring at {org}! {winner} takes it (rated {mq}) |
+| {org}で{name1}と{name2}の対立がリング上で決着。{tone}{winner}が勝利を収めた。 | The feud between {name1} and {name2} at {org} was settled in the ring. {tone}{winner} took the win. |
+| {org}の{name1}と{name2}に亀裂——団体側は静観の構え | A rift between {name1} and {name2} at {org} — promotion stands back |
+| {org}内で{name1}と{name2}の関係が悪化。団体側は介入せず静観を決め込んでいる。 | Relations between {name1} and {name2} inside {org} have gone bad. The promotion is not stepping in and has settled on watching. |
+| {org}の{name}、練習中に{injury}で{weeks}週離脱 | {name} of {org} faces a {weeks}-week layoff — {injury} in training |
+| {org}の練習中に{name}が負傷。{weeks}週間の離脱を余儀なくされる。 | {name} was hurt in training at {org}. She is looking at a {weeks}-week absence. |
+| {outlet}が{org}の{name}に密着取材開始 | {outlet} starts a documentary feature on {name} of {org} |
+| {outlet}が{org}所属の{name}への密着取材を開始。今後3興行の活躍に注目が集まる。 | {outlet} has begun a documentary feature on {name} of {org}. Her next three shows are the ones to watch. |
+| {org}の{name}、密着取材で好評——人気急上昇 | {name} of {org} comes off well on film — popularity climbing |
+| {outlet}の密着取材を受けた{name}が好成績を収め、人気が急上昇した。平均試合評価{avgMQ}。 | {name}, followed by {outlet}, delivered results and her popularity climbed. Average rating {avgMQ}. |
+| 歴史に残る名勝負！ | ␣One that will be remembered. |
+| 好勝負を展開。 | ␣A good match, well worked. |
+| ⚔ {challengerOrg} vs {defenderOrg} 対抗戦は決着つかず | ⚔ {challengerOrg} vs {defenderOrg} — no decision in the interpromotional |
+| {stamp}。{challengerName}と{defenderName}の代表対決は決着つかずに終わった。試合評価{mq}。{tone} | {stamp}. The representatives' match between {challengerName} and {defenderName} ended without a decision. Rated {mq}.{tone} |
+| ⚔ {challengerOrg} vs {defenderOrg} 対抗戦——{winnerOrg}の{winnerName}が勝利 | ⚔ {challengerOrg} vs {defenderOrg} — {winnerName} of {winnerOrg} takes it |
+| {stamp}。{challengerOrg}と{defenderOrg}の対抗戦で、{winnerOrg}の{winnerName}が勝利を収めた。試合評価{mq}。{tone} | {stamp}. In the interpromotional match between {challengerOrg} and {defenderOrg}, {winnerName} of {winnerOrg} took the win. Rated {mq}.{tone} |
+| 📜 {defenderOrg}、{challengerOrg}・{challengerName}からの挑戦状を辞退 | 📜 {defenderOrg} turns down the challenge from {challengerName} of {challengerOrg} |
+| {stamp}。{challengerOrg}の{challengerName}が{defenderOrg}に挑戦状を叩きつけたが、{defenderOrg}側はこれを辞退した。 | {stamp}. {challengerName} of {challengerOrg} threw down a challenge to {defenderOrg}, and {defenderOrg} turned it down. |
+| 📜 {challengerOrg} vs {defenderOrg} 挑戦状一騎討ちは決着つかず | 📜 {challengerOrg} vs {defenderOrg} — challenge singles ends without a decision |
+| {stamp}。{challengerName}と{defenderName}による挑戦状の一騎討ちは決着つかず。試合評価{mq}。 | {stamp}. The challenge singles between {challengerName} and {defenderName} ended without a decision. Rated {mq}. |
+| 📜 {challengerOrg}・{challengerName}が{defenderOrg}に挑戦状——{winnerOrg}の{winnerName}が制す | 📜 {challengerName} of {challengerOrg} challenges {defenderOrg} — {winnerName} of {winnerOrg} takes it |
+| {stamp}。{challengerName}が{defenderOrg}に叩きつけた挑戦状の一騎討ちは、{winnerOrg}の{winnerName}が勝利。試合評価{mq}。{tone} | {stamp}. The challenge {challengerName} threw down to {defenderOrg} was settled in singles, and {winnerName} of {winnerOrg} won it. Rated {mq}.{tone} |
+
+**`NEWS_FALLBACK_TEMPLATES`(3)**
+
+| JA | EN |
+|---|---|
+| 所属団体 | her promotion |
+| 選考通過者 | those who came through selection |
+| 定期興行開催 | Regular show held |
+
+※ 表中の `␣` は**半角スペース1個**(訳文が持つ前置/後置スペース)。実データには `␣` の文字は入っていない。
+
+### 7. JA 1バイト不変の担保 — 凍結コピーとの全分岐突合(8,880通り・不一致0)
+
+`git show HEAD:src/*.js` から**凍結コピー**を切り出して別VMコンテキストへ復元し、
+`Math.random` を両側で同一シードに固定した上で、同じ合成stateを流して `JSON.stringify` 突合した。
+
+| 対象 | 直積 | 件数 | 不一致 |
+|---|---|---:|---:|
+| `generate()` 全記事型 | ジュニアTN(tone4×次点2×準決勝敗退者2×round4=64) / AI団体13型 / retirementDeclare / preview 4型 / winStreak・longInjury・transferDone(団体名欠落2) | **162** | **0** |
+| `eventContenders` + `eventPreviewParagraph` | 王座2×MVP6×人気3×優勝歴4×連勝5×団体名2×対戦歴3 | **8,640** | **0** |
+| `composeHallOfFameRetirement` | 所属3(null/空/実名)×殿堂位3×戴冠2×防衛2 | **36** | **0** |
+| `buildTenchosen*Data` | 特別招待0/1/2名 × 2関数(`previewRaw` は追加フィールドとして除外) | **6** | **0** |
+| 引退記事の**素のフォールバック** | `RETIREMENT_TEMPLATES` を空にして強制到達(実運用では踏めない枝) | **36** | **0** |
+
+覆域は「その分岐の文言が実際に出力へ現れたか」を正規表現で数えて確認した(全26分岐が1回以上ヒット。
+`aiRetirement` の素フォールバックだけは通常グリッドでは到達しないので、最下段の強制到達グリッドで担保)。
+
+### 8. 検証結果
+
+| 検査 | 結果 |
+|---|---|
+| `node --check`(data.js / management.js / lang-en-templates.js / i18n-extract-templates.js / injury-label-test.js) | ✅ 全OK(+ template-ledger.json のJSON妥当性。抽出器を再実行しても台帳はバイト一致) |
+| `node test/ja-golden.js`(`--update`不使用) | ✅ 完全一致(lines=11233, hash=`6b3d05c8…` 不変) |
+| `node test/i18n-build-template-dict.js` | ✅ 3,141キー(+82)・**未訳0**(PH完全性/黒田禁止語/不定冠詞すべて通過。規則23警告は61件=増減0) |
+| `node test/i18n-build-dict.js` | ✅ 4,243キー・未訳0(ui-ledgerは不触) |
+| `node test/i18n-ledger-consistency-test.js` | ✅ 2台帳以上に存在するキー15件・すべて訳文一致 |
+| `npm test` | ✅ **261 PASS / 0 FAIL** |
+| `node test/i18n-ratchet.js --update` | data.js +82 / management.js −84 / 総数 −8 |
+| `node test/auto-sim.js 20 42` | ✅ **ALL CLEAR**(台帳検査3種すべて違反0)。指紋 `464f6941` |
+| `npm run test:ui:walkthrough`(JA) | ✅ PASS・328手・digest **`1052faa82eaf7991` 不変**・Issues 0・Recovered-by-retry 0 |
+| `npm run test:ui:walkthrough:en`(EN) | ✅ PASS・416手・**i18n-miss 0**・Issues 0・JA露出by screen に `screen-newspaper` は出ない |
+| `npm run test:ui:ignite -- --scenario tenchosen` | ✅ PASS(`unified-coronation` 点火・Issues 0) |
+| VM全分岐突合(JA同一性) | ✅ **8,880通り / 不一致0** |
+| EN目視(21シナリオ+事前記事) | ✅ **日本語0文字**(実在の選手名・団体名で検証) |
+
+**auto-sim 指紋の説明**: 指紋は最終 `G` 全体を hash するので、追加した6フィールド
+(`previewRaw` / `reasonRaw` / `orgNameMissing` / `orgMissing` / `fromOrgMissing` / `toOrgMissing`)が載るだけで変わる。
+`JSON.stringify` の replacer でこの6キーだけを除外して同条件で走らせると **`f5c3ee76`**
+(=P7-11 が記録した20季 seed42 の値)に**完全一致**した。既存のセマンティック状態は1バイトも動いていない。
+
+**走破digestの揺れについて**: 最初の2回は 57手FAIL / 327手PASS(`70a427ae…`)とばらついたが、
+**凍結コピー(HEAD)を同じ環境で走らせても同じ揺れが出た**うえで、HEAD・作業ツリーとも安定状態では
+328手 `1052faa82eaf7991` で一致した(§29-5 に記録済みの Playwright タイミング揺れ)。
+
+EN実出力の例:
+
+- 殿堂入り: `Tamaki Fukuzawa, who wrestled S1〜S9 with Tencho Pro Wrestling, goes into the Hall of Fame. A career of 3 title reigns, 7 successful defenses, and a place among the greats. Hall of Fame points: 140.`
+- 挑戦状: `📜 Makoto Fukamachi of Tencho Pro Wrestling challenges Breakthrough — Makoto Fukamachi of Tencho Pro Wrestling takes it` / 本文末に ` One that will be remembered.`
+- 事前記事: `The names this paper puts forward: Kanako Tomioka (Kobukan, Reigning Champion, 2-Time Tournament Winner, Junior Tournament Among Them), Makoto Fukamachi (MVP Race Leader, 6-Match Win Streak). Depending on the draw, Kanako Tomioka and Makoto Fukamachi could meet for match 4 between them.`
+- ジュニアTN: `Koharu Takatsu crowned young! Junior Tournament No. 3` / `... to take the Junior Tournament. It was one that will be remembered. Winner's purse: ¥10M.`
+
+### 9. 副作用の修正(1件)
+
+`test/injury-label-test.js` §6「新聞の練習怪我見出しが言い換えを通っている」は
+management.js のソース文字列 `` 練習中に${injuryLabel(ev.injuryType)} `` を正規表現で見ていた。
+見出しがテンプレ表へ移ったので、**検査の狙い(内部キーが記事に漏れないこと)は変えず見る場所だけ移した**
+(`NEWS_AI_ORG_TEXTS.practiceInjuryHeadline` が `{injury}` を差し込み口にしていること +
+management.js が `injury: injuryLabel(ev.injuryType, dict)` を渡していること の2点検査)。
+
+### 10. 発見(P7-16では直していない)
+
+1. **ブレイクスルー記事の `{stat}` が内部キー(`pw`/`te` 等)のまま紙面に出る**。
+   `_newsBreakthroughs` が `btResult.stat` を生で積み、`generate` がそのまま差し込んでいる。
+   同じ `Engine.newspaper` の `buildFollowUp` は `STAT_LABELS_JP[bt.stat]` を通しているので **AI団体側だけが素通し**。
+   feedback「プレイヤー向け表記に内部変数名を使わない」に当たるが、**直すとJA出力が変わる**(golden採り直し)ため
+   **Keisuke裁定待ち**
+2. **`_wmNewsStamp` の suffix が文脈に合わない既訳を引く**。`定期興行` → `Regular shows`(ナビ用の複数形)、
+   `挑戦状` → `Challenge Letter`。スタンプは「第N年度・第M週 種別」の見出しなので単数・見出し体が正。
+   §15-3(同じキーを2台帳に載せない)の副作用で、**P7-16 より前から**同じ
+3. `buildTenchosen*Data` の `invites` / `championWatch` は **push時のlangで焼かれる**。
+   `preview` だけ生キー化したので、この2つは §8 未適用のまま(言語を切り替えた週にキューが残っていると旧言語で出る)
+
+### 11. 確認してほしいこと(実機)
+
+- **JAモードの新聞**で、以下の記事文面が従来どおりであること:
+  1. **ジュニアトーナメント結果号**(第24週)の一面と、**2面「全試合詳報」**(全試合結果・大会ベストバウト・準決勝で散った才能たち)
+  2. **その2週前(第22週)の2面「トーナメント特集」**(出場選手決定 + 黒田記者の展望)
+  3. **AI団体の業界ニュース**(引退 / 大量退団 / 殿堂入り / 定期興行ハイライト / ブレイクスルー / 確執 / 練習中の負傷 / 密着取材 / 対抗戦 / 挑戦状)
+  4. **特別興行の告知号**(春タッグ第10週 / 秋4団体戦第34週 / 天頂戦の開幕号・第43週)の本文末にある「本紙が挙げる注目は…」の一段落
+- **同じ画面をENで開いて**: 上記4種に日本語が残っていないか / 選手名・団体名・媒体名が英語になっているか /
+  注目選手の括弧内(`(Kobukan, Reigning Champion, 6-Match Win Streak)`)が読める英語か
+- **ENの見出し幅**: `📜 {challengerName} of {challengerOrg} challenges {defenderOrg} — ...` 型の挑戦状見出しは
+  JAより長い。一面・肩・準トップのどの枠でも読めるか(溢れたらP7-15のレイアウト側で調整)
+
+---
 ## 🌐 英語対応 P7-14 — ランキング画面の選手層寸評「連結の様式」のテンプレ化(2026-09-04)
 
 P7-8が「未着手」として残した発見1(`_buildDepthNoteV2` / `_buildLeadSentences` が断片連結の生JA)を潰した。開始前にworktreeをmain先端(`3021d166`)へfast-forward。

@@ -18500,15 +18500,18 @@ const Engine = {
           const count = announcement.slotAllocation[row.orgId] || 0;
           return lang === 'ja' ? `${row.name} ${count}枠` : `${row.name}: ${count} slot${count === 1 ? '' : 's'}`;
         }).join(lang === 'ja' ? '、' : ', ');
+        const stlPreviewIds = (s.springTagLeague && s.springTagLeague.teams || [])
+          .flatMap(t => [t && t.f1Id, t && t.f2Id]).filter(id => id != null);
         s = Engine.industryNews.push(s, {
           type: 'springTagAnnounce',
           data: {
             season: s.season,
             teamCount: announcement.teams.length,
             entrySummary,
-            preview: Engine.newspaper.eventPreviewParagraph(s,
-              (s.springTagLeague && s.springTagLeague.teams || [])
-                .flatMap(t => [t && t.f1Id, t && t.f2Id]).filter(id => id != null)),
+            // P7-16: 完成文(preview)は旧セーブ互換で据え置き、生キー(previewRaw)を併記して
+            // 紙面へ載る瞬間に組み直す(specs §8)
+            preview: Engine.newspaper.eventPreviewParagraph(s, stlPreviewIds),
+            previewRaw: Engine.newspaper.eventPreviewParagraphRaw(s, stlPreviewIds),
           },
         });
         events.push(`📰 第${s.season}回春のタッグリーグ 出場${announcement.teams.length}チーム決定`);
@@ -18545,6 +18548,7 @@ const Engine = {
       s = { ...s, autumnWar: announcement, autumnWarPhase: null };
       if (!announcement.cancelled) {
         const bySeed = n => announcement.teams.find(t => t.seed === n);
+        const _awPreviewIds = (announcement.teams || []).flatMap(t => (t && t.memberIds) || []);
         s = Engine.industryNews.push(s, {
           type: 'autumnWarAnnounce',
           data: {
@@ -18553,8 +18557,9 @@ const Engine = {
             seed3: bySeed(3)?.orgName || '', seed4: bySeed(4)?.orgName || '',
             // P3 §2-7: 出場者が未確定でも「出られる面子」から予想は書ける。
             // 並びは OVR ではなく**見えている実績**(王座/MVP/人気/過去の優勝/連勝)
-            preview: Engine.newspaper.eventPreviewParagraph(s,
-              (announcement.teams || []).flatMap(t => (t && t.memberIds) || [])),
+            // P7-16: 完成文は据え置き、生キーを併記して載る瞬間に組み直す(specs §8)
+            preview: Engine.newspaper.eventPreviewParagraph(s, _awPreviewIds),
+            previewRaw: Engine.newspaper.eventPreviewParagraphRaw(s, _awPreviewIds),
           },
         });
         events.push(`📰 第${s.season}回4団体勝ち残り対抗戦 シード決定`);
@@ -30822,6 +30827,32 @@ function _wmTitleName(dict, orgName) {
 const _AW_ROUND_JA = { roundFinal: '決勝', roundSemiFinal: '準決勝' };
 const _AW_MVP_FALLBACK_JA = '該当選手';
 
+// ── i18n Stage B P7-16: Engine.newspaper が「値として」差し込む1語ラベル ──
+// いずれも ui-ledger に既訳があるので data.js のテンプレ表へは入れず(§15-3の二重登録回避)、
+// JA原文をここに1本だけ置いて `_wmDictLabel` で引く。`決勝`/`準決勝` は _AW_ROUND_JA の
+// 同じ literal を参照する(同一ファイル内で同じJA文字列を二度書かない)。
+const _NP_CONTENDER_CHAMPION_JA = '現王者';
+const _NP_EVENT_LABEL_JA = {
+  juniorTournament: 'ジュニアトーナメント',
+  springTagLeague: '春のタッグリーグ',
+  autumnWar: '4団体勝ち残り対抗戦',
+  ppvTournament: '天頂戦',
+};
+const _NP_JT_ROUND_JA = {
+  final: _AW_ROUND_JA.roundFinal,
+  semiFinal: _AW_ROUND_JA.roundSemiFinal,
+  quarterFinal: '準々決勝',
+};
+const _NP_JT_RUNNERUP_FALLBACK_JA = '決勝の相手';
+const _NP_HOF_INDUCTED_JA = '殿堂入り';
+const _NP_MATCH_WINNER_FALLBACK_JA = '勝者';
+// scanRosterNews が積む「団体名が空のときだけ出る」フォールバック。push側はdictを持たない
+// ので、値そのものではなく `*Missing` フラグを併記して載る瞬間に引き直す(§8)。
+const _NP_PLAYER_ORG_FALLBACK_JA = 'プレイヤー団体';
+// winStreakMilestone の記録ライン。push側が焼くJA完成値(旧セーブ互換)と
+// _wmResolvePreformattedIndustryData の再構築が同じ literal を見るよう1本に寄せる。
+const _NP_RECORD_LINE_JA = { broken: '団体記録を塗り替えた。', match: '団体記録に王手をかけた。' };
+
 // ── i18n Stage B P6-18: 年代記の競争記録タイルの mode ラベル ──
 // `陥落` は ui-ledger に既訳("Dethroned")があり、data.js のテンプレ表へ入れると
 // 同じキーが2つの台帳に載る(読み込み順で訳が入れ替わる)。上の _AW_ROUND_JA と同じく
@@ -30878,8 +30909,31 @@ function _wmNewsStamp(dict, season, week, suffixJa) {
 // 実際に紙面へ載る瞬間(dictが揃っているgenerate()内)に改めて言語別の値を組み立てる。
 // 未加工キーが無い(=このコミットより前に積まれた旧セーブのキュー)場合は、
 // pushされた時点の値をそのまま使う(fail-open、後方互換)。
+// i18n Stage B P7-16: `scanRosterNews` は tickWeek の深いところから dict 無しで押すので、
+// 団体名が空の回に焼かれる `プレイヤー団体` フォールバックだけは値ではなくフラグで積む
+// (`orgNameMissing`/`orgMissing`/`fromOrgMissing`/`toOrgMissing`)。載る瞬間に辞書へ通し直す。
+// フラグの無い旧セーブのキューは焼かれた値をそのまま使う(fail-open・§8)。
+const _WM_PLAYER_ORG_FALLBACK_FIELDS = ['orgName', 'org', 'fromOrg', 'toOrg'];
+function _wmResolvePlayerOrgFallback(data, T) {
+  let out = data;
+  _WM_PLAYER_ORG_FALLBACK_FIELDS.forEach((f) => {
+    if (!data[f + 'Missing']) return;
+    if (out === data) out = { ...data };
+    out[f] = _wmDictLabel(T, _NP_PLAYER_ORG_FALLBACK_JA);
+  });
+  return out;
+}
+
+// i18n Stage B P7-16: 特別興行の告知記事に入る「注目選手の一段落」(data.preview)は、
+// push側(tickWeek)が完成文で焼く。生キー(previewRaw)があればそちらから組み直す(§8)。
+// 生キーの無い旧セーブのキューは焼かれたJA完成文のまま(fail-open)。
+function _wmResolvePreviewParagraph(data, dict) {
+  if (!data.previewRaw) return data;
+  return { ...data, preview: Engine.newspaper._composePreviewParagraph(data.previewRaw, dict) };
+}
+
 function _wmResolvePreformattedIndustryData(ev, dict) {
-  const data = ev.data || {};
+  const data = _wmResolvePreviewParagraph(_wmResolvePlayerOrgFallback(ev.data || {}, dict), dict);
   const T = (typeof dict === 'function') ? dict : (s) => s;
   switch (ev.type) {
     case 'topChampionInjury':
@@ -30889,9 +30943,9 @@ function _wmResolvePreformattedIndustryData(ev, dict) {
       if (!data.injuryTypeRaw) return data;
       return { ...data, injuryType: injuryLabel(data.injuryTypeRaw, T) || T('負傷') };
     case 'winStreakMilestone': {
-      const RECORD_LINE_JA = { broken: '団体記録を塗り替えた。', match: '団体記録に王手をかけた。' };
-      if (!data.recordState || !RECORD_LINE_JA[data.recordState]) return data;
-      return { ...data, recordLine: T(RECORD_LINE_JA[data.recordState]) };
+      // P7-16: JA原文は _NP_RECORD_LINE_JA(push側と共有)に1本だけ置く
+      if (!data.recordState || !_NP_RECORD_LINE_JA[data.recordState]) return data;
+      return { ...data, recordLine: T(_NP_RECORD_LINE_JA[data.recordState]) };
     }
     case 'tenchosenBestBout': {
       if (!data.roundKey) return data;
@@ -31322,7 +31376,11 @@ Engine.newspaper = {
     if (!d || !hofEntry) return null;
     const T = (tpl, params) => _wmFillWithDict(dict, tpl, params);
     const name = d.name || hofEntry.name || '';
-    const orgName = d.orgName || d.org || hofEntry.orgName || '所属団体';
+    // P7-16: 所属が全て空のときのフォールバックは NEWS_FALLBACK_TEMPLATES へ移設(§34-7)。
+    // テンプレ本文ではなく**値**として差し込むので _wmDictLabel で引く。
+    const FB = (typeof NEWS_FALLBACK_TEMPLATES !== 'undefined') ? NEWS_FALLBACK_TEMPLATES : null;
+    const orgName = d.orgName || d.org || hofEntry.orgName
+      || (FB ? _wmDictLabel(dict, FB.hofOrgFallback) : '');
     const seasons = Number(d.seasons) || Math.max(1,
       (Number(hofEntry.activeSeasonsEnd) || 1) - (Number(hofEntry.activeSeasonsStart) || 1) + 1);
     const titleReigns = Math.max(Number(d.reigns) || 0, Number(hofEntry.titleReigns) || 0);
@@ -31789,9 +31847,13 @@ Engine.newspaper = {
   CONTENDER: { champion: 100, mvpTop: 90, mvpTop3: 60, mvpTop10: 30, popTop3: 55, popTop10: 25, pastTitle: 45, streak: 30 },
 
   /** 優勝候補を「見えている実績」で並べる。
-   *  @returns [{ id, name, orgName, reason }] — reason は記事本文にそのまま使える一句 */
-  eventContenders(state, ids, limit = 3) {
+   *  @returns [{ id, name, orgName, reason, reasonRaw }] — reason は記事本文にそのまま使える一句
+   *  i18n Stage B P7-16: 第4引数 dict(=WM_I18N.t 相当)。省略時はJA原文のまま(1バイト不変)。
+   *  reasonRaw は「どの理由がどの値で選ばれたか」の生キー配列で、キューへ焼かれた完成文
+   *  (reason/preview)を**載る瞬間に**組み直すために併記する(specs §8)。 */
+  eventContenders(state, ids, limit = 3, dict) {
     if (!state || !Array.isArray(ids) || !ids.length) return [];
+    const CT = (typeof NEWS_CONTENDER_TEXTS !== 'undefined') ? NEWS_CONTENDER_TEXTS : null;
     const C = Engine.newspaper.CONTENDER;
     const ctx = Engine.newspaper.buildValueContext(state);
     // 「業界人気トップN」は母数がある程度ないと意味を持たない。
@@ -31805,33 +31867,75 @@ Engine.newspaper = {
     ids.forEach(id => {
       const f = Engine.newspaper._findFighter(state, id);
       if (!f) return;
-      let score = 0; const reasons = [];
-      if (ctx.champs.has(id)) { score += C.champion; reasons.push('現王者'); }
+      let score = 0; const reasons = []; const reasonRaw = [];
+      // 断片は「テンプレ+値」で1本ずつ組む。生キー(reasonRaw)は同じ順で積み、
+      // dict が無い呼び出し(キューへの焼き込み)でも後から組み直せるようにする。
+      const addReason = (tpl, params, raw) => {
+        reasons.push(tpl ? _wmFillWithDict(dict, tpl, params) : '');
+        reasonRaw.push(raw);
+      };
+      if (ctx.champs.has(id)) {
+        score += C.champion;
+        reasons.push(_wmDictLabel(dict, _NP_CONTENDER_CHAMPION_JA));
+        reasonRaw.push({ k: 'champion' });
+      }
       const mv = ctx.mvpRank.get(id);
-      if (mv === 1) { score += C.mvpTop; reasons.push('MVPレース首位'); }
-      else if (mv >= 2 && mv <= 3) { score += C.mvpTop3; reasons.push(`MVPレース${mv}位`); }
-      else if (mv >= 4 && mv <= 10) { score += C.mvpTop10; reasons.push(`MVPレース${mv}位`); }
-      if (popTop3.has(id)) { score += C.popTop3; reasons.push('業界屈指の人気'); }
-      else if (popTop10.has(id)) { score += C.popTop10; reasons.push('人気上位'); }
+      if (mv === 1) { score += C.mvpTop; addReason(CT && CT.mvpTop, null, { k: 'mvpTop' }); }
+      else if (mv >= 2 && mv <= 3) { score += C.mvpTop3; addReason(CT && CT.mvpRank, { rank: mv }, { k: 'mvpRank', rank: mv }); }
+      else if (mv >= 4 && mv <= 10) { score += C.mvpTop10; addReason(CT && CT.mvpRank, { rank: mv }, { k: 'mvpRank', rank: mv }); }
+      if (popTop3.has(id)) { score += C.popTop3; addReason(CT && CT.popTop3, null, { k: 'popTop3' }); }
+      else if (popTop10.has(id)) { score += C.popTop10; addReason(CT && CT.popTop10, null, { k: 'popTop10' }); }
       const hist = (f.careerRecord && f.careerRecord.history) || [];
-      const EV = { juniorTournament: 'ジュニアトーナメント', springTagLeague: '春のタッグリーグ', autumnWar: '4団体勝ち残り対抗戦', ppvTournament: '天頂戦' };
+      const EV = _NP_EVENT_LABEL_JA;
       const wins = hist.filter(e => e && EV[e.type] && e.result === 'champion');
       if (wins.length) {
         score += C.pastTitle * Math.min(2, wins.length);
-        const label = EV[wins[wins.length - 1].type];
-        reasons.push(wins.length >= 2 ? `${label}を含む大会${wins.length}度の優勝経験` : `${label}の優勝経験`);
+        const evKey = wins[wins.length - 1].type;
+        // 大会名は ui-ledger の既訳を**値として**引く(§15-3)
+        const label = _wmDictLabel(dict, EV[evKey]);
+        addReason(
+          CT && (wins.length >= 2 ? CT.pastTitleMulti : CT.pastTitleOne),
+          { label, count: wins.length },
+          { k: wins.length >= 2 ? 'pastTitleMulti' : 'pastTitleOne', evKey, count: wins.length },
+        );
       }
       const st = f.streak || 0;
-      if (st >= 5) { score += C.streak + Math.min(20, (st - 5) * 4); reasons.push(`${st}連勝中`); }
+      if (st >= 5) { score += C.streak + Math.min(20, (st - 5) * 4); addReason(CT && CT.streak, { count: st }, { k: 'streak', count: st }); }
       if (!reasons.length) return; // 語れる実績が無い選手は候補に挙げない
+      const kept = reasons.slice(0, 2);
       rows.push({
         id, name: f.name, score,
         orgName: Engine.newspaper._orgNameOfFighter(state, id),
-        reason: reasons.slice(0, 2).join('・'),
+        // 連結様式(JA=中黒 / EN=カンマ)もテンプレ経由。断片は1〜2本なので畳み込む
+        reason: kept.length > 1 && CT
+          ? _wmFillWithDict(dict, CT.reasonJoin, { a: kept[0], b: kept[1] })
+          : kept.join('・'),
+        reasonRaw: reasonRaw.slice(0, 2),
       });
     });
     rows.sort((a, b) => b.score - a.score || a.id - b.id);
     return rows.slice(0, limit);
+  },
+
+  /** P7-16: eventContenders が積んだ生キー(reasonRaw)から選出理由を組み直す。
+   *  キューへ焼かれた完成文(preview)を紙面へ載せる瞬間に再構築するために使う(§8)。 */
+  _composeContenderReason(reasonRaw, dict) {
+    const CT = (typeof NEWS_CONTENDER_TEXTS !== 'undefined') ? NEWS_CONTENDER_TEXTS : null;
+    const parts = (reasonRaw || []).map((r) => {
+      if (!r || !r.k) return '';
+      if (r.k === 'champion') return _wmDictLabel(dict, _NP_CONTENDER_CHAMPION_JA);
+      if (!CT) return '';
+      if (r.k === 'mvpRank') return _wmFillWithDict(dict, CT.mvpRank, { rank: r.rank });
+      if (r.k === 'streak') return _wmFillWithDict(dict, CT.streak, { count: r.count });
+      if (r.k === 'pastTitleMulti' || r.k === 'pastTitleOne') {
+        const label = _wmDictLabel(dict, _NP_EVENT_LABEL_JA[r.evKey] || '');
+        return _wmFillWithDict(dict, CT[r.k], { label, count: r.count });
+      }
+      return CT[r.k] ? _wmFillWithDict(dict, CT[r.k], null) : '';
+    }).filter(Boolean);
+    if (!parts.length) return '';
+    if (parts.length === 1 || !CT) return parts.join('・');
+    return parts.reduce((a, b) => _wmFillWithDict(dict, CT.reasonJoin, { a, b }));
   },
 
   _orgNameOfFighter(state, id) {
@@ -31847,13 +31951,23 @@ Engine.newspaper = {
   },
 
   /** 事前記事に足す「優勝候補」＋「注目カード」の一段落。
-   *  素材が無ければ空文字を返す(無理に埋めない)。*/
+   *  素材が無ければ空文字を返す(無理に埋めない)。
+   *  i18n Stage B P7-16: この段落は industryNews キューの data.preview へ**完成文で焼かれる**
+   *  (最大数週間滞留してから紙面化される)ので、生キーを返す eventPreviewParagraphRaw を対に
+   *  用意し、載る瞬間に _composePreviewParagraph で組み直す(specs §8)。*/
   eventPreviewParagraph(state, ids) {
+    const raw = Engine.newspaper.eventPreviewParagraphRaw(state, ids);
+    return Engine.newspaper._composePreviewParagraph(raw);
+  },
+
+  /** 上の段落を作るための素材だけを返す(dictを持たないpush側が data へ併記する)。*/
+  eventPreviewParagraphRaw(state, ids) {
     const picks = Engine.newspaper.eventContenders(state, ids, 3);
-    if (!picks.length) return '';
-    const named = picks.map(p => `${p.name}（${p.orgName ? p.orgName + '・' : ''}${p.reason}）`);
-    // **断定しない**。記者の予想であって結果ではない
-    let s = `本紙が挙げる注目は${named.join('、')}。`;
+    if (!picks.length) return null;
+    const out = {
+      picks: picks.map(p => ({ name: p.name, orgName: p.orgName, reasonRaw: p.reasonRaw })),
+      rematch: null,
+    };
     // 注目カード: 候補どうしに対戦履歴があれば名指しで書く
     const h2h = state.h2h || {};
     for (let i = 0; i < picks.length; i++) {
@@ -31863,12 +31977,36 @@ Engine.newspaper = {
           || h2h[`${a.id}_${b.id}`] || h2h[`${b.id}_${a.id}`];
         const n = rec && (rec.matches || 0);
         if (n >= 2) {
-          s += `組み合わせ次第では${a.name}と${b.name}の${n + 1}度目が実現する。`;
-          return s;
+          out.rematch = { a: a.name, b: b.name, count: n + 1 };
+          return out;
         }
       }
     }
-    return s;
+    return out;
+  },
+
+  /** 生キー(eventPreviewParagraphRaw の戻り値)から段落を組む。dict省略時はJA原文のまま。*/
+  _composePreviewParagraph(raw, dict) {
+    if (!raw || !raw.picks || !raw.picks.length) return '';
+    const CT = (typeof NEWS_CONTENDER_TEXTS !== 'undefined') ? NEWS_CONTENDER_TEXTS : null;
+    const JOIN = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
+    if (!CT || !JOIN) return '';
+    const named = raw.picks.map((p) => {
+      const reason = Engine.newspaper._composeContenderReason(p.reasonRaw, dict);
+      return p.orgName
+        ? _wmFillWithDict(dict, CT.pickWithOrg, { name: p.name, org: p.orgName, reason })
+        : _wmFillWithDict(dict, CT.pickNoOrg, { name: p.name, reason });
+    });
+    // 列挙の区切り(JA=読点 / EN=", ")も様式テンプレへ委ねる
+    const list = named.reduce((a, b) => _wmFillWithDict(dict, JOIN.nameList, { a, b }));
+    // **断定しない**。記者の予想であって結果ではない
+    const s = _wmFillWithDict(dict, CT.lead, { list });
+    if (!raw.rematch) return s;
+    const tail = _wmFillWithDict(dict, CT.rematch, {
+      a: raw.rematch.a, b: raw.rematch.b, count: raw.rematch.count,
+    });
+    // 完成文どうしの連結様式(JA=直結 / EN=半角スペース)。旧実装の `s += …` に相当
+    return _wmFillWithDict(dict, JOIN.join, { a: s, b: tail });
   },
 
   // 天頂戦の告知用素材。選手がまだ語れる段階でなければ characterIds は空にして、
@@ -31892,7 +32030,9 @@ Engine.newspaper = {
       characterIds: ids.slice(0, 3),
       championWatch: previousChampion && candidateIds.includes(previousChampionId)
         ? fillTemplateVars(T('前回覇者の{name}にも、4年越しの連覇を期待する声がある。'), { name: previousChampion.name }) : '',
+      // P7-16: 完成文は据え置き、生キーを併記して載る瞬間に組み直す(specs §8)
       preview: this.eventPreviewParagraph(state, candidateIds),
+      previewRaw: this.eventPreviewParagraphRaw(state, candidateIds),
     };
   },
 
@@ -31914,10 +32054,17 @@ Engine.newspaper = {
       season: state.season,
       characterId: ids[0] || null,
       characterIds: ids.slice(0, 3),
-      invites: inviteNames.length ? inviteNames.join('、') : '選考通過者',
+      // P7-16: 招待者ゼロの年に出る `選考通過者` は NEWS_FALLBACK_TEMPLATES へ移設(§34-7)。
+      // 名前の列挙(読点)も ARTICLE_COMPOSE_TEMPLATES.nameList の畳み込みへ寄せる
+      invites: inviteNames.length
+        ? Engine.newspaper.joinNameList(inviteNames, dict)
+        : ((typeof NEWS_FALLBACK_TEMPLATES !== 'undefined')
+          ? _wmDictLabel(dict, NEWS_FALLBACK_TEMPLATES.tenchosenInvites) : ''),
       championWatch: previousChampion && entryIds.includes(previousChampionId)
         ? fillTemplateVars(T('前回覇者の{name}も出場圏内に入り、連覇への期待が高まる。'), { name: previousChampion.name }) : '',
+      // P7-16: 完成文は据え置き、生キーを併記して載る瞬間に組み直す(specs §8)
       preview: this.eventPreviewParagraph(state, entryIds),
+      previewRaw: this.eventPreviewParagraphRaw(state, entryIds),
     };
   },
 
@@ -31938,8 +32085,12 @@ Engine.newspaper = {
     const nextStreak = { ...seen.streak };
     const pushes = [];
 
+    // P7-16: 団体名が空の回だけ出る `プレイヤー団体` は、ここ(dictが無い)でJAを焼かずに
+    // 「欠けている」印だけを data へ載せ、紙面に載る瞬間に辞書を引き直す(specs §8)。
+    // JA出力は従来と同じ(_wmResolvePlayerOrgFallback が同じ literal を返す)。
+    const playerOrgMissing = !s.orgName;
     const orgsOf = () => {
-      const list = [['player', s.roster, s.orgName || 'プレイヤー団体']];
+      const list = [['player', s.roster, s.orgName || _NP_PLAYER_ORG_FALLBACK_JA]];
       const ai = s.aiOrgs || {};
       for (const k in ai) {
         list.push([k, ai[k] && ai[k].roster,
@@ -31950,6 +32101,7 @@ Engine.newspaper = {
     };
 
     orgsOf().forEach(([orgId, roster, orgName]) => {
+      const orgNameMissing = (orgId === 'player') && playerOrgMissing;
       (roster || []).forEach(f => {
         if (!f || f.id == null) return;
         const key = String(f.id);
@@ -31965,7 +32117,7 @@ Engine.newspaper = {
             pushes.push({
               type: 'longInjury', characterId: f.id,
               // 表示は必ず injuryLabel を通す(内部キー「中傷」は誹謗中傷と読める — data.js INJURY_LABEL)
-              data: { name: f.name, orgName, weeks, injuryType: injuryLabel((f.injury && f.injury.type) || '') || '負傷', injuryTypeRaw: (f.injury && f.injury.type) || '', weeksOut: weeks },
+              data: { name: f.name, orgName, orgNameMissing, weeks, injuryType: injuryLabel((f.injury && f.injury.type) || '') || '負傷', injuryTypeRaw: (f.injury && f.injury.type) || '', weeksOut: weeks },
             });
           }
         } else if (weeks === 0 && nextInjury[key]) {
@@ -31984,15 +32136,16 @@ Engine.newspaper = {
           pushes.push({
             type: 'winStreakMilestone', characterId: f.id,
             data: {
-              name: f.name, orgName, count: hit, recordState: rec || '',
-              recordLine: rec === 'broken' ? '団体記録を塗り替えた。'
-                : rec === 'match' ? '団体記録に王手をかけた。' : '',
+              name: f.name, orgName, orgNameMissing, count: hit, recordState: rec || '',
+              // P7-16: JA原文は _NP_RECORD_LINE_JA に1本だけ置く
+              // (載る瞬間の再構築 _wmResolvePreformattedIndustryData と同じ表を見る)
+              recordLine: _NP_RECORD_LINE_JA[rec] || '',
             },
           });
         } else {
           pushes.push({
             type: 'loseStreakMilestone', characterId: f.id,
-            data: { name: f.name, orgName, count: hit },
+            data: { name: f.name, orgName, orgNameMissing, count: hit },
           });
         }
       });
@@ -32019,7 +32172,11 @@ Engine.newspaper = {
         if (!f) return;
         pushes.push({
           type: 'transferDone', characterId: f.id,
-          data: { name: f.name, fromOrg: nameOf(before), toOrg: nameOf(nextOrg[key]) },
+          data: {
+            name: f.name, fromOrg: nameOf(before), toOrg: nameOf(nextOrg[key]),
+            fromOrgMissing: before === 'player' && playerOrgMissing,
+            toOrgMissing: nextOrg[key] === 'player' && playerOrgMissing,
+          },
         });
       });
     }
@@ -32038,7 +32195,7 @@ Engine.newspaper = {
       pushes.push({
         type: 'retirementDeclare', characterId: r.id,
         data: {
-          name: r.name, org: s.orgName || 'プレイヤー団体',
+          name: r.name, org: s.orgName || _NP_PLAYER_ORG_FALLBACK_JA, orgMissing: playerOrgMissing,
           age: r.age || '', seasons: (r.careerSeasons || 0) + 1,
           reigns: cs.reigns, peakOVR: cs.peakOVR, wasChampion: cs.wasChampion,
         },
@@ -32135,6 +32292,14 @@ Engine.newspaper = {
   // (auto-sim/ja-goldenを含む既存呼び出し元は無改修で1バイトも変わらない)。
   generate(state, rng, opts) {
     const dict = (opts && typeof opts.dict === 'function') ? opts.dict : (s) => s;
+    // i18n Stage B P7-16: 記事テンプレの短縮参照。`T` は「PH置換前に辞書を引いてから充填」
+    // (_wmFillWithDict)、`L` は「テンプレへ差し込む1語ラベルを値として引く」(_wmDictLabel)。
+    // 表が読めない環境(data.js未ロード)では従来どおり空文字へ落ちる。
+    const T = (tpl, params) => _wmFillWithDict(dict, tpl || '', params);
+    const L = (jaLabel) => _wmDictLabel(dict, jaLabel);
+    const NJT = (typeof NEWS_JUNIOR_TOURNAMENT_TEXTS !== 'undefined') ? NEWS_JUNIOR_TOURNAMENT_TEXTS : {};
+    const NAI = (typeof NEWS_AI_ORG_TEXTS !== 'undefined') ? NEWS_AI_ORG_TEXTS : {};
+    const NFB = (typeof NEWS_FALLBACK_TEMPLATES !== 'undefined') ? NEWS_FALLBACK_TEMPLATES : {};
     const P = Engine.newspaper.PRIORITY;
     const stories = [];
     // task-77 §A-2: 同一号に同ティアの引退が複数出る場合、バリアントを順繰りに変える。
@@ -32184,7 +32349,7 @@ Engine.newspaper = {
       stories.push({
         type: isTitleShow ? 'playerShowTitle' : 'playerShowNormal',
         priority: isTitleShow ? P.playerShowTitle : P.playerShowNormal,
-        headline: cn.headline || '定期興行開催',
+        headline: cn.headline || L(NFB.playerShowHeadline),
         body: cn.article || cn.subheadline || '',
         characterId: cn.winner?.id || cn.left?.id || null,
         situation: stamp,
@@ -32197,12 +32362,17 @@ Engine.newspaper = {
       if (jtr.champion) {
         const finalMatch = jtr.rounds[jtr.rounds.length - 1].matches[0];
         const mq = finalMatch.mq;
-        let tone = mq >= 80 ? '歴史に残る名勝負だ' : mq >= 60 ? '見応えのある決勝戦だった' : mq >= 40 ? 'やや一方的な展開だった' : '期待外れの決勝だった';
+        const tone = L(mq >= 80 ? NJT.resultToneMasterpiece : mq >= 60 ? NJT.resultToneGood
+          : mq >= 40 ? NJT.resultToneOneSided : NJT.resultTonePoor);
         stories.push({
           type: 'juniorTournamentResult',
           priority: P.juniorTournamentResult,
-          headline: `${jtr.champion.name}、若き栄冠！ 第${state.season}回ジュニアトーナメント制覇`,
-          body: `${jtr.champion.name}（${jtr.champion._orgName}）が${jtr.runnerUp ? jtr.runnerUp.name : '決勝の相手'}を下し、ジュニアトーナメント優勝を飾った。${tone}。優勝賞金1,000万円。`,
+          headline: T(NJT.resultHeadline, { name: jtr.champion.name, season: state.season }),
+          body: T(NJT.resultBody, {
+            name: jtr.champion.name, org: jtr.champion._orgName,
+            runnerUp: jtr.runnerUp ? jtr.runnerUp.name : L(_NP_JT_RUNNERUP_FALLBACK_JA),
+            tone,
+          }),
           characterId: jtr.champion.id,
         });
       }
@@ -32349,9 +32519,12 @@ Engine.newspaper = {
             const hofEntry = Engine.newspaper._findHallOfFameEntry(state, ev.id);
             const hofFeature = Engine.newspaper.composeHallOfFameRetirement(ev, hofEntry, dict);
             const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, ev, dict)
-              : `${ev.orgName}の${ev.name}が現役引退を表明`;
+              : T(NAI.retirementHeadline, { org: ev.orgName, name: ev.name });
             const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, ev, dict)
-              : `${ev.orgName}で${ev.seasons || '複数'}シーズンを戦った${ev.name}（${ev.age}歳）が引退を発表。`;
+              : T(NAI.retirementBody, {
+                org: ev.orgName, name: ev.name, age: ev.age,
+                seasons: ev.seasons || L(NAI.retirementSeasonsUnknown),
+              });
             stories.push({
               type: isAce ? 'aiAceRetirement' : 'aiRetirement',
               priority: isAce ? P.aiAceRetirement : P.aiRetirement,
@@ -32407,8 +32580,12 @@ Engine.newspaper = {
             stories.push({
               type: 'aiContractDeparture',
               priority: P.aiContractDeparture + 30,
-              headline: `${orgName}で大量退団——${deps.length}名が離脱`,
-              body: `${orgName}から${deps.map(d => d.fighterName).join('、')}の${deps.length}名が退団。団体の先行きに不安が広がる。`,
+              headline: T(NAI.massDepartureHeadline, { org: orgName, count: deps.length }),
+              body: T(NAI.massDepartureBody, {
+                org: orgName, count: deps.length,
+                // 名前の列挙(JA=読点 / EN=", ")は共通ヘルパーの畳み込みへ寄せる
+                names: Engine.newspaper.joinNameList(deps.map(d => d.fighterName), dict),
+              }),
               characterId: deps[0].fighterId,
             });
           } else {
@@ -32441,16 +32618,24 @@ Engine.newspaper = {
             // 同じ号に引退記事がある選手は、そちらを「殿堂入り引退特別号」へ統合する。
             // 独立した殿堂記事まで並べると、同一人物が一面とサブで二重掲載になる。
             if (retirementIds.has(String(h.id))) return;
-            const starText = h.hofLevel >= 3 ? '★★★レジェンド' : h.hofLevel >= 2 ? '★★ゴールド殿堂' : '殿堂入り';
+            const starText = h.hofLevel >= 3 ? L(NAI.hofStarLegend)
+              : h.hofLevel >= 2 ? L(NAI.hofStarGold) : L(_NP_HOF_INDUCTED_JA);
             const statsText = [];
-            if (h.titleReigns > 0) statsText.push(`通算${h.titleReigns}度戴冠`);
-            if (h.totalDefenses > 0) statsText.push(`${h.totalDefenses}度防衛`);
-            const careerDesc = statsText.length > 0 ? statsText.join('・') + 'の伝説的キャリア' : '数々の名勝負を残した';
+            if (h.titleReigns > 0) statsText.push(T(NAI.hofReigns, { count: h.titleReigns }));
+            if (h.totalDefenses > 0) statsText.push(T(NAI.hofDefenses, { count: h.totalDefenses }));
+            const careerDesc = statsText.length > 0
+              ? T(NAI.hofCareerWithStats, {
+                stats: statsText.reduce((a, b) => T(NAI.hofStatsJoin, { a, b })),
+              })
+              : L(NAI.hofCareerNoStats);
             stories.push({
               type: 'npcHallOfFame',
               priority: P.npcHallOfFame,
-              headline: `${h.orgName}の${h.name}（${h.retireAge}歳）が${starText}`,
-              body: `${h.orgName}で${h.activeYears}を戦った${h.name}が殿堂入り。${careerDesc}。殿堂ポイント${h.hofPoints}ptを獲得。`,
+              headline: T(NAI.hofHeadline, { org: h.orgName, name: h.name, age: h.retireAge, star: starText }),
+              body: T(NAI.hofBody, {
+                org: h.orgName, name: h.name, years: h.activeYears,
+                career: careerDesc, points: h.hofPoints,
+              }),
               characterId: h.id,
             });
           });
@@ -32463,8 +32648,10 @@ Engine.newspaper = {
           stories.push({
             type: 'aiShowHighlight',
             priority: P.aiShowHighlight,
-            headline: `${ev.orgName}定期興行——${ev.winnerName}が${ev.loserName}を下す`,
-            body: `${stamp}。${ev.orgName}の興行で${ev.winnerName}が${ev.loserName}に勝利。試合評価${ev.mq}を記録した。`,
+            headline: T(NAI.showHighlightHeadline, { org: ev.orgName, winner: ev.winnerName, loser: ev.loserName }),
+            body: T(NAI.showHighlightBody, {
+              stamp, org: ev.orgName, winner: ev.winnerName, loser: ev.loserName, mq: ev.mq,
+            }),
             characterId: ev.winnerId,
             situation: stamp,
           });
@@ -32476,8 +32663,10 @@ Engine.newspaper = {
             stories.push({
               type: 'aiBreakthrough',
               priority: P.aiBreakthrough,
-              headline: `${ev.orgName}の${ev.name}が急成長——注目の存在に`,
-              body: `${ev.orgName}所属の${ev.name}がブレイクスルーを達成。${ev.stat}が大幅に向上し、今後の活躍が期待される。`,
+              headline: T(NAI.breakthroughHeadline, { org: ev.orgName, name: ev.name }),
+              // {stat} は内部キー(pw/tc等)がそのまま出る既存挙動。JAを変えないためここでは
+              // 値に手を入れない(specs §34-8 の残課題として記録)
+              body: T(NAI.breakthroughBody, { org: ev.orgName, name: ev.name, stat: ev.stat }),
               characterId: ev.id,
             });
           });
@@ -32487,16 +32676,21 @@ Engine.newspaper = {
         if (aiData._newsTeamConflict) {
           aiData._newsTeamConflict.forEach(ev => {
             let headline, body;
+            const cVars = { org: ev.orgName, name1: ev.fighter1Name, name2: ev.fighter2Name };
             if (ev.resolution === 'talk') {
-              headline = `${ev.orgName}で${ev.fighter1Name}と${ev.fighter2Name}の確執が浮上——話し合いで収束`;
-              body = `${ev.orgName}内で${ev.fighter1Name}と${ev.fighter2Name}の間に緊張が走ったが、話し合いにより事態は収束した。`;
+              headline = T(NAI.conflictTalkHeadline, cVars);
+              body = T(NAI.conflictTalkBody, cVars);
             } else if (ev.resolution === 'match') {
-              const mqTone = ev.matchMQ >= 70 ? '名勝負となった一戦は' : '';
-              headline = `${ev.orgName}の${ev.fighter1Name}と${ev.fighter2Name}、リング上で決着！ ${ev.matchWinner || ''}が勝利（試合評価${ev.matchMQ || 0}）`;
-              body = `${ev.orgName}で${ev.fighter1Name}と${ev.fighter2Name}の対立がリング上で決着。${mqTone}${ev.matchWinner || '勝者'}が勝利を収めた。`;
+              const mqTone = ev.matchMQ >= 70 ? L(NAI.conflictMatchTone) : '';
+              headline = T(NAI.conflictMatchHeadline, {
+                ...cVars, winner: ev.matchWinner || '', mq: ev.matchMQ || 0,
+              });
+              body = T(NAI.conflictMatchBody, {
+                ...cVars, tone: mqTone, winner: ev.matchWinner || L(_NP_MATCH_WINNER_FALLBACK_JA),
+              });
             } else {
-              headline = `${ev.orgName}の${ev.fighter1Name}と${ev.fighter2Name}に亀裂——団体側は静観の構え`;
-              body = `${ev.orgName}内で${ev.fighter1Name}と${ev.fighter2Name}の関係が悪化。団体側は介入せず静観を決め込んでいる。`;
+              headline = T(NAI.conflictRiftHeadline, cVars);
+              body = T(NAI.conflictRiftBody, cVars);
             }
             stories.push({
               type: 'aiTeamConflict',
@@ -32514,8 +32708,11 @@ Engine.newspaper = {
             stories.push({
               type: 'aiPracticeInjury',
               priority: P.aiPracticeInjury + (isAce ? 20 : 0),
-              headline: `${ev.orgName}の${ev.fighterName}、練習中に${injuryLabel(ev.injuryType)}で${ev.weeksOut}週離脱`,
-              body: `${ev.orgName}の練習中に${ev.fighterName}が負傷。${ev.weeksOut}週間の離脱を余儀なくされる。`,
+              headline: T(NAI.practiceInjuryHeadline, {
+                org: ev.orgName, name: ev.fighterName,
+                injury: injuryLabel(ev.injuryType, dict), weeks: ev.weeksOut,
+              }),
+              body: T(NAI.practiceInjuryBody, { org: ev.orgName, name: ev.fighterName, weeks: ev.weeksOut }),
               characterId: ev.fighterId,
             });
           });
@@ -32527,8 +32724,8 @@ Engine.newspaper = {
           stories.push({
             type: 'aiMediaStart',
             priority: P.aiMediaStart,
-            headline: `${ev.outletName}が${ev.orgName}の${ev.fighterName}に密着取材開始`,
-            body: `${ev.outletName}が${ev.orgName}所属の${ev.fighterName}への密着取材を開始。今後3興行の活躍に注目が集まる。`,
+            headline: T(NAI.mediaStartHeadline, { outlet: ev.outletName, org: ev.orgName, name: ev.fighterName }),
+            body: T(NAI.mediaStartBody, { outlet: ev.outletName, org: ev.orgName, name: ev.fighterName }),
             characterId: ev.fighterId,
           });
         }
@@ -32539,14 +32736,20 @@ Engine.newspaper = {
             const basePriority = P.aiWarResult;
             // MQ90+なら最高priority級に格上げ、MQ80+なら名勝負トーン
             const finalPriority = ev.mq >= 90 ? basePriority + 20 : basePriority;
-            const mqTone = ev.mq >= 90 ? '歴史に残る名勝負！' : ev.mq >= 80 ? '好勝負を展開。' : '';
+            const mqTone = ev.mq >= 90 ? L(NAI.mqToneMasterpiece) : ev.mq >= 80 ? L(NAI.mqToneGood) : '';
             const stamp = _wmNewsStamp(dict, state.season, state.week, '対抗戦');
+            const wVars = {
+              stamp, mq: ev.mq, tone: mqTone,
+              challengerOrg: ev.challengerOrg, defenderOrg: ev.defenderOrg,
+              challengerName: ev.challengerName, defenderName: ev.defenderName,
+              winnerOrg: ev.winnerOrg, winnerName: ev.winnerName,
+            };
             if (ev.isDraw) {
               stories.push({
                 type: 'aiWarResult',
                 priority: finalPriority,
-                headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦は決着つかず`,
-                body: `${stamp}。${ev.challengerName}と${ev.defenderName}の代表対決は決着つかずに終わった。試合評価${ev.mq}。${mqTone}`,
+                headline: T(NAI.warDrawHeadline, wVars),
+                body: T(NAI.warDrawBody, wVars),
                 characterId: ev.challengerId || null,
                 situation: stamp,
               });
@@ -32554,8 +32757,8 @@ Engine.newspaper = {
               stories.push({
                 type: 'aiWarResult',
                 priority: finalPriority,
-                headline: `⚔ ${ev.challengerOrg} vs ${ev.defenderOrg} 対抗戦——${ev.winnerOrg}の${ev.winnerName}が勝利`,
-                body: `${stamp}。${ev.challengerOrg}と${ev.defenderOrg}の対抗戦で、${ev.winnerOrg}の${ev.winnerName}が勝利を収めた。試合評価${ev.mq}。${mqTone}`,
+                headline: T(NAI.warWinHeadline, wVars),
+                body: T(NAI.warWinBody, wVars),
                 characterId: ev.winnerId || null,
                 situation: stamp,
               });
@@ -32567,12 +32770,18 @@ Engine.newspaper = {
         if (aiData._newsAIB3Result) {
           aiData._newsAIB3Result.forEach(ev => {
             const stamp = _wmNewsStamp(dict, state.season, state.week, '挑戦状');
+            const bVars = {
+              stamp, mq: ev.mq,
+              challengerOrg: ev.challengerOrg, defenderOrg: ev.defenderOrg,
+              challengerName: ev.challengerName, defenderName: ev.defenderName,
+              winnerOrg: ev.winnerOrg, winnerName: ev.winnerName,
+            };
             if (ev.declined) {
               stories.push({
                 type: 'aiB3Decline',
                 priority: P.aiB3Decline,
-                headline: `📜 ${ev.defenderOrg}、${ev.challengerOrg}・${ev.challengerName}からの挑戦状を辞退`,
-                body: `${stamp}。${ev.challengerOrg}の${ev.challengerName}が${ev.defenderOrg}に挑戦状を叩きつけたが、${ev.defenderOrg}側はこれを辞退した。`,
+                headline: T(NAI.b3DeclineHeadline, bVars),
+                body: T(NAI.b3DeclineBody, bVars),
                 characterId: ev.challengerId || null,
                 situation: stamp,
               });
@@ -32581,19 +32790,19 @@ Engine.newspaper = {
               stories.push({
                 type: 'aiB3Result',
                 priority: finalPriority,
-                headline: `📜 ${ev.challengerOrg} vs ${ev.defenderOrg} 挑戦状一騎討ちは決着つかず`,
-                body: `${stamp}。${ev.challengerName}と${ev.defenderName}による挑戦状の一騎討ちは決着つかず。試合評価${ev.mq}。`,
+                headline: T(NAI.b3DrawHeadline, bVars),
+                body: T(NAI.b3DrawBody, bVars),
                 characterId: ev.challengerId || null,
                 situation: stamp,
               });
             } else {
               const finalPriority = ev.mq >= 90 ? P.aiB3Result + 20 : P.aiB3Result;
-              const mqTone = ev.mq >= 90 ? '歴史に残る名勝負！' : ev.mq >= 80 ? '好勝負を展開。' : '';
+              const mqTone = ev.mq >= 90 ? L(NAI.mqToneMasterpiece) : ev.mq >= 80 ? L(NAI.mqToneGood) : '';
               stories.push({
                 type: 'aiB3Result',
                 priority: finalPriority,
-                headline: `📜 ${ev.challengerOrg}・${ev.challengerName}が${ev.defenderOrg}に挑戦状——${ev.winnerOrg}の${ev.winnerName}が制す`,
-                body: `${stamp}。${ev.challengerName}が${ev.defenderOrg}に叩きつけた挑戦状の一騎討ちは、${ev.winnerOrg}の${ev.winnerName}が勝利。試合評価${ev.mq}。${mqTone}`,
+                headline: T(NAI.b3WinHeadline, bVars),
+                body: T(NAI.b3WinBody, { ...bVars, tone: mqTone }),
                 characterId: ev.winnerId || null,
                 situation: stamp,
               });
@@ -32608,8 +32817,8 @@ Engine.newspaper = {
             stories.push({
               type: 'aiMediaSpotlight',
               priority: P.aiMediaSpotlight,
-              headline: `${ev.orgName}の${ev.fighterName}、密着取材で好評——人気急上昇`,
-              body: `${ev.outletName}の密着取材を受けた${ev.fighterName}が好成績を収め、人気が急上昇した。平均試合評価${ev.avgMQ}。`,
+              headline: T(NAI.mediaSpotlightHeadline, { org: ev.orgName, name: ev.fighterName }),
+              body: T(NAI.mediaSpotlightBody, { outlet: ev.outletName, name: ev.fighterName, avgMQ: ev.avgMQ }),
               characterId: ev.fighterId,
             });
           }
@@ -32650,7 +32859,9 @@ Engine.newspaper = {
         // ここだけ個別に組み立てる(AI団体ループと同じ _retiredVariantCounts を共有し、
         // 同一号での同ティア重複を避ける)
         if (ev.type === 'retirementDeclare') {
-          const d = ev.data || {};
+          // P7-16: `プレイヤー団体` フォールバックを載る瞬間に引き直す(§8)。
+          // 生キーを持たない旧セーブのキューは data がそのまま返る(fail-open)
+          const d = _wmResolvePreformattedIndustryData(ev, dict);
           const grade = Engine.newspaper.retirementGrade(d);
           const variant = Engine.newspaper.pickRetirementVariant(grade.tier, d.reigns || 0, _retiredVariantCounts);
           const queuedHof = industryEvents.find(x => x && x.type === 'hallOfFame'
@@ -32665,9 +32876,9 @@ Engine.newspaper = {
             } : null);
           const hofFeature = Engine.newspaper.composeHallOfFameRetirement(d, hofEntry, dict);
           const headline = hofFeature ? hofFeature.headline : variant ? Engine.newspaper._fillRetirementTemplate(variant.headline, d, dict)
-            : `${d.org || ''}の${d.name || ''}が現役引退`;
+            : T(NAI.playerRetirementHeadline, { org: d.org || '', name: d.name || '' });
           const body = hofFeature ? hofFeature.body : variant ? Engine.newspaper._fillRetirementTemplate(variant.body, d, dict)
-            : `${d.name || ''}が引退した。`;
+            : T(NAI.playerRetirementBody, { name: d.name || '' });
           stories.push({
             type: ev.type,
             priority: P[ev.type] || P.general,
@@ -32858,7 +33069,8 @@ Engine.newspaper = {
         const allMatches = [];
         let bestMQ = 0, bestMatch = null;
         jtr.rounds.forEach(round => {
-          const rl = round.name === 'final' ? '決勝' : round.name === 'semiFinal' ? '準決勝' : '準々決勝';
+          // ラウンド名は ui-ledger の既訳を値として引く(§15-3)
+          const rl = L(_NP_JT_ROUND_JA[round.name] || _NP_JT_ROUND_JA.quarterFinal);
           round.matches.forEach(m => {
             const w = m.winnerId === m.left.id ? m.left : m.right;
             const l = m.winnerId === m.left.id ? m.right : m.left;
@@ -32868,28 +33080,35 @@ Engine.newspaper = {
         });
         page2Stories.push({
           type: 'juniorTournamentMatchResults',
-          headline: `第${state.season}回ジュニアトーナメント 全試合結果`,
-          body: allMatches.map(m => `【${m.round}】${m.winner}（${m.winnerOrg}） def. ${m.loser}（${m.loserOrg}） 試合評価${m.mq}`).join('\n'),
+          headline: T(NJT.allResultsHeadline, { season: state.season }),
+          body: allMatches.map(m => T(NJT.allResultsLine, {
+            round: m.round, winner: m.winner, winnerOrg: m.winnerOrg,
+            loser: m.loser, loserOrg: m.loserOrg, mq: m.mq,
+          })).join('\n'),
           matches: allMatches,
         });
         if (bestMatch) {
-          const bmTone = bestMQ >= 80 ? 'これぞ若手の底力。' : bestMQ >= 60 ? '上々の内容と言えるだろう。' : '今後の成長に期待したい。';
+          const bmTone = L(bestMQ >= 80 ? NJT.bestBoutToneStrong
+            : bestMQ >= 60 ? NJT.bestBoutToneGood : NJT.bestBoutToneWeak);
           page2Stories.push({
             type: 'juniorTournamentBestBout',
-            headline: `大会ベストバウト: ${bestMatch.winner} vs ${bestMatch.loser}（試合評価${bestMatch.mq}）`,
-            body: `${bestMatch.round}で行われた${bestMatch.winner}と${bestMatch.loser}の一戦が、大会最高の試合内容を見せた。${bmTone}`,
+            headline: T(NJT.bestBoutHeadline, { winner: bestMatch.winner, loser: bestMatch.loser, mq: bestMatch.mq }),
+            body: T(NJT.bestBoutBody, {
+              round: bestMatch.round, winner: bestMatch.winner, loser: bestMatch.loser, tone: bmTone,
+            }),
           });
         }
         // 敗退選手フォロー（準決勝敗退者）
         if (jtr.semiFinalists && jtr.semiFinalists.length > 0) {
-          const sfNames = jtr.semiFinalists.map(sf => `${sf.name}（${sf._orgName}）`).join('、');
+          const sfNames = Engine.newspaper.joinNameList(
+            jtr.semiFinalists.map(sf => T(NJT.semiFinalistName, { name: sf.name, org: sf._orgName })), dict);
           page2Stories.push({
             type: 'juniorTournamentSemiFinalists',
-            headline: '準決勝で散った才能たち',
-            body: `${sfNames}は準決勝で敗退。しかしこの大舞台での経験は、必ず今後の糧になるだろう。`,
+            headline: L(NJT.semiFinalistsHeadline),
+            body: T(NJT.semiFinalistsBody, { names: sfNames }),
           });
         }
-        result.pages = [null, { stories: page2Stories, title: '全試合詳報' }]; // index0=通常面, index1=特集面
+        result.pages = [null, { stories: page2Stories, title: L(NJT.pageTitleResults) }]; // index0=通常面, index1=特集面
       }
     }
 
@@ -32902,21 +33121,27 @@ Engine.newspaper = {
         const page2Stories = [];
         page2Stories.push({
           type: 'juniorTournamentPreviewRoster',
-          headline: `第${state.season + 1}回ジュニアトーナメント 出場選手決定！`,
-          body: `第${Engine.juniorTournament.WEEK}週開催のU-20ジュニアトーナメントに${pList.length}名が選出された。`,
+          headline: T(NJT.previewHeadline, { season: state.season + 1 }),
+          body: T(NJT.previewBody, { week: Engine.juniorTournament.WEEK, count: pList.length }),
           participants: pList.map(p => ({ name: p.name, id: p.id, orgName: p._orgName, ovr: Engine.util.ov(p), age: p.age, style: p.style })),
         });
-        // 展望コメント
+        // 展望コメント(黒田記者の署名記事。断片は1〜3本なので完成文どうしを畳み込む)
         const darkHorse = pList.length >= 4 ? pList[Math.min(2, pList.length - 1)] : null;
-        let outlook = `筆頭は${topP.name}（${topP._orgName}、総合力${Engine.util.ov(topP)}）。`;
-        if (darkHorse && darkHorse.id !== topP.id) outlook += `しかし${darkHorse.name}（${darkHorse._orgName}）の勢いも侮れない。`;
-        outlook += '波乱の予感がする大会になりそうだ。';
+        const _JOINT = (typeof ARTICLE_COMPOSE_TEMPLATES !== 'undefined') ? ARTICLE_COMPOSE_TEMPLATES : null;
+        const outlookParts = [T(NJT.outlookTop, { name: topP.name, org: topP._orgName, ovr: Engine.util.ov(topP) })];
+        if (darkHorse && darkHorse.id !== topP.id) {
+          outlookParts.push(T(NJT.outlookDarkHorse, { name: darkHorse.name, org: darkHorse._orgName }));
+        }
+        outlookParts.push(L(NJT.outlookClosing));
+        const outlook = _JOINT
+          ? outlookParts.reduce((a, b) => T(_JOINT.join, { a, b }))
+          : outlookParts.join('');
         page2Stories.push({
           type: 'juniorTournamentOutlook',
-          headline: '黒田記者の展望',
+          headline: L(NJT.outlookHeadline),
           body: outlook,
         });
-        result.pages = [null, { stories: page2Stories, title: 'トーナメント特集' }];
+        result.pages = [null, { stories: page2Stories, title: L(NJT.pageTitlePreview) }];
       }
     }
 

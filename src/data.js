@@ -18297,6 +18297,14 @@ const NEWS_FALLBACK_TEMPLATES = {
   aiChampionChangeHeadline: '{org}——新王者{name}が誕生',
   aiChampionChangeBody: '{org}の王座が動いた。{name}が{prevChamp}を下し、新たな頂点に立った。',
   draftPlayerResultBody: '{names}。新シーズンの陣容がひとつ厚くなった。',
+  // i18n Stage B P7-16: 同型の「値が無いときだけ出る直書きJA」3件。いずれも
+  // Engine.newspaper 内の `X || 'JA'` フォールバックで、t()を一度も通らなかった。
+  //   hofOrgFallback     … composeHallOfFameRetirement の所属名(d.orgName/d.org/hofEntry.orgName が全て空)
+  //   tenchosenInvites   … buildTenchosenFieldData の特別招待者名リスト(招待が1人もいない年)
+  //   playerShowHeadline … 自団体興行結果の見出し(currentNewspaper.headline が空)
+  hofOrgFallback: '所属団体',
+  tenchosenInvites: '選考通過者',
+  playerShowHeadline: '定期興行開催',
 };
 
 // i18n Stage B P6-16: 4団体勝ち残り対抗戦の結果ニュース(specs §8「生キー+render時点再構築」)。
@@ -18314,6 +18322,139 @@ const AUTUMN_WAR_NEWS_PARTS = {
   tieBreak: '{round}は{summary}。',
   // 決勝 / 準決勝 / 該当選手 は ui-ledger に既訳があるので本表へ入れない(二重登録の禁止・specs §9)。
   // JA原文は management.js の _AW_ROUND_JA / _AW_MVP_FALLBACK_JA に1本だけ置く。
+};
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  i18n Stage B P7-16: Engine.newspaper に残っていた直書きJAの移設先(specs §34-7)
+//  ──────────────────────────────────────────────────────────────────────────
+//  移設元は management.js `Engine.newspaper` の関数本体に直書きされた見出し・本文の
+//  JSテンプレートリテラル(§10-2「関数の中のリテラルはどの抽出器からも見えない」型)。
+//  消費点はいずれも `Engine.newspaper.generate(state, rng, { dict })` の中で、
+//  generate のローカル `dict` を `_wmFillWithDict` へ渡して**PH置換前に**辞書を引く。
+//  値(選手名・団体名・媒体名)はparams経由なので名前辞書変換(D-P6-2)が効く。
+//
+//  ■ 表の割り方
+//    NEWS_CONTENDER_TEXTS         … 優勝候補の「選出理由」断片と事前記事の一段落
+//    NEWS_JUNIOR_TOURNAMENT_TEXTS … ジュニアトーナメントの結果面/特集面/前週プレビュー
+//    NEWS_AI_ORG_TEXTS            … AI団体の業界ニュース(引退・退団・殿堂・興行・対抗戦…)
+//
+//  ■ ここに入れない語(§15-3 の二重登録回避)
+//    `現王者` `決勝` `準決勝` `準々決勝` `殿堂入り` `勝者` `決勝の相手` `プレイヤー団体`と
+//    大会名4種(ジュニアトーナメント/春のタッグリーグ/4団体勝ち残り対抗戦/天頂戦)は
+//    **ui-ledger に既訳がある**。JA原文は management.js に1本だけ置き、差し込む直前に
+//    `_wmDictLabel` で値として引き直す。
+// ══════════════════════════════════════════════════════════════════════════════
+
+// 優勝候補の選出理由(eventContenders)と事前記事の一段落(eventPreviewParagraph)。
+// 理由は「社長にも記者にも見えているもの」だけで書く決まりなので、能力値の語彙は入らない。
+// ENは肩書きの列挙として読ませるため Title Case(括弧内が資格の羅列になる)。
+const NEWS_CONTENDER_TEXTS = {
+  mvpTop: 'MVPレース首位',
+  mvpRank: 'MVPレース{rank}位',
+  popTop3: '業界屈指の人気',
+  popTop10: '人気上位',
+  pastTitleMulti: '{label}を含む大会{count}度の優勝経験',
+  pastTitleOne: '{label}の優勝経験',
+  streak: '{count}連勝中',
+  // 理由は最大2件までを連結する。JAは中黒、ENはカンマ。
+  reasonJoin: '{a}・{b}',
+  pickWithOrg: '{name}（{org}・{reason}）',
+  pickNoOrg: '{name}（{reason}）',
+  // **断定しない**。記者の予想であって結果ではない
+  lead: '本紙が挙げる注目は{list}。',
+  rematch: '組み合わせ次第では{a}と{b}の{count}度目が実現する。',
+};
+
+// ジュニアトーナメント(U-20)の紙面。結果号の一面 + 特集面(全試合詳報/ベストバウト/
+// 準決勝敗退者)+ 前週プレビュー面(出場選手決定/黒田記者の展望)。
+// outlook* の3本だけは**黒田幸子の署名記事**(見出し `黒田記者の展望`)なので、
+// ENは黒田文体(感嘆符ゼロ・格言禁止)で書く。他は無署名デスクの平叙報道文。
+const NEWS_JUNIOR_TOURNAMENT_TEXTS = {
+  resultToneMasterpiece: '歴史に残る名勝負だ',
+  resultToneGood: '見応えのある決勝戦だった',
+  resultToneOneSided: 'やや一方的な展開だった',
+  resultTonePoor: '期待外れの決勝だった',
+  resultHeadline: '{name}、若き栄冠！ 第{season}回ジュニアトーナメント制覇',
+  resultBody: '{name}（{org}）が{runnerUp}を下し、ジュニアトーナメント優勝を飾った。{tone}。優勝賞金1,000万円。',
+  allResultsHeadline: '第{season}回ジュニアトーナメント 全試合結果',
+  allResultsLine: '【{round}】{winner}（{winnerOrg}） def. {loser}（{loserOrg}） 試合評価{mq}',
+  bestBoutHeadline: '大会ベストバウト: {winner} vs {loser}（試合評価{mq}）',
+  bestBoutToneStrong: 'これぞ若手の底力。',
+  bestBoutToneGood: '上々の内容と言えるだろう。',
+  bestBoutToneWeak: '今後の成長に期待したい。',
+  bestBoutBody: '{round}で行われた{winner}と{loser}の一戦が、大会最高の試合内容を見せた。{tone}',
+  semiFinalistsHeadline: '準決勝で散った才能たち',
+  semiFinalistName: '{name}（{org}）',
+  semiFinalistsBody: '{names}は準決勝で敗退。しかしこの大舞台での経験は、必ず今後の糧になるだろう。',
+  pageTitleResults: '全試合詳報',
+  pageTitlePreview: 'トーナメント特集',
+  previewHeadline: '第{season}回ジュニアトーナメント 出場選手決定！',
+  previewBody: '第{week}週開催のU-20ジュニアトーナメントに{count}名が選出された。',
+  outlookHeadline: '黒田記者の展望',
+  outlookTop: '筆頭は{name}（{org}、総合力{ovr}）。',
+  outlookDarkHorse: 'しかし{name}（{org}）の勢いも侮れない。',
+  outlookClosing: '波乱の予感がする大会になりそうだ。',
+};
+
+// AI団体の業界ニュース。無署名デスクの平叙報道文で、感嘆符は日本語に「！」がある
+// 見出し(確執のリング決着)だけに残す。{stamp} は _wmNewsStamp が組んだ「第N年度・第M週 種別」。
+const NEWS_AI_ORG_TEXTS = {
+  // 引退(ティア別テンプレも殿堂特別号も引けなかったときのフォールバック)
+  retirementHeadline: '{org}の{name}が現役引退を表明',
+  retirementBody: '{org}で{seasons}シーズンを戦った{name}（{age}歳）が引退を発表。',
+  retirementSeasonsUnknown: '複数',
+  playerRetirementHeadline: '{org}の{name}が現役引退',
+  playerRetirementBody: '{name}が引退した。',
+  // 契約退団(同一団体で3名以上のまとめ記事)
+  massDepartureHeadline: '{org}で大量退団——{count}名が離脱',
+  massDepartureBody: '{org}から{names}の{count}名が退団。団体の先行きに不安が広がる。',
+  // NPC殿堂入り
+  hofStarLegend: '★★★レジェンド',
+  hofStarGold: '★★ゴールド殿堂',
+  hofReigns: '通算{count}度戴冠',
+  hofDefenses: '{count}度防衛',
+  hofStatsJoin: '{a}・{b}',
+  hofCareerWithStats: '{stats}の伝説的キャリア',
+  hofCareerNoStats: '数々の名勝負を残した',
+  hofHeadline: '{org}の{name}（{age}歳）が{star}',
+  hofBody: '{org}で{years}を戦った{name}が殿堂入り。{career}。殿堂ポイント{points}ptを獲得。',
+  // 定期興行のハイライト(高MQ試合)
+  showHighlightHeadline: '{org}定期興行——{winner}が{loser}を下す',
+  showHighlightBody: '{stamp}。{org}の興行で{winner}が{loser}に勝利。試合評価{mq}を記録した。',
+  // ブレイクスルー
+  breakthroughHeadline: '{org}の{name}が急成長——注目の存在に',
+  breakthroughBody: '{org}所属の{name}がブレイクスルーを達成。{stat}が大幅に向上し、今後の活躍が期待される。',
+  // 選手間の確執(話し合いで収束 / リング上で決着 / 亀裂のまま)
+  conflictTalkHeadline: '{org}で{name1}と{name2}の確執が浮上——話し合いで収束',
+  conflictTalkBody: '{org}内で{name1}と{name2}の間に緊張が走ったが、話し合いにより事態は収束した。',
+  conflictMatchTone: '名勝負となった一戦は',
+  conflictMatchHeadline: '{org}の{name1}と{name2}、リング上で決着！ {winner}が勝利（試合評価{mq}）',
+  conflictMatchBody: '{org}で{name1}と{name2}の対立がリング上で決着。{tone}{winner}が勝利を収めた。',
+  conflictRiftHeadline: '{org}の{name1}と{name2}に亀裂——団体側は静観の構え',
+  conflictRiftBody: '{org}内で{name1}と{name2}の関係が悪化。団体側は介入せず静観を決め込んでいる。',
+  // 練習中の負傷
+  practiceInjuryHeadline: '{org}の{name}、練習中に{injury}で{weeks}週離脱',
+  practiceInjuryBody: '{org}の練習中に{name}が負傷。{weeks}週間の離脱を余儀なくされる。',
+  // メディア密着(開始 / 成功)
+  mediaStartHeadline: '{outlet}が{org}の{name}に密着取材開始',
+  mediaStartBody: '{outlet}が{org}所属の{name}への密着取材を開始。今後3興行の活躍に注目が集まる。',
+  mediaSpotlightHeadline: '{org}の{name}、密着取材で好評——人気急上昇',
+  mediaSpotlightBody: '{outlet}の密着取材を受けた{name}が好成績を収め、人気が急上昇した。平均試合評価{avgMQ}。',
+  // 対抗戦 / 挑戦状の締めに付く一言(MQ帯)。文末に直結するのでENも独立した1文にする
+  mqToneMasterpiece: '歴史に残る名勝負！',
+  mqToneGood: '好勝負を展開。',
+  // AI団体どうしの対抗戦
+  warDrawHeadline: '⚔ {challengerOrg} vs {defenderOrg} 対抗戦は決着つかず',
+  warDrawBody: '{stamp}。{challengerName}と{defenderName}の代表対決は決着つかずに終わった。試合評価{mq}。{tone}',
+  warWinHeadline: '⚔ {challengerOrg} vs {defenderOrg} 対抗戦——{winnerOrg}の{winnerName}が勝利',
+  warWinBody: '{stamp}。{challengerOrg}と{defenderOrg}の対抗戦で、{winnerOrg}の{winnerName}が勝利を収めた。試合評価{mq}。{tone}',
+  // AI団体どうしの挑戦状(辞退 / 決着つかず / 決着)
+  b3DeclineHeadline: '📜 {defenderOrg}、{challengerOrg}・{challengerName}からの挑戦状を辞退',
+  b3DeclineBody: '{stamp}。{challengerOrg}の{challengerName}が{defenderOrg}に挑戦状を叩きつけたが、{defenderOrg}側はこれを辞退した。',
+  b3DrawHeadline: '📜 {challengerOrg} vs {defenderOrg} 挑戦状一騎討ちは決着つかず',
+  b3DrawBody: '{stamp}。{challengerName}と{defenderName}による挑戦状の一騎討ちは決着つかず。試合評価{mq}。',
+  b3WinHeadline: '📜 {challengerOrg}・{challengerName}が{defenderOrg}に挑戦状——{winnerOrg}の{winnerName}が制す',
+  b3WinBody: '{stamp}。{challengerName}が{defenderOrg}に叩きつけた挑戦状の一騎討ちは、{winnerOrg}の{winnerName}が勝利。試合評価{mq}。{tone}',
 };
 
 // i18n Stage A P3a-2: PPVアンダーカード記事(management.js:31868-31891・監査3-2)。
@@ -32091,6 +32232,7 @@ if (typeof module !== 'undefined' && module.exports) {
     HEAT_LEVELS, QUARTER_LABELS, INJURY_TABLE, LONG_TERM_INJURY, INJURY_DEBUFF_TABLE,
     TITLES, UNIFIED_TITLE_TEMPLATES, CHAMPION_CHANGE_TEMPLATES, ARTICLE_COMPOSE_TEMPLATES,
     PPV_SUMMIT_STORY_TEMPLATES, NEWS_FALLBACK_TEMPLATES, AUTUMN_WAR_NEWS_PARTS,
+    NEWS_CONTENDER_TEXTS, NEWS_JUNIOR_TOURNAMENT_TEXTS, NEWS_AI_ORG_TEXTS,
     CHRONICLE_QUOTE_CLAUSES, CHRONICLE_QUOTE_TEMPLATES_V2, CHRONICLE_QUOTE_TEMPLATES_V1,
     CHRONICLE_QUOTE_TEMPLATES_DUAL, CHRONICLE_NARRATIVE_TEMPLATES, CHRONICLE_CHAPTER_TEMPLATES,
     PROLOGUE_TEMPLATES, CHRONICLE_UNIT_TEXTS,
