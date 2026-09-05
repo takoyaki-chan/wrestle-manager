@@ -118,7 +118,7 @@ GLIMPSE_B のイベントラベルとして ui-ledger に既訳("A fated nemesis
 
 | ファイル | 件数 | 字数 | 代表例 |
 |---|---:|---:|---|
-| ui-common.js | 144 | 1,764 | `⛓️ 価値観の決裂`、`新戦力◯名を獲得`、`また来年 — GRAND FINAL`、`泥沼`(hostilityBands系ラベル?)、award-card等HTML塊の断片 |
+| ui-common.js | 144 | 1,764 | ✅**P7-30で全数消化(2026-09-05)**。P7-24/25/27/29マージ後の実測106件を1件ずつ描画パスまで追い、表示に到達する**92件を英訳**(ui-ledger 4,502→4,589)、**14件を仕様除外**(`showPopup`不在の死コード2/未使用引数1/到達不能フォールバック3/`negState.log`未描画1/`hostilityBands`は論理比較専用4/CSS・HTMLコメント3)。例示のうち`⛓️ 価値観の決裂`=FLAG_MODAL_META(動的キーのためkept:true手追加)、`新戦力◯名を獲得`=Gへ焼かれる完成文(追加フィールド方式)、`また来年 — GRAND FINAL`=直書き(t()化)、`泥沼`=hostilityBands(除外)。詳細はspecs/i18n-runtime-spec-v1.0.md §39 |
 | ui-render.js | 104 | 1,396 | `追い込みを続けると体が重くなり、同じ練習でも身につきにくくなる。休ませると戻る。`(コーチ助言文?)、`常に落ち着いた佇まいが格を生む`(archetype紹介文プール?)、HTML塊の断片多数 |
 | data.js | 108 | 1,298 | `名���負製造機`(**★文字化けバグ、下記参照**)、`試練`、`{name}は、この日を最後に現役を引退した。`、絆・因縁イベントの短い口上(27000番台)。**★P7-33で仕分け済み**(TRAIT_DEFS/INJURY_*/SEASON_HEADLINE_LABEL/FAREWELL_CLOSING/FAREWELL_KIND_TEXT/GLIMPSE_A_LINES分。§8参照。他の残りは未着手) |
 | management.js(上記A/B以外の残り) | 170 | 1,242 | `📉◯に◯（連敗◯）`、`🌅◯が今季限りでの引退を表明`、`タッグ(◯) vs ◯`、`少し距離を感じる`(gameLog隣接の短い通知文が主体)。**P7-33で関連バグ2件を発見**(§8参照。management.js自体は編集対象外のため未修正) |

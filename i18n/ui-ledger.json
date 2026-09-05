@@ -18944,7 +18944,7 @@
     "files": [
       "ui-common.js"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false
   },
@@ -48360,5 +48360,945 @@
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false
+  },
+  {
+    "key": "2名",
+    "en": "2 wrestlers",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "<em>{a}</em>と<em>{b}</em>——並び立っていた二つの派閥の間に、",
+    "en": "<em>{a}</em> and <em>{b}</em> — two factions that had stood side by side.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{leaderSurname}と{factionName}の動きについて報告があります。",
+    "en": "I have a report on {leaderSurname} and {factionName}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{names} — 今後のFA市場で動きがあるか注目。",
+    "en": "{names} — watch for movement on the free agent market from here.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_buildDraftSummaryPage(ui-common.js)がstoryへ添えるheadlineTpl/bodyTpl。保存値(headline/body)はJA完成文のまま据え置き、表示点(_renderNewspaperExtraPage)がこのテンプレ+差し込み値で組み直す(specs §14-3/§16-1)。データとして持つ文字列なのでextract-uiの走査には出ない。P7-30で手追加"
+  },
+  {
+    "key": "{names} — 新シーズンの台風の目となるか。",
+    "en": "{names} — the eye of the storm in the new season?",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_buildDraftSummaryPage(ui-common.js)がstoryへ添えるheadlineTpl/bodyTpl。保存値(headline/body)はJA完成文のまま据え置き、表示点(_renderNewspaperExtraPage)がこのテンプレ+差し込み値で組み直す(specs §14-3/§16-1)。データとして持つ文字列なのでextract-uiの走査には出ない。P7-30で手追加"
+  },
+  {
+    "key": "{n} シーズン",
+    "en": "Seasons: {n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n} 位",
+    "en": "#{n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n} 名",
+    "en": "{n} inducted",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 3,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n} 回",
+    "en": "{n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 3,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{n}ターンの死闘の末に——",
+    "en": "After {n} turns of war —",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}、{n}名の新人を確保",
+    "en": "Rookies signed by {org}: {n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_buildDraftSummaryPage(ui-common.js)がstoryへ添えるheadlineTpl/bodyTpl。保存値(headline/body)はJA完成文のまま据え置き、表示点(_renderNewspaperExtraPage)がこのテンプレ+差し込み値で組み直す(specs §14-3/§16-1)。データとして持つ文字列なのでextract-uiの走査には出ない。P7-30で手追加"
+  },
+  {
+    "key": "{org}、新戦力{n}名を獲得",
+    "en": "New signings for {org}: {n}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "_buildDraftSummaryPage(ui-common.js)がstoryへ添えるheadlineTpl/bodyTpl。保存値(headline/body)はJA完成文のまま据え置き、表示点(_renderNewspaperExtraPage)がこのテンプレ+差し込み値で組み直す(specs §14-3/§16-1)。データとして持つ文字列なのでextract-uiの走査には出ない。P7-30で手追加"
+  },
+  {
+    "key": "{org}の凄まじい躍進は業界全体に衝撃を与えた。",
+    "en": "{org}'s astonishing rise sent a shock through the whole industry.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}の物語は、ここで終わる。<br><br>",
+    "en": "The story of {org} ends here.<br><br>",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "{org}は<br>女子プロレス界の頂点に立った。<br><br>",
+    "en": "{org}<br>stood at the summit of women's wrestling.<br><br>",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "― {faction}は《{from}》から《{to}》へ気風を変えた ―",
+    "en": "— {faction} changed its character from \"{from}\" to \"{to}\" —",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "……この三人で、最後まで立てた。それが全部です",
+    "en": "...The three of us stood to the end. That's all it is.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "秋対抗戦MVPのセリフのフォールバックプール(ui-common.js:19978)。表示点は_agwMvpLineのWM_I18N.t(String(pool[...]))で引数が変数。P7-30で手追加"
+  },
+  {
+    "key": "…今は移籍する気はないわ。",
+    "en": "...I'm not looking to move right now.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "レンタル交渉不成立のshowEventPopup({speech})(ui-common.js:8028)。表示点はshowEventPopup内のWM_I18N.t(opts.speech)で引数が変数。P7-30で手追加"
+  },
+  {
+    "key": "⚔️ 嫉妬・撃破",
+    "en": "⚔️ Jealousy · Answered",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "⚡ BF/Heel 衝突",
+    "en": "⚡ BF/Heel Clash",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "⛓️ 価値観の決裂",
+    "en": "⛓️ A Break over Values",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "✨ 憧れ",
+    "en": "✨ Admiration",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "あの人と同じ旗は、もう掲げられない",
+    "en": "I can't raise that banner without her.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "うちの名前は…今年もここにない。",
+    "en": "Our name... isn't up there this year either.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ここ数週、ロッカールームの空気が変わっていた。",
+    "en": "The air in the locker room had been changing these past few weeks.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "このベルトとともに、頂点へ行く。",
+    "en": "I'm taking this belt to the top with me.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "このベルトは、まだ渡さない。",
+    "en": "I'm not handing this belt over yet.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "この三人で、最後まで立てた。それが全部です",
+    "en": "The three of us stood to the end. That's all it is.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "秋対抗戦・優勝チームのセリフのフォールバック(ui-common.js:19676)。表示点は同関数内のWM_I18N.t(String(line))で引数が変数。P7-30で手追加"
+  },
+  {
+    "key": "この試合は、譲れなかった",
+    "en": "This one I couldn't give up.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "挑戦状の結果モーダル(勝利)の一言(ui-common.js:14698)。表示点は_mdlAFlowPortraitHtmlのWM_I18N.t(o.line)で引数が変数。P7-30で手追加"
+  },
+  {
+    "key": "これが、頂点の景色。",
+    "en": "So this is the view from the top.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "ご視聴ありがとうございました",
+    "en": "Thank you for watching",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "しかし、{org}の戦いはまだ始まったばかり<br>この先に待つのは、新たな伝説か・・・・",
+    "en": "But the fight for {org} has only just begun.<br>What waits ahead — a new legend, perhaps...",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "その影響は業界3団体の体制を大きく揺るがし、それぞれの団体は内部改革に動き出した。",
+    "en": "The shock rattled all three rival promotions, and each of them started reforming from within.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "だが選手たちの戦いは続く——<br>どこか別の団体の下で。",
+    "en": "But the wrestlers fight on —<br>somewhere else, under another banner.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "また来年 — GRAND FINAL",
+    "en": "See you next year — GRAND FINAL",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": true
+  },
+  {
+    "key": "もう、あの旗の下には戻れない",
+    "en": "There's no going back under that banner.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "もう、元には戻らない。",
+    "en": "There is no going back.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "もはや安泰の時代は終わった。<br><em>真の群雄割拠が始まる——</em>",
+    "en": "The safe years are over.<br><em>Now the real scramble begins —</em>",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "テレビの明かりを消す。<br><br>今夜の歓声も、私たちのものではなかった。<br>でも——<b>来年こそ、あの画面の中に立つ。</b>",
+    "en": "I switch off the television.<br><br>Tonight's cheers weren't ours either.<br>But — <b>next year we will be inside that screen.</b>",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "テレビの明かりを消す。<br><br>初めて画面越しに見た、年末の大舞台。<br>いつか——<b>あの画面の中に立つのはうちの選手たちだ。</b>",
+    "en": "I switch off the television.<br><br>The year's biggest stage, seen through a screen for the first time.<br>Someday — <b>it will be my wrestlers standing inside that screen.</b>",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "フラグ",
+    "en": "Flag",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_METAに無いmodal.typeが来たときの既定タイトル(ui-common.js:2097)。表示点はWM_I18N.t(meta.title)で引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "一人では、派閥とは呼べない",
+    "en": "One person isn't a faction.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "両団体の誇りを懸けて——",
+    "en": "With both promotions' pride on the line —",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "互角の戦いを見せた。",
+    "en": "They fought each other to a standstill.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "挑戦状の結果モーダル(引き分け)の一言(ui-common.js:14698)。表示点は_mdlAFlowPortraitHtmlのWM_I18N.t(o.line)で引数が変数。P7-30で手追加"
+  },
+  {
+    "key": "今夜、業界の頂点が決まる — 4団体の代表が集結",
+    "en": "Tonight the industry's summit is decided — four promotions send their best",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "号外――大ニュースが届いた",
+    "en": "Extra — big news has arrived",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "showBigNewsPopup(ui-common.js:1495)のリード文。BIG_NEWS_LEAD_LINESが空のときの既定値で、WM_I18N.t(三項式)の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "在位 <b>{y}</b> ・ 防衛 <b>{d}</b>",
+    "en": "Reign <b>{y}</b> · Defenses <b>{d}</b>",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "大型補強を宣言——エース候補の発掘に乗り出す",
+    "en": "Declares a major signing push — out to find a future ace",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "実況席にも、張り詰めた空気。",
+    "en": "Even at the commentary desk, the air is tight.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "帰ってきたら、また集まろう",
+    "en": "When she's back, we'll gather again.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "年末恒例・女子プロレス年間総決算",
+    "en": "A year-end tradition — women's wrestling closes out the year",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "揃って数日を過ごした。",
+    "en": "They spent a few days together.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "派閥合宿(COMMON4)のnarrationフォールバック(ui-common.js:12319)。表示点はWM_I18N.t(line.narration)で引数が変数。P7-30で手追加"
+  },
+  {
+    "key": "敗れた{loser}は、バックステージで{winner}を待っていた。",
+    "en": "{loser}, beaten, was waiting for {winner} backstage.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "次はいよいよ、メインイベント。",
+    "en": "Next, at last: the main event.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "死闘の後、敗者は勝者の前に立った。",
+    "en": "After the war, the loser stood in front of the winner.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "決着は、来年に持ち越された。",
+    "en": "The decision carries over to next year.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "王座奪還へ——全力の補強に動く",
+    "en": "Out to take the title back — signing at full stretch",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "画面の前で、次を見届ける。",
+    "en": "I stay in front of the screen and watch the next one.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "画面の向こうは、まだ遠い世界だ。",
+    "en": "The far side of that screen is still a distant world.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "目に見えない線が引かれている。視線は交わらず、言葉も交わさない。",
+    "en": "An invisible line runs between them. No eyes meet, no words are traded.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "私たち三人で、挑ませてください。",
+    "en": "Please let the three of us challenge them.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "団体戦の直訴セリフのフォールバック(ui-common.js:13077)。表示点は_u3bSideHtmlのWM_I18N.t(o.line)で引数が変数。P7-30で手追加"
+  },
+  {
+    "key": "練習場で大きな衝突があったようです",
+    "en": "There seems to have been a serious clash at the gym.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "育成体制を一新——コーチ陣を大幅強化",
+    "en": "Overhauls its development setup — a far stronger coaching staff",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合後の控室で、{loser}は{winner}のもとへ歩み寄った。",
+    "en": "In the locker room after the match, {loser} walked over to {winner}.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "試合後の控室で、二人の間に言葉は少なかった。",
+    "en": "In the locker room after the match, few words passed between them.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "負けた旗の下には、もう立てない",
+    "en": "I can't stand under a banner that lost.",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "頂上決戦 まもなくゴング",
+    "en": "Summit match — the bell is close",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "頂上決戦 決着 — 評価 {mq} {stars}",
+    "en": "Summit match settled — rating {mq} {stars}",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": true,
+    "hasProperNoun": false
+  },
+  {
+    "key": "黒田 沙智子 編集記事",
+    "en": "Editorial by Sachiko Kuroda",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false
+  },
+  {
+    "key": "🌟 憧れ・達成",
+    "en": "🌟 Admiration · Fulfilled",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🌫️ ロッカールームの崩壊",
+    "en": "🌫️ The Locker Room Falls Apart",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🌫️ 嫉妬・宙吊り",
+    "en": "🌫️ Jealousy · Left Hanging",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🌬️ 嫉妬・風化",
+    "en": "🌬️ Jealousy · Faded",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "💔 スランプの八つ当たり",
+    "en": "💔 Lashing Out in a Slump",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "💧 憧れ・幻滅",
+    "en": "💧 Admiration · Disillusioned",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "💸 引き抜きの遺恨",
+    "en": "💸 Bad Blood from a Poaching",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🔥 ライバル同期",
+    "en": "🔥 Rivals from the Same Class",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🔥 番狂わせ・逆恨み",
+    "en": "🔥 Upset · Misplaced Grudge",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🕯️ 憧れ・喪失",
+    "en": "🕯️ Admiration · Lost",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🗯️ 裏切り",
+    "en": "🗯️ Betrayal",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "😭 引き留め失敗の遺恨",
+    "en": "😭 Bad Blood after a Failed Plea",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🚪 出戻りの日",
+    "en": "🚪 The Day She Came Back",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🚪 突然離脱の波紋",
+    "en": "🚪 Fallout from a Sudden Exit",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🥀 引退の置き土産",
+    "en": "🥀 A Retirement's Parting Gift",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🥋 師弟",
+    "en": "🥋 Mentor and Protege",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🩸 嫉妬",
+    "en": "🩸 Jealousy",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
+  },
+  {
+    "key": "🪦 共闘ペアの裏切り",
+    "en": "🪦 A Tag Partner's Betrayal",
+    "files": [
+      "ui-common.js"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "kept": true,
+    "note": "FLAG_MODAL_META[modal.type].title(ui-common.js:2033)。表示点は_flagBuildPopupOpts/_flagBuildM12/_flagBuildM13のWM_I18N.t(meta.title)で、t()の引数が変数のため走査に出ない。P7-30で手追加"
   }
 ]

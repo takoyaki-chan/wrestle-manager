@@ -776,7 +776,7 @@ document.addEventListener('click', (e) => {
 // _mdlAFlowPortraitHtml が表示直前に t() を通す規約(B3の挑戦状 _buildB3Step1 と同じ経路)。
 // ここで先に訳すと表示点の t() が二重適用になり、英語の完成文が辞書キーとして
 // [i18n-miss] に載ってログを汚す(P6-6 で同型を掃除済み)。
-function getWarChallengeDialogue(fighter, orgName) {
+function getWarChallengeDialogue(fighter) {
   if (typeof WAR_CHALLENGER_DIALOGUE !== 'undefined') {
     return pickDialogueLine(WAR_CHALLENGER_DIALOGUE, fighter);
   }
@@ -799,7 +799,7 @@ function showWarChallenge() {
   if (!enemyAce) { skipEvent(); return; }
 
   const aceOvr = Engine.util.ov(enemyAce);
-  const dialogue = getWarChallengeDialogue(enemyAce, G.orgName || 'あんたの団体');
+  const dialogue = getWarChallengeDialogue(enemyAce);
   const upperUrl = getUpperUrl(enemyAce.id);
   const portraitStyle = upperUrl
     ? `background-image:url('${upperUrl}')`
@@ -6690,8 +6690,17 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
       url: typeof getPortraitUrl === 'function' ? getPortraitUrl(f.id) : '',
     }));
     stories.push({
+      // i18n P7-30: headline/body は**Gへ焼かれる完成文**(かつ _queueDraftIndustryNews が
+      // 読点で分割して業界ニュースを組み直す材料でもある)ので1バイトも変えない。
+      // 表示点用にテンプレと差し込み値を併記する(specs §14-3/§16-1の追加フィールド方式)。
+      // 名前の列挙は表示時に joinNameList で畳むため、bodyNames には生JA名の配列を置く
+      // (ENの完成文をセーブへ焼かない)。
       headline: `${state.orgName || 'プレイヤー団体'}、新戦力${names.length}名を獲得`,
+      headlineTpl: '{org}、新戦力{n}名を獲得',
+      headlineVars: { org: state.orgName || 'プレイヤー団体', n: names.length },
       body: names.join('、') + ' — 新シーズンの台風の目となるか。',
+      bodyTpl: '{names} — 新シーズンの台風の目となるか。',
+      bodyNames: [...names],
       type: 'draftPlayerResult',
       portraits,
     });
@@ -6705,7 +6714,10 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
     if (allNames.length > 0) {
       stories.push({
         headline: `${ORG_NAMES[orgId]}、${allNames.length}名の新人を確保`,
+        headlineTpl: '{org}、{n}名の新人を確保',
+        headlineVars: { org: ORG_NAMES[orgId], n: allNames.length },
         body: allNames.join('、'),
+        bodyNames: [...allNames],
         type: 'draftAiResult',
         // task-54: 新聞のサブ記事に顔を出すためのID。EMPRESS安全網(empExtra)は
         // 氏名しか持たないので ID 側には入らない。載る顔は実際に取れたぶんだけ。
@@ -6717,8 +6729,14 @@ function _buildDraftSummaryPage(summary, playerAcquired, empressNames, state) {
   // 流札
   if (summary.flowThrough.length > 0) {
     stories.push({
+      // headlineTpl は NEWS_HEADLINE_TEMPLATES 側と同一キー(template-ledgerに既訳あり)。
+      // データとして持つ文字列なので extract-ui には拾われず、二重登録も起きない。
       headline: `指名漏れ${summary.flowThrough.length}名、フリー市場へ`,
+      headlineTpl: '指名漏れ{count}名、フリー市場へ',
+      headlineVars: { count: summary.flowThrough.length },
       body: summary.flowThrough.join('、') + ' — 今後のFA市場で動きがあるか注目。',
+      bodyTpl: '{names} — 今後のFA市場で動きがあるか注目。',
+      bodyNames: [...summary.flowThrough],
       type: 'draftFlowThrough',
       ids: [...(summary.flowThroughIds || [])],
     });
@@ -7777,7 +7795,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       <div class="ptv-op-title">GRAND FINAL</div>
       <div class="ptv-op-sub">${WM_I18N.t('年間総決算ペイ・パー・ビュー')}${_quoteVal(escHtml(ppvName || 'GRAND FINAL'))}</div>
       <div class="ptv-op-badge">${WM_I18N.t('全国生中継')}</div>
-    </div>` + _hint + _telop(WM_I18N.t('中継'), '年末恒例・女子プロレス年間総決算', '今夜、業界の頂点が決まる — 4団体の代表が集結'),
+    </div>` + _hint + _telop(WM_I18N.t('中継'), WM_I18N.t('年末恒例・女子プロレス年間総決算'), WM_I18N.t('今夜、業界の頂点が決まる — 4団体の代表が集結')),
   });
 
   // ② 本日の対戦カード(メイン先頭)
@@ -7799,7 +7817,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         <div class="ptv-h-row">TONIGHT'S CARD</div>
         ${order.map(rowFor).join('')}
       </div>` + _hint + _telop(WM_I18N.t('カード'), WM_I18N.t('全{n}試合 — メインは頂上決戦', { n: totalMatches }),
-        watchCount <= 1 ? '画面の向こうは、まだ遠い世界だ。' : 'うちの名前は…今年もここにない。'),
+        watchCount <= 1 ? WM_I18N.t('画面の向こうは、まだ遠い世界だ。') : WM_I18N.t('うちの名前は…今年もここにない。')),
     });
   }
 
@@ -7827,7 +7845,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
         <div class="ptv-commentary"><div class="ptv-who">${WM_I18N.t('実況')}</div>${_quoteLine(_liveLine(r))}</div>
         <div class="ptv-dots">${dots}</div>
       </div>` + _hint + _telop(WM_I18N.t('速報'), WM_I18N.t('第{n}試合 {result}', { n: pos + 1, result: winF ? WM_I18N.t('{name} 勝利', { name: escHtml(WM_I18N.pn(winF.name)) }) : WM_I18N.t('決着つかず') }),
-        pos < underIdxs.length - 1 ? '画面の前で、次を見届ける。' : '次はいよいよ、メインイベント。'),
+        pos < underIdxs.length - 1 ? WM_I18N.t('画面の前で、次を見届ける。') : WM_I18N.t('次はいよいよ、メインイベント。')),
     });
   });
 
@@ -7850,8 +7868,8 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       html: _chrome('LIVE') + `<div class="ptv-summit">
         <div class="ptv-summit-kicker">MAIN EVENT ─ ${WM_I18N.t('頂上決戦')}</div>
         ${vsBlock}
-        <div class="ptv-summit-result">両団体の誇りを懸けて——</div>
-      </div>` + _hint + _telop('中継', '頂上決戦 まもなくゴング', '実況席にも、張り詰めた空気。'),
+        <div class="ptv-summit-result">${WM_I18N.t('両団体の誇りを懸けて——')}</div>
+      </div>` + _hint + _telop(WM_I18N.t('中継'), WM_I18N.t('頂上決戦 まもなくゴング'), WM_I18N.t('実況席にも、張り詰めた空気。')),
     });
     scenes.push({
       bgm: null,
@@ -7860,17 +7878,17 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       html: _chrome('LIVE') + `<div class="ptv-summit">
         <div class="ptv-summit-kicker">MAIN EVENT ─ ${WM_I18N.t('頂上決戦')}</div>
         ${summitResultBlock}
-        <div class="ptv-summit-result">${r.turns || 0}ターンの死闘の末に——
+        <div class="ptv-summit-result">${WM_I18N.t('{n}ターンの死闘の末に——', { n: r.turns || 0 })}
           <div class="ptv-win-line">${isDraw ? WM_I18N.t('△ 両者譲らず、DRAW') : WM_I18N.t('🏆 {name}、業界の頂点へ', { name: escHtml(WM_I18N.pn(winF.name)) })}</div>
         </div>
-      </div>` + _hint + _telop(WM_I18N.t('速報'), `頂上決戦 決着 — 評価 ${r.mq} ${_pbStars(r.mq)}`, isDraw ? '決着は、来年に持ち越された。' : 'これが、頂点の景色。'),
+      </div>` + _hint + _telop(WM_I18N.t('速報'), WM_I18N.t('頂上決戦 決着 — 評価 {mq} {stars}', { mq: r.mq, stars: _pbStars(r.mq) }), isDraw ? WM_I18N.t('決着は、来年に持ち越された。') : WM_I18N.t('これが、頂点の景色。')),
     });
   }
 
   // ⑤ 放送終了(視聴回数で独白を変える)
   const endMsg = watchCount <= 1
-    ? 'テレビの明かりを消す。<br><br>初めて画面越しに見た、年末の大舞台。<br>いつか——<b>あの画面の中に立つのはうちの選手たちだ。</b>'
-    : 'テレビの明かりを消す。<br><br>今夜の歓声も、私たちのものではなかった。<br>でも——<b>来年こそ、あの画面の中に立つ。</b>';
+    ? WM_I18N.t('テレビの明かりを消す。<br><br>初めて画面越しに見た、年末の大舞台。<br>いつか——<b>あの画面の中に立つのはうちの選手たちだ。</b>')
+    : WM_I18N.t('テレビの明かりを消す。<br><br>今夜の歓声も、私たちのものではなかった。<br>でも——<b>来年こそ、あの画面の中に立つ。</b>');
   scenes.push({
     bgm: null,
     final: true,
@@ -7878,7 +7896,7 @@ function renderPPVTvBroadcast(card, results, ppvName) {
       <div class="ptv-end-msg">${endMsg}</div>
       <div class="ptv-end-note">${WM_I18N.t('団体人気{n}以上で PPV GRAND FINAL への出場資格を獲得できます', { n: typeof PPV_UNLOCK_POP !== 'undefined' ? PPV_UNLOCK_POP : 30 })}</div>
       <button type="button" class="ptv-btn" onclick="App.closePPVTV()">${WM_I18N.t('事務所へ戻る')}</button>
-    </div>` + _telop(WM_I18N.t('次回'), 'また来年 — GRAND FINAL', 'ご視聴ありがとうございました'),
+    </div>` + _telop(WM_I18N.t('次回'), WM_I18N.t('また来年 — GRAND FINAL'), WM_I18N.t('ご視聴ありがとうございました')),
   });
 
   let sceneIdx = 0;
@@ -8819,7 +8837,8 @@ function showBonusProposalModal(fighterId, state) {
   // 初期選択: 案二(相場)が払えるならそこ、無理なら払える中で最上位の案
   const affordable = [0, 1, 2, 3].filter(i => proposals[i].amount <= funds);
   const defaultIdx = proposals[1].amount <= funds ? 1 : affordable[affordable.length - 1];
-  const kanji = ['一', '二', '三', '四'];
+  // i18n P7-30: 案番号はJAが漢数字・ENは算用数字(specs §25-5と同型の「書式そのものがJA固有」の族)。
+  const kanji = (WM_I18N.lang === 'en') ? ['1', '2', '3', '4'] : ['一', '二', '三', '四'];
   const cards = proposals.map((p, i) => {
     const isWarned = i === 0 && p.proud;
     const memo = isWarned ? warning : (memos[i] || '');
@@ -10325,10 +10344,10 @@ function showFactionF02Modal(payload, state, onChoice) {
 
   // act1: 前段ナレーション（1文ずつ置き換え式）
   const narLines = [
-    'ここ数週、ロッカールームの空気が変わっていた。',
-    `<em>${_quoteVal(String(factionAName))}</em>と<em>${_quoteVal(String(factionBName))}</em>——並び立っていた二つの派閥の間に、`,
-    '目に見えない線が引かれている。視線は交わらず、言葉も交わさない。',
-    'もう、元には戻らない。',
+    WM_I18N.t('ここ数週、ロッカールームの空気が変わっていた。'),
+    WM_I18N.t('<em>{a}</em>と<em>{b}</em>——並び立っていた二つの派閥の間に、', { a: _quoteVal(String(factionAName)), b: _quoteVal(String(factionBName)) }),
+    WM_I18N.t('目に見えない線が引かれている。視線は交わらず、言葉も交わさない。'),
+    WM_I18N.t('もう、元には戻らない。'),
   ];
   const narHtml = `
     <div class="fevt-narration-act" id="fevtF02NarOverlay">
@@ -10425,12 +10444,12 @@ function showFactionF03Modal(payload, state, onContinue) {
 
   const reason = payload.reason || 'retirement';
   const reasonMap = {
-    retirement: { sub: 'FACTION DISSOLVED ・ LEADER RETIRED', caption: 'LEADER RETIRED', lostReason: 'RETIREMENT', line: 'もう、あの旗の下には戻れない' },
-    departure:  { sub: 'FACTION DISSOLVED ・ LEADER DEPARTED', caption: 'LEADER DEPARTED', lostReason: 'DEPARTURE', line: 'あの人と同じ旗は、もう掲げられない' },
-    poach:      { sub: 'FACTION DISSOLVED ・ LEADER DEPARTED', caption: 'LEADER DEPARTED', lostReason: 'DEPARTURE', line: 'あの人と同じ旗は、もう掲げられない' },
-    isolated:   { sub: 'FACTION DISSOLVED ・ MEMBERS SCATTERED', caption: 'MEMBERS SCATTERED', lostReason: 'ISOLATED', line: '一人では、派閥とは呼べない' },
-    collapse:   { sub: 'FACTION DISSOLVED ・ COLLAPSED AFTER DEFEAT', caption: 'COLLAPSED AFTER DEFEAT', lostReason: 'COLLAPSE', line: '負けた旗の下には、もう立てない' },
-    longInjury: { sub: 'FACTION DISSOLVED ・ LEADER ABSENT', caption: 'LEADER ABSENT', lostReason: 'ABSENCE', line: 'もう、あの旗の下には戻れない' },
+    retirement: { sub: 'FACTION DISSOLVED ・ LEADER RETIRED', caption: 'LEADER RETIRED', lostReason: 'RETIREMENT', line: WM_I18N.t('もう、あの旗の下には戻れない') },
+    departure:  { sub: 'FACTION DISSOLVED ・ LEADER DEPARTED', caption: 'LEADER DEPARTED', lostReason: 'DEPARTURE', line: WM_I18N.t('あの人と同じ旗は、もう掲げられない') },
+    poach:      { sub: 'FACTION DISSOLVED ・ LEADER DEPARTED', caption: 'LEADER DEPARTED', lostReason: 'DEPARTURE', line: WM_I18N.t('あの人と同じ旗は、もう掲げられない') },
+    isolated:   { sub: 'FACTION DISSOLVED ・ MEMBERS SCATTERED', caption: 'MEMBERS SCATTERED', lostReason: 'ISOLATED', line: WM_I18N.t('一人では、派閥とは呼べない') },
+    collapse:   { sub: 'FACTION DISSOLVED ・ COLLAPSED AFTER DEFEAT', caption: 'COLLAPSED AFTER DEFEAT', lostReason: 'COLLAPSE', line: WM_I18N.t('負けた旗の下には、もう立てない') },
+    longInjury: { sub: 'FACTION DISSOLVED ・ LEADER ABSENT', caption: 'LEADER ABSENT', lostReason: 'ABSENCE', line: WM_I18N.t('もう、あの旗の下には戻れない') },
   };
   const meta = reasonMap[reason] || reasonMap.retirement;
 
@@ -10506,7 +10525,7 @@ function showFactionHiatusModal(payload, state, onContinue) {
   const leaderName = payload.leaderName || (leader ? leader.name : '???');
   const lostImgUrl = leader ? _factionUpperUrl(leader.id) : null;
   const survivorImgUrl = survivor ? _factionUpperUrl(survivor.id) : null;
-  const survivorLine = payload.survivorLine || '帰ってきたら、また集まろう';
+  const survivorLine = payload.survivorLine || WM_I18N.t('帰ってきたら、また集まろう');
 
   const lostUpper = lostImgUrl
     ? `<img class="fevt-lost-upper" src="${lostImgUrl}" alt="">`
@@ -11066,7 +11085,7 @@ function showFactionF07Modal(payload, state, onChoice) {
     coachLine = (typeof Engine !== 'undefined' && Engine.factions && Engine.factions.getF07Line)
       ? Engine.factions.getF07Line('coachReport', { incidentType, vars }, WM_I18N.t)
       : '';
-    if (!coachLine) coachLine = `${leaderSurname}と${factionName}の動きについて報告があります。`;
+    if (!coachLine) coachLine = WM_I18N.t('{leaderSurname}と{factionName}の動きについて報告があります。', { leaderSurname, factionName });
   }
 
   const leaderMeta = leader
@@ -11504,7 +11523,7 @@ function showInternalChallengePostModal(data, state, onContinue) {
     AUTHORITY: WM_I18N.t('権威型'),
   });
   const transitionHtml = data.archetypeTransition
-    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:var(--stage-text-main)">― ${escHtml(WM_I18N.pn(data.faction.name))}は《${escHtml(transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from)}》から《${escHtml(transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to)}》へ気風を変えた ―</div>`
+    ? `<div class="fevt-arena-narration close" style="margin-top:8px;color:var(--stage-text-main)">${WM_I18N.t('― {faction}は《{from}》から《{to}》へ気風を変えた ―', { faction: escHtml(WM_I18N.pn(data.faction.name)), from: escHtml(transitionLabel[data.archetypeTransition.from] || data.archetypeTransition.from), to: escHtml(transitionLabel[data.archetypeTransition.to] || data.archetypeTransition.to) })}</div>`
     : '';
 
   // U3統一(2026-07-25): 顔出しブロックは _u3bSideHtml(.u3b-*)へ移行。1人ずつ順に見せる決着画面のため
@@ -12069,7 +12088,7 @@ function showFactionF02ResolutionModal(payload, state, onContinue) {
         <div class="fevt-res-ledger-col lose">
           <div class="fevt-res-ledger-head">${String(loserFactionName)} ・ DEFEATED</div>
           <div class="fevt-res-ledger-line">${WM_I18N.t('求心力')}　<span class="delta-down">-14</span> ・ ${WM_I18N.t('勢い')} <span class="delta-down">-22</span></div>
-          <div class="fevt-res-ledger-line">${WM_I18N.t('離脱リスク者')}　<span class="delta-down">2名</span></div>
+          <div class="fevt-res-ledger-line">${WM_I18N.t('離脱リスク者')}　<span class="delta-down">${WM_I18N.t('2名')}</span></div>
           <div class="fevt-res-ledger-line">${String(winnerFactionName)}${WM_I18N.t('への敵対度')}　<span class="delta-down">-40</span></div>
         </div>
       </div>
@@ -12789,7 +12808,7 @@ function showUnifiedTitleReturnCeremony(payload, state, onDone) {
       <div class="unified-speech-slot"><div class="unified-speech"><span>${escHtml(line || '……')}</span></div></div>
       ${imgUrl ? `<img class="unified-return-portrait" src="${escHtml(imgUrl)}" alt="${escHtml(WM_I18N.pn(fighter.name) || '')}">` : `<div class="unified-return-fallback">${escHtml((WM_I18N.pn(fighter.name) || '?').charAt(0))}</div>`}
       <div class="unified-return-name">${escHtml(WM_I18N.pn(fighter.name) || '???')} <span>${escHtml(cfg.orgName || '')}</span></div>
-      <div class="unified-return-record">在位 <b>${WM_I18N.t('{dy}年', { dy: escHtml(cfg.heldYears || 1) })}</b> ・ 防衛 <b>${WM_I18N.t('{n}度', { n: escHtml(cfg.defenses || 0) })}</b><br>${escHtml(holderText)}</div>
+      <div class="unified-return-record">${WM_I18N.t('在位 <b>{y}</b> ・ 防衛 <b>{d}</b>', { y: WM_I18N.t('{dy}年', { dy: escHtml(cfg.heldYears || 1) }), d: WM_I18N.t('{n}度', { n: escHtml(cfg.defenses || 0) }) })}<br>${escHtml(holderText)}</div>
       <div class="unified-return-next">${WM_I18N.t('ベルトは大会へ返還され、翌週の天頂戦で新王者が決まる')}</div>
       <button class="unified-return-close" type="button">${WM_I18N.t('返還式を終える')}</button>
     </div>
@@ -13436,7 +13455,7 @@ function showTitleMatchCeremony(outcome, onDone) {
   const defenses = Number(G?.titles?.world?.defenses) || 0;
   const champLine = typeof getTraitQuote === 'function'
     ? getTraitQuote(isDefense ? 'titleDefense' : 'titleWin', champion)
-    : (isDefense ? 'このベルトは、まだ渡さない。' : 'このベルトとともに、頂点へ行く。');
+    : (isDefense ? WM_I18N.t('このベルトは、まだ渡さない。') : WM_I18N.t('このベルトとともに、頂点へ行く。'));
   const opponentLine = opponent && typeof getTraitQuote === 'function'
     ? getTraitQuote(isDefense ? 'titleChallengeLoss' : 'titleLoss', opponent)
     : '';
@@ -14383,7 +14402,7 @@ function _buildB2Step1(event, state, roster) {
   const o1 = f1 ? Engine.util.ov(f1) : '?';
   const o2 = f2 ? Engine.util.ov(f2) : '?';
   const weekMeta = _mdlASeasonLabel(state);
-  const reporterLine = event.detail || '練習場で大きな衝突があったようです';
+  const reporterLine = event.detail || WM_I18N.t('練習場で大きな衝突があったようです');
 
   return `
     <div class="mdl-a-header danger">
@@ -15911,7 +15930,7 @@ function showLeagueElevationCeremony(state, onDone) {
           <div class="le-narr-line" id="leNarr4" style="margin-top:4px"></div>
         </div>
         <div class="le-closing-block">
-          <div class="le-closing-text" id="leClosingText">もはや安泰の時代は終わった。<br><em>真の群雄割拠が始まる——</em></div>
+          <div class="le-closing-text" id="leClosingText">${WM_I18N.t('もはや安泰の時代は終わった。<br><em>真の群雄割拠が始まる——</em>')}</div>
           <button class="le-btn" id="leCloseBtn">${WM_I18N.t('続ける')} ▶</button>
         </div>
       </div>
@@ -15920,8 +15939,8 @@ function showLeagueElevationCeremony(state, onDone) {
   overlay.classList.add('active');
 
   // ── ナレーションテキスト埋め込み ──
-  document.getElementById('leNarr0').textContent = (state.orgName || '') + 'の凄まじい躍進は業界全体に衝撃を与えた。';
-  document.getElementById('leNarr1').textContent = 'その影響は業界3団体の体制を大きく揺るがし、それぞれの団体は内部改革に動き出した。';
+  document.getElementById('leNarr0').textContent = WM_I18N.t('{org}の凄まじい躍進は業界全体に衝撃を与えた。', { org: state.orgName || '' });
+  document.getElementById('leNarr1').textContent = WM_I18N.t('その影響は業界3団体の体制を大きく揺るがし、それぞれの団体は内部改革に動き出した。');
 
   const content   = document.getElementById('leContent');
   const flash     = document.getElementById('leFlash');
@@ -15974,7 +15993,7 @@ function showLeagueElevationCeremony(state, onDone) {
     () => {
       _playFileSE('../bgm/b07_whiff_v4.mp3');
       fireFlash(); shake(); cutIn('leCutinS');
-      setTimeout(() => setNarr('leNarr2', '王座奪還へ——全力の補強に動く'), 500);
+      setTimeout(() => setNarr('leNarr2', WM_I18N.t('王座奪還へ——全力の補強に動く')), 500);
       unlock(900);
     },
     // step 3: S級退場 → A級カットイン
@@ -15983,7 +16002,7 @@ function showLeagueElevationCeremony(state, onDone) {
       setTimeout(() => {
         _playFileSE('../bgm/b07_whiff_v4.mp3');
         fireFlash(); shake(); cutIn('leCutinA');
-        setTimeout(() => setNarr('leNarr3', '大型補強を宣言——エース候補の発掘に乗り出す'), 500);
+        setTimeout(() => setNarr('leNarr3', WM_I18N.t('大型補強を宣言——エース候補の発掘に乗り出す')), 500);
         unlock(900);
       }, 400);
     },
@@ -15993,7 +16012,7 @@ function showLeagueElevationCeremony(state, onDone) {
       setTimeout(() => {
         _playFileSE('../bgm/b07_whiff_v4.mp3');
         fireFlash(); shake(); cutIn('leCutinB');
-        setTimeout(() => setNarr('leNarr4', '育成体制を一新——コーチ陣を大幅強化'), 500);
+        setTimeout(() => setNarr('leNarr4', WM_I18N.t('育成体制を一新——コーチ陣を大幅強化')), 500);
         unlock(900);
       }, 400);
     },
@@ -16187,7 +16206,7 @@ function showEndingCeremony(data, onDone) {
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
           <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('興行回数')}</span>
-          <span style="font-size:14px;font-weight:700;color:var(--text)">${data.totalShows} 回</span>
+          <span style="font-size:14px;font-weight:700;color:var(--text)">${WM_I18N.t('{n} 回', { n: data.totalShows })}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,0.04);padding:8px 0">
           <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('ベストマッチ')}</span>
@@ -16195,7 +16214,7 @@ function showEndingCeremony(data, onDone) {
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0">
           <span style="font-size:12px;color:var(--text-dim);letter-spacing:1px">${WM_I18N.t('殿堂入り')}</span>
-          <span style="font-size:14px;font-weight:700;color:var(--text)">${data.hallOfFameCount} 名</span>
+          <span style="font-size:14px;font-weight:700;color:var(--text)">${WM_I18N.t('{n} 名', { n: data.hallOfFameCount })}</span>
         </div>
       </div>
     </div>`
@@ -16257,8 +16276,8 @@ function showEndingCeremony(data, onDone) {
       <div style="font-family:'Noto Serif JP',serif;font-size:24px;font-weight:900;letter-spacing:4px;color:var(--text);
         text-shadow:0 0 20px rgba(212,168,67,0.3);margin-bottom:16px">CONGRATULATIONS</div>
       <div style="font-size:14px;color:var(--text-sub);line-height:2.0">
-        ${_quoteVal(data.orgName)}は<br>女子プロレス界の頂点に立った。<br><br>
-        しかし、${_quoteVal(data.orgName)}の戦いはまだ始まったばかり<br>この先に待つのは、新たな伝説か・・・・
+        ${WM_I18N.t('{org}は<br>女子プロレス界の頂点に立った。<br><br>', { org: _quoteVal(data.orgName) })}
+        ${WM_I18N.t('しかし、{org}の戦いはまだ始まったばかり<br>この先に待つのは、新たな伝説か・・・・', { org: _quoteVal(data.orgName) })}
       </div>
     </div>`
   });
@@ -16371,13 +16390,13 @@ function showGameOverScreen(summary) {
     <div class="gameover-subtitle">${WM_I18N.t('「{org}」は資金難により活動停止を発表した。', { org: summary.orgName })}</div>
     <div class="gameover-divider">─── ${WM_I18N.t('団体の足跡')} ───</div>
     <div class="gameover-stats">
-      <div class="gameover-stat-row"><span>${WM_I18N.t('活動期間')}</span><span>${summary.season} シーズン</span></div>
-      <div class="gameover-stat-row"><span>${WM_I18N.t('最高ランク')}</span><span>${summary.bestRank} 位</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('活動期間')}</span><span>${WM_I18N.t('{n} シーズン', { n: summary.season })}</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('最高ランク')}</span><span>${WM_I18N.t('{n} 位', { n: summary.bestRank })}</span></div>
       <div class="gameover-stat-row"><span>${WM_I18N.t('最高資金')}</span><span>${fmt(summary.peakFunds)} ${WM_I18N.t('万')}</span></div>
       <div class="gameover-stat-row"><span>${WM_I18N.t('最高団体人気')}</span><span>${fmt(Math.round(summary.peakOrgPop))}</span></div>
-      <div class="gameover-stat-row"><span>${WM_I18N.t('興行回数')}</span><span>${summary.totalShows} 回</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('興行回数')}</span><span>${WM_I18N.t('{n} 回', { n: summary.totalShows })}</span></div>
       <div class="gameover-stat-row"><span>${WM_I18N.t('ベストマッチ')}</span><span>${summary.bestMQMatch || '—'} (${WM_I18N.t('評価 {n}', { n: summary.bestMQ })})</span></div>
-      <div class="gameover-stat-row"><span>${WM_I18N.t('殿堂入り')}</span><span>${summary.hallOfFameCount} 名</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('殿堂入り')}</span><span>${WM_I18N.t('{n} 名', { n: summary.hallOfFameCount })}</span></div>
     </div>
     <button class="gameover-btn" id="gameoverBtn1" onclick="
       document.getElementById('gameoverBtn1').style.display='none';
@@ -16438,7 +16457,7 @@ function showGameOverCeremony(data, onDone) {
         ${reasonHeadline}<br>${WM_I18N.t('「{org}」は活動停止を発表した。', { org: data.orgName })}
       </div>
       <div style="border-top:1px solid #3a1818;margin:12px 0;padding-top:14px">
-        <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#cc8888;text-transform:uppercase;margin-bottom:8px">黒田 沙智子 編集記事</div>
+        <div style="font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:2px;color:#cc8888;text-transform:uppercase;margin-bottom:8px">${WM_I18N.t('黒田 沙智子 編集記事')}</div>
         <p style="margin:0;font-size:12px;line-height:1.95;color:#c8b8b8;white-space:pre-wrap;text-align:left;max-width:520px;margin:0 auto">${data.kurodaColumn || ''}</p>
       </div>
     </div>`
@@ -16452,11 +16471,11 @@ function showGameOverCeremony(data, onDone) {
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px">
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('活動期間')}</span>
-          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.season} シーズン</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${WM_I18N.t('{n} シーズン', { n: data.season })}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('最高ランク')}</span>
-          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.bestRank} 位</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${WM_I18N.t('{n} 位', { n: data.bestRank })}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('最高資金')}</span>
@@ -16468,7 +16487,7 @@ function showGameOverCeremony(data, onDone) {
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('興行回数')}</span>
-          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.totalShows} 回</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${WM_I18N.t('{n} 回', { n: data.totalShows })}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('ベストマッチ')}</span>
@@ -16476,7 +16495,7 @@ function showGameOverCeremony(data, onDone) {
         </div>
         <div style="display:flex;justify-content:space-between;padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('殿堂入り')}</span>
-          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${data.hallOfFameCount} 名</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${WM_I18N.t('{n} 名', { n: data.hallOfFameCount })}</span>
         </div>
       </div>
     </div>`
@@ -16539,8 +16558,8 @@ function showGameOverCeremony(data, onDone) {
       <div style="font-family:'Noto Serif JP',serif;font-size:24px;font-weight:900;letter-spacing:6px;color:#c8b0b0;
         text-shadow:0 0 20px rgba(170,30,30,0.25);margin-bottom:18px">THE END</div>
       <div style="font-size:14px;color:#a89898;line-height:2.0">
-        ${_quoteVal(data.orgName)}の物語は、ここで終わる。<br><br>
-        だが選手たちの戦いは続く——<br>どこか別の団体の下で。
+        ${WM_I18N.t('{org}の物語は、ここで終わる。<br><br>', { org: _quoteVal(data.orgName) })}
+        ${WM_I18N.t('だが選手たちの戦いは続く——<br>どこか別の団体の下で。')}
       </div>
     </div>`
   });
@@ -20752,10 +20771,10 @@ function renderTenchosenResult() {
 
 /** 関係性ドラマ: ナレーション(事実記述・固定文) */
 function _tcDramaNarration(evClass, winner, loser) {
-  if (evClass === 'epic') return '死闘の後、敗者は勝者の前に立った。';
-  if (evClass === 'humiliation') return `敗れた${WM_I18N.pn(loser.name)}は、バックステージで${WM_I18N.pn(winner.name)}を待っていた。`;
-  if (evClass === 'stablemate_rift') return '試合後の控室で、二人の間に言葉は少なかった。';
-  return `試合後の控室で、${WM_I18N.pn(loser.name)}は${WM_I18N.pn(winner.name)}のもとへ歩み寄った。`;
+  if (evClass === 'epic') return WM_I18N.t('死闘の後、敗者は勝者の前に立った。');
+  if (evClass === 'humiliation') return WM_I18N.t('敗れた{loser}は、バックステージで{winner}を待っていた。', { loser: loser.name, winner: winner.name });
+  if (evClass === 'stablemate_rift') return WM_I18N.t('試合後の控室で、二人の間に言葉は少なかった。');
+  return WM_I18N.t('試合後の控室で、{loser}は{winner}のもとへ歩み寄った。', { loser: loser.name, winner: winner.name });
 }
 
 /** 関係性ドラマ: 関係変化チップ */
