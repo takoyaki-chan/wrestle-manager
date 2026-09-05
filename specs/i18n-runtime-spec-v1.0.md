@@ -149,7 +149,7 @@ EN走破のi18n-miss実測トレースで残る24件のうち11件が「台帳�
 - `SPECIAL_EVENT_INTRO`(43行) → **`EXTRA_INCLUDE` + `INCLUDE_PATH_FILTER`** で`coach`/`fighter`配下のみ抽出(§9参照)。同テーブルの`title`/`travelLine`/`nextLabel` 15行はUI層のため**あえて拾わない**(ui-ledgerの領分。二重登録の禁止理由は§9)
 - `_getKurodaNewsComment`のインライン配列(3行) → **`kuroda-text.js`の`KURODA_NEWS_COMMENT._default`へ移設**し、`ui-render.js`側はそれを返すだけにした。文面・並び順・配列長(3本)は不変(`Engine.rng.pick`が引く添字を変えないため)。template-ledgerが1,490→1,493行になり黒田英文体で訳出済み。**プール要素をトップレベルのテーブルへ置くのが規約** — 関数ローカルのリテラル配列は§6のテンプレ抽出器(トップレベル`const`のみ走査)から永久に見えない
 
-同型の穴を作らないための規約: **新しいセリフ/テンプレのプールは必ずトップレベルの`const`テーブルへ置き、命名は`*_LINES`/`*_DIALOGUE(S)`に従う**。従えない場合(既存テーブルへの相乗り等)は`EXTRA_INCLUDE`(セリフ層)または§6の対象テーブル一覧(テンプレ層)へ**明示追加する**。関数の中に直書きした配列は、消費点が正しくt()を通していても辞書へ入らないため英語モードで日本語のまま出る。
+同型の穴を作らないための規約: **新しいセリフ/テンプレのプールは必ずトップレベルの`const`テーブルへ置き、命名は`*_LINES`/`*_DIALOGUE(S)`に従う**。従えない場合(既存テーブルへの相乗り等)は`EXTRA_INCLUDE`(セリフ層)または§6の対象テーブル一覧(テンプレ層)へ**明示追加する**。関数の中に直書きした配列は、消費点が正しくt()を通していても辞書へ入らないため英語モードで日本語のまま出る。**この規約には「置き場所」の条件も要る(P7-21で判明・§37)**: トップレベル`const`で`*_LINES`命名でも、**ファイルが`DIALOGUE_FILES`(data.js+セリフ専用ファイル群)の外なら抽出器から見えない**。`CUTIN_LINES`(441スロット)は表示点が最初からt()に乗っていたのに`battle-engine-main.js`に置かれていたため辞書が空のままだった。**観戦系(single/tag共通)のセリフの置き場は`src/battle-lines.js`**、タッグ固有は`src/tag-battle-lines.js`。
 3件とも`i18n/dialogue-ledger.json`/`i18n/template-ledger.json`の対象テーブル一覧・抽出器の走査パターンを変更しないと台帳に載らない(=本バッチの厳守事項「dialogue-ledger.json/lang-en-dialogue.jsは触らない」と衝突するため未着手)。次にこれらの抽出器へ触れるバッチで、`FAN_EXPECT_REACTIONS`を`test/i18n-extract-dialogue.js`の対象命名パターンへ追加するか`EXTRA_INCLUDE`に足す、`SPECIAL_EVENT_INTRO`を§6の対象データテーブルへ追加するか同様に`EXTRA_INCLUDE`扱いにする、`_getKurodaNewsComment`のフォールバック配列を`KURODA_NEWS_COMMENT`本体(kuroda-text.js)へ移すかフォールバック自体を廃す、のいずれかを検討すること。**`_getKurodaNewsComment`のフォールバック3件はP6-8でi18n/ui-ledger.json(kept:true)へ暫定登録し訳出した**(§11参照。テーブル自体の移設はしていないため、本項の「未着手」判定はテーブル整理そのものについては変わらない)。
 
 ## 11. Stage B P6-8 — 残存「」ハードコードの全数消化+季総括カードのテンプレ化+新規発見4件(2026-09-04追加)
@@ -1586,3 +1586,74 @@ const NAME_SUBJECT_VERB_EXEMPT_RE = /^(name|winnerName|championName|championOrg|
 - 独立検査(build-dictと同一の正規表現+除外ロジックを別スクリプトで再実装し、現行3台帳を直接スキャン)でも違反0件を確認 — 検査ロジック自体のバグ(false negative)ではないことを担保
 - 書き直し対象の154キー(ui 76 / template 47 / dialogue 29 — うち一部は§29-2の164件のカウント方法(旧`/i`単発マッチ・小文字限定PH名)と本検査(`/gi`全マッチ・大小文字PH名+除外ロジック)の差により件数が前後した。旧検査基準で残っていた17件(ui 4/template 13)は棚卸しの結果すべて§35-2の誤検知パターンで、書き直し不要と確定)はすべてプレースホルダ完全性を保ったまま(ja/en の`{}`集合が完全一致)書き直し
 - `node test/ja-golden.js` 完全一致 / `node test/i18n-ledger-consistency-test.js` green / `npm test` 全green / `node test/i18n-ratchet.js` / `npm run test:ui:walkthrough` PASS / `npm run test:ui:walkthrough:en` PASS(miss 0)
+
+## 37. Stage B P7-21 — 観戦カットイン `CUTIN_LINES` を `battle-lines.js` へ移設し台帳化・英訳(2026-09-05追加)
+
+### 37-1. 何が穴だったか(§10-2 と同型・ただし原因は「命名」ではなく「置き場所」)
+
+`CUTIN_LINES`(観戦画面のカットイン台詞・`atk`/`climax`/`bigmove` × archetype 7 × personality 7 = **441スロット**)は
+**表示点が P5-1 の時点で既に `WM_I18N.t()` に乗っていた**(`_tryPhaseIntroCutin` / `tryRivalryCutin` の
+`WM_I18N.t(pk(lines))`)。それでも EN では全行が日本語のまま出ていた。理由は辞書が空だったから:
+
+- `test/i18n-extract-dialogue.js` の `DIALOGUE_FILES` は data.js + **セリフ専用8ファイル**で、
+  `battle-engine-main.js` はそこに入っていない
+- 命名(`*_LINES`)は自動判定の条件を満たしていたので、**問題は「テーブル名」ではなく「置き場所」**だった
+- i18n-miss にも出るはずだったが、観戦 iframe は UI 自動走破が踏まないため気づけなかった
+  (P7-20 の全数棚卸しで A分類 #2 として初めて可視化された)
+
+### 37-2. 直し方 — 新しい抽出器は作らず、規約どおりの置き場へ移した
+
+§10-2 の規約「新しいセリフのプールは必ずトップレベルの `const` テーブルへ置き、命名は `*_LINES` に従う」に
+**置き場所の条件**が加わる: **観戦系(single/tag 共通)のセリフは `src/battle-lines.js`**。
+`battle-lines.js` は既に `DIALOGUE_FILES` に入っているので、表ごと移すだけで抽出器は無改修のまま追随した。
+
+- `src/battle-engine-main.js:44-239`(196行)を `src/battle-lines.js` の末尾へ移設。
+  **JA原文・キー順・配列長・配列内の並び順は1文字も変えていない**(`pk()` が引く添字が変わらないように。
+  HEAD版と現行版の `CUTIN_LINES` を `JSON.stringify` で突合し完全一致を機械確認済み)
+- `battle-engine-main.js` 側は宣言を消して参照のみ(`_getCutinLines` は不変)。
+  読み込み順は `battle-engine.html`・`tag-battle.html` とも `battle-lines.js` が本体より先で、
+  両 iframe とも解決できる(tag には消費点が無いが、表は読める)
+- **抽出器・台帳スキーマ・`EXTRA_INCLUDE` は一切変更していない**。
+  cell 判定も `CUTIN_LINES.<section>.<archetype>.<personality>` の兄弟キー集合がそのまま
+  archetype/personality 語彙に一致するため、自動判定だけで **49セル**が解決した(手による補正0件)
+- `i18n/dialogue-ledger.json` 16,674 → **17,092行**(新規418・既存en変更0・削除0・
+  `files` 欄が増えた行15=同一JAが他表にも存在する行)。**未訳0を維持**
+
+### 37-3. ラチェットはファイル間移動として `--update`
+
+`battle-lines.js` 154 → 594(+440)/ `battle-engine-main.js` 530 → 90(−440)。
+**総数 28,042・総字数 463,572 はどちらも不変**(差引ゼロの移動)なので、
+P5-2p の `kuroda-text.js` ↔ `ui-render.js` と同じ扱いで基準を更新した(増加ではない)。
+
+### 37-4. 検査 — カットインは自然走破では絶対に踏めないので実関数を直接叩く
+
+`test/ui-walkthrough/spectator-move-i18n-check.js`(P7-5新設・P7-9拡張)に (4) として追加した。
+カットインは `matchInfo.rivalryTier > 0` かつ確率ゲート(tier別 30/50/80%)を通ったときにしか出ないので、
+**実再生に頼らず実関数を直接叩いて決定的に採る**:
+
+- `cutinRawJa` — `_getCutinLines(sec, personality, archetype)` の**戻り値(生JA)**を441スロット分。
+  JA/EN 実行で完全一致することを検査する = **選出はJAのまま・英語化は表示直前のt()だけ**の機械証明
+  (効果音/解説文の判定層と同じ考え方。§26 と同型)
+- `cutinShown` — 各行に `WM_I18N.t()` を通した結果。EN側に日本語残り0 / JA側は日本語のまま
+- `cutinDom` — `Math.random` を固定して `_tryPhaseIntroCutin('Climax'|'Mid')` と
+  `tryRivalryCutin('atk'|'climax'|'bigmove')` を実際に発火させ、
+  `showCutin → BattleAnim.renderCutin` が書いた `#cutinOv .cutin-text` を読む(single のみ)。
+  **EN で `「」` が付かない**(§11-2 `_quoteLine` の言語分岐)ことも同時に見る
+- `cutinTableLoaded` — tag 側でも `CUTIN_LINES` がグローバルに存在すること(= `battle-lines.js` の
+  読み込み順が tag-battle.html でも正しいこと)
+
+### 37-5. 英訳の方針(バイブル適用の要点)
+
+- **カットインは観戦の一瞬**なので吹き出し上限(110字)より短く書いた。実測 **最大69字・中央値30字・平均30.3字**
+  (EN/JA文字数比は2.62でP5-2pの2.41より高いが、これは**JA原文が極端に短い**(平均11.6字)ためで、
+  絶対長は他バッチの半分以下。指示の目安60字以内をほぼ全行が満たす)
+- `atk`(声に出す鼓舞)/`climax`(内心)/`bigmove`(大技の宣言)で**モダリティを分けた**。
+  `climax` は全角括弧の内心モノローグなので P5-2p §3 のト書き規約に従い **`... *…*`** 形式
+  (先頭の「…」は括弧の外へ出す。`BT_HINT_LINES` の内心行と同じ形)
+- 属性=register を全行で守った: ojousama **61行すべて短縮形ゼロ** / cool **56行すべて感嘆符ゼロ・3文以内** /
+  delinquent は冠詞主語の省略+`gonna/wanna`、卑語は **hell/damn 計2回のみ**(どちらも delinquent 確定セル)/
+  f・sワード0 / ALL CAPS 0 / 英国綴り0 / 禁止定型(`I'll do my best` 等)0
+- **`♪` は原文と同数**(5行)。感嘆符も JA にある行だけに置いた(機械検査で全数照合)
+- 同じ日本語の骨格が7属性×3セクションで繰り返される表なので、**均質化回避を全数照合で担保**した。
+  最終的に **バッチ内EN完全重複0・近似重複(トークンJaccard≥0.90)0・既訳16,674行との完全重複0・近似重複0**
+  (検出36件をすべて書き直した)

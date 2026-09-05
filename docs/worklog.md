@@ -1,5 +1,145 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🌐 英語対応 P7-21 — 観戦カットイン `CUTIN_LINES` 441スロットを `battle-lines.js` へ移設し台帳化・英訳418行(2026-09-05・worktree agent-ae9c3371bbb25c84b)
+
+指示書は `docs/i18n-coverage-report-v0.1.md` A分類 #2(P7-20の全数棚卸しで可視化された「表示点は t() に乗っているのに辞書が空」のプール)。開始前にworktreeブランチをmain先端(`4a4e944b`=P7-20)へfast-forward。
+
+**セリフ台帳 16,674 → 17,092行・未訳0を維持**。`src/battle-engine-main.js` の変更は指示どおり **CUTIN_LINES の移設と参照コメントだけ**(判定層・セーブ値は不触)。
+
+### 1. 穴の正体は「命名」ではなく「置き場所」だった — 新しい抽出器は要らなかった
+
+指示書の当初案は「JS_TABLESモードの抽出器を battle-engine-main.js 向けに追加」だったが、調べると**作る必要がなかった**。
+
+- `CUTIN_LINES` は既に `*_LINES` 命名で、`test/i18n-extract-dialogue.js` の自動判定条件を満たしている
+- 落ちていた理由は **`DIALOGUE_FILES`(data.js+セリフ専用8ファイル)に `battle-engine-main.js` が無い**、それだけ
+- 一方 `src/battle-lines.js` は **既に `DIALOGUE_FILES` に入っている**(`DAMAGE_SERIF_LINES`/`DAMAGE_VOICE_LINES` の置き場)。specs §10-2 の規約でも「観戦系(single/tag共通)のセリフの置き場」は battle-lines.js
+
+なので**表ごと移すだけ**で抽出器・台帳スキーマ・`EXTRA_INCLUDE`・`INCLUDE_PATH_FILTER` はすべて無改修のまま追随した。
+「抽出器が無いから作る」ではなく「規約どおりの場所に置いていないから直す」が正しい診断だった。
+
+### 2. 移設のJA不変(検算)
+
+`src/battle-engine-main.js:44-239`(196行)→ `src/battle-lines.js` 末尾。
+
+- **HEAD版の `CUTIN_LINES` と移設後の `CUTIN_LINES` を `JSON.stringify` で突合し完全一致**(JSONはキー挿入順を保つので、セクション順・archetype順・personality順・配列内の並び順・441スロットの全文字列がすべて同一であることの証明)。`pk()` が引く添字が1つも動かない
+- `battle-engine-main.js` 側は宣言を消して参照コメントのみ。`_getCutinLines` / `_tryPhaseIntroCutin` / `tryRivalryCutin` / `showCutin` はすべて不変
+- 読み込み順は `battle-engine.html`(battle-lines.js → battle-engine-main.js)・`tag-battle.html`(battle-lines.js → tag-battle-lines.js → tag-battle-main.js)とも本体より先。**tag側でもグローバルに解決できることを実ブラウザで確認**(検査の `cutinTableLoaded`)。tagには消費点が無いが、`const` の二重宣言も起きない(tag-battle-lines.js は `CUTIN_SAVE_LINES` で別名)
+- 両ファイルとも CRLF・末尾改行を維持
+
+### 3. 台帳化 — 保全マージで既存en欠損0
+
+`node test/i18n-extract-dialogue.js` の実行前後を機械比較:
+
+| 項目 | 値 |
+|---|---|
+| 行数 | 16,674 → **17,092**(+418) |
+| 既存 en の変更 | **0** |
+| 既存行の削除 | **0** |
+| cell の変更 | **0** |
+| `files` 欄が増えた行 | 15(同一JAが他表にも存在する行に `battle-lines.js:CUTIN_LINES` が加わっただけ) |
+
+表全体は **441スロット / ユニーク433行**。うち **15行は既に台帳にあり訳文も入っていた**(`……まだ`=CUTIN_SAVE_LINES、`……終わりだ`=BITTER_RESOLUTION/GLIMPSE_A、`が、頑張ります…！`=JUNIOR_TOURNAMENT/PPV_OPPONENT/HOT_TAG など)。JA原文が同じなら台帳は1行なので、これらは既訳を共有する(=新規訳出は418行)。
+
+**cell判定は自動解決だけで済み、手による補正は0件**。`CUTIN_LINES.<section>.<archetype>.<personality>` の各ノードの兄弟キー集合がそのまま archetype 7種 / personality 7種の語彙に一致するため、§9の兄弟キー集合ルールがそのまま効いた。
+
+- archetype: polite 61 / seductive 61 / ojousama 61 / composed 60 / delinquent 59 / cool 56 / standard 55 / **null 5**
+- personality: easygoing 63 / bold 62 / earnest 61 / shy 60 / emotional 59 / normal 54 / quiet 54 / **null 5**
+- セクション(新規行の初出): atk 182 / bigmove 138 / climax 98
+- **null 5行はすべて「同一原文が2セルに再利用されて判定が割れる」行**で、null が正しい(P5-2p §1 と同型): `負けたくないっ…！`(standard.emotional と seductive.emotional)/`絶対に…絶対にっ…！`(standard.emotional と polite.emotional)/`こ、ここから…ですっ…！`(standard.shy と polite.shy)/`…ここから`(cool.normal と cool.bold)/`…ここから、だよ`(composed.normal と composed.quiet)。**訳文は両セルの共通解になる言い方を選んだ**
+
+### 4. ラチェットは差引ゼロの「ファイル間移動」
+
+| ファイル | jaCount | jaChars |
+|---|---|---|
+| `battle-lines.js` | 154 → **594**(+440) | 1,220 → 5,078 |
+| `battle-engine-main.js` | 530 → **90**(−440) | 4,700 → 842 |
+| **合計** | **28,042(不変)** | **463,572(不変)** |
+
+総数・総字数のどちらも1本も増えていないので、P5-2p の `kuroda-text.js` ↔ `ui-render.js` と同じ「移動」として `--update`。
+
+### 5. 英訳の方針
+
+規範は `docs/en-tone-bible-draft-v0.1.md`(較正済みv0.1・全文。§4-6のネイティブ検品①〜③則を含む)+`docs/en-anchor-samples-draft-v0.1.md`(34セル102本)+`specs/dialogue-tone-spec-v1.0.md` §3鉄則+P5-2a〜2pの訳語判断を継承。
+
+- **カットインは観戦の一瞬**。実測 **最大69字・中央値30字・平均30.3字**(指示の目安60字以内をほぼ全行が満たす)。EN/JA比2.62はP5-2pの2.41より高いが、これは**JA原文が平均11.6字と極端に短い**ため。絶対長は他バッチの半分以下
+- **3セクションでモダリティを分けた**。`atk`=声に出す鼓舞(フェーズ切替)/`bigmove`=大技の宣言/`climax`=内心のモノローグ。`climax` は全角括弧なので P5-2p §3 のト書き規約に従い **`... *…*`** 形式(先頭の「…」は括弧の外へ出す=`BT_HINT_LINES` の内心行と同じ形)
+- **属性=register**: ojousama 61行**すべて短縮形ゼロ** / cool 56行**すべて感嘆符ゼロ・3文以内** / delinquent は冠詞・主語の省略+`gonna/wanna`、**卑語は hell/damn 計2回だけ**(`Like hell I'm backing off!` / `Damn it... I'm putting you through the mat...!` — どちらも delinquent 確定セル) / polite は完全文+緩衝 / composed は急がない英語+後置 though / seductive は低温+味わう動詞+`Mm`/`Hehe` / standard は特徴を足さない
+- **f・sワード0 / ALL CAPS 0 / 英国綴り0 / 禁止定型(`I'll do my best` 等)0 / `Fufu` 音写0**。`ふふ`=`Hehe...`、`うふふ`=`Hehehe,`(検品②)
+- **`♪` は原文と同数(5行)**、感嘆符も **JAにある行だけ**(全数照合)。`！！`の二重感嘆は `!!` で受けた(`思いっきりいくわよっ！！`→`Here it comes — full force!!`)
+
+### 6. 均質化回避 — 検出36件をすべて書き直した
+
+同じ日本語の骨格(`まだまだ`/`ここから`/`負けない`/`いく`/`終わりだ`)が **7属性×7性格×3セクションで繰り返される表**なので、事前検査(自作 `check.js`。scratchpad の専用サブディレクトリ `p721/` に隔離)で**バッチ内の完全/近似重複(トークンJaccard≥0.90)と、既訳16,674行との完全/近似重複を全数照合**した。
+
+- 初回検出 **36件**(バッチ内 完全1・近似23 / 既訳と 完全9・近似22 の重複ぶん)→ **全件書き直し**
+- 最終: **バッチ内EN完全重複0・近似重複0・既訳との完全重複0・近似重複0**
+- 書き直しの型は3つ。(a)**punctuation違いだけで既訳と同語**(`…が、頑張る…`→`...I-I'll manage.` が既訳 `…が、頑張ります` と同文 → `...I-I'll hold on.`)。(b)**属性違いの同義行が同じ英語に落ちる**(`負けないから！`standard と `…負けないよ`composed が両方 `I'm not losing this` → composed を `...I don't plan on losing.` へ)。(c)**セクション違いの同義行**(`絶対に…ここで決める！`bigmove と `ここで…ここで終わらせますっ…！`bigmove.polite → 後者を `Here... this is where I end it...!` へ)
+- 同じ「まだまだ」でも属性ごとに別系統を割った: standard=`Nowhere near done!` / polite=`I have plenty left!` / delinquent=`Nowhere near all I got!` / ojousama=`I have a great deal left in me~!` / cool=`...Still got more.` / composed=`...We're nowhere near done, are we.`
+
+### 7. 代表対訳15本
+
+| JA | EN | セル |
+|---|---|---|
+| ここからが本番よっ！ | Now the real match starts! | standard×bold |
+| …見ていてください | ...Please keep watching. | polite×quiet |
+| ふふ…こんなものじゃないわよ？ | Hehe... this isn't all I have, you know? | seductive×bold |
+| ここで引けるかよ！ | Like hell I'm backing off! | delinquent×earnest |
+| こんなものではございませんわ！ | This is hardly the extent of me! | ojousama×bold |
+| ……見てて | ...Watch. | cool×quiet |
+| …まだまだ、こんなもんじゃないよ | ...Not even close. This isn't all of it. | composed×bold |
+| （…集中。今だけは、何も考えなくていい） | ... *Focus. Right now I don't have to think about anything* | standard×quiet |
+| （胸が苦しい…けれど、この痛みが生きてる証ですの） | *My chest is tight... yet this pain is proof that I am alive* | ojousama×emotional |
+| （…体が軽い。いけるぜ） | ... *Body's light. I can go* | delinquent×quiet |
+| （…わくわくする） | ... *Kind of excited* | cool×easygoing |
+| さあ…ボロ雑巾にしてさしあげますわ！ | Now then... I shall wring you out like an old rag! | ojousama×bold |
+| うふ…壊れちゃっても知らないわよ？ | Mm... don't blame me if something breaks, hm? | seductive×bold |
+| …これが、あたしの全部 | ...This is all of me. | cool×bold |
+| …終わらせるよ、ゆっくりね | ...I'll end it. Slowly, though. | composed×bold |
+
+### 8. 検査 — カットインは自然走破では絶対に踏めない
+
+カットインは `matchInfo.rivalryTier > 0` かつ確率ゲート(tier別 30/50/80%)を通ったときにしか出ない。走破ハーネスも観戦チェックの実再生も**一度も踏んでいなかった**(P7-20 まで気づけなかった理由でもある)。そこで `test/ui-walkthrough/spectator-move-i18n-check.js` に **(4) カットイン層**を追加し、**実関数を直接叩いて決定的に採る**形にした。
+
+| 採取 | 何を証明するか |
+|---|---|
+| `cutinRawJa`(441スロット) | `_getCutinLines(sec, personality, archetype)` の**戻り値(生JA)**。JA実行とEN実行で**完全一致** = 選出はJAのまま・英語化は表示直前のt()だけ(効果音/解説文の判定層と同じ分業) |
+| `cutinShown`(441スロット) | `WM_I18N.t()` 通過後。EN側 **日本語残り0** / JA側は日本語のまま |
+| `cutinDom`(5件・single) | `Math.random` を固定して `_tryPhaseIntroCutin('Climax'/'Mid')` と `tryRivalryCutin('atk'/'climax'/'bigmove')` を**実発火**させ、`showCutin → BattleAnim.renderCutin` が書いた `#cutinOv .cutin-text` を実測。**EN で `「」` が付かない**(§11-2 `_quoteLine` の言語分岐)ことも同時に見る |
+| `cutinTableLoaded` | tag 側でも `CUTIN_LINES` がグローバルに存在(= battle-lines.js の読み込み順が tag-battle.html でも正しい) |
+
+実DOM実測(single):
+
+| 経路 | JA | EN |
+|---|---|---|
+| phaseIntro-Climax | 「（ここからが…わたくしの時間ですわ）」 | `*From here... the time is mine*` |
+| phaseIntro-Mid | 「こんなものではございませんわ！」 | `This is hardly the extent of me!` |
+| rivalry-atk | 「…まだだ」 | `...It's not over.` |
+| rivalry-climax | 「（…集中。余計なこと考えるな）」 | `... *Focus. Quit thinking about anything else*` |
+| rivalry-bigmove | 「……沈め」 | `...Go down.` |
+
+### 9. 検証実結果(すべてフォアグラウンド実行)
+
+| 検証 | 結果 |
+|---|---|
+| `node --check`(battle-engine-main.js / battle-lines.js / lang-en-dialogue.js / spectator-move-i18n-check.js) | OK |
+| **CUTIN_LINES のJA不変**(HEAD版 vs 現行を JSON 突合) | **完全一致**(441スロット・順序込み) |
+| `node test/ja-golden.js` | **基準と完全一致**(lines=11233, hash=`6b3d05c8…`。`--update` 不使用) |
+| `node test/i18n-extract-dialogue.js` | 17,092行・en保持16,674・cell保持16,056・**cell新規解決0/抑止41(既存どおり)** |
+| `node test/i18n-build-dialogue-dict.js` | **green**・17,092キー・**未訳0**(セル検査: ojousama短縮形/cool感嘆符・3文/hell・damn/f・sワード/110字/規則23・25 すべて通過) |
+| `node test/i18n-ledger-consistency-test.js` | ok(2台帳以上に存在するキー15件・すべて訳文一致) |
+| `npm test` | **261/261 green** |
+| `node test/i18n-ratchet.js` | 移動として `--update`(総数28,042・総字数463,572とも不変)。更新後 OK |
+| `node test/balance-baseline.js` | **✅ベースラインから逸脱なし**(anchor/gapCurve/spikeGrid/styleAvg) |
+| `npm run test:ui:walkthrough` | **PASS**・Actions 328・**ja digest `1052faa82eaf7991`(不変)**・Issues 0 |
+| `node test/ui-walkthrough/spectator-move-i18n-check.js` | **ALL CHECKS PASS**(single 32項目 / tag 29項目。うちカットイン新規6項目) |
+
+### 10. 発見
+
+1. **「抽出器が無い」と「置き場所が違う」は別問題**。P7-20 のレポートは前者と診断して新しい抽出器の追加(P7-23)を提案していたが、実際は後者だった。`*_LINES` 命名を満たすテーブルが辞書に載っていないときは、**まず `DIALOGUE_FILES` にそのファイルがあるかを見る**のが先。specs §10-2 の規約に「置き場所」の条件を追記した(§37-2)
+2. **P7-20 レポートの「CUTIN_LINESはtag戦には存在しない(single専用)」は、移設後は正確には「tagにも表は読めるが消費点が無い」**。`battle-lines.js` は tag-battle.html も読むため表自体は両iframeに存在する(二重宣言の衝突は無い)。検査では tag 側も441スロット全数をENで確認しており、将来タッグにカットインを足しても辞書はそのまま効く
+3. **カットインは「表示点がt()に乗っている」ことと「ENで英語が出る」ことが別**という型の実例。同型を早期に見つけるには i18n-miss が要るが、**観戦iframeは走破が踏まない**。今回 spectator-move-i18n-check に全数走査を入れたので、以後 CUTIN_LINES に行を足せば未訳がその場で落ちる
+4. 訳出中に**同一JAが2セルに再利用されている行が5本**あることが分かった(§3)。JAとしては「同じセリフを別の口調セルにも置いている」=書き分け漏れの候補だが、いずれも短い定型(`…ここから` 等)で、**書き分けるほどの情報が無い行**と判断して訳文は共通解にした。Keisuke裁定は不要と考えるが、気になる場合は `負けたくないっ…！`(standard/seductive)と `絶対に…絶対にっ…！`(standard/polite)の2組が候補
+
 ## 🌐 英語対応 P7-20 — 台帳未収載の日本語文字列の全数棚卸し(調査のみ・コード変更なし)(2026-09-05・worktree agent-af4c20f4cbcb37d3e)
 
 指示書: docs/i18n-stage-b-p7-design-v0.1.md §0/§5 の完了指標を機械計測。開始前にworktreeブランチを最新main(a9c673ab)へfast-forward。

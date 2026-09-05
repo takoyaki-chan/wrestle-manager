@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-05T02:51:30.662Z",
+  "generatedAt": "2026-09-05T04:08:46.254Z",
   "files": {
     "data.js": {
       "jaCount": 17320,
@@ -45,13 +45,13 @@
       "jaCount": 532,
       "jaChars": 6439
     },
+    "battle-lines.js": {
+      "jaCount": 594,
+      "jaChars": 5078
+    },
     "index.html": {
       "jaCount": 3,
       "jaChars": 4942
-    },
-    "battle-engine-main.js": {
-      "jaCount": 530,
-      "jaChars": 4700
     },
     "data-faction-dialogue.js": {
       "jaCount": 317,
@@ -65,10 +65,6 @@
       "jaCount": 187,
       "jaChars": 1611
     },
-    "battle-lines.js": {
-      "jaCount": 154,
-      "jaChars": 1220
-    },
     "ppv-lines.js": {
       "jaCount": 56,
       "jaChars": 1206
@@ -80,6 +76,10 @@
     "tag-battle-main.js": {
       "jaCount": 98,
       "jaChars": 894
+    },
+    "battle-engine-main.js": {
+      "jaCount": 90,
+      "jaChars": 842
     },
     "match-engine.js": {
       "jaCount": 95,

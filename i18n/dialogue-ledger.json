@@ -6946,6 +6946,7 @@
     "key": "……",
     "en": "...",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data-faction-dialogue.js:INTERNAL_CHALLENGE_POST_LOSER_LINES",
       "data.js:CARE_REACTION_DIALOGUES",
       "data.js:DOME_FIRSTSHOW_LINES",
@@ -6958,7 +6959,7 @@
       "data.js:POST_MATCH_FLAVOR_LINES",
       "tag-battle-lines.js:BETRAYAL_LINES"
     ],
-    "count": 27,
+    "count": 28,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
@@ -7887,6 +7888,20 @@
     "en": "...My thanks.",
     "files": [
       "data.js:JUNIOR_TOURNAMENT_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…………いく",
+    "en": "...Going now.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -12642,16 +12657,59 @@
     }
   },
   {
-    "key": "……いく",
-    "en": "...Going.",
+    "key": "……いきます",
+    "en": "...I'll go now.",
     "files": [
-      "tag-battle-lines.js:DOUBLE_TEAM_LINES"
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……いく",
+    "en": "...Going.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES",
+      "tag-battle-lines.js:DOUBLE_TEAM_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
       "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……いくぞ",
+    "en": "...Coming.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……いくよ",
+    "en": "...Here I go, then.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "quiet"
     }
   },
@@ -13911,6 +13969,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "……ここから",
+    "en": "...Right from here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
     }
   },
   {
@@ -15250,6 +15322,34 @@
     }
   },
   {
+    "key": "……これで",
+    "en": "...With this.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……これで、ね",
+    "en": "...With this, then.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……これで、終わり。じゃない",
     "en": "...That is not the end of it.",
     "files": [
@@ -15260,6 +15360,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……これで、終わりです",
+    "en": "...And with that, it's over.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "quiet"
     }
   },
@@ -20336,12 +20450,13 @@
     "key": "……まだ",
     "en": "...Not yet.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "battle-lines.js:DAMAGE_SERIF_LINES",
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:RETIREMENT_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
-    "count": 5,
+    "count": 6,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
@@ -21409,6 +21524,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……もう、逃げられないわよ",
+    "en": "...There's nowhere left to run.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
       "personality": "quiet"
     }
   },
@@ -26622,6 +26751,20 @@
     }
   },
   {
+    "key": "……参りますわ",
+    "en": "...I shall go.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……反則、続けるの、しんどかった。普通に試合する方が、自分らしい。",
     "en": "...Keeping up the fouls was hard work. Just wrestling a match is more like me.",
     "files": [
@@ -30076,6 +30219,20 @@
     }
   },
   {
+    "key": "……最後よ",
+    "en": "...This is the last.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……最近、噛み合わない",
     "en": "...Lately nothing lines up.",
     "files": [
@@ -31385,6 +31542,20 @@
     }
   },
   {
+    "key": "……決めます",
+    "en": "...I'll end this now.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……決勝。全て出す",
     "en": "...The final. Everything comes out.",
     "files": [
@@ -31563,6 +31734,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……沈め",
+    "en": "...Go down.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
     }
   },
   {
@@ -33343,6 +33528,20 @@
     }
   },
   {
+    "key": "……終わり、だよ",
+    "en": "...And that's it, then.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……終わりじゃなかったの。切った側に、見せられたわ。",
     "en": "...It wasn't the end. The ones who cut me got to see that.",
     "files": [
@@ -33360,10 +33559,11 @@
     "key": "……終わりだ",
     "en": "...It's over.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data.js:BITTER_RESOLUTION_LINES",
       "data.js:GLIMPSE_A_LINES"
     ],
-    "count": 2,
+    "count": 4,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
@@ -33379,6 +33579,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……終わりですわ",
+    "en": "...It is finished.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……終わりにしてあげる",
+    "en": "...Let me end it for you.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
       "personality": "quiet"
     }
   },
@@ -33449,6 +33677,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……終わる",
+    "en": "...It ends.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "quiet"
     }
   },
@@ -34263,6 +34505,20 @@
     }
   },
   {
+    "key": "……見てて",
+    "en": "...Watch.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "……見る目はある。結果で返す",
     "en": "...You've got an eye. Results will show it.",
     "files": [
@@ -34316,6 +34572,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "……覚悟なさい",
+    "en": "...Brace yourself.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
     }
   },
   {
@@ -35342,6 +35612,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "……負けない",
+    "en": "...I don't lose.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "quiet"
     }
   },
@@ -37565,6 +37849,34 @@
     }
   },
   {
+    "key": "…あ、あの…いくよ…",
+    "en": "...U-Um... going now...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…あ、あの…まだ、いけるよ…",
+    "en": "...U-Um... I can still go...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…あ、あの…よ、よろしくね…",
     "en": "...U-um... g-good to be here...",
     "files": [
@@ -38864,6 +39176,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "…あはは、楽しくなってきた、ね",
+    "en": "...Ahaha, this is getting fun, isn't it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
     }
   },
   {
@@ -42351,6 +42677,20 @@
     }
   },
   {
+    "key": "…い、いく",
+    "en": "...H-Here goes.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…い、いっしょに",
     "en": "...T-Together.",
     "files": [
@@ -43007,6 +43347,34 @@
     }
   },
   {
+    "key": "…いい試合に",
+    "en": "...Good match, this.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…いい試合にしよう、ね",
+    "en": "...Let's make it a match worth watching, okay.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "…いい雰囲気だね。こういうのも大事だよ",
     "en": "...Good mood in here. This sort of thing matters too.",
     "files": [
@@ -43035,6 +43403,20 @@
     }
   },
   {
+    "key": "…いく",
+    "en": "...Moving in.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "…いく、二人で",
     "en": "...Going. Both of us.",
     "files": [
@@ -43060,6 +43442,34 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "quiet"
+    }
+  },
+  {
+    "key": "…いくよ",
+    "en": "...Off we go, then.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "…いくよ、これで決めるね",
+    "en": "...Here I go. This one ends it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
     }
   },
   {
@@ -43102,6 +43512,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "quiet"
+    }
+  },
+  {
+    "key": "…いっくよ〜、最後の大技",
+    "en": "...Heeere we go~, the last big one.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
     }
   },
   {
@@ -43371,6 +43795,34 @@
     }
   },
   {
+    "key": "…うぅ、でも…負けないよ…",
+    "en": "...Nngh, but... you're not beating me...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…うぅ、絶対に…決めるよ",
+    "en": "...Ngh, no question. I'm taking this one.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "…うぅ、遠いなあ",
     "en": "...Ugh, that's a long way off.",
     "files": [
@@ -43409,6 +43861,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed"
+    }
+  },
+  {
+    "key": "…うっ…でも…",
+    "en": "...Ngh... but...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
     }
   },
   {
@@ -43731,6 +44197,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "shy"
+    }
+  },
+  {
+    "key": "…えへへ、全力いくね",
+    "en": "...Ehehe, going all out now.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
     }
   },
   {
@@ -44371,10 +44851,38 @@
     }
   },
   {
+    "key": "…が、頑張る…",
+    "en": "...I-I'll hold on.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…が、頑張る、よ…",
     "en": "...I'll... give it what I've got, okay...",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…が、頑張るよ…",
+    "en": "...I-I'll push through...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -44453,6 +44961,62 @@
     }
   },
   {
+    "key": "…こ、ここから…",
+    "en": "...H-Here on...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…こ、ここから、かな…",
+    "en": "...I-It starts here, I think...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…こ、ここで",
+    "en": "...R-Right here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…こ、ここで…決めるね…",
+    "en": "...R-Right here... I'm finishing it...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…こ、交代…だね…",
     "en": "...S-So, that's the tag...",
     "files": [
@@ -44481,6 +45045,56 @@
     }
   },
   {
+    "key": "…ここから",
+    "en": "...From this point.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": null
+  },
+  {
+    "key": "…ここから…ですの",
+    "en": "...It begins from here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…ここから…ね",
+    "en": "...From here, then.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…ここから、だよ",
+    "en": "...It starts here, you know.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": null
+  },
+  {
     "key": "…ここから、背負う",
     "en": "...From here, I carry it.",
     "files": [
@@ -44506,6 +45120,48 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "…ここからが本番、かな",
+    "en": "...The real match starts about here, I'd say.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…ここからだぜ",
+    "en": "...Starts here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…ここからです",
+    "en": "...From here on.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
     }
   },
   {
@@ -44548,6 +45204,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…ここからよ",
+    "en": "...From here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
     }
   },
   {
@@ -44691,6 +45361,34 @@
     }
   },
   {
+    "key": "…ここで、ここでっ…",
+    "en": "...Now. It has to be now...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…ここで、終わり、かな",
+    "en": "...This is about where it ends, I'd say.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "…ここでは倒れない。証明の途中だ。",
     "en": "...I don't fall here. The proof isn't finished.",
     "files": [
@@ -44761,6 +45459,20 @@
     }
   },
   {
+    "key": "…ここで引くわけには、いかないから",
+    "en": "...Because I can't step back here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…ここで本当にやれるのかな",
     "en": "...Can I actually do this here, I wonder.",
     "files": [
@@ -44772,6 +45484,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "…ここで決める。必ず",
+    "en": "...I finish it here. No question.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
     }
   },
   {
@@ -46364,6 +47090,20 @@
     }
   },
   {
+    "key": "…これが、あたしの全部",
+    "en": "...This is all of me.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "…これが答えだよ。…もう格下なんて言わせない",
     "en": "...There's your answer. ...Nobody calls me the lesser one now.",
     "files": [
@@ -46374,6 +47114,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "…これで、終わり",
+    "en": "...This ends it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "normal"
     }
   },
@@ -46459,6 +47213,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "…こんなところで、終われないから…",
+    "en": "...Because I can't let it end in a place like this...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
     }
   },
   {
@@ -46556,6 +47324,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…こんなもんじゃない",
+    "en": "...That's not all.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "bold"
     }
   },
@@ -50574,6 +51356,20 @@
     }
   },
   {
+    "key": "…そろそろ終わりかな",
+    "en": "...About time this ended.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "…そんなに気にかけてもらえるとは。ありがとうございます",
     "en": "...I didn't expect that much concern. Thank you.",
     "files": [
@@ -51004,6 +51800,20 @@
     }
   },
   {
+    "key": "…っ…いく",
+    "en": "...Ngh... going.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "…っ…ここが全部だった。…ありがとう",
     "en": "...Nngh... this was everything. ...Thank you.",
     "files": [
@@ -51084,6 +51894,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…っ…これで…終わり",
+    "en": "...Ngh... this... ends it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "emotional"
     }
   },
@@ -52334,6 +53158,20 @@
     }
   },
   {
+    "key": "…っ…負けたくない、よ…",
+    "en": "...Ngh... I don't want to lose, I really don't...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "…っ…負けたけど…最高だった。…ありがとう",
     "en": "...Ah... I lost, but... that was the best. ...Thank you.",
     "files": [
@@ -52344,6 +53182,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…っ…負けない",
+    "en": "...Nngh... not losing.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "emotional"
     }
   },
@@ -52905,6 +53757,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "…っ、まだ…",
+    "en": "...Ngh. Not finished...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
     }
   },
   {
@@ -56587,6 +57453,20 @@
     }
   },
   {
+    "key": "…ま、負けないよ…",
+    "en": "...I-I won't lose, though...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…ま、限界みたいでさ。ちょっと休ませてよ",
     "en": "...Well, seems I'm out of road. Let me take a break.",
     "files": [
@@ -57052,10 +57932,11 @@
     "key": "…まだ",
     "en": "...No. Not yet.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data.js:RETIREMENT_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
-    "count": 4,
+    "count": 5,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
@@ -57228,6 +58109,62 @@
     }
   },
   {
+    "key": "…まだ、終わらない",
+    "en": "...This isn't over.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…まだ、終わらない…よ",
+    "en": "...It isn't over... not yet.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…まだ、終わらないよ",
+    "en": "...It's not over yet, you know.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…まだ、終わりません",
+    "en": "...It's not finished yet.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…まだ、返したくなかった",
     "en": "...Wasn't ready to hand it over.",
     "files": [
@@ -57270,15 +58207,30 @@
     }
   },
   {
+    "key": "…まだいける",
+    "en": "...Still got more.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "…まだだ",
     "en": "...It's not over.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data.js:RETAIN_LINES",
       "data.js:RETIREMENT_LINES",
       "data.js:RETIRE_REFUSE_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
-    "count": 4,
+    "count": 5,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": null
@@ -57315,9 +58267,10 @@
     "key": "…まだですわ",
     "en": "...Not yet, it is not.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
@@ -57353,6 +58306,34 @@
     }
   },
   {
+    "key": "…まだまだ、こんなもんじゃないよ",
+    "en": "...Not even close. This isn't all of it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…まだまだ、だね",
+    "en": "...We're nowhere near done, are we.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "…まだまだ、だよ",
     "en": "...We've got plenty left.",
     "files": [
@@ -57378,6 +58359,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "…まだまだいけるよ〜",
+    "en": "...I've got plenty left~",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
     }
   },
   {
@@ -57951,6 +58946,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…み、見てて…",
+    "en": "...W-Watch... please...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
     }
   },
   {
@@ -59866,6 +60875,20 @@
     }
   },
   {
+    "key": "…ゆ、ゆっくりだけど…",
+    "en": "...S-Slowly, but... I'm coming...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…よ、よろしく…が、頑張る…",
     "en": "...G-good to be here... I-I'll work hard...",
     "files": [
@@ -60387,6 +61410,20 @@
     "en": "...Good to be here. Let's enjoy this.",
     "files": [
       "data.js:EVENT_FA_WELCOME_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…よーし、ここで決めちゃおうかな",
+    "en": "...All right, shall I wrap this up here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -61101,6 +62138,20 @@
     "en": "...Mm. That landed. I'm okay.",
     "files": [
       "battle-lines.js:DAMAGE_SERIF_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…ん、いくよ",
+    "en": "...Mm, here I go.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -65475,6 +66526,34 @@
     }
   },
   {
+    "key": "…全力で",
+    "en": "...Everything I have.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "…全力で、いくね",
+    "en": "...Going with everything I have, okay.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…全力でお相手します",
     "en": "...I'll face you with all of it.",
     "files": [
@@ -65639,6 +66718,48 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…全部、出し切るよ",
+    "en": "...I'm emptying the tank now.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "…全部、出す",
+    "en": "...All of it, now.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "…全部、受けな",
+    "en": "...Take all of it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "bold"
     }
   },
@@ -69434,6 +70555,20 @@
     }
   },
   {
+    "key": "…引けない",
+    "en": "...Can't back off.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…引退、ね。…次の興行を見てからもう一度言って",
     "en": "...Retirement, is it. ...Say that again after the next show.",
     "files": [
@@ -72977,6 +74112,20 @@
     }
   },
   {
+    "key": "…最後の一撃！",
+    "en": "...The final blow!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "…最後の防衛戦、やりたかったな。…それだけだよ",
     "en": "...One last defense, I wanted that. ...That's all.",
     "files": [
@@ -73521,6 +74670,34 @@
     }
   },
   {
+    "key": "…本気、出しちゃおうかな？",
+    "en": "...Maybe I'll stop holding back?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…本気、出す",
+    "en": "...Getting serious.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "…本気でやれる相手。…楽しみだね",
     "en": "...Someone I can go all out on. ...I'm looking forward to it.",
     "files": [
@@ -73770,6 +74947,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "…楽しい",
+    "en": "...Fun.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
     }
   },
   {
@@ -74822,6 +76013,34 @@
     }
   },
   {
+    "key": "…決めちゃう",
+    "en": "...Wrapping it up.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "…決める",
+    "en": "...Finishing it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "…決勝か。…ここまで来た以上、負けない",
     "en": "...The final. ...After coming this far, I don't lose.",
     "files": [
@@ -74948,6 +76167,20 @@
     }
   },
   {
+    "key": "…沈め",
+    "en": "...Down you go.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "…油断は、しません",
     "en": "...I won't get careless.",
     "files": [
@@ -75014,6 +76247,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…泣かない…決める",
+    "en": "...Not crying. Finishing it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…泣かないよ…いく、ね",
+    "en": "...I'm not crying... here I go, okay.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "emotional"
     }
   },
@@ -80032,6 +81293,20 @@
     }
   },
   {
+    "key": "…私の全部、受け止めて",
+    "en": "...Take all of me, would you.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "…私の出番",
     "en": "...I'm up.",
     "files": [
@@ -80732,10 +82007,52 @@
     }
   },
   {
+    "key": "…終わらせるよ、ゆっくりね",
+    "en": "...I'll end it. Slowly, though.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…終わりだ",
+    "en": "...That's the end.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "…終わりはない。永遠に戦う",
     "en": "...No end to it. We go on.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…終われない",
+    "en": "...Can't end here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -80868,6 +82185,20 @@
     }
   },
   {
+    "key": "…絶対、勝つ",
+    "en": "...I'm winning.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…絶対、決める",
     "en": "...We end it. Absolutely.",
     "files": [
@@ -80910,10 +82241,66 @@
     }
   },
   {
+    "key": "…絶対に…",
+    "en": "...Whatever it takes...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…絶対に、ここで決めるよ",
+    "en": "...I'm settling this right here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "…絶対に、勝つよ",
+    "en": "...I'm going to win this one.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…絶対に、勝つよ…！",
     "en": "...I'm going to win this one... count on it...!",
     "files": [
       "tag-battle-lines.js:HOT_TAG_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "…絶対に、絶対に、ね…",
+    "en": "...I have to. I really have to...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -81920,13 +83307,84 @@
     "key": "…見ていて",
     "en": "...Watch me.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data.js:DOME_FIRSTSHOW_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…見ていて…",
+    "en": "...Just watch...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "seductive",
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "…見ていて…私の全力",
+    "en": "...Watch this... everything I have.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…見ていて、ね",
+    "en": "...Keep your eyes on me, okay.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…見ていてください",
+    "en": "...Please keep watching.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…見ていてくださいまし",
+    "en": "...Do keep watching.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "quiet"
     }
   },
@@ -81970,6 +83428,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "…見ていなさい",
+    "en": "...Watch me closely.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
     }
   },
   {
@@ -82025,6 +83497,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…見てやがれ",
+    "en": "...Eyes up.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "quiet"
     }
   },
@@ -82095,6 +83581,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…覚悟してね…最高の一発",
+    "en": "...Get ready... the best shot I've got.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "bold"
     }
   },
@@ -82783,6 +84283,34 @@
     }
   },
   {
+    "key": "…諦めない",
+    "en": "...I don't quit.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "…諦めない、よ",
+    "en": "...Giving up isn't really an option.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "…諦めなくてよかった。このベルトは努力の結晶だ",
     "en": "...Glad I did not quit. This belt is what the work turned into.",
     "files": [
@@ -82990,6 +84518,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "…負けたくない、から…いく",
+    "en": "...I don't want to lose... so, here I go.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
     }
   },
   {
@@ -83217,6 +84759,34 @@
     }
   },
   {
+    "key": "…負けない",
+    "en": "...Not losing.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "…負けない…",
+    "en": "...N-Not losing...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "…負けない。…絶対に",
     "en": "...I won't lose. ...Not a chance.",
     "files": [
@@ -83234,14 +84804,29 @@
     "key": "…負けない。絶対に",
     "en": "...I won't lose. Not to her.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data.js:GLIMPSE_A_LINES"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "…負けないよ",
+    "en": "...I don't plan on losing.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
     }
   },
   {
@@ -83357,6 +84942,20 @@
     }
   },
   {
+    "key": "…負けらんねえ",
+    "en": "...Can't lose this.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…負けるつもりはないよ。よろしく",
     "en": "...I don't plan on losing. Good to be facing you.",
     "files": [
@@ -83371,6 +84970,48 @@
     }
   },
   {
+    "key": "…負けるわけには、いかないね",
+    "en": "...I can't really afford to lose.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…負けるわけには、いきません",
+    "en": "...I cannot let myself lose.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…負けるわけにはいかない",
+    "en": "...I can't afford to lose.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "…負けるわけにはいかない。…絶対に",
     "en": "...I can't afford to lose this one. ...Not this one.",
     "files": [
@@ -83382,6 +85023,34 @@
     "cell": {
       "archetype": "composed",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "…負けるわけにはいかないの",
+    "en": "...I can't allow myself to lose.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "…負けるわけには参りませんわ",
+    "en": "...I cannot possibly lose.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
     }
   },
   {
@@ -83819,6 +85488,20 @@
     }
   },
   {
+    "key": "…逃がさない",
+    "en": "...Not letting you go.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "…逃がさない、そっち頼むね",
     "en": "...She's not getting away. Take that side, would you?",
     "files": [
@@ -83843,6 +85526,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "…逃がさないよ、ゆっくりね",
+    "en": "...I'm not letting you go. Slowly now.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
       "personality": "bold"
     }
   },
@@ -88609,6 +90306,34 @@
     }
   },
   {
+    "key": "あ、あの…いきます…！",
+    "en": "U-Um... I'm doing it...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "あ、あの…いきますっ…！",
+    "en": "U-Um... here I go...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "あ、あの…お声がけ、光栄です…！",
     "en": "U-um... I'm honored that you called...!",
     "files": [
@@ -88815,6 +90540,48 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "あ、あの…まだ…よ…?",
+    "en": "U-Um... it's not over... is it...?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "あ、あの…まだまだです…！",
+    "en": "U-Um... I've still got more...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "あ、あの…まだまだですわ…!",
+    "en": "U-Um... I am not finished yet...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "shy"
     }
   },
@@ -89081,6 +90848,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "あ、あの…仕舞いにさせていただきますわ…！",
+    "en": "U-Um... allow me to bring this to a close...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "shy"
     }
   },
@@ -89823,6 +91604,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "あぁ…最後よ…感じなさい…！",
+    "en": "Ahh... this is the last... feel it...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "あぁ…絶対に、絶対にっ…！",
+    "en": "Ahh... I have to, I have to...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
       "personality": "emotional"
     }
   },
@@ -92059,6 +93868,20 @@
     }
   },
   {
+    "key": "あなたの全部…もらうわよ",
+    "en": "All of you... I'm taking it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "あなたの勝ち。……失礼する。",
     "en": "Your win. ...I'm going.",
     "files": [
@@ -93092,6 +94915,20 @@
     "en": "Um... being here with everyone... it makes me happy...",
     "files": [
       "data.js:NOTIF_DIALOGUES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "あの…もう…逃がさない、から…",
+    "en": "Um... I'm not... letting you go now...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -96235,6 +98072,20 @@
     "en": "Haha, maybe I get to be honest just this once. I had a good time.",
     "files": [
       "data.js:RETIREMENT_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "あはは、楽しくなってきた！",
+    "en": "Ahaha, this is getting fun!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -101859,6 +103710,48 @@
     }
   },
   {
+    "key": "い、いきますわ…!",
+    "en": "I-I shall go now...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "い、いくぞ…こ、この野郎…！",
+    "en": "H-Here I come... y-you jerk...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "い、いくぞ…まだだ…!",
+    "en": "H-Here I come... not done yet...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "い、いっしょに…よ…",
     "en": "T-Together... okay...",
     "files": [
@@ -102996,6 +104889,34 @@
     }
   },
   {
+    "key": "いい試合にしましょう！",
+    "en": "Let's make this a good match!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "いい試合にしましょ？",
+    "en": "Shall we make this a good one?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "いい試合にします。絶対に",
     "en": "This will be a good match. I'll see to it.",
     "files": [
@@ -103007,6 +104928,34 @@
     "cell": {
       "archetype": "composed",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "いい試合にしようぜ！",
+    "en": "Let's make this a good scrap!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "いい試合にしようよ！",
+    "en": "Let's make this a good one!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
     }
   },
   {
@@ -103135,6 +105084,34 @@
     }
   },
   {
+    "key": "いきます…これで、決めさせてもらいます！",
+    "en": "Here I go... allow me to end this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "いきますっ！",
+    "en": "I'm going in!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "いきますよ、二人で！",
     "en": "Here we go, both of us!",
     "files": [
@@ -103149,10 +105126,38 @@
     }
   },
   {
+    "key": "いきますよー！ 最後です！",
+    "en": "Here I gooo! This is the last one!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "いくぞ、二人で！",
     "en": "Let's go, both of us!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "いくぞ！",
+    "en": "Comin' through!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -103177,10 +105182,38 @@
     }
   },
   {
+    "key": "いくよ…これで決める！",
+    "en": "Here I go... this ends it!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "いくよ、二人で！",
     "en": "Here we go — together!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "いくよ！",
+    "en": "Here goes!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -103202,6 +105235,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "いくわよ…",
+    "en": "Coming your way...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
     }
   },
   {
@@ -103327,6 +105374,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "いっくよー！ 最後の大技！",
+    "en": "Heeere we go! Last big one!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
     }
   },
   {
@@ -104729,6 +106790,34 @@
     }
   },
   {
+    "key": "うぅ…お願いです…決めさせてください…！",
+    "en": "Nngh... please... let me end it...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "うぅ…ここで…ここで決めますわ…！",
+    "en": "Nngh... here... I shall settle it here...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "うぅ…こんなの悔しい…！",
     "en": "Ugh... this is so unfair...!",
     "files": [
@@ -104883,6 +106972,34 @@
     }
   },
   {
+    "key": "うぅっ…こんちくしょう…いくぞ！",
+    "en": "Nngh... you rotten... here I come!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "うぅっ…こんちくしょうっ…！",
+    "en": "Nngh... you rotten piece of...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "うぅっ…こんなでは…負けませんっ…！",
     "en": "Uu... not from that... I'm not losing...!",
     "files": [
@@ -104925,6 +107042,20 @@
     }
   },
   {
+    "key": "うぅっ…こんなので終われないわっ…！",
+    "en": "Nngh... I can't go out like this...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "うぅっ…てめえ…覚えてろ…！",
     "en": "Nngh... you... you'll remember this...!",
     "files": [
@@ -104935,6 +107066,48 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "うぅっ…でも、負けないっ…！",
+    "en": "Nngh... but I'm not losing...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "うぅっ…でも、負けませんっ…！",
+    "en": "Nngh... but I won't lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "うぅっ…でも負けませんわっ…！",
+    "en": "Nngh... but I shall not lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "emotional"
     }
   },
@@ -104957,6 +107130,20 @@
     "en": "Nngh... that stings... Next time — next time I win, I swear...!",
     "files": [
       "data.js:RIVALRY_MATCH_REACTION"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "うぅっ…絶対に…決めるんだ…！",
+    "en": "Nngh... I'm ending this... for sure...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -105751,6 +107938,20 @@
     }
   },
   {
+    "key": "うふ…壊れちゃっても知らないわよ？",
+    "en": "Mm... don't blame me if something breaks, hm?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "うふふ……みっともないこと。",
     "en": "Hehe... how unbecoming.",
     "files": [
@@ -105891,6 +108092,20 @@
     }
   },
   {
+    "key": "うふふ、楽しくなってまいりましたわ！",
+    "en": "Hehehe, this is becoming rather enjoyable!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "うふふ、皆様を虜にしてあげたわ",
     "en": "Mm. I had every one of them captivated.",
     "files": [
@@ -105902,6 +108117,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "うふふ、締めにいきますわよ！",
+    "en": "Hehehe, I am going for the close!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
     }
   },
   {
@@ -108711,10 +110940,38 @@
     }
   },
   {
+    "key": "えへへ…ここで決めちゃいますね！",
+    "en": "Ehehe... I'm wrapping this up now!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "えへへ…ごめん、ちょっと休むよ",
     "en": "Ehehe... sorry, I'm taking a little rest.",
     "files": [
       "data.js:EVENT_INJURY_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "えへへ…全力いくよー！",
+    "en": "Ehehe... going all out~!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -108833,6 +111090,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "えへへ、楽しくなってきました！",
+    "en": "Ehehe, this is getting fun!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "easygoing"
     }
   },
@@ -109061,6 +111332,20 @@
     }
   },
   {
+    "key": "お、お覚悟を…！",
+    "en": "B-Brace yourself...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "お、お話だけは…聞かせていただきます…",
     "en": "I-I'll at least... hear what you have to say...",
     "files": [
@@ -109191,6 +111476,20 @@
     "en": "I-important news...",
     "files": [
       "data.js:NOTIF_DIALOGUES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "お、思いっきり…やります…！",
+    "en": "I-I'm going to swing with everything...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -110167,6 +112466,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "おらぁっ！ これで終わりだ！",
+    "en": "Rrraaah! This ends it!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
     }
   },
   {
@@ -112413,6 +114726,20 @@
     }
   },
   {
+    "key": "お覚悟を…っ…！",
+    "en": "Do prepare yourself...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "お言葉、ありがとうございます。もう一度頑張ります",
     "en": "Thank you for your words. I'll try once again.",
     "files": [
@@ -112751,6 +115078,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "お願いします…この一撃に全てを…！",
+    "en": "Please... everything goes into this one...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "earnest"
     }
   },
@@ -113191,11 +115532,12 @@
     "key": "が、頑張ります…！",
     "en": "I-I'll give it everything...!",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data.js:JUNIOR_TOURNAMENT_LINES",
       "data.js:PPV_OPPONENT_LINES",
       "tag-battle-lines.js:HOT_TAG_LINES"
     ],
-    "count": 3,
+    "count": 4,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
@@ -113665,6 +116007,20 @@
     "en": "Damn it...! That one got me...!",
     "files": [
       "battle-lines.js:DAMAGE_SERIF_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "くそぉ…絶対ぶっ飛ばす…！",
+    "en": "Damn it... I'm putting you through the mat...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -114633,6 +116989,87 @@
     }
   },
   {
+    "key": "こ、ここから…ですっ…！",
+    "en": "H-Here's where it starts...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": null
+  },
+  {
+    "key": "こ、ここから…ですの…!",
+    "en": "I-It begins from here...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "こ、ここから…なんだから…!",
+    "en": "I-It starts from here... you know...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "こ、ここからだ…!",
+    "en": "S-Starts right here...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "こ、ここで…決めさせてください…！",
+    "en": "H-Here... please let me finish it...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "こ、ここで…決めます…！",
+    "en": "H-Here... I'm finishing it...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "こ、ここに残ってもよろしいですか…？",
     "en": "M-may I stay here...?",
     "files": [
@@ -115288,6 +117725,34 @@
     }
   },
   {
+    "key": "ここからが本番…逃がさないわ",
+    "en": "The real thing starts now... and you're not getting away.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "ここからが本番だぜ！",
+    "en": "Now it's a fight!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "ここからが本番だよ",
     "en": "This is where it actually starts.",
     "files": [
@@ -115302,6 +117767,20 @@
     }
   },
   {
+    "key": "ここからが本番ですのよ！",
+    "en": "The genuine article begins here!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "ここからが本番ですわ。見ていてくださいませ",
     "en": "The real thing begins here. Do keep watching.",
     "files": [
@@ -115312,6 +117791,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "ここからが本番です！",
+    "en": "The match truly begins now!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "ここからが本番よっ！",
+    "en": "Now the real match starts!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "bold"
     }
   },
@@ -115341,6 +117848,48 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "ここからだっ！",
+    "en": "Starts now!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "ここからですっ！",
+    "en": "This is where it begins!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "ここからですの！",
+    "en": "It begins here!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
     }
   },
   {
@@ -115533,6 +118082,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "ここからよ…",
+    "en": "The good part starts now...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "ここからよ！",
+    "en": "This is where I turn it around!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "normal"
     }
   },
@@ -115953,6 +118530,76 @@
     }
   },
   {
+    "key": "ここで…ここでっ…！",
+    "en": "Here... right here...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "ここで…ここで終わらせますっ…！",
+    "en": "Here... this is where I end it...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "ここで…決めさせてください！",
+    "en": "Here... please let me finish it!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "ここで…終わらせます！",
+    "en": "Right here... I'm finishing it!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "ここで…終わりだ！",
+    "en": "Right here... it's over!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "ここでなら…私らしくいられるわ",
     "en": "Here, at least... I get to be myself.",
     "files": [
@@ -116326,6 +118973,76 @@
     }
   },
   {
+    "key": "ここで引くわけにはいかないんです！",
+    "en": "There's no backing down for me here!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "ここで引くわけにはいかない！",
+    "en": "I can't back off here!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "ここで引くわけには参りませんの！",
+    "en": "I cannot withdraw at a moment like this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "ここで引けないの",
+    "en": "I can't step back here.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "ここで引けるかよ！",
+    "en": "Like hell I'm backing off!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "ここで戦えてよかった。それだけは確かだ",
     "en": "Fighting here was worth it. That much is certain.",
     "files": [
@@ -116378,6 +119095,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "ここで決めなきゃ意味ねえ！",
+    "en": "If I don't end it here, what was any of it for!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
     }
   },
   {
@@ -119115,6 +121846,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama"
+    }
+  },
+  {
+    "key": "この一撃に…全てを懸けますわ！",
+    "en": "On this single blow... I stake everything!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
     }
   },
   {
@@ -123274,6 +126019,20 @@
     }
   },
   {
+    "key": "これでお仕舞い…覚悟なさい",
+    "en": "This shall be the end... brace yourself.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "これでは、答えたことにならない。",
     "en": "This doesn't count as answering you.",
     "files": [
@@ -123384,6 +126143,20 @@
     }
   },
   {
+    "key": "これで最後だ…覚悟しろよ！",
+    "en": "This is the end... you'd better be ready!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "これで決まりね……っ……ふふ、いい話し合いだったわ……",
     "en": "That settles it... ah... Mm, what a pleasant conversation...",
     "files": [
@@ -123467,6 +126240,20 @@
     }
   },
   {
+    "key": "これで終わりよ…覚悟しなさい",
+    "en": "This ends it... brace yourself.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "これで終わり？根性が足りないんじゃない？",
     "en": "That's it? Short on guts, aren't you?",
     "files": [
@@ -123478,6 +126265,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "これで終幕よ…！",
+    "en": "The curtain falls here...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
     }
   },
   {
@@ -123812,6 +126613,48 @@
     }
   },
   {
+    "key": "こんなとこで終われるかよっ…！",
+    "en": "No way this ends here...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "こんなところで…終われないっ…！",
+    "en": "This is not where I end...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "こんなところで…終われないっ！",
+    "en": "Not here... I can't end here!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "こんなところで止まってられない！次は絶対やるから！",
     "en": "I'm not stopping here! Next time I get it done!",
     "files": [
@@ -123865,6 +126708,34 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "こんなところで終われませんっ…！",
+    "en": "I can't let it end here...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "こんなところで終われませんわっ…！",
+    "en": "It cannot end here... it simply cannot...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
     }
   },
   {
@@ -124117,6 +126988,48 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "こんなものじゃありませんよ！",
+    "en": "This isn't all I have!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "こんなものではございませんわ！",
+    "en": "This is hardly the extent of me!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "こんなもんじゃねえぞ！",
+    "en": "Nowhere near all I got!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
     }
   },
   {
@@ -125293,6 +128206,20 @@
     }
   },
   {
+    "key": "ごめんね…でも…終わりにするね…",
+    "en": "I'm sorry... but... I'm ending it now...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "ごめんね…もっとやれたはずなのに。次こそ期待してて",
     "en": "Sorry, everyone... I know I had more. Look forward to the next one.",
     "files": [
@@ -125975,6 +128902,76 @@
     }
   },
   {
+    "key": "さあ…これでフィナーレよ",
+    "en": "Now then... this is the finale.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "さあ…ボロ雑巾にしてさしあげますわ！",
+    "en": "Now then... I shall wring you out like an old rag!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "さあ…決めさせていただきます！",
+    "en": "Now then... allow me to finish this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "さあ…終わらせるわよっ！",
+    "en": "All right... let's end this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "さあ…身体で教えてあげる",
+    "en": "Now then... let me teach you the hard way.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "さあ、最後の獲物ね。楽しませてもらうわ",
     "en": "Now then, the last catch of the day. I'll enjoy this.",
     "files": [
@@ -126381,6 +129378,20 @@
     }
   },
   {
+    "key": "さーて！ 仕上げですわ〜！",
+    "en": "Well then! Time for the finish~!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "ざまあみろ！ これがうちの実力だ！",
     "en": "Serves you right! That's what we're made of!",
     "files": [
@@ -126392,6 +129403,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "し、失礼しますわ…全力で…！",
+    "en": "P-Pardon me... with all my strength...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
     }
   },
   {
@@ -126591,6 +129616,20 @@
     }
   },
   {
+    "key": "す、すみません…いきますっ…！",
+    "en": "S-Sorry... here I go...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "す、すみません…ご迷惑を…",
     "en": "I-I'm sorry... for the trouble...",
     "files": [
@@ -126637,6 +129676,20 @@
     "en": "I-I'm sorry... this time it's just not possible...",
     "files": [
       "data.js:NEGOTIATE_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "す、すみません…全力でいきます…！",
+    "en": "S-Sorry... I'm going all out...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -128999,6 +132052,20 @@
     }
   },
   {
+    "key": "それじゃ！ トドメってやつだ！",
+    "en": "Right then! Time for the finisher!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "それだけでも……ありがたいです。ありがとうございます……。",
     "en": "Even that much... means a lot. Thank you...",
     "files": [
@@ -129476,6 +132543,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama"
+    }
+  },
+  {
+    "key": "たっぷり味わわせてあげる",
+    "en": "I'll let you savor every bit of it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
     }
   },
   {
@@ -130600,6 +133681,20 @@
     }
   },
   {
+    "key": "っへ！ これでシメだ！",
+    "en": "Heh! That's a wrap!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "つ、次は…必ず…{partner}さんを勝たせますわ…！",
     "en": "N-Next time... I shall win it for you, {partner}...!",
     "files": [
@@ -130747,6 +133842,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "て、てめえ…覚悟しろ…！",
+    "en": "Y-You... get ready...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
     }
   },
   {
@@ -132574,6 +135683,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "ねえ…もう諦めちゃいなさい♪",
+    "en": "Come on... just give up already ♪",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
     }
   },
   {
@@ -135456,6 +138579,34 @@
     }
   },
   {
+    "key": "ふふ…こんなものじゃないわよ？",
+    "en": "Hehe... this isn't all I have, you know?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "ふふ…そろそろ大詰めよ♪",
+    "en": "Hehe... we're near the end now ♪",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "ふふ…なんて笑ってる場合じゃないわ、これ",
     "en": "Mm — no, this is past laughing at.",
     "files": [
@@ -135526,6 +138677,20 @@
     }
   },
   {
+    "key": "ふふ…もう逃がさないわよ？",
+    "en": "Hehe... you're not slipping away now, are you?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "ふふ…一つ、片づいたわね",
     "en": "Mm... one thing tidied away.",
     "files": [
@@ -135592,6 +138757,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "ふふ…本気で抱きしめてあげる",
+    "en": "Hehe... let me hold you properly this time.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
     }
   },
   {
@@ -136300,6 +139479,20 @@
     }
   },
   {
+    "key": "ふふ、楽しくなってきちゃった♪",
+    "en": "Hehe, I'm starting to enjoy this ♪",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "ふふ、楽しくなりそうね。",
     "en": "Mm, this looks like it will be fun.",
     "files": [
@@ -136952,6 +140145,34 @@
     }
   },
   {
+    "key": "ぶ、ぶっ飛ばしてやる…！",
+    "en": "I-I'm knocking you flat...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "ぶちかます！",
+    "en": "Blowing you away!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "ぶっちゃけ、不満があるの。ちゃんと話しましょう？",
     "en": "Frankly, I have complaints. Shall we talk properly?",
     "files": [
@@ -137053,9 +140274,10 @@
     "key": "ぶっ飛ばしてやる！",
     "en": "I'm going to knock you flat!",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "data.js:PPV_OPPONENT_LINES"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
@@ -137304,6 +140526,20 @@
     "en": "Heh. Just thinking about it gets me fired up.",
     "files": [
       "data.js:GLIMPSE_A_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "へへっ、楽しくなってきたぜ！",
+    "en": "Heh, now it's getting fun!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -137886,6 +141122,20 @@
     }
   },
   {
+    "key": "ま、まだまだだ…!",
+    "en": "I-I ain't done yet...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "ま、まだ若いのに…ご、ごめんなさい…続けられないんです…",
     "en": "I-I'm still so young... I-I'm sorry... I can't keep going...",
     "files": [
@@ -138038,6 +141288,34 @@
     }
   },
   {
+    "key": "ま、負けたくないから…！",
+    "en": "B-Because I don't want to lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "ま、負けたくないんです…！",
+    "en": "I-It's just... I don't want to lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "ま、負けてしまいました…ご、ごめんなさい…",
     "en": "I-I ended up losing... I'm... I'm sorry...",
     "files": [
@@ -138063,6 +141341,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "ま、負けないんだから…!",
+    "en": "I-I'm not going to lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "ま、負けねえから…!",
+    "en": "N-Not losing. No way...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "shy"
     }
   },
@@ -138105,6 +141411,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "ま、負けませんから…!",
+    "en": "I-I will not be losing...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "shy"
     }
   },
@@ -140124,6 +143444,76 @@
     }
   },
   {
+    "key": "まだまだいけますよ〜！",
+    "en": "I've got plenty left in me~!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "まだまだいけますわ〜！",
+    "en": "I have a great deal left in me~!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "まだまだいけらあ〜！",
+    "en": "Got way more in me~!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "まだまだいけるよ〜！",
+    "en": "I've got loads left~!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "まだまだいけるわよ〜♪",
+    "en": "I have so much left ♪",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "まだまだお楽しみは続くの？ いいわね、乗ってあげる",
     "en": "The fun goes on a while longer, does it? Lovely. I will play along.",
     "files": [
@@ -140183,13 +143573,28 @@
     "key": "まだまだだ！",
     "en": "Still got plenty!",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "まだまだっ！",
+    "en": "Nowhere near done!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
-      "archetype": "delinquent",
+      "archetype": "standard",
       "personality": "bold"
     }
   },
@@ -140281,9 +143686,10 @@
     "key": "まだまだですわ！",
     "en": "We are nowhere near finished!",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
@@ -140292,12 +143698,27 @@
     }
   },
   {
+    "key": "まだまだです！",
+    "en": "I have plenty left!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "まだまだよ",
     "en": "Nowhere near finished.",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
@@ -140530,9 +143951,10 @@
     "key": "まだまだ！",
     "en": "Not even close!",
     "files": [
+      "battle-lines.js:CUTIN_LINES",
       "tag-battle-lines.js:CUTIN_SAVE_LINES"
     ],
-    "count": 1,
+    "count": 2,
     "hasPlaceholder": false,
     "hasProperNoun": false,
     "cell": {
@@ -143926,6 +147348,20 @@
     }
   },
   {
+    "key": "もう…我慢できない…壊しちゃうわよ…！",
+    "en": "I can't... hold back anymore... I'll break you...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "もう…涙が止まらない…！ ありがとう…みんな…！",
     "en": "I can't... stop crying...! Thank you... all of you...!",
     "files": [
@@ -145383,6 +148819,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "seductive"
+    }
+  },
+  {
+    "key": "もう終わりだ…沈めてやる！",
+    "en": "It's over... I'm putting you down!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
     }
   },
   {
@@ -149722,6 +153172,20 @@
     }
   },
   {
+    "key": "よーし、ここで決めちゃおう！",
+    "en": "Okay, let's wrap this up!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "よーし、またやる気出てきたぞ！ 楽しまなきゃね",
     "en": "All right, the drive's coming back! Got to enjoy this.",
     "files": [
@@ -149998,6 +153462,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "わ、わたし…まだまだ…！",
+    "en": "I-I've still got more...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
       "personality": "shy"
     }
   },
@@ -150321,6 +153799,20 @@
     "cell": {
       "archetype": "composed",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "わ、私だって…本気なんだから…",
+    "en": "I-I can be serious too, you know...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
     }
   },
   {
@@ -151482,6 +154974,20 @@
     }
   },
   {
+    "key": "わたくしの全力、お受けなさいな！",
+    "en": "My full strength — do receive it!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "わたくしの出番がないとは…運営の怠慢ですわ",
     "en": "For me to have no spot at all... someone has been negligent.",
     "files": [
@@ -152572,6 +156078,20 @@
     }
   },
   {
+    "key": "オマエの負けだ…くらえ！",
+    "en": "You're done... eat this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "オーストリアの強化選手を舐めないでね！",
     "en": "Don't underestimate an Austrian national squad athlete!",
     "files": [
@@ -152710,6 +156230,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "キャハハッ！…終わらせるわよっ…！",
+    "en": "Ahahaha! ...I'm ending this now...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
     }
   },
   {
@@ -156561,6 +160095,20 @@
     "hasPlaceholder": true,
     "hasProperNoun": false,
     "cell": null
+  },
+  {
+    "key": "フィナーレですわ…！",
+    "en": "The finale...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
   },
   {
     "key": "フィニッシュだ！ 二人の信頼が織りなす必殺技！",
@@ -170429,6 +173977,76 @@
     "cell": null
   },
   {
+    "key": "全力で…いきますっ！",
+    "en": "Everything I've got... here I come!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "全力で…いきます！",
+    "en": "With all I have... here I go!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "全力で…いくわよ",
+    "en": "All of it... here it comes.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "全力で…いく！",
+    "en": "Everything I've got... here it comes!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "全力で…行きます！",
+    "en": "With all my strength... here I come!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "全力で、この舞台に恥じない試合をします！",
     "en": "All out — a match this stage won't be ashamed of!",
     "files": [
@@ -170440,6 +174058,34 @@
     "cell": {
       "archetype": "polite",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "全力でいかせてもらいます！",
+    "en": "I'm going to give this everything!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "全力でいくぜ！",
+    "en": "Going all out!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
     }
   },
   {
@@ -171221,6 +174867,34 @@
     }
   },
   {
+    "key": "全身全霊で…参りますわ！",
+    "en": "With all that I am... here I go!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "全身全霊で…行きますっ！",
+    "en": "Body and soul... here I go!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "全身全霊で、臨ませていただきます",
     "en": "I'm going in with everything I am.",
     "files": [
@@ -171232,6 +174906,34 @@
     "cell": {
       "archetype": "standard",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "全部ぶつけてやる…！",
+    "en": "I'm throwing everything at you...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "全部出し切る…！",
+    "en": "Everything I have left...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
     }
   },
   {
@@ -177285,6 +180987,20 @@
     }
   },
   {
+    "key": "参りますわ！",
+    "en": "I shall proceed!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "及びませんでした。存外、こたえますね。",
     "en": "We did not reach them. It stays with one more than expected.",
     "files": [
@@ -177635,6 +181351,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "受けてみなさい！",
+    "en": "Try taking this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
     }
   },
   {
@@ -186782,6 +190512,20 @@
     }
   },
   {
+    "key": "思いっきりいくわよっ！！",
+    "en": "Here it comes — full force!!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "思いつきではないのです。三人で、あちらへ挑戦を。",
     "en": "This is not a whim. The three of us, over there, as a challenge.",
     "files": [
@@ -188702,6 +192446,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "悪いけど…終わりだよっ！",
+    "en": "Sorry about this... but you're done!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
     }
   },
   {
@@ -192535,6 +196293,20 @@
     "cell": null
   },
   {
+    "key": "最後のプレゼント…受け取って？",
+    "en": "One last present... will you take it?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "最後の一つが遠かった、そこを埋めるのが次の仕事だ",
     "en": "The last step was too far. Closing it is the next job.",
     "files": [
@@ -193062,6 +196834,20 @@
     "cell": {
       "archetype": "ojousama",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "最後よ…たっぷり味わいなさい",
+    "en": "This is the last one... savor every second.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
     }
   },
   {
@@ -195082,6 +198868,20 @@
     }
   },
   {
+    "key": "本気、出しちゃおうかしら？",
+    "en": "Shall I stop holding back?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "本気でやり合いたい相手って、そうはいないよ",
     "en": "You don't meet many you actually want to go all out on.",
     "files": [
@@ -195177,6 +198977,62 @@
     "cell": {
       "archetype": "seductive",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "本気を出してしまいますわよ？",
+    "en": "I may have to stop holding back, you know?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "本気出しちゃいますよ？",
+    "en": "I might have to get serious, you know?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "本気出しちゃうぞ？",
+    "en": "Might get serious here, yeah?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "本気出しちゃうよ？",
+    "en": "I might get serious, you know?",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
     }
   },
   {
@@ -195483,6 +199339,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "根性見せてやる…いくぞぉ！",
+    "en": "I'll show you real guts... here I come!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
       "personality": "earnest"
     }
   },
@@ -195807,6 +199677,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "楽しかったですわ…でもここまでですの！",
+    "en": "That was delightful... but this is as far as you go!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "easygoing"
     }
   },
@@ -200154,6 +204038,20 @@
     }
   },
   {
+    "key": "泣いてなど…いきますわよ…！",
+    "en": "I am not crying... here I come...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "泣いてなど…おりません、決して",
     "en": "I am not crying... Certainly not.",
     "files": [
@@ -200186,6 +204084,20 @@
     "en": "I'm not crying. ...It's sweat. Sweat. ...Shut up and leave me alone.",
     "files": [
       "tenchosen-final-lines.js:TENCHOSEN_FINAL_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "泣いてねえ…泣いてねえよ…！",
+    "en": "Nobody's crying here... nobody...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -200238,6 +204150,20 @@
     }
   },
   {
+    "key": "泣いてる場合じゃ…いきます…！",
+    "en": "No time for crying... here I go...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "泣いてんじゃねぇよ。私らはまた、どっかで戦うんだろ",
     "en": "Don't cry on me. We'll be fighting somewhere again, won't we.",
     "files": [
@@ -200262,6 +204188,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "泣かない…泣かないから…いくよ！",
+    "en": "I won't cry... I won't cry... here I go!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
     }
   },
   {
@@ -201103,6 +205043,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "潰れなさいっ…！",
+    "en": "Be crushed...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
     }
   },
   {
@@ -203802,6 +207756,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "真剣勝負です…参りますわよ！",
+    "en": "This is a serious contest... here I come!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
     }
   },
   {
@@ -209741,6 +213709,48 @@
     }
   },
   {
+    "key": "私の全力、受けてくださいっ！",
+    "en": "Everything I have — please take it!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "私の全部、くらいやがれ！",
+    "en": "All of it — eat it!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "私の全部、受け止めなさい",
+    "en": "All of me — take it.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "私の出番は、いつ来るんでしょうか。",
     "en": "I wonder when my turn is coming.",
     "files": [
@@ -212796,6 +216806,73 @@
     }
   },
   {
+    "key": "絶対に…ここで決める！",
+    "en": "I'm ending it... right here!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "絶対に…勝つわ",
+    "en": "I will take this one.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "絶対に…勝つ！",
+    "en": "I'm winning this... whatever it takes!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "絶対に…絶対にっ…！",
+    "en": "No matter what — no matter what...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": null
+  },
+  {
+    "key": "絶対に…絶対にですわっ…！",
+    "en": "I must... I simply must...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "絶対に…絶対に負けたくなかった…！ 団体のみんなのために…！",
     "en": "I couldn't... I absolutely couldn't lose...! Not for everyone here...!",
     "files": [
@@ -212877,6 +216954,48 @@
     "cell": {
       "archetype": "standard",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "絶対にっ…絶対にだっ…！",
+    "en": "I have to... I have to...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "絶対に勝ちますっ！",
+    "en": "I will win this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "絶対に勝ちますわっ！",
+    "en": "I shall win this without fail!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
     }
   },
   {
@@ -213017,6 +217136,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "絶対勝つぞ！",
+    "en": "I'm taking this one!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
     }
   },
   {
@@ -215050,6 +219183,20 @@
     }
   },
   {
+    "key": "良い試合にいたしましょう！",
+    "en": "Let us make this a splendid match!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "良き仲間になれそうですわ。認めてあげます",
     "en": "She may yet make a fine ally. I shall grant her that.",
     "files": [
@@ -215876,6 +220023,20 @@
     }
   },
   {
+    "key": "見せてあげる…私の全力！",
+    "en": "I'll show you... everything I've got!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "見たか、これが{partner}と私のタッグの力だ！",
     "en": "See that? That's what {partner} and I are together!",
     "files": [
@@ -216026,6 +220187,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "polite"
+    }
+  },
+  {
+    "key": "見ていてください…最高の一撃を！",
+    "en": "Please watch... the very best I have!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
     }
   },
   {
@@ -216522,6 +220697,20 @@
     }
   },
   {
+    "key": "覚悟してくださいね…いきますよ！",
+    "en": "Brace yourself... here it comes!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "覚悟はできてたよ。最後よろしくな",
     "en": "I was ready for it. Do right by me at the end, yeah?",
     "files": [
@@ -216547,6 +220736,20 @@
     "cell": {
       "archetype": "seductive",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "覚悟はよろしくて？ いきますわ！",
+    "en": "Are you quite ready? Here I go!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
     }
   },
   {
@@ -218438,6 +222641,34 @@
     }
   },
   {
+    "key": "諦めない…から",
+    "en": "I'm not giving this up...",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "諦めない…！",
+    "en": "I'm not giving up...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "諦めなくてよかった…このベルト、努力の結晶です",
     "en": "I'm glad I never quit... this belt is everything I put in, made solid.",
     "files": [
@@ -218462,6 +222693,48 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "delinquent",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "諦めねえからな…！",
+    "en": "I'm not quitting...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "諦めません…っ！",
+    "en": "I won't give up...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "諦めませんわ…っ！",
+    "en": "I shall not give up...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
       "personality": "earnest"
     }
   },
@@ -218982,6 +223255,20 @@
     }
   },
   {
+    "key": "負けたくありませんわっ…！",
+    "en": "I do not want to lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "負けたくない…この気持ちが一番の武器！",
     "en": "I hate losing... and that's the best weapon I've got!",
     "files": [
@@ -218993,6 +223280,59 @@
     "cell": {
       "archetype": "standard",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "負けたくない…だから…！",
+    "en": "I don't want to lose... so...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "負けたくないっ…！",
+    "en": "I don't want to lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 2,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": null
+  },
+  {
+    "key": "負けたくないですっ…！",
+    "en": "I don't want to lose this...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "負けたくねえっ…！",
+    "en": "I don't wanna lose...!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
     }
   },
   {
@@ -220192,6 +224532,48 @@
     }
   },
   {
+    "key": "負けないから！",
+    "en": "I'm not losing this!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "負けないわ",
+    "en": "I have no intention of losing.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "負けねえからな！",
+    "en": "Not losing. Not to you!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "負けは負け。でも…悪くない戦いだったわ",
     "en": "A loss is a loss. Still... that was a fight worth having.",
     "files": [
@@ -220663,6 +225045,34 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "負けませんわ！",
+    "en": "I shall not lose!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "負けません！",
+    "en": "I won't lose!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
       "personality": "normal"
     }
   },
@@ -222670,10 +227080,38 @@
     }
   },
   {
+    "key": "逃がさないわよ！",
+    "en": "You're not getting away!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "逃がさねえ、そっち頼むぜ！",
     "en": "No way out for her — take that side!",
     "files": [
       "tag-battle-lines.js:DOUBLE_TEAM_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "逃がさねえからな！",
+    "en": "You're not running from me!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -222740,6 +227178,20 @@
     }
   },
   {
+    "key": "逃がしませんよ！",
+    "en": "I won't let you get away!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "逃がしませんわ、そちらお任せを！",
     "en": "She shall not escape. That side is yours!",
     "files": [
@@ -222758,6 +227210,20 @@
     "en": "I shall not let you go. We settle this here and now, shall we?",
     "files": [
       "data.js:RIVALRY_CONFRONTATION_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "逃がしませんわよ！",
+    "en": "You shall not escape me!",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
     ],
     "count": 1,
     "hasPlaceholder": false,
@@ -223084,6 +227550,20 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "逃さないわ…最後まで",
+    "en": "I won't let go... not until the end.",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
     }
   },
   {
@@ -227422,6 +231902,20 @@
     }
   },
   {
+    "key": "（……いける）",
+    "en": "... *I can do this*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "（……見えた。…次の一手——）",
     "en": "... *There it is. ...The next move —*",
     "files": [
@@ -227432,6 +231926,20 @@
     "hasProperNoun": false,
     "cell": {
       "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（……集中）",
+    "en": "... *Focus*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
       "personality": "quiet"
     }
   },
@@ -227486,6 +231994,244 @@
     "cell": {
       "archetype": "standard",
       "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（…お願い、身体…もう少しだけ、動いてね）",
+    "en": "... *Please, body... just hold on a little more, okay*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（…こ、ここで…決める…っ!）",
+    "en": "... *H-Here... I take it here...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…こ、ここで…決める…）",
+    "en": "... *H-Here... I end it...*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…こ、ここで、決めなきゃ…）",
+    "en": "... *H-Here, then. It has to be now...*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…こ、ここで決めなくては…!）",
+    "en": "... *I-I must settle it here...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…ここから、あたしの時間）",
+    "en": "... *From here, my time*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（…ここから、だね）",
+    "en": "... *This is where it starts, isn't it*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…ここから、よ）",
+    "en": "... *This is where it starts, then*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…ここから、私の時間だね）",
+    "en": "... *From here, then. My time*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（…ここからだぜ）",
+    "en": "... *Starts right here*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…ここからだ）",
+    "en": "... *This is where it starts*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…ここからですわ）",
+    "en": "... *From this moment onward*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…ここからです）",
+    "en": "... *And here it begins*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…ここから）",
+    "en": "... *It begins*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…ここまで来たんだ…あとは出し切るだけ、だね）",
+    "en": "... *I came all this way... now I just empty it out, don't I*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（…ここまで来た）",
+    "en": "... *Made it this far*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（…さあ、決めにいこうか）",
+    "en": "... *Well then, shall we go finish it*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "bold"
     }
   },
   {
@@ -227573,6 +232319,118 @@
     }
   },
   {
+    "key": "（…ま、まだ…いけます…！）",
+    "en": "... *I-I can still go... I can...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…ま、まだ…いけるはず…！）",
+    "en": "... *I-I can still... I know I can...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…ま、まだ…これから、だから…）",
+    "en": "... *N-Not yet... it starts from here...*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…ま、まだ…）",
+    "en": "... *N-Not finished...*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…ま、まだ、いけるよ…）",
+    "en": "... *I-I'm still good to go...*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…ま、まだだ…ここからだ…!）",
+    "en": "... *N-Not done... it starts here...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…ま、まだですわ…ここからですの…!）",
+    "en": "... *N-Not yet... it begins from here...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（…わ、私だって…本気なんだから…）",
+    "en": "... *I-I have a serious side too, you know...*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "shy"
+    }
+  },
+  {
     "key": "（…わかる。体が覚えている。次の一手——）",
     "en": "... *I know it. My body remembers. The next move —*",
     "files": [
@@ -227584,6 +232442,34 @@
     "cell": {
       "archetype": "standard",
       "personality": "earnest"
+    }
+  },
+  {
+    "key": "（…わくわくするな…この瞬間が一番好き）",
+    "en": "... *I'm getting excited... this moment is the one I love*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（…わくわくする）",
+    "en": "... *Kind of excited*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
     }
   },
   {
@@ -227640,6 +232526,20 @@
     "cell": {
       "archetype": "standard",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "（…体が軽い。いけるぜ）",
+    "en": "... *Body's light. I can go*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
     }
   },
   {
@@ -227760,6 +232660,34 @@
     "cell": null
   },
   {
+    "key": "（…全部、出し切るよ）",
+    "en": "... *I'm giving every last bit*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（…全部、出す）",
+    "en": "... *Everything comes out now*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "earnest"
+    }
+  },
+  {
     "key": "（…動ける。まだ、動ける——）",
     "en": "... *I can move. I can still move —*",
     "files": [
@@ -227799,6 +232727,48 @@
     "cell": {
       "archetype": "delinquent",
       "personality": "emotional"
+    }
+  },
+  {
+    "key": "（…最高の試合にしよう、ね）",
+    "en": "... *Let's make it a great match, okay*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（…最高の試合に）",
+    "en": "... *Make it a great one*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（…決めにいく）",
+    "en": "... *Going to finish it*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "bold"
     }
   },
   {
@@ -227886,6 +232856,20 @@
     }
   },
   {
+    "key": "（…胸が苦しい…でも）",
+    "en": "... *Chest hurts... but*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
+    }
+  },
+  {
     "key": "（…見えた。次やるべきことが、はっきりと——）",
     "en": "... *I see it. Exactly what I have to do next —*",
     "files": [
@@ -227942,6 +232926,118 @@
     }
   },
   {
+    "key": "（…負けない、よ）",
+    "en": "... *I'm not losing, you know*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…負けない）",
+    "en": "... *Not going to lose*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（…身体、もう少しだけ）",
+    "en": "... *Body. Just a little more*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "cool",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（…身体が軽い…いけますの）",
+    "en": "... *My body is light... I can manage this*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…身体が軽い…いけるわ）",
+    "en": "... *My body is light... I can do this*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…身体が軽い。いけます）",
+    "en": "... *My body feels light. I can go*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…身体が軽い。いける）",
+    "en": "... *My body feels light. I can do this*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…身体が軽いな…いける）",
+    "en": "... *My body feels light... this will work*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
     "key": "（…限界の、その先——）",
     "en": "... *Past the limit —*",
     "files": [
@@ -227953,6 +233049,90 @@
     "cell": {
       "archetype": "cool",
       "personality": "bold"
+    }
+  },
+  {
+    "key": "（…集中…今だけは、何も）",
+    "en": "... *Focus... nothing else, just now*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…集中、だね。今は何も考えなくていい）",
+    "en": "... *Focus, then. Nothing to think about right now*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…集中。今だけは、何も考えなくていい）",
+    "en": "... *Focus. Right now I don't have to think about anything*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…集中。今だけは、何も）",
+    "en": "... *Focus. Nothing else, just for now*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…集中。余計なこと考えるな）",
+    "en": "... *Focus. Quit thinking about anything else*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "quiet"
+    }
+  },
+  {
+    "key": "（…集中ですわ。今だけは何も）",
+    "en": "... *Concentration. Nothing else, for now*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "quiet"
     }
   },
   {
@@ -228345,6 +233525,314 @@
     }
   },
   {
+    "key": "（うわ、胸が苦しい！ でも、これが生きてるってことだよね！）",
+    "en": "*Wow, my chest hurts! But that's what being alive feels like, right!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "composed",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（お願い…身体、もう少しだけ、動いて）",
+    "en": "*Please... body, move for me, just a little more*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（お願い、身体…もう少しだけ動いて）",
+    "en": "*Please, body... move for me a little longer*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（お願いします、身体…もう少しだけ）",
+    "en": "*Please, body... just a little longer*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（お願いですわ身体…もう少しだけ）",
+    "en": "*I beg of you, body... only a little longer*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（こ、ここで…決めないと…！）",
+    "en": "*R-Right here... I have to end it...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（こ、ここで…決めなきゃ…！）",
+    "en": "*H-Here... I have to finish it here...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "shy"
+    }
+  },
+  {
+    "key": "（ここからが…わたくしの時間ですわ）",
+    "en": "*From here... the time is mine*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（ここからが、私の時間！）",
+    "en": "*This part of the match is mine!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（ここからだ…私の時間だぜ）",
+    "en": "*Starts now... this part belongs to me*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（ここからです…ここからが、私の時間）",
+    "en": "*From here... from here on it's my time*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（ここからよ…私の時間が、始まるの）",
+    "en": "*From here... my time is about to begin*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（ここまで参りましたの…あとは出し切るのみ）",
+    "en": "*I have come this far... what remains is to give everything*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（ここまで来た…あとは、出し切るだけ）",
+    "en": "*I made it this far... now I just empty the tank*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（ここまで来たわ…あとは、出し切るだけ）",
+    "en": "*I have come this far... now I simply pour it all out*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（ここまで来たんだ…あとは出し切るだけだ）",
+    "en": "*Came all this way... now I just leave nothing behind*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（ここまで来ました…あとは、出し切るだけ）",
+    "en": "*I have come this far... all that's left is to empty myself out*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（さあ…幕引きにしてさしあげますわ）",
+    "en": "*Now then... allow me to bring down the curtain*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（さあ…決めさせていただきます）",
+    "en": "*Right, then... allow me to finish this*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（さあ…決めてあげる）",
+    "en": "*Now, then... let me finish you*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（さあ…決めてやる）",
+    "en": "*All right... I'm ending this*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "bold"
+    }
+  },
+  {
+    "key": "（さあ…決めにいく）",
+    "en": "*All right... time to finish it*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "bold"
+    }
+  },
+  {
     "key": "（どこか上の空で、視線が泳いでいる）",
     "en": "*Somewhere else entirely, eyes drifting*",
     "files": [
@@ -228398,6 +233886,76 @@
     "cell": {
       "archetype": "standard",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "（わくわくいたしますわ…この瞬間が一番）",
+    "en": "*How thrilling... this moment above all others*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（わくわくしちゃう…この瞬間が好き♪）",
+    "en": "*I can't help getting excited... I do love this moment ♪*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（わくわくします…この瞬間が一番好き）",
+    "en": "*I'm getting excited... this moment is the part I love most*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（わくわくする…この瞬間が一番好き）",
+    "en": "*This is exciting... this moment is my favorite part*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（わくわくするぜ…この瞬間が一番好きだ）",
+    "en": "*This gets me going... this moment's my favorite*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
     }
   },
   {
@@ -228468,6 +234026,76 @@
     "cell": {
       "archetype": "composed",
       "personality": "quiet"
+    }
+  },
+  {
+    "key": "（全て…全て懸けますわ）",
+    "en": "*All of it... I stake all of it*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（全部…全部ぶつけてやる）",
+    "en": "*All of it... I'm throwing all of it at her*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（全部…全部出し切ります）",
+    "en": "*Everything... I'm putting everything in*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（全部…全部出し切るの）",
+    "en": "*All of it... I am pouring all of it out*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "earnest"
+    }
+  },
+  {
+    "key": "（全部…全部出し切る）",
+    "en": "*All of it... I'm giving all of it*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "earnest"
     }
   },
   {
@@ -228681,6 +234309,76 @@
     }
   },
   {
+    "key": "（最高の試合にいたしましょう！）",
+    "en": "*Let us make this a match to remember!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（最高の試合にしましょう！）",
+    "en": "*Let's make this the best match anyone's seen!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（最高の試合にしましょ？）",
+    "en": "*Shall we make this the finest match?*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（最高の試合にしようぜ！）",
+    "en": "*Let's make this one they remember!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "easygoing"
+    }
+  },
+  {
+    "key": "（最高の試合にしよう！）",
+    "en": "*Let's make this the best match ever!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "easygoing"
+    }
+  },
+  {
     "key": "（沈黙）",
     "en": "*Silence, unbroken*",
     "files": [
@@ -228807,6 +234505,146 @@
     }
   },
   {
+    "key": "（胸が苦しい…けど、これが生きてる証だ）",
+    "en": "*Chest is killing me... but that's how I know I'm alive*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（胸が苦しい…けれど、この痛みが生きてる証ですの）",
+    "en": "*My chest is tight... yet this pain is proof that I am alive*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（胸が苦しい…でも、この痛みが、生きてる証だから）",
+    "en": "*My chest hurts... but this pain is how I know I'm alive*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（胸が苦しい…でも、この痛みが、生きてる証です）",
+    "en": "*My chest aches... but this pain is proof that I'm alive*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（胸が苦しい…でも、この痛みが、生きてる証よ）",
+    "en": "*My chest is tight... but this pain is the proof I am alive*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "emotional"
+    }
+  },
+  {
+    "key": "（負けない…！）",
+    "en": "*I'm not losing...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "standard",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（負けないわ…）",
+    "en": "*I don't intend to lose...*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "seductive",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（負けねえ…！）",
+    "en": "*Not losing this...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（負けません…！）",
+    "en": "*I refuse to lose...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "polite",
+      "personality": "normal"
+    }
+  },
+  {
+    "key": "（負けませんわ…！）",
+    "en": "*I shall not be defeated...!*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "ojousama",
+      "personality": "normal"
+    }
+  },
+  {
     "key": "（静かにうなずいている）……ここにいる",
     "en": "*A quiet nod* ...I stay.",
     "files": [
@@ -228818,6 +234656,20 @@
     "cell": {
       "archetype": "cool",
       "personality": "normal"
+    }
+  },
+  {
+    "key": "（頼むぞ身体…もうちょい動いてくれ）",
+    "en": "*Come on, body... hold together a bit longer*",
+    "files": [
+      "battle-lines.js:CUTIN_LINES"
+    ],
+    "count": 1,
+    "hasPlaceholder": false,
+    "hasProperNoun": false,
+    "cell": {
+      "archetype": "delinquent",
+      "personality": "emotional"
     }
   },
   {

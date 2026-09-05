@@ -9,6 +9,12 @@
 //        finishClickラベル・決着表記)も英語になり、EN側に日本語が1文字も残らないこと
 //    (3) 効果音の選択と解説文の**選択**は JA判定のまま変わらないこと
 //        (= 英語化が判定層へ一切漏れていない機械証明)
+//  P7-21 で **観戦カットイン(CUTIN_LINES 441スロット)** を追加した。
+//    (4) カットインのセリフが EN で日本語ゼロになること。表は battle-lines.js へ移設済みで、
+//        選出は _getCutinLines(JA据え置き)・英語化は表示直前の t() だけという分業を
+//        JA/EN の生値一致で機械証明する。自然再生では rivalryTier>0 のときにしか
+//        発火しないので、実関数(_tryPhaseIntroCutin / tryRivalryCutin)を直接叩いて
+//        実DOM(.cutin-text)まで確認する。
 //  スクリーンショットも保存する(single/tag × JA/EN)。
 // ══════════════════════════════════════════════════════════════════════════════
 'use strict';
@@ -203,6 +209,54 @@ const PROBE = `([payload, isTag]) => new Promise((resolve) => {
         .filter((f) => f && !f.action)
         .map((f) => (f.logLines || []).join(' ').trim())
         .filter(Boolean);
+      // ── P7-21: 観戦カットイン CUTIN_LINES の全数検査 ──
+      // 実再生では matchInfo.rivalryTier>0 のときにしか発火せず(しかも確率ゲート付き)、
+      // 自然走破では一度も踏めない。表(battle-lines.js へ移設済み)と実関数を直接叩いて
+      // 441スロット全部を決定的に採取する。
+      //   cutinRawJa = 選出層(_getCutinLines が返す生値。JA据え置きの証明)
+      //   cutinShown = 表示直前の WM_I18N.t() を通した結果
+      //   cutinDom   = 実表示点(_tryPhaseIntroCutin / tryRivalryCutin → showCutin →
+      //                BattleAnim.renderCutin)が書いた .cutin-text の実測
+      rec.cutinRawJa = []; rec.cutinShown = []; rec.cutinDom = [];
+      try {
+        const CT = (typeof CUTIN_LINES !== 'undefined') ? CUTIN_LINES : null;
+        rec.cutinTableLoaded = !!CT;   // tag 側でも battle-lines.js が読めていることの確認
+        if (CT) {
+          Object.keys(CT).forEach((sec) => Object.keys(CT[sec]).forEach((a) => Object.keys(CT[sec][a]).forEach((p) => {
+            // 単品は実セレクタ経由(フォールバック4段も含めて実物を通す)。tag は表を直に読む。
+            const arr = (typeof _getCutinLines === 'function') ? _getCutinLines(sec, p, a) : CT[sec][a][p];
+            (arr || []).forEach((s, i) => {
+              const tag2 = sec + '/' + a + '/' + p + '/' + i + ' :: ';
+              rec.cutinRawJa.push(tag2 + s);
+              rec.cutinShown.push(tag2 + WM_I18N.t(s));
+            });
+          })));
+        }
+      } catch (e) { rec.cutinErr = String(e); }
+      try {
+        if (!isTag && typeof _tryPhaseIntroCutin === 'function') {
+          const rnd = Math.random;
+          const savedPin = S.pinCtrl;
+          Math.random = () => 0;              // 確率ゲートを必ず通す + pk() を先頭固定
+          S.pinCtrl = null;                   // dismissCutin のピン分岐へ落ちないように
+          S.matchInfo = Object.assign({}, S.matchInfo, {
+            rivalryTier: 3,
+            leftArchetype: 'ojousama', leftPersonality: 'bold',
+            rightArchetype: 'delinquent', rightPersonality: 'quiet',
+          });
+          const readCutin = (label) => {
+            const el = document.querySelector('#cutinOv .cutin-text');
+            if (el) rec.cutinDom.push(label + ' :: ' + el.textContent);
+            S._pendingPhaseIntro = false;     // nextFrame の再開予約を踏まない(検査用)
+            dismissCutin();
+          };
+          S.mom = 1;   // 左(ojousama×bold)が主語になる
+          ['Climax', 'Mid'].forEach((ph) => { if (_tryPhaseIntroCutin(ph)) readCutin('phaseIntro-' + ph); });
+          ['atk', 'climax', 'bigmove'].forEach((lt) => { tryRivalryCutin(lt, 'R'); readCutin('rivalry-' + lt); });
+          Math.random = rnd;
+          S.pinCtrl = savedPin;
+        }
+      } catch (e) { rec.cutinDomErr = String(e); }
       const vic = document.getElementById(isTag ? 'vicType' : 'rType');
       rec.finishLabel = vic ? vic.textContent : '(none)';
       // 辞書のfail-open実測。WM_I18N._misses は読み込み時点からの全件を持つ Set
@@ -361,6 +415,13 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
     console.log('  .long閾値の境界テスト(P7-12・[閾値-1字, 閾値字]):', JSON.stringify(r.bigIntroBoundary || []), r.bigIntroBoundaryErr ? `!! ${r.bigIntroBoundaryErr}` : '');
     console.log('  ピンカウント:', uniq(r.pinCounts).join(' / ') || '(なし)');
     console.log('  finishClickラベル:', uniq(r.finishLabels).join(' / ') || '(なし)');
+    console.log(`  カットイン CUTIN_LINES(${(r.cutinShown || []).length}スロット / 表ロード=${r.cutinTableLoaded ? 'yes' : 'NO'}):`);
+    (r.cutinShown || []).slice(0, 6).forEach((s) => console.log('    · ' + s));
+    if ((r.cutinShown || []).length > 6) console.log(`    · …ほか${r.cutinShown.length - 6}行(全件はresult.json)`);
+    if (r.cutinErr) console.log('    !! cutinErr:', r.cutinErr);
+    console.log('  カットイン実DOM(.cutin-text):');
+    (r.cutinDom || []).forEach((s) => console.log('    · ' + s));
+    if (r.cutinDomErr) console.log('    !! cutinDomErr:', r.cutinDomErr);
     console.log('  決着表記:', r.finishLabel);
     console.log('  SFX列:', r.sfx.slice(0, 14).join(',') + (r.sfx.length > 14 ? '…' : ''), `全${r.sfx.length}回`);
     if (r.i18nMiss.length) console.log('  i18n-miss:', uniq(r.i18nMiss).join(' | '));
@@ -386,7 +447,8 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
     const isLogFallback = (s) => { for (const l of logFb) { if (l && s.indexOf(l) >= 0) return true; } return false; };
     const enProse = []
       .concat(en.narrations, en.guides, en.bigIntros, en.pinCounts, en.finishLabels,
-        en.arrowLabels, en.moveNames, en.bigmove, en.pinSeqTexts || [], [en.finishLabel]);
+        en.arrowLabels, en.moveNames, en.bigmove, en.pinSeqTexts || [],
+        en.cutinShown || [], en.cutinDom || [], [en.finishLabel]);
     const enProseJaAll = uniq(enProse.filter((s) => s && JA_RE.test(s)));
     const enProseJa = enProseJaAll.filter((s) => !isLogFallback(s));
     const deferredLog = enProseJaAll.filter(isLogFallback);
@@ -431,6 +493,28 @@ async function runMidShot(browser, server, lang, file, payload, isTag, shot) {
       console.log(`  --  (既知の繰り越し: 試合ログ行の実況ストリップ落ち込み ${deferredLog.length}種 — `
         + `result.log としてGへ永続する記録のため specs §23-6-3 の {type,data} 化まで JA 据え置き)`);
       deferredLog.forEach((s) => console.log('        · ' + s));
+    }
+    // ── P7-21: 観戦カットイン(CUTIN_LINES) ──
+    check(`CUTIN_LINES が ${kind} 側でも読めている(battle-lines.js の読み込み順)`,
+      en.cutinTableLoaded === true && ja.cutinTableLoaded === true);
+    check('カットインの走査で例外ゼロ', !en.cutinErr && !ja.cutinErr && !en.cutinDomErr && !ja.cutinDomErr,
+      String(en.cutinErr || ja.cutinErr || en.cutinDomErr || ja.cutinDomErr || ''));
+    check(`選出層(CUTIN_LINES の生値)が JA と EN で完全一致(選択はJAのまま・${(en.cutinRawJa || []).length}スロット)`,
+      (en.cutinRawJa || []).length > 0 && JSON.stringify(ja.cutinRawJa) === JSON.stringify(en.cutinRawJa));
+    check('JA 側のカットインは日本語のまま(JA不変)',
+      (ja.cutinShown || []).some((s) => JA_RE.test(s)));
+    const enCutinJa = uniq((en.cutinShown || []).filter((s) => JA_RE.test(s)));
+    check(`EN のカットイン全スロットに日本語残り0(${(en.cutinShown || []).length}行)`,
+      (en.cutinShown || []).length > 0 && enCutinJa.length === 0, enCutinJa.slice(0, 8).join(' | '));
+    if (kind === 'single') {   // 実表示点(_tryPhaseIntroCutin / tryRivalryCutin)は単品側だけが持つ
+      const enDomJa = uniq((en.cutinDom || []).filter((s) => JA_RE.test(s)));
+      check(`EN のカットイン実DOM(.cutin-text)に日本語残り0(${(en.cutinDom || []).length}件・フェーズ導入/ライバリー両経路)`,
+        (en.cutinDom || []).length > 0 && enDomJa.length === 0, enDomJa.join(' | '));
+      check('JA のカットイン実DOM は日本語のまま(JA不変)',
+        (ja.cutinDom || []).length > 0 && (ja.cutinDom || []).some((s) => JA_RE.test(s)));
+      check('EN のカットイン実DOM に「」装飾が付いていない(_quoteLine の言語分岐)',
+        !(en.cutinDom || []).some((s) => s.indexOf('「') >= 0)
+        && (ja.cutinDom || []).every((s) => s.indexOf('「') >= 0));
     }
     check('EN で [i18n-miss] が出ていない(辞書のfail-open 0)',
       en.i18nMiss.length === 0, uniq(en.i18nMiss).join(' | '));
