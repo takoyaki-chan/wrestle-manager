@@ -1563,7 +1563,7 @@ function showRosterOverflowSigningModal(pending) {
   const fighterBlock = `
     <div style="background:rgba(255,255,255,0.5);border:1px solid rgba(100,85,50,0.15);border-radius:6px;padding:10px 14px;margin:10px auto 12px;max-width:460px;text-align:center">
       <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:4px">${sourceLabel}</div>
-      <div style="font-size:16px;font-weight:700;color:var(--cream-text-main);margin-bottom:4px">${fighter.name || WM_I18N.t('選手')}</div>
+      <div style="font-size:16px;font-weight:700;color:var(--cream-text-main);margin-bottom:4px">${WM_I18N.pn(fighter.name) || WM_I18N.t('選手')}</div>
       <div style="font-size:12px;color:var(--cream-text-sub)">OVR ${Engine.util.ov(fighter || {})} ・ ${WM_I18N.t('{age}歳', { age: fighter.age || '?' })} ・ ${WM_I18N.t('契約金')} ${WM_I18N.t('{v}万', { v: pending.cost || 0 })}</div>
     </div>`;
 
