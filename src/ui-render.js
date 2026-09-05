@@ -644,7 +644,7 @@ function _renderSeasonReview(review, state) {
     const cur = review.fundsCurve[review.fundsCurve.length - 1];
     h += `<div class="sr-chart-card">
       <div class="sr-chart-head"><span class="sr-chart-title">${WM_I18N.t('資金の推移 — 今季')}</span>
-        <span class="sr-chart-now" style="font-size:18px">${Math.round(cur).toLocaleString()}<span style="font-family:'Oswald';font-size:9px;color:var(--sr-ink-dim)">万</span></span></div>
+        <span class="sr-chart-now" style="font-size:18px">${Math.round(cur).toLocaleString()}<span style="font-family:'Oswald';font-size:9px;color:var(--sr-ink-dim)">${WM_I18N.t('万')}</span></span></div>
       <div class="sr-chart">${_srChartSvg(review.fundsCurve)}</div>
       <div class="sr-chart-x">${_srFundsXLabels(review.fundsCurve.length)}</div>
     </div>`;
@@ -6613,7 +6613,7 @@ function renderCoach() {
             ${coachEffectHtml(c)}
             <span style="font-size:12px;color:var(--text-sub)">${coachBrief(c)}</span>
           </div>
-          <div style="margin-top:5px;font-size:12px;color:#6a6050">${WM_I18N.t('雇用費:')} <b style="color:#4a4035">${fee}万</b> ｜ ${WM_I18N.t('給与:')} <b style="color:#4a4035">${c.salary}万/週</b> ｜ ${WM_I18N.t('決裁枠:')} <b style="color:#c00000">⚡${hireDpCost}</b></div>
+          <div style="margin-top:5px;font-size:12px;color:#6a6050">${WM_I18N.t('雇用費:')} <b style="color:#4a4035">${fee}${WM_I18N.t('万')}</b> ｜ ${WM_I18N.t('給与:')} <b style="color:#4a4035">${c.salary}万/週</b> ｜ ${WM_I18N.t('決裁枠:')} <b style="color:#c00000">⚡${hireDpCost}</b></div>
         </div>
         <button class="btn btn-sm" style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);color:#2ecc71"
           onclick="hireCoach(${c.id})" ${canHire ? '' : 'disabled'}>${btnLabel}</button>
@@ -9925,8 +9925,8 @@ function _renderDbCoaches() {
       <td class="num" style="color:${gc}">${c.observation}</td>
       <td><span class="badge badge-${c.style}" style="font-size:11px;padding:1px 6px">${c.style}</span></td>
       <td style="font-size:11px;color:var(--text-sub)">${(c.abilities||[]).join('・')}${c.flavor ? ` <span style="color:var(--text-dim)">[${WM_I18N.t(c.flavor)}]</span>` : ''}</td>
-      <td class="num" style="font-size:12px">${c.salary}万</td>
-      <td class="num" style="font-size:12px">${c.hireFee}万</td>
+      <td class="num" style="font-size:12px">${c.salary}${WM_I18N.t('万')}</td>
+      <td class="num" style="font-size:12px">${c.hireFee}${WM_I18N.t('万')}</td>
       <td>${isHired ? `<span style="font-size:11px;color:#2ecc71;border:1px solid rgba(46,204,113,0.3);padding:1px 5px;border-radius:3px">${WM_I18N.t('雇用中')}</span>` : '<span style="font-size:11px;color:var(--text-dim)">—</span>'}</td>
     </tr>`;
   });

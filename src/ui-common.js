@@ -6371,7 +6371,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
         </div>
         <div class="b1-hero-cost">
           <span class="lbl">${WM_I18N.t('契約金')}</span>
-          <span class="val">${(f._finalBid || 0).toLocaleString()} 万</span>
+          <span class="val">${(f._finalBid || 0).toLocaleString()} ${WM_I18N.t('万')}</span>
         </div>
       </div>
     </div>`;
@@ -6407,7 +6407,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
       </div>
       <div class="b1-cost">
         <span class="lbl">${WM_I18N.t('契約金')}</span>
-        <span class="val">${(f._finalBid || 0).toLocaleString()} 万</span>
+        <span class="val">${(f._finalBid || 0).toLocaleString()} ${WM_I18N.t('万')}</span>
       </div>
     </div>`;
   }
@@ -6431,7 +6431,7 @@ function _buildDraftGetPage(state, acquiredRecords) {
       <div class="b1-head">
         <div class="kick">DRAFT COMPLETE</div>
         <div class="title">${WM_I18N.t('獲得選手')}</div>
-        <div class="sub">${WM_I18N.t('新戦力')}<span class="count">${acquired.length}</span>名 ・ ${WM_I18N.t('契約金合計')} <span class="total-cost">${totalCost.toLocaleString()}</span> 万</div>
+        <div class="sub">${WM_I18N.t('新戦力')}<span class="count">${acquired.length}</span>名 ・ ${WM_I18N.t('契約金合計')} <span class="total-cost">${totalCost.toLocaleString()}</span> ${WM_I18N.t('万')}</div>
       </div>
       ${cardsHtml}
       <div class="b1-totals">
@@ -8814,7 +8814,7 @@ function showBonusProposalModal(fighterId, state) {
     const selCls = (afford && i === defaultIdx) ? ' is-selected' : '';
     return `<div class="mdl-a-decision-card${selCls}" data-idx="${i}" style="text-align:center${afford ? '' : ';opacity:0.45;pointer-events:none'}">
       <div style="font-family:var(--font-label);font-size:10px;color:var(--cream-gold);letter-spacing:2px;margin-bottom:6px">${WM_I18N.t('案 {n}', { n: kanji[i] })}</div>
-      <div class="mdl-a-decision-label" style="font-size:19px;margin-bottom:8px">${p.amount.toLocaleString()}<span style="font-size:12px">万</span></div>
+      <div class="mdl-a-decision-label" style="font-size:19px;margin-bottom:8px">${p.amount.toLocaleString()}<span style="font-size:12px">${WM_I18N.t('万')}</span></div>
       <div style="font-size:11px;line-height:1.6;min-height:3.2em;${isWarned ? 'color:var(--accent-negative)' : 'color:var(--cream-text-sub)'}">${WM_I18N.t(memo)}</div>
       ${afford ? '' : `<div style="font-size:10px;color:var(--accent-negative);margin-top:6px">${WM_I18N.t('資金不足')}</div>`}
     </div>`;
@@ -16360,7 +16360,7 @@ function showGameOverScreen(summary) {
     <div class="gameover-stats">
       <div class="gameover-stat-row"><span>${WM_I18N.t('活動期間')}</span><span>${summary.season} シーズン</span></div>
       <div class="gameover-stat-row"><span>${WM_I18N.t('最高ランク')}</span><span>${summary.bestRank} 位</span></div>
-      <div class="gameover-stat-row"><span>${WM_I18N.t('最高資金')}</span><span>${fmt(summary.peakFunds)} 万</span></div>
+      <div class="gameover-stat-row"><span>${WM_I18N.t('最高資金')}</span><span>${fmt(summary.peakFunds)} ${WM_I18N.t('万')}</span></div>
       <div class="gameover-stat-row"><span>${WM_I18N.t('最高団体人気')}</span><span>${fmt(Math.round(summary.peakOrgPop))}</span></div>
       <div class="gameover-stat-row"><span>${WM_I18N.t('興行回数')}</span><span>${summary.totalShows} 回</span></div>
       <div class="gameover-stat-row"><span>${WM_I18N.t('ベストマッチ')}</span><span>${summary.bestMQMatch || '—'} (${WM_I18N.t('評価 {n}', { n: summary.bestMQ })})</span></div>
@@ -16447,7 +16447,7 @@ function showGameOverCeremony(data, onDone) {
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('最高資金')}</span>
-          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${fmt(data.peakFunds)} 万</span>
+          <span style="font-size:14px;font-weight:700;color:#d8c8c8">${fmt(data.peakFunds)} ${WM_I18N.t('万')}</span>
         </div>
         <div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(170,30,30,0.15);padding:8px 0">
           <span style="font-size:12px;color:#988080;letter-spacing:1px">${WM_I18N.t('最高団体人気')}</span>
@@ -18847,7 +18847,7 @@ function renderJuniorTournamentResult() {
       <div class="pb-score-lbl">${WM_I18N.t('決勝評価')}</div>
     </div>
     <div class="pb-score-cell">
-      <div class="pb-score-val" style="color:var(--gold);font-size:22px">¥${PRIZE.champion}<span style="font-size:12px"> 万</span></div>
+      <div class="pb-score-val" style="color:var(--gold);font-size:22px">¥${PRIZE.champion}<span style="font-size:12px"> ${WM_I18N.t('万')}</span></div>
       <div class="pb-score-lbl">Prize</div>
     </div>
     <div class="pb-score-cell">

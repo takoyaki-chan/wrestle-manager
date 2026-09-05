@@ -12571,16 +12571,33 @@ const App = {
           setTimeout(armPendingCeremony, 4000);
           return;
         }
-        console.warn('[WM] awards chain callback lost — ceremony pending, resumes on next interaction');
-        awardsChainStarted = true; // 遅れて届いた旧コールバックからの二重開始を防ぐ
-        G = {
-          ...G,
-          _annualAwardsCeremonyPending: {
-            season: G.pendingAwards?.season || G.season,
-            recoveredFrom: 'aiAlertsCallbackLost',
-          },
-        };
-        try { Storage.autoSave(); } catch (_e) {}
+        // 2026-09-05 P7-17: 「今ポップアップが無い」は即「消失」の証拠にならない。
+        // closeEventPopup → _chainEventPopupQueueEmpty は次のアラート表示/最終コールバック
+        // まで200ms×2の遷移窓(最大約400ms)を挟む。この保険のチェックが偶然その窓に
+        // 重なると、進行中のチェーンを「消失」と誤検知して式典待ちを記帳してしまう
+        // (実害はfail-open復旧で次操作に吸収されるが、D1_CONSOLEとして誤検出される —
+        // EN走破で間欠再現。ENは操作優先度づけがJA文言正規表現に依存し一般スコアへ
+        // フォールバックしやすいため手順が揺れやすく、この窓を踏みやすい。
+        // test/ui-walkthrough/README.md の既知の制約を参照)。
+        // 即断せず一呼吸(遷移窓の倍以上の余裕)だけ置いて再確認し、その間に
+        // チェーンが自然に進んでいれば消失扱いにしない。
+        setTimeout(() => {
+          if (awardsChainStarted) return;
+          if (typeof _isPopupActive === 'function' && _isPopupActive()) {
+            setTimeout(armPendingCeremony, 4000);
+            return;
+          }
+          console.warn('[WM] awards chain callback lost — ceremony pending, resumes on next interaction');
+          awardsChainStarted = true; // 遅れて届いた旧コールバックからの二重開始を防ぐ
+          G = {
+            ...G,
+            _annualAwardsCeremonyPending: {
+              season: G.pendingAwards?.season || G.season,
+              recoveredFrom: 'aiAlertsCallbackLost',
+            },
+          };
+          try { Storage.autoSave(); } catch (_e) {}
+        }, 1000);
       };
       setTimeout(armPendingCeremony, Math.max(8000, aiAlerts.length * 4000));
     } else {

@@ -1,5 +1,19 @@
 # Wrestle Manager 作業ログ（worklog）
 
+## 🐛 P7-17 — オフシーズン表彰式チェーンの「callback lost」間欠の根因修正(2026-09-05・Sonnet worktree→Fableが仕上げ)
+
+### 現象
+EN走破(seed42)がオフシーズン(week49・step≈375、`advanceWeek`→`closeEventPopup`×3の直後)で `[WM] awards chain callback lost — ceremony pending, resumes on next interaction` を出しD1_CONSOLE扱いになる**間欠**(P7-12で1/3、09-05朝に1/2。JA走破では未観測)。メッセージは時限の保険(§5-D 鉄則1)の発火で、fail-open復旧(次操作で式典再開)は働いていた。
+
+### 根因
+保険の判定 `armPendingCeremony` が「今ポップアップが無い」を即「チェーン消失」の証拠にしていた。しかし `closeEventPopup`→`_chainEventPopupQueueEmpty` は次のアラート表示/最終コールバックまで **200ms×2の遷移窓(最大約400ms)** を挟むため、保険のチェックが偶然その窓に重なると進行中のチェーンを消失と誤検知し、`_annualAwardsCeremonyPending` を記帳してしまう。ENは走破ドライバの操作優先度がJA文言正規表現に依存して一般スコアへ落ちやすく手順が揺れるため、この窓を踏む確率が高かった(実プレイでも連打で起こりうる)。
+
+### 修正(src/app.js・27行)
+消失と即断せず **1秒置いて再確認**(遷移窓の倍以上の余裕)。その間に `awardsChainStarted` が立てば何もしない、ポップアップが出ていれば従来どおり4秒後に再アーム、それでも無ければ従来の消失処理(警告+pending記帳+autoSave)。演出・順序・文言・セーブ値は不変。エージェント(P7-17)がworktreeで実装し背景ジョブ待ちで停止したため、Fableがパッチを取り出してmainに適用・検証した。
+
+### 検証
+node --check OK / ja-golden 完全一致 / npm test 261/261 / ja走破digest `1052faa82eaf7991`(単独再走) / **EN走破×3 すべてPASS・callback lost再発0**(修正前は1/2〜1/3で再発)。同コミットに同梱: 走破検出器がGoogle Fonts取得失敗(net::ERR_CONNECTION_CLOSED)をD1にしていた誤検知の除外、裸の単位語「万」10箇所を `WM_I18N.t('万')` でwrap(JA DOM不変・ENは ×10k)
+
 ## 🌐 英語対応 P7-13(再開) — 規則23(数値PH直後の可算名詞複数形)違反164件の一掃+検査のexit 1化(2026-09-05)
 
 前セッション(worktree `agent-a0d461bff73eae7b4`、ベース106da6b8)が未コミットのまま停止していたため、開始前にworktreeをmain先端(`084cd401`、P7-11/P7-14マージ済み)へfast-forwardし、前セッションの途中成果を引き継いだ。

@@ -194,6 +194,9 @@ class WalkthroughDetectors {
       this.consoleEntries.push(entry);
       // favicon.ico はブラウザの自動リクエストで、配信サーバに実体が無いだけのノイズ
       if (/Failed to load resource/.test(entry.text) && /favicon\.ico/.test(entry.url)) return;
+      // 2026-09-05: 外部Webフォント(Google Fonts)の取得失敗はネットワーク側の揺れで、アプリのバグではない
+      // (ja走破で net::ERR_CONNECTION_CLOSED の woff2 が D1 になった実例)。fallbackフォントで描画は続くので除外
+      if (/Failed to load resource/.test(entry.text) && /fonts\.(?:gstatic|googleapis)\.com/.test(entry.url)) return;
       // P6-2: i18n未訳キーのfail-openログ(src/i18n.js logMiss)はenモードでの想定内挙動。
       // D1失敗にはせず、件数+ユニークキーとして別集計する(設計: docs/i18n-stage-b-p6-design-v0.1.md §3-1)
       if (entry.text.startsWith(I18N_MISS_PREFIX)) {
